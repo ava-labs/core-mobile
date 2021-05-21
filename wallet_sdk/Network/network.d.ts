@@ -1,0 +1,18 @@
+import { Avalanche } from 'avalanche/dist';
+import { AVMAPI } from 'avalanche/dist/apis/avm';
+import { InfoAPI } from 'avalanche/dist/apis/info';
+import BinTools from 'avalanche/dist/utils/bintools';
+import { EVMAPI } from 'avalanche/dist/apis/evm';
+import Web3 from 'web3';
+import { NetworkConfig } from './types';
+import { AxiosInstance } from 'axios';
+export declare const avalanche: Avalanche;
+export declare const xChain: AVMAPI;
+export declare const cChain: EVMAPI;
+export declare const pChain: import("avalanche/dist/apis/platformvm").PlatformVMAPI;
+export declare const infoApi: InfoAPI;
+export declare const bintools: BinTools;
+export declare const web3: Web3;
+export declare const explorer_api: AxiosInstance;
+export declare let activeNetwork: NetworkConfig;
+export declare function setNetwork(conf: NetworkConfig): void;
