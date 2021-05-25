@@ -1,51 +1,94 @@
 /**
- * Sample React Native App
- * https://github.com/facebook/react-native
+ * Avalanche Wallet App
  *
  * @format
  * @flow strict-local
  */
 
-import React from 'react';
-import type {Node} from 'react';
+import React, {Component} from 'react';
 import {
+  Appearance,
   SafeAreaView,
   ScrollView,
   StatusBar,
-  useColorScheme,
   View,
 } from 'react-native';
 
 import {Colors} from 'react-native/Libraries/NewAppScreen';
-import {MnemonicWallet} from './wallet_sdk';
 import Section from './src/mainView/Section';
 import Header from './src/mainView/Header';
+import AppViewModel from './src/AppViewModel';
 
-const App: () => Node = () => {
-  const isDarkMode = useColorScheme() === 'dark';
+class App extends Component {
+  viewModel: AppViewModel = new AppViewModel(Appearance.getColorScheme());
 
-  let mnemonic = MnemonicWallet.generateMnemonicPhrase();
+  constructor() {
+    super();
+    this.state = {
+      avaxPrice: 0,
+      backgroundStyle: {},
+      mnemonic: '',
+      walletCAddress: '',
+      walletEvmAddress: '',
+      isDarkMode: false,
+    };
+  }
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
+  componentWillUnmount() {
+    console.log('componentWillUnmount');
+  }
+  componentDidMount() {
+    console.log('componentDidMount');
+    this.viewModel.onComponentMount();
 
-  return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Generated mnemonic">{mnemonic}</Section>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
-};
+    this.viewModel.avaxPrice.subscribe(value => {
+      this.setState({avaxPrice: value});
+    });
+    this.viewModel.mnemonic.subscribe(value => {
+      this.setState({mnemonic: value});
+    });
+    this.viewModel.walletCAddress.subscribe(value => {
+      this.setState({walletCAddress: value});
+    });
+    this.viewModel.walletEvmAddrBech.subscribe(value => {
+      this.setState({walletEvmAddress: value});
+    });
+    this.viewModel.isDarkMode.subscribe(value => {
+      this.setState({isDarkMode: value});
+    });
+    this.viewModel.backgroundStyle.subscribe(value => {
+      this.setState({backgroundStyle: value});
+    });
+  }
+
+  render() {
+    console.log('render');
+    return (
+      <SafeAreaView style={this.state.backgroundStyle}>
+        <StatusBar
+          barStyle={this.state.isDarkMode ? 'light-content' : 'dark-content'}
+        />
+        <ScrollView
+          contentInsetAdjustmentBehavior="always"
+          style={this.state.backgroundStyle}>
+          <Header />
+          <View
+            style={{
+              backgroundColor: this.state.isDarkMode
+                ? Colors.black
+                : Colors.white,
+            }}>
+            <Section title="Avax price">${this.state.avaxPrice}</Section>
+            <Section title="Mnemonic">{this.state.mnemonic}</Section>
+            <Section title="C addr">{this.state.walletCAddress}</Section>
+            <Section title="Evm addr bech">
+              {this.state.walletEvmAddress}
+            </Section>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
+}
 
 export default App;
