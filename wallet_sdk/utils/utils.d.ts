@@ -2,11 +2,15 @@
 /// <reference types="node" />
 import Big from 'big.js';
 import { BN } from 'avalanche';
+import { PayloadBase } from 'avalanche/dist/utils';
 /**
  * @param val the amount to parse
  * @param denomination number of decimal places to parse with
  */
 export declare function bnToBig(val: BN, denomination?: number): Big;
+export declare function bnToBigAvaxX(val: BN): Big;
+export declare function bnToBigAvaxP(val: BN): Big;
+export declare function bnToBigAvaxC(val: BN): Big;
 /**
  * Parses the value using a denomination of 18
  *
@@ -73,3 +77,4 @@ export declare function waitTxX(txId: string, tryCount?: number): Promise<string
 export declare function waitTxP(txId: string, tryCount?: number): Promise<string>;
 export declare function waitTxEvm(txHash: string, tryCount?: number): Promise<string>;
 export declare function waitTxC(cAddress: string, nonce?: number, tryCount?: number): Promise<string>;
+export declare function parseNftPayload(rawPayload: string): PayloadBase;
