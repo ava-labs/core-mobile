@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "android": "react-native run-android",
-    "ios": "react-native run-ios",
+    "ios": "cd $INIT_CWD/ios && pod install && cd $INIT_CWD && react-native run-ios",
     "start": "react-native start",
     "test": "jest",
     "lint": "eslint ."
