@@ -20,16 +20,36 @@ yarn install
 Follow [these](https://reactnative.dev/docs/environment-setup) steps to setup dev environment; make sure to select 
 **React Native CLI Quickstart** tab and select appropriate Develeopment & Target OS.
 
-
 ## Launch iOS App
 
+First install iOS dependencies.
+
 ```zsh
+# install cocoapods
+sudo gem install cocoapods
+
+cd io/
+pod install
+cd ..
+```
+
+Now you can run the app
+
+```zsh
+# launch iOS emulator
+npx react-native run-ios
+
+# start app
 yarn ios
 ```
 
 ## Launch Android App
 
 ```zsh
+# launch android emulator
+npx react-native run-android
+
+# start app
 yarn android
 ```
 
