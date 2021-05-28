@@ -15,9 +15,13 @@ Next, install the dependencies.
 yarn install
 ```
 
-## Launch iOS App
+## Setup dev environment
 
-First open XCode and then run
+Follow [these](https://reactnative.dev/docs/environment-setup) steps to setup dev environment; make sure to select 
+**React Native CLI Quickstart** tab and select appropriate Develeopment & Target OS.
+
+
+## Launch iOS App
 
 ```zsh
 yarn ios
