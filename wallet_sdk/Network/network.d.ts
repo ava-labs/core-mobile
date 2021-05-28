@@ -13,6 +13,6 @@ export declare const pChain: import("avalanche/dist/apis/platformvm").PlatformVM
 export declare const infoApi: InfoAPI;
 export declare const bintools: BinTools;
 export declare const web3: Web3;
-export declare const explorer_api: AxiosInstance;
+export declare let explorer_api: AxiosInstance | null;
 export declare let activeNetwork: NetworkConfig;
 export declare function setNetwork(conf: NetworkConfig): void;

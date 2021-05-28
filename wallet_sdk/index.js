@@ -12,6 +12,7 @@ var Web3 = require('web3');
 var utils$2 = require('avalanche/dist/utils');
 var axios = require('axios');
 var evm = require('avalanche/dist/apis/evm');
+var ethers = require('ethers');
 var Big = require('big.js');
 var createHash = require('create-hash');
 var avm = require('avalanche/dist/apis/avm');
@@ -19,6 +20,7 @@ var common = require('avalanche/dist/common');
 var platformvm = require('avalanche/dist/apis/platformvm');
 var tx = require('@ethereumjs/tx');
 var EthereumjsCommon = require('@ethereumjs/common');
+var moment = require('moment');
 var keychain = require('avalanche/dist/apis/avm/keychain');
 require('bignumber.js');
 var rlp = require('rlp');
@@ -55,6 +57,7 @@ var axios__default = /*#__PURE__*/_interopDefaultLegacy(axios);
 var Big__default = /*#__PURE__*/_interopDefaultLegacy(Big);
 var createHash__default = /*#__PURE__*/_interopDefaultLegacy(createHash);
 var EthereumjsCommon__default = /*#__PURE__*/_interopDefaultLegacy(EthereumjsCommon);
+var moment__default = /*#__PURE__*/_interopDefaultLegacy(moment);
 var rlp__default = /*#__PURE__*/_interopDefaultLegacy(rlp);
 
 /*! *****************************************************************************
@@ -228,14 +231,20 @@ avalanche.Info();
 var bintools$1 = BinTools__default['default'].getInstance();
 var rpcUrl = DefaultConfig.apiProtocol + "://" + DefaultConfig.apiIp + ":" + DefaultConfig.apiPort + "/ext/bc/C/rpc";
 var web3 = new Web3__default['default'](rpcUrl);
-var explorer_api = axios__default['default'].create({
-    baseURL: DefaultConfig.explorerURL,
-    withCredentials: false,
-    headers: {
-        'Content-Type': 'application/json',
-    },
-});
+var explorer_api = null;
 var activeNetwork = MainnetConfig;
+function createExplorerApi(networkConfig) {
+    if (!networkConfig.explorerURL) {
+        throw new Error('Network configuration does not specify an explorer API.');
+    }
+    return axios__default['default'].create({
+        baseURL: networkConfig.explorerURL,
+        withCredentials: false,
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    });
+}
 function setNetwork(conf) {
     avalanche.setAddress(conf.apiIp, conf.apiPort, conf.apiProtocol);
     avalanche.setNetworkID(conf.networkID);
@@ -249,7 +258,10 @@ function setNetwork(conf) {
     pChain.setAVAXAssetID(conf.avaxID);
     cChain.setAVAXAssetID(conf.avaxID);
     if (conf.explorerURL) {
-        explorer_api.defaults.baseURL = conf.explorerURL;
+        explorer_api = createExplorerApi(conf);
+    }
+    else {
+        explorer_api = null;
     }
     // Set web3 Network Settings
     var web3Provider = conf.apiProtocol + "://" + conf.apiIp + ":" + conf.apiPort + "/ext/bc/C/rpc";
@@ -266,7 +278,7 @@ var EvmWalletReadonly = /** @class */ (function () {
         this.address = '0x' + ethereumjsUtil.publicToAddress(publicKey).toString('hex');
     }
     EvmWalletReadonly.prototype.getAddress = function () {
-        return this.address;
+        return ethers.ethers.utils.getAddress(this.address);
     };
     EvmWalletReadonly.prototype.updateBalance = function () {
         return __awaiter(this, void 0, void 0, function () {
@@ -336,6 +348,15 @@ var validateAddress = function (address) {
 function bnToBig(val, denomination) {
     if (denomination === void 0) { denomination = 0; }
     return new Big__default['default'](val.toString()).div(Math.pow(10, denomination));
+}
+function bnToBigAvaxX(val) {
+    return bnToBig(val, 9);
+}
+function bnToBigAvaxP(val) {
+    return bnToBigAvaxX(val);
+}
+function bnToBigAvaxC(val) {
+    return bnToBig(val, 18);
 }
 /**
  * Parses the value using a denomination of 18
@@ -640,10 +661,22 @@ function waitTxC(cAddress, nonce, tryCount) {
         });
     });
 }
+var payloadtypes = utils$2.PayloadTypes.getInstance();
+function parseNftPayload(rawPayload) {
+    var payload = avalanche$1.Buffer.from(rawPayload, 'base64');
+    payload = avalanche$1.Buffer.concat([new avalanche$1.Buffer(4).fill(payload.length), payload]);
+    var typeId = payloadtypes.getTypeID(payload);
+    var pl = payloadtypes.getContent(payload);
+    var payloadbase = payloadtypes.select(typeId, pl);
+    return payloadbase;
+}
 
 var utils$1 = /*#__PURE__*/Object.freeze({
     __proto__: null,
     bnToBig: bnToBig,
+    bnToBigAvaxX: bnToBigAvaxX,
+    bnToBigAvaxP: bnToBigAvaxP,
+    bnToBigAvaxC: bnToBigAvaxC,
     bnToAvaxC: bnToAvaxC,
     bnToAvaxX: bnToAvaxX,
     bnToAvaxP: bnToAvaxP,
@@ -655,7 +688,8 @@ var utils$1 = /*#__PURE__*/Object.freeze({
     waitTxX: waitTxX,
     waitTxP: waitTxP,
     waitTxEvm: waitTxEvm,
-    waitTxC: waitTxC
+    waitTxC: waitTxC,
+    parseNftPayload: parseNftPayload
 });
 
 var _format = "hh-sol-artifact-1";
@@ -1529,6 +1563,7 @@ var Assets = /*#__PURE__*/Object.freeze({
 });
 
 var NO_NETWORK = new Error('No network selected.');
+var NO_EXPLORER_API = new Error('Explorer API not found.');
 
 var Erc20Token = /** @class */ (function () {
     function Erc20Token(data) {
@@ -1721,6 +1756,19 @@ function addErc20Token(address) {
         });
     });
 }
+function getContractData(address) {
+    return __awaiter(this, void 0, void 0, function () {
+        var data;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, Erc20Token.getData(address)];
+                case 1:
+                    data = _a.sent();
+                    return [2 /*return*/, data];
+            }
+        });
+    });
+}
 function getErc20Token(address) {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
@@ -1781,6 +1829,7 @@ var Erc20 = /*#__PURE__*/Object.freeze({
     __proto__: null,
     erc20Store: erc20Store,
     addErc20Token: addErc20Token,
+    getContractData: getContractData,
     getErc20Token: getErc20Token,
     balanceOf: balanceOf
 });
@@ -2261,6 +2310,549 @@ function eventTargetAgnosticAddListener(emitter, name, listener, flags) {
   }
 }
 events.once = once_1;
+
+function getAddressHistory(addrs, limit, chainID, endTime) {
+    if (limit === void 0) { limit = 20; }
+    return __awaiter(this, void 0, void 0, function () {
+        var ADDR_SIZE, selection, remaining, addrsRaw, rootUrl, req, res, txs, next, endTime_1, nextRes, nextRes;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    if (!explorer_api) {
+                        throw NO_EXPLORER_API;
+                    }
+                    ADDR_SIZE = 1024;
+                    selection = addrs.slice(0, ADDR_SIZE);
+                    remaining = addrs.slice(ADDR_SIZE);
+                    addrsRaw = selection.map(function (addr) {
+                        return addr.split('-')[1];
+                    });
+                    rootUrl = 'v2/transactions';
+                    req = {
+                        address: addrsRaw,
+                        sort: ['timestamp-desc'],
+                        disableCount: ['1'],
+                        chainID: [chainID],
+                        disableGenesis: ['false'],
+                    };
+                    if (limit > 0) {
+                        //@ts-ignore
+                        req.limit = [limit.toString()];
+                    }
+                    if (endTime) {
+                        //@ts-ignore
+                        req.endTime = [endTime];
+                    }
+                    return [4 /*yield*/, explorer_api.post(rootUrl, req)];
+                case 1:
+                    res = _a.sent();
+                    txs = res.data.transactions;
+                    next = res.data.next;
+                    if (txs === null)
+                        txs = [];
+                    if (!(next && !limit)) return [3 /*break*/, 3];
+                    endTime_1 = next.split('&')[0].split('=')[1];
+                    return [4 /*yield*/, getAddressHistory(selection, limit, chainID, endTime_1)];
+                case 2:
+                    nextRes = _a.sent();
+                    txs.push.apply(txs, nextRes);
+                    _a.label = 3;
+                case 3:
+                    if (!(remaining.length > 0)) return [3 /*break*/, 5];
+                    return [4 /*yield*/, getAddressHistory(remaining, limit, chainID)];
+                case 4:
+                    nextRes = _a.sent();
+                    txs.push.apply(txs, nextRes);
+                    _a.label = 5;
+                case 5: return [2 /*return*/, txs];
+            }
+        });
+    });
+}
+function getTransactionSummary(tx, walletAddrs, evmAddress) {
+    return __awaiter(this, void 0, void 0, function () {
+        var sum, cleanAddressesXP, _a;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
+                case 0:
+                    cleanAddressesXP = walletAddrs.map(function (addr) { return addr.split('-')[1]; });
+                    _a = tx.type;
+                    switch (_a) {
+                        case 'import': return [3 /*break*/, 1];
+                        case 'pvm_import': return [3 /*break*/, 1];
+                        case 'export': return [3 /*break*/, 2];
+                        case 'pvm_export': return [3 /*break*/, 2];
+                        case 'atomic_export_tx': return [3 /*break*/, 2];
+                        case 'add_validator': return [3 /*break*/, 3];
+                        case 'add_delegator': return [3 /*break*/, 4];
+                        case 'atomic_import_tx': return [3 /*break*/, 5];
+                        case 'operation': return [3 /*break*/, 6];
+                        case 'base': return [3 /*break*/, 6];
+                    }
+                    return [3 /*break*/, 8];
+                case 1:
+                    sum = getImportSummary(tx, cleanAddressesXP);
+                    return [3 /*break*/, 9];
+                case 2:
+                    sum = getExportSummary(tx, cleanAddressesXP);
+                    return [3 /*break*/, 9];
+                case 3:
+                    sum = getValidatorSummary(tx, cleanAddressesXP);
+                    return [3 /*break*/, 9];
+                case 4:
+                    sum = getValidatorSummary(tx, cleanAddressesXP);
+                    return [3 /*break*/, 9];
+                case 5:
+                    sum = getImportSummaryC(tx, evmAddress);
+                    return [3 /*break*/, 9];
+                case 6: return [4 /*yield*/, getBaseTxSummary(tx, cleanAddressesXP)];
+                case 7:
+                    sum = _b.sent();
+                    return [3 /*break*/, 9];
+                case 8: throw new Error("Unsupported history transaction type. (" + tx.type + ")");
+                case 9: return [2 /*return*/, sum];
+            }
+        });
+    });
+}
+function idToChainAlias(id) {
+    if (id === activeNetwork.xChainID) {
+        return 'X';
+    }
+    else if (id === activeNetwork.pChainID) {
+        return 'P';
+    }
+    else if (id === activeNetwork.cChainID) {
+        return 'C';
+    }
+    throw new Error('Unknown chain ID.');
+}
+// If any of the outputs has a different chain ID, thats the destination chain
+// else return current chain
+function findDestinationChain(tx) {
+    var baseChain = tx.chainID;
+    var outs = tx.outputs || [];
+    for (var i = 0; i < outs.length; i++) {
+        var outChainId = outs[i].chainID;
+        if (outChainId !== baseChain)
+            return outChainId;
+    }
+    return baseChain;
+}
+// If any of the inputs has a different chain ID, thats the source chain
+// else return current chain
+function findSourceChain(tx) {
+    var baseChain = tx.chainID;
+    var ins = tx.inputs;
+    for (var i = 0; i < ins.length; i++) {
+        var inChainId = ins[i].output.chainID;
+        if (inChainId !== baseChain)
+            return inChainId;
+    }
+    return baseChain;
+}
+function isOutputOwner(ownerAddrs, output) {
+    var outAddrs = output.addresses;
+    if (!outAddrs)
+        return false;
+    var totAddrs = outAddrs.filter(function (addr) {
+        return ownerAddrs.includes(addr);
+    });
+    return totAddrs.length > 0;
+}
+function isOutputOwnerC(ownerAddr, output) {
+    var outAddrs = output.caddresses;
+    if (!outAddrs)
+        return false;
+    return outAddrs.includes(ownerAddr);
+}
+/**
+ * Returns the total amount of `assetID` in the given `utxos` owned by `address`. Checks for X/P addresses.
+ * @param utxos UTXOs to calculate balance from.
+ * @param addresses The wallet's  addresses.
+ * @param assetID Only count outputs of this asset ID.
+ * @param chainID Only count the outputs on this chain.
+ * @param isStake Set to `true` if looking for staking utxos.
+ */
+function getAssetBalanceFromUTXOs(utxos, addresses, assetID, chainID, isStake) {
+    if (isStake === void 0) { isStake = false; }
+    var myOuts = utxos.filter(function (utxo) {
+        if (assetID === utxo.assetID &&
+            isOutputOwner(addresses, utxo) &&
+            chainID === utxo.chainID &&
+            utxo.stake === isStake) {
+            return true;
+        }
+        return false;
+    });
+    var tot = myOuts.reduce(function (acc, utxo) {
+        return acc.add(new avalanche$1.BN(utxo.amount));
+    }, new avalanche$1.BN(0));
+    return tot;
+}
+function getNFTBalanceFromUTXOs(utxos, addresses, assetID) {
+    var nftUTXOs = utxos.filter(function (utxo) {
+        if (utxo.outputType === avm.AVMConstants.NFTXFEROUTPUTID &&
+            utxo.assetID === assetID &&
+            isOutputOwner(addresses, utxo)) {
+            return true;
+        }
+        return false;
+    });
+    var res = {};
+    for (var i = 0; i < nftUTXOs.length; i++) {
+        var utxo = nftUTXOs[i];
+        var groupID = utxo.groupID;
+        if (res[groupID]) {
+            res[groupID].amount++;
+        }
+        else {
+            res[groupID] = {
+                payload: utxo.payload || '',
+                amount: 1,
+            };
+        }
+    }
+    return res;
+}
+/**
+ * Returns the total amount of `assetID` in the given `utxos` owned by `address`. Checks for EVM address.
+ * @param utxos UTXOs to calculate balance from.
+ * @param address The wallet's  evm address `0x...`.
+ * @param assetID Only count outputs of this asset ID.
+ * @param chainID Only count the outputs on this chain.
+ * @param isStake Set to `true` if looking for staking utxos.
+ */
+function getEvmAssetBalanceFromUTXOs(utxos, address, assetID, chainID, isStake) {
+    if (isStake === void 0) { isStake = false; }
+    var myOuts = utxos.filter(function (utxo) {
+        if (assetID === utxo.assetID &&
+            isOutputOwnerC(address, utxo) &&
+            chainID === utxo.chainID &&
+            utxo.stake === isStake) {
+            return true;
+        }
+        return false;
+    });
+    var tot = myOuts.reduce(function (acc, utxo) {
+        return acc.add(new avalanche$1.BN(utxo.amount));
+    }, new avalanche$1.BN(0));
+    return tot;
+}
+function getImportSummary(tx, addresses) {
+    var sourceChain = findSourceChain(tx);
+    var chainAliasFrom = idToChainAlias(sourceChain);
+    var chainAliasTo = idToChainAlias(tx.chainID);
+    var avaxID = activeNetwork.avaxID;
+    var outs = tx.outputs || [];
+    var amtOut = getAssetBalanceFromUTXOs(outs, addresses, avaxID, tx.chainID);
+    var time = new Date(tx.timestamp);
+    var fee = xChain.getTxFee();
+    var res = {
+        id: tx.id,
+        memo: parseMemo(tx.memo),
+        source: chainAliasFrom,
+        destination: chainAliasTo,
+        amount: amtOut,
+        amountClean: bnToAvaxX(amtOut),
+        timestamp: time,
+        type: tx.type,
+        fee: fee,
+    };
+    return res;
+}
+function getExportSummary(tx, addresses) {
+    var inputs = tx.inputs;
+    var sourceChain = inputs[0].output.chainID;
+    var chainAliasFrom = idToChainAlias(sourceChain);
+    var destinationChain = findDestinationChain(tx);
+    var chainAliasTo = idToChainAlias(destinationChain);
+    var avaxID = activeNetwork.avaxID;
+    var outs = tx.outputs || [];
+    var amtOut = getAssetBalanceFromUTXOs(outs, addresses, avaxID, destinationChain);
+    // let amtIn = getAssetBalanceFromUTXOs(inUtxos, addresses, avaxID);
+    var time = new Date(tx.timestamp);
+    var fee = xChain.getTxFee();
+    var res = {
+        id: tx.id,
+        memo: parseMemo(tx.memo),
+        source: chainAliasFrom,
+        destination: chainAliasTo,
+        amount: amtOut,
+        amountClean: bnToAvaxX(amtOut),
+        timestamp: time,
+        type: tx.type,
+        fee: fee,
+    };
+    return res;
+}
+function getValidatorSummary(tx, ownerAddrs) {
+    var time = new Date(tx.timestamp);
+    var pChainID = activeNetwork.pChainID;
+    var avaxID = activeNetwork.avaxID;
+    var outs = tx.outputs || [];
+    var stakeAmt = getAssetBalanceFromUTXOs(outs, ownerAddrs, avaxID, pChainID, true);
+    return {
+        id: tx.id,
+        nodeID: tx.validatorNodeID,
+        stakeStart: new Date(tx.validatorStart * 1000),
+        stakeEnd: new Date(tx.validatorEnd * 1000),
+        timestamp: time,
+        type: tx.type,
+        fee: new avalanche$1.BN(0),
+        amount: stakeAmt,
+        amountClean: bnToAvaxP(stakeAmt),
+        memo: parseMemo(tx.memo),
+        isRewarded: tx.rewarded,
+    };
+}
+// Returns the summary for a C chain import TX
+function getImportSummaryC(tx, ownerAddr) {
+    var sourceChain = findSourceChain(tx);
+    var chainAliasFrom = idToChainAlias(sourceChain);
+    var chainAliasTo = idToChainAlias(tx.chainID);
+    var avaxID = activeNetwork.avaxID;
+    var outs = tx.outputs || [];
+    var amtOut = getEvmAssetBalanceFromUTXOs(outs, ownerAddr, avaxID, tx.chainID);
+    var time = new Date(tx.timestamp);
+    var fee = xChain.getTxFee();
+    var res = {
+        id: tx.id,
+        source: chainAliasFrom,
+        destination: chainAliasTo,
+        amount: amtOut,
+        amountClean: bnToAvaxX(amtOut),
+        timestamp: time,
+        type: tx.type,
+        fee: fee,
+        memo: parseMemo(tx.memo),
+    };
+    return res;
+}
+function getBaseTxSummary(tx, ownerAddrs) {
+    return __awaiter(this, void 0, void 0, function () {
+        var losses, lossesNFT, gains, gainsNFT, received, receivedNFTs, _a, _b, _i, assetID, fromAddrs, tokenDesc, amtBN, _c, _d, _e, assetID, fromAddrs, tokenDesc, groups, sent, sentNFTs, _f, _g, _h, assetID, toAddrs, tokenDesc, amtBN, _j, _k, _l, assetID, fromAddrs, tokenDesc, groups;
+        return __generator(this, function (_m) {
+            switch (_m.label) {
+                case 0:
+                    losses = getBaseTxTokenLosses(tx, ownerAddrs);
+                    lossesNFT = getBaseTxNFTLosses(tx, ownerAddrs);
+                    gains = getBaseTxTokenGains(tx, ownerAddrs);
+                    gainsNFT = getBaseTxNFTGains(tx, ownerAddrs);
+                    received = {};
+                    receivedNFTs = {};
+                    _a = [];
+                    for (_b in gains)
+                        _a.push(_b);
+                    _i = 0;
+                    _m.label = 1;
+                case 1:
+                    if (!(_i < _a.length)) return [3 /*break*/, 4];
+                    assetID = _a[_i];
+                    fromAddrs = getBaseTxSenders(tx, assetID);
+                    return [4 /*yield*/, getAssetDescription(assetID)];
+                case 2:
+                    tokenDesc = _m.sent();
+                    amtBN = gains[assetID];
+                    received[assetID] = {
+                        amount: amtBN,
+                        amountClean: bnToLocaleString(amtBN, tokenDesc.denomination),
+                        from: fromAddrs,
+                        asset: tokenDesc,
+                    };
+                    _m.label = 3;
+                case 3:
+                    _i++;
+                    return [3 /*break*/, 1];
+                case 4:
+                    _c = [];
+                    for (_d in gainsNFT)
+                        _c.push(_d);
+                    _e = 0;
+                    _m.label = 5;
+                case 5:
+                    if (!(_e < _c.length)) return [3 /*break*/, 8];
+                    assetID = _c[_e];
+                    fromAddrs = getBaseTxSenders(tx, assetID);
+                    return [4 /*yield*/, getAssetDescription(assetID)];
+                case 6:
+                    tokenDesc = _m.sent();
+                    groups = gainsNFT[assetID];
+                    receivedNFTs[assetID] = {
+                        groups: groups,
+                        from: fromAddrs,
+                        asset: tokenDesc,
+                    };
+                    _m.label = 7;
+                case 7:
+                    _e++;
+                    return [3 /*break*/, 5];
+                case 8:
+                    sent = {};
+                    sentNFTs = {};
+                    _f = [];
+                    for (_g in losses)
+                        _f.push(_g);
+                    _h = 0;
+                    _m.label = 9;
+                case 9:
+                    if (!(_h < _f.length)) return [3 /*break*/, 12];
+                    assetID = _f[_h];
+                    toAddrs = getBaseTxReceivers(tx, assetID);
+                    return [4 /*yield*/, getAssetDescription(assetID)];
+                case 10:
+                    tokenDesc = _m.sent();
+                    amtBN = losses[assetID];
+                    sent[assetID] = {
+                        amount: amtBN,
+                        amountClean: bnToLocaleString(amtBN, tokenDesc.denomination),
+                        to: toAddrs,
+                        asset: tokenDesc,
+                    };
+                    _m.label = 11;
+                case 11:
+                    _h++;
+                    return [3 /*break*/, 9];
+                case 12:
+                    _j = [];
+                    for (_k in lossesNFT)
+                        _j.push(_k);
+                    _l = 0;
+                    _m.label = 13;
+                case 13:
+                    if (!(_l < _j.length)) return [3 /*break*/, 16];
+                    assetID = _j[_l];
+                    fromAddrs = getBaseTxSenders(tx, assetID);
+                    return [4 /*yield*/, getAssetDescription(assetID)];
+                case 14:
+                    tokenDesc = _m.sent();
+                    groups = lossesNFT[assetID];
+                    sentNFTs[assetID] = {
+                        groups: groups,
+                        to: fromAddrs,
+                        asset: tokenDesc,
+                    };
+                    _m.label = 15;
+                case 15:
+                    _l++;
+                    return [3 /*break*/, 13];
+                case 16: return [2 /*return*/, {
+                        id: tx.id,
+                        fee: xChain.getTxFee(),
+                        type: tx.type,
+                        timestamp: new Date(tx.timestamp),
+                        memo: parseMemo(tx.memo),
+                        tokens: {
+                            sent: sent,
+                            received: received,
+                        },
+                        nfts: {
+                            sent: sentNFTs,
+                            received: receivedNFTs,
+                        },
+                    }];
+            }
+        });
+    });
+}
+function getBaseTxNFTLosses(tx, ownerAddrs) {
+    var inUTXOs = tx.inputs.map(function (input) { return input.output; });
+    var nftUTXOs = inUTXOs.filter(function (utxo) {
+        return utxo.outputType === avm.AVMConstants.NFTXFEROUTPUTID;
+    });
+    var res = {};
+    for (var assetID in tx.inputTotals) {
+        var nftBal = getNFTBalanceFromUTXOs(nftUTXOs, ownerAddrs, assetID);
+        // If empty dictionary pass
+        if (Object.keys(nftBal).length === 0)
+            continue;
+        res[assetID] = nftBal;
+    }
+    return res;
+}
+function getBaseTxNFTGains(tx, ownerAddrs) {
+    var outs = tx.outputs || [];
+    var nftUTXOs = outs.filter(function (utxo) {
+        return utxo.outputType === avm.AVMConstants.NFTXFEROUTPUTID;
+    });
+    var res = {};
+    for (var assetID in tx.inputTotals) {
+        var nftBal = getNFTBalanceFromUTXOs(nftUTXOs, ownerAddrs, assetID);
+        // If empty dictionary pass
+        if (Object.keys(nftBal).length === 0)
+            continue;
+        res[assetID] = nftBal;
+    }
+    return res;
+}
+function getBaseTxTokenLosses(tx, ownerAddrs) {
+    var inUTXOs = tx.inputs.map(function (input) { return input.output; });
+    var tokenUTXOs = inUTXOs.filter(function (utxo) {
+        return utxo.outputType === avm.AVMConstants.SECPXFEROUTPUTID;
+    });
+    var chainID = xChain.getBlockchainID();
+    var res = {};
+    for (var assetID in tx.inputTotals) {
+        var bal = getAssetBalanceFromUTXOs(tokenUTXOs, ownerAddrs, assetID, chainID);
+        if (bal.isZero())
+            continue;
+        res[assetID] = bal;
+    }
+    return res;
+}
+function getBaseTxTokenGains(tx, ownerAddrs) {
+    var chainID = xChain.getBlockchainID();
+    var outs = tx.outputs || [];
+    var tokenUTXOs = outs.filter(function (utxo) {
+        return utxo.outputType === avm.AVMConstants.SECPXFEROUTPUTID;
+    });
+    var res = {};
+    for (var assetID in tx.outputTotals) {
+        var bal = getAssetBalanceFromUTXOs(tokenUTXOs, ownerAddrs, assetID, chainID);
+        if (bal.isZero())
+            continue;
+        res[assetID] = bal;
+    }
+    return res;
+}
+// Look at the inputs and check where the assetID came from.
+function getBaseTxSenders(tx, assetID) {
+    var inUTXOs = tx.inputs.map(function (input) { return input.output; });
+    var res = [];
+    for (var i = 0; i < inUTXOs.length; i++) {
+        var utxo = inUTXOs[i];
+        if (utxo.assetID === assetID && utxo.addresses) {
+            res.push.apply(res, utxo.addresses);
+        }
+    }
+    // Eliminate Duplicates
+    return res.filter(function (addr, i) {
+        return res.indexOf(addr) === i;
+    });
+}
+// Look at the inputs and check where the assetID came from.
+function getBaseTxReceivers(tx, assetID) {
+    var res = [];
+    var outs = tx.outputs || [];
+    for (var i = 0; i < outs.length; i++) {
+        var utxo = outs[i];
+        if (utxo.assetID === assetID && utxo.addresses) {
+            res.push.apply(res, utxo.addresses);
+        }
+    }
+    // Eliminate Duplicates
+    return res.filter(function (addr, i) {
+        return res.indexOf(addr) === i;
+    });
+}
+function parseMemo(raw) {
+    var memoText = new Buffer(raw, 'base64').toString('utf8');
+    // Bug that sets memo to empty string (AAAAAA==) for some
+    // tx types
+    if (!memoText.length || raw === 'AAAAAA==')
+        return '';
+    return memoText;
+}
 
 var WalletProvider = /** @class */ (function () {
     function WalletProvider() {
@@ -3064,6 +3656,99 @@ var WalletProvider = /** @class */ (function () {
             });
         });
     };
+    WalletProvider.prototype.getHistoryX = function (limit) {
+        if (limit === void 0) { limit = 0; }
+        return __awaiter(this, void 0, void 0, function () {
+            var addrs;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        addrs = this.getAllAddressesX();
+                        return [4 /*yield*/, getAddressHistory(addrs, limit, xChain.getBlockchainID())];
+                    case 1: return [2 /*return*/, _a.sent()];
+                }
+            });
+        });
+    };
+    WalletProvider.prototype.getHistoryP = function (limit) {
+        if (limit === void 0) { limit = 0; }
+        return __awaiter(this, void 0, void 0, function () {
+            var addrs;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        addrs = this.getAllAddressesP();
+                        return [4 /*yield*/, getAddressHistory(addrs, limit, pChain.getBlockchainID())];
+                    case 1: return [2 /*return*/, _a.sent()];
+                }
+            });
+        });
+    };
+    WalletProvider.prototype.getHistoryC = function (limit) {
+        if (limit === void 0) { limit = 0; }
+        return __awaiter(this, void 0, void 0, function () {
+            var addrs;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        addrs = [this.getEvmAddressBech()];
+                        return [4 /*yield*/, getAddressHistory(addrs, limit, cChain.getBlockchainID())];
+                    case 1: return [2 /*return*/, _a.sent()];
+                }
+            });
+        });
+    };
+    WalletProvider.prototype.getHistory = function (limit) {
+        if (limit === void 0) { limit = 0; }
+        return __awaiter(this, void 0, void 0, function () {
+            var txsX, txsP, txsC, addrs, addrC, txsSorted, res, i, tx, summary, err_1;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.getHistoryX(limit)];
+                    case 1:
+                        txsX = _a.sent();
+                        return [4 /*yield*/, this.getHistoryP(limit)];
+                    case 2:
+                        txsP = _a.sent();
+                        return [4 /*yield*/, this.getHistoryC(limit)];
+                    case 3:
+                        txsC = _a.sent();
+                        addrs = this.getAllAddressesX();
+                        addrC = this.getAddressC();
+                        txsSorted = txsX
+                            .concat(txsP, txsC)
+                            .sort(function (x, y) { return (moment__default['default'](x.timestamp).isBefore(moment__default['default'](y.timestamp)) ? 1 : -1); });
+                        res = [];
+                        i = 0;
+                        _a.label = 4;
+                    case 4:
+                        if (!(i < txsSorted.length)) return [3 /*break*/, 9];
+                        tx = txsSorted[i];
+                        _a.label = 5;
+                    case 5:
+                        _a.trys.push([5, 7, , 8]);
+                        return [4 /*yield*/, getTransactionSummary(tx, addrs, addrC)];
+                    case 6:
+                        summary = _a.sent();
+                        res.push(summary);
+                        return [3 /*break*/, 8];
+                    case 7:
+                        err_1 = _a.sent();
+                        console.error(err_1);
+                        return [3 /*break*/, 8];
+                    case 8:
+                        i++;
+                        return [3 /*break*/, 4];
+                    case 9:
+                        // If there is a limit only return that much
+                        if (limit > 0) {
+                            return [2 /*return*/, res.slice(0, limit)];
+                        }
+                        return [2 /*return*/, res];
+                }
+            });
+        });
+    };
     return WalletProvider;
 }());
 
@@ -3074,6 +3759,9 @@ function getAddressChains(addrs) {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
+                    if (!explorer_api) {
+                        throw NO_EXPLORER_API;
+                    }
                     rawAddrs = addrs.map(function (addr) {
                         return addr.split('-')[1];
                     });
@@ -3248,27 +3936,27 @@ var HdScanner = /** @class */ (function () {
         return addr;
     };
     // Uses the explorer to scan used addresses and find its starting index
-    HdScanner.prototype.resetIndex = function () {
+    HdScanner.prototype.resetIndex = function (startIndex) {
+        if (startIndex === void 0) { startIndex = 0; }
         return __awaiter(this, void 0, void 0, function () {
-            var _a, _b;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
+            var index;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
                     case 0:
                         if (!activeNetwork)
                             throw NO_NETWORK;
                         if (!activeNetwork.explorerURL) return [3 /*break*/, 2];
-                        _a = this;
-                        return [4 /*yield*/, this.findAvailableIndexExplorer()];
+                        return [4 /*yield*/, this.findAvailableIndexExplorer(startIndex)];
                     case 1:
-                        _a.index = _c.sent();
+                        index = _a.sent();
                         return [3 /*break*/, 4];
-                    case 2:
-                        _b = this;
-                        return [4 /*yield*/, this.findAvailableIndexNode()];
+                    case 2: return [4 /*yield*/, this.findAvailableIndexNode(startIndex)];
                     case 3:
-                        _b.index = _c.sent();
-                        _c.label = 4;
-                    case 4: return [2 /*return*/];
+                        index = _a.sent();
+                        _a.label = 4;
+                    case 4:
+                        this.index = index;
+                        return [2 /*return*/, index];
                 }
             });
         });
@@ -3446,18 +4134,24 @@ var HDWalletAbstract = /** @class */ (function (_super) {
      * - MUST use the explorer api to find the last used address
      * - If explorer is not available it will use the connected node. This may result in invalid balances.
      */
-    HDWalletAbstract.prototype.resetHdIndices = function () {
+    HDWalletAbstract.prototype.resetHdIndices = function (externalStart, internalStart) {
+        if (externalStart === void 0) { externalStart = 0; }
+        if (internalStart === void 0) { internalStart = 0; }
         return __awaiter(this, void 0, void 0, function () {
+            var indexExt, indexInt;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.externalScan.resetIndex()];
+                    case 0: return [4 /*yield*/, this.externalScan.resetIndex(externalStart)];
                     case 1:
-                        _a.sent();
-                        return [4 /*yield*/, this.internalScan.resetIndex()];
+                        indexExt = _a.sent();
+                        return [4 /*yield*/, this.internalScan.resetIndex(internalStart)];
                     case 2:
-                        _a.sent();
+                        indexInt = _a.sent();
                         this.emitAddressChange();
-                        return [2 /*return*/];
+                        return [2 /*return*/, {
+                                internal: indexInt,
+                                external: indexExt,
+                            }];
                 }
             });
         });
@@ -3639,7 +4333,7 @@ var MnemonicWallet = /** @class */ (function (_super) {
      * Hex representation of the EVM address.
      */
     MnemonicWallet.prototype.getAddressC = function () {
-        return this.evmWallet.address;
+        return this.evmWallet.getAddress();
     };
     // TODO: Support internal address as well
     MnemonicWallet.prototype.signMessage = function (msgStr, index) {
