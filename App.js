@@ -8,16 +8,17 @@
 import React, {Component} from 'react';
 import {
   Appearance,
+  Button,
   SafeAreaView,
-  ScrollView,
+  SectionList,
   StatusBar,
-  View,
+  StyleSheet,
+  Text,
 } from 'react-native';
-
-import {Colors} from 'react-native/Libraries/NewAppScreen';
-import Section from './src/mainView/Section';
 import Header from './src/mainView/Header';
 import AppViewModel from './src/AppViewModel';
+import Clock from './src/mainView/Clock';
+import {Colors} from 'react-native/Libraries/NewAppScreen';
 
 class App extends Component {
   viewModel: AppViewModel = new AppViewModel(Appearance.getColorScheme());
@@ -31,6 +32,10 @@ class App extends Component {
       walletCAddress: '',
       walletEvmAddress: '',
       isDarkMode: false,
+      externalAddressesX: [],
+      externalAddressesP: [],
+      addressC: '',
+      availableX: '',
     };
   }
 
@@ -44,9 +49,7 @@ class App extends Component {
     this.viewModel.avaxPrice.subscribe(value => {
       this.setState({avaxPrice: value});
     });
-    this.viewModel.mnemonic.subscribe(value => {
-      this.setState({mnemonic: value});
-    });
+    this.setState({mnemonic: this.viewModel.mnemonic});
     this.viewModel.walletCAddress.subscribe(value => {
       this.setState({walletCAddress: value});
     });
@@ -59,36 +62,97 @@ class App extends Component {
     this.viewModel.backgroundStyle.subscribe(value => {
       this.setState({backgroundStyle: value});
     });
+    this.viewModel.externalAddressesX.subscribe(value => {
+      this.setState({externalAddressesX: value});
+    });
+    this.viewModel.externalAddressesP.subscribe(value => {
+      this.setState({externalAddressesP: value});
+    });
+    this.viewModel.addressC.subscribe(value => {
+      this.setState({addressC: value});
+    });
+    this.viewModel.availableX.subscribe(value => {
+      this.setState({availableX: value});
+    });
   }
-
   render() {
     console.log('render');
+
+    const sectionListData = [
+      {
+        title: 'Avax Price',
+        data: ['$' + this.state.avaxPrice],
+      },
+      {
+        title: 'Mnemonic',
+        data: [this.state.mnemonic],
+      },
+      {
+        title: 'External addresses X',
+        data: [this.state.externalAddressesX],
+      },
+      {
+        title: 'External addresses P',
+        data: [this.state.externalAddressesP],
+      },
+      {
+        title: 'External addresses C',
+        data: [this.state.addressC],
+      },
+      {
+        title: 'Available (X)',
+        data: [this.state.availableX],
+      },
+    ];
     return (
       <SafeAreaView style={this.state.backgroundStyle}>
         <StatusBar
           barStyle={this.state.isDarkMode ? 'light-content' : 'dark-content'}
         />
-        <ScrollView
-          contentInsetAdjustmentBehavior="always"
-          style={this.state.backgroundStyle}>
-          <Header />
-          <View
-            style={{
-              backgroundColor: this.state.isDarkMode
-                ? Colors.black
-                : Colors.white,
-            }}>
-            <Section title="Avax price">${this.state.avaxPrice}</Section>
-            <Section title="Mnemonic">{this.state.mnemonic}</Section>
-            <Section title="C addr">{this.state.walletCAddress}</Section>
-            <Section title="Evm addr bech">
-              {this.state.walletEvmAddress}
-            </Section>
-          </View>
-        </ScrollView>
+        <Clock />
+        <Header />
+        <SectionList
+          sections={sectionListData}
+          renderItem={({item}) => (
+            <Text
+              style={[
+                styles.item,
+                {color: this.state.isDarkMode ? Colors.light : Colors.dark},
+              ]}>
+              {item}
+            </Text>
+          )}
+          renderSectionHeader={({section}) => (
+            <Text style={styles.sectionHeader}>{section.title}</Text>
+          )}
+          keyExtractor={(item, index) => index}
+        />
+        <Button
+          title={'Reset Hd indices'}
+          onPress={() => this.viewModel.onResetHdIndices()}
+        />
       </SafeAreaView>
     );
   }
 }
-
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingTop: 22,
+  },
+  sectionHeader: {
+    paddingTop: 2,
+    paddingLeft: 10,
+    paddingRight: 10,
+    paddingBottom: 2,
+    fontSize: 14,
+    fontWeight: 'bold',
+    backgroundColor: 'rgba(247,247,247,1.0)',
+  },
+  item: {
+    padding: 10,
+    fontSize: 18,
+    height: 44,
+  },
+});
 export default App;
