@@ -28,7 +28,7 @@ First install iOS dependencies.
 # install cocoapods
 sudo gem install cocoapods
 
-cd io/
+cd ios/
 pod install
 cd ..
 ```
