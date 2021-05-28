@@ -31,7 +31,7 @@ export default class HdScanner {
     getKeyForIndexP(index: number): PlatformKeyPair;
     private getHdKeyForIndex;
     private getAddressForIndex;
-    resetIndex(): Promise<void>;
+    resetIndex(startIndex?: number): Promise<number>;
     private findAvailableIndexExplorer;
     private findAvailableIndexNode;
 }

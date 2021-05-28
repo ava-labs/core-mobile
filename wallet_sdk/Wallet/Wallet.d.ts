@@ -10,6 +10,7 @@ import { UnsignedTx as EVMUnsignedTx, Tx as EVMTx } from 'avalanche/dist/apis/ev
 import { PayloadBase } from 'avalanche/dist/utils';
 import EvmWalletReadonly from "./EvmWalletReadonly";
 import EventEmitter from 'events';
+import { ITransactionData } from "../History/types";
 export declare abstract class WalletProvider {
     abstract type: WalletNameType;
     abstract evmWallet: EvmWallet | EvmWalletReadonly;
@@ -178,4 +179,8 @@ export declare abstract class WalletProvider {
      */
     validate(nodeID: string, amt: BN, start: Date, end: Date, delegationFee: number, rewardAddress?: string, utxos?: PlatformUTXO[]): Promise<string>;
     delegate(nodeID: string, amt: BN, start: Date, end: Date, rewardAddress?: string, utxos?: PlatformUTXO[]): Promise<string>;
+    getHistoryX(limit?: number): Promise<ITransactionData[]>;
+    getHistoryP(limit?: number): Promise<ITransactionData[]>;
+    getHistoryC(limit?: number): Promise<ITransactionData[]>;
+    getHistory(limit?: number): Promise<(import("../History/types").iHistoryBaseTx | import("../History/types").iHistoryExport | import("../History/types").iHistoryAddDelegator)[]>;
 }
