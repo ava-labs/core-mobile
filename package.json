@@ -1,6 +1,6 @@
 {
-  "name": "AvaxWallet",
-  "version": "0.0.1",
+  "name": "avalanche-wallet-apps",
+  "version": "0.1.1",
   "private": true,
   "scripts": {
     "android": "react-native run-android",
@@ -12,7 +12,7 @@
   "dependencies": {
     "@ethereumjs/common": "^2.2.0",
     "@ethereumjs/tx": "^3.1.4",
-    "avalanche": "^3.4.1",
+    "avalanche": "^3.5.0",
     "big.js": "^6.1.1",
     "bignumber.js": "^9.0.1",
     "bip39": "^3.0.4",
@@ -38,5 +38,9 @@
   },
   "jest": {
     "preset": "react-native"
+  },
+  "engines": {
+    "node": ">=14.17.0",
+    "yarn": ">=1.22.10"
   }
 }
