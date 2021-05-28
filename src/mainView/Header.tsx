@@ -32,18 +32,17 @@ const Header: React.FC = () => {
 
 const styles = StyleSheet.create({
   background: {
-    paddingBottom: 40,
-    paddingTop: 96,
+    paddingBottom: 0,
+    paddingTop: 56,
     paddingHorizontal: 32,
   },
   logo: {
-    marginTop: 30,
+    marginTop: 0,
     height: 50,
-    // opacity: 0.2,
     resizeMode: 'contain',
   },
   text: {
-    fontSize: 40,
+    fontSize: 30,
     fontWeight: '700',
     textAlign: 'center',
   },
