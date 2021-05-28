@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { FC } from 'react';
 import {StyleSheet, Text, useColorScheme, View} from 'react-native';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 
-const Section: React.FC<{
+const Section: FC<{
   title: string;
 }> = ({children, title}) => {
-  const isDarkMode = useColorScheme() === 'dark';
+  const isDarkMode: boolean = useColorScheme() === 'dark';
   return (
     <View style={styles.sectionContainer}>
       <Text
@@ -30,7 +30,7 @@ const Section: React.FC<{
   );
 };
 
-const styles = StyleSheet.create({
+const styles: any = StyleSheet.create({
   sectionContainer: {
     marginTop: 32,
     paddingHorizontal: 24,

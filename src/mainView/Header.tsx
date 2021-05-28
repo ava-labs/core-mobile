@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { FC } from 'react';
 import {ImageBackground, StyleSheet, Text, useColorScheme} from 'react-native';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 
-const Header: React.FC = () => {
-  const isDarkMode = useColorScheme() === 'dark';
+const Header: FC = () => {
+  const isDarkMode: boolean = useColorScheme() === 'dark';
   return (
     <ImageBackground
       accessibilityRole="image"
@@ -30,7 +30,7 @@ const Header: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const styles: any = StyleSheet.create({
   background: {
     paddingBottom: 0,
     paddingTop: 56,

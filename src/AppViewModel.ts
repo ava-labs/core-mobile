@@ -50,7 +50,7 @@ export default class {
     ),
   );
 
-  onComponentMount() {
+  onComponentMount(): void {
     WalletSDK.setNetwork(NetworkConstants.TestnetConfig);
     WalletSDK.getAvaxPrice()
       .then(value => {
@@ -59,7 +59,7 @@ export default class {
       .catch(reason => console.log(reason));
   }
 
-  onResetHdIndices() {
+  onResetHdIndices(): void {
     console.log('reset indices');
     this.wallet
       .pipe(

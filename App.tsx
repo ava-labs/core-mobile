@@ -20,7 +20,21 @@ import AppViewModel from './src/AppViewModel';
 import Clock from './src/mainView/Clock';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 
-class App extends Component {
+type AppProps = {};
+type AppState = { 
+  avaxPrice: number
+  backgroundStyle: any
+  mnemonic: string
+  walletCAddress: string
+  walletEvmAddress: string
+  isDarkMode: boolean
+  externalAddressesX: string[]
+  externalAddressesP: string[]
+  addressC: string
+  availableX: string
+};
+
+class App extends Component<AppProps, AppState> {
   viewModel: AppViewModel = new AppViewModel(Appearance.getColorScheme());
 
   constructor() {
