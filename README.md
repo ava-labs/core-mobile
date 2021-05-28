@@ -42,6 +42,8 @@ yarn ios
 
 ## Launch Android App
 
+Follow the steps in the React Native docs for [configuring your Android dev environment](https://reactnative.dev/docs/environment-setup).
+
 ```zsh
 # launch android emulator and start the app
 yarn android
