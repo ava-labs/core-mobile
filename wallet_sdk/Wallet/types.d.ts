@@ -1,10 +1,10 @@
 /// <reference types="bn.js" />
 import { KeyPair as AVMKeyPair } from 'avalanche/dist/apis/avm';
 import { BN } from 'avalanche';
-import MnemonicWallet from './MnemonicWallet';
+import MnemonicWallet from "./MnemonicWallet";
 import SingletonWallet from "./SingletonWallet";
-import { iAssetDescriptionClean } from "../Asset/types";
 import LedgerWallet from "./LedgerWallet";
+import { iAssetDescriptionClean } from "../Asset/types";
 export interface IIndexKeyCache {
     [index: number]: AVMKeyPair;
 }
@@ -53,4 +53,8 @@ export interface iWalletAddressChanged {
     X: string;
     P: string;
     changeX: string;
+}
+export interface iHDWalletIndex {
+    external: number;
+    internal: number;
 }
