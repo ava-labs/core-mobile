@@ -36,20 +36,14 @@ cd ..
 Now you can run the app
 
 ```zsh
-# launch iOS emulator
-npx react-native run-ios
-
-# start app
+# launch iOS simulator and start the app
 yarn ios
 ```
 
 ## Launch Android App
 
 ```zsh
-# launch android emulator
-npx react-native run-android
-
-# start app
+# launch android emulator and start the app
 yarn android
 ```
 
