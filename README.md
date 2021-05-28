@@ -15,6 +15,20 @@ Next, install the dependencies.
 yarn install
 ```
 
+## Launch iOS App
+
+First open XCode and then run
+
+```zsh
+yarn ios
+```
+
+## Launch Android App
+
+```zsh
+yarn android
+```
+
 ## Tests
 
 You can run the test suite with

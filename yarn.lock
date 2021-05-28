@@ -2004,7 +2004,7 @@ available-typed-arrays@^1.0.2:
   resolved "https://registry.yarnpkg.com/available-typed-arrays/-/available-typed-arrays-1.0.4.tgz#9e0ae84ecff20caae6a94a1c3bc39b955649b7a9"
   integrity sha512-SA5mXJWrId1TaQjfxUYghbqQ/hYioKmLJvPJyDuYRtXXenFNMjj4hSSt1Cf1xsuXSXrtxrVC5Ot4eU6cOtBDdA==
 
-avalanche@^3.4.1:
+avalanche@^3.5.0:
   version "3.5.0"
   resolved "https://registry.yarnpkg.com/avalanche/-/avalanche-3.5.0.tgz#fdd55fd6c72aad066eb172f50b8a45bfa91b9ac4"
   integrity sha512-ICX9hirAr20S/xdFeubwGXwaOShnXsE2+eiKqAbDNwZ1K7uLUlVugmZzmz+XKRZSWsmwkDWZl/qsZMbpdrEBPw==
