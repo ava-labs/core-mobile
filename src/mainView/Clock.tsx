@@ -1,9 +1,9 @@
-import React, {Component} from 'react';
-import {Appearance, StyleSheet, Text} from 'react-native';
-import {interval, Subscription} from 'rxjs';
-import {retry} from 'rxjs/operators';
-import moment from 'moment';
-import {Colors} from 'react-native/Libraries/NewAppScreen';
+import React, {Component} from "react";
+import {Appearance, StyleSheet, Text} from "react-native";
+import {interval, Subscription} from "rxjs";
+import {retry} from "rxjs/operators";
+import moment from "moment";
+import {Colors} from "react-native/Libraries/NewAppScreen";
 
 type ClockProps = {
   disposable: Subscription
@@ -15,10 +15,10 @@ type ClockState = {
 class Clock extends Component<ClockProps, ClockState> {
   disposable: Subscription;
 
-  constructor() {
-    super();
+  constructor(props: ClockProps | Readonly<ClockProps>) {
+    super(props);
     this.state = {
-      currentTime: moment().format('HH:mm:ss'),
+      currentTime: moment().format("HH:mm:ss"),
     };
   }
   componentDidMount(): void {
@@ -27,7 +27,7 @@ class Clock extends Component<ClockProps, ClockState> {
       .subscribe({
         next: () => {
           this.setState({
-            currentTime: moment().format('HH:mm:ss'),
+            currentTime: moment().format("HH:mm:ss"),
           });
         },
         error: err => console.log(err),
@@ -38,7 +38,7 @@ class Clock extends Component<ClockProps, ClockState> {
   }
 
   render(): Element {
-    const isDarkMode: boolean = Appearance.getColorScheme() === 'dark';
+    const isDarkMode: boolean = Appearance.getColorScheme() === "dark";
     return (
       <Text
         style={[
@@ -54,8 +54,8 @@ class Clock extends Component<ClockProps, ClockState> {
 const styles: any = StyleSheet.create({
   text: {
     fontSize: 16,
-    fontWeight: '700',
-    textAlign: 'right',
+    fontWeight: "700",
+    textAlign: "right",
     marginEnd: 20,
   },
 });
