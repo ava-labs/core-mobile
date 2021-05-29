@@ -5,7 +5,7 @@
  * @flow strict-local
  */
 
-import React, {Component} from 'react';
+import React, {Component} from "react";
 import {
   Appearance,
   Button,
@@ -14,13 +14,15 @@ import {
   StatusBar,
   StyleSheet,
   Text,
-} from 'react-native';
-import Header from './src/mainView/Header';
-import AppViewModel from './src/AppViewModel';
-import Clock from './src/mainView/Clock';
-import {Colors} from 'react-native/Libraries/NewAppScreen';
+} from "react-native";
+import Header from "./src/mainView/Header";
+import AppViewModel from "./src/AppViewModel";
+import Clock from "./src/mainView/Clock";
+import {Colors} from "react-native/Libraries/NewAppScreen";
 
-type AppProps = {};
+type AppProps = {
+  viewModel: AppViewModel
+};
 type AppState = { 
   avaxPrice: number
   backgroundStyle: any
@@ -35,29 +37,29 @@ type AppState = {
 };
 
 class App extends Component<AppProps, AppState> {
-  viewModel: AppViewModel = new AppViewModel(Appearance.getColorScheme());
+  viewModel: AppViewModel = new AppViewModel(Appearance.getColorScheme() as string);
 
-  constructor() {
-    super();
+  constructor(props: AppProps | Readonly<AppProps>) {
+    super(props);
     this.state = {
       avaxPrice: 0,
       backgroundStyle: {},
-      mnemonic: '',
-      walletCAddress: '',
-      walletEvmAddress: '',
+      mnemonic: "",
+      walletCAddress: "",
+      walletEvmAddress: "",
       isDarkMode: false,
       externalAddressesX: [],
       externalAddressesP: [],
-      addressC: '',
-      availableX: '',
+      addressC: "",
+      availableX: "",
     };
   }
 
   componentWillUnmount() {
-    console.log('componentWillUnmount');
+    console.log("componentWillUnmount");
   }
   componentDidMount() {
-    console.log('componentDidMount');
+    console.log("componentDidMount");
     this.viewModel.onComponentMount();
 
     this.viewModel.avaxPrice.subscribe(value => {
@@ -90,38 +92,38 @@ class App extends Component<AppProps, AppState> {
     });
   }
   render() {
-    console.log('render');
+    console.log("render");
 
     const sectionListData = [
       {
-        title: 'Avax Price',
-        data: ['$' + this.state.avaxPrice],
+        title: "Avax Price",
+        data: ["$" + this.state.avaxPrice],
       },
       {
-        title: 'Mnemonic',
+        title: "Mnemonic",
         data: [this.state.mnemonic],
       },
       {
-        title: 'External addresses X',
+        title: "External addresses X",
         data: [this.state.externalAddressesX],
       },
       {
-        title: 'External addresses P',
+        title: "External addresses P",
         data: [this.state.externalAddressesP],
       },
       {
-        title: 'External addresses C',
+        title: "External addresses C",
         data: [this.state.addressC],
       },
       {
-        title: 'Available (X)',
+        title: "Available (X)",
         data: [this.state.availableX],
       },
     ];
     return (
       <SafeAreaView style={this.state.backgroundStyle}>
         <StatusBar
-          barStyle={this.state.isDarkMode ? 'light-content' : 'dark-content'}
+          barStyle={this.state.isDarkMode ? "light-content" : "dark-content"}
         />
         <Clock />
         <Header />
@@ -142,7 +144,7 @@ class App extends Component<AppProps, AppState> {
           keyExtractor={(item, index) => index}
         />
         <Button
-          title={'Reset Hd indices'}
+          title={"Reset Hd indices"}
           onPress={() => this.viewModel.onResetHdIndices()}
         />
       </SafeAreaView>
@@ -160,8 +162,8 @@ const styles = StyleSheet.create({
     paddingRight: 10,
     paddingBottom: 2,
     fontSize: 14,
-    fontWeight: 'bold',
-    backgroundColor: 'rgba(247,247,247,1.0)',
+    fontWeight: "bold",
+    backgroundColor: "rgba(247,247,247,1.0)",
   },
   item: {
     padding: 10,
