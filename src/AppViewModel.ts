@@ -1,17 +1,18 @@
-import {MnemonicWallet, NetworkConstants} from '../wallet_sdk';
+import {MnemonicWallet, NetworkConstants, Utils} from '../wallet_sdk';
 import WalletSDK from './WalletSDK';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 import {asyncScheduler, BehaviorSubject, Observable} from 'rxjs';
 import {concatMap, filter, map, subscribeOn, take} from 'rxjs/operators';
 import {StatusBar} from 'react-native';
+import {AssetBalanceP, AssetBalanceX} from "../wallet_sdk/Wallet/types";
 
 export default class {
   constructor(colorScheme: string) {
     this.isDarkMode.next(colorScheme === 'dark');
   }
-  hdIndicesSet: BehaviorSubject<boolean> = new BehaviorSubject(false);
+  hdIndicesSet: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   avaxPrice: BehaviorSubject<number> = new BehaviorSubject(0);
-  isDarkMode: BehaviorSubject<boolean> = new BehaviorSubject(false);
+  isDarkMode: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   mnemonic: string =
     'capable maze trophy install grunt close left visa cheap tilt elder end mosquito culture south stool baby animal donate creek outer learn kitten tonight';
   wallet: BehaviorSubject<MnemonicWallet> = new BehaviorSubject<MnemonicWallet>(
@@ -41,14 +42,38 @@ export default class {
   addressC: Observable<string> = this.wallet.pipe(
     map(wallet => wallet.getAddressC()),
   );
-  availableX: Observable<string> = this.hdIndicesSet.pipe(
+  private avaxBalanceX: Observable<AssetBalanceX> = this.hdIndicesSet.pipe(
     filter(hdIndicesSet => hdIndicesSet === true),
-    concatMap(() => this.wallet.value.getUtxosX()),
-    concatMap(() => this.wallet),
     map(
-      wallet => wallet.getAvaxBalanceX()?.unlocked.toNumber().toFixed(2) ?? '-',
+      () => this.wallet.value.getAvaxBalanceX(),
     ),
   );
+  private avaxBalanceP: Observable<AssetBalanceP> = this.hdIndicesSet.pipe(
+    filter(hdIndicesSet => hdIndicesSet === true),
+    map(
+      () => this.wallet.value.getAvaxBalanceP(),
+    ),
+  );
+  availableX: Observable<string> = this.avaxBalanceX.pipe(
+      filter(assetBalance => assetBalance !== undefined),
+      map(assetBalance => {
+        return Utils.bnToAvaxX(assetBalance.unlocked) + ' ' + assetBalance.meta.symbol
+      })
+  )
+  availableP: Observable<string> = this.avaxBalanceP.pipe(
+      filter(assetBalance => assetBalance !== undefined),
+      map(assetBalance => {
+        const symbol = 'AVAX'
+        return Utils.bnToAvaxP(assetBalance.unlocked) + ' ' + symbol
+      })
+  )
+  availableC: Observable<string> = this.wallet.pipe(
+      concatMap(wallet => wallet.evmWallet.updateBalance()),
+      map(balance => {
+        const symbol = 'AVAX'
+        return Utils.bnToAvaxC(balance) + ' ' + symbol
+      })
+  )
 
   onComponentMount(): void {
     WalletSDK.setNetwork(NetworkConstants.TestnetConfig);
@@ -65,11 +90,13 @@ export default class {
       .pipe(
         take(1),
         concatMap(wallet => wallet.resetHdIndices()),
+        concatMap(() => this.wallet.value.getUtxosX()),
+        concatMap(() => this.wallet.value.getUtxosP()),
         subscribeOn(asyncScheduler),
       )
       .subscribe({
         next: value => console.log(value),
-        error: err => console.log(err),
+        error: err => console.error(err),
         complete: () => {
           this.hdIndicesSet.next(true);
           this.wallet.next(this.wallet.value);
