@@ -23,7 +23,7 @@ import {Colors} from "react-native/Libraries/NewAppScreen";
 type AppProps = {
   viewModel: AppViewModel
 };
-type AppState = { 
+type AppState = {
   avaxPrice: number
   backgroundStyle: any
   mnemonic: string
@@ -34,6 +34,8 @@ type AppState = {
   externalAddressesP: string[]
   addressC: string
   availableX: string
+  availableP: string
+  availableC: string
 };
 
 class App extends Component<AppProps, AppState> {
@@ -52,6 +54,8 @@ class App extends Component<AppProps, AppState> {
       externalAddressesP: [],
       addressC: "",
       availableX: "",
+      availableP: "",
+      availableC: "",
     };
   }
 
@@ -90,6 +94,12 @@ class App extends Component<AppProps, AppState> {
     this.viewModel.availableX.subscribe(value => {
       this.setState({availableX: value});
     });
+    this.viewModel.availableP.subscribe(value => {
+      this.setState({availableP: value});
+    });
+    this.viewModel.availableC.subscribe(value => {
+      this.setState({availableC: value});
+    });
   }
   render() {
     console.log("render");
@@ -118,6 +128,14 @@ class App extends Component<AppProps, AppState> {
       {
         title: "Available (X)",
         data: [this.state.availableX],
+      },
+      {
+        title: "Available (P)",
+        data: [this.state.availableP],
+      },
+      {
+        title: "Available (C)",
+        data: [this.state.availableC],
       },
     ];
     return (
