@@ -19,6 +19,7 @@ import Header from "./src/mainView/Header";
 import AppViewModel from "./src/AppViewModel";
 import Clock from "./src/mainView/Clock";
 import {Colors} from "react-native/Libraries/NewAppScreen";
+import CommonViewModel from "./src/CommonViewModel";
 
 type AppProps = {};
 type AppState = {
@@ -37,7 +38,8 @@ type AppState = {
 };
 
 class App extends Component<AppProps, AppState> {
-  viewModel: AppViewModel = new AppViewModel(Appearance.getColorScheme() as string);
+  viewModel: AppViewModel = new AppViewModel();
+  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme() as string);
 
   constructor(props: AppProps | Readonly<AppProps>) {
     super(props);
@@ -60,10 +62,18 @@ class App extends Component<AppProps, AppState> {
   componentWillUnmount() {
     console.log("componentWillUnmount");
   }
+
   componentDidMount() {
     console.log("componentDidMount");
-    this.viewModel.onComponentMount();
 
+    this.commonViewModel.isDarkMode.subscribe(value => {
+      this.setState({isDarkMode: value});
+    });
+    this.commonViewModel.backgroundStyle.subscribe(value => {
+      this.setState({backgroundStyle: value});
+    });
+
+    this.viewModel.onComponentMount();
     this.viewModel.avaxPrice.subscribe(value => {
       this.setState({avaxPrice: value});
     });
@@ -73,12 +83,6 @@ class App extends Component<AppProps, AppState> {
     });
     this.viewModel.walletEvmAddrBech.subscribe(value => {
       this.setState({walletEvmAddress: value});
-    });
-    this.viewModel.isDarkMode.subscribe(value => {
-      this.setState({isDarkMode: value});
-    });
-    this.viewModel.backgroundStyle.subscribe(value => {
-      this.setState({backgroundStyle: value});
     });
     this.viewModel.externalAddressesX.subscribe(value => {
       this.setState({externalAddressesX: value});
