@@ -40,24 +40,24 @@ export default class {
     ),
   );
   availableX: Observable<string> = this.avaxBalanceX.pipe(
-      filter(assetBalance => assetBalance !== undefined),
-      map(assetBalance => {
-        return Utils.bnToAvaxX(assetBalance.unlocked) + ' ' + assetBalance.meta.symbol
-      })
+    filter(assetBalance => assetBalance !== undefined),
+    map(assetBalance => {
+      return Utils.bnToAvaxX(assetBalance.unlocked) + ' ' + assetBalance.meta.symbol
+    })
   )
   availableP: Observable<string> = this.avaxBalanceP.pipe(
-      filter(assetBalance => assetBalance !== undefined),
-      map(assetBalance => {
-        const symbol = 'AVAX'
-        return Utils.bnToAvaxP(assetBalance.unlocked) + ' ' + symbol
-      })
+    filter(assetBalance => assetBalance !== undefined),
+    map(assetBalance => {
+      const symbol = 'AVAX'
+      return Utils.bnToAvaxP(assetBalance.unlocked) + ' ' + symbol
+    })
   )
   availableC: Observable<string> = this.wallet.pipe(
-      concatMap(wallet => wallet.evmWallet.updateBalance()),
-      map(balance => {
-        const symbol = 'AVAX'
-        return Utils.bnToAvaxC(balance) + ' ' + symbol
-      })
+    concatMap(wallet => wallet.evmWallet.updateBalance()),
+    map(balance => {
+      const symbol = 'AVAX'
+      return Utils.bnToAvaxC(balance) + ' ' + symbol
+    })
   )
 
   onComponentMount(): void {
@@ -69,23 +69,34 @@ export default class {
       .catch(reason => console.log(reason));
   }
 
-  onResetHdIndices(): void {
-    console.log('reset indices');
-    this.wallet
+  onResetHdIndices(): Observable<boolean> {
+    return this.wallet
       .pipe(
         take(1),
         concatMap(wallet => wallet.resetHdIndices()),
         concatMap(() => this.wallet.value.getUtxosX()),
         concatMap(() => this.wallet.value.getUtxosP()),
+        map(() => {
+          this.hdIndicesSet.next(true)
+          this.wallet.next(this.wallet.value)
+          return true
+        }),
         subscribeOn(asyncScheduler),
       )
-      .subscribe({
-        next: value => console.log(value),
-        error: err => console.error(err),
-        complete: () => {
-          this.hdIndicesSet.next(true);
-          this.wallet.next(this.wallet.value);
-        },
-      });
+  }
+
+  onSendAvaxX(addressX: string, amount: string, memo?: string): Observable<string> {
+    return zip(
+      this.wallet,
+      of(amount)
+    ).pipe(
+      take(1),
+      concatMap(([wallet, amount]) => {
+        const denomination = wallet.getAvaxBalanceX().meta.denomination
+        const bnAmount = Utils.numberToBN(amount, denomination)
+        return wallet.sendAvaxX(addressX, bnAmount, memo)
+      }),
+      subscribeOn(asyncScheduler),
+    )
   }
 }

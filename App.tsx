@@ -7,6 +7,7 @@
 
 import React, {Component} from "react";
 import {
+  Alert,
   Appearance,
   Button,
   SafeAreaView,
@@ -19,6 +20,7 @@ import Header from "./src/mainView/Header";
 import AppViewModel from "./src/AppViewModel";
 import Clock from "./src/mainView/Clock";
 import {Colors} from "react-native/Libraries/NewAppScreen";
+import SendAvaxModal from "./src/mainView/SendAvaxModal";
 import CommonViewModel from "./src/CommonViewModel";
 
 type AppProps = {};
@@ -29,12 +31,13 @@ type AppState = {
   walletCAddress: string
   walletEvmAddress: string
   isDarkMode: boolean
-  externalAddressesX: string[]
-  externalAddressesP: string[]
+  externalAddressX: string
+  externalAddressP: string
   addressC: string
   availableX: string
   availableP: string
   availableC: string
+  sendAvaxVisible: boolean
 };
 
 class App extends Component<AppProps, AppState> {
@@ -50,12 +53,13 @@ class App extends Component<AppProps, AppState> {
       walletCAddress: "",
       walletEvmAddress: "",
       isDarkMode: false,
-      externalAddressesX: [],
-      externalAddressesP: [],
+      externalAddressX: "",
+      externalAddressP: "",
       addressC: "",
       availableX: "",
       availableP: "",
       availableC: "",
+      sendAvaxVisible: false,
     };
   }
 
@@ -85,10 +89,14 @@ class App extends Component<AppProps, AppState> {
       this.setState({walletEvmAddress: value});
     });
     this.viewModel.externalAddressesX.subscribe(value => {
-      this.setState({externalAddressesX: value});
+      if (value.length != 0) {
+        this.setState({externalAddressX: value[0]});
+      }
     });
     this.viewModel.externalAddressesP.subscribe(value => {
-      this.setState({externalAddressesP: value});
+      if (value.length != 0) {
+        this.setState({externalAddressP: value[0]});
+      }
     });
     this.viewModel.addressC.subscribe(value => {
       this.setState({addressC: value});
@@ -103,9 +111,31 @@ class App extends Component<AppProps, AppState> {
       this.setState({availableC: value});
     });
   }
-  render() {
-    console.log("render");
 
+  private onResetHdIndices(): void {
+    this.viewModel.onResetHdIndices()
+      .subscribe({
+        next: value => console.log(value),
+        error: err => console.error(err),
+        complete: () => {
+        },
+      })
+  }
+
+  private onSend(addressX: string, amount: string): void {
+    this.viewModel.onSendAvaxX(addressX, amount)
+      .subscribe({
+        next: txHash => {
+          Alert.alert("Success", "Created transaction: " + txHash)
+        },
+        error: err => Alert.alert("Error", err.message),
+        complete: () => {
+        },
+      })
+  }
+
+  render() {
+    console.log("render")
     const sectionListData = [
       {
         title: "Avax Price",
@@ -117,11 +147,11 @@ class App extends Component<AppProps, AppState> {
       },
       {
         title: "External addresses X",
-        data: [this.state.externalAddressesX],
+        data: [this.state.externalAddressX],
       },
       {
         title: "External addresses P",
-        data: [this.state.externalAddressesP],
+        data: [this.state.externalAddressP],
       },
       {
         title: "External addresses C",
@@ -145,8 +175,8 @@ class App extends Component<AppProps, AppState> {
         <StatusBar
           barStyle={this.state.isDarkMode ? "light-content" : "dark-content"}
         />
-        <Clock />
-        <Header />
+        <Clock/>
+        <Header/>
         <SectionList
           sections={sectionListData}
           renderItem={({item}) => (
@@ -161,16 +191,36 @@ class App extends Component<AppProps, AppState> {
           renderSectionHeader={({section}) => (
             <Text style={styles.sectionHeader}>{section.title}</Text>
           )}
-          keyExtractor={(item, index) => index}
+          keyExtractor={(item, index) => index.toString()}
         />
         <Button
           title={"Reset Hd indices"}
-          onPress={() => this.viewModel.onResetHdIndices()}
+          onPress={() => this.onResetHdIndices()}
+        />
+        <SendAvaxModal
+          visible={this.state.sendAvaxVisible}
+          onClose={() => {
+            this.setState({
+              sendAvaxVisible: false,
+            })
+          }}
+          onSend={(addressX, amount) => {
+            this.onSend(addressX, amount)
+          }}
+        />
+        <Button
+          title={"Send AVAX X"}
+          onPress={() => {
+            this.setState({
+              sendAvaxVisible: true,
+            })
+          }}
         />
       </SafeAreaView>
     );
   }
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
