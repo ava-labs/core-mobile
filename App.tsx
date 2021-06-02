@@ -20,9 +20,7 @@ import AppViewModel from "./src/AppViewModel";
 import Clock from "./src/mainView/Clock";
 import {Colors} from "react-native/Libraries/NewAppScreen";
 
-type AppProps = {
-  viewModel: AppViewModel
-};
+type AppProps = {};
 type AppState = {
   avaxPrice: number
   backgroundStyle: any
