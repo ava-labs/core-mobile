@@ -5,7 +5,7 @@
  * @flow strict-local
  */
 
-import React, {Component} from "react";
+import React, {Component} from "react"
 import {
   Alert,
   Appearance,
@@ -15,15 +15,15 @@ import {
   StatusBar,
   StyleSheet,
   Text,
-} from "react-native";
-import Header from "./src/mainView/Header";
-import AppViewModel from "./src/AppViewModel";
-import Clock from "./src/mainView/Clock";
-import {Colors} from "react-native/Libraries/NewAppScreen";
-import SendAvaxModal from "./src/mainView/SendAvaxModal";
-import CommonViewModel from "./src/CommonViewModel";
+} from "react-native"
+import Header from "./src/mainView/Header"
+import AppViewModel from "./src/AppViewModel"
+import Clock from "./src/mainView/Clock"
+import {Colors} from "react-native/Libraries/NewAppScreen"
+import SendAvaxModal from "./src/mainView/SendAvaxModal"
+import CommonViewModel from "./src/CommonViewModel"
 
-type AppProps = {};
+type AppProps = {}
 type AppState = {
   avaxPrice: number
   backgroundStyle: any
@@ -38,14 +38,14 @@ type AppState = {
   availableP: string
   availableC: string
   sendAvaxVisible: boolean
-};
+}
 
 class App extends Component<AppProps, AppState> {
-  viewModel: AppViewModel = new AppViewModel();
-  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme() as string);
+  viewModel: AppViewModel = new AppViewModel()
+  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme() as string)
 
   constructor(props: AppProps | Readonly<AppProps>) {
-    super(props);
+    super(props)
     this.state = {
       avaxPrice: 0,
       backgroundStyle: {},
@@ -60,56 +60,56 @@ class App extends Component<AppProps, AppState> {
       availableP: "",
       availableC: "",
       sendAvaxVisible: false,
-    };
+    }
   }
 
   componentWillUnmount() {
-    console.log("componentWillUnmount");
+    console.log("componentWillUnmount")
   }
 
   componentDidMount() {
-    console.log("componentDidMount");
+    console.log("componentDidMount")
 
     this.commonViewModel.isDarkMode.subscribe(value => {
-      this.setState({isDarkMode: value});
-    });
+      this.setState({isDarkMode: value})
+    })
     this.commonViewModel.backgroundStyle.subscribe(value => {
-      this.setState({backgroundStyle: value});
-    });
+      this.setState({backgroundStyle: value})
+    })
 
-    this.viewModel.onComponentMount();
+    this.viewModel.onComponentMount()
     this.viewModel.avaxPrice.subscribe(value => {
-      this.setState({avaxPrice: value});
-    });
-    this.setState({mnemonic: this.viewModel.mnemonic});
+      this.setState({avaxPrice: value})
+    })
+    this.setState({mnemonic: this.viewModel.mnemonic})
     this.viewModel.walletCAddress.subscribe(value => {
-      this.setState({walletCAddress: value});
-    });
+      this.setState({walletCAddress: value})
+    })
     this.viewModel.walletEvmAddrBech.subscribe(value => {
-      this.setState({walletEvmAddress: value});
-    });
+      this.setState({walletEvmAddress: value})
+    })
     this.viewModel.externalAddressesX.subscribe(value => {
       if (value.length != 0) {
-        this.setState({externalAddressX: value[0]});
+        this.setState({externalAddressX: value[0]})
       }
-    });
+    })
     this.viewModel.externalAddressesP.subscribe(value => {
       if (value.length != 0) {
-        this.setState({externalAddressP: value[0]});
+        this.setState({externalAddressP: value[0]})
       }
-    });
+    })
     this.viewModel.addressC.subscribe(value => {
-      this.setState({addressC: value});
-    });
+      this.setState({addressC: value})
+    })
     this.viewModel.availableX.subscribe(value => {
-      this.setState({availableX: value});
-    });
+      this.setState({availableX: value})
+    })
     this.viewModel.availableP.subscribe(value => {
-      this.setState({availableP: value});
-    });
+      this.setState({availableP: value})
+    })
     this.viewModel.availableC.subscribe(value => {
-      this.setState({availableC: value});
-    });
+      this.setState({availableC: value})
+    })
   }
 
   private onResetHdIndices(): void {
@@ -169,7 +169,7 @@ class App extends Component<AppProps, AppState> {
         title: "Available (C)",
         data: [this.state.availableC],
       },
-    ];
+    ]
     return (
       <SafeAreaView style={this.state.backgroundStyle}>
         <StatusBar
@@ -217,7 +217,7 @@ class App extends Component<AppProps, AppState> {
           }}
         />
       </SafeAreaView>
-    );
+    )
   }
 }
 
@@ -240,5 +240,5 @@ const styles = StyleSheet.create({
     fontSize: 18,
     height: 44,
   },
-});
-export default App;
+})
+export default App
