@@ -1,18 +1,12 @@
 import {MnemonicWallet, NetworkConstants, Utils} from '../wallet_sdk';
 import WalletSDK from './WalletSDK';
-import {Colors} from 'react-native/Libraries/NewAppScreen';
-import {asyncScheduler, BehaviorSubject, Observable} from 'rxjs';
+import {asyncScheduler, BehaviorSubject, Observable, of, zip} from 'rxjs';
 import {concatMap, filter, map, subscribeOn, take} from 'rxjs/operators';
-import {StatusBar} from 'react-native';
 import {AssetBalanceP, AssetBalanceX} from "../wallet_sdk/Wallet/types";
 
 export default class {
-  constructor(colorScheme: string) {
-    this.isDarkMode.next(colorScheme === 'dark');
-  }
   hdIndicesSet: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   avaxPrice: BehaviorSubject<number> = new BehaviorSubject(0);
-  isDarkMode: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   mnemonic: string =
     'capable maze trophy install grunt close left visa cheap tilt elder end mosquito culture south stool baby animal donate creek outer learn kitten tonight';
   wallet: BehaviorSubject<MnemonicWallet> = new BehaviorSubject<MnemonicWallet>(
@@ -23,15 +17,6 @@ export default class {
   );
   walletEvmAddrBech: Observable<string> = this.wallet.pipe(
     map(wallet => wallet.getEvmAddressBech()),
-  );
-  backgroundStyle: Observable<object> = this.isDarkMode.pipe(
-    map(isDarkMode => {
-      return {
-        backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-        flex: 1,
-        paddingTop: StatusBar.currentHeight,
-      };
-    }),
   );
   externalAddressesX: Observable<string[]> = this.wallet.pipe(
     map(wallet => wallet.getExternalAddressesX()),
