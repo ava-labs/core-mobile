@@ -108,13 +108,32 @@ export default class {
   onSendAvaxX(addressX: string, amount: string, memo?: string): Observable<string> {
     return zip(
       this.wallet,
-      of(amount)
+      of(amount),
+      of(addressX)
     ).pipe(
       take(1),
-      concatMap(([wallet, amount]) => {
+      concatMap(([wallet, amount, toAddress]) => {
         const denomination = wallet.getAvaxBalanceX().meta.denomination
         const bnAmount = Utils.numberToBN(amount, denomination)
-        return wallet.sendAvaxX(addressX, bnAmount, memo)
+        return wallet.sendAvaxX(toAddress, bnAmount, memo)
+      }),
+      subscribeOn(asyncScheduler),
+    )
+  }
+
+  onSendAvaxC(addressC: string, amount: string): Observable<string> {
+    return zip(
+      this.wallet,
+      of(amount),
+      of(addressC)
+    ).pipe(
+      take(1),
+      concatMap(([wallet, amount, toAddress]) => {
+        const denomination = 9
+        const bnAmount = Utils.numberToBN(amount, denomination)
+        const gasPrice = Utils.numberToBN(225, denomination) //todo unfix
+        const gasLimit = 21000 //todo unfix
+        return wallet.sendAvaxC(toAddress, bnAmount, gasPrice, gasLimit)
       }),
       subscribeOn(asyncScheduler),
     )
