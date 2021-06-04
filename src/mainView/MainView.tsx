@@ -5,9 +5,9 @@ import CommonViewModel from "../CommonViewModel"
 import Clock from "./Clock"
 import Header from "./Header"
 import MainViewViewModel from "./MainViewViewModel"
-import SendAvaxModal from "./SendAvaxModal"
+import SendAvaxX from "../sendAvax/SendAvaxX"
 import {MnemonicWallet} from "../../wallet_sdk"
-import SendAvaxC from "./SendAvaxC"
+import SendAvaxC from "../sendAvax/SendAvaxC"
 
 type MainViewProps = {
   wallet: MnemonicWallet,
@@ -192,17 +192,24 @@ class MainView extends Component<MainViewProps, MainViewState> {
           title={"Reset Hd indices"}
           onPress={() => this.onResetHdIndices()}
         />
-        <SendAvaxModal
+        <Modal
+          animationType="slide"
+          transparent={true}
           visible={this.state.sendXVisible}
-          onClose={() => {
-            this.setState({
-              sendXVisible: false,
-            })
-          }}
-          onSend={(addressX, amount) => {
-            this.onSendX(addressX, amount)
-          }}
-        />
+          onRequestClose={() => {
+            console.warn("Modal has been closed.")
+          }}>
+          <SendAvaxX
+            onClose={() => {
+              this.setState({
+                sendXVisible: false,
+              })
+            }}
+            onSend={(addressX, amount) => {
+              this.onSendX(addressX, amount)
+            }}
+          />
+        </Modal>
 
         <Modal
           animationType="slide"
