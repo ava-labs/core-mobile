@@ -1,12 +1,13 @@
 import React, {Component} from "react"
-import {Alert, Appearance, Button, SectionList, StyleSheet, Text, View} from "react-native"
+import {Alert, Appearance, Button, Modal, SectionList, StyleSheet, Text, View} from "react-native"
 import {Colors} from "react-native/Libraries/NewAppScreen"
 import CommonViewModel from "../CommonViewModel"
-import Clock from "./Clock";
-import Header from "./Header";
-import MainViewViewModel from "./MainViewViewModel";
-import SendAvaxModal from "./SendAvaxModal";
-import {MnemonicWallet} from "../../wallet_sdk";
+import Clock from "./Clock"
+import Header from "./Header"
+import MainViewViewModel from "./MainViewViewModel"
+import SendAvaxModal from "./SendAvaxModal"
+import {MnemonicWallet} from "../../wallet_sdk"
+import SendAvaxC from "./SendAvaxC"
 
 type MainViewProps = {
   wallet: MnemonicWallet,
@@ -22,7 +23,8 @@ type MainViewState = {
   availableX: string
   availableP: string
   availableC: string
-  sendAvaxVisible: boolean
+  sendXVisible: boolean
+  sendCVisible: boolean
   walletCAddress: string
   walletEvmAddress: string
 }
@@ -43,7 +45,8 @@ class MainView extends Component<MainViewProps, MainViewState> {
       availableX: "",
       availableP: "",
       availableC: "",
-      sendAvaxVisible: false,
+      sendXVisible: false,
+      sendCVisible: false,
       walletCAddress: "",
       walletEvmAddress: "",
     }
@@ -105,8 +108,20 @@ class MainView extends Component<MainViewProps, MainViewState> {
       })
   }
 
-  private onSend(addressX: string, amount: string): void {
+  private onSendX(addressX: string, amount: string): void {
     this.viewModel.onSendAvaxX(addressX, amount)
+      .subscribe({
+        next: txHash => {
+          Alert.alert("Success", "Created transaction: " + txHash)
+        },
+        error: err => Alert.alert("Error", err.message),
+        complete: () => {
+        },
+      })
+  }
+
+  private onSendC(addressC: string, amount: string): void {
+    this.viewModel.onSendAvaxC(addressC, amount)
       .subscribe({
         next: txHash => {
           Alert.alert("Success", "Created transaction: " + txHash)
@@ -178,21 +193,47 @@ class MainView extends Component<MainViewProps, MainViewState> {
           onPress={() => this.onResetHdIndices()}
         />
         <SendAvaxModal
-          visible={this.state.sendAvaxVisible}
+          visible={this.state.sendXVisible}
           onClose={() => {
             this.setState({
-              sendAvaxVisible: false,
+              sendXVisible: false,
             })
           }}
           onSend={(addressX, amount) => {
-            this.onSend(addressX, amount)
+            this.onSendX(addressX, amount)
           }}
         />
+
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={this.state.sendCVisible}
+          onRequestClose={() => {
+            console.warn("Modal has been closed.")
+          }}>
+          <SendAvaxC
+            onClose={() => {
+              this.setState({
+                sendCVisible: false,
+              })
+            }}
+            onSend={(addressX, amount) => {
+              this.onSendC(addressX, amount)
+            }}/>
+        </Modal>
         <Button
           title={"Send AVAX X"}
           onPress={() => {
             this.setState({
-              sendAvaxVisible: true,
+              sendXVisible: true,
+            })
+          }}
+        />
+        <Button
+          title={"Send AVAX C"}
+          onPress={() => {
+            this.setState({
+              sendCVisible: true,
             })
           }}
         />
