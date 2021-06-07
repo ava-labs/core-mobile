@@ -2,6 +2,36 @@
 import { BN } from 'avalanche';
 import { ChainIdType } from "../types";
 import { iAssetDescriptionClean } from "../Asset/types";
+export interface ITransactionDataEVM {
+    block: string;
+    hash: string;
+    createdAt: string;
+    nonce: number;
+    gasPrice: string;
+    gasLimit: number;
+    blockGasUsed: number;
+    blockGasLimit: number;
+    blockNonce: number;
+    blockHash: string;
+    recipient: string;
+    value: string;
+    toAddr: string;
+    fromAddr: string;
+    v: string;
+    r: string;
+    s: string;
+    traces: [
+        {
+            callType: string;
+            to: string;
+            from: string;
+            type: string;
+            gasUsed: string;
+            gas: string;
+            value: string;
+        }
+    ];
+}
 export interface ITransactionData {
     chainID: string;
     id: string;
@@ -42,27 +72,26 @@ export interface UTXO {
     outputType: number;
     redeemingTransactionID: string;
     stake?: boolean;
+    inChainID: string;
+    outChainID: string;
     threshold: number;
     timestamp: string;
     transactionID: string;
 }
 export declare type TransactionType = 'base' | 'create_asset' | 'operation' | 'import' | 'export' | 'add_validator' | 'add_subnet_validator' | 'add_delegator' | 'create_chain' | 'create_subnet' | 'pvm_import' | 'pvm_export' | 'atomic_import_tx' | 'atomic_export_tx' | 'advance_time' | 'reward_validator';
-export declare type HistoryItemType = iHistoryBaseTx | iHistoryExport | iHistoryImport | iHistoryAddDelegator;
+export declare type HistoryItemType = iHistoryBaseTx | iHistoryImportExport | iHistoryAddDelegator;
+export declare type HistoryImportExportTypeName = 'import' | 'export';
+export declare type HistoryItemTypeName = HistoryImportExportTypeName | 'transaction' | 'transaction_evm' | 'add_delegator' | 'add_validator';
 export interface iHistoryItem {
     id: string;
-    type: TransactionType;
+    type: HistoryItemTypeName;
     timestamp: Date;
     fee: BN;
     memo: string;
 }
-export interface iHistoryExport extends iHistoryItem {
+export interface iHistoryImportExport extends iHistoryItem {
     amount: BN;
-    amountClean: string;
-    destination: ChainIdType;
-    source: ChainIdType;
-}
-export interface iHistoryImport extends iHistoryItem {
-    amount: BN;
+    type: HistoryImportExportTypeName;
     amountClean: string;
     destination: ChainIdType;
     source: ChainIdType;
@@ -75,9 +104,26 @@ export interface iHistoryAddDelegator extends iHistoryItem {
     amountClean: string;
     isRewarded: boolean;
 }
+/**
+ * Interface for parsed X chain base/operation transactions.
+ */
 export interface iHistoryBaseTx extends iHistoryItem {
     tokens: iHistoryBaseTxTokens;
     nfts: iHistoryBaseTxNFTs;
+}
+/**
+ * Interface for parsed EVM transactions.
+ */
+export interface iHistoryEVMTx extends iHistoryItem {
+    hash: string;
+    block: string;
+    gasLimit: number;
+    gasPrice: string;
+    from: string;
+    to: string;
+    amount: BN;
+    amountClean: string;
+    isSender: boolean;
 }
 export interface iHistoryBaseTxTokens {
     sent: iHistoryBaseTxTokensSent;

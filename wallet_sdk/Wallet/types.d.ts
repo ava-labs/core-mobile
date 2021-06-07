@@ -47,8 +47,8 @@ export interface ILedgerAppConfig {
     commit: string;
     name: 'Avalanche';
 }
-export declare type WalletEventType = 'addressChanged' | 'balanceChangedX' | 'balanceChangedP';
-export declare type WalletEventArgsType = iWalletAddressChanged | WalletBalanceX | AssetBalanceP;
+export declare type WalletEventType = 'addressChanged' | 'balanceChangedX' | 'balanceChangedP' | 'balanceChangedC';
+export declare type WalletEventArgsType = iWalletAddressChanged | WalletBalanceX | AssetBalanceP | BN;
 export interface iWalletAddressChanged {
     X: string;
     P: string;

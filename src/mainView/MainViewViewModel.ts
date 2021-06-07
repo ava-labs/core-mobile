@@ -10,8 +10,8 @@ export default class {
   private wallet!: BehaviorSubject<MnemonicWallet>
   walletCAddress!: Observable<string>
   walletEvmAddrBech!: Observable<string>
-  externalAddressesX!: Observable<string[]>
-  externalAddressesP!: Observable<string[]>
+  addressX!: Observable<string>
+  addressP!: Observable<string>
   addressC!: Observable<string>
   availableC!: Observable<string>
   private avaxBalanceX!: Observable<AssetBalanceX>
@@ -30,12 +30,12 @@ export default class {
       map(wallet => wallet.getEvmAddressBech()),
     )
 
-    this.externalAddressesX = this.wallet.pipe(
-      map(wallet => wallet.getExternalAddressesX()),
+    this.addressX = this.wallet.pipe(
+      map(wallet => wallet.getAddressX()),
     )
 
-    this.externalAddressesP = this.wallet.pipe(
-      map(wallet => wallet.getExternalAddressesP()),
+    this.addressP = this.wallet.pipe(
+      map(wallet => wallet.getAddressP()),
     )
 
     this.addressC = this.wallet.pipe(
