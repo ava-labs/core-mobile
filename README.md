@@ -52,3 +52,12 @@ You can run the test suite with
 ```zsh
 yarn test
 ```
+
+## iOS & Android versioning
+
+To update version of apps set new version in package.json and run
+```zsh
+yarn postversion
+```
+This will set versionName (bundle version string) to one set in package.json and increment versionCode (bundle version)
+by one. 
