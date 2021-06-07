@@ -5,170 +5,88 @@
  * @flow strict-local
  */
 
-import React, {Component} from "react";
-import {
-  Appearance,
-  Button,
-  SafeAreaView,
-  SectionList,
-  StatusBar,
-  StyleSheet,
-  Text,
-} from "react-native";
-import Header from "./src/mainView/Header";
-import AppViewModel from "./src/AppViewModel";
-import Clock from "./src/mainView/Clock";
-import {Colors} from "react-native/Libraries/NewAppScreen";
+import React, {Component} from 'react'
+import {Appearance, SafeAreaView, StatusBar,} from 'react-native'
+import AppViewModel, {SelectedView} from './src/AppViewModel'
+import CommonViewModel from './src/CommonViewModel'
+import Login from './src/login/Login'
+import MainView from './src/mainView/MainView'
+import Onboard from './src/onboarding/Onboard'
+import CreateWallet from './src/onboarding/CreateWallet'
 
-type AppProps = {
-  viewModel: AppViewModel
-};
-type AppState = { 
-  avaxPrice: number
+type AppProps = {}
+type AppState = {
   backgroundStyle: any
-  mnemonic: string
-  walletCAddress: string
-  walletEvmAddress: string
   isDarkMode: boolean
-  externalAddressesX: string[]
-  externalAddressesP: string[]
-  addressC: string
-  availableX: string
-};
+  selectedView: SelectedView
+}
 
 class App extends Component<AppProps, AppState> {
-  viewModel: AppViewModel = new AppViewModel(Appearance.getColorScheme() as string);
+  viewModel: AppViewModel = new AppViewModel()
+  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme() as string)
 
   constructor(props: AppProps | Readonly<AppProps>) {
-    super(props);
+    super(props)
     this.state = {
-      avaxPrice: 0,
       backgroundStyle: {},
-      mnemonic: "",
-      walletCAddress: "",
-      walletEvmAddress: "",
       isDarkMode: false,
-      externalAddressesX: [],
-      externalAddressesP: [],
-      addressC: "",
-      availableX: "",
-    };
+      selectedView: SelectedView.Login,
+    }
   }
 
   componentWillUnmount() {
-    console.log("componentWillUnmount");
   }
+
   componentDidMount() {
-    console.log("componentDidMount");
-    this.viewModel.onComponentMount();
+    this.commonViewModel.isDarkMode.subscribe(value => {
+      this.setState({isDarkMode: value})
+    })
+    this.commonViewModel.backgroundStyle.subscribe(value => {
+      this.setState({backgroundStyle: value})
+    })
 
-    this.viewModel.avaxPrice.subscribe(value => {
-      this.setState({avaxPrice: value});
-    });
-    this.setState({mnemonic: this.viewModel.mnemonic});
-    this.viewModel.walletCAddress.subscribe(value => {
-      this.setState({walletCAddress: value});
-    });
-    this.viewModel.walletEvmAddrBech.subscribe(value => {
-      this.setState({walletEvmAddress: value});
-    });
-    this.viewModel.isDarkMode.subscribe(value => {
-      this.setState({isDarkMode: value});
-    });
-    this.viewModel.backgroundStyle.subscribe(value => {
-      this.setState({backgroundStyle: value});
-    });
-    this.viewModel.externalAddressesX.subscribe(value => {
-      this.setState({externalAddressesX: value});
-    });
-    this.viewModel.externalAddressesP.subscribe(value => {
-      this.setState({externalAddressesP: value});
-    });
-    this.viewModel.addressC.subscribe(value => {
-      this.setState({addressC: value});
-    });
-    this.viewModel.availableX.subscribe(value => {
-      this.setState({availableX: value});
-    });
+    this.viewModel.onComponentMount()
+
+    this.viewModel.selectedView.subscribe(value => {
+      this.setState({selectedView: value})
+    })
+
   }
-  render() {
-    console.log("render");
 
-    const sectionListData = [
-      {
-        title: "Avax Price",
-        data: ["$" + this.state.avaxPrice],
-      },
-      {
-        title: "Mnemonic",
-        data: [this.state.mnemonic],
-      },
-      {
-        title: "External addresses X",
-        data: [this.state.externalAddressesX],
-      },
-      {
-        title: "External addresses P",
-        data: [this.state.externalAddressesP],
-      },
-      {
-        title: "External addresses C",
-        data: [this.state.addressC],
-      },
-      {
-        title: "Available (X)",
-        data: [this.state.availableX],
-      },
-    ];
+  onEnterWallet(mnemonic: string): void {
+    this.viewModel.onEnterWallet(mnemonic)
+  }
+
+  getSelectedView(): Element {
+    switch (this.state.selectedView) {
+      case SelectedView.CreateWallet:
+        return <CreateWallet
+          onSavedMyPhrase={mnemonic => this.onEnterWallet(mnemonic)}
+          onClose={() => this.viewModel.setSelectedView(SelectedView.Onboard)}/>
+      case SelectedView.Onboard:
+        return <Onboard
+          onAlreadyHaveWallet={() => this.viewModel.setSelectedView(SelectedView.Login)}
+          onCreateWallet={() => this.viewModel.setSelectedView(SelectedView.CreateWallet)}/>
+      case SelectedView.Login:
+        return <Login
+          onEnterWallet={mnemonic => this.onEnterWallet(mnemonic)}
+          onClose={() => this.viewModel.setSelectedView(SelectedView.Onboard)}/>
+      case SelectedView.Main:
+        if (this.viewModel.wallet === null) throw Error("Wallet not defined")
+        return <MainView wallet={this.viewModel.wallet} onLogout={() => this.viewModel.onLogout()}/>
+    }
+  }
+
+  render() {
     return (
       <SafeAreaView style={this.state.backgroundStyle}>
         <StatusBar
           barStyle={this.state.isDarkMode ? "light-content" : "dark-content"}
         />
-        <Clock />
-        <Header />
-        <SectionList
-          sections={sectionListData}
-          renderItem={({item}) => (
-            <Text
-              style={[
-                styles.item,
-                {color: this.state.isDarkMode ? Colors.light : Colors.dark},
-              ]}>
-              {item}
-            </Text>
-          )}
-          renderSectionHeader={({section}) => (
-            <Text style={styles.sectionHeader}>{section.title}</Text>
-          )}
-          keyExtractor={(item, index) => index}
-        />
-        <Button
-          title={"Reset Hd indices"}
-          onPress={() => this.viewModel.onResetHdIndices()}
-        />
+        {this.getSelectedView()}
       </SafeAreaView>
-    );
+    )
   }
 }
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingTop: 22,
-  },
-  sectionHeader: {
-    paddingTop: 2,
-    paddingLeft: 10,
-    paddingRight: 10,
-    paddingBottom: 2,
-    fontSize: 14,
-    fontWeight: "bold",
-    backgroundColor: "rgba(247,247,247,1.0)",
-  },
-  item: {
-    padding: 10,
-    fontSize: 18,
-    height: 44,
-  },
-});
-export default App;
+
+export default App
