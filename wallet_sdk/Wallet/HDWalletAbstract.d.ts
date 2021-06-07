@@ -8,7 +8,7 @@ export declare abstract class HDWalletAbstract extends WalletProvider {
     protected internalScan: HdScanner;
     protected externalScan: HdScanner;
     protected accountKey: HDKey;
-    constructor(accountKey: HDKey);
+    protected constructor(accountKey: HDKey);
     /**
      * Returns current index used for external address derivation.
      */
@@ -56,5 +56,7 @@ export declare abstract class HDWalletAbstract extends WalletProvider {
      */
     resetHdIndices(externalStart?: number, internalStart?: number): Promise<iHDWalletIndex>;
     getUtxosX(): Promise<AVMUTXOSet>;
+    private incrementExternal;
+    private incrementInternal;
     getUtxosP(): Promise<PlatformUTXOSet>;
 }

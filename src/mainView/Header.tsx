@@ -15,17 +15,6 @@ const Header: FC = () => {
         },
       ]}
       imageStyle={styles.logo}>
-      <Text
-        style={[
-          styles.text,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        Welcome to
-        {'\n'}
-        Avalanche
-      </Text>
     </ImageBackground>
   );
 };

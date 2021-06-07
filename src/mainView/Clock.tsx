@@ -5,15 +5,13 @@ import {retry} from "rxjs/operators";
 import moment from "moment";
 import {Colors} from "react-native/Libraries/NewAppScreen";
 
-type ClockProps = {
-  disposable: Subscription
-};
-type ClockState = { 
+type ClockProps = {};
+type ClockState = {
   currentTime: string
 };
 
 class Clock extends Component<ClockProps, ClockState> {
-  disposable: Subscription;
+  disposable?: Subscription;
 
   constructor(props: ClockProps | Readonly<ClockProps>) {
     super(props);
@@ -21,6 +19,7 @@ class Clock extends Component<ClockProps, ClockState> {
       currentTime: moment().format("HH:mm:ss"),
     };
   }
+
   componentDidMount(): void {
     this.disposable = interval(1000)
       .pipe(retry())
@@ -33,8 +32,9 @@ class Clock extends Component<ClockProps, ClockState> {
         error: err => console.log(err),
       });
   }
+
   componentWillUnmount(): void {
-    this.disposable.unsubscribe();
+    this.disposable?.unsubscribe();
   }
 
   render(): Element {
