@@ -1,31 +1,33 @@
 import {MnemonicWallet, NetworkConstants} from '../wallet_sdk'
 import WalletSDK from './WalletSDK'
-import {BehaviorSubject, Observable} from 'rxjs'
-import {map} from 'rxjs/operators'
+import {BehaviorSubject} from 'rxjs'
 
 export enum SelectedView {
-  Login = 0,
-  Main
+  Onboard,
+  CreateWallet,
+  Login,
+  Main,
 }
 
 export default class {
-  mnemonic: BehaviorSubject<string> = new BehaviorSubject<string>("")
-  wallet: Observable<MnemonicWallet | null> = this.mnemonic.pipe(
-    map(mnemonic => mnemonic === "" ? null : WalletSDK.getMnemonicValet(mnemonic)),
-  )
-  selectedView: Observable<SelectedView> = this.wallet.pipe(
-    map(wallet => wallet === null ? SelectedView.Login : SelectedView.Main)
-  )
+  wallet: MnemonicWallet | null = null
+  selectedView: BehaviorSubject<SelectedView> = new BehaviorSubject<SelectedView>(SelectedView.Onboard)
 
   onComponentMount(): void {
     WalletSDK.setNetwork(NetworkConstants.TestnetConfig)
   }
 
   onEnterWallet(mnemonic: string): void {
-    this.mnemonic.next(mnemonic)
+    this.wallet = WalletSDK.getMnemonicValet(mnemonic)
+    this.setSelectedView(SelectedView.Main)
   }
 
   onLogout(): void {
-    this.mnemonic.next("")
+    this.wallet = null
+    this.setSelectedView(SelectedView.Onboard)
+  }
+
+  setSelectedView(view: SelectedView): void {
+    this.selectedView.next(view)
   }
 }
