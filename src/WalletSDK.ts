@@ -1,8 +1,8 @@
-import {MnemonicWallet, setNetwork, Utils} from '../wallet_sdk';
+import {MnemonicWallet, Network, Utils} from '../wallet_sdk';
 import {NetworkConfig} from '../wallet_sdk/Network/types';
 export default {
   setNetwork: (config: NetworkConfig): void => {
-    setNetwork(config);
+    Network.setNetwork(config);
   },
   getAvaxPrice: (): Promise<number> => {
     return Utils.getAvaxPrice();

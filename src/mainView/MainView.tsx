@@ -71,15 +71,11 @@ class MainView extends Component<MainViewProps, MainViewState> {
     this.viewModel.walletEvmAddrBech.subscribe(value => {
       this.setState({walletEvmAddress: value})
     })
-    this.viewModel.externalAddressesX.subscribe(value => {
-      if (value.length != 0) {
-        this.setState({externalAddressX: value[0]})
-      }
+    this.viewModel.addressX.subscribe(value => {
+      this.setState({externalAddressX: value})
     })
-    this.viewModel.externalAddressesP.subscribe(value => {
-      if (value.length != 0) {
-        this.setState({externalAddressP: value[0]})
-      }
+    this.viewModel.addressP.subscribe(value => {
+      this.setState({externalAddressP: value})
     })
     this.viewModel.addressC.subscribe(value => {
       this.setState({addressC: value})

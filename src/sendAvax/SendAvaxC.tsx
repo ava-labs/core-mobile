@@ -1,5 +1,5 @@
 import React, {Component} from "react"
-import {Appearance, Button, Modal, Pressable, SafeAreaView, StyleSheet, Text, TextInput, View} from "react-native"
+import {Appearance, Button, SafeAreaView, StyleSheet, Text, TextInput, View} from "react-native"
 import {Colors} from "react-native/Libraries/NewAppScreen"
 import CommonViewModel from "../CommonViewModel"
 
