@@ -3,27 +3,28 @@ import {Appearance, Button, StyleSheet, Text, TextInput, View} from 'react-nativ
 import {Colors} from 'react-native/Libraries/NewAppScreen'
 import CommonViewModel from '../CommonViewModel'
 import Header from '../mainView/Header'
-import WalletSDK from '../WalletSDK'
+import CreateWalletViewModel from './CreateWalletViewModel'
 
-type LoginProps = {
-  onEnterWallet: (mnemonic: string) => void,
+type CreateWalletProps = {
   onClose: () => void,
+  onSavedMyPhrase: (mnemonic: string) => void,
 }
-type LoginState = {
+type CreateWalletState = {
   isDarkMode: boolean,
   backgroundStyle: any,
-  mnemonic: string
+  mnemonic: string,
 }
 
-class Login extends Component<LoginProps, LoginState> {
+class CreateWallet extends Component<CreateWalletProps, CreateWalletState> {
   commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme() as string)
+  viewModel: CreateWalletViewModel = new CreateWalletViewModel()
 
-  constructor(props: LoginProps | Readonly<LoginProps>) {
+  constructor(props: CreateWalletProps | Readonly<CreateWalletProps>) {
     super(props)
     this.state = {
       isDarkMode: false,
       backgroundStyle: {},
-      mnemonic: WalletSDK.testMnemonic(),
+      mnemonic: this.viewModel.mnemonic,
     }
   }
 
@@ -39,12 +40,12 @@ class Login extends Component<LoginProps, LoginState> {
   componentWillUnmount(): void {
   }
 
-  onEnterWallet(): void {
-    this.props.onEnterWallet(this.state.mnemonic)
-  }
-
   onClose(): void {
     this.props.onClose()
+  }
+
+  onSavedMyPhrase(): void {
+    this.props.onSavedMyPhrase(this.viewModel.mnemonic)
   }
 
   render(): Element {
@@ -53,36 +54,32 @@ class Login extends Component<LoginProps, LoginState> {
         <Header/>
         <Text
           style={[
-            styles.title,
-            {color: this.state.isDarkMode ? Colors.white : Colors.black},
-          ]}>
-          Mnemonic Wallet
-        </Text>
-
-        <Text
-          style={[
             styles.text,
             {color: this.state.isDarkMode ? Colors.white : Colors.black},
           ]}>
-          Prefilled for testing purposes!!
+          Here are you 24 word key phrase. Please store it somewhere safe.
+        </Text>
+        <Text
+          style={[
+            styles.textBold,
+            {color: this.state.isDarkMode ? Colors.white : Colors.black},
+          ]}>
+          For testing purposes, this is always the same phrase!!
         </Text>
 
         <TextInput
           style={styles.input}
           multiline={true}
-          onChangeText={text => {
-            this.setState({
-              mnemonic: text
-            })
-          }}
           value={this.state.mnemonic}
         />
+
         <Button
-          title={"Enter wallet"}
+          title={"I saved my phrase somewhere safe"}
           onPress={() => {
-            this.onEnterWallet()
+            this.onSavedMyPhrase()
           }}
         />
+
         <Button
           title={"Back"}
           onPress={() => {
@@ -95,13 +92,12 @@ class Login extends Component<LoginProps, LoginState> {
 }
 
 const styles = StyleSheet.create({
-  title: {
-    fontSize: 26,
-    fontWeight: "700",
+  text: {
+    fontSize: 16,
     textAlign: "center",
     marginTop: 26
   },
-  text: {
+  textBold: {
     fontSize: 16,
     fontWeight: "700",
     textAlign: "center",
@@ -114,4 +110,4 @@ const styles = StyleSheet.create({
   },
 })
 
-export default Login
+export default CreateWallet

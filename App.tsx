@@ -5,20 +5,20 @@
  * @flow strict-local
  */
 
-import React, {Component} from "react"
-import {Appearance, SafeAreaView, StatusBar, StyleSheet,} from "react-native"
-import AppViewModel, {SelectedView} from "./src/AppViewModel"
-import CommonViewModel from "./src/CommonViewModel"
-import Login from "./src/login/Login"
-import MainView from "./src/mainView/MainView"
-import {MnemonicWallet} from "./wallet_sdk"
+import React, {Component} from 'react'
+import {Appearance, SafeAreaView, StatusBar,} from 'react-native'
+import AppViewModel, {SelectedView} from './src/AppViewModel'
+import CommonViewModel from './src/CommonViewModel'
+import Login from './src/login/Login'
+import MainView from './src/mainView/MainView'
+import Onboard from './src/onboarding/Onboard'
+import CreateWallet from './src/onboarding/CreateWallet'
 
 type AppProps = {}
 type AppState = {
   backgroundStyle: any
   isDarkMode: boolean
   selectedView: SelectedView
-  wallet: MnemonicWallet | null
 }
 
 class App extends Component<AppProps, AppState> {
@@ -31,7 +31,6 @@ class App extends Component<AppProps, AppState> {
       backgroundStyle: {},
       isDarkMode: false,
       selectedView: SelectedView.Login,
-      wallet: null
     }
   }
 
@@ -52,9 +51,6 @@ class App extends Component<AppProps, AppState> {
       this.setState({selectedView: value})
     })
 
-    this.viewModel.wallet.subscribe(value => {
-      this.setState({wallet: value})
-    })
   }
 
   onEnterWallet(mnemonic: string): void {
@@ -63,13 +59,21 @@ class App extends Component<AppProps, AppState> {
 
   getSelectedView(): Element {
     switch (this.state.selectedView) {
+      case SelectedView.CreateWallet:
+        return <CreateWallet
+          onSavedMyPhrase={mnemonic => this.onEnterWallet(mnemonic)}
+          onClose={() => this.viewModel.setSelectedView(SelectedView.Onboard)}/>
+      case SelectedView.Onboard:
+        return <Onboard
+          onAlreadyHaveWallet={() => this.viewModel.setSelectedView(SelectedView.Login)}
+          onCreateWallet={() => this.viewModel.setSelectedView(SelectedView.CreateWallet)}/>
       case SelectedView.Login:
-        return <Login onEnterWallet={mnemonic => this.onEnterWallet(mnemonic)}/>
+        return <Login
+          onEnterWallet={mnemonic => this.onEnterWallet(mnemonic)}
+          onClose={() => this.viewModel.setSelectedView(SelectedView.Onboard)}/>
       case SelectedView.Main:
-        if (this.state.wallet === null) throw Error("Wallet not defined")
-        return <MainView wallet={this.state.wallet} onLogout={() => this.viewModel.onLogout()}/>
-      default:
-        throw Error("invalid state")
+        if (this.viewModel.wallet === null) throw Error("Wallet not defined")
+        return <MainView wallet={this.viewModel.wallet} onLogout={() => this.viewModel.onLogout()}/>
     }
   }
 
@@ -85,17 +89,4 @@ class App extends Component<AppProps, AppState> {
   }
 }
 
-const styles = StyleSheet.create({
-  text: {
-    fontSize: 26,
-    fontWeight: "700",
-    textAlign: "center",
-    marginTop: 26
-  },
-  input: {
-    padding: 10,
-    margin: 12,
-    borderWidth: 1,
-  },
-})
 export default App
