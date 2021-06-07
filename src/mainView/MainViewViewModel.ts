@@ -7,7 +7,7 @@ import {AssetBalanceP, AssetBalanceX} from "../../wallet_sdk/Wallet/types"
 export default class {
   hdIndicesSet: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false)
   avaxPrice: BehaviorSubject<number> = new BehaviorSubject(0)
-  private wallet!: BehaviorSubject<MnemonicWallet>
+  wallet!: BehaviorSubject<MnemonicWallet>
   walletCAddress!: Observable<string>
   walletEvmAddrBech!: Observable<string>
   addressX!: Observable<string>

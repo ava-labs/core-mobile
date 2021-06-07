@@ -8,6 +8,7 @@ import MainViewViewModel from "./MainViewViewModel"
 import SendAvaxX from "../sendAvax/SendAvaxX"
 import {MnemonicWallet} from "../../wallet_sdk"
 import SendAvaxC from "../sendAvax/SendAvaxC"
+import SendCrossChain from "../sendAvax/SendCrossChain";
 
 type MainViewProps = {
   wallet: MnemonicWallet,
@@ -25,6 +26,7 @@ type MainViewState = {
   availableC: string
   sendXVisible: boolean
   sendCVisible: boolean
+  crossChainVisible: boolean
   walletCAddress: string
   walletEvmAddress: string
 }
@@ -47,6 +49,7 @@ class MainView extends Component<MainViewProps, MainViewState> {
       availableC: "",
       sendXVisible: false,
       sendCVisible: false,
+      crossChainVisible: false,
       walletCAddress: "",
       walletEvmAddress: "",
     }
@@ -237,6 +240,30 @@ class MainView extends Component<MainViewProps, MainViewState> {
           onPress={() => {
             this.setState({
               sendCVisible: true,
+            })
+          }}
+        />
+
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={this.state.crossChainVisible}
+          onRequestClose={() => {
+            console.warn("Modal has been closed.")
+          }}>
+          <SendCrossChain
+            wallet={this.viewModel.wallet.value}
+            onClose={() => {
+              this.setState({
+                crossChainVisible: false,
+              })
+            }}/>
+        </Modal>
+        <Button
+          title={"Cross chain"}
+          onPress={() => {
+            this.setState({
+              crossChainVisible: true,
             })
           }}
         />
