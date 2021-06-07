@@ -1,5 +1,5 @@
 import React, {Component} from "react"
-import {Alert, Appearance, Button, Modal, SectionList, StyleSheet, Text, View} from "react-native"
+import {Alert, Appearance, Button, Modal, ScrollView, SectionList, StyleSheet, Text} from "react-native"
 import {Colors} from "react-native/Libraries/NewAppScreen"
 import CommonViewModel from "../CommonViewModel"
 import Clock from "./Clock"
@@ -9,6 +9,7 @@ import SendAvaxX from "../sendAvax/SendAvaxX"
 import {MnemonicWallet} from "../../wallet_sdk"
 import SendAvaxC from "../sendAvax/SendAvaxC"
 import SendCrossChain from "../sendAvax/SendCrossChain";
+import Loader from "../common/Loader"
 
 type MainViewProps = {
   wallet: MnemonicWallet,
@@ -17,6 +18,7 @@ type MainViewProps = {
 type MainViewState = {
   isDarkMode: boolean
   backgroundStyle: any
+  loaderVisible: boolean
   avaxPrice: number
   externalAddressX: string
   externalAddressP: string
@@ -40,6 +42,7 @@ class MainView extends Component<MainViewProps, MainViewState> {
     this.state = {
       isDarkMode: false,
       backgroundStyle: {},
+      loaderVisible: true,
       avaxPrice: 0,
       externalAddressX: "",
       externalAddressP: "",
@@ -92,19 +95,20 @@ class MainView extends Component<MainViewProps, MainViewState> {
     this.viewModel.availableC.subscribe(value => {
       this.setState({availableC: value})
     })
-  }
 
-  componentWillUnmount(): void {
-  }
-
-  private onResetHdIndices(): void {
     this.viewModel.onResetHdIndices()
       .subscribe({
         next: value => console.log(value),
         error: err => console.error(err),
         complete: () => {
+          this.setState({
+            loaderVisible: false
+          })
         },
       })
+  }
+
+  componentWillUnmount(): void {
   }
 
   private onSendX(addressX: string, amount: string): void {
@@ -168,7 +172,14 @@ class MainView extends Component<MainViewProps, MainViewState> {
     ]
 
     return (
-      <View>
+      <ScrollView>
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={this.state.loaderVisible}>
+          <Loader message={"Loading wallet..."}/>
+        </Modal>
+
         <Clock/>
         <Header/>
         <SectionList
@@ -186,10 +197,6 @@ class MainView extends Component<MainViewProps, MainViewState> {
             <Text style={styles.sectionHeader}>{section.title}</Text>
           )}
           keyExtractor={(item, index) => index.toString()}
-        />
-        <Button
-          title={"Reset Hd indices"}
-          onPress={() => this.onResetHdIndices()}
         />
         <Modal
           animationType="slide"
@@ -271,7 +278,7 @@ class MainView extends Component<MainViewProps, MainViewState> {
           title={"LogOut"}
           onPress={() => this.onLogout()}
         />
-      </View>
+      </ScrollView>
     )
   }
 }
