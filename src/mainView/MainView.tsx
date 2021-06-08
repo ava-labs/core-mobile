@@ -20,8 +20,8 @@ type MainViewState = {
   backgroundStyle: any
   loaderVisible: boolean
   avaxPrice: number
-  externalAddressX: string
-  externalAddressP: string
+  addressX: string
+  addressP: string
   addressC: string
   availableX: string
   availableP: string
@@ -44,8 +44,8 @@ class MainView extends Component<MainViewProps, MainViewState> {
       backgroundStyle: {},
       loaderVisible: true,
       avaxPrice: 0,
-      externalAddressX: "",
-      externalAddressP: "",
+      addressX: "",
+      addressP: "",
       addressC: "",
       availableX: "",
       availableP: "",
@@ -78,10 +78,10 @@ class MainView extends Component<MainViewProps, MainViewState> {
       this.setState({walletEvmAddress: value})
     })
     this.viewModel.addressX.subscribe(value => {
-      this.setState({externalAddressX: value})
+      this.setState({addressX: value})
     })
     this.viewModel.addressP.subscribe(value => {
-      this.setState({externalAddressP: value})
+      this.setState({addressP: value})
     })
     this.viewModel.addressC.subscribe(value => {
       this.setState({addressC: value})
@@ -146,15 +146,15 @@ class MainView extends Component<MainViewProps, MainViewState> {
         data: ["$" + this.state.avaxPrice],
       },
       {
-        title: "External addresses X",
-        data: [this.state.externalAddressX],
+        title: "Derived Wallet Address",
+        data: [this.state.addressX],
       },
       {
-        title: "External addresses P",
-        data: [this.state.externalAddressP],
+        title: "Derived Platform Wallet Address",
+        data: [this.state.addressP],
       },
       {
-        title: "External addresses C",
+        title: "Derived EVM Wallet Address",
         data: [this.state.addressC],
       },
       {
