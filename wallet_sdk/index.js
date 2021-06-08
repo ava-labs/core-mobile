@@ -2,25 +2,24 @@
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-var bip39 = require('bip39');
-var HDKey = require('hdkey');
 var avalanche$1 = require('avalanche');
-var ethereumjsUtil = require('ethereumjs-util');
 var dist = require('avalanche/dist');
-var BinTools = require('avalanche/dist/utils/bintools');
 var Web3 = require('web3');
 var utils$2 = require('avalanche/dist/utils');
 var axios = require('axios');
-var evm = require('avalanche/dist/apis/evm');
-var ethers = require('ethers');
-var Big = require('big.js');
-var createHash = require('create-hash');
 var avm = require('avalanche/dist/apis/avm');
 var common = require('avalanche/dist/common');
 var platformvm = require('avalanche/dist/apis/platformvm');
+var evm = require('avalanche/dist/apis/evm');
 var tx = require('@ethereumjs/tx');
 var EthereumjsCommon = require('@ethereumjs/common');
+var Big = require('big.js');
+var createHash = require('create-hash');
 var moment = require('moment');
+var bip39 = require('bip39');
+var HDKey = require('hdkey');
+var ethereumjsUtil = require('ethereumjs-util');
+var ethers = require('ethers');
 var keychain = require('avalanche/dist/apis/avm/keychain');
 require('bignumber.js');
 var rlp = require('rlp');
@@ -49,16 +48,27 @@ function _interopNamespace(e) {
     return Object.freeze(n);
 }
 
-var bip39__namespace = /*#__PURE__*/_interopNamespace(bip39);
-var HDKey__default = /*#__PURE__*/_interopDefaultLegacy(HDKey);
-var BinTools__default = /*#__PURE__*/_interopDefaultLegacy(BinTools);
 var Web3__default = /*#__PURE__*/_interopDefaultLegacy(Web3);
 var axios__default = /*#__PURE__*/_interopDefaultLegacy(axios);
+var EthereumjsCommon__default = /*#__PURE__*/_interopDefaultLegacy(EthereumjsCommon);
 var Big__default = /*#__PURE__*/_interopDefaultLegacy(Big);
 var createHash__default = /*#__PURE__*/_interopDefaultLegacy(createHash);
-var EthereumjsCommon__default = /*#__PURE__*/_interopDefaultLegacy(EthereumjsCommon);
 var moment__default = /*#__PURE__*/_interopDefaultLegacy(moment);
+var bip39__namespace = /*#__PURE__*/_interopNamespace(bip39);
+var HDKey__default = /*#__PURE__*/_interopDefaultLegacy(HDKey);
 var rlp__default = /*#__PURE__*/_interopDefaultLegacy(rlp);
+
+function wsUrlFromConfigX(config) {
+    var protocol = config.apiProtocol === 'http' ? 'ws' : 'wss';
+    return protocol + "://" + config.apiIp + ":" + config.apiPort + "/ext/bc/X/events";
+}
+function wsUrlFromConfigEVM(config) {
+    var protocol = config.apiProtocol === 'http' ? 'ws' : 'wss';
+    return protocol + "://" + config.apiIp + ":" + config.apiPort + "/ext/bc/C/ws";
+}
+function rpcUrlFromConfig(conf) {
+    return conf.apiProtocol + "://" + conf.apiIp + ":" + conf.apiPort + "/ext/bc/C/rpc";
+}
 
 /*! *****************************************************************************
 Copyright (c) Microsoft Corporation.
@@ -146,19 +156,6 @@ function __spreadArray(to, from) {
     return to;
 }
 
-// HD WALLET
-// Accounts are not used and the account index is fixed to 0
-// m / purpose' / coin_type' / account' / change / address_index
-var AVAX_TOKEN_INDEX = '9000';
-var AVAX_ACCOUNT_PATH = "m/44'/" + AVAX_TOKEN_INDEX + "'/0'"; // Change and index left out
-var ETH_ACCOUNT_PATH = "m/44'/60'/0'";
-var LEDGER_ETH_ACCOUNT_PATH = ETH_ACCOUNT_PATH + '/0/0';
-var INDEX_RANGE = 20; // a gap of at least 20 indexes is needed to claim an index unused
-var SCAN_SIZE = 70; // the total number of utxos to look at initially to calculate last index
-var SCAN_RANGE = SCAN_SIZE - INDEX_RANGE; // How many items are actually scanned
-var LEDGER_EXCHANGE_TIMEOUT = 90000;
-var MIN_EVM_SUPPORT_V = '0.5.3';
-
 // import { AVMConstants } from 'avalanche/dist/apis/avm';
 var MainnetConfig = {
     apiProtocol: 'https',
@@ -212,27 +209,27 @@ var LocalnetConfig = {
     // @ts-ignore
     avaxID: utils$2.Defaults.network[12345]['X']['avaxAssetID'],
 };
+// Default network connection
+var DefaultConfig = MainnetConfig;
 
 var constants = /*#__PURE__*/Object.freeze({
     __proto__: null,
     MainnetConfig: MainnetConfig,
     TestnetConfig: TestnetConfig,
-    LocalnetConfig: LocalnetConfig
+    LocalnetConfig: LocalnetConfig,
+    DefaultConfig: DefaultConfig
 });
 
-// import { getAssetDescription } from '@/Asset/Assets';
-// Default network connection
-var DefaultConfig = MainnetConfig;
 var avalanche = new dist.Avalanche(DefaultConfig.apiIp, DefaultConfig.apiPort, DefaultConfig.apiProtocol, DefaultConfig.networkID);
 var xChain = avalanche.XChain();
 var cChain = avalanche.CChain();
 var pChain = avalanche.PChain();
 avalanche.Info();
-var bintools$1 = BinTools__default['default'].getInstance();
-var rpcUrl = DefaultConfig.apiProtocol + "://" + DefaultConfig.apiIp + ":" + DefaultConfig.apiPort + "/ext/bc/C/rpc";
+// export const bintools: BinTools = BinTools.getInstance();
+var rpcUrl = rpcUrlFromConfig(DefaultConfig);
 var web3 = new Web3__default['default'](rpcUrl);
 var explorer_api = null;
-var activeNetwork = MainnetConfig;
+var activeNetwork$1 = DefaultConfig;
 function createExplorerApi(networkConfig) {
     if (!networkConfig.explorerURL) {
         throw new Error('Network configuration does not specify an explorer API.');
@@ -245,7 +242,7 @@ function createExplorerApi(networkConfig) {
         },
     });
 }
-function setNetwork(conf) {
+function setRpcNetwork(conf) {
     avalanche.setAddress(conf.apiIp, conf.apiPort, conf.apiProtocol);
     avalanche.setNetworkID(conf.networkID);
     xChain.refreshBlockchainID(conf.xChainID);
@@ -263,74 +260,919 @@ function setNetwork(conf) {
     else {
         explorer_api = null;
     }
-    // Set web3 Network Settings
-    var web3Provider = conf.apiProtocol + "://" + conf.apiIp + ":" + conf.apiPort + "/ext/bc/C/rpc";
-    web3.setProvider(web3Provider);
-    activeNetwork = conf;
+    var rpcUrl = rpcUrlFromConfig(conf);
+    web3.setProvider(rpcUrl);
+    activeNetwork$1 = conf;
 }
-// Default connection is Mainnet
-setNetwork(MainnetConfig);
 
-var EvmWalletReadonly = /** @class */ (function () {
-    function EvmWalletReadonly(publicKey) {
-        this.balance = new avalanche$1.BN(0);
-        this.publicKey = publicKey;
-        this.address = '0x' + ethereumjsUtil.publicToAddress(publicKey).toString('hex');
+var _format = "hh-sol-artifact-1";
+var contractName = "ERC20";
+var sourceName = "contracts/token/ERC20/ERC20.sol";
+var abi = [
+	{
+		inputs: [
+			{
+				internalType: "string",
+				name: "name_",
+				type: "string"
+			},
+			{
+				internalType: "string",
+				name: "symbol_",
+				type: "string"
+			}
+		],
+		stateMutability: "nonpayable",
+		type: "constructor"
+	},
+	{
+		anonymous: false,
+		inputs: [
+			{
+				indexed: true,
+				internalType: "address",
+				name: "owner",
+				type: "address"
+			},
+			{
+				indexed: true,
+				internalType: "address",
+				name: "spender",
+				type: "address"
+			},
+			{
+				indexed: false,
+				internalType: "uint256",
+				name: "value",
+				type: "uint256"
+			}
+		],
+		name: "Approval",
+		type: "event"
+	},
+	{
+		anonymous: false,
+		inputs: [
+			{
+				indexed: true,
+				internalType: "address",
+				name: "from",
+				type: "address"
+			},
+			{
+				indexed: true,
+				internalType: "address",
+				name: "to",
+				type: "address"
+			},
+			{
+				indexed: false,
+				internalType: "uint256",
+				name: "value",
+				type: "uint256"
+			}
+		],
+		name: "Transfer",
+		type: "event"
+	},
+	{
+		inputs: [
+			{
+				internalType: "address",
+				name: "owner",
+				type: "address"
+			},
+			{
+				internalType: "address",
+				name: "spender",
+				type: "address"
+			}
+		],
+		name: "allowance",
+		outputs: [
+			{
+				internalType: "uint256",
+				name: "",
+				type: "uint256"
+			}
+		],
+		stateMutability: "view",
+		type: "function"
+	},
+	{
+		inputs: [
+			{
+				internalType: "address",
+				name: "spender",
+				type: "address"
+			},
+			{
+				internalType: "uint256",
+				name: "amount",
+				type: "uint256"
+			}
+		],
+		name: "approve",
+		outputs: [
+			{
+				internalType: "bool",
+				name: "",
+				type: "bool"
+			}
+		],
+		stateMutability: "nonpayable",
+		type: "function"
+	},
+	{
+		inputs: [
+			{
+				internalType: "address",
+				name: "account",
+				type: "address"
+			}
+		],
+		name: "balanceOf",
+		outputs: [
+			{
+				internalType: "uint256",
+				name: "",
+				type: "uint256"
+			}
+		],
+		stateMutability: "view",
+		type: "function"
+	},
+	{
+		inputs: [
+		],
+		name: "decimals",
+		outputs: [
+			{
+				internalType: "uint8",
+				name: "",
+				type: "uint8"
+			}
+		],
+		stateMutability: "view",
+		type: "function"
+	},
+	{
+		inputs: [
+			{
+				internalType: "address",
+				name: "spender",
+				type: "address"
+			},
+			{
+				internalType: "uint256",
+				name: "subtractedValue",
+				type: "uint256"
+			}
+		],
+		name: "decreaseAllowance",
+		outputs: [
+			{
+				internalType: "bool",
+				name: "",
+				type: "bool"
+			}
+		],
+		stateMutability: "nonpayable",
+		type: "function"
+	},
+	{
+		inputs: [
+			{
+				internalType: "address",
+				name: "spender",
+				type: "address"
+			},
+			{
+				internalType: "uint256",
+				name: "addedValue",
+				type: "uint256"
+			}
+		],
+		name: "increaseAllowance",
+		outputs: [
+			{
+				internalType: "bool",
+				name: "",
+				type: "bool"
+			}
+		],
+		stateMutability: "nonpayable",
+		type: "function"
+	},
+	{
+		inputs: [
+		],
+		name: "name",
+		outputs: [
+			{
+				internalType: "string",
+				name: "",
+				type: "string"
+			}
+		],
+		stateMutability: "view",
+		type: "function"
+	},
+	{
+		inputs: [
+		],
+		name: "symbol",
+		outputs: [
+			{
+				internalType: "string",
+				name: "",
+				type: "string"
+			}
+		],
+		stateMutability: "view",
+		type: "function"
+	},
+	{
+		inputs: [
+		],
+		name: "totalSupply",
+		outputs: [
+			{
+				internalType: "uint256",
+				name: "",
+				type: "uint256"
+			}
+		],
+		stateMutability: "view",
+		type: "function"
+	},
+	{
+		inputs: [
+			{
+				internalType: "address",
+				name: "recipient",
+				type: "address"
+			},
+			{
+				internalType: "uint256",
+				name: "amount",
+				type: "uint256"
+			}
+		],
+		name: "transfer",
+		outputs: [
+			{
+				internalType: "bool",
+				name: "",
+				type: "bool"
+			}
+		],
+		stateMutability: "nonpayable",
+		type: "function"
+	},
+	{
+		inputs: [
+			{
+				internalType: "address",
+				name: "sender",
+				type: "address"
+			},
+			{
+				internalType: "address",
+				name: "recipient",
+				type: "address"
+			},
+			{
+				internalType: "uint256",
+				name: "amount",
+				type: "uint256"
+			}
+		],
+		name: "transferFrom",
+		outputs: [
+			{
+				internalType: "bool",
+				name: "",
+				type: "bool"
+			}
+		],
+		stateMutability: "nonpayable",
+		type: "function"
+	}
+];
+var bytecode = "0x60806040523480156200001157600080fd5b5060405162000b7938038062000b798339810160408190526200003491620001c1565b81516200004990600390602085019062000068565b5080516200005f90600490602084019062000068565b5050506200027b565b828054620000769062000228565b90600052602060002090601f0160209004810192826200009a5760008555620000e5565b82601f10620000b557805160ff1916838001178555620000e5565b82800160010185558215620000e5579182015b82811115620000e5578251825591602001919060010190620000c8565b50620000f3929150620000f7565b5090565b5b80821115620000f35760008155600101620000f8565b600082601f8301126200011f578081fd5b81516001600160401b03808211156200013c576200013c62000265565b604051601f8301601f19908116603f0116810190828211818310171562000167576200016762000265565b8160405283815260209250868385880101111562000183578485fd5b8491505b83821015620001a6578582018301518183018401529082019062000187565b83821115620001b757848385830101525b9695505050505050565b60008060408385031215620001d4578182fd5b82516001600160401b0380821115620001eb578384fd5b620001f9868387016200010e565b935060208501519150808211156200020f578283fd5b506200021e858286016200010e565b9150509250929050565b600181811c908216806200023d57607f821691505b602082108114156200025f57634e487b7160e01b600052602260045260246000fd5b50919050565b634e487b7160e01b600052604160045260246000fd5b6108ee806200028b6000396000f3fe608060405234801561001057600080fd5b50600436106100a95760003560e01c80633950935111610071578063395093511461012357806370a082311461013657806395d89b4114610149578063a457c2d714610151578063a9059cbb14610164578063dd62ed3e14610177576100a9565b806306fdde03146100ae578063095ea7b3146100cc57806318160ddd146100ef57806323b872dd14610101578063313ce56714610114575b600080fd5b6100b66101b0565b6040516100c391906107e5565b60405180910390f35b6100df6100da3660046107bc565b610242565b60405190151581526020016100c3565b6002545b6040519081526020016100c3565b6100df61010f366004610781565b610258565b604051601281526020016100c3565b6100df6101313660046107bc565b61030e565b6100f361014436600461072e565b610345565b6100b6610364565b6100df61015f3660046107bc565b610373565b6100df6101723660046107bc565b61040e565b6100f361018536600461074f565b6001600160a01b03918216600090815260016020908152604080832093909416825291909152205490565b6060600380546101bf90610867565b80601f01602080910402602001604051908101604052809291908181526020018280546101eb90610867565b80156102385780601f1061020d57610100808354040283529160200191610238565b820191906000526020600020905b81548152906001019060200180831161021b57829003601f168201915b5050505050905090565b600061024f33848461041b565b50600192915050565b600061026584848461053f565b6001600160a01b0384166000908152600160209081526040808320338452909152902054828110156102ef5760405162461bcd60e51b815260206004820152602860248201527f45524332303a207472616e7366657220616d6f756e74206578636565647320616044820152676c6c6f77616e636560c01b60648201526084015b60405180910390fd5b61030385336102fe8685610850565b61041b565b506001949350505050565b3360008181526001602090815260408083206001600160a01b0387168452909152812054909161024f9185906102fe908690610838565b6001600160a01b0381166000908152602081905260409020545b919050565b6060600480546101bf90610867565b3360009081526001602090815260408083206001600160a01b0386168452909152812054828110156103f55760405162461bcd60e51b815260206004820152602560248201527f45524332303a2064656372656173656420616c6c6f77616e63652062656c6f77604482015264207a65726f60d81b60648201526084016102e6565b61040433856102fe8685610850565b5060019392505050565b600061024f33848461053f565b6001600160a01b03831661047d5760405162461bcd60e51b8152602060048201526024808201527f45524332303a20617070726f76652066726f6d20746865207a65726f206164646044820152637265737360e01b60648201526084016102e6565b6001600160a01b0382166104de5760405162461bcd60e51b815260206004820152602260248201527f45524332303a20617070726f766520746f20746865207a65726f206164647265604482015261737360f01b60648201526084016102e6565b6001600160a01b0383811660008181526001602090815260408083209487168084529482529182902085905590518481527f8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925910160405180910390a3505050565b6001600160a01b0383166105a35760405162461bcd60e51b815260206004820152602560248201527f45524332303a207472616e736665722066726f6d20746865207a65726f206164604482015264647265737360d81b60648201526084016102e6565b6001600160a01b0382166106055760405162461bcd60e51b815260206004820152602360248201527f45524332303a207472616e7366657220746f20746865207a65726f206164647260448201526265737360e81b60648201526084016102e6565b6001600160a01b0383166000908152602081905260409020548181101561067d5760405162461bcd60e51b815260206004820152602660248201527f45524332303a207472616e7366657220616d6f756e7420657863656564732062604482015265616c616e636560d01b60648201526084016102e6565b6106878282610850565b6001600160a01b0380861660009081526020819052604080822093909355908516815290812080548492906106bd908490610838565b92505081905550826001600160a01b0316846001600160a01b03167fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef8460405161070991815260200190565b60405180910390a350505050565b80356001600160a01b038116811461035f57600080fd5b60006020828403121561073f578081fd5b61074882610717565b9392505050565b60008060408385031215610761578081fd5b61076a83610717565b915061077860208401610717565b90509250929050565b600080600060608486031215610795578081fd5b61079e84610717565b92506107ac60208501610717565b9150604084013590509250925092565b600080604083850312156107ce578182fd5b6107d783610717565b946020939093013593505050565b6000602080835283518082850152825b81811015610811578581018301518582016040015282016107f5565b818111156108225783604083870101525b50601f01601f1916929092016040019392505050565b6000821982111561084b5761084b6108a2565b500190565b600082821015610862576108626108a2565b500390565b600181811c9082168061087b57607f821691505b6020821081141561089c57634e487b7160e01b600052602260045260246000fd5b50919050565b634e487b7160e01b600052601160045260246000fdfea2646970667358221220f532269c0b2ab7e801b67a95294344969d1b8ad08c1b2492d01cf2d1d05444cb64736f6c63430008030033";
+var deployedBytecode = "0x608060405234801561001057600080fd5b50600436106100a95760003560e01c80633950935111610071578063395093511461012357806370a082311461013657806395d89b4114610149578063a457c2d714610151578063a9059cbb14610164578063dd62ed3e14610177576100a9565b806306fdde03146100ae578063095ea7b3146100cc57806318160ddd146100ef57806323b872dd14610101578063313ce56714610114575b600080fd5b6100b66101b0565b6040516100c391906107e5565b60405180910390f35b6100df6100da3660046107bc565b610242565b60405190151581526020016100c3565b6002545b6040519081526020016100c3565b6100df61010f366004610781565b610258565b604051601281526020016100c3565b6100df6101313660046107bc565b61030e565b6100f361014436600461072e565b610345565b6100b6610364565b6100df61015f3660046107bc565b610373565b6100df6101723660046107bc565b61040e565b6100f361018536600461074f565b6001600160a01b03918216600090815260016020908152604080832093909416825291909152205490565b6060600380546101bf90610867565b80601f01602080910402602001604051908101604052809291908181526020018280546101eb90610867565b80156102385780601f1061020d57610100808354040283529160200191610238565b820191906000526020600020905b81548152906001019060200180831161021b57829003601f168201915b5050505050905090565b600061024f33848461041b565b50600192915050565b600061026584848461053f565b6001600160a01b0384166000908152600160209081526040808320338452909152902054828110156102ef5760405162461bcd60e51b815260206004820152602860248201527f45524332303a207472616e7366657220616d6f756e74206578636565647320616044820152676c6c6f77616e636560c01b60648201526084015b60405180910390fd5b61030385336102fe8685610850565b61041b565b506001949350505050565b3360008181526001602090815260408083206001600160a01b0387168452909152812054909161024f9185906102fe908690610838565b6001600160a01b0381166000908152602081905260409020545b919050565b6060600480546101bf90610867565b3360009081526001602090815260408083206001600160a01b0386168452909152812054828110156103f55760405162461bcd60e51b815260206004820152602560248201527f45524332303a2064656372656173656420616c6c6f77616e63652062656c6f77604482015264207a65726f60d81b60648201526084016102e6565b61040433856102fe8685610850565b5060019392505050565b600061024f33848461053f565b6001600160a01b03831661047d5760405162461bcd60e51b8152602060048201526024808201527f45524332303a20617070726f76652066726f6d20746865207a65726f206164646044820152637265737360e01b60648201526084016102e6565b6001600160a01b0382166104de5760405162461bcd60e51b815260206004820152602260248201527f45524332303a20617070726f766520746f20746865207a65726f206164647265604482015261737360f01b60648201526084016102e6565b6001600160a01b0383811660008181526001602090815260408083209487168084529482529182902085905590518481527f8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925910160405180910390a3505050565b6001600160a01b0383166105a35760405162461bcd60e51b815260206004820152602560248201527f45524332303a207472616e736665722066726f6d20746865207a65726f206164604482015264647265737360d81b60648201526084016102e6565b6001600160a01b0382166106055760405162461bcd60e51b815260206004820152602360248201527f45524332303a207472616e7366657220746f20746865207a65726f206164647260448201526265737360e81b60648201526084016102e6565b6001600160a01b0383166000908152602081905260409020548181101561067d5760405162461bcd60e51b815260206004820152602660248201527f45524332303a207472616e7366657220616d6f756e7420657863656564732062604482015265616c616e636560d01b60648201526084016102e6565b6106878282610850565b6001600160a01b0380861660009081526020819052604080822093909355908516815290812080548492906106bd908490610838565b92505081905550826001600160a01b0316846001600160a01b03167fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef8460405161070991815260200190565b60405180910390a350505050565b80356001600160a01b038116811461035f57600080fd5b60006020828403121561073f578081fd5b61074882610717565b9392505050565b60008060408385031215610761578081fd5b61076a83610717565b915061077860208401610717565b90509250929050565b600080600060608486031215610795578081fd5b61079e84610717565b92506107ac60208501610717565b9150604084013590509250925092565b600080604083850312156107ce578182fd5b6107d783610717565b946020939093013593505050565b6000602080835283518082850152825b81811015610811578581018301518582016040015282016107f5565b818111156108225783604083870101525b50601f01601f1916929092016040019392505050565b6000821982111561084b5761084b6108a2565b500190565b600082821015610862576108626108a2565b500390565b600181811c9082168061087b57607f821691505b6020821081141561089c57634e487b7160e01b600052602260045260246000fd5b50919050565b634e487b7160e01b600052601160045260246000fdfea2646970667358221220f532269c0b2ab7e801b67a95294344969d1b8ad08c1b2492d01cf2d1d05444cb64736f6c63430008030033";
+var linkReferences = {
+};
+var deployedLinkReferences = {
+};
+var ERC20Abi = {
+	_format: _format,
+	contractName: contractName,
+	sourceName: sourceName,
+	abi: abi,
+	bytecode: bytecode,
+	deployedBytecode: deployedBytecode,
+	linkReferences: linkReferences,
+	deployedLinkReferences: deployedLinkReferences
+};
+
+var bintools$1 = avalanche$1.BinTools.getInstance();
+
+// export async function buildUnsignedTransaction(
+//     orders: (ITransaction | AVMUTXO)[],
+//     addr: string,
+//     derivedAddresses: string[],
+//     utxoset: AVMUTXOSet,
+//     changeAddress?: string,
+//     memo?: Buffer
+// ) {
+//     // TODO: Get new change index.
+//     if (!changeAddress) {
+//         throw new Error('Unable to issue transaction. Ran out of change index.');
+//     }
+//
+//     let fromAddrsStr: string[] = derivedAddresses;
+//     let fromAddrs: Buffer[] = fromAddrsStr.map((val) => bintools.parseAddress(val, 'X'));
+//     let changeAddr: Buffer = bintools.stringToAddress(changeAddress);
+//
+//     // TODO: use internal asset ID
+//     // This does not update on network change, causing issues
+//     const AVAX_ID_BUF = await xChain.getAVAXAssetID();
+//     const AVAX_ID_STR = AVAX_ID_BUF.toString('hex');
+//     const TO_BUF = bintools.stringToAddress(addr);
+//
+//     const aad: AssetAmountDestination = new AssetAmountDestination([TO_BUF], fromAddrs, [changeAddr]);
+//     const ZERO = new BN(0);
+//     let isFeeAdded = false;
+//
+//     // Aggregate Fungible ins & outs
+//     for (let i: number = 0; i < orders.length; i++) {
+//         let order: ITransaction | AVMUTXO = orders[i];
+//
+//         if ((order as ITransaction).asset) {
+//             // if fungible
+//             let tx: ITransaction = order as ITransaction;
+//
+//             let assetId = bintools.cb58Decode(tx.asset.id);
+//             let amt: BN = tx.amount;
+//
+//             if (assetId.toString('hex') === AVAX_ID_STR) {
+//                 aad.addAssetAmount(assetId, amt, xChain.getTxFee());
+//                 isFeeAdded = true;
+//             } else {
+//                 aad.addAssetAmount(assetId, amt, ZERO);
+//             }
+//         }
+//     }
+//
+//     // If fee isn't added, add it
+//     if (!isFeeAdded) {
+//         if (xChain.getTxFee().gt(ZERO)) {
+//             aad.addAssetAmount(AVAX_ID_BUF, ZERO, xChain.getTxFee());
+//         }
+//     }
+//
+//     const success: Error = utxoset.getMinimumSpendable(aad);
+//
+//     let ins: TransferableInput[] = [];
+//     let outs: TransferableOutput[] = [];
+//     if (typeof success === 'undefined') {
+//         ins = aad.getInputs();
+//         outs = aad.getAllOutputs();
+//     } else {
+//         throw success;
+//     }
+//
+//     //@ts-ignore
+//     let nftUtxos: UTXO[] = orders.filter((val) => {
+//         if ((val as ITransaction).asset) return false;
+//         return true;
+//     });
+//
+//     // If transferring an NFT, build the transaction on top of an NFT tx
+//     let unsignedTx: AVMUnsignedTx;
+//     let networkId: number = avalanche.getNetworkID();
+//     let chainId: Buffer = bintools.cb58Decode(xChain.getBlockchainID());
+//
+//     if (nftUtxos.length > 0) {
+//         let nftSet = new AVMUTXOSet();
+//         nftSet.addArray(nftUtxos);
+//
+//         let utxoIds: string[] = nftSet.getUTXOIDs();
+//
+//         // Sort nft utxos
+//         utxoIds.sort((a, b) => {
+//             if (a < b) {
+//                 return -1;
+//             } else if (a > b) {
+//                 return 1;
+//             }
+//             return 0;
+//         });
+//
+//         unsignedTx = nftSet.buildNFTTransferTx(
+//             networkId,
+//             chainId,
+//             [TO_BUF],
+//             fromAddrs,
+//             fromAddrs, // change address should be something else?
+//             utxoIds,
+//             undefined,
+//             undefined,
+//             memo
+//         );
+//
+//         let rawTx = unsignedTx.getTransaction();
+//         let outsNft = rawTx.getOuts();
+//         let insNft = rawTx.getIns();
+//
+//         // TODO: This is a hackish way of doing this, need methods in avalanche.js
+//         //@ts-ignore
+//         rawTx.outs = outsNft.concat(outs);
+//         //@ts-ignore
+//         rawTx.ins = insNft.concat(ins);
+//     } else {
+//         let baseTx: BaseTx = new BaseTx(networkId, chainId, outs, ins, memo);
+//         unsignedTx = new AVMUnsignedTx(baseTx);
+//     }
+//     return unsignedTx;
+// }
+function buildCreateNftFamilyTx(name, symbol, groupNum, fromAddrs, minterAddr, changeAddr, utxoSet) {
+    return __awaiter(this, void 0, void 0, function () {
+        var fromAddresses, changeAddress, minterAddress, minterSets, i, minterSet, unsignedTx;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    fromAddresses = fromAddrs;
+                    changeAddress = changeAddr;
+                    minterAddress = minterAddr;
+                    minterSets = [];
+                    // Create the groups
+                    for (i = 0; i < groupNum; i++) {
+                        minterSet = new avm.MinterSet(1, [minterAddress]);
+                        minterSets.push(minterSet);
+                    }
+                    return [4 /*yield*/, xChain.buildCreateNFTAssetTx(utxoSet, fromAddresses, [changeAddress], minterSets, name, symbol)];
+                case 1:
+                    unsignedTx = _a.sent();
+                    return [2 /*return*/, unsignedTx];
+            }
+        });
+    });
+}
+function buildMintNftTx(mintUtxo, payload, quantity, ownerAddress, changeAddress, fromAddresses, utxoSet) {
+    return __awaiter(this, void 0, void 0, function () {
+        var addrBuf, owners, sourceAddresses, i, owner, groupID, mintTx;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    addrBuf = bintools$1.parseAddress(ownerAddress, 'X');
+                    owners = [];
+                    sourceAddresses = fromAddresses;
+                    for (i = 0; i < quantity; i++) {
+                        owner = new common.OutputOwners([addrBuf]);
+                        owners.push(owner);
+                    }
+                    groupID = mintUtxo.getOutput().getGroupID();
+                    return [4 /*yield*/, xChain.buildCreateNFTMintTx(utxoSet, owners, sourceAddresses, [changeAddress], mintUtxo.getUTXOID(), groupID, payload)];
+                case 1:
+                    mintTx = _a.sent();
+                    return [2 /*return*/, mintTx];
+            }
+        });
+    });
+}
+function buildAvmExportTransaction(destinationChain, utxoSet, fromAddresses, toAddress, amount, // export amount + fee
+sourceChangeAddress) {
+    return __awaiter(this, void 0, void 0, function () {
+        var destinationChainId;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    switch (destinationChain) {
+                        case 'P':
+                            destinationChainId = pChain.getBlockchainID();
+                            break;
+                        case 'C':
+                            destinationChainId = cChain.getBlockchainID();
+                            break;
+                    }
+                    return [4 /*yield*/, xChain.buildExportTx(utxoSet, amount, destinationChainId, [toAddress], fromAddresses, [
+                            sourceChangeAddress,
+                        ])];
+                case 1: return [2 /*return*/, _a.sent()];
+            }
+        });
+    });
+}
+function buildEvmExportTransaction(fromAddresses, toAddress, amount, // export amount + fee
+fromAddressBech) {
+    return __awaiter(this, void 0, void 0, function () {
+        var destinationChainId, nonce, avaxAssetIDBuf, avaxAssetIDStr, fromAddressHex;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    destinationChainId = xChain.getBlockchainID();
+                    return [4 /*yield*/, web3.eth.getTransactionCount(fromAddresses[0])];
+                case 1:
+                    nonce = _a.sent();
+                    return [4 /*yield*/, xChain.getAVAXAssetID()];
+                case 2:
+                    avaxAssetIDBuf = _a.sent();
+                    avaxAssetIDStr = bintools$1.cb58Encode(avaxAssetIDBuf);
+                    fromAddressHex = fromAddresses[0];
+                    return [4 /*yield*/, cChain.buildExportTx(amount, avaxAssetIDStr, destinationChainId, fromAddressHex, fromAddressBech, [toAddress], nonce)];
+                case 3: return [2 /*return*/, _a.sent()];
+            }
+        });
+    });
+}
+function buildEvmTransferNativeTx(from, to, amount, // in wei
+gasPrice, gasLimit) {
+    return __awaiter(this, void 0, void 0, function () {
+        var nonce, chainId, networkId, chainParams, tx$1;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, web3.eth.getTransactionCount(from)];
+                case 1:
+                    nonce = _a.sent();
+                    return [4 /*yield*/, web3.eth.getChainId()];
+                case 2:
+                    chainId = _a.sent();
+                    return [4 /*yield*/, web3.eth.net.getId()];
+                case 3:
+                    networkId = _a.sent();
+                    chainParams = {
+                        common: EthereumjsCommon__default['default'].forCustomChain('mainnet', { networkId: networkId, chainId: chainId }, 'istanbul'),
+                    };
+                    tx$1 = tx.Transaction.fromTxData({
+                        nonce: nonce,
+                        gasPrice: '0x' + gasPrice.toString('hex'),
+                        gasLimit: gasLimit,
+                        to: to,
+                        value: '0x' + amount.toString('hex'),
+                        data: '0x',
+                    }, chainParams);
+                    return [2 /*return*/, tx$1];
+            }
+        });
+    });
+}
+function buildEvmTransferErc20Tx(from, to, amount, // in wei
+gasPrice, gasLimit, contractAddress) {
+    return __awaiter(this, void 0, void 0, function () {
+        var nonce, chainId, networkId, chainParams, cont, tokenTx, tx$1;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, web3.eth.getTransactionCount(from)];
+                case 1:
+                    nonce = _a.sent();
+                    return [4 /*yield*/, web3.eth.getChainId()];
+                case 2:
+                    chainId = _a.sent();
+                    return [4 /*yield*/, web3.eth.net.getId()];
+                case 3:
+                    networkId = _a.sent();
+                    chainParams = {
+                        common: EthereumjsCommon__default['default'].forCustomChain('mainnet', { networkId: networkId, chainId: chainId }, 'istanbul'),
+                    };
+                    cont = new web3.eth.Contract(ERC20Abi.abi, contractAddress);
+                    tokenTx = cont.methods.transfer(to, amount.toString());
+                    tx$1 = tx.Transaction.fromTxData({
+                        nonce: nonce,
+                        gasPrice: '0x' + gasPrice.toString('hex'),
+                        gasLimit: gasLimit,
+                        value: '0x0',
+                        to: contractAddress,
+                        data: tokenTx.encodeABI(),
+                    }, chainParams);
+                    return [2 /*return*/, tx$1];
+            }
+        });
+    });
+}
+var AvmTxNameEnum;
+(function (AvmTxNameEnum) {
+    AvmTxNameEnum[AvmTxNameEnum["Transaction"] = avm.AVMConstants.BASETX] = "Transaction";
+    AvmTxNameEnum[AvmTxNameEnum["Mint"] = avm.AVMConstants.CREATEASSETTX] = "Mint";
+    AvmTxNameEnum[AvmTxNameEnum["Operation"] = avm.AVMConstants.OPERATIONTX] = "Operation";
+    AvmTxNameEnum[AvmTxNameEnum["Import"] = avm.AVMConstants.IMPORTTX] = "Import";
+    AvmTxNameEnum[AvmTxNameEnum["Export"] = avm.AVMConstants.EXPORTTX] = "Export";
+})(AvmTxNameEnum || (AvmTxNameEnum = {}));
+var PlatfromTxNameEnum;
+(function (PlatfromTxNameEnum) {
+    PlatfromTxNameEnum[PlatfromTxNameEnum["Transaction"] = platformvm.PlatformVMConstants.BASETX] = "Transaction";
+    PlatfromTxNameEnum[PlatfromTxNameEnum["Add Validator"] = platformvm.PlatformVMConstants.ADDVALIDATORTX] = "Add Validator";
+    PlatfromTxNameEnum[PlatfromTxNameEnum["Add Delegator"] = platformvm.PlatformVMConstants.ADDDELEGATORTX] = "Add Delegator";
+    PlatfromTxNameEnum[PlatfromTxNameEnum["Import"] = platformvm.PlatformVMConstants.IMPORTTX] = "Import";
+    PlatfromTxNameEnum[PlatfromTxNameEnum["Export"] = platformvm.PlatformVMConstants.EXPORTTX] = "Export";
+    PlatfromTxNameEnum[PlatfromTxNameEnum["Add Subnet Validator"] = platformvm.PlatformVMConstants.ADDSUBNETVALIDATORTX] = "Add Subnet Validator";
+    PlatfromTxNameEnum[PlatfromTxNameEnum["Create Chain"] = platformvm.PlatformVMConstants.CREATECHAINTX] = "Create Chain";
+    PlatfromTxNameEnum[PlatfromTxNameEnum["Create Subnet"] = platformvm.PlatformVMConstants.CREATESUBNETTX] = "Create Subnet";
+    PlatfromTxNameEnum[PlatfromTxNameEnum["Advance Time"] = platformvm.PlatformVMConstants.ADVANCETIMETX] = "Advance Time";
+    PlatfromTxNameEnum[PlatfromTxNameEnum["Reward Validator"] = platformvm.PlatformVMConstants.REWARDVALIDATORTX] = "Reward Validator";
+})(PlatfromTxNameEnum || (PlatfromTxNameEnum = {}));
+// TODO: create asset transactions
+var ParseableAvmTxEnum;
+(function (ParseableAvmTxEnum) {
+    ParseableAvmTxEnum[ParseableAvmTxEnum["Transaction"] = avm.AVMConstants.BASETX] = "Transaction";
+    ParseableAvmTxEnum[ParseableAvmTxEnum["Import"] = avm.AVMConstants.IMPORTTX] = "Import";
+    ParseableAvmTxEnum[ParseableAvmTxEnum["Export"] = avm.AVMConstants.EXPORTTX] = "Export";
+})(ParseableAvmTxEnum || (ParseableAvmTxEnum = {}));
+var ParseablePlatformEnum;
+(function (ParseablePlatformEnum) {
+    ParseablePlatformEnum[ParseablePlatformEnum["Transaction"] = platformvm.PlatformVMConstants.BASETX] = "Transaction";
+    ParseablePlatformEnum[ParseablePlatformEnum["Add Validator"] = platformvm.PlatformVMConstants.ADDVALIDATORTX] = "Add Validator";
+    ParseablePlatformEnum[ParseablePlatformEnum["Add Delegator"] = platformvm.PlatformVMConstants.ADDDELEGATORTX] = "Add Delegator";
+    ParseablePlatformEnum[ParseablePlatformEnum["Import"] = platformvm.PlatformVMConstants.IMPORTTX] = "Import";
+    ParseablePlatformEnum[ParseablePlatformEnum["Export"] = platformvm.PlatformVMConstants.EXPORTTX] = "Export";
+})(ParseablePlatformEnum || (ParseablePlatformEnum = {}));
+var ParseableEvmTxEnum;
+(function (ParseableEvmTxEnum) {
+    ParseableEvmTxEnum[ParseableEvmTxEnum["Import"] = evm.EVMConstants.IMPORTTX] = "Import";
+    ParseableEvmTxEnum[ParseableEvmTxEnum["Export"] = evm.EVMConstants.EXPORTTX] = "Export";
+})(ParseableEvmTxEnum || (ParseableEvmTxEnum = {}));
+
+/**
+ *
+ * @param addrs an array of X chain addresses to get the atomic utxos of
+ * @param chainID Which chain to check agains, either `P` or `C`
+ */
+function avmGetAtomicUTXOs(addrs, chainID) {
+    return __awaiter(this, void 0, void 0, function () {
+        var selection, remaining, utxoSet, nextSet;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    selection = addrs.slice(0, 1024);
+                    remaining = addrs.slice(1024);
+                    if (!(chainID === 'P')) return [3 /*break*/, 2];
+                    return [4 /*yield*/, xChain.getUTXOs(selection, pChain.getBlockchainID())];
+                case 1:
+                    utxoSet = (_a.sent()).utxos;
+                    return [3 /*break*/, 4];
+                case 2: return [4 /*yield*/, xChain.getUTXOs(selection, cChain.getBlockchainID())];
+                case 3:
+                    utxoSet = (_a.sent()).utxos;
+                    _a.label = 4;
+                case 4:
+                    if (!(remaining.length > 0)) return [3 /*break*/, 6];
+                    return [4 /*yield*/, avmGetAtomicUTXOs(remaining, chainID)];
+                case 5:
+                    nextSet = _a.sent();
+                    utxoSet = utxoSet.merge(nextSet);
+                    _a.label = 6;
+                case 6: return [2 /*return*/, utxoSet];
+            }
+        });
+    });
+}
+// todo: Use end index to get ALL utxos
+function platformGetAtomicUTXOs(addrs) {
+    return __awaiter(this, void 0, void 0, function () {
+        var selection, remaining, utxoSet, nextSet;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    selection = addrs.slice(0, 1024);
+                    remaining = addrs.slice(1024);
+                    return [4 /*yield*/, pChain.getUTXOs(selection, xChain.getBlockchainID())];
+                case 1:
+                    utxoSet = (_a.sent()).utxos;
+                    if (!(remaining.length > 0)) return [3 /*break*/, 3];
+                    return [4 /*yield*/, platformGetAtomicUTXOs(remaining)];
+                case 2:
+                    nextSet = _a.sent();
+                    // @ts-ignore
+                    utxoSet = utxoSet.merge(nextSet);
+                    _a.label = 3;
+                case 3: return [2 /*return*/, utxoSet];
+            }
+        });
+    });
+}
+function getStakeForAddresses(addrs) {
+    return __awaiter(this, void 0, void 0, function () {
+        var chunk, remainingChunk, chunkStake, _a, _b;
+        return __generator(this, function (_c) {
+            switch (_c.label) {
+                case 0:
+                    if (!(addrs.length <= 256)) return [3 /*break*/, 2];
+                    return [4 /*yield*/, pChain.getStake(addrs)];
+                case 1: return [2 /*return*/, _c.sent()];
+                case 2:
+                    chunk = addrs.slice(0, 256);
+                    remainingChunk = addrs.slice(256);
+                    return [4 /*yield*/, pChain.getStake(chunk)];
+                case 3:
+                    chunkStake = _c.sent();
+                    _b = (_a = chunkStake).add;
+                    return [4 /*yield*/, getStakeForAddresses(remainingChunk)];
+                case 4: return [2 /*return*/, _b.apply(_a, [_c.sent()])];
+            }
+        });
+    });
+}
+function avmGetAllUTXOs(addrs) {
+    return __awaiter(this, void 0, void 0, function () {
+        var utxos, chunk, remainingChunk, newSet, _a, _b;
+        return __generator(this, function (_c) {
+            switch (_c.label) {
+                case 0:
+                    if (!(addrs.length <= 1024)) return [3 /*break*/, 2];
+                    return [4 /*yield*/, avmGetAllUTXOsForAddresses(addrs)];
+                case 1:
+                    utxos = _c.sent();
+                    return [2 /*return*/, utxos];
+                case 2:
+                    chunk = addrs.slice(0, 1024);
+                    remainingChunk = addrs.slice(1024);
+                    return [4 /*yield*/, avmGetAllUTXOsForAddresses(chunk)];
+                case 3:
+                    newSet = _c.sent();
+                    _b = (_a = newSet).merge;
+                    return [4 /*yield*/, avmGetAllUTXOs(remainingChunk)];
+                case 4: return [2 /*return*/, _b.apply(_a, [_c.sent()])];
+            }
+        });
+    });
+}
+function avmGetAllUTXOsForAddresses(addrs, endIndex) {
+    return __awaiter(this, void 0, void 0, function () {
+        var response, utxoSet, nextEndIndex, len, subUtxos;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    if (addrs.length > 1024)
+                        throw new Error('Maximum length of addresses is 1024');
+                    if (!!endIndex) return [3 /*break*/, 2];
+                    return [4 /*yield*/, xChain.getUTXOs(addrs)];
+                case 1:
+                    response = _a.sent();
+                    return [3 /*break*/, 4];
+                case 2: return [4 /*yield*/, xChain.getUTXOs(addrs, undefined, 0, endIndex)];
+                case 3:
+                    response = _a.sent();
+                    _a.label = 4;
+                case 4:
+                    utxoSet = response.utxos;
+                    utxoSet.getAllUTXOs();
+                    nextEndIndex = response.endIndex;
+                    len = response.numFetched;
+                    if (!(len >= 1024)) return [3 /*break*/, 6];
+                    return [4 /*yield*/, avmGetAllUTXOsForAddresses(addrs, nextEndIndex)];
+                case 5:
+                    subUtxos = _a.sent();
+                    return [2 /*return*/, utxoSet.merge(subUtxos)];
+                case 6: return [2 /*return*/, utxoSet];
+            }
+        });
+    });
+}
+// helper method to get utxos for more than 1024 addresses
+function platformGetAllUTXOs(addrs) {
+    return __awaiter(this, void 0, void 0, function () {
+        var newSet, chunk, remainingChunk, newSet, _a, _b;
+        return __generator(this, function (_c) {
+            switch (_c.label) {
+                case 0:
+                    if (!(addrs.length <= 1024)) return [3 /*break*/, 2];
+                    return [4 /*yield*/, platformGetAllUTXOsForAddresses(addrs)];
+                case 1:
+                    newSet = _c.sent();
+                    return [2 /*return*/, newSet];
+                case 2:
+                    chunk = addrs.slice(0, 1024);
+                    remainingChunk = addrs.slice(1024);
+                    return [4 /*yield*/, platformGetAllUTXOsForAddresses(chunk)];
+                case 3:
+                    newSet = _c.sent();
+                    _b = (_a = newSet).merge;
+                    return [4 /*yield*/, platformGetAllUTXOs(remainingChunk)];
+                case 4: return [2 /*return*/, _b.apply(_a, [_c.sent()])];
+            }
+        });
+    });
+}
+function platformGetAllUTXOsForAddresses(addrs, endIndex) {
+    return __awaiter(this, void 0, void 0, function () {
+        var response, utxoSet, nextEndIndex, len, subUtxos;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    if (!!endIndex) return [3 /*break*/, 2];
+                    return [4 /*yield*/, pChain.getUTXOs(addrs)];
+                case 1:
+                    response = _a.sent();
+                    return [3 /*break*/, 4];
+                case 2: return [4 /*yield*/, pChain.getUTXOs(addrs, undefined, 0, endIndex)];
+                case 3:
+                    response = _a.sent();
+                    _a.label = 4;
+                case 4:
+                    utxoSet = response.utxos;
+                    nextEndIndex = response.endIndex;
+                    len = response.numFetched;
+                    if (!(len >= 1024)) return [3 /*break*/, 6];
+                    return [4 /*yield*/, platformGetAllUTXOsForAddresses(addrs, nextEndIndex)];
+                case 5:
+                    subUtxos = _a.sent();
+                    return [2 /*return*/, utxoSet.merge(subUtxos)];
+                case 6: return [2 /*return*/, utxoSet];
+            }
+        });
+    });
+}
+
+var assetCache = {};
+function getAssetDescription(assetId) {
+    return __awaiter(this, void 0, void 0, function () {
+        var cache, res, clean;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    cache = assetCache[assetId];
+                    if (cache) {
+                        return [2 /*return*/, cache];
+                    }
+                    return [4 /*yield*/, xChain.getAssetDescription(assetId)];
+                case 1:
+                    res = _a.sent();
+                    clean = __assign(__assign({}, res), { assetID: assetId });
+                    assetCache[assetId] = clean;
+                    return [2 /*return*/, clean];
+            }
+        });
+    });
+}
+
+var Assets = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    getAssetDescription: getAssetDescription
+});
+
+var NO_NETWORK = new Error('No network selected.');
+var NO_EXPLORER_API = new Error('Explorer API not found.');
+
+var Erc20Token = /** @class */ (function () {
+    function Erc20Token(data) {
+        this.name = data.name;
+        this.symbol = data.symbol;
+        this.address = data.address;
+        this.decimals = data.decimals;
+        this.chainId = data.chainId;
+        //@ts-ignore
+        this.contract = new web3.eth.Contract(ERC20Abi.abi, data.address);
     }
-    EvmWalletReadonly.prototype.getAddress = function () {
-        return ethers.ethers.utils.getAddress(this.address);
-    };
-    EvmWalletReadonly.prototype.updateBalance = function () {
+    Erc20Token.getData = function (address) {
         return __awaiter(this, void 0, void 0, function () {
-            var bal;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, web3.eth.getBalance(this.address)];
+            var contract, name, symbol, decimals, _a;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        contract = new web3.eth.Contract(ERC20Abi.abi, address);
+                        return [4 /*yield*/, contract.methods.name().call()];
                     case 1:
-                        bal = _a.sent();
-                        this.balance = new avalanche$1.BN(bal);
-                        return [2 /*return*/, this.balance];
+                        name = _b.sent();
+                        return [4 /*yield*/, contract.methods.symbol().call()];
+                    case 2:
+                        symbol = _b.sent();
+                        _a = parseInt;
+                        return [4 /*yield*/, contract.methods.decimals().call()];
+                    case 3:
+                        decimals = _a.apply(void 0, [_b.sent()]);
+                        if (!activeNetwork$1) {
+                            throw NO_NETWORK;
+                        }
+                        return [2 /*return*/, {
+                                name: name,
+                                symbol: symbol,
+                                decimals: decimals,
+                                address: address,
+                                chainId: activeNetwork$1.evmChainID,
+                            }];
                 }
             });
         });
     };
-    return EvmWalletReadonly;
+    Erc20Token.prototype.balanceOf = function (address) {
+        return __awaiter(this, void 0, void 0, function () {
+            var bal;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.contract.methods.balanceOf(address).call()];
+                    case 1:
+                        bal = _a.sent();
+                        return [2 /*return*/, new avalanche$1.BN(bal)];
+                }
+            });
+        });
+    };
+    return Erc20Token;
 }());
 
-var EvmWallet = /** @class */ (function (_super) {
-    __extends(EvmWallet, _super);
-    function EvmWallet(key) {
-        var _this = this;
-        var pubKey = ethereumjsUtil.privateToPublic(key);
-        _this = _super.call(this, pubKey) || this;
-        _this.privateKey = key;
-        return _this;
-    }
-    EvmWallet.prototype.getPrivateKeyBech = function () {
-        return "PrivateKey-" + bintools$1.cb58Encode(avalanche$1.Buffer.from(this.privateKey));
-    };
-    EvmWallet.prototype.getKeyChain = function () {
-        var keychain = new evm.KeyChain(avalanche.getHRP(), 'C');
-        keychain.importKey(this.getPrivateKeyBech());
-        return keychain;
-    };
-    EvmWallet.prototype.getKeyPair = function () {
-        var keychain = new evm.KeyChain(avalanche.getHRP(), 'C');
-        return keychain.importKey(this.getPrivateKeyBech());
-    };
-    EvmWallet.prototype.signEVM = function (tx) {
-        return tx.sign(this.privateKey);
-    };
-    EvmWallet.prototype.signC = function (tx) {
-        return tx.sign(this.getKeyChain());
-    };
-    EvmWallet.prototype.getPrivateKeyHex = function () {
-        return this.privateKey.toString('hex');
-    };
-    return EvmWallet;
-}(EvmWalletReadonly));
-
-var bintools = BinTools__default['default'].getInstance();
+var bintools = avalanche$1.BinTools.getInstance();
 var validateAddress = function (address) {
     try {
         bintools.stringToAddress(address);
@@ -692,936 +1534,6 @@ var utils$1 = /*#__PURE__*/Object.freeze({
     parseNftPayload: parseNftPayload
 });
 
-var _format = "hh-sol-artifact-1";
-var contractName = "ERC20";
-var sourceName = "contracts/token/ERC20/ERC20.sol";
-var abi = [
-	{
-		inputs: [
-			{
-				internalType: "string",
-				name: "name_",
-				type: "string"
-			},
-			{
-				internalType: "string",
-				name: "symbol_",
-				type: "string"
-			}
-		],
-		stateMutability: "nonpayable",
-		type: "constructor"
-	},
-	{
-		anonymous: false,
-		inputs: [
-			{
-				indexed: true,
-				internalType: "address",
-				name: "owner",
-				type: "address"
-			},
-			{
-				indexed: true,
-				internalType: "address",
-				name: "spender",
-				type: "address"
-			},
-			{
-				indexed: false,
-				internalType: "uint256",
-				name: "value",
-				type: "uint256"
-			}
-		],
-		name: "Approval",
-		type: "event"
-	},
-	{
-		anonymous: false,
-		inputs: [
-			{
-				indexed: true,
-				internalType: "address",
-				name: "from",
-				type: "address"
-			},
-			{
-				indexed: true,
-				internalType: "address",
-				name: "to",
-				type: "address"
-			},
-			{
-				indexed: false,
-				internalType: "uint256",
-				name: "value",
-				type: "uint256"
-			}
-		],
-		name: "Transfer",
-		type: "event"
-	},
-	{
-		inputs: [
-			{
-				internalType: "address",
-				name: "owner",
-				type: "address"
-			},
-			{
-				internalType: "address",
-				name: "spender",
-				type: "address"
-			}
-		],
-		name: "allowance",
-		outputs: [
-			{
-				internalType: "uint256",
-				name: "",
-				type: "uint256"
-			}
-		],
-		stateMutability: "view",
-		type: "function"
-	},
-	{
-		inputs: [
-			{
-				internalType: "address",
-				name: "spender",
-				type: "address"
-			},
-			{
-				internalType: "uint256",
-				name: "amount",
-				type: "uint256"
-			}
-		],
-		name: "approve",
-		outputs: [
-			{
-				internalType: "bool",
-				name: "",
-				type: "bool"
-			}
-		],
-		stateMutability: "nonpayable",
-		type: "function"
-	},
-	{
-		inputs: [
-			{
-				internalType: "address",
-				name: "account",
-				type: "address"
-			}
-		],
-		name: "balanceOf",
-		outputs: [
-			{
-				internalType: "uint256",
-				name: "",
-				type: "uint256"
-			}
-		],
-		stateMutability: "view",
-		type: "function"
-	},
-	{
-		inputs: [
-		],
-		name: "decimals",
-		outputs: [
-			{
-				internalType: "uint8",
-				name: "",
-				type: "uint8"
-			}
-		],
-		stateMutability: "view",
-		type: "function"
-	},
-	{
-		inputs: [
-			{
-				internalType: "address",
-				name: "spender",
-				type: "address"
-			},
-			{
-				internalType: "uint256",
-				name: "subtractedValue",
-				type: "uint256"
-			}
-		],
-		name: "decreaseAllowance",
-		outputs: [
-			{
-				internalType: "bool",
-				name: "",
-				type: "bool"
-			}
-		],
-		stateMutability: "nonpayable",
-		type: "function"
-	},
-	{
-		inputs: [
-			{
-				internalType: "address",
-				name: "spender",
-				type: "address"
-			},
-			{
-				internalType: "uint256",
-				name: "addedValue",
-				type: "uint256"
-			}
-		],
-		name: "increaseAllowance",
-		outputs: [
-			{
-				internalType: "bool",
-				name: "",
-				type: "bool"
-			}
-		],
-		stateMutability: "nonpayable",
-		type: "function"
-	},
-	{
-		inputs: [
-		],
-		name: "name",
-		outputs: [
-			{
-				internalType: "string",
-				name: "",
-				type: "string"
-			}
-		],
-		stateMutability: "view",
-		type: "function"
-	},
-	{
-		inputs: [
-		],
-		name: "symbol",
-		outputs: [
-			{
-				internalType: "string",
-				name: "",
-				type: "string"
-			}
-		],
-		stateMutability: "view",
-		type: "function"
-	},
-	{
-		inputs: [
-		],
-		name: "totalSupply",
-		outputs: [
-			{
-				internalType: "uint256",
-				name: "",
-				type: "uint256"
-			}
-		],
-		stateMutability: "view",
-		type: "function"
-	},
-	{
-		inputs: [
-			{
-				internalType: "address",
-				name: "recipient",
-				type: "address"
-			},
-			{
-				internalType: "uint256",
-				name: "amount",
-				type: "uint256"
-			}
-		],
-		name: "transfer",
-		outputs: [
-			{
-				internalType: "bool",
-				name: "",
-				type: "bool"
-			}
-		],
-		stateMutability: "nonpayable",
-		type: "function"
-	},
-	{
-		inputs: [
-			{
-				internalType: "address",
-				name: "sender",
-				type: "address"
-			},
-			{
-				internalType: "address",
-				name: "recipient",
-				type: "address"
-			},
-			{
-				internalType: "uint256",
-				name: "amount",
-				type: "uint256"
-			}
-		],
-		name: "transferFrom",
-		outputs: [
-			{
-				internalType: "bool",
-				name: "",
-				type: "bool"
-			}
-		],
-		stateMutability: "nonpayable",
-		type: "function"
-	}
-];
-var bytecode = "0x60806040523480156200001157600080fd5b5060405162000b7938038062000b798339810160408190526200003491620001c1565b81516200004990600390602085019062000068565b5080516200005f90600490602084019062000068565b5050506200027b565b828054620000769062000228565b90600052602060002090601f0160209004810192826200009a5760008555620000e5565b82601f10620000b557805160ff1916838001178555620000e5565b82800160010185558215620000e5579182015b82811115620000e5578251825591602001919060010190620000c8565b50620000f3929150620000f7565b5090565b5b80821115620000f35760008155600101620000f8565b600082601f8301126200011f578081fd5b81516001600160401b03808211156200013c576200013c62000265565b604051601f8301601f19908116603f0116810190828211818310171562000167576200016762000265565b8160405283815260209250868385880101111562000183578485fd5b8491505b83821015620001a6578582018301518183018401529082019062000187565b83821115620001b757848385830101525b9695505050505050565b60008060408385031215620001d4578182fd5b82516001600160401b0380821115620001eb578384fd5b620001f9868387016200010e565b935060208501519150808211156200020f578283fd5b506200021e858286016200010e565b9150509250929050565b600181811c908216806200023d57607f821691505b602082108114156200025f57634e487b7160e01b600052602260045260246000fd5b50919050565b634e487b7160e01b600052604160045260246000fd5b6108ee806200028b6000396000f3fe608060405234801561001057600080fd5b50600436106100a95760003560e01c80633950935111610071578063395093511461012357806370a082311461013657806395d89b4114610149578063a457c2d714610151578063a9059cbb14610164578063dd62ed3e14610177576100a9565b806306fdde03146100ae578063095ea7b3146100cc57806318160ddd146100ef57806323b872dd14610101578063313ce56714610114575b600080fd5b6100b66101b0565b6040516100c391906107e5565b60405180910390f35b6100df6100da3660046107bc565b610242565b60405190151581526020016100c3565b6002545b6040519081526020016100c3565b6100df61010f366004610781565b610258565b604051601281526020016100c3565b6100df6101313660046107bc565b61030e565b6100f361014436600461072e565b610345565b6100b6610364565b6100df61015f3660046107bc565b610373565b6100df6101723660046107bc565b61040e565b6100f361018536600461074f565b6001600160a01b03918216600090815260016020908152604080832093909416825291909152205490565b6060600380546101bf90610867565b80601f01602080910402602001604051908101604052809291908181526020018280546101eb90610867565b80156102385780601f1061020d57610100808354040283529160200191610238565b820191906000526020600020905b81548152906001019060200180831161021b57829003601f168201915b5050505050905090565b600061024f33848461041b565b50600192915050565b600061026584848461053f565b6001600160a01b0384166000908152600160209081526040808320338452909152902054828110156102ef5760405162461bcd60e51b815260206004820152602860248201527f45524332303a207472616e7366657220616d6f756e74206578636565647320616044820152676c6c6f77616e636560c01b60648201526084015b60405180910390fd5b61030385336102fe8685610850565b61041b565b506001949350505050565b3360008181526001602090815260408083206001600160a01b0387168452909152812054909161024f9185906102fe908690610838565b6001600160a01b0381166000908152602081905260409020545b919050565b6060600480546101bf90610867565b3360009081526001602090815260408083206001600160a01b0386168452909152812054828110156103f55760405162461bcd60e51b815260206004820152602560248201527f45524332303a2064656372656173656420616c6c6f77616e63652062656c6f77604482015264207a65726f60d81b60648201526084016102e6565b61040433856102fe8685610850565b5060019392505050565b600061024f33848461053f565b6001600160a01b03831661047d5760405162461bcd60e51b8152602060048201526024808201527f45524332303a20617070726f76652066726f6d20746865207a65726f206164646044820152637265737360e01b60648201526084016102e6565b6001600160a01b0382166104de5760405162461bcd60e51b815260206004820152602260248201527f45524332303a20617070726f766520746f20746865207a65726f206164647265604482015261737360f01b60648201526084016102e6565b6001600160a01b0383811660008181526001602090815260408083209487168084529482529182902085905590518481527f8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925910160405180910390a3505050565b6001600160a01b0383166105a35760405162461bcd60e51b815260206004820152602560248201527f45524332303a207472616e736665722066726f6d20746865207a65726f206164604482015264647265737360d81b60648201526084016102e6565b6001600160a01b0382166106055760405162461bcd60e51b815260206004820152602360248201527f45524332303a207472616e7366657220746f20746865207a65726f206164647260448201526265737360e81b60648201526084016102e6565b6001600160a01b0383166000908152602081905260409020548181101561067d5760405162461bcd60e51b815260206004820152602660248201527f45524332303a207472616e7366657220616d6f756e7420657863656564732062604482015265616c616e636560d01b60648201526084016102e6565b6106878282610850565b6001600160a01b0380861660009081526020819052604080822093909355908516815290812080548492906106bd908490610838565b92505081905550826001600160a01b0316846001600160a01b03167fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef8460405161070991815260200190565b60405180910390a350505050565b80356001600160a01b038116811461035f57600080fd5b60006020828403121561073f578081fd5b61074882610717565b9392505050565b60008060408385031215610761578081fd5b61076a83610717565b915061077860208401610717565b90509250929050565b600080600060608486031215610795578081fd5b61079e84610717565b92506107ac60208501610717565b9150604084013590509250925092565b600080604083850312156107ce578182fd5b6107d783610717565b946020939093013593505050565b6000602080835283518082850152825b81811015610811578581018301518582016040015282016107f5565b818111156108225783604083870101525b50601f01601f1916929092016040019392505050565b6000821982111561084b5761084b6108a2565b500190565b600082821015610862576108626108a2565b500390565b600181811c9082168061087b57607f821691505b6020821081141561089c57634e487b7160e01b600052602260045260246000fd5b50919050565b634e487b7160e01b600052601160045260246000fdfea2646970667358221220f532269c0b2ab7e801b67a95294344969d1b8ad08c1b2492d01cf2d1d05444cb64736f6c63430008030033";
-var deployedBytecode = "0x608060405234801561001057600080fd5b50600436106100a95760003560e01c80633950935111610071578063395093511461012357806370a082311461013657806395d89b4114610149578063a457c2d714610151578063a9059cbb14610164578063dd62ed3e14610177576100a9565b806306fdde03146100ae578063095ea7b3146100cc57806318160ddd146100ef57806323b872dd14610101578063313ce56714610114575b600080fd5b6100b66101b0565b6040516100c391906107e5565b60405180910390f35b6100df6100da3660046107bc565b610242565b60405190151581526020016100c3565b6002545b6040519081526020016100c3565b6100df61010f366004610781565b610258565b604051601281526020016100c3565b6100df6101313660046107bc565b61030e565b6100f361014436600461072e565b610345565b6100b6610364565b6100df61015f3660046107bc565b610373565b6100df6101723660046107bc565b61040e565b6100f361018536600461074f565b6001600160a01b03918216600090815260016020908152604080832093909416825291909152205490565b6060600380546101bf90610867565b80601f01602080910402602001604051908101604052809291908181526020018280546101eb90610867565b80156102385780601f1061020d57610100808354040283529160200191610238565b820191906000526020600020905b81548152906001019060200180831161021b57829003601f168201915b5050505050905090565b600061024f33848461041b565b50600192915050565b600061026584848461053f565b6001600160a01b0384166000908152600160209081526040808320338452909152902054828110156102ef5760405162461bcd60e51b815260206004820152602860248201527f45524332303a207472616e7366657220616d6f756e74206578636565647320616044820152676c6c6f77616e636560c01b60648201526084015b60405180910390fd5b61030385336102fe8685610850565b61041b565b506001949350505050565b3360008181526001602090815260408083206001600160a01b0387168452909152812054909161024f9185906102fe908690610838565b6001600160a01b0381166000908152602081905260409020545b919050565b6060600480546101bf90610867565b3360009081526001602090815260408083206001600160a01b0386168452909152812054828110156103f55760405162461bcd60e51b815260206004820152602560248201527f45524332303a2064656372656173656420616c6c6f77616e63652062656c6f77604482015264207a65726f60d81b60648201526084016102e6565b61040433856102fe8685610850565b5060019392505050565b600061024f33848461053f565b6001600160a01b03831661047d5760405162461bcd60e51b8152602060048201526024808201527f45524332303a20617070726f76652066726f6d20746865207a65726f206164646044820152637265737360e01b60648201526084016102e6565b6001600160a01b0382166104de5760405162461bcd60e51b815260206004820152602260248201527f45524332303a20617070726f766520746f20746865207a65726f206164647265604482015261737360f01b60648201526084016102e6565b6001600160a01b0383811660008181526001602090815260408083209487168084529482529182902085905590518481527f8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925910160405180910390a3505050565b6001600160a01b0383166105a35760405162461bcd60e51b815260206004820152602560248201527f45524332303a207472616e736665722066726f6d20746865207a65726f206164604482015264647265737360d81b60648201526084016102e6565b6001600160a01b0382166106055760405162461bcd60e51b815260206004820152602360248201527f45524332303a207472616e7366657220746f20746865207a65726f206164647260448201526265737360e81b60648201526084016102e6565b6001600160a01b0383166000908152602081905260409020548181101561067d5760405162461bcd60e51b815260206004820152602660248201527f45524332303a207472616e7366657220616d6f756e7420657863656564732062604482015265616c616e636560d01b60648201526084016102e6565b6106878282610850565b6001600160a01b0380861660009081526020819052604080822093909355908516815290812080548492906106bd908490610838565b92505081905550826001600160a01b0316846001600160a01b03167fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef8460405161070991815260200190565b60405180910390a350505050565b80356001600160a01b038116811461035f57600080fd5b60006020828403121561073f578081fd5b61074882610717565b9392505050565b60008060408385031215610761578081fd5b61076a83610717565b915061077860208401610717565b90509250929050565b600080600060608486031215610795578081fd5b61079e84610717565b92506107ac60208501610717565b9150604084013590509250925092565b600080604083850312156107ce578182fd5b6107d783610717565b946020939093013593505050565b6000602080835283518082850152825b81811015610811578581018301518582016040015282016107f5565b818111156108225783604083870101525b50601f01601f1916929092016040019392505050565b6000821982111561084b5761084b6108a2565b500190565b600082821015610862576108626108a2565b500390565b600181811c9082168061087b57607f821691505b6020821081141561089c57634e487b7160e01b600052602260045260246000fd5b50919050565b634e487b7160e01b600052601160045260246000fdfea2646970667358221220f532269c0b2ab7e801b67a95294344969d1b8ad08c1b2492d01cf2d1d05444cb64736f6c63430008030033";
-var linkReferences = {
-};
-var deployedLinkReferences = {
-};
-var ERC20Abi = {
-	_format: _format,
-	contractName: contractName,
-	sourceName: sourceName,
-	abi: abi,
-	bytecode: bytecode,
-	deployedBytecode: deployedBytecode,
-	linkReferences: linkReferences,
-	deployedLinkReferences: deployedLinkReferences
-};
-
-// export async function buildUnsignedTransaction(
-//     orders: (ITransaction | AVMUTXO)[],
-//     addr: string,
-//     derivedAddresses: string[],
-//     utxoset: AVMUTXOSet,
-//     changeAddress?: string,
-//     memo?: Buffer
-// ) {
-//     // TODO: Get new change index.
-//     if (!changeAddress) {
-//         throw new Error('Unable to issue transaction. Ran out of change index.');
-//     }
-//
-//     let fromAddrsStr: string[] = derivedAddresses;
-//     let fromAddrs: Buffer[] = fromAddrsStr.map((val) => bintools.parseAddress(val, 'X'));
-//     let changeAddr: Buffer = bintools.stringToAddress(changeAddress);
-//
-//     // TODO: use internal asset ID
-//     // This does not update on network change, causing issues
-//     const AVAX_ID_BUF = await xChain.getAVAXAssetID();
-//     const AVAX_ID_STR = AVAX_ID_BUF.toString('hex');
-//     const TO_BUF = bintools.stringToAddress(addr);
-//
-//     const aad: AssetAmountDestination = new AssetAmountDestination([TO_BUF], fromAddrs, [changeAddr]);
-//     const ZERO = new BN(0);
-//     let isFeeAdded = false;
-//
-//     // Aggregate Fungible ins & outs
-//     for (let i: number = 0; i < orders.length; i++) {
-//         let order: ITransaction | AVMUTXO = orders[i];
-//
-//         if ((order as ITransaction).asset) {
-//             // if fungible
-//             let tx: ITransaction = order as ITransaction;
-//
-//             let assetId = bintools.cb58Decode(tx.asset.id);
-//             let amt: BN = tx.amount;
-//
-//             if (assetId.toString('hex') === AVAX_ID_STR) {
-//                 aad.addAssetAmount(assetId, amt, xChain.getTxFee());
-//                 isFeeAdded = true;
-//             } else {
-//                 aad.addAssetAmount(assetId, amt, ZERO);
-//             }
-//         }
-//     }
-//
-//     // If fee isn't added, add it
-//     if (!isFeeAdded) {
-//         if (xChain.getTxFee().gt(ZERO)) {
-//             aad.addAssetAmount(AVAX_ID_BUF, ZERO, xChain.getTxFee());
-//         }
-//     }
-//
-//     const success: Error = utxoset.getMinimumSpendable(aad);
-//
-//     let ins: TransferableInput[] = [];
-//     let outs: TransferableOutput[] = [];
-//     if (typeof success === 'undefined') {
-//         ins = aad.getInputs();
-//         outs = aad.getAllOutputs();
-//     } else {
-//         throw success;
-//     }
-//
-//     //@ts-ignore
-//     let nftUtxos: UTXO[] = orders.filter((val) => {
-//         if ((val as ITransaction).asset) return false;
-//         return true;
-//     });
-//
-//     // If transferring an NFT, build the transaction on top of an NFT tx
-//     let unsignedTx: AVMUnsignedTx;
-//     let networkId: number = avalanche.getNetworkID();
-//     let chainId: Buffer = bintools.cb58Decode(xChain.getBlockchainID());
-//
-//     if (nftUtxos.length > 0) {
-//         let nftSet = new AVMUTXOSet();
-//         nftSet.addArray(nftUtxos);
-//
-//         let utxoIds: string[] = nftSet.getUTXOIDs();
-//
-//         // Sort nft utxos
-//         utxoIds.sort((a, b) => {
-//             if (a < b) {
-//                 return -1;
-//             } else if (a > b) {
-//                 return 1;
-//             }
-//             return 0;
-//         });
-//
-//         unsignedTx = nftSet.buildNFTTransferTx(
-//             networkId,
-//             chainId,
-//             [TO_BUF],
-//             fromAddrs,
-//             fromAddrs, // change address should be something else?
-//             utxoIds,
-//             undefined,
-//             undefined,
-//             memo
-//         );
-//
-//         let rawTx = unsignedTx.getTransaction();
-//         let outsNft = rawTx.getOuts();
-//         let insNft = rawTx.getIns();
-//
-//         // TODO: This is a hackish way of doing this, need methods in avalanche.js
-//         //@ts-ignore
-//         rawTx.outs = outsNft.concat(outs);
-//         //@ts-ignore
-//         rawTx.ins = insNft.concat(ins);
-//     } else {
-//         let baseTx: BaseTx = new BaseTx(networkId, chainId, outs, ins, memo);
-//         unsignedTx = new AVMUnsignedTx(baseTx);
-//     }
-//     return unsignedTx;
-// }
-function buildCreateNftFamilyTx(name, symbol, groupNum, fromAddrs, minterAddr, changeAddr, utxoSet) {
-    return __awaiter(this, void 0, void 0, function () {
-        var fromAddresses, changeAddress, minterAddress, minterSets, i, minterSet, unsignedTx;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    fromAddresses = fromAddrs;
-                    changeAddress = changeAddr;
-                    minterAddress = minterAddr;
-                    minterSets = [];
-                    // Create the groups
-                    for (i = 0; i < groupNum; i++) {
-                        minterSet = new avm.MinterSet(1, [minterAddress]);
-                        minterSets.push(minterSet);
-                    }
-                    return [4 /*yield*/, xChain.buildCreateNFTAssetTx(utxoSet, fromAddresses, [changeAddress], minterSets, name, symbol)];
-                case 1:
-                    unsignedTx = _a.sent();
-                    return [2 /*return*/, unsignedTx];
-            }
-        });
-    });
-}
-function buildMintNftTx(mintUtxo, payload, quantity, ownerAddress, changeAddress, fromAddresses, utxoSet) {
-    return __awaiter(this, void 0, void 0, function () {
-        var addrBuf, owners, sourceAddresses, i, owner, groupID, mintTx;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    addrBuf = bintools$1.parseAddress(ownerAddress, 'X');
-                    owners = [];
-                    sourceAddresses = fromAddresses;
-                    for (i = 0; i < quantity; i++) {
-                        owner = new common.OutputOwners([addrBuf]);
-                        owners.push(owner);
-                    }
-                    groupID = mintUtxo.getOutput().getGroupID();
-                    return [4 /*yield*/, xChain.buildCreateNFTMintTx(utxoSet, owners, sourceAddresses, [changeAddress], mintUtxo.getUTXOID(), groupID, payload)];
-                case 1:
-                    mintTx = _a.sent();
-                    return [2 /*return*/, mintTx];
-            }
-        });
-    });
-}
-function buildAvmExportTransaction(destinationChain, utxoSet, fromAddresses, toAddress, amount, // export amount + fee
-sourceChangeAddress) {
-    return __awaiter(this, void 0, void 0, function () {
-        var destinationChainId;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    switch (destinationChain) {
-                        case 'P':
-                            destinationChainId = pChain.getBlockchainID();
-                            break;
-                        case 'C':
-                            destinationChainId = cChain.getBlockchainID();
-                            break;
-                    }
-                    return [4 /*yield*/, xChain.buildExportTx(utxoSet, amount, destinationChainId, [toAddress], fromAddresses, [
-                            sourceChangeAddress,
-                        ])];
-                case 1: return [2 /*return*/, _a.sent()];
-            }
-        });
-    });
-}
-function buildEvmExportTransaction(fromAddresses, toAddress, amount, // export amount + fee
-fromAddressBech) {
-    return __awaiter(this, void 0, void 0, function () {
-        var destinationChainId, nonce, avaxAssetIDBuf, avaxAssetIDStr, fromAddressHex;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    destinationChainId = xChain.getBlockchainID();
-                    return [4 /*yield*/, web3.eth.getTransactionCount(fromAddresses[0])];
-                case 1:
-                    nonce = _a.sent();
-                    return [4 /*yield*/, xChain.getAVAXAssetID()];
-                case 2:
-                    avaxAssetIDBuf = _a.sent();
-                    avaxAssetIDStr = bintools$1.cb58Encode(avaxAssetIDBuf);
-                    fromAddressHex = fromAddresses[0];
-                    return [4 /*yield*/, cChain.buildExportTx(amount, avaxAssetIDStr, destinationChainId, fromAddressHex, fromAddressBech, [toAddress], nonce)];
-                case 3: return [2 /*return*/, _a.sent()];
-            }
-        });
-    });
-}
-function buildEvmTransferNativeTx(from, to, amount, // in wei
-gasPrice, gasLimit) {
-    return __awaiter(this, void 0, void 0, function () {
-        var nonce, chainId, networkId, chainParams, tx$1;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0: return [4 /*yield*/, web3.eth.getTransactionCount(from)];
-                case 1:
-                    nonce = _a.sent();
-                    return [4 /*yield*/, web3.eth.getChainId()];
-                case 2:
-                    chainId = _a.sent();
-                    return [4 /*yield*/, web3.eth.net.getId()];
-                case 3:
-                    networkId = _a.sent();
-                    chainParams = {
-                        common: EthereumjsCommon__default['default'].forCustomChain('mainnet', { networkId: networkId, chainId: chainId }, 'istanbul'),
-                    };
-                    tx$1 = tx.Transaction.fromTxData({
-                        nonce: nonce,
-                        gasPrice: '0x' + gasPrice.toString('hex'),
-                        gasLimit: gasLimit,
-                        to: to,
-                        value: '0x' + amount.toString('hex'),
-                        data: '0x',
-                    }, chainParams);
-                    return [2 /*return*/, tx$1];
-            }
-        });
-    });
-}
-function buildEvmTransferErc20Tx(from, to, amount, // in wei
-gasPrice, gasLimit, contractAddress) {
-    return __awaiter(this, void 0, void 0, function () {
-        var nonce, chainId, networkId, chainParams, cont, tokenTx, tx$1;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0: return [4 /*yield*/, web3.eth.getTransactionCount(from)];
-                case 1:
-                    nonce = _a.sent();
-                    return [4 /*yield*/, web3.eth.getChainId()];
-                case 2:
-                    chainId = _a.sent();
-                    return [4 /*yield*/, web3.eth.net.getId()];
-                case 3:
-                    networkId = _a.sent();
-                    chainParams = {
-                        common: EthereumjsCommon__default['default'].forCustomChain('mainnet', { networkId: networkId, chainId: chainId }, 'istanbul'),
-                    };
-                    cont = new web3.eth.Contract(ERC20Abi.abi, contractAddress);
-                    tokenTx = cont.methods.transfer(to, amount.toString());
-                    tx$1 = tx.Transaction.fromTxData({
-                        nonce: nonce,
-                        gasPrice: '0x' + gasPrice.toString('hex'),
-                        gasLimit: gasLimit,
-                        value: '0x0',
-                        to: contractAddress,
-                        data: tokenTx.encodeABI(),
-                    }, chainParams);
-                    return [2 /*return*/, tx$1];
-            }
-        });
-    });
-}
-var AvmTxNameEnum;
-(function (AvmTxNameEnum) {
-    AvmTxNameEnum[AvmTxNameEnum["Transaction"] = avm.AVMConstants.BASETX] = "Transaction";
-    AvmTxNameEnum[AvmTxNameEnum["Mint"] = avm.AVMConstants.CREATEASSETTX] = "Mint";
-    AvmTxNameEnum[AvmTxNameEnum["Operation"] = avm.AVMConstants.OPERATIONTX] = "Operation";
-    AvmTxNameEnum[AvmTxNameEnum["Import"] = avm.AVMConstants.IMPORTTX] = "Import";
-    AvmTxNameEnum[AvmTxNameEnum["Export"] = avm.AVMConstants.EXPORTTX] = "Export";
-})(AvmTxNameEnum || (AvmTxNameEnum = {}));
-var PlatfromTxNameEnum;
-(function (PlatfromTxNameEnum) {
-    PlatfromTxNameEnum[PlatfromTxNameEnum["Transaction"] = platformvm.PlatformVMConstants.BASETX] = "Transaction";
-    PlatfromTxNameEnum[PlatfromTxNameEnum["Add Validator"] = platformvm.PlatformVMConstants.ADDVALIDATORTX] = "Add Validator";
-    PlatfromTxNameEnum[PlatfromTxNameEnum["Add Delegator"] = platformvm.PlatformVMConstants.ADDDELEGATORTX] = "Add Delegator";
-    PlatfromTxNameEnum[PlatfromTxNameEnum["Import"] = platformvm.PlatformVMConstants.IMPORTTX] = "Import";
-    PlatfromTxNameEnum[PlatfromTxNameEnum["Export"] = platformvm.PlatformVMConstants.EXPORTTX] = "Export";
-    PlatfromTxNameEnum[PlatfromTxNameEnum["Add Subnet Validator"] = platformvm.PlatformVMConstants.ADDSUBNETVALIDATORTX] = "Add Subnet Validator";
-    PlatfromTxNameEnum[PlatfromTxNameEnum["Create Chain"] = platformvm.PlatformVMConstants.CREATECHAINTX] = "Create Chain";
-    PlatfromTxNameEnum[PlatfromTxNameEnum["Create Subnet"] = platformvm.PlatformVMConstants.CREATESUBNETTX] = "Create Subnet";
-    PlatfromTxNameEnum[PlatfromTxNameEnum["Advance Time"] = platformvm.PlatformVMConstants.ADVANCETIMETX] = "Advance Time";
-    PlatfromTxNameEnum[PlatfromTxNameEnum["Reward Validator"] = platformvm.PlatformVMConstants.REWARDVALIDATORTX] = "Reward Validator";
-})(PlatfromTxNameEnum || (PlatfromTxNameEnum = {}));
-// TODO: create asset transactions
-var ParseableAvmTxEnum;
-(function (ParseableAvmTxEnum) {
-    ParseableAvmTxEnum[ParseableAvmTxEnum["Transaction"] = avm.AVMConstants.BASETX] = "Transaction";
-    ParseableAvmTxEnum[ParseableAvmTxEnum["Import"] = avm.AVMConstants.IMPORTTX] = "Import";
-    ParseableAvmTxEnum[ParseableAvmTxEnum["Export"] = avm.AVMConstants.EXPORTTX] = "Export";
-})(ParseableAvmTxEnum || (ParseableAvmTxEnum = {}));
-var ParseablePlatformEnum;
-(function (ParseablePlatformEnum) {
-    ParseablePlatformEnum[ParseablePlatformEnum["Transaction"] = platformvm.PlatformVMConstants.BASETX] = "Transaction";
-    ParseablePlatformEnum[ParseablePlatformEnum["Add Validator"] = platformvm.PlatformVMConstants.ADDVALIDATORTX] = "Add Validator";
-    ParseablePlatformEnum[ParseablePlatformEnum["Add Delegator"] = platformvm.PlatformVMConstants.ADDDELEGATORTX] = "Add Delegator";
-    ParseablePlatformEnum[ParseablePlatformEnum["Import"] = platformvm.PlatformVMConstants.IMPORTTX] = "Import";
-    ParseablePlatformEnum[ParseablePlatformEnum["Export"] = platformvm.PlatformVMConstants.EXPORTTX] = "Export";
-})(ParseablePlatformEnum || (ParseablePlatformEnum = {}));
-var ParseableEvmTxEnum;
-(function (ParseableEvmTxEnum) {
-    ParseableEvmTxEnum[ParseableEvmTxEnum["Import"] = evm.EVMConstants.IMPORTTX] = "Import";
-    ParseableEvmTxEnum[ParseableEvmTxEnum["Export"] = evm.EVMConstants.EXPORTTX] = "Export";
-})(ParseableEvmTxEnum || (ParseableEvmTxEnum = {}));
-
-// export async function getAtomicUTXOsForAllAddresses<UtxoSet extends AVMUTXOSet | PlatformUTXOSet | EVMUTXOSet>(
-//     addrs: string[],
-//     chainAlias: string
-// ): Promise<UtxoSet> {
-//     let selection = addrs.slice(0, 1024);
-//     let remaining = addrs.slice(1024);
-//
-//     let utxoSet;
-//     if (chainAlias === 'X') {
-//         utxoSet = await avmGetAtomicUTXOs(selection);
-//     } else if (chainAlias === 'P') {
-//         utxoSet = await platformGetAtomicUTXOs(selection);
-//     } else {
-//         utxoSet = await evmGetAtomicUTXOs(selection);
-//     }
-//
-//     if (remaining.length > 0) {
-//         // @ts-ignore
-//         let nextSet = await getAtomicUTXOsForAllAddresses<UtxoSet>(remaining, chainAlias);
-//         // @ts-ignore
-//         utxoSet = utxoSet.merge(nextSet);
-//     }
-//
-//     return utxoSet as UtxoSet;
-// }
-/**
- *
- * @param addrs an array of X chain addresses to get the atomic utxos of
- * @param chainID Which chain to check agains, either `P` or `C`
- */
-function avmGetAtomicUTXOs(addrs, chainID) {
-    return __awaiter(this, void 0, void 0, function () {
-        var selection, remaining, utxoSet, nextSet;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    selection = addrs.slice(0, 1024);
-                    remaining = addrs.slice(1024);
-                    if (!(chainID === 'P')) return [3 /*break*/, 2];
-                    return [4 /*yield*/, xChain.getUTXOs(selection, pChain.getBlockchainID())];
-                case 1:
-                    utxoSet = (_a.sent()).utxos;
-                    return [3 /*break*/, 4];
-                case 2: return [4 /*yield*/, xChain.getUTXOs(selection, cChain.getBlockchainID())];
-                case 3:
-                    utxoSet = (_a.sent()).utxos;
-                    _a.label = 4;
-                case 4:
-                    if (!(remaining.length > 0)) return [3 /*break*/, 6];
-                    return [4 /*yield*/, avmGetAtomicUTXOs(remaining, chainID)];
-                case 5:
-                    nextSet = _a.sent();
-                    utxoSet = utxoSet.merge(nextSet);
-                    _a.label = 6;
-                case 6: return [2 /*return*/, utxoSet];
-            }
-        });
-    });
-}
-// todo: Use end index to get ALL utxos
-function platformGetAtomicUTXOs(addrs) {
-    return __awaiter(this, void 0, void 0, function () {
-        var selection, remaining, utxoSet, nextSet;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    selection = addrs.slice(0, 1024);
-                    remaining = addrs.slice(1024);
-                    return [4 /*yield*/, pChain.getUTXOs(selection, xChain.getBlockchainID())];
-                case 1:
-                    utxoSet = (_a.sent()).utxos;
-                    if (!(remaining.length > 0)) return [3 /*break*/, 3];
-                    return [4 /*yield*/, platformGetAtomicUTXOs(remaining)];
-                case 2:
-                    nextSet = _a.sent();
-                    // @ts-ignore
-                    utxoSet = utxoSet.merge(nextSet);
-                    _a.label = 3;
-                case 3: return [2 /*return*/, utxoSet];
-            }
-        });
-    });
-}
-function getStakeForAddresses(addrs) {
-    return __awaiter(this, void 0, void 0, function () {
-        var chunk, remainingChunk, chunkStake, _a, _b;
-        return __generator(this, function (_c) {
-            switch (_c.label) {
-                case 0:
-                    if (!(addrs.length <= 256)) return [3 /*break*/, 2];
-                    return [4 /*yield*/, pChain.getStake(addrs)];
-                case 1: return [2 /*return*/, _c.sent()];
-                case 2:
-                    chunk = addrs.slice(0, 256);
-                    remainingChunk = addrs.slice(256);
-                    return [4 /*yield*/, pChain.getStake(chunk)];
-                case 3:
-                    chunkStake = _c.sent();
-                    _b = (_a = chunkStake).add;
-                    return [4 /*yield*/, getStakeForAddresses(remainingChunk)];
-                case 4: return [2 /*return*/, _b.apply(_a, [_c.sent()])];
-            }
-        });
-    });
-}
-function avmGetAllUTXOs(addrs) {
-    return __awaiter(this, void 0, void 0, function () {
-        var utxos, chunk, remainingChunk, newSet, _a, _b;
-        return __generator(this, function (_c) {
-            switch (_c.label) {
-                case 0:
-                    if (!(addrs.length <= 1024)) return [3 /*break*/, 2];
-                    return [4 /*yield*/, avmGetAllUTXOsForAddresses(addrs)];
-                case 1:
-                    utxos = _c.sent();
-                    return [2 /*return*/, utxos];
-                case 2:
-                    chunk = addrs.slice(0, 1024);
-                    remainingChunk = addrs.slice(1024);
-                    return [4 /*yield*/, avmGetAllUTXOsForAddresses(chunk)];
-                case 3:
-                    newSet = _c.sent();
-                    _b = (_a = newSet).merge;
-                    return [4 /*yield*/, avmGetAllUTXOs(remainingChunk)];
-                case 4: return [2 /*return*/, _b.apply(_a, [_c.sent()])];
-            }
-        });
-    });
-}
-function avmGetAllUTXOsForAddresses(addrs, endIndex) {
-    return __awaiter(this, void 0, void 0, function () {
-        var response, utxoSet, nextEndIndex, len, subUtxos;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    if (addrs.length > 1024)
-                        throw new Error('Maximum length of addresses is 1024');
-                    if (!!endIndex) return [3 /*break*/, 2];
-                    return [4 /*yield*/, xChain.getUTXOs(addrs)];
-                case 1:
-                    response = _a.sent();
-                    return [3 /*break*/, 4];
-                case 2: return [4 /*yield*/, xChain.getUTXOs(addrs, undefined, 0, endIndex)];
-                case 3:
-                    response = _a.sent();
-                    _a.label = 4;
-                case 4:
-                    utxoSet = response.utxos;
-                    utxoSet.getAllUTXOs();
-                    nextEndIndex = response.endIndex;
-                    len = response.numFetched;
-                    if (!(len >= 1024)) return [3 /*break*/, 6];
-                    return [4 /*yield*/, avmGetAllUTXOsForAddresses(addrs, nextEndIndex)];
-                case 5:
-                    subUtxos = _a.sent();
-                    return [2 /*return*/, utxoSet.merge(subUtxos)];
-                case 6: return [2 /*return*/, utxoSet];
-            }
-        });
-    });
-}
-// helper method to get utxos for more than 1024 addresses
-function platformGetAllUTXOs(addrs) {
-    return __awaiter(this, void 0, void 0, function () {
-        var newSet, chunk, remainingChunk, newSet, _a, _b;
-        return __generator(this, function (_c) {
-            switch (_c.label) {
-                case 0:
-                    if (!(addrs.length <= 1024)) return [3 /*break*/, 2];
-                    return [4 /*yield*/, platformGetAllUTXOsForAddresses(addrs)];
-                case 1:
-                    newSet = _c.sent();
-                    return [2 /*return*/, newSet];
-                case 2:
-                    chunk = addrs.slice(0, 1024);
-                    remainingChunk = addrs.slice(1024);
-                    return [4 /*yield*/, platformGetAllUTXOsForAddresses(chunk)];
-                case 3:
-                    newSet = _c.sent();
-                    _b = (_a = newSet).merge;
-                    return [4 /*yield*/, platformGetAllUTXOs(remainingChunk)];
-                case 4: return [2 /*return*/, _b.apply(_a, [_c.sent()])];
-            }
-        });
-    });
-}
-function platformGetAllUTXOsForAddresses(addrs, endIndex) {
-    return __awaiter(this, void 0, void 0, function () {
-        var response, utxoSet, nextEndIndex, len, subUtxos;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    if (!!endIndex) return [3 /*break*/, 2];
-                    return [4 /*yield*/, pChain.getUTXOs(addrs)];
-                case 1:
-                    response = _a.sent();
-                    return [3 /*break*/, 4];
-                case 2: return [4 /*yield*/, pChain.getUTXOs(addrs, undefined, 0, endIndex)];
-                case 3:
-                    response = _a.sent();
-                    _a.label = 4;
-                case 4:
-                    utxoSet = response.utxos;
-                    nextEndIndex = response.endIndex;
-                    len = response.numFetched;
-                    if (!(len >= 1024)) return [3 /*break*/, 6];
-                    return [4 /*yield*/, platformGetAllUTXOsForAddresses(addrs, nextEndIndex)];
-                case 5:
-                    subUtxos = _a.sent();
-                    return [2 /*return*/, utxoSet.merge(subUtxos)];
-                case 6: return [2 /*return*/, utxoSet];
-            }
-        });
-    });
-}
-
-var assetCache = {};
-function getAssetDescription(assetId) {
-    return __awaiter(this, void 0, void 0, function () {
-        var cache, res, clean;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    cache = assetCache[assetId];
-                    if (cache) {
-                        return [2 /*return*/, cache];
-                    }
-                    return [4 /*yield*/, xChain.getAssetDescription(assetId)];
-                case 1:
-                    res = _a.sent();
-                    clean = __assign(__assign({}, res), { assetID: assetId });
-                    assetCache[assetId] = clean;
-                    return [2 /*return*/, clean];
-            }
-        });
-    });
-}
-
-var Assets = /*#__PURE__*/Object.freeze({
-    __proto__: null,
-    getAssetDescription: getAssetDescription
-});
-
-var NO_NETWORK = new Error('No network selected.');
-var NO_EXPLORER_API = new Error('Explorer API not found.');
-
-var Erc20Token = /** @class */ (function () {
-    function Erc20Token(data) {
-        this.name = data.name;
-        this.symbol = data.symbol;
-        this.address = data.address;
-        this.decimals = data.decimals;
-        this.chainId = data.chainId;
-        //@ts-ignore
-        this.contract = new web3.eth.Contract(ERC20Abi.abi, data.address);
-    }
-    Erc20Token.getData = function (address) {
-        return __awaiter(this, void 0, void 0, function () {
-            var contract, name, symbol, decimals, _a;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
-                    case 0:
-                        contract = new web3.eth.Contract(ERC20Abi.abi, address);
-                        return [4 /*yield*/, contract.methods.name().call()];
-                    case 1:
-                        name = _b.sent();
-                        return [4 /*yield*/, contract.methods.symbol().call()];
-                    case 2:
-                        symbol = _b.sent();
-                        _a = parseInt;
-                        return [4 /*yield*/, contract.methods.decimals().call()];
-                    case 3:
-                        decimals = _a.apply(void 0, [_b.sent()]);
-                        if (!activeNetwork) {
-                            throw NO_NETWORK;
-                        }
-                        return [2 /*return*/, {
-                                name: name,
-                                symbol: symbol,
-                                decimals: decimals,
-                                address: address,
-                                chainId: activeNetwork.evmChainID,
-                            }];
-                }
-            });
-        });
-    };
-    Erc20Token.prototype.balanceOf = function (address) {
-        return __awaiter(this, void 0, void 0, function () {
-            var bal;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.contract.methods.balanceOf(address).call()];
-                    case 1:
-                        bal = _a.sent();
-                        return [2 /*return*/, new avalanche$1.BN(bal)];
-                }
-            });
-        });
-    };
-    return Erc20Token;
-}());
-
 var DEFAULT_TOKENS = [
     {
         chainId: 43114,
@@ -1797,7 +1709,7 @@ function balanceOf(address) {
                     if (!(_i < _a.length)) return [3 /*break*/, 4];
                     tokenAddress = _a[_i];
                     token = erc20Store[tokenAddress];
-                    if (!(token.chainId === (activeNetwork === null || activeNetwork === void 0 ? void 0 : activeNetwork.evmChainID))) return [3 /*break*/, 3];
+                    if (!(token.chainId === (activeNetwork$1 === null || activeNetwork$1 === void 0 ? void 0 : activeNetwork$1.evmChainID))) return [3 /*break*/, 3];
                     return [4 /*yield*/, token.balanceOf(address)];
                 case 2:
                     bal = _c.sent();
@@ -2311,6 +2223,33 @@ function eventTargetAgnosticAddListener(emitter, name, listener, flags) {
 }
 events.once = once_1;
 
+/**
+ * Returns transactions FROM and TO the address given
+ * @param addr The address to get historic transactions for.
+ */
+function getAddressHistoryEVM(addr) {
+    return __awaiter(this, void 0, void 0, function () {
+        var endpoint, data;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    if (!explorer_api) {
+                        throw NO_EXPLORER_API;
+                    }
+                    endpoint = "v2/ctransactions?address=" + addr;
+                    return [4 /*yield*/, explorer_api.get(endpoint)];
+                case 1:
+                    data = (_a.sent()).data.Transactions;
+                    data.sort(function (a, b) {
+                        var dateA = new Date(a.createdAt);
+                        var dateB = new Date(b.createdAt);
+                        return dateB.getTime() - dateA.getTime();
+                    });
+                    return [2 /*return*/, data];
+            }
+        });
+    });
+}
 function getAddressHistory(addrs, limit, chainID, endTime) {
     if (limit === void 0) { limit = 20; }
     return __awaiter(this, void 0, void 0, function () {
@@ -2415,14 +2354,39 @@ function getTransactionSummary(tx, walletAddrs, evmAddress) {
         });
     });
 }
+function getTransactionSummaryEVM(tx, walletAddress) {
+    var isSender = tx.fromAddr.toUpperCase() === walletAddress.toUpperCase();
+    var amt = new avalanche$1.BN(tx.value);
+    var amtClean = bnToAvaxC(amt);
+    var date = new Date(tx.createdAt);
+    var gasLimit = new avalanche$1.BN(tx.gasLimit);
+    var gasPrice = new avalanche$1.BN(tx.gasPrice);
+    var feeBN = gasLimit.mul(gasPrice); // in gwei
+    return {
+        id: tx.hash,
+        fee: feeBN,
+        memo: '',
+        hash: tx.hash,
+        block: tx.block,
+        isSender: isSender,
+        type: 'transaction_evm',
+        amount: amt,
+        amountClean: amtClean,
+        gasLimit: tx.gasLimit,
+        gasPrice: tx.gasPrice,
+        from: tx.fromAddr,
+        to: tx.toAddr,
+        timestamp: date,
+    };
+}
 function idToChainAlias(id) {
-    if (id === activeNetwork.xChainID) {
+    if (id === activeNetwork$1.xChainID) {
         return 'X';
     }
-    else if (id === activeNetwork.pChainID) {
+    else if (id === activeNetwork$1.pChainID) {
         return 'P';
     }
-    else if (id === activeNetwork.cChainID) {
+    else if (id === activeNetwork$1.cChainID) {
         return 'C';
     }
     throw new Error('Unknown chain ID.');
@@ -2433,7 +2397,7 @@ function findDestinationChain(tx) {
     var baseChain = tx.chainID;
     var outs = tx.outputs || [];
     for (var i = 0; i < outs.length; i++) {
-        var outChainId = outs[i].chainID;
+        var outChainId = outs[i].outChainID;
         if (outChainId !== baseChain)
             return outChainId;
     }
@@ -2445,7 +2409,7 @@ function findSourceChain(tx) {
     var baseChain = tx.chainID;
     var ins = tx.inputs;
     for (var i = 0; i < ins.length; i++) {
-        var inChainId = ins[i].output.chainID;
+        var inChainId = ins[i].output.inChainID;
         if (inChainId !== baseChain)
             return inChainId;
     }
@@ -2503,12 +2467,17 @@ function getNFTBalanceFromUTXOs(utxos, addresses, assetID) {
     for (var i = 0; i < nftUTXOs.length; i++) {
         var utxo = nftUTXOs[i];
         var groupID = utxo.groupID;
+        var content = void 0;
+        if (utxo.payload) {
+            var parsedPayload = parseNftPayload(utxo.payload);
+            content = parsedPayload.getContent().toString();
+        }
         if (res[groupID]) {
             res[groupID].amount++;
         }
         else {
             res[groupID] = {
-                payload: utxo.payload || '',
+                payload: content || '',
                 amount: 1,
             };
         }
@@ -2543,7 +2512,7 @@ function getImportSummary(tx, addresses) {
     var sourceChain = findSourceChain(tx);
     var chainAliasFrom = idToChainAlias(sourceChain);
     var chainAliasTo = idToChainAlias(tx.chainID);
-    var avaxID = activeNetwork.avaxID;
+    var avaxID = activeNetwork$1.avaxID;
     var outs = tx.outputs || [];
     var amtOut = getAssetBalanceFromUTXOs(outs, addresses, avaxID, tx.chainID);
     var time = new Date(tx.timestamp);
@@ -2556,7 +2525,7 @@ function getImportSummary(tx, addresses) {
         amount: amtOut,
         amountClean: bnToAvaxX(amtOut),
         timestamp: time,
-        type: tx.type,
+        type: 'import',
         fee: fee,
     };
     return res;
@@ -2567,7 +2536,7 @@ function getExportSummary(tx, addresses) {
     var chainAliasFrom = idToChainAlias(sourceChain);
     var destinationChain = findDestinationChain(tx);
     var chainAliasTo = idToChainAlias(destinationChain);
-    var avaxID = activeNetwork.avaxID;
+    var avaxID = activeNetwork$1.avaxID;
     var outs = tx.outputs || [];
     var amtOut = getAssetBalanceFromUTXOs(outs, addresses, avaxID, destinationChain);
     // let amtIn = getAssetBalanceFromUTXOs(inUtxos, addresses, avaxID);
@@ -2581,15 +2550,15 @@ function getExportSummary(tx, addresses) {
         amount: amtOut,
         amountClean: bnToAvaxX(amtOut),
         timestamp: time,
-        type: tx.type,
+        type: 'export',
         fee: fee,
     };
     return res;
 }
 function getValidatorSummary(tx, ownerAddrs) {
     var time = new Date(tx.timestamp);
-    var pChainID = activeNetwork.pChainID;
-    var avaxID = activeNetwork.avaxID;
+    var pChainID = activeNetwork$1.pChainID;
+    var avaxID = activeNetwork$1.avaxID;
     var outs = tx.outputs || [];
     var stakeAmt = getAssetBalanceFromUTXOs(outs, ownerAddrs, avaxID, pChainID, true);
     return {
@@ -2598,7 +2567,7 @@ function getValidatorSummary(tx, ownerAddrs) {
         stakeStart: new Date(tx.validatorStart * 1000),
         stakeEnd: new Date(tx.validatorEnd * 1000),
         timestamp: time,
-        type: tx.type,
+        type: 'add_validator',
         fee: new avalanche$1.BN(0),
         amount: stakeAmt,
         amountClean: bnToAvaxP(stakeAmt),
@@ -2611,7 +2580,7 @@ function getImportSummaryC(tx, ownerAddr) {
     var sourceChain = findSourceChain(tx);
     var chainAliasFrom = idToChainAlias(sourceChain);
     var chainAliasTo = idToChainAlias(tx.chainID);
-    var avaxID = activeNetwork.avaxID;
+    var avaxID = activeNetwork$1.avaxID;
     var outs = tx.outputs || [];
     var amtOut = getEvmAssetBalanceFromUTXOs(outs, ownerAddr, avaxID, tx.chainID);
     var time = new Date(tx.timestamp);
@@ -2623,7 +2592,7 @@ function getImportSummaryC(tx, ownerAddr) {
         amount: amtOut,
         amountClean: bnToAvaxX(amtOut),
         timestamp: time,
-        type: tx.type,
+        type: 'import',
         fee: fee,
         memo: parseMemo(tx.memo),
     };
@@ -2739,7 +2708,7 @@ function getBaseTxSummary(tx, ownerAddrs) {
                 case 16: return [2 /*return*/, {
                         id: tx.id,
                         fee: xChain.getTxFee(),
-                        type: tx.type,
+                        type: 'transaction',
                         timestamp: new Date(tx.timestamp),
                         memo: parseMemo(tx.memo),
                         tokens: {
@@ -2847,15 +2816,16 @@ function getBaseTxReceivers(tx, assetID) {
 }
 function parseMemo(raw) {
     var memoText = new Buffer(raw, 'base64').toString('utf8');
-    // Bug that sets memo to empty string (AAAAAA==) for some
-    // tx types
+    // Bug that sets memo to empty string (AAAAAA==) for some tx types
     if (!memoText.length || raw === 'AAAAAA==')
         return '';
     return memoText;
 }
 
+// import { updateFilterAddresses } from '@/Network/socket_manager';
 var WalletProvider = /** @class */ (function () {
     function WalletProvider() {
+        this.emitter = new events();
         /**
          * The X chain UTXOs of the wallet's current state
          */
@@ -2866,9 +2836,34 @@ var WalletProvider = /** @class */ (function () {
         this.utxosP = new platformvm.UTXOSet();
         this.balanceX = {};
         this.balanceERC20 = {};
-        var myEmitter = new events();
-        this.emitter = myEmitter;
+        WalletProvider.instances.push(this);
     }
+    /**
+     * Refreshes X chain UTXOs for every wallet instance
+     */
+    WalletProvider.refreshInstanceBalancesX = function () {
+        var wallets = WalletProvider.instances;
+        wallets.forEach(function (w) {
+            w.getUtxosX();
+        });
+    };
+    /**
+     * Refreshes X chain UTXOs for every wallet instance
+     */
+    WalletProvider.refreshInstanceBalancesC = function () {
+        var wallets = WalletProvider.instances;
+        wallets.forEach(function (w) {
+            w.updateAvaxBalanceC();
+        });
+    };
+    /**
+     * Call this when you are done with a wallet instance.
+     * You MUST call this function to avoid memory leaks.
+     */
+    WalletProvider.prototype.destroy = function () {
+        var index = WalletProvider.instances.indexOf(this);
+        WalletProvider.instances.splice(index, 1);
+    };
     WalletProvider.prototype.on = function (event, listener) {
         this.emitter.on(event, listener);
     };
@@ -2891,6 +2886,9 @@ var WalletProvider = /** @class */ (function () {
     WalletProvider.prototype.emitBalanceChangeP = function () {
         this.emit('balanceChangedP', this.getAvaxBalanceP());
     };
+    WalletProvider.prototype.emitBalanceChangeC = function () {
+        this.emit('balanceChangedC', this.getAvaxBalanceC());
+    };
     /**
      *
      * @param to - the address funds are being send to.
@@ -2903,13 +2901,13 @@ var WalletProvider = /** @class */ (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        if (!activeNetwork)
+                        if (!activeNetwork$1)
                             throw NO_NETWORK;
                         memoBuff = memo ? avalanche$1.Buffer.from(memo) : undefined;
                         froms = this.getAllAddressesX();
                         changeAddress = this.getChangeAddressX();
                         utxoSet = this.utxosX;
-                        return [4 /*yield*/, xChain.buildBaseTx(utxoSet, amount, activeNetwork.avaxID, [to], froms, [changeAddress], memoBuff)];
+                        return [4 /*yield*/, xChain.buildBaseTx(utxoSet, amount, activeNetwork$1.avaxID, [to], froms, [changeAddress], memoBuff)];
                     case 1:
                         tx = _a.sent();
                         return [4 /*yield*/, this.signX(tx)];
@@ -2932,7 +2930,7 @@ var WalletProvider = /** @class */ (function () {
      * Sends AVAX to another address on the C chain.
      * @param to Hex address to send AVAX to.
      * @param amount Amount of AVAX to send, represented in WEI format.
-     * @param gasPrice Gas price in gWEI format
+     * @param gasPrice Gas price in WEI format
      * @param gasLimit Gas limit
      *
      * @return Returns the transaction hash
@@ -2965,7 +2963,7 @@ var WalletProvider = /** @class */ (function () {
      * Makes a transfer call on a ERC20 contract.
      * @param to Hex address to transfer tokens to.
      * @param amount Amount of the ERC20 token to send, donated in the token's correct denomination.
-     * @param gasPrice Gas price in gWEI format
+     * @param gasPrice Gas price in WEI format
      * @param gasLimit Gas limit
      * @param contractAddress Contract address of the ERC20 token
      */
@@ -2998,10 +2996,18 @@ var WalletProvider = /** @class */ (function () {
      */
     WalletProvider.prototype.updateAvaxBalanceC = function () {
         return __awaiter(this, void 0, void 0, function () {
+            var balOld, balNew;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.evmWallet.updateBalance()];
-                    case 1: return [2 /*return*/, _a.sent()];
+                    case 0:
+                        balOld = this.evmWallet.getBalance();
+                        return [4 /*yield*/, this.evmWallet.updateBalance()];
+                    case 1:
+                        balNew = _a.sent();
+                        if (!balOld.eq(balNew)) {
+                            this.emitBalanceChangeC();
+                        }
+                        return [2 /*return*/, balNew];
                 }
             });
         });
@@ -3130,7 +3136,7 @@ var WalletProvider = /** @class */ (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        if (!activeNetwork)
+                        if (!activeNetwork$1)
                             throw NO_NETWORK;
                         utxos = this.utxosX.getAllUTXOs();
                         unixNow = utils$2.UnixNow();
@@ -3170,7 +3176,7 @@ var WalletProvider = /** @class */ (function () {
                         i++;
                         return [3 /*break*/, 1];
                     case 5:
-                        avaxID = activeNetwork.avaxID;
+                        avaxID = activeNetwork$1.avaxID;
                         if (!!res[avaxID]) return [3 /*break*/, 7];
                         return [4 /*yield*/, getAssetDescription(avaxID)];
                     case 6:
@@ -3196,10 +3202,13 @@ var WalletProvider = /** @class */ (function () {
      */
     WalletProvider.prototype.getAvaxBalanceX = function () {
         // checkNetworkConnection()
-        if (!activeNetwork) {
+        if (!activeNetwork$1) {
             throw new Error('Network not selected.');
         }
-        return this.balanceX[activeNetwork.avaxID];
+        return this.balanceX[activeNetwork$1.avaxID];
+    };
+    WalletProvider.prototype.getAvaxBalanceC = function () {
+        return this.evmWallet.getBalance();
     };
     /**
      * Returns the P chain AVAX balance of the current wallet state.
@@ -3698,10 +3707,23 @@ var WalletProvider = /** @class */ (function () {
             });
         });
     };
+    WalletProvider.prototype.getHistoryEVM = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var addr;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        addr = this.getAddressC();
+                        return [4 /*yield*/, getAddressHistoryEVM(addr)];
+                    case 1: return [2 /*return*/, _a.sent()];
+                }
+            });
+        });
+    };
     WalletProvider.prototype.getHistory = function (limit) {
         if (limit === void 0) { limit = 0; }
         return __awaiter(this, void 0, void 0, function () {
-            var txsX, txsP, txsC, addrs, addrC, txsSorted, res, i, tx, summary, err_1;
+            var txsX, txsP, txsC, txsXPC, txsEVM, addrs, addrC, parsedXPC, i, tx, summary, err_1, parsedEVM, parsedAll, txsSorted;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, this.getHistoryX(limit)];
@@ -3713,44 +3735,209 @@ var WalletProvider = /** @class */ (function () {
                         return [4 /*yield*/, this.getHistoryC(limit)];
                     case 3:
                         txsC = _a.sent();
+                        txsXPC = txsX.concat(txsP, txsC);
+                        return [4 /*yield*/, this.getHistoryEVM()];
+                    case 4:
+                        txsEVM = _a.sent();
                         addrs = this.getAllAddressesX();
                         addrC = this.getAddressC();
-                        txsSorted = txsX
-                            .concat(txsP, txsC)
-                            .sort(function (x, y) { return (moment__default['default'](x.timestamp).isBefore(moment__default['default'](y.timestamp)) ? 1 : -1); });
-                        res = [];
+                        parsedXPC = [];
                         i = 0;
-                        _a.label = 4;
-                    case 4:
-                        if (!(i < txsSorted.length)) return [3 /*break*/, 9];
-                        tx = txsSorted[i];
                         _a.label = 5;
                     case 5:
-                        _a.trys.push([5, 7, , 8]);
-                        return [4 /*yield*/, getTransactionSummary(tx, addrs, addrC)];
+                        if (!(i < txsXPC.length)) return [3 /*break*/, 10];
+                        tx = txsXPC[i];
+                        _a.label = 6;
                     case 6:
-                        summary = _a.sent();
-                        res.push(summary);
-                        return [3 /*break*/, 8];
+                        _a.trys.push([6, 8, , 9]);
+                        return [4 /*yield*/, getTransactionSummary(tx, addrs, addrC)];
                     case 7:
+                        summary = _a.sent();
+                        parsedXPC.push(summary);
+                        return [3 /*break*/, 9];
+                    case 8:
                         err_1 = _a.sent();
                         console.error(err_1);
-                        return [3 /*break*/, 8];
-                    case 8:
-                        i++;
-                        return [3 /*break*/, 4];
+                        return [3 /*break*/, 9];
                     case 9:
+                        i++;
+                        return [3 /*break*/, 5];
+                    case 10:
+                        parsedEVM = txsEVM.map(function (tx) { return getTransactionSummaryEVM(tx, addrC); });
+                        parsedAll = __spreadArray(__spreadArray([], parsedXPC), parsedEVM);
+                        txsSorted = parsedAll.sort(function (x, y) { return (moment__default['default'](x.timestamp).isBefore(moment__default['default'](y.timestamp)) ? 1 : -1); });
                         // If there is a limit only return that much
                         if (limit > 0) {
-                            return [2 /*return*/, res.slice(0, limit)];
+                            return [2 /*return*/, txsSorted.slice(0, limit)];
                         }
-                        return [2 /*return*/, res];
+                        return [2 /*return*/, txsSorted];
                 }
             });
         });
     };
+    WalletProvider.instances = [];
     return WalletProvider;
 }());
+
+//Testing pubsub
+var socketX;
+var wsUrl = wsUrlFromConfigEVM(DefaultConfig);
+var socketEVM = new Web3__default['default'](wsUrl);
+var activeNetwork = DefaultConfig;
+function setSocketNetwork(config) {
+    // Setup X chain connection
+    connectSocketX(config);
+    // Setup EVM socket connection
+    connectSocketEVM(config);
+    activeNetwork = config;
+}
+function connectSocketX(config) {
+    if (socketX) {
+        socketX.close();
+    }
+    // Setup the X chain socket connection
+    var wsURL = wsUrlFromConfigX(config);
+    socketX = new avalanche$1.Socket(wsURL);
+    addListenersX(socketX);
+}
+function connectSocketEVM(config) {
+    try {
+        var wsUrl_1 = wsUrlFromConfigEVM(config);
+        socketEVM.setProvider(wsUrl_1);
+        addListenersEVM(socketEVM);
+    }
+    catch (e) {
+        console.info('EVM Websocket connection failed.');
+    }
+}
+/**
+ * Add the event listeners to the socket events.
+ * @param socket The socket instance to add event listeners to.
+ */
+function addListenersX(socket) {
+    socket.onopen = function () {
+        updateFilterAddresses();
+    };
+    socket.onmessage = function () {
+        WalletProvider.refreshInstanceBalancesX();
+    };
+    socket.onclose = function () { };
+    socket.onerror = function (error) {
+        console.log(error);
+    };
+}
+function addListenersEVM(provider) {
+    var sub = provider.eth.subscribe('newBlockHeaders');
+    sub.on('data', blockHeaderCallback);
+    sub.on('error', onErrorEVM);
+}
+function onErrorEVM(err) {
+    console.info(err);
+    connectSocketEVM(activeNetwork);
+}
+function blockHeaderCallback() {
+    WalletProvider.refreshInstanceBalancesC();
+}
+var BLOOM_SIZE = 1000;
+function updateFilterAddresses() {
+    if (!socketX) {
+        return;
+    }
+    var wallets = WalletProvider.instances;
+    var addrs = wallets.map(function (w) { return w.getAddressX(); });
+    var pubsub = new avalanche$1.PubSub();
+    var bloom = pubsub.newBloom(BLOOM_SIZE);
+    var addAddrs = pubsub.addAddresses(addrs);
+    socketX.send(bloom);
+    socketX.send(addAddrs);
+}
+
+function setNetwork(conf) {
+    setRpcNetwork(conf);
+    setSocketNetwork(conf);
+}
+// Default connection is Mainnet
+setNetwork(MainnetConfig);
+
+var index = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    setNetwork: setNetwork
+});
+
+// HD WALLET
+// Accounts are not used and the account index is fixed to 0
+// m / purpose' / coin_type' / account' / change / address_index
+var AVAX_TOKEN_INDEX = '9000';
+var AVAX_ACCOUNT_PATH = "m/44'/" + AVAX_TOKEN_INDEX + "'/0'"; // Change and index left out
+var ETH_ACCOUNT_PATH = "m/44'/60'/0'";
+var LEDGER_ETH_ACCOUNT_PATH = ETH_ACCOUNT_PATH + '/0/0';
+var INDEX_RANGE = 20; // a gap of at least 20 indexes is needed to claim an index unused
+var SCAN_SIZE = 70; // the total number of utxos to look at initially to calculate last index
+var SCAN_RANGE = SCAN_SIZE - INDEX_RANGE; // How many items are actually scanned
+var LEDGER_EXCHANGE_TIMEOUT = 90000;
+var MIN_EVM_SUPPORT_V = '0.5.3';
+
+var EvmWalletReadonly = /** @class */ (function () {
+    function EvmWalletReadonly(publicKey) {
+        this.balance = new avalanche$1.BN(0);
+        this.publicKey = publicKey;
+        this.address = '0x' + ethereumjsUtil.publicToAddress(publicKey).toString('hex');
+    }
+    EvmWalletReadonly.prototype.getBalance = function () {
+        return this.balance;
+    };
+    EvmWalletReadonly.prototype.getAddress = function () {
+        return ethers.ethers.utils.getAddress(this.address);
+    };
+    EvmWalletReadonly.prototype.updateBalance = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var bal;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, web3.eth.getBalance(this.address)];
+                    case 1:
+                        bal = _a.sent();
+                        this.balance = new avalanche$1.BN(bal);
+                        return [2 /*return*/, this.balance];
+                }
+            });
+        });
+    };
+    return EvmWalletReadonly;
+}());
+
+var EvmWallet = /** @class */ (function (_super) {
+    __extends(EvmWallet, _super);
+    function EvmWallet(key) {
+        var _this = this;
+        var pubKey = ethereumjsUtil.privateToPublic(key);
+        _this = _super.call(this, pubKey) || this;
+        _this.privateKey = key;
+        return _this;
+    }
+    EvmWallet.prototype.getPrivateKeyBech = function () {
+        return "PrivateKey-" + bintools$1.cb58Encode(avalanche$1.Buffer.from(this.privateKey));
+    };
+    EvmWallet.prototype.getKeyChain = function () {
+        var keychain = new evm.KeyChain(avalanche.getHRP(), 'C');
+        keychain.importKey(this.getPrivateKeyBech());
+        return keychain;
+    };
+    EvmWallet.prototype.getKeyPair = function () {
+        var keychain = new evm.KeyChain(avalanche.getHRP(), 'C');
+        return keychain.importKey(this.getPrivateKeyBech());
+    };
+    EvmWallet.prototype.signEVM = function (tx) {
+        return tx.sign(this.privateKey);
+    };
+    EvmWallet.prototype.signC = function (tx) {
+        return tx.sign(this.getKeyChain());
+    };
+    EvmWallet.prototype.getPrivateKeyHex = function () {
+        return this.privateKey.toString('hex');
+    };
+    return EvmWallet;
+}(EvmWalletReadonly));
 
 // Given an array of addresses, checks which chain each address was already used on
 function getAddressChains(addrs) {
@@ -3817,23 +4004,6 @@ var HdScanner = /** @class */ (function () {
         }
         return res;
     };
-    // updateKeychains() {
-    //     let keychainX = xChain.newKeyChain();
-    //     let keychainP = pChain.newKeyChain();
-    //
-    //     for (let i: number = 0; i <= this.index; i++) {
-    //         let key: AVMKeyPair | PlatformVMKeyPair;
-    //         if (this.chainId === 'X') {
-    //             key = this.getKeyForIndex(i) as AVMKeyPair;
-    //             (keychain as AVMKeyChain).addKey(key);
-    //         } else {
-    //             key = this.getKeyForIndex(i) as PlatformVMKeyPair;
-    //             (keychain as PlatformVMKeyChain).addKey(key);
-    //         }
-    //     }
-    //     this.keyChain = keychain;
-    //     return keychain;
-    // }
     HdScanner.prototype.getKeyChainX = function () {
         var keychain = xChain.newKeyChain();
         for (var i = 0; i <= this.index; i++) {
@@ -3874,45 +4044,6 @@ var HdScanner = /** @class */ (function () {
         this.keyCacheP[index] = keypair;
         return keypair;
     };
-    // getKeyForIndex<keyType extends AVMKeyPair | PlatformKeyPair>(index: number, chainId: HdChainType = 'X'): keyType {
-    //     // if (chainId === 'X' && this.keyCacheX[index]) {
-    //     //     return this.keyCacheX[index.to] as KeyType;
-    //     // }
-    //     // If key is cached return that
-    //     // let cacheExternal: AVMKeyPair | PlatformVMKeyPair
-    //
-    //     // if (this.chainId === 'X') {
-    //     //     cacheExternal = this.keyCache[index] as AVMKeyPair
-    //     // } else {
-    //     //     cacheExternal = this.keyCache[index] as PlatformVMKeyPair
-    //     // }
-    //     //
-    //     // if (cacheExternal) return cacheExternal
-    //
-    //     // let derivationPath: string = `${this.changePath}/${index.toString()}`;
-    //
-    //     // Get key from cache, if not generate it
-    //     // let key: HDKey;
-    //     // if (this.hdCache[index]) {
-    //     //     key = this.hdCache[index];
-    //     // } else {
-    //     //     key = this.masterKey.derive(derivationPath) as HDKey;
-    //     //     this.hdCache[index] = key;
-    //     // }
-    //
-    //     let hdKey = this.getHdKeyForIndex(index);
-    //     let pkHex = hdKey.privateKey.toString('hex');
-    //
-    //     let pkBuf: Buffer = new Buffer(pkHex, 'hex');
-    //
-    //     if (chainId === 'X') {
-    //         let keychain = xChain.newKeyChain();
-    //         return keychain.importKey(pkBuf) as keyType;
-    //     } else {
-    //         let keychain = pChain.newKeyChain();
-    //         return keychain.importKey(pkBuf) as keyType;
-    //     }
-    // }
     HdScanner.prototype.getHdKeyForIndex = function (index) {
         var key;
         if (this.addressCache[index]) {
@@ -3943,9 +4074,9 @@ var HdScanner = /** @class */ (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        if (!activeNetwork)
+                        if (!activeNetwork$1)
                             throw NO_NETWORK;
-                        if (!activeNetwork.explorerURL) return [3 /*break*/, 2];
+                        if (!activeNetwork$1.explorerURL) return [3 /*break*/, 2];
                         return [4 /*yield*/, this.findAvailableIndexExplorer(startIndex)];
                     case 1:
                         index = _a.sent();
@@ -4067,6 +4198,7 @@ var HDWalletAbstract = /** @class */ (function (_super) {
         _this.internalScan = new HdScanner(accountKey, true);
         _this.externalScan = new HdScanner(accountKey, false);
         _this.accountKey = accountKey;
+        updateFilterAddresses();
         return _this;
     }
     /**
@@ -4148,6 +4280,7 @@ var HDWalletAbstract = /** @class */ (function (_super) {
                     case 2:
                         indexInt = _a.sent();
                         this.emitAddressChange();
+                        updateFilterAddresses();
                         return [2 /*return*/, {
                                 internal: indexInt,
                                 external: indexExt,
@@ -4173,12 +4306,12 @@ var HDWalletAbstract = /** @class */ (function (_super) {
                         isAddrChange = false;
                         // Increment external index if the current address is in the utxo set
                         if (utxoAddrsStr.includes(addrExternalX)) {
-                            this.externalScan.increment();
+                            this.incrementExternal();
                             isAddrChange = true;
                         }
                         // Increment internal index if the current address is in the utxo set
                         if (utxoAddrsStr.includes(addrInternalX)) {
-                            this.internalScan.increment();
+                            this.incrementInternal();
                             isAddrChange = true;
                         }
                         if (isAddrChange)
@@ -4187,6 +4320,13 @@ var HDWalletAbstract = /** @class */ (function (_super) {
                 }
             });
         });
+    };
+    HDWalletAbstract.prototype.incrementExternal = function () {
+        this.externalScan.increment();
+        updateFilterAddresses();
+    };
+    HDWalletAbstract.prototype.incrementInternal = function () {
+        this.internalScan.increment();
     };
     HDWalletAbstract.prototype.getUtxosP = function () {
         return __awaiter(this, void 0, void 0, function () {
@@ -4203,7 +4343,7 @@ var HDWalletAbstract = /** @class */ (function (_super) {
                         addrExternalP = this.getAddressP();
                         // Increment external index if the current address is in the utxo set
                         if (utxoAddrsStr.includes(addrExternalP)) {
-                            this.externalScan.increment();
+                            this.incrementExternal();
                             this.emitAddressChange();
                         }
                         return [2 /*return*/, utxosP];
@@ -4365,8 +4505,12 @@ var SingletonWallet = /** @class */ (function (_super) {
         var pkHex = pkBuf.toString('hex');
         var pkBuffNative = Buffer.from(pkHex, 'hex');
         _this.evmWallet = new EvmWallet(pkBuffNative);
+        updateFilterAddresses();
         return _this;
     }
+    // socketSubscribe(){
+    //     socketX.
+    // }
     SingletonWallet.fromEvmKey = function (key) {
         var keyBuff = bintools$1.cb58Encode(avalanche$1.Buffer.from(key, 'hex'));
         var avmKeyStr = "PrivateKey-" + keyBuff;
@@ -6426,7 +6570,7 @@ var LedgerWallet = /** @class */ (function (_super) {
             var assetId = bintools$1.cb58Encode(item.getAssetID());
             // @ts-ignore
             // if (assetId !== store.state.Assets.AVA_ASSET_ID) {
-            if (assetId !== activeNetwork.avaxID) {
+            if (assetId !== activeNetwork$1.avaxID) {
                 isAvaxOnly = false;
             }
             var sigidxs = item.getInput().getSigIdxs();
@@ -7374,7 +7518,7 @@ exports.ERC20 = Erc20;
 exports.Keystore = keystore;
 exports.LedgerWallet = LedgerWallet;
 exports.MnemonicWallet = MnemonicWallet;
+exports.Network = index;
 exports.NetworkConstants = constants;
 exports.SingletonWallet = SingletonWallet;
 exports.Utils = utils$1;
-exports.setNetwork = setNetwork;
