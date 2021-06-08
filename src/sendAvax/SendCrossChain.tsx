@@ -1,5 +1,6 @@
 import React, {Component} from 'react'
 import {
+  Alert,
   Appearance,
   Button,
   FlatList,
@@ -17,6 +18,7 @@ import {Colors} from 'react-native/Libraries/NewAppScreen'
 import CommonViewModel from '../CommonViewModel'
 import SendCrossChainViewModel, {Chain, ChainRenderItem} from './SendCrossChainViewModel';
 import {MnemonicWallet} from '../../wallet_sdk';
+import Loader from "../common/Loader"
 
 type SendCrossChainProps = {
   wallet: MnemonicWallet,
@@ -24,6 +26,8 @@ type SendCrossChainProps = {
 }
 type SendCrossChainState = {
   isDarkMode: boolean,
+  loaderVisible: boolean,
+  loaderMsg: string,
   backgroundStyle: any,
   sourceChain: Chain,
   destinationChain: Chain,
@@ -47,6 +51,8 @@ class SendCrossChain extends Component<SendCrossChainProps, SendCrossChainState>
       destinationChain: Chain.P,
       transferAmount: '',
       isDarkMode: false,
+      loaderVisible: false,
+      loaderMsg: '',
       selectSourceChainVisible: false,
       selectSDestinationChainVisible: false,
       availableDestinationChains: [],
@@ -57,36 +63,31 @@ class SendCrossChain extends Component<SendCrossChainProps, SendCrossChainState>
   }
 
   componentDidMount(): void {
-    this.commonViewModel.isDarkMode.subscribe(value => {
-      this.setState({isDarkMode: value})
-    })
-    this.commonViewModel.backgroundStyle.subscribe(value => {
-      this.setState({backgroundStyle: value})
-    })
-
-    this.viewModel.balance.subscribe(value => {
-      this.setState({balance: value})
-    })
-    this.viewModel.availableDestinationChains.subscribe(value => {
-      this.setState({
-        availableDestinationChains: value
-      })
-    })
-    this.viewModel.sourceChain.subscribe(value => {
-      this.setState({
-        sourceChain: value,
-        selectSourceChainVisible: false
-      })
-    })
-    this.viewModel.destinationChain.subscribe(value => {
-      this.setState({
-        destinationChain: value,
-        selectSDestinationChainVisible: false
-      })
-    })
+    this.commonViewModel.isDarkMode.subscribe(value => this.setState({isDarkMode: value}))
+    this.commonViewModel.backgroundStyle.subscribe(value => this.setState({backgroundStyle: value}))
+    this.viewModel.balance.subscribe(value => this.setState({balance: value}))
+    this.viewModel.availableDestinationChains.subscribe(value => this.setState({availableDestinationChains: value}))
+    this.viewModel.sourceChain.subscribe(value => this.setState({
+      sourceChain: value,
+      selectSourceChainVisible: false
+    }))
+    this.viewModel.destinationChain.subscribe(value => this.setState({
+      destinationChain: value,
+      selectSDestinationChainVisible: false
+    }))
+    this.viewModel.loaderMsg.subscribe(value => this.setState({loaderMsg: value}))
+    this.viewModel.loaderVisible.subscribe(value => this.setState({loaderVisible: value}))
   }
 
   componentWillUnmount(): void {
+  }
+
+  onSend(): void {
+    this.viewModel.makeTransfer(this.state.sourceChain, this.state.destinationChain, this.state.sendAmount)
+      .subscribe({
+        error: err => console.error(err),
+        complete:() => Alert.alert("Finished")
+      })
   }
 
   render(): Element {
@@ -104,6 +105,14 @@ class SendCrossChain extends Component<SendCrossChainProps, SendCrossChainState>
 
     return (
       <SafeAreaView style={this.state.backgroundStyle}>
+
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={this.state.loaderVisible}>
+          <Loader message={this.state.loaderMsg}/>
+        </Modal>
+
         <Text style={[styles.text, {color: this.state.isDarkMode ? Colors.white : Colors.black},]}>
           Send Cross Chain
         </Text>
@@ -178,9 +187,7 @@ class SendCrossChain extends Component<SendCrossChainProps, SendCrossChainState>
           <View style={styles.button}>
             <Button
               title={'Send'}
-              onPress={() => {
-                // this.props.onSend(this.state.addressXToSendTo, this.state.sendAmount)
-              }}/>
+              onPress={ev => this.onSend()}/>
           </View>
         </View>
       </SafeAreaView>

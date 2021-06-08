@@ -9,7 +9,6 @@ type LoaderProps = {
 type LoaderState = {
   isDarkMode: boolean,
   backgroundStyle: any,
-  message: string,
 }
 
 class Loader extends Component<LoaderProps, LoaderState> {
@@ -20,7 +19,6 @@ class Loader extends Component<LoaderProps, LoaderState> {
     this.state = {
       isDarkMode: false,
       backgroundStyle: {},
-      message: this.props.message
     }
   }
 
@@ -46,7 +44,7 @@ class Loader extends Component<LoaderProps, LoaderState> {
             styles.text,
             {color: this.state.isDarkMode ? Colors.white : Colors.black},
           ]}>
-          {this.state.message}
+          {this.props.message}
         </Text>
       </View>
     )
