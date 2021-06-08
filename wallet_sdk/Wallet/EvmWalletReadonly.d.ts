@@ -6,6 +6,7 @@ export default class EvmWalletReadonly {
     address: string;
     publicKey: Buffer;
     constructor(publicKey: Buffer);
+    getBalance(): BN;
     getAddress(): string;
     updateBalance(): Promise<BN>;
 }

@@ -25,13 +25,28 @@ export declare abstract class WalletProvider {
     abstract getAllAddressesX(): string[];
     abstract getAllAddressesP(): string[];
     protected emitter: EventEmitter;
+    static instances: WalletProvider[];
     protected constructor();
+    /**
+     * Refreshes X chain UTXOs for every wallet instance
+     */
+    static refreshInstanceBalancesX(): void;
+    /**
+     * Refreshes X chain UTXOs for every wallet instance
+     */
+    static refreshInstanceBalancesC(): void;
+    /**
+     * Call this when you are done with a wallet instance.
+     * You MUST call this function to avoid memory leaks.
+     */
+    destroy(): void;
     on(event: WalletEventType, listener: (...args: any[]) => void): void;
     off(event: WalletEventType, listener: (...args: any[]) => void): void;
     protected emit(event: WalletEventType, args: WalletEventArgsType): void;
     protected emitAddressChange(): void;
     protected emitBalanceChangeX(): void;
     protected emitBalanceChangeP(): void;
+    protected emitBalanceChangeC(): void;
     /**
      * The X chain UTXOs of the wallet's current state
      */
@@ -57,7 +72,7 @@ export declare abstract class WalletProvider {
      * Sends AVAX to another address on the C chain.
      * @param to Hex address to send AVAX to.
      * @param amount Amount of AVAX to send, represented in WEI format.
-     * @param gasPrice Gas price in gWEI format
+     * @param gasPrice Gas price in WEI format
      * @param gasLimit Gas limit
      *
      * @return Returns the transaction hash
@@ -67,7 +82,7 @@ export declare abstract class WalletProvider {
      * Makes a transfer call on a ERC20 contract.
      * @param to Hex address to transfer tokens to.
      * @param amount Amount of the ERC20 token to send, donated in the token's correct denomination.
-     * @param gasPrice Gas price in gWEI format
+     * @param gasPrice Gas price in WEI format
      * @param gasLimit Gas limit
      * @param contractAddress Contract address of the ERC20 token
      */
@@ -119,6 +134,7 @@ export declare abstract class WalletProvider {
      * - Does not refresh wallet balance.
      */
     getAvaxBalanceX(): AssetBalanceX;
+    getAvaxBalanceC(): BN;
     /**
      * Returns the P chain AVAX balance of the current wallet state.
      * - Does not make a network request.
@@ -182,5 +198,6 @@ export declare abstract class WalletProvider {
     getHistoryX(limit?: number): Promise<ITransactionData[]>;
     getHistoryP(limit?: number): Promise<ITransactionData[]>;
     getHistoryC(limit?: number): Promise<ITransactionData[]>;
-    getHistory(limit?: number): Promise<(import("../History/types").iHistoryBaseTx | import("../History/types").iHistoryExport | import("../History/types").iHistoryAddDelegator)[]>;
+    getHistoryEVM(): Promise<import("../History/types").ITransactionDataEVM[]>;
+    getHistory(limit?: number): Promise<(import("../History/types").iHistoryBaseTx | import("../History/types").iHistoryImportExport | import("../History/types").iHistoryAddDelegator | import("../History/types").iHistoryEVMTx)[]>;
 }
