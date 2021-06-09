@@ -86,7 +86,7 @@ class SendCrossChain extends Component<SendCrossChainProps, SendCrossChainState>
     this.viewModel.makeTransfer(this.state.sourceChain, this.state.destinationChain, this.state.sendAmount)
       .subscribe({
         error: err => console.error(err),
-        complete:() => Alert.alert("Finished")
+        complete: () => Alert.alert("Finished")
       })
   }
 
