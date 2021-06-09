@@ -38,19 +38,10 @@ class App extends Component<AppProps, AppState> {
   }
 
   componentDidMount() {
-    this.commonViewModel.isDarkMode.subscribe(value => {
-      this.setState({isDarkMode: value})
-    })
-    this.commonViewModel.backgroundStyle.subscribe(value => {
-      this.setState({backgroundStyle: value})
-    })
-
     this.viewModel.onComponentMount()
-
-    this.viewModel.selectedView.subscribe(value => {
-      this.setState({selectedView: value})
-    })
-
+    this.commonViewModel.isDarkMode.subscribe(value => this.setState({isDarkMode: value}))
+    this.commonViewModel.backgroundStyle.subscribe(value => this.setState({backgroundStyle: value}))
+    this.viewModel.selectedView.subscribe(value => this.setState({selectedView: value}))
   }
 
   onEnterWallet(mnemonic: string): void {

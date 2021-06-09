@@ -64,39 +64,17 @@ class MainView extends Component<MainViewProps, MainViewState> {
   componentDidMount(): void {
     this.viewModel.onComponentMount()
 
-    this.commonViewModel.isDarkMode.subscribe(value => {
-      this.setState({isDarkMode: value})
-    })
-    this.commonViewModel.backgroundStyle.subscribe(value => {
-      this.setState({backgroundStyle: value})
-    })
-    this.viewModel.avaxPrice.subscribe(value => {
-      this.setState({avaxPrice: value})
-    })
-    this.viewModel.walletCAddress.subscribe(value => {
-      this.setState({walletCAddress: value})
-    })
-    this.viewModel.walletEvmAddrBech.subscribe(value => {
-      this.setState({walletEvmAddress: value})
-    })
-    this.viewModel.addressX.subscribe(value => {
-      this.setState({addressX: value})
-    })
-    this.viewModel.addressP.subscribe(value => {
-      this.setState({addressP: value})
-    })
-    this.viewModel.addressC.subscribe(value => {
-      this.setState({addressC: value})
-    })
-    this.viewModel.availableX.subscribe(value => {
-      this.setState({availableX: value})
-    })
-    this.viewModel.availableP.subscribe(value => {
-      this.setState({availableP: value})
-    })
-    this.viewModel.availableC.subscribe(value => {
-      this.setState({availableC: value})
-    })
+    this.commonViewModel.isDarkMode.subscribe(value => this.setState({isDarkMode: value}))
+    this.commonViewModel.backgroundStyle.subscribe(value => this.setState({backgroundStyle: value}))
+    this.viewModel.avaxPrice.subscribe(value => this.setState({avaxPrice: value}))
+    this.viewModel.walletCAddress.subscribe(value => this.setState({walletCAddress: value}))
+    this.viewModel.walletEvmAddrBech.subscribe(value => this.setState({walletEvmAddress: value}))
+    this.viewModel.addressX.subscribe(value => this.setState({addressX: value}))
+    this.viewModel.addressP.subscribe(value => this.setState({addressP: value}))
+    this.viewModel.addressC.subscribe(value => this.setState({addressC: value}))
+    this.viewModel.availableX.subscribe(value => this.setState({availableX: value}))
+    this.viewModel.availableP.subscribe(value => this.setState({availableP: value}))
+    this.viewModel.availableC.subscribe(value => this.setState({availableC: value}))
 
     this.viewModel.onResetHdIndices()
       .subscribe({
@@ -236,20 +214,10 @@ class MainView extends Component<MainViewProps, MainViewState> {
         </Modal>
         <Button
           title={"Send AVAX X"}
-          onPress={() => {
-            this.setState({
-              sendXVisible: true,
-            })
-          }}
-        />
+          onPress={() => this.setState({sendXVisible: true})}/>
         <Button
           title={"Send AVAX C"}
-          onPress={() => {
-            this.setState({
-              sendCVisible: true,
-            })
-          }}
-        />
+          onPress={() => this.setState({sendCVisible: true})}/>
 
         <Modal
           animationType="slide"
