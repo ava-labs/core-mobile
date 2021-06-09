@@ -2,7 +2,6 @@ import React, {Component} from "react"
 import {Alert, Appearance, Button, Modal, ScrollView, SectionList, StyleSheet, Text} from "react-native"
 import {Colors} from "react-native/Libraries/NewAppScreen"
 import CommonViewModel from "../CommonViewModel"
-import Clock from "./Clock"
 import Header from "./Header"
 import MainViewViewModel from "./MainViewViewModel"
 import SendAvaxX from "../sendAvax/SendAvaxX"
@@ -10,6 +9,7 @@ import {MnemonicWallet} from "../../wallet_sdk"
 import SendAvaxC from "../sendAvax/SendAvaxC"
 import SendCrossChain from "../sendAvax/SendCrossChain";
 import Loader from "../common/Loader"
+import Validate from "../earn/Validate"
 
 type MainViewProps = {
   wallet: MnemonicWallet,
@@ -29,6 +29,7 @@ type MainViewState = {
   sendXVisible: boolean
   sendCVisible: boolean
   crossChainVisible: boolean
+  validateVisible: boolean
   walletCAddress: string
   walletEvmAddress: string
 }
@@ -53,6 +54,7 @@ class MainView extends Component<MainViewProps, MainViewState> {
       sendXVisible: false,
       sendCVisible: false,
       crossChainVisible: false,
+      validateVisible: false,
       walletCAddress: "",
       walletEvmAddress: "",
     }
@@ -180,7 +182,6 @@ class MainView extends Component<MainViewProps, MainViewState> {
           <Loader message={"Loading wallet..."}/>
         </Modal>
 
-        <Clock/>
         <Header/>
         <SectionList
           sections={sectionListData}
@@ -268,16 +269,23 @@ class MainView extends Component<MainViewProps, MainViewState> {
         </Modal>
         <Button
           title={"Cross chain"}
-          onPress={() => {
-            this.setState({
-              crossChainVisible: true,
-            })
-          }}
-        />
+          onPress={() => this.setState({crossChainVisible: true})}/>
+
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={this.state.validateVisible}>
+          <Validate
+            wallet={this.viewModel.wallet.value}
+            onClose={() => this.setState({validateVisible: false})}/>
+        </Modal>
+        <Button
+          title={"Validate"}
+          onPress={() => this.setState({validateVisible: true})}/>
+
         <Button
           title={"LogOut"}
-          onPress={() => this.onLogout()}
-        />
+          onPress={() => this.onLogout()}/>
       </ScrollView>
     )
   }
