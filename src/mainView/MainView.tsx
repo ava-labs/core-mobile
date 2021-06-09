@@ -101,12 +101,11 @@ class MainView extends Component<MainViewProps, MainViewState> {
     this.viewModel.onResetHdIndices()
       .subscribe({
         next: value => console.log(value),
-        error: err => console.error(err),
-        complete: () => {
-          this.setState({
-            loaderVisible: false
-          })
+        error: err => {
+          this.onLogout()
+          Alert.alert("Error", err.message)
         },
+        complete: () => this.setState({loaderVisible: false}),
       })
   }
 
