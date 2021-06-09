@@ -6,6 +6,7 @@ import {MnemonicWallet} from '../../wallet_sdk';
 import Loader from "../common/Loader"
 import ValidateViewModel from "./ValidateViewModel"
 import DateTimePickerModal from "react-native-modal-datetime-picker";
+import ValidateConfirm from "./ValidateConfirm"
 
 type ValidateProps = {
   wallet: MnemonicWallet,
@@ -23,6 +24,7 @@ type ValidateState = {
   stakeAmount: string,
   delegationFee: string,
   rewardAddress: string,
+  validateConfirmVisible: boolean,
 }
 
 class Validate extends Component<ValidateProps, ValidateState> {
@@ -43,6 +45,7 @@ class Validate extends Component<ValidateProps, ValidateState> {
       stakeAmount: '0.00',
       delegationFee: '2',
       rewardAddress: '2',
+      validateConfirmVisible: false,
     }
     this.viewModel = new ValidateViewModel(props.wallet)
   }
@@ -74,20 +77,29 @@ class Validate extends Component<ValidateProps, ValidateState> {
   }
 
   onConfirm(): void {
+    this.setState({validateConfirmVisible: true})
+  }
 
+  onSubmit(): void {
+    this.setState({validateConfirmVisible: false})
+    this.viewModel.submitValidator(
+      this.state.nodeId,
+      this.state.stakeAmount,
+      this.viewModel.startDate.value.toLocaleString(),
+      this.state.endDate,
+      this.state.delegationFee,
+      this.state.rewardAddress
+    )
+      .subscribe({
+        error: err => Alert.alert("Error", err.message),
+        complete: () => Alert.alert("Finished")
+      })
   }
 
   render(): Element {
 
     return (
       <SafeAreaView style={this.state.backgroundStyle}>
-
-        <Modal
-          animationType="fade"
-          transparent={true}
-          visible={this.state.loaderVisible}>
-          <Loader message={this.state.loaderMsg}/>
-        </Modal>
 
         <Text style={[styles.text, {color: this.state.isDarkMode ? Colors.white : Colors.black},]}>
           Validate
@@ -159,6 +171,24 @@ class Validate extends Component<ValidateProps, ValidateState> {
               onPress={() => this.onConfirm()}/>
           </View>
         </View>
+
+
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={this.state.validateConfirmVisible}>
+          <ValidateConfirm nodeId={this.state.nodeId} stakingAmount={this.state.stakeAmount}
+                           endDate={this.state.endDate} delegationFee={this.state.delegationFee}
+                           rewardAddress={this.state.rewardAddress} onSubmit={() => this.onSubmit()}
+                           onClose={() => this.setState({validateConfirmVisible: false})}/>
+        </Modal>
+
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={this.state.loaderVisible}>
+          <Loader message={this.state.loaderMsg}/>
+        </Modal>
       </SafeAreaView>
     )
   }
