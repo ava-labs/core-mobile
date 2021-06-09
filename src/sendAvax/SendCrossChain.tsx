@@ -166,11 +166,7 @@ class SendCrossChain extends Component<SendCrossChainProps, SendCrossChainState>
         </Text>
         <TextInput
           style={styles.input}
-          onChangeText={text => {
-            this.setState({
-              sendAmount: text
-            })
-          }}
+          onChangeText={text => this.setState({sendAmount: text})}
           value={this.state.sendAmount}/>
 
 
