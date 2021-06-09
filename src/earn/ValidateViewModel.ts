@@ -1,7 +1,30 @@
-import {MnemonicWallet} from '../../wallet_sdk'
-import {BehaviorSubject, EMPTY, interval, Observable, Subscription, throwError, zip} from 'rxjs'
+import {BN} from 'avalanche';
+import {MnemonicWallet, Utils} from '../../wallet_sdk'
+import {
+  asyncScheduler,
+  BehaviorSubject,
+  concat,
+  defer,
+  EMPTY,
+  from,
+  interval,
+  Observable,
+  of,
+  Subscription,
+  throwError,
+  zip
+} from 'rxjs'
 import moment from 'moment'
-import {concatMap, map, take} from "rxjs/operators"
+import {concatMap, count, map, take, tap} from "rxjs/operators"
+
+declare type ValidatorInputs = {
+  nodeId: string
+  amount: BN
+  startDate: Date
+  endDate: Date
+  delegationFee: number
+  rewardAddress: string
+}
 
 export default class {
   private intervalSub!: Subscription
@@ -50,5 +73,49 @@ export default class {
         return EMPTY
       })
     )
+  }
+
+  submitValidator(nodeId: string, amount: string, startDate: string, endDate: string, delegationFee: string, rewardAddress: string): Observable<number> {
+    return zip(
+      this.wallet,
+      this.validateAndConvertInputs(nodeId, amount, startDate, endDate, delegationFee, rewardAddress),
+    ).pipe(
+      take(1),
+      concatMap(([wallet, inputs]) => {
+        return concat(
+          of("start loader"),
+          from(wallet.validate(inputs.nodeId, inputs.amount, inputs.startDate, inputs.endDate, inputs.delegationFee, inputs.rewardAddress)),
+          asyncScheduler
+        )
+      }),
+      count((value: string, index: number) => {
+        this.setLoaderVisibilityAndMsg(index)
+        return true
+      }),
+      tap({
+        complete: () => this.loaderVisible.next(false),
+        error: err => this.loaderVisible.next(false)
+      })
+    )
+  }
+
+  private setLoaderVisibilityAndMsg(index: number) {
+    switch (index) {
+      case 0:
+        this.loaderMsg.next("Pending...")
+        break
+    }
+    this.loaderVisible.next(true)
+  }
+
+  private validateAndConvertInputs(nodeId: string, amount: string, startDate: string, endDate: string, delegationFee: string, rewardAddress: string): Observable<ValidatorInputs> {
+    return defer(() => of({
+      nodeId: nodeId, //todo validate this?
+      amount: Utils.numberToBN(amount, 9), //fixme  magic number
+      startDate: moment(startDate).toDate(),
+      delegationFee: parseInt(delegationFee),
+      endDate: moment(endDate).toDate(),
+      rewardAddress: rewardAddress //todo validate this?
+    }))
   }
 }
