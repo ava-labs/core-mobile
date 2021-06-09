@@ -26,6 +26,7 @@ type MainViewState = {
   availableX: string
   availableP: string
   availableC: string
+  stakingAmount: string
   sendXVisible: boolean
   sendCVisible: boolean
   crossChainVisible: boolean
@@ -51,6 +52,7 @@ class MainView extends Component<MainViewProps, MainViewState> {
       availableX: "",
       availableP: "",
       availableC: "",
+      stakingAmount: "",
       sendXVisible: false,
       sendCVisible: false,
       crossChainVisible: false,
@@ -75,6 +77,7 @@ class MainView extends Component<MainViewProps, MainViewState> {
     this.viewModel.availableX.subscribe(value => this.setState({availableX: value}))
     this.viewModel.availableP.subscribe(value => this.setState({availableP: value}))
     this.viewModel.availableC.subscribe(value => this.setState({availableC: value}))
+    this.viewModel.stakingAmount.subscribe(value => this.setState({stakingAmount: value}))
 
     this.viewModel.onResetHdIndices()
       .subscribe({
@@ -147,6 +150,10 @@ class MainView extends Component<MainViewProps, MainViewState> {
       {
         title: "Available (C)",
         data: [this.state.availableC],
+      },
+      {
+        title: "Staking",
+        data: [this.state.stakingAmount],
       },
     ]
 

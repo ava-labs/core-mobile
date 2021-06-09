@@ -14,6 +14,7 @@ export default class {
   addressP!: Observable<string>
   addressC!: Observable<string>
   availableC!: Observable<string>
+  stakingAmount!: Observable<string>
   private avaxBalanceX!: Observable<AssetBalanceX>
   private avaxBalanceP!: Observable<AssetBalanceP>
   availableX!: Observable<string>
@@ -47,6 +48,14 @@ export default class {
       map(balance => {
         const symbol = 'AVAX'
         return Utils.bnToAvaxC(balance) + ' ' + symbol
+      })
+    )
+
+    this.stakingAmount = this.wallet.pipe(
+      concatMap(wallet => wallet.getStake()),
+      map(stake => {
+        const symbol = 'AVAX'
+        return Utils.bnToLocaleString(stake, 9) + ' ' + symbol
       })
     )
 
