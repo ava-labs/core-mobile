@@ -90,6 +90,7 @@ class MainView extends Component<MainViewProps, MainViewState> {
   }
 
   componentWillUnmount(): void {
+    this.viewModel.onComponentUnMount()
   }
 
   private onSendX(addressX: string, amount: string): void {
