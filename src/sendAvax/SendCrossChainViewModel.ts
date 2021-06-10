@@ -2,7 +2,7 @@ import {BN} from 'avalanche';
 import {MnemonicWallet, Utils} from '../../wallet_sdk'
 import {asyncScheduler, BehaviorSubject, concat, defer, Observable, of} from 'rxjs';
 import {AssetBalanceP, AssetBalanceX} from '../../wallet_sdk/Wallet/types';
-import {count, map, subscribeOn, tap} from 'rxjs/operators';
+import {count, map, tap} from 'rxjs/operators';
 
 export enum Chain {
   X = 'X',
@@ -91,8 +91,7 @@ export default class {
     const bnAmount = Utils.numberToBN(amount, denomination)
     const exportOp: Observable<string> = this.getExportOpForSrcDestPair(srcChain, bnAmount, destChain)
     const importOp: Observable<string> = this.getImportOpForSrcDestPair(destChain, srcChain)
-    return concat(of("startLoader"), exportOp, importOp).pipe(
-      subscribeOn(asyncScheduler),
+    return concat(of("startLoader"), exportOp, importOp, asyncScheduler).pipe(
       count((value: string, index: number) => {
         this.setLoaderVisibilityAndMsg(index, srcChain, destChain)
         return true
