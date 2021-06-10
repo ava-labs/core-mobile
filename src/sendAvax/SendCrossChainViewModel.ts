@@ -1,8 +1,7 @@
-import {BN} from 'avalanche';
-import {MnemonicWallet, Utils} from '../../wallet_sdk'
 import {asyncScheduler, BehaviorSubject, concat, defer, Observable, of} from 'rxjs';
-import {AssetBalanceP, AssetBalanceX} from '../../wallet_sdk/Wallet/types';
 import {count, map, tap} from 'rxjs/operators';
+import {BN, MnemonicWallet, Utils} from "@avalabs/avalanche-wallet-sdk"
+import {AssetBalanceP, AssetBalanceRawX} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/types"
 
 export enum Chain {
   X = 'X',
@@ -50,8 +49,8 @@ export default class {
       map(srcChain => {
         switch (srcChain) {
           case Chain.X:
-            const assetBalanceX: AssetBalanceX = this.wallet.value.getAvaxBalanceX()
-            return Utils.bnToAvaxX(assetBalanceX.unlocked) + ' ' + assetBalanceX.meta.symbol
+            const assetBalanceX: AssetBalanceRawX = this.wallet.value.getAvaxBalanceX()
+            return Utils.bnToAvaxX(assetBalanceX.unlocked) + ' AVAX'
           case Chain.P:
             const assetBalanceP: AssetBalanceP = this.wallet.value.getAvaxBalanceP()
             return Utils.bnToAvaxP(assetBalanceP.unlocked) + ' AVAX'
