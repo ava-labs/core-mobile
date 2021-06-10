@@ -1,6 +1,6 @@
 {
   "name": "avalanche-wallet-apps",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "private": true,
   "scripts": {
     "android": "react-native run-android",
@@ -8,7 +8,7 @@
     "start": "react-native start",
     "test": "jest",
     "lint": "eslint .",
-    "postversion": "react-native-version"
+    "postversion": "react-native-version --never-amend"
   },
   "dependencies": {
     "@ethereumjs/common": "^2.2.0",
