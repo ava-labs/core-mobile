@@ -1,9 +1,8 @@
-import {BN} from 'avalanche';
-import {asyncScheduler, BehaviorSubject, from, Observable, of, zip} from "rxjs"
-import {MnemonicWallet, Utils} from "../../wallet_sdk"
+import {asyncScheduler, BehaviorSubject, from, merge, Observable, of, zip} from "rxjs"
 import WalletSDK from "../WalletSDK"
 import {concatMap, delay, filter, map, retryWhen, subscribeOn, take, tap} from "rxjs/operators"
-import {AssetBalanceP, iWalletAddressChanged, WalletBalanceX} from "../../wallet_sdk/Wallet/types"
+import {BN, MnemonicWallet, Utils} from "@avalabs/avalanche-wallet-sdk"
+import {AssetBalanceP, iWalletAddressChanged, WalletBalanceX} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/types"
 
 enum WalletEvents {
   AddressChanged = "addressChanged",
@@ -47,7 +46,7 @@ export default class {
       concatMap(wallet => wallet.getStake()),
       map(stake => {
         const symbol = 'AVAX'
-        return Utils.bnToLocaleString(stake, 9) + ' ' + symbol
+        return Utils.bnToLocaleString(stake.staked, 9) + ' ' + symbol
       })
     )
 
@@ -69,11 +68,13 @@ export default class {
       })
     )
 
-    this.availableC = this.newBalanceC.pipe(
-      filter(value => value !== null),
+    this.availableC = merge(
+      this.wallet.value.evmWallet.updateBalance(),
+      this.newBalanceC.pipe(filter(value => value !== null))
+    ).pipe(
       map(balance => {
         const symbol = 'AVAX'
-        return Utils.bnToAvaxC(<BN>balance) + ' ' + symbol
+        return Utils.bnToAvaxC(balance) + ' ' + symbol
       })
     )
   }
@@ -112,7 +113,7 @@ export default class {
     ).pipe(
       take(1),
       concatMap(([wallet, amount, toAddress]) => {
-        const denomination = wallet.getAvaxBalanceX().meta.denomination
+        const denomination = 9 //todo magic number
         const bnAmount = Utils.numberToBN(amount, denomination)
         return wallet.sendAvaxX(toAddress, bnAmount, memo)
       }),

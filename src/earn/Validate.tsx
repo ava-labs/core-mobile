@@ -2,12 +2,12 @@ import React, {Component} from 'react'
 import {Alert, Appearance, Button, Modal, SafeAreaView, StyleSheet, Text, TextInput, View} from 'react-native'
 import {Colors} from 'react-native/Libraries/NewAppScreen'
 import CommonViewModel from '../CommonViewModel'
-import {MnemonicWallet} from '../../wallet_sdk';
 import Loader from "../common/Loader"
 import ValidateViewModel from "./ValidateViewModel"
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import ValidateConfirm from "./ValidateConfirm"
 import {debounceTime} from "rxjs/operators"
+import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 
 type ValidateProps = {
   wallet: MnemonicWallet,
