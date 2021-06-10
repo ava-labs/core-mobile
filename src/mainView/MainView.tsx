@@ -81,7 +81,6 @@ class MainView extends Component<MainViewProps, MainViewState> {
 
     this.viewModel.onResetHdIndices()
       .subscribe({
-        next: value => console.log(value),
         error: err => {
           this.onLogout()
           Alert.alert("Error", err.message)

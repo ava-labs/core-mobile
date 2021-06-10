@@ -7,6 +7,7 @@ import Loader from "../common/Loader"
 import ValidateViewModel from "./ValidateViewModel"
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import ValidateConfirm from "./ValidateConfirm"
+import {debounceTime} from "rxjs/operators"
 
 type ValidateProps = {
   wallet: MnemonicWallet,
@@ -53,7 +54,9 @@ class Validate extends Component<ValidateProps, ValidateState> {
   componentDidMount(): void {
     this.commonViewModel.isDarkMode.subscribe(value => this.setState({isDarkMode: value}))
     this.commonViewModel.backgroundStyle.subscribe(value => this.setState({backgroundStyle: value}))
-    this.viewModel.loaderVisible.subscribe(value => this.setState({loaderVisible: value}))
+    this.viewModel.loaderVisible.pipe(
+      debounceTime(300) //fixes problem with loader hanging if setstate changes state too quickly
+    ).subscribe(value => this.setState({loaderVisible: value}))
     this.viewModel.loaderMsg.subscribe(value => this.setState({loaderMsg: value}))
     this.viewModel.endDate.subscribe(value => this.setState({endDate: value.toLocaleString()}))
     this.viewModel.stakingDuration.subscribe(value => this.setState({stakingDuration: value}))

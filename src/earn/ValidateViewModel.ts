@@ -6,7 +6,6 @@ import {
   concat,
   defer,
   EMPTY,
-  from,
   interval,
   Observable,
   of,
@@ -84,7 +83,7 @@ export default class {
       concatMap(([wallet, inputs]) => {
         return concat(
           of("start loader"),
-          from(wallet.validate(inputs.nodeId, inputs.amount, inputs.startDate, inputs.endDate, inputs.delegationFee, inputs.rewardAddress)),
+          defer(() => wallet.validate(inputs.nodeId, inputs.amount, inputs.startDate, inputs.endDate, inputs.delegationFee, inputs.rewardAddress)),
           asyncScheduler
         )
       }),
