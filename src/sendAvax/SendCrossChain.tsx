@@ -86,7 +86,7 @@ class SendCrossChain extends Component<SendCrossChainProps, SendCrossChainState>
     this.viewModel.makeTransfer(this.state.sourceChain, this.state.destinationChain, this.state.sendAmount)
       .subscribe({
         error: err => console.error(err),
-        complete:() => Alert.alert("Finished")
+        complete: () => Alert.alert("Finished")
       })
   }
 
@@ -166,11 +166,7 @@ class SendCrossChain extends Component<SendCrossChainProps, SendCrossChainState>
         </Text>
         <TextInput
           style={styles.input}
-          onChangeText={text => {
-            this.setState({
-              sendAmount: text
-            })
-          }}
+          onChangeText={text => this.setState({sendAmount: text})}
           value={this.state.sendAmount}/>
 
 

@@ -2,7 +2,6 @@ import React, {Component} from "react"
 import {Alert, Appearance, Button, Modal, ScrollView, SectionList, StyleSheet, Text} from "react-native"
 import {Colors} from "react-native/Libraries/NewAppScreen"
 import CommonViewModel from "../CommonViewModel"
-import Clock from "./Clock"
 import Header from "./Header"
 import MainViewViewModel from "./MainViewViewModel"
 import SendAvaxX from "../sendAvax/SendAvaxX"
@@ -10,6 +9,7 @@ import {MnemonicWallet} from "../../wallet_sdk"
 import SendAvaxC from "../sendAvax/SendAvaxC"
 import SendCrossChain from "../sendAvax/SendCrossChain";
 import Loader from "../common/Loader"
+import Validate from "../earn/Validate"
 
 type MainViewProps = {
   wallet: MnemonicWallet,
@@ -26,9 +26,11 @@ type MainViewState = {
   availableX: string
   availableP: string
   availableC: string
+  stakingAmount: string
   sendXVisible: boolean
   sendCVisible: boolean
   crossChainVisible: boolean
+  validateVisible: boolean
   walletCAddress: string
   walletEvmAddress: string
 }
@@ -50,9 +52,11 @@ class MainView extends Component<MainViewProps, MainViewState> {
       availableX: "",
       availableP: "",
       availableC: "",
+      stakingAmount: "",
       sendXVisible: false,
       sendCVisible: false,
       crossChainVisible: false,
+      validateVisible: false,
       walletCAddress: "",
       walletEvmAddress: "",
     }
@@ -62,49 +66,26 @@ class MainView extends Component<MainViewProps, MainViewState> {
   componentDidMount(): void {
     this.viewModel.onComponentMount()
 
-    this.commonViewModel.isDarkMode.subscribe(value => {
-      this.setState({isDarkMode: value})
-    })
-    this.commonViewModel.backgroundStyle.subscribe(value => {
-      this.setState({backgroundStyle: value})
-    })
-    this.viewModel.avaxPrice.subscribe(value => {
-      this.setState({avaxPrice: value})
-    })
-    this.viewModel.walletCAddress.subscribe(value => {
-      this.setState({walletCAddress: value})
-    })
-    this.viewModel.walletEvmAddrBech.subscribe(value => {
-      this.setState({walletEvmAddress: value})
-    })
-    this.viewModel.addressX.subscribe(value => {
-      this.setState({addressX: value})
-    })
-    this.viewModel.addressP.subscribe(value => {
-      this.setState({addressP: value})
-    })
-    this.viewModel.addressC.subscribe(value => {
-      this.setState({addressC: value})
-    })
-    this.viewModel.availableX.subscribe(value => {
-      this.setState({availableX: value})
-    })
-    this.viewModel.availableP.subscribe(value => {
-      this.setState({availableP: value})
-    })
-    this.viewModel.availableC.subscribe(value => {
-      this.setState({availableC: value})
-    })
+    this.commonViewModel.isDarkMode.subscribe(value => this.setState({isDarkMode: value}))
+    this.commonViewModel.backgroundStyle.subscribe(value => this.setState({backgroundStyle: value}))
+    this.viewModel.avaxPrice.subscribe(value => this.setState({avaxPrice: value}))
+    this.viewModel.walletCAddress.subscribe(value => this.setState({walletCAddress: value}))
+    this.viewModel.walletEvmAddrBech.subscribe(value => this.setState({walletEvmAddress: value}))
+    this.viewModel.addressX.subscribe(value => this.setState({addressX: value}))
+    this.viewModel.addressP.subscribe(value => this.setState({addressP: value}))
+    this.viewModel.addressC.subscribe(value => this.setState({addressC: value}))
+    this.viewModel.availableX.subscribe(value => this.setState({availableX: value}))
+    this.viewModel.availableP.subscribe(value => this.setState({availableP: value}))
+    this.viewModel.availableC.subscribe(value => this.setState({availableC: value}))
+    this.viewModel.stakingAmount.subscribe(value => this.setState({stakingAmount: value}))
 
     this.viewModel.onResetHdIndices()
       .subscribe({
-        next: value => console.log(value),
-        error: err => console.error(err),
-        complete: () => {
-          this.setState({
-            loaderVisible: false
-          })
+        error: err => {
+          this.onLogout()
+          Alert.alert("Error", err.message)
         },
+        complete: () => this.setState({loaderVisible: false}),
       })
   }
 
@@ -169,6 +150,10 @@ class MainView extends Component<MainViewProps, MainViewState> {
         title: "Available (C)",
         data: [this.state.availableC],
       },
+      {
+        title: "Staking",
+        data: [this.state.stakingAmount],
+      },
     ]
 
     return (
@@ -180,7 +165,6 @@ class MainView extends Component<MainViewProps, MainViewState> {
           <Loader message={"Loading wallet..."}/>
         </Modal>
 
-        <Clock/>
         <Header/>
         <SectionList
           sections={sectionListData}
@@ -236,20 +220,10 @@ class MainView extends Component<MainViewProps, MainViewState> {
         </Modal>
         <Button
           title={"Send AVAX X"}
-          onPress={() => {
-            this.setState({
-              sendXVisible: true,
-            })
-          }}
-        />
+          onPress={() => this.setState({sendXVisible: true})}/>
         <Button
           title={"Send AVAX C"}
-          onPress={() => {
-            this.setState({
-              sendCVisible: true,
-            })
-          }}
-        />
+          onPress={() => this.setState({sendCVisible: true})}/>
 
         <Modal
           animationType="slide"
@@ -268,16 +242,23 @@ class MainView extends Component<MainViewProps, MainViewState> {
         </Modal>
         <Button
           title={"Cross chain"}
-          onPress={() => {
-            this.setState({
-              crossChainVisible: true,
-            })
-          }}
-        />
+          onPress={() => this.setState({crossChainVisible: true})}/>
+
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={this.state.validateVisible}>
+          <Validate
+            wallet={this.viewModel.wallet.value}
+            onClose={() => this.setState({validateVisible: false})}/>
+        </Modal>
+        <Button
+          title={"Validate"}
+          onPress={() => this.setState({validateVisible: true})}/>
+
         <Button
           title={"LogOut"}
-          onPress={() => this.onLogout()}
-        />
+          onPress={() => this.onLogout()}/>
       </ScrollView>
     )
   }
