@@ -23,6 +23,7 @@ export default class {
   }
 
   onLogout(): void {
+    this.wallet?.destroy()
     this.wallet = null
     this.setSelectedView(SelectedView.Onboard)
   }

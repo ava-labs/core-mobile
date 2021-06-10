@@ -1,23 +1,32 @@
-import {asyncScheduler, BehaviorSubject, Observable, of, zip} from "rxjs"
+import {BN} from 'avalanche';
+import {asyncScheduler, BehaviorSubject, from, Observable, of, zip} from "rxjs"
 import {MnemonicWallet, Utils} from "../../wallet_sdk"
 import WalletSDK from "../WalletSDK"
-import {concatMap, filter, map, subscribeOn, take} from "rxjs/operators"
-import {AssetBalanceP, AssetBalanceX} from "../../wallet_sdk/Wallet/types"
+import {concatMap, delay, filter, map, retryWhen, subscribeOn, take, tap} from "rxjs/operators"
+import {AssetBalanceP, iWalletAddressChanged, WalletBalanceX} from "../../wallet_sdk/Wallet/types"
+
+enum WalletEvents {
+  AddressChanged = "addressChanged",
+  BalanceChangedX = "balanceChangedX",
+  BalanceChangedP = "balanceChangedP",
+  BalanceChangedC = "balanceChangedC",
+}
 
 export default class {
-  hdIndicesSet: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false)
   avaxPrice: BehaviorSubject<number> = new BehaviorSubject(0)
-  wallet!: BehaviorSubject<MnemonicWallet>
-  walletCAddress!: Observable<string>
-  walletEvmAddrBech!: Observable<string>
-  addressX!: Observable<string>
-  addressP!: Observable<string>
-  addressC!: Observable<string>
-  availableC!: Observable<string>
-  private avaxBalanceX!: Observable<AssetBalanceX>
-  private avaxBalanceP!: Observable<AssetBalanceP>
-  availableX!: Observable<string>
-  availableP!: Observable<string>
+  wallet: BehaviorSubject<MnemonicWallet>
+  walletCAddress: Observable<string>
+  walletEvmAddrBech: Observable<string>
+  addressX: BehaviorSubject<string> = new BehaviorSubject<string>("")
+  addressP: BehaviorSubject<string> = new BehaviorSubject<string>("")
+  addressC: Observable<string>
+  stakingAmount: Observable<string>
+  availableX: Observable<string>
+  availableP: Observable<string>
+  availableC: Observable<string>
+  newBalanceX: BehaviorSubject<WalletBalanceX | null> = new BehaviorSubject<WalletBalanceX | null>(null)
+  newBalanceP: BehaviorSubject<AssetBalanceP | null> = new BehaviorSubject<AssetBalanceP | null>(null)
+  newBalanceC: BehaviorSubject<BN | null> = new BehaviorSubject<BN | null>(null)
 
   constructor(wallet: MnemonicWallet) {
     this.wallet = new BehaviorSubject<MnemonicWallet>(wallet)
@@ -30,66 +39,57 @@ export default class {
       map(wallet => wallet.getEvmAddressBech()),
     )
 
-    this.addressX = this.wallet.pipe(
-      map(wallet => wallet.getAddressX()),
-    )
-
-    this.addressP = this.wallet.pipe(
-      map(wallet => wallet.getAddressP()),
-    )
-
     this.addressC = this.wallet.pipe(
       map(wallet => wallet.getAddressC()),
     )
 
-    this.availableC = this.wallet.pipe(
-      concatMap(wallet => wallet.evmWallet.updateBalance()),
+    this.stakingAmount = this.wallet.pipe(
+      concatMap(wallet => wallet.getStake()),
+      map(stake => {
+        const symbol = 'AVAX'
+        return Utils.bnToLocaleString(stake, 9) + ' ' + symbol
+      })
+    )
+
+    this.availableX = this.newBalanceX.pipe(
+      filter(value => value !== null),
+      map(assetBalance => assetBalance!['U8iRqJoiJm8xZHAacmvYyZVwqQx6uDNtQeP3CQ6fcgQk3JqnK'].unlocked), //fixme should not be hardcoded?
       map(balance => {
         const symbol = 'AVAX'
-        return Utils.bnToAvaxC(balance) + ' ' + symbol
+        return Utils.bnToAvaxX(balance) + ' ' + symbol
       })
     )
 
-    this.avaxBalanceX = this.hdIndicesSet.pipe(
-      filter(hdIndicesSet => hdIndicesSet === true),
-      map(
-        () => this.wallet.value.getAvaxBalanceX(),
-      ),
-    )
-
-    this.avaxBalanceP = this.hdIndicesSet.pipe(
-      filter(hdIndicesSet => hdIndicesSet === true),
-      map(
-        () => this.wallet.value.getAvaxBalanceP(),
-      ),
-    )
-
-    this.availableX = this.avaxBalanceX.pipe(
-      filter(assetBalance => assetBalance !== undefined),
-      map(assetBalance => {
-        return Utils.bnToAvaxX(assetBalance.unlocked) + ' ' + assetBalance.meta.symbol
-      })
-    )
-
-    this.availableP = this.avaxBalanceP.pipe(
-      filter(assetBalance => assetBalance !== undefined),
-      map(assetBalance => {
+    this.availableP = this.newBalanceP.pipe(
+      filter(value => value !== null),
+      map(assetBalance => assetBalance!.unlocked),
+      map(balance => {
         const symbol = 'AVAX'
-        return Utils.bnToAvaxP(assetBalance.unlocked) + ' ' + symbol
+        return Utils.bnToAvaxP(balance) + ' ' + symbol
+      })
+    )
+
+    this.availableC = this.newBalanceC.pipe(
+      filter(value => value !== null),
+      map(balance => {
+        const symbol = 'AVAX'
+        return Utils.bnToAvaxC(<BN>balance) + ' ' + symbol
       })
     )
   }
 
-  onComponentMount(): void {
-    WalletSDK.getAvaxPrice()
-      .then(value => {
-        this.avaxPrice.next(value)
-      })
-      .catch(reason => console.log(reason))
+  onComponentMount = (): void => {
+    this.fetchAvaxPriceWithRetryOnError()
+    this.addBalanceListeners(this.wallet.value)
+    this.wallet.value.on(WalletEvents.AddressChanged, this.onAddressChanged)
   }
 
+  onComponentUnMount = (): void => {
+    this.removeBalanceListeners(this.wallet.value)
+    this.wallet.value.off(WalletEvents.AddressChanged, this.onAddressChanged)
+  }
 
-  onResetHdIndices(): Observable<boolean> {
+  onResetHdIndices = (): Observable<boolean> => {
     return this.wallet
       .pipe(
         take(1),
@@ -97,7 +97,6 @@ export default class {
         concatMap(() => this.wallet.value.getUtxosX()),
         concatMap(() => this.wallet.value.getUtxosP()),
         map(() => {
-          this.hdIndicesSet.next(true)
           this.wallet.next(this.wallet.value)
           return true
         }),
@@ -105,7 +104,7 @@ export default class {
       )
   }
 
-  onSendAvaxX(addressX: string, amount: string, memo?: string): Observable<string> {
+  onSendAvaxX = (addressX: string, amount: string, memo?: string): Observable<string> => {
     return zip(
       this.wallet,
       of(amount),
@@ -121,7 +120,7 @@ export default class {
     )
   }
 
-  onSendAvaxC(addressC: string, amount: string): Observable<string> {
+  onSendAvaxC = (addressC: string, amount: string): Observable<string> => {
     return zip(
       this.wallet,
       of(amount),
@@ -137,5 +136,46 @@ export default class {
       }),
       subscribeOn(asyncScheduler),
     )
+  }
+
+  private onBalanceChangedX = (balance: WalletBalanceX): void => {
+    this.newBalanceX.next(balance)
+  }
+
+  private onBalanceChangedP = (balance: AssetBalanceP): void => {
+    this.newBalanceP.next(balance)
+  }
+
+  private onBalanceChangedC = (balance: BN): void => {
+    this.newBalanceC.next(balance)
+  }
+
+  private onAddressChanged = (params: iWalletAddressChanged): void => {
+    this.addressX.next(params.X)
+    this.addressP.next(params.P)
+  }
+
+  private addBalanceListeners = (wallet: MnemonicWallet): void => {
+    wallet.on(WalletEvents.BalanceChangedX, this.onBalanceChangedX)
+    wallet.on(WalletEvents.BalanceChangedP, this.onBalanceChangedP)
+    wallet.on(WalletEvents.BalanceChangedC, this.onBalanceChangedC)
+  }
+
+  private removeBalanceListeners = (wallet: MnemonicWallet): void => {
+    wallet.off(WalletEvents.BalanceChangedX, this.onBalanceChangedX)
+    wallet.off(WalletEvents.BalanceChangedP, this.onBalanceChangedP)
+    wallet.off(WalletEvents.BalanceChangedC, this.onBalanceChangedC)
+  }
+
+  private fetchAvaxPriceWithRetryOnError = (): void => {
+    from(WalletSDK.getAvaxPrice()).pipe(
+      retryWhen(errors => errors.pipe(
+        tap(err => console.warn(err)),
+        delay(5000)
+        )
+      )
+    ).subscribe({
+      next: value => this.avaxPrice.next(value)
+    })
   }
 }
