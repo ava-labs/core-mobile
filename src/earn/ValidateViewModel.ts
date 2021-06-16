@@ -1,5 +1,3 @@
-import {BN} from 'avalanche';
-import {MnemonicWallet, Utils} from '../../wallet_sdk'
 import {
   asyncScheduler,
   BehaviorSubject,
@@ -15,6 +13,7 @@ import {
 } from 'rxjs'
 import moment from 'moment'
 import {concatMap, count, map, take, tap} from "rxjs/operators"
+import {BN, MnemonicWallet, Utils} from "@avalabs/avalanche-wallet-sdk"
 
 declare type ValidatorInputs = {
   nodeId: string
