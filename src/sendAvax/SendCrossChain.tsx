@@ -17,8 +17,8 @@ import {
 import {Colors} from 'react-native/Libraries/NewAppScreen'
 import CommonViewModel from '../CommonViewModel'
 import SendCrossChainViewModel, {Chain, ChainRenderItem} from './SendCrossChainViewModel';
-import {MnemonicWallet} from '../../wallet_sdk';
 import Loader from "../common/Loader"
+import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 
 type SendCrossChainProps = {
   wallet: MnemonicWallet,

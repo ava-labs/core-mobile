@@ -1,6 +1,6 @@
-import {MnemonicWallet, NetworkConstants} from '../wallet_sdk'
 import WalletSDK from './WalletSDK'
 import {BehaviorSubject} from 'rxjs'
+import {MnemonicWallet, NetworkConstants} from "@avalabs/avalanche-wallet-sdk"
 
 export enum SelectedView {
   Onboard,

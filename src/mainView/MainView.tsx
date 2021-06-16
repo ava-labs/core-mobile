@@ -5,11 +5,11 @@ import CommonViewModel from "../CommonViewModel"
 import Header from "./Header"
 import MainViewViewModel from "./MainViewViewModel"
 import SendAvaxX from "../sendAvax/SendAvaxX"
-import {MnemonicWallet} from "../../wallet_sdk"
 import SendAvaxC from "../sendAvax/SendAvaxC"
 import SendCrossChain from "../sendAvax/SendCrossChain";
 import Loader from "../common/Loader"
 import Validate from "../earn/Validate"
+import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 
 type MainViewProps = {
   wallet: MnemonicWallet,
