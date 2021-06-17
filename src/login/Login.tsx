@@ -1,24 +1,26 @@
 import React, {Component} from 'react'
-import {Appearance, Button, StyleSheet, Text, TextInput, View} from 'react-native'
-import {Colors} from 'react-native/Libraries/NewAppScreen'
+import {Appearance, View} from 'react-native'
 import CommonViewModel from '../CommonViewModel'
 import Header from '../mainView/Header'
 import WalletSDK from '../WalletSDK'
+import TextTitle from "../common/TextTitle"
+import InputText from "../common/InputText"
+import ButtonAva from "../common/ButtonAva"
 
-type LoginProps = {
+type Props = {
   onEnterWallet: (mnemonic: string) => void,
   onClose: () => void,
 }
-type LoginState = {
+type State = {
   isDarkMode: boolean,
   backgroundStyle: any,
   mnemonic: string
 }
 
-class Login extends Component<LoginProps, LoginState> {
+class Login extends Component<Props, State> {
   commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme() as string)
 
-  constructor(props: LoginProps | Readonly<LoginProps>) {
+  constructor(props: Props | Readonly<Props>) {
     super(props)
     this.state = {
       isDarkMode: false,
@@ -28,12 +30,8 @@ class Login extends Component<LoginProps, LoginState> {
   }
 
   componentDidMount(): void {
-    this.commonViewModel.isDarkMode.subscribe(value => {
-      this.setState({isDarkMode: value})
-    })
-    this.commonViewModel.backgroundStyle.subscribe(value => {
-      this.setState({backgroundStyle: value})
-    })
+    this.commonViewModel.isDarkMode.subscribe(value => this.setState({isDarkMode: value}))
+    this.commonViewModel.backgroundStyle.subscribe(value => this.setState({backgroundStyle: value}))
   }
 
   componentWillUnmount(): void {
@@ -51,67 +49,21 @@ class Login extends Component<LoginProps, LoginState> {
     return (
       <View>
         <Header/>
-        <Text
-          style={[
-            styles.title,
-            {color: this.state.isDarkMode ? Colors.white : Colors.black},
-          ]}>
-          Mnemonic Wallet
-        </Text>
+        <View style={[{height: 8}]}/>
+        <TextTitle text={"Mnemonic Wallet"} textAlign={"center"} bold={true}/>
+        <View style={[{height: 8}]}/>
+        <TextTitle text={"Prefilled for testing purposes!!"} size={20} textAlign={"center"} bold={true}/>
 
-        <Text
-          style={[
-            styles.text,
-            {color: this.state.isDarkMode ? Colors.white : Colors.black},
-          ]}>
-          Prefilled for testing purposes!!
-        </Text>
-
-        <TextInput
-          style={styles.input}
+        <InputText
           multiline={true}
-          onChangeText={text => {
-            this.setState({
-              mnemonic: text
-            })
-          }}
-          value={this.state.mnemonic}
-        />
-        <Button
-          title={"Enter wallet"}
-          onPress={() => {
-            this.onEnterWallet()
-          }}
-        />
-        <Button
-          title={"Back"}
-          onPress={() => {
-            this.onClose()
-          }}
-        />
+          onChangeText={text => this.setState({mnemonic: text})}
+          value={this.state.mnemonic}/>
+
+        <ButtonAva text={"Enter wallet"} onPress={() => this.onEnterWallet()}/>
+        <ButtonAva text={"Back"} onPress={() => this.onClose()}/>
       </View>
     )
   }
 }
-
-const styles = StyleSheet.create({
-  title: {
-    fontSize: 26,
-    fontWeight: "700",
-    textAlign: "center",
-    marginTop: 26
-  },
-  text: {
-    fontSize: 16,
-    fontWeight: "700",
-    textAlign: "center",
-    marginTop: 26
-  },
-  input: {
-    padding: 10,
-    margin: 12,
-    borderWidth: 1,
-  },
-})
 
 export default Login

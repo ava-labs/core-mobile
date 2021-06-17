@@ -7,6 +7,7 @@ type Props = {
   text: string,
   size?: number,
   bold?: boolean,
+  textAlign?: "center" | "right",
 }
 type State = {
   isDarkMode: boolean,
@@ -36,6 +37,7 @@ class TextTitle extends Component<Props, State> {
             fontSize: this.props.size ? this.props.size : 26,
             fontFamily: "Rubik",
             fontWeight: this.props.bold ? "bold" : "normal",
+            textAlign: this.props.textAlign
           },
         ]}>
         {this.props.text}
