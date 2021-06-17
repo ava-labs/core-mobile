@@ -7,13 +7,13 @@ type Props = {
   value: string,
   onChangeText?: (text: string) => void
   textSize?: number,
-  editable?: boolean,
+  editable?: boolean
 }
 type State = {
   isDarkMode: boolean,
 }
 
-class InputAmount extends Component<Props, State> {
+class InputText extends Component<Props, State> {
   commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme() as string)
 
   constructor(props: Props | Readonly<Props>) {
@@ -36,12 +36,11 @@ class InputAmount extends Component<Props, State> {
           {
             color: THEME.primaryColor,
             fontSize: this.props.textSize ? this.props.textSize : 18,
-            padding: 8,
             borderWidth: 1,
             borderColor: THEME.primaryColorLight,
             borderRadius: 4,
             margin: 12,
-            textAlign: "right",
+            padding: 8,
             fontFamily: "Rubik-Regular",
           },
         ]}
@@ -51,4 +50,4 @@ class InputAmount extends Component<Props, State> {
   }
 }
 
-export default InputAmount
+export default InputText
