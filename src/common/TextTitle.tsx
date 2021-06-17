@@ -6,6 +6,7 @@ import {COLORS, COLORS_NIGHT} from "./Constants"
 type Props = {
   text: string,
   size?: number,
+  bold?: boolean,
 }
 type State = {
   isDarkMode: boolean,
@@ -33,7 +34,8 @@ class TextTitle extends Component<Props, State> {
           {
             color: THEME.primaryColor,
             fontSize: this.props.size ? this.props.size : 26,
-            fontFamily: "Rubik-Regular"
+            fontFamily: "Rubik",
+            fontWeight: this.props.bold ? "bold" : "normal",
           },
         ]}>
         {this.props.text}
