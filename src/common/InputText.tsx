@@ -7,7 +7,8 @@ type Props = {
   value: string,
   onChangeText?: (text: string) => void
   textSize?: number,
-  editable?: boolean
+  editable?: boolean,
+  multiline?: boolean,
 }
 type State = {
   isDarkMode: boolean,
@@ -32,6 +33,7 @@ class InputText extends Component<Props, State> {
     return (
       <TextInput
         editable={this.props.editable ? this.props.editable : true}
+        multiline={this.props.multiline ? this.props.multiline : false}
         style={[
           {
             color: THEME.primaryColor,
