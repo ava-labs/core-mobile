@@ -1,7 +1,8 @@
 import React, {Component} from "react"
-import {ActivityIndicator, Appearance, StyleSheet, Text, View} from "react-native"
+import {ActivityIndicator, Appearance, StyleSheet, View} from "react-native"
 import {Colors} from "react-native/Libraries/NewAppScreen"
 import CommonViewModel from "../CommonViewModel"
+import TextTitle from "./TextTitle"
 
 type LoaderProps = {
   message: string,
@@ -23,12 +24,8 @@ class Loader extends Component<LoaderProps, LoaderState> {
   }
 
   componentDidMount(): void {
-    this.commonViewModel.isDarkMode.subscribe(value => {
-      this.setState({isDarkMode: value})
-    })
-    this.commonViewModel.backgroundStyle.subscribe(value => {
-      this.setState({backgroundStyle: value})
-    })
+    this.commonViewModel.isDarkMode.subscribe(value => this.setState({isDarkMode: value}))
+    this.commonViewModel.backgroundStyle.subscribe(value => this.setState({backgroundStyle: value}))
   }
 
   componentWillUnmount(): void {
@@ -38,14 +35,7 @@ class Loader extends Component<LoaderProps, LoaderState> {
     return (
       <View style={[styles.container, this.state.backgroundStyle]}>
         <ActivityIndicator size="large" color={this.state.isDarkMode ? Colors.white : Colors.black}/>
-
-        <Text
-          style={[
-            styles.text,
-            {color: this.state.isDarkMode ? Colors.white : Colors.black},
-          ]}>
-          {this.props.message}
-        </Text>
+        <TextTitle text={this.props.message} textAlign={"center"}/>
       </View>
     )
   }
@@ -53,14 +43,7 @@ class Loader extends Component<LoaderProps, LoaderState> {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     justifyContent: "center"
-  },
-  text: {
-    fontSize: 16,
-    fontWeight: "700",
-    textAlign: "center",
-    marginTop: 26
   },
 })
 
