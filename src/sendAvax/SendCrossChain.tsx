@@ -2,7 +2,6 @@ import React, {Component} from 'react'
 import {
   Alert,
   Appearance,
-  Button,
   FlatList,
   ListRenderItem,
   ListRenderItemInfo,
@@ -10,8 +9,6 @@ import {
   Pressable,
   SafeAreaView,
   StyleSheet,
-  Text,
-  TextInput,
   View
 } from 'react-native'
 import {Colors} from 'react-native/Libraries/NewAppScreen'
@@ -19,42 +16,43 @@ import CommonViewModel from '../CommonViewModel'
 import SendCrossChainViewModel, {Chain, ChainRenderItem} from './SendCrossChainViewModel';
 import Loader from "../common/Loader"
 import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
+import ButtonAva from "../common/ButtonAva"
+import TextTitle from "../common/TextTitle"
+import InputAmount from "../common/InputAmount"
 
-type SendCrossChainProps = {
+type Props = {
   wallet: MnemonicWallet,
   onClose: () => void,
 }
-type SendCrossChainState = {
+type State = {
   isDarkMode: boolean,
   loaderVisible: boolean,
   loaderMsg: string,
   backgroundStyle: any,
   sourceChain: Chain,
   destinationChain: Chain,
-  transferAmount: string,
   balance: string,
   selectSourceChainVisible: boolean,
-  selectSDestinationChainVisible: boolean,
+  selectDestinationChainVisible: boolean,
   sendAmount: string,
   availableDestinationChains: Chain[],
 }
 
-class SendCrossChain extends Component<SendCrossChainProps, SendCrossChainState> {
+class SendCrossChain extends Component<Props, State> {
   viewModel!: SendCrossChainViewModel
   commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme() as string)
 
-  constructor(props: SendCrossChainProps | Readonly<SendCrossChainProps>) {
+  constructor(props: Props | Readonly<Props>) {
     super(props)
     this.state = {
       balance: '',
       sourceChain: Chain.X,
       destinationChain: Chain.P,
-      transferAmount: '',
       isDarkMode: false,
       loaderVisible: false,
       loaderMsg: '',
       selectSourceChainVisible: false,
-      selectSDestinationChainVisible: false,
+      selectDestinationChainVisible: false,
       availableDestinationChains: [],
       sendAmount: '0.00',
       backgroundStyle: {}
@@ -73,7 +71,7 @@ class SendCrossChain extends Component<SendCrossChainProps, SendCrossChainState>
     }))
     this.viewModel.destinationChain.subscribe(value => this.setState({
       destinationChain: value,
-      selectSDestinationChainVisible: false
+      selectDestinationChainVisible: false
     }))
     this.viewModel.loaderMsg.subscribe(value => this.setState({loaderMsg: value}))
     this.viewModel.loaderVisible.subscribe(value => this.setState({loaderVisible: value}))
@@ -94,17 +92,51 @@ class SendCrossChain extends Component<SendCrossChainProps, SendCrossChainState>
 
     const sourceChainRenderItem: ListRenderItem<ChainRenderItem> = (info: ListRenderItemInfo<ChainRenderItem>) => {
       return <Pressable onPress={() => this.viewModel.setSourceChain(info.item.chain)} style={styles.pressable}>
-        <Text>{info.item.displayString}</Text>
+        <TextTitle text={info.item.displayString} size={14}/>
       </Pressable>
     }
     const destinationChainRenderItem: ListRenderItem<ChainRenderItem> = (info: ListRenderItemInfo<ChainRenderItem>) => {
       return <Pressable onPress={() => this.viewModel.setDestinationChain(info.item.chain)} style={styles.pressable}>
-        <Text>{info.item.displayString}</Text>
+        <TextTitle text={info.item.displayString} size={14}/>
       </Pressable>
     }
 
     return (
-      <SafeAreaView style={this.state.backgroundStyle}>
+      <SafeAreaView style={[this.state.backgroundStyle, styles.bg]}>
+
+        <TextTitle text={"Send Cross Chain"}/>
+        <View style={styles.horizontalLayout}>
+          <TextTitle text={"Source chain:"} size={18}/>
+          <ButtonAva text={this.viewModel.getChainString(this.state.sourceChain)} onPress={() => {
+            this.setState({
+              selectSourceChainVisible: true,
+            })
+          }}/>
+        </View>
+        <View style={styles.horizontalLayout}>
+          <TextTitle text={"Destination chain:"} size={18}/>
+          <ButtonAva text={this.viewModel.getChainString(this.state.destinationChain)} onPress={() => {
+            this.setState({
+              selectDestinationChainVisible: true,
+            })
+          }}/>
+        </View>
+        <TextTitle text={"Transfer amount:"} size={18}/>
+        <InputAmount
+          onChangeText={text => this.setState({sendAmount: text})}
+          value={this.state.sendAmount}/>
+        <View style={[styles.horizontalLayout, styles.horizBalance]}>
+          <TextTitle text={"Balance: "} size={18}/>
+          <TextTitle text={this.state.balance} size={18} bold={true}/>
+        </View>
+        <View style={[styles.horizontalLayout, styles.horizButtons]}>
+          <ButtonAva
+            text={'Cancel'}
+            onPress={this.props.onClose}/>
+          <ButtonAva
+            text={'Send'}
+            onPress={() => this.onSend()}/>
+        </View>
 
         <Modal
           animationType="fade"
@@ -113,17 +145,6 @@ class SendCrossChain extends Component<SendCrossChainProps, SendCrossChainState>
           <Loader message={this.state.loaderMsg}/>
         </Modal>
 
-        <Text style={[styles.text, {color: this.state.isDarkMode ? Colors.white : Colors.black},]}>
-          Send Cross Chain
-        </Text>
-        <Text style={[styles.text, {color: this.state.isDarkMode ? Colors.white : Colors.black},]}>
-          Source chain:
-        </Text>
-        <Button title={this.viewModel.getChainString(this.state.sourceChain)} onPress={() => {
-          this.setState({
-            selectSourceChainVisible: true,
-          })
-        }}/>
         <Modal animationType={'fade'} transparent={true} visible={this.state.selectSourceChainVisible}>
           <View style={styles.modalContainer}>
             <View
@@ -138,16 +159,7 @@ class SendCrossChain extends Component<SendCrossChainProps, SendCrossChainState>
           </View>
         </Modal>
 
-
-        <Text style={[styles.text, {color: this.state.isDarkMode ? Colors.white : Colors.black},]}>
-          Destination chain:
-        </Text>
-        <Button title={this.viewModel.getChainString(this.state.destinationChain)} onPress={() => {
-          this.setState({
-            selectSDestinationChainVisible: true,
-          })
-        }}/>
-        <Modal animationType={'fade'} transparent={true} visible={this.state.selectSDestinationChainVisible}>
+        <Modal animationType={'fade'} transparent={true} visible={this.state.selectDestinationChainVisible}>
           <View style={styles.modalContainer}>
             <View
               style={[styles.modalBackground, {backgroundColor: this.state.isDarkMode ? Colors.black : Colors.white}]}>
@@ -160,32 +172,6 @@ class SendCrossChain extends Component<SendCrossChainProps, SendCrossChainState>
             </View>
           </View>
         </Modal>
-
-        <Text style={[styles.text, {color: this.state.isDarkMode ? Colors.white : Colors.black},]}>
-          Transfer amount:
-        </Text>
-        <TextInput
-          style={styles.input}
-          onChangeText={text => this.setState({sendAmount: text})}
-          value={this.state.sendAmount}/>
-
-
-        <Text style={[styles.text, {color: this.state.isDarkMode ? Colors.white : Colors.black},]}>
-          Balance: {this.state.balance}
-        </Text>
-
-        <View style={styles.horizontalLayout}>
-          <View style={styles.button}>
-            <Button
-              title={'Cancel'}
-              onPress={this.props.onClose}/>
-          </View>
-          <View style={styles.button}>
-            <Button
-              title={'Send'}
-              onPress={ev => this.onSend()}/>
-          </View>
-        </View>
       </SafeAreaView>
     )
   }
@@ -204,26 +190,16 @@ const styles: any = StyleSheet.create({
       margin: 30,
       borderRadius: 18,
     },
-    text: {
-      fontSize: 16,
-      fontWeight: '700',
-      marginEnd: 20,
-    },
-    button: {
-      flex: 1,
-      marginHorizontal: 20,
-    },
-    buttonClose: {
-      backgroundColor: '#2196F3',
-    },
-    input: {
-      height: 40,
-      margin: 12,
-      borderWidth: 1,
-      paddingHorizontal: 8,
-    },
     horizontalLayout: {
       flexDirection: 'row',
+      justifyContent: "space-between",
+      alignItems: "center"
+    },
+    horizButtons: {
+      justifyContent: "space-evenly",
+    },
+    horizBalance: {
+      justifyContent: "flex-start",
     },
     pressable: {
       margin: 4,
