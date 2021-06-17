@@ -14,11 +14,11 @@ import TextLabel from "../common/TextLabel"
 import ButtonAva from "../common/ButtonAva"
 import TextTitle from "../common/TextTitle"
 
-type MainViewProps = {
+type Props = {
   wallet: MnemonicWallet,
   onLogout: () => void,
 }
-type MainViewState = {
+type State = {
   isDarkMode: boolean
   backgroundStyle: any
   loaderVisible: boolean
@@ -42,11 +42,11 @@ type MainViewState = {
   walletEvmAddress: string
 }
 
-class MainView extends Component<MainViewProps, MainViewState> {
+class MainView extends Component<Props, State> {
   viewModel!: MainViewViewModel
   commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme() as string)
 
-  constructor(props: MainViewProps | Readonly<MainViewProps>) {
+  constructor(props: Props | Readonly<Props>) {
     super(props)
     this.state = {
       isDarkMode: false,
