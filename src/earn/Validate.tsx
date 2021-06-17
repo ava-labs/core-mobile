@@ -1,6 +1,5 @@
 import React, {Component} from 'react'
-import {Alert, Appearance, Button, Modal, SafeAreaView, StyleSheet, Text, TextInput, View} from 'react-native'
-import {Colors} from 'react-native/Libraries/NewAppScreen'
+import {Alert, Appearance, Modal, SafeAreaView, ScrollView, StyleSheet, View} from 'react-native'
 import CommonViewModel from '../CommonViewModel'
 import Loader from "../common/Loader"
 import ValidateViewModel from "./ValidateViewModel"
@@ -8,12 +7,16 @@ import DateTimePickerModal from "react-native-modal-datetime-picker";
 import ValidateConfirm from "./ValidateConfirm"
 import {debounceTime} from "rxjs/operators"
 import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
+import TextTitle from "../common/TextTitle"
+import InputAmount from "../common/InputAmount"
+import InputText from "../common/InputText"
+import ButtonAva from "../common/ButtonAva"
 
-type ValidateProps = {
+type Props = {
   wallet: MnemonicWallet,
   onClose: () => void,
 }
-type ValidateState = {
+type State = {
   isDarkMode: boolean,
   loaderVisible: boolean,
   loaderMsg: string,
@@ -28,11 +31,11 @@ type ValidateState = {
   validateConfirmVisible: boolean,
 }
 
-class Validate extends Component<ValidateProps, ValidateState> {
+class Validate extends Component<Props, State> {
   viewModel!: ValidateViewModel
   commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme() as string)
 
-  constructor(props: ValidateProps | Readonly<ValidateProps>) {
+  constructor(props: Props | Readonly<Props>) {
     super(props)
     this.state = {
       isDarkMode: false,
@@ -103,118 +106,77 @@ class Validate extends Component<ValidateProps, ValidateState> {
 
     return (
       <SafeAreaView style={this.state.backgroundStyle}>
+        <ScrollView>
+          <TextTitle text={"Validate"}/>
+          <TextTitle text={"Node ID:"} size={18}/>
+          <InputText value={this.state.nodeId} onChangeText={text => this.setState({nodeId: text})}/>
 
-        <Text style={[styles.text, {color: this.state.isDarkMode ? Colors.white : Colors.black},]}>
-          Validate
-        </Text>
-        <Text style={[styles.text, {color: this.state.isDarkMode ? Colors.white : Colors.black},]}>
-          Node ID:
-        </Text>
-        <TextInput
-          style={styles.input}
-          onChangeText={text => this.setState({nodeId: text})}
-          value={this.state.nodeId}/>
+          <TextTitle text={"Staking End Date:"} size={18}/>
+          <ButtonAva
+            text={this.state.endDate}
+            onPress={() => this.setState({endDatePickerVisible: true})}/>
+          <DateTimePickerModal
+            isVisible={this.state.endDatePickerVisible}
+            mode="datetime"
+            onConfirm={date => this.setEndDate(date)}
+            onCancel={date => this.setState({endDatePickerVisible: false})}
+          />
 
-        <Text style={[styles.text, {color: this.state.isDarkMode ? Colors.white : Colors.black},]}>
-          Staking End Date:
-        </Text>
-        <Button
-          title={this.state.endDate}
-          onPress={ev => this.setState({endDatePickerVisible: true})}/>
-        <DateTimePickerModal
-          isVisible={this.state.endDatePickerVisible}
-          mode="datetime"
-          onConfirm={date => this.setEndDate(date)}
-          onCancel={date => this.setState({endDatePickerVisible: false})}
-        />
+          <TextTitle text={"Staking Duration:"} size={18}/>
+          <TextTitle text={this.state.stakingDuration} size={18} bold={true}/>
 
-        <Text style={[styles.text, {color: this.state.isDarkMode ? Colors.white : Colors.black},]}>
-          Staking Duration: {"\n"}{this.state.stakingDuration}
-        </Text>
+          <TextTitle text={"Stake amount:"} size={18}/>
+          <InputAmount value={this.state.stakeAmount} onChangeText={text => this.setState({stakeAmount: text})}/>
 
-        <Text style={[styles.text, {color: this.state.isDarkMode ? Colors.white : Colors.black},]}>
-          Stake amount:
-        </Text>
-        <TextInput
-          style={styles.input}
-          onChangeText={text => this.setState({stakeAmount: text})}
-          value={this.state.stakeAmount}/>
+          <TextTitle text={"Delegation fee (%):"} size={18}/>
+          <InputAmount value={this.state.delegationFee} onChangeText={text => this.setState({delegationFee: text})}/>
 
-        <Text style={[styles.text, {color: this.state.isDarkMode ? Colors.white : Colors.black},]}>
-          Delegation fee (%):
-        </Text>
-        <TextInput
-          style={styles.input}
-          onChangeText={text => this.setState({delegationFee: text})}
-          value={this.state.delegationFee}/>
+          <TextTitle text={"Reward Address:"} size={18}/>
+          <InputText value={this.state.rewardAddress} onChangeText={text => this.setState({rewardAddress: text})}/>
 
-        <Text style={[styles.text, {color: this.state.isDarkMode ? Colors.white : Colors.black},]}>
-          Reward Address:
-        </Text>
-        <TextInput
-          style={styles.input}
-          onChangeText={text => this.setState({rewardAddress: text})}
-          value={this.state.rewardAddress}/>
-        <Button
-          title={'Set to this wallet'}
-          onPress={ev => this.setRewardAddressToThisWallet()}/>
-        <Button
-          title={'Custom address'}
-          onPress={ev => this.setState({rewardAddress: ""})}/>
+          <ButtonAva
+            text={'Set to this wallet'}
+            onPress={() => this.setRewardAddressToThisWallet()}/>
+          <ButtonAva
+            text={'Custom address'}
+            onPress={() => this.setState({rewardAddress: ""})}/>
 
-        <View style={styles.horizontalLayout}>
-          <View style={styles.button}>
-            <Button
-              title={'Cancel'}
+          <View style={styles.horizontalLayout}>
+            <ButtonAva
+              text={'Cancel'}
               onPress={this.props.onClose}/>
-          </View>
-          <View style={styles.button}>
-            <Button
-              title={'Confirm'}
+            <ButtonAva
+              text={'Confirm'}
               onPress={() => this.onConfirm()}/>
           </View>
-        </View>
 
 
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={this.state.validateConfirmVisible}>
-          <ValidateConfirm nodeId={this.state.nodeId} stakingAmount={this.state.stakeAmount}
-                           endDate={this.state.endDate} delegationFee={this.state.delegationFee}
-                           rewardAddress={this.state.rewardAddress} onSubmit={() => this.onSubmit()}
-                           onClose={() => this.setState({validateConfirmVisible: false})}/>
-        </Modal>
+          <Modal
+            animationType="slide"
+            transparent={true}
+            visible={this.state.validateConfirmVisible}>
+            <ValidateConfirm nodeId={this.state.nodeId} stakingAmount={this.state.stakeAmount}
+                             endDate={this.state.endDate} delegationFee={this.state.delegationFee}
+                             rewardAddress={this.state.rewardAddress} onSubmit={() => this.onSubmit()}
+                             onClose={() => this.setState({validateConfirmVisible: false})}/>
+          </Modal>
 
-        <Modal
-          animationType="fade"
-          transparent={true}
-          visible={this.state.loaderVisible}>
-          <Loader message={this.state.loaderMsg}/>
-        </Modal>
+          <Modal
+            animationType="fade"
+            transparent={true}
+            visible={this.state.loaderVisible}>
+            <Loader message={this.state.loaderMsg}/>
+          </Modal>
+        </ScrollView>
       </SafeAreaView>
     )
   }
 }
 
 const styles: any = StyleSheet.create({
-    text: {
-      fontSize: 16,
-      fontWeight: '700',
-      marginEnd: 20,
-    },
-    button: {
-      flex: 1,
-      marginHorizontal: 20,
-    },
-    input: {
-      height: 40,
-      margin: 12,
-      borderWidth: 1,
-      paddingHorizontal: 8,
-    },
     horizontalLayout: {
       flexDirection: 'row',
+      justifyContent: "space-evenly",
     },
   }
 )

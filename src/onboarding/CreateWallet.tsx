@@ -1,25 +1,27 @@
 import React, {Component} from 'react'
-import {Appearance, Button, StyleSheet, Text, TextInput, View} from 'react-native'
-import {Colors} from 'react-native/Libraries/NewAppScreen'
+import {Appearance, View} from 'react-native'
 import CommonViewModel from '../CommonViewModel'
 import Header from '../mainView/Header'
 import CreateWalletViewModel from './CreateWalletViewModel'
+import TextTitle from "../common/TextTitle"
+import InputText from "../common/InputText"
+import ButtonAva from "../common/ButtonAva"
 
-type CreateWalletProps = {
+type Props = {
   onClose: () => void,
   onSavedMyPhrase: (mnemonic: string) => void,
 }
-type CreateWalletState = {
+type State = {
   isDarkMode: boolean,
   backgroundStyle: any,
   mnemonic: string,
 }
 
-class CreateWallet extends Component<CreateWalletProps, CreateWalletState> {
+class CreateWallet extends Component<Props, State> {
   commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme() as string)
   viewModel: CreateWalletViewModel = new CreateWalletViewModel()
 
-  constructor(props: CreateWalletProps | Readonly<CreateWalletProps>) {
+  constructor(props: Props | Readonly<Props>) {
     super(props)
     this.state = {
       isDarkMode: false,
@@ -29,12 +31,8 @@ class CreateWallet extends Component<CreateWalletProps, CreateWalletState> {
   }
 
   componentDidMount(): void {
-    this.commonViewModel.isDarkMode.subscribe(value => {
-      this.setState({isDarkMode: value})
-    })
-    this.commonViewModel.backgroundStyle.subscribe(value => {
-      this.setState({backgroundStyle: value})
-    })
+    this.commonViewModel.isDarkMode.subscribe(value => this.setState({isDarkMode: value}))
+    this.commonViewModel.backgroundStyle.subscribe(value => this.setState({backgroundStyle: value}))
   }
 
   componentWillUnmount(): void {
@@ -52,62 +50,20 @@ class CreateWallet extends Component<CreateWalletProps, CreateWalletState> {
     return (
       <View>
         <Header/>
-        <Text
-          style={[
-            styles.text,
-            {color: this.state.isDarkMode ? Colors.white : Colors.black},
-          ]}>
-          Here are you 24 word key phrase. Please store it somewhere safe.
-        </Text>
-        <Text
-          style={[
-            styles.textBold,
-            {color: this.state.isDarkMode ? Colors.white : Colors.black},
-          ]}>
-          For testing purposes, this is always the same phrase!!
-        </Text>
+        <View style={[{height: 8}]}/>
+        <TextTitle text={"Here are you 24 word key phrase. Please store it somewhere safe."} size={20}
+                   textAlign={"center"}/>
+        <View style={[{height: 8}]}/>
+        <TextTitle text={"For testing purposes, this is always the same phrase!!"} size={20} textAlign={"center"}
+                   bold={true}/>
 
-        <TextInput
-          style={styles.input}
-          multiline={true}
-          value={this.state.mnemonic}
-        />
+        <InputText multiline={true} value={this.state.mnemonic}/>
 
-        <Button
-          title={"I saved my phrase somewhere safe"}
-          onPress={() => {
-            this.onSavedMyPhrase()
-          }}
-        />
-
-        <Button
-          title={"Back"}
-          onPress={() => {
-            this.onClose()
-          }}
-        />
+        <ButtonAva text={"I saved my phrase somewhere safe"} onPress={() => this.onSavedMyPhrase()}/>
+        <ButtonAva text={"Back"} onPress={() => this.onClose()}/>
       </View>
     )
   }
 }
-
-const styles = StyleSheet.create({
-  text: {
-    fontSize: 16,
-    textAlign: "center",
-    marginTop: 26
-  },
-  textBold: {
-    fontSize: 16,
-    fontWeight: "700",
-    textAlign: "center",
-    marginTop: 26
-  },
-  input: {
-    padding: 10,
-    margin: 12,
-    borderWidth: 1,
-  },
-})
 
 export default CreateWallet

@@ -1,6 +1,5 @@
-import React, { FC } from 'react';
-import {ImageBackground, StyleSheet, Text, useColorScheme} from 'react-native';
-import {Colors} from 'react-native/Libraries/NewAppScreen';
+import React, {FC} from 'react';
+import {ImageBackground, StyleSheet, useColorScheme} from 'react-native';
 
 const Header: FC = () => {
   const isDarkMode: boolean = useColorScheme() === 'dark';
@@ -10,9 +9,6 @@ const Header: FC = () => {
       source={require('../assets/AvaLogo.png')}
       style={[
         styles.background,
-        {
-          backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-        },
       ]}
       imageStyle={styles.logo}>
     </ImageBackground>
