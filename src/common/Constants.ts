@@ -1,0 +1,31 @@
+export enum COLORS {
+  bg = "#fff",
+  bg1 = "#fff",
+  bgLight = "#f5f6fa",
+  bgLight1 = "#f5f6fa",
+  primaryColor = "#4c2e56",
+  onPrimary = "#fff",
+  primaryColorLight = "#867e89",
+  error = "#ff0000",
+  info = "#2c7490",
+  info1 = "#2c7490",
+  bgWallet = "#f5f6fa",
+  bgWalletLight = "#fff",
+  warning = "#ef8f4a",
+}
+
+export enum COLORS_NIGHT {
+  bg = "#242729",
+  bg1 = "#242729",
+  bgLight = "#2e3234",
+  bgLight1 = "#2d3133",
+  primaryColor = "#e5e5e5",
+  onPrimary = "#242729",
+  primaryColorLight = "#6e7479",
+  error = "#e84970",
+  info = "#4c8caf",
+  info1 = "#4c8db0",
+  bgWallet = "#181b1d",
+  bgWalletLight = "#242729",
+  warning = "#d49534",
+}
