@@ -1,7 +1,10 @@
 import React, {Component} from "react"
-import {Appearance, Button, SafeAreaView, StyleSheet, Text, TextInput, View} from "react-native"
-import {Colors} from "react-native/Libraries/NewAppScreen"
+import {Appearance, SafeAreaView, StyleSheet, View} from "react-native"
 import CommonViewModel from "../CommonViewModel"
+import ButtonAva from "../common/ButtonAva"
+import TextTitle from "../common/TextTitle"
+import InputAmount from "../common/InputAmount"
+import InputText from "../common/InputText"
 
 type SendAvaxCProps = {
   onClose: () => void,
@@ -23,17 +26,13 @@ class SendAvaxC extends Component<SendAvaxCProps, SendAvaxCState> {
       isDarkMode: false,
       backgroundStyle: {},
       addressCToSendTo: '',
-      sendAmount: '',
+      sendAmount: '0.0',
     }
   }
 
   componentDidMount(): void {
-    this.commonViewModel.isDarkMode.subscribe(value => {
-      this.setState({isDarkMode: value})
-    })
-    this.commonViewModel.backgroundStyle.subscribe(value => {
-      this.setState({backgroundStyle: value})
-    })
+    this.commonViewModel.isDarkMode.subscribe(value => this.setState({isDarkMode: value}))
+    this.commonViewModel.backgroundStyle.subscribe(value => this.setState({backgroundStyle: value}))
   }
 
   componentWillUnmount(): void {
@@ -42,54 +41,26 @@ class SendAvaxC extends Component<SendAvaxCProps, SendAvaxCState> {
   render(): Element {
     return (
       <SafeAreaView style={this.state.backgroundStyle}>
-        <Text
-          style={[
-            styles.text,
-            {color: this.state.isDarkMode ? Colors.white : Colors.black},
-          ]}>
-          Send AVAX (C Chain)
-        </Text>
-        <Text
-          style={[
-            styles.text,
-            {color: this.state.isDarkMode ? Colors.white : Colors.black},
-          ]}>
-          To:
-        </Text>
-        <TextInput
-          style={styles.input}
-          onChangeText={text => {
-            this.setState({
-              addressCToSendTo: text
-            })
-          }}
-          value={this.state.addressCToSendTo}
-        />
-        <Text
-          style={[
-            styles.text,
-            {color: this.state.isDarkMode ? Colors.white : Colors.black},
-          ]}>
-          Amount:
-        </Text>
-        <TextInput
-          style={styles.input}
-          onChangeText={text => {
-            this.setState({
-              sendAmount: text
-            })
-          }}
-          value={this.state.sendAmount}
-        />
+        <TextTitle text={"Send AVAX (C Chain)"}/>
+        <TextTitle text={"To:"} size={18}/>
+        <InputText
+          onChangeText={text => this.setState({addressCToSendTo: text})}
+          value={this.state.addressCToSendTo}/>
+
+        <TextTitle text={"Amount:"} size={18}/>
+        <InputAmount
+          onChangeText={text => this.setState({sendAmount: text})}
+          value={this.state.sendAmount}/>
+
         <View style={styles.horizontalLayout}>
           <View style={styles.button}>
-            <Button
-              title={'Cancel'}
+            <ButtonAva
+              text={'Cancel'}
               onPress={this.props.onClose}/>
           </View>
           <View style={styles.button}>
-            <Button
-              title={'Send'}
+            <ButtonAva
+              text={'Send'}
               onPress={() => {
                 this.props.onSend(this.state.addressCToSendTo, this.state.sendAmount)
               }}/>

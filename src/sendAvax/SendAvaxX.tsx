@@ -1,7 +1,10 @@
 import React, {Component} from "react"
-import {Appearance, Button, SafeAreaView, StyleSheet, Text, TextInput, View} from "react-native"
-import {Colors} from "react-native/Libraries/NewAppScreen"
+import {Appearance, SafeAreaView, StyleSheet, View} from "react-native"
 import CommonViewModel from "../CommonViewModel"
+import ButtonAva from "../common/ButtonAva"
+import TextTitle from "../common/TextTitle"
+import InputAmount from "../common/InputAmount"
+import InputText from "../common/InputText"
 
 type SendAvaxXProps = {
   onClose: () => void,
@@ -23,17 +26,13 @@ class SendAvaxX extends Component<SendAvaxXProps, SendAvaxXState> {
       isDarkMode: false,
       backgroundStyle: {},
       addressXToSendTo: '',
-      sendAmount: '',
+      sendAmount: '0.00',
     }
   }
 
   componentDidMount(): void {
-    this.commonViewModel.isDarkMode.subscribe(value => {
-      this.setState({isDarkMode: value})
-    })
-    this.commonViewModel.backgroundStyle.subscribe(value => {
-      this.setState({backgroundStyle: value})
-    })
+    this.commonViewModel.isDarkMode.subscribe(value => this.setState({isDarkMode: value}))
+    this.commonViewModel.backgroundStyle.subscribe(value => this.setState({backgroundStyle: value}))
   }
 
   componentWillUnmount(): void {
@@ -43,57 +42,25 @@ class SendAvaxX extends Component<SendAvaxXProps, SendAvaxXState> {
     return (
 
       <SafeAreaView style={this.state.backgroundStyle}>
-        <Text
-          style={[
-            styles.text,
-            {color: this.state.isDarkMode ? Colors.white : Colors.black},
-          ]}>
-          Send AVAX (X Chain)
-        </Text>
-        <Text
-          style={[
-            styles.text,
-            {color: this.state.isDarkMode ? Colors.white : Colors.black},
-          ]}>
-          To:
-        </Text>
-        <TextInput
-          style={styles.input}
-          onChangeText={text => {
-            this.setState({
-              addressXToSendTo: text
-            })
-          }}
-          value={this.state.addressXToSendTo}
-        />
-        <Text
-          style={[
-            styles.text,
-            {color: this.state.isDarkMode ? Colors.white : Colors.black},
-          ]}>
-          Amount:
-        </Text>
-        <TextInput
-          style={styles.input}
-          onChangeText={text => {
-            this.setState({
-              sendAmount: text
-            })
-          }}
-          value={this.state.sendAmount}
-        />
+        <TextTitle text={"Send AVAX (X Chain)"}/>
+        <TextTitle text={"To:"} size={18}/>
+        <InputText
+          onChangeText={text => this.setState({addressXToSendTo: text})}
+          value={this.state.addressXToSendTo}/>
+
+        <TextTitle text={"Amount:"} size={18}/>
+        <InputAmount
+          onChangeText={text => this.setState({sendAmount: text})}
+          value={this.state.sendAmount}/>
+
         <View style={styles.horizontalLayout}>
           <View style={styles.button}>
-            <Button
-              title={'Cancel'}
-              onPress={this.props.onClose}/>
+            <ButtonAva text={'Cancel'} onPress={this.props.onClose}/>
           </View>
           <View style={styles.button}>
-            <Button
-              title={'Send'}
-              onPress={() => {
-                this.props.onSend(this.state.addressXToSendTo, this.state.sendAmount)
-              }}/>
+            <ButtonAva
+              text={'Send'}
+              onPress={() => this.props.onSend(this.state.addressXToSendTo, this.state.sendAmount)}/>
           </View>
         </View>
       </SafeAreaView>
@@ -102,23 +69,6 @@ class SendAvaxX extends Component<SendAvaxXProps, SendAvaxXState> {
 }
 
 const styles: any = StyleSheet.create({
-  text: {
-    fontSize: 16,
-    fontWeight: "700",
-    marginEnd: 20,
-  },
-  button: {
-    flex: 1,
-    marginHorizontal: 20,
-  },
-  buttonClose: {
-    backgroundColor: "#2196F3",
-  },
-  input: {
-    height: 40,
-    margin: 12,
-    borderWidth: 1,
-  },
   horizontalLayout: {
     flexDirection: "row",
   },

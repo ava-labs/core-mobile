@@ -6,6 +6,7 @@
     "android": "react-native run-android",
     "ios": "cd $INIT_CWD/ios && pod install && cd $INIT_CWD && react-native run-ios",
     "start": "react-native start",
+    "link": "react-native link",
     "test": "jest",
     "lint": "eslint .",
     "postversion": "react-native-version --never-amend"
