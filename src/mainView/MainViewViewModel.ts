@@ -1,4 +1,4 @@
-import {asyncScheduler, BehaviorSubject, combineLatest, from, merge, Observable, of, zip} from "rxjs"
+import {asyncScheduler, BehaviorSubject, combineLatest, from, merge, Observable} from "rxjs"
 import WalletSDK from "../WalletSDK"
 import {concatMap, delay, filter, map, retryWhen, subscribeOn, take, tap} from "rxjs/operators"
 import {BN, MnemonicWallet, Utils} from "@avalabs/avalanche-wallet-sdk"
@@ -139,24 +139,6 @@ export default class {
         }),
         subscribeOn(asyncScheduler),
       )
-  }
-
-  onSendAvaxC = (addressC: string, amount: string): Observable<string> => {
-    return zip(
-      this.wallet,
-      of(amount),
-      of(addressC)
-    ).pipe(
-      take(1),
-      concatMap(([wallet, amount, toAddress]) => {
-        const denomination = 9
-        const bnAmount = Utils.numberToBN(amount, 18)
-        const gasPrice = Utils.numberToBN(225, denomination) //todo unfix
-        const gasLimit = 21000 //todo unfix
-        return wallet.sendAvaxC(toAddress, bnAmount, gasPrice, gasLimit)
-      }),
-      subscribeOn(asyncScheduler),
-    )
   }
 
   private onBalanceChangedX = (balance: WalletBalanceX): void => {

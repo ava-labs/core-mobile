@@ -105,18 +105,6 @@ class MainView extends Component<Props, State> {
     this.viewModel.onComponentUnMount()
   }
 
-  private onSendC(addressC: string, amount: string): void {
-    this.viewModel.onSendAvaxC(addressC, amount)
-      .subscribe({
-        next: txHash => {
-          Alert.alert("Success", "Created transaction: " + txHash)
-        },
-        error: err => Alert.alert("Error", err.message),
-        complete: () => {
-        },
-      })
-  }
-
   private onLogout(): void {
     this.props.onLogout()
   }
@@ -212,13 +200,11 @@ class MainView extends Component<Props, State> {
             console.warn("Modal has been closed.")
           }}>
           <SendAvaxC
+            wallet={this.viewModel.wallet.value}
             onClose={() => {
               this.setState({
                 sendCVisible: false,
               })
-            }}
-            onSend={(addressX, amount) => {
-              this.onSendC(addressX, amount)
             }}/>
         </Modal>
 
