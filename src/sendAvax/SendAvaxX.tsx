@@ -91,8 +91,8 @@ class SendAvaxX extends Component<SendAvaxXProps, SendAvaxXState> {
 
         <TextTitle text={"Amount:"} size={18}/>
         <InputAmount
-          onChangeText={text => this.setState({sendAmount: text})}
-          value={this.state.sendAmount}/>
+          showControls={true}
+          onChangeText={text => this.setState({sendAmount: text})}/>
 
         <View style={styles.horizontalLayout}>
           <ButtonAva text={'Cancel'} onPress={this.props.onClose}/>
