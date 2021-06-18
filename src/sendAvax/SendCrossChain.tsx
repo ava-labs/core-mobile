@@ -83,7 +83,7 @@ class SendCrossChain extends Component<Props, State> {
   onSend(): void {
     this.viewModel.makeTransfer(this.state.sourceChain, this.state.destinationChain, this.state.sendAmount)
       .subscribe({
-        error: err => console.error(err),
+        error: err => console.error(err.message),
         complete: () => Alert.alert("Finished")
       })
   }

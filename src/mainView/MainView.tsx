@@ -179,9 +179,7 @@ class MainView extends Component<Props, State> {
           animationType="slide"
           transparent={true}
           visible={this.state.sendXVisible}
-          onRequestClose={() => {
-            console.warn("Modal has been closed.")
-          }}>
+          onRequestClose={() => this.setState({sendXVisible: false})}>
           <SendAvaxX
             wallet={this.viewModel.wallet.value}
             onClose={() => {
@@ -196,9 +194,7 @@ class MainView extends Component<Props, State> {
           animationType="slide"
           transparent={true}
           visible={this.state.sendCVisible}
-          onRequestClose={() => {
-            console.warn("Modal has been closed.")
-          }}>
+          onRequestClose={() => this.setState({sendCVisible: false})}>
           <SendAvaxC
             wallet={this.viewModel.wallet.value}
             onClose={() => {
@@ -212,9 +208,7 @@ class MainView extends Component<Props, State> {
           animationType="slide"
           transparent={true}
           visible={this.state.crossChainVisible}
-          onRequestClose={() => {
-            console.warn("Modal has been closed.")
-          }}>
+          onRequestClose={() => this.setState({crossChainVisible: false})}>
           <SendCrossChain
             wallet={this.viewModel.wallet.value}
             onClose={() => {
