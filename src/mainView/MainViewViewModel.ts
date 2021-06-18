@@ -141,22 +141,6 @@ export default class {
       )
   }
 
-  onSendAvaxX = (addressX: string, amount: string, memo?: string): Observable<string> => {
-    return zip(
-      this.wallet,
-      of(amount),
-      of(addressX)
-    ).pipe(
-      take(1),
-      concatMap(([wallet, amount, toAddress]) => {
-        const denomination = 9 //todo magic number
-        const bnAmount = Utils.numberToBN(amount, denomination)
-        return wallet.sendAvaxX(toAddress, bnAmount, memo)
-      }),
-      subscribeOn(asyncScheduler),
-    )
-  }
-
   onSendAvaxC = (addressC: string, amount: string): Observable<string> => {
     return zip(
       this.wallet,
