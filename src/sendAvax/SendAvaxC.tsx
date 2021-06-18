@@ -7,8 +7,8 @@ import InputAmount from "../common/InputAmount"
 import InputText from "../common/InputText"
 import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 import SendAvaxCViewModel from "./SendAvaxCViewModel"
-import Clipboard from "@react-native-clipboard/clipboard"
 import Loader from "../common/Loader"
+import QrScannerAva from "../common/QrScannerAva"
 
 type SendAvaxCProps = {
   wallet: MnemonicWallet,
@@ -16,6 +16,7 @@ type SendAvaxCProps = {
 }
 type SendAvaxCState = {
   isDarkMode: boolean,
+  cameraVisible: boolean,
   loaderVisible: boolean,
   loaderMsg: string,
   backgroundStyle: any,
@@ -31,6 +32,7 @@ class SendAvaxC extends Component<SendAvaxCProps, SendAvaxCState> {
     super(props)
     this.state = {
       isDarkMode: false,
+      cameraVisible: false,
       loaderVisible: false,
       loaderMsg: '',
       backgroundStyle: {},
@@ -45,21 +47,11 @@ class SendAvaxC extends Component<SendAvaxCProps, SendAvaxCState> {
     this.commonViewModel.backgroundStyle.subscribe(value => this.setState({backgroundStyle: value}))
     this.viewModel.loaderMsg.subscribe(value => this.setState({loaderMsg: value}))
     this.viewModel.loaderVisible.subscribe(value => this.setState({loaderVisible: value}))
+    this.viewModel.cameraVisible.subscribe(value => this.setState({cameraVisible: value}))
+    this.viewModel.addressCToSendTo.subscribe(value => this.setState({addressCToSendTo: value}))
   }
 
   componentWillUnmount(): void {
-  }
-
-  private clearAddress(): void {
-    this.setState({addressCToSendTo: ""})
-  }
-
-  private pasteFromClipboard(): void {
-    Clipboard.getString().then(value => this.setState({addressCToSendTo: value}))
-  }
-
-  private scanBarcode(): void {
-
   }
 
   private onSend(addressC: string, amount: string): void {
@@ -74,6 +66,12 @@ class SendAvaxC extends Component<SendAvaxCProps, SendAvaxCState> {
       })
   }
 
+  private pasteFromClipboard(): void {
+    this.viewModel.pasteFromClipboard().subscribe({
+      error: err => Alert.alert("Error", err.message)
+    })
+  }
+
   render(): Element {
     return (
       <SafeAreaView style={this.state.backgroundStyle}>
@@ -85,9 +83,9 @@ class SendAvaxC extends Component<SendAvaxCProps, SendAvaxCState> {
           value={this.state.addressCToSendTo}/>
 
         <View style={styles.horizontalLayout}>
-          <ButtonAva text={'Clear'} onPress={() => this.clearAddress()}/>
+          <ButtonAva text={'Clear'} onPress={() => this.viewModel.clearAddress()}/>
           <ButtonAva text={'Paste'} onPress={() => this.pasteFromClipboard()}/>
-          <ButtonAva text={'Scan'} onPress={() => this.scanBarcode()}/>
+          <ButtonAva text={'Scan'} onPress={() => this.viewModel.onScanBarcode()}/>
         </View>
 
         <TextTitle text={"Amount:"} size={18}/>
@@ -109,6 +107,15 @@ class SendAvaxC extends Component<SendAvaxCProps, SendAvaxCState> {
           transparent={true}
           visible={this.state.loaderVisible}>
           <Loader message={this.state.loaderMsg}/>
+        </Modal>
+
+        <Modal
+          animationType="slide"
+          transparent={true}
+          onRequestClose={() => this.setState({cameraVisible: false})}
+          visible={this.state.cameraVisible}>
+          <QrScannerAva onSuccess={data => this.viewModel.onBarcodeScanned(data)}
+                        onCancel={() => this.setState({cameraVisible: false})}/>
         </Modal>
       </SafeAreaView>
     )
