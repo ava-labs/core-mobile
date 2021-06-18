@@ -126,10 +126,10 @@ class Validate extends Component<Props, State> {
           <TextTitle text={this.state.stakingDuration} size={18} bold={true}/>
 
           <TextTitle text={"Stake amount:"} size={18}/>
-          <InputAmount value={this.state.stakeAmount} onChangeText={text => this.setState({stakeAmount: text})}/>
+          <InputAmount onChangeText={text => this.setState({stakeAmount: text})}/>
 
           <TextTitle text={"Delegation fee (%):"} size={18}/>
-          <InputAmount value={this.state.delegationFee} onChangeText={text => this.setState({delegationFee: text})}/>
+          <InputAmount initValue={this.state.delegationFee} onChangeText={text => this.setState({delegationFee: text})}/>
 
           <TextTitle text={"Reward Address:"} size={18}/>
           <InputText value={this.state.rewardAddress} onChangeText={text => this.setState({rewardAddress: text})}/>
