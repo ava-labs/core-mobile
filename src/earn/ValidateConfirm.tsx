@@ -50,7 +50,7 @@ class ValidateConfirm extends Component<Props, State> {
           <InputText editable={false} value={this.props.nodeId}/>
 
           <TextTitle text={"Staking amount:"} size={18}/>
-          <InputAmount editable={false} value={this.props.stakingAmount}/>
+          <InputAmount editable={false} initValue={this.props.stakingAmount}/>
 
           <TextTitle text={"Start date:"} size={18}/>
           <InputText editable={false}
@@ -60,7 +60,7 @@ class ValidateConfirm extends Component<Props, State> {
           <InputText editable={false} value={this.props.endDate}/>
 
           <TextTitle text={"Delegation fee:"} size={18}/>
-          <InputAmount editable={false} value={this.props.delegationFee}/>
+          <InputAmount editable={false} initValue={this.props.delegationFee}/>
 
           <TextTitle text={"Reward address:"} size={18}/>
           <InputText editable={false} value={this.props.rewardAddress}/>
