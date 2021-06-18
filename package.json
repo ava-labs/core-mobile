@@ -15,6 +15,7 @@
     "@avalabs/avalanche-wallet-sdk": "^0.4.4",
     "@ethereumjs/common": "^2.2.0",
     "@ethereumjs/tx": "^3.1.4",
+    "@react-native-clipboard/clipboard": "^1.8.2",
     "@react-native-community/datetimepicker": "^3.5.2",
     "avalanche": "^3.5.0",
     "big.js": "^6.1.1",
