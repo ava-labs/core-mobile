@@ -105,30 +105,6 @@ class MainView extends Component<Props, State> {
     this.viewModel.onComponentUnMount()
   }
 
-  private onSendX(addressX: string, amount: string): void {
-    this.viewModel.onSendAvaxX(addressX, amount)
-      .subscribe({
-        next: txHash => {
-          Alert.alert("Success", "Created transaction: " + txHash)
-        },
-        error: err => Alert.alert("Error", err.message),
-        complete: () => {
-        },
-      })
-  }
-
-  private onSendC(addressC: string, amount: string): void {
-    this.viewModel.onSendAvaxC(addressC, amount)
-      .subscribe({
-        next: txHash => {
-          Alert.alert("Success", "Created transaction: " + txHash)
-        },
-        error: err => Alert.alert("Error", err.message),
-        complete: () => {
-        },
-      })
-  }
-
   private onLogout(): void {
     this.props.onLogout()
   }
@@ -203,17 +179,13 @@ class MainView extends Component<Props, State> {
           animationType="slide"
           transparent={true}
           visible={this.state.sendXVisible}
-          onRequestClose={() => {
-            console.warn("Modal has been closed.")
-          }}>
+          onRequestClose={() => this.setState({sendXVisible: false})}>
           <SendAvaxX
+            wallet={this.viewModel.wallet.value}
             onClose={() => {
               this.setState({
                 sendXVisible: false,
               })
-            }}
-            onSend={(addressX, amount) => {
-              this.onSendX(addressX, amount)
             }}
           />
         </Modal>
@@ -222,17 +194,13 @@ class MainView extends Component<Props, State> {
           animationType="slide"
           transparent={true}
           visible={this.state.sendCVisible}
-          onRequestClose={() => {
-            console.warn("Modal has been closed.")
-          }}>
+          onRequestClose={() => this.setState({sendCVisible: false})}>
           <SendAvaxC
+            wallet={this.viewModel.wallet.value}
             onClose={() => {
               this.setState({
                 sendCVisible: false,
               })
-            }}
-            onSend={(addressX, amount) => {
-              this.onSendC(addressX, amount)
             }}/>
         </Modal>
 
@@ -240,9 +208,7 @@ class MainView extends Component<Props, State> {
           animationType="slide"
           transparent={true}
           visible={this.state.crossChainVisible}
-          onRequestClose={() => {
-            console.warn("Modal has been closed.")
-          }}>
+          onRequestClose={() => this.setState({crossChainVisible: false})}>
           <SendCrossChain
             wallet={this.viewModel.wallet.value}
             onClose={() => {

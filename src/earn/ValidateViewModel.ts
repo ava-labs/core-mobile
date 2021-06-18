@@ -1,6 +1,7 @@
 import {
   asyncScheduler,
   BehaviorSubject,
+  combineLatest,
   concat,
   defer,
   EMPTY,
@@ -43,7 +44,7 @@ export default class {
   constructor(wallet: MnemonicWallet) {
     this.wallet = new BehaviorSubject<MnemonicWallet>(wallet)
 
-    this.stakingDuration = zip(this.startDate, this.endDate).pipe(
+    this.stakingDuration = combineLatest([this.startDate, this.endDate]).pipe(
       map(([startDate, endDate]) => moment.duration(moment(endDate).diff(moment(startDate)))),
       map(duration => duration.get('days') + " days " + duration.get('hours') + " hours " + duration.get('minutes') + " minutes")
     )

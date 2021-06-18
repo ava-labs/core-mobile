@@ -32,7 +32,7 @@ class InputText extends Component<Props, State> {
     const THEME = this.state.isDarkMode ? COLORS_NIGHT : COLORS
     return (
       <TextInput
-        editable={this.props.editable ? this.props.editable : true}
+        editable={this.props.editable !== false}
         multiline={this.props.multiline ? this.props.multiline : false}
         style={[
           {

@@ -11,7 +11,6 @@ import {
   StyleSheet,
   View
 } from 'react-native'
-import {Colors} from 'react-native/Libraries/NewAppScreen'
 import CommonViewModel from '../CommonViewModel'
 import SendCrossChainViewModel, {Chain, ChainRenderItem} from './SendCrossChainViewModel';
 import Loader from "../common/Loader"
@@ -19,6 +18,7 @@ import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 import ButtonAva from "../common/ButtonAva"
 import TextTitle from "../common/TextTitle"
 import InputAmount from "../common/InputAmount"
+import {COLORS, COLORS_NIGHT} from "../common/Constants"
 
 type Props = {
   wallet: MnemonicWallet,
@@ -83,13 +83,13 @@ class SendCrossChain extends Component<Props, State> {
   onSend(): void {
     this.viewModel.makeTransfer(this.state.sourceChain, this.state.destinationChain, this.state.sendAmount)
       .subscribe({
-        error: err => console.error(err),
+        error: err => console.error(err.message),
         complete: () => Alert.alert("Finished")
       })
   }
 
   render(): Element {
-
+    const THEME = this.state.isDarkMode ? COLORS_NIGHT : COLORS
     const sourceChainRenderItem: ListRenderItem<ChainRenderItem> = (info: ListRenderItemInfo<ChainRenderItem>) => {
       return <Pressable onPress={() => this.viewModel.setSourceChain(info.item.chain)} style={styles.pressable}>
         <TextTitle text={info.item.displayString} size={14}/>
@@ -123,8 +123,8 @@ class SendCrossChain extends Component<Props, State> {
         </View>
         <TextTitle text={"Transfer amount:"} size={18}/>
         <InputAmount
-          onChangeText={text => this.setState({sendAmount: text})}
-          value={this.state.sendAmount}/>
+          showControls={true}
+          onChangeText={text => this.setState({sendAmount: text})}/>
         <View style={[styles.horizontalLayout, styles.horizBalance]}>
           <TextTitle text={"Balance: "} size={18}/>
           <TextTitle text={this.state.balance} size={18} bold={true}/>
@@ -148,7 +148,7 @@ class SendCrossChain extends Component<Props, State> {
         <Modal animationType={'fade'} transparent={true} visible={this.state.selectSourceChainVisible}>
           <View style={styles.modalContainer}>
             <View
-              style={[styles.modalBackground, {backgroundColor: this.state.isDarkMode ? Colors.black : Colors.white}]}>
+              style={[styles.modalBackground, {backgroundColor: THEME.bg}]}>
               <FlatList
                 style={{height: 100}}
                 data={this.viewModel.getChainRenderItems(this.viewModel.availableSourceChains)}
@@ -162,7 +162,7 @@ class SendCrossChain extends Component<Props, State> {
         <Modal animationType={'fade'} transparent={true} visible={this.state.selectDestinationChainVisible}>
           <View style={styles.modalContainer}>
             <View
-              style={[styles.modalBackground, {backgroundColor: this.state.isDarkMode ? Colors.black : Colors.white}]}>
+              style={[styles.modalBackground, {backgroundColor: THEME.bg}]}>
               <FlatList
                 style={{height: 100}}
                 data={this.viewModel.getChainRenderItems(this.state.availableDestinationChains)}
