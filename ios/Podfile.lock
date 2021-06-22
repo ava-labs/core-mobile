@@ -285,6 +285,8 @@ PODS:
     - React-Core
   - RNPermissions (3.0.4):
     - React-Core
+  - RNSVG (12.1.1):
+    - React
   - Yoga (1.14.0)
 
 DEPENDENCIES:
@@ -323,6 +325,7 @@ DEPENDENCIES:
   - "RNCClipboard (from `../node_modules/@react-native-clipboard/clipboard`)"
   - "RNDateTimePicker (from `../node_modules/@react-native-community/datetimepicker`)"
   - RNPermissions (from `../node_modules/react-native-permissions`)
+  - RNSVG (from `../node_modules/react-native-svg`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -396,6 +399,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-community/datetimepicker"
   RNPermissions:
     :path: "../node_modules/react-native-permissions"
+  RNSVG:
+    :path: "../node_modules/react-native-svg"
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
@@ -434,6 +439,7 @@ SPEC CHECKSUMS:
   RNCClipboard: 18e2e6048edf841b1225b81025969ba8330f3251
   RNDateTimePicker: 7658208086d86d09e1627b5c34ba0cf237c60140
   RNPermissions: c46788f4cd402287425983e04a4c9bb4356036eb
+  RNSVG: 551acb6562324b1d52a4e0758f7ca0ec234e278f
   Yoga: a7de31c64fe738607e7a3803e3f591a4b1df7393
 
 PODFILE CHECKSUM: 9bbec942b16ed33b0b3bfdf49f2e769ba3931f60
