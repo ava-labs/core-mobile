@@ -12,7 +12,7 @@ import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 import TextAmount from "../common/TextAmount"
 import TextLabel from "../common/TextLabel"
 import ButtonAva from "../common/ButtonAva"
-import TextTitle from "../common/TextTitle"
+import TabbedAddressCards from "./TabbedAddressCards"
 
 type Props = {
   wallet: MnemonicWallet,
@@ -146,16 +146,7 @@ class MainView extends Component<Props, State> {
           </View>
         </View>
 
-        <View style={[{height: 8}]}/>
-        <TextLabel text={"Derived Wallet Address"}/>
-        <TextTitle size={14} text={this.state.addressX}/>
-        <View style={[{height: 8}]}/>
-        <TextLabel text={"Derived Platform Wallet Address"}/>
-        <TextTitle size={14} text={this.state.addressP}/>
-        <View style={[{height: 8}]}/>
-        <TextLabel text={"Derived EVM Wallet Address"}/>
-        <TextTitle size={14} text={this.state.addressC}/>
-        <View style={[{height: 8}]}/>
+        <TabbedAddressCards addressP={this.state.addressP} addressX={this.state.addressX} addressC={this.state.addressC}/>
 
         <View style={styles.container}>
           <ButtonAva

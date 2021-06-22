@@ -213,6 +213,8 @@ PODS:
     - React-Core
   - react-native-camera/RN (3.44.1):
     - React-Core
+  - react-native-pager-view (5.2.1):
+    - React-Core
   - react-native-randombytes (3.6.1):
     - React-Core
   - React-perflogger (0.64.1)
@@ -285,6 +287,8 @@ PODS:
     - React-Core
   - RNPermissions (3.0.4):
     - React-Core
+  - RNSVG (12.1.1):
+    - React
   - Yoga (1.14.0)
 
 DEPENDENCIES:
@@ -307,6 +311,7 @@ DEPENDENCIES:
   - React-jsiexecutor (from `../node_modules/react-native/ReactCommon/jsiexecutor`)
   - React-jsinspector (from `../node_modules/react-native/ReactCommon/jsinspector`)
   - react-native-camera (from `../node_modules/react-native-camera`)
+  - react-native-pager-view (from `../node_modules/react-native-pager-view`)
   - react-native-randombytes (from `../node_modules/react-native-randombytes`)
   - React-perflogger (from `../node_modules/react-native/ReactCommon/reactperflogger`)
   - React-RCTActionSheet (from `../node_modules/react-native/Libraries/ActionSheetIOS`)
@@ -323,6 +328,7 @@ DEPENDENCIES:
   - "RNCClipboard (from `../node_modules/@react-native-clipboard/clipboard`)"
   - "RNDateTimePicker (from `../node_modules/@react-native-community/datetimepicker`)"
   - RNPermissions (from `../node_modules/react-native-permissions`)
+  - RNSVG (from `../node_modules/react-native-svg`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -364,6 +370,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/jsinspector"
   react-native-camera:
     :path: "../node_modules/react-native-camera"
+  react-native-pager-view:
+    :path: "../node_modules/react-native-pager-view"
   react-native-randombytes:
     :path: "../node_modules/react-native-randombytes"
   React-perflogger:
@@ -396,6 +404,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-community/datetimepicker"
   RNPermissions:
     :path: "../node_modules/react-native-permissions"
+  RNSVG:
+    :path: "../node_modules/react-native-svg"
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
@@ -418,6 +428,7 @@ SPEC CHECKSUMS:
   React-jsiexecutor: 124e8f99992490d0d13e0649d950d3e1aae06fe9
   React-jsinspector: 500a59626037be5b3b3d89c5151bc3baa9abf1a9
   react-native-camera: 7bf59f2728ffb019fa25e60a225d2c57e1a8f0f6
+  react-native-pager-view: 2864530d861ab2970beb2cd0b4cf2292cd30cd84
   react-native-randombytes: 421f1c7d48c0af8dbcd471b0324393ebf8fe7846
   React-perflogger: aad6d4b4a267936b3667260d1f649b6f6069a675
   React-RCTActionSheet: fc376be462c9c8d6ad82c0905442fd77f82a9d2a
@@ -434,6 +445,7 @@ SPEC CHECKSUMS:
   RNCClipboard: 18e2e6048edf841b1225b81025969ba8330f3251
   RNDateTimePicker: 7658208086d86d09e1627b5c34ba0cf237c60140
   RNPermissions: c46788f4cd402287425983e04a4c9bb4356036eb
+  RNSVG: 551acb6562324b1d52a4e0758f7ca0ec234e278f
   Yoga: a7de31c64fe738607e7a3803e3f591a4b1df7393
 
 PODFILE CHECKSUM: 9bbec942b16ed33b0b3bfdf49f2e769ba3931f60
