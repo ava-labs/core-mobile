@@ -1,5 +1,5 @@
-import {MnemonicWallet} from '../../wallet_sdk'
 import WalletSDK from '../WalletSDK'
+import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 
 
 export default class {

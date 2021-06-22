@@ -61,3 +61,10 @@ yarn postversion
 ```
 This will set versionName (bundle version string) to one set in package.json and increment versionCode (bundle version)
 by one. 
+
+## Custom fonts
+
+To add custom font, add it to src/assets folder and then run: 
+```zsh
+yarn link
+```

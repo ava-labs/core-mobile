@@ -1,9 +1,12 @@
 import React, {Component} from 'react'
-import {Appearance, Button, SafeAreaView, StyleSheet, Text, TextInput, View} from 'react-native'
-import {Colors} from 'react-native/Libraries/NewAppScreen'
+import {Appearance, SafeAreaView, ScrollView, StyleSheet, View} from 'react-native'
 import CommonViewModel from '../CommonViewModel'
+import TextTitle from "../common/TextTitle"
+import InputText from "../common/InputText"
+import InputAmount from "../common/InputAmount"
+import ButtonAva from "../common/ButtonAva"
 
-type ValidateConfirmProps = {
+type Props = {
   nodeId: string,
   stakingAmount: string,
   endDate: string,
@@ -12,15 +15,15 @@ type ValidateConfirmProps = {
   onSubmit: () => void,
   onClose: () => void,
 }
-type ValidateConfirmState = {
+type State = {
   isDarkMode: boolean,
   backgroundStyle: any,
 }
 
-class ValidateConfirm extends Component<ValidateConfirmProps, ValidateConfirmState> {
+class ValidateConfirm extends Component<Props, State> {
   commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme() as string)
 
-  constructor(props: ValidateConfirmProps | Readonly<ValidateConfirmProps>) {
+  constructor(props: Props | Readonly<Props>) {
     super(props)
     this.state = {
       isDarkMode: false,
@@ -40,93 +43,46 @@ class ValidateConfirm extends Component<ValidateConfirmProps, ValidateConfirmSta
 
     return (
       <SafeAreaView style={this.state.backgroundStyle}>
+        <ScrollView>
 
-        <Text style={[styles.text, {color: this.state.isDarkMode ? Colors.white : Colors.black},]}>
-          Check data and confirm
-        </Text>
-        <Text style={[styles.text, {color: this.state.isDarkMode ? Colors.white : Colors.black},]}>
-          Node ID:
-        </Text>
-        <TextInput
-          editable={false}
-          style={styles.input}
-          value={this.props.nodeId}/>
+          <TextTitle text={"Check data and confirm"}/>
+          <TextTitle text={"Node ID:"} size={18}/>
+          <InputText editable={false} value={this.props.nodeId}/>
 
-        <Text style={[styles.text, {color: this.state.isDarkMode ? Colors.white : Colors.black},]}>
-          Staking amount:
-        </Text>
-        <TextInput
-          editable={false}
-          style={styles.input}
-          value={this.props.stakingAmount}/>
+          <TextTitle text={"Staking amount:"} size={18}/>
+          <InputAmount editable={false} initValue={this.props.stakingAmount}/>
 
-        <Text style={[styles.text, {color: this.state.isDarkMode ? Colors.white : Colors.black},]}>
-          Start date:
-        </Text>
-        <TextInput
-          editable={false}
-          style={styles.input}
-          value={"Your validation will start at least 5 minutes after you submit this form."}/>
+          <TextTitle text={"Start date:"} size={18}/>
+          <InputText editable={false}
+                     value={"Your validation will start at least 5 minutes after you submit this form."}/>
 
-        <Text style={[styles.text, {color: this.state.isDarkMode ? Colors.white : Colors.black},]}>
-          End date:
-        </Text>
-        <TextInput
-          editable={false}
-          style={styles.input}
-          value={this.props.endDate}/>
+          <TextTitle text={"End date:"} size={18}/>
+          <InputText editable={false} value={this.props.endDate}/>
 
-        <Text style={[styles.text, {color: this.state.isDarkMode ? Colors.white : Colors.black},]}>
-          Delegation fee:
-        </Text>
-        <TextInput
-          editable={false}
-          style={styles.input}
-          value={this.props.delegationFee}/>
+          <TextTitle text={"Delegation fee:"} size={18}/>
+          <InputAmount editable={false} initValue={this.props.delegationFee}/>
 
-        <Text style={[styles.text, {color: this.state.isDarkMode ? Colors.white : Colors.black},]}>
-          Reward address:
-        </Text>
-        <TextInput
-          editable={false}
-          style={styles.input}
-          value={this.props.rewardAddress}/>
+          <TextTitle text={"Reward address:"} size={18}/>
+          <InputText editable={false} value={this.props.rewardAddress}/>
 
-        <View style={styles.horizontalLayout}>
-          <View style={styles.button}>
-            <Button
-              title={'Cancel'}
+          <View style={styles.horizontalLayout}>
+            <ButtonAva
+              text={'Cancel'}
               onPress={this.props.onClose}/>
-          </View>
-          <View style={styles.button}>
-            <Button
-              title={'Confirm'}
+            <ButtonAva
+              text={'Confirm'}
               onPress={this.props.onSubmit}/>
           </View>
-        </View>
+        </ScrollView>
       </SafeAreaView>
     )
   }
 }
 
 const styles: any = StyleSheet.create({
-    text: {
-      fontSize: 16,
-      fontWeight: '700',
-      marginEnd: 20,
-    },
-    button: {
-      flex: 1,
-      marginHorizontal: 20,
-    },
-    input: {
-      height: 40,
-      margin: 12,
-      borderWidth: 1,
-      paddingHorizontal: 8,
-    },
     horizontalLayout: {
       flexDirection: 'row',
+      justifyContent: "space-evenly"
     },
   }
 )

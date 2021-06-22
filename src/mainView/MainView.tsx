@@ -1,21 +1,24 @@
 import React, {Component} from "react"
-import {Alert, Appearance, Button, Modal, ScrollView, SectionList, StyleSheet, Text} from "react-native"
-import {Colors} from "react-native/Libraries/NewAppScreen"
+import {Alert, Appearance, Modal, ScrollView, StyleSheet, View} from "react-native"
 import CommonViewModel from "../CommonViewModel"
 import Header from "./Header"
 import MainViewViewModel from "./MainViewViewModel"
 import SendAvaxX from "../sendAvax/SendAvaxX"
-import {MnemonicWallet} from "../../wallet_sdk"
 import SendAvaxC from "../sendAvax/SendAvaxC"
 import SendCrossChain from "../sendAvax/SendCrossChain";
 import Loader from "../common/Loader"
 import Validate from "../earn/Validate"
+import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
+import TextAmount from "../common/TextAmount"
+import TextLabel from "../common/TextLabel"
+import ButtonAva from "../common/ButtonAva"
+import TextTitle from "../common/TextTitle"
 
-type MainViewProps = {
+type Props = {
   wallet: MnemonicWallet,
   onLogout: () => void,
 }
-type MainViewState = {
+type State = {
   isDarkMode: boolean
   backgroundStyle: any
   loaderVisible: boolean
@@ -23,9 +26,13 @@ type MainViewState = {
   addressX: string
   addressP: string
   addressC: string
+  availableTotal: string
   availableX: string
   availableP: string
   availableC: string
+  lockedX: string
+  lockedP: string
+  lockedStakeable: string
   stakingAmount: string
   sendXVisible: boolean
   sendCVisible: boolean
@@ -35,11 +42,11 @@ type MainViewState = {
   walletEvmAddress: string
 }
 
-class MainView extends Component<MainViewProps, MainViewState> {
+class MainView extends Component<Props, State> {
   viewModel!: MainViewViewModel
   commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme() as string)
 
-  constructor(props: MainViewProps | Readonly<MainViewProps>) {
+  constructor(props: Props | Readonly<Props>) {
     super(props)
     this.state = {
       isDarkMode: false,
@@ -49,10 +56,14 @@ class MainView extends Component<MainViewProps, MainViewState> {
       addressX: "",
       addressP: "",
       addressC: "",
-      availableX: "",
-      availableP: "",
-      availableC: "",
-      stakingAmount: "",
+      availableTotal: "-- AVAX",
+      availableX: "-- AVAX",
+      availableP: "-- AVAX",
+      availableC: "-- AVAX",
+      lockedX: "0 AVAX",
+      lockedP: "0 AVAX",
+      lockedStakeable: "0 AVAX",
+      stakingAmount: "-- AVAX",
       sendXVisible: false,
       sendCVisible: false,
       crossChainVisible: false,
@@ -78,6 +89,7 @@ class MainView extends Component<MainViewProps, MainViewState> {
     this.viewModel.availableP.subscribe(value => this.setState({availableP: value}))
     this.viewModel.availableC.subscribe(value => this.setState({availableC: value}))
     this.viewModel.stakingAmount.subscribe(value => this.setState({stakingAmount: value}))
+    this.viewModel.availableTotal.subscribe(value => this.setState({availableTotal: value}))
 
     this.viewModel.onResetHdIndices()
       .subscribe({
@@ -93,69 +105,11 @@ class MainView extends Component<MainViewProps, MainViewState> {
     this.viewModel.onComponentUnMount()
   }
 
-  private onSendX(addressX: string, amount: string): void {
-    this.viewModel.onSendAvaxX(addressX, amount)
-      .subscribe({
-        next: txHash => {
-          Alert.alert("Success", "Created transaction: " + txHash)
-        },
-        error: err => Alert.alert("Error", err.message),
-        complete: () => {
-        },
-      })
-  }
-
-  private onSendC(addressC: string, amount: string): void {
-    this.viewModel.onSendAvaxC(addressC, amount)
-      .subscribe({
-        next: txHash => {
-          Alert.alert("Success", "Created transaction: " + txHash)
-        },
-        error: err => Alert.alert("Error", err.message),
-        complete: () => {
-        },
-      })
-  }
-
   private onLogout(): void {
     this.props.onLogout()
   }
 
   render(): Element {
-    const sectionListData = [
-      {
-        title: "Avax Price",
-        data: ["$" + this.state.avaxPrice],
-      },
-      {
-        title: "Derived Wallet Address",
-        data: [this.state.addressX],
-      },
-      {
-        title: "Derived Platform Wallet Address",
-        data: [this.state.addressP],
-      },
-      {
-        title: "Derived EVM Wallet Address",
-        data: [this.state.addressC],
-      },
-      {
-        title: "Available (X)",
-        data: [this.state.availableX],
-      },
-      {
-        title: "Available (P)",
-        data: [this.state.availableP],
-      },
-      {
-        title: "Available (C)",
-        data: [this.state.availableC],
-      },
-      {
-        title: "Staking",
-        data: [this.state.stakingAmount],
-      },
-    ]
 
     return (
       <ScrollView>
@@ -167,37 +121,71 @@ class MainView extends Component<MainViewProps, MainViewState> {
         </Modal>
 
         <Header/>
-        <SectionList
-          sections={sectionListData}
-          renderItem={({item}) => (
-            <Text
-              style={[
-                styles.item,
-                {color: this.state.isDarkMode ? Colors.light : Colors.dark},
-              ]}>
-              {item}
-            </Text>
-          )}
-          renderSectionHeader={({section}) => (
-            <Text style={styles.sectionHeader}>{section.title}</Text>
-          )}
-          keyExtractor={(item, index) => index.toString()}
-        />
+        <TextAmount text={this.state.availableTotal} size={36} textAlign={"center"}/>
+
+        <View style={styles.horizontalLayout}>
+          <View style={styles.column}>
+            <TextLabel text={"Available (X)"}/>
+            <TextAmount text={this.state.availableX}/>
+            <TextLabel text={"Available (P)"}/>
+            <TextAmount text={this.state.availableP}/>
+            <TextLabel text={"Available (C)"}/>
+            <TextAmount text={this.state.availableC}/>
+          </View>
+          <View style={styles.column}>
+            <TextLabel text={"Locked (X)"}/>
+            <TextAmount text={this.state.lockedX}/>
+            <TextLabel text={"Locked (P)"}/>
+            <TextAmount text={this.state.lockedP}/>
+            <TextLabel text={"Locked Stakeable"}/>
+            <TextAmount text={this.state.lockedStakeable}/>
+          </View>
+          <View style={styles.column}>
+            <TextLabel text={"Staking"}/>
+            <TextAmount text={this.state.stakingAmount}/>
+          </View>
+        </View>
+
+        <View style={[{height: 8}]}/>
+        <TextLabel text={"Derived Wallet Address"}/>
+        <TextTitle size={14} text={this.state.addressX}/>
+        <View style={[{height: 8}]}/>
+        <TextLabel text={"Derived Platform Wallet Address"}/>
+        <TextTitle size={14} text={this.state.addressP}/>
+        <View style={[{height: 8}]}/>
+        <TextLabel text={"Derived EVM Wallet Address"}/>
+        <TextTitle size={14} text={this.state.addressC}/>
+        <View style={[{height: 8}]}/>
+
+        <View style={styles.container}>
+          <ButtonAva
+            text={"Send AVAX X"}
+            onPress={() => this.setState({sendXVisible: true})}/>
+          <ButtonAva
+            text={"Send AVAX C"}
+            onPress={() => this.setState({sendCVisible: true})}/>
+          <ButtonAva
+            text={"Cross chain"}
+            onPress={() => this.setState({crossChainVisible: true})}/>
+          <ButtonAva
+            text={"Validate"}
+            onPress={() => this.setState({validateVisible: true})}/>
+          <ButtonAva
+            text={"LogOut"}
+            onPress={() => this.onLogout()}/>
+        </View>
+
         <Modal
           animationType="slide"
           transparent={true}
           visible={this.state.sendXVisible}
-          onRequestClose={() => {
-            console.warn("Modal has been closed.")
-          }}>
+          onRequestClose={() => this.setState({sendXVisible: false})}>
           <SendAvaxX
+            wallet={this.viewModel.wallet.value}
             onClose={() => {
               this.setState({
                 sendXVisible: false,
               })
-            }}
-            onSend={(addressX, amount) => {
-              this.onSendX(addressX, amount)
             }}
           />
         </Modal>
@@ -206,33 +194,21 @@ class MainView extends Component<MainViewProps, MainViewState> {
           animationType="slide"
           transparent={true}
           visible={this.state.sendCVisible}
-          onRequestClose={() => {
-            console.warn("Modal has been closed.")
-          }}>
+          onRequestClose={() => this.setState({sendCVisible: false})}>
           <SendAvaxC
+            wallet={this.viewModel.wallet.value}
             onClose={() => {
               this.setState({
                 sendCVisible: false,
               })
-            }}
-            onSend={(addressX, amount) => {
-              this.onSendC(addressX, amount)
             }}/>
         </Modal>
-        <Button
-          title={"Send AVAX X"}
-          onPress={() => this.setState({sendXVisible: true})}/>
-        <Button
-          title={"Send AVAX C"}
-          onPress={() => this.setState({sendCVisible: true})}/>
 
         <Modal
           animationType="slide"
           transparent={true}
           visible={this.state.crossChainVisible}
-          onRequestClose={() => {
-            console.warn("Modal has been closed.")
-          }}>
+          onRequestClose={() => this.setState({crossChainVisible: false})}>
           <SendCrossChain
             wallet={this.viewModel.wallet.value}
             onClose={() => {
@@ -241,9 +217,6 @@ class MainView extends Component<MainViewProps, MainViewState> {
               })
             }}/>
         </Modal>
-        <Button
-          title={"Cross chain"}
-          onPress={() => this.setState({crossChainVisible: true})}/>
 
         <Modal
           animationType="slide"
@@ -253,13 +226,6 @@ class MainView extends Component<MainViewProps, MainViewState> {
             wallet={this.viewModel.wallet.value}
             onClose={() => this.setState({validateVisible: false})}/>
         </Modal>
-        <Button
-          title={"Validate"}
-          onPress={() => this.setState({validateVisible: true})}/>
-
-        <Button
-          title={"LogOut"}
-          onPress={() => this.onLogout()}/>
       </ScrollView>
     )
   }
@@ -267,22 +233,16 @@ class MainView extends Component<MainViewProps, MainViewState> {
 
 const styles = StyleSheet.create({
   container: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center"
+  },
+  horizontalLayout: {
+    flexDirection: 'row',
+    padding: 8,
+  },
+  column: {
     flex: 1,
-    paddingTop: 22,
-  },
-  sectionHeader: {
-    paddingTop: 2,
-    paddingLeft: 10,
-    paddingRight: 10,
-    paddingBottom: 2,
-    fontSize: 14,
-    fontWeight: "bold",
-    backgroundColor: "rgba(247,247,247,1.0)",
-  },
-  item: {
-    padding: 10,
-    fontSize: 18,
-    height: 44,
   },
 })
 

@@ -1,5 +1,5 @@
-import {MnemonicWallet, Network, Utils} from '../wallet_sdk'
-import {NetworkConfig} from '../wallet_sdk/Network/types'
+import {NetworkConfig} from "@avalabs/avalanche-wallet-sdk/dist/Network/types"
+import {MnemonicWallet, Network, Utils} from "@avalabs/avalanche-wallet-sdk"
 
 export default {
   setNetwork: (config: NetworkConfig): void => {

@@ -1,9 +1,8 @@
-import {BN} from 'avalanche';
-import {asyncScheduler, BehaviorSubject, from, Observable, of, zip} from "rxjs"
-import {MnemonicWallet, Utils} from "../../wallet_sdk"
+import {asyncScheduler, BehaviorSubject, combineLatest, from, merge, Observable} from "rxjs"
 import WalletSDK from "../WalletSDK"
 import {concatMap, delay, filter, map, retryWhen, subscribeOn, take, tap} from "rxjs/operators"
-import {AssetBalanceP, iWalletAddressChanged, WalletBalanceX} from "../../wallet_sdk/Wallet/types"
+import {BN, MnemonicWallet, Utils} from "@avalabs/avalanche-wallet-sdk"
+import {AssetBalanceP, iWalletAddressChanged, WalletBalanceX} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/types"
 
 enum WalletEvents {
   AddressChanged = "addressChanged",
@@ -20,10 +19,15 @@ export default class {
   addressX: BehaviorSubject<string> = new BehaviorSubject<string>("")
   addressP: BehaviorSubject<string> = new BehaviorSubject<string>("")
   addressC: Observable<string>
-  stakingAmount: Observable<string>
+  private balanceX: Observable<BN>
+  private balanceP: Observable<BN>
+  private balanceC: Observable<BN>
+  private stake: Observable<BN>
   availableX: Observable<string>
   availableP: Observable<string>
   availableC: Observable<string>
+  stakingAmount: Observable<string>
+  availableTotal: Observable<string>
   newBalanceX: BehaviorSubject<WalletBalanceX | null> = new BehaviorSubject<WalletBalanceX | null>(null)
   newBalanceP: BehaviorSubject<AssetBalanceP | null> = new BehaviorSubject<AssetBalanceP | null>(null)
   newBalanceC: BehaviorSubject<BN | null> = new BehaviorSubject<BN | null>(null)
@@ -43,37 +47,70 @@ export default class {
       map(wallet => wallet.getAddressC()),
     )
 
-    this.stakingAmount = this.wallet.pipe(
+    this.stake = this.wallet.pipe(
       concatMap(wallet => wallet.getStake()),
+      map(stake => stake.staked)
+    )
+
+    this.stakingAmount = this.stake.pipe(
       map(stake => {
         const symbol = 'AVAX'
         return Utils.bnToLocaleString(stake, 9) + ' ' + symbol
       })
     )
 
-    this.availableX = this.newBalanceX.pipe(
+    this.balanceX = this.newBalanceX.pipe(
       filter(value => value !== null),
       map(assetBalance => assetBalance!['U8iRqJoiJm8xZHAacmvYyZVwqQx6uDNtQeP3CQ6fcgQk3JqnK'].unlocked), //fixme should not be hardcoded?
+    )
+
+    this.availableX = this.balanceX.pipe(
       map(balance => {
         const symbol = 'AVAX'
         return Utils.bnToAvaxX(balance) + ' ' + symbol
       })
     )
 
-    this.availableP = this.newBalanceP.pipe(
+    this.balanceP = this.newBalanceP.pipe(
       filter(value => value !== null),
       map(assetBalance => assetBalance!.unlocked),
+    )
+
+    this.availableP = this.balanceP.pipe(
       map(balance => {
         const symbol = 'AVAX'
         return Utils.bnToAvaxP(balance) + ' ' + symbol
       })
     )
 
-    this.availableC = this.newBalanceC.pipe(
-      filter(value => value !== null),
+    this.balanceC = merge(
+      this.wallet.value.evmWallet.updateBalance(),
+      this.newBalanceC.pipe(filter(value => value !== null))
+    ).pipe(
+      map(balance => balance!)
+    )
+
+    this.availableC = this.balanceC.pipe(
       map(balance => {
         const symbol = 'AVAX'
-        return Utils.bnToAvaxC(<BN>balance) + ' ' + symbol
+        return Utils.bnToAvaxC(balance) + ' ' + symbol
+      })
+    )
+
+    this.availableTotal = combineLatest([
+      this.balanceX,
+      this.balanceP,
+      this.balanceC,
+      this.stake
+    ]).pipe(
+      map(([balanceX, balanceP, balanceC, stake]) => {
+        const bigx = Utils.bnToBigAvaxX(balanceX)
+        const bigp = Utils.bnToBigAvaxP(balanceP)
+        const bigc = Utils.bnToBigAvaxC(balanceC)
+        const bigs = Utils.bnToBig(stake, 9)
+        const total = bigx.add(bigp).add(bigc).add(bigs);
+        const symbol = 'AVAX'
+        return Utils.bigToLocaleString(total, 6) + ' ' + symbol
       })
     )
   }
@@ -102,40 +139,6 @@ export default class {
         }),
         subscribeOn(asyncScheduler),
       )
-  }
-
-  onSendAvaxX = (addressX: string, amount: string, memo?: string): Observable<string> => {
-    return zip(
-      this.wallet,
-      of(amount),
-      of(addressX)
-    ).pipe(
-      take(1),
-      concatMap(([wallet, amount, toAddress]) => {
-        const denomination = wallet.getAvaxBalanceX().meta.denomination
-        const bnAmount = Utils.numberToBN(amount, denomination)
-        return wallet.sendAvaxX(toAddress, bnAmount, memo)
-      }),
-      subscribeOn(asyncScheduler),
-    )
-  }
-
-  onSendAvaxC = (addressC: string, amount: string): Observable<string> => {
-    return zip(
-      this.wallet,
-      of(amount),
-      of(addressC)
-    ).pipe(
-      take(1),
-      concatMap(([wallet, amount, toAddress]) => {
-        const denomination = 9
-        const bnAmount = Utils.numberToBN(amount, denomination)
-        const gasPrice = Utils.numberToBN(225, denomination) //todo unfix
-        const gasLimit = 21000 //todo unfix
-        return wallet.sendAvaxC(toAddress, bnAmount, gasPrice, gasLimit)
-      }),
-      subscribeOn(asyncScheduler),
-    )
   }
 
   private onBalanceChangedX = (balance: WalletBalanceX): void => {
