@@ -68,3 +68,22 @@ To add custom font, add it to src/assets folder and then run:
 ```zsh
 yarn link
 ```
+
+## Releasing apps
+
+### Android
+
+Make release AAB
+```zsh
+cd android
+./gradlew bundleRelease
+```
+and then upload generated aab file to [play console](https://play.google.com/console) 
+
+### iOS
+
+1. In **Info.plist** set flags `NSAllowsArbitraryLoads` & `NSExceptionAllowsInsecureHTTPLoads` to `false`
+2. Open Xcode
+3. Configure app to be built using the Release scheme, go to `Product → Scheme → Edit Scheme`. Select the `Run` tab in the sidebar, then set the `Build Configuration` dropdown to `Release`
+4. Set build target to `Any iOS device`
+5. Go to `Product → Archive` and follow wizard steps
