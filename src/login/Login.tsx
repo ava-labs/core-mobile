@@ -36,7 +36,9 @@ class Login extends Component<Props, State> {
     this.commonViewModel.backgroundStyle.subscribe(value => this.setState({backgroundStyle: value}))
 
     BiometricsSDK.loadMnemonic().then(value => {
-      this.setState({mnemonic: (value as UserCredentials).password})
+      if (value !== false) {
+        this.setState({mnemonic: (value as UserCredentials).password})
+      }
     }).catch(reason => Alert.alert("Error", reason.message))
 
   }
