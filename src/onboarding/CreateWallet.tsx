@@ -1,11 +1,12 @@
 import React, {Component} from 'react'
-import {Appearance, View} from 'react-native'
+import {Appearance, ToastAndroid, View} from 'react-native'
 import CommonViewModel from '../CommonViewModel'
 import Header from '../mainView/Header'
 import CreateWalletViewModel from './CreateWalletViewModel'
 import TextTitle from "../common/TextTitle"
 import InputText from "../common/InputText"
 import ButtonAva from "../common/ButtonAva"
+import Clipboard from "@react-native-clipboard/clipboard"
 
 type Props = {
   onClose: () => void,
@@ -42,8 +43,13 @@ class CreateWallet extends Component<Props, State> {
     this.props.onClose()
   }
 
-  onSavedMyPhrase(): void {
+  private onSavedMyPhrase = (): void => {
     this.props.onSavedMyPhrase(this.viewModel.mnemonic)
+  }
+
+  private copyToClipboard = (): void => {
+    Clipboard.setString(this.state.mnemonic)
+    ToastAndroid.show("Copied", 1000)
   }
 
   render(): Element {
@@ -57,7 +63,8 @@ class CreateWallet extends Component<Props, State> {
 
         <InputText multiline={true} value={this.state.mnemonic} editable={false}/>
 
-        <ButtonAva text={"I saved my phrase somewhere safe"} onPress={() => this.onSavedMyPhrase()}/>
+        <ButtonAva text={"Copy to clipboard"} onPress={this.copyToClipboard}/>
+        <ButtonAva text={"I saved my phrase somewhere safe"} onPress={this.onSavedMyPhrase}/>
         <ButtonAva text={"Back"} onPress={() => this.onClose()}/>
       </View>
     )
