@@ -9,10 +9,9 @@ import SendCrossChain from "../sendAvax/SendCrossChain";
 import Loader from "../common/Loader"
 import Validate from "../earn/Validate"
 import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
-import TextAmount from "../common/TextAmount"
-import TextLabel from "../common/TextLabel"
 import ButtonAva from "../common/ButtonAva"
 import TabbedAddressCards from "./TabbedAddressCards"
+import Balances from "./Balances"
 
 type Props = {
   wallet: MnemonicWallet,
@@ -26,14 +25,6 @@ type State = {
   addressX: string
   addressP: string
   addressC: string
-  availableTotal: string
-  availableX: string
-  availableP: string
-  availableC: string
-  lockedX: string
-  lockedP: string
-  lockedStakeable: string
-  stakingAmount: string
   sendXVisible: boolean
   sendCVisible: boolean
   crossChainVisible: boolean
@@ -56,14 +47,6 @@ class MainView extends Component<Props, State> {
       addressX: "",
       addressP: "",
       addressC: "",
-      availableTotal: "-- AVAX",
-      availableX: "-- AVAX",
-      availableP: "-- AVAX",
-      availableC: "-- AVAX",
-      lockedX: "0 AVAX",
-      lockedP: "0 AVAX",
-      lockedStakeable: "0 AVAX",
-      stakingAmount: "-- AVAX",
       sendXVisible: false,
       sendCVisible: false,
       crossChainVisible: false,
@@ -85,11 +68,6 @@ class MainView extends Component<Props, State> {
     this.viewModel.addressX.subscribe(value => this.setState({addressX: value}))
     this.viewModel.addressP.subscribe(value => this.setState({addressP: value}))
     this.viewModel.addressC.subscribe(value => this.setState({addressC: value}))
-    this.viewModel.availableX.subscribe(value => this.setState({availableX: value}))
-    this.viewModel.availableP.subscribe(value => this.setState({availableP: value}))
-    this.viewModel.availableC.subscribe(value => this.setState({availableC: value}))
-    this.viewModel.stakingAmount.subscribe(value => this.setState({stakingAmount: value}))
-    this.viewModel.availableTotal.subscribe(value => this.setState({availableTotal: value}))
 
     this.viewModel.onResetHdIndices()
       .subscribe({
@@ -121,31 +99,7 @@ class MainView extends Component<Props, State> {
         </Modal>
 
         <Header/>
-        <TextAmount text={this.state.availableTotal} size={36} textAlign={"center"}/>
-
-        <View style={styles.horizontalLayout}>
-          <View style={styles.column}>
-            <TextLabel text={"Available (X)"}/>
-            <TextAmount text={this.state.availableX}/>
-            <TextLabel text={"Available (P)"}/>
-            <TextAmount text={this.state.availableP}/>
-            <TextLabel text={"Available (C)"}/>
-            <TextAmount text={this.state.availableC}/>
-          </View>
-          <View style={styles.column}>
-            <TextLabel text={"Locked (X)"}/>
-            <TextAmount text={this.state.lockedX}/>
-            <TextLabel text={"Locked (P)"}/>
-            <TextAmount text={this.state.lockedP}/>
-            <TextLabel text={"Locked Stakeable"}/>
-            <TextAmount text={this.state.lockedStakeable}/>
-          </View>
-          <View style={styles.column}>
-            <TextLabel text={"Staking"}/>
-            <TextAmount text={this.state.stakingAmount}/>
-          </View>
-        </View>
-
+        <Balances wallet={this.props.wallet}/>
         <TabbedAddressCards addressP={this.state.addressP} addressX={this.state.addressX} addressC={this.state.addressC}/>
 
         <View style={styles.container}>
