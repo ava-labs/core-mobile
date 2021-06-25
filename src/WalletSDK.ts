@@ -12,8 +12,7 @@ export default {
     return MnemonicWallet.fromMnemonic(mnemonic)
   },
   newMnemonicWallet(): MnemonicWallet {
-    return this.getMnemonicValet(this.testMnemonic())
-    // return MnemonicWallet.create()
+    return MnemonicWallet.create()
   },
   testMnemonic(): string {
     //fixme: delete this when saving mnemonic is implemented

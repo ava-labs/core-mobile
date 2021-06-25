@@ -1,11 +1,13 @@
 import React, {Component} from 'react'
-import {Appearance, View} from 'react-native'
+import {Alert, Appearance, View} from 'react-native'
 import CommonViewModel from '../CommonViewModel'
 import Header from '../mainView/Header'
-import WalletSDK from '../WalletSDK'
 import TextTitle from "../common/TextTitle"
 import InputText from "../common/InputText"
 import ButtonAva from "../common/ButtonAva"
+import {UserCredentials} from "react-native-keychain"
+import BiometricsSDK from "../BiometricsSDK"
+import WalletSDK from "../WalletSDK"
 
 type Props = {
   onEnterWallet: (mnemonic: string) => void,
@@ -25,23 +27,34 @@ class Login extends Component<Props, State> {
     this.state = {
       isDarkMode: false,
       backgroundStyle: {},
-      mnemonic: WalletSDK.testMnemonic(),
+      mnemonic: "",
     }
   }
 
   componentDidMount(): void {
     this.commonViewModel.isDarkMode.subscribe(value => this.setState({isDarkMode: value}))
     this.commonViewModel.backgroundStyle.subscribe(value => this.setState({backgroundStyle: value}))
+
+    BiometricsSDK.loadMnemonic().then(value => {
+      if (value !== false) {
+        this.setState({mnemonic: (value as UserCredentials).password})
+      }
+    }).catch(reason => Alert.alert("Error", reason.message))
+
   }
 
   componentWillUnmount(): void {
   }
 
-  onEnterWallet(): void {
+  private onEnterWallet = (): void => {
     this.props.onEnterWallet(this.state.mnemonic)
   }
 
-  onClose(): void {
+  private onEnterTestWallet = (): void => {
+    this.props.onEnterWallet(WalletSDK.testMnemonic())
+  }
+
+  private onClose = (): void => {
     this.props.onClose()
   }
 
@@ -52,15 +65,15 @@ class Login extends Component<Props, State> {
         <View style={[{height: 8}]}/>
         <TextTitle text={"Mnemonic Wallet"} textAlign={"center"} bold={true}/>
         <View style={[{height: 8}]}/>
-        <TextTitle text={"Prefilled for testing purposes!!"} size={20} textAlign={"center"} bold={true}/>
 
         <InputText
           multiline={true}
           onChangeText={text => this.setState({mnemonic: text})}
           value={this.state.mnemonic}/>
 
-        <ButtonAva text={"Enter wallet"} onPress={() => this.onEnterWallet()}/>
-        <ButtonAva text={"Back"} onPress={() => this.onClose()}/>
+        <ButtonAva text={"Enter wallet"} onPress={this.onEnterWallet}/>
+        <ButtonAva text={"Enter test wallet"} onPress={this.onEnterTestWallet}/>
+        <ButtonAva text={"Back"} onPress={this.onClose}/>
       </View>
     )
   }
