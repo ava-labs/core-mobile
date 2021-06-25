@@ -54,10 +54,8 @@ class CreateWallet extends Component<Props, State> {
         <TextTitle text={"Here are you 24 word key phrase. Please store it somewhere safe."} size={20}
                    textAlign={"center"}/>
         <View style={[{height: 8}]}/>
-        <TextTitle text={"For testing purposes, this is always the same phrase!!"} size={20} textAlign={"center"}
-                   bold={true}/>
 
-        <InputText multiline={true} value={this.state.mnemonic}/>
+        <InputText multiline={true} value={this.state.mnemonic} editable={false}/>
 
         <ButtonAva text={"I saved my phrase somewhere safe"} onPress={() => this.onSavedMyPhrase()}/>
         <ButtonAva text={"Back"} onPress={() => this.onClose()}/>

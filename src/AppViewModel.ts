@@ -7,6 +7,7 @@ export enum SelectedView {
   CreateWallet,
   Login,
   Main,
+  CheckMnemonic,
 }
 
 export default class {
@@ -20,6 +21,11 @@ export default class {
   onEnterWallet(mnemonic: string): void {
     this.wallet = WalletSDK.getMnemonicValet(mnemonic)
     this.setSelectedView(SelectedView.Main)
+  }
+
+  onSavedMnemonic(mnemonic: string): void {
+    this.wallet = WalletSDK.getMnemonicValet(mnemonic)
+    this.setSelectedView(SelectedView.CheckMnemonic)
   }
 
   onLogout(): void {
