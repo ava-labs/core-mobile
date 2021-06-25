@@ -21,11 +21,13 @@ const options: Options = {
   rules: SECURITY_RULES.AUTOMATIC_UPGRADE
 }
 
-export default {
-  loadMnemonic: (): Promise<false | UserCredentials> => {
-    return Keychain.getGenericPassword(options)
-  },
-  saveMnemonic: (mnemonic: string): Promise<false | Result> => {
+export default class BiometricsSDK {
+  static saveMnemonic = (mnemonic: string): Promise<false | Result> => {
     return Keychain.setGenericPassword("mnemonic", mnemonic, options)
-  },
+  }
+
+  static loadMnemonic = (): Promise<false | UserCredentials> => {
+    return Keychain.getGenericPassword(options)
+  }
+
 }

@@ -70,15 +70,15 @@ export default class {
         }
         return mnemonic
       }),
-      switchMap(mnemonic => zip(of(mnemonic), BiometricsSDK.loadMnemonic())),
-      switchMap(([mnemonic, credentials]) => {
+      switchMap(mnemonic => BiometricsSDK.saveMnemonic(mnemonic)),
+      switchMap(credentials => {
         if (credentials === false) {
-          throw Error("Error authenticating")
+          throw Error("Error saving mnemonic")
         }
-        return BiometricsSDK.saveMnemonic(mnemonic)
+        return BiometricsSDK.loadMnemonic()
       }),
-      map(value => {
-        if (value === false) {
+      map(credentials => {
+        if (credentials === false) {
           throw Error("Error saving mnemonic")
         }
         return true
