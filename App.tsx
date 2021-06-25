@@ -10,9 +10,10 @@ import {Appearance, SafeAreaView, StatusBar,} from 'react-native'
 import AppViewModel, {SelectedView} from './src/AppViewModel'
 import CommonViewModel from './src/CommonViewModel'
 import Login from './src/login/Login'
-import MainView from './src/mainView/MainView'
 import Onboard from './src/onboarding/Onboard'
 import CreateWallet from './src/onboarding/CreateWallet'
+import CheckMnemonic from "./src/onboarding/CheckMnemonic"
+import MainView from "./src/mainView/MainView"
 
 type AppProps = {}
 type AppState = {
@@ -30,7 +31,7 @@ class App extends Component<AppProps, AppState> {
     this.state = {
       backgroundStyle: {},
       isDarkMode: false,
-      selectedView: SelectedView.Login,
+      selectedView: SelectedView.Onboard,
     }
   }
 
@@ -44,23 +45,33 @@ class App extends Component<AppProps, AppState> {
     this.viewModel.selectedView.subscribe(value => this.setState({selectedView: value}))
   }
 
-  onEnterWallet(mnemonic: string): void {
+  private onEnterWallet = (mnemonic: string): void => {
     this.viewModel.onEnterWallet(mnemonic)
+  }
+
+  private onSavedMnemonic = (mnemonic: string): void => {
+    this.viewModel.onSavedMnemonic(mnemonic)
   }
 
   getSelectedView(): Element {
     switch (this.state.selectedView) {
       case SelectedView.CreateWallet:
         return <CreateWallet
-          onSavedMyPhrase={mnemonic => this.onEnterWallet(mnemonic)}
+          onSavedMyPhrase={this.onSavedMnemonic}
           onClose={() => this.viewModel.setSelectedView(SelectedView.Onboard)}/>
+      case SelectedView.CheckMnemonic:
+        if (this.viewModel.wallet === null) throw Error("Wallet not defined")
+        return <CheckMnemonic
+          onSuccess={() => this.viewModel.setSelectedView(SelectedView.Main)}
+          onClose={() => this.viewModel.setSelectedView(SelectedView.Onboard)}
+          mnemonic={this.viewModel.wallet.mnemonic}/>
       case SelectedView.Onboard:
         return <Onboard
           onAlreadyHaveWallet={() => this.viewModel.setSelectedView(SelectedView.Login)}
           onCreateWallet={() => this.viewModel.setSelectedView(SelectedView.CreateWallet)}/>
       case SelectedView.Login:
         return <Login
-          onEnterWallet={mnemonic => this.onEnterWallet(mnemonic)}
+          onEnterWallet={this.onEnterWallet}
           onClose={() => this.viewModel.setSelectedView(SelectedView.Onboard)}/>
       case SelectedView.Main:
         if (this.viewModel.wallet === null) throw Error("Wallet not defined")
