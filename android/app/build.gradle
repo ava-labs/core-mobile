@@ -120,6 +120,9 @@ def jscFlavor = 'org.webkit:android-jsc:+'
  */
 def enableHermes = project.ext.react.get("enableHermes", false);
 
+Properties keystoreProperties = new Properties()
+keystoreProperties.load(project.rootProject.file('keystore.properties').newDataInputStream())
+
 android {
     ndkVersion rootProject.ext.ndkVersion
 
@@ -149,10 +152,10 @@ android {
     }
     signingConfigs {
         release {
-            storeFile file(MYAPP_UPLOAD_STORE_FILE)
-            storePassword MYAPP_UPLOAD_STORE_PASSWORD
-            keyAlias MYAPP_UPLOAD_KEY_ALIAS
-            keyPassword MYAPP_UPLOAD_KEY_PASSWORD
+            storeFile file(keystoreProperties['MYAPP_UPLOAD_STORE_FILE'])
+            storePassword keystoreProperties['MYAPP_UPLOAD_STORE_PASSWORD']
+            keyAlias keystoreProperties['MYAPP_UPLOAD_KEY_ALIAS']
+            keyPassword keystoreProperties['MYAPP_UPLOAD_KEY_PASSWORD']
         }
         debug {
             storeFile file('debug.keystore')
