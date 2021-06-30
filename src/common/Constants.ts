@@ -12,6 +12,8 @@ export enum COLORS {
   bgWallet = "#f5f6fa",
   bgWalletLight = "#fff",
   warning = "#ef8f4a",
+  incoming = "#6bc688",
+  outgoing = "#d04c4c",
 }
 
 export enum COLORS_NIGHT {
@@ -28,4 +30,6 @@ export enum COLORS_NIGHT {
   bgWallet = "#181b1d",
   bgWalletLight = "#242729",
   warning = "#d49534",
+  incoming = "#6bc688",
+  outgoing = "#d04c4c",
 }
