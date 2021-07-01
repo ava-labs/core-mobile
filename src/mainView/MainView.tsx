@@ -12,6 +12,7 @@ import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 import ButtonAva from "../common/ButtonAva"
 import TabbedAddressCards from "./TabbedAddressCards"
 import Balances from "./Balances"
+import Transactions from "../transactions/Transactions"
 
 type Props = {
   wallet: MnemonicWallet,
@@ -29,6 +30,7 @@ type State = {
   sendCVisible: boolean
   crossChainVisible: boolean
   validateVisible: boolean
+  transactionsVisible: boolean
   walletCAddress: string
   walletEvmAddress: string
 }
@@ -51,6 +53,7 @@ class MainView extends Component<Props, State> {
       sendCVisible: false,
       crossChainVisible: false,
       validateVisible: false,
+      transactionsVisible: false,
       walletCAddress: "",
       walletEvmAddress: "",
     }
@@ -116,6 +119,9 @@ class MainView extends Component<Props, State> {
             text={"Validate"}
             onPress={() => this.setState({validateVisible: true})}/>
           <ButtonAva
+            text={"Transactions"}
+            onPress={() => this.setState({transactionsVisible: true})}/>
+          <ButtonAva
             text={"LogOut"}
             onPress={() => this.onLogout()}/>
         </View>
@@ -166,10 +172,21 @@ class MainView extends Component<Props, State> {
         <Modal
           animationType="slide"
           transparent={true}
+          onRequestClose={() => this.setState({validateVisible:false})}
           visible={this.state.validateVisible}>
           <Validate
             wallet={this.viewModel.wallet.value}
             onClose={() => this.setState({validateVisible: false})}/>
+        </Modal>
+
+        <Modal
+          animationType="slide"
+          transparent={true}
+          onRequestClose={() => this.setState({transactionsVisible:false})}
+          visible={this.state.transactionsVisible}>
+          <Transactions
+            wallet={this.viewModel.wallet.value}
+            onClose={() => this.setState({transactionsVisible: false})}/>
         </Modal>
       </ScrollView>
     )
