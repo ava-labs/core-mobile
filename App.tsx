@@ -6,7 +6,7 @@
  */
 
 import React, {Component} from 'react'
-import {Appearance, SafeAreaView, StatusBar,} from 'react-native'
+import {Appearance, BackHandler, NativeEventSubscription, SafeAreaView, StatusBar,} from 'react-native'
 import AppViewModel, {SelectedView} from './src/AppViewModel'
 import CommonViewModel from './src/CommonViewModel'
 import Login from './src/login/Login'
@@ -25,6 +25,8 @@ type AppState = {
 class App extends Component<AppProps, AppState> {
   viewModel: AppViewModel = new AppViewModel()
   commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme() as string)
+  private backHandler?: NativeEventSubscription
+
 
   constructor(props: AppProps | Readonly<AppProps>) {
     super(props)
@@ -36,6 +38,7 @@ class App extends Component<AppProps, AppState> {
   }
 
   componentWillUnmount() {
+    this.backHandler?.remove()
   }
 
   componentDidMount() {
@@ -43,6 +46,11 @@ class App extends Component<AppProps, AppState> {
     this.commonViewModel.isDarkMode.subscribe(value => this.setState({isDarkMode: value}))
     this.commonViewModel.backgroundStyle.subscribe(value => this.setState({backgroundStyle: value}))
     this.viewModel.selectedView.subscribe(value => this.setState({selectedView: value}))
+
+    this.backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      this.viewModel.onBackPressed
+    );
   }
 
   private onEnterWallet = (mnemonic: string): void => {
@@ -53,7 +61,7 @@ class App extends Component<AppProps, AppState> {
     this.viewModel.onSavedMnemonic(mnemonic)
   }
 
-  getSelectedView(): Element {
+  getSelectedView = (): Element => {
     switch (this.state.selectedView) {
       case SelectedView.CreateWallet:
         return <CreateWallet
