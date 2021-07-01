@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@avalabs/avalanche-wallet-sdk@^0.5.0":
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/@avalabs/avalanche-wallet-sdk/-/avalanche-wallet-sdk-0.5.0.tgz#3c3acce3e81d6aca9f87427307b8258669b2a8a4"
-  integrity sha512-MR9LN6l04jZ8IVCY2tn4KLAkg64GQZjO4lV0us3AUJgR/+JrmOtS7iodB5yphNVkwrELLwLoguvOKc65OPUevg==
+"@avalabs/avalanche-wallet-sdk@^0.7.0":
+  version "0.7.1"
+  resolved "https://registry.yarnpkg.com/@avalabs/avalanche-wallet-sdk/-/avalanche-wallet-sdk-0.7.1.tgz#8c705659fe06732f97fc08bc5f2e7927b697605a"
+  integrity sha512-UXVeV96wjsJ0bJ+LdlIg1SsFLgqnIpvaehEjaXPHVu92Vg1er9w0eMG5Eo3DY+FPpxYyE8/B2p8YfMqkBiYFrg==
   dependencies:
     "@ethereumjs/common" "2.2.0"
     "@ethereumjs/tx" "3.1.4"
@@ -23,9 +23,11 @@
     hdkey "2.0.1"
     moment "^2.29.1"
     rollup-plugin-commonjs "^10.1.0"
+    sockette "^2.0.6"
     typedoc "^0.20.36"
     typescript-transform-paths "^2.2.3"
     web3 "^1.3.5"
+    web3-eth-contract "^1.3.6"
 
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.12.13", "@babel/code-frame@^7.14.5":
   version "7.14.5"
@@ -2236,7 +2238,7 @@ avalanche@3.6.2:
     store2 "2.11.0"
     ws "^7.4.6"
 
-avalanche@^3.5.0:
+avalanche@^3.7.0:
   version "3.7.0"
   resolved "https://registry.yarnpkg.com/avalanche/-/avalanche-3.7.0.tgz#31036afdab6dbb49357bfb63ea22b557fd942e9e"
   integrity sha512-ik7U7OFZcHavZsoZ9k+psI2/TftbpxLULTzOmwabNXsjCjtSz6w+YFN5Nok+6VXlHP/yNMsuZjSovRA5xtTPhQ==
@@ -8459,6 +8461,11 @@ snapdragon@^0.8.1:
     source-map-resolve "^0.5.0"
     use "^3.1.0"
 
+sockette@^2.0.6:
+  version "2.0.6"
+  resolved "https://registry.yarnpkg.com/sockette/-/sockette-2.0.6.tgz#63b533f3cfe3b592fc84178beea6577fa18cebf3"
+  integrity sha512-W6iG8RGV6Zife3Cj+FhuyHV447E6fqFM2hKmnaQrTvg3OydINV3Msj3WPFbX76blUlUxvQSMMMdrJxce8NqI5Q==
+
 source-map-resolve@^0.5.0:
   version "0.5.3"
   resolved "https://registry.yarnpkg.com/source-map-resolve/-/source-map-resolve-0.5.3.tgz#190866bece7553e1f8f267a2ee82c606b5509a1a"
@@ -9477,7 +9484,7 @@ web3-eth-accounts@1.3.6:
     web3-core-method "1.3.6"
     web3-utils "1.3.6"
 
-web3-eth-contract@1.3.6:
+web3-eth-contract@1.3.6, web3-eth-contract@^1.3.6:
   version "1.3.6"
   resolved "https://registry.yarnpkg.com/web3-eth-contract/-/web3-eth-contract-1.3.6.tgz#cccf4d32dc56917fb6923e778498a9ba2a5ba866"
   integrity sha512-8gDaRrLF2HCg+YEZN1ov0zN35vmtPnGf3h1DxmJQK5Wm2lRMLomz9rsWsuvig3UJMHqZAQKD7tOl3ocJocQsmA==
