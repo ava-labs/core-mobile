@@ -46,6 +46,8 @@
     "crypto-js": "4.1.1",
     "ethereumjs-util": "7.0.10",
     "hdkey": "^2.0.1",
+    "lottie-ios": "3.2.3",
+    "lottie-react-native": "5.0.1",
     "jail-monkey": "^2.6.0",
     "moment": "^2.29.1",
     "node-libs-react-native": "^1.2.1",
