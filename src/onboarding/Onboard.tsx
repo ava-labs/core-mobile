@@ -4,6 +4,7 @@ import CommonViewModel from '../CommonViewModel'
 import Header from '../mainView/Header'
 import TextTitle from "../common/TextTitle"
 import ButtonAva from "../common/ButtonAva"
+import TextLabel from "../common/TextLabel"
 
 type Props = {
   onCreateWallet: () => void,
@@ -16,6 +17,7 @@ type State = {
 
 class Onboard extends Component<Props, State> {
   commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme() as string)
+  pkg = require('../../package.json')
 
   constructor(props: Props | Readonly<Props>) {
     super(props)
@@ -49,6 +51,7 @@ class Onboard extends Component<Props, State> {
 
         <ButtonAva text={"Create wallet"} onPress={() => this.onCreateWallet()}/>
         <ButtonAva text={"I already have wallet"} onPress={() => this.onAlreadyHaveWallet()}/>
+        <TextLabel text={"v" + this.pkg.version}/>
       </View>
     )
   }
