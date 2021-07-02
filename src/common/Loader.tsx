@@ -13,7 +13,7 @@ type LoaderState = {
 }
 
 class Loader extends Component<LoaderProps, LoaderState> {
-  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme() as string)
+  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme())
 
   constructor(props: LoaderProps | Readonly<LoaderProps>) {
     super(props)

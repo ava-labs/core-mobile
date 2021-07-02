@@ -24,7 +24,7 @@ type AppState = {
 
 class App extends Component<AppProps, AppState> {
   viewModel: AppViewModel = new AppViewModel()
-  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme() as string)
+  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme())
   private backHandler?: NativeEventSubscription
 
 

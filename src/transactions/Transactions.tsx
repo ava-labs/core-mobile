@@ -20,7 +20,7 @@ type State = {
 
 class Transactions extends Component<Props, State> {
   viewModel!: TransactionsViewModel
-  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme() as string)
+  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme())
 
   constructor(props: Props | Readonly<Props>) {
     super(props)

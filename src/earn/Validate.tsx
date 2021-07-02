@@ -33,7 +33,7 @@ type State = {
 
 class Validate extends Component<Props, State> {
   viewModel!: ValidateViewModel
-  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme() as string)
+  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme())
 
   constructor(props: Props | Readonly<Props>) {
     super(props)

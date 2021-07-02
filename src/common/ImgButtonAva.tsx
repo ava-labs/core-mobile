@@ -1,18 +1,17 @@
 import React, {Component} from "react"
-import {Appearance, Pressable, StyleSheet, TouchableNativeFeedback} from "react-native"
+import {Appearance, Image, ImageSourcePropType, StyleSheet, TouchableNativeFeedback} from "react-native"
 import CommonViewModel from "../CommonViewModel"
 import {COLORS, COLORS_NIGHT} from "./Constants"
-import TextButton from "./TextButton"
 
 type Props = {
-  text: string,
+  src: ImageSourcePropType,
   onPress: () => void
 }
 type State = {
   isDarkMode: boolean,
 }
 
-class ButtonAva extends Component<Props, State> {
+class ImgButtonAva extends Component<Props, State> {
   commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme())
 
   constructor(props: Props | Readonly<Props>) {
@@ -29,26 +28,25 @@ class ButtonAva extends Component<Props, State> {
   render(): Element {
     let THEME = this.state.isDarkMode ? COLORS_NIGHT : COLORS
     return (
-      <TouchableNativeFeedback
-        background={TouchableNativeFeedback.Ripple(THEME.bgLight, true)}>
-        <Pressable
-          style={[styles.button, {backgroundColor: THEME.primaryColor}]}
-          onPress={this.props.onPress}>
-          <TextButton text={this.props.text}/>
-        </Pressable>
+      <TouchableNativeFeedback style={styles.container}
+                               onPress={this.props.onPress}
+                               background={TouchableNativeFeedback.Ripple(THEME.primaryColor, true)}>
+        <Image source={this.props.src} style={styles.button}/>
       </TouchableNativeFeedback>
     )
   }
 }
 
 const styles = StyleSheet.create({
+  container: {
+    width: 100,
+    height: 100
+  },
   button: {
-    backgroundColor: COLORS.primaryColor,
-    paddingHorizontal: 24,
-    paddingVertical: 10,
     margin: 10,
-    borderRadius: 4,
+    width: 24,
+    height: 24,
   },
 })
 
-export default ButtonAva
+export default ImgButtonAva

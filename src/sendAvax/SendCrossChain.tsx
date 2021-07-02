@@ -40,7 +40,7 @@ type State = {
 
 class SendCrossChain extends Component<Props, State> {
   viewModel!: SendCrossChainViewModel
-  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme() as string)
+  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme())
 
   constructor(props: Props | Readonly<Props>) {
     super(props)
