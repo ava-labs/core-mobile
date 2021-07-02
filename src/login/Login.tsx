@@ -11,7 +11,7 @@ import WalletSDK from "../WalletSDK"
 
 type Props = {
   onEnterWallet: (mnemonic: string) => void,
-  onClose: () => void,
+  onBack: () => void,
 }
 type State = {
   isDarkMode: boolean,
@@ -54,14 +54,14 @@ class Login extends Component<Props, State> {
     this.props.onEnterWallet(WalletSDK.testMnemonic())
   }
 
-  private onClose = (): void => {
-    this.props.onClose()
+  private onBack = (): void => {
+    this.props.onBack()
   }
 
   render(): Element {
     return (
       <View>
-        <Header onBack={this.onClose}/>
+        <Header onBack={this.onBack}/>
         <View style={[{height: 8}]}/>
         <TextTitle text={"Mnemonic Wallet"} textAlign={"center"} bold={true}/>
         <View style={[{height: 8}]}/>

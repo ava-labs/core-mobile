@@ -101,7 +101,7 @@ class MainView extends Component<Props, State> {
           <Loader message={"Loading wallet..."}/>
         </Modal>
 
-        <Header/>
+        <Header hideBack/>
         <Balances wallet={this.props.wallet}/>
         <TabbedAddressCards addressP={this.state.addressP} addressX={this.state.addressX} addressC={this.state.addressC}/>
 

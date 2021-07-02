@@ -67,12 +67,12 @@ class App extends Component<AppProps, AppState> {
       case SelectedView.CreateWallet:
         return <CreateWallet
           onSavedMyPhrase={this.onSavedMnemonic}
-          onClose={() => this.viewModel.setSelectedView(SelectedView.Onboard)}/>
+          onBack={() => this.viewModel.onBackPressed()}/>
       case SelectedView.CheckMnemonic:
         if (this.viewModel.wallet === null) throw Error("Wallet not defined")
         return <CheckMnemonic
           onSuccess={() => this.viewModel.setSelectedView(SelectedView.Main)}
-          onClose={() => this.viewModel.setSelectedView(SelectedView.Onboard)}
+          onBack={() => this.viewModel.onBackPressed()}
           mnemonic={this.viewModel.wallet.mnemonic}/>
       case SelectedView.Onboard:
         return <Onboard
@@ -81,7 +81,7 @@ class App extends Component<AppProps, AppState> {
       case SelectedView.Login:
         return <Login
           onEnterWallet={this.onEnterWallet}
-          onClose={() => this.viewModel.setSelectedView(SelectedView.Onboard)}/>
+          onBack={() => this.viewModel.onBackPressed()}/>
       case SelectedView.Main:
         if (this.viewModel.wallet === null) throw Error("Wallet not defined")
         return <MainView wallet={this.viewModel.wallet} onLogout={() => this.viewModel.onLogout()}/>

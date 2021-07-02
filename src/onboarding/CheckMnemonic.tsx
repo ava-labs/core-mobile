@@ -9,7 +9,7 @@ import CheckMnemonicViewModel from "./CheckMnemonicViewModel"
 
 type Props = {
   onSuccess: () => void,
-  onClose: () => void,
+  onBack: () => void,
   mnemonic: string,
 }
 export type State = {
@@ -45,8 +45,8 @@ class CheckMnemonic extends Component<Props, State> {
     this.viewModel.cleanup()
   }
 
-  private onClose = (): void => {
-    this.props.onClose()
+  private onBack = (): void => {
+    this.props.onBack()
   }
 
   private onVerify = (): void => {
@@ -84,13 +84,12 @@ class CheckMnemonic extends Component<Props, State> {
 
     return (
       <ScrollView>
-        <Header/>
+        <Header onBack={this.onBack}/>
         <TextTitle text={"Fill In Mnemonic Phrase Below"} size={20} textAlign={"center"}/>
         <View style={styles.mnemonics}>
           {mnemonics}
         </View>
         <ButtonAva text={"Verify"} onPress={this.onVerify}/>
-        <ButtonAva text={"Back"} onPress={this.onClose}/>
       </ScrollView>
     )
   }

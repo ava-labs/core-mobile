@@ -9,7 +9,7 @@ import ButtonAva from "../common/ButtonAva"
 import Clipboard from "@react-native-clipboard/clipboard"
 
 type Props = {
-  onClose: () => void,
+  onBack: () => void,
   onSavedMyPhrase: (mnemonic: string) => void,
 }
 type State = {
@@ -39,8 +39,8 @@ class CreateWallet extends Component<Props, State> {
   componentWillUnmount(): void {
   }
 
-  onClose(): void {
-    this.props.onClose()
+  private onBack = (): void => {
+    this.props.onBack()
   }
 
   private onSavedMyPhrase = (): void => {
@@ -55,7 +55,7 @@ class CreateWallet extends Component<Props, State> {
   render(): Element {
     return (
       <View style={styles.verticalLayout}>
-        <Header onBack={() => this.onClose()}/>
+        <Header onBack={this.onBack}/>
         <View style={[{height: 8}]}/>
 
         <View style={styles.growContainer}>
