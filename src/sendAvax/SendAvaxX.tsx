@@ -9,6 +9,7 @@ import Loader from "../common/Loader"
 import SendAvaxXViewModel from "./SendAvaxXViewModel"
 import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 import QrScannerAva from "../common/QrScannerAva"
+import Header from "../mainView/Header"
 
 type SendAvaxXProps = {
   wallet: MnemonicWallet,
@@ -76,6 +77,7 @@ class SendAvaxX extends Component<SendAvaxXProps, SendAvaxXState> {
     return (
 
       <SafeAreaView style={this.state.backgroundStyle}>
+        <Header onBack={this.props.onClose}/>
         <TextTitle text={"Send AVAX (X Chain)"}/>
         <TextTitle text={"To:"} size={18}/>
         <InputText
@@ -94,12 +96,7 @@ class SendAvaxX extends Component<SendAvaxXProps, SendAvaxXState> {
           showControls={true}
           onChangeText={text => this.setState({sendAmount: text})}/>
 
-        <View style={styles.horizontalLayout}>
-          <ButtonAva text={'Cancel'} onPress={this.props.onClose}/>
-          <ButtonAva
-            text={'Send'}
-            onPress={() => this.onSend(this.state.addressXToSendTo, this.state.sendAmount)}/>
-        </View>
+        <ButtonAva text={'Send'} onPress={() => this.onSend(this.state.addressXToSendTo, this.state.sendAmount)}/>
 
         <Modal
           animationType="fade"
