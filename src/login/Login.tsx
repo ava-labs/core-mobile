@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {Alert, Appearance, View} from 'react-native'
+import {Appearance, StyleSheet, View} from 'react-native'
 import CommonViewModel from '../CommonViewModel'
 import Header from '../mainView/Header'
 import TextTitle from "../common/TextTitle"
@@ -37,17 +37,19 @@ class Login extends Component<Props, State> {
 
     BiometricsSDK.loadMnemonic().then(value => {
       if (value !== false) {
-        this.setState({mnemonic: (value as UserCredentials).password})
+        const mnemonic = (value as UserCredentials).password
+        this.onEnterWallet(mnemonic)
+        this.setState({mnemonic: mnemonic})
       }
-    }).catch(reason => Alert.alert("Error", reason.message))
+    }).catch(reason => console.log(reason))
 
   }
 
   componentWillUnmount(): void {
   }
 
-  private onEnterWallet = (): void => {
-    this.props.onEnterWallet(this.state.mnemonic)
+  private onEnterWallet = (mnemonic: string): void => {
+    this.props.onEnterWallet(mnemonic)
   }
 
   private onEnterTestWallet = (): void => {
@@ -60,22 +62,34 @@ class Login extends Component<Props, State> {
 
   render(): Element {
     return (
-      <View>
+      <View style={styles.verticalLayout}>
         <Header onBack={this.onBack}/>
         <View style={[{height: 8}]}/>
         <TextTitle text={"Mnemonic Wallet"} textAlign={"center"} bold={true}/>
         <View style={[{height: 8}]}/>
 
         <InputText
+          style={styles.grow}
           multiline={true}
           onChangeText={text => this.setState({mnemonic: text})}
           value={this.state.mnemonic}/>
 
-        <ButtonAva text={"Enter wallet"} onPress={this.onEnterWallet}/>
+        <ButtonAva text={"Enter wallet"} onPress={() => this.onEnterWallet(this.state.mnemonic)}/>
         <ButtonAva text={"Enter test wallet"} onPress={this.onEnterTestWallet}/>
       </View>
     )
   }
 }
 
+const styles = StyleSheet.create({
+    verticalLayout: {
+      height: "100%",
+      justifyContent: "flex-end",
+    },
+    grow: {
+      flexGrow: 1,
+      textAlignVertical: "top",
+    }
+  }
+)
 export default Login

@@ -1,6 +1,7 @@
 import WalletSDK from './WalletSDK'
-import {BehaviorSubject} from 'rxjs'
+import {asyncScheduler, BehaviorSubject, Observable, of} from 'rxjs'
 import {MnemonicWallet, NetworkConstants} from "@avalabs/avalanche-wallet-sdk"
+import {map, subscribeOn} from "rxjs/operators"
 
 export enum SelectedView {
   Onboard,
@@ -18,9 +19,16 @@ export default class {
     WalletSDK.setNetwork(NetworkConstants.TestnetConfig)
   }
 
-  onEnterWallet = (mnemonic: string): void => {
-    this.wallet = WalletSDK.getMnemonicValet(mnemonic)
-    this.setSelectedView(SelectedView.Main)
+  onEnterWallet = (mnemonic: string): Observable<boolean> => {
+    return of(mnemonic).pipe(
+      map((mnemonic: string) => WalletSDK.getMnemonicValet(mnemonic)),
+      map((wallet: MnemonicWallet) => {
+        this.wallet = wallet
+        this.setSelectedView(SelectedView.Main)
+        return true
+      }),
+      subscribeOn(asyncScheduler)
+    )
   }
 
   onSavedMnemonic = (mnemonic: string): void => {
