@@ -20,7 +20,7 @@ export type State = {
 }
 
 class CheckMnemonic extends Component<Props, State> {
-  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme() as string)
+  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme())
   viewModel: CheckMnemonicViewModel = new CheckMnemonicViewModel(this.props.mnemonic)
 
   constructor(props: Props | Readonly<Props>) {

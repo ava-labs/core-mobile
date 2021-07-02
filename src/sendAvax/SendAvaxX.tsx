@@ -26,7 +26,7 @@ type SendAvaxXState = {
 
 class SendAvaxX extends Component<SendAvaxXProps, SendAvaxXState> {
   viewModel!: SendAvaxXViewModel
-  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme() as string)
+  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme())
 
   constructor(props: SendAvaxXProps | Readonly<SendAvaxXProps>) {
     super(props)

@@ -19,7 +19,7 @@ type State = {
 }
 
 class CreateWallet extends Component<Props, State> {
-  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme() as string)
+  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme())
   viewModel: CreateWalletViewModel = new CreateWalletViewModel()
 
   constructor(props: Props | Readonly<Props>) {
@@ -55,9 +55,11 @@ class CreateWallet extends Component<Props, State> {
   render(): Element {
     return (
       <View>
-        <Header/>
+        <Header onBack={() => this.onClose()}/>
         <View style={[{height: 8}]}/>
-        <TextTitle text={"Here are you 24 word key phrase. Please store it somewhere safe."} size={20}
+        <TextTitle text={"Here are your 24 word key phrase."} size={20}
+                   textAlign={"center"}/>
+        <TextTitle text={"Please store it somewhere safe."} size={20}
                    textAlign={"center"}/>
         <View style={[{height: 8}]}/>
 
@@ -65,7 +67,6 @@ class CreateWallet extends Component<Props, State> {
 
         <ButtonAva text={"Copy to clipboard"} onPress={this.copyToClipboard}/>
         <ButtonAva text={"I saved my phrase somewhere safe"} onPress={this.onSavedMyPhrase}/>
-        <ButtonAva text={"Back"} onPress={() => this.onClose()}/>
       </View>
     )
   }

@@ -20,7 +20,7 @@ type State = {
 }
 
 class Login extends Component<Props, State> {
-  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme() as string)
+  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme())
 
   constructor(props: Props | Readonly<Props>) {
     super(props)
@@ -61,7 +61,7 @@ class Login extends Component<Props, State> {
   render(): Element {
     return (
       <View>
-        <Header/>
+        <Header onBack={this.onClose}/>
         <View style={[{height: 8}]}/>
         <TextTitle text={"Mnemonic Wallet"} textAlign={"center"} bold={true}/>
         <View style={[{height: 8}]}/>
@@ -73,7 +73,6 @@ class Login extends Component<Props, State> {
 
         <ButtonAva text={"Enter wallet"} onPress={this.onEnterWallet}/>
         <ButtonAva text={"Enter test wallet"} onPress={this.onEnterTestWallet}/>
-        <ButtonAva text={"Back"} onPress={this.onClose}/>
       </View>
     )
   }
