@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {Appearance, ToastAndroid, View} from 'react-native'
+import {Appearance, StyleSheet, ToastAndroid, View} from 'react-native'
 import CommonViewModel from '../CommonViewModel'
 import Header from '../mainView/Header'
 import CreateWalletViewModel from './CreateWalletViewModel'
@@ -54,22 +54,35 @@ class CreateWallet extends Component<Props, State> {
 
   render(): Element {
     return (
-      <View>
+      <View style={styles.verticalLayout}>
         <Header onBack={() => this.onClose()}/>
         <View style={[{height: 8}]}/>
-        <TextTitle text={"Here are your 24 word key phrase."} size={20}
-                   textAlign={"center"}/>
-        <TextTitle text={"Please store it somewhere safe."} size={20}
-                   textAlign={"center"}/>
-        <View style={[{height: 8}]}/>
 
-        <InputText multiline={true} value={this.state.mnemonic} editable={false}/>
+        <View style={styles.growContainer}>
+          <TextTitle text={"Here are your 24 word key phrase."} size={20}
+                     textAlign={"center"}/>
+          <TextTitle text={"Please store it somewhere safe."} size={20}
+                     textAlign={"center"}/>
+          <View style={[{height: 8}]}/>
+          <InputText multiline={true} value={this.state.mnemonic} editable={false}/>
+          <ButtonAva text={"Copy to clipboard"} onPress={this.copyToClipboard}/>
+        </View>
 
-        <ButtonAva text={"Copy to clipboard"} onPress={this.copyToClipboard}/>
         <ButtonAva text={"I saved my phrase somewhere safe"} onPress={this.onSavedMyPhrase}/>
       </View>
     )
   }
 }
 
+const styles = StyleSheet.create({
+    verticalLayout: {
+      height: "100%",
+      justifyContent: "flex-end",
+    },
+    growContainer: {
+      flexGrow: 1,
+      justifyContent: "center"
+    },
+  }
+)
 export default CreateWallet
