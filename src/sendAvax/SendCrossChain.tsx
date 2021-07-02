@@ -19,6 +19,7 @@ import ButtonAva from "../common/ButtonAva"
 import TextTitle from "../common/TextTitle"
 import InputAmount from "../common/InputAmount"
 import {COLORS, COLORS_NIGHT} from "../common/Constants"
+import Header from "../mainView/Header"
 
 type Props = {
   wallet: MnemonicWallet,
@@ -104,6 +105,7 @@ class SendCrossChain extends Component<Props, State> {
     return (
       <SafeAreaView style={[this.state.backgroundStyle, styles.bg]}>
 
+        <Header onBack={this.props.onClose}/>
         <TextTitle text={"Send Cross Chain"}/>
         <View style={styles.horizontalLayout}>
           <TextTitle text={"Source chain:"} size={18}/>
@@ -129,14 +131,9 @@ class SendCrossChain extends Component<Props, State> {
           <TextTitle text={"Balance: "} size={18}/>
           <TextTitle text={this.state.balance} size={18} bold={true}/>
         </View>
-        <View style={[styles.horizontalLayout, styles.horizButtons]}>
-          <ButtonAva
-            text={'Cancel'}
-            onPress={this.props.onClose}/>
-          <ButtonAva
-            text={'Send'}
-            onPress={() => this.onSend()}/>
-        </View>
+
+        <ButtonAva text={'Send'} onPress={() => this.onSend()}/>
+
 
         <Modal
           animationType="fade"
