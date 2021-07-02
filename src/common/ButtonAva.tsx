@@ -29,8 +29,7 @@ class ButtonAva extends Component<Props, State> {
   render(): Element {
     let THEME = this.state.isDarkMode ? COLORS_NIGHT : COLORS
     return (
-      <TouchableNativeFeedback
-        background={TouchableNativeFeedback.Ripple(THEME.bgLight, true)}>
+      <TouchableNativeFeedback >
         <Pressable
           style={[styles.button, {backgroundColor: THEME.primaryColor}]}
           onPress={this.props.onPress}>
@@ -43,7 +42,6 @@ class ButtonAva extends Component<Props, State> {
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: COLORS.primaryColor,
     paddingHorizontal: 24,
     paddingVertical: 10,
     margin: 10,
