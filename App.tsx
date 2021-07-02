@@ -6,7 +6,7 @@
  */
 
 import React, {Component} from 'react'
-import {Appearance, BackHandler, NativeEventSubscription, SafeAreaView, StatusBar,} from 'react-native'
+import {Alert, Appearance, BackHandler, NativeEventSubscription, SafeAreaView, StatusBar,} from 'react-native'
 import AppViewModel, {SelectedView} from './src/AppViewModel'
 import CommonViewModel from './src/CommonViewModel'
 import Login from './src/login/Login'
@@ -55,7 +55,9 @@ class App extends Component<AppProps, AppState> {
   }
 
   private onEnterWallet = (mnemonic: string): void => {
-    this.viewModel.onEnterWallet(mnemonic)
+    this.viewModel.onEnterWallet(mnemonic).subscribe({
+      error: err => Alert.alert(err.message),
+    })
   }
 
   private onSavedMnemonic = (mnemonic: string): void => {
