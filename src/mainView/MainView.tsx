@@ -98,7 +98,7 @@ class MainView extends Component<Props, State> {
           animationType="fade"
           transparent={true}
           visible={this.state.loaderVisible}>
-          <Loader message={"Loading wallet..."}/>
+          <Loader message={"Loading wallet"}/>
         </Modal>
 
         <Header hideBack/>

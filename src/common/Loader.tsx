@@ -3,6 +3,7 @@ import {ActivityIndicator, Appearance, StyleSheet, View} from "react-native"
 import {Colors} from "react-native/Libraries/NewAppScreen"
 import CommonViewModel from "../CommonViewModel"
 import TextTitle from "./TextTitle"
+import Header from "../mainView/Header"
 
 type LoaderProps = {
   message: string,
@@ -33,9 +34,14 @@ class Loader extends Component<LoaderProps, LoaderState> {
 
   render(): Element {
     return (
-      <View style={[styles.container, this.state.backgroundStyle]}>
-        <ActivityIndicator size="large" color={this.state.isDarkMode ? Colors.white : Colors.black}/>
-        <TextTitle text={this.props.message} textAlign={"center"}/>
+      <View style={this.state.backgroundStyle}>
+        <View style={styles.headerContainer}>
+          <Header hideBack={true}/>
+        </View>
+        <View style={styles.container}>
+          <ActivityIndicator size="large" color={this.state.isDarkMode ? Colors.white : Colors.black}/>
+          <TextTitle text={this.props.message} textAlign={"center"}/>
+        </View>
       </View>
     )
   }
@@ -43,7 +49,12 @@ class Loader extends Component<LoaderProps, LoaderState> {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     justifyContent: "center"
+  },
+  headerContainer: {
+    width: "100%",
+    top: 0,
   },
 })
 
