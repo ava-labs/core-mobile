@@ -14,6 +14,7 @@ import Onboard from './src/onboarding/Onboard'
 import CreateWallet from './src/onboarding/CreateWallet'
 import CheckMnemonic from "./src/onboarding/CheckMnemonic"
 import MainView from "./src/mainView/MainView"
+import {COLORS, COLORS_NIGHT} from "./src/common/Constants"
 
 type AppProps = {}
 type AppState = {
@@ -88,9 +89,11 @@ class App extends Component<AppProps, AppState> {
   }
 
   render() {
+    const THEME = this.state.isDarkMode ? COLORS_NIGHT : COLORS
     return (
       <SafeAreaView style={this.state.backgroundStyle}>
         <StatusBar
+          backgroundColor={THEME.bg}
           barStyle={this.state.isDarkMode ? "light-content" : "dark-content"}
         />
         {this.getSelectedView()}
