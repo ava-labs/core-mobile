@@ -6,7 +6,9 @@ import {COLORS, COLORS_NIGHT} from "../common/Constants"
 
 type Props = {
   onBack?: () => void
+  onLogout?: () => void
   hideBack?: boolean
+  showLogout?: boolean
 }
 type State = {
   isDarkMode: boolean,
@@ -32,12 +34,18 @@ class Header extends Component<Props, State> {
   private onBackPress = () => {
     this.props.onBack?.()
   }
+  private onLogoutPress = () => {
+    this.props.onLogout?.()
+  }
 
   render() {
     const THEME = this.state.isDarkMode ? COLORS_NIGHT : COLORS
 
     const icon = this.state.isDarkMode ? require("../assets/icons/arrow_back_dark.png") : require("../assets/icons/arrow_back_light.png")
+    const iconLogout = this.state.isDarkMode ? require("../assets/icons/logout_dark.png") : require("../assets/icons/logout_light.png")
     const backBtn = this.props.hideBack === true ? undefined : <ImgButtonAva src={icon} onPress={this.onBackPress}/>
+    const logoutBtn = this.props.showLogout === true ?
+      <ImgButtonAva src={iconLogout} onPress={this.onLogoutPress}/> : undefined
 
     return (
       <View style={styles.horizontalLayout}>
@@ -48,6 +56,7 @@ class Header extends Component<Props, State> {
             style={styles.logo}/>
         </View>
         {backBtn}
+        {logoutBtn}
       </View>
     );
   }

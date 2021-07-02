@@ -86,7 +86,7 @@ class MainView extends Component<Props, State> {
     this.viewModel.onComponentUnMount()
   }
 
-  private onLogout(): void {
+  private onLogout = (): void => {
     this.props.onLogout()
   }
 
@@ -101,7 +101,7 @@ class MainView extends Component<Props, State> {
           <Loader message={"Loading wallet"}/>
         </Modal>
 
-        <Header hideBack/>
+        <Header hideBack={true} showLogout={true} onLogout={this.onLogout}/>
         <Balances wallet={this.props.wallet}/>
         <TabbedAddressCards addressP={this.state.addressP} addressX={this.state.addressX} addressC={this.state.addressC}/>
 
@@ -121,9 +121,6 @@ class MainView extends Component<Props, State> {
           <ButtonAva
             text={"Transactions"}
             onPress={() => this.setState({transactionsVisible: true})}/>
-          <ButtonAva
-            text={"LogOut"}
-            onPress={() => this.onLogout()}/>
         </View>
 
         <Modal
