@@ -1,5 +1,5 @@
 import React, {Component} from "react"
-import {ActivityIndicator, Appearance, StyleSheet, View} from "react-native"
+import {ActivityIndicator, Appearance, SafeAreaView, StyleSheet, View} from "react-native"
 import {Colors} from "react-native/Libraries/NewAppScreen"
 import CommonViewModel from "../CommonViewModel"
 import TextTitle from "./TextTitle"
@@ -34,15 +34,17 @@ class Loader extends Component<LoaderProps, LoaderState> {
 
   render(): Element {
     return (
-      <View style={this.state.backgroundStyle}>
-        <View style={styles.headerContainer}>
-          <Header hideBack={true}/>
+      <SafeAreaView style={this.state.backgroundStyle}>
+        <View style={this.state.backgroundStyle}>
+          <View style={styles.headerContainer}>
+            <Header hideBack={true}/>
+          </View>
+          <View style={styles.container}>
+            <ActivityIndicator size="large" color={this.state.isDarkMode ? Colors.white : Colors.black}/>
+            <TextTitle text={this.props.message} textAlign={"center"}/>
+          </View>
         </View>
-        <View style={styles.container}>
-          <ActivityIndicator size="large" color={this.state.isDarkMode ? Colors.white : Colors.black}/>
-          <TextTitle text={this.props.message} textAlign={"center"}/>
-        </View>
-      </View>
+      </SafeAreaView>
     )
   }
 }
