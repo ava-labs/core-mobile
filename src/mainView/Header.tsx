@@ -5,7 +5,8 @@ import CommonViewModel from "../CommonViewModel"
 import {COLORS, COLORS_NIGHT} from "../common/Constants"
 
 type Props = {
-  onBack: () => void
+  onBack?: () => void
+  hideBack?: boolean
 }
 type State = {
   isDarkMode: boolean,
@@ -29,13 +30,15 @@ class Header extends Component<Props, State> {
   }
 
   private onBackPress = () => {
-    this.props.onBack()
+    this.props.onBack?.()
   }
 
   render() {
     const THEME = this.state.isDarkMode ? COLORS_NIGHT : COLORS
 
     const icon = this.state.isDarkMode ? require("../assets/icons/arrow_back_dark.png") : require("../assets/icons/arrow_back_light.png")
+    const backBtn = this.props.hideBack === true ? undefined : <ImgButtonAva src={icon} onPress={this.onBackPress}/>
+
     return (
       <View style={styles.horizontalLayout}>
         <View style={styles.padded}>
@@ -44,17 +47,14 @@ class Header extends Component<Props, State> {
             source={require('../assets/AvaLogo.png')}
             style={styles.logo}/>
         </View>
-        <ImgButtonAva src={icon}
-                      onPress={this.onBackPress}/>
+        {backBtn}
       </View>
     );
   }
 }
 
 const styles: any = StyleSheet.create({
-  background: {
-    paddingBottom: 0,
-  },
+
   logo: {
     height: "100%",
     width: "100%",
@@ -62,6 +62,7 @@ const styles: any = StyleSheet.create({
   },
   horizontalLayout: {
     flex: 0,
+    height: 48,
   },
   padded: {
     position: "absolute",
