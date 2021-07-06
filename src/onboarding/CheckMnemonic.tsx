@@ -3,9 +3,9 @@ import {Alert, Appearance, ScrollView, StyleSheet, View} from 'react-native'
 import CommonViewModel from '../CommonViewModel'
 import Header from '../mainView/Header'
 import TextTitle from "../common/TextTitle"
-import InputText from "../common/InputText"
 import ButtonAva from "../common/ButtonAva"
 import CheckMnemonicViewModel from "./CheckMnemonicViewModel"
+import MnemonicInput from "./MnemonicInput"
 
 type Props = {
   onSuccess: () => void,
@@ -65,18 +65,12 @@ class CheckMnemonic extends Component<Props, State> {
     this.state.enteredMnemonics.forEach((value, key) => {
       if (this.state.enabledInputs.get(key)) {
         mnemonics.push(
-          <View style={styles.horizontalLayout} key={key}>
-            <TextTitle text={(key + 1).toString()} size={18}/>
-            <InputText value={value} key={key + 100} style={{flexGrow: 1}}
-                       onChangeText={text => this.setMnemonic(key, text)}/>
-          </View>
+          <MnemonicInput key={key} keyNum={key} text={value} onChangeText={text => this.setMnemonic(key, text)}
+                         editable={true}/>
         )
       } else {
         mnemonics.push(
-          <View style={styles.horizontalLayout} key={key}>
-            <TextTitle text={(key + 1).toString()} size={18}/>
-            <InputText value={value} editable={false} key={key + 100} style={{flexGrow: 1}}/>
-          </View>
+          <MnemonicInput key={key} keyNum={key} text={value} editable={false}/>
         )
       }
     })
