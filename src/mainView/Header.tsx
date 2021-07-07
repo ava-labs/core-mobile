@@ -6,9 +6,11 @@ import {COLORS, COLORS_NIGHT} from "../common/Constants"
 
 type Props = {
   showBack?: boolean
-  showLogout?: boolean
+  showExit?: boolean
+  showSwitchWallet?: boolean
   onBack?: () => void
-  onLogout?: () => void
+  onExit?: () => void
+  onSwitchWallet?: () => void
 }
 type State = {
   isDarkMode: boolean,
@@ -34,17 +36,22 @@ class Header extends Component<Props, State> {
   private onBackPress = () => {
     this.props.onBack?.()
   }
-  private onLogoutPress = () => {
-    this.props.onLogout?.()
+  private onExitPress = () => {
+    this.props.onExit?.()
+  }
+  private onSwitchWalletPress = () => {
+    this.props.onSwitchWallet?.()
   }
 
   render() {
     const THEME = this.state.isDarkMode ? COLORS_NIGHT : COLORS
 
     const icon = this.state.isDarkMode ? require("../assets/icons/arrow_back_dark.png") : require("../assets/icons/arrow_back_light.png")
-    const iconLogout = this.state.isDarkMode ? require("../assets/icons/logout_dark.png") : require("../assets/icons/logout_light.png")
+    const iconExit = this.state.isDarkMode ? require("../assets/icons/logout_dark.png") : require("../assets/icons/logout_light.png")
     const backBtn = this.props.showBack ? <ImgButtonAva src={icon} onPress={this.onBackPress}/> : undefined
-    const logoutBtn = this.props.showLogout ? <ImgButtonAva src={iconLogout} onPress={this.onLogoutPress}/> : undefined
+    const exitBtn = this.props.showExit ? <ImgButtonAva src={iconExit} onPress={this.onExitPress}/> : undefined
+    const iconSwitchWallet = this.state.isDarkMode ? require("../assets/icons/change_circle_dark.png") : require("../assets/icons/change_circle_light.png")
+    const switchWalletBtn = this.props.showSwitchWallet ? <ImgButtonAva src={iconSwitchWallet} onPress={this.onSwitchWalletPress}/> : undefined
 
     return (
       <View style={styles.horizontalLayout}>
@@ -54,8 +61,11 @@ class Header extends Component<Props, State> {
             source={require('../assets/AvaLogo.png')}
             style={styles.logo}/>
         </View>
+        <View style={styles.atEnd}>
+          {exitBtn}
+        </View>
+        {switchWalletBtn}
         {backBtn}
-        {logoutBtn}
       </View>
     );
   }
@@ -78,6 +88,10 @@ const styles: any = StyleSheet.create({
     height: "100%",
     paddingTop: 8,
     paddingBottom: 8,
+  },
+  atEnd: {
+    position: "absolute",
+    right: 0,
   },
 });
 
