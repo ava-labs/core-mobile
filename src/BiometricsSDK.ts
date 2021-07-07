@@ -15,8 +15,8 @@ export default class BiometricsSDK {
     accessControl: ACCESS_CONTROL.BIOMETRY_CURRENT_SET,
     accessible: ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
     authenticationPrompt: {
-      title: "Store mnemonic",
-      subtitle: "To securely store mnemonic on this device put finger on sensor",
+      title: "Store Wallet",
+      subtitle: "Use biometric data to securely store your Avalanche Wallet",
       cancel: "cancel"
     },
     authenticationType: AUTHENTICATION_TYPE.DEVICE_PASSCODE_OR_BIOMETRICS,
@@ -27,8 +27,8 @@ export default class BiometricsSDK {
     accessControl: ACCESS_CONTROL.BIOMETRY_CURRENT_SET,
     accessible: ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
     authenticationPrompt: {
-      title: "Load mnemonic",
-      subtitle: "To securely load mnemonic from this device put finger on sensor",
+      title: "Unlock Wallet",
+      subtitle: "Use biometric unlock to access your Avalanche Wallet",
       cancel: "cancel"
     },
     authenticationType: AUTHENTICATION_TYPE.DEVICE_PASSCODE_OR_BIOMETRICS,
