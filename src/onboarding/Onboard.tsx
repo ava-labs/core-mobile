@@ -4,10 +4,14 @@ import CommonViewModel from '../CommonViewModel'
 import TextTitle from "../common/TextTitle"
 import ButtonAva from "../common/ButtonAva"
 import TextLabel from "../common/TextLabel"
+import BiometricsSDK from "../BiometricsSDK"
+import {UserCredentials} from "react-native-keychain"
+import {from} from "rxjs"
 
 type Props = {
   onCreateWallet: () => void,
   onAlreadyHaveWallet: () => void,
+  onEnterWallet: (mnemonic: string) => void,
 }
 type State = {
   isDarkMode: boolean,
@@ -29,6 +33,20 @@ class Onboard extends Component<Props, State> {
   componentDidMount(): void {
     this.commonViewModel.isDarkMode.subscribe(value => this.setState({isDarkMode: value}))
     this.commonViewModel.backgroundStyle.subscribe(value => this.setState({backgroundStyle: value}))
+
+    this.promptForWalletLoadingIfExists()
+  }
+
+  private promptForWalletLoadingIfExists() {
+    from(BiometricsSDK.loadMnemonic(BiometricsSDK.loadOptions)).subscribe({
+      next: value => {
+        if (value !== false) {
+          const mnemonic = (value as UserCredentials).password
+          this.props.onEnterWallet(mnemonic)
+        }
+      },
+      error: err => console.log(err.message)
+    })
   }
 
   componentWillUnmount(): void {

@@ -8,6 +8,7 @@ import ButtonAva from "../common/ButtonAva"
 import {UserCredentials} from "react-native-keychain"
 import BiometricsSDK from "../BiometricsSDK"
 import WalletSDK from "../WalletSDK"
+import {from} from "rxjs"
 
 type Props = {
   onEnterWallet: (mnemonic: string) => void,
@@ -35,14 +36,20 @@ class Login extends Component<Props, State> {
     this.commonViewModel.isDarkMode.subscribe(value => this.setState({isDarkMode: value}))
     this.commonViewModel.backgroundStyle.subscribe(value => this.setState({backgroundStyle: value}))
 
-    BiometricsSDK.loadMnemonic(BiometricsSDK.loadOptions).then(value => {
-      if (value !== false) {
-        const mnemonic = (value as UserCredentials).password
-        this.onEnterWallet(mnemonic)
-        this.setState({mnemonic: mnemonic})
-      }
-    }).catch(reason => console.log(reason))
+    this.promptForWalletLoadingIfExists()
+  }
 
+  private promptForWalletLoadingIfExists() {
+    from(BiometricsSDK.loadMnemonic(BiometricsSDK.loadOptions)).subscribe({
+      next: value => {
+        if (value !== false) {
+          const mnemonic = (value as UserCredentials).password
+          this.onEnterWallet(mnemonic)
+          this.setState({mnemonic: mnemonic})
+        }
+      },
+      error: err => console.log(err.message)
+    })
   }
 
   componentWillUnmount(): void {

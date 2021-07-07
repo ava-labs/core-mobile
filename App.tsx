@@ -102,6 +102,7 @@ class App extends Component<AppProps, AppState> {
           mnemonic={this.viewModel.wallet.mnemonic}/>
       case SelectedView.Onboard:
         return <Onboard
+          onEnterWallet={this.onEnterWallet}
           onAlreadyHaveWallet={() => this.viewModel.setSelectedView(SelectedView.Login)}
           onCreateWallet={() => this.viewModel.setSelectedView(SelectedView.CreateWallet)}/>
       case SelectedView.Login:
