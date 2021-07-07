@@ -11,7 +11,7 @@ import Keychain, {
 
 export default class BiometricsSDK {
 
-  private static storeOptions: Options = {
+  static storeOptions: Options = {
     accessControl: ACCESS_CONTROL.BIOMETRY_CURRENT_SET,
     accessible: ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
     authenticationPrompt: {
@@ -23,7 +23,7 @@ export default class BiometricsSDK {
     rules: SECURITY_RULES.AUTOMATIC_UPGRADE
   }
 
-  private static loadOptions: Options = {
+  static loadOptions: Options = {
     accessControl: ACCESS_CONTROL.BIOMETRY_CURRENT_SET,
     accessible: ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
     authenticationPrompt: {
@@ -36,11 +36,18 @@ export default class BiometricsSDK {
   }
 
   static saveMnemonic = (mnemonic: string): Promise<false | Result> => {
+    console.log("saveMnemonic")
     return Keychain.setGenericPassword("mnemonic", mnemonic, BiometricsSDK.storeOptions)
   }
 
-  static loadMnemonic = (): Promise<false | UserCredentials> => {
-    return Keychain.getGenericPassword(BiometricsSDK.loadOptions)
+  static loadMnemonic = (options: Options): Promise<false | UserCredentials> => {
+    console.log("loadMnemonic")
+    return Keychain.getGenericPassword(options)
+  }
+
+  static clearMnemonic = (): Promise<boolean> => {
+    console.log("clear mnemonic")
+    return Keychain.resetGenericPassword()
   }
 
 }

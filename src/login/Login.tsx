@@ -35,7 +35,7 @@ class Login extends Component<Props, State> {
     this.commonViewModel.isDarkMode.subscribe(value => this.setState({isDarkMode: value}))
     this.commonViewModel.backgroundStyle.subscribe(value => this.setState({backgroundStyle: value}))
 
-    BiometricsSDK.loadMnemonic().then(value => {
+    BiometricsSDK.loadMnemonic(BiometricsSDK.loadOptions).then(value => {
       if (value !== false) {
         const mnemonic = (value as UserCredentials).password
         this.onEnterWallet(mnemonic)

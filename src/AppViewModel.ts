@@ -1,7 +1,8 @@
 import WalletSDK from './WalletSDK'
-import {asyncScheduler, BehaviorSubject, Observable, of} from 'rxjs'
+import {asyncScheduler, AsyncSubject, BehaviorSubject, concat, from, Observable, of} from 'rxjs'
 import {MnemonicWallet, NetworkConstants} from "@avalabs/avalanche-wallet-sdk"
-import {map, subscribeOn} from "rxjs/operators"
+import {concatMap, map, subscribeOn} from "rxjs/operators"
+import BiometricsSDK from "./BiometricsSDK"
 
 export enum SelectedView {
   Onboard,
@@ -10,6 +11,21 @@ export enum SelectedView {
   Main,
   CheckMnemonic,
 }
+
+export interface LogoutEvents {
+}
+
+export class ShowAlert implements LogoutEvents {
+  question: AsyncSubject<boolean>
+
+  constructor(shouldDeleteBioData: AsyncSubject<boolean>) {
+    this.question = shouldDeleteBioData
+  }
+}
+
+export class LogoutFinished implements LogoutEvents {
+}
+
 
 export default class {
   wallet: MnemonicWallet | null = null
@@ -36,9 +52,23 @@ export default class {
     this.setSelectedView(SelectedView.CheckMnemonic)
   }
 
-  onLogout = (): void => {
-    this.wallet = null
-    this.setSelectedView(SelectedView.Onboard)
+  onLogout = (): Observable<LogoutEvents> => {
+    const deleteBioDataPrompt = new AsyncSubject<boolean>()
+    const dialogOp: Observable<LogoutFinished> = deleteBioDataPrompt.pipe(
+      concatMap(shouldDeleteBioData => {
+        if (shouldDeleteBioData) {
+          return from(BiometricsSDK.clearMnemonic()).pipe(map(() => true))
+        } else {
+          return of(false)
+        }
+      }),
+      map(() => {
+        this.wallet = null
+        this.setSelectedView(SelectedView.Onboard)
+        return new LogoutFinished()
+      })
+    )
+    return concat(of(new ShowAlert(deleteBioDataPrompt)), dialogOp, asyncScheduler)
   }
 
   setSelectedView = (view: SelectedView): void => {
