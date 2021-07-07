@@ -1,5 +1,5 @@
-import {BehaviorSubject, Observable, of, Subscription, zip} from "rxjs"
-import {map, switchMap, take, tap} from "rxjs/operators"
+import {BehaviorSubject, from, Observable, Subscription, zip} from "rxjs"
+import {catchError, map, switchMap, take, tap} from "rxjs/operators"
 import BiometricsSDK from "../BiometricsSDK"
 
 const NUMBER_OF_WORDS_TO_TYPE = 4
@@ -75,13 +75,20 @@ export default class {
         if (credentials === false) {
           throw Error("Error saving mnemonic")
         }
-        return BiometricsSDK.loadMnemonic()
+        return BiometricsSDK.loadMnemonic(BiometricsSDK.storeOptions)
       }),
       map(credentials => {
         if (credentials === false) {
           throw Error("Error saving mnemonic")
         }
         return true
+      }),
+      catchError((err: Error) => {
+        return from(BiometricsSDK.clearMnemonic()).pipe(
+          tap(() => {
+            throw err
+          })
+        )
       })
     )
   }

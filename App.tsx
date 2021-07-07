@@ -7,7 +7,7 @@
 
 import React, {Component} from 'react'
 import {Alert, Appearance, BackHandler, NativeEventSubscription, SafeAreaView, StatusBar,} from 'react-native'
-import AppViewModel, {SelectedView} from './src/AppViewModel'
+import AppViewModel, {LogoutEvents, SelectedView, ShowAlert} from './src/AppViewModel'
 import CommonViewModel from './src/CommonViewModel'
 import Login from './src/login/Login'
 import Onboard from './src/onboarding/Onboard'
@@ -64,6 +64,30 @@ class App extends Component<AppProps, AppState> {
     this.viewModel.onSavedMnemonic(mnemonic)
   }
 
+  private onNo = (value: ShowAlert): void => {
+    value.question.next(false)
+    value.question.complete()
+  }
+
+  private onYes = (value: ShowAlert): void => {
+    value.question.next(true)
+    value.question.complete()
+  }
+
+  private onLogout = (): void => {
+    this.viewModel.onLogout().subscribe({
+      next: (value: LogoutEvents) => {
+        if ("question" in value) {
+          Alert.alert("Do you want to delete the stored passphrase?", undefined, [
+            {text: 'No', onPress: () => this.onNo(value as ShowAlert), style: 'cancel'},
+            {text: 'Yes', onPress: () => this.onYes(value as ShowAlert)},
+          ])
+        }
+      },
+      error: err => Alert.alert(err.message),
+    })
+  }
+
   getSelectedView = (): Element => {
     switch (this.state.selectedView) {
       case SelectedView.CreateWallet:
@@ -86,7 +110,7 @@ class App extends Component<AppProps, AppState> {
           onBack={() => this.viewModel.onBackPressed()}/>
       case SelectedView.Main:
         if (this.viewModel.wallet === null) throw Error("Wallet not defined")
-        return <MainView wallet={this.viewModel.wallet} onLogout={() => this.viewModel.onLogout()}/>
+        return <MainView wallet={this.viewModel.wallet} onLogout={() => this.onLogout()}/>
     }
   }
 
