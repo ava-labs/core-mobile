@@ -6,7 +6,8 @@ import ButtonAva from "../common/ButtonAva"
 import TextLabel from "../common/TextLabel"
 import BiometricsSDK from "../BiometricsSDK"
 import {UserCredentials} from "react-native-keychain"
-import {from} from "rxjs"
+import {asyncScheduler, timer} from "rxjs"
+import {concatMap} from "rxjs/operators"
 
 type Props = {
   onCreateWallet: () => void,
@@ -38,7 +39,9 @@ class Onboard extends Component<Props, State> {
   }
 
   private promptForWalletLoadingIfExists() {
-    from(BiometricsSDK.loadMnemonic(BiometricsSDK.loadOptions)).subscribe({
+    timer(100, asyncScheduler).pipe(
+      concatMap(value => BiometricsSDK.loadMnemonic(BiometricsSDK.loadOptions))
+    ).subscribe({
       next: value => {
         if (value !== false) {
           const mnemonic = (value as UserCredentials).password
