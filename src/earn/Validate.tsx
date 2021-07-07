@@ -108,7 +108,7 @@ class Validate extends Component<Props, State> {
     return (
       <SafeAreaView style={this.state.backgroundStyle}>
         <ScrollView>
-          <Header onBack={this.props.onClose}/>
+          <Header showBack onBack={this.props.onClose}/>
           <TextTitle text={"Validate"}/>
           <TextTitle text={"Node ID:"} size={18}/>
           <InputText value={this.state.nodeId} onChangeText={text => this.setState({nodeId: text})}/>

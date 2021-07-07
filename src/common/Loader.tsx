@@ -37,7 +37,7 @@ class Loader extends Component<LoaderProps, LoaderState> {
       <SafeAreaView style={this.state.backgroundStyle}>
         <View style={this.state.backgroundStyle}>
           <View style={styles.headerContainer}>
-            <Header hideBack={true}/>
+            <Header/>
           </View>
           <View style={styles.container}>
             <ActivityIndicator size="large" color={this.state.isDarkMode ? Colors.white : Colors.black}/>

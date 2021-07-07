@@ -78,7 +78,7 @@ class CheckMnemonic extends Component<Props, State> {
 
     return (
       <ScrollView>
-        <Header onBack={this.onBack}/>
+        <Header showBack onBack={this.onBack}/>
         <TextTitle text={"Fill In Mnemonic Phrase Below"} size={20} textAlign={"center"}/>
         <View style={styles.mnemonics}>
           {mnemonics}

@@ -64,7 +64,7 @@ class Transactions extends Component<Props, State> {
           <Loader message={this.state.loaderMsg}/>
         </Modal>
 
-        <Header onBack={this.props.onClose}/>
+        <Header showBack onBack={this.props.onClose}/>
         <TextTitle text={"Transactions"}/>
         <FlatList
           data={this.state.historyItems}

@@ -76,7 +76,7 @@ class SendAvaxC extends Component<SendAvaxCProps, SendAvaxCState> {
   render(): Element {
     return (
       <SafeAreaView style={this.state.backgroundStyle}>
-        <Header onBack={this.props.onClose}/>
+        <Header showBack onBack={this.props.onClose}/>
         <TextTitle text={"Send AVAX (C Chain)"}/>
         <TextTitle text={"To:"} size={18}/>
         <InputText

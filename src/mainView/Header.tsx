@@ -5,10 +5,10 @@ import CommonViewModel from "../CommonViewModel"
 import {COLORS, COLORS_NIGHT} from "../common/Constants"
 
 type Props = {
+  showBack?: boolean
+  showLogout?: boolean
   onBack?: () => void
   onLogout?: () => void
-  hideBack?: boolean
-  showLogout?: boolean
 }
 type State = {
   isDarkMode: boolean,
@@ -43,9 +43,8 @@ class Header extends Component<Props, State> {
 
     const icon = this.state.isDarkMode ? require("../assets/icons/arrow_back_dark.png") : require("../assets/icons/arrow_back_light.png")
     const iconLogout = this.state.isDarkMode ? require("../assets/icons/logout_dark.png") : require("../assets/icons/logout_light.png")
-    const backBtn = this.props.hideBack === true ? undefined : <ImgButtonAva src={icon} onPress={this.onBackPress}/>
-    const logoutBtn = this.props.showLogout === true ?
-      <ImgButtonAva src={iconLogout} onPress={this.onLogoutPress}/> : undefined
+    const backBtn = this.props.showBack ? <ImgButtonAva src={icon} onPress={this.onBackPress}/> : undefined
+    const logoutBtn = this.props.showLogout ? <ImgButtonAva src={iconLogout} onPress={this.onLogoutPress}/> : undefined
 
     return (
       <View style={styles.horizontalLayout}>
