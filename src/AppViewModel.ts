@@ -1,7 +1,7 @@
 import WalletSDK from './WalletSDK'
 import {asyncScheduler, AsyncSubject, BehaviorSubject, concat, from, Observable, of} from 'rxjs'
 import {MnemonicWallet, NetworkConstants} from "@avalabs/avalanche-wallet-sdk"
-import {concatMap, map, subscribeOn} from "rxjs/operators"
+import {catchError, concatMap, map, subscribeOn, switchMap, tap} from "rxjs/operators"
 import BiometricsSDK from "./BiometricsSDK"
 
 export enum SelectedView {
@@ -40,6 +40,29 @@ export default class {
       map((mnemonic: string) => WalletSDK.getMnemonicValet(mnemonic)),
       map((wallet: MnemonicWallet) => {
         this.wallet = wallet
+        return wallet.mnemonic
+      }),
+      switchMap(mnemonic => BiometricsSDK.saveMnemonic(mnemonic)),
+      switchMap(credentials => {
+        if (credentials === false) {
+          throw Error("Error saving mnemonic")
+        }
+        return BiometricsSDK.loadMnemonic(BiometricsSDK.storeOptions)
+      }),
+      map(credentials => {
+        if (credentials === false) {
+          throw Error("Error saving mnemonic")
+        }
+        return true
+      }),
+      catchError((err: Error) => {
+        return from(BiometricsSDK.clearMnemonic()).pipe(
+          tap(() => {
+            throw err
+          })
+        )
+      }),
+      map(() => {
         this.setSelectedView(SelectedView.Main)
         return true
       }),
