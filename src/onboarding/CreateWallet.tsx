@@ -55,7 +55,7 @@ class CreateWallet extends Component<Props, State> {
   render(): Element {
     return (
       <View style={styles.verticalLayout}>
-        <Header onBack={this.onBack}/>
+        <Header showBack onBack={this.onBack}/>
         <View style={[{height: 8}]}/>
 
         <View style={styles.growContainer}>

@@ -70,7 +70,7 @@ class Login extends Component<Props, State> {
   render(): Element {
     return (
       <View style={styles.verticalLayout}>
-        <Header onBack={this.onBack}/>
+        <Header showBack onBack={this.onBack}/>
         <View style={[{height: 8}]}/>
         <TextTitle text={"Mnemonic Wallet"} textAlign={"center"} bold={true}/>
         <View style={[{height: 8}]}/>

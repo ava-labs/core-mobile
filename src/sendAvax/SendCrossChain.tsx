@@ -105,7 +105,7 @@ class SendCrossChain extends Component<Props, State> {
     return (
       <SafeAreaView style={[this.state.backgroundStyle, styles.bg]}>
 
-        <Header onBack={this.props.onClose}/>
+        <Header showBack onBack={this.props.onClose}/>
         <TextTitle text={"Send Cross Chain"}/>
         <View style={styles.horizontalLayout}>
           <TextTitle text={"Source chain:"} size={18}/>

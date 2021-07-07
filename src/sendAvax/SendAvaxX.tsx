@@ -77,7 +77,7 @@ class SendAvaxX extends Component<SendAvaxXProps, SendAvaxXState> {
     return (
 
       <SafeAreaView style={this.state.backgroundStyle}>
-        <Header onBack={this.props.onClose}/>
+        <Header showBack onBack={this.props.onClose}/>
         <TextTitle text={"Send AVAX (X Chain)"}/>
         <TextTitle text={"To:"} size={18}/>
         <InputText
