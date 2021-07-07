@@ -7,7 +7,14 @@
 
 import React, {Component} from 'react'
 import {Alert, Appearance, BackHandler, NativeEventSubscription, SafeAreaView, StatusBar,} from 'react-native'
-import AppViewModel, {LogoutEvents, SelectedView, ShowAlert} from './src/AppViewModel'
+import AppViewModel, {
+  ExitPromptAnswers,
+  LogoutEvents,
+  LogoutPromptAnswers,
+  SelectedView,
+  ShowExitPrompt,
+  ShowLogoutPrompt
+} from './src/AppViewModel'
 import CommonViewModel from './src/CommonViewModel'
 import Login from './src/login/Login'
 import Onboard from './src/onboarding/Onboard'
@@ -64,23 +71,41 @@ class App extends Component<AppProps, AppState> {
     this.viewModel.onSavedMnemonic(mnemonic)
   }
 
-  private onNo = (value: ShowAlert): void => {
-    value.question.next(false)
-    value.question.complete()
+  private onYes = (value: ShowLogoutPrompt): void => {
+    value.prompt.next(LogoutPromptAnswers.Yes)
+    value.prompt.complete()
   }
 
-  private onYes = (value: ShowAlert): void => {
-    value.question.next(true)
-    value.question.complete()
+  private onOk = (value: ShowExitPrompt): void => {
+    value.prompt.next(ExitPromptAnswers.Ok)
+    value.prompt.complete()
   }
 
-  private onLogout = (): void => {
+  private onCancel = (value: ShowLogoutPrompt): void => {
+    value.prompt.next(LogoutPromptAnswers.Cancel)
+    value.prompt.complete()
+  }
+
+  private onSwitchWallet = (): void => {
     this.viewModel.onLogout().subscribe({
       next: (value: LogoutEvents) => {
-        if ("question" in value) {
-          Alert.alert("Do you want to delete the stored passphrase?", undefined, [
-            {text: 'No', onPress: () => this.onNo(value as ShowAlert), style: 'cancel'},
-            {text: 'Yes', onPress: () => this.onYes(value as ShowAlert)},
+        if ("prompt" in value) {
+          Alert.alert("Do you want to delete the stored passphrase and switch accounts?", undefined, [
+            {text: 'Cancel', onPress: () => this.onCancel(value as ShowLogoutPrompt), style: 'cancel'},
+            {text: 'Yes', onPress: () => this.onYes(value as ShowLogoutPrompt)},
+          ])
+        }
+      },
+      error: err => Alert.alert(err.message),
+    })
+  }
+
+  private onExit = (): void => {
+    this.viewModel.onExit().subscribe({
+      next: (value: LogoutEvents) => {
+        if ("prompt" in value) {
+          Alert.alert("Your passphrase will remain securely stored for easier later access of wallet.", undefined, [
+            {text: 'Ok', onPress: () => this.onOk(value as ShowExitPrompt)},
           ])
         }
       },
@@ -111,7 +136,7 @@ class App extends Component<AppProps, AppState> {
           onBack={() => this.viewModel.onBackPressed()}/>
       case SelectedView.Main:
         if (this.viewModel.wallet === null) throw Error("Wallet not defined")
-        return <MainView wallet={this.viewModel.wallet} onLogout={() => this.onLogout()}/>
+        return <MainView wallet={this.viewModel.wallet} onExit={this.onExit} onSwitchWallet={this.onSwitchWallet}/>
     }
   }
 

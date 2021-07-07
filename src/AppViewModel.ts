@@ -3,6 +3,7 @@ import {asyncScheduler, AsyncSubject, BehaviorSubject, concat, from, Observable,
 import {MnemonicWallet, NetworkConstants} from "@avalabs/avalanche-wallet-sdk"
 import {catchError, concatMap, map, subscribeOn, switchMap, tap} from "rxjs/operators"
 import BiometricsSDK from "./BiometricsSDK"
+import {BackHandler} from "react-native"
 
 export enum SelectedView {
   Onboard,
@@ -11,21 +12,6 @@ export enum SelectedView {
   Main,
   CheckMnemonic,
 }
-
-export interface LogoutEvents {
-}
-
-export class ShowAlert implements LogoutEvents {
-  question: AsyncSubject<boolean>
-
-  constructor(shouldDeleteBioData: AsyncSubject<boolean>) {
-    this.question = shouldDeleteBioData
-  }
-}
-
-export class LogoutFinished implements LogoutEvents {
-}
-
 
 export default class {
   wallet: MnemonicWallet | null = null
@@ -76,22 +62,42 @@ export default class {
   }
 
   onLogout = (): Observable<LogoutEvents> => {
-    const deleteBioDataPrompt = new AsyncSubject<boolean>()
+    const deleteBioDataPrompt = new AsyncSubject<LogoutPromptAnswers>()
     const dialogOp: Observable<LogoutFinished> = deleteBioDataPrompt.pipe(
-      concatMap(shouldDeleteBioData => {
-        if (shouldDeleteBioData) {
-          return from(BiometricsSDK.clearMnemonic()).pipe(map(() => true))
-        } else {
-          return of(false)
+      concatMap((answer: LogoutPromptAnswers) => {
+        switch (answer) {
+          case LogoutPromptAnswers.Yes:
+            return from(BiometricsSDK.clearMnemonic()).pipe(map(() => false))
+          case LogoutPromptAnswers.Cancel:
+            return of(true)
         }
       }),
-      map(() => {
-        this.wallet = null
-        this.setSelectedView(SelectedView.Onboard)
+      map((isCanceled: boolean) => {
+        if (!isCanceled) {
+          this.wallet = null
+          this.setSelectedView(SelectedView.Onboard)
+        }
         return new LogoutFinished()
       })
     )
-    return concat(of(new ShowAlert(deleteBioDataPrompt)), dialogOp, asyncScheduler)
+    return concat(of(new ShowLogoutPrompt(deleteBioDataPrompt)), dialogOp, asyncScheduler)
+  }
+
+  onExit = (): Observable<ExitEvents> => {
+    const exitPrompt = new AsyncSubject<ExitPromptAnswers>()
+    const dialogOp: Observable<ExitFinished> = exitPrompt.pipe(
+      map((answer: ExitPromptAnswers) => {
+        switch (answer) {
+          case ExitPromptAnswers.Ok:
+            return new ExitFinished()
+        }
+      }),
+      map(() => {
+        BackHandler.exitApp()
+        return new LogoutFinished()
+      }),
+    )
+    return concat(of(new ShowExitPrompt(exitPrompt)), dialogOp, asyncScheduler)
   }
 
   setSelectedView = (view: SelectedView): void => {
@@ -119,4 +125,42 @@ export default class {
 
     }
   }
+}
+
+
+export interface LogoutEvents {
+}
+
+export class ShowLogoutPrompt implements LogoutEvents {
+  prompt: AsyncSubject<LogoutPromptAnswers>
+
+  constructor(prompt: AsyncSubject<LogoutPromptAnswers>) {
+    this.prompt = prompt
+  }
+}
+
+export class LogoutFinished implements LogoutEvents {
+}
+
+export enum LogoutPromptAnswers {
+  Yes,
+  Cancel
+}
+
+export interface ExitEvents {
+}
+
+export class ShowExitPrompt implements ExitEvents {
+  prompt: AsyncSubject<ExitPromptAnswers>
+
+  constructor(prompt: AsyncSubject<ExitPromptAnswers>) {
+    this.prompt = prompt
+  }
+}
+
+export class ExitFinished implements ExitEvents {
+}
+
+export enum ExitPromptAnswers {
+  Ok
 }

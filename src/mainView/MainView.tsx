@@ -16,7 +16,8 @@ import Transactions from "../transactions/Transactions"
 
 type Props = {
   wallet: MnemonicWallet,
-  onLogout: () => void,
+  onExit: () => void,
+  onSwitchWallet: () => void,
 }
 type State = {
   isDarkMode: boolean
@@ -75,7 +76,7 @@ class MainView extends Component<Props, State> {
     this.viewModel.onResetHdIndices()
       .subscribe({
         error: err => {
-          this.onLogout()
+          this.onExit()
           Alert.alert("Error", err.message)
         },
         complete: () => this.setState({loaderVisible: false}),
@@ -86,8 +87,12 @@ class MainView extends Component<Props, State> {
     this.viewModel.onComponentUnMount()
   }
 
-  private onLogout = (): void => {
-    this.props.onLogout()
+  private onExit = (): void => {
+    this.props.onExit()
+  }
+
+  private onSwitchWallet = (): void => {
+    this.props.onSwitchWallet()
   }
 
   render(): Element {
@@ -101,7 +106,7 @@ class MainView extends Component<Props, State> {
           <Loader message={"Loading wallet"}/>
         </Modal>
 
-        <Header showLogout onLogout={this.onLogout}/>
+        <Header showExit onExit={this.onExit} showSwitchWallet onSwitchWallet={this.onSwitchWallet}/>
         <Balances wallet={this.props.wallet}/>
         <TabbedAddressCards addressP={this.state.addressP} addressX={this.state.addressX} addressC={this.state.addressC}/>
 
