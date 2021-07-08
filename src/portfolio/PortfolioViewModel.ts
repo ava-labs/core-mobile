@@ -17,8 +17,8 @@ export default class {
   addressP: BehaviorSubject<string> = new BehaviorSubject<string>("")
   addressC: Observable<string>
 
-  constructor(wallet: MnemonicWallet) {
-    this.wallet = new BehaviorSubject<MnemonicWallet>(wallet)
+  constructor(wallet: BehaviorSubject<MnemonicWallet>) {
+    this.wallet = wallet
 
     this.walletCAddress = this.wallet.pipe(
       map(wallet => wallet.getAddressC()),

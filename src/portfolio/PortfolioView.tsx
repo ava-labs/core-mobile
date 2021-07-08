@@ -6,9 +6,10 @@ import PortfolioViewModel from "./PortfolioViewModel"
 import Header from "../mainView/Header"
 import Balances from "../mainView/Balances"
 import TabbedAddressCards from "../mainView/TabbedAddressCards"
+import {BehaviorSubject} from "rxjs"
 
 type Props = {
-  wallet: MnemonicWallet,
+  wallet: BehaviorSubject<MnemonicWallet>,
   onExit: () => void,
   onSwitchWallet: () => void,
 }
@@ -26,7 +27,7 @@ type State = {
   walletEvmAddress: string
 }
 
-class Portfolio extends Component<Props, State> {
+class PortfolioView extends Component<Props, State> {
   viewModel!: PortfolioViewModel
   commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme())
 
@@ -49,8 +50,6 @@ class Portfolio extends Component<Props, State> {
   }
 
   componentDidMount(): void {
-    this.viewModel.onComponentMount()
-
     this.commonViewModel.isDarkMode.subscribe(value => this.setState({isDarkMode: value}))
     this.commonViewModel.backgroundStyle.subscribe(value => this.setState({backgroundStyle: value}))
     this.viewModel.avaxPrice.subscribe(value => this.setState({avaxPrice: value}))
@@ -60,6 +59,7 @@ class Portfolio extends Component<Props, State> {
     this.viewModel.addressP.subscribe(value => this.setState({addressP: value}))
     this.viewModel.addressC.subscribe(value => this.setState({addressC: value}))
 
+    this.viewModel.onComponentMount()
   }
 
   componentWillUnmount(): void {
@@ -92,4 +92,4 @@ const styles = StyleSheet.create({
   },
 })
 
-export default Portfolio
+export default PortfolioView
