@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {Alert, Appearance, FlatList, StyleSheet, View} from 'react-native'
+import {Alert, Appearance, ScrollView, StyleSheet, View} from 'react-native'
 import CommonViewModel from '../CommonViewModel'
 import Header from '../mainView/Header'
 import TextTitle from "../common/TextTitle"
@@ -61,37 +61,43 @@ class CheckMnemonic extends Component<Props, State> {
   }
 
   render(): Element {
-
-    const renderItem = ([key, value]: [number, string]) => {
+    const mnemonics: Element[] = []
+    this.state.enteredMnemonics.forEach((value, key) => {
       if (this.state.enabledInputs.get(key)) {
-        return <MnemonicInput key={key} keyNum={key} text={value} onChangeText={text => this.setMnemonic(key, text)}
-                              editable={true}/>
+        mnemonics.push(
+          <MnemonicInput key={key} keyNum={key} text={value} onChangeText={text => this.setMnemonic(key, text)}
+                         editable={true}/>
+        )
       } else {
-        return <MnemonicInput key={key} keyNum={key} text={value} editable={false}/>
+        mnemonics.push(
+          <MnemonicInput key={key} keyNum={key} text={value} editable={false}/>
+        )
       }
-    }
-
+    })
 
     return (
-      <View style={styles.container}>
+      <ScrollView>
         <Header showBack onBack={this.onBack}/>
         <TextTitle text={"Fill In Mnemonic Phrase Below"} size={20} textAlign={"center"}/>
-        <FlatList
-          numColumns={3}
-          data={Array.from(this.state.enteredMnemonics.entries())}
-          renderItem={info => renderItem(info.item)}
-          keyExtractor={([key, value]) => value}
-        />
-
+        <View style={styles.mnemonics}>
+          {mnemonics}
+        </View>
         <ButtonAva text={"Verify"} onPress={this.onVerify}/>
-      </View>
+      </ScrollView>
     )
   }
 }
 
 const styles: any = StyleSheet.create({
-    container: {
-      height: "100%"
+    mnemonics: {
+      flexDirection: 'row',
+      flexWrap: "wrap",
+      justifyContent: "space-between"
+    },
+    horizontalLayout: {
+      flexDirection: 'row',
+      alignItems: "center",
+      width: 120,
     },
   }
 )
