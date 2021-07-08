@@ -52,7 +52,7 @@ class Balances extends Component<Props, State> {
     this.viewModel.onComponentMount()
   }
 
-  onComponentUnMount = (): void => {
+  componentWillUnmount(): void {
     this.viewModel.onComponentUnMount()
   }
 
