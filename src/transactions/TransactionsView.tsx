@@ -19,7 +19,7 @@ type State = {
   historyItems: HistoryItem[],
 }
 
-class Transactions extends Component<Props, State> {
+class TransactionsView extends Component<Props, State> {
   viewModel!: TransactionsViewModel
   commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme())
 
@@ -79,4 +79,4 @@ const styles = StyleSheet.create({
   },
 })
 
-export default Transactions
+export default TransactionsView

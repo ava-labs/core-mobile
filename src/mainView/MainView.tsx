@@ -1,14 +1,14 @@
 import React, {Component} from "react"
-import {Appearance, Image, Modal, StyleSheet, View} from "react-native"
+import {Alert, Appearance, Image, Modal, StyleSheet, View} from "react-native"
 import CommonViewModel from "../CommonViewModel"
 import MainViewViewModel from "./MainViewViewModel"
 import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {NavigationContainer} from "@react-navigation/native"
-import Portfolio from "../portfolio/Portfolio"
+import PortfolioView from "../portfolio/PortfolioView"
 import SendView from "../sendAvax/SendView"
 import EarnView from "../earn/EarnView"
-import Transactions from "../transactions/Transactions"
+import TransactionsView from "../transactions/TransactionsView"
 import Loader from "../common/Loader"
 
 type Props = {
@@ -69,9 +69,9 @@ class MainView extends Component<Props, State> {
           icon = require("../assets/icons/portfolio_light.png")
         } else if (params.route.name === 'Send') {
           icon = require("../assets/icons/send_light.png")
-        }else if (params.route.name === 'Earn') {
+        } else if (params.route.name === 'Earn') {
           icon = require("../assets/icons/earn_light.png")
-        }else if (params.route.name === 'Transactions') {
+        } else if (params.route.name === 'Transactions') {
           icon = require("../assets/icons/history_light.png")
         }
 
@@ -80,18 +80,18 @@ class MainView extends Component<Props, State> {
     }
   }
 
-  private _Portfolio = () => <Portfolio wallet={this.viewModel.wallet.value} onSwitchWallet={this.onSwitchWallet}
-                                        onExit={this.onExit}/>
-  private _Send = () => <SendView wallet={this.viewModel.wallet.value}/>
-  private _Earn = () => <EarnView wallet={this.viewModel.wallet.value}/>
-  private _Transactions = () => <Transactions wallet={this.viewModel.wallet.value}/>
-  private _Nav = () => (
+  private Portfolio = () => <PortfolioView wallet={this.viewModel.wallet} onSwitchWallet={this.onSwitchWallet}
+                                           onExit={this.onExit}/>
+  private Send = () => <SendView wallet={this.viewModel.wallet.value}/>
+  private Earn = () => <EarnView wallet={this.viewModel.wallet.value}/>
+  private Transactions = () => <TransactionsView wallet={this.viewModel.wallet.value}/>
+  private Nav = () => (
     <NavigationContainer>
       <Tab.Navigator sceneContainerStyle={styles.navContainer} screenOptions={props => this.screenOptions(props)}>
-        <Tab.Screen name="Portfolio" component={this._Portfolio}/>
-        <Tab.Screen name="Send" component={this._Send}/>
-        <Tab.Screen name="Earn" component={this._Earn}/>
-        <Tab.Screen name="Transactions" component={this._Transactions}/>
+        <Tab.Screen name="Portfolio" component={this.Portfolio}/>
+        <Tab.Screen name="Send" component={this.Send}/>
+        <Tab.Screen name="Earn" component={this.Earn}/>
+        <Tab.Screen name="Transactions" component={this.Transactions}/>
       </Tab.Navigator>
     </NavigationContainer>
   )
@@ -106,7 +106,18 @@ class MainView extends Component<Props, State> {
           <Loader message={"Loading wallet"}/>
         </Modal>
 
-        {this.state.walletReady && this._Nav()}
+        <View style={this.state.walletReady ? styles.visible : styles.invisible}>
+          <NavigationContainer>
+            <Tab.Navigator sceneContainerStyle={styles.navContainer} screenOptions={props => this.screenOptions(props)}>
+              <Tab.Screen name="Portfolio" component={this.Portfolio}/>
+              <Tab.Screen name="Send" component={this.Send}/>
+              <Tab.Screen name="Earn" component={this.Earn}/>
+              <Tab.Screen name="Transactions" component={this.Transactions}/>
+            </Tab.Navigator>
+          </NavigationContainer>
+          {/*FIXME: this doesnt work, if used wallet wont get balance updates, i dont know the reason*/}
+          {/*{this.state.walletReady && this.Nav()} */}
+        </View>
       </View>
     )
   }
@@ -121,6 +132,15 @@ const styles = StyleSheet.create({
     paddingStart: 16,
     paddingEnd: 16,
   },
+  invisible: {
+    height: "100%",
+    display: "none"
+  },
+  visible: {
+    height: "100%",
+    display: "flex"
+  },
+
 })
 
 export default MainView

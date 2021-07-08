@@ -24,8 +24,8 @@ export default class {
   newBalanceP: BehaviorSubject<AssetBalanceP | null> = new BehaviorSubject<AssetBalanceP | null>(null)
   newBalanceC: BehaviorSubject<BN | null> = new BehaviorSubject<BN | null>(null)
 
-  constructor(wallet: MnemonicWallet) {
-    this.wallet = new BehaviorSubject<MnemonicWallet>(wallet)
+  constructor(wallet: BehaviorSubject<MnemonicWallet>) {
+    this.wallet = wallet
 
     this.stake = this.wallet.pipe(
       concatMap(wallet => wallet.getStake()),
