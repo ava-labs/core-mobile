@@ -52,7 +52,7 @@ class App extends Component<AppProps, AppState> {
   componentDidMount() {
     this.viewModel.onComponentMount()
     this.commonViewModel.isDarkMode.subscribe(value => this.setState({isDarkMode: value}))
-    this.commonViewModel.backgroundStyle.subscribe(value => this.setState({backgroundStyle: value}))
+    this.commonViewModel.appBackgroundStyle.subscribe(value => this.setState({backgroundStyle: value}))
     this.viewModel.selectedView.subscribe(value => this.setState({selectedView: value}))
 
     this.backHandler = BackHandler.addEventListener(

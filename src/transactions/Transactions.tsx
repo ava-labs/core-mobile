@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {Appearance, FlatList, Modal, SafeAreaView, StyleSheet} from 'react-native'
+import {Appearance, FlatList, Modal, StyleSheet, View} from 'react-native'
 import CommonViewModel from '../CommonViewModel'
 import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 import TextTitle from "../common/TextTitle"
@@ -10,7 +10,6 @@ import Header from "../mainView/Header"
 
 type Props = {
   wallet: MnemonicWallet,
-  onClose: () => void,
 }
 type State = {
   isDarkMode: boolean,
@@ -56,7 +55,7 @@ class Transactions extends Component<Props, State> {
     )
 
     return (
-      <SafeAreaView style={this.state.backgroundStyle}>
+      <View style={styles.container}>
         <Modal
           animationType="fade"
           transparent={true}
@@ -64,19 +63,20 @@ class Transactions extends Component<Props, State> {
           <Loader message={this.state.loaderMsg}/>
         </Modal>
 
-        <Header showBack onBack={this.props.onClose}/>
+        <Header/>
         <TextTitle text={"Transactions"}/>
-        <FlatList
-          data={this.state.historyItems}
-          renderItem={info => renderItem(info.item)}
-          keyExtractor={item => item.id}
-        />
-      </SafeAreaView>
+        <FlatList data={this.state.historyItems}
+                  renderItem={info => renderItem(info.item)}
+                  keyExtractor={item => item.id}/>
+      </View>
     )
   }
 }
 
-const styles: any = StyleSheet.create({}
-)
+const styles = StyleSheet.create({
+  container: {
+    height: "100%"
+  },
+})
 
 export default Transactions
