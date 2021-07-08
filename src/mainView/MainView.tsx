@@ -10,6 +10,7 @@ import SendView from "../sendAvax/SendView"
 import EarnView from "../earn/EarnView"
 import TransactionsView from "../transactions/TransactionsView"
 import Loader from "../common/Loader"
+import {COLORS, COLORS_NIGHT} from "../common/Constants"
 
 type Props = {
   wallet: MnemonicWallet,
@@ -60,19 +61,18 @@ class MainView extends Component<Props, State> {
     this.props.onSwitchWallet()
   }
 
-  private screenOptions = (params: any): any => {
+  private screenOptions = (params: any, isDarkMode: boolean): any => {
     return {
       tabBarIcon: ({focused, color, size}) => {
         let icon;
-
         if (params.route.name === 'Portfolio') {
-          icon = require("../assets/icons/portfolio_light.png")
+          icon = isDarkMode ? require("../assets/icons/portfolio_dark.png") : require("../assets/icons/portfolio_light.png")
         } else if (params.route.name === 'Send') {
-          icon = require("../assets/icons/send_light.png")
+          icon = isDarkMode ? require("../assets/icons/send_dark.png") : require("../assets/icons/send_light.png")
         } else if (params.route.name === 'Earn') {
-          icon = require("../assets/icons/earn_light.png")
+          icon = isDarkMode ? require("../assets/icons/earn_dark.png") : require("../assets/icons/earn_light.png")
         } else if (params.route.name === 'Transactions') {
-          icon = require("../assets/icons/history_light.png")
+          icon = isDarkMode ? require("../assets/icons/history_dark.png") : require("../assets/icons/history_light.png")
         }
 
         return <Image source={icon} style={[{width: 24, height: 24}]}/>
@@ -85,18 +85,19 @@ class MainView extends Component<Props, State> {
   private Send = () => <SendView wallet={this.viewModel.wallet.value}/>
   private Earn = () => <EarnView wallet={this.viewModel.wallet.value}/>
   private Transactions = () => <TransactionsView wallet={this.viewModel.wallet.value}/>
-  private Nav = () => (
-    <NavigationContainer>
-      <Tab.Navigator sceneContainerStyle={styles.navContainer} screenOptions={props => this.screenOptions(props)}>
-        <Tab.Screen name="Portfolio" component={this.Portfolio}/>
-        <Tab.Screen name="Send" component={this.Send}/>
-        <Tab.Screen name="Earn" component={this.Earn}/>
-        <Tab.Screen name="Transactions" component={this.Transactions}/>
-      </Tab.Navigator>
-    </NavigationContainer>
-  )
+  // private Nav = () => ( FIXME: this doesnt work, if used wallet wont get balance updates, i dont know the reason
+  //   <NavigationContainer>
+  //     <Tab.Navigator >
+  //       <Tab.Screen name="Portfolio" component={this.Portfolio}/>
+  //       <Tab.Screen name="Send" component={this.Send}/>
+  //       <Tab.Screen name="Earn" component={this.Earn}/>
+  //       <Tab.Screen name="Transactions" component={this.Transactions}/>
+  //     </Tab.Navigator>
+  //   </NavigationContainer>
+  // )
 
   render(): Element {
+    let THEME = this.state.isDarkMode ? COLORS_NIGHT : COLORS
     return (
       <View style={styles.container}>
         <Modal
@@ -108,7 +109,15 @@ class MainView extends Component<Props, State> {
 
         <View style={this.state.walletReady ? styles.visible : styles.invisible}>
           <NavigationContainer>
-            <Tab.Navigator sceneContainerStyle={styles.navContainer} screenOptions={props => this.screenOptions(props)}>
+            <Tab.Navigator sceneContainerStyle={styles.navContainer}
+                           screenOptions={props => this.screenOptions(props, this.state.isDarkMode)}
+                           tabBarOptions={{
+                             allowFontScaling: false,
+                             activeBackgroundColor: THEME.bg,
+                             inactiveBackgroundColor: THEME.bg,
+                             activeTintColor: THEME.primaryColor,
+                             inactiveTintColor: THEME.primaryColorLight,
+                           }}>
               <Tab.Screen name="Portfolio" component={this.Portfolio}/>
               <Tab.Screen name="Send" component={this.Send}/>
               <Tab.Screen name="Earn" component={this.Earn}/>
