@@ -1,5 +1,5 @@
 import React, {Component} from "react"
-import {Alert, Appearance, Modal, StyleSheet, View} from "react-native"
+import {Appearance, Image, Modal, StyleSheet, View} from "react-native"
 import CommonViewModel from "../CommonViewModel"
 import MainViewViewModel from "./MainViewViewModel"
 import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
@@ -60,6 +60,26 @@ class MainView extends Component<Props, State> {
     this.props.onSwitchWallet()
   }
 
+  private screenOptions = (params: any): any => {
+    return {
+      tabBarIcon: ({focused, color, size}) => {
+        let icon;
+
+        if (params.route.name === 'Portfolio') {
+          icon = require("../assets/icons/portfolio_light.png")
+        } else if (params.route.name === 'Send') {
+          icon = require("../assets/icons/send_light.png")
+        }else if (params.route.name === 'Earn') {
+          icon = require("../assets/icons/earn_light.png")
+        }else if (params.route.name === 'Transactions') {
+          icon = require("../assets/icons/history_light.png")
+        }
+
+        return <Image source={icon} style={[{width: 24, height: 24}]}/>
+      },
+    }
+  }
+
   private _Portfolio = () => <Portfolio wallet={this.viewModel.wallet.value} onSwitchWallet={this.onSwitchWallet}
                                         onExit={this.onExit}/>
   private _Send = () => <SendView wallet={this.viewModel.wallet.value}/>
@@ -67,7 +87,7 @@ class MainView extends Component<Props, State> {
   private _Transactions = () => <Transactions wallet={this.viewModel.wallet.value}/>
   private _Nav = () => (
     <NavigationContainer>
-      <Tab.Navigator sceneContainerStyle={styles.navContainer}>
+      <Tab.Navigator sceneContainerStyle={styles.navContainer} screenOptions={props => this.screenOptions(props)}>
         <Tab.Screen name="Portfolio" component={this._Portfolio}/>
         <Tab.Screen name="Send" component={this._Send}/>
         <Tab.Screen name="Earn" component={this._Earn}/>
