@@ -46,7 +46,7 @@ export default class {
 
     this.stakingDuration = combineLatest([this.startDate, this.endDate]).pipe(
       map(([startDate, endDate]) => moment.duration(moment(endDate).diff(moment(startDate)))),
-      map(duration => duration.get('days') + " days " + duration.get('hours') + " hours " + duration.get('minutes') + " minutes")
+      map(duration => Math.floor(duration.asDays()) + " days " + duration.get('hours') + " hours " + duration.get('minutes') + " minutes")
     )
 
     this.intervalSub = interval(1000).pipe(
