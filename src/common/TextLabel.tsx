@@ -11,7 +11,7 @@ type State = {
 }
 
 class TextLabel extends Component<Props, State> {
-  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme() as string)
+  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme())
 
   constructor(props: Props | Readonly<Props>) {
     super(props)
@@ -25,11 +25,13 @@ class TextLabel extends Component<Props, State> {
   }
 
   render(): Element {
+    let THEME = this.state.isDarkMode ? COLORS_NIGHT : COLORS
     return (
       <Text
+        numberOfLines={1}
         style={[
           {
-            color: this.state.isDarkMode ? COLORS_NIGHT.primaryColorLight : COLORS.primaryColorLight,
+            color: THEME.primaryColorLight,
             fontSize: 13,
             fontFamily: "Rubik-Regular"
           },

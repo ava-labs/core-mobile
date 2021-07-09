@@ -7,13 +7,14 @@ type Props = {
   text: string,
   size?: number,
   textAlign?: "center" | "right",
+  type?: "import" | "export",
 }
 type State = {
   isDarkMode: boolean,
 }
 
 class TextAmount extends Component<Props, State> {
-  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme() as string)
+  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme())
 
   constructor(props: Props | Readonly<Props>) {
     super(props)
@@ -27,11 +28,23 @@ class TextAmount extends Component<Props, State> {
   }
 
   render(): Element {
+    let THEME = this.state.isDarkMode ? COLORS_NIGHT : COLORS
+    let color = THEME.primaryColor
+    if (this.props.type) {
+      switch (this.props.type) {
+        case "import":
+          color = THEME.incoming
+          break
+        case "export":
+          color = THEME.outgoing
+          break
+      }
+    }
     return (
       <Text
         style={[
           {
-            color: this.state.isDarkMode ? COLORS_NIGHT.primaryColor : COLORS.primaryColor,
+            color: color,
             fontSize: this.props.size ? this.props.size : 16,
             fontFamily: "Rubik-Regular",
             textAlign: this.props.textAlign

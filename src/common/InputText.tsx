@@ -1,5 +1,5 @@
 import React, {Component} from "react"
-import {Appearance, TextInput} from "react-native"
+import {Appearance, StyleProp, TextInput, TextStyle} from "react-native"
 import CommonViewModel from "../CommonViewModel"
 import {COLORS, COLORS_NIGHT} from "./Constants"
 
@@ -9,13 +9,14 @@ type Props = {
   textSize?: number,
   editable?: boolean,
   multiline?: boolean,
+  style?: StyleProp<TextStyle>
 }
 type State = {
   isDarkMode: boolean,
 }
 
 class InputText extends Component<Props, State> {
-  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme() as string)
+  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme())
 
   constructor(props: Props | Readonly<Props>) {
     super(props)
@@ -45,6 +46,7 @@ class InputText extends Component<Props, State> {
             padding: 8,
             fontFamily: "Rubik-Regular",
           },
+          this.props.style
         ]}
         onChangeText={this.props.onChangeText}
         value={this.props.value}/>

@@ -1,7 +1,6 @@
-import {asyncScheduler, BehaviorSubject, concat, defer, from, Observable, of, zip} from 'rxjs';
+import {asyncScheduler, BehaviorSubject, concat, defer, Observable, of, zip} from 'rxjs';
 import {concatMap, filter, subscribeOn, take, tap} from 'rxjs/operators';
 import {MnemonicWallet, Utils} from "@avalabs/avalanche-wallet-sdk"
-import Clipboard from "@react-native-clipboard/clipboard"
 
 
 export default class {
@@ -58,11 +57,5 @@ export default class {
 
   clearAddress(): void {
     this.addressCToSendTo.next("")
-  }
-
-  pasteFromClipboard(): Observable<string> {
-    return from(Clipboard.getString()).pipe(
-      tap(value => this.addressCToSendTo.next(value))
-    )
   }
 }
