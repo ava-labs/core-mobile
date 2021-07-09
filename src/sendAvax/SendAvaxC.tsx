@@ -10,6 +10,7 @@ import SendAvaxCViewModel from "./SendAvaxCViewModel"
 import Loader from "../common/Loader"
 import QrScannerAva from "../common/QrScannerAva"
 import Header from "../mainView/Header"
+import ImgButtonAva from "../common/ImgButtonAva"
 
 type SendAvaxCProps = {
   wallet: MnemonicWallet,
@@ -55,7 +56,7 @@ class SendAvaxC extends Component<SendAvaxCProps, SendAvaxCState> {
   componentWillUnmount(): void {
   }
 
-  private onSend(addressC: string, amount: string): void {
+  private onSend = (addressC: string, amount: string): void => {
     this.viewModel.onSendAvaxC(addressC, amount)
       .subscribe({
         next: txHash => {
@@ -67,27 +68,31 @@ class SendAvaxC extends Component<SendAvaxCProps, SendAvaxCState> {
       })
   }
 
-  private pasteFromClipboard(): void {
-    this.viewModel.pasteFromClipboard().subscribe({
-      error: err => Alert.alert("Error", err.message)
-    })
+  private ClearBtn = () => {
+    const clearIcon = this.state.isDarkMode ? require("../assets/icons/clear_dark.png") : require("../assets/icons/clear_light.png")
+    return <View style={styles.clear}>
+      <ImgButtonAva src={clearIcon} onPress={() => this.viewModel.clearAddress()}/>
+    </View>
   }
 
   render(): Element {
+    const scanIcon = this.state.isDarkMode ? require("../assets/icons/qr_scan_dark.png") : require("../assets/icons/qr_scan_light.png")
+    const clearBtn = this.state.addressCToSendTo.length != 0 && this.ClearBtn()
+
     return (
       <SafeAreaView style={this.state.backgroundStyle}>
         <Header showBack onBack={this.props.onClose}/>
         <TextTitle text={"Send AVAX (C Chain)"}/>
         <TextTitle text={"To:"} size={18}/>
-        <InputText
-          multiline={true}
-          onChangeText={text => this.setState({addressCToSendTo: text})}
-          value={this.state.addressCToSendTo}/>
 
         <View style={styles.horizontalLayout}>
-          <ButtonAva text={'Clear'} onPress={() => this.viewModel.clearAddress()}/>
-          <ButtonAva text={'Paste'} onPress={() => this.pasteFromClipboard()}/>
-          <ButtonAva text={'Scan'} onPress={() => this.viewModel.onScanBarcode()}/>
+          <InputText
+            style={[{flex: 1}]}
+            multiline={true}
+            onChangeText={text => this.setState({addressCToSendTo: text})}
+            value={this.state.addressCToSendTo}/>
+          {clearBtn}
+          <ImgButtonAva src={scanIcon} onPress={() => this.viewModel.onScanBarcode()}/>
         </View>
 
         <TextTitle text={"Amount:"} size={18}/>
@@ -121,16 +126,14 @@ class SendAvaxC extends Component<SendAvaxCProps, SendAvaxCState> {
 }
 
 const styles: any = StyleSheet.create({
-  text: {
-    fontSize: 16,
-    fontWeight: "700",
-    marginEnd: 20,
-  },
-  buttonClose: {
-    backgroundColor: "#2196F3",
-  },
   horizontalLayout: {
+    width: "100%",
     flexDirection: "row",
+    alignItems: "center",
+  },
+  clear: {
+    position: "absolute",
+    end: 58,
   },
 })
 
