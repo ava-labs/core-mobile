@@ -14,7 +14,7 @@ type State = {
 }
 
 class TextTitle extends Component<Props, State> {
-  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme() as string)
+  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme())
 
   constructor(props: Props | Readonly<Props>) {
     super(props)

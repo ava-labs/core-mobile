@@ -1,6 +1,9 @@
 import WalletSDK from './WalletSDK'
-import {BehaviorSubject} from 'rxjs'
+import {asyncScheduler, AsyncSubject, BehaviorSubject, concat, from, Observable, of} from 'rxjs'
 import {MnemonicWallet, NetworkConstants} from "@avalabs/avalanche-wallet-sdk"
+import {catchError, concatMap, map, subscribeOn, switchMap, tap} from "rxjs/operators"
+import BiometricsSDK from "./BiometricsSDK"
+import {BackHandler} from "react-native"
 
 export enum SelectedView {
   Onboard,
@@ -14,26 +17,150 @@ export default class {
   wallet: MnemonicWallet | null = null
   selectedView: BehaviorSubject<SelectedView> = new BehaviorSubject<SelectedView>(SelectedView.Onboard)
 
-  onComponentMount(): void {
+  onComponentMount = (): void => {
     WalletSDK.setNetwork(NetworkConstants.TestnetConfig)
   }
 
-  onEnterWallet(mnemonic: string): void {
-    this.wallet = WalletSDK.getMnemonicValet(mnemonic)
-    this.setSelectedView(SelectedView.Main)
+  onEnterWallet = (mnemonic: string): Observable<boolean> => {
+    return of(mnemonic).pipe(
+      map((mnemonic: string) => WalletSDK.getMnemonicValet(mnemonic)),
+      map((wallet: MnemonicWallet) => {
+        this.wallet = wallet
+        return wallet.mnemonic
+      }),
+      switchMap(mnemonic => BiometricsSDK.saveMnemonic(mnemonic)),
+      switchMap(credentials => {
+        if (credentials === false) {
+          throw Error("Error saving mnemonic")
+        }
+        return BiometricsSDK.loadMnemonic(BiometricsSDK.storeOptions)
+      }),
+      map(credentials => {
+        if (credentials === false) {
+          throw Error("Error saving mnemonic")
+        }
+        return true
+      }),
+      catchError((err: Error) => {
+        return from(BiometricsSDK.clearMnemonic()).pipe(
+          tap(() => {
+            throw err
+          })
+        )
+      }),
+      map(() => {
+        this.setSelectedView(SelectedView.Main)
+        return true
+      }),
+      subscribeOn(asyncScheduler)
+    )
   }
 
-  onSavedMnemonic(mnemonic: string): void {
+  onSavedMnemonic = (mnemonic: string): void => {
     this.wallet = WalletSDK.getMnemonicValet(mnemonic)
     this.setSelectedView(SelectedView.CheckMnemonic)
   }
 
-  onLogout(): void {
-    this.wallet = null
-    this.setSelectedView(SelectedView.Onboard)
+  onLogout = (): Observable<LogoutEvents> => {
+    const deleteBioDataPrompt = new AsyncSubject<LogoutPromptAnswers>()
+    const dialogOp: Observable<LogoutFinished> = deleteBioDataPrompt.pipe(
+      concatMap((answer: LogoutPromptAnswers) => {
+        switch (answer) {
+          case LogoutPromptAnswers.Yes:
+            return from(BiometricsSDK.clearMnemonic()).pipe(map(() => false))
+          case LogoutPromptAnswers.Cancel:
+            return of(true)
+        }
+      }),
+      map((isCanceled: boolean) => {
+        if (!isCanceled) {
+          this.wallet = null
+          this.setSelectedView(SelectedView.Onboard)
+        }
+        return new LogoutFinished()
+      })
+    )
+    return concat(of(new ShowLogoutPrompt(deleteBioDataPrompt)), dialogOp, asyncScheduler)
   }
 
-  setSelectedView(view: SelectedView): void {
+  onExit = (): Observable<ExitEvents> => {
+    const exitPrompt = new AsyncSubject<ExitPromptAnswers>()
+    const dialogOp: Observable<ExitFinished> = exitPrompt.pipe(
+      map((answer: ExitPromptAnswers) => {
+        switch (answer) {
+          case ExitPromptAnswers.Ok:
+            return new ExitFinished()
+        }
+      }),
+      map(() => {
+        BackHandler.exitApp()
+        return new LogoutFinished()
+      }),
+    )
+    return concat(of(new ShowExitPrompt(exitPrompt)), dialogOp, asyncScheduler)
+  }
+
+  setSelectedView = (view: SelectedView): void => {
     this.selectedView.next(view)
   }
+
+  /**
+   * Selects appropriate view and returns true if back press should be consumed here.
+   */
+  onBackPressed = (): boolean => {
+    switch (this.selectedView.value) {
+      case SelectedView.Onboard:
+        return false
+      case SelectedView.CreateWallet:
+        this.setSelectedView(SelectedView.Onboard)
+        return true
+      case SelectedView.Login:
+        this.setSelectedView(SelectedView.Onboard)
+        return true
+      case SelectedView.Main:
+        return false
+      case SelectedView.CheckMnemonic:
+        this.setSelectedView(SelectedView.CreateWallet)
+        return true
+
+    }
+  }
+}
+
+
+export interface LogoutEvents {
+}
+
+export class ShowLogoutPrompt implements LogoutEvents {
+  prompt: AsyncSubject<LogoutPromptAnswers>
+
+  constructor(prompt: AsyncSubject<LogoutPromptAnswers>) {
+    this.prompt = prompt
+  }
+}
+
+export class LogoutFinished implements LogoutEvents {
+}
+
+export enum LogoutPromptAnswers {
+  Yes,
+  Cancel
+}
+
+export interface ExitEvents {
+}
+
+export class ShowExitPrompt implements ExitEvents {
+  prompt: AsyncSubject<ExitPromptAnswers>
+
+  constructor(prompt: AsyncSubject<ExitPromptAnswers>) {
+    this.prompt = prompt
+  }
+}
+
+export class ExitFinished implements ExitEvents {
+}
+
+export enum ExitPromptAnswers {
+  Ok
 }

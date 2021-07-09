@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {Alert, Appearance, Modal, SafeAreaView, ScrollView, StyleSheet, View} from 'react-native'
+import {Alert, Appearance, Modal, SafeAreaView, ScrollView, StyleSheet} from 'react-native'
 import CommonViewModel from '../CommonViewModel'
 import Loader from "../common/Loader"
 import ValidateViewModel from "./ValidateViewModel"
@@ -11,6 +11,7 @@ import TextTitle from "../common/TextTitle"
 import InputAmount from "../common/InputAmount"
 import InputText from "../common/InputText"
 import ButtonAva from "../common/ButtonAva"
+import Header from "../mainView/Header"
 
 type Props = {
   wallet: MnemonicWallet,
@@ -33,7 +34,7 @@ type State = {
 
 class Validate extends Component<Props, State> {
   viewModel!: ValidateViewModel
-  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme() as string)
+  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme())
 
   constructor(props: Props | Readonly<Props>) {
     super(props)
@@ -107,6 +108,7 @@ class Validate extends Component<Props, State> {
     return (
       <SafeAreaView style={this.state.backgroundStyle}>
         <ScrollView>
+          <Header showBack onBack={this.props.onClose}/>
           <TextTitle text={"Validate"}/>
           <TextTitle text={"Node ID:"} size={18}/>
           <InputText value={this.state.nodeId} onChangeText={text => this.setState({nodeId: text})}/>
@@ -129,7 +131,8 @@ class Validate extends Component<Props, State> {
           <InputAmount onChangeText={text => this.setState({stakeAmount: text})}/>
 
           <TextTitle text={"Delegation fee (%):"} size={18}/>
-          <InputAmount initValue={this.state.delegationFee} onChangeText={text => this.setState({delegationFee: text})}/>
+          <InputAmount initValue={this.state.delegationFee}
+                       onChangeText={text => this.setState({delegationFee: text})}/>
 
           <TextTitle text={"Reward Address:"} size={18}/>
           <InputText value={this.state.rewardAddress} onChangeText={text => this.setState({rewardAddress: text})}/>
@@ -140,15 +143,7 @@ class Validate extends Component<Props, State> {
           <ButtonAva
             text={'Custom address'}
             onPress={() => this.setState({rewardAddress: ""})}/>
-
-          <View style={styles.horizontalLayout}>
-            <ButtonAva
-              text={'Cancel'}
-              onPress={this.props.onClose}/>
-            <ButtonAva
-              text={'Confirm'}
-              onPress={() => this.onConfirm()}/>
-          </View>
+          <ButtonAva text={'Confirm'} onPress={() => this.onConfirm()}/>
 
 
           <Modal
