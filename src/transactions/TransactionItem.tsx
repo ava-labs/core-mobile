@@ -3,10 +3,10 @@ import {Appearance, Linking, StyleSheet, View} from 'react-native'
 import CommonViewModel from '../CommonViewModel'
 import TextTitle from "../common/TextTitle"
 import {COLORS, COLORS_NIGHT} from "../common/Constants"
-import ButtonAva from "../common/ButtonAva"
 import TextLabel from "../common/TextLabel"
 import TextAmount from "../common/TextAmount"
 import moment from "moment"
+import ImgButtonAva from "../common/ImgButtonAva"
 
 type Props = {
   date: string
@@ -49,6 +49,7 @@ class TransactionItem extends Component<Props, State> {
 
   render(): Element {
     let THEME = this.state.isDarkMode ? COLORS_NIGHT : COLORS
+    const explorerIcon = this.state.isDarkMode ? require("../assets/icons/search_dark.png") : require("../assets/icons/search_light.png")
     const date = moment(this.props.date).format("MMM DD, YYYY")
     return (
       <View style={[{
@@ -64,7 +65,7 @@ class TransactionItem extends Component<Props, State> {
             <TextAmount text={this.props.amount} type={this.props.type}/>
             {this.props.address ? <TextLabel text={this.props.address}/> : undefined}
           </View>
-          <ButtonAva text={"Explorer"} onPress={() => this.onExplorer(this.props.explorerUrl)}/>
+          <ImgButtonAva src={explorerIcon} onPress={() => this.onExplorer(this.props.explorerUrl)}/>
         </View>
       </View>
     )
@@ -74,7 +75,8 @@ class TransactionItem extends Component<Props, State> {
 const styles: any = StyleSheet.create({
     horizontalLayout: {
       flexDirection: 'row',
-      justifyContent: "space-between"
+      justifyContent: "space-between",
+      alignItems: "center"
     },
   }
 )
