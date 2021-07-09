@@ -6,9 +6,10 @@ import BalancesViewModel from "./BalancesViewModel"
 import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 import TextLabel from "../common/TextLabel"
 import TextAmount from "../common/TextAmount"
+import {BehaviorSubject} from "rxjs"
 
 type Props = {
-  wallet: MnemonicWallet,
+  wallet: BehaviorSubject<MnemonicWallet>,
 }
 type State = {
   isDarkMode: boolean
@@ -24,7 +25,7 @@ type State = {
 
 class Balances extends Component<Props, State> {
   viewModel!: BalancesViewModel
-  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme() as string)
+  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme())
 
   constructor(props: Props | Readonly<Props>) {
     super(props)
@@ -52,7 +53,7 @@ class Balances extends Component<Props, State> {
     this.viewModel.onComponentMount()
   }
 
-  onComponentUnMount = (): void => {
+  componentWillUnmount(): void {
     this.viewModel.onComponentUnMount()
   }
 

@@ -1,14 +1,15 @@
 import React, {Component} from 'react'
-import {Appearance, FlatList, SafeAreaView, StyleSheet} from 'react-native'
+import {Appearance, FlatList, Modal, StyleSheet, View} from 'react-native'
 import CommonViewModel from '../CommonViewModel'
 import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 import TextTitle from "../common/TextTitle"
 import TransactionsViewModel, {HistoryItem} from "./TransactionsViewModel"
 import TransactionItem from "./TransactionItem"
+import Loader from "../common/Loader"
+import Header from "../mainView/Header"
 
 type Props = {
   wallet: MnemonicWallet,
-  onClose: () => void,
 }
 type State = {
   isDarkMode: boolean,
@@ -18,9 +19,9 @@ type State = {
   historyItems: HistoryItem[],
 }
 
-class Transactions extends Component<Props, State> {
+class TransactionsView extends Component<Props, State> {
   viewModel!: TransactionsViewModel
-  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme() as string)
+  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme())
 
   constructor(props: Props | Readonly<Props>) {
     super(props)
@@ -38,6 +39,8 @@ class Transactions extends Component<Props, State> {
     this.commonViewModel.isDarkMode.subscribe(value => this.setState({isDarkMode: value}))
     this.commonViewModel.backgroundStyle.subscribe(value => this.setState({backgroundStyle: value}))
     this.viewModel.history.subscribe((value: HistoryItem[]) => this.setState({historyItems: value}))
+    this.viewModel.loaderVisible.subscribe(value => this.setState({loaderVisible: value}))
+    this.viewModel.loaderMsg.subscribe(value => this.setState({loaderMsg: value}))
   }
 
   componentWillUnmount(): void {
@@ -52,19 +55,28 @@ class Transactions extends Component<Props, State> {
     )
 
     return (
-      <SafeAreaView style={this.state.backgroundStyle}>
+      <View style={styles.container}>
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={this.state.loaderVisible}>
+          <Loader message={this.state.loaderMsg}/>
+        </Modal>
+
+        <Header/>
         <TextTitle text={"Transactions"}/>
-        <FlatList
-          data={this.state.historyItems}
-          renderItem={info => renderItem(info.item)}
-          keyExtractor={item => item.id}
-        />
-      </SafeAreaView>
+        <FlatList data={this.state.historyItems}
+                  renderItem={info => renderItem(info.item)}
+                  keyExtractor={item => item.id}/>
+      </View>
     )
   }
 }
 
-const styles: any = StyleSheet.create({}
-)
+const styles = StyleSheet.create({
+  container: {
+    height: "100%"
+  },
+})
 
-export default Transactions
+export default TransactionsView

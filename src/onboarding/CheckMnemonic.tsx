@@ -3,13 +3,13 @@ import {Alert, Appearance, ScrollView, StyleSheet, View} from 'react-native'
 import CommonViewModel from '../CommonViewModel'
 import Header from '../mainView/Header'
 import TextTitle from "../common/TextTitle"
-import InputText from "../common/InputText"
 import ButtonAva from "../common/ButtonAva"
 import CheckMnemonicViewModel from "./CheckMnemonicViewModel"
+import MnemonicInput from "./MnemonicInput"
 
 type Props = {
   onSuccess: () => void,
-  onClose: () => void,
+  onBack: () => void,
   mnemonic: string,
 }
 export type State = {
@@ -20,7 +20,7 @@ export type State = {
 }
 
 class CheckMnemonic extends Component<Props, State> {
-  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme() as string)
+  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme())
   viewModel: CheckMnemonicViewModel = new CheckMnemonicViewModel(this.props.mnemonic)
 
   constructor(props: Props | Readonly<Props>) {
@@ -45,8 +45,8 @@ class CheckMnemonic extends Component<Props, State> {
     this.viewModel.cleanup()
   }
 
-  private onClose = (): void => {
-    this.props.onClose()
+  private onBack = (): void => {
+    this.props.onBack()
   }
 
   private onVerify = (): void => {
@@ -65,32 +65,24 @@ class CheckMnemonic extends Component<Props, State> {
     this.state.enteredMnemonics.forEach((value, key) => {
       if (this.state.enabledInputs.get(key)) {
         mnemonics.push(
-          <View style={styles.horizontalLayout} key={key}>
-            <TextTitle text={(key + 1).toString()} size={18}/>
-            <InputText value={value} key={key + 100} style={{flexGrow: 1}}
-                       onChangeText={text => this.setMnemonic(key, text)}/>
-          </View>
+          <MnemonicInput key={key} keyNum={key} text={value} onChangeText={text => this.setMnemonic(key, text)}
+                         editable={true}/>
         )
       } else {
         mnemonics.push(
-          <View style={styles.horizontalLayout} key={key}>
-            <TextTitle text={(key + 1).toString()} size={18}/>
-            <InputText value={value} editable={false} key={key + 100} style={{flexGrow: 1}}/>
-          </View>
+          <MnemonicInput key={key} keyNum={key} text={value} editable={false}/>
         )
       }
     })
 
-
     return (
       <ScrollView>
-        <Header/>
+        <Header showBack onBack={this.onBack}/>
         <TextTitle text={"Fill In Mnemonic Phrase Below"} size={20} textAlign={"center"}/>
         <View style={styles.mnemonics}>
           {mnemonics}
         </View>
         <ButtonAva text={"Verify"} onPress={this.onVerify}/>
-        <ButtonAva text={"Back"} onPress={this.onClose}/>
       </ScrollView>
     )
   }

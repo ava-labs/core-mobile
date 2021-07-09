@@ -2,7 +2,7 @@ import React, {Component} from "react"
 import {Appearance, StyleSheet, TextInput, View} from "react-native"
 import CommonViewModel from "../CommonViewModel"
 import {COLORS, COLORS_NIGHT} from "./Constants"
-import ButtonAva from "./ButtonAva"
+import ImgButtonAva from "./ImgButtonAva"
 
 type Props = {
   initValue?: string
@@ -19,7 +19,7 @@ type State = {
 }
 
 class InputAmount extends Component<Props, State> {
-  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme() as string)
+  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme())
 
   constructor(props: Props | Readonly<Props>) {
     super(props)
@@ -56,12 +56,15 @@ class InputAmount extends Component<Props, State> {
 
   render(): Element {
     const THEME = this.state.isDarkMode ? COLORS_NIGHT : COLORS
-    const decreaseBtn = this.state.decreaseBtnVisible ? <ButtonAva text={"-"} onPress={() => this.decreaseAmount()}/> : undefined
-    const increaseBtn = this.state.increaseBtnVisible ? <ButtonAva text={"+"} onPress={() => this.increaseAmount()}/> : undefined
+    const decreaseIcon = this.state.isDarkMode ? require("../assets/icons/remove_dark.png") : require("../assets/icons/remove_light.png")
+    const increaseIcon = this.state.isDarkMode ? require("../assets/icons/add_dark.png") : require("../assets/icons/add_light.png")
+    const decreaseBtn = this.state.decreaseBtnVisible && <ImgButtonAva src={decreaseIcon} onPress={() => this.decreaseAmount()}/>
+    const increaseBtn = this.state.increaseBtnVisible && <ImgButtonAva src={increaseIcon} onPress={() => this.increaseAmount()}/>
     return (
       <View style={styles.horizontalLayout}>
         {decreaseBtn}
         <TextInput
+          keyboardType={"numeric"}
           editable={this.props.editable !== false}
           style={[
             {
@@ -93,6 +96,7 @@ class InputAmount extends Component<Props, State> {
 const styles: any = StyleSheet.create({
   horizontalLayout: {
     flexDirection: "row",
+    alignItems: "center",
   },
 })
 export default InputAmount

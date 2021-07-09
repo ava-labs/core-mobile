@@ -1,6 +1,6 @@
 import {asyncScheduler, BehaviorSubject, Observable} from 'rxjs'
 import {BN, MnemonicWallet, Utils} from "@avalabs/avalanche-wallet-sdk"
-import {map, subscribeOn, switchMap} from "rxjs/operators"
+import {map, subscribeOn, switchMap, take, tap} from "rxjs/operators"
 import {ChainIdType} from "@avalabs/avalanche-wallet-sdk/dist/types"
 import {
   HistoryImportExportTypeName,
@@ -27,16 +27,24 @@ export class HistoryItem {
 export default class {
   wallet!: BehaviorSubject<MnemonicWallet>
   history: Observable<HistoryItem[]>
+  loaderVisible: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false)
+  loaderMsg: BehaviorSubject<string> = new BehaviorSubject<string>("Loading transactions")
 
   constructor(wallet: MnemonicWallet) {
     this.wallet = new BehaviorSubject<MnemonicWallet>(wallet)
 
     const NUM_OF_TRXS = 20
     this.history = this.wallet.pipe(
+      take(1),
       subscribeOn(asyncScheduler),
+      tap(wallet => this.loaderVisible.next(true)),
       switchMap(wallet => wallet.getHistory(NUM_OF_TRXS)),
       map(history => this.filterDuplicates(history)),
-      map(history => this.mapToHistoryItem(history))
+      map(history => this.mapToHistoryItem(history)),
+      tap({
+        complete: () => this.loaderVisible.next(false),
+        error: err => this.loaderVisible.next(false)
+      })
     )
   }
 
