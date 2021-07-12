@@ -4,8 +4,8 @@ import CommonViewModel from "../CommonViewModel"
 import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 import PortfolioViewModel from "./PortfolioViewModel"
 import Header from "../mainView/Header"
-import Balances from "../mainView/Balances"
-import TabbedAddressCards from "../mainView/TabbedAddressCards"
+import Balances from "../portfolio/Balances"
+import TabbedAddressCards from "../portfolio/TabbedAddressCards"
 import {BehaviorSubject} from "rxjs"
 
 type Props = {
