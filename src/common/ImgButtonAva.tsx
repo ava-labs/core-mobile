@@ -1,5 +1,5 @@
 import React, {Component} from "react"
-import {Appearance, Image, ImageSourcePropType, StyleSheet, TouchableNativeFeedback} from "react-native"
+import {Appearance, Image, ImageSourcePropType, StyleSheet, TouchableNativeFeedback, View} from "react-native"
 import CommonViewModel from "../CommonViewModel"
 import {COLORS, COLORS_NIGHT} from "./Constants"
 
@@ -25,13 +25,21 @@ class ImgButtonAva extends Component<Props, State> {
     this.commonViewModel.isDarkMode.subscribe(value => this.setState({isDarkMode: value}))
   }
 
+  private onPress = () => {
+    setTimeout(() => {this.props.onPress()}, 200)
+  }
+
   render(): Element {
     let THEME = this.state.isDarkMode ? COLORS_NIGHT : COLORS
     return (
-      <TouchableNativeFeedback style={styles.container}
-                               onPress={this.props.onPress}
-                               background={TouchableNativeFeedback.Ripple(THEME.primaryColor, true)}>
-        <Image source={this.props.src} style={styles.button}/>
+
+      <TouchableNativeFeedback
+        useForeground={true}
+        onPress={this.onPress}
+        background={TouchableNativeFeedback.Ripple(THEME.primaryColor, true)}>
+        <View style={styles.container}>
+          <Image source={this.props.src} style={styles.button}/>
+        </View>
       </TouchableNativeFeedback>
     )
   }
@@ -39,8 +47,7 @@ class ImgButtonAva extends Component<Props, State> {
 
 const styles = StyleSheet.create({
   container: {
-    width: 100,
-    height: 100
+    alignSelf: "baseline"
   },
   button: {
     margin: 10,
