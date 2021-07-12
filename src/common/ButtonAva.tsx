@@ -1,5 +1,5 @@
 import React, {Component} from "react"
-import {Appearance, Pressable, StyleSheet, TouchableNativeFeedback} from "react-native"
+import {Appearance, StyleSheet, TouchableNativeFeedback, View} from "react-native"
 import CommonViewModel from "../CommonViewModel"
 import {COLORS, COLORS_NIGHT} from "./Constants"
 import TextButton from "./TextButton"
@@ -26,15 +26,20 @@ class ButtonAva extends Component<Props, State> {
     this.commonViewModel.isDarkMode.subscribe(value => this.setState({isDarkMode: value}))
   }
 
+  private onPress = () => {
+    setTimeout(() => {this.props.onPress()}, 200)
+  }
+
   render(): Element {
     let THEME = this.state.isDarkMode ? COLORS_NIGHT : COLORS
     return (
-      <TouchableNativeFeedback >
-        <Pressable
-          style={[styles.button, {backgroundColor: THEME.primaryColor}]}
-          onPress={this.props.onPress}>
+      <TouchableNativeFeedback
+        useForeground={true}
+        onPress={() => this.onPress()}
+        background={TouchableNativeFeedback.Ripple(THEME.onPrimary, false)}>
+        <View style={[styles.button, {backgroundColor: THEME.primaryColor}]}>
           <TextButton text={this.props.text}/>
-        </Pressable>
+        </View>
       </TouchableNativeFeedback>
     )
   }
