@@ -18,6 +18,8 @@ export default class {
         concatMap(wallet => wallet.resetHdIndices()),
         concatMap(() => this.wallet.value.updateUtxosX()),
         concatMap(() => this.wallet.value.updateUtxosP()),
+        concatMap(() => this.wallet.value.updateAvaxBalanceC()),
+        concatMap(() => this.wallet.value.updateBalanceERC20()),
         map(() => {
           this.wallet.next(this.wallet.value)
           return true
