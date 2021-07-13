@@ -1,9 +1,9 @@
 import React, {Component} from "react"
 import {Appearance} from "react-native"
 import CommonViewModel from "../CommonViewModel"
-import {SceneMap, TabBar, TabView} from "react-native-tab-view"
+import {SceneMap, TabView} from "react-native-tab-view"
 import AddressCard from "../common/AddressCard"
-import {COLORS, COLORS_NIGHT} from "../common/Constants"
+import TabBarAva from "../common/TabBarAva"
 
 type Props = {
   addressX: string,
@@ -30,50 +30,39 @@ class TabbedAddressCards extends Component<Props, State> {
     this.commonViewModel.isDarkMode.subscribe(value => this.setState({isDarkMode: value}))
   }
 
+  private xRoute = () => (
+    <AddressCard title={"Derived Wallet Address"} address={this.props.addressX}/>
+  )
+
+  private pRoute = () => (
+    <AddressCard title={"Derived Platform Wallet Address"} address={this.props.addressP}/>
+  )
+
+  private cRoute = () => (
+    <AddressCard title={"Derived EVM Wallet Address"} address={this.props.addressC}/>
+  )
+
+  private renderScene = SceneMap({
+    X: this.xRoute,
+    P: this.pRoute,
+    C: this.cRoute,
+  })
+
+  private routes = [
+    {key: 'X', title: 'X'},
+    {key: 'P', title: 'P'},
+    {key: 'C', title: 'C'},
+  ]
 
   render(): Element {
-    const THEME = this.state.isDarkMode ? COLORS_NIGHT : COLORS
-
-    const RouteX = () => (
-      <AddressCard title={"Derived Wallet Address"} address={this.props.addressX}/>
-    );
-    const RouteP = () => (
-      <AddressCard title={"Derived Platform Wallet Address"} address={this.props.addressP}/>
-    );
-    const RouteC = () => (
-      <AddressCard title={"Derived EVM Wallet Address"} address={this.props.addressC}/>
-    );
-
-    const renderScene = SceneMap({
-      X: RouteX,
-      P: RouteP,
-      C: RouteC,
-    });
-
-    const routes = [
-      {key: 'X', title: 'X'},
-      {key: 'P', title: 'P'},
-      {key: 'C', title: 'C'},
-    ]
-    const renderTabBar = props => (
-      <TabBar
-        {...props}
-        indicatorStyle={{backgroundColor: THEME.onPrimary}}
-        style={{backgroundColor: THEME.primaryColor}}
-        labelStyle={{color: THEME.onPrimary}}
-        activeColor={THEME.onPrimary}
-        inactiveColor={THEME.primaryColorLight}
-      />
-    )
-
     return (
       <TabView
         navigationState={{
           index: this.state.index,
-          routes: routes
+          routes: this.routes
         }}
-        renderScene={renderScene}
-        renderTabBar={renderTabBar}
+        renderScene={this.renderScene}
+        renderTabBar={TabBarAva}
         onIndexChange={index => this.setState({index: index})}
         style={[{height: 260}]}
       />
