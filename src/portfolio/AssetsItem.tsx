@@ -37,7 +37,7 @@ class AssetsItem extends Component<Props, State> {
     let THEME = this.state.isDarkMode ? COLORS_NIGHT : COLORS
     return (
       <View style={[styles.container, {
-        borderBottomColor: THEME.primaryColorLight,
+        borderBottomColor: THEME.bgLight,
         borderBottomWidth: 1
       }]}>
         <TextTitle text={this.props.title} size={18}/>

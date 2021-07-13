@@ -4,11 +4,11 @@ import CommonViewModel from "../CommonViewModel"
 import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 import Header from "../mainView/Header"
 import TextTitle from "../common/TextTitle"
-import {SceneMap, TabBar, TabView} from "react-native-tab-view"
+import {SceneMap, TabView} from "react-native-tab-view"
 import AssetsViewModel, {TokenItem} from "./AssetsViewModel"
-import {COLORS, COLORS_NIGHT} from "../common/Constants"
 import AssetsItem from "./AssetsItem"
 import {BehaviorSubject} from "rxjs"
+import TabBarAva from "../common/TabBarAva"
 
 type Props = {
   wallet: BehaviorSubject<MnemonicWallet>,
@@ -41,52 +41,42 @@ class AssetsView extends Component<Props, State> {
   componentWillUnmount(): void {
   }
 
+  private renderItem = (item: TokenItem) => (
+    <AssetsItem title={item.title} balance={item.balance}/>
+  )
+
+  private tokensRoute = () => (
+    <FlatList data={this.state.tokenItems}
+              renderItem={info => this.renderItem(info.item)}
+              keyExtractor={item => item.id}/>
+  )
+
+  private collectiblesRoute = () => (
+    <TextTitle text={"Collectibles"}/>
+  )
+
+  private renderScene = SceneMap({
+    Tokens: this.tokensRoute,
+    Collectibles: this.collectiblesRoute,
+  })
+
+  private routes = [
+    {key: 'Tokens', title: 'Tokens'},
+    {key: 'Collectibles', title: 'Collectibles'},
+  ]
 
   render(): Element {
-    const THEME = this.state.isDarkMode ? COLORS_NIGHT : COLORS
 
-    const renderItem = (item: TokenItem) => (
-      <AssetsItem title={item.title} balance={item.balance}/>
-    )
-
-    const Tokens = () => (
-      <FlatList data={this.state.tokenItems}
-                renderItem={info => renderItem(info.item)}
-                keyExtractor={item => item.id}/>
-    )
-    const Collectibles = () => (
-      <TextTitle text={"Collectibles"}/>
-    )
-
-    const renderScene = SceneMap({
-      Tokens: Tokens,
-      Collectibles: Collectibles,
-    })
-
-    const routes = [
-      {key: 'Tokens', title: 'Tokens'},
-      {key: 'Collectibles', title: 'Collectibles'},
-    ]
-    const renderTabBar = props => (
-      <TabBar
-        {...props}
-        indicatorStyle={{backgroundColor: THEME.tabBarIndicator}}
-        style={{backgroundColor: THEME.transparent}}
-        labelStyle={{fontWeight: "bold"}}
-        activeColor={THEME.tabBarText}
-        inactiveColor={THEME.primaryColorLight}
-      />
-    )
     return (
       <View style={styles.container}>
         <Header/>
         <TabView
           navigationState={{
             index: this.state.index,
-            routes: routes
+            routes: this.routes
           }}
-          renderScene={renderScene}
-          renderTabBar={renderTabBar}
+          renderScene={this.renderScene}
+          renderTabBar={TabBarAva}
           onIndexChange={index => this.setState({index: index})}
           style={[{height: 260}]}
         />
