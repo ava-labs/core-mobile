@@ -1,5 +1,5 @@
 import React, {Component} from "react"
-import {Appearance, FlatList, StyleSheet, View} from "react-native"
+import {Appearance, FlatList, Modal, StyleSheet, View} from "react-native"
 import CommonViewModel from "../CommonViewModel"
 import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 import Header from "../mainView/Header"
@@ -9,6 +9,8 @@ import AssetsViewModel, {TokenItem} from "./AssetsViewModel"
 import AssetsItem from "./AssetsItem"
 import {BehaviorSubject} from "rxjs"
 import TabBarAva from "../common/TabBarAva"
+import ButtonAva from "../common/ButtonAva"
+import AssetsAddToken from "./AssetsAddToken"
 
 type Props = {
   wallet: BehaviorSubject<MnemonicWallet>,
@@ -17,6 +19,7 @@ type State = {
   isDarkMode: boolean
   index: number
   tokenItems: TokenItem[]
+  addTokenVisible: boolean
 }
 
 class AssetsView extends Component<Props, State> {
@@ -27,6 +30,7 @@ class AssetsView extends Component<Props, State> {
     super(props)
     this.state = {
       isDarkMode: false,
+      addTokenVisible: false,
       index: 0,
       tokenItems: []
     }
@@ -78,8 +82,22 @@ class AssetsView extends Component<Props, State> {
           renderScene={this.renderScene}
           renderTabBar={TabBarAva}
           onIndexChange={index => this.setState({index: index})}
-          style={[{height: 260}]}
         />
+        <ButtonAva text={"Add token"} onPress={() => this.setState({addTokenVisible: true})}/>
+
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={this.state.addTokenVisible}
+          onRequestClose={() => this.setState({addTokenVisible: false})}>
+          <AssetsAddToken
+            wallet={this.viewModel.wallet}
+            onClose={() => {
+              this.setState({
+                addTokenVisible: false,
+              })
+            }}/>
+        </Modal>
       </View>
     )
   }
@@ -88,7 +106,6 @@ class AssetsView extends Component<Props, State> {
 const styles = StyleSheet.create({
   container: {
     height: "100%",
-    paddingBottom: 88,
   },
 })
 

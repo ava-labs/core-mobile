@@ -27,11 +27,8 @@ export default class {
       concatMap(() => this.wallet),
       concatMap((wallet: MnemonicWallet) => wallet.updateBalanceERC20()),
       map((tokens: WalletBalanceERC20) => {
-        console.log("generating token items")
-        console.log(tokens)
         const tokenItems = []
         for (let tokenAddress in tokens) {
-          console.log(tokenAddress)
           const bal: ERC20Balance = tokens[tokenAddress]
           tokenItems.push(new TokenItem(tokenAddress, bal.name, Utils.bnToAvaxC(bal.balance) + " " + bal.symbol))
         }
