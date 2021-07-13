@@ -5,6 +5,7 @@ import {COLORS, COLORS_NIGHT} from "./Constants"
 
 type Props = {
   text: string,
+  disabled?: boolean
 }
 type State = {
   isDarkMode: boolean,
@@ -30,7 +31,7 @@ class TextButton extends Component<Props, State> {
       <Text
         style={[
           {
-            color: THEME.onPrimary,
+            color: this.props.disabled ? THEME.primaryColorLight : THEME.onPrimary,
             fontSize: 14,
             fontWeight: "700",
             textTransform: "uppercase",
