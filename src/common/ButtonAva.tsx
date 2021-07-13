@@ -6,7 +6,8 @@ import TextButton from "./TextButton"
 
 type Props = {
   text: string,
-  onPress: () => void
+  onPress: () => void,
+  disabled?: boolean
 }
 type State = {
   isDarkMode: boolean,
@@ -34,11 +35,12 @@ class ButtonAva extends Component<Props, State> {
     let THEME = this.state.isDarkMode ? COLORS_NIGHT : COLORS
     return (
       <TouchableNativeFeedback
+        disabled={this.props.disabled}
         useForeground={true}
         onPress={() => this.onPress()}
         background={TouchableNativeFeedback.Ripple(THEME.onPrimary, false)}>
         <View style={[styles.button, {backgroundColor: THEME.primaryColor}]}>
-          <TextButton text={this.props.text}/>
+          <TextButton disabled={this.props.disabled} text={this.props.text}/>
         </View>
       </TouchableNativeFeedback>
     )
