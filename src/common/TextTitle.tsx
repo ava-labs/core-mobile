@@ -36,7 +36,7 @@ class TextTitle extends Component<Props, State> {
           {
             color: this.props.color || THEME.primaryColor,
             fontSize: this.props.size ? this.props.size : 26,
-            fontFamily: "Rubik",
+            fontFamily: "Inter-Regular",
             fontWeight: this.props.bold ? "bold" : "normal",
             textAlign: this.props.textAlign
           },
