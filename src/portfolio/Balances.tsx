@@ -3,13 +3,13 @@ import {Appearance, StyleSheet, View} from "react-native"
 import CommonViewModel from "../CommonViewModel"
 import {COLORS, COLORS_NIGHT} from "../common/Constants"
 import BalancesViewModel from "./BalancesViewModel"
-import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 import TextLabel from "../common/TextLabel"
 import TextAmount from "../common/TextAmount"
 import {BehaviorSubject} from "rxjs"
+import {WalletProvider} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/Wallet"
 
 type Props = {
-  wallet: BehaviorSubject<MnemonicWallet>,
+  wallet: BehaviorSubject<WalletProvider>,
 }
 type State = {
   isDarkMode: boolean

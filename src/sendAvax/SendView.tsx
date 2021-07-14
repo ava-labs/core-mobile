@@ -4,14 +4,14 @@ import CommonViewModel from "../CommonViewModel"
 import SendAvaxX from "../sendAvax/SendAvaxX"
 import SendAvaxC from "../sendAvax/SendAvaxC"
 import SendCrossChain from "../sendAvax/SendCrossChain";
-import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 import ButtonAva from "../common/ButtonAva"
 import Header from "../mainView/Header"
 import SendViewModel from "./SendViewModel"
 import TextTitle from "../common/TextTitle"
+import {WalletProvider} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/Wallet"
 
 type Props = {
-  wallet: MnemonicWallet,
+  wallet: WalletProvider,
 }
 type State = {
   isDarkMode: boolean

@@ -1,15 +1,15 @@
 import React, {Component} from 'react'
 import {Appearance, FlatList, Modal, StyleSheet, View} from 'react-native'
 import CommonViewModel from '../CommonViewModel'
-import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 import TextTitle from "../common/TextTitle"
 import TransactionsViewModel, {HistoryItem} from "./TransactionsViewModel"
 import TransactionItem from "./TransactionItem"
 import Loader from "../common/Loader"
 import Header from "../mainView/Header"
+import {WalletProvider} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/Wallet"
 
 type Props = {
-  wallet: MnemonicWallet,
+  wallet: WalletProvider,
 }
 type State = {
   isDarkMode: boolean,

@@ -14,7 +14,8 @@ import {
 } from 'rxjs'
 import moment from 'moment'
 import {concatMap, count, map, take, tap} from "rxjs/operators"
-import {BN, MnemonicWallet, Utils} from "@avalabs/avalanche-wallet-sdk"
+import {BN, Utils} from "@avalabs/avalanche-wallet-sdk"
+import {WalletProvider} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/Wallet"
 
 declare type ValidatorInputs = {
   nodeId: string
@@ -27,7 +28,7 @@ declare type ValidatorInputs = {
 
 export default class {
   private intervalSub!: Subscription
-  wallet!: BehaviorSubject<MnemonicWallet>
+  wallet!: BehaviorSubject<WalletProvider>
   loaderVisible: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false)
   loaderMsg: BehaviorSubject<string> = new BehaviorSubject<string>("")
   /**
@@ -41,8 +42,8 @@ export default class {
   stakingDuration: Observable<string>
   endDatePickerVisible: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false)
 
-  constructor(wallet: MnemonicWallet) {
-    this.wallet = new BehaviorSubject<MnemonicWallet>(wallet)
+  constructor(wallet: WalletProvider) {
+    this.wallet = new BehaviorSubject<WalletProvider>(wallet)
 
     this.stakingDuration = combineLatest([this.startDate, this.endDate]).pipe(
       map(([startDate, endDate]) => moment.duration(moment(endDate).diff(moment(startDate)))),

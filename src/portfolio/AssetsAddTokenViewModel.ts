@@ -1,11 +1,12 @@
 import {BehaviorSubject, from, Observable, of} from 'rxjs';
 import {catchError, concatMap, map, skip, tap} from 'rxjs/operators';
-import {Assets, MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
+import {Assets} from "@avalabs/avalanche-wallet-sdk"
 import Erc20Token from "@avalabs/avalanche-wallet-sdk/dist/Asset/Erc20Token"
+import {WalletProvider} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/Wallet"
 
 
 export default class {
-  private wallet!: BehaviorSubject<MnemonicWallet>
+  private wallet!: BehaviorSubject<WalletProvider>
   private token: Observable<Erc20Token | null>
   tokenContractAddress: BehaviorSubject<string> = new BehaviorSubject("0x")
   // tokenContractAddress: BehaviorSubject<string> = new BehaviorSubject("0xd00ae08403B9bbb9124bB305C09058E32C39A48c") //for testing
@@ -15,7 +16,7 @@ export default class {
   errorMsg: BehaviorSubject<string> = new BehaviorSubject("")
   addTokenBtnDisabled: Observable<boolean>
 
-  constructor(wallet: BehaviorSubject<MnemonicWallet>) {
+  constructor(wallet: BehaviorSubject<WalletProvider>) {
     this.wallet = wallet
 
     this.token = this.tokenContractAddress.pipe(

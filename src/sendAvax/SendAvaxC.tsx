@@ -5,15 +5,15 @@ import ButtonAva from "../common/ButtonAva"
 import TextTitle from "../common/TextTitle"
 import InputAmount from "../common/InputAmount"
 import InputText from "../common/InputText"
-import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 import SendAvaxCViewModel from "./SendAvaxCViewModel"
 import Loader from "../common/Loader"
 import QrScannerAva from "../common/QrScannerAva"
 import Header from "../mainView/Header"
 import ImgButtonAva from "../common/ImgButtonAva"
+import {WalletProvider} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/Wallet"
 
 type SendAvaxCProps = {
-  wallet: MnemonicWallet,
+  wallet: WalletProvider,
   onClose: () => void,
 }
 type SendAvaxCState = {
