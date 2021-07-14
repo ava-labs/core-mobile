@@ -1,9 +1,10 @@
 import WalletSDK from './WalletSDK'
 import {asyncScheduler, AsyncSubject, BehaviorSubject, concat, from, Observable, of} from 'rxjs'
-import {MnemonicWallet, NetworkConstants} from "@avalabs/avalanche-wallet-sdk"
+import {MnemonicWallet, NetworkConstants, SingletonWallet} from "@avalabs/avalanche-wallet-sdk"
 import {catchError, concatMap, map, subscribeOn, switchMap, tap} from "rxjs/operators"
 import BiometricsSDK from "./BiometricsSDK"
 import {BackHandler} from "react-native"
+import {WalletProvider} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/Wallet"
 
 export enum SelectedView {
   Onboard,
@@ -14,7 +15,7 @@ export enum SelectedView {
 }
 
 export default class {
-  wallet: MnemonicWallet | null = null
+  wallet: WalletProvider | null = null
   selectedView: BehaviorSubject<SelectedView> = new BehaviorSubject<SelectedView>(SelectedView.Onboard)
 
   onComponentMount = (): void => {
@@ -28,12 +29,12 @@ export default class {
         this.wallet = wallet
         return wallet.mnemonic
       }),
-      switchMap(mnemonic => BiometricsSDK.saveMnemonic(mnemonic)),
+      switchMap(mnemonic => BiometricsSDK.saveWalletKey(mnemonic)),
       switchMap(credentials => {
         if (credentials === false) {
           throw Error("Error saving mnemonic")
         }
-        return BiometricsSDK.loadMnemonic(BiometricsSDK.storeOptions)
+        return BiometricsSDK.loadWalletKey(BiometricsSDK.storeOptions)
       }),
       map(credentials => {
         if (credentials === false) {
@@ -42,7 +43,42 @@ export default class {
         return true
       }),
       catchError((err: Error) => {
-        return from(BiometricsSDK.clearMnemonic()).pipe(
+        return from(BiometricsSDK.clearWalletKey()).pipe(
+          tap(() => {
+            throw err
+          })
+        )
+      }),
+      map(() => {
+        this.setSelectedView(SelectedView.Main)
+        return true
+      }),
+      subscribeOn(asyncScheduler)
+    )
+  }
+
+  onEnterSingletonWallet = (privateKey: string): Observable<boolean> => {
+    return of(privateKey).pipe(
+      map((privateKey: string) => [WalletSDK.getSingletonWallet(privateKey), privateKey]),
+      map(([wallet, privateKey]) => {
+        this.wallet = wallet as SingletonWallet
+        return privateKey as string
+      }),
+      switchMap(privateKey => BiometricsSDK.saveWalletKey(privateKey)),
+      switchMap(credentials => {
+        if (credentials === false) {
+          throw Error("Error saving private key")
+        }
+        return BiometricsSDK.loadWalletKey(BiometricsSDK.storeOptions)
+      }),
+      map(credentials => {
+        if (credentials === false) {
+          throw Error("Error saving private key")
+        }
+        return true
+      }),
+      catchError((err: Error) => {
+        return from(BiometricsSDK.clearWalletKey()).pipe(
           tap(() => {
             throw err
           })
@@ -67,7 +103,7 @@ export default class {
       concatMap((answer: LogoutPromptAnswers) => {
         switch (answer) {
           case LogoutPromptAnswers.Yes:
-            return from(BiometricsSDK.clearMnemonic()).pipe(map(() => false))
+            return from(BiometricsSDK.clearWalletKey()).pipe(map(() => false))
           case LogoutPromptAnswers.Cancel:
             return of(true)
         }

@@ -22,6 +22,7 @@ import CreateWallet from './src/onboarding/CreateWallet'
 import CheckMnemonic from "./src/onboarding/CheckMnemonic"
 import MainView from "./src/mainView/MainView"
 import {COLORS, COLORS_NIGHT} from "./src/common/Constants"
+import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 
 type AppProps = {}
 type AppState = {
@@ -63,6 +64,12 @@ class App extends Component<AppProps, AppState> {
 
   private onEnterWallet = (mnemonic: string): void => {
     this.viewModel.onEnterWallet(mnemonic).subscribe({
+      error: err => Alert.alert(err.message),
+    })
+  }
+
+  private onEnterSingletonWallet = (privateKey: string): void => {
+    this.viewModel.onEnterSingletonWallet(privateKey).subscribe({
       error: err => Alert.alert(err.message),
     })
   }
@@ -124,14 +131,16 @@ class App extends Component<AppProps, AppState> {
         return <CheckMnemonic
           onSuccess={() => this.viewModel.setSelectedView(SelectedView.Main)}
           onBack={() => this.viewModel.onBackPressed()}
-          mnemonic={this.viewModel.wallet.mnemonic}/>
+          mnemonic={(this.viewModel.wallet as MnemonicWallet).mnemonic}/>
       case SelectedView.Onboard:
         return <Onboard
+          onEnterSingletonWallet={this.onEnterSingletonWallet}
           onEnterWallet={this.onEnterWallet}
           onAlreadyHaveWallet={() => this.viewModel.setSelectedView(SelectedView.Login)}
           onCreateWallet={() => this.viewModel.setSelectedView(SelectedView.CreateWallet)}/>
       case SelectedView.Login:
         return <Login
+          onEnterSingletonWallet={this.onEnterSingletonWallet}
           onEnterWallet={this.onEnterWallet}
           onBack={() => this.viewModel.onBackPressed()}/>
       case SelectedView.Main:
