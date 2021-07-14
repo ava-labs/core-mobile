@@ -35,19 +35,18 @@ export default class BiometricsSDK {
     rules: SECURITY_RULES.AUTOMATIC_UPGRADE
   }
 
-  static saveMnemonic = (mnemonic: string): Promise<false | Result> => {
-    console.log("saveMnemonic")
-    return Keychain.setGenericPassword("mnemonic", mnemonic, BiometricsSDK.storeOptions)
+  static saveWalletKey = (key: string): Promise<false | Result> => {
+    console.log("saveWalletKey")
+    return Keychain.setGenericPassword("wallet", key, BiometricsSDK.storeOptions)
   }
 
-  static loadMnemonic = (options: Options): Promise<false | UserCredentials> => {
-    console.log("loadMnemonic")
+  static loadWalletKey = (options: Options): Promise<false | UserCredentials> => {
+    console.log("loadWalletKey")
     return Keychain.getGenericPassword(options)
   }
 
-  static clearMnemonic = (): Promise<boolean> => {
-    console.log("clear mnemonic")
+  static clearWalletKey = (): Promise<boolean> => {
+    console.log("clearWalletKey")
     return Keychain.resetGenericPassword()
   }
-
 }

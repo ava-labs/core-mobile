@@ -12,12 +12,14 @@ import {from} from "rxjs"
 
 type Props = {
   onEnterWallet: (mnemonic: string) => void,
+  onEnterSingletonWallet: (privateKey: string) => void,
   onBack: () => void,
 }
 type State = {
   isDarkMode: boolean,
   backgroundStyle: any,
   mnemonic: string
+  privateKey: string
 }
 
 class Login extends Component<Props, State> {
@@ -29,6 +31,7 @@ class Login extends Component<Props, State> {
       isDarkMode: false,
       backgroundStyle: {},
       mnemonic: "",
+      privateKey: "PrivateKey-",
     }
   }
 
@@ -40,11 +43,11 @@ class Login extends Component<Props, State> {
   }
 
   private promptForWalletLoadingIfExists() {
-    from(BiometricsSDK.loadMnemonic(BiometricsSDK.loadOptions)).subscribe({
+    from(BiometricsSDK.loadWalletKey(BiometricsSDK.loadOptions)).subscribe({
       next: value => {
         if (value !== false) {
           const mnemonic = (value as UserCredentials).password
-          this.onEnterWallet(mnemonic)
+          this.props.onEnterWallet(mnemonic)
           this.setState({mnemonic: mnemonic})
         }
       },
@@ -53,10 +56,6 @@ class Login extends Component<Props, State> {
   }
 
   componentWillUnmount(): void {
-  }
-
-  private onEnterWallet = (mnemonic: string): void => {
-    this.props.onEnterWallet(mnemonic)
   }
 
   private onEnterTestWallet = (): void => {
@@ -72,17 +71,24 @@ class Login extends Component<Props, State> {
       <View style={styles.verticalLayout}>
         <Header showBack onBack={this.onBack}/>
         <View style={[{height: 8}]}/>
-        <TextTitle text={"Mnemonic Wallet"} textAlign={"center"} bold={true}/>
-        <View style={[{height: 8}]}/>
 
+        <TextTitle text={"HD Wallet"} textAlign={"center"} bold={true}/>
+        <View style={[{height: 8}]}/>
         <InputText
           style={styles.grow}
           multiline={true}
           onChangeText={text => this.setState({mnemonic: text})}
           value={this.state.mnemonic}/>
+        <ButtonAva text={"Enter HD wallet"} onPress={() => this.props.onEnterWallet(this.state.mnemonic)}/>
 
-        <ButtonAva text={"Enter wallet"} onPress={() => this.onEnterWallet(this.state.mnemonic)}/>
-        <ButtonAva text={"Enter test wallet"} onPress={this.onEnterTestWallet}/>
+        <TextTitle text={"Singleton wallet"} textAlign={"center"} bold={true}/>
+        <View style={[{height: 8}]}/>
+        <InputText
+          onChangeText={text => this.setState({privateKey: text})}
+          value={this.state.privateKey}/>
+        <ButtonAva text={"Enter singleton wallet"} onPress={() => this.props.onEnterSingletonWallet(this.state.privateKey)}/>
+
+        <ButtonAva text={"Enter test HD wallet"} onPress={this.onEnterTestWallet}/>
       </View>
     )
   }
