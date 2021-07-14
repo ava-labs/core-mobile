@@ -35,7 +35,7 @@ class TextButton extends Component<Props, State> {
             fontSize: 14,
             fontWeight: "700",
             textTransform: "uppercase",
-            fontFamily: "Rubik-Regular",
+            fontFamily: "Inter-Regular",
             textAlign: "center",
           },
         ]}>

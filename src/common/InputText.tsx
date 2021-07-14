@@ -44,7 +44,7 @@ class InputText extends Component<Props, State> {
             borderRadius: 4,
             margin: 12,
             padding: 8,
-            fontFamily: "Rubik-Regular",
+            fontFamily: "Inter-Regular",
           },
           this.props.style
         ]}
