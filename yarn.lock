@@ -2,7 +2,7 @@
 # yarn lockfile v1
 
 
-"@avalabs/avalanche-wallet-sdk@^0.7.0":
+"@avalabs/avalanche-wallet-sdk@0.7.3":
   version "0.7.3"
   resolved "https://registry.yarnpkg.com/@avalabs/avalanche-wallet-sdk/-/avalanche-wallet-sdk-0.7.3.tgz#788fbdc349039150f1a0f5cf57e624bb42fef465"
   integrity sha512-I5azcp76+45V24yr/VCHQQo9iztsiY4ckJu6HxtSS6hpZjdW1QVc1bocl1Yc4tXyZYa4ljpEcxi7B8OOYtaMow==
