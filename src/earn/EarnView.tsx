@@ -1,15 +1,15 @@
 import React, {Component} from "react"
 import {Appearance, Modal, StyleSheet, View} from "react-native"
 import CommonViewModel from "../CommonViewModel"
-import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 import Header from "../mainView/Header"
 import ButtonAva from "../common/ButtonAva"
 import Validate from "./Validate"
 import EarnViewModel from "./EarnViewModel"
 import TextTitle from "../common/TextTitle"
+import {WalletProvider} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/Wallet"
 
 type Props = {
-  wallet: MnemonicWallet,
+  wallet: WalletProvider,
 }
 type State = {
   isDarkMode: boolean

@@ -6,15 +6,15 @@ import ValidateViewModel from "./ValidateViewModel"
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import ValidateConfirm from "./ValidateConfirm"
 import {debounceTime} from "rxjs/operators"
-import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 import TextTitle from "../common/TextTitle"
 import InputAmount from "../common/InputAmount"
 import InputText from "../common/InputText"
 import ButtonAva from "../common/ButtonAva"
 import Header from "../mainView/Header"
+import {WalletProvider} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/Wallet"
 
 type Props = {
-  wallet: MnemonicWallet,
+  wallet: WalletProvider,
   onClose: () => void,
 }
 type State = {

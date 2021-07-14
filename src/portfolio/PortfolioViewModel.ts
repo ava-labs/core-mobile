@@ -1,8 +1,8 @@
 import {BehaviorSubject, from, Observable} from "rxjs"
 import WalletSDK from "../WalletSDK"
 import {delay, map, retryWhen, tap} from "rxjs/operators"
-import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 import {iWalletAddressChanged} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/types"
+import {WalletProvider} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/Wallet"
 
 enum WalletEvents {
   AddressChanged = "addressChanged",
@@ -10,14 +10,14 @@ enum WalletEvents {
 
 export default class {
   avaxPrice: BehaviorSubject<number> = new BehaviorSubject(0)
-  wallet: BehaviorSubject<MnemonicWallet>
+  wallet: BehaviorSubject<WalletProvider>
   walletCAddress: Observable<string>
   walletEvmAddrBech: Observable<string>
   addressX: BehaviorSubject<string> = new BehaviorSubject<string>("")
   addressP: BehaviorSubject<string> = new BehaviorSubject<string>("")
   addressC: Observable<string>
 
-  constructor(wallet: BehaviorSubject<MnemonicWallet>) {
+  constructor(wallet: BehaviorSubject<WalletProvider>) {
     this.wallet = wallet
 
     this.walletCAddress = this.wallet.pipe(
