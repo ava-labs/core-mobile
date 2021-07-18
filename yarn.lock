@@ -7748,6 +7748,11 @@ react-native-crypto@2.2.0, react-native-crypto@^2.0.1:
     public-encrypt "^4.0.0"
     randomfill "^1.0.3"
 
+react-native-dialog@^8.1.1:
+  version "8.1.1"
+  resolved "https://registry.yarnpkg.com/react-native-dialog/-/react-native-dialog-8.1.1.tgz#21fcf949f0b6a2b1372518a5d8ea344e44befd90"
+  integrity sha512-1nLEaKD1dAbjrkbndWFlUJm9TSb5U4A3auDoaa8PZ24MhkcfsMtZ8KqWpeYsJqDx4qBwaej3EEpjBoLgeD6v7w==
+
 react-native-document-picker@^5.2.0:
   version "5.2.0"
   resolved "https://registry.yarnpkg.com/react-native-document-picker/-/react-native-document-picker-5.2.0.tgz#1fb2185a56ba6b2509acdc418a8a75906c31e58e"
