@@ -96,7 +96,7 @@ class App extends Component<AppProps, AppState> {
   private onSwitchWallet = (): void => {
     this.viewModel.onLogout().subscribe({
       next: (value: LogoutEvents) => {
-        if ("prompt" in value) {
+        if (value instanceof ShowLogoutPrompt) {
           Alert.alert("Do you want to delete the stored passphrase and switch accounts?", undefined, [
             {text: 'Cancel', onPress: () => this.onCancel(value as ShowLogoutPrompt), style: 'cancel'},
             {text: 'Yes', onPress: () => this.onYes(value as ShowLogoutPrompt)},
@@ -110,7 +110,7 @@ class App extends Component<AppProps, AppState> {
   private onExit = (): void => {
     this.viewModel.onExit().subscribe({
       next: (value: LogoutEvents) => {
-        if ("prompt" in value) {
+        if (value instanceof ShowExitPrompt) {
           Alert.alert("Your passphrase will remain securely stored for easier later access of wallet.", undefined, [
             {text: 'Ok', onPress: () => this.onOk(value as ShowExitPrompt)},
           ])
