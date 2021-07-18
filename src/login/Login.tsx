@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {Appearance, StyleSheet, View} from 'react-native'
+import {Appearance, ScrollView, StyleSheet, View} from 'react-native'
 import CommonViewModel from '../CommonViewModel'
 import Header from '../mainView/Header'
 import TextTitle from "../common/TextTitle"
@@ -68,18 +68,19 @@ class Login extends Component<Props, State> {
 
   render(): Element {
     return (
-      <View style={styles.verticalLayout}>
-        <Header showBack onBack={this.onBack}/>
-        <View style={[{height: 8}]}/>
+      <ScrollView>
+        <View style={styles.verticalLayout}>
+          <Header showBack onBack={this.onBack}/>
+          <View style={[{height: 8}]}/>
 
-        <TextTitle text={"HD Wallet"} textAlign={"center"} bold={true}/>
-        <View style={[{height: 8}]}/>
-        <InputText
-          style={styles.grow}
-          multiline={true}
-          onChangeText={text => this.setState({mnemonic: text})}
-          value={this.state.mnemonic}/>
-        <ButtonAva text={"Enter HD wallet"} onPress={() => this.props.onEnterWallet(this.state.mnemonic)}/>
+          <TextTitle text={"HD Wallet"} textAlign={"center"} bold={true}/>
+          <View style={[{height: 8}]}/>
+          <InputText
+            onSubmit={() => this.props.onEnterWallet(this.state.mnemonic)}
+            multiline={true}
+            onChangeText={text => this.setState({mnemonic: text})}
+            value={this.state.mnemonic}/>
+          <ButtonAva text={"Enter HD wallet"} onPress={() => this.props.onEnterWallet(this.state.mnemonic)}/>
 
         <TextTitle text={"Singleton wallet"} textAlign={"center"} bold={true}/>
         <View style={[{height: 8}]}/>
@@ -88,21 +89,17 @@ class Login extends Component<Props, State> {
           value={this.state.privateKey}/>
         <ButtonAva text={"Enter singleton wallet"} onPress={() => this.props.onEnterSingletonWallet(this.state.privateKey)}/>
 
-        <ButtonAva text={"Enter test HD wallet"} onPress={this.onEnterTestWallet}/>
-      </View>
+          <ButtonAva text={"Enter test HD wallet"} onPress={this.onEnterTestWallet}/>
+        </View>
+      </ScrollView>
     )
   }
 }
 
 const styles = StyleSheet.create({
     verticalLayout: {
-      height: "100%",
       justifyContent: "flex-end",
     },
-    grow: {
-      flexGrow: 1,
-      textAlignVertical: "top",
-    }
   }
 )
 export default Login
