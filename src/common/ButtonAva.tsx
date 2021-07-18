@@ -3,6 +3,7 @@ import {Appearance, StyleSheet, TouchableNativeFeedback, View} from "react-nativ
 import CommonViewModel from "../CommonViewModel"
 import {COLORS, COLORS_NIGHT} from "./Constants"
 import TextButton from "./TextButton"
+import {PlatformRules} from "./PlatformRules"
 
 type Props = {
   text: string,
@@ -28,7 +29,7 @@ class ButtonAva extends Component<Props, State> {
   }
 
   private onPress = () => {
-    setTimeout(() => {this.props.onPress()}, 200)
+    PlatformRules.delayedPress(this.props.onPress)
   }
 
   render(): Element {
