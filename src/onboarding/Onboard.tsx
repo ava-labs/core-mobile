@@ -4,12 +4,18 @@ import CommonViewModel from '../CommonViewModel'
 import TextTitle from "../common/TextTitle"
 import ButtonAva from "../common/ButtonAva"
 import TextLabel from "../common/TextLabel"
-import OnboardViewModel, {MnemonicLoaded, NothingToLoad, WalletLoadingResults} from "./OnboardViewModel"
+import OnboardViewModel, {
+  MnemonicLoaded,
+  NothingToLoad,
+  PrivateKeyLoaded,
+  WalletLoadingResults
+} from "./OnboardViewModel"
 
 type Props = {
   onCreateWallet: () => void,
   onAlreadyHaveWallet: () => void,
   onEnterWallet: (mnemonic: string) => void,
+  onEnterSingletonWallet: (privateKey: string) => void,
 }
 type State = {
   isDarkMode: boolean,
@@ -40,7 +46,9 @@ class Onboard extends Component<Props, State> {
       next: (value: WalletLoadingResults) => {
         if (value instanceof MnemonicLoaded) {
           this.props.onEnterWallet(value.mnemonic)
-        } else if (value instanceof NothingToLoad) {
+        } else if (value instanceof PrivateKeyLoaded) {
+          this.props.onEnterSingletonWallet(value.privateKey)
+        }else if (value instanceof NothingToLoad) {
           //do nothing
         }
       },

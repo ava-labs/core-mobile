@@ -2,7 +2,6 @@ import React, {Component} from "react"
 import {Alert, Appearance, Image, Modal, StyleSheet, View} from "react-native"
 import CommonViewModel from "../CommonViewModel"
 import MainViewViewModel from "./MainViewViewModel"
-import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {NavigationContainer} from "@react-navigation/native"
 import PortfolioView from "../portfolio/PortfolioView"
@@ -11,9 +10,11 @@ import EarnView from "../earn/EarnView"
 import TransactionsView from "../transactions/TransactionsView"
 import Loader from "../common/Loader"
 import {COLORS, COLORS_NIGHT} from "../common/Constants"
+import AssetsView from "../portfolio/AssetsView"
+import {WalletProvider} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/Wallet"
 
 type Props = {
-  wallet: MnemonicWallet,
+  wallet: WalletProvider,
   onExit: () => void,
   onSwitchWallet: () => void,
 }
@@ -82,6 +83,7 @@ class MainView extends Component<Props, State> {
 
   private Portfolio = () => <PortfolioView wallet={this.viewModel.wallet} onSwitchWallet={this.onSwitchWallet}
                                            onExit={this.onExit}/>
+  private Assets = () => <AssetsView wallet={this.viewModel.wallet}/>
   private Send = () => <SendView wallet={this.viewModel.wallet.value}/>
   private Earn = () => <EarnView wallet={this.viewModel.wallet.value}/>
   private Transactions = () => <TransactionsView wallet={this.viewModel.wallet.value}/>
@@ -119,6 +121,7 @@ class MainView extends Component<Props, State> {
                              inactiveTintColor: THEME.primaryColorLight,
                            }}>
               <Tab.Screen name="Portfolio" component={this.Portfolio}/>
+              <Tab.Screen name="Assets" component={this.Assets}/>
               <Tab.Screen name="Send" component={this.Send}/>
               <Tab.Screen name="Earn" component={this.Earn}/>
               <Tab.Screen name="Transactions" component={this.Transactions}/>

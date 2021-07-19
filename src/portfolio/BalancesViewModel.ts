@@ -1,7 +1,8 @@
 import {BehaviorSubject, combineLatest, merge, Observable} from "rxjs"
-import {concatMap, filter, map, tap} from "rxjs/operators"
-import {BN, MnemonicWallet, Utils} from "@avalabs/avalanche-wallet-sdk"
+import {concatMap, filter, map} from "rxjs/operators"
+import {BN, Utils} from "@avalabs/avalanche-wallet-sdk"
 import {AssetBalanceP, WalletBalanceX} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/types"
+import {WalletProvider} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/Wallet"
 
 enum WalletEvents {
   BalanceChangedX = "balanceChangedX",
@@ -10,7 +11,7 @@ enum WalletEvents {
 }
 
 export default class {
-  wallet: BehaviorSubject<MnemonicWallet>
+  wallet: BehaviorSubject<WalletProvider>
   private balanceX: Observable<BN>
   private balanceP: Observable<BN>
   private balanceC: Observable<BN>
@@ -24,13 +25,12 @@ export default class {
   newBalanceP: BehaviorSubject<AssetBalanceP | null> = new BehaviorSubject<AssetBalanceP | null>(null)
   newBalanceC: BehaviorSubject<BN | null> = new BehaviorSubject<BN | null>(null)
 
-  constructor(wallet: BehaviorSubject<MnemonicWallet>) {
+  constructor(wallet: BehaviorSubject<WalletProvider>) {
     this.wallet = wallet
 
     this.stake = this.wallet.pipe(
       concatMap(wallet => wallet.getStake()),
-      tap(stake => console.log(stake)),
-      map(value => value === undefined ? 0 : value)
+      map(value => value === undefined ? new BN(0) : value)
     )
 
     this.stakingAmount = this.stake.pipe(
@@ -116,13 +116,13 @@ export default class {
     this.newBalanceC.next(balance)
   }
 
-  private addBalanceListeners = (wallet: MnemonicWallet): void => {
+  private addBalanceListeners = (wallet: WalletProvider): void => {
     wallet.on(WalletEvents.BalanceChangedX, this.onBalanceChangedX)
     wallet.on(WalletEvents.BalanceChangedP, this.onBalanceChangedP)
     wallet.on(WalletEvents.BalanceChangedC, this.onBalanceChangedC)
   }
 
-  private removeBalanceListeners = (wallet: MnemonicWallet): void => {
+  private removeBalanceListeners = (wallet: WalletProvider): void => {
     wallet.off(WalletEvents.BalanceChangedX, this.onBalanceChangedX)
     wallet.off(WalletEvents.BalanceChangedP, this.onBalanceChangedP)
     wallet.off(WalletEvents.BalanceChangedC, this.onBalanceChangedC)

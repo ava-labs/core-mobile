@@ -33,7 +33,7 @@ class TextLabel extends Component<Props, State> {
           {
             color: THEME.primaryColorLight,
             fontSize: 13,
-            fontFamily: "Rubik-Regular"
+            fontFamily: "Inter-Regular"
           },
         ]}>
         {this.props.text}

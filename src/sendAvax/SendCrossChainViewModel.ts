@@ -1,7 +1,8 @@
 import {asyncScheduler, BehaviorSubject, concat, defer, Observable, of} from 'rxjs';
 import {count, map, tap} from 'rxjs/operators';
-import {BN, MnemonicWallet, Utils} from "@avalabs/avalanche-wallet-sdk"
+import {BN, Utils} from "@avalabs/avalanche-wallet-sdk"
 import {AssetBalanceP, AssetBalanceRawX} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/types"
+import {WalletProvider} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/Wallet"
 
 export enum Chain {
   X = 'X',
@@ -20,7 +21,7 @@ export class ChainRenderItem {
 }
 
 export default class {
-  private wallet!: BehaviorSubject<MnemonicWallet>
+  private wallet!: BehaviorSubject<WalletProvider>
   availableSourceChains: Chain[] = [Chain.X, Chain.P, Chain.C]
   availableDestinationChains!: Observable<Chain[]>
   sourceChain: BehaviorSubject<Chain> = new BehaviorSubject<Chain>(Chain.X)
@@ -29,8 +30,8 @@ export default class {
   loaderVisible: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false)
   loaderMsg: BehaviorSubject<string> = new BehaviorSubject<string>("")
 
-  constructor(wallet: MnemonicWallet) {
-    this.wallet = new BehaviorSubject<MnemonicWallet>(wallet)
+  constructor(wallet: WalletProvider) {
+    this.wallet = new BehaviorSubject<WalletProvider>(wallet)
 
     this.availableDestinationChains = this.sourceChain.pipe(
       map(srcChain => {

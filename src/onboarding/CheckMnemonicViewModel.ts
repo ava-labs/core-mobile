@@ -70,12 +70,12 @@ export default class {
         }
         return mnemonic
       }),
-      switchMap(mnemonic => BiometricsSDK.saveMnemonic(mnemonic)),
+      switchMap(mnemonic => BiometricsSDK.saveWalletKey(mnemonic)),
       switchMap(credentials => {
         if (credentials === false) {
           throw Error("Error saving mnemonic")
         }
-        return BiometricsSDK.loadMnemonic(BiometricsSDK.storeOptions)
+        return BiometricsSDK.loadWalletKey(BiometricsSDK.storeOptions)
       }),
       map(credentials => {
         if (credentials === false) {
@@ -84,7 +84,7 @@ export default class {
         return true
       }),
       catchError((err: Error) => {
-        return from(BiometricsSDK.clearMnemonic()).pipe(
+        return from(BiometricsSDK.clearWalletKey()).pipe(
           tap(() => {
             throw err
           })

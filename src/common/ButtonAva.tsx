@@ -1,12 +1,14 @@
 import React, {Component} from "react"
-import {Appearance, Pressable, StyleSheet, TouchableNativeFeedback} from "react-native"
+import {Appearance, StyleSheet, TouchableNativeFeedback, View} from "react-native"
 import CommonViewModel from "../CommonViewModel"
 import {COLORS, COLORS_NIGHT} from "./Constants"
 import TextButton from "./TextButton"
+import {PlatformRules} from "./PlatformRules"
 
 type Props = {
   text: string,
-  onPress: () => void
+  onPress: () => void,
+  disabled?: boolean
 }
 type State = {
   isDarkMode: boolean,
@@ -26,15 +28,21 @@ class ButtonAva extends Component<Props, State> {
     this.commonViewModel.isDarkMode.subscribe(value => this.setState({isDarkMode: value}))
   }
 
+  private onPress = () => {
+    PlatformRules.delayedPress(this.props.onPress)
+  }
+
   render(): Element {
     let THEME = this.state.isDarkMode ? COLORS_NIGHT : COLORS
     return (
-      <TouchableNativeFeedback >
-        <Pressable
-          style={[styles.button, {backgroundColor: THEME.primaryColor}]}
-          onPress={this.props.onPress}>
-          <TextButton text={this.props.text}/>
-        </Pressable>
+      <TouchableNativeFeedback
+        disabled={this.props.disabled}
+        useForeground={true}
+        onPress={() => this.onPress()}
+        background={TouchableNativeFeedback.Ripple(THEME.onPrimary, false)}>
+        <View style={[styles.button, {backgroundColor: THEME.primaryColor}]}>
+          <TextButton disabled={this.props.disabled} text={this.props.text}/>
+        </View>
       </TouchableNativeFeedback>
     )
   }

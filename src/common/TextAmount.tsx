@@ -46,7 +46,7 @@ class TextAmount extends Component<Props, State> {
           {
             color: color,
             fontSize: this.props.size ? this.props.size : 16,
-            fontFamily: "Rubik-Regular",
+            fontFamily: "Inter-Regular",
             textAlign: this.props.textAlign
           },
         ]}>

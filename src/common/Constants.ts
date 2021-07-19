@@ -1,4 +1,5 @@
 export enum COLORS {
+  transparent = "#00000000",
   bg = "#fff",
   bg1 = "#fff",
   bgLight = "#f5f6fa",
@@ -14,9 +15,12 @@ export enum COLORS {
   warning = "#ef8f4a",
   incoming = "#6bc688",
   outgoing = "#d04c4c",
+  tabBarText = "#e84970",
+  tabBarIndicator = "#e84970",
 }
 
 export enum COLORS_NIGHT {
+  transparent = "#00000000",
   bg = "#242729",
   bg1 = "#242729",
   bgLight = "#2e3234",
@@ -32,4 +36,6 @@ export enum COLORS_NIGHT {
   warning = "#d49534",
   incoming = "#6bc688",
   outgoing = "#d04c4c",
+  tabBarText = "#e84970",
+  tabBarIndicator = "#e84970",
 }
