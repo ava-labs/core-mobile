@@ -1,5 +1,12 @@
 import React, {Component} from "react"
-import {Appearance, StyleProp, TextInput, TextStyle} from "react-native"
+import {
+  Appearance,
+  NativeSyntheticEvent,
+  StyleProp,
+  TextInput,
+  TextInputSubmitEditingEventData,
+  TextStyle
+} from "react-native"
 import CommonViewModel from "../CommonViewModel"
 import {COLORS, COLORS_NIGHT} from "./Constants"
 
@@ -10,6 +17,7 @@ type Props = {
   editable?: boolean,
   multiline?: boolean,
   style?: StyleProp<TextStyle>
+  onSubmit?: () => void
 }
 type State = {
   isDarkMode: boolean,
@@ -29,10 +37,18 @@ class InputText extends Component<Props, State> {
     this.commonViewModel.isDarkMode.subscribe(value => this.setState({isDarkMode: value}))
   }
 
+  private onSubmit = (e: NativeSyntheticEvent<TextInputSubmitEditingEventData>): void => {
+      this.props.onSubmit?.()
+  }
+
   render(): Element {
     const THEME = this.state.isDarkMode ? COLORS_NIGHT : COLORS
     return (
       <TextInput
+        blurOnSubmit={true}
+        onSubmitEditing={this.onSubmit}
+        returnKeyType={this.props.onSubmit && "go"}
+        enablesReturnKeyAutomatically={true}
         editable={this.props.editable !== false}
         multiline={this.props.multiline ? this.props.multiline : false}
         style={[
@@ -44,7 +60,7 @@ class InputText extends Component<Props, State> {
             borderRadius: 4,
             margin: 12,
             padding: 8,
-            fontFamily: "Rubik-Regular",
+            fontFamily: "Inter-Regular",
           },
           this.props.style
         ]}

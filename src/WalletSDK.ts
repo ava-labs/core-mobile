@@ -1,5 +1,5 @@
 import {NetworkConfig} from "@avalabs/avalanche-wallet-sdk/dist/Network/types"
-import {MnemonicWallet, Network, Utils} from "@avalabs/avalanche-wallet-sdk"
+import {MnemonicWallet, Network, SingletonWallet, Utils} from "@avalabs/avalanche-wallet-sdk"
 
 export default {
   setNetwork: (config: NetworkConfig): void => {
@@ -7,6 +7,9 @@ export default {
   },
   getAvaxPrice: (): Promise<number> => {
     return Utils.getAvaxPrice()
+  },
+  getSingletonWallet: (privateKey: string): SingletonWallet => {
+    return SingletonWallet.fromPrivateKey(privateKey)
   },
   getMnemonicValet: (mnemonic: string): MnemonicWallet => {
     return MnemonicWallet.fromMnemonic(mnemonic)

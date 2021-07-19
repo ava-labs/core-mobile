@@ -2,16 +2,16 @@ import React, {Component} from "react"
 import {Alert, Appearance, SafeAreaView, StyleSheet, View} from "react-native"
 import CommonViewModel from "../CommonViewModel"
 import TextTitle from "../common/TextTitle"
-import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 import Header from "../mainView/Header"
 import AssetsAddTokenViewModel from "./AssetsAddTokenViewModel"
 import InputText from "../common/InputText"
 import {BehaviorSubject} from "rxjs"
 import {COLORS, COLORS_NIGHT} from "../common/Constants"
 import ButtonAva from "../common/ButtonAva"
+import {WalletProvider} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/Wallet"
 
 type Props = {
-  wallet: BehaviorSubject<MnemonicWallet>,
+  wallet: BehaviorSubject<WalletProvider>,
   onClose: () => void,
 }
 type State = {

@@ -7,13 +7,13 @@ import InputAmount from "../common/InputAmount"
 import InputText from "../common/InputText"
 import Loader from "../common/Loader"
 import SendAvaxXViewModel from "./SendAvaxXViewModel"
-import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 import QrScannerAva from "../common/QrScannerAva"
 import Header from "../mainView/Header"
 import ImgButtonAva from "../common/ImgButtonAva"
+import {WalletProvider} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/Wallet"
 
 type SendAvaxXProps = {
-  wallet: MnemonicWallet,
+  wallet: WalletProvider,
   onClose: () => void,
 }
 type SendAvaxXState = {
