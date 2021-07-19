@@ -1,17 +1,18 @@
 import {asyncScheduler, BehaviorSubject, concat, defer, Observable, of, zip} from 'rxjs';
 import {concatMap, filter, subscribeOn, take, tap} from 'rxjs/operators';
-import {MnemonicWallet, Utils} from "@avalabs/avalanche-wallet-sdk"
+import {Utils} from "@avalabs/avalanche-wallet-sdk"
+import {WalletProvider} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/Wallet"
 
 
 export default class {
-  private wallet!: BehaviorSubject<MnemonicWallet>
+  private wallet!: BehaviorSubject<WalletProvider>
   loaderVisible: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false)
   loaderMsg: BehaviorSubject<string> = new BehaviorSubject<string>("")
   cameraVisible: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false)
   addressCToSendTo: BehaviorSubject<string> = new BehaviorSubject<string>("")
 
-  constructor(wallet: MnemonicWallet) {
-    this.wallet = new BehaviorSubject<MnemonicWallet>(wallet)
+  constructor(wallet: WalletProvider) {
+    this.wallet = new BehaviorSubject<WalletProvider>(wallet)
   }
 
   onSendAvaxC = (addressX: string, amount: string, memo?: string): Observable<string> => {

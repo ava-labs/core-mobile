@@ -2,7 +2,6 @@ import React, {Component} from "react"
 import {Alert, Appearance, Image, Modal, StyleSheet, View} from "react-native"
 import CommonViewModel from "../CommonViewModel"
 import MainViewViewModel from "./MainViewViewModel"
-import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {NavigationContainer} from "@react-navigation/native"
 import PortfolioView from "../portfolio/PortfolioView"
@@ -12,9 +11,10 @@ import TransactionsView from "../transactions/TransactionsView"
 import Loader from "../common/Loader"
 import {COLORS, COLORS_NIGHT} from "../common/Constants"
 import AssetsView from "../portfolio/AssetsView"
+import {WalletProvider} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/Wallet"
 
 type Props = {
-  wallet: MnemonicWallet,
+  wallet: WalletProvider,
   onExit: () => void,
   onSwitchWallet: () => void,
 }

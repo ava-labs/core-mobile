@@ -77,7 +77,7 @@ class InputAmount extends Component<Props, State> {
               borderRadius: 4,
               margin: 12,
               textAlign: "right",
-              fontFamily: "Rubik-Regular",
+              fontFamily: "Inter-Regular",
             },
           ]}
           textAlign={"center"}

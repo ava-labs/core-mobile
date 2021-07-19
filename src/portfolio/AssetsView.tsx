@@ -1,7 +1,6 @@
 import React, {Component} from "react"
 import {Appearance, FlatList, Modal, StyleSheet, View} from "react-native"
 import CommonViewModel from "../CommonViewModel"
-import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 import Header from "../mainView/Header"
 import TextTitle from "../common/TextTitle"
 import {SceneMap, TabView} from "react-native-tab-view"
@@ -11,9 +10,10 @@ import {BehaviorSubject} from "rxjs"
 import TabBarAva from "../common/TabBarAva"
 import ButtonAva from "../common/ButtonAva"
 import AssetsAddToken from "./AssetsAddToken"
+import {WalletProvider} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/Wallet"
 
 type Props = {
-  wallet: BehaviorSubject<MnemonicWallet>,
+  wallet: BehaviorSubject<WalletProvider>,
 }
 type State = {
   isDarkMode: boolean

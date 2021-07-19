@@ -2,6 +2,7 @@ import React, {Component} from "react"
 import {Appearance, Image, ImageSourcePropType, StyleSheet, TouchableNativeFeedback, View} from "react-native"
 import CommonViewModel from "../CommonViewModel"
 import {COLORS, COLORS_NIGHT} from "./Constants"
+import {PlatformRules} from "./PlatformRules"
 
 type Props = {
   src: ImageSourcePropType,
@@ -26,7 +27,7 @@ class ImgButtonAva extends Component<Props, State> {
   }
 
   private onPress = () => {
-    setTimeout(() => {this.props.onPress()}, 200)
+    PlatformRules.delayedPress(this.props.onPress)
   }
 
   render(): Element {

@@ -10,11 +10,15 @@ export default class {
 
   promptForWalletLoadingIfExists = (): Observable<WalletLoadingResults> => {
     return timer(100, asyncScheduler).pipe(
-      concatMap(value => BiometricsSDK.loadMnemonic(BiometricsSDK.loadOptions)),
+      concatMap(value => BiometricsSDK.loadWalletKey(BiometricsSDK.loadOptions)),
       map(value => {
         if (value !== false) {
-          const mnemonic = (value as UserCredentials).password
-          return new MnemonicLoaded(mnemonic)
+          const keyOrMnemonic = (value as UserCredentials).password
+          if (keyOrMnemonic.startsWith("PrivateKey")) {
+            return new PrivateKeyLoaded(keyOrMnemonic)
+          } else {
+            return new MnemonicLoaded(keyOrMnemonic)
+          }
         } else {
           this.showButtons.next(true)
           return new NothingToLoad()
@@ -36,6 +40,14 @@ export class MnemonicLoaded implements WalletLoadingResults {
 
   constructor(mnemonic: string) {
     this.mnemonic = mnemonic
+  }
+}
+
+export class PrivateKeyLoaded implements WalletLoadingResults {
+  privateKey: string
+
+  constructor(privateKey: string) {
+    this.privateKey = privateKey
   }
 }
 

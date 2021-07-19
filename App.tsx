@@ -22,6 +22,7 @@ import CreateWallet from './src/onboarding/CreateWallet'
 import CheckMnemonic from "./src/onboarding/CheckMnemonic"
 import MainView from "./src/mainView/MainView"
 import {COLORS, COLORS_NIGHT} from "./src/common/Constants"
+import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 
 type AppProps = {}
 type AppState = {
@@ -67,6 +68,12 @@ class App extends Component<AppProps, AppState> {
     })
   }
 
+  private onEnterSingletonWallet = (privateKey: string): void => {
+    this.viewModel.onEnterSingletonWallet(privateKey).subscribe({
+      error: err => Alert.alert(err.message),
+    })
+  }
+
   private onSavedMnemonic = (mnemonic: string): void => {
     this.viewModel.onSavedMnemonic(mnemonic)
   }
@@ -89,7 +96,7 @@ class App extends Component<AppProps, AppState> {
   private onSwitchWallet = (): void => {
     this.viewModel.onLogout().subscribe({
       next: (value: LogoutEvents) => {
-        if ("prompt" in value) {
+        if (value instanceof ShowLogoutPrompt) {
           Alert.alert("Do you want to delete the stored passphrase and switch accounts?", undefined, [
             {text: 'Cancel', onPress: () => this.onCancel(value as ShowLogoutPrompt), style: 'cancel'},
             {text: 'Yes', onPress: () => this.onYes(value as ShowLogoutPrompt)},
@@ -103,7 +110,7 @@ class App extends Component<AppProps, AppState> {
   private onExit = (): void => {
     this.viewModel.onExit().subscribe({
       next: (value: LogoutEvents) => {
-        if ("prompt" in value) {
+        if (value instanceof ShowExitPrompt) {
           Alert.alert("Your passphrase will remain securely stored for easier later access of wallet.", undefined, [
             {text: 'Ok', onPress: () => this.onOk(value as ShowExitPrompt)},
           ])
@@ -124,14 +131,16 @@ class App extends Component<AppProps, AppState> {
         return <CheckMnemonic
           onSuccess={() => this.viewModel.setSelectedView(SelectedView.Main)}
           onBack={() => this.viewModel.onBackPressed()}
-          mnemonic={this.viewModel.wallet.mnemonic}/>
+          mnemonic={(this.viewModel.wallet as MnemonicWallet).mnemonic}/>
       case SelectedView.Onboard:
         return <Onboard
+          onEnterSingletonWallet={this.onEnterSingletonWallet}
           onEnterWallet={this.onEnterWallet}
           onAlreadyHaveWallet={() => this.viewModel.setSelectedView(SelectedView.Login)}
           onCreateWallet={() => this.viewModel.setSelectedView(SelectedView.CreateWallet)}/>
       case SelectedView.Login:
         return <Login
+          onEnterSingletonWallet={this.onEnterSingletonWallet}
           onEnterWallet={this.onEnterWallet}
           onBack={() => this.viewModel.onBackPressed()}/>
       case SelectedView.Main:
