@@ -1,5 +1,5 @@
-import React, {Component} from 'react'
-import {Alert, Appearance, Modal, SafeAreaView, ScrollView, StyleSheet} from 'react-native'
+import React, {useEffect, useState} from 'react'
+import {Alert, Appearance, Modal, SafeAreaView, ScrollView} from 'react-native'
 import CommonViewModel from '../CommonViewModel'
 import Loader from "../common/Loader"
 import ValidateViewModel from "./ValidateViewModel"
@@ -12,90 +12,69 @@ import InputText from "../common/InputText"
 import ButtonAva from "../common/ButtonAva"
 import Header from "../mainView/Header"
 import {WalletProvider} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/Wallet"
+import {Subscription} from "rxjs"
 
 type Props = {
   wallet: WalletProvider,
   onClose: () => void,
 }
-type State = {
-  isDarkMode: boolean,
-  loaderVisible: boolean,
-  loaderMsg: string,
-  backgroundStyle: any,
-  nodeId: string,
-  endDate: string,
-  stakingDuration: string,
-  endDatePickerVisible: boolean,
-  stakeAmount: string,
-  delegationFee: string,
-  rewardAddress: string,
-  validateConfirmVisible: boolean,
-}
 
-class Validate extends Component<Props, State> {
-  viewModel!: ValidateViewModel
-  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme())
+export default function Validate(props: Props | Readonly<Props>) {
+  const [commonViewModel] = useState(new CommonViewModel(Appearance.getColorScheme()))
+  const [viewModel] = useState(new ValidateViewModel(props.wallet))
+  const [loaderVisible, setLoaderVisible] = useState(false)
+  const [loaderMsg, setLoaderMsg] = useState('')
+  const [backgroundStyle] = useState(commonViewModel.backgroundStyle)
+  const [nodeId, setNodeId] = useState('NodeID-')
+  const [endDatePickerVisible, setEndDatePickerVisible] = useState(false)
+  const [endDate, setEndDate] = useState('')
+  const [stakingDuration, setStakingDuration] = useState('')
+  const [stakeAmount, setStakeAmount] = useState('0.00')
+  const [delegationFee, setDelegationFee] = useState('2')
+  const [rewardAddress, setRewardAddress] = useState('2')
+  const [validateConfirmVisible, setValidateConfirmVisible] = useState(false)
 
-  constructor(props: Props | Readonly<Props>) {
-    super(props)
-    this.state = {
-      isDarkMode: false,
-      loaderVisible: false,
-      loaderMsg: '',
-      backgroundStyle: {},
-      nodeId: 'NodeID-',
-      endDatePickerVisible: false,
-      endDate: '',
-      stakingDuration: '',
-      stakeAmount: '0.00',
-      delegationFee: '2',
-      rewardAddress: '2',
-      validateConfirmVisible: false,
-    }
-    this.viewModel = new ValidateViewModel(props.wallet)
-  }
-
-  componentDidMount(): void {
-    this.commonViewModel.isDarkMode.subscribe(value => this.setState({isDarkMode: value}))
-    this.commonViewModel.backgroundStyle.subscribe(value => this.setState({backgroundStyle: value}))
-    this.viewModel.loaderVisible.pipe(
+  useEffect(() => {
+    const disposables = new Subscription()
+    disposables.add(viewModel.loaderVisible.pipe(
       debounceTime(300) //fixes problem with loader hanging if setstate changes state too quickly
-    ).subscribe(value => this.setState({loaderVisible: value}))
-    this.viewModel.loaderMsg.subscribe(value => this.setState({loaderMsg: value}))
-    this.viewModel.endDate.subscribe(value => this.setState({endDate: value.toLocaleString()}))
-    this.viewModel.stakingDuration.subscribe(value => this.setState({stakingDuration: value}))
-    this.viewModel.endDatePickerVisible.subscribe(value => this.setState({endDatePickerVisible: value}))
-    this.setRewardAddressToThisWallet()
+    ).subscribe(value => setLoaderVisible(value)))
+    disposables.add(viewModel.loaderMsg.subscribe(value => setLoaderMsg(value)))
+    disposables.add(viewModel.endDate.subscribe(value => setEndDate(value.toLocaleString())))
+    disposables.add(viewModel.stakingDuration.subscribe(value => setStakingDuration(value)))
+    disposables.add(viewModel.endDatePickerVisible.subscribe(value => setEndDatePickerVisible(value)))
+    setRewardAddressToThisWallet()
+
+    return () => {
+      disposables.unsubscribe()
+      viewModel.cleanup()
+    }
+  }, [])
+
+  const setRewardAddressToThisWallet = (): void => {
+    setRewardAddress(viewModel.wallet.value.getAddressP())
   }
 
-  componentWillUnmount(): void {
-    this.viewModel.cleanup()
-  }
-
-  setRewardAddressToThisWallet(): void {
-    this.setState({rewardAddress: this.viewModel.wallet.value.getAddressP()})
-  }
-
-  setEndDate(date: Date): void {
-    this.viewModel.setEndDate(date).subscribe({
+  const onSetEndDate = (date: Date): void => {
+    viewModel.setEndDate(date).subscribe({
       error: err => Alert.alert("Error", err.message),
-      complete: () => this.setState({endDatePickerVisible: false})
+      complete: () => setEndDatePickerVisible(false)
     })
   }
 
-  onConfirm(): void {
-    this.setState({validateConfirmVisible: true})
+  const onConfirm = (): void => {
+    setValidateConfirmVisible(true)
   }
 
-  onSubmit(): void {
-    this.setState({validateConfirmVisible: false})
-    this.viewModel.submitValidator(
-      this.state.nodeId,
-      this.state.stakeAmount,
-      this.viewModel.startDate.value.toLocaleString(),
-      this.state.endDate,
-      this.state.delegationFee,
-      this.state.rewardAddress
+  const onSubmit = (): void => {
+    setValidateConfirmVisible(false)
+    viewModel.submitValidator(
+      nodeId,
+      stakeAmount,
+      viewModel.startDate.value.toLocaleString(),
+      endDate,
+      delegationFee,
+      rewardAddress
     )
       .subscribe({
         error: err => Alert.alert("Error", err.message),
@@ -103,77 +82,64 @@ class Validate extends Component<Props, State> {
       })
   }
 
-  render(): Element {
+  return (
+    <SafeAreaView style={backgroundStyle}>
+      <ScrollView>
+        <Header showBack onBack={props.onClose}/>
+        <TextTitle text={"Validate"}/>
+        <TextTitle text={"Node ID:"} size={18}/>
+        <InputText value={nodeId} onChangeText={text => setNodeId(text)}/>
 
-    return (
-      <SafeAreaView style={this.state.backgroundStyle}>
-        <ScrollView>
-          <Header showBack onBack={this.props.onClose}/>
-          <TextTitle text={"Validate"}/>
-          <TextTitle text={"Node ID:"} size={18}/>
-          <InputText value={this.state.nodeId} onChangeText={text => this.setState({nodeId: text})}/>
+        <TextTitle text={"Staking End Date:"} size={18}/>
+        <ButtonAva
+          text={endDate}
+          onPress={() => setEndDatePickerVisible(true)}/>
+        <DateTimePickerModal
+          isVisible={endDatePickerVisible}
+          mode="datetime"
+          onConfirm={date => onSetEndDate(date)}
+          onCancel={() => setEndDatePickerVisible(false)}
+        />
 
-          <TextTitle text={"Staking End Date:"} size={18}/>
-          <ButtonAva
-            text={this.state.endDate}
-            onPress={() => this.setState({endDatePickerVisible: true})}/>
-          <DateTimePickerModal
-            isVisible={this.state.endDatePickerVisible}
-            mode="datetime"
-            onConfirm={date => this.setEndDate(date)}
-            onCancel={date => this.setState({endDatePickerVisible: false})}
-          />
+        <TextTitle text={"Staking Duration:"} size={18}/>
+        <TextTitle text={stakingDuration} size={18} bold={true}/>
 
-          <TextTitle text={"Staking Duration:"} size={18}/>
-          <TextTitle text={this.state.stakingDuration} size={18} bold={true}/>
+        <TextTitle text={"Stake amount:"} size={18}/>
+        <InputAmount onChangeText={text => setStakeAmount(text)}/>
 
-          <TextTitle text={"Stake amount:"} size={18}/>
-          <InputAmount onChangeText={text => this.setState({stakeAmount: text})}/>
+        <TextTitle text={"Delegation fee (%):"} size={18}/>
+        <InputAmount initValue={delegationFee}
+                     onChangeText={text => setDelegationFee(text)}/>
 
-          <TextTitle text={"Delegation fee (%):"} size={18}/>
-          <InputAmount initValue={this.state.delegationFee}
-                       onChangeText={text => this.setState({delegationFee: text})}/>
+        <TextTitle text={"Reward Address:"} size={18}/>
+        <InputText value={rewardAddress} onChangeText={text => setRewardAddress(text)}/>
 
-          <TextTitle text={"Reward Address:"} size={18}/>
-          <InputText value={this.state.rewardAddress} onChangeText={text => this.setState({rewardAddress: text})}/>
-
-          <ButtonAva
-            text={'Set to this wallet'}
-            onPress={() => this.setRewardAddressToThisWallet()}/>
-          <ButtonAva
-            text={'Custom address'}
-            onPress={() => this.setState({rewardAddress: ""})}/>
-          <ButtonAva text={'Confirm'} onPress={() => this.onConfirm()}/>
+        <ButtonAva
+          text={'Set to this wallet'}
+          onPress={() => setRewardAddressToThisWallet()}/>
+        <ButtonAva
+          text={'Custom address'}
+          onPress={() => setRewardAddress("")}/>
+        <ButtonAva text={'Confirm'} onPress={() => onConfirm()}/>
 
 
-          <Modal
-            animationType="slide"
-            transparent={true}
-            visible={this.state.validateConfirmVisible}>
-            <ValidateConfirm nodeId={this.state.nodeId} stakingAmount={this.state.stakeAmount}
-                             endDate={this.state.endDate} delegationFee={this.state.delegationFee}
-                             rewardAddress={this.state.rewardAddress} onSubmit={() => this.onSubmit()}
-                             onClose={() => this.setState({validateConfirmVisible: false})}/>
-          </Modal>
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={validateConfirmVisible}>
+          <ValidateConfirm nodeId={nodeId} stakingAmount={stakeAmount}
+                           endDate={endDate} delegationFee={delegationFee}
+                           rewardAddress={rewardAddress} onSubmit={() => onSubmit()}
+                           onClose={() => setValidateConfirmVisible(false)}/>
+        </Modal>
 
-          <Modal
-            animationType="fade"
-            transparent={true}
-            visible={this.state.loaderVisible}>
-            <Loader message={this.state.loaderMsg}/>
-          </Modal>
-        </ScrollView>
-      </SafeAreaView>
-    )
-  }
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={loaderVisible}>
+          <Loader message={loaderMsg}/>
+        </Modal>
+      </ScrollView>
+    </SafeAreaView>
+  )
 }
-
-const styles: any = StyleSheet.create({
-    horizontalLayout: {
-      flexDirection: 'row',
-      justifyContent: "space-evenly",
-    },
-  }
-)
-
-export default Validate

@@ -1,4 +1,4 @@
-import React, {Component} from "react"
+import React, {useState} from "react"
 import {ActivityIndicator, Appearance, SafeAreaView, StyleSheet, View} from "react-native"
 import {Colors} from "react-native/Libraries/NewAppScreen"
 import CommonViewModel from "../CommonViewModel"
@@ -8,46 +8,27 @@ import Header from "../mainView/Header"
 type LoaderProps = {
   message: string,
 }
-type LoaderState = {
-  isDarkMode: boolean,
-  backgroundStyle: any,
-}
 
-class Loader extends Component<LoaderProps, LoaderState> {
-  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme())
+export default function Loader(props: LoaderProps | Readonly<LoaderProps>) {
+  const [commonViewModel] = useState(new CommonViewModel(Appearance.getColorScheme()))
+  const [isDarkMode] = useState(commonViewModel.isDarkMode)
+  const [backgroundStyle] = useState(commonViewModel.backgroundStyle)
 
-  constructor(props: LoaderProps | Readonly<LoaderProps>) {
-    super(props)
-    this.state = {
-      isDarkMode: false,
-      backgroundStyle: {},
-    }
-  }
-
-  componentDidMount(): void {
-    this.commonViewModel.isDarkMode.subscribe(value => this.setState({isDarkMode: value}))
-    this.commonViewModel.backgroundStyle.subscribe(value => this.setState({backgroundStyle: value}))
-  }
-
-  componentWillUnmount(): void {
-  }
-
-  render(): Element {
-    return (
-      <SafeAreaView style={this.state.backgroundStyle}>
-        <View style={this.state.backgroundStyle}>
-          <View style={styles.headerContainer}>
-            <Header/>
-          </View>
-          <View style={styles.container}>
-            <ActivityIndicator size="large" color={this.state.isDarkMode ? Colors.white : Colors.black}/>
-            <TextTitle text={this.props.message} textAlign={"center"}/>
-          </View>
+  return (
+    <SafeAreaView style={backgroundStyle}>
+      <View style={backgroundStyle}>
+        <View style={styles.headerContainer}>
+          <Header/>
         </View>
-      </SafeAreaView>
-    )
-  }
+        <View style={styles.container}>
+          <ActivityIndicator size="large" color={isDarkMode ? Colors.white : Colors.black}/>
+          <TextTitle text={props.message} textAlign={"center"}/>
+        </View>
+      </View>
+    </SafeAreaView>
+  )
 }
+
 
 const styles = StyleSheet.create({
   container: {
@@ -60,4 +41,3 @@ const styles = StyleSheet.create({
   },
 })
 
-export default Loader

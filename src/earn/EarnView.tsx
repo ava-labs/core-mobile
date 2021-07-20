@@ -1,6 +1,5 @@
-import React, {Component} from "react"
-import {Appearance, Modal, StyleSheet, View} from "react-native"
-import CommonViewModel from "../CommonViewModel"
+import React, {useState} from "react"
+import {Modal, StyleSheet, View} from "react-native"
 import Header from "../mainView/Header"
 import ButtonAva from "../common/ButtonAva"
 import Validate from "./Validate"
@@ -11,54 +10,32 @@ import {WalletProvider} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/Wallet"
 type Props = {
   wallet: WalletProvider,
 }
-type State = {
-  isDarkMode: boolean
-  validateVisible: boolean
-}
 
-class EarnView extends Component<Props, State> {
-  viewModel!: EarnViewModel
-  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme())
+export default function EarnView(props: Props | Readonly<Props>) {
+  const [viewModel] = useState(new EarnViewModel(props.wallet))
+  const [validateVisible, setValidateVisible] = useState(false)
 
-  constructor(props: Props | Readonly<Props>) {
-    super(props)
-    this.state = {
-      isDarkMode: false,
-      validateVisible: false,
-    }
-    this.viewModel = new EarnViewModel(this.props.wallet)
-  }
-
-  componentDidMount(): void {
-    this.commonViewModel.isDarkMode.subscribe(value => this.setState({isDarkMode: value}))
-  }
-
-  componentWillUnmount(): void {
-  }
-
-  render(): Element {
-
-    return (
-      <View style={styles.container}>
-        <Header/>
-        <TextTitle text={"Earn"}/>
-        <View style={styles.buttons}>
-          <ButtonAva text={"Validate"} onPress={() => this.setState({validateVisible: true})}/>
-        </View>
-
-        <Modal
-          animationType="slide"
-          transparent={true}
-          onRequestClose={() => this.setState({validateVisible: false})}
-          visible={this.state.validateVisible}>
-          <Validate
-            wallet={this.viewModel.wallet.value}
-            onClose={() => this.setState({validateVisible: false})}/>
-        </Modal>
+  return (
+    <View style={styles.container}>
+      <Header/>
+      <TextTitle text={"Earn"}/>
+      <View style={styles.buttons}>
+        <ButtonAva text={"Validate"} onPress={() => setValidateVisible(true)}/>
       </View>
-    )
-  }
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setValidateVisible(false)}
+        visible={validateVisible}>
+        <Validate
+          wallet={viewModel.wallet.value}
+          onClose={() => setValidateVisible(false)}/>
+      </Modal>
+    </View>
+  )
 }
+
 
 const styles = StyleSheet.create({
   container: {
@@ -71,4 +48,3 @@ const styles = StyleSheet.create({
   }
 })
 
-export default EarnView
