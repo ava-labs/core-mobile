@@ -1,6 +1,5 @@
-import React, {Component} from 'react'
-import {Appearance, StyleSheet, ToastAndroid, View} from 'react-native'
-import CommonViewModel from '../CommonViewModel'
+import React, {useState} from 'react'
+import {StyleSheet, ToastAndroid, View} from 'react-native'
 import Header from '../mainView/Header'
 import CreateWalletViewModel from './CreateWalletViewModel'
 import TextTitle from "../common/TextTitle"
@@ -12,66 +11,42 @@ type Props = {
   onBack: () => void,
   onSavedMyPhrase: (mnemonic: string) => void,
 }
-type State = {
-  isDarkMode: boolean,
-  backgroundStyle: any,
-  mnemonic: string,
-}
 
-class CreateWallet extends Component<Props, State> {
-  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme())
-  viewModel: CreateWalletViewModel = new CreateWalletViewModel()
+export default function CreateWallet(props: Props | Readonly<Props>) {
+  const [viewModel] = useState(new CreateWalletViewModel())
+  const [mnemonic, setMnemonic] = useState(viewModel.mnemonic)
 
-  constructor(props: Props | Readonly<Props>) {
-    super(props)
-    this.state = {
-      isDarkMode: false,
-      backgroundStyle: {},
-      mnemonic: this.viewModel.mnemonic,
-    }
+  const onBack = (): void => {
+    props.onBack()
   }
 
-  componentDidMount(): void {
-    this.commonViewModel.isDarkMode.subscribe(value => this.setState({isDarkMode: value}))
-    this.commonViewModel.backgroundStyle.subscribe(value => this.setState({backgroundStyle: value}))
+  const onSavedMyPhrase = (): void => {
+    props.onSavedMyPhrase(viewModel.mnemonic)
   }
 
-  componentWillUnmount(): void {
-  }
-
-  private onBack = (): void => {
-    this.props.onBack()
-  }
-
-  private onSavedMyPhrase = (): void => {
-    this.props.onSavedMyPhrase(this.viewModel.mnemonic)
-  }
-
-  private copyToClipboard = (): void => {
-    Clipboard.setString(this.state.mnemonic)
+  const copyToClipboard = (): void => {
+    Clipboard.setString(mnemonic)
     ToastAndroid.show("Copied", 1000)
   }
 
-  render(): Element {
-    return (
-      <View style={styles.verticalLayout}>
-        <Header showBack onBack={this.onBack}/>
+  return (
+    <View style={styles.verticalLayout}>
+      <Header showBack onBack={onBack}/>
+      <View style={[{height: 8}]}/>
+
+      <View style={styles.growContainer}>
+        <TextTitle text={"Here are your 24 word key phrase."} size={20}
+                   textAlign={"center"}/>
+        <TextTitle text={"Please store it somewhere safe."} size={20}
+                   textAlign={"center"}/>
         <View style={[{height: 8}]}/>
-
-        <View style={styles.growContainer}>
-          <TextTitle text={"Here are your 24 word key phrase."} size={20}
-                     textAlign={"center"}/>
-          <TextTitle text={"Please store it somewhere safe."} size={20}
-                     textAlign={"center"}/>
-          <View style={[{height: 8}]}/>
-          <InputText multiline={true} value={this.state.mnemonic} editable={false}/>
-          <ButtonAva text={"Copy to clipboard"} onPress={this.copyToClipboard}/>
-        </View>
-
-        <ButtonAva text={"I saved my phrase somewhere safe"} onPress={this.onSavedMyPhrase}/>
+        <InputText multiline={true} value={mnemonic} editable={false}/>
+        <ButtonAva text={"Copy to clipboard"} onPress={copyToClipboard}/>
       </View>
-    )
-  }
+
+      <ButtonAva text={"I saved my phrase somewhere safe"} onPress={onSavedMyPhrase}/>
+    </View>
+  )
 }
 
 const styles = StyleSheet.create({
@@ -85,4 +60,3 @@ const styles = StyleSheet.create({
     },
   }
 )
-export default CreateWallet

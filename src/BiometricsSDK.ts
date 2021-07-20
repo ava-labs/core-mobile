@@ -36,17 +36,14 @@ export default class BiometricsSDK {
   }
 
   static saveWalletKey = (key: string): Promise<false | Result> => {
-    console.log("saveWalletKey")
     return Keychain.setGenericPassword("wallet", key, BiometricsSDK.storeOptions)
   }
 
   static loadWalletKey = (options: Options): Promise<false | UserCredentials> => {
-    console.log("loadWalletKey")
     return Keychain.getGenericPassword(options)
   }
 
   static clearWalletKey = (): Promise<boolean> => {
-    console.log("clearWalletKey")
     return Keychain.resetGenericPassword()
   }
 }

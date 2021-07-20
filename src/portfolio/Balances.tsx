@@ -1,93 +1,77 @@
-import React, {Component} from "react"
-import {Appearance, StyleSheet, View} from "react-native"
-import CommonViewModel from "../CommonViewModel"
-import {COLORS, COLORS_NIGHT} from "../common/Constants"
+import React, {useEffect, useState} from "react"
+import {StyleSheet, View} from "react-native"
 import BalancesViewModel from "./BalancesViewModel"
 import TextLabel from "../common/TextLabel"
 import TextAmount from "../common/TextAmount"
-import {BehaviorSubject} from "rxjs"
+import {asyncScheduler, BehaviorSubject, Subscription} from "rxjs"
 import {WalletProvider} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/Wallet"
+import {subscribeOn} from "rxjs/operators"
 
 type Props = {
   wallet: BehaviorSubject<WalletProvider>,
 }
-type State = {
-  isDarkMode: boolean
-  availableTotal: string
-  availableX: string
-  availableP: string
-  availableC: string
-  stakingAmount: string
-  lockedX: string
-  lockedP: string
-  lockedStakeable: string
-}
 
-class Balances extends Component<Props, State> {
-  viewModel!: BalancesViewModel
-  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme())
+export default function Balances(props: Props | Readonly<Props>) {
+  console.log("Balances")
+  const [viewModel] = useState(new BalancesViewModel(props.wallet))
+  const [availableX, setAvailableX] = useState("-- AVAX")
+  const [availableP, setAvailableP] = useState("-- AVAX")
+  const [lockedX, setLockedX] = useState("-- AVAX")
+  const [lockedP, setLockedP] = useState("-- AVAX")
+  const [lockedStakeable, setLockedStakeable] = useState("-- AVAX")
+  const [availableC, setAvailableC] = useState("-- AVAX")
+  const [stakingAmount, setStakingAmount] = useState("-- AVAX")
+  const [availableTotal, setAvailableTotal] = useState("-- AVAX")
 
-  constructor(props: Props | Readonly<Props>) {
-    super(props)
-    this.state = {
-      isDarkMode: false,
-      availableTotal: "-- AVAX",
-      availableX: "-- AVAX",
-      availableP: "-- AVAX",
-      availableC: "-- AVAX",
-      stakingAmount: "-- AVAX",
-      lockedX: "0 AVAX",
-      lockedP: "0 AVAX",
-      lockedStakeable: "0 AVAX",
+  useEffect(() => {
+    const disposables = new Subscription()
+    disposables.add(viewModel.availableX.pipe(subscribeOn(asyncScheduler)).subscribe(value => setAvailableX(value)))
+    disposables.add(viewModel.availableP.pipe(subscribeOn(asyncScheduler)).subscribe(value => setAvailableP(value)))
+    disposables.add(viewModel.availableC.pipe(subscribeOn(asyncScheduler)).subscribe(value => setAvailableC(value)))
+    disposables.add(viewModel.stakingAmount.pipe(subscribeOn(asyncScheduler)).subscribe(value => setStakingAmount(value)))
+    disposables.add(viewModel.availableTotal.pipe(subscribeOn(asyncScheduler)).subscribe(value => setAvailableTotal(value)))
+
+    return () => {
+      disposables.unsubscribe()
     }
-    this.viewModel = new BalancesViewModel(props.wallet)
-  }
 
-  componentDidMount(): void {
-    this.commonViewModel.isDarkMode.subscribe(value => this.setState({isDarkMode: value}))
-    this.viewModel.availableX.subscribe(value => this.setState({availableX: value}))
-    this.viewModel.availableP.subscribe(value => this.setState({availableP: value}))
-    this.viewModel.availableC.subscribe(value => this.setState({availableC: value}))
-    this.viewModel.stakingAmount.subscribe(value => this.setState({stakingAmount: value}))
-    this.viewModel.availableTotal.subscribe(value => this.setState({availableTotal: value}))
-    this.viewModel.onComponentMount()
-  }
+  }, [])
 
-  componentWillUnmount(): void {
-    this.viewModel.onComponentUnMount()
-  }
+  useEffect(() => {
+    viewModel.onComponentMount()
+    return () => {
+      viewModel.onComponentUnMount()
+    }
+  }, [props.wallet])
 
-  render(): Element {
-    const THEME = this.state.isDarkMode ? COLORS_NIGHT : COLORS
 
-    return (
-      <View>
-        <TextAmount text={this.state.availableTotal} size={36} textAlign={"center"}/>
-        <View style={styles.horizontalLayout}>
-          <View style={styles.column}>
-            <TextLabel text={"Available (X)"}/>
-            <TextAmount text={this.state.availableX}/>
-            <TextLabel text={"Available (P)"}/>
-            <TextAmount text={this.state.availableP}/>
-            <TextLabel text={"Available (C)"}/>
-            <TextAmount text={this.state.availableC}/>
-          </View>
-          <View style={styles.column}>
-            <TextLabel text={"Locked (X)"}/>
-            <TextAmount text={this.state.lockedX}/>
-            <TextLabel text={"Locked (P)"}/>
-            <TextAmount text={this.state.lockedP}/>
-            <TextLabel text={"Locked Stakeable"}/>
-            <TextAmount text={this.state.lockedStakeable}/>
-          </View>
-          <View style={styles.column}>
-            <TextLabel text={"Staking"}/>
-            <TextAmount text={this.state.stakingAmount}/>
-          </View>
+  return (
+    <View>
+      <TextAmount text={availableTotal} size={36} textAlign={"center"}/>
+      <View style={styles.horizontalLayout}>
+        <View style={styles.column}>
+          <TextLabel text={"Available (X)"}/>
+          <TextAmount text={availableX}/>
+          <TextLabel text={"Available (P)"}/>
+          <TextAmount text={availableP}/>
+          <TextLabel text={"Available (C)"}/>
+          <TextAmount text={availableC}/>
+        </View>
+        <View style={styles.column}>
+          <TextLabel text={"Locked (X)"}/>
+          <TextAmount text={lockedX}/>
+          <TextLabel text={"Locked (P)"}/>
+          <TextAmount text={lockedP}/>
+          <TextLabel text={"Locked Stakeable"}/>
+          <TextAmount text={lockedStakeable}/>
+        </View>
+        <View style={styles.column}>
+          <TextLabel text={"Staking"}/>
+          <TextAmount text={stakingAmount}/>
         </View>
       </View>
-    )
-  }
+    </View>
+  )
 }
 
 const styles = StyleSheet.create({
@@ -99,4 +83,3 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 })
-export default Balances

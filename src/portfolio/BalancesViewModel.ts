@@ -21,9 +21,9 @@ export default class {
   availableC: Observable<string>
   stakingAmount: Observable<string>
   availableTotal: Observable<string>
-  newBalanceX: BehaviorSubject<WalletBalanceX | null> = new BehaviorSubject<WalletBalanceX | null>(null)
-  newBalanceP: BehaviorSubject<AssetBalanceP | null> = new BehaviorSubject<AssetBalanceP | null>(null)
-  newBalanceC: BehaviorSubject<BN | null> = new BehaviorSubject<BN | null>(null)
+  newBalanceX: BehaviorSubject<WalletBalanceX>
+  newBalanceP: BehaviorSubject<AssetBalanceP>
+  newBalanceC: BehaviorSubject<BN>
 
   constructor(wallet: BehaviorSubject<WalletProvider>) {
     this.wallet = wallet
@@ -40,6 +40,7 @@ export default class {
       })
     )
 
+    this.newBalanceX = new BehaviorSubject(this.wallet.value.balanceX)
     this.balanceX = this.newBalanceX.pipe(
       filter(value => value !== null),
       map(assetBalance => assetBalance!['U8iRqJoiJm8xZHAacmvYyZVwqQx6uDNtQeP3CQ6fcgQk3JqnK'].unlocked), //fixme should not be hardcoded?
@@ -52,6 +53,8 @@ export default class {
       })
     )
 
+    this.newBalanceP = new BehaviorSubject(this.wallet.value.getAvaxBalanceP())
+
     this.balanceP = this.newBalanceP.pipe(
       filter(value => value !== null),
       map(assetBalance => assetBalance!.unlocked),
@@ -63,6 +66,8 @@ export default class {
         return Utils.bnToAvaxP(balance) + ' ' + symbol
       })
     )
+
+    this.newBalanceC = new BehaviorSubject(this.wallet.value.getAvaxBalanceC())
 
     this.balanceC = merge(
       this.wallet.value.evmWallet.updateBalance(),
