@@ -25,8 +25,8 @@ export default function ButtonAva(props: Props | Readonly<Props>) {
       disabled={props.disabled}
       useForeground={true}
       onPress={() => onPress()}
-      background={TouchableNativeFeedback.Ripple(THEME.onPrimary, false)}>
-      <View style={[styles.button, {backgroundColor: THEME.primaryColor}]}>
+      background={TouchableNativeFeedback.Ripple(THEME.buttonRipple, false)}>
+      <View style={[styles.button, {backgroundColor: props.disabled ? THEME.buttonPrimaryDisabled : THEME.buttonPrimary}]}>
         <TextButton disabled={props.disabled} text={props.text}/>
       </View>
     </TouchableNativeFeedback>
@@ -36,10 +36,13 @@ export default function ButtonAva(props: Props | Readonly<Props>) {
 
 const styles = StyleSheet.create({
   button: {
+    height: 48,
+    justifyContent: "center",
     paddingHorizontal: 24,
     paddingVertical: 10,
-    margin: 10,
-    borderRadius: 4,
+    marginHorizontal: 24,
+    marginVertical: 8,
+    borderRadius: 8,
   },
 })
 
