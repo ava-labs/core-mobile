@@ -1,49 +1,24 @@
-import React, {useEffect, useState} from "react"
+import React from "react"
 import {StyleSheet, View} from "react-native"
-import BalancesViewModel from "./BalancesViewModel"
 import TextLabel from "../common/TextLabel"
 import TextAmount from "../common/TextAmount"
-import {asyncScheduler, BehaviorSubject, Subscription} from "rxjs"
+import {BehaviorSubject} from "rxjs"
 import {WalletProvider} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/Wallet"
-import {subscribeOn} from "rxjs/operators"
+import {useBalances} from "./UseBalances"
 
 type Props = {
   wallet: BehaviorSubject<WalletProvider>,
 }
 
 export default function Balances(props: Props | Readonly<Props>) {
-  console.log("Balances")
-  const [viewModel] = useState(new BalancesViewModel(props.wallet))
-  const [availableX, setAvailableX] = useState("-- AVAX")
-  const [availableP, setAvailableP] = useState("-- AVAX")
-  const [lockedX, setLockedX] = useState("-- AVAX")
-  const [lockedP, setLockedP] = useState("-- AVAX")
-  const [lockedStakeable, setLockedStakeable] = useState("-- AVAX")
-  const [availableC, setAvailableC] = useState("-- AVAX")
-  const [stakingAmount, setStakingAmount] = useState("-- AVAX")
-  const [availableTotal, setAvailableTotal] = useState("-- AVAX")
-
-  useEffect(() => {
-    const disposables = new Subscription()
-    disposables.add(viewModel.availableX.pipe(subscribeOn(asyncScheduler)).subscribe(value => setAvailableX(value)))
-    disposables.add(viewModel.availableP.pipe(subscribeOn(asyncScheduler)).subscribe(value => setAvailableP(value)))
-    disposables.add(viewModel.availableC.pipe(subscribeOn(asyncScheduler)).subscribe(value => setAvailableC(value)))
-    disposables.add(viewModel.stakingAmount.pipe(subscribeOn(asyncScheduler)).subscribe(value => setStakingAmount(value)))
-    disposables.add(viewModel.availableTotal.pipe(subscribeOn(asyncScheduler)).subscribe(value => setAvailableTotal(value)))
-
-    return () => {
-      disposables.unsubscribe()
-    }
-
-  }, [])
-
-  useEffect(() => {
-    viewModel.onComponentMount()
-    return () => {
-      viewModel.onComponentUnMount()
-    }
-  }, [props.wallet])
-
+  const [availableX,
+    availableP,
+    lockedX,
+    lockedP,
+    lockedStakeable,
+    availableC,
+    stakingAmount,
+    availableTotal] = useBalances(props.wallet.value)
 
   return (
     <View>
