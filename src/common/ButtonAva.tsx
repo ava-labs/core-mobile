@@ -1,4 +1,4 @@
-import React, {Component} from "react"
+import React, {useState} from "react"
 import {Appearance, StyleSheet, TouchableNativeFeedback, View} from "react-native"
 import CommonViewModel from "../CommonViewModel"
 import {COLORS, COLORS_NIGHT} from "./Constants"
@@ -10,43 +10,29 @@ type Props = {
   onPress: () => void,
   disabled?: boolean
 }
-type State = {
-  isDarkMode: boolean,
+
+export default function ButtonAva(props: Props | Readonly<Props>) {
+  const [commonViewModel] = useState(new CommonViewModel(Appearance.getColorScheme()))
+  const [isDarkMode] = useState(commonViewModel.isDarkMode)
+
+  const onPress = () => {
+    PlatformRules.delayedPress(props.onPress)
+  }
+
+  const THEME = isDarkMode ? COLORS_NIGHT : COLORS
+  return (
+    <TouchableNativeFeedback
+      disabled={props.disabled}
+      useForeground={true}
+      onPress={() => onPress()}
+      background={TouchableNativeFeedback.Ripple(THEME.onPrimary, false)}>
+      <View style={[styles.button, {backgroundColor: THEME.primaryColor}]}>
+        <TextButton disabled={props.disabled} text={props.text}/>
+      </View>
+    </TouchableNativeFeedback>
+  )
 }
 
-class ButtonAva extends Component<Props, State> {
-  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme())
-
-  constructor(props: Props | Readonly<Props>) {
-    super(props)
-    this.state = {
-      isDarkMode: false,
-    }
-  }
-
-  componentDidMount(): void {
-    this.commonViewModel.isDarkMode.subscribe(value => this.setState({isDarkMode: value}))
-  }
-
-  private onPress = () => {
-    PlatformRules.delayedPress(this.props.onPress)
-  }
-
-  render(): Element {
-    let THEME = this.state.isDarkMode ? COLORS_NIGHT : COLORS
-    return (
-      <TouchableNativeFeedback
-        disabled={this.props.disabled}
-        useForeground={true}
-        onPress={() => this.onPress()}
-        background={TouchableNativeFeedback.Ripple(THEME.onPrimary, false)}>
-        <View style={[styles.button, {backgroundColor: THEME.primaryColor}]}>
-          <TextButton disabled={this.props.disabled} text={this.props.text}/>
-        </View>
-      </TouchableNativeFeedback>
-    )
-  }
-}
 
 const styles = StyleSheet.create({
   button: {
@@ -57,4 +43,3 @@ const styles = StyleSheet.create({
   },
 })
 
-export default ButtonAva

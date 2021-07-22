@@ -1,6 +1,5 @@
-import React, {Component} from 'react'
-import {Appearance, Image, StyleSheet, View} from 'react-native'
-import CommonViewModel from '../CommonViewModel'
+import React, {useEffect, useState} from 'react'
+import {Image, StyleSheet, View} from 'react-native'
 import TextTitle from "../common/TextTitle"
 import ButtonAva from "../common/ButtonAva"
 import TextLabel from "../common/TextLabel"
@@ -10,6 +9,7 @@ import OnboardViewModel, {
   PrivateKeyLoaded,
   WalletLoadingResults
 } from "./OnboardViewModel"
+import {Subscription} from "rxjs"
 
 type Props = {
   onCreateWallet: () => void,
@@ -17,75 +17,58 @@ type Props = {
   onEnterWallet: (mnemonic: string) => void,
   onEnterSingletonWallet: (privateKey: string) => void,
 }
-type State = {
-  isDarkMode: boolean,
-  backgroundStyle: any,
-  showButtons: boolean
-}
 
-class Onboard extends Component<Props, State> {
-  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme())
-  viewModel: OnboardViewModel = new OnboardViewModel()
-  pkg = require('../../package.json')
+const pkg = require('../../package.json')
 
-  constructor(props: Props | Readonly<Props>) {
-    super(props)
-    this.state = {
-      isDarkMode: false,
-      showButtons: false,
-      backgroundStyle: {},
-    }
-  }
+export default function Onboard(props: Props | Readonly<Props>) {
+  const [viewModel] = useState(new OnboardViewModel())
+  const [showButtons, setShowButtons] = useState(false)
 
-  componentDidMount(): void {
-    this.commonViewModel.isDarkMode.subscribe(value => this.setState({isDarkMode: value}))
-    this.commonViewModel.backgroundStyle.subscribe(value => this.setState({backgroundStyle: value}))
-    this.viewModel.showButtons.subscribe(value => this.setState({showButtons: value}))
-
-    this.viewModel.promptForWalletLoadingIfExists().subscribe({
+  useEffect(() => {
+    const disposables = new Subscription()
+    disposables.add(viewModel.showButtons.subscribe(value => setShowButtons(value)))
+    viewModel.promptForWalletLoadingIfExists().subscribe({
       next: (value: WalletLoadingResults) => {
         if (value instanceof MnemonicLoaded) {
-          this.props.onEnterWallet(value.mnemonic)
+          props.onEnterWallet(value.mnemonic)
         } else if (value instanceof PrivateKeyLoaded) {
-          this.props.onEnterSingletonWallet(value.privateKey)
-        }else if (value instanceof NothingToLoad) {
+          props.onEnterSingletonWallet(value.privateKey)
+        } else if (value instanceof NothingToLoad) {
           //do nothing
         }
       },
       error: err => console.log(err.message)
     })
+    return () => {
+      disposables.unsubscribe()
+    }
+  }, [])
+
+  const onCreateWallet = (): void => {
+    props.onCreateWallet()
   }
 
-
-  componentWillUnmount(): void {
+  const onAlreadyHaveWallet = (): void => {
+    props.onAlreadyHaveWallet()
   }
 
-  onCreateWallet(): void {
-    this.props.onCreateWallet()
-  }
-
-  onAlreadyHaveWallet(): void {
-    this.props.onAlreadyHaveWallet()
-  }
-
-  render(): Element {
-    return (
-      <View style={styles.verticalLayout}>
-        <View style={styles.logoContainer}>
-          <Image
-            accessibilityRole="image"
-            source={require('../assets/AvaLogo.png')}
-            style={styles.logo}/>
-          <TextTitle text={"Avalanche Wallet"} textAlign={"center"} bold={true}/>
-        </View>
-        {this.state.showButtons && <ButtonAva text={"Create wallet"} onPress={() => this.onCreateWallet()}/>}
-        {this.state.showButtons &&
-        <ButtonAva text={"I already have wallet"} onPress={() => this.onAlreadyHaveWallet()}/>}
-        <TextLabel text={"v" + this.pkg.version}/>
+  return (
+    <View style={styles.verticalLayout}>
+      <View style={styles.logoContainer}>
+        <Image
+          accessibilityRole="image"
+          source={require('../assets/AvaLogo.png')}
+          style={styles.logo}/>
+        <TextTitle text={"Avalanche Wallet"} textAlign={"center"} bold={true}/>
       </View>
-    )
-  }
+      {showButtons && <ButtonAva text={"Create wallet"} onPress={() => onCreateWallet()}/>}
+      {showButtons &&
+      <ButtonAva text={"I already have wallet"} onPress={() => onAlreadyHaveWallet()}/>}
+      <TextLabel text={"v" + pkg.version}/>
+    </View>
+  )
 }
+
 
 const styles = StyleSheet.create({
     verticalLayout: {
@@ -104,4 +87,3 @@ const styles = StyleSheet.create({
     },
   }
 )
-export default Onboard

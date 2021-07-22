@@ -1,4 +1,4 @@
-import React, {Component} from 'react'
+import React, {useEffect, useState} from 'react'
 import {Appearance, SafeAreaView, ScrollView, StyleSheet, View} from 'react-native'
 import CommonViewModel from '../CommonViewModel'
 import TextTitle from "../common/TextTitle"
@@ -15,69 +15,54 @@ type Props = {
   onSubmit: () => void,
   onClose: () => void,
 }
-type State = {
-  isDarkMode: boolean,
-  backgroundStyle: any,
+
+export default function ValidateConfirm(props: Props | Readonly<Props>) {
+  const [commonViewModel] = useState(new CommonViewModel(Appearance.getColorScheme()))
+  const [isDarkMode, setIsDarkMode] = useState(false)
+  const [backgroundStyle, setBackgroundStyle] = useState({})
+
+  useEffect(() => {
+    commonViewModel.isDarkMode.subscribe(value => setIsDarkMode(value))
+    commonViewModel.backgroundStyle.subscribe(value => setBackgroundStyle(value))
+  }, [])
+
+  return (
+    <SafeAreaView style={backgroundStyle}>
+      <ScrollView>
+
+        <TextTitle text={"Check data and confirm"}/>
+        <TextTitle text={"Node ID:"} size={18}/>
+        <InputText editable={false} value={props.nodeId}/>
+
+        <TextTitle text={"Staking amount:"} size={18}/>
+        <InputAmount editable={false} initValue={props.stakingAmount}/>
+
+        <TextTitle text={"Start date:"} size={18}/>
+        <InputText editable={false}
+                   value={"Your validation will start at least 5 minutes after you submit this form."}/>
+
+        <TextTitle text={"End date:"} size={18}/>
+        <InputText editable={false} value={props.endDate}/>
+
+        <TextTitle text={"Delegation fee:"} size={18}/>
+        <InputAmount editable={false} initValue={props.delegationFee}/>
+
+        <TextTitle text={"Reward address:"} size={18}/>
+        <InputText editable={false} value={props.rewardAddress}/>
+
+        <View style={styles.horizontalLayout}>
+          <ButtonAva
+            text={'Cancel'}
+            onPress={props.onClose}/>
+          <ButtonAva
+            text={'Confirm'}
+            onPress={props.onSubmit}/>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  )
 }
 
-class ValidateConfirm extends Component<Props, State> {
-  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme())
-
-  constructor(props: Props | Readonly<Props>) {
-    super(props)
-    this.state = {
-      isDarkMode: false,
-      backgroundStyle: {},
-    }
-  }
-
-  componentDidMount(): void {
-    this.commonViewModel.isDarkMode.subscribe(value => this.setState({isDarkMode: value}))
-    this.commonViewModel.backgroundStyle.subscribe(value => this.setState({backgroundStyle: value}))
-  }
-
-  componentWillUnmount(): void {
-  }
-
-  render(): Element {
-
-    return (
-      <SafeAreaView style={this.state.backgroundStyle}>
-        <ScrollView>
-
-          <TextTitle text={"Check data and confirm"}/>
-          <TextTitle text={"Node ID:"} size={18}/>
-          <InputText editable={false} value={this.props.nodeId}/>
-
-          <TextTitle text={"Staking amount:"} size={18}/>
-          <InputAmount editable={false} initValue={this.props.stakingAmount}/>
-
-          <TextTitle text={"Start date:"} size={18}/>
-          <InputText editable={false}
-                     value={"Your validation will start at least 5 minutes after you submit this form."}/>
-
-          <TextTitle text={"End date:"} size={18}/>
-          <InputText editable={false} value={this.props.endDate}/>
-
-          <TextTitle text={"Delegation fee:"} size={18}/>
-          <InputAmount editable={false} initValue={this.props.delegationFee}/>
-
-          <TextTitle text={"Reward address:"} size={18}/>
-          <InputText editable={false} value={this.props.rewardAddress}/>
-
-          <View style={styles.horizontalLayout}>
-            <ButtonAva
-              text={'Cancel'}
-              onPress={this.props.onClose}/>
-            <ButtonAva
-              text={'Confirm'}
-              onPress={this.props.onSubmit}/>
-          </View>
-        </ScrollView>
-      </SafeAreaView>
-    )
-  }
-}
 
 const styles: any = StyleSheet.create({
     horizontalLayout: {
@@ -87,4 +72,3 @@ const styles: any = StyleSheet.create({
   }
 )
 
-export default ValidateConfirm

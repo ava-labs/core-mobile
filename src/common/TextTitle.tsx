@@ -1,4 +1,4 @@
-import React, {Component} from "react"
+import React, {useState} from "react"
 import {Appearance, ColorValue, Text} from "react-native"
 import CommonViewModel from "../CommonViewModel"
 import {COLORS, COLORS_NIGHT} from "./Constants"
@@ -10,41 +10,26 @@ type Props = {
   color?: ColorValue,
   textAlign?: "center" | "right",
 }
-type State = {
-  isDarkMode: boolean,
+
+export default function TextTitle(props: Props | Readonly<Props>) {
+  const [commonViewModel] = useState(new CommonViewModel(Appearance.getColorScheme()))
+  const [isDarkMode] = useState(commonViewModel.isDarkMode)
+
+
+  const THEME = isDarkMode ? COLORS_NIGHT : COLORS
+  return (
+    <Text
+      style={[
+        {
+          color: props.color || THEME.primaryColor,
+          fontSize: props.size ? props.size : 26,
+          fontFamily: "Inter-Regular",
+          fontWeight: props.bold ? "bold" : "normal",
+          textAlign: props.textAlign
+        },
+      ]}>
+      {props.text}
+    </Text>
+  )
 }
 
-class TextTitle extends Component<Props, State> {
-  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme())
-
-  constructor(props: Props | Readonly<Props>) {
-    super(props)
-    this.state = {
-      isDarkMode: false,
-    }
-  }
-
-  componentDidMount(): void {
-    this.commonViewModel.isDarkMode.subscribe(value => this.setState({isDarkMode: value}))
-  }
-
-  render(): Element {
-    const THEME = this.state.isDarkMode ? COLORS_NIGHT : COLORS
-    return (
-      <Text
-        style={[
-          {
-            color: this.props.color || THEME.primaryColor,
-            fontSize: this.props.size ? this.props.size : 26,
-            fontFamily: "Inter-Regular",
-            fontWeight: this.props.bold ? "bold" : "normal",
-            textAlign: this.props.textAlign
-          },
-        ]}>
-        {this.props.text}
-      </Text>
-    )
-  }
-}
-
-export default TextTitle

@@ -1,4 +1,4 @@
-import React, {Component} from 'react'
+import React, {useState} from 'react'
 import {Appearance, Linking, StyleSheet, View} from 'react-native'
 import CommonViewModel from '../CommonViewModel'
 import TextTitle from "../common/TextTitle"
@@ -16,60 +16,38 @@ type Props = {
   type?: "import" | "export"
   address?: string
 }
-type State = {
-  isDarkMode: boolean,
-  backgroundStyle: any,
-}
 
-class TransactionItem extends Component<Props, State> {
-  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme())
+export default function TransactionItem(props: Props | Readonly<Props>) {
+  const [commonViewModel] = useState(new CommonViewModel(Appearance.getColorScheme()))
+  const [isDarkMode] = useState(commonViewModel.isDarkMode)
 
-  constructor(props: Props | Readonly<Props>) {
-    super(props)
-    this.state = {
-      isDarkMode: false,
-      backgroundStyle: {},
-    }
-  }
-
-  componentDidMount(): void {
-    this.commonViewModel.isDarkMode.subscribe(value => this.setState({isDarkMode: value}))
-    this.commonViewModel.backgroundStyle.subscribe(value => this.setState({backgroundStyle: value}))
-  }
-
-  componentWillUnmount(): void {
-  }
-
-  private onExplorer = (url: string): void => {
+  const onExplorer = (url: string): void => {
     Linking.openURL(url).then(value => {
       console.log("Linking: " + value)
     })
   }
 
-
-  render(): Element {
-    let THEME = this.state.isDarkMode ? COLORS_NIGHT : COLORS
-    const explorerIcon = this.state.isDarkMode ? require("../assets/icons/search_dark.png") : require("../assets/icons/search_light.png")
-    const date = moment(this.props.date).format("MMM DD, YYYY")
-    return (
-      <View style={[{
-        borderTopColor: THEME.primaryColorLight,
-        borderTopWidth: 1
-      }]}>
-        <View style={styles.horizontalLayout}>
-          <View style={[{
-            flexShrink: 1,
-          }]}>
-            <TextTitle text={date} size={14}/>
-            <TextLabel text={this.props.info}/>
-            <TextAmount text={this.props.amount} type={this.props.type}/>
-            {this.props.address ? <TextLabel text={this.props.address}/> : undefined}
-          </View>
-          <ImgButtonAva src={explorerIcon} onPress={() => this.onExplorer(this.props.explorerUrl)}/>
+  let THEME = isDarkMode ? COLORS_NIGHT : COLORS
+  const explorerIcon = isDarkMode ? require("../assets/icons/search_dark.png") : require("../assets/icons/search_light.png")
+  const date = moment(props.date).format("MMM DD, YYYY")
+  return (
+    <View style={[{
+      borderTopColor: THEME.primaryColorLight,
+      borderTopWidth: 1
+    }]}>
+      <View style={styles.horizontalLayout}>
+        <View style={[{
+          flexShrink: 1,
+        }]}>
+          <TextTitle text={date} size={14}/>
+          <TextLabel text={props.info}/>
+          <TextAmount text={props.amount} type={props.type}/>
+          {props.address ? <TextLabel text={props.address}/> : undefined}
         </View>
+        <ImgButtonAva src={explorerIcon} onPress={() => onExplorer(props.explorerUrl)}/>
       </View>
-    )
-  }
+    </View>
+  )
 }
 
 const styles: any = StyleSheet.create({
@@ -81,4 +59,3 @@ const styles: any = StyleSheet.create({
   }
 )
 
-export default TransactionItem

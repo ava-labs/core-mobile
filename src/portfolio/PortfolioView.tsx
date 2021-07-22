@@ -1,11 +1,10 @@
-import React, {Component} from "react"
-import {Appearance, StyleSheet, View} from "react-native"
-import CommonViewModel from "../CommonViewModel"
+import React, {useEffect, useState} from "react"
+import {StyleSheet, View} from "react-native"
 import PortfolioViewModel from "./PortfolioViewModel"
 import Header from "../mainView/Header"
 import Balances from "../portfolio/Balances"
 import TabbedAddressCards from "../portfolio/TabbedAddressCards"
-import {BehaviorSubject} from "rxjs"
+import {BehaviorSubject, Subscription} from "rxjs"
 import {WalletProvider} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/Wallet"
 
 type Props = {
@@ -13,77 +12,51 @@ type Props = {
   onExit: () => void,
   onSwitchWallet: () => void,
 }
-type State = {
-  isDarkMode: boolean
-  backgroundStyle: any
-  avaxPrice: number
-  addressX: string
-  addressP: string
-  addressC: string
-  sendXVisible: boolean
-  sendCVisible: boolean
-  crossChainVisible: boolean
-  walletCAddress: string
-  walletEvmAddress: string
-}
 
-class PortfolioView extends Component<Props, State> {
-  viewModel!: PortfolioViewModel
-  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme())
+export default function PortfolioView(props: Props | Readonly<Props>) {
+  const [viewModel] = useState(new PortfolioViewModel(props.wallet))
+  const [avaxPrice, setAvaxPrice] = useState(0)
+  const [addressX, setAddressX] = useState("")
+  const [addressP, setAddressP] = useState("")
+  const [addressC, setAddressC] = useState("")
+  const [sendXVisible, setSendXVisible] = useState(false)
+  const [sendCVisible, setSendCVisible] = useState(false)
+  const [crossChainVisible, setCrossChainVisible] = useState(false)
+  const [walletCAddress, setWalletCAddress] = useState("")
+  const [walletEvmAddress, setWalletEvmAddress] = useState("")
 
-  constructor(props: Props | Readonly<Props>) {
-    super(props)
-    this.state = {
-      isDarkMode: false,
-      backgroundStyle: {},
-      avaxPrice: 0,
-      addressX: "",
-      addressP: "",
-      addressC: "",
-      sendXVisible: false,
-      sendCVisible: false,
-      crossChainVisible: false,
-      walletCAddress: "",
-      walletEvmAddress: "",
+  useEffect(() => {
+    const disposables = new Subscription()
+    disposables.add(viewModel.avaxPrice.subscribe(value => setAvaxPrice(value)))
+    disposables.add(viewModel.walletCAddress.subscribe(value => setWalletCAddress(value)))
+    disposables.add(viewModel.walletEvmAddrBech.subscribe(value => setWalletEvmAddress(value)))
+    disposables.add(viewModel.addressX.subscribe(value => setAddressX(value)))
+    disposables.add(viewModel.addressP.subscribe(value => setAddressP(value)))
+    disposables.add(viewModel.addressC.subscribe(value => setAddressC(value)))
+    viewModel.onComponentMount()
+
+    return () => {
+      disposables.unsubscribe()
+      viewModel.onComponentUnMount()
     }
-    this.viewModel = new PortfolioViewModel(props.wallet)
+  }, [])
+
+  const onExit = (): void => {
+    props.onExit()
   }
 
-  componentDidMount(): void {
-    this.commonViewModel.isDarkMode.subscribe(value => this.setState({isDarkMode: value}))
-    this.commonViewModel.backgroundStyle.subscribe(value => this.setState({backgroundStyle: value}))
-    this.viewModel.avaxPrice.subscribe(value => this.setState({avaxPrice: value}))
-    this.viewModel.walletCAddress.subscribe(value => this.setState({walletCAddress: value}))
-    this.viewModel.walletEvmAddrBech.subscribe(value => this.setState({walletEvmAddress: value}))
-    this.viewModel.addressX.subscribe(value => this.setState({addressX: value}))
-    this.viewModel.addressP.subscribe(value => this.setState({addressP: value}))
-    this.viewModel.addressC.subscribe(value => this.setState({addressC: value}))
-
-    this.viewModel.onComponentMount()
+  const onSwitchWallet = (): void => {
+    props.onSwitchWallet()
   }
 
-  componentWillUnmount(): void {
-    this.viewModel.onComponentUnMount()
-  }
-
-  private onExit = (): void => {
-    this.props.onExit()
-  }
-
-  private onSwitchWallet = (): void => {
-    this.props.onSwitchWallet()
-  }
-
-  render(): Element {
-
-    return (
-      <View style={styles.container}>
-        <Header showExit onExit={this.onExit} showSwitchWallet onSwitchWallet={this.onSwitchWallet}/>
-        <Balances wallet={this.props.wallet}/>
-        <TabbedAddressCards addressP={this.state.addressP} addressX={this.state.addressX} addressC={this.state.addressC}/>
-      </View>
-    )
-  }
+  return (
+    <View style={styles.container}>
+      <Header showExit onExit={onExit} showSwitchWallet onSwitchWallet={onSwitchWallet}/>
+      <Balances wallet={props.wallet}/>
+      <TabbedAddressCards addressP={addressP} addressX={addressX}
+                          addressC={addressC}/>
+    </View>
+  )
 }
 
 const styles = StyleSheet.create({
@@ -92,4 +65,3 @@ const styles = StyleSheet.create({
   },
 })
 
-export default PortfolioView

@@ -1,6 +1,5 @@
-import React, {Component} from 'react'
-import {Alert, Appearance, ScrollView, StyleSheet, View} from 'react-native'
-import CommonViewModel from '../CommonViewModel'
+import React, {useEffect, useState} from 'react'
+import {Alert, ScrollView, StyleSheet, View} from 'react-native'
 import Header from '../mainView/Header'
 import TextTitle from "../common/TextTitle"
 import InputText from "../common/InputText"
@@ -18,129 +17,106 @@ type Props = {
   onEnterSingletonWallet: (privateKey: string) => void,
   onBack: () => void,
 }
-type State = {
-  isDarkMode: boolean,
-  backgroundStyle: any,
-  mnemonic: string
-  privateKey: string
-  showPasswordPrompt: boolean
-}
 
-class Login extends Component<Props, State> {
-  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme())
-  viewModel: LoginViewModel
-  prompt?: AsyncSubject<string>
+export default function Login(props: Props | Readonly<Props>) {
+  const [viewModel] = useState(new LoginViewModel())
+  const [prompt, setPrompt] = useState<AsyncSubject<string>>()
+  const [showPasswordPrompt, setShowPasswordPrompt] = useState(false)
+  const [mnemonic, setMnemonic] = useState("")
+  const [privateKey, setPrivateKey] = useState("PrivateKey-")
+  // const [privateKey, setPrivateKey] = useState("27c9f8927ead18895542197939033a79a0060a98011b7ba022ddae33efcf82b5")
+  // const [privateKey, setPrivateKey] = useState("PrivateKey-JXMcF4J7JAjVmQeeo9rXSRD8KeJefUFrd2Lgx59rEBN59WN4G")
 
-  constructor(props: Props | Readonly<Props>) {
-    super(props)
-    this.state = {
-      isDarkMode: false,
-      showPasswordPrompt: false,
-      backgroundStyle: {},
-      mnemonic: "",
-      privateKey: "PrivateKey-",
-    }
-    this.viewModel = new LoginViewModel()
-  }
+  useEffect(() => {
+    promptForWalletLoadingIfExists()
+  }, [])
 
-  componentDidMount(): void {
-    this.commonViewModel.isDarkMode.subscribe(value => this.setState({isDarkMode: value}))
-    this.commonViewModel.backgroundStyle.subscribe(value => this.setState({backgroundStyle: value}))
-
-    this.promptForWalletLoadingIfExists()
-  }
-
-  private promptForWalletLoadingIfExists() {
+  const promptForWalletLoadingIfExists = () => {
     from(BiometricsSDK.loadWalletKey(BiometricsSDK.loadOptions)).subscribe({
       next: value => {
         if (value !== false) {
           const mnemonic = (value as UserCredentials).password
-          this.props.onEnterWallet(mnemonic)
-          this.setState({mnemonic: mnemonic})
+          props.onEnterWallet(mnemonic)
+          setMnemonic(mnemonic)
         }
       },
       error: err => console.log(err.message)
     })
   }
 
-  componentWillUnmount(): void {
+  const onEnterTestWallet = (): void => {
+    props.onEnterWallet(WalletSDK.testMnemonic())
   }
 
-  private onEnterTestWallet = (): void => {
-    this.props.onEnterWallet(WalletSDK.testMnemonic())
+  const onBack = (): void => {
+    props.onBack()
   }
 
-  private onBack = (): void => {
-    this.props.onBack()
-  }
-
-  private onDocumentPick = (): void => {
-    this.viewModel.onDocumentPick().subscribe({
+  const onDocumentPick = (): void => {
+    viewModel.onDocumentPick().subscribe({
       next: (value: DocPickEvents) => {
         if (value instanceof PasswordPrompt) {
-          this.prompt = value.prompt
-          this.setState({showPasswordPrompt: true})
+          setPrompt(value.prompt)
+          setShowPasswordPrompt(true)
         } else if (value instanceof Finished) {
-          this.props.onEnterWallet(value.mnemonic)
+          props.onEnterWallet(value.mnemonic)
         }
       },
       error: err => Alert.alert("Error", err)
     })
   }
 
-  private onOk = (password?: string): void => {
-    this.prompt?.next(password || "")
-    this.prompt?.complete()
-    this.prompt = undefined
-    this.setState({showPasswordPrompt: false})
+  const onOk = (password?: string): void => {
+    prompt?.next(password || "")
+    prompt?.complete()
+    setPrompt(undefined)
+    setShowPasswordPrompt(false)
   }
 
-  private onCancel = ():void => {
-    this.prompt?.error("User canceled")
-    this.prompt = undefined
-    this.setState({showPasswordPrompt: false})
+  const onCancel = (): void => {
+    prompt?.error("User canceled")
+    setPrompt(undefined)
+    setShowPasswordPrompt(false)
   }
 
-  render(): Element {
-    const pwdInput = this.state.showPasswordPrompt && <PasswordInput onOk={this.onOk} onCancel={this.onCancel}/>
+  const pwdInput = showPasswordPrompt && <PasswordInput onOk={onOk} onCancel={onCancel}/>
 
-    return (
-      <ScrollView>
-        <View style={styles.verticalLayout}>
-          <Header showBack onBack={this.onBack}/>
-          <View style={[{height: 8}]}/>
+  return (
+    <ScrollView>
+      <View style={styles.verticalLayout}>
+        <Header showBack onBack={onBack}/>
+        <View style={[{height: 8}]}/>
 
-          <TextTitle text={"HD Wallet"} textAlign={"center"} bold={true}/>
-          <View style={[{height: 8}]}/>
-          <InputText
-            onSubmit={() => this.props.onEnterWallet(this.state.mnemonic)}
-            multiline={true}
-            onChangeText={text => this.setState({mnemonic: text})}
-            value={this.state.mnemonic}/>
-          <ButtonAva text={"Enter HD wallet"} onPress={() => this.props.onEnterWallet(this.state.mnemonic)}/>
+        <TextTitle text={"HD Wallet"} textAlign={"center"} bold={true}/>
+        <View style={[{height: 8}]}/>
+        <InputText
+          onSubmit={() => props.onEnterWallet(mnemonic)}
+          multiline={true}
+          onChangeText={text => setMnemonic(text)}
+          value={mnemonic}/>
+        <ButtonAva text={"Enter HD wallet"} onPress={() => props.onEnterWallet(mnemonic)}/>
 
-          <TextTitle text={"Singleton wallet"} textAlign={"center"} bold={true}/>
-          <View style={[{height: 8}]}/>
-          <InputText
-            multiline={true}
-            onChangeText={text => this.setState({privateKey: text})}
-            value={this.state.privateKey}/>
-          <ButtonAva text={"Enter singleton wallet"}
-                     onPress={() => this.props.onEnterSingletonWallet(this.state.privateKey)}/>
+        <TextTitle text={"Singleton wallet"} textAlign={"center"} bold={true}/>
+        <View style={[{height: 8}]}/>
+        <InputText
+          multiline={true}
+          onChangeText={text => setPrivateKey(text)}
+          value={privateKey}/>
+        <ButtonAva text={"Enter singleton wallet"}
+                   onPress={() => props.onEnterSingletonWallet(privateKey)}/>
 
-          {/*Needed by Wallet SDK for accessing keystore file*/}
-          <PolyfillCrypto/>
-          <TextTitle text={"Keystore wallet"} textAlign={"center"} bold={true}/>
-          <View style={[{height: 8}]}/>
-          <ButtonAva text={"Choose keystore file"} onPress={this.onDocumentPick}/>
+        {/*Needed by Wallet SDK for accessing keystore file*/}
+        <PolyfillCrypto/>
+        <TextTitle text={"Keystore wallet"} textAlign={"center"} bold={true}/>
+        <View style={[{height: 8}]}/>
+        <ButtonAva text={"Choose keystore file"} onPress={onDocumentPick}/>
 
-          <ButtonAva text={"Enter test HD wallet"} onPress={this.onEnterTestWallet}/>
+        <ButtonAva text={"Enter test HD wallet"} onPress={onEnterTestWallet}/>
 
-          {pwdInput}
-        </View>
-      </ScrollView>
-    )
-  }
+        {pwdInput}
+      </View>
+    </ScrollView>
+  )
 }
 
 const styles = StyleSheet.create({
@@ -149,4 +125,3 @@ const styles = StyleSheet.create({
     },
   }
 )
-export default Login

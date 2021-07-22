@@ -1,4 +1,4 @@
-import React, {Component} from "react"
+import React, {useEffect, useState} from "react"
 import {Alert, Appearance, Modal, SafeAreaView, StyleSheet, View} from "react-native"
 import CommonViewModel from "../CommonViewModel"
 import ButtonAva from "../common/ButtonAva"
@@ -16,48 +16,27 @@ type SendAvaxXProps = {
   wallet: WalletProvider,
   onClose: () => void,
 }
-type SendAvaxXState = {
-  isDarkMode: boolean,
-  cameraVisible: boolean,
-  loaderVisible: boolean,
-  loaderMsg: string,
-  backgroundStyle: any,
-  addressXToSendTo: string,
-  sendAmount: string,
-}
 
-class SendAvaxX extends Component<SendAvaxXProps, SendAvaxXState> {
-  viewModel!: SendAvaxXViewModel
-  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme())
+export default function SendAvaxX(props: SendAvaxXProps | Readonly<SendAvaxXProps>) {
+  const [commonViewModel] = useState(new CommonViewModel(Appearance.getColorScheme()))
+  const [viewModel] = useState(new SendAvaxXViewModel(props.wallet))
+  const [isDarkMode] = useState(commonViewModel.isDarkMode)
+  const [cameraVisible, setCameraVisible] = useState(false)
+  const [loaderVisible, setLoaderVisible] = useState(false)
+  const [loaderMsg, setLoaderMsg] = useState('')
+  const [backgroundStyle] = useState(commonViewModel.backgroundStyle)
+  const [addressXToSendTo, setAddressXToSendTo] = useState('')
+  const [sendAmount, setSendAmount] = useState('0.00')
 
-  constructor(props: SendAvaxXProps | Readonly<SendAvaxXProps>) {
-    super(props)
-    this.state = {
-      isDarkMode: false,
-      cameraVisible: false,
-      loaderVisible: false,
-      loaderMsg: '',
-      backgroundStyle: {},
-      addressXToSendTo: '',
-      sendAmount: '0.00',
-    }
-    this.viewModel = new SendAvaxXViewModel(props.wallet)
-  }
+  useEffect(() => {
+    viewModel.loaderMsg.subscribe(value => setLoaderMsg(value))
+    viewModel.loaderVisible.subscribe(value => setLoaderVisible(value))
+    viewModel.cameraVisible.subscribe(value => setCameraVisible(value))
+    viewModel.addressXToSendTo.subscribe(value => setAddressXToSendTo(value))
+  }, [])
 
-  componentDidMount(): void {
-    this.commonViewModel.isDarkMode.subscribe(value => this.setState({isDarkMode: value}))
-    this.commonViewModel.backgroundStyle.subscribe(value => this.setState({backgroundStyle: value}))
-    this.viewModel.loaderMsg.subscribe(value => this.setState({loaderMsg: value}))
-    this.viewModel.loaderVisible.subscribe(value => this.setState({loaderVisible: value}))
-    this.viewModel.cameraVisible.subscribe(value => this.setState({cameraVisible: value}))
-    this.viewModel.addressXToSendTo.subscribe(value => this.setState({addressXToSendTo: value}))
-  }
-
-  componentWillUnmount(): void {
-  }
-
-  private onSend = (addressX: string, amount: string): void => {
-    this.viewModel.onSendAvaxX(addressX, amount)
+  const onSend = (addressX: string, amount: string): void => {
+    viewModel.onSendAvaxX(addressX, amount)
       .subscribe({
         next: txHash => {
           Alert.alert("Success", "Created transaction: " + txHash)
@@ -68,61 +47,60 @@ class SendAvaxX extends Component<SendAvaxXProps, SendAvaxXState> {
       })
   }
 
-  private ClearBtn = () => {
-    const clearIcon = this.state.isDarkMode ? require("../assets/icons/clear_dark.png") : require("../assets/icons/clear_light.png")
+  const ClearBtn = () => {
+    const clearIcon = isDarkMode ? require("../assets/icons/clear_dark.png") : require("../assets/icons/clear_light.png")
     return <View style={styles.clear}>
-      <ImgButtonAva src={clearIcon} onPress={() => this.viewModel.clearAddress()}/>
+      <ImgButtonAva src={clearIcon} onPress={() => viewModel.clearAddress()}/>
     </View>
   }
 
-  render(): Element {
-    const scanIcon = this.state.isDarkMode ? require("../assets/icons/qr_scan_dark.png") : require("../assets/icons/qr_scan_light.png")
-    const clearBtn = this.state.addressXToSendTo.length != 0 && this.ClearBtn()
+  const scanIcon = isDarkMode ? require("../assets/icons/qr_scan_dark.png") : require("../assets/icons/qr_scan_light.png")
+  const clearBtn = addressXToSendTo.length != 0 && ClearBtn()
 
-    return (
+  return (
 
-      <SafeAreaView style={this.state.backgroundStyle}>
-        <Header showBack onBack={this.props.onClose}/>
-        <TextTitle text={"Send AVAX (X Chain)"}/>
-        <TextTitle text={"To:"} size={18}/>
+    <SafeAreaView style={backgroundStyle}>
+      <Header showBack onBack={props.onClose}/>
+      <TextTitle text={"Send AVAX (X Chain)"}/>
+      <TextTitle text={"To:"} size={18}/>
 
-        <View style={styles.horizontalLayout}>
-          <InputText
-            style={[{flex: 1}]}
-            multiline={true}
-            onChangeText={text => this.setState({addressXToSendTo: text})}
-            value={this.state.addressXToSendTo}/>
-          {clearBtn}
-          <ImgButtonAva src={scanIcon} onPress={() => this.viewModel.onScanBarcode()}/>
-        </View>
+      <View style={styles.horizontalLayout}>
+        <InputText
+          style={[{flex: 1}]}
+          multiline={true}
+          onChangeText={text => setAddressXToSendTo(text)}
+          value={addressXToSendTo}/>
+        {clearBtn}
+        <ImgButtonAva src={scanIcon} onPress={() => viewModel.onScanBarcode()}/>
+      </View>
 
-        <TextTitle text={"Amount:"} size={18}/>
-        <InputAmount
-          showControls={true}
-          onChangeText={text => this.setState({sendAmount: text})}/>
+      <TextTitle text={"Amount:"} size={18}/>
+      <InputAmount
+        showControls={true}
+        onChangeText={text => setSendAmount(text)}/>
 
-        <ButtonAva text={'Send'} onPress={() => this.onSend(this.state.addressXToSendTo, this.state.sendAmount)}/>
+      <ButtonAva text={'Send'} onPress={() => onSend(addressXToSendTo, sendAmount)}/>
 
-        <Modal
-          animationType="fade"
-          transparent={true}
-          visible={this.state.loaderVisible}>
-          <Loader message={this.state.loaderMsg}/>
-        </Modal>
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={loaderVisible}>
+        <Loader message={loaderMsg}/>
+      </Modal>
 
-        <Modal
-          animationType="slide"
-          transparent={true}
-          onRequestClose={() => this.setState({cameraVisible: false})}
-          visible={this.state.cameraVisible}>
-          <QrScannerAva onSuccess={data => this.viewModel.onBarcodeScanned(data)}
-                        onCancel={() => this.setState({cameraVisible: false})}/>
-        </Modal>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setCameraVisible(false)}
+        visible={cameraVisible}>
+        <QrScannerAva onSuccess={data => viewModel.onBarcodeScanned(data)}
+                      onCancel={() => setCameraVisible(false)}/>
+      </Modal>
 
-      </SafeAreaView>
-    )
-  }
+    </SafeAreaView>
+  )
 }
+
 
 const styles: any = StyleSheet.create({
   horizontalLayout: {
@@ -136,4 +114,3 @@ const styles: any = StyleSheet.create({
   },
 })
 
-export default SendAvaxX
