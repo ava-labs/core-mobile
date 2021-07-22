@@ -33,8 +33,9 @@ export default function MainView(props: Props | Readonly<Props>) {
     disposables.add(viewModel.onResetHdIndices()
       .subscribe({
         error: err => {
-          onExit()
-          Alert.alert("Error", err.message)
+          Alert.alert("Error", err.message, [
+            {text: 'Exit', onPress: () => onExit()},
+          ])
         },
         complete: () => setWalletReady(true),
       }))
