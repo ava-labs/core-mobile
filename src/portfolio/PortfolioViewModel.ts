@@ -13,12 +13,15 @@ export default class {
   wallet: BehaviorSubject<WalletProvider>
   walletCAddress: Observable<string>
   walletEvmAddrBech: Observable<string>
-  addressX: BehaviorSubject<string> = new BehaviorSubject<string>("")
-  addressP: BehaviorSubject<string> = new BehaviorSubject<string>("")
+  addressX: BehaviorSubject<string>
+  addressP: BehaviorSubject<string>
   addressC: Observable<string>
 
   constructor(wallet: BehaviorSubject<WalletProvider>) {
     this.wallet = wallet
+
+    this.addressX = new BehaviorSubject<string>(this.wallet.value.getAddressX())
+    this.addressP = new BehaviorSubject<string>(this.wallet.value.getAddressP())
 
     this.walletCAddress = this.wallet.pipe(
       map(wallet => wallet.getAddressC()),

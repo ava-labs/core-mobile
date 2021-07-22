@@ -1,4 +1,4 @@
-import {BehaviorSubject, from, Observable, Subscription, zip} from "rxjs"
+import {BehaviorSubject, from, Observable, zip} from "rxjs"
 import {catchError, map, switchMap, take, tap} from "rxjs/operators"
 import BiometricsSDK from "../BiometricsSDK"
 
@@ -10,14 +10,31 @@ export default class {
   private randomIndices!: BehaviorSubject<number[]>
   enteredMnemonic: BehaviorSubject<Map<number, string>> = new BehaviorSubject(new Map())
   enabledInputs!: Observable<Map<number, boolean>>
-  private enteredMnemonicSubscription: Subscription
 
   constructor(mnemonic: string) {
     this.mnemonic = new BehaviorSubject<string>(mnemonic)
 
     this.randomIndices = new BehaviorSubject<number[]>(this.getRandomIndices())
 
-    this.enteredMnemonicSubscription = zip(this.mnemonic, this.randomIndices).pipe(
+    this.enabledInputs = zip(this.mnemonic, this.randomIndices).pipe(
+      map(([mnemonic, randomIndices]) => {
+        const enabledInputs: Map<number, boolean> = new Map()
+        mnemonic.split(" ").forEach((value: string, index: number) => {
+          let enabled = randomIndices.indexOf(index) !== -1
+          enabledInputs.set(index, enabled)
+        })
+        return enabledInputs
+      })
+    )
+  }
+
+  onComponentMount = () => {
+    this.generateMnemonics()
+  }
+
+  private generateMnemonics = () => {
+    zip(this.mnemonic, this.randomIndices).pipe(
+      take(1),
       map(([mnemonic, randomIndices]) => {
         const enteredMnemonic: Map<number, string> = new Map()
         mnemonic.split(" ").forEach((value: string, index: number) => {
@@ -32,17 +49,6 @@ export default class {
       }),
       tap(mnemonic => this.enteredMnemonic.next(mnemonic))
     ).subscribe()
-
-    this.enabledInputs = zip(this.mnemonic, this.randomIndices).pipe(
-      map(([mnemonic, randomIndices]) => {
-        const enabledInputs: Map<number, boolean> = new Map()
-        mnemonic.split(" ").forEach((value: string, index: number) => {
-          let enabled = randomIndices.indexOf(index) !== -1
-          enabledInputs.set(index, enabled)
-        })
-        return enabledInputs
-      })
-    )
   }
 
   private getRandomIndices(): number[] {
@@ -51,10 +57,6 @@ export default class {
       randomIndices.push(Math.trunc(Math.random() * 24))
     }
     return randomIndices
-  }
-
-  cleanup(): void {
-    this.enteredMnemonicSubscription?.unsubscribe()
   }
 
   onVerify(): Observable<boolean> {
@@ -94,6 +96,7 @@ export default class {
   }
 
   setMnemonic(key: number, value: string) {
-    this.enteredMnemonic.next(this.enteredMnemonic.value.set(key, value))
+    const next = new Map(this.enteredMnemonic.value.set(key, value))
+    this.enteredMnemonic.next(next)
   }
 }

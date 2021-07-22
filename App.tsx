@@ -5,7 +5,7 @@
  * @flow strict-local
  */
 
-import React, {Component} from 'react'
+import React, {useEffect, useState} from 'react'
 import {Alert, Appearance, BackHandler, NativeEventSubscription, SafeAreaView, StatusBar,} from 'react-native'
 import AppViewModel, {
   ExitPromptAnswers,
@@ -23,83 +23,73 @@ import CheckMnemonic from "./src/onboarding/CheckMnemonic"
 import MainView from "./src/mainView/MainView"
 import {COLORS, COLORS_NIGHT} from "./src/common/Constants"
 import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
+import {Subscription} from "rxjs"
 
 type AppProps = {}
-type AppState = {
-  backgroundStyle: any
-  isDarkMode: boolean
-  selectedView: SelectedView
-}
 
-class App extends Component<AppProps, AppState> {
-  viewModel: AppViewModel = new AppViewModel()
-  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme())
-  private backHandler?: NativeEventSubscription
+export default function App(props: AppProps | Readonly<AppProps>) {
+  const [commonViewModel] = useState(new CommonViewModel(Appearance.getColorScheme()))
+  const [viewModel] = useState(new AppViewModel())
+  const [backHandler, setBackHandler] = useState<NativeEventSubscription>()
+  const [isDarkMode] = useState(commonViewModel.isDarkMode)
+  const [backgroundStyle] = useState(commonViewModel.appBackgroundStyle)
+  const [selectedView, setSelectedView] = useState(SelectedView.Onboard)
 
+  useEffect(() => {
+    viewModel.onComponentMount()
+    const disposables = new Subscription()
+    disposables.add(viewModel.selectedView.subscribe(value => setSelectedView(value)))
 
-  constructor(props: AppProps | Readonly<AppProps>) {
-    super(props)
-    this.state = {
-      backgroundStyle: {},
-      isDarkMode: false,
-      selectedView: SelectedView.Onboard,
-    }
-  }
-
-  componentWillUnmount() {
-    this.backHandler?.remove()
-  }
-
-  componentDidMount() {
-    this.viewModel.onComponentMount()
-    this.commonViewModel.isDarkMode.subscribe(value => this.setState({isDarkMode: value}))
-    this.commonViewModel.appBackgroundStyle.subscribe(value => this.setState({backgroundStyle: value}))
-    this.viewModel.selectedView.subscribe(value => this.setState({selectedView: value}))
-
-    this.backHandler = BackHandler.addEventListener(
+    setBackHandler(BackHandler.addEventListener(
       "hardwareBackPress",
-      this.viewModel.onBackPressed
-    );
-  }
+      viewModel.onBackPressed
+    ))
 
-  private onEnterWallet = (mnemonic: string): void => {
-    this.viewModel.onEnterWallet(mnemonic).subscribe({
+    return () => {
+      disposables.unsubscribe()
+      backHandler?.remove()
+    }
+  }, [])
+
+
+  const onEnterWallet = (mnemonic: string): void => {
+    viewModel.onEnterWallet(mnemonic).subscribe({
       error: err => Alert.alert(err.message),
     })
   }
 
-  private onEnterSingletonWallet = (privateKey: string): void => {
-    this.viewModel.onEnterSingletonWallet(privateKey).subscribe({
+  const onEnterSingletonWallet = (constKey: string): void => {
+    viewModel.onEnterSingletonWallet(constKey).subscribe({
       error: err => Alert.alert(err.message),
     })
   }
 
-  private onSavedMnemonic = (mnemonic: string): void => {
-    this.viewModel.onSavedMnemonic(mnemonic)
+  const onSavedMnemonic = (mnemonic: string): void => {
+    viewModel.onSavedMnemonic(mnemonic)
   }
 
-  private onYes = (value: ShowLogoutPrompt): void => {
+  const onYes = (value: ShowLogoutPrompt): void => {
     value.prompt.next(LogoutPromptAnswers.Yes)
     value.prompt.complete()
   }
 
-  private onOk = (value: ShowExitPrompt): void => {
+  const onOk = (value: ShowExitPrompt): void => {
     value.prompt.next(ExitPromptAnswers.Ok)
     value.prompt.complete()
   }
 
-  private onCancel = (value: ShowLogoutPrompt): void => {
+  const onCancel = (value: ShowLogoutPrompt): void => {
     value.prompt.next(LogoutPromptAnswers.Cancel)
     value.prompt.complete()
   }
 
-  private onSwitchWallet = (): void => {
-    this.viewModel.onLogout().subscribe({
+  const onSwitchWallet = (): void => {
+    viewModel.onLogout().subscribe({
       next: (value: LogoutEvents) => {
         if (value instanceof ShowLogoutPrompt) {
           Alert.alert("Do you want to delete the stored passphrase and switch accounts?", undefined, [
-            {text: 'Cancel', onPress: () => this.onCancel(value as ShowLogoutPrompt), style: 'cancel'},
-            {text: 'Yes', onPress: () => this.onYes(value as ShowLogoutPrompt)},
+            {text: 'Cancel', onPress: () => onCancel(value as ShowLogoutPrompt), style: 'cancel'},
+            {text: 'Yes', onPress: () => onYes(value as ShowLogoutPrompt)},
           ])
         }
       },
@@ -107,12 +97,12 @@ class App extends Component<AppProps, AppState> {
     })
   }
 
-  private onExit = (): void => {
-    this.viewModel.onExit().subscribe({
+  const onExit = (): void => {
+    viewModel.onExit().subscribe({
       next: (value: LogoutEvents) => {
         if (value instanceof ShowExitPrompt) {
           Alert.alert("Your passphrase will remain securely stored for easier later access of wallet.", undefined, [
-            {text: 'Ok', onPress: () => this.onOk(value as ShowExitPrompt)},
+            {text: 'Ok', onPress: () => onOk(value as ShowExitPrompt)},
           ])
         }
       },
@@ -120,47 +110,44 @@ class App extends Component<AppProps, AppState> {
     })
   }
 
-  getSelectedView = (): Element => {
-    switch (this.state.selectedView) {
+  const getSelectedView = (): Element => {
+    switch (selectedView) {
       case SelectedView.CreateWallet:
         return <CreateWallet
-          onSavedMyPhrase={this.onSavedMnemonic}
-          onBack={() => this.viewModel.onBackPressed()}/>
+          onSavedMyPhrase={onSavedMnemonic}
+          onBack={() => viewModel.onBackPressed()}/>
       case SelectedView.CheckMnemonic:
-        if (this.viewModel.wallet === null) throw Error("Wallet not defined")
+        if (viewModel.wallet === null) throw Error("Wallet not defined")
         return <CheckMnemonic
-          onSuccess={() => this.viewModel.setSelectedView(SelectedView.Main)}
-          onBack={() => this.viewModel.onBackPressed()}
-          mnemonic={(this.viewModel.wallet as MnemonicWallet).mnemonic}/>
+          onSuccess={() => viewModel.setSelectedView(SelectedView.Main)}
+          onBack={() => viewModel.onBackPressed()}
+          mnemonic={(viewModel.wallet as MnemonicWallet).mnemonic}/>
       case SelectedView.Onboard:
         return <Onboard
-          onEnterSingletonWallet={this.onEnterSingletonWallet}
-          onEnterWallet={this.onEnterWallet}
-          onAlreadyHaveWallet={() => this.viewModel.setSelectedView(SelectedView.Login)}
-          onCreateWallet={() => this.viewModel.setSelectedView(SelectedView.CreateWallet)}/>
+          onEnterSingletonWallet={onEnterSingletonWallet}
+          onEnterWallet={onEnterWallet}
+          onAlreadyHaveWallet={() => viewModel.setSelectedView(SelectedView.Login)}
+          onCreateWallet={() => viewModel.setSelectedView(SelectedView.CreateWallet)}/>
       case SelectedView.Login:
         return <Login
-          onEnterSingletonWallet={this.onEnterSingletonWallet}
-          onEnterWallet={this.onEnterWallet}
-          onBack={() => this.viewModel.onBackPressed()}/>
+          onEnterSingletonWallet={onEnterSingletonWallet}
+          onEnterWallet={onEnterWallet}
+          onBack={() => viewModel.onBackPressed()}/>
       case SelectedView.Main:
-        if (this.viewModel.wallet === null) throw Error("Wallet not defined")
-        return <MainView wallet={this.viewModel.wallet} onExit={this.onExit} onSwitchWallet={this.onSwitchWallet}/>
+        if (viewModel.wallet === null) throw Error("Wallet not defined")
+        return <MainView wallet={viewModel.wallet} onExit={onExit} onSwitchWallet={onSwitchWallet}/>
     }
   }
 
-  render() {
-    const THEME = this.state.isDarkMode ? COLORS_NIGHT : COLORS
-    return (
-      <SafeAreaView style={this.state.backgroundStyle}>
-        <StatusBar
-          backgroundColor={THEME.bg}
-          barStyle={this.state.isDarkMode ? "light-content" : "dark-content"}
-        />
-        {this.getSelectedView()}
-      </SafeAreaView>
-    )
-  }
-}
+  const THEME = isDarkMode ? COLORS_NIGHT : COLORS
+  return (
+    <SafeAreaView style={backgroundStyle}>
+      <StatusBar
+        backgroundColor={THEME.bg}
+        barStyle={isDarkMode ? "light-content" : "dark-content"}
+      />
+      {getSelectedView()}
+    </SafeAreaView>
+  )
 
-export default App
+}
