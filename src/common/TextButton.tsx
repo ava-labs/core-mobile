@@ -12,15 +12,14 @@ export default function TextButton(props: Props | Readonly<Props>) {
   const [commonViewModel] = useState(new CommonViewModel(Appearance.getColorScheme()))
   const [isDarkMode] = useState(commonViewModel.isDarkMode)
 
-  let THEME = isDarkMode ? COLORS_NIGHT : COLORS
+  const THEME = isDarkMode ? COLORS_NIGHT : COLORS
   return (
     <Text
       style={[
         {
-          color: props.disabled ? THEME.primaryColorLight : THEME.onPrimary,
-          fontSize: 14,
+          color: props.disabled ? THEME.primaryColorLight : THEME.buttonPrimaryText,
+          fontSize: 18,
           fontWeight: "700",
-          textTransform: "uppercase",
           fontFamily: "Inter-Regular",
           textAlign: "center",
         },

@@ -61,7 +61,7 @@ export default function Onboard(props: Props | Readonly<Props>) {
           style={styles.logo}/>
         <TextTitle text={"Avalanche Wallet"} textAlign={"center"} bold={true}/>
       </View>
-      {showButtons && <ButtonAva text={"Create wallet"} onPress={() => onCreateWallet()}/>}
+      {showButtons && <ButtonAva text={"Create new wallet"} onPress={() => onCreateWallet()}/>}
       {showButtons &&
       <ButtonAva text={"I already have wallet"} onPress={() => onAlreadyHaveWallet()}/>}
       <TextLabel text={"v" + pkg.version}/>
