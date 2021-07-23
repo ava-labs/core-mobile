@@ -6,7 +6,9 @@ import {PlatformRules} from "./PlatformRules"
 
 type Props = {
   src: ImageSourcePropType,
-  onPress: () => void
+  onPress: () => void,
+  width?: number,
+  height?: number,
 }
 export default function ImgButtonAva(props: Props | Readonly<Props>) {
   const [commonViewModel] = useState(new CommonViewModel(Appearance.getColorScheme()))
@@ -24,7 +26,7 @@ export default function ImgButtonAva(props: Props | Readonly<Props>) {
       onPress={onPress}
       background={TouchableNativeFeedback.Ripple(THEME.primaryColor, true)}>
       <View style={styles.container}>
-        <Image source={props.src} style={[styles.button]}/>
+        <Image source={props.src} style={[styles.button, {width: props.width || 24, height: props.height || 24 }]}/>
       </View>
     </TouchableNativeFeedback>
   )
@@ -37,8 +39,6 @@ const styles = StyleSheet.create({
   },
   button: {
     margin: 10,
-    width: 24,
-    height: 24,
   },
 })
 

@@ -5,6 +5,7 @@ import {COLORS, COLORS_NIGHT} from "./Constants"
 
 type Props = {
   text: string,
+  multiline?: boolean
 }
 
 export default function TextLabel(props: Props | Readonly<Props>) {
@@ -14,10 +15,11 @@ export default function TextLabel(props: Props | Readonly<Props>) {
   let THEME = isDarkMode ? COLORS_NIGHT : COLORS
   return (
     <Text
-      numberOfLines={1}
+      numberOfLines={props.multiline ? undefined : 1}
       style={[
         {
-          color: THEME.primaryColorLight,
+          textAlign: props.multiline ? "center" : "left",
+          color: THEME.textOnBg,
           fontSize: 13,
           fontFamily: "Inter-Regular"
         },
