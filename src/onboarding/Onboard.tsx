@@ -18,6 +18,7 @@ type Props = {
   onAlreadyHaveWallet: () => void,
   onLoginWithMnemonic: () => void,
   onLoginWithPrivateKey: () => void,
+  onLoginWithKeystoreFile: () => void,
   onEnterWallet: (mnemonic: string) => void,
   onEnterSingletonWallet: (privateKey: string) => void,
 }
@@ -61,6 +62,10 @@ export default function Onboard(props: Props | Readonly<Props>) {
     props.onLoginWithPrivateKey()
   }
 
+  const onLoginWithKeystoreFile = (): void => {
+    props.onLoginWithKeystoreFile()
+  }
+
   const logo = commonViewModel.isDarkMode ? require("../assets/ava_logo_dark.png") : require("../assets/ava_logo_light.png")
   const loginRecoveryIcon = commonViewModel.isDarkMode ? require("../assets/icons/login_recovery_dark.png") : require("../assets/icons/login_recovery_dark.png") //fixme:  replace with light when its designed
   const loginPrivateKey = commonViewModel.isDarkMode ? require("../assets/icons/private_key_dark.png") : require("../assets/icons/private_key_dark.png") //fixme:  replace with light when its designed
@@ -91,6 +96,7 @@ export default function Onboard(props: Props | Readonly<Props>) {
       {showButtons && <View style={styles.roundButtons}>
         {buttonWithText(loginRecoveryIcon, "Recovery Phrase", onLoginWithMnemonic)}
         {buttonWithText(loginPrivateKey, "Private Key", onLoginWithPrivateKey)}
+        {buttonWithText(loginPrivateKey, "Keystore File", onLoginWithKeystoreFile)}
       </View>}
 
       {showButtons && <ButtonAva text={"Create new wallet"} onPress={() => onCreateWallet()}/>}
