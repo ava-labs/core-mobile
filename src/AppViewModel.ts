@@ -12,6 +12,7 @@ export enum SelectedView {
   Login,
   LoginWithMnemonic,
   LoginWithPrivateKey,
+  LoginWithKeystoreFile,
   Main,
   CheckMnemonic,
 }
@@ -155,6 +156,7 @@ export default class {
       case SelectedView.Login:
       case SelectedView.LoginWithMnemonic:
       case SelectedView.LoginWithPrivateKey:
+      case SelectedView.LoginWithKeystoreFile:
         this.setSelectedView(SelectedView.Onboard)
         return true
       case SelectedView.Main:
