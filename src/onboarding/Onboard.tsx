@@ -15,7 +15,6 @@ import ImgButtonAva from "../common/ImgButtonAva"
 
 type Props = {
   onCreateWallet: () => void,
-  onAlreadyHaveWallet: () => void,
   onLoginWithMnemonic: () => void,
   onLoginWithPrivateKey: () => void,
   onLoginWithKeystoreFile: () => void,
