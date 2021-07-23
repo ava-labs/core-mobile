@@ -27,6 +27,7 @@ export default function Header(props: Props | Readonly<Props>) {
     props.onSwitchWallet?.()
   }
 
+  const logo = isDarkMode ? require("../assets/ava_logo_dark.png") : require("../assets/ava_logo_light.png")
   const icon = isDarkMode ? require("../assets/icons/arrow_back_dark.png") : require("../assets/icons/arrow_back_light.png")
   const iconExit = isDarkMode ? require("../assets/icons/logout_dark.png") : require("../assets/icons/logout_light.png")
   const backBtn = props.showBack ? <ImgButtonAva src={icon} onPress={onBackPress}/> : undefined
@@ -40,7 +41,7 @@ export default function Header(props: Props | Readonly<Props>) {
       <View style={styles.padded}>
         <Image
           accessibilityRole="image"
-          source={require('../assets/AvaLogo.png')}
+          source={logo}
           style={styles.logo}/>
       </View>
       <View style={styles.atEnd}>

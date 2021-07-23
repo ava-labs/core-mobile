@@ -5,6 +5,9 @@ export enum COLORS {
   buttonPrimaryText = "#FFF",
   buttonPrimaryDisabled = "#E8E0FF",
   buttonRipple = "#F1F1F4",
+  textOnBg = "#1A1A1C",
+  buttonSecondary = "#7451FF",
+  buttonRippleSecondary = "#F3EEFF",
 
   bg1 = "#fff",
   bgLight = "#f5f6fa",
@@ -31,6 +34,9 @@ export enum COLORS_NIGHT {
   buttonPrimaryText = "#FFF",
   buttonPrimaryDisabled = "#464648",
   buttonRipple = "#3A3A3C",
+  textOnBg = "#F8F8FB",
+  buttonSecondary = "#4E2EFD",
+  buttonRippleSecondary = "#3A3A3C",
 
   bg1 = "#242729",
   bgLight = "#2e3234",
