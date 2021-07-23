@@ -24,6 +24,7 @@ import MainView from "./src/mainView/MainView"
 import {COLORS, COLORS_NIGHT} from "./src/common/Constants"
 import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 import {Subscription} from "rxjs"
+import HdWalletLogin from "./src/login/HdWalletLogin"
 
 type AppProps = {}
 
@@ -127,9 +128,15 @@ export default function App(props: AppProps | Readonly<AppProps>) {
           onEnterSingletonWallet={onEnterSingletonWallet}
           onEnterWallet={onEnterWallet}
           onAlreadyHaveWallet={() => viewModel.setSelectedView(SelectedView.Login)}
+          onLoginWithMnemonic={() => viewModel.setSelectedView(SelectedView.LoginWithMnemonic)}
           onCreateWallet={() => viewModel.setSelectedView(SelectedView.CreateWallet)}/>
       case SelectedView.Login:
         return <Login
+          onEnterSingletonWallet={onEnterSingletonWallet}
+          onEnterWallet={onEnterWallet}
+          onBack={() => viewModel.onBackPressed()}/>
+      case SelectedView.LoginWithMnemonic:
+        return <HdWalletLogin
           onEnterSingletonWallet={onEnterSingletonWallet}
           onEnterWallet={onEnterWallet}
           onBack={() => viewModel.onBackPressed()}/>
