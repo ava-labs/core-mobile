@@ -17,6 +17,7 @@ type Props = {
   onCreateWallet: () => void,
   onAlreadyHaveWallet: () => void,
   onLoginWithMnemonic: () => void,
+  onLoginWithPrivateKey: () => void,
   onEnterWallet: (mnemonic: string) => void,
   onEnterSingletonWallet: (privateKey: string) => void,
 }
@@ -57,7 +58,7 @@ export default function Onboard(props: Props | Readonly<Props>) {
   }
 
   const onLoginWithPrivateKey = (): void => {
-    props.onAlreadyHaveWallet()
+    props.onLoginWithPrivateKey()
   }
 
   const logo = commonViewModel.isDarkMode ? require("../assets/ava_logo_dark.png") : require("../assets/ava_logo_light.png")
