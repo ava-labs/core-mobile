@@ -25,6 +25,7 @@ import {COLORS, COLORS_NIGHT} from "./src/common/Constants"
 import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 import {Subscription} from "rxjs"
 import HdWalletLogin from "./src/login/HdWalletLogin"
+import PrivateKeyLogin from "./src/login/PrivateKeyLogin"
 
 type AppProps = {}
 
@@ -129,6 +130,7 @@ export default function App(props: AppProps | Readonly<AppProps>) {
           onEnterWallet={onEnterWallet}
           onAlreadyHaveWallet={() => viewModel.setSelectedView(SelectedView.Login)}
           onLoginWithMnemonic={() => viewModel.setSelectedView(SelectedView.LoginWithMnemonic)}
+          onLoginWithPrivateKey={() => viewModel.setSelectedView(SelectedView.LoginWithPrivateKey)}
           onCreateWallet={() => viewModel.setSelectedView(SelectedView.CreateWallet)}/>
       case SelectedView.Login:
         return <Login
@@ -137,8 +139,11 @@ export default function App(props: AppProps | Readonly<AppProps>) {
           onBack={() => viewModel.onBackPressed()}/>
       case SelectedView.LoginWithMnemonic:
         return <HdWalletLogin
-          onEnterSingletonWallet={onEnterSingletonWallet}
           onEnterWallet={onEnterWallet}
+          onBack={() => viewModel.onBackPressed()}/>
+      case SelectedView.LoginWithPrivateKey:
+        return <PrivateKeyLogin
+          onEnterSingletonWallet={onEnterSingletonWallet}
           onBack={() => viewModel.onBackPressed()}/>
       case SelectedView.Main:
         if (viewModel.wallet === null) throw Error("Wallet not defined")

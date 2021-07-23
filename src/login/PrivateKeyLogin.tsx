@@ -4,21 +4,16 @@ import Header from '../mainView/Header'
 import TextTitle from "../common/TextTitle"
 import InputText from "../common/InputText"
 import ButtonAva from "../common/ButtonAva"
-import WalletSDK from "../WalletSDK"
-import ButtonAvaSecondary from "../common/ButtonAvaSecondary"
 
 type Props = {
-  onEnterWallet: (mnemonic: string) => void,
+  onEnterSingletonWallet: (privateKey: string) => void,
   onBack: () => void,
 }
 
-export default function HdWalletLogin(props: Props | Readonly<Props>) {
-  const [mnemonic, setMnemonic] = useState("")
-
-
-  const onEnterTestWallet = (): void => {
-    props.onEnterWallet(WalletSDK.testMnemonic())
-  }
+export default function PrivateKeyLogin(props: Props | Readonly<Props>) {
+  const [privateKey, setPrivateKey] = useState("PrivateKey-")
+  // const [privateKey, setPrivateKey] = useState("27c9f8927ead18895542197939033a79a0060a98011b7ba022ddae33efcf82b5")
+  // const [privateKey, setPrivateKey] = useState("PrivateKey-JXMcF4J7JAjVmQeeo9rXSRD8KeJefUFrd2Lgx59rEBN59WN4G")
 
   const onBack = (): void => {
     props.onBack()
@@ -30,17 +25,15 @@ export default function HdWalletLogin(props: Props | Readonly<Props>) {
         <Header showBack onBack={onBack}/>
         <View style={[{height: 8}]}/>
 
-        <TextTitle text={"HD Wallet"} textAlign={"center"} bold={true}/>
+        <TextTitle text={"Singleton wallet"} textAlign={"center"} bold={true}/>
         <View style={[{height: 8}]}/>
         <InputText
-          onSubmit={() => props.onEnterWallet(mnemonic)}
           multiline={true}
-          onChangeText={text => setMnemonic(text)}
-          value={mnemonic}/>
+          onChangeText={text => setPrivateKey(text)}
+          value={privateKey}/>
         <View style={[{flexGrow: 1}]}/>
-        <ButtonAva text={"Enter HD wallet"} onPress={() => props.onEnterWallet(mnemonic)}/>
+        <ButtonAva text={"Enter singleton wallet"} onPress={() => props.onEnterSingletonWallet(privateKey)}/>
 
-        <ButtonAvaSecondary text={"Enter test HD wallet"} onPress={onEnterTestWallet}/>
       </View>
     </ScrollView>
   )
