@@ -16,7 +16,6 @@ import AppViewModel, {
   ShowLogoutPrompt
 } from './src/AppViewModel'
 import CommonViewModel from './src/CommonViewModel'
-import Login from './src/login/Login'
 import Onboard from './src/onboarding/Onboard'
 import CreateWallet from './src/onboarding/CreateWallet'
 import CheckMnemonic from "./src/onboarding/CheckMnemonic"
@@ -129,16 +128,10 @@ export default function App(props: AppProps | Readonly<AppProps>) {
         return <Onboard
           onEnterSingletonWallet={onEnterSingletonWallet}
           onEnterWallet={onEnterWallet}
-          onAlreadyHaveWallet={() => viewModel.setSelectedView(SelectedView.Login)}
           onLoginWithMnemonic={() => viewModel.setSelectedView(SelectedView.LoginWithMnemonic)}
           onLoginWithPrivateKey={() => viewModel.setSelectedView(SelectedView.LoginWithPrivateKey)}
           onLoginWithKeystoreFile={() => viewModel.setSelectedView(SelectedView.LoginWithKeystoreFile)}
           onCreateWallet={() => viewModel.setSelectedView(SelectedView.CreateWallet)}/>
-      case SelectedView.Login:
-        return <Login
-          onEnterSingletonWallet={onEnterSingletonWallet}
-          onEnterWallet={onEnterWallet}
-          onBack={() => viewModel.onBackPressed()}/>
       case SelectedView.LoginWithMnemonic:
         return <HdWalletLogin
           onEnterWallet={onEnterWallet}
