@@ -100,7 +100,7 @@ export default function Onboard(props: Props | Readonly<Props>) {
       </View>}
 
       {showButtons && <ButtonAva text={"Create new wallet"} onPress={() => onCreateWallet()}/>}
-      <TextLabel text={"v" + pkg.version}/>
+      <TextLabel text={"v" + pkg.version + " Fuji network"}/>
     </View>
   )
 }
