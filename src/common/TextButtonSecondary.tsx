@@ -1,33 +1,27 @@
 import React, {useState} from "react"
-import {Appearance, ColorValue, Text} from "react-native"
+import {Appearance, Text} from "react-native"
 import CommonViewModel from "../CommonViewModel"
 import {COLORS, COLORS_NIGHT} from "./Constants"
 
 type Props = {
   text: string,
-  size?: number,
-  bold?: boolean,
-  color?: ColorValue,
-  lineHeight?: number,
-  textAlign?: "center" | "right",
+  disabled?: boolean
 }
 
-export default function TextTitle(props: Props | Readonly<Props>) {
+export default function TextButtonSecondary(props: Props | Readonly<Props>) {
   const [commonViewModel] = useState(new CommonViewModel(Appearance.getColorScheme()))
   const [isDarkMode] = useState(commonViewModel.isDarkMode)
-
 
   const THEME = isDarkMode ? COLORS_NIGHT : COLORS
   return (
     <Text
       style={[
         {
-          lineHeight: props.lineHeight || undefined,
-          color: props.color || THEME.primaryColor,
-          fontSize: props.size ? props.size : 26,
+          color: props.disabled ? THEME.buttonSecondaryTextDisabled : THEME.buttonSecondaryText,
+          fontSize: 18,
+          fontWeight: "700",
           fontFamily: "Inter-Regular",
-          fontWeight: props.bold ? "bold" : "normal",
-          textAlign: props.textAlign
+          textAlign: "center",
         },
       ]}>
       {props.text}

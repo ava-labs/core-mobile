@@ -2,8 +2,8 @@ import React, {useState} from "react"
 import {Appearance, StyleSheet, TouchableNativeFeedback, View} from "react-native"
 import CommonViewModel from "../CommonViewModel"
 import {COLORS, COLORS_NIGHT} from "./Constants"
-import TextButton from "./TextButton"
 import {PlatformRules} from "./PlatformRules"
+import TextButtonSecondary from "./TextButtonSecondary"
 
 type Props = {
   text: string,
@@ -27,7 +27,7 @@ export default function ButtonAvaSecondary(props: Props | Readonly<Props>) {
       onPress={() => onPress()}
       background={TouchableNativeFeedback.Ripple(THEME.buttonRippleSecondary, false)}>
       <View style={[styles.button, {backgroundColor: THEME.transparent, borderColor: THEME.buttonSecondary}]}>
-        <TextButton disabled={props.disabled} text={props.text}/>
+        <TextButtonSecondary disabled={props.disabled} text={props.text}/>
       </View>
     </TouchableNativeFeedback>
   )
