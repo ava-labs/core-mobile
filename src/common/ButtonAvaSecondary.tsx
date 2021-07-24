@@ -2,8 +2,8 @@ import React, {useState} from "react"
 import {Appearance, StyleSheet, TouchableNativeFeedback, View} from "react-native"
 import CommonViewModel from "../CommonViewModel"
 import {COLORS, COLORS_NIGHT} from "./Constants"
-import TextButton from "./TextButton"
 import {PlatformRules} from "./PlatformRules"
+import TextButtonSecondary from "./TextButtonSecondary"
 
 type Props = {
   text: string,
@@ -11,7 +11,7 @@ type Props = {
   disabled?: boolean
 }
 
-export default function ButtonAva(props: Props | Readonly<Props>) {
+export default function ButtonAvaSecondary(props: Props | Readonly<Props>) {
   const [commonViewModel] = useState(new CommonViewModel(Appearance.getColorScheme()))
   const [isDarkMode] = useState(commonViewModel.isDarkMode)
 
@@ -25,9 +25,9 @@ export default function ButtonAva(props: Props | Readonly<Props>) {
       disabled={props.disabled}
       useForeground={true}
       onPress={() => onPress()}
-      background={TouchableNativeFeedback.Ripple(THEME.buttonRipple, false)}>
-      <View style={[styles.button, {backgroundColor: props.disabled ? THEME.buttonPrimaryDisabled : THEME.buttonPrimary}]}>
-        <TextButton disabled={props.disabled} text={props.text}/>
+      background={TouchableNativeFeedback.Ripple(THEME.buttonRippleSecondary, false)}>
+      <View style={[styles.button, {backgroundColor: THEME.transparent, borderColor: THEME.buttonSecondary}]}>
+        <TextButtonSecondary disabled={props.disabled} text={props.text}/>
       </View>
     </TouchableNativeFeedback>
   )
@@ -42,6 +42,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     marginHorizontal: 24,
     marginVertical: 8,
+    borderWidth: 2,
     borderRadius: 8,
   },
 })
