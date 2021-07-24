@@ -16,7 +16,6 @@ import AppViewModel, {
   ShowLogoutPrompt
 } from './src/AppViewModel'
 import CommonViewModel from './src/CommonViewModel'
-import Login from './src/login/Login'
 import Onboard from './src/onboarding/Onboard'
 import CreateWallet from './src/onboarding/CreateWallet'
 import CheckMnemonic from "./src/onboarding/CheckMnemonic"
@@ -24,6 +23,9 @@ import MainView from "./src/mainView/MainView"
 import {COLORS, COLORS_NIGHT} from "./src/common/Constants"
 import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 import {Subscription} from "rxjs"
+import HdWalletLogin from "./src/login/HdWalletLogin"
+import PrivateKeyLogin from "./src/login/PrivateKeyLogin"
+import KeystoreLogin from "./src/login/KeystoreLogin"
 
 type AppProps = {}
 
@@ -126,11 +128,20 @@ export default function App(props: AppProps | Readonly<AppProps>) {
         return <Onboard
           onEnterSingletonWallet={onEnterSingletonWallet}
           onEnterWallet={onEnterWallet}
-          onAlreadyHaveWallet={() => viewModel.setSelectedView(SelectedView.Login)}
+          onLoginWithMnemonic={() => viewModel.setSelectedView(SelectedView.LoginWithMnemonic)}
+          onLoginWithPrivateKey={() => viewModel.setSelectedView(SelectedView.LoginWithPrivateKey)}
+          onLoginWithKeystoreFile={() => viewModel.setSelectedView(SelectedView.LoginWithKeystoreFile)}
           onCreateWallet={() => viewModel.setSelectedView(SelectedView.CreateWallet)}/>
-      case SelectedView.Login:
-        return <Login
+      case SelectedView.LoginWithMnemonic:
+        return <HdWalletLogin
+          onEnterWallet={onEnterWallet}
+          onBack={() => viewModel.onBackPressed()}/>
+      case SelectedView.LoginWithPrivateKey:
+        return <PrivateKeyLogin
           onEnterSingletonWallet={onEnterSingletonWallet}
+          onBack={() => viewModel.onBackPressed()}/>
+      case SelectedView.LoginWithKeystoreFile:
+        return <KeystoreLogin
           onEnterWallet={onEnterWallet}
           onBack={() => viewModel.onBackPressed()}/>
       case SelectedView.Main:

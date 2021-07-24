@@ -59,6 +59,8 @@ export default function MainView(props: Props | Readonly<Props>) {
         let icon;
         if (params.route.name === 'Portfolio') {
           icon = isDarkMode ? require("../assets/icons/portfolio_dark.png") : require("../assets/icons/portfolio_light.png")
+        } else if (params.route.name === 'Assets') {
+          icon = isDarkMode ? require("../assets/icons/assets_dark.png") : require("../assets/icons/assets_light.png")
         } else if (params.route.name === 'Send') {
           icon = isDarkMode ? require("../assets/icons/send_dark.png") : require("../assets/icons/send_light.png")
         } else if (params.route.name === 'Earn') {

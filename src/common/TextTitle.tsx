@@ -8,6 +8,7 @@ type Props = {
   size?: number,
   bold?: boolean,
   color?: ColorValue,
+  lineHeight?: number,
   textAlign?: "center" | "right",
 }
 
@@ -21,6 +22,7 @@ export default function TextTitle(props: Props | Readonly<Props>) {
     <Text
       style={[
         {
+          lineHeight: props.lineHeight || undefined,
           color: props.color || THEME.primaryColor,
           fontSize: props.size ? props.size : 26,
           fontFamily: "Inter-Regular",
