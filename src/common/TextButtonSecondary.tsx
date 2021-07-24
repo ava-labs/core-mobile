@@ -5,23 +5,23 @@ import {COLORS, COLORS_NIGHT} from "./Constants"
 
 type Props = {
   text: string,
-  multiline?: boolean
+  disabled?: boolean
 }
 
-export default function TextLabel(props: Props | Readonly<Props>) {
+export default function TextButtonSecondary(props: Props | Readonly<Props>) {
   const [commonViewModel] = useState(new CommonViewModel(Appearance.getColorScheme()))
   const [isDarkMode] = useState(commonViewModel.isDarkMode)
 
-  let THEME = isDarkMode ? COLORS_NIGHT : COLORS
+  const THEME = isDarkMode ? COLORS_NIGHT : COLORS
   return (
     <Text
-      numberOfLines={props.multiline ? undefined : 1}
       style={[
         {
-          textAlign: props.multiline ? "center" : "left",
-          color: THEME.textOnBg,
-          fontSize: 13,
-          fontFamily: "Inter-Regular"
+          color: props.disabled ? THEME.buttonSecondaryTextDisabled : THEME.buttonSecondaryText,
+          fontSize: 18,
+          fontWeight: "700",
+          fontFamily: "Inter-Regular",
+          textAlign: "center",
         },
       ]}>
       {props.text}

@@ -1,4 +1,4 @@
-import React, {Component} from 'react'
+import React, {useEffect, useState} from 'react'
 import {
   Alert,
   Appearance,
@@ -25,154 +25,124 @@ type Props = {
   wallet: WalletProvider,
   onClose: () => void,
 }
-type State = {
-  isDarkMode: boolean,
-  loaderVisible: boolean,
-  loaderMsg: string,
-  backgroundStyle: any,
-  sourceChain: Chain,
-  destinationChain: Chain,
-  balance: string,
-  selectSourceChainVisible: boolean,
-  selectDestinationChainVisible: boolean,
-  sendAmount: string,
-  availableDestinationChains: Chain[],
-}
 
-class SendCrossChain extends Component<Props, State> {
-  viewModel!: SendCrossChainViewModel
-  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme())
+export default function SendCrossChain(props: Props | Readonly<Props>) {
+  const [commonViewModel] = useState(new CommonViewModel(Appearance.getColorScheme()))
+  const [viewModel] = useState(new SendCrossChainViewModel(props.wallet))
+  const [isDarkMode] = useState(commonViewModel.isDarkMode)
+  const [balance, setBalance] = useState('')
+  const [sourceChain, setSourceChain] = useState(Chain.X)
+  const [destinationChain, setDestinationChain] = useState(Chain.P)
+  const [loaderVisible, setLoaderVisible] = useState(false)
+  const [loaderMsg, setLoaderMsg] = useState('')
+  const [selectSourceChainVisible, setSelectSourceChainVisible] = useState(false)
+  const [selectDestinationChainVisible, setSelectDestinationChainVisible] = useState(false)
+  const [availableDestinationChains, setAvailableDestinationChains] = useState([] as Chain[])
+  const [sendAmount, setSendAmount] = useState('0.00')
+  const [backgroundStyle] = useState(commonViewModel.backgroundStyle)
 
-  constructor(props: Props | Readonly<Props>) {
-    super(props)
-    this.state = {
-      balance: '',
-      sourceChain: Chain.X,
-      destinationChain: Chain.P,
-      isDarkMode: false,
-      loaderVisible: false,
-      loaderMsg: '',
-      selectSourceChainVisible: false,
-      selectDestinationChainVisible: false,
-      availableDestinationChains: [],
-      sendAmount: '0.00',
-      backgroundStyle: {}
-    }
-    this.viewModel = new SendCrossChainViewModel(props.wallet)
-  }
+  useEffect(() => {
+    viewModel.balance.subscribe(value => setBalance(value))
+    viewModel.availableDestinationChains.subscribe(value => setAvailableDestinationChains(value))
+    viewModel.sourceChain.subscribe(value => {
+      setSourceChain(value)
+      setSelectSourceChainVisible(false)
+    })
+    viewModel.destinationChain.subscribe(value => {
+      setDestinationChain(value)
+      setSelectDestinationChainVisible(false)
+    })
+    viewModel.loaderMsg.subscribe(value => setLoaderMsg(value))
+    viewModel.loaderVisible.subscribe(value => setLoaderVisible(value))
+  }, [])
 
-  componentDidMount(): void {
-    this.commonViewModel.isDarkMode.subscribe(value => this.setState({isDarkMode: value}))
-    this.commonViewModel.backgroundStyle.subscribe(value => this.setState({backgroundStyle: value}))
-    this.viewModel.balance.subscribe(value => this.setState({balance: value}))
-    this.viewModel.availableDestinationChains.subscribe(value => this.setState({availableDestinationChains: value}))
-    this.viewModel.sourceChain.subscribe(value => this.setState({
-      sourceChain: value,
-      selectSourceChainVisible: false
-    }))
-    this.viewModel.destinationChain.subscribe(value => this.setState({
-      destinationChain: value,
-      selectDestinationChainVisible: false
-    }))
-    this.viewModel.loaderMsg.subscribe(value => this.setState({loaderMsg: value}))
-    this.viewModel.loaderVisible.subscribe(value => this.setState({loaderVisible: value}))
-  }
-
-  componentWillUnmount(): void {
-  }
-
-  onSend(): void {
-    this.viewModel.makeTransfer(this.state.sourceChain, this.state.destinationChain, this.state.sendAmount)
+  const onSend = (): void => {
+    viewModel.makeTransfer(sourceChain, destinationChain, sendAmount)
       .subscribe({
         error: err => console.error(err.message),
         complete: () => Alert.alert("Finished")
       })
   }
 
-  render(): Element {
-    const THEME = this.state.isDarkMode ? COLORS_NIGHT : COLORS
-    const sourceChainRenderItem: ListRenderItem<ChainRenderItem> = (info: ListRenderItemInfo<ChainRenderItem>) => {
-      return <Pressable onPress={() => this.viewModel.setSourceChain(info.item.chain)} style={styles.pressable}>
-        <TextTitle text={info.item.displayString} size={14}/>
-      </Pressable>
-    }
-    const destinationChainRenderItem: ListRenderItem<ChainRenderItem> = (info: ListRenderItemInfo<ChainRenderItem>) => {
-      return <Pressable onPress={() => this.viewModel.setDestinationChain(info.item.chain)} style={styles.pressable}>
-        <TextTitle text={info.item.displayString} size={14}/>
-      </Pressable>
-    }
-
-    return (
-      <SafeAreaView style={[this.state.backgroundStyle, styles.bg]}>
-
-        <Header showBack onBack={this.props.onClose}/>
-        <TextTitle text={"Send Cross Chain"}/>
-        <View style={styles.horizontalLayout}>
-          <TextTitle text={"Source chain:"} size={18}/>
-          <ButtonAva text={this.viewModel.getChainString(this.state.sourceChain)} onPress={() => {
-            this.setState({
-              selectSourceChainVisible: true,
-            })
-          }}/>
-        </View>
-        <View style={styles.horizontalLayout}>
-          <TextTitle text={"Destination chain:"} size={18}/>
-          <ButtonAva text={this.viewModel.getChainString(this.state.destinationChain)} onPress={() => {
-            this.setState({
-              selectDestinationChainVisible: true,
-            })
-          }}/>
-        </View>
-        <TextTitle text={"Transfer amount:"} size={18}/>
-        <InputAmount
-          showControls={true}
-          onChangeText={text => this.setState({sendAmount: text})}/>
-        <View style={[styles.horizontalLayout, styles.horizBalance]}>
-          <TextTitle text={"Balance: "} size={18}/>
-          <TextTitle text={this.state.balance} size={18} bold={true}/>
-        </View>
-
-        <ButtonAva text={'Send'} onPress={() => this.onSend()}/>
-
-
-        <Modal
-          animationType="fade"
-          transparent={true}
-          visible={this.state.loaderVisible}>
-          <Loader message={this.state.loaderMsg}/>
-        </Modal>
-
-        <Modal animationType={'fade'} transparent={true} visible={this.state.selectSourceChainVisible}>
-          <View style={styles.modalContainer}>
-            <View
-              style={[styles.modalBackground, {backgroundColor: THEME.bg}]}>
-              <FlatList
-                style={{height: 100}}
-                data={this.viewModel.getChainRenderItems(this.viewModel.availableSourceChains)}
-                renderItem={sourceChainRenderItem}
-                keyExtractor={item => item.chain.toString()}
-              />
-            </View>
-          </View>
-        </Modal>
-
-        <Modal animationType={'fade'} transparent={true} visible={this.state.selectDestinationChainVisible}>
-          <View style={styles.modalContainer}>
-            <View
-              style={[styles.modalBackground, {backgroundColor: THEME.bg}]}>
-              <FlatList
-                style={{height: 100}}
-                data={this.viewModel.getChainRenderItems(this.state.availableDestinationChains)}
-                renderItem={destinationChainRenderItem}
-                keyExtractor={item => item.chain.toString()}
-              />
-            </View>
-          </View>
-        </Modal>
-      </SafeAreaView>
-    )
+  const THEME = isDarkMode ? COLORS_NIGHT : COLORS
+  const sourceChainRenderItem: ListRenderItem<ChainRenderItem> = (info: ListRenderItemInfo<ChainRenderItem>) => {
+    return <Pressable onPress={() => viewModel.setSourceChain(info.item.chain)} style={styles.pressable}>
+      <TextTitle text={info.item.displayString} size={14}/>
+    </Pressable>
   }
+  const destinationChainRenderItem: ListRenderItem<ChainRenderItem> = (info: ListRenderItemInfo<ChainRenderItem>) => {
+    return <Pressable onPress={() => viewModel.setDestinationChain(info.item.chain)} style={styles.pressable}>
+      <TextTitle text={info.item.displayString} size={14}/>
+    </Pressable>
+  }
+
+  return (
+    <SafeAreaView style={[backgroundStyle, styles.bg]}>
+
+      <Header showBack onBack={props.onClose}/>
+      <TextTitle text={"Send Cross Chain"}/>
+      <View style={styles.horizontalLayout}>
+        <TextTitle text={"Source chain:"} size={18}/>
+        <ButtonAva text={viewModel.getChainString(sourceChain)} onPress={() => {
+          setSelectSourceChainVisible(true)
+        }}/>
+      </View>
+      <View style={styles.horizontalLayout}>
+        <TextTitle text={"Destination chain:"} size={18}/>
+        <ButtonAva text={viewModel.getChainString(destinationChain)} onPress={() => {
+          setSelectDestinationChainVisible(true)
+        }}/>
+      </View>
+      <TextTitle text={"Transfer amount:"} size={18}/>
+      <InputAmount
+        showControls={true}
+        onChangeText={text => setSendAmount(text)}/>
+      <View style={[styles.horizontalLayout, styles.horizBalance]}>
+        <TextTitle text={"Balance: "} size={18}/>
+        <TextTitle text={balance} size={18} bold={true}/>
+      </View>
+
+      <ButtonAva text={'Send'} onPress={() => onSend()}/>
+
+
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={loaderVisible}>
+        <Loader message={loaderMsg}/>
+      </Modal>
+
+      <Modal animationType={'fade'} transparent={true} visible={selectSourceChainVisible}>
+        <View style={styles.modalContainer}>
+          <View
+            style={[styles.modalBackground, {backgroundColor: THEME.bg}]}>
+            <FlatList
+              style={{height: 100}}
+              data={viewModel.getChainRenderItems(viewModel.availableSourceChains)}
+              renderItem={sourceChainRenderItem}
+              keyExtractor={item => item.chain.toString()}
+            />
+          </View>
+        </View>
+      </Modal>
+
+      <Modal animationType={'fade'} transparent={true} visible={selectDestinationChainVisible}>
+        <View style={styles.modalContainer}>
+          <View
+            style={[styles.modalBackground, {backgroundColor: THEME.bg}]}>
+            <FlatList
+              style={{height: 100}}
+              data={viewModel.getChainRenderItems(availableDestinationChains)}
+              renderItem={destinationChainRenderItem}
+              keyExtractor={item => item.chain.toString()}
+            />
+          </View>
+        </View>
+      </Modal>
+    </SafeAreaView>
+  )
 }
+
 
 const styles: any = StyleSheet.create({
     modalContainer: {
@@ -204,5 +174,3 @@ const styles: any = StyleSheet.create({
     },
   }
 )
-
-export default SendCrossChain

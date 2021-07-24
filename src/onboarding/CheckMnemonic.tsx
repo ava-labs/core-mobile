@@ -1,71 +1,55 @@
-import React, {Component} from 'react'
-import {Alert, Appearance, ScrollView, StyleSheet, View} from 'react-native'
-import CommonViewModel from '../CommonViewModel'
+import React, {useEffect, useState} from 'react'
+import {Alert, ScrollView, StyleSheet, View} from 'react-native'
 import Header from '../mainView/Header'
 import TextTitle from "../common/TextTitle"
 import ButtonAva from "../common/ButtonAva"
 import CheckMnemonicViewModel from "./CheckMnemonicViewModel"
 import MnemonicInput from "./MnemonicInput"
+import {Subscription} from "rxjs"
 
 type Props = {
   onSuccess: () => void,
   onBack: () => void,
   mnemonic: string,
 }
-export type State = {
-  isDarkMode: boolean,
-  backgroundStyle: any,
-  enteredMnemonics: Map<number, string>
-  enabledInputs: Map<number, boolean>
-}
 
-class CheckMnemonic extends Component<Props, State> {
-  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme())
-  viewModel: CheckMnemonicViewModel = new CheckMnemonicViewModel(this.props.mnemonic)
+export default function CheckMnemonic(props: Props | Readonly<Props>) {
+  const [viewModel] = useState(new CheckMnemonicViewModel(props.mnemonic))
+  const [enteredMnemonics, setEnteredMnemonics] = useState(new Map())
+  const [enabledInputs, setEnabledInputs] = useState(new Map())
 
-  constructor(props: Props | Readonly<Props>) {
-    super(props)
-    this.state = {
-      isDarkMode: false,
-      backgroundStyle: {},
-      enteredMnemonics: new Map(),
-      enabledInputs: new Map(),
+  useEffect(() => {
+    const disposables = new Subscription()
+    disposables.add(viewModel.enteredMnemonic.subscribe(value => setEnteredMnemonics(value)))
+    disposables.add(viewModel.enabledInputs.subscribe(value => setEnabledInputs(value)))
+    viewModel.onComponentMount()
+
+    return () => {
+      disposables.unsubscribe()
     }
+  }, [])
 
+  const onBack = (): void => {
+    props.onBack()
   }
 
-  componentDidMount(): void {
-    this.commonViewModel.isDarkMode.subscribe(value => this.setState({isDarkMode: value}))
-    this.commonViewModel.backgroundStyle.subscribe(value => this.setState({backgroundStyle: value}))
-    this.viewModel.enteredMnemonic.subscribe(value => this.setState({enteredMnemonics: value}))
-    this.viewModel.enabledInputs.subscribe(value => this.setState({enabledInputs: value}))
-  }
-
-  componentWillUnmount(): void {
-    this.viewModel.cleanup()
-  }
-
-  private onBack = (): void => {
-    this.props.onBack()
-  }
-
-  private onVerify = (): void => {
-    this.viewModel.onVerify().subscribe({
+  const onVerify = (): void => {
+    viewModel.onVerify().subscribe({
       error: err => Alert.alert(err.message),
-      complete: () => this.props.onSuccess(),
+      complete: () => props.onSuccess(),
     })
   }
 
-  private setMnemonic(index: number, value: string): void {
-    this.viewModel.setMnemonic(index, value)
+  const setMnemonic = (index: number, value: string): void => {
+    viewModel.setMnemonic(index, value)
   }
 
-  render(): Element {
+  const mnemonics = () => {
     const mnemonics: Element[] = []
-    this.state.enteredMnemonics.forEach((value, key) => {
-      if (this.state.enabledInputs.get(key)) {
+    enteredMnemonics.forEach((value, key) => {
+      if (enabledInputs.get(key)) {
         mnemonics.push(
-          <MnemonicInput key={key} keyNum={key} text={value} onChangeText={text => this.setMnemonic(key, text)}
+          <MnemonicInput key={key} keyNum={key} text={value} onChangeText={text => setMnemonic(key, text)}
                          editable={true}/>
         )
       } else {
@@ -74,18 +58,20 @@ class CheckMnemonic extends Component<Props, State> {
         )
       }
     })
-
-    return (
-      <ScrollView>
-        <Header showBack onBack={this.onBack}/>
-        <TextTitle text={"Fill In Mnemonic Phrase Below"} size={20} textAlign={"center"}/>
-        <View style={styles.mnemonics}>
-          {mnemonics}
-        </View>
-        <ButtonAva text={"Verify"} onPress={this.onVerify}/>
-      </ScrollView>
-    )
+    return mnemonics
   }
+
+
+  return (
+    <ScrollView>
+      <Header showBack onBack={onBack}/>
+      <TextTitle text={"Fill In Mnemonic Phrase Below"} size={20} textAlign={"center"}/>
+      <View style={styles.mnemonics}>
+        {mnemonics()}
+      </View>
+      <ButtonAva text={"Verify"} onPress={onVerify}/>
+    </ScrollView>
+  )
 }
 
 const styles: any = StyleSheet.create({
@@ -101,4 +87,3 @@ const styles: any = StyleSheet.create({
     },
   }
 )
-export default CheckMnemonic

@@ -1,8 +1,7 @@
-import React, {Component} from 'react';
-import {Appearance, ColorSchemeName, Image, StyleSheet, View} from 'react-native';
+import React, {useState} from 'react'
+import {Appearance, ColorSchemeName, Image, StyleSheet, View} from 'react-native'
 import ImgButtonAva from "../common/ImgButtonAva"
 import CommonViewModel from "../CommonViewModel"
-import {COLORS, COLORS_NIGHT} from "../common/Constants"
 
 type Props = {
   showBack?: boolean
@@ -12,64 +11,48 @@ type Props = {
   onExit?: () => void
   onSwitchWallet?: () => void
 }
-type State = {
-  isDarkMode: boolean,
-  iconSufix: ColorSchemeName,
-}
 
-class Header extends Component<Props, State> {
-  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme())
+export default function Header(props: Props | Readonly<Props>) {
+  const [commonViewModel] = useState(new CommonViewModel(Appearance.getColorScheme()))
+  const [isDarkMode] = useState(commonViewModel.isDarkMode)
+  const [iconSufix] = useState<ColorSchemeName>(commonViewModel.iconSufix)
 
-  constructor(props: Props | Readonly<Props>) {
-    super(props)
-    this.state = {
-      isDarkMode: false,
-      iconSufix: undefined,
-    }
+  const onBackPress = () => {
+    props.onBack?.()
+  }
+  const onExitPress = () => {
+    props.onExit?.()
+  }
+  const onSwitchWalletPress = () => {
+    props.onSwitchWallet?.()
   }
 
-  componentDidMount(): void {
-    this.commonViewModel.isDarkMode.subscribe(value => this.setState({isDarkMode: value}))
-    this.commonViewModel.iconSufix.subscribe(value => this.setState({iconSufix: value}))
-  }
+  const logo = isDarkMode ? require("../assets/ava_logo_dark.png") : require("../assets/ava_logo_light.png")
+  const icon = isDarkMode ? require("../assets/icons/arrow_back_dark.png") : require("../assets/icons/arrow_back_light.png")
+  const iconExit = isDarkMode ? require("../assets/icons/logout_dark.png") : require("../assets/icons/logout_light.png")
+  const backBtn = props.showBack ? <ImgButtonAva src={icon} onPress={onBackPress}/> : undefined
+  const exitBtn = props.showExit ? <ImgButtonAva src={iconExit} onPress={onExitPress}/> : undefined
+  const iconSwitchWallet = isDarkMode ? require("../assets/icons/change_circle_dark.png") : require("../assets/icons/change_circle_light.png")
+  const switchWalletBtn = props.showSwitchWallet ?
+    <ImgButtonAva src={iconSwitchWallet} onPress={onSwitchWalletPress}/> : undefined
 
-  private onBackPress = () => {
-    this.props.onBack?.()
-  }
-  private onExitPress = () => {
-    this.props.onExit?.()
-  }
-  private onSwitchWalletPress = () => {
-    this.props.onSwitchWallet?.()
-  }
-
-  render() {
-    const THEME = this.state.isDarkMode ? COLORS_NIGHT : COLORS
-
-    const icon = this.state.isDarkMode ? require("../assets/icons/arrow_back_dark.png") : require("../assets/icons/arrow_back_light.png")
-    const iconExit = this.state.isDarkMode ? require("../assets/icons/logout_dark.png") : require("../assets/icons/logout_light.png")
-    const backBtn = this.props.showBack ? <ImgButtonAva src={icon} onPress={this.onBackPress}/> : undefined
-    const exitBtn = this.props.showExit ? <ImgButtonAva src={iconExit} onPress={this.onExitPress}/> : undefined
-    const iconSwitchWallet = this.state.isDarkMode ? require("../assets/icons/change_circle_dark.png") : require("../assets/icons/change_circle_light.png")
-    const switchWalletBtn = this.props.showSwitchWallet ? <ImgButtonAva src={iconSwitchWallet} onPress={this.onSwitchWalletPress}/> : undefined
-
-    return (
-      <View style={styles.horizontalLayout}>
-        <View style={styles.padded}>
-          <Image
-            accessibilityRole="image"
-            source={require('../assets/AvaLogo.png')}
-            style={styles.logo}/>
-        </View>
-        <View style={styles.atEnd}>
-          {exitBtn}
-        </View>
-        {switchWalletBtn}
-        {backBtn}
+  return (
+    <View style={styles.horizontalLayout}>
+      <View style={styles.padded}>
+        <Image
+          accessibilityRole="image"
+          source={logo}
+          style={styles.logo}/>
       </View>
-    );
-  }
+      <View style={styles.atEnd}>
+        {exitBtn}
+      </View>
+      {switchWalletBtn}
+      {backBtn}
+    </View>
+  )
 }
+
 
 const styles: any = StyleSheet.create({
 
@@ -93,6 +76,5 @@ const styles: any = StyleSheet.create({
     position: "absolute",
     right: 0,
   },
-});
+})
 
-export default Header;

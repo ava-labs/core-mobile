@@ -1,4 +1,4 @@
-import React, {Component} from "react"
+import React, {useEffect, useState} from "react"
 import {Alert, Appearance, Image, Modal, StyleSheet, View} from "react-native"
 import CommonViewModel from "../CommonViewModel"
 import MainViewViewModel from "./MainViewViewModel"
@@ -12,62 +12,55 @@ import Loader from "../common/Loader"
 import {COLORS, COLORS_NIGHT} from "../common/Constants"
 import AssetsView from "../portfolio/AssetsView"
 import {WalletProvider} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/Wallet"
+import {Subscription} from "rxjs"
 
 type Props = {
   wallet: WalletProvider,
   onExit: () => void,
   onSwitchWallet: () => void,
 }
-type State = {
-  isDarkMode: boolean
-  walletReady: boolean
-}
 
 const Tab = createBottomTabNavigator()
 
-class MainView extends Component<Props, State> {
-  viewModel!: MainViewViewModel
-  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme())
+export default function MainView(props: Props | Readonly<Props>) {
+  const [commonViewModel] = useState(new CommonViewModel(Appearance.getColorScheme()))
+  const [viewModel] = useState(new MainViewViewModel(props.wallet))
+  const [isDarkMode] = useState(commonViewModel.isDarkMode)
+  const [walletReady, setWalletReady] = useState(false)
 
-  constructor(props: Props | Readonly<Props>) {
-    super(props)
-    this.state = {
-      isDarkMode: false,
-      walletReady: false,
-    }
-    this.viewModel = new MainViewViewModel(props.wallet)
-  }
-
-  componentDidMount(): void {
-    this.commonViewModel.isDarkMode.subscribe(value => this.setState({isDarkMode: value}))
-
-    this.viewModel.onResetHdIndices()
+  useEffect(() => {
+    const disposables = new Subscription()
+    disposables.add(viewModel.onResetHdIndices()
       .subscribe({
         error: err => {
-          this.onExit()
-          Alert.alert("Error", err.message)
+          Alert.alert("Error", err.message, [
+            {text: 'Exit', onPress: () => onExit()},
+          ])
         },
-        complete: () => this.setState({walletReady: true}),
-      })
+        complete: () => setWalletReady(true),
+      }))
+
+    return () => {
+      disposables.unsubscribe()
+    }
+  }, [])
+
+  const onExit = (): void => {
+    props.onExit()
   }
 
-  componentWillUnmount(): void {
+  const onSwitchWallet = (): void => {
+    props.onSwitchWallet()
   }
 
-  private onExit = (): void => {
-    this.props.onExit()
-  }
-
-  private onSwitchWallet = (): void => {
-    this.props.onSwitchWallet()
-  }
-
-  private screenOptions = (params: any, isDarkMode: boolean): any => {
+  const screenOptions = (params: any, isDarkMode: boolean): any => {
     return {
-      tabBarIcon: ({focused, color, size}) => {
+      tabBarIcon: () => {
         let icon;
         if (params.route.name === 'Portfolio') {
           icon = isDarkMode ? require("../assets/icons/portfolio_dark.png") : require("../assets/icons/portfolio_light.png")
+        } else if (params.route.name === 'Assets') {
+          icon = isDarkMode ? require("../assets/icons/assets_dark.png") : require("../assets/icons/assets_light.png")
         } else if (params.route.name === 'Send') {
           icon = isDarkMode ? require("../assets/icons/send_dark.png") : require("../assets/icons/send_light.png")
         } else if (params.route.name === 'Earn') {
@@ -80,59 +73,46 @@ class MainView extends Component<Props, State> {
       },
     }
   }
+  const Portfolio = () => <PortfolioView wallet={viewModel.wallet} onSwitchWallet={onSwitchWallet} onExit={onExit}/>
+  const Assets = () => <AssetsView wallet={viewModel.wallet}/>
+  const Send = () => <SendView wallet={viewModel.wallet.value}/>
+  const Earn = () => <EarnView wallet={viewModel.wallet.value}/>
+  const Transactions = () => <TransactionsView wallet={viewModel.wallet.value}/>
+  const Nav = () => (
+    <NavigationContainer>
+      <Tab.Navigator sceneContainerStyle={styles.navContainer}
+                     screenOptions={props => screenOptions(props, isDarkMode)}
+                     tabBarOptions={{
+                       allowFontScaling: false,
+                       activeBackgroundColor: THEME.bg,
+                       inactiveBackgroundColor: THEME.bg,
+                       activeTintColor: THEME.primaryColor,
+                       inactiveTintColor: THEME.primaryColorLight,
+                     }}>
+        <Tab.Screen name="Portfolio" component={Portfolio}/>
+        <Tab.Screen name="Assets" component={Assets}/>
+        <Tab.Screen name="Send" component={Send}/>
+        <Tab.Screen name="Earn" component={Earn}/>
+        <Tab.Screen name="Transactions" component={Transactions}/>
+      </Tab.Navigator>
+    </NavigationContainer>
+  )
 
-  private Portfolio = () => <PortfolioView wallet={this.viewModel.wallet} onSwitchWallet={this.onSwitchWallet}
-                                           onExit={this.onExit}/>
-  private Assets = () => <AssetsView wallet={this.viewModel.wallet}/>
-  private Send = () => <SendView wallet={this.viewModel.wallet.value}/>
-  private Earn = () => <EarnView wallet={this.viewModel.wallet.value}/>
-  private Transactions = () => <TransactionsView wallet={this.viewModel.wallet.value}/>
-  // private Nav = () => ( FIXME: this doesnt work, if used wallet wont get balance updates, i dont know the reason
-  //   <NavigationContainer>
-  //     <Tab.Navigator >
-  //       <Tab.Screen name="Portfolio" component={this.Portfolio}/>
-  //       <Tab.Screen name="Send" component={this.Send}/>
-  //       <Tab.Screen name="Earn" component={this.Earn}/>
-  //       <Tab.Screen name="Transactions" component={this.Transactions}/>
-  //     </Tab.Navigator>
-  //   </NavigationContainer>
-  // )
+  let THEME = isDarkMode ? COLORS_NIGHT : COLORS
+  return (
+    <View style={styles.container}>
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={!walletReady}>
+        <Loader message={"Loading wallet"}/>
+      </Modal>
 
-  render(): Element {
-    let THEME = this.state.isDarkMode ? COLORS_NIGHT : COLORS
-    return (
       <View style={styles.container}>
-        <Modal
-          animationType="fade"
-          transparent={true}
-          visible={!this.state.walletReady}>
-          <Loader message={"Loading wallet"}/>
-        </Modal>
-
-        <View style={this.state.walletReady ? styles.visible : styles.invisible}>
-          <NavigationContainer>
-            <Tab.Navigator sceneContainerStyle={styles.navContainer}
-                           screenOptions={props => this.screenOptions(props, this.state.isDarkMode)}
-                           tabBarOptions={{
-                             allowFontScaling: false,
-                             activeBackgroundColor: THEME.bg,
-                             inactiveBackgroundColor: THEME.bg,
-                             activeTintColor: THEME.primaryColor,
-                             inactiveTintColor: THEME.primaryColorLight,
-                           }}>
-              <Tab.Screen name="Portfolio" component={this.Portfolio}/>
-              <Tab.Screen name="Assets" component={this.Assets}/>
-              <Tab.Screen name="Send" component={this.Send}/>
-              <Tab.Screen name="Earn" component={this.Earn}/>
-              <Tab.Screen name="Transactions" component={this.Transactions}/>
-            </Tab.Navigator>
-          </NavigationContainer>
-          {/*FIXME: this doesnt work, if used wallet wont get balance updates, i dont know the reason*/}
-          {/*{this.state.walletReady && this.Nav()} */}
-        </View>
+        {walletReady && Nav()}
       </View>
-    )
-  }
+    </View>
+  )
 }
 
 const styles = StyleSheet.create({
@@ -144,15 +124,5 @@ const styles = StyleSheet.create({
     paddingStart: 16,
     paddingEnd: 16,
   },
-  invisible: {
-    height: "100%",
-    display: "none"
-  },
-  visible: {
-    height: "100%",
-    display: "flex"
-  },
-
 })
 
-export default MainView

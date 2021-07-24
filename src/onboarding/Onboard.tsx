@@ -1,6 +1,5 @@
-import React, {Component} from 'react'
+import React, {useEffect, useState} from 'react'
 import {Appearance, Image, StyleSheet, View} from 'react-native'
-import CommonViewModel from '../CommonViewModel'
 import TextTitle from "../common/TextTitle"
 import ButtonAva from "../common/ButtonAva"
 import TextLabel from "../common/TextLabel"
@@ -10,87 +9,116 @@ import OnboardViewModel, {
   PrivateKeyLoaded,
   WalletLoadingResults
 } from "./OnboardViewModel"
+import {Subscription} from "rxjs"
+import CommonViewModel from "../CommonViewModel"
+import ImgButtonAva from "../common/ImgButtonAva"
 
 type Props = {
   onCreateWallet: () => void,
-  onAlreadyHaveWallet: () => void,
+  onLoginWithMnemonic: () => void,
+  onLoginWithPrivateKey: () => void,
+  onLoginWithKeystoreFile: () => void,
   onEnterWallet: (mnemonic: string) => void,
   onEnterSingletonWallet: (privateKey: string) => void,
 }
-type State = {
-  isDarkMode: boolean,
-  backgroundStyle: any,
-  showButtons: boolean
-}
 
-class Onboard extends Component<Props, State> {
-  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme())
-  viewModel: OnboardViewModel = new OnboardViewModel()
-  pkg = require('../../package.json')
+const pkg = require('../../package.json')
 
-  constructor(props: Props | Readonly<Props>) {
-    super(props)
-    this.state = {
-      isDarkMode: false,
-      showButtons: false,
-      backgroundStyle: {},
-    }
-  }
+export default function Onboard(props: Props | Readonly<Props>) {
+  const [commonViewModel] = useState(new CommonViewModel(Appearance.getColorScheme()))
+  const [viewModel] = useState(new OnboardViewModel())
+  const [showButtons, setShowButtons] = useState(false)
 
-  componentDidMount(): void {
-    this.commonViewModel.isDarkMode.subscribe(value => this.setState({isDarkMode: value}))
-    this.commonViewModel.backgroundStyle.subscribe(value => this.setState({backgroundStyle: value}))
-    this.viewModel.showButtons.subscribe(value => this.setState({showButtons: value}))
-
-    this.viewModel.promptForWalletLoadingIfExists().subscribe({
+  useEffect(() => {
+    const disposables = new Subscription()
+    disposables.add(viewModel.showButtons.subscribe(value => setShowButtons(value)))
+    viewModel.promptForWalletLoadingIfExists().subscribe({
       next: (value: WalletLoadingResults) => {
         if (value instanceof MnemonicLoaded) {
-          this.props.onEnterWallet(value.mnemonic)
+          props.onEnterWallet(value.mnemonic)
         } else if (value instanceof PrivateKeyLoaded) {
-          this.props.onEnterSingletonWallet(value.privateKey)
-        }else if (value instanceof NothingToLoad) {
+          props.onEnterSingletonWallet(value.privateKey)
+        } else if (value instanceof NothingToLoad) {
           //do nothing
         }
       },
       error: err => console.log(err.message)
     })
+    return () => {
+      disposables.unsubscribe()
+    }
+  }, [])
+
+  const onCreateWallet = (): void => {
+    props.onCreateWallet()
   }
 
-
-  componentWillUnmount(): void {
+  const onLoginWithMnemonic = (): void => {
+    props.onLoginWithMnemonic()
   }
 
-  onCreateWallet(): void {
-    this.props.onCreateWallet()
+  const onLoginWithPrivateKey = (): void => {
+    props.onLoginWithPrivateKey()
   }
 
-  onAlreadyHaveWallet(): void {
-    this.props.onAlreadyHaveWallet()
+  const onLoginWithKeystoreFile = (): void => {
+    props.onLoginWithKeystoreFile()
   }
 
-  render(): Element {
+  const logo = commonViewModel.isDarkMode ? require("../assets/ava_logo_dark.png") : require("../assets/ava_logo_light.png")
+  const loginRecoveryIcon = commonViewModel.isDarkMode ? require("../assets/icons/login_recovery_dark.png") : require("../assets/icons/login_recovery_dark.png") //fixme:  replace with light when its designed
+  const loginPrivateKey = commonViewModel.isDarkMode ? require("../assets/icons/private_key_dark.png") : require("../assets/icons/private_key_dark.png") //fixme:  replace with light when its designed
+  const loginKeystoreFile = commonViewModel.isDarkMode ? require("../assets/icons/keystore_dark.png") : require("../assets/icons/keystore_dark.png") //fixme:  replace with light when its designed
+
+  const buttonWithText = (icon: any, text: string, onPress: () => void) => {
     return (
-      <View style={styles.verticalLayout}>
-        <View style={styles.logoContainer}>
-          <Image
-            accessibilityRole="image"
-            source={require('../assets/AvaLogo.png')}
-            style={styles.logo}/>
-          <TextTitle text={"Avalanche Wallet"} textAlign={"center"} bold={true}/>
+      <View style={styles.buttonWithText}>
+        <View>
+          <ImgButtonAva src={icon} onPress={onPress} width={68} height={68}/>
         </View>
-        {this.state.showButtons && <ButtonAva text={"Create wallet"} onPress={() => this.onCreateWallet()}/>}
-        {this.state.showButtons &&
-        <ButtonAva text={"I already have wallet"} onPress={() => this.onAlreadyHaveWallet()}/>}
-        <TextLabel text={"v" + this.pkg.version}/>
+        <View style={[{width: 68}]}>
+          <TextLabel text={text} multiline/>
+        </View>
       </View>
     )
   }
+
+  return (
+    <View style={styles.verticalLayout}>
+      <View style={styles.logoContainer}>
+        <Image
+          accessibilityRole="image"
+          source={logo}
+          style={styles.logo}/>
+        <TextTitle text={"Avalanche Wallet"} textAlign={"center"} bold={true}/>
+      </View>
+
+      {showButtons && <View style={styles.roundButtons}>
+        {buttonWithText(loginRecoveryIcon, "Recovery Phrase", onLoginWithMnemonic)}
+        {buttonWithText(loginPrivateKey, "Private Key", onLoginWithPrivateKey)}
+        {buttonWithText(loginKeystoreFile, "Keystore File", onLoginWithKeystoreFile)}
+      </View>}
+
+      {showButtons && <ButtonAva text={"Create new wallet"} onPress={() => onCreateWallet()}/>}
+      <TextLabel text={"v" + pkg.version + " Fuji network"}/>
+    </View>
+  )
 }
 
+
 const styles = StyleSheet.create({
+    roundButtons: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-evenly",
+      marginBottom: 52 - 8,
+    },
     verticalLayout: {
       height: "100%",
       justifyContent: "flex-end",
+    },
+    buttonWithText: {
+      alignItems: "center",
     },
     logoContainer: {
       flexGrow: 1,
@@ -104,4 +132,3 @@ const styles = StyleSheet.create({
     },
   }
 )
-export default Onboard

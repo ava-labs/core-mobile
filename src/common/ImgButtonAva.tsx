@@ -1,4 +1,4 @@
-import React, {Component} from "react"
+import React, {useState} from "react"
 import {Appearance, Image, ImageSourcePropType, StyleSheet, TouchableNativeFeedback, View} from "react-native"
 import CommonViewModel from "../CommonViewModel"
 import {COLORS, COLORS_NIGHT} from "./Constants"
@@ -6,45 +6,32 @@ import {PlatformRules} from "./PlatformRules"
 
 type Props = {
   src: ImageSourcePropType,
-  onPress: () => void
+  onPress: () => void,
+  width?: number,
+  height?: number,
 }
-type State = {
-  isDarkMode: boolean,
+export default function ImgButtonAva(props: Props | Readonly<Props>) {
+  const [commonViewModel] = useState(new CommonViewModel(Appearance.getColorScheme()))
+  const [isDarkMode] = useState(commonViewModel.isDarkMode)
+
+  const onPress = () => {
+    PlatformRules.delayedPress(props.onPress)
+  }
+
+  let THEME = isDarkMode ? COLORS_NIGHT : COLORS
+  return (
+
+    <TouchableNativeFeedback
+      useForeground={true}
+      onPress={onPress}
+      background={TouchableNativeFeedback.Ripple(THEME.primaryColor, true)}>
+      <View style={styles.container}>
+        <Image source={props.src} style={[styles.button, {width: props.width || 24, height: props.height || 24 }]}/>
+      </View>
+    </TouchableNativeFeedback>
+  )
 }
 
-class ImgButtonAva extends Component<Props, State> {
-  commonViewModel: CommonViewModel = new CommonViewModel(Appearance.getColorScheme())
-
-  constructor(props: Props | Readonly<Props>) {
-    super(props)
-    this.state = {
-      isDarkMode: false,
-    }
-  }
-
-  componentDidMount(): void {
-    this.commonViewModel.isDarkMode.subscribe(value => this.setState({isDarkMode: value}))
-  }
-
-  private onPress = () => {
-    PlatformRules.delayedPress(this.props.onPress)
-  }
-
-  render(): Element {
-    let THEME = this.state.isDarkMode ? COLORS_NIGHT : COLORS
-    return (
-
-      <TouchableNativeFeedback
-        useForeground={true}
-        onPress={this.onPress}
-        background={TouchableNativeFeedback.Ripple(THEME.primaryColor, true)}>
-        <View style={styles.container}>
-          <Image source={this.props.src} style={styles.button}/>
-        </View>
-      </TouchableNativeFeedback>
-    )
-  }
-}
 
 const styles = StyleSheet.create({
   container: {
@@ -52,9 +39,6 @@ const styles = StyleSheet.create({
   },
   button: {
     margin: 10,
-    width: 24,
-    height: 24,
   },
 })
 
-export default ImgButtonAva
