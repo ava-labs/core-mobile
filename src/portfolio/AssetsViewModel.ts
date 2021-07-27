@@ -1,7 +1,6 @@
 import {BehaviorSubject, from, Observable} from "rxjs"
 import {Assets, Utils} from "@avalabs/avalanche-wallet-sdk"
 import {concatMap, map} from "rxjs/operators"
-import {WalletBalanceERC20} from "@avalabs/avalanche-wallet-sdk/src/Wallet/types"
 import {ERC20Balance} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/types"
 import {WalletProvider} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/Wallet"
 
@@ -24,10 +23,10 @@ export default class {
   constructor(wallet: BehaviorSubject<WalletProvider>) {
     this.wallet = wallet
 
-    this.tokenItems = from(Assets.addErc20Token("0xd00ae08403B9bbb9124bB305C09058E32C39A48c")).pipe(
+    this.tokenItems = from(Assets.getErc20Token("0xd00ae08403B9bbb9124bB305C09058E32C39A48c")).pipe(
       concatMap(() => this.wallet),
-      concatMap((wallet: WalletProvider) => wallet.updateBalanceERC20()),
-      map((tokens: WalletBalanceERC20) => {
+      concatMap((wallet: WalletProvider) => wallet.getBalanceERC20(["0xd00ae08403B9bbb9124bB305C09058E32C39A48c"])),
+      map((tokens: ERC20Balance[]) => {
         const tokenItems = []
         for (let tokenAddress in tokens) {
           const bal: ERC20Balance = tokens[tokenAddress]

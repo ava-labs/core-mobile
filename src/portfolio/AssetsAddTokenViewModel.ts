@@ -49,7 +49,7 @@ export default class {
   }
 
   onAddToken = (): Observable<boolean> => {
-    return from(Assets.addErc20Token(this.tokenContractAddress.value)).pipe(
+    return from(Assets.getErc20Token(this.tokenContractAddress.value)).pipe(
       map(() => true)
     )
   }

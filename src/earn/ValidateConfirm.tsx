@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react'
+import React, {useState} from 'react'
 import {Appearance, SafeAreaView, ScrollView, StyleSheet, View} from 'react-native'
 import CommonViewModel from '../CommonViewModel'
 import TextTitle from "../common/TextTitle"
@@ -18,13 +18,8 @@ type Props = {
 
 export default function ValidateConfirm(props: Props | Readonly<Props>) {
   const [commonViewModel] = useState(new CommonViewModel(Appearance.getColorScheme()))
-  const [isDarkMode, setIsDarkMode] = useState(false)
-  const [backgroundStyle, setBackgroundStyle] = useState({})
-
-  useEffect(() => {
-    commonViewModel.isDarkMode.subscribe(value => setIsDarkMode(value))
-    commonViewModel.backgroundStyle.subscribe(value => setBackgroundStyle(value))
-  }, [])
+  const [isDarkMode, setIsDarkMode] = useState(commonViewModel.isDarkMode)
+  const [backgroundStyle, setBackgroundStyle] = useState(commonViewModel.backgroundStyle)
 
   return (
     <SafeAreaView style={backgroundStyle}>
