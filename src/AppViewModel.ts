@@ -131,6 +131,7 @@ export default class {
         }
       }),
       map(() => {
+        this.setSelectedView(SelectedView.Onboard)
         BackHandler.exitApp()
         return new LogoutFinished()
       }),
