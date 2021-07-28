@@ -102,9 +102,7 @@ const OnboardScreen = () => {
     <Onboard
       onEnterSingletonWallet={onEnterSingletonWallet}
       onEnterWallet={onEnterWallet}
-      onLoginWithMnemonic={() => viewModel.setSelectedView(SelectedView.LoginWithMnemonic)}
-      onLoginWithPrivateKey={() => viewModel.setSelectedView(SelectedView.LoginWithPrivateKey)}
-      onLoginWithKeystoreFile={() => viewModel.setSelectedView(SelectedView.LoginWithKeystoreFile)}
+      onAlreadyHaveWallet={() => viewModel.setSelectedView(SelectedView.LoginWithMnemonic)}
       onCreateWallet={() => viewModel.setSelectedView(SelectedView.CreateWallet)}/>
   )
 }
