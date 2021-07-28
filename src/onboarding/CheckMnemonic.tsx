@@ -63,23 +63,32 @@ export default function CheckMnemonic(props: Props | Readonly<Props>) {
 
 
   return (
-    <ScrollView>
+    <ScrollView contentContainerStyle={styles.scrollView}>
       <Header showBack onBack={onBack}/>
       <TextTitle text={"Fill In Mnemonic Phrase Below"} size={20} textAlign={"center"}/>
-      <View style={styles.mnemonics}>
-        {mnemonics()}
+      <View style={[{height: 16}]}/>
+      <View style={styles.growContainer}>
+        <View style={styles.mnemonics}>
+          {mnemonics()}
+        </View>
       </View>
-      <ButtonAva text={"Verify"} onPress={onVerify}/>
+      <ButtonAva text={"Next"} onPress={onVerify}/>
     </ScrollView>
   )
 }
 
 const styles: any = StyleSheet.create({
+    scrollView: {
+      height: "100%",
+    },
     mnemonics: {
       marginHorizontal: 24,
       flexDirection: 'row',
       flexWrap: "wrap",
       justifyContent: "space-between"
+    },
+    growContainer: {
+      flexGrow: 1,
     },
     horizontalLayout: {
       flexDirection: 'row',
