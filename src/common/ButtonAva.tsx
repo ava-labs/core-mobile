@@ -3,7 +3,6 @@ import {Appearance, StyleSheet, TouchableNativeFeedback, View} from "react-nativ
 import CommonViewModel from "../CommonViewModel"
 import {COLORS, COLORS_NIGHT} from "./Constants"
 import TextButton from "./TextButton"
-import {PlatformRules} from "./PlatformRules"
 
 type Props = {
   text: string,
@@ -15,16 +14,12 @@ export default function ButtonAva(props: Props | Readonly<Props>) {
   const [commonViewModel] = useState(new CommonViewModel(Appearance.getColorScheme()))
   const [isDarkMode] = useState(commonViewModel.isDarkMode)
 
-  const onPress = () => {
-    PlatformRules.delayedPress(props.onPress)
-  }
-
   const THEME = isDarkMode ? COLORS_NIGHT : COLORS
   return (
     <TouchableNativeFeedback
       disabled={props.disabled}
       useForeground={true}
-      onPress={() => onPress()}
+      onPress={() => props.onPress()}
       background={TouchableNativeFeedback.Ripple(THEME.buttonRipple, false)}>
       <View style={[styles.button, {backgroundColor: props.disabled ? THEME.buttonPrimaryDisabled : THEME.buttonPrimary}]}>
         <TextButton disabled={props.disabled} text={props.text}/>
