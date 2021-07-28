@@ -76,6 +76,7 @@ export default function CheckMnemonic(props: Props | Readonly<Props>) {
 
 const styles: any = StyleSheet.create({
     mnemonics: {
+      marginHorizontal: 24,
       flexDirection: 'row',
       flexWrap: "wrap",
       justifyContent: "space-between"

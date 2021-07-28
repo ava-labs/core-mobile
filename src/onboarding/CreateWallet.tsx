@@ -3,11 +3,12 @@ import {Appearance, Image, StyleSheet, ToastAndroid, View} from 'react-native'
 import Header from '../mainView/Header'
 import CreateWalletViewModel from './CreateWalletViewModel'
 import TextTitle from "../common/TextTitle"
-import InputText from "../common/InputText"
 import ButtonAva from "../common/ButtonAva"
 import Clipboard from "@react-native-clipboard/clipboard"
 import CommonViewModel from "../CommonViewModel"
 import {COLORS, COLORS_NIGHT} from "../common/Constants"
+import ButtonAvaTextual from "../common/ButtonAvaTextual"
+import MnemonicInput from "./MnemonicInput"
 
 type Props = {
   onBack: () => void,
@@ -34,21 +35,35 @@ export default function CreateWallet(props: Props | Readonly<Props>) {
 
   const BalloonText = () => {
     const theme = commonViewModel.isDarkMode ? COLORS_NIGHT : COLORS
-    const balloonArrow = require("../assets/icons/balloon_arrow.png")
+    const balloonArrow = commonViewModel.isDarkMode ? require("../assets/icons/balloon_arrow_dark.png") : require("../assets/icons/balloon_arrow_light.png")
+    const warningIcon = commonViewModel.isDarkMode ? require("../assets/icons/warning_dark.png") : require("../assets/icons/warning_light.png")
     return <View style={[{marginTop: 24, alignItems: "center"}]}>
       <View style={[{
+        flexDirection: "row",
         marginHorizontal: 24,
         backgroundColor: theme.balloonBg,
+        alignItems: "center",
         borderRadius: 8,
-        padding: 12,
+        padding: 16,
       }]}>
+        <Image source={warningIcon} style={[{ width: 32, height: 32, marginRight: 12}]}/>
         <TextTitle
           color={theme.balloonText}
-          text={"The recovery phrase is the only key to your wallet. Do not share it with anyone. Write it down and store it in a secure location!"}
-          lineHeight={24} size={16}/>
+          text={"The recovery phrase is the only key to your wallet. Do not share it with anyone."}
+          lineHeight={17} size={14}/>
       </View>
       <Image source={balloonArrow}/>
     </View>
+  }
+
+  const mnemonics = () => {
+    const mnemonics: Element[] = []
+    mnemonic.split(" ").forEach((value, key) => {
+      mnemonics.push(
+        <MnemonicInput key={key} keyNum={key} text={value} editable={false}/>
+      )
+    })
+    return mnemonics
   }
 
   return (
@@ -61,11 +76,13 @@ export default function CreateWallet(props: Props | Readonly<Props>) {
         <TextTitle text={"Write down the recovery phrase"} size={16} textAlign={"center"}/>
         <BalloonText/>
         <View style={[{height: 8}]}/>
-        <InputText multiline={true} value={mnemonic} editable={false}/>
-        <ButtonAva text={"Copy to clipboard"} onPress={copyToClipboard}/>
+        <View style={styles.mnemonics}>
+          {mnemonics()}
+        </View>
       </View>
 
-      <ButtonAva text={"I saved my phrase somewhere safe"} onPress={onSavedMyPhrase}/>
+      <ButtonAvaTextual text={"Copy phrase"} onPress={copyToClipboard}/>
+      <ButtonAva text={"Next"} onPress={onSavedMyPhrase}/>
     </View>
   )
 }
@@ -77,6 +94,12 @@ const styles = StyleSheet.create({
     },
     growContainer: {
       flexGrow: 1,
+    },
+    mnemonics: {
+      marginHorizontal: 24,
+      flexDirection: 'row',
+      flexWrap: "wrap",
+      justifyContent: "space-between",
     },
   }
 )
