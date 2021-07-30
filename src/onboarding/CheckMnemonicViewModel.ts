@@ -71,26 +71,6 @@ export default class {
         }
         return true
       }),
-      // switchMap(mnemonic => BiometricsSDK.saveWalletKey(mnemonic)),
-      // switchMap(credentials => {
-      //   if (credentials === false) {
-      //     throw Error("Error saving mnemonic")
-      //   }
-      //   return BiometricsSDK.loadWalletKey(BiometricsSDK.storeOptions)
-      // }),
-      // map(credentials => {
-      //   if (credentials === false) {
-      //     throw Error("Error saving mnemonic")
-      //   }
-      //   return true
-      // }),
-      // catchError((err: Error) => {
-      //   return from(BiometricsSDK.clearWalletKey()).pipe(
-      //     tap(() => {
-      //       throw err
-      //     })
-      //   )
-      // })
     )
   }
 
