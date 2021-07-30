@@ -125,10 +125,16 @@ const CheckMnemonicScreen = () => {
   )
 }
 
+const onPinSet = (pin: string): void => {
+  viewModel.onPinCreated(pin).subscribe({
+    error: err => Alert.alert(err.message)
+  })
+}
+
 const CreatePinScreen = () => {
   return (
     <CreatePIN
-      onPinSet={pin => {}}
+      onPinSet={onPinSet}
       onBack={() => viewModel.onBackPressed()}/>
   )
 }
@@ -176,7 +182,7 @@ const CreateWalletFlow = () => {
 
 const RootScreen = () => {
   return (
-    <RootStack.Navigator headerMode="none" detachInactiveScreens={false} mode="modal">
+    <RootStack.Navigator headerMode="none" detachInactiveScreens={true} mode="modal">
       <RootStack.Screen name="Onboard" component={OnboardScreen}/>
       <RootStack.Screen name="Create Wallet flow" component={CreateWalletFlow}/>
       <RootStack.Screen name="Login with mnemonic" component={LoginWithMnemonicScreen}/>

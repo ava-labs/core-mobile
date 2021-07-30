@@ -25,6 +25,22 @@ export default class {
     WalletSDK.setNetwork(NetworkConstants.TestnetConfig)
   }
 
+  onPinCreated = (pin: string): Observable<boolean> => {
+    return from(BiometricsSDK.savePin(pin)).pipe(
+      switchMap(pinSaved => {
+        if (pinSaved === false) {
+          throw Error("Pin not saved")
+        }
+        return BiometricsSDK.storeWalletWithBiometry((this.wallet as MnemonicWallet).mnemonic)
+      }),
+      map(() => {
+        this.setSelectedView(SelectedView.Main)
+        return true
+      })
+    )
+  }
+
+
   onEnterWallet = (mnemonic: string): Observable<boolean> => {
     return of(mnemonic).pipe(
       map((mnemonic: string) => WalletSDK.getMnemonicValet(mnemonic)),
