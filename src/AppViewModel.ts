@@ -9,11 +9,12 @@ import {WalletProvider} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/Wallet"
 export enum SelectedView {
   Onboard,
   CreateWallet,
+  CheckMnemonic,
+  CreatePin,
   LoginWithMnemonic,
   LoginWithPrivateKey,
   LoginWithKeystoreFile,
   Main,
-  CheckMnemonic,
 }
 
 export default class {
@@ -152,6 +153,9 @@ export default class {
         return false
       case SelectedView.CreateWallet:
         this.setSelectedView(SelectedView.Onboard)
+        return true
+      case SelectedView.CreatePin:
+        this.setSelectedView(SelectedView.CheckMnemonic)
         return true
       case SelectedView.LoginWithMnemonic:
       case SelectedView.LoginWithPrivateKey:

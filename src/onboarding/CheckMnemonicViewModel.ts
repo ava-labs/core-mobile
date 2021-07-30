@@ -1,6 +1,5 @@
-import {BehaviorSubject, from, Observable, zip} from "rxjs"
-import {catchError, map, switchMap, take, tap} from "rxjs/operators"
-import BiometricsSDK from "../BiometricsSDK"
+import {BehaviorSubject, Observable, zip} from "rxjs"
+import {map, take, tap} from "rxjs/operators"
 
 const NUMBER_OF_WORDS_TO_TYPE = 4
 
@@ -70,28 +69,28 @@ export default class {
         if (isInvalid) {
           throw Error("no match")
         }
-        return mnemonic
-      }),
-      switchMap(mnemonic => BiometricsSDK.saveWalletKey(mnemonic)),
-      switchMap(credentials => {
-        if (credentials === false) {
-          throw Error("Error saving mnemonic")
-        }
-        return BiometricsSDK.loadWalletKey(BiometricsSDK.storeOptions)
-      }),
-      map(credentials => {
-        if (credentials === false) {
-          throw Error("Error saving mnemonic")
-        }
         return true
       }),
-      catchError((err: Error) => {
-        return from(BiometricsSDK.clearWalletKey()).pipe(
-          tap(() => {
-            throw err
-          })
-        )
-      })
+      // switchMap(mnemonic => BiometricsSDK.saveWalletKey(mnemonic)),
+      // switchMap(credentials => {
+      //   if (credentials === false) {
+      //     throw Error("Error saving mnemonic")
+      //   }
+      //   return BiometricsSDK.loadWalletKey(BiometricsSDK.storeOptions)
+      // }),
+      // map(credentials => {
+      //   if (credentials === false) {
+      //     throw Error("Error saving mnemonic")
+      //   }
+      //   return true
+      // }),
+      // catchError((err: Error) => {
+      //   return from(BiometricsSDK.clearWalletKey()).pipe(
+      //     tap(() => {
+      //       throw err
+      //     })
+      //   )
+      // })
     )
   }
 

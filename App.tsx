@@ -28,6 +28,7 @@ import {createStackNavigator} from '@react-navigation/stack'
 import {NavigationContainer, NavigationContainerRef, Theme} from "@react-navigation/native"
 import CheckMnemonic from "./src/onboarding/CheckMnemonic"
 import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
+import CreatePIN from "./src/onboarding/CreatePIN"
 
 type AppProps = {}
 
@@ -118,9 +119,17 @@ const CreateWalletScreen = () => {
 const CheckMnemonicScreen = () => {
   return (
     <CheckMnemonic
-      onSuccess={() => viewModel.setSelectedView(SelectedView.Main)}
+      onSuccess={() => viewModel.setSelectedView(SelectedView.CreatePin)}
       onBack={() => viewModel.onBackPressed()}
       mnemonic={(viewModel.wallet as MnemonicWallet).mnemonic}/>
+  )
+}
+
+const CreatePinScreen = () => {
+  return (
+    <CreatePIN
+      onPinSet={pin => {}}
+      onBack={() => viewModel.onBackPressed()}/>
   )
 }
 
@@ -160,6 +169,7 @@ const CreateWalletFlow = () => {
     <CreateWalletStack.Navigator headerMode="none" detachInactiveScreens={false} mode="card">
       <CreateWalletStack.Screen name="Create Wallet" component={CreateWalletScreen}/>
       <CreateWalletStack.Screen name="Check mnemonic" component={CheckMnemonicScreen}/>
+      <CreateWalletStack.Screen name="Create pin" component={CreatePinScreen}/>
     </CreateWalletStack.Navigator>
   )
 }
@@ -205,6 +215,9 @@ export default function App(props: AppProps | Readonly<AppProps>) {
         break;
       case SelectedView.CheckMnemonic:
         navigationRef.current?.navigate("Create Wallet flow", {screen: "Check mnemonic"})
+        break;
+      case SelectedView.CreatePin:
+        navigationRef.current?.navigate("Create Wallet flow", {screen: "Create pin"})
         break;
       case SelectedView.LoginWithMnemonic:
         navigationRef.current?.navigate("Login with mnemonic")
