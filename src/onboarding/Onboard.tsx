@@ -11,7 +11,7 @@ import OnboardViewModel, {
 } from "./OnboardViewModel"
 import {Subscription} from "rxjs"
 import CommonViewModel from "../CommonViewModel"
-import ButtonAvaTextual from "../common/ButtonAvaTextual"
+import ButtonAvaSecondary from "../common/ButtonAvaSecondary"
 
 type Props = {
   onCreateWallet: () => void,
@@ -92,7 +92,7 @@ export default function Onboard(props: Props | Readonly<Props>) {
       {/*  {buttonWithText(loginKeystoreFile, "Keystore File", onLoginWithKeystoreFile)}*/}
       {/*</View>}*/}
 
-      {showButtons && <ButtonAvaTextual text={"I already have a wallet"} onPress={() => onAlreadyHaveWallet()}/>}
+      {showButtons && <ButtonAvaSecondary text={"I already have a wallet"} onPress={() => onAlreadyHaveWallet()}/>}
       {showButtons && <ButtonAva text={"Create new wallet"} onPress={() => onCreateWallet()}/>}
       <TextLabel text={"v" + pkg.version + " Fuji network"}/>
     </View>

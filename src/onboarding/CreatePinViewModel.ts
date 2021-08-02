@@ -37,7 +37,7 @@ export function useCreatePin(): [string, string, DotView[], (pinKey: PinKeys) =>
   }, [chosenPin, confirmedPin, chosenPinEntered])
 
   useEffect(() => {
-    setTitle(chosenPinEntered ? "Confirm password" : "Create password")
+    setTitle(chosenPinEntered ? "Confirm PIN" : "Create PIN")
   }, [chosenPinEntered])
 
   function resetConfirmPinProcess() {
