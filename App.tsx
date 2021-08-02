@@ -29,6 +29,7 @@ import {NavigationContainer, NavigationContainerRef, Theme} from "@react-navigat
 import CheckMnemonic from "./src/onboarding/CheckMnemonic"
 import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 import CreatePIN from "./src/onboarding/CreatePIN"
+import BiometricLogin from "./src/onboarding/BiometricLogin"
 
 type AppProps = {}
 
@@ -121,7 +122,7 @@ const CheckMnemonicScreen = () => {
     <CheckMnemonic
       onSuccess={() => viewModel.setSelectedView(SelectedView.CreatePin)}
       onBack={() => viewModel.onBackPressed()}
-      mnemonic={(viewModel.wallet as MnemonicWallet).mnemonic}/>
+      mnemonic={(viewModel.wallet as MnemonicWallet)?.mnemonic}/>
   )
 }
 
@@ -136,6 +137,15 @@ const CreatePinScreen = () => {
     <CreatePIN
       onPinSet={onPinSet}
       onBack={() => viewModel.onBackPressed()}/>
+  )
+}
+
+const BiometricLoginScreen = () => {
+  return (
+    <BiometricLogin
+      wallet={viewModel.wallet as MnemonicWallet}
+      onBiometrySet={() => viewModel.setSelectedView(SelectedView.Main)}
+      onSkip={() => viewModel.setSelectedView(SelectedView.Main)}/>
   )
 }
 
@@ -176,6 +186,7 @@ const CreateWalletFlow = () => {
       <CreateWalletStack.Screen name="Create Wallet" component={CreateWalletScreen}/>
       <CreateWalletStack.Screen name="Check mnemonic" component={CheckMnemonicScreen}/>
       <CreateWalletStack.Screen name="Create pin" component={CreatePinScreen}/>
+      <CreateWalletStack.Screen name="Biometric login" component={BiometricLoginScreen}/>
     </CreateWalletStack.Navigator>
   )
 }
@@ -224,6 +235,9 @@ export default function App(props: AppProps | Readonly<AppProps>) {
         break;
       case SelectedView.CreatePin:
         navigationRef.current?.navigate("Create Wallet flow", {screen: "Create pin"})
+        break;
+      case SelectedView.BiometricLogin:
+        navigationRef.current?.navigate("Create Wallet flow", {screen: "Biometric login"})
         break;
       case SelectedView.LoginWithMnemonic:
         navigationRef.current?.navigate("Login with mnemonic")
