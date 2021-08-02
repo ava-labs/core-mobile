@@ -92,12 +92,21 @@ export default class BiometricsSDK {
   }
 
   static clearWalletKey = (): Promise<boolean> => {
-    return Keychain.resetGenericPassword()
+    return Keychain.resetGenericPassword(BiometricsSDK.storePinOptions).then(value =>
+      Keychain.resetGenericPassword(BiometricsSDK.storeOptions)
+    )
   }
 
   static canUseBiometry = (): Promise<boolean> => {
     return getSupportedBiometryType().then(value => {
       return value !== null
+    })
+  }
+
+  static getBiometryType = (): Promise<string> => {
+    return getSupportedBiometryType().then(value => {
+      console.log(value)
+      return value as string
     })
   }
 }

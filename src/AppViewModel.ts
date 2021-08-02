@@ -11,6 +11,7 @@ export enum SelectedView {
   CreateWallet,
   CheckMnemonic,
   CreatePin,
+  BiometricLogin,
   LoginWithMnemonic,
   LoginWithPrivateKey,
   LoginWithKeystoreFile,
@@ -27,14 +28,11 @@ export default class {
 
   onPinCreated = (pin: string): Observable<boolean> => {
     return from(BiometricsSDK.savePin(pin)).pipe(
-      switchMap(pinSaved => {
+      map(pinSaved => {
         if (pinSaved === false) {
           throw Error("Pin not saved")
         }
-        return BiometricsSDK.storeWalletWithBiometry((this.wallet as MnemonicWallet).mnemonic)
-      }),
-      map(() => {
-        this.setSelectedView(SelectedView.Main)
+        this.setSelectedView(SelectedView.BiometricLogin)
         return true
       })
     )
@@ -170,8 +168,14 @@ export default class {
       case SelectedView.CreateWallet:
         this.setSelectedView(SelectedView.Onboard)
         return true
+      case SelectedView.CheckMnemonic:
+        this.setSelectedView(SelectedView.CreateWallet)
+        return true
       case SelectedView.CreatePin:
         this.setSelectedView(SelectedView.CheckMnemonic)
+        return true
+      case SelectedView.BiometricLogin:
+        this.setSelectedView(SelectedView.CreatePin)
         return true
       case SelectedView.LoginWithMnemonic:
       case SelectedView.LoginWithPrivateKey:
@@ -180,9 +184,6 @@ export default class {
         return true
       case SelectedView.Main:
         return false
-      case SelectedView.CheckMnemonic:
-        this.setSelectedView(SelectedView.CreateWallet)
-        return true
 
     }
   }
