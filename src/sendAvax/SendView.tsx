@@ -7,10 +7,10 @@ import ButtonAva from "../common/ButtonAva"
 import Header from "../mainView/Header"
 import SendViewModel from "./SendViewModel"
 import TextTitle from "../common/TextTitle"
-import {WalletProvider} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/Wallet"
+import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 
 type Props = {
-  wallet: WalletProvider,
+  wallet: MnemonicWallet,
 }
 
 export default function SendView(props: Props | Readonly<Props>) {
