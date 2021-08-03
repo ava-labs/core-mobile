@@ -1,92 +1,52 @@
 import WalletSDK from './WalletSDK'
 import {asyncScheduler, AsyncSubject, BehaviorSubject, concat, from, Observable, of} from 'rxjs'
-import {MnemonicWallet, NetworkConstants, SingletonWallet} from "@avalabs/avalanche-wallet-sdk"
-import {catchError, concatMap, map, subscribeOn, switchMap, tap} from "rxjs/operators"
+import {MnemonicWallet, NetworkConstants} from "@avalabs/avalanche-wallet-sdk"
+import {concatMap, map, subscribeOn} from "rxjs/operators"
 import BiometricsSDK from "./BiometricsSDK"
 import {BackHandler} from "react-native"
-import {WalletProvider} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/Wallet"
 
 export enum SelectedView {
   Onboard,
   CreateWallet,
-  LoginWithMnemonic,
-  LoginWithPrivateKey,
-  LoginWithKeystoreFile,
-  Main,
   CheckMnemonic,
+  CreatePin,
+  BiometricStore,
+  LoginWithMnemonic,
+  PinOrBiometryLogin,
+  Main,
 }
 
 export default class {
-  wallet: WalletProvider | null = null
+  wallet: MnemonicWallet | null = null
   selectedView: BehaviorSubject<SelectedView> = new BehaviorSubject<SelectedView>(SelectedView.Onboard)
 
   onComponentMount = (): void => {
     WalletSDK.setNetwork(NetworkConstants.TestnetConfig)
+    BiometricsSDK.hasWalletStored().then((value) => {
+      if (value) {
+        this.setSelectedView(SelectedView.PinOrBiometryLogin)
+      }
+    })
   }
+
+  onPinCreated = (pin: string): Observable<boolean> => {
+    return from(BiometricsSDK.storeWalletWithPin(pin, this.wallet?.mnemonic!)).pipe(
+      map(pinSaved => {
+        if (pinSaved === false) {
+          throw Error("Pin not saved")
+        }
+        this.setSelectedView(SelectedView.BiometricStore)
+        return true
+      })
+    )
+  }
+
 
   onEnterWallet = (mnemonic: string): Observable<boolean> => {
     return of(mnemonic).pipe(
       map((mnemonic: string) => WalletSDK.getMnemonicValet(mnemonic)),
       map((wallet: MnemonicWallet) => {
         this.wallet = wallet
-        return wallet.mnemonic
-      }),
-      switchMap(mnemonic => BiometricsSDK.saveWalletKey(mnemonic)),
-      switchMap(credentials => {
-        if (credentials === false) {
-          throw Error("Error saving mnemonic")
-        }
-        return BiometricsSDK.loadWalletKey(BiometricsSDK.storeOptions)
-      }),
-      map(credentials => {
-        if (credentials === false) {
-          throw Error("Error saving mnemonic")
-        }
-        return true
-      }),
-      catchError((err: Error) => {
-        return from(BiometricsSDK.clearWalletKey()).pipe(
-          tap(() => {
-            throw err
-          })
-        )
-      }),
-      map(() => {
-        this.setSelectedView(SelectedView.Main)
-        return true
-      }),
-      subscribeOn(asyncScheduler)
-    )
-  }
-
-  onEnterSingletonWallet = (privateKey: string): Observable<boolean> => {
-    return of(privateKey).pipe(
-      map((privateKey: string) => [WalletSDK.getSingletonWallet(privateKey), privateKey]),
-      map(([wallet, privateKey]) => {
-        this.wallet = wallet as SingletonWallet
-        return privateKey as string
-      }),
-      switchMap(privateKey => BiometricsSDK.saveWalletKey(privateKey)),
-      switchMap(credentials => {
-        if (credentials === false) {
-          throw Error("Error saving private key")
-        }
-        return BiometricsSDK.loadWalletKey(BiometricsSDK.storeOptions)
-      }),
-      map(credentials => {
-        if (credentials === false) {
-          throw Error("Error saving private key")
-        }
-        return true
-      }),
-      catchError((err: Error) => {
-        return from(BiometricsSDK.clearWalletKey()).pipe(
-          tap(() => {
-            throw err
-          })
-        )
-      }),
-      map(() => {
         this.setSelectedView(SelectedView.Main)
         return true
       }),
@@ -153,16 +113,21 @@ export default class {
       case SelectedView.CreateWallet:
         this.setSelectedView(SelectedView.Onboard)
         return true
+      case SelectedView.CheckMnemonic:
+        this.setSelectedView(SelectedView.CreateWallet)
+        return true
+      case SelectedView.CreatePin:
+        this.setSelectedView(SelectedView.CheckMnemonic)
+        return true
+      case SelectedView.BiometricStore:
+        this.setSelectedView(SelectedView.CreatePin)
+        return true
       case SelectedView.LoginWithMnemonic:
-      case SelectedView.LoginWithPrivateKey:
-      case SelectedView.LoginWithKeystoreFile:
+      case SelectedView.PinOrBiometryLogin:
         this.setSelectedView(SelectedView.Onboard)
         return true
       case SelectedView.Main:
         return false
-      case SelectedView.CheckMnemonic:
-        this.setSelectedView(SelectedView.CreateWallet)
-        return true
 
     }
   }

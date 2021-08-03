@@ -22,12 +22,12 @@ import MainView from "./src/mainView/MainView"
 import {COLORS, COLORS_NIGHT} from "./src/common/Constants"
 import {Subscription} from "rxjs"
 import HdWalletLogin from "./src/login/HdWalletLogin"
-import PrivateKeyLogin from "./src/login/PrivateKeyLogin"
-import KeystoreLogin from "./src/login/KeystoreLogin"
 import {createStackNavigator} from '@react-navigation/stack'
 import {NavigationContainer, NavigationContainerRef, Theme} from "@react-navigation/native"
 import CheckMnemonic from "./src/onboarding/CheckMnemonic"
-import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
+import CreatePIN from "./src/onboarding/CreatePIN"
+import BiometricLogin from "./src/onboarding/BiometricLogin"
+import PinOrBiometryLogin from "./src/login/PinOrBiometryLogin"
 
 type AppProps = {}
 
@@ -63,12 +63,6 @@ const onEnterWallet = (mnemonic: string): void => {
   })
 }
 
-const onEnterSingletonWallet = (constKey: string): void => {
-  viewModel.onEnterSingletonWallet(constKey).subscribe({
-    error: err => Alert.alert(err.message),
-  })
-}
-
 const onSavedMnemonic = (mnemonic: string): void => {
   viewModel.onSavedMnemonic(mnemonic)
 }
@@ -100,11 +94,8 @@ const onSwitchWallet = (): void => {
 const OnboardScreen = () => {
   return (
     <Onboard
-      onEnterSingletonWallet={onEnterSingletonWallet}
       onEnterWallet={onEnterWallet}
-      onLoginWithMnemonic={() => viewModel.setSelectedView(SelectedView.LoginWithMnemonic)}
-      onLoginWithPrivateKey={() => viewModel.setSelectedView(SelectedView.LoginWithPrivateKey)}
-      onLoginWithKeystoreFile={() => viewModel.setSelectedView(SelectedView.LoginWithKeystoreFile)}
+      onAlreadyHaveWallet={() => viewModel.setSelectedView(SelectedView.LoginWithMnemonic)}
       onCreateWallet={() => viewModel.setSelectedView(SelectedView.CreateWallet)}/>
   )
 }
@@ -120,9 +111,32 @@ const CreateWalletScreen = () => {
 const CheckMnemonicScreen = () => {
   return (
     <CheckMnemonic
-      onSuccess={() => viewModel.setSelectedView(SelectedView.Main)}
+      onSuccess={() => viewModel.setSelectedView(SelectedView.CreatePin)}
       onBack={() => viewModel.onBackPressed()}
-      mnemonic={(viewModel.wallet as MnemonicWallet).mnemonic}/>
+      mnemonic={viewModel.wallet?.mnemonic || ""}/>
+  )
+}
+
+const onPinSet = (pin: string): void => {
+  viewModel.onPinCreated(pin).subscribe({
+    error: err => Alert.alert(err.message)
+  })
+}
+
+const CreatePinScreen = () => {
+  return (
+    <CreatePIN
+      onPinSet={onPinSet}
+      onBack={() => viewModel.onBackPressed()}/>
+  )
+}
+
+const BiometricLoginScreen = () => {
+  return (
+    <BiometricLogin
+      wallet={viewModel.wallet!}
+      onBiometrySet={() => viewModel.setSelectedView(SelectedView.Main)}
+      onSkip={() => viewModel.setSelectedView(SelectedView.Main)}/>
   )
 }
 
@@ -134,19 +148,12 @@ const LoginWithMnemonicScreen = () => {
   )
 }
 
-const LoginWithPrivateKeyScreen = () => {
+const LoginWithPinOrBiometryScreen = () => {
   return (
-    <PrivateKeyLogin
-      onEnterSingletonWallet={onEnterSingletonWallet}
-      onBack={() => viewModel.onBackPressed()}/>
-  )
-}
-
-const LoginWithKeystoreFileScreen = () => {
-  return (
-    <KeystoreLogin
+    <PinOrBiometryLogin
+      onBack={() => viewModel.onBackPressed()}
       onEnterWallet={onEnterWallet}
-      onBack={() => viewModel.onBackPressed()}/>
+    />
   )
 }
 
@@ -162,18 +169,19 @@ const CreateWalletFlow = () => {
     <CreateWalletStack.Navigator headerMode="none" detachInactiveScreens={false} mode="card">
       <CreateWalletStack.Screen name="Create Wallet" component={CreateWalletScreen}/>
       <CreateWalletStack.Screen name="Check mnemonic" component={CheckMnemonicScreen}/>
+      <CreateWalletStack.Screen name="Create pin" component={CreatePinScreen}/>
+      <CreateWalletStack.Screen name="Biometric login" component={BiometricLoginScreen}/>
     </CreateWalletStack.Navigator>
   )
 }
 
 const RootScreen = () => {
   return (
-    <RootStack.Navigator headerMode="none" detachInactiveScreens={false} mode="modal">
+    <RootStack.Navigator headerMode="none" detachInactiveScreens={true} mode="modal">
       <RootStack.Screen name="Onboard" component={OnboardScreen}/>
       <RootStack.Screen name="Create Wallet flow" component={CreateWalletFlow}/>
       <RootStack.Screen name="Login with mnemonic" component={LoginWithMnemonicScreen}/>
-      <RootStack.Screen name="Login with private key" component={LoginWithPrivateKeyScreen}/>
-      <RootStack.Screen name="Login with keystore file" component={LoginWithKeystoreFileScreen}/>
+      <RootStack.Screen name="Login" component={LoginWithPinOrBiometryScreen}/>
       <RootStack.Screen name="Wallet" component={WalletScreen}/>
     </RootStack.Navigator>
   )
@@ -208,14 +216,17 @@ export default function App(props: AppProps | Readonly<AppProps>) {
       case SelectedView.CheckMnemonic:
         navigationRef.current?.navigate("Create Wallet flow", {screen: "Check mnemonic"})
         break;
+      case SelectedView.CreatePin:
+        navigationRef.current?.navigate("Create Wallet flow", {screen: "Create pin"})
+        break;
+      case SelectedView.BiometricStore:
+        navigationRef.current?.navigate("Create Wallet flow", {screen: "Biometric login"})
+        break;
       case SelectedView.LoginWithMnemonic:
         navigationRef.current?.navigate("Login with mnemonic")
         break;
-      case SelectedView.LoginWithPrivateKey:
-        navigationRef.current?.navigate("Login with private key")
-        break;
-      case SelectedView.LoginWithKeystoreFile:
-        navigationRef.current?.navigate("Login with keystore file")
+      case SelectedView.PinOrBiometryLogin:
+        navigationRef.current?.navigate("Login")
         break;
       case SelectedView.Main:
         navigationRef.current?.navigate("Wallet")

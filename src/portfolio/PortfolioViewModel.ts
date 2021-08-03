@@ -1,13 +1,13 @@
 import {BehaviorSubject, from} from "rxjs"
 import WalletSDK from "../WalletSDK"
 import {delay, retryWhen, tap} from "rxjs/operators"
-import {WalletProvider} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/Wallet"
+import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 
 export default class {
   avaxPrice: BehaviorSubject<number> = new BehaviorSubject(0)
-  wallet: BehaviorSubject<WalletProvider>
+  wallet: BehaviorSubject<MnemonicWallet>
 
-  constructor(wallet: BehaviorSubject<WalletProvider>) {
+  constructor(wallet: BehaviorSubject<MnemonicWallet>) {
     this.wallet = wallet
   }
 

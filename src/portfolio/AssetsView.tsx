@@ -9,10 +9,10 @@ import {BehaviorSubject} from "rxjs"
 import TabBarAva from "../common/TabBarAva"
 import ButtonAva from "../common/ButtonAva"
 import AssetsAddToken from "./AssetsAddToken"
-import {WalletProvider} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/Wallet"
+import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 
 type Props = {
-  wallet: BehaviorSubject<WalletProvider>,
+  wallet: BehaviorSubject<MnemonicWallet>,
 }
 
 export default function AssetsView(props: Props | Readonly<Props>) {

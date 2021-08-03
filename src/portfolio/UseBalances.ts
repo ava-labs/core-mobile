@@ -1,6 +1,5 @@
-import {BN, Utils} from "@avalabs/avalanche-wallet-sdk"
+import {BN, MnemonicWallet, Utils} from "@avalabs/avalanche-wallet-sdk"
 import {AssetBalanceP, WalletBalanceX} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/types"
-import {WalletProvider} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/Wallet"
 import {useEffect, useState} from "react"
 
 enum WalletEvents {
@@ -56,12 +55,12 @@ export function useBalances(w: WalletProvider) {
     return Utils.bnToAvaxC(balanceC) + ' ' + symbol
   }
 
-  const fetchStake = async (wallet: WalletProvider) => {
+  const fetchStake = async (wallet: MnemonicWallet) => {
     const stake = await wallet.getStake()
     return stake === undefined ? new BN(0) : stake
   }
 
-  const stakeToReadableString = async (wallet: WalletProvider) => {
+  const stakeToReadableString = async (wallet: MnemonicWallet) => {
     const stake = await fetchStake(wallet)
     const symbol = 'AVAX'
     return Utils.bnToLocaleString(stake, 9) + ' ' + symbol

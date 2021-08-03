@@ -5,13 +5,12 @@ import Header from "../mainView/Header"
 import Balances from "../portfolio/Balances"
 import TabbedAddressCards from "../portfolio/TabbedAddressCards"
 import {BehaviorSubject, Subscription} from "rxjs"
-import {WalletProvider} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/Wallet"
 import {MnemonicWallet, NetworkConstants} from "@avalabs/avalanche-wallet-sdk"
 import {useAddresses} from "@avalabs/wallet-react-components/src/hooks/useAddresses"
 import TextLabel from "../common/TextLabel"
 
 type Props = {
-  wallet: BehaviorSubject<WalletProvider>,
+  wallet: BehaviorSubject<MnemonicWallet>,
   onExit: () => void,
   onSwitchWallet: () => void,
 }

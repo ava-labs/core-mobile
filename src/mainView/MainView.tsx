@@ -11,11 +11,11 @@ import TransactionsView from "../transactions/TransactionsView"
 import Loader from "../common/Loader"
 import {COLORS, COLORS_NIGHT} from "../common/Constants"
 import AssetsView from "../portfolio/AssetsView"
-import {WalletProvider} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/Wallet"
 import {Subscription} from "rxjs"
+import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 
 type Props = {
-  wallet: WalletProvider,
+  wallet: MnemonicWallet,
   onExit: () => void,
   onSwitchWallet: () => void,
 }
