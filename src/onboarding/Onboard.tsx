@@ -1,15 +1,8 @@
-import React, {useEffect, useState} from 'react'
+import React, {useState} from 'react'
 import {Appearance, Image, StyleSheet, View} from 'react-native'
 import TextTitle from "../common/TextTitle"
 import ButtonAva from "../common/ButtonAva"
 import TextLabel from "../common/TextLabel"
-import OnboardViewModel, {
-  MnemonicLoaded,
-  NothingToLoad,
-  PrivateKeyLoaded,
-  WalletLoadingResults
-} from "./OnboardViewModel"
-import {Subscription} from "rxjs"
 import CommonViewModel from "../CommonViewModel"
 import ButtonAvaSecondary from "../common/ButtonAvaSecondary"
 
@@ -24,28 +17,6 @@ const pkg = require('../../package.json')
 
 export default function Onboard(props: Props | Readonly<Props>) {
   const [commonViewModel] = useState(new CommonViewModel(Appearance.getColorScheme()))
-  const [viewModel] = useState(new OnboardViewModel())
-  const [showButtons, setShowButtons] = useState(false)
-
-  useEffect(() => {
-    const disposables = new Subscription()
-    disposables.add(viewModel.showButtons.subscribe(value => setShowButtons(value)))
-    viewModel.promptForWalletLoadingIfExists().subscribe({
-      next: (value: WalletLoadingResults) => {
-        if (value instanceof MnemonicLoaded) {
-          props.onEnterWallet(value.mnemonic)
-        } else if (value instanceof PrivateKeyLoaded) {
-          props.onEnterSingletonWallet(value.privateKey)
-        } else if (value instanceof NothingToLoad) {
-          //do nothing
-        }
-      },
-      error: err => console.log(err.message)
-    })
-    return () => {
-      disposables.unsubscribe()
-    }
-  }, [])
 
   const onCreateWallet = (): void => {
     props.onCreateWallet()
@@ -92,8 +63,8 @@ export default function Onboard(props: Props | Readonly<Props>) {
       {/*  {buttonWithText(loginKeystoreFile, "Keystore File", onLoginWithKeystoreFile)}*/}
       {/*</View>}*/}
 
-      {showButtons && <ButtonAvaSecondary text={"I already have a wallet"} onPress={() => onAlreadyHaveWallet()}/>}
-      {showButtons && <ButtonAva text={"Create new wallet"} onPress={() => onCreateWallet()}/>}
+      <ButtonAvaSecondary text={"I already have a wallet"} onPress={() => onAlreadyHaveWallet()}/>
+      <ButtonAva text={"Create new wallet"} onPress={() => onCreateWallet()}/>
       <TextLabel text={"v" + pkg.version + " Fuji network"}/>
     </View>
   )
