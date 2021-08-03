@@ -3,11 +3,11 @@ import {StyleSheet, View} from "react-native"
 import TextLabel from "../common/TextLabel"
 import TextAmount from "../common/TextAmount"
 import {BehaviorSubject} from "rxjs"
-import {WalletProvider} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/Wallet"
 import {useBalances} from "./UseBalances"
+import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 
 type Props = {
-  wallet: BehaviorSubject<WalletProvider>,
+  wallet: BehaviorSubject<MnemonicWallet>,
 }
 
 export default function Balances(props: Props | Readonly<Props>) {

@@ -19,7 +19,7 @@ const keymap: Map<PinKeys, string> = new Map([
 ])
 
 export function useCreatePin(): [string, string, DotView[], (pinKey: PinKeys) => void, (pinKey: PinKeys) => void, boolean, string | undefined] {
-  const [title, setTitle] = useState("Create password")
+  const [title, setTitle] = useState("Create PIN")
   const [errorMessage, setErrorMessage] = useState("")
   const [chosenPin, setChosenPin] = useState("")
   const [confirmedPin, setConfirmedPin] = useState("")
@@ -44,7 +44,6 @@ export function useCreatePin(): [string, string, DotView[], (pinKey: PinKeys) =>
     setValidPin(undefined)
     setConfirmedPinEntered(false)
     setConfirmedPin("")
-    setErrorMessage("Pins dont match")
   }
 
   useEffect(() => {
@@ -52,6 +51,7 @@ export function useCreatePin(): [string, string, DotView[], (pinKey: PinKeys) =>
       if (chosenPin === confirmedPin) {
         setValidPin(chosenPin)
       } else {
+        setErrorMessage("Pins dont match")
         resetConfirmPinProcess()
       }
     }
