@@ -30,6 +30,7 @@ import CheckMnemonic from "./src/onboarding/CheckMnemonic"
 import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 import CreatePIN from "./src/onboarding/CreatePIN"
 import BiometricLogin from "./src/onboarding/BiometricLogin"
+import PinOrBiometryLogin from "./src/login/PinOrBiometryLogin"
 
 type AppProps = {}
 
@@ -173,6 +174,15 @@ const LoginWithKeystoreFileScreen = () => {
   )
 }
 
+const LoginWithPinOrBiometryScreen = () => {
+  return (
+    <PinOrBiometryLogin
+      onBack={() => viewModel.onBackPressed()}
+      onEnterWallet={onEnterWallet}
+      />
+  )
+}
+
 const WalletScreen = () => {
   if (viewModel.wallet === null) throw Error("Wallet not defined")
   return (
@@ -199,6 +209,7 @@ const RootScreen = () => {
       <RootStack.Screen name="Login with mnemonic" component={LoginWithMnemonicScreen}/>
       <RootStack.Screen name="Login with private key" component={LoginWithPrivateKeyScreen}/>
       <RootStack.Screen name="Login with keystore file" component={LoginWithKeystoreFileScreen}/>
+      <RootStack.Screen name="Login" component={LoginWithPinOrBiometryScreen}/>
       <RootStack.Screen name="Wallet" component={WalletScreen}/>
     </RootStack.Navigator>
   )
@@ -247,6 +258,9 @@ export default function App(props: AppProps | Readonly<AppProps>) {
         break;
       case SelectedView.LoginWithKeystoreFile:
         navigationRef.current?.navigate("Login with keystore file")
+        break;
+      case SelectedView.PinOrBiometryLogin:
+        navigationRef.current?.navigate("Login")
         break;
       case SelectedView.Main:
         navigationRef.current?.navigate("Wallet")

@@ -15,6 +15,7 @@ export enum SelectedView {
   LoginWithMnemonic,
   LoginWithPrivateKey,
   LoginWithKeystoreFile,
+  PinOrBiometryLogin,
   Main,
 }
 
@@ -24,10 +25,15 @@ export default class {
 
   onComponentMount = (): void => {
     WalletSDK.setNetwork(NetworkConstants.TestnetConfig)
+    BiometricsSDK.hasWalletStored().then((value) => {
+      if (value) {
+        this.setSelectedView(SelectedView.PinOrBiometryLogin)
+      }
+    })
   }
 
   onPinCreated = (pin: string): Observable<boolean> => {
-    return from(BiometricsSDK.savePin(pin)).pipe(
+    return from(BiometricsSDK.storeWalletWithPin(pin, (this.wallet as MnemonicWallet)?.mnemonic)).pipe(
       map(pinSaved => {
         if (pinSaved === false) {
           throw Error("Pin not saved")
@@ -44,29 +50,6 @@ export default class {
       map((mnemonic: string) => WalletSDK.getMnemonicValet(mnemonic)),
       map((wallet: MnemonicWallet) => {
         this.wallet = wallet
-        return wallet.mnemonic
-      }),
-      switchMap(mnemonic => BiometricsSDK.saveWalletKey(mnemonic)),
-      switchMap(credentials => {
-        if (credentials === false) {
-          throw Error("Error saving mnemonic")
-        }
-        return BiometricsSDK.loadWalletKey(BiometricsSDK.storeOptions)
-      }),
-      map(credentials => {
-        if (credentials === false) {
-          throw Error("Error saving mnemonic")
-        }
-        return true
-      }),
-      catchError((err: Error) => {
-        return from(BiometricsSDK.clearWalletKey()).pipe(
-          tap(() => {
-            throw err
-          })
-        )
-      }),
-      map(() => {
         this.setSelectedView(SelectedView.Main)
         return true
       }),
@@ -180,6 +163,7 @@ export default class {
       case SelectedView.LoginWithMnemonic:
       case SelectedView.LoginWithPrivateKey:
       case SelectedView.LoginWithKeystoreFile:
+      case SelectedView.PinOrBiometryLogin:
         this.setSelectedView(SelectedView.Onboard)
         return true
       case SelectedView.Main:

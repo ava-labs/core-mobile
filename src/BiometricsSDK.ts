@@ -2,6 +2,7 @@ import Keychain, {
   ACCESS_CONTROL,
   ACCESSIBLE,
   AUTHENTICATION_TYPE,
+  getAllGenericPasswordServices,
   getSupportedBiometryType,
   Options,
   Result,
@@ -47,10 +48,10 @@ export default class BiometricsSDK {
     service: "mnemonic"
   }
 
-  static savePin = (pin: string): Promise<false | Result> => {
-    return Keychain.setGenericPassword("pin", pin, BiometricsSDK.storePinOptions)
+  static storeWalletWithPin = (pin: string, walletMnemonic: string): Promise<false | Result> => {
+    return Keychain.setGenericPassword(pin, walletMnemonic, BiometricsSDK.storePinOptions)
   }
-  static loadPin = (): Promise<false | UserCredentials> => {
+  static loadWalletWithPin = (): Promise<false | UserCredentials> => {
     return Keychain.getGenericPassword(BiometricsSDK.storePinOptions)
   }
 
@@ -107,6 +108,12 @@ export default class BiometricsSDK {
     return getSupportedBiometryType().then(value => {
       console.log(value)
       return value as string
+    })
+  }
+
+  static hasWalletStored = (): Promise<boolean> => {
+    return getAllGenericPasswordServices().then((value) => {
+      return value.length !== 0
     })
   }
 }
