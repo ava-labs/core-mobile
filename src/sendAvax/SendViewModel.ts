@@ -1,10 +1,10 @@
 import {BehaviorSubject} from "rxjs"
-import {WalletProvider} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/Wallet"
+import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 
 export default class {
-  wallet: BehaviorSubject<WalletProvider>
+  wallet: BehaviorSubject<MnemonicWallet>
 
-  constructor(wallet: WalletProvider) {
-    this.wallet = new BehaviorSubject<WalletProvider>(wallet)
+  constructor(wallet: MnemonicWallet) {
+    this.wallet = new BehaviorSubject<MnemonicWallet>(wallet)
   }
 }

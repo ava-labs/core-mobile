@@ -19,10 +19,10 @@ import TextTitle from "../common/TextTitle"
 import InputAmount from "../common/InputAmount"
 import {COLORS, COLORS_NIGHT} from "../common/Constants"
 import Header from "../mainView/Header"
-import {WalletProvider} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/Wallet"
+import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 
 type Props = {
-  wallet: WalletProvider,
+  wallet: MnemonicWallet,
   onClose: () => void,
 }
 

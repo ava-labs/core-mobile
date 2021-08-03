@@ -11,11 +11,11 @@ import InputAmount from "../common/InputAmount"
 import InputText from "../common/InputText"
 import ButtonAva from "../common/ButtonAva"
 import Header from "../mainView/Header"
-import {WalletProvider} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/Wallet"
 import {Subscription} from "rxjs"
+import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 
 type Props = {
-  wallet: WalletProvider,
+  wallet: MnemonicWallet,
   onClose: () => void,
 }
 

@@ -10,7 +10,6 @@ type Props = {
   onCreateWallet: () => void,
   onAlreadyHaveWallet: () => void,
   onEnterWallet: (mnemonic: string) => void,
-  onEnterSingletonWallet: (privateKey: string) => void,
 }
 
 const pkg = require('../../package.json')
