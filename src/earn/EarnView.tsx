@@ -5,10 +5,10 @@ import ButtonAva from "../common/ButtonAva"
 import Validate from "./Validate"
 import EarnViewModel from "./EarnViewModel"
 import TextTitle from "../common/TextTitle"
-import {WalletProvider} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/Wallet"
+import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 
 type Props = {
-  wallet: WalletProvider,
+  wallet: MnemonicWallet,
 }
 
 export default function EarnView(props: Props | Readonly<Props>) {

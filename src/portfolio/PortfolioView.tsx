@@ -5,10 +5,12 @@ import Header from "../mainView/Header"
 import Balances from "../portfolio/Balances"
 import TabbedAddressCards from "../portfolio/TabbedAddressCards"
 import {BehaviorSubject, Subscription} from "rxjs"
-import {WalletProvider} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/Wallet"
+import {MnemonicWallet, NetworkConstants} from "@avalabs/avalanche-wallet-sdk"
+import {useAddresses} from "@avalabs/wallet-react-components/src/hooks/useAddresses"
+import TextLabel from "../common/TextLabel"
 
 type Props = {
-  wallet: BehaviorSubject<WalletProvider>,
+  wallet: BehaviorSubject<MnemonicWallet>,
   onExit: () => void,
   onSwitchWallet: () => void,
 }
@@ -16,28 +18,20 @@ type Props = {
 export default function PortfolioView(props: Props | Readonly<Props>) {
   const [viewModel] = useState(new PortfolioViewModel(props.wallet))
   const [avaxPrice, setAvaxPrice] = useState(0)
-  const [addressX, setAddressX] = useState("")
-  const [addressP, setAddressP] = useState("")
-  const [addressC, setAddressC] = useState("")
-  const [sendXVisible, setSendXVisible] = useState(false)
-  const [sendCVisible, setSendCVisible] = useState(false)
-  const [crossChainVisible, setCrossChainVisible] = useState(false)
-  const [walletCAddress, setWalletCAddress] = useState("")
-  const [walletEvmAddress, setWalletEvmAddress] = useState("")
+  const {
+    addressX,
+    addressP,
+    addressC
+  } = useAddresses(props.wallet.value as MnemonicWallet, NetworkConstants.TestnetConfig)
+
 
   useEffect(() => {
     const disposables = new Subscription()
     disposables.add(viewModel.avaxPrice.subscribe(value => setAvaxPrice(value)))
-    disposables.add(viewModel.walletCAddress.subscribe(value => setWalletCAddress(value)))
-    disposables.add(viewModel.walletEvmAddrBech.subscribe(value => setWalletEvmAddress(value)))
-    disposables.add(viewModel.addressX.subscribe(value => setAddressX(value)))
-    disposables.add(viewModel.addressP.subscribe(value => setAddressP(value)))
-    disposables.add(viewModel.addressC.subscribe(value => setAddressC(value)))
     viewModel.onComponentMount()
 
     return () => {
       disposables.unsubscribe()
-      viewModel.onComponentUnMount()
     }
   }, [])
 
@@ -53,8 +47,8 @@ export default function PortfolioView(props: Props | Readonly<Props>) {
     <View style={styles.container}>
       <Header showExit onExit={onExit} showSwitchWallet onSwitchWallet={onSwitchWallet}/>
       <Balances wallet={props.wallet}/>
-      <TabbedAddressCards addressP={addressP} addressX={addressX}
-                          addressC={addressC}/>
+      <TextLabel text={"Avax price = " + avaxPrice + "USD"}/>
+      <TabbedAddressCards addressP={addressP} addressX={addressX} addressC={addressC}/>
     </View>
   )
 }

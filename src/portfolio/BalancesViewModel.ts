@@ -1,8 +1,7 @@
 import {BehaviorSubject, combineLatest, merge, Observable} from "rxjs"
 import {concatMap, filter, map} from "rxjs/operators"
-import {BN, Utils} from "@avalabs/avalanche-wallet-sdk"
+import {BN, MnemonicWallet, Utils} from "@avalabs/avalanche-wallet-sdk"
 import {AssetBalanceP, WalletBalanceX} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/types"
-import {WalletProvider} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/Wallet"
 
 enum WalletEvents {
   BalanceChangedX = "balanceChangedX",
@@ -11,7 +10,7 @@ enum WalletEvents {
 }
 
 export default class {
-  wallet: BehaviorSubject<WalletProvider>
+  wallet: BehaviorSubject<MnemonicWallet>
   private balanceX: Observable<BN>
   private balanceP: Observable<BN>
   private balanceC: Observable<BN>
@@ -25,7 +24,7 @@ export default class {
   newBalanceP: BehaviorSubject<AssetBalanceP>
   newBalanceC: BehaviorSubject<BN>
 
-  constructor(wallet: BehaviorSubject<WalletProvider>) {
+  constructor(wallet: BehaviorSubject<MnemonicWallet>) {
     this.wallet = wallet
 
     this.stake = this.wallet.pipe(
@@ -121,13 +120,13 @@ export default class {
     this.newBalanceC.next(balance)
   }
 
-  private addBalanceListeners = (wallet: WalletProvider): void => {
+  private addBalanceListeners = (wallet: MnemonicWallet): void => {
     wallet.on(WalletEvents.BalanceChangedX, this.onBalanceChangedX)
     wallet.on(WalletEvents.BalanceChangedP, this.onBalanceChangedP)
     wallet.on(WalletEvents.BalanceChangedC, this.onBalanceChangedC)
   }
 
-  private removeBalanceListeners = (wallet: WalletProvider): void => {
+  private removeBalanceListeners = (wallet: MnemonicWallet): void => {
     wallet.off(WalletEvents.BalanceChangedX, this.onBalanceChangedX)
     wallet.off(WalletEvents.BalanceChangedP, this.onBalanceChangedP)
     wallet.off(WalletEvents.BalanceChangedC, this.onBalanceChangedC)

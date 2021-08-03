@@ -5,10 +5,10 @@ import TransactionsViewModel, {HistoryItem} from "./TransactionsViewModel"
 import TransactionItem from "./TransactionItem"
 import Loader from "../common/Loader"
 import Header from "../mainView/Header"
-import {WalletProvider} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/Wallet"
+import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 
 type Props = {
-  wallet: WalletProvider,
+  wallet: MnemonicWallet,
 }
 
 export default function TransactionsView(props: Props | Readonly<Props>) {

@@ -8,10 +8,10 @@ import InputText from "../common/InputText"
 import {BehaviorSubject} from "rxjs"
 import {COLORS, COLORS_NIGHT} from "../common/Constants"
 import ButtonAva from "../common/ButtonAva"
-import {WalletProvider} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/Wallet"
+import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 
 type Props = {
-  wallet: BehaviorSubject<WalletProvider>,
+  wallet: BehaviorSubject<MnemonicWallet>,
   onClose: () => void,
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "avalanche-wallet-apps",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "private": true,
   "scripts": {
     "android": "react-native run-android",
@@ -12,7 +12,8 @@
     "postversion": "react-native-version --never-amend"
   },
   "dependencies": {
-    "@avalabs/avalanche-wallet-sdk": "0.7.3",
+    "@avalabs/wallet-react-components": "file:../../Work/wallet-react-components",
+    "@avalabs/avalanche-wallet-sdk": "0.8.1",
     "@ethereumjs/common": "^2.2.0",
     "@ethereumjs/tx": "^3.1.4",
     "@react-native-clipboard/clipboard": "^1.8.2",
@@ -20,6 +21,7 @@
     "@react-native-community/masked-view": "^0.1.11",
     "@react-navigation/bottom-tabs": "^5.11.11",
     "@react-navigation/native": "^5.9.4",
+    "@react-navigation/stack": "^5.14.5",
     "avalanche": "^3.7.0",
     "big.js": "^6.1.1",
     "bignumber.js": "^9.0.1",

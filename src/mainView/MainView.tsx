@@ -1,9 +1,9 @@
 import React, {useEffect, useState} from "react"
-import {Alert, Appearance, Image, Modal, StyleSheet, View} from "react-native"
+import {Alert, Appearance, BackHandler, Image, Modal, StyleSheet, View} from "react-native"
 import CommonViewModel from "../CommonViewModel"
 import MainViewViewModel from "./MainViewViewModel"
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import {NavigationContainer} from "@react-navigation/native"
+import {NavigationContainer, useFocusEffect} from "@react-navigation/native"
 import PortfolioView from "../portfolio/PortfolioView"
 import SendView from "../sendAvax/SendView"
 import EarnView from "../earn/EarnView"
@@ -11,11 +11,11 @@ import TransactionsView from "../transactions/TransactionsView"
 import Loader from "../common/Loader"
 import {COLORS, COLORS_NIGHT} from "../common/Constants"
 import AssetsView from "../portfolio/AssetsView"
-import {WalletProvider} from "@avalabs/avalanche-wallet-sdk/dist/Wallet/Wallet"
 import {Subscription} from "rxjs"
+import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
 
 type Props = {
-  wallet: WalletProvider,
+  wallet: MnemonicWallet,
   onExit: () => void,
   onSwitchWallet: () => void,
 }
@@ -27,6 +27,19 @@ export default function MainView(props: Props | Readonly<Props>) {
   const [viewModel] = useState(new MainViewViewModel(props.wallet))
   const [isDarkMode] = useState(commonViewModel.isDarkMode)
   const [walletReady, setWalletReady] = useState(false)
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        onExit()
+        return true
+      }
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      return () =>
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [])
+  )
 
   useEffect(() => {
     const disposables = new Subscription()
@@ -79,7 +92,7 @@ export default function MainView(props: Props | Readonly<Props>) {
   const Earn = () => <EarnView wallet={viewModel.wallet.value}/>
   const Transactions = () => <TransactionsView wallet={viewModel.wallet.value}/>
   const Nav = () => (
-    <NavigationContainer>
+    <NavigationContainer independent={true}>
       <Tab.Navigator sceneContainerStyle={styles.navContainer}
                      screenOptions={props => screenOptions(props, isDarkMode)}
                      tabBarOptions={{

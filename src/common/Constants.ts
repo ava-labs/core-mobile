@@ -12,8 +12,8 @@ export enum COLORS {
   buttonRippleSecondary = "#F3EEFF",
   primary300 = "#9272FF",
   primary400 = "#7451FF",
-  balloonBg = "#6A408A",
-  balloonText = "#FFF",
+  balloonBg = "#FCE3F0",
+  balloonText = "#1A1A1C",
 
   bg1 = "#fff",
   bgLight = "#f5f6fa",
@@ -47,7 +47,7 @@ export enum COLORS_NIGHT {
   buttonRippleSecondary = "#3A3A3C",
   primary300 = "#9272FF",
   primary400 = "#7451FF",
-  balloonBg = "#6A408A",
+  balloonBg = "#E10076",
   balloonText = "#FFF",
 
   bg1 = "#242729",
