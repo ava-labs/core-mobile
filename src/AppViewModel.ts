@@ -1,7 +1,7 @@
 import WalletSDK from './WalletSDK'
 import {asyncScheduler, AsyncSubject, BehaviorSubject, concat, from, Observable, of} from 'rxjs'
 import {MnemonicWallet, NetworkConstants} from "@avalabs/avalanche-wallet-sdk"
-import {concatMap, map, subscribeOn} from "rxjs/operators"
+import {concatMap, map, subscribeOn, switchMap} from "rxjs/operators"
 import BiometricsSDK from "./BiometricsSDK"
 import {BackHandler} from "react-native"
 
@@ -31,11 +31,18 @@ export default class {
 
   onPinCreated = (pin: string): Observable<boolean> => {
     return from(BiometricsSDK.storeWalletWithPin(pin, this.wallet?.mnemonic!)).pipe(
-      map(pinSaved => {
+      switchMap(pinSaved => {
         if (pinSaved === false) {
           throw Error("Pin not saved")
         }
-        this.setSelectedView(SelectedView.BiometricStore)
+        return BiometricsSDK.canUseBiometry()
+      }),
+      map((canUseBiometry: boolean) => {
+        if (canUseBiometry) {
+          this.setSelectedView(SelectedView.BiometricStore)
+        } else {
+          this.setSelectedView(SelectedView.Main)
+        }
         return true
       })
     )
