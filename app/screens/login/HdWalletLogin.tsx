@@ -1,11 +1,10 @@
-import React, {useState} from 'react';
+import React from 'react';
 import {ScrollView, StyleSheet, View} from 'react-native';
 import Header from 'screens/mainView/Header';
 import TextTitle from 'components/TextTitle';
-import InputText from 'components/InputText';
-import ButtonAva from 'components/ButtonAva';
 import WalletSDK from 'utils/WalletSDK';
-import ButtonAvaSecondary from 'components/ButtonAvaSecondary';
+import RecoveryPhraseInputCard from '../../components/RecoveryPhraseInputCard';
+import ButtonAvaTextual from '../../components/ButtonAvaTextual';
 
 type Props = {
   onEnterWallet: (mnemonic: string) => void;
@@ -13,8 +12,6 @@ type Props = {
 };
 
 export default function HdWalletLogin(props: Props | Readonly<Props>) {
-  const [mnemonic, setMnemonic] = useState('');
-
   const onEnterTestWallet = (): void => {
     props.onEnterWallet(WalletSDK.testMnemonic());
   };
@@ -30,23 +27,18 @@ export default function HdWalletLogin(props: Props | Readonly<Props>) {
         <View style={[{height: 8}]} />
 
         <TextTitle text={'HD Wallet'} textAlign={'center'} bold={true} />
-        <View style={[{height: 8}]} />
-        <InputText
-          onSubmit={() => props.onEnterWallet(mnemonic)}
-          multiline={true}
-          onChangeText={text => setMnemonic(text)}
-          value={mnemonic}
-        />
         <View style={[{flexGrow: 1}]} />
-        <ButtonAva
-          text={'Enter HD wallet'}
-          onPress={() => props.onEnterWallet(mnemonic)}
-        />
 
-        <ButtonAvaSecondary
+        <ButtonAvaTextual
           text={'Enter test HD wallet'}
           onPress={onEnterTestWallet}
         />
+        <View style={[{padding: 16}]}>
+          <RecoveryPhraseInputCard
+            onCancel={onBack}
+            onEnter={mnemonic => props.onEnterWallet(mnemonic)}
+          />
+        </View>
       </View>
     </ScrollView>
   );
