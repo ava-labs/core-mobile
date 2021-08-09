@@ -1,14 +1,14 @@
 export enum COLORS {
   transparent = '#00000000',
-  bg = '#F8F8FB',
-  buttonPrimary = '#7451FF',
+  bg = '#FFFFFF',
+  buttonPrimary = '#1B93F2',
   buttonPrimaryText = '#FFF',
   buttonPrimaryDisabled = '#E8E0FF',
   buttonRipple = '#F1F1F4',
   textOnBg = '#1A1A1C',
   buttonSecondary = '#7451FF',
   buttonSecondaryText = '#1A1A1C',
-  buttonSecondaryTextDisabled = '#E8E0FF',
+  buttonSecondaryTextDisabled = '#BADCFB',
   buttonRippleSecondary = '#F3EEFF',
   primary300 = '#9272FF',
   primary400 = '#7451FF',
@@ -35,8 +35,8 @@ export enum COLORS {
 
 export enum COLORS_NIGHT {
   transparent = '#00000000',
-  bg = '#1A1A1C',
-  buttonPrimary = '#7451FF',
+  bg = '#000000',
+  buttonPrimary = '#3EA1F4',
   buttonPrimaryText = '#FFF',
   buttonPrimaryDisabled = '#464648',
   buttonRipple = '#3A3A3C',
