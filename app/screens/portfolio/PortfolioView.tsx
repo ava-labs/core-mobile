@@ -5,8 +5,7 @@ import Header from 'screens/mainView/Header';
 import Balances from './Balances';
 import TabbedAddressCards from './TabbedAddressCards';
 import {BehaviorSubject, Subscription} from 'rxjs';
-import {MnemonicWallet, NetworkConstants} from '@avalabs/avalanche-wallet-sdk';
-import {useAddresses} from '@avalabs/wallet-react-components/src/hooks/useAddresses';
+import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
 import TextLabel from 'components/TextLabel';
 
 type Props = {
@@ -18,22 +17,25 @@ type Props = {
 const PortfolioView: FC<Props> = ({wallet, onExit, onSwitchWallet}) => {
   const [viewModel] = useState(new PortfolioViewModel(wallet));
   const [avaxPrice, setAvaxPrice] = useState(0);
-  const {addressX, addressP, addressC} = useAddresses(
-    wallet?.value as MnemonicWallet,
-    NetworkConstants.TestnetConfig,
-  );
+  const [addressX, setAddressX] = useState('');
+  const [addressP, setAddressP] = useState('');
+  const [addressC, setAddressC] = useState('');
 
   useEffect(() => {
     const disposables = new Subscription();
     disposables.add(
       viewModel.avaxPrice.subscribe(value => setAvaxPrice(value)),
     );
+    disposables.add(viewModel.addressX.subscribe(value => setAddressX(value)));
+    disposables.add(viewModel.addressP.subscribe(value => setAddressP(value)));
+    disposables.add(viewModel.addressC.subscribe(value => setAddressC(value)));
     viewModel.onComponentMount();
 
     return () => {
       disposables.unsubscribe();
+      viewModel.onComponentUnMount();
     };
-  }, [viewModel]);
+  }, []);
 
   return (
     <View style={styles.container}>
