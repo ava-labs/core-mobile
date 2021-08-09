@@ -10,6 +10,7 @@ export declare type BackgroundStyle = {
 };
 
 export default class {
+  theme: typeof COLORS | typeof COLORS_NIGHT = COLORS;
   isDarkMode: boolean;
   iconSufix: ColorSchemeName = 'light';
   appBackgroundStyle: BackgroundStyle;
@@ -18,6 +19,7 @@ export default class {
   constructor(colorScheme: ColorSchemeName) {
     this.isDarkMode = colorScheme === 'dark';
     this.iconSufix = colorScheme;
+    this.theme = this.isDarkMode ? COLORS_NIGHT : COLORS;
     this.appBackgroundStyle = (() => {
       const THEME = this.isDarkMode ? COLORS_NIGHT : COLORS;
       return {
