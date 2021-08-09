@@ -11,6 +11,7 @@ type Props = {
   multiline?: boolean;
   style?: StyleProp<TextStyle>;
   onSubmit?: () => void;
+  placeholder?: string;
 };
 
 export default function InputText(props: Props | Readonly<Props>) {
@@ -26,6 +27,7 @@ export default function InputText(props: Props | Readonly<Props>) {
   const THEME = isDarkMode ? COLORS_NIGHT : COLORS;
   return (
     <TextInput
+      placeholder={props.placeholder}
       blurOnSubmit={true}
       onSubmitEditing={onSubmit}
       returnKeyType={props.onSubmit && 'go'}
