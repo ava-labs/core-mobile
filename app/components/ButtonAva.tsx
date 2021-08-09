@@ -13,6 +13,7 @@ type Props = {
   text: string;
   onPress: () => void;
   disabled?: boolean;
+  size?: 'large' | 'medium' | 'small';
 };
 
 export default function ButtonAva(props: Props | Readonly<Props>) {
@@ -22,6 +23,23 @@ export default function ButtonAva(props: Props | Readonly<Props>) {
   const [isDarkMode] = useState(commonViewModel.isDarkMode);
 
   const THEME = isDarkMode ? COLORS_NIGHT : COLORS;
+  const size = props.size || 'large';
+  let width: string | number = 'auto';
+  let height: number = 48;
+  switch (size) {
+    case 'large':
+      width = 'auto';
+      height = 48;
+      break;
+    case 'medium':
+      width = 140;
+      height = 40;
+      break;
+    case 'small':
+      width = 90;
+      height = 32;
+      break;
+  }
   return (
     <TouchableNativeFeedback
       disabled={props.disabled}
@@ -35,9 +53,15 @@ export default function ButtonAva(props: Props | Readonly<Props>) {
             backgroundColor: props.disabled
               ? THEME.buttonPrimaryDisabled
               : THEME.buttonPrimary,
+            width: width,
+            height: height,
           },
         ]}>
-        <TextButton disabled={props.disabled} text={props.text} />
+        <TextButton
+          disabled={props.disabled}
+          text={props.text}
+          size={props.size}
+        />
       </View>
     </TouchableNativeFeedback>
   );
