@@ -5,7 +5,7 @@
  * @flow strict-local
  */
 
-import React, {RefObject, useEffect, useState} from 'react';
+import React, {RefObject, useContext, useEffect, useState} from 'react';
 import {
   Alert,
   Appearance,
@@ -25,7 +25,6 @@ import CommonViewModel from 'utils/CommonViewModel';
 import Onboard from 'screens/onboarding/Onboard';
 import CreateWallet from 'screens/onboarding/CreateWallet';
 import MainView from 'screens/mainView/MainView';
-import {COLORS, COLORS_NIGHT} from 'resources/Constants';
 import {Subscription} from 'rxjs';
 import HdWalletLogin from 'screens/login/HdWalletLogin';
 import {createStackNavigator} from '@react-navigation/stack';
@@ -38,6 +37,7 @@ import CheckMnemonic from 'screens/onboarding/CheckMnemonic';
 import CreatePIN from 'screens/onboarding/CreatePIN';
 import BiometricLogin from 'screens/onboarding/BiometricLogin';
 import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin';
+import {ApplicationContext} from 'contexts/applicationContext';
 
 type AppProps = {};
 
@@ -303,23 +303,24 @@ export default function App(props: AppProps | Readonly<AppProps>) {
     }
   }, [selectedView]);
 
-  const THEME = isDarkMode ? COLORS_NIGHT : COLORS;
+  const context = useContext(ApplicationContext);
+  const theme = context.theme;
   const navTheme: Theme = {
     dark: isDarkMode,
     colors: {
-      primary: THEME.primaryColor,
-      background: THEME.bg,
-      text: THEME.textOnBg,
-      card: THEME.primaryColor,
-      border: THEME.bg,
-      notification: THEME.primaryColor,
+      primary: theme.primaryColor,
+      background: theme.bg,
+      text: theme.textOnBg,
+      card: theme.primaryColor,
+      border: theme.bg,
+      notification: theme.primaryColor,
     },
   };
 
   return (
     <SafeAreaView style={backgroundStyle}>
       <StatusBar
-        backgroundColor={THEME.bg}
+        backgroundColor={theme.bg}
         barStyle={isDarkMode ? 'light-content' : 'dark-content'}
       />
       <NavigationContainer theme={navTheme} ref={navigationRef}>
