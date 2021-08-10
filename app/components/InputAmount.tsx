@@ -1,8 +1,7 @@
-import React, {useState} from 'react';
-import {Appearance, StyleSheet, TextInput, View} from 'react-native';
-import CommonViewModel from 'utils/CommonViewModel';
-import {COLORS, COLORS_NIGHT} from 'resources/Constants';
+import React, {useContext, useState} from 'react';
+import {StyleSheet, TextInput, View} from 'react-native';
 import ImgButtonAva from 'components/ImgButtonAva';
+import {ApplicationContext} from 'contexts/applicationContext';
 
 type Props = {
   initValue?: string;
@@ -13,10 +12,7 @@ type Props = {
 };
 
 export default function InputAmount(props: Props | Readonly<Props>) {
-  const [commonViewModel] = useState(
-    new CommonViewModel(Appearance.getColorScheme()),
-  );
-  const [isDarkMode] = useState(commonViewModel.isDarkMode);
+  const context = useContext(ApplicationContext);
   const [decreaseBtnVisible] = useState(!!props.showControls);
   const [increaseBtnVisible] = useState(!!props.showControls);
   const [value, setValue] = useState(
@@ -40,11 +36,11 @@ export default function InputAmount(props: Props | Readonly<Props>) {
     props.onChangeText?.(newState);
   };
 
-  const THEME = isDarkMode ? COLORS_NIGHT : COLORS;
-  const decreaseIcon = isDarkMode
+  const theme = context.theme;
+  const decreaseIcon = context.isDarkMode
     ? require('assets/icons/remove_dark.png')
     : require('assets/icons/remove_light.png');
-  const increaseIcon = isDarkMode
+  const increaseIcon = context.isDarkMode
     ? require('assets/icons/add_dark.png')
     : require('assets/icons/add_light.png');
   const decreaseBtn = decreaseBtnVisible && (
@@ -62,11 +58,11 @@ export default function InputAmount(props: Props | Readonly<Props>) {
         style={[
           {
             flexGrow: 1,
-            color: THEME.primaryColor,
+            color: theme.primaryColor,
             fontSize: props.textSize ? props.textSize : 18,
             padding: 8,
             borderWidth: 1,
-            borderColor: THEME.primaryColorLight,
+            borderColor: theme.primaryColorLight,
             borderRadius: 4,
             margin: 12,
             textAlign: 'right',

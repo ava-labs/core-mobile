@@ -1,14 +1,12 @@
-import React, {useState} from 'react';
+import React, {useContext} from 'react';
 import {
-  Appearance,
   Image,
   ImageSourcePropType,
   StyleSheet,
   TouchableNativeFeedback,
   View,
 } from 'react-native';
-import CommonViewModel from 'utils/CommonViewModel';
-import {COLORS, COLORS_NIGHT} from 'resources/Constants';
+import {ApplicationContext} from 'contexts/applicationContext';
 
 type Props = {
   src: ImageSourcePropType;
@@ -17,17 +15,13 @@ type Props = {
   height?: number;
 };
 export default function ImgButtonAva(props: Props | Readonly<Props>) {
-  const [commonViewModel] = useState(
-    new CommonViewModel(Appearance.getColorScheme()),
-  );
-  const [isDarkMode] = useState(commonViewModel.isDarkMode);
-
-  let THEME = isDarkMode ? COLORS_NIGHT : COLORS;
+  const context = useContext(ApplicationContext);
+  const theme = context.theme;
   return (
     <TouchableNativeFeedback
       useForeground={true}
       onPress={props.onPress}
-      background={TouchableNativeFeedback.Ripple(THEME.primaryColor, true)}>
+      background={TouchableNativeFeedback.Ripple(theme.primaryColor, true)}>
       <View style={styles.container}>
         <Image
           source={props.src}

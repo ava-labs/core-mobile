@@ -1,13 +1,7 @@
-import React, {useState} from 'react';
-import {
-  Appearance,
-  ColorSchemeName,
-  Image,
-  StyleSheet,
-  View,
-} from 'react-native';
+import React, {useContext} from 'react';
+import {Image, StyleSheet, View} from 'react-native';
 import ImgButtonAva from 'components/ImgButtonAva';
-import CommonViewModel from 'utils/CommonViewModel';
+import {ApplicationContext} from 'contexts/applicationContext';
 
 type Props = {
   showBack?: boolean;
@@ -19,11 +13,8 @@ type Props = {
 };
 
 export default function Header(props: Props | Readonly<Props>) {
-  const [commonViewModel] = useState(
-    new CommonViewModel(Appearance.getColorScheme()),
-  );
-  const [isDarkMode] = useState(commonViewModel.isDarkMode);
-  const [iconSufix] = useState<ColorSchemeName>(commonViewModel.iconSufix);
+  const context = useContext(ApplicationContext);
+  const isDarkMode = context.isDarkMode;
 
   const onBackPress = () => {
     props.onBack?.();

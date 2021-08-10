@@ -1,16 +1,10 @@
-import React, {useState} from 'react';
-import {
-  Appearance,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  View,
-} from 'react-native';
-import CommonViewModel from 'utils/CommonViewModel';
+import React, {useContext, useState} from 'react';
+import {SafeAreaView, ScrollView, StyleSheet, View} from 'react-native';
 import TextTitle from 'components/TextTitle';
 import InputText from 'components/InputText';
 import InputAmount from 'components/InputAmount';
 import ButtonAva from 'components/ButtonAva';
+import {ApplicationContext} from 'contexts/applicationContext';
 
 type Props = {
   nodeId: string;
@@ -23,13 +17,9 @@ type Props = {
 };
 
 export default function ValidateConfirm(props: Props | Readonly<Props>) {
-  const [commonViewModel] = useState(
-    new CommonViewModel(Appearance.getColorScheme()),
-  );
-  const [isDarkMode, setIsDarkMode] = useState(commonViewModel.isDarkMode);
-  const [backgroundStyle, setBackgroundStyle] = useState(
-    commonViewModel.backgroundStyle,
-  );
+  const context = useContext(ApplicationContext);
+
+  const [backgroundStyle] = useState(context.backgroundStyle);
 
   return (
     <SafeAreaView style={backgroundStyle}>

@@ -1,14 +1,5 @@
-import React, {useEffect, useState} from 'react';
-import {
-  Alert,
-  Appearance,
-  BackHandler,
-  Image,
-  Modal,
-  StyleSheet,
-  View,
-} from 'react-native';
-import CommonViewModel from 'utils/CommonViewModel';
+import React, {useContext, useEffect, useState} from 'react';
+import {Alert, BackHandler, Image, Modal, StyleSheet, View} from 'react-native';
 import MainViewViewModel from './MainViewViewModel';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {NavigationContainer, useFocusEffect} from '@react-navigation/native';
@@ -21,6 +12,7 @@ import {COLORS, COLORS_NIGHT} from 'resources/Constants';
 import AssetsView from 'screens/portfolio/AssetsView';
 import {Subscription} from 'rxjs';
 import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
+import {ApplicationContext} from 'contexts/applicationContext';
 
 type Props = {
   wallet: MnemonicWallet;
@@ -31,11 +23,10 @@ type Props = {
 const Tab = createBottomTabNavigator();
 
 export default function MainView(props: Props | Readonly<Props>) {
-  const [commonViewModel] = useState(
-    new CommonViewModel(Appearance.getColorScheme()),
-  );
+  const context = useContext(ApplicationContext);
+
   const [viewModel] = useState(new MainViewViewModel(props.wallet));
-  const [isDarkMode] = useState(commonViewModel.isDarkMode);
+  const [isDarkMode] = useState(context.isDarkMode);
   const [walletReady, setWalletReady] = useState(false);
 
   useFocusEffect(

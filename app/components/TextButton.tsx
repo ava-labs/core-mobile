@@ -1,7 +1,6 @@
-import React, {useState} from 'react';
-import {Appearance, Text} from 'react-native';
-import CommonViewModel from 'utils/CommonViewModel';
-import {COLORS, COLORS_NIGHT} from '../resources/Constants';
+import React, {useContext} from 'react';
+import {Text} from 'react-native';
+import {ApplicationContext} from 'contexts/applicationContext';
 
 type Props = {
   text: string;
@@ -10,12 +9,8 @@ type Props = {
 };
 
 export default function TextButton(props: Props | Readonly<Props>) {
-  const [commonViewModel] = useState(
-    new CommonViewModel(Appearance.getColorScheme()),
-  );
-  const [isDarkMode] = useState(commonViewModel.isDarkMode);
-
-  const THEME = isDarkMode ? COLORS_NIGHT : COLORS;
+  const context = useContext(ApplicationContext);
+  const theme = context.theme;
   const size = props.size || 'large';
   let fontSize = 18;
   switch (size) {
@@ -34,8 +29,8 @@ export default function TextButton(props: Props | Readonly<Props>) {
       style={[
         {
           color: props.disabled
-            ? THEME.primaryColorLight
-            : THEME.buttonPrimaryText,
+            ? theme.primaryColorLight
+            : theme.buttonPrimaryText,
           fontSize: fontSize,
           fontWeight: '600',
           fontFamily: 'Inter-Regular',

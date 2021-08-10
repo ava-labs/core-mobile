@@ -1,12 +1,11 @@
-import React, {useState} from 'react';
-import {Appearance, Linking, StyleSheet, View} from 'react-native';
-import CommonViewModel from 'utils/CommonViewModel';
+import React, {useContext} from 'react';
+import {Linking, StyleSheet, View} from 'react-native';
 import TextTitle from 'components/TextTitle';
-import {COLORS, COLORS_NIGHT} from 'resources/Constants';
 import TextLabel from 'components/TextLabel';
 import TextAmount from 'components/TextAmount';
 import moment from 'moment';
 import ImgButtonAva from 'components/ImgButtonAva';
+import {ApplicationContext} from 'contexts/applicationContext';
 
 type Props = {
   date: string;
@@ -18,10 +17,7 @@ type Props = {
 };
 
 export default function TransactionItem(props: Props | Readonly<Props>) {
-  const [commonViewModel] = useState(
-    new CommonViewModel(Appearance.getColorScheme()),
-  );
-  const [isDarkMode] = useState(commonViewModel.isDarkMode);
+  const context = useContext(ApplicationContext);
 
   const onExplorer = (url: string): void => {
     Linking.openURL(url).then(value => {
@@ -29,8 +25,8 @@ export default function TransactionItem(props: Props | Readonly<Props>) {
     });
   };
 
-  let THEME = isDarkMode ? COLORS_NIGHT : COLORS;
-  const explorerIcon = isDarkMode
+  const theme = context.theme;
+  const explorerIcon = context.isDarkMode
     ? require('assets/icons/search_dark.png')
     : require('assets/icons/search_light.png');
   const date = moment(props.date).format('MMM DD, YYYY');
@@ -38,7 +34,7 @@ export default function TransactionItem(props: Props | Readonly<Props>) {
     <View
       style={[
         {
-          borderTopColor: THEME.primaryColorLight,
+          borderTopColor: theme.primaryColorLight,
           borderTopWidth: 1,
         },
       ]}>

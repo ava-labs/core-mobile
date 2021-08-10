@@ -1,6 +1,5 @@
-import React, {useEffect, useState} from 'react';
-import {Alert, Appearance, SafeAreaView, View} from 'react-native';
-import CommonViewModel from 'utils/CommonViewModel';
+import React, {useContext, useEffect, useState} from 'react';
+import {Alert, SafeAreaView, View} from 'react-native';
 import TextTitle from 'components/TextTitle';
 import Header from 'screens/mainView/Header';
 import AssetsAddTokenViewModel from './AssetsAddTokenViewModel';
@@ -9,6 +8,7 @@ import {BehaviorSubject} from 'rxjs';
 import {COLORS, COLORS_NIGHT} from 'resources/Constants';
 import ButtonAva from 'components/ButtonAva';
 import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
+import {ApplicationContext} from 'contexts/applicationContext';
 
 type Props = {
   wallet: BehaviorSubject<MnemonicWallet>;
@@ -16,12 +16,10 @@ type Props = {
 };
 
 export default function AssetsAddToken(props: Props | Readonly<Props>) {
-  const [commonViewModel] = useState(
-    new CommonViewModel(Appearance.getColorScheme()),
-  );
+  const context = useContext(ApplicationContext);
   const [viewModel] = useState(new AssetsAddTokenViewModel(props.wallet));
-  const [isDarkMode] = useState(commonViewModel.isDarkMode);
-  const [backgroundStyle] = useState(commonViewModel.backgroundStyle);
+  const [isDarkMode] = useState(context.isDarkMode);
+  const [backgroundStyle] = useState(context.backgroundStyle);
   const [tokenContractAddress, setTokenContractAddress] = useState('');
   const [tokenName, setTokenName] = useState('');
   const [tokenSymbol, setTokenSymbol] = useState('');

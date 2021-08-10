@@ -1,13 +1,5 @@
-import React, {useEffect, useState} from 'react';
-import {
-  Alert,
-  Appearance,
-  Modal,
-  SafeAreaView,
-  StyleSheet,
-  View,
-} from 'react-native';
-import CommonViewModel from 'utils/CommonViewModel';
+import React, {useContext, useEffect, useState} from 'react';
+import {Alert, Modal, SafeAreaView, StyleSheet, View} from 'react-native';
 import ButtonAva from 'components/ButtonAva';
 import TextTitle from 'components/TextTitle';
 import InputAmount from 'components/InputAmount';
@@ -18,6 +10,7 @@ import QrScannerAva from 'components/QrScannerAva';
 import Header from 'screens/mainView/Header';
 import ImgButtonAva from 'components/ImgButtonAva';
 import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
+import {ApplicationContext} from 'contexts/applicationContext';
 
 type SendAvaxXProps = {
   wallet: MnemonicWallet;
@@ -27,15 +20,13 @@ type SendAvaxXProps = {
 export default function SendAvaxX(
   props: SendAvaxXProps | Readonly<SendAvaxXProps>,
 ) {
-  const [commonViewModel] = useState(
-    new CommonViewModel(Appearance.getColorScheme()),
-  );
+  const context = useContext(ApplicationContext);
   const [viewModel] = useState(new SendAvaxXViewModel(props.wallet));
-  const [isDarkMode] = useState(commonViewModel.isDarkMode);
+  const [isDarkMode] = useState(context.isDarkMode);
   const [cameraVisible, setCameraVisible] = useState(false);
   const [loaderVisible, setLoaderVisible] = useState(false);
   const [loaderMsg, setLoaderMsg] = useState('');
-  const [backgroundStyle] = useState(commonViewModel.backgroundStyle);
+  const [backgroundStyle] = useState(context.backgroundStyle);
   const [addressXToSendTo, setAddressXToSendTo] = useState('');
   const [sendAmount, setSendAmount] = useState('0.00');
 

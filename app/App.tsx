@@ -6,13 +6,7 @@
  */
 
 import React, {RefObject, useContext, useEffect, useState} from 'react';
-import {
-  Alert,
-  Appearance,
-  BackHandler,
-  SafeAreaView,
-  StatusBar,
-} from 'react-native';
+import {Alert, BackHandler, SafeAreaView, StatusBar} from 'react-native';
 import AppViewModel, {
   ExitPromptAnswers,
   LogoutEvents,
@@ -21,7 +15,6 @@ import AppViewModel, {
   ShowExitPrompt,
   ShowLogoutPrompt,
 } from './utils/AppViewModel';
-import CommonViewModel from 'utils/CommonViewModel';
 import Onboard from 'screens/onboarding/Onboard';
 import CreateWallet from 'screens/onboarding/CreateWallet';
 import MainView from 'screens/mainView/MainView';
@@ -39,12 +32,9 @@ import BiometricLogin from 'screens/onboarding/BiometricLogin';
 import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin';
 import {ApplicationContext} from 'contexts/applicationContext';
 
-type AppProps = {};
-
 const RootStack = createStackNavigator();
 const CreateWalletStack = createStackNavigator();
 const navigationRef: RefObject<NavigationContainerRef> = React.createRef();
-const commonViewModel = new CommonViewModel(Appearance.getColorScheme());
 const viewModel = new AppViewModel();
 
 const onOk = (value: ShowExitPrompt): void => {
@@ -244,9 +234,10 @@ const RootScreen = () => {
   );
 };
 
-export default function App(props: AppProps | Readonly<AppProps>) {
-  const [isDarkMode] = useState(commonViewModel.isDarkMode);
-  const [backgroundStyle] = useState(commonViewModel.appBackgroundStyle);
+export default function App() {
+  const context = useContext(ApplicationContext);
+  const [isDarkMode] = useState(context.isDarkMode);
+  const [backgroundStyle] = useState(context.appBackgroundStyle);
   const [selectedView, setSelectedView] = useState(SelectedView.Onboard);
 
   useEffect(() => {
@@ -303,10 +294,9 @@ export default function App(props: AppProps | Readonly<AppProps>) {
     }
   }, [selectedView]);
 
-  const context = useContext(ApplicationContext);
   const theme = context.theme;
   const navTheme: Theme = {
-    dark: isDarkMode,
+    dark: context.isDarkMode,
     colors: {
       primary: theme.primaryColor,
       background: theme.bg,
