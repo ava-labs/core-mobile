@@ -1,7 +1,6 @@
-import React, {useState} from 'react';
-import {Appearance, Text} from 'react-native';
-import CommonViewModel from 'utils/CommonViewModel';
-import {COLORS, COLORS_NIGHT} from '../resources/Constants';
+import React, {useContext} from 'react';
+import {Text} from 'react-native';
+import {ApplicationContext} from 'contexts/applicationContext';
 
 type Props = {
   text: string;
@@ -9,19 +8,15 @@ type Props = {
 };
 
 export default function TextButtonSecondary(props: Props | Readonly<Props>) {
-  const [commonViewModel] = useState(
-    new CommonViewModel(Appearance.getColorScheme()),
-  );
-  const [isDarkMode] = useState(commonViewModel.isDarkMode);
-
-  const THEME = isDarkMode ? COLORS_NIGHT : COLORS;
+  const context = useContext(ApplicationContext);
+  const theme = context.theme;
   return (
     <Text
       style={[
         {
           color: props.disabled
-            ? THEME.buttonSecondaryTextDisabled
-            : THEME.buttonSecondaryText,
+            ? theme.buttonSecondaryTextDisabled
+            : theme.buttonSecondaryText,
           fontSize: 18,
           fontWeight: '700',
           fontFamily: 'Inter-Regular',

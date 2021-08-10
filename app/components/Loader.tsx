@@ -1,37 +1,27 @@
-import React, {useState} from 'react';
-import {
-  ActivityIndicator,
-  Appearance,
-  SafeAreaView,
-  StyleSheet,
-  View,
-} from 'react-native';
+import React, {useContext} from 'react';
+import {ActivityIndicator, SafeAreaView, StyleSheet, View} from 'react-native';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
-import CommonViewModel from 'utils/CommonViewModel';
 import TextTitle from 'components/TextTitle';
 import Header from 'screens/mainView/Header';
+import {ApplicationContext} from 'contexts/applicationContext';
 
 type LoaderProps = {
   message: string;
 };
 
 export default function Loader(props: LoaderProps | Readonly<LoaderProps>) {
-  const [commonViewModel] = useState(
-    new CommonViewModel(Appearance.getColorScheme()),
-  );
-  const [isDarkMode] = useState(commonViewModel.isDarkMode);
-  const [backgroundStyle] = useState(commonViewModel.backgroundStyle);
+  const context = useContext(ApplicationContext);
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <View style={backgroundStyle}>
+    <SafeAreaView style={context.backgroundStyle}>
+      <View style={context.backgroundStyle}>
         <View style={styles.headerContainer}>
           <Header />
         </View>
         <View style={styles.container}>
           <ActivityIndicator
             size="large"
-            color={isDarkMode ? Colors.white : Colors.black}
+            color={context.isDarkMode ? Colors.white : Colors.black}
           />
           <TextTitle text={props.message} textAlign={'center'} />
         </View>

@@ -1,7 +1,6 @@
-import React, {useState} from 'react';
-import {Appearance, ColorValue, Text} from 'react-native';
-import CommonViewModel from 'utils/CommonViewModel';
-import {COLORS, COLORS_NIGHT} from '../resources/Constants';
+import React, {useContext} from 'react';
+import {ColorValue, Text} from 'react-native';
+import {ApplicationContext} from 'contexts/applicationContext';
 
 type Props = {
   text: string;
@@ -13,18 +12,14 @@ type Props = {
 };
 
 export default function TextTitle(props: Props | Readonly<Props>) {
-  const [commonViewModel] = useState(
-    new CommonViewModel(Appearance.getColorScheme()),
-  );
-  const [isDarkMode] = useState(commonViewModel.isDarkMode);
-
-  const THEME = isDarkMode ? COLORS_NIGHT : COLORS;
+  const context = useContext(ApplicationContext);
+  const theme = context.theme;
   return (
     <Text
       style={[
         {
           lineHeight: props.lineHeight || undefined,
-          color: props.color || THEME.primaryColor,
+          color: props.color || theme.primaryColor,
           fontSize: props.size ? props.size : 26,
           fontFamily: 'Inter-Regular',
           fontWeight: props.bold ? 'bold' : 'normal',

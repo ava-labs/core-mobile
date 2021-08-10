@@ -1,12 +1,12 @@
-import React, {useState} from 'react';
-import {Appearance, StyleSheet, View} from 'react-native';
-import CommonViewModel from 'utils/CommonViewModel';
+import React, {useContext, useState} from 'react';
+import {StyleSheet, View} from 'react-native';
 import TextTitle from 'components/TextTitle';
 import InputText from './InputText';
 import ButtonAva from './ButtonAva';
 import ButtonAvaTextual from './ButtonAvaTextual';
 import TextLabel from './TextLabel';
 import WalletSDK from '../utils/WalletSDK';
+import {ApplicationContext} from 'contexts/applicationContext';
 
 type Props = {
   onEnter: (mnemonic: string) => void;
@@ -16,15 +16,14 @@ type Props = {
 export default function RecoveryPhraseInputCard(
   props: Props | Readonly<Props>,
 ) {
-  const [commonViewModel] = useState(
-    new CommonViewModel(Appearance.getColorScheme()),
-  );
+  const context = useContext(ApplicationContext);
+
   const [enteredMnemonic, setEnteredMnemonic] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | undefined>(
     undefined,
   );
 
-  const THEME = commonViewModel.theme;
+  const theme = context.theme;
 
   const onEnterWallet = (): void => {
     try {
@@ -45,8 +44,8 @@ export default function RecoveryPhraseInputCard(
       style={[
         styles.container,
         {
-          backgroundColor: THEME.tcwbBg,
-          shadowColor: THEME.shadow,
+          backgroundColor: theme.tcwbBg,
+          shadowColor: theme.shadow,
         },
       ]}>
       <View style={[{margin: 10}]}>
@@ -60,9 +59,9 @@ export default function RecoveryPhraseInputCard(
         onChangeText={onEnterMnemonic}
       />
       <View style={[{marginStart: 12, marginBottom: 12}]}>
-        <TextLabel text={errorMessage || ''} color={THEME.error} />
+        <TextLabel text={errorMessage || ''} color={theme.error} />
       </View>
-      <View style={[styles.buttonContainer, {backgroundColor: THEME.tcwbBg2}]}>
+      <View style={[styles.buttonContainer, {backgroundColor: theme.tcwbBg2}]}>
         <View style={styles.horizontalLayout}>
           <ButtonAvaTextual text={'Cancel'} onPress={props.onCancel} />
           <ButtonAva text={'Enter'} onPress={onEnterWallet} size={'medium'} />

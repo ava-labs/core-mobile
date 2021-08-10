@@ -1,6 +1,5 @@
-import React, {useEffect, useState} from 'react';
-import {Alert, Appearance, Modal, SafeAreaView, ScrollView} from 'react-native';
-import CommonViewModel from 'utils/CommonViewModel';
+import React, {useContext, useEffect, useState} from 'react';
+import {Alert, Modal, SafeAreaView, ScrollView} from 'react-native';
 import Loader from 'components/Loader';
 import ValidateViewModel from './ValidateViewModel';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
@@ -13,6 +12,7 @@ import ButtonAva from 'components/ButtonAva';
 import Header from 'screens/mainView/Header';
 import {Subscription} from 'rxjs';
 import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
+import {ApplicationContext} from 'contexts/applicationContext';
 
 type Props = {
   wallet: MnemonicWallet;
@@ -20,13 +20,11 @@ type Props = {
 };
 
 export default function Validate(props: Props | Readonly<Props>) {
-  const [commonViewModel] = useState(
-    new CommonViewModel(Appearance.getColorScheme()),
-  );
+  const context = useContext(ApplicationContext);
   const [viewModel] = useState(new ValidateViewModel(props.wallet));
   const [loaderVisible, setLoaderVisible] = useState(false);
   const [loaderMsg, setLoaderMsg] = useState('');
-  const [backgroundStyle] = useState(commonViewModel.backgroundStyle);
+  const [backgroundStyle] = useState(context.backgroundStyle);
   const [nodeId, setNodeId] = useState('NodeID-');
   const [endDatePickerVisible, setEndDatePickerVisible] = useState(false);
   const [endDate, setEndDate] = useState('');
