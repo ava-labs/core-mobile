@@ -52,13 +52,12 @@ const styles: any = StyleSheet.create({
     resizeMode: 'contain',
   },
   horizontalLayout: {
-    flex: 0,
-    height: 48,
+    height: 44,
   },
   dots: {
     position: 'absolute',
     paddingHorizontal: 68,
-    flexGrow: 1,
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     height: '100%',

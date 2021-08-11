@@ -44,7 +44,7 @@ export default function RecoveryPhraseInputCard(
       style={[
         styles.container,
         {
-          backgroundColor: theme.tcwbBg,
+          backgroundColor: theme.cardBg,
           shadowColor: theme.shadow,
         },
       ]}>
