@@ -6,7 +6,7 @@ import ButtonAvaTextual from 'components/ButtonAvaTextual';
 import ButtonAva from 'components/ButtonAva';
 import {useBiometricLogin} from './BiometricLoginViewModel';
 import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
-import {ApplicationContext} from 'contexts/applicationContext';
+import {ApplicationContext} from 'contexts/ApplicationContext';
 
 type Props = {
   wallet: MnemonicWallet;

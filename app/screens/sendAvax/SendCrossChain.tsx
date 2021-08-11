@@ -21,7 +21,7 @@ import InputAmount from 'components/InputAmount';
 import {COLORS, COLORS_NIGHT} from 'resources/Constants';
 import Header from 'screens/mainView/Header';
 import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
-import {ApplicationContext} from 'contexts/applicationContext';
+import {ApplicationContext} from 'contexts/ApplicationContext';
 
 type Props = {
   wallet: MnemonicWallet;

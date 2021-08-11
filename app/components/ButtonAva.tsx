@@ -1,7 +1,7 @@
 import React, {useContext} from 'react';
 import {StyleSheet, TouchableNativeFeedback, View} from 'react-native';
 import TextButton from './TextButton';
-import {ApplicationContext} from 'contexts/applicationContext';
+import {ApplicationContext} from 'contexts/ApplicationContext';
 
 type Props = {
   text: string;

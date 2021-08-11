@@ -30,7 +30,7 @@ import CheckMnemonic from 'screens/onboarding/CheckMnemonic';
 import CreatePIN from 'screens/onboarding/CreatePIN';
 import BiometricLogin from 'screens/onboarding/BiometricLogin';
 import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin';
-import {ApplicationContext} from 'contexts/applicationContext';
+import {ApplicationContext} from 'contexts/ApplicationContext';
 
 const RootStack = createStackNavigator();
 const CreateWalletStack = createStackNavigator();

@@ -1,7 +1,7 @@
 import React, {useContext, useState} from 'react';
 import {StyleSheet, TextInput, View} from 'react-native';
 import ImgButtonAva from 'components/ImgButtonAva';
-import {ApplicationContext} from 'contexts/applicationContext';
+import {ApplicationContext} from 'contexts/ApplicationContext';
 
 type Props = {
   initValue?: string;

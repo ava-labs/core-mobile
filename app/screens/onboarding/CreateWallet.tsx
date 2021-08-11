@@ -7,7 +7,7 @@ import ButtonAva from 'components/ButtonAva';
 import Clipboard from '@react-native-clipboard/clipboard';
 import ButtonAvaTextual from 'components/ButtonAvaTextual';
 import MnemonicInput from './MnemonicInput';
-import {ApplicationContext} from 'contexts/applicationContext';
+import {ApplicationContext} from 'contexts/ApplicationContext';
 
 type Props = {
   onBack: () => void;

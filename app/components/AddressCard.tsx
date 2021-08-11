@@ -3,7 +3,7 @@ import {Share, StyleSheet, View} from 'react-native';
 import TextTitle from 'components/TextTitle';
 import QRCode from 'react-native-qrcode-svg';
 import ButtonAva from 'components/ButtonAva';
-import {ApplicationContext} from 'contexts/applicationContext';
+import {ApplicationContext} from 'contexts/ApplicationContext';
 
 type Props = {
   title: string;

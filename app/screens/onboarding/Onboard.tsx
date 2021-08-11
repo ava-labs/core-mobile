@@ -4,7 +4,7 @@ import TextTitle from 'components/TextTitle';
 import ButtonAva from 'components/ButtonAva';
 import TextLabel from 'components/TextLabel';
 import ButtonAvaSecondary from 'components/ButtonAvaSecondary';
-import {ApplicationContext} from 'contexts/applicationContext';
+import {ApplicationContext} from 'contexts/ApplicationContext';
 
 type Props = {
   onCreateWallet: () => void;

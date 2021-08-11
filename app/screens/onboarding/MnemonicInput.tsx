@@ -2,7 +2,7 @@ import React, {useContext} from 'react';
 import {StyleSheet, View} from 'react-native';
 import TextTitle from 'components/TextTitle';
 import InputText from 'components/InputText';
-import {ApplicationContext} from 'contexts/applicationContext';
+import {ApplicationContext} from 'contexts/ApplicationContext';
 
 type Props = {
   keyNum: number;

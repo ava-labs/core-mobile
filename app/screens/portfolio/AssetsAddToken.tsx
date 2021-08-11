@@ -8,7 +8,7 @@ import {BehaviorSubject} from 'rxjs';
 import {COLORS, COLORS_NIGHT} from 'resources/Constants';
 import ButtonAva from 'components/ButtonAva';
 import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
-import {ApplicationContext} from 'contexts/applicationContext';
+import {ApplicationContext} from 'contexts/ApplicationContext';
 
 type Props = {
   wallet: BehaviorSubject<MnemonicWallet>;
