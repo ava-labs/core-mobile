@@ -46,7 +46,6 @@ export default function CreateWallet(props: Props | Readonly<Props>) {
           style={[
             {
               flexDirection: 'row',
-              marginHorizontal: 24,
               backgroundColor: theme.balloonBg,
               alignItems: 'center',
               borderRadius: 8,
@@ -57,14 +56,16 @@ export default function CreateWallet(props: Props | Readonly<Props>) {
             source={warningIcon}
             style={[{width: 32, height: 32, marginRight: 12}]}
           />
-          <TextTitle
-            color={theme.balloonText}
-            text={
-              'The recovery phrase is the only key to your wallet. Do not share it with anyone.'
-            }
-            lineHeight={17}
-            size={14}
-          />
+          <View style={[{flex: 1}]}>
+            <TextTitle
+              color={theme.balloonText}
+              text={
+                'The recovery phrase is the only key to your wallet. Do not share it with anyone.'
+              }
+              lineHeight={17}
+              size={14}
+            />
+          </View>
         </View>
         <Image source={balloonArrow} />
       </View>
@@ -93,14 +94,21 @@ export default function CreateWallet(props: Props | Readonly<Props>) {
           bold
           size={24}
         />
+        <View style={[{height: 8}]} />
         <TextTitle
-          text={'Write down the recovery phrase'}
+          text={
+            'Write down the recovery phrase and store it in a secure location!'
+          }
           size={16}
+          lineHeight={24}
           textAlign={'center'}
         />
         <BalloonText />
         <View style={[{height: 8}]} />
-        <View style={styles.mnemonics}>{mnemonics()}</View>
+        <View
+          style={[styles.mnemonics, {backgroundColor: context.theme.cardBg}]}>
+          {mnemonics()}
+        </View>
       </View>
 
       <ButtonAvaTextual text={'Copy phrase'} onPress={copyToClipboard} />
@@ -111,14 +119,17 @@ export default function CreateWallet(props: Props | Readonly<Props>) {
 
 const styles = StyleSheet.create({
   verticalLayout: {
-    height: '100%',
+    flex: 1,
     justifyContent: 'flex-end',
   },
   growContainer: {
-    flexGrow: 1,
+    flex: 1,
+    paddingHorizontal: 16,
   },
   mnemonics: {
-    marginHorizontal: 24,
+    paddingStart: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
