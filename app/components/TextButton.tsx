@@ -32,7 +32,7 @@ export default function TextButton(props: Props | Readonly<Props>) {
             ? theme.primaryColorLight
             : theme.buttonPrimaryText,
           fontSize: fontSize,
-          fontWeight: '600',
+          fontWeight: '700',
           fontFamily: 'Inter-Regular',
           textAlign: 'center',
         },
