@@ -5,7 +5,7 @@ import TextLabel from 'components/TextLabel';
 import TextAmount from 'components/TextAmount';
 import moment from 'moment';
 import ImgButtonAva from 'components/ImgButtonAva';
-import {ApplicationContext} from 'contexts/applicationContext';
+import {ApplicationContext} from 'contexts/ApplicationContext';
 
 type Props = {
   date: string;

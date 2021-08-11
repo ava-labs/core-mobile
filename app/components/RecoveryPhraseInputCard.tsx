@@ -6,7 +6,7 @@ import ButtonAva from './ButtonAva';
 import ButtonAvaTextual from './ButtonAvaTextual';
 import TextLabel from './TextLabel';
 import WalletSDK from '../utils/WalletSDK';
-import {ApplicationContext} from 'contexts/applicationContext';
+import {ApplicationContext} from 'contexts/ApplicationContext';
 
 type Props = {
   onEnter: (mnemonic: string) => void;

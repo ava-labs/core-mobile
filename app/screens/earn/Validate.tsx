@@ -12,7 +12,7 @@ import ButtonAva from 'components/ButtonAva';
 import Header from 'screens/mainView/Header';
 import {Subscription} from 'rxjs';
 import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
-import {ApplicationContext} from 'contexts/applicationContext';
+import {ApplicationContext} from 'contexts/ApplicationContext';
 
 type Props = {
   wallet: MnemonicWallet;

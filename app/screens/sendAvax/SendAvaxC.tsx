@@ -10,7 +10,7 @@ import QrScannerAva from 'components/QrScannerAva';
 import Header from 'screens/mainView/Header';
 import ImgButtonAva from 'components/ImgButtonAva';
 import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
-import {ApplicationContext} from 'contexts/applicationContext';
+import {ApplicationContext} from 'contexts/ApplicationContext';
 
 type SendAvaxCProps = {
   wallet: MnemonicWallet;

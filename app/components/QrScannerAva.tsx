@@ -3,7 +3,7 @@ import {SafeAreaView, StyleSheet} from 'react-native';
 import QRCodeScanner from 'react-native-qrcode-scanner';
 import {BarCodeReadEvent} from 'react-native-camera';
 import ButtonAva from './ButtonAva';
-import {ApplicationContext} from 'contexts/applicationContext';
+import {ApplicationContext} from 'contexts/ApplicationContext';
 
 type Props = {
   onSuccess: (data: string) => void;

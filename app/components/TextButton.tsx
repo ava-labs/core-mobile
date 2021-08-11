@@ -1,6 +1,6 @@
 import React, {useContext} from 'react';
 import {Text} from 'react-native';
-import {ApplicationContext} from 'contexts/applicationContext';
+import {ApplicationContext} from 'contexts/ApplicationContext';
 
 type Props = {
   text: string;

@@ -4,7 +4,7 @@ import TextTitle from 'components/TextTitle';
 import InputText from 'components/InputText';
 import InputAmount from 'components/InputAmount';
 import ButtonAva from 'components/ButtonAva';
-import {ApplicationContext} from 'contexts/applicationContext';
+import {ApplicationContext} from 'contexts/ApplicationContext';
 
 type Props = {
   nodeId: string;

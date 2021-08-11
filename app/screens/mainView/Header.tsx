@@ -1,7 +1,7 @@
 import React, {useContext} from 'react';
 import {Image, StyleSheet, View} from 'react-native';
 import ImgButtonAva from 'components/ImgButtonAva';
-import {ApplicationContext} from 'contexts/applicationContext';
+import {ApplicationContext} from 'contexts/ApplicationContext';
 
 type Props = {
   showBack?: boolean;

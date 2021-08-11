@@ -4,7 +4,7 @@
 
 import React from 'react';
 import App from 'App';
-import {ApplicationContextProvider} from 'contexts/applicationContext';
+import {ApplicationContextProvider} from 'contexts/ApplicationContext';
 
 export default function ContextApp() {
   return (

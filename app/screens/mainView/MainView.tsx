@@ -12,7 +12,7 @@ import {COLORS, COLORS_NIGHT} from 'resources/Constants';
 import AssetsView from 'screens/portfolio/AssetsView';
 import {Subscription} from 'rxjs';
 import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
-import {ApplicationContext} from 'contexts/applicationContext';
+import {ApplicationContext} from 'contexts/ApplicationContext';
 
 type Props = {
   wallet: MnemonicWallet;
