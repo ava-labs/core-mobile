@@ -48,17 +48,26 @@ export default function RecoveryPhraseInputCard(
           shadowColor: theme.shadow,
         },
       ]}>
-      <View style={[{margin: 10}]}>
+      <View style={[{margin: 16}]}>
         <TextTitle text={'Recovery phrase'} size={18} bold />
       </View>
       <InputText
-        style={[{height: 160, textAlignVertical: 'top'}]}
+        style={[
+          {
+            height: 160,
+            textAlignVertical: 'top',
+            borderWidth: 0,
+            padding: 0,
+            marginVertical: 0,
+            marginHorizontal: 16,
+          },
+        ]}
         placeholder="Enter your recovery phrase"
         value={enteredMnemonic}
         multiline
         onChangeText={onEnterMnemonic}
       />
-      <View style={[{marginStart: 12, marginBottom: 12}]}>
+      <View style={[{marginStart: 16, marginBottom: 16}]}>
         <TextLabel text={errorMessage || ''} color={theme.error} />
       </View>
       <View style={[styles.buttonContainer, {backgroundColor: theme.tcwbBg2}]}>
