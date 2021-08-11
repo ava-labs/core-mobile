@@ -197,16 +197,19 @@ const CreateWalletFlow = () => {
       detachInactiveScreens={false}
       mode="card">
       <CreateWalletStack.Screen
-        name="Create Wallet"
+        name={CreateWalletFlowScreen.CreateWallet}
         component={CreateWalletScreen}
       />
       <CreateWalletStack.Screen
-        name="Check mnemonic"
+        name={CreateWalletFlowScreen.CreateWallet}
         component={CheckMnemonicScreen}
       />
-      <CreateWalletStack.Screen name="Create pin" component={CreatePinScreen} />
       <CreateWalletStack.Screen
-        name="Biometric login"
+        name={CreateWalletFlowScreen.CreatePin}
+        component={CreatePinScreen}
+      />
+      <CreateWalletStack.Screen
+        name={CreateWalletFlowScreen.BiometricLogin}
         component={BiometricLoginScreen}
       />
     </CreateWalletStack.Navigator>
@@ -219,17 +222,20 @@ const RootScreen = () => {
       headerMode="none"
       detachInactiveScreens={true}
       mode="modal">
-      <RootStack.Screen name="Onboard" component={OnboardScreen} />
+      <RootStack.Screen name={Screen.Onboard} component={OnboardScreen} />
       <RootStack.Screen
-        name="Create Wallet flow"
+        name={Screen.CreateWalletFlow}
         component={CreateWalletFlow}
       />
       <RootStack.Screen
-        name="Login with mnemonic"
+        name={Screen.LoginWithMnemonic}
         component={LoginWithMnemonicScreen}
       />
-      <RootStack.Screen name="Login" component={LoginWithPinOrBiometryScreen} />
-      <RootStack.Screen name="Wallet" component={WalletScreen} />
+      <RootStack.Screen
+        name={Screen.Login}
+        component={LoginWithPinOrBiometryScreen}
+      />
+      <RootStack.Screen name={Screen.Wallet} component={WalletScreen} />
     </RootStack.Navigator>
   );
 };
@@ -260,36 +266,36 @@ export default function App() {
   useEffect(() => {
     switch (selectedView) {
       case SelectedView.Onboard:
-        navigationRef.current?.navigate('Onboard');
+        navigationRef.current?.navigate(Screen.Onboard);
         break;
       case SelectedView.CreateWallet:
-        navigationRef.current?.navigate('Create Wallet flow', {
-          screen: 'Create Wallet',
+        navigationRef.current?.navigate(Screen.CreateWalletFlow, {
+          screen: CreateWalletFlowScreen.CreateWallet,
         });
         break;
       case SelectedView.CheckMnemonic:
-        navigationRef.current?.navigate('Create Wallet flow', {
-          screen: 'Check mnemonic',
+        navigationRef.current?.navigate(Screen.CreateWalletFlow, {
+          screen: CreateWalletFlowScreen.CheckMnemonic,
         });
         break;
       case SelectedView.CreatePin:
-        navigationRef.current?.navigate('Create Wallet flow', {
-          screen: 'Create pin',
+        navigationRef.current?.navigate(Screen.CreateWalletFlow, {
+          screen: CreateWalletFlowScreen.CreatePin,
         });
         break;
       case SelectedView.BiometricStore:
-        navigationRef.current?.navigate('Create Wallet flow', {
-          screen: 'Biometric login',
+        navigationRef.current?.navigate(Screen.CreateWalletFlow, {
+          screen: CreateWalletFlowScreen.BiometricLogin,
         });
         break;
       case SelectedView.LoginWithMnemonic:
-        navigationRef.current?.navigate('Login with mnemonic');
+        navigationRef.current?.navigate(Screen.LoginWithMnemonic);
         break;
       case SelectedView.PinOrBiometryLogin:
-        navigationRef.current?.navigate('Login');
+        navigationRef.current?.navigate(Screen.Login);
         break;
       case SelectedView.Main:
-        navigationRef.current?.navigate('Wallet');
+        navigationRef.current?.navigate(Screen.Wallet);
         break;
     }
   }, [selectedView]);
@@ -318,4 +324,19 @@ export default function App() {
       </NavigationContainer>
     </SafeAreaView>
   );
+}
+
+enum Screen {
+  Onboard = 'Onboard',
+  CreateWalletFlow = 'Create Wallet flow',
+  LoginWithMnemonic = 'Login with mnemonic',
+  Login = 'Login',
+  Wallet = 'Wallet',
+}
+
+enum CreateWalletFlowScreen {
+  CreateWallet = 'Create Wallet',
+  CheckMnemonic = 'Check mnemonic',
+  CreatePin = 'Create pin',
+  BiometricLogin = 'Biometric login',
 }
