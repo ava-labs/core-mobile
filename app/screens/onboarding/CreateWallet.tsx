@@ -1,6 +1,5 @@
 import React, {useContext, useState} from 'react';
 import {Image, StyleSheet, ToastAndroid, View} from 'react-native';
-import Header from 'screens/mainView/Header';
 import CreateWalletViewModel from './CreateWalletViewModel';
 import TextTitle from 'components/TextTitle';
 import ButtonAva from 'components/ButtonAva';
@@ -8,6 +7,7 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import ButtonAvaTextual from 'components/ButtonAvaTextual';
 import MnemonicInput from './MnemonicInput';
 import {ApplicationContext} from 'contexts/ApplicationContext';
+import HeaderProgress from 'screens/mainView/HeaderProgress';
 
 type Props = {
   onBack: () => void;
@@ -83,7 +83,7 @@ export default function CreateWallet(props: Props | Readonly<Props>) {
 
   return (
     <View style={styles.verticalLayout}>
-      <Header showBack onBack={onBack} />
+      <HeaderProgress maxDots={3} filledDots={1} showBack onBack={onBack} />
       <View style={[{height: 8}]} />
 
       <View style={styles.growContainer}>

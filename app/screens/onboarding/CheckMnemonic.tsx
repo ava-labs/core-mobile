@@ -1,11 +1,11 @@
 import React, {useEffect, useState} from 'react';
 import {Alert, ScrollView, StyleSheet, View} from 'react-native';
-import Header from 'screens/mainView/Header';
 import TextTitle from 'components/TextTitle';
 import ButtonAva from 'components/ButtonAva';
 import CheckMnemonicViewModel from './CheckMnemonicViewModel';
 import MnemonicInput from './MnemonicInput';
 import {Subscription} from 'rxjs';
+import HeaderProgress from 'screens/mainView/HeaderProgress';
 
 type Props = {
   onSuccess: () => void;
@@ -77,7 +77,7 @@ export default function CheckMnemonic(props: Props | Readonly<Props>) {
 
   return (
     <ScrollView contentContainerStyle={styles.scrollView}>
-      <Header showBack onBack={onBack} />
+      <HeaderProgress maxDots={3} filledDots={2} showBack onBack={onBack} />
       <TextTitle
         text={'Fill In Mnemonic Phrase Below'}
         size={20}
