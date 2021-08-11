@@ -36,6 +36,7 @@ export default function BiometricLogin(props: Props | Readonly<Props>) {
         />
         <View style={[{height: 90}]} />
         <TextTitle text={'Biometric Login'} size={24} bold />
+        <View style={[{height: 8}]} />
         <TextLabel
           text={'Sign in quickly using your ' + biometryType?.toLowerCase()}
         />
