@@ -201,7 +201,7 @@ const CreateWalletFlow = () => {
         component={CreateWalletScreen}
       />
       <CreateWalletStack.Screen
-        name={CreateWalletFlowScreen.CreateWallet}
+        name={CreateWalletFlowScreen.CheckMnemonic}
         component={CheckMnemonicScreen}
       />
       <CreateWalletStack.Screen
