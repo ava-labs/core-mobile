@@ -7,11 +7,29 @@ type Props = {
   text: string;
   onPress: () => void;
   disabled?: boolean;
+  size?: 'large' | 'medium' | 'small';
 };
 
 export default function ButtonAvaSecondary(props: Props | Readonly<Props>) {
   const context = useContext(ApplicationContext);
   const theme = context.theme;
+  const size = props.size || 'large';
+  let width: string | number = 'auto';
+  let height: number = 48;
+  switch (size) {
+    case 'large':
+      width = 'auto';
+      height = 48;
+      break;
+    case 'medium':
+      width = 140;
+      height = 40;
+      break;
+    case 'small':
+      width = 90;
+      height = 32;
+      break;
+  }
   return (
     <TouchableNativeFeedback
       disabled={props.disabled}
@@ -27,6 +45,8 @@ export default function ButtonAvaSecondary(props: Props | Readonly<Props>) {
           {
             backgroundColor: theme.transparent,
             borderColor: theme.buttonSecondary,
+            width: width,
+            height: height,
           },
         ]}>
         <TextButtonSecondary disabled={props.disabled} text={props.text} />
