@@ -1,7 +1,6 @@
-import {BehaviorSubject, from, Observable} from 'rxjs';
 import {Assets, MnemonicWallet, Utils} from '@avalabs/avalanche-wallet-sdk';
-import {concatMap, map} from 'rxjs/operators';
 import {ERC20Balance} from '@avalabs/avalanche-wallet-sdk/dist/Wallet/types';
+import {useEffect, useState} from 'react';
 
 export class TokenItem {
   id: string;
@@ -15,21 +14,21 @@ export class TokenItem {
   }
 }
 
-export default class {
-  wallet: BehaviorSubject<MnemonicWallet>;
-  tokenItems: Observable<TokenItem[]>;
+export function useTokenAssets(wallet: MnemonicWallet): [TokenItem[]] {
+  const [tokenItems, setTokenItems] = useState<TokenItem[]>([]);
 
-  constructor(wallet: BehaviorSubject<MnemonicWallet>) {
-    this.wallet = wallet;
+  useEffect(() => {
+    getTokens().then((value: TokenItem[]) => setTokenItems(value));
+  }, []);
 
-    this.tokenItems = from(
-      Assets.getErc20Token('0xd00ae08403B9bbb9124bB305C09058E32C39A48c'),
-    ).pipe(
-      concatMap(() => this.wallet),
-      concatMap((wallet: MnemonicWallet) =>
-        wallet.getBalanceERC20(['0xd00ae08403B9bbb9124bB305C09058E32C39A48c']),
-      ),
-      map((tokens: ERC20Balance[]) => {
+  function getTokens(): Promise<TokenItem[]> {
+    return Assets.getErc20Token('0xd00ae08403B9bbb9124bB305C09058E32C39A48c')
+      .then(() => {
+        return wallet.getBalanceERC20([
+          '0xd00ae08403B9bbb9124bB305C09058E32C39A48c',
+        ]);
+      })
+      .then((tokens: ERC20Balance[]) => {
         const tokenItems = [];
         for (let tokenAddress in tokens) {
           const bal: ERC20Balance = tokens[tokenAddress];
@@ -42,7 +41,8 @@ export default class {
           );
         }
         return tokenItems;
-      }),
-    );
+      });
   }
+
+  return [tokenItems];
 }
