@@ -5,14 +5,8 @@
  * @flow strict-local
  */
 
-import React, {RefObject, useEffect, useState} from 'react';
-import {
-  Alert,
-  Appearance,
-  BackHandler,
-  SafeAreaView,
-  StatusBar,
-} from 'react-native';
+import React, {RefObject, useContext, useEffect, useState} from 'react';
+import {Alert, BackHandler, SafeAreaView, StatusBar} from 'react-native';
 import AppViewModel, {
   ExitPromptAnswers,
   LogoutEvents,
@@ -21,11 +15,9 @@ import AppViewModel, {
   ShowExitPrompt,
   ShowLogoutPrompt,
 } from './utils/AppViewModel';
-import CommonViewModel from 'utils/CommonViewModel';
 import Onboard from 'screens/onboarding/Onboard';
 import CreateWallet from 'screens/onboarding/CreateWallet';
 import MainView from 'screens/mainView/MainView';
-import {COLORS, COLORS_NIGHT} from 'resources/Constants';
 import {Subscription} from 'rxjs';
 import HdWalletLogin from 'screens/login/HdWalletLogin';
 import {createStackNavigator} from '@react-navigation/stack';
@@ -38,13 +30,11 @@ import CheckMnemonic from 'screens/onboarding/CheckMnemonic';
 import CreatePIN from 'screens/onboarding/CreatePIN';
 import BiometricLogin from 'screens/onboarding/BiometricLogin';
 import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin';
-
-type AppProps = {};
+import {ApplicationContext} from 'contexts/ApplicationContext';
 
 const RootStack = createStackNavigator();
 const CreateWalletStack = createStackNavigator();
 const navigationRef: RefObject<NavigationContainerRef> = React.createRef();
-const commonViewModel = new CommonViewModel(Appearance.getColorScheme());
 const viewModel = new AppViewModel();
 
 const onOk = (value: ShowExitPrompt): void => {
@@ -207,16 +197,19 @@ const CreateWalletFlow = () => {
       detachInactiveScreens={false}
       mode="card">
       <CreateWalletStack.Screen
-        name="Create Wallet"
+        name={CreateWalletFlowScreen.CreateWallet}
         component={CreateWalletScreen}
       />
       <CreateWalletStack.Screen
-        name="Check mnemonic"
+        name={CreateWalletFlowScreen.CheckMnemonic}
         component={CheckMnemonicScreen}
       />
-      <CreateWalletStack.Screen name="Create pin" component={CreatePinScreen} />
       <CreateWalletStack.Screen
-        name="Biometric login"
+        name={CreateWalletFlowScreen.CreatePin}
+        component={CreatePinScreen}
+      />
+      <CreateWalletStack.Screen
+        name={CreateWalletFlowScreen.BiometricLogin}
         component={BiometricLoginScreen}
       />
     </CreateWalletStack.Navigator>
@@ -229,24 +222,28 @@ const RootScreen = () => {
       headerMode="none"
       detachInactiveScreens={true}
       mode="modal">
-      <RootStack.Screen name="Onboard" component={OnboardScreen} />
+      <RootStack.Screen name={Screen.Onboard} component={OnboardScreen} />
       <RootStack.Screen
-        name="Create Wallet flow"
+        name={Screen.CreateWalletFlow}
         component={CreateWalletFlow}
       />
       <RootStack.Screen
-        name="Login with mnemonic"
+        name={Screen.LoginWithMnemonic}
         component={LoginWithMnemonicScreen}
       />
-      <RootStack.Screen name="Login" component={LoginWithPinOrBiometryScreen} />
-      <RootStack.Screen name="Wallet" component={WalletScreen} />
+      <RootStack.Screen
+        name={Screen.Login}
+        component={LoginWithPinOrBiometryScreen}
+      />
+      <RootStack.Screen name={Screen.Wallet} component={WalletScreen} />
     </RootStack.Navigator>
   );
 };
 
-export default function App(props: AppProps | Readonly<AppProps>) {
-  const [isDarkMode] = useState(commonViewModel.isDarkMode);
-  const [backgroundStyle] = useState(commonViewModel.appBackgroundStyle);
+export default function App() {
+  const context = useContext(ApplicationContext);
+  const [isDarkMode] = useState(context.isDarkMode);
+  const [backgroundStyle] = useState(context.appBackgroundStyle);
   const [selectedView, setSelectedView] = useState(SelectedView.Onboard);
 
   useEffect(() => {
@@ -269,57 +266,57 @@ export default function App(props: AppProps | Readonly<AppProps>) {
   useEffect(() => {
     switch (selectedView) {
       case SelectedView.Onboard:
-        navigationRef.current?.navigate('Onboard');
+        navigationRef.current?.navigate(Screen.Onboard);
         break;
       case SelectedView.CreateWallet:
-        navigationRef.current?.navigate('Create Wallet flow', {
-          screen: 'Create Wallet',
+        navigationRef.current?.navigate(Screen.CreateWalletFlow, {
+          screen: CreateWalletFlowScreen.CreateWallet,
         });
         break;
       case SelectedView.CheckMnemonic:
-        navigationRef.current?.navigate('Create Wallet flow', {
-          screen: 'Check mnemonic',
+        navigationRef.current?.navigate(Screen.CreateWalletFlow, {
+          screen: CreateWalletFlowScreen.CheckMnemonic,
         });
         break;
       case SelectedView.CreatePin:
-        navigationRef.current?.navigate('Create Wallet flow', {
-          screen: 'Create pin',
+        navigationRef.current?.navigate(Screen.CreateWalletFlow, {
+          screen: CreateWalletFlowScreen.CreatePin,
         });
         break;
       case SelectedView.BiometricStore:
-        navigationRef.current?.navigate('Create Wallet flow', {
-          screen: 'Biometric login',
+        navigationRef.current?.navigate(Screen.CreateWalletFlow, {
+          screen: CreateWalletFlowScreen.BiometricLogin,
         });
         break;
       case SelectedView.LoginWithMnemonic:
-        navigationRef.current?.navigate('Login with mnemonic');
+        navigationRef.current?.navigate(Screen.LoginWithMnemonic);
         break;
       case SelectedView.PinOrBiometryLogin:
-        navigationRef.current?.navigate('Login');
+        navigationRef.current?.navigate(Screen.Login);
         break;
       case SelectedView.Main:
-        navigationRef.current?.navigate('Wallet');
+        navigationRef.current?.navigate(Screen.Wallet);
         break;
     }
   }, [selectedView]);
 
-  const THEME = isDarkMode ? COLORS_NIGHT : COLORS;
+  const theme = context.theme;
   const navTheme: Theme = {
-    dark: isDarkMode,
+    dark: context.isDarkMode,
     colors: {
-      primary: THEME.primaryColor,
-      background: THEME.bg,
-      text: THEME.textOnBg,
-      card: THEME.primaryColor,
-      border: THEME.bg,
-      notification: THEME.primaryColor,
+      primary: theme.primaryColor,
+      background: theme.bg,
+      text: theme.textOnBg,
+      card: theme.primaryColor,
+      border: theme.bg,
+      notification: theme.primaryColor,
     },
   };
 
   return (
     <SafeAreaView style={backgroundStyle}>
       <StatusBar
-        backgroundColor={THEME.bg}
+        backgroundColor={theme.bg}
         barStyle={isDarkMode ? 'light-content' : 'dark-content'}
       />
       <NavigationContainer theme={navTheme} ref={navigationRef}>
@@ -327,4 +324,19 @@ export default function App(props: AppProps | Readonly<AppProps>) {
       </NavigationContainer>
     </SafeAreaView>
   );
+}
+
+enum Screen {
+  Onboard = 'Onboard',
+  CreateWalletFlow = 'Create Wallet flow',
+  LoginWithMnemonic = 'Login with mnemonic',
+  Login = 'Login',
+  Wallet = 'Wallet',
+}
+
+enum CreateWalletFlowScreen {
+  CreateWallet = 'Create Wallet',
+  CheckMnemonic = 'Check mnemonic',
+  CreatePin = 'Create pin',
+  BiometricLogin = 'Biometric login',
 }

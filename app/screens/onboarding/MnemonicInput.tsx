@@ -1,9 +1,8 @@
-import React from 'react';
-import {Appearance, StyleSheet, View} from 'react-native';
+import React, {useContext} from 'react';
+import {StyleSheet, View} from 'react-native';
 import TextTitle from 'components/TextTitle';
 import InputText from 'components/InputText';
-import CommonViewModel from 'utils/CommonViewModel';
-import {COLORS, COLORS_NIGHT} from 'resources/Constants';
+import {ApplicationContext} from 'contexts/ApplicationContext';
 
 type Props = {
   keyNum: number;
@@ -13,8 +12,8 @@ type Props = {
 };
 
 export default function MnemonicInput(props: Props | Readonly<Props>) {
-  const commonViewModel = new CommonViewModel(Appearance.getColorScheme());
-  const theme = commonViewModel.isDarkMode ? COLORS_NIGHT : COLORS;
+  const context = useContext(ApplicationContext);
+  const theme = context.theme;
   return (
     <View style={styles.horizontalLayout}>
       <TextTitle

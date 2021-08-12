@@ -1,10 +1,9 @@
-import React, {useState} from 'react';
-import {Appearance, SafeAreaView, StyleSheet} from 'react-native';
-import CommonViewModel from 'utils/CommonViewModel';
+import React, {useContext} from 'react';
+import {SafeAreaView, StyleSheet} from 'react-native';
 import QRCodeScanner from 'react-native-qrcode-scanner';
 import {BarCodeReadEvent} from 'react-native-camera';
-import {COLORS, COLORS_NIGHT} from '../resources/Constants';
 import ButtonAva from './ButtonAva';
+import {ApplicationContext} from 'contexts/ApplicationContext';
 
 type Props = {
   onSuccess: (data: string) => void;
@@ -12,19 +11,15 @@ type Props = {
 };
 
 export default function QrScannerAva(props: Props | Readonly<Props>) {
-  const [commonViewModel] = useState(
-    new CommonViewModel(Appearance.getColorScheme()),
-  );
-  const [isDarkMode] = useState(commonViewModel.isDarkMode);
-  const [backgroundStyle] = useState(commonViewModel.backgroundStyle);
+  const context = useContext(ApplicationContext);
 
   const onSuccess = (e: BarCodeReadEvent): void => {
     props.onSuccess(e.data);
   };
 
-  const theme = isDarkMode ? COLORS_NIGHT : COLORS;
+  const theme = context.theme;
   return (
-    <SafeAreaView style={[backgroundStyle, styles.container]}>
+    <SafeAreaView style={[context.backgroundStyle, styles.container]}>
       <QRCodeScanner
         showMarker={true}
         markerStyle={[

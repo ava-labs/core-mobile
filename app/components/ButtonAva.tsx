@@ -1,13 +1,7 @@
-import React, {useState} from 'react';
-import {
-  Appearance,
-  StyleSheet,
-  TouchableNativeFeedback,
-  View,
-} from 'react-native';
-import CommonViewModel from 'utils/CommonViewModel';
-import {COLORS, COLORS_NIGHT} from '../resources/Constants';
+import React, {useContext} from 'react';
+import {StyleSheet, TouchableNativeFeedback, View} from 'react-native';
 import TextButton from './TextButton';
+import {ApplicationContext} from 'contexts/ApplicationContext';
 
 type Props = {
   text: string;
@@ -17,12 +11,9 @@ type Props = {
 };
 
 export default function ButtonAva(props: Props | Readonly<Props>) {
-  const [commonViewModel] = useState(
-    new CommonViewModel(Appearance.getColorScheme()),
-  );
-  const [isDarkMode] = useState(commonViewModel.isDarkMode);
+  const context = useContext(ApplicationContext);
+  const theme = context.theme;
 
-  const THEME = isDarkMode ? COLORS_NIGHT : COLORS;
   const size = props.size || 'large';
   let width: string | number = 'auto';
   let height: number = 48;
@@ -45,14 +36,14 @@ export default function ButtonAva(props: Props | Readonly<Props>) {
       disabled={props.disabled}
       useForeground={true}
       onPress={() => props.onPress()}
-      background={TouchableNativeFeedback.Ripple(THEME.buttonRipple, false)}>
+      background={TouchableNativeFeedback.Ripple(theme.buttonRipple, false)}>
       <View
         style={[
           styles.button,
           {
             backgroundColor: props.disabled
-              ? THEME.buttonPrimaryDisabled
-              : THEME.buttonPrimary,
+              ? theme.buttonPrimaryDisabled
+              : theme.buttonPrimary,
             width: width,
             height: height,
           },

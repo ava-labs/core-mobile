@@ -1,10 +1,10 @@
-import React, {useState} from 'react';
-import {Appearance, Image, StyleSheet, View} from 'react-native';
+import React, {useContext} from 'react';
+import {Image, StyleSheet, View} from 'react-native';
 import TextTitle from 'components/TextTitle';
 import ButtonAva from 'components/ButtonAva';
 import TextLabel from 'components/TextLabel';
-import CommonViewModel from 'utils/CommonViewModel';
 import ButtonAvaSecondary from 'components/ButtonAvaSecondary';
+import {ApplicationContext} from 'contexts/ApplicationContext';
 
 type Props = {
   onCreateWallet: () => void;
@@ -15,10 +15,7 @@ type Props = {
 const pkg = require('../../../package.json');
 
 export default function Onboard(props: Props | Readonly<Props>) {
-  const [commonViewModel] = useState(
-    new CommonViewModel(Appearance.getColorScheme()),
-  );
-
+  const context = useContext(ApplicationContext);
   const onCreateWallet = (): void => {
     props.onCreateWallet();
   };
@@ -27,25 +24,9 @@ export default function Onboard(props: Props | Readonly<Props>) {
     props.onAlreadyHaveWallet();
   };
 
-  const logo = commonViewModel.isDarkMode
+  const logo = context.isDarkMode
     ? require('assets/ava_logo_dark.png')
     : require('assets/ava_logo_light.png');
-  // const loginRecoveryIcon = commonViewModel.isDarkMode ? require("../assets/icons/login_recovery_dark.png") : require("../assets/icons/login_recovery_dark.png") //fixme:  replace with light when its designed
-  // const loginPrivateKey = commonViewModel.isDarkMode ? require("../assets/icons/private_key_dark.png") : require("../assets/icons/private_key_dark.png") //fixme:  replace with light when its designed
-  // const loginKeystoreFile = commonViewModel.isDarkMode ? require("../assets/icons/keystore_dark.png") : require("../assets/icons/keystore_dark.png") //fixme:  replace with light when its designed
-
-  // const buttonWithText = (icon: any, text: string, onPress: () => void) => {
-  //   return (
-  //     <View style={styles.buttonWithText}>
-  //       <View>
-  //         <ImgButtonAva screens={icon} onPress={onPress} width={68} height={68}/>
-  //       </View>
-  //       <View style={[{width: 68}]}>
-  //         <TextLabel text={text} multiline/>
-  //       </View>
-  //     </View>
-  //   )
-  // }
 
   return (
     <View style={styles.verticalLayout}>
@@ -60,12 +41,6 @@ export default function Onboard(props: Props | Readonly<Props>) {
           size={16}
         />
       </View>
-
-      {/*{showButtons && <View style={styles.roundButtons}>*/}
-      {/*  {buttonWithText(loginRecoveryIcon, "Recovery Phrase", onLoginWithMnemonic)}*/}
-      {/*  {buttonWithText(loginPrivateKey, "Private Key", onLoginWithPrivateKey)}*/}
-      {/*  {buttonWithText(loginKeystoreFile, "Keystore File", onLoginWithKeystoreFile)}*/}
-      {/*</View>}*/}
 
       <ButtonAvaSecondary
         text={'I already have a wallet'}
