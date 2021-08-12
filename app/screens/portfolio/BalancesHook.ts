@@ -4,7 +4,7 @@ import {
   WalletBalanceX,
 } from '@avalabs/avalanche-wallet-sdk/dist/Wallet/types';
 import {useEffect, useState} from 'react';
-import {WalletProvider} from '@avalabs/avalanche-wallet-sdk/dist/Wallet/Wallet';
+import {GetStakeResponse} from 'avalanche/dist/common';
 
 enum WalletEvents {
   BalanceChangedX = 'balanceChangedX',
@@ -12,7 +12,7 @@ enum WalletEvents {
   BalanceChangedC = 'balanceChangedC',
 }
 
-export function useBalances(w: WalletProvider) {
+export function useBalances(w: MnemonicWallet) {
   const [wallet] = useState(w);
   const [newBalanceX, setNewBalanceX] = useState<WalletBalanceX>(
     wallet.getBalanceX(),
@@ -44,7 +44,7 @@ export function useBalances(w: WalletProvider) {
     return newBalanceP.unlocked;
   };
 
-  const balanceCToBN = async (newBalanceC?: BN) => {
+  const balanceCToBN = async (newBalanceC?: BN): Promise<BN> => {
     await wallet.evmWallet.updateBalance();
     if (newBalanceC === undefined) {
       return new BN(0);
@@ -52,28 +52,30 @@ export function useBalances(w: WalletProvider) {
     return newBalanceC;
   };
 
-  const bnXToReadableString = (balanceX: BN) => {
+  const bnXToReadableString = (balanceX: BN): string => {
     const symbol = 'AVAX';
     return Utils.bnToAvaxX(balanceX) + ' ' + symbol;
   };
 
-  const bnPToReadableString = (balanceP: BN) => {
+  const bnPToReadableString = (balanceP: BN): string => {
     const symbol = 'AVAX';
     return Utils.bnToAvaxP(balanceP) + ' ' + symbol;
   };
 
-  const bnCToReadableString = (balanceC: BN) => {
+  const bnCToReadableString = (balanceC: BN): string => {
     const symbol = 'AVAX';
     return Utils.bnToAvaxC(balanceC) + ' ' + symbol;
   };
 
-  const fetchStake = async (wallet: MnemonicWallet) => {
-    const stake = await wallet.getStake();
-    return stake === undefined ? new BN(0) : stake;
+  const fetchStake = async (wallet: MnemonicWallet): Promise<BN> => {
+    const stake: GetStakeResponse = await wallet.getStake();
+    return stake === undefined ? new BN(0) : stake.staked;
   };
 
-  const stakeToReadableString = async (wallet: MnemonicWallet) => {
-    const stake = await fetchStake(wallet);
+  const stakeToReadableString = async (
+    wallet: MnemonicWallet,
+  ): Promise<string> => {
+    const stake: BN = await fetchStake(wallet);
     const symbol = 'AVAX';
     return Utils.bnToLocaleString(stake, 9) + ' ' + symbol;
   };
@@ -83,7 +85,7 @@ export function useBalances(w: WalletProvider) {
     balanceP: BN,
     balanceC: BN,
     stake: BN,
-  ) => {
+  ): string => {
     const bigx = Utils.bnToBigAvaxX(balanceX);
     const bigp = Utils.bnToBigAvaxP(balanceP);
     const bigc = Utils.bnToBigAvaxC(balanceC);
