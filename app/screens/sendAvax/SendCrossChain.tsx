@@ -1,7 +1,6 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {
   Alert,
-  Appearance,
   FlatList,
   ListRenderItem,
   ListRenderItemInfo,
@@ -11,7 +10,6 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import CommonViewModel from 'utils/CommonViewModel';
 import SendCrossChainViewModel, {
   Chain,
   ChainRenderItem,
@@ -23,6 +21,7 @@ import InputAmount from 'components/InputAmount';
 import {COLORS, COLORS_NIGHT} from 'resources/Constants';
 import Header from 'screens/mainView/Header';
 import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
+import {ApplicationContext} from 'contexts/ApplicationContext';
 
 type Props = {
   wallet: MnemonicWallet;
@@ -30,11 +29,9 @@ type Props = {
 };
 
 export default function SendCrossChain(props: Props | Readonly<Props>) {
-  const [commonViewModel] = useState(
-    new CommonViewModel(Appearance.getColorScheme()),
-  );
+  const context = useContext(ApplicationContext);
   const [viewModel] = useState(new SendCrossChainViewModel(props.wallet));
-  const [isDarkMode] = useState(commonViewModel.isDarkMode);
+  const [isDarkMode] = useState(context.isDarkMode);
   const [balance, setBalance] = useState('');
   const [sourceChain, setSourceChain] = useState(Chain.X);
   const [destinationChain, setDestinationChain] = useState(Chain.P);
@@ -48,7 +45,7 @@ export default function SendCrossChain(props: Props | Readonly<Props>) {
     [] as Chain[],
   );
   const [sendAmount, setSendAmount] = useState('0.00');
-  const [backgroundStyle] = useState(commonViewModel.backgroundStyle);
+  const [backgroundStyle] = useState(context.backgroundStyle);
 
   useEffect(() => {
     viewModel.balance.subscribe(value => setBalance(value));

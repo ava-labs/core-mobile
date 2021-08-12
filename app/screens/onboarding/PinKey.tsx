@@ -1,13 +1,6 @@
-import React from 'react';
-import {
-  Appearance,
-  StyleSheet,
-  Text,
-  TouchableNativeFeedback,
-  View,
-} from 'react-native';
-import CommonViewModel from 'utils/CommonViewModel';
-import {COLORS, COLORS_NIGHT} from 'resources/Constants';
+import React, {useContext} from 'react';
+import {StyleSheet, Text, TouchableNativeFeedback, View} from 'react-native';
+import {ApplicationContext} from 'contexts/ApplicationContext';
 
 export enum PinKeys {
   Key1,
@@ -43,8 +36,8 @@ const keymap: Map<PinKeys, string> = new Map([
 ]);
 
 export default function PinKey(props: Props | Readonly<Props>) {
-  const commonViewModel = new CommonViewModel(Appearance.getColorScheme());
-  const theme = commonViewModel.isDarkMode ? COLORS_NIGHT : COLORS;
+  const context = useContext(ApplicationContext);
+  const theme = context.theme;
   return (
     <TouchableNativeFeedback
       useForeground={true}

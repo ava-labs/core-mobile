@@ -1,7 +1,6 @@
-import React, {useState} from 'react';
-import {Appearance, StyleProp, TextInput, TextStyle} from 'react-native';
-import CommonViewModel from 'utils/CommonViewModel';
-import {COLORS, COLORS_NIGHT} from 'resources/Constants';
+import React, {useContext} from 'react';
+import {StyleProp, TextInput, TextStyle} from 'react-native';
+import {ApplicationContext} from 'contexts/ApplicationContext';
 
 type Props = {
   value: string;
@@ -15,16 +14,13 @@ type Props = {
 };
 
 export default function InputText(props: Props | Readonly<Props>) {
-  const [commonViewModel] = useState(
-    new CommonViewModel(Appearance.getColorScheme()),
-  );
-  const [isDarkMode] = useState(commonViewModel.isDarkMode);
+  const context = useContext(ApplicationContext);
 
   const onSubmit = (): void => {
     props.onSubmit?.();
   };
 
-  const THEME = isDarkMode ? COLORS_NIGHT : COLORS;
+  const theme = context.theme;
   return (
     <TextInput
       placeholder={props.placeholder}
@@ -36,10 +32,10 @@ export default function InputText(props: Props | Readonly<Props>) {
       multiline={props.multiline ? props.multiline : false}
       style={[
         {
-          color: THEME.primaryColor,
+          color: theme.primaryColor,
           fontSize: props.textSize ? props.textSize : 18,
           borderWidth: 1,
-          borderColor: THEME.primaryColorLight,
+          borderColor: theme.primaryColorLight,
           borderRadius: 4,
           margin: 12,
           padding: 8,

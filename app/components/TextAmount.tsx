@@ -1,7 +1,6 @@
-import React, {useState} from 'react';
-import {Appearance, Text} from 'react-native';
-import CommonViewModel from 'utils/CommonViewModel';
-import {COLORS, COLORS_NIGHT} from '../resources/Constants';
+import React, {useContext} from 'react';
+import {Text} from 'react-native';
+import {ApplicationContext} from 'contexts/ApplicationContext';
 
 type Props = {
   text: string;
@@ -11,20 +10,16 @@ type Props = {
 };
 
 export default function TextAmount(props: Props | Readonly<Props>) {
-  const [commonViewModel] = useState(
-    new CommonViewModel(Appearance.getColorScheme()),
-  );
-  const [isDarkMode] = useState(commonViewModel.isDarkMode);
-
-  let THEME = isDarkMode ? COLORS_NIGHT : COLORS;
-  let color = THEME.primaryColor;
+  const context = useContext(ApplicationContext);
+  const theme = context.theme;
+  let color = theme.primaryColor;
   if (props.type) {
     switch (props.type) {
       case 'import':
-        color = THEME.incoming;
+        color = theme.incoming;
         break;
       case 'export':
-        color = THEME.outgoing;
+        color = theme.outgoing;
         break;
     }
   }

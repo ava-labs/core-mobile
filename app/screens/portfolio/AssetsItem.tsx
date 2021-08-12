@@ -1,8 +1,7 @@
-import React, {useState} from 'react';
-import {Appearance, StyleSheet, View} from 'react-native';
-import CommonViewModel from 'utils/CommonViewModel';
+import React, {useContext} from 'react';
+import {StyleSheet, View} from 'react-native';
 import TextTitle from 'components/TextTitle';
-import {COLORS, COLORS_NIGHT} from 'resources/Constants';
+import {ApplicationContext} from 'contexts/ApplicationContext';
 
 type Props = {
   title: string;
@@ -10,19 +9,15 @@ type Props = {
 };
 
 export default function AssetsItem(props: Props | Readonly<Props>) {
-  const [commonViewModel] = useState(
-    new CommonViewModel(Appearance.getColorScheme()),
-  );
-  const [isDarkMode] = useState(commonViewModel.isDarkMode);
-
-  let THEME = isDarkMode ? COLORS_NIGHT : COLORS;
+  const context = useContext(ApplicationContext);
+  const theme = context.theme;
 
   return (
     <View
       style={[
         styles.container,
         {
-          borderBottomColor: THEME.bgLight,
+          borderBottomColor: theme.bgLight,
           borderBottomWidth: 1,
         },
       ]}>

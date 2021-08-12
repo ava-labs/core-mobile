@@ -1,14 +1,13 @@
-import React, {useState} from 'react';
-import {Appearance, Image, StyleSheet, ToastAndroid, View} from 'react-native';
+import React, {useContext, useState} from 'react';
+import {Image, StyleSheet, ToastAndroid, View} from 'react-native';
 import Header from 'screens/mainView/Header';
 import CreateWalletViewModel from './CreateWalletViewModel';
 import TextTitle from 'components/TextTitle';
 import ButtonAva from 'components/ButtonAva';
 import Clipboard from '@react-native-clipboard/clipboard';
-import CommonViewModel from 'utils/CommonViewModel';
-import {COLORS, COLORS_NIGHT} from 'resources/Constants';
 import ButtonAvaTextual from 'components/ButtonAvaTextual';
 import MnemonicInput from './MnemonicInput';
+import {ApplicationContext} from 'contexts/ApplicationContext';
 
 type Props = {
   onBack: () => void;
@@ -16,11 +15,9 @@ type Props = {
 };
 
 export default function CreateWallet(props: Props | Readonly<Props>) {
-  const [commonViewModel] = useState(
-    new CommonViewModel(Appearance.getColorScheme()),
-  );
+  const context = useContext(ApplicationContext);
   const [viewModel] = useState(new CreateWalletViewModel());
-  const [mnemonic, setMnemonic] = useState(viewModel.mnemonic);
+  const [mnemonic] = useState(viewModel.mnemonic);
 
   const onBack = (): void => {
     props.onBack();
@@ -36,11 +33,11 @@ export default function CreateWallet(props: Props | Readonly<Props>) {
   };
 
   const BalloonText = () => {
-    const theme = commonViewModel.isDarkMode ? COLORS_NIGHT : COLORS;
-    const balloonArrow = commonViewModel.isDarkMode
+    const theme = context.theme;
+    const balloonArrow = context.isDarkMode
       ? require('assets/icons/balloon_arrow_dark.png')
       : require('assets/icons/balloon_arrow_light.png');
-    const warningIcon = commonViewModel.isDarkMode
+    const warningIcon = context.isDarkMode
       ? require('assets/icons/warning_dark.png')
       : require('assets/icons/warning_light.png');
     return (
