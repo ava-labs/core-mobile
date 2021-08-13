@@ -1,5 +1,5 @@
 import React, {ReactElement} from 'react';
-import {StyleSheet} from 'react-native';
+import {StyleSheet, TouchableWithoutFeedback} from 'react-native';
 import Animated, {
   runOnJS,
   useAnimatedGestureHandler,
@@ -31,7 +31,15 @@ interface SortableWordProps {
   children: ReactElement<{id: number}>;
   index: number;
   containerWidth: number;
-  onCompleted: (position: number[]) => void;
+  onCompleted: (position: number[], status: PHRASE_STATUS) => void;
+}
+
+export enum PHRASE_STATUS {
+  NO_WORDS,
+  SOME_WORDS,
+  ALL_WORDS,
+  INVALID_PHRASE,
+  VALID_PHRASE,
 }
 
 const SortableWord = ({
@@ -46,6 +54,26 @@ const SortableWord = ({
   const isAnimating = useSharedValue(false);
   const translation = useVector();
   const isInPhrase = useDerivedValue(() => offset.order.value !== -1);
+
+  /**
+   * Check if all words are in the phrase
+   */
+  const checkPhraseIsComplete = () => {
+    if (offsets.filter(o => o.order.value === -1).length === 0) {
+      console.debug('SortableWord: isInPhrase: All');
+      onCompleted(
+        offsets.map(o => o.order.value),
+        PHRASE_STATUS.ALL_WORDS,
+      );
+    } else if (
+      offsets.filter(o => o.order.value === -1).length === offsets.length
+    ) {
+      onCompleted([], PHRASE_STATUS.NO_WORDS);
+    } else {
+      onCompleted([], PHRASE_STATUS.SOME_WORDS);
+    }
+  };
+
   const onGestureEvent = useAnimatedGestureHandler<
     PanGestureHandlerGestureEvent,
     {x: number; y: number}
@@ -103,21 +131,57 @@ const SortableWord = ({
       translation.y.value = withSpring(offset.y.value, {velocity: velocityY});
       isGestureActive.value = false;
 
-      /**
-       * Check if all words are in the phrase
-       */
-      if (offsets.filter(o => o.order.value === -1).length === 0) {
-        console.debug('SortableWord: isInPhrase: All');
-        runOnJS(onCompleted)(offsets.map(o => o.order.value));
-      }
+      runOnJS(checkPhraseIsComplete)();
     },
   });
+
+  const onPress = () => {
+    'worklet';
+    if (!isInPhrase.value) {
+      translation.x.value = offset.originalX.value - MARGIN_LEFT;
+      translation.y.value = offset.originalY.value + MARGIN_TOP;
+      offset.order.value = lastOrder(offsets);
+
+      isAnimating.value = true;
+      translation.x.value = withSpring(
+        offset.x.value,
+        {velocity: 50},
+        () => (isAnimating.value = false),
+      );
+      translation.y.value = withSpring(offset.y.value, {velocity: 500});
+
+      calculateLayout(offsets, containerWidth);
+      isGestureActive.value = false;
+    } else {
+      translation.x.value = offset.x.value;
+      translation.y.value = offset.y.value;
+      //remove
+      offset.order.value = -1;
+      remove(offsets, index);
+
+      isAnimating.value = true;
+      translation.x.value = withSpring(
+        offset.x.value,
+        {velocity: 50},
+        () => (isAnimating.value = false),
+      );
+      translation.y.value = withSpring(offset.y.value, {velocity: 500});
+
+      calculateLayout(offsets, containerWidth);
+    }
+
+    isGestureActive.value = false;
+
+    runOnJS(checkPhraseIsComplete)();
+  };
+
   const translateX = useDerivedValue(() => {
     if (isGestureActive.value) {
       return translation.x.value;
     }
     return withSpring(
       !isInPhrase.value ? offset.originalX.value - MARGIN_LEFT : offset.x.value,
+      {damping: 15},
     );
   });
   const translateY = useDerivedValue(() => {
@@ -126,6 +190,7 @@ const SortableWord = ({
     }
     return withSpring(
       !isInPhrase.value ? offset.originalY.value + MARGIN_TOP : offset.y.value,
+      {damping: 15},
     );
   });
   const style = useAnimatedStyle(() => {
@@ -142,16 +207,19 @@ const SortableWord = ({
       ],
     };
   });
+
   return (
     <>
       {/*<Placeholder offset={offset} />*/}
-      <Animated.View style={style}>
-        <PanGestureHandler onGestureEvent={onGestureEvent}>
-          <Animated.View style={StyleSheet.absoluteFill}>
-            {children}
-          </Animated.View>
-        </PanGestureHandler>
-      </Animated.View>
+      <TouchableWithoutFeedback onPress={onPress}>
+        <Animated.View style={style}>
+          <PanGestureHandler onGestureEvent={onGestureEvent}>
+            <Animated.View style={StyleSheet.absoluteFill}>
+              {children}
+            </Animated.View>
+          </PanGestureHandler>
+        </Animated.View>
+      </TouchableWithoutFeedback>
     </>
   );
 };

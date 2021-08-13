@@ -3,7 +3,7 @@ import React, {ReactElement, useState} from 'react';
 import {Dimensions, LayoutChangeEvent, StyleSheet, View} from 'react-native';
 import {runOnJS, runOnUI, useSharedValue} from 'react-native-reanimated';
 
-import SortableWord from './SortableWord';
+import SortableWord, {PHRASE_STATUS} from './SortableWord';
 import PhraseContainer from 'screens/onboarding/recovery/components/PhraseContainer';
 import {MARGIN_LEFT} from './Layout';
 
@@ -19,16 +19,17 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'center',
     opacity: 0,
+    paddingHorizontal: 16,
   },
 });
 
 interface WordListProps {
   children: ReactElement<{id: number}>[];
-  onCompleted: (order: number[]) => void;
-  isValidPhrase: boolean;
+  onCompleted: (order: number[], status: PHRASE_STATUS) => void;
+  phraseStatus?: PHRASE_STATUS;
 }
 
-const WordList = ({children, onCompleted, isValidPhrase}: WordListProps) => {
+const WordList = ({children, onCompleted, phraseStatus}: WordListProps) => {
   const [ready, setReady] = useState(false);
 
   /**
@@ -89,17 +90,19 @@ const WordList = ({children, onCompleted, isValidPhrase}: WordListProps) => {
    */
   return (
     <View style={styles.container}>
-      <PhraseContainer isValidPhrase />
-      {children.map((child, index) => (
-        <SortableWord
-          key={index}
-          offsets={offsets}
-          index={index}
-          onCompleted={onCompleted}
-          containerWidth={containerWidth}>
-          {child}
-        </SortableWord>
-      ))}
+      <PhraseContainer phraseStatus={phraseStatus} />
+      <View style={StyleSheet.absoluteFill}>
+        {children.map((child, index) => (
+          <SortableWord
+            key={index}
+            offsets={offsets}
+            index={index}
+            onCompleted={onCompleted}
+            containerWidth={containerWidth}>
+            {child}
+          </SortableWord>
+        ))}
+      </View>
     </View>
   );
 };

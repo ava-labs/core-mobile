@@ -1,18 +1,19 @@
 import React, {useCallback, useState} from 'react';
-import {View, StyleSheet, Text} from 'react-native';
+import {StyleSheet, Text, View} from 'react-native';
 import WordList from './WordList';
 import Word from './Word';
 import Header from 'screens/mainView/Header';
 import {Buffer} from 'buffer';
+import {PHRASE_STATUS} from './SortableWord';
 
 const RAW_WORDS = [
   'dog',
   'lamp',
   'plant',
   'straw',
-  'food',
-  'sunshine',
-  'glass',
+  // 'food',
+  // 'sunshine',
+  // 'glass',
   // 'charger',
   // 'door',
   // 'pencil',
@@ -62,25 +63,30 @@ interface Props {
 }
 
 const MnemonicRecovery = ({onBack}: Props) => {
-
-  const [isValidPhrase, setIsValidPhrase] = useState<boolean | undefined>(undefined)
+  const [phraseStatus, setPhraseStatus] = useState(PHRASE_STATUS.NO_WORDS);
 
   const getWords = useCallback(() => {
     return words.map(word => <Word key={word.id} {...word} />);
   }, []);
 
-  const correctHash =
-    'Z2xhc3MsZG9nLGxhbXAscGxhbnQsc3RyYXcsZm9vZCxzdW5zaGluZQ==';
+  const correctHash = 'c3RyYXcsZG9nLGxhbXAscGxhbnQ=';
 
   const orderedWords = new Array(RAW_WORDS.length - 1);
-  const onCompleted = (order: number[]) => {
-    order.map((position: number, index: number) => {
-      orderedWords[position] = RAW_WORDS[index];
-    });
-    console.debug(orderedWords);
-    const genHash = Buffer.from(orderedWords.toString()).toString('base64');
-    if (genHash === correctHash) {
+  const onCompleted = (order: number[], status: PHRASE_STATUS) => {
+    setPhraseStatus(status);
 
+    if (status === PHRASE_STATUS.ALL_WORDS) {
+      order.map((position: number, index: number) => {
+        orderedWords[position] = RAW_WORDS[index];
+      });
+      console.debug(orderedWords.toString());
+      const genHash = Buffer.from(orderedWords.toString()).toString('base64');
+      console.debug(genHash);
+      if (genHash === correctHash) {
+        setPhraseStatus(PHRASE_STATUS.VALID_PHRASE);
+      } else {
+        setPhraseStatus(PHRASE_STATUS.INVALID_PHRASE);
+      }
     }
   };
 
@@ -91,7 +97,9 @@ const MnemonicRecovery = ({onBack}: Props) => {
         <Text style={styles.title}>Recovery phrase</Text>
         <Text style={styles.subTitle}>Drag words in correct order</Text>
       </View>
-      <WordList onCompleted={onCompleted} isValidPhrase >{getWords()}</WordList>
+      <WordList onCompleted={onCompleted} phraseStatus={phraseStatus}>
+        {getWords()}
+      </WordList>
     </View>
   );
 };
