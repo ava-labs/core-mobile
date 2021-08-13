@@ -1,0 +1,11 @@
+#!/usr/bin/env bash -x
+
+watchman watch-del-all
+rm -rf ios/Pods
+rm -rf node_modules
+rm -rf ts
+yarn cache clean
+yarn install
+cd ios
+pod install --repo-update
+cd ..

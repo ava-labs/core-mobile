@@ -3,6 +3,7 @@
   "version": "0.3.1",
   "private": true,
   "scripts": {
+    "clean": "./scripts/clean",
     "android": "react-native run-android",
     "ios": "cd $INIT_CWD/ios && pod install && cd $INIT_CWD && react-native run-ios",
     "start": "react-native start",
@@ -46,6 +47,7 @@
     "react-native-qrcode-svg": "^6.1.1",
     "react-native-randombytes": "^3.6.1",
     "react-native-reanimated": "^2.2.0",
+    "react-native-redash": "^16.2.0",
     "react-native-safe-area-context": "^3.2.0",
     "react-native-screens": "^3.4.0",
     "react-native-svg": "^12.1.1",

@@ -17,5 +17,6 @@ module.exports = {
         root: ['./app'],
       },
     ],
+    'react-native-reanimated/plugin'
   ],
 };
