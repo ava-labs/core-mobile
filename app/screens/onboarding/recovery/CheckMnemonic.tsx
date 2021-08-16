@@ -1,27 +1,31 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 import WordList from './WordList';
 import Word from './Word';
 import Header from 'screens/mainView/Header';
 import {PHRASE_STATUS} from './SortableWord';
-import CheckMnemonicViewModel from 'screens/onboarding/CheckMnemonicViewModel';
 import LoadingIndicator from 'components/LoadingIndicator';
+import {ApplicationContext} from 'contexts/ApplicationContext';
+import {Buffer} from 'buffer';
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'black',
+    backgroundColor: 'white',
     flex: 1,
   },
   subTitle: {
-    color: 'white',
+    color: 'black',
     fontSize: 16,
     paddingTop: 10,
   },
   title: {
-    color: 'white',
+    color: 'black',
     fontSize: 24,
     fontWeight: 'bold',
     paddingTop: 10,
+  },
+  darkText: {
+    color: 'white',
   },
 });
 
@@ -31,15 +35,16 @@ interface Props {
   mnemonic: string;
 }
 
-interface Word {
+interface MnemonicWord {
   id: number;
   word: string;
 }
 
 const CheckMnemonic = ({onBack, onSuccess, mnemonic}: Props) => {
-  const [viewModel] = useState(new CheckMnemonicViewModel(mnemonic));
+  const context = useContext(ApplicationContext);
+  const isDarkMode = context.isDarkMode;
   const [loading, setLoading] = useState(false);
-  const [scrambledWords, setScrambledWords] = useState<Word[]>([]);
+  const [scrambledWords, setScrambledWords] = useState<MnemonicWord[]>([]);
   const [phraseStatus, setPhraseStatus] = useState(PHRASE_STATUS.NO_WORDS);
 
   /* Randomize array in-place using Durstenfeld shuffle algorithm */
@@ -50,7 +55,7 @@ const CheckMnemonic = ({onBack, onSuccess, mnemonic}: Props) => {
       array[i] = array[j];
       array[j] = temp;
     }
-    return array.map((w, index): Word => {
+    return array.map((w, index): MnemonicWord => {
       return {
         id: index,
         word: w,
@@ -65,24 +70,27 @@ const CheckMnemonic = ({onBack, onSuccess, mnemonic}: Props) => {
       setLoading(false);
     };
     scrambledMnemonics();
-  },[mnemonic]);
+  }, [mnemonic]);
 
   const onVerify = async (order: number[]) => {
     const orderedWords = new Array(scrambledWords.length - 1);
+
+    // put create array with ordered words in correct position
     order.map((position: number, index: number) => {
       orderedWords[position] = scrambledWords[index].word;
     });
 
-    orderedWords.forEach((word: string, index: number) => {
-      viewModel.setMnemonic(index, word);
-    });
+    // gen hashes
+    const orderedHash = Buffer.from(orderedWords.join(' ')).toString('base64');
+    const mnemonicHash = Buffer.from(mnemonic.toString()).toString('base64');
 
-    viewModel.onVerify().subscribe({
-      error: () => {
-        setPhraseStatus(PHRASE_STATUS.INVALID_PHRASE);
-      },
-      complete: onSuccess,
-    });
+    // compare hashes
+    if (orderedHash === mnemonicHash) {
+      setPhraseStatus(PHRASE_STATUS.VALID_PHRASE);
+      onSuccess();
+    } else {
+      setPhraseStatus(PHRASE_STATUS.INVALID_PHRASE);
+    }
   };
 
   const onCompleted = async (order: number[], status: PHRASE_STATUS) => {
@@ -94,17 +102,21 @@ const CheckMnemonic = ({onBack, onSuccess, mnemonic}: Props) => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, isDarkMode && {backgroundColor: '#000'}]}>
       <Header showBack onBack={onBack} />
       <View style={{alignItems: 'center'}}>
-        <Text style={styles.title}>Recovery phrase</Text>
-        <Text style={styles.subTitle}>Drag words in correct order</Text>
+        <Text style={[styles.title, isDarkMode && styles.darkText]}>
+          Recovery phrase
+        </Text>
+        <Text style={[styles.subTitle, isDarkMode && styles.darkText]}>
+          Drag words in correct order
+        </Text>
       </View>
       {loading ? (
         <LoadingIndicator size={'large'} />
       ) : (
         <WordList onCompleted={onCompleted} phraseStatus={phraseStatus}>
-          {scrambledWords.map((word: Word) => (
+          {scrambledWords.map((word: MnemonicWord) => (
             <Word key={word.id} {...word} />
           ))}
         </WordList>
