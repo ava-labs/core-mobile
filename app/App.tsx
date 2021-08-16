@@ -26,7 +26,7 @@ import CreatePIN from 'screens/onboarding/CreatePIN';
 import BiometricLogin from 'screens/onboarding/BiometricLogin';
 import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin';
 import {ApplicationContext} from 'contexts/ApplicationContext';
-import MnemonicRecovery from 'screens/onboarding/recovery/MnemonicRecovery';
+import CheckMnemonic from 'screens/onboarding/recovery/CheckMnemonic';
 
 const RootStack = createStackNavigator();
 const CreateWalletStack = createStackNavigator();
@@ -125,7 +125,7 @@ const CreateWalletScreen = () => {
 
 const CheckMnemonicScreen = () => {
   return (
-    <MnemonicRecovery
+    <CheckMnemonic
       onSuccess={() => viewModel.setSelectedView(SelectedView.CreatePin)}
       onBack={() => viewModel.onBackPressed()}
       mnemonic={viewModel.wallet?.mnemonic || ''}

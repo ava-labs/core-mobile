@@ -36,7 +36,7 @@ interface Word {
   word: string;
 }
 
-const MnemonicRecovery = ({onBack, onSuccess, mnemonic}: Props) => {
+const CheckMnemonic = ({onBack, onSuccess, mnemonic}: Props) => {
   const [viewModel] = useState(new CheckMnemonicViewModel(mnemonic));
   const [loading, setLoading] = useState(false);
   const [scrambledWords, setScrambledWords] = useState<Word[]>([]);
@@ -113,4 +113,4 @@ const MnemonicRecovery = ({onBack, onSuccess, mnemonic}: Props) => {
   );
 };
 
-export default MnemonicRecovery;
+export default CheckMnemonic;
