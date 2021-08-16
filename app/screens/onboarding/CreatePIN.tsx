@@ -1,11 +1,11 @@
 import React, {useEffect} from 'react';
 import {StyleSheet, View} from 'react-native';
-import Header from 'screens/mainView/Header';
 import TextTitle from 'components/TextTitle';
 import PinKey, {PinKeys} from './PinKey';
 import Dot from 'components/Dot';
 import {useCreatePin} from './CreatePinViewModel';
 import TextLabel from 'components/TextLabel';
+import HeaderProgress from 'screens/mainView/HeaderProgress';
 
 const keymap: Map<string, PinKeys> = new Map([
   ['1', PinKeys.Key1],
@@ -73,7 +73,7 @@ export default function CreatePIN(props: Props | Readonly<Props>) {
 
   return (
     <View style={styles.verticalLayout}>
-      <Header showBack onBack={onBack} />
+      <HeaderProgress maxDots={3} filledDots={3} showBack onBack={onBack} />
       <View style={[{height: 8}]} />
 
       <View style={styles.growContainer}>

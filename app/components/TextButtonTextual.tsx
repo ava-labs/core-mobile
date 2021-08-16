@@ -18,7 +18,7 @@ export default function TextButtonTextual(props: Props | Readonly<Props>) {
             ? theme.buttonPrimaryDisabled
             : theme.buttonPrimary,
           fontSize: 14,
-          fontWeight: '600',
+          fontWeight: '700',
           fontFamily: 'Inter-Regular',
           textAlign: 'center',
         },

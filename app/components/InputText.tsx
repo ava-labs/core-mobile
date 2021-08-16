@@ -23,6 +23,7 @@ export default function InputText(props: Props | Readonly<Props>) {
   const theme = context.theme;
   return (
     <TextInput
+      autoCapitalize="none"
       placeholder={props.placeholder}
       blurOnSubmit={true}
       onSubmitEditing={onSubmit}

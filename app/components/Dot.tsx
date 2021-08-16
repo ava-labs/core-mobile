@@ -1,8 +1,10 @@
 import React from 'react';
-import {Image, StyleSheet} from 'react-native';
+import {Image} from 'react-native';
 
 type Props = {
   filled?: boolean;
+  size?: number;
+  margin?: number;
 };
 
 const getIcon = (isFilled: boolean) => {
@@ -13,13 +15,21 @@ const getIcon = (isFilled: boolean) => {
 
 export default function Dot(props: Props | Readonly<Props>) {
   const icon = getIcon(props.filled || false);
+  const iconSize = props.size || 20;
+  const iconMargin = props.margin || 0;
 
-  return <Image source={icon} width={20} height={20} style={styles.image} />;
+  return (
+    <Image
+      source={icon}
+      width={iconSize}
+      height={iconSize}
+      style={[
+        {
+          width: iconSize,
+          height: iconSize,
+          margin: iconMargin,
+        },
+      ]}
+    />
+  );
 }
-
-const styles = StyleSheet.create({
-  image: {
-    width: 20,
-    height: 20,
-  },
-});

@@ -26,7 +26,7 @@ export default function HdWalletLogin(props: Props | Readonly<Props>) {
         <Header showBack onBack={onBack} />
         <View style={[{height: 8}]} />
 
-        <TextTitle text={'HD Wallet'} textAlign={'center'} bold={true} />
+        <TextTitle text={'Wallet'} textAlign={'center'} bold={true} />
         <View style={[{flexGrow: 1}]} />
 
         <ButtonAvaTextual
