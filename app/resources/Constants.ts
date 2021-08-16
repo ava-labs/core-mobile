@@ -6,14 +6,14 @@ export enum COLORS {
   buttonPrimaryDisabled = '#E8E0FF',
   buttonRipple = '#F1F1F4',
   textOnBg = '#1A1A1C',
-  buttonSecondary = '#7451FF',
+  buttonSecondary = '#1B93F2',
   buttonSecondaryText = '#1A1A1C',
   buttonSecondaryTextDisabled = '#BADCFB',
   buttonRippleSecondary = '#F3EEFF',
   balloonBg = '#FCE3F0',
   balloonText = '#1A1A1C',
+  cardBg = '#FFFFFF',
   // text card with buttons
-  tcwbBg = '#FFFFFF',
   tcwbBg2 = '#F8F8FB',
   shadow = '#00000066',
 
@@ -37,14 +37,14 @@ export enum COLORS_NIGHT {
   buttonPrimaryDisabled = '#464648',
   buttonRipple = '#3A3A3C',
   textOnBg = '#F8F8FB',
-  buttonSecondary = '#4E2EFD',
+  buttonSecondary = '#3EA1F4',
   buttonSecondaryText = '#FFF',
   buttonSecondaryTextDisabled = '#464648',
   buttonRippleSecondary = '#3A3A3C',
   balloonBg = '#E10076',
   balloonText = '#FFF',
+  cardBg = '#1A1A1C',
   // text card with buttons
-  tcwbBg = '#1A1A1C',
   tcwbBg2 = '#3A3A3C',
   shadow = '#FFFFFF66',
 
