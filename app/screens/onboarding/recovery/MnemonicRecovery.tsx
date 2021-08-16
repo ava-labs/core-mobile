@@ -1,44 +1,11 @@
-import React, {useCallback, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 import WordList from './WordList';
 import Word from './Word';
 import Header from 'screens/mainView/Header';
-import {Buffer} from 'buffer';
 import {PHRASE_STATUS} from './SortableWord';
-
-const RAW_WORDS = [
-  'dog',
-  'lamp',
-  'plant',
-  'straw',
-  // 'food',
-  // 'sunshine',
-  // 'glass',
-  // 'charger',
-  // 'door',
-  // 'pencil',
-  // 'desk',
-  // 'phone',
-  // 'watch',
-  // 'speaker',
-  // 'notepad',
-  // 'socks',
-  // 'painting',
-  // 'glitter',
-  // 'notes',
-  // 'purse',
-  // 'dress',
-  // 'chips',
-  // 'box',
-  // 'shoes',
-];
-
-const words = RAW_WORDS.map((w: string, index: number) => {
-  return {
-    id: index,
-    word: w,
-  };
-});
+import CheckMnemonicViewModel from 'screens/onboarding/CheckMnemonicViewModel';
+import LoadingIndicator from 'components/LoadingIndicator';
 
 const styles = StyleSheet.create({
   container: {
@@ -59,34 +26,70 @@ const styles = StyleSheet.create({
 });
 
 interface Props {
+  onSuccess: () => void;
   onBack: () => void;
+  mnemonic: string;
 }
 
-const MnemonicRecovery = ({onBack}: Props) => {
+interface Word {
+  id: number;
+  word: string;
+}
+
+const MnemonicRecovery = ({onBack, onSuccess, mnemonic}: Props) => {
+  const [viewModel] = useState(new CheckMnemonicViewModel(mnemonic));
+  const [loading, setLoading] = useState(false);
+  const [scrambledWords, setScrambledWords] = useState<Word[]>([]);
   const [phraseStatus, setPhraseStatus] = useState(PHRASE_STATUS.NO_WORDS);
 
-  const getWords = useCallback(() => {
-    return words.map(word => <Word key={word.id} {...word} />);
-  }, []);
+  /* Randomize array in-place using Durstenfeld shuffle algorithm */
+  async function shuffleMnemonics(array: any[]) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const temp = array[i];
+      array[i] = array[j];
+      array[j] = temp;
+    }
+    return array.map((w, index): Word => {
+      return {
+        id: index,
+        word: w,
+      };
+    });
+  }
 
-  const correctHash = 'c3RyYXcsZG9nLGxhbXAscGxhbnQ=';
+  useEffect(() => {
+    setLoading(true);
+    const scrambledMnemonics = async () => {
+      setScrambledWords(await shuffleMnemonics(mnemonic.split(' ')));
+      setLoading(false);
+    };
+    scrambledMnemonics();
+  },[mnemonic]);
 
-  const orderedWords = new Array(RAW_WORDS.length - 1);
-  const onCompleted = (order: number[], status: PHRASE_STATUS) => {
+  const onVerify = async (order: number[]) => {
+    const orderedWords = new Array(scrambledWords.length - 1);
+    order.map((position: number, index: number) => {
+      orderedWords[position] = scrambledWords[index].word;
+    });
+
+    orderedWords.forEach((word: string, index: number) => {
+      viewModel.setMnemonic(index, word);
+    });
+
+    viewModel.onVerify().subscribe({
+      error: () => {
+        setPhraseStatus(PHRASE_STATUS.INVALID_PHRASE);
+      },
+      complete: onSuccess,
+    });
+  };
+
+  const onCompleted = async (order: number[], status: PHRASE_STATUS) => {
     setPhraseStatus(status);
 
     if (status === PHRASE_STATUS.ALL_WORDS) {
-      order.map((position: number, index: number) => {
-        orderedWords[position] = RAW_WORDS[index];
-      });
-      console.debug(orderedWords.toString());
-      const genHash = Buffer.from(orderedWords.toString()).toString('base64');
-      console.debug(genHash);
-      if (genHash === correctHash) {
-        setPhraseStatus(PHRASE_STATUS.VALID_PHRASE);
-      } else {
-        setPhraseStatus(PHRASE_STATUS.INVALID_PHRASE);
-      }
+      await onVerify(order);
     }
   };
 
@@ -97,9 +100,15 @@ const MnemonicRecovery = ({onBack}: Props) => {
         <Text style={styles.title}>Recovery phrase</Text>
         <Text style={styles.subTitle}>Drag words in correct order</Text>
       </View>
-      <WordList onCompleted={onCompleted} phraseStatus={phraseStatus}>
-        {getWords()}
-      </WordList>
+      {loading ? (
+        <LoadingIndicator size={'large'} />
+      ) : (
+        <WordList onCompleted={onCompleted} phraseStatus={phraseStatus}>
+          {scrambledWords.map((word: Word) => (
+            <Word key={word.id} {...word} />
+          ))}
+        </WordList>
+      )}
     </View>
   );
 };

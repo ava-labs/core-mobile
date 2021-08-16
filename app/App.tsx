@@ -21,16 +21,12 @@ import MainView from 'screens/mainView/MainView';
 import {Subscription} from 'rxjs';
 import HdWalletLogin from 'screens/login/HdWalletLogin';
 import {createStackNavigator} from '@react-navigation/stack';
-import {
-  NavigationContainer,
-  NavigationContainerRef,
-  Theme,
-} from '@react-navigation/native';
-import CheckMnemonic from 'screens/onboarding/CheckMnemonic';
+import {NavigationContainer, NavigationContainerRef, Theme,} from '@react-navigation/native';
 import CreatePIN from 'screens/onboarding/CreatePIN';
 import BiometricLogin from 'screens/onboarding/BiometricLogin';
 import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin';
 import {ApplicationContext} from 'contexts/ApplicationContext';
+import MnemonicRecovery from 'screens/onboarding/recovery/MnemonicRecovery';
 
 const RootStack = createStackNavigator();
 const CreateWalletStack = createStackNavigator();
@@ -129,7 +125,7 @@ const CreateWalletScreen = () => {
 
 const CheckMnemonicScreen = () => {
   return (
-    <CheckMnemonic
+    <MnemonicRecovery
       onSuccess={() => viewModel.setSelectedView(SelectedView.CreatePin)}
       onBack={() => viewModel.onBackPressed()}
       mnemonic={viewModel.wallet?.mnemonic || ''}

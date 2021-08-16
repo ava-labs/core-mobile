@@ -3,8 +3,8 @@ import {ScrollView, StyleSheet, View} from 'react-native';
 import Header from 'screens/mainView/Header';
 import TextTitle from 'components/TextTitle';
 import WalletSDK from 'utils/WalletSDK';
-import RecoveryPhraseInputCard from '../../components/RecoveryPhraseInputCard';
-import ButtonAvaTextual from '../../components/ButtonAvaTextual';
+import RecoveryPhraseInputCard from 'components/RecoveryPhraseInputCard';
+import ButtonAvaTextual from 'components/ButtonAvaTextual';
 
 type Props = {
   onEnterWallet: (mnemonic: string) => void;
