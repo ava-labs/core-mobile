@@ -1,17 +1,16 @@
-import React, {useContext, useEffect, useState} from 'react';
-import {Alert, Modal, SafeAreaView, StyleSheet, View} from 'react-native';
+import React, {useContext, useState} from 'react';
+import {Modal, SafeAreaView, StyleSheet, View} from 'react-native';
 import ButtonAva from 'components/ButtonAva';
 import TextTitle from 'components/TextTitle';
+import InputAmount from 'components/InputAmount';
 import InputText from 'components/InputText';
 import Loader from 'components/Loader';
-import SendAvaxXViewModel from './SendAvaxXViewModel';
 import QrScannerAva from 'components/QrScannerAva';
 import Header from 'screens/mainView/Header';
 import ImgButtonAva from 'components/ImgButtonAva';
 import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
 import {ApplicationContext} from 'contexts/ApplicationContext';
-import Divider from 'components/Divider';
-import {useBalances} from 'screens/portfolio/BalancesHook';
+import {useSendAvax} from 'screens/sendAvax/SendAvaxXHook';
 
 type SendAvaxXProps = {
   wallet: MnemonicWallet;
@@ -22,82 +21,65 @@ export default function SendAvaxX(
   props: SendAvaxXProps | Readonly<SendAvaxXProps>,
 ) {
   const context = useContext(ApplicationContext);
-  const [viewModel] = useState(new SendAvaxXViewModel(props.wallet));
+  const [
+    loaderVisible,
+    loaderMsg,
+    cameraVisible,
+    setCameraVisible,
+    address,
+    setAddress,
+    sendAmountString,
+    setSendAmountString,
+    onSendAvax,
+    onScanBarcode,
+    onBarcodeScanned,
+    clearAddress,
+  ] = useSendAvax(props.wallet);
   const [isDarkMode] = useState(context.isDarkMode);
-  const [cameraVisible, setCameraVisible] = useState(false);
-  const [loaderVisible, setLoaderVisible] = useState(false);
-  const [loaderMsg, setLoaderMsg] = useState('');
   const [backgroundStyle] = useState(context.backgroundStyle);
-  const [addressXToSendTo, setAddressXToSendTo] = useState('');
-  const [sendAmount, setSendAmount] = useState('');
-  const [balanceText, setBalanceText] = useState('Balance:');
-  const {availableTotal} = useBalances(props.wallet);
 
-  useEffect(() => {
-    viewModel.loaderMsg.subscribe(value => setLoaderMsg(value));
-    viewModel.loaderVisible.subscribe(value => setLoaderVisible(value));
-    viewModel.cameraVisible.subscribe(value => setCameraVisible(value));
-    viewModel.addressXToSendTo.subscribe(value => setAddressXToSendTo(value));
-  }, []);
-
-  useEffect(() => {
-    setBalanceText('Balance: ' + availableTotal);
-  }, [availableTotal]);
-
-  const onSend = (addressX: string, amount: string): void => {
-    viewModel.onSendAvaxX(addressX, amount).subscribe({
-      next: txHash => {
-        Alert.alert('Success', 'Created transaction: ' + txHash);
-      },
-      error: err => Alert.alert('Error', err.message),
-      complete: () => {},
-    });
+  const ClearBtn = () => {
+    const clearIcon = isDarkMode
+      ? require('assets/icons/clear_dark.png')
+      : require('assets/icons/clear_light.png');
+    return (
+      <View style={styles.clear}>
+        <ImgButtonAva src={clearIcon} onPress={() => clearAddress()} />
+      </View>
+    );
   };
 
   const scanIcon = isDarkMode
     ? require('assets/icons/qr_scan_dark.png')
     : require('assets/icons/qr_scan_light.png');
+  const clearBtn = address.length != 0 && ClearBtn();
 
   return (
     <SafeAreaView style={backgroundStyle}>
       <Header showBack onBack={props.onClose} />
-      <Divider size={12} />
-      <TextTitle
-        textAlign="center"
-        text={'Send AVAX (X Chain)'}
-        size={24}
-        bold
-      />
-      <Divider size={8} />
-      <TextTitle text={balanceText} textAlign="center" size={16} />
-      <Divider size={20} />
+      <TextTitle text={'Send AVAX (X Chain)'} />
+      <TextTitle text={'To:'} size={18} />
+
       <View style={styles.horizontalLayout}>
         <InputText
-          label="Address"
-          placeholder="Enter the address"
+          style={[{flex: 1}]}
           multiline={true}
-          onChangeText={text => setAddressXToSendTo(text)}
-          value={addressXToSendTo}
+          onChangeText={text => setAddress(text)}
+          value={address}
         />
-        <View>
-          <ImgButtonAva
-            src={scanIcon}
-            onPress={() => viewModel.onScanBarcode()}
-          />
-        </View>
+        {clearBtn}
+        <ImgButtonAva src={scanIcon} onPress={() => onScanBarcode()} />
       </View>
 
-      <InputText
-        label="Amount"
-        placeholder="Enter the amount"
-        helperText="$0"
-        onChangeText={text => setSendAmount(text)}
-        value={sendAmount}
+      <TextTitle text={'Amount:'} size={18} />
+      <InputAmount
+        showControls={true}
+        onChangeText={text => setSendAmountString(text)}
       />
 
       <ButtonAva
         text={'Send'}
-        onPress={() => onSend(addressXToSendTo, sendAmount)}
+        onPress={() => onSendAvax(address, sendAmountString)}
       />
 
       <Modal animationType="fade" transparent={true} visible={loaderVisible}>
@@ -110,7 +92,7 @@ export default function SendAvaxX(
         onRequestClose={() => setCameraVisible(false)}
         visible={cameraVisible}>
         <QrScannerAva
-          onSuccess={data => viewModel.onBarcodeScanned(data)}
+          onSuccess={data => onBarcodeScanned(data)}
           onCancel={() => setCameraVisible(false)}
         />
       </Modal>
@@ -120,9 +102,12 @@ export default function SendAvaxX(
 
 const styles: any = StyleSheet.create({
   horizontalLayout: {
+    width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
-    overflow: 'hidden',
-    width: '100%',
+  },
+  clear: {
+    position: 'absolute',
+    end: 58,
   },
 });
