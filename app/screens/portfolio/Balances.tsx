@@ -3,8 +3,8 @@ import {StyleSheet, View} from 'react-native';
 import TextLabel from 'components/TextLabel';
 import TextAmount from 'components/TextAmount';
 import {BehaviorSubject} from 'rxjs';
-import {useBalances} from './UseBalances';
 import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
+import {useBalances} from 'screens/portfolio/BalancesHook';
 
 type Props = {
   wallet: BehaviorSubject<MnemonicWallet>;
