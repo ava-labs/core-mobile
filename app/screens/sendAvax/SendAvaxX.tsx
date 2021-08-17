@@ -22,14 +22,15 @@ export default function SendAvaxX(
 ) {
   const context = useContext(ApplicationContext);
   const [
+    targetChain,
     loaderVisible,
     loaderMsg,
     cameraVisible,
     setCameraVisible,
     address,
     setAddress,
-    sendAmountString,
     setSendAmountString,
+    sendFeeString,
     onSendAvax,
     onScanBarcode,
     onBarcodeScanned,
@@ -57,7 +58,11 @@ export default function SendAvaxX(
   return (
     <SafeAreaView style={backgroundStyle}>
       <Header showBack onBack={props.onClose} />
-      <TextTitle text={'Send AVAX (X Chain)'} />
+      <TextTitle
+        text={
+          'Send AVAX ' + (targetChain ? ' (' + targetChain + ' Chain)' : '')
+        }
+      />
       <TextTitle text={'To:'} size={18} />
 
       <View style={styles.horizontalLayout}>
@@ -76,11 +81,10 @@ export default function SendAvaxX(
         showControls={true}
         onChangeText={text => setSendAmountString(text)}
       />
+      <TextTitle text={'Fee:'} size={18} />
+      <TextTitle text={sendFeeString + ' AVAX'} size={12} />
 
-      <ButtonAva
-        text={'Send'}
-        onPress={() => onSendAvax(address, sendAmountString)}
-      />
+      <ButtonAva text={'Send'} onPress={onSendAvax} />
 
       <Modal animationType="fade" transparent={true} visible={loaderVisible}>
         <Loader message={loaderMsg} />
