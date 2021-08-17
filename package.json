@@ -1,6 +1,6 @@
 {
   "name": "avalanche-wallet-apps",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "private": true,
   "scripts": {
     "android": "react-native run-android",
@@ -12,8 +12,8 @@
     "postversion": "react-native-version --never-amend"
   },
   "dependencies": {
+    "@avalabs/avalanche-wallet-sdk": "file:../../Work/avalanche-wallet-sdk-internal",
     "@avalabs/wallet-react-components": "file:../../Work/wallet-react-components",
-    "@avalabs/avalanche-wallet-sdk": "0.8.1",
     "@ethereumjs/common": "^2.2.0",
     "@ethereumjs/tx": "^3.1.4",
     "@react-native-clipboard/clipboard": "^1.8.2",
@@ -22,7 +22,7 @@
     "@react-navigation/bottom-tabs": "^5.11.11",
     "@react-navigation/native": "^5.9.4",
     "@react-navigation/stack": "^5.14.5",
-    "avalanche": "^3.7.0",
+    "babel-plugin-module-resolver": "^4.1.0",
     "big.js": "^6.1.1",
     "bignumber.js": "^9.0.1",
     "bip39": "^3.0.4",
@@ -61,6 +61,8 @@
     "@babel/core": "7.14.3",
     "@babel/runtime": "7.14.0",
     "@react-native-community/eslint-config": "2.0.0",
+    "@types/big.js": "^6.1.1",
+    "@types/hdkey": "^2.0.0",
     "@types/jest": "^26.0.23",
     "@types/react": "^17.0.8",
     "@types/react-native": "^0.64.7",
