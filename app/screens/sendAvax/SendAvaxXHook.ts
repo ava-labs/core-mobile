@@ -2,21 +2,21 @@ import {BN, MnemonicWallet, Utils} from '@avalabs/avalanche-wallet-sdk';
 import {useSendAvaxForm} from '@avalabs/wallet-react-components';
 import {useEffect, useState} from 'react';
 import {Alert} from 'react-native';
-import {asyncScheduler, defer, Subscription} from 'rxjs';
-import {subscribeOn} from 'rxjs/operators';
+import {Subscription} from 'rxjs';
 
 export function useSendAvax(
   wallet: MnemonicWallet,
 ): [
+  'X' | 'C' | undefined,
   boolean,
   string,
   boolean,
   (value: ((prevState: boolean) => boolean) | boolean) => void,
   string,
   any,
-  string,
   (value: ((prevState: string) => string) | string) => void,
-  (addressX: string, amount: string, memo?: string) => void,
+  string,
+  (memo?: string) => Promise<void>,
   () => void,
   (data: string) => void,
   () => void,
@@ -24,9 +24,9 @@ export function useSendAvax(
   const {
     address,
     setAddress,
-    // amount,
-    // setAmount,
-    // targetChain,
+    amount,
+    setAmount,
+    targetChain,
     // txId,
     // error,
     // submit,
@@ -34,7 +34,7 @@ export function useSendAvax(
     // canSubmit,
     // extraTxs,
     // extraStatuses,
-    // sendFee,
+    sendFee,
     // otherFees,
     // isExecuting,
     // activeTxIndex,
@@ -43,37 +43,32 @@ export function useSendAvax(
   const [loaderMsg, setLoaderMsg] = useState('');
   const [cameraVisible, setCameraVisible] = useState(false);
   const [sendAmountString, setSendAmountString] = useState('0.00');
+  const [sendFeeString, setSendFeeString] = useState('0.00');
   const [disposables] = useState(new Subscription());
 
   useEffect(() => {
-    return disposables.unsubscribe;
+    return () => disposables?.unsubscribe();
   }, [disposables]);
 
-  const onSendAvax = (
-    addressX: string,
-    amount: string,
-    memo?: string,
-  ): void => {
-    const amountBn = stringAmountToBN(amount);
+  useEffect(() => {
+    setAmount(stringAmountToBN(sendAmountString));
+  }, [sendAmountString]);
+
+  useEffect(() => {
+    setSendFeeString(bnAmountToString(sendFee));
+  }, [sendFee, targetChain]);
+
+  const onSendAvax = async (memo?: string): Promise<void> => {
     setLoaderVisible(true);
     setLoaderMsg('Sending...');
-    const sub = defer(() => {
-      //without this app will freeze until sendAvaxX resolves
-      return wallet
-        .sendAvaxX(addressX, amountBn, memo)
-        .then((txHash: string) => {
-          Alert.alert('Success', 'Created transaction: ' + txHash);
-        })
-        .catch(reason => {
-          Alert.alert('Error', reason.message);
-        })
-        .finally(() => {
-          setLoaderVisible(false);
-        });
-    })
-      .pipe(subscribeOn(asyncScheduler))
-      .subscribe();
-    disposables.add(sub);
+    try {
+      const txHash = await wallet.sendAvaxX(address, amount!, memo);
+      Alert.alert('Success', 'Created transaction: ' + txHash);
+    } catch (e) {
+      Alert.alert('Error', e.message);
+    } finally {
+      setLoaderVisible(false);
+    }
   };
 
   const onScanBarcode = (): void => {
@@ -94,15 +89,20 @@ export function useSendAvax(
     return Utils.numberToBN(amount, denomination);
   }
 
+  function bnAmountToString(amount: BN): string {
+    return Utils.bnToAvaxX(amount);
+  }
+
   return [
+    targetChain,
     loaderVisible,
     loaderMsg,
     cameraVisible,
     setCameraVisible,
     address,
     setAddress,
-    sendAmountString,
     setSendAmountString,
+    sendFeeString,
     onSendAvax,
     onScanBarcode,
     onBarcodeScanned,
