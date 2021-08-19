@@ -2,7 +2,7 @@ import {BN, MnemonicWallet, Utils} from '@avalabs/avalanche-wallet-sdk';
 import {useSendAvaxForm} from '@avalabs/wallet-react-components';
 import {useEffect, useState} from 'react';
 import {Alert} from 'react-native';
-import {Subscription} from 'rxjs';
+import {asyncScheduler, defer, scheduled, Subscription} from 'rxjs';
 
 export function useSendAvax(
   wallet: MnemonicWallet,
@@ -10,13 +10,14 @@ export function useSendAvax(
   'X' | 'C' | undefined,
   boolean,
   string,
+  string,
   boolean,
   (value: ((prevState: boolean) => boolean) | boolean) => void,
   string,
   any,
   (value: ((prevState: string) => string) | string) => void,
   string,
-  (memo?: string) => Promise<void>,
+  (memo?: string) => void,
   () => void,
   (data: string) => void,
   () => void,
@@ -28,8 +29,8 @@ export function useSendAvax(
     setAmount,
     targetChain,
     // txId,
-    // error,
-    // submit,
+    error,
+    //submit,
     // clearForm,
     // canSubmit,
     // extraTxs,
@@ -41,10 +42,15 @@ export function useSendAvax(
   } = useSendAvaxForm(wallet);
   const [loaderVisible, setLoaderVisible] = useState(false);
   const [loaderMsg, setLoaderMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
   const [cameraVisible, setCameraVisible] = useState(false);
   const [sendAmountString, setSendAmountString] = useState('0.00');
   const [sendFeeString, setSendFeeString] = useState('0.00');
   const [disposables] = useState(new Subscription());
+
+  useEffect(() => {
+    setErrorMsg(error);
+  }, [error]);
 
   useEffect(() => {
     return () => disposables?.unsubscribe();
@@ -58,17 +64,24 @@ export function useSendAvax(
     setSendFeeString(bnAmountToString(sendFee));
   }, [sendFee, targetChain]);
 
-  const onSendAvax = async (memo?: string): Promise<void> => {
+  const onSendAvax = (memo?: string): void => {
     setLoaderVisible(true);
     setLoaderMsg('Sending...');
-    try {
-      const txHash = await wallet.sendAvaxX(address, amount!, memo);
-      Alert.alert('Success', 'Created transaction: ' + txHash);
-    } catch (e) {
-      Alert.alert('Error', e.message);
-    } finally {
-      setLoaderVisible(false);
-    }
+
+    const subscription = scheduled(
+      defer(() => wallet.sendAvaxX(address, amount!, memo)),
+      asyncScheduler,
+    ).subscribe({
+      next: (txHash: string) => {
+        Alert.alert('Success', 'Created transaction: ' + txHash);
+        setLoaderVisible(false);
+      },
+      error: err => {
+        Alert.alert('Error', err.message);
+        setLoaderVisible(false);
+      },
+    });
+    disposables.add(subscription);
   };
 
   const onScanBarcode = (): void => {
@@ -97,6 +110,7 @@ export function useSendAvax(
     targetChain,
     loaderVisible,
     loaderMsg,
+    errorMsg,
     cameraVisible,
     setCameraVisible,
     address,

@@ -11,6 +11,7 @@ import ImgButtonAva from 'components/ImgButtonAva';
 import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import {useSendAvax} from 'screens/sendAvax/SendAvaxXHook';
+import TextLabel from 'components/TextLabel';
 
 type SendAvaxXProps = {
   wallet: MnemonicWallet;
@@ -25,6 +26,7 @@ export default function SendAvaxX(
     targetChain,
     loaderVisible,
     loaderMsg,
+    errorMsg,
     cameraVisible,
     setCameraVisible,
     address,
@@ -84,6 +86,7 @@ export default function SendAvaxX(
       <TextTitle text={'Fee:'} size={18} />
       <TextTitle text={sendFeeString + ' AVAX'} size={12} />
 
+      <TextLabel text={errorMsg || ''} color={context.theme.error} />
       <ButtonAva text={'Send'} onPress={onSendAvax} />
 
       <Modal animationType="fade" transparent={true} visible={loaderVisible}>
