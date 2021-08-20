@@ -2,7 +2,6 @@ import React, {useContext, useEffect, useState} from 'react';
 import {Alert, Modal, SafeAreaView, StyleSheet, View} from 'react-native';
 import ButtonAva from 'components/ButtonAva';
 import TextTitle from 'components/TextTitle';
-import InputAmount from 'components/InputAmount';
 import InputText from 'components/InputText';
 import Loader from 'components/Loader';
 import SendAvaxXViewModel from './SendAvaxXViewModel';
@@ -11,6 +10,8 @@ import Header from 'screens/mainView/Header';
 import ImgButtonAva from 'components/ImgButtonAva';
 import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
 import {ApplicationContext} from 'contexts/ApplicationContext';
+import Divider from 'components/Divider';
+import {useBalances} from 'screens/portfolio/BalancesHook';
 
 type SendAvaxXProps = {
   wallet: MnemonicWallet;
@@ -28,7 +29,9 @@ export default function SendAvaxX(
   const [loaderMsg, setLoaderMsg] = useState('');
   const [backgroundStyle] = useState(context.backgroundStyle);
   const [addressXToSendTo, setAddressXToSendTo] = useState('');
-  const [sendAmount, setSendAmount] = useState('0.00');
+  const [sendAmount, setSendAmount] = useState('');
+  const [balanceText, setBalanceText] = useState('Balance:');
+  const {availableTotal} = useBalances(props.wallet);
 
   useEffect(() => {
     viewModel.loaderMsg.subscribe(value => setLoaderMsg(value));
@@ -36,6 +39,10 @@ export default function SendAvaxX(
     viewModel.cameraVisible.subscribe(value => setCameraVisible(value));
     viewModel.addressXToSendTo.subscribe(value => setAddressXToSendTo(value));
   }, []);
+
+  useEffect(() => {
+    setBalanceText('Balance: ' + availableTotal);
+  }, [availableTotal]);
 
   const onSend = (addressX: string, amount: string): void => {
     viewModel.onSendAvaxX(addressX, amount).subscribe({
@@ -47,49 +54,45 @@ export default function SendAvaxX(
     });
   };
 
-  const ClearBtn = () => {
-    const clearIcon = isDarkMode
-      ? require('assets/icons/clear_dark.png')
-      : require('assets/icons/clear_light.png');
-    return (
-      <View style={styles.clear}>
-        <ImgButtonAva
-          src={clearIcon}
-          onPress={() => viewModel.clearAddress()}
-        />
-      </View>
-    );
-  };
-
   const scanIcon = isDarkMode
     ? require('assets/icons/qr_scan_dark.png')
     : require('assets/icons/qr_scan_light.png');
-  const clearBtn = addressXToSendTo.length != 0 && ClearBtn();
 
   return (
     <SafeAreaView style={backgroundStyle}>
       <Header showBack onBack={props.onClose} />
-      <TextTitle text={'Send AVAX (X Chain)'} />
-      <TextTitle text={'To:'} size={18} />
-
+      <Divider size={12} />
+      <TextTitle
+        textAlign="center"
+        text={'Send AVAX (X Chain)'}
+        size={24}
+        bold
+      />
+      <Divider size={8} />
+      <TextTitle text={balanceText} textAlign="center" size={16} />
+      <Divider size={20} />
       <View style={styles.horizontalLayout}>
         <InputText
-          style={[{flex: 1}]}
+          label="Address"
+          placeholder="Enter the address"
           multiline={true}
           onChangeText={text => setAddressXToSendTo(text)}
           value={addressXToSendTo}
         />
-        {clearBtn}
-        <ImgButtonAva
-          src={scanIcon}
-          onPress={() => viewModel.onScanBarcode()}
-        />
+        <View>
+          <ImgButtonAva
+            src={scanIcon}
+            onPress={() => viewModel.onScanBarcode()}
+          />
+        </View>
       </View>
 
-      <TextTitle text={'Amount:'} size={18} />
-      <InputAmount
-        showControls={true}
+      <InputText
+        label="Amount"
+        placeholder="Enter the amount"
+        helperText="$0"
         onChangeText={text => setSendAmount(text)}
+        value={sendAmount}
       />
 
       <ButtonAva
@@ -117,12 +120,9 @@ export default function SendAvaxX(
 
 const styles: any = StyleSheet.create({
   horizontalLayout: {
-    width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  clear: {
-    position: 'absolute',
-    end: 58,
+    overflow: 'hidden',
+    width: '100%',
   },
 });
