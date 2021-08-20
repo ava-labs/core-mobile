@@ -21,6 +21,8 @@ type Props = {
   errorText?: string;
   // Hides input, shows toggle button to show input, neon color border. Will disable multiline.
   privateMode?: boolean;
+  // Set keyboard type (numeric, text)
+  keyboardType?: 'numeric';
 };
 
 export default function InputText(props: Props | Readonly<Props>) {
@@ -113,6 +115,15 @@ export default function InputText(props: Props | Readonly<Props>) {
     );
   };
 
+  const onChangeText = (text: string): void => {
+    if (props.keyboardType === 'numeric') {
+      text = text.replace(',', '.');
+      text = text.replace(/(?<=\..*)\./g, '');
+    }
+    setText(text);
+    props.onChangeText?.(text);
+  };
+
   return (
     <View
       style={[
@@ -139,6 +150,7 @@ export default function InputText(props: Props | Readonly<Props>) {
           returnKeyType={props.onSubmit && 'go'}
           enablesReturnKeyAutomatically={true}
           editable={props.editable !== false}
+          keyboardType={props.keyboardType}
           multiline={
             props.multiline && !props.privateMode ? props.multiline : false
           }
@@ -168,10 +180,7 @@ export default function InputText(props: Props | Readonly<Props>) {
           ]}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          onChangeText={text1 => {
-            setText(text1);
-            props.onChangeText?.(text1);
-          }}
+          onChangeText={onChangeText}
           value={props.value}
         />
         {!props.privateMode && text.length > 0 && <ClearBtn />}

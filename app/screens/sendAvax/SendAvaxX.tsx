@@ -88,12 +88,17 @@ export default function SendAvaxX(
           label="Amount"
           placeholder="Enter the amount"
           helperText="$0"
+          keyboardType="numeric"
           onChangeText={text => setSendAmountString(text)}
         />
-        <TextTitle
-          text={'Transaction fee: ' + sendFeeString + ' AVAX'}
-          size={12}
-        />
+        <View style={styles.transactionFee}>
+          <TextTitle
+            textAlign="right"
+            color={context.theme.textFieldBorder}
+            text={'Transaction fee: ' + sendFeeString + ' AVAX'}
+            size={12}
+          />
+        </View>
       </View>
 
       <ButtonAva text={'Send'} onPress={onSendAvax} />
@@ -120,5 +125,11 @@ const styles: any = StyleSheet.create({
   horizontalLayout: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  transactionFee: {
+    position: 'relative',
+    bottom: 30,
+    right: 16,
+    alignItems: 'flex-end',
   },
 });

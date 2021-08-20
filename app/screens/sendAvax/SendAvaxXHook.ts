@@ -45,7 +45,7 @@ export function useSendAvax(
   const [loaderMsg, setLoaderMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [cameraVisible, setCameraVisible] = useState(false);
-  const [sendAmountString, setSendAmountString] = useState('0.00');
+  const [sendAmountString, setSendAmountString] = useState('');
   const [sendFeeString, setSendFeeString] = useState('0.00');
   const [disposables] = useState(new Subscription());
 
@@ -99,8 +99,15 @@ export function useSendAvax(
   };
 
   function stringAmountToBN(amount: string): BN {
+    if (!amount) {
+      return new BN(0);
+    }
     const denomination = 9; //todo magic number
-    return Utils.numberToBN(amount, denomination);
+    try {
+      return Utils.numberToBN(amount, denomination);
+    } catch (e) {
+      return new BN(0);
+    }
   }
 
   function bnAmountToString(amount: BN): string {
