@@ -74,7 +74,6 @@ export default function SendAvaxC(
 
       <View style={styles.horizontalLayout}>
         <InputText
-          style={[{flex: 1}]}
           multiline={true}
           onChangeText={text => setAddressCToSendTo(text)}
           value={addressCToSendTo}

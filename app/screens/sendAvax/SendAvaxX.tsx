@@ -1,8 +1,7 @@
-import React, {useContext, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {Modal, SafeAreaView, StyleSheet, View} from 'react-native';
 import ButtonAva from 'components/ButtonAva';
 import TextTitle from 'components/TextTitle';
-import InputAmount from 'components/InputAmount';
 import InputText from 'components/InputText';
 import Loader from 'components/Loader';
 import QrScannerAva from 'components/QrScannerAva';
@@ -10,8 +9,9 @@ import Header from 'screens/mainView/Header';
 import ImgButtonAva from 'components/ImgButtonAva';
 import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
 import {ApplicationContext} from 'contexts/ApplicationContext';
+import Divider from 'components/Divider';
+import {useBalances} from 'screens/portfolio/BalancesHook';
 import {useSendAvax} from 'screens/sendAvax/SendAvaxXHook';
-import TextLabel from 'components/TextLabel';
 
 type SendAvaxXProps = {
   wallet: MnemonicWallet;
@@ -31,6 +31,7 @@ export default function SendAvaxX(
     setCameraVisible,
     address,
     setAddress,
+    sendAmountString,
     setSendAmountString,
     sendFeeString,
     onSendAvax,
@@ -40,53 +41,61 @@ export default function SendAvaxX(
   ] = useSendAvax(props.wallet);
   const [isDarkMode] = useState(context.isDarkMode);
   const [backgroundStyle] = useState(context.backgroundStyle);
+  const [balanceText, setBalanceText] = useState('Balance:');
+  const {availableTotal} = useBalances(props.wallet);
 
-  const ClearBtn = () => {
-    const clearIcon = isDarkMode
-      ? require('assets/icons/clear_dark.png')
-      : require('assets/icons/clear_light.png');
-    return (
-      <View style={styles.clear}>
-        <ImgButtonAva src={clearIcon} onPress={() => clearAddress()} />
-      </View>
-    );
-  };
+  useEffect(() => {
+    setBalanceText('Balance: ' + availableTotal);
+  }, [availableTotal]);
 
   const scanIcon = isDarkMode
     ? require('assets/icons/qr_scan_dark.png')
     : require('assets/icons/qr_scan_light.png');
-  const clearBtn = address.length != 0 && ClearBtn();
 
   return (
     <SafeAreaView style={backgroundStyle}>
       <Header showBack onBack={props.onClose} />
+      <Divider size={12} />
       <TextTitle
+        textAlign="center"
         text={
           'Send AVAX ' + (targetChain ? ' (' + targetChain + ' Chain)' : '')
         }
+        size={24}
+        bold
       />
-      <TextTitle text={'To:'} size={18} />
-
+      <Divider size={8} />
+      <TextTitle text={balanceText} textAlign="center" size={16} />
+      <Divider size={20} />
       <View style={styles.horizontalLayout}>
-        <InputText
-          style={[{flex: 1}]}
-          multiline={true}
-          onChangeText={text => setAddress(text)}
-          value={address}
-        />
-        {clearBtn}
-        <ImgButtonAva src={scanIcon} onPress={() => onScanBarcode()} />
+        <View style={[{flex: 1}]}>
+          <InputText
+            label="Address"
+            placeholder="Enter the address"
+            multiline={true}
+            onChangeText={text => setAddress(text)}
+            value={address}
+          />
+        </View>
+        <View>
+          <ImgButtonAva src={scanIcon} onPress={() => onScanBarcode()} />
+        </View>
       </View>
 
-      <TextTitle text={'Amount:'} size={18} />
-      <InputAmount
-        showControls={true}
-        onChangeText={text => setSendAmountString(text)}
-      />
-      <TextTitle text={'Fee:'} size={18} />
-      <TextTitle text={sendFeeString + ' AVAX'} size={12} />
+      <View style={[{flex: 1}]}>
+        <InputText
+          value={sendAmountString}
+          label="Amount"
+          placeholder="Enter the amount"
+          helperText="$0"
+          onChangeText={text => setSendAmountString(text)}
+        />
+        <TextTitle
+          text={'Transaction fee: ' + sendFeeString + ' AVAX'}
+          size={12}
+        />
+      </View>
 
-      <TextLabel text={errorMsg || ''} color={context.theme.error} />
       <ButtonAva text={'Send'} onPress={onSendAvax} />
 
       <Modal animationType="fade" transparent={true} visible={loaderVisible}>
@@ -109,12 +118,7 @@ export default function SendAvaxX(
 
 const styles: any = StyleSheet.create({
   horizontalLayout: {
-    width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  clear: {
-    position: 'absolute',
-    end: 58,
   },
 });

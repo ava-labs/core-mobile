@@ -52,7 +52,7 @@ export default function RecoveryPhraseInputCard(
         <TextTitle text={'Recovery phrase'} size={18} bold />
       </View>
       <InputText
-        style={[{height: 130}]}
+        minHeight={130}
         placeholder="Enter your recovery phrase"
         value={enteredMnemonic}
         multiline

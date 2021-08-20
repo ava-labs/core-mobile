@@ -1,5 +1,5 @@
 import React, {useContext, useEffect, useState} from 'react';
-import {StyleProp, TextInput, TextStyle, View} from 'react-native';
+import {TextInput, View} from 'react-native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import TextLabel from 'components/TextLabel';
 import ImgButtonAva from 'components/ImgButtonAva';
@@ -10,7 +10,7 @@ type Props = {
   onChangeText?: (text: string) => void;
   editable?: boolean;
   multiline?: boolean;
-  style?: StyleProp<TextStyle>;
+  minHeight?: number;
   onSubmit?: () => void;
   placeholder?: string;
   // Shows label above input
@@ -117,8 +117,6 @@ export default function InputText(props: Props | Readonly<Props>) {
     <View
       style={[
         {
-          flex: 1,
-          flexGrow: 1,
           margin: 12,
           flexDirection: 'column',
         },
@@ -146,6 +144,7 @@ export default function InputText(props: Props | Readonly<Props>) {
           }
           style={[
             {
+              minHeight: props.minHeight,
               flexGrow: 0,
               color: theme.primaryColor,
               fontSize: 16,
@@ -166,7 +165,6 @@ export default function InputText(props: Props | Readonly<Props>) {
               paddingBottom: 12,
               fontFamily: 'Inter-Regular',
             },
-            props.style,
           ]}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
