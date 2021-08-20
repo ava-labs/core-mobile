@@ -21,6 +21,11 @@ export enum COLORS {
   // text card with buttons
   tcwbBg2 = '#F8F8FB',
   shadow = '#00000066',
+  // textField
+  textFieldFocused = '#6A408A',
+  textFieldBorder = '#949497',
+  textFieldBg = '#FFFFFF',
+  textFieldPrivate = '#934AF6',
 
   inputBg = '#E8E8EB',
   textOnInputBg = '#1A1A1C',
@@ -29,7 +34,7 @@ export enum COLORS {
   primaryColor = '#F64942',
   onPrimary = '#FFFFFF',
   primaryColorLight = '#867e89',
-  error = '#ff0000',
+  error = '#FF4562',
   bgWallet = '#f5f6fa',
   incoming = '#6bc688',
   outgoing = '#d04c4c',
@@ -60,6 +65,11 @@ export enum COLORS_NIGHT {
   // text card with buttons
   tcwbBg2 = '#3A3A3C',
   shadow = '#FFFFFF66',
+  // textField
+  textFieldFocused = '#6A408A',
+  textFieldBorder = '#949497',
+  textFieldBg = '#1A1A1C',
+  textFieldPrivate = '#934AF6',
 
   inputBg = '#3A3A3C',
   textOnInputBg = '#FFF',
@@ -68,7 +78,7 @@ export enum COLORS_NIGHT {
   primaryColor = '#F1595A',
   onPrimary = '#FFFFFF',
   primaryColorLight = '#6e7479',
-  error = '#e84970',
+  error = '#FF4562',
   bgWallet = '#181b1d',
   incoming = '#6bc688',
   outgoing = '#d04c4c',
