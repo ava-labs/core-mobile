@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 import {Animated, Dimensions, StyleSheet, Text, View} from 'react-native';
 import PagerView, {
   PagerViewOnPageScrollEventData,
@@ -9,24 +9,17 @@ import SearchHeader, {
 } from 'screens/portfolio/components/SearchHeader';
 import {SlidingDot} from 'react-native-animated-pagination-dots';
 import LinearGradient from 'react-native-linear-gradient';
-import PortfolioViewModel from 'screens/portfolio/PortfolioViewModel';
-import {Subscription} from 'rxjs';
+import {usePortfolio} from 'screens/portfolio/PortfolioHook';
+import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
 
 interface PortfolioHeaderProps {
-  portfolioViewModel: PortfolioViewModel;
+  wallet: MnemonicWallet;
 }
 
 type Props = PortfolioHeaderProps & SearchHeaderProps;
 
-function PortfolioHeader({
-  portfolioViewModel,
-  searchText,
-  onSearchTextChanged,
-}: Props) {
-  const [avaxPrice, setAvaxPrice] = useState(0);
-  const [addressX, setAddressX] = useState('');
-  const [addressP, setAddressP] = useState('');
-  const [addressC, setAddressC] = useState('');
+function PortfolioHeader({wallet, searchText, onSearchTextChanged}: Props) {
+  const [avaxPrice, , , addressX, addressP, addressC] = usePortfolio(wallet);
 
   const width = Dimensions.get('window').width;
   const ref = React.useRef<PagerView>(null);
@@ -41,40 +34,6 @@ function PortfolioHeader({
     inputRange,
     outputRange: [0, 2 * width],
   });
-
-  useEffect(() => {
-    const disposables = new Subscription();
-    disposables.add(
-      portfolioViewModel.avaxPrice.subscribe(value => {
-        console.log('avaxPrice: ' + value);
-        setAvaxPrice(value);
-      }),
-    );
-    disposables.add(
-      portfolioViewModel.addressX.subscribe(value => {
-        console.log('addressX: ' + value);
-        setAddressX(value);
-      }),
-    );
-    disposables.add(
-      portfolioViewModel.addressP.subscribe(value => {
-        console.log('addressP: ' + value);
-        setAddressP(value);
-      }),
-    );
-    disposables.add(
-      portfolioViewModel.addressC.subscribe(value => {
-        console.log('addressC: ' + value);
-        setAddressC(value);
-      }),
-    );
-    portfolioViewModel.onComponentMount();
-
-    return () => {
-      disposables.unsubscribe();
-      portfolioViewModel.onComponentUnMount();
-    };
-  }, [portfolioViewModel]);
 
   const onPageScroll = React.useMemo(
     () =>

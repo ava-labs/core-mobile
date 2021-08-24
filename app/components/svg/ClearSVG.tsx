@@ -3,13 +3,13 @@ import Svg, {Path} from 'react-native-svg';
 
 interface Props {
   size?: number;
-  color?: string;
-  backgroundColor?: string;
+  color: string;
+  backgroundColor: string;
 }
 
 function ClearSVG({color, backgroundColor, size = 24}: Props) {
-  const svgColor = color ? color : '#B4B4B7';
-  const bgColor = backgroundColor ? backgroundColor : '#3A3A3C';
+  const svgColor = color;
+  const bgColor = backgroundColor;
   return (
     <Svg fill="none" height={size} viewBox="0 0 24 24" width={size}>
       <Path
