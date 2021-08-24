@@ -1,12 +1,17 @@
-import React, {FC, useEffect, useState} from 'react';
-import {StyleSheet, View} from 'react-native';
-import PortfolioViewModel from './PortfolioViewModel';
-import Header from 'screens/mainView/Header';
-import Balances from './Balances';
-import TabbedAddressCards from './TabbedAddressCards';
-import {BehaviorSubject, Subscription} from 'rxjs';
+import React, {FC, useContext, useState} from 'react';
+import {
+  Animated,
+  FlatList,
+  ListRenderItemInfo,
+  SafeAreaView,
+  StyleSheet,
+} from 'react-native';
 import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
-import TextLabel from 'components/TextLabel';
+import ListItem from './ListItem';
+import PortfolioHeader from 'screens/portfolio/PortfolioHeader';
+import PortfolioViewModel from 'screens/portfolio/PortfolioViewModel';
+import {BehaviorSubject} from 'rxjs';
+import {ApplicationContext} from 'contexts/ApplicationContext';
 
 type Props = {
   wallet: BehaviorSubject<MnemonicWallet>;
@@ -14,51 +19,75 @@ type Props = {
   onSwitchWallet: () => void;
 };
 
+const data: JSON[] = require('assets/coins.json');
+
 const PortfolioView: FC<Props> = ({wallet, onExit, onSwitchWallet}) => {
   const [viewModel] = useState(new PortfolioViewModel(wallet));
-  const [avaxPrice, setAvaxPrice] = useState(0);
-  const [addressX, setAddressX] = useState('');
-  const [addressP, setAddressP] = useState('');
-  const [addressC, setAddressC] = useState('');
+  const [searchText, setSearchText] = useState('');
+  const [scrollY] = useState(new Animated.Value(0));
+  const context = useContext(ApplicationContext);
+  const isDarkMode = context.isDarkMode;
 
-  useEffect(() => {
-    const disposables = new Subscription();
-    disposables.add(
-      viewModel.avaxPrice.subscribe(value => setAvaxPrice(value)),
+  const keyExtractor = (item: any, index: number) => item?.id ?? index;
+
+  const renderItem = (item: ListRenderItemInfo<any>) => {
+    const json = item.item;
+    return (
+      <ListItem.Coin
+        coinName={json.name}
+        coinPrice={json.current_price}
+        avaxPrice={json.price_change_percentage_24h}
+      />
     );
-    disposables.add(viewModel.addressX.subscribe(value => setAddressX(value)));
-    disposables.add(viewModel.addressP.subscribe(value => setAddressP(value)));
-    disposables.add(viewModel.addressC.subscribe(value => setAddressC(value)));
-    viewModel.onComponentMount();
-
-    return () => {
-      disposables.unsubscribe();
-      viewModel.onComponentUnMount();
-    };
-  }, []);
+  };
 
   return (
-    <View style={styles.container}>
-      <Header
-        showExit
-        onExit={onExit}
-        showSwitchWallet
-        onSwitchWallet={onSwitchWallet}
+    <SafeAreaView style={styles.flex}>
+      <FlatList
+        style={{
+          backgroundColor: isDarkMode ? '#1A1A1C' : '#FFF',
+        }}
+        data={data}
+        renderItem={renderItem}
+        keyExtractor={keyExtractor}
+        nestedScrollEnabled
+        ListHeaderComponent={
+          <PortfolioHeader
+            portfolioViewModel={viewModel}
+            searchText={searchText}
+            onSearchTextChanged={setSearchText}
+          />
+        }
+        onScroll={Animated.event(
+          [{nativeEvent: {contentOffset: {y: scrollY}}}],
+          {useNativeDriver: false},
+        )}
       />
-      <Balances wallet={wallet} />
-      <TextLabel text={'Avax price = ' + avaxPrice + 'USD'} />
-      <TabbedAddressCards
-        addressP={addressP}
-        addressX={addressX}
-        addressC={addressC}
-      />
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  flex: {
+    flex: 1,
+  },
   container: {
-    height: '100%',
+    flexDirection: 'row',
+  },
+  progressContainer: {flex: 0.1, backgroundColor: '#63a4ff'},
+  text: {
+    fontSize: 30,
+  },
+  separator: {
+    paddingVertical: 16,
+    paddingHorizontal: 10,
+  },
+  touchableTitle: {
+    textAlign: 'center',
+    color: '#000',
+  },
+  touchableTitleActive: {
+    color: '#fff',
   },
 });
 

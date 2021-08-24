@@ -8,7 +8,7 @@ enum WalletEvents {
   AddressChanged = 'addressChanged',
 }
 
-export default class {
+export default class PortfolioViewModel {
   avaxPrice: BehaviorSubject<number> = new BehaviorSubject(0);
   wallet: BehaviorSubject<MnemonicWallet>;
   walletCAddress: Observable<string>;
