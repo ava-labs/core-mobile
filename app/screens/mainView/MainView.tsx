@@ -150,7 +150,5 @@ const styles = StyleSheet.create({
   },
   navContainer: {
     backgroundColor: 'transparent',
-    paddingStart: 16,
-    paddingEnd: 16,
   },
 });
