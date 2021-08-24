@@ -18,7 +18,6 @@ import Loader from 'components/Loader';
 import ButtonAva from 'components/ButtonAva';
 import TextTitle from 'components/TextTitle';
 import InputAmount from 'components/InputAmount';
-import {COLORS, COLORS_NIGHT} from 'resources/Constants';
 import Header from 'screens/mainView/Header';
 import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
 import {ApplicationContext} from 'contexts/ApplicationContext';
@@ -31,7 +30,6 @@ type Props = {
 export default function SendCrossChain(props: Props | Readonly<Props>) {
   const context = useContext(ApplicationContext);
   const [viewModel] = useState(new SendCrossChainViewModel(props.wallet));
-  const [isDarkMode] = useState(context.isDarkMode);
   const [balance, setBalance] = useState('');
   const [sourceChain, setSourceChain] = useState(Chain.X);
   const [destinationChain, setDestinationChain] = useState(Chain.P);
@@ -73,7 +71,7 @@ export default function SendCrossChain(props: Props | Readonly<Props>) {
       });
   };
 
-  const THEME = isDarkMode ? COLORS_NIGHT : COLORS;
+  const THEME = context.theme;
   const sourceChainRenderItem: ListRenderItem<ChainRenderItem> = (
     info: ListRenderItemInfo<ChainRenderItem>,
   ) => {
