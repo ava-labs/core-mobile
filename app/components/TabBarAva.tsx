@@ -1,19 +1,17 @@
-import React from 'react';
-import {Appearance} from 'react-native';
-import {COLORS, COLORS_NIGHT} from 'resources/Constants';
+import React, {useContext} from 'react';
 import {TabBar} from 'react-native-tab-view';
+import {ApplicationContext} from 'contexts/ApplicationContext';
 
 export default (props: any) => {
-  const isDarkMode = Appearance.getColorScheme() === 'dark';
-  const THEME = isDarkMode ? COLORS_NIGHT : COLORS;
+  const theme = useContext(ApplicationContext).theme;
   return (
     <TabBar
       {...props}
-      indicatorStyle={{backgroundColor: THEME.tabBarIndicator}}
-      style={{backgroundColor: THEME.transparent}}
+      indicatorStyle={{backgroundColor: theme.tabBarIndicator}}
+      style={{backgroundColor: theme.transparent}}
       labelStyle={{fontWeight: 'bold'}}
-      activeColor={THEME.tabBarText}
-      inactiveColor={THEME.primaryColorLight}
+      activeColor={theme.tabBarText}
+      inactiveColor={theme.primaryColorLight}
     />
   );
 };
