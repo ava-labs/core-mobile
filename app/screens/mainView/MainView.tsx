@@ -100,7 +100,7 @@ export default function MainView(props: Props | Readonly<Props>) {
   };
   const Portfolio = () => (
     <PortfolioView
-      wallet={viewModel.wallet}
+      wallet={viewModel.wallet.value}
       onSwitchWallet={onSwitchWallet}
       onExit={onExit}
     />
