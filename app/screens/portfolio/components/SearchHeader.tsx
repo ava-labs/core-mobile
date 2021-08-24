@@ -23,7 +23,6 @@ function SearchHeader({
   const textInputRef = useRef<TextInput>(null);
   const [active, setActive] = useState(false);
   const context = useContext(ApplicationContext);
-  const isDarkMode = context.isDarkMode;
 
   function onCancel() {
     onSearchTextChanged('');
@@ -38,11 +37,7 @@ function SearchHeader({
 
   return (
     <View>
-      <View
-        style={[
-          styles.container,
-          {backgroundColor: isDarkMode ? '#1A1A1C' : '#FFFFFF'},
-        ]}>
+      <View style={[styles.container, {backgroundColor: context.theme.cardBg}]}>
         <TouchableOpacity>
           <AnalyticsSVG />
         </TouchableOpacity>
@@ -59,18 +54,15 @@ function SearchHeader({
           <View
             style={[
               styles.searchBackground,
-              {backgroundColor: isDarkMode ? '#3A3A3C' : '#E8E8EB'},
+              {backgroundColor: context.theme.inputBg},
             ]}>
             <SearchSVG
-              circleColor={isDarkMode ? '#3A3A3C' : '#E8E8EB'}
-              color={isDarkMode ? '#949497' : '#B4B4B7'}
+              circleColor={context.theme.buttonIconOutline}
+              color={context.theme.buttonIconSecondary}
             />
             <TextInput
               ref={textInputRef}
-              style={[
-                styles.searchInput,
-                {color: isDarkMode ? '#FFF' : '#1A1A1C'},
-              ]}
+              style={[styles.searchInput, {color: context.theme.textOnInputBg}]}
               placeholder="Search"
               placeholderTextColor={'#B4B4B7'}
               value={searchText}
@@ -85,7 +77,8 @@ function SearchHeader({
           <TouchableOpacity style={{paddingLeft: 16}} onPress={onCancel}>
             <ClearSVG
               size={44}
-              backgroundColor={!isDarkMode ? '#E8E8EB' : undefined}
+              color={context.theme.buttonIconSecondary}
+              backgroundColor={context.theme.buttonIconOutline}
             />
           </TouchableOpacity>
         </View>

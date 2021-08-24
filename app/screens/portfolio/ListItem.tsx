@@ -11,7 +11,6 @@ interface Props {
 }
 const BaseListItem: FC<Props> = props => {
   const context = useContext(ApplicationContext);
-  const isDarkMode = context.isDarkMode;
 
   return (
     <View style={{flex: 1, paddingVertical: 16}}>
@@ -40,7 +39,7 @@ const BaseListItem: FC<Props> = props => {
           <View style={{paddingStart: 16}}>
             <Text
               style={{
-                color: '#949497',
+                color: context.theme.balloonTextTertiary,
                 fontSize: 14,
                 lineHeight: 17,
                 justifyContent: 'center',
@@ -49,24 +48,25 @@ const BaseListItem: FC<Props> = props => {
             </Text>
             <Text
               style={{
-                color: isDarkMode ? '#F8F8FB' : '#1A1A1C',
+                color: context.theme.balloonText,
                 fontSize: 16,
                 lineHeight: 24,
               }}>
               {`${props.avaxPrice} AVAX`}
             </Text>
-            <Text style={{color: '#B4B4B7', fontSize: 14, lineHeight: 17}}>
+            <Text
+              style={{
+                color: context.theme.balloonTextSecondary,
+                fontSize: 14,
+                lineHeight: 17,
+              }}>
               {`$${props.coinPrice} USD`}
             </Text>
           </View>
         </View>
         <View style={{flexDirection: 'row', alignItems: 'center'}}>
-          <ButtonAvaTextual
-            text={'Send'}
-            onPress={() => {}}
-            color={'#F1595A'}
-          />
-          <CarrotSVG color={'#F1595A'} />
+          <ButtonAvaTextual text={'Send'} onPress={() => {}} />
+          <CarrotSVG color={context.theme.primaryColor} />
         </View>
       </TouchableOpacity>
     </View>

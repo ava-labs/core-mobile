@@ -2,7 +2,7 @@ import React, {useContext, useState} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import {ApplicationContext} from 'contexts/ApplicationContext';
-import NetworkCircle from 'components/NetworkCircle';
+import BlockchainCircle from 'components/BlockchainCircle';
 
 type Props = {
   addressX: string;
@@ -12,7 +12,7 @@ type Props = {
 
 export default function ReceiveAssets({addressX, addressC, addressP}: Props) {
   const context = useContext(ApplicationContext);
-  const isDarkMode = context.isDarkMode;
+  const theme = context.theme;
 
   // address C is arbitrarily selected. could be any.
   const [activeAddress, setActiveAddress] = useState<string | undefined>(
@@ -32,8 +32,6 @@ export default function ReceiveAssets({addressX, addressC, addressP}: Props) {
   //   ).then(value => console.log(value));
   // };
 
-  const theme = context.theme;
-
   console.debug('activeNetworkAddress: ' + activeAddress);
 
   return (
@@ -41,7 +39,7 @@ export default function ReceiveAssets({addressX, addressC, addressP}: Props) {
       style={[
         styles.container,
         {
-          backgroundColor: isDarkMode ? '#1A1A1C' : theme.bgLight,
+          backgroundColor: theme.cardBg,
         },
       ]}>
       <View style={styles.networkContainer}>
@@ -50,41 +48,45 @@ export default function ReceiveAssets({addressX, addressC, addressP}: Props) {
             style={[
               styles.title,
               {
-                color: isDarkMode ? '#FFF' : '#1A1A1C',
+                color: theme.balloonText,
               },
             ]}>
             Receive assets
           </Text>
-          <Text style={styles.subtitle}>Long press to copy address</Text>
+          <Text
+            style={[
+              styles.subtitle,
+              {
+                color: theme.balloonTextSecondary,
+              },
+            ]}>
+            Long press to copy address
+          </Text>
           <View style={styles.networkSelectionContainer}>
-            <NetworkCircle
-              network={'C'}
+            <BlockchainCircle
+              chain={'C'}
               active={activeAddress === addressC}
-              onNetworkSelected={() => setActiveAddress(addressC)}
+              onChainSelected={() => setActiveAddress(addressC)}
             />
-            <NetworkCircle
-              network={'X'}
+            <BlockchainCircle
+              chain={'X'}
               active={activeAddress === addressX}
-              onNetworkSelected={() => setActiveAddress(addressX)}
+              onChainSelected={() => setActiveAddress(addressX)}
             />
-            <NetworkCircle
-              network={'P'}
+            <BlockchainCircle
+              chain={'P'}
               active={activeAddress === addressP}
-              onNetworkSelected={() => setActiveAddress(addressP)}
+              onChainSelected={() => setActiveAddress(addressP)}
             />
           </View>
         </View>
         {!!activeAddress && (
-          <View style={isDarkMode && styles.qrDarkBackground}>
+          <View style={styles.qrDarkBackground}>
             <QRCode size={70} value={activeAddress} />
           </View>
         )}
       </View>
-      <Text
-        style={[
-          styles.networkAddress,
-          {color: isDarkMode ? '#FFFFFF' : '#1A1A1C'},
-        ]}>
+      <Text style={[styles.networkAddress, {color: theme.balloonText}]}>
         {activeAddress}
       </Text>
     </View>
@@ -117,7 +119,6 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 12,
     lineHeight: 14,
-    color: '#6C6C6E',
   },
   networkAddress: {
     fontSize: 14,

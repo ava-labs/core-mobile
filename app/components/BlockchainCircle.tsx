@@ -3,29 +3,35 @@ import {StyleSheet, Text, TouchableOpacity} from 'react-native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 
 interface Props {
-  network: string;
+  chain: string;
   active?: boolean;
-  onNetworkSelected: () => void;
+  onChainSelected: () => void;
 }
 
-function NetworkCircle({network, active = false, onNetworkSelected}: Props) {
+function BlockchainCircle({chain, active = false, onChainSelected}: Props) {
   const context = useContext(ApplicationContext);
-  const isDarkMode = context.isDarkMode;
 
   function getBackgroundColor() {
     if (active) {
-      return '#F1595A';
+      return context.theme.primaryColor;
     }
 
-    return isDarkMode ? '#3A3A3C' : '#F1F1F4';
+    return context.theme.buttonIconOutline;
   }
 
   return (
     <TouchableOpacity
-      onPress={onNetworkSelected}
+      onPress={onChainSelected}
       style={[styles.circle, {backgroundColor: getBackgroundColor()}]}>
-      <Text style={[styles.text, {color: active ? '#FFF' : '#6C6C6E'}]}>
-        {network.toUpperCase()}
+      <Text
+        style={[
+          {
+            color: active
+              ? context.theme.onPrimary
+              : context.theme.buttonIconSecondary,
+          },
+        ]}>
+        {chain.toUpperCase()}
       </Text>
     </TouchableOpacity>
   );
@@ -45,4 +51,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default NetworkCircle;
+export default BlockchainCircle;
