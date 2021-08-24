@@ -32,6 +32,7 @@
     "node-libs-react-native": "^1.2.1",
     "react": "17.0.1",
     "react-native": "0.64.1",
+    "react-native-animated-pagination-dots": "^0.1.72",
     "react-native-camera": "git+https://git@github.com/react-native-community/react-native-camera.git",
     "react-native-crypto": "2.2.0",
     "react-native-dialog": "^8.1.1",
@@ -39,8 +40,10 @@
     "react-native-fs": "^2.18.0",
     "react-native-gesture-handler": "^1.10.3",
     "react-native-keychain": "^7.0.0",
+    "react-native-linear-gradient": "^2.5.6",
     "react-native-modal-datetime-picker": "^10.0.0",
     "react-native-pager-view": "^5.2.1",
+    "react-native-parallax-header": "^1.1.4",
     "react-native-permissions": "^3.0.4",
     "react-native-qrcode-scanner": "^1.5.4",
     "react-native-qrcode-svg": "^6.1.1",
@@ -59,6 +62,7 @@
   },
   "devDependencies": {
     "@babel/core": "7.14.3",
+    "@babel/plugin-proposal-nullish-coalescing-operator": "^7.14.5",
     "@babel/runtime": "7.14.0",
     "@react-native-community/eslint-config": "2.0.0",
     "@types/big.js": "^6.1.1",
@@ -68,12 +72,14 @@
     "@types/react-native": "^0.64.7",
     "@types/react-test-renderer": "^17.0.1",
     "babel-jest": "26.6.3",
+    "babel-loader": "^8.2.2",
     "eslint": "7.14.0",
     "jest": "26.6.3",
     "metro-react-native-babel-preset": "0.64.0",
+    "react-dom": "17.0.1",
     "react-native-version": "^4.0.0",
     "react-test-renderer": "17.0.1",
-    "typescript": "^4.3.2"
+    "typescript": "^4.3.5"
   },
   "jest": {
     "preset": "react-native"
