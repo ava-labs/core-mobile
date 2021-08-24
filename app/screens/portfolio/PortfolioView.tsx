@@ -9,12 +9,10 @@ import {
 import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
 import ListItem from './ListItem';
 import PortfolioHeader from 'screens/portfolio/PortfolioHeader';
-import PortfolioViewModel from 'screens/portfolio/PortfolioViewModel';
-import {BehaviorSubject} from 'rxjs';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 
 type Props = {
-  wallet: BehaviorSubject<MnemonicWallet>;
+  wallet: MnemonicWallet;
   onExit: () => void;
   onSwitchWallet: () => void;
 };
@@ -22,7 +20,6 @@ type Props = {
 const data: JSON[] = require('assets/coins.json');
 
 const PortfolioView: FC<Props> = ({wallet, onExit, onSwitchWallet}) => {
-  const [viewModel] = useState(new PortfolioViewModel(wallet));
   const [searchText, setSearchText] = useState('');
   const [scrollY] = useState(new Animated.Value(0));
   const context = useContext(ApplicationContext);
@@ -53,7 +50,7 @@ const PortfolioView: FC<Props> = ({wallet, onExit, onSwitchWallet}) => {
         nestedScrollEnabled
         ListHeaderComponent={
           <PortfolioHeader
-            portfolioViewModel={viewModel}
+            wallet={wallet}
             searchText={searchText}
             onSearchTextChanged={setSearchText}
           />

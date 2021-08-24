@@ -8,7 +8,6 @@ import SendView from 'screens/sendAvax/SendView';
 import EarnView from 'screens/earn/EarnView';
 import TransactionsView from 'screens/transactions/TransactionsView';
 import Loader from 'components/Loader';
-import {COLORS, COLORS_NIGHT} from 'resources/Constants';
 import AssetsView from 'screens/portfolio/AssetsView';
 import {Subscription} from 'rxjs';
 import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
@@ -24,6 +23,7 @@ const Tab = createBottomTabNavigator();
 
 export default function MainView(props: Props | Readonly<Props>) {
   const context = useContext(ApplicationContext);
+  const theme = context.theme;
 
   const [viewModel] = useState(new MainViewViewModel(props.wallet));
   const [isDarkMode] = useState(context.isDarkMode);
@@ -100,7 +100,7 @@ export default function MainView(props: Props | Readonly<Props>) {
   };
   const Portfolio = () => (
     <PortfolioView
-      wallet={viewModel.wallet}
+      wallet={viewModel.wallet.value}
       onSwitchWallet={onSwitchWallet}
       onExit={onExit}
     />
@@ -118,10 +118,10 @@ export default function MainView(props: Props | Readonly<Props>) {
         screenOptions={props => screenOptions(props, isDarkMode)}
         tabBarOptions={{
           allowFontScaling: false,
-          activeBackgroundColor: THEME.bg,
-          inactiveBackgroundColor: THEME.bg,
-          activeTintColor: THEME.primaryColor,
-          inactiveTintColor: THEME.primaryColorLight,
+          activeBackgroundColor: theme.bg,
+          inactiveBackgroundColor: theme.bg,
+          activeTintColor: theme.primaryColor,
+          inactiveTintColor: theme.primaryColorLight,
         }}>
         <Tab.Screen name="Portfolio" component={Portfolio} />
         <Tab.Screen name="Assets" component={Assets} />
@@ -131,8 +131,6 @@ export default function MainView(props: Props | Readonly<Props>) {
       </Tab.Navigator>
     </NavigationContainer>
   );
-
-  let THEME = isDarkMode ? COLORS_NIGHT : COLORS;
   return (
     <View style={styles.container}>
       <Modal animationType="fade" transparent={true} visible={!walletReady}>

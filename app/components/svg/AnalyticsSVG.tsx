@@ -9,9 +9,8 @@ interface Prop {
 
 function AnalyticsSVG({color, circleColor}: Prop) {
   const context = useContext(ApplicationContext);
-  const isDarkMode = context.isDarkMode;
-  const svgColor = color ?? isDarkMode ? '#FFF' : '#1A1A1C';
-  const strokeColor = circleColor ?? isDarkMode ? '#3A3A3C' : '#E8E8EB';
+  const svgColor = color ?? context.theme.buttonIcon;
+  const strokeColor = circleColor ?? context.theme.buttonIconOutline;
   return (
     <Svg width="44" height="44" viewBox="0 0 44 44" fill="none">
       <Circle cx="22" cy="22" r="21.5" stroke={strokeColor} />
