@@ -6,20 +6,18 @@ import {
   SafeAreaView,
   StyleSheet,
 } from 'react-native';
-import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
 import ListItem from './ListItem';
 import PortfolioHeader from 'screens/portfolio/PortfolioHeader';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 
 type Props = {
-  wallet: MnemonicWallet;
   onExit: () => void;
   onSwitchWallet: () => void;
 };
 
 const data: JSON[] = require('assets/coins.json');
 
-const PortfolioView: FC<Props> = ({wallet, onExit, onSwitchWallet}) => {
+const PortfolioView: FC<Props> = ({onExit, onSwitchWallet}) => {
   const [searchText, setSearchText] = useState('');
   const [scrollY] = useState(new Animated.Value(0));
   const context = useContext(ApplicationContext);
@@ -50,7 +48,6 @@ const PortfolioView: FC<Props> = ({wallet, onExit, onSwitchWallet}) => {
         nestedScrollEnabled
         ListHeaderComponent={
           <PortfolioHeader
-            wallet={wallet}
             searchText={searchText}
             onSearchTextChanged={setSearchText}
           />

@@ -10,16 +10,13 @@ import SearchHeader, {
 import {SlidingDot} from 'react-native-animated-pagination-dots';
 import LinearGradient from 'react-native-linear-gradient';
 import {usePortfolio} from 'screens/portfolio/PortfolioHook';
-import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
 
-interface PortfolioHeaderProps {
-  wallet: MnemonicWallet;
-}
+interface PortfolioHeaderProps {}
 
 type Props = PortfolioHeaderProps & SearchHeaderProps;
 
-function PortfolioHeader({wallet, searchText, onSearchTextChanged}: Props) {
-  const [avaxPrice, , , addressX, addressP, addressC] = usePortfolio(wallet);
+function PortfolioHeader({searchText, onSearchTextChanged}: Props) {
+  const [addressX, addressP, addressC, balanceTotalInUSD] = usePortfolio();
 
   const width = Dimensions.get('window').width;
   const ref = React.useRef<PagerView>(null);
@@ -76,7 +73,7 @@ function PortfolioHeader({wallet, searchText, onSearchTextChanged}: Props) {
                 lineHeight: 44,
                 color: 'white',
               }}>
-              {`$${avaxPrice} USD`}
+              {balanceTotalInUSD}
             </Text>
           </View>
           <View key={1}>
