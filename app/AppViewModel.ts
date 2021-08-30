@@ -1,4 +1,3 @@
-import WalletSDK from './WalletSDK';
 import {
   asyncScheduler,
   AsyncSubject,
@@ -10,8 +9,9 @@ import {
 } from 'rxjs';
 import {MnemonicWallet, NetworkConstants} from '@avalabs/avalanche-wallet-sdk';
 import {concatMap, map, subscribeOn, switchMap} from 'rxjs/operators';
-import BiometricsSDK from './BiometricsSDK';
 import {BackHandler} from 'react-native';
+import WalletSDK from 'utils/WalletSDK';
+import BiometricsSDK from 'utils/BiometricsSDK';
 
 export enum SelectedView {
   Onboard,
