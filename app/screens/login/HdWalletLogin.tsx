@@ -21,7 +21,9 @@ export default function HdWalletLogin(props: Props | Readonly<Props>) {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.scrollView}>
+    <ScrollView
+      contentContainerStyle={styles.scrollView}
+      keyboardShouldPersistTaps="handled">
       <View style={styles.verticalLayout}>
         <Header showBack onBack={onBack} />
         <View style={[{height: 8}]} />
