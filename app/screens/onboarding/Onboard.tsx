@@ -1,10 +1,11 @@
-import React, {useContext} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {Image, StyleSheet, View} from 'react-native';
 import TextTitle from 'components/TextTitle';
 import ButtonAva from 'components/ButtonAva';
 import TextLabel from 'components/TextLabel';
 import ButtonAvaSecondary from 'components/ButtonAvaSecondary';
 import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useNetworkContext} from '@avalabs/wallet-react-components';
 
 type Props = {
   onCreateWallet: () => void;
@@ -16,6 +17,13 @@ const pkg = require('../../../package.json');
 
 export default function Onboard(props: Props | Readonly<Props>) {
   const context = useContext(ApplicationContext);
+  const networkContext = useNetworkContext();
+  const [networkName, setNetworkName] = useState('');
+
+  useEffect(() => {
+    setNetworkName(networkContext?.network?.name ?? '');
+  }, [networkContext?.network]);
+
   const onCreateWallet = (): void => {
     props.onCreateWallet();
   };
@@ -47,7 +55,7 @@ export default function Onboard(props: Props | Readonly<Props>) {
         onPress={() => onAlreadyHaveWallet()}
       />
       <ButtonAva text={'Create new wallet'} onPress={() => onCreateWallet()} />
-      <TextLabel text={'v' + pkg.version + ' Fuji network'} />
+      <TextLabel text={'v' + pkg.version + ' ' + networkName} />
     </View>
   );
 }
