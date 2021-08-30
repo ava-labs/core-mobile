@@ -152,9 +152,9 @@ const CreatePinScreen = () => {
 const BiometricLoginScreen = () => {
   return (
     <BiometricLogin
-      wallet={viewModel.wallet!}
-      onBiometrySet={() => viewModel.setSelectedView(SelectedView.Main)}
-      onSkip={() => viewModel.setSelectedView(SelectedView.Main)}
+      mnemonic={viewModel.mnemonic}
+      onBiometrySet={() => onEnterWallet(viewModel.mnemonic)}
+      onSkip={() => onEnterWallet(viewModel.mnemonic)}
     />
   );
 };
@@ -162,7 +162,7 @@ const BiometricLoginScreen = () => {
 const LoginWithMnemonicScreen = () => {
   return (
     <HdWalletLogin
-      onEnterWallet={onEnterWallet}
+      onEnterWallet={mnemonic => viewModel.onEnterExistingMnemonic(mnemonic)}
       onBack={() => viewModel.onBackPressed()}
     />
   );
@@ -279,6 +279,11 @@ export default function App() {
         });
         break;
       case SelectedView.CreatePin:
+        navigationRef.current?.navigate(Screen.CreateWalletFlow, {
+          screen: CreateWalletFlowScreen.CreatePin,
+        });
+        break;
+      case SelectedView.CreatePinForExistingWallet:
         navigationRef.current?.navigate(Screen.CreateWalletFlow, {
           screen: CreateWalletFlowScreen.CreatePin,
         });
