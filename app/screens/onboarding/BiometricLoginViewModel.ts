@@ -1,14 +1,13 @@
 import {useEffect, useState} from 'react';
 import BiometricsSDK from 'utils/BiometricsSDK';
-import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
 import {Observable} from 'rxjs';
 import {BIOMETRY_TYPE} from 'react-native-keychain';
 
 export function useBiometricLogin(
-  w: MnemonicWallet,
+  m: string,
   isDarkMode: boolean,
 ): [string, () => Observable<boolean>, any] {
-  const [wallet] = useState(w);
+  const [mnemonic] = useState(m);
   const [biometryType, setBiometryType] = useState('');
   const [fingerprintIcon, setFingerprintIcon] = useState<any>();
 
@@ -48,7 +47,7 @@ export function useBiometricLogin(
   }, [biometryType]);
 
   const onUseBiometry = (): Observable<boolean> => {
-    return BiometricsSDK.storeWalletWithBiometry(wallet.mnemonic);
+    return BiometricsSDK.storeWalletWithBiometry(mnemonic);
   };
 
   return [biometryType, onUseBiometry, fingerprintIcon];
