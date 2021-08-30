@@ -156,7 +156,7 @@ export function useBalances(w: MnemonicWallet) {
       .catch(reason => console.error(reason));
   }, [newBalanceX, newBalanceP, newBalanceC, stakingAmount]);
 
-  return [
+  return {
     availableX,
     availableP,
     lockedX,
@@ -165,5 +165,5 @@ export function useBalances(w: MnemonicWallet) {
     availableC,
     stakingAmount,
     availableTotal,
-  ];
+  };
 }

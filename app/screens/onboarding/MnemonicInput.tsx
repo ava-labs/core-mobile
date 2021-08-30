@@ -1,8 +1,8 @@
 import React, {useContext} from 'react';
 import {StyleSheet, View} from 'react-native';
 import TextTitle from 'components/TextTitle';
-import InputText from 'components/InputText';
 import {ApplicationContext} from 'contexts/ApplicationContext';
+import Divider from 'components/Divider';
 
 type Props = {
   keyNum: number;
@@ -16,18 +16,15 @@ export default function MnemonicInput(props: Props | Readonly<Props>) {
   const theme = context.theme;
   return (
     <View style={styles.horizontalLayout}>
-      <TextTitle
-        text={(props.keyNum + 1).toString()}
-        size={16}
-        color={theme.primaryColorLight}
-      />
-      <InputText
-        value={props.text}
-        style={styles.input}
-        textSize={16}
-        editable={props.editable}
-        onChangeText={props.onChangeText}
-      />
+      <View style={[{width: 20}]}>
+        <TextTitle
+          text={(props.keyNum + 1).toString()}
+          size={16}
+          color={theme.primaryColorLight}
+        />
+      </View>
+      <Divider size={4} />
+      <TextTitle text={props.text} size={16} />
     </View>
   );
 }
@@ -42,6 +39,7 @@ const styles: any = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     width: 100,
+    height: 32,
   },
   input: {
     margin: 0,

@@ -11,7 +11,7 @@ type Props = {
 };
 
 export default function Balances(props: Props | Readonly<Props>) {
-  const [
+  const {
     availableX,
     availableP,
     lockedX,
@@ -20,7 +20,7 @@ export default function Balances(props: Props | Readonly<Props>) {
     availableC,
     stakingAmount,
     availableTotal,
-  ] = useBalances(props.wallet.value);
+  } = useBalances(props.wallet.value);
 
   return (
     <View>
