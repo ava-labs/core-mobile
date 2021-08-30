@@ -7,7 +7,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
-import ListItem from './ListItem';
+import AvaListItem from 'screens/portfolio/AvaListItem';
 import PortfolioHeader from 'screens/portfolio/PortfolioHeader';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 
@@ -30,7 +30,7 @@ const PortfolioView: FC<Props> = ({wallet, onExit, onSwitchWallet}) => {
   const renderItem = (item: ListRenderItemInfo<any>) => {
     const json = item.item;
     return (
-      <ListItem.Coin
+      <AvaListItem.Coin
         coinName={json.name}
         coinPrice={json.current_price}
         avaxPrice={json.price_change_percentage_24h}

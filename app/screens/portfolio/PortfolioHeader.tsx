@@ -1,16 +1,14 @@
-import React from 'react';
-import {Animated, Dimensions, StyleSheet, Text, View} from 'react-native';
-import PagerView, {
-  PagerViewOnPageScrollEventData,
-} from 'react-native-pager-view';
-import ReceiveAssets from 'screens/portfolio/components/ReceiveAssets';
+import React, {useContext} from 'react';
+import {StyleSheet, Text, View} from 'react-native';
 import SearchHeader, {
   SearchHeaderProps,
 } from 'screens/portfolio/components/SearchHeader';
-import {SlidingDot} from 'react-native-animated-pagination-dots';
-import LinearGradient from 'react-native-linear-gradient';
 import {usePortfolio} from 'screens/portfolio/PortfolioHook';
 import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
+import PortfolioActionButton from './components/PortfolioActionButton';
+import AvaListItem from 'screens/portfolio/AvaListItem';
+import LinearGradient from 'react-native-linear-gradient';
+import {ApplicationContext} from 'contexts/ApplicationContext';
 
 interface PortfolioHeaderProps {
   wallet: MnemonicWallet;
@@ -19,96 +17,54 @@ interface PortfolioHeaderProps {
 type Props = PortfolioHeaderProps & SearchHeaderProps;
 
 function PortfolioHeader({wallet, searchText, onSearchTextChanged}: Props) {
-  const [avaxPrice, , , addressX, addressP, addressC] = usePortfolio(wallet);
-
-  const width = Dimensions.get('window').width;
-  const ref = React.useRef<PagerView>(null);
-  const scrollOffsetAnimatedValue = React.useRef(new Animated.Value(0)).current;
-  const positionAnimatedValue = React.useRef(new Animated.Value(0)).current;
-  const AnimatedPagerView = Animated.createAnimatedComponent(PagerView);
-  const inputRange = [0, 2];
-  const scrollX = Animated.add(
-    scrollOffsetAnimatedValue,
-    positionAnimatedValue,
-  ).interpolate({
-    inputRange,
-    outputRange: [0, 2 * width],
-  });
-
-  const onPageScroll = React.useMemo(
-    () =>
-      Animated.event<PagerViewOnPageScrollEventData>(
-        [
-          {
-            nativeEvent: {
-              offset: scrollOffsetAnimatedValue,
-              position: positionAnimatedValue,
-            },
-          },
-        ],
-        {
-          useNativeDriver: false,
-        },
-      ),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
-  );
-
+  const [avaxPrice, walletEvmAddrBech] = usePortfolio(wallet);
+  const context = useContext(ApplicationContext);
+  const isDarkMode = context.isDarkMode;
   return (
-    <LinearGradient colors={['#2700D8', '#C29BF9']}>
-      <View
-        style={{
-          minHeight: 360,
-          flex: 1,
-          justifyContent: 'space-evenly',
-        }}>
-        <AnimatedPagerView
-          initialPage={0}
-          ref={ref}
-          style={styles.PagerView}
-          onPageScroll={onPageScroll}>
-          {/*{INTRO_DATA.map(({key}) => (*/}
-          <View key={0} style={styles.center}>
-            <Text
-              style={{
-                fontWeight: 'bold',
-                fontSize: 36,
-                lineHeight: 44,
-                color: 'white',
-              }}>
-              {`$${avaxPrice} USD`}
-            </Text>
-          </View>
-          <View key={1}>
-            <ReceiveAssets
-              addressX={addressX}
-              addressC={addressC}
-              addressP={addressP}
-            />
-          </View>
-          {/*))}*/}
-        </AnimatedPagerView>
-        <View style={styles.dotContainer}>
-          <SlidingDot
-            marginHorizontal={3}
-            data={[{}, {}]}
-            //@ts-ignore
-            scrollX={scrollX}
-            dotStyle={styles.dot}
-            dotSize={8}
-            slidingIndicatorStyle={{
-              backgroundColor: 'white',
-            }}
-          />
-        </View>
-        <SearchHeader
-          searchText={searchText}
-          onSearchTextChanged={text => {
-            onSearchTextChanged(text);
-            console.log('search header:' + text);
-          }}
+    <LinearGradient
+      colors={isDarkMode ? ['#00000000', '#0d0711'] : ['#FFF', '#C29BF9']}
+      style={{
+        flex: 1,
+        justifyContent: 'space-between',
+      }}>
+      <View>
+        <AvaListItem.Account
+          accountName={'My Awesome Wallet'}
+          accountAddress={walletEvmAddrBech ?? ''}
         />
       </View>
+      <View key={0} style={styles.center}>
+        <Text
+          style={{
+            fontWeight: 'bold',
+            fontSize: 36,
+            lineHeight: 44,
+            color: context.theme.buttonIcon,
+          }}>
+          {`$${avaxPrice} USD`}
+        </Text>
+      </View>
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'center',
+          alignItems: 'center',
+          paddingTop: 60,
+          paddingBottom: 46,
+        }}>
+        <PortfolioActionButton.Send />
+        <View style={{paddingHorizontal: 24}}>
+          <PortfolioActionButton.Receive />
+        </View>
+        <PortfolioActionButton.Buy />
+      </View>
+      <SearchHeader
+        searchText={searchText}
+        onSearchTextChanged={text => {
+          onSearchTextChanged(text);
+          console.log('search header:' + text);
+        }}
+      />
     </LinearGradient>
   );
 }
@@ -123,19 +79,7 @@ const styles = StyleSheet.create({
   dotContainer: {
     justifyContent: 'center',
     alignSelf: 'center',
-    flex: 0.2,
     paddingBottom: 16,
-  },
-  contentSlider: {
-    flex: 1,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-  },
-  dot: {
-    backgroundColor: 'white',
-  },
-  PagerView: {
-    flex: 1,
   },
 });
 
