@@ -96,11 +96,7 @@ export default function MainView(props: Props | Readonly<Props>) {
     };
   };
   const Portfolio = () => (
-    <PortfolioView
-      wallet={wallet!}
-      onSwitchWallet={onSwitchWallet}
-      onExit={onExit}
-    />
+    <PortfolioView onSwitchWallet={onSwitchWallet} onExit={onExit} />
   );
   const Assets = () => <AssetsView wallet={wallet!} />;
   const Send = () => <SendView wallet={wallet!} />;

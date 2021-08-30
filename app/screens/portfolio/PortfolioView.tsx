@@ -16,14 +16,13 @@ import {ApplicationContext} from 'contexts/ApplicationContext';
 import SearchHeader from 'screens/portfolio/components/SearchHeader';
 
 type Props = {
-  wallet: MnemonicWallet;
   onExit: () => void;
   onSwitchWallet: () => void;
 };
 
 const data: JSON[] = require('assets/coins.json');
 
-const PortfolioView: FC<Props> = ({wallet, onExit, onSwitchWallet}) => {
+const PortfolioView: FC<Props> = ({onExit, onSwitchWallet}) => {
   const [searchText, setSearchText] = useState('');
   const scrollY = useRef(new Animated.Value(0)).current;
   const listRef = useRef<FlatList>(null);
@@ -74,7 +73,7 @@ const PortfolioView: FC<Props> = ({wallet, onExit, onSwitchWallet}) => {
           />
         }
       />
-      <PortfolioHeader wallet={wallet} scrollY={scrollY} />
+      <PortfolioHeader scrollY={scrollY} />
     </SafeAreaView>
   );
 };

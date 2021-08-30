@@ -1,13 +1,11 @@
 import React, {useContext} from 'react';
 import {Animated, Platform, StyleSheet, Text, View} from 'react-native';
 import {usePortfolio} from 'screens/portfolio/PortfolioHook';
-import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
 import PortfolioActionButton from './components/PortfolioActionButton';
 import AvaListItem from 'screens/portfolio/AvaListItem';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 
 interface PortfolioHeaderProps {
-  wallet: MnemonicWallet;
   scrollY: Animated.AnimatedInterpolation;
 }
 
@@ -15,9 +13,9 @@ export const HEADER_MAX_HEIGHT = 260;
 export const HEADER_MIN_HEIGHT = Platform.OS === 'ios' ? 60 : 73;
 export const HEADER_SCROLL_DISTANCE = HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT;
 
-function PortfolioHeader({wallet, scrollY}: PortfolioHeaderProps) {
+function PortfolioHeader({scrollY}: PortfolioHeaderProps) {
   const context = useContext(ApplicationContext);
-  const [avaxPrice, walletEvmAddrBech] = usePortfolio(wallet);
+  const [addressX, addressP, addressC, balanceTotalInUSD] = usePortfolio();
 
   const headerTranslate = scrollY.interpolate({
     inputRange: [0, HEADER_SCROLL_DISTANCE],
@@ -66,7 +64,7 @@ function PortfolioHeader({wallet, scrollY}: PortfolioHeaderProps) {
         <Animated.View style={{opacity: imageOpacity}}>
           <AvaListItem.Account
             accountName={'My Awesome Wallet'}
-            accountAddress={walletEvmAddrBech ?? ''}
+            accountAddress={addressC ?? ''}
           />
         </Animated.View>
         <Animated.View
@@ -75,7 +73,7 @@ function PortfolioHeader({wallet, scrollY}: PortfolioHeaderProps) {
             transform: [{translateY: titleTranslate}],
           }}>
           <Text style={[styles.text, {color: context.theme.buttonIcon}]}>
-            {`$${avaxPrice} USD`}
+            {balanceTotalInUSD}
           </Text>
         </Animated.View>
         <Animated.View
