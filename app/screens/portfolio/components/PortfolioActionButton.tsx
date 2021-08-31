@@ -36,7 +36,7 @@ function PortfolioActionButtonBase({
         justifyContent: 'space-between',
         alignItems: 'center',
         paddingVertical: 12,
-        backgroundColor: context.theme.bgLight,
+        backgroundColor: context.theme.buttonIconOutline,
         opacity: 0.8,
       }}>
       <View
