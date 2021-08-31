@@ -1,24 +1,20 @@
-import AnalyticsSVG from 'components/svg/AnalyticsSVG';
 import SearchSVG from 'components/svg/SearchSVG';
-import React, {useContext, useEffect, useRef, useState} from 'react';
-import {
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import React, {RefObject, useContext, useEffect, useRef, useState} from 'react';
+import {FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
 import ClearSVG from 'components/svg/ClearSVG';
 import {ApplicationContext} from 'contexts/ApplicationContext';
+import AddSVG from 'components/svg/AddSVG';
 
 export interface SearchHeaderProps {
   searchText?: string;
   onSearchTextChanged: (text: string) => void;
+  listRef: RefObject<FlatList>;
 }
 
 function SearchHeader({
   searchText = '',
   onSearchTextChanged,
+  listRef,
 }: SearchHeaderProps) {
   const textInputRef = useRef<TextInput>(null);
   const [active, setActive] = useState(false);
@@ -39,7 +35,7 @@ function SearchHeader({
     <View>
       <View style={[styles.container, {backgroundColor: context.theme.cardBg}]}>
         <TouchableOpacity>
-          <AnalyticsSVG />
+          <AddSVG />
         </TouchableOpacity>
         <Text style={styles.title}>Tokens</Text>
         <TouchableOpacity
@@ -71,6 +67,9 @@ function SearchHeader({
               accessible
               onBlur={() => {
                 setActive(false);
+              }}
+              onFocus={() => {
+                listRef?.current?.scrollToIndex({index: 0});
               }}
             />
           </View>
