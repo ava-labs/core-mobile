@@ -38,6 +38,7 @@ function PortfolioActionButtonBase({
         paddingVertical: 12,
         backgroundColor: context.theme.buttonIconOutline,
         opacity: 0.8,
+        zIndex: 2,
       }}>
       <View
         style={{

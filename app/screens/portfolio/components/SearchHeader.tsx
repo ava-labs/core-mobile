@@ -1,6 +1,13 @@
 import SearchSVG from 'components/svg/SearchSVG';
 import React, {RefObject, useContext, useEffect, useRef, useState} from 'react';
-import {FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import {
+  FlatList,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import ClearSVG from 'components/svg/ClearSVG';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import AddSVG from 'components/svg/AddSVG';
@@ -8,7 +15,7 @@ import AddSVG from 'components/svg/AddSVG';
 export interface SearchHeaderProps {
   searchText?: string;
   onSearchTextChanged: (text: string) => void;
-  listRef: RefObject<FlatList>;
+  listRef?: RefObject<FlatList>;
 }
 
 function SearchHeader({
@@ -21,18 +28,28 @@ function SearchHeader({
   const context = useContext(ApplicationContext);
 
   function onCancel() {
+    console.log('on cancel pressed');
     onSearchTextChanged('');
     textInputRef?.current?.blur();
+    setActive(false);
   }
 
   useEffect(() => {
     if (active) {
       textInputRef?.current?.focus();
+      listRef?.current?.scrollToIndex({
+        animated: true,
+        index: 0,
+      });
     }
   }, [active]);
 
   return (
-    <View>
+    <View
+      // while we wait for the proper background from UX
+      style={{
+        backgroundColor: context.isDarkMode ? '#000' : context.theme.tcwbBg2,
+      }}>
       <View style={[styles.container, {backgroundColor: context.theme.cardBg}]}>
         <TouchableOpacity>
           <AddSVG />
@@ -65,12 +82,6 @@ function SearchHeader({
               onChangeText={onSearchTextChanged}
               underlineColorAndroid="transparent"
               accessible
-              onBlur={() => {
-                setActive(false);
-              }}
-              onFocus={() => {
-                listRef?.current?.scrollToIndex({index: 0});
-              }}
             />
           </View>
           <TouchableOpacity style={{paddingLeft: 16}} onPress={onCancel}>
