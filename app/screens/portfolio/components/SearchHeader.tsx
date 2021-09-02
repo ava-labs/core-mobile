@@ -1,7 +1,7 @@
-import AnalyticsSVG from 'components/svg/AnalyticsSVG';
 import SearchSVG from 'components/svg/SearchSVG';
-import React, {useContext, useEffect, useRef, useState} from 'react';
+import React, {RefObject, useContext, useEffect, useRef, useState} from 'react';
 import {
+  FlatList,
   StyleSheet,
   Text,
   TextInput,
@@ -10,36 +10,49 @@ import {
 } from 'react-native';
 import ClearSVG from 'components/svg/ClearSVG';
 import {ApplicationContext} from 'contexts/ApplicationContext';
+import AddSVG from 'components/svg/AddSVG';
 
 export interface SearchHeaderProps {
   searchText?: string;
   onSearchTextChanged: (text: string) => void;
+  listRef?: RefObject<FlatList>;
 }
 
 function SearchHeader({
   searchText = '',
   onSearchTextChanged,
+  listRef,
 }: SearchHeaderProps) {
   const textInputRef = useRef<TextInput>(null);
   const [active, setActive] = useState(false);
   const context = useContext(ApplicationContext);
 
   function onCancel() {
+    console.log('on cancel pressed');
     onSearchTextChanged('');
     textInputRef?.current?.blur();
+    setActive(false);
   }
 
   useEffect(() => {
     if (active) {
       textInputRef?.current?.focus();
+      listRef?.current?.scrollToIndex({
+        animated: true,
+        index: 0,
+      });
     }
   }, [active]);
 
   return (
-    <View>
+    <View
+      // while we wait for the proper background from UX
+      style={{
+        backgroundColor: context.isDarkMode ? '#000' : context.theme.tcwbBg2,
+      }}>
       <View style={[styles.container, {backgroundColor: context.theme.cardBg}]}>
         <TouchableOpacity>
-          <AnalyticsSVG />
+          <AddSVG />
         </TouchableOpacity>
         <Text style={styles.title}>Tokens</Text>
         <TouchableOpacity
@@ -69,9 +82,6 @@ function SearchHeader({
               onChangeText={onSearchTextChanged}
               underlineColorAndroid="transparent"
               accessible
-              onBlur={() => {
-                setActive(false);
-              }}
             />
           </View>
           <TouchableOpacity style={{paddingLeft: 16}} onPress={onCancel}>
