@@ -18,6 +18,7 @@ export enum SelectedView {
   CreateWallet,
   CheckMnemonic,
   CreatePin,
+  CreatePinForExistingWallet,
   BiometricStore,
   LoginWithMnemonic,
   PinOrBiometryLogin,
@@ -69,6 +70,13 @@ export default class {
       }),
       subscribeOn(asyncScheduler),
     );
+  };
+
+  onEnterExistingMnemonic = (mnemonic: string): void => {
+    BiometricsSDK.clearWalletKey().then(() => {
+      this.mnemonic = mnemonic;
+      this.setSelectedView(SelectedView.CreatePinForExistingWallet);
+    });
   };
 
   onSavedMnemonic = (mnemonic: string): void => {
@@ -139,6 +147,9 @@ export default class {
         return true;
       case SelectedView.CreatePin:
         this.setSelectedView(SelectedView.CheckMnemonic);
+        return true;
+      case SelectedView.CreatePinForExistingWallet:
+        this.setSelectedView(SelectedView.Onboard);
         return true;
       case SelectedView.BiometricStore:
         this.setSelectedView(SelectedView.CreatePin);
