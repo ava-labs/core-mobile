@@ -9,7 +9,8 @@
     "link": "react-native link",
     "test": "jest",
     "lint": "eslint .",
-    "postversion": "react-native-version --never-amend"
+    "postversion": "react-native-version --never-amend",
+    "clean": "./scripts/clean"
   },
   "dependencies": {
     "@avalabs/avalanche-wallet-sdk": "file:../../Work/avalanche-wallet-sdk-internal",
