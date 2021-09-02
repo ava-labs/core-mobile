@@ -9,7 +9,8 @@
     "link": "react-native link",
     "test": "jest",
     "lint": "eslint .",
-    "postversion": "react-native-version --never-amend"
+    "postversion": "react-native-version --never-amend",
+    "clean": "./scripts/clean"
   },
   "dependencies": {
     "@avalabs/avalanche-wallet-sdk": "file:../../Work/avalanche-wallet-sdk-internal",
@@ -43,7 +44,6 @@
     "react-native-linear-gradient": "^2.5.6",
     "react-native-modal-datetime-picker": "^10.0.0",
     "react-native-pager-view": "^5.2.1",
-    "react-native-parallax-header": "^1.1.4",
     "react-native-permissions": "^3.0.4",
     "react-native-qrcode-scanner": "^1.5.4",
     "react-native-qrcode-svg": "^6.1.1",
@@ -54,6 +54,7 @@
     "react-native-svg": "^12.1.1",
     "react-native-tab-view": "^3.0.1",
     "react-native-v8": ">=0.64.0-patch.0 <0.64.1",
+    "react-native-vector-icons": "^8.1.0",
     "react-native-webview": "^11.6.5",
     "react-native-webview-crypto": "^0.0.22",
     "rxjs": "^7.1.0",
@@ -70,6 +71,7 @@
     "@types/jest": "^26.0.23",
     "@types/react": "^17.0.8",
     "@types/react-native": "^0.64.7",
+    "@types/react-native-vector-icons": "^6.4.8",
     "@types/react-test-renderer": "^17.0.1",
     "babel-jest": "26.6.3",
     "babel-loader": "^8.2.2",
