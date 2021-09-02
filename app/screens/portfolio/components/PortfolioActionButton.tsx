@@ -36,7 +36,7 @@ function PortfolioActionButtonBase({
         justifyContent: 'space-between',
         alignItems: 'center',
         paddingVertical: 12,
-        backgroundColor: context.theme.buttonIconOutline,
+        backgroundColor: context.theme.bgActionButton,
         opacity: 0.8,
         zIndex: 2,
       }}>
@@ -54,7 +54,11 @@ function PortfolioActionButtonBase({
         </View>
       </View>
       <Text
-        style={{fontSize: 14, lineHeight: 17, color: context.theme.buttonIcon}}>
+        style={{
+          fontSize: 14,
+          lineHeight: 17,
+          color: context.theme.txtOnBgApp,
+        }}>
         {caption}
       </Text>
     </TouchableOpacity>

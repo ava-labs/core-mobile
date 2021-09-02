@@ -20,7 +20,7 @@ export default function TextButtonTextual({
       return color;
     }
 
-    return disabled ? theme.buttonPrimaryDisabled : theme.buttonPrimary;
+    return disabled ? theme.btnTextTxtDisabled : theme.btnTextTxt;
   }
   return (
     <Text

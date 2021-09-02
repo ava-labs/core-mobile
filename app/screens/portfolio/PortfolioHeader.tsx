@@ -52,9 +52,7 @@ function PortfolioHeader({scrollY}: PortfolioHeaderProps) {
           styles.header,
           {
             // while we wait for the proper background from UX
-            backgroundColor: context.isDarkMode
-              ? '#000'
-              : context.theme.tcwbBg2,
+            backgroundColor: context.theme.bgApp,
             transform: [{translateY: headerTranslate}],
           },
         ]}
@@ -72,7 +70,7 @@ function PortfolioHeader({scrollY}: PortfolioHeaderProps) {
             alignItems: 'center',
             transform: [{translateY: titleTranslate}],
           }}>
-          <Text style={[styles.text, {color: context.theme.buttonIcon}]}>
+          <Text style={[styles.text, {color: context.theme.txtOnBgApp}]}>
             {balanceTotalInUSD}
           </Text>
         </Animated.View>

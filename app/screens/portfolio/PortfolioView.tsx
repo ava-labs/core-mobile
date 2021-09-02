@@ -6,7 +6,6 @@ import {
   SafeAreaView,
   StyleSheet,
 } from 'react-native';
-import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
 import AvaListItem from 'screens/portfolio/AvaListItem';
 import PortfolioHeader, {
   HEADER_MAX_HEIGHT,
@@ -49,7 +48,7 @@ const PortfolioView: FC<Props> = ({onExit, onSwitchWallet}) => {
         style={[
           {
             flex: 1,
-            backgroundColor: context.theme.cardBg,
+            backgroundColor: context.theme.bgOnBgApp,
             marginTop: HEADER_MIN_HEIGHT,
           },
         ]}

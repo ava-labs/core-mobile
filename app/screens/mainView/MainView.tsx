@@ -109,10 +109,10 @@ export default function MainView(props: Props | Readonly<Props>) {
         screenOptions={props => screenOptions(props, isDarkMode)}
         tabBarOptions={{
           allowFontScaling: false,
-          activeBackgroundColor: theme.bg,
-          inactiveBackgroundColor: theme.bg,
-          activeTintColor: theme.primaryColor,
-          inactiveTintColor: theme.primaryColorLight,
+          activeBackgroundColor: theme.bgApp,
+          inactiveBackgroundColor: theme.bgApp,
+          activeTintColor: theme.accentColor,
+          inactiveTintColor: theme.bgOnBgApp,
         }}>
         <Tab.Screen name="Portfolio" component={Portfolio} />
         <Tab.Screen name="Assets" component={Assets} />

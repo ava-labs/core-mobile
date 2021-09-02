@@ -72,7 +72,7 @@ export default function AssetsAddToken(props: Props | Readonly<Props>) {
         textAlign={'center'}
         text={errorMsg}
         size={18}
-        color={THEME.error}
+        color={THEME.txtError}
       />
 
       <TextTitle text={'Token Name'} size={18} />

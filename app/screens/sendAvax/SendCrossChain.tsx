@@ -138,7 +138,8 @@ export default function SendCrossChain(props: Props | Readonly<Props>) {
         transparent={true}
         visible={selectSourceChainVisible}>
         <View style={styles.modalContainer}>
-          <View style={[styles.modalBackground, {backgroundColor: THEME.bg}]}>
+          <View
+            style={[styles.modalBackground, {backgroundColor: THEME.bgApp}]}>
             <FlatList
               style={{height: 100}}
               data={viewModel.getChainRenderItems(
@@ -156,7 +157,8 @@ export default function SendCrossChain(props: Props | Readonly<Props>) {
         transparent={true}
         visible={selectDestinationChainVisible}>
         <View style={styles.modalContainer}>
-          <View style={[styles.modalBackground, {backgroundColor: THEME.bg}]}>
+          <View
+            style={[styles.modalBackground, {backgroundColor: THEME.bgApp}]}>
             <FlatList
               style={{height: 100}}
               data={viewModel.getChainRenderItems(availableDestinationChains)}

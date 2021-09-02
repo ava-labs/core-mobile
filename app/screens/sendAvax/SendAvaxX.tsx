@@ -94,7 +94,7 @@ export default function SendAvaxX(
         <View style={styles.transactionFee}>
           <TextTitle
             textAlign="right"
-            color={context.theme.textFieldBorder}
+            color={context.theme.txtListItemSubscript}
             text={'Transaction fee: ' + sendFeeString + ' AVAX'}
             size={12}
           />

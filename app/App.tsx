@@ -322,19 +322,19 @@ export default function App() {
   const navTheme: Theme = {
     dark: context.isDarkMode,
     colors: {
-      primary: theme.primaryColor,
-      background: theme.bg,
-      text: theme.textOnBg,
-      card: theme.primaryColor,
-      border: theme.bg,
-      notification: theme.primaryColor,
+      primary: theme.accentColor,
+      background: theme.bgApp,
+      text: theme.txtOnBgApp,
+      card: theme.bgOnBgApp,
+      border: theme.bgApp,
+      notification: theme.accentColor,
     },
   };
 
   return (
     <SafeAreaView style={backgroundStyle}>
       <StatusBar
-        backgroundColor={theme.bg}
+        backgroundColor={theme.bgApp}
         barStyle={isDarkMode ? 'light-content' : 'dark-content'}
       />
       <NavigationContainer theme={navTheme} ref={navigationRef}>

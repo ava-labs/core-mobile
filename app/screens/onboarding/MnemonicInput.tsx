@@ -20,7 +20,7 @@ export default function MnemonicInput(props: Props | Readonly<Props>) {
         <TextTitle
           text={(props.keyNum + 1).toString()}
           size={16}
-          color={theme.primaryColorLight}
+          color={theme.txtOnBgApp}
         />
       </View>
       <Divider size={4} />

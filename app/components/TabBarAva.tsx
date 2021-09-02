@@ -7,11 +7,11 @@ export default (props: any) => {
   return (
     <TabBar
       {...props}
-      indicatorStyle={{backgroundColor: theme.tabBarIndicator}}
+      indicatorStyle={{backgroundColor: theme.tabBarIconInactive}}
       style={{backgroundColor: theme.transparent}}
       labelStyle={{fontWeight: 'bold'}}
-      activeColor={theme.tabBarText}
-      inactiveColor={theme.primaryColorLight}
+      activeColor={theme.accentColor}
+      inactiveColor={theme.tabBarIconInactive}
     />
   );
 };

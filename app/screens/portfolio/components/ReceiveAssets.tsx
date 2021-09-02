@@ -46,7 +46,7 @@ export default function ReceiveAssets({addressX, addressC, addressP}: Props) {
       style={[
         styles.container,
         {
-          backgroundColor: theme.cardBg,
+          backgroundColor: theme.bgOnBgApp,
         },
       ]}>
       <View style={styles.networkContainer}>
@@ -55,7 +55,7 @@ export default function ReceiveAssets({addressX, addressC, addressP}: Props) {
             style={[
               styles.title,
               {
-                color: theme.balloonText,
+                color: theme.txtListItem,
               },
             ]}>
             Receive assets
@@ -64,7 +64,7 @@ export default function ReceiveAssets({addressX, addressC, addressP}: Props) {
             style={[
               styles.subtitle,
               {
-                color: theme.balloonTextSecondary,
+                color: theme.txtListItemSubscript,
               },
             ]}>
             Long press to copy address
@@ -95,7 +95,7 @@ export default function ReceiveAssets({addressX, addressC, addressP}: Props) {
       </View>
       <Text
         onLongPress={() => copyToClipboard(activeAddress)}
-        style={[styles.networkAddress, {color: theme.balloonText}]}>
+        style={[styles.networkAddress, {color: theme.txtListItem}]}>
         {activeAddress}
       </Text>
     </View>
