@@ -11,7 +11,7 @@ import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import Divider from 'components/Divider';
 import {useBalances} from 'screens/portfolio/BalancesHook';
-import {useSendAvax} from 'screens/sendAvax/SendAvaxXHook';
+import {useSendAvaxX} from 'screens/sendAvax/SendAvaxXHook';
 
 type SendAvaxXProps = {
   wallet: MnemonicWallet;
@@ -38,7 +38,7 @@ export default function SendAvaxX(
     onScanBarcode,
     onBarcodeScanned,
     clearAddress,
-  ] = useSendAvax(props.wallet);
+  ] = useSendAvaxX(props.wallet);
   const [isDarkMode] = useState(context.isDarkMode);
   const [backgroundStyle] = useState(context.backgroundStyle);
   const [balanceText, setBalanceText] = useState('Balance:');
@@ -94,7 +94,7 @@ export default function SendAvaxX(
         <View style={styles.transactionFee}>
           <TextTitle
             textAlign="right"
-            color={context.theme.textFieldBorder}
+            color={context.theme.txtListItemSubscript}
             text={'Transaction fee: ' + sendFeeString + ' AVAX'}
             size={12}
           />

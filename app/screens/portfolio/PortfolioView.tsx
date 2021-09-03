@@ -6,7 +6,6 @@ import {
   SafeAreaView,
   StyleSheet,
 } from 'react-native';
-import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
 import AvaListItem from 'screens/portfolio/AvaListItem';
 import PortfolioHeader, {
   HEADER_MAX_HEIGHT,
@@ -16,14 +15,13 @@ import {ApplicationContext} from 'contexts/ApplicationContext';
 import SearchHeader from 'screens/portfolio/components/SearchHeader';
 
 type Props = {
-  wallet: MnemonicWallet;
   onExit: () => void;
   onSwitchWallet: () => void;
 };
 
 const data: JSON[] = require('assets/coins.json');
 
-const PortfolioView: FC<Props> = ({wallet, onExit, onSwitchWallet}) => {
+const PortfolioView: FC<Props> = ({onExit, onSwitchWallet}) => {
   const [searchText, setSearchText] = useState('');
   const scrollY = useRef(new Animated.Value(0)).current;
   const listRef = useRef<FlatList>(null);
@@ -50,7 +48,7 @@ const PortfolioView: FC<Props> = ({wallet, onExit, onSwitchWallet}) => {
         style={[
           {
             flex: 1,
-            backgroundColor: context.theme.cardBg,
+            backgroundColor: context.theme.bgOnBgApp,
             marginTop: HEADER_MIN_HEIGHT,
           },
         ]}
@@ -74,7 +72,7 @@ const PortfolioView: FC<Props> = ({wallet, onExit, onSwitchWallet}) => {
           />
         }
       />
-      <PortfolioHeader wallet={wallet} scrollY={scrollY} />
+      <PortfolioHeader scrollY={scrollY} />
     </SafeAreaView>
   );
 };

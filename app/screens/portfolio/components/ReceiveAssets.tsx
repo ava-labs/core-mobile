@@ -1,8 +1,9 @@
 import React, {useContext, useState} from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, Text, ToastAndroid, View} from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import BlockchainCircle from 'components/BlockchainCircle';
+import Clipboard from '@react-native-clipboard/clipboard';
 
 type Props = {
   addressX: string;
@@ -32,14 +33,20 @@ export default function ReceiveAssets({addressX, addressC, addressP}: Props) {
   //   ).then(value => console.log(value));
   // };
 
-  console.debug('activeNetworkAddress: ' + activeAddress);
+  const copyToClipboard = (str?: string): void => {
+    if (!str) {
+      return;
+    }
+    Clipboard.setString(str);
+    ToastAndroid.show('Copied', 1000);
+  };
 
   return (
     <View
       style={[
         styles.container,
         {
-          backgroundColor: theme.cardBg,
+          backgroundColor: theme.bgOnBgApp,
         },
       ]}>
       <View style={styles.networkContainer}>
@@ -48,7 +55,7 @@ export default function ReceiveAssets({addressX, addressC, addressP}: Props) {
             style={[
               styles.title,
               {
-                color: theme.balloonText,
+                color: theme.txtListItem,
               },
             ]}>
             Receive assets
@@ -57,7 +64,7 @@ export default function ReceiveAssets({addressX, addressC, addressP}: Props) {
             style={[
               styles.subtitle,
               {
-                color: theme.balloonTextSecondary,
+                color: theme.txtListItemSubscript,
               },
             ]}>
             Long press to copy address
@@ -86,7 +93,9 @@ export default function ReceiveAssets({addressX, addressC, addressP}: Props) {
           </View>
         )}
       </View>
-      <Text style={[styles.networkAddress, {color: theme.balloonText}]}>
+      <Text
+        onLongPress={() => copyToClipboard(activeAddress)}
+        style={[styles.networkAddress, {color: theme.txtListItem}]}>
         {activeAddress}
       </Text>
     </View>

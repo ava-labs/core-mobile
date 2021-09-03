@@ -4,7 +4,6 @@ import Header from 'screens/mainView/Header';
 import TextTitle from 'components/TextTitle';
 import {SceneMap, TabView} from 'react-native-tab-view';
 import AssetsItem from './AssetsItem';
-import {BehaviorSubject} from 'rxjs';
 import TabBarAva from 'components/TabBarAva';
 import ButtonAva from 'components/ButtonAva';
 import AssetsAddToken from './AssetsAddToken';
@@ -12,13 +11,13 @@ import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
 import {TokenItem, useTokenAssets} from 'screens/portfolio/AssetsTokenHook';
 
 type Props = {
-  wallet: BehaviorSubject<MnemonicWallet>;
+  wallet: MnemonicWallet;
 };
 
 export default function AssetsView(props: Props | Readonly<Props>) {
   const [addTokenVisible, setAddTokenVisible] = useState(false);
   const [index, setIndex] = useState(0);
-  const [tokenItems] = useTokenAssets(props.wallet.value);
+  const [tokenItems] = useTokenAssets(props.wallet);
 
   const renderItem = (item: TokenItem) => (
     <AssetsItem title={item.title} balance={item.balance} />

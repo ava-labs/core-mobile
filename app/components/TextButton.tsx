@@ -29,8 +29,8 @@ export default function TextButton(props: Props | Readonly<Props>) {
       style={[
         {
           color: props.disabled
-            ? theme.primaryColorLight
-            : theme.buttonPrimaryText,
+            ? theme.btnPrimaryTxtDisabled
+            : theme.btnPrimaryTxt,
           fontSize: fontSize,
           fontWeight: '700',
           fontFamily: 'Inter-Regular',

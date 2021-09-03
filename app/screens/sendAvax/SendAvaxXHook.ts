@@ -1,13 +1,13 @@
 import {BN, MnemonicWallet, Utils} from '@avalabs/avalanche-wallet-sdk';
-import {useSendAvaxForm} from '@avalabs/wallet-react-components';
+import {useSendAvax} from '@avalabs/wallet-react-components';
 import {useEffect, useState} from 'react';
 import {Alert} from 'react-native';
 import {asyncScheduler, defer, scheduled, Subscription} from 'rxjs';
 
-export function useSendAvax(
+export function useSendAvaxX(
   wallet: MnemonicWallet,
 ): [
-  'X' | 'C' | undefined,
+  string,
   boolean,
   string,
   string,
@@ -24,23 +24,18 @@ export function useSendAvax(
   () => void,
 ] {
   const {
-    address,
+    send,
+    clearForm,
+    targetChain,
+    canSubmit,
+    error,
+    txId,
+    txs,
+    setAmount,
     setAddress,
     amount,
-    setAmount,
-    targetChain,
-    // txId,
-    error,
-    //submit,
-    // clearForm,
-    // canSubmit,
-    // extraTxs,
-    // extraStatuses,
-    sendFee,
-    // otherFees,
-    // isExecuting,
-    // activeTxIndex,
-  } = useSendAvaxForm(wallet);
+    address,
+  } = useSendAvax();
   const [loaderVisible, setLoaderVisible] = useState(false);
   const [loaderMsg, setLoaderMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
@@ -61,9 +56,9 @@ export function useSendAvax(
     setAmount(stringAmountToBN(sendAmountString));
   }, [sendAmountString]);
 
-  useEffect(() => {
-    setSendFeeString(bnAmountToString(sendFee));
-  }, [sendFee, targetChain]);
+  // useEffect(() => {
+  //   setSendFeeString(bnAmountToString(sendFee));
+  // }, [sendFee, targetChain]);
 
   const onSendAvax = (memo?: string): void => {
     setLoaderVisible(true);

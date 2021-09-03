@@ -46,6 +46,9 @@ export default function PinKey(props: Props | Readonly<Props>) {
   const context = useContext(ApplicationContext);
   const theme = context.theme;
   const isBackspace = props.keyboardKey === PinKeys.Backspace;
+  if (props.keyboardKey === undefined) {
+    return <View />;
+  }
   return (
     <TouchableNativeFeedback
       useForeground={true}
@@ -53,7 +56,7 @@ export default function PinKey(props: Props | Readonly<Props>) {
       background={TouchableNativeFeedback.Ripple(theme.buttonRipple, true)}>
       <View style={[styles.button]}>
         {isBackspace && Backspace(context.isDarkMode)}
-        {!isBackspace && Digit(props.keyboardKey, context.theme.textOnBg)}
+        {!isBackspace && Digit(props.keyboardKey, theme.txtOnBgApp)}
       </View>
     </TouchableNativeFeedback>
   );

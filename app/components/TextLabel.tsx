@@ -18,7 +18,7 @@ export default function TextLabel(props: Props | Readonly<Props>) {
       style={[
         {
           textAlign: props.textAlign || (props.multiline ? 'center' : 'left'),
-          color: props.color || theme.textOnBg,
+          color: props.color || theme.txtOnBgApp,
           fontSize: 13,
           fontFamily: 'Inter-Regular',
         },

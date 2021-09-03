@@ -10,13 +10,17 @@ import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 
 type Props = {
-  wallet: BehaviorSubject<MnemonicWallet>;
+  wallet: MnemonicWallet;
   onClose: () => void;
 };
 
 export default function AssetsAddToken(props: Props | Readonly<Props>) {
   const context = useContext(ApplicationContext);
-  const [viewModel] = useState(new AssetsAddTokenViewModel(props.wallet));
+  const [viewModel] = useState(
+    new AssetsAddTokenViewModel(
+      new BehaviorSubject<MnemonicWallet>(props.wallet),
+    ),
+  );
   const [backgroundStyle] = useState(context.backgroundStyle);
   const [tokenContractAddress, setTokenContractAddress] = useState('');
   const [tokenName, setTokenName] = useState('');
@@ -68,7 +72,7 @@ export default function AssetsAddToken(props: Props | Readonly<Props>) {
         textAlign={'center'}
         text={errorMsg}
         size={18}
-        color={THEME.error}
+        color={THEME.txtError}
       />
 
       <TextTitle text={'Token Name'} size={18} />

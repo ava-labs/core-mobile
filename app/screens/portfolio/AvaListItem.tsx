@@ -43,7 +43,7 @@ function BaseListItem({
             {!!label && (
               <Text
                 style={{
-                  color: context.theme.balloonTextTertiary,
+                  color: context.theme.txtListItemSuperscript,
                   fontSize: 14,
                   lineHeight: 17,
                   justifyContent: 'center',
@@ -53,7 +53,7 @@ function BaseListItem({
             )}
             <Text
               style={{
-                color: context.theme.balloonText,
+                color: context.theme.txtListItem,
                 fontSize: 16,
                 lineHeight: 24,
               }}>
@@ -64,7 +64,7 @@ function BaseListItem({
                 ellipsizeMode="middle"
                 numberOfLines={1}
                 style={{
-                  color: context.theme.balloonTextSecondary,
+                  color: context.theme.txtListItemSubscript,
                   fontSize: 14,
                   lineHeight: 17,
                 }}>
@@ -105,7 +105,7 @@ const CoinItem: FC<CoinItemProps> = props => {
   const sendCoin = (
     <View style={{flexDirection: 'row', alignItems: 'center'}}>
       <ButtonAvaTextual text={'Send'} onPress={() => {}} />
-      <CarrotSVG color={context.theme.primaryColor} />
+      <CarrotSVG color={context.theme.accentColor} />
     </View>
   );
 

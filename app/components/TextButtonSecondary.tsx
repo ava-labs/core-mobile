@@ -15,8 +15,8 @@ export default function TextButtonSecondary(props: Props | Readonly<Props>) {
       style={[
         {
           color: props.disabled
-            ? theme.buttonSecondaryTextDisabled
-            : theme.buttonSecondaryText,
+            ? theme.btnSecondaryTxtDisabled
+            : theme.btnSecondaryTxt,
           fontSize: 18,
           fontWeight: '700',
           fontFamily: 'Inter-Regular',
