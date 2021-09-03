@@ -44,7 +44,7 @@ export default function RecoveryPhraseInputCard(
         styles.container,
         {
           height: 300,
-          backgroundColor: theme.cardBg,
+          backgroundColor: theme.bgOnBgApp,
           shadowColor: theme.shadow,
         },
       ]}>
@@ -60,7 +60,11 @@ export default function RecoveryPhraseInputCard(
         errorText={errorMessage}
         onChangeText={onEnterMnemonic}
       />
-      <View style={[styles.buttonContainer, {backgroundColor: theme.tcwbBg2}]}>
+      <View
+        style={[
+          styles.buttonContainer,
+          {backgroundColor: theme.bgActionButton},
+        ]}>
         <View style={styles.horizontalLayout}>
           <ButtonAvaTextual text={'Cancel'} onPress={props.onCancel} />
           <ButtonAva text={'Enter'} onPress={onEnterWallet} size={'medium'} />

@@ -17,7 +17,7 @@ export default function AssetsItem(props: Props | Readonly<Props>) {
       style={[
         styles.container,
         {
-          borderBottomColor: theme.bgLight,
+          borderBottomColor: theme.bgOnBgApp,
           borderBottomWidth: 1,
         },
       ]}>

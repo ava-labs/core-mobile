@@ -13,10 +13,10 @@ function BlockchainCircle({chain, active = false, onChainSelected}: Props) {
 
   function getBackgroundColor() {
     if (active) {
-      return context.theme.primaryColor;
+      return context.theme.accentColor;
     }
 
-    return context.theme.buttonIconOutline;
+    return context.theme.bgSearch;
   }
 
   return (
@@ -26,9 +26,7 @@ function BlockchainCircle({chain, active = false, onChainSelected}: Props) {
       <Text
         style={[
           {
-            color: active
-              ? context.theme.onPrimary
-              : context.theme.buttonIconSecondary,
+            color: active ? context.theme.txtOnBgApp : context.theme.txtOnBgApp,
           },
         ]}>
         {chain.toUpperCase()}

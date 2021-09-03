@@ -34,7 +34,7 @@ export default function TransactionItem(props: Props | Readonly<Props>) {
     <View
       style={[
         {
-          borderTopColor: theme.primaryColorLight,
+          borderTopColor: theme.accentColor,
           borderTopWidth: 1,
         },
       ]}>

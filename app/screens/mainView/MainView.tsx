@@ -1,6 +1,5 @@
 import React, {useContext, useEffect, useState} from 'react';
-import {Alert, BackHandler, Image, Modal, StyleSheet, View} from 'react-native';
-import MainViewViewModel from './MainViewViewModel';
+import {BackHandler, Image, Modal, StyleSheet, View} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {NavigationContainer, useFocusEffect} from '@react-navigation/native';
 import PortfolioView from 'screens/portfolio/PortfolioView';
@@ -9,12 +8,14 @@ import EarnView from 'screens/earn/EarnView';
 import TransactionsView from 'screens/transactions/TransactionsView';
 import Loader from 'components/Loader';
 import AssetsView from 'screens/portfolio/AssetsView';
-import {Subscription} from 'rxjs';
-import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
 import {ApplicationContext} from 'contexts/ApplicationContext';
+import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
+import {
+  useWalletContext,
+  useWalletStateContext,
+} from '@avalabs/wallet-react-components';
 
 type Props = {
-  wallet: MnemonicWallet;
   onExit: () => void;
   onSwitchWallet: () => void;
 };
@@ -23,11 +24,13 @@ const Tab = createBottomTabNavigator();
 
 export default function MainView(props: Props | Readonly<Props>) {
   const context = useContext(ApplicationContext);
-  const theme = context.theme;
+  const walletStateContext = useWalletStateContext();
+  const walletContext = useWalletContext();
 
-  const [viewModel] = useState(new MainViewViewModel(props.wallet));
+  const theme = context.theme;
+  const [wallet, setWallet] = useState<MnemonicWallet>();
+  const [walletReady, setWalletReady] = useState<boolean>(false);
   const [isDarkMode] = useState(context.isDarkMode);
-  const [walletReady, setWalletReady] = useState(false);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -43,22 +46,16 @@ export default function MainView(props: Props | Readonly<Props>) {
   );
 
   useEffect(() => {
-    const disposables = new Subscription();
-    disposables.add(
-      viewModel.onResetHdIndices().subscribe({
-        error: err => {
-          Alert.alert('Error', err.message, [
-            {text: 'Exit', onPress: () => onExit()},
-          ]);
-        },
-        complete: () => setWalletReady(true),
-      }),
-    );
+    if (walletContext?.wallet) {
+      setWallet(walletContext?.wallet as MnemonicWallet);
+    }
+  }, [walletContext?.wallet]);
 
-    return () => {
-      disposables.unsubscribe();
-    };
-  }, []);
+  useEffect(() => {
+    if (!walletReady) {
+      setWalletReady(walletStateContext?.balances !== undefined);
+    }
+  }, [walletStateContext]);
 
   const onExit = (): void => {
     props.onExit();
@@ -99,18 +96,12 @@ export default function MainView(props: Props | Readonly<Props>) {
     };
   };
   const Portfolio = () => (
-    <PortfolioView
-      wallet={viewModel.wallet.value}
-      onSwitchWallet={onSwitchWallet}
-      onExit={onExit}
-    />
+    <PortfolioView onSwitchWallet={onSwitchWallet} onExit={onExit} />
   );
-  const Assets = () => <AssetsView wallet={viewModel.wallet} />;
-  const Send = () => <SendView wallet={viewModel.wallet.value} />;
-  const Earn = () => <EarnView wallet={viewModel.wallet.value} />;
-  const Transactions = () => (
-    <TransactionsView wallet={viewModel.wallet.value} />
-  );
+  const Assets = () => <AssetsView wallet={wallet!} />;
+  const Send = () => <SendView wallet={wallet!} />;
+  const Earn = () => <EarnView wallet={wallet!} />;
+  const Transactions = () => <TransactionsView wallet={wallet!} />;
   const Nav = () => (
     <NavigationContainer independent={true}>
       <Tab.Navigator
@@ -118,10 +109,10 @@ export default function MainView(props: Props | Readonly<Props>) {
         screenOptions={props => screenOptions(props, isDarkMode)}
         tabBarOptions={{
           allowFontScaling: false,
-          activeBackgroundColor: theme.bg,
-          inactiveBackgroundColor: theme.bg,
-          activeTintColor: theme.primaryColor,
-          inactiveTintColor: theme.primaryColorLight,
+          activeBackgroundColor: theme.bgApp,
+          inactiveBackgroundColor: theme.bgApp,
+          activeTintColor: theme.accentColor,
+          inactiveTintColor: theme.bgOnBgApp,
         }}>
         <Tab.Screen name="Portfolio" component={Portfolio} />
         <Tab.Screen name="Assets" component={Assets} />

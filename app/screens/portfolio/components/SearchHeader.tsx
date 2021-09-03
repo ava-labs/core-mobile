@@ -48,9 +48,10 @@ function SearchHeader({
     <View
       // while we wait for the proper background from UX
       style={{
-        backgroundColor: context.isDarkMode ? '#000' : context.theme.tcwbBg2,
+        backgroundColor: context.theme.bgApp,
       }}>
-      <View style={[styles.container, {backgroundColor: context.theme.cardBg}]}>
+      <View
+        style={[styles.container, {backgroundColor: context.theme.bgOnBgApp}]}>
         <TouchableOpacity>
           <AddSVG />
         </TouchableOpacity>
@@ -67,17 +68,14 @@ function SearchHeader({
           <View
             style={[
               styles.searchBackground,
-              {backgroundColor: context.theme.inputBg},
+              {backgroundColor: context.theme.bgSearch},
             ]}>
-            <SearchSVG
-              circleColor={context.theme.buttonIconOutline}
-              color={context.theme.buttonIconSecondary}
-            />
+            <SearchSVG color={context.theme.onBgSearch} />
             <TextInput
               ref={textInputRef}
-              style={[styles.searchInput, {color: context.theme.textOnInputBg}]}
+              style={[styles.searchInput, {color: context.theme.txtOnBgApp}]}
               placeholder="Search"
-              placeholderTextColor={'#B4B4B7'}
+              placeholderTextColor={context.theme.onBgSearch}
               value={searchText}
               onChangeText={onSearchTextChanged}
               underlineColorAndroid="transparent"
@@ -87,8 +85,8 @@ function SearchHeader({
           <TouchableOpacity style={{paddingLeft: 16}} onPress={onCancel}>
             <ClearSVG
               size={44}
-              color={context.theme.buttonIconSecondary}
-              backgroundColor={context.theme.buttonIconOutline}
+              color={context.theme.onBgSearch}
+              backgroundColor={context.theme.bgSearch}
             />
           </TouchableOpacity>
         </View>

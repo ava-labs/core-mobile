@@ -1,72 +1,30 @@
-import {from, Subscription} from 'rxjs';
-import {delay, retryWhen, tap} from 'rxjs/operators';
-import {iWalletAddressChanged} from '@avalabs/avalanche-wallet-sdk/dist/Wallet/types';
-import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
-import WalletSDK from '../../utils/WalletSDK';
 import {useEffect, useState} from 'react';
+import {BN, Utils} from '@avalabs/avalanche-wallet-sdk';
+import {useWalletStateContext} from '@avalabs/wallet-react-components';
 
-enum WalletEvents {
-  AddressChanged = 'addressChanged',
-}
-
-export function usePortfolio(
-  w: MnemonicWallet,
-): [number, string, string, string, string, string] {
-  const [wallet] = useState(w);
+export function usePortfolio(): [string, string, string, string] {
+  const walletStateContext = useWalletStateContext();
   const [avaxPrice, setAvaxPrice] = useState(0);
-  const [walletCAddress, setWalletCAddress] = useState('');
-  const [walletEvmAddrBech, setWalletEvmAddrBech] = useState('');
   const [addressX, setAddressX] = useState('');
   const [addressP, setAddressP] = useState('');
   const [addressC, setAddressC] = useState('');
+  const [balanceAvaxTotal, setBalanceAvaxTotal] = useState<BN>(new BN(0));
+  const [balanceTotalInUSD, setBalanceTotalInUSD] = useState('');
 
   useEffect(() => {
-    const subscription = fetchAvaxPriceWithRetryOnError();
-    return () => {
-      subscription?.unsubscribe();
-    };
-  }, []);
+    setAvaxPrice(walletStateContext!.avaxPrice);
+    setAddressX(walletStateContext!.addresses.addrX);
+    setAddressP(walletStateContext!.addresses.addrP);
+    setAddressC(walletStateContext!.addresses.addrC);
+    setBalanceAvaxTotal(walletStateContext!.balances.balanceAvaxTotal);
+  }, [walletStateContext]);
 
   useEffect(() => {
-    setAddressX(wallet.getAddressX());
-    setAddressP(wallet.getAddressP());
-    setAddressC(wallet.getAddressC());
-    setWalletCAddress(wallet.getAddressC());
-    setWalletEvmAddrBech(wallet.getEvmAddressBech());
+    const symbol = 'USD';
+    const total =
+      parseFloat(Utils.bnToLocaleString(balanceAvaxTotal, 9)) * avaxPrice;
+    setBalanceTotalInUSD(total.toFixed(2) + ' ' + symbol);
+  }, [avaxPrice, balanceAvaxTotal]);
 
-    wallet.on(WalletEvents.AddressChanged, onAddressChanged);
-
-    return () => {
-      wallet.off(WalletEvents.AddressChanged, onAddressChanged);
-    };
-  }, [wallet]);
-
-  function fetchAvaxPriceWithRetryOnError(): Subscription {
-    return from(WalletSDK.getAvaxPrice())
-      .pipe(
-        retryWhen(errors =>
-          errors.pipe(
-            tap(err => console.warn(err)),
-            delay(5000),
-          ),
-        ),
-      )
-      .subscribe({
-        next: value => setAvaxPrice(value),
-      });
-  }
-
-  function onAddressChanged(params: iWalletAddressChanged): void {
-    setAddressX(params.X);
-    setAddressP(params.P);
-  }
-
-  return [
-    avaxPrice,
-    walletCAddress,
-    walletEvmAddrBech,
-    addressX,
-    addressP,
-    addressC,
-  ];
+  return [addressX, addressP, addressC, balanceTotalInUSD];
 }

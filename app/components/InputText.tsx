@@ -108,7 +108,7 @@ export default function InputText(props: Props | Readonly<Props>) {
         <View style={[{height: 4}]} />
         <TextLabel
           textAlign="left"
-          color={theme.error}
+          color={theme.txtError}
           text={props.errorText || ''}
         />
       </>
@@ -158,18 +158,18 @@ export default function InputText(props: Props | Readonly<Props>) {
             {
               minHeight: props.minHeight,
               flexGrow: 0,
-              color: theme.primaryColor,
+              color: theme.inputTxt,
               fontSize: 16,
               borderWidth: 1,
               textAlignVertical: props.multiline ? 'top' : undefined,
               borderColor: props.errorText
-                ? theme.error
+                ? theme.txtError
                 : focused
-                ? theme.textFieldFocused
+                ? theme.inputBorderFocused
                 : props.privateMode
-                ? theme.textFieldPrivate
-                : theme.textFieldBorder,
-              backgroundColor: theme.textFieldBg,
+                ? theme.inputBorderFocused
+                : theme.inputBorder,
+              backgroundColor: focused ? theme.inputBgFocused : theme.inputBg,
               borderRadius: 8,
               paddingStart: 16,
               paddingEnd: !props.privateMode ? 46 : 80,

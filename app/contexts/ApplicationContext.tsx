@@ -1,16 +1,16 @@
 import React, {createContext, useState} from 'react';
-import {COLORS, COLORS_NIGHT} from 'resources/Constants';
+import {COLORS_DAY, COLORS_NIGHT} from 'resources/Constants';
 import {Appearance} from 'react-native';
 
 interface ApplicationContextState {
-  theme: typeof COLORS | typeof COLORS_NIGHT;
+  theme: typeof COLORS_DAY | typeof COLORS_NIGHT;
   isDarkMode: boolean;
   backgroundStyle: BackgroundStyle;
   appBackgroundStyle: BackgroundStyle;
 }
 
 export declare type BackgroundStyle = {
-  backgroundColor: COLORS | COLORS_NIGHT;
+  backgroundColor: COLORS_DAY | COLORS_NIGHT;
   flex: number;
   paddingBottom?: number;
   paddingStart?: number;
@@ -23,21 +23,21 @@ export const ApplicationContext = createContext<ApplicationContextState>(
 
 export const ApplicationContextProvider = ({children}: {children: any}) => {
   const [isDarkMode] = useState(Appearance.getColorScheme() === 'dark');
-  const [theme] = useState(isDarkMode ? COLORS_NIGHT : COLORS);
+  const [theme] = useState(isDarkMode ? COLORS_NIGHT : COLORS_DAY);
   const [backgroundStyle] = useState({
-    backgroundColor: theme.bg,
+    backgroundColor: theme.bgApp,
     flex: 1,
     paddingBottom: 16,
     paddingStart: 16,
     paddingEnd: 16,
   });
   const [appBackgroundStyle] = useState({
-    backgroundColor: theme.bg,
+    backgroundColor: theme.bgApp,
     flex: 1,
   });
 
   const appContextState: ApplicationContextState = {
-    theme: theme,
+    theme,
     isDarkMode,
     backgroundStyle,
     appBackgroundStyle,

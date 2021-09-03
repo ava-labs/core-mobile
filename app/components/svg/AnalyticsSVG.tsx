@@ -9,15 +9,30 @@ interface Prop {
 
 function AnalyticsSVG({color, circleColor}: Prop) {
   const context = useContext(ApplicationContext);
-  const svgColor = color ?? context.theme.buttonIcon;
-  const strokeColor = circleColor ?? context.theme.buttonIconOutline;
+
+  const iconColor = color ?? context.theme.btnIconIcon;
+  const borderColor = circleColor ?? context.theme.btnIconBorder;
   return (
     <Svg width="44" height="44" viewBox="0 0 44 44" fill="none">
-      <Circle cx="22" cy="22" r="21.5" stroke={strokeColor} />
-      <Rect x="11" y="28" width="2.5" height="6" rx="1.25" fill={svgColor} />
-      <Rect x="17.5" y="18" width="2.5" height="16" rx="1.25" fill={svgColor} />
-      <Rect x="24" y="10" width="2.5" height="24" rx="1.25" fill={svgColor} />
-      <Rect x="30.5" y="22" width="2.5" height="12" rx="1.25" fill={svgColor} />
+      <Circle cx="22" cy="22" r="21.5" stroke={borderColor} />
+      <Rect x="11" y="28" width="2.5" height="6" rx="1.25" fill={iconColor} />
+      <Rect
+        x="17.5"
+        y="18"
+        width="2.5"
+        height="16"
+        rx="1.25"
+        fill={iconColor}
+      />
+      <Rect x="24" y="10" width="2.5" height="24" rx="1.25" fill={iconColor} />
+      <Rect
+        x="30.5"
+        y="22"
+        width="2.5"
+        height="12"
+        rx="1.25"
+        fill={iconColor}
+      />
     </Svg>
   );
 }

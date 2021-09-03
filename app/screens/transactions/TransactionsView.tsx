@@ -1,5 +1,5 @@
-import React, {useEffect, useState} from 'react';
 import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
+import {useEffect, useState} from 'react';
 import TransactionsViewModel, {
   HistoryItem,
 } from 'screens/transactions/TransactionsViewModel';
@@ -7,7 +7,6 @@ import {FlatList, Modal, StyleSheet, View} from 'react-native';
 import Loader from 'components/Loader';
 import TextTitle from 'components/TextTitle';
 import TransactionItem from './TransactionItem';
-import Header from 'screens/mainView/Header';
 
 type Props = {
   wallet: MnemonicWallet;

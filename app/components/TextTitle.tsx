@@ -19,7 +19,7 @@ export default function TextTitle(props: Props | Readonly<Props>) {
       style={[
         {
           lineHeight: props.lineHeight || undefined,
-          color: props.color || theme.primaryColor,
+          color: props.color || theme.txtOnBgApp,
           fontSize: props.size ? props.size : 26,
           fontFamily: 'Inter-Regular',
           fontWeight: props.bold ? 'bold' : 'normal',
