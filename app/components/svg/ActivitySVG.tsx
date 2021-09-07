@@ -10,8 +10,8 @@ function ActivitySVG({selected}: Prop) {
   const context = useContext(ApplicationContext);
 
   const svgColor = selected
-    ? context.theme.primaryColor
-    : context.theme.buttonIconSecondary;
+    ? context.theme.accentColor
+    : context.theme.onBgSearch;
   return (
     <Svg width="32" height="32" viewBox="0 0 32 32" fill="none">
       <Path

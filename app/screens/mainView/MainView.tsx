@@ -1,5 +1,5 @@
 import React, {useContext, useEffect, useState} from 'react';
-import {BackHandler, Image, Modal, StyleSheet, View} from 'react-native';
+import {BackHandler, Modal, StyleSheet, View} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {NavigationContainer, useFocusEffect} from '@react-navigation/native';
 import PortfolioView from 'screens/portfolio/PortfolioView';
@@ -33,7 +33,6 @@ export default function MainView(props: Props | Readonly<Props>) {
   const theme = context.theme;
   const [wallet, setWallet] = useState<MnemonicWallet>();
   const [walletReady, setWalletReady] = useState<boolean>(false);
-  const [isDarkMode] = useState(context.isDarkMode);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -90,7 +89,6 @@ export default function MainView(props: Props | Readonly<Props>) {
   const Assets = () => <AssetsView wallet={wallet!} />;
   const Send = () => <SendView wallet={wallet!} />;
   const Earn = () => <EarnView wallet={wallet!} />;
-  const Transactions = () => <TransactionsView wallet={wallet!} />;
   const Nav = () => (
     <NavigationContainer independent={true}>
       <Tab.Navigator
@@ -101,7 +99,7 @@ export default function MainView(props: Props | Readonly<Props>) {
           activeBackgroundColor: theme.bgApp,
           inactiveBackgroundColor: theme.bgApp,
           activeTintColor: theme.accentColor,
-          inactiveTintColor: theme.bgOnBgApp,
+          inactiveTintColor: theme.onBgSearch,
         }}>
         <Tab.Screen name="Portfolio" component={Portfolio} />
         <Tab.Screen name="Activity" component={Assets} />
