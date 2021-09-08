@@ -10,8 +10,8 @@ function HomeSVG({selected}: Prop) {
   const context = useContext(ApplicationContext);
 
   const svgColor = selected
-    ? context.theme.primaryColor
-    : context.theme.buttonIconSecondary;
+    ? context.theme.accentColor
+    : context.theme.onBgSearch;
   return (
     <Svg width="32" height="32" viewBox="0 0 32 33" fill="none">
       <Path
