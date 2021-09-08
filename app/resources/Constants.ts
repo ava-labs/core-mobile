@@ -1,5 +1,6 @@
 export enum COLORS_DAY {
   transparent = '#00000000',
+  logoColor = '#E84142',
   accentColor = '#F64942',
   shadow = '#00000066',
 
@@ -59,6 +60,7 @@ export enum COLORS_DAY {
 
 export enum COLORS_NIGHT {
   transparent = '#00000000',
+  logoColor = '#E84142',
   accentColor = '#F1595A',
   shadow = '#FFFFFF66',
 
