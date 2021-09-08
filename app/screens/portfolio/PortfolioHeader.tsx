@@ -1,21 +1,23 @@
 import React, {useContext} from 'react';
 import {Animated, Platform, StyleSheet, Text, View} from 'react-native';
 import {usePortfolio} from 'screens/portfolio/PortfolioHook';
+import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
 import PortfolioActionButton from './components/PortfolioActionButton';
 import AvaListItem from 'screens/portfolio/AvaListItem';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 
 interface PortfolioHeaderProps {
+  wallet: MnemonicWallet;
   scrollY: Animated.AnimatedInterpolation;
 }
 
-export const HEADER_MAX_HEIGHT = 260;
+export const HEADER_MAX_HEIGHT = 180;
 export const HEADER_MIN_HEIGHT = Platform.OS === 'ios' ? 60 : 73;
 export const HEADER_SCROLL_DISTANCE = HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT;
 
-function PortfolioHeader({scrollY}: PortfolioHeaderProps) {
+function PortfolioHeader({wallet, scrollY}: PortfolioHeaderProps) {
   const context = useContext(ApplicationContext);
-  const [addressX, addressP, addressC, balanceTotalInUSD] = usePortfolio();
+  const [avaxPrice, walletEvmAddrBech] = usePortfolio(wallet);
 
   const headerTranslate = scrollY.interpolate({
     inputRange: [0, HEADER_SCROLL_DISTANCE],
@@ -52,7 +54,9 @@ function PortfolioHeader({scrollY}: PortfolioHeaderProps) {
           styles.header,
           {
             // while we wait for the proper background from UX
-            backgroundColor: context.theme.bgApp,
+            backgroundColor: context.isDarkMode
+              ? '#000'
+              : context.theme.tcwbBg2,
             transform: [{translateY: headerTranslate}],
           },
         ]}
@@ -62,16 +66,26 @@ function PortfolioHeader({scrollY}: PortfolioHeaderProps) {
         <Animated.View style={{opacity: imageOpacity}}>
           <AvaListItem.Account
             accountName={'My Awesome Wallet'}
-            accountAddress={addressC ?? ''}
+            accountAddress={walletEvmAddrBech ?? ''}
           />
         </Animated.View>
         <Animated.View
           style={{
-            alignItems: 'center',
+            justifyContent: 'center',
+            flexDirection: 'row',
             transform: [{translateY: titleTranslate}],
           }}>
-          <Text style={[styles.text, {color: context.theme.txtOnBgApp}]}>
-            {balanceTotalInUSD}
+          <Text style={[styles.text, {color: context.theme.buttonIcon}]}>
+            {`$${avaxPrice}`}
+          </Text>
+          <Text
+            style={{
+              fontSize: 16,
+              lineHeight: 32,
+              color: '#F8F8FB',
+              paddingLeft: 4,
+            }}>
+            USD
           </Text>
         </Animated.View>
         <Animated.View
@@ -79,13 +93,13 @@ function PortfolioHeader({scrollY}: PortfolioHeaderProps) {
             opacity: imageOpacity,
             transform: [{translateY: imageTranslate}],
           }}>
-          <Animated.View style={[styles.actionsContainer]}>
-            <PortfolioActionButton.Send />
-            <View style={{paddingHorizontal: 24}}>
-              <PortfolioActionButton.Receive />
-            </View>
-            <PortfolioActionButton.Buy />
-          </Animated.View>
+          {/*<Animated.View style={[styles.actionsContainer]}>*/}
+          {/*  <PortfolioActionButton.Send />*/}
+          {/*  <View style={{paddingHorizontal: 24}}>*/}
+          {/*    <PortfolioActionButton.Receive />*/}
+          {/*  </View>*/}
+          {/*  <PortfolioActionButton.Buy />*/}
+          {/*</Animated.View>*/}
         </Animated.View>
       </Animated.View>
     </>
@@ -100,7 +114,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   text: {
-    fontSize: 30,
+    fontSize: 36,
+    fontWeight: 'bold',
+    lineHeight: 36,
+    textAlignVertical: 'bottom',
   },
   header: {
     position: 'absolute',

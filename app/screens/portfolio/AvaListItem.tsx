@@ -1,16 +1,15 @@
-import React, {FC, useContext} from 'react';
-import {Text, TouchableOpacity, View} from 'react-native';
-import ButtonAvaTextual from 'components/ButtonAvaTextual';
+import React, {useContext} from 'react';
+import {Image, Text, TouchableOpacity, View} from 'react-native';
 import CarrotSVG from 'components/svg/CarrotSVG';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import AccountSVG from 'components/svg/AccountSVG';
-import GraphSVG from 'components/svg/GraphSVG';
+import SearchSVG from 'components/svg/SearchSVG';
 
 interface Props {
   rightComponent?: React.ReactNode;
   leftComponent?: React.ReactNode;
   label?: string;
-  title: string;
+  title: string | React.ReactNode;
   subtitle?: string;
 }
 function BaseListItem({
@@ -43,7 +42,7 @@ function BaseListItem({
             {!!label && (
               <Text
                 style={{
-                  color: context.theme.txtListItemSuperscript,
+                  color: context.theme.balloonTextTertiary,
                   fontSize: 14,
                   lineHeight: 17,
                   justifyContent: 'center',
@@ -51,20 +50,26 @@ function BaseListItem({
                 {label}
               </Text>
             )}
-            <Text
-              style={{
-                color: context.theme.txtListItem,
-                fontSize: 16,
-                lineHeight: 24,
-              }}>
-              {title}
-            </Text>
+            <>
+              {typeof title === 'string' ? (
+                <Text
+                  style={{
+                    color: context.theme.balloonText,
+                    fontSize: 16,
+                    lineHeight: 24,
+                  }}>
+                  {title}
+                </Text>
+              ) : (
+                {title}
+              )}
+            </>
             {!!subtitle && (
               <Text
                 ellipsizeMode="middle"
                 numberOfLines={1}
                 style={{
-                  color: context.theme.txtListItemSubscript,
+                  color: context.theme.balloonTextSecondary,
                   fontSize: 14,
                   lineHeight: 17,
                 }}>
@@ -83,42 +88,80 @@ interface CoinItemProps {
   coinName: string;
   coinPrice: number;
   avaxPrice: number;
+  image?: string;
+  symbol?: string;
 }
-const CoinItem: FC<CoinItemProps> = props => {
-  const subtitle = `$${props.coinPrice} USD`;
-  const label = props.coinName;
-  const title = props.coinName;
+function CoinItem({
+  coinName,
+  coinPrice,
+  avaxPrice,
+  image,
+  symbol,
+}: CoinItemProps) {
+  const label = coinName;
+  const title = coinName;
   const context = useContext(ApplicationContext);
 
   const coinLogo = (
-    <View
+    <Image
       style={{
         paddingHorizontal: 16,
-        backgroundColor: 'red',
         width: 32,
         height: 32,
         borderRadius: 20,
+        overflow: 'hidden',
       }}
+      source={{uri: image}}
     />
   );
 
   const sendCoin = (
-    <View style={{flexDirection: 'row', alignItems: 'center'}}>
-      <ButtonAvaTextual text={'Send'} onPress={() => {}} />
-      <CarrotSVG color={context.theme.accentColor} />
+    <View style={{alignItems: 'flex-end'}}>
+      <Text
+        style={{
+          fontWeight: 'bold',
+          fontSize: 16,
+          lineHeight: 24,
+          color: context.isDarkMode ? '#F8F8FB' : '#1A1A1C',
+        }}>
+        {`${coinPrice} ${symbol?.toUpperCase()}`}
+      </Text>
+      <Text
+        style={{
+          fontSize: 14,
+          lineHeight: 17,
+          color: context.isDarkMode ? '#B4B4B7' : '#6C6C6E',
+        }}>
+        {`${coinPrice} USD`}
+      </Text>
     </View>
   );
 
   return (
-    <BaseListItem
-      title={title}
-      subtitle={subtitle}
-      label={label}
-      leftComponent={coinLogo}
-      rightComponent={sendCoin}
-    />
+    <View
+      style={{
+        marginHorizontal: 8,
+        backgroundColor: context.theme.cardBg,
+        borderRadius: 8,
+        marginVertical: 4,
+        shadowColor: '#1A1A1A',
+        shadowOffset: {
+          width: 0,
+          height: 3,
+        },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+
+        elevation: 5,
+      }}>
+      <BaseListItem
+        title={title}
+        leftComponent={coinLogo}
+        rightComponent={sendCoin}
+      />
+    </View>
   );
-};
+}
 
 interface AccountItemProps {
   accountName: string;
@@ -126,7 +169,24 @@ interface AccountItemProps {
 }
 function AccountItem({accountName, accountAddress}: AccountItemProps) {
   const leftComponent = <AccountSVG />;
-  const rightComponent = <GraphSVG />;
+  const rightComponent = <SearchSVG />;
+
+  function buildTitle() {
+    return (
+      <View
+        style={{
+          flexDirection: 'row',
+          borderRadius: 100,
+          borderWidth: 1,
+          borderColor: '#3A3A3C',
+        }}>
+        <Text>{accountAddress}</Text>
+        <View style={{transform: [{rotate: '90deg'}]}}>
+          <CarrotSVG />
+        </View>
+      </View>
+    );
+  }
 
   return (
     <BaseListItem
