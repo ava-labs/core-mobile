@@ -6,6 +6,7 @@ import {
   SafeAreaView,
   StyleSheet,
 } from 'react-native';
+import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
 import AvaListItem from 'screens/portfolio/AvaListItem';
 import PortfolioHeader, {
   HEADER_MAX_HEIGHT,
@@ -15,13 +16,14 @@ import {ApplicationContext} from 'contexts/ApplicationContext';
 import SearchHeader from 'screens/portfolio/components/SearchHeader';
 
 type Props = {
+  wallet: MnemonicWallet;
   onExit: () => void;
   onSwitchWallet: () => void;
 };
 
 const data: JSON[] = require('assets/coins.json');
 
-const PortfolioView: FC<Props> = ({onExit, onSwitchWallet}) => {
+const PortfolioView: FC<Props> = ({wallet, onExit, onSwitchWallet}) => {
   const [searchText, setSearchText] = useState('');
   const scrollY = useRef(new Animated.Value(0)).current;
   const listRef = useRef<FlatList>(null);
@@ -37,6 +39,8 @@ const PortfolioView: FC<Props> = ({onExit, onSwitchWallet}) => {
         coinName={json.name}
         coinPrice={json.current_price}
         avaxPrice={json.price_change_percentage_24h}
+        image={json.image}
+        symbol={json.symbol}
       />
     );
   };
@@ -48,7 +52,9 @@ const PortfolioView: FC<Props> = ({onExit, onSwitchWallet}) => {
         style={[
           {
             flex: 1,
-            backgroundColor: context.theme.bgOnBgApp,
+            backgroundColor: context.isDarkMode
+              ? context.theme.bg
+              : context.theme.tcwbBg2,
             marginTop: HEADER_MIN_HEIGHT,
           },
         ]}
@@ -56,7 +62,7 @@ const PortfolioView: FC<Props> = ({onExit, onSwitchWallet}) => {
         renderItem={renderItem}
         keyExtractor={keyExtractor}
         scrollEventThrottle={16}
-        stickyHeaderIndices={[0]}
+        // stickyHeaderIndices={[0]}
         onScroll={Animated.event(
           [{nativeEvent: {contentOffset: {y: scrollY}}}],
           {useNativeDriver: true},
@@ -64,15 +70,15 @@ const PortfolioView: FC<Props> = ({onExit, onSwitchWallet}) => {
         contentContainerStyle={{
           paddingTop: HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT,
         }}
-        ListHeaderComponent={
-          <SearchHeader
-            searchText={searchText}
-            onSearchTextChanged={setSearchText}
-            listRef={listRef}
-          />
-        }
+        // ListHeaderComponent={
+        //   <SearchHeader
+        //     searchText={searchText}
+        //     onSearchTextChanged={setSearchText}
+        //     listRef={listRef}
+        //   />
+        // }
       />
-      <PortfolioHeader scrollY={scrollY} />
+      <PortfolioHeader wallet={wallet} scrollY={scrollY} />
     </SafeAreaView>
   );
 };
