@@ -1,73 +1,68 @@
-import React, {FC, useContext} from 'react';
-import {Text, TouchableOpacity, View} from 'react-native';
-import ButtonAvaTextual from 'components/ButtonAvaTextual';
+import React, {useContext} from 'react';
+import {Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import CarrotSVG from 'components/svg/CarrotSVG';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import AccountSVG from 'components/svg/AccountSVG';
-import GraphSVG from 'components/svg/GraphSVG';
+import SearchSVG from 'components/svg/SearchSVG';
+import {useNavigation} from '@react-navigation/native';
 
 interface Props {
   rightComponent?: React.ReactNode;
   leftComponent?: React.ReactNode;
   label?: string;
-  title: string;
+  title: React.ReactNode | string;
   subtitle?: string;
+  listPressDisabled?: boolean;
 }
+
 function BaseListItem({
   rightComponent,
   leftComponent,
   subtitle,
   label,
   title,
+  listPressDisabled,
 }: Props) {
   const context = useContext(ApplicationContext);
 
   return (
     <View style={{paddingVertical: 16}}>
       <TouchableOpacity
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          paddingHorizontal: 16,
-        }}>
-        <View
-          style={{
-            justifyContent: 'center',
-            alignItems: 'center',
-            flexDirection: 'row',
-            flex: 1,
-          }}>
+        style={styles.baseRowContainer}
+        disabled={listPressDisabled}>
+        <View style={styles.baseRow}>
           {leftComponent && leftComponent}
-          <View style={{paddingHorizontal: 16, flex: 1}}>
+          <View style={styles.baseMainContent}>
             {!!label && (
               <Text
-                style={{
-                  color: context.theme.txtListItemSuperscript,
-                  fontSize: 14,
-                  lineHeight: 17,
-                  justifyContent: 'center',
-                }}>
+                style={[
+                  styles.baseLabel,
+                  {color: context.theme.txtListItemSuperscript},
+                ]}>
                 {label}
               </Text>
             )}
-            <Text
-              style={{
-                color: context.theme.txtListItem,
-                fontSize: 16,
-                lineHeight: 24,
-              }}>
-              {title}
-            </Text>
+            <>
+              {typeof title === 'string' ? (
+                <Text
+                  style={[
+                    styles.baseTitleText,
+                    {color: context.theme.txtListItem},
+                  ]}>
+                  {title}
+                </Text>
+              ) : (
+                <View style={styles.baseTitleObject}>{title}</View>
+              )}
+            </>
             {!!subtitle && (
               <Text
                 ellipsizeMode="middle"
                 numberOfLines={1}
-                style={{
-                  color: context.theme.txtListItemSubscript,
-                  fontSize: 14,
-                  lineHeight: 17,
-                }}>
+                style={[
+                  styles.baseSubtitle,
+                  {color: context.theme.txtListItemSubscript},
+                ]}>
                 {subtitle}
               </Text>
             )}
@@ -79,68 +74,177 @@ function BaseListItem({
   );
 }
 
-interface CoinItemProps {
-  coinName: string;
-  coinPrice: number;
-  avaxPrice: number;
+interface TokenItemProps {
+  tokenName: string;
+  tokenPrice: number;
+  image?: string;
+  symbol?: string;
 }
-const CoinItem: FC<CoinItemProps> = props => {
-  const subtitle = `$${props.coinPrice} USD`;
-  const label = props.coinName;
-  const title = props.coinName;
+function TokenItem({tokenName, tokenPrice, image, symbol}: TokenItemProps) {
+  const title = tokenName;
   const context = useContext(ApplicationContext);
 
-  const coinLogo = (
-    <View
-      style={{
-        paddingHorizontal: 16,
-        backgroundColor: 'red',
-        width: 32,
-        height: 32,
-        borderRadius: 20,
-      }}
-    />
-  );
+  const tokenLogo = <Image style={styles.tokenLogo} source={{uri: image}} />;
 
   const sendCoin = (
-    <View style={{flexDirection: 'row', alignItems: 'center'}}>
-      <ButtonAvaTextual text={'Send'} onPress={() => {}} />
-      <CarrotSVG color={context.theme.accentColor} />
+    <View style={{alignItems: 'flex-end'}}>
+      <Text
+        style={[styles.tokenNativeValue, {color: context.theme.txtListItem}]}>
+        {`${tokenPrice} ${symbol?.toUpperCase()}`}
+      </Text>
+      <Text
+        style={[
+          styles.tokenUsdValue,
+          {color: context.theme.txtListItemSubscript},
+        ]}>
+        {`${tokenPrice} USD`}
+      </Text>
     </View>
   );
 
   return (
-    <BaseListItem
-      title={title}
-      subtitle={subtitle}
-      label={label}
-      leftComponent={coinLogo}
-      rightComponent={sendCoin}
-    />
+    <View style={[styles.tokenItem, {backgroundColor: context.theme.bgApp}]}>
+      <BaseListItem
+        title={title}
+        leftComponent={tokenLogo}
+        rightComponent={sendCoin}
+      />
+    </View>
   );
-};
+}
 
 interface AccountItemProps {
-  accountName: string;
+  accountName?: string;
   accountAddress: string;
 }
-function AccountItem({accountName, accountAddress}: AccountItemProps) {
+function AccountItem({
+  accountName = 'Account 1',
+  accountAddress,
+}: AccountItemProps) {
   const leftComponent = <AccountSVG />;
-  const rightComponent = <GraphSVG />;
+  const navigation = useNavigation();
+  const context = useContext(ApplicationContext);
+
+  const rightComponent = (
+    <TouchableOpacity
+      onPress={() => {
+        navigation.navigate('Search');
+      }}>
+      <SearchSVG />
+    </TouchableOpacity>
+  );
+
+  function buildTitle() {
+    return (
+      <View style={styles.accountTitleContainer}>
+        <Text
+          style={[
+            styles.accountTitleText,
+            {borderColor: context.theme.btnIconBorder},
+          ]}
+          ellipsizeMode="middle"
+          numberOfLines={1}>
+          {accountName}
+        </Text>
+        <View style={{transform: [{rotate: '90deg'}]}}>
+          <CarrotSVG color={context.theme.txtListItem} size={10} />
+        </View>
+      </View>
+    );
+  }
 
   return (
     <BaseListItem
       leftComponent={leftComponent}
-      title={accountName}
-      subtitle={accountAddress}
+      title={buildTitle()}
       rightComponent={rightComponent}
+      listPressDisabled
     />
   );
 }
 
 const AvaListItem = {
-  Coin: CoinItem,
+  Token: TokenItem,
   Account: AccountItem,
 };
 
 export default AvaListItem;
+
+const styles = StyleSheet.create({
+  baseRowContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+  },
+  baseRow: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
+    flex: 1,
+  },
+  baseMainContent: {paddingHorizontal: 16, flex: 1},
+  baseLabel: {
+    fontSize: 14,
+    lineHeight: 17,
+    justifyContent: 'center',
+  },
+  baseTitleText: {
+    fontSize: 16,
+    lineHeight: 24,
+  },
+  baseTitleObject: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  baseSubtitle: {
+    fontSize: 14,
+    lineHeight: 17,
+  },
+  tokenLogo: {
+    paddingHorizontal: 16,
+    width: 32,
+    height: 32,
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  tokenItem: {
+    marginHorizontal: 8,
+    borderRadius: 8,
+    marginVertical: 4,
+    shadowColor: '#1A1A1A',
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+
+    elevation: 5,
+  },
+  tokenNativeValue: {
+    fontWeight: 'bold',
+    fontSize: 16,
+    lineHeight: 24,
+  },
+  tokenUsdValue: {
+    fontSize: 14,
+    lineHeight: 17,
+  },
+  accountTitleContainer: {
+    flexDirection: 'row',
+    borderRadius: 100,
+    borderWidth: 1,
+    paddingHorizontal: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    minHeight: 44,
+  },
+  accountTitleText: {
+    paddingRight: 16,
+    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: '600',
+    lineHeight: 24,
+  },
+});

@@ -1,7 +1,11 @@
 import React, {useContext, useEffect, useState} from 'react';
 import {BackHandler, Modal, StyleSheet, View} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import {NavigationContainer, useFocusEffect} from '@react-navigation/native';
+import {
+  getFocusedRouteNameFromRoute,
+  NavigationContainer,
+  useFocusEffect,
+} from '@react-navigation/native';
 import PortfolioView from 'screens/portfolio/PortfolioView';
 import SendView from 'screens/sendAvax/SendView';
 import EarnView from 'screens/earn/EarnView';
@@ -17,6 +21,14 @@ import HomeSVG from 'components/svg/HomeSVG';
 import ActivitySVG from 'components/svg/ActivitySVG';
 import SwapSVG from 'components/svg/SwapSVG';
 import MoreSVG from 'components/svg/MoreSVG';
+import {createStackNavigator} from '@react-navigation/stack';
+import SearchView from 'screens/portfolio/SearchView';
+
+export type BaseStackParamList = {
+  Portfolio: undefined;
+  Search: undefined;
+};
+const BaseStack = createStackNavigator<BaseStackParamList>();
 
 type Props = {
   onExit: () => void;
@@ -49,6 +61,7 @@ export default function MainView(props: Props | Readonly<Props>) {
 
   useEffect(() => {
     if (walletContext?.wallet) {
+      // @ts-ignore complaining about type
       setWallet(walletContext?.wallet as MnemonicWallet);
     }
   }, [walletContext?.wallet]);
@@ -57,7 +70,7 @@ export default function MainView(props: Props | Readonly<Props>) {
     if (!walletReady) {
       setWalletReady(walletStateContext?.balances !== undefined);
     }
-  }, [walletStateContext]);
+  }, [walletReady, walletStateContext]);
 
   const onExit = (): void => {
     props.onExit();
@@ -67,10 +80,15 @@ export default function MainView(props: Props | Readonly<Props>) {
     props.onSwitchWallet();
   };
 
+  const forFade = ({current}: any) => ({
+    cardStyle: {
+      opacity: current.progress,
+    },
+  });
+
   const screenOptions = (params: any): any => {
     return {
       tabBarIcon: ({focused}: {focused: boolean}) => {
-        console.log(`route: ${params.route.name} focused: ${focused}`);
         if (params.route.name === 'Portfolio') {
           return <HomeSVG selected={focused} />;
         } else if (params.route.name === 'Activity') {
@@ -83,9 +101,35 @@ export default function MainView(props: Props | Readonly<Props>) {
       },
     };
   };
-  const Portfolio = () => (
-    <PortfolioView onSwitchWallet={onSwitchWallet} onExit={onExit} />
-  );
+
+  function setTabBarVisibility(route: any) {
+    const routeName = getFocusedRouteNameFromRoute(route);
+    return routeName !== 'Search';
+  }
+
+  function PortfolioStack({navigation, route}: any) {
+    useEffect(() => {
+      navigation.setOptions({tabBarVisible: setTabBarVisibility(route)});
+    }, [navigation, route]);
+    return (
+      <BaseStack.Navigator
+        initialRouteName="Portfolio"
+        headerMode="none"
+        detachInactiveScreens={false}>
+        <BaseStack.Screen name="Portfolio">
+          {() => (
+            <PortfolioView onExit={onExit} onSwitchWallet={onSwitchWallet} />
+          )}
+        </BaseStack.Screen>
+        <BaseStack.Screen
+          name="Search"
+          options={{cardStyleInterpolator: forFade}}>
+          {() => <SearchView />}
+        </BaseStack.Screen>
+      </BaseStack.Navigator>
+    );
+  }
+  // screenOptions={props => screenOptions(props)}
   const Assets = () => <AssetsView wallet={wallet!} />;
   const Send = () => <SendView wallet={wallet!} />;
   const Earn = () => <EarnView wallet={wallet!} />;
@@ -101,7 +145,7 @@ export default function MainView(props: Props | Readonly<Props>) {
           activeTintColor: theme.accentColor,
           inactiveTintColor: theme.onBgSearch,
         }}>
-        <Tab.Screen name="Portfolio" component={Portfolio} />
+        <Tab.Screen name="Portfolio" component={PortfolioStack} />
         <Tab.Screen name="Activity" component={Assets} />
         <Tab.Screen name="Swap" component={Send} />
         <Tab.Screen name="More" component={Earn} />
@@ -114,7 +158,7 @@ export default function MainView(props: Props | Readonly<Props>) {
         <Loader message={'Loading wallet'} />
       </Modal>
 
-      <View style={styles.container}>{walletReady && Nav()}</View>
+      <View style={styles.container}>{Nav()}</View>
     </View>
   );
 }

@@ -13,14 +13,16 @@ import {ApplicationContext} from 'contexts/ApplicationContext';
 import AddSVG from 'components/svg/AddSVG';
 
 export interface SearchHeaderProps {
-  searchText?: string;
+  currentSearchText?: string;
   onSearchTextChanged: (text: string) => void;
+  onSearchPressed: () => void;
   listRef?: RefObject<FlatList>;
 }
 
 function SearchHeader({
-  searchText = '',
+  currentSearchText = '',
   onSearchTextChanged,
+  onSearchPressed,
   listRef,
 }: SearchHeaderProps) {
   const textInputRef = useRef<TextInput>(null);
@@ -56,10 +58,7 @@ function SearchHeader({
           <AddSVG />
         </TouchableOpacity>
         <Text style={styles.title}>Tokens</Text>
-        <TouchableOpacity
-          onPress={() => {
-            setActive(true);
-          }}>
+        <TouchableOpacity onPress={onSearchPressed}>
           <SearchSVG />
         </TouchableOpacity>
       </View>
@@ -76,7 +75,7 @@ function SearchHeader({
               style={[styles.searchInput, {color: context.theme.txtOnBgApp}]}
               placeholder="Search"
               placeholderTextColor={context.theme.onBgSearch}
-              value={searchText}
+              value={currentSearchText}
               onChangeText={onSearchTextChanged}
               underlineColorAndroid="transparent"
               accessible
@@ -115,7 +114,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 16,
     paddingHorizontal: 16,
-    position: 'absolute',
   },
   searchBackground: {
     alignItems: 'center',

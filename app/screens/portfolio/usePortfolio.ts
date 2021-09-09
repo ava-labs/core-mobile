@@ -12,11 +12,13 @@ export function usePortfolio(): [string, string, string, string] {
   const [balanceTotalInUSD, setBalanceTotalInUSD] = useState('');
 
   useEffect(() => {
-    setAvaxPrice(walletStateContext!.avaxPrice);
-    setAddressX(walletStateContext!.addresses.addrX);
-    setAddressP(walletStateContext!.addresses.addrP);
-    setAddressC(walletStateContext!.addresses.addrC);
-    setBalanceAvaxTotal(walletStateContext!.balances.balanceAvaxTotal);
+    if (walletStateContext) {
+      setAvaxPrice(walletStateContext.avaxPrice);
+      setAddressX(walletStateContext.addresses.addrX);
+      setAddressP(walletStateContext.addresses.addrP);
+      setAddressC(walletStateContext.addresses.addrC);
+      setBalanceAvaxTotal(walletStateContext.balances.balanceAvaxTotal);
+    }
   }, [walletStateContext]);
 
   useEffect(() => {
