@@ -1,93 +1,57 @@
 import React, {useContext} from 'react';
-import {Animated, Platform, StyleSheet, Text, View} from 'react-native';
-import {usePortfolio} from 'screens/portfolio/PortfolioHook';
-import PortfolioActionButton from './components/PortfolioActionButton';
+import {Platform, StyleSheet, Text, View} from 'react-native';
 import AvaListItem from 'screens/portfolio/AvaListItem';
 import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useWalletStateContext} from '@avalabs/wallet-react-components';
 
-interface PortfolioHeaderProps {
-  scrollY: Animated.AnimatedInterpolation;
-}
-
-export const HEADER_MAX_HEIGHT = 260;
+export const HEADER_MAX_HEIGHT = 150;
 export const HEADER_MIN_HEIGHT = Platform.OS === 'ios' ? 60 : 73;
 export const HEADER_SCROLL_DISTANCE = HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT;
 
-function PortfolioHeader({scrollY}: PortfolioHeaderProps) {
+function PortfolioHeader() {
   const context = useContext(ApplicationContext);
-  const [addressX, addressP, addressC, balanceTotalInUSD] = usePortfolio();
-
-  const headerTranslate = scrollY.interpolate({
-    inputRange: [0, HEADER_SCROLL_DISTANCE],
-    outputRange: [0, -HEADER_SCROLL_DISTANCE],
-    extrapolate: 'clamp',
-  });
-
-  const imageOpacity = scrollY.interpolate({
-    inputRange: [0, HEADER_SCROLL_DISTANCE / 3, HEADER_SCROLL_DISTANCE],
-    outputRange: [1, 0, 0],
-    extrapolate: 'clamp',
-  });
-  const imageTranslate = scrollY.interpolate({
-    inputRange: [0, HEADER_SCROLL_DISTANCE],
-    outputRange: [0, -300],
-    extrapolate: 'clamp',
-  });
-
-  const titleTranslate = scrollY.interpolate({
-    inputRange: [0, HEADER_SCROLL_DISTANCE / 2, HEADER_SCROLL_DISTANCE],
-    outputRange: [
-      0,
-      -(HEADER_SCROLL_DISTANCE / 4),
-      -(HEADER_SCROLL_DISTANCE / 2),
-    ],
-    extrapolate: 'clamp',
-  });
+  const walletStateContext = useWalletStateContext();
 
   return (
     <>
-      <Animated.View
+      <View
         pointerEvents="none"
         style={[
           styles.header,
           {
             // while we wait for the proper background from UX
-            backgroundColor: context.theme.bgApp,
-            transform: [{translateY: headerTranslate}],
+            backgroundColor: context.theme.bgOnBgApp,
           },
         ]}
       />
 
-      <Animated.View style={[styles.bar]} pointerEvents="box-none">
-        <Animated.View style={{opacity: imageOpacity}}>
+      <View style={[styles.bar]} pointerEvents="box-none">
+        <View>
           <AvaListItem.Account
             accountName={'My Awesome Wallet'}
-            accountAddress={addressC ?? ''}
+            accountAddress={walletStateContext?.addresses?.addrC ?? ''}
           />
-        </Animated.View>
-        <Animated.View
+        </View>
+        <View
           style={{
-            alignItems: 'center',
-            transform: [{translateY: titleTranslate}],
+            alignItems: 'flex-end',
+            justifyContent: 'center',
+            flexDirection: 'row',
           }}>
           <Text style={[styles.text, {color: context.theme.txtOnBgApp}]}>
-            {balanceTotalInUSD}
+            {walletStateContext?.avaxPrice ?? 0}
           </Text>
-        </Animated.View>
-        <Animated.View
-          style={{
-            opacity: imageOpacity,
-            transform: [{translateY: imageTranslate}],
-          }}>
-          <Animated.View style={[styles.actionsContainer]}>
-            <PortfolioActionButton.Send />
-            <View style={{paddingHorizontal: 24}}>
-              <PortfolioActionButton.Receive />
-            </View>
-            <PortfolioActionButton.Buy />
-          </Animated.View>
-        </Animated.View>
-      </Animated.View>
+          <Text
+            style={{
+              fontSize: 16,
+              color: context.theme.txtOnBgApp,
+              paddingLeft: 4,
+              lineHeight: 28,
+            }}>
+            USD
+          </Text>
+        </View>
+      </View>
     </>
   );
 }
@@ -100,13 +64,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   text: {
-    fontSize: 30,
+    fontSize: 36,
+    fontWeight: 'bold',
   },
   header: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
     overflow: 'hidden',
     height: HEADER_MAX_HEIGHT,
   },
