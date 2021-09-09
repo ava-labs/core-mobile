@@ -1,41 +1,52 @@
 import {BN, MnemonicWallet, Utils} from '@avalabs/avalanche-wallet-sdk';
-import {useSendAvax} from '@avalabs/wallet-react-components';
+import {
+  useSendAvax,
+  useWalletStateContext,
+} from '@avalabs/wallet-react-components';
 import {useEffect, useState} from 'react';
 import {Alert} from 'react-native';
-import {asyncScheduler, defer, scheduled, Subscription} from 'rxjs';
+import {
+  asyncScheduler,
+  BehaviorSubject,
+  defer,
+  scheduled,
+  Subscription,
+} from 'rxjs';
 
-export function useSendAvaxX(
-  wallet: MnemonicWallet,
-): [
-  string,
-  boolean,
-  string,
-  string,
-  boolean,
-  (value: ((prevState: boolean) => boolean) | boolean) => void,
-  string,
-  any,
-  string,
-  (value: ((prevState: string) => string) | string) => void,
-  string,
-  (memo?: string) => void,
-  () => void,
-  (data: string) => void,
-  () => void,
-] {
+export function useSendAvaxX(wallet: MnemonicWallet): {
+  address: string | undefined;
+  setSendAmountString: (
+    value: ((prevState: string) => string) | string,
+  ) => void;
+  setAddress: (address: string) => void;
+  cameraVisible: boolean;
+  loaderMsg: string;
+  loaderVisible: boolean;
+  setCameraVisible: (
+    value: ((prevState: boolean) => boolean) | boolean,
+  ) => void;
+  sendAmountString: string;
+  clearAddress: () => void;
+  sendFeeString: string;
+  errorMsg: string;
+  onScanBarcode: () => void;
+  balanceTotalInUSD: string;
+  avaxTotal: string;
+  targetChain: 'X' | 'P' | 'C' | undefined;
+  onSendAvax: (memo?: string) => void;
+  onBarcodeScanned: (data: string) => void;
+} {
   const {
-    send,
-    clearForm,
-    targetChain,
-    canSubmit,
-    error,
-    txId,
-    txs,
+    submit,
+    reset,
     setAmount,
     setAddress,
     amount,
     address,
-  } = useSendAvax();
+    targetChain,
+    error,
+    canSubmit,
+  } = useSendAvax(new BehaviorSubject({bn: new BN(0)})); //Fixme: how is this gas used? where that should come from?
   const [loaderVisible, setLoaderVisible] = useState(false);
   const [loaderMsg, setLoaderMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
@@ -43,9 +54,19 @@ export function useSendAvaxX(
   const [sendAmountString, setSendAmountString] = useState('');
   const [sendFeeString, setSendFeeString] = useState('0.00');
   const [disposables] = useState(new Subscription());
+  const walletStateContext = useWalletStateContext();
+  const [avaxPrice, setAvaxPrice] = useState(0);
+  const [balanceAvaxTotal, setBalanceAvaxTotal] = useState<BN>(new BN(0));
+  const [balanceTotalInUSD, setBalanceTotalInUSD] = useState('');
+  const [avaxTotal, setAvaxTotal] = useState('');
 
   useEffect(() => {
-    setErrorMsg(error);
+    setAvaxPrice(walletStateContext!.avaxPrice);
+    setBalanceAvaxTotal(walletStateContext!.balances.balanceAvaxTotal);
+  }, [walletStateContext]);
+
+  useEffect(() => {
+    setErrorMsg(error ?? '');
   }, [error]);
 
   useEffect(() => {
@@ -60,10 +81,22 @@ export function useSendAvaxX(
   //   setSendFeeString(bnAmountToString(sendFee));
   // }, [sendFee, targetChain]);
 
+  useEffect(() => {
+    setAvaxTotal(bnAmountToString(balanceAvaxTotal));
+    const symbol = 'USD';
+    const total =
+      parseFloat(Utils.bnToLocaleString(balanceAvaxTotal, 9)) * avaxPrice;
+    setBalanceTotalInUSD(total.toFixed(2) + ' ' + symbol);
+  }, [avaxPrice, balanceAvaxTotal]);
+
   const onSendAvax = (memo?: string): void => {
     setLoaderVisible(true);
     setLoaderMsg('Sending...');
 
+    if (!address) {
+      Alert.alert('Error', 'Address not set ');
+      return;
+    }
     const subscription = scheduled(
       defer(() => wallet.sendAvaxX(address, amount!, memo)),
       asyncScheduler,
@@ -106,10 +139,12 @@ export function useSendAvaxX(
   }
 
   function bnAmountToString(amount: BN): string {
-    return Utils.bnToAvaxX(amount);
+    return Utils.bnToAvaxX(amount) + ' AVAX';
   }
 
-  return [
+  return {
+    avaxTotal,
+    balanceTotalInUSD,
     targetChain,
     loaderVisible,
     loaderMsg,
@@ -125,5 +160,5 @@ export function useSendAvaxX(
     onScanBarcode,
     onBarcodeScanned,
     clearAddress,
-  ];
+  };
 }
