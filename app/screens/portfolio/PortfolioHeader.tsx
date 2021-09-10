@@ -2,7 +2,7 @@ import React, {useContext} from 'react';
 import {Platform, StyleSheet, Text, View} from 'react-native';
 import AvaListItem from 'screens/portfolio/AvaListItem';
 import {ApplicationContext} from 'contexts/ApplicationContext';
-import {useWalletStateContext} from '@avalabs/wallet-react-components';
+import {usePortfolio} from 'screens/portfolio/usePortfolio';
 
 export const HEADER_MAX_HEIGHT = 150;
 export const HEADER_MIN_HEIGHT = Platform.OS === 'ios' ? 60 : 73;
@@ -10,7 +10,7 @@ export const HEADER_SCROLL_DISTANCE = HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT;
 
 function PortfolioHeader() {
   const context = useContext(ApplicationContext);
-  const walletStateContext = useWalletStateContext();
+  const {addressC, balanceTotalInUSD} = usePortfolio();
 
   return (
     <>
@@ -20,7 +20,7 @@ function PortfolioHeader() {
         <View>
           <AvaListItem.Account
             accountName={'My Awesome Wallet'}
-            accountAddress={walletStateContext?.addresses?.addrC ?? ''}
+            accountAddress={addressC ?? ''}
           />
         </View>
         <View
@@ -30,7 +30,7 @@ function PortfolioHeader() {
             flexDirection: 'row',
           }}>
           <Text style={[styles.text, {color: context.theme.txtOnBgApp}]}>
-            {walletStateContext?.avaxPrice ?? 0}
+            {balanceTotalInUSD}
           </Text>
           <Text
             style={{

@@ -2,7 +2,12 @@ import {useEffect, useState} from 'react';
 import {BN, Utils} from '@avalabs/avalanche-wallet-sdk';
 import {useWalletStateContext} from '@avalabs/wallet-react-components';
 
-export function usePortfolio(): [string, string, string, string] {
+export function usePortfolio(): {
+  addressX: string;
+  addressP: string;
+  addressC: string;
+  balanceTotalInUSD: string;
+} {
   const walletStateContext = useWalletStateContext();
   const [avaxPrice, setAvaxPrice] = useState(0);
   const [addressX, setAddressX] = useState('');
@@ -22,11 +27,10 @@ export function usePortfolio(): [string, string, string, string] {
   }, [walletStateContext]);
 
   useEffect(() => {
-    const symbol = 'USD';
     const total =
       parseFloat(Utils.bnToLocaleString(balanceAvaxTotal, 9)) * avaxPrice;
-    setBalanceTotalInUSD(total.toFixed(2) + ' ' + symbol);
+    setBalanceTotalInUSD('$' + total.toFixed(2));
   }, [avaxPrice, balanceAvaxTotal]);
 
-  return [addressX, addressP, addressC, balanceTotalInUSD];
+  return {addressX, addressP, addressC, balanceTotalInUSD};
 }
