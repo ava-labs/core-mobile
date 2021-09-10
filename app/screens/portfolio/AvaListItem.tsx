@@ -137,12 +137,13 @@ function AccountItem({
 
   function buildTitle() {
     return (
-      <View style={styles.accountTitleContainer}>
+      <View
+        style={[
+          styles.accountTitleContainer,
+          {borderColor: context.theme.btnIconBorder},
+        ]}>
         <Text
-          style={[
-            styles.accountTitleText,
-            {borderColor: context.theme.btnIconBorder},
-          ]}
+          style={[styles.accountTitleText, {color: context.theme.btnIconIcon}]}
           ellipsizeMode="middle"
           numberOfLines={1}>
           {accountName}
