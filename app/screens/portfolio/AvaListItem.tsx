@@ -103,7 +103,8 @@ function TokenItem({tokenName, tokenPrice, image, symbol}: TokenItemProps) {
   );
 
   return (
-    <View style={[styles.tokenItem, {backgroundColor: context.theme.bgApp}]}>
+    <View
+      style={[styles.tokenItem, {backgroundColor: context.theme.bgOnBgApp}]}>
       <BaseListItem
         title={title}
         leftComponent={tokenLogo}
