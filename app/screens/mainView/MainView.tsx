@@ -129,12 +129,13 @@ export default function MainView(props: Props | Readonly<Props>) {
       </BaseStack.Navigator>
     );
   }
+
   // screenOptions={props => screenOptions(props)}
   const Assets = () => <AssetsView wallet={wallet!} />;
   const Send = () => <SendView wallet={wallet!} />;
   const Earn = () => <EarnView wallet={wallet!} />;
   const Nav = () => (
-    <NavigationContainer independent={true}>
+    <NavigationContainer theme={context.navContainerTheme} independent={true}>
       <Tab.Navigator
         sceneContainerStyle={styles.navContainer}
         screenOptions={props => screenOptions(props)}
