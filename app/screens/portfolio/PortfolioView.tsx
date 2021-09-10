@@ -15,7 +15,6 @@ export const keyExtractor = (item: any, index: number) => item?.id ?? index;
 
 const PortfolioView: FC<PortfolioProps> = ({onExit, onSwitchWallet}) => {
   const listRef = useRef<FlatList>(null);
-  const context = useContext(ApplicationContext);
 
   const renderItem = (item: ListRenderItemInfo<any>) => {
     const json = item.item;
@@ -37,7 +36,6 @@ const PortfolioView: FC<PortfolioProps> = ({onExit, onSwitchWallet}) => {
         style={[
           {
             flex: 1,
-            backgroundColor: context.theme.bgOnBgApp,
             marginTop: 36,
           },
         ]}
@@ -53,7 +51,6 @@ const PortfolioView: FC<PortfolioProps> = ({onExit, onSwitchWallet}) => {
 const styles = StyleSheet.create({
   flex: {
     flex: 1,
-    backgroundColor: '#F8F8FB',
   },
 });
 
