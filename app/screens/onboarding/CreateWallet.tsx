@@ -5,9 +5,9 @@ import TextTitle from 'components/TextTitle';
 import ButtonAva from 'components/ButtonAva';
 import Clipboard from '@react-native-clipboard/clipboard';
 import ButtonAvaTextual from 'components/ButtonAvaTextual';
-import MnemonicInput from './MnemonicInput';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import HeaderProgress from 'screens/mainView/HeaderProgress';
+import MnemonicAva from 'screens/onboarding/MnemonicAva';
 
 type Props = {
   onBack: () => void;
@@ -75,9 +75,7 @@ export default function CreateWallet(props: Props | Readonly<Props>) {
   const mnemonics = () => {
     const mnemonics: Element[] = [];
     mnemonic.split(' ').forEach((value, key) => {
-      mnemonics.push(
-        <MnemonicInput key={key} keyNum={key} text={value} editable={false} />,
-      );
+      mnemonics.push(<MnemonicAva.Text key={key} keyNum={key} text={value} />);
     });
     return mnemonics;
   };
