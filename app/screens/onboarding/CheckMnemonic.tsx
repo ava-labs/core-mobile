@@ -3,9 +3,9 @@ import {Alert, ScrollView, StyleSheet, View} from 'react-native';
 import TextTitle from 'components/TextTitle';
 import ButtonAva from 'components/ButtonAva';
 import CheckMnemonicViewModel from './CheckMnemonicViewModel';
-import MnemonicInput from './MnemonicInput';
 import {Subscription} from 'rxjs';
 import HeaderProgress from 'screens/mainView/HeaderProgress';
+import MnemonicAva from 'screens/onboarding/MnemonicAva';
 
 type Props = {
   onSuccess: () => void;
@@ -53,22 +53,16 @@ export default function CheckMnemonic(props: Props | Readonly<Props>) {
     enteredMnemonics.forEach((value, key) => {
       if (enabledInputs.get(key)) {
         mnemonics.push(
-          <MnemonicInput
+          <MnemonicAva.Input
             key={key}
             keyNum={key}
             text={value}
             onChangeText={text => setMnemonic(key, text)}
-            editable={true}
           />,
         );
       } else {
         mnemonics.push(
-          <MnemonicInput
-            key={key}
-            keyNum={key}
-            text={value}
-            editable={false}
-          />,
+          <MnemonicAva.Text key={key} keyNum={key} text={value} />,
         );
       }
     });

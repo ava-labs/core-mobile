@@ -11,6 +11,7 @@ export enum COLORS_DAY {
   onBgSearch = '#949497',
 
   txtOnBgApp = '#000000',
+  txtDim = '#6C6C6E',
   txtError = '#C52926',
 
   txtListItem = '#1A1A1C',
@@ -43,7 +44,7 @@ export enum COLORS_DAY {
   btnIconIcon = '#1A1A1C',
   btnIconBgPressed = '#F8F8FB',
 
-  toastTxt = '#FFFFFF',
+  toastTxt = '#1A1A1C',
   toastBgWarning = '#FCE3F0',
   toastBgInfo = '#F1E7FD',
   toastBgSuccess = '#2CB753',
@@ -71,6 +72,7 @@ export enum COLORS_NIGHT {
   onBgSearch = '#B4B4B7',
 
   txtOnBgApp = '#FFFFFF',
+  txtDim = '#6C6C6E',
   txtError = '#F34333',
 
   txtListItem = '#F8F8FB',
