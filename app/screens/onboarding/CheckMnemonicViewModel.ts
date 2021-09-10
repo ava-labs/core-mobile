@@ -72,7 +72,7 @@ export default class {
             return value !== enteredMnemonic.get(index);
           });
         if (isInvalid) {
-          throw Error('no match');
+          throw Error('Invalid mnemonic');
         }
         return true;
       }),
