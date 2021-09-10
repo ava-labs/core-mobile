@@ -22,7 +22,7 @@ function MoreSVG({selected}: Prop) {
         rx="3"
         fill={svgColor}
         stroke={svgColor}
-        stroke-width="2"
+        strokeWidth="2"
       />
       <Rect
         x="5"
@@ -32,7 +32,7 @@ function MoreSVG({selected}: Prop) {
         rx="3"
         fill={svgColor}
         stroke={svgColor}
-        stroke-width="2"
+        strokeWidth="2"
       />
       <Rect
         x="17.9231"
@@ -42,7 +42,7 @@ function MoreSVG({selected}: Prop) {
         rx="3"
         fill={svgColor}
         stroke={svgColor}
-        stroke-width="2"
+        strokeWidth="2"
       />
       <Rect
         x="17.9231"
@@ -52,7 +52,7 @@ function MoreSVG({selected}: Prop) {
         rx="3"
         fill={svgColor}
         stroke={svgColor}
-        stroke-width="2"
+        strokeWidth="2"
       />
     </Svg>
   );

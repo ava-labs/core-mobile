@@ -4,8 +4,8 @@ export enum COLORS_DAY {
   accentColor = '#F64942',
   shadow = '#00000066',
 
-  bgApp = '#FFFFFF',
-  bgOnBgApp = '#F8F8FB',
+  bgApp = '#F8F8FB',
+  bgOnBgApp = '#FFFFFF',
   bgActionButton = '#FFFFFF',
   bgSearch = '#E8E8EB',
   onBgSearch = '#949497',
@@ -23,7 +23,7 @@ export enum COLORS_DAY {
   btnPrimaryTxt = '#FFFFFF',
   btnPrimaryTxtDisabled = '#FFFFFF',
   btnPrimaryBgPressed = '#F1595A',
-  btnPrimaryBgDisabled = '#E8E0FF',
+  btnPrimaryBgDisabled = '#FFCFD5',
 
   btnSecondaryBg = '#00000000',
   btnSecondaryBorder = '#F64942',

@@ -1,5 +1,7 @@
-import React from 'react';
-import {Image} from 'react-native';
+import React, {useContext} from 'react';
+import {ApplicationContext} from 'contexts/ApplicationContext';
+import DotSVG from 'components/svg/DotSVG';
+import {View} from 'react-native';
 
 type Props = {
   filled?: boolean;
@@ -7,29 +9,16 @@ type Props = {
   margin?: number;
 };
 
-const getIcon = (isFilled: boolean) => {
-  return isFilled
-    ? require('assets/icons/dot_filled.png')
-    : require('assets/icons/dot.png');
-};
-
 export default function Dot(props: Props | Readonly<Props>) {
-  const icon = getIcon(props.filled || false);
-  const iconSize = props.size || 20;
+  const context = useContext(ApplicationContext);
   const iconMargin = props.margin || 0;
 
   return (
-    <Image
-      source={icon}
-      width={iconSize}
-      height={iconSize}
-      style={[
-        {
-          width: iconSize,
-          height: iconSize,
-          margin: iconMargin,
-        },
-      ]}
-    />
+    <View style={[{margin: iconMargin}]}>
+      {props.filled || <DotSVG size={props.size} />}
+      {props.filled && (
+        <DotSVG size={props.size} fillColor={context.theme.accentColor} />
+      )}
+    </View>
   );
 }

@@ -14,16 +14,7 @@ function PortfolioHeader() {
 
   return (
     <>
-      <View
-        pointerEvents="none"
-        style={[
-          styles.header,
-          {
-            // while we wait for the proper background from UX
-            backgroundColor: context.theme.bgOnBgApp,
-          },
-        ]}
-      />
+      <View pointerEvents="none" style={[styles.header]} />
 
       <View style={[styles.bar]} pointerEvents="box-none">
         <View>

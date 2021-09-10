@@ -318,26 +318,15 @@ export default function App() {
     }
   }, [selectedView]);
 
-  const theme = context.theme;
-  const navTheme: Theme = {
-    dark: context.isDarkMode,
-    colors: {
-      primary: theme.accentColor,
-      background: theme.bgApp,
-      text: theme.txtOnBgApp,
-      card: theme.bgOnBgApp,
-      border: theme.bgApp,
-      notification: theme.accentColor,
-    },
-  };
-
   return (
     <SafeAreaView style={backgroundStyle}>
       <StatusBar
-        backgroundColor={theme.bgApp}
+        backgroundColor={context.theme.bgApp}
         barStyle={isDarkMode ? 'light-content' : 'dark-content'}
       />
-      <NavigationContainer theme={navTheme} ref={navigationRef}>
+      <NavigationContainer
+        theme={context.navContainerTheme}
+        ref={navigationRef}>
         <RootScreen />
       </NavigationContainer>
     </SafeAreaView>
