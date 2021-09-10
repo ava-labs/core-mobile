@@ -104,7 +104,11 @@ function TokenItem({tokenName, tokenPrice, image, symbol}: TokenItemProps) {
 
   return (
     <View
-      style={[styles.tokenItem, {backgroundColor: context.theme.bgOnBgApp}]}>
+      style={[
+        styles.tokenItem,
+        context.shadow,
+        {backgroundColor: context.theme.bgOnBgApp},
+      ]}>
       <BaseListItem
         title={title}
         leftComponent={tokenLogo}
@@ -214,15 +218,6 @@ const styles = StyleSheet.create({
     marginHorizontal: 8,
     borderRadius: 8,
     marginVertical: 4,
-    shadowColor: '#1A1A1A',
-    shadowOffset: {
-      width: 0,
-      height: 3,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-
-    elevation: 5,
   },
   tokenNativeValue: {
     fontWeight: 'bold',

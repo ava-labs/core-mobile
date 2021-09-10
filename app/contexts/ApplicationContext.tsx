@@ -1,7 +1,7 @@
 import React, {createContext, useState} from 'react';
 import {COLORS_DAY, COLORS_NIGHT} from 'resources/Constants';
-import {Appearance} from 'react-native';
 import type {Theme} from '@react-navigation/native';
+import {Appearance} from 'react-native';
 
 interface ApplicationContextState {
   theme: typeof COLORS_DAY | typeof COLORS_NIGHT;
@@ -9,6 +9,7 @@ interface ApplicationContextState {
   backgroundStyle: BackgroundStyle;
   appBackgroundStyle: AppBackgroundStyle;
   navContainerTheme: Theme;
+  shadow: Shadow;
 }
 
 export declare type BackgroundStyle = {
@@ -17,6 +18,14 @@ export declare type BackgroundStyle = {
   paddingBottom?: number;
   paddingStart?: number;
   paddingEnd?: number;
+};
+
+export declare type Shadow = {
+  shadowColor: string;
+  shadowRadius: number;
+  shadowOpacity: number;
+  elevation: number;
+  shadowOffset: {width: number; height: number};
 };
 
 export declare type AppBackgroundStyle = {
@@ -56,12 +65,21 @@ export const ApplicationContextProvider = ({children}: {children: any}) => {
     },
   } as Theme);
 
+  const [shadow] = useState({
+    shadowColor: theme.shadow,
+    shadowRadius: 3,
+    shadowOpacity: 0.5,
+    elevation: 3,
+    shadowOffset: {width: 0, height: 1},
+  } as Shadow);
+
   const appContextState: ApplicationContextState = {
     theme,
     isDarkMode,
     backgroundStyle,
     appBackgroundStyle,
     navContainerTheme,
+    shadow,
   };
   return (
     <ApplicationContext.Provider value={appContextState}>
