@@ -21,23 +21,25 @@ export default function HdWalletLogin(props: Props | Readonly<Props>) {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.scrollView}>
+    <ScrollView
+      contentContainerStyle={styles.scrollView}
+      keyboardShouldPersistTaps="handled">
       <View style={styles.verticalLayout}>
         <Header showBack onBack={onBack} />
         <View style={[{height: 8}]} />
 
         <TextTitle text={'Wallet'} textAlign={'center'} bold={true} />
-        <View style={[{flexGrow: 1}]} />
-
-        <ButtonAvaTextual
-          text={'Enter test HD wallet'}
-          onPress={onEnterTestWallet}
-        />
-        <View style={[{padding: 16}]}>
-          <RecoveryPhraseInputCard
-            onCancel={onBack}
-            onEnter={mnemonic => props.onEnterWallet(mnemonic)}
+        <View style={[{flexGrow: 1, justifyContent: 'flex-end'}]}>
+          <ButtonAvaTextual
+            text={'Enter test HD wallet'}
+            onPress={onEnterTestWallet}
           />
+          <View style={[{padding: 16}]}>
+            <RecoveryPhraseInputCard
+              onCancel={onBack}
+              onEnter={mnemonic => props.onEnterWallet(mnemonic)}
+            />
+          </View>
         </View>
       </View>
     </ScrollView>
@@ -50,6 +52,5 @@ const styles = StyleSheet.create({
   },
   verticalLayout: {
     height: '100%',
-    justifyContent: 'flex-end',
   },
 });

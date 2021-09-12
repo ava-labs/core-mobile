@@ -5,9 +5,9 @@ import TextTitle from 'components/TextTitle';
 import ButtonAva from 'components/ButtonAva';
 import Clipboard from '@react-native-clipboard/clipboard';
 import ButtonAvaTextual from 'components/ButtonAvaTextual';
-import MnemonicInput from './MnemonicInput';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import HeaderProgress from 'screens/mainView/HeaderProgress';
+import MnemonicAva from 'screens/onboarding/MnemonicAva';
 
 type Props = {
   onBack: () => void;
@@ -46,7 +46,7 @@ export default function CreateWallet(props: Props | Readonly<Props>) {
           style={[
             {
               flexDirection: 'row',
-              backgroundColor: theme.balloonBg,
+              backgroundColor: theme.toastBgWarning,
               alignItems: 'center',
               borderRadius: 8,
               padding: 16,
@@ -58,7 +58,7 @@ export default function CreateWallet(props: Props | Readonly<Props>) {
           />
           <View style={[{flex: 1}]}>
             <TextTitle
-              color={theme.balloonText}
+              color={theme.toastTxt}
               text={
                 'The recovery phrase is the only key to your wallet. Do not share it with anyone.'
               }
@@ -75,9 +75,7 @@ export default function CreateWallet(props: Props | Readonly<Props>) {
   const mnemonics = () => {
     const mnemonics: Element[] = [];
     mnemonic.split(' ').forEach((value, key) => {
-      mnemonics.push(
-        <MnemonicInput key={key} keyNum={key} text={value} editable={false} />,
-      );
+      mnemonics.push(<MnemonicAva.Text key={key} keyNum={key} text={value} />);
     });
     return mnemonics;
   };
@@ -106,7 +104,10 @@ export default function CreateWallet(props: Props | Readonly<Props>) {
         <BalloonText />
         <View style={[{height: 8}]} />
         <View
-          style={[styles.mnemonics, {backgroundColor: context.theme.cardBg}]}>
+          style={[
+            styles.mnemonics,
+            {backgroundColor: context.theme.bgOnBgApp},
+          ]}>
           {mnemonics()}
         </View>
       </View>

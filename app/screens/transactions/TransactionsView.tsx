@@ -1,55 +1,59 @@
-import React, {useEffect, useState} from 'react'
-import {FlatList, Modal, StyleSheet, View} from 'react-native'
-import TextTitle from "../../components/TextTitle"
-import TransactionsViewModel, {HistoryItem} from "./TransactionsViewModel"
-import TransactionItem from "./TransactionItem"
-import Loader from "../../components/Loader"
-import Header from "../mainView/Header"
-import {MnemonicWallet} from "@avalabs/avalanche-wallet-sdk"
+import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
+import {useEffect, useState} from 'react';
+import TransactionsViewModel, {
+  HistoryItem,
+} from 'screens/transactions/TransactionsViewModel';
+import {FlatList, Modal, StyleSheet, View} from 'react-native';
+import Loader from 'components/Loader';
+import TextTitle from 'components/TextTitle';
+import TransactionItem from './TransactionItem';
 
 type Props = {
-  wallet: MnemonicWallet,
-}
+  wallet: MnemonicWallet;
+};
 
 export default function TransactionsView(props: Props | Readonly<Props>) {
-  const [viewModel] = useState(new TransactionsViewModel(props.wallet))
-  const [loaderVisible, setLoaderVisible] = useState(false)
-  const [loaderMsg, setLoaderMsg] = useState('')
-  const [historyItems, setHistoryItems] = useState<HistoryItem[]>([])
+  const [viewModel] = useState(new TransactionsViewModel(props.wallet));
+  const [loaderVisible, setLoaderVisible] = useState(false);
+  const [loaderMsg, setLoaderMsg] = useState('');
+  const [historyItems, setHistoryItems] = useState<HistoryItem[]>([]);
 
   useEffect(() => {
-    viewModel.history.subscribe(value => setHistoryItems(value))
-    viewModel.loaderVisible.subscribe(value => setLoaderVisible(value))
-    viewModel.loaderMsg.subscribe(value => setLoaderMsg(value))
-  }, [])
+    viewModel.history.subscribe(value => setHistoryItems(value));
+    viewModel.loaderVisible.subscribe(value => setLoaderVisible(value));
+    viewModel.loaderMsg.subscribe(value => setLoaderMsg(value));
+  }, []);
 
   const renderItem = (item: HistoryItem) => (
-    <TransactionItem type={item.type} date={item.date} info={item.info} amount={item.amount}
-                     address={item.address} explorerUrl={item.explorerUrl}/>
-  )
+    <TransactionItem
+      type={item.type}
+      date={item.date}
+      info={item.info}
+      amount={item.amount}
+      address={item.address}
+      explorerUrl={item.explorerUrl}
+    />
+  );
 
   return (
     <View style={styles.container}>
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={loaderVisible}>
-        <Loader message={loaderMsg}/>
+      <Modal animationType="fade" transparent={true} visible={loaderVisible}>
+        <Loader message={loaderMsg} />
       </Modal>
 
-      <Header/>
-      <TextTitle text={"Transactions"}/>
-      <FlatList data={historyItems}
-                renderItem={info => renderItem(info.item)}
-                keyExtractor={item => item.id}/>
+      <Header />
+      <TextTitle text={'Transactions'} />
+      <FlatList
+        data={historyItems}
+        renderItem={info => renderItem(info.item)}
+        keyExtractor={item => item.id}
+      />
     </View>
-  )
+  );
 }
-
 
 const styles = StyleSheet.create({
   container: {
-    height: "100%"
+    height: '100%',
   },
-})
-
+});

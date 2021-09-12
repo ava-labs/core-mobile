@@ -26,9 +26,7 @@ export default function Header(props: Props | Readonly<Props>) {
     props.onSwitchWallet?.();
   };
 
-  const logo = isDarkMode
-    ? require('assets/ava_logo_dark.png')
-    : require('assets/ava_logo_light.png');
+  const logo = require('assets/icons/avax_token.png');
   const icon = isDarkMode
     ? require('assets/icons/arrow_back_dark.png')
     : require('assets/icons/arrow_back_light.png');

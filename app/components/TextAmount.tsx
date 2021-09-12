@@ -12,14 +12,14 @@ type Props = {
 export default function TextAmount(props: Props | Readonly<Props>) {
   const context = useContext(ApplicationContext);
   const theme = context.theme;
-  let color = theme.primaryColor;
+  let color = theme.accentColor;
   if (props.type) {
     switch (props.type) {
       case 'import':
-        color = theme.incoming;
+        color = theme.txtOnBgApp;
         break;
       case 'export':
-        color = theme.outgoing;
+        color = theme.txtOnBgApp;
         break;
     }
   }

@@ -4,7 +4,6 @@ import TextTitle from 'components/TextTitle';
 import InputText from './InputText';
 import ButtonAva from './ButtonAva';
 import ButtonAvaTextual from './ButtonAvaTextual';
-import TextLabel from './TextLabel';
 import WalletSDK from '../utils/WalletSDK';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 
@@ -42,35 +41,26 @@ export default function RecoveryPhraseInputCard(
   return (
     <View
       style={[
+        context.shadow,
         styles.container,
         {
-          backgroundColor: theme.cardBg,
-          shadowColor: theme.shadow,
+          height: 300,
+          backgroundColor: theme.bgOnBgApp,
         },
       ]}>
       <View style={[{margin: 16}]}>
         <TextTitle text={'Recovery phrase'} size={18} bold />
       </View>
       <InputText
-        style={[
-          {
-            height: 160,
-            textAlignVertical: 'top',
-            borderWidth: 0,
-            padding: 0,
-            marginVertical: 0,
-            marginHorizontal: 16,
-          },
-        ]}
+        onSubmit={onEnterWallet}
+        minHeight={130}
         placeholder="Enter your recovery phrase"
         value={enteredMnemonic}
         multiline
+        errorText={errorMessage}
         onChangeText={onEnterMnemonic}
       />
-      <View style={[{marginStart: 16, marginBottom: 16}]}>
-        <TextLabel text={errorMessage || ''} color={theme.error} />
-      </View>
-      <View style={[styles.buttonContainer, {backgroundColor: theme.tcwbBg2}]}>
+      <View style={[styles.buttonContainer]}>
         <View style={styles.horizontalLayout}>
           <ButtonAvaTextual text={'Cancel'} onPress={props.onCancel} />
           <ButtonAva text={'Enter'} onPress={onEnterWallet} size={'medium'} />
@@ -83,8 +73,6 @@ export default function RecoveryPhraseInputCard(
 const styles = StyleSheet.create({
   container: {
     borderRadius: 8,
-    shadowRadius: 4,
-    shadowOpacity: 1,
     justifyContent: 'flex-end',
   },
   buttonContainer: {

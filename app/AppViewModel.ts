@@ -1,23 +1,25 @@
-import WalletSDK from './WalletSDK';
 import {
   asyncScheduler,
   AsyncSubject,
   BehaviorSubject,
   concat,
+  delay,
   from,
   Observable,
   of,
+  tap,
 } from 'rxjs';
-import {MnemonicWallet, NetworkConstants} from '@avalabs/avalanche-wallet-sdk';
-import {concatMap, map, subscribeOn, switchMap} from 'rxjs/operators';
-import BiometricsSDK from './BiometricsSDK';
+import {concatMap, map, switchMap} from 'rxjs/operators';
 import {BackHandler} from 'react-native';
+import WalletSDK from 'utils/WalletSDK';
+import BiometricsSDK from 'utils/BiometricsSDK';
 
 export enum SelectedView {
   Onboard,
   CreateWallet,
   CheckMnemonic,
   CreatePin,
+  CreatePinForExistingWallet,
   BiometricStore,
   LoginWithMnemonic,
   PinOrBiometryLogin,
@@ -25,12 +27,11 @@ export enum SelectedView {
 }
 
 export default class {
-  wallet: MnemonicWallet | null = null;
+  mnemonic: string = '';
   selectedView: BehaviorSubject<SelectedView> =
     new BehaviorSubject<SelectedView>(SelectedView.Onboard);
 
   onComponentMount = (): void => {
-    WalletSDK.setNetwork(NetworkConstants.TestnetConfig);
     BiometricsSDK.hasWalletStored().then(value => {
       if (value) {
         this.setSelectedView(SelectedView.PinOrBiometryLogin);
@@ -39,9 +40,7 @@ export default class {
   };
 
   onPinCreated = (pin: string): Observable<boolean> => {
-    return from(
-      BiometricsSDK.storeWalletWithPin(pin, this.wallet?.mnemonic!),
-    ).pipe(
+    return from(BiometricsSDK.storeWalletWithPin(pin, this.mnemonic)).pipe(
       switchMap(pinSaved => {
         if (pinSaved === false) {
           throw Error('Pin not saved');
@@ -61,18 +60,26 @@ export default class {
 
   onEnterWallet = (mnemonic: string): Observable<boolean> => {
     return of(mnemonic).pipe(
-      map((mnemonic: string) => WalletSDK.getMnemonicValet(mnemonic)),
-      map((wallet: MnemonicWallet) => {
-        this.wallet = wallet;
+      tap((mnemonic: string) => {
+        WalletSDK.getMnemonicValet(mnemonic);
         this.setSelectedView(SelectedView.Main);
+      }),
+      delay(10, asyncScheduler), //give UI chance to update selected view
+      map(() => {
         return true;
       }),
-      subscribeOn(asyncScheduler),
     );
   };
 
+  onEnterExistingMnemonic = (mnemonic: string): void => {
+    BiometricsSDK.clearWalletKey().then(() => {
+      this.mnemonic = mnemonic;
+      this.setSelectedView(SelectedView.CreatePinForExistingWallet);
+    });
+  };
+
   onSavedMnemonic = (mnemonic: string): void => {
-    this.wallet = WalletSDK.getMnemonicValet(mnemonic);
+    this.mnemonic = mnemonic;
     this.setSelectedView(SelectedView.CheckMnemonic);
   };
 
@@ -89,7 +96,7 @@ export default class {
       }),
       map((isCanceled: boolean) => {
         if (!isCanceled) {
-          this.wallet = null;
+          this.mnemonic = '';
           this.setSelectedView(SelectedView.Onboard);
         }
         return new LogoutFinished();
@@ -139,6 +146,9 @@ export default class {
         return true;
       case SelectedView.CreatePin:
         this.setSelectedView(SelectedView.CheckMnemonic);
+        return true;
+      case SelectedView.CreatePinForExistingWallet:
+        this.setSelectedView(SelectedView.Onboard);
         return true;
       case SelectedView.BiometricStore:
         this.setSelectedView(SelectedView.CreatePin);

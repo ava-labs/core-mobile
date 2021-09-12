@@ -21,7 +21,7 @@ export default function ImgButtonAva(props: Props | Readonly<Props>) {
     <TouchableNativeFeedback
       useForeground={true}
       onPress={props.onPress}
-      background={TouchableNativeFeedback.Ripple(theme.primaryColor, true)}>
+      background={TouchableNativeFeedback.Ripple(theme.buttonRipple, true)}>
       <View style={styles.container}>
         <Image
           source={props.src}

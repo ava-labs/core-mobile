@@ -5,20 +5,22 @@ import Header from 'screens/mainView/Header';
 import AssetsAddTokenViewModel from './AssetsAddTokenViewModel';
 import InputText from 'components/InputText';
 import {BehaviorSubject} from 'rxjs';
-import {COLORS, COLORS_NIGHT} from 'resources/Constants';
 import ButtonAva from 'components/ButtonAva';
 import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 
 type Props = {
-  wallet: BehaviorSubject<MnemonicWallet>;
+  wallet: MnemonicWallet;
   onClose: () => void;
 };
 
 export default function AssetsAddToken(props: Props | Readonly<Props>) {
   const context = useContext(ApplicationContext);
-  const [viewModel] = useState(new AssetsAddTokenViewModel(props.wallet));
-  const [isDarkMode] = useState(context.isDarkMode);
+  const [viewModel] = useState(
+    new AssetsAddTokenViewModel(
+      new BehaviorSubject<MnemonicWallet>(props.wallet),
+    ),
+  );
   const [backgroundStyle] = useState(context.backgroundStyle);
   const [tokenContractAddress, setTokenContractAddress] = useState('');
   const [tokenName, setTokenName] = useState('');
@@ -54,7 +56,7 @@ export default function AssetsAddToken(props: Props | Readonly<Props>) {
     });
   };
 
-  const THEME = isDarkMode ? COLORS_NIGHT : COLORS;
+  const THEME = context.theme;
   return (
     <SafeAreaView style={backgroundStyle}>
       <Header showBack onBack={props.onClose} />
@@ -70,7 +72,7 @@ export default function AssetsAddToken(props: Props | Readonly<Props>) {
         textAlign={'center'}
         text={errorMsg}
         size={18}
-        color={THEME.error}
+        color={THEME.txtError}
       />
 
       <TextTitle text={'Token Name'} size={18} />

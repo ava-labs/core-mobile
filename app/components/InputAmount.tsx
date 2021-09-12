@@ -58,11 +58,11 @@ export default function InputAmount(props: Props | Readonly<Props>) {
         style={[
           {
             flexGrow: 1,
-            color: theme.primaryColor,
+            color: theme.inputTxt,
             fontSize: props.textSize ? props.textSize : 18,
             padding: 8,
             borderWidth: 1,
-            borderColor: theme.primaryColorLight,
+            borderColor: theme.inputBorder,
             borderRadius: 4,
             margin: 12,
             textAlign: 'right',

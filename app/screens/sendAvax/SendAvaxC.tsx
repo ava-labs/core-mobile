@@ -11,6 +11,7 @@ import Header from 'screens/mainView/Header';
 import ImgButtonAva from 'components/ImgButtonAva';
 import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
 import {ApplicationContext} from 'contexts/ApplicationContext';
+import QRCode from 'components/svg/QRCode';
 
 type SendAvaxCProps = {
   wallet: MnemonicWallet;
@@ -61,10 +62,7 @@ export default function SendAvaxC(
     );
   };
 
-  const scanIcon = isDarkMode
-    ? require('assets/icons/qr_scan_dark.png')
-    : require('assets/icons/qr_scan_light.png');
-  const clearBtn = addressCToSendTo.length != 0 && ClearBtn();
+  const clearBtn = addressCToSendTo.length !== 0 && ClearBtn();
 
   return (
     <SafeAreaView style={backgroundStyle}>
@@ -74,16 +72,12 @@ export default function SendAvaxC(
 
       <View style={styles.horizontalLayout}>
         <InputText
-          style={[{flex: 1}]}
           multiline={true}
           onChangeText={text => setAddressCToSendTo(text)}
           value={addressCToSendTo}
         />
         {clearBtn}
-        <ImgButtonAva
-          src={scanIcon}
-          onPress={() => viewModel.onScanBarcode()}
-        />
+        <QRCode />
       </View>
 
       <TextTitle text={'Amount:'} size={18} />

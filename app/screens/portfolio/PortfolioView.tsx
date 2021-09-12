@@ -1,64 +1,56 @@
-import React, {FC, useEffect, useState} from 'react';
-import {StyleSheet, View} from 'react-native';
-import PortfolioViewModel from './PortfolioViewModel';
-import Header from 'screens/mainView/Header';
-import Balances from './Balances';
-import TabbedAddressCards from './TabbedAddressCards';
-import {BehaviorSubject, Subscription} from 'rxjs';
-import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
-import TextLabel from 'components/TextLabel';
+import React, {FC, useContext, useRef} from 'react';
+import {FlatList, ListRenderItemInfo, StyleSheet} from 'react-native';
+import AvaListItem from 'screens/portfolio/AvaListItem';
+import PortfolioHeader from 'screens/portfolio/PortfolioHeader';
+import {ApplicationContext} from 'contexts/ApplicationContext';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
 
-type Props = {
-  wallet: BehaviorSubject<MnemonicWallet>;
+type PortfolioProps = {
   onExit: () => void;
   onSwitchWallet: () => void;
 };
 
-const PortfolioView: FC<Props> = ({wallet, onExit, onSwitchWallet}) => {
-  const [viewModel] = useState(new PortfolioViewModel(wallet));
-  const [avaxPrice, setAvaxPrice] = useState(0);
-  const [addressX, setAddressX] = useState('');
-  const [addressP, setAddressP] = useState('');
-  const [addressC, setAddressC] = useState('');
+const data: JSON[] = require('assets/coins.json');
+export const keyExtractor = (item: any, index: number) => item?.id ?? index;
 
-  useEffect(() => {
-    const disposables = new Subscription();
-    disposables.add(
-      viewModel.avaxPrice.subscribe(value => setAvaxPrice(value)),
+const PortfolioView: FC<PortfolioProps> = ({onExit, onSwitchWallet}) => {
+  const listRef = useRef<FlatList>(null);
+
+  const renderItem = (item: ListRenderItemInfo<any>) => {
+    const json = item.item;
+    return (
+      <AvaListItem.Token
+        tokenName={json.name}
+        tokenPrice={json.current_price}
+        image={json.image}
+        symbol={json.symbol}
+      />
     );
-    disposables.add(viewModel.addressX.subscribe(value => setAddressX(value)));
-    disposables.add(viewModel.addressP.subscribe(value => setAddressP(value)));
-    disposables.add(viewModel.addressC.subscribe(value => setAddressC(value)));
-    viewModel.onComponentMount();
-
-    return () => {
-      disposables.unsubscribe();
-      viewModel.onComponentUnMount();
-    };
-  }, []);
+  };
 
   return (
-    <View style={styles.container}>
-      <Header
-        showExit
-        onExit={onExit}
-        showSwitchWallet
-        onSwitchWallet={onSwitchWallet}
+    <SafeAreaProvider style={styles.flex}>
+      <PortfolioHeader />
+      <FlatList
+        ref={listRef}
+        style={[
+          {
+            flex: 1,
+            marginTop: 36,
+          },
+        ]}
+        data={data}
+        renderItem={renderItem}
+        keyExtractor={keyExtractor}
+        scrollEventThrottle={16}
       />
-      <Balances wallet={wallet} />
-      <TextLabel text={'Avax price = ' + avaxPrice + 'USD'} />
-      <TabbedAddressCards
-        addressP={addressP}
-        addressX={addressX}
-        addressC={addressC}
-      />
-    </View>
+    </SafeAreaProvider>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    height: '100%',
+  flex: {
+    flex: 1,
   },
 });
 

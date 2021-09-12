@@ -35,16 +35,13 @@ export default function ButtonAvaSecondary(props: Props | Readonly<Props>) {
       disabled={props.disabled}
       useForeground={true}
       onPress={() => props.onPress()}
-      background={TouchableNativeFeedback.Ripple(
-        theme.buttonRippleSecondary,
-        false,
-      )}>
+      background={TouchableNativeFeedback.Ripple(theme.buttonRipple, false)}>
       <View
         style={[
           styles.button,
           {
-            backgroundColor: theme.transparent,
-            borderColor: theme.buttonSecondary,
+            backgroundColor: theme.btnSecondaryBg,
+            borderColor: theme.btnSecondaryBorder,
             width: width,
             height: height,
           },

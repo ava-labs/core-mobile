@@ -13,7 +13,7 @@ export default function Loader(props: LoaderProps | Readonly<LoaderProps>) {
   const context = useContext(ApplicationContext);
 
   return (
-    <SafeAreaView style={context.backgroundStyle}>
+    <SafeAreaView style={context.appBackgroundStyle}>
       <View style={context.backgroundStyle}>
         <View style={styles.headerContainer}>
           <Header />

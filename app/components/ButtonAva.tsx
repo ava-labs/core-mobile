@@ -42,8 +42,8 @@ export default function ButtonAva(props: Props | Readonly<Props>) {
           styles.button,
           {
             backgroundColor: props.disabled
-              ? theme.buttonPrimaryDisabled
-              : theme.buttonPrimary,
+              ? theme.btnPrimaryBgDisabled
+              : theme.btnPrimaryBg,
             width: width,
             height: height,
           },

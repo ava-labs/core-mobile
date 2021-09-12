@@ -7,14 +7,7 @@
 
 import React, {RefObject, useContext, useEffect, useState} from 'react';
 import {Alert, BackHandler, SafeAreaView, StatusBar} from 'react-native';
-import AppViewModel, {
-  ExitPromptAnswers,
-  LogoutEvents,
-  LogoutPromptAnswers,
-  SelectedView,
-  ShowExitPrompt,
-  ShowLogoutPrompt,
-} from './utils/AppViewModel';
+
 import Onboard from 'screens/onboarding/Onboard';
 import CreateWallet from 'screens/onboarding/CreateWallet';
 import MainView from 'screens/mainView/MainView';
@@ -31,6 +24,20 @@ import CreatePIN from 'screens/onboarding/CreatePIN';
 import BiometricLogin from 'screens/onboarding/BiometricLogin';
 import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin';
 import {ApplicationContext} from 'contexts/ApplicationContext';
+import AppViewModel, {
+  ExitPromptAnswers,
+  LogoutEvents,
+  LogoutPromptAnswers,
+  SelectedView,
+  ShowExitPrompt,
+  ShowLogoutPrompt,
+} from 'AppViewModel';
+import {
+  FUJI_NETWORK,
+  useNetworkContext,
+  useWalletContext,
+  WalletStateContextProvider,
+} from '@avalabs/wallet-react-components';
 
 const RootStack = createStackNavigator();
 const CreateWalletStack = createStackNavigator();
@@ -62,8 +69,12 @@ const onExit = (): void => {
   });
 };
 
-const onEnterWallet = (mnemonic: string): void => {
+const onEnterWallet = (
+  mnemonic: string,
+  setMnemonic: (mnemonic: string) => void,
+): void => {
   viewModel.onEnterWallet(mnemonic).subscribe({
+    next: () => setMnemonic(mnemonic),
     error: err => Alert.alert(err.message),
   });
 };
@@ -105,9 +116,10 @@ const onSwitchWallet = (): void => {
 };
 
 const OnboardScreen = () => {
+  const context = useWalletContext();
   return (
     <Onboard
-      onEnterWallet={onEnterWallet}
+      onEnterWallet={mnemonic => onEnterWallet(mnemonic, context!.setMnemonic)}
       onAlreadyHaveWallet={() =>
         viewModel.setSelectedView(SelectedView.LoginWithMnemonic)
       }
@@ -132,7 +144,7 @@ const CheckMnemonicScreen = () => {
     <CheckMnemonic
       onSuccess={() => viewModel.setSelectedView(SelectedView.CreatePin)}
       onBack={() => viewModel.onBackPressed()}
-      mnemonic={viewModel.wallet?.mnemonic || ''}
+      mnemonic={viewModel.mnemonic}
     />
   );
 };
@@ -150,11 +162,14 @@ const CreatePinScreen = () => {
 };
 
 const BiometricLoginScreen = () => {
+  const context = useWalletContext();
   return (
     <BiometricLogin
-      wallet={viewModel.wallet!}
-      onBiometrySet={() => viewModel.setSelectedView(SelectedView.Main)}
-      onSkip={() => viewModel.setSelectedView(SelectedView.Main)}
+      mnemonic={viewModel.mnemonic}
+      onBiometrySet={() =>
+        onEnterWallet(viewModel.mnemonic, context!.setMnemonic)
+      }
+      onSkip={() => onEnterWallet(viewModel.mnemonic, context!.setMnemonic)}
     />
   );
 };
@@ -162,31 +177,27 @@ const BiometricLoginScreen = () => {
 const LoginWithMnemonicScreen = () => {
   return (
     <HdWalletLogin
-      onEnterWallet={onEnterWallet}
+      onEnterWallet={mnemonic => viewModel.onEnterExistingMnemonic(mnemonic)}
       onBack={() => viewModel.onBackPressed()}
     />
   );
 };
 
 const LoginWithPinOrBiometryScreen = () => {
+  const context = useWalletContext();
   return (
     <PinOrBiometryLogin
       onBack={() => viewModel.onBackPressed()}
-      onEnterWallet={onEnterWallet}
+      onEnterWallet={mnemonic => onEnterWallet(mnemonic, context!.setMnemonic)}
     />
   );
 };
 
 const WalletScreen = () => {
-  if (viewModel.wallet === null) {
-    throw Error('Wallet not defined');
-  }
   return (
-    <MainView
-      wallet={viewModel.wallet}
-      onExit={onExit}
-      onSwitchWallet={onSwitchWallet}
-    />
+    <WalletStateContextProvider>
+      <MainView onExit={onExit} onSwitchWallet={onSwitchWallet} />
+    </WalletStateContextProvider>
   );
 };
 
@@ -242,11 +253,13 @@ const RootScreen = () => {
 
 export default function App() {
   const context = useContext(ApplicationContext);
+  const networkContext = useNetworkContext();
   const [isDarkMode] = useState(context.isDarkMode);
   const [backgroundStyle] = useState(context.appBackgroundStyle);
   const [selectedView, setSelectedView] = useState(SelectedView.Onboard);
 
   useEffect(() => {
+    networkContext!.setNetwork(FUJI_NETWORK);
     viewModel.onComponentMount();
     const disposables = new Subscription();
     disposables.add(
@@ -283,6 +296,11 @@ export default function App() {
           screen: CreateWalletFlowScreen.CreatePin,
         });
         break;
+      case SelectedView.CreatePinForExistingWallet:
+        navigationRef.current?.navigate(Screen.CreateWalletFlow, {
+          screen: CreateWalletFlowScreen.CreatePin,
+        });
+        break;
       case SelectedView.BiometricStore:
         navigationRef.current?.navigate(Screen.CreateWalletFlow, {
           screen: CreateWalletFlowScreen.BiometricLogin,
@@ -300,26 +318,15 @@ export default function App() {
     }
   }, [selectedView]);
 
-  const theme = context.theme;
-  const navTheme: Theme = {
-    dark: context.isDarkMode,
-    colors: {
-      primary: theme.primaryColor,
-      background: theme.bg,
-      text: theme.textOnBg,
-      card: theme.primaryColor,
-      border: theme.bg,
-      notification: theme.primaryColor,
-    },
-  };
-
   return (
     <SafeAreaView style={backgroundStyle}>
       <StatusBar
-        backgroundColor={theme.bg}
+        backgroundColor={context.theme.bgApp}
         barStyle={isDarkMode ? 'light-content' : 'dark-content'}
       />
-      <NavigationContainer theme={navTheme} ref={navigationRef}>
+      <NavigationContainer
+        theme={context.navContainerTheme}
+        ref={navigationRef}>
         <RootScreen />
       </NavigationContainer>
     </SafeAreaView>

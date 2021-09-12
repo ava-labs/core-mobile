@@ -6,6 +6,7 @@ type Props = {
   text: string;
   multiline?: boolean;
   color?: string;
+  textAlign?: 'center' | 'left';
 };
 
 export default function TextLabel(props: Props | Readonly<Props>) {
@@ -16,8 +17,8 @@ export default function TextLabel(props: Props | Readonly<Props>) {
       numberOfLines={props.multiline ? undefined : 1}
       style={[
         {
-          textAlign: props.multiline ? 'center' : 'left',
-          color: props.color || theme.textOnBg,
+          textAlign: props.textAlign || (props.multiline ? 'center' : 'left'),
+          color: props.color || theme.txtOnBgApp,
           fontSize: 13,
           fontFamily: 'Inter-Regular',
         },
