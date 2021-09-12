@@ -24,12 +24,7 @@ export default function SendView(props: Props | Readonly<Props>) {
       <Header />
       <TextTitle text={'Send'} />
       <View style={styles.buttons}>
-        <ButtonAva text={'Send AVAX X'} onPress={() => setSendXVisible(true)} />
-        <ButtonAva text={'Send AVAX C'} onPress={() => setSendCVisible(true)} />
-        <ButtonAva
-          text={'Cross chain'}
-          onPress={() => setCrossChainVisible(true)}
-        />
+        <ButtonAva text={'Send AVAX'} onPress={() => setSendXVisible(true)} />
       </View>
 
       <Modal
