@@ -23,10 +23,12 @@ import SwapSVG from 'components/svg/SwapSVG';
 import MoreSVG from 'components/svg/MoreSVG';
 import {createStackNavigator} from '@react-navigation/stack';
 import SearchView from 'screens/portfolio/SearchView';
+import AvaBottomSheet from 'components/AvaBottomSheet';
 
 export type BaseStackParamList = {
   Portfolio: undefined;
   Search: undefined;
+  BottomSheet: undefined;
 };
 const BaseStack = createStackNavigator<BaseStackParamList>();
 
@@ -115,7 +117,22 @@ export default function MainView(props: Props | Readonly<Props>) {
       <BaseStack.Navigator
         initialRouteName="Portfolio"
         headerMode="none"
-        detachInactiveScreens={false}>
+        mode={'modal'}
+        detachInactiveScreens={false}
+        screenOptions={{
+          headerShown: false,
+          cardStyle: {backgroundColor: 'transparent'},
+          cardOverlayEnabled: true,
+          cardStyleInterpolator: ({current: {progress}}) => ({
+            overlayStyle: {
+              opacity: progress.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0, 0.5],
+                extrapolate: 'clamp',
+              }),
+            },
+          }),
+        }}>
         <BaseStack.Screen name="Portfolio">
           {() => (
             <PortfolioView onExit={onExit} onSwitchWallet={onSwitchWallet} />
@@ -126,6 +143,7 @@ export default function MainView(props: Props | Readonly<Props>) {
           options={{cardStyleInterpolator: forFade}}>
           {() => <SearchView />}
         </BaseStack.Screen>
+        <BaseStack.Screen name="BottomSheet" component={AvaBottomSheet} />
       </BaseStack.Navigator>
     );
   }

@@ -1,14 +1,20 @@
-import React, {useContext} from 'react';
+import React, { MutableRefObject, useContext } from "react";
 import {Platform, StyleSheet, Text, View} from 'react-native';
 import AvaListItem from 'screens/portfolio/AvaListItem';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import {usePortfolio} from 'screens/portfolio/usePortfolio';
+import {useWalletStateContext} from '@avalabs/wallet-react-components';
+import BottomSheet from "@gorhom/bottom-sheet";
 
 export const HEADER_MAX_HEIGHT = 150;
 export const HEADER_MIN_HEIGHT = Platform.OS === 'ios' ? 60 : 73;
 export const HEADER_SCROLL_DISTANCE = HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT;
 
-function PortfolioHeader() {
+interface Props {
+  bottomRef?: MutableRefObject<BottomSheet>;
+}
+
+function PortfolioHeader({bottomRef}: Props) {
   const context = useContext(ApplicationContext);
   const {addressC, balanceTotalInUSD} = usePortfolio();
 
@@ -19,8 +25,11 @@ function PortfolioHeader() {
       <View style={[styles.bar]} pointerEvents="box-none">
         <View>
           <AvaListItem.Account
-            accountName={'My Awesome Wallet'}
+            accountName={'Account 1'}
             accountAddress={addressC ?? ''}
+            onPress={() => {
+              bottomRef?.current.snapTo(1);
+            }}
           />
         </View>
         <View

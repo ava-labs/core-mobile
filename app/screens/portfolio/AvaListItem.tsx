@@ -13,6 +13,7 @@ interface Props {
   title: React.ReactNode | string;
   subtitle?: string;
   listPressDisabled?: boolean;
+  onPress?: () => void;
 }
 
 function BaseListItem({
@@ -22,6 +23,7 @@ function BaseListItem({
   label,
   title,
   listPressDisabled,
+  onPress,
 }: Props) {
   const context = useContext(ApplicationContext);
 
@@ -29,7 +31,8 @@ function BaseListItem({
     <View style={{paddingVertical: 16}}>
       <TouchableOpacity
         style={styles.baseRowContainer}
-        disabled={listPressDisabled}>
+        disabled={listPressDisabled}
+        onPress={onPress}>
         <View style={styles.baseRow}>
           {leftComponent && leftComponent}
           <View style={styles.baseMainContent}>
@@ -79,8 +82,15 @@ interface TokenItemProps {
   tokenPrice: number;
   image?: string;
   symbol?: string;
+  onPress?: () => void;
 }
-function TokenItem({tokenName, tokenPrice, image, symbol}: TokenItemProps) {
+function TokenItem({
+  tokenName,
+  tokenPrice,
+  image,
+  symbol,
+  onPress,
+}: TokenItemProps) {
   const title = tokenName;
   const context = useContext(ApplicationContext);
 
@@ -113,6 +123,7 @@ function TokenItem({tokenName, tokenPrice, image, symbol}: TokenItemProps) {
         title={title}
         leftComponent={tokenLogo}
         rightComponent={sendCoin}
+        onPress={onPress}
       />
     </View>
   );
@@ -121,6 +132,7 @@ function TokenItem({tokenName, tokenPrice, image, symbol}: TokenItemProps) {
 interface AccountItemProps {
   accountName?: string;
   accountAddress: string;
+  onPress: () => void;
 }
 function AccountItem({
   accountName = 'Account 1',
@@ -147,7 +159,7 @@ function AccountItem({
           {borderColor: context.theme.btnIconBorder},
         ]}>
         <Text
-          style={[styles.accountTitleText, {color: context.theme.btnIconIcon}]}
+          style={styles.accountTitleText}
           ellipsizeMode="middle"
           numberOfLines={1}>
           {accountName}
