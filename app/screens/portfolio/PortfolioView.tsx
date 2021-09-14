@@ -4,7 +4,6 @@ import AvaListItem from 'screens/portfolio/AvaListItem';
 import PortfolioHeader from 'screens/portfolio/PortfolioHeader';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {useNavigation} from '@react-navigation/native';
-import BottomSheet from '@gorhom/bottom-sheet';
 
 type PortfolioProps = {
   onExit: () => void;
