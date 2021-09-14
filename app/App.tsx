@@ -17,7 +17,6 @@ import {createStackNavigator} from '@react-navigation/stack';
 import {
   NavigationContainer,
   NavigationContainerRef,
-  Theme,
 } from '@react-navigation/native';
 import CheckMnemonic from 'screens/onboarding/CheckMnemonic';
 import CreatePIN from 'screens/onboarding/CreatePIN';
