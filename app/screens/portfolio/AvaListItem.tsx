@@ -1,5 +1,12 @@
 import React, {useContext} from 'react';
-import {Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
+} from 'react-native';
 import CarrotSVG from 'components/svg/CarrotSVG';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import AccountSVG from 'components/svg/AccountSVG';
@@ -133,10 +140,12 @@ interface AccountItemProps {
   accountName?: string;
   accountAddress: string;
   onPress: () => void;
+  onAccountPressed: () => void;
 }
 function AccountItem({
   accountName = 'Account 1',
   accountAddress,
+  onAccountPressed,
 }: AccountItemProps) {
   const leftComponent = <AccountSVG />;
   const navigation = useNavigation();
@@ -153,21 +162,26 @@ function AccountItem({
 
   function buildTitle() {
     return (
-      <View
-        style={[
-          styles.accountTitleContainer,
-          {borderColor: context.theme.btnIconBorder},
-        ]}>
-        <Text
-          style={styles.accountTitleText}
-          ellipsizeMode="middle"
-          numberOfLines={1}>
-          {accountName}
-        </Text>
-        <View style={{transform: [{rotate: '90deg'}]}}>
-          <CarrotSVG color={context.theme.txtListItem} size={10} />
+      <TouchableWithoutFeedback onPress={onAccountPressed}>
+        <View
+          style={[
+            styles.accountTitleContainer,
+            {borderColor: context.theme.btnIconBorder},
+          ]}>
+          <Text
+            style={[
+              styles.accountTitleText,
+              {color: context.theme.txtListItem},
+            ]}
+            ellipsizeMode="middle"
+            numberOfLines={1}>
+            {accountName}
+          </Text>
+          <View style={{transform: [{rotate: '90deg'}]}}>
+            <CarrotSVG color={context.theme.txtListItem} size={10} />
+          </View>
         </View>
-      </View>
+      </TouchableWithoutFeedback>
     );
   }
 
