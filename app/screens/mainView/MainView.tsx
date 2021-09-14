@@ -24,7 +24,7 @@ import MoreSVG from 'components/svg/MoreSVG';
 import {createStackNavigator} from '@react-navigation/stack';
 import SearchView from 'screens/portfolio/SearchView';
 import SendReceiveBottomSheet from 'screens/portfolio/SendReceiveBottomSheet';
-import AccountBottomSheet from "screens/portfolio/account/AccountBottomSheet";
+import AccountBottomSheet from 'screens/portfolio/account/AccountBottomSheet';
 
 export type BaseStackParamList = {
   Portfolio: undefined;
@@ -175,7 +175,7 @@ export default function MainView(props: Props | Readonly<Props>) {
 
   function loadWalletNavigation() {
     return (
-      <NavigationContainer independent={true}>
+      <NavigationContainer theme={context.navContainerTheme} independent={true}>
         <RootStack.Navigator
           mode="modal"
           headerMode="none"
