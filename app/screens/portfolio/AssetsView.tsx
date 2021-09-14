@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useContext, useState} from 'react';
 import {FlatList, Modal, StyleSheet, View} from 'react-native';
 import Header from 'screens/mainView/Header';
 import TextTitle from 'components/TextTitle';
@@ -9,12 +9,14 @@ import ButtonAva from 'components/ButtonAva';
 import AssetsAddToken from './AssetsAddToken';
 import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
 import {TokenItem, useTokenAssets} from 'screens/portfolio/AssetsTokenHook';
+import {ApplicationContext} from 'contexts/ApplicationContext';
 
 type Props = {
   wallet: MnemonicWallet;
 };
 
 export default function AssetsView(props: Props | Readonly<Props>) {
+  const context = useContext(ApplicationContext);
   const [addTokenVisible, setAddTokenVisible] = useState(false);
   const [index, setIndex] = useState(0);
   const [tokenItems] = useTokenAssets(props.wallet);
@@ -44,7 +46,7 @@ export default function AssetsView(props: Props | Readonly<Props>) {
   ];
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, {backgroundColor: context.theme.bgApp}]}>
       <Header />
       <TabView
         navigationState={{

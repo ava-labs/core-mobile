@@ -23,10 +23,13 @@ import SwapSVG from 'components/svg/SwapSVG';
 import MoreSVG from 'components/svg/MoreSVG';
 import {createStackNavigator} from '@react-navigation/stack';
 import SearchView from 'screens/portfolio/SearchView';
+import SendReceiveBottomSheet from 'screens/portfolio/SendReceiveBottomSheet';
+import AccountBottomSheet from 'screens/portfolio/account/AccountBottomSheet';
 
 export type BaseStackParamList = {
   Portfolio: undefined;
   Search: undefined;
+  BottomSheet: undefined;
 };
 const BaseStack = createStackNavigator<BaseStackParamList>();
 
@@ -36,6 +39,7 @@ type Props = {
 };
 
 const Tab = createBottomTabNavigator();
+const RootStack = createStackNavigator();
 
 export default function MainView(props: Props | Readonly<Props>) {
   const context = useContext(ApplicationContext);
@@ -86,7 +90,7 @@ export default function MainView(props: Props | Readonly<Props>) {
     },
   });
 
-  const screenOptions = (params: any): any => {
+  const tabBarScreenOptions = (params: any): any => {
     return {
       tabBarIcon: ({focused}: {focused: boolean}) => {
         if (params.route.name === 'Portfolio') {
@@ -115,7 +119,10 @@ export default function MainView(props: Props | Readonly<Props>) {
       <BaseStack.Navigator
         initialRouteName="Portfolio"
         headerMode="none"
-        detachInactiveScreens={false}>
+        detachInactiveScreens={false}
+        screenOptions={{
+          headerShown: false,
+        }}>
         <BaseStack.Screen name="Portfolio">
           {() => (
             <PortfolioView onExit={onExit} onSwitchWallet={onSwitchWallet} />
@@ -130,36 +137,76 @@ export default function MainView(props: Props | Readonly<Props>) {
     );
   }
 
-  // screenOptions={props => screenOptions(props)}
   const Assets = () => <AssetsView wallet={wallet!} />;
   const Send = () => <SendView wallet={wallet!} />;
   const Earn = () => <EarnView wallet={wallet!} />;
-  const Nav = () => (
-    <NavigationContainer theme={context.navContainerTheme} independent={true}>
-      <Tab.Navigator
-        sceneContainerStyle={styles.navContainer}
-        screenOptions={props => screenOptions(props)}
-        tabBarOptions={{
-          allowFontScaling: false,
-          activeBackgroundColor: theme.bgApp,
-          inactiveBackgroundColor: theme.bgApp,
-          activeTintColor: theme.accentColor,
-          inactiveTintColor: theme.onBgSearch,
-        }}>
-        <Tab.Screen name="Portfolio" component={PortfolioStack} />
-        <Tab.Screen name="Activity" component={Assets} />
-        <Tab.Screen name="Swap" component={Send} />
-        <Tab.Screen name="More" component={Earn} />
-      </Tab.Navigator>
-    </NavigationContainer>
+  const Tabs = () => (
+    <Tab.Navigator
+      sceneContainerStyle={styles.navContainer}
+      screenOptions={props => tabBarScreenOptions(props)}
+      tabBarOptions={{
+        allowFontScaling: false,
+        activeBackgroundColor: theme.bgApp,
+        inactiveBackgroundColor: theme.bgApp,
+        activeTintColor: theme.accentColor,
+        inactiveTintColor: theme.onBgSearch,
+      }}>
+      <Tab.Screen name="Portfolio" component={PortfolioStack} />
+      <Tab.Screen name="Activity" component={Assets} />
+      <Tab.Screen name="Swap" component={Send} />
+      <Tab.Screen name="More" component={Earn} />
+    </Tab.Navigator>
   );
+
+  const Modals = () => {
+    return (
+      <>
+        <RootStack.Screen
+          name="SendReceiveBottomSheet"
+          component={SendReceiveBottomSheet}
+        />
+        <RootStack.Screen
+          name={'AccountBottomSheet'}
+          component={AccountBottomSheet}
+        />
+      </>
+    );
+  };
+
+  function loadWalletNavigation() {
+    return (
+      <NavigationContainer theme={context.navContainerTheme} independent={true}>
+        <RootStack.Navigator
+          mode="modal"
+          headerMode="none"
+          screenOptions={{
+            headerShown: false,
+            cardStyle: {backgroundColor: 'transparent'},
+            cardOverlayEnabled: true,
+            cardStyleInterpolator: ({current: {progress}}) => ({
+              overlayStyle: {
+                opacity: progress.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0, 0.5],
+                  extrapolate: 'clamp',
+                }),
+              },
+            }),
+          }}>
+          <RootStack.Screen name="Main" component={Tabs} />
+          {Modals()}
+        </RootStack.Navigator>
+      </NavigationContainer>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <Modal animationType="fade" transparent={true} visible={!walletReady}>
         <Loader message={'Loading wallet'} />
       </Modal>
 
-      <View style={styles.container}>{Nav()}</View>
+      <View style={styles.container}>{loadWalletNavigation()}</View>
     </View>
   );
 }
