@@ -1,21 +1,17 @@
-import React, { MutableRefObject, useContext } from "react";
+import React, {useContext} from 'react';
 import {Platform, StyleSheet, Text, View} from 'react-native';
 import AvaListItem from 'screens/portfolio/AvaListItem';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import {usePortfolio} from 'screens/portfolio/usePortfolio';
-import {useWalletStateContext} from '@avalabs/wallet-react-components';
-import BottomSheet from "@gorhom/bottom-sheet";
+import {useNavigation} from '@react-navigation/native';
 
 export const HEADER_MAX_HEIGHT = 150;
 export const HEADER_MIN_HEIGHT = Platform.OS === 'ios' ? 60 : 73;
 export const HEADER_SCROLL_DISTANCE = HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT;
 
-interface Props {
-  bottomRef?: MutableRefObject<BottomSheet>;
-}
-
-function PortfolioHeader({bottomRef}: Props) {
+function PortfolioHeader() {
   const context = useContext(ApplicationContext);
+  const navigation = useNavigation();
   const {addressC, balanceTotalInUSD} = usePortfolio();
 
   return (
@@ -28,7 +24,10 @@ function PortfolioHeader({bottomRef}: Props) {
             accountName={'Account 1'}
             accountAddress={addressC ?? ''}
             onPress={() => {
-              bottomRef?.current.snapTo(1);
+              console.log('test');
+            }}
+            onAccountPressed={() => {
+              navigation.navigate('AccountBottomSheet');
             }}
           />
         </View>
