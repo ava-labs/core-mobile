@@ -33,6 +33,7 @@ export function useSendAvaxX(wallet: MnemonicWallet): {
   balanceTotalInUSD: string;
   avaxTotal: string;
   targetChain: 'X' | 'P' | 'C' | undefined;
+  canSubmit: undefined | boolean;
   onSendAvax: (memo?: string) => void;
   onBarcodeScanned: (data: string) => void;
 } {
@@ -47,6 +48,7 @@ export function useSendAvaxX(wallet: MnemonicWallet): {
     error,
     canSubmit,
   } = useSendAvax(new BehaviorSubject({bn: new BN(0)})); //Fixme: how is this gas used? where that should come from?
+
   const [loaderVisible, setLoaderVisible] = useState(false);
   const [loaderMsg, setLoaderMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
@@ -61,8 +63,11 @@ export function useSendAvaxX(wallet: MnemonicWallet): {
   const [avaxTotal, setAvaxTotal] = useState('');
 
   useEffect(() => {
-    setAvaxPrice(walletStateContext!.avaxPrice);
-    setBalanceAvaxTotal(walletStateContext!.balances.balanceAvaxTotal);
+    if (!walletStateContext) {
+      return;
+    }
+    setAvaxPrice(walletStateContext.avaxPrice);
+    setBalanceAvaxTotal(walletStateContext.balances.balanceAvaxTotal);
   }, [walletStateContext]);
 
   useEffect(() => {
@@ -156,6 +161,7 @@ export function useSendAvaxX(wallet: MnemonicWallet): {
     sendAmountString,
     setSendAmountString,
     sendFeeString,
+    canSubmit,
     onSendAvax,
     onScanBarcode,
     onBarcodeScanned,
