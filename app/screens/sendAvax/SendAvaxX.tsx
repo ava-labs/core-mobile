@@ -1,16 +1,16 @@
 import React, {useContext, useState} from 'react';
-import {Modal, SafeAreaView, StyleSheet, View} from 'react-native';
+import {Modal, StyleSheet, View} from 'react-native';
 import ButtonAva from 'components/ButtonAva';
 import TextTitle from 'components/TextTitle';
 import InputText from 'components/InputText';
 import Loader from 'components/Loader';
 import QrScannerAva from 'components/QrScannerAva';
-import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
 import {ApplicationContext} from 'contexts/ApplicationContext';
-import {useSendAvaxX} from 'screens/sendAvax/SendAvaxXHook';
 import QRCode from 'components/svg/QRCode';
 import ButtonIcon from 'components/ButtonIcon';
 import {useNavigation} from '@react-navigation/native';
+import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
+import {useSendAvaxX} from 'screens/sendAvax/SendAvaxXHook';
 
 type SendAvaxXProps = {
   wallet: MnemonicWallet;
@@ -35,6 +35,7 @@ export default function SendAvaxX(
     sendAmountString,
     setSendAmountString,
     sendFeeString,
+    canSubmit,
     onSendAvax,
     onScanBarcode,
     onBarcodeScanned,
@@ -44,15 +45,16 @@ export default function SendAvaxX(
   const {navigate} = useNavigation();
 
   return (
-    <View style={[backgroundStyle, {backgroundColor: context.theme.bgOnBgApp}]}>
+    <View style={backgroundStyle}>
       <View style={styles.horizontalLayout}>
         <View style={[{flex: 1}]}>
           <InputText
-            label="Address"
+            label={'Address ' + targetChain}
             placeholder="Enter the address"
             multiline={true}
+            errorText={errorMsg}
             onChangeText={text => setAddress(text)}
-            value={address}
+            value={address ?? ''}
           />
         </View>
         <View

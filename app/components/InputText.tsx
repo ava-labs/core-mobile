@@ -189,7 +189,7 @@ export default function InputText(props: Props | Readonly<Props>) {
 
       {props.helperText && <HelperText />}
 
-      {props.errorText && <ErrorText />}
+      {(props.errorText || false) && <ErrorText />}
     </View>
   );
 }
