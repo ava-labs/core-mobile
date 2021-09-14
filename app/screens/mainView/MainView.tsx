@@ -1,5 +1,5 @@
 import React, {useContext, useEffect, useState} from 'react';
-import {BackHandler, Modal, StyleSheet, View} from 'react-native';
+import {BackHandler, StyleSheet, View} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {
   getFocusedRouteNameFromRoute,
@@ -9,14 +9,10 @@ import {
 import PortfolioView from 'screens/portfolio/PortfolioView';
 import SendView from 'screens/sendAvax/SendView';
 import EarnView from 'screens/earn/EarnView';
-import Loader from 'components/Loader';
 import AssetsView from 'screens/portfolio/AssetsView';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
-import {
-  useWalletContext,
-  useWalletStateContext,
-} from '@avalabs/wallet-react-components';
+import {useWalletContext} from '@avalabs/wallet-react-components';
 import HomeSVG from 'components/svg/HomeSVG';
 import ActivitySVG from 'components/svg/ActivitySVG';
 import SwapSVG from 'components/svg/SwapSVG';
@@ -43,12 +39,10 @@ const RootStack = createStackNavigator();
 
 export default function MainView(props: Props | Readonly<Props>) {
   const context = useContext(ApplicationContext);
-  const walletStateContext = useWalletStateContext();
   const walletContext = useWalletContext();
 
   const theme = context.theme;
   const [wallet, setWallet] = useState<MnemonicWallet>();
-  const [walletReady, setWalletReady] = useState<boolean>(false);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -69,12 +63,6 @@ export default function MainView(props: Props | Readonly<Props>) {
       setWallet(walletContext?.wallet as MnemonicWallet);
     }
   }, [walletContext?.wallet]);
-
-  useEffect(() => {
-    if (!walletReady) {
-      setWalletReady(walletStateContext?.balances !== undefined);
-    }
-  }, [walletReady, walletStateContext]);
 
   const onExit = (): void => {
     props.onExit();
@@ -202,10 +190,6 @@ export default function MainView(props: Props | Readonly<Props>) {
 
   return (
     <View style={styles.container}>
-      <Modal animationType="fade" transparent={true} visible={!walletReady}>
-        <Loader message={'Loading wallet'} />
-      </Modal>
-
       <View style={styles.container}>{loadWalletNavigation()}</View>
     </View>
   );
