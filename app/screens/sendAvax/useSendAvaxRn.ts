@@ -1,4 +1,4 @@
-import {BN, MnemonicWallet, Utils} from '@avalabs/avalanche-wallet-sdk';
+import {BN, Utils} from '@avalabs/avalanche-wallet-sdk';
 import {
   useSendAvax,
   useWalletStateContext,
@@ -14,7 +14,7 @@ import {
 } from 'rxjs';
 import {take} from 'rxjs/operators';
 
-export function useSendAvaxX(wallet: MnemonicWallet): {
+export function useSendAvaxRn(): {
   address: string | undefined;
   setSendAmountString: (
     value: ((prevState: string) => string) | string,
