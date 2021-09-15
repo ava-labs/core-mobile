@@ -1,44 +1,282 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import SendAvaxC from 'screens/sendAvax/SendAvaxC';
+import React, {
+  FC,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import {
+  ActivityIndicator,
+  Image,
+  InteractionManager,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import {NavigationContainer, useNavigation} from '@react-navigation/native';
+import {
+  createStackNavigator,
+  StackNavigationOptions,
+  TransitionPresets,
+} from '@react-navigation/stack';
+import BottomSheet, {TouchableOpacity} from '@gorhom/bottom-sheet';
+import ButtonAva from 'components/ButtonAva';
+import AvaLogoSVG from 'components/svg/AvaLogoSVG';
+import SendAvaxX from 'screens/sendAvax/SendAvaxX';
 import {useWalletContext} from '@avalabs/wallet-react-components';
 import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
-import BottomSheet from '@gorhom/bottom-sheet';
-import {InteractionManager} from 'react-native';
-import {useNavigation} from '@react-navigation/native';
+import {ApplicationContext} from 'contexts/ApplicationContext';
+import TabViewAva from 'components/TabViewAva';
+import CarrotSVG from 'components/svg/CarrotSVG';
+import ClearSVG from 'components/svg/ClearSVG';
+import {useSendAvaxX} from '../sendAvax/SendAvaxXHook';
+import TextTitle from 'components/TextTitle';
+import AvaListItem from './AvaListItem';
+import SendAvaxC from 'screens/sendAvax/SendAvaxC';
+import TabViewBackground from './components/TabViewBackground';
 
-function SendReceiveBottomSheet() {
-  const [index, setIndex] = useState(0);
+const Stack = createStackNavigator();
+
+interface Props {
+  symbol?: string;
+}
+
+const data: JSON[] = require('assets/coins.json');
+
+const SendReceiveBottomSheet: FC<Props> = props => {
+  const bottomSheetRef = useRef<BottomSheet>(null);
   const wallet = useWalletContext()?.wallet as MnemonicWallet;
-  const navigation = useNavigation();
-  const bottomSheetModalRef = useRef<BottomSheet>(null);
-  const snapPoints = useMemo(() => ['0%', '75%'], []);
+  const theme = useContext(ApplicationContext).theme;
+  const {avaxTotal, balanceTotalInUSD} = useSendAvaxX(wallet);
+  const {goBack, canGoBack} = useNavigation();
+  const snapPoints = useMemo(() => ['0%', '86%'], []);
+
+  //todo: figure out types for route params
+  const {route} = props;
+  const symbol = route.params.symbol;
+
+  const tokenObj: any = data.filter(
+    json => json.symbol?.toLowerCase() === symbol?.toLowerCase(),
+  )?.[0];
 
   useEffect(() => {
     // intentionally setting delay so animation is visible.
     setTimeout(() => {
-      bottomSheetModalRef?.current?.snapTo(1);
-    }, 100);
+      bottomSheetRef?.current?.snapTo(1);
+    }, 50);
   }, []);
 
   const handleClose = useCallback(() => {
-    bottomSheetModalRef?.current?.close();
-    InteractionManager.runAfterInteractions(() => navigation.goBack());
+    bottomSheetRef?.current?.close();
+    InteractionManager.runAfterInteractions(() => canGoBack() && goBack());
   }, []);
 
   const handleChange = useCallback(index => {
-    // eslint-disable-next-line no-console
-    console.log('handleSheetChange', index);
     index === 0 && handleClose();
   }, []);
 
+  const Tabs = () => (
+    <>
+      <View style={{flexDirection: 'row', paddingRight: 16}}>
+        <View style={{flex: 1}}>
+          <AvaListItem.Simple
+            label={
+              <TextTitle
+                text={tokenObj?.name ?? ''}
+                size={16}
+                color={theme.txtListItem}
+                bold
+              />
+            }
+            title={
+              <TextTitle
+                text={avaxTotal}
+                size={24}
+                color={theme.txtListItem}
+                bold
+              />
+            }
+            subtitle={
+              <TextTitle
+                text={balanceTotalInUSD}
+                size={14}
+                color={theme.txtListItemSubscript}
+              />
+            }
+            leftComponent={
+              <Image
+                style={styles.tokenLogo}
+                source={{
+                  uri: tokenObj?.image ?? '',
+                }}
+              />
+            }
+            titleAlignment={'flex-start'}
+          />
+        </View>
+        <TouchableOpacity onPress={handleClose}>
+          <ClearSVG
+            color={theme.bgSearch}
+            backgroundColor={'#F1F1F4'}
+            size={40}
+          />
+        </TouchableOpacity>
+      </View>
+      <TabViewAva renderCustomLabel={renderCustomLabel}>
+        <SendAvaxX wallet={wallet} onClose={handleClose} title={'Send'} />
+        <SendAvaxC wallet={wallet} onClose={handleClose} title={'Receive'} />
+        <SendAvaxX wallet={wallet} onClose={handleClose} title={'Activity'} />
+      </TabViewAva>
+    </>
+  );
+
+  const SendNavigator = () => {
+    const screenOptions = useMemo<StackNavigationOptions>(
+      () => ({
+        ...TransitionPresets.SlideFromRightIOS,
+        headerShown: true,
+        safeAreaInsets: {top: 0},
+        headerLeft: ({onPress}) => (
+          <TouchableOpacity
+            style={{paddingEnd: 16, transform: [{rotate: '180deg'}]}}
+            onPress={onPress}>
+            <CarrotSVG color={theme.txtOnBgApp} />
+          </TouchableOpacity>
+        ),
+        headerRight: () => (
+          <TouchableOpacity style={{paddingRight: 16}} onPress={handleClose}>
+            <ClearSVG
+              color={theme.bgSearch}
+              backgroundColor={'#F1F1F4'}
+              size={40}
+            />
+          </TouchableOpacity>
+        ),
+        headerTitleStyle: {
+          color: theme.txtListItem,
+        },
+        headerStyle: {
+          backgroundColor: theme.bgOnBgApp,
+          shadowColor: theme.transparent,
+        },
+        cardStyle: {
+          backgroundColor: theme.bgOnBgApp,
+          overflow: 'visible',
+        },
+      }),
+      [],
+    );
+
+    const DoneDoneScreen = () => <DoneScreen onClose={handleClose} />;
+
+    const doneScreenOptions = useMemo(
+      () => ({headerShown: false, headerLeft: () => null}),
+      [],
+    );
+    return (
+      <NavigationContainer independent={true}>
+        <Stack.Navigator screenOptions={screenOptions} headerMode="screen">
+          <Stack.Screen
+            name="Send Screen"
+            options={doneScreenOptions}
+            component={Tabs}
+          />
+          <Stack.Screen name="Confirm Screen" component={ConfirmScreen} />
+          <Stack.Screen
+            name="Done Screen"
+            options={doneScreenOptions}
+            component={DoneDoneScreen}
+          />
+        </Stack.Navigator>
+      </NavigationContainer>
+    );
+  };
+
+  const renderCustomLabel = (title: string, focused: boolean) => {
+    return (
+      <View
+        style={{
+          backgroundColor: focused ? '#FFECEF' : theme.transparent,
+          borderRadius: 100,
+          paddingHorizontal: 12,
+          paddingVertical: 8,
+        }}>
+        <Text
+          style={{
+            color: focused ? theme.btnTextTxt : '#6C6C6E',
+            fontWeight: '600',
+            fontSize: 16,
+            lineHeight: 24,
+          }}>
+          {title}
+        </Text>
+      </View>
+    );
+  };
+
+  // renders
   return (
-    <BottomSheet
-      ref={bottomSheetModalRef}
-      index={index}
-      snapPoints={snapPoints}
-      onChange={handleChange}>
-      <SendAvaxC wallet={wallet} onClose={handleClose} />
-    </BottomSheet>
+    <View style={styles.container}>
+      <BottomSheet
+        ref={bottomSheetRef}
+        index={0}
+        snapPoints={snapPoints}
+        onChange={handleChange}
+        backgroundComponent={TabViewBackground}>
+        <SendNavigator />
+      </BottomSheet>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 24,
+  },
+  tokenLogo: {
+    paddingHorizontal: 16,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+});
+
+/**
+ * Temporary helper components
+ */
+
+const ConfirmScreen: FC = props => {
+  const [loading, setLoading] = useState(false);
+  const {navigate} = useNavigation();
+  return (
+    <View style={{justifyContent: 'center', alignItems: 'center', flex: 1}}>
+      {loading && <ActivityIndicator />}
+      <ButtonAva
+        text={'Confirm'}
+        onPress={() => {
+          setLoading(true);
+          setTimeout(() => {
+            navigate('Done Screen');
+          }, 1000);
+        }}
+      />
+    </View>
+  );
+};
+
+interface DoneProps {
+  onClose: () => void;
+}
+function DoneScreen({onClose}: DoneProps) {
+  return (
+    <View style={{justifyContent: 'center', alignItems: 'center', flex: 1}}>
+      <AvaLogoSVG />
+      <ButtonAva text={'Confirm'} onPress={onClose} />
+    </View>
   );
 }
 
