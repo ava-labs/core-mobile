@@ -9,17 +9,9 @@ import {ApplicationContext} from 'contexts/ApplicationContext';
 import QRCode from 'components/svg/QRCode';
 import ButtonIcon from 'components/ButtonIcon';
 import {useNavigation} from '@react-navigation/native';
-import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
-import {useSendAvaxX} from 'screens/sendAvax/SendAvaxXHook';
+import {useSendAvaxRn} from 'screens/sendAvax/useSendAvaxRn';
 
-type SendAvaxXProps = {
-  wallet: MnemonicWallet;
-  onClose: () => void;
-};
-
-export default function SendAvaxX(
-  props: SendAvaxXProps | Readonly<SendAvaxXProps>,
-) {
+export default function SendAvax() {
   const context = useContext(ApplicationContext);
   const {
     avaxTotal,
@@ -40,7 +32,7 @@ export default function SendAvaxX(
     onScanBarcode,
     onBarcodeScanned,
     clearAddress,
-  } = useSendAvaxX(props.wallet);
+  } = useSendAvaxRn();
   const [backgroundStyle] = useState(context.backgroundStyle);
   const {navigate} = useNavigation();
 
