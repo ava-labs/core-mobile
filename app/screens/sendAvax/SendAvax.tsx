@@ -22,7 +22,7 @@ export default function SendAvax() {
     errorMsg,
     cameraVisible,
     setCameraVisible,
-    address,
+    destinationAddress,
     setAddress,
     sendAmountString,
     setSendAmountString,
@@ -46,7 +46,7 @@ export default function SendAvax() {
             multiline={true}
             errorText={errorMsg}
             onChangeText={text => setAddress(text)}
-            value={address ?? ''}
+            value={destinationAddress}
           />
         </View>
         <View

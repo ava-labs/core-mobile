@@ -15,7 +15,7 @@ import {
 import {take} from 'rxjs/operators';
 
 export function useSendAvaxRn(): {
-  address: string | undefined;
+  destinationAddress: string;
   setSendAmountString: (
     value: ((prevState: string) => string) | string,
   ) => void;
@@ -62,6 +62,7 @@ export function useSendAvaxRn(): {
   const [balanceAvaxTotal, setBalanceAvaxTotal] = useState<BN>(new BN(0));
   const [balanceTotalInUSD, setBalanceTotalInUSD] = useState('');
   const [avaxTotal, setAvaxTotal] = useState('');
+  const [destinationAddress, setDestinationAddress] = useState('');
 
   useEffect(() => {
     if (!walletStateContext) {
@@ -82,6 +83,10 @@ export function useSendAvaxRn(): {
   useEffect(() => {
     setAmount(stringAmountToBN(sendAmountString));
   }, [sendAmountString]);
+
+  useEffect(() => {
+    setDestinationAddress(address ?? '');
+  }, [address]);
 
   // useEffect(() => {
   //   setSendFeeString(bnAmountToString(sendFee));
@@ -175,7 +180,7 @@ export function useSendAvaxRn(): {
     errorMsg,
     cameraVisible,
     setCameraVisible,
-    address,
+    destinationAddress,
     setAddress,
     sendAmountString,
     setSendAmountString,
