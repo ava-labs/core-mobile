@@ -12,6 +12,7 @@ import {
   scheduled,
   Subscription,
 } from 'rxjs';
+import {take} from 'rxjs/operators';
 
 export function useSendAvaxX(wallet: MnemonicWallet): {
   address: string | undefined;
@@ -103,18 +104,36 @@ export function useSendAvaxX(wallet: MnemonicWallet): {
       return;
     }
     const subscription = scheduled(
-      defer(() => wallet.sendAvaxX(address, amount!, memo)),
+      defer(() => submit()),
       asyncScheduler,
-    ).subscribe({
-      next: (txHash: string) => {
-        Alert.alert('Success', 'Created transaction: ' + txHash);
-        setLoaderVisible(false);
-      },
-      error: err => {
-        Alert.alert('Error', err.message);
-        setLoaderVisible(false);
-      },
-    });
+    )
+      .pipe(take(1))
+      .subscribe({
+        next: value => {
+          if (value === undefined) {
+            Alert.alert('Error', 'Undefined error');
+          } else if (typeof value === 'string') {
+            Alert.alert('Success', value);
+          } else {
+            if ('complete' in value) {
+              console.log('complete', value.complete);
+            }
+            if ('activeTxIndex' in value) {
+              Alert.alert(
+                'Success',
+                'Active tx index = ' + value.activeTxIndex,
+              );
+            }
+          }
+        },
+        error: err => {
+          Alert.alert('Error', err.message);
+          setLoaderVisible(false);
+        },
+        complete: () => {
+          setLoaderVisible(false);
+        },
+      });
     disposables.add(subscription);
   };
 
