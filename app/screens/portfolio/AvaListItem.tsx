@@ -16,11 +16,12 @@ import {useNavigation} from '@react-navigation/native';
 interface Props {
   rightComponent?: React.ReactNode;
   leftComponent?: React.ReactNode;
-  label?: string;
-  title: React.ReactNode | string;
-  subtitle?: string;
+  label?: React.ReactNode | string;
+  title?: React.ReactNode | string;
+  subtitle?: React.ReactNode | string;
   listPressDisabled?: boolean;
   onPress?: () => void;
+  titleAlignment?: 'center' | 'flex-start' | 'flex-end';
 }
 
 function BaseListItem({
@@ -30,6 +31,7 @@ function BaseListItem({
   label,
   title,
   listPressDisabled,
+  titleAlignment = 'center',
   onPress,
 }: Props) {
   const context = useContext(ApplicationContext);
@@ -43,7 +45,7 @@ function BaseListItem({
         <View style={styles.baseRow}>
           {leftComponent && leftComponent}
           <View style={styles.baseMainContent}>
-            {!!label && (
+            {!!label && typeof label === 'string' ? (
               <Text
                 style={[
                   styles.baseLabel,
@@ -51,6 +53,8 @@ function BaseListItem({
                 ]}>
                 {label}
               </Text>
+            ) : (
+              <View>{label}</View>
             )}
             <>
               {typeof title === 'string' ? (
@@ -62,10 +66,16 @@ function BaseListItem({
                   {title}
                 </Text>
               ) : (
-                <View style={styles.baseTitleObject}>{title}</View>
+                <View
+                  style={[
+                    styles.baseTitleObject,
+                    titleAlignment && {alignItems: titleAlignment},
+                  ]}>
+                  {title}
+                </View>
               )}
             </>
-            {!!subtitle && (
+            {!!subtitle && typeof subtitle === 'string' ? (
               <Text
                 ellipsizeMode="middle"
                 numberOfLines={1}
@@ -75,6 +85,8 @@ function BaseListItem({
                 ]}>
                 {subtitle}
               </Text>
+            ) : (
+              <View>{subtitle}</View>
             )}
           </View>
           {rightComponent && rightComponent}
@@ -195,9 +207,14 @@ function AccountItem({
   );
 }
 
+function SimpleItem(props: Props) {
+  return <BaseListItem {...props} />;
+}
+
 const AvaListItem = {
   Token: TokenItem,
   Account: AccountItem,
+  Simple: SimpleItem,
 };
 
 export default AvaListItem;
