@@ -7,14 +7,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import {
-  ActivityIndicator,
-  Image,
-  InteractionManager,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import {ActivityIndicator, Image, StyleSheet, Text, View} from 'react-native';
 import {NavigationContainer, useNavigation} from '@react-navigation/native';
 import {
   createStackNavigator,
@@ -69,12 +62,14 @@ const SendReceiveBottomSheet: FC<Props> = props => {
   }, []);
 
   const handleClose = useCallback(() => {
-    bottomSheetRef?.current?.close();
-    InteractionManager.runAfterInteractions(() => canGoBack() && goBack());
+    bottomSheetRef?.current?.collapse();
+    // InteractionManager.runAfterInteractions(() => canGoBack() && goBack());
   }, []);
 
   const handleChange = useCallback(index => {
-    index === 0 && handleClose();
+    if (index === 0 && canGoBack()) {
+      goBack();
+    }
   }, []);
 
   const Tabs = () => (
@@ -221,7 +216,7 @@ const SendReceiveBottomSheet: FC<Props> = props => {
     <View style={styles.container}>
       <BottomSheet
         ref={bottomSheetRef}
-        index={0}
+        index={-1}
         snapPoints={snapPoints}
         onChange={handleChange}
         backgroundComponent={TabViewBackground}>
