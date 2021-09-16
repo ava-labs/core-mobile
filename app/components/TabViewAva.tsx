@@ -30,6 +30,7 @@ const TabViewAva: FC<Props> = ({renderCustomLabel, children}) => {
       <View>
         <TabBar
           {...tabBarProps}
+          style={{elevation: 0}}
           renderLabel={({route, focused}) =>
             renderCustomLabel && renderCustomLabel(route?.title ?? '', focused)
           }
