@@ -1,4 +1,4 @@
-import {BN, MnemonicWallet, Utils} from '@avalabs/avalanche-wallet-sdk';
+import {BN, Utils} from '@avalabs/avalanche-wallet-sdk';
 import {
   useSendAvax,
   useWalletStateContext,
@@ -12,9 +12,10 @@ import {
   scheduled,
   Subscription,
 } from 'rxjs';
+import {take} from 'rxjs/operators';
 
-export function useSendAvaxX(wallet: MnemonicWallet): {
-  address: string | undefined;
+export function useSendAvaxRn(): {
+  destinationAddress: string;
   setSendAmountString: (
     value: ((prevState: string) => string) | string,
   ) => void;
@@ -33,6 +34,7 @@ export function useSendAvaxX(wallet: MnemonicWallet): {
   balanceTotalInUSD: string;
   avaxTotal: string;
   targetChain: 'X' | 'P' | 'C' | undefined;
+  canSubmit: undefined | boolean;
   onSendAvax: (memo?: string) => void;
   onBarcodeScanned: (data: string) => void;
 } {
@@ -47,6 +49,7 @@ export function useSendAvaxX(wallet: MnemonicWallet): {
     error,
     canSubmit,
   } = useSendAvax(new BehaviorSubject({bn: new BN(0)})); //Fixme: how is this gas used? where that should come from?
+
   const [loaderVisible, setLoaderVisible] = useState(false);
   const [loaderMsg, setLoaderMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
@@ -59,10 +62,14 @@ export function useSendAvaxX(wallet: MnemonicWallet): {
   const [balanceAvaxTotal, setBalanceAvaxTotal] = useState<BN>(new BN(0));
   const [balanceTotalInUSD, setBalanceTotalInUSD] = useState('');
   const [avaxTotal, setAvaxTotal] = useState('');
+  const [destinationAddress, setDestinationAddress] = useState('');
 
   useEffect(() => {
-    setAvaxPrice(walletStateContext!.avaxPrice);
-    setBalanceAvaxTotal(walletStateContext!.balances.balanceAvaxTotal);
+    if (!walletStateContext) {
+      return;
+    }
+    setAvaxPrice(walletStateContext.avaxPrice);
+    setBalanceAvaxTotal(walletStateContext.balances.balanceAvaxTotal);
   }, [walletStateContext]);
 
   useEffect(() => {
@@ -76,6 +83,10 @@ export function useSendAvaxX(wallet: MnemonicWallet): {
   useEffect(() => {
     setAmount(stringAmountToBN(sendAmountString));
   }, [sendAmountString]);
+
+  useEffect(() => {
+    setDestinationAddress(address ?? '');
+  }, [address]);
 
   // useEffect(() => {
   //   setSendFeeString(bnAmountToString(sendFee));
@@ -98,18 +109,36 @@ export function useSendAvaxX(wallet: MnemonicWallet): {
       return;
     }
     const subscription = scheduled(
-      defer(() => wallet.sendAvaxX(address, amount!, memo)),
+      defer(() => submit()),
       asyncScheduler,
-    ).subscribe({
-      next: (txHash: string) => {
-        Alert.alert('Success', 'Created transaction: ' + txHash);
-        setLoaderVisible(false);
-      },
-      error: err => {
-        Alert.alert('Error', err.message);
-        setLoaderVisible(false);
-      },
-    });
+    )
+      .pipe(take(1))
+      .subscribe({
+        next: value => {
+          if (value === undefined) {
+            Alert.alert('Error', 'Undefined error');
+          } else if (typeof value === 'string') {
+            Alert.alert('Success', value);
+          } else {
+            if ('complete' in value) {
+              console.log('complete', value.complete);
+            }
+            if ('activeTxIndex' in value) {
+              Alert.alert(
+                'Success',
+                'Active tx index = ' + value.activeTxIndex,
+              );
+            }
+          }
+        },
+        error: err => {
+          Alert.alert('Error', err.message);
+          setLoaderVisible(false);
+        },
+        complete: () => {
+          setLoaderVisible(false);
+        },
+      });
     disposables.add(subscription);
   };
 
@@ -151,11 +180,12 @@ export function useSendAvaxX(wallet: MnemonicWallet): {
     errorMsg,
     cameraVisible,
     setCameraVisible,
-    address,
+    destinationAddress,
     setAddress,
     sendAmountString,
     setSendAmountString,
     sendFeeString,
+    canSubmit,
     onSendAvax,
     onScanBarcode,
     onBarcodeScanned,

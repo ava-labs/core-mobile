@@ -17,18 +17,15 @@ import {
 import BottomSheet, {TouchableOpacity} from '@gorhom/bottom-sheet';
 import ButtonAva from 'components/ButtonAva';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
-import SendAvaxX from 'screens/sendAvax/SendAvaxX';
-import {useWalletContext} from '@avalabs/wallet-react-components';
-import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import TabViewAva from 'components/TabViewAva';
 import CarrotSVG from 'components/svg/CarrotSVG';
 import ClearSVG from 'components/svg/ClearSVG';
-import {useSendAvaxX} from '../sendAvax/SendAvaxXHook';
 import TextTitle from 'components/TextTitle';
 import AvaListItem from './AvaListItem';
-import SendAvaxC from 'screens/sendAvax/SendAvaxC';
 import TabViewBackground from './components/TabViewBackground';
+import SendAvax from 'screens/sendAvax/SendAvax';
+import {usePortfolio} from 'screens/portfolio/usePortfolio';
 
 const Stack = createStackNavigator();
 
@@ -40,9 +37,8 @@ const data: JSON[] = require('assets/coins.json');
 
 const SendReceiveBottomSheet: FC<Props> = props => {
   const bottomSheetRef = useRef<BottomSheet>(null);
-  const wallet = useWalletContext()?.wallet as MnemonicWallet;
   const theme = useContext(ApplicationContext).theme;
-  const {avaxTotal, balanceTotalInUSD} = useSendAvaxX(wallet);
+  const {balanceAvaxTotal, balanceTotalInUSD} = usePortfolio();
   const {goBack, canGoBack} = useNavigation();
   const snapPoints = useMemo(() => ['0%', '86%'], []);
 
@@ -87,7 +83,7 @@ const SendReceiveBottomSheet: FC<Props> = props => {
             }
             title={
               <TextTitle
-                text={avaxTotal}
+                text={balanceAvaxTotal}
                 size={24}
                 color={theme.txtListItem}
                 bold
@@ -120,9 +116,9 @@ const SendReceiveBottomSheet: FC<Props> = props => {
         </TouchableOpacity>
       </View>
       <TabViewAva renderCustomLabel={renderCustomLabel}>
-        <SendAvaxX wallet={wallet} onClose={handleClose} title={'Send'} />
-        <SendAvaxC wallet={wallet} onClose={handleClose} title={'Receive'} />
-        <SendAvaxX wallet={wallet} onClose={handleClose} title={'Activity'} />
+        <SendAvax title={'Send'} />
+        <SendAvax title={'Receive'} />
+        <SendAvax title={'Activity'} />
       </TabViewAva>
     </>
   );

@@ -7,7 +7,6 @@ import {
   useFocusEffect,
 } from '@react-navigation/native';
 import PortfolioView from 'screens/portfolio/PortfolioView';
-import SendView from 'screens/sendAvax/SendView';
 import EarnView from 'screens/earn/EarnView';
 import AssetsView from 'screens/portfolio/AssetsView';
 import {ApplicationContext} from 'contexts/ApplicationContext';
@@ -21,6 +20,7 @@ import {createStackNavigator} from '@react-navigation/stack';
 import SearchView from 'screens/portfolio/SearchView';
 import SendReceiveBottomSheet from 'screens/portfolio/SendReceiveBottomSheet';
 import AccountBottomSheet from 'screens/portfolio/account/AccountBottomSheet';
+import SwapView from 'screens/swap/SwapView';
 
 export type BaseStackParamList = {
   Portfolio: undefined;
@@ -126,7 +126,7 @@ export default function MainView(props: Props | Readonly<Props>) {
   }
 
   const Assets = () => <AssetsView wallet={wallet!} />;
-  const Send = () => <SendView wallet={wallet!} />;
+  const Swap = () => <SwapView />;
   const Earn = () => <EarnView wallet={wallet!} />;
   const Tabs = () => (
     <Tab.Navigator
@@ -141,7 +141,7 @@ export default function MainView(props: Props | Readonly<Props>) {
       }}>
       <Tab.Screen name="Portfolio" component={PortfolioStack} />
       <Tab.Screen name="Activity" component={Assets} />
-      <Tab.Screen name="Swap" component={Send} />
+      <Tab.Screen name="Swap" component={Swap} />
       <Tab.Screen name="More" component={Earn} />
     </Tab.Navigator>
   );
