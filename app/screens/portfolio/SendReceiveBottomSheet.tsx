@@ -24,8 +24,8 @@ import ClearSVG from 'components/svg/ClearSVG';
 import TextTitle from 'components/TextTitle';
 import AvaListItem from './AvaListItem';
 import TabViewBackground from './components/TabViewBackground';
-import {useSendAvaxRn} from 'screens/sendAvax/useSendAvaxRn';
 import SendAvax from 'screens/sendAvax/SendAvax';
+import {usePortfolio} from 'screens/portfolio/usePortfolio';
 
 const Stack = createStackNavigator();
 
@@ -38,7 +38,7 @@ const data: JSON[] = require('assets/coins.json');
 const SendReceiveBottomSheet: FC<Props> = props => {
   const bottomSheetRef = useRef<BottomSheet>(null);
   const theme = useContext(ApplicationContext).theme;
-  const {avaxTotal, balanceTotalInUSD} = useSendAvaxRn();
+  const {balanceAvaxTotal, balanceTotalInUSD} = usePortfolio();
   const {goBack, canGoBack} = useNavigation();
   const snapPoints = useMemo(() => ['0%', '86%'], []);
 
@@ -83,7 +83,7 @@ const SendReceiveBottomSheet: FC<Props> = props => {
             }
             title={
               <TextTitle
-                text={avaxTotal}
+                text={balanceAvaxTotal}
                 size={24}
                 color={theme.txtListItem}
                 bold
