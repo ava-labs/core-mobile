@@ -17,8 +17,8 @@ function PortfolioView({onExit, onSwitchWallet}: PortfolioProps) {
   const listRef = useRef<FlatList>(null);
   const navigation = useNavigation();
 
-  function showBottomSheet() {
-    navigation.navigate('SendReceiveBottomSheet');
+  function showBottomSheet(symbol: string) {
+    navigation.navigate('SendReceiveBottomSheet', {symbol});
   }
 
   const renderItem = (item: ListRenderItemInfo<any>) => {
@@ -29,7 +29,7 @@ function PortfolioView({onExit, onSwitchWallet}: PortfolioProps) {
         tokenPrice={json.current_price}
         image={json.image}
         symbol={json.symbol}
-        onPress={showBottomSheet}
+        onPress={() => showBottomSheet(json.symbol)}
       />
     );
   };
