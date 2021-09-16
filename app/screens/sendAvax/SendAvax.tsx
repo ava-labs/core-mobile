@@ -37,7 +37,7 @@ export default function SendAvax() {
   const {navigate} = useNavigation();
 
   return (
-    <View style={backgroundStyle}>
+    <View style={[backgroundStyle, {backgroundColor: context.theme.bgOnBgApp}]}>
       <View style={styles.horizontalLayout}>
         <View style={[{flex: 1}]}>
           <InputText
@@ -49,20 +49,9 @@ export default function SendAvax() {
             value={destinationAddress}
           />
         </View>
-        <View
-          style={[
-            {
-              position: 'absolute',
-              right: 0,
-              marginRight: -16,
-              top: 0,
-              marginTop: 32,
-            },
-          ]}>
-          <ButtonIcon onPress={() => onScanBarcode()}>
-            <QRCode />
-          </ButtonIcon>
-        </View>
+        {destinationAddress.length === 0 && (
+          <ScanQrIcon onScanBarcode={onScanBarcode} />
+        )}
       </View>
 
       <View style={[{flex: 1}]}>
@@ -84,7 +73,11 @@ export default function SendAvax() {
         </View>
       </View>
 
-      <ButtonAva text={'Next'} onPress={() => navigate('Confirm Screen')} />
+      <ButtonAva
+        disabled={!canSubmit}
+        text={'Next'}
+        onPress={() => navigate('Confirm Screen')}
+      />
 
       <Modal animationType="fade" transparent={true} visible={loaderVisible}>
         <Loader message={loaderMsg} />
@@ -117,3 +110,22 @@ const styles: any = StyleSheet.create({
     alignItems: 'flex-end',
   },
 });
+
+const ScanQrIcon = ({onScanBarcode}: {onScanBarcode: () => void}) => {
+  return (
+    <View
+      style={[
+        {
+          position: 'absolute',
+          right: 0,
+          marginRight: -16,
+          top: 0,
+          marginTop: 32,
+        },
+      ]}>
+      <ButtonIcon onPress={onScanBarcode}>
+        <QRCode />
+      </ButtonIcon>
+    </View>
+  );
+};
