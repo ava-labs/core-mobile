@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useContext, useEffect} from 'react';
 import {BackHandler, StyleSheet, View} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {
@@ -10,8 +10,6 @@ import PortfolioView from 'screens/portfolio/PortfolioView';
 import EarnView from 'screens/earn/EarnView';
 import AssetsView from 'screens/portfolio/AssetsView';
 import {ApplicationContext} from 'contexts/ApplicationContext';
-import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
-import {useWalletContext} from '@avalabs/wallet-react-components';
 import HomeSVG from 'components/svg/HomeSVG';
 import ActivitySVG from 'components/svg/ActivitySVG';
 import SwapSVG from 'components/svg/SwapSVG';
@@ -39,10 +37,7 @@ const RootStack = createStackNavigator();
 
 export default function MainView(props: Props | Readonly<Props>) {
   const context = useContext(ApplicationContext);
-  const walletContext = useWalletContext();
-
   const theme = context.theme;
-  const [wallet, setWallet] = useState<MnemonicWallet>();
 
   useFocusEffect(
     React.useCallback(() => {
@@ -56,13 +51,6 @@ export default function MainView(props: Props | Readonly<Props>) {
         BackHandler.removeEventListener('hardwareBackPress', onBackPress);
     }, []),
   );
-
-  useEffect(() => {
-    if (walletContext?.wallet) {
-      // @ts-ignore complaining about type
-      setWallet(walletContext?.wallet as MnemonicWallet);
-    }
-  }, [walletContext?.wallet]);
 
   const onExit = (): void => {
     props.onExit();
@@ -125,9 +113,9 @@ export default function MainView(props: Props | Readonly<Props>) {
     );
   }
 
-  const Assets = () => <AssetsView wallet={wallet!} />;
+  const Assets = () => <AssetsView />;
   const Swap = () => <SwapView />;
-  const Earn = () => <EarnView wallet={wallet!} />;
+  const Earn = () => <EarnView />;
   const Tabs = () => (
     <Tab.Navigator
       sceneContainerStyle={styles.navContainer}

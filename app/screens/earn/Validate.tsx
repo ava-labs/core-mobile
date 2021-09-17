@@ -13,15 +13,17 @@ import Header from 'screens/mainView/Header';
 import {Subscription} from 'rxjs';
 import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
 import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useWalletContext} from '@avalabs/wallet-react-components/lib/index.es';
 
 type Props = {
-  wallet: MnemonicWallet;
   onClose: () => void;
 };
 
 export default function Validate(props: Props | Readonly<Props>) {
   const context = useContext(ApplicationContext);
-  const [viewModel] = useState(new ValidateViewModel(props.wallet));
+  const [viewModel] = useState(
+    new ValidateViewModel(useWalletContext()?.wallet as MnemonicWallet),
+  );
   const [loaderVisible, setLoaderVisible] = useState(false);
   const [loaderMsg, setLoaderMsg] = useState('');
   const [backgroundStyle] = useState(context.backgroundStyle);
