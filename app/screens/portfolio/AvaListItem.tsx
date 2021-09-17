@@ -1,5 +1,12 @@
 import React, {useContext} from 'react';
-import {Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
+} from 'react-native';
 import CarrotSVG from 'components/svg/CarrotSVG';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import AccountSVG from 'components/svg/AccountSVG';
@@ -9,10 +16,12 @@ import {useNavigation} from '@react-navigation/native';
 interface Props {
   rightComponent?: React.ReactNode;
   leftComponent?: React.ReactNode;
-  label?: string;
-  title: React.ReactNode | string;
-  subtitle?: string;
+  label?: React.ReactNode | string;
+  title?: React.ReactNode | string;
+  subtitle?: React.ReactNode | string;
   listPressDisabled?: boolean;
+  onPress?: () => void;
+  titleAlignment?: 'center' | 'flex-start' | 'flex-end';
 }
 
 function BaseListItem({
@@ -22,6 +31,8 @@ function BaseListItem({
   label,
   title,
   listPressDisabled,
+  titleAlignment = 'center',
+  onPress,
 }: Props) {
   const context = useContext(ApplicationContext);
 
@@ -29,11 +40,12 @@ function BaseListItem({
     <View style={{paddingVertical: 16}}>
       <TouchableOpacity
         style={styles.baseRowContainer}
-        disabled={listPressDisabled}>
+        disabled={listPressDisabled}
+        onPress={onPress}>
         <View style={styles.baseRow}>
           {leftComponent && leftComponent}
           <View style={styles.baseMainContent}>
-            {!!label && (
+            {!!label && typeof label === 'string' ? (
               <Text
                 style={[
                   styles.baseLabel,
@@ -41,6 +53,8 @@ function BaseListItem({
                 ]}>
                 {label}
               </Text>
+            ) : (
+              <View>{label}</View>
             )}
             <>
               {typeof title === 'string' ? (
@@ -52,10 +66,16 @@ function BaseListItem({
                   {title}
                 </Text>
               ) : (
-                <View style={styles.baseTitleObject}>{title}</View>
+                <View
+                  style={[
+                    styles.baseTitleObject,
+                    titleAlignment && {alignItems: titleAlignment},
+                  ]}>
+                  {title}
+                </View>
               )}
             </>
-            {!!subtitle && (
+            {!!subtitle && typeof subtitle === 'string' ? (
               <Text
                 ellipsizeMode="middle"
                 numberOfLines={1}
@@ -65,6 +85,8 @@ function BaseListItem({
                 ]}>
                 {subtitle}
               </Text>
+            ) : (
+              <View>{subtitle}</View>
             )}
           </View>
           {rightComponent && rightComponent}
@@ -79,8 +101,15 @@ interface TokenItemProps {
   tokenPrice: number;
   image?: string;
   symbol?: string;
+  onPress?: () => void;
 }
-function TokenItem({tokenName, tokenPrice, image, symbol}: TokenItemProps) {
+function TokenItem({
+  tokenName,
+  tokenPrice,
+  image,
+  symbol,
+  onPress,
+}: TokenItemProps) {
   const title = tokenName;
   const context = useContext(ApplicationContext);
 
@@ -113,6 +142,7 @@ function TokenItem({tokenName, tokenPrice, image, symbol}: TokenItemProps) {
         title={title}
         leftComponent={tokenLogo}
         rightComponent={sendCoin}
+        onPress={onPress}
       />
     </View>
   );
@@ -120,20 +150,23 @@ function TokenItem({tokenName, tokenPrice, image, symbol}: TokenItemProps) {
 
 interface AccountItemProps {
   accountName?: string;
-  accountAddress: string;
+  accountAddress?: string;
+  onPress: () => void;
+  onAccountPressed: () => void;
 }
 function AccountItem({
   accountName = 'Account 1',
   accountAddress,
+  onAccountPressed,
 }: AccountItemProps) {
   const leftComponent = <AccountSVG />;
-  const navigation = useNavigation();
+  const {navigate} = useNavigation();
   const context = useContext(ApplicationContext);
 
   const rightComponent = (
     <TouchableOpacity
       onPress={() => {
-        navigation.navigate('Search');
+        navigate('Search');
       }}>
       <SearchSVG />
     </TouchableOpacity>
@@ -141,21 +174,26 @@ function AccountItem({
 
   function buildTitle() {
     return (
-      <View
-        style={[
-          styles.accountTitleContainer,
-          {borderColor: context.theme.btnIconBorder},
-        ]}>
-        <Text
-          style={[styles.accountTitleText, {color: context.theme.btnIconIcon}]}
-          ellipsizeMode="middle"
-          numberOfLines={1}>
-          {accountName}
-        </Text>
-        <View style={{transform: [{rotate: '90deg'}]}}>
-          <CarrotSVG color={context.theme.txtListItem} size={10} />
+      <TouchableWithoutFeedback onPress={onAccountPressed}>
+        <View
+          style={[
+            styles.accountTitleContainer,
+            {borderColor: context.theme.btnIconBorder},
+          ]}>
+          <Text
+            style={[
+              styles.accountTitleText,
+              {color: context.theme.txtListItem},
+            ]}
+            ellipsizeMode="middle"
+            numberOfLines={1}>
+            {accountName}
+          </Text>
+          <View style={{transform: [{rotate: '90deg'}]}}>
+            <CarrotSVG color={context.theme.txtListItem} size={10} />
+          </View>
         </View>
-      </View>
+      </TouchableWithoutFeedback>
     );
   }
 
@@ -169,9 +207,14 @@ function AccountItem({
   );
 }
 
+function SimpleItem(props: Props) {
+  return <BaseListItem {...props} />;
+}
+
 const AvaListItem = {
   Token: TokenItem,
   Account: AccountItem,
+  Simple: SimpleItem,
 };
 
 export default AvaListItem;

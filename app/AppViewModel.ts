@@ -27,7 +27,7 @@ export enum SelectedView {
 }
 
 export default class {
-  mnemonic: string = '';
+  mnemonic = '';
   selectedView: BehaviorSubject<SelectedView> =
     new BehaviorSubject<SelectedView>(SelectedView.Onboard);
 
@@ -114,13 +114,17 @@ export default class {
     const dialogOp: Observable<ExitFinished> = exitPrompt.pipe(
       map((answer: ExitPromptAnswers) => {
         switch (answer) {
+          case ExitPromptAnswers.Cancel:
+            return new ExitCanceled();
           case ExitPromptAnswers.Ok:
             return new ExitFinished();
         }
       }),
-      map(() => {
-        this.setSelectedView(SelectedView.Onboard);
-        BackHandler.exitApp();
+      map((exitEvent: ExitEvents) => {
+        if (exitEvent instanceof ExitFinished) {
+          this.setSelectedView(SelectedView.Onboard);
+          BackHandler.exitApp();
+        }
         return new LogoutFinished();
       }),
     );
@@ -191,7 +195,9 @@ export class ShowExitPrompt implements ExitEvents {
 }
 
 export class ExitFinished implements ExitEvents {}
+export class ExitCanceled implements ExitEvents {}
 
 export enum ExitPromptAnswers {
   Ok,
+  Cancel,
 }

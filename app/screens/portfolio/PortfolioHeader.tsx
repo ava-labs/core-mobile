@@ -1,8 +1,17 @@
-import React, {useContext} from 'react';
-import {Platform, StyleSheet, Text, View} from 'react-native';
+import React, {useContext, useEffect, useState} from 'react';
+import {
+  ActivityIndicator,
+  Platform,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import AvaListItem from 'screens/portfolio/AvaListItem';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import {usePortfolio} from 'screens/portfolio/usePortfolio';
+import {useNavigation} from '@react-navigation/native';
+import {useWalletStateContext} from '@avalabs/wallet-react-components';
+import {Colors} from 'react-native/Libraries/NewAppScreen';
 
 export const HEADER_MAX_HEIGHT = 150;
 export const HEADER_MIN_HEIGHT = Platform.OS === 'ios' ? 60 : 73;
@@ -10,7 +19,16 @@ export const HEADER_SCROLL_DISTANCE = HEADER_MAX_HEIGHT - HEADER_MIN_HEIGHT;
 
 function PortfolioHeader() {
   const context = useContext(ApplicationContext);
+  const navigation = useNavigation();
+  const walletStateContext = useWalletStateContext();
   const {addressC, balanceTotalInUSD} = usePortfolio();
+  const [walletReady, setWalletReady] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!walletReady) {
+      setWalletReady(walletStateContext?.balances !== undefined);
+    }
+  }, [walletReady, walletStateContext]);
 
   return (
     <>
@@ -19,8 +37,14 @@ function PortfolioHeader() {
       <View style={[styles.bar]} pointerEvents="box-none">
         <View>
           <AvaListItem.Account
-            accountName={'My Awesome Wallet'}
+            accountName={'Account 1'}
             accountAddress={addressC ?? ''}
+            onPress={() => {
+              console.log('test');
+            }}
+            onAccountPressed={() => {
+              navigation.navigate('AccountBottomSheet');
+            }}
           />
         </View>
         <View
@@ -29,9 +53,17 @@ function PortfolioHeader() {
             justifyContent: 'center',
             flexDirection: 'row',
           }}>
-          <Text style={[styles.text, {color: context.theme.txtOnBgApp}]}>
-            {balanceTotalInUSD}
-          </Text>
+          {!walletReady && (
+            <ActivityIndicator
+              size="small"
+              color={context.isDarkMode ? Colors.white : Colors.black}
+            />
+          )}
+          {walletReady && (
+            <Text style={[styles.text, {color: context.theme.txtOnBgApp}]}>
+              {balanceTotalInUSD}
+            </Text>
+          )}
           <Text
             style={{
               fontSize: 16,

@@ -3,17 +3,19 @@ import {BN, Utils} from '@avalabs/avalanche-wallet-sdk';
 import {useWalletStateContext} from '@avalabs/wallet-react-components';
 
 export function usePortfolio(): {
-  addressX: string;
-  addressP: string;
   addressC: string;
   balanceTotalInUSD: string;
+  addressP: string;
+  balanceAvaxTotal: string;
+  addressX: string;
 } {
   const walletStateContext = useWalletStateContext();
   const [avaxPrice, setAvaxPrice] = useState(0);
   const [addressX, setAddressX] = useState('');
   const [addressP, setAddressP] = useState('');
   const [addressC, setAddressC] = useState('');
-  const [balanceAvaxTotal, setBalanceAvaxTotal] = useState<BN>(new BN(0));
+  const [balanceAvaxTotalBN, setBalanceAvaxTotalBN] = useState<BN>(new BN(0));
+  const [balanceAvaxTotal, setBalanceAvaxTotal] = useState<string>('- AVAX');
   const [balanceTotalInUSD, setBalanceTotalInUSD] = useState('');
 
   useEffect(() => {
@@ -22,15 +24,16 @@ export function usePortfolio(): {
       setAddressX(walletStateContext.addresses.addrX);
       setAddressP(walletStateContext.addresses.addrP);
       setAddressC(walletStateContext.addresses.addrC);
-      setBalanceAvaxTotal(walletStateContext.balances.balanceAvaxTotal);
+      setBalanceAvaxTotalBN(walletStateContext.balances.balanceAvaxTotal);
     }
   }, [walletStateContext]);
 
   useEffect(() => {
-    const total =
-      parseFloat(Utils.bnToLocaleString(balanceAvaxTotal, 9)) * avaxPrice;
+    const balanceAvaxString = Utils.bnToLocaleString(balanceAvaxTotalBN, 9);
+    const total = parseFloat(balanceAvaxString) * avaxPrice;
     setBalanceTotalInUSD('$' + total.toFixed(2));
-  }, [avaxPrice, balanceAvaxTotal]);
+    setBalanceAvaxTotal(balanceAvaxString + ' AVAX');
+  }, [avaxPrice, balanceAvaxTotalBN]);
 
-  return {addressX, addressP, addressC, balanceTotalInUSD};
+  return {addressX, addressP, addressC, balanceTotalInUSD, balanceAvaxTotal};
 }

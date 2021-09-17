@@ -17,7 +17,6 @@ import {createStackNavigator} from '@react-navigation/stack';
 import {
   NavigationContainer,
   NavigationContainerRef,
-  Theme,
 } from '@react-navigation/native';
 import CheckMnemonic from 'screens/onboarding/CheckMnemonic';
 import CreatePIN from 'screens/onboarding/CreatePIN';
@@ -49,6 +48,11 @@ const onOk = (value: ShowExitPrompt): void => {
   value.prompt.complete();
 };
 
+const onNo = (value: ShowExitPrompt): void => {
+  value.prompt.next(ExitPromptAnswers.Cancel);
+  value.prompt.complete();
+};
+
 const onExit = (): void => {
   viewModel.onExit().subscribe({
     next: (value: LogoutEvents) => {
@@ -60,6 +64,11 @@ const onExit = (): void => {
             {
               text: 'Ok',
               onPress: () => onOk(value as ShowExitPrompt),
+            },
+            {
+              text: 'Cancel',
+              onPress: () => onNo(value as ShowExitPrompt),
+              style: 'cancel',
             },
           ],
         );

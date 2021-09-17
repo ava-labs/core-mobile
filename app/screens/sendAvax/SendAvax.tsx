@@ -1,27 +1,17 @@
 import React, {useContext, useState} from 'react';
-import {Modal, SafeAreaView, StyleSheet, View} from 'react-native';
+import {Modal, StyleSheet, View} from 'react-native';
 import ButtonAva from 'components/ButtonAva';
 import TextTitle from 'components/TextTitle';
 import InputText from 'components/InputText';
 import Loader from 'components/Loader';
 import QrScannerAva from 'components/QrScannerAva';
-import Header from 'screens/mainView/Header';
-import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
 import {ApplicationContext} from 'contexts/ApplicationContext';
-import Divider from 'components/Divider';
-import {useSendAvaxX} from 'screens/sendAvax/SendAvaxXHook';
 import QRCode from 'components/svg/QRCode';
 import ButtonIcon from 'components/ButtonIcon';
-import AvaToken from 'components/svg/AvaToken';
+import {useNavigation} from '@react-navigation/native';
+import {useSendAvaxRn} from 'screens/sendAvax/useSendAvaxRn';
 
-type SendAvaxXProps = {
-  wallet: MnemonicWallet;
-  onClose: () => void;
-};
-
-export default function SendAvaxX(
-  props: SendAvaxXProps | Readonly<SendAvaxXProps>,
-) {
+export default function SendAvax() {
   const context = useContext(ApplicationContext);
   const {
     avaxTotal,
@@ -32,74 +22,47 @@ export default function SendAvaxX(
     errorMsg,
     cameraVisible,
     setCameraVisible,
-    address,
+    destinationAddress,
     setAddress,
     sendAmountString,
     setSendAmountString,
     sendFeeString,
+    canSubmit,
     onSendAvax,
     onScanBarcode,
     onBarcodeScanned,
     clearAddress,
-  } = useSendAvaxX(props.wallet);
+  } = useSendAvaxRn();
   const [backgroundStyle] = useState(context.backgroundStyle);
+  const {navigate} = useNavigation();
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <Header showBack onBack={props.onClose} />
-      <Divider size={12} />
+    <View
+      style={[
+        backgroundStyle,
+        {
+          backgroundColor: context.theme.bgOnBgApp,
+          paddingStart: 0,
+          paddingEnd: 0,
+        },
+      ]}>
       <View style={styles.horizontalLayout}>
-        <AvaToken />
-        <Divider size={16} />
-        <View>
-          <TextTitle
-            text={'Avalanche'}
-            size={16}
-            color={context.theme.txtListItem}
-            bold
-          />
-          <TextTitle
-            text={avaxTotal}
-            size={24}
-            color={context.theme.txtListItem}
-            bold
-          />
-          <TextTitle
-            text={balanceTotalInUSD}
-            size={14}
-            color={context.theme.txtListItemSubscript}
-          />
-        </View>
-      </View>
-      <Divider size={8} />
-      <Divider size={20} />
-      <View style={styles.horizontalLayout}>
-        <View style={[{flex: 1}]}>
+        <View style={[{flex: 1, paddingStart: 4, paddingEnd: 4}]}>
           <InputText
-            label="Address"
+            label={'Address ' + targetChain}
             placeholder="Enter the address"
             multiline={true}
+            errorText={errorMsg}
             onChangeText={text => setAddress(text)}
-            value={address}
+            value={destinationAddress}
           />
         </View>
-        <View
-          style={[
-            {
-              position: 'absolute',
-              right: 0,
-              marginRight: -16,
-              top: 0,
-              marginTop: 32,
-            },
-          ]}>
-          <ButtonIcon onPress={() => onScanBarcode()}>
-            <QRCode />
-          </ButtonIcon>
-        </View>
+        {destinationAddress.length === 0 && (
+          <ScanQrIcon onScanBarcode={onScanBarcode} />
+        )}
       </View>
 
-      <View style={[{flex: 1}]}>
+      <View style={[{flex: 1, paddingStart: 4, paddingEnd: 4}]}>
         <InputText
           value={sendAmountString}
           label="Amount"
@@ -118,7 +81,11 @@ export default function SendAvaxX(
         </View>
       </View>
 
-      <ButtonAva text={'Send'} onPress={onSendAvax} />
+      <ButtonAva
+        disabled={!canSubmit}
+        text={'Next'}
+        onPress={() => navigate('Confirm Transaction')}
+      />
 
       <Modal animationType="fade" transparent={true} visible={loaderVisible}>
         <Loader message={loaderMsg} />
@@ -134,7 +101,7 @@ export default function SendAvaxX(
           onCancel={() => setCameraVisible(false)}
         />
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -151,3 +118,22 @@ const styles: any = StyleSheet.create({
     alignItems: 'flex-end',
   },
 });
+
+const ScanQrIcon = ({onScanBarcode}: {onScanBarcode: () => void}) => {
+  return (
+    <View
+      style={[
+        {
+          position: 'absolute',
+          right: 0,
+          marginRight: -16,
+          top: 0,
+          marginTop: 32,
+        },
+      ]}>
+      <ButtonIcon onPress={onScanBarcode}>
+        <QRCode />
+      </ButtonIcon>
+    </View>
+  );
+};

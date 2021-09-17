@@ -1,9 +1,9 @@
-import React, {FC, useContext, useRef} from 'react';
+import React, {useRef} from 'react';
 import {FlatList, ListRenderItemInfo, StyleSheet} from 'react-native';
 import AvaListItem from 'screens/portfolio/AvaListItem';
 import PortfolioHeader from 'screens/portfolio/PortfolioHeader';
-import {ApplicationContext} from 'contexts/ApplicationContext';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
+import {useNavigation} from '@react-navigation/native';
 
 type PortfolioProps = {
   onExit: () => void;
@@ -13,8 +13,13 @@ type PortfolioProps = {
 const data: JSON[] = require('assets/coins.json');
 export const keyExtractor = (item: any, index: number) => item?.id ?? index;
 
-const PortfolioView: FC<PortfolioProps> = ({onExit, onSwitchWallet}) => {
+function PortfolioView({onExit, onSwitchWallet}: PortfolioProps) {
   const listRef = useRef<FlatList>(null);
+  const navigation = useNavigation();
+
+  function showBottomSheet(symbol: string) {
+    navigation.navigate('SendReceiveBottomSheet', {symbol});
+  }
 
   const renderItem = (item: ListRenderItemInfo<any>) => {
     const json = item.item;
@@ -24,6 +29,7 @@ const PortfolioView: FC<PortfolioProps> = ({onExit, onSwitchWallet}) => {
         tokenPrice={json.current_price}
         image={json.image}
         symbol={json.symbol}
+        onPress={() => showBottomSheet(json.symbol)}
       />
     );
   };
@@ -46,7 +52,7 @@ const PortfolioView: FC<PortfolioProps> = ({onExit, onSwitchWallet}) => {
       />
     </SafeAreaProvider>
   );
-};
+}
 
 const styles = StyleSheet.create({
   flex: {
