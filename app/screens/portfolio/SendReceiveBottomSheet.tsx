@@ -6,7 +6,7 @@ import React, {
   useMemo,
   useRef,
 } from 'react';
-import {Image, StyleSheet, Text, View} from 'react-native';
+import {Image, StyleSheet, View} from 'react-native';
 import {NavigationContainer, useNavigation} from '@react-navigation/native';
 import {
   createStackNavigator,
@@ -29,6 +29,7 @@ import {usePortfolio} from 'screens/portfolio/usePortfolio';
 import SendAvaxConfirm from 'screens/sendAvax/SendAvaxConfirm';
 import ReceiveToken from 'screens/receive/ReceiveToken';
 import OvalTagBg from 'components/OvalTagBg';
+import TransactionsView from 'screens/transactions/TransactionsView';
 
 const Stack = createStackNavigator();
 
@@ -121,7 +122,7 @@ const SendReceiveBottomSheet: FC<Props> = props => {
       <TabViewAva renderCustomLabel={renderCustomLabel}>
         <SendAvax title={'Send'} />
         <ReceiveToken title={'Receive'} />
-        <SendAvax title={'Activity'} />
+        <TransactionsView title={'Activity'} />
       </TabViewAva>
     </>
   );
