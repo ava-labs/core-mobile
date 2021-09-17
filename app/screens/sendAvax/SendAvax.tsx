@@ -76,7 +76,7 @@ export default function SendAvax() {
       <ButtonAva
         disabled={!canSubmit}
         text={'Next'}
-        onPress={() => navigate('Confirm Screen')}
+        onPress={() => navigate('Confirm Transaction')}
       />
 
       <Modal animationType="fade" transparent={true} visible={loaderVisible}>

@@ -112,8 +112,8 @@ const SendReceiveBottomSheet: FC<Props> = props => {
         </View>
         <TouchableOpacity onPress={handleClose}>
           <ClearSVG
-            color={theme.bgSearch}
-            backgroundColor={'#F1F1F4'}
+            color={theme.btnIconIcon}
+            backgroundColor={theme.bgSearch}
             size={40}
           />
         </TouchableOpacity>
@@ -139,15 +139,6 @@ const SendReceiveBottomSheet: FC<Props> = props => {
             <CarrotSVG color={theme.txtOnBgApp} />
           </TouchableOpacity>
         ),
-        headerRight: () => (
-          <TouchableOpacity style={{paddingRight: 16}} onPress={handleClose}>
-            <ClearSVG
-              color={theme.bgSearch}
-              backgroundColor={'#F1F1F4'}
-              size={40}
-            />
-          </TouchableOpacity>
-        ),
         headerTitleStyle: {
           color: theme.txtListItem,
         },
@@ -168,9 +159,9 @@ const SendReceiveBottomSheet: FC<Props> = props => {
       <SendAvaxConfirm
         onConfirm={() => navigate('Done Screen')}
         onClose={handleClose}
-        destinationAddress={'0Xlslsllkdslkdlk'}
-        fiatAmount={'443.23'}
-        tokenAmount={'23232.23'}
+        destinationAddress={'X-fuji1mtf4tv4dnmghh34ausjqyxer05hl3qvqv3nmja'}
+        fiatAmount={'443.23 USD'}
+        tokenAmount={'23232.23 AVAX'}
         tokenImageUrl={tokenObj?.image}
       />
     );
@@ -187,7 +178,7 @@ const SendReceiveBottomSheet: FC<Props> = props => {
             options={doneScreenOptions}
             component={Tabs}
           />
-          <Stack.Screen name="Confirm Screen" component={ConfirmScreen} />
+          <Stack.Screen name="Confirm Transaction" component={ConfirmScreen} />
           <Stack.Screen
             name="Done Screen"
             options={doneScreenOptions}
