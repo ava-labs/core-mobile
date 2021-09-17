@@ -37,9 +37,17 @@ export default function SendAvax() {
   const {navigate} = useNavigation();
 
   return (
-    <View style={[backgroundStyle, {backgroundColor: context.theme.bgOnBgApp}]}>
+    <View
+      style={[
+        backgroundStyle,
+        {
+          backgroundColor: context.theme.bgOnBgApp,
+          paddingStart: 0,
+          paddingEnd: 0,
+        },
+      ]}>
       <View style={styles.horizontalLayout}>
-        <View style={[{flex: 1}]}>
+        <View style={[{flex: 1, paddingStart: 4, paddingEnd: 4}]}>
           <InputText
             label={'Address ' + targetChain}
             placeholder="Enter the address"
@@ -54,7 +62,7 @@ export default function SendAvax() {
         )}
       </View>
 
-      <View style={[{flex: 1}]}>
+      <View style={[{flex: 1, paddingStart: 4, paddingEnd: 4}]}>
         <InputText
           value={sendAmountString}
           label="Amount"

@@ -1,22 +1,23 @@
-import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
-import {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import TransactionsViewModel, {
   HistoryItem,
 } from 'screens/transactions/TransactionsViewModel';
-import {FlatList, Modal, StyleSheet, View} from 'react-native';
+import {FlatList, View} from 'react-native';
 import Loader from 'components/Loader';
-import TextTitle from 'components/TextTitle';
-import TransactionItem from './TransactionItem';
+import TransactionItem from 'screens/transactions/TransactionItem';
+import {useWalletContext} from '@avalabs/wallet-react-components';
+import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
+import {ApplicationContext} from 'contexts/ApplicationContext';
 
-type Props = {
-  wallet: MnemonicWallet;
-};
-
-export default function TransactionsView(props: Props | Readonly<Props>) {
-  const [viewModel] = useState(new TransactionsViewModel(props.wallet));
+export default function TransactionsView() {
+  const context = useContext(ApplicationContext);
+  const [viewModel] = useState(
+    new TransactionsViewModel(useWalletContext()?.wallet as MnemonicWallet),
+  );
   const [loaderVisible, setLoaderVisible] = useState(false);
   const [loaderMsg, setLoaderMsg] = useState('');
   const [historyItems, setHistoryItems] = useState<HistoryItem[]>([]);
+  const [backgroundStyle] = useState(context.backgroundStyle);
 
   useEffect(() => {
     viewModel.history.subscribe(value => setHistoryItems(value));
@@ -36,24 +37,15 @@ export default function TransactionsView(props: Props | Readonly<Props>) {
   );
 
   return (
-    <View style={styles.container}>
-      <Modal animationType="fade" transparent={true} visible={loaderVisible}>
-        <Loader message={loaderMsg} />
-      </Modal>
-
-      <Header />
-      <TextTitle text={'Transactions'} />
-      <FlatList
-        data={historyItems}
-        renderItem={info => renderItem(info.item)}
-        keyExtractor={item => item.id}
-      />
+    <View style={backgroundStyle}>
+      {loaderVisible && <Loader message={loaderMsg} />}
+      {!loaderVisible && (
+        <FlatList
+          data={historyItems}
+          renderItem={info => renderItem(info.item)}
+          keyExtractor={item => item.id}
+        />
+      )}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    height: '100%',
-  },
-});
