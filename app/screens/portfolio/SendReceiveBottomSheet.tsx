@@ -15,6 +15,7 @@ import {
 } from '@react-navigation/stack';
 import BottomSheet, {TouchableOpacity} from '@gorhom/bottom-sheet';
 import ButtonAva from 'components/ButtonAva';
+import AvaText from 'components/AvaText';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import TabViewAva from 'components/TabViewAva';
@@ -27,6 +28,7 @@ import SendAvax from 'screens/sendAvax/SendAvax';
 import {usePortfolio} from 'screens/portfolio/usePortfolio';
 import SendAvaxConfirm from 'screens/sendAvax/SendAvaxConfirm';
 import ReceiveToken from 'screens/receive/ReceiveToken';
+import OvalTagBg from 'components/OvalTagBg';
 
 const Stack = createStackNavigator();
 
@@ -110,8 +112,8 @@ const SendReceiveBottomSheet: FC<Props> = props => {
         </View>
         <TouchableOpacity onPress={handleClose}>
           <ClearSVG
-            color={theme.bgSearch}
-            backgroundColor={'#F1F1F4'}
+            color={theme.btnIconIcon}
+            backgroundColor={theme.bgSearch}
             size={40}
           />
         </TouchableOpacity>
@@ -137,15 +139,6 @@ const SendReceiveBottomSheet: FC<Props> = props => {
             <CarrotSVG color={theme.txtOnBgApp} />
           </TouchableOpacity>
         ),
-        headerRight: () => (
-          <TouchableOpacity style={{paddingRight: 16}} onPress={handleClose}>
-            <ClearSVG
-              color={theme.bgSearch}
-              backgroundColor={'#F1F1F4'}
-              size={40}
-            />
-          </TouchableOpacity>
-        ),
         headerTitleStyle: {
           color: theme.txtListItem,
         },
@@ -166,9 +159,9 @@ const SendReceiveBottomSheet: FC<Props> = props => {
       <SendAvaxConfirm
         onConfirm={() => navigate('Done Screen')}
         onClose={handleClose}
-        destinationAddress={'0Xlslsllkdslkdlk'}
-        fiatAmount={'443.23'}
-        tokenAmount={'23232.23'}
+        destinationAddress={'X-fuji1mtf4tv4dnmghh34ausjqyxer05hl3qvqv3nmja'}
+        fiatAmount={'443.23 USD'}
+        tokenAmount={'23232.23 AVAX'}
         tokenImageUrl={tokenObj?.image}
       />
     );
@@ -185,7 +178,7 @@ const SendReceiveBottomSheet: FC<Props> = props => {
             options={doneScreenOptions}
             component={Tabs}
           />
-          <Stack.Screen name="Confirm Screen" component={ConfirmScreen} />
+          <Stack.Screen name="Confirm Transaction" component={ConfirmScreen} />
           <Stack.Screen
             name="Done Screen"
             options={doneScreenOptions}
@@ -198,23 +191,12 @@ const SendReceiveBottomSheet: FC<Props> = props => {
 
   const renderCustomLabel = (title: string, focused: boolean) => {
     return (
-      <View
-        style={{
-          backgroundColor: focused ? '#FFECEF' : theme.transparent,
-          borderRadius: 100,
-          paddingHorizontal: 12,
-          paddingVertical: 8,
-        }}>
-        <Text
-          style={{
-            color: focused ? theme.btnTextTxt : '#6C6C6E',
-            fontWeight: '600',
-            fontSize: 16,
-            lineHeight: 24,
-          }}>
+      <OvalTagBg color={focused ? '#FFECEF' : theme.transparent}>
+        <AvaText.Tag
+          textStyle={{color: focused ? theme.btnTextTxt : '#6C6C6E'}}>
           {title}
-        </Text>
-      </View>
+        </AvaText.Tag>
+      </OvalTagBg>
     );
   };
 
