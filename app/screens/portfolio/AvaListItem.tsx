@@ -150,7 +150,7 @@ function TokenItem({
 
 interface AccountItemProps {
   accountName?: string;
-  accountAddress: string;
+  accountAddress?: string;
   onPress: () => void;
   onAccountPressed: () => void;
 }
@@ -160,13 +160,13 @@ function AccountItem({
   onAccountPressed,
 }: AccountItemProps) {
   const leftComponent = <AccountSVG />;
-  const navigation = useNavigation();
+  const {navigate} = useNavigation();
   const context = useContext(ApplicationContext);
 
   const rightComponent = (
     <TouchableOpacity
       onPress={() => {
-        navigation.navigate('Search');
+        navigate('Search');
       }}>
       <SearchSVG />
     </TouchableOpacity>
