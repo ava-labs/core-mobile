@@ -1,6 +1,6 @@
 import React, {FC, useContext} from 'react';
 import {StyleProp, StyleSheet, Text, TextStyle} from 'react-native';
-import {ApplicationContext} from '../contexts/ApplicationContext';
+import {ApplicationContext} from 'contexts/ApplicationContext';
 
 interface TextProps {
   textStyle?: StyleProp<TextStyle>;
@@ -33,10 +33,20 @@ const TextBody2: FC<TextProps> = ({textStyle, children}) => {
   );
 };
 
+const TextTag: FC<TextProps> = ({textStyle, children}) => {
+  const theme = useContext(ApplicationContext).theme;
+  return (
+    <Text style={[styles.textTag, {color: theme.txtListItem}, textStyle]}>
+      {children}
+    </Text>
+  );
+};
+
 const AvaText = {
   Heading2: TextHeading2,
   Body1: TextBody1,
   Body2: TextBody2,
+  Tag: TextTag,
 };
 
 const styles = StyleSheet.create({
@@ -54,6 +64,11 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     fontSize: 14,
     lineHeight: 17,
+  },
+  textTag: {
+    fontWeight: 'bold',
+    fontSize: 16,
+    lineHeight: 24,
   },
 });
 
