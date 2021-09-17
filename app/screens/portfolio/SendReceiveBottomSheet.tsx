@@ -5,9 +5,8 @@ import React, {
   useEffect,
   useMemo,
   useRef,
-  useState,
 } from 'react';
-import {ActivityIndicator, Image, StyleSheet, Text, View} from 'react-native';
+import {Image, StyleSheet, Text, View} from 'react-native';
 import {NavigationContainer, useNavigation} from '@react-navigation/native';
 import {
   createStackNavigator,
@@ -26,6 +25,8 @@ import AvaListItem from './AvaListItem';
 import TabViewBackground from './components/TabViewBackground';
 import SendAvax from 'screens/sendAvax/SendAvax';
 import {usePortfolio} from 'screens/portfolio/usePortfolio';
+import SendAvaxConfirm from 'screens/sendAvax/SendAvaxConfirm';
+import ReceiveToken from 'screens/receive/ReceiveToken';
 
 const Stack = createStackNavigator();
 
@@ -39,7 +40,7 @@ const SendReceiveBottomSheet: FC<Props> = props => {
   const bottomSheetRef = useRef<BottomSheet>(null);
   const theme = useContext(ApplicationContext).theme;
   const {balanceAvaxTotal, balanceTotalInUSD} = usePortfolio();
-  const {goBack, canGoBack} = useNavigation();
+  const {goBack, canGoBack, navigate} = useNavigation();
   const snapPoints = useMemo(() => ['0%', '86%'], []);
 
   //todo: figure out types for route params
@@ -117,7 +118,7 @@ const SendReceiveBottomSheet: FC<Props> = props => {
       </View>
       <TabViewAva renderCustomLabel={renderCustomLabel}>
         <SendAvax title={'Send'} />
-        <SendAvax title={'Receive'} />
+        <ReceiveToken title={'Receive'} />
         <SendAvax title={'Activity'} />
       </TabViewAva>
     </>
@@ -161,6 +162,16 @@ const SendReceiveBottomSheet: FC<Props> = props => {
     );
 
     const DoneDoneScreen = () => <DoneScreen onClose={handleClose} />;
+    const ConfirmScreen = () => (
+      <SendAvaxConfirm
+        onConfirm={() => navigate('Done Screen')}
+        onClose={handleClose}
+        destinationAddress={'0Xlslsllkdslkdlk'}
+        fiatAmount={'443.23'}
+        tokenAmount={'23232.23'}
+        tokenImageUrl={tokenObj?.image}
+      />
+    );
 
     const doneScreenOptions = useMemo(
       () => ({headerShown: false, headerLeft: () => null}),
@@ -240,24 +251,25 @@ const styles = StyleSheet.create({
  * Temporary helper components
  */
 
-const ConfirmScreen: FC = props => {
-  const [loading, setLoading] = useState(false);
-  const {navigate} = useNavigation();
-  return (
-    <View style={{justifyContent: 'center', alignItems: 'center', flex: 1}}>
-      {loading && <ActivityIndicator />}
-      <ButtonAva
-        text={'Confirm'}
-        onPress={() => {
-          setLoading(true);
-          setTimeout(() => {
-            navigate('Done Screen');
-          }, 1000);
-        }}
-      />
-    </View>
-  );
-};
+// const ConfirmScreen = () => <SendAvaxConfirm />;
+//   FC = props => {
+//   const [loading, setLoading] = useState(false);
+//   const {navigate} = useNavigation();
+//   return (
+//     <View style={{justifyContent: 'center', alignItems: 'center', flex: 1}}>
+//       {loading && <ActivityIndicator />}
+//       <ButtonAva
+//         text={'Confirm'}
+//         onPress={() => {
+//           setLoading(true);
+//           setTimeout(() => {
+//             navigate('Done Screen');
+//           }, 1000);
+//         }}
+//       />
+//     </View>
+//   );
+// };
 
 interface DoneProps {
   onClose: () => void;
