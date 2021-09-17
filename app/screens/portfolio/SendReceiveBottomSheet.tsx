@@ -30,6 +30,7 @@ import SendAvaxConfirm from 'screens/sendAvax/SendAvaxConfirm';
 import ReceiveToken from 'screens/receive/ReceiveToken';
 import OvalTagBg from 'components/OvalTagBg';
 import TransactionsView from 'screens/transactions/TransactionsView';
+import Divider from 'components/Divider';
 
 const Stack = createStackNavigator();
 
@@ -156,16 +157,19 @@ const SendReceiveBottomSheet: FC<Props> = props => {
     );
 
     const DoneDoneScreen = () => <DoneScreen onClose={handleClose} />;
-    const ConfirmScreen = () => (
-      <SendAvaxConfirm
-        onConfirm={() => navigate('Done Screen')}
-        onClose={handleClose}
-        destinationAddress={'X-fuji1mtf4tv4dnmghh34ausjqyxer05hl3qvqv3nmja'}
-        fiatAmount={'443.23 USD'}
-        tokenAmount={'23232.23 AVAX'}
-        tokenImageUrl={tokenObj?.image}
-      />
-    );
+    const ConfirmScreen = () => {
+      const {navigate} = useNavigation();
+      return (
+        <SendAvaxConfirm
+          onConfirm={() => navigate('Done Screen')}
+          onClose={handleClose}
+          destinationAddress={'X-fuji1mtf4tv4dnmghh34ausjqyxer05hl3qvqv3nmja'}
+          fiatAmount={'443.23 USD'}
+          tokenAmount={'23232.23 AVAX'}
+          tokenImageUrl={tokenObj?.image}
+        />
+      );
+    };
 
     const doneScreenOptions = useMemo(
       () => ({headerShown: false, headerLeft: () => null}),
@@ -230,38 +234,31 @@ const styles = StyleSheet.create({
   },
 });
 
-/**
- * Temporary helper components
- */
-
-// const ConfirmScreen = () => <SendAvaxConfirm />;
-//   FC = props => {
-//   const [loading, setLoading] = useState(false);
-//   const {navigate} = useNavigation();
-//   return (
-//     <View style={{justifyContent: 'center', alignItems: 'center', flex: 1}}>
-//       {loading && <ActivityIndicator />}
-//       <ButtonAva
-//         text={'Confirm'}
-//         onPress={() => {
-//           setLoading(true);
-//           setTimeout(() => {
-//             navigate('Done Screen');
-//           }, 1000);
-//         }}
-//       />
-//     </View>
-//   );
-// };
-
 interface DoneProps {
   onClose: () => void;
 }
+
 function DoneScreen({onClose}: DoneProps) {
   return (
-    <View style={{justifyContent: 'center', alignItems: 'center', flex: 1}}>
+    <View
+      style={[
+        useContext(ApplicationContext).backgroundStyle,
+        {
+          justifyContent: 'center',
+          alignItems: 'center',
+          flex: 1,
+          paddingStart: 0,
+          paddingEnd: 0,
+        },
+      ]}>
+      <Divider size={100} />
       <AvaLogoSVG />
-      <ButtonAva text={'Confirm'} onPress={onClose} />
+      <Divider size={32} />
+      <AvaText.Heading2>Asset sent</AvaText.Heading2>
+      <View style={{flex: 1}} />
+      <View style={{width: '100%'}}>
+        <ButtonAva text={'Done'} onPress={onClose} />
+      </View>
     </View>
   );
 }
