@@ -4,23 +4,16 @@ import TextTitle from 'components/TextTitle';
 import Header from 'screens/mainView/Header';
 import AssetsAddTokenViewModel from './AssetsAddTokenViewModel';
 import InputText from 'components/InputText';
-import {BehaviorSubject} from 'rxjs';
 import ButtonAva from 'components/ButtonAva';
-import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 
 type Props = {
-  wallet: MnemonicWallet;
   onClose: () => void;
 };
 
 export default function AssetsAddToken(props: Props | Readonly<Props>) {
   const context = useContext(ApplicationContext);
-  const [viewModel] = useState(
-    new AssetsAddTokenViewModel(
-      new BehaviorSubject<MnemonicWallet>(props.wallet),
-    ),
-  );
+  const [viewModel] = useState(new AssetsAddTokenViewModel());
   const [backgroundStyle] = useState(context.backgroundStyle);
   const [tokenContractAddress, setTokenContractAddress] = useState('');
   const [tokenName, setTokenName] = useState('');

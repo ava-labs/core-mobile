@@ -31,6 +31,8 @@ export default function SendAvaxConfirm(
           alignItems: 'center',
           backgroundColor: context.theme.bgOnBgApp,
           paddingLeft: 0,
+          paddingStart: 0,
+          paddingEnd: 0,
           paddingRight: 0,
         },
       ]}>
