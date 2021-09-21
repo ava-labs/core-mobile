@@ -8,7 +8,7 @@ import App from '../app/App';
 
 // Note: test renderer must be required after react-native.
 import renderer from 'react-test-renderer';
-import AppViewModel from '../app/utils/AppViewModel';
+import AppViewModel from 'AppViewModel';
 import {TestScheduler} from 'rxjs/testing';
 import {auditTime, take} from 'rxjs/operators';
 

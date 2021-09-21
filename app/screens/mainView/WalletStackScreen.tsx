@@ -1,9 +1,8 @@
-import React, {useContext, useEffect} from 'react';
-import {BackHandler, StyleSheet, View} from 'react-native';
+import React, {Fragment, useContext, useEffect} from 'react';
+import {BackHandler, StyleSheet} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {
   getFocusedRouteNameFromRoute,
-  NavigationContainer,
   useFocusEffect,
 } from '@react-navigation/native';
 import PortfolioView from 'screens/portfolio/PortfolioView';
@@ -19,6 +18,8 @@ import SearchView from 'screens/portfolio/SearchView';
 import SendReceiveBottomSheet from 'screens/portfolio/SendReceiveBottomSheet';
 import AccountBottomSheet from 'screens/portfolio/account/AccountBottomSheet';
 import SwapView from 'screens/swap/SwapView';
+import AvaNavigation from 'navigation/AvaNavigation';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 export type BaseStackParamList = {
   Portfolio: undefined;
@@ -35,7 +36,7 @@ type Props = {
 const Tab = createBottomTabNavigator();
 const RootStack = createStackNavigator();
 
-export default function MainView(props: Props | Readonly<Props>) {
+export default function WalletStackScreen(props: Props | Readonly<Props>) {
   const context = useContext(ApplicationContext);
   const theme = context.theme;
 
@@ -69,13 +70,13 @@ export default function MainView(props: Props | Readonly<Props>) {
   const tabBarScreenOptions = (params: any): any => {
     return {
       tabBarIcon: ({focused}: {focused: boolean}) => {
-        if (params.route.name === 'Portfolio') {
+        if (params.route.name === AvaNavigation.Wallet.Portfolio) {
           return <HomeSVG selected={focused} />;
-        } else if (params.route.name === 'Activity') {
+        } else if (params.route.name === AvaNavigation.Wallet.Activity) {
           return <ActivitySVG selected={focused} />;
-        } else if (params.route.name === 'Swap') {
+        } else if (params.route.name === AvaNavigation.Wallet.Swap) {
           return <SwapSVG selected={focused} />;
-        } else if (params.route.name === 'More') {
+        } else if (params.route.name === AvaNavigation.Wallet.More) {
           return <MoreSVG selected={focused} />;
         }
       },
@@ -93,21 +94,20 @@ export default function MainView(props: Props | Readonly<Props>) {
     }, [navigation, route]);
     return (
       <BaseStack.Navigator
-        initialRouteName="Portfolio"
+        initialRouteName={AvaNavigation.Wallet.Portfolio}
         headerMode="none"
         detachInactiveScreens={false}
         screenOptions={{
           headerShown: false,
         }}>
-        <BaseStack.Screen name="Portfolio">
-          {() => (
-            <PortfolioView onExit={onExit} onSwitchWallet={onSwitchWallet} />
-          )}
-        </BaseStack.Screen>
         <BaseStack.Screen
-          name="Search"
+          name={AvaNavigation.Wallet.Portfolio}
+          component={PortfolioView}
+        />
+        <BaseStack.Screen
+          name={AvaNavigation.Wallet.Search}
           options={{cardStyleInterpolator: forFade}}>
-          {() => <SearchView />}
+          {SearchView}
         </BaseStack.Screen>
       </BaseStack.Navigator>
     );
@@ -127,10 +127,13 @@ export default function MainView(props: Props | Readonly<Props>) {
         activeTintColor: theme.accentColor,
         inactiveTintColor: theme.onBgSearch,
       }}>
-      <Tab.Screen name="Portfolio" component={PortfolioStack} />
-      <Tab.Screen name="Activity" component={Assets} />
-      <Tab.Screen name="Swap" component={Swap} />
-      <Tab.Screen name="More" component={Earn} />
+      <Tab.Screen
+        name={AvaNavigation.Wallet.Portfolio}
+        component={PortfolioStack}
+      />
+      <Tab.Screen name={AvaNavigation.Wallet.Activity} component={Assets} />
+      <Tab.Screen name={AvaNavigation.Wallet.Swap} component={Swap} />
+      <Tab.Screen name={AvaNavigation.Wallet.More} component={Earn} />
     </Tab.Navigator>
   );
 
@@ -138,20 +141,21 @@ export default function MainView(props: Props | Readonly<Props>) {
     return (
       <>
         <RootStack.Screen
-          name="SendReceiveBottomSheet"
+          name={AvaNavigation.Modal.SendReceiveBottomSheet}
           component={SendReceiveBottomSheet}
         />
         <RootStack.Screen
-          name={'AccountBottomSheet'}
+          name={AvaNavigation.Modal.AccountBottomSheet}
           component={AccountBottomSheet}
         />
       </>
     );
   };
 
-  function loadWalletNavigation() {
-    return (
-      <NavigationContainer theme={context.navContainerTheme} independent={true}>
+  return (
+    <Fragment>
+      {/*<SafeAreaView style={{flex: 0, backgroundColor: 'red'}} />*/}
+      <SafeAreaView style={context.backgroundStyle}>
         <RootStack.Navigator
           mode="modal"
           headerMode="none"
@@ -172,20 +176,14 @@ export default function MainView(props: Props | Readonly<Props>) {
           <RootStack.Screen name="Main" component={Tabs} />
           {Modals()}
         </RootStack.Navigator>
-      </NavigationContainer>
-    );
-  }
-
-  return (
-    <View style={styles.container}>
-      <View style={styles.container}>{loadWalletNavigation()}</View>
-    </View>
+      </SafeAreaView>
+    </Fragment>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    height: '100%',
+    flex: 1,
   },
   navContainer: {
     backgroundColor: 'transparent',

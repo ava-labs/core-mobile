@@ -212,9 +212,9 @@ function SimpleItem(props: Props) {
 }
 
 const AvaListItem = {
-  Token: TokenItem,
-  Account: AccountItem,
-  Simple: SimpleItem,
+  Token: React.memo(TokenItem),
+  Account: React.memo(AccountItem),
+  Simple: React.memo(SimpleItem),
 };
 
 export default AvaListItem;

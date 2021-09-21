@@ -1,5 +1,5 @@
 import React, {useContext, useState} from 'react';
-import {Image, StyleSheet, ToastAndroid, View} from 'react-native';
+import {Image, StyleSheet, View} from 'react-native';
 import CreateWalletViewModel from './CreateWalletViewModel';
 import TextTitle from 'components/TextTitle';
 import ButtonAva from 'components/ButtonAva';
@@ -8,28 +8,28 @@ import ButtonAvaTextual from 'components/ButtonAvaTextual';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import HeaderProgress from 'screens/mainView/HeaderProgress';
 import MnemonicAva from 'screens/onboarding/MnemonicAva';
+import {useNavigation} from '@react-navigation/native';
+import AppViewModel from 'AppViewModel';
+import {SafeAreaView} from 'react-native-safe-area-context';
+import AvaNavigation from 'navigation/AvaNavigation';
 
-type Props = {
-  onBack: () => void;
-  onSavedMyPhrase: (mnemonic: string) => void;
-};
-
-export default function CreateWallet(props: Props | Readonly<Props>) {
+export default function CreateWallet() {
   const context = useContext(ApplicationContext);
   const [viewModel] = useState(new CreateWalletViewModel());
   const [mnemonic] = useState(viewModel.mnemonic);
+  const {navigate, goBack} = useNavigation();
 
-  const onBack = (): void => {
-    props.onBack();
+  const onBack = () => {
+    goBack();
   };
 
-  const onSavedMyPhrase = (): void => {
-    props.onSavedMyPhrase(viewModel.mnemonic);
+  const navigateToCheckMnemonic = () => {
+    AppViewModel.onSavedMnemonic(viewModel.mnemonic);
+    navigate(AvaNavigation.CreateWallet.CheckMnemonic);
   };
 
   const copyToClipboard = (): void => {
     Clipboard.setString(mnemonic);
-    ToastAndroid.show('Copied', 1000);
   };
 
   const BalloonText = () => {
@@ -81,40 +81,42 @@ export default function CreateWallet(props: Props | Readonly<Props>) {
   };
 
   return (
-    <View style={styles.verticalLayout}>
-      <HeaderProgress maxDots={3} filledDots={1} showBack onBack={onBack} />
-      <View style={[{height: 8}]} />
+    <SafeAreaView style={{flex: 1}}>
+      <View style={styles.verticalLayout}>
+        <HeaderProgress maxDots={3} filledDots={1} showBack onBack={onBack} />
+        <View style={[{height: 8}]} />
 
-      <View style={styles.growContainer}>
-        <TextTitle
-          text={'Recovery Phrase'}
-          textAlign={'center'}
-          bold
-          size={24}
-        />
-        <View style={[{height: 8}]} />
-        <TextTitle
-          text={
-            'Write down the recovery phrase and store it in a secure location!'
-          }
-          size={16}
-          lineHeight={24}
-          textAlign={'center'}
-        />
-        <BalloonText />
-        <View style={[{height: 8}]} />
-        <View
-          style={[
-            styles.mnemonics,
-            {backgroundColor: context.theme.bgOnBgApp},
-          ]}>
-          {mnemonics()}
+        <View style={styles.growContainer}>
+          <TextTitle
+            text={'Recovery Phrase'}
+            textAlign={'center'}
+            bold
+            size={24}
+          />
+          <View style={[{height: 8}]} />
+          <TextTitle
+            text={
+              'Write down the recovery phrase and store it in a secure location!'
+            }
+            size={16}
+            lineHeight={24}
+            textAlign={'center'}
+          />
+          <BalloonText />
+          <View style={[{height: 8}]} />
+          <View
+            style={[
+              styles.mnemonics,
+              {backgroundColor: context.theme.bgOnBgApp},
+            ]}>
+            {mnemonics()}
+          </View>
         </View>
-      </View>
 
-      <ButtonAvaTextual text={'Copy phrase'} onPress={copyToClipboard} />
-      <ButtonAva text={'Next'} onPress={onSavedMyPhrase} />
-    </View>
+        <ButtonAvaTextual text={'Copy phrase'} onPress={copyToClipboard} />
+        <ButtonAva text={'Next'} onPress={navigateToCheckMnemonic} />
+      </View>
+    </SafeAreaView>
   );
 }
 

@@ -5,43 +5,38 @@
  * @flow strict-local
  */
 
-import React, {RefObject, useContext, useEffect, useState} from 'react';
-import {Alert, BackHandler, SafeAreaView, StatusBar} from 'react-native';
-
-import Onboard from 'screens/onboarding/Onboard';
-import CreateWallet from 'screens/onboarding/CreateWallet';
-import MainView from 'screens/mainView/MainView';
-import {Subscription} from 'rxjs';
-import HdWalletLogin from 'screens/login/HdWalletLogin';
+import React, {RefObject, useContext, useEffect} from 'react';
+import {Alert, BackHandler} from 'react-native';
 import {createStackNavigator} from '@react-navigation/stack';
 import {
   NavigationContainer,
   NavigationContainerRef,
+  StackActions,
 } from '@react-navigation/native';
-import CheckMnemonic from 'screens/onboarding/CheckMnemonic';
-import CreatePIN from 'screens/onboarding/CreatePIN';
-import BiometricLogin from 'screens/onboarding/BiometricLogin';
-import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import AppViewModel, {
   ExitPromptAnswers,
   LogoutEvents,
   LogoutPromptAnswers,
-  SelectedView,
   ShowExitPrompt,
   ShowLogoutPrompt,
 } from 'AppViewModel';
 import {
   FUJI_NETWORK,
   useNetworkContext,
-  useWalletContext,
-  WalletStateContextProvider,
 } from '@avalabs/wallet-react-components';
+import {AuthStackScreen} from 'navigation/AuthStackScreen';
+import {createDrawerNavigator} from '@react-navigation/drawer';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
+import WalletStackScreen from 'screens/mainView/WalletStackScreen';
+import {useAuthContext} from 'hooks/AuthContext';
+import SendAvax from './screens/sendAvax/SendAvax';
+import AvaNavigation from 'navigation/AvaNavigation';
 
 const RootStack = createStackNavigator();
-const CreateWalletStack = createStackNavigator();
+const DrawerStack = createDrawerNavigator();
+
 const navigationRef: RefObject<NavigationContainerRef> = React.createRef();
-const viewModel = new AppViewModel();
 
 const onOk = (value: ShowExitPrompt): void => {
   value.prompt.next(ExitPromptAnswers.Ok);
@@ -54,7 +49,7 @@ const onNo = (value: ShowExitPrompt): void => {
 };
 
 const onExit = (): void => {
-  viewModel.onExit().subscribe({
+  AppViewModel.onExit().subscribe({
     next: (value: LogoutEvents) => {
       if (value instanceof ShowExitPrompt) {
         Alert.alert(
@@ -77,19 +72,19 @@ const onExit = (): void => {
     error: err => Alert.alert(err.message),
   });
 };
-
-const onEnterWallet = (
+//
+export const onEnterWallet = (
   mnemonic: string,
   setMnemonic: (mnemonic: string) => void,
 ): void => {
-  viewModel.onEnterWallet(mnemonic).subscribe({
-    next: () => setMnemonic(mnemonic),
-    error: err => Alert.alert(err.message),
-  });
+  // AppViewModel.onEnterWallet(mnemonic).subscribe({
+  //   next: () => setMnemonic(mnemonic),
+  //   error: err => Alert.alert(err.message),
+  // });
 };
 
 const onSavedMnemonic = (mnemonic: string): void => {
-  viewModel.onSavedMnemonic(mnemonic);
+  AppViewModel.onSavedMnemonic(mnemonic);
 };
 
 const onYes = (value: ShowLogoutPrompt): void => {
@@ -101,161 +96,56 @@ const onCancel = (value: ShowLogoutPrompt): void => {
   value.prompt.next(LogoutPromptAnswers.Cancel);
   value.prompt.complete();
 };
+//
+// const onSwitchWallet = (): void => {
+//   viewModel.onLogout().subscribe({
+//     next: (value: LogoutEvents) => {
+//       if (value instanceof ShowLogoutPrompt) {
+//         Alert.alert(
+//           'Do you want to delete the stored passphrase and switch accounts?',
+//           undefined,
+//           [
+//             {
+//               text: 'Cancel',
+//               onPress: () => onCancel(value as ShowLogoutPrompt),
+//               style: 'cancel',
+//             },
+//             {text: 'Yes', onPress: () => onYes(value as ShowLogoutPrompt)},
+//           ],
+//         );
+//       }
+//     },
+//     error: err => Alert.alert(err.message),
+//   });
+// };
 
-const onSwitchWallet = (): void => {
-  viewModel.onLogout().subscribe({
-    next: (value: LogoutEvents) => {
-      if (value instanceof ShowLogoutPrompt) {
-        Alert.alert(
-          'Do you want to delete the stored passphrase and switch accounts?',
-          undefined,
-          [
-            {
-              text: 'Cancel',
-              onPress: () => onCancel(value as ShowLogoutPrompt),
-              style: 'cancel',
-            },
-            {text: 'Yes', onPress: () => onYes(value as ShowLogoutPrompt)},
-          ],
-        );
-      }
-    },
-    error: err => Alert.alert(err.message),
-  });
-};
-
-const OnboardScreen = () => {
-  const context = useWalletContext();
-  return (
-    <Onboard
-      onEnterWallet={mnemonic => onEnterWallet(mnemonic, context!.setMnemonic)}
-      onAlreadyHaveWallet={() =>
-        viewModel.setSelectedView(SelectedView.LoginWithMnemonic)
-      }
-      onCreateWallet={() =>
-        viewModel.setSelectedView(SelectedView.CreateWallet)
-      }
+const DrawerScreen = () => (
+  <DrawerStack.Navigator headerMode="none">
+    <DrawerStack.Screen
+      name={AvaNavigation.Stack.Wallet}
+      options={{headerShown: false}}
+      component={WalletStackScreen}
     />
-  );
-};
+  </DrawerStack.Navigator>
+);
 
-const CreateWalletScreen = () => {
+const RootStackScreen = () => {
   return (
-    <CreateWallet
-      onSavedMyPhrase={onSavedMnemonic}
-      onBack={() => viewModel.onBackPressed()}
-    />
-  );
-};
-
-const CheckMnemonicScreen = () => {
-  return (
-    <CheckMnemonic
-      onSuccess={() => viewModel.setSelectedView(SelectedView.CreatePin)}
-      onBack={() => viewModel.onBackPressed()}
-      mnemonic={viewModel.mnemonic}
-    />
-  );
-};
-
-const onPinSet = (pin: string): void => {
-  viewModel.onPinCreated(pin).subscribe({
-    error: err => Alert.alert(err.message),
-  });
-};
-
-const CreatePinScreen = () => {
-  return (
-    <CreatePIN onPinSet={onPinSet} onBack={() => viewModel.onBackPressed()} />
-  );
-};
-
-const BiometricLoginScreen = () => {
-  const context = useWalletContext();
-  return (
-    <BiometricLogin
-      mnemonic={viewModel.mnemonic}
-      onBiometrySet={() =>
-        onEnterWallet(viewModel.mnemonic, context!.setMnemonic)
-      }
-      onSkip={() => onEnterWallet(viewModel.mnemonic, context!.setMnemonic)}
-    />
-  );
-};
-
-const LoginWithMnemonicScreen = () => {
-  return (
-    <HdWalletLogin
-      onEnterWallet={mnemonic => viewModel.onEnterExistingMnemonic(mnemonic)}
-      onBack={() => viewModel.onBackPressed()}
-    />
-  );
-};
-
-const LoginWithPinOrBiometryScreen = () => {
-  const context = useWalletContext();
-  return (
-    <PinOrBiometryLogin
-      onBack={() => viewModel.onBackPressed()}
-      onEnterWallet={mnemonic => onEnterWallet(mnemonic, context!.setMnemonic)}
-    />
-  );
-};
-
-const WalletScreen = () => {
-  return (
-    <WalletStateContextProvider>
-      <MainView onExit={onExit} onSwitchWallet={onSwitchWallet} />
-    </WalletStateContextProvider>
-  );
-};
-
-const CreateWalletFlow = () => {
-  return (
-    <CreateWalletStack.Navigator
-      headerMode="none"
-      detachInactiveScreens={false}
-      mode="card">
-      <CreateWalletStack.Screen
-        name={CreateWalletFlowScreen.CreateWallet}
-        component={CreateWalletScreen}
-      />
-      <CreateWalletStack.Screen
-        name={CreateWalletFlowScreen.CheckMnemonic}
-        component={CheckMnemonicScreen}
-      />
-      <CreateWalletStack.Screen
-        name={CreateWalletFlowScreen.CreatePin}
-        component={CreatePinScreen}
-      />
-      <CreateWalletStack.Screen
-        name={CreateWalletFlowScreen.BiometricLogin}
-        component={BiometricLoginScreen}
-      />
-    </CreateWalletStack.Navigator>
-  );
-};
-
-const RootScreen = () => {
-  return (
-    <RootStack.Navigator
-      headerMode="none"
-      detachInactiveScreens={true}
-      mode="modal">
-      <RootStack.Screen name={Screen.Onboard} component={OnboardScreen} />
+    <RootStack.Navigator headerMode="none">
       <RootStack.Screen
-        name={Screen.CreateWalletFlow}
-        component={CreateWalletFlow}
+        name={AvaNavigation.Stack.Auth}
+        component={AuthStackScreen}
+        options={{
+          animationEnabled: false,
+        }}
       />
       <RootStack.Screen
-        name={Screen.LoginWithMnemonic}
-        component={LoginWithMnemonicScreen}
+        name={AvaNavigation.Stack.App}
+        component={DrawerScreen}
+        options={{
+          animationEnabled: false,
+        }}
       />
-      <RootStack.Screen
-        name={Screen.Login}
-        component={LoginWithPinOrBiometryScreen}
-      />
-      <RootStack.Screen name={Screen.Wallet} component={WalletScreen} />
     </RootStack.Navigator>
   );
 };
@@ -263,96 +153,41 @@ const RootScreen = () => {
 export default function App() {
   const context = useContext(ApplicationContext);
   const networkContext = useNetworkContext();
-  const [isDarkMode] = useState(context.isDarkMode);
-  const [backgroundStyle] = useState(context.appBackgroundStyle);
-  const [selectedView, setSelectedView] = useState(SelectedView.Onboard);
+  const {userDidLogout} = useAuthContext();
+
+  useEffect(() => {
+    if (userDidLogout) {
+      console.log('userDidLogout - true');
+      navigationRef?.current?.dispatch(
+        StackActions.replace('Auth', {screen: 'Onboard'}),
+      );
+    } else {
+      console.log('userDidLogout - false');
+    }
+  }, [userDidLogout]);
 
   useEffect(() => {
     networkContext!.setNetwork(FUJI_NETWORK);
-    viewModel.onComponentMount();
-    const disposables = new Subscription();
-    disposables.add(
-      viewModel.selectedView.subscribe(value => setSelectedView(value)),
+    BackHandler.addEventListener(
+      'hardwareBackPress',
+      AppViewModel.onBackPressed,
     );
-    BackHandler.addEventListener('hardwareBackPress', viewModel.onBackPressed);
 
     return () => {
       BackHandler.removeEventListener(
         'hardwareBackPress',
-        viewModel.onBackPressed,
+        AppViewModel.onBackPressed,
       );
-      disposables.unsubscribe();
     };
   }, []);
 
-  useEffect(() => {
-    switch (selectedView) {
-      case SelectedView.Onboard:
-        navigationRef.current?.navigate(Screen.Onboard);
-        break;
-      case SelectedView.CreateWallet:
-        navigationRef.current?.navigate(Screen.CreateWalletFlow, {
-          screen: CreateWalletFlowScreen.CreateWallet,
-        });
-        break;
-      case SelectedView.CheckMnemonic:
-        navigationRef.current?.navigate(Screen.CreateWalletFlow, {
-          screen: CreateWalletFlowScreen.CheckMnemonic,
-        });
-        break;
-      case SelectedView.CreatePin:
-        navigationRef.current?.navigate(Screen.CreateWalletFlow, {
-          screen: CreateWalletFlowScreen.CreatePin,
-        });
-        break;
-      case SelectedView.CreatePinForExistingWallet:
-        navigationRef.current?.navigate(Screen.CreateWalletFlow, {
-          screen: CreateWalletFlowScreen.CreatePin,
-        });
-        break;
-      case SelectedView.BiometricStore:
-        navigationRef.current?.navigate(Screen.CreateWalletFlow, {
-          screen: CreateWalletFlowScreen.BiometricLogin,
-        });
-        break;
-      case SelectedView.LoginWithMnemonic:
-        navigationRef.current?.navigate(Screen.LoginWithMnemonic);
-        break;
-      case SelectedView.PinOrBiometryLogin:
-        navigationRef.current?.navigate(Screen.Login);
-        break;
-      case SelectedView.Main:
-        navigationRef.current?.navigate(Screen.Wallet);
-        break;
-    }
-  }, [selectedView]);
-
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        backgroundColor={context.theme.bgApp}
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-      />
+    <SafeAreaProvider>
       <NavigationContainer
         theme={context.navContainerTheme}
         ref={navigationRef}>
-        <RootScreen />
+        <RootStackScreen />
       </NavigationContainer>
-    </SafeAreaView>
+    </SafeAreaProvider>
   );
-}
-
-enum Screen {
-  Onboard = 'Onboard',
-  CreateWalletFlow = 'Create Wallet flow',
-  LoginWithMnemonic = 'Login with mnemonic',
-  Login = 'Login',
-  Wallet = 'Wallet',
-}
-
-enum CreateWalletFlowScreen {
-  CreateWallet = 'Create Wallet',
-  CheckMnemonic = 'Check mnemonic',
-  CreatePin = 'Create pin',
-  BiometricLogin = 'Biometric login',
 }

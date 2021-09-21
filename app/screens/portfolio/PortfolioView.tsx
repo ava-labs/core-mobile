@@ -2,23 +2,24 @@ import React, {useRef} from 'react';
 import {FlatList, ListRenderItemInfo, StyleSheet} from 'react-native';
 import AvaListItem from 'screens/portfolio/AvaListItem';
 import PortfolioHeader from 'screens/portfolio/PortfolioHeader';
-import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {useNavigation} from '@react-navigation/native';
+import {SafeAreaView} from 'react-native-safe-area-context';
+import AvaNavigation from 'navigation/AvaNavigation';
 
-type PortfolioProps = {
-  onExit: () => void;
-  onSwitchWallet: () => void;
-};
+// type PortfolioProps = {
+//   onExit: () => void;
+//   onSwitchWallet: () => void;
+// };
 
 const data: JSON[] = require('assets/coins.json');
 export const keyExtractor = (item: any, index: number) => item?.id ?? index;
 
-function PortfolioView({onExit, onSwitchWallet}: PortfolioProps) {
+function PortfolioView() {
   const listRef = useRef<FlatList>(null);
-  const navigation = useNavigation();
+  const {navigate} = useNavigation();
 
   function showBottomSheet(symbol: string) {
-    navigation.navigate('SendReceiveBottomSheet', {symbol});
+    // navigate(AvaNavigation.Modal.SendReceiveBottomSheet, {symbol});
   }
 
   const renderItem = (item: ListRenderItemInfo<any>) => {
@@ -35,7 +36,7 @@ function PortfolioView({onExit, onSwitchWallet}: PortfolioProps) {
   };
 
   return (
-    <SafeAreaProvider style={styles.flex}>
+    <SafeAreaView style={styles.flex}>
       <PortfolioHeader />
       <FlatList
         ref={listRef}
@@ -50,7 +51,7 @@ function PortfolioView({onExit, onSwitchWallet}: PortfolioProps) {
         keyExtractor={keyExtractor}
         scrollEventThrottle={16}
       />
-    </SafeAreaProvider>
+    </SafeAreaView>
   );
 }
 

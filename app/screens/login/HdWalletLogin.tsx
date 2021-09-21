@@ -3,46 +3,53 @@ import {ScrollView, StyleSheet, View} from 'react-native';
 import Header from 'screens/mainView/Header';
 import TextTitle from 'components/TextTitle';
 import WalletSDK from 'utils/WalletSDK';
-import RecoveryPhraseInputCard from '../../components/RecoveryPhraseInputCard';
-import ButtonAvaTextual from '../../components/ButtonAvaTextual';
+import RecoveryPhraseInputCard from 'components/RecoveryPhraseInputCard';
+import ButtonAvaTextual from 'components/ButtonAvaTextual';
+import AppViewModel from 'AppViewModel';
+import {useWalletContext} from '@avalabs/wallet-react-components';
+import {SafeAreaView} from 'react-native-safe-area-context';
+import {useNavigation} from '@react-navigation/native';
 
-type Props = {
-  onEnterWallet: (mnemonic: string) => void;
-  onBack: () => void;
-};
-
-export default function HdWalletLogin(props: Props | Readonly<Props>) {
+export default function HdWalletLogin() {
+  const walletContext = useWalletContext();
+  const {goBack} = useNavigation();
   const onEnterTestWallet = (): void => {
-    props.onEnterWallet(WalletSDK.testMnemonic());
+    AppViewModel.onEnterExistingMnemonic(WalletSDK.testMnemonic());
   };
 
-  const onBack = (): void => {
-    props.onBack();
+  const onBack = () => {
+    goBack();
   };
 
   return (
-    <ScrollView
-      contentContainerStyle={styles.scrollView}
-      keyboardShouldPersistTaps="handled">
-      <View style={styles.verticalLayout}>
-        <Header showBack onBack={onBack} />
-        <View style={[{height: 8}]} />
+    <SafeAreaView style={{flex: 1}}>
+      <ScrollView
+        contentContainerStyle={styles.scrollView}
+        keyboardShouldPersistTaps="handled">
+        <View style={styles.verticalLayout}>
+          <Header showBack onBack={onBack} />
+          <View style={[{height: 8}]} />
 
-        <TextTitle text={'Wallet'} textAlign={'center'} bold={true} />
-        <View style={[{flexGrow: 1, justifyContent: 'flex-end'}]}>
-          <ButtonAvaTextual
-            text={'Enter test HD wallet'}
-            onPress={onEnterTestWallet}
-          />
-          <View style={[{padding: 16}]}>
-            <RecoveryPhraseInputCard
-              onCancel={onBack}
-              onEnter={mnemonic => props.onEnterWallet(mnemonic)}
+          <TextTitle text={'Wallet'} textAlign={'center'} bold={true} />
+          <View style={[{flexGrow: 1, justifyContent: 'flex-end'}]}>
+            <ButtonAvaTextual
+              text={'Enter test HD wallet'}
+              onPress={onEnterTestWallet}
             />
+            <View style={[{padding: 16}]}>
+              <RecoveryPhraseInputCard
+                onCancel={onBack}
+                onEnter={mnemonic =>
+                  AppViewModel.onEnterWallet(mnemonic).then(() =>
+                    walletContext?.setMnemonic(mnemonic),
+                  )
+                }
+              />
+            </View>
           </View>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 

@@ -12,6 +12,10 @@ import {
   usePinOrBiometryLogin,
   WalletLoadingResults,
 } from './PinOrBiometryLoginViewModel';
+import {useWalletContext} from '@avalabs/wallet-react-components';
+import {StackActions, useNavigation} from '@react-navigation/native';
+import {SafeAreaView} from 'react-native-safe-area-context';
+import AppViewModel from 'AppViewModel';
 
 const keymap: Map<string, PinKeys> = new Map([
   ['1', PinKeys.Key1],
@@ -27,15 +31,8 @@ const keymap: Map<string, PinKeys> = new Map([
   ['<', PinKeys.Backspace],
 ]);
 
-type Props = {
-  onBack: () => void;
-  onEnterWallet: (mnemonic: string) => void;
-};
-
-export default function PinOrBiometryLogin({
-  onBack,
-  onEnterWallet,
-}: Props | Readonly<Props>) {
+const PinOrBiometryLogin = () => {
+  const {canGoBack, goBack, dispatch} = useNavigation();
   const [
     title,
     errorMessage,
@@ -45,11 +42,15 @@ export default function PinOrBiometryLogin({
     promptForWalletLoadingIfExists,
   ] = usePinOrBiometryLogin();
 
+  const walletContext = useWalletContext();
+
   useEffect(() => {
     promptForWalletLoadingIfExists().subscribe({
       next: (value: WalletLoadingResults) => {
         if (value instanceof MnemonicLoaded) {
-          onEnterWallet(value.mnemonic);
+          AppViewModel.onEnterWallet(value.mnemonic)
+            .then(() => walletContext?.setMnemonic(value.mnemonic))
+            .then(() => navigateToApp());
         } else if (value instanceof PrivateKeyLoaded) {
           // props.onEnterSingletonWallet(value.privateKey)
         } else if (value instanceof NothingToLoad) {
@@ -61,7 +62,9 @@ export default function PinOrBiometryLogin({
   }, []);
   useEffect(() => {
     if (mnemonic) {
-      onEnterWallet(mnemonic);
+      AppViewModel.onEnterWallet(mnemonic)
+        .then(() => walletContext?.setMnemonic(mnemonic))
+        .then(() => navigateToApp());
     }
   }, [mnemonic]);
 
@@ -86,27 +89,34 @@ export default function PinOrBiometryLogin({
     return keys;
   };
 
-  return (
-    <View style={styles.verticalLayout}>
-      <Header showBack onBack={onBack} />
-      <View style={[{height: 8}]} />
+  const navigateToApp = () => {
+    // navigate('App', {screen: 'Home'});
+    dispatch(StackActions.replace('App', {screen: 'Home'}));
+  };
 
-      <View style={styles.growContainer}>
-        <TextTitle text={title} textAlign={'center'} bold size={24} />
-        <TextTitle
-          text={'Access your wallet faster'}
-          size={16}
-          textAlign={'center'}
-        />
+  return (
+    <SafeAreaView style={{flex: 1}}>
+      <View style={styles.verticalLayout}>
+        <Header showBack={canGoBack()} onBack={goBack} />
         <View style={[{height: 8}]} />
 
-        {errorMessage.length > 0 && <TextLabel text={errorMessage} />}
-        <View style={styles.dots}>{generatePinDots()}</View>
+        <View style={styles.growContainer}>
+          <TextTitle text={title} textAlign={'center'} bold size={24} />
+          <TextTitle
+            text={'Access your wallet faster'}
+            size={16}
+            textAlign={'center'}
+          />
+          <View style={[{height: 8}]} />
+
+          {errorMessage.length > 0 && <TextLabel text={errorMessage} />}
+          <View style={styles.dots}>{generatePinDots()}</View>
+        </View>
+        <View style={styles.keyboard}>{keyboard()}</View>
       </View>
-      <View style={styles.keyboard}>{keyboard()}</View>
-    </View>
+    </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   verticalLayout: {
@@ -134,3 +144,5 @@ const styles = StyleSheet.create({
     padding: 16,
   },
 });
+
+export default PinOrBiometryLogin;

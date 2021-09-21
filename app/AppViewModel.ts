@@ -1,18 +1,9 @@
-import {
-  asyncScheduler,
-  AsyncSubject,
-  BehaviorSubject,
-  concat,
-  delay,
-  from,
-  Observable,
-  of,
-  tap,
-} from 'rxjs';
+import {asyncScheduler, AsyncSubject, BehaviorSubject, concat, from, Observable, of} from 'rxjs';
 import {concatMap, map, switchMap} from 'rxjs/operators';
 import {BackHandler} from 'react-native';
 import WalletSDK from 'utils/WalletSDK';
 import BiometricsSDK from 'utils/BiometricsSDK';
+import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
 
 export enum SelectedView {
   Onboard,
@@ -26,8 +17,9 @@ export enum SelectedView {
   Main,
 }
 
-export default class {
+class AppViewModel {
   mnemonic = '';
+  wallet: MnemonicWallet;
   selectedView: BehaviorSubject<SelectedView> =
     new BehaviorSubject<SelectedView>(SelectedView.Onboard);
 
@@ -58,17 +50,23 @@ export default class {
     );
   };
 
-  onEnterWallet = (mnemonic: string): Observable<boolean> => {
-    return of(mnemonic).pipe(
-      tap((mnemonic: string) => {
-        WalletSDK.getMnemonicValet(mnemonic);
-        this.setSelectedView(SelectedView.Main);
-      }),
-      delay(10, asyncScheduler), //give UI chance to update selected view
-      map(() => {
-        return true;
-      }),
-    );
+  onEnterWallet = async (mnemonic: string) => {
+    try {
+      const wallet = await WalletSDK.getMnemonicValet(mnemonic);
+      this.wallet = wallet;
+    } catch (e) {
+      console.log(e);
+    }
+    // return of(mnemonic).pipe(
+    //   tap((mnemonic: string) => {
+    //     WalletSDK.getMnemonicValet(mnemonic);
+    //     // this.setSelectedView(SelectedView.Main);
+    //   }),
+    //   delay(10, asyncScheduler), //give UI chance to update selected view
+    //   map(() => {
+    //     return true;
+    //   }),
+    // );
   };
 
   onEnterExistingMnemonic = (mnemonic: string): void => {
@@ -201,3 +199,5 @@ export enum ExitPromptAnswers {
   Ok,
   Cancel,
 }
+
+export default new AppViewModel();

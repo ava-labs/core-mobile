@@ -6,20 +6,25 @@ import ButtonAvaTextual from 'components/ButtonAvaTextual';
 import ButtonAva from 'components/ButtonAva';
 import {useBiometricLogin} from './BiometricLoginViewModel';
 import {ApplicationContext} from 'contexts/ApplicationContext';
+import AppViewModel from 'AppViewModel';
+import {useNavigation} from '@react-navigation/native';
+import {useWalletContext} from '@avalabs/wallet-react-components';
 
-type Props = {
-  mnemonic: string;
-  onSkip: () => void;
-  onBiometrySet: () => void;
-};
-
-export default function BiometricLogin(props: Props | Readonly<Props>) {
+export default function BiometricLogin() {
   const context = useContext(ApplicationContext);
-
+  const walletContext = useWalletContext();
+  const {navigate} = useNavigation();
+  const mnemonic = AppViewModel.mnemonic;
   const [biometryType, onUseBiometry, fingerprintIcon] = useBiometricLogin(
-    props.mnemonic,
+    mnemonic,
     context.isDarkMode,
   );
+
+  const initWalletAndNavigate = () => {
+    AppViewModel.onEnterWallet(mnemonic)
+      .then(() => walletContext?.setMnemonic(mnemonic))
+      .then(() => navigate('App', {screen: 'Home'}));
+  };
 
   return (
     <View style={styles.verticalLayout}>
@@ -42,13 +47,13 @@ export default function BiometricLogin(props: Props | Readonly<Props>) {
         <TextLabel text={'Change this anytime in settings'} />
       </View>
 
-      <ButtonAvaTextual text={'Skip'} onPress={props.onSkip} />
+      <ButtonAvaTextual text={'Skip'} onPress={initWalletAndNavigate} />
       <ButtonAva
         text={'Use ' + biometryType?.toLowerCase()}
         onPress={() => {
           onUseBiometry().subscribe({
             error: err => Alert.alert(err?.message || 'error'),
-            complete: () => props.onBiometrySet(),
+            complete: initWalletAndNavigate,
           });
         }}
       />

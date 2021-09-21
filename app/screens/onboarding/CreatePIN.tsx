@@ -1,11 +1,13 @@
 import React, {useEffect} from 'react';
-import {StyleSheet, View} from 'react-native';
+import {Alert, StyleSheet, View} from 'react-native';
 import TextTitle from 'components/TextTitle';
 import PinKey, {PinKeys} from './PinKey';
 import Dot from 'components/Dot';
 import {useCreatePin} from './CreatePinViewModel';
 import TextLabel from 'components/TextLabel';
 import HeaderProgress from 'screens/mainView/HeaderProgress';
+import AppViewModel from 'AppViewModel';
+import {useNavigation} from '@react-navigation/native';
 
 const keymap: Map<string, PinKeys> = new Map([
   ['1', PinKeys.Key1],
@@ -21,12 +23,7 @@ const keymap: Map<string, PinKeys> = new Map([
   ['<', PinKeys.Backspace],
 ]);
 
-type Props = {
-  onBack: () => void;
-  onPinSet: (pin: string) => void;
-};
-
-export default function CreatePIN(props: Props | Readonly<Props>) {
+export default function CreatePin() {
   const [
     title,
     errorMessage,
@@ -36,15 +33,27 @@ export default function CreatePIN(props: Props | Readonly<Props>) {
     chosenPinEntered,
     validPin,
   ] = useCreatePin();
+  const {navigate, goBack} = useNavigation();
 
   useEffect(() => {
     if (validPin) {
-      props.onPinSet(validPin);
+      onPinSet(validPin);
     }
   }, [validPin]);
 
   const onBack = (): void => {
-    props.onBack();
+    goBack();
+  };
+
+  const navigateToApp = () => {
+    navigate('App', {screen: 'Home'});
+  };
+
+  const onPinSet = (pin: string): void => {
+    AppViewModel.onPinCreated(pin).subscribe({
+      error: err => Alert.alert(err.message),
+      complete: navigateToApp,
+    });
   };
 
   const generatePinDots = (): Element[] => {

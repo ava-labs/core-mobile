@@ -3135,6 +3135,15 @@
     query-string "^6.13.6"
     react-is "^16.13.0"
 
+"@react-navigation/drawer@^6.1.4":
+  version "6.1.4"
+  resolved "https://registry.yarnpkg.com/@react-navigation/drawer/-/drawer-6.1.4.tgz#8f4c78f1f3483f224fe3fa18194708000f2f1fb0"
+  integrity sha512-lmWV/Hxd60LFLsHESOXkDXZmzqpXHoRhBdaxk5FvQHXSBYm+ZB0bP9vq5nTCzUby513wTyM381GBujdgYWCGRA==
+  dependencies:
+    "@react-navigation/elements" "^1.1.0"
+    color "^3.1.3"
+    warn-once "^0.1.0"
+
 "@react-navigation/elements@^1.1.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@react-navigation/elements/-/elements-1.1.0.tgz#483155ccf5a8f18d015db283bed34cc2255e2e9e"
@@ -14138,10 +14147,10 @@ react-native-redash@^14.2.4:
     normalize-svg-path "^1.0.1"
     parse-svg-path "^0.1.2"
 
-react-native-safe-area-context@^3.2.0:
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/react-native-safe-area-context/-/react-native-safe-area-context-3.2.0.tgz#06113c6b208f982d68ab5c3cebd199ca93db6941"
-  integrity sha512-k2Nty4PwSnrg9HwrYeeE+EYqViYJoOFwEy9LxL5RIRfoqxAq/uQXNGwpUg2/u4gnKpBbEPa9eRh15KKMe/VHkA==
+react-native-safe-area-context@^3.3.2:
+  version "3.3.2"
+  resolved "https://registry.yarnpkg.com/react-native-safe-area-context/-/react-native-safe-area-context-3.3.2.tgz#9549a2ce580f2374edb05e49d661258d1b8bcaed"
+  integrity sha512-yOwiiPJ1rk+/nfK13eafbpW6sKW0jOnsRem2C1LPJjM3tfTof6hlvV5eWHATye3XOpu2cJ7N+HdkUvUDGwFD2Q==
 
 react-native-screens@^3.4.0:
   version "3.4.0"

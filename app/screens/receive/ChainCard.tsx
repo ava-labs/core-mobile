@@ -1,5 +1,5 @@
 import React, {useContext} from 'react';
-import {TouchableOpacity, TouchableWithoutFeedbackComponent, View} from 'react-native';
+import {TouchableOpacity, View} from 'react-native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from 'components/AvaText';
 import QRCode from 'react-native-qrcode-svg';

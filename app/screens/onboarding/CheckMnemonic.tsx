@@ -6,17 +6,17 @@ import CheckMnemonicViewModel from './CheckMnemonicViewModel';
 import {Subscription} from 'rxjs';
 import HeaderProgress from 'screens/mainView/HeaderProgress';
 import MnemonicAva from 'screens/onboarding/MnemonicAva';
+import {SafeAreaView} from 'react-native-safe-area-context';
+import {useNavigation} from '@react-navigation/native';
+import AppViewModel from 'AppViewModel';
+import AvaNavigation from 'navigation/AvaNavigation';
 
-type Props = {
-  onSuccess: () => void;
-  onBack: () => void;
-  mnemonic: string;
-};
-
-export default function CheckMnemonic(props: Props | Readonly<Props>) {
-  const [viewModel] = useState(new CheckMnemonicViewModel(props.mnemonic));
+export default function CheckMnemonic() {
+  const mnemonic = AppViewModel.mnemonic;
+  const [viewModel] = useState(new CheckMnemonicViewModel(mnemonic ?? ''));
   const [enteredMnemonics, setEnteredMnemonics] = useState(new Map());
   const [enabledInputs, setEnabledInputs] = useState(new Map());
+  const {goBack, navigate} = useNavigation();
 
   useEffect(() => {
     const disposables = new Subscription();
@@ -33,14 +33,18 @@ export default function CheckMnemonic(props: Props | Readonly<Props>) {
     };
   }, []);
 
-  const onBack = (): void => {
-    props.onBack();
+  const onBack = () => {
+    goBack();
+  };
+
+  const navigateToCreatePin = () => {
+    navigate(AvaNavigation.CreateWallet.CreatePin);
   };
 
   const onVerify = (): void => {
     viewModel.onVerify().subscribe({
       error: err => Alert.alert(err.message),
-      complete: () => props.onSuccess(),
+      complete: navigateToCreatePin,
     });
   };
 
@@ -70,19 +74,21 @@ export default function CheckMnemonic(props: Props | Readonly<Props>) {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.scrollView}>
-      <HeaderProgress maxDots={3} filledDots={2} showBack onBack={onBack} />
-      <TextTitle
-        text={'Fill In Mnemonic Phrase Below'}
-        size={20}
-        textAlign={'center'}
-      />
-      <View style={[{height: 16}]} />
-      <View style={styles.growContainer}>
-        <View style={styles.mnemonics}>{mnemonics()}</View>
-      </View>
-      <ButtonAva text={'Next'} onPress={onVerify} />
-    </ScrollView>
+    <SafeAreaView style={{flex: 1}}>
+      <ScrollView contentContainerStyle={styles.scrollView}>
+        <HeaderProgress maxDots={3} filledDots={2} showBack onBack={onBack} />
+        <TextTitle
+          text={'Fill In Mnemonic Phrase Below'}
+          size={20}
+          textAlign={'center'}
+        />
+        <View style={[{height: 16}]} />
+        <View style={styles.growContainer}>
+          <View style={styles.mnemonics}>{mnemonics()}</View>
+        </View>
+        <ButtonAva text={'Next'} onPress={onVerify} />
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 

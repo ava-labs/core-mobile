@@ -1,4 +1,4 @@
-import WalletSDK from '../../utils/WalletSDK';
+import WalletSDK from 'utils/WalletSDK';
 import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
 
 export default class {

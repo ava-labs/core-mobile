@@ -9,15 +9,18 @@ import {
   NetworkContextProvider,
   WalletContextProvider,
 } from '@avalabs/wallet-react-components';
+import {AuthProvider} from './hooks/AuthContext';
 
 export default function ContextApp() {
   return (
-    <ApplicationContextProvider>
-      <NetworkContextProvider>
-        <WalletContextProvider>
-          <App />
-        </WalletContextProvider>
-      </NetworkContextProvider>
-    </ApplicationContextProvider>
+    <AuthProvider>
+      <ApplicationContextProvider>
+        <NetworkContextProvider>
+          <WalletContextProvider>
+            <App />
+          </WalletContextProvider>
+        </NetworkContextProvider>
+      </ApplicationContextProvider>
+    </AuthProvider>
   );
 }
