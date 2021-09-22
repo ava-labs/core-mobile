@@ -49,10 +49,10 @@ export default function SendAvax() {
       <View style={styles.horizontalLayout}>
         <View style={[{flex: 1, paddingStart: 4, paddingEnd: 4}]}>
           <InputText
-            label={'Address ' + targetChain}
+            label={'Address'}
             placeholder="Enter the address"
             multiline={true}
-            errorText={errorMsg}
+            errorText={destinationAddress.length === 0 ? undefined : errorMsg}
             onChangeText={text => setAddress(text)}
             value={destinationAddress}
           />

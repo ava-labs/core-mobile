@@ -14,16 +14,13 @@ import {ApplicationContext} from 'contexts/ApplicationContext';
 import {useNavigation} from '@react-navigation/native';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import AvaListItem from './AvaListItem';
-import {keyExtractor} from './PortfolioView';
-import filter from 'lodash.filter';
-// @ts-ignore no-type-def-available
-import contains from 'lodash.contains';
-
-const data: JSON[] = require('assets/coins.json');
+import {ERC20} from '@avalabs/wallet-react-components';
+import {AvaxToken} from 'dto/AvaxToken';
+import {useSearchableTokenList} from 'screens/portfolio/useSearchableTokenList';
 
 function SearchView() {
-  const [searchText, setSearchText] = useState('');
-  const [tokenList, setTokenList] = useState(data);
+  const {filteredTokenList, searchText, setSearchText} =
+    useSearchableTokenList();
   // back press hides flatlist to help minimize artifacts during fade out transition
   const [backPressed, setBackPressed] = useState(false);
   const context = useContext(ApplicationContext);
@@ -35,13 +32,13 @@ function SearchView() {
   }
 
   const renderItem = (item: ListRenderItemInfo<any>) => {
-    const json = item.item;
+    const token = item.item as ERC20 | AvaxToken;
     return (
       <AvaListItem.Token
-        tokenName={json.name}
-        tokenPrice={json.current_price}
-        image={json.image}
-        symbol={json.symbol}
+        tokenName={token.name}
+        tokenPrice={token.balanceParsed}
+        image={token.logoURI}
+        symbol={token.symbol}
       />
     );
   };
@@ -61,17 +58,8 @@ function SearchView() {
     </View>
   );
 
-  // once we have the official list we'll fix with the proper types
-  // and remove the @ts-ignores
   const handleSearch = (text: string) => {
-    const filteredTokens = filter(data, token => {
-      // @ts-ignore
-      return contains(token?.name?.toLowerCase(), text.toLowerCase());
-    });
-
     setSearchText(text);
-    // @ts-ignore
-    setTokenList(filteredTokens);
   };
 
   return (
@@ -112,9 +100,9 @@ function SearchView() {
       </View>
       {backPressed || (
         <FlatList
-          data={tokenList}
+          data={filteredTokenList}
           renderItem={renderItem}
-          keyExtractor={keyExtractor}
+          keyExtractor={(item: ERC20 | AvaxToken) => item.symbol}
           ListEmptyComponent={emptyList}
         />
       )}
