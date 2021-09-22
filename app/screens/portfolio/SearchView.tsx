@@ -31,6 +31,10 @@ function SearchView() {
     setTimeout(() => navigation.goBack(), 0);
   }
 
+  function showBottomSheet(token: ERC20 | AvaxToken) {
+    navigation.navigate('SendReceiveBottomSheet', {token});
+  }
+
   const renderItem = (item: ListRenderItemInfo<any>) => {
     const token = item.item as ERC20 | AvaxToken;
     return (
@@ -39,6 +43,7 @@ function SearchView() {
         tokenPrice={token.balanceParsed}
         image={token.logoURI}
         symbol={token.symbol}
+        onPress={() => showBottomSheet(token)}
       />
     );
   };
