@@ -8,11 +8,10 @@ import {
   View,
 } from 'react-native';
 import CarrotSVG from 'components/svg/CarrotSVG';
-import {ApplicationContext} from 'contexts/ApplicationContext';
-import AccountSVG from 'components/svg/AccountSVG';
 import SearchSVG from 'components/svg/SearchSVG';
 import {useNavigation} from '@react-navigation/native';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
+import {ApplicationContext} from 'contexts/ApplicationContext';
 
 interface Props {
   rightComponent?: React.ReactNode;
@@ -161,23 +160,26 @@ function TokenItem({
 interface AccountItemProps {
   accountName?: string;
   accountAddress?: string;
-  onPress: () => void;
+  onRightComponentPress?: () => void;
+  onLeftComponentPress?: () => void;
   onAccountPressed: () => void;
 }
 function AccountItem({
   accountName = 'Account 1',
-  accountAddress,
   onAccountPressed,
+  onRightComponentPress,
+  onLeftComponentPress,
 }: AccountItemProps) {
-  const leftComponent = <AccountSVG />;
-  const {navigate} = useNavigation();
   const context = useContext(ApplicationContext);
 
+  const leftComponent = (
+    <TouchableOpacity onPress={onLeftComponentPress}>
+      <SearchSVG />
+    </TouchableOpacity>
+  );
+
   const rightComponent = (
-    <TouchableOpacity
-      onPress={() => {
-        navigate('Search');
-      }}>
+    <TouchableOpacity onPress={onRightComponentPress}>
       <SearchSVG />
     </TouchableOpacity>
   );

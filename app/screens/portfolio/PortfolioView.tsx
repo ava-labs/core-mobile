@@ -7,19 +7,27 @@ import {useNavigation} from '@react-navigation/native';
 import {ERC20} from '@avalabs/wallet-react-components';
 import {AvaxToken} from 'dto/AvaxToken';
 import {useSearchableTokenList} from 'screens/portfolio/useSearchableTokenList';
+import AppNavigation from 'navigation/AppNavigation';
+import {StackNavigationProp} from '@react-navigation/stack';
+import {PortfolioStackParamList} from 'navigation/PortfolioStackScreen';
 
 type PortfolioProps = {
   onExit: () => void;
   onSwitchWallet: () => void;
 };
 
+export type PortfolioRouteProp = StackNavigationProp<
+  PortfolioStackParamList,
+  'PortfolioScreen'
+>;
+
 function PortfolioView({onExit, onSwitchWallet}: PortfolioProps) {
   const listRef = useRef<FlatList>(null);
-  const navigation = useNavigation();
+const navigation = useNavigation<PortfolioRouteProp>();
   const {tokenList} = useSearchableTokenList();
 
   function showBottomSheet(token: ERC20 | AvaxToken) {
-    navigation.navigate('SendReceiveBottomSheet', {token});
+navigation.navigate(AppNavigation.Modal.SendReceiveBottomSheet, {token});
   }
 
   const renderItem = (item: ListRenderItemInfo<ERC20 | AvaxToken>) => {
