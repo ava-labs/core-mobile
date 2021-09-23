@@ -1,5 +1,5 @@
-import React, {useContext, useEffect} from 'react';
-import {BackHandler, StyleSheet, View} from 'react-native';
+import React, {useContext, useEffect, useState} from 'react';
+import {BackHandler, Modal, StyleSheet, View} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {
   getFocusedRouteNameFromRoute,
@@ -19,6 +19,8 @@ import SearchView from 'screens/portfolio/SearchView';
 import SendReceiveBottomSheet from 'screens/portfolio/SendReceiveBottomSheet';
 import AccountBottomSheet from 'screens/portfolio/account/AccountBottomSheet';
 import SwapView from 'screens/swap/SwapView';
+import {useWalletStateContext} from '@avalabs/wallet-react-components';
+import Loader from 'components/Loader';
 
 export type BaseStackParamList = {
   Portfolio: undefined;
@@ -37,7 +39,10 @@ const RootStack = createStackNavigator();
 
 export default function MainView(props: Props | Readonly<Props>) {
   const context = useContext(ApplicationContext);
+  const walletStateContext = useWalletStateContext();
+
   const theme = context.theme;
+  const [walletReady, setWalletReady] = useState<boolean>(false);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -51,6 +56,12 @@ export default function MainView(props: Props | Readonly<Props>) {
         BackHandler.removeEventListener('hardwareBackPress', onBackPress);
     }, []),
   );
+
+  useEffect(() => {
+    if (!walletReady) {
+      setWalletReady(walletStateContext?.balances !== undefined);
+    }
+  }, [walletReady, walletStateContext]);
 
   const onExit = (): void => {
     props.onExit();
@@ -178,6 +189,10 @@ export default function MainView(props: Props | Readonly<Props>) {
 
   return (
     <View style={styles.container}>
+      <Modal animationType="fade" transparent={true} visible={!walletReady}>
+        <Loader message={'Loading wallet'} />
+      </Modal>
+
       <View style={styles.container}>{loadWalletNavigation()}</View>
     </View>
   );
