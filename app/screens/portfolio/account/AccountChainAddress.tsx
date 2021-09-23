@@ -1,16 +1,23 @@
 import React, {useContext} from 'react';
-import {View} from 'react-native';
+import {ToastAndroid, View} from 'react-native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from 'components/AvaText';
+import AvaButton from 'components/AvaButton';
 import Divider from 'components/Divider';
 import OvalTagBg from 'components/OvalTagBg';
 import FlexSpacer from 'components/FlexSpacer';
 import CopySVG from 'components/svg/CopySVG';
+import Clipboard from '@react-native-clipboard/clipboard';
 
 type Props = {
   title: string;
   address: string;
   color: string;
+};
+
+const copyToClipboard = (str: string): void => {
+  Clipboard.setString(str);
+  ToastAndroid.show('Copied', 1000);
 };
 
 function AccountChainAddress({title, address, color}: Props): JSX.Element {
@@ -31,7 +38,9 @@ function AccountChainAddress({title, address, color}: Props): JSX.Element {
         <FlexSpacer />
         <AvaText.Heading3>{address}</AvaText.Heading3>
         <Divider size={16} />
-        <CopySVG color={context.theme.txtOnBgApp} />
+        <AvaButton.Base onPress={() => copyToClipboard(address)}>
+          <CopySVG color={context.theme.txtOnBgApp} />
+        </AvaButton.Base>
       </OvalTagBg>
     </View>
   );
