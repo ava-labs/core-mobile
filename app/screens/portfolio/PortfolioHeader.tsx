@@ -4,6 +4,10 @@ import AvaListItem from 'screens/portfolio/AvaListItem';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import {usePortfolio} from 'screens/portfolio/usePortfolio';
 import {useNavigation} from '@react-navigation/native';
+import {useWalletStateContext} from '@avalabs/wallet-react-components';
+import {Colors} from 'react-native/Libraries/NewAppScreen';
+import AppNavigation from 'navigation/AppNavigation';
+import {PortfolioRouteProp} from 'screens/portfolio/PortfolioView';
 
 export const HEADER_MAX_HEIGHT = 150;
 export const HEADER_MIN_HEIGHT = Platform.OS === 'ios' ? 60 : 73;
@@ -15,27 +19,42 @@ function PortfolioHeader() {
   const {addressC, balanceTotalInUSD} = usePortfolio();
 
   return (
-    <>
-      <View pointerEvents="none" style={[styles.header]} />
-
-      <View style={[styles.bar]} pointerEvents="box-none">
-        <View>
-          <AvaListItem.Account
-            accountName={'Account 1'}
-            accountAddress={addressC ?? ''}
-            onPress={() => {
-              console.log('test');
-            }}
-            onAccountPressed={() => {
-              navigation.navigate('AccountBottomSheet');
-            }}
+    <View pointerEvents="box-none">
+      <View>
+        <AvaListItem.Account
+          accountName={'Account 1'}
+          accountAddress={addressC ?? ''}
+          onRightComponentPress={() => {
+            navigation.navigate(AppNavigation.Wallet.SearchScreen);
+          }}
+          onAccountPressed={() => {
+            navigation.navigate(AppNavigation.Modal.AccountBottomSheet);
+          }}
+        />
+      </View>
+      <View
+        style={{
+          alignItems: 'flex-end',
+          justifyContent: 'center',
+          flexDirection: 'row',
+        }}>
+        {!walletReady && (
+          <ActivityIndicator
+            size="small"
+            color={context.isDarkMode ? Colors.white : Colors.black}
           />
-        </View>
-        <View
+        )}
+        {walletReady && (
+          <Text style={[styles.text, {color: context.theme.txtOnBgApp}]}>
+            {balanceTotalInUSD}
+          </Text>
+        )}
+        <Text
           style={{
-            alignItems: 'flex-end',
-            justifyContent: 'center',
-            flexDirection: 'row',
+            fontSize: 16,
+            color: context.theme.txtOnBgApp,
+            paddingLeft: 4,
+            lineHeight: 28,
           }}>
           <Text style={[styles.text, {color: context.theme.txtOnBgApp}]}>
             {balanceTotalInUSD}
@@ -51,7 +70,7 @@ function PortfolioHeader() {
           </Text>
         </View>
       </View>
-    </>
+    </View>
   );
 }
 
@@ -67,20 +86,6 @@ const styles = StyleSheet.create({
   },
   header: {
     overflow: 'hidden',
-    height: HEADER_MAX_HEIGHT,
-  },
-  bar: {
-    backgroundColor: 'transparent',
-    marginTop: Platform.OS === 'ios' ? 0 : 0,
-    height: HEADER_MAX_HEIGHT,
-    justifyContent: 'space-between',
-    position: 'absolute',
-    width: '100%',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 1,
-    paddingBottom: 8,
   },
 });
 
