@@ -12,6 +12,7 @@ import {ApplicationContext} from 'contexts/ApplicationContext';
 import AccountSVG from 'components/svg/AccountSVG';
 import SearchSVG from 'components/svg/SearchSVG';
 import {useNavigation} from '@react-navigation/native';
+import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 
 interface Props {
   rightComponent?: React.ReactNode;
@@ -113,7 +114,16 @@ function TokenItem({
   const title = tokenName;
   const context = useContext(ApplicationContext);
 
-  const tokenLogo = <Image style={styles.tokenLogo} source={{uri: image}} />;
+  let tokenLogo = <Image style={styles.tokenLogo} source={{uri: image}} />;
+  if (symbol === 'AVAX') {
+    tokenLogo = (
+      <AvaLogoSVG
+        size={32}
+        logoColor={context.theme.logoColor}
+        backgroundColor={context.theme.txtOnBgApp}
+      />
+    );
+  }
 
   const sendCoin = (
     <View style={{alignItems: 'flex-end'}}>

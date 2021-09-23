@@ -4,32 +4,33 @@ import AvaListItem from 'screens/portfolio/AvaListItem';
 import PortfolioHeader from 'screens/portfolio/PortfolioHeader';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {useNavigation} from '@react-navigation/native';
+import {ERC20} from '@avalabs/wallet-react-components';
+import {AvaxToken} from 'dto/AvaxToken';
+import {useSearchableTokenList} from 'screens/portfolio/useSearchableTokenList';
 
 type PortfolioProps = {
   onExit: () => void;
   onSwitchWallet: () => void;
 };
 
-const data: JSON[] = require('assets/coins.json');
-export const keyExtractor = (item: any, index: number) => item?.id ?? index;
-
 function PortfolioView({onExit, onSwitchWallet}: PortfolioProps) {
   const listRef = useRef<FlatList>(null);
   const navigation = useNavigation();
+  const {tokenList} = useSearchableTokenList();
 
-  function showBottomSheet(symbol: string) {
-    navigation.navigate('SendReceiveBottomSheet', {symbol});
+  function showBottomSheet(token: ERC20 | AvaxToken) {
+    navigation.navigate('SendReceiveBottomSheet', {token});
   }
 
-  const renderItem = (item: ListRenderItemInfo<any>) => {
-    const json = item.item;
+  const renderItem = (item: ListRenderItemInfo<ERC20 | AvaxToken>) => {
+    const token = item.item;
     return (
       <AvaListItem.Token
-        tokenName={json.name}
-        tokenPrice={json.current_price}
-        image={json.image}
-        symbol={json.symbol}
-        onPress={() => showBottomSheet(json.symbol)}
+        tokenName={token.name}
+        tokenPrice={token.balanceParsed}
+        image={token.logoURI}
+        symbol={token.symbol}
+        onPress={() => showBottomSheet(token)}
       />
     );
   };
@@ -45,9 +46,9 @@ function PortfolioView({onExit, onSwitchWallet}: PortfolioProps) {
             marginTop: 36,
           },
         ]}
-        data={data}
+        data={tokenList}
         renderItem={renderItem}
-        keyExtractor={keyExtractor}
+        keyExtractor={(item: ERC20 | AvaxToken) => item.symbol}
         scrollEventThrottle={16}
       />
     </SafeAreaProvider>

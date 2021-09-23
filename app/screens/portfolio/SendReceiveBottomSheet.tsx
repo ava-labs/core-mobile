@@ -31,14 +31,14 @@ import ReceiveToken from 'screens/receive/ReceiveToken';
 import OvalTagBg from 'components/OvalTagBg';
 import TransactionsView from 'screens/transactions/TransactionsView';
 import Divider from 'components/Divider';
+import {ERC20} from '@avalabs/wallet-react-components';
+import {AvaxToken} from 'dto/AvaxToken';
 
 const Stack = createStackNavigator();
 
 interface Props {
-  symbol?: string;
+  token: ERC20;
 }
-
-const data: JSON[] = require('assets/coins.json');
 
 const SendReceiveBottomSheet: FC<Props> = props => {
   const bottomSheetRef = useRef<BottomSheet>(null);
@@ -49,11 +49,7 @@ const SendReceiveBottomSheet: FC<Props> = props => {
 
   //todo: figure out types for route params
   const {route} = props;
-  const symbol = route.params.symbol;
-
-  const tokenObj: any = data.filter(
-    json => json.symbol?.toLowerCase() === symbol?.toLowerCase(),
-  )?.[0];
+  const tokenObj = route.params.token as ERC20 | AvaxToken;
 
   useEffect(() => {
     // intentionally setting delay so animation is visible.
@@ -73,6 +69,28 @@ const SendReceiveBottomSheet: FC<Props> = props => {
     }
   }, []);
 
+  const TokenLogo = () => {
+    const context = useContext(ApplicationContext);
+    if (tokenObj.symbol === 'AVAX') {
+      return (
+        <AvaLogoSVG
+          size={32}
+          logoColor={context.theme.logoColor}
+          backgroundColor={context.theme.txtOnBgApp}
+        />
+      );
+    } else {
+      return (
+        <Image
+          style={styles.tokenLogo}
+          source={{
+            uri: (tokenObj as ERC20).logoURI,
+          }}
+        />
+      );
+    }
+  };
+
   const Tabs = () => (
     <>
       <View style={{flexDirection: 'row', paddingRight: 16}}>
@@ -80,7 +98,7 @@ const SendReceiveBottomSheet: FC<Props> = props => {
           <AvaListItem.Simple
             label={
               <TextTitle
-                text={tokenObj?.name ?? ''}
+                text={tokenObj.name}
                 size={16}
                 color={theme.txtListItem}
                 bold
@@ -88,7 +106,7 @@ const SendReceiveBottomSheet: FC<Props> = props => {
             }
             title={
               <TextTitle
-                text={balanceAvaxTotal}
+                text={`${tokenObj.balanceParsed} ${tokenObj.symbol}`}
                 size={24}
                 color={theme.txtListItem}
                 bold
@@ -101,14 +119,7 @@ const SendReceiveBottomSheet: FC<Props> = props => {
                 color={theme.txtListItemSubscript}
               />
             }
-            leftComponent={
-              <Image
-                style={styles.tokenLogo}
-                source={{
-                  uri: tokenObj?.image ?? '',
-                }}
-              />
-            }
+            leftComponent={<TokenLogo />}
             titleAlignment={'flex-start'}
           />
         </View>
@@ -166,7 +177,7 @@ const SendReceiveBottomSheet: FC<Props> = props => {
           destinationAddress={'X-fuji1mtf4tv4dnmghh34ausjqyxer05hl3qvqv3nmja'}
           fiatAmount={'443.23 USD'}
           tokenAmount={'23232.23 AVAX'}
-          tokenImageUrl={tokenObj?.image}
+          tokenImageUrl={tokenObj.logoURI}
         />
       );
     };
