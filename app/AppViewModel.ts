@@ -26,7 +26,7 @@ export enum SelectedView {
   Main,
 }
 
-export default class {
+class AppViewModel {
   mnemonic = '';
   selectedView: BehaviorSubject<SelectedView> =
     new BehaviorSubject<SelectedView>(SelectedView.Onboard);
@@ -201,3 +201,5 @@ export enum ExitPromptAnswers {
   Ok,
   Cancel,
 }
+
+export default new AppViewModel();

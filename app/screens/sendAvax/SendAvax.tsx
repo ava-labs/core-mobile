@@ -10,6 +10,7 @@ import QRCode from 'components/svg/QRCode';
 import ButtonIcon from 'components/ButtonIcon';
 import {useNavigation} from '@react-navigation/native';
 import {useSendAvaxRn} from 'screens/sendAvax/useSendAvaxRn';
+import AppNavigation from 'navigation/AppNavigation';
 
 export default function SendAvax() {
   const context = useContext(ApplicationContext);
@@ -82,9 +83,10 @@ export default function SendAvax() {
       </View>
 
       <ButtonAva
-        disabled={!canSubmit}
         text={'Next'}
-        onPress={() => navigate('Confirm Transaction')}
+        onPress={() =>
+          navigate(AppNavigation.SendToken.ConfirmTransactionScreen)
+        }
       />
 
       <Modal animationType="fade" transparent={true} visible={loaderVisible}>

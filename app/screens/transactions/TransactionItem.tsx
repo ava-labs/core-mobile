@@ -19,8 +19,8 @@ type Props = {
 export default function TransactionItem(props: Props | Readonly<Props>) {
   const context = useContext(ApplicationContext);
 
-  const onExplorer = (url: string): void => {
-    Linking.openURL(url).then(value => {
+  const onExplorer = (): void => {
+    Linking.openURL(props.explorerUrl).then(value => {
       console.log('Linking: ' + value);
     });
   };
@@ -48,12 +48,9 @@ export default function TransactionItem(props: Props | Readonly<Props>) {
           <TextTitle text={date} size={14} />
           <TextLabel text={props.info} />
           <TextAmount text={props.amount} type={props.type} />
-          {props.address ? <TextLabel text={props.address} /> : undefined}
+          {props?.address && <TextLabel text={props.address} />}
         </View>
-        <ImgButtonAva
-          src={explorerIcon}
-          onPress={() => onExplorer(props.explorerUrl)}
-        />
+        <ImgButtonAva src={explorerIcon} onPress={onExplorer} />
       </View>
     </View>
   );

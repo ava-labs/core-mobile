@@ -1,6 +1,12 @@
 import React, {useCallback, useEffect, useMemo, useRef} from 'react';
 import BottomSheet from '@gorhom/bottom-sheet';
-import {Button, InteractionManager, View} from 'react-native';
+import {
+  Button,
+  InteractionManager,
+  Pressable,
+  StyleSheet,
+  View,
+} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 
 function AccountBottomSheet() {
@@ -27,21 +33,30 @@ function AccountBottomSheet() {
   }, []);
 
   return (
-    <BottomSheet
-      ref={bottomSheetModalRef}
-      index={0}
-      snapPoints={snapPoints}
-      onChange={handleChange}>
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: 'yellow',
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}>
-        <Button title={'close'} onPress={handleClose} />
-      </View>
-    </BottomSheet>
+    <View style={{flex: 1}}>
+      <Pressable
+        style={[
+          StyleSheet.absoluteFill,
+          {backgroundColor: 'rgba(0, 0, 0, 0.5)'},
+        ]}
+        onPress={() => navigation.goBack()}
+      />
+      <BottomSheet
+        ref={bottomSheetModalRef}
+        index={0}
+        snapPoints={snapPoints}
+        onChange={handleChange}>
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: 'yellow',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}>
+          <Button title={'close'} onPress={handleClose} />
+        </View>
+      </BottomSheet>
+    </View>
   );
 }
 
