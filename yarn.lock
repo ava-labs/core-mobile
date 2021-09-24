@@ -1576,7 +1576,7 @@
   dependencies:
     regenerator-runtime "^0.13.4"
 
-"@babel/runtime@^7.0.0", "@babel/runtime@^7.10.2", "@babel/runtime@^7.11.2", "@babel/runtime@^7.12.5", "@babel/runtime@^7.15.3", "@babel/runtime@^7.5.5", "@babel/runtime@^7.7.2", "@babel/runtime@^7.9.2":
+"@babel/runtime@^7.0.0", "@babel/runtime@^7.10.2", "@babel/runtime@^7.11.2", "@babel/runtime@^7.12.5", "@babel/runtime@^7.13.10", "@babel/runtime@^7.15.3", "@babel/runtime@^7.5.5", "@babel/runtime@^7.7.2", "@babel/runtime@^7.9.2":
   version "7.15.4"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.15.4.tgz#fd17d16bfdf878e6dd02d19753a39fa8a8d9c84a"
   integrity sha512-99catp6bHCaxr4sJ/DbTGgHS4+Rs2RVd2g7iOap6SLGPDknRK9ztKNsE/Fg6QhSeh1FGE5f6gHGQmvvn3I3xhw==
@@ -1718,6 +1718,15 @@
   integrity sha512-XQsZgjm2EcVUiZQf11UBJQfmZeEmOW8DpI1gsFeln6w0ae0ii4dMQEQ0kjl6DspdWX1aGY1/loyXnP0JS06e/A==
   dependencies:
     "@types/hammerjs" "^2.0.36"
+
+"@eliav2/react-native-collapsible-view@^1.4.0":
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/@eliav2/react-native-collapsible-view/-/react-native-collapsible-view-1.4.0.tgz#f9ec5ea53f73d34a8634a6e23b361abc027405b2"
+  integrity sha512-iN1/mwN+Tugi3ct+30IK2GM+qNWepgJXV8EbbnOTuuDLYD/fIqMfezH0J5X+SA1L1aaJDKMbi1Qyi2TVYNNN0g==
+  dependencies:
+    "@babel/runtime" "^7.13.10"
+    react-native-collapsible "^1.5.3"
+    react-native-svg "^12.1.0"
 
 "@emotion/is-prop-valid@^0.8.8":
   version "0.8.8"
@@ -13848,7 +13857,7 @@ react-native-codegen@^0.0.6:
     jscodeshift "^0.11.0"
     nullthrows "^1.1.1"
 
-react-native-collapsible@^1.6.0:
+react-native-collapsible@^1.5.3, react-native-collapsible@^1.6.0:
   version "1.6.0"
   resolved "https://registry.yarnpkg.com/react-native-collapsible/-/react-native-collapsible-1.6.0.tgz#ca261ffff16914f872059bb0972e3a78c4b37f9c"
   integrity sha512-beZjdgbT9Y/Pg591Xy5XkKG20HffJiVad4n9bfcUF/f783A+tvOVXnqvbS58Lkaym93mi4jcDPMuW9Vc1t6rqg==

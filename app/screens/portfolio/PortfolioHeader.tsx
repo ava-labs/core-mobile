@@ -1,6 +1,6 @@
 import React, {useContext} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
-import AvaListItem from 'screens/portfolio/AvaListItem';
+import AvaListItem from 'components/AvaListItem';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import {usePortfolio} from 'screens/portfolio/usePortfolio';
 import {useNavigation} from '@react-navigation/native';

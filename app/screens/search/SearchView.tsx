@@ -13,10 +13,18 @@ import ClearSVG from 'components/svg/ClearSVG';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import {useNavigation} from '@react-navigation/native';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
-import AvaListItem from './AvaListItem';
+import AvaListItem from 'components/AvaListItem';
 import {ERC20} from '@avalabs/wallet-react-components';
 import {AvaxToken} from 'dto/AvaxToken';
 import {useSearchableTokenList} from 'screens/portfolio/useSearchableTokenList';
+import AppNavigation from 'navigation/AppNavigation';
+import {PortfolioStackParamList} from 'navigation/PortfolioStackScreen';
+import {StackNavigationProp} from '@react-navigation/stack';
+
+export type SearchRouteProp = StackNavigationProp<
+  PortfolioStackParamList,
+  'SearchScreen'
+>;
 
 function SearchView() {
   const {filteredTokenList, searchText, setSearchText} =
@@ -24,7 +32,7 @@ function SearchView() {
   // back press hides flatlist to help minimize artifacts during fade out transition
   const [backPressed, setBackPressed] = useState(false);
   const context = useContext(ApplicationContext);
-  const navigation = useNavigation();
+  const navigation = useNavigation<SearchRouteProp>();
 
   function onCancel() {
     setBackPressed(true);
@@ -32,23 +40,24 @@ function SearchView() {
   }
 
   function showBottomSheet(token: ERC20 | AvaxToken) {
-    navigation.navigate('SendReceiveBottomSheet', {token});
+    navigation.navigate(AppNavigation.Modal.SendReceiveBottomSheet, {token});
   }
 
   const renderItem = (item: ListRenderItemInfo<any>) => {
     const token = item.item as ERC20 | AvaxToken;
+    const logoUri = (token as ERC20)?.logoURI ?? undefined;
     return (
       <AvaListItem.Token
         tokenName={token.name}
         tokenPrice={token.balanceParsed}
-        image={token.logoURI}
+        image={logoUri}
         symbol={token.symbol}
         onPress={() => showBottomSheet(token)}
       />
     );
   };
 
-  const emptyList = (
+  const emptyView = (
     <View
       style={{
         justifyContent: 'center',
@@ -108,7 +117,7 @@ function SearchView() {
           data={filteredTokenList}
           renderItem={renderItem}
           keyExtractor={(item: ERC20 | AvaxToken) => item.symbol}
-          ListEmptyComponent={emptyList}
+          ListEmptyComponent={emptyView}
         />
       )}
     </View>

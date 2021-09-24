@@ -9,10 +9,10 @@ import {
 } from 'react-native';
 import CarrotSVG from 'components/svg/CarrotSVG';
 import SearchSVG from 'components/svg/SearchSVG';
-import {useNavigation} from '@react-navigation/native';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import ArrowSVG from 'components/svg/ArrowSVG';
+import MovementIndicator from 'components/MovementIndicator';
 
 interface Props {
   rightComponent?: React.ReactNode;
@@ -38,7 +38,7 @@ function BaseListItem({
   const context = useContext(ApplicationContext);
 
   return (
-    <View style={{paddingVertical: 16}}>
+    <View style={{paddingVertical: 16, }}>
       <TouchableOpacity
         style={styles.baseRowContainer}
         disabled={listPressDisabled}
@@ -226,7 +226,7 @@ function AccountItem({
 
 type ActivityItemProps = {
   balance: number;
-  movement: 'UP' | 'DOWN';
+  movement?: number;
 } & TokenItemProps;
 
 function ActivityItem({
@@ -238,21 +238,6 @@ function ActivityItem({
   onPress,
 }: ActivityItemProps) {
   const context = useContext(ApplicationContext);
-  const up = movement === 'UP';
-  const tokenLogo = (
-    <View
-      style={[
-        styles.tokenLogo,
-        {
-          backgroundColor: up ? '#F1595A33' : '#74CD8833',
-          justifyContent: 'center',
-          alignItems: 'center',
-        },
-        up && {transform:[{rotate: '180deg'}]}
-      ]}>
-      <ArrowSVG color={up ? '#E6787B' : '#74CD88'} />
-    </View>
-  );
 
   const rightComponent = (
     <View style={{alignItems: 'flex-end'}}>
@@ -280,7 +265,7 @@ function ActivityItem({
       <BaseListItem
         title={tokenName}
         subtitle={`Bal: ${balance}`}
-        leftComponent={tokenLogo}
+        leftComponent={<MovementIndicator metric={movement} />}
         rightComponent={rightComponent}
         onPress={onPress}
       />
@@ -294,7 +279,6 @@ const AvaListItem = {
   Activity: ActivityItem,
   Custom: CustomItem,
 };
-
 
 export default AvaListItem;
 
