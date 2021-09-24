@@ -5,37 +5,21 @@ import BottomSheet from '@gorhom/bottom-sheet';
 import TabViewBackground from './components/TabViewBackground';
 import {PortfolioStackParamList} from 'navigation/PortfolioStackScreen';
 import SendTokenStackScreen from 'navigation/SendTokenStackScreen';
-import SendAvax from 'screens/sendAvax/SendAvax';
-import {usePortfolio} from 'screens/portfolio/usePortfolio';
-import SendAvaxConfirm from 'screens/sendAvax/SendAvaxConfirm';
-import ReceiveToken from 'screens/receive/ReceiveToken';
-import OvalTagBg from 'components/OvalTagBg';
-import TransactionsView from 'screens/transactions/TransactionsView';
-import Divider from 'components/Divider';
 import {ERC20} from '@avalabs/wallet-react-components';
 import {AvaxToken} from 'dto/AvaxToken';
-
-const Stack = createStackNavigator();
-
-interface Props {
-  token: ERC20;
-}
-
 
 type SendReceiveRouteProp = RouteProp<
   PortfolioStackParamList,
   'SendReceiveBottomSheet'
 >;
 
-const SendReceiveBottomSheet: FC = props => {
+const SendReceiveBottomSheet: FC = () => {
   const bottomSheetRef = useRef<BottomSheet>(null);
   const {goBack, canGoBack} = useNavigation();
   const route = useRoute<SendReceiveRouteProp>();
   const snapPoints = useMemo(() => ['0%', '86%'], []);
 
-  //todo: figure out types for route params
-  const {route} = props;
-  const tokenObj = route.params.token as ERC20 | AvaxToken;
+  const tokenObj = route?.params?.token as ERC20 | AvaxToken;
 
   useEffect(() => {
     // intentionally setting delay so animation is visible.

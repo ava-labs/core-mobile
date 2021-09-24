@@ -1,4 +1,4 @@
-import React, {useRef} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {FlatList, ListRenderItemInfo, StyleSheet} from 'react-native';
 import AvaListItem from 'screens/portfolio/AvaListItem';
 import PortfolioHeader from 'screens/portfolio/PortfolioHeader';
@@ -10,6 +10,8 @@ import {useSearchableTokenList} from 'screens/portfolio/useSearchableTokenList';
 import AppNavigation from 'navigation/AppNavigation';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {PortfolioStackParamList} from 'navigation/PortfolioStackScreen';
+import {useWalletStateContext} from '@avalabs/wallet-react-components';
+import Loader from 'components/Loader';
 
 type PortfolioProps = {
   onExit: () => void;
@@ -23,20 +25,21 @@ export type PortfolioRouteProp = StackNavigationProp<
 
 function PortfolioView({onExit, onSwitchWallet}: PortfolioProps) {
   const listRef = useRef<FlatList>(null);
-const navigation = useNavigation<PortfolioRouteProp>();
+  const navigation = useNavigation<PortfolioRouteProp>();
   const {tokenList} = useSearchableTokenList();
 
   function showBottomSheet(token: ERC20 | AvaxToken) {
-navigation.navigate(AppNavigation.Modal.SendReceiveBottomSheet, {token});
+    navigation.navigate(AppNavigation.Modal.SendReceiveBottomSheet, {token});
   }
 
   const renderItem = (item: ListRenderItemInfo<ERC20 | AvaxToken>) => {
     const token = item.item;
+    const logoUri = (token as ERC20)?.logoURI ?? undefined;
     return (
       <AvaListItem.Token
         tokenName={token.name}
         tokenPrice={token.balanceParsed}
-        image={token.logoURI}
+        image={logoUri}
         symbol={token.symbol}
         onPress={() => showBottomSheet(token)}
       />
@@ -48,12 +51,7 @@ navigation.navigate(AppNavigation.Modal.SendReceiveBottomSheet, {token});
       <PortfolioHeader />
       <FlatList
         ref={listRef}
-        style={[
-          {
-            flex: 1,
-            marginTop: 36,
-          },
-        ]}
+        style={styles.tokenList}
         data={tokenList}
         renderItem={renderItem}
         keyExtractor={(item: ERC20 | AvaxToken) => item.symbol}
@@ -66,6 +64,10 @@ navigation.navigate(AppNavigation.Modal.SendReceiveBottomSheet, {token});
 const styles = StyleSheet.create({
   flex: {
     flex: 1,
+  },
+  tokenList: {
+    flex: 1,
+    marginTop: 36,
   },
 });
 

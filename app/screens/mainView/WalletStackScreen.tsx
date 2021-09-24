@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {BackHandler, StyleSheet} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {NavigationContainer, useFocusEffect} from '@react-navigation/native';
@@ -15,6 +15,9 @@ import AccountBottomSheet from 'screens/portfolio/account/AccountBottomSheet';
 import SwapView from 'screens/swap/SwapView';
 import AppNavigation from 'navigation/AppNavigation';
 import PortfolioStackScreen from 'navigation/PortfolioStackScreen';
+import SearchView from 'screens/portfolio/SearchView';
+import {useWalletStateContext} from '@avalabs/wallet-react-components';
+import Loader from 'components/Loader';
 
 export type BaseStackParamList = {
   Portfolio: undefined;
@@ -33,6 +36,8 @@ const DrawerStack = createStackNavigator();
 
 export default function WalletStackScreen(props: Props | Readonly<Props>) {
   const context = useContext(ApplicationContext);
+  const [walletReady, setWalletReady] = useState(false);
+  const walletStateContext = useWalletStateContext();
 
   useFocusEffect(
     React.useCallback(() => {
@@ -47,6 +52,18 @@ export default function WalletStackScreen(props: Props | Readonly<Props>) {
     }, []),
   );
 
+  useEffect(() => {
+    if (!walletReady) {
+      setWalletReady(walletStateContext?.balances !== undefined);
+    }
+  }, [walletReady, walletStateContext]);
+
+  /**
+   * : (
+   <Loader message="One moment please. \nLoading wallet" />
+   )}
+   */
+
   const onExit = (): void => {
     props.onExit();
   };
@@ -54,32 +71,6 @@ export default function WalletStackScreen(props: Props | Readonly<Props>) {
   const onSwitchWallet = (): void => {
     props.onSwitchWallet();
   };
-
-  // function PortfolioStack({navigation, route}: any) {
-  //   useEffect(() => {
-  //     navigation.setOptions({tabBarVisible: setTabBarVisibility(route)});
-  //   }, [navigation, route]);
-  //   return (
-  //     <BaseStack.Navigator
-  //       initialRouteName="Portfolio"
-  //       headerMode="none"
-  //       detachInactiveScreens={false}
-  //       screenOptions={{
-  //         headerShown: false,
-  //       }}>
-  //       <BaseStack.Screen name="Portfolio">
-  //         {() => (
-  //           <PortfolioView onExit={onExit} onSwitchWallet={onSwitchWallet} />
-  //         )}
-  //       </BaseStack.Screen>
-  //       <BaseStack.Screen
-  //         name="Search"
-  //         options={{cardStyleInterpolator: forFade}}>
-  //         {() => <SearchView />}
-  //       </BaseStack.Screen>
-  //     </BaseStack.Navigator>
-  //   );
-  // }
 
   const DrawerScreen = () => (
     <DrawerStack.Navigator screenOptions={{headerShown: false}}>
@@ -131,7 +122,9 @@ export default function WalletStackScreen(props: Props | Readonly<Props>) {
     );
   };
 
-  return (
+  return !walletReady ? (
+    <Loader message="Loading wallet. One moment please." />
+  ) : (
     <NavigationContainer theme={context.navContainerTheme} independent={true}>
       <RootStack.Navigator
         screenOptions={{
@@ -139,6 +132,10 @@ export default function WalletStackScreen(props: Props | Readonly<Props>) {
         }}>
         <RootStack.Group>
           <RootStack.Screen name={'Drawer'} component={DrawerScreen} />
+          <RootStack.Screen
+            name={AppNavigation.Wallet.SearchScreen}
+            component={SearchView}
+          />
         </RootStack.Group>
         <RootStack.Group screenOptions={{presentation: 'transparentModal'}}>
           <RootStack.Screen

@@ -24,17 +24,19 @@ import ReceiveToken from 'screens/receive/ReceiveToken';
 import TransactionsView from 'screens/transactions/TransactionsView';
 import OvalTagBg from 'components/OvalTagBg';
 import {usePortfolio} from 'screens/portfolio/usePortfolio';
+import {ERC20} from '@avalabs/wallet-react-components';
+import {AvaxToken} from 'dto/AvaxToken';
 
 const Stack = createStackNavigator();
 
 type Props = {
   onClose: () => void;
-  token: any;
+  token: ERC20 | AvaxToken;
 };
 
 const SendTokenStackScreen = ({onClose, token}: Props) => {
   const theme = useContext(ApplicationContext).theme;
-  const {balanceAvaxTotal, balanceTotalInUSD} = usePortfolio();
+  const {balanceTotalInUSD} = usePortfolio();
   const screenOptions = useMemo<StackNavigationOptions>(
     () => ({
       ...TransitionPresets.SlideFromRightIOS,
@@ -84,6 +86,27 @@ const SendTokenStackScreen = ({onClose, token}: Props) => {
     [],
   );
 
+  const tokenLogo = () => {
+    if (token.symbol === 'AVAX') {
+      return (
+        <AvaLogoSVG
+          size={32}
+          logoColor={theme.logoColor}
+          backgroundColor={theme.txtOnBgApp}
+        />
+      );
+    } else {
+      return (
+        <Image
+          style={styles.tokenLogo}
+          source={{
+            uri: (token as ERC20).logoURI,
+          }}
+        />
+      );
+    }
+  };
+
   const Tabs = () => (
     <>
       <View style={{flexDirection: 'row', paddingRight: 16}}>
@@ -91,7 +114,7 @@ const SendTokenStackScreen = ({onClose, token}: Props) => {
           <AvaListItem.Simple
             label={
               <TextTitle
-                text={token?.name ?? ''}
+                text={token.name}
                 size={16}
                 color={theme.txtListItem}
                 bold
@@ -99,7 +122,7 @@ const SendTokenStackScreen = ({onClose, token}: Props) => {
             }
             title={
               <TextTitle
-                text={balanceAvaxTotal}
+                text={`${token.balanceParsed} ${token.symbol}`}
                 size={24}
                 color={theme.txtListItem}
                 bold
@@ -112,14 +135,7 @@ const SendTokenStackScreen = ({onClose, token}: Props) => {
                 color={theme.txtListItemSubscript}
               />
             }
-            leftComponent={
-              <Image
-                style={styles.tokenLogo}
-                source={{
-                  uri: token?.image ?? '',
-                }}
-              />
-            }
+            leftComponent={tokenLogo()}
             titleAlignment={'flex-start'}
           />
         </View>

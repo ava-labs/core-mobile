@@ -1,8 +1,10 @@
 import {createStackNavigator} from '@react-navigation/stack';
 import PortfolioView from 'screens/portfolio/PortfolioView';
 import SearchView from 'screens/portfolio/SearchView';
-import React from 'react';
+import React, {useEffect} from 'react';
 import AppNavigation from 'navigation/AppNavigation';
+import {ERC20} from '@avalabs/wallet-react-components';
+import {AvaxToken} from 'dto/AvaxToken';
 
 type Props = {
   onExit: () => void;
@@ -18,17 +20,13 @@ const forFade = ({current}: any) => ({
 export type PortfolioStackParamList = {
   PortfolioScreen: undefined;
   SearchScreen: undefined;
-  SendReceiveBottomSheet: undefined | {symbol: string};
+  SendReceiveBottomSheet: undefined | {token: ERC20 | AvaxToken};
   AccountBottomSheet: undefined;
 };
 
 const PortfolioStack = createStackNavigator<PortfolioStackParamList>();
 
 function PortfolioStackScreen({onExit, onSwitchWallet}: Props) {
-  // useEffect(() => {
-  //   navigation.setOptions({tabBarVisible: setTabBarVisibility(route)});
-  // }, [navigation, route]);
-
   const PortfolioViewWithProps = () => (
     <PortfolioView onExit={onExit} onSwitchWallet={onSwitchWallet} />
   );
@@ -44,11 +42,6 @@ function PortfolioStackScreen({onExit, onSwitchWallet}: Props) {
         name={AppNavigation.Wallet.PortfolioScreen}
         component={PortfolioViewWithProps}
       />
-      <PortfolioStack.Screen
-        name={AppNavigation.Wallet.SearchScreen}
-        options={{cardStyleInterpolator: forFade}}>
-        {SearchView}
-      </PortfolioStack.Screen>
     </PortfolioStack.Navigator>
   );
 }
