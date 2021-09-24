@@ -5,7 +5,7 @@ type Props = {
   size: number;
 };
 
-export default function Divider(props: Props | Readonly<Props>) {
+export default function Divider(props: Props | Readonly<Props>): JSX.Element {
   return (
     <View
       style={[

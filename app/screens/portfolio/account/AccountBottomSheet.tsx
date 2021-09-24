@@ -1,18 +1,19 @@
 import React, {useCallback, useEffect, useMemo, useRef} from 'react';
 import BottomSheet from '@gorhom/bottom-sheet';
 import {
-  Button,
   InteractionManager,
   Pressable,
   StyleSheet,
   View,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
+import AccountView from 'screens/portfolio/account/AccountView';
+import TabViewBackground from 'screens/portfolio/components/TabViewBackground';
 
-function AccountBottomSheet() {
+function AccountBottomSheet(): JSX.Element {
   const navigation = useNavigation();
   const bottomSheetModalRef = useRef<BottomSheet>(null);
-  const snapPoints = useMemo(() => ['0%', '75%'], []);
+  const snapPoints = useMemo(() => ['0%', '65%'], []);
 
   useEffect(() => {
     // intentionally setting delay so animation is visible.
@@ -45,16 +46,8 @@ function AccountBottomSheet() {
         ref={bottomSheetModalRef}
         index={0}
         snapPoints={snapPoints}
-        onChange={handleChange}>
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: 'yellow',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}>
-          <Button title={'close'} onPress={handleClose} />
-        </View>
+        backgroundComponent={TabViewBackground}>
+        <AccountView />
       </BottomSheet>
     </View>
   );

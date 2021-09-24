@@ -3,7 +3,7 @@ import {StyleSheet, View} from 'react-native';
 import ImgButtonAva from 'components/ImgButtonAva';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import Dot from 'components/Dot';
-import {useDots} from 'screens/mainView/HeaderProgressViewModel';
+import {DotView} from 'screens/mainView/HeaderProgressViewModel';
 
 type Props = {
   maxDots: number;
@@ -15,7 +15,17 @@ type Props = {
 export default function HeaderProgress(props: Props | Readonly<Props>) {
   const context = useContext(ApplicationContext);
   const isDarkMode = context.isDarkMode;
-  const [pinDots] = useDots(props.maxDots, props.filledDots);
+  const pinDots = () => {
+    const dots: DotView[] = [];
+    for (let i = 0; i < props.maxDots; i++) {
+      if (i < props.filledDots) {
+        dots.push({filled: true});
+      } else {
+        dots.push({filled: false});
+      }
+    }
+    return dots;
+  };
 
   const onBackPress = () => {
     props.onBack?.();
@@ -31,7 +41,7 @@ export default function HeaderProgress(props: Props | Readonly<Props>) {
   const generatePinDots = (): Element[] => {
     const dots: Element[] = [];
 
-    pinDots.forEach((value, key) => {
+    pinDots().forEach((value, key) => {
       dots.push(<Dot size={12} margin={4} filled={value.filled} key={key} />);
     });
     return dots;
