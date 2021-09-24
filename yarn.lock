@@ -13848,6 +13848,11 @@ react-native-codegen@^0.0.6:
     jscodeshift "^0.11.0"
     nullthrows "^1.1.1"
 
+react-native-collapsible@^1.6.0:
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/react-native-collapsible/-/react-native-collapsible-1.6.0.tgz#ca261ffff16914f872059bb0972e3a78c4b37f9c"
+  integrity sha512-beZjdgbT9Y/Pg591Xy5XkKG20HffJiVad4n9bfcUF/f783A+tvOVXnqvbS58Lkaym93mi4jcDPMuW9Vc1t6rqg==
+
 react-native-crypto@2.2.0, react-native-crypto@^2.0.1:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/react-native-crypto/-/react-native-crypto-2.2.0.tgz#c999ed7c96064f830e1f958687f53d0c44025770"
