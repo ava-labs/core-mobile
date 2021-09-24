@@ -1,6 +1,6 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {FlatList, ListRenderItemInfo, StyleSheet} from 'react-native';
-import AvaListItem from 'screens/portfolio/AvaListItem';
+import AvaListItem from 'components/AvaListItem';
 import PortfolioHeader from 'screens/portfolio/PortfolioHeader';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {useNavigation} from '@react-navigation/native';
@@ -10,8 +10,6 @@ import {useSearchableTokenList} from 'screens/portfolio/useSearchableTokenList';
 import AppNavigation from 'navigation/AppNavigation';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {PortfolioStackParamList} from 'navigation/PortfolioStackScreen';
-import {useWalletStateContext} from '@avalabs/wallet-react-components';
-import Loader from 'components/Loader';
 
 type PortfolioProps = {
   onExit: () => void;

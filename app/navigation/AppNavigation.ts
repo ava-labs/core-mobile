@@ -15,12 +15,14 @@ enum Tabs {
   Activity = 'Activity',
   Swap = 'Swap',
   More = 'More',
+  Watchlist = 'Watchlist',
   Tabs = 'Tabs',
 }
 
 enum ModalScreens {
   SendReceiveBottomSheet = 'SendReceiveBottomSheet',
   AccountBottomSheet = 'AccountBottomSheet',
+  TransactionDetailBottomSheet = 'TransactionDetailBottomSheet',
 }
 
 export enum OnboardScreens {
