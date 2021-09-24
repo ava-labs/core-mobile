@@ -41,6 +41,7 @@
     "react-native": "0.64.1",
     "react-native-animated-pagination-dots": "^0.1.72",
     "react-native-camera": "git+https://git@github.com/react-native-community/react-native-camera.git",
+    "react-native-collapsible": "^1.6.0",
     "react-native-crypto": "2.2.0",
     "react-native-dialog": "^8.1.1",
     "react-native-document-picker": "^5.2.0",
