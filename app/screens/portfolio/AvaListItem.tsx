@@ -98,7 +98,7 @@ function BaseListItem({
 
 interface TokenItemProps {
   tokenName: string;
-  tokenPrice: number;
+  tokenPrice: string;
   image?: string;
   symbol?: string;
   onPress?: () => void;
@@ -124,7 +124,7 @@ function TokenItem({
     );
   }
 
-  const sendCoin = (
+  const info = (
     <View style={{alignItems: 'flex-end'}}>
       <Text
         style={[styles.tokenNativeValue, {color: context.theme.txtListItem}]}>
@@ -150,7 +150,7 @@ function TokenItem({
       <BaseListItem
         title={title}
         leftComponent={tokenLogo}
-        rightComponent={sendCoin}
+        rightComponent={info}
         onPress={onPress}
       />
     </View>
