@@ -2,7 +2,7 @@ import React, {useContext, useEffect, useState} from 'react';
 import TransactionsViewModel, {
   HistoryItem,
 } from 'screens/transactions/TransactionsViewModel';
-import {FlatList, View} from 'react-native';
+import {FlatList, InteractionManager, View} from 'react-native';
 import Loader from 'components/Loader';
 import TransactionItem from 'screens/transactions/TransactionItem';
 import {useWalletContext} from '@avalabs/wallet-react-components';
@@ -14,15 +14,17 @@ export default function TransactionsView() {
   const [viewModel] = useState(
     new TransactionsViewModel(useWalletContext()?.wallet as MnemonicWallet),
   );
-  const [loaderVisible, setLoaderVisible] = useState(false);
+  const [loaderVisible, setLoaderVisible] = useState<boolean>(false);
   const [loaderMsg, setLoaderMsg] = useState('');
   const [historyItems, setHistoryItems] = useState<HistoryItem[]>([]);
   const [backgroundStyle] = useState(context.backgroundStyle);
 
   useEffect(() => {
-    viewModel.history.subscribe(value => setHistoryItems(value));
-    viewModel.loaderVisible.subscribe(value => setLoaderVisible(value));
-    viewModel.loaderMsg.subscribe(value => setLoaderMsg(value));
+    InteractionManager.runAfterInteractions(() => {
+      viewModel.history.subscribe(value => setHistoryItems(value));
+      viewModel.loaderVisible.subscribe(value => setLoaderVisible(value));
+      viewModel.loaderMsg.subscribe(value => setLoaderMsg(value));
+    });
   }, []);
 
   const renderItem = (item: HistoryItem) => (
@@ -38,8 +40,9 @@ export default function TransactionsView() {
 
   return (
     <View style={backgroundStyle}>
-      {loaderVisible && <Loader message={loaderMsg} />}
-      {!loaderVisible && (
+      {loaderVisible ? (
+        <Loader message={loaderMsg} />
+      ) : (
         <FlatList
           data={historyItems}
           renderItem={info => renderItem(info.item)}
