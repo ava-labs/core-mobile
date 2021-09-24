@@ -29,17 +29,17 @@ function AccountItem({account}: Props): JSX.Element {
       ]}>
       <Divider size={16} />
       <View style={{flexDirection: 'row'}}>
-        <AvaText.Heading2>Account 1</AvaText.Heading2>
+        <AvaText.Heading2>{account.title}</AvaText.Heading2>
         <Divider size={8} />
         <EditSVG />
       </View>
       <Divider size={8} />
       <AvaText.Body2>$980,345.11 USD</AvaText.Body2>
-      <HeaderProgress maxDots={3} filledDots={2} />
+      <Divider size={32} />
       <AccountChainAddress
         address={account.cAddress}
         title={'C chain'}
-        color={'#232E2F'}
+        color={context.theme.ovalBgGreen}
       />
 
       <Divider size={8} />
@@ -47,7 +47,7 @@ function AccountItem({account}: Props): JSX.Element {
         <AccountChainAddress
           address={account.xAddress}
           title={'X chain'}
-          color={'#30293B'}
+          color={context.theme.ovalBgBlue}
         />
       </View>
     </View>
