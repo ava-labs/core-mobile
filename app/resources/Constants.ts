@@ -57,6 +57,9 @@ export enum COLORS_DAY {
   inputTxtPlaceholder = '#949497',
 
   tabBarIconInactive = '#949497',
+
+  ovalBgGreen = '#00D3BC1A',
+  ovalBgBlue = '#934AF61A',
 }
 
 export enum COLORS_NIGHT {
@@ -118,4 +121,7 @@ export enum COLORS_NIGHT {
   inputTxtPlaceholder = '#B4B4B7',
 
   tabBarIconInactive = '#949497',
+
+  ovalBgGreen = '#00D3BC1A',
+  ovalBgBlue = '#934AF61A',
 }
