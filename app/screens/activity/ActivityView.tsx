@@ -1,33 +1,15 @@
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
-import {
-  ListRenderItemInfo,
-  ScrollView,
-  SectionList,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import React, {useCallback, useContext, useEffect, useState} from 'react';
+import {ScrollView, StyleSheet, View} from 'react-native';
 import SearchSVG from 'components/svg/SearchSVG';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import {useNavigation} from '@react-navigation/native';
-import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import AvaListItem from 'components/AvaListItem';
-import {keyExtractor} from 'screens/portfolio/PortfolioView';
-// @ts-ignore no-type-def-available
-import CarrotSVG from 'components/svg/CarrotSVG';
 import AppNavigation from 'navigation/AppNavigation';
 import AvaText from 'components/AvaText';
 import Loader from 'components/Loader';
-// @ts-ignore javascript-no-type-def
-import CollapsibleView from '@eliav2/react-native-collapsible-view';
 import CollapsibleSection from 'components/CollapsibleSection';
 import {BottomSheetScrollView} from '@gorhom/bottom-sheet';
+import {useWalletContext} from '@avalabs/wallet-react-components';
 
 const data: JSON[] = require('assets/coins.json');
 
@@ -36,14 +18,20 @@ interface Props {
 }
 function ActivityView({embedded}: Props) {
   const theme = useContext(ApplicationContext).theme;
+  const wallet = useWalletContext()?.wallet;
   const [loading, setLoading] = useState(true);
   const navigation = useNavigation();
 
   useEffect(() => {
-    setTimeout(() => {
+    const loadDataAsync = async () => {
+      console.log('history Items', 'Loading');
+      const rawItems = await wallet?.getHistory(20);
       setLoading(false);
-    }, 1000);
-  }, []);
+      //todo: currently not doing anything with this. just logging.
+      console.log('history Items', JSON.stringify(rawItems, null, '\t'));
+    };
+    loadDataAsync();
+  }, [wallet]);
 
   const today = {
     title: 'Today',
@@ -87,6 +75,13 @@ function ActivityView({embedded}: Props) {
     });
   };
 
+  /**
+   * if view is embedded, meaning it's used in the bottom sheet (currently), then we wrap it
+   * with the appropriate scrollview.
+   *
+   * We also don't show the 'header'
+   * @param children
+   */
   const ScrollableComponent = ({children}: {children: React.ReactNode}) =>
     embedded ? (
       <BottomSheetScrollView>{children}</BottomSheetScrollView>
@@ -115,31 +110,5 @@ function ActivityView({embedded}: Props) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  searchContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-  },
-  searchBackground: {
-    alignItems: 'center',
-    borderRadius: 20,
-    flexDirection: 'row',
-    height: 40,
-    flex: 1,
-    justifyContent: 'center',
-    paddingStart: 12,
-  },
-  searchInput: {
-    paddingLeft: 4,
-    height: 40,
-    flex: 1,
-    marginRight: 24,
-    fontSize: 16,
-  },
-});
 
 export default ActivityView;
