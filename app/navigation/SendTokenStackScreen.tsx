@@ -16,7 +16,7 @@ import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import AvaText from 'components/AvaText';
 import ButtonAva from 'components/ButtonAva';
 import AppNavigation from 'navigation/AppNavigation';
-import AvaListItem from 'screens/portfolio/AvaListItem';
+import AvaListItem from 'components/AvaListItem';
 import TextTitle from 'components/TextTitle';
 import ClearSVG from 'components/svg/ClearSVG';
 import TabViewAva from 'components/TabViewAva';
@@ -26,6 +26,7 @@ import OvalTagBg from 'components/OvalTagBg';
 import {usePortfolio} from 'screens/portfolio/usePortfolio';
 import {ERC20} from '@avalabs/wallet-react-components';
 import {AvaxToken} from 'dto/AvaxToken';
+import ActivityView from 'screens/activity/ActivityView';
 
 const Stack = createStackNavigator();
 
@@ -111,7 +112,7 @@ const SendTokenStackScreen = ({onClose, token}: Props) => {
     <>
       <View style={{flexDirection: 'row', paddingRight: 16}}>
         <View style={{flex: 1}}>
-          <AvaListItem.Simple
+          <AvaListItem.Custom
             label={
               <TextTitle
                 text={token.name}
@@ -150,7 +151,7 @@ const SendTokenStackScreen = ({onClose, token}: Props) => {
       <TabViewAva renderCustomLabel={renderCustomLabel}>
         <SendAvax title={'Send'} />
         <ReceiveToken title={'Receive'} />
-        <TransactionsView title={'Activity'} />
+        <ActivityView embedded title={'Activity'} />
       </TabViewAva>
     </>
   );

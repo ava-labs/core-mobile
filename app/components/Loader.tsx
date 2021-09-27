@@ -6,24 +6,27 @@ import Header from 'screens/mainView/Header';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 
 type LoaderProps = {
-  message: string;
+  message?: string;
+  showLogo?: boolean;
 };
 
-export default function Loader(props: LoaderProps | Readonly<LoaderProps>) {
+export default function Loader({message, showLogo = true}: LoaderProps) {
   const context = useContext(ApplicationContext);
 
   return (
     <SafeAreaView style={context.appBackgroundStyle}>
       <View style={context.backgroundStyle}>
-        <View style={styles.headerContainer}>
-          <Header />
-        </View>
+        {showLogo && (
+          <View style={styles.headerContainer}>
+            <Header />
+          </View>
+        )}
         <View style={styles.container}>
           <ActivityIndicator
             size="large"
             color={context.isDarkMode ? Colors.white : Colors.black}
           />
-          <TextTitle text={props.message} textAlign={'center'} />
+          {!!message && <TextTitle text={message} textAlign={'center'} />}
         </View>
       </View>
     </SafeAreaView>
