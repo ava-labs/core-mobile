@@ -15,9 +15,12 @@ import AccountBottomSheet from 'screens/portfolio/account/AccountBottomSheet';
 import SwapView from 'screens/swap/SwapView';
 import AppNavigation from 'navigation/AppNavigation';
 import PortfolioStackScreen from 'navigation/PortfolioStackScreen';
-import SearchView from 'screens/portfolio/SearchView';
+import SearchView from 'screens/search/SearchView';
 import {useWalletStateContext} from '@avalabs/wallet-react-components';
 import Loader from 'components/Loader';
+import Activity from 'screens/activity/ActivityView';
+import TransactionDetailBottomSheet from 'screens/activity/TransactionDetailBottomSheet';
+import WatchlistSVG from 'components/svg/WatchlistSVG';
 
 export type BaseStackParamList = {
   Portfolio: undefined;
@@ -105,6 +108,8 @@ export default function WalletStackScreen(props: Props | Readonly<Props>) {
                 return <SwapSVG selected={focused} />;
               case AppNavigation.Tabs.More:
                 return <MoreSVG selected={focused} />;
+              case AppNavigation.Tabs.Watchlist:
+                return <WatchlistSVG selected={focused} />;
             }
           },
           tabBarAllowFontScaling: false,
@@ -115,7 +120,8 @@ export default function WalletStackScreen(props: Props | Readonly<Props>) {
           name={AppNavigation.Tabs.Portfolio}
           component={PortfolioStackScreenWithProps}
         />
-        <Tab.Screen name={AppNavigation.Tabs.Activity} component={AssetsView} />
+        <Tab.Screen name={AppNavigation.Tabs.Watchlist} component={Activity} />
+        <Tab.Screen name={AppNavigation.Tabs.Activity} component={Activity} />
         <Tab.Screen name={AppNavigation.Tabs.Swap} component={SwapView} />
         <Tab.Screen name={AppNavigation.Tabs.More} component={EarnView} />
       </Tab.Navigator>
@@ -145,6 +151,10 @@ export default function WalletStackScreen(props: Props | Readonly<Props>) {
           <RootStack.Screen
             name={AppNavigation.Modal.AccountBottomSheet}
             component={AccountBottomSheet}
+          />
+          <RootStack.Screen
+            name={AppNavigation.Modal.TransactionDetailBottomSheet}
+            component={TransactionDetailBottomSheet}
           />
         </RootStack.Group>
       </RootStack.Navigator>

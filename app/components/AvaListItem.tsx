@@ -9,9 +9,10 @@ import {
 } from 'react-native';
 import CarrotSVG from 'components/svg/CarrotSVG';
 import SearchSVG from 'components/svg/SearchSVG';
-import {useNavigation} from '@react-navigation/native';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import {ApplicationContext} from 'contexts/ApplicationContext';
+import ArrowSVG from 'components/svg/ArrowSVG';
+import MovementIndicator from 'components/MovementIndicator';
 
 interface Props {
   rightComponent?: React.ReactNode;
@@ -37,7 +38,7 @@ function BaseListItem({
   const context = useContext(ApplicationContext);
 
   return (
-    <View style={{paddingVertical: 16}}>
+    <View style={{paddingVertical: 16, }}>
       <TouchableOpacity
         style={styles.baseRowContainer}
         disabled={listPressDisabled}
@@ -94,6 +95,10 @@ function BaseListItem({
       </TouchableOpacity>
     </View>
   );
+}
+
+function CustomItem(props: Props) {
+  return <BaseListItem {...props} />;
 }
 
 interface TokenItemProps {
@@ -219,14 +224,60 @@ function AccountItem({
   );
 }
 
-function SimpleItem(props: Props) {
-  return <BaseListItem {...props} />;
+type ActivityItemProps = {
+  balance: number;
+  movement?: number;
+} & TokenItemProps;
+
+function ActivityItem({
+  tokenName,
+  tokenPrice,
+  symbol,
+  balance,
+  movement,
+  onPress,
+}: ActivityItemProps) {
+  const context = useContext(ApplicationContext);
+
+  const rightComponent = (
+    <View style={{alignItems: 'flex-end'}}>
+      <Text
+        style={[styles.tokenNativeValue, {color: context.theme.txtListItem}]}>
+        {`${tokenPrice} ${symbol?.toUpperCase()}`}
+      </Text>
+      <Text
+        style={[
+          styles.tokenUsdValue,
+          {color: context.theme.txtListItemSubscript},
+        ]}>
+        {`${tokenPrice} USD`}
+      </Text>
+    </View>
+  );
+
+  return (
+    <View
+      style={[
+        styles.tokenItem,
+        context.shadow,
+        {backgroundColor: context.theme.bgOnBgApp},
+      ]}>
+      <BaseListItem
+        title={tokenName}
+        subtitle={`Bal: ${balance}`}
+        leftComponent={<MovementIndicator metric={movement} />}
+        rightComponent={rightComponent}
+        onPress={onPress}
+      />
+    </View>
+  );
 }
 
 const AvaListItem = {
   Token: TokenItem,
   Account: AccountItem,
-  Simple: SimpleItem,
+  Activity: ActivityItem,
+  Custom: CustomItem,
 };
 
 export default AvaListItem;
