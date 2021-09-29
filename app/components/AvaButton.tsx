@@ -1,9 +1,10 @@
 import React, {FC, useContext} from 'react';
-import {StyleSheet, Text, TouchableNativeFeedback, View} from 'react-native';
+import {StyleSheet, TouchableNativeFeedback, View} from 'react-native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
+import AvaText from './AvaText';
 
 interface BaseProps {
-  onPress: () => void;
+  onPress?: () => void;
   disabled?: boolean;
   style?: any;
 }
@@ -21,9 +22,73 @@ const AvaButtonBase: FC<BaseProps> = ({onPress, style, disabled, children}) => {
   );
 };
 
-const AvaButtonIcon: FC<BaseProps> = ({onPress, children}) => {
+const AvaButtonIcon: FC<BaseProps> = ({disabled, onPress, children}) => {
   return (
-    <AvaButtonBase onPress={onPress} style={styles.buttonIcon}>
+    <AvaButtonBase
+      disabled={disabled}
+      onPress={onPress}
+      style={styles.buttonIcon}>
+      {children}
+    </AvaButtonBase>
+  );
+};
+
+const BtnPrimary: FC<BaseProps> = ({onPress, disabled, children, style}) => {
+  const theme = useContext(ApplicationContext).theme;
+  return (
+    <AvaButtonBase
+      disabled={disabled}
+      onPress={onPress}
+      style={[
+        {
+          alignItems: 'center',
+          borderRadius: 8,
+          backgroundColor: disabled ? theme.colorDisabled : theme.colorPrimary1,
+        },
+        style,
+      ]}>
+      {children}
+    </AvaButtonBase>
+  );
+};
+
+const BtnSecondary: FC<BaseProps> = ({onPress, disabled, children, style}) => {
+  const theme = useContext(ApplicationContext).theme;
+  return (
+    <AvaButtonBase
+      disabled={disabled}
+      onPress={onPress}
+      style={[
+        {
+          alignItems: 'center',
+          borderColor: disabled ? theme.colorDisabled : theme.colorPrimary1,
+          backgroundColor: theme.transparent,
+          justifyContent: 'center',
+          borderRadius: 8,
+          borderWidth: 2,
+        },
+        style,
+      ]}>
+      {children}
+    </AvaButtonBase>
+  );
+};
+
+const BtnText: FC<BaseProps> = ({onPress, disabled, children, style}) => {
+  const theme = useContext(ApplicationContext).theme;
+  return (
+    <AvaButtonBase
+      disabled={disabled}
+      onPress={onPress}
+      style={[
+        {
+          alignItems: 'center',
+          height: 48,
+          justifyContent: 'center',
+          backgroundColor: theme.transparent,
+        },
+        style,
+      ]}>
       {children}
     </AvaButtonBase>
   );
@@ -32,56 +97,69 @@ const AvaButtonIcon: FC<BaseProps> = ({onPress, children}) => {
 const BtnPrimaryLarge: FC<BaseProps> = ({onPress, disabled, children}) => {
   const theme = useContext(ApplicationContext).theme;
   return (
-    <AvaButtonBase
+    <BtnPrimary
+      disabled={disabled}
       onPress={onPress}
-      style={[
-        styles.btnPrimaryLarge,
-        {
-          backgroundColor: disabled ? theme.colorDisabled : theme.colorPrimary1,
-        },
-      ]}>
-      <Text
-        style={[
-          styles.btnPrimaryLargeText,
-          {
-            color: disabled ? theme.colorText2 : theme.colorText3,
-          },
-        ]}>
+      style={styles.btnPrimaryLarge}>
+      <AvaText.ButtonLarge
+        textStyle={{color: disabled ? theme.colorText2 : theme.colorText3}}>
         {children}
-      </Text>
-    </AvaButtonBase>
+      </AvaText.ButtonLarge>
+    </BtnPrimary>
+  );
+};
+
+const BtnPrimaryMedium: FC<BaseProps> = ({onPress, disabled, children}) => {
+  const theme = useContext(ApplicationContext).theme;
+  return (
+    <BtnPrimary
+      disabled={disabled}
+      onPress={onPress}
+      style={styles.btnPrimaryMedium}>
+      <AvaText.ButtonMedium
+        textStyle={{color: disabled ? theme.colorText2 : theme.colorText3}}>
+        {children}
+      </AvaText.ButtonMedium>
+    </BtnPrimary>
   );
 };
 
 const BtnSecondaryLarge: FC<BaseProps> = ({onPress, disabled, children}) => {
   const theme = useContext(ApplicationContext).theme;
   return (
-    <AvaButtonBase
+    <BtnSecondary
       onPress={onPress}
       disabled={disabled}
-      style={[
-        styles.btnSecondaryLarge,
-        {
-          borderColor: disabled ? theme.colorDisabled : theme.colorPrimary1,
-          backgroundColor: theme.transparent,
-        },
-      ]}>
-      <Text
-        style={[
-          styles.btnSecondaryLargeText,
-          {
-            color: disabled ? theme.colorDisabled : theme.colorPrimary1,
-          },
-        ]}>
+      style={styles.btnSecondaryLarge}>
+      <AvaText.ButtonLarge
+        textStyle={{
+          color: disabled ? theme.colorDisabled : theme.colorPrimary1,
+        }}>
         {children}
-      </Text>
-    </AvaButtonBase>
+      </AvaText.ButtonLarge>
+    </BtnSecondary>
+  );
+};
+
+const BtnTextLarge: FC<BaseProps> = ({onPress, disabled, children}) => {
+  const theme = useContext(ApplicationContext).theme;
+  return (
+    <BtnText onPress={onPress} style={styles.btnTextLarge} disabled={disabled}>
+      <AvaText.ButtonMedium
+        textStyle={{
+          color: disabled ? theme.colorDisabled : theme.colorPrimary1,
+        }}>
+        {children}
+      </AvaText.ButtonMedium>
+    </BtnText>
   );
 };
 
 const AvaButton = {
   PrimaryLarge: BtnPrimaryLarge,
+  PrimaryMedium: BtnPrimaryMedium,
   SecondaryLarge: BtnSecondaryLarge,
+  TextLarge: BtnTextLarge,
   Base: AvaButtonBase,
   Icon: AvaButtonIcon,
 };
@@ -97,35 +175,25 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   btnPrimaryLarge: {
-    justifyContent: 'center',
     paddingHorizontal: 24,
     paddingVertical: 12,
-    borderRadius: 8,
     width: 'auto',
     height: 48,
+  },
+  btnPrimaryMedium: {
+    paddingHorizontal: 32,
+    paddingVertical: 8,
+    height: 40,
   },
   btnSecondaryLarge: {
-    justifyContent: 'center',
-    paddingHorizontal: 24,
     paddingVertical: 12,
-    borderRadius: 8,
-    borderWidth: 2,
+    paddingHorizontal: 24,
     width: 'auto',
     height: 48,
   },
-  btnPrimaryLargeText: {
-    fontSize: 18,
-    lineHeight: 24,
-    fontWeight: '700',
-    fontFamily: 'Inter-Regular',
-    textAlign: 'center',
-  },
-  btnSecondaryLargeText: {
-    fontSize: 18,
-    lineHeight: 22,
-    fontWeight: '700',
-    fontFamily: 'Inter-Regular',
-    textAlign: 'center',
+  btnTextLarge: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
 });
 
