@@ -3,7 +3,7 @@ import {ToastAndroid, View} from 'react-native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from 'components/AvaText';
 import AvaButton from 'components/AvaButton';
-import Divider from 'components/Divider';
+import {Space} from 'components/Space';
 import OvalTagBg from 'components/OvalTagBg';
 import FlexSpacer from 'components/FlexSpacer';
 import CopySVG from 'components/svg/CopySVG';
@@ -37,7 +37,7 @@ function AccountChainAddress({title, address, color}: Props): JSX.Element {
         <AvaText.Heading3>{title}</AvaText.Heading3>
         <FlexSpacer />
         <AvaText.Heading3>{address}</AvaText.Heading3>
-        <Divider size={16} />
+        <Space y={16} />
         <AvaButton.Base onPress={() => copyToClipboard(address)}>
           <CopySVG color={context.theme.txtOnBgApp} />
         </AvaButton.Base>
