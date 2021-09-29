@@ -1,4 +1,5 @@
 export enum COLORS_DAY {
+  background = '#ffffff',
   colorPrimary1 = '#F64942',
   colorPrimary2 = '#E84142',
   colorError = '#C52926',
@@ -79,6 +80,7 @@ export enum COLORS_DAY {
 }
 
 export enum COLORS_NIGHT {
+  background = '#000000',
   colorPrimary1 = '#F1595A',
   colorPrimary2 = '#E6787B',
   colorError = '#F34333',
