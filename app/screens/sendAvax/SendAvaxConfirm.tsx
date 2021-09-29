@@ -1,7 +1,7 @@
 import React, {useContext, useState} from 'react';
 import {Image, View} from 'react-native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
-import Divider from 'components/Divider';
+import {Space} from 'components/Space';
 import ButtonAva from 'components/ButtonAva';
 import TextTitle from 'components/TextTitle';
 import OvalTagBg from 'components/OvalTagBg';
@@ -36,23 +36,23 @@ export default function SendAvaxConfirm(
           paddingRight: 0,
         },
       ]}>
-      <Divider size={40} />
+      <Space y={40} />
       <Image
         style={{width: 40, height: 40}}
         width={40}
         height={40}
         source={{uri: props.tokenImageUrl}}
       />
-      <Divider size={16} />
+      <Space y={16} />
       <TextTitle text={props.tokenAmount} size={24} bold />
-      <Divider size={8} />
+      <Space y={8} />
       <TextTitle text={props.fiatAmount} size={14} />
 
-      <Divider size={32} />
+      <Space y={32} />
       <OvalTagBg color={context.theme.bgApp}>
         <AvaText.Tag>Send to</AvaText.Tag>
       </OvalTagBg>
-      <Divider size={32} />
+      <Space y={32} />
 
       <View style={{paddingLeft: 24, paddingRight: 24}}>
         <AvaText.Heading2>{props.destinationAddress}</AvaText.Heading2>

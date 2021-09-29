@@ -41,7 +41,7 @@ export const ApplicationContextProvider = ({children}: {children: any}) => {
   const [isDarkMode] = useState(Appearance.getColorScheme() === 'dark');
   const [theme] = useState(isDarkMode ? COLORS_NIGHT : COLORS_DAY);
   const [backgroundStyle] = useState({
-    backgroundColor: theme.bgApp,
+    backgroundColor: theme.background,
     flex: 1,
     paddingBottom: 16,
     paddingStart: 16,
@@ -49,7 +49,7 @@ export const ApplicationContextProvider = ({children}: {children: any}) => {
   } as BackgroundStyle);
 
   const [appBackgroundStyle] = useState({
-    backgroundColor: theme.bgApp,
+    backgroundColor: theme.background,
     flex: 1,
   } as AppBackgroundStyle);
 
@@ -57,10 +57,10 @@ export const ApplicationContextProvider = ({children}: {children: any}) => {
     dark: isDarkMode,
     colors: {
       primary: theme.accentColor,
-      background: theme.bgApp,
+      background: theme.background,
       text: theme.txtOnBgApp,
       card: theme.bgOnBgApp,
-      border: theme.bgApp,
+      border: theme.background,
       notification: theme.accentColor,
     },
   } as Theme);

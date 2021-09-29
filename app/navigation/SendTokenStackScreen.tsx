@@ -11,7 +11,7 @@ import SendAvaxConfirm from 'screens/sendAvax/SendAvaxConfirm';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import SendAvax from 'screens/sendAvax/SendAvax';
 import {Image, StyleSheet, View} from 'react-native';
-import Divider from 'components/Divider';
+import {Space} from 'components/Space';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import AvaText from 'components/AvaText';
 import ButtonAva from 'components/ButtonAva';
@@ -216,9 +216,9 @@ function DoneScreen({onClose}: DoneProps) {
           paddingEnd: 0,
         },
       ]}>
-      <Divider size={100} />
+      <Space y={100} />
       <AvaLogoSVG />
-      <Divider size={32} />
+      <Space y={32} />
       <AvaText.Heading2>Asset sent</AvaText.Heading2>
       <View style={{flex: 1}} />
       <View style={{width: '100%'}}>
