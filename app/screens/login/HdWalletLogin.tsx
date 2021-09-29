@@ -1,17 +1,24 @@
-import React from 'react';
+import React, {useContext, useState} from 'react';
 import {ScrollView, StyleSheet, View} from 'react-native';
-import Header from 'screens/mainView/Header';
-import TextTitle from 'components/TextTitle';
 import WalletSDK from 'utils/WalletSDK';
-import RecoveryPhraseInputCard from 'components/RecoveryPhraseInputCard';
+import TextArea from 'components/TextArea';
 import ButtonAvaTextual from 'components/ButtonAvaTextual';
+import AvaText from 'components/AvaText';
+import {ApplicationContext} from 'contexts/ApplicationContext';
 
 type Props = {
   onEnterWallet: (mnemonic: string) => void;
   onBack: () => void;
 };
 
-export default function HdWalletLogin(props: Props | Readonly<Props>) {
+export default function HdWalletLogin(
+  props: Props | Readonly<Props>,
+): JSX.Element {
+  const context = useContext(ApplicationContext);
+  const [errorMessage, setErrorMessage] = useState<string | undefined>(
+    undefined,
+  );
+
   const onEnterTestWallet = (): void => {
     props.onEnterWallet(WalletSDK.testMnemonic());
   };
@@ -20,24 +27,41 @@ export default function HdWalletLogin(props: Props | Readonly<Props>) {
     props.onBack();
   };
 
+  const onEnterWallet = (mnemonic: string) => {
+    try {
+      WalletSDK.getMnemonicValet(mnemonic);
+      props.onEnterWallet(mnemonic);
+    } catch (e) {
+      setErrorMessage('Invalid recovery phrase');
+    }
+  };
+
   return (
     <ScrollView
-      contentContainerStyle={styles.scrollView}
+      contentContainerStyle={styles.fullHeight}
       keyboardShouldPersistTaps="handled">
-      <View style={styles.verticalLayout}>
-        <Header showBack onBack={onBack} />
-        <View style={[{height: 8}]} />
-
-        <TextTitle text={'Wallet'} textAlign={'center'} bold={true} />
+      <View style={styles.fullHeight}>
+        <AvaText.LargeTitleBold
+          textStyle={{textAlign: 'center', marginTop: 100}}>
+          Wallet
+        </AvaText.LargeTitleBold>
+        <View
+          style={[styles.overlay, {backgroundColor: context.theme.overlay}]}
+        />
         <View style={[{flexGrow: 1, justifyContent: 'flex-end'}]}>
           <ButtonAvaTextual
             text={'Enter test HD wallet'}
             onPress={onEnterTestWallet}
           />
           <View style={[{padding: 16}]}>
-            <RecoveryPhraseInputCard
-              onCancel={onBack}
-              onEnter={mnemonic => props.onEnterWallet(mnemonic)}
+            <TextArea
+              btnPrimaryText={'Sign in'}
+              btnSecondaryText={'Cancel'}
+              heading={'Recovery phrase'}
+              onBtnSecondary={onBack}
+              onChangeText={() => setErrorMessage(undefined)}
+              errorMessage={errorMessage}
+              onBtnPrimary={onEnterWallet}
             />
           </View>
         </View>
@@ -47,10 +71,12 @@ export default function HdWalletLogin(props: Props | Readonly<Props>) {
 }
 
 const styles = StyleSheet.create({
-  scrollView: {
+  fullHeight: {
     height: '100%',
   },
-  verticalLayout: {
+  overlay: {
+    position: 'absolute',
     height: '100%',
+    width: '100%',
   },
 });

@@ -2,7 +2,7 @@ import React, {useContext} from 'react';
 import {StyleSheet, TextInput, View} from 'react-native';
 import TextTitle from 'components/TextTitle';
 import {ApplicationContext} from 'contexts/ApplicationContext';
-import Divider from 'components/Divider';
+import {Space} from 'components/Space';
 
 type InputProps = {
   keyNum: number;
@@ -22,7 +22,7 @@ function MnemonicInput(props: InputProps | Readonly<InputProps>) {
           color={theme.txtDim}
         />
       </View>
-      <Divider size={4} />
+      <Space y={4} />
       <TextInput
         autoCapitalize="none"
         enablesReturnKeyAutomatically={true}
@@ -62,7 +62,7 @@ function MnemonicText(props: TextProps | Readonly<TextProps>) {
           color={theme.txtDim}
         />
       </View>
-      <Divider size={4} />
+      <Space y={4} />
       <TextTitle text={props.text} size={16} />
     </View>
   );

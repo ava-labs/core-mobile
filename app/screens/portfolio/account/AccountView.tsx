@@ -8,7 +8,7 @@ import {
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from 'components/AvaText';
 import AddSVG from 'components/svg/AddSVG';
-import Divider from 'components/Divider';
+import {Space} from 'components/Space';
 import AccountItem from 'screens/portfolio/account/AccountItem';
 import {useAccount} from 'screens/portfolio/account/useAccount';
 import {Account} from 'dto/Account';
@@ -59,7 +59,7 @@ function AccountView(): JSX.Element {
         <AvaText.Heading1>My accounts</AvaText.Heading1>
         <AddSVG />
       </View>
-      <Divider size={16} />
+      <Space y={16} />
       {
         //todo: wrap accountElements in card carousel
       }
