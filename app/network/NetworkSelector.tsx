@@ -13,18 +13,20 @@ import CheckmarkSVG from 'components/svg/CheckmarkSVG';
 interface Props {
   toggleOpenClose: () => void;
   isExpanded: boolean;
+  closeDrawer: () => void;
 }
 
 const paddingTop = 24;
 const marginEnd = 12;
 const DOT = '\u25CF';
 
-const NetworkSelector: FC<Props> = ({toggleOpenClose, isExpanded}) => {
+const NetworkSelector: FC<Props> = ({toggleOpenClose, isExpanded, closeDrawer}) => {
   const context = useContext(ApplicationContext);
   const theme = context.theme;
   const networkContext = useNetworkContext();
   const [networkName, setNetworkName] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isChanging, setIsChanging] = useState(false);
 
   const availableNetworks = useMemo(() => {
     return {
@@ -37,11 +39,15 @@ const NetworkSelector: FC<Props> = ({toggleOpenClose, isExpanded}) => {
     if (networkName != networkContext?.network?.name) {
       setNetworkName(networkContext?.network?.name ?? '');
       setLoading(false);
+      if (isChanging) {
+        closeDrawer();
+      }
     }
   }, [networkContext?.network?.config]);
 
   function handleChangeNetwork(network: string) {
     setLoading(true);
+    setIsChanging(true);
     // give chance for loading to be set and show the activity indicator.
     setTimeout(() => {
       networkContext?.setNetwork(availableNetworks[network]);
