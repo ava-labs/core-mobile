@@ -3,7 +3,6 @@ import {Alert, Pressable, StyleSheet, View} from 'react-native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import AvaText from 'components/AvaText';
-import CarrotSVG from 'components/svg/CarrotSVG';
 import BottomSheet, {BottomSheetScrollView} from '@gorhom/bottom-sheet';
 import {DrawerContentComponentProps} from '@react-navigation/drawer';
 import CurrencyItem from 'screens/drawer/components/CurrencyItem';
@@ -16,14 +15,9 @@ import ButtonAvaTextual from 'components/ButtonAvaTextual';
 import AppViewModel from 'AppViewModel';
 import LightModeSVG from 'components/svg/LightModeSVG';
 import DarkModeSVG from 'components/svg/DarkModeSVG';
-import {
-  FUJI_NETWORK,
-  MAINNET_NETWORK,
-  useNetworkContext,
-} from '@avalabs/wallet-react-components';
 import NetworkSelector from 'network/NetworkSelector';
 
-const DrawerView: FC<DrawerContentComponentProps> = props => {
+const DrawerView: FC<DrawerContentComponentProps> = () => {
   const context = useContext(ApplicationContext);
   const bottomSheetRef = useRef<BottomSheet>(null);
   const [openNetworkSwitcher, setOpenNetworkSwitcher] = useState(false);

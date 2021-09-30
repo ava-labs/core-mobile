@@ -1,5 +1,5 @@
 import React, {useContext, useEffect, useState} from 'react';
-import {BackHandler, StyleSheet, View} from 'react-native';
+import {BackHandler, StyleSheet} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {NavigationContainer, useFocusEffect} from '@react-navigation/native';
 import EarnView from 'screens/earn/EarnView';
@@ -20,26 +20,7 @@ import Loader from 'components/Loader';
 import Activity from 'screens/activity/ActivityView';
 import TransactionDetailBottomSheet from 'screens/activity/TransactionDetailBottomSheet';
 import WatchlistSVG from 'components/svg/WatchlistSVG';
-import {
-  createDrawerNavigator,
-  DrawerContentScrollView,
-  DrawerItemList,
-} from '@react-navigation/drawer';
-import AvaLogoSVG from 'components/svg/AvaLogoSVG';
-import AvaText from 'components/AvaText';
-import DotSVG from 'components/svg/DotSVG';
-import CarrotSVG from 'components/svg/CarrotSVG';
-import BottomSheet, {BottomSheetScrollView} from '@gorhom/bottom-sheet';
-import CurrencyItem from 'screens/drawer/components/CurrencyItem';
-import {Colors} from 'react-native/Libraries/NewAppScreen';
-import SecurityItem from 'screens/drawer/components/SecurityItem';
-import LegalItem from 'screens/drawer/components/LegalItem';
-import AdvancedItem from 'screens/drawer/components/AdvancedItem';
-import Divider from 'components/Divider';
-import Separator from 'components/Separator';
-import VersionItem from 'screens/drawer/components/VersionItem';
-import ButtonAvaTextual from 'components/ButtonAvaTextual';
-import TextButtonTextual from 'components/TextButtonTextual';
+import {createDrawerNavigator} from '@react-navigation/drawer';
 import DrawerView from 'screens/drawer/DrawerView';
 
 type Props = {
