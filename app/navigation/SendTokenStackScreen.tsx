@@ -14,19 +14,18 @@ import {Image, StyleSheet, View} from 'react-native';
 import {Space} from 'components/Space';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import AvaText from 'components/AvaText';
-import ButtonAva from 'components/ButtonAva';
 import AppNavigation from 'navigation/AppNavigation';
 import AvaListItem from 'components/AvaListItem';
 import TextTitle from 'components/TextTitle';
 import ClearSVG from 'components/svg/ClearSVG';
 import TabViewAva from 'components/TabViewAva';
 import ReceiveToken from 'screens/receive/ReceiveToken';
-import TransactionsView from 'screens/transactions/TransactionsView';
 import OvalTagBg from 'components/OvalTagBg';
 import {usePortfolio} from 'screens/portfolio/usePortfolio';
 import {ERC20} from '@avalabs/wallet-react-components';
 import {AvaxToken} from 'dto/AvaxToken';
 import ActivityView from 'screens/activity/ActivityView';
+import AvaButton from 'components/AvaButton';
 
 const Stack = createStackNavigator();
 
@@ -222,7 +221,7 @@ function DoneScreen({onClose}: DoneProps) {
       <AvaText.Heading2>Asset sent</AvaText.Heading2>
       <View style={{flex: 1}} />
       <View style={{width: '100%'}}>
-        <ButtonAva text={'Done'} onPress={onClose} />
+        <AvaButton.PrimaryLarge onPress={onClose}>Done</AvaButton.PrimaryLarge>
       </View>
     </View>
   );
