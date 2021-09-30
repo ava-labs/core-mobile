@@ -11,11 +11,11 @@ import LegalItem from 'screens/drawer/components/LegalItem';
 import AdvancedItem from 'screens/drawer/components/AdvancedItem';
 import Separator from 'components/Separator';
 import VersionItem from 'screens/drawer/components/VersionItem';
-import ButtonAvaTextual from 'components/ButtonAvaTextual';
 import AppViewModel from 'AppViewModel';
 import LightModeSVG from 'components/svg/LightModeSVG';
 import DarkModeSVG from 'components/svg/DarkModeSVG';
 import NetworkSelector from 'network/NetworkSelector';
+import AvaButton from 'components/AvaButton';
 
 const DrawerView: FC<DrawerContentComponentProps> = () => {
   const context = useContext(ApplicationContext);
@@ -60,11 +60,14 @@ const DrawerView: FC<DrawerContentComponentProps> = () => {
       </BottomSheetScrollView>
       <Separator />
       <VersionItem />
-      <ButtonAvaTextual
-        text={'Sign out'}
-        onPress={() => AppViewModel.onLogout()}
-        centered={false}
-      />
+
+      <AvaButton.TextLarge
+        style={{
+          alignItems: 'flex-start',
+        }}
+        onPress={() => AppViewModel.onLogout()}>
+        Sign out
+      </AvaButton.TextLarge>
     </>
   );
 

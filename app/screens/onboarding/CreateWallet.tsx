@@ -3,7 +3,6 @@ import {Image, StyleSheet, ToastAndroid, View} from 'react-native';
 import CreateWalletViewModel from './CreateWalletViewModel';
 import TextTitle from 'components/TextTitle';
 import Clipboard from '@react-native-clipboard/clipboard';
-import ButtonAvaTextual from 'components/ButtonAvaTextual';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import HeaderProgress from 'screens/mainView/HeaderProgress';
 import MnemonicAva from 'screens/onboarding/MnemonicAva';
@@ -114,7 +113,9 @@ export default function CreateWallet(
         </View>
       </View>
 
-      <ButtonAvaTextual text={'Copy phrase'} onPress={copyToClipboard} />
+      <AvaButton.TextLarge onPress={copyToClipboard}>
+        Copy phrase
+      </AvaButton.TextLarge>
       <AvaButton.PrimaryLarge style={{margin: 16}} onPress={onSavedMyPhrase}>
         Next
       </AvaButton.PrimaryLarge>
