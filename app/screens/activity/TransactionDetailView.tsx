@@ -1,14 +1,14 @@
-import React, {FC, useContext} from 'react';
+import React, {useContext} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from 'components/AvaText';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import AvaListItem from 'components/AvaListItem';
 import LinkSVG from 'components/svg/LinkSVG';
-import ButtonAvaTextual from 'components/ButtonAvaTextual';
 import ArrowSVG from 'components/svg/ArrowSVG';
+import AvaButton from 'components/AvaButton';
 
-function TransactionDetailView() {
+function TransactionDetailView(): JSX.Element {
   const theme = useContext(ApplicationContext).theme;
 
   const tokenLogo = (
@@ -59,11 +59,13 @@ function TransactionDetailView() {
           alignItems: 'center',
         }}>
         <LinkSVG />
-        <ButtonAvaTextual text="View on Explorer" onPress={() => {}} />
+        <AvaButton.TextLarge onPress={() => {}}>
+          View on Explorer
+        </AvaButton.TextLarge>
       </View>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   logoContainer: {

@@ -3,7 +3,7 @@ import {ScrollView, StyleSheet, View} from 'react-native';
 import Header from 'screens/mainView/Header';
 import TextTitle from 'components/TextTitle';
 import InputText from 'components/InputText';
-import ButtonAva from 'components/ButtonAva';
+import AvaButton from 'components/AvaButton';
 
 type Props = {
   onEnterSingletonWallet: (privateKey: string) => void;
@@ -33,10 +33,11 @@ export default function PrivateKeyLogin(props: Props | Readonly<Props>) {
           value={privateKey}
         />
         <View style={[{flexGrow: 1}]} />
-        <ButtonAva
-          text={'Enter singleton wallet'}
-          onPress={() => props.onEnterSingletonWallet(privateKey)}
-        />
+
+        <AvaButton.PrimaryLarge
+          onPress={() => props.onEnterSingletonWallet(privateKey)}>
+          Enter singleton wallet
+        </AvaButton.PrimaryLarge>
       </View>
     </ScrollView>
   );

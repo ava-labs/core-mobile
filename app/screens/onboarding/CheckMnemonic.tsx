@@ -1,11 +1,11 @@
 import React, {useEffect, useState} from 'react';
 import {Alert, ScrollView, StyleSheet, View} from 'react-native';
 import TextTitle from 'components/TextTitle';
-import ButtonAva from 'components/ButtonAva';
 import CheckMnemonicViewModel from './CheckMnemonicViewModel';
 import {Subscription} from 'rxjs';
 import HeaderProgress from 'screens/mainView/HeaderProgress';
 import MnemonicAva from 'screens/onboarding/MnemonicAva';
+import AvaButton from 'components/AvaButton';
 
 type Props = {
   onSuccess: () => void;
@@ -13,7 +13,9 @@ type Props = {
   mnemonic: string;
 };
 
-export default function CheckMnemonic(props: Props | Readonly<Props>) {
+export default function CheckMnemonic(
+  props: Props | Readonly<Props>,
+): JSX.Element {
   const [viewModel] = useState(new CheckMnemonicViewModel(props.mnemonic));
   const [enteredMnemonics, setEnteredMnemonics] = useState(new Map());
   const [enabledInputs, setEnabledInputs] = useState(new Map());
@@ -81,7 +83,9 @@ export default function CheckMnemonic(props: Props | Readonly<Props>) {
       <View style={styles.growContainer}>
         <View style={styles.mnemonics}>{mnemonics()}</View>
       </View>
-      <ButtonAva text={'Next'} onPress={onVerify} />
+      <AvaButton.PrimaryLarge style={{margin: 16}} onPress={onVerify}>
+        Next
+      </AvaButton.PrimaryLarge>
     </ScrollView>
   );
 }

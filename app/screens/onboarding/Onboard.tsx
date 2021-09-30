@@ -16,7 +16,7 @@ type Props = {
 
 const pkg = require('../../../package.json');
 
-export default function Onboard(props: Props | Readonly<Props>) {
+export default function Onboard(props: Props | Readonly<Props>): JSX.Element {
   const context = useContext(ApplicationContext);
   const networkContext = useNetworkContext();
   const [networkName, setNetworkName] = useState('');
@@ -51,9 +51,9 @@ export default function Onboard(props: Props | Readonly<Props>) {
         />
       </View>
 
-      <AvaButton.SecondaryLarge onPress={onAlreadyHaveWallet}>
+      <AvaButton.TextLarge onPress={onAlreadyHaveWallet}>
         I already have a wallet
-      </AvaButton.SecondaryLarge>
+      </AvaButton.TextLarge>
 
       <Space y={16} />
 

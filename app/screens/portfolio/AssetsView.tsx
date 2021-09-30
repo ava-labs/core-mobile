@@ -5,14 +5,14 @@ import TextTitle from 'components/TextTitle';
 import {SceneMap, TabView} from 'react-native-tab-view';
 import AssetsItem from './AssetsItem';
 import TabBarAva from 'components/TabBarAva';
-import ButtonAva from 'components/ButtonAva';
 import AssetsAddToken from './AssetsAddToken';
 import {TokenItem, useTokenAssets} from 'screens/portfolio/AssetsTokenHook';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import {useWalletContext} from '@avalabs/wallet-react-components/lib/index.es';
 import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
+import AvaButton from 'components/AvaButton';
 
-export default function AssetsView() {
+export default function AssetsView(): JSX.Element {
   const context = useContext(ApplicationContext);
   const walletContext = useWalletContext();
   const [addTokenVisible, setAddTokenVisible] = useState(false);
@@ -55,7 +55,11 @@ export default function AssetsView() {
         renderTabBar={TabBarAva}
         onIndexChange={index => setIndex(index)}
       />
-      <ButtonAva text={'Add token'} onPress={() => setAddTokenVisible(true)} />
+      <AvaButton.PrimaryLarge
+        style={{margin: 16}}
+        onPress={() => setAddTokenVisible(true)}>
+        Add token
+      </AvaButton.PrimaryLarge>
 
       <Modal
         animationType="slide"

@@ -4,14 +4,16 @@ import TextTitle from 'components/TextTitle';
 import Header from 'screens/mainView/Header';
 import AssetsAddTokenViewModel from './AssetsAddTokenViewModel';
 import InputText from 'components/InputText';
-import ButtonAva from 'components/ButtonAva';
 import {ApplicationContext} from 'contexts/ApplicationContext';
+import AvaButton from 'components/AvaButton';
 
 type Props = {
   onClose: () => void;
 };
 
-export default function AssetsAddToken(props: Props | Readonly<Props>) {
+export default function AssetsAddToken(
+  props: Props | Readonly<Props>,
+): JSX.Element {
   const context = useContext(ApplicationContext);
   const [viewModel] = useState(new AssetsAddTokenViewModel());
   const [backgroundStyle] = useState(context.backgroundStyle);
@@ -78,11 +80,12 @@ export default function AssetsAddToken(props: Props | Readonly<Props>) {
       <InputText editable={false} multiline={true} value={tokenDecimals} />
 
       <View style={[{flexGrow: 1, justifyContent: 'flex-end'}]}>
-        <ButtonAva
+        <AvaButton.PrimaryLarge
           disabled={addTokenBtnDisabled}
-          text={'Add token'}
-          onPress={onAddToken}
-        />
+          style={{margin: 16}}
+          onPress={onAddToken}>
+          Add token
+        </AvaButton.PrimaryLarge>
       </View>
     </SafeAreaView>
   );
