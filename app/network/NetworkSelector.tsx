@@ -1,5 +1,5 @@
 import React, {FC, useContext, useEffect, useState} from 'react';
-import {Pressable, View} from 'react-native';
+import {ActivityIndicator, Pressable, StyleSheet, View} from 'react-native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from 'components/AvaText';
 import CarrotSVG from 'components/svg/CarrotSVG';
@@ -17,17 +17,34 @@ interface Props {
 
 const paddingTop = 24;
 const marginEnd = 12;
-const MAINNET_NAME = 'Avalanche Mainnet';
-const FUJI_NAME = 'Avalanche FUJI';
+const DOT = '\u25CF';
+
+const availableNetworks = {
+  [MAINNET_NETWORK.name]: MAINNET_NETWORK,
+  [FUJI_NETWORK.name]: FUJI_NETWORK,
+};
 
 const NetworkSelector: FC<Props> = ({toggleOpenClose, isExpanded}) => {
-  const theme = useContext(ApplicationContext).theme;
+  const context = useContext(ApplicationContext);
+  const theme = context.theme;
   const networkContext = useNetworkContext();
   const [networkName, setNetworkName] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    setNetworkName(networkContext?.network?.name ?? '');
-  }, [networkContext?.network]);
+    if (networkName != networkContext?.network?.name) {
+      setNetworkName(networkContext?.network?.name ?? '');
+      setLoading(false);
+    }
+  }, [networkContext?.network?.config]);
+
+  function handleChangeNetwork(network: string) {
+    setLoading(true);
+    // give chance for loading to be set and show the activity indicator.
+    setTimeout(() => {
+      networkContext?.setNetwork(availableNetworks[network]);
+    }, 500);
+  }
 
   return (
     <View style={{backgroundColor: theme.bgApp}}>
@@ -37,7 +54,7 @@ const NetworkSelector: FC<Props> = ({toggleOpenClose, isExpanded}) => {
         <AvaText.Body2
           color={theme.txtListItem}
           textStyle={{marginEnd: marginEnd}}>
-          {networkName}
+          {`${DOT} ${networkName}`}
         </AvaText.Body2>
         <CarrotSVG direction={isExpanded ? 'up' : 'down'} size={12} />
       </Pressable>
@@ -48,7 +65,7 @@ const NetworkSelector: FC<Props> = ({toggleOpenClose, isExpanded}) => {
           alignItems: 'center',
           marginTop: paddingTop,
         }}
-        onPress={() => networkContext?.setNetwork?.(MAINNET_NETWORK)}>
+        onPress={() => handleChangeNetwork(MAINNET_NETWORK.name)}>
         <AvaText.Body2 color={theme.txtListItem}>
           {MAINNET_NETWORK.name}
         </AvaText.Body2>
@@ -61,7 +78,7 @@ const NetworkSelector: FC<Props> = ({toggleOpenClose, isExpanded}) => {
           alignItems: 'center',
           marginTop: paddingTop,
         }}
-        onPress={() => networkContext?.setNetwork?.(FUJI_NETWORK)}>
+        onPress={() => handleChangeNetwork(FUJI_NETWORK.name)}>
         <AvaText.Body2 color={theme.txtListItem}>
           {FUJI_NETWORK.name}
         </AvaText.Body2>
@@ -72,6 +89,25 @@ const NetworkSelector: FC<Props> = ({toggleOpenClose, isExpanded}) => {
         textStyle={{paddingTop: paddingTop}}>
         Add Network
       </AvaText.Body2>
+      {loading && (
+        <ActivityIndicator
+          size={'small'}
+          color={context.isDarkMode ? '#FFF' : '#000'}
+          style={[
+            StyleSheet.absoluteFill,
+            {
+              backgroundColor: 'rgba(0, 0, 0, 0.1)',
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              top: 0,
+              bottom: 0,
+              alignItems: 'center',
+              justifyContent: 'center',
+            },
+          ]}
+        />
+      )}
     </View>
   );
 };
