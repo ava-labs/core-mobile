@@ -11,8 +11,8 @@ import CarrotSVG from 'components/svg/CarrotSVG';
 import SearchSVG from 'components/svg/SearchSVG';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import {ApplicationContext} from 'contexts/ApplicationContext';
-import ArrowSVG from 'components/svg/ArrowSVG';
 import MovementIndicator from 'components/MovementIndicator';
+import MenuSVG from 'components/svg/MenuSVG';
 
 interface Props {
   rightComponent?: React.ReactNode;
@@ -38,7 +38,7 @@ function BaseListItem({
   const context = useContext(ApplicationContext);
 
   return (
-    <View style={{paddingVertical: 16, }}>
+    <View style={{paddingVertical: 16}}>
       <TouchableOpacity
         style={styles.baseRowContainer}
         disabled={listPressDisabled}
@@ -179,7 +179,7 @@ function AccountItem({
 
   const leftComponent = (
     <TouchableOpacity onPress={onLeftComponentPress}>
-      <SearchSVG />
+      <MenuSVG />
     </TouchableOpacity>
   );
 
