@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, {memo, useContext, useEffect, useState} from 'react';
 import {BackHandler, StyleSheet} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {NavigationContainer, useFocusEffect} from '@react-navigation/native';
@@ -38,7 +38,7 @@ const Tab = createBottomTabNavigator();
 const RootStack = createStackNavigator();
 const DrawerStack = createDrawerNavigator();
 
-export default function WalletStackScreen(props: Props | Readonly<Props>) {
+function WalletStackScreen(props: Props | Readonly<Props>) {
   const context = useContext(ApplicationContext);
   const [walletReady, setWalletReady] = useState(false);
   const walletStateContext = useWalletStateContext();
@@ -167,3 +167,5 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
 });
+
+export default memo(WalletStackScreen);
