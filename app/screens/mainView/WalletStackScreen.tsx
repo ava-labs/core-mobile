@@ -1,9 +1,8 @@
 import React, {useContext, useEffect, useState} from 'react';
-import {BackHandler, StyleSheet} from 'react-native';
+import {BackHandler, StyleSheet, View} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {NavigationContainer, useFocusEffect} from '@react-navigation/native';
 import EarnView from 'screens/earn/EarnView';
-import AssetsView from 'screens/portfolio/AssetsView';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import HomeSVG from 'components/svg/HomeSVG';
 import ActivitySVG from 'components/svg/ActivitySVG';
@@ -21,21 +20,43 @@ import Loader from 'components/Loader';
 import Activity from 'screens/activity/ActivityView';
 import TransactionDetailBottomSheet from 'screens/activity/TransactionDetailBottomSheet';
 import WatchlistSVG from 'components/svg/WatchlistSVG';
-
-export type BaseStackParamList = {
-  Portfolio: undefined;
-  Search: undefined;
-  BottomSheet: undefined;
-};
+import {
+  createDrawerNavigator,
+  DrawerContentScrollView,
+  DrawerItemList,
+} from '@react-navigation/drawer';
+import AvaLogoSVG from 'components/svg/AvaLogoSVG';
+import AvaText from 'components/AvaText';
+import DotSVG from 'components/svg/DotSVG';
+import CarrotSVG from 'components/svg/CarrotSVG';
+import BottomSheet, {BottomSheetScrollView} from '@gorhom/bottom-sheet';
+import CurrencyItem from 'screens/drawer/components/CurrencyItem';
+import {Colors} from 'react-native/Libraries/NewAppScreen';
+import SecurityItem from 'screens/drawer/components/SecurityItem';
+import LegalItem from 'screens/drawer/components/LegalItem';
+import AdvancedItem from 'screens/drawer/components/AdvancedItem';
+import Divider from 'components/Divider';
+import Separator from 'components/Separator';
+import VersionItem from 'screens/drawer/components/VersionItem';
+import ButtonAvaTextual from 'components/ButtonAvaTextual';
+import TextButtonTextual from 'components/TextButtonTextual';
+import DrawerView from 'screens/drawer/DrawerView';
 
 type Props = {
   onExit: () => void;
   onSwitchWallet: () => void;
 };
 
+export type DrawerStackParamList = {
+  NetworkSwitcher: undefined;
+  Legal: undefined;
+  Security: undefined;
+  AccountBottomSheet: undefined;
+};
+
 const Tab = createBottomTabNavigator();
 const RootStack = createStackNavigator();
-const DrawerStack = createStackNavigator();
+const DrawerStack = createDrawerNavigator();
 
 export default function WalletStackScreen(props: Props | Readonly<Props>) {
   const context = useContext(ApplicationContext);
@@ -61,12 +82,6 @@ export default function WalletStackScreen(props: Props | Readonly<Props>) {
     }
   }, [walletReady, walletStateContext]);
 
-  /**
-   * : (
-   <Loader message="One moment please. \nLoading wallet" />
-   )}
-   */
-
   const onExit = (): void => {
     props.onExit();
   };
@@ -76,7 +91,10 @@ export default function WalletStackScreen(props: Props | Readonly<Props>) {
   };
 
   const DrawerScreen = () => (
-    <DrawerStack.Navigator screenOptions={{headerShown: false}}>
+    <DrawerStack.Navigator
+      screenOptions={{headerShown: false}}
+      useLegacyImplementation
+      drawerContent={props => <DrawerView {...props} />}>
       <DrawerStack.Screen
         name={AppNavigation.Tabs.Tabs}
         options={{headerShown: false}}
