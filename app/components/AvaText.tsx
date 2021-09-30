@@ -4,6 +4,7 @@ import {ApplicationContext} from 'contexts/ApplicationContext';
 
 interface TextProps {
   textStyle?: StyleProp<TextStyle>;
+  color?: string;
 }
 
 const LargeTitleBold: FC<TextProps> = ({textStyle, children}) => {
@@ -51,10 +52,10 @@ const TextBody1: FC<TextProps> = ({textStyle, children}) => {
   );
 };
 
-const TextBody2: FC<TextProps> = ({textStyle, children}) => {
+const TextBody2: FC<TextProps> = ({color, textStyle, children}) => {
   const theme = useContext(ApplicationContext).theme;
   return (
-    <Text style={[styles.body2, {color: theme.txtDim}, textStyle]}>
+    <Text style={[styles.body2, {color: color ?? theme.txtDim}, textStyle]}>
       {children}
     </Text>
   );
