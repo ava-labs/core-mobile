@@ -3,7 +3,7 @@ import {TextInput, View} from 'react-native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import TextLabel from 'components/TextLabel';
 import ImgButtonAva from 'components/ImgButtonAva';
-import ButtonAvaTextual from 'components/ButtonAvaTextual';
+import AvaButton from './AvaButton';
 
 type Props = {
   value: string;
@@ -76,10 +76,12 @@ export default function InputText(props: Props | Readonly<Props>) {
         style={[
           {
             position: 'absolute',
-            end: -16,
+            end: 0,
           },
         ]}>
-        <ButtonAvaTextual text={toggleShowText} onPress={onToggleShowInput} />
+        <AvaButton.TextMedium onPress={onToggleShowInput}>
+          {toggleShowText}
+        </AvaButton.TextMedium>
       </View>
     );
   };
