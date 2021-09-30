@@ -1,6 +1,5 @@
 import React, {useContext, useState} from 'react';
 import {Modal, StyleSheet, View} from 'react-native';
-import ButtonAva from 'components/ButtonAva';
 import TextTitle from 'components/TextTitle';
 import InputText from 'components/InputText';
 import AvaButton from 'components/AvaButton';
@@ -12,7 +11,7 @@ import {useNavigation} from '@react-navigation/native';
 import {useSendAvaxRn} from 'screens/sendAvax/useSendAvaxRn';
 import AppNavigation from 'navigation/AppNavigation';
 
-export default function SendAvax() {
+export default function SendAvax(): JSX.Element {
   const context = useContext(ApplicationContext);
   const {
     avaxTotal,
@@ -59,7 +58,7 @@ export default function SendAvax() {
           />
         </View>
         {destinationAddress.length === 0 && (
-          <ScanQrIcon onScanBarcode={onScanBarcode}/>
+          <ScanQrIcon onScanBarcode={onScanBarcode} />
         )}
       </View>
 
@@ -82,15 +81,16 @@ export default function SendAvax() {
         </View>
       </View>
 
-      <ButtonAva
-        text={'Next'}
+      <AvaButton.PrimaryLarge
+        style={{margin: 16}}
         onPress={() =>
           navigate(AppNavigation.SendToken.ConfirmTransactionScreen)
-        }
-      />
+        }>
+        Next
+      </AvaButton.PrimaryLarge>
 
       <Modal animationType="fade" transparent={true} visible={loaderVisible}>
-        <Loader message={loaderMsg}/>
+        <Loader message={loaderMsg} />
       </Modal>
 
       <Modal
@@ -121,7 +121,7 @@ const styles: any = StyleSheet.create({
   },
 });
 
-const ScanQrIcon = ({onScanBarcode}: { onScanBarcode: () => void }) => {
+const ScanQrIcon = ({onScanBarcode}: {onScanBarcode: () => void}) => {
   return (
     <View
       style={[
@@ -134,7 +134,7 @@ const ScanQrIcon = ({onScanBarcode}: { onScanBarcode: () => void }) => {
         },
       ]}>
       <AvaButton.Icon onPress={onScanBarcode}>
-        <QRCode/>
+        <QRCode />
       </AvaButton.Icon>
     </View>
   );

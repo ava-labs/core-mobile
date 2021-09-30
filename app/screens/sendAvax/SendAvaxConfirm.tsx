@@ -2,10 +2,10 @@ import React, {useContext, useState} from 'react';
 import {Image, View} from 'react-native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import {Space} from 'components/Space';
-import ButtonAva from 'components/ButtonAva';
 import TextTitle from 'components/TextTitle';
 import OvalTagBg from 'components/OvalTagBg';
 import AvaText from 'components/AvaText';
+import AvaButton from 'components/AvaButton';
 
 type SendAvaxXProps = {
   tokenImageUrl: string;
@@ -19,7 +19,7 @@ type SendAvaxXProps = {
 
 export default function SendAvaxConfirm(
   props: SendAvaxXProps | Readonly<SendAvaxXProps>,
-) {
+): JSX.Element {
   const context = useContext(ApplicationContext);
   const [backgroundStyle] = useState(context.backgroundStyle);
 
@@ -60,7 +60,9 @@ export default function SendAvaxConfirm(
 
       <View style={{flex: 1}} />
       <View style={{width: '100%'}}>
-        <ButtonAva text={'Send'} onPress={props.onConfirm} />
+        <AvaButton.PrimaryLarge style={{margin: 16}} onPress={props.onConfirm}>
+          Send
+        </AvaButton.PrimaryLarge>
       </View>
     </View>
   );

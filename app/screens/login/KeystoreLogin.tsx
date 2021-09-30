@@ -2,7 +2,6 @@ import React, {useState} from 'react';
 import {Alert, ScrollView, StyleSheet, View} from 'react-native';
 import Header from 'screens/mainView/Header';
 import TextTitle from 'components/TextTitle';
-import ButtonAva from 'components/ButtonAva';
 import {AsyncSubject} from 'rxjs';
 import PolyfillCrypto from 'react-native-webview-crypto';
 import LoginViewModel, {
@@ -11,6 +10,7 @@ import LoginViewModel, {
   PasswordPrompt,
 } from './LoginViewModel';
 import PasswordInput from 'components/PasswordInput';
+import AvaButton from 'components/AvaButton';
 
 type Props = {
   onEnterWallet: (mnemonic: string) => void;
@@ -67,7 +67,9 @@ export default function KeystoreLogin(props: Props | Readonly<Props>) {
         <PolyfillCrypto />
         <TextTitle text={'Keystore wallet'} textAlign={'center'} bold={true} />
         <View style={[{flexGrow: 1}]} />
-        <ButtonAva text={'Choose keystore file'} onPress={onDocumentPick} />
+        <AvaButton.PrimaryLarge onPress={onDocumentPick}>
+          Choose keystore file
+        </AvaButton.PrimaryLarge>
 
         {pwdInput}
       </View>
