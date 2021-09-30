@@ -6,12 +6,14 @@ type Props = {
   text: string;
   disabled?: boolean;
   color?: string;
+  centered?: boolean
 };
 
 export default function TextButtonTextual({
   text,
   disabled = false,
   color,
+  centered = true,
 }: Props) {
   const context = useContext(ApplicationContext);
   const theme = context.theme;
@@ -29,7 +31,7 @@ export default function TextButtonTextual({
         fontSize: 14,
         fontWeight: '700',
         fontFamily: 'Inter-Regular',
-        textAlign: 'center',
+        textAlign: centered ? 'center' : 'auto',
       }}>
       {text}
     </Text>
