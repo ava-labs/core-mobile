@@ -2,7 +2,6 @@ import React, {useContext, useEffect, useState} from 'react';
 import {BackHandler, StyleSheet} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {NavigationContainer, useFocusEffect} from '@react-navigation/native';
-import EarnView from 'screens/earn/EarnView';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import HomeSVG from 'components/svg/HomeSVG';
 import ActivitySVG from 'components/svg/ActivitySVG';
@@ -122,7 +121,6 @@ export default function WalletStackScreen(props: Props | Readonly<Props>) {
         <Tab.Screen name={AppNavigation.Tabs.Watchlist} component={Activity} />
         <Tab.Screen name={AppNavigation.Tabs.Activity} component={Activity} />
         <Tab.Screen name={AppNavigation.Tabs.Swap} component={SwapView} />
-        <Tab.Screen name={AppNavigation.Tabs.More} component={EarnView} />
       </Tab.Navigator>
     );
   };

@@ -2,19 +2,20 @@ import React, {useContext, useState} from 'react';
 import {Image, StyleSheet, ToastAndroid, View} from 'react-native';
 import CreateWalletViewModel from './CreateWalletViewModel';
 import TextTitle from 'components/TextTitle';
-import ButtonAva from 'components/ButtonAva';
 import Clipboard from '@react-native-clipboard/clipboard';
-import ButtonAvaTextual from 'components/ButtonAvaTextual';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import HeaderProgress from 'screens/mainView/HeaderProgress';
 import MnemonicAva from 'screens/onboarding/MnemonicAva';
+import AvaButton from 'components/AvaButton';
 
 type Props = {
   onBack: () => void;
   onSavedMyPhrase: (mnemonic: string) => void;
 };
 
-export default function CreateWallet(props: Props | Readonly<Props>) {
+export default function CreateWallet(
+  props: Props | Readonly<Props>,
+): JSX.Element {
   const context = useContext(ApplicationContext);
   const [viewModel] = useState(new CreateWalletViewModel());
   const [mnemonic] = useState(viewModel.mnemonic);
@@ -112,8 +113,12 @@ export default function CreateWallet(props: Props | Readonly<Props>) {
         </View>
       </View>
 
-      <ButtonAvaTextual text={'Copy phrase'} onPress={copyToClipboard} />
-      <ButtonAva text={'Next'} onPress={onSavedMyPhrase} />
+      <AvaButton.TextLarge onPress={copyToClipboard}>
+        Copy phrase
+      </AvaButton.TextLarge>
+      <AvaButton.PrimaryLarge style={{margin: 16}} onPress={onSavedMyPhrase}>
+        Next
+      </AvaButton.PrimaryLarge>
     </View>
   );
 }

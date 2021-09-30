@@ -12,10 +12,10 @@ import {Space} from 'components/Space';
 import AccountItem from 'screens/portfolio/account/AccountItem';
 import {useAccount} from 'screens/portfolio/account/useAccount';
 import {Account} from 'dto/Account';
-import ButtonAva from 'components/ButtonAva';
 import HeaderProgress from 'screens/mainView/HeaderProgress';
 import {BottomSheetScrollView} from '@gorhom/bottom-sheet';
 import {useFocusEffect} from '@react-navigation/native';
+import AvaButton from 'components/AvaButton';
 
 const SCREEN_WIDTH = Dimensions.get('window')?.width;
 
@@ -39,7 +39,7 @@ function AccountView(): JSX.Element {
       );
       setSelectedAccountIndex(pageNumber);
     },
-    [],
+    [accounts.length],
   );
 
   return (
@@ -76,7 +76,9 @@ function AccountView(): JSX.Element {
         maxDots={accounts.length}
         filledDots={selectedAccountIndex + 1}
       />
-      <ButtonAva text={'Select'} onPress={onSelect} />
+      <AvaButton.PrimaryLarge style={{marginHorizontal: 16}} onPress={onSelect}>
+        Select
+      </AvaButton.PrimaryLarge>
     </View>
   );
 }

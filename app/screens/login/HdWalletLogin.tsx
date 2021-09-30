@@ -2,9 +2,9 @@ import React, {useContext, useState} from 'react';
 import {ScrollView, StyleSheet, View} from 'react-native';
 import WalletSDK from 'utils/WalletSDK';
 import TextArea from 'components/TextArea';
-import ButtonAvaTextual from 'components/ButtonAvaTextual';
 import AvaText from 'components/AvaText';
 import {ApplicationContext} from 'contexts/ApplicationContext';
+import AvaButton from 'components/AvaButton';
 
 type Props = {
   onEnterWallet: (mnemonic: string) => void;
@@ -49,10 +49,9 @@ export default function HdWalletLogin(
           style={[styles.overlay, {backgroundColor: context.theme.overlay}]}
         />
         <View style={[{flexGrow: 1, justifyContent: 'flex-end'}]}>
-          <ButtonAvaTextual
-            text={'Enter test HD wallet'}
-            onPress={onEnterTestWallet}
-          />
+          <AvaButton.TextLarge onPress={onEnterTestWallet}>
+            Enter test HD wallet
+          </AvaButton.TextLarge>
           <View style={[{padding: 16}]}>
             <TextArea
               btnPrimaryText={'Sign in'}
