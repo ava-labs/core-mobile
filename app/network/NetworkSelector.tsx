@@ -1,4 +1,4 @@
-import React, {FC, useContext, useEffect, useState} from 'react';
+import React, {FC, useContext, useEffect, useMemo, useState} from 'react';
 import {ActivityIndicator, Pressable, StyleSheet, View} from 'react-native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from 'components/AvaText';
@@ -19,17 +19,19 @@ const paddingTop = 24;
 const marginEnd = 12;
 const DOT = '\u25CF';
 
-const availableNetworks = {
-  [MAINNET_NETWORK.name]: MAINNET_NETWORK,
-  [FUJI_NETWORK.name]: FUJI_NETWORK,
-};
-
 const NetworkSelector: FC<Props> = ({toggleOpenClose, isExpanded}) => {
   const context = useContext(ApplicationContext);
   const theme = context.theme;
   const networkContext = useNetworkContext();
   const [networkName, setNetworkName] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const availableNetworks = useMemo(() => {
+    return {
+      [MAINNET_NETWORK.name]: MAINNET_NETWORK,
+      [FUJI_NETWORK.name]: FUJI_NETWORK,
+    };
+  }, []);
 
   useEffect(() => {
     if (networkName != networkContext?.network?.name) {
