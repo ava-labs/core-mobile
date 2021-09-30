@@ -102,11 +102,7 @@ function ActivityView({embedded}: Props) {
           <SearchSVG />
         </View>
       )}
-      {loading ? (
-        <Loader showLogo={false} />
-      ) : (
-        <ScrollableComponent children={renderItems()} />
-      )}
+      {loading ? <Loader /> : <ScrollableComponent children={renderItems()} />}
     </View>
   );
 }
