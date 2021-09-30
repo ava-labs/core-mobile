@@ -3,7 +3,6 @@ import {BackHandler, StyleSheet} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {NavigationContainer, useFocusEffect} from '@react-navigation/native';
 import EarnView from 'screens/earn/EarnView';
-import AssetsView from 'screens/portfolio/AssetsView';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import HomeSVG from 'components/svg/HomeSVG';
 import ActivitySVG from 'components/svg/ActivitySVG';
@@ -21,21 +20,24 @@ import Loader from 'components/Loader';
 import Activity from 'screens/activity/ActivityView';
 import TransactionDetailBottomSheet from 'screens/activity/TransactionDetailBottomSheet';
 import WatchlistSVG from 'components/svg/WatchlistSVG';
-
-export type BaseStackParamList = {
-  Portfolio: undefined;
-  Search: undefined;
-  BottomSheet: undefined;
-};
+import {createDrawerNavigator} from '@react-navigation/drawer';
+import DrawerView from 'screens/drawer/DrawerView';
 
 type Props = {
   onExit: () => void;
   onSwitchWallet: () => void;
 };
 
+export type DrawerStackParamList = {
+  NetworkSwitcher: undefined;
+  Legal: undefined;
+  Security: undefined;
+  AccountBottomSheet: undefined;
+};
+
 const Tab = createBottomTabNavigator();
 const RootStack = createStackNavigator();
-const DrawerStack = createStackNavigator();
+const DrawerStack = createDrawerNavigator();
 
 export default function WalletStackScreen(props: Props | Readonly<Props>) {
   const context = useContext(ApplicationContext);
@@ -61,12 +63,6 @@ export default function WalletStackScreen(props: Props | Readonly<Props>) {
     }
   }, [walletReady, walletStateContext]);
 
-  /**
-   * : (
-   <Loader message="One moment please. \nLoading wallet" />
-   )}
-   */
-
   const onExit = (): void => {
     props.onExit();
   };
@@ -76,7 +72,10 @@ export default function WalletStackScreen(props: Props | Readonly<Props>) {
   };
 
   const DrawerScreen = () => (
-    <DrawerStack.Navigator screenOptions={{headerShown: false}}>
+    <DrawerStack.Navigator
+      screenOptions={{headerShown: false}}
+      useLegacyImplementation
+      drawerContent={props => <DrawerView {...props} />}>
       <DrawerStack.Screen
         name={AppNavigation.Tabs.Tabs}
         options={{headerShown: false}}

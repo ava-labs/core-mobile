@@ -5,6 +5,8 @@ import {ApplicationContext} from 'contexts/ApplicationContext';
 import {usePortfolio} from 'screens/portfolio/usePortfolio';
 import {useNavigation} from '@react-navigation/native';
 import AppNavigation from 'navigation/AppNavigation';
+import { DrawerActions } from '@react-navigation/native';
+
 
 function PortfolioHeader() {
   const context = useContext(ApplicationContext);
@@ -19,6 +21,9 @@ function PortfolioHeader() {
           accountAddress={addressC ?? ''}
           onRightComponentPress={() => {
             navigation.navigate(AppNavigation.Wallet.SearchScreen);
+          }}
+          onLeftComponentPress={() => {
+            navigation.dispatch(DrawerActions.openDrawer());
           }}
           onAccountPressed={() => {
             navigation.navigate(AppNavigation.Modal.AccountBottomSheet);
