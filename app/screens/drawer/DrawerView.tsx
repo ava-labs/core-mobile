@@ -17,7 +17,7 @@ import DarkModeSVG from 'components/svg/DarkModeSVG';
 import NetworkSelector from 'network/NetworkSelector';
 import AvaButton from 'components/AvaButton';
 
-const DrawerView: FC<DrawerContentComponentProps> = () => {
+const DrawerView: FC<DrawerContentComponentProps> = ({navigation}) => {
   const context = useContext(ApplicationContext);
   const bottomSheetRef = useRef<BottomSheet>(null);
   const [openNetworkSwitcher, setOpenNetworkSwitcher] = useState(false);
@@ -28,6 +28,10 @@ const DrawerView: FC<DrawerContentComponentProps> = () => {
 
   function toggleDarkLightMode() {
     Alert.alert('Toggle dark/ligt mode');
+  }
+
+  function handleCloseDrawer() {
+    navigation.closeDrawer();
   }
 
   const header = (
@@ -46,6 +50,7 @@ const DrawerView: FC<DrawerContentComponentProps> = () => {
     <NetworkSelector
       isExpanded={openNetworkSwitcher}
       toggleOpenClose={() => setOpenNetworkSwitcher(!openNetworkSwitcher)}
+      closeDrawer={handleCloseDrawer}
     />
   );
 
