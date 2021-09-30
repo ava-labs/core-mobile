@@ -7,6 +7,7 @@ type Props = {
   text: string;
   onPress: () => void;
   disabled?: boolean;
+  centered?: boolean;
 };
 
 export default function ButtonAvaTextual(props: Props | Readonly<Props>) {
@@ -19,7 +20,11 @@ export default function ButtonAvaTextual(props: Props | Readonly<Props>) {
       onPress={() => props.onPress()}
       background={TouchableNativeFeedback.Ripple(theme.buttonRipple, false)}>
       <View style={[styles.button]}>
-        <TextButtonTextual disabled={props.disabled} text={props.text} />
+        <TextButtonTextual
+          disabled={props.disabled}
+          text={props.text}
+          centered={props.centered}
+        />
       </View>
     </TouchableNativeFeedback>
   );

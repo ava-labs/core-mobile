@@ -13,6 +13,7 @@ import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import ArrowSVG from 'components/svg/ArrowSVG';
 import MovementIndicator from 'components/MovementIndicator';
+import MenuSVG from 'components/svg/MenuSVG';
 
 interface Props {
   rightComponent?: React.ReactNode;
@@ -179,7 +180,7 @@ function AccountItem({
 
   const leftComponent = (
     <TouchableOpacity onPress={onLeftComponentPress}>
-      <SearchSVG />
+      <MenuSVG />
     </TouchableOpacity>
   );
 
