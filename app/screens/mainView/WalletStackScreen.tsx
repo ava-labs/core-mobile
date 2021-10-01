@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, {memo, useContext, useEffect, useState} from 'react';
 import {BackHandler, StyleSheet} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {NavigationContainer, useFocusEffect} from '@react-navigation/native';
@@ -21,6 +21,7 @@ import TransactionDetailBottomSheet from 'screens/activity/TransactionDetailBott
 import WatchlistSVG from 'components/svg/WatchlistSVG';
 import {createDrawerNavigator} from '@react-navigation/drawer';
 import DrawerView from 'screens/drawer/DrawerView';
+import CurrencySelector from 'screens/drawer/CurrencySelector';
 
 type Props = {
   onExit: () => void;
@@ -28,17 +29,19 @@ type Props = {
 };
 
 export type DrawerStackParamList = {
-  NetworkSwitcher: undefined;
+  Tabs: undefined;
+  CurrencySelector:
+    | undefined
+    | {onCurrencySelected: (code: string) => void; selectedCurrency: string};
   Legal: undefined;
   Security: undefined;
-  AccountBottomSheet: undefined;
 };
 
 const Tab = createBottomTabNavigator();
 const RootStack = createStackNavigator();
-const DrawerStack = createDrawerNavigator();
+const DrawerStack = createDrawerNavigator<DrawerStackParamList>();
 
-export default function WalletStackScreen(props: Props | Readonly<Props>) {
+function WalletStackScreen(props: Props | Readonly<Props>) {
   const context = useContext(ApplicationContext);
   const [walletReady, setWalletReady] = useState(false);
   const walletStateContext = useWalletStateContext();
@@ -139,6 +142,15 @@ export default function WalletStackScreen(props: Props | Readonly<Props>) {
             name={AppNavigation.Wallet.SearchScreen}
             component={SearchView}
           />
+          <RootStack.Screen
+            options={{
+              headerShown: true,
+              title: 'Currency',
+              headerBackTitleVisible: false,
+            }}
+            name={AppNavigation.Wallet.CurrencySelector}
+            component={CurrencySelector}
+          />
         </RootStack.Group>
         <RootStack.Group screenOptions={{presentation: 'transparentModal'}}>
           <RootStack.Screen
@@ -167,3 +179,5 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
 });
+
+export default memo(WalletStackScreen);

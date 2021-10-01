@@ -13,13 +13,13 @@ import ClearSVG from 'components/svg/ClearSVG';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import {useNavigation} from '@react-navigation/native';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
-import AvaListItem from 'components/AvaListItem';
 import {ERC20} from '@avalabs/wallet-react-components';
 import {AvaxToken} from 'dto/AvaxToken';
 import {useSearchableTokenList} from 'screens/portfolio/useSearchableTokenList';
 import AppNavigation from 'navigation/AppNavigation';
 import {PortfolioStackParamList} from 'navigation/PortfolioStackScreen';
 import {StackNavigationProp} from '@react-navigation/stack';
+import SearchListItem from 'screens/search/SearchListItem';
 
 export type SearchRouteProp = StackNavigationProp<
   PortfolioStackParamList,
@@ -47,11 +47,10 @@ function SearchView() {
     const token = item.item as ERC20 | AvaxToken;
     const logoUri = (token as ERC20)?.logoURI ?? undefined;
     return (
-      <AvaListItem.Token
-        tokenName={token.name}
-        tokenPrice={token.balanceParsed}
+      <SearchListItem
+        balance={token.balanceParsed}
+        name={token.name}
         image={logoUri}
-        symbol={token.symbol}
         onPress={() => showBottomSheet(token)}
       />
     );

@@ -3,7 +3,7 @@ import {COLORS_DAY, COLORS_NIGHT} from 'resources/Constants';
 import type {Theme} from '@react-navigation/native';
 import {Appearance} from 'react-native';
 
-interface ApplicationContextState {
+export interface ApplicationContextState {
   theme: typeof COLORS_DAY | typeof COLORS_NIGHT;
   isDarkMode: boolean;
   backgroundStyle: BackgroundStyle;

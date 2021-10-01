@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {FC, memo, useRef} from 'react';
 import {FlatList, ListRenderItemInfo, StyleSheet} from 'react-native';
 import AvaListItem from 'components/AvaListItem';
 import PortfolioHeader from 'screens/portfolio/PortfolioHeader';
@@ -10,10 +10,12 @@ import {useSearchableTokenList} from 'screens/portfolio/useSearchableTokenList';
 import AppNavigation from 'navigation/AppNavigation';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {PortfolioStackParamList} from 'navigation/PortfolioStackScreen';
+import PortfolioListItem from 'screens/portfolio/components/PortfolioListItem';
 
 type PortfolioProps = {
   onExit: () => void;
   onSwitchWallet: () => void;
+  tokenList?: (ERC20 | AvaxToken)[];
 };
 
 export type PortfolioRouteProp = StackNavigationProp<
@@ -21,43 +23,57 @@ export type PortfolioRouteProp = StackNavigationProp<
   'PortfolioScreen'
 >;
 
-function PortfolioView({onExit, onSwitchWallet}: PortfolioProps) {
-  const listRef = useRef<FlatList>(null);
-  const navigation = useNavigation<PortfolioRouteProp>();
+// experimenting with container pattern and stable props to try to reduce re-renders
+function PortfolioContainer({onExit, onSwitchWallet}: PortfolioProps) {
   const {tokenList} = useSearchableTokenList();
 
-  function showBottomSheet(token: ERC20 | AvaxToken) {
-    navigation.navigate(AppNavigation.Modal.SendReceiveBottomSheet, {token});
-  }
-
-  const renderItem = (item: ListRenderItemInfo<ERC20 | AvaxToken>) => {
-    const token = item.item;
-    const logoUri = (token as ERC20)?.logoURI ?? undefined;
-    return (
-      <AvaListItem.Token
-        tokenName={token.name}
-        tokenPrice={token.balanceParsed}
-        image={logoUri}
-        symbol={token.symbol}
-        onPress={() => showBottomSheet(token)}
-      />
-    );
-  };
-
   return (
-    <SafeAreaProvider style={styles.flex}>
-      <PortfolioHeader />
-      <FlatList
-        ref={listRef}
-        style={styles.tokenList}
-        data={tokenList}
-        renderItem={renderItem}
-        keyExtractor={(item: ERC20 | AvaxToken) => item.symbol}
-        scrollEventThrottle={16}
-      />
-    </SafeAreaProvider>
+    <PortfolioView
+      onExit={onExit}
+      onSwitchWallet={onSwitchWallet}
+      tokenList={tokenList}
+    />
   );
 }
+
+const PortfolioView: FC<PortfolioProps> = memo(
+  ({tokenList}: PortfolioProps) => {
+    const listRef = useRef<FlatList>(null);
+    const navigation = useNavigation<PortfolioRouteProp>();
+
+    function showBottomSheet(token: ERC20 | AvaxToken) {
+      navigation.navigate(AppNavigation.Modal.SendReceiveBottomSheet, {token});
+    }
+
+    const renderItem = (item: ListRenderItemInfo<ERC20 | AvaxToken>) => {
+      const token = item.item;
+      const logoUri = (token as ERC20)?.logoURI ?? undefined;
+      return (
+        <PortfolioListItem
+          tokenName={token.name}
+          tokenPrice={token.balanceParsed}
+          image={logoUri}
+          symbol={token.symbol}
+          onPress={() => showBottomSheet(token)}
+        />
+      );
+    };
+
+    return (
+      <SafeAreaProvider style={styles.flex}>
+        <PortfolioHeader />
+        <FlatList
+          ref={listRef}
+          style={styles.tokenList}
+          data={tokenList}
+          renderItem={renderItem}
+          keyExtractor={(item: ERC20 | AvaxToken) => item.symbol}
+          scrollEventThrottle={16}
+        />
+      </SafeAreaProvider>
+    );
+  },
+);
 
 const styles = StyleSheet.create({
   flex: {
@@ -69,4 +85,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PortfolioView;
+export default PortfolioContainer;

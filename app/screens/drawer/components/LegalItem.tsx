@@ -6,7 +6,7 @@ import CarrotSVG from 'components/svg/CarrotSVG';
 export default function LegalItem() {
   return (
     <>
-      <AvaListItem.Custom
+      <AvaListItem.Base
         title={'Legal'}
         leftComponent={null}
         rightComponent={<CarrotSVG />}

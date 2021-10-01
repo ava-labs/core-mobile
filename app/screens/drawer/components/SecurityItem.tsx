@@ -6,7 +6,7 @@ import CarrotSVG from 'components/svg/CarrotSVG';
 export default function SecurityItem() {
   return (
     <>
-      <AvaListItem.Custom
+      <AvaListItem.Base
         title={'Security & Privacy'}
         leftComponent={null}
         rightComponent={<CarrotSVG />}

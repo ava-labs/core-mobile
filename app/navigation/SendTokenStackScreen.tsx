@@ -16,7 +16,6 @@ import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import AvaText from 'components/AvaText';
 import AppNavigation from 'navigation/AppNavigation';
 import AvaListItem from 'components/AvaListItem';
-import TextTitle from 'components/TextTitle';
 import ClearSVG from 'components/svg/ClearSVG';
 import TabViewAva from 'components/TabViewAva';
 import ReceiveToken from 'screens/receive/ReceiveToken';
@@ -107,34 +106,16 @@ const SendTokenStackScreen = ({onClose, token}: Props) => {
     }
   };
 
-  const Tabs = () => (
-    <>
+  const header = () => {
+    return (
       <View style={{flexDirection: 'row', paddingRight: 16}}>
         <View style={{flex: 1}}>
-          <AvaListItem.Custom
-            label={
-              <TextTitle
-                text={token.name}
-                size={16}
-                color={theme.txtListItem}
-                bold
-              />
-            }
+          <AvaListItem.Base
+            label={<AvaText.Heading3>{token.name}</AvaText.Heading3>}
             title={
-              <TextTitle
-                text={`${token.balanceParsed} ${token.symbol}`}
-                size={24}
-                color={theme.txtListItem}
-                bold
-              />
+              <AvaText.Heading1>{`${token.balanceParsed} ${token.symbol}`}</AvaText.Heading1>
             }
-            subtitle={
-              <TextTitle
-                text={balanceTotalInUSD}
-                size={14}
-                color={theme.txtListItemSubscript}
-              />
-            }
+            subtitle={<AvaText.Body2>{balanceTotalInUSD}</AvaText.Body2>}
             leftComponent={tokenLogo()}
             titleAlignment={'flex-start'}
           />
@@ -147,6 +128,12 @@ const SendTokenStackScreen = ({onClose, token}: Props) => {
           />
         </TouchableOpacity>
       </View>
+    );
+  };
+
+  const Tabs = () => (
+    <>
+      {header()}
       <TabViewAva renderCustomLabel={renderCustomLabel}>
         <SendAvax title={'Send'} />
         <ReceiveToken title={'Receive'} />

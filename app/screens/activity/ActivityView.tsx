@@ -1,15 +1,15 @@
 import React, {useCallback, useContext, useEffect, useState} from 'react';
-import {ScrollView, StyleSheet, View} from 'react-native';
+import {ScrollView, View} from 'react-native';
 import SearchSVG from 'components/svg/SearchSVG';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import {useNavigation} from '@react-navigation/native';
-import AvaListItem from 'components/AvaListItem';
 import AppNavigation from 'navigation/AppNavigation';
 import AvaText from 'components/AvaText';
 import Loader from 'components/Loader';
 import CollapsibleSection from 'components/CollapsibleSection';
 import {BottomSheetScrollView} from '@gorhom/bottom-sheet';
 import {useWalletContext} from '@avalabs/wallet-react-components';
+import ActivityListItem from 'screens/activity/ActivityListItem';
 
 const data: JSON[] = require('assets/coins.json');
 
@@ -59,7 +59,7 @@ function ActivityView({embedded}: Props) {
           startExpanded>
           {section.data.map((item: any) => {
             return (
-              <AvaListItem.Activity
+              <ActivityListItem
                 key={item.name}
                 tokenName={item.name}
                 tokenPrice={item.current_price}
