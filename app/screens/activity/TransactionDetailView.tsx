@@ -47,7 +47,7 @@ function TransactionDetailView(): JSX.Element {
           $434.59 USD - Fee: 0.01 AVAX
         </AvaText.Body2>
       </View>
-      <AvaListItem.Custom
+      <AvaListItem.Base
         leftComponent={tokenLogo}
         label={'From'}
         title={'Xfuji1hul6q0w383863v6kejul2psaeumcwee5fzzk2e'}
