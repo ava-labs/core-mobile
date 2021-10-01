@@ -8,6 +8,7 @@ enum Stacks {
 enum WalletScreens {
   PortfolioScreen = 'PortfolioScreen',
   SearchScreen = 'SearchScreen',
+  CurrencySelector = 'CurrencySelector',
 }
 
 enum Tabs {
