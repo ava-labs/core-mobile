@@ -10,6 +10,8 @@ import QRCode from 'components/svg/QRCode';
 import {useNavigation} from '@react-navigation/native';
 import {useSendAvaxRn} from 'screens/sendAvax/useSendAvaxRn';
 import AppNavigation from 'navigation/AppNavigation';
+import AvaText from 'components/AvaText';
+import FlexSpacer from 'components/FlexSpacer';
 
 export default function SendAvax(): JSX.Element {
   const context = useContext(ApplicationContext);
@@ -46,6 +48,26 @@ export default function SendAvax(): JSX.Element {
           paddingEnd: 0,
         },
       ]}>
+      <View style={[{paddingStart: 4, paddingEnd: 4}]}>
+        <InputText
+          value={sendAmountString}
+          label="Amount"
+          placeholder="Enter the amount"
+          helperText="$0"
+          keyboardType="numeric"
+          onChangeText={text => setSendAmountString(text)}
+        />
+        <View style={styles.transactionFee}>
+          <AvaText.Body3
+            textStyle={{
+              textAlign: 'right',
+              color: context.theme.txtListItemSubscript,
+            }}>
+            {'Transaction fee: ' + sendFeeString + ' AVAX'}
+          </AvaText.Body3>
+        </View>
+      </View>
+
       <View style={styles.horizontalLayout}>
         <View style={[{flex: 1, paddingStart: 4, paddingEnd: 4}]}>
           <InputText
@@ -62,24 +84,7 @@ export default function SendAvax(): JSX.Element {
         )}
       </View>
 
-      <View style={[{flex: 1, paddingStart: 4, paddingEnd: 4}]}>
-        <InputText
-          value={sendAmountString}
-          label="Amount"
-          placeholder="Enter the amount"
-          helperText="$0"
-          keyboardType="numeric"
-          onChangeText={text => setSendAmountString(text)}
-        />
-        <View style={styles.transactionFee}>
-          <TextTitle
-            textAlign="right"
-            color={context.theme.txtListItemSubscript}
-            text={'Transaction fee: ' + sendFeeString + ' AVAX'}
-            size={12}
-          />
-        </View>
-      </View>
+      <FlexSpacer />
 
       <AvaButton.PrimaryLarge
         style={{margin: 16}}
@@ -114,8 +119,8 @@ const styles: any = StyleSheet.create({
     alignItems: 'center',
   },
   transactionFee: {
-    position: 'relative',
-    bottom: 30,
+    position: 'absolute',
+    bottom: 14,
     right: 16,
     alignItems: 'flex-end',
   },
