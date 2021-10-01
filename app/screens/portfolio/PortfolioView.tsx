@@ -10,11 +10,12 @@ import {useSearchableTokenList} from 'screens/portfolio/useSearchableTokenList';
 import AppNavigation from 'navigation/AppNavigation';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {PortfolioStackParamList} from 'navigation/PortfolioStackScreen';
+import PortfolioListItem from 'screens/portfolio/components/PortfolioListItem';
 
 type PortfolioProps = {
   onExit: () => void;
   onSwitchWallet: () => void;
-  tokenList: (ERC20 | AvaxToken)[];
+  tokenList?: (ERC20 | AvaxToken)[];
 };
 
 export type PortfolioRouteProp = StackNavigationProp<
@@ -48,7 +49,7 @@ const PortfolioView: FC<PortfolioProps> = memo(
       const token = item.item;
       const logoUri = (token as ERC20)?.logoURI ?? undefined;
       return (
-        <AvaListItem.Token
+        <PortfolioListItem
           tokenName={token.name}
           tokenPrice={token.balanceParsed}
           image={logoUri}

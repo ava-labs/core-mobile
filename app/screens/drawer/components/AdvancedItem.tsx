@@ -6,7 +6,7 @@ import CarrotSVG from 'components/svg/CarrotSVG';
 export default function AdvancedItem() {
   return (
     <>
-      <AvaListItem.Custom
+      <AvaListItem.Base
         title={'Advanced'}
         leftComponent={null}
         rightComponent={<CarrotSVG />}
