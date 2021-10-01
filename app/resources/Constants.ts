@@ -1,3 +1,6 @@
+export const Opacity10 = '1A';
+export const Opacity50 = '7F';
+
 export enum COLORS_DAY {
   transparent = '#00000000',
   overlay = '#0000009A',
