@@ -77,8 +77,8 @@ export enum COLORS_DAY {
 
   tabBarIconInactive = '#949497',
 
-  ovalBgGreen = '#00D3BC1A',
-  ovalBgBlue = '#934AF61A',
+  ovalBgGreen = '#00D3BC',
+  ovalBgBlue = '#934AF6',
 }
 
 export enum COLORS_NIGHT {
@@ -160,6 +160,6 @@ export enum COLORS_NIGHT {
 
   tabBarIconInactive = '#949497',
 
-  ovalBgGreen = '#00D3BC1A',
-  ovalBgBlue = '#934AF61A',
+  ovalBgGreen = '#00D3BC',
+  ovalBgBlue = '#934AF6',
 }

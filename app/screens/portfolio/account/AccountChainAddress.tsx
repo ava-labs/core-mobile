@@ -1,6 +1,5 @@
-import React, {useContext} from 'react';
+import React from 'react';
 import {ToastAndroid, View} from 'react-native';
-import {ApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from 'components/AvaText';
 import AvaButton from 'components/AvaButton';
 import {Space} from 'components/Space';
@@ -21,12 +20,10 @@ const copyToClipboard = (str: string): void => {
 };
 
 function AccountChainAddress({title, address, color}: Props): JSX.Element {
-  const context = useContext(ApplicationContext);
-
   return (
     <View style={{flexDirection: 'row'}}>
       <OvalTagBg
-        color={color}
+        color={color + '1A'}
         style={{
           flex: 1,
           paddingHorizontal: 16,
@@ -34,12 +31,12 @@ function AccountChainAddress({title, address, color}: Props): JSX.Element {
           flexDirection: 'row',
           alignItems: 'center',
         }}>
-        <AvaText.Heading3>{title}</AvaText.Heading3>
+        <AvaText.Heading3 textStyle={{color: color}}>{title}</AvaText.Heading3>
         <FlexSpacer />
-        <AvaText.Heading3>{address}</AvaText.Heading3>
-        <Space y={16} />
+        <AvaText.Body1 textStyle={{color: color}}>{address}</AvaText.Body1>
+        <Space x={16} />
         <AvaButton.Base onPress={() => copyToClipboard(address)}>
-          <CopySVG color={context.theme.txtOnBgApp} />
+          <CopySVG color={color} />
         </AvaButton.Base>
       </OvalTagBg>
     </View>

@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   heading3: {
-    fontWeight: '600',
+    fontWeight: '700',
     fontSize: 16,
     lineHeight: 24,
   },
