@@ -10,12 +10,6 @@ type Props = {
   onSwitchWallet: () => void;
 };
 
-const forFade = ({current}: any) => ({
-  cardStyle: {
-    opacity: current.progress,
-  },
-});
-
 export type PortfolioStackParamList = {
   PortfolioScreen: undefined;
   SearchScreen: undefined;
