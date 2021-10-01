@@ -58,7 +58,7 @@ const DrawerView: FC<DrawerContentComponentProps> = ({navigation}) => {
     <>
       <BottomSheetScrollView
         style={{backgroundColor: context.theme.bgOnBgApp, flex: 1}}>
-        <CurrencyItem currency={'USD'} />
+        <CurrencyItem navigation={navigation} />
         <SecurityItem />
         <LegalItem />
         <AdvancedItem />

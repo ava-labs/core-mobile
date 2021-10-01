@@ -1,7 +1,6 @@
 import {createStackNavigator} from '@react-navigation/stack';
 import PortfolioView from 'screens/portfolio/PortfolioView';
-import SearchView from 'screens/portfolio/SearchView';
-import React, {useEffect} from 'react';
+import React from 'react';
 import AppNavigation from 'navigation/AppNavigation';
 import {ERC20} from '@avalabs/wallet-react-components';
 import {AvaxToken} from 'dto/AvaxToken';

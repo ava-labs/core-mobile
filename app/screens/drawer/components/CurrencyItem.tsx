@@ -1,15 +1,18 @@
-import React, {FC, useContext} from 'react';
-import {Alert, View} from 'react-native';
+import React, {FC, useContext, useState} from 'react';
+import {View} from 'react-native';
 import AvaListItem from 'components/AvaListItem';
 import AvaText from 'components/AvaText';
 import CarrotSVG from 'components/svg/CarrotSVG';
 import {ApplicationContext} from 'contexts/ApplicationContext';
+import {DrawerContentComponentProps} from '@react-navigation/drawer';
+import AppNavigation from 'navigation/AppNavigation';
 
-interface Props {
-  currency?: string;
-}
-const CurrencyItem: FC<Props> = ({currency = 'USD'}) => {
+const CurrencyItem: FC<Partial<DrawerContentComponentProps>> = ({
+  navigation,
+}) => {
   const theme = useContext(ApplicationContext).theme;
+  const [selectedCurrency, setSelectedCurrency] = useState('USD');
+
   const customNav = () => (
     <View
       style={{
@@ -19,7 +22,7 @@ const CurrencyItem: FC<Props> = ({currency = 'USD'}) => {
         flex: 1,
       }}>
       <AvaText.Body2 textStyle={{paddingRight: 12, color: theme.txtListItem}}>
-        {currency}
+        {selectedCurrency}
       </AvaText.Body2>
       <CarrotSVG />
     </View>
@@ -27,12 +30,15 @@ const CurrencyItem: FC<Props> = ({currency = 'USD'}) => {
 
   return (
     <>
-      <AvaListItem.Custom
-        leftComponent={null}
+      <AvaListItem.Base
         title={'Currency'}
+        titleAlignment={'flex-start'}
         rightComponent={customNav()}
         onPress={() => {
-          Alert.alert('naviagate to currency picker');
+          navigation?.navigate(AppNavigation.Wallet.CurrencySelector, {
+            onCurrencySelected: setSelectedCurrency,
+            selectedCurrency,
+          });
         }}
       />
     </>

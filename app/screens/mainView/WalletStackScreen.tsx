@@ -1,13 +1,13 @@
-import React, {memo, useContext, useEffect, useState} from 'react';
-import {BackHandler, StyleSheet} from 'react-native';
+import React, {memo, useContext, useEffect, useMemo, useState} from 'react';
+import {BackHandler, Pressable, StyleSheet} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import {NavigationContainer, useFocusEffect} from '@react-navigation/native';
+import {NavigationContainer, useFocusEffect, useNavigation} from '@react-navigation/native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import HomeSVG from 'components/svg/HomeSVG';
 import ActivitySVG from 'components/svg/ActivitySVG';
 import SwapSVG from 'components/svg/SwapSVG';
 import MoreSVG from 'components/svg/MoreSVG';
-import {createStackNavigator} from '@react-navigation/stack';
+import {createStackNavigator, StackNavigationOptions} from '@react-navigation/stack';
 import SendReceiveBottomSheet from 'screens/portfolio/SendReceiveBottomSheet';
 import AccountBottomSheet from 'screens/portfolio/account/AccountBottomSheet';
 import SwapView from 'screens/swap/SwapView';
@@ -21,6 +21,10 @@ import TransactionDetailBottomSheet from 'screens/activity/TransactionDetailBott
 import WatchlistSVG from 'components/svg/WatchlistSVG';
 import {createDrawerNavigator} from '@react-navigation/drawer';
 import DrawerView from 'screens/drawer/DrawerView';
+import CurrencySelector from 'screens/drawer/CurrencySelector';
+import {Header} from '@react-navigation/elements';
+import {TouchableOpacity} from '@gorhom/bottom-sheet';
+import CarrotSVG from 'components/svg/CarrotSVG';
 
 type Props = {
   onExit: () => void;
@@ -28,18 +32,21 @@ type Props = {
 };
 
 export type DrawerStackParamList = {
-  NetworkSwitcher: undefined;
+  Tabs: undefined;
+  CurrencySelector:
+    | undefined
+    | {onCurrencySelected: (code: string) => void; selectedCurrency: string};
   Legal: undefined;
   Security: undefined;
-  AccountBottomSheet: undefined;
 };
 
 const Tab = createBottomTabNavigator();
 const RootStack = createStackNavigator();
-const DrawerStack = createDrawerNavigator();
+const DrawerStack = createDrawerNavigator<DrawerStackParamList>();
 
 function WalletStackScreen(props: Props | Readonly<Props>) {
   const context = useContext(ApplicationContext);
+  const navigation = useNavigation();
   const [walletReady, setWalletReady] = useState(false);
   const walletStateContext = useWalletStateContext();
 
@@ -79,6 +86,13 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
         name={AppNavigation.Tabs.Tabs}
         options={{headerShown: false}}
         component={Tabs}
+      />
+      <DrawerStack.Screen
+        options={{
+          headerShown: true,
+        }}
+        name={AppNavigation.Wallet.CurrencySelector}
+        component={CurrencySelector}
       />
     </DrawerStack.Navigator>
   );
