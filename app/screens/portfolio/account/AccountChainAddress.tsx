@@ -7,6 +7,7 @@ import OvalTagBg from 'components/OvalTagBg';
 import FlexSpacer from 'components/FlexSpacer';
 import CopySVG from 'components/svg/CopySVG';
 import Clipboard from '@react-native-clipboard/clipboard';
+import {Opacity10} from 'resources/Constants';
 
 type Props = {
   title: string;
@@ -23,7 +24,7 @@ function AccountChainAddress({title, address, color}: Props): JSX.Element {
   return (
     <View style={{flexDirection: 'row'}}>
       <OvalTagBg
-        color={color + '1A'}
+        color={color + Opacity10}
         style={{
           flex: 1,
           paddingHorizontal: 16,
