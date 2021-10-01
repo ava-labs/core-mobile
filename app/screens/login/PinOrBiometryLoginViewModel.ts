@@ -1,9 +1,10 @@
-import {useEffect, useState} from 'react';
+import {useEffect, useMemo, useRef, useState} from 'react';
 import BiometricsSDK from 'utils/BiometricsSDK';
 import {UserCredentials} from 'react-native-keychain';
 import {PinKeys} from 'screens/onboarding/PinKey';
 import {asyncScheduler, Observable, timer} from 'rxjs';
 import {catchError, concatMap, map} from 'rxjs/operators';
+import {Animated, Platform, Vibration} from 'react-native';
 
 export type DotView = {
   filled: boolean;
@@ -24,18 +25,36 @@ const keymap: Map<PinKeys, string> = new Map([
 
 export function usePinOrBiometryLogin(): [
   string,
-  string,
   DotView[],
   (pinKey: PinKeys) => void,
   string | undefined,
   () => Observable<WalletLoadingResults>,
+  Animated.Value,
 ] {
-  const [title] = useState('Enter PIN');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [title] = useState('Wallet');
   const [enteredPin, setEnteredPin] = useState('');
   const [pinDots, setPinDots] = useState<DotView[]>([]);
   const [pinEntered, setPinEntered] = useState(false);
   const [mnemonic, setMnemonic] = useState<string | undefined>(undefined);
+  const jiggleAnim = useRef(new Animated.Value(0)).current;
+
+  const wrongPinAnim = useMemo(() => {
+    return Animated.loop(
+      Animated.sequence([
+        Animated.timing(jiggleAnim, {
+          toValue: 20,
+          duration: 60,
+          useNativeDriver: true,
+        }),
+        Animated.timing(jiggleAnim, {
+          toValue: -20,
+          duration: 60,
+          useNativeDriver: true,
+        }),
+      ]),
+      {},
+    );
+  }, []);
 
   useEffect(() => {
     setPinDots(getPinDots(enteredPin));
@@ -57,12 +76,29 @@ export function usePinOrBiometryLogin(): [
         if (credentials.username === enteredPin) {
           setMnemonic(credentials.password);
         } else {
-          setErrorMessage('Wrong pin!');
           resetConfirmPinProcess();
+          fireJiggleAnimation();
+          vibratePhone();
         }
       });
     }
   }, [pinEntered]);
+
+  function vibratePhone() {
+    Vibration.vibrate(
+      Platform.OS === 'android'
+        ? [0, 150, 10, 150, 10, 150, 10, 150, 10, 150]
+        : [0, 10, 10, 10, 10],
+    );
+  }
+
+  function fireJiggleAnimation() {
+    wrongPinAnim.start();
+    setTimeout(() => {
+      wrongPinAnim.reset();
+      jiggleAnim.setValue(0);
+    }, 800);
+  }
 
   const getPinDots = (pin: string): DotView[] => {
     const dots: DotView[] = [];
@@ -95,9 +131,7 @@ export function usePinOrBiometryLogin(): [
     (): Observable<WalletLoadingResults> => {
       return timer(100, asyncScheduler).pipe(
         //timer is here to give UI opportunity to draw everything
-        concatMap(value =>
-          BiometricsSDK.loadWalletKey(BiometricsSDK.loadOptions),
-        ),
+        concatMap(() => BiometricsSDK.loadWalletKey(BiometricsSDK.loadOptions)),
         map(value => {
           if (value !== false) {
             const keyOrMnemonic = (value as UserCredentials).password;
@@ -119,11 +153,11 @@ export function usePinOrBiometryLogin(): [
 
   return [
     title,
-    errorMessage,
     pinDots,
     onEnterPin,
     mnemonic,
     promptForWalletLoadingIfExists,
+    jiggleAnim,
   ];
 }
 

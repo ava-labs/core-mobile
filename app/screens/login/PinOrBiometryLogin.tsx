@@ -1,9 +1,6 @@
-import React, {useEffect} from 'react';
-import {StyleSheet, View} from 'react-native';
-import Header from 'screens/mainView/Header';
-import TextTitle from 'components/TextTitle';
+import React, {useContext, useEffect} from 'react';
+import {Animated, StyleSheet, View} from 'react-native';
 import Dot from 'components/Dot';
-import TextLabel from 'components/TextLabel';
 import PinKey, {PinKeys} from 'screens/onboarding/PinKey';
 import {
   MnemonicLoaded,
@@ -12,6 +9,10 @@ import {
   usePinOrBiometryLogin,
   WalletLoadingResults,
 } from './PinOrBiometryLoginViewModel';
+import AvaText from 'components/AvaText';
+import {Space} from 'components/Space';
+import {ApplicationContext} from 'contexts/ApplicationContext';
+import AvaButton from 'components/AvaButton';
 
 const keymap: Map<string, PinKeys> = new Map([
   ['1', PinKeys.Key1],
@@ -28,22 +29,24 @@ const keymap: Map<string, PinKeys> = new Map([
 ]);
 
 type Props = {
-  onBack: () => void;
+  onSignInWithRecoveryPhrase: () => void;
   onEnterWallet: (mnemonic: string) => void;
 };
 
 export default function PinOrBiometryLogin({
-  onBack,
+  onSignInWithRecoveryPhrase,
   onEnterWallet,
-}: Props | Readonly<Props>) {
+}: Props | Readonly<Props>): JSX.Element {
   const [
     title,
-    errorMessage,
     pinDots,
     onEnterPin,
     mnemonic,
     promptForWalletLoadingIfExists,
+    jiggleAnim,
   ] = usePinOrBiometryLogin();
+
+  const context = useContext(ApplicationContext);
 
   useEffect(() => {
     promptForWalletLoadingIfExists().subscribe({
@@ -88,22 +91,34 @@ export default function PinOrBiometryLogin({
 
   return (
     <View style={styles.verticalLayout}>
-      <Header showBack onBack={onBack} />
-      <View style={[{height: 8}]} />
-
+      <Space y={64} />
       <View style={styles.growContainer}>
-        <TextTitle text={title} textAlign={'center'} bold size={24} />
-        <TextTitle
-          text={'Access your wallet faster'}
-          size={16}
-          textAlign={'center'}
-        />
-        <View style={[{height: 8}]} />
-
-        {errorMessage.length > 0 && <TextLabel text={errorMessage} />}
-        <View style={styles.dots}>{generatePinDots()}</View>
+        <AvaText.LargeTitleBold textStyle={{textAlign: 'center'}}>
+          {title}
+        </AvaText.LargeTitleBold>
+        <Space y={8} />
+        <AvaText.Body1
+          textStyle={{textAlign: 'center', color: context.theme.colorText1}}>
+          Enter your PIN
+        </AvaText.Body1>
+        <Animated.View
+          style={[
+            {padding: 68},
+            {
+              transform: [
+                {
+                  translateX: jiggleAnim,
+                },
+              ],
+            },
+          ]}>
+          <View style={styles.dots}>{generatePinDots()}</View>
+        </Animated.View>
       </View>
       <View style={styles.keyboard}>{keyboard()}</View>
+      <AvaButton.TextMedium onPress={onSignInWithRecoveryPhrase}>
+        Sign In with recovery phrase
+      </AvaButton.TextMedium>
     </View>
   );
 }
@@ -122,7 +137,6 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   dots: {
-    paddingHorizontal: 68,
     flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'space-between',
