@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     paddingTop: 16,
   },
   title: {
-    fontWeight: 'bold',
+    fontFamily: 'Inter-Bold',
     fontSize: 18,
     lineHeight: 22,
   },
