@@ -1,10 +1,8 @@
-import {BN, Utils} from '@avalabs/avalanche-wallet-sdk';
+import React, {createContext, useEffect, useState} from 'react';
 import {
   useSendAvax,
   useWalletStateContext,
 } from '@avalabs/wallet-react-components';
-import {useEffect, useState} from 'react';
-import {Alert} from 'react-native';
 import {
   asyncScheduler,
   BehaviorSubject,
@@ -12,9 +10,11 @@ import {
   scheduled,
   Subscription,
 } from 'rxjs';
+import {BN, Utils} from '@avalabs/avalanche-wallet-sdk';
+import {Alert} from 'react-native';
 import {take} from 'rxjs/operators';
 
-export function useSendAvaxRn(): {
+export interface SendAvaxContextState {
   destinationAddress: string;
   setSendAmountString: (
     value: ((prevState: string) => string) | string,
@@ -28,8 +28,10 @@ export function useSendAvaxRn(): {
   ) => void;
   sendAmountString: string;
   clearAddress: () => void;
+  createdTxId: string;
   sendFeeString: string;
   errorMsg: string;
+  clearErrorMsg: () => void;
   onScanBarcode: () => void;
   balanceTotalInUSD: string;
   avaxTotal: string;
@@ -37,7 +39,11 @@ export function useSendAvaxRn(): {
   canSubmit: undefined | boolean;
   onSendAvax: (memo?: string) => void;
   onBarcodeScanned: (data: string) => void;
-} {
+}
+
+export const SendAvaxContext = createContext<SendAvaxContextState>({} as any);
+
+export const SendAvaxContextProvider = ({children}: {children: any}) => {
   const {
     submit,
     reset,
@@ -48,6 +54,8 @@ export function useSendAvaxRn(): {
     targetChain,
     error,
     canSubmit,
+    txs,
+    sendFee,
   } = useSendAvax(new BehaviorSubject({bn: new BN(0)})); //Fixme: how is this gas used? where that should come from?
 
   const [loaderVisible, setLoaderVisible] = useState(false);
@@ -63,6 +71,7 @@ export function useSendAvaxRn(): {
   const [balanceTotalInUSD, setBalanceTotalInUSD] = useState('');
   const [avaxTotal, setAvaxTotal] = useState('');
   const [destinationAddress, setDestinationAddress] = useState('');
+  const [createdTxId, setCreatedTxId] = useState('');
 
   useEffect(() => {
     if (!walletStateContext) {
@@ -73,7 +82,7 @@ export function useSendAvaxRn(): {
   }, [walletStateContext]);
 
   useEffect(() => {
-    setErrorMsg(error ?? '');
+    setErrorMsg(error?.message ?? '');
   }, [error]);
 
   useEffect(() => {
@@ -115,19 +124,12 @@ export function useSendAvaxRn(): {
       .pipe(take(1))
       .subscribe({
         next: value => {
+          console.log('submit result:', value);
           if (value === undefined) {
             Alert.alert('Error', 'Undefined error');
-          } else if (typeof value === 'string') {
-            Alert.alert('Success', value);
           } else {
-            if ('complete' in value) {
-              console.log('complete', value.complete);
-            }
-            if ('activeTxIndex' in value) {
-              Alert.alert(
-                'Success',
-                'Active tx index = ' + value.activeTxIndex,
-              );
+            if ('txId' in value && value.txId) {
+              setCreatedTxId(value.txId);
             }
           }
         },
@@ -155,6 +157,10 @@ export function useSendAvaxRn(): {
     setAddress('');
   };
 
+  const clearErrorMsg = (): void => {
+    setErrorMsg('');
+  };
+
   function stringAmountToBN(amount: string): BN {
     if (!amount) {
       return new BN(0);
@@ -171,13 +177,14 @@ export function useSendAvaxRn(): {
     return Utils.bnToAvaxX(amount) + ' AVAX';
   }
 
-  return {
+  const state: SendAvaxContextState = {
     avaxTotal,
     balanceTotalInUSD,
     targetChain,
     loaderVisible,
     loaderMsg,
     errorMsg,
+    clearErrorMsg,
     cameraVisible,
     setCameraVisible,
     destinationAddress,
@@ -190,5 +197,11 @@ export function useSendAvaxRn(): {
     onScanBarcode,
     onBarcodeScanned,
     clearAddress,
+    createdTxId,
   };
-}
+  return (
+    <SendAvaxContext.Provider value={state}>
+      {children}
+    </SendAvaxContext.Provider>
+  );
+};
