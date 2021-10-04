@@ -3,6 +3,7 @@ export const Opacity50 = '7F';
 
 export enum COLORS_DAY {
   transparent = '#00000000',
+  white = '#ffffff',
   overlay = '#0000009A',
   background = '#ffffff',
   colorPrimary1 = '#F64942',
@@ -86,6 +87,7 @@ export enum COLORS_DAY {
 
 export enum COLORS_NIGHT {
   transparent = '#00000000',
+  white = '#ffffff',
   overlay = '#0000009A',
   background = '#000000',
   colorPrimary1 = '#F1595A',

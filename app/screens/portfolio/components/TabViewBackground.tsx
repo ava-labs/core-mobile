@@ -11,7 +11,7 @@ const TabViewBackground = ({style}: BottomSheetBackgroundProps) => {
     () => [
       style,
       {
-        backgroundColor: theme.bgOnBgApp,
+        backgroundColor: theme.colorBg2,
       },
     ],
     [style],

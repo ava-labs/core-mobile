@@ -55,7 +55,7 @@ const TextBody1: FC<TextProps> = ({textStyle, children}) => {
 const TextBody2: FC<TextProps> = ({color, textStyle, children}) => {
   const theme = useContext(ApplicationContext).theme;
   return (
-    <Text style={[styles.body2, {color: color ?? theme.txtDim}, textStyle]}>
+    <Text style={[styles.body2, {color: color ?? theme.colorText2}, textStyle]}>
       {children}
     </Text>
   );
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   heading3: {
-    fontFamily: 'Inter-Bold',
+    fontFamily: 'Inter-SemiBold',
     fontSize: 16,
     lineHeight: 24,
   },
