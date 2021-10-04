@@ -2,7 +2,6 @@ import React, {useContext, useState} from 'react';
 import {Image, View} from 'react-native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import {Space} from 'components/Space';
-import TextTitle from 'components/TextTitle';
 import OvalTagBg from 'components/OvalTagBg';
 import AvaText from 'components/AvaText';
 import AvaButton from 'components/AvaButton';
@@ -30,7 +29,7 @@ export default function SendAvaxConfirm(
         backgroundStyle,
         {
           alignItems: 'center',
-          backgroundColor: context.theme.bgOnBgApp,
+          backgroundColor: undefined, //cancel backgroundColor from backgroundStyle
           paddingLeft: 0,
           paddingStart: 0,
           paddingEnd: 0,
@@ -45,9 +44,9 @@ export default function SendAvaxConfirm(
         source={{uri: props.tokenImageUrl}}
       />
       <Space y={16} />
-      <TextTitle text={props.tokenAmount} size={24} bold />
+      <AvaText.Heading1>{props.tokenAmount}</AvaText.Heading1>
       <Space y={8} />
-      <TextTitle text={props.fiatAmount} size={14} />
+      <AvaText.Body2>{props.fiatAmount}</AvaText.Body2>
 
       <Space y={32} />
       <OvalTagBg color={context.theme.colorBg3 + Opacity50}>
