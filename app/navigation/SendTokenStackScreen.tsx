@@ -45,11 +45,14 @@ const SendTokenStackScreen = ({onClose, token}: Props) => {
         <TouchableOpacity
           style={{paddingEnd: 16, transform: [{rotate: '180deg'}]}}
           onPress={onPress}>
-          <CarrotSVG color={theme.txtOnBgApp} />
+          <CarrotSVG color={theme.colorText1} />
         </TouchableOpacity>
       ),
       headerTitleStyle: {
-        color: theme.txtListItem,
+        color: theme.colorText1,
+        fontFamily: 'Inter-Bold',
+        fontSize: 24,
+        lineHeight: 29,
       },
       headerStyle: {
         backgroundColor: theme.bgOnBgApp,
@@ -80,7 +83,7 @@ const SendTokenStackScreen = ({onClose, token}: Props) => {
     );
   };
 
-  const doneScreenOptions = useMemo(
+  const noHeaderOptions = useMemo(
     () => ({headerShown: false, headerLeft: () => null}),
     [],
   );
@@ -90,8 +93,8 @@ const SendTokenStackScreen = ({onClose, token}: Props) => {
       return (
         <AvaLogoSVG
           size={32}
-          logoColor={theme.logoColor}
-          backgroundColor={theme.txtOnBgApp}
+          logoColor={theme.white}
+          backgroundColor={theme.logoColor}
         />
       );
     } else {
@@ -158,16 +161,17 @@ const SendTokenStackScreen = ({onClose, token}: Props) => {
       <Stack.Navigator screenOptions={screenOptions}>
         <Stack.Screen
           name={AppNavigation.SendToken.SendTokenScreen}
-          options={doneScreenOptions}
+          options={noHeaderOptions}
           component={Tabs}
         />
         <Stack.Screen
+          options={{title: 'Confirm Transaction'}}
           name={AppNavigation.SendToken.ConfirmTransactionScreen}
           component={ConfirmScreen}
         />
         <Stack.Screen
           name={AppNavigation.SendToken.DoneScreen}
-          options={doneScreenOptions}
+          options={noHeaderOptions}
           component={DoneDoneScreen}
         />
       </Stack.Navigator>
