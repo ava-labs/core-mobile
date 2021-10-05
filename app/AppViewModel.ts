@@ -13,6 +13,8 @@ import {concatMap, map, switchMap} from 'rxjs/operators';
 import {BackHandler} from 'react-native';
 import WalletSDK from 'utils/WalletSDK';
 import BiometricsSDK from 'utils/BiometricsSDK';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {SECURE_ACCESS_SET} from 'resources/Constants';
 
 export enum SelectedView {
   Onboard,
@@ -32,20 +34,23 @@ class AppViewModel {
     new BehaviorSubject<SelectedView>(SelectedView.Onboard);
 
   onComponentMount = (): void => {
-    BiometricsSDK.hasWalletStored().then(value => {
-      if (value) {
+    AsyncStorage.getItem(SECURE_ACCESS_SET).then(result => {
+      if (result) {
         this.setSelectedView(SelectedView.PinOrBiometryLogin);
       }
     });
   };
 
-  onPinCreated = (pin: string): Observable<boolean> => {
+  onPinCreated = (pin: string, isResetting = false): Observable<boolean> => {
     return from(BiometricsSDK.storeWalletWithPin(pin, this.mnemonic)).pipe(
       switchMap(pinSaved => {
         if (pinSaved === false) {
           throw Error('Pin not saved');
         }
-        return BiometricsSDK.canUseBiometry();
+
+        return isResetting
+          ? Promise.reject(false)
+          : BiometricsSDK.canUseBiometry();
       }),
       map((canUseBiometry: boolean) => {
         if (canUseBiometry) {
@@ -78,12 +83,15 @@ class AppViewModel {
     });
   };
 
-  onSavedMnemonic = (mnemonic: string): void => {
+  onSavedMnemonic = (mnemonic: string, isResetting = false): void => {
     this.mnemonic = mnemonic;
-    this.setSelectedView(SelectedView.CheckMnemonic);
+    if (!isResetting) {
+      this.setSelectedView(SelectedView.CheckMnemonic);
+    }
   };
 
   onLogout = (): Observable<LogoutEvents> => {
+    AsyncStorage.removeItem(SECURE_ACCESS_SET);
     const deleteBioDataPrompt = new AsyncSubject<LogoutPromptAnswers>();
     const dialogOp: Observable<LogoutFinished> = deleteBioDataPrompt.pipe(
       concatMap((answer: LogoutPromptAnswers) => {
