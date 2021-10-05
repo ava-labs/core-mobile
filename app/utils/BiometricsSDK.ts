@@ -11,53 +11,38 @@ import Keychain, {
 } from 'react-native-keychain';
 import {from, Observable} from 'rxjs';
 import {catchError, map, switchMap, tap} from 'rxjs/operators';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {SECURE_ACCESS_SET} from 'resources/Constants';
+
+const SERVICE_KEY = 'sec-storage-service';
 
 export default class BiometricsSDK {
-  static storePinOptions: Options = {
-    accessControl: ACCESS_CONTROL.APPLICATION_PASSWORD,
-    accessible: ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
-    rules: SECURITY_RULES.AUTOMATIC_UPGRADE,
-    service: 'pin',
+  static KEYSTORE_PASSCODE_OPTIONS: Options = {
+    accessControl: Keychain.ACCESS_CONTROL.DEVICE_PASSCODE,
+    accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
+    service: SERVICE_KEY,
   };
 
-  static storeOptions: Options = {
-    accessControl: ACCESS_CONTROL.BIOMETRY_CURRENT_SET,
-    accessible: ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
-    authenticationPrompt: {
-      title: 'Store Wallet',
-      subtitle: 'Use biometric data to securely store your Avalanche Wallet',
-      cancel: 'cancel',
-    },
-    authenticationType: AUTHENTICATION_TYPE.DEVICE_PASSCODE_OR_BIOMETRICS,
-    rules: SECURITY_RULES.AUTOMATIC_UPGRADE,
-    service: 'mnemonic',
-  };
-
-  static loadOptions: Options = {
-    accessControl: ACCESS_CONTROL.BIOMETRY_CURRENT_SET,
-    accessible: ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
-    authenticationPrompt: {
-      title: 'Unlock Wallet',
-      subtitle: 'Use biometric unlock to access your Avalanche Wallet',
-      cancel: 'cancel',
-    },
-    authenticationType: AUTHENTICATION_TYPE.DEVICE_PASSCODE_OR_BIOMETRICS,
-    rules: SECURITY_RULES.AUTOMATIC_UPGRADE,
-    service: 'mnemonic',
+  static KEYSTORE_OPTIONS: Options = {
+    accessControl:
+      Keychain.ACCESS_CONTROL.BIOMETRY_CURRENT_SET_OR_DEVICE_PASSCODE,
+    accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
+    service: SERVICE_KEY,
   };
 
   static storeWalletWithPin = (
     pin: string,
     walletMnemonic: string,
   ): Promise<false | Result> => {
+    AsyncStorage.setItem(SECURE_ACCESS_SET, 'PIN');
     return Keychain.setGenericPassword(
       pin,
       walletMnemonic,
-      BiometricsSDK.storePinOptions,
+      BiometricsSDK.KEYSTORE_PASSCODE_OPTIONS,
     );
   };
   static loadWalletWithPin = (): Promise<false | UserCredentials> => {
-    return Keychain.getGenericPassword(BiometricsSDK.storePinOptions);
+    return Keychain.getGenericPassword(BiometricsSDK.KEYSTORE_PASSCODE_OPTIONS);
   };
 
   /**
@@ -66,12 +51,13 @@ export default class BiometricsSDK {
    * @param key - mnemonic to store
    */
   static storeWalletWithBiometry(key: string): Observable<boolean> {
+    AsyncStorage.setItem(SECURE_ACCESS_SET, 'BIO');
     return from(BiometricsSDK.saveWalletKey(key)).pipe(
       switchMap(credentials => {
         if (credentials === false) {
           throw Error('Error saving mnemonic');
         }
-        return BiometricsSDK.loadWalletKey(BiometricsSDK.storeOptions);
+        return BiometricsSDK.loadWalletKey(BiometricsSDK.KEYSTORE_OPTIONS);
       }),
       map(credentials => {
         if (credentials === false) {
@@ -93,7 +79,7 @@ export default class BiometricsSDK {
     return Keychain.setGenericPassword(
       'wallet',
       key,
-      BiometricsSDK.storeOptions,
+      BiometricsSDK.KEYSTORE_OPTIONS,
     );
   };
 
@@ -104,8 +90,8 @@ export default class BiometricsSDK {
   };
 
   static clearWalletKey = (): Promise<boolean> => {
-    return Keychain.resetGenericPassword(BiometricsSDK.storePinOptions).then(
-      () => Keychain.resetGenericPassword(BiometricsSDK.storeOptions),
+    return Keychain.resetGenericPassword(BiometricsSDK.KEYSTORE_PASSCODE_OPTIONS).then(
+      () => Keychain.resetGenericPassword(BiometricsSDK.KEYSTORE_OPTIONS),
     );
   };
 
