@@ -46,7 +46,7 @@ function AccountView(): JSX.Element {
     <View
       style={{
         flex: 1,
-        backgroundColor: context.theme.bgApp,
+        backgroundColor: context.theme.colorBg2,
         paddingVertical: 16,
       }}>
       <View
@@ -60,9 +60,6 @@ function AccountView(): JSX.Element {
         <AddSVG />
       </View>
       <Space y={16} />
-      {
-        //todo: wrap accountElements in card carousel
-      }
       <BottomSheetScrollView
         focusHook={useFocusEffect}
         horizontal

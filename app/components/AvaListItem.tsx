@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
     marginVertical: 4,
   },
   tokenNativeValue: {
-    fontWeight: 'bold',
+    fontFamily: 'Inter-Bold',
     fontSize: 16,
     lineHeight: 24,
   },
@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
     paddingRight: 16,
     textAlign: 'center',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
     lineHeight: 24,
   },
 });
