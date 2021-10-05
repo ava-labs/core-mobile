@@ -62,7 +62,7 @@ const CollapsibleSection: FC<Props> = ({
 
 const styles = StyleSheet.create({
   header: {
-    fontWeight: '400',
+    fontFamily: 'Inter-Regular',
     fontSize: 14,
     lineHeight: 17,
     color: '#6C6C6E',

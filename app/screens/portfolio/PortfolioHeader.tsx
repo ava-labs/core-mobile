@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 36,
-    fontWeight: 'bold',
+    fontFamily: 'Inter-Bold',
   },
   header: {
     overflow: 'hidden',
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
     paddingRight: 16,
     textAlign: 'center',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
     lineHeight: 24,
   },
 });

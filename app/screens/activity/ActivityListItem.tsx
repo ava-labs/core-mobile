@@ -49,7 +49,7 @@ const ActivityListItem: FC<Props> = ({
 
 const styles = StyleSheet.create({
   tokenNativeValue: {
-    fontWeight: 'bold',
+    fontFamily: 'Inter-Bold',
     fontSize: 16,
     lineHeight: 24,
   },

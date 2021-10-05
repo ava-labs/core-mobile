@@ -102,62 +102,59 @@ const AvaText = {
 
 const styles = StyleSheet.create({
   largeTitleBold: {
-    fontWeight: '700',
+    fontFamily: 'Inter-Bold',
     fontSize: 36,
     lineHeight: 44,
   },
   heading1: {
-    fontWeight: '700',
+    fontFamily: 'Inter-Bold',
     fontSize: 24,
     lineHeight: 29,
   },
   heading2: {
-    fontWeight: '700',
+    fontFamily: 'Inter-Bold',
     fontSize: 18,
     lineHeight: 22,
   },
   heading3: {
-    fontWeight: '600',
+    fontFamily: 'Inter-Bold',
     fontSize: 16,
     lineHeight: 24,
   },
   body1: {
-    fontWeight: '400',
+    fontFamily: 'Inter-Regular',
     fontSize: 16,
     lineHeight: 24,
   },
   body2: {
-    fontWeight: '400',
+    fontFamily: 'Inter-Regular',
     fontSize: 14,
     lineHeight: 17,
   },
   body3: {
-    fontWeight: '400',
+    fontFamily: 'Inter-Regular',
     fontSize: 12,
     lineHeight: 15,
   },
   textTag: {
-    fontWeight: 'bold',
+    fontFamily: 'Inter-Bold',
     fontSize: 16,
     lineHeight: 24,
   },
   textButtonLarge: {
-    fontFamily: 'Inter-Regular',
+    fontFamily: 'Inter-SemiBold',
     fontSize: 18,
     lineHeight: 22,
-    fontWeight: '700',
   },
   textButtonMedium: {
-    fontFamily: 'Inter-Regular',
+    fontFamily: 'Inter-SemiBold',
     fontSize: 14,
     lineHeight: 24,
-    fontWeight: '700',
   },
   textButtonSmall: {
-    fontFamily: 'Inter-Regular',
+    fontFamily: 'Inter-SemiBold',
     fontSize: 12,
     lineHeight: 16,
-    fontWeight: '700',
   },
 });
 

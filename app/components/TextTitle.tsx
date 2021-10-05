@@ -21,8 +21,7 @@ export default function TextTitle(props: Props | Readonly<Props>) {
           lineHeight: props.lineHeight || undefined,
           color: props.color || theme.txtOnBgApp,
           fontSize: props.size ? props.size : 26,
-          fontFamily: 'Inter-Regular',
-          fontWeight: props.bold ? 'bold' : 'normal',
+          fontFamily: props.bold ? 'Inter-Bold' : 'Inter-Regular',
           textAlign: props.textAlign,
         },
       ]}>

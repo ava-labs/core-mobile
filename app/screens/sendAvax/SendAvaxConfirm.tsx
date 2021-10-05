@@ -6,6 +6,7 @@ import TextTitle from 'components/TextTitle';
 import OvalTagBg from 'components/OvalTagBg';
 import AvaText from 'components/AvaText';
 import AvaButton from 'components/AvaButton';
+import {Opacity50} from 'resources/Constants';
 
 type SendAvaxXProps = {
   tokenImageUrl: string;
@@ -49,7 +50,7 @@ export default function SendAvaxConfirm(
       <TextTitle text={props.fiatAmount} size={14} />
 
       <Space y={32} />
-      <OvalTagBg color={context.theme.bgApp}>
+      <OvalTagBg color={context.theme.colorBg3 + Opacity50}>
         <AvaText.Tag>Send to</AvaText.Tag>
       </OvalTagBg>
       <Space y={32} />

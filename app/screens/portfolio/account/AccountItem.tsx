@@ -19,7 +19,7 @@ function AccountItem({account}: Props): JSX.Element {
       style={[
         {
           flex: 1,
-          backgroundColor: context.theme.bgOnBgApp,
+          backgroundColor: context.theme.colorBg2,
           borderRadius: 8,
           padding: 16,
           alignItems: 'center',

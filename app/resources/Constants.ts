@@ -1,3 +1,6 @@
+export const Opacity10 = '1A';
+export const Opacity50 = '7F';
+
 export enum COLORS_DAY {
   transparent = '#00000000',
   overlay = '#0000009A',
@@ -77,8 +80,8 @@ export enum COLORS_DAY {
 
   tabBarIconInactive = '#949497',
 
-  ovalBgGreen = '#00D3BC1A',
-  ovalBgBlue = '#934AF61A',
+  ovalBgGreen = '#00D3BC',
+  ovalBgBlue = '#934AF6',
 }
 
 export enum COLORS_NIGHT {
@@ -160,6 +163,6 @@ export enum COLORS_NIGHT {
 
   tabBarIconInactive = '#949497',
 
-  ovalBgGreen = '#00D3BC1A',
-  ovalBgBlue = '#934AF61A',
+  ovalBgGreen = '#00D3BC',
+  ovalBgBlue = '#934AF6',
 }
