@@ -1,6 +1,7 @@
 import React, {useContext} from 'react';
 import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
+import CarrotSVG from 'components/svg/CarrotSVG';
 
 interface Props {
   rightComponent?: React.ReactNode;
@@ -8,6 +9,7 @@ interface Props {
   label?: React.ReactNode | string;
   title?: React.ReactNode | string;
   subtitle?: React.ReactNode | string;
+  showNavigationArrow?: boolean;
   listPressDisabled?: boolean;
   onPress?: () => void;
   titleAlignment?: 'center' | 'flex-start' | 'flex-end';
@@ -21,6 +23,7 @@ function BaseListItem({
   title,
   listPressDisabled,
   titleAlignment = 'center',
+  showNavigationArrow = false,
   onPress,
 }: Props) {
   const context = useContext(ApplicationContext);
@@ -32,7 +35,9 @@ function BaseListItem({
         disabled={listPressDisabled}
         onPress={onPress}>
         <View style={styles.baseRow}>
-          {leftComponent && leftComponent}
+          <View style={{marginLeft: 16, flexDirection: 'row'}}>
+            {leftComponent && leftComponent}
+          </View>
           <View style={styles.baseMainContent}>
             {!!label && typeof label === 'string' ? (
               <Text
@@ -78,7 +83,10 @@ function BaseListItem({
               <View>{subtitle}</View>
             )}
           </View>
-          {rightComponent && rightComponent}
+          <View style={{marginRight: 16, flexDirection: 'row'}}>
+            {rightComponent && rightComponent}
+            {showNavigationArrow && <CarrotSVG />}
+          </View>
         </View>
       </TouchableOpacity>
     </View>
@@ -102,7 +110,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
   },
   baseRow: {
     justifyContent: 'center',
