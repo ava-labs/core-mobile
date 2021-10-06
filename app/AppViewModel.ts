@@ -15,6 +15,7 @@ import WalletSDK from 'utils/WalletSDK';
 import BiometricsSDK from 'utils/BiometricsSDK';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {SECURE_ACCESS_SET} from 'resources/Constants';
+import {encrypt, getEncryptionKey} from 'screens/login/utils/EncryptionHelper';
 
 export enum SelectedView {
   Onboard,
@@ -41,26 +42,43 @@ class AppViewModel {
     });
   };
 
-  onPinCreated = (pin: string, isResetting = false): Observable<boolean> => {
-    return from(BiometricsSDK.storeWalletWithPin(pin, this.mnemonic)).pipe(
-      switchMap(pinSaved => {
-        if (pinSaved === false) {
-          throw Error('Pin not saved');
-        }
+  onPinCreated = async (pin: string, isResetting = false) => {
+    const key = await getEncryptionKey(pin);
+    const encryptedData = await encrypt(this.mnemonic, key);
+    await BiometricsSDK.storeWalletWithPin(encryptedData);
 
-        return isResetting
-          ? Promise.reject(false)
-          : BiometricsSDK.canUseBiometry();
-      }),
-      map((canUseBiometry: boolean) => {
-        if (canUseBiometry) {
-          this.setSelectedView(SelectedView.BiometricStore);
-        } else {
-          this.setSelectedView(SelectedView.Main);
-        }
-        return true;
-      }),
+    //if we're resetting we don't need to go anywhere.
+    if (isResetting) {
+      return;
+    }
+    //if not resetting we give the option for the user to use biometrics if supported
+    const isBiometricsAvailable = await BiometricsSDK.canUseBiometry();
+    this.setSelectedView(
+      isBiometricsAvailable ? SelectedView.BiometricStore : SelectedView.Main,
     );
+    // return from(getEncryptionKey(pin)).pipe(
+    //   switchMap(key => encrypt(this.mnemonic, key)),
+    //   switchMap((encryptedData: string) =>
+    //     BiometricsSDK.storeWalletWithPin(encryptedData),
+    //   ),
+    //   switchMap(pinSaved => {
+    //     if (pinSaved === false) {
+    //       throw Error('Pin not saved');
+    //     }
+    //
+    //     return isResetting
+    //       ? Promise.reject(false)
+    //       : BiometricsSDK.canUseBiometry();
+    //   }),
+    //   map((canUseBiometry: boolean) => {
+    //     if (canUseBiometry) {
+    //       this.setSelectedView(SelectedView.BiometricStore);
+    //     } else {
+    //       this.setSelectedView(SelectedView.Main);
+    //     }
+    //     return true;
+    //   }),
+    // );
   };
 
   onEnterWallet = (mnemonic: string): Observable<boolean> => {
