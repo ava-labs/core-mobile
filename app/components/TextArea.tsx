@@ -21,10 +21,19 @@ export default function TextArea(props: Props | Readonly<Props>): JSX.Element {
   const [errorMessage, setErrorMessage] = useState<string | undefined>(
     props.errorMessage,
   );
+  const [primaryDisabled, setPrimaryDisabled] = useState(true);
 
   useEffect(() => {
     setErrorMessage(props.errorMessage);
   }, [props.errorMessage]);
+
+  useEffect(() => {
+    if (enteredText) {
+      setPrimaryDisabled(false);
+    } else {
+      setPrimaryDisabled(true);
+    }
+  }, [enteredText]);
 
   return (
     <View
@@ -82,6 +91,7 @@ export default function TextArea(props: Props | Readonly<Props>): JSX.Element {
           {props.btnSecondaryText}
         </AvaButton.TextLarge>
         <AvaButton.PrimaryMedium
+          disabled={primaryDisabled}
           onPress={() => props.onBtnPrimary(enteredText)}>
           {props.btnPrimaryText}
         </AvaButton.PrimaryMedium>
