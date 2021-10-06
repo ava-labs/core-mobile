@@ -62,7 +62,7 @@ export default function SendAvax(): JSX.Element {
               textAlign: 'right',
               color: context.theme.txtListItemSubscript,
             }}>
-            {'Transaction fee: ' + sendFeeString + ' AVAX'}
+            {'Transaction fee: ' + sendFeeString}
           </AvaText.Body3>
         </View>
       </View>

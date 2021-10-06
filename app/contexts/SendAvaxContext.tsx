@@ -97,9 +97,11 @@ export const SendAvaxContextProvider = ({children}: {children: any}) => {
     setDestinationAddress(address ?? '');
   }, [address]);
 
-  // useEffect(() => {
-  //   setSendFeeString(bnAmountToString(sendFee));
-  // }, [sendFee, targetChain]);
+  useEffect(() => {
+    if (sendFee) {
+      setSendFeeString(bnAmountToString(sendFee));
+    }
+  }, [sendFee]);
 
   useEffect(() => {
     setAvaxTotal(bnAmountToString(balanceAvaxTotal));
