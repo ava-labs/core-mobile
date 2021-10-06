@@ -54,6 +54,7 @@ export default function HdWalletLogin(
           </AvaButton.TextLarge>
           <View style={[{padding: 16}]}>
             <TextArea
+              autoFocus
               btnPrimaryText={'Sign in'}
               btnSecondaryText={'Cancel'}
               heading={'Recovery phrase'}
