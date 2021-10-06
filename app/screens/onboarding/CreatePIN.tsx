@@ -1,11 +1,12 @@
 import React, {useEffect} from 'react';
 import {StyleSheet, View} from 'react-native';
-import TextTitle from 'components/TextTitle';
 import PinKey, {PinKeys} from './PinKey';
 import Dot from 'components/Dot';
 import {useCreatePin} from './CreatePinViewModel';
 import TextLabel from 'components/TextLabel';
 import HeaderProgress from 'screens/mainView/HeaderProgress';
+import {Space} from 'components/Space';
+import AvaText from 'components/AvaText';
 
 const keymap: Map<string, PinKeys> = new Map([
   ['1', PinKeys.Key1],
@@ -74,16 +75,16 @@ export default function CreatePIN(props: Props | Readonly<Props>) {
   return (
     <View style={styles.verticalLayout}>
       <HeaderProgress maxDots={3} filledDots={3} showBack onBack={onBack} />
-      <View style={[{height: 8}]} />
+      <Space y={8} />
 
       <View style={styles.growContainer}>
-        <TextTitle text={title} textAlign={'center'} bold size={24} />
-        <TextTitle
-          text={'Access your wallet faster'}
-          size={16}
-          textAlign={'center'}
-        />
-        <View style={[{height: 8}]} />
+        <AvaText.Heading1 textStyle={{textAlign: 'center'}}>
+          {title}
+        </AvaText.Heading1>
+        <AvaText.Heading3 textStyle={{textAlign: 'center'}}>
+          Access your wallet faster
+        </AvaText.Heading3>
+        <Space y={8} />
 
         {errorMessage.length > 0 && <TextLabel text={errorMessage} />}
         <View style={styles.dots}>{generatePinDots()}</View>
