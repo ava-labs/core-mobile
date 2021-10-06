@@ -56,8 +56,8 @@ const onExit = () => {
     next: (value: LogoutEvents) => {
       if (value instanceof ShowExitPrompt) {
         Alert.alert(
+          'Logout?',
           'Your passphrase will remain securely stored for easier later access of wallet.',
-          undefined,
           [
             {
               text: 'Ok',
