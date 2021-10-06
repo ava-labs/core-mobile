@@ -1,116 +1,143 @@
 import Keychain, {
-  ACCESS_CONTROL,
-  ACCESSIBLE,
-  AUTHENTICATION_TYPE,
-  getAllGenericPasswordServices,
   getSupportedBiometryType,
   Options,
-  Result,
-  SECURITY_RULES,
   UserCredentials,
 } from 'react-native-keychain';
-import {from, Observable} from 'rxjs';
-import {catchError, map, switchMap, tap} from 'rxjs/operators';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {SECURE_ACCESS_SET} from 'resources/Constants';
+import {NativeModules, Platform} from 'react-native';
 
 const SERVICE_KEY = 'sec-storage-service';
+const iOS = Platform.OS === 'ios';
 
-export default class BiometricsSDK {
-  static KEYSTORE_PASSCODE_OPTIONS: Options = {
+type KeystoreConfigType = {
+  KEYSTORE_PASSCODE_OPTIONS: Options;
+  KEYSTORE_BIO_OPTIONS: Options;
+  KEYCHAIN_FALLBACK_OPTIONS: Options;
+};
+
+export const KeystoreConfig: KeystoreConfigType = {
+  KEYSTORE_PASSCODE_OPTIONS: {
+    service: SERVICE_KEY,
+    accessControl: iOS
+      ? undefined
+      : Keychain.ACCESS_CONTROL.APPLICATION_PASSWORD,
+    rules: iOS ? undefined : Keychain.SECURITY_RULES.NONE,
+  },
+  KEYSTORE_BIO_OPTIONS: {
+    accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_CURRENT_SET,
+    accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
+    authenticationPrompt: {
+      title: 'Store Wallet',
+      subtitle: 'Use biometric data to securely store your Avalanche Wallet',
+      cancel: 'cancel',
+    },
+    authenticationType:
+      Keychain.AUTHENTICATION_TYPE.DEVICE_PASSCODE_OR_BIOMETRICS,
+    service: SERVICE_KEY,
+  },
+  KEYCHAIN_FALLBACK_OPTIONS: {
     accessControl: Keychain.ACCESS_CONTROL.DEVICE_PASSCODE,
-    accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
     service: SERVICE_KEY,
-  };
+  },
+};
 
-  static KEYSTORE_OPTIONS: Options = {
-    accessControl:
-      Keychain.ACCESS_CONTROL.BIOMETRY_CURRENT_SET_OR_DEVICE_PASSCODE,
-    accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
-    service: SERVICE_KEY,
-  };
+class BiometricsSDK {
+  async getAccessType() {
+    return AsyncStorage.getItem(SECURE_ACCESS_SET);
+  }
 
-  static storeWalletWithPin = (
-    pin: string,
-    walletMnemonic: string,
-  ): Promise<false | Result> => {
-    AsyncStorage.setItem(SECURE_ACCESS_SET, 'PIN');
+  async storeWalletWithPin(walletMnemonic: string) {
+    await AsyncStorage.setItem(SECURE_ACCESS_SET, 'PIN');
     return Keychain.setGenericPassword(
-      pin,
+      'wallet',
       walletMnemonic,
-      BiometricsSDK.KEYSTORE_PASSCODE_OPTIONS,
+      KeystoreConfig.KEYSTORE_PASSCODE_OPTIONS,
     );
-  };
-  static loadWalletWithPin = (): Promise<false | UserCredentials> => {
-    return Keychain.getGenericPassword(BiometricsSDK.KEYSTORE_PASSCODE_OPTIONS);
-  };
+  }
+
+  async loadWalletWithPin(): Promise<false | UserCredentials> {
+    return Keychain.getGenericPassword(
+      KeystoreConfig.KEYSTORE_PASSCODE_OPTIONS,
+    );
+  }
 
   /**
    * Stores key under available biometry and prompts user for biometry to check if everytinih is ok.
    * Emits boolean true if everything ok, or throws Error if something whent wrong.
    * @param key - mnemonic to store
    */
-  static storeWalletWithBiometry(key: string): Observable<boolean> {
-    AsyncStorage.setItem(SECURE_ACCESS_SET, 'BIO');
-    return from(BiometricsSDK.saveWalletKey(key)).pipe(
-      switchMap(credentials => {
-        if (credentials === false) {
-          throw Error('Error saving mnemonic');
-        }
-        return BiometricsSDK.loadWalletKey(BiometricsSDK.KEYSTORE_OPTIONS);
-      }),
-      map(credentials => {
-        if (credentials === false) {
-          throw Error('Error saving mnemonic');
-        }
-        return true;
-      }),
-      catchError((err: Error) => {
-        return from(BiometricsSDK.clearWalletKey()).pipe(
-          tap(() => {
-            throw err;
-          }),
+  async storeWalletWithBiometry(key: string) {
+    await AsyncStorage.setItem(SECURE_ACCESS_SET, 'BIO');
+    // reset keystore because we're changing from PIN to BIO
+    await Keychain.resetGenericPassword({service: SERVICE_KEY});
+
+    // try to store with biometry
+    try {
+      await Keychain.setGenericPassword(
+        'wallet',
+        key,
+        KeystoreConfig.KEYSTORE_BIO_OPTIONS,
+      );
+      return this.loadWalletKey(KeystoreConfig.KEYSTORE_BIO_OPTIONS);
+    } catch (e) {
+      // case something goes wrong with biometrics, use use the fallback, which defaults to device code
+      try {
+        await Keychain.setGenericPassword(
+          'wallet',
+          key,
+          KeystoreConfig.KEYCHAIN_FALLBACK_OPTIONS,
         );
-      }),
+        return Promise.resolve(true);
+      } catch (ex) {
+        return Promise.reject(false);
+      }
+    }
+
+    // return from(BiometricsSDK.saveWalletKey(key)).pipe(
+    //   switchMap(credentials => {
+    //     if (credentials === false) {
+    //       throw Error('Error saving mnemonic');
+    //     }
+    //     return BiometricsSDK.loadWalletKey(BiometricsSDK.KEYSTORE_BIO_OPTIONS);
+    //   }),
+    //   map(credentials => {
+    //     if (credentials === false) {
+    //       throw Error('Error saving mnemonic');
+    //     }
+    //     return true;
+    //   }),
+    //   catchError((err: Error) => {
+    //     return from(BiometricsSDK.clearWalletKey()).pipe(
+    //       tap(() => {
+    //         throw err;
+    //       }),
+    //     );
+    //   }),
+    // );
+  }
+
+  async loadWalletKey(options: Options): Promise<false | UserCredentials> {
+    return Keychain.getGenericPassword(options);
+  }
+
+  async clearWalletKey() {
+    return Keychain.resetGenericPassword(
+      KeystoreConfig.KEYSTORE_PASSCODE_OPTIONS,
+    ).then(() =>
+      Keychain.resetGenericPassword(KeystoreConfig.KEYSTORE_BIO_OPTIONS),
     );
   }
 
-  static saveWalletKey = (key: string): Promise<false | Result> => {
-    return Keychain.setGenericPassword(
-      'wallet',
-      key,
-      BiometricsSDK.KEYSTORE_OPTIONS,
-    );
-  };
-
-  static loadWalletKey = (
-    options: Options,
-  ): Promise<false | UserCredentials> => {
-    return Keychain.getGenericPassword(options);
-  };
-
-  static clearWalletKey = (): Promise<boolean> => {
-    return Keychain.resetGenericPassword(
-      BiometricsSDK.KEYSTORE_PASSCODE_OPTIONS,
-    ).then(() => Keychain.resetGenericPassword(BiometricsSDK.KEYSTORE_OPTIONS));
-  };
-
-  static canUseBiometry = (): Promise<boolean> => {
+  async canUseBiometry() {
     return getSupportedBiometryType().then(value => {
       return value !== null;
     });
-  };
+  }
 
-  static getBiometryType = (): Promise<string> => {
-    return getSupportedBiometryType().then(value => {
-      console.log(value);
-      return value as string;
-    });
-  };
-
-  static hasWalletStored = (): Promise<boolean> => {
-    return getAllGenericPasswordServices().then(value => {
-      return value.length !== 0;
-    });
-  };
+  async getBiometryType() {
+    return getSupportedBiometryType();
+  }
 }
+
+export default new BiometricsSDK();
