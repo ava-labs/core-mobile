@@ -25,8 +25,17 @@ import {ERC20} from '@avalabs/wallet-react-components';
 import {AvaxToken} from 'dto/AvaxToken';
 import ActivityView from 'screens/activity/ActivityView';
 import AvaButton from 'components/AvaButton';
+import {SendAvaxContextProvider} from 'contexts/SendAvaxContext';
 
-const Stack = createStackNavigator();
+export type SendTokenStackProps = {
+  sendAvaxConfirmProps?: SendAvaxConfirmProps;
+};
+
+export type SendAvaxConfirmProps = {
+  tokenImageUrl: string;
+};
+
+const Stack = createStackNavigator<SendTokenStackProps>();
 
 type Props = {
   onClose: () => void;
@@ -45,11 +54,14 @@ const SendTokenStackScreen = ({onClose, token}: Props) => {
         <TouchableOpacity
           style={{paddingEnd: 16, transform: [{rotate: '180deg'}]}}
           onPress={onPress}>
-          <CarrotSVG color={theme.txtOnBgApp} />
+          <CarrotSVG color={theme.colorText1} />
         </TouchableOpacity>
       ),
       headerTitleStyle: {
-        color: theme.txtListItem,
+        color: theme.colorText1,
+        fontFamily: 'Inter-Bold',
+        fontSize: 24,
+        lineHeight: 29,
       },
       headerStyle: {
         backgroundColor: theme.bgOnBgApp,
@@ -72,15 +84,11 @@ const SendTokenStackScreen = ({onClose, token}: Props) => {
           navigate(AppNavigation.SendToken.ConfirmTransactionScreen)
         }
         onClose={onClose}
-        destinationAddress={'X-fuji1mtf4tv4dnmghh34ausjqyxer05hl3qvqv3nmja'}
-        fiatAmount={'443.23 USD'}
-        tokenAmount={'23232.23 AVAX'}
-        tokenImageUrl={'tokenObj?.image'}
       />
     );
   };
 
-  const doneScreenOptions = useMemo(
+  const noHeaderOptions = useMemo(
     () => ({headerShown: false, headerLeft: () => null}),
     [],
   );
@@ -90,8 +98,8 @@ const SendTokenStackScreen = ({onClose, token}: Props) => {
       return (
         <AvaLogoSVG
           size={32}
-          logoColor={theme.logoColor}
-          backgroundColor={theme.txtOnBgApp}
+          logoColor={theme.white}
+          backgroundColor={theme.logoColor}
         />
       );
     } else {
@@ -154,24 +162,27 @@ const SendTokenStackScreen = ({onClose, token}: Props) => {
   };
 
   return (
-    <NavigationContainer independent={true}>
-      <Stack.Navigator screenOptions={screenOptions}>
-        <Stack.Screen
-          name={AppNavigation.SendToken.SendTokenScreen}
-          options={doneScreenOptions}
-          component={Tabs}
-        />
-        <Stack.Screen
-          name={AppNavigation.SendToken.ConfirmTransactionScreen}
-          component={ConfirmScreen}
-        />
-        <Stack.Screen
-          name={AppNavigation.SendToken.DoneScreen}
-          options={doneScreenOptions}
-          component={DoneDoneScreen}
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <SendAvaxContextProvider>
+      <NavigationContainer independent={true}>
+        <Stack.Navigator screenOptions={screenOptions}>
+          <Stack.Screen
+            name={AppNavigation.SendToken.SendTokenScreen}
+            options={noHeaderOptions}
+            component={Tabs}
+          />
+          <Stack.Screen
+            options={{title: 'Confirm Transaction'}}
+            name={AppNavigation.SendToken.ConfirmTransactionScreen}
+            component={ConfirmScreen}
+          />
+          <Stack.Screen
+            name={AppNavigation.SendToken.DoneScreen}
+            options={noHeaderOptions}
+            component={DoneDoneScreen}
+          />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </SendAvaxContextProvider>
   );
 };
 
@@ -190,11 +201,13 @@ interface DoneProps {
 }
 
 function DoneScreen({onClose}: DoneProps) {
+  const context = useContext(ApplicationContext);
   return (
     <View
       style={[
         useContext(ApplicationContext).backgroundStyle,
         {
+          backgroundColor: undefined,
           justifyContent: 'center',
           alignItems: 'center',
           flex: 1,
@@ -203,12 +216,17 @@ function DoneScreen({onClose}: DoneProps) {
         },
       ]}>
       <Space y={100} />
-      <AvaLogoSVG />
+      <AvaLogoSVG
+        logoColor={context.theme.white}
+        backgroundColor={context.theme.logoColor}
+      />
       <Space y={32} />
       <AvaText.Heading2>Asset sent</AvaText.Heading2>
       <View style={{flex: 1}} />
       <View style={{width: '100%'}}>
-        <AvaButton.PrimaryLarge onPress={onClose}>Done</AvaButton.PrimaryLarge>
+        <AvaButton.PrimaryLarge style={{margin: 16}} onPress={onClose}>
+          Done
+        </AvaButton.PrimaryLarge>
       </View>
     </View>
   );

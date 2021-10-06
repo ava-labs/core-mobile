@@ -1,6 +1,5 @@
 import React, {useContext, useState} from 'react';
 import {Modal, StyleSheet, View} from 'react-native';
-import TextTitle from 'components/TextTitle';
 import InputText from 'components/InputText';
 import AvaButton from 'components/AvaButton';
 import Loader from 'components/Loader';
@@ -8,20 +7,18 @@ import QrScannerAva from 'components/QrScannerAva';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import QRCode from 'components/svg/QRCode';
 import {useNavigation} from '@react-navigation/native';
-import {useSendAvaxRn} from 'screens/sendAvax/useSendAvaxRn';
 import AppNavigation from 'navigation/AppNavigation';
 import AvaText from 'components/AvaText';
 import FlexSpacer from 'components/FlexSpacer';
+import {SendAvaxContext} from 'contexts/SendAvaxContext';
 
 export default function SendAvax(): JSX.Element {
   const context = useContext(ApplicationContext);
   const {
-    avaxTotal,
-    balanceTotalInUSD,
-    targetChain,
     loaderVisible,
     loaderMsg,
     errorMsg,
+    clearErrorMsg,
     cameraVisible,
     setCameraVisible,
     destinationAddress,
@@ -30,11 +27,9 @@ export default function SendAvax(): JSX.Element {
     setSendAmountString,
     sendFeeString,
     canSubmit,
-    onSendAvax,
     onScanBarcode,
     onBarcodeScanned,
-    clearAddress,
-  } = useSendAvaxRn();
+  } = useContext(SendAvaxContext);
   const [backgroundStyle] = useState(context.backgroundStyle);
   const {navigate} = useNavigation();
 
@@ -54,8 +49,12 @@ export default function SendAvax(): JSX.Element {
           label="Amount"
           placeholder="Enter the amount"
           helperText="$0"
+          errorText={errorMsg.startsWith('Amount') ? errorMsg : undefined}
           keyboardType="numeric"
-          onChangeText={text => setSendAmountString(text)}
+          onChangeText={text => {
+            clearErrorMsg();
+            setSendAmountString(text);
+          }}
         />
         <View style={styles.transactionFee}>
           <AvaText.Body3
@@ -74,8 +73,11 @@ export default function SendAvax(): JSX.Element {
             label={'Address'}
             placeholder="Enter the address"
             multiline={true}
-            errorText={destinationAddress.length === 0 ? undefined : errorMsg}
-            onChangeText={text => setAddress(text)}
+            errorText={errorMsg.indexOf('address') != -1 ? errorMsg : undefined}
+            onChangeText={text => {
+              setAddress(text);
+              clearErrorMsg();
+            }}
             value={destinationAddress}
           />
         </View>
@@ -87,6 +89,7 @@ export default function SendAvax(): JSX.Element {
       <FlexSpacer />
 
       <AvaButton.PrimaryLarge
+        disabled={!canSubmit}
         style={{margin: 16}}
         onPress={() =>
           navigate(AppNavigation.SendToken.ConfirmTransactionScreen)
