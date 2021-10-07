@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, {RefObject, useContext, useEffect, useRef, useState} from 'react';
 import {TextInput, View} from 'react-native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import TextLabel from 'components/TextLabel';
@@ -23,6 +23,7 @@ type Props = {
   privateMode?: boolean;
   // Set keyboard type (numeric, text)
   keyboardType?: 'numeric';
+  autoFocus?: boolean;
 };
 
 export default function InputText(props: Props | Readonly<Props>) {
@@ -31,9 +32,13 @@ export default function InputText(props: Props | Readonly<Props>) {
   const [showInput, setShowInput] = useState(false);
   const [focused, setFocused] = useState(false);
   const [toggleShowText, setToggleShowText] = useState('Show');
+  const textInputRef = useRef() as RefObject<TextInput>;
 
   useEffect(() => {
     setToggleShowText(showInput ? 'Hide' : 'Show');
+    if (props.autoFocus) {
+      textInputRef.current?.focus();
+    }
   }, [showInput]);
 
   const onSubmit = (): void => {
@@ -144,6 +149,7 @@ export default function InputText(props: Props | Readonly<Props>) {
           },
         ]}>
         <TextInput
+          ref={textInputRef}
           autoCapitalize="none"
           placeholder={props.placeholder}
           blurOnSubmit={true}
