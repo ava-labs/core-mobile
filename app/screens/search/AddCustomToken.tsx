@@ -3,7 +3,6 @@ import {Modal, StyleSheet, View} from 'react-native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import InputText from 'components/InputText';
 import QrScannerAva from 'components/QrScannerAva';
-import {useSendAvaxRn} from 'screens/sendAvax/useSendAvaxRn';
 import AvaButton from 'components/AvaButton';
 import QRCode from 'components/svg/QRCode';
 import {useNavigation} from '@react-navigation/native';
@@ -30,15 +29,6 @@ const ScanQrIcon = ({onScanBarcode}: {onScanBarcode: () => void}) => {
 const AddCustomToken: FC = () => {
   const theme = useContext(ApplicationContext).theme;
   const {goBack} = useNavigation();
-  const {
-    errorMsg,
-    cameraVisible,
-    setCameraVisible,
-    destinationAddress,
-    setAddress,
-    onScanBarcode,
-    onBarcodeScanned,
-  } = useSendAvaxRn();
 
   return (
     <View
@@ -53,25 +43,25 @@ const AddCustomToken: FC = () => {
             label={'Address'}
             placeholder="Enter the address"
             multiline={true}
-            errorText={destinationAddress.length === 0 ? undefined : errorMsg}
-            onChangeText={text => setAddress(text)}
-            value={destinationAddress}
+            errorText={'awaiting implementation'}
+            onChangeText={text => {}}
+            value={'awaiting implementation'}
             autoFocus
           />
         </View>
-        {destinationAddress.length === 0 && (
-          <ScanQrIcon onScanBarcode={onScanBarcode} />
-        )}
+        {/*{destinationAddress.length === 0 && (*/}
+        {/*  <ScanQrIcon onScanBarcode={onScanBarcode} />*/}
+        {/*)}*/}
       </View>
 
       <Modal
         animationType="slide"
         transparent={true}
-        onRequestClose={() => setCameraVisible(false)}
-        visible={cameraVisible}>
+        onRequestClose={() => {}}
+        visible={false}>
         <QrScannerAva
-          onSuccess={data => onBarcodeScanned(data)}
-          onCancel={() => setCameraVisible(false)}
+          onSuccess={data => {}}
+          onCancel={() => {}}
         />
       </Modal>
 
