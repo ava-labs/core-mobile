@@ -1,5 +1,5 @@
-import React, {useContext, useEffect, useState} from 'react';
-import {StyleSheet, TextInput, View} from 'react-native';
+import React, {useContext, useEffect, useRef, useState} from 'react';
+import {InteractionManager, StyleSheet, TextInput, View} from 'react-native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import AvaButton from './AvaButton';
 import AvaText from './AvaText';
@@ -12,6 +12,7 @@ type Props = {
   onChangeText: (text: string) => void;
   heading?: string;
   errorMessage?: string;
+  autoFocus?: boolean;
 };
 
 export default function TextArea(props: Props | Readonly<Props>): JSX.Element {
@@ -21,6 +22,15 @@ export default function TextArea(props: Props | Readonly<Props>): JSX.Element {
   const [errorMessage, setErrorMessage] = useState<string | undefined>(
     props.errorMessage,
   );
+  const textInputRef = useRef<TextInput>(null);
+
+  useEffect(() => {
+    if (props.autoFocus) {
+      InteractionManager.runAfterInteractions(() => {
+        textInputRef.current?.focus();
+      });
+    }
+  }, [props.autoFocus, textInputRef]);
 
   useEffect(() => {
     setErrorMessage(props.errorMessage);
@@ -50,6 +60,7 @@ export default function TextArea(props: Props | Readonly<Props>): JSX.Element {
           </AvaText.Heading2>
         )}
         <TextInput
+          ref={textInputRef}
           placeholder={'Enter your recovery phrase'}
           placeholderTextColor={theme.colorDisabled}
           multiline={true}
