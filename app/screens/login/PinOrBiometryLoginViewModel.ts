@@ -5,7 +5,6 @@ import {PinKeys} from 'screens/onboarding/PinKey';
 import {asyncScheduler, Observable, timer} from 'rxjs';
 import {catchError, concatMap, map} from 'rxjs/operators';
 import {Animated, Platform, Vibration} from 'react-native';
-import {useNavigation} from '@react-navigation/native';
 import {
   decrypt,
   EncryptedData,
@@ -29,21 +28,15 @@ const keymap: Map<PinKeys, string> = new Map([
   [PinKeys.Key0, '0'],
 ]);
 
-export function usePinOrBiometryLogin(
-  isResettingPin?: boolean,
-): [
+export function usePinOrBiometryLogin(): [
   string,
   DotView[],
   (pinKey: PinKeys) => void,
   string | undefined,
   () => Observable<WalletLoadingResults>,
   Animated.Value,
-  string,
 ] {
-  const title = isResettingPin ? 'Reset PIN' : 'Wallet';
-  const instruction = isResettingPin
-    ? 'Enter current or old PIN'
-    : 'Enter your PIN';
+  const [title] = useState('Wallet');
   const [enteredPin, setEnteredPin] = useState('');
   const [pinDots, setPinDots] = useState<DotView[]>([]);
   const [pinEntered, setPinEntered] = useState(false);
@@ -186,7 +179,6 @@ export function usePinOrBiometryLogin(
     mnemonic,
     promptForWalletLoadingIfExists,
     jiggleAnim,
-    instruction,
   ];
 }
 

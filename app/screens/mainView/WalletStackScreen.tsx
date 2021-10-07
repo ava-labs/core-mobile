@@ -32,6 +32,7 @@ import CurrencySelector from 'screens/drawer/currency-selector/CurrencySelector'
 import SecurityPrivacy from 'screens/drawer/security/SecurityPrivacy';
 import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin';
 import CreatePIN from 'screens/onboarding/CreatePIN';
+import SecurityPrivacyStackScreen from 'navigation/SecurityPrivacyStackScreen';
 
 type Props = {
   onExit: () => void;
@@ -185,13 +186,8 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
             component={CurrencySelector}
           />
           <RootStack.Screen
-            options={{
-              headerShown: true,
-              title: 'Security & Privacy',
-              headerBackTitleVisible: false,
-            }}
-            name={AppNavigation.Wallet.SecurityPrivacy}
-            component={SecurityPrivacy}
+            name={AppNavigation.Stack.Security}
+            component={SecurityPrivacyStackScreen}
           />
         </RootStack.Group>
         <RootStack.Group screenOptions={{presentation: 'transparentModal'}}>
@@ -206,14 +202,6 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
           <RootStack.Screen
             name={AppNavigation.Modal.TransactionDetailBottomSheet}
             component={TransactionDetailBottomSheet}
-          />
-          <RootStack.Screen
-            name={AppNavigation.Onboard.Login}
-            component={PinOrBiometryLogin}
-          />
-          <RootStack.Screen
-            name={AppNavigation.CreateWallet.CreatePin}
-            component={CreatePIN}
           />
         </RootStack.Group>
       </RootStack.Navigator>
