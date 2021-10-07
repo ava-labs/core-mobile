@@ -136,7 +136,6 @@ const styles = StyleSheet.create({
     lineHeight: 17,
   },
   tokenLogo: {
-    paddingHorizontal: 16,
     width: 32,
     height: 32,
     borderRadius: 20,
