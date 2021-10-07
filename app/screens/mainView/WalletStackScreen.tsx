@@ -21,10 +21,7 @@ import TransactionDetailBottomSheet from 'screens/activity/TransactionDetailBott
 import WatchlistSVG from 'components/svg/WatchlistSVG';
 import {createDrawerNavigator} from '@react-navigation/drawer';
 import DrawerView from 'screens/drawer/DrawerView';
-import CurrencySelector from 'screens/drawer/currency-selector/CurrencySelector';
-import SecurityPrivacy from 'screens/drawer/security/SecurityPrivacy';
-import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin';
-import CreatePIN from 'screens/onboarding/CreatePIN';
+import CurrencySelector from 'screens/drawer/CurrencySelector';
 import AddCustomToken from 'screens/search/AddCustomToken';
 
 type Props = {
@@ -151,7 +148,7 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
               title: 'Manage token list',
               headerBackTitleVisible: false,
               headerStyle: {
-                backgroundColor: context.theme.background
+                backgroundColor: context.theme.background,
               },
             }}
             name={AppNavigation.Wallet.SearchScreen}
@@ -163,7 +160,7 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
               title: 'Add custom token',
               headerBackTitleVisible: false,
               headerStyle: {
-                backgroundColor: context.theme.background
+                backgroundColor: context.theme.background,
               },
             }}
             name={AppNavigation.Wallet.AddCustomToken}
