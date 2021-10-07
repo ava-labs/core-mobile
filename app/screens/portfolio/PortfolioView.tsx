@@ -1,4 +1,4 @@
-import React, {FC, memo, useRef} from 'react';
+import React, {FC, memo, useEffect, useRef} from 'react';
 import {FlatList, ListRenderItemInfo, StyleSheet} from 'react-native';
 import AvaListItem from 'components/AvaListItem';
 import PortfolioHeader from 'screens/portfolio/PortfolioHeader';
@@ -16,6 +16,7 @@ type PortfolioProps = {
   onExit: () => void;
   onSwitchWallet: () => void;
   tokenList?: (ERC20 | AvaxToken)[];
+  loadZeroBalanceList: () => void;
 };
 
 export type PortfolioRouteProp = StackNavigationProp<
@@ -25,21 +26,29 @@ export type PortfolioRouteProp = StackNavigationProp<
 
 // experimenting with container pattern and stable props to try to reduce re-renders
 function PortfolioContainer({onExit, onSwitchWallet}: PortfolioProps) {
-  const {tokenList} = useSearchableTokenList();
+  const {tokenList, loadZeroBalanceList} = useSearchableTokenList();
 
   return (
     <PortfolioView
       onExit={onExit}
       onSwitchWallet={onSwitchWallet}
       tokenList={tokenList}
+      loadZeroBalanceList={loadZeroBalanceList}
     />
   );
 }
 
 const PortfolioView: FC<PortfolioProps> = memo(
-  ({tokenList}: PortfolioProps) => {
+  ({tokenList, loadZeroBalanceList}: PortfolioProps) => {
     const listRef = useRef<FlatList>(null);
     const navigation = useNavigation<PortfolioRouteProp>();
+
+    useEffect(() => {
+      const unsubscribe = navigation.addListener('focus', () => {
+        loadZeroBalanceList();
+      });
+      return () => unsubscribe();
+    }, [navigation]);
 
     function showBottomSheet(token: ERC20 | AvaxToken) {
       navigation.navigate(AppNavigation.Modal.SendReceiveBottomSheet, {token});
@@ -48,6 +57,7 @@ const PortfolioView: FC<PortfolioProps> = memo(
     const renderItem = (item: ListRenderItemInfo<ERC20 | AvaxToken>) => {
       const token = item.item;
       const logoUri = (token as ERC20)?.logoURI ?? undefined;
+
       return (
         <PortfolioListItem
           tokenName={token.name}
