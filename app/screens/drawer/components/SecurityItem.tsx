@@ -13,7 +13,7 @@ const SecurityItem: FC<Partial<DrawerContentComponentProps>> = ({
       leftComponent={null}
       rightComponent={<CarrotSVG />}
       onPress={() => {
-        navigation?.navigate(AppNavigation.Wallet.SecurityPrivacy);
+        navigation?.navigate(AppNavigation.Stack.Security);
       }}
     />
   );

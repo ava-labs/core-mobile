@@ -18,7 +18,9 @@ const keymap: Map<PinKeys, string> = new Map([
   [PinKeys.Key0, '0'],
 ]);
 
-export function useCreatePin(): [
+export function useCreatePin(
+  isResettingPin = false,
+): [
   string,
   string,
   DotView[],
@@ -27,7 +29,7 @@ export function useCreatePin(): [
   boolean,
   string | undefined,
 ] {
-  const [title, setTitle] = useState('Create PIN');
+  const [title, setTitle] = useState('Create Pin');
   const [errorMessage, setErrorMessage] = useState('');
   const [chosenPin, setChosenPin] = useState('');
   const [confirmedPin, setConfirmedPin] = useState('');
@@ -45,7 +47,11 @@ export function useCreatePin(): [
   }, [chosenPin, confirmedPin, chosenPinEntered]);
 
   useEffect(() => {
-    setTitle(chosenPinEntered ? 'Confirm PIN' : 'Create PIN');
+    if (isResettingPin) {
+      setTitle(chosenPinEntered ? 'Confirm new Pin' : 'Create new Pin');
+    } else {
+      setTitle(chosenPinEntered ? 'Confirm Pin' : 'Create Pin');
+    }
   }, [chosenPinEntered]);
 
   function resetConfirmPinProcess() {
