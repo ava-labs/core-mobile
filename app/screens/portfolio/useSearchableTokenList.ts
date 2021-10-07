@@ -5,7 +5,7 @@ import {AvaxToken} from 'dto/AvaxToken';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type Tokens = (ERC20 | AvaxToken)[];
-type ShowZeroArrayType = {};
+type ShowZeroArrayType = {[x: string]: boolean};
 
 export function useSearchableTokenList(hideZeroBalance = true): {
   searchText: string;
@@ -13,7 +13,7 @@ export function useSearchableTokenList(hideZeroBalance = true): {
   setSearchText: (value: ((prevState: string) => string) | string) => void;
   tokenList: (ERC20 | AvaxToken)[];
   setShowZeroBalanceList: Dispatch<any>;
-  showZeroBalanceList: {};
+  showZeroBalanceList: ShowZeroArrayType;
   loadZeroBalanceList: () => void;
 } {
   const walletState = useWalletStateContext();

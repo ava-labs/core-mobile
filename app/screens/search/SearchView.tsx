@@ -1,5 +1,12 @@
 import React, {useContext, useState} from 'react';
-import {FlatList, ListRenderItemInfo, StyleSheet, Text, TextInput, View} from 'react-native';
+import {
+  FlatList,
+  ListRenderItemInfo,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import SearchSVG from 'components/svg/SearchSVG';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import {useNavigation} from '@react-navigation/native';
@@ -52,8 +59,7 @@ function SearchView() {
         balance={token.balanceParsed}
         name={token.name}
         image={logoUri}
-        onPress={() => showBottomSheet(token)}
-        isShowingZeroBalanceForToken={!!showZeroBalanceList[token.name]}
+        isShowingZeroBalanceForToken={showZeroBalanceList[token.name]}
         onSwitchChanged={value => {
           showZeroBalanceList[token.name] = value;
           setShowZeroBalanceList({...showZeroBalanceList});
@@ -82,7 +88,7 @@ function SearchView() {
   };
 
   return (
-    <View style={{flex: 1, backgroundColor: context.theme.bgApp}}>
+    <View style={{flex: 1, backgroundColor: context.theme.background}}>
       <AvaText.Body1 textStyle={{alignSelf: 'center', paddingTop: 8}}>
         Add or remove tokens without balance
       </AvaText.Body1>
@@ -110,8 +116,9 @@ function SearchView() {
       <View
         style={{
           marginHorizontal: 16,
-          backgroundColor: context.theme.bgSearch,
           borderRadius: 8,
+          borderWidth: 1,
+          borderColor: context.theme.colorStroke,
         }}>
         <AvaListItem.Base
           title={'Add custom token'}
@@ -119,6 +126,9 @@ function SearchView() {
             <AddSVG color={context.theme.colorPrimary1} hideCircle size={24} />
           }
           rightComponent={<CarrotSVG />}
+          onPress={() =>
+            navigation.navigate(AppNavigation.Wallet.AddCustomToken)
+          }
         />
       </View>
       {backPressed || (
