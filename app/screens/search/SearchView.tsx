@@ -1,15 +1,6 @@
 import React, {useContext, useState} from 'react';
-import {
-  FlatList,
-  ListRenderItemInfo,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import {FlatList, ListRenderItemInfo, StyleSheet, Text, TextInput, View} from 'react-native';
 import SearchSVG from 'components/svg/SearchSVG';
-import ClearSVG from 'components/svg/ClearSVG';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import {useNavigation} from '@react-navigation/native';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
@@ -20,6 +11,10 @@ import AppNavigation from 'navigation/AppNavigation';
 import {PortfolioStackParamList} from 'navigation/PortfolioStackScreen';
 import {StackNavigationProp} from '@react-navigation/stack';
 import SearchListItem from 'screens/search/SearchListItem';
+import AvaText from 'components/AvaText';
+import AddSVG from 'components/svg/AddSVG';
+import AvaListItem from 'components/AvaListItem';
+import CarrotSVG from 'components/svg/CarrotSVG';
 
 export type SearchRouteProp = StackNavigationProp<
   PortfolioStackParamList,
@@ -27,8 +22,13 @@ export type SearchRouteProp = StackNavigationProp<
 >;
 
 function SearchView() {
-  const {filteredTokenList, searchText, setSearchText} =
-    useSearchableTokenList();
+  const {
+    filteredTokenList,
+    searchText,
+    setSearchText,
+    setShowZeroBalanceList,
+    showZeroBalanceList,
+  } = useSearchableTokenList(false);
   // back press hides flatlist to help minimize artifacts during fade out transition
   const [backPressed, setBackPressed] = useState(false);
   const context = useContext(ApplicationContext);
@@ -46,12 +46,18 @@ function SearchView() {
   const renderItem = (item: ListRenderItemInfo<any>) => {
     const token = item.item as ERC20 | AvaxToken;
     const logoUri = (token as ERC20)?.logoURI ?? undefined;
+
     return (
       <SearchListItem
         balance={token.balanceParsed}
         name={token.name}
         image={logoUri}
         onPress={() => showBottomSheet(token)}
+        isShowingZeroBalanceForToken={!!showZeroBalanceList[token.name]}
+        onSwitchChanged={value => {
+          showZeroBalanceList[token.name] = value;
+          setShowZeroBalanceList({...showZeroBalanceList});
+        }}
       />
     );
   };
@@ -77,39 +83,43 @@ function SearchView() {
 
   return (
     <View style={{flex: 1, backgroundColor: context.theme.bgApp}}>
-      <View
-        // while we wait for the proper background from UX
-        style={{
-          backgroundColor: context.theme.bgApp,
-        }}>
-        <View style={styles.searchContainer}>
-          <View
-            style={[
-              styles.searchBackground,
-              {backgroundColor: context.theme.bgSearch},
-            ]}>
-            <SearchSVG color={context.theme.onBgSearch} size={32} hideBorder />
-            <TextInput
-              style={[styles.searchInput, {color: context.theme.txtOnBgApp}]}
-              placeholder="Search"
-              placeholderTextColor={context.theme.onBgSearch}
-              value={searchText}
-              onChangeText={handleSearch}
-              underlineColorAndroid="transparent"
-              accessible
-              clearButtonMode="always"
-              autoCapitalize="none"
-              numberOfLines={1}
-            />
-          </View>
-          <TouchableOpacity style={{paddingLeft: 16}} onPress={onCancel}>
-            <ClearSVG
-              size={36}
-              color={context.theme.onBgSearch}
-              backgroundColor={context.theme.bgSearch}
-            />
-          </TouchableOpacity>
+      <AvaText.Body1 textStyle={{alignSelf: 'center', paddingTop: 8}}>
+        Add or remove tokens without balance
+      </AvaText.Body1>
+      <View style={styles.searchContainer}>
+        <View
+          style={[
+            styles.searchBackground,
+            {backgroundColor: context.theme.bgSearch},
+          ]}>
+          <SearchSVG color={context.theme.onBgSearch} size={32} hideBorder />
+          <TextInput
+            style={[styles.searchInput, {color: context.theme.txtOnBgApp}]}
+            placeholder="Search"
+            placeholderTextColor={context.theme.onBgSearch}
+            value={searchText}
+            onChangeText={handleSearch}
+            underlineColorAndroid="transparent"
+            accessible
+            clearButtonMode="always"
+            autoCapitalize="none"
+            numberOfLines={1}
+          />
         </View>
+      </View>
+      <View
+        style={{
+          marginHorizontal: 16,
+          backgroundColor: context.theme.bgSearch,
+          borderRadius: 8,
+        }}>
+        <AvaListItem.Base
+          title={'Add custom token'}
+          leftComponent={
+            <AddSVG color={context.theme.colorPrimary1} hideCircle size={24} />
+          }
+          rightComponent={<CarrotSVG />}
+        />
       </View>
       {backPressed || (
         <FlatList
