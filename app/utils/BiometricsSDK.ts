@@ -93,28 +93,6 @@ class BiometricsSDK {
         return Promise.reject(false);
       }
     }
-
-    // return from(BiometricsSDK.saveWalletKey(key)).pipe(
-    //   switchMap(credentials => {
-    //     if (credentials === false) {
-    //       throw Error('Error saving mnemonic');
-    //     }
-    //     return BiometricsSDK.loadWalletKey(BiometricsSDK.KEYSTORE_BIO_OPTIONS);
-    //   }),
-    //   map(credentials => {
-    //     if (credentials === false) {
-    //       throw Error('Error saving mnemonic');
-    //     }
-    //     return true;
-    //   }),
-    //   catchError((err: Error) => {
-    //     return from(BiometricsSDK.clearWalletKey()).pipe(
-    //       tap(() => {
-    //         throw err;
-    //       }),
-    //     );
-    //   }),
-    // );
   }
 
   async loadWalletKey(options: Options): Promise<false | UserCredentials> {
