@@ -9,6 +9,8 @@ enum WalletScreens {
   PortfolioScreen = 'PortfolioScreen',
   SearchScreen = 'SearchScreen',
   CurrencySelector = 'CurrencySelector',
+  SecurityPrivacy = 'Security & Privacy',
+  AddCustomToken = 'Add custom token',
 }
 
 enum Tabs {

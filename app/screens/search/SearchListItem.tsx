@@ -1,7 +1,8 @@
-import React, {Dispatch, FC, useState} from 'react';
+import React, {FC, useContext} from 'react';
 import {Image, Switch} from 'react-native';
 import AvaListItem from 'components/AvaListItem';
 import AvaText from 'components/AvaText';
+import {ApplicationContext} from 'contexts/ApplicationContext';
 
 type Props = {
   balance?: string;
@@ -20,7 +21,7 @@ const SearchListItem: FC<Props> = ({
   isShowingZeroBalanceForToken,
   onSwitchChanged,
 }) => {
-
+  const theme = useContext(ApplicationContext).theme;
   function handleChange(value: boolean) {
     onSwitchChanged(value);
   }
@@ -31,6 +32,12 @@ const SearchListItem: FC<Props> = ({
         <Switch
           value={isShowingZeroBalanceForToken}
           onValueChange={handleChange}
+          trackColor={{true: theme.btnPrimaryBgPressed}}
+          thumbColor={
+            isShowingZeroBalanceForToken
+              ? theme.colorPrimary1
+              : theme.colorDisabled
+          }
         />
       );
     } else {
@@ -44,6 +51,7 @@ const SearchListItem: FC<Props> = ({
       leftComponent={<Image source={{uri: image}} />}
       rightComponent={rightComponent()}
       onPress={onPress}
+      listPressDisabled
     />
   );
 };

@@ -21,7 +21,11 @@ import TransactionDetailBottomSheet from 'screens/activity/TransactionDetailBott
 import WatchlistSVG from 'components/svg/WatchlistSVG';
 import {createDrawerNavigator} from '@react-navigation/drawer';
 import DrawerView from 'screens/drawer/DrawerView';
-import CurrencySelector from 'screens/drawer/CurrencySelector';
+import CurrencySelector from 'screens/drawer/currency-selector/CurrencySelector';
+import SecurityPrivacy from 'screens/drawer/security/SecurityPrivacy';
+import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin';
+import CreatePIN from 'screens/onboarding/CreatePIN';
+import AddCustomToken from 'screens/search/AddCustomToken';
 
 type Props = {
   onExit: () => void;
@@ -116,6 +120,9 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
           tabBarAllowFontScaling: false,
           tabBarActiveTintColor: theme.accentColor,
           tabBarInactiveTintColor: theme.onBgSearch,
+          tabBarStyle: {
+            backgroundColor: theme.background,
+          },
         })}>
         <Tab.Screen
           name={AppNavigation.Tabs.Portfolio}
@@ -143,9 +150,24 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
               headerShown: true,
               title: 'Manage token list',
               headerBackTitleVisible: false,
+              headerStyle: {
+                backgroundColor: context.theme.background
+              },
             }}
             name={AppNavigation.Wallet.SearchScreen}
             component={SearchView}
+          />
+          <RootStack.Screen
+            options={{
+              headerShown: true,
+              title: 'Add custom token',
+              headerBackTitleVisible: false,
+              headerStyle: {
+                backgroundColor: context.theme.background
+              },
+            }}
+            name={AppNavigation.Wallet.AddCustomToken}
+            component={AddCustomToken}
           />
           <RootStack.Screen
             options={{
