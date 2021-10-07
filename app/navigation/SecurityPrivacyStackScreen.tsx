@@ -1,5 +1,4 @@
 import {createStackNavigator} from '@react-navigation/stack';
-import PortfolioView from 'screens/portfolio/PortfolioView';
 import React, {memo} from 'react';
 import AppNavigation from 'navigation/AppNavigation';
 import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin';
@@ -7,14 +6,14 @@ import CreatePIN from 'screens/onboarding/CreatePIN';
 import SecurityPrivacy from 'screens/drawer/security/SecurityPrivacy';
 import AppViewModel from 'AppViewModel';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {StackActions, useNavigation} from '@react-navigation/native';
-import App from 'App';
-import {HeaderBackButton} from '@react-navigation/elements';
+import {useNavigation} from '@react-navigation/native';
+import CreateWallet from 'screens/onboarding/CreateWallet';
 
 export type SecurityStackParamList = {
   [AppNavigation.Wallet.SecurityPrivacy]: undefined;
-  [AppNavigation.Onboard.Login]: undefined;
+  [AppNavigation.Onboard.Login]: {revealMnemonic: (mnemonic: string) => void};
   [AppNavigation.CreateWallet.CreatePin]: undefined;
+  [AppNavigation.CreateWallet.CreateWallet]: undefined;
 };
 
 type SecurityNavigationType = NativeStackNavigationProp<SecurityStackParamList>;
@@ -50,6 +49,10 @@ function SecurityPrivacyStackScreen() {
     />
   ));
 
+  const CreateWalletWithProps = memo(() => (
+    <CreateWallet onBack={gotBackToTopOfStack} isRevealingCurrentMnemonic />
+  ));
+
   return (
     <SecurityStack.Navigator
       detachInactiveScreens={false}
@@ -65,7 +68,7 @@ function SecurityPrivacyStackScreen() {
       <SecurityStack.Group screenOptions={{presentation: 'modal'}}>
         <SecurityStack.Screen
           options={{
-            title: 'Enter your PIN',
+            title: 'Enter your pin',
           }}
           name={AppNavigation.Onboard.Login}
           component={PinOrBiometryLoginWithProps}
@@ -73,6 +76,13 @@ function SecurityPrivacyStackScreen() {
         <SecurityStack.Screen
           name={AppNavigation.CreateWallet.CreatePin}
           component={CreatePinWithProps}
+        />
+        <SecurityStack.Screen
+          options={{
+            title: 'Recovery Phrase',
+          }}
+          name={AppNavigation.CreateWallet.CreateWallet}
+          component={CreateWalletWithProps}
         />
       </SecurityStack.Group>
     </SecurityStack.Navigator>

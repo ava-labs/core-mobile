@@ -13,7 +13,9 @@ import AvaText from 'components/AvaText';
 import {Space} from 'components/Space';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import AvaButton from 'components/AvaButton';
-import {useNavigation, useRoute} from '@react-navigation/native';
+import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
+import {SecurityStackParamList} from 'navigation/SecurityPrivacyStackScreen';
+import AppNavigation from 'navigation/AppNavigation';
 
 const keymap: Map<string, PinKeys> = new Map([
   ['1', PinKeys.Key1],
@@ -33,8 +35,12 @@ type Props = {
   onSignInWithRecoveryPhrase: () => void;
   onEnterWallet: (mnemonic: string) => void;
   isResettingPin?: boolean;
-  revealMnemonic?: (mnemonic: string) => void;
 };
+
+type SecurityRouteProps = RouteProp<
+  SecurityStackParamList,
+  AppNavigation.Onboard.Login
+>;
 
 export default function PinOrBiometryLogin({
   onSignInWithRecoveryPhrase,
@@ -42,7 +48,7 @@ export default function PinOrBiometryLogin({
   isResettingPin,
 }: Props | Readonly<Props>): JSX.Element {
   const theme = useContext(ApplicationContext).theme;
-  const route = useRoute();
+  const route = useRoute<SecurityRouteProps>();
   const {goBack} = useNavigation();
   const revealMnemonic = route?.params?.revealMnemonic;
 
