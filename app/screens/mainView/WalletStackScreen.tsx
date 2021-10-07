@@ -139,6 +139,11 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
         <RootStack.Group>
           <RootStack.Screen name={'Drawer'} component={DrawerScreen} />
           <RootStack.Screen
+            options={{
+              headerShown: true,
+              title: 'Manage token list',
+              headerBackTitleVisible: false,
+            }}
             name={AppNavigation.Wallet.SearchScreen}
             component={SearchView}
           />
