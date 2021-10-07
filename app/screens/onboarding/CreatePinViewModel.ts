@@ -87,7 +87,9 @@ export function useCreatePin(): [
       const newPin = chosenPin + keymap.get(pinKey)!;
       setChosenPin(newPin);
       if (newPin.length === 6) {
-        setChosenPinEntered(true);
+        setTimeout(() => {
+          setChosenPinEntered(true);
+        }, 300);
       }
     }
   };
