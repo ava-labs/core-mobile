@@ -10,7 +10,7 @@ import {NavigationContainer, useNavigation} from '@react-navigation/native';
 import SendAvaxConfirm from 'screens/sendAvax/SendAvaxConfirm';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import SendAvax from 'screens/sendAvax/SendAvax';
-import {Image, StyleSheet, View} from 'react-native';
+import {View} from 'react-native';
 import {Space} from 'components/Space';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import AvaText from 'components/AvaText';
@@ -20,29 +20,20 @@ import ClearSVG from 'components/svg/ClearSVG';
 import TabViewAva from 'components/TabViewAva';
 import ReceiveToken from 'screens/receive/ReceiveToken';
 import {usePortfolio} from 'screens/portfolio/usePortfolio';
-import {ERC20} from '@avalabs/wallet-react-components';
-import {AvaxToken} from 'dto/AvaxToken';
 import ActivityView from 'screens/activity/ActivityView';
 import AvaButton from 'components/AvaButton';
 import {SendAvaxContextProvider} from 'contexts/SendAvaxContext';
+import {SelectedTokenContext} from 'contexts/SelectedTokenContext';
 
-export type SendTokenStackProps = {
-  sendAvaxConfirmProps?: SendAvaxConfirmProps;
-};
-
-export type SendAvaxConfirmProps = {
-  tokenImageUrl: string;
-};
-
-const Stack = createStackNavigator<SendTokenStackProps>();
+const Stack = createStackNavigator();
 
 type Props = {
   onClose: () => void;
-  token: ERC20 | AvaxToken;
 };
 
-const SendTokenStackScreen = ({onClose, token}: Props) => {
+const SendTokenStackScreen = ({onClose}: Props) => {
   const theme = useContext(ApplicationContext).theme;
+  const {selectedToken, tokenLogo} = useContext(SelectedTokenContext);
   const {balanceTotalInUSD} = usePortfolio();
   const screenOptions = useMemo<StackNavigationOptions>(
     () => ({
@@ -92,27 +83,6 @@ const SendTokenStackScreen = ({onClose, token}: Props) => {
     [],
   );
 
-  const tokenLogo = () => {
-    if (token.symbol === 'AVAX') {
-      return (
-        <AvaLogoSVG
-          size={32}
-          logoColor={theme.white}
-          backgroundColor={theme.logoColor}
-        />
-      );
-    } else {
-      return (
-        <Image
-          style={styles.tokenLogo}
-          source={{
-            uri: (token as ERC20).logoURI,
-          }}
-        />
-      );
-    }
-  };
-
   const header = () => {
     return (
       <View
@@ -121,9 +91,9 @@ const SendTokenStackScreen = ({onClose, token}: Props) => {
         }}>
         <View style={{flex: 1}}>
           <AvaListItem.Base
-            label={<AvaText.Heading3>{token.name}</AvaText.Heading3>}
+            label={<AvaText.Heading3>{selectedToken?.name}</AvaText.Heading3>}
             title={
-              <AvaText.Heading1>{`${token.balanceParsed} ${token.symbol}`}</AvaText.Heading1>
+              <AvaText.Heading1>{`${selectedToken?.balanceParsed} ${selectedToken?.symbol}`}</AvaText.Heading1>
             }
             subtitle={<AvaText.Body2>{balanceTotalInUSD}</AvaText.Body2>}
             leftComponent={tokenLogo()}
@@ -185,16 +155,6 @@ const SendTokenStackScreen = ({onClose, token}: Props) => {
     </SendAvaxContextProvider>
   );
 };
-
-const styles = StyleSheet.create({
-  tokenLogo: {
-    paddingHorizontal: 16,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    overflow: 'hidden',
-  },
-});
 
 interface DoneProps {
   onClose: () => void;
