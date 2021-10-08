@@ -3,6 +3,7 @@ import {Image, StyleSheet, Text, View} from 'react-native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import AvaListItem from 'components/AvaListItem';
+import AvaText from 'components/AvaText';
 
 interface Props {
   tokenName: string;
@@ -33,26 +34,32 @@ const PortfolioListItem: FC<Props> = ({
       <Image style={styles.tokenLogo} source={{uri: image}} />
     );
 
-  const info = (
-    <View style={{alignItems: 'flex-end'}}>
-      <Text style={[styles.tokenNativeValue, {color: theme.txtListItem}]}>
-        {`${tokenPrice} ${symbol?.toUpperCase()}`}
-      </Text>
-      <Text style={[styles.tokenUsdValue, {color: theme.txtListItemSubscript}]}>
-        {`${tokenPrice} USD`}
-      </Text>
-    </View>
+  const subTitle = (
+    <AvaText.Body2>{`${tokenPrice} ${symbol?.toUpperCase()}`}</AvaText.Body2>
+  );
+
+  const usdBalance = (
+    <AvaText.Heading3>{`$${parseFloat(tokenPrice).toFixed(
+      2,
+    )} USD`}</AvaText.Heading3>
   );
 
   return (
-    <>
+    <View
+      style={{
+        marginHorizontal: 16,
+        marginVertical: 4,
+        borderRadius: 8,
+        backgroundColor: theme.bgOnBgApp,
+      }}>
       <AvaListItem.Base
         title={title}
+        subtitle={subTitle}
         leftComponent={tokenLogo}
-        rightComponent={info}
+        rightComponent={usdBalance}
         onPress={onPress}
       />
-    </>
+    </View>
   );
 };
 
