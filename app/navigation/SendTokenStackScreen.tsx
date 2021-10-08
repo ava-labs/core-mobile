@@ -19,7 +19,6 @@ import AvaListItem from 'components/AvaListItem';
 import ClearSVG from 'components/svg/ClearSVG';
 import TabViewAva from 'components/TabViewAva';
 import ReceiveToken from 'screens/receive/ReceiveToken';
-import OvalTagBg from 'components/OvalTagBg';
 import {usePortfolio} from 'screens/portfolio/usePortfolio';
 import {ERC20} from '@avalabs/wallet-react-components';
 import {AvaxToken} from 'dto/AvaxToken';
@@ -116,7 +115,10 @@ const SendTokenStackScreen = ({onClose, token}: Props) => {
 
   const header = () => {
     return (
-      <View style={{flexDirection: 'row', paddingRight: 16}}>
+      <View
+        style={{
+          flexDirection: 'row',
+        }}>
         <View style={{flex: 1}}>
           <AvaListItem.Base
             label={<AvaText.Heading3>{token.name}</AvaText.Heading3>}
@@ -128,13 +130,13 @@ const SendTokenStackScreen = ({onClose, token}: Props) => {
             titleAlignment={'flex-start'}
           />
         </View>
-        <TouchableOpacity onPress={onClose}>
+        <AvaButton.Icon onPress={onClose} style={{marginTop: -16}}>
           <ClearSVG
-            color={theme.btnIconIcon}
-            backgroundColor={theme.bgSearch}
+            color={theme.colorIcon1}
+            backgroundColor={theme.colorBg2}
             size={40}
           />
-        </TouchableOpacity>
+        </AvaButton.Icon>
       </View>
     );
   };
@@ -152,12 +154,10 @@ const SendTokenStackScreen = ({onClose, token}: Props) => {
 
   const renderCustomLabel = (title: string, focused: boolean) => {
     return (
-      <OvalTagBg color={focused ? '#FFECEF' : theme.transparent}>
-        <AvaText.Tag
-          textStyle={{color: focused ? theme.btnTextTxt : '#6C6C6E'}}>
-          {title}
-        </AvaText.Tag>
-      </OvalTagBg>
+      <AvaText.Heading3
+        textStyle={{color: focused ? theme.colorText1 : theme.colorText2}}>
+        {title}
+      </AvaText.Heading3>
     );
   };
 
