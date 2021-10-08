@@ -15,6 +15,7 @@ import AppNavigation from 'navigation/AppNavigation';
 import MenuSVG from 'components/svg/MenuSVG';
 import SearchSVG from 'components/svg/SearchSVG';
 import CarrotSVG from 'components/svg/CarrotSVG';
+import AddSVG from 'components/svg/AddSVG';
 
 // experimenting with container pattern and stable props to try to reduce re-renders
 function PortfolioHeaderContainer() {
@@ -55,7 +56,7 @@ const PortfolioHeader: FC<PortfolioHeaderProps> = memo(
     const rightComponent = (
       <Pressable
         onPress={() => navigation.navigate(AppNavigation.Wallet.SearchScreen)}>
-        <SearchSVG />
+        <AddSVG />
       </Pressable>
     );
 

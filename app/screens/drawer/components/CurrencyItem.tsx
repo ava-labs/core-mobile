@@ -13,19 +13,10 @@ const CurrencyItem: FC<Partial<DrawerContentComponentProps>> = ({
   const theme = useContext(ApplicationContext).theme;
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
 
-  const customNav = () => (
-    <View
-      style={{
-        flexDirection: 'row',
-        justifyContent: 'flex-end',
-        alignItems: 'center',
-        flex: 1,
-      }}>
-      <AvaText.Body2 textStyle={{paddingRight: 12, color: theme.txtListItem}}>
-        {selectedCurrency}
-      </AvaText.Body2>
-      <CarrotSVG />
-    </View>
+  const currency = () => (
+    <AvaText.Body2 textStyle={{paddingRight: 12, color: theme.txtListItem}}>
+      {selectedCurrency}
+    </AvaText.Body2>
   );
 
   return (
@@ -33,7 +24,8 @@ const CurrencyItem: FC<Partial<DrawerContentComponentProps>> = ({
       <AvaListItem.Base
         title={'Currency'}
         titleAlignment={'flex-start'}
-        rightComponent={customNav()}
+        rightComponent={currency()}
+        showNavigationArrow
         onPress={() => {
           navigation?.navigate(AppNavigation.Wallet.CurrencySelector, {
             onCurrencySelected: setSelectedCurrency,

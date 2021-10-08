@@ -1,5 +1,5 @@
-import React, {useContext, useEffect, useState} from 'react';
-import {TextInput, View} from 'react-native';
+import React, {RefObject, useContext, useEffect, useRef, useState} from 'react';
+import {InteractionManager, TextInput, View} from 'react-native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import TextLabel from 'components/TextLabel';
 import ImgButtonAva from 'components/ImgButtonAva';
@@ -23,6 +23,7 @@ type Props = {
   privateMode?: boolean;
   // Set keyboard type (numeric, text)
   keyboardType?: 'numeric';
+  autoFocus?: boolean;
 };
 
 export default function InputText(props: Props | Readonly<Props>) {
@@ -31,10 +32,19 @@ export default function InputText(props: Props | Readonly<Props>) {
   const [showInput, setShowInput] = useState(false);
   const [focused, setFocused] = useState(false);
   const [toggleShowText, setToggleShowText] = useState('Show');
+  const textInputRef = useRef() as RefObject<TextInput>;
 
   useEffect(() => {
     setToggleShowText(showInput ? 'Hide' : 'Show');
   }, [showInput]);
+
+  useEffect(() => {
+    if (props.autoFocus) {
+      InteractionManager.runAfterInteractions(() => {
+        textInputRef.current?.focus();
+      });
+    }
+  }, [props.autoFocus, textInputRef]);
 
   const onSubmit = (): void => {
     props.onSubmit?.();
@@ -144,6 +154,7 @@ export default function InputText(props: Props | Readonly<Props>) {
           },
         ]}>
         <TextInput
+          ref={textInputRef}
           autoCapitalize="none"
           placeholder={props.placeholder}
           blurOnSubmit={true}
