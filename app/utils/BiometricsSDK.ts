@@ -90,9 +90,9 @@ export default class BiometricsSDK {
   };
 
   static clearWalletKey = (): Promise<boolean> => {
-    return Keychain.resetGenericPassword(BiometricsSDK.KEYSTORE_PASSCODE_OPTIONS).then(
-      () => Keychain.resetGenericPassword(BiometricsSDK.KEYSTORE_OPTIONS),
-    );
+    return Keychain.resetGenericPassword(
+      BiometricsSDK.KEYSTORE_PASSCODE_OPTIONS,
+    ).then(() => Keychain.resetGenericPassword(BiometricsSDK.KEYSTORE_OPTIONS));
   };
 
   static canUseBiometry = (): Promise<boolean> => {

@@ -13,6 +13,9 @@ import AvaText from 'components/AvaText';
 import {Space} from 'components/Space';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import AvaButton from 'components/AvaButton';
+import {useNavigation, useRoute} from '@react-navigation/native';
+import AppNavigation from 'navigation/AppNavigation';
+import AppViewModel from 'AppViewModel';
 
 const keymap: Map<string, PinKeys> = new Map([
   ['1', PinKeys.Key1],
@@ -37,6 +40,12 @@ export default function PinOrBiometryLogin({
   onSignInWithRecoveryPhrase,
   onEnterWallet,
 }: Props | Readonly<Props>): JSX.Element {
+  const theme = useContext(ApplicationContext).theme;
+  const route = useRoute();
+  const {navigate, goBack} = useNavigation();
+  const isChangingPin = route?.params?.isChangingPin;
+  const revealMnemonic = route?.params?.revealMnemonic;
+
   const [
     title,
     pinDots,
@@ -44,7 +53,8 @@ export default function PinOrBiometryLogin({
     mnemonic,
     promptForWalletLoadingIfExists,
     jiggleAnim,
-  ] = usePinOrBiometryLogin();
+    instruction,
+  ] = usePinOrBiometryLogin(isChangingPin);
 
   const context = useContext(ApplicationContext);
 
@@ -64,7 +74,15 @@ export default function PinOrBiometryLogin({
   }, []);
   useEffect(() => {
     if (mnemonic) {
-      onEnterWallet(mnemonic);
+      if (isChangingPin) {
+        AppViewModel.onSavedMnemonic(mnemonic, isChangingPin);
+        navigate(AppNavigation.CreateWallet.CreatePin, {isChangingPin});
+      } else if (revealMnemonic) {
+        goBack();
+        revealMnemonic(mnemonic);
+      } else {
+        onEnterWallet(mnemonic);
+      }
     }
   }, [mnemonic]);
 
@@ -90,7 +108,7 @@ export default function PinOrBiometryLogin({
   };
 
   return (
-    <View style={styles.verticalLayout}>
+    <View style={[styles.verticalLayout, {backgroundColor: theme.bgApp}]}>
       <Space y={64} />
       <View style={styles.growContainer}>
         <AvaText.LargeTitleBold textStyle={{textAlign: 'center'}}>
@@ -99,7 +117,7 @@ export default function PinOrBiometryLogin({
         <Space y={8} />
         <AvaText.Body1
           textStyle={{textAlign: 'center', color: context.theme.colorText1}}>
-          Enter your PIN
+          {instruction}
         </AvaText.Body1>
         <Animated.View
           style={[
@@ -116,9 +134,11 @@ export default function PinOrBiometryLogin({
         </Animated.View>
       </View>
       <View style={styles.keyboard}>{keyboard()}</View>
-      <AvaButton.TextMedium onPress={onSignInWithRecoveryPhrase}>
-        Sign In with recovery phrase
-      </AvaButton.TextMedium>
+      {isChangingPin || (
+        <AvaButton.TextMedium onPress={onSignInWithRecoveryPhrase}>
+          Sign In with recovery phrase
+        </AvaButton.TextMedium>
+      )}
     </View>
   );
 }
@@ -135,6 +155,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 24,
     flexDirection: 'row',
     flexWrap: 'wrap',
+    marginBottom: 32,
   },
   dots: {
     flexGrow: 1,

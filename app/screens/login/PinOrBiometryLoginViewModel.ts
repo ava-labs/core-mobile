@@ -5,6 +5,7 @@ import {PinKeys} from 'screens/onboarding/PinKey';
 import {asyncScheduler, Observable, timer} from 'rxjs';
 import {catchError, concatMap, map} from 'rxjs/operators';
 import {Animated, Platform, Vibration} from 'react-native';
+import {useNavigation} from '@react-navigation/native';
 
 export type DotView = {
   filled: boolean;
@@ -23,15 +24,21 @@ const keymap: Map<PinKeys, string> = new Map([
   [PinKeys.Key0, '0'],
 ]);
 
-export function usePinOrBiometryLogin(): [
+export function usePinOrBiometryLogin(
+  isResettingPin?: boolean,
+): [
   string,
   DotView[],
   (pinKey: PinKeys) => void,
   string | undefined,
   () => Observable<WalletLoadingResults>,
   Animated.Value,
+  string,
 ] {
-  const [title] = useState('Wallet');
+  const title = isResettingPin ? 'Reset PIN' : 'Wallet';
+  const instruction = isResettingPin
+    ? 'Enter current or old PIN'
+    : 'Enter your PIN';
   const [enteredPin, setEnteredPin] = useState('');
   const [pinDots, setPinDots] = useState<DotView[]>([]);
   const [pinEntered, setPinEntered] = useState(false);
@@ -131,7 +138,9 @@ export function usePinOrBiometryLogin(): [
     (): Observable<WalletLoadingResults> => {
       return timer(100, asyncScheduler).pipe(
         //timer is here to give UI opportunity to draw everything
-        concatMap(() => BiometricsSDK.loadWalletKey(BiometricsSDK.loadOptions)),
+        concatMap(() =>
+          BiometricsSDK.loadWalletKey(BiometricsSDK.KEYSTORE_OPTIONS),
+        ),
         map(value => {
           if (value !== false) {
             const keyOrMnemonic = (value as UserCredentials).password;
@@ -158,6 +167,7 @@ export function usePinOrBiometryLogin(): [
     mnemonic,
     promptForWalletLoadingIfExists,
     jiggleAnim,
+    instruction,
   ];
 }
 
