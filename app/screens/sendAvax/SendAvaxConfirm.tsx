@@ -1,5 +1,5 @@
 import React, {useContext, useEffect, useState} from 'react';
-import {Image, View} from 'react-native';
+import {Image, StyleSheet, View} from 'react-native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import {Space} from 'components/Space';
 import OvalTagBg from 'components/OvalTagBg';
@@ -26,8 +26,13 @@ export default function SendAvaxConfirm(
   const context = useContext(ApplicationContext);
   const [backgroundStyle] = useState(context.backgroundStyle);
   const {navigate} = useNavigation();
-  const {destinationAddress, sendAmountString, onSendAvax, createdTxId} =
-    useContext(SendAvaxContext);
+  const {
+    destinationAddress,
+    sendAmountString,
+    onSendAvax,
+    createdTxId,
+    sendFeeString,
+  } = useContext(SendAvaxContext);
   const route = useRoute<SendAvaxConfirmProps>();
 
   useEffect(() => {
@@ -72,6 +77,15 @@ export default function SendAvaxConfirm(
       </View>
 
       <View style={{flex: 1}} />
+      <View style={{alignSelf: 'flex-start', marginLeft: 16}}>
+        <AvaText.Body3
+          textStyle={{
+            textAlign: 'right',
+            color: context.theme.txtListItemSubscript,
+          }}>
+          {'Fee: ' + sendFeeString}
+        </AvaText.Body3>
+      </View>
       <View style={{width: '100%'}}>
         <AvaButton.PrimaryLarge
           style={{margin: 16}}
