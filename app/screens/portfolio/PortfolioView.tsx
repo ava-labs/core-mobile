@@ -1,6 +1,5 @@
-import React, {FC, memo, useEffect, useRef} from 'react';
+import React, {FC, memo, useEffect, useContext, useRef} from 'react';
 import {FlatList, ListRenderItemInfo, StyleSheet} from 'react-native';
-import AvaListItem from 'components/AvaListItem';
 import PortfolioHeader from 'screens/portfolio/PortfolioHeader';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {useNavigation} from '@react-navigation/native';
@@ -11,6 +10,7 @@ import AppNavigation from 'navigation/AppNavigation';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {PortfolioStackParamList} from 'navigation/PortfolioStackScreen';
 import PortfolioListItem from 'screens/portfolio/components/PortfolioListItem';
+import {SelectedTokenContext} from 'contexts/SelectedTokenContext';
 
 type PortfolioProps = {
   onExit: () => void;
@@ -42,6 +42,7 @@ const PortfolioView: FC<PortfolioProps> = memo(
   ({tokenList, loadZeroBalanceList}: PortfolioProps) => {
     const listRef = useRef<FlatList>(null);
     const navigation = useNavigation<PortfolioRouteProp>();
+    const {setSelectedToken} = useContext(SelectedTokenContext);
 
     useEffect(() => {
       const unsubscribe = navigation.addListener('focus', () => {
@@ -50,8 +51,9 @@ const PortfolioView: FC<PortfolioProps> = memo(
       return () => unsubscribe();
     }, [navigation]);
 
-    function showBottomSheet(token: ERC20 | AvaxToken) {
-      navigation.navigate(AppNavigation.Modal.SendReceiveBottomSheet, {token});
+    function selectToken(token: ERC20 | AvaxToken) {
+      setSelectedToken(token);
+      navigation.navigate(AppNavigation.Modal.SendReceiveBottomSheet);
     }
 
     const renderItem = (item: ListRenderItemInfo<ERC20 | AvaxToken>) => {
@@ -64,7 +66,7 @@ const PortfolioView: FC<PortfolioProps> = memo(
           tokenPrice={token.balanceParsed}
           image={logoUri}
           symbol={token.symbol}
-          onPress={() => showBottomSheet(token)}
+          onPress={() => selectToken(token)}
         />
       );
     };

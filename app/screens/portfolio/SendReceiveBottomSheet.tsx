@@ -7,28 +7,18 @@ import React, {
   useRef,
 } from 'react';
 import {StyleSheet, View} from 'react-native';
-import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
+import {useNavigation} from '@react-navigation/native';
 import BottomSheet, {BottomSheetBackdrop} from '@gorhom/bottom-sheet';
 import TabViewBackground from './components/TabViewBackground';
-import {PortfolioStackParamList} from 'navigation/PortfolioStackScreen';
 import SendTokenStackScreen from 'navigation/SendTokenStackScreen';
-import {ERC20} from '@avalabs/wallet-react-components';
-import {AvaxToken} from 'dto/AvaxToken';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import {Space} from 'components/Space';
-
-type SendReceiveRouteProp = RouteProp<
-  PortfolioStackParamList,
-  'SendReceiveBottomSheet'
->;
 
 const SendReceiveBottomSheet: FC = () => {
   const bottomSheetRef = useRef<BottomSheet>(null);
   const {goBack, canGoBack} = useNavigation();
-  const route = useRoute<SendReceiveRouteProp>();
   const snapPoints = useMemo(() => ['0%', '86%'], []);
   const theme = useContext(ApplicationContext).theme;
-  const tokenObj = route?.params?.token as ERC20 | AvaxToken;
 
   useEffect(() => {
     // intentionally setting delay so animation is visible.
@@ -63,7 +53,7 @@ const SendReceiveBottomSheet: FC = () => {
         onChange={handleChange}
         backdropComponent={BottomSheetBackdrop}
         backgroundComponent={TabViewBackground}>
-        <SendTokenStackScreen onClose={handleClose} token={tokenObj} />
+        <SendTokenStackScreen onClose={handleClose} />
       </BottomSheet>
     </View>
   );
