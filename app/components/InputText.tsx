@@ -1,5 +1,5 @@
 import React, {RefObject, useContext, useEffect, useRef, useState} from 'react';
-import {TextInput, View} from 'react-native';
+import {InteractionManager, TextInput, View} from 'react-native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import TextLabel from 'components/TextLabel';
 import ImgButtonAva from 'components/ImgButtonAva';
@@ -36,10 +36,15 @@ export default function InputText(props: Props | Readonly<Props>) {
 
   useEffect(() => {
     setToggleShowText(showInput ? 'Hide' : 'Show');
-    if (props.autoFocus) {
-      textInputRef.current?.focus();
-    }
   }, [showInput]);
+
+  useEffect(() => {
+    if (props.autoFocus) {
+      InteractionManager.runAfterInteractions(() => {
+        textInputRef.current?.focus();
+      });
+    }
+  }, [props.autoFocus, textInputRef]);
 
   const onSubmit = (): void => {
     props.onSubmit?.();
