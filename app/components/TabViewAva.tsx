@@ -30,12 +30,17 @@ const TabViewAva: FC<Props> = ({renderCustomLabel, children}) => {
       <View>
         <TabBar
           {...tabBarProps}
-          style={{elevation: 0, shadowOpacity: 0}}
+          style={{
+            elevation: 0,
+            shadowOpacity: 0,
+            backgroundColor: theme.transparent,
+            marginHorizontal: 16,
+          }}
           renderLabel={({route, focused}) =>
             renderCustomLabel && renderCustomLabel(route?.title ?? '', focused)
           }
-          tabStyle={{backgroundColor: theme.bgOnBgApp}}
-          contentContainerStyle={{backgroundColor: theme.bgOnBgApp}}
+          indicatorStyle={{backgroundColor: theme.colorPrimary1, height: 2}}
+          tabStyle={{width: 'auto', padding: 12}}
         />
       </View>
     );
