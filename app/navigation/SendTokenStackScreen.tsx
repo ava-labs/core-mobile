@@ -139,7 +139,7 @@ const SendTokenStackScreen = ({onClose, token}: Props) => {
     );
   };
 
-  const Tabs = () => (
+  const HeaderAndTabs = () => (
     <>
       {header()}
       <TabViewAva renderCustomLabel={renderCustomLabel}>
@@ -168,7 +168,7 @@ const SendTokenStackScreen = ({onClose, token}: Props) => {
           <Stack.Screen
             name={AppNavigation.SendToken.SendTokenScreen}
             options={noHeaderOptions}
-            component={Tabs}
+            component={HeaderAndTabs}
           />
           <Stack.Screen
             options={{title: 'Confirm Transaction'}}
