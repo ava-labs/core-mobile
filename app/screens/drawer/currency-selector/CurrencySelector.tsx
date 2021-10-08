@@ -2,7 +2,7 @@ import React, {FC, useCallback} from 'react';
 import {FlatList, ListRenderItemInfo, StyleSheet} from 'react-native';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
-import CurrencyListItem from 'screens/drawer/CurrencyListItem';
+import CurrencyListItem from 'screens/drawer/currency-selector/CurrencyListItem';
 import {DrawerStackParamList} from 'screens/mainView/WalletStackScreen';
 
 type CurrencyRouteProp = RouteProp<DrawerStackParamList, 'CurrencySelector'>;
