@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useContext, useEffect} from 'react';
 import {StyleSheet, View} from 'react-native';
 import PinKey, {PinKeys} from './PinKey';
 import Dot from 'components/Dot';
@@ -7,6 +7,10 @@ import TextLabel from 'components/TextLabel';
 import HeaderProgress from 'screens/mainView/HeaderProgress';
 import {Space} from 'components/Space';
 import AvaText from 'components/AvaText';
+import {StackActions, useNavigation, useRoute} from '@react-navigation/native';
+import AppViewModel from 'AppViewModel';
+import AppNavigation from 'navigation/AppNavigation';
+import {ApplicationContext} from 'contexts/ApplicationContext';
 
 const keymap: Map<string, PinKeys> = new Map([
   ['1', PinKeys.Key1],
@@ -28,6 +32,10 @@ type Props = {
 };
 
 export default function CreatePIN(props: Props | Readonly<Props>) {
+  const route = useRoute();
+  const navigation = useNavigation();
+  const theme = useContext(ApplicationContext).theme;
+  const isChangingPin = route?.params?.isChangingPin;
   const [
     title,
     errorMessage,
@@ -40,7 +48,12 @@ export default function CreatePIN(props: Props | Readonly<Props>) {
 
   useEffect(() => {
     if (validPin) {
-      props.onPinSet(validPin);
+      if (isChangingPin) {
+        AppViewModel.onPinCreated(validPin, isChangingPin);
+        navigation.dispatch(StackActions.pop(2));
+      } else {
+        props.onPinSet(validPin);
+      }
     }
   }, [validPin]);
 
@@ -73,8 +86,10 @@ export default function CreatePIN(props: Props | Readonly<Props>) {
   };
 
   return (
-    <View style={styles.verticalLayout}>
-      <HeaderProgress maxDots={3} filledDots={3} showBack onBack={onBack} />
+    <View style={[styles.verticalLayout, {backgroundColor: theme.bgApp}]}>
+      {isChangingPin || (
+        <HeaderProgress maxDots={3} filledDots={3} showBack onBack={onBack} />
+      )}
       <Space y={8} />
 
       <View style={styles.growContainer}>
@@ -82,7 +97,7 @@ export default function CreatePIN(props: Props | Readonly<Props>) {
           {title}
         </AvaText.Heading1>
         <AvaText.Heading3 textStyle={{textAlign: 'center'}}>
-          Access your wallet faster
+            {isChangingPin ? 'Enter new PIN' : 'Access your wallet faster'}
         </AvaText.Heading3>
         <Space y={8} />
 

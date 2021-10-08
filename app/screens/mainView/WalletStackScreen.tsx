@@ -1,7 +1,12 @@
 import React, {memo, useContext, useEffect, useState} from 'react';
 import {BackHandler, StyleSheet} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import {NavigationContainer, useFocusEffect} from '@react-navigation/native';
+import {
+  NavigationContainer,
+  StackActions,
+  useFocusEffect,
+  useNavigation,
+} from '@react-navigation/native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import HomeSVG from 'components/svg/HomeSVG';
 import ActivitySVG from 'components/svg/ActivitySVG';
@@ -23,6 +28,10 @@ import {createDrawerNavigator} from '@react-navigation/drawer';
 import DrawerView from 'screens/drawer/DrawerView';
 import CurrencySelector from 'screens/drawer/CurrencySelector';
 import AddCustomToken from 'screens/search/AddCustomToken';
+import CurrencySelector from 'screens/drawer/currency-selector/CurrencySelector';
+import SecurityPrivacy from 'screens/drawer/security/SecurityPrivacy';
+import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin';
+import CreatePIN from 'screens/onboarding/CreatePIN';
 
 type Props = {
   onExit: () => void;
@@ -175,6 +184,15 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
             name={AppNavigation.Wallet.CurrencySelector}
             component={CurrencySelector}
           />
+          <RootStack.Screen
+            options={{
+              headerShown: true,
+              title: 'Security & Privacy',
+              headerBackTitleVisible: false,
+            }}
+            name={AppNavigation.Wallet.SecurityPrivacy}
+            component={SecurityPrivacy}
+          />
         </RootStack.Group>
         <RootStack.Group screenOptions={{presentation: 'transparentModal'}}>
           <RootStack.Screen
@@ -188,6 +206,14 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
           <RootStack.Screen
             name={AppNavigation.Modal.TransactionDetailBottomSheet}
             component={TransactionDetailBottomSheet}
+          />
+          <RootStack.Screen
+            name={AppNavigation.Onboard.Login}
+            component={PinOrBiometryLogin}
+          />
+          <RootStack.Screen
+            name={AppNavigation.CreateWallet.CreatePin}
+            component={CreatePIN}
           />
         </RootStack.Group>
       </RootStack.Navigator>
