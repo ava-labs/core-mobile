@@ -3,6 +3,7 @@ enum Stacks {
   Auth = 'Auth',
   CreateWallet = 'CreateWallet',
   Wallet = 'Wallet',
+  Security = 'Security',
 }
 
 enum WalletScreens {

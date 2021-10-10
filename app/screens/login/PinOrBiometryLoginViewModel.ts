@@ -1,10 +1,15 @@
 import {useEffect, useMemo, useRef, useState} from 'react';
-import BiometricsSDK from 'utils/BiometricsSDK';
+import BiometricsSDK, {KeystoreConfig} from 'utils/BiometricsSDK';
 import {UserCredentials} from 'react-native-keychain';
 import {PinKeys} from 'screens/onboarding/PinKey';
 import {asyncScheduler, Observable, timer} from 'rxjs';
 import {catchError, concatMap, map} from 'rxjs/operators';
 import {Animated, Platform, Vibration} from 'react-native';
+import {
+  decrypt,
+  EncryptedData,
+  getEncryptionKey,
+} from 'screens/login/utils/EncryptionHelper';
 
 export type DotView = {
   filled: boolean;
@@ -67,21 +72,29 @@ export function usePinOrBiometryLogin(): [
   }
 
   useEffect(() => {
-    if (pinEntered) {
-      BiometricsSDK.loadWalletWithPin().then(value => {
-        if (value === false) {
-          throw Error('Cannot load pin');
+    async function checkPinEntered() {
+      if (pinEntered) {
+        try {
+          const credentials =
+            (await BiometricsSDK.loadWalletWithPin()) as UserCredentials;
+          const key = await getEncryptionKey(enteredPin);
+          const encryptedData: EncryptedData = JSON.parse(credentials.password);
+          const data = await decrypt(encryptedData, key);
+          setMnemonic(data);
+        } catch (err) {
+          if (
+            err instanceof Error &&
+            (err?.message?.includes('BAD_DECRYPT') || // Android
+              err?.message?.includes('Decrypt failed')) // iOS
+          ) {
+            resetConfirmPinProcess();
+            fireJiggleAnimation();
+            vibratePhone();
+          }
         }
-        const credentials = value as UserCredentials;
-        if (credentials.username === enteredPin) {
-          setMnemonic(credentials.password);
-        } else {
-          resetConfirmPinProcess();
-          fireJiggleAnimation();
-          vibratePhone();
-        }
-      });
+      }
     }
+    checkPinEntered();
   }, [pinEntered]);
 
   function vibratePhone() {
@@ -129,9 +142,17 @@ export function usePinOrBiometryLogin(): [
 
   const promptForWalletLoadingIfExists =
     (): Observable<WalletLoadingResults> => {
-      return timer(100, asyncScheduler).pipe(
+      return timer(0, asyncScheduler).pipe(
         //timer is here to give UI opportunity to draw everything
-        concatMap(() => BiometricsSDK.loadWalletKey(BiometricsSDK.loadOptions)),
+        concatMap(() => BiometricsSDK.getAccessType()),
+        concatMap((value: any) => {
+          if (value && value === 'BIO') {
+            return BiometricsSDK.loadWalletKey(
+              KeystoreConfig.KEYSTORE_BIO_OPTIONS,
+            );
+          }
+          return false;
+        }),
         map(value => {
           if (value !== false) {
             const keyOrMnemonic = (value as UserCredentials).password;
