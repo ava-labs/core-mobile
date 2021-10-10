@@ -5,6 +5,7 @@ import {ApplicationContext} from 'contexts/ApplicationContext';
 interface TextProps {
   textStyle?: StyleProp<TextStyle>;
   color?: string;
+  ellipsize?: 'head' | 'middle' | 'tail' | 'clip' | undefined;
 }
 
 const LargeTitleBold: FC<TextProps> = ({textStyle, children}) => {
@@ -43,10 +44,13 @@ const TextHeading3: FC<TextProps> = ({textStyle, children}) => {
   );
 };
 
-const TextBody1: FC<TextProps> = ({textStyle, children}) => {
+const TextBody1: FC<TextProps> = ({ellipsize, textStyle, children}) => {
   const theme = useContext(ApplicationContext).theme;
   return (
-    <Text style={[styles.body2, {color: theme.txtDim}, textStyle]}>
+    <Text
+      ellipsizeMode={ellipsize}
+      numberOfLines={ellipsize ? 1 : undefined}
+      style={[styles.body1, {color: theme.txtDim}, textStyle]}>
       {children}
     </Text>
   );
