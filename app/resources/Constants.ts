@@ -168,3 +168,5 @@ export enum COLORS_NIGHT {
   ovalBgGreen = '#00D3BC',
   ovalBgBlue = '#934AF6',
 }
+
+export const SECURE_ACCESS_SET = 'secureAccessSet';

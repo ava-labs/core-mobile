@@ -13,6 +13,9 @@ import {concatMap, map, switchMap} from 'rxjs/operators';
 import {BackHandler} from 'react-native';
 import WalletSDK from 'utils/WalletSDK';
 import BiometricsSDK from 'utils/BiometricsSDK';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {SECURE_ACCESS_SET} from 'resources/Constants';
+import {encrypt, getEncryptionKey} from 'screens/login/utils/EncryptionHelper';
 
 export enum SelectedView {
   Onboard,
@@ -32,30 +35,50 @@ class AppViewModel {
     new BehaviorSubject<SelectedView>(SelectedView.Onboard);
 
   onComponentMount = (): void => {
-    BiometricsSDK.hasWalletStored().then(value => {
-      if (value) {
+    AsyncStorage.getItem(SECURE_ACCESS_SET).then(result => {
+      if (result) {
         this.setSelectedView(SelectedView.PinOrBiometryLogin);
       }
     });
   };
 
-  onPinCreated = (pin: string): Observable<boolean> => {
-    return from(BiometricsSDK.storeWalletWithPin(pin, this.mnemonic)).pipe(
-      switchMap(pinSaved => {
-        if (pinSaved === false) {
-          throw Error('Pin not saved');
-        }
-        return BiometricsSDK.canUseBiometry();
-      }),
-      map((canUseBiometry: boolean) => {
-        if (canUseBiometry) {
-          this.setSelectedView(SelectedView.BiometricStore);
-        } else {
-          this.setSelectedView(SelectedView.Main);
-        }
-        return true;
-      }),
+  onPinCreated = async (pin: string, isResetting = false) => {
+    const key = await getEncryptionKey(pin);
+    const encryptedData = await encrypt(this.mnemonic, key);
+    await BiometricsSDK.storeWalletWithPin(encryptedData);
+
+    //if we're resetting we don't need to go anywhere.
+    if (isResetting) {
+      return;
+    }
+    //if not resetting we give the option for the user to use biometrics if supported
+    const isBiometricsAvailable = await BiometricsSDK.canUseBiometry();
+    this.setSelectedView(
+      isBiometricsAvailable ? SelectedView.BiometricStore : SelectedView.Main,
     );
+    // return from(getEncryptionKey(pin)).pipe(
+    //   switchMap(key => encrypt(this.mnemonic, key)),
+    //   switchMap((encryptedData: string) =>
+    //     BiometricsSDK.storeWalletWithPin(encryptedData),
+    //   ),
+    //   switchMap(pinSaved => {
+    //     if (pinSaved === false) {
+    //       throw Error('Pin not saved');
+    //     }
+    //
+    //     return isResetting
+    //       ? Promise.reject(false)
+    //       : BiometricsSDK.canUseBiometry();
+    //   }),
+    //   map((canUseBiometry: boolean) => {
+    //     if (canUseBiometry) {
+    //       this.setSelectedView(SelectedView.BiometricStore);
+    //     } else {
+    //       this.setSelectedView(SelectedView.Main);
+    //     }
+    //     return true;
+    //   }),
+    // );
   };
 
   onEnterWallet = (mnemonic: string): Observable<boolean> => {
@@ -78,12 +101,15 @@ class AppViewModel {
     });
   };
 
-  onSavedMnemonic = (mnemonic: string): void => {
+  onSavedMnemonic = (mnemonic: string, isResetting = false): void => {
     this.mnemonic = mnemonic;
-    this.setSelectedView(SelectedView.CheckMnemonic);
+    if (!isResetting) {
+      this.setSelectedView(SelectedView.CheckMnemonic);
+    }
   };
 
   onLogout = (): Observable<LogoutEvents> => {
+    AsyncStorage.removeItem(SECURE_ACCESS_SET);
     const deleteBioDataPrompt = new AsyncSubject<LogoutPromptAnswers>();
     const dialogOp: Observable<LogoutFinished> = deleteBioDataPrompt.pipe(
       concatMap((answer: LogoutPromptAnswers) => {

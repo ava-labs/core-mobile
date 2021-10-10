@@ -21,8 +21,9 @@ import TransactionDetailBottomSheet from 'screens/activity/TransactionDetailBott
 import WatchlistSVG from 'components/svg/WatchlistSVG';
 import {createDrawerNavigator} from '@react-navigation/drawer';
 import DrawerView from 'screens/drawer/DrawerView';
-import CurrencySelector from 'screens/drawer/CurrencySelector';
 import AddCustomToken from 'screens/search/AddCustomToken';
+import CurrencySelector from 'screens/drawer/currency-selector/CurrencySelector';
+import SecurityPrivacyStackScreen from 'navigation/SecurityPrivacyStackScreen';
 
 type Props = {
   onExit: () => void;
@@ -174,6 +175,10 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
             }}
             name={AppNavigation.Wallet.CurrencySelector}
             component={CurrencySelector}
+          />
+          <RootStack.Screen
+            name={AppNavigation.Stack.Security}
+            component={SecurityPrivacyStackScreen}
           />
         </RootStack.Group>
         <RootStack.Group screenOptions={{presentation: 'transparentModal'}}>

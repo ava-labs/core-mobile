@@ -23,6 +23,15 @@ export default function BiometricLogin(
     context.isDarkMode,
   );
 
+  async function handleUseBiometry() {
+    try {
+      await onUseBiometry();
+      props.onBiometrySet();
+    } catch (e: any) {
+      Alert.alert(e?.message || 'error');
+    }
+  }
+
   return (
     <View style={styles.verticalLayout}>
       <View style={styles.centerLayout}>
@@ -46,13 +55,7 @@ export default function BiometricLogin(
 
       <AvaButton.TextMedium onPress={props.onSkip}>Skip</AvaButton.TextMedium>
       <Space y={16} />
-      <AvaButton.PrimaryLarge
-        onPress={() => {
-          onUseBiometry().subscribe({
-            error: err => Alert.alert(err?.message || 'error'),
-            complete: () => props.onBiometrySet(),
-          });
-        }}>
+      <AvaButton.PrimaryLarge onPress={handleUseBiometry}>
         {'Use ' + biometryType?.toLowerCase()}
       </AvaButton.PrimaryLarge>
     </View>

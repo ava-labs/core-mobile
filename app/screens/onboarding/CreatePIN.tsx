@@ -1,5 +1,5 @@
-import React, {useEffect} from 'react';
-import {StyleSheet, View} from 'react-native';
+import React, {useCallback, useContext, useEffect} from 'react';
+import {BackHandler, StyleSheet, View} from 'react-native';
 import PinKey, {PinKeys} from './PinKey';
 import Dot from 'components/Dot';
 import {useCreatePin} from './CreatePinViewModel';
@@ -7,6 +7,13 @@ import TextLabel from 'components/TextLabel';
 import HeaderProgress from 'screens/mainView/HeaderProgress';
 import {Space} from 'components/Space';
 import AvaText from 'components/AvaText';
+import {
+  StackActions,
+  useFocusEffect,
+  useNavigation,
+} from '@react-navigation/native';
+import {ApplicationContext} from 'contexts/ApplicationContext';
+import {HeaderBackButton} from '@react-navigation/elements';
 
 const keymap: Map<string, PinKeys> = new Map([
   ['1', PinKeys.Key1],
@@ -25,9 +32,12 @@ const keymap: Map<string, PinKeys> = new Map([
 type Props = {
   onBack: () => void;
   onPinSet: (pin: string) => void;
+  isResettingPin?: boolean;
 };
 
-export default function CreatePIN(props: Props | Readonly<Props>) {
+export default function CreatePIN({onBack, onPinSet, isResettingPin}: Props) {
+  const navigation = useNavigation();
+  const theme = useContext(ApplicationContext).theme;
   const [
     title,
     errorMessage,
@@ -36,17 +46,38 @@ export default function CreatePIN(props: Props | Readonly<Props>) {
     onEnterConfirmedPin,
     chosenPinEntered,
     validPin,
-  ] = useCreatePin();
+  ] = useCreatePin(isResettingPin);
 
   useEffect(() => {
     if (validPin) {
-      props.onPinSet(validPin);
+      onPinSet(validPin);
     }
-  }, [validPin]);
+    navigation.setOptions({
+      title: title,
+      headerLeft: () => (
+        <HeaderBackButton onPress={onBack} labelVisible={false} />
+      ),
+    });
+  }, [validPin, title]);
 
-  const onBack = (): void => {
-    props.onBack();
-  };
+  useFocusEffect(
+    useCallback(() => {
+      function onBackPress() {
+        onBack();
+        return true;
+      }
+
+      if (isResettingPin) {
+        BackHandler.addEventListener('hardwareBackPress', onBackPress);
+      }
+
+      return () => {
+        if (isResettingPin) {
+          BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+        }
+      };
+    }, [isResettingPin]),
+  );
 
   const generatePinDots = (): Element[] => {
     const dots: Element[] = [];
@@ -73,22 +104,22 @@ export default function CreatePIN(props: Props | Readonly<Props>) {
   };
 
   return (
-    <View style={styles.verticalLayout}>
-      <HeaderProgress maxDots={3} filledDots={3} showBack onBack={onBack} />
-      <Space y={8} />
-
-      <View style={styles.growContainer}>
-        <AvaText.Heading1 textStyle={{textAlign: 'center'}}>
-          {title}
-        </AvaText.Heading1>
-        <AvaText.Heading3 textStyle={{textAlign: 'center'}}>
-          Access your wallet faster
-        </AvaText.Heading3>
-        <Space y={8} />
-
-        {errorMessage.length > 0 && <TextLabel text={errorMessage} />}
-        <View style={styles.dots}>{generatePinDots()}</View>
-      </View>
+    <View style={[styles.verticalLayout, {backgroundColor: theme.bgApp}]}>
+      {isResettingPin || (
+        <>
+          <HeaderProgress maxDots={3} filledDots={3} showBack onBack={onBack} />
+          <Space y={8} />
+          <AvaText.Heading1 textStyle={{textAlign: 'center'}}>
+            {title}
+          </AvaText.Heading1>
+          <AvaText.Heading3 textStyle={{textAlign: 'center'}}>
+            'Access your wallet faster'
+          </AvaText.Heading3>
+          <Space y={8} />
+        </>
+      )}
+      {errorMessage.length > 0 && <TextLabel text={errorMessage} />}
+      <View style={styles.dots}>{generatePinDots()}</View>
       <View style={styles.keyboard}>{keyboard(chosenPinEntered)}</View>
     </View>
   );
