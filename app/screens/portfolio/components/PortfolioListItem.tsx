@@ -8,6 +8,7 @@ import AvaText from 'components/AvaText';
 interface Props {
   tokenName: string;
   tokenPrice: string;
+  tokenPriceUsd: string;
   image?: string;
   symbol?: string;
   onPress?: () => void;
@@ -16,6 +17,7 @@ interface Props {
 const PortfolioListItem: FC<Props> = ({
   tokenName,
   tokenPrice,
+  tokenPriceUsd,
   image,
   symbol,
   onPress,
@@ -39,9 +41,7 @@ const PortfolioListItem: FC<Props> = ({
   );
 
   const usdBalance = (
-    <AvaText.Heading3>{`$${parseFloat(tokenPrice).toFixed(
-      2,
-    )} USD`}</AvaText.Heading3>
+    <AvaText.Heading3>{`$${tokenPriceUsd} USD`}</AvaText.Heading3>
   );
 
   return (
