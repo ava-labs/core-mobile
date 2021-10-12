@@ -79,6 +79,7 @@ const PortfolioView: FC<PortfolioProps> = memo(
         <PortfolioHeader />
         <FlatList
           ref={listRef}
+          contentContainerStyle={{paddingHorizontal: 16}}
           style={styles.tokenList}
           data={tokenList}
           renderItem={renderItem}
