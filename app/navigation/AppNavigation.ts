@@ -12,6 +12,7 @@ enum WalletScreens {
   CurrencySelector = 'CurrencySelector',
   SecurityPrivacy = 'Security & Privacy',
   AddCustomToken = 'Add custom token',
+  WebView = 'WebView',
 }
 
 enum Tabs {

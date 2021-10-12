@@ -1,9 +1,10 @@
-import React from 'react';
-import {Alert} from 'react-native';
+import React, {FC} from 'react';
 import AvaListItem from 'components/AvaListItem';
 import CarrotSVG from 'components/svg/CarrotSVG';
+import {DrawerContentComponentProps} from '@react-navigation/drawer';
+import AppNavigation from 'navigation/AppNavigation';
 
-export default function LegalItem() {
+const LegalItem: FC<Partial<DrawerContentComponentProps>> = ({navigation}) => {
   return (
     <>
       <AvaListItem.Base
@@ -11,9 +12,11 @@ export default function LegalItem() {
         leftComponent={null}
         rightComponent={<CarrotSVG />}
         onPress={() => {
-          Alert.alert('naviagate to legal');
+          navigation?.navigate(AppNavigation.Wallet.WebView);
         }}
       />
     </>
   );
-}
+};
+
+export default LegalItem;

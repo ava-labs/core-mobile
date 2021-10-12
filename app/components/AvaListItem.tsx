@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flex: 1,
   },
-  baseMainContent: {paddingHorizontal: 16, flex: 1},
+  baseMainContent: {flex: 1, marginLeft: 16},
   baseLabel: {
     fontSize: 14,
     lineHeight: 17,
