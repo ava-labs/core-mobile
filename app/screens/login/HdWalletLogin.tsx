@@ -28,9 +28,10 @@ export default function HdWalletLogin(
   };
 
   const onEnterWallet = (mnemonic: string) => {
+    const trimmed = mnemonic.trim();
     try {
-      WalletSDK.getMnemonicValet(mnemonic);
-      props.onEnterWallet(mnemonic);
+      WalletSDK.getMnemonicValet(trimmed);
+      props.onEnterWallet(trimmed);
     } catch (e) {
       setErrorMessage('Invalid recovery phrase');
     }
