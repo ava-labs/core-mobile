@@ -34,7 +34,9 @@ function AccountChainAddress({title, address, color}: Props): JSX.Element {
         }}>
         <AvaText.Heading3 textStyle={{color: color}}>{title}</AvaText.Heading3>
         <FlexSpacer />
-        <AvaText.Body1 textStyle={{color: color}}>{address}</AvaText.Body1>
+        <AvaText.Body1 textStyle={{color: color, flex: 1}} ellipsize={'middle'}>
+          {address}
+        </AvaText.Body1>
         <Space x={16} />
         <AvaButton.Base onPress={() => copyToClipboard(address)}>
           <CopySVG color={color} />

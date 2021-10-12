@@ -38,12 +38,13 @@ export default function SendAvax(): JSX.Element {
       style={[
         backgroundStyle,
         {
-          backgroundColor: context.theme.bgOnBgApp,
+          backgroundColor: undefined,
           paddingStart: 0,
           paddingEnd: 0,
+          paddingBottom: 0,
         },
       ]}>
-      <View style={[{paddingStart: 4, paddingEnd: 4}]}>
+      <View style={[{paddingStart: 4, paddingEnd: 4, marginTop: 20}]}>
         <InputText
           value={sendAmountString}
           label="Amount"
@@ -62,7 +63,7 @@ export default function SendAvax(): JSX.Element {
               textAlign: 'right',
               color: context.theme.txtListItemSubscript,
             }}>
-            {'Transaction fee: ' + sendFeeString + ' AVAX'}
+            {'Transaction fee: ' + sendFeeString}
           </AvaText.Body3>
         </View>
       </View>
@@ -136,9 +137,9 @@ const ScanQrIcon = ({onScanBarcode}: {onScanBarcode: () => void}) => {
         {
           position: 'absolute',
           right: 0,
-          marginRight: -16,
+          marginRight: 20,
           top: 0,
-          marginTop: 32,
+          marginTop: 40,
         },
       ]}>
       <AvaButton.Icon onPress={onScanBarcode}>

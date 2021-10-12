@@ -7,27 +7,38 @@ interface BaseProps {
   onPress?: () => void;
   disabled?: boolean;
   style?: any;
+  rippleBorderless?: boolean;
 }
 
-const AvaButtonBase: FC<BaseProps> = ({onPress, style, disabled, children}) => {
+const AvaButtonBase: FC<BaseProps> = ({
+  rippleBorderless,
+  onPress,
+  style,
+  disabled,
+  children,
+}) => {
   const theme = useContext(ApplicationContext).theme;
   return (
     <TouchableNativeFeedback
       useForeground={true}
       onPress={onPress}
       disabled={disabled}
-      background={TouchableNativeFeedback.Ripple(theme.buttonRipple, false)}>
+      background={TouchableNativeFeedback.Ripple(
+        theme.buttonRipple,
+        rippleBorderless ?? false,
+      )}>
       <View style={style}>{children}</View>
     </TouchableNativeFeedback>
   );
 };
 
-const AvaButtonIcon: FC<BaseProps> = ({disabled, onPress, children}) => {
+const AvaButtonIcon: FC<BaseProps> = ({style, disabled, onPress, children}) => {
   return (
     <AvaButtonBase
       disabled={disabled}
       onPress={onPress}
-      style={styles.buttonIcon}>
+      rippleBorderless={true}
+      style={[styles.buttonIcon, style]}>
       {children}
     </AvaButtonBase>
   );
@@ -191,10 +202,7 @@ const styles = StyleSheet.create({
   buttonIcon: {
     height: 48,
     justifyContent: 'center',
-    paddingHorizontal: 28,
-    paddingVertical: 14,
-    marginHorizontal: 16,
-    marginVertical: 8,
+    padding: 8,
     borderRadius: 8,
   },
   btnPrimaryLarge: {

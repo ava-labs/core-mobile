@@ -1,25 +1,24 @@
-import React, {FC, useCallback, useEffect, useMemo, useRef} from 'react';
-import {Pressable, StyleSheet, View} from 'react-native';
-import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
-import BottomSheet from '@gorhom/bottom-sheet';
+import React, {
+  FC,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+} from 'react';
+import {StyleSheet, View} from 'react-native';
+import {useNavigation} from '@react-navigation/native';
+import BottomSheet, {BottomSheetBackdrop} from '@gorhom/bottom-sheet';
 import TabViewBackground from './components/TabViewBackground';
-import {PortfolioStackParamList} from 'navigation/PortfolioStackScreen';
 import SendTokenStackScreen from 'navigation/SendTokenStackScreen';
-import {ERC20} from '@avalabs/wallet-react-components';
-import {AvaxToken} from 'dto/AvaxToken';
-
-type SendReceiveRouteProp = RouteProp<
-  PortfolioStackParamList,
-  'SendReceiveBottomSheet'
->;
+import {ApplicationContext} from 'contexts/ApplicationContext';
+import {Space} from 'components/Space';
 
 const SendReceiveBottomSheet: FC = () => {
   const bottomSheetRef = useRef<BottomSheet>(null);
   const {goBack, canGoBack} = useNavigation();
-  const route = useRoute<SendReceiveRouteProp>();
   const snapPoints = useMemo(() => ['0%', '86%'], []);
-
-  const tokenObj = route?.params?.token as ERC20 | AvaxToken;
+  const theme = useContext(ApplicationContext).theme;
 
   useEffect(() => {
     // intentionally setting delay so animation is visible.
@@ -39,23 +38,22 @@ const SendReceiveBottomSheet: FC = () => {
     }
   }, []);
 
+  const MyHandle = () => {
+    return <Space y={24} />;
+  };
+
   // renders
   return (
-    <View style={styles.container}>
-      <Pressable
-        style={[
-          StyleSheet.absoluteFill,
-          {backgroundColor: 'rgba(0, 0, 0, 0.5)'},
-        ]}
-        onPress={goBack}
-      />
+    <View style={[styles.container, {backgroundColor: theme.transparent}]}>
       <BottomSheet
         ref={bottomSheetRef}
         index={-1}
         snapPoints={snapPoints}
+        handleComponent={MyHandle}
         onChange={handleChange}
+        backdropComponent={BottomSheetBackdrop}
         backgroundComponent={TabViewBackground}>
-        <SendTokenStackScreen onClose={handleClose} token={tokenObj} />
+        <SendTokenStackScreen onClose={handleClose} />
       </BottomSheet>
     </View>
   );

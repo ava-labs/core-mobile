@@ -2,8 +2,6 @@ import {createStackNavigator} from '@react-navigation/stack';
 import PortfolioView from 'screens/portfolio/PortfolioView';
 import React from 'react';
 import AppNavigation from 'navigation/AppNavigation';
-import {ERC20} from '@avalabs/wallet-react-components';
-import {AvaxToken} from 'dto/AvaxToken';
 
 type Props = {
   onExit: () => void;
@@ -13,7 +11,6 @@ type Props = {
 export type PortfolioStackParamList = {
   PortfolioScreen: undefined;
   SearchScreen: undefined;
-  SendReceiveBottomSheet: undefined | {token: ERC20 | AvaxToken};
   AccountBottomSheet: undefined;
 };
 

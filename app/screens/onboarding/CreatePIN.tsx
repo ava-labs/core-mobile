@@ -7,11 +7,7 @@ import TextLabel from 'components/TextLabel';
 import HeaderProgress from 'screens/mainView/HeaderProgress';
 import {Space} from 'components/Space';
 import AvaText from 'components/AvaText';
-import {
-  StackActions,
-  useFocusEffect,
-  useNavigation,
-} from '@react-navigation/native';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import {HeaderBackButton} from '@react-navigation/elements';
 
@@ -113,7 +109,7 @@ export default function CreatePIN({onBack, onPinSet, isResettingPin}: Props) {
             {title}
           </AvaText.Heading1>
           <AvaText.Heading3 textStyle={{textAlign: 'center'}}>
-            'Access your wallet faster'
+            Access your wallet faster
           </AvaText.Heading3>
           <Space y={8} />
         </>

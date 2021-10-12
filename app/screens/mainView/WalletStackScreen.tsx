@@ -23,6 +23,7 @@ import {createDrawerNavigator} from '@react-navigation/drawer';
 import DrawerView from 'screens/drawer/DrawerView';
 import AddCustomToken from 'screens/search/AddCustomToken';
 import CurrencySelector from 'screens/drawer/currency-selector/CurrencySelector';
+import {SelectedTokenContextProvider} from 'contexts/SelectedTokenContext';
 import SecurityPrivacyStackScreen from 'navigation/SecurityPrivacyStackScreen';
 
 type Props = {
@@ -136,67 +137,69 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
   return !walletReady ? (
     <Loader message="Loading wallet. One moment please." />
   ) : (
-    <NavigationContainer theme={context.navContainerTheme} independent={true}>
-      <RootStack.Navigator
-        screenOptions={{
-          headerShown: false,
-        }}>
-        <RootStack.Group>
-          <RootStack.Screen name={'Drawer'} component={DrawerScreen} />
-          <RootStack.Screen
-            options={{
-              headerShown: true,
-              title: 'Manage token list',
-              headerBackTitleVisible: false,
-              headerStyle: {
-                backgroundColor: context.theme.background,
-              },
-            }}
-            name={AppNavigation.Wallet.SearchScreen}
-            component={SearchView}
-          />
-          <RootStack.Screen
-            options={{
-              headerShown: true,
-              title: 'Add custom token',
-              headerBackTitleVisible: false,
-              headerStyle: {
-                backgroundColor: context.theme.background,
-              },
-            }}
-            name={AppNavigation.Wallet.AddCustomToken}
-            component={AddCustomToken}
-          />
-          <RootStack.Screen
-            options={{
-              headerShown: true,
-              title: 'Currency',
-              headerBackTitleVisible: false,
-            }}
-            name={AppNavigation.Wallet.CurrencySelector}
-            component={CurrencySelector}
-          />
-          <RootStack.Screen
-            name={AppNavigation.Stack.Security}
-            component={SecurityPrivacyStackScreen}
-          />
-        </RootStack.Group>
-        <RootStack.Group screenOptions={{presentation: 'transparentModal'}}>
-          <RootStack.Screen
-            name={AppNavigation.Modal.SendReceiveBottomSheet}
-            component={SendReceiveBottomSheet}
-          />
-          <RootStack.Screen
-            name={AppNavigation.Modal.AccountBottomSheet}
-            component={AccountBottomSheet}
-          />
-          <RootStack.Screen
-            name={AppNavigation.Modal.TransactionDetailBottomSheet}
-            component={TransactionDetailBottomSheet}
-          />
-        </RootStack.Group>
-      </RootStack.Navigator>
-    </NavigationContainer>
+    <SelectedTokenContextProvider>
+      <NavigationContainer theme={context.navContainerTheme} independent={true}>
+        <RootStack.Navigator
+          screenOptions={{
+            headerShown: false,
+          }}>
+          <RootStack.Group>
+            <RootStack.Screen name={'Drawer'} component={DrawerScreen} />
+            <RootStack.Screen
+              options={{
+                headerShown: true,
+                title: 'Manage token list',
+                headerBackTitleVisible: false,
+                headerStyle: {
+                  backgroundColor: context.theme.background,
+                },
+              }}
+              name={AppNavigation.Wallet.SearchScreen}
+              component={SearchView}
+            />
+            <RootStack.Screen
+              options={{
+                headerShown: true,
+                title: 'Add custom token',
+                headerBackTitleVisible: false,
+                headerStyle: {
+                  backgroundColor: context.theme.background,
+                },
+              }}
+              name={AppNavigation.Wallet.AddCustomToken}
+              component={AddCustomToken}
+            />
+            <RootStack.Screen
+              options={{
+                headerShown: true,
+                title: 'Currency',
+                headerBackTitleVisible: false,
+              }}
+              name={AppNavigation.Wallet.CurrencySelector}
+              component={CurrencySelector}
+            />
+            <RootStack.Screen
+              name={AppNavigation.Stack.Security}
+              component={SecurityPrivacyStackScreen}
+            />
+          </RootStack.Group>
+          <RootStack.Group screenOptions={{presentation: 'transparentModal'}}>
+            <RootStack.Screen
+              name={AppNavigation.Modal.SendReceiveBottomSheet}
+              component={SendReceiveBottomSheet}
+            />
+            <RootStack.Screen
+              name={AppNavigation.Modal.AccountBottomSheet}
+              component={AccountBottomSheet}
+            />
+            <RootStack.Screen
+              name={AppNavigation.Modal.TransactionDetailBottomSheet}
+              component={TransactionDetailBottomSheet}
+            />
+          </RootStack.Group>
+        </RootStack.Navigator>
+      </NavigationContainer>
+    </SelectedTokenContextProvider>
   );
 }
 
