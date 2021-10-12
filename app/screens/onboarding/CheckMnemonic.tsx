@@ -72,7 +72,9 @@ export default function CheckMnemonic(
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.scrollView}>
+    <ScrollView
+      contentContainerStyle={styles.scrollView}
+      keyboardShouldPersistTaps="handled">
       <HeaderProgress maxDots={3} filledDots={2} showBack onBack={onBack} />
       <TextTitle
         text={'Fill In Mnemonic Phrase Below'}
