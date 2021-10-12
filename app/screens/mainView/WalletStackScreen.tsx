@@ -25,6 +25,7 @@ import AddCustomToken from 'screens/search/AddCustomToken';
 import CurrencySelector from 'screens/drawer/currency-selector/CurrencySelector';
 import {SelectedTokenContextProvider} from 'contexts/SelectedTokenContext';
 import SecurityPrivacyStackScreen from 'navigation/SecurityPrivacyStackScreen';
+import WebViewScreen from 'screens/webview/WebViewScreen';
 
 type Props = {
   onExit: () => void;
@@ -181,6 +182,15 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
             <RootStack.Screen
               name={AppNavigation.Stack.Security}
               component={SecurityPrivacyStackScreen}
+            />
+            <RootStack.Screen
+              options={{
+                headerShown: true,
+                title: 'Legal',
+                headerBackTitleVisible: false,
+              }}
+              name={AppNavigation.Wallet.WebView}
+              component={WebViewScreen}
             />
           </RootStack.Group>
           <RootStack.Group screenOptions={{presentation: 'transparentModal'}}>
