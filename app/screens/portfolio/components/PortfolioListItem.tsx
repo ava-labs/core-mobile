@@ -29,8 +29,8 @@ const PortfolioListItem: FC<Props> = ({
     symbol === 'AVAX' ? (
       <AvaLogoSVG
         size={32}
-        logoColor={theme.logoColor}
-        backgroundColor={theme.txtOnBgApp}
+        logoColor={theme.white}
+        backgroundColor={theme.logoColor}
       />
     ) : (
       <Image style={styles.tokenLogo} source={{uri: image}} />
