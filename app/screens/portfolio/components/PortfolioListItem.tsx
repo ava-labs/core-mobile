@@ -1,5 +1,5 @@
 import React, {FC, useContext} from 'react';
-import {Image, StyleSheet, Text, View} from 'react-native';
+import {Image, StyleSheet, View} from 'react-native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import AvaListItem from 'components/AvaListItem';
@@ -8,6 +8,7 @@ import AvaText from 'components/AvaText';
 interface Props {
   tokenName: string;
   tokenPrice: string;
+  tokenPriceUsd?: string;
   image?: string;
   symbol?: string;
   onPress?: () => void;
@@ -16,6 +17,7 @@ interface Props {
 const PortfolioListItem: FC<Props> = ({
   tokenName,
   tokenPrice,
+  tokenPriceUsd,
   image,
   symbol,
   onPress,
@@ -27,8 +29,8 @@ const PortfolioListItem: FC<Props> = ({
     symbol === 'AVAX' ? (
       <AvaLogoSVG
         size={32}
-        logoColor={theme.logoColor}
-        backgroundColor={theme.txtOnBgApp}
+        logoColor={theme.white}
+        backgroundColor={theme.logoColor}
       />
     ) : (
       <Image style={styles.tokenLogo} source={{uri: image}} />
@@ -38,11 +40,9 @@ const PortfolioListItem: FC<Props> = ({
     <AvaText.Body2>{`${tokenPrice} ${symbol?.toUpperCase()}`}</AvaText.Body2>
   );
 
-  const usdBalance = (
-    <AvaText.Heading3>{`$${parseFloat(tokenPrice).toFixed(
-      2,
-    )} USD`}</AvaText.Heading3>
-  );
+  const usdBalance = tokenPriceUsd ? (
+    <AvaText.Heading3>{`$${tokenPriceUsd} USD`}</AvaText.Heading3>
+  ) : undefined;
 
   return (
     <View

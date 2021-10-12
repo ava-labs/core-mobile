@@ -6,56 +6,64 @@ import React, {
   useState,
 } from 'react';
 import {
-  useSendAvax,
-  useWalletStateContext,
+  ERC20,
+  sendErc20Submit,
+  useSendErc20Form,
+  useWalletContext,
 } from '@avalabs/wallet-react-components';
-import {asyncScheduler, defer, scheduled, Subscription} from 'rxjs';
+import {
+  asyncScheduler,
+  defer,
+  firstValueFrom,
+  scheduled,
+  Subscription,
+} from 'rxjs';
 import {BN, Utils} from '@avalabs/avalanche-wallet-sdk';
 import {Alert} from 'react-native';
 import {take} from 'rxjs/operators';
 import {useGasPrice} from 'utils/GasPriceHook';
 
-export interface SendAvaxContextState {
-  destinationAddress: string;
-  setSendAmountString: Dispatch<SetStateAction<string>>;
-  setAddress: Dispatch<string>;
-  cameraVisible: boolean;
-  loaderMsg: string;
-  loaderVisible: boolean;
-  setCameraVisible: Dispatch<SetStateAction<boolean>>;
+export interface SendERC20ContextState {
   sendAmountString: string;
-  clearAddress: () => void;
-  createdTxId: string;
-  sendFeeString: string;
   errorMsg: string;
   clearErrorMsg: () => void;
+  setSendAmountString: Dispatch<SetStateAction<string>>;
+  sendFeeString: string;
+  setAddress: Dispatch<string>;
+  destinationAddress: string;
   onScanBarcode: () => void;
-  balanceTotalInUSD: string;
-  avaxTotal: string;
-  targetChain: 'X' | 'P' | 'C' | undefined;
-  canSubmit: undefined | boolean;
-  onSendAvax: (memo?: string) => void;
+  canSubmit: boolean | undefined;
+  loaderVisible: boolean;
+  loaderMsg: string;
+  setCameraVisible: Dispatch<SetStateAction<boolean>>;
+  cameraVisible: boolean;
   onBarcodeScanned: Dispatch<string>;
+  onSendErc20: () => void;
+  createdTxId: string;
+  clearAddress: () => void;
 }
 
-export const SendAvaxContext = createContext<SendAvaxContextState>({} as any);
+export const SendERC20Context = createContext<SendERC20ContextState>({} as any);
 
-export const SendAvaxContextProvider = ({children}: {children: any}) => {
+export const SendERC20ContextProvider = ({
+  erc20Token,
+  children,
+}: {
+  erc20Token: ERC20;
+  children: any;
+}) => {
   const {gasPrice$} = useGasPrice();
   const {
-    submit,
-    reset,
+    setTokenBalances,
     setAmount,
     setAddress,
+    canSubmit,
+    error,
+    sendFee,
     amount,
     address,
-    targetChain,
-    error,
-    canSubmit,
-    txs,
-    sendFee,
-  } = useSendAvax(gasPrice$);
-
+  } = useSendErc20Form(erc20Token, gasPrice$);
+  const wallet = useWalletContext()?.wallet;
   const [loaderVisible, setLoaderVisible] = useState(false);
   const [loaderMsg, setLoaderMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
@@ -63,21 +71,12 @@ export const SendAvaxContextProvider = ({children}: {children: any}) => {
   const [sendAmountString, setSendAmountString] = useState('');
   const [sendFeeString, setSendFeeString] = useState('0.00');
   const [disposables] = useState(new Subscription());
-  const walletStateContext = useWalletStateContext();
-  const [avaxPrice, setAvaxPrice] = useState(0);
-  const [balanceAvaxTotal, setBalanceAvaxTotal] = useState<BN>(new BN(0));
-  const [balanceTotalInUSD, setBalanceTotalInUSD] = useState('');
-  const [avaxTotal, setAvaxTotal] = useState('');
   const [destinationAddress, setDestinationAddress] = useState('');
   const [createdTxId, setCreatedTxId] = useState('');
 
   useEffect(() => {
-    if (!walletStateContext) {
-      return;
-    }
-    setAvaxPrice(walletStateContext.avaxPrice);
-    setBalanceAvaxTotal(walletStateContext.balances.balanceAvaxTotal);
-  }, [walletStateContext]);
+    setTokenBalances({[erc20Token.address]: erc20Token});
+  }, []);
 
   useEffect(() => {
     setErrorMsg(error?.message ?? '');
@@ -101,15 +100,7 @@ export const SendAvaxContextProvider = ({children}: {children: any}) => {
     }
   }, [sendFee]);
 
-  useEffect(() => {
-    setAvaxTotal(bnAmountToString(balanceAvaxTotal));
-    const symbol = 'USD';
-    const total =
-      parseFloat(Utils.bnToLocaleString(balanceAvaxTotal, 9)) * avaxPrice;
-    setBalanceTotalInUSD(total.toFixed(2) + ' ' + symbol);
-  }, [avaxPrice, balanceAvaxTotal]);
-
-  const onSendAvax = (memo?: string): void => {
+  const onSendErc20 = (): void => {
     setLoaderVisible(true);
     setLoaderMsg('Sending...');
 
@@ -117,8 +108,20 @@ export const SendAvaxContextProvider = ({children}: {children: any}) => {
       Alert.alert('Error', 'Address not set ');
       return;
     }
+    if (!amount || amount.isZero()) {
+      Alert.alert('Error', 'Amount not set ');
+      return;
+    }
     const subscription = scheduled(
-      defer(() => submit()),
+      defer(() =>
+        sendErc20Submit(
+          erc20Token,
+          Promise.resolve(wallet),
+          amount,
+          address,
+          firstValueFrom(gasPrice$),
+        ),
+      ),
       asyncScheduler,
     )
       .pipe(take(1))
@@ -165,9 +168,8 @@ export const SendAvaxContextProvider = ({children}: {children: any}) => {
     if (!amount) {
       return new BN(0);
     }
-    const denomination = 9; //todo magic number
     try {
-      return Utils.numberToBN(amount, denomination);
+      return Utils.numberToBN(amount, erc20Token.denomination);
     } catch (e) {
       return new BN(0);
     }
@@ -177,31 +179,28 @@ export const SendAvaxContextProvider = ({children}: {children: any}) => {
     return Utils.bnToAvaxX(amount) + ' AVAX';
   }
 
-  const state: SendAvaxContextState = {
-    avaxTotal,
-    balanceTotalInUSD,
-    targetChain,
-    loaderVisible,
-    loaderMsg,
+  const state: SendERC20ContextState = {
+    sendAmountString,
     errorMsg,
     clearErrorMsg,
-    cameraVisible,
-    setCameraVisible,
-    destinationAddress,
-    setAddress,
-    sendAmountString,
     setSendAmountString,
     sendFeeString,
-    canSubmit,
-    onSendAvax,
+    setAddress,
+    destinationAddress,
     onScanBarcode,
+    canSubmit,
+    loaderVisible,
+    loaderMsg,
+    setCameraVisible,
+    cameraVisible,
     onBarcodeScanned,
-    clearAddress,
+    onSendErc20,
     createdTxId,
+    clearAddress,
   };
   return (
-    <SendAvaxContext.Provider value={state}>
+    <SendERC20Context.Provider value={state}>
       {children}
-    </SendAvaxContext.Provider>
+    </SendERC20Context.Provider>
   );
 };
