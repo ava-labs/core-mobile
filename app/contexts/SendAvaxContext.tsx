@@ -1,4 +1,10 @@
-import React, {createContext, useEffect, useState} from 'react';
+import React, {
+  createContext,
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useState,
+} from 'react';
 import {
   useSendAvax,
   useWalletStateContext,
@@ -16,16 +22,12 @@ import {take} from 'rxjs/operators';
 
 export interface SendAvaxContextState {
   destinationAddress: string;
-  setSendAmountString: (
-    value: ((prevState: string) => string) | string,
-  ) => void;
-  setAddress: (address: string) => void;
+  setSendAmountString: Dispatch<SetStateAction<string>>;
+  setAddress: Dispatch<string>;
   cameraVisible: boolean;
   loaderMsg: string;
   loaderVisible: boolean;
-  setCameraVisible: (
-    value: ((prevState: boolean) => boolean) | boolean,
-  ) => void;
+  setCameraVisible: Dispatch<SetStateAction<boolean>>;
   sendAmountString: string;
   clearAddress: () => void;
   createdTxId: string;
@@ -38,7 +40,7 @@ export interface SendAvaxContextState {
   targetChain: 'X' | 'P' | 'C' | undefined;
   canSubmit: undefined | boolean;
   onSendAvax: (memo?: string) => void;
-  onBarcodeScanned: (data: string) => void;
+  onBarcodeScanned: Dispatch<string>;
 }
 
 export const SendAvaxContext = createContext<SendAvaxContextState>({} as any);
@@ -97,9 +99,11 @@ export const SendAvaxContextProvider = ({children}: {children: any}) => {
     setDestinationAddress(address ?? '');
   }, [address]);
 
-  // useEffect(() => {
-  //   setSendFeeString(bnAmountToString(sendFee));
-  // }, [sendFee, targetChain]);
+  useEffect(() => {
+    if (sendFee) {
+      setSendFeeString(bnAmountToString(sendFee));
+    }
+  }, [sendFee]);
 
   useEffect(() => {
     setAvaxTotal(bnAmountToString(balanceAvaxTotal));

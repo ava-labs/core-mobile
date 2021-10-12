@@ -1,24 +1,20 @@
 import React, {useContext, useEffect, useState} from 'react';
-import {Image, View} from 'react-native';
+import {View} from 'react-native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import {Space} from 'components/Space';
 import OvalTagBg from 'components/OvalTagBg';
 import AvaText from 'components/AvaText';
 import AvaButton from 'components/AvaButton';
 import {Opacity50} from 'resources/Constants';
-import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
-import {SendTokenStackProps} from 'navigation/SendTokenStackScreen';
+import {useNavigation} from '@react-navigation/native';
 import AppNavigation from 'navigation/AppNavigation';
 import {SendAvaxContext} from 'contexts/SendAvaxContext';
+import {SelectedTokenContext} from 'contexts/SelectedTokenContext';
 
 type SendAvaxXProps = {
   onClose: () => void;
   onConfirm: () => void;
 };
-type SendAvaxConfirmProps = RouteProp<
-  SendTokenStackProps,
-  'sendAvaxConfirmProps'
->;
 
 export default function SendAvaxConfirm(
   props: SendAvaxXProps | Readonly<SendAvaxXProps>,
@@ -26,9 +22,14 @@ export default function SendAvaxConfirm(
   const context = useContext(ApplicationContext);
   const [backgroundStyle] = useState(context.backgroundStyle);
   const {navigate} = useNavigation();
-  const {destinationAddress, sendAmountString, onSendAvax, createdTxId} =
-    useContext(SendAvaxContext);
-  const route = useRoute<SendAvaxConfirmProps>();
+  const {
+    destinationAddress,
+    sendAmountString,
+    onSendAvax,
+    createdTxId,
+    sendFeeString,
+  } = useContext(SendAvaxContext);
+  const {selectedToken, tokenLogo} = useContext(SelectedTokenContext);
 
   useEffect(() => {
     if (createdTxId) {
@@ -50,14 +51,11 @@ export default function SendAvaxConfirm(
         },
       ]}>
       <Space y={40} />
-      <Image
-        style={{width: 40, height: 40}}
-        width={40}
-        height={40}
-        source={{uri: route?.params?.tokenImageUrl}}
-      />
+      {tokenLogo()}
       <Space y={16} />
-      <AvaText.Heading1>{sendAmountString}</AvaText.Heading1>
+      <AvaText.Heading1>
+        {sendAmountString + ' ' + selectedToken?.symbol}
+      </AvaText.Heading1>
       <Space y={8} />
       {/*<AvaText.Body2>{route?.params?.fiatAmount}</AvaText.Body2>*/}
 
@@ -72,6 +70,15 @@ export default function SendAvaxConfirm(
       </View>
 
       <View style={{flex: 1}} />
+      <View style={{alignSelf: 'flex-start', marginLeft: 16}}>
+        <AvaText.Body3
+          textStyle={{
+            textAlign: 'right',
+            color: context.theme.txtListItemSubscript,
+          }}>
+          {'Fee: ' + sendFeeString}
+        </AvaText.Body3>
+      </View>
       <View style={{width: '100%'}}>
         <AvaButton.PrimaryLarge
           style={{margin: 16}}
