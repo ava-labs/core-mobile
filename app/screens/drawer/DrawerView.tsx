@@ -1,5 +1,5 @@
 import React, {FC, useContext, useEffect, useRef, useState} from 'react';
-import {Alert, Pressable, StyleSheet, View} from 'react-native';
+import {Alert, Modal, Pressable, StyleSheet, View} from 'react-native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import AvaText from 'components/AvaText';
@@ -16,11 +16,13 @@ import LightModeSVG from 'components/svg/LightModeSVG';
 import DarkModeSVG from 'components/svg/DarkModeSVG';
 import NetworkSelector from 'network/NetworkSelector';
 import AvaButton from 'components/AvaButton';
+import {Space} from 'components/Space';
 
 const DrawerView: FC<DrawerContentComponentProps> = ({navigation}) => {
   const context = useContext(ApplicationContext);
   const bottomSheetRef = useRef<BottomSheet>(null);
   const [openNetworkSwitcher, setOpenNetworkSwitcher] = useState(false);
+  const [logoutWarningVisible, setLogoutWarningVisible] = useState(false);
 
   useEffect(() => {
     bottomSheetRef?.current?.snapTo(openNetworkSwitcher ? 0 : 1);
@@ -32,6 +34,10 @@ const DrawerView: FC<DrawerContentComponentProps> = ({navigation}) => {
 
   function handleCloseDrawer() {
     navigation.closeDrawer();
+  }
+
+  function handleLogout() {
+    AppViewModel.immediateLogout().catch(err => Alert.alert(err.message));
   }
 
   const header = (
@@ -60,8 +66,8 @@ const DrawerView: FC<DrawerContentComponentProps> = ({navigation}) => {
         style={{backgroundColor: context.theme.bgOnBgApp, flex: 1}}>
         <CurrencyItem navigation={navigation} />
         <SecurityItem navigation={navigation} />
-        <LegalItem />
-        <AdvancedItem />
+        <LegalItem navigation={navigation} />
+        {/*<AdvancedItem />*/}
       </BottomSheetScrollView>
       <Separator />
       <VersionItem />
@@ -70,9 +76,47 @@ const DrawerView: FC<DrawerContentComponentProps> = ({navigation}) => {
         style={{
           alignItems: 'flex-start',
         }}
-        onPress={() => AppViewModel.onLogout()}>
+        onPress={() => setLogoutWarningVisible(!logoutWarningVisible)}>
         Sign out
       </AvaButton.TextLarge>
+      <Modal visible={logoutWarningVisible} transparent animated>
+        <Pressable
+          style={[
+            StyleSheet.absoluteFill,
+            {backgroundColor: 'rgba(0, 0, 0, 0.5)'},
+          ]}
+          onPress={() => setLogoutWarningVisible(!setLogoutWarningVisible)}
+        />
+        <View
+          style={[
+            {
+              borderRadius: 8,
+              backgroundColor: context.theme.bgApp,
+              paddingVertical: 24,
+              paddingHorizontal: 16,
+              marginHorizontal: 16,
+              marginVertical: 16,
+              justifyContent: 'flex-end',
+              position: 'absolute',
+              bottom: 0,
+            },
+          ]}>
+          <AvaText.Heading2 textStyle={{textAlign: 'center'}}>
+            Have you recorded your recovery phrase?
+          </AvaText.Heading2>
+          <AvaText.Body2 textStyle={{textAlign: 'center', marginVertical: 16}}>
+            Without this you will not be able to sign back in to your account.
+          </AvaText.Body2>
+          <AvaButton.PrimaryLarge onPress={handleLogout}>
+            Yes
+          </AvaButton.PrimaryLarge>
+          <Space y={8} />
+          <AvaButton.TextLarge
+            onPress={() => setLogoutWarningVisible(!logoutWarningVisible)}>
+            No
+          </AvaButton.TextLarge>
+        </View>
+      </Modal>
     </>
   );
 

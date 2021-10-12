@@ -47,7 +47,6 @@ const PortfolioListItem: FC<Props> = ({
   return (
     <View
       style={{
-        marginHorizontal: 16,
         marginVertical: 4,
         borderRadius: 8,
         backgroundColor: theme.bgOnBgApp,
