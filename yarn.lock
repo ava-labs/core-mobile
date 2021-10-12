@@ -29,10 +29,10 @@
     web3 "^1.3.5"
     web3-eth-contract "^1.3.6"
 
-"@avalabs/wallet-react-components@1.4.6":
-  version "1.4.6"
-  resolved "https://registry.yarnpkg.com/@avalabs/wallet-react-components/-/wallet-react-components-1.4.6.tgz#ff0f23aa4deaae66fb4553269ef64e11871bc933"
-  integrity sha512-BDkgZYPzLwf9vS0poLLZnouguAP1G7WHr3g5noMOa953iQ1VIs/4vAACETDPjzF+inepRJug66DZfdHWHrSNhQ==
+"@avalabs/wallet-react-components@1.5.0":
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/@avalabs/wallet-react-components/-/wallet-react-components-1.5.0.tgz#b33b4dd909b2867bb22913f10a27f715c88d9654"
+  integrity sha512-/dQddP6ozrZ78kYOc+gNa0bufCpM86ayCZkK9nmxhvJix3SiUmXGhxT4nS6ukAsBcg9RRtX4oCzl4tgYnXBcZA==
   dependencies:
     "@testing-library/jest-dom" "^5.14.1"
     "@testing-library/react" "^11.2.7"
@@ -42,6 +42,8 @@
     "@types/react" "^17.0.14"
     "@types/react-dom" "^17.0.9"
     cz-conventional-changelog "^3.3.0"
+    eslint "^7.32.0"
+    prettier "^2.4.1"
     react "^17.0.2"
     react-dom "^17.0.2"
     react-scripts "4.0.3"
@@ -49,6 +51,7 @@
     rollup-plugin-ts "^1.4.0"
     rxjs "^7.3.0"
     typescript "^4.3.5"
+    typescript-eslint "^0.0.1-alpha.0"
     web-vitals "^1.1.2"
 
 "@babel/code-frame@7.10.4":
@@ -13505,6 +13508,11 @@ prettier@^2.0.2:
   resolved "https://registry.yarnpkg.com/prettier/-/prettier-2.3.1.tgz#76903c3f8c4449bc9ac597acefa24dc5ad4cbea6"
   integrity sha512-p+vNbgpLjif/+D+DwAZAbndtRrR0md0MwfmOVN9N+2RgyACMT+7tfaRnT+WDPkqnuVwleyuBIG2XBxKDme3hPA==
 
+prettier@^2.4.1:
+  version "2.4.1"
+  resolved "https://registry.yarnpkg.com/prettier/-/prettier-2.4.1.tgz#671e11c89c14a4cfc876ce564106c4a6726c9f5c"
+  integrity sha512-9fbDAXSBcc6Bs1mZrDYb3XKzDLm4EXXL9sC1LqKP5rZkT6KRr/rf9amVUcODVXgguK/isJz0d0hP72WeaKWsvA==
+
 pretty-bytes@^5.3.0:
   version "5.6.0"
   resolved "https://registry.yarnpkg.com/pretty-bytes/-/pretty-bytes-5.6.0.tgz#356256f643804773c82f64723fe78c92c62beaeb"
@@ -16334,6 +16342,11 @@ typedarray@^0.0.6:
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
   integrity sha1-hnrHTjhkGHsdPUfZlqeOxciDB3c=
+
+typescript-eslint@^0.0.1-alpha.0:
+  version "0.0.1-alpha.0"
+  resolved "https://registry.yarnpkg.com/typescript-eslint/-/typescript-eslint-0.0.1-alpha.0.tgz#285d68a4e96588295cd436278801bcb6a6b916c1"
+  integrity sha512-1hNKM37dAWML/2ltRXupOq2uqcdRQyDFphl+341NTPXFLLLiDhErXx8VtaSLh3xP7SyHZdcCgpt9boYYVb3fQg==
 
 typescript-transform-paths@^2.2.3:
   version "2.2.4"

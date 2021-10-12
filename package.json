@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@avalabs/avalanche-wallet-sdk": "file:../../Work/avalanche-wallet-sdk",
-    "@avalabs/wallet-react-components": "1.4.6",
+    "@avalabs/wallet-react-components": "1.5.0",
     "@eliav2/react-native-collapsible-view": "^1.4.0",
     "@ethereumjs/common": "^2.2.0",
     "@ethereumjs/tx": "^3.1.4",
