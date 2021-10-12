@@ -14,7 +14,7 @@ type Props = {
 };
 
 const SearchListItem: FC<Props> = ({
-  balance = 0,
+  balance,
   name,
   image,
   onPress,
@@ -27,7 +27,7 @@ const SearchListItem: FC<Props> = ({
   }
 
   const rightComponent = () => {
-    if (balance <= 0) {
+    if (balance === undefined) {
       return (
         <Switch
           value={isShowingZeroBalanceForToken}

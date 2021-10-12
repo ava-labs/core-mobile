@@ -1,4 +1,4 @@
-import React, {useContext, useState} from 'react';
+import React, {useContext} from 'react';
 import {
   FlatList,
   ListRenderItemInfo,
@@ -11,8 +11,7 @@ import SearchSVG from 'components/svg/SearchSVG';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import {useNavigation} from '@react-navigation/native';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
-import {ERC20} from '@avalabs/wallet-react-components';
-import {AvaxToken} from 'dto/AvaxToken';
+import {TokenWithBalance} from '@avalabs/wallet-react-components';
 import {useSearchableTokenList} from 'screens/portfolio/useSearchableTokenList';
 import AppNavigation from 'navigation/AppNavigation';
 import {PortfolioStackParamList} from 'navigation/PortfolioStackScreen';
@@ -36,27 +35,19 @@ function SearchView() {
     setShowZeroBalanceList,
     showZeroBalanceList,
   } = useSearchableTokenList(false);
-  // back press hides flatlist to help minimize artifacts during fade out transition
-  const [backPressed, setBackPressed] = useState(false);
   const context = useContext(ApplicationContext);
   const navigation = useNavigation<SearchRouteProp>();
 
-  function onCancel() {
-    setBackPressed(true);
-    setTimeout(() => navigation.goBack(), 0);
-  }
-
-  function showBottomSheet(token: ERC20 | AvaxToken) {
-    navigation.navigate(AppNavigation.Modal.SendReceiveBottomSheet, {token});
-  }
-
-  const renderItem = (item: ListRenderItemInfo<any>) => {
-    const token = item.item as ERC20 | AvaxToken;
-    const logoUri = (token as ERC20)?.logoURI ?? undefined;
+  const renderItem = (item: ListRenderItemInfo<TokenWithBalance>) => {
+    const token = item.item;
+    const logoUri = token?.logoURI ?? undefined;
+    const balance = !token.balance.isZero()
+      ? `${token.balanceDisplayValue} ${token.symbol}`
+      : undefined;
 
     return (
       <SearchListItem
-        balance={token.balanceParsed}
+        balance={balance}
         name={token.name}
         image={logoUri}
         isShowingZeroBalanceForToken={showZeroBalanceList[token.name]}
@@ -131,14 +122,12 @@ function SearchView() {
           }
         />
       </View>
-      {backPressed || (
-        <FlatList
-          data={filteredTokenList}
-          renderItem={renderItem}
-          keyExtractor={(item: ERC20 | AvaxToken) => item.symbol}
-          ListEmptyComponent={emptyView}
-        />
-      )}
+      <FlatList
+        data={filteredTokenList}
+        renderItem={renderItem}
+        keyExtractor={(item: TokenWithBalance) => item.symbol}
+        ListEmptyComponent={emptyView}
+      />
     </View>
   );
 }
