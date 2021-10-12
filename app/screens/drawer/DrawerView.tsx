@@ -66,8 +66,8 @@ const DrawerView: FC<DrawerContentComponentProps> = ({navigation}) => {
         style={{backgroundColor: context.theme.bgOnBgApp, flex: 1}}>
         <CurrencyItem navigation={navigation} />
         <SecurityItem navigation={navigation} />
-        <LegalItem />
-        <AdvancedItem />
+        <LegalItem navigation={navigation} />
+        {/*<AdvancedItem />*/}
       </BottomSheetScrollView>
       <Separator />
       <VersionItem />
