@@ -1,5 +1,5 @@
 import React, {FC, useContext} from 'react';
-import {Image, StyleSheet, Text, View} from 'react-native';
+import {Image, StyleSheet, View} from 'react-native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import AvaListItem from 'components/AvaListItem';
@@ -8,7 +8,7 @@ import AvaText from 'components/AvaText';
 interface Props {
   tokenName: string;
   tokenPrice: string;
-  tokenPriceUsd: string;
+  tokenPriceUsd?: string;
   image?: string;
   symbol?: string;
   onPress?: () => void;
@@ -40,9 +40,9 @@ const PortfolioListItem: FC<Props> = ({
     <AvaText.Body2>{`${tokenPrice} ${symbol?.toUpperCase()}`}</AvaText.Body2>
   );
 
-  const usdBalance = (
+  const usdBalance = tokenPriceUsd ? (
     <AvaText.Heading3>{`$${tokenPriceUsd} USD`}</AvaText.Heading3>
-  );
+  ) : undefined;
 
   return (
     <View
