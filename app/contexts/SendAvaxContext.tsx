@@ -9,16 +9,11 @@ import {
   useSendAvax,
   useWalletStateContext,
 } from '@avalabs/wallet-react-components';
-import {
-  asyncScheduler,
-  BehaviorSubject,
-  defer,
-  scheduled,
-  Subscription,
-} from 'rxjs';
+import {asyncScheduler, defer, scheduled, Subscription} from 'rxjs';
 import {BN, Utils} from '@avalabs/avalanche-wallet-sdk';
 import {Alert} from 'react-native';
 import {take} from 'rxjs/operators';
+import {useGasPrice} from 'utils/GasPriceHook';
 
 export interface SendAvaxContextState {
   destinationAddress: string;
@@ -46,6 +41,7 @@ export interface SendAvaxContextState {
 export const SendAvaxContext = createContext<SendAvaxContextState>({} as any);
 
 export const SendAvaxContextProvider = ({children}: {children: any}) => {
+  const {gasPrice$} = useGasPrice();
   const {
     submit,
     reset,
@@ -58,7 +54,7 @@ export const SendAvaxContextProvider = ({children}: {children: any}) => {
     canSubmit,
     txs,
     sendFee,
-  } = useSendAvax(new BehaviorSubject({bn: new BN(0)})); //Fixme: how is this gas used? where that should come from?
+  } = useSendAvax(gasPrice$);
 
   const [loaderVisible, setLoaderVisible] = useState(false);
   const [loaderMsg, setLoaderMsg] = useState('');
