@@ -28,7 +28,7 @@ function ActivityView({embedded}: Props) {
       const rawItems = await wallet?.getHistory(20);
       setLoading(false);
       //todo: currently not doing anything with this. just logging.
-      console.log('history Items', JSON.stringify(rawItems, null, '\t'));
+      // console.log('history Items', JSON.stringify(rawItems, null, '\t'));
     };
     loadDataAsync();
   }, [wallet]);

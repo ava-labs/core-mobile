@@ -19,11 +19,18 @@ import AvaListItem from 'components/AvaListItem';
 import ClearSVG from 'components/svg/ClearSVG';
 import TabViewAva from 'components/TabViewAva';
 import ReceiveToken from 'screens/receive/ReceiveToken';
-import {usePortfolio} from 'screens/portfolio/usePortfolio';
 import ActivityView from 'screens/activity/ActivityView';
 import AvaButton from 'components/AvaButton';
 import {SendAvaxContextProvider} from 'contexts/SendAvaxContext';
-import {SelectedTokenContext} from 'contexts/SelectedTokenContext';
+import {SelectedTokenContext, TokenType} from 'contexts/SelectedTokenContext';
+import {
+  ERC20,
+  ERC20WithBalance,
+  TokenWithBalance,
+} from '@avalabs/wallet-react-components';
+import {SendERC20ContextProvider} from 'contexts/SendERC20Context';
+import SendERC20 from 'screens/sendERC20/SendERC20';
+import SendERC20Confirm from 'screens/sendERC20/SendERC20Confirm';
 
 const Stack = createStackNavigator();
 
@@ -33,8 +40,8 @@ type Props = {
 
 const SendTokenStackScreen = ({onClose}: Props) => {
   const theme = useContext(ApplicationContext).theme;
-  const {selectedToken, tokenLogo} = useContext(SelectedTokenContext);
-  const {balanceTotalInUSD} = usePortfolio();
+  const {selectedToken, tokenLogo, tokenType} =
+    useContext(SelectedTokenContext);
   const screenOptions = useMemo<StackNavigationOptions>(
     () => ({
       ...TransitionPresets.SlideFromRightIOS,
@@ -68,14 +75,25 @@ const SendTokenStackScreen = ({onClose}: Props) => {
   const DoneDoneScreen = () => <DoneScreen onClose={onClose} />;
   const ConfirmScreen = () => {
     const {navigate} = useNavigation();
-    return (
-      <SendAvaxConfirm
-        onConfirm={() =>
-          navigate(AppNavigation.SendToken.ConfirmTransactionScreen)
-        }
-        onClose={onClose}
-      />
-    );
+    return {
+      [TokenType.AVAX]: (
+        <SendAvaxConfirm
+          onConfirm={() =>
+            navigate(AppNavigation.SendToken.ConfirmTransactionScreen)
+          }
+          onClose={onClose}
+        />
+      ),
+      [TokenType.ERC20]: (
+        <SendERC20Confirm
+          onConfirm={() =>
+            navigate(AppNavigation.SendToken.ConfirmTransactionScreen)
+          }
+          onClose={onClose}
+        />
+      ),
+      [TokenType.ANT]: <SendAvax />,
+    }[tokenType(selectedToken) ?? TokenType.AVAX];
   };
 
   const noHeaderOptions = useMemo(
@@ -83,7 +101,7 @@ const SendTokenStackScreen = ({onClose}: Props) => {
     [],
   );
 
-  const header = () => {
+  const header = (token: TokenWithBalance | undefined) => {
     return (
       <View
         style={{
@@ -91,11 +109,15 @@ const SendTokenStackScreen = ({onClose}: Props) => {
         }}>
         <View style={{flex: 1}}>
           <AvaListItem.Base
-            label={<AvaText.Heading3>{selectedToken?.name}</AvaText.Heading3>}
+            label={<AvaText.Heading3>{token?.name}</AvaText.Heading3>}
             title={
-              <AvaText.Heading1>{`${selectedToken?.balanceParsed} ${selectedToken?.symbol}`}</AvaText.Heading1>
+              <AvaText.Heading1>{`${token?.balanceDisplayValue} ${token?.symbol}`}</AvaText.Heading1>
             }
-            subtitle={<AvaText.Body2>{balanceTotalInUSD}</AvaText.Body2>}
+            subtitle={
+              <AvaText.Body2>
+                ${token?.balanceUsdDisplayValue} USD
+              </AvaText.Body2>
+            }
             leftComponent={tokenLogo()}
             titleAlignment={'flex-start'}
           />
@@ -111,11 +133,19 @@ const SendTokenStackScreen = ({onClose}: Props) => {
     );
   };
 
+  const SendTab = ({token}: {token: TokenWithBalance | undefined}) => {
+    return {
+      [TokenType.AVAX]: <SendAvax />,
+      [TokenType.ERC20]: <SendERC20 />,
+      [TokenType.ANT]: <SendAvax />,
+    }[tokenType(token) ?? TokenType.AVAX];
+  };
+
   const HeaderAndTabs = () => (
     <>
-      {header()}
+      {header(selectedToken)}
       <TabViewAva renderCustomLabel={renderCustomLabel}>
-        <SendAvax title={'Send'} />
+        <SendTab title={'Send'} token={selectedToken} />
         <ReceiveToken title={'Receive'} />
         <ActivityView embedded title={'Activity'} />
       </TabViewAva>
@@ -131,29 +161,65 @@ const SendTokenStackScreen = ({onClose}: Props) => {
     );
   };
 
-  return (
-    <SendAvaxContextProvider>
-      <NavigationContainer independent={true}>
-        <Stack.Navigator screenOptions={screenOptions}>
-          <Stack.Screen
-            name={AppNavigation.SendToken.SendTokenScreen}
-            options={noHeaderOptions}
-            component={HeaderAndTabs}
-          />
-          <Stack.Screen
-            options={{title: 'Confirm Transaction'}}
-            name={AppNavigation.SendToken.ConfirmTransactionScreen}
-            component={ConfirmScreen}
-          />
-          <Stack.Screen
-            name={AppNavigation.SendToken.DoneScreen}
-            options={noHeaderOptions}
-            component={DoneDoneScreen}
-          />
-        </Stack.Navigator>
-      </NavigationContainer>
-    </SendAvaxContextProvider>
-  );
+  const SendAvaxStack = () => {
+    return (
+      <SendAvaxContextProvider>
+        <NavigationContainer independent={true}>
+          <Stack.Navigator screenOptions={screenOptions}>
+            <Stack.Screen
+              name={AppNavigation.SendToken.SendTokenScreen}
+              options={noHeaderOptions}
+              component={HeaderAndTabs}
+            />
+            <Stack.Screen
+              options={{title: 'Confirm Transaction'}}
+              name={AppNavigation.SendToken.ConfirmTransactionScreen}
+              component={ConfirmScreen}
+            />
+            <Stack.Screen
+              name={AppNavigation.SendToken.DoneScreen}
+              options={noHeaderOptions}
+              component={DoneDoneScreen}
+            />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </SendAvaxContextProvider>
+    );
+  };
+
+  const SendERC20Stack = ({token}: {token: ERC20}) => {
+    return (
+      <SendERC20ContextProvider erc20Token={token}>
+        <NavigationContainer independent={true}>
+          <Stack.Navigator screenOptions={screenOptions}>
+            <Stack.Screen
+              name={AppNavigation.SendToken.SendTokenScreen}
+              options={noHeaderOptions}
+              component={HeaderAndTabs}
+            />
+            <Stack.Screen
+              options={{title: 'Confirm Transaction'}}
+              name={AppNavigation.SendToken.ConfirmTransactionScreen}
+              component={ConfirmScreen} //TODO: change to specific screen for ant
+            />
+            <Stack.Screen
+              name={AppNavigation.SendToken.DoneScreen}
+              options={noHeaderOptions}
+              component={DoneDoneScreen}
+            />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </SendERC20ContextProvider>
+    );
+  };
+
+  return {
+    [TokenType.AVAX]: <SendAvaxStack />,
+    [TokenType.ERC20]: (
+      <SendERC20Stack token={selectedToken as ERC20WithBalance} />
+    ),
+    [TokenType.ANT]: <SendAvaxStack />, //fixme: implement send ant
+  }[tokenType(selectedToken) ?? TokenType.AVAX];
 };
 
 interface DoneProps {
