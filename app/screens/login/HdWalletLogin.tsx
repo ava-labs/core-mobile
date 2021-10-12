@@ -36,6 +36,14 @@ export default function HdWalletLogin(
     }
   };
 
+  const EnterTestWalletButton = () => {
+    return __DEV__ ? (
+      <AvaButton.TextLarge onPress={onEnterTestWallet}>
+        Enter test HD wallet
+      </AvaButton.TextLarge>
+    ) : null;
+  };
+
   return (
     <ScrollView
       contentContainerStyle={styles.fullHeight}
@@ -49,9 +57,7 @@ export default function HdWalletLogin(
           style={[styles.overlay, {backgroundColor: context.theme.overlay}]}
         />
         <View style={[{flexGrow: 1, justifyContent: 'flex-end'}]}>
-          <AvaButton.TextLarge onPress={onEnterTestWallet}>
-            Enter test HD wallet
-          </AvaButton.TextLarge>
+          <EnterTestWalletButton />
           <View style={[{padding: 16}]}>
             <TextArea
               autoFocus
