@@ -135,6 +135,13 @@ class AppViewModel {
     );
   };
 
+  async immediateLogout() {
+    await AsyncStorage.removeItem(SECURE_ACCESS_SET);
+    await BiometricsSDK.clearWalletKey();
+    this.mnemonic = '';
+    this.setSelectedView(SelectedView.Onboard);
+  }
+
   onExit = (): Observable<ExitEvents> => {
     const exitPrompt = new AsyncSubject<ExitPromptAnswers>();
     const dialogOp: Observable<ExitFinished> = exitPrompt.pipe(

@@ -181,7 +181,7 @@ export default function App() {
   useEffect(() => {
     switch (selectedView) {
       case SelectedView.Onboard:
-        navigationRef.current?.navigate(Screen.Onboard);
+        navigationRef.current?.navigate('Auth', {screen: Screen.Onboard});
         break;
       case SelectedView.CreateWallet:
         navigationRef.current?.navigate(Screen.CreateWalletFlow, {
