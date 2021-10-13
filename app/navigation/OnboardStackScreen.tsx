@@ -30,7 +30,9 @@ export const OnboardStackScreen = () => {
     const context = useWalletContext();
     return (
       <PinOrBiometryLogin
-        onBack={() => AppViewModel.onBackPressed()}
+        onSignInWithRecoveryPhrase={() =>
+          AppViewModel.setSelectedView(SelectedView.LoginWithMnemonic)
+        }
         onEnterWallet={mnemonic =>
           onEnterWallet(mnemonic, context!.setMnemonic)
         }

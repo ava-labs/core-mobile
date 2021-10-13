@@ -15,19 +15,21 @@ import SendCrossChainViewModel, {
   ChainRenderItem,
 } from './SendCrossChainViewModel';
 import Loader from 'components/Loader';
-import ButtonAva from 'components/ButtonAva';
 import TextTitle from 'components/TextTitle';
 import InputAmount from 'components/InputAmount';
 import Header from 'screens/mainView/Header';
 import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import {useWalletContext} from '@avalabs/wallet-react-components';
+import AvaButton from 'components/AvaButton';
 
 type Props = {
   onClose: () => void;
 };
 
-export default function SendCrossChain(props: Props | Readonly<Props>) {
+export default function SendCrossChain(
+  props: Props | Readonly<Props>,
+): JSX.Element {
   const context = useContext(ApplicationContext);
   const walletContext = useWalletContext();
   const [viewModel] = useState(
@@ -104,21 +106,23 @@ export default function SendCrossChain(props: Props | Readonly<Props>) {
       <TextTitle text={'Send Cross Chain'} />
       <View style={styles.horizontalLayout}>
         <TextTitle text={'Source chain:'} size={18} />
-        <ButtonAva
-          text={viewModel.getChainString(sourceChain)}
+        <AvaButton.PrimaryLarge
+          style={{margin: 16}}
           onPress={() => {
             setSelectSourceChainVisible(true);
-          }}
-        />
+          }}>
+          {viewModel.getChainString(sourceChain)}
+        </AvaButton.PrimaryLarge>
       </View>
       <View style={styles.horizontalLayout}>
         <TextTitle text={'Destination chain:'} size={18} />
-        <ButtonAva
-          text={viewModel.getChainString(destinationChain)}
+        <AvaButton.PrimaryLarge
+          style={{margin: 16}}
           onPress={() => {
             setSelectDestinationChainVisible(true);
-          }}
-        />
+          }}>
+          {viewModel.getChainString(destinationChain)}
+        </AvaButton.PrimaryLarge>
       </View>
       <TextTitle text={'Transfer amount:'} size={18} />
       <InputAmount
@@ -130,7 +134,7 @@ export default function SendCrossChain(props: Props | Readonly<Props>) {
         <TextTitle text={balance} size={18} bold={true} />
       </View>
 
-      <ButtonAva text={'Send'} onPress={() => onSend()} />
+      <AvaButton.PrimaryLarge onPress={onSend}>Send</AvaButton.PrimaryLarge>
 
       <Modal animationType="fade" transparent={true} visible={loaderVisible}>
         <Loader message={loaderMsg} />

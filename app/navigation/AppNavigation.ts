@@ -3,11 +3,16 @@ enum Stacks {
   Auth = 'Auth',
   CreateWallet = 'CreateWallet',
   Wallet = 'Wallet',
+  Security = 'Security',
 }
 
 enum WalletScreens {
   PortfolioScreen = 'PortfolioScreen',
   SearchScreen = 'SearchScreen',
+  CurrencySelector = 'CurrencySelector',
+  SecurityPrivacy = 'Security & Privacy',
+  AddCustomToken = 'Add custom token',
+  WebView = 'WebView',
 }
 
 enum Tabs {
@@ -15,12 +20,14 @@ enum Tabs {
   Activity = 'Activity',
   Swap = 'Swap',
   More = 'More',
+  Watchlist = 'Watchlist',
   Tabs = 'Tabs',
 }
 
 enum ModalScreens {
   SendReceiveBottomSheet = 'SendReceiveBottomSheet',
   AccountBottomSheet = 'AccountBottomSheet',
+  TransactionDetailBottomSheet = 'TransactionDetailBottomSheet',
 }
 
 export enum OnboardScreens {

@@ -1,11 +1,6 @@
 import React, {useCallback, useEffect, useMemo, useRef} from 'react';
-import BottomSheet from '@gorhom/bottom-sheet';
-import {
-  InteractionManager,
-  Pressable,
-  StyleSheet,
-  View,
-} from 'react-native';
+import BottomSheet, {BottomSheetBackdrop} from '@gorhom/bottom-sheet';
+import {InteractionManager, View} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import AccountView from 'screens/portfolio/account/AccountView';
 import TabViewBackground from 'screens/portfolio/components/TabViewBackground';
@@ -35,14 +30,8 @@ function AccountBottomSheet(): JSX.Element {
 
   return (
     <View style={{flex: 1}}>
-      <Pressable
-        style={[
-          StyleSheet.absoluteFill,
-          {backgroundColor: 'rgba(0, 0, 0, 0.5)'},
-        ]}
-        onPress={() => navigation.goBack()}
-      />
       <BottomSheet
+        backdropComponent={BottomSheetBackdrop}
         ref={bottomSheetModalRef}
         index={0}
         snapPoints={snapPoints}

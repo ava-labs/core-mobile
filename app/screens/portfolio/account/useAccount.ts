@@ -1,23 +1,20 @@
 import {useEffect, useState} from 'react';
 import {Account} from 'dto/Account';
+import {useWalletStateContext} from '@avalabs/wallet-react-components';
 
 export function useAccount(): {
   setSelectedAccount: (account: Account) => void;
   accounts: Account[];
 } {
   const [accounts, setAccounts] = useState([] as Account[]);
+  const walletState = useWalletStateContext();
 
   useEffect(() => {
     setAccounts([
       {
-        title: 'Account 1',
-        xAddress: 'X-fu...7yu2',
-        cAddress: '0xfu...zk2e',
-      } as Account,
-      {
-        title: 'Account 2',
-        xAddress: 'neven',
-        cAddress: 'skend',
+        title: 'Account1',
+        xAddress: walletState?.addresses?.addrX,
+        cAddress: walletState?.addresses?.addrC,
       } as Account,
     ]);
   }, []);

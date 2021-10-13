@@ -6,14 +6,14 @@ import {BIOMETRY_TYPE} from 'react-native-keychain';
 export function useBiometricLogin(
   m: string,
   isDarkMode: boolean,
-): [string, () => Observable<boolean>, any] {
+): [string, () => Promise<boolean>, any] {
   const [mnemonic] = useState(m);
-  const [biometryType, setBiometryType] = useState('');
+  const [biometryType, setBiometryType] = useState<string>('');
   const [fingerprintIcon, setFingerprintIcon] = useState<any>();
 
   useEffect(() => {
     BiometricsSDK.getBiometryType().then(value => {
-      setBiometryType(value);
+      setBiometryType(value?.toString() ?? '');
     });
   }, []);
 
@@ -46,7 +46,7 @@ export function useBiometricLogin(
     }
   }, [biometryType]);
 
-  const onUseBiometry = (): Observable<boolean> => {
+  const onUseBiometry = () => {
     return BiometricsSDK.storeWalletWithBiometry(mnemonic);
   };
 

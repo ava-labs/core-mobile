@@ -1,5 +1,29 @@
+export const Opacity10 = '1A';
+export const Opacity50 = '7F';
+
 export enum COLORS_DAY {
   transparent = '#00000000',
+  white = '#ffffff',
+  overlay = '#0000009A',
+  background = '#F1F1F4',
+  colorPrimary1 = '#F64942',
+  colorPrimary2 = '#E84142',
+  colorError = '#C52926',
+  colorSuccess = '#14953E',
+  colorText1 = '#1A1A1C',
+  colorText2 = '#6C6C6E',
+  colorText3 = '#FFFFFF',
+  colorIcon1 = '#000000',
+  colorIcon2 = '#6C6C6E',
+  colorIcon3 = '#018433',
+  colorDisabled = '#E8E8EB',
+  colorStroke = '#F1F1F4',
+  colorStroke2 = '#6C6C6E',
+  colorBg1 = '#F1F1F4',
+  colorBg2 = '#FFFFFF',
+  colorBg3 = '#F1F1F4',
+  colorBgGreen = '#2CB753',
+
   logoColor = '#E84142',
   accentColor = '#F64942',
   shadow = '#00000066',
@@ -58,12 +82,33 @@ export enum COLORS_DAY {
 
   tabBarIconInactive = '#949497',
 
-  ovalBgGreen = '#00D3BC1A',
-  ovalBgBlue = '#934AF61A',
+  ovalBgGreen = '#00D3BC',
+  ovalBgBlue = '#934AF6',
 }
 
 export enum COLORS_NIGHT {
   transparent = '#00000000',
+  white = '#ffffff',
+  overlay = '#0000009A',
+  background = '#000000',
+  colorPrimary1 = '#F1595A',
+  colorPrimary2 = '#E6787B',
+  colorError = '#F34333',
+  colorSuccess = '#53C26E',
+  colorText1 = '#F8F8FB',
+  colorText2 = '#B4B4B7',
+  colorText3 = '#FFFFFF',
+  colorIcon1 = '#FFFFFF',
+  colorIcon2 = '#B4B4B7',
+  colorIcon3 = '#53C26E',
+  colorDisabled = '#58585B',
+  colorStroke = '#3A3A3C',
+  colorStroke2 = '#B4B4B7',
+  colorBg1 = '#000000',
+  colorBg2 = '#1A1A1C',
+  colorBg3 = '#3A3A3C',
+  colorBgGreen = '#74CD88',
+
   logoColor = '#E84142',
   accentColor = '#F1595A',
   shadow = '#FFFFFF66',
@@ -122,6 +167,8 @@ export enum COLORS_NIGHT {
 
   tabBarIconInactive = '#949497',
 
-  ovalBgGreen = '#00D3BC1A',
-  ovalBgBlue = '#934AF61A',
+  ovalBgGreen = '#00D3BC',
+  ovalBgBlue = '#934AF6',
 }
+
+export const SECURE_ACCESS_SET = 'secureAccessSet';

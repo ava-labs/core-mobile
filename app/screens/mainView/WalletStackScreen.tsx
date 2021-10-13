@@ -1,9 +1,7 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, {memo, useContext, useEffect, useState} from 'react';
 import {BackHandler, StyleSheet} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {NavigationContainer, useFocusEffect} from '@react-navigation/native';
-import EarnView from 'screens/earn/EarnView';
-import AssetsView from 'screens/portfolio/AssetsView';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import HomeSVG from 'components/svg/HomeSVG';
 import ActivitySVG from 'components/svg/ActivitySVG';
@@ -15,26 +13,39 @@ import AccountBottomSheet from 'screens/portfolio/account/AccountBottomSheet';
 import SwapView from 'screens/swap/SwapView';
 import AppNavigation from 'navigation/AppNavigation';
 import PortfolioStackScreen from 'navigation/PortfolioStackScreen';
-import SearchView from 'screens/portfolio/SearchView';
+import SearchView from 'screens/search/SearchView';
 import {useWalletStateContext} from '@avalabs/wallet-react-components';
 import Loader from 'components/Loader';
-
-export type BaseStackParamList = {
-  Portfolio: undefined;
-  Search: undefined;
-  BottomSheet: undefined;
-};
+import Activity from 'screens/activity/ActivityView';
+import TransactionDetailBottomSheet from 'screens/activity/TransactionDetailBottomSheet';
+import WatchlistSVG from 'components/svg/WatchlistSVG';
+import {createDrawerNavigator} from '@react-navigation/drawer';
+import DrawerView from 'screens/drawer/DrawerView';
+import AddCustomToken from 'screens/search/AddCustomToken';
+import CurrencySelector from 'screens/drawer/currency-selector/CurrencySelector';
+import {SelectedTokenContextProvider} from 'contexts/SelectedTokenContext';
+import SecurityPrivacyStackScreen from 'navigation/SecurityPrivacyStackScreen';
+import WebViewScreen from 'screens/webview/WebViewScreen';
 
 type Props = {
   onExit: () => void;
   onSwitchWallet: () => void;
 };
 
+export type DrawerStackParamList = {
+  Tabs: undefined;
+  CurrencySelector:
+    | undefined
+    | {onCurrencySelected: (code: string) => void; selectedCurrency: string};
+  Legal: undefined;
+  Security: undefined;
+};
+
 const Tab = createBottomTabNavigator();
 const RootStack = createStackNavigator();
-const DrawerStack = createStackNavigator();
+const DrawerStack = createDrawerNavigator<DrawerStackParamList>();
 
-export default function WalletStackScreen(props: Props | Readonly<Props>) {
+function WalletStackScreen(props: Props | Readonly<Props>) {
   const context = useContext(ApplicationContext);
   const [walletReady, setWalletReady] = useState(false);
   const walletStateContext = useWalletStateContext();
@@ -58,12 +69,6 @@ export default function WalletStackScreen(props: Props | Readonly<Props>) {
     }
   }, [walletReady, walletStateContext]);
 
-  /**
-   * : (
-   <Loader message="One moment please. \nLoading wallet" />
-   )}
-   */
-
   const onExit = (): void => {
     props.onExit();
   };
@@ -73,7 +78,10 @@ export default function WalletStackScreen(props: Props | Readonly<Props>) {
   };
 
   const DrawerScreen = () => (
-    <DrawerStack.Navigator screenOptions={{headerShown: false}}>
+    <DrawerStack.Navigator
+      screenOptions={{headerShown: false}}
+      useLegacyImplementation
+      drawerContent={props => <DrawerView {...props} />}>
       <DrawerStack.Screen
         name={AppNavigation.Tabs.Tabs}
         options={{headerShown: false}}
@@ -105,19 +113,24 @@ export default function WalletStackScreen(props: Props | Readonly<Props>) {
                 return <SwapSVG selected={focused} />;
               case AppNavigation.Tabs.More:
                 return <MoreSVG selected={focused} />;
+              case AppNavigation.Tabs.Watchlist:
+                return <WatchlistSVG selected={focused} />;
             }
           },
           tabBarAllowFontScaling: false,
           tabBarActiveTintColor: theme.accentColor,
           tabBarInactiveTintColor: theme.onBgSearch,
+          tabBarStyle: {
+            backgroundColor: theme.background,
+          },
         })}>
         <Tab.Screen
           name={AppNavigation.Tabs.Portfolio}
           component={PortfolioStackScreenWithProps}
         />
-        <Tab.Screen name={AppNavigation.Tabs.Activity} component={AssetsView} />
+        <Tab.Screen name={AppNavigation.Tabs.Watchlist} component={Activity} />
+        <Tab.Screen name={AppNavigation.Tabs.Activity} component={Activity} />
         <Tab.Screen name={AppNavigation.Tabs.Swap} component={SwapView} />
-        <Tab.Screen name={AppNavigation.Tabs.More} component={EarnView} />
       </Tab.Navigator>
     );
   };
@@ -125,30 +138,78 @@ export default function WalletStackScreen(props: Props | Readonly<Props>) {
   return !walletReady ? (
     <Loader message="Loading wallet. One moment please." />
   ) : (
-    <NavigationContainer theme={context.navContainerTheme} independent={true}>
-      <RootStack.Navigator
-        screenOptions={{
-          headerShown: false,
-        }}>
-        <RootStack.Group>
-          <RootStack.Screen name={'Drawer'} component={DrawerScreen} />
-          <RootStack.Screen
-            name={AppNavigation.Wallet.SearchScreen}
-            component={SearchView}
-          />
-        </RootStack.Group>
-        <RootStack.Group screenOptions={{presentation: 'transparentModal'}}>
-          <RootStack.Screen
-            name={AppNavigation.Modal.SendReceiveBottomSheet}
-            component={SendReceiveBottomSheet}
-          />
-          <RootStack.Screen
-            name={AppNavigation.Modal.AccountBottomSheet}
-            component={AccountBottomSheet}
-          />
-        </RootStack.Group>
-      </RootStack.Navigator>
-    </NavigationContainer>
+    <SelectedTokenContextProvider>
+      <NavigationContainer theme={context.navContainerTheme} independent={true}>
+        <RootStack.Navigator
+          screenOptions={{
+            headerShown: false,
+          }}>
+          <RootStack.Group>
+            <RootStack.Screen name={'Drawer'} component={DrawerScreen} />
+            <RootStack.Screen
+              options={{
+                headerShown: true,
+                title: 'Manage token list',
+                headerBackTitleVisible: false,
+                headerStyle: {
+                  backgroundColor: context.theme.background,
+                },
+              }}
+              name={AppNavigation.Wallet.SearchScreen}
+              component={SearchView}
+            />
+            <RootStack.Screen
+              options={{
+                headerShown: true,
+                title: 'Add custom token',
+                headerBackTitleVisible: false,
+                headerStyle: {
+                  backgroundColor: context.theme.background,
+                },
+              }}
+              name={AppNavigation.Wallet.AddCustomToken}
+              component={AddCustomToken}
+            />
+            <RootStack.Screen
+              options={{
+                headerShown: true,
+                title: 'Currency',
+                headerBackTitleVisible: false,
+              }}
+              name={AppNavigation.Wallet.CurrencySelector}
+              component={CurrencySelector}
+            />
+            <RootStack.Screen
+              name={AppNavigation.Stack.Security}
+              component={SecurityPrivacyStackScreen}
+            />
+            <RootStack.Screen
+              options={{
+                headerShown: true,
+                title: 'Legal',
+                headerBackTitleVisible: false,
+              }}
+              name={AppNavigation.Wallet.WebView}
+              component={WebViewScreen}
+            />
+          </RootStack.Group>
+          <RootStack.Group screenOptions={{presentation: 'transparentModal'}}>
+            <RootStack.Screen
+              name={AppNavigation.Modal.SendReceiveBottomSheet}
+              component={SendReceiveBottomSheet}
+            />
+            <RootStack.Screen
+              name={AppNavigation.Modal.AccountBottomSheet}
+              component={AccountBottomSheet}
+            />
+            <RootStack.Screen
+              name={AppNavigation.Modal.TransactionDetailBottomSheet}
+              component={TransactionDetailBottomSheet}
+            />
+          </RootStack.Group>
+        </RootStack.Navigator>
+      </NavigationContainer>
+    </SelectedTokenContextProvider>
   );
 }
 
@@ -160,3 +221,5 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
 });
+
+export default memo(WalletStackScreen);

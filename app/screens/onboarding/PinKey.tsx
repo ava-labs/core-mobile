@@ -71,7 +71,6 @@ const Digit = (key: PinKeys, color: ColorValue) => {
           fontFamily: 'Inter-Regular',
           fontSize: 36,
           lineHeight: 44,
-          fontWeight: '400',
         },
       ]}>
       {keymap.get(key)}

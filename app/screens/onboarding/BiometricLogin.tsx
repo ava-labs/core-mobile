@@ -1,11 +1,11 @@
 import React, {useContext} from 'react';
 import {Alert, Image, StyleSheet, View} from 'react-native';
-import TextTitle from 'components/TextTitle';
 import TextLabel from 'components/TextLabel';
-import ButtonAvaTextual from 'components/ButtonAvaTextual';
-import ButtonAva from 'components/ButtonAva';
 import {useBiometricLogin} from './BiometricLoginViewModel';
 import {ApplicationContext} from 'contexts/ApplicationContext';
+import {Space} from 'components/Space';
+import AvaText from 'components/AvaText';
+import AvaButton from 'components/AvaButton';
 
 type Props = {
   mnemonic: string;
@@ -13,13 +13,24 @@ type Props = {
   onBiometrySet: () => void;
 };
 
-export default function BiometricLogin(props: Props | Readonly<Props>) {
+export default function BiometricLogin(
+  props: Props | Readonly<Props>,
+): JSX.Element {
   const context = useContext(ApplicationContext);
 
   const [biometryType, onUseBiometry, fingerprintIcon] = useBiometricLogin(
     props.mnemonic,
     context.isDarkMode,
   );
+
+  async function handleUseBiometry() {
+    try {
+      await onUseBiometry();
+      props.onBiometrySet();
+    } catch (e: any) {
+      Alert.alert(e?.message || 'error');
+    }
+  }
 
   return (
     <View style={styles.verticalLayout}>
@@ -33,31 +44,27 @@ export default function BiometricLogin(props: Props | Readonly<Props>) {
             },
           ]}
         />
-        <View style={[{height: 90}]} />
-        <TextTitle text={'Biometric Login'} size={24} bold />
-        <View style={[{height: 8}]} />
+        <Space y={90} />
+        <AvaText.Heading1>Biometric Login</AvaText.Heading1>
+        <Space y={8} />
         <TextLabel
           text={'Sign in quickly using your ' + biometryType?.toLowerCase()}
         />
         <TextLabel text={'Change this anytime in settings'} />
       </View>
 
-      <ButtonAvaTextual text={'Skip'} onPress={props.onSkip} />
-      <ButtonAva
-        text={'Use ' + biometryType?.toLowerCase()}
-        onPress={() => {
-          onUseBiometry().subscribe({
-            error: err => Alert.alert(err?.message || 'error'),
-            complete: () => props.onBiometrySet(),
-          });
-        }}
-      />
+      <AvaButton.TextMedium onPress={props.onSkip}>Skip</AvaButton.TextMedium>
+      <Space y={16} />
+      <AvaButton.PrimaryLarge onPress={handleUseBiometry}>
+        {'Use ' + biometryType?.toLowerCase()}
+      </AvaButton.PrimaryLarge>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   verticalLayout: {
+    padding: 16,
     justifyContent: 'flex-end',
     height: '100%',
   },

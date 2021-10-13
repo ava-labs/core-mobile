@@ -24,9 +24,10 @@ export const CreateWalletStackScreen = () => {
   };
 
   const onPinSet = (pin: string): void => {
-    AppViewModel.onPinCreated(pin).subscribe({
-      error: err => Alert.alert(err.message),
-    });
+    AppViewModel.onPinCreated(pin);
+    //   .subscribe({
+    //   error: err => Alert.alert(err.message),
+    // });
   };
 
   /**

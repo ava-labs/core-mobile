@@ -8,14 +8,14 @@ import {
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from 'components/AvaText';
 import AddSVG from 'components/svg/AddSVG';
-import Divider from 'components/Divider';
+import {Space} from 'components/Space';
 import AccountItem from 'screens/portfolio/account/AccountItem';
 import {useAccount} from 'screens/portfolio/account/useAccount';
 import {Account} from 'dto/Account';
-import ButtonAva from 'components/ButtonAva';
 import HeaderProgress from 'screens/mainView/HeaderProgress';
 import {BottomSheetScrollView} from '@gorhom/bottom-sheet';
 import {useFocusEffect} from '@react-navigation/native';
+import AvaButton from 'components/AvaButton';
 
 const SCREEN_WIDTH = Dimensions.get('window')?.width;
 
@@ -39,14 +39,14 @@ function AccountView(): JSX.Element {
       );
       setSelectedAccountIndex(pageNumber);
     },
-    [],
+    [accounts.length],
   );
 
   return (
     <View
       style={{
         flex: 1,
-        backgroundColor: context.theme.bgApp,
+        backgroundColor: context.theme.colorBg2,
         paddingVertical: 16,
       }}>
       <View
@@ -59,10 +59,7 @@ function AccountView(): JSX.Element {
         <AvaText.Heading1>My accounts</AvaText.Heading1>
         <AddSVG />
       </View>
-      <Divider size={16} />
-      {
-        //todo: wrap accountElements in card carousel
-      }
+      <Space y={16} />
       <BottomSheetScrollView
         focusHook={useFocusEffect}
         horizontal
@@ -76,7 +73,9 @@ function AccountView(): JSX.Element {
         maxDots={accounts.length}
         filledDots={selectedAccountIndex + 1}
       />
-      <ButtonAva text={'Select'} onPress={onSelect} />
+      <AvaButton.PrimaryLarge style={{marginHorizontal: 16}} onPress={onSelect}>
+        Select
+      </AvaButton.PrimaryLarge>
     </View>
   );
 }
