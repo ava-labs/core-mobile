@@ -1,11 +1,13 @@
-import React, {FC, useContext} from 'react';
-import {StyleProp, StyleSheet, Text, TextStyle} from 'react-native';
+import React, {FC, useContext, useEffect, useState} from 'react';
+import {StyleProp, StyleSheet, Text, TextInput, TextStyle} from 'react-native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 
 interface TextProps {
   textStyle?: StyleProp<TextStyle>;
   color?: string;
   ellipsize?: 'head' | 'middle' | 'tail' | 'clip' | undefined;
+  editable?: boolean;
+  onTextEdited?: (editedText: string) => void;
 }
 
 const LargeTitleBold: FC<TextProps> = ({textStyle, children}) => {
@@ -26,9 +28,32 @@ const TextHeading1: FC<TextProps> = ({textStyle, children}) => {
   );
 };
 
-const TextHeading2: FC<TextProps> = ({textStyle, children}) => {
+const TextHeading2: FC<TextProps> = ({
+  editable,
+  onTextEdited,
+  textStyle,
+  children,
+}) => {
   const theme = useContext(ApplicationContext).theme;
-  return (
+  const [value, setValue] = useState('');
+
+  useEffect(() => {
+    if (editable && typeof children === 'string') {
+      setValue(children);
+    } else {
+      setValue('');
+    }
+  }, [editable]);
+
+  return editable && typeof children === 'string' ? (
+    <TextInput
+      autoFocus={true}
+      onBlur={() => onTextEdited?.(value)}
+      onChangeText={text => setValue(text)}
+      value={value}
+      style={[styles.heading2, {color: theme.txtListItem}, textStyle]}
+    />
+  ) : (
     <Text style={[styles.heading2, {color: theme.txtListItem}, textStyle]}>
       {children}
     </Text>
