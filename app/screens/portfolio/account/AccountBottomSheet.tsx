@@ -4,6 +4,7 @@ import {InteractionManager, View} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import AccountView from 'screens/portfolio/account/AccountView';
 import TabViewBackground from 'screens/portfolio/components/TabViewBackground';
+import AvaxSheetHandle from 'components/AvaxSheetHandle';
 
 function AccountBottomSheet(): JSX.Element {
   const navigation = useNavigation();
@@ -32,6 +33,7 @@ function AccountBottomSheet(): JSX.Element {
     <View style={{flex: 1}}>
       <BottomSheet
         backdropComponent={BottomSheetBackdrop}
+        handleComponent={AvaxSheetHandle}
         ref={bottomSheetModalRef}
         index={0}
         snapPoints={snapPoints}
