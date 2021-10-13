@@ -13,6 +13,7 @@ interface Props {
   listPressDisabled?: boolean;
   onPress?: () => void;
   titleAlignment?: 'center' | 'flex-start' | 'flex-end';
+  embedInCard?: boolean;
 }
 
 function BaseListItem({
@@ -25,11 +26,20 @@ function BaseListItem({
   titleAlignment = 'center',
   showNavigationArrow = false,
   onPress,
+  embedInCard,
 }: Props) {
   const context = useContext(ApplicationContext);
 
   return (
-    <View style={{paddingVertical: 16}}>
+    <View
+      style={[
+        {paddingVertical: 16},
+        embedInCard && {
+          backgroundColor: context.theme.bgOnBgApp,
+          marginHorizontal: 16,
+          borderRadius: 8,
+        },
+      ]}>
       <TouchableOpacity
         style={styles.baseRowContainer}
         disabled={listPressDisabled}

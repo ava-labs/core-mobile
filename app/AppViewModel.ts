@@ -43,42 +43,30 @@ class AppViewModel {
   };
 
   onPinCreated = async (pin: string, isResetting = false) => {
-    const key = await getEncryptionKey(pin);
-    const encryptedData = await encrypt(this.mnemonic, key);
-    await BiometricsSDK.storeWalletWithPin(encryptedData);
+    // 🤣
+    return from(getEncryptionKey(pin)).pipe(
+      switchMap(key => encrypt(this.mnemonic, key)),
+      switchMap((encryptedData: string) =>
+        BiometricsSDK.storeWalletWithPin(encryptedData),
+      ),
+      switchMap(pinSaved => {
+        if (pinSaved === false) {
+          throw Error('Pin not saved');
+        }
 
-    //if we're resetting we don't need to go anywhere.
-    if (isResetting) {
-      return;
-    }
-    //if not resetting we give the option for the user to use biometrics if supported
-    const isBiometricsAvailable = await BiometricsSDK.canUseBiometry();
-    this.setSelectedView(
-      isBiometricsAvailable ? SelectedView.BiometricStore : SelectedView.Main,
+        return isResetting
+          ? Promise.reject(false)
+          : BiometricsSDK.canUseBiometry();
+      }),
+      map((canUseBiometry: boolean) => {
+        if (canUseBiometry) {
+          this.setSelectedView(SelectedView.BiometricStore);
+        } else {
+          this.setSelectedView(SelectedView.Main);
+        }
+        return true;
+      }),
     );
-    // return from(getEncryptionKey(pin)).pipe(
-    //   switchMap(key => encrypt(this.mnemonic, key)),
-    //   switchMap((encryptedData: string) =>
-    //     BiometricsSDK.storeWalletWithPin(encryptedData),
-    //   ),
-    //   switchMap(pinSaved => {
-    //     if (pinSaved === false) {
-    //       throw Error('Pin not saved');
-    //     }
-    //
-    //     return isResetting
-    //       ? Promise.reject(false)
-    //       : BiometricsSDK.canUseBiometry();
-    //   }),
-    //   map((canUseBiometry: boolean) => {
-    //     if (canUseBiometry) {
-    //       this.setSelectedView(SelectedView.BiometricStore);
-    //     } else {
-    //       this.setSelectedView(SelectedView.Main);
-    //     }
-    //     return true;
-    //   }),
-    // );
   };
 
   onEnterWallet = (mnemonic: string): Observable<boolean> => {

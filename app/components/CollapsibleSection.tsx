@@ -1,12 +1,5 @@
-import React, {FC, useContext, useEffect, useRef, useState} from 'react';
-import {
-  Animated,
-  Easing,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import React, {FC, useContext, useEffect, useState} from 'react';
+import {Animated, Pressable, View} from 'react-native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from 'components/AvaText';
 import Collapsible from 'react-native-collapsible';
@@ -35,9 +28,10 @@ const CollapsibleSection: FC<Props> = ({
           flexDirection: 'row',
           justifyContent: 'space-between',
           padding: 16,
+          marginRight: 8,
           backgroundColor: theme.bgApp,
         }}>
-        <Text style={styles.header}>{title}</Text>
+        <AvaText.Body2>{title}</AvaText.Body2>
         <View style={{transform: [{rotate: expanded ? '-90deg' : '90deg'}]}}>
           <CarrotSVG color={theme.txtDim} />
         </View>
@@ -59,14 +53,5 @@ const CollapsibleSection: FC<Props> = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  header: {
-    fontFamily: 'Inter-Regular',
-    fontSize: 14,
-    lineHeight: 17,
-    color: '#6C6C6E',
-  },
-});
 
 export default CollapsibleSection;
