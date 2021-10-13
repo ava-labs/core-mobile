@@ -9,9 +9,13 @@ import Loader from 'components/Loader';
 import CollapsibleSection from 'components/CollapsibleSection';
 import {BottomSheetScrollView} from '@gorhom/bottom-sheet';
 import {useWalletContext} from '@avalabs/wallet-react-components';
+import moment from 'moment';
 import ActivityListItem from 'screens/activity/ActivityListItem';
+import {HistoryItemType} from '@avalabs/avalanche-wallet-sdk/dist/History';
 
-const data: JSON[] = require('assets/coins.json');
+const TODAY = moment().format('MM.DD.YY');
+const YESTERDAY = moment().subtract(1, 'days').format('MM.DD.YY');
+type SectionType = {[x: string]: HistoryItemType[]};
 
 interface Props {
   embedded?: boolean;
@@ -19,57 +23,50 @@ interface Props {
 function ActivityView({embedded}: Props) {
   const theme = useContext(ApplicationContext).theme;
   const wallet = useWalletContext()?.wallet;
+  const [sectionData, setSectionData] = useState<SectionType>({});
   const [loading, setLoading] = useState(true);
   const navigation = useNavigation();
 
-  useEffect(() => {
-    const loadDataAsync = async () => {
-      console.log('history Items', 'Loading');
-      const rawItems = await wallet?.getHistory(20);
+  const loadHistory = useCallback(async () => {
+    const history = (await wallet?.getHistory(50)) ?? [];
+    if (history.length > 0) {
+      history.map((it: HistoryItemType) => {
+        const date = moment(it.timestamp).format('MM.DD.YY');
+        if (date === TODAY) {
+          sectionData.Today = [...[it]];
+        } else if (date === YESTERDAY) {
+          sectionData.Yesterday = [...[it]];
+        } else {
+          sectionData[date] = [...[it]];
+        }
+      });
+      setSectionData({...sectionData});
       setLoading(false);
-      //todo: currently not doing anything with this. just logging.
-      // console.log('history Items', JSON.stringify(rawItems, null, '\t'));
-    };
-    loadDataAsync();
+    }
   }, [wallet]);
 
-  const today = {
-    title: 'Today',
-    data: data.slice(0, 5),
-  };
-  const yesterday = {
-    title: 'Yesterday',
-    data: data.slice(5, 10),
-  };
+  useEffect(() => {
+    loadHistory();
+  }, []);
 
-  const sectionData = [today, yesterday];
-
-  const openDetailBottomSheet = useCallback(() => {
+  const openDetailBottomSheet = useCallback((item: HistoryItemType) => {
     return navigation.navigate(
       AppNavigation.Modal.TransactionDetailBottomSheet,
+      {historyItem: item},
     );
   }, []);
 
   const renderItems = () => {
-    return sectionData.map((section, sectionIndex) => {
+    return Object.entries(sectionData).map((key, index) => {
       return (
-        <CollapsibleSection
-          key={`${sectionIndex} + ssds`}
-          title={section.title}
-          startExpanded>
-          {section.data.map((item: any) => {
-            return (
-              <ActivityListItem
-                key={item.name}
-                tokenName={item.name}
-                tokenPrice={item.current_price}
-                balance={item.current_price}
-                movement={item.price_change_percentage_24h}
-                symbol={item.symbol}
-                onPress={openDetailBottomSheet}
-              />
-            );
-          })}
+        <CollapsibleSection key={`${index}`} title={key[0]} startExpanded>
+          {key[1].map((item: HistoryItemType) => (
+            <ActivityListItem
+              key={item.id}
+              historyItem={item}
+              onPress={() => openDetailBottomSheet(item)}
+            />
+          ))}
         </CollapsibleSection>
       );
     });

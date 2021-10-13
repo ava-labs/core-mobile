@@ -1,13 +1,15 @@
 import React, {useCallback, useEffect, useMemo, useRef} from 'react';
 import BottomSheet from '@gorhom/bottom-sheet';
 import {InteractionManager, Pressable, StyleSheet} from 'react-native';
-import {useNavigation} from '@react-navigation/native';
-import TransactionDetailView from 'screens/activity/TransactionDetailView';
+import {useNavigation, useRoute} from '@react-navigation/native';
+import ActivityDetailView from 'screens/activity/ActivityDetailView';
 
-function AccountBottomSheet() {
+function ActivityDetailBottomSheet() {
   const {goBack} = useNavigation();
+  const route = useRoute();
   const bottomSheetModalRef = useRef<BottomSheet>(null);
-  const snapPoints = useMemo(() => ['0%', '55%'], []);
+  const snapPoints = useMemo(() => ['0%', '50%'], []);
+  const txItem = route.params.historyItem;
 
   useEffect(() => {
     // intentionally setting delay so animation is visible.
@@ -41,9 +43,9 @@ function AccountBottomSheet() {
         index={0}
         snapPoints={snapPoints}
         onChange={handleChange}>
-        <TransactionDetailView />
+        <ActivityDetailView txItem={txItem} />
       </BottomSheet>
     </>
   );
 }
-export default AccountBottomSheet;
+export default ActivityDetailBottomSheet;
