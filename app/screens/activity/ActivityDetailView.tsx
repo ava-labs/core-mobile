@@ -1,5 +1,5 @@
-import React, {useContext} from 'react';
-import {StyleSheet, View} from 'react-native';
+import React, {useContext, useEffect, useState} from 'react';
+import {Linking, StyleSheet, View} from 'react-native';
 import AvaText from 'components/AvaText';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import AvaListItem from 'components/AvaListItem';
@@ -10,13 +10,31 @@ import moment from 'moment';
 import MovementIndicator from 'components/MovementIndicator';
 import {Utils} from '@avalabs/avalanche-wallet-sdk';
 import {ApplicationContext} from 'contexts/ApplicationContext';
+import {
+  FUJI_NETWORK,
+  useNetworkContext,
+} from '@avalabs/wallet-react-components';
 
 interface Props {
   txItem: HistoryItemType;
 }
 function ActivityDetailView({txItem}: Props) {
   const theme = useContext(ApplicationContext).theme;
+  const networkContext = useNetworkContext();
   const date = moment(txItem.timestamp).format('MMM DD, YYYY HH:mm');
+  const [explorerUrl, setExplorerUrl] = useState<string>();
+
+  useEffect(() => {
+    if (networkContext) {
+      const isTestNt = networkContext.network === FUJI_NETWORK;
+      setExplorerUrl(
+        `https://explorer.avax${isTestNt ? '-test' : ''}.network/tx/${
+          txItem.id
+        }`,
+      );
+    }
+  }, [networkContext]);
+
   function getValue() {
     return (
       ('amountDisplayValue' in txItem && txItem?.amountDisplayValue) ?? '0'
@@ -47,14 +65,14 @@ function ActivityDetailView({txItem}: Props) {
     }
   }
 
-  function getDestination() {
-    if ('destination' in txItem) {
-      return txItem.destination;
-    }
-    if ('to' in txItem) {
-      return txItem.to;
-    }
-  }
+  // function getDestination() {
+  //   if ('destination' in txItem) {
+  //     return txItem.destination;
+  //   }
+  //   if ('to' in txItem) {
+  //     return txItem.to;
+  //   }
+  // }
 
   return (
     <View
@@ -81,8 +99,9 @@ function ActivityDetailView({txItem}: Props) {
         </AvaText.Body2>
       </View>
       <AvaListItem.Base
+        label={'From'}
         leftComponent={<MovementIndicator metric={getMetric()} />}
-        title={`from ${getSource()} to ${getDestination()}`}
+        title={getSource()}
       />
       <View
         style={{
@@ -90,10 +109,17 @@ function ActivityDetailView({txItem}: Props) {
           justifyContent: 'center',
           alignItems: 'center',
         }}>
-        <LinkSVG />
-        <AvaButton.TextLarge onPress={() => {}}>
-          View on Explorer
-        </AvaButton.TextLarge>
+        {!!explorerUrl && (
+          <>
+            <LinkSVG />
+            <AvaButton.TextLarge
+              onPress={() => {
+                Linking.openURL(explorerUrl);
+              }}>
+              View on Explorer
+            </AvaButton.TextLarge>
+          </>
+        )}
       </View>
     </View>
   );
