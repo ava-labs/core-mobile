@@ -15,5 +15,8 @@ module.exports = {
       'prettier',
       'eslint-comments',
       '@typescript-eslint',
-  ]
+  ],
+  "rules": {
+    "react-hooks/exhaustive-deps": "off"
+  }
 };

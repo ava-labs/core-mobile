@@ -27,11 +27,13 @@ const MovementIndicator: FC<Props> = ({isNegative = false, metric}) => {
       style={[
         styles.tokenLogo,
         {
-          backgroundColor: negative ? '#F1595A33' : '#74CD8833',
-          transform: [{rotate: negative ? '0deg' : '180deg'}],
+          backgroundColor: negative
+            ? theme.colorPrimary1Light
+            : theme.colorBgGreenLight,
+          transform: [{rotate: negative ? '180deg' : '0deg'}],
         },
       ]}>
-      <ArrowSVG color={negative ? '#E6787B' : '#74CD88'} />
+      <ArrowSVG color={negative ? theme.colorPrimary1 : theme.colorIcon3} />
     </View>
   );
 };

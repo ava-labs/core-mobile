@@ -1,5 +1,5 @@
 import React, {useCallback, useContext, useEffect, useState} from 'react';
-import {ScrollView, View} from 'react-native';
+import {RefreshControl, ScrollView, View} from 'react-native';
 import SearchSVG from 'components/svg/SearchSVG';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import {useNavigation} from '@react-navigation/native';
@@ -9,9 +9,14 @@ import Loader from 'components/Loader';
 import CollapsibleSection from 'components/CollapsibleSection';
 import {BottomSheetScrollView} from '@gorhom/bottom-sheet';
 import {useWalletContext} from '@avalabs/wallet-react-components';
+import moment from 'moment';
 import ActivityListItem from 'screens/activity/ActivityListItem';
+import {HistoryItemType} from '@avalabs/avalanche-wallet-sdk/dist/History';
+import {History} from '@avalabs/avalanche-wallet-sdk';
 
-const data: JSON[] = require('assets/coins.json');
+const TODAY = moment().format('MM.DD.YY');
+const YESTERDAY = moment().subtract(1, 'days').format('MM.DD.YY');
+type SectionType = {[x: string]: HistoryItemType[]};
 
 interface Props {
   embedded?: boolean;
@@ -19,61 +24,80 @@ interface Props {
 function ActivityView({embedded}: Props) {
   const theme = useContext(ApplicationContext).theme;
   const wallet = useWalletContext()?.wallet;
+  const [sectionData, setSectionData] = useState<SectionType>({});
   const [loading, setLoading] = useState(true);
   const navigation = useNavigation();
 
-  useEffect(() => {
-    const loadDataAsync = async () => {
-      console.log('history Items', 'Loading');
-      const rawItems = await wallet?.getHistory(20);
-      setLoading(false);
-      //todo: currently not doing anything with this. just logging.
-      // console.log('history Items', JSON.stringify(rawItems, null, '\t'));
-    };
-    loadDataAsync();
+  const loadHistory = useCallback(async () => {
+    setLoading(true);
+    const history = (await wallet?.getHistory(50)) ?? [];
+    // We're only going to show EVMT without inputs at this time. Remove filter in the future
+    history
+      .filter(ik => History.isHistoryEVMTx(ik) && ik.input === undefined)
+      .map((it: HistoryItemType) => {
+        const date = moment(it.timestamp).format('MM.DD.YY');
+        if (date === TODAY) {
+          sectionData.Today = [...[it]];
+        } else if (date === YESTERDAY) {
+          sectionData.Yesterday = [...[it]];
+        } else {
+          sectionData[date] = [...[it]];
+        }
+      });
+    setSectionData({...sectionData});
+    setLoading(false);
   }, [wallet]);
 
-  const today = {
-    title: 'Today',
-    data: data.slice(0, 5),
-  };
-  const yesterday = {
-    title: 'Yesterday',
-    data: data.slice(5, 10),
-  };
+  useEffect(() => {
+    loadHistory();
+  }, []);
 
-  const sectionData = [today, yesterday];
-
-  const openDetailBottomSheet = useCallback(() => {
+  const openDetailBottomSheet = useCallback((item: HistoryItemType) => {
     return navigation.navigate(
       AppNavigation.Modal.TransactionDetailBottomSheet,
+      {historyItem: item},
     );
   }, []);
 
   const renderItems = () => {
-    return sectionData.map((section, sectionIndex) => {
+    const items = Object.entries(sectionData).map((key, index) => {
       return (
-        <CollapsibleSection
-          key={`${sectionIndex} + ssds`}
-          title={section.title}
-          startExpanded>
-          {section.data.map((item: any) => {
-            return (
-              <ActivityListItem
-                key={item.name}
-                tokenName={item.name}
-                tokenPrice={item.current_price}
-                balance={item.current_price}
-                movement={item.price_change_percentage_24h}
-                symbol={item.symbol}
-                onPress={openDetailBottomSheet}
-              />
-            );
-          })}
+        <CollapsibleSection key={`${index}`} title={key[0]} startExpanded>
+          {key[1].map((item: HistoryItemType) => (
+            <ActivityListItem
+              key={item.id}
+              historyItem={item}
+              onPress={() => openDetailBottomSheet(item)}
+            />
+          ))}
         </CollapsibleSection>
       );
     });
+
+    if (items.length > 0) {
+      return items;
+    }
+
+    // if no items we return zero state
+    return (
+      // replace with zero states once we have them
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          marginHorizontal: 16,
+        }}>
+        <AvaText.Heading3 textStyle={{textAlign: 'center'}}>
+          As transactions take place, they will show up here.
+        </AvaText.Heading3>
+      </View>
+    );
   };
+
+  function onRefresh() {
+    loadHistory();
+  }
 
   /**
    * if view is embedded, meaning it's used in the bottom sheet (currently), then we wrap it
@@ -82,12 +106,30 @@ function ActivityView({embedded}: Props) {
    * We also don't show the 'header'
    * @param children
    */
-  const ScrollableComponent = ({children}: {children: React.ReactNode}) =>
-    embedded ? (
-      <BottomSheetScrollView>{children}</BottomSheetScrollView>
+  const ScrollableComponent = ({children}: {children: React.ReactNode}) => {
+    const isEmpty = Object.entries(sectionData).length === 0;
+
+    return embedded ? (
+      <BottomSheetScrollView
+        style={{flex: 1}}
+        refreshControl={
+          <RefreshControl refreshing={loading} onRefresh={onRefresh} />
+        }>
+        {children}
+      </BottomSheetScrollView>
     ) : (
-      <ScrollView>{children}</ScrollView>
+      <ScrollView
+        style={{flex: 1}}
+        contentContainerStyle={
+          isEmpty && {flex: 1, justifyContent: 'center', alignItems: 'center'}
+        }
+        refreshControl={
+          <RefreshControl refreshing={loading} onRefresh={onRefresh} />
+        }>
+        {children}
+      </ScrollView>
     );
+  };
 
   return (
     <View style={{flex: 1, backgroundColor: theme.bgApp}}>
