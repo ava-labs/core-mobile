@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {memo} from 'react';
 import CreateWallet from 'screens/onboarding/CreateWallet';
 import CheckMnemonic from 'screens/onboarding/CheckMnemonic';
 import BiometricLogin from 'screens/onboarding/BiometricLogin';
@@ -7,8 +7,8 @@ import CreatePIN from 'screens/onboarding/CreatePIN';
 import AppNavigation from 'navigation/AppNavigation';
 import AppViewModel, {SelectedView} from 'AppViewModel';
 import {useWalletContext} from '@avalabs/wallet-react-components';
-import {Alert} from 'react-native';
 import {onEnterWallet} from 'App';
+import {Alert} from 'react-native';
 
 const CreateWalletStack = createStackNavigator();
 
@@ -32,16 +32,16 @@ export const CreateWalletStackScreen = () => {
   /**
    * Views with Props
    */
-  const CreateWalletScreen = () => {
+  const CreateWalletScreen = memo(() => {
     return (
       <CreateWallet
         onSavedMyPhrase={onSavedMnemonic}
         onBack={() => AppViewModel.onBackPressed()}
       />
     );
-  };
+  });
 
-  const CheckMnemonicScreen = () => {
+  const CheckMnemonicScreen = memo(() => {
     return (
       <CheckMnemonic
         onSuccess={() => AppViewModel.setSelectedView(SelectedView.CreatePin)}
@@ -49,18 +49,18 @@ export const CreateWalletStackScreen = () => {
         mnemonic={AppViewModel.mnemonic}
       />
     );
-  };
+  });
 
-  const CreatePinScreen = () => {
+  const CreatePinScreen = memo(() => {
     return (
       <CreatePIN
         onPinSet={onPinSet}
         onBack={() => AppViewModel.onBackPressed()}
       />
     );
-  };
+  });
 
-  const BiometricLoginScreen = () => {
+  const BiometricLoginScreen = memo(() => {
     return (
       <BiometricLogin
         mnemonic={AppViewModel.mnemonic}
@@ -72,7 +72,7 @@ export const CreateWalletStackScreen = () => {
         }
       />
     );
-  };
+  });
 
   return (
     <CreateWalletStack.Navigator
