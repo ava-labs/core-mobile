@@ -7,15 +7,12 @@ import {
 } from 'react-native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from 'components/AvaText';
-import AddSVG from 'components/svg/AddSVG';
 import {Space} from 'components/Space';
 import AccountItem from 'screens/portfolio/account/AccountItem';
 import {useAccount} from 'screens/portfolio/account/useAccount';
 import {Account} from 'dto/Account';
-import HeaderProgress from 'screens/mainView/HeaderProgress';
 import {BottomSheetScrollView} from '@gorhom/bottom-sheet';
 import {useFocusEffect} from '@react-navigation/native';
-import AvaButton from 'components/AvaButton';
 
 const SCREEN_WIDTH = Dimensions.get('window')?.width;
 
@@ -57,7 +54,7 @@ function AccountView(): JSX.Element {
           paddingHorizontal: 16,
         }}>
         <AvaText.Heading1>My accounts</AvaText.Heading1>
-        <AddSVG />
+        {/*<AddSVG />*/}
       </View>
       <Space y={16} />
       <BottomSheetScrollView
@@ -69,13 +66,13 @@ function AccountView(): JSX.Element {
         {accountElements(accounts)}
       </BottomSheetScrollView>
 
-      <HeaderProgress
-        maxDots={accounts.length}
-        filledDots={selectedAccountIndex + 1}
-      />
-      <AvaButton.PrimaryLarge style={{marginHorizontal: 16}} onPress={onSelect}>
-        Select
-      </AvaButton.PrimaryLarge>
+      {/*<HeaderProgress*/}
+      {/*  maxDots={accounts.length}*/}
+      {/*  filledDots={selectedAccountIndex + 1}*/}
+      {/*/>*/}
+      {/*<AvaButton.PrimaryLarge style={{marginHorizontal: 16}} onPress={onSelect}>*/}
+      {/*  Select*/}
+      {/*</AvaButton.PrimaryLarge>*/}
     </View>
   );
 }
