@@ -42,8 +42,7 @@ class AppViewModel {
     });
   };
 
-  onPinCreated = async (pin: string, isResetting = false) => {
-    // 🤣
+  onPinCreated = (pin: string, isResetting = false): Observable<boolean> => {
     return from(getEncryptionKey(pin)).pipe(
       switchMap(key => encrypt(this.mnemonic, key)),
       switchMap((encryptedData: string) =>
