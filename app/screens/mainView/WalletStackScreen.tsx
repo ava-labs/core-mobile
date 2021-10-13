@@ -14,10 +14,12 @@ import SwapView from 'screens/swap/SwapView';
 import AppNavigation from 'navigation/AppNavigation';
 import PortfolioStackScreen from 'navigation/PortfolioStackScreen';
 import SearchView from 'screens/search/SearchView';
-import {useWalletStateContext} from '@avalabs/wallet-react-components';
+import {
+  useWalletContext,
+  useWalletStateContext,
+} from '@avalabs/wallet-react-components';
 import Loader from 'components/Loader';
 import Activity from 'screens/activity/ActivityView';
-import TransactionDetailBottomSheet from 'screens/activity/TransactionDetailBottomSheet';
 import WatchlistSVG from 'components/svg/WatchlistSVG';
 import {createDrawerNavigator} from '@react-navigation/drawer';
 import DrawerView from 'screens/drawer/DrawerView';
@@ -26,6 +28,7 @@ import CurrencySelector from 'screens/drawer/currency-selector/CurrencySelector'
 import {SelectedTokenContextProvider} from 'contexts/SelectedTokenContext';
 import SecurityPrivacyStackScreen from 'navigation/SecurityPrivacyStackScreen';
 import WebViewScreen from 'screens/webview/WebViewScreen';
+import ActivityDetailBottomSheet from 'screens/activity/ActivityDetailBottomSheet';
 
 type Props = {
   onExit: () => void;
@@ -204,7 +207,7 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
             />
             <RootStack.Screen
               name={AppNavigation.Modal.TransactionDetailBottomSheet}
-              component={TransactionDetailBottomSheet}
+              component={ActivityDetailBottomSheet}
             />
           </RootStack.Group>
         </RootStack.Navigator>

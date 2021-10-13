@@ -7,6 +7,7 @@ export enum COLORS_DAY {
   overlay = '#0000009A',
   background = '#F1F1F4',
   colorPrimary1 = '#F64942',
+  colorPrimary1Light = '#F649421A',
   colorPrimary2 = '#E84142',
   colorError = '#C52926',
   colorSuccess = '#14953E',
@@ -23,6 +24,7 @@ export enum COLORS_DAY {
   colorBg2 = '#FFFFFF',
   colorBg3 = '#F1F1F4',
   colorBgGreen = '#2CB753',
+  colorBgGreenLight = '#2CB7531A',
 
   logoColor = '#E84142',
   accentColor = '#F64942',
@@ -92,6 +94,7 @@ export enum COLORS_NIGHT {
   overlay = '#0000009A',
   background = '#000000',
   colorPrimary1 = '#F1595A',
+  colorPrimary1Light = '#F1595A1A',
   colorPrimary2 = '#E6787B',
   colorError = '#F34333',
   colorSuccess = '#53C26E',
@@ -108,6 +111,7 @@ export enum COLORS_NIGHT {
   colorBg2 = '#1A1A1C',
   colorBg3 = '#3A3A3C',
   colorBgGreen = '#74CD88',
+  colorBgGreenLight = '#74CD881A',
 
   logoColor = '#E84142',
   accentColor = '#F1595A',
