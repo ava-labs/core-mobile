@@ -12,6 +12,7 @@ import {useWalletContext} from '@avalabs/wallet-react-components';
 import moment from 'moment';
 import ActivityListItem from 'screens/activity/ActivityListItem';
 import {HistoryItemType} from '@avalabs/avalanche-wallet-sdk/dist/History';
+import {History} from '@avalabs/avalanche-wallet-sdk';
 
 const TODAY = moment().format('MM.DD.YY');
 const YESTERDAY = moment().subtract(1, 'days').format('MM.DD.YY');
@@ -30,16 +31,19 @@ function ActivityView({embedded}: Props) {
   const loadHistory = useCallback(async () => {
     const history = (await wallet?.getHistory(50)) ?? [];
     if (history.length > 0) {
-      history.map((it: HistoryItemType) => {
-        const date = moment(it.timestamp).format('MM.DD.YY');
-        if (date === TODAY) {
-          sectionData.Today = [...[it]];
-        } else if (date === YESTERDAY) {
-          sectionData.Yesterday = [...[it]];
-        } else {
-          sectionData[date] = [...[it]];
-        }
-      });
+      // We're only going to show EVMT without inputs at this time. Remove filter in the future
+      history
+        .filter(ik => History.isHistoryEVMTx(ik) && ik.input === undefined)
+        .map((it: HistoryItemType) => {
+          const date = moment(it.timestamp).format('MM.DD.YY');
+          if (date === TODAY) {
+            sectionData.Today = [...[it]];
+          } else if (date === YESTERDAY) {
+            sectionData.Yesterday = [...[it]];
+          } else {
+            sectionData[date] = [...[it]];
+          }
+        });
       setSectionData({...sectionData});
       setLoading(false);
     }
