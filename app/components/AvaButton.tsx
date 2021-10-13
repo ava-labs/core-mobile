@@ -1,12 +1,18 @@
 import React, {FC, useContext} from 'react';
-import {StyleSheet, TouchableNativeFeedback, View} from 'react-native';
+import {
+  StyleProp,
+  StyleSheet,
+  TouchableNativeFeedback,
+  View,
+  ViewStyle,
+} from 'react-native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from './AvaText';
 
 interface BaseProps {
   onPress?: () => void;
   disabled?: boolean;
-  style?: any;
+  style?: StyleProp<ViewStyle>;
   rippleBorderless?: boolean;
 }
 
