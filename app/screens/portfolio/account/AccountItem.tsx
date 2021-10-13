@@ -6,6 +6,7 @@ import {Space} from 'components/Space';
 import EditSVG from 'components/svg/EditSVG';
 import AccountChainAddress from 'screens/portfolio/account/AccountChainAddress';
 import {Account} from 'dto/Account';
+import {usePortfolio} from 'screens/portfolio/usePortfolio';
 
 type Props = {
   account: Account;
@@ -13,6 +14,7 @@ type Props = {
 
 function AccountItem({account}: Props): JSX.Element {
   const context = useContext(ApplicationContext);
+  const {balanceTotalInUSD} = usePortfolio();
 
   return (
     <View
@@ -33,7 +35,7 @@ function AccountItem({account}: Props): JSX.Element {
         <EditSVG />
       </View>
       <Space y={8} />
-      <AvaText.Body2>$980,345.11 USD</AvaText.Body2>
+      <AvaText.Body2>{balanceTotalInUSD} USD</AvaText.Body2>
       <Space y={32} />
       <AccountChainAddress
         address={account.cAddress}
