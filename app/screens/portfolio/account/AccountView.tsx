@@ -9,16 +9,16 @@ import {ApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from 'components/AvaText';
 import {Space} from 'components/Space';
 import AccountItem from 'screens/portfolio/account/AccountItem';
-import {useAccount} from 'screens/portfolio/account/useAccount';
 import {Account} from 'dto/Account';
 import {BottomSheetScrollView} from '@gorhom/bottom-sheet';
 import {useFocusEffect} from '@react-navigation/native';
+import {SelectedAccountContext} from 'contexts/SelectedAccountContext';
 
 const SCREEN_WIDTH = Dimensions.get('window')?.width;
 
 function AccountView(): JSX.Element {
   const context = useContext(ApplicationContext);
-  const {accounts, setSelectedAccount} = useAccount();
+  const {accounts, setSelectedAccount} = useContext(SelectedAccountContext);
   const [selectedAccountIndex, setSelectedAccountIndex] = useState(0);
 
   const onSelect = () => {
@@ -32,11 +32,11 @@ function AccountView(): JSX.Element {
           Math.floor(e.nativeEvent.contentOffset.x / SCREEN_WIDTH + 0.5),
           0,
         ),
-        accounts.length,
+        accounts.size,
       );
       setSelectedAccountIndex(pageNumber);
     },
-    [accounts.length],
+    [accounts.size],
   );
 
   return (
@@ -63,7 +63,7 @@ function AccountView(): JSX.Element {
         onMomentumScrollEnd={onScrollEnd}
         pagingEnabled
         showsHorizontalScrollIndicator={false}>
-        {accountElements(accounts)}
+        {accountElements([...accounts.values()])}
       </BottomSheetScrollView>
 
       {/*<HeaderProgress*/}
