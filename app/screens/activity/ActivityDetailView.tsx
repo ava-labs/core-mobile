@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import {StyleSheet, View} from 'react-native';
 import AvaText from 'components/AvaText';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
@@ -9,11 +9,13 @@ import {HistoryItemType} from '@avalabs/avalanche-wallet-sdk/dist/History';
 import moment from 'moment';
 import MovementIndicator from 'components/MovementIndicator';
 import {Utils} from '@avalabs/avalanche-wallet-sdk';
+import {ApplicationContext} from 'contexts/ApplicationContext';
 
 interface Props {
   txItem: HistoryItemType;
 }
 function ActivityDetailView({txItem}: Props) {
+  const theme = useContext(ApplicationContext).theme;
   const date = moment(txItem.timestamp).format('MMM DD, YYYY HH:mm');
   function getValue() {
     return (
@@ -56,10 +58,13 @@ function ActivityDetailView({txItem}: Props) {
 
   return (
     <View
-      style={{
-        justifyContent: 'center',
-        padding: 16,
-      }}>
+      style={[
+        {
+          justifyContent: 'center',
+          padding: 16,
+        },
+        {backgroundColor: theme.bgOnBgApp},
+      ]}>
       <View style={styles.logoContainer}>
         <AvaText.Heading1>Transaction Details</AvaText.Heading1>
         <AvaText.Body2 textStyle={{paddingTop: 8, paddingBottom: 32}}>
