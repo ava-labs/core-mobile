@@ -78,7 +78,7 @@ const TextBody1: FC<TextProps> = ({ellipsize, textStyle, children}) => {
     <Text
       ellipsizeMode={ellipsize}
       numberOfLines={ellipsize ? 1 : undefined}
-      style={[styles.body1, {color: theme.txtDim}, textStyle]}>
+      style={[styles.body1, {color: theme.colorText1}, textStyle]}>
       {children}
     </Text>
   );
