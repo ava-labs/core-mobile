@@ -35,10 +35,13 @@ const TextHeading2: FC<TextProps> = ({textStyle, children}) => {
   );
 };
 
-const TextHeading3: FC<TextProps> = ({textStyle, children}) => {
+const TextHeading3: FC<TextProps> = ({ellipsize, textStyle, children}) => {
   const theme = useContext(ApplicationContext).theme;
   return (
-    <Text style={[styles.heading3, {color: theme.txtListItem}, textStyle]}>
+    <Text
+      ellipsizeMode={ellipsize}
+      numberOfLines={ellipsize ? 1 : undefined}
+      style={[styles.heading3, {color: theme.txtListItem}, textStyle]}>
       {children}
     </Text>
   );

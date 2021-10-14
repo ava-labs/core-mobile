@@ -20,7 +20,7 @@ export default class {
       map(([mnemonic, randomIndices]) => {
         const enabledInputs: Map<number, boolean> = new Map();
         mnemonic.split(' ').forEach((value: string, index: number) => {
-          let enabled = randomIndices.indexOf(index) !== -1;
+          const enabled = randomIndices.indexOf(index) !== -1;
           enabledInputs.set(index, enabled);
         });
         return enabledInputs;
@@ -39,7 +39,7 @@ export default class {
         map(([mnemonic, randomIndices]) => {
           const enteredMnemonic: Map<number, string> = new Map();
           mnemonic.split(' ').forEach((value: string, index: number) => {
-            let shouldSkip = randomIndices.indexOf(index) !== -1;
+            const shouldSkip = randomIndices.indexOf(index) !== -1;
             if (shouldSkip) {
               enteredMnemonic.set(index, '');
             } else {
@@ -67,9 +67,10 @@ export default class {
       map(([mnemonic, enteredMnemonic]) => {
         //check if mnemonic and entered mnemonic match
         const isInvalid: boolean = mnemonic
+          .trim()
           .split(' ')
           .some((value: string, index: number) => {
-            return value !== enteredMnemonic.get(index);
+            return value.trim() !== enteredMnemonic.get(index);
           });
         if (isInvalid) {
           throw Error('Invalid mnemonic');
