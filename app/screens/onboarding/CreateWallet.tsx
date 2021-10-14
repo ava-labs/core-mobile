@@ -42,6 +42,10 @@ export default function CreateWallet({
   };
 
   const BalloonText = () => {
+    if (isRevealingCurrentMnemonic) {
+      return null;
+    }
+
     const theme = context.theme;
     const balloonArrow = context.isDarkMode
       ? require('assets/icons/balloon_arrow_dark.png')
@@ -123,7 +127,7 @@ export default function CreateWallet({
           Copy phrase
         </AvaButton.TextLarge>
         <AvaButton.PrimaryLarge
-          style={{margin: 16}}
+          style={{marginTop: 28, marginBottom: 40}}
           onPress={handleSaveMyPhrase}>
           {isRevealingCurrentMnemonic ? 'Done' : 'Next'}
         </AvaButton.PrimaryLarge>
@@ -146,6 +150,7 @@ const styles = StyleSheet.create({
     paddingStart: 16,
     paddingVertical: 8,
     borderRadius: 8,
+    marginTop: 40,
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',

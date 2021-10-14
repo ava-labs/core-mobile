@@ -100,6 +100,7 @@ const PortfolioHeader: FC<PortfolioHeaderProps> = memo(
             alignItems: 'flex-end',
             justifyContent: 'center',
             flexDirection: 'row',
+            marginTop: 25,
           }}>
           <AvaText.LargeTitleBold>{balanceTotalUSD}</AvaText.LargeTitleBold>
           <AvaText.Heading3 textStyle={{paddingBottom: 4, marginLeft: 4}}>
