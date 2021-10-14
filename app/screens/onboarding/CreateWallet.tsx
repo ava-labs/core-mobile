@@ -1,5 +1,5 @@
-import React, {useContext, useEffect, useState} from 'react';
-import {Image, Platform, StyleSheet, ToastAndroid, View} from 'react-native';
+import React, {useContext, useState} from 'react';
+import {Image, StyleSheet, View} from 'react-native';
 import CreateWalletViewModel from './CreateWalletViewModel';
 import TextTitle from 'components/TextTitle';
 import Clipboard from '@react-native-clipboard/clipboard';
@@ -10,6 +10,7 @@ import AvaButton from 'components/AvaButton';
 import AvaText from 'components/AvaText';
 import {Space} from 'components/Space';
 import AppViewModel from 'AppViewModel';
+import {ShowSnackBar} from 'components/Snackbar';
 
 type Props = {
   onBack: () => void;
@@ -38,7 +39,7 @@ export default function CreateWallet({
 
   const copyToClipboard = (): void => {
     Clipboard.setString(mnemonic);
-    Platform.OS === 'android' && ToastAndroid.show('Copied', 1000);
+    ShowSnackBar('Copied');
   };
 
   const BalloonText = () => {
