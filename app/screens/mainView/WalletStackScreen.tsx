@@ -27,6 +27,7 @@ import SecurityPrivacyStackScreen from 'navigation/SecurityPrivacyStackScreen';
 import WebViewScreen from 'screens/webview/WebViewScreen';
 import ActivityDetailBottomSheet from 'screens/activity/ActivityDetailBottomSheet';
 import {SelectedAccountContextProvider} from 'contexts/SelectedAccountContext';
+import WatchlistView from 'screens/watchlist/WatchlistView';
 
 type Props = {
   onExit: () => void;
@@ -129,7 +130,10 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
           name={AppNavigation.Tabs.Portfolio}
           component={PortfolioStackScreenWithProps}
         />
-        <Tab.Screen name={AppNavigation.Tabs.Watchlist} component={Activity} />
+        <Tab.Screen
+          name={AppNavigation.Tabs.Watchlist}
+          component={WatchlistView}
+        />
         <Tab.Screen name={AppNavigation.Tabs.Activity} component={Activity} />
         <Tab.Screen name={AppNavigation.Tabs.Swap} component={SwapView} />
       </Tab.Navigator>
