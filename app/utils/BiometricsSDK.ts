@@ -5,9 +5,10 @@ import Keychain, {
 } from 'react-native-keychain';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {SECURE_ACCESS_SET} from 'resources/Constants';
-import {NativeModules, Platform} from 'react-native';
+import {Platform} from 'react-native';
 
 const SERVICE_KEY = 'sec-storage-service';
+const SERVICE_KEY_BIO = 'sec-storage-service-bio';
 const iOS = Platform.OS === 'ios';
 
 type KeystoreConfigType = {
@@ -18,7 +19,7 @@ type KeystoreConfigType = {
 
 export const KeystoreConfig: KeystoreConfigType = {
   KEYSTORE_PASSCODE_OPTIONS: {
-    service: SERVICE_KEY,
+    service: SERVICE_KEY_BIO,
     accessControl: iOS
       ? undefined
       : Keychain.ACCESS_CONTROL.APPLICATION_PASSWORD,
@@ -47,8 +48,16 @@ class BiometricsSDK {
     return AsyncStorage.getItem(SECURE_ACCESS_SET);
   }
 
-  async storeWalletWithPin(walletMnemonic: string) {
-    await AsyncStorage.setItem(SECURE_ACCESS_SET, 'PIN');
+  async storeWalletWithPin(walletMnemonic: string, isResetting = false) {
+    // if the user is not resetting the pin
+    // we mark it as using PIN type. The other two cases are:
+    // - User already option is already PIN and is simply changing it
+    // - User has BIO but is simply changing the pin. In this case
+    // to change the type back to PIN the need to toggle the switch in
+    // security & privacy
+    if (!isResetting) {
+      await AsyncStorage.setItem(SECURE_ACCESS_SET, 'PIN');
+    }
     return Keychain.setGenericPassword(
       'wallet',
       walletMnemonic,
@@ -70,7 +79,7 @@ class BiometricsSDK {
   async storeWalletWithBiometry(key: string) {
     await AsyncStorage.setItem(SECURE_ACCESS_SET, 'BIO');
     // reset keystore because we're changing from PIN to BIO
-    await Keychain.resetGenericPassword({service: SERVICE_KEY});
+    // await Keychain.resetGenericPassword({service: SERVICE_KEY_BIO});
 
     // try to store with biometry
     try {
