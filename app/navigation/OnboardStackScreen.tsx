@@ -8,7 +8,7 @@ import AppNavigation from 'navigation/AppNavigation';
 import AppViewModel, {SelectedView} from 'AppViewModel';
 import {useWalletContext} from '@avalabs/wallet-react-components';
 import {onEnterWallet} from 'App';
-import {Alert} from 'react-native';
+import {Alert, View} from 'react-native';
 
 const AuthStack = createStackNavigator();
 
@@ -62,6 +62,7 @@ export const OnboardStackScreen = () => {
   return (
     <AuthStack.Navigator screenOptions={{headerShown: false}}>
       <AuthStack.Group>
+        <AuthStack.Screen name={'init'} component={View} />
         <AuthStack.Screen
           name={AppNavigation.Onboard.Onboard}
           component={OnboardScreen}
