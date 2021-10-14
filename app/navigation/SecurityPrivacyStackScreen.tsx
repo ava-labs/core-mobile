@@ -8,6 +8,7 @@ import AppViewModel from 'AppViewModel';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useNavigation} from '@react-navigation/native';
 import CreateWallet from 'screens/onboarding/CreateWallet';
+import {Alert} from 'react-native';
 
 export type SecurityStackParamList = {
   [AppNavigation.Wallet.SecurityPrivacy]: undefined;
@@ -42,7 +43,9 @@ function SecurityPrivacyStackScreen() {
     <CreatePIN
       onBack={gotBackToTopOfStack}
       onPinSet={pin => {
-        AppViewModel.onPinCreated(pin, true);
+        AppViewModel.onPinCreated(pin, true).subscribe({
+          error: err => console.log('ignored'),
+        });
         gotBackToTopOfStack();
       }}
       isResettingPin
