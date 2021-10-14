@@ -44,6 +44,15 @@ export const KeystoreConfig: KeystoreConfigType = {
 };
 
 class BiometricsSDK {
+  /**
+   * On some android devices loading keystore can take
+   * some time on firs run so we call this function
+   * early and mask it with splash for smoother UX
+   */
+  async warmup() {
+    await Keychain.getAllGenericPasswordServices();
+  }
+
   async getAccessType() {
     return AsyncStorage.getItem(SECURE_ACCESS_SET);
   }
