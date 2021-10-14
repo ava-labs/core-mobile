@@ -1,4 +1,4 @@
-import React, {useContext, useEffect} from 'react';
+import React, {useCallback, useContext, useEffect} from 'react';
 import {Animated, StyleSheet, View} from 'react-native';
 import Dot from 'components/Dot';
 import PinKey, {PinKeys} from 'screens/onboarding/PinKey';
@@ -13,7 +13,12 @@ import AvaText from 'components/AvaText';
 import {Space} from 'components/Space';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import AvaButton from 'components/AvaButton';
-import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
+import {
+  RouteProp,
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 import {SecurityStackParamList} from 'navigation/SecurityPrivacyStackScreen';
 import AppNavigation from 'navigation/AppNavigation';
 
@@ -63,20 +68,22 @@ export default function PinOrBiometryLogin({
 
   const context = useContext(ApplicationContext);
 
-  useEffect(() => {
-    promptForWalletLoadingIfExists().subscribe({
-      next: (value: WalletLoadingResults) => {
-        if (value instanceof MnemonicLoaded) {
-          onEnterWallet(value.mnemonic);
-        } else if (value instanceof PrivateKeyLoaded) {
-          // props.onEnterSingletonWallet(value.privateKey)
-        } else if (value instanceof NothingToLoad) {
-          //do nothing
-        }
-      },
-      error: err => console.log(err.message),
-    });
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      promptForWalletLoadingIfExists().subscribe({
+        next: (value: WalletLoadingResults) => {
+          if (value instanceof MnemonicLoaded) {
+            onEnterWallet(value.mnemonic);
+          } else if (value instanceof PrivateKeyLoaded) {
+            // props.onEnterSingletonWallet(value.privateKey)
+          } else if (value instanceof NothingToLoad) {
+            //do nothing
+          }
+        },
+        error: err => console.log(err.message),
+      });
+    }, []),
+  );
   useEffect(() => {
     if (mnemonic) {
       if (revealMnemonic) {

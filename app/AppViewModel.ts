@@ -46,7 +46,7 @@ class AppViewModel {
     return from(getEncryptionKey(pin)).pipe(
       switchMap(key => encrypt(this.mnemonic, key)),
       switchMap((encryptedData: string) =>
-        BiometricsSDK.storeWalletWithPin(encryptedData),
+        BiometricsSDK.storeWalletWithPin(encryptedData, isResetting),
       ),
       switchMap(pinSaved => {
         if (pinSaved === false) {
