@@ -1,12 +1,10 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useContext} from 'react';
 import {StyleSheet, View} from 'react-native';
-import TextTitle from 'components/TextTitle';
-import TextLabel from 'components/TextLabel';
 import {ApplicationContext} from 'contexts/ApplicationContext';
-import {useNetworkContext} from '@avalabs/wallet-react-components';
 import AvaButton from 'components/AvaButton';
 import {Space} from 'components/Space';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
+import AvaText from 'components/AvaText';
 
 type Props = {
   onCreateWallet: () => void;
@@ -18,12 +16,6 @@ const pkg = require('../../../package.json');
 
 export default function Onboard(props: Props | Readonly<Props>): JSX.Element {
   const context = useContext(ApplicationContext);
-  const networkContext = useNetworkContext();
-  const [networkName, setNetworkName] = useState('');
-
-  useEffect(() => {
-    setNetworkName(networkContext?.network?.name ?? '');
-  }, [networkContext?.network]);
 
   const onCreateWallet = (): void => {
     props.onCreateWallet();
@@ -42,13 +34,13 @@ export default function Onboard(props: Props | Readonly<Props>): JSX.Element {
             backgroundColor={context.theme.transparent}
           />
         </View>
-        <TextTitle text={'Wallet'} textAlign={'center'} bold={true} size={36} />
+        <AvaText.LargeTitleBold textStyle={{textAlign: 'center'}}>
+          Wallet
+        </AvaText.LargeTitleBold>
         <Space y={8} />
-        <TextTitle
-          text={'Your simple and secure crypto wallet'}
-          textAlign={'center'}
-          size={16}
-        />
+        <AvaText.Body1 textStyle={{textAlign: 'center'}}>
+          Your simple and secure crypto wallet
+        </AvaText.Body1>
       </View>
 
       <AvaButton.TextLarge onPress={onAlreadyHaveWallet}>
@@ -60,7 +52,10 @@ export default function Onboard(props: Props | Readonly<Props>): JSX.Element {
       <AvaButton.PrimaryLarge onPress={onCreateWallet}>
         Create new wallet
       </AvaButton.PrimaryLarge>
-      <TextLabel text={'v' + pkg.version + ' ' + networkName} />
+
+      <AvaText.Body2 textStyle={{position: 'absolute', top: 0, left: 16}}>
+        v{pkg.version}
+      </AvaText.Body2>
     </View>
   );
 }
