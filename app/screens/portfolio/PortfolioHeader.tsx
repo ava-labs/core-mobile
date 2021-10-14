@@ -16,12 +16,14 @@ import MenuSVG from 'components/svg/MenuSVG';
 import CarrotSVG from 'components/svg/CarrotSVG';
 import AddSVG from 'components/svg/AddSVG';
 import AvaText from 'components/AvaText';
+import {SelectedAccountContext} from 'contexts/SelectedAccountContext';
 
 // experimenting with container pattern and stable props to try to reduce re-renders
 function PortfolioHeaderContainer() {
   const context = useContext(ApplicationContext);
   const navigation = useNavigation();
   const {addressC, balanceTotalInUSD} = usePortfolio();
+  const {selectedAccount} = useContext(SelectedAccountContext);
 
   return (
     <PortfolioHeader
@@ -29,7 +31,7 @@ function PortfolioHeaderContainer() {
       navigation={navigation}
       addressC={addressC}
       balanceTotalUSD={balanceTotalInUSD}
-      accountName={'Account1'}
+      accountName={selectedAccount?.title ?? ''}
     />
   );
 }
