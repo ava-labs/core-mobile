@@ -2,7 +2,7 @@ import {useEffect, useMemo, useRef, useState} from 'react';
 import BiometricsSDK, {KeystoreConfig} from 'utils/BiometricsSDK';
 import {UserCredentials} from 'react-native-keychain';
 import {PinKeys} from 'screens/onboarding/PinKey';
-import {asyncScheduler, Observable, timer} from 'rxjs';
+import {asyncScheduler, Observable, of, timer} from 'rxjs';
 import {catchError, concatMap, map} from 'rxjs/operators';
 import {Animated, Platform, Vibration} from 'react-native';
 import {
@@ -145,15 +145,15 @@ export function usePinOrBiometryLogin(): [
       return timer(0, asyncScheduler).pipe(
         //timer is here to give UI opportunity to draw everything
         concatMap(() => BiometricsSDK.getAccessType()),
-        concatMap((value: any) => {
+        concatMap((value: string | null) => {
           if (value && value === 'BIO') {
             return BiometricsSDK.loadWalletKey(
               KeystoreConfig.KEYSTORE_BIO_OPTIONS,
             );
           }
-          return false;
+          return of(false);
         }),
-        map(value => {
+        map((value: boolean | UserCredentials) => {
           if (value !== false) {
             const keyOrMnemonic = (value as UserCredentials).password;
             if (keyOrMnemonic.startsWith('PrivateKey')) {
