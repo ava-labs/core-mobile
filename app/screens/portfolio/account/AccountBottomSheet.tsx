@@ -4,11 +4,12 @@ import {InteractionManager, View} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import AccountView from 'screens/portfolio/account/AccountView';
 import TabViewBackground from 'screens/portfolio/components/TabViewBackground';
+import AvaxSheetHandle from 'components/AvaxSheetHandle';
 
 function AccountBottomSheet(): JSX.Element {
   const navigation = useNavigation();
   const bottomSheetModalRef = useRef<BottomSheet>(null);
-  const snapPoints = useMemo(() => ['0%', '65%'], []);
+  const snapPoints = useMemo(() => ['0%', '45%'], []);
 
   useEffect(() => {
     // intentionally setting delay so animation is visible.
@@ -32,6 +33,7 @@ function AccountBottomSheet(): JSX.Element {
     <View style={{flex: 1}}>
       <BottomSheet
         backdropComponent={BottomSheetBackdrop}
+        handleComponent={AvaxSheetHandle}
         ref={bottomSheetModalRef}
         index={0}
         snapPoints={snapPoints}
