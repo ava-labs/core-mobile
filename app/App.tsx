@@ -155,7 +155,9 @@ export default function App() {
   const context = useContext(ApplicationContext);
   const networkContext = useNetworkContext();
   const [backgroundStyle] = useState(context.appBackgroundStyle);
-  const [selectedView, setSelectedView] = useState(SelectedView.Onboard);
+  const [selectedView, setSelectedView] = useState<SelectedView | undefined>(
+    undefined,
+  );
 
   useEffect(() => {
     networkContext!.setNetwork(FUJI_NETWORK);
@@ -220,6 +222,8 @@ export default function App() {
         navigationRef.current?.dispatch(
           StackActions.replace('App', {screen: 'Home'}),
         );
+        break;
+      default:
         break;
     }
   }, [selectedView]);
