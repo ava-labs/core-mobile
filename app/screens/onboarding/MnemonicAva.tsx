@@ -33,6 +33,7 @@ function MnemonicInput(props: InputProps | Readonly<InputProps>) {
             borderRadius: 4,
             fontFamily: 'Inter-Regular',
             marginEnd: 4,
+            marginVertical: 1,
           },
         ]}
         onChangeText={props.onChangeText}
