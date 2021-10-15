@@ -1,9 +1,10 @@
 import React, {useContext, useState} from 'react';
-import {StyleSheet, Text, ToastAndroid, View} from 'react-native';
+import {StyleSheet, Text, View} from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import BlockchainCircle from 'components/BlockchainCircle';
 import Clipboard from '@react-native-clipboard/clipboard';
+import {ShowSnackBar} from 'components/Snackbar';
 
 type Props = {
   addressX: string;
@@ -38,7 +39,7 @@ export default function ReceiveAssets({addressX, addressC, addressP}: Props) {
       return;
     }
     Clipboard.setString(str);
-    ToastAndroid.show('Copied', 1000);
+    ShowSnackBar('Copied');
   };
 
   return (

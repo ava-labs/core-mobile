@@ -1,5 +1,5 @@
 import React from 'react';
-import {ToastAndroid, View} from 'react-native';
+import {View} from 'react-native';
 import AvaText from 'components/AvaText';
 import AvaButton from 'components/AvaButton';
 import {Space} from 'components/Space';
@@ -8,6 +8,7 @@ import FlexSpacer from 'components/FlexSpacer';
 import CopySVG from 'components/svg/CopySVG';
 import Clipboard from '@react-native-clipboard/clipboard';
 import {Opacity10} from 'resources/Constants';
+import {ShowSnackBar} from 'components/Snackbar';
 
 type Props = {
   title: string;
@@ -17,7 +18,7 @@ type Props = {
 
 const copyToClipboard = (str: string): void => {
   Clipboard.setString(str);
-  ToastAndroid.show('Copied', 1000);
+  ShowSnackBar('Copied');
 };
 
 function AccountChainAddress({title, address, color}: Props): JSX.Element {

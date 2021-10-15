@@ -5,6 +5,7 @@
 import React, {useEffect, useState} from 'react';
 import App from 'App';
 import {ApplicationContextProvider} from 'contexts/ApplicationContext';
+import Toast from 'react-native-toast-notifications';
 import {
   NetworkContextProvider,
   WalletContextProvider,
@@ -42,6 +43,7 @@ export default function ContextApp() {
           {!isWarmingUp && <App />}
         </WalletContextProvider>
       </NetworkContextProvider>
+      <Toast ref={ref => (global['toast'] = ref)} />
     </ApplicationContextProvider>
   );
 }
