@@ -112,7 +112,7 @@ const SendTokenStackScreen = ({onClose}: Props) => {
       <TabViewAva renderCustomLabel={renderCustomLabel}>
         <SendTab title={'Send'} token={selectedToken} />
         <ReceiveToken title={'Receive'} />
-        <ActivityView embedded title={'Activity'} />
+        {/*<ActivityView embedded title={'Activity'} />*/}
       </TabViewAva>
     </>
   );
