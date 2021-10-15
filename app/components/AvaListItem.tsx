@@ -45,9 +45,11 @@ function BaseListItem({
         disabled={listPressDisabled}
         onPress={onPress}>
         <View style={styles.baseRow}>
-          <View style={{marginLeft: 16, flexDirection: 'row'}}>
-            {leftComponent && leftComponent}
-          </View>
+          {leftComponent && (
+            <View style={{marginLeft: 16, flexDirection: 'row'}}>
+              {leftComponent}
+            </View>
+          )}
           <View style={styles.baseMainContent}>
             {!!label && typeof label === 'string' ? (
               <Text

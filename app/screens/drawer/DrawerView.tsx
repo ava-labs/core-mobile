@@ -8,7 +8,6 @@ import {DrawerContentComponentProps} from '@react-navigation/drawer';
 import CurrencyItem from 'screens/drawer/components/CurrencyItem';
 import SecurityItem from 'screens/drawer/components/SecurityItem';
 import LegalItem from 'screens/drawer/components/LegalItem';
-import AdvancedItem from 'screens/drawer/components/AdvancedItem';
 import Separator from 'components/Separator';
 import VersionItem from 'screens/drawer/components/VersionItem';
 import AppViewModel from 'AppViewModel';
@@ -44,11 +43,14 @@ const DrawerView: FC<DrawerContentComponentProps> = ({navigation}) => {
     <View style={styles.headerContainer}>
       <AvaLogoSVG size={32} />
       <AvaText.Heading1>Wallet</AvaText.Heading1>
-      <Pressable
-        style={styles.darkLightModeContainer}
-        onPress={toggleDarkLightMode}>
-        {context.isDarkMode ? <LightModeSVG /> : <DarkModeSVG />}
-      </Pressable>
+      {/* hiding mode toggle until it's implemented */}
+      {true || (
+        <Pressable
+          style={styles.darkLightModeContainer}
+          onPress={toggleDarkLightMode}>
+          {context.isDarkMode ? <LightModeSVG /> : <DarkModeSVG />}
+        </Pressable>
+      )}
     </View>
   );
 
@@ -182,7 +184,7 @@ const styles = StyleSheet.create({
   headerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     paddingTop: 24,
   },
   darkLightModeContainer: {flex: 1, alignItems: 'flex-end'},
