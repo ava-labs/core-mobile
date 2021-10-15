@@ -39,6 +39,8 @@ class AppViewModel {
     AsyncStorage.getItem(SECURE_ACCESS_SET).then(result => {
       if (result) {
         this.setSelectedView(SelectedView.PinOrBiometryLogin);
+      } else {
+        this.setSelectedView(SelectedView.Onboard);
       }
     });
   };
