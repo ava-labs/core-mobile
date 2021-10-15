@@ -15,11 +15,8 @@ import {Space} from 'components/Space';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import AvaText from 'components/AvaText';
 import AppNavigation from 'navigation/AppNavigation';
-import AvaListItem from 'components/AvaListItem';
-import ClearSVG from 'components/svg/ClearSVG';
 import TabViewAva from 'components/TabViewAva';
 import ReceiveToken from 'screens/receive/ReceiveToken';
-import ActivityView from 'screens/activity/ActivityView';
 import AvaButton from 'components/AvaButton';
 import {SendAvaxContextProvider} from 'contexts/SendAvaxContext';
 import {SelectedTokenContext, TokenType} from 'contexts/SelectedTokenContext';
@@ -31,6 +28,7 @@ import {
 import {SendERC20ContextProvider} from 'contexts/SendERC20Context';
 import SendERC20 from 'screens/sendERC20/SendERC20';
 import SendERC20Confirm from 'screens/sendERC20/SendERC20Confirm';
+import SendHeader from 'screens/portfolio/sendBottomSheet/SendHeader';
 
 const Stack = createStackNavigator();
 
@@ -40,8 +38,7 @@ type Props = {
 
 const SendTokenStackScreen = ({onClose}: Props) => {
   const theme = useContext(ApplicationContext).theme;
-  const {selectedToken, tokenLogo, tokenType} =
-    useContext(SelectedTokenContext);
+  const {selectedToken, tokenType} = useContext(SelectedTokenContext);
   const screenOptions = useMemo<StackNavigationOptions>(
     () => ({
       ...TransitionPresets.SlideFromRightIOS,
@@ -101,38 +98,6 @@ const SendTokenStackScreen = ({onClose}: Props) => {
     [],
   );
 
-  const header = (token: TokenWithBalance | undefined) => {
-    return (
-      <View
-        style={{
-          flexDirection: 'row',
-        }}>
-        <View style={{flex: 1}}>
-          <AvaListItem.Base
-            label={<AvaText.Heading3>{token?.name}</AvaText.Heading3>}
-            title={
-              <AvaText.Heading1>{`${token?.balanceDisplayValue} ${token?.symbol}`}</AvaText.Heading1>
-            }
-            subtitle={
-              <AvaText.Body2>
-                ${token?.balanceUsdDisplayValue} USD
-              </AvaText.Body2>
-            }
-            leftComponent={tokenLogo()}
-            titleAlignment={'flex-start'}
-          />
-        </View>
-        <AvaButton.Icon onPress={onClose} style={{marginTop: -16}}>
-          <ClearSVG
-            color={theme.colorIcon1}
-            backgroundColor={theme.colorBg2}
-            size={40}
-          />
-        </AvaButton.Icon>
-      </View>
-    );
-  };
-
   const SendTab = ({token}: {token: TokenWithBalance | undefined}) => {
     return {
       [TokenType.AVAX]: <SendAvax />,
@@ -143,7 +108,7 @@ const SendTokenStackScreen = ({onClose}: Props) => {
 
   const HeaderAndTabs = () => (
     <>
-      {header(selectedToken)}
+      <SendHeader onClose={onClose} />
       <TabViewAva renderCustomLabel={renderCustomLabel}>
         <SendTab title={'Send'} token={selectedToken} />
         <ReceiveToken title={'Receive'} />
