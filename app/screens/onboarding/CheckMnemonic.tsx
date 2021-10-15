@@ -97,10 +97,14 @@ const styles: any = StyleSheet.create({
     height: '100%',
   },
   mnemonics: {
-    marginHorizontal: 24,
-    flexDirection: 'row',
+    paddingVertical: 8,
+    borderRadius: 8,
+    flexDirection: 'column',
+    flex: 1,
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    marginTop: 8,
+    maxHeight: 280,
+    alignContent: 'center',
   },
   growContainer: {
     flexGrow: 1,

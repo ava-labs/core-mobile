@@ -1,5 +1,11 @@
 import React, {useContext, useState} from 'react';
-import {ScrollView, StyleSheet, View} from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 import WalletSDK from 'utils/WalletSDK';
 import TextArea from 'components/TextArea';
 import AvaText from 'components/AvaText';
@@ -49,7 +55,10 @@ export default function HdWalletLogin(
     <ScrollView
       contentContainerStyle={styles.fullHeight}
       keyboardShouldPersistTaps="handled">
-      <View style={styles.fullHeight}>
+      <KeyboardAvoidingView
+        style={styles.fullHeight}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={50}>
         <AvaText.LargeTitleBold
           textStyle={{textAlign: 'center', marginTop: 100}}>
           Wallet
@@ -69,17 +78,18 @@ export default function HdWalletLogin(
               onChangeText={() => setErrorMessage(undefined)}
               errorMessage={errorMessage}
               onBtnPrimary={onEnterWallet}
+              autoCorrect={false}
             />
           </View>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   fullHeight: {
-    height: '100%',
+    flexGrow: 1,
   },
   overlay: {
     position: 'absolute',

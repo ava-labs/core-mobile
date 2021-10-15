@@ -13,6 +13,7 @@ type Props = {
   heading?: string;
   errorMessage?: string;
   autoFocus?: boolean;
+  autoCorrect?: boolean;
 };
 
 export default function TextArea(props: Props | Readonly<Props>): JSX.Element {
@@ -72,6 +73,7 @@ export default function TextArea(props: Props | Readonly<Props>): JSX.Element {
         )}
         <TextInput
           ref={textInputRef}
+          autoCorrect={props?.autoCorrect}
           placeholder={'Enter your recovery phrase'}
           placeholderTextColor={theme.colorDisabled}
           multiline={true}

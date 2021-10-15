@@ -64,6 +64,7 @@
     "react-native-screens": "^3.4.0",
     "react-native-svg": "^12.1.1",
     "react-native-tab-view": "^3.1.1",
+    "react-native-toast-notifications": "^3.2.2",
     "react-native-v8": ">=0.64.0-patch.0 <0.64.1",
     "react-native-vector-icons": "^8.1.0",
     "react-native-webview": "^11.13.0",

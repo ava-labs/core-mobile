@@ -3,6 +3,7 @@ import {StyleSheet, TextInput, View} from 'react-native';
 import TextTitle from 'components/TextTitle';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import {Space} from 'components/Space';
+import AvaText from 'components/AvaText';
 
 type InputProps = {
   keyNum: number;
@@ -15,14 +16,9 @@ function MnemonicInput(props: InputProps | Readonly<InputProps>) {
   const theme = context.theme;
   return (
     <View style={styles.horizontalLayout}>
-      <View style={[{width: 20}]}>
-        <TextTitle
-          text={(props.keyNum + 1).toString()}
-          size={16}
-          color={theme.txtDim}
-        />
-      </View>
-      <Space y={4} />
+      <AvaText.Body1 textStyle={{marginEnd: 4}}>
+        {(props.keyNum + 1).toString()}
+      </AvaText.Body1>
       <TextInput
         autoCapitalize="none"
         enablesReturnKeyAutomatically={true}
@@ -36,6 +32,8 @@ function MnemonicInput(props: InputProps | Readonly<InputProps>) {
             padding: 4,
             borderRadius: 4,
             fontFamily: 'Inter-Regular',
+            marginEnd: 4,
+            marginVertical: 1,
           },
         ]}
         onChangeText={props.onChangeText}
@@ -51,19 +49,12 @@ type TextProps = {
 };
 
 function MnemonicText(props: TextProps | Readonly<TextProps>) {
-  const context = useContext(ApplicationContext);
-  const theme = context.theme;
   return (
-    <View style={styles.horizontalLayout}>
-      <View style={[{width: 20}]}>
-        <TextTitle
-          text={(props.keyNum + 1).toString()}
-          size={16}
-          color={theme.txtDim}
-        />
-      </View>
-      <Space y={4} />
-      <TextTitle text={props.text} size={16} />
+    <View style={[styles.horizontalLayout]}>
+      <AvaText.Body1 textStyle={{marginEnd: 4}}>
+        {(props.keyNum + 1).toString()}
+      </AvaText.Body1>
+      <AvaText.Heading3>{props.text}</AvaText.Heading3>
     </View>
   );
 }

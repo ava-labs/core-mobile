@@ -14061,6 +14061,11 @@ react-native-tab-view@^3.1.1:
   resolved "https://registry.yarnpkg.com/react-native-tab-view/-/react-native-tab-view-3.1.1.tgz#1f8d7a835ab4f5b1b1407ec8dddc1053b53fa3c6"
   integrity sha512-M5pRN6utQfytKWoKlKVzg5NbkYu308qNoW1khGTtEOTs1k14p2dHJ/BWOJoJYHKbPVUyZldbG9MFT7gUl4YHnw==
 
+react-native-toast-notifications@^3.2.2:
+  version "3.2.2"
+  resolved "https://registry.yarnpkg.com/react-native-toast-notifications/-/react-native-toast-notifications-3.2.2.tgz#884af05c2a8d32ed6a4e49a6d1a7720053b25ec8"
+  integrity sha512-44x1Nr0QVnpE/2+Xyiv3Cd9S5MlgxS+5YdCioHfass36pJQAF9sSh3bHPakGNoT0e+kCp9A46CJE9E9BbwSDUw==
+
 "react-native-v8@>=0.64.0-patch.0 <0.64.1":
   version "0.64.0-patch.0"
   resolved "https://registry.yarnpkg.com/react-native-v8/-/react-native-v8-0.64.0-patch.0.tgz#3fbc6c338b4c85e17d6829a04187bb41b3855795"
