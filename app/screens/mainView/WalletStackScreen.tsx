@@ -1,4 +1,4 @@
-import React, {memo, useContext, useEffect, useState} from 'react';
+import React, {memo, useContext, useEffect, useMemo, useState} from 'react';
 import {BackHandler, StyleSheet} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {NavigationContainer, useFocusEffect} from '@react-navigation/native';
@@ -140,6 +140,25 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
     );
   };
 
+  const BottomSheetGroup = useMemo(() => {
+    return (
+      <RootStack.Group screenOptions={{presentation: 'transparentModal'}}>
+        <RootStack.Screen
+          name={AppNavigation.Modal.SendReceiveBottomSheet}
+          component={SendReceiveBottomSheet}
+        />
+        <RootStack.Screen
+          name={AppNavigation.Modal.AccountBottomSheet}
+          component={AccountBottomSheet}
+        />
+        <RootStack.Screen
+          name={AppNavigation.Modal.TransactionDetailBottomSheet}
+          component={ActivityDetailBottomSheet}
+        />
+      </RootStack.Group>
+    );
+  }, []);
+
   return !walletReady ? (
     <Loader message="Loading wallet. One moment please." />
   ) : (
@@ -201,20 +220,7 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
                 component={WebViewScreen}
               />
             </RootStack.Group>
-            <RootStack.Group screenOptions={{presentation: 'transparentModal'}}>
-              <RootStack.Screen
-                name={AppNavigation.Modal.SendReceiveBottomSheet}
-                component={SendReceiveBottomSheet}
-              />
-              <RootStack.Screen
-                name={AppNavigation.Modal.AccountBottomSheet}
-                component={AccountBottomSheet}
-              />
-              <RootStack.Screen
-                name={AppNavigation.Modal.TransactionDetailBottomSheet}
-                component={ActivityDetailBottomSheet}
-              />
-            </RootStack.Group>
+            {BottomSheetGroup}
           </RootStack.Navigator>
         </NavigationContainer>
       </SelectedTokenContextProvider>
