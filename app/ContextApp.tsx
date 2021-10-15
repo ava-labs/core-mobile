@@ -11,15 +11,26 @@ import {
 } from '@avalabs/wallet-react-components';
 import BiometricsSDK from 'utils/BiometricsSDK';
 import Splash from 'screens/onboarding/Splash';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {SECURE_ACCESS_SET} from 'resources/Constants';
 
 export default function ContextApp() {
   const [isWarmingUp, setIsWarmingUp] = useState(true);
+  const [showSplash, setShowSplash] = useState(false);
 
   useEffect(() => {
-    BiometricsSDK.warmup().then(() => {
-      setTimeout(() => {
+    AsyncStorage.getItem(SECURE_ACCESS_SET).then(result => {
+      if (result) {
+        setShowSplash(true);
+        BiometricsSDK.warmup().then(() => {
+          setTimeout(() => {
+            setShowSplash(false);
+            setIsWarmingUp(false);
+          }, 1000);
+        });
+      } else {
         setIsWarmingUp(false);
-      }, 1000);
+      }
     });
   }, []);
 
@@ -27,7 +38,7 @@ export default function ContextApp() {
     <ApplicationContextProvider>
       <NetworkContextProvider>
         <WalletContextProvider>
-          {isWarmingUp && <Splash />}
+          {showSplash && <Splash />}
           {!isWarmingUp && <App />}
         </WalletContextProvider>
       </NetworkContextProvider>
