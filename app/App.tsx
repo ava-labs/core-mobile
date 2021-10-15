@@ -35,7 +35,7 @@ import {
   useNetworkContext,
   WalletStateContextProvider,
 } from '@avalabs/wallet-react-components';
-import AppNavigation from 'navigation/AppNavigation';
+import AppNavigation, {OnboardScreens} from 'navigation/AppNavigation';
 import {OnboardStackScreen} from 'navigation/OnboardStackScreen';
 
 const RootStack = createStackNavigator();
@@ -155,7 +155,9 @@ export default function App() {
   const context = useContext(ApplicationContext);
   const networkContext = useNetworkContext();
   const [backgroundStyle] = useState(context.appBackgroundStyle);
-  const [selectedView, setSelectedView] = useState(SelectedView.Onboard);
+  const [selectedView, setSelectedView] = useState<SelectedView | undefined>(
+    undefined,
+  );
 
   useEffect(() => {
     networkContext!.setNetwork(FUJI_NETWORK);
@@ -181,43 +183,47 @@ export default function App() {
   useEffect(() => {
     switch (selectedView) {
       case SelectedView.Onboard:
-        navigationRef.current?.navigate('Auth', {screen: Screen.Onboard});
+        navigationRef.current?.navigate('Auth', {
+          screen: OnboardScreens.Onboard,
+        });
         break;
       case SelectedView.CreateWallet:
-        navigationRef.current?.navigate(Screen.CreateWalletFlow, {
-          screen: CreateWalletFlowScreen.CreateWallet,
+        navigationRef.current?.navigate(OnboardScreens.CreateWalletFlow, {
+          screen: AppNavigation.CreateWallet.CreateWallet,
         });
         break;
       case SelectedView.CheckMnemonic:
-        navigationRef.current?.navigate(Screen.CreateWalletFlow, {
-          screen: CreateWalletFlowScreen.CheckMnemonic,
+        navigationRef.current?.navigate(OnboardScreens.CreateWalletFlow, {
+          screen: AppNavigation.CreateWallet.CheckMnemonic,
         });
         break;
       case SelectedView.CreatePin:
-        navigationRef.current?.navigate(Screen.CreateWalletFlow, {
-          screen: CreateWalletFlowScreen.CreatePin,
+        navigationRef.current?.navigate(OnboardScreens.CreateWalletFlow, {
+          screen: AppNavigation.CreateWallet.CreatePin,
         });
         break;
       case SelectedView.CreatePinForExistingWallet:
-        navigationRef.current?.navigate(Screen.CreateWalletFlow, {
-          screen: CreateWalletFlowScreen.CreatePin,
+        navigationRef.current?.navigate(OnboardScreens.CreateWalletFlow, {
+          screen: AppNavigation.CreateWallet.CreatePin,
         });
         break;
       case SelectedView.BiometricStore:
-        navigationRef.current?.navigate(Screen.CreateWalletFlow, {
-          screen: CreateWalletFlowScreen.BiometricLogin,
+        navigationRef.current?.navigate(OnboardScreens.CreateWalletFlow, {
+          screen: AppNavigation.CreateWallet.BiometricLogin,
         });
         break;
       case SelectedView.LoginWithMnemonic:
-        navigationRef.current?.navigate(Screen.LoginWithMnemonic);
+        navigationRef.current?.navigate(OnboardScreens.LoginWithMnemonic);
         break;
       case SelectedView.PinOrBiometryLogin:
-        navigationRef.current?.navigate(Screen.Login);
+        navigationRef.current?.navigate(OnboardScreens.Login);
         break;
       case SelectedView.Main:
         navigationRef.current?.dispatch(
           StackActions.replace('App', {screen: 'Home'}),
         );
+        break;
+      default:
         break;
     }
   }, [selectedView]);
@@ -231,19 +237,4 @@ export default function App() {
       </NavigationContainer>
     </SafeAreaView>
   );
-}
-
-enum Screen {
-  Onboard = 'Onboard',
-  CreateWalletFlow = 'Create Wallet flow',
-  LoginWithMnemonic = 'Login with mnemonic',
-  Login = 'Login',
-  Wallet = 'Wallet',
-}
-
-enum CreateWalletFlowScreen {
-  CreateWallet = 'Create Wallet',
-  CheckMnemonic = 'Check mnemonic',
-  CreatePin = 'Create pin',
-  BiometricLogin = 'Biometric login',
 }
