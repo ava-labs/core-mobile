@@ -1,7 +1,6 @@
 import React, {useContext, useState} from 'react';
-import {Image, StyleSheet, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import CreateWalletViewModel from './CreateWalletViewModel';
-import TextTitle from 'components/TextTitle';
 import Clipboard from '@react-native-clipboard/clipboard';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import HeaderProgress from 'screens/mainView/HeaderProgress';
@@ -42,50 +41,6 @@ export default function CreateWallet({
     ShowSnackBar('Copied');
   };
 
-  const BalloonText = () => {
-    if (isRevealingCurrentMnemonic) {
-      return null;
-    }
-
-    const theme = context.theme;
-    const balloonArrow = context.isDarkMode
-      ? require('assets/icons/balloon_arrow_dark.png')
-      : require('assets/icons/balloon_arrow_light.png');
-    const warningIcon = context.isDarkMode
-      ? require('assets/icons/warning_dark.png')
-      : require('assets/icons/warning_light.png');
-    return (
-      <View style={[{marginTop: 24, alignItems: 'center'}]}>
-        <View
-          style={[
-            {
-              flexDirection: 'row',
-              backgroundColor: theme.toastBgWarning,
-              alignItems: 'center',
-              borderRadius: 8,
-              padding: 16,
-            },
-          ]}>
-          <Image
-            source={warningIcon}
-            style={[{width: 32, height: 32, marginRight: 12}]}
-          />
-          <View style={[{flex: 1}]}>
-            <TextTitle
-              color={theme.toastTxt}
-              text={
-                'The recovery phrase is the only key to your wallet. Do not share it with anyone.'
-              }
-              lineHeight={17}
-              size={14}
-            />
-          </View>
-        </View>
-        <Image source={balloonArrow} />
-      </View>
-    );
-  };
-
   const mnemonics = () => {
     const mnemonics: Element[] = [];
     mnemonic?.split(' ').forEach((value, key) => {
@@ -107,12 +62,11 @@ export default function CreateWallet({
         </>
       )}
       {/* This serves as grouping so we can achieve desired behavior with `justifyContent: 'space-between'`   */}
-      <View>
+      <View style={{flex: 1}}>
         <AvaText.Body1 textStyle={{textAlign: 'center'}}>
           Write down the recovery phrase and store it in a secure location!
         </AvaText.Body1>
-        <BalloonText />
-        <Space y={8} />
+        <Space y={32} />
         <View
           style={[
             styles.mnemonics,
@@ -141,19 +95,19 @@ const styles = StyleSheet.create({
   verticalLayout: {
     flex: 1,
     marginHorizontal: 16,
-    justifyContent: 'space-between',
   },
   growContainer: {
     flex: 1,
     paddingHorizontal: 16,
   },
   mnemonics: {
-    paddingStart: 16,
     paddingVertical: 8,
     borderRadius: 8,
-    marginTop: 40,
-    flexDirection: 'row',
+    flexDirection: 'column',
+    flex: 1,
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    marginTop: 8,
+    maxHeight: 280,
+    alignContent: 'center',
   },
 });
