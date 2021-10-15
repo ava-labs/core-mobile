@@ -1,32 +1,21 @@
 import React, {useContext} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
-import AvaButton from 'components/AvaButton';
 import {Space} from 'components/Space';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import AvaText from 'components/AvaText';
 
-type Props = {
-  onCreateWallet: () => void;
-  onAlreadyHaveWallet: () => void;
-  onEnterWallet: (mnemonic: string) => void;
-};
-
 const pkg = require('../../../package.json');
 
-export default function Onboard(props: Props | Readonly<Props>): JSX.Element {
+export default function Splash(): JSX.Element {
   const context = useContext(ApplicationContext);
 
-  const onCreateWallet = (): void => {
-    props.onCreateWallet();
-  };
-
-  const onAlreadyHaveWallet = (): void => {
-    props.onAlreadyHaveWallet();
-  };
-
   return (
-    <View style={styles.verticalLayout}>
+    <View
+      style={[
+        styles.verticalLayout,
+        {backgroundColor: context.theme.colorBg1},
+      ]}>
       <View style={styles.logoContainer}>
         <View style={styles.logo}>
           <AvaLogoSVG
@@ -42,16 +31,6 @@ export default function Onboard(props: Props | Readonly<Props>): JSX.Element {
           Your simple and secure crypto wallet
         </AvaText.Body1>
       </View>
-
-      <AvaButton.TextLarge onPress={onAlreadyHaveWallet}>
-        I already have a wallet
-      </AvaButton.TextLarge>
-
-      <Space y={16} />
-
-      <AvaButton.PrimaryLarge onPress={onCreateWallet}>
-        Create new wallet
-      </AvaButton.PrimaryLarge>
 
       <AvaText.Body2 textStyle={{position: 'absolute', top: 0, left: 16}}>
         v{pkg.version}

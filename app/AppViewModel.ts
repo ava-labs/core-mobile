@@ -31,8 +31,9 @@ export enum SelectedView {
 
 class AppViewModel {
   mnemonic = '';
-  selectedView: BehaviorSubject<SelectedView> =
-    new BehaviorSubject<SelectedView>(SelectedView.Onboard);
+  selectedView: BehaviorSubject<SelectedView | undefined> = new BehaviorSubject<
+    SelectedView | undefined
+  >(undefined);
 
   onComponentMount = (): void => {
     AsyncStorage.getItem(SECURE_ACCESS_SET).then(result => {
@@ -151,7 +152,7 @@ class AppViewModel {
     return concat(of(new ShowExitPrompt(exitPrompt)), dialogOp, asyncScheduler);
   };
 
-  setSelectedView = (view: SelectedView): void => {
+  setSelectedView = (view?: SelectedView): void => {
     this.selectedView.next(view);
   };
 
@@ -161,7 +162,9 @@ class AppViewModel {
   onBackPressed = (): boolean => {
     switch (this.selectedView.value) {
       case SelectedView.Onboard:
-        return false;
+        this.setSelectedView(undefined);
+        BackHandler.exitApp();
+        return true;
       case SelectedView.CreateWallet:
         this.setSelectedView(SelectedView.Onboard);
         return true;
@@ -182,6 +185,8 @@ class AppViewModel {
         this.setSelectedView(SelectedView.Onboard);
         return true;
       case SelectedView.Main:
+        return false;
+      default:
         return false;
     }
   };
