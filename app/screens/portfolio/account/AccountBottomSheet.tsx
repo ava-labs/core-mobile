@@ -1,6 +1,6 @@
 import React, {useCallback, useEffect, useMemo, useRef} from 'react';
 import BottomSheet, {BottomSheetBackdrop} from '@gorhom/bottom-sheet';
-import {InteractionManager, View} from 'react-native';
+import {InteractionManager} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import AccountView from 'screens/portfolio/account/AccountView';
 import TabViewBackground from 'screens/portfolio/components/TabViewBackground';
@@ -24,23 +24,20 @@ function AccountBottomSheet(): JSX.Element {
   }, []);
 
   const handleChange = useCallback(index => {
-    // eslint-disable-next-line no-console
-    console.log('handleSheetChange', index);
     index === 0 && handleClose();
   }, []);
 
   return (
-    <View style={{flex: 1}}>
-      <BottomSheet
-        backdropComponent={BottomSheetBackdrop}
-        handleComponent={AvaxSheetHandle}
-        ref={bottomSheetModalRef}
-        index={0}
-        snapPoints={snapPoints}
-        backgroundComponent={TabViewBackground}>
-        <AccountView />
-      </BottomSheet>
-    </View>
+    <BottomSheet
+      backdropComponent={BottomSheetBackdrop}
+      handleComponent={AvaxSheetHandle}
+      ref={bottomSheetModalRef}
+      index={0}
+      snapPoints={snapPoints}
+      backgroundComponent={TabViewBackground}
+      onChange={handleChange}>
+      <AccountView />
+    </BottomSheet>
   );
 }
 

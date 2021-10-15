@@ -49,7 +49,7 @@ function ActivityView({embedded}: Props) {
   }, [wallet]);
 
   useEffect(() => {
-    loadHistory();
+    loadHistory().catch(reason => console.warn(reason));
   }, []);
 
   const openDetailBottomSheet = useCallback((item: HistoryItemType) => {
