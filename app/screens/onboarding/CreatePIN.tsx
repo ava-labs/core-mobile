@@ -1,4 +1,4 @@
-import React, {useCallback, useContext, useEffect} from 'react';
+import React, {useCallback, useEffect} from 'react';
 import {BackHandler, StyleSheet, View} from 'react-native';
 import PinKey, {PinKeys} from './PinKey';
 import Dot from 'components/Dot';
@@ -8,7 +8,6 @@ import HeaderProgress from 'screens/mainView/HeaderProgress';
 import {Space} from 'components/Space';
 import AvaText from 'components/AvaText';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
-import {ApplicationContext} from 'contexts/ApplicationContext';
 import {HeaderBackButton} from '@react-navigation/elements';
 import {useWalletContext} from '@avalabs/wallet-react-components';
 import {WalletContextType} from 'dto/TypeUtils';
@@ -35,7 +34,6 @@ type Props = {
 
 export default function CreatePIN({onBack, onPinSet, isResettingPin}: Props) {
   const navigation = useNavigation();
-  const theme = useContext(ApplicationContext).theme;
   const walletContext = useWalletContext();
   const [
     title,
@@ -103,7 +101,7 @@ export default function CreatePIN({onBack, onPinSet, isResettingPin}: Props) {
   };
 
   return (
-    <View style={[styles.verticalLayout, {backgroundColor: theme.bgApp}]}>
+    <View style={[styles.verticalLayout]}>
       {isResettingPin || (
         <>
           <HeaderProgress maxDots={3} filledDots={3} showBack onBack={onBack} />

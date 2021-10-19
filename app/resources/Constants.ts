@@ -30,7 +30,6 @@ export enum COLORS_DAY {
   accentColor = '#F64942',
   shadow = '#00000066',
 
-  bgApp = '#F8F8FB',
   bgOnBgApp = '#FFFFFF',
   bgActionButton = '#FFFFFF',
   bgSearch = '#E8E8EB',
@@ -117,7 +116,6 @@ export enum COLORS_NIGHT {
   accentColor = '#F1595A',
   shadow = '#FFFFFF66',
 
-  bgApp = '#000000',
   bgOnBgApp = '#1A1A1C',
   bgActionButton = '#333235',
   bgSearch = '#3A3A3C',

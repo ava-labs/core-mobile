@@ -94,7 +94,7 @@ const DrawerView: FC<DrawerContentComponentProps> = ({navigation}) => {
           style={[
             {
               borderRadius: 8,
-              backgroundColor: context.theme.bgApp,
+              backgroundColor: context.theme.colorBg2,
               paddingVertical: 24,
               paddingHorizontal: 16,
               marginHorizontal: 16,
@@ -144,7 +144,7 @@ const DrawerView: FC<DrawerContentComponentProps> = ({navigation}) => {
   );
 
   return (
-    <View style={[styles.container, {backgroundColor: context.theme.bgApp}]}>
+    <View style={[styles.container, {backgroundColor: context.theme.colorBg1}]}>
       {header}
       {networkSwitcher}
       <BottomSheet
