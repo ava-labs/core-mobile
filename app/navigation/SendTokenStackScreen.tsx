@@ -21,6 +21,7 @@ import AvaButton from 'components/AvaButton';
 import {SendAvaxContextProvider} from 'contexts/SendAvaxContext';
 import {SelectedTokenContext, TokenType} from 'contexts/SelectedTokenContext';
 import {
+  AntWithBalance,
   ERC20,
   ERC20WithBalance,
   TokenWithBalance,
@@ -29,6 +30,9 @@ import {SendERC20ContextProvider} from 'contexts/SendERC20Context';
 import SendERC20 from 'screens/sendERC20/SendERC20';
 import SendERC20Confirm from 'screens/sendERC20/SendERC20Confirm';
 import SendHeader from 'screens/portfolio/sendBottomSheet/SendHeader';
+import SendANT from 'screens/sendANT/SendANT';
+import {SendANTContextProvider} from 'contexts/SendANTContext';
+import SendANTConfirm from 'screens/sendANT/SendANTConfirm';
 
 const Stack = createStackNavigator();
 
@@ -71,25 +75,10 @@ const SendTokenStackScreen = ({onClose}: Props) => {
 
   const DoneDoneScreen = () => <DoneScreen onClose={onClose} />;
   const ConfirmScreen = () => {
-    const {navigate} = useNavigation();
     return {
-      [TokenType.AVAX]: (
-        <SendAvaxConfirm
-          onConfirm={() =>
-            navigate(AppNavigation.SendToken.ConfirmTransactionScreen)
-          }
-          onClose={onClose}
-        />
-      ),
-      [TokenType.ERC20]: (
-        <SendERC20Confirm
-          onConfirm={() =>
-            navigate(AppNavigation.SendToken.ConfirmTransactionScreen)
-          }
-          onClose={onClose}
-        />
-      ),
-      [TokenType.ANT]: <SendAvax />,
+      [TokenType.AVAX]: <SendAvaxConfirm />,
+      [TokenType.ERC20]: <SendERC20Confirm />,
+      [TokenType.ANT]: <SendANTConfirm />,
     }[tokenType(selectedToken) ?? TokenType.AVAX];
   };
 
@@ -102,7 +91,7 @@ const SendTokenStackScreen = ({onClose}: Props) => {
     return {
       [TokenType.AVAX]: <SendAvax />,
       [TokenType.ERC20]: <SendERC20 />,
-      [TokenType.ANT]: <SendAvax />,
+      [TokenType.ANT]: <SendANT />,
     }[tokenType(token) ?? TokenType.AVAX];
   };
 
@@ -152,6 +141,32 @@ const SendTokenStackScreen = ({onClose}: Props) => {
     );
   };
 
+  const SendANTStack = ({token}: {token: AntWithBalance}) => {
+    return (
+      <SendANTContextProvider antToken={token}>
+        <NavigationContainer independent={true}>
+          <Stack.Navigator screenOptions={screenOptions}>
+            <Stack.Screen
+              name={AppNavigation.SendToken.SendTokenScreen}
+              options={noHeaderOptions}
+              component={HeaderAndTabs}
+            />
+            <Stack.Screen
+              options={{title: 'Confirm Transaction'}}
+              name={AppNavigation.SendToken.ConfirmTransactionScreen}
+              component={ConfirmScreen}
+            />
+            <Stack.Screen
+              name={AppNavigation.SendToken.DoneScreen}
+              options={noHeaderOptions}
+              component={DoneDoneScreen}
+            />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </SendANTContextProvider>
+    );
+  };
+
   const SendERC20Stack = ({token}: {token: ERC20}) => {
     return (
       <SendERC20ContextProvider erc20Token={token}>
@@ -183,7 +198,7 @@ const SendTokenStackScreen = ({onClose}: Props) => {
     [TokenType.ERC20]: (
       <SendERC20Stack token={selectedToken as ERC20WithBalance} />
     ),
-    [TokenType.ANT]: <SendAvaxStack />, //fixme: implement send ant
+    [TokenType.ANT]: <SendANTStack token={selectedToken as AntWithBalance} />,
   }[tokenType(selectedToken) ?? TokenType.AVAX];
 };
 
