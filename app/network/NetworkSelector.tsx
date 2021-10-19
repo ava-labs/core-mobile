@@ -59,7 +59,7 @@ const NetworkSelector: FC<Props> = ({
   }
 
   return (
-    <View style={{backgroundColor: theme.bgApp}}>
+    <View>
       <Pressable
         style={{paddingTop: 16, paddingBottom: 20, flexDirection: 'row'}}
         onPress={toggleOpenClose}>
