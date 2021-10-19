@@ -130,7 +130,7 @@ export default function InputText(props: Props | Readonly<Props>) {
   const onChangeText = (text: string): void => {
     if (props.keyboardType === 'numeric') {
       text = text.replace(',', '.');
-      text = text.replace(/(?<=\..*)\./g, '');
+      text = text.replace(/(?=\..*)\./g, '');
     }
     setText(text);
     props.onChangeText?.(text);
