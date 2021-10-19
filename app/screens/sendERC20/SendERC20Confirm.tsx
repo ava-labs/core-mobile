@@ -11,14 +11,7 @@ import AppNavigation from 'navigation/AppNavigation';
 import {SendERC20Context} from 'contexts/SendERC20Context';
 import {SelectedTokenContext} from 'contexts/SelectedTokenContext';
 
-type SendERC20XProps = {
-  onClose: () => void;
-  onConfirm: () => void;
-};
-
-export default function SendERC20Confirm(
-  props: SendERC20XProps | Readonly<SendERC20XProps>,
-): JSX.Element {
+export default function SendERC20Confirm(): JSX.Element {
   const context = useContext(ApplicationContext);
   const [backgroundStyle] = useState(context.backgroundStyle);
   const {navigate} = useNavigation();
