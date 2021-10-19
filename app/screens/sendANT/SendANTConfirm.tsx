@@ -8,20 +8,20 @@ import AvaButton from 'components/AvaButton';
 import {Opacity50} from 'resources/Constants';
 import {useNavigation} from '@react-navigation/native';
 import AppNavigation from 'navigation/AppNavigation';
-import {SendAvaxContext} from 'contexts/SendAvaxContext';
 import {SelectedTokenContext} from 'contexts/SelectedTokenContext';
+import {SendANTContext} from 'contexts/SendANTContext';
 
-export default function SendAvaxConfirm(): JSX.Element {
+export default function SendANTConfirm(): JSX.Element {
   const context = useContext(ApplicationContext);
   const [backgroundStyle] = useState(context.backgroundStyle);
   const {navigate} = useNavigation();
   const {
     destinationAddress,
     sendAmountString,
-    onSendAvax,
+    onSendANT,
     createdTxId,
     sendFeeString,
-  } = useContext(SendAvaxContext);
+  } = useContext(SendANTContext);
   const {selectedToken, tokenLogo} = useContext(SelectedTokenContext);
 
   useEffect(() => {
@@ -75,7 +75,7 @@ export default function SendAvaxConfirm(): JSX.Element {
       <View style={{width: '100%'}}>
         <AvaButton.PrimaryLarge
           style={{margin: 16}}
-          onPress={() => onSendAvax()}>
+          onPress={() => onSendANT()}>
           Send
         </AvaButton.PrimaryLarge>
       </View>
