@@ -110,9 +110,10 @@ export default function CreatePIN({onBack, onPinSet, isResettingPin}: Props) {
           <AvaText.Heading1 textStyle={{textAlign: 'center'}}>
             {title}
           </AvaText.Heading1>
-          <AvaText.Heading3 textStyle={{textAlign: 'center'}}>
+          <Space y={8} />
+          <AvaText.Body4 textStyle={{textAlign: 'center'}}>
             Access your wallet faster
-          </AvaText.Heading3>
+          </AvaText.Body4>
           <Space y={8} />
         </>
       )}
