@@ -53,8 +53,12 @@ class BiometricsSDK {
     await Keychain.getAllGenericPasswordServices();
   }
 
-  async getAccessType() {
-    return AsyncStorage.getItem(SECURE_ACCESS_SET);
+  async getAccessType(): Promise<string | null> {
+    try {
+      return AsyncStorage.getItem(SECURE_ACCESS_SET);
+    } catch (e) {
+      return Promise.reject(null);
+    }
   }
 
   async storeWalletWithPin(walletMnemonic: string, isResetting = false) {
