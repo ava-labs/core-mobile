@@ -5,6 +5,7 @@ import {
   useWalletStateContext,
 } from '@avalabs/wallet-react-components';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {noop} from 'rxjs';
 
 type ShowZeroArrayType = {[x: string]: boolean};
 
@@ -16,6 +17,7 @@ export function useSearchableTokenList(hideZeroBalance = true): {
   showZeroBalanceList: ShowZeroArrayType;
   setSearchText: (value: ((prevState: string) => string) | string) => void;
   tokenList: TokenWithBalance[];
+  loadTokenList: () => Promise<boolean>;
 } {
   const walletState = useWalletStateContext();
   const [tokenList, setTokenList] = useState([] as TokenWithBalance[]);
@@ -44,11 +46,9 @@ export function useSearchableTokenList(hideZeroBalance = true): {
     );
   };
 
-  useEffect(() => loadZeroBalanceList(), []);
-
-  useEffect(() => {
+  function loadTokenList(): Promise<boolean> {
     if (!walletState) {
-      return;
+      return Promise.reject('wallet state not available');
     }
     const bnZero = new BN(0);
     const tokens = [
@@ -60,6 +60,13 @@ export function useSearchableTokenList(hideZeroBalance = true): {
     ] as TokenWithBalance[];
 
     setTokenList(tokens);
+    return Promise.resolve(true);
+  }
+
+  useEffect(() => loadZeroBalanceList(), []);
+
+  useEffect(() => {
+    loadTokenList().then(() => noop);
   }, [walletState, showZeroBalanceList, hideZeroBalance]);
 
   useEffect(() => {
@@ -79,5 +86,6 @@ export function useSearchableTokenList(hideZeroBalance = true): {
     setShowZeroBalanceList,
     showZeroBalanceList,
     loadZeroBalanceList,
+    loadTokenList,
   };
 }
