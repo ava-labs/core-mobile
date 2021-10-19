@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect} from 'react';
-import {BackHandler, StyleSheet, View} from 'react-native';
+import {Animated, BackHandler, StyleSheet, View} from 'react-native';
 import PinKey, {PinKeys} from './PinKey';
 import Dot from 'components/Dot';
 import {useCreatePin} from './CreatePinViewModel';
@@ -43,6 +43,7 @@ export default function CreatePIN({onBack, onPinSet, isResettingPin}: Props) {
     onEnterConfirmedPin,
     chosenPinEntered,
     validPin,
+    jiggleAnim,
   ] = useCreatePin(isResettingPin);
 
   useEffect(() => {
@@ -116,7 +117,19 @@ export default function CreatePIN({onBack, onPinSet, isResettingPin}: Props) {
         </>
       )}
       {errorMessage.length > 0 && <TextLabel text={errorMessage} />}
-      <View style={styles.dots}>{generatePinDots()}</View>
+      <Animated.View
+        style={[
+          {padding: 68},
+          {
+            transform: [
+              {
+                translateX: jiggleAnim,
+              },
+            ],
+          },
+        ]}>
+        <View style={styles.dots}>{generatePinDots()}</View>
+      </Animated.View>
       <View style={styles.keyboard}>{keyboard(chosenPinEntered)}</View>
     </View>
   );
@@ -136,7 +149,6 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   dots: {
-    paddingHorizontal: 68,
     flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'space-between',
