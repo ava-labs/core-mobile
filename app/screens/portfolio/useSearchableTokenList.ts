@@ -54,7 +54,9 @@ export function useSearchableTokenList(hideZeroBalance = true): {
     const tokens = [
       walletState.avaxToken,
       ...walletState.erc20Tokens.filter(value => {
-        return hideZeroBalance ? value.balance.gt(bnZero) : true;
+        return hideZeroBalance
+          ? value.balance.gt(bnZero) || showZeroBalanceList[value.name]
+          : true;
       }),
       ...walletState.antTokens,
     ] as TokenWithBalance[];
