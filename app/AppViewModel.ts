@@ -74,8 +74,9 @@ class AppViewModel {
   onEnterWallet = (mnemonic: string): Observable<boolean> => {
     return of(mnemonic).pipe(
       tap((mnemonic: string) => {
-        WalletSDK.getMnemonicValet(mnemonic);
-        this.setSelectedView(SelectedView.Main);
+        WalletSDK.getMnemonicValet(mnemonic).then(() =>
+          this.setSelectedView(SelectedView.Main),
+        );
       }),
       delay(10, asyncScheduler), //give UI chance to update selected view
       map(() => {

@@ -66,7 +66,7 @@ const PortfolioView: FC<PortfolioProps> = memo(
       const unsubscribe = navigation.addListener('focus', () => {
         loadZeroBalanceList();
       });
-      return () => unsubscribe();
+      return () => navigation.removeListener('focus', unsubscribe);
     }, [navigation]);
 
     function selectToken(token: TokenWithBalance) {
