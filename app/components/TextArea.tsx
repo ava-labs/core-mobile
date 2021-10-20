@@ -35,7 +35,6 @@ export default function TextArea(props: Props | Readonly<Props>): JSX.Element {
     }
   }, [props.autoFocus, textInputRef]);
 
-
   useEffect(() => {
     setErrorMessage(props.errorMessage);
   }, [props.errorMessage]);
@@ -51,7 +50,6 @@ export default function TextArea(props: Props | Readonly<Props>): JSX.Element {
   return (
     <View
       style={[
-        context.shadow,
         styles.container,
         {
           backgroundColor: theme.colorBg2,
