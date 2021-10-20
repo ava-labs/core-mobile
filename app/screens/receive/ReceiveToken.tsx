@@ -1,13 +1,15 @@
 import React from 'react';
-import {Dimensions, ScrollView, View} from 'react-native';
+import {Dimensions, View} from 'react-native';
 import ChainCard from './ChainCard';
 import {BottomSheetScrollView} from '@gorhom/bottom-sheet';
+import {usePortfolio} from 'screens/portfolio/usePortfolio';
 
 const SCREEN_WIDTH = Dimensions.get('window')?.width;
 
 function ReceiveToken() {
   //todo: not working right now. Investigate after dinner
-  // const {addressC, addressX} = usePortfolio();
+  const {addressC, addressX} = usePortfolio();
+
   return (
     <View style={{flex: 1}}>
       <BottomSheetScrollView
@@ -19,12 +21,12 @@ function ReceiveToken() {
         <ChainCard
           chainName={'C Chain'}
           description={'Some description about the C Chain'}
-          address={'0x:fuji1hul6q0w383863v6kejul2psaeumcwee5fzzk2e'}
+          address={addressC}
         />
         <ChainCard
           chainName={'X Chain'}
           description={'Some description about the X Chain'}
-          address={'X:fuji1hul6q0w383863v6kejul2psaeumcwee5fzzk2e'}
+          address={addressX}
         />
       </BottomSheetScrollView>
     </View>
