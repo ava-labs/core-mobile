@@ -1,5 +1,6 @@
 import React, {
   memo,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -21,7 +22,10 @@ import SwapView from 'screens/swap/SwapView';
 import AppNavigation from 'navigation/AppNavigation';
 import PortfolioStackScreen from 'navigation/PortfolioStackScreen';
 import SearchView from 'screens/search/SearchView';
-import {useWalletStateContext} from '@avalabs/wallet-react-components';
+import {
+  useWalletContext,
+  useWalletStateContext,
+} from '@avalabs/wallet-react-components';
 import Loader from 'components/Loader';
 import Activity from 'screens/activity/ActivityView';
 import WatchlistSVG from 'components/svg/WatchlistSVG';
@@ -39,6 +43,7 @@ import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BiometricsSDK from 'utils/BiometricsSDK';
 import moment from 'moment';
+import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
 
 type Props = {
   onExit: () => void;
@@ -66,6 +71,7 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
   const [walletReady, setWalletReady] = useState(false);
   const [showSecurityModal, setShowSecurityModal] = useState(false);
   const walletStateContext = useWalletStateContext();
+  const walletContext = useWalletContext();
   const appState = useRef(AppState.currentState);
 
   /**
@@ -130,11 +136,24 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
     }, []),
   );
 
+  const hdReadyListener = useCallback(() => setWalletReady(true), []);
+
   useEffect(() => {
-    if (!walletReady) {
-      setWalletReady(walletStateContext?.balances !== undefined);
+    const wallet = walletContext?.wallet as MnemonicWallet;
+    if (wallet?.isHdReady) {
+      hdReadyListener();
+    } else {
+      wallet?.on('hd_ready', hdReadyListener);
     }
-  }, [walletReady, walletStateContext]);
+
+    return () => {
+      try {
+        wallet?.off('hd_ready', hdReadyListener);
+      } catch (e) {
+        //ignored
+      }
+    };
+  }, [walletContext]);
 
   const onExit = (): void => {
     props.onExit();
