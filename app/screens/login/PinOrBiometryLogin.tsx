@@ -1,4 +1,4 @@
-import React, {useCallback, useContext, useEffect} from 'react';
+import React, {useContext, useEffect} from 'react';
 import {Animated, StyleSheet, View} from 'react-native';
 import Dot from 'components/Dot';
 import PinKey, {PinKeys} from 'screens/onboarding/PinKey';
@@ -13,12 +13,7 @@ import AvaText from 'components/AvaText';
 import {Space} from 'components/Space';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import AvaButton from 'components/AvaButton';
-import {
-  RouteProp,
-  useFocusEffect,
-  useNavigation,
-  useRoute,
-} from '@react-navigation/native';
+import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
 import {SecurityStackParamList} from 'navigation/SecurityPrivacyStackScreen';
 import AppNavigation from 'navigation/AppNavigation';
 
@@ -40,6 +35,7 @@ type Props = {
   onSignInWithRecoveryPhrase: () => void;
   onEnterWallet: (mnemonic: string) => void;
   isResettingPin?: boolean;
+  hideLoginWithMnemonic?: boolean;
 };
 
 type SecurityRouteProps = RouteProp<
@@ -51,6 +47,7 @@ export default function PinOrBiometryLogin({
   onSignInWithRecoveryPhrase,
   onEnterWallet,
   isResettingPin,
+  hideLoginWithMnemonic = false,
 }: Props | Readonly<Props>): JSX.Element {
   const theme = useContext(ApplicationContext).theme;
   const route = useRoute<SecurityRouteProps>();
@@ -68,22 +65,20 @@ export default function PinOrBiometryLogin({
 
   const context = useContext(ApplicationContext);
 
-  useFocusEffect(
-    useCallback(() => {
-      promptForWalletLoadingIfExists().subscribe({
-        next: (value: WalletLoadingResults) => {
-          if (value instanceof MnemonicLoaded) {
-            onEnterWallet(value.mnemonic);
-          } else if (value instanceof PrivateKeyLoaded) {
-            // props.onEnterSingletonWallet(value.privateKey)
-          } else if (value instanceof NothingToLoad) {
-            //do nothing
-          }
-        },
-        error: err => console.log(err.message),
-      });
-    }, []),
-  );
+  useEffect(() => {
+    promptForWalletLoadingIfExists().subscribe({
+      next: (value: WalletLoadingResults) => {
+        if (value instanceof MnemonicLoaded) {
+          onEnterWallet(value.mnemonic);
+        } else if (value instanceof PrivateKeyLoaded) {
+          // props.onEnterSingletonWallet(value.privateKey)
+        } else if (value instanceof NothingToLoad) {
+          //do nothing
+        }
+      },
+      error: err => console.log(err.message),
+    });
+  }, []);
   useEffect(() => {
     if (mnemonic) {
       if (revealMnemonic) {
@@ -150,7 +145,7 @@ export default function PinOrBiometryLogin({
         </Animated.View>
       </View>
       <View style={styles.keyboard}>{keyboard()}</View>
-      {isResettingPin || (
+      {isResettingPin || hideLoginWithMnemonic || (
         <AvaButton.TextMedium onPress={onSignInWithRecoveryPhrase}>
           Sign In with recovery phrase
         </AvaButton.TextMedium>

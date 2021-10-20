@@ -1,5 +1,13 @@
-import React, {memo, useContext, useEffect, useMemo, useState} from 'react';
-import {BackHandler, StyleSheet} from 'react-native';
+import React, {
+  memo,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import {AppState, BackHandler, Modal, Platform, StyleSheet} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {NavigationContainer, useFocusEffect} from '@react-navigation/native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
@@ -28,6 +36,9 @@ import WebViewScreen from 'screens/webview/WebViewScreen';
 import ActivityDetailBottomSheet from 'screens/activity/ActivityDetailBottomSheet';
 import {SelectedAccountContextProvider} from 'contexts/SelectedAccountContext';
 import WatchlistView from 'screens/watchlist/WatchlistView';
+import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {SECURE_ACCESS_SET} from 'resources/Constants';
 
 type Props = {
   onExit: () => void;
@@ -47,10 +58,44 @@ const Tab = createBottomTabNavigator();
 const RootStack = createStackNavigator();
 const DrawerStack = createDrawerNavigator<DrawerStackParamList>();
 
+const focusEvent = 'change';
+
 function WalletStackScreen(props: Props | Readonly<Props>) {
   const context = useContext(ApplicationContext);
   const [walletReady, setWalletReady] = useState(false);
+  const [showSecurityModal, setShowSecurityModal] = useState(false);
   const walletStateContext = useWalletStateContext();
+  const appState = useRef(AppState.currentState);
+
+  useFocusEffect(
+    useCallback(() => {
+      AppState.addEventListener(focusEvent, handleAppStateChange);
+
+      return () => {
+        AppState.removeEventListener(focusEvent, handleAppStateChange);
+      };
+    }, []),
+  );
+
+  const handleAppStateChange = async (nextAppState: any) => {
+    if (
+      appState.current === 'active' &&
+      nextAppState.match(/inactive|background/)
+    ) {
+      console.log('went to background');
+    } else if (
+      appState.current.match(/inactive|background/) &&
+      nextAppState === 'active'
+    ) {
+      // this condition calls when app is in foreground mode
+      // here you can detect application is in active state again.
+      const value = await AsyncStorage.getItem(SECURE_ACCESS_SET);
+      if (value) {
+        setShowSecurityModal(true);
+      }
+    }
+    appState.current = nextAppState;
+  };
 
   useFocusEffect(
     React.useCallback(() => {
@@ -223,6 +268,16 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
             {BottomSheetGroup}
           </RootStack.Navigator>
         </NavigationContainer>
+        <Modal visible={showSecurityModal} animationType={'slide'} animated>
+          <PinOrBiometryLogin
+            onSignInWithRecoveryPhrase={() => {
+              // ignored
+            }}
+            onEnterWallet={() => {
+              setShowSecurityModal(false);
+            }}
+          />
+        </Modal>
       </SelectedTokenContextProvider>
     </SelectedAccountContextProvider>
   );
