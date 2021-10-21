@@ -1,3 +1,4 @@
+export const Opacity05 = '0D';
 export const Opacity10 = '1A';
 export const Opacity50 = '7F';
 

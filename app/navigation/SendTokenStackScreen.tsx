@@ -96,14 +96,14 @@ const SendTokenStackScreen = ({onClose}: Props) => {
   };
 
   const HeaderAndTabs = () => (
-    <>
+    <View style={{flex: 1}}>
       <SendHeader onClose={onClose} />
       <TabViewAva renderCustomLabel={renderCustomLabel}>
         <SendTab title={'Send'} token={selectedToken} />
         <ReceiveToken title={'Receive'} />
         {/*<ActivityView embedded title={'Activity'} />*/}
       </TabViewAva>
-    </>
+    </View>
   );
 
   const renderCustomLabel = (title: string, focused: boolean) => {
