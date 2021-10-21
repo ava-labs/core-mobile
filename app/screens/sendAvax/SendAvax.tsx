@@ -55,7 +55,6 @@ export default function SendAvax(): JSX.Element {
         ]}>
         <View style={[{paddingStart: 4, paddingEnd: 4, marginTop: 20}]}>
           <InputText
-            value={sendAmountString}
             label="Amount"
             placeholder="Enter the amount"
             helperText="$0"
@@ -90,7 +89,6 @@ export default function SendAvax(): JSX.Element {
                 setAddress(text);
                 clearErrorMsg();
               }}
-              value={destinationAddress}
             />
             {destinationAddress.length === 0 && (
               <ScanQrIcon onScanBarcode={onScanBarcode} />
