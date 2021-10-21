@@ -16,6 +16,7 @@ import AvaButton from 'components/AvaButton';
 import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
 import {SecurityStackParamList} from 'navigation/SecurityPrivacyStackScreen';
 import AppNavigation from 'navigation/AppNavigation';
+import {useWalletContext} from '@avalabs/wallet-react-components';
 
 const keymap: Map<string, PinKeys> = new Map([
   ['1', PinKeys.Key1],
@@ -64,6 +65,7 @@ export default function PinOrBiometryLogin({
   ] = usePinOrBiometryLogin();
 
   const context = useContext(ApplicationContext);
+  const walletContext = useWalletContext();
 
   useEffect(() => {
     promptForWalletLoadingIfExists().subscribe({
@@ -85,6 +87,7 @@ export default function PinOrBiometryLogin({
         goBack();
         revealMnemonic(mnemonic);
       } else {
+        walletContext?.setMnemonic(mnemonic);
         onEnterWallet(mnemonic);
       }
     }
