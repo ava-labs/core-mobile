@@ -11,6 +11,7 @@ import TextArea from 'components/TextArea';
 import AvaText from 'components/AvaText';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import AvaButton from 'components/AvaButton';
+import {useWalletContext} from '@avalabs/wallet-react-components';
 
 type Props = {
   onEnterWallet: (mnemonic: string) => void;
@@ -24,6 +25,7 @@ export default function HdWalletLogin(
   const [errorMessage, setErrorMessage] = useState<string | undefined>(
     undefined,
   );
+  const walletContext = useWalletContext();
 
   const onEnterTestWallet = (): void => {
     props.onEnterWallet(WalletSDK.testMnemonic());
@@ -36,7 +38,7 @@ export default function HdWalletLogin(
   const onEnterWallet = (mnemonic: string) => {
     const trimmed = mnemonic.trim();
     try {
-      WalletSDK.getMnemonicValet(trimmed);
+      walletContext?.setMnemonic(trimmed);
       props.onEnterWallet(trimmed);
     } catch (e) {
       setErrorMessage('Invalid recovery phrase');

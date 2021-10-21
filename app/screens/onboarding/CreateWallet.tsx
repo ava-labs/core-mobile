@@ -1,6 +1,10 @@
-import React, {useContext, useState} from 'react';
-import {StyleSheet, View} from 'react-native';
-import CreateWalletViewModel from './CreateWalletViewModel';
+import React, {useContext, useEffect, useState} from 'react';
+import {
+  ActivityIndicator,
+  InteractionManager,
+  StyleSheet,
+  View,
+} from 'react-native';
 import Clipboard from '@react-native-clipboard/clipboard';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import HeaderProgress from 'screens/mainView/HeaderProgress';
@@ -10,6 +14,7 @@ import AvaText from 'components/AvaText';
 import {Space} from 'components/Space';
 import AppViewModel from 'AppViewModel';
 import {ShowSnackBar} from 'components/Snackbar';
+import WalletSDK from 'utils/WalletSDK';
 
 type Props = {
   onBack: () => void;
@@ -23,16 +28,29 @@ export default function CreateWallet({
   isRevealingCurrentMnemonic,
 }: Props): JSX.Element {
   const context = useContext(ApplicationContext);
-  const [viewModel] = useState(new CreateWalletViewModel());
-  const [mnemonic] = useState(
-    isRevealingCurrentMnemonic ? AppViewModel.mnemonic : viewModel.mnemonic,
-  );
+  const [mnemonic, setMnemonic] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    InteractionManager.runAfterInteractions(() => {
+      if (isRevealingCurrentMnemonic) {
+        setMnemonic(AppViewModel.mnemonic);
+        setIsLoading(false);
+      } else {
+        (async () => {
+          const newPhrase = await WalletSDK.generateMnemonic();
+          setMnemonic(newPhrase);
+          setIsLoading(false);
+        })();
+      }
+    });
+  }, []);
 
   const handleSaveMyPhrase = (): void => {
     if (isRevealingCurrentMnemonic) {
       onBack();
     } else {
-      onSavedMyPhrase?.(viewModel.mnemonic);
+      onSavedMyPhrase?.(mnemonic);
     }
   };
 
@@ -63,26 +81,36 @@ export default function CreateWallet({
       )}
       {/* This serves as grouping so we can achieve desired behavior with `justifyContent: 'space-between'`   */}
       <View style={{flex: 1}}>
-        <AvaText.Body1 textStyle={{textAlign: 'center'}}>
-          Write down the recovery phrase and store it in a secure location!
-        </AvaText.Body1>
-        <Space y={32} />
-        <View
-          style={[
-            styles.mnemonics,
-            {backgroundColor: context.theme.bgOnBgApp},
-          ]}>
-          {mnemonics()}
-        </View>
+        {isLoading ? (
+          <ActivityIndicator
+            style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}
+            size="large"
+          />
+        ) : (
+          <>
+            <AvaText.Body1 textStyle={{textAlign: 'center'}}>
+              Write down the recovery phrase and store it in a secure location!
+            </AvaText.Body1>
+            <Space y={32} />
+            <View
+              style={[
+                styles.mnemonics,
+                {backgroundColor: context.theme.bgOnBgApp},
+              ]}>
+              {mnemonics()}
+            </View>
+          </>
+        )}
       </View>
 
       {/* This serves as grouping so we can achieve desired behavior with `justifyContent: 'space-between'`   */}
       <View>
-        <AvaButton.TextLarge onPress={copyToClipboard}>
+        <AvaButton.TextLarge disabled={!mnemonic} onPress={copyToClipboard}>
           Copy phrase
         </AvaButton.TextLarge>
         <AvaButton.PrimaryLarge
           style={{marginTop: 28, marginBottom: 40}}
+          disabled={!mnemonic}
           onPress={handleSaveMyPhrase}>
           {isRevealingCurrentMnemonic ? 'Done' : 'Next'}
         </AvaButton.PrimaryLarge>

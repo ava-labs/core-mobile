@@ -11,7 +11,6 @@ import {
 } from 'rxjs';
 import {concatMap, map, switchMap} from 'rxjs/operators';
 import {BackHandler} from 'react-native';
-import WalletSDK from 'utils/WalletSDK';
 import BiometricsSDK from 'utils/BiometricsSDK';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {SECURE_ACCESS_SET} from 'resources/Constants';
@@ -74,9 +73,8 @@ class AppViewModel {
   onEnterWallet = (mnemonic: string): Observable<boolean> => {
     return of(mnemonic).pipe(
       tap((mnemonic: string) => {
-        WalletSDK.getMnemonicValet(mnemonic).then(() =>
-          this.setSelectedView(SelectedView.Main),
-        );
+        this.mnemonic = mnemonic;
+        this.setSelectedView(SelectedView.Main);
       }),
       delay(10, asyncScheduler), //give UI chance to update selected view
       map(() => {
