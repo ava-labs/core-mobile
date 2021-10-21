@@ -120,7 +120,7 @@ export default function CreatePIN({onBack, onPinSet, isResettingPin}: Props) {
       {errorMessage.length > 0 && <TextLabel text={errorMessage} />}
       <Animated.View
         style={[
-          {padding: 68},
+          {padding: 68, flexGrow: 1},
           {
             transform: [
               {
