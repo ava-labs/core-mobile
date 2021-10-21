@@ -6,7 +6,6 @@ import ImgButtonAva from 'components/ImgButtonAva';
 import AvaButton from './AvaButton';
 
 type Props = {
-  value: string;
   onChangeText?: (text: string) => void;
   editable?: boolean;
   multiline?: boolean;
@@ -194,7 +193,7 @@ export default function InputText(props: Props | Readonly<Props>) {
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           onChangeText={onChangeText}
-          value={props.value}
+          value={text}
         />
         {!props.privateMode && text.length > 0 && <ClearBtn />}
         {props.privateMode && text.length > 0 && <ShowPassBtn />}
