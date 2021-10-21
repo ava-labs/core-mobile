@@ -67,7 +67,11 @@ export const SendANTContextProvider = ({
   const [createdTxId, setCreatedTxId] = useState('');
 
   useEffect(() => {
-    setErrorMsg(error?.message ?? '');
+    if (error?.message && error?.message !== 'address undefined') {
+      setErrorMsg(error.message);
+    } else {
+      setErrorMsg('');
+    }
   }, [error]);
 
   useEffect(() => {
