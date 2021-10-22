@@ -1,7 +1,7 @@
 import React, {FC, useCallback, useContext, useState} from 'react';
 import {TabBar, TabBarProps, TabView} from 'react-native-tab-view';
 import {View} from 'react-native';
-import {ApplicationContext} from '../contexts/ApplicationContext';
+import {ApplicationContext} from 'contexts/ApplicationContext';
 
 interface Props {
   renderCustomLabel?: (title: string, selected: boolean) => void;
