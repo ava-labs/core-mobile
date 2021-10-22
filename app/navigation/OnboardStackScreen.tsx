@@ -6,14 +6,13 @@ import {CreateWalletStackScreen} from './CreateWalletStackScreen';
 import Onboard from 'screens/onboarding/Onboard';
 import AppNavigation from 'navigation/AppNavigation';
 import AppViewModel, {SelectedView} from 'AppViewModel';
-import {useWalletContext} from '@avalabs/wallet-react-components';
-import {onEnterWallet} from 'App';
-import {Alert, View} from 'react-native';
+import {View} from 'react-native';
+import {StackActions, useNavigation} from '@react-navigation/native';
 
 const AuthStack = createStackNavigator();
 
 export const OnboardStackScreen = () => {
-  const walletContext = useWalletContext();
+  const {dispatch} = useNavigation();
 
   const LoginWithMnemonicScreen = () => {
     return (
@@ -27,14 +26,17 @@ export const OnboardStackScreen = () => {
   };
 
   const LoginWithPinOrBiometryScreen = () => {
-    const context = useWalletContext();
     return (
       <PinOrBiometryLogin
         onSignInWithRecoveryPhrase={() =>
           AppViewModel.setSelectedView(SelectedView.LoginWithMnemonic)
         }
-        onEnterWallet={mnemonic =>
-          onEnterWallet(mnemonic, context!.setMnemonic)
+        onEnterWallet={
+          mnemonic => {
+            AppViewModel.onSavedMnemonic(mnemonic, false);
+            dispatch(StackActions.replace('App', {screen: 'Home'}));
+          }
+          //onEnterWallet(mnemonic, context!.setMnemonic)
         }
       />
     );
@@ -43,12 +45,6 @@ export const OnboardStackScreen = () => {
   const OnboardScreen = () => {
     return (
       <Onboard
-        onEnterWallet={mnemonic =>
-          AppViewModel.onEnterWallet(mnemonic).subscribe({
-            next: () => walletContext?.setMnemonic(mnemonic),
-            error: err => Alert.alert(err.message),
-          })
-        }
         onAlreadyHaveWallet={() =>
           AppViewModel.setSelectedView(SelectedView.LoginWithMnemonic)
         }

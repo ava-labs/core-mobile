@@ -29,10 +29,10 @@
     web3 "^1.3.5"
     web3-eth-contract "^1.3.6"
 
-"@avalabs/wallet-react-components@1.6.0":
-  version "1.6.0"
-  resolved "https://registry.yarnpkg.com/@avalabs/wallet-react-components/-/wallet-react-components-1.6.0.tgz#62675061323ec0f54206dc9907ad18b4e2e2fed7"
-  integrity sha512-TNDfdUwiyrTES0StDuKiMDTME2qam734vExT9JWlioqCS6qXK7c75KHVZkIphW1fnx5jX+etX/gqYDVm6sLOhw==
+"@avalabs/wallet-react-components@1.7.1":
+  version "1.7.1"
+  resolved "https://registry.yarnpkg.com/@avalabs/wallet-react-components/-/wallet-react-components-1.7.1.tgz#c6789d242f64230e21d73bbea07acbb38405e5d6"
+  integrity sha512-gJ1HlgqOyuo+5a6haECnAFNT1nMG/mwZo0dp1a1i8PbximeyM+vxzvV5/CQ9ynAFJwV5OY8otD3fDTtrgx+SWA==
   dependencies:
     "@testing-library/jest-dom" "^5.14.1"
     "@testing-library/react" "^11.2.7"

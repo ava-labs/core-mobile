@@ -14,6 +14,7 @@ import BiometricsSDK from 'utils/BiometricsSDK';
 import Splash from 'screens/onboarding/Splash';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {SECURE_ACCESS_SET} from 'resources/Constants';
+import {Platform} from 'react-native';
 
 export default function ContextApp() {
   const [isWarmingUp, setIsWarmingUp] = useState(true);
@@ -21,7 +22,7 @@ export default function ContextApp() {
 
   useEffect(() => {
     AsyncStorage.getItem(SECURE_ACCESS_SET).then(result => {
-      if (result) {
+      if (result && Platform.OS === 'android') {
         setShowSplash(true);
         BiometricsSDK.warmup().then(() => {
           setTimeout(() => {
