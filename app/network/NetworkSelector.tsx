@@ -20,7 +20,11 @@ const paddingTop = 24;
 const marginEnd = 12;
 const DOT = '\u25CF';
 
-const NetworkSelector: FC<Props> = ({toggleOpenClose, isExpanded, closeDrawer}) => {
+const NetworkSelector: FC<Props> = ({
+  toggleOpenClose,
+  isExpanded,
+  closeDrawer,
+}) => {
   const context = useContext(ApplicationContext);
   const theme = context.theme;
   const networkContext = useNetworkContext();
