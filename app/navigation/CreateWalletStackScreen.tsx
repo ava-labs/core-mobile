@@ -9,6 +9,7 @@ import AppViewModel, {SelectedView} from 'AppViewModel';
 import {useWalletContext} from '@avalabs/wallet-react-components';
 import {onEnterWallet} from 'App';
 import {Alert} from 'react-native';
+import {WalletContextType} from 'dto/TypeUtils';
 
 const CreateWalletStack = createStackNavigator();
 
@@ -23,8 +24,8 @@ export const CreateWalletStackScreen = () => {
     AppViewModel.onSavedMnemonic(mnemonic);
   };
 
-  const onPinSet = (pin: string): void => {
-    AppViewModel.onPinCreated(pin).subscribe({
+  const onPinSet = (pin: string, walletContext: WalletContextType): void => {
+    AppViewModel.onPinCreated(pin, false, walletContext).subscribe({
       error: err => Alert.alert(err.message),
     });
   };
