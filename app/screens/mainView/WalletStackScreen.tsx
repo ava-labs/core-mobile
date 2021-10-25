@@ -68,10 +68,10 @@ const TIMEOUT = 5000;
 
 function WalletStackScreen(props: Props | Readonly<Props>) {
   const context = useContext(ApplicationContext);
+  const walletContext = useWalletContext();
+  const walletStateContext = useWalletStateContext();
   const [walletReady, setWalletReady] = useState(false);
   const [showSecurityModal, setShowSecurityModal] = useState(false);
-  const walletContext = useWalletContext();
-  const walletSatateContext = useWalletStateContext();
   const appState = useRef(AppState.currentState);
 
   /**
@@ -103,10 +103,7 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
       (await AsyncStorage.getItem('TIME_APP_SUSPENDED')) ??
       moment().toISOString();
 
-    if (
-      appState.current === 'active' &&
-      nextAppState.match(/inactive|background/)
-    ) {
+    if (appState.current === 'active' && nextAppState.match(/background/)) {
       // this condition calls when app is in background mode
       // here you can detect application is going to background or inactive.
       await AsyncStorage.setItem('TIME_APP_SUSPENDED', moment().toISOString());
@@ -143,7 +140,7 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
 
   useEffect(() => {
     const wallet = walletContext?.wallet as MnemonicWallet;
-    const isBalanceReady = !!walletSatateContext?.balances;
+    const isBalanceReady = !!walletStateContext?.balances;
     if (wallet?.isHdReady) {
       hdReadyListener(isBalanceReady);
     } else {
@@ -157,7 +154,7 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
         //ignored
       }
     };
-  }, [walletContext, walletSatateContext]);
+  }, [walletContext, walletStateContext]);
 
   const onExit = (): void => {
     props.onExit();

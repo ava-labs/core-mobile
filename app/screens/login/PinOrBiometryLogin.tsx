@@ -17,9 +17,7 @@ import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
 import {SecurityStackParamList} from 'navigation/SecurityPrivacyStackScreen';
 import AppNavigation from 'navigation/AppNavigation';
 import {useWalletContext} from '@avalabs/wallet-react-components';
-import BiometricsSDK, {KeystoreConfig} from 'utils/BiometricsSDK';
-import {UserCredentials} from 'react-native-keychain';
-import AppViewModel from 'AppViewModel';
+import {WalletContextType} from 'dto/TypeUtils';
 
 const keymap: Map<string, PinKeys> = new Map([
   ['1', PinKeys.Key1],
@@ -37,7 +35,7 @@ const keymap: Map<string, PinKeys> = new Map([
 
 type Props = {
   onSignInWithRecoveryPhrase: () => void;
-  onEnterWallet: (mnemonic: string) => void;
+  onEnterWallet: (mnemonic: string, walletContext: WalletContextType) => void;
   isResettingPin?: boolean;
   hideLoginWithMnemonic?: boolean;
 };
@@ -69,34 +67,26 @@ export default function PinOrBiometryLogin({
 
   const context = useContext(ApplicationContext);
   const walletContext = useWalletContext();
-  const navigation = useNavigation();
+
+  function initWallet(givenMnemonic: string) {
+    onEnterWallet(givenMnemonic, walletContext);
+  }
 
   useEffect(() => {
     // check if if the login is biometric
-    BiometricsSDK.getAccessType().then(type => {
-      if (type === 'BIO') {
-        BiometricsSDK.loadWalletKey(KeystoreConfig.KEYSTORE_BIO_OPTIONS).then(
-          creds => {
-            const pass = (creds as UserCredentials).password;
-            AppViewModel.mnemonic = pass;
-            walletContext?.setMnemonic(pass);
-            onEnterWallet(mnemonic);
-          },
-        );
-      }
+    promptForWalletLoadingIfExists().subscribe({
+      next: (value: WalletLoadingResults) => {
+        if (value instanceof MnemonicLoaded) {
+          // do nothing. We only rely on `setMnemonic` being called
+          // and the useEffect being triggered.
+        } else if (value instanceof PrivateKeyLoaded) {
+          // props.onEnterSingletonWallet(value.privateKey)
+        } else if (value instanceof NothingToLoad) {
+          //do nothing
+        }
+      },
+      error: err => console.log(err.message),
     });
-    // promptForWalletLoadingIfExists().subscribe({
-    //   next: (value: WalletLoadingResults) => {
-    //     if (value instanceof MnemonicLoaded) {
-    //       onEnterWallet(value.mnemonic);
-    //     } else if (value instanceof PrivateKeyLoaded) {
-    //       // props.onEnterSingletonWallet(value.privateKey)
-    //     } else if (value instanceof NothingToLoad) {
-    //       //do nothing
-    //     }
-    //   },
-    //   error: err => console.log(err.message),
-    // });
   }, []);
 
   useEffect(() => {
@@ -105,8 +95,7 @@ export default function PinOrBiometryLogin({
         goBack();
         revealMnemonic(mnemonic);
       } else {
-        walletContext?.setMnemonic(mnemonic);
-        onEnterWallet(mnemonic);
+        initWallet(mnemonic);
       }
     }
   }, [mnemonic]);

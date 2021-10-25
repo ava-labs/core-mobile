@@ -7,54 +7,51 @@ import Onboard from 'screens/onboarding/Onboard';
 import AppNavigation from 'navigation/AppNavigation';
 import AppViewModel, {SelectedView} from 'AppViewModel';
 import {View} from 'react-native';
-import {StackActions, useNavigation} from '@react-navigation/native';
+import {onEnterWallet} from 'App';
 
 const AuthStack = createStackNavigator();
 
+const LoginWithMnemonicScreen = () => {
+  return (
+    <HdWalletLogin
+      onEnterWallet={mnemonic => AppViewModel.onEnterExistingMnemonic(mnemonic)}
+      onBack={() => AppViewModel.onBackPressed()}
+    />
+  );
+};
+
+const LoginWithPinOrBiometryScreen = () => {
+  return (
+    <PinOrBiometryLogin
+      onSignInWithRecoveryPhrase={() =>
+        AppViewModel.setSelectedView(SelectedView.LoginWithMnemonic)
+      }
+      onEnterWallet={(mnemonic, walletContext) => {
+        if (!walletContext?.wallet) {
+          onEnterWallet(mnemonic, walletContext?.setMnemonic);
+        } else {
+          AppViewModel.setSelectedView(SelectedView.Main);
+        }
+      }}
+    />
+  );
+};
+
+const OnboardScreen = () => {
+  return (
+    <Onboard
+      onAlreadyHaveWallet={() =>
+        AppViewModel.setSelectedView(SelectedView.LoginWithMnemonic)
+      }
+      onCreateWallet={() =>
+        AppViewModel.setSelectedView(SelectedView.CreateWallet)
+      }
+      onEnterWallet={() => {}}
+    />
+  );
+};
+
 export const OnboardStackScreen = () => {
-  const {dispatch} = useNavigation();
-
-  const LoginWithMnemonicScreen = () => {
-    return (
-      <HdWalletLogin
-        onEnterWallet={mnemonic =>
-          AppViewModel.onEnterExistingMnemonic(mnemonic)
-        }
-        onBack={() => AppViewModel.onBackPressed()}
-      />
-    );
-  };
-
-  const LoginWithPinOrBiometryScreen = () => {
-    return (
-      <PinOrBiometryLogin
-        onSignInWithRecoveryPhrase={() =>
-          AppViewModel.setSelectedView(SelectedView.LoginWithMnemonic)
-        }
-        onEnterWallet={
-          mnemonic => {
-            AppViewModel.onSavedMnemonic(mnemonic, false);
-            dispatch(StackActions.replace('App', {screen: 'Home'}));
-          }
-          //onEnterWallet(mnemonic, context!.setMnemonic)
-        }
-      />
-    );
-  };
-
-  const OnboardScreen = () => {
-    return (
-      <Onboard
-        onAlreadyHaveWallet={() =>
-          AppViewModel.setSelectedView(SelectedView.LoginWithMnemonic)
-        }
-        onCreateWallet={() =>
-          AppViewModel.setSelectedView(SelectedView.CreateWallet)
-        }
-      />
-    );
-  };
-
   return (
     <AuthStack.Navigator screenOptions={{headerShown: false}}>
       <AuthStack.Group>

@@ -36,6 +36,7 @@ const DrawerView: FC<DrawerContentComponentProps> = ({navigation}) => {
   }
 
   function handleLogout() {
+    setLogoutWarningVisible(!logoutWarningVisible);
     AppViewModel.immediateLogout().catch(err => Alert.alert(err.message));
   }
 

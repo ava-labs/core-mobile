@@ -15,6 +15,8 @@ import BiometricsSDK from 'utils/BiometricsSDK';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {SECURE_ACCESS_SET} from 'resources/Constants';
 import {encrypt, getEncryptionKey} from 'screens/login/utils/EncryptionHelper';
+import {WalletContextType} from 'dto/TypeUtils';
+import {onEnterWallet} from 'App';
 
 export enum SelectedView {
   Onboard,
@@ -44,7 +46,7 @@ class AppViewModel {
     });
   };
 
-  onPinCreated = (pin: string, isResetting = false): Observable<boolean> => {
+  onPinCreated = (pin: string, isResetting = false, walletContext?: WalletContextType): Observable<boolean> => {
     return from(getEncryptionKey(pin)).pipe(
       switchMap(key => encrypt(this.mnemonic, key)),
       switchMap((encryptedData: string) =>
@@ -63,7 +65,7 @@ class AppViewModel {
         if (canUseBiometry) {
           this.setSelectedView(SelectedView.BiometricStore);
         } else {
-          this.setSelectedView(SelectedView.Main);
+          onEnterWallet(this.mnemonic, walletContext?.setMnemonic);
         }
         return true;
       }),
