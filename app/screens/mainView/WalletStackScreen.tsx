@@ -7,7 +7,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import {AppState, BackHandler, Modal, StyleSheet} from 'react-native';
+import {AppState, BackHandler, Modal} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {NavigationContainer, useFocusEffect} from '@react-navigation/native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
@@ -184,10 +184,10 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
   };
 
   const Tabs = () => {
-    const theme = useContext(ApplicationContext).theme;
+    const theme = context.theme;
     return (
       <Tab.Navigator
-        sceneContainerStyle={styles.navContainer}
+        sceneContainerStyle={{backgroundColor: theme.colorBg1}}
         screenOptions={({route}) => ({
           headerShown: false,
           tabBarIcon: ({focused}) => {
@@ -322,14 +322,5 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
     </SelectedAccountContextProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    height: '100%',
-  },
-  navContainer: {
-    backgroundColor: 'transparent',
-  },
-});
 
 export default memo(WalletStackScreen);

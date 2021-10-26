@@ -1,5 +1,7 @@
 import {useEffect, useState} from 'react';
 import {PinKeys} from './PinKey';
+import {useJigglyPinIndicator} from 'utils/JigglyPinIndicatorHook';
+import {Animated} from 'react-native';
 
 export type DotView = {
   filled: boolean;
@@ -28,6 +30,7 @@ export function useCreatePin(
   (pinKey: PinKeys) => void,
   boolean,
   string | undefined,
+  Animated.Value,
 ] {
   const [title, setTitle] = useState('Create Pin');
   const [errorMessage, setErrorMessage] = useState('');
@@ -37,6 +40,7 @@ export function useCreatePin(
   const [chosenPinEntered, setChosenPinEntered] = useState(false);
   const [confirmedPinEntered, setConfirmedPinEntered] = useState(false);
   const [validPin, setValidPin] = useState<string | undefined>(undefined);
+  const {jiggleAnim, fireJiggleAnimation} = useJigglyPinIndicator();
 
   useEffect(() => {
     if (chosenPinEntered) {
@@ -65,8 +69,8 @@ export function useCreatePin(
       if (chosenPin === confirmedPin) {
         setValidPin(chosenPin);
       } else {
-        setErrorMessage('Pins dont match');
         resetConfirmPinProcess();
+        fireJiggleAnimation();
       }
     }
   }, [chosenPinEntered, confirmedPinEntered]);
@@ -124,5 +128,6 @@ export function useCreatePin(
     onEnterConfirmedPin,
     chosenPinEntered,
     validPin,
+    jiggleAnim,
   ];
 }

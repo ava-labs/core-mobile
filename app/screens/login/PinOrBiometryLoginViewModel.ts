@@ -1,15 +1,16 @@
-import {useEffect, useMemo, useRef, useState} from 'react';
+import {useEffect, useState} from 'react';
 import BiometricsSDK, {KeystoreConfig} from 'utils/BiometricsSDK';
 import {UserCredentials} from 'react-native-keychain';
 import {PinKeys} from 'screens/onboarding/PinKey';
 import {asyncScheduler, Observable, of, timer} from 'rxjs';
 import {catchError, concatMap, map} from 'rxjs/operators';
-import {Animated, Platform, Vibration} from 'react-native';
+import {Animated} from 'react-native';
 import {
   decrypt,
   EncryptedData,
   getEncryptionKey,
 } from 'screens/login/utils/EncryptionHelper';
+import {useJigglyPinIndicator} from 'utils/JigglyPinIndicatorHook';
 
 export type DotView = {
   filled: boolean;
@@ -41,25 +42,7 @@ export function usePinOrBiometryLogin(): [
   const [pinDots, setPinDots] = useState<DotView[]>([]);
   const [pinEntered, setPinEntered] = useState(false);
   const [mnemonic, setMnemonic] = useState<string | undefined>(undefined);
-  const jiggleAnim = useRef(new Animated.Value(0)).current;
-
-  const wrongPinAnim = useMemo(() => {
-    return Animated.loop(
-      Animated.sequence([
-        Animated.timing(jiggleAnim, {
-          toValue: 20,
-          duration: 60,
-          useNativeDriver: true,
-        }),
-        Animated.timing(jiggleAnim, {
-          toValue: -20,
-          duration: 60,
-          useNativeDriver: true,
-        }),
-      ]),
-      {},
-    );
-  }, []);
+  const {jiggleAnim, fireJiggleAnimation} = useJigglyPinIndicator();
 
   useEffect(() => {
     setPinDots(getPinDots(enteredPin));
@@ -89,29 +72,13 @@ export function usePinOrBiometryLogin(): [
           ) {
             resetConfirmPinProcess();
             fireJiggleAnimation();
-            vibratePhone();
           }
         }
       }
     }
+
     checkPinEntered();
   }, [pinEntered]);
-
-  function vibratePhone() {
-    Vibration.vibrate(
-      Platform.OS === 'android'
-        ? [0, 150, 10, 150, 10, 150, 10, 150, 10, 150]
-        : [0, 10, 10, 10, 10],
-    );
-  }
-
-  function fireJiggleAnimation() {
-    wrongPinAnim.start();
-    setTimeout(() => {
-      wrongPinAnim.reset();
-      jiggleAnim.setValue(0);
-    }, 800);
-  }
 
   const getPinDots = (pin: string): DotView[] => {
     const dots: DotView[] = [];

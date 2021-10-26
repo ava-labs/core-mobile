@@ -1,8 +1,10 @@
 import React, {useCallback, useContext, useState} from 'react';
 import {
   Dimensions,
+  KeyboardAvoidingView,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  Platform,
   View,
 } from 'react-native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
@@ -40,40 +42,44 @@ function AccountView(): JSX.Element {
   );
 
   return (
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: context.theme.colorBg2,
-        paddingVertical: 16,
-      }}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={{flex: 1}}>
       <View
         style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          paddingHorizontal: 16,
+          flex: 1,
+          backgroundColor: context.theme.colorBg2,
+          paddingVertical: 16,
         }}>
-        <AvaText.Heading1>My accounts</AvaText.Heading1>
-        {/*<AddSVG />*/}
-      </View>
-      <Space y={16} />
-      <BottomSheetScrollView
-        focusHook={useFocusEffect}
-        horizontal
-        onMomentumScrollEnd={onScrollEnd}
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}>
-        {accountElements([...accounts.values()])}
-      </BottomSheetScrollView>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            paddingHorizontal: 16,
+          }}>
+          <AvaText.Heading1>My accounts</AvaText.Heading1>
+          {/*<AddSVG />*/}
+        </View>
+        <Space y={16} />
+        <BottomSheetScrollView
+          focusHook={useFocusEffect}
+          horizontal
+          onMomentumScrollEnd={onScrollEnd}
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}>
+          {accountElements([...accounts.values()])}
+        </BottomSheetScrollView>
 
-      {/*<HeaderProgress*/}
-      {/*  maxDots={accounts.length}*/}
-      {/*  filledDots={selectedAccountIndex + 1}*/}
-      {/*/>*/}
-      {/*<AvaButton.PrimaryLarge style={{marginHorizontal: 16}} onPress={onSelect}>*/}
-      {/*  Select*/}
-      {/*</AvaButton.PrimaryLarge>*/}
-    </View>
+        {/*<HeaderProgress*/}
+        {/*  maxDots={accounts.length}*/}
+        {/*  filledDots={selectedAccountIndex + 1}*/}
+        {/*/>*/}
+        {/*<AvaButton.PrimaryLarge style={{marginHorizontal: 16}} onPress={onSelect}>*/}
+        {/*  Select*/}
+        {/*</AvaButton.PrimaryLarge>*/}
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 

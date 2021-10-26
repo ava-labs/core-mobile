@@ -1,7 +1,6 @@
-import React, {useCallback, useContext, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {RefreshControl, ScrollView, View} from 'react-native';
 import SearchSVG from 'components/svg/SearchSVG';
-import {ApplicationContext} from 'contexts/ApplicationContext';
 import {useNavigation} from '@react-navigation/native';
 import AppNavigation from 'navigation/AppNavigation';
 import AvaText from 'components/AvaText';
@@ -21,8 +20,8 @@ type SectionType = {[x: string]: HistoryItemType[]};
 interface Props {
   embedded?: boolean;
 }
+
 function ActivityView({embedded}: Props) {
-  const theme = useContext(ApplicationContext).theme;
   const wallet = useWalletContext()?.wallet;
   const [sectionData, setSectionData] = useState<SectionType>({});
   const [loading, setLoading] = useState(true);
@@ -132,7 +131,7 @@ function ActivityView({embedded}: Props) {
   };
 
   return (
-    <View style={{flex: 1, backgroundColor: theme.bgApp}}>
+    <View style={{flex: 1}}>
       {embedded || (
         <View
           style={{

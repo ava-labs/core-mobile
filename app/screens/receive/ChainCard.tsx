@@ -1,5 +1,5 @@
 import React, {useContext} from 'react';
-import {TouchableOpacity, TouchableWithoutFeedbackComponent, View} from 'react-native';
+import {TouchableOpacity, View} from 'react-native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from 'components/AvaText';
 import QRCode from 'react-native-qrcode-svg';
@@ -7,6 +7,7 @@ import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import CircularText from 'components/svg/CircularText';
 import CopySVG from 'components/svg/CopySVG';
 import Clipboard from '@react-native-clipboard/clipboard';
+import {ShowSnackBar} from 'components/Snackbar';
 
 interface Props {
   chainName: string;
@@ -51,7 +52,7 @@ function ChainCard({chainName, description, address}: Props) {
               borderRadius: 7,
               alignSelf: 'baseline',
             }}>
-            <QRCode size={180} value={address} />
+            <QRCode size={180} value={address ? address : undefined} />
             <View
               style={{
                 position: 'absolute',
@@ -75,6 +76,7 @@ function ChainCard({chainName, description, address}: Props) {
       <TouchableOpacity
         onPress={() => {
           Clipboard.setString(address ?? '');
+          ShowSnackBar('Copied');
         }}
         style={[
           {
