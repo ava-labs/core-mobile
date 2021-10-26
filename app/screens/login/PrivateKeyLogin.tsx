@@ -30,7 +30,6 @@ export default function PrivateKeyLogin(props: Props | Readonly<Props>) {
         <InputText
           multiline={true}
           onChangeText={text => setPrivateKey(text)}
-          value={privateKey}
         />
         <View style={[{flexGrow: 1}]} />
 
