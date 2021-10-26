@@ -14,7 +14,7 @@ export default function Splash(): JSX.Element {
     <View
       style={[
         styles.verticalLayout,
-        {backgroundColor: context.theme.colorBg1},
+        {backgroundColor: context.theme.colorBg2},
       ]}>
       <View style={styles.logoContainer}>
         <View style={styles.logo}>

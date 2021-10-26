@@ -29,7 +29,7 @@ const CollapsibleSection: FC<Props> = ({
           justifyContent: 'space-between',
           padding: 16,
           marginRight: 8,
-          backgroundColor: theme.bgApp,
+          backgroundColor: theme.colorBg1,
         }}>
         <AvaText.Body2>{title}</AvaText.Body2>
         <View style={{transform: [{rotate: expanded ? '-90deg' : '90deg'}]}}>
@@ -47,7 +47,9 @@ const CollapsibleSection: FC<Props> = ({
   return (
     <View>
       <Pressable onPress={toggleExpanded}>{getTitle()}</Pressable>
-      <Collapsible style={{backgroundColor: theme.bgApp}} collapsed={!expanded}>
+      <Collapsible
+        style={{backgroundColor: theme.colorBg1}}
+        collapsed={!expanded}>
         {children}
       </Collapsible>
     </View>

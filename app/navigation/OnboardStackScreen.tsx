@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin';
 import HdWalletLogin from 'screens/login/HdWalletLogin';
 import {createStackNavigator} from '@react-navigation/stack';
@@ -8,6 +8,7 @@ import AppNavigation from 'navigation/AppNavigation';
 import AppViewModel, {SelectedView} from 'AppViewModel';
 import {View} from 'react-native';
 import {onEnterWallet} from 'App';
+import {ApplicationContext} from 'contexts/ApplicationContext';
 
 const AuthStack = createStackNavigator();
 
@@ -52,8 +53,14 @@ const OnboardScreen = () => {
 };
 
 export const OnboardStackScreen = () => {
+  const {theme} = useContext(ApplicationContext);
+
   return (
-    <AuthStack.Navigator screenOptions={{headerShown: false}}>
+    <AuthStack.Navigator
+      screenOptions={{
+        headerShown: false,
+        cardStyle: {backgroundColor: theme.colorBg2},
+      }}>
       <AuthStack.Group>
         <AuthStack.Screen name={'init'} component={View} />
         <AuthStack.Screen

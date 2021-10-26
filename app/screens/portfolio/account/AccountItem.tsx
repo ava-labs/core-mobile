@@ -35,10 +35,11 @@ function AccountItem({account}: Props): JSX.Element {
           flex: 1,
           backgroundColor: context.theme.colorBg2,
           borderRadius: 8,
+          borderWidth: 1,
+          borderColor: '#F1F1F4',
           padding: 16,
           alignItems: 'center',
         },
-        context.shadow,
       ]}>
       <Space y={16} />
       <View style={{flexDirection: 'row'}}>

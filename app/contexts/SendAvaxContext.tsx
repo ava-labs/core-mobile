@@ -80,7 +80,11 @@ export const SendAvaxContextProvider = ({children}: {children: any}) => {
   }, [walletStateContext]);
 
   useEffect(() => {
-    setErrorMsg(error?.message ?? '');
+    if (error?.message && error?.message !== 'address undefined') {
+      setErrorMsg(error.message);
+    } else {
+      setErrorMsg('');
+    }
   }, [error]);
 
   useEffect(() => {

@@ -47,10 +47,17 @@ export default function BiometricLogin(
         <Space y={90} />
         <AvaText.Heading1>Biometric Login</AvaText.Heading1>
         <Space y={8} />
-        <TextLabel
-          text={'Sign in quickly using your ' + biometryType?.toLowerCase()}
-        />
-        <TextLabel text={'Change this anytime in settings'} />
+
+        <AvaText.Body4
+          textStyle={{
+            textAlign: 'center',
+            alignSelf: 'stretch',
+            paddingRight: 8,
+            paddingLeft: 8,
+          }}>
+          Sign in quickly using your {biometryType?.toLowerCase()}. Change this
+          anytime in settings
+        </AvaText.Body4>
       </View>
 
       <AvaButton.TextMedium onPress={props.onSkip}>Skip</AvaButton.TextMedium>

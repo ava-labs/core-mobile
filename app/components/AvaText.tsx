@@ -97,6 +97,15 @@ const TextBody3: FC<TextProps> = ({textStyle, children}) => {
   return <Text style={[styles.body3, textStyle]}>{children}</Text>;
 };
 
+const TextBody4: FC<TextProps> = ({textStyle, children}) => {
+  const {theme} = useContext(ApplicationContext);
+  return (
+    <Text style={[styles.body4, {color: theme.colorText1}, textStyle]}>
+      {children}
+    </Text>
+  );
+};
+
 const TextTag: FC<TextProps> = ({textStyle, children}) => {
   const theme = useContext(ApplicationContext).theme;
   return (
@@ -126,6 +135,7 @@ const AvaText = {
   Body1: TextBody1,
   Body2: TextBody2,
   Body3: TextBody3,
+  Body4: TextBody4, //this font configuration is not named in design at the time of writing
   Tag: TextTag,
   ButtonLarge: TextButtonLarge,
   ButtonMedium: TextButtonMedium,
@@ -167,6 +177,11 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Regular',
     fontSize: 12,
     lineHeight: 15,
+  },
+  body4: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 16,
+    lineHeight: 19,
   },
   textTag: {
     fontFamily: 'Inter-Bold',

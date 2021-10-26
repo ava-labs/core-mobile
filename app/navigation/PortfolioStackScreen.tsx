@@ -1,7 +1,8 @@
 import {createStackNavigator} from '@react-navigation/stack';
-import PortfolioView from 'screens/portfolio/PortfolioView';
-import React from 'react';
+import React, {useContext} from 'react';
 import AppNavigation from 'navigation/AppNavigation';
+import PortfolioView from 'screens/portfolio/PortfolioView';
+import {ApplicationContext} from 'contexts/ApplicationContext';
 
 type Props = {
   onExit: () => void;
@@ -17,6 +18,7 @@ export type PortfolioStackParamList = {
 const PortfolioStack = createStackNavigator<PortfolioStackParamList>();
 
 function PortfolioStackScreen({onExit, onSwitchWallet}: Props) {
+  const {theme} = useContext(ApplicationContext);
   const PortfolioViewWithProps = () => (
     <PortfolioView onExit={onExit} onSwitchWallet={onSwitchWallet} />
   );
@@ -27,6 +29,7 @@ function PortfolioStackScreen({onExit, onSwitchWallet}: Props) {
       detachInactiveScreens={false}
       screenOptions={{
         headerShown: false,
+        cardStyle: {backgroundColor: theme.colorBg1},
       }}>
       <PortfolioStack.Screen
         name={AppNavigation.Wallet.PortfolioScreen}

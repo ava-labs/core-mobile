@@ -1,5 +1,5 @@
-import React, {useCallback, useContext, useEffect} from 'react';
-import {BackHandler, StyleSheet, View} from 'react-native';
+import React, {useCallback, useEffect} from 'react';
+import {Animated, BackHandler, StyleSheet, View} from 'react-native';
 import PinKey, {PinKeys} from './PinKey';
 import Dot from 'components/Dot';
 import {useCreatePin} from './CreatePinViewModel';
@@ -8,7 +8,6 @@ import HeaderProgress from 'screens/mainView/HeaderProgress';
 import {Space} from 'components/Space';
 import AvaText from 'components/AvaText';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
-import {ApplicationContext} from 'contexts/ApplicationContext';
 import {HeaderBackButton} from '@react-navigation/elements';
 import {useWalletContext} from '@avalabs/wallet-react-components';
 import {WalletContextType} from 'dto/TypeUtils';
@@ -35,7 +34,6 @@ type Props = {
 
 export default function CreatePIN({onBack, onPinSet, isResettingPin}: Props) {
   const navigation = useNavigation();
-  const theme = useContext(ApplicationContext).theme;
   const walletContext = useWalletContext();
   const [
     title,
@@ -45,6 +43,7 @@ export default function CreatePIN({onBack, onPinSet, isResettingPin}: Props) {
     onEnterConfirmedPin,
     chosenPinEntered,
     validPin,
+    jiggleAnim,
   ] = useCreatePin(isResettingPin);
 
   useEffect(() => {
@@ -103,7 +102,7 @@ export default function CreatePIN({onBack, onPinSet, isResettingPin}: Props) {
   };
 
   return (
-    <View style={[styles.verticalLayout, {backgroundColor: theme.bgApp}]}>
+    <View style={[styles.verticalLayout]}>
       {isResettingPin || (
         <>
           <HeaderProgress maxDots={3} filledDots={3} showBack onBack={onBack} />
@@ -111,14 +110,27 @@ export default function CreatePIN({onBack, onPinSet, isResettingPin}: Props) {
           <AvaText.Heading1 textStyle={{textAlign: 'center'}}>
             {title}
           </AvaText.Heading1>
-          <AvaText.Heading3 textStyle={{textAlign: 'center'}}>
+          <Space y={8} />
+          <AvaText.Body4 textStyle={{textAlign: 'center'}}>
             Access your wallet faster
-          </AvaText.Heading3>
+          </AvaText.Body4>
           <Space y={8} />
         </>
       )}
       {errorMessage.length > 0 && <TextLabel text={errorMessage} />}
-      <View style={styles.dots}>{generatePinDots()}</View>
+      <Animated.View
+        style={[
+          {padding: 68, flexGrow: 1},
+          {
+            transform: [
+              {
+                translateX: jiggleAnim,
+              },
+            ],
+          },
+        ]}>
+        <View style={styles.dots}>{generatePinDots()}</View>
+      </Animated.View>
       <View style={styles.keyboard}>{keyboard(chosenPinEntered)}</View>
     </View>
   );
@@ -138,7 +150,6 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   dots: {
-    paddingHorizontal: 68,
     flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'space-between',

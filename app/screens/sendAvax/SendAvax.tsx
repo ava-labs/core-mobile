@@ -5,12 +5,12 @@ import AvaButton from 'components/AvaButton';
 import Loader from 'components/Loader';
 import QrScannerAva from 'components/QrScannerAva';
 import {ApplicationContext} from 'contexts/ApplicationContext';
-import QRCode from 'components/svg/QRCode';
 import {useNavigation} from '@react-navigation/native';
 import AppNavigation from 'navigation/AppNavigation';
 import AvaText from 'components/AvaText';
 import FlexSpacer from 'components/FlexSpacer';
 import {SendAvaxContext} from 'contexts/SendAvaxContext';
+import {ScanQrIcon} from 'screens/send/ScanQrIcon';
 
 export default function SendAvax(): JSX.Element {
   const context = useContext(ApplicationContext);
@@ -74,17 +74,17 @@ export default function SendAvax(): JSX.Element {
             label={'Address'}
             placeholder="Enter the address"
             multiline={true}
-            errorText={errorMsg.indexOf('address') != -1 ? errorMsg : undefined}
+            errorText={errorMsg.indexOf('address') !== -1 ? errorMsg : undefined}
             onChangeText={text => {
               setAddress(text);
               clearErrorMsg();
             }}
             value={destinationAddress}
           />
+          {destinationAddress.length === 0 && (
+            <ScanQrIcon onScanBarcode={onScanBarcode} />
+          )}
         </View>
-        {destinationAddress.length === 0 && (
-          <ScanQrIcon onScanBarcode={onScanBarcode} />
-        )}
       </View>
 
       <FlexSpacer />
@@ -129,22 +129,3 @@ const styles: any = StyleSheet.create({
     alignItems: 'flex-end',
   },
 });
-
-const ScanQrIcon = ({onScanBarcode}: {onScanBarcode: () => void}) => {
-  return (
-    <View
-      style={[
-        {
-          position: 'absolute',
-          right: 0,
-          marginRight: 20,
-          top: 0,
-          marginTop: 40,
-        },
-      ]}>
-      <AvaButton.Icon onPress={onScanBarcode}>
-        <QRCode />
-      </AvaButton.Icon>
-    </View>
-  );
-};
