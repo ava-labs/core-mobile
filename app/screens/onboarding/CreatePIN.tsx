@@ -10,6 +10,8 @@ import AvaText from 'components/AvaText';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import {HeaderBackButton} from '@react-navigation/elements';
+import {useWalletContext} from '@avalabs/wallet-react-components';
+import {WalletContextType} from 'dto/TypeUtils';
 
 const keymap: Map<string, PinKeys> = new Map([
   ['1', PinKeys.Key1],
@@ -27,13 +29,14 @@ const keymap: Map<string, PinKeys> = new Map([
 
 type Props = {
   onBack: () => void;
-  onPinSet: (pin: string) => void;
+  onPinSet: (pin: string, walletContext: WalletContextType) => void;
   isResettingPin?: boolean;
 };
 
 export default function CreatePIN({onBack, onPinSet, isResettingPin}: Props) {
   const navigation = useNavigation();
   const theme = useContext(ApplicationContext).theme;
+  const walletContext = useWalletContext();
   const [
     title,
     errorMessage,
@@ -46,7 +49,7 @@ export default function CreatePIN({onBack, onPinSet, isResettingPin}: Props) {
 
   useEffect(() => {
     if (validPin) {
-      onPinSet(validPin);
+      onPinSet(validPin, walletContext);
     }
     navigation.setOptions({
       title: title,

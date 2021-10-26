@@ -42,7 +42,7 @@ export const SelectedAccountContextProvider = ({children}: {children: any}) => {
   }, [walletContext, walletContext?.wallet]);
 
   useEffect(() => {
-    if (!walletId) {
+    if (!walletId || !walletState) {
       return;
     }
     (async () => {
@@ -64,7 +64,7 @@ export const SelectedAccountContextProvider = ({children}: {children: any}) => {
         setAccounts(defaultAccount);
       }
     })();
-  }, [walletId]);
+  }, [walletId, walletState]);
 
   async function loadAccountsFromStorage(
     walletId: WalletId,
