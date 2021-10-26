@@ -12,7 +12,7 @@ import React, {
   useEffect,
   useState,
 } from 'react';
-import {Alert, BackHandler, SafeAreaView} from 'react-native';
+import {Alert, BackHandler, InteractionManager, LogBox, SafeAreaView} from 'react-native';
 import WalletStackScreen from 'screens/mainView/WalletStackScreen';
 import {Subscription} from 'rxjs';
 import {createStackNavigator} from '@react-navigation/stack';
@@ -40,6 +40,8 @@ import {OnboardStackScreen} from 'navigation/OnboardStackScreen';
 
 const RootStack = createStackNavigator();
 const navigationRef: RefObject<NavigationContainerRef<any>> = React.createRef();
+
+LogBox.ignoreAllLogs();
 
 const onOk = (value: ShowExitPrompt): void => {
   value.prompt.next(ExitPromptAnswers.Ok);
@@ -81,7 +83,11 @@ export const onEnterWallet = (
   setMnemonic?: Dispatch<string>,
 ): void => {
   AppViewModel.onEnterWallet(mnemonic).subscribe({
-    next: () => setMnemonic?.(mnemonic),
+    next: () => {
+      InteractionManager.runAfterInteractions(() => {
+        setMnemonic?.(mnemonic);
+      });
+    },
     error: err => Alert.alert(err.message),
   });
 };

@@ -19,7 +19,7 @@ export default class {
     this.enabledInputs = zip(this.mnemonic, this.randomIndices).pipe(
       map(([mnemonic, randomIndices]) => {
         const enabledInputs: Map<number, boolean> = new Map();
-        mnemonic.split(' ').forEach((value: string, index: number) => {
+        mnemonic.split(' ').forEach((_: string, index: number) => {
           const enabled = randomIndices.indexOf(index) !== -1;
           enabledInputs.set(index, enabled);
         });

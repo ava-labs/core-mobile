@@ -46,7 +46,7 @@ interface PortfolioHeaderProps {
 
 const PortfolioHeader: FC<PortfolioHeaderProps> = memo(
   ({navigation, addressC, appContext, balanceTotalUSD = 0, accountName}) => {
-    const theme = useContext(ApplicationContext).theme;
+    const theme = appContext.theme;
 
     const leftComponent = (
       <Pressable

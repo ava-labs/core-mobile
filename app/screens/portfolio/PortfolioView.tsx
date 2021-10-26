@@ -1,4 +1,4 @@
-import React, {FC, memo, useContext, useEffect, useRef} from 'react';
+import React, {FC, memo, useContext, useEffect, useRef, useState} from 'react';
 import {FlatList, ListRenderItemInfo, StyleSheet} from 'react-native';
 import PortfolioHeader from 'screens/portfolio/PortfolioHeader';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
@@ -16,6 +16,8 @@ type PortfolioProps = {
   onSwitchWallet: () => void;
   tokenList?: TokenWithBalance[];
   loadZeroBalanceList: () => void;
+  isRefreshing: boolean;
+  handleRefresh: () => void;
 };
 
 export type PortfolioRouteProp = StackNavigationProp<
@@ -28,7 +30,14 @@ function PortfolioContainer({
   onExit,
   onSwitchWallet,
 }: PortfolioProps): JSX.Element {
-  const {tokenList, loadZeroBalanceList} = useSearchableTokenList();
+  const {tokenList, loadZeroBalanceList, loadTokenList} =
+    useSearchableTokenList();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  function handleRefresh() {
+    setIsRefreshing(true);
+    loadTokenList().then(() => setIsRefreshing(false));
+  }
 
   return (
     <PortfolioView
@@ -36,12 +45,19 @@ function PortfolioContainer({
       onSwitchWallet={onSwitchWallet}
       tokenList={tokenList}
       loadZeroBalanceList={loadZeroBalanceList}
+      isRefreshing={isRefreshing}
+      handleRefresh={handleRefresh}
     />
   );
 }
 
 const PortfolioView: FC<PortfolioProps> = memo(
-  ({tokenList, loadZeroBalanceList}: PortfolioProps) => {
+  ({
+    tokenList,
+    loadZeroBalanceList,
+    isRefreshing,
+    handleRefresh,
+  }: PortfolioProps) => {
     const listRef = useRef<FlatList>(null);
     const navigation = useNavigation<PortfolioRouteProp>();
     const {setSelectedToken} = useContext(SelectedTokenContext);
@@ -50,7 +66,7 @@ const PortfolioView: FC<PortfolioProps> = memo(
       const unsubscribe = navigation.addListener('focus', () => {
         loadZeroBalanceList();
       });
-      return () => unsubscribe();
+      return () => navigation.removeListener('focus', unsubscribe);
     }, [navigation]);
 
     function selectToken(token: TokenWithBalance) {
@@ -84,6 +100,8 @@ const PortfolioView: FC<PortfolioProps> = memo(
           data={tokenList}
           renderItem={renderItem}
           keyExtractor={(item: TokenWithBalance) => item.symbol}
+          onRefresh={handleRefresh}
+          refreshing={isRefreshing}
           scrollEventThrottle={16}
         />
       </SafeAreaProvider>
