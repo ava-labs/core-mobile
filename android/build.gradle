@@ -11,6 +11,8 @@ buildscript {
     repositories {
         google()
         mavenCentral()
+        // com.facebook.yoga:proguard-annotations still depends on jcenter apparently
+        jcenter()
     }
     dependencies {
         classpath("com.android.tools.build:gradle:4.2.2")
@@ -37,7 +39,8 @@ allprojects {
         }
 
         google()
-
+        // com.facebook.yoga:proguard-annotations still depends on jcenter apparently
+        jcenter()
         maven { url 'https://www.jitpack.io' }
     }
 }
