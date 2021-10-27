@@ -1,7 +1,11 @@
+#source 'https://github.com/CocoaPods/Specs.git'
+
 require_relative '../node_modules/react-native/scripts/react_native_pods'
 require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
 
-platform :ios, '10.0'
+#install! 'cocoapods', :deterministic_uuids => false
+
+platform :ios, '11.0'
 
 target 'AvaxWallet' do
   config = use_native_modules!
@@ -23,13 +27,15 @@ target 'AvaxWallet' do
   #
   # Note that if you have use_frameworks! enabled, Flipper will not work and
   # you should disable the next line.
-  #use_flipper!()
-
-  post_install do |installer|
-    react_native_post_install(installer)
-  end
+  use_flipper!({'Flipper' => '0.92.0', 'Flipper-Folly' => '2.6.7', 'Flipper-RSocket' => '1.4.3'})
 
   permissions_path = '../node_modules/react-native-permissions/ios'
   pod 'Permission-Camera', :path => "#{permissions_path}/Camera"
 
+end
+
+post_install do |installer|
+ flipper_post_install(installer)
+ react_native_post_install(installer)
+ __apply_Xcode_12_5_M1_post_install_workaround(installer)
 end
