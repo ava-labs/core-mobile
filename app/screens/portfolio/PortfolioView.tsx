@@ -30,13 +30,11 @@ function PortfolioContainer({
   onExit,
   onSwitchWallet,
 }: PortfolioProps): JSX.Element {
-  const {tokenList, loadZeroBalanceList, loadTokenList} =
+  const {tokenList, loadZeroBalanceList, loadTokenList, isRefreshing} =
     useSearchableTokenList();
-  const [isRefreshing, setIsRefreshing] = useState(false);
 
   function handleRefresh() {
-    setIsRefreshing(true);
-    loadTokenList().then(() => setIsRefreshing(false));
+    loadTokenList();
   }
 
   return (
