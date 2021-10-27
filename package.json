@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "android": "react-native run-android",
+    "androidNightly": "react-native run-android --variant=nightly",
     "ios": "cd $INIT_CWD/ios && pod install && cd $INIT_CWD && react-native run-ios",
     "start": "react-native start",
     "link": "react-native link",

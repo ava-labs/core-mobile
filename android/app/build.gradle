@@ -79,6 +79,9 @@ import com.android.build.OutputFile
 
 project.ext.react = [
     enableHermes: false,  // clean and rebuild if changing
+    entryFile: "index.js",
+    bundleInNightly: true,
+    devDisabledInNightly: true,
 ]
 
 apply from: "../../node_modules/react-native/react.gradle"
@@ -183,6 +186,13 @@ android {
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
+        nightly {
+            applicationIdSuffix ".nightly"
+            signingConfig signingConfigs.release
+            minifyEnabled enableProguardInReleaseBuilds
+            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+            matchingFallbacks = ['release']
+        }
     }
 
     // applicationVariants are e.g. debug, release
@@ -232,6 +242,7 @@ dependencies {
         def hermesPath = "../../node_modules/hermes-engine/android/";
         debugImplementation files(hermesPath + "hermes-debug.aar")
         releaseImplementation files(hermesPath + "hermes-release.aar")
+        nightlyImplementation files(hermesPath + "hermes-release.aar")
     } else {
         implementation jscFlavor
     }

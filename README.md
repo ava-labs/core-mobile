@@ -87,3 +87,9 @@ and then upload generated aab file to [play console](https://play.google.com/con
 3. Configure app to be built using the Release scheme, go to `Product → Scheme → Edit Scheme`. Select the `Run` tab in the sidebar, then set the `Build Configuration` dropdown to `Release`
 4. Set build target to `Any iOS device`
 5. Go to `Product → Archive` and follow wizard steps
+
+### Nightly builds - Android
+```zsh
+cd android
+./gradlew assembleNightly
+```
