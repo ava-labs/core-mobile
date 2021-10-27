@@ -18,6 +18,7 @@ function SendHeader({onClose}: Props): JSX.Element {
     <View
       style={{
         flexDirection: 'row',
+        marginTop: -16,
       }}>
       <View style={{flex: 1}}>
         <AvaListItem.Base
@@ -34,7 +35,7 @@ function SendHeader({onClose}: Props): JSX.Element {
           titleAlignment={'flex-start'}
         />
       </View>
-      <AvaButton.Icon onPress={onClose} style={{marginTop: -16}}>
+      <AvaButton.Icon onPress={onClose}>
         <ClearSVG
           color={theme.colorIcon1}
           backgroundColor={theme.colorBg2}

@@ -4,9 +4,7 @@ import {
   StackNavigationOptions,
   TransitionPresets,
 } from '@react-navigation/stack';
-import {TouchableOpacity} from '@gorhom/bottom-sheet';
-import CarrotSVG from 'components/svg/CarrotSVG';
-import {NavigationContainer, useNavigation} from '@react-navigation/native';
+import {NavigationContainer} from '@react-navigation/native';
 import SendAvaxConfirm from 'screens/sendAvax/SendAvaxConfirm';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import SendAvax from 'screens/sendAvax/SendAvax';
@@ -46,27 +44,9 @@ const SendTokenStackScreen = ({onClose}: Props) => {
   const screenOptions = useMemo<StackNavigationOptions>(
     () => ({
       ...TransitionPresets.SlideFromRightIOS,
-      headerShown: true,
+      headerShown: false,
       safeAreaInsets: {top: 0},
-      headerLeft: ({onPress}) => (
-        <TouchableOpacity
-          style={{paddingEnd: 16, transform: [{rotate: '180deg'}]}}
-          onPress={onPress}>
-          <CarrotSVG color={theme.colorText1} />
-        </TouchableOpacity>
-      ),
-      headerTitleStyle: {
-        color: theme.colorText1,
-        fontFamily: 'Inter-Bold',
-        fontSize: 24,
-        lineHeight: 29,
-      },
-      headerStyle: {
-        backgroundColor: theme.bgOnBgApp,
-        shadowColor: theme.transparent,
-      },
       cardStyle: {
-        backgroundColor: theme.bgOnBgApp,
         overflow: 'visible',
       },
     }),
@@ -81,11 +61,6 @@ const SendTokenStackScreen = ({onClose}: Props) => {
       [TokenType.ANT]: <SendANTConfirm />,
     }[tokenType(selectedToken) ?? TokenType.AVAX];
   };
-
-  const noHeaderOptions = useMemo(
-    () => ({headerShown: false, headerLeft: () => null}),
-    [],
-  );
 
   const SendTab = ({token}: {token: TokenWithBalance | undefined}) => {
     return {
@@ -116,23 +91,23 @@ const SendTokenStackScreen = ({onClose}: Props) => {
   };
 
   const SendAvaxStack = () => {
+    const context = useContext(ApplicationContext);
     return (
       <SendAvaxContextProvider>
-        <NavigationContainer independent={true}>
+        <NavigationContainer
+          independent={true}
+          theme={context.navContainerTheme}>
           <Stack.Navigator screenOptions={screenOptions}>
             <Stack.Screen
               name={AppNavigation.SendToken.SendTokenScreen}
-              options={noHeaderOptions}
               component={HeaderAndTabs}
             />
             <Stack.Screen
-              options={{title: 'Confirm Transaction'}}
               name={AppNavigation.SendToken.ConfirmTransactionScreen}
               component={ConfirmScreen}
             />
             <Stack.Screen
               name={AppNavigation.SendToken.DoneScreen}
-              options={noHeaderOptions}
               component={DoneDoneScreen}
             />
           </Stack.Navigator>
@@ -142,23 +117,23 @@ const SendTokenStackScreen = ({onClose}: Props) => {
   };
 
   const SendANTStack = ({token}: {token: AntWithBalance}) => {
+    const context = useContext(ApplicationContext);
     return (
       <SendANTContextProvider antToken={token}>
-        <NavigationContainer independent={true}>
+        <NavigationContainer
+          independent={true}
+          theme={context.navContainerTheme}>
           <Stack.Navigator screenOptions={screenOptions}>
             <Stack.Screen
               name={AppNavigation.SendToken.SendTokenScreen}
-              options={noHeaderOptions}
               component={HeaderAndTabs}
             />
             <Stack.Screen
-              options={{title: 'Confirm Transaction'}}
               name={AppNavigation.SendToken.ConfirmTransactionScreen}
               component={ConfirmScreen}
             />
             <Stack.Screen
               name={AppNavigation.SendToken.DoneScreen}
-              options={noHeaderOptions}
               component={DoneDoneScreen}
             />
           </Stack.Navigator>
@@ -168,23 +143,23 @@ const SendTokenStackScreen = ({onClose}: Props) => {
   };
 
   const SendERC20Stack = ({token}: {token: ERC20}) => {
+    const context = useContext(ApplicationContext);
     return (
       <SendERC20ContextProvider erc20Token={token}>
-        <NavigationContainer independent={true}>
+        <NavigationContainer
+          independent={true}
+          theme={context.navContainerTheme}>
           <Stack.Navigator screenOptions={screenOptions}>
             <Stack.Screen
               name={AppNavigation.SendToken.SendTokenScreen}
-              options={noHeaderOptions}
               component={HeaderAndTabs}
             />
             <Stack.Screen
-              options={{title: 'Confirm Transaction'}}
               name={AppNavigation.SendToken.ConfirmTransactionScreen}
               component={ConfirmScreen} //TODO: change to specific screen for ant
             />
             <Stack.Screen
               name={AppNavigation.SendToken.DoneScreen}
-              options={noHeaderOptions}
               component={DoneDoneScreen}
             />
           </Stack.Navigator>
