@@ -35,7 +35,9 @@ export default function SendANT(): JSX.Element {
   const {navigate} = useNavigation();
 
   return (
-    <BottomSheetScrollView contentContainerStyle={{flexGrow: 1}}>
+    <BottomSheetScrollView
+      contentContainerStyle={{flexGrow: 1}}
+      keyboardShouldPersistTaps="handled">
       <View
         style={[
           backgroundStyle,
