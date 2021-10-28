@@ -2,40 +2,28 @@ import React, {useContext} from 'react';
 import {View} from 'react-native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from 'components/AvaText';
-import QRCode from 'react-native-qrcode-svg';
-import AvaLogoSVG from 'components/svg/AvaLogoSVG';
-import CircularText from 'components/svg/CircularText';
 import {Opacity05} from 'resources/Constants';
 import {Space} from 'components/Space';
+import AvaxQACode from 'components/AvaxQACode';
 
 interface Props {
   chainName: string;
-  description?: string;
+  description: string;
   address?: string;
-  hideBackground?: boolean;
-  hideChainName?: boolean;
-  removeMargins?: boolean;
 }
 
-function ChainCard({
-  chainName,
-  description,
-  address,
-  hideChainName,
-  hideBackground,
-  removeMargins,
-}: Props) {
+function ChainCard({chainName, description, address}: Props) {
   const context = useContext(ApplicationContext);
   return (
     <View
       style={[
         {
+          width: 280,
+          height: 292,
           borderRadius: 8,
-          marginTop: removeMargins ? 0 : 16,
-          backgroundColor: hideBackground
-            ? context.theme.transparent
-            : context.theme.colorIcon1 + Opacity05,
-          marginHorizontal: removeMargins ? 0 : 16,
+          marginTop: 16,
+          backgroundColor: context.theme.colorIcon1 + Opacity05,
+          marginHorizontal: 16,
           justifyContent: 'center',
           alignItems: 'center',
           alignSelf: 'baseline',
@@ -43,44 +31,16 @@ function ChainCard({
       ]}>
       <View style={{paddingHorizontal: 50}}>
         <Space y={16} />
-        {hideChainName || <AvaText.Heading2>{chainName}</AvaText.Heading2>}
-        {!!description && (
-          <AvaText.Body2
-            textStyle={{
-              paddingTop: 8,
-              paddingBottom: 16,
-              textAlign: 'justify',
-            }}>
-            {description}
-          </AvaText.Body2>
-        )}
-        <View
-          style={{
-            borderWidth: 7,
-            height: 180,
-            borderColor: context.theme.txtOnBgApp,
-            borderRadius: 7,
-            alignSelf: 'baseline',
+        <AvaText.Heading2>{chainName}</AvaText.Heading2>
+        <AvaText.Body2
+          textStyle={{
+            paddingTop: 8,
+            paddingBottom: 16,
+            textAlign: 'justify',
           }}>
-          <QRCode ecl={'H'} size={168} value={address ? address : undefined} />
-          <View
-            style={{
-              position: 'absolute',
-              top: 0,
-              bottom: 0,
-              left: 0,
-              right: 0,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}>
-            <AvaLogoSVG
-              absolutePosition
-              size={40}
-              logoColor={context.theme.txtListItem}
-            />
-            <CircularText text={chainName} />
-          </View>
-        </View>
+          {description}
+        </AvaText.Body2>
+        <AvaxQACode address={address} circularText={chainName} />
       </View>
     </View>
   );
