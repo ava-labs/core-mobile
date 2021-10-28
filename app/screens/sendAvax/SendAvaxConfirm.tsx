@@ -10,11 +10,12 @@ import {useNavigation} from '@react-navigation/native';
 import AppNavigation from 'navigation/AppNavigation';
 import {SendAvaxContext} from 'contexts/SendAvaxContext';
 import {SelectedTokenContext} from 'contexts/SelectedTokenContext';
+import {ConfirmHeader} from 'screens/send/ConfirmHeader';
 
 export default function SendAvaxConfirm(): JSX.Element {
   const context = useContext(ApplicationContext);
   const [backgroundStyle] = useState(context.backgroundStyle);
-  const {navigate} = useNavigation();
+  const {navigate, goBack} = useNavigation();
   const {
     destinationAddress,
     sendAmountString,
@@ -43,7 +44,8 @@ export default function SendAvaxConfirm(): JSX.Element {
           paddingRight: 0,
         },
       ]}>
-      <Space y={40} />
+      <ConfirmHeader onBack={goBack} />
+      <Space y={51} />
       {tokenLogo()}
       <Space y={16} />
       <AvaText.Heading1>
