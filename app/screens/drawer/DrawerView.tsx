@@ -3,7 +3,7 @@ import {Alert, Modal, Pressable, StyleSheet, View} from 'react-native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import AvaText from 'components/AvaText';
-import BottomSheet, {BottomSheetScrollView} from '@gorhom/bottom-sheet';
+import BottomSheet from '@gorhom/bottom-sheet';
 import {DrawerContentComponentProps} from '@react-navigation/drawer';
 import CurrencyItem from 'screens/drawer/components/CurrencyItem';
 import SecurityItem from 'screens/drawer/components/SecurityItem';
@@ -16,6 +16,7 @@ import DarkModeSVG from 'components/svg/DarkModeSVG';
 import NetworkSelector from 'network/NetworkSelector';
 import AvaButton from 'components/AvaButton';
 import {Space} from 'components/Space';
+import {ScrollView} from 'react-native-gesture-handler';
 
 const DrawerView: FC<DrawerContentComponentProps> = ({navigation}) => {
   const context = useContext(ApplicationContext);
@@ -65,13 +66,12 @@ const DrawerView: FC<DrawerContentComponentProps> = ({navigation}) => {
 
   const renderContent = () => (
     <>
-      <BottomSheetScrollView
-        style={{backgroundColor: context.theme.bgOnBgApp, flex: 1}}>
+      <ScrollView style={{backgroundColor: context.theme.bgOnBgApp, flex: 1}}>
         <CurrencyItem navigation={navigation} />
         <SecurityItem navigation={navigation} />
         <LegalItem navigation={navigation} />
         {/*<AdvancedItem />*/}
-      </BottomSheetScrollView>
+      </ScrollView>
       <Separator />
       <VersionItem />
 

@@ -1,12 +1,5 @@
 import React, {useContext, useState} from 'react';
-import {
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  View,
-} from 'react-native';
+import {Modal, StyleSheet, View} from 'react-native';
 import InputText from 'components/InputText';
 import AvaButton from 'components/AvaButton';
 import Loader from 'components/Loader';
@@ -18,7 +11,7 @@ import AvaText from 'components/AvaText';
 import FlexSpacer from 'components/FlexSpacer';
 import {SendAvaxContext} from 'contexts/SendAvaxContext';
 import {ScanQrIcon} from 'screens/send/ScanQrIcon';
-import {BottomSheetScrollView} from '@gorhom/bottom-sheet';
+import {ScrollView} from 'react-native-gesture-handler';
 
 export default function SendAvax(): JSX.Element {
   const context = useContext(ApplicationContext);
@@ -42,7 +35,7 @@ export default function SendAvax(): JSX.Element {
   const {navigate} = useNavigation();
 
   return (
-    <BottomSheetScrollView
+    <ScrollView
       contentContainerStyle={{flexGrow: 1}}
       keyboardShouldPersistTaps="handled">
       <View
@@ -124,7 +117,7 @@ export default function SendAvax(): JSX.Element {
           />
         </Modal>
       </View>
-    </BottomSheetScrollView>
+    </ScrollView>
   );
 }
 
