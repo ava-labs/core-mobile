@@ -16,6 +16,7 @@ import {
   TransitionPresets,
 } from '@react-navigation/stack';
 import {NavigationContainer, useNavigation} from '@react-navigation/native';
+import AvaxQACode from 'components/AvaxQACode';
 
 type ReceiveStackParams = {
   ReceiveCChain: undefined;
@@ -113,12 +114,9 @@ const Receive: FC<{
     <View style={[styles.container, {backgroundColor: theme.colorBg2}]}>
       <AvaText.Body1>Scan QR code or share the address</AvaText.Body1>
       <View style={{alignSelf: 'center', marginTop: 16, marginBottom: 32}}>
-        <ChainCard
-          chainName={isXChain ? 'X Chain' : 'C Chain'}
+        <AvaxQACode
+          circularText={isXChain ? 'X Chain' : 'C Chain'}
           address={props.selectedAddress}
-          hideBackground
-          hideChainName
-          removeMargins
         />
       </View>
       <AvaButton.Base
