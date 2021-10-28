@@ -12,9 +12,8 @@ import AvaText from 'components/AvaText';
 import {Space} from 'components/Space';
 import AccountItem from 'screens/portfolio/account/AccountItem';
 import {Account} from 'dto/Account';
-import {BottomSheetScrollView} from '@gorhom/bottom-sheet';
-import {useFocusEffect} from '@react-navigation/native';
 import {SelectedAccountContext} from 'contexts/SelectedAccountContext';
+import {ScrollView} from 'react-native-gesture-handler';
 
 const SCREEN_WIDTH = Dimensions.get('window')?.width;
 
@@ -62,14 +61,13 @@ function AccountView(): JSX.Element {
           {/*<AddSVG />*/}
         </View>
         <Space y={16} />
-        <BottomSheetScrollView
-          focusHook={useFocusEffect}
+        <ScrollView
           horizontal
           onMomentumScrollEnd={onScrollEnd}
           pagingEnabled
           showsHorizontalScrollIndicator={false}>
           {accountElements([...accounts.values()])}
-        </BottomSheetScrollView>
+        </ScrollView>
 
         {/*<HeaderProgress*/}
         {/*  maxDots={accounts.length}*/}

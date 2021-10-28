@@ -11,7 +11,7 @@ import AvaText from 'components/AvaText';
 import FlexSpacer from 'components/FlexSpacer';
 import {SendANTContext} from 'contexts/SendANTContext';
 import {ScanQrIcon} from 'screens/send/ScanQrIcon';
-import {BottomSheetScrollView} from '@gorhom/bottom-sheet';
+import {ScrollView} from 'react-native-gesture-handler';
 
 export default function SendANT(): JSX.Element {
   const context = useContext(ApplicationContext);
@@ -35,7 +35,7 @@ export default function SendANT(): JSX.Element {
   const {navigate} = useNavigation();
 
   return (
-    <BottomSheetScrollView
+    <ScrollView
       contentContainerStyle={{flexGrow: 1}}
       keyboardShouldPersistTaps="handled">
       <View
@@ -123,7 +123,7 @@ export default function SendANT(): JSX.Element {
           />
         </Modal>
       </View>
-    </BottomSheetScrollView>
+    </ScrollView>
   );
 }
 
