@@ -28,6 +28,7 @@ enum ModalScreens {
   SendReceiveBottomSheet = 'SendReceiveBottomSheet',
   AccountBottomSheet = 'AccountBottomSheet',
   TransactionDetailBottomSheet = 'TransactionDetailBottomSheet',
+  ReceiveOnlyBottomSheet = 'ReceiveOnlyBottomSheet',
 }
 
 export enum OnboardScreens {

@@ -44,6 +44,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import BiometricsSDK from 'utils/BiometricsSDK';
 import moment from 'moment';
 import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
+import ReceiveOnlyBottomSheet from 'screens/portfolio/receive/ReceiveOnlyBottomSheet';
 
 type Props = {
   onExit: () => void;
@@ -239,6 +240,10 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
         <RootStack.Screen
           name={AppNavigation.Modal.TransactionDetailBottomSheet}
           component={ActivityDetailBottomSheet}
+        />
+        <RootStack.Screen
+          name={AppNavigation.Modal.ReceiveOnlyBottomSheet}
+          component={ReceiveOnlyBottomSheet}
         />
       </RootStack.Group>
     );
