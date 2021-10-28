@@ -14,18 +14,12 @@ import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import {TokenWithBalance} from '@avalabs/wallet-react-components';
 import {useSearchableTokenList} from 'screens/portfolio/useSearchableTokenList';
 import AppNavigation from 'navigation/AppNavigation';
-import {PortfolioStackParamList} from 'navigation/PortfolioStackScreen';
-import {StackNavigationProp} from '@react-navigation/stack';
 import SearchListItem from 'screens/search/SearchListItem';
 import AvaText from 'components/AvaText';
 import AddSVG from 'components/svg/AddSVG';
 import AvaListItem from 'components/AvaListItem';
 import CarrotSVG from 'components/svg/CarrotSVG';
-
-export type SearchRouteProp = StackNavigationProp<
-  PortfolioStackParamList,
-  'SearchScreen'
->;
+import {PortfolioNavigationProp} from 'screens/portfolio/PortfolioView';
 
 function SearchView() {
   const {
@@ -34,9 +28,15 @@ function SearchView() {
     setSearchText,
     setShowZeroBalanceList,
     showZeroBalanceList,
+    isRefreshing,
+    loadTokenList,
   } = useSearchableTokenList(false);
   const context = useContext(ApplicationContext);
-  const navigation = useNavigation<SearchRouteProp>();
+  const navigation = useNavigation<PortfolioNavigationProp>();
+
+  function handleRefresh() {
+    loadTokenList();
+  }
 
   const renderItem = (item: ListRenderItemInfo<TokenWithBalance>) => {
     const token = item.item;
@@ -125,6 +125,8 @@ function SearchView() {
       <FlatList
         data={filteredTokenList}
         renderItem={renderItem}
+        onRefresh={handleRefresh}
+        refreshing={isRefreshing}
         keyExtractor={(item: TokenWithBalance) => item.symbol}
         ListEmptyComponent={emptyView}
       />

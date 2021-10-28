@@ -6,30 +6,26 @@ import {
   ApplicationContextState,
 } from 'contexts/ApplicationContext';
 import {usePortfolio} from 'screens/portfolio/usePortfolio';
-import {
-  DrawerActions,
-  NavigationProp,
-  useNavigation,
-} from '@react-navigation/native';
+import {DrawerActions, useNavigation} from '@react-navigation/native';
 import AppNavigation from 'navigation/AppNavigation';
 import MenuSVG from 'components/svg/MenuSVG';
 import CarrotSVG from 'components/svg/CarrotSVG';
 import AddSVG from 'components/svg/AddSVG';
 import AvaText from 'components/AvaText';
 import {SelectedAccountContext} from 'contexts/SelectedAccountContext';
+import {PortfolioNavigationProp} from 'screens/portfolio/PortfolioView';
 
 // experimenting with container pattern and stable props to try to reduce re-renders
 function PortfolioHeaderContainer() {
   const context = useContext(ApplicationContext);
-  const navigation = useNavigation();
-  const {addressC, balanceTotalInUSD} = usePortfolio();
+  const navigation = useNavigation<PortfolioNavigationProp>();
+  const {balanceTotalInUSD} = usePortfolio();
   const {selectedAccount} = useContext(SelectedAccountContext);
 
   return (
     <PortfolioHeader
       appContext={context}
       navigation={navigation}
-      addressC={addressC}
       balanceTotalUSD={balanceTotalInUSD}
       accountName={selectedAccount?.title ?? ''}
     />
@@ -38,14 +34,13 @@ function PortfolioHeaderContainer() {
 
 interface PortfolioHeaderProps {
   appContext: ApplicationContextState;
-  navigation: NavigationProp<ReactNavigation.RootParamList>;
-  addressC: string;
+  navigation: PortfolioNavigationProp;
   balanceTotalUSD: string;
   accountName: string;
 }
 
 const PortfolioHeader: FC<PortfolioHeaderProps> = memo(
-  ({navigation, addressC, appContext, balanceTotalUSD = 0, accountName}) => {
+  ({navigation, appContext, balanceTotalUSD = 0, accountName}) => {
     const theme = appContext.theme;
 
     const leftComponent = (
