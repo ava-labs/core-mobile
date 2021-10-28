@@ -1,17 +1,17 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import {RefreshControl, ScrollView, View} from 'react-native';
+import {RefreshControl, View} from 'react-native';
 import SearchSVG from 'components/svg/SearchSVG';
 import {useNavigation} from '@react-navigation/native';
 import AppNavigation from 'navigation/AppNavigation';
 import AvaText from 'components/AvaText';
 import Loader from 'components/Loader';
 import CollapsibleSection from 'components/CollapsibleSection';
-import {BottomSheetScrollView} from '@gorhom/bottom-sheet';
 import {useWalletContext} from '@avalabs/wallet-react-components';
 import moment from 'moment';
 import ActivityListItem from 'screens/activity/ActivityListItem';
 import {HistoryItemType} from '@avalabs/avalanche-wallet-sdk/dist/History';
 import {History} from '@avalabs/avalanche-wallet-sdk';
+import {ScrollView} from 'react-native-gesture-handler';
 
 const TODAY = moment().format('MM.DD.YY');
 const YESTERDAY = moment().subtract(1, 'days').format('MM.DD.YY');
@@ -109,13 +109,13 @@ function ActivityView({embedded}: Props) {
     const isEmpty = Object.entries(sectionData).length === 0;
 
     return embedded ? (
-      <BottomSheetScrollView
+      <ScrollView
         style={{flex: 1}}
         refreshControl={
           <RefreshControl refreshing={loading} onRefresh={onRefresh} />
         }>
         {children}
-      </BottomSheetScrollView>
+      </ScrollView>
     ) : (
       <ScrollView
         style={{flex: 1}}
