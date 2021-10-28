@@ -10,22 +10,32 @@ import {Space} from 'components/Space';
 
 interface Props {
   chainName: string;
-  description: string;
+  description?: string;
   address?: string;
+  hideBackground?: boolean;
+  hideChainName?: boolean;
+  removeMargins?: boolean;
 }
 
-function ChainCard({chainName, description, address}: Props) {
+function ChainCard({
+  chainName,
+  description,
+  address,
+  hideChainName,
+  hideBackground,
+  removeMargins,
+}: Props) {
   const context = useContext(ApplicationContext);
   return (
     <View
       style={[
         {
-          width: 280,
-          height: 292,
           borderRadius: 8,
-          marginTop: 16,
-          backgroundColor: context.theme.colorIcon1 + Opacity05,
-          marginHorizontal: 16,
+          marginTop: removeMargins ? 0 : 16,
+          backgroundColor: hideBackground
+            ? context.theme.transparent
+            : context.theme.colorIcon1 + Opacity05,
+          marginHorizontal: removeMargins ? 0 : 16,
           justifyContent: 'center',
           alignItems: 'center',
           alignSelf: 'baseline',
@@ -33,15 +43,17 @@ function ChainCard({chainName, description, address}: Props) {
       ]}>
       <View style={{paddingHorizontal: 50}}>
         <Space y={16} />
-        <AvaText.Heading2>{chainName}</AvaText.Heading2>
-        <AvaText.Body2
-          textStyle={{
-            paddingTop: 8,
-            paddingBottom: 16,
-            textAlign: 'justify',
-          }}>
-          {description}
-        </AvaText.Body2>
+        {hideChainName || <AvaText.Heading2>{chainName}</AvaText.Heading2>}
+        {!!description && (
+          <AvaText.Body2
+            textStyle={{
+              paddingTop: 8,
+              paddingBottom: 16,
+              textAlign: 'justify',
+            }}>
+            {description}
+          </AvaText.Body2>
+        )}
         <View
           style={{
             borderWidth: 7,
