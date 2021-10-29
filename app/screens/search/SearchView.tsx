@@ -50,6 +50,8 @@ function SearchView(): JSX.Element {
       <SearchListItem
         balance={balance}
         name={token.name}
+        symbol={token.symbol}
+        position={item.index + 1}
         image={logoUri}
         isShowingZeroBalanceForToken={showZeroBalanceList[token.name]}
         onSwitchChanged={value => {
