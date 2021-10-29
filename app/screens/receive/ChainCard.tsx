@@ -2,11 +2,9 @@ import React, {useContext} from 'react';
 import {View} from 'react-native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from 'components/AvaText';
-import QRCode from 'react-native-qrcode-svg';
-import AvaLogoSVG from 'components/svg/AvaLogoSVG';
-import CircularText from 'components/svg/CircularText';
 import {Opacity05} from 'resources/Constants';
 import {Space} from 'components/Space';
+import AvaxQACode from 'components/AvaxQACode';
 
 interface Props {
   chainName: string;
@@ -42,33 +40,7 @@ function ChainCard({chainName, description, address}: Props) {
           }}>
           {description}
         </AvaText.Body2>
-        <View
-          style={{
-            borderWidth: 7,
-            height: 180,
-            borderColor: context.theme.txtOnBgApp,
-            borderRadius: 7,
-            alignSelf: 'baseline',
-          }}>
-          <QRCode ecl={'H'} size={168} value={address ? address : undefined} />
-          <View
-            style={{
-              position: 'absolute',
-              top: 0,
-              bottom: 0,
-              left: 0,
-              right: 0,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}>
-            <AvaLogoSVG
-              absolutePosition
-              size={40}
-              logoColor={context.theme.txtListItem}
-            />
-            <CircularText text={chainName} />
-          </View>
-        </View>
+        <AvaxQACode address={address} circularText={chainName} />
       </View>
     </View>
   );
