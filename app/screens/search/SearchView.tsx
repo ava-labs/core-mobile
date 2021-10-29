@@ -17,11 +17,12 @@ import AppNavigation from 'navigation/AppNavigation';
 import SearchListItem from 'screens/search/SearchListItem';
 import AvaText from 'components/AvaText';
 import AddSVG from 'components/svg/AddSVG';
-import AvaListItem from 'components/AvaListItem';
 import CarrotSVG from 'components/svg/CarrotSVG';
 import {PortfolioNavigationProp} from 'screens/portfolio/PortfolioView';
+import AvaButton from 'components/AvaButton';
+import {Opacity50} from 'resources/Constants';
 
-function SearchView() {
+function SearchView(): JSX.Element {
   const {
     filteredTokenList,
     searchText,
@@ -104,24 +105,9 @@ function SearchView() {
           />
         </View>
       </View>
-      <View
-        style={{
-          marginHorizontal: 16,
-          borderRadius: 8,
-          borderWidth: 1,
-          borderColor: context.theme.colorStroke,
-        }}>
-        <AvaListItem.Base
-          title={'Add custom token'}
-          leftComponent={
-            <AddSVG color={context.theme.colorPrimary1} hideCircle size={24} />
-          }
-          rightComponent={<CarrotSVG />}
-          onPress={() =>
-            navigation.navigate(AppNavigation.Wallet.AddCustomToken)
-          }
-        />
-      </View>
+      <AddCustomTokenButton
+        onPress={() => navigation.navigate(AppNavigation.Wallet.AddCustomToken)}
+      />
       <FlatList
         data={filteredTokenList}
         renderItem={renderItem}
@@ -159,5 +145,27 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
+
+const AddCustomTokenButton = ({onPress}: {onPress: () => void}) => {
+  const {theme} = useContext(ApplicationContext);
+  return (
+    <AvaButton.Base
+      onPress={onPress}
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: theme.colorBg3 + Opacity50,
+        borderRadius: 8,
+        margin: 16,
+        padding: 16,
+      }}>
+      <AddSVG color={theme.colorPrimary1} hideCircle size={24} />
+      <AvaText.Body1 textStyle={{marginLeft: 12, flex: 1}}>
+        Add custom token
+      </AvaText.Body1>
+      <CarrotSVG />
+    </AvaButton.Base>
+  );
+};
 
 export default SearchView;
