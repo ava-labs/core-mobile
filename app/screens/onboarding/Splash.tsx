@@ -1,9 +1,8 @@
 import React, {useContext} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
-import {Space} from 'components/Space';
-import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import AvaText from 'components/AvaText';
+import SplashLogoSVG from 'components/svg/SplashLogoSVG';
 
 const pkg = require('../../../package.json');
 
@@ -18,18 +17,8 @@ export default function Splash(): JSX.Element {
       ]}>
       <View style={styles.logoContainer}>
         <View style={styles.logo}>
-          <AvaLogoSVG
-            logoColor={context.theme.colorPrimary1}
-            backgroundColor={context.theme.transparent}
-          />
+          <SplashLogoSVG />
         </View>
-        <AvaText.LargeTitleBold textStyle={{textAlign: 'center'}}>
-          Wallet
-        </AvaText.LargeTitleBold>
-        <Space y={8} />
-        <AvaText.Body1 textStyle={{textAlign: 'center'}}>
-          Your simple and secure crypto wallet
-        </AvaText.Body1>
       </View>
 
       <AvaText.Body2 textStyle={{position: 'absolute', top: 0, left: 16}}>
@@ -44,9 +33,6 @@ const styles = StyleSheet.create({
     padding: 16,
     height: '100%',
     justifyContent: 'flex-end',
-  },
-  buttonWithText: {
-    alignItems: 'center',
   },
   logoContainer: {
     flexGrow: 1,
