@@ -1,5 +1,5 @@
-import React, {FC, memo, useContext, useEffect, useRef, useState} from 'react';
-import {FlatList, ListRenderItemInfo, StyleSheet} from 'react-native';
+import React, {FC, memo, useContext, useEffect, useMemo, useRef} from 'react';
+import {FlatList, ListRenderItemInfo, StyleSheet, View} from 'react-native';
 import PortfolioHeader from 'screens/portfolio/PortfolioHeader';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {useNavigation} from '@react-navigation/native';
@@ -10,20 +10,22 @@ import {StackNavigationProp} from '@react-navigation/stack';
 import {PortfolioStackParamList} from 'navigation/PortfolioStackScreen';
 import PortfolioListItem from 'screens/portfolio/components/PortfolioListItem';
 import {SelectedTokenContext} from 'contexts/SelectedTokenContext';
+import ZeroState from 'components/ZeroState';
+import AvaButton from 'components/AvaButton';
+import {usePortfolio} from 'screens/portfolio/usePortfolio';
 
 type PortfolioProps = {
   onExit: () => void;
   onSwitchWallet: () => void;
   tokenList?: TokenWithBalance[];
-  loadZeroBalanceList: () => void;
-  isRefreshing: boolean;
-  handleRefresh: () => void;
+  loadZeroBalanceList?: () => void;
+  isRefreshing?: boolean;
+  handleRefresh?: () => void;
+  hasZeroBalance: boolean;
 };
 
-export type PortfolioRouteProp = StackNavigationProp<
-  PortfolioStackParamList,
-  'PortfolioScreen'
->;
+export type PortfolioNavigationProp =
+  StackNavigationProp<PortfolioStackParamList>;
 
 // experimenting with container pattern and stable props to try to reduce re-renders
 function PortfolioContainer({
@@ -32,6 +34,11 @@ function PortfolioContainer({
 }: PortfolioProps): JSX.Element {
   const {tokenList, loadZeroBalanceList, loadTokenList, isRefreshing} =
     useSearchableTokenList();
+  const {balanceTotalInUSD} = usePortfolio();
+  const hasZeroBalance =
+    !balanceTotalInUSD ||
+    balanceTotalInUSD === '0' ||
+    balanceTotalInUSD === '$0.00';
 
   function handleRefresh() {
     loadTokenList();
@@ -45,6 +52,7 @@ function PortfolioContainer({
       loadZeroBalanceList={loadZeroBalanceList}
       isRefreshing={isRefreshing}
       handleRefresh={handleRefresh}
+      hasZeroBalance={true}
     />
   );
 }
@@ -55,14 +63,15 @@ const PortfolioView: FC<PortfolioProps> = memo(
     loadZeroBalanceList,
     isRefreshing,
     handleRefresh,
+    hasZeroBalance,
   }: PortfolioProps) => {
     const listRef = useRef<FlatList>(null);
-    const navigation = useNavigation<PortfolioRouteProp>();
+    const navigation = useNavigation<PortfolioNavigationProp>();
     const {setSelectedToken} = useContext(SelectedTokenContext);
 
     useEffect(() => {
       const unsubscribe = navigation.addListener('focus', () => {
-        loadZeroBalanceList();
+        loadZeroBalanceList?.();
       });
       return () => navigation.removeListener('focus', unsubscribe);
     }, [navigation]);
@@ -72,6 +81,18 @@ const PortfolioView: FC<PortfolioProps> = memo(
       navigation.navigate(AppNavigation.Modal.SendReceiveBottomSheet);
     }
 
+    function emptyStateAdditionalItem() {
+      return (
+        <AvaButton.PrimaryLarge
+          style={{marginTop: 32}}
+          onPress={() => {
+            navigation.navigate(AppNavigation.Modal.ReceiveOnlyBottomSheet);
+          }}>
+          Receive tokens
+        </AvaButton.PrimaryLarge>
+      );
+    }
+
     const renderItem = (item: ListRenderItemInfo<TokenWithBalance>) => {
       const token = item.item;
       const logoUri = token.logoURI ?? undefined;
@@ -79,7 +100,7 @@ const PortfolioView: FC<PortfolioProps> = memo(
       return (
         <PortfolioListItem
           tokenName={token.name}
-          tokenPrice={token.balanceDisplayValue}
+          tokenPrice={token.balanceDisplayValue ?? '0'}
           tokenPriceUsd={token.balanceUsdDisplayValue}
           image={logoUri}
           symbol={token.symbol}
@@ -88,20 +109,39 @@ const PortfolioView: FC<PortfolioProps> = memo(
       );
     };
 
+    const zeroState = useMemo(() => {
+      return (
+        <ZeroState.Portfolio additionalItem={emptyStateAdditionalItem()} />
+      );
+    }, []);
+
     return (
       <SafeAreaProvider style={styles.flex}>
         <PortfolioHeader />
         <FlatList
           ref={listRef}
           contentContainerStyle={{paddingHorizontal: 16}}
-          style={styles.tokenList}
+          style={[styles.tokenList, tokenList?.length === 1 && {flex: 0}]}
           data={tokenList}
           renderItem={renderItem}
           keyExtractor={(item: TokenWithBalance) => item.symbol}
           onRefresh={handleRefresh}
           refreshing={isRefreshing}
           scrollEventThrottle={16}
+          ListEmptyComponent={zeroState}
         />
+        {tokenList?.length === 1 && hasZeroBalance && (
+          <View
+            style={{
+              position: 'absolute',
+              top: 200,
+              left: 0,
+              right: 0,
+              bottom: 0,
+            }}>
+            {zeroState}
+          </View>
+        )}
       </SafeAreaProvider>
     );
   },
@@ -112,7 +152,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   tokenList: {
-    flex: 1,
     marginTop: 36,
   },
 });

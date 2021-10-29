@@ -9,6 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {take} from 'rxjs/operators';
 
 type ShowZeroArrayType = {[x: string]: boolean};
+const bnZero = new BN(0);
 
 export function useSearchableTokenList(hideZeroBalance = true): {
   searchText: string;
@@ -55,7 +56,6 @@ export function useSearchableTokenList(hideZeroBalance = true): {
     }
 
     setIsRefreshing(true);
-    const bnZero = new BN(0);
 
     erc20TokenList$.pipe(take(1)).subscribe({
       next: erc20Tokens => {

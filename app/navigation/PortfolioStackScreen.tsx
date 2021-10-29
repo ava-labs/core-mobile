@@ -10,9 +10,12 @@ type Props = {
 };
 
 export type PortfolioStackParamList = {
-  PortfolioScreen: undefined;
-  SearchScreen: undefined;
-  AccountBottomSheet: undefined;
+  [AppNavigation.Wallet.PortfolioScreen]: undefined;
+  [AppNavigation.Wallet.SearchScreen]: undefined;
+  [AppNavigation.Wallet.AddCustomToken]: undefined;
+  [AppNavigation.Modal.AccountBottomSheet]: undefined;
+  [AppNavigation.Modal.SendReceiveBottomSheet]: undefined;
+  [AppNavigation.Modal.ReceiveOnlyBottomSheet]: undefined;
 };
 
 const PortfolioStack = createStackNavigator<PortfolioStackParamList>();
