@@ -45,6 +45,7 @@ import BiometricsSDK from 'utils/BiometricsSDK';
 import moment from 'moment';
 import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
 import ReceiveOnlyBottomSheet from 'screens/portfolio/receive/ReceiveOnlyBottomSheet';
+import AvaText from 'components/AvaText';
 
 type Props = {
   onExit: () => void;
@@ -266,7 +267,9 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
               <RootStack.Screen
                 options={{
                   headerShown: true,
-                  title: 'Manage token list',
+                  headerTitle: () => (
+                    <AvaText.Heading1>{'Manage token list'}</AvaText.Heading1>
+                  ),
                   headerBackTitleVisible: false,
                   headerStyle: {
                     backgroundColor: context.theme.background,
