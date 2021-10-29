@@ -1,6 +1,5 @@
 import React, {FC, memo, useContext} from 'react';
 import {Share, StyleSheet, View} from 'react-native';
-import ChainCard from './ChainCard';
 import {usePortfolio} from 'screens/portfolio/usePortfolio';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import AvaButton from 'components/AvaButton';
@@ -27,7 +26,7 @@ const ReceiveStack = createStackNavigator<ReceiveStackParams>();
 
 function ReceiveToken2() {
   const {addressC, addressX} = usePortfolio();
-  const theme = useContext(ApplicationContext).theme;
+  const {navContainerTheme} = useContext(ApplicationContext);
 
   const handleShare = async (address: string) => {
     try {
@@ -49,19 +48,13 @@ function ReceiveToken2() {
   };
 
   return (
-    <NavigationContainer independent={true}>
+    <NavigationContainer independent={true} theme={navContainerTheme}>
       <ReceiveStack.Navigator
         initialRouteName={'ReceiveCChain'}
         screenOptions={{
           presentation: 'card',
           headerBackTitleVisible: false,
-          headerStyle: {
-            backgroundColor: theme.colorBg2,
-            elevation: 0,
-            shadowOpacity: 0,
-          },
           headerTitleAlign: 'center',
-          headerTintColor: theme.colorText1,
           ...TransitionPresets.SlideFromRightIOS,
         }}>
         <ReceiveStack.Screen
