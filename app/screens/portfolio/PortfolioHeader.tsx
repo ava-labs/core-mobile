@@ -1,6 +1,5 @@
 import React, {FC, memo, useContext} from 'react';
-import {Pressable, StyleSheet, View} from 'react-native';
-import AvaListItem from 'components/AvaListItem';
+import {StyleSheet, View} from 'react-native';
 import {
   ApplicationContext,
   ApplicationContextState,
@@ -10,10 +9,11 @@ import {DrawerActions, useNavigation} from '@react-navigation/native';
 import AppNavigation from 'navigation/AppNavigation';
 import MenuSVG from 'components/svg/MenuSVG';
 import CarrotSVG from 'components/svg/CarrotSVG';
-import AddSVG from 'components/svg/AddSVG';
 import AvaText from 'components/AvaText';
 import {SelectedAccountContext} from 'contexts/SelectedAccountContext';
 import {PortfolioNavigationProp} from 'screens/portfolio/PortfolioView';
+import AvaButton from 'components/AvaButton';
+import SwitchesSVG from 'components/svg/SwitchesSVG';
 
 // experimenting with container pattern and stable props to try to reduce re-renders
 function PortfolioHeaderContainer() {
@@ -43,54 +43,41 @@ const PortfolioHeader: FC<PortfolioHeaderProps> = memo(
   ({navigation, appContext, balanceTotalUSD = 0, accountName}) => {
     const theme = appContext.theme;
 
-    const leftComponent = (
-      <Pressable
-        onPress={() => navigation.dispatch(DrawerActions.openDrawer())}>
-        <MenuSVG />
-      </Pressable>
-    );
-
-    const rightComponent = (
-      <Pressable
-        onPress={() => navigation.navigate(AppNavigation.Wallet.SearchScreen)}>
-        <AddSVG />
-      </Pressable>
-    );
-
     function onAccountPressed() {
       navigation.navigate(AppNavigation.Modal.AccountBottomSheet);
     }
 
-    function customTitle() {
-      return (
-        <Pressable onPress={onAccountPressed}>
-          <View
-            style={[
-              styles.accountTitleContainer,
-              {borderColor: theme.btnIconBorder},
-            ]}>
-            <AvaText.Heading3
-              ellipsize={'middle'}
-              textStyle={{marginRight: 16}}>
-              {accountName}
-            </AvaText.Heading3>
-            <View style={{transform: [{rotate: '90deg'}]}}>
-              <CarrotSVG color={theme.txtListItem} size={10} />
-            </View>
-          </View>
-        </Pressable>
-      );
-    }
-
     return (
       <View pointerEvents="box-none">
-        <View>
-          <AvaListItem.Base
-            title={customTitle()}
-            rightComponent={rightComponent}
-            leftComponent={leftComponent}
-            listPressDisabled
-          />
+        <View
+          style={{
+            marginTop: 8,
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+          }}>
+          <AvaButton.Icon
+            onPress={() => navigation.dispatch(DrawerActions.openDrawer())}>
+            <MenuSVG />
+          </AvaButton.Icon>
+          <AvaButton.Base onPress={onAccountPressed}>
+            <View style={[styles.accountTitleContainer]}>
+              <AvaText.Heading3
+                ellipsize={'middle'}
+                textStyle={{marginRight: 16}}>
+                {accountName}
+              </AvaText.Heading3>
+              <View style={{transform: [{rotate: '90deg'}]}}>
+                <CarrotSVG color={theme.txtListItem} size={10} />
+              </View>
+            </View>
+          </AvaButton.Base>
+          <AvaButton.Icon
+            style={{marginRight: 8}}
+            onPress={() =>
+              navigation.navigate(AppNavigation.Wallet.SearchScreen)
+            }>
+            <SwitchesSVG />
+          </AvaButton.Icon>
         </View>
         <View
           style={{
@@ -112,8 +99,6 @@ const PortfolioHeader: FC<PortfolioHeaderProps> = memo(
 const styles = StyleSheet.create({
   accountTitleContainer: {
     flexDirection: 'row',
-    borderRadius: 100,
-    borderWidth: 1,
     paddingHorizontal: 16,
     justifyContent: 'center',
     alignItems: 'center',
