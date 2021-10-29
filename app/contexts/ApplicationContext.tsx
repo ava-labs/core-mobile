@@ -56,7 +56,7 @@ export const ApplicationContextProvider = ({children}: {children: any}) => {
   const [navContainerTheme] = useState({
     dark: isDarkMode,
     colors: {
-      primary: theme.accentColor,
+      primary: theme.colorText1,
       background: theme.colorBg2,
       text: theme.txtOnBgApp,
       card: theme.bgOnBgApp,
