@@ -46,6 +46,7 @@ import moment from 'moment';
 import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
 import ReceiveOnlyBottomSheet from 'screens/portfolio/receive/ReceiveOnlyBottomSheet';
 import AvaText from 'components/AvaText';
+import {MainHeaderOptions} from 'navigation/NavUtils';
 
 type Props = {
   onExit: () => void;
@@ -221,7 +222,14 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
           name={AppNavigation.Tabs.Watchlist}
           component={WatchlistView}
         />
-        <Tab.Screen name={AppNavigation.Tabs.Activity} component={Activity} />
+        <Tab.Screen
+          name={AppNavigation.Tabs.Activity}
+          options={{
+            headerShown: true,
+            headerStyle: {backgroundColor: theme.colorBg1},
+          }}
+          component={Activity}
+        />
         <Tab.Screen name={AppNavigation.Tabs.Swap} component={SwapView} />
       </Tab.Navigator>
     );
@@ -267,10 +275,7 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
               <RootStack.Screen
                 options={{
                   headerShown: true,
-                  headerTitle: () => (
-                    <AvaText.Heading1>{'Manage token list'}</AvaText.Heading1>
-                  ),
-                  headerBackTitleVisible: false,
+                  ...MainHeaderOptions('Manage token list'),
                   headerStyle: {
                     backgroundColor: context.theme.background,
                   },
@@ -281,8 +286,7 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
               <RootStack.Screen
                 options={{
                   headerShown: true,
-                  title: 'Add custom token',
-                  headerBackTitleVisible: false,
+                  ...MainHeaderOptions('Add custom token'),
                   headerStyle: {
                     backgroundColor: context.theme.background,
                   },
@@ -293,8 +297,7 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
               <RootStack.Screen
                 options={{
                   headerShown: true,
-                  title: 'Currency',
-                  headerBackTitleVisible: false,
+                  ...MainHeaderOptions('Currency'),
                 }}
                 name={AppNavigation.Wallet.CurrencySelector}
                 component={CurrencySelector}
@@ -306,7 +309,9 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
               <RootStack.Screen
                 options={{
                   headerShown: true,
-                  title: 'Legal',
+                  headerTitle: () => (
+                    <AvaText.Heading1>{'Legal'}</AvaText.Heading1>
+                  ),
                   headerBackTitleVisible: false,
                 }}
                 name={AppNavigation.Wallet.WebView}

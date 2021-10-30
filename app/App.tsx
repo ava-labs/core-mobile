@@ -12,7 +12,13 @@ import React, {
   useEffect,
   useState,
 } from 'react';
-import {Alert, BackHandler, InteractionManager, LogBox, SafeAreaView} from 'react-native';
+import {
+  Alert,
+  BackHandler,
+  InteractionManager,
+  LogBox,
+  SafeAreaView,
+} from 'react-native';
 import WalletStackScreen from 'screens/mainView/WalletStackScreen';
 import {Subscription} from 'rxjs';
 import {createStackNavigator} from '@react-navigation/stack';

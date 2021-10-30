@@ -21,7 +21,7 @@ type PortfolioProps = {
   loadZeroBalanceList?: () => void;
   isRefreshing?: boolean;
   handleRefresh?: () => void;
-  hasZeroBalance: boolean;
+  hasZeroBalance?: boolean;
 };
 
 export type PortfolioNavigationProp =
@@ -52,7 +52,7 @@ function PortfolioContainer({
       loadZeroBalanceList={loadZeroBalanceList}
       isRefreshing={isRefreshing}
       handleRefresh={handleRefresh}
-      hasZeroBalance={true}
+      hasZeroBalance={hasZeroBalance}
     />
   );
 }
