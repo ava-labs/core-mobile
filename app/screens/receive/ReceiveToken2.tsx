@@ -20,6 +20,7 @@ import {
   useNavigation,
 } from '@react-navigation/native';
 import AvaxQACode from 'components/AvaxQACode';
+import {SubHeaderOptions} from 'App';
 
 type ReceiveStackParams = {
   ReceiveCChain: undefined;
@@ -67,12 +68,7 @@ function ReceiveToken2({position}: {position: (position: number) => void}) {
         }}>
         <ReceiveStack.Screen
           name={'ReceiveCChain'}
-          options={{
-            headerTitle: () => (
-              <AvaText.Heading1>{'Receive Tokens'}</AvaText.Heading1>
-            ),
-            headerLeft: () => null,
-          }}>
+          options={SubHeaderOptions('Receive tokens', true)}>
           {props => (
             <Receive
               {...props}
@@ -84,9 +80,7 @@ function ReceiveToken2({position}: {position: (position: number) => void}) {
         </ReceiveStack.Screen>
         <ReceiveStack.Screen
           name={'ReceiveXChain'}
-          options={{
-            headerTitle: () => <AvaText.Heading1>{'X Chain'}</AvaText.Heading1>,
-          }}>
+          options={SubHeaderOptions('X Chain')}>
           {props => (
             <Receive
               {...props}

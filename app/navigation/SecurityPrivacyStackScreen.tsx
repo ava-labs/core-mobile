@@ -8,7 +8,7 @@ import AppViewModel from 'AppViewModel';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useNavigation} from '@react-navigation/native';
 import CreateWallet from 'screens/onboarding/CreateWallet';
-import {Alert} from 'react-native';
+import {MainHeaderOptions} from 'navigation/NavUtils';
 
 export type SecurityStackParamList = {
   [AppNavigation.Wallet.SecurityPrivacy]: undefined;
@@ -44,7 +44,7 @@ function SecurityPrivacyStackScreen() {
       onBack={gotBackToTopOfStack}
       onPinSet={pin => {
         AppViewModel.onPinCreated(pin, true).subscribe({
-          error: err => console.log('ignored'),
+          error: () => console.log('ignored'),
         });
         gotBackToTopOfStack();
       }}
@@ -65,14 +65,13 @@ function SecurityPrivacyStackScreen() {
       <SecurityStack.Group>
         <SecurityStack.Screen
           name={AppNavigation.Wallet.SecurityPrivacy}
+          options={MainHeaderOptions('Security & Privacy')}
           component={SecurityPrivacy}
         />
       </SecurityStack.Group>
       <SecurityStack.Group screenOptions={{presentation: 'modal'}}>
         <SecurityStack.Screen
-          options={{
-            title: 'Enter your pin',
-          }}
+          options={MainHeaderOptions('Enter your pin')}
           name={AppNavigation.Onboard.Login}
           component={PinOrBiometryLoginWithProps}
         />
@@ -81,9 +80,7 @@ function SecurityPrivacyStackScreen() {
           component={CreatePinWithProps}
         />
         <SecurityStack.Screen
-          options={{
-            title: 'Recovery Phrase',
-          }}
+          options={MainHeaderOptions('Recovery phrase')}
           name={AppNavigation.CreateWallet.CreateWallet}
           component={CreateWalletWithProps}
         />
