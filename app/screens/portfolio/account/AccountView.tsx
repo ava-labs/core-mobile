@@ -22,6 +22,7 @@ function AccountView(): JSX.Element {
   const {accounts, setSelectedAccount} = useSelectedAccountContext();
   const [selectedAccountIndex, setSelectedAccountIndex] = useState(0);
 
+  // to be implemented
   const onSelect = () => {
     setSelectedAccount(accounts[selectedAccountIndex]);
   };

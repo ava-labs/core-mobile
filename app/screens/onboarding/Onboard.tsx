@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React from 'react';
 import {StyleSheet, View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaButton from 'components/AvaButton';
@@ -12,6 +12,7 @@ type Props = {
   onEnterWallet: (mnemonic: string) => void;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const pkg = require('../../../package.json');
 
 export default function Onboard(props: Props | Readonly<Props>): JSX.Element {

@@ -14,8 +14,6 @@ import SwapView from 'screens/swap/SwapView';
 import AppNavigation from 'navigation/AppNavigation';
 import PortfolioStackScreen from 'navigation/PortfolioStackScreen';
 import SearchView from 'screens/search/SearchView';
-import {useWalletStateContext} from '@avalabs/wallet-react-components';
-import Loader from 'components/Loader';
 import Activity from 'screens/activity/ActivityView';
 import WatchlistSVG from 'components/svg/WatchlistSVG';
 import {createDrawerNavigator} from '@react-navigation/drawer';

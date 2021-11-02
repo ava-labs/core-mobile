@@ -12,6 +12,7 @@ import {HistoryItemType} from '@avalabs/avalanche-wallet-sdk/dist/History';
 import {History} from '@avalabs/avalanche-wallet-sdk';
 import {ScrollView} from 'react-native-gesture-handler';
 import {MainHeaderOptions} from 'navigation/NavUtils';
+import {PortfolioNavigationProp} from 'screens/portfolio/PortfolioView';
 
 const TODAY = moment().format('MM.DD.YY');
 const YESTERDAY = moment().subtract(1, 'days').format('MM.DD.YY');
@@ -25,7 +26,7 @@ function ActivityView({embedded}: Props) {
   const wallet = useWalletContext()?.wallet;
   const [sectionData, setSectionData] = useState<SectionType>({});
   const [loading, setLoading] = useState(true);
-  const navigation = useNavigation();
+  const navigation = useNavigation<PortfolioNavigationProp>();
 
   const loadHistory = useCallback(async () => {
     setLoading(true);
