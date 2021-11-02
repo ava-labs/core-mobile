@@ -1,4 +1,4 @@
-import React, {FC, memo, useContext} from 'react';
+import React, {FC, memo, useCallback, useContext} from 'react';
 import {Share, StyleSheet, View} from 'react-native';
 import {usePortfolio} from 'screens/portfolio/usePortfolio';
 import {ApplicationContext} from 'contexts/ApplicationContext';
@@ -14,8 +14,13 @@ import {
   StackNavigationProp,
   TransitionPresets,
 } from '@react-navigation/stack';
-import {NavigationContainer, useNavigation} from '@react-navigation/native';
+import {
+  NavigationContainer,
+  useFocusEffect,
+  useNavigation,
+} from '@react-navigation/native';
 import AvaxQACode from 'components/AvaxQACode';
+import {SubHeaderOptions} from 'App';
 
 type ReceiveStackParams = {
   ReceiveCChain: undefined;
@@ -24,7 +29,7 @@ type ReceiveStackParams = {
 
 const ReceiveStack = createStackNavigator<ReceiveStackParams>();
 
-function ReceiveToken2() {
+function ReceiveToken2({position}: {position: (position: number) => void}) {
   const {addressC, addressX} = usePortfolio();
   const {navContainerTheme} = useContext(ApplicationContext);
 
@@ -54,36 +59,35 @@ function ReceiveToken2() {
         screenOptions={{
           presentation: 'card',
           headerBackTitleVisible: false,
+          headerStyle: {
+            elevation: 0,
+            shadowOpacity: 0,
+          },
           headerTitleAlign: 'center',
           ...TransitionPresets.SlideFromRightIOS,
         }}>
         <ReceiveStack.Screen
           name={'ReceiveCChain'}
-          options={{
-            headerTitle: () => (
-              <AvaText.Heading1>{'Receive Tokens'}</AvaText.Heading1>
-            ),
-            headerLeft: () => null,
-          }}>
+          options={SubHeaderOptions('Receive tokens', true)}>
           {props => (
             <Receive
               {...props}
               selectedAddress={addressC}
               onShare={handleShare}
+              positionCallback={position}
             />
           )}
         </ReceiveStack.Screen>
         <ReceiveStack.Screen
           name={'ReceiveXChain'}
-          options={{
-            headerTitle: () => <AvaText.Heading1>{'X Chain'}</AvaText.Heading1>,
-          }}>
+          options={SubHeaderOptions('X Chain')}>
           {props => (
             <Receive
               {...props}
               selectedAddress={addressX}
               isXChain
               onShare={handleShare}
+              positionCallback={position}
             />
           )}
         </ReceiveStack.Screen>
@@ -98,10 +102,17 @@ const Receive: FC<{
   selectedAddress: string;
   isXChain?: boolean;
   onShare?: (address: string) => void;
+  positionCallback?: (position: number) => void;
 }> = memo(props => {
   const theme = useContext(ApplicationContext).theme;
   const isXChain = !!props?.isXChain;
   const navigation = useNavigation<ReceiveRouteProp>();
+
+  useFocusEffect(
+    useCallback(() => {
+      props?.positionCallback?.(isXChain ? 1 : 0);
+    }, []),
+  );
 
   return (
     <View style={[styles.container, {backgroundColor: theme.colorBg2}]}>
@@ -121,12 +132,12 @@ const Receive: FC<{
           styles.copyAddressContainer,
           {backgroundColor: theme.colorIcon1 + Opacity05},
         ]}>
-        <CopySVG />
         <AvaText.Body1
           ellipsize={'middle'}
-          textStyle={{flex: 1, marginLeft: 16}}>
+          textStyle={{flex: 1, marginRight: 16}}>
           {props.selectedAddress}
         </AvaText.Body1>
+        <CopySVG />
       </AvaButton.Base>
       <Space y={16} />
       <AvaButton.PrimaryLarge

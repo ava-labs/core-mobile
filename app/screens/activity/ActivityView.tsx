@@ -1,6 +1,5 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import {RefreshControl, View} from 'react-native';
-import SearchSVG from 'components/svg/SearchSVG';
 import {useNavigation} from '@react-navigation/native';
 import AppNavigation from 'navigation/AppNavigation';
 import AvaText from 'components/AvaText';
@@ -12,6 +11,7 @@ import ActivityListItem from 'screens/activity/ActivityListItem';
 import {HistoryItemType} from '@avalabs/avalanche-wallet-sdk/dist/History';
 import {History} from '@avalabs/avalanche-wallet-sdk';
 import {ScrollView} from 'react-native-gesture-handler';
+import {MainHeaderOptions} from 'navigation/NavUtils';
 
 const TODAY = moment().format('MM.DD.YY');
 const YESTERDAY = moment().subtract(1, 'days').format('MM.DD.YY');
@@ -46,6 +46,14 @@ function ActivityView({embedded}: Props) {
     setSectionData({...sectionData});
     setLoading(false);
   }, [wallet]);
+
+  useEffect(() => {
+    if (embedded) {
+      navigation.setOptions({headerShown: false});
+    } else {
+      navigation.setOptions(MainHeaderOptions('Activity'));
+    }
+  }, [embedded]);
 
   useEffect(() => {
     loadHistory().catch(reason => console.warn(reason));
@@ -132,17 +140,6 @@ function ActivityView({embedded}: Props) {
 
   return (
     <View style={{flex: 1}}>
-      {embedded || (
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            padding: 16,
-          }}>
-          <AvaText.Heading1>Activity</AvaText.Heading1>
-          <SearchSVG />
-        </View>
-      )}
       {loading ? <Loader /> : <ScrollableComponent children={renderItems()} />}
     </View>
   );

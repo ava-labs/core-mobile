@@ -4,19 +4,20 @@ import BottomSheet, {BottomSheetBackdrop} from '@gorhom/bottom-sheet';
 import TabViewBackground from 'screens/portfolio/components/TabViewBackground';
 import {Space} from 'components/Space';
 import ReceiveToken2 from 'screens/receive/ReceiveToken2';
-import {Platform} from 'react-native';
+import {InteractionManager, Platform} from 'react-native';
 
-const maxSnapPoint = Platform.OS === 'ios' ? '65%' : '70%';
+const maxXChainSnapPoint = Platform.OS === 'ios' ? '57%' : '60%';
+
 const ReceiveOnlyBottomSheet: FC = () => {
   const bottomSheetRef = useRef<BottomSheet>(null);
   const {goBack, canGoBack} = useNavigation();
 
-  const snapPoints = useMemo(() => ['0%', maxSnapPoint], []);
+  const snapPoints = useMemo(() => ['0%', maxXChainSnapPoint, '65%'], []);
 
   useEffect(() => {
     // intentionally setting delay so animation is visible.
     setTimeout(() => {
-      bottomSheetRef?.current?.snapTo(1);
+      bottomSheetRef?.current?.snapTo(2);
     }, 50);
   }, []);
 
@@ -24,6 +25,13 @@ const ReceiveOnlyBottomSheet: FC = () => {
     if (index === 0 && canGoBack()) {
       goBack();
     }
+  }, []);
+
+  const handlePositionChange = useCallback((position: number) => {
+    InteractionManager.runAfterInteractions(() => {
+      const snapPoint = position === 0 ? 2 : 1;
+      bottomSheetRef?.current?.snapTo(snapPoint);
+    });
   }, []);
 
   const MyHandle = () => {
@@ -40,7 +48,7 @@ const ReceiveOnlyBottomSheet: FC = () => {
       onChange={handleChange}
       backdropComponent={BottomSheetBackdrop}
       backgroundComponent={TabViewBackground}>
-      <ReceiveToken2 />
+      <ReceiveToken2 position={handlePositionChange} />
     </BottomSheet>
   );
 };
