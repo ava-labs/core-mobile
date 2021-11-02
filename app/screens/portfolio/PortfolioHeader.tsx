@@ -14,14 +14,12 @@ import {PortfolioNavigationProp} from 'screens/portfolio/PortfolioView';
 import AvaButton from 'components/AvaButton';
 import SwitchesSVG from 'components/svg/SwitchesSVG';
 import {useSelectedAccountContext} from 'contexts/SelectedAccountContext';
-import {useWalletStateContext} from '@avalabs/wallet-react-components';
 
 // experimenting with container pattern and stable props to try to reduce re-renders
 function PortfolioHeaderContainer() {
   const context = useApplicationContext();
   const navigation = useNavigation<PortfolioNavigationProp>();
-  const isBalanceLoading = !!useWalletStateContext()?.isBalanceLoading;
-  const {balanceTotalInUSD} = usePortfolio();
+  const {balanceTotalInUSD, isBalanceLoading} = usePortfolio();
   const {selectedAccount} = useSelectedAccountContext();
 
   return (
@@ -96,15 +94,14 @@ const PortfolioHeader: FC<PortfolioHeaderProps> = memo(
             flexDirection: 'row',
             marginTop: 25,
           }}>
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}>
-            {isBalanceLoading && <ActivityIndicator size="small" />}
-            <AvaText.LargeTitleBold>{balanceTotalUSD}</AvaText.LargeTitleBold>
-          </View>
+          {isBalanceLoading && (
+            <ActivityIndicator
+              style={{alignSelf: 'center'}}
+              size="small"
+              color={'white'}
+            />
+          )}
+          <AvaText.LargeTitleBold>{balanceTotalUSD}</AvaText.LargeTitleBold>
           <AvaText.Heading3 textStyle={{paddingBottom: 4, marginLeft: 4}}>
             USD
           </AvaText.Heading3>

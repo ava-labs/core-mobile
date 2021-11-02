@@ -1,5 +1,5 @@
 import React, {FC, memo, useEffect, useMemo, useRef} from 'react';
-import {FlatList, ListRenderItemInfo, StyleSheet, View} from 'react-native';
+import {FlatList, ListRenderItemInfo, Modal, StyleSheet, View} from 'react-native';
 import PortfolioHeader from 'screens/portfolio/PortfolioHeader';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {useNavigation} from '@react-navigation/native';
@@ -13,6 +13,7 @@ import {useSelectedTokenContext} from 'contexts/SelectedTokenContext';
 import ZeroState from 'components/ZeroState';
 import AvaButton from 'components/AvaButton';
 import {usePortfolio} from 'screens/portfolio/usePortfolio';
+import Loader from 'components/Loader';
 
 type PortfolioProps = {
   onExit: () => void;
@@ -34,7 +35,7 @@ function PortfolioContainer({
 }: PortfolioProps): JSX.Element {
   const {tokenList, loadZeroBalanceList, loadTokenList, isRefreshing} =
     useSearchableTokenList();
-  const {balanceTotalInUSD} = usePortfolio();
+  const {balanceTotalInUSD, isWalletReady} = usePortfolio();
   const hasZeroBalance =
     !balanceTotalInUSD ||
     balanceTotalInUSD === '0' ||
@@ -45,15 +46,20 @@ function PortfolioContainer({
   }
 
   return (
-    <PortfolioView
-      onExit={onExit}
-      onSwitchWallet={onSwitchWallet}
-      tokenList={tokenList}
-      loadZeroBalanceList={loadZeroBalanceList}
-      isRefreshing={isRefreshing}
-      handleRefresh={handleRefresh}
-      hasZeroBalance={hasZeroBalance}
-    />
+    <>
+      <PortfolioView
+        onExit={onExit}
+        onSwitchWallet={onSwitchWallet}
+        tokenList={tokenList}
+        loadZeroBalanceList={loadZeroBalanceList}
+        isRefreshing={isRefreshing}
+        handleRefresh={handleRefresh}
+        hasZeroBalance={hasZeroBalance}
+      />
+      <Modal visible={!isWalletReady}>
+        <Loader message={'Loading wallet. One moment please.'} />
+      </Modal>
+    </>
   );
 }
 
@@ -95,14 +101,12 @@ const PortfolioView: FC<PortfolioProps> = memo(
 
     const renderItem = (item: ListRenderItemInfo<TokenWithBalance>) => {
       const token = item.item;
-      const logoUri = token.logoURI ?? undefined;
-
       return (
         <PortfolioListItem
           tokenName={token.name}
           tokenPrice={token.balanceDisplayValue ?? '0'}
           tokenPriceUsd={token.balanceUsdDisplayValue}
-          image={logoUri}
+          image={token?.logoURI}
           symbol={token.symbol}
           onPress={() => selectToken(token)}
         />
@@ -124,7 +128,7 @@ const PortfolioView: FC<PortfolioProps> = memo(
           style={[styles.tokenList, tokenList?.length === 1 && {flex: 0}]}
           data={tokenList}
           renderItem={renderItem}
-          keyExtractor={(item: TokenWithBalance) => item.symbol}
+          keyExtractor={(item: TokenWithBalance) => item?.symbol}
           onRefresh={handleRefresh}
           refreshing={isRefreshing}
           scrollEventThrottle={16}

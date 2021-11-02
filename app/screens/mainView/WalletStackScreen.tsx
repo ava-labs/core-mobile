@@ -58,11 +58,9 @@ const focusEvent = 'change';
 const TIMEOUT = 5000;
 
 function WalletStackScreen(props: Props | Readonly<Props>) {
-  const context = useApplicationContext();
-  const walletStateContext = useWalletStateContext();
-  const [walletReady, setWalletReady] = useState(false);
   const [showSecurityModal, setShowSecurityModal] = useState(false);
   const appState = useRef(AppState.currentState);
+  const context = useApplicationContext();
 
   /**
    * This UseEffect handles subscription to
@@ -122,10 +120,6 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
         BackHandler.removeEventListener('hardwareBackPress', onBackPress);
     }, []),
   );
-
-  useEffect(() => {
-    setWalletReady(!!walletStateContext?.isWalletReady);
-  }, [walletStateContext]);
 
   const onExit = (): void => {
     props.onExit();
@@ -226,9 +220,7 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
     );
   }, []);
 
-  return !walletReady ? (
-    <Loader message="Loading wallet. One moment please." />
-  ) : (
+  return (
     <SelectedAccountContextProvider>
       <SelectedTokenContextProvider>
         <NavigationContainer

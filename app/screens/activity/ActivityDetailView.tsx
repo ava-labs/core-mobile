@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Linking, StyleSheet, View} from 'react-native';
 import AvaText from 'components/AvaText';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
