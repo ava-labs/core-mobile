@@ -7,9 +7,9 @@ import Onboard from 'screens/onboarding/Onboard';
 import AppNavigation from 'navigation/AppNavigation';
 import AppViewModel, {SelectedView} from 'AppViewModel';
 import {View} from 'react-native';
-import {onEnterWallet} from 'App';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {noop} from 'rxjs';
+import {take} from 'rxjs/operators';
 
 const AuthStack = createStackNavigator();
 
@@ -28,12 +28,8 @@ const LoginWithPinOrBiometryScreen = () => {
       onSignInWithRecoveryPhrase={() =>
         AppViewModel.setSelectedView(SelectedView.LoginWithMnemonic)
       }
-      onEnterWallet={(mnemonic, walletContext) => {
-        if (!walletContext?.wallet) {
-          onEnterWallet(mnemonic, walletContext?.setMnemonic);
-        } else {
-          AppViewModel.setSelectedView(SelectedView.Main);
-        }
+      onEnterWallet={mnemonic => {
+        AppViewModel.onEnterWallet(mnemonic).pipe(take(1)).subscribe();
       }}
     />
   );
