@@ -1,4 +1,4 @@
-import React, {useContext, useState} from 'react';
+import React, {useState} from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -11,11 +11,10 @@ import TextArea from 'components/TextArea';
 import AvaText from 'components/AvaText';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaButton from 'components/AvaButton';
-import {useWalletContext} from '@avalabs/wallet-react-components';
-import {WalletContextType} from 'dto/TypeUtils';
+import * as bip39 from 'bip39';
 
 type Props = {
-  onEnterWallet: (mnemonic: string, walletContext: WalletContextType) => void;
+  onEnterWallet: (mnemonic: string) => void;
   onBack: () => void;
 };
 
@@ -26,10 +25,9 @@ export default function HdWalletLogin(
   const [errorMessage, setErrorMessage] = useState<string | undefined>(
     undefined,
   );
-  const walletContext = useWalletContext();
 
   const onEnterTestWallet = (): void => {
-    props.onEnterWallet(WalletSDK.testMnemonic(), walletContext);
+    onEnterWallet(WalletSDK.testMnemonic());
   };
 
   const onBack = (): void => {
@@ -38,8 +36,13 @@ export default function HdWalletLogin(
 
   const onEnterWallet = (mnemonic: string) => {
     const trimmed = mnemonic.trim();
+    const isValid = bip39.validateMnemonic(trimmed);
     try {
-      props.onEnterWallet(trimmed, walletContext);
+      if (isValid) {
+        props.onEnterWallet(trimmed);
+      } else {
+        throw new Error();
+      }
     } catch (e) {
       setErrorMessage('Invalid recovery phrase');
     }
