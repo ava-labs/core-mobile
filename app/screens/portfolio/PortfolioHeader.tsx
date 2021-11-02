@@ -1,8 +1,8 @@
-import React, {FC, memo, useContext} from 'react';
-import {StyleSheet, View} from 'react-native';
+import React, {FC, memo} from 'react';
+import {ActivityIndicator, StyleSheet, View} from 'react-native';
 import {
-  ApplicationContext,
   ApplicationContextState,
+  useApplicationContext,
 } from 'contexts/ApplicationContext';
 import {usePortfolio} from 'screens/portfolio/usePortfolio';
 import {DrawerActions, useNavigation} from '@react-navigation/native';
@@ -10,17 +10,19 @@ import AppNavigation from 'navigation/AppNavigation';
 import MenuSVG from 'components/svg/MenuSVG';
 import CarrotSVG from 'components/svg/CarrotSVG';
 import AvaText from 'components/AvaText';
-import {SelectedAccountContext} from 'contexts/SelectedAccountContext';
 import {PortfolioNavigationProp} from 'screens/portfolio/PortfolioView';
 import AvaButton from 'components/AvaButton';
 import SwitchesSVG from 'components/svg/SwitchesSVG';
+import {useSelectedAccountContext} from 'contexts/SelectedAccountContext';
+import {useWalletStateContext} from '@avalabs/wallet-react-components';
 
 // experimenting with container pattern and stable props to try to reduce re-renders
 function PortfolioHeaderContainer() {
-  const context = useContext(ApplicationContext);
+  const context = useApplicationContext();
   const navigation = useNavigation<PortfolioNavigationProp>();
+  const isBalanceLoading = !!useWalletStateContext()?.isBalanceLoading;
   const {balanceTotalInUSD} = usePortfolio();
-  const {selectedAccount} = useContext(SelectedAccountContext);
+  const {selectedAccount} = useSelectedAccountContext();
 
   return (
     <PortfolioHeader
@@ -28,6 +30,7 @@ function PortfolioHeaderContainer() {
       navigation={navigation}
       balanceTotalUSD={balanceTotalInUSD}
       accountName={selectedAccount?.title ?? ''}
+      isBalanceLoading={isBalanceLoading}
     />
   );
 }
@@ -37,10 +40,17 @@ interface PortfolioHeaderProps {
   navigation: PortfolioNavigationProp;
   balanceTotalUSD: string;
   accountName: string;
+  isBalanceLoading: boolean;
 }
 
 const PortfolioHeader: FC<PortfolioHeaderProps> = memo(
-  ({navigation, appContext, balanceTotalUSD = 0, accountName}) => {
+  ({
+    navigation,
+    appContext,
+    balanceTotalUSD = 0,
+    accountName,
+    isBalanceLoading = false,
+  }) => {
     const theme = appContext.theme;
 
     function onAccountPressed() {
@@ -86,7 +96,15 @@ const PortfolioHeader: FC<PortfolioHeaderProps> = memo(
             flexDirection: 'row',
             marginTop: 25,
           }}>
-          <AvaText.LargeTitleBold>{balanceTotalUSD}</AvaText.LargeTitleBold>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+            {isBalanceLoading && <ActivityIndicator size="small" />}
+            <AvaText.LargeTitleBold>{balanceTotalUSD}</AvaText.LargeTitleBold>
+          </View>
           <AvaText.Heading3 textStyle={{paddingBottom: 4, marginLeft: 4}}>
             USD
           </AvaText.Heading3>
