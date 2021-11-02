@@ -9,7 +9,6 @@ import AppViewModel, {SelectedView} from 'AppViewModel';
 import {View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {noop} from 'rxjs';
-import {take} from 'rxjs/operators';
 
 const AuthStack = createStackNavigator();
 
@@ -29,7 +28,7 @@ const LoginWithPinOrBiometryScreen = () => {
         AppViewModel.setSelectedView(SelectedView.LoginWithMnemonic)
       }
       onEnterWallet={mnemonic => {
-        AppViewModel.onEnterWallet(mnemonic).pipe(take(1)).subscribe();
+        AppViewModel.onEnterWallet(mnemonic);
       }}
     />
   );

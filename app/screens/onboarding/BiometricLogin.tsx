@@ -1,6 +1,5 @@
-import React, {useContext} from 'react';
+import React from 'react';
 import {Alert, Image, StyleSheet, View} from 'react-native';
-import TextLabel from 'components/TextLabel';
 import {useBiometricLogin} from './BiometricLoginViewModel';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {Space} from 'components/Space';
@@ -20,16 +19,14 @@ export default function BiometricLogin(
   const context = useApplicationContext();
   const {initWalletWithMnemonic} = useWalletSetup();
 
-  const [biometryType, onUseBiometry, fingerprintIcon] = useBiometricLogin(
-    props.mnemonic,
-    context.isDarkMode,
-  );
+  const {biometryType, storeMnemonicWithBiometric, fingerprintIcon} =
+    useBiometricLogin(props.mnemonic, context.isDarkMode);
 
   async function handleUseBiometry() {
     try {
-      await onUseBiometry();
-      props.onBiometrySet();
+      await storeMnemonicWithBiometric();
       initWalletWithMnemonic(props.mnemonic);
+      props.onBiometrySet();
     } catch (e: any) {
       Alert.alert(e?.message || 'error');
     }
