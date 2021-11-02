@@ -7,7 +7,6 @@ import CreatePIN from 'screens/onboarding/CreatePIN';
 import AppNavigation from 'navigation/AppNavigation';
 import AppViewModel, {SelectedView} from 'AppViewModel';
 import {useWalletContext} from '@avalabs/wallet-react-components';
-import {onEnterWallet} from 'App';
 import {Alert} from 'react-native';
 import {WalletContextType} from 'dto/TypeUtils';
 
@@ -24,8 +23,8 @@ export const CreateWalletStackScreen = () => {
     AppViewModel.onSavedMnemonic(mnemonic);
   };
 
-  const onPinSet = (pin: string, walletContext: WalletContextType): void => {
-    AppViewModel.onPinCreated(pin, false, walletContext).subscribe({
+  const onPinSet = (pin: string): void => {
+    AppViewModel.onPinCreated(pin, false).subscribe({
       error: err => Alert.alert(err.message),
     });
   };
@@ -65,12 +64,8 @@ export const CreateWalletStackScreen = () => {
     return (
       <BiometricLogin
         mnemonic={AppViewModel.mnemonic}
-        onBiometrySet={() =>
-          onEnterWallet(AppViewModel.mnemonic, walletContext?.setMnemonic)
-        }
-        onSkip={() =>
-          onEnterWallet(AppViewModel.mnemonic, walletContext?.setMnemonic)
-        }
+        onBiometrySet={() => AppViewModel.onEnterWallet(AppViewModel.mnemonic)}
+        onSkip={() => AppViewModel.onEnterWallet(AppViewModel.mnemonic)}
       />
     );
   });

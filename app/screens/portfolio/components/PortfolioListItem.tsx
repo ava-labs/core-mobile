@@ -1,4 +1,4 @@
-import React, {FC, useContext} from 'react';
+import React, {FC} from 'react';
 import {Image, StyleSheet, View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
@@ -86,4 +86,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PortfolioListItem;
+export default React.memo(PortfolioListItem);

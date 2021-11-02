@@ -1,6 +1,5 @@
 import {useEffect, useState} from 'react';
 import BiometricsSDK from 'utils/BiometricsSDK';
-import {Observable} from 'rxjs';
 import {BIOMETRY_TYPE} from 'react-native-keychain';
 
 export function useBiometricLogin(

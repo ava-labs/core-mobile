@@ -5,14 +5,8 @@
  * @flow strict-local
  */
 
-import React, {Dispatch, RefObject, useEffect, useState} from 'react';
-import {
-  Alert,
-  BackHandler,
-  InteractionManager,
-  LogBox,
-  SafeAreaView,
-} from 'react-native';
+import React, {RefObject, useEffect, useState} from 'react';
+import {Alert, BackHandler, LogBox, SafeAreaView} from 'react-native';
 import WalletStackScreen from 'screens/mainView/WalletStackScreen';
 import {Subscription} from 'rxjs';
 import {createStackNavigator} from '@react-navigation/stack';
@@ -73,20 +67,6 @@ const onExit = () => {
           ],
         );
       }
-    },
-    error: err => Alert.alert(err.message),
-  });
-};
-
-export const onEnterWallet = (
-  mnemonic: string,
-  setMnemonic?: Dispatch<string>,
-): void => {
-  AppViewModel.onEnterWallet(mnemonic).subscribe({
-    next: () => {
-      InteractionManager.runAfterInteractions(() => {
-        setMnemonic?.(mnemonic);
-      });
     },
     error: err => Alert.alert(err.message),
   });

@@ -17,10 +17,12 @@ import NetworkSelector from 'network/NetworkSelector';
 import AvaButton from 'components/AvaButton';
 import {Space} from 'components/Space';
 import {ScrollView} from 'react-native-gesture-handler';
+import {useWalletSetup} from 'hooks/useWalletSetup';
 
 const DrawerView: FC<DrawerContentComponentProps> = ({navigation}) => {
   const context = useApplicationContext();
   const bottomSheetRef = useRef<BottomSheet>(null);
+  const {destroyWallet} = useWalletSetup();
   const [openNetworkSwitcher, setOpenNetworkSwitcher] = useState(false);
   const [logoutWarningVisible, setLogoutWarningVisible] = useState(false);
 
@@ -38,6 +40,7 @@ const DrawerView: FC<DrawerContentComponentProps> = ({navigation}) => {
 
   function handleLogout() {
     setLogoutWarningVisible(!logoutWarningVisible);
+    destroyWallet();
     AppViewModel.immediateLogout().catch(err => Alert.alert(err.message));
   }
 

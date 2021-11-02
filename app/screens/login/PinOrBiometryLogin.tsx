@@ -15,11 +15,7 @@ import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaButton from 'components/AvaButton';
 import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
 import {SecurityStackParamList} from 'navigation/SecurityPrivacyStackScreen';
-import {
-  useAccountsContext,
-  useWalletContext,
-} from '@avalabs/wallet-react-components';
-import {WalletContextType} from 'dto/TypeUtils';
+import {useWalletSetup} from 'hooks/useWalletSetup';
 
 const keymap: Map<string, PinKeys> = new Map([
   ['1', PinKeys.Key1],
@@ -37,7 +33,7 @@ const keymap: Map<string, PinKeys> = new Map([
 
 type Props = {
   onSignInWithRecoveryPhrase: () => void;
-  onEnterWallet: (mnemonic: string, walletContext: WalletContextType) => void;
+  onEnterWallet: (mnemonic: string) => void;
   isResettingPin?: boolean;
   hideLoginWithMnemonic?: boolean;
 };
@@ -51,6 +47,7 @@ export default function PinOrBiometryLogin({
   hideLoginWithMnemonic = false,
 }: Props | Readonly<Props>): JSX.Element {
   const theme = useApplicationContext().theme;
+  const {initWalletWithMnemonic} = useWalletSetup();
   const route = useRoute<SecurityRouteProps>();
   const {goBack} = useNavigation();
   const revealMnemonic = route?.params?.revealMnemonic;
@@ -65,16 +62,11 @@ export default function PinOrBiometryLogin({
   ] = usePinOrBiometryLogin();
 
   const context = useApplicationContext();
-  const walletContext = useWalletContext();
-  const accountContext = useAccountsContext();
 
   function initWallet(givenMnemonic: string) {
-    onEnterWallet(givenMnemonic, walletContext);
+    onEnterWallet(givenMnemonic);
     // new wallet
-    setTimeout(() => {
-      accountContext.addAccount();
-      accountContext.activateAccount(0);
-    }, 5000);
+    initWalletWithMnemonic(givenMnemonic);
 
     // existing
     // store account and meta data
