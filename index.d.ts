@@ -7,7 +7,11 @@ export {};
 type ToastType = import('react-native-toast-notifications').ToastType;
 
 declare global {
-  const toast: ToastType;
+  namespace NodeJS {
+    interface Global {
+      toast: ToastType | null;
+    }
+  }
 }
 
 declare const toast: ToastType;

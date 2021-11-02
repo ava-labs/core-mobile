@@ -1,6 +1,6 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {View} from 'react-native';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import {Space} from 'components/Space';
 import OvalTagBg from 'components/OvalTagBg';
 import AvaText from 'components/AvaText';
@@ -8,12 +8,12 @@ import AvaButton from 'components/AvaButton';
 import {Opacity50} from 'resources/Constants';
 import {useNavigation} from '@react-navigation/native';
 import AppNavigation from 'navigation/AppNavigation';
-import {SelectedTokenContext} from 'contexts/SelectedTokenContext';
-import {SendANTContext} from 'contexts/SendANTContext';
+import {useSelectedTokenContext} from 'contexts/SelectedTokenContext';
+import {useSendAntContext} from 'contexts/SendANTContext';
 import {ConfirmHeader} from 'screens/send/ConfirmHeader';
 
 export default function SendANTConfirm(): JSX.Element {
-  const context = useContext(ApplicationContext);
+  const context = useApplicationContext();
   const [backgroundStyle] = useState(context.backgroundStyle);
   const {navigate, goBack} = useNavigation();
   const {
@@ -22,8 +22,8 @@ export default function SendANTConfirm(): JSX.Element {
     onSendANT,
     createdTxId,
     sendFeeString,
-  } = useContext(SendANTContext);
-  const {selectedToken, tokenLogo} = useContext(SelectedTokenContext);
+  } = useSendAntContext();
+  const {selectedToken, tokenLogo} = useSelectedTokenContext();
 
   useEffect(() => {
     if (createdTxId) {

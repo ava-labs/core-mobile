@@ -2,6 +2,7 @@ import React, {
   createContext,
   Dispatch,
   SetStateAction,
+  useContext,
   useEffect,
   useState,
 } from 'react';
@@ -209,3 +210,7 @@ export const SendAvaxContextProvider = ({children}: {children: any}) => {
     </SendAvaxContext.Provider>
   );
 };
+
+export function useSendAvaxContext() {
+  return useContext(SendAvaxContext);
+}

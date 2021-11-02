@@ -1,6 +1,6 @@
-import React, {FC, useContext} from 'react';
+import React, {FC} from 'react';
 import {StyleSheet, View} from 'react-native';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import ArrowSVG from 'components/svg/ArrowSVG';
 
 interface Props {
@@ -17,7 +17,7 @@ interface Props {
  * @param metric
  */
 const MovementIndicator: FC<Props> = ({isNegative = false, metric}) => {
-  const theme = useContext(ApplicationContext).theme;
+  const theme = useApplicationContext().theme;
 
   const negative = (metric && Math.sign(metric) === -1) ?? isNegative;
 

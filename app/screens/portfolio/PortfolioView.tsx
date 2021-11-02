@@ -1,4 +1,4 @@
-import React, {FC, memo, useContext, useEffect, useMemo, useRef} from 'react';
+import React, {FC, memo, useEffect, useMemo, useRef} from 'react';
 import {FlatList, ListRenderItemInfo, StyleSheet, View} from 'react-native';
 import PortfolioHeader from 'screens/portfolio/PortfolioHeader';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
@@ -9,7 +9,7 @@ import AppNavigation from 'navigation/AppNavigation';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {PortfolioStackParamList} from 'navigation/PortfolioStackScreen';
 import PortfolioListItem from 'screens/portfolio/components/PortfolioListItem';
-import {SelectedTokenContext} from 'contexts/SelectedTokenContext';
+import {useSelectedTokenContext} from 'contexts/SelectedTokenContext';
 import ZeroState from 'components/ZeroState';
 import AvaButton from 'components/AvaButton';
 import {usePortfolio} from 'screens/portfolio/usePortfolio';
@@ -67,7 +67,7 @@ const PortfolioView: FC<PortfolioProps> = memo(
   }: PortfolioProps) => {
     const listRef = useRef<FlatList>(null);
     const navigation = useNavigation<PortfolioNavigationProp>();
-    const {setSelectedToken} = useContext(SelectedTokenContext);
+    const {setSelectedToken} = useSelectedTokenContext();
 
     useEffect(() => {
       const unsubscribe = navigation.addListener('focus', () => {

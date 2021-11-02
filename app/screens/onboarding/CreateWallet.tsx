@@ -6,7 +6,7 @@ import {
   View,
 } from 'react-native';
 import Clipboard from '@react-native-clipboard/clipboard';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import HeaderProgress from 'screens/mainView/HeaderProgress';
 import MnemonicAva from 'screens/onboarding/MnemonicAva';
 import AvaButton from 'components/AvaButton';
@@ -27,7 +27,7 @@ export default function CreateWallet({
   onSavedMyPhrase,
   isRevealingCurrentMnemonic,
 }: Props): JSX.Element {
-  const context = useContext(ApplicationContext);
+  const context = useApplicationContext();
   const [mnemonic, setMnemonic] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
 

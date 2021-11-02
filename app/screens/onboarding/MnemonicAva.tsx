@@ -1,8 +1,6 @@
-import React, {useContext} from 'react';
+import React from 'react';
 import {StyleSheet, TextInput, View} from 'react-native';
-import TextTitle from 'components/TextTitle';
-import {ApplicationContext} from 'contexts/ApplicationContext';
-import {Space} from 'components/Space';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from 'components/AvaText';
 
 type InputProps = {
@@ -12,7 +10,7 @@ type InputProps = {
 };
 
 function MnemonicInput(props: InputProps | Readonly<InputProps>) {
-  const context = useContext(ApplicationContext);
+  const context = useApplicationContext();
   const theme = context.theme;
   return (
     <View style={styles.horizontalLayout}>

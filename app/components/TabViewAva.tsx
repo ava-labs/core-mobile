@@ -1,7 +1,7 @@
-import React, {FC, useCallback, useContext, useState} from 'react';
+import React, {FC, useCallback, useState} from 'react';
 import {TabBar, TabBarProps, TabView} from 'react-native-tab-view';
 import {View} from 'react-native';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 
 interface Props {
   renderCustomLabel?: (title: string, selected: boolean) => void;
@@ -9,7 +9,7 @@ interface Props {
 
 const TabViewAva: FC<Props> = ({renderCustomLabel, children}) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const theme = useContext(ApplicationContext).theme;
+  const theme = useApplicationContext().theme;
   const childrenArray = React.Children.toArray(children);
 
   // https://github.com/satya164/react-native-tab-view#tabview-props

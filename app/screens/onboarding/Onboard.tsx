@@ -1,6 +1,6 @@
 import React, {useContext} from 'react';
 import {StyleSheet, View} from 'react-native';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaButton from 'components/AvaButton';
 import {Space} from 'components/Space';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
@@ -15,7 +15,7 @@ type Props = {
 const pkg = require('../../../package.json');
 
 export default function Onboard(props: Props | Readonly<Props>): JSX.Element {
-  const context = useContext(ApplicationContext);
+  const context = useApplicationContext();
 
   const onCreateWallet = (): void => {
     props.onCreateWallet();

@@ -1,5 +1,5 @@
 import React, {useContext, useMemo} from 'react';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import {NavigationContainer} from '@react-navigation/native';
 import AppNavigation from 'navigation/AppNavigation';
 import DoneScreen from 'screens/send/DoneScreen';
@@ -21,7 +21,7 @@ type Props = {
 };
 
 export default function SendERC20Stack({onClose, token}: Props): JSX.Element {
-  const context = useContext(ApplicationContext);
+  const context = useApplicationContext();
   const screenOptions = useMemo<StackNavigationOptions>(
     () => ({
       ...TransitionPresets.SlideFromRightIOS,

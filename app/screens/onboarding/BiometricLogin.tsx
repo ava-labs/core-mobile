@@ -2,7 +2,7 @@ import React, {useContext} from 'react';
 import {Alert, Image, StyleSheet, View} from 'react-native';
 import TextLabel from 'components/TextLabel';
 import {useBiometricLogin} from './BiometricLoginViewModel';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import {Space} from 'components/Space';
 import AvaText from 'components/AvaText';
 import AvaButton from 'components/AvaButton';
@@ -16,7 +16,7 @@ type Props = {
 export default function BiometricLogin(
   props: Props | Readonly<Props>,
 ): JSX.Element {
-  const context = useContext(ApplicationContext);
+  const context = useApplicationContext();
 
   const [biometryType, onUseBiometry, fingerprintIcon] = useBiometricLogin(
     props.mnemonic,

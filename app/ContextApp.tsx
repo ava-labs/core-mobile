@@ -7,6 +7,7 @@ import App from 'App';
 import {ApplicationContextProvider} from 'contexts/ApplicationContext';
 import Toast from 'react-native-toast-notifications';
 import {
+  AccountsContextProvider,
   NetworkContextProvider,
   WalletContextProvider,
 } from '@avalabs/wallet-react-components';
@@ -39,12 +40,14 @@ export default function ContextApp() {
   return (
     <ApplicationContextProvider>
       <NetworkContextProvider>
-        <WalletContextProvider>
-          {showSplash && <Splash />}
-          {!isWarmingUp && <App />}
-        </WalletContextProvider>
+        <AccountsContextProvider>
+          <WalletContextProvider>
+            {showSplash && <Splash />}
+            {!isWarmingUp && <App />}
+          </WalletContextProvider>
+        </AccountsContextProvider>
       </NetworkContextProvider>
-      <Toast ref={ref => (global['toast'] = ref)} />
+      <Toast ref={ref => (global.toast = ref)} />
     </ApplicationContextProvider>
   );
 }

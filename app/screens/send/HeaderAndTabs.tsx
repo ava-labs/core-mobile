@@ -1,12 +1,12 @@
-import React, {useContext} from 'react';
+import React from 'react';
 import {View} from 'react-native';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from 'components/AvaText';
 import SendHeader from 'screens/portfolio/sendBottomSheet/SendHeader';
 import TabViewAva from 'components/TabViewAva';
 import ReceiveToken from 'screens/receive/ReceiveToken';
 import {TokenWithBalance} from '@avalabs/wallet-react-components';
-import {SelectedTokenContext, TokenType} from 'contexts/SelectedTokenContext';
+import {TokenType, useSelectedTokenContext} from 'contexts/SelectedTokenContext';
 import SendAvax from 'screens/sendAvax/SendAvax';
 import SendERC20 from 'screens/sendERC20/SendERC20';
 import SendANT from 'screens/sendANT/SendANT';
@@ -16,8 +16,8 @@ type Props = {
 };
 
 export default function HeaderAndTabs({onClose}: Props): JSX.Element {
-  const {theme} = useContext(ApplicationContext);
-  const {selectedToken, tokenType} = useContext(SelectedTokenContext);
+  const {theme} = useApplicationContext();
+  const {selectedToken, tokenType} = useSelectedTokenContext();
 
   const renderCustomLabel = (title: string, focused: boolean) => {
     return (

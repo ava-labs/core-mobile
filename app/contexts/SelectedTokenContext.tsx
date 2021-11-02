@@ -8,7 +8,7 @@ import React, {
 import {TokenWithBalance} from '@avalabs/wallet-react-components';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import {Image, StyleSheet} from 'react-native';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 
 export enum TokenType {
   AVAX,
@@ -31,7 +31,7 @@ export const SelectedTokenContextProvider = ({children}: {children: any}) => {
   const [selectedToken, setSelectedToken] = useState<
     TokenWithBalance | undefined
   >(undefined);
-  const {theme} = useContext(ApplicationContext);
+  const {theme} = useApplicationContext();
 
   const tokenLogo = () => {
     if (selectedToken?.isAvax) {
@@ -90,3 +90,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
 });
+
+export function useSelectedTokenContext() {
+  return useContext(SelectedTokenContext);
+}

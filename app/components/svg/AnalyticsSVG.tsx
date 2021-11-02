@@ -1,6 +1,6 @@
 import React, {useContext} from 'react';
 import Svg, {Circle, Rect} from 'react-native-svg';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 
 interface Prop {
   color?: string;
@@ -8,7 +8,7 @@ interface Prop {
 }
 
 function AnalyticsSVG({color, circleColor}: Prop) {
-  const context = useContext(ApplicationContext);
+  const context = useApplicationContext();
 
   const iconColor = color ?? context.theme.btnIconIcon;
   const borderColor = circleColor ?? context.theme.btnIconBorder;

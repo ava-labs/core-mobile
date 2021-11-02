@@ -1,9 +1,9 @@
-import React, {useContext} from 'react';
+import React from 'react';
 import {TabBar} from 'react-native-tab-view';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 
 export default (props: any) => {
-  const theme = useContext(ApplicationContext).theme;
+  const theme = useApplicationContext().theme;
   return (
     <TabBar
       {...props}

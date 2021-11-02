@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React from 'react';
 import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin';
 import HdWalletLogin from 'screens/login/HdWalletLogin';
 import {createStackNavigator} from '@react-navigation/stack';
@@ -8,7 +8,8 @@ import AppNavigation from 'navigation/AppNavigation';
 import AppViewModel, {SelectedView} from 'AppViewModel';
 import {View} from 'react-native';
 import {onEnterWallet} from 'App';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
+import {noop} from 'rxjs';
 
 const AuthStack = createStackNavigator();
 
@@ -47,13 +48,13 @@ const OnboardScreen = () => {
       onCreateWallet={() =>
         AppViewModel.setSelectedView(SelectedView.CreateWallet)
       }
-      onEnterWallet={() => {}}
+      onEnterWallet={() => noop}
     />
   );
 };
 
 export const OnboardStackScreen = () => {
-  const {theme} = useContext(ApplicationContext);
+  const {theme} = useApplicationContext();
 
   return (
     <AuthStack.Navigator

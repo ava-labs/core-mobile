@@ -46,7 +46,11 @@ class AppViewModel {
     });
   };
 
-  onPinCreated = (pin: string, isResetting = false, walletContext?: WalletContextType): Observable<boolean> => {
+  onPinCreated = (
+    pin: string,
+    isResetting = false,
+    walletContext?: WalletContextType,
+  ): Observable<boolean> => {
     return from(getEncryptionKey(pin)).pipe(
       switchMap(key => encrypt(this.mnemonic, key)),
       switchMap((encryptedData: string) =>

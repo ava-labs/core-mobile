@@ -1,6 +1,6 @@
-import React, {FC, useContext, useEffect, useState} from 'react';
+import React, {FC, useEffect, useState} from 'react';
 import {Animated, Pressable, View} from 'react-native';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from 'components/AvaText';
 import Collapsible from 'react-native-collapsible';
 import CarrotSVG from 'components/svg/CarrotSVG';
@@ -15,7 +15,7 @@ const CollapsibleSection: FC<Props> = ({
   title,
   children,
 }) => {
-  const theme = useContext(ApplicationContext).theme;
+  const theme = useApplicationContext().theme;
   const [expanded, setExpanded] = useState<boolean | undefined>(undefined);
 
   useEffect(() => setExpanded(startExpanded), []);

@@ -7,7 +7,7 @@ import {
   TouchableNativeFeedback,
   View,
 } from 'react-native';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 
 export enum PinKeys {
   Key1,
@@ -43,7 +43,7 @@ const keymap: Map<PinKeys, string> = new Map([
 ]);
 
 export default function PinKey(props: Props | Readonly<Props>) {
-  const context = useContext(ApplicationContext);
+  const context = useApplicationContext();
   const theme = context.theme;
   const isBackspace = props.keyboardKey === PinKeys.Backspace;
   if (props.keyboardKey === undefined) {

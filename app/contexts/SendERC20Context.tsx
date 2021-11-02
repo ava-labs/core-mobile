@@ -1,7 +1,7 @@
 import React, {
   createContext,
   Dispatch,
-  SetStateAction,
+  SetStateAction, useContext,
   useEffect,
   useState,
 } from 'react';
@@ -208,3 +208,7 @@ export const SendERC20ContextProvider = ({
     </SendERC20Context.Provider>
   );
 };
+
+export function useSendERC20Context() {
+  return useContext(SendERC20Context);
+}

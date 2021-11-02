@@ -1,13 +1,13 @@
 import React, {useContext} from 'react';
 import Svg, {Path} from 'react-native-svg';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 
 interface Prop {
   color?: string;
 }
 
 function EditSVG({color}: Prop): JSX.Element {
-  const context = useContext(ApplicationContext);
+  const context = useApplicationContext();
 
   const iconColor = color ?? context.theme.txtOnBgApp;
   return (
