@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React from 'react';
 import {ActivityIndicator, SafeAreaView, StyleSheet, View} from 'react-native';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 import TextTitle from 'components/TextTitle';

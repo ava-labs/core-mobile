@@ -1,8 +1,9 @@
 import {createStackNavigator} from '@react-navigation/stack';
-import React, {useContext} from 'react';
+import React from 'react';
 import AppNavigation from 'navigation/AppNavigation';
 import PortfolioView from 'screens/portfolio/PortfolioView';
 import {useApplicationContext} from 'contexts/ApplicationContext';
+import {HistoryItemType} from '@avalabs/avalanche-wallet-sdk/dist/History';
 
 type Props = {
   onExit: () => void;
@@ -16,6 +17,9 @@ export type PortfolioStackParamList = {
   [AppNavigation.Modal.AccountBottomSheet]: undefined;
   [AppNavigation.Modal.SendReceiveBottomSheet]: undefined;
   [AppNavigation.Modal.ReceiveOnlyBottomSheet]: undefined;
+  [AppNavigation.Modal.TransactionDetailBottomSheet]: {
+    historyItem: HistoryItemType;
+  };
 };
 
 const PortfolioStack = createStackNavigator<PortfolioStackParamList>();
