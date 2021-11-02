@@ -2,6 +2,7 @@ import React, {
   createContext,
   Dispatch,
   SetStateAction,
+  useContext,
   useEffect,
   useState,
 } from 'react';
@@ -110,3 +111,7 @@ export const SelectedAccountContextProvider = ({children}: {children: any}) => {
     </SelectedAccountContext.Provider>
   );
 };
+
+export function useSelectedAccountContext() {
+  return useContext(SelectedAccountContext);
+}

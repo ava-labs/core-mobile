@@ -1,4 +1,4 @@
-import React, {useCallback, useContext, useState} from 'react';
+import React, {useCallback, useState} from 'react';
 import {
   Dimensions,
   KeyboardAvoidingView,
@@ -7,19 +7,19 @@ import {
   Platform,
   View,
 } from 'react-native';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from 'components/AvaText';
 import {Space} from 'components/Space';
 import AccountItem from 'screens/portfolio/account/AccountItem';
 import {Account} from 'dto/Account';
-import {SelectedAccountContext} from 'contexts/SelectedAccountContext';
+import {useSelectedAccountContext} from 'contexts/SelectedAccountContext';
 import {ScrollView} from 'react-native-gesture-handler';
 
 const SCREEN_WIDTH = Dimensions.get('window')?.width;
 
 function AccountView(): JSX.Element {
-  const context = useContext(ApplicationContext);
-  const {accounts, setSelectedAccount} = useContext(SelectedAccountContext);
+  const context = useApplicationContext();
+  const {accounts, setSelectedAccount} = useSelectedAccountContext();
   const [selectedAccountIndex, setSelectedAccountIndex] = useState(0);
 
   const onSelect = () => {

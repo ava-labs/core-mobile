@@ -1,13 +1,13 @@
 import React, {useContext} from 'react';
 import Svg, {Path} from 'react-native-svg';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 
 interface Prop {
   color?: string;
 }
 
 function ArrowSVG({color = '#FFF'}: Prop) {
-  const context = useContext(ApplicationContext);
+  const context = useApplicationContext();
 
   const iconColor = color ?? context.theme.btnIconIcon;
 

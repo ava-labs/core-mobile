@@ -5,13 +5,7 @@
  * @flow strict-local
  */
 
-import React, {
-  Dispatch,
-  RefObject,
-  useContext,
-  useEffect,
-  useState,
-} from 'react';
+import React, {Dispatch, RefObject, useEffect, useState} from 'react';
 import {
   Alert,
   BackHandler,
@@ -27,7 +21,7 @@ import {
   NavigationContainerRef,
   StackActions,
 } from '@react-navigation/native';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import AppViewModel, {
   ExitPromptAnswers,
   LogoutEvents,
@@ -164,7 +158,7 @@ const RootStackScreen = () => {
 };
 
 export default function App() {
-  const context = useContext(ApplicationContext);
+  const context = useApplicationContext();
   const networkContext = useNetworkContext();
   const [backgroundStyle] = useState(context.appBackgroundStyle);
   const [selectedView, setSelectedView] = useState<SelectedView | undefined>(

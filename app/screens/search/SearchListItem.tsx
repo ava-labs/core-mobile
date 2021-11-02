@@ -2,8 +2,7 @@ import React, {FC, useContext, useMemo} from 'react';
 import {Image, Platform, StyleSheet, Switch, View} from 'react-native';
 import AvaListItem from 'components/AvaListItem';
 import AvaText from 'components/AvaText';
-import {ApplicationContext} from 'contexts/ApplicationContext';
-import AvaLogoSVG from 'components/svg/AvaLogoSVG';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 
 type Props = {
   balance?: string;
@@ -36,7 +35,7 @@ const SearchListItem: FC<Props> = ({
   isShowingZeroBalanceForToken,
   onSwitchChanged,
 }) => {
-  const theme = useContext(ApplicationContext).theme;
+  const theme = useApplicationContext().theme;
   function handleChange(value: boolean) {
     onSwitchChanged(value);
   }

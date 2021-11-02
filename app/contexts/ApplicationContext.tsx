@@ -1,4 +1,4 @@
-import React, {createContext, useState} from 'react';
+import React, {createContext, useContext, useState} from 'react';
 import {COLORS_DAY, COLORS_NIGHT} from 'resources/Constants';
 import type {Theme} from '@react-navigation/native';
 import {Appearance} from 'react-native';
@@ -87,3 +87,7 @@ export const ApplicationContextProvider = ({children}: {children: any}) => {
     </ApplicationContext.Provider>
   );
 };
+
+export function useApplicationContext() {
+  return useContext(ApplicationContext);
+}

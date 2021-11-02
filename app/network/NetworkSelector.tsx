@@ -1,6 +1,6 @@
 import React, {FC, useContext, useEffect, useMemo, useState} from 'react';
 import {ActivityIndicator, Pressable, StyleSheet, View} from 'react-native';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from 'components/AvaText';
 import CarrotSVG from 'components/svg/CarrotSVG';
 import {
@@ -25,7 +25,7 @@ const NetworkSelector: FC<Props> = ({
   isExpanded,
   closeDrawer,
 }) => {
-  const context = useContext(ApplicationContext);
+  const context = useApplicationContext();
   const theme = context.theme;
   const networkContext = useNetworkContext();
   const [networkName, setNetworkName] = useState('');

@@ -1,6 +1,6 @@
 import React, {useContext, useEffect, useRef, useState} from 'react';
 import {InteractionManager, StyleSheet, TextInput, View} from 'react-native';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaButton from './AvaButton';
 import AvaText from './AvaText';
 
@@ -17,7 +17,7 @@ type Props = {
 };
 
 export default function TextArea(props: Props | Readonly<Props>): JSX.Element {
-  const context = useContext(ApplicationContext);
+  const context = useApplicationContext();
   const theme = context.theme;
   const [enteredText, setEnteredText] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | undefined>(

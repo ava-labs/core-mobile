@@ -8,7 +8,7 @@ import {
   View,
 } from 'react-native';
 import SearchSVG from 'components/svg/SearchSVG';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import {useNavigation} from '@react-navigation/native';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import {TokenWithBalance} from '@avalabs/wallet-react-components';
@@ -32,7 +32,7 @@ function SearchView(): JSX.Element {
     isRefreshing,
     loadTokenList,
   } = useSearchableTokenList(false);
-  const context = useContext(ApplicationContext);
+  const context = useApplicationContext();
   const navigation = useNavigation<PortfolioNavigationProp>();
 
   function handleRefresh() {
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
 });
 
 const AddCustomTokenButton = ({onPress}: {onPress: () => void}) => {
-  const {theme} = useContext(ApplicationContext);
+  const {theme} = useApplicationContext();
   return (
     <AvaButton.Base
       onPress={onPress}

@@ -1,6 +1,6 @@
 import React, {useContext, useEffect, useState} from 'react';
 import {Switch, View} from 'react-native';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaListItem from 'components/AvaListItem';
 import {StackActions, useNavigation} from '@react-navigation/native';
 import BiometricsSDK, {KeystoreConfig} from 'utils/BiometricsSDK';
@@ -18,7 +18,7 @@ import {
 import {UserCredentials} from 'react-native-keychain';
 
 function SecurityPrivacy() {
-  const theme = useContext(ApplicationContext).theme;
+  const theme = useApplicationContext().theme;
   const {dispatch} = useNavigation();
   const [isBiometricSwitchEnabled, setIsBiometricSwitchEnabled] =
     useState(false);

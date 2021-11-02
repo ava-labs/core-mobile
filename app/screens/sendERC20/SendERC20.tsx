@@ -1,20 +1,20 @@
-import React, {useContext, useState} from 'react';
+import React, {useState} from 'react';
 import {Modal, StyleSheet, View} from 'react-native';
 import InputText from 'components/InputText';
 import AvaButton from 'components/AvaButton';
 import Loader from 'components/Loader';
 import QrScannerAva from 'components/QrScannerAva';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import {useNavigation} from '@react-navigation/native';
 import AppNavigation from 'navigation/AppNavigation';
 import AvaText from 'components/AvaText';
 import FlexSpacer from 'components/FlexSpacer';
-import {SendERC20Context} from 'contexts/SendERC20Context';
+import {useSendERC20Context} from 'contexts/SendERC20Context';
 import {ScanQrIcon} from 'screens/send/ScanQrIcon';
 import {ScrollView} from 'react-native-gesture-handler';
 
 export default function SendERC20(): JSX.Element {
-  const context = useContext(ApplicationContext);
+  const context = useApplicationContext();
   const {
     sendAmountString,
     errorMsg,
@@ -30,7 +30,7 @@ export default function SendERC20(): JSX.Element {
     setCameraVisible,
     cameraVisible,
     onBarcodeScanned,
-  } = useContext(SendERC20Context);
+  } = useSendERC20Context();
   const [backgroundStyle] = useState(context.backgroundStyle);
   const {navigate} = useNavigation();
 

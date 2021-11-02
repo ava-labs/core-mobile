@@ -9,7 +9,7 @@ import {
 import WalletSDK from 'utils/WalletSDK';
 import TextArea from 'components/TextArea';
 import AvaText from 'components/AvaText';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaButton from 'components/AvaButton';
 import {useWalletContext} from '@avalabs/wallet-react-components';
 import {WalletContextType} from 'dto/TypeUtils';
@@ -22,7 +22,7 @@ type Props = {
 export default function HdWalletLogin(
   props: Props | Readonly<Props>,
 ): JSX.Element {
-  const context = useContext(ApplicationContext);
+  const context = useApplicationContext();
   const [errorMessage, setErrorMessage] = useState<string | undefined>(
     undefined,
   );

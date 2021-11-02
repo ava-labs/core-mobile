@@ -1,6 +1,6 @@
 import React, {FC, useContext, useEffect, useRef, useState} from 'react';
 import {Alert, Modal, Pressable, StyleSheet, View} from 'react-native';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import AvaText from 'components/AvaText';
 import BottomSheet from '@gorhom/bottom-sheet';
@@ -19,7 +19,7 @@ import {Space} from 'components/Space';
 import {ScrollView} from 'react-native-gesture-handler';
 
 const DrawerView: FC<DrawerContentComponentProps> = ({navigation}) => {
-  const context = useContext(ApplicationContext);
+  const context = useApplicationContext();
   const bottomSheetRef = useRef<BottomSheet>(null);
   const [openNetworkSwitcher, setOpenNetworkSwitcher] = useState(false);
   const [logoutWarningVisible, setLogoutWarningVisible] = useState(false);

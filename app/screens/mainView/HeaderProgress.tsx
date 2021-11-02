@@ -1,7 +1,7 @@
 import React, {useContext} from 'react';
 import {StyleSheet, View} from 'react-native';
 import ImgButtonAva from 'components/ImgButtonAva';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import Dot from 'components/Dot';
 import {DotView} from 'screens/mainView/HeaderProgressViewModel';
 
@@ -13,7 +13,7 @@ type Props = {
 };
 
 export default function HeaderProgress(props: Props | Readonly<Props>) {
-  const context = useContext(ApplicationContext);
+  const context = useApplicationContext();
   const isDarkMode = context.isDarkMode;
   const pinDots = () => {
     const dots: DotView[] = [];

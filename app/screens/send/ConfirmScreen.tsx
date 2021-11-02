@@ -1,11 +1,11 @@
-import React, {useContext} from 'react';
-import {SelectedTokenContext, TokenType} from 'contexts/SelectedTokenContext';
+import React from 'react';
+import {TokenType, useSelectedTokenContext} from 'contexts/SelectedTokenContext';
 import SendAvaxConfirm from 'screens/sendAvax/SendAvaxConfirm';
 import SendERC20Confirm from 'screens/sendERC20/SendERC20Confirm';
 import SendANTConfirm from 'screens/sendANT/SendANTConfirm';
 
 export default function ConfirmScreen() {
-  const {selectedToken, tokenType} = useContext(SelectedTokenContext);
+  const {selectedToken, tokenType} = useSelectedTokenContext();
 
   return {
     [TokenType.AVAX]: <SendAvaxConfirm />,

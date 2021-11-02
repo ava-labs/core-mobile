@@ -1,6 +1,6 @@
-import React, {RefObject, useContext, useEffect, useRef, useState} from 'react';
+import React, {RefObject, useEffect, useRef, useState} from 'react';
 import {InteractionManager, TextInput, View} from 'react-native';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import TextLabel from 'components/TextLabel';
 import ImgButtonAva from 'components/ImgButtonAva';
 import AvaButton from './AvaButton';
@@ -26,7 +26,7 @@ type Props = {
 };
 
 export default function InputText(props: Props | Readonly<Props>) {
-  const context = useContext(ApplicationContext);
+  const context = useApplicationContext();
   const [text, setText] = useState('');
   const [showInput, setShowInput] = useState(false);
   const [focused, setFocused] = useState(false);
