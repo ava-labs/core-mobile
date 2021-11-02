@@ -1,4 +1,4 @@
-import React, {FC, useContext, useEffect, useRef, useState} from 'react';
+import React, {FC, useEffect, useRef, useState} from 'react';
 import {Alert, Modal, Pressable, StyleSheet, View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
@@ -10,7 +10,6 @@ import SecurityItem from 'screens/drawer/components/SecurityItem';
 import LegalItem from 'screens/drawer/components/LegalItem';
 import Separator from 'components/Separator';
 import VersionItem from 'screens/drawer/components/VersionItem';
-import AppViewModel from 'AppViewModel';
 import LightModeSVG from 'components/svg/LightModeSVG';
 import DarkModeSVG from 'components/svg/DarkModeSVG';
 import NetworkSelector from 'network/NetworkSelector';
@@ -41,7 +40,6 @@ const DrawerView: FC<DrawerContentComponentProps> = ({navigation}) => {
   function handleLogout() {
     setLogoutWarningVisible(!logoutWarningVisible);
     destroyWallet();
-    AppViewModel.immediateLogout().catch(err => Alert.alert(err.message));
   }
 
   const header = (

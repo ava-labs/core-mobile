@@ -6,14 +6,11 @@ import {createStackNavigator} from '@react-navigation/stack';
 import CreatePIN from 'screens/onboarding/CreatePIN';
 import AppNavigation from 'navigation/AppNavigation';
 import AppViewModel, {SelectedView} from 'AppViewModel';
-import {useWalletContext} from '@avalabs/wallet-react-components';
 import {Alert} from 'react-native';
-import {WalletContextType} from 'dto/TypeUtils';
 
 const CreateWalletStack = createStackNavigator();
 
 export const CreateWalletStackScreen = () => {
-  const walletContext = useWalletContext();
 
   /**
    * Callbacks
@@ -64,7 +61,9 @@ export const CreateWalletStackScreen = () => {
     return (
       <BiometricLogin
         mnemonic={AppViewModel.mnemonic}
-        onBiometrySet={() => AppViewModel.onEnterWallet(AppViewModel.mnemonic)}
+        onBiometrySet={() => {
+          AppViewModel.onEnterWallet(AppViewModel.mnemonic);
+        }}
         onSkip={() => AppViewModel.onEnterWallet(AppViewModel.mnemonic)}
       />
     );
