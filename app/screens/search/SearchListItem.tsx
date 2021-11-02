@@ -1,8 +1,9 @@
-import React, {FC, useContext, useMemo} from 'react';
+import React, {FC, useMemo} from 'react';
 import {Image, Platform, StyleSheet, Switch, View} from 'react-native';
 import AvaListItem from 'components/AvaListItem';
 import AvaText from 'components/AvaText';
 import {useApplicationContext} from 'contexts/ApplicationContext';
+import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 
 type Props = {
   balance?: string;
@@ -50,7 +51,8 @@ const SearchListItem: FC<Props> = ({
     [],
   );
   const trackColorOn = useMemo(
-    () => (Platform.OS === 'android' ? theme.colorPrimary1 : theme.colorPrimary1),
+    () =>
+      Platform.OS === 'android' ? theme.colorPrimary1 : theme.colorPrimary1,
     [],
   );
   const trackColorOff = useMemo(
