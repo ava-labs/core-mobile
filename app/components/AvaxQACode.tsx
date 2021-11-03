@@ -1,6 +1,6 @@
-import React, {FC, useContext} from 'react';
+import React, {FC} from 'react';
 import {View} from 'react-native';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import QRCode from 'react-native-qrcode-svg';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import CircularText from 'components/svg/CircularText';
@@ -11,7 +11,7 @@ interface Props {
 }
 
 const AvaxQRCode: FC<Props> = ({address = '', circularText = ''}: Props) => {
-  const theme = useContext(ApplicationContext).theme;
+  const theme = useApplicationContext().theme;
 
   return (
     <View

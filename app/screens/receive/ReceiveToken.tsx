@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import ChainCard from './ChainCard';
 import {usePortfolio} from 'screens/portfolio/usePortfolio';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaButton from 'components/AvaButton';
 import CopySVG from 'components/svg/CopySVG';
 import AvaText from 'components/AvaText';
@@ -21,7 +21,7 @@ const SCREEN_WIDTH = Dimensions.get('window')?.width;
 
 function ReceiveToken() {
   const {addressC, addressX} = usePortfolio();
-  const {theme} = useContext(ApplicationContext);
+  const {theme} = useApplicationContext();
   const [selectedAddress, setSelectedAddress] = useState('');
   const [currentSlide, setCurrentSlide] = useState(0);
 

@@ -1,6 +1,6 @@
-import React, {FC, useContext, useEffect, useState} from 'react';
+import React, {FC, useEffect, useState} from 'react';
 import {StyleProp, StyleSheet, Text, TextInput, TextStyle} from 'react-native';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 
 interface TextProps {
   textStyle?: StyleProp<TextStyle>;
@@ -11,7 +11,7 @@ interface TextProps {
 }
 
 const LargeTitleBold: FC<TextProps> = ({textStyle, children}) => {
-  const theme = useContext(ApplicationContext).theme;
+  const theme = useApplicationContext().theme;
   return (
     <Text style={[styles.largeTitleBold, {color: theme.colorText1}, textStyle]}>
       {children}
@@ -20,7 +20,7 @@ const LargeTitleBold: FC<TextProps> = ({textStyle, children}) => {
 };
 
 const TextHeading1: FC<TextProps> = ({textStyle, children}) => {
-  const theme = useContext(ApplicationContext).theme;
+  const theme = useApplicationContext().theme;
   return (
     <Text style={[styles.heading1, {color: theme.txtListItem}, textStyle]}>
       {children}
@@ -34,7 +34,7 @@ const TextHeading2: FC<TextProps> = ({
   textStyle,
   children,
 }) => {
-  const theme = useContext(ApplicationContext).theme;
+  const theme = useApplicationContext().theme;
   const [value, setValue] = useState('');
 
   useEffect(() => {
@@ -61,7 +61,7 @@ const TextHeading2: FC<TextProps> = ({
 };
 
 const TextHeading3: FC<TextProps> = ({ellipsize, textStyle, children}) => {
-  const theme = useContext(ApplicationContext).theme;
+  const theme = useApplicationContext().theme;
   return (
     <Text
       ellipsizeMode={ellipsize}
@@ -73,7 +73,7 @@ const TextHeading3: FC<TextProps> = ({ellipsize, textStyle, children}) => {
 };
 
 const TextBody1: FC<TextProps> = ({ellipsize, textStyle, children}) => {
-  const theme = useContext(ApplicationContext).theme;
+  const theme = useApplicationContext().theme;
   return (
     <Text
       ellipsizeMode={ellipsize}
@@ -85,7 +85,7 @@ const TextBody1: FC<TextProps> = ({ellipsize, textStyle, children}) => {
 };
 
 const TextBody2: FC<TextProps> = ({color, textStyle, children}) => {
-  const theme = useContext(ApplicationContext).theme;
+  const theme = useApplicationContext().theme;
   return (
     <Text style={[styles.body2, {color: color ?? theme.colorText2}, textStyle]}>
       {children}
@@ -98,7 +98,7 @@ const TextBody3: FC<TextProps> = ({textStyle, children}) => {
 };
 
 const TextBody4: FC<TextProps> = ({textStyle, children}) => {
-  const {theme} = useContext(ApplicationContext);
+  const {theme} = useApplicationContext();
   return (
     <Text style={[styles.body4, {color: theme.colorText1}, textStyle]}>
       {children}
@@ -107,7 +107,7 @@ const TextBody4: FC<TextProps> = ({textStyle, children}) => {
 };
 
 const TextTag: FC<TextProps> = ({textStyle, children}) => {
-  const theme = useContext(ApplicationContext).theme;
+  const theme = useApplicationContext().theme;
   return (
     <Text style={[styles.textTag, {color: theme.txtListItem}, textStyle]}>
       {children}

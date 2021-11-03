@@ -4,7 +4,7 @@ import TextTitle from 'components/TextTitle';
 import Header from 'screens/mainView/Header';
 import AssetsAddTokenViewModel from './AssetsAddTokenViewModel';
 import InputText from 'components/InputText';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaButton from 'components/AvaButton';
 
 type Props = {
@@ -14,7 +14,7 @@ type Props = {
 export default function AssetsAddToken(
   props: Props | Readonly<Props>,
 ): JSX.Element {
-  const context = useContext(ApplicationContext);
+  const context = useApplicationContext();
   const [viewModel] = useState(new AssetsAddTokenViewModel());
   const [backgroundStyle] = useState(context.backgroundStyle);
   const [tokenContractAddress, setTokenContractAddress] = useState('');

@@ -1,6 +1,6 @@
 import React, {FC, useCallback, useContext, useEffect, useState} from 'react';
 import {Alert, Modal, StyleSheet, View} from 'react-native';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import InputText from 'components/InputText';
 import QrScannerAva from 'components/QrScannerAva';
 import AvaButton from 'components/AvaButton';
@@ -12,7 +12,7 @@ import AvaText from 'components/AvaText';
 import {Space} from 'components/Space';
 
 const AddCustomToken: FC = () => {
-  const theme = useContext(ApplicationContext).theme;
+  const theme = useApplicationContext().theme;
   const [tokenAddress, setTokenAddress] = useState('');
   const [errorMessage, setErrorMessage] = useState<string>();
   const [token, setToken] = useState<Erc20Token>();

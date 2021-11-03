@@ -1,9 +1,9 @@
 import React, {useContext} from 'react';
 import {StyleSheet, View} from 'react-native';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 
 export default function AvaxSheetHandle() {
-  const {theme} = useContext(ApplicationContext);
+  const {theme} = useApplicationContext();
   return (
     <View style={styles.container}>
       <View style={[styles.indicator, {backgroundColor: theme.colorText2}]} />

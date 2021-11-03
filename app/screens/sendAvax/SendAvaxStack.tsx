@@ -1,5 +1,5 @@
 import React, {useContext, useMemo} from 'react';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import {SendAvaxContextProvider} from 'contexts/SendAvaxContext';
 import {NavigationContainer} from '@react-navigation/native';
 import AppNavigation from 'navigation/AppNavigation';
@@ -19,7 +19,7 @@ type Props = {
 };
 
 export default function SendAvaxStack({onClose}: Props): JSX.Element {
-  const context = useContext(ApplicationContext);
+  const context = useApplicationContext();
   const screenOptions = useMemo<StackNavigationOptions>(
     () => ({
       ...TransitionPresets.SlideFromRightIOS,

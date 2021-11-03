@@ -1,13 +1,13 @@
 import React, {useContext} from 'react';
 import {StyleSheet, View} from 'react-native';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from 'components/AvaText';
 import SplashLogoSVG from 'components/svg/SplashLogoSVG';
 
 const pkg = require('../../../package.json');
 
 export default function Splash(): JSX.Element {
-  const context = useContext(ApplicationContext);
+  const context = useApplicationContext();
 
   return (
     <View

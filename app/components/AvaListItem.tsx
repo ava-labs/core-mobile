@@ -1,6 +1,6 @@
 import React, {useContext} from 'react';
 import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import CarrotSVG from 'components/svg/CarrotSVG';
 
 interface Props {
@@ -28,7 +28,7 @@ function BaseListItem({
   onPress,
   embedInCard,
 }: Props) {
-  const context = useContext(ApplicationContext);
+  const context = useApplicationContext();
 
   return (
     <View

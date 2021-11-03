@@ -1,6 +1,6 @@
 import React, {useContext} from 'react';
 import {View} from 'react-native';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from 'components/AvaText';
 import {Opacity05} from 'resources/Constants';
 import {Space} from 'components/Space';
@@ -13,7 +13,7 @@ interface Props {
 }
 
 function ChainCard({chainName, description, address}: Props) {
-  const context = useContext(ApplicationContext);
+  const context = useApplicationContext();
   return (
     <View
       style={[

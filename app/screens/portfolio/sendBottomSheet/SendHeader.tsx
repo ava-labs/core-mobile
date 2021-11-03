@@ -1,19 +1,19 @@
-import React, {useContext} from 'react';
+import React from 'react';
 import {View} from 'react-native';
 import AvaListItem from 'components/AvaListItem';
 import AvaText from 'components/AvaText';
 import AvaButton from 'components/AvaButton';
 import ClearSVG from 'components/svg/ClearSVG';
-import {ApplicationContext} from 'contexts/ApplicationContext';
-import {SelectedTokenContext} from 'contexts/SelectedTokenContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
+import {useSelectedTokenContext} from 'contexts/SelectedTokenContext';
 
 type Props = {
   onClose: () => void;
 };
 
 function SendHeader({onClose}: Props): JSX.Element {
-  const {theme} = useContext(ApplicationContext);
-  const {selectedToken, tokenLogo} = useContext(SelectedTokenContext);
+  const {theme} = useApplicationContext();
+  const {selectedToken, tokenLogo} = useSelectedTokenContext();
   return (
     <View
       style={{

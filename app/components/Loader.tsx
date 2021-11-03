@@ -1,8 +1,8 @@
-import React, {useContext} from 'react';
+import React from 'react';
 import {ActivityIndicator, SafeAreaView, StyleSheet, View} from 'react-native';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 import TextTitle from 'components/TextTitle';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 
 type LoaderProps = {
   message?: string;
@@ -10,7 +10,7 @@ type LoaderProps = {
 };
 
 export default function Loader({message}: LoaderProps): JSX.Element {
-  const context = useContext(ApplicationContext);
+  const context = useApplicationContext();
 
   return (
     <SafeAreaView style={context.appBackgroundStyle}>

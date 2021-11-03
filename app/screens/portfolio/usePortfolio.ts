@@ -8,6 +8,8 @@ export type UsePortfolioData = {
   addressP: string;
   balanceAvaxTotal: string;
   addressX: string;
+  isBalanceLoading: boolean;
+  isWalletReady: boolean;
 };
 
 export function usePortfolio(): UsePortfolioData {
@@ -34,7 +36,7 @@ export function usePortfolio(): UsePortfolioData {
     if (walletStateContext) {
       calculateUsdBalance();
     }
-  }, []);
+  }, [walletStateContext]);
 
   return {
     addressX: walletStateContext?.addresses?.addrX ?? '',
@@ -42,5 +44,7 @@ export function usePortfolio(): UsePortfolioData {
     addressC: walletStateContext?.addresses?.addrC ?? '',
     balanceTotalInUSD,
     balanceAvaxTotal,
+    isBalanceLoading: walletStateContext?.isBalanceLoading ?? true,
+    isWalletReady: walletStateContext?.isWalletReady ?? false,
   };
 }

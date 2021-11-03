@@ -1,6 +1,6 @@
-import React, {FC, useContext} from 'react';
+import React, {FC} from 'react';
 import {Image, StyleSheet, View} from 'react-native';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import AvaListItem from 'components/AvaListItem';
 import AvaText from 'components/AvaText';
@@ -22,7 +22,7 @@ const PortfolioListItem: FC<Props> = ({
   symbol,
   onPress,
 }) => {
-  const theme = useContext(ApplicationContext).theme;
+  const theme = useApplicationContext().theme;
   const title = tokenName;
 
   const tokenLogo =
@@ -86,4 +86,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PortfolioListItem;
+export default React.memo(PortfolioListItem);

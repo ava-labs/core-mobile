@@ -1,7 +1,7 @@
 import React, {FC, memo, useCallback, useContext} from 'react';
 import {Share, StyleSheet, View} from 'react-native';
 import {usePortfolio} from 'screens/portfolio/usePortfolio';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaButton from 'components/AvaButton';
 import CopySVG from 'components/svg/CopySVG';
 import AvaText from 'components/AvaText';
@@ -31,7 +31,7 @@ const ReceiveStack = createStackNavigator<ReceiveStackParams>();
 
 function ReceiveToken2({position}: {position: (position: number) => void}) {
   const {addressC, addressX} = usePortfolio();
-  const {navContainerTheme} = useContext(ApplicationContext);
+  const {navContainerTheme} = useApplicationContext();
 
   const handleShare = async (address: string) => {
     try {
@@ -104,7 +104,7 @@ const Receive: FC<{
   onShare?: (address: string) => void;
   positionCallback?: (position: number) => void;
 }> = memo(props => {
-  const theme = useContext(ApplicationContext).theme;
+  const theme = useApplicationContext().theme;
   const isXChain = !!props?.isXChain;
   const navigation = useNavigation<ReceiveRouteProp>();
 

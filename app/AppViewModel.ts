@@ -3,11 +3,9 @@ import {
   AsyncSubject,
   BehaviorSubject,
   concat,
-  delay,
   from,
   Observable,
   of,
-  tap,
 } from 'rxjs';
 import {concatMap, map, switchMap} from 'rxjs/operators';
 import {BackHandler} from 'react-native';
@@ -15,8 +13,6 @@ import BiometricsSDK from 'utils/BiometricsSDK';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {SECURE_ACCESS_SET} from 'resources/Constants';
 import {encrypt, getEncryptionKey} from 'screens/login/utils/EncryptionHelper';
-import {WalletContextType} from 'dto/TypeUtils';
-import {onEnterWallet} from 'App';
 
 export enum SelectedView {
   Onboard,
@@ -46,7 +42,7 @@ class AppViewModel {
     });
   };
 
-  onPinCreated = (pin: string, isResetting = false, walletContext?: WalletContextType): Observable<boolean> => {
+  onPinCreated = (pin: string, isResetting = false): Observable<boolean> => {
     return from(getEncryptionKey(pin)).pipe(
       switchMap(key => encrypt(this.mnemonic, key)),
       switchMap((encryptedData: string) =>
@@ -65,24 +61,18 @@ class AppViewModel {
         if (canUseBiometry) {
           this.setSelectedView(SelectedView.BiometricStore);
         } else {
-          onEnterWallet(this.mnemonic, walletContext?.setMnemonic);
+          this.onEnterWallet(this.mnemonic);
         }
         return true;
       }),
     );
   };
 
-  onEnterWallet = (mnemonic: string): Observable<boolean> => {
-    return of(mnemonic).pipe(
-      tap((mnemonic: string) => {
-        this.mnemonic = mnemonic;
-        this.setSelectedView(SelectedView.Main);
-      }),
-      delay(10, asyncScheduler), //give UI chance to update selected view
-      map(() => {
-        return true;
-      }),
-    );
+  onEnterWallet = (mnemonic?: string) => {
+    if (mnemonic && mnemonic !== this.mnemonic) {
+      this.mnemonic = mnemonic;
+    }
+    this.setSelectedView(SelectedView.Main);
   };
 
   onEnterExistingMnemonic = (mnemonic: string): void => {

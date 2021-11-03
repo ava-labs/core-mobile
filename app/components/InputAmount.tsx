@@ -1,7 +1,7 @@
 import React, {useContext, useState} from 'react';
 import {StyleSheet, TextInput, View} from 'react-native';
 import ImgButtonAva from 'components/ImgButtonAva';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 
 type Props = {
   initValue?: string;
@@ -12,7 +12,7 @@ type Props = {
 };
 
 export default function InputAmount(props: Props | Readonly<Props>) {
-  const context = useContext(ApplicationContext);
+  const context = useApplicationContext();
   const [decreaseBtnVisible] = useState(!!props.showControls);
   const [increaseBtnVisible] = useState(!!props.showControls);
   const [value, setValue] = useState(

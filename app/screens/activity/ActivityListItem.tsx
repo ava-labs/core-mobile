@@ -1,6 +1,6 @@
 import React, {FC, useContext} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaListItem from 'components/AvaListItem';
 import {History} from '@avalabs/avalanche-wallet-sdk';
 import {
@@ -18,7 +18,7 @@ type Props = {
 };
 
 const ActivityListItem: FC<Props> = ({historyItem, onPress}) => {
-  const theme = useContext(ApplicationContext).theme;
+  const theme = useApplicationContext().theme;
   if (History.isHistoryBaseTx(historyItem)) {
     const token = historyItem as any;
     const baseRightComponent = (

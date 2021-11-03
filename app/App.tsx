@@ -5,20 +5,8 @@
  * @flow strict-local
  */
 
-import React, {
-  Dispatch,
-  RefObject,
-  useContext,
-  useEffect,
-  useState,
-} from 'react';
-import {
-  Alert,
-  BackHandler,
-  InteractionManager,
-  LogBox,
-  SafeAreaView,
-} from 'react-native';
+import React, {RefObject, useEffect, useState} from 'react';
+import {Alert, BackHandler, LogBox, SafeAreaView} from 'react-native';
 import WalletStackScreen from 'screens/mainView/WalletStackScreen';
 import {Subscription} from 'rxjs';
 import {createStackNavigator} from '@react-navigation/stack';
@@ -27,7 +15,7 @@ import {
   NavigationContainerRef,
   StackActions,
 } from '@react-navigation/native';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import AppViewModel, {
   ExitPromptAnswers,
   LogoutEvents,
@@ -79,20 +67,6 @@ const onExit = () => {
           ],
         );
       }
-    },
-    error: err => Alert.alert(err.message),
-  });
-};
-
-export const onEnterWallet = (
-  mnemonic: string,
-  setMnemonic?: Dispatch<string>,
-): void => {
-  AppViewModel.onEnterWallet(mnemonic).subscribe({
-    next: () => {
-      InteractionManager.runAfterInteractions(() => {
-        setMnemonic?.(mnemonic);
-      });
     },
     error: err => Alert.alert(err.message),
   });
@@ -164,7 +138,7 @@ const RootStackScreen = () => {
 };
 
 export default function App() {
-  const context = useContext(ApplicationContext);
+  const context = useApplicationContext();
   const networkContext = useNetworkContext();
   const [backgroundStyle] = useState(context.appBackgroundStyle);
   const [selectedView, setSelectedView] = useState<SelectedView | undefined>(

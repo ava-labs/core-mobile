@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Linking, StyleSheet, View} from 'react-native';
 import AvaText from 'components/AvaText';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
@@ -9,7 +9,7 @@ import {HistoryItemType} from '@avalabs/avalanche-wallet-sdk/dist/History';
 import moment from 'moment';
 import MovementIndicator from 'components/MovementIndicator';
 import {Utils} from '@avalabs/avalanche-wallet-sdk';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import {
   FUJI_NETWORK,
   useNetworkContext,
@@ -19,7 +19,7 @@ interface Props {
   txItem: HistoryItemType;
 }
 function ActivityDetailView({txItem}: Props) {
-  const theme = useContext(ApplicationContext).theme;
+  const theme = useApplicationContext().theme;
   const networkContext = useNetworkContext();
   const date = moment(txItem.timestamp).format('MMM DD, YYYY HH:mm');
   const [explorerUrl, setExplorerUrl] = useState<string>();

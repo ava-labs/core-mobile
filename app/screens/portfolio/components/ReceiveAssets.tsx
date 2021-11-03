@@ -1,7 +1,7 @@
 import React, {useContext, useState} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import BlockchainCircle from 'components/BlockchainCircle';
 import Clipboard from '@react-native-clipboard/clipboard';
 import {ShowSnackBar} from 'components/Snackbar';
@@ -13,7 +13,7 @@ type Props = {
 };
 
 export default function ReceiveAssets({addressX, addressC, addressP}: Props) {
-  const context = useContext(ApplicationContext);
+  const context = useApplicationContext();
   const theme = context.theme;
 
   // address C is arbitrarily selected. could be any.

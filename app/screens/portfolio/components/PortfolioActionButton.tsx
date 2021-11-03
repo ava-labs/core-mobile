@@ -1,7 +1,7 @@
 import React, {useContext} from 'react';
 import {Text, TouchableOpacity, View} from 'react-native';
 import ArrowSVG from 'components/svg/ArrowSVG';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 
 interface PortfolioButtonProps {
   caption: string;
@@ -14,7 +14,7 @@ function PortfolioActionButtonBase({
   direction,
   onPress,
 }: PortfolioButtonProps) {
-  const context = useContext(ApplicationContext);
+  const context = useApplicationContext();
   function getArrowOrientation() {
     switch (direction) {
       case 'send':

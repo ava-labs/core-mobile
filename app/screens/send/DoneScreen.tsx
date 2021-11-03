@@ -1,7 +1,7 @@
 import React, {useContext} from 'react';
 import {View} from 'react-native';
 import AvaButton from 'components/AvaButton';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from 'components/AvaText';
 import {Space} from 'components/Space';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
@@ -11,11 +11,11 @@ interface DoneProps {
 }
 
 export default function DoneScreen({onClose}: DoneProps): JSX.Element {
-  const context = useContext(ApplicationContext);
+  const context = useApplicationContext();
   return (
     <View
       style={[
-        useContext(ApplicationContext).backgroundStyle,
+        useApplicationContext().backgroundStyle,
         {
           backgroundColor: undefined,
           justifyContent: 'center',
