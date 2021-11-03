@@ -57,7 +57,7 @@ function PortfolioContainer({
         hasZeroBalance={hasZeroBalance}
       />
       <Modal visible={!isWalletReady}>
-        <Loader message={'Loading wallet. One moment please.'} />
+        <Loader />
       </Modal>
     </>
   );
