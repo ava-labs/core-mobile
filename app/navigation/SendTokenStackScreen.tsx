@@ -1,9 +1,6 @@
-import React, {useContext} from 'react';
-import {SelectedTokenContext, TokenType} from 'contexts/SelectedTokenContext';
-import {
-  AntWithBalance,
-  ERC20WithBalance,
-} from '@avalabs/wallet-react-components';
+import React from 'react';
+import {TokenType, useSelectedTokenContext} from 'contexts/SelectedTokenContext';
+import {AntWithBalance, ERC20WithBalance} from '@avalabs/wallet-react-components';
 import SendAvaxStack from 'screens/sendAvax/SendAvaxStack';
 import SendERC20Stack from 'screens/sendERC20/SendERC20Stack';
 import SendANTStack from 'screens/sendANT/SendANTStack';
@@ -13,7 +10,7 @@ type Props = {
 };
 
 const SendTokenStackScreen = ({onClose}: Props) => {
-  const {selectedToken, tokenType} = useContext(SelectedTokenContext);
+  const {selectedToken, tokenType} = useSelectedTokenContext();
 
   return {
     [TokenType.AVAX]: <SendAvaxStack onClose={onClose} />,

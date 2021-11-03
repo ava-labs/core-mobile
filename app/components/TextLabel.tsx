@@ -1,6 +1,6 @@
 import React, {useContext} from 'react';
 import {Text} from 'react-native';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 
 type Props = {
   text: string;
@@ -10,7 +10,7 @@ type Props = {
 };
 
 export default function TextLabel(props: Props | Readonly<Props>) {
-  const context = useContext(ApplicationContext);
+  const context = useApplicationContext();
   const theme = context.theme;
   return (
     <Text

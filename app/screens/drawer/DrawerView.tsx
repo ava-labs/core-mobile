@@ -1,6 +1,6 @@
-import React, {FC, useContext, useEffect, useRef, useState} from 'react';
+import React, {FC, useEffect, useRef, useState} from 'react';
 import {Alert, Modal, Pressable, StyleSheet, View} from 'react-native';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import AvaText from 'components/AvaText';
 import BottomSheet from '@gorhom/bottom-sheet';
@@ -10,17 +10,18 @@ import SecurityItem from 'screens/drawer/components/SecurityItem';
 import LegalItem from 'screens/drawer/components/LegalItem';
 import Separator from 'components/Separator';
 import VersionItem from 'screens/drawer/components/VersionItem';
-import AppViewModel from 'AppViewModel';
 import LightModeSVG from 'components/svg/LightModeSVG';
 import DarkModeSVG from 'components/svg/DarkModeSVG';
 import NetworkSelector from 'network/NetworkSelector';
 import AvaButton from 'components/AvaButton';
 import {Space} from 'components/Space';
 import {ScrollView} from 'react-native-gesture-handler';
+import {useWalletSetup} from 'hooks/useWalletSetup';
 
 const DrawerView: FC<DrawerContentComponentProps> = ({navigation}) => {
-  const context = useContext(ApplicationContext);
+  const context = useApplicationContext();
   const bottomSheetRef = useRef<BottomSheet>(null);
+  const {destroyWallet} = useWalletSetup();
   const [openNetworkSwitcher, setOpenNetworkSwitcher] = useState(false);
   const [logoutWarningVisible, setLogoutWarningVisible] = useState(false);
 
@@ -38,7 +39,7 @@ const DrawerView: FC<DrawerContentComponentProps> = ({navigation}) => {
 
   function handleLogout() {
     setLogoutWarningVisible(!logoutWarningVisible);
-    AppViewModel.immediateLogout().catch(err => Alert.alert(err.message));
+    destroyWallet();
   }
 
   const header = (

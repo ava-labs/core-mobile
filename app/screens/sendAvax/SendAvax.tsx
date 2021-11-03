@@ -4,17 +4,17 @@ import InputText from 'components/InputText';
 import AvaButton from 'components/AvaButton';
 import Loader from 'components/Loader';
 import QrScannerAva from 'components/QrScannerAva';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import {useNavigation} from '@react-navigation/native';
 import AppNavigation from 'navigation/AppNavigation';
 import AvaText from 'components/AvaText';
 import FlexSpacer from 'components/FlexSpacer';
-import {SendAvaxContext} from 'contexts/SendAvaxContext';
+import {SendAvaxContext, useSendAvaxContext} from 'contexts/SendAvaxContext';
 import {ScanQrIcon} from 'screens/send/ScanQrIcon';
 import {ScrollView} from 'react-native-gesture-handler';
 
 export default function SendAvax(): JSX.Element {
-  const context = useContext(ApplicationContext);
+  const context = useApplicationContext();
   const {
     loaderVisible,
     loaderMsg,
@@ -30,7 +30,7 @@ export default function SendAvax(): JSX.Element {
     canSubmit,
     onScanBarcode,
     onBarcodeScanned,
-  } = useContext(SendAvaxContext);
+  } = useSendAvaxContext();
   const [backgroundStyle] = useState(context.backgroundStyle);
   const {navigate} = useNavigation();
 

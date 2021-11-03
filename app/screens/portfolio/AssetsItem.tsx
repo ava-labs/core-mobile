@@ -1,7 +1,7 @@
 import React, {useContext} from 'react';
 import {StyleSheet, View} from 'react-native';
 import TextTitle from 'components/TextTitle';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 
 type Props = {
   title: string;
@@ -9,7 +9,7 @@ type Props = {
 };
 
 export default function AssetsItem(props: Props | Readonly<Props>) {
-  const context = useContext(ApplicationContext);
+  const context = useApplicationContext();
   const theme = context.theme;
 
   return (

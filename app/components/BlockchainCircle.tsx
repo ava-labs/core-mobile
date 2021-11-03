@@ -1,6 +1,6 @@
 import React, {useContext} from 'react';
 import {StyleSheet, Text, TouchableOpacity} from 'react-native';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 
 interface Props {
   chain: string;
@@ -9,7 +9,7 @@ interface Props {
 }
 
 function BlockchainCircle({chain, active = false, onChainSelected}: Props) {
-  const context = useContext(ApplicationContext);
+  const context = useApplicationContext();
 
   function getBackgroundColor() {
     if (active) {

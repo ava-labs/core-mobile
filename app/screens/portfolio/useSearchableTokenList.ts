@@ -22,7 +22,6 @@ export function useSearchableTokenList(hideZeroBalance = true): {
   loadTokenList: () => void;
   isRefreshing: boolean;
 } {
-  const walletState = useWalletStateContext();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [tokenList, setTokenList] = useState([] as TokenWithBalance[]);
   const [filteredTokenList, setFilteredTokenList] = useState(
@@ -34,6 +33,8 @@ export function useSearchableTokenList(hideZeroBalance = true): {
       ['init']: false,
     },
   );
+
+  const walletState = useWalletStateContext();
 
   const loadZeroBalanceList = () => {
     AsyncStorage.getItem('showZeroBalanceList').then(value => {

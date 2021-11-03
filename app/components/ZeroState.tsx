@@ -1,6 +1,5 @@
-import React, {FC, ReactNode, useContext} from 'react';
+import React, {FC, ReactNode} from 'react';
 import {Image, View} from 'react-native';
-import {ApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from './AvaText';
 import AddSVG from 'components/svg/AddSVG';
 
@@ -17,7 +16,6 @@ const ZeroStateBase: FC<BaseProps> = ({
   message,
   additionalItems,
 }) => {
-  const theme = useContext(ApplicationContext).theme;
 
   function getImage() {
     if (!image) {

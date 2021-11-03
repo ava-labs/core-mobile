@@ -1,4 +1,4 @@
-import React, {useContext, useEffect} from 'react';
+import React, {useEffect} from 'react';
 import {Animated, StyleSheet, View} from 'react-native';
 import Dot from 'components/Dot';
 import PinKey, {PinKeys} from 'screens/onboarding/PinKey';
@@ -11,13 +11,11 @@ import {
 } from './PinOrBiometryLoginViewModel';
 import AvaText from 'components/AvaText';
 import {Space} from 'components/Space';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaButton from 'components/AvaButton';
 import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
 import {SecurityStackParamList} from 'navigation/SecurityPrivacyStackScreen';
-import AppNavigation from 'navigation/AppNavigation';
-import {useWalletContext} from '@avalabs/wallet-react-components';
-import {WalletContextType} from 'dto/TypeUtils';
+import {useWalletSetup} from 'hooks/useWalletSetup';
 
 const keymap: Map<string, PinKeys> = new Map([
   ['1', PinKeys.Key1],
@@ -35,15 +33,12 @@ const keymap: Map<string, PinKeys> = new Map([
 
 type Props = {
   onSignInWithRecoveryPhrase: () => void;
-  onEnterWallet: (mnemonic: string, walletContext: WalletContextType) => void;
+  onEnterWallet: (mnemonic: string) => void;
   isResettingPin?: boolean;
   hideLoginWithMnemonic?: boolean;
 };
 
-type SecurityRouteProps = RouteProp<
-  SecurityStackParamList,
-  AppNavigation.Onboard.Login
->;
+type SecurityRouteProps = RouteProp<SecurityStackParamList>;
 
 export default function PinOrBiometryLogin({
   onSignInWithRecoveryPhrase,
@@ -51,7 +46,8 @@ export default function PinOrBiometryLogin({
   isResettingPin,
   hideLoginWithMnemonic = false,
 }: Props | Readonly<Props>): JSX.Element {
-  const theme = useContext(ApplicationContext).theme;
+  const theme = useApplicationContext().theme;
+  const {initWalletWithMnemonic} = useWalletSetup();
   const route = useRoute<SecurityRouteProps>();
   const {goBack} = useNavigation();
   const revealMnemonic = route?.params?.revealMnemonic;
@@ -65,11 +61,17 @@ export default function PinOrBiometryLogin({
     jiggleAnim,
   ] = usePinOrBiometryLogin();
 
-  const context = useContext(ApplicationContext);
-  const walletContext = useWalletContext();
+  const context = useApplicationContext();
 
   function initWallet(givenMnemonic: string) {
-    onEnterWallet(givenMnemonic, walletContext);
+    onEnterWallet(givenMnemonic);
+    // new wallet
+    initWalletWithMnemonic(givenMnemonic);
+
+    // existing
+    // store account and meta data
+    // store active account - index
+    // check
   }
 
   useEffect(() => {

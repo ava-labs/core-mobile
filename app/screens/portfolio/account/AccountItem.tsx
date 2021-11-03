@@ -1,6 +1,6 @@
-import React, {useContext, useState} from 'react';
+import React, {useState} from 'react';
 import {View} from 'react-native';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from 'components/AvaText';
 import {Space} from 'components/Space';
 import EditSVG from 'components/svg/EditSVG';
@@ -8,17 +8,17 @@ import AccountChainAddress from 'screens/portfolio/account/AccountChainAddress';
 import {Account} from 'dto/Account';
 import {usePortfolio} from 'screens/portfolio/usePortfolio';
 import AvaButton from 'components/AvaButton';
-import {SelectedAccountContext} from 'contexts/SelectedAccountContext';
+import {useSelectedAccountContext} from 'contexts/SelectedAccountContext';
 
 type Props = {
   account: Account;
 };
 
 function AccountItem({account}: Props): JSX.Element {
-  const context = useContext(ApplicationContext);
+  const context = useApplicationContext();
   const {balanceTotalInUSD} = usePortfolio();
   const [editAccount, setEditAccount] = useState(false);
-  const {updateAccountName} = useContext(SelectedAccountContext);
+  const {updateAccountName} = useSelectedAccountContext();
 
   function onEditAccountName(): void {
     setEditAccount(!editAccount);

@@ -1,5 +1,5 @@
 import React, {useContext} from 'react';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import DotSVG from 'components/svg/DotSVG';
 import {View} from 'react-native';
 
@@ -10,7 +10,7 @@ type Props = {
 };
 
 export default function Dot(props: Props | Readonly<Props>) {
-  const context = useContext(ApplicationContext);
+  const context = useApplicationContext();
   const iconMargin = props.margin || 0;
 
   return (

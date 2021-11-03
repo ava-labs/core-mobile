@@ -1,6 +1,6 @@
 import React, {useContext} from 'react';
 import Svg, {Path} from 'react-native-svg';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import {View} from 'react-native';
 
 interface Prop {
@@ -10,7 +10,7 @@ interface Prop {
 }
 
 function CarrotSVG({color, size = 16, direction}: Prop) {
-  const context = useContext(ApplicationContext);
+  const context = useApplicationContext();
 
   function getDegrees() {
     let degrees = 0;

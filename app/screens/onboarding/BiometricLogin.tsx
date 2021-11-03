@@ -1,11 +1,11 @@
-import React, {useContext} from 'react';
+import React from 'react';
 import {Alert, Image, StyleSheet, View} from 'react-native';
-import TextLabel from 'components/TextLabel';
 import {useBiometricLogin} from './BiometricLoginViewModel';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import {Space} from 'components/Space';
 import AvaText from 'components/AvaText';
 import AvaButton from 'components/AvaButton';
+import {useWalletSetup} from 'hooks/useWalletSetup';
 
 type Props = {
   mnemonic: string;
@@ -16,16 +16,16 @@ type Props = {
 export default function BiometricLogin(
   props: Props | Readonly<Props>,
 ): JSX.Element {
-  const context = useContext(ApplicationContext);
+  const context = useApplicationContext();
+  const {initWalletWithMnemonic} = useWalletSetup();
 
-  const [biometryType, onUseBiometry, fingerprintIcon] = useBiometricLogin(
-    props.mnemonic,
-    context.isDarkMode,
-  );
+  const {biometryType, storeMnemonicWithBiometric, fingerprintIcon} =
+    useBiometricLogin(props.mnemonic, context.isDarkMode);
 
   async function handleUseBiometry() {
     try {
-      await onUseBiometry();
+      await storeMnemonicWithBiometric();
+      initWalletWithMnemonic(props.mnemonic);
       props.onBiometrySet();
     } catch (e: any) {
       Alert.alert(e?.message || 'error');

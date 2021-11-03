@@ -2,7 +2,7 @@ import React, {useContext} from 'react';
 import {View} from 'react-native';
 import AvaButton from 'components/AvaButton';
 import CarrotSVG from 'components/svg/CarrotSVG';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from 'components/AvaText';
 import {Space} from 'components/Space';
 
@@ -11,7 +11,7 @@ type Props = {
 };
 
 export const ConfirmHeader = ({onBack}: Props) => {
-  const {theme} = useContext(ApplicationContext);
+  const {theme} = useApplicationContext();
 
   return (
     <View

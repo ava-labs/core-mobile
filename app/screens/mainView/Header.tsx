@@ -1,7 +1,7 @@
 import React, {useContext} from 'react';
 import {Image, StyleSheet, View} from 'react-native';
 import ImgButtonAva from 'components/ImgButtonAva';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 
 type Props = {
   showBack?: boolean;
@@ -13,7 +13,7 @@ type Props = {
 };
 
 export default function Header(props: Props | Readonly<Props>) {
-  const context = useContext(ApplicationContext);
+  const context = useApplicationContext();
   const isDarkMode = context.isDarkMode;
 
   const onBackPress = () => {

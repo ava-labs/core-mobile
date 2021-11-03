@@ -2,6 +2,7 @@ import React, {
   createContext,
   Dispatch,
   SetStateAction,
+  useContext,
   useEffect,
   useState,
 } from 'react';
@@ -184,3 +185,7 @@ export const SendANTContextProvider = ({
     <SendANTContext.Provider value={state}>{children}</SendANTContext.Provider>
   );
 };
+
+export function useSendAntContext() {
+  return useContext(SendANTContext);
+}

@@ -1,6 +1,6 @@
-import React, {useContext} from 'react';
+import React from 'react';
 import Svg, {Path} from 'react-native-svg';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 
 interface Prop {
   color?: string;
@@ -8,7 +8,7 @@ interface Prop {
 }
 
 function LightModeSVG({color, size = 24}: Prop) {
-  const theme = useContext(ApplicationContext).theme;
+  const theme = useApplicationContext().theme;
   const iconColor = color ?? theme.txtOnBgApp;
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">

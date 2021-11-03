@@ -1,6 +1,6 @@
-import React, {useContext} from 'react';
+import React from 'react';
 import Svg, {Circle, Path} from 'react-native-svg';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 
 interface Props {
   absolutePosition?: boolean;
@@ -15,7 +15,7 @@ function AvaLogoSVG({
   logoColor,
   backgroundColor,
 }: Props) {
-  const context = useContext(ApplicationContext);
+  const context = useApplicationContext();
   const lgColor = logoColor ?? context.theme.accentColor;
   const bgColor = backgroundColor ?? context.theme.colorBg1;
   return (

@@ -1,16 +1,8 @@
-import React, {
-  memo,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, {memo, useEffect, useMemo, useRef, useState} from 'react';
 import {AppState, BackHandler, Modal} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {NavigationContainer, useFocusEffect} from '@react-navigation/native';
-import {ApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import HomeSVG from 'components/svg/HomeSVG';
 import ActivitySVG from 'components/svg/ActivitySVG';
 import SwapSVG from 'components/svg/SwapSVG';
@@ -22,11 +14,6 @@ import SwapView from 'screens/swap/SwapView';
 import AppNavigation from 'navigation/AppNavigation';
 import PortfolioStackScreen from 'navigation/PortfolioStackScreen';
 import SearchView from 'screens/search/SearchView';
-import {
-  useWalletContext,
-  useWalletStateContext,
-} from '@avalabs/wallet-react-components';
-import Loader from 'components/Loader';
 import Activity from 'screens/activity/ActivityView';
 import WatchlistSVG from 'components/svg/WatchlistSVG';
 import {createDrawerNavigator} from '@react-navigation/drawer';
@@ -43,7 +30,6 @@ import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BiometricsSDK from 'utils/BiometricsSDK';
 import moment from 'moment';
-import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
 import ReceiveOnlyBottomSheet from 'screens/portfolio/receive/ReceiveOnlyBottomSheet';
 import AvaText from 'components/AvaText';
 import {MainHeaderOptions} from 'navigation/NavUtils';
@@ -70,12 +56,9 @@ const focusEvent = 'change';
 const TIMEOUT = 5000;
 
 function WalletStackScreen(props: Props | Readonly<Props>) {
-  const context = useContext(ApplicationContext);
-  const walletContext = useWalletContext();
-  const walletStateContext = useWalletStateContext();
-  const [walletReady, setWalletReady] = useState(false);
   const [showSecurityModal, setShowSecurityModal] = useState(false);
   const appState = useRef(AppState.currentState);
+  const context = useApplicationContext();
 
   /**
    * This UseEffect handles subscription to
@@ -135,29 +118,6 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
         BackHandler.removeEventListener('hardwareBackPress', onBackPress);
     }, []),
   );
-
-  const hdReadyListener = useCallback(
-    (isBalanceReady: boolean) => setWalletReady(isBalanceReady),
-    [],
-  );
-
-  useEffect(() => {
-    const wallet = walletContext?.wallet as MnemonicWallet;
-    const isBalanceReady = !!walletStateContext?.balances;
-    if (wallet?.isHdReady) {
-      hdReadyListener(isBalanceReady);
-    } else {
-      wallet?.on('hd_ready', () => hdReadyListener(isBalanceReady));
-    }
-
-    return () => {
-      try {
-        wallet?.off('hd_ready', () => hdReadyListener(isBalanceReady));
-      } catch (e) {
-        //ignored
-      }
-    };
-  }, [walletContext, walletStateContext]);
 
   const onExit = (): void => {
     props.onExit();
@@ -258,9 +218,7 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
     );
   }, []);
 
-  return !walletReady ? (
-    <Loader message="Loading wallet. One moment please." />
-  ) : (
+  return (
     <SelectedAccountContextProvider>
       <SelectedTokenContextProvider>
         <NavigationContainer
