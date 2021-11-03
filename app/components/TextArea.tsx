@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {InteractionManager, StyleSheet, TextInput, View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaButton from './AvaButton';
@@ -61,7 +61,7 @@ export default function TextArea(props: Props | Readonly<Props>): JSX.Element {
             display: 'flex',
             flexDirection: 'column',
             padding: 16,
-            height: 160,
+            minHeight: 160,
           },
         ]}>
         {props.heading && (

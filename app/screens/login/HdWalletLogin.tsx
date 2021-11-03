@@ -64,14 +64,23 @@ export default function HdWalletLogin(
         style={styles.fullHeight}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={50}>
-        <AvaText.LargeTitleBold
-          textStyle={{textAlign: 'center', marginTop: 100}}>
-          Wallet
-        </AvaText.LargeTitleBold>
+        <View
+          style={{
+            flexGrow: 1,
+            justifyContent: 'center',
+          }}>
+          <AvaText.LargeTitleBold
+            textStyle={{
+              textAlign: 'center',
+            }}>
+            Wallet
+          </AvaText.LargeTitleBold>
+        </View>
+
         <View
           style={[styles.overlay, {backgroundColor: context.theme.overlay}]}
         />
-        <View style={[{flexGrow: 1, justifyContent: 'flex-end'}]}>
+        <View style={[{justifyContent: 'flex-end'}]}>
           <EnterTestWalletButton />
           <View style={[{padding: 16}]}>
             <TextArea
