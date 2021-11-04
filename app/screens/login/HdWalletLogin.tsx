@@ -1,11 +1,5 @@
 import React, {useState} from 'react';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  View,
-} from 'react-native';
+import {ScrollView, StyleSheet, View} from 'react-native';
 import WalletSDK from 'utils/WalletSDK';
 import TextArea from 'components/TextArea';
 import AvaText from 'components/AvaText';
@@ -60,34 +54,28 @@ export default function HdWalletLogin(
     <ScrollView
       contentContainerStyle={styles.fullHeight}
       keyboardShouldPersistTaps="handled">
-      <KeyboardAvoidingView
-        style={styles.fullHeight}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={50}>
-        <AvaText.LargeTitleBold
-          textStyle={{textAlign: 'center', marginTop: 100}}>
-          Wallet
-        </AvaText.LargeTitleBold>
-        <View
-          style={[styles.overlay, {backgroundColor: context.theme.overlay}]}
-        />
-        <View style={[{flexGrow: 1, justifyContent: 'flex-end'}]}>
-          <EnterTestWalletButton />
-          <View style={[{padding: 16}]}>
-            <TextArea
-              autoFocus
-              btnPrimaryText={'Sign in'}
-              btnSecondaryText={'Cancel'}
-              heading={'Recovery phrase'}
-              onBtnSecondary={onBack}
-              onChangeText={() => setErrorMessage(undefined)}
-              errorMessage={errorMessage}
-              onBtnPrimary={onEnterWallet}
-              autoCorrect={false}
-            />
-          </View>
+      <AvaText.LargeTitleBold textStyle={{textAlign: 'center', marginTop: 100}}>
+        Wallet
+      </AvaText.LargeTitleBold>
+      <View
+        style={[styles.overlay, {backgroundColor: context.theme.overlay}]}
+      />
+      <View style={[{flexGrow: 1, justifyContent: 'flex-end'}]}>
+        <EnterTestWalletButton />
+        <View style={[{padding: 16}]}>
+          <TextArea
+            autoFocus
+            btnPrimaryText={'Sign in'}
+            btnSecondaryText={'Cancel'}
+            heading={'Recovery phrase'}
+            onBtnSecondary={onBack}
+            onChangeText={() => setErrorMessage(undefined)}
+            errorMessage={errorMessage}
+            onBtnPrimary={onEnterWallet}
+            autoCorrect={false}
+          />
         </View>
-      </KeyboardAvoidingView>
+      </View>
     </ScrollView>
   );
 }
