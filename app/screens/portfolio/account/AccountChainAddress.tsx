@@ -7,13 +7,13 @@ import OvalTagBg from 'components/OvalTagBg';
 import FlexSpacer from 'components/FlexSpacer';
 import CopySVG from 'components/svg/CopySVG';
 import Clipboard from '@react-native-clipboard/clipboard';
-import {Opacity10} from 'resources/Constants';
 import {ShowSnackBar} from 'components/Snackbar';
 
 type Props = {
   title: string;
   address: string;
   color: string;
+  bgColor: string;
 };
 
 const copyToClipboard = (str: string): void => {
@@ -21,11 +21,16 @@ const copyToClipboard = (str: string): void => {
   ShowSnackBar('Copied');
 };
 
-function AccountChainAddress({title, address, color}: Props): JSX.Element {
+function AccountChainAddress({
+  title,
+  address,
+  color,
+  bgColor,
+}: Props): JSX.Element {
   return (
     <View style={{flexDirection: 'row'}}>
       <OvalTagBg
-        color={color + Opacity10}
+        color={bgColor}
         style={{
           flex: 1,
           paddingHorizontal: 16,

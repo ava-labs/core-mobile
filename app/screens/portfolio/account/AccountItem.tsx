@@ -9,6 +9,7 @@ import {Account} from 'dto/Account';
 import {usePortfolio} from 'screens/portfolio/usePortfolio';
 import AvaButton from 'components/AvaButton';
 import {useSelectedAccountContext} from 'contexts/SelectedAccountContext';
+import {Opacity05} from 'resources/Constants';
 
 type Props = {
   account: Account;
@@ -33,10 +34,12 @@ function AccountItem({account}: Props): JSX.Element {
       style={[
         {
           flex: 1,
-          backgroundColor: context.theme.colorBg2,
+          backgroundColor: context.isDarkMode
+            ? context.theme.white + Opacity05
+            : context.theme.colorBg2,
           borderRadius: 8,
-          borderWidth: 1,
-          borderColor: '#F1F1F4',
+          borderWidth: context.isDarkMode ? 0 : 1,
+          borderColor: context.theme.colorStroke,
           padding: 16,
           alignItems: 'center',
         },
@@ -51,12 +54,14 @@ function AccountItem({account}: Props): JSX.Element {
             {account.title}
           </AvaText.Heading2>
         </AvaButton.Base>
-        <Space x={8} />
-        <AvaButton.Icon
-          style={{marginTop: -14, marginLeft: -8, marginBottom: -10}}
-          onPress={onEditAccountName}>
-          <EditSVG />
-        </AvaButton.Icon>
+        {!editAccount && <Space x={8} />}
+        {!editAccount && (
+          <AvaButton.Icon
+            style={{marginTop: -14, marginLeft: -8, marginBottom: -10}}
+            onPress={onEditAccountName}>
+            <EditSVG />
+          </AvaButton.Icon>
+        )}
       </View>
       <Space y={8} />
       <AvaText.Body2>{balanceTotalInUSD} USD</AvaText.Body2>
@@ -64,7 +69,8 @@ function AccountItem({account}: Props): JSX.Element {
       <AccountChainAddress
         address={account.cAddress}
         title={'C chain'}
-        color={context.theme.ovalBgGreen}
+        color={context.theme.colorChain2}
+        bgColor={context.theme.colorChain}
       />
 
       <Space y={8} />
@@ -72,7 +78,8 @@ function AccountItem({account}: Props): JSX.Element {
         <AccountChainAddress
           address={account.xAddress}
           title={'X chain'}
-          color={context.theme.ovalBgBlue}
+          color={context.theme.colorChain4}
+          bgColor={context.theme.colorChain3}
         />
       </View>
     </View>
