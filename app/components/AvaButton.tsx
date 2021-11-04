@@ -1,11 +1,5 @@
 import React, {FC} from 'react';
-import {
-  StyleProp,
-  StyleSheet,
-  TouchableNativeFeedback,
-  View,
-  ViewStyle,
-} from 'react-native';
+import {Pressable, StyleProp, StyleSheet, View, ViewStyle} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from './AvaText';
 
@@ -25,16 +19,15 @@ const AvaButtonBase: FC<BaseProps> = ({
 }) => {
   const theme = useApplicationContext().theme;
   return (
-    <TouchableNativeFeedback
-      useForeground={true}
+    <Pressable
+      android_ripple={{
+        color: theme.buttonRipple,
+        borderless: rippleBorderless ?? false,
+      }}
       onPress={onPress}
-      disabled={disabled}
-      background={TouchableNativeFeedback.Ripple(
-        theme.buttonRipple,
-        rippleBorderless ?? false,
-      )}>
+      disabled={disabled}>
       <View style={style}>{children}</View>
-    </TouchableNativeFeedback>
+    </Pressable>
   );
 };
 
