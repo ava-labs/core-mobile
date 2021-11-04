@@ -2,8 +2,9 @@ import React, {RefObject, useEffect, useRef, useState} from 'react';
 import {InteractionManager, TextInput, View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import TextLabel from 'components/TextLabel';
-import ImgButtonAva from 'components/ImgButtonAva';
 import AvaButton from './AvaButton';
+import {Opacity50} from 'resources/Constants';
+import ClearInputSVG from 'components/svg/ClearInputSVG';
 
 type Props = {
   onChangeText?: (text: string) => void;
@@ -59,23 +60,18 @@ export default function InputText(props: Props | Readonly<Props>) {
   const theme = context.theme;
 
   const ClearBtn = () => {
-    const clearIcon = require('assets/icons/input_clear.png');
     return (
-      <View
+      <AvaButton.Icon
+        onPress={onClear}
         style={[
           {
             position: 'absolute',
-            end: 6,
-            top: 10,
+            end: 8,
+            top: 2,
           },
         ]}>
-        <ImgButtonAva
-          width={14}
-          height={14}
-          src={clearIcon}
-          onPress={onClear}
-        />
-      </View>
+        <ClearInputSVG color={theme.colorText2} size={14} />
+      </AvaButton.Icon>
     );
   };
 
@@ -166,6 +162,7 @@ export default function InputText(props: Props | Readonly<Props>) {
           ref={textInputRef}
           autoCapitalize="none"
           placeholder={props.placeholder}
+          placeholderTextColor={theme.colorText2}
           blurOnSubmit={true}
           secureTextEntry={props.privateMode && !showInput}
           onSubmitEditing={onSubmit}
@@ -180,18 +177,21 @@ export default function InputText(props: Props | Readonly<Props>) {
             {
               minHeight: props.minHeight,
               flexGrow: 0,
-              color: theme.inputTxt,
+              color: theme.colorText1,
               fontSize: 16,
               borderWidth: 1,
               textAlignVertical: props.multiline ? 'top' : undefined,
               borderColor: props.errorText
                 ? theme.txtError
                 : focused
-                ? theme.inputBorderFocused
-                : props.privateMode
-                ? theme.inputBorderFocused
-                : theme.inputBorder,
-              backgroundColor: focused ? theme.inputBgFocused : theme.inputBg,
+                ? theme.colorText2
+                : theme.colorBg3,
+              backgroundColor:
+                text.length > 0
+                  ? theme.transparent
+                  : focused
+                  ? theme.transparent
+                  : theme.colorBg3 + Opacity50,
               borderRadius: 8,
               paddingStart: 16,
               paddingEnd: !props.privateMode ? 46 : 80,
