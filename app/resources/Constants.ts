@@ -26,6 +26,10 @@ export enum COLORS_DAY {
   colorBg3 = '#F1F1F4',
   colorBgGreen = '#2CB753',
   colorBgGreenLight = '#2CB7531A',
+  colorChain = '#00D3BC1A',
+  colorChain2 = '#00A087',
+  colorChain3 = '#7C1BF21A',
+  colorChain4 = '#4D00DE',
 
   logoColor = '#E84142',
   accentColor = '#F64942',
@@ -54,9 +58,6 @@ export enum COLORS_DAY {
   inputBorder = '#D8D8DA',
 
   tabBarIconInactive = '#949497',
-
-  ovalBgGreen = '#00D3BC',
-  ovalBgBlue = '#934AF6',
 }
 
 export enum COLORS_NIGHT {
@@ -83,6 +84,10 @@ export enum COLORS_NIGHT {
   colorBg3 = '#3A3A3C',
   colorBgGreen = '#74CD88',
   colorBgGreenLight = '#74CD881A',
+  colorChain = '#00DDCB0D',
+  colorChain2 = '#00DDCB',
+  colorChain3 = '#934AF61A',
+  colorChain4 = '#DAC3FB',
 
   logoColor = '#E84142',
   accentColor = '#F1595A',
@@ -111,9 +116,6 @@ export enum COLORS_NIGHT {
   inputBorder = '#949497',
 
   tabBarIconInactive = '#949497',
-
-  ovalBgGreen = '#00D3BC',
-  ovalBgBlue = '#934AF6',
 }
 
 export const SECURE_ACCESS_SET = 'secureAccessSet';
