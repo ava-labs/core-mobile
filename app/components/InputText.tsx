@@ -1,5 +1,5 @@
 import React, {RefObject, useEffect, useRef, useState} from 'react';
-import {InteractionManager, TextInput, View} from 'react-native';
+import {Appearance, InteractionManager, TextInput, View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import TextLabel from 'components/TextLabel';
 import ImgButtonAva from 'components/ImgButtonAva';
@@ -163,6 +163,7 @@ export default function InputText(props: Props | Readonly<Props>) {
           },
         ]}>
         <TextInput
+          keyboardAppearance={Appearance.getColorScheme() || 'default'}
           ref={textInputRef}
           autoCapitalize="none"
           placeholder={props.placeholder}
