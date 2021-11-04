@@ -1,14 +1,12 @@
 import React from 'react';
-import {StyleSheet, View} from 'react-native';
+import {StyleProp, View, ViewStyle} from 'react-native';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#DEDEDE',
-    height: 1,
-  },
-});
-const Separator = () => {
-  return <View style={styles.container} />;
+const Separator = ({style}: {style?: StyleProp<ViewStyle>}) => {
+  const {theme} = useApplicationContext();
+  return (
+    <View style={[{height: 1, backgroundColor: theme.colorStroke}, style]} />
+  );
 };
 
 export default Separator;
