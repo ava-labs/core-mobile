@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React from 'react';
 import {
   FlatList,
   ListRenderItemInfo,
@@ -31,7 +31,6 @@ function SearchView(): JSX.Element {
     setShowZeroBalanceList,
     showZeroBalanceList,
     loadTokenList,
-    loading,
   } = useSearchableTokenList(false);
   const context = useApplicationContext();
   const navigation = useNavigation<PortfolioNavigationProp>();
@@ -84,14 +83,14 @@ function SearchView(): JSX.Element {
 
   return (
     <View style={{flex: 1, backgroundColor: context.theme.background}}>
-      <AvaText.Body1 textStyle={{alignSelf: 'center', paddingTop: 8}}>
+      <AvaText.Body1 textStyle={{alignSelf: 'center', paddingStart: 32}}>
         Add or remove tokens without balance
       </AvaText.Body1>
       <View style={styles.searchContainer}>
         <View
           style={[
             styles.searchBackground,
-            {backgroundColor: context.theme.bgSearch},
+            {backgroundColor: context.theme.colorBg3 + Opacity50},
           ]}>
           <SearchSVG color={context.theme.onBgSearch} size={32} hideBorder />
           <TextInput
@@ -108,9 +107,6 @@ function SearchView(): JSX.Element {
           />
         </View>
       </View>
-      <AddCustomTokenButton
-        onPress={() => navigation.navigate(AppNavigation.Wallet.AddCustomToken)}
-      />
       {!filteredTokenList ? (
         <Loader />
       ) : (
@@ -118,6 +114,13 @@ function SearchView(): JSX.Element {
           data={filteredTokenList}
           renderItem={renderItem}
           onRefresh={handleRefresh}
+          ListHeaderComponent={
+            <AddCustomTokenButton
+              onPress={() =>
+                navigation.navigate(AppNavigation.Wallet.AddCustomToken)
+              }
+            />
+          }
           refreshing={false}
           keyExtractor={(item: TokenWithBalance) => item.symbol}
           ListEmptyComponent={emptyView}
@@ -132,8 +135,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 16,
+    marginTop: 16,
+    marginBottom: 8,
+    marginHorizontal: 16,
   },
   searchBackground: {
     alignItems: 'center',
@@ -163,7 +167,9 @@ const AddCustomTokenButton = ({onPress}: {onPress: () => void}) => {
         alignItems: 'center',
         backgroundColor: theme.colorBg3 + Opacity50,
         borderRadius: 8,
-        margin: 16,
+        marginTop: 8,
+        marginBottom: 16,
+        marginHorizontal: 16,
         padding: 16,
       }}>
       <AddSVG color={theme.colorPrimary1} hideCircle size={24} />
