@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {Linking, StyleSheet, View} from 'react-native';
 import AvaText from 'components/AvaText';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
@@ -14,6 +14,7 @@ import {
   FUJI_NETWORK,
   useNetworkContext,
 } from '@avalabs/wallet-react-components';
+import {Space} from 'components/Space';
 
 interface Props {
   txItem: HistoryItemType;
@@ -35,35 +36,42 @@ function ActivityDetailView({txItem}: Props) {
     }
   }, [networkContext]);
 
-  function getValue() {
-    return (
-      ('amountDisplayValue' in txItem && txItem?.amountDisplayValue) ?? '0'
-    );
-  }
+  const isOutboundTransaction = useMemo(
+    () =>
+      txItem?.type === 'export' || ('isSender' in txItem && txItem?.isSender),
+    [],
+  );
 
-  function getMetric() {
-    if (
-      txItem?.type === 'export' ||
-      ('isSender' in txItem && txItem?.isSender)
-    ) {
-      return -1;
-    }
-    return 0;
-  }
+  const amount = useMemo(
+    () =>
+      ('amountDisplayValue' in txItem &&
+        `${isOutboundTransaction ? '-' : '+'}${txItem?.amountDisplayValue}`) ??
+      '0',
+    [],
+  );
 
-  function getFee() {
-    // todo: calculate correct fee
-    return Utils.bnToAvaxX(txItem.fee);
-  }
+  const fee = useMemo(() => Utils.bnToLocaleString(txItem.fee, 18), []);
 
-  function getSource() {
+  const source = useMemo(() => {
     if ('source' in txItem) {
       return txItem.source;
     }
     if ('from' in txItem) {
       return txItem.from;
     }
-  }
+  }, []);
+
+  const tokenLogo = (
+    // 'AVAX' === 'AVAX' ? (
+    <AvaLogoSVG
+      size={32}
+      logoColor={theme.white}
+      backgroundColor={theme.logoColor}
+    />
+  );
+  // ) : (
+  //   <Image style={styles.tokenLogo} source={{uri: image}} />
+  // );
 
   // function getDestination() {
   //   if ('destination' in txItem) {
@@ -78,39 +86,48 @@ function ActivityDetailView({txItem}: Props) {
     <View
       style={[
         {
-          justifyContent: 'center',
-          padding: 16,
+          flex: 1,
+          justifyContent: 'flex-end',
         },
         {backgroundColor: theme.bgOnBgApp},
       ]}>
       <View style={styles.logoContainer}>
         <AvaText.Heading1>Transaction Details</AvaText.Heading1>
-        <AvaText.Body2 textStyle={{paddingTop: 8, paddingBottom: 32}}>
-          {`${date} - Bal: -`}
-        </AvaText.Body2>
-
-        <AvaLogoSVG size={32} />
-
-        <AvaText.Heading1 textStyle={{paddingTop: 16}}>
-          {`${getValue()} AVAX`}
+        <AvaText.Body2 textStyle={{paddingTop: 8}}>{`${date}`}</AvaText.Body2>
+        <Space y={32} />
+        {tokenLogo}
+        <AvaText.Heading1
+          textStyle={{paddingTop: 16}}
+          color={isOutboundTransaction ? theme.colorError : theme.colorIcon3}>
+          {`${amount} AVAX`}
         </AvaText.Heading1>
-        <AvaText.Body2 textStyle={{paddingTop: 8, paddingBottom: 32}}>
-          {`$0 - ${txItem?.fee && 'Fee: ' + getFee()} AVAX`}
+        <AvaText.Body2 textStyle={{paddingTop: 8}}>
+          {`$0 USD - ${txItem?.fee && 'Fee: ' + fee} AVAX`}
         </AvaText.Body2>
       </View>
+      <Space y={16} />
       <AvaListItem.Base
-        label={'From'}
-        leftComponent={<MovementIndicator metric={getMetric()} />}
-        title={getSource()}
+        label={
+          <AvaText.Body2>{isOutboundTransaction ? 'To' : 'From'}</AvaText.Body2>
+        }
+        leftComponent={
+          <MovementIndicator metric={isOutboundTransaction ? -1 : 0} />
+        }
+        title={source}
       />
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}>
-        {!!explorerUrl && (
-          <>
+      {!!explorerUrl && (
+        <>
+          {/* AvaListItem already contains a 16 bottom margin. With 8 makes the total 24 as per design */}
+          <Space y={8} />
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center',
+              paddingHorizontal: 16,
+              paddingBottom: 16,
+              paddingTop: 12,
+            }}>
             <LinkSVG />
             <AvaButton.TextLarge
               onPress={() => {
@@ -118,9 +135,10 @@ function ActivityDetailView({txItem}: Props) {
               }}>
               View on Explorer
             </AvaButton.TextLarge>
-          </>
-        )}
-      </View>
+          </View>
+          <Space y={16} />
+        </>
+      )}
     </View>
   );
 }
