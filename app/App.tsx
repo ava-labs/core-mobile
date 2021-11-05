@@ -6,7 +6,14 @@
  */
 
 import React, {RefObject, useEffect, useState} from 'react';
-import {Alert, BackHandler, LogBox, SafeAreaView} from 'react-native';
+import {
+  Alert,
+  BackHandler,
+  KeyboardAvoidingView,
+  LogBox,
+  Platform,
+  SafeAreaView,
+} from 'react-native';
 import WalletStackScreen from 'screens/mainView/WalletStackScreen';
 import {Subscription} from 'rxjs';
 import {createStackNavigator} from '@react-navigation/stack';
@@ -218,11 +225,16 @@ export default function App() {
 
   return (
     <SafeAreaView style={backgroundStyle}>
-      <NavigationContainer
-        theme={context.navContainerTheme}
-        ref={navigationRef}>
-        <RootStackScreen />
-      </NavigationContainer>
+      <KeyboardAvoidingView
+        enabled={context.keyboardAvoidingViewEnabled}
+        style={{flex: 1}}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        <NavigationContainer
+          theme={context.navContainerTheme}
+          ref={navigationRef}>
+          <RootStackScreen />
+        </NavigationContainer>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
