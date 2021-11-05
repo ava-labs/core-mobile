@@ -1,11 +1,5 @@
 import React, {useState} from 'react';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  View,
-} from 'react-native';
+import {ScrollView, StyleSheet, View} from 'react-native';
 import WalletSDK from 'utils/WalletSDK';
 import TextArea from 'components/TextArea';
 import AvaText from 'components/AvaText';
@@ -60,43 +54,37 @@ export default function HdWalletLogin(
     <ScrollView
       contentContainerStyle={styles.fullHeight}
       keyboardShouldPersistTaps="handled">
-      <KeyboardAvoidingView
-        style={styles.fullHeight}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={50}>
-        <View
-          style={{
-            flexGrow: 1,
-            justifyContent: 'center',
+      <View
+        style={{
+          flexGrow: 1,
+          justifyContent: 'center',
+        }}>
+        <AvaText.LargeTitleBold
+          textStyle={{
+            textAlign: 'center',
           }}>
-          <AvaText.LargeTitleBold
-            textStyle={{
-              textAlign: 'center',
-            }}>
-            Wallet
-          </AvaText.LargeTitleBold>
+          Wallet
+        </AvaText.LargeTitleBold>
+      </View>
+      <View
+        style={[styles.overlay, {backgroundColor: context.theme.overlay}]}
+      />
+      <View style={[{flexGrow: 1, justifyContent: 'flex-end'}]}>
+        <EnterTestWalletButton />
+        <View style={[{padding: 16}]}>
+          <TextArea
+            autoFocus
+            btnPrimaryText={'Sign in'}
+            btnSecondaryText={'Cancel'}
+            heading={'Recovery phrase'}
+            onBtnSecondary={onBack}
+            onChangeText={() => setErrorMessage(undefined)}
+            errorMessage={errorMessage}
+            onBtnPrimary={onEnterWallet}
+            autoCorrect={false}
+          />
         </View>
-
-        <View
-          style={[styles.overlay, {backgroundColor: context.theme.overlay}]}
-        />
-        <View style={[{justifyContent: 'flex-end'}]}>
-          <EnterTestWalletButton />
-          <View style={[{padding: 16}]}>
-            <TextArea
-              autoFocus
-              btnPrimaryText={'Sign in'}
-              btnSecondaryText={'Cancel'}
-              heading={'Recovery phrase'}
-              onBtnSecondary={onBack}
-              onChangeText={() => setErrorMessage(undefined)}
-              errorMessage={errorMessage}
-              onBtnPrimary={onEnterWallet}
-              autoCorrect={false}
-            />
-          </View>
-        </View>
-      </KeyboardAvoidingView>
+      </View>
     </ScrollView>
   );
 }

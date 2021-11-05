@@ -4,11 +4,21 @@ import BottomSheet, {BottomSheetBackdrop} from '@gorhom/bottom-sheet';
 import TabViewBackground from './components/TabViewBackground';
 import SendTokenStackScreen from 'navigation/SendTokenStackScreen';
 import {Space} from 'components/Space';
+import {useApplicationContext} from 'contexts/ApplicationContext';
+import {Platform} from 'react-native';
 
 const SendReceiveBottomSheet: FC = () => {
   const bottomSheetRef = useRef<BottomSheet>(null);
   const {goBack, canGoBack} = useNavigation();
   const snapPoints = useMemo(() => ['0%', '86%'], []);
+  const {setKeyboardAvoidingViewEnabled} = useApplicationContext();
+
+  useEffect(() => {
+    if (Platform.OS === 'ios') {
+      setKeyboardAvoidingViewEnabled(false);
+      return () => setKeyboardAvoidingViewEnabled(true);
+    }
+  }, []);
 
   useEffect(() => {
     // intentionally setting delay so animation is visible.

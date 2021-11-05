@@ -10,6 +10,8 @@ export interface ApplicationContextState {
   appBackgroundStyle: AppBackgroundStyle;
   navContainerTheme: Theme;
   shadow: Shadow;
+  keyboardAvoidingViewEnabled: boolean;
+  setKeyboardAvoidingViewEnabled: (value: boolean) => void;
 }
 
 export declare type BackgroundStyle = {
@@ -73,6 +75,9 @@ export const ApplicationContextProvider = ({children}: {children: any}) => {
     shadowOffset: {width: 0, height: 1},
   } as Shadow);
 
+  const [keyboardAvoidingViewEnabled, setKeyboardAvoidingViewEnabled] =
+    useState(true);
+
   const appContextState: ApplicationContextState = {
     theme,
     isDarkMode,
@@ -80,6 +85,8 @@ export const ApplicationContextProvider = ({children}: {children: any}) => {
     appBackgroundStyle,
     navContainerTheme,
     shadow,
+    keyboardAvoidingViewEnabled,
+    setKeyboardAvoidingViewEnabled,
   };
   return (
     <ApplicationContext.Provider value={appContextState}>
