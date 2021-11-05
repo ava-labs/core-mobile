@@ -19,10 +19,11 @@ const LargeTitleBold: FC<TextProps> = ({textStyle, children}) => {
   );
 };
 
-const TextHeading1: FC<TextProps> = ({textStyle, children}) => {
+const TextHeading1: FC<TextProps> = ({textStyle, color, children}) => {
   const theme = useApplicationContext().theme;
   return (
-    <Text style={[styles.heading1, {color: theme.txtListItem}, textStyle]}>
+    <Text
+      style={[styles.heading1, {color: color ?? theme.txtListItem}, textStyle]}>
       {children}
     </Text>
   );

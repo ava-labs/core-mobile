@@ -4,12 +4,13 @@ import {InteractionManager} from 'react-native';
 import {useNavigation, useRoute} from '@react-navigation/native';
 import ActivityDetailView from 'screens/activity/ActivityDetailView';
 import TabViewBackground from 'screens/portfolio/components/TabViewBackground';
+import AvaxSheetHandle from 'components/AvaxSheetHandle';
 
 function ActivityDetailBottomSheet() {
   const {goBack} = useNavigation();
   const route = useRoute();
   const bottomSheetModalRef = useRef<BottomSheet>(null);
-  const snapPoints = useMemo(() => ['0%', '50%'], []);
+  const snapPoints = useMemo(() => ['0%', '53%'], []);
   const txItem = route.params.historyItem;
 
   useEffect(() => {
@@ -37,6 +38,7 @@ function ActivityDetailBottomSheet() {
       snapPoints={snapPoints}
       backdropComponent={BottomSheetBackdrop}
       backgroundComponent={TabViewBackground}
+      handleComponent={AvaxSheetHandle}
       onChange={handleChange}>
       <ActivityDetailView txItem={txItem} />
     </BottomSheet>
