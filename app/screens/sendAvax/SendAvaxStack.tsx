@@ -1,4 +1,4 @@
-import React, {useContext, useMemo} from 'react';
+import React, {useMemo} from 'react';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {SendAvaxContextProvider} from 'contexts/SendAvaxContext';
 import {NavigationContainer} from '@react-navigation/native';

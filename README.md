@@ -93,3 +93,27 @@ and then upload generated aab file to [play console](https://play.google.com/con
 cd android
 ./gradlew assembleNightly
 ```
+
+
+## Known issues
+### Apple M1 chips
+
+Exclude arch `arm64`
+
+Prefix all comands with `arch -x86_64`
+
+Examples:
+```zsh
+arch -x86_64 pod install
+```
+
+```zsh
+arch -x86_64 yarn ios
+```
+
+### `pod install` fails on Apple M1 chips
+
+Install ffi
+```zsh
+sudo arch -x86_64 gem install ffi
+```
