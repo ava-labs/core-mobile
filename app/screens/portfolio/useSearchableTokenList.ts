@@ -15,18 +15,17 @@ export function useSearchableTokenList(hideZeroBalance = true): {
   searchText: string;
   setShowZeroBalanceList: (list: ShowZeroArrayType) => void;
   loadZeroBalanceList: () => void;
-  filteredTokenList: TokenWithBalance[];
+  filteredTokenList?: TokenWithBalance[];
   showZeroBalanceList: ShowZeroArrayType;
   setSearchText: (value: ((prevState: string) => string) | string) => void;
-  tokenList: TokenWithBalance[];
+  tokenList?: TokenWithBalance[];
   loadTokenList: () => void;
-  isRefreshing: boolean;
+  loading: boolean;
 } {
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [tokenList, setTokenList] = useState([] as TokenWithBalance[]);
-  const [filteredTokenList, setFilteredTokenList] = useState(
-    [] as TokenWithBalance[],
-  );
+  const [loading, setLoading] = useState(false);
+  const [tokenList, setTokenList] = useState<TokenWithBalance[]>();
+  const [filteredTokenList, setFilteredTokenList] =
+    useState<TokenWithBalance[]>();
   const [searchText, setSearchText] = useState('');
   const [showZeroBalanceList, setZeroBalanceList] = useState<ShowZeroArrayType>(
     {
@@ -56,7 +55,7 @@ export function useSearchableTokenList(hideZeroBalance = true): {
       return; //('wallet state not available');
     }
 
-    setIsRefreshing(true);
+    setLoading(true);
 
     erc20TokenList$.pipe(take(1)).subscribe({
       next: erc20Tokens => {
@@ -71,11 +70,11 @@ export function useSearchableTokenList(hideZeroBalance = true): {
         ] as TokenWithBalance[];
 
         setTokenList(tokens);
-        setIsRefreshing(false);
+        setLoading(false);
       },
       error: e => {
-        setIsRefreshing(false);
         console.debug('deal with error', e);
+        setLoading(false);
       },
       complete: () => {
         console.debug('complete');
@@ -90,12 +89,14 @@ export function useSearchableTokenList(hideZeroBalance = true): {
   }, [walletState, showZeroBalanceList, hideZeroBalance]);
 
   useEffect(() => {
-    setFilteredTokenList(
-      tokenList.filter(
-        token =>
-          token.name.toLowerCase().indexOf(searchText.toLowerCase()) !== -1,
-      ),
-    );
+    if (tokenList) {
+      setFilteredTokenList(
+        tokenList.filter(
+          token =>
+            token.name.toLowerCase().indexOf(searchText.toLowerCase()) !== -1,
+        ),
+      );
+    }
   }, [tokenList, searchText]);
 
   return {
@@ -107,6 +108,6 @@ export function useSearchableTokenList(hideZeroBalance = true): {
     showZeroBalanceList,
     loadZeroBalanceList,
     loadTokenList,
-    isRefreshing,
+    loading,
   };
 }

@@ -1,6 +1,5 @@
 import React from 'react';
 import {ActivityIndicator, SafeAreaView, StyleSheet, View} from 'react-native';
-import {Colors} from 'react-native/Libraries/NewAppScreen';
 import TextTitle from 'components/TextTitle';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 
@@ -16,10 +15,7 @@ export default function Loader({message}: LoaderProps): JSX.Element {
     <SafeAreaView style={context.appBackgroundStyle}>
       <View style={context.backgroundStyle}>
         <View style={styles.container}>
-          <ActivityIndicator
-            size="large"
-            color={context.isDarkMode ? Colors.white : Colors.black}
-          />
+          <ActivityIndicator size="large" color={context.theme.colorPrimary1} />
           {!!message && <TextTitle text={message} textAlign={'center'} />}
         </View>
       </View>

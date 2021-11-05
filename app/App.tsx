@@ -199,7 +199,9 @@ export default function App() {
         });
         break;
       case SelectedView.LoginWithMnemonic:
-        navigationRef.current?.navigate(OnboardScreens.LoginWithMnemonic);
+        navigationRef.current?.navigate('Auth', {
+          screen: OnboardScreens.LoginWithMnemonic,
+        });
         break;
       case SelectedView.PinOrBiometryLogin:
         navigationRef.current?.navigate(OnboardScreens.Login);

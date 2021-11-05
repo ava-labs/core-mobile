@@ -33,6 +33,7 @@ import moment from 'moment';
 import ReceiveOnlyBottomSheet from 'screens/portfolio/receive/ReceiveOnlyBottomSheet';
 import AvaText from 'components/AvaText';
 import {MainHeaderOptions} from 'navigation/NavUtils';
+import AppViewModel, {SelectedView} from 'AppViewModel';
 
 type Props = {
   onExit: () => void;
@@ -129,7 +130,7 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
 
   const DrawerScreen = () => (
     <DrawerStack.Navigator
-      screenOptions={{headerShown: false}}
+      screenOptions={{headerShown: false, drawerStyle: {width: '80%'}}}
       useLegacyImplementation
       drawerContent={props => <DrawerView {...props} />}>
       <DrawerStack.Screen
@@ -282,7 +283,10 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
         <Modal visible={showSecurityModal} animationType={'slide'} animated>
           <PinOrBiometryLogin
             onSignInWithRecoveryPhrase={() => {
-              // ignored
+              AppViewModel.immediateLogout().then(() => {
+                AppViewModel.setSelectedView(SelectedView.LoginWithMnemonic);
+                setShowSecurityModal(false);
+              });
             }}
             onEnterWallet={() => {
               setShowSecurityModal(false);

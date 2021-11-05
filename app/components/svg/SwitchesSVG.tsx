@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React from 'react';
 import Svg, {Circle, Rect} from 'react-native-svg';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 
@@ -14,7 +14,7 @@ export default function SwitchesSVG({color}: Prop) {
     <Svg width="24" height="24" viewBox="0 0 24 24" fill="none">
       <Rect y="5" width="6" height="2.5" rx="1.25" fill={iconColor} />
       <Rect x="15" y="5" width="9" height="2.5" rx="1.25" fill={iconColor} />
-      <Circle cx="9" cy="6" r="3.75" stroke={iconColor} stroke-width="2.5" />
+      <Circle cx="9" cy="6" r="3.75" stroke={iconColor} strokeWidth="2.5" />
       <Rect
         x="24"
         y="19"
@@ -39,7 +39,7 @@ export default function SwitchesSVG({color}: Prop) {
         r="3.75"
         transform="rotate(-180 15 18)"
         stroke={iconColor}
-        stroke-width="2.5"
+        strokeWidth="2.5"
       />
     </Svg>
   );
