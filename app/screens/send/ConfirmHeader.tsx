@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React from 'react';
 import {View} from 'react-native';
 import AvaButton from 'components/AvaButton';
 import CarrotSVG from 'components/svg/CarrotSVG';
