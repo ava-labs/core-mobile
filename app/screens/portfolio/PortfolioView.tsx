@@ -1,5 +1,11 @@
 import React, {FC, memo, useEffect, useMemo, useRef} from 'react';
-import {FlatList, ListRenderItemInfo, Modal, StyleSheet, View} from 'react-native';
+import {
+  FlatList,
+  ListRenderItemInfo,
+  Modal,
+  StyleSheet,
+  View,
+} from 'react-native';
 import PortfolioHeader from 'screens/portfolio/PortfolioHeader';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {useNavigation} from '@react-navigation/native';
@@ -20,7 +26,6 @@ type PortfolioProps = {
   onSwitchWallet: () => void;
   tokenList?: TokenWithBalance[];
   loadZeroBalanceList?: () => void;
-  isRefreshing?: boolean;
   handleRefresh?: () => void;
   hasZeroBalance?: boolean;
 };
@@ -33,7 +38,7 @@ function PortfolioContainer({
   onExit,
   onSwitchWallet,
 }: PortfolioProps): JSX.Element {
-  const {tokenList, loadZeroBalanceList, loadTokenList, isRefreshing} =
+  const {tokenList, loadZeroBalanceList, loadTokenList} =
     useSearchableTokenList();
   const {balanceTotalInUSD, isWalletReady} = usePortfolio();
   const hasZeroBalance =
@@ -52,7 +57,6 @@ function PortfolioContainer({
         onSwitchWallet={onSwitchWallet}
         tokenList={tokenList}
         loadZeroBalanceList={loadZeroBalanceList}
-        isRefreshing={isRefreshing}
         handleRefresh={handleRefresh}
         hasZeroBalance={hasZeroBalance}
       />
@@ -67,7 +71,6 @@ const PortfolioView: FC<PortfolioProps> = memo(
   ({
     tokenList,
     loadZeroBalanceList,
-    isRefreshing,
     handleRefresh,
     hasZeroBalance,
   }: PortfolioProps) => {
@@ -122,18 +125,22 @@ const PortfolioView: FC<PortfolioProps> = memo(
     return (
       <SafeAreaProvider style={styles.flex}>
         <PortfolioHeader />
-        <FlatList
-          ref={listRef}
-          contentContainerStyle={{paddingHorizontal: 16}}
-          style={[styles.tokenList, tokenList?.length === 1 && {flex: 0}]}
-          data={tokenList}
-          renderItem={renderItem}
-          keyExtractor={(item: TokenWithBalance) => item?.symbol}
-          onRefresh={handleRefresh}
-          refreshing={isRefreshing}
-          scrollEventThrottle={16}
-          ListEmptyComponent={zeroState}
-        />
+        {!tokenList ? (
+          <Loader />
+        ) : (
+          <FlatList
+            ref={listRef}
+            contentContainerStyle={{paddingHorizontal: 16}}
+            style={[styles.tokenList, tokenList?.length === 1 && {flex: 0}]}
+            data={tokenList}
+            renderItem={renderItem}
+            keyExtractor={(item: TokenWithBalance) => item?.symbol}
+            onRefresh={handleRefresh}
+            refreshing={false}
+            scrollEventThrottle={16}
+            ListEmptyComponent={zeroState}
+          />
+        )}
         {tokenList?.length === 1 && hasZeroBalance && (
           <View
             style={{
