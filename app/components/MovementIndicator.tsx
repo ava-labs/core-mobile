@@ -33,7 +33,7 @@ const MovementIndicator: FC<Props> = ({isNegative = false, metric}) => {
           transform: [{rotate: negative ? '180deg' : '0deg'}],
         },
       ]}>
-      <ArrowSVG color={negative ? theme.colorPrimary1 : theme.colorIcon3} />
+      <ArrowSVG color={negative ? theme.colorError : theme.colorIcon3} />
     </View>
   );
 };

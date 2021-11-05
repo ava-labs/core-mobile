@@ -1,4 +1,4 @@
-import React, {FC, useContext, useEffect, useMemo, useState} from 'react';
+import React, {FC, useEffect, useMemo, useState} from 'react';
 import {ActivityIndicator, Pressable, StyleSheet, View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from 'components/AvaText';
@@ -68,7 +68,7 @@ const NetworkSelector: FC<Props> = ({
           textStyle={{marginEnd: marginEnd}}>
           {`${DOT} ${networkName}`}
         </AvaText.Body2>
-        <CarrotSVG direction={isExpanded ? 'up' : 'down'} size={12} />
+        <CarrotSVG direction={isExpanded ? 'up' : 'down'} />
       </Pressable>
       <Pressable
         style={{

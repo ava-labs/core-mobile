@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React from 'react';
 import Svg, {Path} from 'react-native-svg';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {View} from 'react-native';
@@ -10,7 +10,7 @@ interface Prop {
 }
 
 function CarrotSVG({color, size = 16, direction}: Prop) {
-  const context = useApplicationContext();
+  const {theme} = useApplicationContext();
 
   function getDegrees() {
     let degrees = 0;
@@ -33,10 +33,10 @@ function CarrotSVG({color, size = 16, direction}: Prop) {
     <Svg width={size} height={size} viewBox="0 0 16 16" fill="none">
       <Path
         d="M5 3L10.25 8.25L5 13.5"
-        stroke={color || context.theme.txtDim}
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+        stroke={color || theme.txtDim}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </Svg>
   );
