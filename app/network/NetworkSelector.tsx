@@ -1,5 +1,11 @@
 import React, {FC, useEffect, useMemo, useState} from 'react';
-import {ActivityIndicator, Pressable, StyleSheet, View} from 'react-native';
+import {
+  ActivityIndicator,
+  LayoutAnimation,
+  StyleSheet,
+  UIManager,
+  View,
+} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from 'components/AvaText';
 import CarrotSVG from 'components/svg/CarrotSVG';
@@ -9,28 +15,28 @@ import {
   useNetworkContext,
 } from '@avalabs/wallet-react-components';
 import CheckmarkSVG from 'components/svg/CheckmarkSVG';
+import AvaButton from 'components/AvaButton';
 
 interface Props {
-  toggleOpenClose: () => void;
-  isExpanded: boolean;
   closeDrawer: () => void;
 }
 
-const paddingTop = 24;
+UIManager.setLayoutAnimationEnabledExperimental &&
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+
+const FLEX_BASIS = 53;
 const marginEnd = 12;
 const DOT = '\u25CF';
 
-const NetworkSelector: FC<Props> = ({
-  toggleOpenClose,
-  isExpanded,
-  closeDrawer,
-}) => {
+const NetworkSelector: FC<Props> = ({closeDrawer}) => {
   const context = useApplicationContext();
   const theme = context.theme;
   const networkContext = useNetworkContext();
   const [networkName, setNetworkName] = useState('');
   const [loading, setLoading] = useState(false);
   const [isChanging, setIsChanging] = useState(false);
+  const [flexBasis, setFlexBasis] = useState<number | undefined>(FLEX_BASIS);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const availableNetworks = useMemo(() => {
     return {
@@ -40,7 +46,12 @@ const NetworkSelector: FC<Props> = ({
   }, []);
 
   useEffect(() => {
-    if (networkName != networkContext?.network?.name) {
+    LayoutAnimation.easeInEaseOut();
+    setFlexBasis(isExpanded ? undefined : FLEX_BASIS);
+  }, [isExpanded]);
+
+  useEffect(() => {
+    if (networkName !== networkContext?.network?.name) {
       setNetworkName(networkContext?.network?.name ?? '');
       setLoading(false);
       if (isChanging) {
@@ -59,48 +70,47 @@ const NetworkSelector: FC<Props> = ({
   }
 
   return (
-    <View>
-      <Pressable
-        style={{paddingTop: 16, paddingBottom: 20, flexDirection: 'row'}}
-        onPress={toggleOpenClose}>
+    <View
+      style={{
+        paddingHorizontal: 16,
+        flexBasis: flexBasis,
+        overflow: 'hidden',
+      }}>
+      <AvaButton.Base
+        style={styles.item}
+        onPress={() => {
+          setIsExpanded(!isExpanded);
+        }}>
         <AvaText.Body2
           color={theme.txtListItem}
           textStyle={{marginEnd: marginEnd}}>
           {`${DOT} ${networkName}`}
         </AvaText.Body2>
-        <CarrotSVG direction={isExpanded ? 'up' : 'down'} />
-      </Pressable>
-      <Pressable
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginTop: paddingTop,
-        }}
+        <CarrotSVG
+          direction={isExpanded ? 'up' : 'down'}
+          color={theme.colorText1}
+        />
+      </AvaButton.Base>
+      <AvaButton.Base
+        style={[styles.item, styles.checkable]}
         onPress={() => handleChangeNetwork(MAINNET_NETWORK.name)}>
-        <AvaText.Body2 color={theme.txtListItem}>
+        <AvaText.Body1 color={theme.txtListItem}>
           {MAINNET_NETWORK.name}
-        </AvaText.Body2>
+        </AvaText.Body1>
         {networkName === MAINNET_NETWORK.name && <CheckmarkSVG />}
-      </Pressable>
-      <Pressable
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginTop: paddingTop,
-        }}
+      </AvaButton.Base>
+      <AvaButton.Base
+        style={[styles.item, styles.checkable]}
         onPress={() => handleChangeNetwork(FUJI_NETWORK.name)}>
-        <AvaText.Body2 color={theme.txtListItem}>
-          {FUJI_NETWORK.name}
-        </AvaText.Body2>
+        <AvaText.Body1 color={theme.txtListItem}>
+          {FUJI_NETWORK.name.trim()}
+        </AvaText.Body1>
         {networkName === FUJI_NETWORK.name && <CheckmarkSVG />}
-      </Pressable>
-      <AvaText.Body2
-        color={theme.txtListItem}
-        textStyle={{paddingTop: paddingTop}}>
-        Add Network
-      </AvaText.Body2>
+      </AvaButton.Base>
+
+      {/*<AvaButton.TextLarge style={{alignSelf: 'flex-start', marginLeft: -16}}>*/}
+      {/*  Add Network*/}
+      {/*</AvaButton.TextLarge>*/}
       {loading && (
         <ActivityIndicator
           size={'small'}
@@ -124,4 +134,13 @@ const NetworkSelector: FC<Props> = ({
   );
 };
 
+const styles = StyleSheet.create({
+  item: {
+    paddingVertical: 12,
+    flexDirection: 'row',
+  },
+  checkable: {
+    justifyContent: 'space-between',
+  },
+});
 export default NetworkSelector;

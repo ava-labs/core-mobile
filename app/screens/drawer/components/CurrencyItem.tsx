@@ -1,18 +1,16 @@
-import React, {FC, useContext, useState} from 'react';
+import React, {FC, useState} from 'react';
 import AvaListItem from 'components/AvaListItem';
 import AvaText from 'components/AvaText';
-import {useApplicationContext} from 'contexts/ApplicationContext';
 import {DrawerContentComponentProps} from '@react-navigation/drawer';
 import AppNavigation from 'navigation/AppNavigation';
 
 const CurrencyItem: FC<Partial<DrawerContentComponentProps>> = ({
   navigation,
 }) => {
-  const theme = useApplicationContext().theme;
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
 
   const currency = () => (
-    <AvaText.Body2 textStyle={{paddingRight: 12, color: theme.txtListItem}}>
+    <AvaText.Body2 textStyle={{paddingRight: 12}}>
       {selectedCurrency}
     </AvaText.Body2>
   );
