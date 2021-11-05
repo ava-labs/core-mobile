@@ -75,7 +75,7 @@ const PortfolioHeader: FC<PortfolioHeaderProps> = memo(
                 {accountName}
               </AvaText.Heading3>
               <View style={{transform: [{rotate: '90deg'}]}}>
-                <CarrotSVG color={theme.txtListItem} size={10} />
+                <CarrotSVG color={theme.txtListItem} />
               </View>
             </View>
           </AvaButton.Base>
