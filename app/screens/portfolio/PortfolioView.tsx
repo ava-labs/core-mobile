@@ -1,11 +1,5 @@
 import React, {FC, memo, useEffect, useMemo, useRef} from 'react';
-import {
-  FlatList,
-  ListRenderItemInfo,
-  Modal,
-  StyleSheet,
-  View,
-} from 'react-native';
+import {FlatList, ListRenderItemInfo, StyleSheet, View} from 'react-native';
 import PortfolioHeader from 'screens/portfolio/PortfolioHeader';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {useNavigation} from '@react-navigation/native';
@@ -52,17 +46,18 @@ function PortfolioContainer({
 
   return (
     <>
-      <PortfolioView
-        onExit={onExit}
-        onSwitchWallet={onSwitchWallet}
-        tokenList={tokenList}
-        loadZeroBalanceList={loadZeroBalanceList}
-        handleRefresh={handleRefresh}
-        hasZeroBalance={hasZeroBalance}
-      />
-      <Modal visible={!isWalletReady}>
+      {!isWalletReady ? (
         <Loader />
-      </Modal>
+      ) : (
+        <PortfolioView
+          onExit={onExit}
+          onSwitchWallet={onSwitchWallet}
+          tokenList={tokenList}
+          loadZeroBalanceList={loadZeroBalanceList}
+          handleRefresh={handleRefresh}
+          hasZeroBalance={hasZeroBalance}
+        />
+      )}
     </>
   );
 }
