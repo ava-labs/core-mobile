@@ -130,7 +130,7 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
 
   const DrawerScreen = () => (
     <DrawerStack.Navigator
-      screenOptions={{headerShown: false}}
+      screenOptions={{headerShown: false, drawerStyle: {width: '80%'}}}
       useLegacyImplementation
       drawerContent={props => <DrawerView {...props} />}>
       <DrawerStack.Screen
