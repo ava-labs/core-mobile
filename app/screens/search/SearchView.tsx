@@ -21,6 +21,7 @@ import CarrotSVG from 'components/svg/CarrotSVG';
 import {PortfolioNavigationProp} from 'screens/portfolio/PortfolioView';
 import AvaButton from 'components/AvaButton';
 import {Opacity50} from 'resources/Constants';
+import Loader from 'components/Loader';
 
 function SearchView(): JSX.Element {
   const {
@@ -29,8 +30,8 @@ function SearchView(): JSX.Element {
     setSearchText,
     setShowZeroBalanceList,
     showZeroBalanceList,
-    isRefreshing,
     loadTokenList,
+    loading,
   } = useSearchableTokenList(false);
   const context = useApplicationContext();
   const navigation = useNavigation<PortfolioNavigationProp>();
@@ -110,14 +111,18 @@ function SearchView(): JSX.Element {
       <AddCustomTokenButton
         onPress={() => navigation.navigate(AppNavigation.Wallet.AddCustomToken)}
       />
-      <FlatList
-        data={filteredTokenList}
-        renderItem={renderItem}
-        onRefresh={handleRefresh}
-        refreshing={isRefreshing}
-        keyExtractor={(item: TokenWithBalance) => item.symbol}
-        ListEmptyComponent={emptyView}
-      />
+      {!filteredTokenList ? (
+        <Loader />
+      ) : (
+        <FlatList
+          data={filteredTokenList}
+          renderItem={renderItem}
+          onRefresh={handleRefresh}
+          refreshing={false}
+          keyExtractor={(item: TokenWithBalance) => item.symbol}
+          ListEmptyComponent={emptyView}
+        />
+      )}
     </View>
   );
 }
