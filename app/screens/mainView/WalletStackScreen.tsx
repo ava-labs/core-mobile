@@ -255,7 +255,6 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
               />
               <RootStack.Screen
                 options={{
-                  headerShown: true,
                   ...MainHeaderOptions('Currency'),
                 }}
                 name={AppNavigation.Wallet.CurrencySelector}
@@ -267,11 +266,7 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
               />
               <RootStack.Screen
                 options={{
-                  headerShown: true,
-                  headerTitle: () => (
-                    <AvaText.Heading1>{'Legal'}</AvaText.Heading1>
-                  ),
-                  headerBackTitleVisible: false,
+                  ...MainHeaderOptions('Legal'),
                 }}
                 name={AppNavigation.Wallet.WebView}
                 component={WebViewScreen}
