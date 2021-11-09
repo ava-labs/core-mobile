@@ -87,21 +87,19 @@ function ActivityDetailView({txItem}: Props) {
       style={[
         {
           flex: 1,
-          justifyContent: 'flex-end',
         },
-        {backgroundColor: theme.bgOnBgApp},
       ]}>
       <View style={styles.logoContainer}>
         <AvaText.Heading1>Transaction Details</AvaText.Heading1>
-        <AvaText.Body2 textStyle={{paddingTop: 8}}>{`${date}`}</AvaText.Body2>
+        <AvaText.Body2 textStyle={{marginTop: 8}}>{`${date}`}</AvaText.Body2>
         <Space y={32} />
         {tokenLogo}
         <AvaText.Heading1
-          textStyle={{paddingTop: 16}}
+          textStyle={{marginTop: 16}}
           color={isOutboundTransaction ? theme.colorError : theme.colorIcon3}>
           {`${amount} AVAX`}
         </AvaText.Heading1>
-        <AvaText.Body2 textStyle={{paddingTop: 8}}>
+        <AvaText.Body2 textStyle={{marginTop: 8}}>
           {`$0 USD - ${txItem?.fee && 'Fee: ' + fee} AVAX`}
         </AvaText.Body2>
       </View>
@@ -145,6 +143,7 @@ function ActivityDetailView({txItem}: Props) {
 
 const styles = StyleSheet.create({
   logoContainer: {
+    marginTop: 8,
     justifyContent: 'center',
     alignItems: 'center',
   },

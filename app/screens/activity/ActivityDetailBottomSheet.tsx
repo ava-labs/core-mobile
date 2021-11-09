@@ -13,7 +13,7 @@ function ActivityDetailBottomSheet() {
   const {goBack} = useNavigation();
   const route = useRoute<ActivityDetailRouteProps>();
   const bottomSheetRef = useRef<BottomSheet>(null);
-  const snapPoints = useMemo(() => ['0%', '53%'], []);
+  const snapPoints = useMemo(() => ['0%', '56%'], []);
   const txItem = route?.params?.historyItem;
 
   useEffect(() => {
