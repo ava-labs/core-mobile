@@ -10,7 +10,7 @@ import {Platform} from 'react-native';
 const SendReceiveBottomSheet: FC = () => {
   const bottomSheetRef = useRef<BottomSheet>(null);
   const {goBack, canGoBack} = useNavigation();
-  const snapPoints = useMemo(() => ['0%', '86%'], []);
+  const snapPoints = useMemo(() => ['0%', '85%'], []);
   const {setKeyboardAvoidingViewEnabled} = useApplicationContext();
 
   useEffect(() => {

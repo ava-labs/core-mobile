@@ -107,7 +107,7 @@ function ReceiveToken() {
                 padding: 16,
                 backgroundColor: theme.colorIcon1 + Opacity05,
                 borderRadius: 8,
-                marginVertical: 8,
+                marginBottom: 8,
                 marginHorizontal: 16,
               },
             ]}>

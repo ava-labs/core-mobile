@@ -125,42 +125,45 @@ export default function PinOrBiometryLogin({
 
   return (
     <View style={[styles.verticalLayout, {backgroundColor: theme.colorBg1}]}>
-      <Space y={64} />
-      <View style={styles.growContainer}>
-        {isResettingPin || (
-          <>
-            <AvaText.LargeTitleBold textStyle={{textAlign: 'center'}}>
-              {title}
-            </AvaText.LargeTitleBold>
-            <Space y={8} />
-            <AvaText.Body1
-              textStyle={{
-                textAlign: 'center',
-                color: context.theme.colorText1,
-              }}>
-              Enter your PIN
-            </AvaText.Body1>
-          </>
-        )}
-        <Animated.View
-          style={[
-            {padding: 68},
-            {
-              transform: [
-                {
-                  translateX: jiggleAnim,
-                },
-              ],
-            },
-          ]}>
-          <View style={styles.dots}>{generatePinDots()}</View>
-        </Animated.View>
-      </View>
+      <Space y={56} />
+      {isResettingPin || (
+        <>
+          <AvaText.LargeTitleBold textStyle={{textAlign: 'center'}}>
+            {title}
+          </AvaText.LargeTitleBold>
+          <Space y={8} />
+          <AvaText.Body1
+            textStyle={{
+              textAlign: 'center',
+              color: context.theme.colorText1,
+            }}>
+            Enter your PIN
+          </AvaText.Body1>
+        </>
+      )}
+      <Space y={94} />
+      <Animated.View
+        style={[
+          {paddingHorizontal: 68},
+          {
+            transform: [
+              {
+                translateX: jiggleAnim,
+              },
+            ],
+          },
+        ]}>
+        <View style={styles.dots}>{generatePinDots()}</View>
+      </Animated.View>
+      <Space y={120} />
       <View style={styles.keyboard}>{keyboard()}</View>
       {isResettingPin || hideLoginWithMnemonic || (
-        <AvaButton.TextMedium onPress={onSignInWithRecoveryPhrase}>
-          Sign In with recovery phrase
-        </AvaButton.TextMedium>
+        <>
+          <Space y={16} />
+          <AvaButton.TextMedium onPress={onSignInWithRecoveryPhrase}>
+            Sign In with recovery phrase
+          </AvaButton.TextMedium>
+        </>
       )}
     </View>
   );
@@ -168,17 +171,14 @@ export default function PinOrBiometryLogin({
 
 const styles = StyleSheet.create({
   verticalLayout: {
-    height: '100%',
-    justifyContent: 'flex-end',
-  },
-  growContainer: {
-    flexGrow: 1,
+    flex: 1,
+    paddingVertical: 16,
+    justifyContent: 'center',
   },
   keyboard: {
     marginHorizontal: 24,
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginBottom: 32,
   },
   dots: {
     flexGrow: 1,

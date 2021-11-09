@@ -7,10 +7,14 @@ export const MainHeaderOptions = (
   hideHeaderLeft = false,
 ): Partial<StackNavigationOptions> => {
   return {
+    headerShown: true,
     headerTitle: () => <AvaText.Heading1>{title} </AvaText.Heading1>,
     headerTitleAlign: 'left',
     headerLeft: hideHeaderLeft ? () => null : undefined,
     headerBackTitleVisible: false,
+    headerStyle: {
+      shadowColor: 'transparent',
+    },
   };
 };
 

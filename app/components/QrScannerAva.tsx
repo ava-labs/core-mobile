@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React from 'react';
 import {SafeAreaView, StyleSheet} from 'react-native';
 import QRCodeScanner from 'react-native-qrcode-scanner';
 import {BarCodeReadEvent} from 'react-native-camera';

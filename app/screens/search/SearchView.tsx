@@ -2,6 +2,7 @@ import React from 'react';
 import {
   FlatList,
   ListRenderItemInfo,
+  Platform,
   StyleSheet,
   Text,
   TextInput,
@@ -81,9 +82,12 @@ function SearchView(): JSX.Element {
     setSearchText(text);
   };
 
+  const descriptionPadding = Platform.OS === 'ios' ? 24 : 32;
+
   return (
     <View style={{flex: 1, backgroundColor: context.theme.background}}>
-      <AvaText.Body1 textStyle={{alignSelf: 'center', paddingStart: 32}}>
+      <AvaText.Body1
+        textStyle={{alignSelf: 'center', paddingStart: descriptionPadding}}>
         Add or remove tokens without balance
       </AvaText.Body1>
       <View style={styles.searchContainer}>
