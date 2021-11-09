@@ -43,7 +43,7 @@ export function useWalletSetup(): WalletSetup {
     // this destroy method is actually not supported as intended currently.
     // the wallet still lives in memor :( talked to Emre and we need more methods,
     // including a 'clearMnemonic' from state context.
-    walletContext?.wallet?.destroy();
+    walletContext?.clearMnemonic();
 
     await AppViewModel.immediateLogout().catch(err => Alert.alert(err.message));
   }
