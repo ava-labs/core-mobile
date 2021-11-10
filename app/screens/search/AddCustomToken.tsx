@@ -1,4 +1,4 @@
-import React, {FC, useCallback, useContext, useEffect, useState} from 'react';
+import React, {FC, useCallback, useEffect, useState} from 'react';
 import {Alert, Modal, StyleSheet, View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import InputText from 'components/InputText';
@@ -54,20 +54,26 @@ const AddCustomToken: FC = () => {
       <View style={styles.horizontalLayout}>
         <View style={[{flex: 1, paddingStart: 4, paddingEnd: 4}]}>
           <InputText
-            label={'Address'}
-            placeholder="Enter the address"
+            minHeight={72}
+            label={'Token contract address'}
+            placeholder="Token contract address"
             multiline={true}
             errorText={errorMessage}
             onChangeText={setTokenAddress}
           />
+          {tokenAddress.length === 0 && (
+            <View
+              style={{
+                position: 'absolute',
+                right: 24,
+                top: 40,
+              }}>
+              <AvaButton.Icon onPress={() => setShowQrCamera(true)}>
+                <QRCode />
+              </AvaButton.Icon>
+            </View>
+          )}
         </View>
-        {tokenAddress.length === 0 && (
-          <AvaButton.Icon
-            style={{position: 'absolute', right: 16, top: 40}}
-            onPress={() => setShowQrCamera(true)}>
-            <QRCode />
-          </AvaButton.Icon>
-        )}
       </View>
 
       {!!token && (
@@ -115,6 +121,7 @@ const AddCustomToken: FC = () => {
 
 const styles = StyleSheet.create({
   horizontalLayout: {
+    paddingTop: 28,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
