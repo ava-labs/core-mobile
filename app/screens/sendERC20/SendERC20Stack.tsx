@@ -1,4 +1,4 @@
-import React, {useContext, useMemo} from 'react';
+import React, {useMemo} from 'react';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {NavigationContainer} from '@react-navigation/native';
 import AppNavigation from 'navigation/AppNavigation';
@@ -12,6 +12,7 @@ import HeaderAndTabs from 'screens/send/HeaderAndTabs';
 import ConfirmScreen from 'screens/send/ConfirmScreen';
 import {ERC20} from '@avalabs/wallet-react-components';
 import {SendERC20ContextProvider} from 'contexts/SendERC20Context';
+import {SubHeaderOptions} from 'navigation/NavUtils';
 
 const Stack = createStackNavigator();
 
@@ -46,6 +47,7 @@ export default function SendERC20Stack({onClose, token}: Props): JSX.Element {
           />
           <Stack.Screen
             name={AppNavigation.SendToken.ConfirmTransactionScreen}
+            options={SubHeaderOptions('Confirm Transaction')}
             component={ConfirmScreen} //TODO: change to specific screen for ant
           />
           <Stack.Screen

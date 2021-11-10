@@ -1,4 +1,4 @@
-import React, {useContext, useMemo} from 'react';
+import React, {useMemo} from 'react';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {NavigationContainer} from '@react-navigation/native';
 import AppNavigation from 'navigation/AppNavigation';
@@ -12,6 +12,7 @@ import HeaderAndTabs from 'screens/send/HeaderAndTabs';
 import ConfirmScreen from 'screens/send/ConfirmScreen';
 import {AntWithBalance} from '@avalabs/wallet-react-components';
 import {SendANTContextProvider} from 'contexts/SendANTContext';
+import {SubHeaderOptions} from 'navigation/NavUtils';
 
 const Stack = createStackNavigator();
 
@@ -47,6 +48,7 @@ export default function SendANTStack({onClose, token}: Props): JSX.Element {
           />
           <Stack.Screen
             name={AppNavigation.SendToken.ConfirmTransactionScreen}
+            options={SubHeaderOptions('Confirm Transaction')}
             component={ConfirmScreen}
           />
           <Stack.Screen

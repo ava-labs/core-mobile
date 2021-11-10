@@ -11,6 +11,7 @@ import {
 } from '@react-navigation/stack';
 import HeaderAndTabs from 'screens/send/HeaderAndTabs';
 import ConfirmScreen from 'screens/send/ConfirmScreen';
+import {SubHeaderOptions} from 'navigation/NavUtils';
 
 const Stack = createStackNavigator();
 
@@ -45,6 +46,7 @@ export default function SendAvaxStack({onClose}: Props): JSX.Element {
           />
           <Stack.Screen
             name={AppNavigation.SendToken.ConfirmTransactionScreen}
+            options={SubHeaderOptions('Confirm Transaction')}
             component={ConfirmScreen}
           />
           <Stack.Screen
