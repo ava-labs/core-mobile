@@ -10,12 +10,11 @@ import {useNavigation} from '@react-navigation/native';
 import AppNavigation from 'navigation/AppNavigation';
 import {useSendERC20Context} from 'contexts/SendERC20Context';
 import {useSelectedTokenContext} from 'contexts/SelectedTokenContext';
-import {ConfirmHeader} from 'screens/send/ConfirmHeader';
 
 export default function SendERC20Confirm(): JSX.Element {
   const context = useApplicationContext();
   const [backgroundStyle] = useState(context.backgroundStyle);
-  const {navigate, goBack} = useNavigation();
+  const {navigate} = useNavigation();
   const {
     destinationAddress,
     sendAmountString,
@@ -44,7 +43,6 @@ export default function SendERC20Confirm(): JSX.Element {
           paddingRight: 0,
         },
       ]}>
-      <ConfirmHeader onBack={goBack} />
       <Space y={51} />
       {tokenLogo()}
       <Space y={16} />

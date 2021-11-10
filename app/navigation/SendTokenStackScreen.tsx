@@ -1,6 +1,12 @@
 import React from 'react';
-import {TokenType, useSelectedTokenContext} from 'contexts/SelectedTokenContext';
-import {AntWithBalance, ERC20WithBalance} from '@avalabs/wallet-react-components';
+import {
+  TokenType,
+  useSelectedTokenContext,
+} from 'contexts/SelectedTokenContext';
+import {
+  AntWithBalance,
+  ERC20WithBalance,
+} from '@avalabs/wallet-react-components';
 import SendAvaxStack from 'screens/sendAvax/SendAvaxStack';
 import SendERC20Stack from 'screens/sendERC20/SendERC20Stack';
 import SendANTStack from 'screens/sendANT/SendANTStack';
