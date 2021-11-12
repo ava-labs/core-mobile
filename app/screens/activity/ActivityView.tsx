@@ -5,7 +5,7 @@ import AppNavigation from 'navigation/AppNavigation';
 import AvaText from 'components/AvaText';
 import Loader from 'components/Loader';
 import CollapsibleSection from 'components/CollapsibleSection';
-import {useWalletContext} from '@avalabs/wallet-react-components';
+import {useWalletStateContext} from '@avalabs/wallet-react-components';
 import moment from 'moment';
 import ActivityListItem from 'screens/activity/ActivityListItem';
 import {HistoryItemType} from '@avalabs/avalanche-wallet-sdk/dist/History';
@@ -13,6 +13,7 @@ import {History} from '@avalabs/avalanche-wallet-sdk';
 import {ScrollView} from 'react-native-gesture-handler';
 import {MainHeaderOptions} from 'navigation/NavUtils';
 import {PortfolioNavigationProp} from 'screens/portfolio/PortfolioView';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 
 const TODAY = moment().format('MM.DD.YY');
 const YESTERDAY = moment().subtract(1, 'days').format('MM.DD.YY');
@@ -23,14 +24,15 @@ interface Props {
 }
 
 function ActivityView({embedded}: Props) {
-  const wallet = useWalletContext()?.wallet;
+  const walletState = useWalletStateContext();
   const [sectionData, setSectionData] = useState<SectionType>({});
   const [loading, setLoading] = useState(true);
   const navigation = useNavigation<PortfolioNavigationProp>();
+  const theme = useApplicationContext().theme;
 
   const loadHistory = useCallback(async () => {
     setLoading(true);
-    const history = (await wallet?.getHistory(50)) ?? [];
+    const history = (await walletState?.recentTxHistory) ?? [];
     // We're only going to show EVMT without inputs at this time. Remove filter in the future
     history
       .filter(ik => History.isHistoryEVMTx(ik) && ik.input === undefined)
@@ -46,13 +48,21 @@ function ActivityView({embedded}: Props) {
       });
     setSectionData({...sectionData});
     setLoading(false);
-  }, [wallet]);
+  }, [walletState?.recentTxHistory]);
 
   useEffect(() => {
     if (embedded) {
       navigation.setOptions({headerShown: false});
     } else {
-      navigation.setOptions(MainHeaderOptions('Activity'));
+      navigation.setOptions({
+        ...MainHeaderOptions('Activity'),
+        headerStyle: {
+          shadowColor: 'transparent',
+          elevation: 0,
+          shadowOpacity: 0,
+          backgroundColor: theme.colorBg1,
+        },
+      });
     }
   }, [embedded]);
 
@@ -139,7 +149,9 @@ function ActivityView({embedded}: Props) {
     );
   };
 
-  return (
+  return !walletState?.isWalletReady ? (
+    <Loader />
+  ) : (
     <View style={{flex: 1}}>
       {loading ? <Loader /> : <ScrollableComponent children={renderItems()} />}
     </View>
