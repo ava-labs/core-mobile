@@ -30,6 +30,7 @@ export enum COLORS_DAY {
   colorChain2 = '#00A087',
   colorChain3 = '#7C1BF21A',
   colorChain4 = '#4D00DE',
+  listItemBg = '#ffffff',
 
   logoColor = '#E84142',
   accentColor = '#F64942',
@@ -88,6 +89,7 @@ export enum COLORS_NIGHT {
   colorChain2 = '#00DDCB',
   colorChain3 = '#934AF61A',
   colorChain4 = '#DAC3FB',
+  listItemBg = '#1A1A1C',
 
   logoColor = '#E84142',
   accentColor = '#F1595A',
