@@ -80,7 +80,7 @@ function SecurityPrivacy() {
   };
 
   return (
-    <View style={{backgroundColor: theme.bgOnBgApp}}>
+    <View style={{backgroundColor: theme.colorBg2}}>
       <AvaListItem.Base
         title={'Change password'}
         showNavigationArrow
