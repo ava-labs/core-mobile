@@ -1,6 +1,4 @@
-import React, {FC, useContext} from 'react';
-import {StyleSheet, Text, View} from 'react-native';
-import {useApplicationContext} from 'contexts/ApplicationContext';
+import React, {FC} from 'react';
 import AvaListItem from 'components/AvaListItem';
 import {History} from '@avalabs/avalanche-wallet-sdk';
 import {
@@ -18,15 +16,19 @@ type Props = {
 };
 
 const ActivityListItem: FC<Props> = ({historyItem, onPress}) => {
-  const theme = useApplicationContext().theme;
   if (History.isHistoryBaseTx(historyItem)) {
     const token = historyItem as any;
     const baseRightComponent = (
-      <View style={{alignItems: 'flex-end'}}>
-        <Text style={[styles.tokenNativeValue, {color: theme.txtListItem}]}>
-          {token.amountDisplayValue} {token.asset.symbol}
-        </Text>
-      </View>
+      <AvaListItem.CurrencyAmount
+        value={
+          <AvaText.ActivityTotal>
+            {token.amountDisplayValue}
+          </AvaText.ActivityTotal>
+        }
+        currency={
+          <AvaText.ActivityTotal>{token.asset.symbol}</AvaText.ActivityTotal>
+        }
+      />
     );
     return (
       <AvaListItem.Base
@@ -40,20 +42,19 @@ const ActivityListItem: FC<Props> = ({historyItem, onPress}) => {
     const token = historyItem as iHistoryEVMTx;
     const sign = token.isSender ? '-' : '+';
     const hasInput = !!token.input;
-    const evmRightComponent = (
-      <View style={{alignItems: 'flex-end'}}>
-        {hasInput ? (
-          <AvaText.Body2>Contract call</AvaText.Body2>
-        ) : (
-          <>
-            <Text style={[styles.tokenNativeValue, {color: theme.txtListItem}]}>
-              {`${sign}${token.amountDisplayValue} AVAX`}
-            </Text>
-            {/*<AvaText.Body2>{`${token.amount} USD`}</AvaText.Body2>*/}
-          </>
-        )}
-      </View>
+    const evmRightComponent = hasInput ? (
+      <AvaText.Body2>Contract call</AvaText.Body2>
+    ) : (
+      <AvaListItem.CurrencyAmount
+        value={
+          <AvaText.ActivityTotal ellipsize={'tail'}>
+            {sign + token.amountDisplayValue}
+          </AvaText.ActivityTotal>
+        }
+        currency={<AvaText.ActivityTotal> AVAX</AvaText.ActivityTotal>}
+      />
     );
+
     return (
       <AvaListItem.Base
         title={'Avalanche'}
@@ -66,15 +67,14 @@ const ActivityListItem: FC<Props> = ({historyItem, onPress}) => {
   } else if (History.isHistoryStakingTx(historyItem)) {
     const token = historyItem as iHistoryStaking;
     const stakingRightComponent = (
-      <View style={{alignItems: 'flex-end'}}>
-        <Text style={[styles.tokenNativeValue, {color: theme.txtListItem}]}>
-          {`${token.amountDisplayValue} AVAX`}
-        </Text>
-        {/*<Text*/}
-        {/*  style={[styles.tokenUsdValue, {color: theme.txtListItemSubscript}]}>*/}
-        {/*  {`${Utils.bnToLocaleString(token.amount, 2)} USD`}*/}
-        {/*</Text>*/}
-      </View>
+      <AvaListItem.CurrencyAmount
+        value={
+          <AvaText.ActivityTotal ellipsize={'tail'}>
+            {token.amountDisplayValue}
+          </AvaText.ActivityTotal>
+        }
+        currency={<AvaText.ActivityTotal> AVAX</AvaText.ActivityTotal>}
+      />
     );
     return (
       <AvaListItem.Base
@@ -88,16 +88,16 @@ const ActivityListItem: FC<Props> = ({historyItem, onPress}) => {
     const token = historyItem as iHistoryImportExport;
     const sign = token.type === 'export' ? '-' : '+';
     const ImpExpRightComponent = (
-      <View style={{alignItems: 'flex-end'}}>
-        <Text style={[styles.tokenNativeValue, {color: theme.txtListItem}]}>
-          {`${sign}${token.amountDisplayValue} AVAX`}
-        </Text>
-        {/*<Text*/}
-        {/*  style={[styles.tokenUsdValue, {color: theme.txtListItemSubscript}]}>*/}
-        {/*  {`${Utils.bnToLocaleString(token.amount, 2)} USD`}*/}
-        {/*</Text>*/}
-      </View>
+      <AvaListItem.CurrencyAmount
+        value={
+          <AvaText.ActivityTotal ellipsize={'tail'}>
+            {sign + token.amountDisplayValue}
+          </AvaText.ActivityTotal>
+        }
+        currency={<AvaText.ActivityTotal> AVAX</AvaText.ActivityTotal>}
+      />
     );
+
     return (
       <AvaListItem.Base
         title={'Avalanche'}
@@ -113,17 +113,5 @@ const ActivityListItem: FC<Props> = ({historyItem, onPress}) => {
 
   return null;
 };
-
-const styles = StyleSheet.create({
-  tokenNativeValue: {
-    fontFamily: 'Inter-Bold',
-    fontSize: 16,
-    lineHeight: 24,
-  },
-  tokenUsdValue: {
-    fontSize: 14,
-    lineHeight: 17,
-  },
-});
 
 export default ActivityListItem;

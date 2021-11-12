@@ -37,11 +37,23 @@ const PortfolioListItem: FC<Props> = ({
     );
 
   const subTitle = (
-    <AvaText.Body2>{`${tokenPrice} ${symbol?.toUpperCase()}`}</AvaText.Body2>
+    <AvaListItem.CurrencyAmount
+      value={
+        <AvaText.Body2 ellipsize={'tail'}>{`${tokenPrice} `}</AvaText.Body2>
+      }
+      currency={<AvaText.Body2>{`${symbol?.toUpperCase()}`}</AvaText.Body2>}
+    />
   );
 
   const usdBalance = tokenPriceUsd ? (
-    <AvaText.Heading3>{`$${tokenPriceUsd} USD`}</AvaText.Heading3>
+    <AvaListItem.CurrencyAmount
+      justifyContent={'flex-end'}
+      value={
+        <AvaText.Heading3
+          ellipsize={'tail'}>{`$${tokenPriceUsd}`}</AvaText.Heading3>
+      }
+      currency={<AvaText.Heading3>{'USD'}</AvaText.Heading3>}
+    />
   ) : undefined;
 
   return (
@@ -49,7 +61,7 @@ const PortfolioListItem: FC<Props> = ({
       style={{
         marginVertical: 4,
         borderRadius: 8,
-        backgroundColor: theme.bgOnBgApp,
+        backgroundColor: theme.listItemBg,
       }}>
       <AvaListItem.Base
         title={title}
