@@ -61,8 +61,7 @@ export default function InputText(props: Props | Readonly<Props>) {
 
   const ClearBtn = () => {
     return (
-      <AvaButton.Icon
-        onPress={onClear}
+      <View
         style={[
           {
             position: 'absolute',
@@ -70,8 +69,10 @@ export default function InputText(props: Props | Readonly<Props>) {
             top: 2,
           },
         ]}>
-        <ClearInputSVG color={theme.colorText2} size={14} />
-      </AvaButton.Icon>
+        <AvaButton.Icon onPress={onClear}>
+          <ClearInputSVG color={theme.colorText2} size={14} />
+        </AvaButton.Icon>
+      </View>
     );
   };
 
