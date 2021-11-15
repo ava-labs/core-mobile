@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Switch, View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaListItem from 'components/AvaListItem';
@@ -8,13 +8,6 @@ import AppNavigation from 'navigation/AppNavigation';
 import AppViewModel from 'AppViewModel';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {SECURE_ACCESS_SET} from 'resources/Constants';
-import {
-  MnemonicLoaded,
-  NothingToLoad,
-  PrivateKeyLoaded,
-  usePinOrBiometryLogin,
-  WalletLoadingResults,
-} from 'screens/login/PinOrBiometryLoginViewModel';
 import {UserCredentials} from 'react-native-keychain';
 
 function SecurityPrivacy() {
@@ -23,7 +16,6 @@ function SecurityPrivacy() {
   const [isBiometricSwitchEnabled, setIsBiometricSwitchEnabled] =
     useState(false);
   const [isBiometricEnabled, setIsBiometricEnabled] = useState(false);
-  const [promptForWalletLoadingIfExists] = usePinOrBiometryLogin();
 
   useEffect(() => {
     BiometricsSDK.canUseBiometry().then((biometryAvailable: boolean) => {
@@ -34,7 +26,9 @@ function SecurityPrivacy() {
     );
   }, []);
 
-  const resetPinAction = StackActions.push(AppNavigation.CreateWallet.CreatePin);
+  const resetPinAction = StackActions.push(
+    AppNavigation.CreateWallet.CreatePin,
+  );
   const showMnemonicAction = StackActions.push(
     AppNavigation.CreateWallet.CreateWallet,
   );
@@ -86,7 +80,7 @@ function SecurityPrivacy() {
   };
 
   return (
-    <View style={{backgroundColor: theme.bgOnBgApp}}>
+    <View style={{backgroundColor: theme.colorBg2}}>
       <AvaListItem.Base
         title={'Change password'}
         showNavigationArrow

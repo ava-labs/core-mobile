@@ -9,6 +9,8 @@ import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useNavigation} from '@react-navigation/native';
 import CreateWallet from 'screens/onboarding/CreateWallet';
 import {MainHeaderOptions} from 'navigation/NavUtils';
+import AvaText from 'components/AvaText';
+import {View} from 'react-native';
 
 export type SecurityStackParamList = {
   [AppNavigation.Wallet.SecurityPrivacy]: undefined;
@@ -65,7 +67,18 @@ function SecurityPrivacyStackScreen() {
       <SecurityStack.Group>
         <SecurityStack.Screen
           name={AppNavigation.Wallet.SecurityPrivacy}
-          options={MainHeaderOptions('Security & Privacy')}
+          options={{
+            headerTitle: () => (
+              <View
+                style={{
+                  flex: 1,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}>
+                <AvaText.Heading1>Security & Privacy</AvaText.Heading1>
+              </View>
+            ),
+          }}
           component={SecurityPrivacy}
         />
       </SecurityStack.Group>

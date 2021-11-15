@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React from 'react';
 import {View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from 'components/AvaText';
@@ -23,14 +23,15 @@ function ChainCard({chainName, description, address}: Props) {
           borderRadius: 8,
           marginTop: 16,
           backgroundColor: context.theme.colorIcon1 + Opacity05,
-          marginHorizontal: 16,
+          marginStart: 16,
+          paddingBottom: 8,
           justifyContent: 'center',
           alignItems: 'center',
           alignSelf: 'baseline',
         },
       ]}>
       <View style={{paddingHorizontal: 50}}>
-        <Space y={16} />
+        <Space y={8} />
         <AvaText.Heading2>{chainName}</AvaText.Heading2>
         <AvaText.Body2
           textStyle={{

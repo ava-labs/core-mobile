@@ -51,7 +51,7 @@ export default function CreatePIN({onBack, onPinSet, isResettingPin}: Props) {
       onPinSet(validPin, walletContext);
     }
     navigation.setOptions({
-      title: title,
+      title: <AvaText.Heading1>{title}</AvaText.Heading1>,
       headerLeft: () => (
         <HeaderBackButton onPress={onBack} labelVisible={false} />
       ),
