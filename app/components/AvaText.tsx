@@ -67,7 +67,11 @@ const TextHeading3: FC<TextProps> = ({ellipsize, textStyle, children}) => {
     <Text
       ellipsizeMode={ellipsize}
       numberOfLines={ellipsize ? 1 : undefined}
-      style={[styles.heading3, {color: theme.txtListItem}, textStyle]}>
+      style={[
+        styles.heading3,
+        {flexShrink: ellipsize ? 1 : 0, color: theme.txtListItem},
+        textStyle,
+      ]}>
       {children}
     </Text>
   );
@@ -79,16 +83,27 @@ const TextBody1: FC<TextProps> = ({ellipsize, textStyle, children}) => {
     <Text
       ellipsizeMode={ellipsize}
       numberOfLines={ellipsize ? 1 : undefined}
-      style={[styles.body1, {color: theme.colorText1}, textStyle]}>
+      style={[
+        styles.body1,
+        {flexShrink: ellipsize ? 1 : 0, color: theme.colorText1},
+        textStyle,
+      ]}>
       {children}
     </Text>
   );
 };
 
-const TextBody2: FC<TextProps> = ({color, textStyle, children}) => {
+const TextBody2: FC<TextProps> = ({ellipsize, color, textStyle, children}) => {
   const theme = useApplicationContext().theme;
   return (
-    <Text style={[styles.body2, {color: color ?? theme.colorText2}, textStyle]}>
+    <Text
+      ellipsizeMode={ellipsize}
+      numberOfLines={ellipsize ? 1 : undefined}
+      style={[
+        styles.body2,
+        {flexShrink: ellipsize ? 1 : 0, color: color ?? theme.colorText2},
+        textStyle,
+      ]}>
       {children}
     </Text>
   );
@@ -128,6 +143,22 @@ const TextButtonSmall: FC<TextProps> = ({textStyle, children}) => {
   return <Text style={[styles.textButtonSmall, textStyle]}>{children}</Text>;
 };
 
+const ActivityTotal: FC<TextProps> = ({ellipsize, textStyle, children}) => {
+  const theme = useApplicationContext().theme;
+  return (
+    <Text
+      ellipsizeMode={ellipsize}
+      numberOfLines={ellipsize ? 1 : undefined}
+      style={[
+        styles.activityTotal,
+        {flexShrink: ellipsize ? 1 : 0, color: theme.colorText1},
+        textStyle,
+      ]}>
+      {children}
+    </Text>
+  );
+};
+
 const AvaText = {
   LargeTitleBold: LargeTitleBold,
   Heading1: TextHeading1,
@@ -141,6 +172,7 @@ const AvaText = {
   ButtonLarge: TextButtonLarge,
   ButtonMedium: TextButtonMedium,
   ButtonSmall: TextButtonSmall,
+  ActivityTotal: ActivityTotal, //this font configuration is not named in design at the time of writing
 };
 
 const styles = StyleSheet.create({
@@ -203,6 +235,11 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-SemiBold',
     fontSize: 12,
     lineHeight: 16,
+  },
+  activityTotal: {
+    fontFamily: 'Inter-SemiBold',
+    fontSize: 14,
+    lineHeight: 17,
   },
 });
 

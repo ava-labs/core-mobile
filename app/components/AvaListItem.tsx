@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React from 'react';
 import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import CarrotSVG from 'components/svg/CarrotSVG';
@@ -81,9 +81,9 @@ function BaseListItem({
                 </View>
               )}
             </>
-            {!!subtitle || typeof subtitle === 'string' ? (
+            {!!subtitle && typeof subtitle === 'string' ? (
               <Text
-                ellipsizeMode="middle"
+                ellipsizeMode="tail"
                 numberOfLines={1}
                 style={[
                   styles.baseSubtitle,
@@ -91,11 +91,17 @@ function BaseListItem({
                 ]}>
                 {subtitle}
               </Text>
-            ) : (
+            ) : subtitle ? (
               <View>{subtitle}</View>
-            )}
+            ) : undefined}
           </View>
-          <View style={{marginRight: 16, flexDirection: 'row'}}>
+          <View
+            style={{
+              marginRight: 16,
+              flexDirection: 'row',
+              maxWidth: 150,
+              flexShrink: 1,
+            }}>
             {rightComponent && rightComponent}
             {showNavigationArrow && <CarrotSVG />}
           </View>
@@ -109,10 +115,40 @@ function BaseItem(props: Props) {
   return <BaseListItem {...props} />;
 }
 
+/**
+ * This component helps ellipsize amount if there's no enough space but keeps currency fully visible.
+ * Amount component must use ellipsize for this purpose.
+ *
+ * @param value - component displaying value, should be ellipsizable
+ * @param currency - component displaying currency
+ */
+function CurrencyAmountHelper({
+  value,
+  currency,
+  justifyContent,
+}: {
+  value: React.ReactNode;
+  currency: React.ReactNode;
+  justifyContent?: 'flex-start' | 'flex-end' | 'center';
+}): JSX.Element {
+  return (
+    <View
+      style={{
+        flexDirection: 'row',
+        justifyContent: justifyContent || 'flex-start',
+        flexShrink: 1,
+      }}>
+      {value}
+      {currency}
+    </View>
+  );
+}
+
 // Even tho we only have a single case for now, we'll leave it as is
 // so we take advantage of this pattern in the future.
 const AvaListItem = {
   Base: BaseItem,
+  CurrencyAmount: CurrencyAmountHelper,
 };
 
 export default AvaListItem;
