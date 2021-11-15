@@ -5,7 +5,7 @@ import AppNavigation from 'navigation/AppNavigation';
 import AvaText from 'components/AvaText';
 import Loader from 'components/Loader';
 import CollapsibleSection from 'components/CollapsibleSection';
-import {useWalletStateContext} from '@avalabs/wallet-react-components';
+import {useWalletContext} from '@avalabs/wallet-react-components';
 import moment from 'moment';
 import ActivityListItem from 'screens/activity/ActivityListItem';
 import {HistoryItemType} from '@avalabs/avalanche-wallet-sdk/dist/History';
@@ -24,7 +24,7 @@ interface Props {
 }
 
 function ActivityView({embedded}: Props) {
-  const walletState = useWalletStateContext();
+  const wallet = useWalletContext()?.wallet;
   const [sectionData, setSectionData] = useState<SectionType>({});
   const [loading, setLoading] = useState(true);
   const navigation = useNavigation<PortfolioNavigationProp>();
@@ -32,7 +32,7 @@ function ActivityView({embedded}: Props) {
 
   const loadHistory = useCallback(async () => {
     setLoading(true);
-    const history = (await walletState?.recentTxHistory) ?? [];
+    const history = (await wallet?.getHistory(50)) ?? [];
     // We're only going to show EVMT without inputs at this time. Remove filter in the future
     history
       .filter(ik => History.isHistoryEVMTx(ik) && ik.input === undefined)
@@ -48,7 +48,7 @@ function ActivityView({embedded}: Props) {
       });
     setSectionData({...sectionData});
     setLoading(false);
-  }, [walletState?.recentTxHistory]);
+  }, [wallet]);
 
   useEffect(() => {
     if (embedded) {
@@ -149,11 +149,11 @@ function ActivityView({embedded}: Props) {
     );
   };
 
-  return !walletState?.isWalletReady ? (
+  return !wallet || loading ? (
     <Loader />
   ) : (
     <View style={{flex: 1}}>
-      {loading ? <Loader /> : <ScrollableComponent children={renderItems()} />}
+      <ScrollableComponent children={renderItems()} />
     </View>
   );
 }
