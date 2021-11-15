@@ -4,10 +4,9 @@ import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
 import CurrencyListItem from 'screens/drawer/currency-selector/CurrencyListItem';
 import {DrawerStackParamList} from 'screens/mainView/WalletStackScreen';
+import currencyList from 'assets/currency.json';
 
 type CurrencyRouteProp = RouteProp<DrawerStackParamList, 'CurrencySelector'>;
-
-const currencyList = require('assets/currency.json');
 
 const CurrencySelector: FC = () => {
   const {goBack} = useNavigation();
@@ -50,7 +49,7 @@ const styles = StyleSheet.create({
   },
   tokenList: {
     flex: 1,
-    marginTop: 36,
+    marginTop: 8,
   },
 });
 

@@ -31,7 +31,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import BiometricsSDK from 'utils/BiometricsSDK';
 import moment from 'moment';
 import ReceiveOnlyBottomSheet from 'screens/portfolio/receive/ReceiveOnlyBottomSheet';
-import AvaText from 'components/AvaText';
 import {MainHeaderOptions} from 'navigation/NavUtils';
 import AppViewModel, {SelectedView} from 'AppViewModel';
 
@@ -186,6 +185,7 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
         <Tab.Screen
           name={AppNavigation.Tabs.Activity}
           options={{
+            ...MainHeaderOptions('Activity'),
             headerShown: true,
             headerStyle: {backgroundColor: theme.colorBg1},
           }}
@@ -255,7 +255,6 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
               />
               <RootStack.Screen
                 options={{
-                  headerShown: true,
                   ...MainHeaderOptions('Currency'),
                 }}
                 name={AppNavigation.Wallet.CurrencySelector}
@@ -267,11 +266,7 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
               />
               <RootStack.Screen
                 options={{
-                  headerShown: true,
-                  headerTitle: () => (
-                    <AvaText.Heading1>{'Legal'}</AvaText.Heading1>
-                  ),
-                  headerBackTitleVisible: false,
+                  ...MainHeaderOptions('Legal'),
                 }}
                 name={AppNavigation.Wallet.WebView}
                 component={WebViewScreen}
