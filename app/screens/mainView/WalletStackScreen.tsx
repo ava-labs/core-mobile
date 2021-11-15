@@ -245,7 +245,7 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
               <RootStack.Screen
                 options={{
                   headerShown: true,
-                  ...MainHeaderOptions('Add custom token'),
+                  ...MainHeaderOptions('Add Custom Token'),
                   headerStyle: {
                     backgroundColor: context.theme.background,
                   },
