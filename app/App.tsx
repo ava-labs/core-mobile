@@ -23,14 +23,6 @@ import {
   StackActions,
 } from '@react-navigation/native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
-import AppViewModel, {
-  ExitPromptAnswers,
-  LogoutEvents,
-  LogoutPromptAnswers,
-  SelectedView,
-  ShowExitPrompt,
-  ShowLogoutPrompt,
-} from 'AppViewModel';
 import {
   FUJI_NETWORK,
   useNetworkContext,
@@ -38,6 +30,15 @@ import {
 } from '@avalabs/wallet-react-components';
 import AppNavigation, {OnboardScreens} from 'navigation/AppNavigation';
 import {OnboardStackScreen} from 'navigation/OnboardStackScreen';
+import {
+  ExitPromptAnswers,
+  LogoutEvents,
+  LogoutPromptAnswers,
+  SelectedView,
+  ShowExitPrompt,
+  ShowLogoutPrompt,
+} from 'AppViewModel';
+import {useWalletSetup} from 'hooks/useWalletSetup';
 
 const RootStack = createStackNavigator();
 const navigationRef: RefObject<NavigationContainerRef<any>> = React.createRef();
@@ -150,9 +151,9 @@ export default function App() {
   const context = useApplicationContext();
   const networkContext = useNetworkContext();
   const [backgroundStyle] = useState(context.appBackgroundStyle);
-  const [selectedView, setSelectedView] = useState<SelectedView | undefined>(
-    undefined,
-  );
+  const {selectedView, onBackPressed, shouldSetupWallet, mnemonic} =
+    context.appHook;
+  const {initWalletWithMnemonic} = useWalletSetup();
 
   useEffect(() => {
     networkContext!.setNetwork(FUJI_NETWORK);
@@ -164,6 +165,12 @@ export default function App() {
       disposables.unsubscribe();
     };
   }, []);
+
+  useEffect(() => {
+    if (shouldSetupWallet) {
+      initWalletWithMnemonic(mnemonic);
+    }
+  }, [shouldSetupWallet]);
 
   useEffect(() => {
     switch (selectedView) {
