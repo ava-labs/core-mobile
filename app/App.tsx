@@ -54,31 +54,6 @@ const onNo = (value: ShowExitPrompt): void => {
   value.prompt.complete();
 };
 
-const onExit = () => {
-  AppViewModel.onExit().subscribe({
-    next: (value: LogoutEvents) => {
-      if (value instanceof ShowExitPrompt) {
-        Alert.alert(
-          'Exit app?',
-          'Your passphrase will remain securely stored for easier later access of wallet.',
-          [
-            {
-              text: 'Ok',
-              onPress: () => onOk(value as ShowExitPrompt),
-            },
-            {
-              text: 'Cancel',
-              onPress: () => onNo(value as ShowExitPrompt),
-              style: 'cancel',
-            },
-          ],
-        );
-      }
-    },
-    error: err => Alert.alert(err.message),
-  });
-};
-
 const onYes = (value: ShowLogoutPrompt): void => {
   value.prompt.next(LogoutPromptAnswers.Yes);
   value.prompt.complete();
@@ -89,32 +64,59 @@ const onCancel = (value: ShowLogoutPrompt): void => {
   value.prompt.complete();
 };
 
-const onSwitchWallet = (): void => {
-  AppViewModel.onLogout().subscribe({
-    next: (value: LogoutEvents) => {
-      if (value instanceof ShowLogoutPrompt) {
-        Alert.alert(
-          'Do you want to delete the stored passphrase and switch accounts?',
-          undefined,
-          [
-            {
-              text: 'Cancel',
-              onPress: () => onCancel(value as ShowLogoutPrompt),
-              style: 'cancel',
-            },
-            {text: 'Yes', onPress: () => onYes(value as ShowLogoutPrompt)},
-          ],
-        );
-      }
-    },
-    error: err => Alert.alert(err.message),
-  });
-};
-
 const WalletStackScreenWithProps = () => {
+  const {onExit, onLogout} = useApplicationContext().appHook;
+
+  const doExit = () => {
+    onExit().subscribe({
+      next: (value: LogoutEvents) => {
+        if (value instanceof ShowExitPrompt) {
+          Alert.alert(
+            'Exit app?',
+            'Your passphrase will remain securely stored for easier later access of wallet.',
+            [
+              {
+                text: 'Ok',
+                onPress: () => onOk(value as ShowExitPrompt),
+              },
+              {
+                text: 'Cancel',
+                onPress: () => onNo(value as ShowExitPrompt),
+                style: 'cancel',
+              },
+            ],
+          );
+        }
+      },
+      error: err => Alert.alert(err.message),
+    });
+  };
+
+  const doSwitchWallet = (): void => {
+    onLogout().subscribe({
+      next: (value: LogoutEvents) => {
+        if (value instanceof ShowLogoutPrompt) {
+          Alert.alert(
+            'Do you want to delete the stored passphrase and switch accounts?',
+            undefined,
+            [
+              {
+                text: 'Cancel',
+                onPress: () => onCancel(value as ShowLogoutPrompt),
+                style: 'cancel',
+              },
+              {text: 'Yes', onPress: () => onYes(value as ShowLogoutPrompt)},
+            ],
+          );
+        }
+      },
+      error: err => Alert.alert(err.message),
+    });
+  };
+
   return (
     <WalletStateContextProvider>
-      <WalletStackScreen onExit={onExit} onSwitchWallet={onSwitchWallet} />
+      <WalletStackScreen onExit={doExit} onSwitchWallet={doSwitchWallet} />
     </WalletStateContextProvider>
   );
 };
@@ -154,21 +156,11 @@ export default function App() {
 
   useEffect(() => {
     networkContext!.setNetwork(FUJI_NETWORK);
-    AppViewModel.onComponentMount();
     const disposables = new Subscription();
-    disposables.add(
-      AppViewModel.selectedView.subscribe(value => setSelectedView(value)),
-    );
-    BackHandler.addEventListener(
-      'hardwareBackPress',
-      AppViewModel.onBackPressed,
-    );
+    BackHandler.addEventListener('hardwareBackPress', onBackPressed);
 
     return () => {
-      BackHandler.removeEventListener(
-        'hardwareBackPress',
-        AppViewModel.onBackPressed,
-      );
+      BackHandler.removeEventListener('hardwareBackPress', onBackPressed);
       disposables.unsubscribe();
     };
   }, []);

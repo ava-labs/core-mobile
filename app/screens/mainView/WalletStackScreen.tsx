@@ -32,7 +32,7 @@ import BiometricsSDK from 'utils/BiometricsSDK';
 import moment from 'moment';
 import ReceiveOnlyBottomSheet from 'screens/portfolio/receive/ReceiveOnlyBottomSheet';
 import {MainHeaderOptions} from 'navigation/NavUtils';
-import AppViewModel, {SelectedView} from 'AppViewModel';
+import {SelectedView} from 'AppViewModel';
 
 type Props = {
   onExit: () => void;
@@ -59,6 +59,7 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
   const [showSecurityModal, setShowSecurityModal] = useState(false);
   const appState = useRef(AppState.currentState);
   const context = useApplicationContext();
+  const {immediateLogout, setSelectedView} = context.appHook;
 
   /**
    * This UseEffect handles subscription to
@@ -278,8 +279,8 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
         <Modal visible={showSecurityModal} animationType={'slide'} animated>
           <PinOrBiometryLogin
             onSignInWithRecoveryPhrase={() => {
-              AppViewModel.immediateLogout().then(() => {
-                AppViewModel.setSelectedView(SelectedView.LoginWithMnemonic);
+              immediateLogout().then(() => {
+                setSelectedView(SelectedView.LoginWithMnemonic);
                 setShowSecurityModal(false);
               });
             }}
