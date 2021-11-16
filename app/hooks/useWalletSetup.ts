@@ -2,8 +2,6 @@ import {
   useAccountsContext,
   useWalletContext,
 } from '@avalabs/wallet-react-components';
-import AppViewModel from 'AppViewModel';
-import {Alert} from 'react-native';
 
 interface WalletSetup {
   initWalletWithMnemonic: (mnemonic: string) => void;
@@ -44,8 +42,6 @@ export function useWalletSetup(): WalletSetup {
     // the wallet still lives in memor :( talked to Emre and we need more methods,
     // including a 'clearMnemonic' from state context.
     walletContext?.clearMnemonic();
-
-    await AppViewModel.immediateLogout().catch(err => Alert.alert(err.message));
   }
 
   return {
