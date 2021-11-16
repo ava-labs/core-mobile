@@ -2,6 +2,7 @@ import React, {createContext, useContext, useState} from 'react';
 import {COLORS_DAY, COLORS_NIGHT} from 'resources/Constants';
 import type {Theme} from '@react-navigation/native';
 import {Appearance} from 'react-native';
+import {AppHook, useApp} from 'AppViewModel';
 
 export interface ApplicationContextState {
   theme: typeof COLORS_DAY | typeof COLORS_NIGHT;
@@ -12,6 +13,7 @@ export interface ApplicationContextState {
   shadow: Shadow;
   keyboardAvoidingViewEnabled: boolean;
   setKeyboardAvoidingViewEnabled: (value: boolean) => void;
+  appHook: AppHook;
 }
 
 export declare type BackgroundStyle = {
@@ -40,6 +42,7 @@ export const ApplicationContext = createContext<ApplicationContextState>(
 );
 
 export const ApplicationContextProvider = ({children}: {children: any}) => {
+  const appHook = useApp();
   const [isDarkMode] = useState(Appearance.getColorScheme() === 'dark');
   const [theme] = useState(isDarkMode ? COLORS_NIGHT : COLORS_DAY);
   const [backgroundStyle] = useState({
@@ -87,6 +90,7 @@ export const ApplicationContextProvider = ({children}: {children: any}) => {
     shadow,
     keyboardAvoidingViewEnabled,
     setKeyboardAvoidingViewEnabled,
+    appHook,
   };
   return (
     <ApplicationContext.Provider value={appContextState}>

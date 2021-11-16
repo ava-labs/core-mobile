@@ -4,13 +4,13 @@ import AppNavigation from 'navigation/AppNavigation';
 import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin';
 import CreatePIN from 'screens/onboarding/CreatePIN';
 import SecurityPrivacy from 'screens/drawer/security/SecurityPrivacy';
-import AppViewModel from 'AppViewModel';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useNavigation} from '@react-navigation/native';
 import CreateWallet from 'screens/onboarding/CreateWallet';
 import {MainHeaderOptions} from 'navigation/NavUtils';
 import AvaText from 'components/AvaText';
 import {View} from 'react-native';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 
 export type SecurityStackParamList = {
   [AppNavigation.Wallet.SecurityPrivacy]: undefined;
@@ -30,29 +30,37 @@ function SecurityPrivacyStackScreen() {
     navigation.navigate(AppNavigation.Wallet.SecurityPrivacy);
   }
 
-  const PinOrBiometryLoginWithProps = memo(() => (
-    <PinOrBiometryLogin
-      onEnterWallet={mnemonic => {
-        AppViewModel.onSavedMnemonic(mnemonic, true);
-        navigation.navigate(AppNavigation.CreateWallet.CreatePin);
-      }}
-      onSignInWithRecoveryPhrase={() => console.log('onSignIn')}
-      isResettingPin
-    />
-  ));
+  const PinOrBiometryLoginWithProps = memo(() => {
+    const {onSavedMnemonic} = useApplicationContext().appHook;
 
-  const CreatePinWithProps = memo(() => (
-    <CreatePIN
-      onBack={gotBackToTopOfStack}
-      onPinSet={pin => {
-        AppViewModel.onPinCreated(pin, true).subscribe({
-          error: () => console.log('ignored'),
-        });
-        gotBackToTopOfStack();
-      }}
-      isResettingPin
-    />
-  ));
+    return (
+      <PinOrBiometryLogin
+        onEnterWallet={mnemonic => {
+          onSavedMnemonic(mnemonic, true);
+          navigation.navigate(AppNavigation.CreateWallet.CreatePin);
+        }}
+        onSignInWithRecoveryPhrase={() => console.log('onSignIn')}
+        isResettingPin
+      />
+    );
+  });
+
+  const CreatePinWithProps = memo(() => {
+    const {onPinCreated} = useApplicationContext().appHook;
+
+    return (
+      <CreatePIN
+        onBack={gotBackToTopOfStack}
+        onPinSet={pin => {
+          onPinCreated(pin, true).subscribe({
+            error: () => console.log('ignored'),
+          });
+          gotBackToTopOfStack();
+        }}
+        isResettingPin
+      />
+    );
+  });
 
   const CreateWalletWithProps = memo(() => (
     <CreateWallet onBack={gotBackToTopOfStack} isRevealingCurrentMnemonic />
