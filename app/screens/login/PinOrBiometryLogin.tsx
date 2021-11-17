@@ -15,7 +15,6 @@ import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaButton from 'components/AvaButton';
 import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
 import {SecurityStackParamList} from 'navigation/SecurityPrivacyStackScreen';
-import {useWalletSetup} from 'hooks/useWalletSetup';
 
 const keymap: Map<string, PinKeys> = new Map([
   ['1', PinKeys.Key1],
@@ -47,7 +46,6 @@ export default function PinOrBiometryLogin({
   hideLoginWithMnemonic = false,
 }: Props | Readonly<Props>): JSX.Element {
   const theme = useApplicationContext().theme;
-  const {initWalletWithMnemonic} = useWalletSetup();
   const route = useRoute<SecurityRouteProps>();
   const {goBack} = useNavigation();
   const revealMnemonic = route?.params?.revealMnemonic;
@@ -65,13 +63,6 @@ export default function PinOrBiometryLogin({
 
   function initWallet(givenMnemonic: string) {
     onEnterWallet(givenMnemonic);
-    // new wallet
-    initWalletWithMnemonic(givenMnemonic);
-
-    // existing
-    // store account and meta data
-    // store active account - index
-    // check
   }
 
   useEffect(() => {

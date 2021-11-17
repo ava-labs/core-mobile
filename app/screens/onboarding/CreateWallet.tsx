@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   ActivityIndicator,
   InteractionManager,
@@ -12,7 +12,6 @@ import MnemonicAva from 'screens/onboarding/MnemonicAva';
 import AvaButton from 'components/AvaButton';
 import AvaText from 'components/AvaText';
 import {Space} from 'components/Space';
-import AppViewModel from 'AppViewModel';
 import {ShowSnackBar} from 'components/Snackbar';
 import WalletSDK from 'utils/WalletSDK';
 
@@ -28,18 +27,19 @@ export default function CreateWallet({
   isRevealingCurrentMnemonic,
 }: Props): JSX.Element {
   const context = useApplicationContext();
-  const [mnemonic, setMnemonic] = useState<string>('');
+  const [localMnemonic, setLocalMnemonic] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
+  const {mnemonic} = context.appHook;
 
   useEffect(() => {
     InteractionManager.runAfterInteractions(() => {
       if (isRevealingCurrentMnemonic) {
-        setMnemonic(AppViewModel.mnemonic);
+        setLocalMnemonic(mnemonic);
         setIsLoading(false);
       } else {
         (async () => {
           const newPhrase = await WalletSDK.generateMnemonic();
-          setMnemonic(newPhrase);
+          setLocalMnemonic(newPhrase);
           setIsLoading(false);
         })();
       }
@@ -50,18 +50,18 @@ export default function CreateWallet({
     if (isRevealingCurrentMnemonic) {
       onBack();
     } else {
-      onSavedMyPhrase?.(mnemonic);
+      onSavedMyPhrase?.(localMnemonic);
     }
   };
 
   const copyToClipboard = (): void => {
-    Clipboard.setString(mnemonic);
+    Clipboard.setString(localMnemonic);
     ShowSnackBar('Copied');
   };
 
   const mnemonics = () => {
     const mnemonics: Element[] = [];
-    mnemonic?.split(' ').forEach((value, key) => {
+    localMnemonic?.split(' ').forEach((value, key) => {
       mnemonics.push(<MnemonicAva.Text key={key} keyNum={key} text={value} />);
     });
     return mnemonics;
@@ -105,12 +105,14 @@ export default function CreateWallet({
 
       {/* This serves as grouping so we can achieve desired behavior with `justifyContent: 'space-between'`   */}
       <View>
-        <AvaButton.TextLarge disabled={!mnemonic} onPress={copyToClipboard}>
+        <AvaButton.TextLarge
+          disabled={!localMnemonic}
+          onPress={copyToClipboard}>
           Copy phrase
         </AvaButton.TextLarge>
         <AvaButton.PrimaryLarge
           style={{marginTop: 28, marginBottom: 40}}
-          disabled={!mnemonic}
+          disabled={!localMnemonic}
           onPress={handleSaveMyPhrase}>
           {isRevealingCurrentMnemonic ? 'Done' : 'Next'}
         </AvaButton.PrimaryLarge>

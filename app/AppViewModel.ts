@@ -1,18 +1,11 @@
-import {
-  asyncScheduler,
-  AsyncSubject,
-  BehaviorSubject,
-  concat,
-  from,
-  Observable,
-  of,
-} from 'rxjs';
+import {asyncScheduler, AsyncSubject, concat, from, Observable, of} from 'rxjs';
 import {concatMap, map, switchMap} from 'rxjs/operators';
 import {BackHandler} from 'react-native';
 import BiometricsSDK from 'utils/BiometricsSDK';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {SECURE_ACCESS_SET} from 'resources/Constants';
 import {encrypt, getEncryptionKey} from 'screens/login/utils/EncryptionHelper';
+import {Dispatch, useEffect, useState} from 'react';
 
 export enum SelectedView {
   Onboard,
@@ -26,25 +19,41 @@ export enum SelectedView {
   Main,
 }
 
-class AppViewModel {
-  mnemonic = '';
-  selectedView: BehaviorSubject<SelectedView | undefined> = new BehaviorSubject<
-    SelectedView | undefined
-  >(undefined);
+export type AppHook = {
+  shouldSetupWallet: boolean;
+  mnemonic: string;
+  immediateLogout: () => Promise<void>;
+  onEnterWallet: (m?: string) => void;
+  onExit: () => Observable<ExitEvents>;
+  onSavedMnemonic: (mnemonic: string, isResetting?: boolean) => void;
+  onLogout: () => Observable<LogoutEvents>;
+  onPinCreated: (pin: string, isResetting?: boolean) => Observable<boolean>;
+  setSelectedView: Dispatch<SelectedView | undefined>;
+  onEnterExistingMnemonic: (m: string) => void;
+  selectedView: SelectedView | undefined;
+  onBackPressed: () => boolean;
+};
 
-  onComponentMount = (): void => {
+export function useApp(): AppHook {
+  const [shouldSetupWallet, setShouldSetupWallet] = useState(false);
+  const [mnemonic, setMnemonic] = useState<string>('');
+  const [selectedView, setSelectedView] = useState<SelectedView | undefined>(
+    undefined,
+  );
+
+  useEffect(() => {
     AsyncStorage.getItem(SECURE_ACCESS_SET).then(result => {
       if (result) {
-        this.setSelectedView(SelectedView.PinOrBiometryLogin);
+        setSelectedView(SelectedView.PinOrBiometryLogin);
       } else {
-        this.setSelectedView(SelectedView.Onboard);
+        setSelectedView(SelectedView.Onboard);
       }
     });
-  };
+  }, []);
 
-  onPinCreated = (pin: string, isResetting = false): Observable<boolean> => {
+  function onPinCreated(pin: string, isResetting = false): Observable<boolean> {
     return from(getEncryptionKey(pin)).pipe(
-      switchMap(key => encrypt(this.mnemonic, key)),
+      switchMap(key => encrypt(mnemonic, key)),
       switchMap((encryptedData: string) =>
         BiometricsSDK.storeWalletWithPin(encryptedData, isResetting),
       ),
@@ -59,37 +68,38 @@ class AppViewModel {
       }),
       map((canUseBiometry: boolean) => {
         if (canUseBiometry) {
-          this.setSelectedView(SelectedView.BiometricStore);
+          setSelectedView(SelectedView.BiometricStore);
         } else {
-          this.onEnterWallet(this.mnemonic);
+          onEnterWallet(mnemonic);
         }
         return true;
       }),
     );
-  };
+  }
 
-  onEnterWallet = (mnemonic?: string) => {
-    if (mnemonic && mnemonic !== this.mnemonic) {
-      this.mnemonic = mnemonic;
+  function onEnterWallet(m?: string) {
+    if (m && m !== mnemonic) {
+      setMnemonic(m);
     }
-    this.setSelectedView(SelectedView.Main);
-  };
+    setSelectedView(SelectedView.Main);
+    setShouldSetupWallet(true);
+  }
 
-  onEnterExistingMnemonic = (mnemonic: string): void => {
+  function onEnterExistingMnemonic(m: string): void {
     BiometricsSDK.clearWalletKey().then(() => {
-      this.mnemonic = mnemonic;
-      this.setSelectedView(SelectedView.CreatePinForExistingWallet);
+      setMnemonic(m);
+      setSelectedView(SelectedView.CreatePinForExistingWallet);
     });
-  };
+  }
 
-  onSavedMnemonic = (mnemonic: string, isResetting = false): void => {
-    this.mnemonic = mnemonic;
+  function onSavedMnemonic(mnemonic: string, isResetting = false): void {
+    setMnemonic(mnemonic);
     if (!isResetting) {
-      this.setSelectedView(SelectedView.CheckMnemonic);
+      setSelectedView(SelectedView.CheckMnemonic);
     }
-  };
+  }
 
-  onLogout = (): Observable<LogoutEvents> => {
+  function onLogout(): Observable<LogoutEvents> {
     AsyncStorage.removeItem(SECURE_ACCESS_SET);
     const deleteBioDataPrompt = new AsyncSubject<LogoutPromptAnswers>();
     const dialogOp: Observable<LogoutFinished> = deleteBioDataPrompt.pipe(
@@ -103,8 +113,8 @@ class AppViewModel {
       }),
       map((isCanceled: boolean) => {
         if (!isCanceled) {
-          this.mnemonic = '';
-          this.setSelectedView(SelectedView.Onboard);
+          setMnemonic('');
+          setSelectedView(SelectedView.Onboard);
         }
         return new LogoutFinished();
       }),
@@ -114,16 +124,16 @@ class AppViewModel {
       dialogOp,
       asyncScheduler,
     );
-  };
-
-  async immediateLogout() {
-    await AsyncStorage.removeItem(SECURE_ACCESS_SET);
-    await BiometricsSDK.clearWalletKey();
-    this.mnemonic = '';
-    this.setSelectedView(SelectedView.Onboard);
   }
 
-  onExit = (): Observable<ExitEvents> => {
+  async function immediateLogout() {
+    await AsyncStorage.removeItem(SECURE_ACCESS_SET);
+    await BiometricsSDK.clearWalletKey();
+    setMnemonic('');
+    setSelectedView(SelectedView.Onboard);
+  }
+
+  function onExit(): Observable<ExitEvents> {
     const exitPrompt = new AsyncSubject<ExitPromptAnswers>();
     const dialogOp: Observable<ExitFinished> = exitPrompt.pipe(
       map((answer: ExitPromptAnswers) => {
@@ -136,52 +146,63 @@ class AppViewModel {
       }),
       map((exitEvent: ExitEvents) => {
         if (exitEvent instanceof ExitFinished) {
-          this.setSelectedView(SelectedView.Onboard);
+          setSelectedView(SelectedView.Onboard);
           BackHandler.exitApp();
         }
         return new LogoutFinished();
       }),
     );
     return concat(of(new ShowExitPrompt(exitPrompt)), dialogOp, asyncScheduler);
-  };
-
-  setSelectedView = (view?: SelectedView): void => {
-    this.selectedView.next(view);
-  };
+  }
 
   /**
    * Selects appropriate view and returns true if back press should be consumed here.
    */
-  onBackPressed = (): boolean => {
-    switch (this.selectedView.value) {
+  function onBackPressed(): boolean {
+    switch (selectedView) {
       case SelectedView.Onboard:
-        this.setSelectedView(undefined);
+        setSelectedView(undefined);
         BackHandler.exitApp();
         return true;
       case SelectedView.CreateWallet:
-        this.setSelectedView(SelectedView.Onboard);
+        setSelectedView(SelectedView.Onboard);
         return true;
       case SelectedView.CheckMnemonic:
-        this.setSelectedView(SelectedView.CreateWallet);
+        setSelectedView(SelectedView.CreateWallet);
         return true;
       case SelectedView.CreatePin:
-        this.setSelectedView(SelectedView.CheckMnemonic);
+        setSelectedView(SelectedView.CheckMnemonic);
         return true;
       case SelectedView.CreatePinForExistingWallet:
-        this.setSelectedView(SelectedView.Onboard);
+        setSelectedView(SelectedView.Onboard);
         return true;
       case SelectedView.BiometricStore:
-        this.setSelectedView(SelectedView.CreatePin);
+        setSelectedView(SelectedView.CreatePin);
         return true;
       case SelectedView.LoginWithMnemonic:
       case SelectedView.PinOrBiometryLogin:
-        this.setSelectedView(SelectedView.Onboard);
+        setSelectedView(SelectedView.Onboard);
         return true;
       case SelectedView.Main:
         return false;
       default:
         return false;
     }
+  }
+
+  return {
+    shouldSetupWallet,
+    mnemonic,
+    selectedView,
+    setSelectedView,
+    onPinCreated,
+    onEnterWallet,
+    onEnterExistingMnemonic,
+    onSavedMnemonic,
+    onLogout,
+    immediateLogout,
+    onExit,
+    onBackPressed,
   };
 }
 
@@ -213,11 +234,10 @@ export class ShowExitPrompt implements ExitEvents {
 }
 
 export class ExitFinished implements ExitEvents {}
+
 export class ExitCanceled implements ExitEvents {}
 
 export enum ExitPromptAnswers {
   Ok,
   Cancel,
 }
-
-export default new AppViewModel();

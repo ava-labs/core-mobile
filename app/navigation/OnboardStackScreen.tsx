@@ -5,44 +5,46 @@ import {createStackNavigator} from '@react-navigation/stack';
 import {CreateWalletStackScreen} from './CreateWalletStackScreen';
 import Onboard from 'screens/onboarding/Onboard';
 import AppNavigation from 'navigation/AppNavigation';
-import AppViewModel, {SelectedView} from 'AppViewModel';
 import {View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {noop} from 'rxjs';
+import {SelectedView} from 'AppViewModel';
 
 const AuthStack = createStackNavigator();
 
 const LoginWithMnemonicScreen = () => {
+  const {onEnterExistingMnemonic, onBackPressed} =
+    useApplicationContext().appHook;
   return (
     <HdWalletLogin
-      onEnterWallet={mnemonic => AppViewModel.onEnterExistingMnemonic(mnemonic)}
-      onBack={() => AppViewModel.onBackPressed()}
+      onEnterWallet={mnemonic => onEnterExistingMnemonic(mnemonic)}
+      onBack={() => onBackPressed()}
     />
   );
 };
 
 const LoginWithPinOrBiometryScreen = () => {
+  const {setSelectedView, onEnterWallet} = useApplicationContext().appHook;
   return (
     <PinOrBiometryLogin
       onSignInWithRecoveryPhrase={() =>
-        AppViewModel.setSelectedView(SelectedView.LoginWithMnemonic)
+        setSelectedView(SelectedView.LoginWithMnemonic)
       }
       onEnterWallet={mnemonic => {
-        AppViewModel.onEnterWallet(mnemonic);
+        onEnterWallet(mnemonic);
       }}
     />
   );
 };
 
 const OnboardScreen = () => {
+  const {setSelectedView} = useApplicationContext().appHook;
   return (
     <Onboard
       onAlreadyHaveWallet={() =>
-        AppViewModel.setSelectedView(SelectedView.LoginWithMnemonic)
+        setSelectedView(SelectedView.LoginWithMnemonic)
       }
-      onCreateWallet={() =>
-        AppViewModel.setSelectedView(SelectedView.CreateWallet)
-      }
+      onCreateWallet={() => setSelectedView(SelectedView.CreateWallet)}
       onEnterWallet={() => noop}
     />
   );

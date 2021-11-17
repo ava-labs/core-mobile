@@ -21,6 +21,7 @@ const DrawerView: FC<DrawerContentComponentProps> = ({navigation}) => {
   const context = useApplicationContext();
   const {destroyWallet} = useWalletSetup();
   const [logoutWarningVisible, setLogoutWarningVisible] = useState(false);
+  const {immediateLogout} = context.appHook;
 
   function toggleDarkLightMode() {
     Alert.alert('Toggle dark/ligt mode');
@@ -33,6 +34,7 @@ const DrawerView: FC<DrawerContentComponentProps> = ({navigation}) => {
   function handleLogout() {
     setLogoutWarningVisible(!logoutWarningVisible);
     destroyWallet();
+    immediateLogout();
   }
 
   const header = (
