@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@avalabs/avalanche-wallet-sdk": "0.10.2",
-    "@avalabs/wallet-react-components": "file:../../Work/wallet-react-components",
+    "@avalabs/wallet-react-components": "1.11.0",
     "@eliav2/react-native-collapsible-view": "^1.4.0",
     "@ethereumjs/common": "^2.2.0",
     "@ethereumjs/tx": "^3.1.4",
@@ -36,6 +36,7 @@
     "big.js": "^6.1.1",
     "bignumber.js": "^9.0.1",
     "bip39": "^3.0.4",
+    "bip32": "^2.0.6",
     "bn.js": "^5.2.0",
     "ethereumjs-util": "^6.2.1",
     "hdkey": "^2.0.1",
