@@ -32,10 +32,13 @@ export type AppHook = {
   onEnterExistingMnemonic: (m: string) => void;
   selectedView: SelectedView | undefined;
   onBackPressed: () => boolean;
+  isNewWallet: boolean;
+  setIsNewWallet: (newWallet: boolean) => void;
 };
 
 export function useApp(): AppHook {
   const [shouldSetupWallet, setShouldSetupWallet] = useState(false);
+  const [isNewWallet, setIsNewWallet] = useState(false);
   const [mnemonic, setMnemonic] = useState<string>('');
   const [selectedView, setSelectedView] = useState<SelectedView | undefined>(
     undefined,
@@ -203,6 +206,8 @@ export function useApp(): AppHook {
     immediateLogout,
     onExit,
     onBackPressed,
+    isNewWallet,
+    setIsNewWallet,
   };
 }
 

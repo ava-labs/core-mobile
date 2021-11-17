@@ -30,11 +30,14 @@ export const CreateWalletStackScreen = () => {
   });
 
   const CheckMnemonicScreen = memo(() => {
-    const {setSelectedView, onBackPressed, mnemonic} =
+    const {setSelectedView, onBackPressed, mnemonic, setIsNewWallet} =
       useApplicationContext().appHook;
     return (
       <CheckMnemonic
-        onSuccess={() => setSelectedView(SelectedView.CreatePin)}
+        onSuccess={() => {
+          setIsNewWallet(true);
+          setSelectedView(SelectedView.CreatePin);
+        }}
         onBack={() => onBackPressed()}
         mnemonic={mnemonic}
       />
