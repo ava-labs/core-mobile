@@ -151,9 +151,14 @@ export default function App() {
   const context = useApplicationContext();
   const networkContext = useNetworkContext();
   const [backgroundStyle] = useState(context.appBackgroundStyle);
-  const {selectedView, onBackPressed, shouldSetupWallet, mnemonic} =
-    context.appHook;
-  const {initWalletWithMnemonic} = useWalletSetup();
+  const {
+    selectedView,
+    onBackPressed,
+    shouldSetupWallet,
+    mnemonic,
+    isNewWallet,
+  } = context.appHook;
+  const {initWalletWithMnemonic, createNewWallet} = useWalletSetup();
 
   useEffect(() => {
     networkContext!.setNetwork(FUJI_NETWORK);
@@ -168,7 +173,11 @@ export default function App() {
 
   useEffect(() => {
     if (shouldSetupWallet) {
-      initWalletWithMnemonic(mnemonic);
+      if (isNewWallet) {
+        createNewWallet(mnemonic);
+      } else {
+        initWalletWithMnemonic(mnemonic);
+      }
     }
   }, [shouldSetupWallet]);
 
