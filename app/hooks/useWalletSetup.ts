@@ -1,7 +1,7 @@
 import {
+  AccountsHdCache,
   FUJI_NETWORK,
   MAINNET_NETWORK,
-  NetworksHdCache,
   setHdCache,
   setWalletHdCache,
   useAccountsContext,
@@ -24,7 +24,7 @@ export function useWalletSetup(): WalletSetup {
   useEffect(() => {
     AsyncStorage.getItem('HD_CACHE').then(value => {
       if (value) {
-        const cache: NetworksHdCache = JSON.parse(value);
+        const cache: AccountsHdCache = JSON.parse(value);
         setHdCache(cache);
       }
     });
