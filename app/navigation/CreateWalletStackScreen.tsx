@@ -5,66 +5,63 @@ import BiometricLogin from 'screens/onboarding/BiometricLogin';
 import {createStackNavigator} from '@react-navigation/stack';
 import CreatePIN from 'screens/onboarding/CreatePIN';
 import AppNavigation from 'navigation/AppNavigation';
-import AppViewModel, {SelectedView} from 'AppViewModel';
 import {Alert} from 'react-native';
+import {useApplicationContext} from 'contexts/ApplicationContext';
+import {SelectedView} from 'AppViewModel';
 
 const CreateWalletStack = createStackNavigator();
 
 export const CreateWalletStackScreen = () => {
-
   /**
    * Callbacks
    */
-
-  const onSavedMnemonic = (mnemonic: string): void => {
-    AppViewModel.onSavedMnemonic(mnemonic);
-  };
-
-  const onPinSet = (pin: string): void => {
-    AppViewModel.onPinCreated(pin, false).subscribe({
-      error: err => Alert.alert(err.message),
-    });
-  };
 
   /**
    * Views with Props
    */
   const CreateWalletScreen = memo(() => {
+    const {onBackPressed, onSavedMnemonic} = useApplicationContext().appHook;
     return (
       <CreateWallet
-        onSavedMyPhrase={onSavedMnemonic}
-        onBack={() => AppViewModel.onBackPressed()}
+        onSavedMyPhrase={mnemonic => onSavedMnemonic(mnemonic)}
+        onBack={() => onBackPressed()}
       />
     );
   });
 
   const CheckMnemonicScreen = memo(() => {
+    const {setSelectedView, onBackPressed, mnemonic} =
+      useApplicationContext().appHook;
     return (
       <CheckMnemonic
-        onSuccess={() => AppViewModel.setSelectedView(SelectedView.CreatePin)}
-        onBack={() => AppViewModel.onBackPressed()}
-        mnemonic={AppViewModel.mnemonic}
+        onSuccess={() => setSelectedView(SelectedView.CreatePin)}
+        onBack={() => onBackPressed()}
+        mnemonic={mnemonic}
       />
     );
   });
 
   const CreatePinScreen = memo(() => {
-    return (
-      <CreatePIN
-        onPinSet={onPinSet}
-        onBack={() => AppViewModel.onBackPressed()}
-      />
-    );
+    const {onPinCreated, onBackPressed} = useApplicationContext().appHook;
+
+    const onPinSet = (pin: string): void => {
+      onPinCreated(pin, false).subscribe({
+        error: err => Alert.alert(err.message),
+      });
+    };
+
+    return <CreatePIN onPinSet={onPinSet} onBack={() => onBackPressed()} />;
   });
 
   const BiometricLoginScreen = memo(() => {
+    const {mnemonic, onEnterWallet} = useApplicationContext().appHook;
     return (
       <BiometricLogin
-        mnemonic={AppViewModel.mnemonic}
+        mnemonic={mnemonic}
         onBiometrySet={() => {
-          AppViewModel.onEnterWallet(AppViewModel.mnemonic);
+          onEnterWallet(mnemonic);
         }}
-        onSkip={() => AppViewModel.onEnterWallet(AppViewModel.mnemonic)}
+        onSkip={() => onEnterWallet(mnemonic)}
       />
     );
   });

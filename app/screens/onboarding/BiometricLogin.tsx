@@ -5,7 +5,6 @@ import {useApplicationContext} from 'contexts/ApplicationContext';
 import {Space} from 'components/Space';
 import AvaText from 'components/AvaText';
 import AvaButton from 'components/AvaButton';
-import {useWalletSetup} from 'hooks/useWalletSetup';
 
 type Props = {
   mnemonic: string;
@@ -17,7 +16,6 @@ export default function BiometricLogin(
   props: Props | Readonly<Props>,
 ): JSX.Element {
   const context = useApplicationContext();
-  const {initWalletWithMnemonic} = useWalletSetup();
 
   const {biometryType, storeMnemonicWithBiometric, fingerprintIcon} =
     useBiometricLogin(props.mnemonic, context.isDarkMode);
@@ -25,7 +23,6 @@ export default function BiometricLogin(
   async function handleUseBiometry() {
     try {
       await storeMnemonicWithBiometric();
-      initWalletWithMnemonic(props.mnemonic);
       props.onBiometrySet();
     } catch (e: any) {
       Alert.alert(e?.message || 'error');

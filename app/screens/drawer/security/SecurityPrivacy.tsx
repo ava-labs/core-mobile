@@ -5,7 +5,6 @@ import AvaListItem from 'components/AvaListItem';
 import {StackActions, useNavigation} from '@react-navigation/native';
 import BiometricsSDK, {KeystoreConfig} from 'utils/BiometricsSDK';
 import AppNavigation from 'navigation/AppNavigation';
-import AppViewModel from 'AppViewModel';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {SECURE_ACCESS_SET} from 'resources/Constants';
 import {UserCredentials} from 'react-native-keychain';
@@ -16,6 +15,7 @@ function SecurityPrivacy() {
   const [isBiometricSwitchEnabled, setIsBiometricSwitchEnabled] =
     useState(false);
   const [isBiometricEnabled, setIsBiometricEnabled] = useState(false);
+  const {onSavedMnemonic} = useApplicationContext().appHook;
 
   useEffect(() => {
     BiometricsSDK.canUseBiometry().then((biometryAvailable: boolean) => {
@@ -35,7 +35,7 @@ function SecurityPrivacy() {
   const resetAction = StackActions.push(AppNavigation.Onboard.Login);
   const revealAction = StackActions.push(AppNavigation.Onboard.Login, {
     revealMnemonic: (mnemonic: string) => {
-      AppViewModel.onSavedMnemonic(mnemonic, true);
+      onSavedMnemonic(mnemonic, true);
       dispatch(showMnemonicAction);
     },
   });
@@ -60,7 +60,7 @@ function SecurityPrivacy() {
       const mnemonic = (await BiometricsSDK.loadWalletKey(
         KeystoreConfig.KEYSTORE_BIO_OPTIONS,
       )) as UserCredentials;
-      AppViewModel.onSavedMnemonic(mnemonic.password, true);
+      onSavedMnemonic(mnemonic.password, true);
       dispatch(resetPinAction);
     } else {
       dispatch(resetAction);
@@ -72,7 +72,7 @@ function SecurityPrivacy() {
       const mnemonic = (await BiometricsSDK.loadWalletKey(
         KeystoreConfig.KEYSTORE_BIO_OPTIONS,
       )) as UserCredentials;
-      AppViewModel.onSavedMnemonic(mnemonic.password, true);
+      onSavedMnemonic(mnemonic.password, true);
       dispatch(showMnemonicAction);
     } else {
       dispatch(revealAction);

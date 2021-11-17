@@ -23,14 +23,6 @@ import {
   StackActions,
 } from '@react-navigation/native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
-import AppViewModel, {
-  ExitPromptAnswers,
-  LogoutEvents,
-  LogoutPromptAnswers,
-  SelectedView,
-  ShowExitPrompt,
-  ShowLogoutPrompt,
-} from 'AppViewModel';
 import {
   FUJI_NETWORK,
   useNetworkContext,
@@ -38,6 +30,15 @@ import {
 } from '@avalabs/wallet-react-components';
 import AppNavigation, {OnboardScreens} from 'navigation/AppNavigation';
 import {OnboardStackScreen} from 'navigation/OnboardStackScreen';
+import {
+  ExitPromptAnswers,
+  LogoutEvents,
+  LogoutPromptAnswers,
+  SelectedView,
+  ShowExitPrompt,
+  ShowLogoutPrompt,
+} from 'AppViewModel';
+import {useWalletSetup} from 'hooks/useWalletSetup';
 
 const RootStack = createStackNavigator();
 const navigationRef: RefObject<NavigationContainerRef<any>> = React.createRef();
@@ -54,31 +55,6 @@ const onNo = (value: ShowExitPrompt): void => {
   value.prompt.complete();
 };
 
-const onExit = () => {
-  AppViewModel.onExit().subscribe({
-    next: (value: LogoutEvents) => {
-      if (value instanceof ShowExitPrompt) {
-        Alert.alert(
-          'Exit app?',
-          'Your passphrase will remain securely stored for easier later access of wallet.',
-          [
-            {
-              text: 'Ok',
-              onPress: () => onOk(value as ShowExitPrompt),
-            },
-            {
-              text: 'Cancel',
-              onPress: () => onNo(value as ShowExitPrompt),
-              style: 'cancel',
-            },
-          ],
-        );
-      }
-    },
-    error: err => Alert.alert(err.message),
-  });
-};
-
 const onYes = (value: ShowLogoutPrompt): void => {
   value.prompt.next(LogoutPromptAnswers.Yes);
   value.prompt.complete();
@@ -89,32 +65,59 @@ const onCancel = (value: ShowLogoutPrompt): void => {
   value.prompt.complete();
 };
 
-const onSwitchWallet = (): void => {
-  AppViewModel.onLogout().subscribe({
-    next: (value: LogoutEvents) => {
-      if (value instanceof ShowLogoutPrompt) {
-        Alert.alert(
-          'Do you want to delete the stored passphrase and switch accounts?',
-          undefined,
-          [
-            {
-              text: 'Cancel',
-              onPress: () => onCancel(value as ShowLogoutPrompt),
-              style: 'cancel',
-            },
-            {text: 'Yes', onPress: () => onYes(value as ShowLogoutPrompt)},
-          ],
-        );
-      }
-    },
-    error: err => Alert.alert(err.message),
-  });
-};
-
 const WalletStackScreenWithProps = () => {
+  const {onExit, onLogout} = useApplicationContext().appHook;
+
+  const doExit = () => {
+    onExit().subscribe({
+      next: (value: LogoutEvents) => {
+        if (value instanceof ShowExitPrompt) {
+          Alert.alert(
+            'Exit app?',
+            'Your passphrase will remain securely stored for easier later access of wallet.',
+            [
+              {
+                text: 'Ok',
+                onPress: () => onOk(value as ShowExitPrompt),
+              },
+              {
+                text: 'Cancel',
+                onPress: () => onNo(value as ShowExitPrompt),
+                style: 'cancel',
+              },
+            ],
+          );
+        }
+      },
+      error: err => Alert.alert(err.message),
+    });
+  };
+
+  const doSwitchWallet = (): void => {
+    onLogout().subscribe({
+      next: (value: LogoutEvents) => {
+        if (value instanceof ShowLogoutPrompt) {
+          Alert.alert(
+            'Do you want to delete the stored passphrase and switch accounts?',
+            undefined,
+            [
+              {
+                text: 'Cancel',
+                onPress: () => onCancel(value as ShowLogoutPrompt),
+                style: 'cancel',
+              },
+              {text: 'Yes', onPress: () => onYes(value as ShowLogoutPrompt)},
+            ],
+          );
+        }
+      },
+      error: err => Alert.alert(err.message),
+    });
+  };
+
   return (
     <WalletStateContextProvider>
-      <WalletStackScreen onExit={onExit} onSwitchWallet={onSwitchWallet} />
+      <WalletStackScreen onExit={doExit} onSwitchWallet={doSwitchWallet} />
     </WalletStateContextProvider>
   );
 };
@@ -148,30 +151,26 @@ export default function App() {
   const context = useApplicationContext();
   const networkContext = useNetworkContext();
   const [backgroundStyle] = useState(context.appBackgroundStyle);
-  const [selectedView, setSelectedView] = useState<SelectedView | undefined>(
-    undefined,
-  );
+  const {selectedView, onBackPressed, shouldSetupWallet, mnemonic} =
+    context.appHook;
+  const {initWalletWithMnemonic} = useWalletSetup();
 
   useEffect(() => {
     networkContext!.setNetwork(FUJI_NETWORK);
-    AppViewModel.onComponentMount();
     const disposables = new Subscription();
-    disposables.add(
-      AppViewModel.selectedView.subscribe(value => setSelectedView(value)),
-    );
-    BackHandler.addEventListener(
-      'hardwareBackPress',
-      AppViewModel.onBackPressed,
-    );
+    BackHandler.addEventListener('hardwareBackPress', onBackPressed);
 
     return () => {
-      BackHandler.removeEventListener(
-        'hardwareBackPress',
-        AppViewModel.onBackPressed,
-      );
+      BackHandler.removeEventListener('hardwareBackPress', onBackPressed);
       disposables.unsubscribe();
     };
   }, []);
+
+  useEffect(() => {
+    if (shouldSetupWallet) {
+      initWalletWithMnemonic(mnemonic);
+    }
+  }, [shouldSetupWallet]);
 
   useEffect(() => {
     switch (selectedView) {
