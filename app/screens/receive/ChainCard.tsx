@@ -13,7 +13,7 @@ interface Props {
 }
 
 function ChainCard({chainName, description, address}: Props) {
-  const context = useApplicationContext();
+  const {theme, isDarkMode} = useApplicationContext();
   return (
     <View
       style={[
@@ -22,12 +22,17 @@ function ChainCard({chainName, description, address}: Props) {
           height: 292,
           borderRadius: 8,
           marginTop: 16,
-          backgroundColor: context.theme.colorIcon1 + Opacity05,
+          borderColor: theme.colorIcon1 + Opacity05,
+          borderWidth: 1,
           marginStart: 16,
           paddingBottom: 8,
           justifyContent: 'center',
           alignItems: 'center',
           alignSelf: 'baseline',
+        },
+        isDarkMode && {
+          backgroundColor: theme.colorIcon1 + Opacity05,
+          borderWidth: 0,
         },
       ]}>
       <View style={{paddingHorizontal: 50}}>
