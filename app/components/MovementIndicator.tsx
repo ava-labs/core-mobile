@@ -25,7 +25,7 @@ const MovementIndicator: FC<Props> = ({isNegative = false, metric}) => {
   return (
     <View
       style={[
-        styles.tokenLogo,
+        styles.indicator,
         {
           backgroundColor: negative
             ? theme.colorPrimary1Light
@@ -39,7 +39,7 @@ const MovementIndicator: FC<Props> = ({isNegative = false, metric}) => {
 };
 
 const styles = StyleSheet.create({
-  tokenLogo: {
+  indicator: {
     paddingHorizontal: 16,
     width: 32,
     height: 32,

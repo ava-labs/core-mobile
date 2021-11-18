@@ -10,6 +10,7 @@ import {Assets, Utils} from '@avalabs/avalanche-wallet-sdk';
 import {Erc20Token} from '@avalabs/avalanche-wallet-sdk/dist/Asset';
 import AvaText from 'components/AvaText';
 import {Space} from 'components/Space';
+import Avatar from 'components/Avatar';
 
 const AddCustomToken: FC = () => {
   const theme = useApplicationContext().theme;
@@ -79,17 +80,7 @@ const AddCustomToken: FC = () => {
       {!!token && (
         <View style={{justifyContent: 'center', alignItems: 'center'}}>
           {/* placeholder for image or initials if there's no image available*/}
-          <View
-            style={{
-              backgroundColor: theme.colorDisabled,
-              borderRadius: 20,
-              height: 40,
-              width: 40,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}>
-            <AvaText.Heading1>{token?.name?.substring(0, 1)}</AvaText.Heading1>
-          </View>
+          <Avatar.Token token={token} />
           <Space y={16} />
           <AvaText.Heading2>{token?.name}</AvaText.Heading2>
         </View>
