@@ -1,5 +1,5 @@
 import React, {FC, useMemo} from 'react';
-import {Image, Platform, StyleSheet, Switch, View} from 'react-native';
+import {Image, Platform, StyleSheet, View} from 'react-native';
 import AvaListItem from 'components/AvaListItem';
 import AvaText from 'components/AvaText';
 import {useApplicationContext} from 'contexts/ApplicationContext';
@@ -67,7 +67,6 @@ const SearchListItem: FC<Props> = ({
         justifyContent: 'center',
         alignItems: 'center',
       }}>
-      <AvaText.Body2 textStyle={{marginRight: 16}}>{position}</AvaText.Body2>
       {symbol === 'AVAX' ? (
         <AvaLogoSVG
           size={32}
