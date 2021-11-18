@@ -31,7 +31,6 @@ const SearchListItem: FC<Props> = ({
   balance,
   name,
   image,
-  onPress,
   symbol,
   isShowingZeroBalanceForToken,
   onSwitchChanged,
@@ -78,8 +77,6 @@ const SearchListItem: FC<Props> = ({
       title={name}
       leftComponent={tokenLogo}
       rightComponent={rightComponent()}
-      onPress={onPress}
-      disabled
     />
   );
 };
