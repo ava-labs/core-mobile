@@ -5,6 +5,7 @@ import AvaText from 'components/AvaText';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import Switch from 'components/Switch';
+import Avatar from 'components/Avatar';
 
 type Props = {
   balance?: string;
@@ -16,16 +17,6 @@ type Props = {
   onSwitchChanged: (value: boolean) => void;
   isShowingZeroBalanceForToken?: boolean;
 };
-
-const styles = StyleSheet.create({
-  tokenLogo: {
-    paddingHorizontal: 16,
-    width: 32,
-    height: 32,
-    borderRadius: 20,
-    overflow: 'hidden',
-  },
-});
 
 const SearchListItem: FC<Props> = ({
   balance,
@@ -47,15 +38,8 @@ const SearchListItem: FC<Props> = ({
         justifyContent: 'center',
         alignItems: 'center',
       }}>
-      {symbol === 'AVAX' ? (
-        <AvaLogoSVG
-          size={32}
-          logoColor={theme.white}
-          backgroundColor={theme.logoColor}
-        />
-      ) : (
-        <Image style={styles.tokenLogo} source={{uri: image}} />
-      )}
+      <AvaText.Body2 textStyle={{marginRight: 16}}>{position}</AvaText.Body2>
+      <Avatar.Custom name={name} symbol={symbol} logoUri={image} />
     </View>
   );
 

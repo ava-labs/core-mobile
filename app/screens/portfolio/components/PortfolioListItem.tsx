@@ -1,9 +1,9 @@
 import React, {FC} from 'react';
-import {Image, StyleSheet, View} from 'react-native';
+import {View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
-import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import AvaListItem from 'components/AvaListItem';
 import AvaText from 'components/AvaText';
+import Avatar from 'components/Avatar';
 
 interface Props {
   tokenName: string;
@@ -25,17 +25,6 @@ const PortfolioListItem: FC<Props> = ({
   const theme = useApplicationContext().theme;
   const title = tokenName;
 
-  const tokenLogo =
-    symbol === 'AVAX' ? (
-      <AvaLogoSVG
-        size={32}
-        logoColor={theme.white}
-        backgroundColor={theme.logoColor}
-      />
-    ) : (
-      <Image style={styles.tokenLogo} source={{uri: image}} />
-    );
-
   const subTitle = (
     <AvaListItem.CurrencyAmount
       value={
@@ -45,16 +34,35 @@ const PortfolioListItem: FC<Props> = ({
     />
   );
 
-  const usdBalance = tokenPriceUsd ? (
-    <AvaListItem.CurrencyAmount
-      justifyContent={'flex-end'}
-      value={
-        <AvaText.Heading3
-          ellipsize={'tail'}>{`$${tokenPriceUsd}`}</AvaText.Heading3>
-      }
-      currency={<AvaText.Heading3>{'USD'}</AvaText.Heading3>}
-    />
-  ) : undefined;
+  const usdBalance = () => {
+    if (tokenPriceUsd) {
+      return (
+        <AvaListItem.CurrencyAmount
+          justifyContent={'flex-end'}
+          value={
+            <AvaText.Heading3
+              ellipsize={'tail'}>{`$${tokenPriceUsd}`}</AvaText.Heading3>
+          }
+          currency={<AvaText.Heading3>{'USD'}</AvaText.Heading3>}
+        />
+      );
+    }
+
+    if (!tokenPriceUsd && tokenPrice === '0') {
+      return (
+        <AvaListItem.CurrencyAmount
+          justifyContent={'flex-end'}
+          value={
+            <AvaText.Heading3
+              ellipsize={'tail'}>{`$${tokenPriceUsd}`}</AvaText.Heading3>
+          }
+          currency={<AvaText.Heading3>{'USD'}</AvaText.Heading3>}
+        />
+      );
+    }
+
+    return null;
+  };
 
   return (
     <View
@@ -66,36 +74,14 @@ const PortfolioListItem: FC<Props> = ({
       <AvaListItem.Base
         title={title}
         subtitle={subTitle}
-        leftComponent={tokenLogo}
-        rightComponent={usdBalance}
+        leftComponent={
+          <Avatar.Custom name={tokenName} symbol={symbol} logoUri={image} />
+        }
+        rightComponent={usdBalance()}
         onPress={onPress}
       />
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  tokenLogo: {
-    paddingHorizontal: 16,
-    width: 32,
-    height: 32,
-    borderRadius: 20,
-    overflow: 'hidden',
-  },
-  tokenItem: {
-    marginHorizontal: 8,
-    borderRadius: 8,
-    marginVertical: 4,
-  },
-  tokenNativeValue: {
-    fontFamily: 'Inter-Bold',
-    fontSize: 16,
-    lineHeight: 24,
-  },
-  tokenUsdValue: {
-    fontSize: 14,
-    lineHeight: 17,
-  },
-});
 
 export default React.memo(PortfolioListItem);
