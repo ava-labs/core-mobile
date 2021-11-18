@@ -12,6 +12,7 @@ import FlexSpacer from 'components/FlexSpacer';
 import {useSendAvaxContext} from 'contexts/SendAvaxContext';
 import {ScanQrIcon} from 'screens/send/ScanQrIcon';
 import {ScrollView} from 'react-native-gesture-handler';
+import {SendTokenNavigationProp} from 'screens/sendERC20/SendERC20Stack';
 
 export default function SendAvax(): JSX.Element {
   const context = useApplicationContext();
@@ -24,7 +25,6 @@ export default function SendAvax(): JSX.Element {
     setCameraVisible,
     destinationAddress,
     setAddress,
-    sendAmountString,
     setSendAmountString,
     sendFeeString,
     canSubmit,
@@ -32,7 +32,7 @@ export default function SendAvax(): JSX.Element {
     onBarcodeScanned,
   } = useSendAvaxContext();
   const [backgroundStyle] = useState(context.backgroundStyle);
-  const {navigate} = useNavigation();
+  const {navigate} = useNavigation<SendTokenNavigationProp>();
 
   return (
     <ScrollView

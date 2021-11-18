@@ -6,6 +6,7 @@ import DoneScreen from 'screens/send/DoneScreen';
 import {
   createStackNavigator,
   StackNavigationOptions,
+  StackNavigationProp,
   TransitionPresets,
 } from '@react-navigation/stack';
 import HeaderAndTabs from 'screens/send/HeaderAndTabs';
@@ -14,7 +15,15 @@ import {ERC20} from '@avalabs/wallet-react-components';
 import {SendERC20ContextProvider} from 'contexts/SendERC20Context';
 import {SubHeaderOptions} from 'navigation/NavUtils';
 
-const Stack = createStackNavigator();
+export type SendTokenParamList = {
+  [AppNavigation.SendToken.SendTokenScreen]: undefined;
+  [AppNavigation.SendToken.ConfirmTransactionScreen]: undefined;
+  [AppNavigation.SendToken.DoneScreen]: undefined;
+};
+
+export type SendTokenNavigationProp = StackNavigationProp<SendTokenParamList>;
+
+const Stack = createStackNavigator<SendTokenParamList>();
 
 type Props = {
   onClose: () => void;
