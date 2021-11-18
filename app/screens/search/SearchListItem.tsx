@@ -1,9 +1,10 @@
-import React, {FC, useMemo} from 'react';
-import {Image, Platform, StyleSheet, View} from 'react-native';
+import React, {FC} from 'react';
+import {Image, StyleSheet, View} from 'react-native';
 import AvaListItem from 'components/AvaListItem';
 import AvaText from 'components/AvaText';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
+import Switch from 'components/Switch';
 
 type Props = {
   balance?: string;
@@ -32,7 +33,6 @@ const SearchListItem: FC<Props> = ({
   image,
   onPress,
   symbol,
-  position,
   isShowingZeroBalanceForToken,
   onSwitchChanged,
 }) => {
@@ -40,25 +40,6 @@ const SearchListItem: FC<Props> = ({
   function handleChange(value: boolean) {
     onSwitchChanged(value);
   }
-
-  // waiting for UX to give the colors for Android.
-  const thumbColorOn = useMemo(
-    () => (Platform.OS === 'android' ? theme.white : theme.white),
-    [],
-  );
-  const thumbColorOff = useMemo(
-    () => (Platform.OS === 'android' ? theme.onBgSearch : theme.onBgSearch),
-    [],
-  );
-  const trackColorOn = useMemo(
-    () =>
-      Platform.OS === 'android' ? theme.colorPrimary1 : theme.colorPrimary1,
-    [],
-  );
-  const trackColorOff = useMemo(
-    () => (Platform.OS === 'android' ? theme.colorBg2 : theme.background),
-    [],
-  );
 
   const tokenLogo = (
     <View
@@ -85,11 +66,6 @@ const SearchListItem: FC<Props> = ({
         <Switch
           value={isShowingZeroBalanceForToken}
           onValueChange={handleChange}
-          thumbColor={
-            isShowingZeroBalanceForToken ? thumbColorOn : thumbColorOff
-          }
-          trackColor={{false: trackColorOff, true: trackColorOn}}
-          ios_backgroundColor={trackColorOff}
         />
       );
     } else {
@@ -103,7 +79,7 @@ const SearchListItem: FC<Props> = ({
       leftComponent={tokenLogo}
       rightComponent={rightComponent()}
       onPress={onPress}
-      listPressDisabled
+      disabled
     />
   );
 };
