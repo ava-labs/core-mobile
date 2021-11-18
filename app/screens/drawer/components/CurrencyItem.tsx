@@ -22,6 +22,7 @@ const CurrencyItem: FC<Partial<DrawerContentComponentProps>> = ({
         titleAlignment={'flex-start'}
         rightComponent={currency()}
         showNavigationArrow
+        disabled
         onPress={() => {
           navigation?.navigate(AppNavigation.Wallet.CurrencySelector, {
             onCurrencySelected: setSelectedCurrency,
