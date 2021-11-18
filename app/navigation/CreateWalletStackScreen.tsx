@@ -57,11 +57,13 @@ export const CreateWalletStackScreen = () => {
   });
 
   const BiometricLoginScreen = memo(() => {
-    const {mnemonic, onEnterWallet} = useApplicationContext().appHook;
+    const {mnemonic, onEnterWallet, setIsNewWallet} =
+      useApplicationContext().appHook;
     return (
       <BiometricLogin
         mnemonic={mnemonic}
         onBiometrySet={() => {
+          setIsNewWallet(true);
           onEnterWallet(mnemonic);
         }}
         onSkip={() => onEnterWallet(mnemonic)}
