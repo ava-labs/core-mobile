@@ -12,11 +12,11 @@ import FlexSpacer from 'components/FlexSpacer';
 import {useSendERC20Context} from 'contexts/SendERC20Context';
 import {ScanQrIcon} from 'screens/send/ScanQrIcon';
 import {ScrollView} from 'react-native-gesture-handler';
+import {SendERC20NavigationProp} from 'screens/sendERC20/SendERC20Stack';
 
 export default function SendERC20(): JSX.Element {
   const context = useApplicationContext();
   const {
-    sendAmountString,
     errorMsg,
     clearErrorMsg,
     setSendAmountString,
@@ -32,7 +32,7 @@ export default function SendERC20(): JSX.Element {
     onBarcodeScanned,
   } = useSendERC20Context();
   const [backgroundStyle] = useState(context.backgroundStyle);
-  const {navigate} = useNavigation();
+  const {navigate} = useNavigation<SendERC20NavigationProp>();
 
   return (
     <ScrollView
@@ -97,7 +97,9 @@ export default function SendERC20(): JSX.Element {
           disabled={!canSubmit}
           style={{margin: 16}}
           onPress={() =>
-            navigate(AppNavigation.SendToken.ConfirmTransactionScreen)
+            navigate(
+              AppNavigation.SendToken.ConfirmTransactionScreen,
+            )
           }>
           Next
         </AvaButton.PrimaryLarge>
