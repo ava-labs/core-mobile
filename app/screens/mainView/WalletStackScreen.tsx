@@ -163,22 +163,14 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
               <RootStack.Screen name={'Drawer'} component={DrawerNavigator} />
               <RootStack.Screen
                 options={{
-                  headerShown: true,
                   ...MainHeaderOptions('Manage token list'),
-                  headerStyle: {
-                    backgroundColor: context.theme.background,
-                  },
                 }}
                 name={AppNavigation.Wallet.SearchScreen}
                 component={SearchView}
               />
               <RootStack.Screen
                 options={{
-                  headerShown: true,
                   ...MainHeaderOptions('Add Custom Token'),
-                  headerStyle: {
-                    backgroundColor: context.theme.background,
-                  },
                 }}
                 name={AppNavigation.Wallet.AddCustomToken}
                 component={AddCustomToken}

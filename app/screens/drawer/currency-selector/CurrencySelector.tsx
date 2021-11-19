@@ -3,8 +3,8 @@ import {FlatList, ListRenderItemInfo, StyleSheet} from 'react-native';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
 import CurrencyListItem from 'screens/drawer/currency-selector/CurrencyListItem';
-import {DrawerStackParamList} from 'screens/mainView/WalletStackScreen';
 import {currencies} from '@avalabs/wallet-react-components';
+import {DrawerStackParamList} from 'navigation/DrawerNavigator';
 
 type CurrencyRouteProp = RouteProp<DrawerStackParamList, 'CurrencySelector'>;
 
