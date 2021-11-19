@@ -73,18 +73,6 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
 
     const overTimeOut = moment().diff(moment(suspended)) >= TIMEOUT;
 
-    console.log(
-      'current appstate: ' +
-        appState.current +
-        ' next appstate: ' +
-        nextAppState +
-        ' biometric value: ' +
-        value +
-        ' time app suspended: ' +
-        timeAppWasSuspended,
-      ' over timeout: ' + overTimeOut,
-    );
-
     if (
       (appState.current === 'active' && nextAppState.match(/background/)) ||
       (appState.current === 'inactive' && nextAppState.match(/background/))
