@@ -9,11 +9,13 @@ import {
 } from '@avalabs/wallet-react-components';
 import {useEffect} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {iHDWalletIndex, MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
 
 interface WalletSetup {
   initWalletWithMnemonic: (mnemonic: string) => void;
   createNewWallet: (mnemonic: string) => void;
   destroyWallet: () => void;
+  resetHDIndices: () => Promise<iHDWalletIndex>;
 }
 
 export function useWalletSetup(): WalletSetup {
@@ -89,9 +91,14 @@ export function useWalletSetup(): WalletSetup {
     walletContext?.clearMnemonic();
   }
 
+  async function resetHDIndices() {
+    return (walletContext?.wallet as MnemonicWallet)?.resetHdIndices();
+  }
+
   return {
     initWalletWithMnemonic,
     createNewWallet,
     destroyWallet,
+    resetHDIndices,
   };
 }
