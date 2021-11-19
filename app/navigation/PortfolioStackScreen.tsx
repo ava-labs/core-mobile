@@ -46,4 +46,4 @@ function PortfolioStackScreen({onExit, onSwitchWallet}: Props) {
   );
 }
 
-export default PortfolioStackScreen;
+export default React.memo(PortfolioStackScreen);
