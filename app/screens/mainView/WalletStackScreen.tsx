@@ -1,23 +1,12 @@
 import React, {memo, useEffect, useMemo, useRef, useState} from 'react';
 import {AppState, BackHandler, Modal} from 'react-native';
-import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {NavigationContainer, useFocusEffect} from '@react-navigation/native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
-import HomeSVG from 'components/svg/HomeSVG';
-import ActivitySVG from 'components/svg/ActivitySVG';
-import SwapSVG from 'components/svg/SwapSVG';
-import MoreSVG from 'components/svg/MoreSVG';
 import {createStackNavigator} from '@react-navigation/stack';
 import SendReceiveBottomSheet from 'screens/portfolio/SendReceiveBottomSheet';
 import AccountBottomSheet from 'screens/portfolio/account/AccountBottomSheet';
-import SwapView from 'screens/swap/SwapView';
 import AppNavigation from 'navigation/AppNavigation';
-import PortfolioStackScreen from 'navigation/PortfolioStackScreen';
 import SearchView from 'screens/search/SearchView';
-import Activity from 'screens/activity/ActivityView';
-import WatchlistSVG from 'components/svg/WatchlistSVG';
-import {createDrawerNavigator} from '@react-navigation/drawer';
-import DrawerView from 'screens/drawer/DrawerView';
 import AddCustomToken from 'screens/search/AddCustomToken';
 import CurrencySelector from 'screens/drawer/currency-selector/CurrencySelector';
 import {SelectedTokenContextProvider} from 'contexts/SelectedTokenContext';
@@ -25,7 +14,6 @@ import SecurityPrivacyStackScreen from 'navigation/SecurityPrivacyStackScreen';
 import WebViewScreen from 'screens/webview/WebViewScreen';
 import ActivityDetailBottomSheet from 'screens/activity/ActivityDetailBottomSheet';
 import {SelectedAccountContextProvider} from 'contexts/SelectedAccountContext';
-import WatchlistView from 'screens/watchlist/WatchlistView';
 import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BiometricsSDK from 'utils/BiometricsSDK';
@@ -33,32 +21,24 @@ import moment from 'moment';
 import ReceiveOnlyBottomSheet from 'screens/portfolio/receive/ReceiveOnlyBottomSheet';
 import {MainHeaderOptions} from 'navigation/NavUtils';
 import {SelectedView} from 'AppViewModel';
+import DrawerNavigator from 'navigation/DrawerNavigator';
+import {useWalletSetup} from 'hooks/useWalletSetup';
 
 type Props = {
   onExit: () => void;
   onSwitchWallet: () => void;
 };
 
-export type DrawerStackParamList = {
-  Tabs: undefined;
-  CurrencySelector:
-    | undefined
-    | {onCurrencySelected: (code: string) => void; selectedCurrency: string};
-  Legal: undefined;
-  Security: undefined;
-};
-
-const Tab = createBottomTabNavigator();
 const RootStack = createStackNavigator();
-const DrawerStack = createDrawerNavigator<DrawerStackParamList>();
 
 const focusEvent = 'change';
-const TIMEOUT = 5000;
+const TIMEOUT = 3000;
 
 function WalletStackScreen(props: Props | Readonly<Props>) {
   const [showSecurityModal, setShowSecurityModal] = useState(false);
   const appState = useRef(AppState.currentState);
   const context = useApplicationContext();
+  const {resetHDIndices} = useWalletSetup();
   const {immediateLogout, setSelectedView} = context.appHook;
 
   /**
@@ -86,11 +66,29 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
    */
   const handleAppStateChange = async (nextAppState: any) => {
     const value = await BiometricsSDK.getAccessType();
-    const suspended =
-      (await AsyncStorage.getItem('TIME_APP_SUSPENDED')) ??
-      moment().toISOString();
+    const timeAppWasSuspended = await AsyncStorage.getItem(
+      'TIME_APP_SUSPENDED',
+    );
+    const suspended = timeAppWasSuspended ?? moment().toISOString();
 
-    if (appState.current === 'active' && nextAppState.match(/background/)) {
+    const overTimeOut = moment().diff(moment(suspended)) >= TIMEOUT;
+
+    console.log(
+      'current appstate: ' +
+        appState.current +
+        ' next appstate: ' +
+        nextAppState +
+        ' biometric value: ' +
+        value +
+        ' time app suspended: ' +
+        timeAppWasSuspended,
+      ' over timeout: ' + overTimeOut,
+    );
+
+    if (
+      (appState.current === 'active' && nextAppState.match(/background/)) ||
+      (appState.current === 'inactive' && nextAppState.match(/background/))
+    ) {
       // this condition calls when app is in background mode
       // here you can detect application is going to background or inactive.
       await AsyncStorage.setItem('TIME_APP_SUSPENDED', moment().toISOString());
@@ -98,11 +96,15 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
       appState.current.match(/background/) &&
       nextAppState === 'active' &&
       value &&
-      moment().diff(moment(suspended)) >= TIMEOUT
+      overTimeOut
     ) {
       // this condition calls when app is in foreground mode
       // here you can detect application is in active state again.
+      console.log('getting here coming back from background');
       setShowSecurityModal(true);
+      resetHDIndices().then(() => {
+        //ignored
+      });
     }
     appState.current = nextAppState;
   };
@@ -122,79 +124,6 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
 
   const onExit = (): void => {
     props.onExit();
-  };
-
-  const onSwitchWallet = (): void => {
-    props.onSwitchWallet();
-  };
-
-  const DrawerScreen = () => (
-    <DrawerStack.Navigator
-      screenOptions={{headerShown: false, drawerStyle: {width: '80%'}}}
-      useLegacyImplementation
-      drawerContent={props => <DrawerView {...props} />}>
-      <DrawerStack.Screen
-        name={AppNavigation.Tabs.Tabs}
-        options={{headerShown: false}}
-        component={Tabs}
-      />
-    </DrawerStack.Navigator>
-  );
-
-  const PortfolioStackScreenWithProps = () => {
-    return (
-      <PortfolioStackScreen onExit={onExit} onSwitchWallet={onSwitchWallet} />
-    );
-  };
-
-  const Tabs = () => {
-    const theme = context.theme;
-    return (
-      <Tab.Navigator
-        sceneContainerStyle={{backgroundColor: theme.colorBg1}}
-        screenOptions={({route}) => ({
-          headerShown: false,
-          tabBarIcon: ({focused}) => {
-            switch (route.name) {
-              case AppNavigation.Tabs.Portfolio:
-                return <HomeSVG selected={focused} />;
-              case AppNavigation.Tabs.Activity:
-                return <ActivitySVG selected={focused} />;
-              case AppNavigation.Tabs.Swap:
-                return <SwapSVG selected={focused} />;
-              case AppNavigation.Tabs.More:
-                return <MoreSVG selected={focused} />;
-              case AppNavigation.Tabs.Watchlist:
-                return <WatchlistSVG selected={focused} />;
-            }
-          },
-          tabBarAllowFontScaling: false,
-          tabBarActiveTintColor: theme.accentColor,
-          tabBarInactiveTintColor: theme.onBgSearch,
-          tabBarStyle: {
-            backgroundColor: theme.background,
-          },
-        })}>
-        <Tab.Screen
-          name={AppNavigation.Tabs.Portfolio}
-          component={PortfolioStackScreenWithProps}
-        />
-        <Tab.Screen
-          name={AppNavigation.Tabs.Watchlist}
-          component={WatchlistView}
-        />
-        <Tab.Screen
-          name={AppNavigation.Tabs.Activity}
-          options={{
-            ...MainHeaderOptions('Activity'),
-            headerShown: true,
-            headerStyle: {backgroundColor: theme.colorBg1},
-          }}
-          component={Activity}
-        />
-        <Tab.Screen name={AppNavigation.Tabs.Swap} component={SwapView} />
-      </Tab.Navigator>
-    );
   };
 
   const BottomSheetGroup = useMemo(() => {
@@ -231,7 +160,7 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
               headerShown: false,
             }}>
             <RootStack.Group>
-              <RootStack.Screen name={'Drawer'} component={DrawerScreen} />
+              <RootStack.Screen name={'Drawer'} component={DrawerNavigator} />
               <RootStack.Screen
                 options={{
                   headerShown: true,
