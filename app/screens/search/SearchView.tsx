@@ -118,13 +118,13 @@ function SearchView(): JSX.Element {
           data={filteredTokenList}
           renderItem={renderItem}
           onRefresh={handleRefresh}
-          ListHeaderComponent={
-            <AddCustomTokenButton
-              onPress={() =>
-                navigation.navigate(AppNavigation.Wallet.AddCustomToken)
-              }
-            />
-          }
+          // ListHeaderComponent={
+          //   <AddCustomTokenButton
+          //     onPress={() =>
+          //       navigation.navigate(AppNavigation.Wallet.AddCustomToken)
+          //     }
+          //   />
+          // }
           refreshing={false}
           keyExtractor={(item: TokenWithBalance) => item.symbol}
           ListEmptyComponent={emptyView}
