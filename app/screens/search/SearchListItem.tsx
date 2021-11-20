@@ -38,7 +38,6 @@ const SearchListItem: FC<Props> = ({
         justifyContent: 'center',
         alignItems: 'center',
       }}>
-      <AvaText.Body2 textStyle={{marginRight: 16}}>{position}</AvaText.Body2>
       <Avatar.Custom name={name} symbol={symbol} logoUri={image} />
     </View>
   );
