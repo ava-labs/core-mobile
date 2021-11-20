@@ -35,7 +35,8 @@ function PortfolioContainer({
 }: PortfolioProps): JSX.Element {
   const {tokenList, loadZeroBalanceList, loadTokenList} =
     useSearchableTokenList();
-  const {balanceTotalInUSD, isWalletReady} = usePortfolio();
+  const {balanceTotalInUSD, isWalletReady, isBalanceLoading, isErc20Loading} =
+    usePortfolio();
   const {setSelectedToken} = useSelectedTokenContext();
 
   const hasZeroBalance =
@@ -49,7 +50,7 @@ function PortfolioContainer({
 
   return (
     <>
-      {!isWalletReady ? (
+      {!isWalletReady || isBalanceLoading || isErc20Loading ? (
         <Loader />
       ) : (
         <PortfolioView
