@@ -1,142 +1,75 @@
-import React, {useState} from 'react';
-import {Modal, StyleSheet, View} from 'react-native';
-import InputText from 'components/InputText';
-import AvaButton from 'components/AvaButton';
-import Loader from 'components/Loader';
-import QrScannerAva from 'components/QrScannerAva';
-import {useApplicationContext} from 'contexts/ApplicationContext';
+import React from 'react';
+import {Alert} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import AppNavigation from 'navigation/AppNavigation';
-import AvaText from 'components/AvaText';
-import FlexSpacer from 'components/FlexSpacer';
-import {useSendAntContext} from 'contexts/SendANTContext';
-import {ScanQrIcon} from 'screens/send/ScanQrIcon';
-import {ScrollView} from 'react-native-gesture-handler';
 import {SendTokenNavigationProp} from 'screens/sendERC20/SendERC20Stack';
+import {AntWithBalance, useSendAnt} from '@avalabs/wallet-react-components';
+import SendForm from 'screens/send/SendForm';
+import {useSelectedTokenContext} from 'contexts/SelectedTokenContext';
+import {bnAmountToString} from 'dto/SendInfo';
 
 export default function SendANT(): JSX.Element {
-  const context = useApplicationContext();
+  const {selectedToken} = useSelectedTokenContext();
   const {
-    errorMsg,
-    clearErrorMsg,
-    setSendAmountString,
-    sendFeeString,
-    setAddress,
-    destinationAddress,
-    onScanBarcode,
+    sendFee,
+    address,
+    amount,
     canSubmit,
-    loaderVisible,
-    loaderMsg,
-    setCameraVisible,
-    cameraVisible,
-    onBarcodeScanned,
-  } = useSendAntContext();
-  const [backgroundStyle] = useState(context.backgroundStyle);
+    error,
+    submit,
+    setAddress,
+    setAmount,
+  } = useSendAnt(selectedToken as AntWithBalance);
   const {navigate} = useNavigation<SendTokenNavigationProp>();
 
+  async function handleOnConfirm(doneLoading: () => void) {
+    if (!address) {
+      Alert.alert('Error', 'Address not set ');
+      return;
+    }
+    if (!amount || amount.isZero()) {
+      Alert.alert('Error', 'Amount not set ');
+      return;
+    }
+
+    submit().subscribe({
+      next: (value: any) => {
+        if (value === undefined) {
+          Alert.alert('Error', 'Undefined error');
+        } else {
+          if ('txId' in value && value.txId) {
+            console.log(value);
+            navigate(AppNavigation.SendToken.DoneScreen);
+            doneLoading();
+          }
+        }
+      },
+      error: (err: any) => {
+        Alert.alert('Error', err.message);
+      },
+    });
+  }
+
   return (
-    <ScrollView
-      contentContainerStyle={{flexGrow: 1}}
-      keyboardShouldPersistTaps="handled">
-      <View
-        style={[
-          backgroundStyle,
-          {
-            backgroundColor: undefined,
-            paddingStart: 0,
-            paddingEnd: 0,
-            paddingBottom: 0,
+    <SendForm
+      setAmount={setAmount}
+      canSubmit={canSubmit}
+      error={error}
+      sendFee={sendFee}
+      address={address}
+      setAddress={setAddress}
+      onNextPress={() => {
+        navigate(AppNavigation.SendToken.ConfirmTransactionScreen, {
+          payload: {
+            imageUrl: selectedToken?.logoURI,
+            name: selectedToken?.name,
+            fee: bnAmountToString(sendFee),
+            amount: bnAmountToString(amount),
+            address: address,
+            onConfirm: handleOnConfirm,
           },
-        ]}>
-        <View style={[{paddingStart: 4, paddingEnd: 4, marginTop: 20}]}>
-          <InputText
-            label="Amount"
-            placeholder="Enter the amount"
-            helperText="$0"
-            errorText={
-              errorMsg?.startsWith('Amount')
-                ? errorMsg
-                : errorMsg?.indexOf('balance') !== -1
-                ? errorMsg
-                : undefined
-            }
-            keyboardType="numeric"
-            onChangeText={text => {
-              clearErrorMsg();
-              setSendAmountString(text);
-            }}
-          />
-          <View style={styles.transactionFee}>
-            <AvaText.Body3
-              textStyle={{
-                textAlign: 'right',
-                color: context.theme.txtListItemSubscript,
-              }}>
-              {'Transaction fee: ' + sendFeeString}
-            </AvaText.Body3>
-          </View>
-        </View>
-
-        <View style={styles.horizontalLayout}>
-          <View style={[{flex: 1, paddingStart: 4, paddingEnd: 4}]}>
-            <InputText
-              label={'Address'}
-              placeholder="Enter the address"
-              multiline={true}
-              errorText={
-                errorMsg?.indexOf('Address') !== -1 ? errorMsg : undefined
-              }
-              onChangeText={text => {
-                setAddress(text);
-                clearErrorMsg();
-              }}
-            />
-            {destinationAddress.length === 0 && (
-              <ScanQrIcon onScanBarcode={onScanBarcode} />
-            )}
-          </View>
-        </View>
-
-        <FlexSpacer />
-
-        <AvaButton.PrimaryLarge
-          disabled={!canSubmit}
-          style={{margin: 16}}
-          onPress={() =>
-            navigate(AppNavigation.SendToken.ConfirmTransactionScreen)
-          }>
-          Next
-        </AvaButton.PrimaryLarge>
-
-        <Modal animationType="fade" transparent={true} visible={loaderVisible}>
-          <Loader message={loaderMsg} />
-        </Modal>
-
-        <Modal
-          animationType="slide"
-          transparent={true}
-          onRequestClose={() => setCameraVisible(false)}
-          visible={cameraVisible}>
-          <QrScannerAva
-            onSuccess={data => onBarcodeScanned(data)}
-            onCancel={() => setCameraVisible(false)}
-          />
-        </Modal>
-      </View>
-    </ScrollView>
+        });
+      }}
+    />
   );
 }
-
-const styles: any = StyleSheet.create({
-  horizontalLayout: {
-    position: 'relative',
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  transactionFee: {
-    position: 'absolute',
-    top: 100,
-    right: 16,
-    alignItems: 'flex-end',
-  },
-});

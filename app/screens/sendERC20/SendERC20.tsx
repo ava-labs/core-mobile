@@ -1,138 +1,87 @@
-import React, {useState} from 'react';
-import {Modal, StyleSheet, View} from 'react-native';
-import InputText from 'components/InputText';
-import AvaButton from 'components/AvaButton';
-import Loader from 'components/Loader';
-import QrScannerAva from 'components/QrScannerAva';
-import {useApplicationContext} from 'contexts/ApplicationContext';
+import React from 'react';
+import {Alert} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import AppNavigation from 'navigation/AppNavigation';
-import AvaText from 'components/AvaText';
-import FlexSpacer from 'components/FlexSpacer';
-import {useSendERC20Context} from 'contexts/SendERC20Context';
-import {ScanQrIcon} from 'screens/send/ScanQrIcon';
-import {ScrollView} from 'react-native-gesture-handler';
-import {SendERC20NavigationProp} from 'screens/sendERC20/SendERC20Stack';
+import {SendTokenNavigationProp} from 'screens/sendERC20/SendERC20Stack';
+import {
+  ERC20WithBalance,
+  sendErc20Submit,
+  useSendErc20Form,
+  useWalletContext,
+} from '@avalabs/wallet-react-components';
+import {useGasPrice} from 'utils/GasPriceHook';
+import {bnAmountToString} from 'dto/SendInfo';
+import SendForm from 'screens/send/SendForm';
+import {firstValueFrom} from 'rxjs';
+import BN from 'bn.js';
+import {useSelectedTokenContext} from 'contexts/SelectedTokenContext';
 
 export default function SendERC20(): JSX.Element {
-  const context = useApplicationContext();
-  const {
-    errorMsg,
-    clearErrorMsg,
-    setSendAmountString,
-    sendFeeString,
-    setAddress,
-    destinationAddress,
-    onScanBarcode,
-    canSubmit,
-    loaderVisible,
-    loaderMsg,
-    setCameraVisible,
-    cameraVisible,
-    onBarcodeScanned,
-  } = useSendERC20Context();
-  const [backgroundStyle] = useState(context.backgroundStyle);
-  const {navigate} = useNavigation<SendERC20NavigationProp>();
+  const token = useSelectedTokenContext().selectedToken as ERC20WithBalance;
+  const wallet = useWalletContext()?.wallet;
+  const {navigate} = useNavigation<SendTokenNavigationProp>();
+  const {gasPrice$} = useGasPrice();
+  const {setAmount, setAddress, canSubmit, error, sendFee, amount, address} =
+    useSendErc20Form(token, gasPrice$);
+
+  async function handleOnConfirm(doneLoading: () => void) {
+    if (!address) {
+      Alert.alert('Error', 'Address not set ');
+      return;
+    }
+    if (!amount || amount.isZero()) {
+      Alert.alert('Error', 'Amount not set ');
+      return;
+    }
+
+    sendErc20Submit(
+      token,
+      Promise.resolve(wallet),
+      amount,
+      address,
+      firstValueFrom(gasPrice$),
+    ).subscribe({
+      next: value => {
+        if (value === undefined) {
+          Alert.alert('Error', 'Undefined error');
+        } else {
+          if ('txId' in value && value.txId) {
+            console.log(value);
+            navigate(AppNavigation.SendToken.DoneScreen);
+            doneLoading();
+          }
+        }
+      },
+      error: err => {
+        Alert.alert('Error', err.message);
+      },
+    });
+  }
+
+  function handleSetAmount(txAmount: BN) {
+    setAmount(txAmount);
+  }
 
   return (
-    <ScrollView
-      contentContainerStyle={{flexGrow: 1}}
-      keyboardShouldPersistTaps="handled">
-      <View
-        style={[
-          backgroundStyle,
-          {
-            backgroundColor: undefined,
-            paddingStart: 0,
-            paddingEnd: 0,
-            paddingBottom: 0,
+    <SendForm
+      setAmount={handleSetAmount}
+      canSubmit={canSubmit}
+      error={error}
+      sendFee={sendFee}
+      address={address}
+      setAddress={setAddress}
+      onNextPress={() => {
+        navigate(AppNavigation.SendToken.ConfirmTransactionScreen, {
+          payload: {
+            imageUrl: token?.logoURI,
+            name: token?.name,
+            fee: bnAmountToString(sendFee),
+            amount: bnAmountToString(amount),
+            address: address,
+            onConfirm: handleOnConfirm,
           },
-        ]}>
-        <View style={[{paddingStart: 4, paddingEnd: 4, marginTop: 20}]}>
-          <InputText
-            label="Amount"
-            placeholder="Enter the amount"
-            helperText="$0"
-            errorText={errorMsg.startsWith('Amount') ? errorMsg : undefined}
-            keyboardType="numeric"
-            onChangeText={text => {
-              clearErrorMsg();
-              setSendAmountString(text);
-            }}
-          />
-          <View style={styles.transactionFee}>
-            <AvaText.Body3
-              textStyle={{
-                textAlign: 'right',
-                color: context.theme.txtListItemSubscript,
-              }}>
-              {'Transaction fee: ' + sendFeeString}
-            </AvaText.Body3>
-          </View>
-        </View>
-
-        <View style={styles.horizontalLayout}>
-          <View style={[{flex: 1, paddingStart: 4, paddingEnd: 4}]}>
-            <InputText
-              label={'Address'}
-              placeholder="Enter the address"
-              multiline={true}
-              errorText={
-                errorMsg.indexOf('address') !== -1 ? errorMsg : undefined
-              }
-              onChangeText={text => {
-                setAddress(text);
-                clearErrorMsg();
-              }}
-            />
-            {destinationAddress.length === 0 && (
-              <ScanQrIcon onScanBarcode={onScanBarcode} />
-            )}
-          </View>
-        </View>
-
-        <FlexSpacer />
-
-        <AvaButton.PrimaryLarge
-          disabled={!canSubmit}
-          style={{margin: 16}}
-          onPress={() =>
-            navigate(
-              AppNavigation.SendToken.ConfirmTransactionScreen,
-            )
-          }>
-          Next
-        </AvaButton.PrimaryLarge>
-
-        <Modal animationType="fade" transparent={true} visible={loaderVisible}>
-          <Loader message={loaderMsg} />
-        </Modal>
-
-        <Modal
-          animationType="slide"
-          transparent={true}
-          onRequestClose={() => setCameraVisible(false)}
-          visible={cameraVisible}>
-          <QrScannerAva
-            onSuccess={data => onBarcodeScanned(data)}
-            onCancel={() => setCameraVisible(false)}
-          />
-        </Modal>
-      </View>
-    </ScrollView>
+        });
+      }}
+    />
   );
 }
-
-const styles: any = StyleSheet.create({
-  horizontalLayout: {
-    position: 'relative',
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  transactionFee: {
-    position: 'absolute',
-    bottom: 14,
-    right: 16,
-    alignItems: 'flex-end',
-  },
-});

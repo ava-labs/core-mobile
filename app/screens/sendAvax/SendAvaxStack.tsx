@@ -1,6 +1,5 @@
 import React, {useMemo} from 'react';
 import {useApplicationContext} from 'contexts/ApplicationContext';
-import {SendAvaxContextProvider} from 'contexts/SendAvaxContext';
 import {NavigationContainer} from '@react-navigation/native';
 import AppNavigation from 'navigation/AppNavigation';
 import DoneScreen from 'screens/send/DoneScreen';
@@ -37,24 +36,22 @@ export default function SendAvaxStack({onClose}: Props): JSX.Element {
   const DoneScrn = () => <DoneScreen onClose={onClose} />;
 
   return (
-    <SendAvaxContextProvider>
-      <NavigationContainer independent={true} theme={context.navContainerTheme}>
-        <Stack.Navigator screenOptions={screenOptions}>
-          <Stack.Screen
-            name={AppNavigation.SendToken.SendTokenScreen}
-            component={HeaderNTabs}
-          />
-          <Stack.Screen
-            name={AppNavigation.SendToken.ConfirmTransactionScreen}
-            options={SubHeaderOptions('Confirm Transaction')}
-            component={ConfirmScreen}
-          />
-          <Stack.Screen
-            name={AppNavigation.SendToken.DoneScreen}
-            component={DoneScrn}
-          />
-        </Stack.Navigator>
-      </NavigationContainer>
-    </SendAvaxContextProvider>
+    <NavigationContainer independent={true} theme={context.navContainerTheme}>
+      <Stack.Navigator screenOptions={screenOptions}>
+        <Stack.Screen
+          name={AppNavigation.SendToken.SendTokenScreen}
+          component={HeaderNTabs}
+        />
+        <Stack.Screen
+          name={AppNavigation.SendToken.ConfirmTransactionScreen}
+          options={SubHeaderOptions('Confirm Transaction')}
+          component={ConfirmScreen}
+        />
+        <Stack.Screen
+          name={AppNavigation.SendToken.DoneScreen}
+          component={DoneScrn}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }

@@ -9,11 +9,11 @@ import AppNavigation from 'navigation/AppNavigation';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {PortfolioStackParamList} from 'navigation/PortfolioStackScreen';
 import PortfolioListItem from 'screens/portfolio/components/PortfolioListItem';
-import {useSelectedTokenContext} from 'contexts/SelectedTokenContext';
 import ZeroState from 'components/ZeroState';
 import AvaButton from 'components/AvaButton';
 import {usePortfolio} from 'screens/portfolio/usePortfolio';
 import Loader from 'components/Loader';
+import {useSelectedTokenContext} from 'contexts/SelectedTokenContext';
 
 type PortfolioProps = {
   onExit: () => void;
@@ -22,6 +22,7 @@ type PortfolioProps = {
   loadZeroBalanceList?: () => void;
   handleRefresh?: () => void;
   hasZeroBalance?: boolean;
+  setSelectedToken: (token: TokenWithBalance) => void;
 };
 
 export type PortfolioNavigationProp =
@@ -35,6 +36,8 @@ function PortfolioContainer({
   const {tokenList, loadZeroBalanceList, loadTokenList} =
     useSearchableTokenList();
   const {balanceTotalInUSD, isWalletReady} = usePortfolio();
+  const {setSelectedToken} = useSelectedTokenContext();
+
   const hasZeroBalance =
     !balanceTotalInUSD ||
     balanceTotalInUSD === '0' ||
@@ -56,6 +59,7 @@ function PortfolioContainer({
           loadZeroBalanceList={loadZeroBalanceList}
           handleRefresh={handleRefresh}
           hasZeroBalance={hasZeroBalance}
+          setSelectedToken={setSelectedToken}
         />
       )}
     </>
@@ -68,10 +72,10 @@ const PortfolioView: FC<PortfolioProps> = memo(
     loadZeroBalanceList,
     handleRefresh,
     hasZeroBalance,
+    setSelectedToken,
   }: PortfolioProps) => {
     const listRef = useRef<FlatList>(null);
     const navigation = useNavigation<PortfolioNavigationProp>();
-    const {setSelectedToken} = useSelectedTokenContext();
 
     useEffect(() => {
       const unsubscribe = navigation.addListener('focus', () => {
