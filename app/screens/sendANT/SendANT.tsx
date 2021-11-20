@@ -7,6 +7,7 @@ import {AntWithBalance, useSendAnt} from '@avalabs/wallet-react-components';
 import SendForm from 'screens/send/SendForm';
 import {useSelectedTokenContext} from 'contexts/SelectedTokenContext';
 import {bnAmountToString} from 'dto/SendInfo';
+import {asyncScheduler, defer, from, scheduled} from 'rxjs';
 
 export default function SendANT(): JSX.Element {
   const {selectedToken} = useSelectedTokenContext();
@@ -32,21 +33,23 @@ export default function SendANT(): JSX.Element {
       return;
     }
 
-    submit()
-      .then((value: any) => {
+    scheduled(
+      defer(() => from(submit())),
+      asyncScheduler,
+    ).subscribe({
+      next: (value: any) => {
         if (value === undefined) {
           Alert.alert('Error', 'Undefined error');
         } else {
-          if ('txId' in value && value.txId) {
-            console.log(value);
-            navigate(AppNavigation.SendToken.DoneScreen);
-            doneLoading();
-          }
+          console.log(value);
+          navigate(AppNavigation.SendToken.DoneScreen);
+          doneLoading();
         }
-      })
-      .error((err: any) => {
+      },
+      error: (err: any) => {
         Alert.alert('Error', err.message);
-      });
+      },
+    });
   }
 
   return (
