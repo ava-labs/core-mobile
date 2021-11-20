@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {Alert} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import AppNavigation from 'navigation/AppNavigation';
@@ -21,8 +21,20 @@ export default function SendERC20(): JSX.Element {
   const wallet = useWalletContext()?.wallet;
   const {navigate} = useNavigation<SendTokenNavigationProp>();
   const {gasPrice$} = useGasPrice();
-  const {setAmount, setAddress, canSubmit, error, sendFee, amount, address} =
-    useSendErc20Form(token, gasPrice$);
+  const {
+    setAmount,
+    setAddress,
+    canSubmit,
+    error,
+    sendFee,
+    amount,
+    address,
+    setTokenBalances,
+  } = useSendErc20Form(token, gasPrice$);
+
+  useEffect(() => {
+    setTokenBalances({[token.address]: token});
+  }, []);
 
   async function handleOnConfirm(doneLoading: () => void) {
     if (!address) {

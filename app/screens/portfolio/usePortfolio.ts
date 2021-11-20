@@ -10,6 +10,7 @@ export type UsePortfolioData = {
   addressX: string;
   isBalanceLoading: boolean;
   isWalletReady: boolean;
+  isErc20Loading: boolean;
 };
 
 export function usePortfolio(): UsePortfolioData {
@@ -36,7 +37,7 @@ export function usePortfolio(): UsePortfolioData {
     if (walletStateContext) {
       calculateUsdBalance();
     }
-  }, [walletStateContext]);
+  }, [walletStateContext?.balances, walletStateContext?.avaxPrice]);
 
   return {
     addressX: walletStateContext?.addresses?.addrX ?? '',
@@ -46,5 +47,6 @@ export function usePortfolio(): UsePortfolioData {
     balanceAvaxTotal,
     isBalanceLoading: walletStateContext?.isBalanceLoading ?? true,
     isWalletReady: walletStateContext?.isWalletReady ?? false,
+    isErc20Loading: walletStateContext?.isErc20Loading ?? true,
   };
 }
