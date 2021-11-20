@@ -32,8 +32,8 @@ export default function SendANT(): JSX.Element {
       return;
     }
 
-    submit().subscribe({
-      next: (value: any) => {
+    submit()
+      .then((value: any) => {
         if (value === undefined) {
           Alert.alert('Error', 'Undefined error');
         } else {
@@ -43,11 +43,10 @@ export default function SendANT(): JSX.Element {
             doneLoading();
           }
         }
-      },
-      error: (err: any) => {
+      })
+      .error((err: any) => {
         Alert.alert('Error', err.message);
-      },
-    });
+      });
   }
 
   return (
