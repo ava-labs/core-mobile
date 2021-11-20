@@ -55,12 +55,16 @@ const NetworkSelector: FC<Props> = ({closeDrawer}) => {
       setNetworkName(networkContext?.network?.name ?? '');
       setLoading(false);
       if (isChanging) {
+        setIsChanging(false);
         closeDrawer();
       }
     }
   }, [networkContext?.network?.config]);
 
   function handleChangeNetwork(network: string) {
+    if (network === networkContext?.network?.name) {
+      return;
+    }
     setLoading(true);
     setIsChanging(true);
     // give chance for loading to be set and show the activity indicator.
