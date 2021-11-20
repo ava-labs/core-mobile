@@ -6,6 +6,7 @@ import AvaButton from 'components/AvaButton';
 import ClearSVG from 'components/svg/ClearSVG';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {useSelectedTokenContext} from 'contexts/SelectedTokenContext';
+import Avatar from 'components/Avatar';
 
 type Props = {
   onClose: () => void;
@@ -13,7 +14,7 @@ type Props = {
 
 function SendHeader({onClose}: Props): JSX.Element {
   const {theme} = useApplicationContext();
-  const {selectedToken, tokenLogo} = useSelectedTokenContext();
+  const {selectedToken} = useSelectedTokenContext();
   return (
     <View
       style={{
@@ -31,7 +32,9 @@ function SendHeader({onClose}: Props): JSX.Element {
               ${selectedToken?.balanceUsdDisplayValue} USD
             </AvaText.Body2>
           }
-          leftComponent={tokenLogo()}
+          leftComponent={
+            selectedToken && <Avatar.Token token={selectedToken} />
+          }
           titleAlignment={'flex-start'}
         />
       </View>

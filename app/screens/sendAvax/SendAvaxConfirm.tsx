@@ -1,34 +1,45 @@
-import React, {useEffect, useState} from 'react';
-import {View} from 'react-native';
+import React, {useState} from 'react';
+import {Modal, View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {Space} from 'components/Space';
 import OvalTagBg from 'components/OvalTagBg';
 import AvaText from 'components/AvaText';
 import AvaButton from 'components/AvaButton';
 import {Opacity50} from 'resources/Constants';
-import {useNavigation} from '@react-navigation/native';
-import AppNavigation from 'navigation/AppNavigation';
+import {RouteProp, useRoute} from '@react-navigation/native';
+import {SendTokenParamList} from 'screens/sendERC20/SendERC20Stack';
+import Loader from 'components/Loader';
 import {useSelectedTokenContext} from 'contexts/SelectedTokenContext';
-import {useSendAvaxContext} from 'contexts/SendAvaxContext';
+import Avatar from 'components/Avatar';
 
-export default function SendAvaxConfirm(): JSX.Element {
+export interface ISendConfirm {
+  imageUrl?: string;
+  name?: string;
+  fee: string;
+  amount: string;
+  address?: string;
+  onConfirm?: (doneLoading: () => void) => void;
+}
+
+export type SendConfirmRouteProp = RouteProp<SendTokenParamList>;
+
+export default function SendAvaxConfirm() {
   const context = useApplicationContext();
   const [backgroundStyle] = useState(context.backgroundStyle);
-  const {navigate} = useNavigation();
-  const {
-    destinationAddress,
-    sendAmountString,
-    onSendAvax,
-    createdTxId,
-    sendFeeString,
-  } = useSendAvaxContext();
-  const {selectedToken, tokenLogo} = useSelectedTokenContext();
+  const route = useRoute<SendConfirmRouteProp>();
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (createdTxId) {
-      navigate(AppNavigation.SendToken.DoneScreen);
-    }
-  }, [createdTxId]);
+  const {selectedToken} = useSelectedTokenContext();
+  const amount = route?.params?.payload?.amount;
+  const address = route?.params?.payload?.address;
+  const fee = route?.params?.payload?.fee;
+  const onConfirm = route?.params?.payload?.onConfirm;
+
+  const showLoading = (
+    <Modal animationType="fade" transparent={true} visible={loading}>
+      <Loader message={'Sending...'} />
+    </Modal>
+  );
 
   return (
     <View
@@ -44,13 +55,12 @@ export default function SendAvaxConfirm(): JSX.Element {
         },
       ]}>
       <Space y={51} />
-      {tokenLogo()}
+      {selectedToken && <Avatar.Token token={selectedToken} />}
       <Space y={16} />
       <AvaText.Heading1>
-        {sendAmountString + ' ' + selectedToken?.symbol}
+        {amount + ' ' + selectedToken?.symbol}
       </AvaText.Heading1>
       <Space y={8} />
-      {/*<AvaText.Body2>{route?.params?.fiatAmount}</AvaText.Body2>*/}
 
       <Space y={32} />
       <OvalTagBg color={context.theme.colorBg3 + Opacity50}>
@@ -59,7 +69,7 @@ export default function SendAvaxConfirm(): JSX.Element {
       <Space y={32} />
 
       <View style={{paddingLeft: 24, paddingRight: 24}}>
-        <AvaText.Heading2>{destinationAddress}</AvaText.Heading2>
+        <AvaText.Heading2>{address}</AvaText.Heading2>
       </View>
 
       <View style={{flex: 1}} />
@@ -69,16 +79,20 @@ export default function SendAvaxConfirm(): JSX.Element {
             textAlign: 'right',
             color: context.theme.txtListItemSubscript,
           }}>
-          {'Fee: ' + sendFeeString}
+          {'Fee: ' + fee}
         </AvaText.Body3>
       </View>
       <View style={{width: '100%'}}>
         <AvaButton.PrimaryLarge
           style={{margin: 16}}
-          onPress={() => onSendAvax()}>
+          onPress={() => {
+            onConfirm && onConfirm(() => setLoading(false));
+            setLoading(true);
+          }}>
           Send
         </AvaButton.PrimaryLarge>
       </View>
+      {loading && showLoading}
     </View>
   );
 }
