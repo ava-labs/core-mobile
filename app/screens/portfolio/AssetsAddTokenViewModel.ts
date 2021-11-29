@@ -19,7 +19,7 @@ export default class {
       tap(() => this.errorMsg.next('')),
       concatMap(address =>
         from(Assets.getErc20Token(address)).pipe(
-          catchError(err => {
+          catchError(() => {
             this.errorMsg.next('Invalid contract address.');
             return of(null);
           }),
