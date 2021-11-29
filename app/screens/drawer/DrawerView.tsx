@@ -61,52 +61,7 @@ const DrawerView = () => {
       </ScrollView>
       <Separator style={{marginHorizontal: 16}} />
       <VersionItem />
-
-      <AvaButton.TextLarge
-        style={{
-          alignItems: 'flex-start',
-        }}
-        onPress={() => setLogoutWarningVisible(!logoutWarningVisible)}>
-        Sign out
-      </AvaButton.TextLarge>
-      <Modal visible={logoutWarningVisible} transparent animated>
-        <Pressable
-          style={[
-            StyleSheet.absoluteFill,
-            {backgroundColor: 'rgba(0, 0, 0, 0.5)'},
-          ]}
-          onPress={() => setLogoutWarningVisible(!setLogoutWarningVisible)}
-        />
-        <View
-          style={[
-            {
-              borderRadius: 8,
-              backgroundColor: context.theme.colorBg2,
-              paddingVertical: 24,
-              paddingHorizontal: 16,
-              marginHorizontal: 16,
-              marginVertical: 16,
-              justifyContent: 'flex-end',
-              position: 'absolute',
-              bottom: 0,
-            },
-          ]}>
-          <AvaText.Heading2 textStyle={{textAlign: 'center'}}>
-            Have you recorded your recovery phrase?
-          </AvaText.Heading2>
-          <AvaText.Body2 textStyle={{textAlign: 'center', marginVertical: 16}}>
-            Without this you will not be able to sign back in to your account.
-          </AvaText.Body2>
-          <AvaButton.PrimaryLarge onPress={handleLogout}>
-            Yes
-          </AvaButton.PrimaryLarge>
-          <Space y={8} />
-          <AvaButton.TextLarge
-            onPress={() => setLogoutWarningVisible(!logoutWarningVisible)}>
-            No
-          </AvaButton.TextLarge>
-        </View>
-      </Modal>
+      <SignOutItem />
     </View>
   );
 
