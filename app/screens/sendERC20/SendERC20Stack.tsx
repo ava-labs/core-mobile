@@ -12,12 +12,12 @@ import {
 import HeaderAndTabs from 'screens/send/HeaderAndTabs';
 import ConfirmScreen from 'screens/send/ConfirmScreen';
 import {ERC20} from '@avalabs/wallet-react-components';
-import {SendERC20ContextProvider} from 'contexts/SendERC20Context';
 import {SubHeaderOptions} from 'navigation/NavUtils';
+import {ISendConfirm} from 'screens/sendAvax/SendAvaxConfirm';
 
 export type SendTokenParamList = {
   [AppNavigation.SendToken.SendTokenScreen]: undefined;
-  [AppNavigation.SendToken.ConfirmTransactionScreen]: undefined;
+  [AppNavigation.SendToken.ConfirmTransactionScreen]: {payload: ISendConfirm};
   [AppNavigation.SendToken.DoneScreen]: undefined;
 };
 
@@ -47,24 +47,22 @@ export default function SendERC20Stack({onClose, token}: Props): JSX.Element {
   const DoneScrn = () => <DoneScreen onClose={onClose} />;
 
   return (
-    <SendERC20ContextProvider erc20Token={token}>
-      <NavigationContainer independent={true} theme={context.navContainerTheme}>
-        <Stack.Navigator screenOptions={screenOptions}>
-          <Stack.Screen
-            name={AppNavigation.SendToken.SendTokenScreen}
-            component={HeaderNTabs}
-          />
-          <Stack.Screen
-            name={AppNavigation.SendToken.ConfirmTransactionScreen}
-            options={SubHeaderOptions('Confirm Transaction')}
-            component={ConfirmScreen} //TODO: change to specific screen for ant
-          />
-          <Stack.Screen
-            name={AppNavigation.SendToken.DoneScreen}
-            component={DoneScrn}
-          />
-        </Stack.Navigator>
-      </NavigationContainer>
-    </SendERC20ContextProvider>
+    <NavigationContainer independent={true} theme={context.navContainerTheme}>
+      <Stack.Navigator screenOptions={screenOptions}>
+        <Stack.Screen
+          name={AppNavigation.SendToken.SendTokenScreen}
+          component={HeaderNTabs}
+        />
+        <Stack.Screen
+          name={AppNavigation.SendToken.ConfirmTransactionScreen}
+          options={SubHeaderOptions('Confirm Transaction')}
+          component={ConfirmScreen} //TODO: change to specific screen for ant
+        />
+        <Stack.Screen
+          name={AppNavigation.SendToken.DoneScreen}
+          component={DoneScrn}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }

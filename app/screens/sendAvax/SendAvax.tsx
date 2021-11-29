@@ -1,136 +1,68 @@
-import React, {useState} from 'react';
-import {Modal, StyleSheet, View} from 'react-native';
-import InputText from 'components/InputText';
-import AvaButton from 'components/AvaButton';
-import Loader from 'components/Loader';
-import QrScannerAva from 'components/QrScannerAva';
-import {useApplicationContext} from 'contexts/ApplicationContext';
+import React from 'react';
+import {Alert} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import AppNavigation from 'navigation/AppNavigation';
-import AvaText from 'components/AvaText';
-import FlexSpacer from 'components/FlexSpacer';
-import {useSendAvaxContext} from 'contexts/SendAvaxContext';
-import {ScanQrIcon} from 'screens/send/ScanQrIcon';
-import {ScrollView} from 'react-native-gesture-handler';
 import {SendTokenNavigationProp} from 'screens/sendERC20/SendERC20Stack';
+import {useGasPrice} from 'utils/GasPriceHook';
+import {useSendAvax} from '@avalabs/wallet-react-components';
+import {bnAmountToString} from 'dto/SendInfo';
+import SendForm from 'screens/send/SendForm';
+import {useSelectedTokenContext} from 'contexts/SelectedTokenContext';
 
 export default function SendAvax(): JSX.Element {
-  const context = useApplicationContext();
+  const {selectedToken} = useSelectedTokenContext();
+  const {gasPrice$} = useGasPrice();
   const {
-    loaderVisible,
-    loaderMsg,
-    errorMsg,
-    clearErrorMsg,
-    cameraVisible,
-    setCameraVisible,
-    destinationAddress,
+    submit,
+    setAmount,
     setAddress,
-    setSendAmountString,
-    sendFeeString,
+    amount,
+    address,
+    error,
     canSubmit,
-    onScanBarcode,
-    onBarcodeScanned,
-  } = useSendAvaxContext();
-  const [backgroundStyle] = useState(context.backgroundStyle);
+    sendFee,
+  } = useSendAvax(gasPrice$);
   const {navigate} = useNavigation<SendTokenNavigationProp>();
 
+  async function handleOnConfirm(doneLoading: () => void) {
+    submit().subscribe({
+      next: value => {
+        if (value === undefined) {
+          Alert.alert('Error', 'Undefined error');
+        } else {
+          if ('txId' in value && value.txId) {
+            console.log(value);
+            navigate(AppNavigation.SendToken.DoneScreen);
+            doneLoading();
+          }
+        }
+      },
+      error: err => {
+        Alert.alert('Error', err.message);
+      },
+    });
+  }
+
   return (
-    <ScrollView
-      contentContainerStyle={{flexGrow: 1}}
-      keyboardShouldPersistTaps="handled">
-      <View
-        style={[
-          backgroundStyle,
-          {
-            backgroundColor: undefined,
-            paddingStart: 0,
-            paddingEnd: 0,
-            paddingBottom: 0,
+    <SendForm
+      setAmount={setAmount}
+      canSubmit={canSubmit}
+      error={error}
+      sendFee={sendFee}
+      address={address}
+      setAddress={setAddress}
+      onNextPress={() => {
+        navigate(AppNavigation.SendToken.ConfirmTransactionScreen, {
+          payload: {
+            imageUrl: selectedToken?.logoURI,
+            name: selectedToken?.name,
+            fee: bnAmountToString(sendFee),
+            amount: bnAmountToString(amount),
+            address: address,
+            onConfirm: handleOnConfirm,
           },
-        ]}>
-        <View style={[{paddingStart: 4, paddingEnd: 4, marginTop: 20}]}>
-          <InputText
-            label="Amount"
-            placeholder="Enter the amount"
-            helperText="$0"
-            errorText={errorMsg.startsWith('Amount') ? errorMsg : undefined}
-            keyboardType="numeric"
-            onChangeText={text => {
-              clearErrorMsg();
-              setSendAmountString(text);
-            }}
-          />
-          <View style={styles.transactionFee}>
-            <AvaText.Body3
-              textStyle={{
-                textAlign: 'right',
-                color: context.theme.txtListItemSubscript,
-              }}>
-              {'Transaction fee: ' + sendFeeString}
-            </AvaText.Body3>
-          </View>
-        </View>
-
-        <View style={styles.horizontalLayout}>
-          <View style={[{flex: 1, paddingStart: 4, paddingEnd: 4}]}>
-            <InputText
-              label={'Address'}
-              placeholder="Enter the address"
-              multiline={true}
-              errorText={
-                errorMsg.indexOf('address') !== -1 ? errorMsg : undefined
-              }
-              onChangeText={text => {
-                setAddress(text);
-                clearErrorMsg();
-              }}
-            />
-            {destinationAddress.length === 0 && (
-              <ScanQrIcon onScanBarcode={onScanBarcode} />
-            )}
-          </View>
-        </View>
-
-        <FlexSpacer />
-
-        <AvaButton.PrimaryLarge
-          disabled={!canSubmit}
-          style={{margin: 16}}
-          onPress={() =>
-            navigate(AppNavigation.SendToken.ConfirmTransactionScreen)
-          }>
-          Next
-        </AvaButton.PrimaryLarge>
-
-        <Modal animationType="fade" transparent={true} visible={loaderVisible}>
-          <Loader message={loaderMsg} />
-        </Modal>
-
-        <Modal
-          animationType="slide"
-          transparent={true}
-          onRequestClose={() => setCameraVisible(false)}
-          visible={cameraVisible}>
-          <QrScannerAva
-            onSuccess={data => onBarcodeScanned(data)}
-            onCancel={() => setCameraVisible(false)}
-          />
-        </Modal>
-      </View>
-    </ScrollView>
+        });
+      }}
+    />
   );
 }
-
-const styles: any = StyleSheet.create({
-  horizontalLayout: {
-    position: 'relative',
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  transactionFee: {
-    position: 'absolute',
-    bottom: 14,
-    right: 16,
-    alignItems: 'flex-end',
-  },
-});
