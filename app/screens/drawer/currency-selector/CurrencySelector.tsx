@@ -3,8 +3,8 @@ import {FlatList, ListRenderItemInfo, StyleSheet} from 'react-native';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
 import CurrencyListItem from 'screens/drawer/currency-selector/CurrencyListItem';
-import {DrawerStackParamList} from 'screens/mainView/WalletStackScreen';
-import currencyList from 'assets/currency.json';
+import {currencies} from '@avalabs/wallet-react-components';
+import {DrawerStackParamList} from 'navigation/DrawerNavigator';
 
 type CurrencyRouteProp = RouteProp<DrawerStackParamList, 'CurrencySelector'>;
 
@@ -18,14 +18,16 @@ const CurrencySelector: FC = () => {
     goBack();
   }, []);
 
-  const renderItem = (item: ListRenderItemInfo<any>) => {
+  const renderItem = (
+    item: ListRenderItemInfo<{name: string; symbol: string}>,
+  ) => {
     const currency = item.item;
 
     return (
       <CurrencyListItem
-        name={`${currency.name} (${currency.code})`}
-        selected={selectedCurrency === currency.code}
-        onPress={() => handlePress(currency.code)}
+        name={`${currency.name} (${currency.symbol})`}
+        selected={selectedCurrency === currency.symbol}
+        onPress={() => handlePress(currency.symbol)}
       />
     );
   };
@@ -34,7 +36,7 @@ const CurrencySelector: FC = () => {
     <SafeAreaProvider style={styles.flex}>
       <FlatList
         style={styles.tokenList}
-        data={currencyList}
+        data={currencies}
         renderItem={renderItem}
         keyExtractor={(item: any) => item.name}
         scrollEventThrottle={16}

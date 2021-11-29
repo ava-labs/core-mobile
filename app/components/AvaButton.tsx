@@ -209,6 +209,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     width: 'auto',
     height: 48,
+    justifyContent: 'center',
   },
   btnPrimaryMedium: {
     paddingHorizontal: 32,

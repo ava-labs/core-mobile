@@ -10,16 +10,13 @@ import {
 } from 'react-native';
 import SearchSVG from 'components/svg/SearchSVG';
 import {useApplicationContext} from 'contexts/ApplicationContext';
-import {useNavigation} from '@react-navigation/native';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import {TokenWithBalance} from '@avalabs/wallet-react-components';
 import {useSearchableTokenList} from 'screens/portfolio/useSearchableTokenList';
-import AppNavigation from 'navigation/AppNavigation';
 import SearchListItem from 'screens/search/SearchListItem';
 import AvaText from 'components/AvaText';
 import AddSVG from 'components/svg/AddSVG';
 import CarrotSVG from 'components/svg/CarrotSVG';
-import {PortfolioNavigationProp} from 'screens/portfolio/PortfolioView';
 import AvaButton from 'components/AvaButton';
 import {Opacity50} from 'resources/Constants';
 import Loader from 'components/Loader';
@@ -34,7 +31,7 @@ function SearchView(): JSX.Element {
     loadTokenList,
   } = useSearchableTokenList(false);
   const context = useApplicationContext();
-  const navigation = useNavigation<PortfolioNavigationProp>();
+  // const navigation = useNavigation<PortfolioNavigationProp>();
 
   function handleRefresh() {
     loadTokenList();
@@ -85,7 +82,7 @@ function SearchView(): JSX.Element {
   const descriptionPadding = Platform.OS === 'ios' ? 24 : 32;
 
   return (
-    <View style={{flex: 1, backgroundColor: context.theme.background}}>
+    <View style={{flex: 1, backgroundColor: context.theme.colorBg2}}>
       <AvaText.Body1
         textStyle={{alignSelf: 'center', paddingStart: descriptionPadding}}>
         Add or remove tokens without balance
@@ -118,13 +115,13 @@ function SearchView(): JSX.Element {
           data={filteredTokenList}
           renderItem={renderItem}
           onRefresh={handleRefresh}
-          ListHeaderComponent={
-            <AddCustomTokenButton
-              onPress={() =>
-                navigation.navigate(AppNavigation.Wallet.AddCustomToken)
-              }
-            />
-          }
+          // ListHeaderComponent={
+          //   <AddCustomTokenButton
+          //     onPress={() =>
+          //       navigation.navigate(AppNavigation.Wallet.AddCustomToken)
+          //     }
+          //   />
+          // }
           refreshing={false}
           keyExtractor={(item: TokenWithBalance) => item.symbol}
           ListEmptyComponent={emptyView}

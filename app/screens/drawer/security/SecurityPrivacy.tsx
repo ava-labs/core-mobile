@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Switch, View} from 'react-native';
+import {View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaListItem from 'components/AvaListItem';
 import {StackActions, useNavigation} from '@react-navigation/native';
@@ -8,6 +8,7 @@ import AppNavigation from 'navigation/AppNavigation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {SECURE_ACCESS_SET} from 'resources/Constants';
 import {UserCredentials} from 'react-native-keychain';
+import Switch from 'components/Switch';
 
 function SecurityPrivacy() {
   const theme = useApplicationContext().theme;

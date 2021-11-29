@@ -1,5 +1,5 @@
 import React from 'react';
-import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {Pressable, StyleSheet, Text, View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import CarrotSVG from 'components/svg/CarrotSVG';
 
@@ -10,7 +10,7 @@ interface Props {
   title?: React.ReactNode | string;
   subtitle?: React.ReactNode | string;
   showNavigationArrow?: boolean;
-  listPressDisabled?: boolean;
+  disabled?: boolean;
   onPress?: () => void;
   titleAlignment?: 'center' | 'flex-start' | 'flex-end';
   embedInCard?: boolean;
@@ -22,7 +22,7 @@ function BaseListItem({
   subtitle,
   label,
   title,
-  listPressDisabled,
+  disabled,
   titleAlignment = 'center',
   showNavigationArrow = false,
   onPress,
@@ -40,11 +40,11 @@ function BaseListItem({
           borderRadius: 8,
         },
       ]}>
-      <TouchableOpacity
+      <Pressable
         style={styles.baseRowContainer}
-        disabled={listPressDisabled}
+        disabled={disabled}
         onPress={onPress}>
-        <View style={styles.baseRow}>
+        <View style={[styles.baseRow, disabled && {opacity: 0.5}]}>
           {leftComponent && (
             <View style={{marginLeft: 16, flexDirection: 'row'}}>
               {leftComponent}
@@ -106,7 +106,7 @@ function BaseListItem({
             {showNavigationArrow && <CarrotSVG />}
           </View>
         </View>
-      </TouchableOpacity>
+      </Pressable>
     </View>
   );
 }

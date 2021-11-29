@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   Dimensions,
   NativeScrollEvent,
@@ -21,7 +21,7 @@ const SCREEN_WIDTH = Dimensions.get('window')?.width;
 
 function ReceiveToken() {
   const {addressC, addressX} = usePortfolio();
-  const {theme} = useApplicationContext();
+  const {theme, isDarkMode} = useApplicationContext();
   const [selectedAddress, setSelectedAddress] = useState('');
   const [currentSlide, setCurrentSlide] = useState(0);
 
@@ -105,10 +105,15 @@ function ReceiveToken() {
                 flexDirection: 'row',
                 alignItems: 'center',
                 padding: 16,
-                backgroundColor: theme.colorIcon1 + Opacity05,
+                borderWidth: 1,
+                borderColor: theme.colorIcon1 + Opacity05,
                 borderRadius: 8,
                 marginBottom: 8,
                 marginHorizontal: 16,
+              },
+              isDarkMode && {
+                backgroundColor: theme.colorIcon1 + Opacity05,
+                borderWidth: 0,
               },
             ]}>
             <CopySVG />

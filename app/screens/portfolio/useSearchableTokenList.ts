@@ -1,12 +1,12 @@
 import {useEffect, useState} from 'react';
 import {BN} from '@avalabs/avalanche-wallet-sdk';
 import {
-  erc20TokenList$,
   TokenWithBalance,
+  updateAllBalances,
+  useWalletContext,
   useWalletStateContext,
 } from '@avalabs/wallet-react-components';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {take} from 'rxjs/operators';
 
 type ShowZeroArrayType = {[x: string]: boolean};
 const bnZero = new BN(0);
@@ -34,6 +34,7 @@ export function useSearchableTokenList(hideZeroBalance = true): {
   );
 
   const walletState = useWalletStateContext();
+  const wallet = useWalletContext().wallet;
 
   const loadZeroBalanceList = () => {
     AsyncStorage.getItem('showZeroBalanceList').then(value => {
@@ -51,41 +52,30 @@ export function useSearchableTokenList(hideZeroBalance = true): {
   };
 
   function loadTokenList() {
-    if (!walletState) {
-      return; //('wallet state not available');
+    if (wallet) {
+      setLoading(true);
+      updateAllBalances(wallet).then(() => setLoading(false));
     }
-
-    setLoading(true);
-
-    erc20TokenList$.pipe(take(1)).subscribe({
-      next: erc20Tokens => {
-        const tokens = [
-          walletState.avaxToken,
-          ...erc20Tokens.filter(value => {
-            return hideZeroBalance
-              ? value.balance.gt(bnZero) || showZeroBalanceList[value.name]
-              : true;
-          }),
-          ...walletState.antTokens,
-        ] as TokenWithBalance[];
-
-        setTokenList(tokens);
-        setLoading(false);
-      },
-      error: e => {
-        console.debug('deal with error', e);
-        setLoading(false);
-      },
-      complete: () => {
-        console.debug('complete');
-      },
-    });
   }
 
   useEffect(() => loadZeroBalanceList(), []);
 
   useEffect(() => {
-    loadTokenList();
+    if (!walletState) {
+      return; //('wallet state not available');
+    }
+
+    const tokens = [
+      walletState?.avaxToken,
+      ...walletState?.erc20Tokens?.filter(value => {
+        return hideZeroBalance
+          ? value.balance.gt(bnZero) || showZeroBalanceList[value.name]
+          : true;
+      }),
+      ...walletState?.antTokens,
+    ] as TokenWithBalance[];
+
+    setTokenList(tokens);
   }, [walletState, showZeroBalanceList, hideZeroBalance]);
 
   useEffect(() => {
