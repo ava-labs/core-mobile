@@ -1,4 +1,4 @@
-import React, {FC, memo, useCallback, useContext} from 'react';
+import React, {FC, memo, useCallback} from 'react';
 import {Share, StyleSheet, View} from 'react-native';
 import {usePortfolio} from 'screens/portfolio/usePortfolio';
 import {useApplicationContext} from 'contexts/ApplicationContext';
@@ -9,18 +9,10 @@ import {Opacity05} from 'resources/Constants';
 import {ShowSnackBar} from 'components/Snackbar';
 import Clipboard from '@react-native-clipboard/clipboard';
 import {Space} from 'components/Space';
-import {
-  createStackNavigator,
-  StackNavigationProp,
-  TransitionPresets,
-} from '@react-navigation/stack';
-import {
-  NavigationContainer,
-  useFocusEffect,
-  useNavigation,
-} from '@react-navigation/native';
+import {createStackNavigator, StackNavigationProp, TransitionPresets} from '@react-navigation/stack';
+import {NavigationContainer, useFocusEffect, useNavigation} from '@react-navigation/native';
 import AvaxQACode from 'components/AvaxQACode';
-import {SubHeaderOptions} from 'App';
+import {SubHeaderOptions} from 'navigation/NavUtils';
 
 type ReceiveStackParams = {
   ReceiveCChain: undefined;
@@ -166,12 +158,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   copyAddressContainer: {
-    display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
     borderRadius: 8,
     marginHorizontal: 16,
+    alignSelf: 'baseline',
   },
 });
 

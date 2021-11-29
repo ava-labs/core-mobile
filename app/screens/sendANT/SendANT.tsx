@@ -12,11 +12,11 @@ import FlexSpacer from 'components/FlexSpacer';
 import {useSendAntContext} from 'contexts/SendANTContext';
 import {ScanQrIcon} from 'screens/send/ScanQrIcon';
 import {ScrollView} from 'react-native-gesture-handler';
+import {SendTokenNavigationProp} from 'screens/sendERC20/SendERC20Stack';
 
 export default function SendANT(): JSX.Element {
   const context = useApplicationContext();
   const {
-    sendAmountString,
     errorMsg,
     clearErrorMsg,
     setSendAmountString,
@@ -32,7 +32,7 @@ export default function SendANT(): JSX.Element {
     onBarcodeScanned,
   } = useSendAntContext();
   const [backgroundStyle] = useState(context.backgroundStyle);
-  const {navigate} = useNavigation();
+  const {navigate} = useNavigation<SendTokenNavigationProp>();
 
   return (
     <ScrollView

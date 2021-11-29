@@ -1,6 +1,6 @@
 {
   "name": "avalanche-wallet-apps",
-  "version": "0.4.10",
+  "version": "0.4.11",
   "private": true,
   "scripts": {
     "android": "react-native run-android",
@@ -36,6 +36,7 @@
     "big.js": "^6.1.1",
     "bignumber.js": "^9.0.1",
     "bip39": "^3.0.4",
+    "bip32": "^2.0.6",
     "bn.js": "^5.2.0",
     "ethereumjs-util": "^6.2.1",
     "hdkey": "^2.0.1",
