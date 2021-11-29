@@ -47,7 +47,19 @@ const RootStack = createStackNavigator<RootStackParamList>();
 const focusEvent = 'change';
 const TIMEOUT = 3000;
 
-function WalletStackScreen(props: Props | Readonly<Props>) {
+const SignOutBottomSheetScreen = () => {
+  const {destroyWallet} = useWalletSetup();
+  const {immediateLogout} = useApplicationContext().appHook;
+
+  const doSwitchWallet = (): void => {
+    destroyWallet();
+    immediateLogout();
+  };
+
+  return <SignOutBottomSheet onConfirm={doSwitchWallet} />;
+};
+
+function WalletScreenStack(props: Props | Readonly<Props>) {
   const [showSecurityModal, setShowSecurityModal] = useState(false);
   const appState = useRef(AppState.currentState);
   const context = useApplicationContext();
@@ -150,6 +162,10 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
         <RootStack.Screen
           name={AppNavigation.Modal.ReceiveOnlyBottomSheet}
           component={ReceiveOnlyBottomSheet}
+        />
+        <RootStack.Screen
+          name={AppNavigation.Modal.SignOut}
+          component={SignOutBottomSheetScreen}
         />
       </RootStack.Group>
     );
