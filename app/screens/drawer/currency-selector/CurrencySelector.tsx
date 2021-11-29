@@ -1,23 +1,16 @@
-import React, {FC, useCallback} from 'react';
+import React from 'react';
 import {FlatList, ListRenderItemInfo, StyleSheet} from 'react-native';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
-import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
 import CurrencyListItem from 'screens/drawer/currency-selector/CurrencyListItem';
 import {currencies} from '@avalabs/wallet-react-components';
-import {DrawerStackParamList} from 'navigation/DrawerNavigator';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 
-type CurrencyRouteProp = RouteProp<DrawerStackParamList, 'CurrencySelector'>;
-
-const CurrencySelector: FC = () => {
-  const {goBack} = useNavigation();
-  const route = useRoute<CurrencyRouteProp>();
-  const selectedCurrency = route?.params?.selectedCurrency;
-
-  const handlePress = useCallback((code: string) => {
-    route?.params?.onCurrencySelected(code);
-    goBack();
-  }, []);
-
+const CurrencySelector = ({
+  onSelectedCurrency,
+}: {
+  onSelectedCurrency: (code: string) => void;
+}) => {
+  const {selectedCurrency} = useApplicationContext().appHook;
   const renderItem = (
     item: ListRenderItemInfo<{name: string; symbol: string}>,
   ) => {
@@ -27,7 +20,7 @@ const CurrencySelector: FC = () => {
       <CurrencyListItem
         name={`${currency.name} (${currency.symbol})`}
         selected={selectedCurrency === currency.symbol}
-        onPress={() => handlePress(currency.symbol)}
+        onPress={() => onSelectedCurrency(currency.symbol)}
       />
     );
   };

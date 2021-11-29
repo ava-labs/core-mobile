@@ -1,17 +1,10 @@
 import React, {memo, useEffect, useMemo, useRef, useState} from 'react';
 import {AppState, BackHandler, Modal} from 'react-native';
-import {NavigationContainer, useFocusEffect} from '@react-navigation/native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
-import {createStackNavigator} from '@react-navigation/stack';
 import SendReceiveBottomSheet from 'screens/portfolio/SendReceiveBottomSheet';
 import AccountBottomSheet from 'screens/portfolio/account/AccountBottomSheet';
 import AppNavigation from 'navigation/AppNavigation';
-import SearchView from 'screens/search/SearchView';
-import AddCustomToken from 'screens/search/AddCustomToken';
-import CurrencySelector from 'screens/drawer/currency-selector/CurrencySelector';
 import {SelectedTokenContextProvider} from 'contexts/SelectedTokenContext';
-import SecurityPrivacyStackScreen from 'navigation/SecurityPrivacyStackScreen';
-import WebViewScreen from 'screens/webview/WebViewScreen';
 import ActivityDetailBottomSheet from 'screens/activity/ActivityDetailBottomSheet';
 import {SelectedAccountContextProvider} from 'contexts/SelectedAccountContext';
 import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin';
@@ -19,17 +12,37 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import BiometricsSDK from 'utils/BiometricsSDK';
 import moment from 'moment';
 import ReceiveOnlyBottomSheet from 'screens/portfolio/receive/ReceiveOnlyBottomSheet';
-import {MainHeaderOptions} from 'navigation/NavUtils';
-import {SelectedView} from 'AppViewModel';
-import DrawerNavigator from 'navigation/DrawerNavigator';
+import DrawerScreenStack from 'navigation/wallet/DrawerScreenStack';
 import {useWalletSetup} from 'hooks/useWalletSetup';
+import SearchView from 'screens/search/SearchView';
+import AddCustomToken from 'screens/search/AddCustomToken';
+import CurrencySelector from 'screens/drawer/currency-selector/CurrencySelector';
+import SecurityPrivacyStackScreen from 'navigation/wallet/SecurityPrivacyStackScreen';
+import {MainHeaderOptions} from 'navigation/NavUtils';
+import WebViewScreen from 'screens/webview/WebViewScreen';
+import {useFocusEffect} from '@react-navigation/native';
+import SignOutBottomSheet from 'screens/mainView/SignOutBottomSheet';
+import {createStackNavigator} from '@react-navigation/stack';
 
 type Props = {
   onExit: () => void;
-  onSwitchWallet: () => void;
 };
 
-const RootStack = createStackNavigator();
+type RootStackParamList = {
+  [AppNavigation.Wallet.Drawer]: undefined;
+  [AppNavigation.Wallet.SearchScreen]: undefined;
+  [AppNavigation.Wallet.AddCustomToken]: undefined;
+  [AppNavigation.Wallet.CurrencySelector]: undefined;
+  [AppNavigation.Wallet.SecurityPrivacy]: undefined;
+  [AppNavigation.Wallet.Legal]: undefined;
+  [AppNavigation.Modal.SendReceiveBottomSheet]: undefined;
+  [AppNavigation.Modal.AccountBottomSheet]: undefined;
+  [AppNavigation.Modal.TransactionDetailBottomSheet]: undefined;
+  [AppNavigation.Modal.ReceiveOnlyBottomSheet]: undefined;
+  [AppNavigation.Modal.SignOut]: undefined;
+};
+
+const RootStack = createStackNavigator<RootStackParamList>();
 
 const focusEvent = 'change';
 const TIMEOUT = 3000;
@@ -39,7 +52,8 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
   const appState = useRef(AppState.currentState);
   const context = useApplicationContext();
   const {resetHDIndices} = useWalletSetup();
-  const {immediateLogout, setSelectedView} = context.appHook;
+  const {immediateLogout, resetNavToEnterMnemonic, setSelectedCurrency} =
+    context.appHook;
 
   /**
    * This UseEffect handles subscription to
@@ -100,8 +114,12 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
   useFocusEffect(
     React.useCallback(() => {
       const onBackPress = () => {
-        onExit();
-        return true;
+        if (!context.appHook.navigation.current?.canGoBack()) {
+          onExit();
+          return true;
+        } else {
+          return false;
+        }
       };
       BackHandler.addEventListener('hardwareBackPress', onBackPress);
 
@@ -137,63 +155,68 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
     );
   }, []);
 
+  const CurrencySelectorScreen = () => {
+    return (
+      <CurrencySelector
+        onSelectedCurrency={code => setSelectedCurrency(code)}
+      />
+    );
+  };
+
   return (
     <SelectedAccountContextProvider>
       <SelectedTokenContextProvider>
-        <NavigationContainer
-          theme={context.navContainerTheme}
-          independent={true}>
-          <RootStack.Navigator
-            screenOptions={{
-              headerShown: false,
-            }}>
-            <RootStack.Group>
-              <RootStack.Screen name={'Drawer'} component={DrawerNavigator} />
-              <RootStack.Screen
-                options={{
-                  ...MainHeaderOptions('Manage token list'),
-                }}
-                name={AppNavigation.Wallet.SearchScreen}
-                component={SearchView}
-              />
-              <RootStack.Screen
-                options={{
-                  ...MainHeaderOptions('Add Custom Token'),
-                }}
-                name={AppNavigation.Wallet.AddCustomToken}
-                component={AddCustomToken}
-              />
-              <RootStack.Screen
-                options={{
-                  ...MainHeaderOptions('Currency'),
-                }}
-                name={AppNavigation.Wallet.CurrencySelector}
-                component={CurrencySelector}
-              />
-              <RootStack.Screen
-                name={AppNavigation.Stack.Security}
-                component={SecurityPrivacyStackScreen}
-              />
-              <RootStack.Screen
-                options={{
-                  ...MainHeaderOptions('Legal'),
-                }}
-                name={AppNavigation.Wallet.WebView}
-                component={WebViewScreen}
-              />
-            </RootStack.Group>
-            {BottomSheetGroup}
-          </RootStack.Navigator>
-        </NavigationContainer>
+        <RootStack.Navigator
+          screenOptions={{
+            headerShown: false,
+          }}>
+          <RootStack.Screen
+            name={AppNavigation.Wallet.Drawer}
+            component={DrawerScreenStack}
+          />
+          <RootStack.Screen
+            options={{
+              ...MainHeaderOptions('Manage token list'),
+            }}
+            name={AppNavigation.Wallet.SearchScreen}
+            component={SearchView}
+          />
+          <RootStack.Screen
+            options={{
+              ...MainHeaderOptions('Add Custom Token'),
+            }}
+            name={AppNavigation.Wallet.AddCustomToken}
+            component={AddCustomToken}
+          />
+          <RootStack.Screen
+            options={{
+              ...MainHeaderOptions('Currency'),
+            }}
+            name={AppNavigation.Wallet.CurrencySelector}
+            component={CurrencySelectorScreen}
+          />
+          <RootStack.Screen
+            name={AppNavigation.Wallet.SecurityPrivacy}
+            component={SecurityPrivacyStackScreen}
+          />
+          <RootStack.Screen
+            options={{
+              ...MainHeaderOptions('Legal'),
+            }}
+            name={AppNavigation.Wallet.Legal}
+            component={WebViewScreen}
+          />
+          {BottomSheetGroup}
+        </RootStack.Navigator>
         <Modal visible={showSecurityModal} animationType={'slide'} animated>
           <PinOrBiometryLogin
             onSignInWithRecoveryPhrase={() => {
               immediateLogout().then(() => {
-                setSelectedView(SelectedView.LoginWithMnemonic);
+                resetNavToEnterMnemonic();
                 setShowSecurityModal(false);
               });
             }}
-            onEnterWallet={() => {
+            onLoginSuccess={() => {
               setShowSecurityModal(false);
             }}
           />
@@ -203,4 +226,4 @@ function WalletStackScreen(props: Props | Readonly<Props>) {
   );
 }
 
-export default memo(WalletStackScreen);
+export default memo(WalletScreenStack);
