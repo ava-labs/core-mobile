@@ -1,10 +1,12 @@
-import React, {FC} from 'react';
+import React from 'react';
 import AvaListItem from 'components/AvaListItem';
 import CarrotSVG from 'components/svg/CarrotSVG';
-import {DrawerContentComponentProps} from '@react-navigation/drawer';
 import AppNavigation from 'navigation/AppNavigation';
+import {useNavigation} from '@react-navigation/native';
+import {NativeStackNavigatorProps} from 'react-native-screens/lib/typescript/native-stack/types';
 
-const LegalItem: FC<Partial<DrawerContentComponentProps>> = ({navigation}) => {
+const LegalItem = () => {
+  const navigation = useNavigation<NativeStackNavigatorProps>();
   return (
     <>
       <AvaListItem.Base
@@ -12,7 +14,7 @@ const LegalItem: FC<Partial<DrawerContentComponentProps>> = ({navigation}) => {
         leftComponent={null}
         rightComponent={<CarrotSVG />}
         onPress={() => {
-          navigation?.navigate(AppNavigation.Wallet.WebView);
+          navigation?.navigate(AppNavigation.Wallet.Legal);
         }}
       />
     </>
