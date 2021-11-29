@@ -2,7 +2,7 @@ import React, {FC, useCallback, useEffect, useMemo, useRef} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import BottomSheet, {BottomSheetBackdrop} from '@gorhom/bottom-sheet';
 import TabViewBackground from './components/TabViewBackground';
-import SendTokenStackScreen from 'navigation/SendTokenStackScreen';
+import SendTokenScreenStack from 'navigation/wallet/SendTokenScreenStack';
 import {Space} from 'components/Space';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {Platform} from 'react-native';
@@ -52,7 +52,7 @@ const SendReceiveBottomSheet: FC = () => {
       onChange={handleChange}
       backdropComponent={BottomSheetBackdrop}
       backgroundComponent={TabViewBackground}>
-      <SendTokenStackScreen onClose={handleClose} />
+      <SendTokenScreenStack onClose={handleClose} />
     </BottomSheet>
   );
 };

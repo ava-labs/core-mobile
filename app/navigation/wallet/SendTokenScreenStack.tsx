@@ -15,7 +15,7 @@ type Props = {
   onClose: () => void;
 };
 
-const SendTokenStackScreen = ({onClose}: Props) => {
+const SendTokenScreenStack = ({onClose}: Props) => {
   const {selectedToken, tokenType} = useSelectedTokenContext();
 
   return {
@@ -32,4 +32,4 @@ const SendTokenStackScreen = ({onClose}: Props) => {
   }[tokenType(selectedToken) ?? TokenType.AVAX];
 };
 
-export default SendTokenStackScreen;
+export default SendTokenScreenStack;

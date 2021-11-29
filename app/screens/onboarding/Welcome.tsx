@@ -15,7 +15,7 @@ type Props = {
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const pkg = require('../../../package.json');
 
-export default function Onboard(props: Props | Readonly<Props>): JSX.Element {
+export default function Welcome(props: Props | Readonly<Props>): JSX.Element {
   const context = useApplicationContext();
 
   const onCreateWallet = (): void => {

@@ -1,19 +1,20 @@
-import React, {FC} from 'react';
+import React from 'react';
 import AvaListItem from 'components/AvaListItem';
 import CarrotSVG from 'components/svg/CarrotSVG';
-import {DrawerContentComponentProps} from '@react-navigation/drawer';
 import AppNavigation from 'navigation/AppNavigation';
+import {useNavigation} from '@react-navigation/native';
+import {NativeStackNavigatorProps} from 'react-native-screens/lib/typescript/native-stack/types';
 
-const SecurityItem: FC<Partial<DrawerContentComponentProps>> = ({
-  navigation,
-}) => {
+const SecurityItem = () => {
+  const navigation = useNavigation<NativeStackNavigatorProps>();
+
   return (
     <AvaListItem.Base
       title={'Security & Privacy'}
       leftComponent={null}
       rightComponent={<CarrotSVG />}
       onPress={() => {
-        navigation?.navigate(AppNavigation.Stack.Security);
+        navigation?.navigate(AppNavigation.Wallet.SecurityPrivacy);
       }}
     />
   );
