@@ -41,30 +41,30 @@ export function useWalletSetup(): WalletSetup {
     }
   }, [accountsContext.hdCache]);
   /**
-   * Inists wallet with Mnemonic phrase,
-   * adds account at set it as active.
+   * Inits wallet with Mnemonic phrase,
+   * adds account and set it as active.
    *
    * This does not yet handles the scenario of
    * multiple accounts.
    * @param mnemonic
    */
   function initWalletWithMnemonic(mnemonic: string) {
-    // setMnemonic should be an async call, because
-    // accountsContext.addAccount() can only be called after the
-    // mnemonic has been set.
-    walletContext.setMnemonic(mnemonic);
-
-    // for this reason we add a small delay between calls.
-    setTimeout(() => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    walletContext.setMnemonic(mnemonic).then(() => {
       accountsContext.addAccount();
       accountsContext.activateAccount(0);
-
-      // For multiple accounts we'll need to keep
-      // the meta data on and how many accounts we'll need
-      // to be added and which one was active.
-    }, 1000);
+    });
   }
 
+  /**
+   * Create new wallet, set cache immediately so we don't have to wait for derivations.
+   * Adds account and set it as active.
+   *
+   * This does not yet handles the scenario of
+   * multiple accounts.
+   * @param mnemonic
+   */
   function createNewWallet(mnemonic: string) {
     // setMnemonic should be an async call, because
     // accountsContext.addAccount() can only be called after the
@@ -84,10 +84,10 @@ export function useWalletSetup(): WalletSetup {
     }, 1000);
   }
 
+  /**
+   * Destroys the wallet instance
+   */
   async function destroyWallet() {
-    // this destroy method is actually not supported as intended currently.
-    // the wallet still lives in memor :( talked to Emre and we need more methods,
-    // including a 'clearMnemonic' from state context.
     walletContext?.clearMnemonic();
   }
 
