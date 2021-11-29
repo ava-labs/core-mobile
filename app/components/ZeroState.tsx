@@ -1,7 +1,6 @@
 import React, {FC, ReactNode} from 'react';
 import {Image, View} from 'react-native';
 import AvaText from './AvaText';
-import AddSVG from 'components/svg/AddSVG';
 
 interface BaseProps {
   image?: string | ReactNode;
@@ -16,7 +15,6 @@ const ZeroStateBase: FC<BaseProps> = ({
   message,
   additionalItems,
 }) => {
-
   function getImage() {
     if (!image) {
       return null;
@@ -71,7 +69,6 @@ function ZeroStatePortfolio({additionalItem}: ZeroStatePorfolioProps) {
     <ZeroStateBase
       title={title}
       message={message}
-      image={<AddSVG size={140} />}
       additionalItems={additionalItem}
     />
   );

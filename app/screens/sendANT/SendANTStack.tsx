@@ -11,7 +11,6 @@ import {
 import HeaderAndTabs from 'screens/send/HeaderAndTabs';
 import ConfirmScreen from 'screens/send/ConfirmScreen';
 import {AntWithBalance} from '@avalabs/wallet-react-components';
-import {SendANTContextProvider} from 'contexts/SendANTContext';
 import {SubHeaderOptions} from 'navigation/NavUtils';
 
 const Stack = createStackNavigator();
@@ -39,24 +38,22 @@ export default function SendANTStack({onClose, token}: Props): JSX.Element {
   const DoneScrn = () => <DoneScreen onClose={onClose} />;
 
   return (
-    <SendANTContextProvider antToken={token}>
-      <NavigationContainer independent={true} theme={context.navContainerTheme}>
-        <Stack.Navigator screenOptions={screenOptions}>
-          <Stack.Screen
-            name={AppNavigation.SendToken.SendTokenScreen}
-            component={HeaderNTabs}
-          />
-          <Stack.Screen
-            name={AppNavigation.SendToken.ConfirmTransactionScreen}
-            options={SubHeaderOptions('Confirm Transaction')}
-            component={ConfirmScreen}
-          />
-          <Stack.Screen
-            name={AppNavigation.SendToken.DoneScreen}
-            component={DoneScrn}
-          />
-        </Stack.Navigator>
-      </NavigationContainer>
-    </SendANTContextProvider>
+    <NavigationContainer independent={true} theme={context.navContainerTheme}>
+      <Stack.Navigator screenOptions={screenOptions}>
+        <Stack.Screen
+          name={AppNavigation.SendToken.SendTokenScreen}
+          component={HeaderNTabs}
+        />
+        <Stack.Screen
+          name={AppNavigation.SendToken.ConfirmTransactionScreen}
+          options={SubHeaderOptions('Confirm Transaction')}
+          component={ConfirmScreen}
+        />
+        <Stack.Screen
+          name={AppNavigation.SendToken.DoneScreen}
+          component={DoneScrn}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }
