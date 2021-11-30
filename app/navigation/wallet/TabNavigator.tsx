@@ -6,13 +6,13 @@ import MoreSVG from 'components/svg/MoreSVG';
 import WatchlistSVG from 'components/svg/WatchlistSVG';
 import WatchlistView from 'screens/watchlist/WatchlistView';
 import {MainHeaderOptions} from 'navigation/NavUtils';
-import Activity from 'screens/activity/ActivityView';
 import SwapView from 'screens/swap/SwapView';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {useApplicationContext} from 'contexts/ApplicationContext';
-import PortfolioStackScreen from 'navigation/PortfolioStackScreen';
+import PortfolioStackScreen from 'navigation/wallet/PortfolioScreenStack';
 import React from 'react';
 import {noop} from 'rxjs';
+import ActivityView from 'screens/activity/ActivityView';
 
 const Tab = createBottomTabNavigator();
 
@@ -65,7 +65,7 @@ const TabNavigator = () => {
           headerShown: true,
           headerStyle: {backgroundColor: theme.colorBg1},
         }}
-        component={Activity}
+        component={ActivityView}
       />
       <Tab.Screen name={AppNavigation.Tabs.Swap} component={SwapView} />
     </Tab.Navigator>

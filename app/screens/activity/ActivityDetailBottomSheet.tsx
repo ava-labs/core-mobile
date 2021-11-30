@@ -5,7 +5,7 @@ import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
 import ActivityDetailView from 'screens/activity/ActivityDetailView';
 import TabViewBackground from 'screens/portfolio/components/TabViewBackground';
 import AvaxSheetHandle from 'components/AvaxSheetHandle';
-import {PortfolioStackParamList} from 'navigation/PortfolioStackScreen';
+import {PortfolioStackParamList} from 'navigation/wallet/PortfolioScreenStack';
 
 type ActivityDetailRouteProps = RouteProp<PortfolioStackParamList>;
 

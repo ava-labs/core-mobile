@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React from 'react';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import DotSVG from 'components/svg/DotSVG';
 import {View} from 'react-native';

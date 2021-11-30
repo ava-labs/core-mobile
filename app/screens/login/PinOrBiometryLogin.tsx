@@ -13,8 +13,6 @@ import AvaText from 'components/AvaText';
 import {Space} from 'components/Space';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaButton from 'components/AvaButton';
-import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
-import {SecurityStackParamList} from 'navigation/SecurityPrivacyStackScreen';
 
 const keymap: Map<string, PinKeys> = new Map([
   ['1', PinKeys.Key1],
@@ -32,23 +30,26 @@ const keymap: Map<string, PinKeys> = new Map([
 
 type Props = {
   onSignInWithRecoveryPhrase: () => void;
-  onEnterWallet: (mnemonic: string) => void;
+  onLoginSuccess: (mnemonic: string) => void;
   isResettingPin?: boolean;
   hideLoginWithMnemonic?: boolean;
 };
 
-type SecurityRouteProps = RouteProp<SecurityStackParamList>;
-
+/**
+ * This screen will select appropriate login method (pin or biometry) and call onLoginSuccess upon successful login.
+ * @param onSignInWithRecoveryPhrase
+ * @param onLoginSuccess
+ * @param isResettingPin
+ * @param hideLoginWithMnemonic
+ * @constructor
+ */
 export default function PinOrBiometryLogin({
   onSignInWithRecoveryPhrase,
-  onEnterWallet,
+  onLoginSuccess,
   isResettingPin,
   hideLoginWithMnemonic = false,
 }: Props | Readonly<Props>): JSX.Element {
   const theme = useApplicationContext().theme;
-  const route = useRoute<SecurityRouteProps>();
-  const {goBack} = useNavigation();
-  const revealMnemonic = route?.params?.revealMnemonic;
 
   const [
     title,
@@ -60,10 +61,6 @@ export default function PinOrBiometryLogin({
   ] = usePinOrBiometryLogin();
 
   const context = useApplicationContext();
-
-  function initWallet(givenMnemonic: string) {
-    onEnterWallet(givenMnemonic);
-  }
 
   useEffect(() => {
     // check if if the login is biometric
@@ -84,12 +81,7 @@ export default function PinOrBiometryLogin({
 
   useEffect(() => {
     if (mnemonic) {
-      if (revealMnemonic) {
-        goBack();
-        revealMnemonic(mnemonic);
-      } else {
-        initWallet(mnemonic);
-      }
+      onLoginSuccess(mnemonic);
     }
   }, [mnemonic]);
 
@@ -116,44 +108,44 @@ export default function PinOrBiometryLogin({
 
   return (
     <View style={[styles.verticalLayout, {backgroundColor: theme.colorBg2}]}>
-      <Space y={56} />
-      {isResettingPin || (
-        <>
-          <AvaText.LargeTitleBold textStyle={{textAlign: 'center'}}>
-            {title}
-          </AvaText.LargeTitleBold>
-          <Space y={8} />
-          <AvaText.Body1
-            textStyle={{
-              textAlign: 'center',
-              color: context.theme.colorText1,
-            }}>
-            Enter your PIN
-          </AvaText.Body1>
-        </>
-      )}
-      <Space y={94} />
-      <Animated.View
-        style={[
-          {paddingHorizontal: 68},
-          {
-            transform: [
-              {
-                translateX: jiggleAnim,
-              },
-            ],
-          },
-        ]}>
-        <View style={styles.dots}>{generatePinDots()}</View>
-      </Animated.View>
-      <Space y={120} />
+      <Space y={64} />
+      <View style={styles.growContainer}>
+        {isResettingPin || (
+          <>
+            <AvaText.LargeTitleBold textStyle={{textAlign: 'center'}}>
+              {title}
+            </AvaText.LargeTitleBold>
+            <Space y={8} />
+            <AvaText.Body1
+              textStyle={{
+                textAlign: 'center',
+                color: context.theme.colorText1,
+              }}>
+              Enter your PIN
+            </AvaText.Body1>
+          </>
+        )}
+        <Animated.View
+          style={[
+            {padding: 68},
+            {
+              transform: [
+                {
+                  translateX: jiggleAnim,
+                },
+              ],
+            },
+          ]}>
+          <View style={styles.dots}>{generatePinDots()}</View>
+        </Animated.View>
+      </View>
       <View style={styles.keyboard}>{keyboard()}</View>
       {isResettingPin || hideLoginWithMnemonic || (
         <>
-          <Space y={16} />
           <AvaButton.TextMedium onPress={onSignInWithRecoveryPhrase}>
             Sign In with recovery phrase
           </AvaButton.TextMedium>
+          <Space y={16} />
         </>
       )}
     </View>
@@ -162,14 +154,17 @@ export default function PinOrBiometryLogin({
 
 const styles = StyleSheet.create({
   verticalLayout: {
-    flex: 1,
-    paddingVertical: 16,
-    justifyContent: 'center',
+    height: '100%',
+    justifyContent: 'flex-end',
+  },
+  growContainer: {
+    flexGrow: 1,
   },
   keyboard: {
     marginHorizontal: 24,
     flexDirection: 'row',
     flexWrap: 'wrap',
+    marginBottom: 32,
   },
   dots: {
     flexGrow: 1,
