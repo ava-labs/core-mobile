@@ -1,9 +1,7 @@
 import React, {FC} from 'react';
-import {Image, StyleSheet, View} from 'react-native';
+import {View} from 'react-native';
 import AvaListItem from 'components/AvaListItem';
 import AvaText from 'components/AvaText';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import Switch from 'components/Switch';
 import Avatar from 'components/Avatar';
 
@@ -25,8 +23,8 @@ const SearchListItem: FC<Props> = ({
   symbol,
   isShowingZeroBalanceForToken,
   onSwitchChanged,
+  position,
 }) => {
-  const theme = useApplicationContext().theme;
   function handleChange(value: boolean) {
     onSwitchChanged(value);
   }
