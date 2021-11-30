@@ -1,5 +1,5 @@
-import React, {useCallback, useEffect} from 'react';
-import {Animated, BackHandler, StyleSheet, View} from 'react-native';
+import React, {useEffect} from 'react';
+import {Animated, StyleSheet, View} from 'react-native';
 import PinKey, {PinKeys} from './PinKey';
 import Dot from 'components/Dot';
 import {useCreatePin} from './CreatePinViewModel';
@@ -7,8 +7,6 @@ import TextLabel from 'components/TextLabel';
 import HeaderProgress from 'screens/mainView/HeaderProgress';
 import {Space} from 'components/Space';
 import AvaText from 'components/AvaText';
-import {useFocusEffect, useNavigation} from '@react-navigation/native';
-import {HeaderBackButton} from '@react-navigation/elements';
 import {useWalletContext} from '@avalabs/wallet-react-components';
 import {WalletContextType} from 'dto/TypeUtils';
 
@@ -32,8 +30,18 @@ type Props = {
   isResettingPin?: boolean;
 };
 
-export default function CreatePIN({onBack, onPinSet, isResettingPin}: Props) {
-  const navigation = useNavigation();
+/**
+ * This screen will prompt user for PIN creation and confirmation, and upon success onPinSet will be called.
+ * @param onBack
+ * @param onPinSet
+ * @param isResettingPin
+ * @constructor
+ */
+export default function CreatePIN({
+  onBack,
+  onPinSet,
+  isResettingPin,
+}: Props): JSX.Element {
   const walletContext = useWalletContext();
   const [
     title,
@@ -50,32 +58,7 @@ export default function CreatePIN({onBack, onPinSet, isResettingPin}: Props) {
     if (validPin) {
       onPinSet(validPin, walletContext);
     }
-    navigation.setOptions({
-      title: <AvaText.Heading1>{title}</AvaText.Heading1>,
-      headerLeft: () => (
-        <HeaderBackButton onPress={onBack} labelVisible={false} />
-      ),
-    });
   }, [validPin, title]);
-
-  useFocusEffect(
-    useCallback(() => {
-      function onBackPress() {
-        onBack();
-        return true;
-      }
-
-      if (isResettingPin) {
-        BackHandler.addEventListener('hardwareBackPress', onBackPress);
-      }
-
-      return () => {
-        if (isResettingPin) {
-          BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-        }
-      };
-    }, [isResettingPin]),
-  );
 
   const generatePinDots = (): Element[] => {
     const dots: Element[] = [];
@@ -86,14 +69,16 @@ export default function CreatePIN({onBack, onPinSet, isResettingPin}: Props) {
     return dots;
   };
 
-  const keyboard = (chosenPinEntered: boolean) => {
+  const keyboard = (isChosenPinEntered: boolean) => {
     const keys: Element[] = [];
     '123456789 0<'.split('').forEach((value, key) => {
       keys.push(
         <View key={key} style={styles.pinKey}>
           <PinKey
             keyboardKey={keymap.get(value)!}
-            onPress={chosenPinEntered ? onEnterConfirmedPin : onEnterChosenPin}
+            onPress={
+              isChosenPinEntered ? onEnterConfirmedPin : onEnterChosenPin
+            }
           />
         </View>,
       );

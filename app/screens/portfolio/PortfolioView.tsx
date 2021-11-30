@@ -7,7 +7,7 @@ import {TokenWithBalance} from '@avalabs/wallet-react-components';
 import {useSearchableTokenList} from 'screens/portfolio/useSearchableTokenList';
 import AppNavigation from 'navigation/AppNavigation';
 import {StackNavigationProp} from '@react-navigation/stack';
-import {PortfolioStackParamList} from 'navigation/PortfolioStackScreen';
+import {PortfolioStackParamList} from 'navigation/wallet/PortfolioScreenStack';
 import PortfolioListItem from 'screens/portfolio/components/PortfolioListItem';
 import ZeroState from 'components/ZeroState';
 import AvaButton from 'components/AvaButton';
@@ -22,7 +22,7 @@ type PortfolioProps = {
   loadZeroBalanceList?: () => void;
   handleRefresh?: () => void;
   hasZeroBalance?: boolean;
-  setSelectedToken: (token: TokenWithBalance) => void;
+  setSelectedToken?: (token: TokenWithBalance) => void;
 };
 
 export type PortfolioNavigationProp =
@@ -86,7 +86,7 @@ const PortfolioView: FC<PortfolioProps> = memo(
     }, [navigation]);
 
     function selectToken(token: TokenWithBalance) {
-      setSelectedToken(token);
+      setSelectedToken?.(token);
       navigation.navigate(AppNavigation.Modal.SendReceiveBottomSheet);
     }
 

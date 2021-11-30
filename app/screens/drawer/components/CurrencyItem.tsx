@@ -1,14 +1,14 @@
-import React, {FC, useState} from 'react';
+import React from 'react';
 import AvaListItem from 'components/AvaListItem';
 import AvaText from 'components/AvaText';
-import {DrawerContentComponentProps} from '@react-navigation/drawer';
 import AppNavigation from 'navigation/AppNavigation';
+import {useNavigation} from '@react-navigation/native';
+import {NativeStackNavigatorProps} from 'react-native-screens/lib/typescript/native-stack/types';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 
-const CurrencyItem: FC<Partial<DrawerContentComponentProps>> = ({
-  navigation,
-}) => {
-  const [selectedCurrency, setSelectedCurrency] = useState('USD');
-
+const CurrencyItem = () => {
+  const {selectedCurrency} = useApplicationContext().appHook;
+  const navigation = useNavigation<NativeStackNavigatorProps>();
   const currency = () => (
     <AvaText.Body2 textStyle={{paddingRight: 12}}>
       {selectedCurrency}
@@ -25,8 +25,7 @@ const CurrencyItem: FC<Partial<DrawerContentComponentProps>> = ({
         disabled
         onPress={() => {
           navigation?.navigate(AppNavigation.Wallet.CurrencySelector, {
-            onCurrencySelected: setSelectedCurrency,
-            selectedCurrency,
+            currency: selectedCurrency,
           });
         }}
       />

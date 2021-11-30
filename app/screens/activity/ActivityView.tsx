@@ -23,7 +23,7 @@ interface Props {
   embedded?: boolean;
 }
 
-function ActivityView({embedded}: Props) {
+function ActivityView({embedded}: Props): JSX.Element {
   const wallet = useWalletContext()?.wallet;
   const [sectionData, setSectionData] = useState<SectionType>({});
   const [loading, setLoading] = useState(true);
