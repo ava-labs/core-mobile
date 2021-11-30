@@ -1,20 +1,26 @@
 import React from 'react';
-import {StyleSheet, View} from 'react-native';
-import Header from 'screens/mainView/Header';
-import TextTitle from 'components/TextTitle';
+import {Image, StyleSheet, View} from 'react-native';
+import {useApplicationContext} from 'contexts/ApplicationContext';
+import AvaText from 'components/AvaText';
 
-export default function WatchlistView() {
+export default function WatchlistView(): JSX.Element {
+  const {isDarkMode} = useApplicationContext();
+  const graphics = isDarkMode
+    ? require('../assets/tbd_graphics_dark.png')
+    : require('../assets/tbd_graphics_light.png');
   return (
     <View style={[styles.container]}>
-      <Header />
-      <TextTitle text={'Watchlist (TBD)'} />
+      <Image source={graphics} />
+      <AvaText.Heading3>Watchlist is coming soon!</AvaText.Heading3>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
     height: '100%',
-    paddingBottom: 88,
   },
 });

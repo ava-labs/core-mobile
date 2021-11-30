@@ -51,7 +51,7 @@ const SendForm: FC<Props> = ({
             placeholder="Enter the amount"
             helperText="$0"
             errorText={
-              error?.message.startsWith('Amount') ? error?.message : undefined
+              error?.message?.startsWith('Amount') ? error?.message : undefined
             }
             keyboardType="numeric"
             onChangeText={text => {

@@ -65,7 +65,7 @@ export const SelectedAccountContextProvider = ({children}: {children: any}) => {
         setAccounts(defaultAccount);
       }
     })();
-  }, [walletId, walletState]);
+  }, [walletId, walletState?.addresses]);
 
   async function loadAccountsFromStorage(
     walletId: WalletId,

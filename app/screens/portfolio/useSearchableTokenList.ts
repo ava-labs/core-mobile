@@ -23,7 +23,7 @@ export function useSearchableTokenList(hideZeroBalance = true): {
   loading: boolean;
 } {
   const [loading, setLoading] = useState(false);
-  const [tokenList, setTokenList] = useState<TokenWithBalance[]>();
+  const [tokenList, setTokenList] = useState<TokenWithBalance[]>([]);
   const [filteredTokenList, setFilteredTokenList] =
     useState<TokenWithBalance[]>();
   const [searchText, setSearchText] = useState('');
@@ -76,14 +76,20 @@ export function useSearchableTokenList(hideZeroBalance = true): {
     ] as TokenWithBalance[];
 
     setTokenList(tokens);
-  }, [walletState, showZeroBalanceList, hideZeroBalance]);
+  }, [
+    walletState?.erc20Tokens,
+    walletState?.avaxToken,
+    walletState?.antTokens,
+    showZeroBalanceList,
+    hideZeroBalance
+  ]);
 
   useEffect(() => {
     if (tokenList) {
       setFilteredTokenList(
         tokenList.filter(
           token =>
-            token.name.toLowerCase().indexOf(searchText.toLowerCase()) !== -1,
+            token?.name?.toLowerCase().indexOf(searchText.toLowerCase()) !== -1,
         ),
       );
     }
