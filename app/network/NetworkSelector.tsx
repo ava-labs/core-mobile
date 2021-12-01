@@ -62,6 +62,7 @@ const NetworkSelector: FC<Props> = ({closeDrawer}) => {
   }, [networkContext?.network?.config]);
 
   function handleChangeNetwork(network: string) {
+    setIsExpanded(false);
     if (network === networkContext?.network?.name) {
       return;
     }

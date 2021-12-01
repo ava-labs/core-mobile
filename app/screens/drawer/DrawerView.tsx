@@ -12,20 +12,17 @@ import LightModeSVG from 'components/svg/LightModeSVG';
 import DarkModeSVG from 'components/svg/DarkModeSVG';
 import NetworkSelector from 'network/NetworkSelector';
 import {ScrollView} from 'react-native-gesture-handler';
-import {useNavigation} from '@react-navigation/native';
-import {DrawerNavigationHelpers} from '@react-navigation/drawer/lib/typescript/src/types';
 import SignOutItem from 'screens/drawer/components/SignOutItem';
 
-const DrawerView = () => {
+const DrawerView = ({navigation}) => {
   const context = useApplicationContext();
-  const {closeDrawer} = useNavigation<DrawerNavigationHelpers>();
 
   function toggleDarkLightMode() {
     Alert.alert('Toggle dark/ligt mode');
   }
 
   function handleCloseDrawer() {
-    closeDrawer();
+    navigation.closeDrawer();
   }
 
   const header = (
