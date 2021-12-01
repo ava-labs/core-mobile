@@ -16,7 +16,10 @@ export const OnboardScreenStack = () => {
         headerShown: false,
         cardStyle: {backgroundColor: theme.colorBg2},
       }}>
-      <OnboardingScreenS.Screen name={'init'} component={Splash} />
+      <OnboardingScreenS.Screen
+        name={AppNavigation.Onboard.Init}
+        component={Splash}
+      />
       <OnboardingScreenS.Screen
         name={AppNavigation.Root.Welcome}
         component={WelcomeScreenStack}
