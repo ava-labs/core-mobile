@@ -5,7 +5,10 @@ import AppNavigation from 'navigation/AppNavigation';
 import AvaText from 'components/AvaText';
 import Loader from 'components/Loader';
 import CollapsibleSection from 'components/CollapsibleSection';
-import {useWalletContext} from '@avalabs/wallet-react-components';
+import {
+  useNetworkContext,
+  useWalletContext,
+} from '@avalabs/wallet-react-components';
 import moment from 'moment';
 import ActivityListItem from 'screens/activity/ActivityListItem';
 import {HistoryItemType} from '@avalabs/avalanche-wallet-sdk/dist/History';
@@ -25,6 +28,7 @@ interface Props {
 
 function ActivityView({embedded}: Props): JSX.Element {
   const wallet = useWalletContext()?.wallet;
+  const network = useNetworkContext()?.network;
   const [sectionData, setSectionData] = useState<SectionType>({});
   const [loading, setLoading] = useState(true);
   const navigation = useNavigation<PortfolioNavigationProp>();
@@ -34,19 +38,20 @@ function ActivityView({embedded}: Props): JSX.Element {
     setLoading(true);
     const history = (await wallet?.getHistory(50)) ?? [];
     // We're only going to show EVMT without inputs at this time. Remove filter in the future
+    const newSectionData: SectionType = {};
     history
       .filter(ik => History.isHistoryEVMTx(ik) && ik.input === undefined)
       .map((it: HistoryItemType) => {
         const date = moment(it.timestamp).format('MM.DD.YY');
         if (date === TODAY) {
-          sectionData.Today = [...[it]];
+          newSectionData.Today = [...[it]];
         } else if (date === YESTERDAY) {
-          sectionData.Yesterday = [...[it]];
+          newSectionData.Yesterday = [...[it]];
         } else {
-          sectionData[date] = [...[it]];
+          newSectionData[date] = [...[it]];
         }
       });
-    setSectionData({...sectionData});
+    setSectionData({...newSectionData});
     setLoading(false);
   }, [wallet]);
 
@@ -68,7 +73,7 @@ function ActivityView({embedded}: Props): JSX.Element {
 
   useEffect(() => {
     loadHistory().catch(reason => console.warn(reason));
-  }, []);
+  }, [network]);
 
   const openDetailBottomSheet = useCallback((item: HistoryItemType) => {
     return navigation.navigate(
