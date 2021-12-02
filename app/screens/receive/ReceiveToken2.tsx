@@ -9,10 +9,18 @@ import {Opacity05} from 'resources/Constants';
 import {ShowSnackBar} from 'components/Snackbar';
 import Clipboard from '@react-native-clipboard/clipboard';
 import {Space} from 'components/Space';
-import {createStackNavigator, StackNavigationProp, TransitionPresets} from '@react-navigation/stack';
-import {NavigationContainer, useFocusEffect, useNavigation} from '@react-navigation/native';
+import {
+  createStackNavigator,
+  StackNavigationProp,
+  TransitionPresets,
+} from '@react-navigation/stack';
+import {
+  NavigationContainer,
+  useFocusEffect,
+  useNavigation,
+} from '@react-navigation/native';
 import AvaxQACode from 'components/AvaxQACode';
-import {SubHeaderOptions} from 'navigation/NavUtils';
+import {MainHeaderOptions, SubHeaderOptions} from 'navigation/NavUtils';
 
 type ReceiveStackParams = {
   ReceiveCChain: undefined;
@@ -21,7 +29,12 @@ type ReceiveStackParams = {
 
 const ReceiveStack = createStackNavigator<ReceiveStackParams>();
 
-function ReceiveToken2({position}: {position: (position: number) => void}) {
+interface Props {
+  showBackButton?: boolean;
+  setPosition?: (position: number) => void;
+}
+
+function ReceiveToken2({setPosition, showBackButton = false}: Props) {
   const {addressC, addressX} = usePortfolio();
   const {navContainerTheme} = useApplicationContext();
 
@@ -44,48 +57,58 @@ function ReceiveToken2({position}: {position: (position: number) => void}) {
     }
   };
 
-  return (
-    <NavigationContainer independent={true} theme={navContainerTheme}>
-      <ReceiveStack.Navigator
-        initialRouteName={'ReceiveCChain'}
-        screenOptions={{
-          presentation: 'card',
-          headerBackTitleVisible: false,
-          headerStyle: {
-            elevation: 0,
-            shadowOpacity: 0,
-          },
-          headerTitleAlign: 'center',
-          ...TransitionPresets.SlideFromRightIOS,
-        }}>
-        <ReceiveStack.Screen
-          name={'ReceiveCChain'}
-          options={SubHeaderOptions('Receive tokens', true)}>
-          {props => (
-            <Receive
-              {...props}
-              selectedAddress={addressC}
-              onShare={handleShare}
-              positionCallback={position}
-            />
-          )}
-        </ReceiveStack.Screen>
-        <ReceiveStack.Screen
-          name={'ReceiveXChain'}
-          options={SubHeaderOptions('X Chain')}>
-          {props => (
-            <Receive
-              {...props}
-              selectedAddress={addressX}
-              isXChain
-              onShare={handleShare}
-              positionCallback={position}
-            />
-          )}
-        </ReceiveStack.Screen>
-      </ReceiveStack.Navigator>
-    </NavigationContainer>
+  const receiveNavigator = (
+    <ReceiveStack.Navigator
+      initialRouteName={'ReceiveCChain'}
+      screenOptions={{
+        presentation: 'card',
+        headerBackTitleVisible: false,
+        headerStyle: {
+          elevation: 0,
+          shadowOpacity: 0,
+        },
+        headerTitleAlign: 'center',
+        ...TransitionPresets.SlideFromRightIOS,
+      }}>
+      <ReceiveStack.Screen
+        name={'ReceiveCChain'}
+        options={MainHeaderOptions('Receive tokens', !showBackButton)}>
+        {props => (
+          <Receive
+            {...props}
+            selectedAddress={addressC}
+            onShare={handleShare}
+            positionCallback={setPosition}
+          />
+        )}
+      </ReceiveStack.Screen>
+      <ReceiveStack.Screen
+        name={'ReceiveXChain'}
+        options={SubHeaderOptions('X Chain')}>
+        {props => (
+          <Receive
+            {...props}
+            selectedAddress={addressX}
+            isXChain
+            onShare={handleShare}
+            positionCallback={setPosition}
+          />
+        )}
+      </ReceiveStack.Screen>
+    </ReceiveStack.Navigator>
   );
+
+  if (showBackButton) {
+    return receiveNavigator;
+  } else {
+    return (
+      <NavigationContainer
+        independent={!showBackButton}
+        theme={navContainerTheme}>
+        {receiveNavigator}
+      </NavigationContainer>
+    );
+  }
 }
 
 type ReceiveRouteProp = StackNavigationProp<ReceiveStackParams>;
@@ -107,8 +130,11 @@ const Receive: FC<{
   );
 
   return (
-    <View style={[styles.container, {backgroundColor: theme.colorBg2}]}>
-      <AvaText.Body1>Scan QR code or share the address</AvaText.Body1>
+    <View style={[styles.container]}>
+      <AvaText.Body2>
+        This is your C chain address to receive funds. Your address will change
+        after every deposit.
+      </AvaText.Body2>
       <View style={{alignSelf: 'center', marginTop: 16, marginBottom: 32}}>
         <AvaxQACode
           circularText={isXChain ? 'X Chain' : 'C Chain'}

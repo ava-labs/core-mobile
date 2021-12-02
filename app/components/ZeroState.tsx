@@ -63,13 +63,12 @@ interface ZeroStatePorfolioProps {
 
 function ZeroStatePortfolio({additionalItem}: ZeroStatePorfolioProps) {
   const title = 'Your wallet is empty';
-  const message = 'Add tokens using the following options';
+  const message = 'Add tokens using the receive button above';
 
   return (
     <ZeroStateBase
       title={title}
       message={message}
-      additionalItems={additionalItem}
     />
   );
 }
