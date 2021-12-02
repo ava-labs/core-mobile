@@ -14,6 +14,9 @@ import {PortfolioNavigationProp} from 'screens/portfolio/PortfolioView';
 import AvaButton from 'components/AvaButton';
 import SwitchesSVG from 'components/svg/SwitchesSVG';
 import {useSelectedAccountContext} from 'contexts/SelectedAccountContext';
+import {Space} from 'components/Space';
+import CircularButton from 'components/CircularButton';
+import ArrowSVG from 'components/svg/ArrowSVG';
 
 // experimenting with container pattern and stable props to try to reduce re-renders
 function PortfolioHeaderContainer() {
@@ -50,6 +53,13 @@ const PortfolioHeader: FC<PortfolioHeaderProps> = memo(
     isBalanceLoading = false,
   }) => {
     const theme = appContext.theme;
+
+    const sendArrow = (
+      <ArrowSVG size={20} color={theme.colorText1} rotate={225} />
+    );
+    const receiveArrow = (
+      <ArrowSVG size={20} color={theme.colorText1} rotate={45} />
+    );
 
     function onAccountPressed() {
       navigation.navigate(AppNavigation.Modal.AccountBottomSheet);
@@ -95,16 +105,18 @@ const PortfolioHeader: FC<PortfolioHeaderProps> = memo(
             marginTop: 25,
           }}>
           {isBalanceLoading && (
-            <ActivityIndicator
-              style={{alignSelf: 'center'}}
-              size="small"
-              color={'white'}
-            />
+            <ActivityIndicator style={{alignSelf: 'center'}} size="small" />
           )}
           <AvaText.LargeTitleBold>{balanceTotalUSD}</AvaText.LargeTitleBold>
           <AvaText.Heading3 textStyle={{paddingBottom: 4, marginLeft: 4}}>
             USD
           </AvaText.Heading3>
+        </View>
+        <Space y={18} />
+        <View style={{flexDirection: 'row', justifyContent: 'center'}}>
+          <CircularButton image={sendArrow} caption={'Send'} />
+          <Space x={24} />
+          <CircularButton image={receiveArrow} caption={'Receive'} />
         </View>
       </View>
     );
