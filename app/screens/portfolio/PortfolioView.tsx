@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   tokenList: {
-    marginTop: 36,
+    marginTop: 12,
   },
 });
 

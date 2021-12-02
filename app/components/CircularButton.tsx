@@ -1,4 +1,4 @@
-import React, {FC, ReactNode} from 'react';
+import React, {ReactNode} from 'react';
 import {Pressable, StyleProp, StyleSheet, View, ViewStyle} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from './AvaText';
@@ -33,7 +33,9 @@ export default function CircularButton({
         {image}
       </Pressable>
       <Space y={8} />
-      <AvaText.ButtonSmall>{caption}</AvaText.ButtonSmall>
+      <AvaText.ButtonSmall textStyle={{color: theme.colorText1}}>
+        {caption}
+      </AvaText.ButtonSmall>
     </View>
   );
 }

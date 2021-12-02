@@ -26,7 +26,7 @@ const TabNavigator = () => {
   const theme = useApplicationContext().theme;
   return (
     <Tab.Navigator
-      sceneContainerStyle={{backgroundColor: theme.colorBg1}}
+      sceneContainerStyle={{backgroundColor: theme.background}}
       screenOptions={({route}) => ({
         headerShown: false,
         tabBarIcon: ({focused}) => {
@@ -47,7 +47,7 @@ const TabNavigator = () => {
         tabBarActiveTintColor: theme.accentColor,
         tabBarInactiveTintColor: theme.onBgSearch,
         tabBarStyle: {
-          backgroundColor: theme.colorBg2,
+          backgroundColor: theme.background,
         },
       })}>
       <Tab.Screen

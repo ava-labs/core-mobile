@@ -45,7 +45,6 @@ export default function HeaderAndTabs({onClose}: Props): JSX.Element {
       <TabViewAva renderCustomLabel={renderCustomLabel}>
         <SendTab title={'Send'} token={selectedToken} />
         <ReceiveToken title={'Receive'} />
-        {/*<ActivityView embedded title={'Activity'} />*/}
       </TabViewAva>
     </View>
   );

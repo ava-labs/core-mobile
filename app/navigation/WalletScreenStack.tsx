@@ -11,7 +11,6 @@ import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BiometricsSDK from 'utils/BiometricsSDK';
 import moment from 'moment';
-import ReceiveOnlyBottomSheet from 'screens/portfolio/receive/ReceiveOnlyBottomSheet';
 import DrawerScreenStack from 'navigation/wallet/DrawerScreenStack';
 import {useWalletSetup} from 'hooks/useWalletSetup';
 import SearchView from 'screens/search/SearchView';
@@ -23,6 +22,9 @@ import WebViewScreen from 'screens/webview/WebViewScreen';
 import {useFocusEffect} from '@react-navigation/native';
 import SignOutBottomSheet from 'screens/mainView/SignOutBottomSheet';
 import {createStackNavigator} from '@react-navigation/stack';
+import ReceiveToken2 from 'screens/receive/ReceiveToken2';
+import SendTokenSelector from 'screens/send/SendTokenSelector';
+import HeaderAccountSelector from 'components/HeaderAccountSelector';
 
 type Props = {
   onExit: () => void;
@@ -35,6 +37,8 @@ type RootStackParamList = {
   [AppNavigation.Wallet.CurrencySelector]: undefined;
   [AppNavigation.Wallet.SecurityPrivacy]: undefined;
   [AppNavigation.Wallet.Legal]: undefined;
+  [AppNavigation.Wallet.ReceiveTokens]: undefined;
+  [AppNavigation.Wallet.SendTokens]: undefined;
   [AppNavigation.Modal.SendReceiveBottomSheet]: undefined;
   [AppNavigation.Modal.AccountBottomSheet]: undefined;
   [AppNavigation.Modal.TransactionDetailBottomSheet]: undefined;
@@ -160,10 +164,6 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
           component={ActivityDetailBottomSheet}
         />
         <RootStack.Screen
-          name={AppNavigation.Modal.ReceiveOnlyBottomSheet}
-          component={ReceiveOnlyBottomSheet}
-        />
-        <RootStack.Screen
           name={AppNavigation.Modal.SignOut}
           component={SignOutBottomSheetScreen}
         />
@@ -197,6 +197,19 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
             name={AppNavigation.Wallet.SearchScreen}
             component={SearchView}
           />
+          <RootStack.Screen
+            name={AppNavigation.Wallet.SendTokens}
+            options={{
+              presentation: 'card',
+              headerShown: true,
+              headerBackTitleVisible: false,
+              headerTitle: () => <HeaderAccountSelector />,
+            }}
+            component={SendTokenSelector}
+          />
+          <RootStack.Screen name={AppNavigation.Wallet.ReceiveTokens}>
+            {props => <ReceiveToken2 showBackButton {...props} />}
+          </RootStack.Screen>
           <RootStack.Screen
             options={{
               ...MainHeaderOptions('Add Custom Token'),
