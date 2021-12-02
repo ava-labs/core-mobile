@@ -6,7 +6,7 @@
     "android": "react-native run-android",
     "androidNightly": "react-native run-android --variant=nightly",
     "ios": "cd $INIT_CWD/ios && pod install && cd $INIT_CWD && react-native run-ios",
-    "iosM1": "cd $INIT_CWD/ios && arch -x86_64 pod installl && cd $INIT_CWD && react-native run-ios",
+    "iosM1": "cd $INIT_CWD/ios && arch -x86_64 pod install && cd $INIT_CWD && react-native run-ios",
     "start": "react-native start",
     "link": "react-native link",
     "test": "jest",
@@ -15,8 +15,8 @@
     "clean": "./scripts/clean"
   },
   "dependencies": {
-    "@avalabs/avalanche-wallet-sdk": "0.11.0",
-    "@avalabs/wallet-react-components": "1.12.0",
+    "@avalabs/avalanche-wallet-sdk": "0.11.1",
+    "@avalabs/wallet-react-components": "1.15.0",
     "@eliav2/react-native-collapsible-view": "^1.4.0",
     "@ethereumjs/common": "^2.2.0",
     "@ethereumjs/tx": "^3.1.4",
