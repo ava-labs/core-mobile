@@ -69,7 +69,7 @@ const PortfolioListItem: FC<Props> = ({
       style={{
         marginVertical: 4,
         borderRadius: 8,
-        backgroundColor: theme.listItemBg,
+        backgroundColor: theme.colorBg1,
       }}>
       <AvaListItem.Base
         title={title}

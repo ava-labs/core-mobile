@@ -47,7 +47,7 @@ const TabNavigator = () => {
         tabBarActiveTintColor: theme.accentColor,
         tabBarInactiveTintColor: theme.onBgSearch,
         tabBarStyle: {
-          backgroundColor: theme.background,
+          backgroundColor: theme.colorBg2,
         },
       })}>
       <Tab.Screen
