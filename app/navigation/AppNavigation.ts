@@ -5,6 +5,7 @@ enum Root {
 }
 
 enum OnboardScreens {
+  Init = 'OnboardScreens.Init',
   Welcome = 'OnboardScreens.Welcome',
   CreateWalletStack = 'OnboardScreens.CreateWalletStack',
   EnterWithMnemonicStack = 'OnboardScreens.EnterWithMnemonicStack',

@@ -10720,6 +10720,11 @@ isurl@^1.0.0-alpha5:
     has-to-string-tag-x "^1.2.0"
     is-object "^1.0.1"
 
+jail-monkey@^2.6.0:
+  version "2.6.0"
+  resolved "https://registry.yarnpkg.com/jail-monkey/-/jail-monkey-2.6.0.tgz#7e38b726fc01b7d8c6e75da0f3ddcf6b68d22096"
+  integrity sha512-QY7oIkcrBnL0Ni3DlXP87nEbedMv3SvYkiqtgUGir31tde/xMf2Dw/+/NlBQZZafuAUZmfOp1DdTXrPkomKbjg==
+
 jest-changed-files@^26.6.2:
   version "26.6.2"
   resolved "https://registry.yarnpkg.com/jest-changed-files/-/jest-changed-files-26.6.2.tgz#f6198479e1cc66f22f9ae1e22acaa0b429c042d0"
