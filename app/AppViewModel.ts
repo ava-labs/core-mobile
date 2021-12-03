@@ -65,7 +65,7 @@ export function useApp(): {
           setLoginRoute(navigation);
         } else {
           navigation.current?.navigate(AppNavigation.Root.Onboard, {
-            screen: AppNavigation.Onboard.Welcome,
+            screen: AppNavigation.Root.Welcome,
           });
         }
       });
