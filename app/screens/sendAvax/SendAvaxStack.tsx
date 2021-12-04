@@ -27,6 +27,7 @@ export default function SendAvaxStack({onClose}: Props): JSX.Element {
       safeAreaInsets: {top: 0},
       cardStyle: {
         overflow: 'visible',
+        backgroundColor: context.theme.colorBg2,
       },
     }),
     [],

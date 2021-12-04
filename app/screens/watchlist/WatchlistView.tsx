@@ -1,17 +1,11 @@
 import React from 'react';
-import {Image, StyleSheet, View} from 'react-native';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import AvaText from 'components/AvaText';
+import {StyleSheet, View} from 'react-native';
+import ZeroState from 'components/ZeroState';
 
 export default function WatchlistView(): JSX.Element {
-  const {isDarkMode} = useApplicationContext();
-  const graphics = isDarkMode
-    ? require('../assets/tbd_graphics_dark.png')
-    : require('../assets/tbd_graphics_light.png');
   return (
     <View style={[styles.container]}>
-      <Image source={graphics} />
-      <AvaText.Heading3>Watchlist is coming soon!</AvaText.Heading3>
+      <ZeroState.ComingSoon />
     </View>
   );
 }

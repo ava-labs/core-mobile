@@ -20,7 +20,7 @@ type Props = {
   token: AntWithBalance;
 };
 
-export default function SendANTStack({onClose, token}: Props): JSX.Element {
+export default function SendANTStack({onClose}: Props): JSX.Element {
   const context = useApplicationContext();
   const screenOptions = useMemo<StackNavigationOptions>(
     () => ({
@@ -29,6 +29,7 @@ export default function SendANTStack({onClose, token}: Props): JSX.Element {
       safeAreaInsets: {top: 0},
       cardStyle: {
         overflow: 'visible',
+        backgroundColor: context.theme.colorBg2,
       },
     }),
     [],

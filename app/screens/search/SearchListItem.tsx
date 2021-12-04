@@ -23,7 +23,6 @@ const SearchListItem: FC<Props> = ({
   symbol,
   isShowingZeroBalanceForToken,
   onSwitchChanged,
-  position,
 }) => {
   function handleChange(value: boolean) {
     onSwitchChanged(value);
@@ -36,7 +35,7 @@ const SearchListItem: FC<Props> = ({
         justifyContent: 'center',
         alignItems: 'center',
       }}>
-      <Avatar.Custom name={name} symbol={symbol} logoUri={image} />
+      <Avatar.Custom name={name} symbol={symbol} logoUri={image} showBorder />
     </View>
   );
 

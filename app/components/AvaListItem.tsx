@@ -14,6 +14,7 @@ interface Props {
   onPress?: () => void;
   titleAlignment?: 'center' | 'flex-start' | 'flex-end';
   embedInCard?: boolean;
+  roundedEdges?: boolean;
 }
 
 function BaseListItem({
@@ -35,7 +36,7 @@ function BaseListItem({
       style={[
         {paddingVertical: 16},
         embedInCard && {
-          backgroundColor: context.theme.bgOnBgApp,
+          backgroundColor: context.theme.listItemBg,
           marginHorizontal: 16,
           borderRadius: 8,
         },

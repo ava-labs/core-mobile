@@ -105,7 +105,6 @@ const ActivityListItem: FC<Props> = ({historyItem, onPress}) => {
           <MovementIndicator metric={token.type === 'export' ? -1 : 0} />
         }
         rightComponent={ImpExpRightComponent}
-        embedInCard
         onPress={onPress}
       />
     );

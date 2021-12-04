@@ -26,14 +26,16 @@ enum LoginWithMnemonicStackScreens {
 }
 
 enum WalletScreens {
-  Drawer = 'WalletScreens.Drawer',
-  Tabs = 'WalletScreens.Tabs',
-  // PortfolioScreen = 'PortfolioScreen',
-  SearchScreen = 'WalletScreens.SearchScreen',
   AddCustomToken = 'WalletScreens.AddCustomToken',
   CurrencySelector = 'WalletScreens.CurrencySelector',
-  SecurityPrivacy = 'WalletScreens.SecurityPrivacy',
+  Drawer = 'WalletScreens.Drawer',
   Legal = 'WalletScreens.Legal',
+  Tabs = 'WalletScreens.Tabs',
+  ReceiveTokens = 'WalletScreens.ReceiveTokens',
+  SendTokens = 'WalletScreens.SendTokens',
+  SearchScreen = 'WalletScreens.SearchScreen',
+  SecurityPrivacy = 'WalletScreens.SecurityPrivacy',
+  // PortfolioScreen = 'PortfolioScreen',
 }
 
 enum SecurityPrivacyScreens {

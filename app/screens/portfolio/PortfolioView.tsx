@@ -1,4 +1,4 @@
-import React, {FC, memo, useEffect, useMemo, useRef} from 'react';
+import React, {FC, memo, useEffect, useRef} from 'react';
 import {FlatList, ListRenderItemInfo, StyleSheet, View} from 'react-native';
 import PortfolioHeader from 'screens/portfolio/PortfolioHeader';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
@@ -10,7 +10,6 @@ import {StackNavigationProp} from '@react-navigation/stack';
 import {PortfolioStackParamList} from 'navigation/wallet/PortfolioScreenStack';
 import PortfolioListItem from 'screens/portfolio/components/PortfolioListItem';
 import ZeroState from 'components/ZeroState';
-import AvaButton from 'components/AvaButton';
 import {usePortfolio} from 'screens/portfolio/usePortfolio';
 import Loader from 'components/Loader';
 import {useSelectedTokenContext} from 'contexts/SelectedTokenContext';
@@ -90,18 +89,6 @@ const PortfolioView: FC<PortfolioProps> = memo(
       navigation.navigate(AppNavigation.Modal.SendReceiveBottomSheet);
     }
 
-    function emptyStateAdditionalItem() {
-      return (
-        <AvaButton.PrimaryLarge
-          style={{marginTop: 32}}
-          onPress={() => {
-            navigation.navigate(AppNavigation.Modal.ReceiveOnlyBottomSheet);
-          }}>
-          Receive tokens
-        </AvaButton.PrimaryLarge>
-      );
-    }
-
     const renderItem = (item: ListRenderItemInfo<TokenWithBalance>) => {
       const token = item.item;
       return (
@@ -115,12 +102,6 @@ const PortfolioView: FC<PortfolioProps> = memo(
         />
       );
     };
-
-    const zeroState = useMemo(() => {
-      return (
-        <ZeroState.Portfolio additionalItem={emptyStateAdditionalItem()} />
-      );
-    }, []);
 
     return (
       <SafeAreaProvider style={styles.flex}>
@@ -138,7 +119,7 @@ const PortfolioView: FC<PortfolioProps> = memo(
             onRefresh={handleRefresh}
             refreshing={false}
             scrollEventThrottle={16}
-            ListEmptyComponent={zeroState}
+            ListEmptyComponent={<ZeroState.Portfolio />}
           />
         )}
         {tokenList?.length === 1 && hasZeroBalance && (
@@ -150,7 +131,7 @@ const PortfolioView: FC<PortfolioProps> = memo(
               right: 0,
               bottom: 0,
             }}>
-            {zeroState}
+            {<ZeroState.Portfolio />}
           </View>
         )}
       </SafeAreaProvider>

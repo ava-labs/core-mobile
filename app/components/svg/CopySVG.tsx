@@ -9,7 +9,7 @@ interface Prop {
 
 function CopySVG({color, size = 16}: Prop) {
   const theme = useApplicationContext().theme;
-  const iconColor = color ?? theme.btnPrimaryBg;
+  const iconColor = color ?? theme.alternateBackground;
   return (
     <Svg width={size} height={size} viewBox="0 0 16 16" fill="none">
       <Path
