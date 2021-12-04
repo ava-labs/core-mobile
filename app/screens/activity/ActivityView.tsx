@@ -45,9 +45,9 @@ function ActivityView({embedded}: Props): JSX.Element {
       .map((it: HistoryItemType) => {
         const date = moment(it.timestamp);
         if (TODAY.isSame(date, 'day')) {
-          newSectionData = [...[it]];
+          newSectionData.Today = [...[it]];
         } else if (YESTERDAY.isSame(date, 'day')) {
-          newSectionData = [...[it]];
+          newSectionData.Yesterday = [...[it]];
         } else {
           const isCurrentYear = TODAY.year() === date.year();
           newSectionData[
@@ -59,7 +59,7 @@ function ActivityView({embedded}: Props): JSX.Element {
           ] = [...[it]];
         }
       });
-    setSectionData({...newSectionData});
+    setSectionData(newSectionData);
     setLoading(false);
   }, [wallet]);
 
