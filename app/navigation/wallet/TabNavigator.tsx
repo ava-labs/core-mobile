@@ -26,7 +26,6 @@ const TabNavigator = () => {
   const theme = useApplicationContext().theme;
   return (
     <Tab.Navigator
-      sceneContainerStyle={{backgroundColor: theme.background}}
       screenOptions={({route}) => ({
         headerShown: false,
         tabBarIcon: ({focused}) => {
@@ -62,8 +61,6 @@ const TabNavigator = () => {
         name={AppNavigation.Tabs.Activity}
         options={{
           ...MainHeaderOptions('Activity'),
-          headerShown: true,
-          headerStyle: {backgroundColor: theme.colorBg1},
         }}
         component={ActivityView}
       />

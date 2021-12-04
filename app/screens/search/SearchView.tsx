@@ -82,7 +82,7 @@ function SearchView(): JSX.Element {
   const descriptionPadding = Platform.OS === 'ios' ? 24 : 32;
 
   return (
-    <View style={{flex: 1, backgroundColor: context.theme.colorBg2}}>
+    <View style={{flex: 1}}>
       <AvaText.Body1
         textStyle={{alignSelf: 'center', paddingStart: descriptionPadding}}>
         Add or remove tokens without balance
@@ -158,6 +158,7 @@ const styles = StyleSheet.create({
   },
 });
 
+// not currently in use due to lack of SKD support
 const AddCustomTokenButton = ({onPress}: {onPress: () => void}) => {
   const {theme} = useApplicationContext();
   return (

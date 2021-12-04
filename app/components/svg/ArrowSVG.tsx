@@ -24,7 +24,12 @@ function ArrowSVG({color = '#FFF', size = 16, rotate}: Prop) {
   );
 
   return rotate ? (
-    <View style={{transform: [{rotate: `${rotate}deg`}]}}>
+    <View
+      style={{
+        justifyContent: 'center',
+        alignItems: 'center',
+        transform: [{rotate: `${rotate}deg`}],
+      }}>
       <Arrow />
     </View>
   ) : (

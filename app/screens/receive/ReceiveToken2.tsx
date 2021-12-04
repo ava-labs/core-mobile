@@ -1,5 +1,5 @@
 import React, {FC, memo, useCallback} from 'react';
-import {Share, StyleSheet, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import {usePortfolio} from 'screens/portfolio/usePortfolio';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaButton from 'components/AvaButton';
@@ -20,7 +20,8 @@ import {
   useNavigation,
 } from '@react-navigation/native';
 import AvaxQACode from 'components/AvaxQACode';
-import {MainHeaderOptions, SubHeaderOptions} from 'navigation/NavUtils';
+import {SubHeaderOptions} from 'navigation/NavUtils';
+import HeaderAccountSelector from 'components/HeaderAccountSelector';
 
 type ReceiveStackParams = {
   ReceiveCChain: undefined;
@@ -38,24 +39,25 @@ function ReceiveToken2({setPosition, showBackButton = false}: Props) {
   const {addressC, addressX} = usePortfolio();
   const {navContainerTheme} = useApplicationContext();
 
-  const handleShare = async (address: string) => {
-    try {
-      const result = await Share.share({
-        message: address,
-      });
-      if (result.action === Share.sharedAction) {
-        if (result.activityType) {
-          console.log('shared with activity type of ', result.activityType);
-        } else {
-          console.log('shared');
-        }
-      } else if (result.action === Share.dismissedAction) {
-        console.log('dismissed');
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  //Share has been decommissioned yet again :(
+  // const handleShare = async (address: string) => {
+  //   try {
+  //     const result = await Share.share({
+  //       message: address,
+  //     });
+  //     if (result.action === Share.sharedAction) {
+  //       if (result.activityType) {
+  //         console.log('shared with activity type of ', result.activityType);
+  //       } else {
+  //         console.log('shared');
+  //       }
+  //     } else if (result.action === Share.dismissedAction) {
+  //       console.log('dismissed');
+  //     }
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // };
 
   const receiveNavigator = (
     <ReceiveStack.Navigator
@@ -67,17 +69,17 @@ function ReceiveToken2({setPosition, showBackButton = false}: Props) {
           elevation: 0,
           shadowOpacity: 0,
         },
-        headerTitleAlign: 'center',
         ...TransitionPresets.SlideFromRightIOS,
       }}>
       <ReceiveStack.Screen
         name={'ReceiveCChain'}
-        options={MainHeaderOptions('Receive tokens', !showBackButton)}>
+        options={{
+          headerTitle: () => <HeaderAccountSelector />,
+        }}>
         {props => (
           <Receive
             {...props}
             selectedAddress={addressC}
-            onShare={handleShare}
             positionCallback={setPosition}
           />
         )}
@@ -90,7 +92,6 @@ function ReceiveToken2({setPosition, showBackButton = false}: Props) {
             {...props}
             selectedAddress={addressX}
             isXChain
-            onShare={handleShare}
             positionCallback={setPosition}
           />
         )}
@@ -130,57 +131,61 @@ const Receive: FC<{
   );
 
   return (
-    <View style={[styles.container]}>
-      <AvaText.Body2>
+    <View style={{flex: 1}}>
+      <Space y={8} />
+      <AvaText.Heading1 textStyle={{marginHorizontal: 8}}>
+        Receive Tokens
+      </AvaText.Heading1>
+      <Space y={24} />
+      <AvaText.Body2 textStyle={{marginHorizontal: 8}}>
         This is your C chain address to receive funds. Your address will change
         after every deposit.
       </AvaText.Body2>
-      <View style={{alignSelf: 'center', marginTop: 16, marginBottom: 32}}>
-        <AvaxQACode
-          circularText={isXChain ? 'X Chain' : 'C Chain'}
-          address={props.selectedAddress}
-        />
+      <View style={[styles.container]}>
+        <Space y={40} />
+        <View style={{alignSelf: 'center'}}>
+          <AvaxQACode
+            circularText={isXChain ? 'X Chain' : 'C Chain'}
+            address={props.selectedAddress}
+          />
+        </View>
+        <Space y={32} />
+        <AvaButton.Base
+          onPress={() => {
+            Clipboard.setString(props.selectedAddress);
+            ShowSnackBar('Copied');
+          }}
+          style={[
+            styles.copyAddressContainer,
+            {backgroundColor: theme.colorIcon1 + Opacity05},
+          ]}>
+          <AvaText.Body1
+            ellipsize={'middle'}
+            textStyle={{flex: 1, marginRight: 16}}>
+            {props.selectedAddress}
+          </AvaText.Body1>
+          <CopySVG color={theme.colorText1} />
+        </AvaButton.Base>
+        <Space y={16} />
+        {isXChain || (
+          <>
+            <Space y={130} />
+            <AvaButton.TextLarge
+              style={{marginVertical: 16}}
+              onPress={() => {
+                navigation.navigate('ReceiveXChain');
+              }}>
+              Looking for X-Chain?
+            </AvaButton.TextLarge>
+          </>
+        )}
       </View>
-      <AvaButton.Base
-        onPress={() => {
-          Clipboard.setString(props.selectedAddress);
-          ShowSnackBar('Copied');
-        }}
-        style={[
-          styles.copyAddressContainer,
-          {backgroundColor: theme.colorIcon1 + Opacity05},
-        ]}>
-        <AvaText.Body1
-          ellipsize={'middle'}
-          textStyle={{flex: 1, marginRight: 16}}>
-          {props.selectedAddress}
-        </AvaText.Body1>
-        <CopySVG />
-      </AvaButton.Base>
-      <Space y={16} />
-      <AvaButton.PrimaryLarge
-        style={{marginHorizontal: 16, alignSelf: 'stretch'}}
-        onPress={() => props?.onShare?.(props.selectedAddress)}>
-        Share
-      </AvaButton.PrimaryLarge>
-      {isXChain || (
-        <>
-          <AvaButton.TextLarge
-            style={{marginVertical: 16}}
-            onPress={() => {
-              navigation.navigate('ReceiveXChain');
-            }}>
-            Looking for X chain?
-          </AvaButton.TextLarge>
-        </>
-      )}
     </View>
   );
 });
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     alignItems: 'center',
   },
   copyAddressContainer: {

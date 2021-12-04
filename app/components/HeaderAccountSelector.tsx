@@ -1,4 +1,4 @@
-import React, {FC} from 'react';
+import React from 'react';
 import {useSelectedAccountContext} from 'contexts/SelectedAccountContext';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {useNavigation} from '@react-navigation/native';

@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import {RefreshControl, View} from 'react-native';
+import {Animated, RefreshControl, View} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import AppNavigation from 'navigation/AppNavigation';
 import AvaText from 'components/AvaText';
@@ -16,10 +16,12 @@ import {History} from '@avalabs/avalanche-wallet-sdk';
 import {ScrollView} from 'react-native-gesture-handler';
 import {MainHeaderOptions} from 'navigation/NavUtils';
 import {PortfolioNavigationProp} from 'screens/portfolio/PortfolioView';
-import {useApplicationContext} from 'contexts/ApplicationContext';
 
-const TODAY = moment().format('MM.DD.YY');
-const YESTERDAY = moment().subtract(1, 'days').format('MM.DD.YY');
+const DISPLAY_FORMAT_CURRENT_YEAR = 'MMMM DD';
+const DISPLAY_FORMAT_PAST_YEAR = 'MMMM DD, YYYY';
+
+const TODAY = moment();
+const YESTERDAY = moment().subtract(1, 'days');
 type SectionType = {[x: string]: HistoryItemType[]};
 
 interface Props {
@@ -32,7 +34,6 @@ function ActivityView({embedded}: Props): JSX.Element {
   const [sectionData, setSectionData] = useState<SectionType>({});
   const [loading, setLoading] = useState(true);
   const navigation = useNavigation<PortfolioNavigationProp>();
-  const theme = useApplicationContext().theme;
 
   const loadHistory = useCallback(async () => {
     setLoading(true);
@@ -42,13 +43,20 @@ function ActivityView({embedded}: Props): JSX.Element {
     history
       .filter(ik => History.isHistoryEVMTx(ik) && ik.input === undefined)
       .map((it: HistoryItemType) => {
-        const date = moment(it.timestamp).format('MM.DD.YY');
-        if (date === TODAY) {
-          newSectionData.Today = [...[it]];
-        } else if (date === YESTERDAY) {
-          newSectionData.Yesterday = [...[it]];
+        const date = moment(it.timestamp);
+        if (TODAY.isSame(date, 'day')) {
+          newSectionData = [...[it]];
+        } else if (YESTERDAY.isSame(date, 'day')) {
+          newSectionData = [...[it]];
         } else {
-          newSectionData[date] = [...[it]];
+          const isCurrentYear = TODAY.year() === date.year();
+          newSectionData[
+            date.format(
+              isCurrentYear
+                ? DISPLAY_FORMAT_CURRENT_YEAR
+                : DISPLAY_FORMAT_PAST_YEAR,
+            )
+          ] = [...[it]];
         }
       });
     setSectionData({...newSectionData});
@@ -65,7 +73,6 @@ function ActivityView({embedded}: Props): JSX.Element {
           shadowColor: 'transparent',
           elevation: 0,
           shadowOpacity: 0,
-          backgroundColor: theme.colorBg1,
         },
       });
     }
@@ -85,7 +92,20 @@ function ActivityView({embedded}: Props): JSX.Element {
   const renderItems = () => {
     const items = Object.entries(sectionData).map((key, index) => {
       return (
-        <CollapsibleSection key={`${index}`} title={key[0]} startExpanded>
+        <View>
+          <Animated.View
+            style={{
+              flex: 1,
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              padding: 16,
+              marginRight: 8,
+            }}>
+            <AvaText.ActivityTotal>{key[0]}</AvaText.ActivityTotal>
+            {/*<View style={{transform: [{rotate: expanded ? '-90deg' : '90deg'}]}}>*/}
+            {/*  <CarrotSVG color={theme.txtDim} />*/}
+            {/*</View>*/}
+          </Animated.View>
           {key[1].map((item: HistoryItemType) => (
             <ActivityListItem
               key={item.id}
@@ -93,7 +113,7 @@ function ActivityView({embedded}: Props): JSX.Element {
               onPress={() => openDetailBottomSheet(item)}
             />
           ))}
-        </CollapsibleSection>
+        </View>
       );
     });
 
