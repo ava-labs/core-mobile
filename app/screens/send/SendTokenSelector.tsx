@@ -68,15 +68,11 @@ function SendTokenSelector(): JSX.Element {
   }
 
   return (
-    <View style={{flex: 1}}>
+    <View style={{flex: 1, marginHorizontal: 16}}>
       <Space y={8} />
-      <AvaText.Heading1 textStyle={{paddingStart: 8}}>
-        Send Tokens
-      </AvaText.Heading1>
+      <AvaText.Heading1>Send Tokens</AvaText.Heading1>
       <Space y={24} />
-      <AvaText.Body1 textStyle={{paddingStart: 8}}>
-        Choose asset to continue
-      </AvaText.Body1>
+      <AvaText.Body1>Choose asset to continue</AvaText.Body1>
       <Space y={16} />
       <View style={styles.searchContainer}>
         <View
@@ -107,7 +103,6 @@ function SendTokenSelector(): JSX.Element {
           data={filteredTokenList}
           renderItem={renderItem}
           onRefresh={handleRefresh}
-          contentContainerStyle={{paddingHorizontal: 16}}
           refreshing={false}
           keyExtractor={(item: TokenWithBalance) => item.symbol}
           ListEmptyComponent={
@@ -126,7 +121,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 16,
     marginBottom: 8,
-    marginHorizontal: 16,
   },
   searchBackground: {
     alignItems: 'center',

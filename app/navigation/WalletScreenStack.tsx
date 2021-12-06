@@ -203,6 +203,7 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
               presentation: 'card',
               headerShown: true,
               headerBackTitleVisible: false,
+              headerTitleAlign: 'center',
               headerTitle: () => <HeaderAccountSelector />,
             }}
             component={SendTokenSelector}
