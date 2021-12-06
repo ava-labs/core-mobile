@@ -47,6 +47,6 @@ export function usePortfolio(): UsePortfolioData {
     balanceAvaxTotal,
     isBalanceLoading: walletStateContext?.isBalanceLoading ?? true,
     isWalletReady: walletStateContext?.isWalletReady ?? false,
-    isErc20Loading: walletStateContext?.isErc20Loading ?? true,
+    isErc20Loading: walletStateContext?.isErc20TokenListLoading ?? true,
   };
 }
