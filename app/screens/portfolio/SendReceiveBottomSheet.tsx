@@ -3,9 +3,9 @@ import {useNavigation} from '@react-navigation/native';
 import BottomSheet, {BottomSheetBackdrop} from '@gorhom/bottom-sheet';
 import TabViewBackground from './components/TabViewBackground';
 import SendTokenScreenStack from 'navigation/wallet/SendTokenScreenStack';
-import {Space} from 'components/Space';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {Platform} from 'react-native';
+import AvaxSheetHandle from 'components/AvaxSheetHandle';
 
 const SendReceiveBottomSheet: FC = () => {
   const bottomSheetRef = useRef<BottomSheet>(null);
@@ -38,20 +38,16 @@ const SendReceiveBottomSheet: FC = () => {
     }
   }, []);
 
-  const MyHandle = () => {
-    return <Space y={24} />;
-  };
-
   // renders
   return (
     <BottomSheet
       ref={bottomSheetRef}
       index={-1}
       snapPoints={snapPoints}
-      handleComponent={MyHandle}
       onChange={handleChange}
       backdropComponent={BottomSheetBackdrop}
-      backgroundComponent={TabViewBackground}>
+      backgroundComponent={TabViewBackground}
+      handleComponent={AvaxSheetHandle}>
       <SendTokenScreenStack onClose={handleClose} />
     </BottomSheet>
   );

@@ -30,7 +30,7 @@ type Props = {
   token: ERC20;
 };
 
-export default function SendERC20Stack({onClose, token}: Props): JSX.Element {
+export default function SendERC20Stack({onClose}: Props): JSX.Element {
   const context = useApplicationContext();
   const screenOptions = useMemo<StackNavigationOptions>(
     () => ({
@@ -39,6 +39,7 @@ export default function SendERC20Stack({onClose, token}: Props): JSX.Element {
       safeAreaInsets: {top: 0},
       cardStyle: {
         overflow: 'visible',
+        backgroundColor: context.theme.colorBg2,
       },
     }),
     [],

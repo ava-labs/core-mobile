@@ -5,11 +5,13 @@ import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import {Erc20Token} from '@avalabs/avalanche-wallet-sdk/dist/Asset';
 import {TokenWithBalance} from '@avalabs/wallet-react-components';
 import AvaText from './AvaText';
+import {Opacity10} from 'resources/Constants';
 
 interface Props {
   name: string;
   symbol?: string;
   logoUri?: string;
+  showBorder?: boolean;
 }
 
 function isTokenWithBalance(
@@ -18,8 +20,8 @@ function isTokenWithBalance(
   return 'logoURI' in token;
 }
 
-const AvatarBase: FC<Props> = ({name, symbol, logoUri}) => {
-  const theme = useApplicationContext().theme;
+const AvatarBase: FC<Props> = ({name, symbol, logoUri, showBorder}) => {
+  const {theme, isDarkMode} = useApplicationContext();
   const hasValidLogoUri =
     logoUri && (logoUri.startsWith('http') || logoUri.startsWith('https'));
 
@@ -48,8 +50,11 @@ const AvatarBase: FC<Props> = ({name, symbol, logoUri}) => {
           style={[
             styles.initials,
             {
-              backgroundColor: theme.colorDisabled,
+              backgroundColor: isDarkMode
+                ? theme.colorStroke2 + Opacity10
+                : theme.white,
             },
+            showBorder && {borderWidth: 0.5, borderColor: theme.colorDisabled},
           ]}>
           <AvaText.Body1>{initials}</AvaText.Body1>
         </View>
@@ -77,8 +82,8 @@ const TokenAvatar: FC<TokenAvatarProps> = ({token}) => {
   return <AvatarBase name={name} symbol={symbol} logoUri={logoUri} />;
 };
 
-const CustomAvatar: FC<Props> = ({name, symbol, logoUri}) => {
-  return <AvatarBase name={name} symbol={symbol} logoUri={logoUri} />;
+const CustomAvatar: FC<Props> = props => {
+  return <AvatarBase {...props} />;
 };
 
 const Avatar = {
