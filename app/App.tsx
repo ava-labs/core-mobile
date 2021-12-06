@@ -95,6 +95,7 @@ const RootScreenStack = () => {
         component={WalletScreenStackWithContext}
         options={{
           animationEnabled: false,
+          presentation: 'card',
         }}
       />
     </RootStack.Navigator>

@@ -25,8 +25,12 @@ export default function SendAvaxStack({onClose}: Props): JSX.Element {
       ...TransitionPresets.SlideFromRightIOS,
       headerShown: false,
       safeAreaInsets: {top: 0},
+      headerStyle: {
+        backgroundColor: context.theme.colorBg2,
+      },
       cardStyle: {
         overflow: 'visible',
+        backgroundColor: context.theme.colorBg2,
       },
     }),
     [],
@@ -35,8 +39,11 @@ export default function SendAvaxStack({onClose}: Props): JSX.Element {
   const HeaderNTabs = () => <HeaderAndTabs onClose={onClose} />;
   const DoneScrn = () => <DoneScreen onClose={onClose} />;
 
+  const theme = context.navContainerTheme;
+  theme.colors.card = context.theme.colorBg2;
+
   return (
-    <NavigationContainer independent={true} theme={context.navContainerTheme}>
+    <NavigationContainer independent={true} theme={theme}>
       <Stack.Navigator screenOptions={screenOptions}>
         <Stack.Screen
           name={AppNavigation.SendToken.SendTokenScreen}

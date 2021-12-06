@@ -62,9 +62,9 @@ export const ApplicationContextProvider = ({children}: {children: any}) => {
     dark: isDarkMode,
     colors: {
       primary: theme.colorText1,
-      background: theme.colorBg2,
-      text: theme.txtOnBgApp,
-      card: theme.bgOnBgApp,
+      background: theme.background,
+      text: theme.colorText1,
+      card: theme.background,
       border: theme.background,
       notification: theme.accentColor,
     },

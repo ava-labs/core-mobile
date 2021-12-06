@@ -107,7 +107,7 @@ export default function PinOrBiometryLogin({
   };
 
   return (
-    <View style={[styles.verticalLayout, {backgroundColor: theme.colorBg2}]}>
+    <View style={styles.verticalLayout}>
       <Space y={64} />
       <View style={styles.growContainer}>
         {isResettingPin || (
