@@ -65,6 +65,7 @@ function ReceiveToken2({setPosition, showBackButton = false}: Props) {
       screenOptions={{
         presentation: 'card',
         headerBackTitleVisible: false,
+        headerTitleAlign: 'center',
         headerStyle: {
           elevation: 0,
           shadowOpacity: 0,
@@ -133,11 +134,11 @@ const Receive: FC<{
   return (
     <View style={{flex: 1}}>
       <Space y={8} />
-      <AvaText.Heading1 textStyle={{marginHorizontal: 8}}>
+      <AvaText.Heading1 textStyle={{marginHorizontal: 16}}>
         Receive Tokens
       </AvaText.Heading1>
       <Space y={24} />
-      <AvaText.Body2 textStyle={{marginHorizontal: 8}}>
+      <AvaText.Body2 textStyle={{marginHorizontal: 16}}>
         This is your C chain address to receive funds. Your address will change
         after every deposit.
       </AvaText.Body2>
@@ -157,7 +158,7 @@ const Receive: FC<{
           }}
           style={[
             styles.copyAddressContainer,
-            {backgroundColor: theme.colorIcon1 + Opacity05},
+            {backgroundColor: theme.listItemBg},
           ]}>
           <AvaText.Body1
             ellipsize={'middle'}
@@ -191,7 +192,8 @@ const styles = StyleSheet.create({
   copyAddressContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
     borderRadius: 8,
     marginHorizontal: 16,
     alignSelf: 'baseline',

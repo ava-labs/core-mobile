@@ -43,17 +43,20 @@ function SecurityPrivacy({
     <View style={{backgroundColor: theme.colorBg2}}>
       <AvaListItem.Base
         title={'Change PIN'}
+        background={theme.background}
         showNavigationArrow
         onPress={onChangePin}
       />
       <AvaListItem.Base
         title={'Show recovery phrase'}
+        background={theme.background}
         showNavigationArrow
         onPress={onShowRecoveryPhrase}
       />
       {isBiometricEnabled && (
         <AvaListItem.Base
           title={'Sign in with Biometrics'}
+          background={theme.background}
           rightComponent={
             <Switch
               value={isBiometricSwitchEnabled}

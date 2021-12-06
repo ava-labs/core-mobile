@@ -15,7 +15,6 @@ const TopNavigationHeader: FC = () => {
       style={{
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginHorizontal: -10,
       }}>
       <AvaButton.Icon
         onPress={() => navigation.dispatch(DrawerActions.openDrawer())}>

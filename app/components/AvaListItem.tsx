@@ -15,6 +15,7 @@ interface Props {
   titleAlignment?: 'center' | 'flex-start' | 'flex-end';
   embedInCard?: boolean;
   roundedEdges?: boolean;
+  background?: string;
 }
 
 function BaseListItem({
@@ -28,6 +29,7 @@ function BaseListItem({
   showNavigationArrow = false,
   onPress,
   embedInCard,
+  background,
 }: Props) {
   const context = useApplicationContext();
 
@@ -39,6 +41,9 @@ function BaseListItem({
           backgroundColor: context.theme.listItemBg,
           marginHorizontal: 16,
           borderRadius: 8,
+        },
+        !!background && {
+          backgroundColor: background,
         },
       ]}>
       <Pressable

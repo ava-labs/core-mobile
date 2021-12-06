@@ -17,5 +17,5 @@ export function stringAmountToBN(amount: string): BN {
 }
 
 export function bnAmountToString(amount?: BN): string {
-  return amount ? Utils.bnToAvaxX(amount) + ' AVAX' : '0.00';
+  return amount ? Utils.bnToAvaxX(amount) : '0.00';
 }
