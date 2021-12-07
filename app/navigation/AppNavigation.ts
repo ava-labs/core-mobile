@@ -17,6 +17,7 @@ enum CreateWalletNavigationScreens {
   CheckMnemonic = 'CreateWalletNavigationScreens.CheckMnemonic',
   CreatePin = 'CreateWalletNavigationScreens.CreatePin',
   BiometricLogin = 'CreateWalletNavigationScreens.BiometricLogin',
+  ProtectFunds = 'CreateWalletNavigationScreens.ProtectFunds',
 }
 
 enum LoginWithMnemonicStackScreens {
