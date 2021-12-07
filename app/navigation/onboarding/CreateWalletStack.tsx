@@ -11,6 +11,7 @@ import {
   createStackNavigator,
   StackNavigationProp,
 } from '@react-navigation/stack';
+import {MainHeaderOptions} from 'navigation/NavUtils';
 
 type CreateWalletStackParamList = {
   [AppNavigation.CreateWallet.CreateWallet]: undefined;
@@ -21,13 +22,9 @@ type CreateWalletStackParamList = {
 const CreateWalletS = createStackNavigator<CreateWalletStackParamList>();
 
 const CreateWalletScreen = () => {
-  const {goBack} = useNavigation();
   const {onSavedMnemonic} = useApplicationContext().appHook;
   return (
-    <CreateWallet
-      onSavedMyPhrase={mnemonic => onSavedMnemonic(mnemonic)}
-      onBack={() => goBack()}
-    />
+    <CreateWallet onSavedMyPhrase={mnemonic => onSavedMnemonic(mnemonic)} />
   );
 };
 
@@ -78,6 +75,7 @@ const BiometricLoginScreen = () => {
 const CreateWalletStack: () => JSX.Element = () => (
   <CreateWalletS.Navigator screenOptions={{headerShown: false}}>
     <CreateWalletS.Screen
+      options={MainHeaderOptions('Recovery Phrase')}
       name={AppNavigation.CreateWallet.CreateWallet}
       component={CreateWalletScreen}
     />
