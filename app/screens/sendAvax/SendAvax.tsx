@@ -21,6 +21,8 @@ export default function SendAvax(): JSX.Element {
     error,
     canSubmit,
     sendFee,
+    gasLimit,
+    gasPrice,
   } = useSendAvax(gasPrice$);
   const {navigate} = useNavigation<SendTokenNavigationProp>();
 
@@ -51,6 +53,8 @@ export default function SendAvax(): JSX.Element {
       sendFee={sendFee}
       address={address}
       setAddress={setAddress}
+      gasLimit={gasLimit}
+      gasPrice={gasPrice}
       onNextPress={() => {
         navigate(AppNavigation.SendToken.ConfirmTransactionScreen, {
           payload: {

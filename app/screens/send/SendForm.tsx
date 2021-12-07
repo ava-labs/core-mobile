@@ -1,5 +1,5 @@
-import React, {FC} from 'react';
-import {StyleSheet, View} from 'react-native';
+import React, {FC, useRef} from 'react';
+import {Animated, Pressable, StyleSheet, View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import InputText from 'components/InputText';
 import {bnAmountToString, stringAmountToBN} from 'dto/SendInfo';
@@ -9,12 +9,16 @@ import AvaButton from 'components/AvaButton';
 import {ScrollView} from 'react-native-gesture-handler';
 import {SendHookError} from '@avalabs/wallet-react-components';
 import BN from 'bn.js';
+import InfoSVG from 'components/svg/InfoSVG';
+import {Space} from 'components/Space';
 
 interface Props {
   error?: SendHookError;
   setAmount: (amount: BN) => void;
   setAddress: (address: string) => void;
   sendFee?: BN;
+  gasLimit?: number;
+  gasPrice?: BN;
   address?: string;
   canSubmit?: boolean;
   onNextPress?: () => void;
@@ -25,11 +29,59 @@ const SendForm: FC<Props> = ({
   setAmount,
   setAddress,
   sendFee,
+  gasPrice,
+  gasLimit,
   address,
   canSubmit,
   onNextPress,
 }) => {
   const context = useApplicationContext();
+  const fadeAnimation = useRef(new Animated.Value(0)).current;
+  const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
+  const gasInfo = (text: string) => (
+    <AvaText.Body3 color={context.theme.background}>{text}</AvaText.Body3>
+  );
+
+  function fadeIn() {
+    Animated.timing(fadeAnimation, {
+      toValue: 1,
+      duration: 100,
+      useNativeDriver: true,
+    }).start();
+  }
+
+  function fadeOut() {
+    Animated.timing(fadeAnimation, {
+      toValue: 0,
+      duration: 100,
+      useNativeDriver: true,
+    }).start();
+  }
+
+  const helperText = (
+    <View
+      style={{
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+      }}>
+      <AvaText.Body2 textStyle={{textAlign: 'left'}}>$0</AvaText.Body2>
+      <View style={{flexDirection: 'row', justifyContent: 'flex-end'}}>
+        <AvaText.Body3
+          textStyle={{
+            textAlign: 'right',
+            color: context.theme.txtListItemSubscript,
+          }}>
+          {`Transaction fee: ${bnAmountToString(sendFee)}`}
+        </AvaText.Body3>
+        <Space x={8} />
+        <AvaButton.Base onPress={fadeIn}>
+          <InfoSVG />
+        </AvaButton.Base>
+      </View>
+    </View>
+  );
 
   return (
     <ScrollView
@@ -49,7 +101,7 @@ const SendForm: FC<Props> = ({
           <InputText
             label="Amount"
             placeholder="Enter the amount"
-            helperText="$0"
+            helperText={helperText}
             errorText={
               error?.message?.startsWith('Amount') ? error?.message : undefined
             }
@@ -58,15 +110,6 @@ const SendForm: FC<Props> = ({
               setAmount(stringAmountToBN(text));
             }}
           />
-          <View style={styles.transactionFee}>
-            <AvaText.Body3
-              textStyle={{
-                textAlign: 'right',
-                color: context.theme.txtListItemSubscript,
-              }}>
-              {'Transaction fee: ' + bnAmountToString(sendFee)}
-            </AvaText.Body3>
-          </View>
         </View>
 
         <View style={styles.horizontalLayout}>
@@ -90,6 +133,27 @@ const SendForm: FC<Props> = ({
             )}
           </View>
         </View>
+        <AnimatedPressable
+          onPress={fadeOut}
+          style={[
+            styles.transactionFeeInfo,
+            {
+              backgroundColor: context.theme.alternateBackground,
+              opacity: fadeAnimation,
+            },
+          ]}>
+          <View style={styles.gasInfo}>
+            {gasInfo('Gas Limit')}
+            <Space x={8} />
+            {gasInfo(`${gasLimit ?? 0}`)}
+          </View>
+          <Space y={8} />
+          <View style={styles.gasInfo}>
+            {gasInfo('Gas Price')}
+            <Space x={8} />
+            {gasInfo(`${bnAmountToString(gasPrice)}`)}
+          </View>
+        </AnimatedPressable>
 
         <FlexSpacer />
 
@@ -99,33 +163,28 @@ const SendForm: FC<Props> = ({
           onPress={onNextPress}>
           Next
         </AvaButton.PrimaryLarge>
-
-        {/*<Modal*/}
-        {/*  animationType="slide"*/}
-        {/*  transparent={true}*/}
-        {/*  onRequestClose={() => setCameraVisible(false)}*/}
-        {/*  visible={cameraVisible}>*/}
-        {/*  <QrScannerAva*/}
-        {/*    onSuccess={data => onBarcodeScanned(data)}*/}
-        {/*    onCancel={() => setCameraVisible(false)}*/}
-        {/*  />*/}
-        {/*</Modal>*/}
       </View>
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
+  gasInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
   horizontalLayout: {
     position: 'relative',
     flexDirection: 'row',
     alignItems: 'center',
   },
-  transactionFee: {
+  transactionFeeInfo: {
+    padding: 16,
+    borderRadius: 8,
     position: 'absolute',
-    bottom: 14,
+    minWidth: 150,
+    top: 140,
     right: 16,
-    alignItems: 'flex-end',
   },
 });
 
