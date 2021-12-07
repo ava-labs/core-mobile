@@ -5,6 +5,8 @@ import TextLabel from 'components/TextLabel';
 import AvaButton from './AvaButton';
 import {Opacity50} from 'resources/Constants';
 import ClearInputSVG from 'components/svg/ClearInputSVG';
+import {Space} from 'components/Space';
+import AvaText from './AvaText';
 
 type Props = {
   onChangeText?: (text: string) => void;
@@ -16,7 +18,7 @@ type Props = {
   // Shows label above input
   label?: string;
   // Shows helper text under input
-  helperText?: string;
+  helperText?: string | React.ReactNode;
   // Shows error message and error color border
   errorText?: string;
   // Hides input, shows toggle button to show input, neon color border. Will disable multiline.
@@ -104,8 +106,14 @@ export default function InputText(props: Props | Readonly<Props>) {
   const HelperText = () => {
     return (
       <>
-        <View style={[{height: 4}]} />
-        <TextLabel textAlign="left" text={props.helperText || ''} />
+        <Space y={5} />
+        {!!props.helperText && typeof props.helperText === 'string' ? (
+          <AvaText.Body2 textStyle={{textAlign: 'left'}}>
+            {props.helperText}
+          </AvaText.Body2>
+        ) : (
+          <View>{props.helperText}</View>
+        )}
       </>
     );
   };
@@ -147,7 +155,6 @@ export default function InputText(props: Props | Readonly<Props>) {
       style={[
         {
           margin: 12,
-          flexDirection: 'column',
         },
       ]}>
       {props.label && <Label />}
@@ -155,7 +162,6 @@ export default function InputText(props: Props | Readonly<Props>) {
       <View
         style={[
           {
-            flexDirection: 'column',
             justifyContent: 'center',
           },
         ]}>
