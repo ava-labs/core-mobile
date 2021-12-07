@@ -4,13 +4,17 @@ import {useNavigation} from '@react-navigation/native';
 import AppNavigation from 'navigation/AppNavigation';
 import {SendTokenNavigationProp} from 'screens/sendERC20/SendERC20Stack';
 import {useGasPrice} from 'utils/GasPriceHook';
-import {useSendAvax} from '@avalabs/wallet-react-components';
+import {
+  useSendAvax,
+  useWalletStateContext,
+} from '@avalabs/wallet-react-components';
 import {bnAmountToString} from 'dto/SendInfo';
 import SendForm from 'screens/send/SendForm';
 import {useSelectedTokenContext} from 'contexts/SelectedTokenContext';
 
 export default function SendAvax(): JSX.Element {
   const {selectedToken} = useSelectedTokenContext();
+  const {avaxPrice} = useWalletStateContext();
   const {gasPrice$} = useGasPrice();
   const {
     submit,
@@ -48,6 +52,8 @@ export default function SendAvax(): JSX.Element {
   return (
     <SendForm
       setAmount={setAmount}
+      amount={amount}
+      priceUSD={amount ? avaxPrice : 0}
       canSubmit={canSubmit}
       error={error}
       sendFee={sendFee}

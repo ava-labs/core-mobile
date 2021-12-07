@@ -77,6 +77,8 @@ export default function SendERC20(): JSX.Element {
   return (
     <SendForm
       setAmount={handleSetAmount}
+      amount={amount}
+      priceUSD={amount ? token?.priceUSD : 0}
       canSubmit={canSubmit}
       error={error}
       sendFee={sendFee}
