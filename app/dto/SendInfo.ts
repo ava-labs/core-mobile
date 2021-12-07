@@ -1,4 +1,4 @@
-import {BN, Utils} from '@avalabs/avalanche-wallet-sdk';
+import {Big, BN, Utils} from '@avalabs/avalanche-wallet-sdk';
 
 // I know, I'm disgusted by it too, but it's a simple,
 // quick, dirty hack that works. Will remove this when
@@ -18,4 +18,9 @@ export function stringAmountToBN(amount: string): BN {
 
 export function bnAmountToString(amount?: BN): string {
   return amount ? Utils.bnToAvaxX(amount) : '0.00';
+}
+
+export function bnToNumber(amount: BN) {
+  const stringValue = bnAmountToString(amount);
+  return Number.parseFloat(stringValue);
 }

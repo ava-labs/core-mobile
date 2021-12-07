@@ -55,6 +55,8 @@ export default function SendANT(): JSX.Element {
   return (
     <SendForm
       setAmount={setAmount}
+      amount={amount}
+      priceUSD={amount ? selectedToken?.priceUSD : 0}
       canSubmit={canSubmit}
       error={error}
       sendFee={sendFee}

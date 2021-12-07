@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {Modal, View} from 'react-native';
+import {Modal, ScrollView, StyleSheet, View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {Space} from 'components/Space';
 import OvalTagBg from 'components/OvalTagBg';
@@ -11,6 +11,11 @@ import {SendTokenParamList} from 'screens/sendERC20/SendERC20Stack';
 import Loader from 'components/Loader';
 import {useSelectedTokenContext} from 'contexts/SelectedTokenContext';
 import Avatar from 'components/Avatar';
+import MovementIndicator from 'components/MovementIndicator';
+import AvaListItem from 'components/AvaListItem';
+import FlexSpacer from 'components/FlexSpacer';
+import Collapsible from 'react-native-collapsible';
+import CollapsibleSection from 'components/CollapsibleSection';
 
 export interface ISendConfirm {
   imageUrl?: string;
@@ -25,7 +30,6 @@ export type SendConfirmRouteProp = RouteProp<SendTokenParamList>;
 
 export default function SendAvaxConfirm() {
   const context = useApplicationContext();
-  const [backgroundStyle] = useState(context.backgroundStyle);
   const route = useRoute<SendConfirmRouteProp>();
   const [loading, setLoading] = useState(false);
 
@@ -42,57 +46,59 @@ export default function SendAvaxConfirm() {
   );
 
   return (
-    <View
-      style={[
-        backgroundStyle,
-        {
-          alignItems: 'center',
-          backgroundColor: undefined, //cancel backgroundColor from backgroundStyle
-          paddingLeft: 0,
-          paddingStart: 0,
-          paddingEnd: 0,
-          paddingRight: 0,
-        },
-      ]}>
-      <Space y={51} />
-      {selectedToken && <Avatar.Token token={selectedToken} />}
-      <Space y={16} />
-      <AvaText.Heading1>
-        {amount + ' ' + selectedToken?.symbol}
-      </AvaText.Heading1>
-      <Space y={8} />
+    <View style={{flex: 1}}>
+      <ScrollView>
+        <Space y={16} />
 
-      <Space y={32} />
-      <OvalTagBg color={context.theme.colorBg3 + Opacity50}>
-        <AvaText.Tag>Send to</AvaText.Tag>
-      </OvalTagBg>
-      <Space y={32} />
-
-      <View style={{paddingLeft: 24, paddingRight: 24}}>
-        <AvaText.Heading2>{address}</AvaText.Heading2>
-      </View>
-
-      <View style={{flex: 1}} />
-      <View style={{alignSelf: 'flex-start', marginLeft: 16}}>
-        <AvaText.Body3
-          textStyle={{
-            textAlign: 'right',
-            color: context.theme.txtListItemSubscript,
+        {/* centered views */}
+        <View
+          style={{
+            alignItems: 'center',
           }}>
-          {'Fee: ' + fee}
-        </AvaText.Body3>
-      </View>
-      <View style={{width: '100%'}}>
-        <AvaButton.PrimaryLarge
-          style={{margin: 16}}
-          onPress={() => {
-            onConfirm && onConfirm(() => setLoading(false));
-            setLoading(true);
-          }}>
-          Send
-        </AvaButton.PrimaryLarge>
-      </View>
-      {loading && showLoading}
+          {selectedToken && <Avatar.Token token={selectedToken} size={48} />}
+          <AvaText.Body1 textStyle={{marginTop: 8}}>
+            Payment amount
+          </AvaText.Body1>
+          <AvaText.LargeTitleBold textStyle={{marginVertical: 6}}>
+            {amount + ' ' + selectedToken?.symbol}
+          </AvaText.LargeTitleBold>
+          <AvaText.Heading1 color={context.theme.colorText2}>
+            {'$343.34 USD'}
+          </AvaText.Heading1>
+        </View>
+
+        <Space y={50} />
+        <AvaListItem.Base label={'Send to'} title={address} embedInCard />
+        <Space y={16} />
+
+        <CollapsibleSection
+          title={
+            <AvaListItem.Base
+              label={'Transaction fee'}
+              title={`${fee} AVAX`}
+              embedInCard
+              disablePress
+            />
+          }>
+          <>{/*Future expandable content will go here*/}</>
+        </CollapsibleSection>
+        <FlexSpacer />
+        {loading && showLoading}
+      </ScrollView>
+      <AvaButton.PrimaryLarge
+        style={{margin: 16}}
+        onPress={() => {
+          onConfirm && onConfirm(() => setLoading(false));
+          setLoading(true);
+        }}>
+        Send
+      </AvaButton.PrimaryLarge>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});
