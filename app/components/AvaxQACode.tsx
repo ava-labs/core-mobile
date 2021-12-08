@@ -8,21 +8,26 @@ import CircularText from 'components/svg/CircularText';
 interface Props {
   address?: string;
   circularText?: string;
+  sizePercentage?: number;
 }
 
-const AvaxQRCode: FC<Props> = ({address = '', circularText = ''}: Props) => {
+const AvaxQRCode: FC<Props> = ({
+  address,
+  circularText = '',
+  sizePercentage = 1,
+}: Props) => {
   const theme = useApplicationContext().theme;
 
   return (
     <View
       style={{
-        borderWidth: 7,
-        height: 180,
+        borderWidth: 7 * sizePercentage,
+        height: 180 * sizePercentage,
         borderColor: theme.txtOnBgApp,
         borderRadius: 7,
         alignSelf: 'baseline',
       }}>
-      <QRCode ecl={'H'} size={168} value={address ? address : undefined} />
+      <QRCode ecl={'H'} size={168 * sizePercentage} value={address} />
       <View
         style={{
           position: 'absolute',

@@ -1,11 +1,10 @@
 import React, {FC, memo, useCallback} from 'react';
-import {StyleSheet, View} from 'react-native';
+import {StyleSheet, Text, View} from 'react-native';
 import {usePortfolio} from 'screens/portfolio/usePortfolio';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaButton from 'components/AvaButton';
 import CopySVG from 'components/svg/CopySVG';
 import AvaText from 'components/AvaText';
-import {Opacity05} from 'resources/Constants';
 import {ShowSnackBar} from 'components/Snackbar';
 import Clipboard from '@react-native-clipboard/clipboard';
 import {Space} from 'components/Space';
@@ -33,11 +32,16 @@ const ReceiveStack = createStackNavigator<ReceiveStackParams>();
 interface Props {
   showBackButton?: boolean;
   setPosition?: (position: number) => void;
+  embedded?: boolean;
 }
 
-function ReceiveToken2({setPosition, showBackButton = false}: Props) {
+function ReceiveToken2({
+  setPosition,
+  showBackButton = false,
+  embedded = false,
+}: Props) {
   const {addressC, addressX} = usePortfolio();
-  const {navContainerTheme} = useApplicationContext();
+  const {navContainerTheme, theme} = useApplicationContext();
 
   //Share has been decommissioned yet again :(
   // const handleShare = async (address: string) => {
@@ -69,17 +73,23 @@ function ReceiveToken2({setPosition, showBackButton = false}: Props) {
         headerStyle: {
           elevation: 0,
           shadowOpacity: 0,
+          backgroundColor: embedded ? theme.colorBg2 : theme.background,
         },
         ...TransitionPresets.SlideFromRightIOS,
       }}>
       <ReceiveStack.Screen
         name={'ReceiveCChain'}
-        options={{
-          headerTitle: () => <HeaderAccountSelector />,
-        }}>
+        options={
+          embedded
+            ? {headerShown: false}
+            : {
+                headerTitle: () => <HeaderAccountSelector />,
+              }
+        }>
         {props => (
           <Receive
             {...props}
+            embedded={embedded}
             selectedAddress={addressC}
             positionCallback={setPosition}
           />
@@ -87,10 +97,11 @@ function ReceiveToken2({setPosition, showBackButton = false}: Props) {
       </ReceiveStack.Screen>
       <ReceiveStack.Screen
         name={'ReceiveXChain'}
-        options={SubHeaderOptions('X Chain')}>
+        options={embedded ? {headerShown: false} : SubHeaderOptions('X Chain')}>
         {props => (
           <Receive
             {...props}
+            embedded={embedded}
             selectedAddress={addressX}
             isXChain
             positionCallback={setPosition}
@@ -100,13 +111,14 @@ function ReceiveToken2({setPosition, showBackButton = false}: Props) {
     </ReceiveStack.Navigator>
   );
 
+  const switchTheme = {...navContainerTheme};
+  switchTheme.colors.background = embedded ? theme.colorBg2 : theme.background;
+
   if (showBackButton) {
     return receiveNavigator;
   } else {
     return (
-      <NavigationContainer
-        independent={!showBackButton}
-        theme={navContainerTheme}>
+      <NavigationContainer independent={!showBackButton} theme={switchTheme}>
         {receiveNavigator}
       </NavigationContainer>
     );
@@ -120,9 +132,11 @@ const Receive: FC<{
   isXChain?: boolean;
   onShare?: (address: string) => void;
   positionCallback?: (position: number) => void;
+  embedded: boolean;
 }> = memo(props => {
   const theme = useApplicationContext().theme;
   const isXChain = !!props?.isXChain;
+  const embedded = !!props?.embedded;
   const navigation = useNavigation<ReceiveRouteProp>();
 
   useFocusEffect(
@@ -132,21 +146,35 @@ const Receive: FC<{
   );
 
   return (
-    <View style={{flex: 1}}>
-      <Space y={8} />
-      <AvaText.Heading1 textStyle={{marginHorizontal: 16}}>
-        Receive Tokens
-      </AvaText.Heading1>
-      <Space y={24} />
-      <AvaText.Body2 textStyle={{marginHorizontal: 16}}>
-        This is your C chain address to receive funds. Your address will change
-        after every deposit.
-      </AvaText.Body2>
+    <View
+      style={{
+        flex: 1,
+      }}>
+      <Space y={embedded ? 34 : 8} />
+      {embedded || (
+        <>
+          <AvaText.Heading1 textStyle={{marginHorizontal: 16}}>
+            Receive Tokens
+          </AvaText.Heading1>
+          <Space y={24} />
+        </>
+      )}
+      <Text style={{marginHorizontal: 16, paddingTop: 4}}>
+        <AvaText.Body2>This is your </AvaText.Body2>
+        <AvaText.Heading3>
+          {isXChain ? 'X chain ' : 'C chain '}
+        </AvaText.Heading3>
+        <AvaText.Body2>
+          address to receive funds. Your address will change after every
+          deposit.
+        </AvaText.Body2>
+      </Text>
       <View style={[styles.container]}>
         <Space y={40} />
         <View style={{alignSelf: 'center'}}>
           <AvaxQACode
             circularText={isXChain ? 'X Chain' : 'C Chain'}
+            sizePercentage={0.8}
             address={props.selectedAddress}
           />
         </View>
@@ -170,13 +198,25 @@ const Receive: FC<{
         <Space y={16} />
         {isXChain || (
           <>
-            <Space y={130} />
+            <Space y={embedded ? 80 : 130} />
             <AvaButton.TextLarge
               style={{marginVertical: 16}}
               onPress={() => {
                 navigation.navigate('ReceiveXChain');
               }}>
               Looking for X-Chain?
+            </AvaButton.TextLarge>
+          </>
+        )}
+        {isXChain && embedded && (
+          <>
+            <Space y={80} />
+            <AvaButton.TextLarge
+              style={{marginVertical: 16}}
+              onPress={() => {
+                navigation.navigate('ReceiveCChain');
+              }}>
+              Back
             </AvaButton.TextLarge>
           </>
         )}
