@@ -109,8 +109,12 @@ const TextBody2: FC<TextProps> = ({ellipsize, color, textStyle, children}) => {
   );
 };
 
-const TextBody3: FC<TextProps> = ({textStyle, children}) => {
-  return <Text style={[styles.body3, textStyle]}>{children}</Text>;
+const TextBody3: FC<TextProps> = ({textStyle, color, children}) => {
+  return (
+    <Text style={[styles.body3, textStyle, !!color && {color: color}]}>
+      {children}
+    </Text>
+  );
 };
 
 const TextBody4: FC<TextProps> = ({textStyle, children}) => {

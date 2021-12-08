@@ -12,6 +12,7 @@ interface Props {
   symbol?: string;
   logoUri?: string;
   showBorder?: boolean;
+  size?: number;
 }
 
 function isTokenWithBalance(
@@ -20,7 +21,13 @@ function isTokenWithBalance(
   return 'logoURI' in token;
 }
 
-const AvatarBase: FC<Props> = ({name, symbol, logoUri, showBorder}) => {
+const AvatarBase: FC<Props> = ({
+  name,
+  symbol,
+  logoUri,
+  showBorder,
+  size = 32,
+}) => {
   const {theme, isDarkMode} = useApplicationContext();
   const hasValidLogoUri =
     logoUri && (logoUri.startsWith('http') || logoUri.startsWith('https'));
@@ -30,7 +37,7 @@ const AvatarBase: FC<Props> = ({name, symbol, logoUri, showBorder}) => {
     if (symbol === 'AVAX') {
       return (
         <AvaLogoSVG
-          size={32}
+          size={size}
           logoColor={theme.white}
           backgroundColor={theme.logoColor}
         />
@@ -53,6 +60,8 @@ const AvatarBase: FC<Props> = ({name, symbol, logoUri, showBorder}) => {
               backgroundColor: isDarkMode
                 ? theme.colorStroke2 + Opacity10
                 : theme.white,
+              width: size,
+              height: size,
             },
             showBorder && {borderWidth: 0.5, borderColor: theme.colorDisabled},
           ]}>
@@ -61,7 +70,14 @@ const AvatarBase: FC<Props> = ({name, symbol, logoUri, showBorder}) => {
       );
       // if TokenWithBalance and valid URI get load it.
     } else {
-      return <Image style={styles.tokenLogo} source={{uri: logoUri!}} />;
+      return (
+        <Image
+          style={styles.tokenLogo}
+          source={{uri: logoUri!}}
+          width={size}
+          height={size}
+        />
+      );
     }
   }, []);
 
@@ -70,8 +86,9 @@ const AvatarBase: FC<Props> = ({name, symbol, logoUri, showBorder}) => {
 
 interface TokenAvatarProps {
   token: Erc20Token | TokenWithBalance;
+  size?: number;
 }
-const TokenAvatar: FC<TokenAvatarProps> = ({token}) => {
+const TokenAvatar: FC<TokenAvatarProps> = ({token, size}) => {
   const isErc20Token = !isTokenWithBalance(token);
   const name = token.name;
   const symbol = token.symbol;
@@ -79,7 +96,9 @@ const TokenAvatar: FC<TokenAvatarProps> = ({token}) => {
     ? undefined
     : (token as TokenWithBalance).logoURI;
 
-  return <AvatarBase name={name} symbol={symbol} logoUri={logoUri} />;
+  return (
+    <AvatarBase name={name} symbol={symbol} logoUri={logoUri} size={size} />
+  );
 };
 
 const CustomAvatar: FC<Props> = props => {
@@ -94,15 +113,11 @@ const Avatar = {
 const styles = StyleSheet.create({
   tokenLogo: {
     paddingHorizontal: 16,
-    width: 32,
-    height: 32,
     borderRadius: 20,
     overflow: 'hidden',
   },
   initials: {
     borderRadius: 20,
-    height: 32,
-    width: 32,
     justifyContent: 'center',
     alignItems: 'center',
   },

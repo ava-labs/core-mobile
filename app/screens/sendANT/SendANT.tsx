@@ -23,7 +23,10 @@ export default function SendANT(): JSX.Element {
   } = useSendAnt(selectedToken as AntWithBalance);
   const {navigate} = useNavigation<SendTokenNavigationProp>();
 
-  async function handleOnConfirm(doneLoading: () => void) {
+  async function handleOnConfirm(
+    onSuccess: () => void,
+    onError: (error: any) => void,
+  ) {
     if (!address) {
       Alert.alert('Error', 'Address not set ');
       return;
@@ -42,12 +45,12 @@ export default function SendANT(): JSX.Element {
           Alert.alert('Error', 'Undefined error');
         } else {
           console.log(value);
-          navigate(AppNavigation.SendToken.DoneScreen);
-          doneLoading();
+          navigate(AppNavigation.SendToken.DoneScreen, {transactionId: value.txId});
+          onSuccess();
         }
       },
       error: (err: any) => {
-        Alert.alert('Error', err.message);
+        onError(err);
       },
     });
   }
@@ -55,6 +58,8 @@ export default function SendANT(): JSX.Element {
   return (
     <SendForm
       setAmount={setAmount}
+      amount={amount}
+      priceUSD={amount ? selectedToken?.priceUSD : 0}
       canSubmit={canSubmit}
       error={error}
       sendFee={sendFee}

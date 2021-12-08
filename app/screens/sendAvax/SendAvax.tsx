@@ -4,13 +4,17 @@ import {useNavigation} from '@react-navigation/native';
 import AppNavigation from 'navigation/AppNavigation';
 import {SendTokenNavigationProp} from 'screens/sendERC20/SendERC20Stack';
 import {useGasPrice} from 'utils/GasPriceHook';
-import {useSendAvax} from '@avalabs/wallet-react-components';
+import {
+  useSendAvax,
+  useWalletStateContext,
+} from '@avalabs/wallet-react-components';
 import {bnAmountToString} from 'dto/SendInfo';
 import SendForm from 'screens/send/SendForm';
 import {useSelectedTokenContext} from 'contexts/SelectedTokenContext';
 
 export default function SendAvax(): JSX.Element {
   const {selectedToken} = useSelectedTokenContext();
+  const {avaxPrice} = useWalletStateContext();
   const {gasPrice$} = useGasPrice();
   const {
     submit,
@@ -21,24 +25,37 @@ export default function SendAvax(): JSX.Element {
     error,
     canSubmit,
     sendFee,
+    gasLimit,
+    gasPrice,
   } = useSendAvax(gasPrice$);
   const {navigate} = useNavigation<SendTokenNavigationProp>();
 
-  async function handleOnConfirm(doneLoading: () => void) {
+  async function handleOnConfirm(
+    onSuccess: () => void,
+    onError: (error: any) => void,
+  ) {
+    if (!address) {
+      Alert.alert('Error', 'Address not set ');
+      return;
+    }
+    if (!amount || amount.isZero()) {
+      Alert.alert('Error', 'Amount not set ');
+      return;
+    }
+
     submit().subscribe({
       next: value => {
         if (value === undefined) {
           Alert.alert('Error', 'Undefined error');
         } else {
           if ('txId' in value && value.txId) {
-            console.log(value);
-            navigate(AppNavigation.SendToken.DoneScreen);
-            doneLoading();
+            navigate(AppNavigation.SendToken.DoneScreen, {transactionId: value.txId});
+            onSuccess();
           }
         }
       },
       error: err => {
-        Alert.alert('Error', err.message);
+        onError(err);
       },
     });
   }
@@ -46,11 +63,15 @@ export default function SendAvax(): JSX.Element {
   return (
     <SendForm
       setAmount={setAmount}
+      amount={amount}
+      priceUSD={amount ? avaxPrice : 0}
       canSubmit={canSubmit}
       error={error}
       sendFee={sendFee}
       address={address}
       setAddress={setAddress}
+      gasLimit={gasLimit}
+      gasPrice={gasPrice}
       onNextPress={() => {
         navigate(AppNavigation.SendToken.ConfirmTransactionScreen, {
           payload: {

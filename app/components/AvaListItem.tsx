@@ -11,6 +11,7 @@ interface Props {
   subtitle?: React.ReactNode | string;
   showNavigationArrow?: boolean;
   disabled?: boolean;
+  disablePress?: boolean;
   onPress?: () => void;
   titleAlignment?: 'center' | 'flex-start' | 'flex-end';
   embedInCard?: boolean;
@@ -25,6 +26,7 @@ function BaseListItem({
   label,
   title,
   disabled,
+  disablePress,
   titleAlignment = 'center',
   showNavigationArrow = false,
   onPress,
@@ -47,6 +49,7 @@ function BaseListItem({
         },
       ]}>
       <Pressable
+        pointerEvents={disablePress ? 'none' : 'auto'}
         style={styles.baseRowContainer}
         disabled={disabled}
         onPress={onPress}>

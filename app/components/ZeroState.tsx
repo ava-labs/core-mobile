@@ -51,15 +51,44 @@ const ZeroStateBase: FC<BaseProps> = ({
         alignItems: 'center',
         flex: 1,
       }}>
-      <Space y={52} />
-      {getImage()}
-      <Space y={52} />
+      {getImage() && (
+        <>
+          <Space y={52} />
+          {getImage()}
+          <Space y={52} />
+        </>
+      )}
       {getTitle()}
+      <Space y={16} />
       {getMessage()}
-      {additionalComponent}
+      {additionalComponent && (
+        <>
+          <Space y={24} />
+          {additionalComponent}
+        </>
+      )}
     </View>
   );
 };
+
+type ZeroStateSendErrorProps = Pick<
+  BaseProps,
+  'additionalComponent' | 'message'
+>;
+
+function ZeroStateSendError({
+  additionalComponent,
+  message,
+}: ZeroStateSendErrorProps) {
+  const title = 'Oops, something went wrong';
+  return (
+    <ZeroStateBase
+      title={title}
+      message={message ?? 'An unknown error as occurred.'}
+      additionalComponent={additionalComponent}
+    />
+  );
+}
 
 function ZeroStatePortfolio() {
   const title = 'Your wallet is empty';
@@ -89,6 +118,7 @@ const ZeroState = {
   Portfolio: ZeroStatePortfolio,
   NoResults: ZeroStateNoResults,
   ComingSoon: ZeroStateComingSoon,
+  SendError: ZeroStateSendError,
 };
 
 export default ZeroState;
