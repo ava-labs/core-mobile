@@ -49,7 +49,7 @@ export default function SendAvax(): JSX.Element {
           Alert.alert('Error', 'Undefined error');
         } else {
           if ('txId' in value && value.txId) {
-            navigate(AppNavigation.SendToken.DoneScreen);
+            navigate(AppNavigation.SendToken.DoneScreen, {transactionId: value.txId});
             onSuccess();
           }
         }

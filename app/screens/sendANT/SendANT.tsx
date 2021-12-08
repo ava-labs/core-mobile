@@ -45,7 +45,7 @@ export default function SendANT(): JSX.Element {
           Alert.alert('Error', 'Undefined error');
         } else {
           console.log(value);
-          navigate(AppNavigation.SendToken.DoneScreen);
+          navigate(AppNavigation.SendToken.DoneScreen, {transactionId: value.txId});
           onSuccess();
         }
       },
