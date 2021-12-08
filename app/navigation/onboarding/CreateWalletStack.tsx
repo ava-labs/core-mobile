@@ -120,6 +120,7 @@ const CreateWalletStack: () => JSX.Element = () => (
       component={CreateWalletScreen}
     />
     <CreateWalletS.Screen
+      options={MainHeaderOptions('Verify Phrase')}
       name={AppNavigation.CreateWallet.CheckMnemonic}
       component={CheckMnemonicScreen}
     />
