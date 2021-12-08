@@ -30,21 +30,32 @@ export default function SendAvax(): JSX.Element {
   } = useSendAvax(gasPrice$);
   const {navigate} = useNavigation<SendTokenNavigationProp>();
 
-  async function handleOnConfirm(doneLoading: () => void) {
+  async function handleOnConfirm(
+    onSuccess: () => void,
+    onError: (error: any) => void,
+  ) {
+    if (!address) {
+      Alert.alert('Error', 'Address not set ');
+      return;
+    }
+    if (!amount || amount.isZero()) {
+      Alert.alert('Error', 'Amount not set ');
+      return;
+    }
+
     submit().subscribe({
       next: value => {
         if (value === undefined) {
           Alert.alert('Error', 'Undefined error');
         } else {
           if ('txId' in value && value.txId) {
-            console.log(value);
             navigate(AppNavigation.SendToken.DoneScreen);
-            doneLoading();
+            onSuccess();
           }
         }
       },
       error: err => {
-        Alert.alert('Error', err.message);
+        onError(err);
       },
     });
   }
