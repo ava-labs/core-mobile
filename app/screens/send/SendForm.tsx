@@ -1,5 +1,5 @@
 import React, {FC, useRef} from 'react';
-import {Animated, Pressable, StyleSheet, View} from 'react-native';
+import {Animated, Platform, Pressable, StyleSheet, View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import InputText from 'components/InputText';
 import {bnAmountToString, bnToNumber, stringAmountToBN} from 'dto/SendInfo';
@@ -105,6 +105,28 @@ const SendForm: FC<Props> = ({
           },
         ]}>
         <View style={[{paddingStart: 4, paddingEnd: 4, marginTop: 20}]}>
+          <View style={styles.horizontalLayout}>
+            <View style={[{flex: 1, paddingStart: 4, paddingEnd: 4}]}>
+              <InputText
+                label={'Address'}
+                placeholder="Enter the address"
+                multiline={true}
+                errorText={
+                  error?.message?.toLowerCase().indexOf('address') !== -1
+                    ? error?.message
+                    : undefined
+                }
+                onChangeText={text => {
+                  setAddress(text);
+                }}
+              />
+              {address?.length === 0 && (
+                <View />
+                // <ScanQrIcon onScanBarcode={onScanBarcode} />
+              )}
+            </View>
+          </View>
+
           <InputText
             label="Amount"
             placeholder="Enter the amount"
@@ -119,27 +141,6 @@ const SendForm: FC<Props> = ({
           />
         </View>
 
-        <View style={styles.horizontalLayout}>
-          <View style={[{flex: 1, paddingStart: 4, paddingEnd: 4}]}>
-            <InputText
-              label={'Address'}
-              placeholder="Enter the address"
-              multiline={true}
-              errorText={
-                error?.message?.toLowerCase().indexOf('address') !== -1
-                  ? error?.message
-                  : undefined
-              }
-              onChangeText={text => {
-                setAddress(text);
-              }}
-            />
-            {address?.length === 0 && (
-              <View />
-              // <ScanQrIcon onScanBarcode={onScanBarcode} />
-            )}
-          </View>
-        </View>
         <AnimatedPressable
           onPress={fadeOut}
           style={[
@@ -190,7 +191,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     position: 'absolute',
     minWidth: 150,
-    top: 140,
+    bottom: Platform.OS === 'ios' ? 200 : 160,
     right: 16,
   },
 });
