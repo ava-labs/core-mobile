@@ -1,16 +1,18 @@
 import React, {useState} from 'react';
-import {Modal, View} from 'react-native';
+import {Modal, ScrollView, View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {Space} from 'components/Space';
-import OvalTagBg from 'components/OvalTagBg';
 import AvaText from 'components/AvaText';
 import AvaButton from 'components/AvaButton';
-import {Opacity50} from 'resources/Constants';
-import {RouteProp, useRoute} from '@react-navigation/native';
+import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
 import {SendTokenParamList} from 'screens/sendERC20/SendERC20Stack';
 import Loader from 'components/Loader';
 import {useSelectedTokenContext} from 'contexts/SelectedTokenContext';
 import Avatar from 'components/Avatar';
+import AvaListItem from 'components/AvaListItem';
+import FlexSpacer from 'components/FlexSpacer';
+import CollapsibleSection from 'components/CollapsibleSection';
+import ZeroState from 'components/ZeroState';
 
 export interface ISendConfirm {
   imageUrl?: string;
@@ -18,16 +20,17 @@ export interface ISendConfirm {
   fee: string;
   amount: string;
   address?: string;
-  onConfirm?: (doneLoading: () => void) => void;
+  onConfirm?: (onSuccess: () => void, onError: (error: any) => void) => void;
 }
 
 export type SendConfirmRouteProp = RouteProp<SendTokenParamList>;
 
 export default function SendAvaxConfirm() {
   const context = useApplicationContext();
-  const [backgroundStyle] = useState(context.backgroundStyle);
+  const {goBack} = useNavigation();
   const route = useRoute<SendConfirmRouteProp>();
   const [loading, setLoading] = useState(false);
+  const [submitError, setSubmitError] = useState<Error>();
 
   const {selectedToken} = useSelectedTokenContext();
   const amount = route?.params?.payload?.amount;
@@ -41,58 +44,92 @@ export default function SendAvaxConfirm() {
     </Modal>
   );
 
-  return (
+  const errorComponent = (
+    <>
+      <AvaButton.PrimaryLarge onPress={confirmTransaction}>
+        Retry
+      </AvaButton.PrimaryLarge>
+      <Space y={24} />
+      <AvaButton.TextLarge onPress={goBack}>
+        Back to Portfolio
+      </AvaButton.TextLarge>
+    </>
+  );
+
+  const centerComponents = (
     <View
-      style={[
-        backgroundStyle,
-        {
-          alignItems: 'center',
-          backgroundColor: undefined, //cancel backgroundColor from backgroundStyle
-          paddingLeft: 0,
-          paddingStart: 0,
-          paddingEnd: 0,
-          paddingRight: 0,
-        },
-      ]}>
-      <Space y={51} />
-      {selectedToken && <Avatar.Token token={selectedToken} />}
-      <Space y={16} />
-      <AvaText.Heading1>
+      style={{
+        alignItems: 'center',
+      }}>
+      {selectedToken && <Avatar.Token token={selectedToken} size={48} />}
+      <AvaText.Body1 textStyle={{marginTop: 8}}>Payment amount</AvaText.Body1>
+      <AvaText.LargeTitleBold textStyle={{marginVertical: 6}}>
         {amount + ' ' + selectedToken?.symbol}
+      </AvaText.LargeTitleBold>
+      <AvaText.Heading1 color={context.theme.colorText2}>
+        {'$343.34 USD'}
       </AvaText.Heading1>
-      <Space y={8} />
+    </View>
+  );
 
-      <Space y={32} />
-      <OvalTagBg color={context.theme.colorBg3 + Opacity50}>
-        <AvaText.Tag>Send to</AvaText.Tag>
-      </OvalTagBg>
-      <Space y={32} />
+  function onSuccess() {
+    setLoading(false);
+  }
 
-      <View style={{paddingLeft: 24, paddingRight: 24}}>
-        <AvaText.Heading2>{address}</AvaText.Heading2>
-      </View>
+  function onError(error: any) {
+    setLoading(false);
+    setSubmitError(error);
+  }
 
-      <View style={{flex: 1}} />
-      <View style={{alignSelf: 'flex-start', marginLeft: 16}}>
-        <AvaText.Body3
-          textStyle={{
-            textAlign: 'right',
-            color: context.theme.txtListItemSubscript,
-          }}>
-          {'Fee: ' + fee}
-        </AvaText.Body3>
-      </View>
-      <View style={{width: '100%'}}>
-        <AvaButton.PrimaryLarge
-          style={{margin: 16}}
-          onPress={() => {
-            onConfirm && onConfirm(() => setLoading(false));
-            setLoading(true);
-          }}>
-          Send
-        </AvaButton.PrimaryLarge>
-      </View>
-      {loading && showLoading}
+  function confirmTransaction() {
+    if (onConfirm) {
+      setSubmitError(undefined);
+      setLoading(true);
+      onConfirm(onSuccess, onError);
+    }
+  }
+
+  return (
+    <View style={{flex: 1}}>
+      {submitError ? (
+        <View style={{marginHorizontal: 16, flex: 1}}>
+          <ZeroState.SendError
+            message={submitError?.message}
+            additionalComponent={errorComponent}
+          />
+        </View>
+      ) : (
+        <>
+          <ScrollView>
+            <Space y={16} />
+
+            {centerComponents}
+
+            <Space y={50} />
+            <AvaListItem.Base label={'Send to'} title={address} embedInCard />
+            <Space y={16} />
+
+            <CollapsibleSection
+              title={
+                <AvaListItem.Base
+                  label={'Transaction fee'}
+                  title={`${fee} AVAX`}
+                  embedInCard
+                  disablePress
+                />
+              }>
+              <>{/*Future expandable content will go here*/}</>
+            </CollapsibleSection>
+            <FlexSpacer />
+            {loading && showLoading}
+          </ScrollView>
+          <AvaButton.PrimaryLarge
+            style={{margin: 16}}
+            onPress={confirmTransaction}>
+            Confirm transaction
+          </AvaButton.PrimaryLarge>
+        </>
+      )}
     </View>
   );
 }

@@ -36,7 +36,10 @@ export default function SendERC20(): JSX.Element {
     setTokenBalances({[token.address]: token});
   }, []);
 
-  async function handleOnConfirm(doneLoading: () => void) {
+  async function handleOnConfirm(
+    onSuccess: () => void,
+    onError: (error: any) => void,
+  ) {
     if (!address) {
       Alert.alert('Error', 'Address not set ');
       return;
@@ -58,14 +61,13 @@ export default function SendERC20(): JSX.Element {
           Alert.alert('Error', 'Undefined error');
         } else {
           if ('txId' in value && value.txId) {
-            console.log(value);
-            navigate(AppNavigation.SendToken.DoneScreen);
-            doneLoading();
+            navigate(AppNavigation.SendToken.DoneScreen, {transactionId: value.txId});
+            onSuccess();
           }
         }
       },
       error: err => {
-        Alert.alert('Error', err.message);
+        onError(err);
       },
     });
   }
@@ -77,6 +79,8 @@ export default function SendERC20(): JSX.Element {
   return (
     <SendForm
       setAmount={handleSetAmount}
+      amount={amount}
+      priceUSD={amount ? token?.priceUSD : 0}
       canSubmit={canSubmit}
       error={error}
       sendFee={sendFee}
