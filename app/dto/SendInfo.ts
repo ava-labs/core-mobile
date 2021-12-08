@@ -22,5 +22,5 @@ export function bnAmountToString(amount?: BN): string {
 
 export function bnToNumber(amount: BN) {
   const stringValue = bnAmountToString(amount);
-  return Number.parseFloat(stringValue);
+  return Number.parseFloat(stringValue).toFixed(3);
 }
