@@ -102,9 +102,6 @@ function ActivityView({embedded}: Props): JSX.Element {
               marginRight: 8,
             }}>
             <AvaText.ActivityTotal>{key[0]}</AvaText.ActivityTotal>
-            {/*<View style={{transform: [{rotate: expanded ? '-90deg' : '90deg'}]}}>*/}
-            {/*  <CarrotSVG color={theme.txtDim} />*/}
-            {/*</View>*/}
           </Animated.View>
           {key[1].map((item: HistoryItemType) => (
             <ActivityListItem
