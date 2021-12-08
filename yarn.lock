@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@avalabs/avalanche-wallet-sdk@0.11.0":
-  version "0.11.0"
-  resolved "https://registry.yarnpkg.com/@avalabs/avalanche-wallet-sdk/-/avalanche-wallet-sdk-0.11.0.tgz#433fffe88b33f78721bf3d42503b4b1294b26378"
-  integrity sha512-+8s3lhZEchD3CltxVIQzSZdWPyhRjSf2Opqw/c9JgYb37vFbcfY3KSlPmrVqGg5obGXxwtOejIT9Kk2SKf8DEQ==
+"@avalabs/avalanche-wallet-sdk@0.11.1":
+  version "0.11.1"
+  resolved "https://registry.yarnpkg.com/@avalabs/avalanche-wallet-sdk/-/avalanche-wallet-sdk-0.11.1.tgz#42d6ee96086c6f40b4df571f8bd151295242cf3b"
+  integrity sha512-I+MdDWz/Guzt+IFGynBeSXcHOjWieKMQmMG5Q+8e3ZQZy9loMb1laMZmaZY1z4AQ61ZGH2KDQ6OTVrxB3SVzsA==
   dependencies:
     "@ethereumjs/common" "2.4.0"
     "@ethereumjs/tx" "3.3.0"
@@ -30,10 +30,10 @@
     web3-eth-contract "^1.3.6"
     xss "^1.0.10"
 
-"@avalabs/wallet-react-components@1.12.0":
-  version "1.12.0"
-  resolved "https://registry.yarnpkg.com/@avalabs/wallet-react-components/-/wallet-react-components-1.12.0.tgz#2667ea88d086eb76d30f7ebaa64bd428917fe4ae"
-  integrity sha512-McrztTT0PAShS4ZguoES0F+d/pPgT96IknMXTsYYYvU8vhmLskRv+RX01ZGtaNj+OgNkAAiR1wLem9q6Vs+X7g==
+"@avalabs/wallet-react-components@1.15.0":
+  version "1.15.0"
+  resolved "https://registry.yarnpkg.com/@avalabs/wallet-react-components/-/wallet-react-components-1.15.0.tgz#f5b6b707956d18ee3b59f522b19de27912e093e7"
+  integrity sha512-IUqcYxE33JCmnMZayUlXqgnOWHQtHLdx1S9ID5mYnX/wM4Z3SQJWOkRoOFBvdGXrvU/QV5GLskB3u7KkZOj3vQ==
   dependencies:
     "@testing-library/jest-dom" "^5.14.1"
     "@testing-library/react" "^11.2.7"
