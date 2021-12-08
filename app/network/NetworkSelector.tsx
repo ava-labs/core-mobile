@@ -1,42 +1,28 @@
 import React, {FC, useEffect, useMemo, useState} from 'react';
-import {
-  ActivityIndicator,
-  LayoutAnimation,
-  StyleSheet,
-  UIManager,
-  View,
-} from 'react-native';
+import {ActivityIndicator, StyleSheet, UIManager, View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
-import AvaText from 'components/AvaText';
-import CarrotSVG from 'components/svg/CarrotSVG';
 import {
   FUJI_NETWORK,
   MAINNET_NETWORK,
   useNetworkContext,
 } from '@avalabs/wallet-react-components';
 import CheckmarkSVG from 'components/svg/CheckmarkSVG';
-import AvaButton from 'components/AvaButton';
-
-interface Props {
-  closeDrawer: () => void;
-}
+import AvaListItem from 'components/AvaListItem';
+import {useNavigation} from '@react-navigation/native';
 
 UIManager.setLayoutAnimationEnabledExperimental &&
   UIManager.setLayoutAnimationEnabledExperimental(true);
 
-const FLEX_BASIS = 53;
-const marginEnd = 12;
-const DOT = '\u25CF';
+//const DOT = '\u25CF';
 
-const NetworkSelector: FC<Props> = ({closeDrawer}) => {
+const NetworkSelector: FC = () => {
   const context = useApplicationContext();
   const theme = context.theme;
   const networkContext = useNetworkContext();
+  const {goBack} = useNavigation();
   const [networkName, setNetworkName] = useState('');
   const [loading, setLoading] = useState(false);
   const [isChanging, setIsChanging] = useState(false);
-  const [flexBasis, setFlexBasis] = useState<number | undefined>(FLEX_BASIS);
-  const [isExpanded, setIsExpanded] = useState(false);
 
   const availableNetworks = useMemo(() => {
     return {
@@ -46,23 +32,17 @@ const NetworkSelector: FC<Props> = ({closeDrawer}) => {
   }, []);
 
   useEffect(() => {
-    LayoutAnimation.easeInEaseOut();
-    setFlexBasis(isExpanded ? undefined : FLEX_BASIS);
-  }, [isExpanded]);
-
-  useEffect(() => {
     if (networkName !== networkContext?.network?.name) {
       setNetworkName(networkContext?.network?.name ?? '');
       setLoading(false);
       if (isChanging) {
         setIsChanging(false);
-        closeDrawer();
+        goBack();
       }
     }
   }, [networkContext?.network?.config]);
 
   function handleChangeNetwork(network: string) {
-    setIsExpanded(false);
     if (network === networkContext?.network?.name) {
       return;
     }
@@ -77,45 +57,31 @@ const NetworkSelector: FC<Props> = ({closeDrawer}) => {
   return (
     <View
       style={{
-        paddingHorizontal: 16,
-        flexBasis: flexBasis,
-        overflow: 'hidden',
+        flex: 1,
+        marginVertical: 16,
       }}>
-      <AvaButton.Base
-        style={styles.item}
-        onPress={() => {
-          setIsExpanded(!isExpanded);
-        }}>
-        <AvaText.Body2
-          color={theme.txtListItem}
-          textStyle={{marginEnd: marginEnd}}>
-          {`${DOT} ${networkName}`}
-        </AvaText.Body2>
-        <CarrotSVG
-          direction={isExpanded ? 'up' : 'down'}
-          color={theme.colorText1}
-        />
-      </AvaButton.Base>
-      <AvaButton.Base
-        style={[styles.item, styles.checkable]}
-        onPress={() => handleChangeNetwork(MAINNET_NETWORK.name)}>
-        <AvaText.Body1 color={theme.txtListItem}>
-          {MAINNET_NETWORK.name}
-        </AvaText.Body1>
-        {networkName === MAINNET_NETWORK.name && <CheckmarkSVG />}
-      </AvaButton.Base>
-      <AvaButton.Base
-        style={[styles.item, styles.checkable]}
-        onPress={() => handleChangeNetwork(FUJI_NETWORK.name)}>
-        <AvaText.Body1 color={theme.txtListItem}>
-          {FUJI_NETWORK.name.trim()}
-        </AvaText.Body1>
-        {networkName === FUJI_NETWORK.name && <CheckmarkSVG />}
-      </AvaButton.Base>
-
-      {/*<AvaButton.TextLarge style={{alignSelf: 'flex-start', marginLeft: -16}}>*/}
-      {/*  Add Network*/}
-      {/*</AvaButton.TextLarge>*/}
+      <AvaListItem.Base
+        title={MAINNET_NETWORK.name}
+        onPress={() => handleChangeNetwork(MAINNET_NETWORK.name)}
+        background={
+          networkName === MAINNET_NETWORK.name
+            ? theme.listItemBg
+            : theme.background
+        }
+        rightComponent={
+          networkName === MAINNET_NETWORK.name && <CheckmarkSVG />
+        }
+      />
+      <AvaListItem.Base
+        title={FUJI_NETWORK.name}
+        onPress={() => handleChangeNetwork(FUJI_NETWORK.name)}
+        background={
+          networkName === FUJI_NETWORK.name
+            ? theme.listItemBg
+            : theme.background
+        }
+        rightComponent={networkName === FUJI_NETWORK.name && <CheckmarkSVG />}
+      />
       {loading && (
         <ActivityIndicator
           size={'small'}
@@ -139,13 +105,4 @@ const NetworkSelector: FC<Props> = ({closeDrawer}) => {
   );
 };
 
-const styles = StyleSheet.create({
-  item: {
-    paddingVertical: 12,
-    flexDirection: 'row',
-  },
-  checkable: {
-    justifyContent: 'space-between',
-  },
-});
 export default NetworkSelector;

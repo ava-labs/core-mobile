@@ -4,28 +4,27 @@ import AvaText from 'components/AvaText';
 import AppNavigation from 'navigation/AppNavigation';
 import {useNavigation} from '@react-navigation/native';
 import {NativeStackNavigatorProps} from 'react-native-screens/lib/typescript/native-stack/types';
-import {useApplicationContext} from 'contexts/ApplicationContext';
+import {useNetworkContext} from '@avalabs/wallet-react-components';
 
-const CurrencyItem = () => {
-  const {selectedCurrency} = useApplicationContext().appHook;
+const NetworkItem = () => {
+  const networkContext = useNetworkContext();
   const navigation = useNavigation<NativeStackNavigatorProps>();
-  const currency = () => (
+  const selectedNetwork = () => (
     <AvaText.Body2 textStyle={{paddingRight: 12}}>
-      {selectedCurrency}
+      {networkContext?.network?.name}
     </AvaText.Body2>
   );
 
   return (
     <>
       <AvaListItem.Base
-        title={<AvaText.Heading3>Currency</AvaText.Heading3>}
+        title={<AvaText.Heading3>Network</AvaText.Heading3>}
         titleAlignment={'flex-start'}
-        rightComponent={currency()}
-        disabled
+        rightComponent={selectedNetwork()}
         showNavigationArrow
         onPress={() => {
-          navigation?.navigate(AppNavigation.Wallet.CurrencySelector, {
-            currency: selectedCurrency,
+          navigation?.navigate(AppNavigation.Wallet.NetworkSelector, {
+            currentNetwork: networkContext?.network?.name,
           });
         }}
       />
@@ -33,4 +32,4 @@ const CurrencyItem = () => {
   );
 };
 
-export default CurrencyItem;
+export default NetworkItem;
