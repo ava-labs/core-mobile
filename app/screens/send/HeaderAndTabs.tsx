@@ -4,7 +4,6 @@ import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from 'components/AvaText';
 import SendHeader from 'screens/portfolio/sendBottomSheet/SendHeader';
 import TabViewAva from 'components/TabViewAva';
-import ReceiveToken from 'screens/receive/ReceiveToken';
 import {TokenWithBalance} from '@avalabs/wallet-react-components';
 import {
   TokenType,
@@ -13,6 +12,7 @@ import {
 import SendAvax from 'screens/sendAvax/SendAvax';
 import SendERC20 from 'screens/sendERC20/SendERC20';
 import SendANT from 'screens/sendANT/SendANT';
+import ReceiveToken2 from 'screens/receive/ReceiveToken2';
 
 type Props = {
   onClose: () => void;
@@ -44,7 +44,7 @@ export default function HeaderAndTabs({onClose}: Props): JSX.Element {
       <SendHeader onClose={onClose} />
       <TabViewAva renderCustomLabel={renderCustomLabel}>
         <SendTab title={'Send'} token={selectedToken} />
-        <ReceiveToken title={'Receive'} />
+        <ReceiveToken2 title={'Receive'} embedded />
       </TabViewAva>
     </View>
   );
