@@ -25,6 +25,7 @@ import {createStackNavigator} from '@react-navigation/stack';
 import ReceiveToken2 from 'screens/receive/ReceiveToken2';
 import SendTokenSelector from 'screens/send/SendTokenSelector';
 import HeaderAccountSelector from 'components/HeaderAccountSelector';
+import NetworkSelector from 'network/NetworkSelector';
 
 type Props = {
   onExit: () => void;
@@ -39,6 +40,7 @@ type RootStackParamList = {
   [AppNavigation.Wallet.Legal]: undefined;
   [AppNavigation.Wallet.ReceiveTokens]: undefined;
   [AppNavigation.Wallet.SendTokens]: undefined;
+  [AppNavigation.Wallet.NetworkSelector]: undefined;
   [AppNavigation.Modal.SendReceiveBottomSheet]: undefined;
   [AppNavigation.Modal.AccountBottomSheet]: undefined;
   [AppNavigation.Modal.TransactionDetailBottomSheet]: undefined;
@@ -224,6 +226,13 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
             }}
             name={AppNavigation.Wallet.CurrencySelector}
             component={CurrencySelectorScreen}
+          />
+          <RootStack.Screen
+            options={{
+              ...MainHeaderOptions('Network'),
+            }}
+            name={AppNavigation.Wallet.NetworkSelector}
+            component={NetworkSelector}
           />
           <RootStack.Screen
             name={AppNavigation.Wallet.SecurityPrivacy}
