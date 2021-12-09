@@ -23,9 +23,7 @@ const NetworkItem = () => {
         rightComponent={selectedNetwork()}
         showNavigationArrow
         onPress={() => {
-          navigation?.navigate(AppNavigation.Wallet.NetworkSelector, {
-            currentNetwork: networkContext?.network?.name,
-          });
+          navigation?.navigate(AppNavigation.Wallet.NetworkSelector);
         }}
       />
     </>
