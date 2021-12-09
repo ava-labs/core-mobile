@@ -108,6 +108,7 @@ export default function App() {
   const [backgroundStyle] = useState(context.appBackgroundStyle);
   const {shouldSetupWallet, mnemonic, isNewWallet} = context.appHook;
   const {initWalletWithMnemonic, createNewWallet} = useWalletSetup();
+  const {accounts} = useApplicationContext().repo.accountsRepo;
 
   useEffect(() => {
     networkContext?.setNetwork(FUJI_NETWORK);
@@ -118,7 +119,7 @@ export default function App() {
       if (isNewWallet) {
         createNewWallet(mnemonic);
       } else {
-        initWalletWithMnemonic(mnemonic);
+        initWalletWithMnemonic(mnemonic, accounts);
       }
     }
   }, [shouldSetupWallet]);
