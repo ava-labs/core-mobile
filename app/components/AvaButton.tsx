@@ -1,7 +1,8 @@
-import React, {FC} from 'react';
+import React, {FC, ReactNode} from 'react';
 import {Pressable, StyleProp, StyleSheet, View, ViewStyle} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from './AvaText';
+import {Space} from 'components/Space';
 
 interface BaseProps {
   onPress?: () => void;
@@ -40,6 +41,20 @@ const AvaButtonIcon: FC<BaseProps> = ({style, disabled, onPress, children}) => {
       style={[styles.buttonIcon, style]}>
       {children}
     </AvaButtonBase>
+  );
+};
+
+const TextWithIcon: FC<
+  BaseProps & {icon: ReactNode; text: ReactNode; gap?: number}
+> = ({style, disabled, onPress, icon, text, gap = 8}) => {
+  return (
+    <AvaButton.Base disabled={disabled} onPress={onPress} style={[style]}>
+      <View style={{flexDirection: 'row', alignItems: 'center', margin: 8}}>
+        {icon}
+        <Space x={gap} />
+        {text}
+      </View>
+    </AvaButton.Base>
   );
 };
 
@@ -195,6 +210,7 @@ const AvaButton = {
   TextMedium: BtnTextMedium,
   Base: AvaButtonBase,
   Icon: AvaButtonIcon,
+  TextWithIcon: TextWithIcon,
 };
 
 const styles = StyleSheet.create({

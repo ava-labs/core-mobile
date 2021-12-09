@@ -41,16 +41,17 @@ export default function MnemonicScreen({mnemonic}: Props) {
       </View>
 
       <View style={{alignSelf: 'flex-end', marginTop: 16}}>
-        <AvaButton.Base disabled={!mnemonic} onPress={copyToClipboard}>
-          <View style={{flexDirection: 'row', alignItems: 'center', margin: 8}}>
-            <CopySVG />
-            <Space x={8} />
+        <AvaButton.TextWithIcon
+          disabled={!mnemonic}
+          onPress={copyToClipboard}
+          icon={<CopySVG />}
+          text={
             <AvaText.ButtonMedium
               textStyle={{color: context.theme.alternateBackground}}>
               Copy Phrase
             </AvaText.ButtonMedium>
-          </View>
-        </AvaButton.Base>
+          }
+        />
       </View>
     </View>
   );
