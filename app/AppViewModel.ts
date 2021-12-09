@@ -15,37 +15,20 @@ export type AppHook = {
   onExit: () => Observable<ExitEvents>;
   onSavedMnemonic: (mnemonic: string, isResetting?: boolean) => void;
   selectedCurrency: string;
-  resetNavToEnterMnemonic: () => void;
+  resetNavToEnterMnemonic: (
+    navigation: MutableRefObject<NavigationContainerRef<any> | undefined>,
+  ) => void;
   onPinCreated: (pin: string, isResetting?: boolean) => Observable<boolean>;
   isNewWallet: boolean;
   immediateLogout: () => Promise<void>;
   setSelectedCurrency: Dispatch<string>;
-  setIsNewWallet: (newWallet: boolean) => void;
-  navigation: MutableRefObject<NavigationContainerRef<any>>;
+  setIsNewWallet: Dispatch<boolean>;
+  navigation: MutableRefObject<NavigationContainerRef<any> | undefined>;
   mnemonic: string;
   onEnterExistingMnemonic: (m: string) => void;
 };
 
-export function useApp(): {
-  shouldSetupWallet: boolean;
-  onEnterWallet: (m?: string) => void;
-  onExit: () => Observable<ExitEvents>;
-  onSavedMnemonic: (mnemonic: string, isResetting?: boolean) => void;
-  selectedCurrency: string;
-  resetNavToEnterMnemonic: (
-    navigation: React.MutableRefObject<NavigationContainerRef<any> | undefined>,
-  ) => void;
-  onPinCreated: (pin: string, isResetting?: boolean) => Observable<boolean>;
-  isNewWallet: boolean;
-  immediateLogout: () => Promise<void>;
-  setSelectedCurrency: (
-    value: ((prevState: string) => string) | string,
-  ) => void;
-  setIsNewWallet: (value: ((prevState: boolean) => boolean) | boolean) => void;
-  navigation: React.MutableRefObject<NavigationContainerRef<any> | undefined>;
-  mnemonic: string;
-  onEnterExistingMnemonic: (m: string) => void;
-} {
+export function useApp(): AppHook {
   const navigation = useRef<NavigationContainerRef<any>>();
   const [shouldSetupWallet, setShouldSetupWallet] = useState(false);
   const [isNewWallet, setIsNewWallet] = useState(false);
