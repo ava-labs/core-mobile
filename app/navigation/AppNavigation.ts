@@ -37,6 +37,7 @@ enum WalletScreens {
   SearchScreen = 'WalletScreens.SearchScreen',
   SecurityPrivacy = 'WalletScreens.SecurityPrivacy',
   // PortfolioScreen = 'PortfolioScreen',
+  NetworkSelector = 'WalletScreens.NetworkSelector',
 }
 
 enum SecurityPrivacyScreens {
