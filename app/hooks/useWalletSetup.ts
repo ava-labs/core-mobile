@@ -10,9 +10,14 @@ import {
 import {useEffect} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {iHDWalletIndex, MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
+import {useApplicationContext} from 'contexts/ApplicationContext';
+import {Account} from 'dto/Account';
 
 interface WalletSetup {
-  initWalletWithMnemonic: (mnemonic: string) => void;
+  initWalletWithMnemonic: (
+    mnemonic: string,
+    existingAccounts: Map<number, Account>,
+  ) => void;
   createNewWallet: (mnemonic: string) => void;
   destroyWallet: () => void;
   resetHDIndices: () => Promise<iHDWalletIndex>;
@@ -21,6 +26,7 @@ interface WalletSetup {
 export function useWalletSetup(): WalletSetup {
   const walletContext = useWalletContext();
   const accountsContext = useAccountsContext();
+  const {saveAccounts} = useApplicationContext().repo.accountsRepo;
 
   // set cache if there it one
   useEffect(() => {
@@ -47,13 +53,35 @@ export function useWalletSetup(): WalletSetup {
    * This does not yet handles the scenario of
    * multiple accounts.
    * @param mnemonic
+   * @param existingAccounts
    */
-  function initWalletWithMnemonic(mnemonic: string) {
+  function initWalletWithMnemonic(
+    mnemonic: string,
+    existingAccounts: Map<number, Account>,
+  ) {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
+    // noinspection JSVoidFunctionReturnValueUsed
     walletContext.setMnemonic(mnemonic).then(() => {
-      accountsContext.addAccount();
-      accountsContext.activateAccount(0);
+      if (existingAccounts.size === 0) {
+        const accounts = new Map();
+        const newAccount = accountsContext.addAccount();
+        accounts.set(newAccount.index, <Account>{
+          index: newAccount.index,
+          title: `Account ${newAccount.index + 1}`,
+          active: true,
+          cAddress: newAccount.wallet.getAddressC(),
+          xAddress: newAccount.wallet.getAddressX(),
+        });
+        saveAccounts(accounts);
+      } else {
+        for (let i = 0; i < existingAccounts.size; i++) {
+          const newAccount = accountsContext.addAccount();
+          if (existingAccounts.get(newAccount.index)!.active) {
+            accountsContext.activateAccount(newAccount.index);
+          }
+        }
+      }
     });
   }
 
