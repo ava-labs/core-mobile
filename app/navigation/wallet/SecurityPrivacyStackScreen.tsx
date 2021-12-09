@@ -5,11 +5,11 @@ import CreatePIN from 'screens/onboarding/CreatePIN';
 import SecurityPrivacy from 'screens/drawer/security/SecurityPrivacy';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useNavigation} from '@react-navigation/native';
-import CreateWallet from 'screens/onboarding/CreateWallet';
 import {MainHeaderOptions} from 'navigation/NavUtils';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {createStackNavigator} from '@react-navigation/stack';
 import BiometricsSDK from 'utils/BiometricsSDK';
+import RevealMnemonic from 'navigation/wallet/RevealMnemonic';
 
 const SecurityStack = createStackNavigator();
 
@@ -93,14 +93,6 @@ const CreatePinScreen = memo(() => {
   );
 });
 
-const CreateWalletScreen = memo(() => {
-  const nav = useNavigation<NativeStackNavigationProp<any>>();
-
-  return (
-    <CreateWallet onBack={() => nav.goBack()} isRevealingCurrentMnemonic />
-  );
-});
-
 function SecurityPrivacyStackScreen(): JSX.Element {
   return (
     <SecurityStack.Navigator
@@ -136,9 +128,9 @@ function SecurityPrivacyStackScreen(): JSX.Element {
           component={PinForBiometryEnable}
         />
         <SecurityStack.Screen
-          options={MainHeaderOptions('Recovery phrase')}
+          options={MainHeaderOptions('Recovery Phrase')}
           name={AppNavigation.SecurityPrivacy.RecoveryPhrase}
-          component={CreateWalletScreen}
+          component={RevealMnemonic}
         />
       </SecurityStack.Group>
     </SecurityStack.Navigator>

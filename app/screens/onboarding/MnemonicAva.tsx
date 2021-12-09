@@ -49,8 +49,8 @@ type TextProps = {
 function MnemonicText(props: TextProps | Readonly<TextProps>) {
   return (
     <View style={[styles.horizontalLayout]}>
-      <AvaText.Body1 textStyle={{marginEnd: 4}}>
-        {(props.keyNum + 1).toString()}
+      <AvaText.Body1 textStyle={{marginEnd: 6}}>
+        {(props.keyNum + 1).toString()}.
       </AvaText.Body1>
       <AvaText.Heading3>{props.text}</AvaText.Heading3>
     </View>
