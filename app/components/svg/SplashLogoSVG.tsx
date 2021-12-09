@@ -1,10 +1,10 @@
-import React, {useContext} from 'react';
+import React from 'react';
 import Svg, {Path} from 'react-native-svg';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 
 export default function SplashLogoSVG(): JSX.Element {
-  const {isDarkMode} = useApplicationContext();
-  const color = isDarkMode ? '#ffffff' : '#000000';
+  const theme = useApplicationContext().theme;
+  const color = theme.colorText1;
 
   return (
     <Svg width="200" height="40" viewBox="0 0 200 40" fill="none">

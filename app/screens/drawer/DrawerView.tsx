@@ -1,8 +1,6 @@
 import React from 'react';
 import {Alert, Pressable, StyleSheet, View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
-import AvaLogoSVG from 'components/svg/AvaLogoSVG';
-import AvaText from 'components/AvaText';
 import CurrencyItem from 'screens/drawer/components/CurrencyItem';
 import SecurityItem from 'screens/drawer/components/SecurityItem';
 import LegalItem from 'screens/drawer/components/LegalItem';
@@ -10,25 +8,22 @@ import Separator from 'components/Separator';
 import VersionItem from 'screens/drawer/components/VersionItem';
 import LightModeSVG from 'components/svg/LightModeSVG';
 import DarkModeSVG from 'components/svg/DarkModeSVG';
-import NetworkSelector from 'network/NetworkSelector';
 import {ScrollView} from 'react-native-gesture-handler';
 import SignOutItem from 'screens/drawer/components/SignOutItem';
+import SplashLogoSVG from 'components/svg/SplashLogoSVG';
+import NetworkItem from 'screens/drawer/components/NetworkItem';
+import {Space} from 'components/Space';
 
-const DrawerView = ({navigation}) => {
+const DrawerView = () => {
   const context = useApplicationContext();
 
   function toggleDarkLightMode() {
     Alert.alert('Toggle dark/ligt mode');
   }
 
-  function handleCloseDrawer() {
-    navigation.closeDrawer();
-  }
-
   const header = (
     <View style={styles.headerContainer}>
-      <AvaLogoSVG size={32} />
-      <AvaText.Heading1>Wallet</AvaText.Heading1>
+      <SplashLogoSVG />
       {/* hiding mode toggle until it's implemented */}
       {true || (
         <Pressable
@@ -40,18 +35,16 @@ const DrawerView = ({navigation}) => {
     </View>
   );
 
-  const networkSwitcher = <NetworkSelector closeDrawer={handleCloseDrawer} />;
-
   const renderContent = () => (
     <View
       style={{
-        borderTopLeftRadius: 16,
-        borderTopRightRadius: 16,
         flex: 1,
-        backgroundColor: context.theme.colorBg2,
       }}>
       <ScrollView>
+        <Space y={48} />
+        <NetworkItem />
         <CurrencyItem />
+        <Separator style={{marginHorizontal: 16}} />
         <SecurityItem />
         <LegalItem />
         {/*<AdvancedItem />*/}
@@ -63,9 +56,8 @@ const DrawerView = ({navigation}) => {
   );
 
   return (
-    <View style={[styles.container, {backgroundColor: context.theme.colorBg1}]}>
+    <View style={[styles.container, {backgroundColor: context.theme.colorBg2}]}>
       {header}
-      {networkSwitcher}
       {renderContent()}
     </View>
   );
@@ -79,6 +71,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     flexDirection: 'row',
     justifyContent: 'flex-start',
+    alignItems: 'center',
     paddingTop: 24,
   },
   darkLightModeContainer: {flex: 1, alignItems: 'flex-end'},
