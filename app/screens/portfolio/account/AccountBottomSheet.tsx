@@ -9,7 +9,7 @@ import AvaxSheetHandle from 'components/AvaxSheetHandle';
 function AccountBottomSheet(): JSX.Element {
   const navigation = useNavigation();
   const bottomSheetModalRef = useRef<BottomSheet>(null);
-  const snapPoints = useMemo(() => ['0%', '45%'], []);
+  const snapPoints = useMemo(() => ['0%', '90%'], []);
 
   useEffect(() => {
     // intentionally setting delay so animation is visible.
