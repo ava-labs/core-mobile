@@ -8,7 +8,6 @@ import AccountChainAddress from 'screens/portfolio/account/AccountChainAddress';
 import {Account} from 'dto/Account';
 import {usePortfolio} from 'screens/portfolio/usePortfolio';
 import AvaButton from 'components/AvaButton';
-import {useSelectedAccountContext} from 'contexts/SelectedAccountContext';
 import {Opacity05} from 'resources/Constants';
 
 type Props = {
@@ -19,14 +18,18 @@ function AccountItem({account}: Props): JSX.Element {
   const context = useApplicationContext();
   const {balanceTotalInUSD} = usePortfolio();
   const [editAccount, setEditAccount] = useState(false);
-  const {updateAccountName} = useSelectedAccountContext();
+  const {accounts, saveAccounts} = useApplicationContext().repo.accountsRepo;
 
   function onEditAccountName(): void {
     setEditAccount(!editAccount);
   }
 
   function onTextEdited(newAccountName: string): void {
-    updateAccountName(account.cAddress, newAccountName);
+    const accToUpdate = accounts.get(account.index);
+    if (accToUpdate) {
+      accToUpdate.title = newAccountName;
+      saveAccounts(accounts);
+    }
   }
 
   return (
