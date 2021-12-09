@@ -90,7 +90,7 @@ export default function CreatePIN({
     <View style={[styles.verticalLayout]}>
       {isResettingPin || (
         <>
-          <HeaderProgress maxDots={3} filledDots={3} showBack onBack={onBack} />
+          <HeaderProgress maxDots={0} filledDots={0} showBack onBack={onBack} />
           <Space y={8} />
           <AvaText.Heading1 textStyle={{textAlign: 'center'}}>
             {title}

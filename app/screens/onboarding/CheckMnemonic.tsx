@@ -1,11 +1,11 @@
 import React, {useEffect, useState} from 'react';
-import {Alert, ScrollView, StyleSheet, View} from 'react-native';
-import TextTitle from 'components/TextTitle';
-import CheckMnemonicViewModel from './CheckMnemonicViewModel';
-import {Subscription} from 'rxjs';
-import HeaderProgress from 'screens/mainView/HeaderProgress';
-import MnemonicAva from 'screens/onboarding/MnemonicAva';
+import {StyleSheet, View} from 'react-native';
 import AvaButton from 'components/AvaButton';
+import AvaText from 'components/AvaText';
+import {Space} from 'components/Space';
+import WordSelection from 'screens/onboarding/WordSelection';
+import {ShowSnackBar} from 'components/Snackbar';
+import {useCheckMnemonic} from 'screens/onboarding/useCheckMnemonic';
 
 type Props = {
   onSuccess: () => void;
@@ -16,102 +16,67 @@ type Props = {
 export default function CheckMnemonic(
   props: Props | Readonly<Props>,
 ): JSX.Element {
-  const [viewModel] = useState(new CheckMnemonicViewModel(props.mnemonic));
-  const [enteredMnemonics, setEnteredMnemonics] = useState(new Map());
-  const [enabledInputs, setEnabledInputs] = useState(new Map());
-
-  useEffect(() => {
-    const disposables = new Subscription();
-    disposables.add(
-      viewModel.enteredMnemonic.subscribe(value => setEnteredMnemonics(value)),
-    );
-    disposables.add(
-      viewModel.enabledInputs.subscribe(value => setEnabledInputs(value)),
-    );
-    viewModel.onComponentMount();
-
-    return () => {
-      disposables.unsubscribe();
-    };
-  }, []);
-
-  const onBack = (): void => {
-    props.onBack();
-  };
+  const {firstWordSelection, secondWordSelection, thirdWordSelection, verify} =
+    useCheckMnemonic(props.mnemonic);
 
   const onVerify = (): void => {
-    viewModel.onVerify().subscribe({
-      error: err => Alert.alert(err.message),
-      complete: () => props.onSuccess(),
-    });
+    if (
+      [selectedWord1, selectedWord2, selectedWord3].find(value => !value) !==
+      undefined
+    ) {
+      ShowSnackBar('Select all words');
+      return;
+    }
+
+    if (verify(selectedWord1, selectedWord2, selectedWord3)) {
+      props.onSuccess();
+    } else {
+      ShowSnackBar('No good');
+    }
   };
 
-  const setMnemonic = (index: number, value: string): void => {
-    viewModel.setMnemonic(index, value);
-  };
+  const [selectedWord1, setSelectedWord1] = useState('');
+  const [selectedWord2, setSelectedWord2] = useState('');
+  const [selectedWord3, setSelectedWord3] = useState('');
 
-  const mnemonics = () => {
-    const mnemonics: Element[] = [];
-    enteredMnemonics.forEach((value, key) => {
-      if (enabledInputs.get(key)) {
-        mnemonics.push(
-          <MnemonicAva.Input
-            key={key}
-            keyNum={key}
-            text={value}
-            onChangeText={text => setMnemonic(key, text)}
-          />,
-        );
-      } else {
-        mnemonics.push(
-          <MnemonicAva.Text key={key} keyNum={key} text={value} />,
-        );
-      }
-    });
-    return mnemonics;
-  };
+  useEffect(() => {}, [selectedWord1, selectedWord2, selectedWord3]);
 
   return (
-    <ScrollView
-      contentContainerStyle={styles.scrollView}
-      keyboardShouldPersistTaps="handled">
-      <HeaderProgress maxDots={3} filledDots={2} showBack onBack={onBack} />
-      <TextTitle
-        text={'Fill In Mnemonic Phrase Below'}
-        size={20}
-        textAlign={'center'}
+    <View style={styles.container}>
+      <AvaText.Body1>
+        Select the words below to verify your Recovery Phrase.
+      </AvaText.Body1>
+      <Space y={24} />
+      <WordSelection
+        wordIndex={firstWordSelection.index}
+        wordOptions={firstWordSelection.wordOptions}
+        setSelectedWord={setSelectedWord1}
       />
-      <View style={[{height: 16}]} />
-      <View style={styles.growContainer}>
-        <View style={styles.mnemonics}>{mnemonics()}</View>
+      <Space y={24} />
+      <WordSelection
+        wordIndex={secondWordSelection.index}
+        wordOptions={secondWordSelection.wordOptions}
+        setSelectedWord={setSelectedWord2}
+      />
+      <Space y={24} />
+      <WordSelection
+        wordIndex={thirdWordSelection.index}
+        wordOptions={thirdWordSelection.wordOptions}
+        setSelectedWord={setSelectedWord3}
+      />
+      <View style={{flex: 1}} />
+      <View>
+        <AvaButton.PrimaryLarge onPress={onVerify}>
+          Verify phrase
+        </AvaButton.PrimaryLarge>
       </View>
-      <AvaButton.PrimaryLarge style={{margin: 16}} onPress={onVerify}>
-        Next
-      </AvaButton.PrimaryLarge>
-    </ScrollView>
+    </View>
   );
 }
 
 const styles: any = StyleSheet.create({
-  scrollView: {
+  container: {
     height: '100%',
-  },
-  mnemonics: {
-    paddingVertical: 8,
-    borderRadius: 8,
-    flexDirection: 'column',
-    flex: 1,
-    flexWrap: 'wrap',
-    marginTop: 8,
-    maxHeight: 280,
-    alignContent: 'center',
-  },
-  growContainer: {
-    flexGrow: 1,
-  },
-  horizontalLayout: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: 120,
+    padding: 16,
   },
 });
