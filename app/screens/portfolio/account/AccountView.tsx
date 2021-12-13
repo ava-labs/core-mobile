@@ -1,92 +1,105 @@
-import React, {useCallback, useState} from 'react';
-import {
-  Dimensions,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
-  View,
-} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from 'components/AvaText';
 import {Space} from 'components/Space';
-import AccountItem from 'screens/portfolio/account/AccountItem';
+import AvaButton from 'components/AvaButton';
+import AddSVG from 'components/svg/AddSVG';
+import {useAccountsContext} from '@avalabs/wallet-react-components';
 import {Account} from 'dto/Account';
-import {useSelectedAccountContext} from 'contexts/SelectedAccountContext';
-import {ScrollView} from 'react-native-gesture-handler';
+import AccountItem from 'screens/portfolio/account/AccountItem';
 
-const SCREEN_WIDTH = Dimensions.get('window')?.width;
+function accountElements(
+  accounts: Account[],
+  expandedAccIndex: number,
+  setExpanded: (accIndex: number) => void,
+  onSelectAccount: (accountIndex: number) => void,
+): Element[] {
+  const elements: Element[] = [];
+
+  accounts.forEach(account => {
+    elements.push(
+      <AccountItem
+        key={account.title}
+        account={account}
+        expanded={expandedAccIndex === account.index}
+        setExpanded={accIndex => setExpanded(accIndex)}
+        onSelectAccount={onSelectAccount}
+      />,
+    );
+  });
+  return elements;
+}
 
 function AccountView(): JSX.Element {
-  const context = useApplicationContext();
-  const {accounts, setSelectedAccount} = useSelectedAccountContext();
-  const [selectedAccountIndex, setSelectedAccountIndex] = useState(0);
+  const {theme} = useApplicationContext();
+  const {accounts, saveAccounts, setActiveAccount} =
+    useApplicationContext().repo.accountsRepo;
+  const accountsContext = useAccountsContext();
+  const [expandedAccIndex, setExpandedAccIndex] = useState(0);
 
-  // to be implemented
-  const onSelect = () => {
-    setSelectedAccount(accounts[selectedAccountIndex]);
+  useEffect(() => {
+    const activeIndex = [...accounts.values()].find(
+      value => value.active,
+    )?.index;
+    if (activeIndex) {
+      setExpandedAccIndex(activeIndex);
+    }
+  }, []);
+
+  const onSelectAccount = (accountIndex: number) => {
+    setActiveAccount(accountIndex);
+    console.log('accountsContext', accountsContext);
+    accountsContext.activateAccount(accountIndex);
   };
 
-  const onScrollEnd = useCallback(
-    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-      const pageNumber = Math.min(
-        Math.max(
-          Math.floor(e.nativeEvent.contentOffset.x / SCREEN_WIDTH + 0.5),
-          0,
-        ),
-        accounts.size,
-      );
-      setSelectedAccountIndex(pageNumber);
-    },
-    [accounts.size],
-  );
+  const addNewAccount = () => {
+    const newAccount = accountsContext.addAccount();
+    accountsContext.activateAccount(newAccount.index);
+    accounts.set(newAccount.index, {
+      index: newAccount.index,
+      title: `Account ${newAccount.index + 1}`,
+      active: true,
+      cAddress: newAccount.wallet.getAddressC(),
+      xAddress: newAccount.wallet.getAddressX(),
+    });
+    saveAccounts(accounts);
+    setActiveAccount(newAccount.index);
+  };
 
   return (
     <View
       style={{
         flex: 1,
-        backgroundColor: context.theme.colorBg2,
-        paddingVertical: 16,
+        paddingHorizontal: 16,
       }}>
       <View
         style={{
           flexDirection: 'row',
           justifyContent: 'space-between',
           alignItems: 'center',
-          paddingHorizontal: 16,
         }}>
         <AvaText.Heading1>My accounts</AvaText.Heading1>
-        {/*<AddSVG />*/}
+        <AvaButton.TextWithIcon
+          onPress={addNewAccount}
+          gap={0}
+          icon={<AddSVG color={theme.colorPrimary1} hideCircle size={32} />}
+          text={
+            <AvaText.ButtonLarge textStyle={{color: theme.colorPrimary1}}>
+              Add new
+            </AvaText.ButtonLarge>
+          }
+        />
       </View>
       <Space y={16} />
-      <ScrollView
-        horizontal
-        onMomentumScrollEnd={onScrollEnd}
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}>
-        {accountElements([...accounts.values()])}
-      </ScrollView>
-
-      {/*<HeaderProgress*/}
-      {/*  maxDots={accounts.length}*/}
-      {/*  filledDots={selectedAccountIndex + 1}*/}
-      {/*/>*/}
-      {/*<AvaButton.PrimaryLarge style={{marginHorizontal: 16}} onPress={onSelect}>*/}
-      {/*  Select*/}
-      {/*</AvaButton.PrimaryLarge>*/}
+      {accountElements(
+        [...accounts.values()],
+        expandedAccIndex,
+        accIndex => setExpandedAccIndex(accIndex),
+        onSelectAccount,
+      )}
     </View>
   );
 }
-
-const accountElements = (accounts: Account[]): Element[] => {
-  const elements: Element[] = [];
-
-  accounts.forEach(account => {
-    elements.push(
-      <View key={account.title} style={{width: SCREEN_WIDTH, padding: 16}}>
-        <AccountItem account={account} />
-      </View>,
-    );
-  });
-  return elements;
-};
 
 export default AccountView;
