@@ -26,11 +26,12 @@ type Props = {
   // Set keyboard type (numeric, text)
   keyboardType?: 'numeric';
   autoFocus?: boolean;
+  text?: string;
 };
 
 export default function InputText(props: Props | Readonly<Props>) {
   const context = useApplicationContext();
-  const [text, setText] = useState('');
+  const [text, setText] = useState(props.text ?? '');
   const [showInput, setShowInput] = useState(false);
   const [focused, setFocused] = useState(false);
   const [toggleShowText, setToggleShowText] = useState('Show');
