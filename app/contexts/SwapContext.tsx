@@ -1,5 +1,12 @@
-import React, {createContext, Dispatch, useContext, useState} from 'react';
+import React, {
+  createContext,
+  Dispatch,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 import {TokenWithBalance} from '@avalabs/wallet-react-components';
+import {getSwapRate} from 'swap/getSwapRate';
 
 export interface SwapEntry {
   token: TokenWithBalance | undefined;
@@ -38,6 +45,38 @@ export const SwapContextProvider = ({children}: {children: any}) => {
   const [networkFee, setNetworkFee] = useState<string>('0.004222 AVAX');
   const [networkFeeUsd, setNetworkFeeUsd] = useState<string>('$0.24 USD');
   const [avaxWalletFee, setAvaxWalletFee] = useState<string>('38213 AVAX');
+
+  useEffect(() => {
+    getSwapRate({
+      srcToken: fromToken?.address,
+      destToken: toToken?.address,
+      srcDecimals: fromToken?.denomination,
+      destDecimals: toToken?.denomination,
+      srcAmount: (
+        fromAmount * Math.pow(10, fromToken?.denomination ?? 0)
+      ).toString(),
+    }).then(val => {
+      const result = val.result;
+      const destAmount = result.destAmount / Math.pow(10, result.destDecimals);
+      const srcAmount = result.srcAmount / Math.pow(10, result.srcDecimals);
+      const destAmountBySrcAmount = destAmount / srcAmount;
+
+      setToAmount(destAmount);
+      setFromUsdAmount(result.srcUSD);
+      setToUsdAmount(result.destUSD);
+      setAvaxWalletFee(`${result.partnerFee} AVAX`);
+      setTrxRate(
+        `1 ${fromToken?.symbol} ≈ ${destAmountBySrcAmount} ${toToken?.symbol}`,
+      );
+    });
+  }, [fromToken, toToken, fromAmount]);
+
+  useEffect(() => {
+    console.log('trxRate', trxRate);
+    console.log('fromUsdAmount', fromUsdAmount);
+    console.log('toUsdAmount', toUsdAmount);
+    console.log('avaxWalletFee', avaxWalletFee);
+  }, [trxRate, fromUsdAmount, toUsdAmount, avaxWalletFee]);
 
   const swapFromTo = () => {
     const tempToken = toToken;
