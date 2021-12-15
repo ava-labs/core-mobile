@@ -4,6 +4,7 @@ import AvaButton from 'components/AvaButton';
 import AvaText from 'components/AvaText';
 import {Space} from 'components/Space';
 import {useApplicationContext} from 'contexts/ApplicationContext';
+import {Opacity10, Opacity50} from 'resources/Constants';
 
 type Props = {
   wordIndex: number;
@@ -59,18 +60,23 @@ function Word({
   onSelected: (word: string) => void;
   selected: boolean;
 }) {
-  const {theme} = useApplicationContext();
+  const {theme, isDarkMode} = useApplicationContext();
+  //until designers fix the design system we'll bear with this
+  const bgColor = isDarkMode ? theme.white + Opacity10 : theme.colorBg1;
+  const colorSelected = isDarkMode ? theme.white + Opacity50 : theme.colorBg3;
   return (
     <View style={{flexGrow: 1}}>
       <AvaButton.Base
         onPress={() => onSelected(word)}
         style={{
-          backgroundColor: selected ? theme.colorPrimary1 : theme.overlay,
+          backgroundColor: selected ? colorSelected : bgColor,
           borderRadius: 8,
           alignItems: 'center',
           padding: 12,
         }}>
-        <AvaText.ButtonMedium>{word}</AvaText.ButtonMedium>
+        <AvaText.ButtonMedium textStyle={{color: theme.colorText1}}>
+          {word}
+        </AvaText.ButtonMedium>
       </AvaButton.Base>
     </View>
   );
