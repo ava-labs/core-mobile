@@ -1,11 +1,10 @@
-import React, {FC, useEffect, useState} from 'react';
+import React, {FC} from 'react';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {View} from 'react-native';
 import AvaText from 'components/AvaText';
 import {Space} from 'components/Space';
 import AvaButton from 'components/AvaButton';
 import CarrotSVG from 'components/svg/CarrotSVG';
-import FlexSpacer from 'components/FlexSpacer';
 import InputText from 'components/InputText';
 import {useNavigation} from '@react-navigation/native';
 import {TokenWithBalance} from '@avalabs/wallet-react-components';
@@ -58,12 +57,11 @@ const TokenDropDown: FC<TokenDropDownProps> = ({type}) => {
             flex: 1,
             flexDirection: 'row',
             paddingStart: 16,
-            paddingEnd: 8,
+            paddingVertical: 8,
             alignItems: 'center',
             justifyContent: 'space-between',
             backgroundColor: context.theme.colorBg2,
             borderRadius: 10,
-            maxHeight: 70,
           },
           context.shadow,
         ]}>
@@ -90,15 +88,17 @@ const TokenDropDown: FC<TokenDropDownProps> = ({type}) => {
             color={context.theme.colorText1}
           />
         </AvaButton.Base>
-        <FlexSpacer />
-        <InputText
-          placeholder="Enter the amount"
-          keyboardType="numeric"
-          onChangeText={text => {
-            setAmount(Number.parseFloat(text));
-          }}
-          text={amount.toString()}
-        />
+        <View style={{width: 180}}>
+          <InputText
+            mode={'amount'}
+            keyboardType="numeric"
+            onMax={() => console.log('hello')}
+            onChangeText={text => {
+              setAmount(Number.parseFloat(text));
+            }}
+            text={amount.toString()}
+          />
+        </View>
       </View>
       <Space y={8} />
       <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
