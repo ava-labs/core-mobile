@@ -38,6 +38,7 @@ enum WalletScreens {
   SecurityPrivacy = 'WalletScreens.SecurityPrivacy',
   // PortfolioScreen = 'PortfolioScreen',
   NetworkSelector = 'WalletScreens.NetworkSelector',
+  Swap = 'WalletScreens.Swap',
 }
 
 enum SecurityPrivacyScreens {
@@ -64,6 +65,8 @@ enum ModalScreens {
   TransactionDetailBottomSheet = 'ModalScreens.TransactionDetailBottomSheet',
   ReceiveOnlyBottomSheet = 'ModalScreens.ReceiveOnlyBottomSheet',
   SignOut = 'ModalScreens.SignOut',
+  SelectToken = 'ModalScreens.SelectToken',
+  SwapTransactionFee = 'ModalScreens.SwapTransactionFees',
 }
 
 enum SendTokenScreens {

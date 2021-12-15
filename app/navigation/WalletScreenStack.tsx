@@ -22,9 +22,11 @@ import {useFocusEffect} from '@react-navigation/native';
 import SignOutBottomSheet from 'screens/mainView/SignOutBottomSheet';
 import {createStackNavigator} from '@react-navigation/stack';
 import ReceiveToken2 from 'screens/receive/ReceiveToken2';
-import SendTokenSelector from 'screens/send/SendTokenSelector';
 import HeaderAccountSelector from 'components/HeaderAccountSelector';
 import NetworkSelector from 'network/NetworkSelector';
+import SendToken from 'screens/send/SendToken';
+import SelectTokenBottomSheet from 'screens/swap/SelectTokenBottomSheet';
+import SwapFeesBottomSheet from 'screens/swap/components/SwapFeesBottomSheet';
 
 type Props = {
   onExit: () => void;
@@ -45,6 +47,8 @@ type RootStackParamList = {
   [AppNavigation.Modal.TransactionDetailBottomSheet]: undefined;
   [AppNavigation.Modal.ReceiveOnlyBottomSheet]: undefined;
   [AppNavigation.Modal.SignOut]: undefined;
+  [AppNavigation.Modal.SelectToken]: undefined;
+  [AppNavigation.Modal.SwapTransactionFee]: undefined;
 };
 
 const RootStack = createStackNavigator<RootStackParamList>();
@@ -168,6 +172,14 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
           name={AppNavigation.Modal.SignOut}
           component={SignOutBottomSheetScreen}
         />
+        <RootStack.Screen
+          name={AppNavigation.Modal.SelectToken}
+          component={SelectTokenBottomSheet}
+        />
+        <RootStack.Screen
+          name={AppNavigation.Modal.SwapTransactionFee}
+          component={SwapFeesBottomSheet}
+        />
       </RootStack.Group>
     );
   }, []);
@@ -206,7 +218,7 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
             headerTitleAlign: 'center',
             headerTitle: () => <HeaderAccountSelector />,
           }}
-          component={SendTokenSelector}
+          component={SendToken}
         />
         <RootStack.Screen name={AppNavigation.Wallet.ReceiveTokens}>
           {props => <ReceiveToken2 showBackButton {...props} />}
