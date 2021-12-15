@@ -7,6 +7,7 @@ import {Opacity50} from 'resources/Constants';
 import ClearInputSVG from 'components/svg/ClearInputSVG';
 import {Space} from 'components/Space';
 import AvaText from './AvaText';
+import CheckmarkSVG from 'components/svg/CheckmarkSVG';
 
 type Props = {
   onChangeText?: (text: string) => void;
@@ -15,6 +16,7 @@ type Props = {
   minHeight?: number;
   onSubmit?: () => void;
   onMax?: () => void;
+  onConfirm?: (text: string) => void;
   placeholder?: string;
   // Shows label above input
   label?: string;
@@ -23,7 +25,7 @@ type Props = {
   // Shows error message and error color border
   errorText?: string;
   // Private - Hides input, shows toggle button to show input, neon color border. Will disable multiline.
-  mode?: 'default' | 'private' | 'amount';
+  mode?: 'default' | 'private' | 'amount' | 'confirmEntry';
   // Set keyboard type (numeric, text)
   keyboardType?: 'numeric';
   autoFocus?: boolean;
@@ -219,6 +221,9 @@ export default function InputText(props: Props | Readonly<Props>) {
         {mode === 'default' && text.length > 0 && <ClearBtn />}
         {mode === 'private' && text.length > 0 && <ShowPassBtn />}
         {mode === 'amount' && <MaxBtn onPress={props.onMax} />}
+        {mode === 'confirmEntry' && (
+          <ConfirmBtn onPress={() => props.onConfirm?.(text)} />
+        )}
       </View>
 
       {props.helperText && <HelperText />}
@@ -238,6 +243,22 @@ function MaxBtn({onPress}: {onPress?: () => void}) {
         },
       ]}>
       <AvaButton.TextMedium onPress={onPress}>Max</AvaButton.TextMedium>
+    </View>
+  );
+}
+
+function ConfirmBtn({onPress}: {onPress?: () => void}) {
+  return (
+    <View
+      style={[
+        {
+          position: 'absolute',
+          end: 16,
+        },
+      ]}>
+      <AvaButton.Icon onPress={onPress}>
+        <CheckmarkSVG />
+      </AvaButton.Icon>
     </View>
   );
 }
