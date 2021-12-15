@@ -9,6 +9,7 @@ interface BaseProps {
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
   rippleBorderless?: boolean;
+  textColor?: string;
 }
 
 const AvaButtonBase: FC<BaseProps> = ({
@@ -124,6 +125,7 @@ const BtnPrimaryLarge: FC<BaseProps> = ({
   disabled,
   children,
   style,
+  textColor,
 }) => {
   const theme = useApplicationContext().theme;
   return (
@@ -132,7 +134,9 @@ const BtnPrimaryLarge: FC<BaseProps> = ({
       onPress={onPress}
       style={[styles.btnPrimaryLarge, style]}>
       <AvaText.ButtonLarge
-        textStyle={{color: disabled ? theme.colorText2 : theme.colorText3}}>
+        textStyle={{
+          color: disabled ? theme.colorText2 : textColor ?? theme.colorText3,
+        }}>
         {children}
       </AvaText.ButtonLarge>
     </BtnPrimary>

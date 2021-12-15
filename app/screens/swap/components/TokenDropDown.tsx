@@ -39,6 +39,13 @@ const TokenDropDown: FC<TokenDropDownProps> = ({type}) => {
     ? swapContext.swapFrom.amount
     : swapContext.swapTo.amount;
 
+  console.log(
+    (isFrom ? 'From: ' : 'to: ') +
+      selectedToken?.symbol +
+      ' url: ' +
+      selectedToken?.logoURI,
+  );
+
   function selectToken() {
     navigation.navigate(AppNavigation.Modal.SelectToken, {
       onTokenSelected: (token: TokenWithBalance) => {

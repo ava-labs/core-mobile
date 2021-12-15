@@ -4,6 +4,7 @@ import PortfolioView from 'screens/portfolio/PortfolioView';
 import {createStackNavigator} from '@react-navigation/stack';
 import SwapView from 'screens/swap/SwapView';
 import {SwapContextProvider} from 'contexts/SwapContext';
+import SwapReview from 'screens/swap/SwapReview';
 
 type Props = {
   onExit: () => void;
@@ -13,10 +14,6 @@ type Props = {
 const SwapStack = createStackNavigator();
 
 function SwapScreenStack({onExit, onSwitchWallet}: Props) {
-  const PortfolioViewScreen = () => (
-    <PortfolioView onExit={onExit} onSwitchWallet={onSwitchWallet} />
-  );
-
   return (
     <SwapStack.Navigator
       screenOptions={{
