@@ -24,11 +24,6 @@ function SwapFeesBottomSheet(): JSX.Element {
     }, 100);
   }, []);
 
-  function onTokenSelected() {
-    handleClose();
-    //set selected token
-  }
-
   const handleClose = useCallback(() => {
     bottomSheetModalRef?.current?.close();
     InteractionManager.runAfterInteractions(() => navigation.goBack());

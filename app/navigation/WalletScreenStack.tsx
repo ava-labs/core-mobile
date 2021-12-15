@@ -27,6 +27,7 @@ import NetworkSelector from 'network/NetworkSelector';
 import SendToken from 'screens/send/SendToken';
 import SelectTokenBottomSheet from 'screens/swap/SelectTokenBottomSheet';
 import SwapFeesBottomSheet from 'screens/swap/components/SwapFeesBottomSheet';
+import {SwapContextProvider} from 'contexts/SwapContext';
 
 type Props = {
   onExit: () => void;
@@ -193,84 +194,86 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
   };
 
   return (
-    <SelectedTokenContextProvider>
-      <RootStack.Navigator
-        screenOptions={{
-          headerShown: false,
-        }}>
-        <RootStack.Screen
-          name={AppNavigation.Wallet.Drawer}
-          component={DrawerScreenStack}
-        />
-        <RootStack.Screen
-          options={{
-            ...MainHeaderOptions('Manage token list'),
-          }}
-          name={AppNavigation.Wallet.SearchScreen}
-          component={SearchView}
-        />
-        <RootStack.Screen
-          name={AppNavigation.Wallet.SendTokens}
-          options={{
-            presentation: 'card',
-            headerShown: true,
-            headerBackTitleVisible: false,
-            headerTitleAlign: 'center',
-            headerTitle: () => <HeaderAccountSelector />,
-          }}
-          component={SendToken}
-        />
-        <RootStack.Screen name={AppNavigation.Wallet.ReceiveTokens}>
-          {props => <ReceiveToken2 showBackButton {...props} />}
-        </RootStack.Screen>
-        <RootStack.Screen
-          options={{
-            ...MainHeaderOptions('Add Custom Token'),
-          }}
-          name={AppNavigation.Wallet.AddCustomToken}
-          component={AddCustomToken}
-        />
-        <RootStack.Screen
-          options={{
-            ...MainHeaderOptions('Currency'),
-          }}
-          name={AppNavigation.Wallet.CurrencySelector}
-          component={CurrencySelectorScreen}
-        />
-        <RootStack.Screen
-          options={{
-            ...MainHeaderOptions('Network'),
-          }}
-          name={AppNavigation.Wallet.NetworkSelector}
-          component={NetworkSelector}
-        />
-        <RootStack.Screen
-          name={AppNavigation.Wallet.SecurityPrivacy}
-          component={SecurityPrivacyStackScreen}
-        />
-        <RootStack.Screen
-          options={{
-            ...MainHeaderOptions('Legal'),
-          }}
-          name={AppNavigation.Wallet.Legal}
-          component={WebViewScreen}
-        />
-        {BottomSheetGroup}
-      </RootStack.Navigator>
-      <Modal visible={showSecurityModal} animationType={'slide'} animated>
-        <PinOrBiometryLogin
-          onSignInWithRecoveryPhrase={() => {
-            immediateLogout().then(() => {
-              resetNavToEnterMnemonic();
+    <SwapContextProvider>
+      <SelectedTokenContextProvider>
+        <RootStack.Navigator
+          screenOptions={{
+            headerShown: false,
+          }}>
+          <RootStack.Screen
+            name={AppNavigation.Wallet.Drawer}
+            component={DrawerScreenStack}
+          />
+          <RootStack.Screen
+            options={{
+              ...MainHeaderOptions('Manage token list'),
+            }}
+            name={AppNavigation.Wallet.SearchScreen}
+            component={SearchView}
+          />
+          <RootStack.Screen
+            name={AppNavigation.Wallet.SendTokens}
+            options={{
+              presentation: 'card',
+              headerShown: true,
+              headerBackTitleVisible: false,
+              headerTitleAlign: 'center',
+              headerTitle: () => <HeaderAccountSelector />,
+            }}
+            component={SendToken}
+          />
+          <RootStack.Screen name={AppNavigation.Wallet.ReceiveTokens}>
+            {props => <ReceiveToken2 showBackButton {...props} />}
+          </RootStack.Screen>
+          <RootStack.Screen
+            options={{
+              ...MainHeaderOptions('Add Custom Token'),
+            }}
+            name={AppNavigation.Wallet.AddCustomToken}
+            component={AddCustomToken}
+          />
+          <RootStack.Screen
+            options={{
+              ...MainHeaderOptions('Currency'),
+            }}
+            name={AppNavigation.Wallet.CurrencySelector}
+            component={CurrencySelectorScreen}
+          />
+          <RootStack.Screen
+            options={{
+              ...MainHeaderOptions('Network'),
+            }}
+            name={AppNavigation.Wallet.NetworkSelector}
+            component={NetworkSelector}
+          />
+          <RootStack.Screen
+            name={AppNavigation.Wallet.SecurityPrivacy}
+            component={SecurityPrivacyStackScreen}
+          />
+          <RootStack.Screen
+            options={{
+              ...MainHeaderOptions('Legal'),
+            }}
+            name={AppNavigation.Wallet.Legal}
+            component={WebViewScreen}
+          />
+          {BottomSheetGroup}
+        </RootStack.Navigator>
+        <Modal visible={showSecurityModal} animationType={'slide'} animated>
+          <PinOrBiometryLogin
+            onSignInWithRecoveryPhrase={() => {
+              immediateLogout().then(() => {
+                resetNavToEnterMnemonic();
+                setShowSecurityModal(false);
+              });
+            }}
+            onLoginSuccess={() => {
               setShowSecurityModal(false);
-            });
-          }}
-          onLoginSuccess={() => {
-            setShowSecurityModal(false);
-          }}
-        />
-      </Modal>
-    </SelectedTokenContextProvider>
+            }}
+          />
+        </Modal>
+      </SelectedTokenContextProvider>
+    </SwapContextProvider>
   );
 }
 
