@@ -95,7 +95,7 @@ function TokenSelector({
         <Loader />
       ) : (
         <FlatList
-          data={[]}
+          data={filteredTokenList}
           renderItem={renderItem}
           onRefresh={handleRefresh}
           refreshing={false}
