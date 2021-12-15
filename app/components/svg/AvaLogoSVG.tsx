@@ -15,9 +15,10 @@ function AvaLogoSVG({
   logoColor,
   backgroundColor,
 }: Props) {
-  const context = useApplicationContext();
-  const lgColor = logoColor ?? context.theme.accentColor;
-  const bgColor = backgroundColor ?? context.theme.colorBg1;
+  const {theme, isDarkMode} = useApplicationContext();
+  const lgColor = logoColor ?? theme.accentColor;
+  const bgColor =
+    backgroundColor ?? isDarkMode ? theme.colorBg3 : theme.colorBg1;
   return (
     <Svg
       style={absolutePosition && {position: 'absolute'}}
