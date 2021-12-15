@@ -29,9 +29,7 @@ export default function DoneScreen({onClose}: DoneProps): JSX.Element {
     if (networkContext) {
       const isFuji = networkContext.network === FUJI_NETWORK;
       setExplorerUrl(
-        `https://explorer.avax${
-          isFuji ? '-test' : ''
-        }.network/tx/${transactionId}`,
+        `https://${isFuji ? 'testnet.' : ''}snowtrace.io/tx/${transactionId}`,
       );
     }
   }, [networkContext]);
