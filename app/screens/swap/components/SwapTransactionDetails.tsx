@@ -9,9 +9,13 @@ import {useNavigation} from '@react-navigation/native';
 import AvaButton from 'components/AvaButton';
 import {useSwapContext} from 'contexts/SwapContext';
 
-interface SwapTransactionDetailProps {}
+interface SwapTransactionDetailProps {
+  review?: boolean;
+}
 
-const SwapTransactionDetail: FC<SwapTransactionDetailProps> = props => {
+const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
+  review = false,
+}) => {
   const context = useApplicationContext();
   const navigation = useNavigation();
   const {trxDetails} = useSwapContext();
@@ -22,9 +26,13 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = props => {
 
   return (
     <View style={{flex: 1, paddingHorizontal: 16}}>
-      <Space y={16} />
-      <AvaText.Heading3>Transaction details</AvaText.Heading3>
-      <Space y={16} />
+      {review || (
+        <>
+          <Space y={16} />
+          <AvaText.Heading3>Transaction details</AvaText.Heading3>
+          <Space y={16} />
+        </>
+      )}
       <View
         style={{
           flexDirection: 'row',
@@ -43,10 +51,14 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = props => {
         }}>
         <AvaText.Body2>Slippage tolerance</AvaText.Body2>
         <View style={{backgroundColor: context.theme.colorBg2}}>
-          <InputText
-            text={`${trxDetails.slippageTol}`}
-            keyboardType={'numeric'}
-          />
+          {review ? (
+            <AvaText.Heading3>{trxDetails.slippageTol}</AvaText.Heading3>
+          ) : (
+            <InputText
+              text={`${trxDetails.slippageTol}`}
+              keyboardType={'numeric'}
+            />
+          )}
         </View>
       </View>
       <Space y={16} />

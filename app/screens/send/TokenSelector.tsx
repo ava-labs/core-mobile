@@ -16,11 +16,17 @@ import ZeroState from 'components/ZeroState';
 import PortfolioListItem from 'screens/portfolio/components/PortfolioListItem';
 import {Space} from 'components/Space';
 
+const DEFAULT_HORIZONTAL_MARGIN = 16;
+
 interface TokenSelectorProps {
   onTokenSelected: (token: TokenWithBalance) => void;
+  horizontalMargin?: number;
 }
 
-function TokenSelector({onTokenSelected}: TokenSelectorProps) {
+function TokenSelector({
+  onTokenSelected,
+  horizontalMargin = DEFAULT_HORIZONTAL_MARGIN,
+}: TokenSelectorProps) {
   const {filteredTokenList, searchText, setSearchText, loadTokenList} =
     useSearchableTokenList(false);
   const context = useApplicationContext();
@@ -39,7 +45,6 @@ function TokenSelector({onTokenSelected}: TokenSelectorProps) {
         image={token?.logoURI}
         symbol={token.symbol}
         onPress={() => {
-          console.log("test" );
           onTokenSelected(token);
         }}
       />
@@ -63,7 +68,7 @@ function TokenSelector({onTokenSelected}: TokenSelectorProps) {
   }
 
   return (
-    <View style={{flex: 1}}>
+    <View style={{flex: 1, marginHorizontal: horizontalMargin}}>
       <View style={styles.searchContainer}>
         <View
           style={[
@@ -90,11 +95,11 @@ function TokenSelector({onTokenSelected}: TokenSelectorProps) {
         <Loader />
       ) : (
         <FlatList
-          data={filteredTokenList}
+          data={[]}
           renderItem={renderItem}
           onRefresh={handleRefresh}
           refreshing={false}
-          keyExtractor={(item: TokenWithBalance) => item.symbol}
+          keyExtractor={(item: TokenWithBalance) => item.name + item.symbol}
           ListEmptyComponent={
             <ZeroState.NoResults message={getNoResultsText()} />
           }
@@ -111,7 +116,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 16,
     marginBottom: 8,
-    marginHorizontal: 16,
   },
   searchBackground: {
     alignItems: 'center',

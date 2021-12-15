@@ -8,13 +8,18 @@ import AvaButton from 'components/AvaButton';
 import TokenDropDown from 'screens/swap/components/TokenDropDown';
 import SwapTransactionDetail from 'screens/swap/components/SwapTransactionDetails';
 import {useSwapContext} from 'contexts/SwapContext';
+import {useNavigation} from '@react-navigation/native';
+import AppNavigation from 'navigation/AppNavigation';
 
 export default function SwapView() {
   const {theme} = useApplicationContext();
-  const {swapFromTo, } = useSwapContext();
+  const {swapFromTo, swapFrom, swapTo} = useSwapContext();
+  const navigation = useNavigation();
+
+  const reviewButtonDisabled = swapTo.amount === 0 || swapFrom.amount === 0;
 
   function confirm() {
-
+    navigation.navigate(AppNavigation.Wallet.SwapReview);
   }
 
   return (
@@ -44,7 +49,10 @@ export default function SwapView() {
         <TokenDropDown type={'To'} />
         <SwapTransactionDetail />
       </ScrollView>
-      <AvaButton.PrimaryLarge style={{margin: 16}} onPress={confirm}>
+      <AvaButton.PrimaryLarge
+        style={{margin: 16}}
+        onPress={confirm}
+        disabled={reviewButtonDisabled}>
         Review Order
       </AvaButton.PrimaryLarge>
     </View>
