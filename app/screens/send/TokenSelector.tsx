@@ -10,31 +10,23 @@ import SearchSVG from 'components/svg/SearchSVG';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {TokenWithBalance} from '@avalabs/wallet-react-components';
 import {useSearchableTokenList} from 'screens/portfolio/useSearchableTokenList';
-import AvaText from 'components/AvaText';
 import {Opacity50} from 'resources/Constants';
 import Loader from 'components/Loader';
 import ZeroState from 'components/ZeroState';
 import PortfolioListItem from 'screens/portfolio/components/PortfolioListItem';
-import AppNavigation from 'navigation/AppNavigation';
-import {useNavigation} from '@react-navigation/native';
-import {PortfolioNavigationProp} from 'screens/portfolio/PortfolioView';
-import {useSelectedTokenContext} from 'contexts/SelectedTokenContext';
 import {Space} from 'components/Space';
 
-function SendTokenSelector(): JSX.Element {
+interface TokenSelectorProps {
+  onTokenSelected: (token: TokenWithBalance) => void;
+}
+
+function TokenSelector({onTokenSelected}: TokenSelectorProps) {
   const {filteredTokenList, searchText, setSearchText, loadTokenList} =
     useSearchableTokenList(false);
   const context = useApplicationContext();
-  const navigation = useNavigation<PortfolioNavigationProp>();
-  const {setSelectedToken} = useSelectedTokenContext();
 
   function handleRefresh() {
     loadTokenList();
-  }
-
-  function selectToken(token: TokenWithBalance) {
-    setSelectedToken?.(token);
-    navigation.navigate(AppNavigation.Modal.SendReceiveBottomSheet);
   }
 
   const renderItem = (item: ListRenderItemInfo<TokenWithBalance>) => {
@@ -46,7 +38,10 @@ function SendTokenSelector(): JSX.Element {
         tokenPriceUsd={token.balanceUsdDisplayValue}
         image={token?.logoURI}
         symbol={token.symbol}
-        onPress={() => selectToken(token)}
+        onPress={() => {
+          console.log("test" );
+          onTokenSelected(token);
+        }}
       />
     );
   };
@@ -68,12 +63,7 @@ function SendTokenSelector(): JSX.Element {
   }
 
   return (
-    <View style={{flex: 1, marginHorizontal: 16}}>
-      <Space y={8} />
-      <AvaText.Heading1>Send Tokens</AvaText.Heading1>
-      <Space y={24} />
-      <AvaText.Body1>Choose asset to continue</AvaText.Body1>
-      <Space y={16} />
+    <View style={{flex: 1}}>
       <View style={styles.searchContainer}>
         <View
           style={[
@@ -95,7 +85,7 @@ function SendTokenSelector(): JSX.Element {
           />
         </View>
       </View>
-      <Space y={32} />
+      <Space y={16} />
       {!filteredTokenList ? (
         <Loader />
       ) : (
@@ -121,6 +111,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 16,
     marginBottom: 8,
+    marginHorizontal: 16,
   },
   searchBackground: {
     alignItems: 'center',
@@ -140,4 +131,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SendTokenSelector;
+export default TokenSelector;
