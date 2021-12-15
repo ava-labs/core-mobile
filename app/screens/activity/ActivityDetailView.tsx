@@ -29,9 +29,7 @@ function ActivityDetailView({txItem}: Props) {
     if (networkContext) {
       const isTestNt = networkContext.network === FUJI_NETWORK;
       setExplorerUrl(
-        `https://explorer.avax${isTestNt ? '-test' : ''}.network/tx/${
-          txItem.id
-        }`,
+        `https://${isTestNt ? 'testnet.' : ''}snowtrace.io/tx/${txItem.id}`,
       );
     }
   }, [networkContext]);
