@@ -79,7 +79,7 @@ const AvatarBase: FC<Props> = ({
         />
       );
     }
-  }, []);
+  }, [logoUri]);
 
   return tokenLogo();
 };
