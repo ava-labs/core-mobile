@@ -14,6 +14,7 @@ type Props = {
   multiline?: boolean;
   minHeight?: number;
   onSubmit?: () => void;
+  onMax?: () => void;
   placeholder?: string;
   // Shows label above input
   label?: string;
@@ -21,8 +22,8 @@ type Props = {
   helperText?: string | React.ReactNode;
   // Shows error message and error color border
   errorText?: string;
-  // Hides input, shows toggle button to show input, neon color border. Will disable multiline.
-  privateMode?: boolean;
+  // Private - Hides input, shows toggle button to show input, neon color border. Will disable multiline.
+  mode?: 'default' | 'private' | 'amount';
   // Set keyboard type (numeric, text)
   keyboardType?: 'numeric';
   autoFocus?: boolean;
@@ -35,6 +36,7 @@ export default function InputText(props: Props | Readonly<Props>) {
   const [showInput, setShowInput] = useState(false);
   const [focused, setFocused] = useState(false);
   const [toggleShowText, setToggleShowText] = useState('Show');
+  const [mode] = useState(props.mode ?? 'default');
   const textInputRef = useRef() as RefObject<TextInput>;
 
   useEffect(() => {
@@ -173,14 +175,14 @@ export default function InputText(props: Props | Readonly<Props>) {
           placeholder={props.placeholder}
           placeholderTextColor={theme.colorText2}
           blurOnSubmit={true}
-          secureTextEntry={props.privateMode && !showInput}
+          secureTextEntry={mode === 'private' && !showInput}
           onSubmitEditing={onSubmit}
           returnKeyType={props.onSubmit && 'go'}
           enablesReturnKeyAutomatically={true}
           editable={props.editable !== false}
           keyboardType={props.keyboardType}
           multiline={
-            props.multiline && !props.privateMode ? props.multiline : false
+            props.multiline && mode === 'default' ? props.multiline : false
           }
           style={[
             {
@@ -203,7 +205,7 @@ export default function InputText(props: Props | Readonly<Props>) {
                   : theme.colorBg3 + Opacity50,
               borderRadius: 8,
               paddingStart: 16,
-              paddingEnd: !props.privateMode ? 46 : 80,
+              paddingEnd: mode === 'private' ? 80 : 46,
               paddingTop: 12,
               paddingBottom: 12,
               fontFamily: 'Inter-Regular',
@@ -214,13 +216,28 @@ export default function InputText(props: Props | Readonly<Props>) {
           onChangeText={onChangeText}
           value={text}
         />
-        {!props.privateMode && text.length > 0 && <ClearBtn />}
-        {props.privateMode && text.length > 0 && <ShowPassBtn />}
+        {mode === 'default' && text.length > 0 && <ClearBtn />}
+        {mode === 'private' && text.length > 0 && <ShowPassBtn />}
+        {mode === 'amount' && <MaxBtn onPress={props.onMax} />}
       </View>
 
       {props.helperText && <HelperText />}
 
       {(props.errorText || false) && <ErrorText />}
+    </View>
+  );
+}
+
+function MaxBtn({onPress}: {onPress?: () => void}) {
+  return (
+    <View
+      style={[
+        {
+          position: 'absolute',
+          end: 0,
+        },
+      ]}>
+      <AvaButton.TextMedium onPress={onPress}>Max</AvaButton.TextMedium>
     </View>
   );
 }
