@@ -1,4 +1,4 @@
-import React, {FC} from 'react';
+import React, {FC, useEffect, useState} from 'react';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {View} from 'react-native';
 import AvaText from 'components/AvaText';
@@ -11,28 +11,46 @@ import {useNavigation} from '@react-navigation/native';
 import {TokenWithBalance} from '@avalabs/wallet-react-components';
 import AppNavigation from 'navigation/AppNavigation';
 import Avatar from 'components/Avatar';
+import {useSwapContext} from 'contexts/SwapContext';
 
 interface TokenDropDownProps {
-  selectedToken?: TokenWithBalance;
-  onTokenSelected: (token: TokenWithBalance) => void;
-  label?: string;
+  type?: 'From' | 'To';
 }
 
-const TokenDropDown: FC<TokenDropDownProps> = ({
-  selectedToken,
-  onTokenSelected,
-  label,
-}) => {
+const TokenDropDown: FC<TokenDropDownProps> = ({type}) => {
   const context = useApplicationContext();
   const navigation = useNavigation();
+  const swapContext = useSwapContext();
+
+  const isFrom = type === 'From';
+
+  const selectedToken = isFrom
+    ? swapContext.swapFrom.token
+    : swapContext.swapTo.token;
+  const usdValue = isFrom
+    ? swapContext.swapFrom.usdValue
+    : swapContext.swapTo.usdValue;
+  const setAmount = isFrom
+    ? swapContext.swapFrom.setAmount
+    : swapContext.swapTo.setAmount;
+  const setToken = isFrom
+    ? swapContext.swapFrom.setToken
+    : swapContext.swapTo.setToken;
+  const amount = isFrom
+    ? swapContext.swapFrom.amount
+    : swapContext.swapTo.amount;
 
   function selectToken() {
-    navigation.navigate(AppNavigation.Modal.SelectToken, {onTokenSelected});
+    navigation.navigate(AppNavigation.Modal.SelectToken, {
+      onTokenSelected: (token: TokenWithBalance) => {
+        setToken(token);
+      },
+    });
   }
 
   return (
     <View style={{marginHorizontal: 16, flex: 1}}>
-      {label && <AvaText.Heading3>{label}</AvaText.Heading3>}
+      {type && <AvaText.Heading3>{type}</AvaText.Heading3>}
       <Space y={4} />
       <View
         style={[
@@ -49,12 +67,19 @@ const TokenDropDown: FC<TokenDropDownProps> = ({
           },
           context.shadow,
         ]}>
-        <AvaButton.Base style={{flexDirection: 'row'}} onPress={selectToken}>
+        <AvaButton.Base
+          style={{flexDirection: 'row', alignItems: 'center'}}
+          onPress={selectToken}>
           {selectedToken ? (
-            <View>
-              <Avatar.Token token={selectedToken} />
+            <>
+              <Avatar.Custom
+                name={selectedToken.name}
+                symbol={selectedToken.symbol}
+                logoUri={selectedToken.logoURI}
+              />
+              <Space x={8} />
               <AvaText.Heading3>{selectedToken.symbol}</AvaText.Heading3>
-            </View>
+            </>
           ) : (
             <AvaText.Heading3>Select</AvaText.Heading3>
           )}
@@ -70,15 +95,16 @@ const TokenDropDown: FC<TokenDropDownProps> = ({
           placeholder="Enter the amount"
           keyboardType="numeric"
           onChangeText={text => {
-            console.log('amount: ' + text);
+            setAmount(Number.parseFloat(text));
           }}
+          text={amount.toString()}
         />
       </View>
       <Space y={8} />
       <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
         <AvaText.Body3 color={context.theme.colorError}>Error</AvaText.Body3>
         <AvaText.Body2>
-          {selectedToken ? `${selectedToken.priceUSD} USD` : '$0.00 USD'}
+          {selectedToken ? `${usdValue} USD` : '$0.00 USD'}
         </AvaText.Body2>
       </View>
     </View>

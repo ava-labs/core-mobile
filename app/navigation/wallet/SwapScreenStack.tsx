@@ -3,6 +3,7 @@ import AppNavigation from 'navigation/AppNavigation';
 import PortfolioView from 'screens/portfolio/PortfolioView';
 import {createStackNavigator} from '@react-navigation/stack';
 import SwapView from 'screens/swap/SwapView';
+import {SwapContextProvider} from 'contexts/SwapContext';
 
 type Props = {
   onExit: () => void;

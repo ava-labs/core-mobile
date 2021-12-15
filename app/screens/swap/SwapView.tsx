@@ -7,14 +7,15 @@ import SwapNarrowSVG from 'components/svg/SwapNarrowSVG';
 import AvaButton from 'components/AvaButton';
 import TokenDropDown from 'screens/swap/components/TokenDropDown';
 import SwapTransactionDetail from 'screens/swap/components/SwapTransactionDetails';
-import {TokenWithBalance} from '@avalabs/wallet-react-components';
+import {useSwapContext} from 'contexts/SwapContext';
 
 export default function SwapView() {
   const {theme} = useApplicationContext();
+  const {swapFromTo, } = useSwapContext();
 
-  function setFrom(token: TokenWithBalance) {}
+  function confirm() {
 
-  function setTo(token: TokenWithBalance) {}
+  }
 
   return (
     <View style={styles.container}>
@@ -24,9 +25,10 @@ export default function SwapView() {
           Swap
         </AvaText.Heading1>
         <Space y={20} />
-        <TokenDropDown label={'From'} onTokenSelected={setFrom} />
+        <TokenDropDown type={'From'} />
         <Space y={20} />
         <AvaButton.Base
+          onPress={swapFromTo}
           style={{
             alignSelf: 'flex-end',
             borderRadius: 50,
@@ -39,10 +41,10 @@ export default function SwapView() {
           }}>
           <SwapNarrowSVG />
         </AvaButton.Base>
-        <TokenDropDown label={'To'} onTokenSelected={setTo} />
+        <TokenDropDown type={'To'} />
         <SwapTransactionDetail />
       </ScrollView>
-      <AvaButton.PrimaryLarge style={{margin: 16}}>
+      <AvaButton.PrimaryLarge style={{margin: 16}} onPress={confirm}>
         Review Order
       </AvaButton.PrimaryLarge>
     </View>

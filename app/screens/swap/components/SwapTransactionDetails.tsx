@@ -7,12 +7,14 @@ import InputText from 'components/InputText';
 import AppNavigation from 'navigation/AppNavigation';
 import {useNavigation} from '@react-navigation/native';
 import AvaButton from 'components/AvaButton';
+import {useSwapContext} from 'contexts/SwapContext';
 
 interface SwapTransactionDetailProps {}
 
 const SwapTransactionDetail: FC<SwapTransactionDetailProps> = props => {
   const context = useApplicationContext();
   const navigation = useNavigation();
+  const {trxDetails} = useSwapContext();
 
   function openTransactionFees() {
     navigation.navigate(AppNavigation.Modal.SwapTransactionFee);
@@ -30,7 +32,7 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = props => {
           alignItems: 'center',
         }}>
         <AvaText.Body2>Rate</AvaText.Body2>
-        <AvaText.Heading3>1 AVAX ≈ 45.5589 PNG</AvaText.Heading3>
+        <AvaText.Heading3>{trxDetails.rate}</AvaText.Heading3>
       </View>
       <Space y={16} />
       <View
@@ -41,7 +43,10 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = props => {
         }}>
         <AvaText.Body2>Slippage tolerance</AvaText.Body2>
         <View style={{backgroundColor: context.theme.colorBg2}}>
-          <InputText text={'0.12%'} keyboardType={'numeric'} />
+          <InputText
+            text={`${trxDetails.slippageTol}`}
+            keyboardType={'numeric'}
+          />
         </View>
       </View>
       <Space y={16} />
@@ -53,7 +58,7 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = props => {
             alignItems: 'center',
           }}>
           <AvaText.Body2>Network fee</AvaText.Body2>
-          <AvaText.Heading3>0.21223 AVAX</AvaText.Heading3>
+          <AvaText.Heading3>{trxDetails.networkFee}</AvaText.Heading3>
         </View>
         <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
           <AvaButton.Base onPress={openTransactionFees}>
@@ -61,7 +66,7 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = props => {
               Edit
             </AvaText.Body3>
           </AvaButton.Base>
-          <AvaText.Body2>$0.24 USD</AvaText.Body2>
+          <AvaText.Body2>{trxDetails.networkFeeUsd}</AvaText.Body2>
         </View>
       </View>
       <Space y={16} />
@@ -72,7 +77,7 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = props => {
           alignItems: 'center',
         }}>
         <AvaText.Body2>Avalanche wallet fee</AvaText.Body2>
-        <AvaText.Heading3>0.21223 AVAX</AvaText.Heading3>
+        <AvaText.Heading3>{trxDetails.avaxWalletFee}</AvaText.Heading3>
       </View>
     </View>
   );
