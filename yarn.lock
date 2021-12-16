@@ -15010,6 +15010,11 @@ react-native-permissions@^3.0.4:
   resolved "https://registry.yarnpkg.com/react-native-permissions/-/react-native-permissions-3.0.4.tgz#7771d28899d7d2b75fd2a70cd3f86d44c90397ec"
   integrity sha512-GMd0l0TA/qupidGFfKAVNaboewQkJSW+l3ndwv1cu+tBGI+TRfJdMjg8Q714wn9roZlXsZ3z407qT2xPdQmGdg==
 
+react-native-popable@^0.4.3:
+  version "0.4.3"
+  resolved "https://registry.yarnpkg.com/react-native-popable/-/react-native-popable-0.4.3.tgz#6e08678d5768f1d2b4a0dd60604d6f7fdef31fde"
+  integrity sha512-khoK9TVLfJV+mBO5FTRx0eZip7djYVDfjaTRDhFPgVq2Exq9X6139Rfjg1sWHPvAQ2VCszTuC45o6iT373kFPw==
+
 react-native-qrcode-scanner@^1.5.4:
   version "1.5.4"
   resolved "https://registry.yarnpkg.com/react-native-qrcode-scanner/-/react-native-qrcode-scanner-1.5.4.tgz#5e96189260942db3287739545eb3f6a16f7c0178"
