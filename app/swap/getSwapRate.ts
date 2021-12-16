@@ -1,5 +1,9 @@
 import {WalletType} from '@avalabs/avalanche-wallet-sdk';
-import {wallet$} from '@avalabs/wallet-react-components';
+import {
+  ERC20,
+  TokenWithBalance,
+  wallet$,
+} from '@avalabs/wallet-react-components';
 import {APIError, ParaSwap, SwapSide} from 'paraswap';
 import {OptimalRate} from 'paraswap-core';
 import {firstValueFrom} from 'rxjs';
@@ -7,11 +11,9 @@ import {paraSwap$} from './swap';
 
 const SERVER_BUSY_ERROR = 'Server too busy';
 
-export type TokenAddress = string;
-
 export async function getSwapRate(request: {
-  srcToken?: TokenAddress;
-  destToken?: TokenAddress;
+  srcToken?: TokenWithBalance;
+  destToken?: TokenWithBalance;
   srcDecimals?: number;
   destDecimals?: number;
   srcAmount?: string;
@@ -72,8 +74,8 @@ export async function getSwapRate(request: {
   }
 
   const optimalRates = (paraSwap as ParaSwap).getRate(
-    srcToken,
-    destToken,
+    getSrcToken(srcToken),
+    getSrcToken(destToken),
     srcAmount,
     (wallet as WalletType).getAddressC(),
     SwapSide.SELL,
@@ -128,4 +130,11 @@ function incrementAndCall<T>(prom: Promise<T>, interval = 0) {
       prom.then(res => resolve(res));
     }, 500 * interval);
   });
+}
+
+function getSrcToken(token: TokenWithBalance) {
+  if (token.isErc20) {
+    return (token as ERC20).address;
+  }
+  return token.symbol;
 }
