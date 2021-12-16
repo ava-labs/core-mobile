@@ -7,6 +7,7 @@ import {
   useWalletStateContext,
 } from '@avalabs/wallet-react-components';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {getTokenUID} from 'utils/UniqueToken';
 
 type ShowZeroArrayType = {[x: string]: boolean};
 const bnZero = new BN(0);
@@ -37,7 +38,7 @@ export function useSearchableTokenList(hideZeroBalance = true): {
   const wallet = useWalletContext().wallet;
 
   const loadZeroBalanceList = () => {
-    AsyncStorage.getItem('showZeroBalanceList').then(value => {
+    AsyncStorage.getItem('showZeroBalanceList.v2').then(value => {
       if (value) {
         const list: ShowZeroArrayType = JSON.parse(value);
         setZeroBalanceList({...list});
@@ -46,8 +47,8 @@ export function useSearchableTokenList(hideZeroBalance = true): {
   };
 
   const setShowZeroBalanceList = (list: ShowZeroArrayType) => {
-    AsyncStorage.setItem('showZeroBalanceList', JSON.stringify(list)).then(() =>
-      setZeroBalanceList(list),
+    AsyncStorage.setItem('showZeroBalanceList.v2', JSON.stringify(list)).then(
+      () => setZeroBalanceList(list),
     );
   };
 
@@ -69,7 +70,7 @@ export function useSearchableTokenList(hideZeroBalance = true): {
       walletState?.avaxToken,
       ...walletState?.erc20Tokens?.filter(value => {
         return hideZeroBalance
-          ? value.balance.gt(bnZero) || showZeroBalanceList[value.name]
+          ? value.balance.gt(bnZero) || showZeroBalanceList[getTokenUID(value)]
           : true;
       }),
       ...walletState?.antTokens,
@@ -81,15 +82,17 @@ export function useSearchableTokenList(hideZeroBalance = true): {
     walletState?.avaxToken,
     walletState?.antTokens,
     showZeroBalanceList,
-    hideZeroBalance
+    hideZeroBalance,
   ]);
 
   useEffect(() => {
     if (tokenList) {
+      const regExp = new RegExp(searchText, 'i');
       setFilteredTokenList(
         tokenList.filter(
           token =>
-            token?.name?.toLowerCase().indexOf(searchText.toLowerCase()) !== -1,
+            (token.name && token.name.search(regExp) !== -1) ||
+            (token.symbol && token.symbol.search(regExp) !== -1),
         ),
       );
     }
