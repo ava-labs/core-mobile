@@ -15,6 +15,7 @@ import Loader from 'components/Loader';
 import ZeroState from 'components/ZeroState';
 import PortfolioListItem from 'screens/portfolio/components/PortfolioListItem';
 import {Space} from 'components/Space';
+import {getTokenUID} from 'utils/UniqueToken';
 
 const DEFAULT_HORIZONTAL_MARGIN = 16;
 
@@ -99,7 +100,7 @@ function TokenSelector({
           renderItem={renderItem}
           onRefresh={handleRefresh}
           refreshing={false}
-          keyExtractor={(item: TokenWithBalance) => item.name + item.symbol}
+          keyExtractor={(item: TokenWithBalance) => getTokenUID(item)}
           ListEmptyComponent={
             <ZeroState.NoResults message={getNoResultsText()} />
           }
