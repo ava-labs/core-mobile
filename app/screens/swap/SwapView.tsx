@@ -16,7 +16,7 @@ export default function SwapView() {
   const {swapFromTo, swapFrom, swapTo} = useSwapContext();
   const navigation = useNavigation();
 
-  const reviewButtonDisabled = swapTo.amount === 0 || swapFrom.amount === 0;
+  const reviewButtonDisabled = !swapTo.amount || !swapFrom.amount;
 
   function confirm() {
     navigation.navigate(AppNavigation.Wallet.SwapReview);
