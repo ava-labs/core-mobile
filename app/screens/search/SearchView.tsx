@@ -20,6 +20,7 @@ import CarrotSVG from 'components/svg/CarrotSVG';
 import AvaButton from 'components/AvaButton';
 import {Opacity50} from 'resources/Constants';
 import Loader from 'components/Loader';
+import {getTokenUID} from 'utils/UniqueToken';
 
 function SearchView(): JSX.Element {
   const {
@@ -51,9 +52,9 @@ function SearchView(): JSX.Element {
         symbol={token.symbol}
         position={item.index + 1}
         image={logoUri}
-        isShowingZeroBalanceForToken={showZeroBalanceList[token.name]}
+        isShowingZeroBalanceForToken={showZeroBalanceList[getTokenUID(token)]}
         onSwitchChanged={value => {
-          showZeroBalanceList[token.name] = value;
+          showZeroBalanceList[getTokenUID(token)] = value;
           setShowZeroBalanceList({...showZeroBalanceList});
         }}
       />
@@ -123,7 +124,7 @@ function SearchView(): JSX.Element {
           //   />
           // }
           refreshing={false}
-          keyExtractor={(item: TokenWithBalance) => item.symbol}
+          keyExtractor={(item: TokenWithBalance) => getTokenUID(item)}
           ListEmptyComponent={emptyView}
         />
       )}
