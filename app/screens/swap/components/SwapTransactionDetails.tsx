@@ -8,6 +8,7 @@ import AppNavigation from 'navigation/AppNavigation';
 import {useNavigation} from '@react-navigation/native';
 import AvaButton from 'components/AvaButton';
 import {useSwapContext} from 'contexts/SwapContext';
+import {Popable} from 'react-native-popable';
 
 interface SwapTransactionDetailProps {
   review?: boolean;
@@ -49,17 +50,19 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
           justifyContent: 'space-between',
           alignItems: 'center',
         }}>
-        <AvaText.Body2>Slippage tolerance</AvaText.Body2>
-        <View style={{backgroundColor: context.theme.colorBg2}}>
-          {review ? (
-            <AvaText.Heading3>{trxDetails.slippageTol}</AvaText.Heading3>
-          ) : (
-            <InputText
-              text={`${trxDetails.slippageTol}`}
-              keyboardType={'numeric'}
-            />
-          )}
-        </View>
+        <Popable
+          content={'Some description about slippage tolerance'}
+          position={'right'}>
+          <AvaText.Body2>Slippage tolerance ⓘ</AvaText.Body2>
+        </Popable>
+        {review ? (
+          <AvaText.Heading3>{trxDetails.slippageTol}</AvaText.Heading3>
+        ) : (
+          <InputText
+            text={`${trxDetails.slippageTol}`}
+            keyboardType={'numeric'}
+          />
+        )}
       </View>
       <Space y={16} />
       <View>
@@ -69,7 +72,11 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
             justifyContent: 'space-between',
             alignItems: 'center',
           }}>
-          <AvaText.Body2>Network fee</AvaText.Body2>
+          <Popable
+            content={'Some description about network fee'}
+            position={'right'}>
+            <AvaText.Body2>Network fee ⓘ</AvaText.Body2>
+          </Popable>
           <AvaText.Heading3>{trxDetails.networkFee}</AvaText.Heading3>
         </View>
         <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>

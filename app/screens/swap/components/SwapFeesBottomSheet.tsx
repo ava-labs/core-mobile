@@ -55,9 +55,21 @@ function SwapFeesBottomSheet(): JSX.Element {
           <AvaText.Body3 textStyle={{marginHorizontal: 12}}>
             Max fee: (0.005935 AVAX)
           </AvaText.Body3>
-          <InputText label={'Gas Limit'} placeholder={'Gas Limit'} />
-          <InputText label={'Max priority fee (GWEI)'} placeholder={'GWEI'} />
-          <InputText label={'Max fee'} placeholder={'GWEI'} />
+          <InputText
+            label={'Gas Limit ⓘ'}
+            popOverInfoText={'Some blurp about gas limit'}
+            placeholder={'Gas Limit'}
+          />
+          <InputText
+            label={'Max priority fee (GWEI) ⓘ'}
+            popOverInfoText={'Some blurp about priority fee'}
+            placeholder={'GWEI'}
+          />
+          <InputText
+            label={'Max fee ⓘ'}
+            popOverInfoText={'Some blurp about max fee'}
+            placeholder={'GWEI'}
+          />
           <AvaButton.PrimaryLarge style={{marginHorizontal: 12}}>
             Save
           </AvaButton.PrimaryLarge>

@@ -7,6 +7,7 @@ import {Opacity50} from 'resources/Constants';
 import ClearInputSVG from 'components/svg/ClearInputSVG';
 import {Space} from 'components/Space';
 import AvaText from './AvaText';
+import {Popable} from 'react-native-popable';
 
 type Props = {
   onChangeText?: (text: string) => void;
@@ -26,6 +27,8 @@ type Props = {
   mode?: 'default' | 'private' | 'amount';
   // Set keyboard type (numeric, text)
   keyboardType?: 'numeric';
+  // shows popover info if provided
+  popOverInfoText?: string;
   autoFocus?: boolean;
   text?: string;
 };
@@ -99,10 +102,16 @@ export default function InputText(props: Props | Readonly<Props>) {
 
   const Label = () => {
     return (
-      <>
-        <TextLabel multiline textAlign="left" text={props.label || ''} />
+      <View style={{alignSelf: 'baseline'}}>
+        {props.popOverInfoText ? (
+          <Popable content={props.popOverInfoText} position={'right'}>
+            <TextLabel multiline textAlign="left" text={props.label || ''} />
+          </Popable>
+        ) : (
+          <TextLabel multiline textAlign="left" text={props.label || ''} />
+        )}
         <View style={[{height: 8}]} />
-      </>
+      </View>
     );
   };
 
@@ -154,14 +163,8 @@ export default function InputText(props: Props | Readonly<Props>) {
   };
 
   return (
-    <View
-      style={[
-        {
-          margin: 12,
-        },
-      ]}>
+    <View style={{margin: 12}}>
       {props.label && <Label />}
-
       <View
         style={[
           {
