@@ -48,8 +48,8 @@ export const SwapContextProvider = ({children}: {children: any}) => {
 
   useEffect(() => {
     getSwapRate({
-      srcToken: fromToken?.address,
-      destToken: toToken?.address,
+      srcToken: fromToken,
+      destToken: toToken,
       srcDecimals: fromToken?.denomination,
       destDecimals: toToken?.denomination,
       srcAmount: (
