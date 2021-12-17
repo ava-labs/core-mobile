@@ -96,6 +96,7 @@ function TokenSelector({
         <Loader />
       ) : (
         <FlatList
+          keyboardShouldPersistTaps="handled"
           data={filteredTokenList}
           renderItem={renderItem}
           onRefresh={handleRefresh}
