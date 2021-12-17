@@ -249,7 +249,7 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
         <PinOrBiometryLogin
           onSignInWithRecoveryPhrase={() => {
             immediateLogout().then(() => {
-              resetNavToEnterMnemonic();
+              resetNavToEnterMnemonic(context.appHook.navigation);
               setShowSecurityModal(false);
             });
           }}
