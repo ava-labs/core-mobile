@@ -11,6 +11,8 @@ import BN from 'bn.js';
 import {getDecimalsForEVM} from 'utils/TokenTools';
 import {Utils} from '@avalabs/avalanche-wallet-sdk';
 import {SwapSide} from 'paraswap';
+import {from} from 'rxjs';
+import {map} from 'rxjs/operators';
 
 export interface SwapEntry {
   token: TokenWithBalance | undefined;
@@ -59,32 +61,45 @@ export const SwapContextProvider = ({children}: {children: any}) => {
       swapSide === SwapSide.SELL ? fromAmount : toAmount,
       getDecimalsForEVM(swapSide === SwapSide.SELL ? fromToken : toToken) ?? 0,
     ).toString();
-    getSwapRate({
-      srcToken: fromToken,
-      destToken: toToken,
-      amount: amount,
-      swapSide,
-    }).then(val => {
-      const result = val.result;
-      const destAmount = Utils.bnToBig(
-        new BN(result.destAmount),
-        result.destDecimals,
-      );
-      const srcAmount = Utils.bnToBig(
-        new BN(result.srcAmount),
-        result.srcDecimals,
-      );
-      const destAmountBySrcAmount = destAmount.div(srcAmount).toString();
 
-      setFromAmount(srcAmount.toNumber());
-      setToAmount(destAmount.toNumber());
-      setFromUsdAmount(result.srcUSD);
-      setToUsdAmount(result.destUSD);
-      setAvaxWalletFee(`${result.partnerFee} AVAX`);
-      setTrxRate(
-        `1 ${fromToken?.symbol} ≈ ${destAmountBySrcAmount} ${toToken?.symbol}`,
-      );
-    });
+    const subscription = from(
+      getSwapRate({
+        srcToken: fromToken,
+        destToken: toToken,
+        amount: amount,
+        swapSide,
+      }),
+    )
+      .pipe(
+        map(val => {
+          const result = val.result;
+          const destAmount = Utils.bnToBig(
+            new BN(result.destAmount),
+            result.destDecimals,
+          );
+          const srcAmount = Utils.bnToBig(
+            new BN(result.srcAmount),
+            result.srcDecimals,
+          );
+          const destAmountBySrcAmount = destAmount.div(srcAmount).toString();
+
+          setFromAmount(srcAmount.toNumber());
+          setToAmount(destAmount.toNumber());
+          setFromUsdAmount(result.srcUSD);
+          setToUsdAmount(result.destUSD);
+          setAvaxWalletFee(`${result.partnerFee} AVAX`);
+          setTrxRate(
+            `1 ${fromToken?.symbol} ≈ ${destAmountBySrcAmount} ${toToken?.symbol}`,
+          );
+        }),
+      )
+      .subscribe({
+        error: err => console.log(err),
+      });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [fromToken, toToken, fromAmount, toAmount, swapSide]);
 
   const setSrcAmount = (amount: number) => {
