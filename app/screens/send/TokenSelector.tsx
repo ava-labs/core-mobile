@@ -1,6 +1,7 @@
-import React from 'react';
+import React, {RefObject, useEffect, useRef} from 'react';
 import {
   FlatList,
+  InteractionManager,
   ListRenderItemInfo,
   StyleSheet,
   TextInput,
@@ -31,6 +32,15 @@ function TokenSelector({
   const {filteredTokenList, searchText, setSearchText, loadTokenList} =
     useSearchableTokenList(false);
   const context = useApplicationContext();
+  const textInputRef = useRef() as RefObject<TextInput>;
+
+  useEffect(() => {
+    InteractionManager.runAfterInteractions(() => {
+      setTimeout(() => {
+        textInputRef.current?.focus();
+      }, 300); //delay is for some weird bug effect when opening select token on swap page
+    });
+  }, [textInputRef]);
 
   function handleRefresh() {
     loadTokenList();
@@ -78,6 +88,7 @@ function TokenSelector({
           ]}>
           <SearchSVG color={context.theme.onBgSearch} size={32} hideBorder />
           <TextInput
+            ref={textInputRef}
             style={[styles.searchInput, {color: context.theme.txtOnBgApp}]}
             placeholder="Search"
             placeholderTextColor={context.theme.onBgSearch}
