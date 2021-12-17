@@ -15,7 +15,7 @@ import Loader from 'components/Loader';
 import ZeroState from 'components/ZeroState';
 import PortfolioListItem from 'screens/portfolio/components/PortfolioListItem';
 import {Space} from 'components/Space';
-import {getTokenUID} from 'utils/UniqueToken';
+import {getTokenUID} from 'utils/TokenTools';
 
 const DEFAULT_HORIZONTAL_MARGIN = 16;
 

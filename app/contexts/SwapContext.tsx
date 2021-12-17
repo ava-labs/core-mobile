@@ -7,6 +7,10 @@ import React, {
 } from 'react';
 import {TokenWithBalance} from '@avalabs/wallet-react-components';
 import {getSwapRate} from 'swap/getSwapRate';
+import BN from 'bn.js';
+import {getDecimalsForEVM} from 'utils/TokenTools';
+import {Utils} from '@avalabs/avalanche-wallet-sdk';
+import {SwapSide} from 'paraswap';
 
 export interface SwapEntry {
   token: TokenWithBalance | undefined;
@@ -40,28 +44,40 @@ export const SwapContextProvider = ({children}: {children: any}) => {
   const [toToken, setToToken] = useState<TokenWithBalance>();
   const [toAmount, setToAmount] = useState<number>(0);
   const [toUsdAmount, setToUsdAmount] = useState<string>('');
-  const [trxRate, setTrxRate] = useState<string>('1 AVAX ≈ 45.5589 PNG');
+  const [trxRate, setTrxRate] = useState<string>('');
   const [slipTol, setSlipTol] = useState<string>('.12%');
-  const [networkFee, setNetworkFee] = useState<string>('0.004222 AVAX');
-  const [networkFeeUsd, setNetworkFeeUsd] = useState<string>('$0.24 USD');
-  const [avaxWalletFee, setAvaxWalletFee] = useState<string>('38213 AVAX');
+  const [networkFee, setNetworkFee] = useState<string>('- AVAX');
+  const [networkFeeUsd, setNetworkFeeUsd] = useState<string>('$- USD');
+  const [avaxWalletFee, setAvaxWalletFee] = useState<string>('0 AVAX');
+  const [swapSide, setSwapSide] = useState<SwapSide>(SwapSide.SELL);
 
   useEffect(() => {
+    if (swapSide === SwapSide.SELL ? isNaN(fromAmount) : isNaN(toAmount)) {
+      return;
+    }
+    const amount = Utils.numberToBN(
+      swapSide === SwapSide.SELL ? fromAmount : toAmount,
+      getDecimalsForEVM(swapSide === SwapSide.SELL ? fromToken : toToken) ?? 0,
+    ).toString();
     getSwapRate({
       srcToken: fromToken,
       destToken: toToken,
-      srcDecimals: fromToken?.denomination,
-      destDecimals: toToken?.denomination,
-      srcAmount: (
-        fromAmount * Math.pow(10, fromToken?.denomination ?? 0)
-      ).toString(),
+      amount: amount,
+      swapSide,
     }).then(val => {
       const result = val.result;
-      const destAmount = result.destAmount / Math.pow(10, result.destDecimals);
-      const srcAmount = result.srcAmount / Math.pow(10, result.srcDecimals);
-      const destAmountBySrcAmount = destAmount / srcAmount;
+      const destAmount = Utils.bnToBig(
+        new BN(result.destAmount),
+        result.destDecimals,
+      );
+      const srcAmount = Utils.bnToBig(
+        new BN(result.srcAmount),
+        result.srcDecimals,
+      );
+      const destAmountBySrcAmount = destAmount.div(srcAmount).toString();
 
-      setToAmount(destAmount);
+      setFromAmount(srcAmount.toNumber());
+      setToAmount(destAmount.toNumber());
       setFromUsdAmount(result.srcUSD);
       setToUsdAmount(result.destUSD);
       setAvaxWalletFee(`${result.partnerFee} AVAX`);
@@ -69,14 +85,16 @@ export const SwapContextProvider = ({children}: {children: any}) => {
         `1 ${fromToken?.symbol} ≈ ${destAmountBySrcAmount} ${toToken?.symbol}`,
       );
     });
-  }, [fromToken, toToken, fromAmount]);
+  }, [fromToken, toToken, fromAmount, toAmount, swapSide]);
 
-  useEffect(() => {
-    console.log('trxRate', trxRate);
-    console.log('fromUsdAmount', fromUsdAmount);
-    console.log('toUsdAmount', toUsdAmount);
-    console.log('avaxWalletFee', avaxWalletFee);
-  }, [trxRate, fromUsdAmount, toUsdAmount, avaxWalletFee]);
+  const setSrcAmount = (amount: number) => {
+    setSwapSide(SwapSide.SELL);
+    setFromAmount(amount);
+  };
+  const setDestAmount = (amount: number) => {
+    setSwapSide(SwapSide.BUY);
+    setToAmount(amount);
+  };
 
   const swapFromTo = () => {
     const tempToken = toToken;
@@ -92,14 +110,14 @@ export const SwapContextProvider = ({children}: {children: any}) => {
       token: fromToken,
       setToken: setFromToken,
       amount: fromAmount,
-      setAmount: setFromAmount,
+      setAmount: setSrcAmount,
       usdValue: fromUsdAmount,
     },
     swapTo: {
       token: toToken,
       setToken: setToToken,
       amount: toAmount,
-      setAmount: setToAmount,
+      setAmount: setDestAmount,
       usdValue: toUsdAmount,
     },
     swapFromTo,

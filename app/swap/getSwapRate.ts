@@ -8,18 +8,17 @@ import {APIError, ParaSwap, SwapSide} from 'paraswap';
 import {OptimalRate} from 'paraswap-core';
 import {firstValueFrom} from 'rxjs';
 import {paraSwap$} from './swap';
+import {getDecimalsForEVM} from 'utils/TokenTools';
 
 const SERVER_BUSY_ERROR = 'Server too busy';
 
 export async function getSwapRate(request: {
   srcToken?: TokenWithBalance;
   destToken?: TokenWithBalance;
-  srcDecimals?: number;
-  destDecimals?: number;
-  srcAmount?: string;
+  amount?: string;
+  swapSide: SwapSide;
 }) {
-  const {srcToken, destToken, srcDecimals, destDecimals, srcAmount} =
-    request || [];
+  const {srcToken, destToken, amount, swapSide} = request || [];
 
   if (!srcToken) {
     return {
@@ -35,24 +34,10 @@ export async function getSwapRate(request: {
     };
   }
 
-  if (!srcAmount) {
+  if (!amount) {
     return {
       ...request,
       error: 'no amount on request',
-    };
-  }
-
-  if (!srcDecimals) {
-    return {
-      ...request,
-      error: 'request requires the decimals for source token',
-    };
-  }
-
-  if (!destDecimals) {
-    return {
-      ...request,
-      error: 'request requires the decimals for destination token',
     };
   }
 
@@ -76,14 +61,14 @@ export async function getSwapRate(request: {
   const optimalRates = (paraSwap as ParaSwap).getRate(
     getSrcToken(srcToken),
     getSrcToken(destToken),
-    srcAmount,
+    amount,
     (wallet as WalletType).getAddressC(),
-    SwapSide.SELL,
+    swapSide,
     {
       partner: 'Avalanche',
     },
-    srcDecimals,
-    destDecimals,
+    getDecimalsForEVM(srcToken),
+    getDecimalsForEVM(destToken),
   );
 
   function checkForErrorsInResult(result: OptimalRate | APIError) {
@@ -114,7 +99,7 @@ async function incrementalPromiseResolve<T>(
   increment = 0,
   maxTries = 10,
 ) {
-  const res = await incrementAndCall(prom(), 0);
+  const res = await incrementAndCall(prom(), Math.pow(2, increment));
   if (maxTries === increment) {
     return res;
   }

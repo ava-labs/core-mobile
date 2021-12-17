@@ -7,7 +7,7 @@ import {
   useWalletStateContext,
 } from '@avalabs/wallet-react-components';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {getTokenUID} from 'utils/UniqueToken';
+import {getTokenUID} from 'utils/TokenTools';
 
 type ShowZeroArrayType = {[x: string]: boolean};
 const bnZero = new BN(0);
