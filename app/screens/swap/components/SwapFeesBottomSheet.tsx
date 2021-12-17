@@ -1,8 +1,5 @@
 import React, {useCallback, useEffect, useMemo, useRef} from 'react';
-import BottomSheet, {
-  BottomSheetBackdrop,
-  BottomSheetScrollView,
-} from '@gorhom/bottom-sheet';
+import BottomSheet, {BottomSheetBackdrop, BottomSheetScrollView} from '@gorhom/bottom-sheet';
 import {InteractionManager, Text} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import TabViewBackground from 'screens/portfolio/components/TabViewBackground';
@@ -11,9 +8,12 @@ import AvaText from 'components/AvaText';
 import InputText from 'components/InputText';
 import AvaButton from 'components/AvaButton';
 import {Space} from 'components/Space';
+import {popableContent} from 'screens/swap/components/SwapTransactionDetails';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 
 function SwapFeesBottomSheet(): JSX.Element {
   const navigation = useNavigation();
+  const {theme} = useApplicationContext();
   const bottomSheetModalRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ['0%', '60%'], []);
 
@@ -32,6 +32,19 @@ function SwapFeesBottomSheet(): JSX.Element {
   const handleChange = useCallback(index => {
     index === 0 && handleClose();
   }, []);
+
+  const gasLimitInfoInfoMessage = popableContent(
+    'Gas limit is the maximum units of gas you are willing to use.\n\nUnits of gas are a multiplier to “Max priority fee” and “Max fee.”',
+    theme.colorBg3,
+  );
+  const priorityFeeInfoMessage = popableContent(
+    'Max priority fee (aka “validator tip”) goes directly validators and incentivizes them to prioritize your transaction.\n\nYou will most often pay your max setting.',
+    theme.colorBg3,
+  );
+  const maxFeeInfoMessage = popableContent(
+    'The max fee is the most you will pay (base fee + priority fee).',
+    theme.colorBg3,
+  );
 
   return (
     <BottomSheet
@@ -57,17 +70,17 @@ function SwapFeesBottomSheet(): JSX.Element {
           </AvaText.Body3>
           <InputText
             label={'Gas Limit ⓘ'}
-            popOverInfoText={'Some blurp about gas limit'}
+            popOverInfoText={gasLimitInfoInfoMessage}
             placeholder={'Gas Limit'}
           />
           <InputText
             label={'Max priority fee (GWEI) ⓘ'}
-            popOverInfoText={'Some blurp about priority fee'}
+            popOverInfoText={priorityFeeInfoMessage}
             placeholder={'GWEI'}
           />
           <InputText
             label={'Max fee ⓘ'}
-            popOverInfoText={'Some blurp about max fee'}
+            popOverInfoText={maxFeeInfoMessage}
             placeholder={'GWEI'}
           />
           <AvaButton.PrimaryLarge style={{marginHorizontal: 12}}>

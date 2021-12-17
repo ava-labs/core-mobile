@@ -28,7 +28,7 @@ type Props = {
   // Set keyboard type (numeric, text)
   keyboardType?: 'numeric';
   // shows popover info if provided
-  popOverInfoText?: string;
+  popOverInfoText?: string | React.ReactElement;
   autoFocus?: boolean;
   text?: string;
 };
@@ -116,7 +116,11 @@ export default function InputText(props: Props | Readonly<Props>) {
     return (
       <View style={{alignSelf: 'baseline'}}>
         {props.popOverInfoText ? (
-          <Popable content={props.popOverInfoText} position={'right'}>
+          <Popable
+            content={props.popOverInfoText}
+            position={'right'}
+            style={{minWidth: 200}}
+            backgroundColor={context.theme.colorBg3}>
             <TextLabel multiline textAlign="left" text={props.label || ''} />
           </Popable>
         ) : (
