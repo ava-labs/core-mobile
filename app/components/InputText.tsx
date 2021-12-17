@@ -41,6 +41,18 @@ export default function InputText(props: Props | Readonly<Props>) {
   const [toggleShowText, setToggleShowText] = useState('Show');
   const [mode] = useState(props.mode ?? 'default');
   const textInputRef = useRef() as RefObject<TextInput>;
+  const [initText, setInitText] = useState(props.text);
+
+  useEffect(() => {
+    if (props.text !== undefined && isNaN(Number(props.text))) {
+      return;
+    }
+    //detects change in param, without it, changing param won't trigger redraw
+    if (initText !== props.text) {
+      setInitText(props.text);
+      setText(props.text ?? '');
+    }
+  });
 
   useEffect(() => {
     setToggleShowText(showInput ? 'Hide' : 'Show');

@@ -20,7 +20,7 @@ import CarrotSVG from 'components/svg/CarrotSVG';
 import AvaButton from 'components/AvaButton';
 import {Opacity50} from 'resources/Constants';
 import Loader from 'components/Loader';
-import {getTokenUID} from 'utils/UniqueToken';
+import {getTokenUID} from 'utils/TokenTools';
 
 function SearchView(): JSX.Element {
   const {
