@@ -14,6 +14,15 @@ interface SwapTransactionDetailProps {
   review?: boolean;
 }
 
+export function popableContent(message: string, backgroundColor: string) {
+  return (
+    <View
+      style={{padding: 8, backgroundColor: backgroundColor, borderRadius: 8}}>
+      <AvaText.Body3>{message}</AvaText.Body3>
+    </View>
+  );
+}
+
 const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
   review = false,
 }) => {
@@ -24,6 +33,15 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
   function openTransactionFees() {
     navigation.navigate(AppNavigation.Modal.SwapTransactionFee);
   }
+
+  const slippageInfoMessage = popableContent(
+    'Suggested slippage – your transaction will fail if the price changes unfavorably more than this percentage',
+    context.theme.colorBg3,
+  );
+  const networkFeeInfoMessage = popableContent(
+    'Network fees are paid to the network to process transactions on Avalanche.\n\nThese fees are estimated and will change based on network traffic and transaction complexity.',
+    context.theme.colorBg3,
+  );
 
   return (
     <View style={{flex: 1, paddingHorizontal: 16}}>
@@ -51,8 +69,10 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
           alignItems: 'center',
         }}>
         <Popable
-          content={'Some description about slippage tolerance'}
-          position={'right'}>
+          content={slippageInfoMessage}
+          position={'right'}
+          style={{minWidth: 200}}
+          backgroundColor={context.theme.colorBg3}>
           <AvaText.Body2>Slippage tolerance ⓘ</AvaText.Body2>
         </Popable>
         {review ? (
@@ -73,8 +93,10 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
             alignItems: 'center',
           }}>
           <Popable
-            content={'Some description about network fee'}
-            position={'right'}>
+            content={networkFeeInfoMessage}
+            position={'right'}
+            style={{minWidth: 200}}
+            backgroundColor={context.theme.colorBg3}>
             <AvaText.Body2>Network fee ⓘ</AvaText.Body2>
           </Popable>
           <AvaText.Heading3>{trxDetails.networkFee}</AvaText.Heading3>
