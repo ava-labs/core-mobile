@@ -78,7 +78,15 @@ Make release AAB
 cd android
 ./gradlew bundleRelease
 ```
-and then upload generated aab file to [play console](https://play.google.com/console) 
+and then upload generated aab file to [play console](https://play.google.com/console)
+
+#### Manual signing
+Build unsigned aab (remove `buildTypes.release.signingConfig` entry from `build.gradle` file)
+
+Sign with:
+```zsh
+jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore xample.jks bundle.aab keystoreAlias
+```
 
 ### iOS
 
