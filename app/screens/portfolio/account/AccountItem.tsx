@@ -78,9 +78,7 @@ function AccountItem({
         }}
         startExpanded={expanded}
         title={
-          expanded ? (
-            <></>
-          ) : (
+          expanded || (
             <View style={{padding: 16}}>
               <AvaText.Heading2>{account.title}</AvaText.Heading2>
             </View>
