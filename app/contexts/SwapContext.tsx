@@ -35,6 +35,7 @@ export interface SwapContextState {
   swapTo: SwapEntry;
   swapFromTo: () => void;
   trxDetails: TrxDetails;
+  error: string;
 }
 
 export const SwapContext = createContext<SwapContextState>({} as any);
@@ -52,6 +53,7 @@ export const SwapContextProvider = ({children}: {children: any}) => {
   const [networkFeeUsd, setNetworkFeeUsd] = useState<string>('$- USD');
   const [avaxWalletFee, setAvaxWalletFee] = useState<string>('0 AVAX');
   const [swapSide, setSwapSide] = useState<SwapSide>(SwapSide.SELL);
+  const [error, setError] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (swapSide === SwapSide.SELL ? isNaN(fromAmount) : isNaN(toAmount)) {
@@ -81,6 +83,9 @@ export const SwapContextProvider = ({children}: {children: any}) => {
             new BN(result.srcAmount),
             result.srcDecimals,
           );
+          if (srcAmount.toNumber() === 0) {
+            return;
+          }
           const destAmountBySrcAmount = destAmount
             .div(srcAmount)
             .toFixed(4)
@@ -94,10 +99,14 @@ export const SwapContextProvider = ({children}: {children: any}) => {
           setTrxRate(
             `1 ${fromToken?.symbol} ≈ ${destAmountBySrcAmount} ${toToken?.symbol}`,
           );
+          setError(undefined);
         }),
       )
       .subscribe({
-        error: err => console.log(err),
+        error: err => {
+          setError(err.message);
+          console.log(err);
+        },
       });
 
     return () => {
@@ -146,6 +155,7 @@ export const SwapContextProvider = ({children}: {children: any}) => {
       networkFeeUsd,
       avaxWalletFee,
     },
+    error,
   };
   return <SwapContext.Provider value={state}>{children}</SwapContext.Provider>;
 };
