@@ -1,6 +1,7 @@
-import React from 'react';
+import React, {RefObject, useEffect, useRef} from 'react';
 import {
   FlatList,
+  InteractionManager,
   ListRenderItemInfo,
   StyleSheet,
   TextInput,
@@ -10,31 +11,39 @@ import SearchSVG from 'components/svg/SearchSVG';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {TokenWithBalance} from '@avalabs/wallet-react-components';
 import {useSearchableTokenList} from 'screens/portfolio/useSearchableTokenList';
-import AvaText from 'components/AvaText';
 import {Opacity50} from 'resources/Constants';
 import Loader from 'components/Loader';
 import ZeroState from 'components/ZeroState';
 import PortfolioListItem from 'screens/portfolio/components/PortfolioListItem';
-import AppNavigation from 'navigation/AppNavigation';
-import {useNavigation} from '@react-navigation/native';
-import {PortfolioNavigationProp} from 'screens/portfolio/PortfolioView';
-import {useSelectedTokenContext} from 'contexts/SelectedTokenContext';
 import {Space} from 'components/Space';
+import {getTokenUID} from 'utils/TokenTools';
 
-function SendTokenSelector(): JSX.Element {
+const DEFAULT_HORIZONTAL_MARGIN = 16;
+
+interface TokenSelectorProps {
+  onTokenSelected: (token: TokenWithBalance) => void;
+  horizontalMargin?: number;
+}
+
+function TokenSelector({
+  onTokenSelected,
+  horizontalMargin = DEFAULT_HORIZONTAL_MARGIN,
+}: TokenSelectorProps) {
   const {filteredTokenList, searchText, setSearchText, loadTokenList} =
     useSearchableTokenList(false);
   const context = useApplicationContext();
-  const navigation = useNavigation<PortfolioNavigationProp>();
-  const {setSelectedToken} = useSelectedTokenContext();
+  const textInputRef = useRef() as RefObject<TextInput>;
+
+  useEffect(() => {
+    InteractionManager.runAfterInteractions(() => {
+      setTimeout(() => {
+        textInputRef.current?.focus();
+      }, 300); //delay is for some weird bug effect when opening select token on swap page
+    });
+  }, [textInputRef]);
 
   function handleRefresh() {
     loadTokenList();
-  }
-
-  function selectToken(token: TokenWithBalance) {
-    setSelectedToken?.(token);
-    navigation.navigate(AppNavigation.Modal.SendReceiveBottomSheet);
   }
 
   const renderItem = (item: ListRenderItemInfo<TokenWithBalance>) => {
@@ -46,7 +55,9 @@ function SendTokenSelector(): JSX.Element {
         tokenPriceUsd={token.balanceUsdDisplayValue}
         image={token?.logoURI}
         symbol={token.symbol}
-        onPress={() => selectToken(token)}
+        onPress={() => {
+          onTokenSelected(token);
+        }}
       />
     );
   };
@@ -68,12 +79,7 @@ function SendTokenSelector(): JSX.Element {
   }
 
   return (
-    <View style={{flex: 1, marginHorizontal: 16}}>
-      <Space y={8} />
-      <AvaText.Heading1>Send Tokens</AvaText.Heading1>
-      <Space y={24} />
-      <AvaText.Body1>Choose asset to continue</AvaText.Body1>
-      <Space y={16} />
+    <View style={{flex: 1, marginHorizontal: horizontalMargin}}>
       <View style={styles.searchContainer}>
         <View
           style={[
@@ -82,6 +88,7 @@ function SendTokenSelector(): JSX.Element {
           ]}>
           <SearchSVG color={context.theme.onBgSearch} size={32} hideBorder />
           <TextInput
+            ref={textInputRef}
             style={[styles.searchInput, {color: context.theme.txtOnBgApp}]}
             placeholder="Search"
             placeholderTextColor={context.theme.onBgSearch}
@@ -95,16 +102,17 @@ function SendTokenSelector(): JSX.Element {
           />
         </View>
       </View>
-      <Space y={32} />
+      <Space y={16} />
       {!filteredTokenList ? (
         <Loader />
       ) : (
         <FlatList
+          keyboardShouldPersistTaps="handled"
           data={filteredTokenList}
           renderItem={renderItem}
           onRefresh={handleRefresh}
           refreshing={false}
-          keyExtractor={(item: TokenWithBalance) => item.symbol}
+          keyExtractor={(item: TokenWithBalance) => getTokenUID(item)}
           ListEmptyComponent={
             <ZeroState.NoResults message={getNoResultsText()} />
           }
@@ -140,4 +148,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SendTokenSelector;
+export default TokenSelector;

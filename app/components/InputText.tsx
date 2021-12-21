@@ -8,6 +8,7 @@ import ClearInputSVG from 'components/svg/ClearInputSVG';
 import {Space} from 'components/Space';
 import AvaText from './AvaText';
 import CheckmarkSVG from 'components/svg/CheckmarkSVG';
+import {Popable} from 'react-native-popable';
 
 type Props = {
   onChangeText?: (text: string) => void;
@@ -28,6 +29,8 @@ type Props = {
   mode?: 'default' | 'private' | 'amount' | 'confirmEntry';
   // Set keyboard type (numeric, text)
   keyboardType?: 'numeric';
+  // shows popover info if provided
+  popOverInfoText?: string | React.ReactElement;
   autoFocus?: boolean;
   text?: string;
 };
@@ -40,6 +43,18 @@ export default function InputText(props: Props | Readonly<Props>) {
   const [toggleShowText, setToggleShowText] = useState('Show');
   const [mode] = useState(props.mode ?? 'default');
   const textInputRef = useRef() as RefObject<TextInput>;
+  const [initText, setInitText] = useState(props.text);
+
+  useEffect(() => {
+    if (props.text !== undefined && isNaN(Number(props.text))) {
+      return;
+    }
+    //detects change in param, without it, changing param won't trigger redraw
+    if (initText !== props.text) {
+      setInitText(props.text);
+      setText(props.text ?? '');
+    }
+  });
 
   useEffect(() => {
     setToggleShowText(showInput ? 'Hide' : 'Show');
@@ -101,10 +116,20 @@ export default function InputText(props: Props | Readonly<Props>) {
 
   const Label = () => {
     return (
-      <>
-        <TextLabel multiline textAlign="left" text={props.label || ''} />
+      <View style={{alignSelf: 'baseline'}}>
+        {props.popOverInfoText ? (
+          <Popable
+            content={props.popOverInfoText}
+            position={'right'}
+            style={{minWidth: 200}}
+            backgroundColor={context.theme.colorBg3}>
+            <TextLabel multiline textAlign="left" text={props.label || ''} />
+          </Popable>
+        ) : (
+          <TextLabel multiline textAlign="left" text={props.label || ''} />
+        )}
         <View style={[{height: 8}]} />
-      </>
+      </View>
     );
   };
 
@@ -156,14 +181,8 @@ export default function InputText(props: Props | Readonly<Props>) {
   };
 
   return (
-    <View
-      style={[
-        {
-          margin: 12,
-        },
-      ]}>
+    <View style={{margin: 12}}>
       {props.label && <Label />}
-
       <View
         style={[
           {

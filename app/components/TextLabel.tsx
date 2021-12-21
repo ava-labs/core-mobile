@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React from 'react';
 import {Text} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 
