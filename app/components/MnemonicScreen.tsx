@@ -14,7 +14,7 @@ type Props = {
 };
 
 export default function MnemonicScreen({mnemonic}: Props) {
-  const context = useApplicationContext();
+  const {theme, isDarkMode} = useApplicationContext();
 
   const copyToClipboard = (): void => {
     Clipboard.setString(mnemonic);
@@ -36,7 +36,12 @@ export default function MnemonicScreen({mnemonic}: Props) {
       </AvaText.Body1>
       <Space y={24} />
       <View
-        style={[styles.mnemonics, {backgroundColor: context.theme.colorBg1}]}>
+        style={[
+          styles.mnemonics,
+          {
+            backgroundColor: isDarkMode ? theme.colorBg2 : theme.colorBg1,
+          },
+        ]}>
         {mnemonics()}
       </View>
 
@@ -47,7 +52,7 @@ export default function MnemonicScreen({mnemonic}: Props) {
           icon={<CopySVG />}
           text={
             <AvaText.ButtonMedium
-              textStyle={{color: context.theme.alternateBackground}}>
+              textStyle={{color: theme.alternateBackground}}>
               Copy Phrase
             </AvaText.ButtonMedium>
           }
