@@ -1,4 +1,4 @@
-import React, {FC} from 'react';
+import React, {FC, useEffect, useState} from 'react';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {View} from 'react-native';
 import AvaText from 'components/AvaText';
@@ -7,10 +7,15 @@ import AvaButton from 'components/AvaButton';
 import CarrotSVG from 'components/svg/CarrotSVG';
 import InputText from 'components/InputText';
 import {useNavigation} from '@react-navigation/native';
-import {TokenWithBalance} from '@avalabs/wallet-react-components';
+import {
+  ERC20WithBalance,
+  TokenWithBalance,
+  useWalletStateContext,
+} from '@avalabs/wallet-react-components';
 import AppNavigation from 'navigation/AppNavigation';
 import Avatar from 'components/Avatar';
 import {useSwapContext} from 'contexts/SwapContext';
+import {getTokenUID} from 'utils/TokenTools';
 
 interface TokenDropDownProps {
   type?: 'From' | 'To';
@@ -20,6 +25,8 @@ const TokenDropDown: FC<TokenDropDownProps> = ({type}) => {
   const context = useApplicationContext();
   const navigation = useNavigation();
   const swapContext = useSwapContext();
+  const {avaxToken, erc20Tokens} = useWalletStateContext()!;
+  const [srcTokenBalance, setSrcTokenBalance] = useState('-');
 
   const isFrom = type === 'From';
 
@@ -39,12 +46,28 @@ const TokenDropDown: FC<TokenDropDownProps> = ({type}) => {
     ? swapContext.swapFrom.amount
     : swapContext.swapTo.amount;
 
-  console.log(
-    (isFrom ? 'From: ' : 'to: ') +
-      selectedToken?.symbol +
-      ' url: ' +
-      selectedToken?.logoURI,
-  );
+  useEffect(() => {
+    if (!swapContext.swapFrom.token) {
+      setSrcTokenBalance('-');
+      return;
+    }
+
+    const srcTokenUid = getTokenUID(swapContext.swapFrom.token!);
+    const tokenWithBal =
+      srcTokenUid === getTokenUID(avaxToken)
+        ? avaxToken
+        : (erc20Tokens as ERC20WithBalance[]).find(
+            erc20Token => srcTokenUid === getTokenUID(erc20Token),
+          );
+
+    if (tokenWithBal) {
+      setSrcTokenBalance(
+        `${tokenWithBal.balanceDisplayValue} ${tokenWithBal.symbol}`,
+      );
+    } else {
+      setSrcTokenBalance('-');
+    }
+  }, [swapContext.swapFrom.token]);
 
   function selectToken() {
     navigation.navigate(AppNavigation.Modal.SelectToken, {
@@ -56,7 +79,10 @@ const TokenDropDown: FC<TokenDropDownProps> = ({type}) => {
 
   return (
     <View style={{marginHorizontal: 16, flex: 1}}>
-      {type && <AvaText.Heading3>{type}</AvaText.Heading3>}
+      <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+        {type && <AvaText.Heading3>{type}</AvaText.Heading3>}
+        {type === 'From' && <AvaText.Body2>{srcTokenBalance}</AvaText.Body2>}
+      </View>
       <Space y={4} />
       <View
         style={[
