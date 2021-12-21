@@ -13,6 +13,7 @@ type Props = {
   title: string;
   address: string;
   color: string;
+  addressColor: string;
   bgColor: string;
 };
 
@@ -25,6 +26,7 @@ function AccountChainAddress({
   title,
   address,
   color,
+  addressColor,
   bgColor,
 }: Props): JSX.Element {
   return (
@@ -32,21 +34,26 @@ function AccountChainAddress({
       <OvalTagBg
         color={bgColor}
         style={{
+          borderRadius: 8,
           flex: 1,
           paddingHorizontal: 16,
           paddingVertical: 8,
           flexDirection: 'row',
           alignItems: 'center',
         }}>
-        <AvaText.Heading3 textStyle={{color: color}}>{title}</AvaText.Heading3>
+        <AvaText.Heading2 textStyle={{color: color}}>{title}</AvaText.Heading2>
         <FlexSpacer />
-        <AvaText.Body1 textStyle={{color: color, flex: 1}} ellipsize={'middle'}>
+        <AvaText.Body1
+          textStyle={{color: addressColor, flex: 1}}
+          ellipsize={'middle'}>
           {address}
         </AvaText.Body1>
         <Space x={16} />
-        <AvaButton.Base onPress={() => copyToClipboard(address)}>
-          <CopySVG color={color} />
-        </AvaButton.Base>
+        <AvaButton.Icon
+          onPress={() => copyToClipboard(address)}
+          style={{margin: -8}}>
+          <CopySVG color={color} size={24} />
+        </AvaButton.Icon>
       </OvalTagBg>
     </View>
   );
