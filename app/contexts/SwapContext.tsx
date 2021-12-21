@@ -81,7 +81,10 @@ export const SwapContextProvider = ({children}: {children: any}) => {
             new BN(result.srcAmount),
             result.srcDecimals,
           );
-          const destAmountBySrcAmount = destAmount.div(srcAmount).toString();
+          const destAmountBySrcAmount = destAmount
+            .div(srcAmount)
+            .toFixed(4)
+            .toString();
 
           setFromAmount(srcAmount.toNumber());
           setToAmount(destAmount.toNumber());
