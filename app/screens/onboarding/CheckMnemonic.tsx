@@ -31,7 +31,7 @@ export default function CheckMnemonic(
     if (verify(selectedWord1, selectedWord2, selectedWord3)) {
       props.onSuccess();
     } else {
-      ShowSnackBar('No good');
+      ShowSnackBar('Incorrect! Try again, please.');
     }
   };
 

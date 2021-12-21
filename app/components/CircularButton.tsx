@@ -3,6 +3,7 @@ import {Pressable, StyleProp, StyleSheet, View, ViewStyle} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from './AvaText';
 import {Space} from 'components/Space';
+import {Opacity10} from 'resources/Constants';
 
 type CircularButtonProps = {
   image: ReactNode;
@@ -19,7 +20,7 @@ export default function CircularButton({
   style,
   onPress,
 }: CircularButtonProps) {
-  const theme = useApplicationContext().theme;
+  const {theme, isDarkMode} = useApplicationContext();
   return (
     <View style={styles.container}>
       <Pressable
@@ -29,7 +30,15 @@ export default function CircularButton({
           color: theme.buttonRipple,
           borderless: true,
         }}
-        style={[styles.circular, {backgroundColor: theme.colorBg1}, style]}>
+        style={[
+          styles.circular,
+          {
+            backgroundColor: isDarkMode
+              ? theme.white + Opacity10
+              : theme.colorBg1,
+          },
+          style,
+        ]}>
         {image}
       </Pressable>
       <Space y={8} />
