@@ -10,10 +10,16 @@ import SwapTransactionDetail from 'screens/swap/components/SwapTransactionDetail
 import {useSwapContext} from 'contexts/SwapContext';
 import {useNavigation} from '@react-navigation/native';
 import AppNavigation from 'navigation/AppNavigation';
+import {
+  FUJI_NETWORK,
+  useNetworkContext,
+} from '@avalabs/wallet-react-components';
+import ZeroState from 'components/ZeroState';
 
 export default function SwapView() {
   const {theme} = useApplicationContext();
   const {swapFromTo, swapFrom, swapTo} = useSwapContext();
+  const networkContext = useNetworkContext();
   const navigation = useNavigation();
 
   const reviewButtonDisabled = !swapTo.amount || !swapFrom.amount;
@@ -29,32 +35,40 @@ export default function SwapView() {
         <AvaText.Heading1 textStyle={{marginHorizontal: 16}}>
           Swap
         </AvaText.Heading1>
-        <Space y={20} />
-        <TokenDropDown type={'From'} />
-        <Space y={20} />
-        <AvaButton.Base
-          onPress={swapFromTo}
-          style={{
-            alignSelf: 'flex-end',
-            borderRadius: 50,
-            backgroundColor: theme.listItemBg,
-            width: 40,
-            height: 40,
-            justifyContent: 'center',
-            alignItems: 'center',
-            marginHorizontal: 16,
-          }}>
-          <SwapNarrowSVG />
-        </AvaButton.Base>
-        <TokenDropDown type={'To'} />
-        <SwapTransactionDetail />
+        {networkContext?.network === FUJI_NETWORK ? (
+          <ZeroState.NoResults message={'Not available on Testnet'} />
+        ) : (
+          <>
+            <Space y={20} />
+            <TokenDropDown type={'From'} />
+            <Space y={20} />
+            <AvaButton.Base
+              onPress={swapFromTo}
+              style={{
+                alignSelf: 'flex-end',
+                borderRadius: 50,
+                backgroundColor: theme.listItemBg,
+                width: 40,
+                height: 40,
+                justifyContent: 'center',
+                alignItems: 'center',
+                marginHorizontal: 16,
+              }}>
+              <SwapNarrowSVG />
+            </AvaButton.Base>
+            <TokenDropDown type={'To'} />
+            <SwapTransactionDetail />
+          </>
+        )}
       </ScrollView>
-      <AvaButton.PrimaryLarge
-        style={{margin: 16}}
-        onPress={confirm}
-        disabled={reviewButtonDisabled}>
-        Review Order
-      </AvaButton.PrimaryLarge>
+      {networkContext?.network === FUJI_NETWORK || (
+        <AvaButton.PrimaryLarge
+          style={{margin: 16}}
+          onPress={confirm}
+          disabled={reviewButtonDisabled}>
+          Review Order
+        </AvaButton.PrimaryLarge>
+      )}
     </View>
   );
 }
