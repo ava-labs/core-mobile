@@ -16,17 +16,21 @@ import AppNavigation from 'navigation/AppNavigation';
 import Avatar from 'components/Avatar';
 import {useSwapContext} from 'contexts/SwapContext';
 import {getTokenUID} from 'utils/TokenTools';
+import numeral from 'numeral';
+import FlexSpacer from 'components/FlexSpacer';
 
 interface TokenDropDownProps {
   type?: 'From' | 'To';
+  error?: string;
 }
 
-const TokenDropDown: FC<TokenDropDownProps> = ({type}) => {
+const TokenDropDown: FC<TokenDropDownProps> = ({type, error}) => {
   const context = useApplicationContext();
   const navigation = useNavigation();
   const swapContext = useSwapContext();
   const {avaxToken, erc20Tokens} = useWalletStateContext()!;
   const [srcTokenBalance, setSrcTokenBalance] = useState('-');
+  const [maxAmount, setMaxAmount] = useState(0);
 
   const isFrom = type === 'From';
 
@@ -64,8 +68,10 @@ const TokenDropDown: FC<TokenDropDownProps> = ({type}) => {
       setSrcTokenBalance(
         `${tokenWithBal.balanceDisplayValue} ${tokenWithBal.symbol}`,
       );
+      setMaxAmount(numeral(tokenWithBal.balanceDisplayValue).value());
     } else {
       setSrcTokenBalance('-');
+      setMaxAmount(0);
     }
   }, [swapContext.swapFrom.token]);
 
@@ -79,9 +85,13 @@ const TokenDropDown: FC<TokenDropDownProps> = ({type}) => {
 
   return (
     <View style={{marginHorizontal: 16, flex: 1}}>
-      <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+        }}>
         {type && <AvaText.Heading3>{type}</AvaText.Heading3>}
-        {type === 'From' && <AvaText.Body2>{srcTokenBalance}</AvaText.Body2>}
+        {isFrom && <AvaText.Body2>{srcTokenBalance}</AvaText.Body2>}
       </View>
       <Space y={4} />
       <View
@@ -89,7 +99,6 @@ const TokenDropDown: FC<TokenDropDownProps> = ({type}) => {
           {
             flex: 1,
             flexDirection: 'row',
-            paddingStart: 16,
             paddingVertical: 8,
             alignItems: 'center',
             justifyContent: 'space-between',
@@ -99,7 +108,7 @@ const TokenDropDown: FC<TokenDropDownProps> = ({type}) => {
           context.shadow,
         ]}>
         <AvaButton.Base
-          style={{flexDirection: 'row', alignItems: 'center'}}
+          style={{flexDirection: 'row', alignItems: 'center', padding: 16}}
           onPress={selectToken}>
           {selectedToken ? (
             <>
@@ -121,11 +130,11 @@ const TokenDropDown: FC<TokenDropDownProps> = ({type}) => {
             color={context.theme.colorText1}
           />
         </AvaButton.Base>
-        <View style={{width: 180}}>
+        <View style={{flex: 1}}>
           <InputText
             mode={'amount'}
             keyboardType="numeric"
-            onMax={() => console.log('hello')}
+            onMax={isFrom ? () => setAmount(maxAmount) : undefined}
             onChangeText={text => {
               setAmount(Number.parseFloat(text));
             }}
@@ -134,10 +143,20 @@ const TokenDropDown: FC<TokenDropDownProps> = ({type}) => {
         </View>
       </View>
       <Space y={8} />
-      <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-        <AvaText.Body3 color={context.theme.colorError}>Error</AvaText.Body3>
+      <View
+        style={{
+          flexDirection: 'row',
+        }}>
+        {error && (
+          <AvaText.Body3 color={context.theme.colorError}>
+            {error}
+          </AvaText.Body3>
+        )}
+        <FlexSpacer />
         <AvaText.Body2>
-          {selectedToken ? `${usdValue} USD` : '$0.00 USD'}
+          {selectedToken
+            ? `${numeral(usdValue).format('0[.0000]a')} USD`
+            : '$0.00 USD'}
         </AvaText.Body2>
       </View>
     </View>

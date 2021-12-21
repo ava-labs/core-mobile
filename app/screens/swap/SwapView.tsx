@@ -18,7 +18,7 @@ import ZeroState from 'components/ZeroState';
 
 export default function SwapView() {
   const {theme} = useApplicationContext();
-  const {swapFromTo, swapFrom, swapTo} = useSwapContext();
+  const {swapFromTo, swapFrom, swapTo, error} = useSwapContext();
   const networkContext = useNetworkContext();
   const navigation = useNavigation();
 
@@ -40,7 +40,7 @@ export default function SwapView() {
         ) : (
           <>
             <Space y={20} />
-            <TokenDropDown type={'From'} />
+            <TokenDropDown type={'From'} error={error} />
             <Space y={20} />
             <AvaButton.Base
               onPress={swapFromTo}
