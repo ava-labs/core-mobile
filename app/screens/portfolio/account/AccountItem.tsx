@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {View} from 'react-native';
+import {Pressable, View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from 'components/AvaText';
 import {Space} from 'components/Space';
@@ -9,6 +9,9 @@ import {Account} from 'dto/Account';
 import {usePortfolio} from 'screens/portfolio/usePortfolio';
 import AvaButton from 'components/AvaButton';
 import {Opacity50} from 'resources/Constants';
+import CollapsibleSection from 'components/CollapsibleSection';
+import InputText from 'components/InputText';
+import FlexSpacer from 'components/FlexSpacer';
 
 type Props = {
   account: Account;
@@ -34,6 +37,7 @@ function AccountItem({
   }
 
   function onTextEdited(newAccountName: string): void {
+    setEditAccount(false);
     const accToUpdate = accounts.get(account.index);
     if (accToUpdate) {
       accToUpdate.title = newAccountName;
@@ -41,17 +45,47 @@ function AccountItem({
     }
   }
 
+  function Title() {
+    return (
+      <View
+        style={{flexDirection: 'row', paddingVertical: 16, marginBottom: 14}}>
+        <AvaText.Heading2
+          onTextEdited={onTextEdited}
+          editable={editAccount}
+          textStyle={{height: 24, padding: 0}}>
+          {account.title}
+        </AvaText.Heading2>
+        <FlexSpacer />
+        <AvaButton.Icon
+          style={{marginTop: -14, marginLeft: -8, marginBottom: -10}}
+          onPress={onEditAccountName}>
+          <EditSVG />
+        </AvaButton.Icon>
+      </View>
+    );
+  }
+
   return (
     <>
-      {!expanded && (
-        <AvaButton.Base
-          style={{padding: 16}}
-          onPress={() => setExpanded(account.index)}>
-          <AvaText.Heading2>{account.title}</AvaText.Heading2>
-        </AvaButton.Base>
-      )}
-      {expanded && (
-        <View
+      <CollapsibleSection
+        onExpandedChange={isExpanded => {
+          console.log('ex', isExpanded);
+          if (isExpanded) {
+            setExpanded(account.index);
+          } else {
+            setEditAccount(false);
+          }
+        }}
+        startExpanded={expanded}
+        title={
+          expanded || (
+            <View style={{padding: 16}}>
+              <AvaText.Heading2>{account.title}</AvaText.Heading2>
+            </View>
+          )
+        }>
+        <Pressable
+          onPress={() => setEditAccount(false)}
           style={[
             {
               backgroundColor: context.isDarkMode
@@ -63,33 +97,28 @@ function AccountItem({
               padding: 16,
             },
           ]}>
-          <Space y={16} />
-          <View style={{flexDirection: 'row'}}>
-            <AvaButton.Base onPress={onEditAccountName}>
-              <AvaText.Heading2
-                onTextEdited={onTextEdited}
-                editable={editAccount}
-                textStyle={{height: 24, padding: 0}}>
-                {account.title}
-              </AvaText.Heading2>
-            </AvaButton.Base>
-            {!editAccount && <Space x={8} />}
-            {!editAccount && (
-              <AvaButton.Icon
-                style={{marginTop: -14, marginLeft: -8, marginBottom: -10}}
-                onPress={onEditAccountName}>
-                <EditSVG />
-              </AvaButton.Icon>
+          <AvaButton.Base onPress={onEditAccountName}>
+            {editAccount ? (
+              <View style={{marginTop: -8, marginHorizontal: -8}}>
+                <InputText
+                  text={account.title}
+                  autoFocus
+                  mode={'confirmEntry'}
+                  onConfirm={text => onTextEdited(text)}
+                />
+              </View>
+            ) : (
+              <Title />
             )}
-          </View>
-          <Space y={8} />
+          </AvaButton.Base>
           <AvaText.Body2>{balanceTotalInUSD} USD</AvaText.Body2>
-          <Space y={32} />
+          <Space y={16} />
           <AccountChainAddress
             address={account.cAddress}
             title={'C chain'}
-            color={context.theme.colorChain2}
-            bgColor={context.theme.colorChain}
+            color={context.theme.colorText3}
+            addressColor={context.theme.colorText2}
+            bgColor={context.theme.colorBg2}
           />
 
           <Space y={8} />
@@ -97,8 +126,9 @@ function AccountItem({
             <AccountChainAddress
               address={account.xAddress}
               title={'X chain'}
-              color={context.theme.colorChain4}
-              bgColor={context.theme.colorChain3}
+              color={context.theme.colorText3}
+              addressColor={context.theme.colorText2}
+              bgColor={context.theme.colorBg2}
             />
           </View>
           {!account.active && (
@@ -110,8 +140,8 @@ function AccountItem({
               </AvaButton.PrimaryLarge>
             </>
           )}
-        </View>
-      )}
+        </Pressable>
+      </CollapsibleSection>
     </>
   );
 }
