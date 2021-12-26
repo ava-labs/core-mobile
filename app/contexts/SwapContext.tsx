@@ -30,7 +30,8 @@ export interface SwapEntry {
 
 export interface TrxDetails {
   rate: string;
-  slippageTol: string;
+  slippageTol: number;
+  setSlippageTol: Dispatch<number>;
   networkFee: string;
   networkFeeUsd: string;
   avaxWalletFee: string;
@@ -63,7 +64,7 @@ export const SwapContextProvider = ({children}: {children: any}) => {
   const [minAmountBig, setMinAmountBig] = useState<string>('');
   const [destUsdAmount, setDestUsdAmount] = useState<string>('');
   const [trxRate, setTrxRate] = useState<string>('');
-  const [slipTol, setSlipTol] = useState<string>('.12');
+  const [slipTol, setSlipTol] = useState<number>(0.12);
   const [networkFee, setNetworkFee] = useState<string>('- AVAX');
   const [networkFeeUsd, setNetworkFeeUsd] = useState<string>('$- USD');
   const [avaxWalletFee, setAvaxWalletFee] = useState<string>('0 AVAX');
@@ -119,7 +120,7 @@ export const SwapContextProvider = ({children}: {children: any}) => {
           setTrxRate(
             `1 ${srcToken?.symbol} ≈ ${destAmountBySrcAmount} ${destToken?.symbol}`,
           );
-          const minAmnt = destAmount.times(1 - 0.12 / 100).toFixed(8); //fixme unfix 0.12 with slippage
+          const minAmnt = destAmount.times(1 - slipTol / 100).toFixed(8); //fixme move this to different useEffect
           setMinAmount(minAmnt);
           setMinAmountBig(
             Utils.stringToBN(minAmnt, result.destDecimals).toString(),
@@ -203,6 +204,7 @@ export const SwapContextProvider = ({children}: {children: any}) => {
     trxDetails: {
       rate: trxRate,
       slippageTol: slipTol,
+      setSlippageTol: setSlipTol,
       networkFee,
       networkFeeUsd,
       avaxWalletFee,
