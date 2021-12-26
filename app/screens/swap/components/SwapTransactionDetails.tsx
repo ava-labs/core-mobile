@@ -79,6 +79,7 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
           <AvaText.Heading3>{trxDetails.slippageTol}</AvaText.Heading3>
         ) : (
           <InputText
+            onChangeText={text => trxDetails.setSlippageTol(Number(text))}
             text={`${trxDetails.slippageTol}`}
             keyboardType={'numeric'}
           />
