@@ -19,21 +19,18 @@ export async function getSwapRate(request: {
 
   if (!srcToken) {
     return {
-      ...request,
       error: 'no source token on request',
     };
   }
 
   if (!destToken) {
     return {
-      ...request,
       error: 'no destination token on request',
     };
   }
 
   if (!amount) {
     return {
-      ...request,
       error: 'no amount on request',
     };
   }
@@ -43,14 +40,12 @@ export async function getSwapRate(request: {
 
   if (err) {
     return {
-      ...request,
       error: err,
     };
   }
 
   if (walletError) {
     return {
-      ...request,
       error: walletError,
     };
   }
@@ -72,14 +67,19 @@ export async function getSwapRate(request: {
     return (result as APIError).message === SERVER_BUSY_ERROR;
   }
 
-  const result = await incrementalPromiseResolve(
+  const result: OptimalRate | APIError = await incrementalPromiseResolve(
     () => optimalRates,
     checkForErrorsInResult,
   );
-
   console.log('----------result', result);
 
+  if ((result as APIError).message) {
+    return {
+      error: (result as APIError).message,
+    };
+  }
+
   return {
-    result,
+    result: result as OptimalRate,
   };
 }

@@ -12,12 +12,12 @@ import AvaButton from 'components/AvaButton';
 import {useNavigation} from '@react-navigation/native';
 
 const SwapReview: FC = () => {
-  const {swapTo, swapFrom} = useSwapContext();
+  const {swapTo, swapFrom, doSwap} = useSwapContext();
   const theme = useApplicationContext().theme;
   const {goBack} = useNavigation();
 
   function onConfirm() {
-    Alert.alert('Confirm Swap', 'Implement swap confirm method call');
+    doSwap().catch(reason => console.error(reason));
   }
 
   return (
@@ -33,7 +33,7 @@ const SwapReview: FC = () => {
         </AvaText.Heading3>
         <AvaListItem.Base
           embedInCard
-          leftComponent={<Avatar.Token token={swapFrom.token} />}
+          leftComponent={<Avatar.Token token={swapFrom.token!} />}
           title={swapFrom.token?.symbol}
           rightComponent={
             <View>
@@ -48,7 +48,7 @@ const SwapReview: FC = () => {
         </AvaText.Heading3>
         <AvaListItem.Base
           embedInCard
-          leftComponent={<Avatar.Token token={swapTo.token} />}
+          leftComponent={<Avatar.Token token={swapTo.token!} />}
           title={swapTo.token?.symbol}
           rightComponent={
             <View>
