@@ -15,7 +15,7 @@
     "clean": "./scripts/clean"
   },
   "dependencies": {
-    "@avalabs/avalanche-wallet-sdk": "0.11.1-alpha.4",
+    "@avalabs/avalanche-wallet-sdk": "0.11.3",
     "@avalabs/wallet-react-components": "1.17.0-beta.5",
     "@eliav2/react-native-collapsible-view": "^1.4.0",
     "@ethereumjs/common": "^2.2.0",
@@ -55,6 +55,7 @@
     "react-native-document-picker": "^5.2.0",
     "react-native-fs": "^2.18.0",
     "react-native-gesture-handler": "^1.10.3",
+    "react-native-inappbrowser-reborn": "^3.6.3",
     "react-native-keychain": "^8.0.0",
     "react-native-linear-gradient": "^2.5.6",
     "react-native-modal-datetime-picker": "^10.0.0",
