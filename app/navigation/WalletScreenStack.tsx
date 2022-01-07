@@ -63,7 +63,7 @@ type RootStackParamList = {
 const RootStack = createStackNavigator<RootStackParamList>();
 
 const focusEvent = 'change';
-const TIMEOUT = 3000;
+const TIMEOUT = 5000;
 
 const SignOutBottomSheetScreen = () => {
   const {destroyWallet} = useWalletSetup();
@@ -82,12 +82,8 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
   const appState = useRef(AppState.currentState);
   const context = useApplicationContext();
   const {resetHDIndices} = useWalletSetup();
-  const {
-    immediateLogout,
-    resetNavToEnterMnemonic,
-    setSelectedCurrency,
-    backFromWhitelistedProcess,
-  } = context.appHook;
+  const {immediateLogout, resetNavToEnterMnemonic, setSelectedCurrency} =
+    context.appHook;
 
   /**
    * This UseEffect handles subscription to
@@ -100,7 +96,7 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
     return () => {
       AppState.removeEventListener(focusEvent, handleAppStateChange);
     };
-  }, [backFromWhitelistedProcess]);
+  }, []);
 
   /**
    * Handles AppState change. When app is being backgrounded we save the current
@@ -112,46 +108,37 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
    * TIMEOUT of 5 sec.
    * @param nextAppState
    */
-  const handleAppStateChange = useCallback(
-    async (nextAppState: any) => {
-      setTimeout(async () => {
-        const value = await BiometricsSDK.getAccessType();
-        const timeAppWasSuspended = await AsyncStorage.getItem(
-          'TIME_APP_SUSPENDED',
-        );
-        const suspended = timeAppWasSuspended ?? moment().toISOString();
+  const handleAppStateChange = useCallback(async (nextAppState: any) => {
+    const value = await BiometricsSDK.getAccessType();
+    const timeAppWasSuspended = await AsyncStorage.getItem(
+      'TIME_APP_SUSPENDED',
+    );
+    const suspended = timeAppWasSuspended ?? moment().toISOString();
 
-        const overTimeOut = moment().diff(moment(suspended)) >= TIMEOUT;
+    const overTimeOut = moment().diff(moment(suspended)) >= TIMEOUT;
 
-        if (
-          (appState.current === 'active' && nextAppState.match(/background/)) ||
-          (appState.current === 'inactive' && nextAppState.match(/background/))
-        ) {
-          // this condition calls when app is in background mode
-          // here you can detect application is going to background or inactive.
-          await AsyncStorage.setItem(
-            'TIME_APP_SUSPENDED',
-            moment().toISOString(),
-          );
-        } else if (
-          appState.current.match(/background/) &&
-          nextAppState === 'active' &&
-          value &&
-          overTimeOut &&
-          !context.appHook.backFromWhitelistedProcess
-        ) {
-          // this condition calls when app is in foreground mode
-          // here you can detect application is in active state again.
-          setShowSecurityModal(true);
-          resetHDIndices().then(() => {
-            //ignored
-          });
-        }
-        appState.current = nextAppState;
-      }, 500);
-    },
-    [backFromWhitelistedProcess],
-  );
+    if (
+      (appState.current === 'active' && nextAppState.match(/background/)) ||
+      (appState.current === 'inactive' && nextAppState.match(/background/))
+    ) {
+      // this condition calls when app is in background mode
+      // here you can detect application is going to background or inactive.
+      await AsyncStorage.setItem('TIME_APP_SUSPENDED', moment().toISOString());
+    } else if (
+      appState.current.match(/background/) &&
+      nextAppState === 'active' &&
+      value &&
+      overTimeOut
+    ) {
+      // this condition calls when app is in foreground mode
+      // here you can detect application is in active state again.
+      setShowSecurityModal(true);
+      resetHDIndices().then(() => {
+        //ignored
+      });
+    }
+    appState.current = nextAppState;
+  }, []);
 
   useFocusEffect(
     React.useCallback(() => {

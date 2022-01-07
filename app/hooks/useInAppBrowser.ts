@@ -8,7 +8,7 @@ import {
 } from '@avalabs/wallet-react-components';
 
 const useInAppBrowser = () => {
-  const {theme, appHook} = useApplicationContext();
+  const {theme} = useApplicationContext();
   const networkContext = useNetworkContext();
   const isTestnet = networkContext?.network === FUJI_NETWORK;
 
@@ -20,12 +20,16 @@ const useInAppBrowser = () => {
     const apiKey = isTestnet
       ? Config.MOONPAY_DEV_API_KEY
       : Config.MOONPAY_PROD_API_KEY;
-    const apiUrl = isTestnet ? Config.MOONPAY_DEV_URL : Config.MOONPAY_PROD_URL;
+    const apiBaseUrl = isTestnet
+      ? Config.MOONPAY_DEV_URL
+      : Config.MOONPAY_PROD_URL;
     const widgetConfigs = {
       apiKey,
       defaultCurrencyCode: 'avax',
       colorCode: theme.colorPrimary1,
     };
+    const params = new URLSearchParams(widgetConfigs);
+    const url = `${apiBaseUrl}?${params.toString()}`;
     Alert.alert(
       'Attention',
       'Clicking “Continue” will take you to a page powered by our partner MoonPay, data entered here will not be stored by CoreX',
@@ -37,9 +41,6 @@ const useInAppBrowser = () => {
         {
           text: 'Continue',
           onPress: () => {
-            appHook.setBackFromWhitelistedProcess(true);
-            const params = new URLSearchParams(widgetConfigs);
-            const url = `${apiUrl}?${params.toString()}`;
             openUrl(url);
           },
         },
