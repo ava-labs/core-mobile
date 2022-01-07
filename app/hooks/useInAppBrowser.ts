@@ -1,19 +1,28 @@
 import {InAppBrowser} from 'react-native-inappbrowser-reborn';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {Alert, Linking} from 'react-native';
-
-const MOONPAY_URL = 'https://buy-staging.moonpay.io';
+import Config from 'react-native-config';
+import {
+  FUJI_NETWORK,
+  useNetworkContext,
+} from '@avalabs/wallet-react-components';
 
 const useInAppBrowser = () => {
   const {theme, appHook} = useApplicationContext();
+  const networkContext = useNetworkContext();
+  const isTestnet = networkContext?.network === FUJI_NETWORK;
 
   function failSafe(url: string) {
     Linking.openURL(url);
   }
 
   function openMoonPay() {
+    const apiKey = isTestnet
+      ? Config.MOONPAY_DEV_API_KEY
+      : Config.MOONPAY_PROD_API_KEY;
+    const apiUrl = isTestnet ? Config.MOONPAY_DEV_URL : Config.MOONPAY_PROD_URL;
     const widgetConfigs = {
-      apiKey: 'pk_test_P43YhsrWQjnnnJcGWE8UFeHwYstSJ',
+      apiKey,
       defaultCurrencyCode: 'avax',
       colorCode: theme.colorPrimary1,
     };
@@ -30,7 +39,7 @@ const useInAppBrowser = () => {
           onPress: () => {
             appHook.setBackFromWhitelistedProcess(true);
             const params = new URLSearchParams(widgetConfigs);
-            const url = `${MOONPAY_URL}?${params.toString()}`;
+            const url = `${apiUrl}?${params.toString()}`;
             openUrl(url);
           },
         },
