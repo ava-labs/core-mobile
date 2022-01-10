@@ -8,17 +8,19 @@ import {
   sendErc20Submit,
   useSendErc20Form,
   useWalletContext,
+  useWalletStateContext,
 } from '@avalabs/wallet-react-components';
 import {useGasPrice} from 'utils/GasPriceHook';
 import {bnAmountToString} from 'dto/SendInfo';
 import SendForm from 'screens/send/SendForm';
-import {firstValueFrom} from 'rxjs';
+import {firstValueFrom, of} from 'rxjs';
 import BN from 'bn.js';
 import {useSelectedTokenContext} from 'contexts/SelectedTokenContext';
 
 export default function SendERC20(): JSX.Element {
   const token = useSelectedTokenContext().selectedToken as ERC20WithBalance;
   const wallet = useWalletContext()?.wallet;
+  const walletState = useWalletStateContext();
   const {navigate} = useNavigation<SendTokenNavigationProp>();
   const {gasPrice$} = useGasPrice();
   const {
@@ -49,19 +51,32 @@ export default function SendERC20(): JSX.Element {
       return;
     }
 
+    const balances = walletState?.erc20Tokens.reduce(
+      (acc: {[key: string]: ERC20WithBalance}, tk) => {
+        return {
+          ...acc,
+          [tk.address]: token,
+        };
+      },
+      {},
+    );
+
     sendErc20Submit(
       token,
       Promise.resolve(wallet),
       amount,
       address,
       firstValueFrom(gasPrice$),
+      of(balances) as any,
     ).subscribe({
       next: value => {
         if (value === undefined) {
           Alert.alert('Error', 'Undefined error');
         } else {
           if ('txId' in value && value.txId) {
-            navigate(AppNavigation.SendToken.DoneScreen, {transactionId: value.txId});
+            navigate(AppNavigation.SendToken.DoneScreen, {
+              transactionId: value.txId,
+            });
             onSuccess();
           }
         }
@@ -85,6 +100,7 @@ export default function SendERC20(): JSX.Element {
       error={error}
       sendFee={sendFee}
       address={address}
+      denomination={token?.denomination}
       setAddress={setAddress}
       onNextPress={() => {
         navigate(AppNavigation.SendToken.ConfirmTransactionScreen, {

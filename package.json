@@ -15,8 +15,8 @@
     "clean": "./scripts/clean"
   },
   "dependencies": {
-    "@avalabs/avalanche-wallet-sdk": "0.11.1",
-    "@avalabs/wallet-react-components": "1.15.0",
+    "@avalabs/avalanche-wallet-sdk": "0.11.1-alpha.4",
+    "@avalabs/wallet-react-components": "1.17.0-beta.5",
     "@eliav2/react-native-collapsible-view": "^1.4.0",
     "@ethereumjs/common": "^2.2.0",
     "@ethereumjs/tx": "^3.1.4",

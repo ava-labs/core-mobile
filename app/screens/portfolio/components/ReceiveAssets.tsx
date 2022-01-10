@@ -1,4 +1,4 @@
-import React, {useContext, useState} from 'react';
+import React, {useState} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import {useApplicationContext} from 'contexts/ApplicationContext';
