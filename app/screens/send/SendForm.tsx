@@ -17,6 +17,7 @@ interface Props {
   setAmount: (amount: BN) => void;
   amount?: BN;
   priceUSD?: number;
+  denomination: number;
   setAddress: (address: string) => void;
   sendFee?: BN;
   gasLimit?: number;
@@ -38,6 +39,7 @@ const SendForm: FC<Props> = ({
   address,
   canSubmit,
   onNextPress,
+  denomination,
 }) => {
   const context = useApplicationContext();
   const fadeAnimation = useRef(new Animated.Value(0)).current;
@@ -127,6 +129,7 @@ const SendForm: FC<Props> = ({
             </View>
           </View>
 
+          {/* we only support c chain so this needs to be 18 decimals */}
           <InputText
             label="Amount"
             placeholder="Enter the amount"
@@ -136,7 +139,7 @@ const SendForm: FC<Props> = ({
             }
             keyboardType="numeric"
             onChangeText={text => {
-              setAmount(stringAmountToBN(text));
+              setAmount(stringAmountToBN(text, denomination));
             }}
           />
         </View>

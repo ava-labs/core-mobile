@@ -72,6 +72,7 @@ export default function SendAvax(): JSX.Element {
       setAddress={setAddress}
       gasLimit={gasLimit}
       gasPrice={gasPrice}
+      denomination={selectedToken?.denomination ?? 3}
       onNextPress={() => {
         navigate(AppNavigation.SendToken.ConfirmTransactionScreen, {
           payload: {

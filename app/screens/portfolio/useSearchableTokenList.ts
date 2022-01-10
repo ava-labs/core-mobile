@@ -73,14 +73,12 @@ export function useSearchableTokenList(hideZeroBalance = true): {
           ? value.balance.gt(bnZero) || showZeroBalanceList[getTokenUID(value)]
           : true;
       }),
-      ...walletState?.antTokens,
     ] as TokenWithBalance[];
 
     setTokenList(tokens);
   }, [
     walletState?.erc20Tokens,
     walletState?.avaxToken,
-    walletState?.antTokens,
     showZeroBalanceList,
     hideZeroBalance,
   ]);
