@@ -1,5 +1,5 @@
-import React, {FC} from 'react';
-import {Alert, ScrollView, StyleSheet, View} from 'react-native';
+import React, {FC, useState} from 'react';
+import {ScrollView, StyleSheet, View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {Space} from 'components/Space';
 import AvaText from 'components/AvaText';
@@ -10,17 +10,24 @@ import SwapTransactionDetail from 'screens/swap/components/SwapTransactionDetail
 import {useSwapContext} from 'contexts/SwapContext';
 import AvaButton from 'components/AvaButton';
 import {useNavigation} from '@react-navigation/native';
+import Loader from 'components/Loader';
 
 const SwapReview: FC = () => {
   const {swapTo, swapFrom, doSwap} = useSwapContext();
   const theme = useApplicationContext().theme;
   const {goBack} = useNavigation();
+  const [loading, setLoading] = useState(false);
 
   function onConfirm() {
-    doSwap().catch(reason => console.error(reason));
+    setLoading(true);
+    doSwap()
+      .catch(reason => console.error(reason))
+      .finally(() => setLoading(false));
   }
 
-  return (
+  return loading ? (
+    <Loader />
+  ) : (
     <View style={styles.container}>
       <ScrollView style={styles.container}>
         <Space y={8} />
