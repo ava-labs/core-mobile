@@ -44,6 +44,7 @@ enum SwapScreens {
   Swap = 'SwapScreens.Swap',
   Review = 'SwapScreens.Review',
   Success = 'SwapScreens.Success',
+  Fail = 'SwapScreens.Fail',
 }
 
 enum SecurityPrivacyScreens {

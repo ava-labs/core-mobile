@@ -29,7 +29,10 @@ const SwapReview: FC = () => {
         console.log(value);
         navigate(AppNavigation.Swap.Success);
       })
-      .catch(reason => console.error(reason))
+      .catch((reason: Error) => {
+        console.error(reason);
+        navigate(AppNavigation.Swap.Fail, {errorMsg: reason.message ?? ''});
+      })
       .finally(() => setLoading(false));
   }
 
