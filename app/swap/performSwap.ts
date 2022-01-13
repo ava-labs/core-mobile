@@ -191,8 +191,9 @@ export async function performSwap(
   console.log('~~~~~~~~~txError', txError);
 
   if (txError) {
+    const shortError = txError.message.split('\n')[0];
     return {
-      error: `Tx Error: ${txError}`,
+      error: shortError,
     };
   }
 
