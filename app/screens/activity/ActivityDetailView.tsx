@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo, useState} from 'react';
-import {Linking, StyleSheet, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import AvaText from 'components/AvaText';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import AvaListItem from 'components/AvaListItem';
@@ -15,6 +15,8 @@ import {
   useNetworkContext,
 } from '@avalabs/wallet-react-components';
 import {Space} from 'components/Space';
+import Config from 'react-native-config';
+import useInAppBrowser from 'hooks/useInAppBrowser';
 
 interface Props {
   txItem: HistoryItemType;
@@ -24,12 +26,15 @@ function ActivityDetailView({txItem}: Props) {
   const networkContext = useNetworkContext();
   const date = moment(txItem.timestamp).format('MMM DD, YYYY HH:mm');
   const [explorerUrl, setExplorerUrl] = useState<string>();
+  const {openUrl} = useInAppBrowser();
 
   useEffect(() => {
     if (networkContext) {
       const isTestNt = networkContext.network === FUJI_NETWORK;
       setExplorerUrl(
-        `https://${isTestNt ? 'testnet.' : ''}snowtrace.io/tx/${txItem.id}`,
+        `${
+          isTestNt ? Config.SNOWTRACE_TESTNET_URL : Config.SNOWTRACE_MAINNET_URL
+        }/tx/${txItem.id}`,
       );
     }
   }, [networkContext]);
@@ -127,7 +132,7 @@ function ActivityDetailView({txItem}: Props) {
             <LinkSVG />
             <AvaButton.TextLarge
               onPress={() => {
-                Linking.openURL(explorerUrl);
+                openUrl(explorerUrl);
               }}>
               View on Explorer
             </AvaButton.TextLarge>
