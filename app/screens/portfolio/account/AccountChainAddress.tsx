@@ -34,7 +34,7 @@ function AccountChainAddress({
       <OvalTagBg
         color={bgColor}
         style={{
-          borderRadius: 8,
+          borderRadius: 50,
           flex: 1,
           paddingHorizontal: 16,
           paddingVertical: 8,

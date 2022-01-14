@@ -2,7 +2,7 @@ import React, {FC, useRef} from 'react';
 import {Animated, Platform, Pressable, StyleSheet, View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import InputText from 'components/InputText';
-import {bnAmountToString, bnToNumber, stringAmountToBN} from 'dto/SendInfo';
+import {bnAmountToString, stringAmountToBN} from 'dto/SendInfo';
 import AvaText from 'components/AvaText';
 import FlexSpacer from 'components/FlexSpacer';
 import AvaButton from 'components/AvaButton';
@@ -11,12 +11,14 @@ import {SendHookError} from '@avalabs/wallet-react-components';
 import BN from 'bn.js';
 import InfoSVG from 'components/svg/InfoSVG';
 import {Space} from 'components/Space';
+import {Utils} from '@avalabs/avalanche-wallet-sdk';
 
 interface Props {
   error?: SendHookError;
   setAmount: (amount: BN) => void;
   amount?: BN;
   priceUSD?: number;
+  denomination: number;
   setAddress: (address: string) => void;
   sendFee?: BN;
   gasLimit?: number;
@@ -38,12 +40,16 @@ const SendForm: FC<Props> = ({
   address,
   canSubmit,
   onNextPress,
+  denomination,
 }) => {
   const context = useApplicationContext();
   const fadeAnimation = useRef(new Animated.Value(0)).current;
   const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-  const usdAmount = amount && priceUSD ? bnToNumber(amount) * priceUSD : 0;
+  const usdAmount =
+    amount && priceUSD
+      ? Utils.bnToBig(amount, 18).mul(priceUSD).toNumber().toFixed(3)
+      : '0';
 
   const gasInfo = (text: string) => (
     <AvaText.Body3 color={context.theme.background}>{text}</AvaText.Body3>
@@ -127,6 +133,7 @@ const SendForm: FC<Props> = ({
             </View>
           </View>
 
+          {/* we only support c chain so this needs to be 18 decimals */}
           <InputText
             label="Amount"
             placeholder="Enter the amount"
@@ -136,7 +143,7 @@ const SendForm: FC<Props> = ({
             }
             keyboardType="numeric"
             onChangeText={text => {
-              setAmount(stringAmountToBN(text));
+              setAmount(stringAmountToBN(text, denomination));
             }}
           />
         </View>
