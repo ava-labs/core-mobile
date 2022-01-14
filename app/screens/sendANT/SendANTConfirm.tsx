@@ -20,6 +20,7 @@ export default function SendANTConfirm() {
 
   const {selectedToken} = useSelectedTokenContext();
   const amount = route?.params?.payload?.amount;
+  const amountUSD = route?.params?.payload?.amountUSD;
   const address = route?.params?.payload?.address;
   const fee = route?.params?.payload?.fee;
   const onConfirm = route?.params?.payload?.onConfirm;
@@ -48,6 +49,9 @@ export default function SendANTConfirm() {
       <Space y={16} />
       <AvaText.Heading1>
         {amount + ' ' + selectedToken?.symbol}
+      </AvaText.Heading1>
+      <AvaText.Heading1 color={context.theme.colorText2}>
+        {`$${amountUSD} USD`}
       </AvaText.Heading1>
       <Space y={8} />
 
