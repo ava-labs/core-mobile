@@ -19,6 +19,7 @@ export interface ISendConfirm {
   name?: string;
   fee: string;
   amount: string;
+  amountUSD: string;
   address?: string;
   onConfirm?: (onSuccess: () => void, onError: (error: any) => void) => void;
 }
@@ -34,6 +35,7 @@ export default function SendAvaxConfirm() {
 
   const {selectedToken} = useSelectedTokenContext();
   const amount = route?.params?.payload?.amount;
+  const amountUSD = route?.params?.payload?.amountUSD;
   const address = route?.params?.payload?.address;
   const fee = route?.params?.payload?.fee;
   const onConfirm = route?.params?.payload?.onConfirm;
@@ -67,7 +69,7 @@ export default function SendAvaxConfirm() {
         {amount + ' ' + selectedToken?.symbol}
       </AvaText.LargeTitleBold>
       <AvaText.Heading1 color={context.theme.colorText2}>
-        {'$343.34 USD'}
+        {`$${amountUSD} USD`}
       </AvaText.Heading1>
     </View>
   );

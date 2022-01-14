@@ -116,21 +116,10 @@ function AccountItem({
           <AccountChainAddress
             address={account.cAddress}
             title={'C chain'}
-            color={context.theme.colorText3}
-            addressColor={context.theme.colorText2}
-            bgColor={context.theme.colorBg2}
+            color={context.theme.colorChain2}
+            addressColor={context.theme.colorChain2}
+            bgColor={context.theme.colorChain}
           />
-
-          <Space y={8} />
-          <View style={{display: 'flex', alignSelf: 'stretch'}}>
-            <AccountChainAddress
-              address={account.xAddress}
-              title={'X chain'}
-              color={context.theme.colorText3}
-              addressColor={context.theme.colorText2}
-              bgColor={context.theme.colorBg2}
-            />
-          </View>
           {!account.active && (
             <>
               <Space y={24} />

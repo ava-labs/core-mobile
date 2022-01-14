@@ -11,6 +11,7 @@ import {
 import {bnAmountToString} from 'dto/SendInfo';
 import SendForm from 'screens/send/SendForm';
 import {useSelectedTokenContext} from 'contexts/SelectedTokenContext';
+import {Utils} from '@avalabs/avalanche-wallet-sdk';
 
 export default function SendAvax(): JSX.Element {
   const {selectedToken} = useSelectedTokenContext();
@@ -49,7 +50,9 @@ export default function SendAvax(): JSX.Element {
           Alert.alert('Error', 'Undefined error');
         } else {
           if ('txId' in value && value.txId) {
-            navigate(AppNavigation.SendToken.DoneScreen, {transactionId: value.txId});
+            navigate(AppNavigation.SendToken.DoneScreen, {
+              transactionId: value.txId,
+            });
             onSuccess();
           }
         }
@@ -72,6 +75,7 @@ export default function SendAvax(): JSX.Element {
       setAddress={setAddress}
       gasLimit={gasLimit}
       gasPrice={gasPrice}
+      denomination={selectedToken?.denomination ?? 0}
       onNextPress={() => {
         navigate(AppNavigation.SendToken.ConfirmTransactionScreen, {
           payload: {
@@ -79,6 +83,10 @@ export default function SendAvax(): JSX.Element {
             name: selectedToken?.name,
             fee: bnAmountToString(sendFee),
             amount: bnAmountToString(amount),
+            amountUSD: Utils.bnToBig(amount!, 18)
+              .mul(avaxPrice)
+              .toNumber()
+              .toFixed(3),
             address: address,
             onConfirm: handleOnConfirm,
           },

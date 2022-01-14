@@ -71,7 +71,6 @@ export function useWalletSetup(): WalletSetup {
           title: `Account ${newAccount.index + 1}`,
           active: true,
           cAddress: newAccount.wallet.getAddressC(),
-          xAddress: newAccount.wallet.getAddressX(),
         });
         saveAccounts(accounts);
       } else {

@@ -8,23 +8,14 @@ import AvaText from 'components/AvaText';
 import {ShowSnackBar} from 'components/Snackbar';
 import Clipboard from '@react-native-clipboard/clipboard';
 import {Space} from 'components/Space';
-import {
-  createStackNavigator,
-  StackNavigationProp,
-  TransitionPresets,
-} from '@react-navigation/stack';
-import {
-  NavigationContainer,
-  useFocusEffect,
-  useNavigation,
-} from '@react-navigation/native';
+import {createStackNavigator, TransitionPresets} from '@react-navigation/stack';
+import {NavigationContainer, useFocusEffect} from '@react-navigation/native';
 import AvaxQACode from 'components/AvaxQACode';
-import {SubHeaderOptions} from 'navigation/NavUtils';
 import HeaderAccountSelector from 'components/HeaderAccountSelector';
 
 type ReceiveStackParams = {
   ReceiveCChain: undefined;
-  ReceiveXChain: undefined;
+  // ReceiveXChain: undefined;
 };
 
 const ReceiveStack = createStackNavigator<ReceiveStackParams>();
@@ -40,7 +31,7 @@ function ReceiveToken2({
   showBackButton = false,
   embedded = false,
 }: Props) {
-  const {addressC, addressX} = usePortfolio();
+  const {addressC} = usePortfolio();
   const {navContainerTheme, theme} = useApplicationContext();
 
   //Share has been decommissioned yet again :(
@@ -95,19 +86,6 @@ function ReceiveToken2({
           />
         )}
       </ReceiveStack.Screen>
-      <ReceiveStack.Screen
-        name={'ReceiveXChain'}
-        options={embedded ? {headerShown: false} : SubHeaderOptions('X Chain')}>
-        {props => (
-          <Receive
-            {...props}
-            embedded={embedded}
-            selectedAddress={addressX}
-            isXChain
-            positionCallback={setPosition}
-          />
-        )}
-      </ReceiveStack.Screen>
     </ReceiveStack.Navigator>
   );
 
@@ -125,8 +103,6 @@ function ReceiveToken2({
   }
 }
 
-type ReceiveRouteProp = StackNavigationProp<ReceiveStackParams>;
-
 const Receive: FC<{
   selectedAddress: string;
   isXChain?: boolean;
@@ -137,7 +113,6 @@ const Receive: FC<{
   const theme = useApplicationContext().theme;
   const isXChain = !!props?.isXChain;
   const embedded = !!props?.embedded;
-  const navigation = useNavigation<ReceiveRouteProp>();
 
   useFocusEffect(
     useCallback(() => {
@@ -196,30 +171,6 @@ const Receive: FC<{
           <CopySVG color={theme.colorText1} />
         </AvaButton.Base>
         <Space y={16} />
-        {isXChain || (
-          <>
-            <Space y={embedded ? 80 : 130} />
-            <AvaButton.TextLarge
-              style={{marginVertical: 16}}
-              onPress={() => {
-                navigation.navigate('ReceiveXChain');
-              }}>
-              Looking for X-Chain?
-            </AvaButton.TextLarge>
-          </>
-        )}
-        {isXChain && embedded && (
-          <>
-            <Space y={80} />
-            <AvaButton.TextLarge
-              style={{marginVertical: 16}}
-              onPress={() => {
-                navigation.navigate('ReceiveCChain');
-              }}>
-              Back
-            </AvaButton.TextLarge>
-          </>
-        )}
       </View>
     </View>
   );
