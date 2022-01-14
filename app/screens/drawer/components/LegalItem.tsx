@@ -1,13 +1,13 @@
 import React from 'react';
 import AvaListItem from 'components/AvaListItem';
 import CarrotSVG from 'components/svg/CarrotSVG';
-import AppNavigation from 'navigation/AppNavigation';
-import {useNavigation} from '@react-navigation/native';
-import {NativeStackNavigatorProps} from 'react-native-screens/lib/typescript/native-stack/types';
 import AvaText from 'components/AvaText';
+import useInAppBrowser from 'hooks/useInAppBrowser';
+
+const LEGAL_URL = 'https://wallet.avax.network/legal';
 
 const LegalItem = () => {
-  const navigation = useNavigation<NativeStackNavigatorProps>();
+  const {openUrl} = useInAppBrowser();
   return (
     <>
       <AvaListItem.Base
@@ -16,7 +16,7 @@ const LegalItem = () => {
         leftComponent={null}
         rightComponent={<CarrotSVG />}
         onPress={() => {
-          navigation?.navigate(AppNavigation.Wallet.Legal);
+          openUrl(LEGAL_URL);
         }}
       />
     </>

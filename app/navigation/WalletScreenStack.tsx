@@ -1,4 +1,11 @@
-import React, {memo, useEffect, useMemo, useRef, useState} from 'react';
+import React, {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {AppState, BackHandler, Modal} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import SendReceiveBottomSheet from 'screens/portfolio/SendReceiveBottomSheet';
@@ -75,8 +82,12 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
   const appState = useRef(AppState.currentState);
   const context = useApplicationContext();
   const {resetHDIndices} = useWalletSetup();
-  const {immediateLogout, resetNavToEnterMnemonic, setSelectedCurrency} =
-    context.appHook;
+  const {
+    immediateLogout,
+    resetNavToEnterMnemonic,
+    setSelectedCurrency,
+    backFromWhitelistedProcess,
+  } = context.appHook;
 
   /**
    * This UseEffect handles subscription to
@@ -89,7 +100,7 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
     return () => {
       AppState.removeEventListener(focusEvent, handleAppStateChange);
     };
-  }, []);
+  }, [backFromWhitelistedProcess]);
 
   /**
    * Handles AppState change. When app is being backgrounded we save the current
@@ -101,38 +112,46 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
    * TIMEOUT of 5 sec.
    * @param nextAppState
    */
-  const handleAppStateChange = async (nextAppState: any) => {
-    const value = await BiometricsSDK.getAccessType();
-    const timeAppWasSuspended = await AsyncStorage.getItem(
-      'TIME_APP_SUSPENDED',
-    );
-    const suspended = timeAppWasSuspended ?? moment().toISOString();
+  const handleAppStateChange = useCallback(
+    async (nextAppState: any) => {
+      setTimeout(async () => {
+        const value = await BiometricsSDK.getAccessType();
+        const timeAppWasSuspended = await AsyncStorage.getItem(
+          'TIME_APP_SUSPENDED',
+        );
+        const suspended = timeAppWasSuspended ?? moment().toISOString();
 
-    const overTimeOut = moment().diff(moment(suspended)) >= TIMEOUT;
+        const overTimeOut = moment().diff(moment(suspended)) >= TIMEOUT;
 
-    if (
-      (appState.current === 'active' && nextAppState.match(/background/)) ||
-      (appState.current === 'inactive' && nextAppState.match(/background/))
-    ) {
-      // this condition calls when app is in background mode
-      // here you can detect application is going to background or inactive.
-      await AsyncStorage.setItem('TIME_APP_SUSPENDED', moment().toISOString());
-    } else if (
-      appState.current.match(/background/) &&
-      nextAppState === 'active' &&
-      value &&
-      overTimeOut
-    ) {
-      // this condition calls when app is in foreground mode
-      // here you can detect application is in active state again.
-      console.log('getting here coming back from background');
-      setShowSecurityModal(true);
-      resetHDIndices().then(() => {
-        //ignored
-      });
-    }
-    appState.current = nextAppState;
-  };
+        if (
+          (appState.current === 'active' && nextAppState.match(/background/)) ||
+          (appState.current === 'inactive' && nextAppState.match(/background/))
+        ) {
+          // this condition calls when app is in background mode
+          // here you can detect application is going to background or inactive.
+          await AsyncStorage.setItem(
+            'TIME_APP_SUSPENDED',
+            moment().toISOString(),
+          );
+        } else if (
+          appState.current.match(/background/) &&
+          nextAppState === 'active' &&
+          value &&
+          overTimeOut &&
+          !context.appHook.backFromWhitelistedProcess
+        ) {
+          // this condition calls when app is in foreground mode
+          // here you can detect application is in active state again.
+          setShowSecurityModal(true);
+          resetHDIndices().then(() => {
+            //ignored
+          });
+        }
+        appState.current = nextAppState;
+      }, 500);
+    },
+    [backFromWhitelistedProcess],
+  );
 
   useFocusEffect(
     React.useCallback(() => {
