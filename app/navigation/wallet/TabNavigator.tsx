@@ -21,6 +21,7 @@ import ActionButton from 'components/ActionButton';
 import LinearGradient from 'react-native-linear-gradient';
 import ArrowSVG from 'components/svg/ArrowSVG';
 import {useNavigation} from '@react-navigation/native';
+import FloatingActionButton from 'components/svg/FloatingActionButton';
 
 const Tab = createBottomTabNavigator();
 const TAB_ICON_SIZE = 28;
@@ -52,32 +53,32 @@ const TabNavigator = () => {
   }
 
   const CustomTabBarFab = ({children}) => (
-    <View
-      style={{
-        top: -170,
-        position: 'absolute',
-        justifyContent: 'center',
-        alignItems: 'center',
-        width: '100%',
-        // backgroundColor: 'green',
-        height: 200,
-      }}>
-      {fabActive && (
-        <LinearGradient
-          colors={['transparent', '#000000D9', '#000000']}
-          style={{height: 400, width: '100%', flex: 1, top: -25}}
-        />
-      )}
-      <ActionButton
-        buttonColor={'#0A84FF'}
-        position={'center'}
-        btnOutRange={'#0A84FF'}
+    // <View
+    //   pointerEvents={'box-none'}
+    //   style={{
+    //     top: -50,
+    //     position: 'absolute',
+    //     justifyContent: 'center',
+    //     alignItems: 'center',
+    //     width: '100%',
+    //     backgroundColor: 'green',
+    //     height: 200,
+    //   }}>
+    //   {/*{fabActive && (*/}
+    //   {/*  <LinearGradient*/}
+    //   {/*    pointerEvents={'box-none'}*/}
+    //   {/*    colors={['transparent', '#000000D9', '#000000']}*/}
+    //   {/*    style={{height: 400, width: '100%', flex: 1}}*/}
+    //   {/*  />*/}
+    //   {/*)}*/}
+    <>
+      <View style={{width: 48}} />
+      <FloatingActionButton
+        backgroundColor={'#0A84FF'}
+        changeBackgroundColor={'#0A84FF'}
         radius={110}
-        itemSize={48}
-        active={fabActive}
-        onPress={() => setFabActive(!fabActive)}
-        btnOutRangeTxt={'#ffffff'}
-        backdrop={true}
+        size={69}
+        changeIconTextColor={'#ffffff'}
         icon={children}>
         <ActionButton.Item />
         <ActionButton.Item
@@ -94,20 +95,23 @@ const TabNavigator = () => {
           <ArrowSVG rotate={225} color={theme.background} size={20} />
         </ActionButton.Item>
         <ActionButton.Item
-          buttonColor="#1abc9c"
+          buttonColor={theme.alternateBackground}
           title="Receive"
-          onPress={() => {navigation.navigate(AppNavigation.Wallet.ReceiveTokens)}}>
+          onPress={() => {
+            navigation.navigate(AppNavigation.Wallet.ReceiveTokens);
+          }}>
           <ArrowSVG rotate={45} color={theme.background} size={20} />
         </ActionButton.Item>
         <ActionButton.Item
-          buttonColor="#1abc9c"
+          buttonColor={theme.alternateBackground}
           title="Swap"
           onPress={() => {}}>
           <SwapSVG color={theme.background} size={24} />
         </ActionButton.Item>
         <ActionButton.Item />
-      </ActionButton>
-    </View>
+      </FloatingActionButton>
+    </>
+    // </View>
 
     // <Pressable
     //   style={{
