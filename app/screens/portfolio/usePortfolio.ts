@@ -22,7 +22,7 @@ export function usePortfolio(): UsePortfolioData {
   const calculateUsdBalance = useCallback(() => {
     const balanceAvaxString = Utils.bnToLocaleString(
       walletStateContext?.avaxToken?.balance ?? new BN(0),
-      9,
+      18,
     );
     const total =
       parseFloat(balanceAvaxString) * (walletStateContext?.avaxPrice ?? 1);
