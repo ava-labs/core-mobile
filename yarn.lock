@@ -15114,12 +15114,12 @@ react-native-toast-notifications@^3.2.2:
   resolved "https://registry.yarnpkg.com/react-native-toast-notifications/-/react-native-toast-notifications-3.2.2.tgz#884af05c2a8d32ed6a4e49a6d1a7720053b25ec8"
   integrity sha512-44x1Nr0QVnpE/2+Xyiv3Cd9S5MlgxS+5YdCioHfass36pJQAF9sSh3bHPakGNoT0e+kCp9A46CJE9E9BbwSDUw==
 
-"react-native-v8@>=0.64.0-patch.0 <0.64.1":
-  version "0.64.0-patch.0"
-  resolved "https://registry.yarnpkg.com/react-native-v8/-/react-native-v8-0.64.0-patch.0.tgz#3fbc6c338b4c85e17d6829a04187bb41b3855795"
-  integrity sha512-KXOUQehA2PO8SuQcOIBe9JH/bWcErrzvaX9+TuMecGy62m0AHhkJTUz00680lF2WRAjTIufi9WR8NzyF90Mv/w==
+"react-native-v8@>=0.66.3-patch.0 <0.66.3":
+  version "0.66.3-patch.1"
+  resolved "https://registry.yarnpkg.com/react-native-v8/-/react-native-v8-0.66.3-patch.1.tgz#baca62e1684dadbfe8b67409ba56915d2dbabce6"
+  integrity sha512-fll8irbxY1ThmN7rWvziYmFboV3P+eEQgUEuEJ+kWaVB2lTVpQc85fni5F7hkdhjN7BgnYTso6tzKzTW+oM56A==
   dependencies:
-    v8-android "~9.88.0"
+    v8-android-jit "~9.93.0"
 
 react-native-vector-icons@^8.1.0:
   version "8.1.0"
@@ -15211,10 +15211,10 @@ react-native-windows@0.64.1:
     whatwg-fetch "^3.0.0"
     ws "^6.1.4"
 
-react-native@0.66.1:
-  version "0.66.1"
-  resolved "https://registry.yarnpkg.com/react-native/-/react-native-0.66.1.tgz#96defaf60579406321340ebe1dcea76a3c942806"
-  integrity sha512-BBvytmqlOLL+bRcO0jBiYfg16lYRsYDOC8/5E+bpnhb3EGtU+YCQAYfszw6JL7Hfy0ftnQNP5yj8pt+vqMHXIA==
+react-native@0.66.4:
+  version "0.66.4"
+  resolved "https://registry.yarnpkg.com/react-native/-/react-native-0.66.4.tgz#bf89a5fb18bd23046d889fb4de4ea2822a4d7805"
+  integrity sha512-9vx5dlSfQlKbbDtr8+xMon6qsmSu7jvjdXWZpEKh3XVKpUidbbODv7048gwVKX8YAel1egeR7hN8vzSeI6ssTw==
   dependencies:
     "@jest/create-cache-key-function" "^27.0.1"
     "@react-native-community/cli" "^6.0.0"
@@ -17766,15 +17766,10 @@ uuid@^8.3.0:
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-8.3.2.tgz#80d5b5ced271bb9af6c445f21a1a04c606cefbe2"
   integrity sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==
 
-v8-android-jit-nointl@^9.88.0:
-  version "9.88.0"
-  resolved "https://registry.yarnpkg.com/v8-android-jit-nointl/-/v8-android-jit-nointl-9.88.0.tgz#3f8bcf884212c30ccea7a659bcf007e2c5902af6"
-  integrity sha512-sXl67ZRelKXPuN28nk/i05voVVlmnY3lc6Ynd+9aeQZsWgWgyQIThLn1GS2tM0mVWRZ85NHtDTRSOunYNJF0iw==
-
-v8-android@~9.88.0:
-  version "9.88.0"
-  resolved "https://registry.yarnpkg.com/v8-android/-/v8-android-9.88.0.tgz#ecb8e4426d6e68837d70eb71f209626bb0d3c575"
-  integrity sha512-KUnCspxD/7h2Gl7a8OhVd+8UWGPqmCDXwT3PORa32HXk+BK2KBKS+jnd0Eyccv4sSawfQM62iZGghb+8KOuJbw==
+v8-android-jit@^9.93.0, v8-android-jit@~9.93.0:
+  version "9.93.0"
+  resolved "https://registry.yarnpkg.com/v8-android-jit/-/v8-android-jit-9.93.0.tgz#2e52d3878da97647959991cefc5b90e47449f51a"
+  integrity sha512-qSEnxj/7x2lqvAjRtdox0fx20J5ekcLg/O1/M4vNKUtbWG75+/ACspP3n0KD0RIYLhD8F2iGxERRbwu9FbjKRg==
 
 v8-compile-cache@^2.0.3:
   version "2.3.0"
