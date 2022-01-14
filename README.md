@@ -15,6 +15,11 @@ Next, install the dependencies.
 yarn install
 ```
 
+## Create an environment (.env) file
+Create a `.env` file in the root of the project. The contents of the .env file are in 1Password. Ask permission to access it (TBD on who or which group in 1Password you need to be part of). Once access is given copy and paste the contents from the 1Password Secure Note into your local .env file. 
+
+IMPORTANT: the `.env` is never to be committed to the repo, and is already added to .gitignore. 
+
 ## Setup dev environment
 
 Follow [these](https://reactnative.dev/docs/environment-setup) steps to setup dev environment; make sure to select 
