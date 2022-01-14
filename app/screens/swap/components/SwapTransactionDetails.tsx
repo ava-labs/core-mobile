@@ -38,10 +38,12 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
     'Suggested slippage – your transaction will fail if the price changes unfavorably more than this percentage',
     context.theme.colorBg3,
   );
-  const networkFeeInfoMessage = popableContent(
-    'Network fees are paid to the network to process transactions on Avalanche.\n\nThese fees are estimated and will change based on network traffic and transaction complexity.',
-    context.theme.colorBg3,
-  );
+  const networkFeeInfoMessage = (gasLimit: string, gasPrice: string) => {
+    return popableContent(
+      `Gas limit = ${gasLimit} \nGas price = ${gasPrice} nAVAX`,
+      context.theme.colorBg3,
+    );
+  };
 
   return (
     <View style={{flex: 1, paddingHorizontal: 16}}>
@@ -81,6 +83,7 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
           <InputText
             onChangeText={text => trxDetails.setSlippageTol(Number(text))}
             text={`${trxDetails.slippageTol}`}
+            mode={'percentage'}
             keyboardType={'numeric'}
           />
         )}
@@ -94,7 +97,10 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
             alignItems: 'center',
           }}>
           <Popable
-            content={networkFeeInfoMessage}
+            content={networkFeeInfoMessage(
+              trxDetails.gasLimit.toString(),
+              trxDetails.gasPriceNAvax.toString(),
+            )}
             position={'right'}
             style={{minWidth: 200}}
             backgroundColor={context.theme.colorBg3}>
@@ -104,9 +110,11 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
         </View>
         <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
           <AvaButton.Base onPress={openTransactionFees}>
-            <AvaText.Body3 color={context.theme.colorPrimary1}>
-              Edit
-            </AvaText.Body3>
+            {review || (
+              <AvaText.Body3 color={context.theme.colorPrimary1}>
+                Edit
+              </AvaText.Body3>
+            )}
           </AvaButton.Base>
           <AvaText.Body2>{trxDetails.networkFeeUsd}</AvaText.Body2>
         </View>

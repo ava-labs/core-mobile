@@ -1,8 +1,5 @@
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import BottomSheet, {
-  BottomSheetBackdrop,
-  BottomSheetScrollView,
-} from '@gorhom/bottom-sheet';
+import React, {useCallback, useEffect, useMemo, useRef} from 'react';
+import BottomSheet, {BottomSheetBackdrop} from '@gorhom/bottom-sheet';
 import {InteractionManager, Text} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import TabViewBackground from 'screens/portfolio/components/TabViewBackground';
@@ -13,19 +10,15 @@ import AvaButton from 'components/AvaButton';
 import {Space} from 'components/Space';
 import {popableContent} from 'screens/swap/components/SwapTransactionDetails';
 import {useApplicationContext} from 'contexts/ApplicationContext';
+import {useSwapContext} from 'contexts/SwapContext';
+import {ScrollView} from 'react-native-gesture-handler';
 
-function SwapFeesBottomSheet({
-  onSave,
-}: {
-  onSave: (gasLimit: number, maxPriorityFee: number, maxFee: number) => void;
-}): JSX.Element {
+function SwapFeesBottomSheet(): JSX.Element {
   const navigation = useNavigation();
   const {theme} = useApplicationContext();
   const bottomSheetModalRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ['0%', '60%'], []);
-  const [gasLimit, setGasLimit] = useState<number>();
-  const [maxPriorityFee, setMaxPriorityFee] = useState<number>();
-  const [maxFee, setMaxFee] = useState<number>();
+  const {trxDetails} = useSwapContext();
 
   useEffect(() => {
     // intentionally setting delay so animation is visible.
@@ -44,28 +37,16 @@ function SwapFeesBottomSheet({
   }, []);
 
   const gasLimitInfoInfoMessage = popableContent(
-    'Gas limit is the maximum units of gas you are willing to use.\n\nUnits of gas are a multiplier to “Max priority fee” and “Max fee.”',
+    'Gas limit is the maximum units of gas you are willing to use.”',
     theme.colorBg3,
   );
-  const priorityFeeInfoMessage = popableContent(
-    'Max priority fee (aka “validator tip”) goes directly validators and incentivizes them to prioritize your transaction.\n\nYou will most often pay your max setting.',
-    theme.colorBg3,
-  );
-  const maxFeeInfoMessage = popableContent(
-    'The max fee is the most you will pay (base fee + priority fee).',
+  const gasFeeInfoMessage = popableContent(
+    'Gas fee is the price of gas unit.',
     theme.colorBg3,
   );
 
   const doSave = () => {
-    if (
-      gasLimit === undefined ||
-      maxPriorityFee === undefined ||
-      maxFee === undefined
-    ) {
-      handleClose();
-      return;
-    }
-    onSave(gasLimit, maxPriorityFee, maxFee);
+    handleClose();
   };
 
   return (
@@ -77,44 +58,39 @@ function SwapFeesBottomSheet({
       snapPoints={snapPoints}
       backgroundComponent={TabViewBackground}
       onChange={handleChange}>
-      <>
-        <BottomSheetScrollView>
-          <AvaText.LargeTitleBold textStyle={{marginHorizontal: 12}}>
-            Edit Fees
-          </AvaText.LargeTitleBold>
-          <Space y={24} />
-          <Text style={{marginHorizontal: 12}}>
-            <AvaText.Heading1>0.102320</AvaText.Heading1>
-            <AvaText.Heading3>AVAX</AvaText.Heading3>
-          </Text>
-          <AvaText.Body3 textStyle={{marginHorizontal: 12}}>
-            Max fee: (0.005935 AVAX)
-          </AvaText.Body3>
-          <InputText
-            label={'Gas Limit ⓘ'}
-            mode={'amount'}
-            popOverInfoText={gasLimitInfoInfoMessage}
-            onChangeText={text => setGasLimit(Number(text) || 0)}
-          />
-          <InputText
-            label={'Max priority fee (GWEI) ⓘ'}
-            popOverInfoText={priorityFeeInfoMessage}
-            placeholder={'GWEI'}
-            onChangeText={text => setMaxPriorityFee(Number(text) || 0)}
-          />
-          <InputText
-            label={'Max fee ⓘ'}
-            popOverInfoText={maxFeeInfoMessage}
-            placeholder={'GWEI'}
-            onChangeText={text => setMaxFee(Number(text) || 0)}
-          />
-          <AvaButton.PrimaryLarge
-            style={{marginHorizontal: 12}}
-            onPress={doSave}>
-            Save
-          </AvaButton.PrimaryLarge>
-        </BottomSheetScrollView>
-      </>
+      <ScrollView>
+        <AvaText.LargeTitleBold textStyle={{marginHorizontal: 12}}>
+          Edit Fees
+        </AvaText.LargeTitleBold>
+        <Space y={24} />
+        <Text style={{marginHorizontal: 12}}>
+          <AvaText.Heading1>{trxDetails.networkFee}</AvaText.Heading1>
+        </Text>
+        <AvaText.Body3 textStyle={{marginHorizontal: 12}}>
+          Max fee: ({trxDetails.networkFee})
+        </AvaText.Body3>
+        <InputText
+          label={'Gas Limit ⓘ'}
+          mode={'amount'}
+          text={trxDetails.gasLimit.toString()}
+          popOverInfoText={gasLimitInfoInfoMessage}
+          onChangeText={text => trxDetails.setUsersGasLimit(Number(text) || 0)}
+        />
+        <InputText
+          label={'Gas Price ⓘ'}
+          text={trxDetails.gasPriceNAvax.toString()}
+          currency={'nAVAX'}
+          mode={'currency'}
+          popOverInfoText={gasFeeInfoMessage}
+          onChangeText={text =>
+            trxDetails.setUsersGasPriceNAvax(Number(text) || 0)
+          }
+        />
+        <Space y={24} />
+        <AvaButton.PrimaryLarge style={{marginHorizontal: 12}} onPress={doSave}>
+          Save
+        </AvaButton.PrimaryLarge>
+      </ScrollView>
     </BottomSheet>
   );
 }
