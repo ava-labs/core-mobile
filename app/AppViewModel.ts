@@ -26,6 +26,8 @@ export type AppHook = {
   navigation: MutableRefObject<NavigationContainerRef<any> | undefined>;
   mnemonic: string;
   onEnterExistingMnemonic: (m: string) => void;
+  setBackFromWhitelistedProcess: Dispatch<boolean>;
+  backFromWhitelistedProcess?: boolean;
 };
 
 export function useApp(): AppHook {
@@ -34,6 +36,8 @@ export function useApp(): AppHook {
   const [isNewWallet, setIsNewWallet] = useState(false);
   const [mnemonic, setMnemonic] = useState<string>('');
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
+  const [backFromWhitelistedProcess, setBackFromWhitelistedProcess] =
+    useState(false);
 
   useEffect(() => {
     async function onFirstLoad() {
@@ -159,6 +163,8 @@ export function useApp(): AppHook {
     setIsNewWallet,
     selectedCurrency,
     setSelectedCurrency,
+    setBackFromWhitelistedProcess,
+    backFromWhitelistedProcess,
   };
 }
 

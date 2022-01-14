@@ -12,6 +12,8 @@ import {Space} from 'components/Space';
 import CircularButton from 'components/CircularButton';
 import ArrowSVG from 'components/svg/ArrowSVG';
 import AppNavigation from 'navigation/AppNavigation';
+import BuySVG from 'components/svg/BuySVG';
+import useInAppBrowser from 'hooks/useInAppBrowser';
 
 // experimenting with container pattern and stable props to try to reduce re-renders
 function PortfolioHeaderContainer() {
@@ -39,6 +41,7 @@ interface PortfolioHeaderProps {
 const PortfolioHeader: FC<PortfolioHeaderProps> = memo(
   ({navigation, appContext, balanceTotalUSD = 0, isBalanceLoading = false}) => {
     const theme = appContext.theme;
+    const {openMoonPay} = useInAppBrowser();
 
     const sendArrow = (
       <ArrowSVG size={20} color={theme.colorText1} rotate={225} />
@@ -53,6 +56,10 @@ const PortfolioHeader: FC<PortfolioHeaderProps> = memo(
 
     function navigateReceive() {
       navigation.navigate(AppNavigation.Wallet.ReceiveTokens);
+    }
+
+    function navigateBuy() {
+      openMoonPay();
     }
 
     return (
@@ -84,6 +91,12 @@ const PortfolioHeader: FC<PortfolioHeaderProps> = memo(
             image={receiveArrow}
             caption={'Receive'}
             onPress={navigateReceive}
+          />
+          <Space x={24} />
+          <CircularButton
+            image={<BuySVG size={26} />}
+            caption={'Buy'}
+            onPress={navigateBuy}
           />
         </View>
       </View>
