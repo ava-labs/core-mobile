@@ -26,7 +26,7 @@ export function usePortfolio(): UsePortfolioData {
     );
     const total =
       parseFloat(balanceAvaxString) * (walletStateContext?.avaxPrice ?? 1);
-    setBalanceTotalInUSD('$' + total.toFixed(2));
+    setBalanceTotalInUSD(total.toFixed(2));
     setBalanceAvaxTotal(balanceAvaxString + ' AVAX');
   }, [walletStateContext?.avaxPrice, walletStateContext?.avaxToken?.balance]);
 

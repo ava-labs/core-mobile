@@ -111,7 +111,7 @@ function AccountItem({
               <Title />
             )}
           </AvaButton.Base>
-          <AvaText.Body2>{balanceTotalInUSD} USD</AvaText.Body2>
+          <AvaText.Body2 currency>{balanceTotalInUSD}</AvaText.Body2>
           <Space y={16} />
           <AccountChainAddress
             address={account.cAddress}

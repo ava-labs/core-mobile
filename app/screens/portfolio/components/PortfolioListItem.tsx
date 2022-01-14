@@ -28,7 +28,7 @@ const PortfolioListItem: FC<Props> = ({
   const subTitle = (
     <AvaListItem.CurrencyAmount
       value={
-        <AvaText.Body2 ellipsize={'tail'}>{`${tokenPrice} `}</AvaText.Body2>
+        <AvaText.Body2 ellipsizeMode={'tail'}>{`${tokenPrice} `}</AvaText.Body2>
       }
       currency={<AvaText.Body2>{`${symbol?.toUpperCase()}`}</AvaText.Body2>}
     />
@@ -40,10 +40,11 @@ const PortfolioListItem: FC<Props> = ({
         <AvaListItem.CurrencyAmount
           justifyContent={'flex-end'}
           value={
-            <AvaText.Heading3
-              ellipsize={'tail'}>{`$${tokenPriceUsd}`}</AvaText.Heading3>
+            <AvaText.Heading3 currency ellipsizeMode={'tail'}>
+              {tokenPriceUsd}
+            </AvaText.Heading3>
           }
-          currency={<AvaText.Heading3>{'USD'}</AvaText.Heading3>}
+          currency={<AvaText.Heading3>{''}</AvaText.Heading3>}
         />
       );
     }
@@ -53,10 +54,11 @@ const PortfolioListItem: FC<Props> = ({
         <AvaListItem.CurrencyAmount
           justifyContent={'flex-end'}
           value={
-            <AvaText.Heading3
-              ellipsize={'tail'}>{`$${tokenPriceUsd}`}</AvaText.Heading3>
+            <AvaText.Heading3 ellipsizeMode={'tail'}>
+              {tokenPriceUsd}
+            </AvaText.Heading3>
           }
-          currency={<AvaText.Heading3>{'USD'}</AvaText.Heading3>}
+          currency={<AvaText.Heading3>{''}</AvaText.Heading3>}
         />
       );
     }

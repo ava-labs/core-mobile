@@ -28,9 +28,8 @@ function SendHeader({onClose}: Props): JSX.Element {
             <AvaText.Heading1>{`${selectedToken?.balanceDisplayValue} ${selectedToken?.symbol}`}</AvaText.Heading1>
           }
           subtitle={
-            <AvaText.Body2>
-              ${selectedToken?.balanceUsdDisplayValue} USD
-            </AvaText.Body2>
+            <AvaText.Body2
+              currency>{`${selectedToken?.balanceUsdDisplayValue}`}</AvaText.Body2>
           }
           leftComponent={
             selectedToken && <Avatar.Token token={selectedToken} />
