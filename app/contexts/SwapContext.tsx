@@ -12,13 +12,13 @@ import {
 import {getSwapRate} from 'swap/getSwapRate';
 import BN from 'bn.js';
 import {getDecimalsForEVM} from 'utils/TokenTools';
-import {Utils} from '@avalabs/avalanche-wallet-sdk';
+import {Big, Utils} from '@avalabs/avalanche-wallet-sdk';
 import {SwapSide} from 'paraswap';
 import {firstValueFrom, from} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {performSwap} from 'swap/performSwap';
 import {OptimalRate} from 'paraswap-core';
-import {useGasPrice} from 'utils/GasPriceHook';
+import {GasPrice, useGasPrice} from 'utils/GasPriceHook';
 
 export interface SwapEntry {
   token: TokenWithBalance | undefined;
@@ -35,6 +35,10 @@ export interface TrxDetails {
   networkFee: string;
   networkFeeUsd: string;
   avaxWalletFee: string;
+  gasLimit: number;
+  gasPriceNAvax: number;
+  setUsersGasLimit: Dispatch<number>;
+  setUsersGasPriceNAvax: Dispatch<number>;
 }
 
 export interface SwapContextState {
@@ -55,6 +59,10 @@ export const SwapContext = createContext<SwapContextState>({} as any);
 export const SwapContextProvider = ({children}: {children: any}) => {
   const {wallet} = useWalletContext();
   const {gasPrice$} = useGasPrice();
+  const [gasPrice, setGasPrice] = useState<GasPrice>({
+    bn: new BN(0),
+    value: '',
+  });
   const [srcToken, setSrcToken] = useState<TokenWithBalance>();
   const [srcAmount, setSrcAmount] = useState<number>(0);
   const [srcUsdAmount, setSrcUsdAmount] = useState<string>('');
@@ -64,13 +72,47 @@ export const SwapContextProvider = ({children}: {children: any}) => {
   const [minAmountBig, setMinAmountBig] = useState<string>('');
   const [destUsdAmount, setDestUsdAmount] = useState<string>('');
   const [trxRate, setTrxRate] = useState<string>('');
-  const [slipTol, setSlipTol] = useState<number>(0.12);
+  const [slipTol, setSlipTol] = useState<number>(12);
+  const [gasCost, setGasCost] = useState<number>(0);
+  const [gasLimit, setGasLimit] = useState<number>(0);
+  const [gasPriceNAvax, setGasPriceNAvax] = useState<number>(0);
+  const [usersGasLimit, setUsersGasLimit] = useState<number>(0);
+  const [usersGasPriceNAvax, setUsersGasPriceNAvax] = useState<number>(0);
   const [networkFee, setNetworkFee] = useState<string>('- AVAX');
   const [networkFeeUsd, setNetworkFeeUsd] = useState<string>('$- USD');
   const [avaxWalletFee, setAvaxWalletFee] = useState<string>('0 AVAX');
   const [swapSide, setSwapSide] = useState<SwapSide>(SwapSide.SELL);
   const [error, setError] = useState<string | undefined>(undefined);
   const [priceRoute, setPriceRoute] = useState<OptimalRate>();
+
+  useEffect(() => {
+    const subscription = gasPrice$
+      .pipe(
+        map(value => {
+          setGasPrice(value);
+        }),
+      )
+      .subscribe();
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    setGasPriceNAvax(
+      usersGasPriceNAvax || Utils.bnToBig(gasPrice.bn, 9).toNumber(),
+    );
+    setGasLimit(usersGasLimit || gasCost);
+    const gasPriceBig = usersGasPriceNAvax
+      ? new Big(usersGasPriceNAvax).div(Math.pow(10, 9))
+      : Utils.bnToBig(gasPrice.bn, 18);
+    const gasLimitBig = usersGasLimit
+      ? new Big(usersGasLimit)
+      : new Big(gasCost);
+    const feeBig = gasPriceBig.mul(gasLimitBig);
+    const fee = Utils.bigToLocaleString(feeBig, 4);
+    setNetworkFee(`${fee} AVAX`);
+    setNetworkFeeUsd(`${fee} AVAX`);
+  }, [gasPrice, gasCost, usersGasLimit, usersGasPriceNAvax]);
 
   useEffect(() => {
     const amount = Utils.numberToBN(
@@ -116,11 +158,12 @@ export const SwapContextProvider = ({children}: {children: any}) => {
           setDestAmount(destAmount.toNumber());
           setSrcUsdAmount(result.srcUSD);
           setDestUsdAmount(result.destUSD);
+          setGasCost(Number(result.gasCost));
           setAvaxWalletFee(`${result.partnerFee} AVAX`);
           setTrxRate(
             `1 ${srcToken?.symbol} ≈ ${destAmountBySrcAmount} ${destToken?.symbol}`,
           );
-          const minAmnt = destAmount.times(1 - slipTol / 100).toFixed(8); //fixme move this to different useEffect
+          const minAmnt = destAmount.times(1 - slipTol / 100).toFixed(8);
           setMinAmount(minAmnt);
           setMinAmountBig(
             Utils.stringToBN(minAmnt, result.destDecimals).toString(),
@@ -208,6 +251,10 @@ export const SwapContextProvider = ({children}: {children: any}) => {
       networkFee,
       networkFeeUsd,
       avaxWalletFee,
+      gasLimit,
+      gasPriceNAvax,
+      setUsersGasLimit,
+      setUsersGasPriceNAvax,
     },
     doSwap,
     error,

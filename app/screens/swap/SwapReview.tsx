@@ -78,21 +78,27 @@ const SwapReview: FC = () => {
         <Separator style={{marginHorizontal: 16, marginVertical: 24}} />
         <SwapTransactionDetail review />
       </ScrollView>
-      <AvaButton.PrimaryLarge
-        onPress={onConfirm}
-        style={{marginHorizontal: 16}}>
-        Confirm
-      </AvaButton.PrimaryLarge>
-      <Space y={16} />
-      <AvaButton.PrimaryLarge
-        onPress={goBack}
-        textColor={theme.colorText1}
+      <View
         style={{
-          marginHorizontal: 16,
-          backgroundColor: theme.colorDisabled,
+          flexDirection: 'row',
+          justifyContent: 'space-between',
         }}>
-        Cancel
-      </AvaButton.PrimaryLarge>
+        <View style={{flex: 1, marginHorizontal: 16}}>
+          <AvaButton.PrimaryLarge
+            onPress={goBack}
+            textColor={theme.colorText1}
+            style={{
+              backgroundColor: theme.colorDisabled,
+            }}>
+            Cancel
+          </AvaButton.PrimaryLarge>
+        </View>
+        <View style={{flex: 1, marginRight: 16}}>
+          <AvaButton.PrimaryLarge onPress={onConfirm}>
+            Confirm
+          </AvaButton.PrimaryLarge>
+        </View>
+      </View>
       <Space y={8} />
     </View>
   );
