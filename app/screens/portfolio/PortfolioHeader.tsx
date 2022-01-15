@@ -20,13 +20,16 @@ function PortfolioHeaderContainer() {
   const context = useApplicationContext();
   const navigation = useNavigation<PortfolioNavigationProp>();
   const {balanceTotalInUSD, isBalanceLoading} = usePortfolio();
+  const {selectedCurrency, currencyFormatter} = context.appHook;
+  const currencyBalance = currencyFormatter(Number(balanceTotalInUSD));
 
   return (
     <PortfolioHeader
       appContext={context}
       navigation={navigation}
-      balanceTotalUSD={balanceTotalInUSD}
+      balanceTotalUSD={currencyBalance}
       isBalanceLoading={isBalanceLoading}
+      currencyCode={selectedCurrency}
     />
   );
 }
@@ -36,10 +39,17 @@ interface PortfolioHeaderProps {
   navigation: PortfolioNavigationProp;
   balanceTotalUSD: string;
   isBalanceLoading: boolean;
+  currencyCode: string;
 }
 
 const PortfolioHeader: FC<PortfolioHeaderProps> = memo(
-  ({navigation, appContext, balanceTotalUSD = 0, isBalanceLoading = false}) => {
+  ({
+    navigation,
+    appContext,
+    balanceTotalUSD = 0,
+    isBalanceLoading = false,
+    currencyCode,
+  }) => {
     const theme = appContext.theme;
     const {openMoonPay} = useInAppBrowser();
 
@@ -76,7 +86,7 @@ const PortfolioHeader: FC<PortfolioHeaderProps> = memo(
           )}
           <AvaText.LargeTitleBold>{balanceTotalUSD}</AvaText.LargeTitleBold>
           <AvaText.Heading3 textStyle={{paddingBottom: 4, marginLeft: 4}}>
-            USD
+            {currencyCode}
           </AvaText.Heading3>
         </View>
         <Space y={18} />

@@ -1,39 +1,69 @@
 import React, {FC, useEffect, useState} from 'react';
-import {StyleProp, StyleSheet, Text, TextInput, TextStyle} from 'react-native';
+import {
+  StyleProp,
+  StyleSheet,
+  Text,
+  TextInput,
+  TextProps,
+  TextStyle,
+} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 
-interface TextProps {
+type AvaTextProps = {
   textStyle?: StyleProp<TextStyle>;
   color?: string;
-  ellipsize?: 'head' | 'middle' | 'tail' | 'clip' | undefined;
+  ellipsizeMode?: 'head' | 'middle' | 'tail' | 'clip' | undefined;
   editable?: boolean;
   onTextEdited?: (editedText: string) => void;
-}
+  currency?: boolean;
+} & TextProps;
 
-const LargeTitleBold: FC<TextProps> = ({textStyle, children}) => {
+const AvaxTextBase: FC<AvaTextProps> = ({currency, children, ...rest}) => {
+  const {selectedCurrency, currencyFormatter} = useApplicationContext().appHook;
+
+  if (typeof children === 'string' && currency) {
+    return (
+      <Text {...rest}>{`${currencyFormatter(
+        Number(children),
+      )} ${selectedCurrency}`}</Text>
+    );
+  }
+  return <Text {...rest}>{children}</Text>;
+};
+
+const LargeTitleBold: FC<AvaTextProps> = ({textStyle, children, ...rest}) => {
   const theme = useApplicationContext().theme;
   return (
-    <Text style={[styles.largeTitleBold, {color: theme.colorText1}, textStyle]}>
+    <AvaxTextBase
+      {...rest}
+      style={[styles.largeTitleBold, {color: theme.colorText1}, textStyle]}>
       {children}
-    </Text>
+    </AvaxTextBase>
   );
 };
 
-const TextHeading1: FC<TextProps> = ({textStyle, color, children}) => {
+const TextHeading1: FC<AvaTextProps> = ({
+  textStyle,
+  color,
+  children,
+  ...rest
+}) => {
   const theme = useApplicationContext().theme;
   return (
-    <Text
+    <AvaxTextBase
+      {...rest}
       style={[styles.heading1, {color: color ?? theme.txtListItem}, textStyle]}>
       {children}
-    </Text>
+    </AvaxTextBase>
   );
 };
 
-const TextHeading2: FC<TextProps> = ({
+const TextHeading2: FC<AvaTextProps> = ({
   editable,
   onTextEdited,
   textStyle,
   children,
+  ...rest
 }) => {
   const theme = useApplicationContext().theme;
   const [value, setValue] = useState('');
@@ -55,111 +85,158 @@ const TextHeading2: FC<TextProps> = ({
       style={[styles.heading2, {color: theme.txtListItem}, textStyle]}
     />
   ) : (
-    <Text style={[styles.heading2, {color: theme.txtListItem}, textStyle]}>
+    <AvaxTextBase
+      style={[styles.heading2, {color: theme.txtListItem}, textStyle]}
+      {...rest}>
       {children}
-    </Text>
+    </AvaxTextBase>
   );
 };
 
-const TextHeading3: FC<TextProps> = ({ellipsize, textStyle, children}) => {
+const TextHeading3: FC<AvaTextProps> = ({
+  ellipsizeMode,
+  textStyle,
+  children,
+  currency,
+  ...rest
+}) => {
   const theme = useApplicationContext().theme;
   return (
-    <Text
-      ellipsizeMode={ellipsize}
-      numberOfLines={ellipsize ? 1 : undefined}
+    <AvaxTextBase
+      {...rest}
+      ellipsizeMode={ellipsizeMode}
+      numberOfLines={ellipsizeMode ? 1 : undefined}
+      currency={currency}
       style={[
         styles.heading3,
-        {flexShrink: ellipsize ? 1 : 0, color: theme.txtListItem},
+        {flexShrink: ellipsizeMode ? 1 : 0, color: theme.txtListItem},
         textStyle,
       ]}>
       {children}
-    </Text>
+    </AvaxTextBase>
   );
 };
 
-const TextBody1: FC<TextProps> = ({ellipsize, textStyle, children}) => {
+const TextBody1: FC<AvaTextProps> = ({
+  ellipsizeMode,
+  textStyle,
+  children,
+  ...rest
+}) => {
   const theme = useApplicationContext().theme;
   return (
-    <Text
-      ellipsizeMode={ellipsize}
-      numberOfLines={ellipsize ? 1 : undefined}
+    <AvaxTextBase
+      {...rest}
+      ellipsizeMode={ellipsizeMode}
+      numberOfLines={ellipsizeMode ? 1 : undefined}
       style={[
         styles.body1,
-        {flexShrink: ellipsize ? 1 : 0, color: theme.colorText1},
+        {flexShrink: ellipsizeMode ? 1 : 0, color: theme.colorText1},
         textStyle,
       ]}>
       {children}
-    </Text>
+    </AvaxTextBase>
   );
 };
 
-const TextBody2: FC<TextProps> = ({ellipsize, color, textStyle, children}) => {
+const TextBody2: FC<AvaTextProps> = ({
+  ellipsizeMode,
+  color,
+  textStyle,
+  children,
+  ...rest
+}) => {
   const theme = useApplicationContext().theme;
   return (
-    <Text
-      ellipsizeMode={ellipsize}
-      numberOfLines={ellipsize ? 1 : undefined}
+    <AvaxTextBase
+      {...rest}
+      ellipsizeMode={ellipsizeMode}
+      numberOfLines={ellipsizeMode ? 1 : undefined}
       style={[
         styles.body2,
-        {flexShrink: ellipsize ? 1 : 0, color: color ?? theme.colorText2},
+        {flexShrink: ellipsizeMode ? 1 : 0, color: color ?? theme.colorText2},
         textStyle,
       ]}>
       {children}
-    </Text>
+    </AvaxTextBase>
   );
 };
 
-const TextBody3: FC<TextProps> = ({textStyle, color, children}) => {
+const TextBody3: FC<AvaTextProps> = ({textStyle, color, children, ...rest}) => {
   return (
-    <Text style={[styles.body3, textStyle, !!color && {color: color}]}>
+    <AvaxTextBase
+      style={[styles.body3, textStyle, !!color && {color: color}]}
+      {...rest}>
       {children}
-    </Text>
+    </AvaxTextBase>
   );
 };
 
-const TextBody4: FC<TextProps> = ({textStyle, children}) => {
+const TextBody4: FC<AvaTextProps> = ({textStyle, children, ...rest}) => {
   const {theme} = useApplicationContext();
   return (
-    <Text style={[styles.body4, {color: theme.colorText1}, textStyle]}>
+    <AvaxTextBase
+      style={[styles.body4, {color: theme.colorText1}, textStyle]}
+      {...rest}>
       {children}
-    </Text>
+    </AvaxTextBase>
   );
 };
 
-const TextTag: FC<TextProps> = ({textStyle, children}) => {
+const TextTag: FC<AvaTextProps> = ({textStyle, children, ...rest}) => {
   const theme = useApplicationContext().theme;
   return (
-    <Text style={[styles.textTag, {color: theme.txtListItem}, textStyle]}>
+    <AvaxTextBase
+      style={[styles.textTag, {color: theme.txtListItem}, textStyle]}
+      {...rest}>
       {children}
-    </Text>
+    </AvaxTextBase>
   );
 };
 
-const TextButtonLarge: FC<TextProps> = ({textStyle, children}) => {
-  return <Text style={[styles.textButtonLarge, textStyle]}>{children}</Text>;
+const TextButtonLarge: FC<AvaTextProps> = ({textStyle, children, ...rest}) => {
+  return (
+    <AvaxTextBase style={[styles.textButtonLarge, textStyle]} {...rest}>
+      {children}
+    </AvaxTextBase>
+  );
 };
 
-const TextButtonMedium: FC<TextProps> = ({textStyle, children}) => {
-  return <Text style={[styles.textButtonMedium, textStyle]}>{children}</Text>;
+const TextButtonMedium: FC<AvaTextProps> = ({textStyle, children, ...rest}) => {
+  return (
+    <AvaxTextBase style={[styles.textButtonMedium, textStyle]} {...rest}>
+      {children}
+    </AvaxTextBase>
+  );
 };
 
-const TextButtonSmall: FC<TextProps> = ({textStyle, children}) => {
-  return <Text style={[styles.textButtonSmall, textStyle]}>{children}</Text>;
+const TextButtonSmall: FC<AvaTextProps> = ({textStyle, children, ...rest}) => {
+  return (
+    <AvaxTextBase style={[styles.textButtonSmall, textStyle]} {...rest}>
+      {children}
+    </AvaxTextBase>
+  );
 };
 
-const ActivityTotal: FC<TextProps> = ({ellipsize, textStyle, children}) => {
+const ActivityTotal: FC<AvaTextProps> = ({
+  ellipsizeMode,
+  textStyle,
+  children,
+  ...rest
+}) => {
   const theme = useApplicationContext().theme;
   return (
-    <Text
-      ellipsizeMode={ellipsize}
-      numberOfLines={ellipsize ? 1 : undefined}
+    <AvaxTextBase
+      {...rest}
+      ellipsizeMode={ellipsizeMode}
+      numberOfLines={ellipsizeMode ? 1 : undefined}
       style={[
         styles.activityTotal,
-        {flexShrink: ellipsize ? 1 : 0, color: theme.colorText1},
+        {flexShrink: ellipsizeMode ? 1 : 0, color: theme.colorText1},
         textStyle,
       ]}>
       {children}
-    </Text>
+    </AvaxTextBase>
   );
 };
 

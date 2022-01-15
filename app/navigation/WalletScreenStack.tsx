@@ -36,6 +36,7 @@ import SelectTokenBottomSheet from 'screens/swap/SelectTokenBottomSheet';
 import SwapFeesBottomSheet from 'screens/swap/components/SwapFeesBottomSheet';
 import {SwapContextProvider} from 'contexts/SwapContext';
 import SwapReview from 'screens/swap/SwapReview';
+import {currentSelectedCurrency$} from '@avalabs/wallet-react-components';
 
 type Props = {
   onExit: () => void;
@@ -195,7 +196,10 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
   const CurrencySelectorScreen = () => {
     return (
       <CurrencySelector
-        onSelectedCurrency={code => setSelectedCurrency(code)}
+        onSelectedCurrency={code => {
+          currentSelectedCurrency$.next(code);
+          setSelectedCurrency(code);
+        }}
       />
     );
   };

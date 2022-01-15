@@ -164,7 +164,7 @@ const Receive: FC<{
             {backgroundColor: theme.listItemBg},
           ]}>
           <AvaText.Body1
-            ellipsize={'middle'}
+            ellipsizeMode={'middle'}
             textStyle={{flex: 1, marginRight: 16}}>
             {props.selectedAddress}
           </AvaText.Body1>
