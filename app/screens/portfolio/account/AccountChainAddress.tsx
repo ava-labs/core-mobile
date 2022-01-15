@@ -45,7 +45,7 @@ function AccountChainAddress({
         <FlexSpacer />
         <AvaText.Body1
           textStyle={{color: addressColor, flex: 1}}
-          ellipsize={'middle'}>
+          ellipsizeMode={'middle'}>
           {address}
         </AvaText.Body1>
         <Space x={16} />

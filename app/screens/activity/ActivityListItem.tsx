@@ -47,7 +47,7 @@ const ActivityListItem: FC<Props> = ({historyItem, onPress}) => {
     ) : (
       <AvaListItem.CurrencyAmount
         value={
-          <AvaText.ActivityTotal ellipsize={'tail'}>
+          <AvaText.ActivityTotal ellipsizeMode={'tail'}>
             {sign + token.amountDisplayValue}
           </AvaText.ActivityTotal>
         }
@@ -69,7 +69,7 @@ const ActivityListItem: FC<Props> = ({historyItem, onPress}) => {
     const stakingRightComponent = (
       <AvaListItem.CurrencyAmount
         value={
-          <AvaText.ActivityTotal ellipsize={'tail'}>
+          <AvaText.ActivityTotal ellipsizeMode={'tail'}>
             {token.amountDisplayValue}
           </AvaText.ActivityTotal>
         }
@@ -90,7 +90,7 @@ const ActivityListItem: FC<Props> = ({historyItem, onPress}) => {
     const ImpExpRightComponent = (
       <AvaListItem.CurrencyAmount
         value={
-          <AvaText.ActivityTotal ellipsize={'tail'}>
+          <AvaText.ActivityTotal ellipsizeMode={'tail'}>
             {sign + token.amountDisplayValue}
           </AvaText.ActivityTotal>
         }
