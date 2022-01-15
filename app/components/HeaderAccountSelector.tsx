@@ -26,7 +26,9 @@ export default function HeaderAccountSelector() {
   return (
     <AvaButton.Base onPress={onAccountPressed}>
       <View style={[styles.accountTitleContainer]}>
-        <AvaText.Heading3 ellipsize={'middle'} textStyle={{marginRight: 16}}>
+        <AvaText.Heading3
+          ellipsizeMode={'middle'}
+          textStyle={{marginRight: 16}}>
           {activeAccount?.title}
         </AvaText.Heading3>
         <View style={{transform: [{rotate: '90deg'}]}}>

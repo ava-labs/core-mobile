@@ -5,7 +5,14 @@ import BiometricsSDK from 'utils/BiometricsSDK';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {SECURE_ACCESS_SET} from 'resources/Constants';
 import {encrypt, getEncryptionKey} from 'screens/login/utils/EncryptionHelper';
-import {Dispatch, MutableRefObject, useEffect, useRef, useState} from 'react';
+import {
+  Dispatch,
+  MutableRefObject,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {NavigationContainerRef} from '@react-navigation/native';
 import AppNavigation from 'navigation/AppNavigation';
 
@@ -26,6 +33,7 @@ export type AppHook = {
   navigation: MutableRefObject<NavigationContainerRef<any> | undefined>;
   mnemonic: string;
   onEnterExistingMnemonic: (m: string) => void;
+  currencyFormatter(value: number): string;
 };
 
 export function useApp(): AppHook {
@@ -144,6 +152,15 @@ export function useApp(): AppHook {
     return concat(of(new ShowExitPrompt(exitPrompt)), dialogOp, asyncScheduler);
   }
 
+  const currencyFormatter = useMemo(() => {
+    const formatter = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: selectedCurrency,
+    });
+
+    return formatter.format.bind(formatter);
+  }, [selectedCurrency]);
+
   return {
     shouldSetupWallet,
     mnemonic,
@@ -159,6 +176,7 @@ export function useApp(): AppHook {
     setIsNewWallet,
     selectedCurrency,
     setSelectedCurrency,
+    currencyFormatter,
   };
 }
 
