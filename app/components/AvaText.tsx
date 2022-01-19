@@ -246,6 +246,7 @@ const AvaText = {
   ButtonMedium: TextButtonMedium,
   ButtonSmall: TextButtonSmall,
   ActivityTotal: ActivityTotal, //this font configuration is not named in design at the time of writing
+  Caption: TextCaption,
 };
 
 const styles = StyleSheet.create({
@@ -313,6 +314,12 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-SemiBold',
     fontSize: 14,
     lineHeight: 17,
+  },
+  textCaption: {
+    fontFamily: 'Inter',
+    fontSize: 12,
+    lineHeight: 15,
+    fontWeight: '600',
   },
 });
 
