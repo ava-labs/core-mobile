@@ -210,6 +210,14 @@ const TextButtonSmall: FC<AvaTextProps> = ({
   );
 };
 
+const TextCaption: FC<AvaTextProps> = ({textStyle, children, ...rest}) => {
+  return (
+    <AvaxTextBase style={[styles.textCaption, textStyle]} {...rest}>
+      {children}
+    </AvaxTextBase>
+  );
+};
+
 const ActivityTotal: FC<AvaTextProps> = ({
   ellipsizeMode,
   textStyle,
