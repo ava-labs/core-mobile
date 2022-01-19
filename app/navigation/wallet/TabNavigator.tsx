@@ -47,7 +47,9 @@ const TabNavigator = () => {
       <View style={{justifyContent: 'center', alignItems: 'center', top: 2}}>
         {image}
         <AvaText.Caption
-          color={focused ? theme.alternateBackground : theme.txtDim}>
+          textStyle={{
+            color: focused ? theme.alternateBackground : theme.txtDim,
+          }}>
           {routeName}
         </AvaText.Caption>
       </View>

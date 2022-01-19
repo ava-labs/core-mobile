@@ -33,7 +33,7 @@ function PortfolioHeaderContainer() {
       balanceTotalUSD={currencyBalance}
       isBalanceLoading={isBalanceLoading}
       currencyCode={selectedCurrency}
-      addressC={addressC}  
+      addressC={addressC}
     />
   );
 }
@@ -61,7 +61,7 @@ const PortfolioHeader: FC<PortfolioHeaderProps> = memo(
           <Space x={8} />
           <AvaText.Body2
             textStyle={{color: theme.colorText1}}
-            ellipsize={'middle'}>
+            ellipsizeMode={'middle'}>
             {addressC}
           </AvaText.Body2>
         </AvaButton.Base>
