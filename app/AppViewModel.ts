@@ -143,7 +143,7 @@ export function useApp(): AppHook {
       }),
       map((exitEvent: ExitEvents) => {
         if (exitEvent instanceof ExitFinished) {
-          resetNavToRoot(navigation);
+          setLoginRoute(navigation);
           BackHandler.exitApp();
         }
         return exitEvent;
