@@ -46,7 +46,7 @@ export const ApplicationContext = createContext<ApplicationContextState>(
 export const ApplicationContextProvider = ({children}: {children: any}) => {
   const appHook = useApp();
   const repository = useRepo();
-  const [isDarkMode] = useState(Appearance.getColorScheme() === 'dark');
+  const isDarkMode = true; // useState(Appearance.getColorScheme() === 'dark');
   const [theme] = useState(isDarkMode ? COLORS_NIGHT : COLORS_DAY);
   const [backgroundStyle] = useState({
     backgroundColor: theme.background,
