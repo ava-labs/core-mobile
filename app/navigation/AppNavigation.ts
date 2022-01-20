@@ -63,6 +63,7 @@ enum Tabs {
   More = 'More',
   Watchlist = 'Watchlist',
   Tabs = 'Tabs',
+  Fab = 'Fab',
 }
 
 enum ModalScreens {
