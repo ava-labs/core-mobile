@@ -11,16 +11,24 @@ import {useSwapContext} from 'contexts/SwapContext';
 import AvaButton from 'components/AvaButton';
 import {useNavigation} from '@react-navigation/native';
 import Loader from 'components/Loader';
+import AppNavigation from 'navigation/AppNavigation';
+import {StackNavigationProp} from '@react-navigation/stack';
+import {SwapStackParamList} from 'navigation/wallet/SwapScreenStack';
 
 const SwapReview: FC = () => {
   const {swapTo, swapFrom, doSwap} = useSwapContext();
   const theme = useApplicationContext().theme;
-  const {goBack} = useNavigation();
+  const {goBack, navigate} =
+    useNavigation<StackNavigationProp<SwapStackParamList>>();
   const [loading, setLoading] = useState(false);
 
   function onConfirm() {
     setLoading(true);
     doSwap()
+      .then(value => {
+        console.log(value);
+        navigate(AppNavigation.Swap.Success);
+      })
       .catch(reason => console.error(reason))
       .finally(() => setLoading(false));
   }

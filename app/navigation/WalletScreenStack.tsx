@@ -269,13 +269,6 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
             component={WebViewScreen}
           />
           {BottomSheetGroup}
-          <RootStack.Screen
-            name={AppNavigation.Wallet.SwapReview}
-            options={{
-              ...MainHeaderOptions(''),
-            }}
-            component={SwapReview}
-          />
         </RootStack.Navigator>
         <Modal visible={showSecurityModal} animationType={'slide'} animated>
           <PinOrBiometryLogin

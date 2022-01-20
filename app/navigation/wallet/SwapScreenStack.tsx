@@ -1,25 +1,33 @@
 import React from 'react';
 import AppNavigation from 'navigation/AppNavigation';
-import PortfolioView from 'screens/portfolio/PortfolioView';
 import {createStackNavigator} from '@react-navigation/stack';
 import SwapView from 'screens/swap/SwapView';
-import {SwapContextProvider} from 'contexts/SwapContext';
 import SwapReview from 'screens/swap/SwapReview';
+import DoneScreen from 'screens/swap/DoneScreen';
 
-type Props = {
-  onExit: () => void;
-  onSwitchWallet: () => void;
+export type SwapStackParamList = {
+  [AppNavigation.Swap.Swap]: undefined;
+  [AppNavigation.Swap.Review]: undefined;
+  [AppNavigation.Swap.Success]: undefined;
 };
 
-const SwapStack = createStackNavigator();
+const SwapStack = createStackNavigator<SwapStackParamList>();
 
-function SwapScreenStack({onExit, onSwitchWallet}: Props) {
+function SwapScreenStack() {
   return (
     <SwapStack.Navigator
       screenOptions={{
         headerShown: false,
       }}>
-      <SwapStack.Screen name={AppNavigation.Wallet.Swap} component={SwapView} />
+      <SwapStack.Screen name={AppNavigation.Swap.Swap} component={SwapView} />
+      <SwapStack.Screen
+        name={AppNavigation.Swap.Review}
+        component={SwapReview}
+      />
+      <SwapStack.Screen
+        name={AppNavigation.Swap.Success}
+        component={DoneScreen}
+      />
     </SwapStack.Navigator>
   );
 }
