@@ -38,8 +38,12 @@ enum WalletScreens {
   SecurityPrivacy = 'WalletScreens.SecurityPrivacy',
   // PortfolioScreen = 'PortfolioScreen',
   NetworkSelector = 'WalletScreens.NetworkSelector',
-  Swap = 'WalletScreens.Swap',
-  SwapReview = 'WalletScreens.SwapReview',
+}
+
+enum SwapScreens {
+  Swap = 'SwapScreens.Swap',
+  Review = 'SwapScreens.Review',
+  Success = 'SwapScreens.Success',
 }
 
 enum SecurityPrivacyScreens {
@@ -86,6 +90,7 @@ const AppNavigation = {
   Tabs: Tabs,
   Modal: ModalScreens,
   SendToken: SendTokenScreens,
+  Swap: SwapScreens,
 };
 
 export default AppNavigation;
