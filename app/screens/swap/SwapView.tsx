@@ -10,6 +10,8 @@ import SwapTransactionDetail from 'screens/swap/components/SwapTransactionDetail
 import {useSwapContext} from 'contexts/SwapContext';
 import {useNavigation} from '@react-navigation/native';
 import AppNavigation from 'navigation/AppNavigation';
+import {StackNavigationProp} from '@react-navigation/stack';
+import {SwapStackParamList} from 'navigation/wallet/SwapScreenStack';
 import {
   FUJI_NETWORK,
   useNetworkContext,
@@ -18,14 +20,14 @@ import ZeroState from 'components/ZeroState';
 
 export default function SwapView() {
   const {theme} = useApplicationContext();
-  const {swapFromTo, swapFrom, swapTo} = useSwapContext();
+  const {swapFromTo, swapFrom, swapTo, error} = useSwapContext();
   const networkContext = useNetworkContext();
-  const navigation = useNavigation();
+  const navigation = useNavigation<StackNavigationProp<SwapStackParamList>>();
 
   const reviewButtonDisabled = !swapTo.amount || !swapFrom.amount;
 
   function confirm() {
-    navigation.navigate(AppNavigation.Wallet.SwapReview);
+    navigation.navigate(AppNavigation.Swap.Review);
   }
 
   return (
@@ -40,7 +42,7 @@ export default function SwapView() {
         ) : (
           <>
             <Space y={20} />
-            <TokenDropDown type={'From'} />
+            <TokenDropDown type={'From'} error={error} />
             <Space y={20} />
             <AvaButton.Base
               onPress={swapFromTo}

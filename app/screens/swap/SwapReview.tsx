@@ -1,5 +1,5 @@
-import React, {FC} from 'react';
-import {Alert, ScrollView, StyleSheet, View} from 'react-native';
+import React, {FC, useState} from 'react';
+import {ScrollView, StyleSheet, View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {Space} from 'components/Space';
 import AvaText from 'components/AvaText';
@@ -10,17 +10,35 @@ import SwapTransactionDetail from 'screens/swap/components/SwapTransactionDetail
 import {useSwapContext} from 'contexts/SwapContext';
 import AvaButton from 'components/AvaButton';
 import {useNavigation} from '@react-navigation/native';
+import Loader from 'components/Loader';
+import AppNavigation from 'navigation/AppNavigation';
+import {StackNavigationProp} from '@react-navigation/stack';
+import {SwapStackParamList} from 'navigation/wallet/SwapScreenStack';
 
 const SwapReview: FC = () => {
-  const {swapTo, swapFrom} = useSwapContext();
+  const {swapTo, swapFrom, doSwap} = useSwapContext();
   const theme = useApplicationContext().theme;
-  const {goBack} = useNavigation();
+  const {goBack, navigate} =
+    useNavigation<StackNavigationProp<SwapStackParamList>>();
+  const [loading, setLoading] = useState(false);
 
   function onConfirm() {
-    Alert.alert('Confirm Swap', 'Implement swap confirm method call');
+    setLoading(true);
+    doSwap()
+      .then(value => {
+        console.log(value);
+        navigate(AppNavigation.Swap.Success);
+      })
+      .catch((reason: Error) => {
+        console.error(reason);
+        navigate(AppNavigation.Swap.Fail, {errorMsg: reason.message ?? ''});
+      })
+      .finally(() => setLoading(false));
   }
 
-  return (
+  return loading ? (
+    <Loader />
+  ) : (
     <View style={styles.container}>
       <ScrollView style={styles.container}>
         <Space y={8} />
@@ -33,7 +51,7 @@ const SwapReview: FC = () => {
         </AvaText.Heading3>
         <AvaListItem.Base
           embedInCard
-          leftComponent={<Avatar.Token token={swapFrom.token} />}
+          leftComponent={<Avatar.Token token={swapFrom.token!} />}
           title={swapFrom.token?.symbol}
           rightComponent={
             <View>
@@ -48,7 +66,7 @@ const SwapReview: FC = () => {
         </AvaText.Heading3>
         <AvaListItem.Base
           embedInCard
-          leftComponent={<Avatar.Token token={swapTo.token} />}
+          leftComponent={<Avatar.Token token={swapTo.token!} />}
           title={swapTo.token?.symbol}
           rightComponent={
             <View>
@@ -60,21 +78,27 @@ const SwapReview: FC = () => {
         <Separator style={{marginHorizontal: 16, marginVertical: 24}} />
         <SwapTransactionDetail review />
       </ScrollView>
-      <AvaButton.PrimaryLarge
-        onPress={onConfirm}
-        style={{marginHorizontal: 16}}>
-        Confirm
-      </AvaButton.PrimaryLarge>
-      <Space y={16} />
-      <AvaButton.PrimaryLarge
-        onPress={goBack}
-        textColor={theme.colorText1}
+      <View
         style={{
-          marginHorizontal: 16,
-          backgroundColor: theme.colorDisabled,
+          flexDirection: 'row',
+          justifyContent: 'space-between',
         }}>
-        Cancel
-      </AvaButton.PrimaryLarge>
+        <View style={{flex: 1, marginHorizontal: 16}}>
+          <AvaButton.PrimaryLarge
+            onPress={goBack}
+            textColor={theme.colorText1}
+            style={{
+              backgroundColor: theme.colorDisabled,
+            }}>
+            Cancel
+          </AvaButton.PrimaryLarge>
+        </View>
+        <View style={{flex: 1, marginRight: 16}}>
+          <AvaButton.PrimaryLarge onPress={onConfirm}>
+            Confirm
+          </AvaButton.PrimaryLarge>
+        </View>
+      </View>
       <Space y={8} />
     </View>
   );

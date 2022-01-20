@@ -26,13 +26,20 @@ type Props = {
   // Shows error message and error color border
   errorText?: string;
   // Private - Hides input, shows toggle button to show input, neon color border. Will disable multiline.
-  mode?: 'default' | 'private' | 'amount' | 'confirmEntry';
+  mode?:
+    | 'default'
+    | 'private'
+    | 'amount'
+    | 'confirmEntry'
+    | 'percentage'
+    | 'currency';
   // Set keyboard type (numeric, text)
   keyboardType?: 'numeric';
   // shows popover info if provided
   popOverInfoText?: string | React.ReactElement;
   autoFocus?: boolean;
   text?: string;
+  currency?: string;
 };
 
 export default function InputText(props: Props | Readonly<Props>) {
@@ -94,6 +101,36 @@ export default function InputText(props: Props | Readonly<Props>) {
         <AvaButton.Icon onPress={onClear}>
           <ClearInputSVG color={theme.colorText2} size={14} />
         </AvaButton.Icon>
+      </View>
+    );
+  };
+
+  const Percent = () => {
+    return (
+      <View
+        style={[
+          {
+            position: 'absolute',
+            justifyContent: 'center',
+            end: 16,
+          },
+        ]}>
+        <AvaText.Heading3>%</AvaText.Heading3>
+      </View>
+    );
+  };
+
+  const Currency = ({currency}: {currency?: string}) => {
+    return (
+      <View
+        style={[
+          {
+            position: 'absolute',
+            justifyContent: 'center',
+            end: 16,
+          },
+        ]}>
+        <AvaText.Heading3>{currency}</AvaText.Heading3>
       </View>
     );
   };
@@ -226,7 +263,14 @@ export default function InputText(props: Props | Readonly<Props>) {
                   : theme.colorBg3 + Opacity50,
               borderRadius: 8,
               paddingStart: 16,
-              paddingEnd: mode === 'private' ? 80 : 46,
+              paddingEnd:
+                mode === 'private'
+                  ? 80
+                  : mode === 'amount' && !props.onMax
+                  ? 16
+                  : mode === 'currency'
+                  ? 50
+                  : 46,
               paddingTop: 12,
               paddingBottom: 12,
               fontFamily: 'Inter-Regular',
@@ -239,10 +283,12 @@ export default function InputText(props: Props | Readonly<Props>) {
         />
         {mode === 'default' && text.length > 0 && <ClearBtn />}
         {mode === 'private' && text.length > 0 && <ShowPassBtn />}
-        {mode === 'amount' && <MaxBtn onPress={props.onMax} />}
+        {mode === 'amount' && props.onMax && <MaxBtn onPress={props.onMax} />}
         {mode === 'confirmEntry' && (
           <ConfirmBtn onPress={() => props.onConfirm?.(text)} />
         )}
+        {mode === 'percentage' && <Percent />}
+        {mode === 'currency' && <Currency currency={props.currency} />}
       </View>
 
       {props.helperText && <HelperText />}
