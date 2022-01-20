@@ -2,19 +2,28 @@ import AppNavigation from 'navigation/AppNavigation';
 import HomeSVG from 'components/svg/HomeSVG';
 import ActivitySVG from 'components/svg/ActivitySVG';
 import SwapSVG from 'components/svg/SwapSVG';
-import MoreSVG from 'components/svg/MoreSVG';
 import WatchlistSVG from 'components/svg/WatchlistSVG';
 import WatchlistView from 'screens/watchlist/WatchlistView';
 import {MainHeaderOptions} from 'navigation/NavUtils';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import PortfolioStackScreen from 'navigation/wallet/PortfolioScreenStack';
-import React from 'react';
+import React, {useState} from 'react';
 import {noop} from 'rxjs';
 import ActivityView from 'screens/activity/ActivityView';
 import SwapScreenStack from 'navigation/wallet/SwapScreenStack';
+import SwapView from 'screens/swap/SwapView';
+import {Alert, Pressable, StyleSheet, View} from 'react-native';
+import AddSVG from 'components/svg/AddSVG';
+import AvaText from 'components/AvaText';
+import BuySVG from 'components/svg/BuySVG';
+import ActionButton from 'components/ActionButton';
+import LinearGradient from 'react-native-linear-gradient';
+import ArrowSVG from 'components/svg/ArrowSVG';
+import {useNavigation} from '@react-navigation/native';
 
 const Tab = createBottomTabNavigator();
+const TAB_ICON_SIZE = 28;
 
 const PortfolioStackScreenWithProps = () => {
   return (
@@ -24,24 +33,111 @@ const PortfolioStackScreenWithProps = () => {
 
 const TabNavigator = () => {
   const theme = useApplicationContext().theme;
+  const [fabActive, setFabActive] = useState(false);
+  const navigation = useNavigation();
+
+  function normalTabButtons(
+    routeName: string,
+    focused: boolean,
+    image: React.ReactNode,
+  ) {
+    return (
+      <View style={{justifyContent: 'center', alignItems: 'center', top: 2}}>
+        {image}
+        <AvaText.Caption color={focused ? theme.accentColor : theme.onBgSearch}>
+          {routeName}
+        </AvaText.Caption>
+      </View>
+    );
+  }
+
+  const CustomTabBarFab = ({children}) => (
+    <View
+      style={{
+        top: -170,
+        position: 'absolute',
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '100%',
+        // backgroundColor: 'green',
+        height: 200,
+      }}>
+      {fabActive && (
+        <LinearGradient
+          colors={['transparent', '#000000D9', '#000000']}
+          style={{height: 400, width: '100%', flex: 1, top: -25}}
+        />
+      )}
+      <ActionButton
+        buttonColor={'#0A84FF'}
+        position={'center'}
+        btnOutRange={'#0A84FF'}
+        radius={110}
+        itemSize={48}
+        active={fabActive}
+        onPress={() => setFabActive(!fabActive)}
+        btnOutRangeTxt={'#ffffff'}
+        backdrop={true}
+        icon={children}>
+        <ActionButton.Item />
+        <ActionButton.Item
+          buttonColor={theme.alternateBackground}
+          title="Buy"
+          btnOutRangeText={'#ffffff'}
+          onPress={() => {}}>
+          <BuySVG color={theme.background} />
+        </ActionButton.Item>
+        <ActionButton.Item
+          buttonColor={theme.alternateBackground}
+          title="Send"
+          onPress={() => {}}>
+          <ArrowSVG rotate={225} color={theme.background} size={20} />
+        </ActionButton.Item>
+        <ActionButton.Item
+          buttonColor="#1abc9c"
+          title="Receive"
+          onPress={() => {navigation.navigate(AppNavigation.Wallet.ReceiveTokens)}}>
+          <ArrowSVG rotate={45} color={theme.background} size={20} />
+        </ActionButton.Item>
+        <ActionButton.Item
+          buttonColor="#1abc9c"
+          title="Swap"
+          onPress={() => {}}>
+          <SwapSVG color={theme.background} size={24} />
+        </ActionButton.Item>
+        <ActionButton.Item />
+      </ActionButton>
+    </View>
+
+    // <Pressable
+    //   style={{
+    //     top: -100,
+    //     position: 'absolute',
+    //     justifyContent: 'center',
+    //     alignItems: 'center',
+    //     width: '100%',
+    //     height: 200,
+    //   }}
+    //   onPress={() => {
+    //     Alert.alert('This is being intercepted');
+    //   }}>
+    //   <View
+    //     style={{
+    //       width: 48,
+    //       height: 48,
+    //       borderRadius: 35,
+    //       backgroundColor: '#0A84FF',
+    //     }}>
+    //     {children}
+    //   </View>
+    // </Pressable>
+  );
+
   return (
     <Tab.Navigator
-      screenOptions={({route}) => ({
+      screenOptions={() => ({
+        tabBarShowLabel: false,
         headerShown: false,
-        tabBarIcon: ({focused}) => {
-          switch (route.name) {
-            case AppNavigation.Tabs.Portfolio:
-              return <HomeSVG selected={focused} />;
-            case AppNavigation.Tabs.Activity:
-              return <ActivitySVG selected={focused} />;
-            case AppNavigation.Tabs.Swap:
-              return <SwapSVG selected={focused} />;
-            case AppNavigation.Tabs.More:
-              return <MoreSVG selected={focused} />;
-            case AppNavigation.Tabs.Watchlist:
-              return <WatchlistSVG selected={focused} />;
-          }
-        },
         tabBarAllowFontScaling: false,
         tabBarActiveTintColor: theme.accentColor,
         tabBarInactiveTintColor: theme.onBgSearch,
@@ -52,21 +148,72 @@ const TabNavigator = () => {
       <Tab.Screen
         name={AppNavigation.Tabs.Portfolio}
         component={PortfolioStackScreenWithProps}
-      />
-      <Tab.Screen
-        name={AppNavigation.Tabs.Watchlist}
-        component={WatchlistView}
+        options={{
+          tabBarIcon: ({focused}) =>
+            normalTabButtons(
+              AppNavigation.Tabs.Portfolio,
+              focused,
+              <HomeSVG selected={focused} size={TAB_ICON_SIZE} />,
+            ),
+        }}
       />
       <Tab.Screen
         name={AppNavigation.Tabs.Activity}
-        options={{
-          ...MainHeaderOptions('Activity'),
-        }}
         component={ActivityView}
+        options={{
+          tabBarIcon: ({focused}) =>
+            normalTabButtons(
+              AppNavigation.Tabs.Activity,
+              focused,
+              <ActivitySVG selected={focused} size={TAB_ICON_SIZE} />,
+            ),
+        }}
       />
-      <Tab.Screen name={AppNavigation.Tabs.Swap} component={SwapScreenStack} />
+      <Tab.Screen
+        name={AppNavigation.Tabs.Fab}
+        component={CustomTabBarFab}
+        options={{
+          tabBarIcon: () => (
+            <AddSVG color={theme.white} size={TAB_ICON_SIZE} hideCircle />
+          ),
+          tabBarButton: props => <CustomTabBarFab {...props} />,
+        }}
+      />
+      <Tab.Screen
+        name={AppNavigation.Tabs.Swap}
+        component={SwapView}
+        options={{
+          tabBarIcon: ({focused}) =>
+            normalTabButtons(
+              AppNavigation.Tabs.Swap,
+              focused,
+              <SwapSVG selected={focused} size={TAB_ICON_SIZE} />,
+            ),
+        }}
+      />
+      <Tab.Screen
+        name={AppNavigation.Tabs.Watchlist}
+        options={{
+          ...MainHeaderOptions('WatchList'),
+          tabBarIcon: ({focused}) =>
+            normalTabButtons(
+              AppNavigation.Tabs.Watchlist,
+              focused,
+              <WatchlistSVG selected={focused} size={TAB_ICON_SIZE} />,
+            ),
+        }}
+        component={WatchlistView}
+      />
     </Tab.Navigator>
   );
 };
+
+const styles = StyleSheet.create({
+  actionButtonIcon: {
+    fontSize: 20,
+    height: 22,
+    color: 'white',
+  },
+});
 
 export default React.memo(TabNavigator);
