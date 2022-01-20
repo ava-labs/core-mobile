@@ -35,7 +35,6 @@ import SendToken from 'screens/send/SendToken';
 import SelectTokenBottomSheet from 'screens/swap/SelectTokenBottomSheet';
 import SwapFeesBottomSheet from 'screens/swap/components/SwapFeesBottomSheet';
 import {SwapContextProvider} from 'contexts/SwapContext';
-import SwapReview from 'screens/swap/SwapReview';
 import {currentSelectedCurrency$} from '@avalabs/wallet-react-components';
 
 type Props = {
@@ -269,13 +268,6 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
             component={WebViewScreen}
           />
           {BottomSheetGroup}
-          <RootStack.Screen
-            name={AppNavigation.Wallet.SwapReview}
-            options={{
-              ...MainHeaderOptions(''),
-            }}
-            component={SwapReview}
-          />
         </RootStack.Navigator>
         <Modal visible={showSecurityModal} animationType={'slide'} animated>
           <PinOrBiometryLogin

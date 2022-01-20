@@ -13,7 +13,6 @@ import React from 'react';
 import {noop} from 'rxjs';
 import ActivityView from 'screens/activity/ActivityView';
 import SwapScreenStack from 'navigation/wallet/SwapScreenStack';
-import SwapView from 'screens/swap/SwapView';
 
 const Tab = createBottomTabNavigator();
 
@@ -65,7 +64,7 @@ const TabNavigator = () => {
         }}
         component={ActivityView}
       />
-      <Tab.Screen name={AppNavigation.Tabs.Swap} component={SwapView} />
+      <Tab.Screen name={AppNavigation.Tabs.Swap} component={SwapScreenStack} />
     </Tab.Navigator>
   );
 };

@@ -1,4 +1,4 @@
-import {ParaSwap} from 'paraswap';
+import {NetworkID, ParaSwap} from 'paraswap';
 import {
   network$,
   FUJI_NETWORK,
@@ -19,6 +19,7 @@ export const paraSwap$ = network$.pipe(
       throw NETWORK_UNSUPPORTED_ERROR;
     }
 
-    return new ParaSwap(MAINNET_NETWORK.chainId as any, undefined, new Web3());
+    const chainId = Number(MAINNET_NETWORK.chainId);
+    return new ParaSwap(chainId as NetworkID, undefined, new Web3());
   }),
 );

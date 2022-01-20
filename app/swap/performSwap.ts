@@ -1,8 +1,3 @@
-import {
-  ERC20,
-  TokenWithBalance,
-  wallet$,
-} from '@avalabs/wallet-react-components';
 import {APIError, ParaSwap} from 'paraswap';
 import {firstValueFrom} from 'rxjs';
 import {paraSwap$} from 'swap/swap';
@@ -11,91 +6,69 @@ import {WalletType} from '@avalabs/avalanche-wallet-sdk';
 import Web3 from 'web3';
 import ERC20_ABI from '../contracts/erc20.abi.json';
 import {Allowance} from 'paraswap/build/types';
-import {getDecimalsForEVM} from 'utils/TokenTools';
 import {OptimalRate} from 'paraswap-core';
-import {getSrcToken, incrementalPromiseResolve, resolve} from 'swap/utils';
+import {incrementalPromiseResolve, resolve} from 'swap/utils';
+import {BN} from 'avalanche';
 
 const SERVER_BUSY_ERROR = 'Server too busy';
 
-export async function performSwap(request: {
-  srcToken?: TokenWithBalance;
-  destToken?: TokenWithBalance;
-  srcAmount?: string;
-  destAmount?: string;
-  priceRoute: any;
-  gasLimit: any;
-  gasPrice: GasPrice;
-}) {
-  const {
-    srcToken,
-    destToken,
-    srcAmount,
-    destAmount,
-    priceRoute,
-    gasLimit,
-    gasPrice,
-  } = request;
+export async function performSwap(
+  request: {
+    srcAmount?: string;
+    destAmount?: string;
+    priceRoute?: OptimalRate;
+    gasLimit?: any;
+    gasPrice?: GasPrice;
+  },
+  wallet?: WalletType,
+) {
+  console.log('~~~~~~~~~ perform swap');
+  const {srcAmount, destAmount, priceRoute, gasLimit, gasPrice} = request;
+  console.log('~~~~~~~~~ srcAmount', srcAmount);
+  console.log('~~~~~~~~~ destAmount', destAmount);
+  console.log('~~~~~~~~~ priceRoute', priceRoute);
+  console.log('~~~~~~~~~ gasLimit', gasLimit);
+  console.log('~~~~~~~~~ gasPrice', gasPrice);
 
-  if (!srcToken) {
+  if (!priceRoute) {
     return {
-      ...request,
-      error: 'no source token on request',
+      error: 'request requires the paraswap priceRoute',
     };
   }
 
-  if (!destToken) {
+  if (!wallet) {
     return {
-      ...request,
-      error: 'no destination token on request',
+      error: 'no wallet on request',
     };
   }
 
   if (!srcAmount) {
     return {
-      ...request,
       error: 'no amount on request',
     };
   }
 
   if (!destAmount) {
     return {
-      ...request,
       error: 'no amount on request',
-    };
-  }
-
-  if (!priceRoute) {
-    return {
-      ...request,
-      error: 'request requires the paraswap priceRoute',
     };
   }
 
   if (!gasLimit) {
     return {
-      ...request,
       error: 'request requires gas limit from paraswap response',
     };
   }
 
   const [paraSwap, err] = await resolve(firstValueFrom(paraSwap$));
-  const [wallet, walletError] = await resolve(firstValueFrom(wallet$));
 
   if (err) {
     return {
-      ...request,
       error: `Paraswap Init Error: ${err}`,
     };
   }
 
   const pSwap = paraSwap as ParaSwap;
-
-  if (walletError) {
-    return {
-      ...request,
-      error: `Wallet Error: ${walletError}`,
-    };
-  }
 
   const buildOptions = undefined,
     partnerAddress = undefined,
@@ -106,54 +79,66 @@ export async function performSwap(request: {
     deadline = undefined,
     partnerFeeBps = undefined;
 
+  console.log('~~~~~~~~~ userAddress', userAddress);
+  console.log('~~~~~~~~~ partner', partner);
   const spender = await pSwap.getTokenTransferProxy();
+  console.log('~~~~~~~~~ spender', spender);
 
-  const contract = new (pSwap.web3Provider as Web3).eth.Contract(
-    ERC20_ABI as any,
-    (srcToken as ERC20).address, //fixme
-  );
+  let approveTxHash;
 
-  const [allowance, allowanceError] = await resolve(
-    pSwap.getAllowance(userAddress, (srcToken as ERC20).address), //fixme
-  );
+  // no need to approve AVAX
+  if (priceRoute.srcToken !== '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE') {
+    const contract = new (pSwap.web3Provider as Web3).eth.Contract(
+      ERC20_ABI as any,
+      priceRoute.srcToken,
+    );
+    console.log('~~~~~~~~~ contract', contract);
 
-  if (
-    allowanceError ||
-    (!!(allowance as APIError).message &&
-      (allowance as APIError).message !== 'Not Found')
-  ) {
-    return {
-      ...request,
-      error: `Allowance Error: ${
-        allowanceError ?? (allowance as APIError).message
-      }`,
-    };
-  }
+    const [allowance, allowanceError] = await resolve(
+      pSwap.getAllowance(userAddress, priceRoute.srcToken),
+    );
+    console.log('~~~~~~~~~allowance', allowance);
+    console.log('~~~~~~~~~allowanceError', allowanceError);
+    if (
+      allowanceError ||
+      (!!(allowance as APIError).message &&
+        (allowance as APIError).message !== 'Not Found')
+    ) {
+      return {
+        error: `Allowance Error: ${
+          allowanceError ?? (allowance as APIError).message
+        }`,
+      };
+    }
 
-  const [approveTxHash, approveError] = await resolve(
-    /**
-     * We may need to check if the allowance is enough to cover what is trying to be sent?
-     */
-    (allowance as Allowance).tokenAddress
-      ? (Promise.resolve([]) as any)
-      : (wallet as WalletType).sendCustomEvmTx(
-          (gasPrice as GasPrice).bn,
-          Number(gasLimit),
-          contract.methods.approve(spender, srcAmount).encodeABI(),
-          (srcToken as ERC20).address, //fixme
-        ),
-  );
+    const [approveHash, approveError] = await resolve(
+      /**
+       * We may need to check if the allowance is enough to cover what is trying to be sent?
+       */
+      (allowance as Allowance).tokenAddress
+        ? (Promise.resolve([]) as any)
+        : (wallet as WalletType).sendCustomEvmTx(
+            (gasPrice as GasPrice).bn,
+            Number(gasLimit),
+            contract.methods.approve(spender, srcAmount).encodeABI(),
+            priceRoute.srcToken,
+          ),
+    );
+    console.log('~~~~~~~~~approveTxHash', approveHash);
+    console.log('~~~~~~~~~approveError', approveError);
 
-  if (approveError) {
-    return {
-      ...request,
-      error: `Approve Error: ${approveError}`,
-    };
+    if (approveError) {
+      return {
+        error: `Approve Error: ${approveError}`,
+      };
+    }
+
+    approveTxHash = approveHash;
   }
 
   const txData = pSwap.buildTx(
-    getSrcToken(srcToken),
-    getSrcToken(destToken),
+    priceRoute.srcToken,
+    priceRoute.destToken,
     srcAmount,
     destAmount,
     priceRoute,
@@ -163,11 +148,12 @@ export async function performSwap(request: {
     partnerFeeBps,
     receiver,
     buildOptions,
-    getDecimalsForEVM(srcToken),
-    getDecimalsForEVM(destToken),
+    priceRoute.srcDecimals,
+    priceRoute.destDecimals,
     permit,
     deadline,
   );
+  console.log('~~~~~~~~~txData', txData);
 
   function checkForErrorsInResult(result: OptimalRate | APIError) {
     return (result as APIError).message === SERVER_BUSY_ERROR;
@@ -176,10 +162,16 @@ export async function performSwap(request: {
   const [txBuildData, txBuildDataError] = await resolve(
     incrementalPromiseResolve(() => txData, checkForErrorsInResult),
   );
+  console.log('~~~~~~~~~txBuildData', txBuildData);
+  console.log('~~~~~~~~~txBuildDataError', txBuildDataError);
 
+  if ((txBuildData as APIError).message) {
+    return {
+      error: (txBuildData as APIError).message,
+    };
+  }
   if (txBuildDataError) {
     return {
-      ...request,
       error: `Data Error: ${txBuildDataError}`,
     };
   }
@@ -190,18 +182,22 @@ export async function performSwap(request: {
       Number(txBuildData.gas),
       txBuildData.data,
       txBuildData.to,
+      priceRoute.srcToken === '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
+        ? `0x${new BN(srcAmount).toString('hex')}`
+        : undefined, // AVAX value needs to be sent with the transaction
     ),
   );
+  console.log('~~~~~~~~~swapTxHash', swapTxHash);
+  console.log('~~~~~~~~~txError', txError);
 
   if (txError) {
+    const shortError = txError.message.split('\n')[0];
     return {
-      ...request,
-      error: `Tx Error: ${txError}`,
+      error: shortError,
     };
   }
 
   return {
-    ...request,
     result: {
       swapTxHash,
       approveTxHash,
