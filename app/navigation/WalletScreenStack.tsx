@@ -8,7 +8,6 @@ import React, {
 } from 'react';
 import {AppState, BackHandler, Modal} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
-import SendReceiveBottomSheet from 'screens/portfolio/SendReceiveBottomSheet';
 import AccountBottomSheet from 'screens/portfolio/account/AccountBottomSheet';
 import AppNavigation from 'navigation/AppNavigation';
 import {SelectedTokenContextProvider} from 'contexts/SelectedTokenContext';
@@ -29,7 +28,6 @@ import {useFocusEffect} from '@react-navigation/native';
 import SignOutBottomSheet from 'screens/mainView/SignOutBottomSheet';
 import {createStackNavigator} from '@react-navigation/stack';
 import ReceiveToken2 from 'screens/receive/ReceiveToken2';
-import HeaderAccountSelector from 'components/HeaderAccountSelector';
 import NetworkSelector from 'network/NetworkSelector';
 import SelectTokenBottomSheet from 'screens/swap/SelectTokenBottomSheet';
 import SwapFeesBottomSheet from 'screens/swap/components/SwapFeesBottomSheet';
@@ -54,7 +52,6 @@ export type RootStackParamList = {
   [AppNavigation.Wallet.ReceiveTokens]: undefined;
   [AppNavigation.Wallet.SendTokens]: {token?: TokenWithBalance} | undefined;
   [AppNavigation.Wallet.NetworkSelector]: undefined;
-  [AppNavigation.Modal.SendReceiveBottomSheet]: undefined;
   [AppNavigation.Modal.AccountBottomSheet]: undefined;
   [AppNavigation.Modal.TransactionDetailBottomSheet]: undefined;
   [AppNavigation.Modal.ReceiveOnlyBottomSheet]: undefined;
