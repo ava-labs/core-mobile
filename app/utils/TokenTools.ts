@@ -5,6 +5,9 @@ import {
 } from '@avalabs/wallet-react-components';
 
 export function getTokenUID(token: TokenWithBalance): string {
+  if (Object.keys(token).length === 0) {
+    return '0';
+  }
   if (token.isAvax) {
     return 'ID-AVAX';
   }

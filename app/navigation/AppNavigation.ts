@@ -81,6 +81,12 @@ enum SendTokenScreens {
   DoneScreen = 'DoneScreen',
 }
 
+enum SendScreens {
+  Send = 'SendScreens.Send',
+  Review = 'SendScreens.Review',
+  Success = 'SendScreens.Success',
+}
+
 const AppNavigation = {
   Root: Root,
   Onboard: OnboardScreens,
@@ -92,6 +98,7 @@ const AppNavigation = {
   Modal: ModalScreens,
   SendToken: SendTokenScreens,
   Swap: SwapScreens,
+  Send: SendScreens,
 };
 
 export default AppNavigation;

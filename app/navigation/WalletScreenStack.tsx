@@ -31,17 +31,20 @@ import {createStackNavigator} from '@react-navigation/stack';
 import ReceiveToken2 from 'screens/receive/ReceiveToken2';
 import HeaderAccountSelector from 'components/HeaderAccountSelector';
 import NetworkSelector from 'network/NetworkSelector';
-import SendToken from 'screens/send/SendToken';
 import SelectTokenBottomSheet from 'screens/swap/SelectTokenBottomSheet';
 import SwapFeesBottomSheet from 'screens/swap/components/SwapFeesBottomSheet';
 import {SwapContextProvider} from 'contexts/SwapContext';
-import {currentSelectedCurrency$} from '@avalabs/wallet-react-components';
+import SendScreenStack from 'navigation/wallet/SendScreenStack';
+import {
+  currentSelectedCurrency$,
+  TokenWithBalance,
+} from '@avalabs/wallet-react-components';
 
 type Props = {
   onExit: () => void;
 };
 
-type RootStackParamList = {
+export type RootStackParamList = {
   [AppNavigation.Wallet.Drawer]: undefined;
   [AppNavigation.Wallet.SearchScreen]: undefined;
   [AppNavigation.Wallet.AddCustomToken]: undefined;
@@ -49,7 +52,7 @@ type RootStackParamList = {
   [AppNavigation.Wallet.SecurityPrivacy]: undefined;
   [AppNavigation.Wallet.Legal]: undefined;
   [AppNavigation.Wallet.ReceiveTokens]: undefined;
-  [AppNavigation.Wallet.SendTokens]: undefined;
+  [AppNavigation.Wallet.SendTokens]: {token?: TokenWithBalance} | undefined;
   [AppNavigation.Wallet.NetworkSelector]: undefined;
   [AppNavigation.Modal.SendReceiveBottomSheet]: undefined;
   [AppNavigation.Modal.AccountBottomSheet]: undefined;
@@ -165,10 +168,6 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
     return (
       <RootStack.Group screenOptions={{presentation: 'transparentModal'}}>
         <RootStack.Screen
-          name={AppNavigation.Modal.SendReceiveBottomSheet}
-          component={SendReceiveBottomSheet}
-        />
-        <RootStack.Screen
           name={AppNavigation.Modal.AccountBottomSheet}
           component={AccountBottomSheet}
         />
@@ -224,13 +223,9 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
           <RootStack.Screen
             name={AppNavigation.Wallet.SendTokens}
             options={{
-              presentation: 'card',
-              headerShown: true,
-              headerBackTitleVisible: false,
-              headerTitleAlign: 'center',
-              headerTitle: () => <HeaderAccountSelector />,
+              headerShown: false,
             }}
-            component={SendToken}
+            component={SendScreenStack}
           />
           <RootStack.Screen name={AppNavigation.Wallet.ReceiveTokens}>
             {props => <ReceiveToken2 showBackButton {...props} />}
