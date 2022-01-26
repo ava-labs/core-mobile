@@ -1,13 +1,15 @@
 import React from 'react';
 import {Alert} from 'react-native';
-import {useNavigation} from '@react-navigation/native';
 import AppNavigation from 'navigation/AppNavigation';
-import {SendTokenNavigationProp} from 'screens/sendERC20/SendERC20Stack';
 import {AntWithBalance, useSendAnt} from '@avalabs/wallet-react-components';
-import SendForm from 'screens/send/SendForm';
+import SendForm from 'screens/send/forFutureReference/SendForm';
 import {useSelectedTokenContext} from 'contexts/SelectedTokenContext';
 import {bnAmountToString} from 'dto/SendInfo';
 import {asyncScheduler, defer, from, scheduled} from 'rxjs';
+
+/**
+ * LEFT FOR FUTURE REFERENCE WHEN WE AGAIN IMPLEMENT ANT TOKENS
+ */
 
 export default function SendANT(): JSX.Element {
   const {selectedToken} = useSelectedTokenContext();
@@ -21,7 +23,6 @@ export default function SendANT(): JSX.Element {
     setAddress,
     setAmount,
   } = useSendAnt(selectedToken as AntWithBalance);
-  const {navigate} = useNavigation<SendTokenNavigationProp>();
 
   async function handleOnConfirm(
     onSuccess: () => void,
@@ -45,7 +46,9 @@ export default function SendANT(): JSX.Element {
           Alert.alert('Error', 'Undefined error');
         } else {
           console.log(value);
-          navigate(AppNavigation.SendToken.DoneScreen, {transactionId: value.txId});
+          // navigate(AppNavigation.SendToken.DoneScreen, {
+          //   transactionId: value.txId,
+          // });
           onSuccess();
         }
       },

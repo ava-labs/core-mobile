@@ -66,7 +66,6 @@ enum Tabs {
 }
 
 enum ModalScreens {
-  SendReceiveBottomSheet = 'ModalScreens.SendReceiveBottomSheet',
   AccountBottomSheet = 'ModalScreens.AccountBottomSheet',
   TransactionDetailBottomSheet = 'ModalScreens.TransactionDetailBottomSheet',
   ReceiveOnlyBottomSheet = 'ModalScreens.ReceiveOnlyBottomSheet',

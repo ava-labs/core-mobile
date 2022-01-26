@@ -13,7 +13,6 @@ export type PortfolioStackParamList = {
   Send: undefined;
   Receive: undefined;
   [AppNavigation.Wallet.ReceiveTokens]: undefined;
-  [AppNavigation.Wallet.SendTokens]: undefined;
 };
 
 const PortfolioStack = createStackNavigator<PortfolioStackParamList>();
