@@ -4,20 +4,14 @@ import BlockchainCircle from 'components/BlockchainCircle';
 import AvaText from 'components/AvaText';
 import AvaButton from 'components/AvaButton';
 import CopySVG from 'components/svg/CopySVG';
-import Clipboard from '@react-native-clipboard/clipboard';
-import {ShowSnackBar} from 'components/Snackbar';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {Space} from 'components/Space';
+import {copyToClipboard} from 'utils/DeviceTools';
 
 interface Props {
   title: string;
   address: string;
 }
-
-const copyToClipboard = (str: string): void => {
-  Clipboard.setString(str);
-  ShowSnackBar('Copied');
-};
 
 export default function AddressBookItem({title, address}: Props) {
   const {theme} = useApplicationContext();
