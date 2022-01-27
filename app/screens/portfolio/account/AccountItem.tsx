@@ -1,136 +1,170 @@
-import React, {useState} from 'react';
-import {Pressable, View} from 'react-native';
+import React, {useCallback, useMemo, useState} from 'react';
+import {View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from 'components/AvaText';
 import {Space} from 'components/Space';
-import EditSVG from 'components/svg/EditSVG';
-import AccountChainAddress from 'screens/portfolio/account/AccountChainAddress';
 import {Account} from 'dto/Account';
-import {usePortfolio} from 'screens/portfolio/usePortfolio';
 import AvaButton from 'components/AvaButton';
-import {Opacity50} from 'resources/Constants';
-import CollapsibleSection from 'components/CollapsibleSection';
 import InputText from 'components/InputText';
-import FlexSpacer from 'components/FlexSpacer';
+import {Row} from 'components/Row';
+import CopySVG from 'components/svg/CopySVG';
+import {copyToClipboard} from 'utils/DeviceTools';
+import {usePortfolio} from 'screens/portfolio/usePortfolio';
 
 type Props = {
   account: Account;
-  expanded: boolean;
-  setExpanded: (accIndex: number) => void;
   onSelectAccount: (accountIndex: number) => void;
+  editable?: boolean;
+  selected?: boolean;
+  blurred?: boolean;
 };
 
 function AccountItem({
   account,
-  expanded,
-  setExpanded,
   onSelectAccount,
+  editable,
+  selected,
+  blurred,
 }: Props): JSX.Element {
   const context = useApplicationContext();
   // const accContext = useAccountsContext(); // For some reason this returns empty object
   const {accounts, saveAccounts} = useApplicationContext().repo.accountsRepo;
   const {balanceTotalInUSD} = usePortfolio();
   const [editAccount, setEditAccount] = useState(false);
+  const [editedAccountTitle, setEditedAccountTitle] = useState(account.title);
 
-  function onEditAccountName(): void {
-    setEditAccount(!editAccount);
-  }
-
-  function onTextEdited(newAccountName: string): void {
-    setEditAccount(false);
-    const accToUpdate = accounts.get(account.index);
-    if (accToUpdate) {
-      accToUpdate.title = newAccountName;
-      saveAccounts(accounts);
+  const bgColor = useMemo(() => {
+    if (selected) {
+      return context.isDarkMode
+        ? context.theme.colorBg3
+        : context.theme.colorBg2;
+    } else {
+      return context.isDarkMode
+        ? context.theme.colorBg2
+        : context.theme.colorBg2;
     }
-  }
+  }, [
+    context.isDarkMode,
+    context.theme.colorBg2,
+    context.theme.colorBg3,
+    selected,
+  ]);
 
-  function Title() {
+  const saveAccountTitle = useCallback(
+    (newAccountName: string) => {
+      setEditAccount(false);
+      const accToUpdate = accounts.get(account.index);
+      if (accToUpdate) {
+        accToUpdate.title = newAccountName;
+        saveAccounts(accounts);
+      }
+    },
+    [account.index, accounts, saveAccounts],
+  );
+
+  const Title = useCallback(() => {
     return (
-      <View
-        style={{flexDirection: 'row', paddingVertical: 16, marginBottom: 14}}>
-        <AvaText.Heading2
-          onTextEdited={onTextEdited}
-          editable={editAccount}
-          textStyle={{height: 24, padding: 0}}>
-          {account.title}
-        </AvaText.Heading2>
-        <FlexSpacer />
-        <AvaButton.Icon
-          style={{marginTop: -14, marginLeft: -8, marginBottom: -10}}
-          onPress={onEditAccountName}>
-          <EditSVG />
-        </AvaButton.Icon>
+      <AvaText.Heading2 ellipsizeMode={'tail'}>
+        {account.title}
+      </AvaText.Heading2>
+    );
+  }, [account.title]);
+
+  const EditTitle = useCallback(() => {
+    return (
+      <View style={{margin: -12}}>
+        <InputText
+          autoFocus
+          text={account.title}
+          onChangeText={setEditedAccountTitle}
+        />
       </View>
     );
-  }
+  }, [account.title]);
+
+  const Edit = useCallback(() => {
+    return (
+      <AvaButton.Base
+        rippleBorderless
+        onPress={() => setEditAccount(!editAccount)}
+        style={{paddingVertical: 4, paddingEnd: 8}}>
+        <AvaText.ButtonMedium style={{color: context.theme.colorAccent}}>
+          Edit
+        </AvaText.ButtonMedium>
+      </AvaButton.Base>
+    );
+  }, [context.theme.colorAccent, editAccount]);
+
+  const Save = useCallback(() => {
+    return (
+      <AvaButton.Base
+        rippleBorderless
+        disabled={!editedAccountTitle}
+        onPress={() => saveAccountTitle(editedAccountTitle)}
+        style={{paddingVertical: 4, paddingEnd: 8}}>
+        <AvaText.ButtonMedium style={{color: context.theme.colorAccent}}>
+          Save
+        </AvaText.ButtonMedium>
+      </AvaButton.Base>
+    );
+  }, [context.theme.colorAccent, editedAccountTitle, saveAccountTitle]);
+
+  const AddressC = useCallback(() => {
+    return (
+      <Row
+        style={{
+          alignItems: 'center',
+          height: 16,
+        }}>
+        <AvaButton.Icon onPress={() => copyToClipboard(account.cAddress)}>
+          <CopySVG size={16} />
+        </AvaButton.Icon>
+        <AvaText.ButtonSmall ellipsizeMode={'middle'}>
+          {account.cAddress}
+        </AvaText.ButtonSmall>
+      </Row>
+    );
+  }, [account.cAddress]);
 
   return (
     <>
-      <CollapsibleSection
-        onExpandedChange={isExpanded => {
-          console.log('ex', isExpanded);
-          if (isExpanded) {
-            setExpanded(account.index);
-          } else {
-            setEditAccount(false);
-          }
-        }}
-        startExpanded={expanded}
-        title={
-          expanded || (
-            <View style={{padding: 16}}>
-              <AvaText.Heading2>{account.title}</AvaText.Heading2>
-            </View>
-          )
-        }>
-        <Pressable
-          onPress={() => setEditAccount(false)}
-          style={[
-            {
-              backgroundColor: context.isDarkMode
-                ? context.theme.colorBg3 + Opacity50
-                : context.theme.colorBg2,
-              borderRadius: 8,
-              borderWidth: 1,
-              borderColor: context.theme.colorBg3,
-              padding: 16,
-            },
-          ]}>
-          <AvaButton.Base onPress={onEditAccountName}>
-            {editAccount ? (
-              <View style={{marginTop: -8, marginHorizontal: -8}}>
-                <InputText
-                  text={account.title}
-                  autoFocus
-                  mode={'confirmEntry'}
-                  onConfirm={text => onTextEdited(text)}
-                />
-              </View>
-            ) : (
-              <Title />
+      <AvaButton.Base
+        onPress={() => onSelectAccount(account.index)}
+        style={[
+          {
+            backgroundColor: bgColor,
+            padding: 16,
+          },
+        ]}>
+        <Row>
+          <View style={{flex: 1, justifyContent: 'center'}}>
+            {editAccount ? <EditTitle /> : <Title />}
+            {editable && (
+              // For smaller touch area
+              <Row>{editAccount ? <Save /> : <Edit />}</Row>
             )}
-          </AvaButton.Base>
-          <AvaText.Body2 currency>{balanceTotalInUSD}</AvaText.Body2>
-          <Space y={16} />
-          <AccountChainAddress
-            address={account.cAddress}
-            title={'C chain'}
-            color={context.theme.colorChain2}
-            addressColor={context.theme.colorChain2}
-            bgColor={context.theme.colorChain}
-          />
-          {!account.active && (
-            <>
-              <Space y={24} />
-              <AvaButton.PrimaryLarge
-                onPress={() => onSelectAccount(account.index)}>
-                Select
-              </AvaButton.PrimaryLarge>
-            </>
-          )}
-        </Pressable>
-      </CollapsibleSection>
+          </View>
+          <View
+            style={{
+              width: 116,
+              alignItems: 'flex-end',
+            }}>
+            <AddressC />
+            <Space y={6} />
+            <AvaText.Body3 currency>{balanceTotalInUSD}</AvaText.Body3>
+          </View>
+        </Row>
+      </AvaButton.Base>
+      {blurred && (
+        <View
+          style={{
+            position: 'absolute',
+            backgroundColor: context.theme.overlay,
+            width: '100%',
+            height: '100%',
+          }}
+        />
+      )}
     </>
   );
 }
