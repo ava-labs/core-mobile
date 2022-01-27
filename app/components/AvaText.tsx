@@ -1,20 +1,11 @@
-import React, {FC, useEffect, useState} from 'react';
-import {
-  StyleProp,
-  StyleSheet,
-  Text,
-  TextInput,
-  TextProps,
-  TextStyle,
-} from 'react-native';
+import React, {FC} from 'react';
+import {StyleProp, StyleSheet, Text, TextProps, TextStyle} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 
 type AvaTextProps = {
   textStyle?: StyleProp<TextStyle>;
   color?: string;
   ellipsizeMode?: 'head' | 'middle' | 'tail' | 'clip' | undefined;
-  editable?: boolean;
-  onTextEdited?: (editedText: string) => void;
   currency?: boolean;
 } & TextProps;
 
@@ -59,33 +50,14 @@ const TextHeading1: FC<AvaTextProps> = ({
 };
 
 const TextHeading2: FC<AvaTextProps> = ({
-  editable,
   ellipsizeMode,
-  onTextEdited,
   textStyle,
   children,
   ...rest
 }) => {
   const theme = useApplicationContext().theme;
-  const [value, setValue] = useState('');
 
-  useEffect(() => {
-    if (editable && typeof children === 'string') {
-      setValue(children);
-    } else {
-      setValue('');
-    }
-  }, [editable]);
-
-  return editable && typeof children === 'string' ? (
-    <TextInput
-      autoFocus={true}
-      onBlur={() => onTextEdited?.(value)}
-      onChangeText={text => setValue(text)}
-      value={value}
-      style={[styles.heading2, {color: theme.txtListItem}, textStyle]}
-    />
-  ) : (
+  return (
     <AvaxTextBase
       ellipsizeMode={ellipsizeMode}
       numberOfLines={ellipsizeMode ? 1 : undefined}
