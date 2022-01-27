@@ -7,7 +7,6 @@ export const Row: FC<ViewProps> = ({style, children}) => {
       style={[
         {
           flexDirection: 'row',
-          alignItems: 'baseline',
         },
         style,
       ]}>
