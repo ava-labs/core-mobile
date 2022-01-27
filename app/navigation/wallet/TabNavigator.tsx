@@ -64,7 +64,7 @@ const TabNavigator = () => {
       <Space x={48} />
       <FloatingActionButton
         backgroundColor={'#0A84FF'}
-        changeBackgroundColor={'#0A84FF'}
+        changeBackgroundColor={'#FFFFFF'}
         radius={110}
         size={69}
         changeIconTextColor={'#000000'}
