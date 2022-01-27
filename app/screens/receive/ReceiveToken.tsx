@@ -13,9 +13,8 @@ import AvaButton from 'components/AvaButton';
 import CopySVG from 'components/svg/CopySVG';
 import AvaText from 'components/AvaText';
 import {Opacity05} from 'resources/Constants';
-import {ShowSnackBar} from 'components/Snackbar';
 import {ScrollView} from 'react-native-gesture-handler';
-import Clipboard from '@react-native-clipboard/clipboard';
+import {copyToClipboard} from 'utils/DeviceTools';
 
 const SCREEN_WIDTH = Dimensions.get('window')?.width;
 
@@ -95,10 +94,7 @@ function ReceiveToken() {
       <View style={{flex: 1}}>
         <ScrollView>
           <AvaButton.Base
-            onPress={() => {
-              Clipboard.setString(selectedAddress);
-              ShowSnackBar('Copied');
-            }}
+            onPress={() => copyToClipboard(selectedAddress)}
             style={[
               {
                 display: 'flex',
