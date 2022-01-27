@@ -60,6 +60,7 @@ const TextHeading1: FC<AvaTextProps> = ({
 
 const TextHeading2: FC<AvaTextProps> = ({
   editable,
+  ellipsizeMode,
   onTextEdited,
   textStyle,
   children,
@@ -86,7 +87,13 @@ const TextHeading2: FC<AvaTextProps> = ({
     />
   ) : (
     <AvaxTextBase
-      style={[styles.heading2, {color: theme.txtListItem}, textStyle]}
+      ellipsizeMode={ellipsizeMode}
+      numberOfLines={ellipsizeMode ? 1 : undefined}
+      style={[
+        styles.heading2,
+        {color: theme.txtListItem, flexShrink: ellipsizeMode ? 1 : 0},
+        textStyle,
+      ]}
       {...rest}>
       {children}
     </AvaxTextBase>
@@ -210,9 +217,22 @@ const TextButtonMedium: FC<AvaTextProps> = ({textStyle, children, ...rest}) => {
   );
 };
 
-const TextButtonSmall: FC<AvaTextProps> = ({textStyle, children, ...rest}) => {
+const TextButtonSmall: FC<AvaTextProps> = ({
+  ellipsizeMode,
+  textStyle,
+  children,
+  ...rest
+}) => {
   return (
-    <AvaxTextBase style={[styles.textButtonSmall, textStyle]} {...rest}>
+    <AvaxTextBase
+      ellipsizeMode={ellipsizeMode}
+      numberOfLines={ellipsizeMode ? 1 : undefined}
+      style={[
+        styles.textButtonSmall,
+        {flexShrink: ellipsizeMode ? 1 : 0},
+        textStyle,
+      ]}
+      {...rest}>
       {children}
     </AvaxTextBase>
   );
