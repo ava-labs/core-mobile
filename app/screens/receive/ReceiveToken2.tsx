@@ -6,12 +6,21 @@ import AvaButton from 'components/AvaButton';
 import CopySVG from 'components/svg/CopySVG';
 import AvaText from 'components/AvaText';
 import {Space} from 'components/Space';
-import {createStackNavigator, TransitionPresets} from '@react-navigation/stack';
-import {NavigationContainer, useFocusEffect} from '@react-navigation/native';
+import {
+  createStackNavigator,
+  StackNavigationProp,
+  TransitionPresets,
+} from '@react-navigation/stack';
+import {
+  NavigationContainer,
+  useFocusEffect,
+  useNavigation,
+} from '@react-navigation/native';
 import AvaxQACode from 'components/AvaxQACode';
 import HeaderAccountSelector from 'components/HeaderAccountSelector';
 import AppNavigation from 'navigation/AppNavigation';
 import {copyToClipboard} from 'utils/DeviceTools';
+import {RootStackParamList} from 'navigation/WalletScreenStack';
 
 type ReceiveStackParams = {
   ReceiveCChain: undefined;
@@ -54,6 +63,17 @@ function ReceiveToken2({
   //   }
   // };
 
+  const HeaderAccountSelectorComp = () => {
+    const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+    return (
+      <HeaderAccountSelector
+        onPressed={() =>
+          navigation.navigate(AppNavigation.Modal.AccountDropDown)
+        }
+      />
+    );
+  };
+
   const receiveNavigator = (
     <ReceiveStack.Navigator
       initialRouteName={'ReceiveCChain'}
@@ -74,7 +94,7 @@ function ReceiveToken2({
           embedded
             ? {headerShown: false}
             : {
-                headerTitle: () => <HeaderAccountSelector />,
+                headerTitle: () => <HeaderAccountSelectorComp />,
               }
         }>
         {props => (
