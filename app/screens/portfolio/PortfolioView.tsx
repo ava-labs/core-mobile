@@ -110,6 +110,14 @@ const PortfolioView: FC<PortfolioProps> = memo(
       navigation.navigate(AppNavigation.Tabs.Watchlist);
     }
 
+    function manageTokens() {
+      navigation.navigate(AppNavigation.Wallet.SearchScreen);
+    }
+
+    function viewAllWatchlist() {
+      navigation.navigate(AppNavigation.Tabs.Watchlist);
+    }
+
     const renderItem = (item: ListRenderItemInfo<TokenWithBalance>) => {
       const token = item.item;
       return (
