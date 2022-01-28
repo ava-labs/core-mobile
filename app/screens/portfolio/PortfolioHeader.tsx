@@ -1,11 +1,7 @@
 import React, {FC, memo} from 'react';
 import {ActivityIndicator, StyleSheet, View} from 'react-native';
-import {
-  ApplicationContextState,
-  useApplicationContext,
-} from 'contexts/ApplicationContext';
+import {ApplicationContextState, useApplicationContext} from 'contexts/ApplicationContext';
 import {usePortfolio} from 'screens/portfolio/usePortfolio';
-import {useNavigation} from '@react-navigation/native';
 import AvaText from 'components/AvaText';
 import {Space} from 'components/Space';
 import Clipboard from '@react-native-clipboard/clipboard';
@@ -16,13 +12,13 @@ import AvaButton from 'components/AvaButton';
 // experimenting with container pattern and stable props to try to reduce re-renders
 function PortfolioHeaderContainer() {
   const context = useApplicationContext();
-  const navigation = useNavigation<PortfolioNavigationProp>();
   const {balanceTotalInUSD, isBalanceLoading, addressC} = usePortfolio();
   const {selectedCurrency, currencyFormatter} = context.appHook;
   const currencyBalance = currencyFormatter(Number(balanceTotalInUSD));
 
   return (
     <PortfolioHeader
+      appContext={context}
       balanceTotalUSD={currencyBalance}
       isBalanceLoading={isBalanceLoading}
       currencyCode={selectedCurrency}
@@ -32,6 +28,7 @@ function PortfolioHeaderContainer() {
 }
 
 interface PortfolioHeaderProps {
+  appContext: ApplicationContextState;
   balanceTotalUSD: string;
   isBalanceLoading: boolean;
   currencyCode: string;

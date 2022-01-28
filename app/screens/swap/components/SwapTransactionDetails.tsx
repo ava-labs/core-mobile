@@ -9,6 +9,8 @@ import {useNavigation} from '@react-navigation/native';
 import AvaButton from 'components/AvaButton';
 import {useSwapContext} from 'contexts/SwapContext';
 import {Popable} from 'react-native-popable';
+import {StackNavigationProp} from '@react-navigation/stack';
+import {RootStackParamList} from 'navigation/WalletScreenStack';
 
 interface SwapTransactionDetailProps {
   review?: boolean;
@@ -27,7 +29,7 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
   review = false,
 }) => {
   const context = useApplicationContext();
-  const navigation = useNavigation();
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const {trxDetails} = useSwapContext();
 
   function openTransactionFees() {
