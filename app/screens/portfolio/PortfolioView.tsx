@@ -23,7 +23,6 @@ import {getTokenUID} from 'utils/TokenTools';
 import {RootStackParamList} from 'navigation/WalletScreenStack';
 import WatchlistCarrousel from 'components/WatchlistCarrousel';
 import AvaText from 'components/AvaText';
-import {Space} from 'components/Space';
 import AvaButton from 'components/AvaButton';
 
 type PortfolioProps = {

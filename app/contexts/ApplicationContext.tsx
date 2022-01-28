@@ -1,7 +1,6 @@
 import React, {createContext, useContext, useState} from 'react';
 import {COLORS_DAY, COLORS_NIGHT} from 'resources/Constants';
 import type {Theme} from '@react-navigation/native';
-import {Appearance} from 'react-native';
 import {AppHook, useApp} from 'AppViewModel';
 import {Repo, useRepo} from 'Repo';
 

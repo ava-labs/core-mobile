@@ -23,6 +23,8 @@ import BridgeSVG from 'components/svg/BridgeSVG';
 import {Space} from 'components/Space';
 import ActionButtonItem from 'components/ActionButtonItem';
 import QRCodeSVG from 'components/svg/QRCodeSVG';
+import {StackNavigationProp} from '@react-navigation/stack';
+import {RootStackParamList} from 'navigation/WalletScreenStack';
 
 const Tab = createBottomTabNavigator();
 const TAB_ICON_SIZE = 28;
@@ -35,7 +37,7 @@ const PortfolioStackScreenWithProps = () => {
 
 const TabNavigator = () => {
   const theme = useApplicationContext().theme;
-  const navigation = useNavigation();
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const {openMoonPay} = useInAppBrowser();
 
   function normalTabButtons(
@@ -175,13 +177,5 @@ const TabNavigator = () => {
     </Tab.Navigator>
   );
 };
-
-const styles = StyleSheet.create({
-  actionButtonIcon: {
-    fontSize: 20,
-    height: 22,
-    color: 'white',
-  },
-});
 
 export default React.memo(TabNavigator);
