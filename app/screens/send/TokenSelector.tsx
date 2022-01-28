@@ -3,20 +3,17 @@ import {
   FlatList,
   InteractionManager,
   ListRenderItemInfo,
-  StyleSheet,
   TextInput,
   View,
 } from 'react-native';
-import SearchSVG from 'components/svg/SearchSVG';
-import {useApplicationContext} from 'contexts/ApplicationContext';
 import {TokenWithBalance} from '@avalabs/wallet-react-components';
 import {useSearchableTokenList} from 'screens/portfolio/useSearchableTokenList';
-import {Opacity50} from 'resources/Constants';
 import Loader from 'components/Loader';
 import ZeroState from 'components/ZeroState';
 import PortfolioListItem from 'screens/portfolio/components/PortfolioListItem';
 import {Space} from 'components/Space';
 import {getTokenUID} from 'utils/TokenTools';
+import SearchBar from 'components/SearchBar';
 
 const DEFAULT_HORIZONTAL_MARGIN = 16;
 
@@ -31,7 +28,6 @@ function TokenSelector({
 }: TokenSelectorProps) {
   const {filteredTokenList, searchText, setSearchText, loadTokenList} =
     useSearchableTokenList(false);
-  const context = useApplicationContext();
   const textInputRef = useRef() as RefObject<TextInput>;
 
   useEffect(() => {
@@ -80,28 +76,7 @@ function TokenSelector({
 
   return (
     <View style={{flex: 1, marginHorizontal: horizontalMargin}}>
-      <View style={styles.searchContainer}>
-        <View
-          style={[
-            styles.searchBackground,
-            {backgroundColor: context.theme.colorBg3 + Opacity50},
-          ]}>
-          <SearchSVG color={context.theme.onBgSearch} size={32} hideBorder />
-          <TextInput
-            ref={textInputRef}
-            style={[styles.searchInput, {color: context.theme.txtOnBgApp}]}
-            placeholder="Search"
-            placeholderTextColor={context.theme.onBgSearch}
-            value={searchText}
-            onChangeText={handleSearch}
-            underlineColorAndroid="transparent"
-            accessible
-            clearButtonMode="always"
-            autoCapitalize="none"
-            numberOfLines={1}
-          />
-        </View>
-      </View>
+      <SearchBar onTextChanged={handleSearch} initSearchText={searchText} />
       <Space y={16} />
       {!filteredTokenList ? (
         <Loader />
@@ -121,31 +96,5 @@ function TokenSelector({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  searchContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  searchBackground: {
-    alignItems: 'center',
-    borderRadius: 20,
-    flexDirection: 'row',
-    height: 40,
-    flex: 1,
-    justifyContent: 'center',
-    paddingStart: 12,
-  },
-  searchInput: {
-    paddingLeft: 4,
-    height: 40,
-    flex: 1,
-    marginRight: 24,
-    fontSize: 16,
-  },
-});
 
 export default TokenSelector;
