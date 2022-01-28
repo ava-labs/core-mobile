@@ -3,21 +3,16 @@ import {useApplicationContext} from 'contexts/ApplicationContext';
 import {View} from 'react-native';
 import AvaText from 'components/AvaText';
 import {Space} from 'components/Space';
-import AvaButton from 'components/AvaButton';
-import CarrotSVG from 'components/svg/CarrotSVG';
-import InputText from 'components/InputText';
-import {useNavigation} from '@react-navigation/native';
 import {
   ERC20WithBalance,
-  TokenWithBalance,
   useWalletStateContext,
 } from '@avalabs/wallet-react-components';
-import AppNavigation from 'navigation/AppNavigation';
-import Avatar from 'components/Avatar';
 import {useSwapContext} from 'contexts/SwapContext';
 import {getTokenUID} from 'utils/TokenTools';
 import numeral from 'numeral';
 import FlexSpacer from 'components/FlexSpacer';
+import TokenSelectAndAmount from 'components/TokenSelectAndAmount';
+import {mustNumber} from 'utils/JsTools';
 
 interface TokenDropDownProps {
   type?: 'From' | 'To';
@@ -26,11 +21,9 @@ interface TokenDropDownProps {
 
 const TokenDropDown: FC<TokenDropDownProps> = ({type, error}) => {
   const context = useApplicationContext();
-  const navigation = useNavigation();
   const swapContext = useSwapContext();
   const {avaxToken, erc20Tokens} = useWalletStateContext()!;
   const [srcTokenBalance, setSrcTokenBalance] = useState('-');
-  const [maxAmount, setMaxAmount] = useState(0);
 
   const isFrom = type === 'From';
 
@@ -68,20 +61,10 @@ const TokenDropDown: FC<TokenDropDownProps> = ({type, error}) => {
       setSrcTokenBalance(
         `${tokenWithBal.balanceDisplayValue} ${tokenWithBal.symbol}`,
       );
-      setMaxAmount(numeral(tokenWithBal.balanceDisplayValue).value());
     } else {
       setSrcTokenBalance('-');
-      setMaxAmount(0);
     }
   }, [swapContext.swapFrom.token]);
-
-  function selectToken() {
-    navigation.navigate(AppNavigation.Modal.SelectToken, {
-      onTokenSelected: (token: TokenWithBalance) => {
-        setToken(token);
-      },
-    });
-  }
 
   return (
     <View style={{marginHorizontal: 16, flex: 1}}>
@@ -94,54 +77,15 @@ const TokenDropDown: FC<TokenDropDownProps> = ({type, error}) => {
         {isFrom && <AvaText.Body2>{srcTokenBalance}</AvaText.Body2>}
       </View>
       <Space y={4} />
-      <View
-        style={[
-          {
-            flex: 1,
-            flexDirection: 'row',
-            paddingVertical: 8,
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            backgroundColor: context.theme.colorBg2,
-            borderRadius: 10,
-          },
-          context.shadow,
-        ]}>
-        <AvaButton.Base
-          style={{flexDirection: 'row', alignItems: 'center', padding: 16}}
-          onPress={selectToken}>
-          {selectedToken ? (
-            <>
-              <Avatar.Custom
-                name={selectedToken.name}
-                symbol={selectedToken.symbol}
-                logoUri={selectedToken.logoURI}
-              />
-              <Space x={8} />
-              <AvaText.Heading3>{selectedToken.symbol}</AvaText.Heading3>
-            </>
-          ) : (
-            <AvaText.Heading3>Select</AvaText.Heading3>
-          )}
-          <Space x={8} />
-          <CarrotSVG
-            direction={'down'}
-            size={12}
-            color={context.theme.colorText1}
-          />
-        </AvaButton.Base>
-        <View style={{flex: 1}}>
-          <InputText
-            mode={'amount'}
-            keyboardType="numeric"
-            onMax={isFrom ? () => setAmount(maxAmount) : undefined}
-            onChangeText={text => {
-              setAmount(Number.parseFloat(text));
-            }}
-            text={amount.toString()}
-          />
-        </View>
-      </View>
+      <TokenSelectAndAmount
+        initToken={selectedToken}
+        initAmount={amount.toString()}
+        onTokenSelect={token => setToken(token)}
+        onAmountSet={amount1 =>
+          setAmount(mustNumber(() => Number.parseFloat(amount1), 0))
+        }
+        maxEnabled={isFrom}
+      />
       <Space y={8} />
       <View
         style={{

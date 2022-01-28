@@ -1,32 +1,26 @@
 import React, {FC, memo} from 'react';
 import {ActivityIndicator, View} from 'react-native';
-import {
-  ApplicationContextState,
-  useApplicationContext,
-} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 import {usePortfolio} from 'screens/portfolio/usePortfolio';
 import {useNavigation} from '@react-navigation/native';
 import AvaText from 'components/AvaText';
-import {PortfolioNavigationProp} from 'screens/portfolio/PortfolioView';
 import {Space} from 'components/Space';
 import CircularButton from 'components/CircularButton';
 import ArrowSVG from 'components/svg/ArrowSVG';
 import AppNavigation from 'navigation/AppNavigation';
 import BuySVG from 'components/svg/BuySVG';
 import useInAppBrowser from 'hooks/useInAppBrowser';
+import {RootStackParamList} from 'navigation/WalletScreenStack';
+import {StackNavigationProp} from '@react-navigation/stack';
 
 // experimenting with container pattern and stable props to try to reduce re-renders
 function PortfolioHeaderContainer() {
-  const context = useApplicationContext();
-  const navigation = useNavigation<PortfolioNavigationProp>();
   const {balanceTotalInUSD, isBalanceLoading} = usePortfolio();
-  const {selectedCurrency, currencyFormatter} = context.appHook;
+  const {selectedCurrency, currencyFormatter} = useApplicationContext().appHook;
   const currencyBalance = currencyFormatter(Number(balanceTotalInUSD));
 
   return (
     <PortfolioHeader
-      appContext={context}
-      navigation={navigation}
       balanceTotalUSD={currencyBalance}
       isBalanceLoading={isBalanceLoading}
       currencyCode={selectedCurrency}
@@ -35,24 +29,16 @@ function PortfolioHeaderContainer() {
 }
 
 interface PortfolioHeaderProps {
-  appContext: ApplicationContextState;
-  navigation: PortfolioNavigationProp;
   balanceTotalUSD: string;
   isBalanceLoading: boolean;
   currencyCode: string;
 }
 
 const PortfolioHeader: FC<PortfolioHeaderProps> = memo(
-  ({
-    navigation,
-    appContext,
-    balanceTotalUSD = 0,
-    isBalanceLoading = false,
-    currencyCode,
-  }) => {
-    const theme = appContext.theme;
+  ({balanceTotalUSD = 0, isBalanceLoading = false, currencyCode}) => {
+    const {theme} = useApplicationContext();
     const {openMoonPay} = useInAppBrowser();
-
+    const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
     const sendArrow = (
       <ArrowSVG size={20} color={theme.colorText1} rotate={225} />
     );

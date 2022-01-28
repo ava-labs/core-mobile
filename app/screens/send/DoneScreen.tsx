@@ -7,11 +7,12 @@ import LinkSVG from 'components/svg/LinkSVG';
 import {Space} from 'components/Space';
 import ClearSVG from 'components/svg/ClearSVG';
 import {useApplicationContext} from 'contexts/ApplicationContext';
-import {useRoute} from '@react-navigation/native';
+import {RouteProp, useRoute} from '@react-navigation/native';
 import {
   FUJI_NETWORK,
   useNetworkContext,
 } from '@avalabs/wallet-react-components';
+import {SendStackParamList} from 'navigation/wallet/SendScreenStack';
 
 interface DoneProps {
   onClose: () => void;
@@ -19,11 +20,11 @@ interface DoneProps {
 
 export default function DoneScreen({onClose}: DoneProps): JSX.Element {
   const theme = useApplicationContext().theme;
-  const route = useRoute();
   const networkContext = useNetworkContext();
   const [explorerUrl, setExplorerUrl] = useState<string>();
 
-  const transactionId = route?.params?.transactionId;
+  const transactionId =
+    useRoute<RouteProp<SendStackParamList>>()?.params?.transactionId;
 
   useEffect(() => {
     if (networkContext) {
