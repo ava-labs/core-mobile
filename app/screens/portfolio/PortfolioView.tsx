@@ -13,6 +13,8 @@ import ZeroState from 'components/ZeroState';
 import {usePortfolio} from 'screens/portfolio/usePortfolio';
 import Loader from 'components/Loader';
 import {useSelectedTokenContext} from 'contexts/SelectedTokenContext';
+import {getTokenUID} from 'utils/TokenTools';
+import {RootStackParamList} from 'navigation/WalletScreenStack';
 
 type PortfolioProps = {
   onExit: () => void;
@@ -76,6 +78,8 @@ const PortfolioView: FC<PortfolioProps> = memo(
   }: PortfolioProps) => {
     const listRef = useRef<FlatList>(null);
     const navigation = useNavigation<PortfolioNavigationProp>();
+    const rootNavigation =
+      useNavigation<StackNavigationProp<RootStackParamList>>();
 
     useEffect(() => {
       const unsubscribe = navigation.addListener('focus', () => {
@@ -86,7 +90,7 @@ const PortfolioView: FC<PortfolioProps> = memo(
 
     function selectToken(token: TokenWithBalance) {
       setSelectedToken?.(token);
-      navigation.navigate(AppNavigation.Modal.SendReceiveBottomSheet);
+      rootNavigation.navigate(AppNavigation.Wallet.SendTokens, {token});
     }
 
     const renderItem = (item: ListRenderItemInfo<TokenWithBalance>) => {
@@ -115,7 +119,7 @@ const PortfolioView: FC<PortfolioProps> = memo(
             style={[styles.tokenList, tokenList?.length === 1 && {flex: 0}]}
             data={tokenList}
             renderItem={renderItem}
-            keyExtractor={(item: TokenWithBalance) => item?.symbol}
+            keyExtractor={(item: TokenWithBalance) => getTokenUID(item)}
             onRefresh={handleRefresh}
             refreshing={false}
             scrollEventThrottle={16}

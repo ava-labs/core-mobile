@@ -40,6 +40,7 @@ type Props = {
   autoFocus?: boolean;
   text?: string;
   currency?: string;
+  onInputRef?: (inputRef: RefObject<TextInput>) => void;
 };
 
 export default function InputText(props: Props | Readonly<Props>) {
@@ -51,6 +52,10 @@ export default function InputText(props: Props | Readonly<Props>) {
   const [mode] = useState(props.mode ?? 'default');
   const textInputRef = useRef() as RefObject<TextInput>;
   const [initText, setInitText] = useState(props.text);
+
+  useEffect(() => {
+    props.onInputRef?.(textInputRef);
+  }, [textInputRef]);
 
   useEffect(() => {
     if (props.text !== undefined && isNaN(Number(props.text))) {
@@ -201,10 +206,12 @@ export default function InputText(props: Props | Readonly<Props>) {
   const onChangeText = (text: string): void => {
     if (props.keyboardType === 'numeric') {
       text = text.replace(',', '.');
-      text = text.replace(/[^.\d]/g, '');
-      text = text.replace(/^0+/g, '0');
+      text = text.replace(/[^.\d]/g, ''); //remove non-digits
+      text = text.replace(/^0+/g, '0'); //remove starting double 0
+      text = text.replace(/^0(?=\d)/g, ''); //remove starting 0 if next one is digit
       let numOfDots = 0;
       text = text.replace(/\./g, substring => {
+        //remove extra decimal points
         if (numOfDots === 0) {
           numOfDots++;
           return substring;
