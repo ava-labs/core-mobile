@@ -62,7 +62,7 @@ export function useWalletSetup(): WalletSetup {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     // noinspection JSVoidFunctionReturnValueUsed
-    walletContext.setMnemonic(mnemonic).then(() => {
+    walletContext.initWalletMnemonic(mnemonic).then(() => {
       if (existingAccounts.size === 0) {
         const accounts = new Map();
         const newAccount = accountsContext.addAccount();
@@ -96,7 +96,7 @@ export function useWalletSetup(): WalletSetup {
     // setMnemonic should be an async call, because
     // accountsContext.addAccount() can only be called after the
     // mnemonic has been set.
-    walletContext.setMnemonic(mnemonic);
+    walletContext.initWalletMnemonic(mnemonic);
 
     // for this reason we add a small delay between calls.
     setTimeout(() => {
