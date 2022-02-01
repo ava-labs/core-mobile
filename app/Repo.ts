@@ -7,11 +7,16 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
  * If we want to support multiple wallets we need to keep track of different wallet id-s.
  */
 const WALLET_ID = 'WALLET_ID';
-const ADDR_BOOK = 'ADDR_BOOK';
+const ADDR_BOOK = 'ADDR_BOOK_1';
 
 type AccountId = number;
-type Address = string;
-type Title = string;
+type UID = string;
+
+export type Contact = {
+  address: string;
+  title: string;
+  id: string;
+};
 
 export type Repo = {
   accountsRepo: {
@@ -20,16 +25,14 @@ export type Repo = {
     setActiveAccount: (accountIndex: number) => void;
   };
   addressBookRepo: {
-    addressBook: Map<Address, Title>;
-    saveAddressBook: (addressBook: Map<Address, Title>) => void;
+    addressBook: Map<UID, Contact>;
+    saveAddressBook: (addressBook: Map<UID, Contact>) => void;
   };
 };
 
 export function useRepo(): Repo {
   const [accounts, setAccounts] = useState<Map<AccountId, Account>>(new Map());
-  const [addressBook, setAddressBook] = useState<Map<Address, Title>>(
-    new Map(),
-  );
+  const [addressBook, setAddressBook] = useState<Map<UID, Contact>>(new Map());
 
   useEffect(() => {
     loadAccountsFromStorage().then(value => setAccounts(value));
@@ -46,7 +49,7 @@ export function useRepo(): Repo {
     saveAccounts(accounts);
   };
 
-  const saveAddressBook = (addrBook: Map<Address, Title>) => {
+  const saveAddressBook = (addrBook: Map<UID, Contact>) => {
     setAddressBook(new Map(addrBook));
     saveAddressBookToStorage(addrBook).catch(reason => console.error());
   };
@@ -67,8 +70,8 @@ async function loadAccountsFromStorage() {
 async function loadAddressBookFromStorage() {
   const rawAddrBook = await AsyncStorage.getItem(ADDR_BOOK);
   return rawAddrBook
-    ? (new Map(JSON.parse(rawAddrBook)) as Map<Address, Title>)
-    : new Map<Address, Title>();
+    ? (new Map(JSON.parse(rawAddrBook)) as Map<UID, Contact>)
+    : new Map<UID, Contact>();
 }
 
 async function saveAccountsToStorage(
@@ -83,7 +86,7 @@ async function saveAccountsToStorage(
   }
 }
 
-async function saveAddressBookToStorage(addrBook: Map<Address, Title>) {
+async function saveAddressBookToStorage(addrBook: Map<UID, Contact>) {
   const stringifiedAddrBook = JSON.stringify([...addrBook]);
   if (stringifiedAddrBook === undefined) {
     console.error(addrBook);

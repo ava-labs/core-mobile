@@ -28,6 +28,7 @@ enum LoginWithMnemonicStackScreens {
 
 enum WalletScreens {
   AddCustomToken = 'WalletScreens.AddCustomToken',
+  AddressBook = 'WalletScreens.AddressBook',
   CurrencySelector = 'WalletScreens.CurrencySelector',
   Drawer = 'WalletScreens.Drawer',
   Legal = 'WalletScreens.Legal',
@@ -90,6 +91,13 @@ enum SendScreens {
   Success = 'SendScreens.Success',
 }
 
+enum AddressBookScreens {
+  List = 'AddressBookScreens.List',
+  Add = 'AddressBookScreens.Add',
+  Edit = 'AddressBookScreens.Edit',
+  Details = 'AddressBookScreens.Details',
+}
+
 const AppNavigation = {
   Root: Root,
   Onboard: OnboardScreens,
@@ -102,6 +110,7 @@ const AppNavigation = {
   SendToken: SendTokenScreens,
   Swap: SwapScreens,
   Send: SendScreens,
+  AddressBook: AddressBookScreens,
 };
 
 export default AppNavigation;
