@@ -7,7 +7,7 @@ import {MainHeaderOptions} from 'navigation/NavUtils';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import PortfolioStackScreen from 'navigation/wallet/PortfolioScreenStack';
-import React from 'react';
+import React, {ReactElement} from 'react';
 import {noop} from 'rxjs';
 import ActivityView from 'screens/activity/ActivityView';
 import SwapScreenStack from 'navigation/wallet/SwapScreenStack';
@@ -23,6 +23,8 @@ import FloatingActionButton from 'components/svg/FloatingActionButton';
 import useInAppBrowser from 'hooks/useInAppBrowser';
 import HistorySVG from 'components/svg/HistorySVG';
 import BridgeSVG from 'components/svg/BridgeSVG';
+import {Space} from 'components/Space';
+import ActionButtonItem from 'components/ActionButtonItem';
 
 const Tab = createBottomTabNavigator();
 const TAB_ICON_SIZE = 28;
@@ -56,90 +58,49 @@ const TabNavigator = () => {
     );
   }
 
-  const CustomTabBarFab = ({children}) => (
-    // <View
-    //   pointerEvents={'box-none'}
-    //   style={{
-    //     top: -50,
-    //     position: 'absolute',
-    //     justifyContent: 'center',
-    //     alignItems: 'center',
-    //     width: '100%',
-    //     backgroundColor: 'green',
-    //     height: 200,
-    //   }}>
-    //   {/*{fabActive && (*/}
-    //   {/*  <LinearGradient*/}
-    //   {/*    pointerEvents={'box-none'}*/}
-    //   {/*    colors={['transparent', '#000000D9', '#000000']}*/}
-    //   {/*    style={{height: 400, width: '100%', flex: 1}}*/}
-    //   {/*  />*/}
-    //   {/*)}*/}
+  const CustomTabBarFab = ({children}: {children: ReactElement}) => (
     <>
-      <View style={{width: 48}} />
+      {/* necessary for spacing betten the fab and bottle bar buttons */}
+      <Space x={48} />
       <FloatingActionButton
         backgroundColor={'#0A84FF'}
         changeBackgroundColor={'#FFFFFF'}
         radius={110}
         size={69}
         changeIconTextColor={'#000000'}
-        iconText={'+'}
+        icon={children}
         iconTextColor={'#FFFFFF'}>
-        <ActionButton.Item />
-        <ActionButton.Item
+        <ActionButtonItem />
+        <ActionButtonItem
           buttonColor={theme.alternateBackground}
           title="Buy"
           btnOutRangeText={'#ffffff'}
           onPress={() => openMoonPay()}>
           <BuySVG color={theme.background} />
-        </ActionButton.Item>
-        <ActionButton.Item
+        </ActionButtonItem>
+        <ActionButtonItem
           buttonColor={theme.alternateBackground}
           title="Send"
           onPress={() => navigation.navigate(AppNavigation.Wallet.SendTokens)}>
           <ArrowSVG rotate={225} color={theme.background} size={20} />
-        </ActionButton.Item>
-        <ActionButton.Item
+        </ActionButtonItem>
+        <ActionButtonItem
           buttonColor={theme.alternateBackground}
           title="Receive"
           onPress={() => {
             navigation.navigate(AppNavigation.Wallet.ReceiveTokens);
           }}>
           <ArrowSVG rotate={45} color={theme.background} size={20} />
-        </ActionButton.Item>
-        <ActionButton.Item
+        </ActionButtonItem>
+        <ActionButtonItem
           buttonColor={theme.alternateBackground}
           title="Swap"
           onPress={() => navigation.navigate(AppNavigation.Wallet.Swap)}>
           <SwapSVG color={theme.background} size={24} />
-        </ActionButton.Item>
-        <ActionButton.Item />
+        </ActionButtonItem>
+        <ActionButtonItem />
       </FloatingActionButton>
     </>
-    // </View>
-
-    // <Pressable
-    //   style={{
-    //     top: -100,
-    //     position: 'absolute',
-    //     justifyContent: 'center',
-    //     alignItems: 'center',
-    //     width: '100%',
-    //     height: 200,
-    //   }}
-    //   onPress={() => {
-    //     Alert.alert('This is being intercepted');
-    //   }}>
-    //   <View
-    //     style={{
-    //       width: 48,
-    //       height: 48,
-    //       borderRadius: 35,
-    //       backgroundColor: '#0A84FF',
-    //     }}>
-    //     {children}
-    //   </View>
-    // </Pressable>
   );
 
   return (

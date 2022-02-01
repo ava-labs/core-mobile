@@ -8,13 +8,6 @@ import {usePortfolio} from 'screens/portfolio/usePortfolio';
 import {useNavigation} from '@react-navigation/native';
 import AvaText from 'components/AvaText';
 import {Space} from 'components/Space';
-import CircularButton from 'components/CircularButton';
-import ArrowSVG from 'components/svg/ArrowSVG';
-import AppNavigation from 'navigation/AppNavigation';
-import BuySVG from 'components/svg/BuySVG';
-import useInAppBrowser from 'hooks/useInAppBrowser';
-import {RootStackParamList} from 'navigation/WalletScreenStack';
-import {StackNavigationProp} from '@react-navigation/stack';
 import Clipboard from '@react-native-clipboard/clipboard';
 import {ShowSnackBar} from 'components/Snackbar';
 import CopySVG from 'components/svg/CopySVG';
@@ -46,7 +39,13 @@ interface PortfolioHeaderProps {
 }
 
 const PortfolioHeader: FC<PortfolioHeaderProps> = memo(
-  ({addressC, appContext, balanceTotalUSD = 0, isBalanceLoading = false, currencyCode}) => {
+  ({
+    addressC,
+    appContext,
+    balanceTotalUSD = 0,
+    isBalanceLoading = false,
+    currencyCode,
+  }) => {
     const theme = appContext.theme;
 
     return (
