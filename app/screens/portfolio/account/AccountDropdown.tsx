@@ -29,7 +29,7 @@ function AccountDropdown({
   const accountsContext = useAccountsContext();
   const {goBack} = useNavigation();
   const animScale = useRef(new Animated.Value(0)).current;
-  const animTranslateY = useRef(new Animated.Value(-170)).current;
+  const animTranslateY = useRef(new Animated.Value(-370)).current;
 
   useEffect(() => {
     Animated.timing(animScale, {
@@ -43,9 +43,9 @@ function AccountDropdown({
   useEffect(() => {
     Animated.timing(animTranslateY, {
       toValue: 0,
-      duration: 400,
+      duration: 600,
       useNativeDriver: true,
-      easing: Easing.elastic(1),
+      easing: Easing.elastic(1.2),
     }).start();
   }, [animTranslateY]);
 
@@ -100,9 +100,6 @@ function AccountDropdown({
             transform: [
               {
                 translateY: animTranslateY,
-              },
-              {
-                scaleY: animScale,
               },
             ],
             height: 340,
