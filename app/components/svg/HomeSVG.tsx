@@ -11,7 +11,7 @@ function HomeSVG({selected, size = 32}: Prop) {
   const context = useApplicationContext();
 
   const svgColor = selected
-    ? context.theme.accentColor
+    ? context.theme.alternateBackground
     : context.theme.onBgSearch;
   return (
     <Svg width={size} height={size} viewBox="0 0 32 33" fill="none">

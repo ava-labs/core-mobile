@@ -104,11 +104,11 @@ const FloatingActionButton: FC<Props> = ({
             btnColor={backgroundColor}
             {...button.props}
             onPress={() => {
-              if (this.props.autoInactive) {
-                this.timeout = setTimeout(() => {
-                  this.reset();
-                }, 200);
-              }
+              // if (this.props.autoInactive) {
+              //   this.timeout = setTimeout(() => {
+              //     this.reset();
+              //   }, 200);
+              // }
               button.props.onPress();
             }}
           />
@@ -141,8 +141,9 @@ const FloatingActionButton: FC<Props> = ({
   return (
     <View
       pointerEvents="box-none"
-      style={[styles.overlay, {height: 400, top: -100}]}>
+      style={[styles.overlay, {height: 400, top: -100, zIndex: 99999}]}>
       <Animated.View
+        pointerEvents={'box-none'}
         style={{
           opacity: anim,
         }}>
@@ -150,8 +151,8 @@ const FloatingActionButton: FC<Props> = ({
           pointerEvents={'box-none'}
           colors={['transparent', '#000000D9', '#000000']}
           style={{
-            height: 100,
-            bottom: 0,
+            height: 130,
+            bottom: 30,
           }}
         />
         {children && renderActionItems}
@@ -161,7 +162,7 @@ const FloatingActionButton: FC<Props> = ({
           // position: 'absolute',
           alignSelf: 'center',
           justifyContent: 'flex-end',
-          top: -35,
+          top: -65,
         }}
         onPress={() => {
           if (children) {

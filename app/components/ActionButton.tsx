@@ -214,11 +214,11 @@ export default class ActionButton extends Component {
             btnColor={this.props.btnOutRange}
             {...button.props}
             onPress={() => {
-              if (this.props.autoInactive) {
-                this.timeout = setTimeout(() => {
-                  this.reset();
-                }, 200);
-              }
+              // if (this.props.autoInactive) {
+              //   this.timeout = setTimeout(() => {
+              //     this.reset();
+              //   }, 200);
+              // }
               button.props.onPress();
             }}
           />

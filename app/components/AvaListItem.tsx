@@ -38,7 +38,7 @@ function BaseListItem({
   return (
     <View
       style={[
-        {paddingVertical: 16},
+        {paddingVertical: 16, height: 64, justifyContent: 'center'},
         embedInCard && {
           backgroundColor: context.theme.listItemBg,
           marginHorizontal: 16,
@@ -110,6 +110,9 @@ function BaseListItem({
               flexDirection: 'row',
               maxWidth: 150,
               flexShrink: 1,
+              flex: 1,
+              justifyContent: 'flex-end',
+              alignSelf: 'flex-start',
             }}>
             {rightComponent && rightComponent}
             {showNavigationArrow && <CarrotSVG />}
@@ -146,6 +149,7 @@ function CurrencyAmountHelper({
         flexDirection: 'row',
         justifyContent: justifyContent || 'flex-start',
         flexShrink: 1,
+        alignItems: 'flex-end',
       }}>
       {value}
       {currency}

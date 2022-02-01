@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React from 'react';
 import Svg, {Path} from 'react-native-svg';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 
@@ -7,7 +7,7 @@ interface Prop {
   size: number;
 }
 
-function ActivitySVG({selected, size = 32}: Prop) {
+function LightningBoltSVG({selected, size = 32}: Prop) {
   const context = useApplicationContext();
 
   const svgColor = selected
@@ -24,4 +24,4 @@ function ActivitySVG({selected, size = 32}: Prop) {
   );
 }
 
-export default ActivitySVG;
+export default LightningBoltSVG;
