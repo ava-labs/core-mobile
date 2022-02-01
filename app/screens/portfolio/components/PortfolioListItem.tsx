@@ -74,10 +74,16 @@ const PortfolioListItem: FC<Props> = ({
         backgroundColor: theme.listItemBg,
       }}>
       <AvaListItem.Base
-        title={title}
+        title={<AvaText.Heading2>{title}</AvaText.Heading2>}
+        titleAlignment={'flex-start'}
         subtitle={subTitle}
         leftComponent={
-          <Avatar.Custom name={tokenName} symbol={symbol} logoUri={image} />
+          <Avatar.Custom
+            name={tokenName}
+            symbol={symbol}
+            logoUri={image}
+            size={40}
+          />
         }
         rightComponent={usdBalance()}
         onPress={onPress}

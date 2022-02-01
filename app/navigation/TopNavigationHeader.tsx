@@ -8,6 +8,7 @@ import SwitchesSVG from 'components/svg/SwitchesSVG';
 import HeaderAccountSelector from 'components/HeaderAccountSelector';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {RootStackParamList} from 'navigation/WalletScreenStack';
+import QRCodeSVG from 'components/svg/QRCodeSVG';
 
 const TopNavigationHeader: FC = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
@@ -29,8 +30,8 @@ const TopNavigationHeader: FC = () => {
       />
       <AvaButton.Icon
         style={{marginRight: 8}}
-        onPress={() => navigation.navigate(AppNavigation.Wallet.SearchScreen)}>
-        <SwitchesSVG />
+        onPress={() => navigation.navigate(AppNavigation.Wallet.ReceiveTokens)}>
+        <QRCodeSVG />
       </AvaButton.Icon>
     </View>
   );
