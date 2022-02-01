@@ -93,7 +93,7 @@ export default function ReviewSend({
           address={toAccount.address}
         />
         <Space y={16} />
-        <Row>
+        <Row style={{alignItems: 'baseline'}}>
           <AvaText.Heading3>≈ ${sendFeeUsd?.toFixed(4)}</AvaText.Heading3>
           <Space x={4} />
           <AvaText.Body3 textStyle={{paddingBottom: 2}}>

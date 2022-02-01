@@ -6,8 +6,7 @@ import {Space} from 'components/Space';
 import OvalTagBg from 'components/OvalTagBg';
 import FlexSpacer from 'components/FlexSpacer';
 import CopySVG from 'components/svg/CopySVG';
-import Clipboard from '@react-native-clipboard/clipboard';
-import {ShowSnackBar} from 'components/Snackbar';
+import {copyToClipboard} from 'utils/DeviceTools';
 
 type Props = {
   title: string;
@@ -15,11 +14,6 @@ type Props = {
   color: string;
   addressColor: string;
   bgColor: string;
-};
-
-const copyToClipboard = (str: string): void => {
-  Clipboard.setString(str);
-  ShowSnackBar('Copied');
 };
 
 function AccountChainAddress({

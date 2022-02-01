@@ -4,10 +4,9 @@ import AvaText from 'components/AvaText';
 import {Space} from 'components/Space';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import MnemonicAva from 'screens/onboarding/MnemonicAva';
-import Clipboard from '@react-native-clipboard/clipboard';
-import {ShowSnackBar} from 'components/Snackbar';
 import AvaButton from 'components/AvaButton';
 import CopySVG from 'components/svg/CopySVG';
+import {copyToClipboard} from 'utils/DeviceTools';
 
 type Props = {
   mnemonic: string;
@@ -15,11 +14,6 @@ type Props = {
 
 export default function MnemonicScreen({mnemonic}: Props) {
   const {theme, isDarkMode} = useApplicationContext();
-
-  const copyToClipboard = (): void => {
-    Clipboard.setString(mnemonic);
-    ShowSnackBar('Copied');
-  };
 
   const mnemonics = () => {
     const mnemonics: Element[] = [];
@@ -48,7 +42,7 @@ export default function MnemonicScreen({mnemonic}: Props) {
       <View style={{alignSelf: 'flex-end', marginTop: 16}}>
         <AvaButton.TextWithIcon
           disabled={!mnemonic}
-          onPress={copyToClipboard}
+          onPress={() => copyToClipboard(mnemonic)}
           icon={<CopySVG />}
           text={
             <AvaText.ButtonMedium

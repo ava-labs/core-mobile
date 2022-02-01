@@ -36,7 +36,7 @@ function AccountBottomSheet(): JSX.Element {
       snapPoints={snapPoints}
       backgroundComponent={TabViewBackground}
       onChange={handleChange}>
-      <AccountView />
+      <AccountView onDone={() => navigation.goBack()} />
     </BottomSheet>
   );
 }
