@@ -7,6 +7,7 @@ import CopySVG from 'components/svg/CopySVG';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {Space} from 'components/Space';
 import {copyToClipboard} from 'utils/DeviceTools';
+import useAddressBook from 'screens/drawer/addressBook/useAddressBook';
 
 interface Props {
   title: string;
@@ -15,11 +16,7 @@ interface Props {
 
 export default function AddressBookItem({title, address}: Props) {
   const {theme} = useApplicationContext();
-  const initials = useMemo(() => {
-    return title.split(' ').reduce((previousValue, currentValue) => {
-      return previousValue + currentValue[0];
-    }, '');
-  }, [title]);
+  const {titleToInitials} = useAddressBook();
 
   const shortAddress = useMemo(() => {
     return address;
@@ -34,7 +31,7 @@ export default function AddressBookItem({title, address}: Props) {
         justifyContent: 'space-between',
         alignItems: 'center',
       }}>
-      <BlockchainCircle chain={initials} onChainSelected={() => {}} />
+      <BlockchainCircle chain={titleToInitials(title)} />
       <View style={{flex: 1, marginHorizontal: 16}}>
         <AvaText.Heading3 ellipsizeMode={'tail'}>{title}</AvaText.Heading3>
       </View>

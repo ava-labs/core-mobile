@@ -13,12 +13,13 @@ import SignOutItem from 'screens/drawer/components/SignOutItem';
 import SplashLogoSVG from 'components/svg/SplashLogoSVG';
 import NetworkItem from 'screens/drawer/components/NetworkItem';
 import {Space} from 'components/Space';
+import AddressBookItem from 'screens/drawer/components/AddressBookItem';
 
 const DrawerView = () => {
   const context = useApplicationContext();
 
   function toggleDarkLightMode() {
-    Alert.alert('Toggle dark/ligt mode');
+    Alert.alert('Toggle dark/light mode');
   }
 
   const header = (
@@ -35,7 +36,16 @@ const DrawerView = () => {
     </View>
   );
 
-  const renderContent = () => (
+  return (
+    <View style={[styles.container, {backgroundColor: context.theme.colorBg2}]}>
+      {header}
+      <Main />
+    </View>
+  );
+};
+
+const Main = () => {
+  return (
     <View
       style={{
         flex: 1,
@@ -43,6 +53,7 @@ const DrawerView = () => {
       <ScrollView>
         <Space y={48} />
         <NetworkItem />
+        <AddressBookItem />
         <CurrencyItem />
         <Separator style={{marginHorizontal: 16}} />
         <SecurityItem />
@@ -52,13 +63,6 @@ const DrawerView = () => {
       <Separator style={{marginHorizontal: 16}} />
       <VersionItem />
       <SignOutItem />
-    </View>
-  );
-
-  return (
-    <View style={[styles.container, {backgroundColor: context.theme.colorBg2}]}>
-      {header}
-      {renderContent()}
     </View>
   );
 };
