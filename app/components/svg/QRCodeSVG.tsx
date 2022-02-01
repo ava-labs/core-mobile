@@ -4,14 +4,15 @@ import {useApplicationContext} from 'contexts/ApplicationContext';
 
 interface Prop {
   color?: string;
+  size?: number;
 }
 
-export default function QRCodeSVG({color}: Prop) {
+export default function QRCodeSVG({color, size = 24}: Prop) {
   const context = useApplicationContext();
 
   const iconColor = color ?? context.theme.alternateBackground;
   return (
-    <Svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
         d="M15 20C14.4477 20 14 20.4477 14 21C14 21.5523 14.4477 22 15 22H20C21.1046 22 22 21.1046 22 20V15C22 14.4477 21.5523 14 21 14C20.4477 14 20 14.4477 20 15V19.3571C20 19.7122 19.7122 20 19.3571 20H15Z"
         fill={iconColor}

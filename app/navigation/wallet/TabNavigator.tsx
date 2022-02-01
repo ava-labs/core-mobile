@@ -10,13 +10,10 @@ import PortfolioStackScreen from 'navigation/wallet/PortfolioScreenStack';
 import React, {ReactElement} from 'react';
 import {noop} from 'rxjs';
 import ActivityView from 'screens/activity/ActivityView';
-import SwapScreenStack from 'navigation/wallet/SwapScreenStack';
-import SwapView from 'screens/swap/SwapView';
-import {Alert, Pressable, StyleSheet, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import AddSVG from 'components/svg/AddSVG';
 import AvaText from 'components/AvaText';
 import BuySVG from 'components/svg/BuySVG';
-import ActionButton from 'components/ActionButton';
 import ArrowSVG from 'components/svg/ArrowSVG';
 import {useNavigation} from '@react-navigation/native';
 import FloatingActionButton from 'components/svg/FloatingActionButton';
@@ -25,6 +22,7 @@ import HistorySVG from 'components/svg/HistorySVG';
 import BridgeSVG from 'components/svg/BridgeSVG';
 import {Space} from 'components/Space';
 import ActionButtonItem from 'components/ActionButtonItem';
+import QRCodeSVG from 'components/svg/QRCodeSVG';
 
 const Tab = createBottomTabNavigator();
 const TAB_ICON_SIZE = 28;
@@ -64,7 +62,7 @@ const TabNavigator = () => {
       <Space x={48} />
       <FloatingActionButton
         backgroundColor={'#0A84FF'}
-        changeBackgroundColor={'#FFFFFF'}
+        changeBackgroundColor={'#0A84FF'}
         radius={110}
         size={69}
         changeIconTextColor={'#000000'}
@@ -74,9 +72,8 @@ const TabNavigator = () => {
         <ActionButtonItem
           buttonColor={theme.alternateBackground}
           title="Buy"
-          btnOutRangeText={'#ffffff'}
           onPress={() => openMoonPay()}>
-          <BuySVG color={theme.background} />
+          <BuySVG color={theme.background} size={20} />
         </ActionButtonItem>
         <ActionButtonItem
           buttonColor={theme.alternateBackground}
@@ -90,7 +87,7 @@ const TabNavigator = () => {
           onPress={() => {
             navigation.navigate(AppNavigation.Wallet.ReceiveTokens);
           }}>
-          <ArrowSVG rotate={45} color={theme.background} size={20} />
+          <QRCodeSVG color={theme.background} size={24} />
         </ActionButtonItem>
         <ActionButtonItem
           buttonColor={theme.alternateBackground}
@@ -166,6 +163,7 @@ const TabNavigator = () => {
         name={AppNavigation.Tabs.Bridge}
         component={WatchlistView}
         options={{
+          ...MainHeaderOptions('Bridge'),
           tabBarIcon: ({focused}) =>
             normalTabButtons(
               AppNavigation.Tabs.Bridge,
