@@ -1,20 +1,11 @@
-import React, {FC, useEffect, useState} from 'react';
-import {
-  StyleProp,
-  StyleSheet,
-  Text,
-  TextInput,
-  TextProps,
-  TextStyle,
-} from 'react-native';
+import React, {FC} from 'react';
+import {StyleProp, StyleSheet, Text, TextProps, TextStyle} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 
 type AvaTextProps = {
   textStyle?: StyleProp<TextStyle>;
   color?: string;
   ellipsizeMode?: 'head' | 'middle' | 'tail' | 'clip' | undefined;
-  editable?: boolean;
-  onTextEdited?: (editedText: string) => void;
   currency?: boolean;
 } & TextProps;
 
@@ -59,34 +50,22 @@ const TextHeading1: FC<AvaTextProps> = ({
 };
 
 const TextHeading2: FC<AvaTextProps> = ({
-  editable,
-  onTextEdited,
+  ellipsizeMode,
   textStyle,
   children,
   ...rest
 }) => {
   const theme = useApplicationContext().theme;
-  const [value, setValue] = useState('');
 
-  useEffect(() => {
-    if (editable && typeof children === 'string') {
-      setValue(children);
-    } else {
-      setValue('');
-    }
-  }, [editable]);
-
-  return editable && typeof children === 'string' ? (
-    <TextInput
-      autoFocus={true}
-      onBlur={() => onTextEdited?.(value)}
-      onChangeText={text => setValue(text)}
-      value={value}
-      style={[styles.heading2, {color: theme.txtListItem}, textStyle]}
-    />
-  ) : (
+  return (
     <AvaxTextBase
-      style={[styles.heading2, {color: theme.txtListItem}, textStyle]}
+      ellipsizeMode={ellipsizeMode}
+      numberOfLines={ellipsizeMode ? 1 : undefined}
+      style={[
+        styles.heading2,
+        {color: theme.txtListItem, flexShrink: ellipsizeMode ? 1 : 0},
+        textStyle,
+      ]}
       {...rest}>
       {children}
     </AvaxTextBase>
@@ -210,9 +189,22 @@ const TextButtonMedium: FC<AvaTextProps> = ({textStyle, children, ...rest}) => {
   );
 };
 
-const TextButtonSmall: FC<AvaTextProps> = ({textStyle, children, ...rest}) => {
+const TextButtonSmall: FC<AvaTextProps> = ({
+  ellipsizeMode,
+  textStyle,
+  children,
+  ...rest
+}) => {
   return (
-    <AvaxTextBase style={[styles.textButtonSmall, textStyle]} {...rest}>
+    <AvaxTextBase
+      ellipsizeMode={ellipsizeMode}
+      numberOfLines={ellipsizeMode ? 1 : undefined}
+      style={[
+        styles.textButtonSmall,
+        {flexShrink: ellipsizeMode ? 1 : 0},
+        textStyle,
+      ]}
+      {...rest}>
       {children}
     </AvaxTextBase>
   );

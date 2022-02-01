@@ -17,7 +17,8 @@ module.exports = {
       '@typescript-eslint',
   ],
   "rules": {
-    "react-hooks/exhaustive-deps": "off",
+    "react-hooks/exhaustive-deps": "warn",
+    "react-native/no-inline-styles": "off",
     "@typescript-eslint/explicit-module-boundary-types": "off"
   }
 };

@@ -3,8 +3,7 @@ import {StyleSheet, Text, View} from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import BlockchainCircle from 'components/BlockchainCircle';
-import Clipboard from '@react-native-clipboard/clipboard';
-import {ShowSnackBar} from 'components/Snackbar';
+import {copyToClipboard} from 'utils/DeviceTools';
 
 type Props = {
   addressX: string;
@@ -33,14 +32,6 @@ export default function ReceiveAssets({addressX, addressC, addressP}: Props) {
   //     },
   //   ).then(value => console.log(value));
   // };
-
-  const copyToClipboard = (str?: string): void => {
-    if (!str) {
-      return;
-    }
-    Clipboard.setString(str);
-    ShowSnackBar('Copied');
-  };
 
   return (
     <View

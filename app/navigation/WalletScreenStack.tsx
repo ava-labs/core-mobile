@@ -24,9 +24,12 @@ import CurrencySelector from 'screens/drawer/currency-selector/CurrencySelector'
 import SecurityPrivacyStackScreen from 'navigation/wallet/SecurityPrivacyStackScreen';
 import {MainHeaderOptions} from 'navigation/NavUtils';
 import WebViewScreen from 'screens/webview/WebViewScreen';
-import {useFocusEffect} from '@react-navigation/native';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import SignOutBottomSheet from 'screens/mainView/SignOutBottomSheet';
-import {createStackNavigator} from '@react-navigation/stack';
+import {
+  createStackNavigator,
+  StackNavigationProp,
+} from '@react-navigation/stack';
 import ReceiveToken2 from 'screens/receive/ReceiveToken2';
 import NetworkSelector from 'network/NetworkSelector';
 import SelectTokenBottomSheet from 'screens/swap/SelectTokenBottomSheet';
@@ -37,6 +40,7 @@ import {
   currentSelectedCurrency$,
   TokenWithBalance,
 } from '@avalabs/wallet-react-components';
+import AccountDropdown from 'screens/portfolio/account/AccountDropdown';
 
 type Props = {
   onExit: () => void;
@@ -53,6 +57,7 @@ export type RootStackParamList = {
   [AppNavigation.Wallet.SendTokens]: {token?: TokenWithBalance} | undefined;
   [AppNavigation.Wallet.NetworkSelector]: undefined;
   [AppNavigation.Modal.AccountBottomSheet]: undefined;
+  [AppNavigation.Modal.AccountDropDown]: undefined;
   [AppNavigation.Modal.TransactionDetailBottomSheet]: undefined;
   [AppNavigation.Modal.ReceiveOnlyBottomSheet]: undefined;
   [AppNavigation.Modal.SignOut]: undefined;
@@ -164,6 +169,16 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
   const BottomSheetGroup = useMemo(() => {
     return (
       <RootStack.Group screenOptions={{presentation: 'transparentModal'}}>
+        <RootStack.Screen
+          options={{
+            transitionSpec: {
+              open: {animation: 'timing', config: {duration: 0}},
+              close: {animation: 'timing', config: {duration: 300}},
+            },
+          }}
+          name={AppNavigation.Modal.AccountDropDown}
+          component={AccountDropdownComp}
+        />
         <RootStack.Screen
           name={AppNavigation.Modal.AccountBottomSheet}
           component={AccountBottomSheet}
@@ -278,5 +293,17 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
     </SwapContextProvider>
   );
 }
+
+const AccountDropdownComp = () => {
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  return (
+    <AccountDropdown
+      onAddEditAccounts={() => {
+        navigation.goBack();
+        navigation.navigate(AppNavigation.Modal.AccountBottomSheet);
+      }}
+    />
+  );
+};
 
 export default memo(WalletScreenStack);
