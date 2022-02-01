@@ -38,6 +38,7 @@ enum WalletScreens {
   SecurityPrivacy = 'WalletScreens.SecurityPrivacy',
   // PortfolioScreen = 'PortfolioScreen',
   NetworkSelector = 'WalletScreens.NetworkSelector',
+  Swap = 'WalletScreens.Swap',
 }
 
 enum SwapScreens {
