@@ -1,18 +1,9 @@
-import React, {
-  FC,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, {FC, useCallback, useMemo, useRef, useState} from 'react';
 import {Animated, Pressable, StyleSheet, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import {index} from 'avalanche';
 import ActionButtonItem from 'components/ActionButtonItem';
 
 interface Props {
-  activeStateChanged: (active: boolean) => void;
   backgroundColor?: string;
   changeBackgroundColor?: string;
   icon?: React.ReactNode;
@@ -27,7 +18,6 @@ interface Props {
 
 const FloatingActionButton: FC<Props> = ({
   children,
-  activeStateChanged,
   backgroundColor = 'blue',
   changeBackgroundColor = 'blue',
   icon,
@@ -41,10 +31,6 @@ const FloatingActionButton: FC<Props> = ({
 }) => {
   const anim = useRef(new Animated.Value(0)).current;
   const [isActive, setIsActive] = useState(false);
-
-  useEffect(() => {
-    activeStateChanged?.(isActive);
-  }, [isActive]);
 
   const animateItems = useCallback(() => {
     if (isActive) {
@@ -102,14 +88,14 @@ const FloatingActionButton: FC<Props> = ({
             radius={radius}
             angle={startRadian + index * offset}
             btnColor={backgroundColor}
-            {...button.props}
+            {...button?.props}
             onPress={() => {
               // if (this.props.autoInactive) {
               //   this.timeout = setTimeout(() => {
               //     this.reset();
               //   }, 200);
               // }
-              button.props.onPress();
+              button?.props?.onPress();
             }}
           />
         </View>

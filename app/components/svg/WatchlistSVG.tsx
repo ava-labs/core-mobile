@@ -4,16 +4,17 @@ import {useApplicationContext} from 'contexts/ApplicationContext';
 
 interface Prop {
   selected: boolean;
+  size?: number;
 }
 
-function WatchListSVG({selected}: Prop) {
+function WatchListSVG({selected, size = 32}: Prop) {
   const context = useApplicationContext();
 
   const svgColor = selected
     ? context.theme.alternateBackground
     : context.theme.txtDim;
   return (
-    <Svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+    <Svg width={size} height={size} viewBox="0 0 32 32" fill="none">
       <Rect
         x="9"
         y="8"
