@@ -1,14 +1,22 @@
-import React, {useContext} from 'react';
+import React from 'react';
 import {StyleSheet, Text, TouchableOpacity} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 
 interface Props {
   chain: string;
   active?: boolean;
-  onChainSelected: () => void;
+  onChainSelected?: () => void;
+  size?: number;
+  textSize?: number;
 }
 
-function BlockchainCircle({chain, active = false, onChainSelected}: Props) {
+function BlockchainCircle({
+  chain,
+  active = false,
+  onChainSelected,
+  size,
+  textSize,
+}: Props) {
   const context = useApplicationContext();
 
   function getBackgroundColor() {
@@ -22,11 +30,19 @@ function BlockchainCircle({chain, active = false, onChainSelected}: Props) {
   return (
     <TouchableOpacity
       onPress={onChainSelected}
-      style={[styles.circle, {backgroundColor: getBackgroundColor()}]}>
+      style={[
+        styles.circle,
+        {
+          backgroundColor: getBackgroundColor(),
+          width: size ?? 40,
+          height: size ?? 40,
+        },
+      ]}>
       <Text
         style={[
           {
             color: active ? context.theme.txtOnBgApp : context.theme.txtOnBgApp,
+            fontSize: textSize ?? 16,
           },
         ]}>
         {chain.toUpperCase()}
@@ -37,15 +53,9 @@ function BlockchainCircle({chain, active = false, onChainSelected}: Props) {
 
 const styles = StyleSheet.create({
   circle: {
-    borderRadius: 20,
-    width: 40,
-    height: 40,
+    borderRadius: 2000,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  text: {
-    fontSize: 16,
-    lineHeight: 24,
   },
 });
 
