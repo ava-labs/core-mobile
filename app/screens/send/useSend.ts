@@ -7,17 +7,16 @@ import {
   useSendAvax,
   useSendErc20Form,
 } from '@avalabs/wallet-react-components';
-import {BehaviorSubject, Observable} from 'rxjs';
 import {BN, WalletType} from '@avalabs/avalanche-wallet-sdk';
-import {GasPrice} from 'utils/GasPriceHook';
+import {Observable} from 'rxjs';
 
 export function useSend(
   token: TokenWithBalance | ERC20WithBalance | undefined,
-  gasPrice$: BehaviorSubject<GasPrice>,
+  gasPrice$: Observable<{bn: BN}>,
 ) {
   const sendAvax = useSendAvax(gasPrice$);
   const sendErc20 = useSendErc20Form(
-    token?.isErc20 ? (token as ERC20WithBalance) : undefined,
+    token?.isErc20 ? (token as ERC20) : undefined,
     gasPrice$,
   );
 
@@ -38,7 +37,7 @@ interface SendTokenInterface {
     balances$?: import('rxjs').Subject<{
       [address: string]: ERC20;
     }>,
-    gasPrice?: BN,
+    gasLimit?: number,
   ) => Observable<
     | {
         error: SendHookError;
@@ -53,17 +52,10 @@ interface SendTokenInterface {
         error?: undefined;
       }
   >;
-
   reset(): void;
-
   setAmount(amount: BN): void;
-
   setAddress(address: string): void;
-
-  setTokenBalances?(tokenBalances: {[address: string]: ERC20}): void;
-
-  sendFeeDisplayValue?: string | undefined; //erc20
-  token?: ERC20 | undefined; //erc20
+  setGasLimit(gasLimit: number): void;
   maxAmount?: BN | undefined;
   amount?: BN | undefined;
   address?: string | undefined;
@@ -72,4 +64,9 @@ interface SendTokenInterface {
   gasPrice?: BN | undefined;
   gasLimit?: number | undefined;
   canSubmit?: boolean | undefined;
+  //region ERC20 specific
+  setTokenBalances?(tokenBalances: {[address: string]: ERC20}): void;
+  sendFeeDisplayValue?: string | undefined;
+  token?: ERC20 | undefined;
+  //endregion
 }
