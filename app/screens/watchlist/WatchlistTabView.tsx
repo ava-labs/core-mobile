@@ -6,12 +6,11 @@ import SearchSVG from 'components/svg/SearchSVG';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import TabViewAva from 'components/TabViewAva';
 import WatchlistView from 'screens/watchlist/WatchlistView';
-import debounce from 'lodash.debounce';
+import {Space} from 'components/Space';
 
 export default function WatchlistTab() {
   const theme = useApplicationContext().theme;
   const [searchText, setSearchText] = useState('');
-  const [currentTabIndex, setCurrentTabIndex] = useState(0);
 
   const context = useApplicationContext();
 
@@ -24,18 +23,10 @@ export default function WatchlistTab() {
     );
   };
 
-  const debounceTabChange = useMemo(() => {
-    return debounce(() => {
-      if (currentTabIndex !== 0) {
-        setCurrentTabIndex(0);
-      }
-    }, 300);
-  }, []);
-
-  function handleSearch(text: string) {
-    setSearchText(text);
-    debounceTabChange();
-  }
+  const allWatchList = useMemo(
+    () => <WatchlistView title={'All'} searchText={searchText} />,
+    [searchText],
+  );
 
   return (
     <View style={{flex: 1}}>
@@ -51,7 +42,7 @@ export default function WatchlistTab() {
             placeholder="Search all tokens"
             placeholderTextColor={context.theme.onBgSearch}
             value={searchText}
-            onChangeText={handleSearch}
+            onChangeText={setSearchText}
             underlineColorAndroid="transparent"
             accessible
             clearButtonMode="always"
@@ -60,14 +51,20 @@ export default function WatchlistTab() {
           />
         </View>
       </View>
-
-      <TabViewAva
-        renderCustomLabel={renderCustomLabel}
-        currentTabIndex={currentTabIndex}
-        onTabIndexChange={setCurrentTabIndex}>
-        <WatchlistView title={'All'} searchText={searchText} />
-        <WatchlistView title={'Favorites'} showFavorites />
-      </TabViewAva>
+      {searchText && searchText?.length > 0 ? (
+        <>
+          <Space y={32} />
+          <AvaText.Heading3 textStyle={{marginStart: 16}}>
+            Results
+          </AvaText.Heading3>
+          {allWatchList}
+        </>
+      ) : (
+        <TabViewAva renderCustomLabel={renderCustomLabel}>
+          {allWatchList}
+          <WatchlistView title={'Favorites'} showFavorites />
+        </TabViewAva>
+      )}
     </View>
   );
 }
