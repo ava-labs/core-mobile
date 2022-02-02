@@ -1,10 +1,10 @@
 import React from 'react';
-import {View} from 'react-native';
+import {View, ViewStyle} from 'react-native';
 
 type Props = {
   color: string;
   children: any;
-  style?: any;
+  style?: ViewStyle;
 };
 
 export default function OvalTagBg({
@@ -20,6 +20,8 @@ export default function OvalTagBg({
           borderRadius: 100,
           paddingHorizontal: 12,
           paddingVertical: 8,
+          justifyContent: 'center',
+          alignItems: 'center',
         },
         style,
       ]}>
