@@ -22,7 +22,7 @@ import {Big, Utils} from '@avalabs/avalanche-wallet-sdk';
 import {useGasPrice} from 'utils/GasPriceHook';
 import {mustNumber, mustValue} from 'utils/JsTools';
 import {BN} from 'avalanche';
-import {firstValueFrom, of, tap} from 'rxjs';
+import {firstValueFrom, of, Subject, tap} from 'rxjs';
 import {useSend} from 'screens/send/useSend';
 
 export enum TokenType {
@@ -177,7 +177,7 @@ export const SendTokenContextProvider = ({children}: {children: any}) => {
       amount!,
       address!,
       firstValueFrom(gasPrice$),
-      of(balances) as any,
+      of(balances) as Subject<any>,
       sendGasPrice ? Utils.stringToBN(sendGasPrice, 9) : undefined,
     ).subscribe({
       next: value => {
