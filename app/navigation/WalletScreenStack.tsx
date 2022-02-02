@@ -45,6 +45,7 @@ import SwapScreenStack from 'navigation/wallet/SwapScreenStack';
 import AddressBookStack from 'navigation/wallet/AddressBookStack';
 import HeaderAccountSelector from 'components/HeaderAccountSelector';
 import TokenDetail from 'screens/watchlist/TokenDetail';
+import HeaderAccountSelector from 'components/HeaderAccountSelector';
 
 type Props = {
   onExit: () => void;
@@ -62,7 +63,7 @@ export type RootStackParamList = {
   [AppNavigation.Wallet.SendTokens]: {token?: TokenWithBalance} | undefined;
   [AppNavigation.Wallet.Swap]: undefined;
   [AppNavigation.Wallet.NetworkSelector]: undefined;
-  [AppNavigation.Wallet.TokenDetail]: undefined;
+  [AppNavigation.Wallet.TokenDetail]: {tokenId?: string} | undefined;
   [AppNavigation.Modal.AccountBottomSheet]: undefined;
   [AppNavigation.Modal.AccountDropDown]: undefined;
   [AppNavigation.Modal.TransactionDetailBottomSheet]: undefined;
@@ -70,7 +71,6 @@ export type RootStackParamList = {
   [AppNavigation.Modal.SignOut]: undefined;
   [AppNavigation.Modal.SelectToken]: undefined;
   [AppNavigation.Modal.SwapTransactionFee]: undefined;
-
 };
 
 const RootStack = createStackNavigator<RootStackParamList>();

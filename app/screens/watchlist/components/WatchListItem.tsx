@@ -80,7 +80,6 @@ const WatchListItem: FC<Props> = ({
             }}
             renderFillGradient={defaultAreaChartFillGradient}
           />
-          <Space x={2} />
           <View>
             <AvaText.Heading3 currency ellipsizeMode={'tail'}>
               {tokenPriceUsd}
@@ -96,15 +95,9 @@ const WatchListItem: FC<Props> = ({
 
     if (!tokenPriceUsd && tokenPrice === '0') {
       return (
-        <AvaListItem.CurrencyAmount
-          justifyContent={'flex-end'}
-          value={
-            <AvaText.Heading3 ellipsizeMode={'tail'}>
-              {tokenPriceUsd}
-            </AvaText.Heading3>
-          }
-          currency={<AvaText.Heading3>{''}</AvaText.Heading3>}
-        />
+        <AvaText.Heading3 currency ellipsizeMode={'tail'}>
+          {tokenPriceUsd}
+        </AvaText.Heading3>
       );
     }
 
@@ -119,7 +112,9 @@ const WatchListItem: FC<Props> = ({
         backgroundColor: theme.listItemBg + 'D9',
       }}>
       <AvaListItem.Base
-        title={<AvaText.Heading2>{symbol}</AvaText.Heading2>}
+        title={
+          <AvaText.Heading2 ellipsizeMode={'tail'}>{symbol}</AvaText.Heading2>
+        }
         titleAlignment={'flex-start'}
         subtitle={tokenName}
         leftComponent={
