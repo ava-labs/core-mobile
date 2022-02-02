@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef} from 'react';
 import BottomSheet, {BottomSheetBackdrop} from '@gorhom/bottom-sheet';
 import {InteractionManager} from 'react-native';
 import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
@@ -14,8 +14,6 @@ function EditGasLimitBottomSheet(): JSX.Element {
   const snapPoints = useMemo(() => ['0%', '90%'], []);
   const {params} = useRoute<RouteProp<SendStackParamList>>();
 
-  const [editedGasLimit, setEditedGasLimit] = useState(params?.currentGasLimit);
-
   useEffect(() => {
     // intentionally setting delay so animation is visible.
     setTimeout(() => {
@@ -29,16 +27,11 @@ function EditGasLimitBottomSheet(): JSX.Element {
     InteractionManager.runAfterInteractions(() => {
       goBack();
     });
-  }, [editedGasLimit]);
+  }, []);
 
   const handleChange = useCallback(index => {
     index === 0 && handleClose();
   }, []);
-
-  const doSave = () => {
-    params?.onSave?.(editedGasLimit);
-    handleClose();
-  };
 
   return (
     <BottomSheet
@@ -50,10 +43,12 @@ function EditGasLimitBottomSheet(): JSX.Element {
       backgroundComponent={TabViewBackground}
       onChange={handleChange}>
       <EditFees
-        onSave={doSave}
-        gasLimit={editedGasLimit}
-        networkFee={params?.currentNetFee ?? ''}
-        onSetGasLimit={value => setEditedGasLimit(value)}
+        onSave={newGasLimit => {
+          params.onSave(newGasLimit);
+          handleClose();
+        }}
+        gasLimit={params.gasLimit}
+        networkFee={params.networkFee}
       />
     </BottomSheet>
   );

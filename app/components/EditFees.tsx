@@ -3,24 +3,24 @@ import {Space} from 'components/Space';
 import {View} from 'react-native';
 import InputText from 'components/InputText';
 import AvaButton from 'components/AvaButton';
-import React, {useMemo} from 'react';
+import React, {useMemo, useState} from 'react';
 import {popableContent} from 'screens/swap/components/SwapTransactionDetails';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import FlexSpacer from 'components/FlexSpacer';
 import {Row} from 'components/Row';
+import {mustNumber} from 'utils/JsTools';
 
 const EditFees = ({
   networkFee,
   gasLimit,
-  onSetGasLimit,
   onSave,
 }: {
   networkFee: string;
   gasLimit: string;
-  onSetGasLimit: (value: string) => void;
-  onSave: () => void;
+  onSave: (newGasLimit: number) => void;
 }) => {
   const {theme} = useApplicationContext();
+  const [newGasLimit, setNewGasLimit] = useState(gasLimit);
 
   const gasLimitInfoInfoMessage = useMemo(
     () =>
@@ -45,12 +45,16 @@ const EditFees = ({
       <InputText
         label={'Gas Limit ⓘ'}
         mode={'amount'}
-        text={gasLimit}
+        text={newGasLimit}
         popOverInfoText={gasLimitInfoInfoMessage}
-        onChangeText={text => onSetGasLimit(text)}
+        onChangeText={text => setNewGasLimit(text)}
       />
       <FlexSpacer />
-      <AvaButton.PrimaryLarge style={{marginHorizontal: 12}} onPress={onSave}>
+      <AvaButton.PrimaryLarge
+        style={{marginHorizontal: 12}}
+        onPress={() =>
+          onSave(mustNumber(() => Number.parseFloat(newGasLimit), 0))
+        }>
         Save
       </AvaButton.PrimaryLarge>
     </View>
