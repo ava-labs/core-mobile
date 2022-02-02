@@ -49,6 +49,7 @@ enum SwapScreens {
   Review = 'SwapScreens.Review',
   Success = 'SwapScreens.Success',
   Fail = 'SwapScreens.Fail',
+  SwapTransactionFee = 'ModalScreens.SwapTransactionFees',
 }
 
 enum SecurityPrivacyScreens {
@@ -78,7 +79,7 @@ enum ModalScreens {
   ReceiveOnlyBottomSheet = 'ModalScreens.ReceiveOnlyBottomSheet',
   SignOut = 'ModalScreens.SignOut',
   SelectToken = 'ModalScreens.SelectToken',
-  SwapTransactionFee = 'ModalScreens.SwapTransactionFees',
+  EditGasLimit = 'ModalScreens.EditGasLimit',
 }
 
 enum SendTokenScreens {
@@ -90,7 +91,6 @@ enum SendTokenScreens {
 enum SendScreens {
   Send = 'SendScreens.Send',
   Review = 'SendScreens.Review',
-  EditGasLimit = 'SendScreens.EditGasLimit',
   Success = 'SendScreens.Success',
 }
 

@@ -12,9 +12,10 @@ import {Opacity10} from 'resources/Constants';
 import FlexSpacer from 'components/FlexSpacer';
 import NetworkFeeSelector from 'components/NetworkFeeSelector';
 import {useSendTokenContext} from 'contexts/SendTokenContext';
-import AppNavigation from 'navigation/AppNavigation';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {SendStackParamList} from 'navigation/wallet/SendScreenStack';
+import {useGasPrice} from 'utils/GasPriceHook';
+import AppNavigation from 'navigation/AppNavigation';
 
 export default function ReviewSend({
   onSuccess,
@@ -22,8 +23,7 @@ export default function ReviewSend({
   onSuccess: (transactionId: string) => void;
 }) {
   const {theme, isDarkMode} = useApplicationContext();
-  const {goBack, navigate} =
-    useNavigation<StackNavigationProp<SendStackParamList>>();
+  const {goBack} = useNavigation<StackNavigationProp<SendStackParamList>>();
   const {
     tokenLogo,
     sendAmount,
@@ -35,14 +35,13 @@ export default function ReviewSend({
     sendStatusMsg,
     transactionId,
   } = useSendTokenContext();
+  const {gasPrice} = useGasPrice();
 
-  const netFeeString = useMemo(
-    () =>
-      fees.sendFeeAvax
-        ? Number.parseFloat(fees.sendFeeAvax).toFixed(6).toString()
-        : '-',
-    [fees.sendFeeAvax],
-  );
+  const netFeeString = useMemo(() => {
+    return fees.sendFeeAvax
+      ? Number.parseFloat(fees.sendFeeAvax).toFixed(6).toString()
+      : '-';
+  }, [fees.sendFeeAvax]);
 
   useEffect(() => {
     switch (sendStatus) {
@@ -103,21 +102,12 @@ export default function ReviewSend({
         <NetworkFeeSelector
           networkFeeAvax={netFeeString}
           networkFeeUsd={`${fees.sendFeeUsd?.toFixed(4)} USD`}
-          onSelectedPreset={preset => fees.setSelectedGasPricePreset(preset)}
-          onGasPriceEntered={gasPrice =>
-            fees.setCustomGasPriceNanoAvax(gasPrice)
-          }
-          onSettings={() => {
-            navigate(AppNavigation.Send.EditGasLimit, {
-              currentNetFee: netFeeString,
-              currentGasLimit: fees.gasLimit?.toString() ?? '',
-              onSave: customGasLimit => {
-                if (Number(customGasLimit)) {
-                  fees.setGasLimit(Number(customGasLimit));
-                }
-              },
-            });
-          }}
+          gasLimitEditorRoute={AppNavigation.Modal.EditGasLimit}
+          gasPrice={gasPrice}
+          initGasLimit={fees.gasLimit || 0}
+          onCustomGasLimit={gasLimit => fees.setGasLimit(gasLimit)}
+          onWeightedGas={price => fees.setCustomGasPriceNanoAvax(price.value)}
+          weights={{normal: 1, fast: 1.05, instant: 1.15, custom: 35}}
         />
         <Space y={16} />
         <Separator />
