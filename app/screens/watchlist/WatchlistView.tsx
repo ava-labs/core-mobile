@@ -16,6 +16,8 @@ import ListFilter from 'components/ListFilter';
 import {useNavigation} from '@react-navigation/native';
 import AppNavigation from 'navigation/AppNavigation';
 import {useApplicationContext} from 'contexts/ApplicationContext';
+import {StackNavigationProp} from '@react-navigation/stack';
+import {RootStackParamList} from 'navigation/WalletScreenStack';
 
 interface Props {
   showFavorites?: boolean;
@@ -31,7 +33,7 @@ const WatchlistView: FC<Props> = ({
   searchText = '',
   ...rest
 }) => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const {watchlistFavorites} =
     useApplicationContext().repo.watchlistFavoritesRepo;
   const {filteredTokenList, setSearchText, loadTokenList} =
