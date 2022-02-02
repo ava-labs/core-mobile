@@ -18,6 +18,7 @@ interface Props {
   embedInCard?: boolean;
   roundedEdges?: boolean;
   background?: string;
+  paddingVertical?: number;
 }
 
 function BaseListItem({
@@ -34,13 +35,18 @@ function BaseListItem({
   onPress,
   embedInCard,
   background,
+  paddingVertical = 4,
 }: Props) {
   const context = useApplicationContext();
 
   return (
     <View
       style={[
-        {paddingVertical: 16, height: 64, justifyContent: 'center'},
+        {
+          paddingVertical: paddingVertical,
+          height: 64,
+          justifyContent: 'center',
+        },
         embedInCard && {
           backgroundColor: context.theme.listItemBg,
           marginHorizontal: 16,
