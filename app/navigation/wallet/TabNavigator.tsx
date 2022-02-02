@@ -16,7 +16,7 @@ import AvaText from 'components/AvaText';
 import BuySVG from 'components/svg/BuySVG';
 import ArrowSVG from 'components/svg/ArrowSVG';
 import {useNavigation} from '@react-navigation/native';
-import FloatingActionButton from 'components/svg/FloatingActionButton';
+import FloatingActionButton from 'components/FloatingActionButton';
 import useInAppBrowser from 'hooks/useInAppBrowser';
 import HistorySVG from 'components/svg/HistorySVG';
 import BridgeSVG from 'components/svg/BridgeSVG';
