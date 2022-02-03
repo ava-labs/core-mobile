@@ -14,6 +14,7 @@ interface Props {
   disablePress?: boolean;
   onPress?: () => void;
   titleAlignment?: 'center' | 'flex-start' | 'flex-end';
+  rightComponentAlignment?: 'center' | 'flex-start' | 'flex-end';
   embedInCard?: boolean;
   roundedEdges?: boolean;
   background?: string;
@@ -28,6 +29,7 @@ function BaseListItem({
   disabled,
   disablePress,
   titleAlignment = 'center',
+  rightComponentAlignment = 'flex-end',
   showNavigationArrow = false,
   onPress,
   embedInCard,
@@ -111,7 +113,7 @@ function BaseListItem({
               maxWidth: 150,
               flexShrink: 1,
               flex: 1,
-              justifyContent: 'flex-end',
+              justifyContent: rightComponentAlignment,
               alignSelf: 'flex-start',
             }}>
             {rightComponent && rightComponent}
