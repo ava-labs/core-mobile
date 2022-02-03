@@ -106,19 +106,22 @@ function BaseListItem({
               <View>{subtitle}</View>
             ) : undefined}
           </View>
-          <View
-            style={{
-              marginRight: 16,
-              flexDirection: 'row',
-              maxWidth: 150,
-              flexShrink: 1,
-              flex: 1,
-              justifyContent: rightComponentAlignment,
-              alignSelf: 'flex-start',
-            }}>
-            {rightComponent && rightComponent}
-            {showNavigationArrow && <CarrotSVG />}
-          </View>
+          {rightComponent ||
+            (showNavigationArrow && (
+              <View
+                style={{
+                  marginRight: 16,
+                  flexDirection: 'row',
+                  maxWidth: 150,
+                  flexShrink: 1,
+                  flex: 1,
+                  justifyContent: rightComponentAlignment,
+                  alignSelf: 'flex-start',
+                }}>
+                {rightComponent && rightComponent}
+                {showNavigationArrow && <CarrotSVG />}
+              </View>
+            ))}
         </View>
       </Pressable>
     </View>

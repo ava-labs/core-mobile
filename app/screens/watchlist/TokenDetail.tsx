@@ -1,4 +1,4 @@
-import React, {FC, useLayoutEffect, useState} from 'react';
+import React, {FC, useEffect, useLayoutEffect, useState} from 'react';
 import {Dimensions, Pressable, ScrollView, Text, View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaListItem from 'components/AvaListItem';
@@ -14,30 +14,67 @@ import {
 } from '@connectedcars/react-native-slide-charts';
 import {LinearGradient, Stop} from 'react-native-svg';
 import TabViewAva from 'components/TabViewAva';
-import {useNavigation} from '@react-navigation/native';
+import {useNavigation, useRoute} from '@react-navigation/native';
 import StarSVG from 'components/svg/StarSVG';
+import {getTokenUID} from 'utils/TokenTools';
+import {useSearchableTokenList} from 'screens/portfolio/useSearchableTokenList';
+import {TokenWithBalance} from '@avalabs/wallet-react-components';
+import LineChartSVG from 'components/svg/LineChartSVG';
+import CandleChartSVG from 'components/svg/CandleChartSVG';
 
 interface Props {}
 
-const screenWidth = Dimensions.get('window').width;
-
-// const data = [-100, 10, 40, 95, -4, -24, 85, 91, 35, 53, -53, 24, 50, -20, -80];
-
-const data = {
-  labels: ['January', 'February', 'March', 'April', 'May', 'June'],
-  datasets: [
-    {
-      data: [20, 45, 28, 80, 99, 43],
-    },
-  ],
+export const defaultAreaChartFillGradient = (props: GradientProps) => {
+  return (
+    <LinearGradient x1="50%" y1="0%" x2="50%" y2="100%" {...props}>
+      <Stop stopColor="#FF0000" offset="0%" stopOpacity="0.5" />
+      <Stop stopColor="#000000" offset="100%" stopOpacity="0.2" />
+    </LinearGradient>
+  );
 };
 
+const screenWidth = Dimensions.get('window').width;
+
 const TokenDetail: FC<Props> = props => {
-  const {theme, repo, appHook} = useApplicationContext();
+  const {theme, repo} = useApplicationContext();
+  const {watchlistFavorites, saveWatchlistFavorites} =
+    repo.watchlistFavoritesRepo;
+  const {filteredTokenList} = useSearchableTokenList();
   const navigation = useNavigation();
+  const route = useRoute();
   const [isFavorite, setIsFavorite] = useState(true);
 
+  const tokenId = route.params.tokenId;
+  const [token, setToken] = useState<TokenWithBalance>();
+
+  useEffect(() => {
+    if (filteredTokenList) {
+      const result = filteredTokenList.filter(
+        tk => getTokenUID(tk) === tokenId,
+      );
+      if (result.length > 0) {
+        setToken(result[0]);
+      }
+    }
+  }, [filteredTokenList]);
+
+  useEffect(() => {
+    setIsFavorite(
+      watchlistFavorites.filter(value => value === tokenId).length > 0,
+    );
+  }, [watchlistFavorites]);
+
   function handleFavorite() {
+    if (isFavorite) {
+      const index = watchlistFavorites.indexOf(tokenId);
+      if (index > -1) {
+        watchlistFavorites.splice(index, 1);
+        saveWatchlistFavorites(watchlistFavorites);
+      }
+    } else {
+      watchlistFavorites.push(tokenId);
+    }
+    setIsFavorite(!isFavorite);
   }
 
   useLayoutEffect(() => {
@@ -50,19 +87,6 @@ const TokenDetail: FC<Props> = props => {
     });
   }, [isFavorite]);
 
-  const chartConfig: AbstractChartConfig = {
-    // backgroundGradientFrom: theme.colorSuccess,
-    // backgroundGradientFromOpacity: 0,
-    // backgroundGradientTo: '#08130D',
-    // backgroundGradientToOpacity: 0.9,
-    fillShadowGradient: '#53C26E',
-    fillShadowGradientOpacity: 0.3,
-    color: () => theme.colorSuccess,
-    strokeWidth: 2, // optional, default 3
-    useShadowColorFromDataset: false, // optional
-    width: screenWidth,
-  };
-
   const renderCustomLabel = (title: string, focused: boolean) => {
     return (
       <AvaText.Heading3
@@ -72,24 +96,13 @@ const TokenDetail: FC<Props> = props => {
     );
   };
 
-  const defaultAreaChartFillGradient = (props: GradientProps) => {
-    return (
-      <LinearGradient x1="50%" y1="0%" x2="50%" y2="100%" {...props}>
-        <Stop stopColor="#FF0000" offset="0%" stopOpacity="0.5" />
-        <Stop stopColor="#000000" offset="100%" stopOpacity="0.2" />
-      </LinearGradient>
-    );
-  };
-
   return (
     <ScrollView style={{paddingHorizontal: 8}}>
       <AvaListItem.Base
-        title={<AvaText.Heading1>Avalance</AvaText.Heading1>}
+        title={<AvaText.Heading1>{token?.name}</AvaText.Heading1>}
         titleAlignment={'flex-start'}
-        subtitle={'AVAX'}
-        leftComponent={
-          <Avatar.Custom name={'Avalanche'} symbol={'AVAX'} size={48} />
-        }
+        subtitle={token?.symbol}
+        leftComponent={token && <Avatar.Token token={token} size={48} />}
       />
       <Space y={24} />
       <AvaListItem.Base
@@ -97,40 +110,42 @@ const TokenDetail: FC<Props> = props => {
         titleAlignment={'flex-start'}
         subtitle={
           <Text>
-            <AvaText.Heading3>$101.24 </AvaText.Heading3>
+            <AvaText.Heading3 currency>{token?.priceUSD}</AvaText.Heading3>
             <AvaText.Body3 color={theme.colorSuccess}>
               +$1.13(1.29%)
             </AvaText.Body3>
           </Text>
         }
-        rightComponent={<Switch />}
+        rightComponent={
+          <View
+            style={{
+              borderRadius: 10,
+              backgroundColor: '#F1F1F433',
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+            }}>
+            <View style={{paddingHorizontal: 8}}>
+              <LineChartSVG />
+            </View>
+            <View
+              style={{
+                height: 24,
+                width: 1,
+                backgroundColor: theme.colorStroke2,
+              }}
+            />
+            <View
+              style={{
+                paddingHorizontal: 8,
+                backgroundColor: '#F1F1F4',
+                borderTopRightRadius: 10,
+                borderBottomRightRadius: 10,
+              }}>
+              <CandleChartSVG />
+            </View>
+          </View>
+        }
       />
-
-      {/*<LineChart*/}
-      {/*  style={{flex: 1, minWidth: 200, minHeight: 150}}*/}
-      {/*  data={data}*/}
-      {/*  svg={{stroke: 'rgb(255, 0, 0)'}}*/}
-      {/*  contentInset={{top: 10, bottom: 10}}*/}
-      {/*/>*/}
-
-      {/*<LineChart*/}
-      {/*  data={data}*/}
-      {/*  width={screenWidth}*/}
-      {/*  height={200}*/}
-      {/*  chartConfig={chartConfig}*/}
-      {/*  withHorizontalLabels={false}*/}
-      {/*  withVerticalLabels={false}*/}
-      {/*  withHorizontalLines={false}*/}
-      {/*  withVerticalLines={false}*/}
-      {/*  onDataPointClick={({value, dataset, getColor, y, x, index}) => {*/}
-      {/*    console.log('value: ' + value);*/}
-      {/*    console.log('dataset: ' + dataset);*/}
-      {/*    console.log('getColor: ' + getColor);*/}
-      {/*    console.log('y: ' + y);*/}
-      {/*    console.log('x: ' + x);*/}
-      {/*    console.log('index: ' + index);*/}
-      {/*  }}*/}
-      {/*/>*/}
 
       <SlideAreaChart
         scrollable
