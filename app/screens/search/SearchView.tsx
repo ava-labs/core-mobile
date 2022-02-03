@@ -1,6 +1,5 @@
 import React from 'react';
-import {FlatList, ListRenderItemInfo, Platform, StyleSheet, Text, TextInput, View} from 'react-native';
-import SearchSVG from 'components/svg/SearchSVG';
+import {FlatList, ListRenderItemInfo, Platform, Text, View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import {TokenWithBalance} from '@avalabs/wallet-react-components';
@@ -13,6 +12,7 @@ import AvaButton from 'components/AvaButton';
 import {Opacity50} from 'resources/Constants';
 import Loader from 'components/Loader';
 import {getTokenUID} from 'utils/TokenTools';
+import SearchBar from 'components/SearchBar';
 
 function SearchView(): JSX.Element {
   const {
@@ -23,7 +23,7 @@ function SearchView(): JSX.Element {
     showZeroBalanceList,
     loadTokenList,
   } = useSearchableTokenList(false);
-  const context = useApplicationContext();
+
   // const navigation = useNavigation<PortfolioNavigationProp>();
 
   function handleRefresh() {
@@ -80,26 +80,8 @@ function SearchView(): JSX.Element {
         textStyle={{alignSelf: 'center', paddingStart: descriptionPadding}}>
         Add or remove tokens without balance
       </AvaText.Body1>
-      <View style={styles.searchContainer}>
-        <View
-          style={[
-            styles.searchBackground,
-            {backgroundColor: context.theme.colorBg3 + Opacity50},
-          ]}>
-          <SearchSVG color={context.theme.onBgSearch} size={32} hideBorder />
-          <TextInput
-            style={[styles.searchInput, {color: context.theme.txtOnBgApp}]}
-            placeholder="Search"
-            placeholderTextColor={context.theme.onBgSearch}
-            value={searchText}
-            onChangeText={handleSearch}
-            underlineColorAndroid="transparent"
-            accessible
-            clearButtonMode="always"
-            autoCapitalize="none"
-            numberOfLines={1}
-          />
-        </View>
+      <View style={{marginHorizontal: 16}}>
+        <SearchBar onTextChanged={handleSearch} initSearchText={searchText} />
       </View>
       {!filteredTokenList ? (
         <Loader />
@@ -123,33 +105,6 @@ function SearchView(): JSX.Element {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  searchContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 16,
-    marginBottom: 8,
-    marginHorizontal: 16,
-  },
-  searchBackground: {
-    alignItems: 'center',
-    borderRadius: 20,
-    flexDirection: 'row',
-    height: 40,
-    flex: 1,
-    justifyContent: 'center',
-    paddingStart: 12,
-  },
-  searchInput: {
-    paddingLeft: 4,
-    height: 40,
-    flex: 1,
-    marginRight: 24,
-    fontSize: 16,
-  },
-});
 
 // not currently in use due to lack of SKD support
 const AddCustomTokenButton = ({onPress}: {onPress: () => void}) => {

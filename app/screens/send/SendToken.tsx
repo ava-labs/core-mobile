@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {FlatList, ListRenderItemInfo, View} from 'react-native';
 import AvaText from 'components/AvaText';
 import {Space} from 'components/Space';
@@ -18,15 +18,11 @@ import {
   ERC20WithBalance,
   TokenWithBalance,
 } from '@avalabs/wallet-react-components';
+import {Contact} from 'Repo';
 
 const renderCustomLabel = (title: string) => {
   return <AvaText.Heading3>{title}</AvaText.Heading3>;
 };
-
-interface AddressItem {
-  title: string;
-  address: string;
-}
 
 function SendToken({
   onNext,
@@ -48,33 +44,25 @@ function SendToken({
     error,
   } = useSendTokenContext();
   const [showAddressBook, setShowAddressBook] = useState(false);
-  const [recentAddresses, setRecentAddresses] = useState<AddressItem[]>([
-    {
-      title: 'Eduardo Gueiros',
-      address: '0x904c05Aeb90B8582C62fff17623A7bE7534cB5A6',
-    },
-  ]);
-  const [addressBook, setAddressBook] = useState<AddressItem[]>([
-    {
-      title: 'Eduardo Gueiros',
-      address: '0x904c05Aeb90B8582C62fff17623A7bE7534cB5A6',
-    },
-    {
-      title: 'Neven Skendžić',
-      address: '0x225d6Bcf35391957FA117b10A0e7186dd80faE15',
-    },
-    {
-      title: 'Jovica Popović',
-      address: '0xC93161EA37789db85b08C1a93bB4756D2E47A6cA',
-    },
-  ]);
+  const {recentContacts, addressBook, addToRecentContacts} =
+    useApplicationContext().repo.addressBookRepo;
   const {accounts} = useApplicationContext().repo.accountsRepo;
+
+  const addressBookContacts = useMemo(
+    () => [...addressBook.values()],
+    [addressBook],
+  );
+
+  const recentAddresses = useMemo(
+    () => recentContacts.map(uid => addressBook.get(uid)!),
+    [addressBook, recentContacts],
+  );
 
   useEffect(() => {
     if (token) {
       setSendToken(token as ERC20WithBalance);
     }
-  }, [token]);
+  }, [setSendToken, token]);
 
   useEffect(() => {
     if (toAccount.address) {
@@ -86,12 +74,13 @@ function SendToken({
     setShowAddressBook(!showAddressBook);
   }
 
-  const renderAddressItem = (item: ListRenderItemInfo<AddressItem>) => {
+  const renderAddressItem = (item: ListRenderItemInfo<Contact>) => {
     return (
       <AvaButton.Base
         onPress={() => {
           toAccount.setAddress?.(item.item.address);
           toAccount.setTitle?.(item.item.title);
+          addToRecentContacts(item.item.id);
         }}>
         <AddressBookItem title={item.item.title} address={item.item.address} />
       </AvaButton.Base>
@@ -152,13 +141,15 @@ function SendToken({
             title={'Recents'}
             data={recentAddresses}
             renderItem={renderAddressItem}
+            keyExtractor={item => item.id}
             contentContainerStyle={{paddingHorizontal: 16}}
             ListEmptyComponent={<ZeroState.NoResults />}
           />
           <FlatList
             title={'Address Book'}
-            data={addressBook}
+            data={addressBookContacts}
             renderItem={renderAddressItem}
+            keyExtractor={item => item.id}
             contentContainerStyle={{paddingHorizontal: 16}}
             ListEmptyComponent={<ZeroState.NoResults />}
           />

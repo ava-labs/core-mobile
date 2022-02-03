@@ -42,6 +42,8 @@ import {
 } from '@avalabs/wallet-react-components';
 import AccountDropdown from 'screens/portfolio/account/AccountDropdown';
 import SwapScreenStack from 'navigation/wallet/SwapScreenStack';
+import AddressBookStack from 'navigation/wallet/AddressBookStack';
+import HeaderAccountSelector from 'components/HeaderAccountSelector';
 
 type Props = {
   onExit: () => void;
@@ -51,6 +53,7 @@ export type RootStackParamList = {
   [AppNavigation.Wallet.Drawer]: undefined;
   [AppNavigation.Wallet.SearchScreen]: undefined;
   [AppNavigation.Wallet.AddCustomToken]: undefined;
+  [AppNavigation.Wallet.AddressBook]: undefined;
   [AppNavigation.Wallet.CurrencySelector]: undefined;
   [AppNavigation.Wallet.SecurityPrivacy]: undefined;
   [AppNavigation.Wallet.Legal]: undefined;
@@ -261,6 +264,13 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
             }}
             name={AppNavigation.Wallet.Swap}
             component={SwapScreenStack}
+          />
+          <RootStack.Screen
+            options={{
+              headerShown: false,
+            }}
+            name={AppNavigation.Wallet.AddressBook}
+            component={AddressBookStack}
           />
           <RootStack.Screen
             options={{
