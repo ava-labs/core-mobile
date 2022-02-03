@@ -1,7 +1,6 @@
 import React, {createContext, useContext, useState} from 'react';
 import {COLORS_DAY, COLORS_NIGHT} from 'resources/Constants';
 import type {Theme} from '@react-navigation/native';
-import {Appearance} from 'react-native';
 import {AppHook, useApp} from 'AppViewModel';
 import {Repo, useRepo} from 'Repo';
 
@@ -46,7 +45,7 @@ export const ApplicationContext = createContext<ApplicationContextState>(
 export const ApplicationContextProvider = ({children}: {children: any}) => {
   const appHook = useApp();
   const repository = useRepo();
-  const [isDarkMode] = useState(Appearance.getColorScheme() === 'dark');
+  const isDarkMode = true; // useState(Appearance.getColorScheme() === 'dark');
   const [theme] = useState(isDarkMode ? COLORS_NIGHT : COLORS_DAY);
   const [backgroundStyle] = useState({
     backgroundColor: theme.background,

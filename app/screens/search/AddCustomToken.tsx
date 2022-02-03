@@ -4,7 +4,7 @@ import {useApplicationContext} from 'contexts/ApplicationContext';
 import InputText from 'components/InputText';
 import QrScannerAva from 'components/QrScannerAva';
 import AvaButton from 'components/AvaButton';
-import QRCode from 'components/svg/QRCode';
+import QRCode from 'components/svg/QRCodeSVG';
 import {useNavigation} from '@react-navigation/native';
 import {Assets, Utils} from '@avalabs/avalanche-wallet-sdk';
 import {Erc20Token} from '@avalabs/avalanche-wallet-sdk/dist/Asset';
