@@ -63,7 +63,7 @@ function BaseListItem({
         onPress={onPress}>
         <View style={[styles.baseRow, disabled && {opacity: 0.5}]}>
           {leftComponent && (
-            <View style={{marginLeft: 16, flexDirection: 'row'}}>
+            <View style={{marginLeft: 8, flexDirection: 'row'}}>
               {leftComponent}
             </View>
           )}
@@ -112,22 +112,21 @@ function BaseListItem({
               <View>{subtitle}</View>
             ) : undefined}
           </View>
-          {rightComponent ||
-            (showNavigationArrow && (
-              <View
-                style={{
-                  marginRight: 16,
-                  flexDirection: 'row',
-                  maxWidth: 150,
-                  flexShrink: 1,
-                  flex: 1,
-                  justifyContent: rightComponentAlignment,
-                  alignSelf: 'flex-start',
-                }}>
-                {rightComponent && rightComponent}
-                {showNavigationArrow && <CarrotSVG />}
-              </View>
-            ))}
+          {(rightComponent || showNavigationArrow) && (
+            <View
+              style={{
+                marginRight: 8,
+                flexDirection: 'row',
+                maxWidth: 150,
+                flexGrow: 1,
+                justifyContent: rightComponentAlignment,
+                alignSelf: 'flex-start',
+              }}>
+              {rightComponent}
+              {showNavigationArrow && <CarrotSVG />}
+            </View>
+          )}
+          {/*))}*/}
         </View>
       </Pressable>
     </View>
@@ -189,7 +188,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flex: 1,
   },
-  baseMainContent: {flex: 1, marginLeft: 16},
+  baseMainContent: {flex: 1, marginLeft: 8},
   baseLabel: {
     fontSize: 14,
     lineHeight: 17,
