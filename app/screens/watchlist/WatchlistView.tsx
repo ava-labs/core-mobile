@@ -1,5 +1,11 @@
 import React, {FC, useEffect, useState} from 'react';
-import {Alert, FlatList, ListRenderItemInfo, StyleSheet, Text, View} from 'react-native';
+import {
+  FlatList,
+  ListRenderItemInfo,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import Loader from 'components/Loader';
 import {TokenWithBalance} from '@avalabs/wallet-react-components';
 import {getTokenUID} from 'utils/TokenTools';
@@ -9,6 +15,7 @@ import WatchListItem from 'screens/watchlist/components/WatchListItem';
 import ListFilter from 'components/ListFilter';
 import {useNavigation} from '@react-navigation/native';
 import AppNavigation from 'navigation/AppNavigation';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 
 interface Props {
   showFavorites?: boolean;
@@ -25,8 +32,16 @@ const WatchlistView: FC<Props> = ({
   ...rest
 }) => {
   const navigation = useNavigation();
+  const {watchlistFavorites} =
+    useApplicationContext().repo.watchlistFavoritesRepo;
   const {filteredTokenList, setSearchText, loadTokenList} =
     useSearchableTokenList(false);
+
+  const data = showFavorites
+    ? filteredTokenList?.filter(token =>
+        watchlistFavorites.includes(getTokenUID(token)),
+      )
+    : filteredTokenList;
 
   const [filterBy, setFilterBy] = useState(filterByOptions[0]);
   const [filterTime, setFilterTime] = useState(filterTimeOptions[0]);
@@ -52,7 +67,11 @@ const WatchlistView: FC<Props> = ({
         tokenPriceUsd={token?.priceUSD?.toString() ?? '0'}
         symbol={token.symbol}
         image={logoUri}
-        onPress={() => navigation.navigate(AppNavigation.Wallet.TokenDetail)}
+        onPress={() =>
+          navigation.navigate(AppNavigation.Wallet.TokenDetail, {
+            tokenId: getTokenUID(token),
+          })
+        }
       />
     );
   };
@@ -95,7 +114,7 @@ const WatchlistView: FC<Props> = ({
             />
           </View>
           <FlatList
-            data={filteredTokenList}
+            data={data}
             renderItem={renderItem}
             onRefresh={handleRefresh}
             contentContainerStyle={{paddingHorizontal: 16}}

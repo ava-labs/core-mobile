@@ -5,7 +5,11 @@ import AvaListItem from 'components/AvaListItem';
 import AvaText from 'components/AvaText';
 import Avatar from 'components/Avatar';
 import {Space} from 'components/Space';
-import {LineChart} from 'react-native-svg-charts';
+import {
+  GradientProps,
+  SlideAreaChart,
+} from '@connectedcars/react-native-slide-charts';
+import {LinearGradient, Stop} from 'react-native-svg';
 
 interface Props {
   tokenName: string;
@@ -26,62 +30,57 @@ const WatchListItem: FC<Props> = ({
 }) => {
   const theme = useApplicationContext().theme;
 
-  // const chartConfig: AbstractChartConfig = {
-  //   backgroundGradientFromOpacity: 0,
-  //   backgroundGradientToOpacity: 0,
-  //   color: () => 'red',
-  //   strokeWidth: 1, // optional, default 3
-  //   barPercentage: 0.5,
-  //   barRadius: 10,
-  //   useShadowColorFromDataset: false, // optional
-  // };
-
-  const data = [
-    -100, 10, 40, 95, -4, -24, 85, 91, 35, 53, -53, 24, 50, -20, -80,
-  ];
+  const defaultAreaChartFillGradient = (props: GradientProps) => {
+    return (
+      <LinearGradient x1="50%" y1="0%" x2="50%" y2="100%" {...props}>
+        <Stop stopColor="#FF0000" offset="0%" stopOpacity="0.5" />
+        <Stop stopColor={theme.listItemBg} offset="100%" stopOpacity="0.2" />
+      </LinearGradient>
+    );
+  };
 
   const usdBalance = () => {
     if (tokenPriceUsd) {
       return (
         <View style={{flexDirection: 'row', alignItems: 'center'}}>
-          <LineChart
-            style={{flex: 1, minWidth: 80}}
-            data={data}
-            svg={{stroke: 'rgb(255, 0, 0)'}}
-            contentInset={{top: 10, bottom: 10}}
+          <SlideAreaChart
+            style={{
+              backgroundColor: theme.transparent,
+            }}
+            width={120}
+            height={80}
+            animated={false}
+            data={[
+              {x: 1, y: 5},
+              {x: 2, y: 6},
+              {x: 3, y: 11},
+              {x: 4, y: 50},
+              {x: 5, y: 3},
+              {x: 6, y: 34},
+              {x: 7, y: 5},
+              {x: 8, y: 6},
+              {x: 9, y: 11},
+              {x: 10, y: 50},
+              {x: 11, y: 3},
+              {x: 12, y: 34},
+              {x: 27, y: 11},
+            ]}
+            axisWidth={35}
+            paddingBottom={16}
+            alwaysShowIndicator={false}
+            chartLineColor={theme.colorError}
+            chartLineWidth={1}
+            cursorProps={{
+              displayCursor: false,
+            }}
+            yAxisProps={{
+              horizontalLineColor: theme.transparent,
+              verticalLineColor: theme.transparent,
+              interval: 1,
+            }}
+            renderFillGradient={defaultAreaChartFillGradient}
           />
-          {/*<LineChart*/}
-          {/*  data={{*/}
-          {/*    labels: [],*/}
-          {/*    datasets: [*/}
-          {/*      {*/}
-          {/*        data: [*/}
-          {/*          Math.random() * 100,*/}
-          {/*          Math.random() * 100,*/}
-          {/*          Math.random() * 100,*/}
-          {/*          Math.random() * 100,*/}
-          {/*          Math.random() * 100,*/}
-          {/*          Math.random() * 100,*/}
-          {/*          Math.random() * 100,*/}
-          {/*          Math.random() * 100,*/}
-          {/*          Math.random() * 100,*/}
-          {/*          Math.random() * 100,*/}
-          {/*          Math.random() * 100,*/}
-          {/*          Math.random() * 100,*/}
-          {/*        ],*/}
-          {/*      },*/}
-          {/*    ],*/}
-          {/*  }}*/}
-          {/*  width={130}*/}
-          {/*  height={30}*/}
-          {/*  chartConfig={chartConfig}*/}
-          {/*  withDots={false}*/}
-          {/*  withHorizontalLabels={false}*/}
-          {/*  withVerticalLabels={false}*/}
-          {/*  withHorizontalLines={false}*/}
-          {/*  withVerticalLines={false}*/}
-          {/*/>*/}
-          <Space x={8} />
+          <Space x={2} />
           <View>
             <AvaText.Heading3 currency ellipsizeMode={'tail'}>
               {tokenPriceUsd}
@@ -117,7 +116,7 @@ const WatchListItem: FC<Props> = ({
       style={{
         marginVertical: 4,
         borderRadius: 8,
-        backgroundColor: theme.colorBg3,
+        backgroundColor: theme.listItemBg + 'D9',
       }}>
       <AvaListItem.Base
         title={<AvaText.Heading2>{symbol}</AvaText.Heading2>}
