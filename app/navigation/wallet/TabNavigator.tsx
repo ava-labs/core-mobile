@@ -10,7 +10,7 @@ import PortfolioStackScreen from 'navigation/wallet/PortfolioScreenStack';
 import React, {ReactElement} from 'react';
 import {noop} from 'rxjs';
 import ActivityView from 'screens/activity/ActivityView';
-import {StyleSheet, View} from 'react-native';
+import {View} from 'react-native';
 import AddSVG from 'components/svg/AddSVG';
 import AvaText from 'components/AvaText';
 import BuySVG from 'components/svg/BuySVG';
@@ -25,6 +25,7 @@ import ActionButtonItem from 'components/ActionButtonItem';
 import QRCodeSVG from 'components/svg/QRCodeSVG';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {RootStackParamList} from 'navigation/WalletScreenStack';
+import WatchlistTab from 'screens/watchlist/WatchlistTabView';
 
 const Tab = createBottomTabNavigator();
 const TAB_ICON_SIZE = 28;
@@ -60,7 +61,7 @@ const TabNavigator = () => {
 
   const CustomTabBarFab = ({children}: {children: ReactElement}) => (
     <>
-      {/* necessary for spacing betten the fab and bottle bar buttons */}
+      {/* necessary for spacing between the fab and bottle bar buttons */}
       <Space x={48} />
       <FloatingActionButton
         backgroundColor={'#0A84FF'}
@@ -159,7 +160,7 @@ const TabNavigator = () => {
               <WatchlistSVG selected={focused} size={TAB_ICON_SIZE} />,
             ),
         }}
-        component={WatchlistView}
+        component={WatchlistTab}
       />
       <Tab.Screen
         name={AppNavigation.Tabs.Bridge}

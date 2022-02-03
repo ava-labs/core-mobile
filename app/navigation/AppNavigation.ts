@@ -40,6 +40,7 @@ enum WalletScreens {
   // PortfolioScreen = 'PortfolioScreen',
   NetworkSelector = 'WalletScreens.NetworkSelector',
   Swap = 'WalletScreens.Swap',
+  TokenDetail = 'WalletScreens.TokenDetail',
 }
 
 enum SwapScreens {
