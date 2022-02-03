@@ -38,6 +38,7 @@ enum WalletScreens {
   SecurityPrivacy = 'WalletScreens.SecurityPrivacy',
   // PortfolioScreen = 'PortfolioScreen',
   NetworkSelector = 'WalletScreens.NetworkSelector',
+  Swap = 'WalletScreens.Swap',
 }
 
 enum SwapScreens {
@@ -63,6 +64,8 @@ enum Tabs {
   More = 'More',
   Watchlist = 'Watchlist',
   Tabs = 'Tabs',
+  Fab = 'Fab',
+  Bridge = 'Bridge',
 }
 
 enum ModalScreens {

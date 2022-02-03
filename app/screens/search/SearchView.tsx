@@ -1,13 +1,5 @@
 import React from 'react';
-import {
-  FlatList,
-  ListRenderItemInfo,
-  Platform,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import {FlatList, ListRenderItemInfo, Platform, StyleSheet, Text, TextInput, View} from 'react-native';
 import SearchSVG from 'components/svg/SearchSVG';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';

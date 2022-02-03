@@ -1,7 +1,7 @@
 import React from 'react';
 import {Platform, View} from 'react-native';
 import AvaButton from 'components/AvaButton';
-import QRCode from 'components/svg/QRCode';
+import QRCode from 'components/svg/QRCodeSVG';
 
 export const ScanQrIcon = ({onScanBarcode}: {onScanBarcode: () => void}) => {
   return (

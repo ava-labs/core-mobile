@@ -41,6 +41,7 @@ import {
   TokenWithBalance,
 } from '@avalabs/wallet-react-components';
 import AccountDropdown from 'screens/portfolio/account/AccountDropdown';
+import SwapScreenStack from 'navigation/wallet/SwapScreenStack';
 
 type Props = {
   onExit: () => void;
@@ -55,6 +56,7 @@ export type RootStackParamList = {
   [AppNavigation.Wallet.Legal]: undefined;
   [AppNavigation.Wallet.ReceiveTokens]: undefined;
   [AppNavigation.Wallet.SendTokens]: {token?: TokenWithBalance} | undefined;
+  [AppNavigation.Wallet.Swap]: undefined;
   [AppNavigation.Wallet.NetworkSelector]: undefined;
   [AppNavigation.Modal.AccountBottomSheet]: undefined;
   [AppNavigation.Modal.AccountDropDown]: undefined;
@@ -248,6 +250,17 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
             }}
             name={AppNavigation.Wallet.AddCustomToken}
             component={AddCustomToken}
+          />
+          <RootStack.Screen
+            options={{
+              presentation: 'card',
+              headerShown: true,
+              headerBackTitleVisible: false,
+              headerTitleAlign: 'center',
+              headerTitle: () => <HeaderAccountSelector />,
+            }}
+            name={AppNavigation.Wallet.Swap}
+            component={SwapScreenStack}
           />
           <RootStack.Screen
             options={{
