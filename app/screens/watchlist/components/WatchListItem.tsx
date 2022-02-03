@@ -82,9 +82,8 @@ const WatchListItem: FC<Props> = ({
           />
           <View>
             <AvaText.Heading3 currency ellipsizeMode={'tail'}>
-              {tokenPriceUsd}
+              43034.02
             </AvaText.Heading3>
-            <Space y={8} />
             <AvaText.Caption textStyle={{color: theme.colorSuccess}}>
               +$8.55 (9.923%)
             </AvaText.Caption>

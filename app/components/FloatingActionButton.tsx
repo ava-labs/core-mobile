@@ -1,4 +1,11 @@
-import React, {FC, useCallback, useMemo, useRef, useState} from 'react';
+import React, {
+  FC,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {Animated, Pressable, StyleSheet, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import ActionButtonItem from 'components/ActionButtonItem';
@@ -14,6 +21,7 @@ interface Props {
   degrees?: number;
   size?: number;
   radius?: number;
+  resetOnItemPress?: boolean;
 }
 
 const FloatingActionButton: FC<Props> = ({
@@ -28,11 +36,30 @@ const FloatingActionButton: FC<Props> = ({
   degrees = 135,
   size = 48,
   radius = 100,
+  resetOnItemPress = true,
 }) => {
   const anim = useRef(new Animated.Value(0)).current;
   const [isActive, setIsActive] = useState(false);
+  let timeout: number | null;
 
+  /**
+   * This clears the timout once it's used.
+   */
+  useEffect(() => {
+    return () => {
+      if (timeout != null) {
+        clearTimeout(timeout);
+      }
+    };
+  });
+
+  /**
+   * Animates elements of the component.
+   * Fab rotates
+   * Fab Items spring out
+   */
   const animateItems = useCallback(() => {
+    // if fab is active (expanded) then we collapse.
     if (isActive) {
       reset();
       return;
@@ -40,21 +67,29 @@ const FloatingActionButton: FC<Props> = ({
 
     Animated.spring(anim, {
       toValue: 1,
-      duration: 250,
+      speed: 250,
+      useNativeDriver: false,
     }).start();
 
     setIsActive(true);
   }, [isActive]);
 
+  /**
+   * Resets Fab with animations
+   */
   const reset = useCallback(() => {
     Animated.spring(anim, {
       toValue: 0,
-      duration: 250,
+      speed: 250,
+      useNativeDriver: false,
     }).start(() => {
       setIsActive(false);
     });
   }, [isActive]);
 
+  /**
+   * Render methods and start/end values for fab item animations and positions
+   */
   const renderActionItems = useMemo(() => {
     if (!isActive) {
       return null;
@@ -90,11 +125,11 @@ const FloatingActionButton: FC<Props> = ({
             btnColor={backgroundColor}
             {...button?.props}
             onPress={() => {
-              // if (this.props.autoInactive) {
-              //   this.timeout = setTimeout(() => {
-              //     this.reset();
-              //   }, 200);
-              // }
+              if (resetOnItemPress) {
+                timeout = setTimeout(() => {
+                  reset();
+                }, 200);
+              }
               button?.props?.onPress();
             }}
           />
@@ -103,6 +138,9 @@ const FloatingActionButton: FC<Props> = ({
     });
   }, [isActive]);
 
+  /**
+   * FAB render method and interpolation
+   */
   const renderButtonIcon = useMemo(() => {
     if (icon) {
       return icon;
@@ -115,7 +153,7 @@ const FloatingActionButton: FC<Props> = ({
           {
             color: anim.interpolate({
               inputRange: [0, 1],
-              outputRange: [iconTextColor, changeIconTextColor],
+              outputRange: [iconTextColor ?? '', changeIconTextColor ?? ''],
             }),
           },
         ]}>
@@ -127,13 +165,14 @@ const FloatingActionButton: FC<Props> = ({
   return (
     <View
       pointerEvents="box-none"
-      style={[styles.overlay, {height: 400, top: -100, zIndex: 99999}]}>
+      style={[styles.overlay, {height: 400, top: -100}]}>
       <Animated.View
         pointerEvents={'box-none'}
         style={{
           opacity: anim,
         }}>
         <LinearGradient
+          nativeID={'linearGradient'}
           pointerEvents={'box-none'}
           colors={['transparent', '#000000D9', '#000000']}
           style={{
@@ -145,10 +184,8 @@ const FloatingActionButton: FC<Props> = ({
       </Animated.View>
       <Pressable
         style={{
-          // position: 'absolute',
           alignSelf: 'center',
-          justifyContent: 'flex-end',
-          top: -65,
+          bottom: 70,
         }}
         onPress={() => {
           if (children) {
