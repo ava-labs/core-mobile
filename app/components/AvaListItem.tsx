@@ -112,6 +112,9 @@ function BaseListItem({
               <View>{subtitle}</View>
             ) : undefined}
           </View>
+          {/* right element only rendered if component not undefined or showNavigation Error is true.
+            It now utilizes flexGrow which will allow us to align items in the space as per UX requirements.
+           */}
           {(rightComponent || showNavigationArrow) && (
             <View
               style={{

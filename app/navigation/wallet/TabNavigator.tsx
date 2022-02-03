@@ -41,6 +41,12 @@ const TabNavigator = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const {openMoonPay} = useInAppBrowser();
 
+  /**
+   * extracts creation of "normal" tab items
+   * @param routeName
+   * @param focused
+   * @param image
+   */
   function normalTabButtons(
     routeName: string,
     focused: boolean,
@@ -59,6 +65,11 @@ const TabNavigator = () => {
     );
   }
 
+  /**
+   * extracts creation of "custom" tab item
+   * @param children
+   * @constructor
+   */
   const CustomTabBarFab = ({children}: {children: ReactElement}) => (
     <>
       {/* necessary for spacing between the fab and bottle bar buttons */}
@@ -103,6 +114,11 @@ const TabNavigator = () => {
     </>
   );
 
+  /**
+   * Due to the use of a custom FAB as a tab icon, spacing needed to be manually manipulated
+   * which required the "normal" items to be manually rendered on `options.tabBarIcon` instead of automatically handled
+   * by Tab.Navigator.
+   */
   return (
     <Tab.Navigator
       screenOptions={() => ({
