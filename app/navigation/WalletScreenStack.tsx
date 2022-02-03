@@ -45,7 +45,6 @@ import SwapScreenStack from 'navigation/wallet/SwapScreenStack';
 import AddressBookStack from 'navigation/wallet/AddressBookStack';
 import HeaderAccountSelector from 'components/HeaderAccountSelector';
 import TokenDetail from 'screens/watchlist/TokenDetail';
-import HeaderAccountSelector from 'components/HeaderAccountSelector';
 
 type Props = {
   onExit: () => void;

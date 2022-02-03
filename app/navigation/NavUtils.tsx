@@ -6,6 +6,7 @@ import {Row} from 'components/Row';
 export const MainHeaderOptions = (
   title: string,
   hideHeaderLeft = false,
+  actionComponent?: React.ReactNode,
 ): Partial<StackNavigationOptions> => {
   return {
     headerShown: true,
@@ -17,7 +18,7 @@ export const MainHeaderOptions = (
             alignItems: 'center',
             justifyContent: 'space-between',
           }}>
-          <AvaText.Heading1>{title} </AvaText.Heading1>
+          <AvaText.Heading1>{title}</AvaText.Heading1>
           {actionComponent}
         </Row>
       );

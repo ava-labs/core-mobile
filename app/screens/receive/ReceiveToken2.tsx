@@ -159,10 +159,7 @@ const Receive: FC<{
         <AvaText.Heading3>
           {isXChain ? 'X chain ' : 'C chain '}
         </AvaText.Heading3>
-        <AvaText.Body2>
-          address to receive funds. Your address will change after every
-          deposit.
-        </AvaText.Body2>
+        <AvaText.Body2>address to receive funds.</AvaText.Body2>
       </Text>
       <View style={[styles.container]}>
         <Space y={40} />
