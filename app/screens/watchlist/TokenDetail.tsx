@@ -22,6 +22,8 @@ import ChartSelector, {
   ChartType,
 } from 'screens/watchlist/components/ChartSelector';
 import OvalTagBg from 'components/OvalTagBg';
+import useInAppBrowser from 'hooks/useInAppBrowser';
+import AvaButton from 'components/AvaButton';
 
 export const defaultAreaChartFillGradient = (props: GradientProps) => {
   return (
@@ -43,6 +45,8 @@ const TokenDetail: FC<any> = () => {
   const [isFavorite, setIsFavorite] = useState(true);
   const [token, setToken] = useState<TokenWithBalance>();
   const [showLineChart, setShowLineChart] = useState(true);
+  const {openMoonPay} = useInAppBrowser();
+
   const {tokenId} = useRoute<RouteProp<RootStackParamList>>().params;
 
   useEffect(() => {
@@ -273,9 +277,11 @@ const TokenDetail: FC<any> = () => {
         subtitle={<AvaText.Heading3>$377.7M</AvaText.Heading3>}
       />
 
-      <OvalTagBg color={theme.listItemBg} style={{height: 48}}>
-        <AvaText.ButtonLarge>Buy {token?.symbol}</AvaText.ButtonLarge>
-      </OvalTagBg>
+      <AvaButton.Base onPress={openMoonPay}>
+        <OvalTagBg color={theme.listItemBg} style={{height: 48}}>
+          <AvaText.ButtonLarge>Buy {token?.symbol}</AvaText.ButtonLarge>
+        </OvalTagBg>
+      </AvaButton.Base>
     </ScrollView>
   );
 };
