@@ -1,21 +1,14 @@
 import React, {useCallback, useEffect, useMemo, useRef} from 'react';
 import BottomSheet, {BottomSheetBackdrop} from '@gorhom/bottom-sheet';
-import {InteractionManager, Text} from 'react-native';
+import {InteractionManager} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import TabViewBackground from 'screens/portfolio/components/TabViewBackground';
 import AvaxSheetHandle from 'components/AvaxSheetHandle';
-import AvaText from 'components/AvaText';
-import InputText from 'components/InputText';
-import AvaButton from 'components/AvaButton';
-import {Space} from 'components/Space';
-import {popableContent} from 'screens/swap/components/SwapTransactionDetails';
-import {useApplicationContext} from 'contexts/ApplicationContext';
 import {useSwapContext} from 'contexts/SwapContext';
-import {ScrollView} from 'react-native-gesture-handler';
+import EditFees from 'components/EditFees';
 
 function SwapFeesBottomSheet(): JSX.Element {
   const navigation = useNavigation();
-  const {theme} = useApplicationContext();
   const bottomSheetModalRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ['0%', '60%'], []);
   const {trxDetails} = useSwapContext();
@@ -36,15 +29,6 @@ function SwapFeesBottomSheet(): JSX.Element {
     index === 0 && handleClose();
   }, []);
 
-  const gasLimitInfoInfoMessage = popableContent(
-    'Gas limit is the maximum units of gas you are willing to use.”',
-    theme.colorBg3,
-  );
-  const gasFeeInfoMessage = popableContent(
-    'Gas fee is the price of gas unit.',
-    theme.colorBg3,
-  );
-
   const doSave = () => {
     handleClose();
   };
@@ -58,39 +42,12 @@ function SwapFeesBottomSheet(): JSX.Element {
       snapPoints={snapPoints}
       backgroundComponent={TabViewBackground}
       onChange={handleChange}>
-      <ScrollView>
-        <AvaText.LargeTitleBold textStyle={{marginHorizontal: 12}}>
-          Edit Fees
-        </AvaText.LargeTitleBold>
-        <Space y={24} />
-        <Text style={{marginHorizontal: 12}}>
-          <AvaText.Heading1>{trxDetails.networkFee}</AvaText.Heading1>
-        </Text>
-        <AvaText.Body3 textStyle={{marginHorizontal: 12}}>
-          Max fee: ({trxDetails.networkFee})
-        </AvaText.Body3>
-        <InputText
-          label={'Gas Limit ⓘ'}
-          mode={'amount'}
-          text={trxDetails.gasLimit.toString()}
-          popOverInfoText={gasLimitInfoInfoMessage}
-          onChangeText={text => trxDetails.setUsersGasLimit(Number(text) || 0)}
-        />
-        <InputText
-          label={'Gas Price ⓘ'}
-          text={trxDetails.gasPriceNAvax.toString()}
-          currency={'nAVAX'}
-          mode={'currency'}
-          popOverInfoText={gasFeeInfoMessage}
-          onChangeText={text =>
-            trxDetails.setUsersGasPriceNAvax(Number(text) || 0)
-          }
-        />
-        <Space y={24} />
-        <AvaButton.PrimaryLarge style={{marginHorizontal: 12}} onPress={doSave}>
-          Save
-        </AvaButton.PrimaryLarge>
-      </ScrollView>
+      <EditFees
+        onSave={doSave}
+        gasLimit={trxDetails.gasLimit.toString()}
+        networkFee={trxDetails.networkFee}
+        onSetGasLimit={value => trxDetails.setUsersGasLimit(Number(value) || 0)}
+      />
     </BottomSheet>
   );
 }
