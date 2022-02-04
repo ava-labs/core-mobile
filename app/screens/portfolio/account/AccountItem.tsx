@@ -116,15 +116,15 @@ function AccountItem({
           alignItems: 'center',
           height: 16,
         }}>
-        <AvaButton.Icon onPress={() => copyToClipboard(account.cAddress)}>
+        <AvaButton.Icon onPress={() => copyToClipboard(account.address)}>
           <CopySVG size={16} />
         </AvaButton.Icon>
         <AvaText.ButtonSmall ellipsizeMode={'middle'}>
-          {account.cAddress}
+          {account.address}
         </AvaText.ButtonSmall>
       </Row>
     );
-  }, [account.cAddress]);
+  }, [account.address]);
 
   return (
     <>

@@ -70,7 +70,7 @@ export function useWalletSetup(): WalletSetup {
           index: newAccount.index,
           title: `Account ${newAccount.index + 1}`,
           active: true,
-          cAddress: newAccount.wallet.getAddressC(),
+          address: newAccount.wallet.getAddressC(),
         });
         saveAccounts(accounts);
       } else {
