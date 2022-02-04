@@ -44,6 +44,7 @@ import AccountDropdown from 'screens/portfolio/account/AccountDropdown';
 import SwapScreenStack from 'navigation/wallet/SwapScreenStack';
 import AddressBookStack from 'navigation/wallet/AddressBookStack';
 import HeaderAccountSelector from 'components/HeaderAccountSelector';
+import {Contact} from 'Repo';
 import TokenDetail from 'screens/watchlist/TokenDetail';
 
 type Props = {
@@ -59,7 +60,9 @@ export type RootStackParamList = {
   [AppNavigation.Wallet.SecurityPrivacy]: undefined;
   [AppNavigation.Wallet.Legal]: undefined;
   [AppNavigation.Wallet.ReceiveTokens]: undefined;
-  [AppNavigation.Wallet.SendTokens]: {token?: TokenWithBalance} | undefined;
+  [AppNavigation.Wallet.SendTokens]:
+    | {token?: TokenWithBalance; contact?: Contact}
+    | undefined;
   [AppNavigation.Wallet.Swap]: undefined;
   [AppNavigation.Wallet.NetworkSelector]: undefined;
   [AppNavigation.Wallet.TokenDetail]: {tokenId?: string} | undefined;

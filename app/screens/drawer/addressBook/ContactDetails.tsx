@@ -15,8 +15,13 @@ import {Space} from 'components/Space';
 import {copyToClipboard} from 'utils/DeviceTools';
 import {Contact} from 'Repo';
 
-const ContactDetails = ({onEditFinished}: {onEditFinished: () => void}) => {
-  const {theme} = useApplicationContext();
+const ContactDetails = ({
+  onEditFinished,
+  onSend,
+}: {
+  onEditFinished: () => void;
+  onSend: (contact: Contact) => void;
+}) => {
   const {titleToInitials, onSave} = useAddressBook();
   const {params} = useRoute<RouteProp<AddressBookStackParamList>>();
   const {addressBook} = useApplicationContext().repo.addressBookRepo;
@@ -41,28 +46,6 @@ const ContactDetails = ({onEditFinished}: {onEditFinished: () => void}) => {
       setEditName(contact.title);
     }
   }, [contact]);
-
-  const AddressView = useCallback(() => {
-    return (
-      <>
-        <AvaText.Body1>Address</AvaText.Body1>
-        <Space y={8} />
-        <AvaButton.Base
-          onPress={() => copyToClipboard(contact.address)}
-          style={[
-            styles.copyAddressContainer,
-            {backgroundColor: theme.listItemBg},
-          ]}>
-          <AvaText.ButtonMedium
-            ellipsizeMode={'middle'}
-            textStyle={{flex: 1, marginRight: 16}}>
-            {contact.address}
-          </AvaText.ButtonMedium>
-          <CopySVG color={theme.colorText1} />
-        </AvaButton.Base>
-      </>
-    );
-  }, [contact, theme.colorText1, theme.listItemBg]);
 
   const save = () => {
     onSave({id: contact.id, title: editName, address: editAddress});
@@ -93,9 +76,36 @@ const ContactDetails = ({onEditFinished}: {onEditFinished: () => void}) => {
           <AvaButton.PrimaryLarge onPress={save}>Save</AvaButton.PrimaryLarge>
         </>
       ) : (
-        <AddressView />
+        <AddressView contact={contact} />
       )}
+      <FlexSpacer />
+      <AvaButton.PrimaryLarge onPress={() => onSend(contact)}>
+        Send
+      </AvaButton.PrimaryLarge>
     </SafeAreaProvider>
+  );
+};
+
+const AddressView = ({contact}: {contact: Contact}) => {
+  const {theme} = useApplicationContext();
+  return (
+    <>
+      <AvaText.Body1>Address</AvaText.Body1>
+      <Space y={8} />
+      <AvaButton.Base
+        onPress={() => copyToClipboard(contact.address)}
+        style={[
+          styles.copyAddressContainer,
+          {backgroundColor: theme.listItemBg},
+        ]}>
+        <AvaText.ButtonMedium
+          ellipsizeMode={'middle'}
+          textStyle={{flex: 1, marginRight: 16}}>
+          {contact.address}
+        </AvaText.ButtonMedium>
+        <CopySVG color={theme.colorText1} />
+      </AvaButton.Base>
+    </>
   );
 };
 
