@@ -1,6 +1,7 @@
 import AppNavigation from 'navigation/AppNavigation';
 import {
   createStackNavigator,
+  StackNavigationOptions,
   StackNavigationProp,
 } from '@react-navigation/stack';
 import React from 'react';
@@ -13,6 +14,7 @@ import AddContact from 'screens/drawer/addressBook/AddContact';
 import ContactDetails from 'screens/drawer/addressBook/ContactDetails';
 import AvaText from 'components/AvaText';
 import {useApplicationContext} from 'contexts/ApplicationContext';
+import {RootStackParamList} from 'navigation/WalletScreenStack';
 
 export type AddressBookStackParamList = {
   [AppNavigation.AddressBook.List]: undefined;
@@ -34,11 +36,11 @@ const AddressBookStack = () => {
       <Stack.Screen
         options={{
           headerShown: true,
-          ...MainHeaderOptions(
+          ...(MainHeaderOptions(
             'Address Book',
             false,
             <AddAddressBookContact />,
-          ),
+          ) as Partial<StackNavigationOptions>),
         }}
         name={AppNavigation.AddressBook.List}
         component={AddressBook}
@@ -46,7 +48,9 @@ const AddressBookStack = () => {
       <Stack.Screen
         options={{
           headerShown: true,
-          ...MainHeaderOptions('New Contact'),
+          ...(MainHeaderOptions(
+            'New Contact',
+          ) as Partial<StackNavigationOptions>),
         }}
         name={AppNavigation.AddressBook.Add}
         component={AddContact}
@@ -54,7 +58,11 @@ const AddressBookStack = () => {
       <Stack.Screen
         options={{
           headerShown: true,
-          ...MainHeaderOptions('', false, <EditAddressBookContact />),
+          ...(MainHeaderOptions(
+            '',
+            false,
+            <EditAddressBookContact />,
+          ) as Partial<StackNavigationOptions>),
         }}
         name={AppNavigation.AddressBook.Details}
         component={ContactDetailsComp}
@@ -66,13 +74,21 @@ const AddressBookStack = () => {
 const ContactDetailsComp = () => {
   const {setParams, setOptions} =
     useNavigation<StackNavigationProp<AddressBookStackParamList>>();
+  const {navigate} = useNavigation<StackNavigationProp<RootStackParamList>>();
   return (
     <ContactDetails
       onEditFinished={() => {
         setParams({editable: false});
         setOptions({
-          ...MainHeaderOptions('', false, <EditAddressBookContact />),
+          ...(MainHeaderOptions(
+            '',
+            false,
+            <EditAddressBookContact />,
+          ) as Partial<StackNavigationOptions>),
         });
+      }}
+      onSend={contact => {
+        navigate(AppNavigation.Wallet.SendTokens, {contact});
       }}
     />
   );
@@ -97,7 +113,7 @@ const EditAddressBookContact = () => {
       onPress={() => {
         setParams({editable: true});
         setOptions({
-          ...MainHeaderOptions(''),
+          ...(MainHeaderOptions('') as Partial<StackNavigationOptions>),
         });
       }}>
       <AvaText.ButtonLarge textStyle={{color: theme.colorAccent}}>
