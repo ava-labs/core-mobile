@@ -91,10 +91,10 @@ function SendToken({
     return (
       <AvaButton.Base
         onPress={() => {
-          toAccount.setAddress?.(item.item.cAddress);
+          toAccount.setAddress?.(item.item.address);
           toAccount.setTitle?.(item.item.title);
         }}>
-        <AddressBookItem title={item.item.title} address={item.item.cAddress} />
+        <AddressBookItem title={item.item.title} address={item.item.address} />
       </AvaButton.Base>
     );
   };

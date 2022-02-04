@@ -1,6 +1,6 @@
 export type Account = {
   index: number;
   title: string;
-  cAddress: string;
+  address: string;
   active: boolean;
 };
