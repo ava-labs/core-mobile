@@ -280,7 +280,7 @@ PODS:
     - glog
   - react-native-aes (1.3.10):
     - React-Core
-  - react-native-blur (0.8.0):
+  - react-native-blur (3.6.1):
     - React
   - react-native-camera (3.44.1):
     - React-Core
@@ -671,7 +671,7 @@ SPEC CHECKSUMS:
   React-jsinspector: d0374f7509d407d2264168b6d0fad0b54e300b85
   React-logger: 933f80c97c633ee8965d609876848148e3fef438
   react-native-aes: c6e4e3ffcff410535e31e161fca95d50e608d4ee
-  react-native-blur: cad4d93b364f91e7b7931b3fa935455487e5c33c
+  react-native-blur: 4568dd93d1d82748c180df8beb2d929c97b13b47
   react-native-camera: 7bf59f2728ffb019fa25e60a225d2c57e1a8f0f6
   react-native-config: 6502b1879f97ed5ac570a029961fc35ea606cd14
   react-native-document-picker: f1b5398801b332c77bc62ae0eae2116f49bdff26

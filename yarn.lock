@@ -3434,10 +3434,9 @@
   resolved "https://registry.yarnpkg.com/@react-native-clipboard/clipboard/-/clipboard-1.8.2.tgz#454000db103442e830026566e3c2a436e9b3f781"
   integrity sha512-IMUBqkwS6HyyHX1Dcu/yNqSYsgmI6UGilcUhD+qbH7tVQP8mX3k7hugr5K5IPzpGKaC1VSq4Lt7avy0jomHhLg==
 
-"@react-native-community/blur@^3.6.0":
-  version "3.6.0"
-  resolved "https://registry.yarnpkg.com/@react-native-community/blur/-/blur-3.6.0.tgz#31c9e0f2770519c9b5c4f99418f192246f0d4db8"
-  integrity sha512-GtDBhpX2pQcjl4VopOC8FktrVufrEfYRwVeMQ2WWckqKIv2BdwvlvWvj88L1WmEdBr9UNcm3rtgz+d+YXkmirA==
+"@react-native-community/blur@git+https://git@github.com/Kureev/react-native-blur.git":
+  version "3.6.1"
+  resolved "git+https://git@github.com/Kureev/react-native-blur.git#9d2d744a5171f3a77564a43f87c2cfb3fbcf597e"
   dependencies:
     prop-types "^15.5.10"
 
@@ -4189,13 +4188,6 @@
   dependencies:
     "@types/node" "*"
 
-"@types/dompurify@^2.3.1":
-  version "2.3.3"
-  resolved "https://registry.yarnpkg.com/@types/dompurify/-/dompurify-2.3.3.tgz#c24c92f698f77ed9cc9d9fa7888f90cf2bfaa23f"
-  integrity sha512-nnVQSgRVuZ/843oAfhA25eRSNzUFcBPk/LOiw5gm8mD9/X7CNcbRkQu/OsjCewO8+VIYfPxUnXvPEVGenw14+w==
-  dependencies:
-    "@types/trusted-types" "*"
-
 "@types/d3-path@^1":
   version "1.0.9"
   resolved "https://registry.yarnpkg.com/@types/d3-path/-/d3-path-1.0.9.tgz#73526b150d14cd96e701597cbf346cfd1fd4a58c"
@@ -4219,6 +4211,13 @@
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/@types/d3-time/-/d3-time-1.1.1.tgz#6cf3a4242c3bbac00440dfb8ba7884f16bedfcbf"
   integrity sha512-ULX7LoqXTCYtM+tLYOaeAJK7IwCT+4Gxlm2MaH0ErKLi07R5lh8NHCAyWcDkCCmx1AfRcBEV6H9QE9R25uP7jw==
+
+"@types/dompurify@^2.3.1":
+  version "2.3.3"
+  resolved "https://registry.yarnpkg.com/@types/dompurify/-/dompurify-2.3.3.tgz#c24c92f698f77ed9cc9d9fa7888f90cf2bfaa23f"
+  integrity sha512-nnVQSgRVuZ/843oAfhA25eRSNzUFcBPk/LOiw5gm8mD9/X7CNcbRkQu/OsjCewO8+VIYfPxUnXvPEVGenw14+w==
+  dependencies:
+    "@types/trusted-types" "*"
 
 "@types/eslint-visitor-keys@^1.0.0":
   version "1.0.0"
