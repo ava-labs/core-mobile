@@ -1,5 +1,5 @@
 /**
- * Avalanche Wallet App
+ * Core X
  *
  * @format
  * @flow strict-local
