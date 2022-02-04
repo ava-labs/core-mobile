@@ -10,6 +10,7 @@ import {Row} from 'components/Row';
 import AvaButton from 'components/AvaButton';
 import {Opacity10, Opacity50} from 'resources/Constants';
 import FlexSpacer from 'components/FlexSpacer';
+import NetworkFeeSelector from 'components/NetworkFeeSelector';
 import {useSendTokenContext} from 'contexts/SendTokenContext';
 import InputText from 'components/InputText';
 
@@ -104,52 +105,25 @@ export default function ReviewSend({
           </AvaText.Body3>
         </Row>
         <Space y={8} />
-        <Row
-          style={{
-            justifyContent: 'space-evenly',
-            alignItems: 'center',
-          }}>
-          <FeeSelector
-            label={'Normal'}
-            value={gasPresets.Normal}
-            selected={selectedFeeSelector === 'Normal'}
-            onSelect={value => {
-              setSelectedFeeSelector('Normal');
-              setSendGasPrice(value);
-            }}
-          />
-          <FeeSelector
-            label={'Fast'}
-            value={gasPresets.Fast}
-            selected={selectedFeeSelector === 'Fast'}
-            onSelect={value => {
-              setSelectedFeeSelector('Fast');
-              setSendGasPrice(value);
-            }}
-          />
-          <FeeSelector
-            label={'Instant'}
-            value={gasPresets.Instant}
-            selected={selectedFeeSelector === 'Instant'}
-            onSelect={value => {
-              setSelectedFeeSelector('Instant');
-              setSendGasPrice(value);
-            }}
-          />
-          <FeeSelector
-            label={'Custom'}
-            value={customGasPrice}
-            editable
-            selected={selectedFeeSelector === 'Custom'}
-            onSelect={() => {
-              setSelectedFeeSelector('Custom');
-            }}
-            onValueEntered={value => {
-              setSendGasPrice(value);
-              setCustomGasPrice(value);
-            }}
-          />
-        </Row>
+        <NetworkFeeSelector
+          networkFeeAvax={netFeeString}
+          networkFeeUsd={`${fees.sendFeeUsd?.toFixed(4)} USD`}
+          onSelectedPreset={preset => fees.setSelectedGasPricePreset(preset)}
+          onGasPriceEntered={gasPrice =>
+            fees.setCustomGasPriceNanoAvax(gasPrice)
+          }
+          onSettings={() => {
+            navigate(AppNavigation.Send.EditGasLimit, {
+              currentNetFee: netFeeString,
+              currentGasLimit: fees.gasLimit?.toString() ?? '',
+              onSave: customGasLimit => {
+                if (Number(customGasLimit)) {
+                  fees.setGasLimit(Number(customGasLimit));
+                }
+              },
+            });
+          }}
+        />
         <Space y={16} />
         <Separator />
         <Space y={32} />
@@ -190,91 +164,6 @@ export default function ReviewSend({
     </View>
   );
 }
-
-const FeeSelector: FC<{
-  label: string;
-  value: string;
-  selected: boolean;
-  onSelect: (value: string) => void;
-  editable?: boolean;
-  onValueEntered?: (value: string) => void;
-}> = ({label, value, selected, onSelect, editable = false, onValueEntered}) => {
-  const {theme} = useApplicationContext();
-  const [showInput, setShowInput] = useState(false);
-
-  let inputRef = useRef() as RefObject<TextInput>;
-
-  useEffect(() => {
-    if (selected && editable) {
-      setShowInput(true);
-    }
-    if (!selected) {
-      setShowInput(false);
-      inputRef.current?.blur();
-    }
-  }, [selected]);
-
-  return (
-    <View
-      style={{
-        alignItems: 'center',
-        width: 66,
-        height: 40,
-      }}>
-      {showInput && (
-        <InputText
-          text={value}
-          autoFocus
-          onChangeText={text => onValueEntered?.(text)}
-          keyboardType={'numeric'}
-          onInputRef={inputRef1 => {
-            inputRef = inputRef1;
-            inputRef1.current?.setNativeProps({
-              style: {
-                backgroundColor: theme.colorText1,
-                width: 66,
-                height: 40,
-                marginTop: -12,
-                fontFamily: 'Inter-SemiBold',
-                textAlign: 'center',
-                textAlignVertical: 'center',
-                paddingTop: 0,
-                paddingBottom: 0,
-                paddingLeft: 0,
-                paddingRight: 0,
-                color: theme.colorBg2,
-                fontSize: 14,
-                lineHeight: 24,
-              },
-            });
-          }}
-          mode={'amount'}
-        />
-      )}
-      {!showInput && (
-        <AvaButton.Base onPress={() => onSelect(value)}>
-          <View
-            focusable
-            style={{
-              width: 66,
-              height: 40,
-              borderRadius: 8,
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: selected
-                ? theme.colorText1
-                : theme.colorBg3 + Opacity50,
-            }}>
-            <AvaText.ButtonMedium
-              textStyle={{color: selected ? theme.colorBg2 : theme.colorText2}}>
-              {editable && value ? value : label}
-            </AvaText.ButtonMedium>
-          </View>
-        </AvaButton.Base>
-      )}
-    </View>
-  );
-};
 
 function SendRow({
   label,
