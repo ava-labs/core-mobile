@@ -89,6 +89,7 @@ enum SendTokenScreens {
 enum SendScreens {
   Send = 'SendScreens.Send',
   Review = 'SendScreens.Review',
+  EditGasLimit = 'SendScreens.EditGasLimit',
   Success = 'SendScreens.Success',
 }
 

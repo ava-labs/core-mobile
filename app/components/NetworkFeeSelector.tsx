@@ -4,7 +4,7 @@ import {TextInput, View} from 'react-native';
 import AvaButton from 'components/AvaButton';
 import SettingsCogSVG from 'components/svg/SettingsCogSVG';
 import {Space} from 'components/Space';
-import React, {FC, RefObject, useEffect, useRef, useState} from 'react';
+import React, {FC, useEffect, useRef, useState} from 'react';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import InputText from 'components/InputText';
 import {Opacity50} from 'resources/Constants';
@@ -96,7 +96,7 @@ const FeeSelector: FC<{
   const [showInput, setShowInput] = useState(false);
   const [selectedAtLeastOnce, setSelectedAtLeastOnce] = useState(false);
 
-  let inputRef = useRef() as RefObject<TextInput>;
+  let inputRef = useRef<TextInput>(null);
 
   useEffect(() => {
     if (selected && editable) {

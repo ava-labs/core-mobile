@@ -58,7 +58,7 @@ export const SwapContext = createContext<SwapContextState>({} as any);
 
 export const SwapContextProvider = ({children}: {children: any}) => {
   const {wallet} = useWalletContext();
-  const {gasPrice$} = useGasPrice();
+  const gasPrice$ = useGasPrice().gasPrice$;
   const [gasPrice, setGasPrice] = useState<GasPrice>({
     bn: new BN(0),
     value: '',

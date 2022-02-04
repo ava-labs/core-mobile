@@ -11,10 +11,16 @@ import ReviewSend from 'screens/send/ReviewSend';
 import {SendTokenContextProvider} from 'contexts/SendTokenContext';
 import {RootStackParamList} from 'navigation/WalletScreenStack';
 import {TokenWithBalance} from '@avalabs/wallet-react-components';
+import EditGasLimitBottomSheet from 'screens/send/EditGasLimitBottomSheet';
 
 export type SendStackParamList = {
   [AppNavigation.Send.Send]: {token?: TokenWithBalance} | undefined;
   [AppNavigation.Send.Review]: undefined;
+  [AppNavigation.Send.EditGasLimit]: {
+    currentNetFee: string;
+    currentGasLimit: string;
+    onSave: (setGasLimit: string) => void;
+  };
   [AppNavigation.Send.Success]: {transactionId: string};
 };
 
@@ -38,6 +44,11 @@ function SendScreenStack() {
         <SendStack.Screen
           name={AppNavigation.Send.Review}
           component={ReviewSendComponent}
+        />
+        <SendStack.Screen
+          options={{presentation: 'transparentModal'}}
+          name={AppNavigation.Send.EditGasLimit}
+          component={EditGasLimitBottomSheet}
         />
         <SendStack.Screen
           name={AppNavigation.Send.Success}
