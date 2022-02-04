@@ -1,5 +1,5 @@
-import React, {FC, RefObject, useEffect, useRef, useState} from 'react';
-import {ActivityIndicator, TextInput, View} from 'react-native';
+import React, {useEffect, useMemo} from 'react';
+import {ActivityIndicator, View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {Space} from 'components/Space';
 import AvaText from 'components/AvaText';
@@ -8,11 +8,13 @@ import DotSVG from 'components/svg/DotSVG';
 import Separator from 'components/Separator';
 import {Row} from 'components/Row';
 import AvaButton from 'components/AvaButton';
-import {Opacity10, Opacity50} from 'resources/Constants';
+import {Opacity10} from 'resources/Constants';
 import FlexSpacer from 'components/FlexSpacer';
 import NetworkFeeSelector from 'components/NetworkFeeSelector';
 import {useSendTokenContext} from 'contexts/SendTokenContext';
-import InputText from 'components/InputText';
+import AppNavigation from 'navigation/AppNavigation';
+import {StackNavigationProp} from '@react-navigation/stack';
+import {SendStackParamList} from 'navigation/wallet/SendScreenStack';
 
 export default function ReviewSend({
   onSuccess,
@@ -20,23 +22,27 @@ export default function ReviewSend({
   onSuccess: (transactionId: string) => void;
 }) {
   const {theme, isDarkMode} = useApplicationContext();
-  const {goBack} = useNavigation();
+  const {goBack, navigate} =
+    useNavigation<StackNavigationProp<SendStackParamList>>();
   const {
     tokenLogo,
     sendAmount,
     fromAccount,
     toAccount,
-    sendFeeAvax,
-    sendFeeUsd,
-    gasPresets,
-    setSendGasPrice,
+    fees,
     onSendNow,
     sendStatus,
+    sendStatusMsg,
     transactionId,
   } = useSendTokenContext();
 
-  const [selectedFeeSelector, setSelectedFeeSelector] = useState('Normal');
-  const [customGasPrice, setCustomGasPrice] = useState('');
+  const netFeeString = useMemo(
+    () =>
+      fees.sendFeeAvax
+        ? Number.parseFloat(fees.sendFeeAvax).toFixed(6).toString()
+        : '-',
+    [fees.sendFeeAvax],
+  );
 
   useEffect(() => {
     switch (sendStatus) {
@@ -93,17 +99,6 @@ export default function ReviewSend({
           title={toAccount.title}
           address={toAccount.address}
         />
-        <Space y={16} />
-        <Row style={{alignItems: 'baseline'}}>
-          <AvaText.Heading3>≈ ${sendFeeUsd?.toFixed(4)}</AvaText.Heading3>
-          <Space x={4} />
-          <AvaText.Body3 textStyle={{paddingBottom: 2}}>
-            {sendFeeAvax
-              ? Number.parseFloat(sendFeeAvax).toFixed(6).toString()
-              : '-'}{' '}
-            AVAX
-          </AvaText.Body3>
-        </Row>
         <Space y={8} />
         <NetworkFeeSelector
           networkFeeAvax={netFeeString}
@@ -137,7 +132,7 @@ export default function ReviewSend({
           ${fromAccount.balanceAfterTrxUsd} USD
         </AvaText.Body3>
         <FlexSpacer />
-        {sendStatus === 'Idle' && (
+        {sendStatus !== 'Sending' && (
           <>
             <AvaButton.PrimaryLarge onPress={onSendNow}>
               Send Now
@@ -158,6 +153,13 @@ export default function ReviewSend({
           <>
             <ActivityIndicator size="large" color={theme.colorPrimary1} />
             <Space y={32} />
+          </>
+        )}
+        {sendStatus === 'Fail' && (
+          <>
+            <AvaText.Body2 textStyle={{color: theme.colorError}}>
+              {sendStatusMsg.toString()}
+            </AvaText.Body2>
           </>
         )}
       </View>
