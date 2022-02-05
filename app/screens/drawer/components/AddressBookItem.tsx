@@ -15,6 +15,7 @@ const AddressBookItem = () => {
         title={<AvaText.Heading3>Address Book</AvaText.Heading3>}
         titleAlignment={'flex-start'}
         showNavigationArrow
+        rightComponentVerticalAlignment={'center'}
         onPress={() => {
           navigation?.navigate(AppNavigation.Wallet.AddressBook);
         }}

@@ -42,7 +42,7 @@ const WatchlistCarrousel: FC<Props> = () => {
     () => (
       <AvaButton.Base
         onPress={goToWatchlist}
-        style={[style.item, {backgroundColor: theme.colorBg3}]}>
+        style={[style.item, {backgroundColor: theme.listItemBg + 'D9'}]}>
         <Space y={14} />
         <AddSVG circleColor={'white'} size={24} />
         <Space y={4} />
@@ -68,6 +68,11 @@ const WatchlistCarrousel: FC<Props> = () => {
     return (
       <AvaButton.Base
         key={getTokenUID(token)}
+        onPress={() =>
+          navigation.navigate(AppNavigation.Wallet.TokenDetail, {
+            tokenId: getTokenUID(token),
+          })
+        }
         style={[style.item, {backgroundColor: theme.colorBg3}]}>
         <Avatar.Custom
           name={token.name}

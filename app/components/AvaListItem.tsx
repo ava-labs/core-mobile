@@ -14,7 +14,8 @@ interface Props {
   disablePress?: boolean;
   onPress?: () => void;
   titleAlignment?: 'center' | 'flex-start' | 'flex-end';
-  rightComponentAlignment?: 'center' | 'flex-start' | 'flex-end';
+  rightComponentHorizontalAlignment?: 'center' | 'flex-start' | 'flex-end';
+  rightComponentVerticalAlignment?: 'center' | 'flex-start' | 'flex-end';
   embedInCard?: boolean;
   roundedEdges?: boolean;
   background?: string;
@@ -30,7 +31,8 @@ function BaseListItem({
   disabled,
   disablePress,
   titleAlignment = 'center',
-  rightComponentAlignment = 'flex-end',
+  rightComponentHorizontalAlignment = 'flex-end',
+  rightComponentVerticalAlignment = 'flex-start',
   showNavigationArrow = false,
   onPress,
   embedInCard,
@@ -63,7 +65,7 @@ function BaseListItem({
         onPress={onPress}>
         <View style={[styles.baseRow, disabled && {opacity: 0.5}]}>
           {leftComponent && (
-            <View style={{marginLeft: 8, flexDirection: 'row'}}>
+            <View style={{marginLeft: 16, flexDirection: 'row'}}>
               {leftComponent}
             </View>
           )}
@@ -118,18 +120,17 @@ function BaseListItem({
           {(rightComponent || showNavigationArrow) && (
             <View
               style={{
-                marginRight: 8,
+                marginRight: 16,
                 flexDirection: 'row',
                 maxWidth: 150,
-                flexGrow: 1,
-                justifyContent: rightComponentAlignment,
-                alignSelf: 'flex-start',
+                flexGrow: 0.5,
+                justifyContent: rightComponentHorizontalAlignment,
+                alignSelf: rightComponentVerticalAlignment,
               }}>
               {rightComponent}
               {showNavigationArrow && <CarrotSVG />}
             </View>
           )}
-          {/*))}*/}
         </View>
       </Pressable>
     </View>
@@ -191,7 +192,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flex: 1,
   },
-  baseMainContent: {flex: 1, marginLeft: 8},
+  baseMainContent: {flex: 1, marginLeft: 16},
   baseLabel: {
     fontSize: 14,
     lineHeight: 17,
