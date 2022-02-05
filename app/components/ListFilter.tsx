@@ -12,7 +12,6 @@ import AvaText from 'components/AvaText';
 import CarrotSVG from 'components/svg/CarrotSVG';
 import {Popable, PopableManager} from 'react-native-popable';
 import Separator from 'components/Separator';
-import {BlurView} from '@react-native-community/blur';
 
 interface Props {
   filterOptions: string[];
@@ -47,12 +46,18 @@ const ListFilter: FC<Props> = ({
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const blurBackground = useMemo(() => {
     return (
-      <BlurView
-        style={StyleSheet.absoluteFill}
-        blurType={'dark'}
-        blurAmount={10}
-        reducedTransparencyFallbackColor={'black'}
+      <View
+        style={[
+          StyleSheet.absoluteFill,
+          {backgroundColor: '#000000', opacity: 0.9},
+        ]}
       />
+      // <BlurView
+      //   style={StyleSheet.absoluteFill}
+      //   blurType={'dark'}
+      //   blurAmount={10}
+      //   reducedTransparencyFallbackColor={'black'}
+      // />
     );
   }, []);
 

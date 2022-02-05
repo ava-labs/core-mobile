@@ -1,16 +1,9 @@
 import React, {FC, useEffect, useState} from 'react';
-import {
-  FlatList,
-  ListRenderItemInfo,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import {FlatList, ListRenderItemInfo, StyleSheet, View} from 'react-native';
 import Loader from 'components/Loader';
 import {TokenWithBalance} from '@avalabs/wallet-react-components';
 import {getTokenUID} from 'utils/TokenTools';
 import {useSearchableTokenList} from 'screens/portfolio/useSearchableTokenList';
-import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import WatchListItem from 'screens/watchlist/components/WatchListItem';
 import ListFilter from 'components/ListFilter';
 import {useNavigation} from '@react-navigation/native';
@@ -18,6 +11,8 @@ import AppNavigation from 'navigation/AppNavigation';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {RootStackParamList} from 'navigation/WalletScreenStack';
+import Separator from 'components/Separator';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
 
 interface Props {
   showFavorites?: boolean;
@@ -28,11 +23,7 @@ interface Props {
 const filterByOptions = ['Price', 'Market Cap', 'Volume', 'Gainers', 'Losers'];
 const filterTimeOptions = ['1H', '1D', '1W', '1Y'];
 
-const WatchlistView: FC<Props> = ({
-  showFavorites,
-  searchText = '',
-  ...rest
-}) => {
+const WatchlistView: FC<Props> = ({showFavorites, searchText = ''}) => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const {watchlistFavorites} =
     useApplicationContext().repo.watchlistFavoritesRepo;
@@ -69,6 +60,7 @@ const WatchlistView: FC<Props> = ({
         tokenPriceUsd={token?.priceUSD?.toString() ?? '0'}
         symbol={token.symbol}
         image={logoUri}
+        rank={!showFavorites ? item.index + 1 : undefined}
         onPress={() =>
           navigation.navigate(AppNavigation.Wallet.TokenDetail, {
             tokenId: getTokenUID(token),
@@ -78,23 +70,8 @@ const WatchlistView: FC<Props> = ({
     );
   };
 
-  const emptyView = (
-    <View
-      style={{
-        justifyContent: 'center',
-        alignItems: 'center',
-        flex: 1,
-        marginTop: 32,
-      }}>
-      <AvaLogoSVG />
-      <Text style={{fontSize: 24, paddingTop: 32, textAlign: 'center'}}>
-        There are no results. Please try another search
-      </Text>
-    </View>
-  );
-
   return (
-    <View {...rest} style={{flex: 1}}>
+    <SafeAreaProvider style={styles.container}>
       {!filteredTokenList ? (
         <Loader />
       ) : (
@@ -119,18 +96,22 @@ const WatchlistView: FC<Props> = ({
             data={data}
             renderItem={renderItem}
             onRefresh={handleRefresh}
-            contentContainerStyle={{paddingHorizontal: 16}}
+            ItemSeparatorComponent={() => (
+              <Separator style={{backgroundColor: '#323232', height: 0.5}} />
+            )}
             refreshing={false}
             keyExtractor={(item: TokenWithBalance) => getTokenUID(item)}
-            ListEmptyComponent={emptyView}
           />
         </>
       )}
-    </View>
+    </SafeAreaProvider>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   filterContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',

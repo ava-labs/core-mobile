@@ -18,6 +18,7 @@ interface Props {
   image?: string;
   symbol?: string;
   onPress?: () => void;
+  rank?: number;
 }
 
 const WatchListItem: FC<Props> = ({
@@ -27,6 +28,7 @@ const WatchListItem: FC<Props> = ({
   image,
   symbol,
   onPress,
+  rank,
 }) => {
   const theme = useApplicationContext().theme;
 
@@ -104,25 +106,34 @@ const WatchListItem: FC<Props> = ({
   };
 
   return (
-    <View
-      style={{
-        marginVertical: 4,
-        borderRadius: 8,
-        backgroundColor: theme.listItemBg + 'D9',
-      }}>
+    <View>
       <AvaListItem.Base
         title={
           <AvaText.Heading2 ellipsizeMode={'tail'}>{symbol}</AvaText.Heading2>
         }
         titleAlignment={'flex-start'}
         subtitle={tokenName}
+        embedInCard={false}
         leftComponent={
-          <Avatar.Custom
-            name={tokenName}
-            symbol={symbol}
-            logoUri={image}
-            size={40}
-          />
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+            {rank && (
+              <>
+                <AvaText.Heading3>{rank}</AvaText.Heading3>
+                <Space x={9} />
+              </>
+            )}
+            <Avatar.Custom
+              name={tokenName}
+              symbol={symbol}
+              logoUri={image}
+              size={32}
+            />
+          </View>
         }
         rightComponent={usdBalance()}
         onPress={onPress}

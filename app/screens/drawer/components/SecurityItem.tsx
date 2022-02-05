@@ -15,6 +15,7 @@ const SecurityItem = () => {
       titleAlignment={'flex-start'}
       leftComponent={null}
       rightComponent={<CarrotSVG />}
+      rightComponentVerticalAlignment={'center'}
       onPress={() => {
         navigation?.navigate(AppNavigation.Wallet.SecurityPrivacy);
       }}

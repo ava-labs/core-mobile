@@ -1,11 +1,5 @@
 import React, {FC, memo, useEffect, useRef} from 'react';
-import {
-  FlatList,
-  ListRenderItemInfo,
-  ScrollView,
-  StyleSheet,
-  View,
-} from 'react-native';
+import {FlatList, ListRenderItemInfo, StyleSheet, View} from 'react-native';
 import PortfolioHeader from 'screens/portfolio/PortfolioHeader';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {useNavigation} from '@react-navigation/native';
