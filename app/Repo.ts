@@ -83,7 +83,9 @@ export function useRepo(): Repo {
 
   const saveWatchlistFavorites = (favorites: string[]) => {
     setWatchlistFavorites(favorites);
-    saveWatchlistFavoritesToStorage(favorites).catch(reason => console.error());
+    saveWatchlistFavoritesToStorage(favorites).catch(reason =>
+      console.error(reason),
+    );
   };
 
   return {
@@ -118,8 +120,8 @@ async function loadRecentContactsFromStorage() {
 }
 
 async function loadWatchlistFavoritesFromStorage() {
-  const favorites = await AsyncStorage.getItem(ADDR_BOOK);
-  return favorites ?? [];
+  const favorites = await AsyncStorage.getItem(WATCHLIST_FAVORITES);
+  return favorites ? (JSON.parse(favorites) as string[]) : [];
 }
 
 async function saveAccountsToStorage(
