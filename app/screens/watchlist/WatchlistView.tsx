@@ -13,6 +13,7 @@ import {StackNavigationProp} from '@react-navigation/stack';
 import {RootStackParamList} from 'navigation/WalletScreenStack';
 import Separator from 'components/Separator';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
+import ZeroState from 'components/ZeroState';
 
 interface Props {
   showFavorites?: boolean;
@@ -99,6 +100,7 @@ const WatchlistView: FC<Props> = ({showFavorites, searchText = ''}) => {
             ItemSeparatorComponent={() => (
               <Separator style={{backgroundColor: '#323232', height: 0.5}} />
             )}
+            ListEmptyComponent={<ZeroState.NoResultsTextual />}
             refreshing={false}
             keyExtractor={(item: TokenWithBalance) => getTokenUID(item)}
           />

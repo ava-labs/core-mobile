@@ -25,7 +25,7 @@ interface Props {
 
 const WatchlistCarrousel: FC<Props> = () => {
   const {theme, repo} = useApplicationContext();
-  const {filteredTokenList} = useSearchableTokenList();
+  const {filteredTokenList} = useSearchableTokenList(false);
   const {watchlistFavorites} = repo.watchlistFavoritesRepo;
   const navigation = useNavigation<StackNavigationProp<any>>();
 

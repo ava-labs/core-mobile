@@ -40,7 +40,7 @@ const TokenDetail: FC<any> = () => {
   const {theme, repo} = useApplicationContext();
   const {watchlistFavorites, saveWatchlistFavorites} =
     repo.watchlistFavoritesRepo;
-  const {filteredTokenList} = useSearchableTokenList();
+  const {filteredTokenList} = useSearchableTokenList(false);
   const {setOptions} = useNavigation<StackNavigationProp<RootStackParamList>>();
   const [isFavorite, setIsFavorite] = useState(true);
   const [token, setToken] = useState<TokenWithBalance>();
@@ -106,7 +106,6 @@ const TokenDetail: FC<any> = () => {
         subtitle={token?.symbol}
         leftComponent={token && <Avatar.Token token={token} size={48} />}
       />
-      <Space y={8} />
       <AvaListItem.Base
         title={<AvaText.Body2>Price</AvaText.Body2>}
         titleAlignment={'flex-start'}
@@ -127,7 +126,7 @@ const TokenDetail: FC<any> = () => {
         }
       />
       <View
-        style={{height: 130, justifyContent: 'center', alignItems: 'center'}}>
+        style={{height: 110, justifyContent: 'center', alignItems: 'center'}}>
         {showLineChart ? (
           <SlideAreaChart
             scrollable
@@ -191,7 +190,7 @@ const TokenDetail: FC<any> = () => {
 
       <Space y={22} />
 
-      {/* this will change once data and component purpose and interaction is defined */}
+      {/* this will change once data component purpose and interaction is defined */}
       <TabViewAva renderCustomLabel={renderCustomLabel}>
         <View title={'24H'} />
         <View title={'1W'} />
@@ -219,7 +218,7 @@ const TokenDetail: FC<any> = () => {
       <AvaListItem.Base
         title={<AvaText.Body2>Market Cap</AvaText.Body2>}
         titleAlignment={'flex-start'}
-        rightComponentAlignment={'flex-start'}
+        rightComponentHorizontalAlignment={'flex-start'}
         paddingVertical={4}
         subtitle={<AvaText.Heading3>$23.4B</AvaText.Heading3>}
         rightComponent={
@@ -235,7 +234,7 @@ const TokenDetail: FC<any> = () => {
       <AvaListItem.Base
         title={<AvaText.Body2>24h Volume</AvaText.Body2>}
         titleAlignment={'flex-start'}
-        rightComponentAlignment={'flex-start'}
+        rightComponentHorizontalAlignment={'flex-start'}
         paddingVertical={4}
         subtitle={<AvaText.Heading3>$1.4B</AvaText.Heading3>}
         rightComponent={
@@ -255,7 +254,7 @@ const TokenDetail: FC<any> = () => {
       <AvaListItem.Base
         title={<AvaText.Body2>Available Supply</AvaText.Body2>}
         titleAlignment={'flex-start'}
-        rightComponentAlignment={'flex-start'}
+        rightComponentHorizontalAlignment={'flex-start'}
         paddingVertical={4}
         subtitle={<AvaText.Heading3>$220.3M</AvaText.Heading3>}
         rightComponent={
