@@ -6,17 +6,20 @@ const Separator = ({
   style,
   inset,
   color,
+  vertical,
 }: {
   style?: StyleProp<ViewStyle>;
   inset?: number;
   color?: string;
+  vertical?: string;
 }) => {
   const {theme} = useApplicationContext();
   return (
     <View
       style={[
         {
-          height: 1,
+          height: !vertical ? 1 : undefined,
+          width: vertical ? 1 : undefined,
           backgroundColor: color ?? theme.colorStroke,
           marginHorizontal: inset ?? 0,
         },

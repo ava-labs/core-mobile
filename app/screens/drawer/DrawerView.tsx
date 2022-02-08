@@ -12,8 +12,8 @@ import {ScrollView} from 'react-native-gesture-handler';
 import SignOutItem from 'screens/drawer/components/SignOutItem';
 import SplashLogoSVG from 'components/svg/SplashLogoSVG';
 import NetworkItem from 'screens/drawer/components/NetworkItem';
-import {Space} from 'components/Space';
 import AddressBookItem from 'screens/drawer/components/AddressBookItem';
+import {Row} from 'components/Row';
 
 const DrawerView = () => {
   const context = useApplicationContext();
@@ -23,8 +23,8 @@ const DrawerView = () => {
   }
 
   const header = (
-    <View style={styles.headerContainer}>
-      <SplashLogoSVG />
+    <Row style={styles.headerContainer}>
+      <SplashLogoSVG width={142} height={40} />
       {/* hiding mode toggle until it's implemented */}
       {true || (
         <Pressable
@@ -33,7 +33,7 @@ const DrawerView = () => {
           {context.isDarkMode ? <LightModeSVG /> : <DarkModeSVG />}
         </Pressable>
       )}
-    </View>
+    </Row>
   );
 
   return (
@@ -51,7 +51,6 @@ const Main = () => {
         flex: 1,
       }}>
       <ScrollView>
-        <Space y={48} />
         <NetworkItem />
         <AddressBookItem />
         <CurrencyItem />
@@ -73,10 +72,10 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     paddingHorizontal: 16,
-    flexDirection: 'row',
     justifyContent: 'flex-start',
     alignItems: 'center',
-    paddingTop: 24,
+    marginVertical: 16,
+    height: 52,
   },
   darkLightModeContainer: {flex: 1, alignItems: 'flex-end'},
 });
