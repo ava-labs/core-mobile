@@ -18,7 +18,7 @@ export const OnboardScreenStack = () => {
       }}>
       <OnboardingScreenS.Screen
         name={AppNavigation.Onboard.Init}
-        component={Splash}
+        component={SplashComp}
       />
       <OnboardingScreenS.Screen
         name={AppNavigation.Root.Welcome}
@@ -26,4 +26,8 @@ export const OnboardScreenStack = () => {
       />
     </OnboardingScreenS.Navigator>
   );
+};
+
+const SplashComp = () => {
+  return <Splash finished />;
 };

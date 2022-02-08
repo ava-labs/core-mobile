@@ -38,12 +38,7 @@ const AvaxQRCode: FC<Props> = ({
           justifyContent: 'center',
           alignItems: 'center',
         }}>
-        <AvaLogoSVG
-          absolutePosition
-          size={40}
-          logoColor={theme.txtListItem}
-          backgroundColor={theme.colorBg3}
-        />
+        <AvaLogoSVG absolutePosition size={40} />
         <CircularText text={circularText} />
       </View>
     </View>

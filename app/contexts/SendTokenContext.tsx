@@ -298,13 +298,7 @@ export const SendTokenContextProvider = ({children}: {children: any}) => {
 
   const tokenLogo = useCallback(() => {
     if (sendToken?.isAvax) {
-      return (
-        <AvaLogoSVG
-          backgroundColor={theme.logoColor}
-          logoColor={theme.white}
-          size={57}
-        />
-      );
+      return <AvaLogoSVG size={57} />;
     } else {
       return (
         <Image
