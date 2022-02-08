@@ -10,7 +10,7 @@ import PortfolioStackScreen from 'navigation/wallet/PortfolioScreenStack';
 import React, {ReactElement} from 'react';
 import {noop} from 'rxjs';
 import ActivityView from 'screens/activity/ActivityView';
-import {StyleSheet, View} from 'react-native';
+import {View} from 'react-native';
 import AddSVG from 'components/svg/AddSVG';
 import AvaText from 'components/AvaText';
 import BuySVG from 'components/svg/BuySVG';
@@ -25,6 +25,7 @@ import ActionButtonItem from 'components/ActionButtonItem';
 import QRCodeSVG from 'components/svg/QRCodeSVG';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {RootStackParamList} from 'navigation/WalletScreenStack';
+import WatchlistTab from 'screens/watchlist/WatchlistTabView';
 
 const Tab = createBottomTabNavigator();
 const TAB_ICON_SIZE = 28;
@@ -40,6 +41,12 @@ const TabNavigator = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const {openMoonPay} = useInAppBrowser();
 
+  /**
+   * extracts creation of "normal" tab items
+   * @param routeName
+   * @param focused
+   * @param image
+   */
   function normalTabButtons(
     routeName: string,
     focused: boolean,
@@ -58,9 +65,14 @@ const TabNavigator = () => {
     );
   }
 
+  /**
+   * extracts creation of "custom" tab item
+   * @param children
+   * @constructor
+   */
   const CustomTabBarFab = ({children}: {children: ReactElement}) => (
     <>
-      {/* necessary for spacing betten the fab and bottle bar buttons */}
+      {/* necessary for spacing between the fab and bottle bar buttons */}
       <Space x={48} />
       <FloatingActionButton
         backgroundColor={'#0A84FF'}
@@ -102,6 +114,11 @@ const TabNavigator = () => {
     </>
   );
 
+  /**
+   * Due to the use of a custom FAB as a tab icon, spacing needed to be manually manipulated
+   * which required the "normal" items to be manually rendered on `options.tabBarIcon` instead of automatically handled
+   * by Tab.Navigator.
+   */
   return (
     <Tab.Navigator
       screenOptions={() => ({
@@ -159,7 +176,7 @@ const TabNavigator = () => {
               <WatchlistSVG selected={focused} size={TAB_ICON_SIZE} />,
             ),
         }}
-        component={WatchlistView}
+        component={WatchlistTab}
       />
       <Tab.Screen
         name={AppNavigation.Tabs.Bridge}

@@ -39,7 +39,7 @@ const ZeroStateBase: FC<BaseProps> = ({
 
   function getMessage() {
     if (typeof message === 'string') {
-      return <AvaText.Body1>{message}</AvaText.Body1>;
+      return <AvaText.Body2>{message}</AvaText.Body2>;
     }
     return <View>{message}</View>;
   }
@@ -97,6 +97,14 @@ function ZeroStatePortfolio() {
   return <ZeroStateBase title={title} message={message} />;
 }
 
+function ZeroStateNoResultsTextual() {
+  const title = 'No results found';
+  const message =
+    'There are no tokens that match your search.\nPlease try again.';
+
+  return <ZeroStateBase title={title} message={message} />;
+}
+
 type NoResultsProps = Pick<BaseProps, 'message'>;
 
 function ZeroStateNoResults({message}: NoResultsProps) {
@@ -116,7 +124,8 @@ function ZeroStateComingSoon() {
 
 const ZeroState = {
   Portfolio: ZeroStatePortfolio,
-  NoResults: ZeroStateNoResults,
+  NoResultsWithArt: ZeroStateNoResults,
+  NoResultsTextual: ZeroStateNoResultsTextual,
   ComingSoon: ZeroStateComingSoon,
   SendError: ZeroStateSendError,
 };

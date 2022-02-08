@@ -21,6 +21,7 @@ const NetworkItem = () => {
         title={<AvaText.Heading3>Network</AvaText.Heading3>}
         titleAlignment={'flex-start'}
         rightComponent={selectedNetwork()}
+        rightComponentVerticalAlignment={'center'}
         showNavigationArrow
         onPress={() => {
           navigation?.navigate(AppNavigation.Wallet.NetworkSelector);

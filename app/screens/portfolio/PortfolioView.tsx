@@ -1,11 +1,5 @@
 import React, {FC, memo, useEffect, useRef} from 'react';
-import {
-  FlatList,
-  ListRenderItemInfo,
-  ScrollView,
-  StyleSheet,
-  View,
-} from 'react-native';
+import {FlatList, ListRenderItemInfo, StyleSheet, View} from 'react-native';
 import PortfolioHeader from 'screens/portfolio/PortfolioHeader';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {useNavigation} from '@react-navigation/native';
@@ -100,6 +94,14 @@ const PortfolioView: FC<PortfolioProps> = memo(
     function selectToken(token: TokenWithBalance) {
       setSelectedToken?.(token);
       rootNavigation.navigate(AppNavigation.Wallet.SendTokens, {token});
+    }
+
+    function manageTokens() {
+      navigation.navigate(AppNavigation.Wallet.SearchScreen);
+    }
+
+    function viewAllWatchlist() {
+      navigation.navigate(AppNavigation.Tabs.Watchlist);
     }
 
     function manageTokens() {

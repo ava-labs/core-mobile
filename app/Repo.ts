@@ -9,6 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const WALLET_ID = 'WALLET_ID';
 const ADDR_BOOK = 'ADDR_BOOK_1';
 const ADDR_BOOK_RECENTS = 'ADDR_BOOK_RECENTS';
+const WATCHLIST_FAVORITES = 'WATCHLIST_FAVORITES';
 
 type AccountId = number;
 type UID = string;
@@ -20,6 +21,10 @@ export type Contact = {
 };
 
 export type Repo = {
+  watchlistFavoritesRepo: {
+    watchlistFavorites: string[];
+    saveWatchlistFavorites: (favorites: string[]) => void;
+  };
   accountsRepo: {
     accounts: Map<AccountId, Account>;
     saveAccounts: (accounts: Map<AccountId, Account>) => void;
@@ -37,11 +42,15 @@ export function useRepo(): Repo {
   const [accounts, setAccounts] = useState<Map<AccountId, Account>>(new Map());
   const [addressBook, setAddressBook] = useState<Map<UID, Contact>>(new Map());
   const [recentContacts, setRecentContacts] = useState<UID[]>([]);
+  const [watchlistFavorites, setWatchlistFavorites] = useState<string[]>([]);
 
   useEffect(() => {
     loadAccountsFromStorage().then(value => setAccounts(value));
     loadAddressBookFromStorage().then(value => setAddressBook(value));
     loadRecentContactsFromStorage().then(value => setRecentContacts(value));
+    loadWatchlistFavoritesFromStorage().then(value =>
+      setWatchlistFavorites(value),
+    );
   }, []);
 
   const saveAccounts = (accounts: Map<AccountId, Account>) => {
@@ -72,6 +81,13 @@ export function useRepo(): Repo {
     );
   };
 
+  const saveWatchlistFavorites = (favorites: string[]) => {
+    setWatchlistFavorites(favorites);
+    saveWatchlistFavoritesToStorage(favorites).catch(reason =>
+      console.error(reason),
+    );
+  };
+
   return {
     accountsRepo: {accounts, saveAccounts, setActiveAccount},
     addressBookRepo: {
@@ -80,6 +96,7 @@ export function useRepo(): Repo {
       recentContacts,
       addToRecentContacts,
     },
+    watchlistFavoritesRepo: {watchlistFavorites, saveWatchlistFavorites},
   };
 }
 
@@ -100,6 +117,11 @@ async function loadAddressBookFromStorage() {
 async function loadRecentContactsFromStorage() {
   const rawRecents = await AsyncStorage.getItem(ADDR_BOOK_RECENTS);
   return rawRecents ? (JSON.parse(rawRecents) as UID[]) : ([] as UID[]);
+}
+
+async function loadWatchlistFavoritesFromStorage() {
+  const favorites = await AsyncStorage.getItem(WATCHLIST_FAVORITES);
+  return favorites ? (JSON.parse(favorites) as string[]) : [];
 }
 
 async function saveAccountsToStorage(
@@ -129,5 +151,14 @@ async function saveRecentContactsToStorage(recent: UID[]) {
     console.error(recent);
   } else {
     await AsyncStorage.setItem(ADDR_BOOK_RECENTS, stringifiedRecentContacts);
+  }
+}
+
+async function saveWatchlistFavoritesToStorage(favorites: string[]) {
+  const stringifiedFavorites = JSON.stringify(favorites);
+  if (stringifiedFavorites === undefined) {
+    console.error(favorites);
+  } else {
+    await AsyncStorage.setItem(WATCHLIST_FAVORITES, stringifiedFavorites);
   }
 }
