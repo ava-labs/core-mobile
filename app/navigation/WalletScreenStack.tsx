@@ -44,6 +44,7 @@ import AccountDropdown from 'screens/portfolio/account/AccountDropdown';
 import SwapScreenStack from 'navigation/wallet/SwapScreenStack';
 import AddressBookStack from 'navigation/wallet/AddressBookStack';
 import HeaderAccountSelector from 'components/HeaderAccountSelector';
+import TokenDetail from 'screens/watchlist/TokenDetail';
 
 type Props = {
   onExit: () => void;
@@ -61,6 +62,7 @@ export type RootStackParamList = {
   [AppNavigation.Wallet.SendTokens]: {token?: TokenWithBalance} | undefined;
   [AppNavigation.Wallet.Swap]: undefined;
   [AppNavigation.Wallet.NetworkSelector]: undefined;
+  [AppNavigation.Wallet.TokenDetail]: {tokenId?: string} | undefined;
   [AppNavigation.Modal.AccountBottomSheet]: undefined;
   [AppNavigation.Modal.AccountDropDown]: undefined;
   [AppNavigation.Modal.TransactionDetailBottomSheet]: undefined;
@@ -253,6 +255,13 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
             }}
             name={AppNavigation.Wallet.AddCustomToken}
             component={AddCustomToken}
+          />
+          <RootStack.Screen
+            options={{
+              ...MainHeaderOptions(''),
+            }}
+            name={AppNavigation.Wallet.TokenDetail}
+            component={TokenDetail}
           />
           <RootStack.Screen
             options={{

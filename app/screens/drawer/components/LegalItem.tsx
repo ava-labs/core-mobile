@@ -15,6 +15,7 @@ const LegalItem = () => {
         titleAlignment={'flex-start'}
         leftComponent={null}
         rightComponent={<CarrotSVG />}
+        rightComponentVerticalAlignment={'center'}
         onPress={() => {
           openUrl(LEGAL_URL);
         }}

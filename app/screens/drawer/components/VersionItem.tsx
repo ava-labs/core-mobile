@@ -12,6 +12,7 @@ export default function VersionItem() {
       titleAlignment={'flex-start'}
       leftComponent={null}
       rightComponent={<AvaText.Body2>{pkg.version}</AvaText.Body2>}
+      rightComponentVerticalAlignment={'center'}
       onPress={() => {
         Alert.alert('naviagate to security');
       }}

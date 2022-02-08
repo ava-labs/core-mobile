@@ -173,9 +173,21 @@ const TextTag: FC<AvaTextProps> = ({textStyle, children, ...rest}) => {
   );
 };
 
-const TextButtonLarge: FC<AvaTextProps> = ({textStyle, children, ...rest}) => {
+const TextButtonLarge: FC<AvaTextProps> = ({
+  textStyle,
+  color,
+  children,
+  ...rest
+}) => {
+  const theme = useApplicationContext().theme;
   return (
-    <AvaxTextBase style={[styles.textButtonLarge, textStyle]} {...rest}>
+    <AvaxTextBase
+      style={[
+        styles.textButtonLarge,
+        {color: color ?? theme.colorText2},
+        textStyle,
+      ]}
+      {...rest}>
       {children}
     </AvaxTextBase>
   );

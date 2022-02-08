@@ -21,6 +21,7 @@ const CurrencyItem = () => {
         title={<AvaText.Heading3>Currency</AvaText.Heading3>}
         titleAlignment={'flex-start'}
         rightComponent={currency()}
+        rightComponentVerticalAlignment={'center'}
         showNavigationArrow
         onPress={() => {
           navigation?.navigate(AppNavigation.Wallet.CurrencySelector, {

@@ -34,44 +34,12 @@ const PortfolioListItem: FC<Props> = ({
     />
   );
 
-  const usdBalance = () => {
-    if (tokenPriceUsd) {
-      return (
-        <AvaListItem.CurrencyAmount
-          justifyContent={'flex-end'}
-          value={
-            <AvaText.Heading3 currency ellipsizeMode={'tail'}>
-              {tokenPriceUsd}
-            </AvaText.Heading3>
-          }
-          currency={<AvaText.Heading3>{''}</AvaText.Heading3>}
-        />
-      );
-    }
-
-    if (!tokenPriceUsd && tokenPrice === '0') {
-      return (
-        <AvaListItem.CurrencyAmount
-          justifyContent={'flex-end'}
-          value={
-            <AvaText.Heading3 ellipsizeMode={'tail'}>
-              {tokenPriceUsd}
-            </AvaText.Heading3>
-          }
-          currency={<AvaText.Heading3>{''}</AvaText.Heading3>}
-        />
-      );
-    }
-
-    return null;
-  };
-
   return (
     <View
       style={{
         marginVertical: 4,
         borderRadius: 8,
-        backgroundColor: theme.colorBg3,
+        backgroundColor: theme.listItemBg + 'D9',
       }}>
       <AvaListItem.Base
         title={<AvaText.Heading2>{title}</AvaText.Heading2>}
@@ -85,7 +53,11 @@ const PortfolioListItem: FC<Props> = ({
             size={40}
           />
         }
-        rightComponent={usdBalance()}
+        rightComponent={
+          <AvaText.Heading3 currency ellipsizeMode={'tail'}>
+            {tokenPriceUsd}
+          </AvaText.Heading3>
+        }
         onPress={onPress}
       />
     </View>

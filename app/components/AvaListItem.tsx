@@ -14,9 +14,12 @@ interface Props {
   disablePress?: boolean;
   onPress?: () => void;
   titleAlignment?: 'center' | 'flex-start' | 'flex-end';
+  rightComponentHorizontalAlignment?: 'center' | 'flex-start' | 'flex-end';
+  rightComponentVerticalAlignment?: 'center' | 'flex-start' | 'flex-end';
   embedInCard?: boolean;
   roundedEdges?: boolean;
   background?: string;
+  paddingVertical?: number;
 }
 
 function BaseListItem({
@@ -28,17 +31,24 @@ function BaseListItem({
   disabled,
   disablePress,
   titleAlignment = 'center',
+  rightComponentHorizontalAlignment = 'flex-end',
+  rightComponentVerticalAlignment = 'flex-start',
   showNavigationArrow = false,
   onPress,
   embedInCard,
   background,
+  paddingVertical = 4,
 }: Props) {
   const context = useApplicationContext();
 
   return (
     <View
       style={[
-        {paddingVertical: 16, height: 64, justifyContent: 'center'},
+        {
+          paddingVertical: paddingVertical,
+          height: 64,
+          justifyContent: 'center',
+        },
         embedInCard && {
           backgroundColor: context.theme.listItemBg,
           marginHorizontal: 16,
@@ -104,19 +114,23 @@ function BaseListItem({
               <View>{subtitle}</View>
             ) : undefined}
           </View>
-          <View
-            style={{
-              marginRight: 16,
-              flexDirection: 'row',
-              maxWidth: 150,
-              flexShrink: 1,
-              flex: 1,
-              justifyContent: 'flex-end',
-              alignSelf: 'flex-start',
-            }}>
-            {rightComponent && rightComponent}
-            {showNavigationArrow && <CarrotSVG />}
-          </View>
+          {/* right element only rendered if component not undefined or showNavigation Error is true.
+            It now utilizes flexGrow which will allow us to align items in the space as per UX requirements.
+           */}
+          {(rightComponent || showNavigationArrow) && (
+            <View
+              style={{
+                marginRight: 16,
+                flexDirection: 'row',
+                maxWidth: 150,
+                flexGrow: 0.5,
+                justifyContent: rightComponentHorizontalAlignment,
+                alignSelf: rightComponentVerticalAlignment,
+              }}>
+              {rightComponent}
+              {showNavigationArrow && <CarrotSVG />}
+            </View>
+          )}
         </View>
       </Pressable>
     </View>
