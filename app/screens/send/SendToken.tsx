@@ -153,7 +153,7 @@ function SendToken({
             renderItem={renderAddressItem}
             keyExtractor={item => item.id}
             contentContainerStyle={{paddingHorizontal: 16}}
-            ListEmptyComponent={<ZeroState.NoResults />}
+            ListEmptyComponent={<ZeroState.NoResultsGraphical />}
           />
           <FlatList
             title={'Address Book'}
@@ -161,14 +161,14 @@ function SendToken({
             renderItem={renderAddressItem}
             keyExtractor={item => item.id}
             contentContainerStyle={{paddingHorizontal: 16}}
-            ListEmptyComponent={<ZeroState.NoResults />}
+            ListEmptyComponent={<ZeroState.NoResultsGraphical />}
           />
           <FlatList
             title={'My accounts'}
             data={[...accounts.values()]}
             renderItem={renderAccountItem}
             contentContainerStyle={{paddingHorizontal: 16}}
-            ListEmptyComponent={<ZeroState.NoResults />}
+            ListEmptyComponent={<ZeroState.NoResultsGraphical />}
           />
         </TabViewAva>
       ) : (
