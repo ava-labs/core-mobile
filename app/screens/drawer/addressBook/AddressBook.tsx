@@ -41,7 +41,7 @@ const AddressBook = () => {
 
   return (
     <SafeAreaProvider style={{flex: 1, paddingHorizontal: 16}}>
-      <SearchBar onTextChanged={value => setSearchFilter(value)} />
+      <SearchBar searchText={searchFilter} onTextChanged={setSearchFilter} />
       <FlatList data={contacts} renderItem={renderAccountItem} />
     </SafeAreaProvider>
   );

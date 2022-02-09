@@ -76,7 +76,7 @@ function TokenSelector({
 
   return (
     <View style={{flex: 1, marginHorizontal: horizontalMargin}}>
-      <SearchBar onTextChanged={handleSearch} initSearchText={searchText} />
+      <SearchBar onTextChanged={handleSearch} searchText={searchText} />
       <Space y={16} />
       {!filteredTokenList ? (
         <Loader />
@@ -89,7 +89,7 @@ function TokenSelector({
           refreshing={false}
           keyExtractor={(item: TokenWithBalance) => getTokenUID(item)}
           ListEmptyComponent={
-            <ZeroState.NoResults message={getNoResultsText()} />
+            <ZeroState.NoResultsGraphical message={getNoResultsText()} />
           }
         />
       )}
