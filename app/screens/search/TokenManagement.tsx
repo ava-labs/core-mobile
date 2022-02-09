@@ -13,8 +13,11 @@ import {Opacity50} from 'resources/Constants';
 import Loader from 'components/Loader';
 import {getTokenUID} from 'utils/TokenTools';
 import SearchBar from 'components/SearchBar';
+import {useNavigation} from '@react-navigation/native';
+import {PortfolioNavigationProp} from 'screens/portfolio/PortfolioView';
+import AppNavigation from 'navigation/AppNavigation';
 
-function SearchView(): JSX.Element {
+function TokenManagement(): JSX.Element {
   const {
     filteredTokenList,
     searchText,
@@ -24,7 +27,7 @@ function SearchView(): JSX.Element {
     loadTokenList,
   } = useSearchableTokenList(false);
 
-  // const navigation = useNavigation<PortfolioNavigationProp>();
+  const navigation = useNavigation<PortfolioNavigationProp>();
 
   function handleRefresh() {
     loadTokenList();
@@ -90,13 +93,13 @@ function SearchView(): JSX.Element {
           data={filteredTokenList}
           renderItem={renderItem}
           onRefresh={handleRefresh}
-          // ListHeaderComponent={
-          //   <AddCustomTokenButton
-          //     onPress={() =>
-          //       navigation.navigate(AppNavigation.Wallet.AddCustomToken)
-          //     }
-          //   />
-          // }
+          ListHeaderComponent={
+            <AddCustomTokenButton
+              onPress={() =>
+                navigation.navigate(AppNavigation.Wallet.AddCustomToken)
+              }
+            />
+          }
           refreshing={false}
           keyExtractor={(item: TokenWithBalance) => getTokenUID(item)}
           ListEmptyComponent={emptyView}
@@ -131,4 +134,4 @@ const AddCustomTokenButton = ({onPress}: {onPress: () => void}) => {
   );
 };
 
-export default SearchView;
+export default TokenManagement;
