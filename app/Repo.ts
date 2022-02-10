@@ -1,6 +1,7 @@
 import {useEffect, useState} from 'react';
 import {Account} from 'dto/Account';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {CustomTokens} from 'screens/tokenManagement/hooks/useAddCustomToken';
 
 /**
  * Currently we support only one wallet, with multiple accounts.
@@ -10,6 +11,7 @@ const WALLET_ID = 'WALLET_ID';
 const ADDR_BOOK = 'ADDR_BOOK_1';
 const ADDR_BOOK_RECENTS = 'ADDR_BOOK_RECENTS';
 const WATCHLIST_FAVORITES = 'WATCHLIST_FAVORITES';
+const CUSTOM_TOKENS = 'CUSTOM_TOKENS';
 
 type AccountId = number;
 type UID = string;
@@ -36,6 +38,10 @@ export type Repo = {
     recentContacts: UID[];
     addToRecentContacts: (contactId: UID) => void;
   };
+  customTokenRepo: {
+    customTokens: CustomTokens;
+    saveCustomTokens: (customTokens: CustomTokens) => Promise<void>;
+  };
 };
 
 export function useRepo(): Repo {
@@ -43,6 +49,7 @@ export function useRepo(): Repo {
   const [addressBook, setAddressBook] = useState<Map<UID, Contact>>(new Map());
   const [recentContacts, setRecentContacts] = useState<UID[]>([]);
   const [watchlistFavorites, setWatchlistFavorites] = useState<string[]>([]);
+  const [customTokens, setCustomTokens] = useState<CustomTokens>({});
 
   useEffect(() => {
     loadAccountsFromStorage().then(value => setAccounts(value));
@@ -51,6 +58,7 @@ export function useRepo(): Repo {
     loadWatchlistFavoritesFromStorage().then(value =>
       setWatchlistFavorites(value),
     );
+    loadCustomTokensFromStorage().then(value => setCustomTokens(value));
   }, []);
 
   const saveAccounts = (accounts: Map<AccountId, Account>) => {
@@ -68,6 +76,11 @@ export function useRepo(): Repo {
   const saveAddressBook = (addrBook: Map<UID, Contact>) => {
     setAddressBook(new Map(addrBook));
     saveAddressBookToStorage(addrBook).catch(reason => console.error(reason));
+  };
+
+  const saveCustomTokens = (tokens: CustomTokens) => {
+    setCustomTokens(tokens);
+    return saveCustomTokensToStorage(tokens);
   };
 
   const addToRecentContacts = (contactId: UID) => {
@@ -97,6 +110,7 @@ export function useRepo(): Repo {
       addToRecentContacts,
     },
     watchlistFavoritesRepo: {watchlistFavorites, saveWatchlistFavorites},
+    customTokenRepo: {customTokens, saveCustomTokens},
   };
 }
 
@@ -112,6 +126,11 @@ async function loadAddressBookFromStorage() {
   return rawAddrBook
     ? (new Map(JSON.parse(rawAddrBook)) as Map<UID, Contact>)
     : new Map<UID, Contact>();
+}
+
+async function loadCustomTokensFromStorage() {
+  const tokenString = await AsyncStorage.getItem(CUSTOM_TOKENS);
+  return tokenString ? (JSON.parse(tokenString) as CustomTokens) : {};
 }
 
 async function loadRecentContactsFromStorage() {
@@ -142,6 +161,15 @@ async function saveAddressBookToStorage(addrBook: Map<UID, Contact>) {
     console.error(addrBook);
   } else {
     await AsyncStorage.setItem(ADDR_BOOK, stringifiedAddrBook);
+  }
+}
+
+async function saveCustomTokensToStorage(tokens: CustomTokens) {
+  const tokensString = JSON.stringify(tokens);
+  if (tokensString === undefined) {
+    console.error(tokens);
+  } else {
+    await AsyncStorage.setItem(CUSTOM_TOKENS, tokensString);
   }
 }
 
