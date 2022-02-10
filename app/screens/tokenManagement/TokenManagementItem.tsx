@@ -16,7 +16,7 @@ type Props = {
   isShowingZeroBalanceForToken?: boolean;
 };
 
-const SearchListItem: FC<Props> = ({
+const TokenManagementItem: FC<Props> = ({
   balance,
   name,
   image,
@@ -61,4 +61,4 @@ const SearchListItem: FC<Props> = ({
   );
 };
 
-export default SearchListItem;
+export default TokenManagementItem;
