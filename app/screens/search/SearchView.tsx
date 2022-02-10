@@ -81,7 +81,7 @@ function SearchView(): JSX.Element {
         Add or remove tokens without balance
       </AvaText.Body1>
       <View style={{marginHorizontal: 16}}>
-        <SearchBar onTextChanged={handleSearch} initSearchText={searchText} />
+        <SearchBar onTextChanged={handleSearch} searchText={searchText} />
       </View>
       {!filteredTokenList ? (
         <Loader />

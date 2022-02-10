@@ -38,7 +38,7 @@ export default function SwapView() {
           Swap
         </AvaText.Heading1>
         {networkContext?.network === FUJI_NETWORK ? (
-          <ZeroState.NoResults message={'Not available on Testnet'} />
+          <ZeroState.NoResultsGraphical message={'Not available on Testnet'} />
         ) : (
           <>
             <Space y={20} />

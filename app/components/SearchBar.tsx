@@ -1,28 +1,109 @@
-import {StyleSheet, TextInput, View} from 'react-native';
+import {
+  Dimensions,
+  LayoutAnimation,
+  StyleSheet,
+  TextInput,
+  TextInputProps,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import {Opacity50} from 'resources/Constants';
 import SearchSVG from 'components/svg/SearchSVG';
-import React, {useEffect, useState} from 'react';
+import React, {FC, useLayoutEffect, useRef, useState} from 'react';
 import {useApplicationContext} from 'contexts/ApplicationContext';
+import AvaText from './AvaText';
+import ClearSVG from 'components/svg/ClearSVG';
+import AvaButton from './AvaButton';
+import {useNavigation} from '@react-navigation/native';
 
-const SearchBar = ({
-  onTextChanged,
-  initSearchText,
-}: {
+interface Props extends Omit<TextInputProps, 'value' | 'onChangeText'> {
   onTextChanged: (value: string) => void;
-  initSearchText?: string;
-}) => {
-  const {theme} = useApplicationContext();
-  const [searchText, setSearchText] = useState(initSearchText);
-  useEffect(() => {
-    if (initSearchText) {
-      setSearchText(initSearchText);
-    }
-  }, [initSearchText]);
+  searchText: string;
+  placeholder?: string;
+  hideBottomNav?: boolean;
+}
 
-  const onChangeText = (value: string) => {
-    setSearchText(value);
-    onTextChanged(value);
-  };
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const INPUT_SIZE = SCREEN_WIDTH - 82;
+const INPUT_SIZE_FOCUSED = SCREEN_WIDTH - 160;
+const INPUT_SIZE_FOCUSED_SHOWING_CLEAR = SCREEN_WIDTH - 188;
+
+/**
+ * SearchBar component. Text state is handled outside the
+ * component except for when the text is cleared.
+ *
+ * Shows clear button when there's text present.
+ * Shows cancel button when input is focused.
+ *
+ * @param onTextChanged callback to implementing view
+ * @param searchText current search text
+ * @param placeholder defaults to 'Search'
+ * @param hideBottomNav attempts to hide bottom tabs, gives more space
+ * @param rest all other props
+ * @constructor
+ */
+const SearchBar: FC<Props> = ({
+  onTextChanged,
+  searchText,
+  placeholder = 'Search',
+  hideBottomNav = false,
+  ...rest
+}) => {
+  const textInputRef = useRef<TextInput>(null);
+  const navigation = useNavigation();
+  const {theme} = useApplicationContext();
+  const [isFocused, setIsFocused] = useState(false);
+
+  /**
+   * An attempt to hide bottom tabs when the search is focused.
+   * It's kinda working.
+   */
+  useLayoutEffect(() => {
+    if (hideBottomNav) {
+      navigation.setOptions({
+        tabBarStyle: {display: isFocused ? 'none' : 'flex'},
+      });
+    }
+  }, [isFocused]);
+
+  /**
+   * Clears the input by reference and state,
+   */
+  function clearText() {
+    textInputRef?.current?.clear();
+    onTextChanged('');
+  }
+
+  /**
+   * Sets the behavior for when the user cancels
+   * the search
+   */
+  function onCancel() {
+    setIsFocused(false);
+    clearText();
+    textInputRef.current?.blur();
+  }
+
+  /**
+   * Sets isEmpty.
+   * Used to determine if we show the clear button or not
+   * and used to tweak input's width
+   */
+  let isEmpty = false;
+  if (isFocused && searchText && searchText.length > 0) {
+    isEmpty = true;
+  }
+
+  /**
+   * Sets textInputWidth
+   * Used to the set the with and animate based on that.
+   */
+  let textInputWidth = INPUT_SIZE;
+  if (isEmpty) {
+    textInputWidth = INPUT_SIZE_FOCUSED_SHOWING_CLEAR;
+  } else if (isFocused) {
+    textInputWidth = INPUT_SIZE_FOCUSED;
+  }
 
   return (
     <View style={styles.searchContainer}>
@@ -33,18 +114,41 @@ const SearchBar = ({
         ]}>
         <SearchSVG color={theme.onBgSearch} size={32} hideBorder />
         <TextInput
-          style={[styles.searchInput, {color: theme.txtOnBgApp}]}
-          placeholder="Search"
+          autoCorrect={false}
+          autoCompleteType={'off'}
+          autoCapitalize="none"
+          keyboardAppearance={'dark'}
+          ref={textInputRef}
+          style={[
+            styles.searchInput,
+            {color: theme.txtOnBgApp, width: textInputWidth},
+          ]}
+          placeholder={placeholder}
           placeholderTextColor={theme.onBgSearch}
           value={searchText}
-          onChangeText={onChangeText}
+          onChangeText={onTextChanged}
+          onBlur={() => {
+            LayoutAnimation.easeInEaseOut();
+            setIsFocused(false);
+          }}
+          onFocus={() => {
+            LayoutAnimation.easeInEaseOut();
+            setIsFocused(true);
+          }}
           underlineColorAndroid="transparent"
-          accessible
-          clearButtonMode="always"
-          autoCapitalize="none"
-          numberOfLines={1}
+          {...rest}
         />
+        {isEmpty && (
+          <TouchableOpacity style={{marginEnd: 4}} onPress={clearText}>
+            <ClearSVG color={theme.background} backgroundColor={theme.white} />
+          </TouchableOpacity>
+        )}
       </View>
+      {isFocused && (
+        <AvaButton.Base style={{marginStart: 16}} onPress={onCancel}>
+          <AvaText.ButtonLarge color={'#0A84FF'}>Cancel</AvaText.ButtonLarge>
+        </AvaButton.Base>
+      )}
     </View>
   );
 };
@@ -52,26 +156,20 @@ const SearchBar = ({
 const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
-    justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 16,
-    marginBottom: 8,
+    alignSelf: 'center',
   },
   searchBackground: {
     alignItems: 'center',
-    borderRadius: 20,
+    borderRadius: 10,
     flexDirection: 'row',
     height: 40,
-    flex: 1,
-    justifyContent: 'center',
-    paddingStart: 12,
+    paddingLeft: 12,
+    paddingRight: 8,
+    marginVertical: 8,
   },
   searchInput: {
     paddingLeft: 4,
-    height: 40,
-    flex: 1,
-    marginRight: 24,
-    fontSize: 16,
   },
 });
 
