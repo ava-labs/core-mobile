@@ -24,7 +24,7 @@ interface Props {
 const filterByOptions = ['Price', 'Market Cap', 'Volume', 'Gainers', 'Losers'];
 const filterTimeOptions = ['1H', '1D', '1W', '1Y'];
 
-const WatchlistView: FC<Props> = ({showFavorites, searchText = ''}) => {
+const WatchlistView: FC<Props> = ({showFavorites, searchText}) => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const {watchlistFavorites} =
     useApplicationContext().repo.watchlistFavoritesRepo;
@@ -42,7 +42,7 @@ const WatchlistView: FC<Props> = ({showFavorites, searchText = ''}) => {
 
   useEffect(() => {
     if (!showFavorites) {
-      setSearchText(searchText);
+      setSearchText(searchText ?? '');
     }
   }, [searchText]);
 

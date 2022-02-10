@@ -124,7 +124,7 @@ function ZeroStateComingSoon() {
 
 const ZeroState = {
   Portfolio: ZeroStatePortfolio,
-  NoResultsWithArt: ZeroStateNoResults,
+  NoResultsGraphical: ZeroStateNoResults,
   NoResultsTextual: ZeroStateNoResultsTextual,
   ComingSoon: ZeroStateComingSoon,
   SendError: ZeroStateSendError,
