@@ -1,10 +1,12 @@
 import {
   AccountsHdCache,
+  customErc20Tokens$,
   FUJI_NETWORK,
   MAINNET_NETWORK,
   setHdCache,
   setWalletHdCache,
   useAccountsContext,
+  useNetworkContext,
   useWalletContext,
 } from '@avalabs/wallet-react-components';
 import {useEffect} from 'react';
@@ -26,7 +28,15 @@ interface WalletSetup {
 export function useWalletSetup(): WalletSetup {
   const walletContext = useWalletContext();
   const accountsContext = useAccountsContext();
+  const networkState = useNetworkContext();
   const {saveAccounts} = useApplicationContext().repo.accountsRepo;
+  const {customTokens} = useApplicationContext().repo.customTokenRepo;
+
+  useEffect(() => {
+    if (networkState?.network?.chainId) {
+      customErc20Tokens$.next(customTokens[networkState.network.chainId]);
+    }
+  }, [networkState, customTokens]);
 
   // set cache if there it one
   useEffect(() => {
@@ -115,7 +125,7 @@ export function useWalletSetup(): WalletSetup {
    * Destroys the wallet instance
    */
   async function destroyWallet() {
-    walletContext?.clearMnemonic();
+    walletContext?.clearWallet();
   }
 
   async function resetHDIndices() {

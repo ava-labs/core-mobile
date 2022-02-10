@@ -97,15 +97,7 @@ const PortfolioView: FC<PortfolioProps> = memo(
     }
 
     function manageTokens() {
-      navigation.navigate(AppNavigation.Wallet.SearchScreen);
-    }
-
-    function viewAllWatchlist() {
-      navigation.navigate(AppNavigation.Tabs.Watchlist);
-    }
-
-    function manageTokens() {
-      navigation.navigate(AppNavigation.Wallet.SearchScreen);
+      navigation.navigate(AppNavigation.Wallet.TokenManagement);
     }
 
     function viewAllWatchlist() {
