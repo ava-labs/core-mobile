@@ -1,17 +1,20 @@
-import React, {useCallback, useEffect, useMemo, useRef} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import BottomSheet, {BottomSheetBackdrop} from '@gorhom/bottom-sheet';
 import {InteractionManager} from 'react-native';
-import {useNavigation} from '@react-navigation/native';
+import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
 import TabViewBackground from 'screens/portfolio/components/TabViewBackground';
 import AvaxSheetHandle from 'components/AvaxSheetHandle';
-import {useSwapContext} from 'contexts/SwapContext';
 import EditFees from 'components/EditFees';
+import {SendStackParamList} from 'navigation/wallet/SendScreenStack';
+import {StackNavigationProp} from '@react-navigation/stack';
 
-function SwapFeesBottomSheet(): JSX.Element {
-  const navigation = useNavigation();
+function EditGasLimitBottomSheet(): JSX.Element {
+  const {goBack} = useNavigation<StackNavigationProp<SendStackParamList>>();
   const bottomSheetModalRef = useRef<BottomSheet>(null);
-  const snapPoints = useMemo(() => ['0%', '60%'], []);
-  const {trxDetails} = useSwapContext();
+  const snapPoints = useMemo(() => ['0%', '90%'], []);
+  const {params} = useRoute<RouteProp<SendStackParamList>>();
+
+  const [editedGasLimit, setEditedGasLimit] = useState(params?.currentGasLimit);
 
   useEffect(() => {
     // intentionally setting delay so animation is visible.
@@ -22,14 +25,18 @@ function SwapFeesBottomSheet(): JSX.Element {
 
   const handleClose = useCallback(() => {
     bottomSheetModalRef?.current?.close();
-    InteractionManager.runAfterInteractions(() => navigation.goBack());
-  }, []);
+
+    InteractionManager.runAfterInteractions(() => {
+      goBack();
+    });
+  }, [editedGasLimit]);
 
   const handleChange = useCallback(index => {
     index === 0 && handleClose();
   }, []);
 
   const doSave = () => {
+    params?.onSave?.(editedGasLimit);
     handleClose();
   };
 
@@ -44,12 +51,12 @@ function SwapFeesBottomSheet(): JSX.Element {
       onChange={handleChange}>
       <EditFees
         onSave={doSave}
-        gasLimit={trxDetails.gasLimit.toString()}
-        networkFee={trxDetails.networkFee}
-        onSetGasLimit={value => trxDetails.setUsersGasLimit(Number(value) || 0)}
+        gasLimit={editedGasLimit}
+        networkFee={params?.currentNetFee ?? ''}
+        onSetGasLimit={value => setEditedGasLimit(value)}
       />
     </BottomSheet>
   );
 }
 
-export default SwapFeesBottomSheet;
+export default EditGasLimitBottomSheet;

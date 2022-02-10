@@ -39,9 +39,9 @@ function SendToken({
     setSendAmount,
     sendAmount,
     toAccount,
-    sendFeeAvax,
+    fees,
     canSubmit,
-    error,
+    sdkError,
   } = useSendTokenContext();
   const [showAddressBook, setShowAddressBook] = useState(false);
   const {recentContacts, addressBook, addToRecentContacts} =
@@ -173,13 +173,13 @@ function SendToken({
               getMaxAmount={() => {
                 return (
                   numeral(sendToken?.balanceDisplayValue ?? 0).value() -
-                  numeral(sendFeeAvax ?? 0).value()
+                  numeral(fees.sendFeeAvax ?? 0).value()
                 ).toFixed(4);
               }}
             />
             <Space y={8} />
             <AvaText.Body3 textStyle={{color: theme.colorError}}>
-              {error?.message ?? ''}
+              {sdkError?.message ?? ''}
             </AvaText.Body3>
           </View>
           <FlexSpacer />
