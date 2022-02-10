@@ -1,6 +1,7 @@
 import React, {
   createContext,
   Dispatch,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -18,12 +19,21 @@ import {
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import {Alert, Image} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
-import {Big, Utils} from '@avalabs/avalanche-wallet-sdk';
-import {useGasPrice} from 'utils/GasPriceHook';
+import {Utils} from '@avalabs/avalanche-wallet-sdk';
+import {GasPrice, useGasPrice} from 'utils/GasPriceHook';
 import {mustNumber, mustValue} from 'utils/JsTools';
 import {BN} from 'avalanche';
-import {firstValueFrom, of, tap} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  firstValueFrom,
+  map,
+  Observable,
+  of,
+  Subject,
+} from 'rxjs';
 import {useSend} from 'screens/send/useSend';
+import {FeePreset} from 'components/NetworkFeeSelector';
 
 export enum TokenType {
   AVAX,
@@ -40,48 +50,151 @@ export interface SendTokenContextState {
   toAccount: Account;
   tokenLogo: () => JSX.Element;
   tokenType: (token?: TokenWithBalance) => TokenType | undefined;
+  fees: Fees;
   canSubmit: boolean;
-  sendFeeAvax: string | undefined;
-  sendFeeUsd: number | undefined;
-  gasPresets: {Normal: string; Fast: string; Instant: string; Custom: string};
-  setSendGasPrice: Dispatch<string>;
   sendStatus: 'Idle' | 'Sending' | 'Success' | 'Fail';
-  error: SendHookError | undefined;
+  sendStatusMsg: string;
   onSendNow: () => void;
   transactionId: string | undefined;
+  sdkError: SendHookError | undefined;
 }
 
 export const SendTokenContext = createContext<SendTokenContextState>({} as any);
+
+/**
+ * These are mappings from preset to multiplier
+ */
+const gasPresets = {
+  [FeePreset.Normal]: 1,
+  [FeePreset.Fast]: 1.05,
+  [FeePreset.Instant]: 1.15,
+  [FeePreset.Custom]: 0,
+};
+
+const tokenType = (token?: TokenWithBalance) => {
+  if (token === undefined) {
+    return undefined;
+  } else if (token.isAvax) {
+    return TokenType.AVAX;
+  } else if (token.isErc20) {
+    return TokenType.ERC20;
+  } else if (token.isAnt) {
+    return TokenType.ANT;
+  } else {
+    return undefined;
+  }
+};
+
+/**
+ * This observable emits gas price that is actually used on all UI calculations and will be used
+ * for finalizing transaction.
+ * @param originGasPrice$ - current network's gas price
+ * @param selectedGasPreset$ - selected preset; See {@link gasPresets}
+ * @param customGasPrice$ - user's entered gas price
+ */
+const finalGasPrice = (
+  originGasPrice$: Observable<GasPrice>,
+  selectedGasPreset$ = of<FeePreset>(FeePreset.Normal),
+  customGasPrice$ = of(new BN(0)),
+) => {
+  return combineLatest([
+    originGasPrice$,
+    selectedGasPreset$,
+    customGasPrice$,
+  ]).pipe(
+    map(([originGasPrice, selectedGasPreset, customGasPrice]) => {
+      if (selectedGasPreset === FeePreset.Custom) {
+        return {
+          bn: customGasPrice,
+          value: '',
+        } as GasPrice;
+      } else {
+        const multiplier = gasPresets[selectedGasPreset];
+        if (multiplier) {
+          return {
+            bn: originGasPrice.bn.muln(multiplier),
+            value: '',
+          } as GasPrice;
+        } else {
+          return originGasPrice;
+        }
+      }
+    }),
+  );
+};
 
 export const SendTokenContextProvider = ({children}: {children: any}) => {
   const {theme, repo} = useApplicationContext();
   const {wallet} = useWalletContext();
   const {activeAccount} = useAccountsContext();
   const {avaxPrice, erc20Tokens} = useWalletStateContext()!;
-  const {gasPrice$} = useGasPrice();
   const [sendToken, setSendToken] = useState<TokenWithBalance | undefined>(
     undefined,
   );
+
+  const selectedGasPricePreset$ = useMemo(
+    () => new BehaviorSubject<FeePreset>(FeePreset.Normal),
+    [],
+  );
+  const originGasPrice = useGasPrice().gasPrice$;
+  const customGasPrice$ = useMemo(() => new BehaviorSubject(new BN(0)), []);
+  const finalGasPrice$ = useMemo(
+    () =>
+      finalGasPrice(originGasPrice, selectedGasPricePreset$, customGasPrice$),
+    [originGasPrice],
+  );
+
   const {
     submit,
     setAmount,
     amount,
     setAddress,
     address,
-    error,
     canSubmit,
     sendFee,
     setTokenBalances,
-  } = useSend(sendToken, gasPrice$);
+    gasLimit,
+    setGasLimit,
+    reset,
+    error,
+  } = useSend(sendToken, finalGasPrice$);
+  useEffect(() => {
+    console.log('reset context');
+    reset(); //todo: this won't reset gas limit set with "setGasLimit"
+  }, []);
+
   const [sendAmount, setSendAmount] = useState('0');
   const [sendToAddress, setSendToAddress] = useState('');
   const [sendToTitle, setSendToTitle] = useState('');
-  const [sendGasPrice, setSendGasPrice] = useState<string | undefined>();
+
+  //GAS - we have finalGasPrice$ which depends on selectedGasPricePreset, but
+  // if we set customGasPriceNanoAvax => gasPriceNAvax, we would prefer that over
+  const [customGasPriceNanoAvax, setCustomGasPriceNanoAvax] = useState('0');
+  useEffect(() => {
+    customGasPrice$.next(
+      mustValue(
+        () =>
+          Utils.numberToBN(
+            mustNumber(() => parseFloat(customGasPriceNanoAvax), 0),
+            9,
+          ),
+        new BN(0),
+      ),
+    );
+  }, [customGasPriceNanoAvax]);
+
+  const [selectedGasPricePreset, setSelectedGasPricePreset] =
+    useState<FeePreset>(FeePreset.Normal);
+  useEffect(() => {
+    selectedGasPricePreset$.next(selectedGasPricePreset);
+  }, [selectedGasPricePreset]);
+
   const [sendStatus, setSendStatus] = useState<
     'Idle' | 'Sending' | 'Success' | 'Fail'
   >('Idle');
+  const [sendStatusMsg, setSendStatusMsg] = useState('');
+
   const [transactionId, setTransactionId] = useState<string>();
-  const [gasPriceNAvax, setGasPriceNAvax] = useState(new Big(0));
 
   const balanceAfterTrx = useMemo(
     () =>
@@ -115,27 +228,12 @@ export const SendTokenContextProvider = ({children}: {children: any}) => {
       sendFeeAvax ? Number.parseFloat(sendFeeAvax) * avaxPrice : undefined,
     [sendFeeAvax, avaxPrice],
   );
-  const gasPresets = useMemo(() => {
-    return {
-      ['Normal']: gasPriceNAvax.toFixed(2),
-      ['Fast']: gasPriceNAvax.mul(1.05).toFixed(2),
-      ['Instant']: gasPriceNAvax.mul(1.15).toFixed(2),
-      ['Custom']: '0',
-    };
-  }, [sendFeeAvax]);
 
   useEffect(() => {
     if (sendToken?.isErc20) {
       setTokenBalances?.({[(sendToken as ERC20).address]: sendToken as ERC20});
     }
   }, [sendToken]);
-
-  useEffect(() => {
-    const sub = gasPrice$
-      .pipe(tap(gasPrice => setGasPriceNAvax(Utils.bnToBig(gasPrice.bn, 9))))
-      .subscribe();
-    return () => sub.unsubscribe();
-  }, []);
 
   useEffect(() => {
     setAmount(
@@ -149,12 +247,6 @@ export const SendTokenContextProvider = ({children}: {children: any}) => {
   useEffect(() => {
     setAddress(sendToAddress);
   }, [sendToAddress, sendToken]);
-
-  useEffect(() => {
-    if (!sendGasPrice) {
-      setSendGasPrice(gasPresets.Normal);
-    }
-  }, [gasPresets]);
 
   function onSendNow() {
     console.log('onsend now');
@@ -176,9 +268,9 @@ export const SendTokenContextProvider = ({children}: {children: any}) => {
       Promise.resolve(wallet),
       amount!,
       address!,
-      firstValueFrom(gasPrice$),
-      of(balances) as any,
-      sendGasPrice ? Utils.stringToBN(sendGasPrice, 9) : undefined,
+      firstValueFrom(finalGasPrice$),
+      of(balances) as Subject<any>,
+      gasLimit,
     ).subscribe({
       next: value => {
         if (value === undefined) {
@@ -193,12 +285,13 @@ export const SendTokenContextProvider = ({children}: {children: any}) => {
       },
       error: err => {
         setSendStatus('Fail');
+        setSendStatusMsg(err);
         console.log('send err', err);
       },
     });
   }
 
-  const tokenLogo = () => {
+  const tokenLogo = useCallback(() => {
     if (sendToken?.isAvax) {
       return (
         <AvaLogoSVG
@@ -217,21 +310,7 @@ export const SendTokenContextProvider = ({children}: {children: any}) => {
         />
       );
     }
-  };
-
-  const tokenType = (token?: TokenWithBalance) => {
-    if (token === undefined) {
-      return undefined;
-    } else if (token.isAvax) {
-      return TokenType.AVAX;
-    } else if (token.isErc20) {
-      return TokenType.ERC20;
-    } else if (token.isAnt) {
-      return TokenType.ANT;
-    } else {
-      return undefined;
-    }
-  };
+  }, [sendToken, theme]);
 
   const state: SendTokenContextState = {
     sendToken,
@@ -250,17 +329,25 @@ export const SendTokenContextProvider = ({children}: {children: any}) => {
       setTitle: setSendToTitle,
       setAddress: setSendToAddress,
     },
+    fees: {
+      gasPresets,
+      selectedGasPricePreset,
+      setSelectedGasPricePreset,
+      sendFeeAvax,
+      sendFeeUsd,
+      customGasPriceNanoAvax,
+      setCustomGasPriceNanoAvax,
+      gasLimit,
+      setGasLimit,
+    },
     tokenLogo,
     tokenType,
     canSubmit: canSubmit ?? false,
-    sendFeeAvax,
-    sendFeeUsd,
-    gasPresets,
-    setSendGasPrice,
     sendStatus,
-    error,
+    sendStatusMsg,
     onSendNow,
     transactionId,
+    sdkError: error,
   };
   return (
     <SendTokenContext.Provider value={state}>
@@ -280,4 +367,16 @@ export interface Account {
   setAddress?: Dispatch<string>;
   balanceAfterTrx?: string;
   balanceAfterTrxUsd?: string;
+}
+
+export interface Fees {
+  gasPresets: {Normal: number; Fast: number; Instant: number; Custom: number};
+  selectedGasPricePreset: FeePreset;
+  setSelectedGasPricePreset: Dispatch<FeePreset>;
+  sendFeeAvax: string | undefined;
+  sendFeeUsd: number | undefined;
+  customGasPriceNanoAvax: string;
+  setCustomGasPriceNanoAvax: Dispatch<string>;
+  gasLimit: number | undefined;
+  setGasLimit: Dispatch<number>;
 }
