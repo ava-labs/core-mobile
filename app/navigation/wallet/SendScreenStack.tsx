@@ -64,6 +64,7 @@ const SendTokenComponent = () => {
   const {params} = useRoute<RouteProp<SendStackParamList>>();
   return (
     <SendToken
+      contact={params?.contact}
       token={params?.token}
       onNext={() => navigate(AppNavigation.Send.Review)}
     />
