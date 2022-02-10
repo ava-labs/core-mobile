@@ -35,7 +35,7 @@ enum WalletScreens {
   Tabs = 'WalletScreens.Tabs',
   ReceiveTokens = 'WalletScreens.ReceiveTokens',
   SendTokens = 'WalletScreens.SendTokens',
-  SearchScreen = 'WalletScreens.SearchScreen',
+  TokenManagement = 'WalletScreens.TokenManagement',
   SecurityPrivacy = 'WalletScreens.SecurityPrivacy',
   // PortfolioScreen = 'PortfolioScreen',
   NetworkSelector = 'WalletScreens.NetworkSelector',
