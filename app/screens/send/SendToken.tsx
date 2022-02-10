@@ -27,9 +27,11 @@ const renderCustomLabel = (title: string) => {
 function SendToken({
   onNext,
   token,
+  contact,
 }: {
   onNext: () => void;
   token?: TokenWithBalance;
+  contact?: Contact;
 }): JSX.Element {
   const {theme} = useApplicationContext();
 
@@ -44,7 +46,7 @@ function SendToken({
     sdkError,
   } = useSendTokenContext();
   const [showAddressBook, setShowAddressBook] = useState(false);
-  const {recentContacts, addressBook, addToRecentContacts} =
+  const {recentContacts, addressBook} =
     useApplicationContext().repo.addressBookRepo;
   const {accounts} = useApplicationContext().repo.accountsRepo;
 
@@ -65,6 +67,12 @@ function SendToken({
   }, [setSendToken, token]);
 
   useEffect(() => {
+    if (contact) {
+      setAddress(contact);
+    }
+  }, [contact]);
+
+  useEffect(() => {
     if (toAccount.address) {
       setShowAddressBook(false);
     }
@@ -74,13 +82,16 @@ function SendToken({
     setShowAddressBook(!showAddressBook);
   }
 
+  function setAddress({address, title}: {address: string; title: string}) {
+    toAccount.setAddress?.(address);
+    toAccount.setTitle?.(title);
+  }
+
   const renderAddressItem = (item: ListRenderItemInfo<Contact>) => {
     return (
       <AvaButton.Base
         onPress={() => {
-          toAccount.setAddress?.(item.item.address);
-          toAccount.setTitle?.(item.item.title);
-          addToRecentContacts(item.item.id);
+          setAddress(item.item);
         }}>
         <AddressBookItem title={item.item.title} address={item.item.address} />
       </AvaButton.Base>
@@ -91,10 +102,9 @@ function SendToken({
     return (
       <AvaButton.Base
         onPress={() => {
-          toAccount.setAddress?.(item.item.cAddress);
-          toAccount.setTitle?.(item.item.title);
+          setAddress(item.item);
         }}>
-        <AddressBookItem title={item.item.title} address={item.item.cAddress} />
+        <AddressBookItem title={item.item.title} address={item.item.address} />
       </AvaButton.Base>
     );
   };
