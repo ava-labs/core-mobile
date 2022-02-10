@@ -4,7 +4,7 @@ import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import {TokenWithBalance} from '@avalabs/wallet-react-components';
 import {useSearchableTokenList} from 'screens/portfolio/useSearchableTokenList';
-import SearchListItem from 'screens/search/SearchListItem';
+import TokenManagementItem from 'screens/tokenManagement/TokenManagementItem';
 import AvaText from 'components/AvaText';
 import AddSVG from 'components/svg/AddSVG';
 import CarrotSVG from 'components/svg/CarrotSVG';
@@ -13,8 +13,12 @@ import {Opacity50} from 'resources/Constants';
 import Loader from 'components/Loader';
 import {getTokenUID} from 'utils/TokenTools';
 import SearchBar from 'components/SearchBar';
+import {useNavigation} from '@react-navigation/native';
+import AppNavigation from 'navigation/AppNavigation';
+import {StackNavigationProp} from '@react-navigation/stack';
+import {RootStackParamList} from 'navigation/WalletScreenStack';
 
-function SearchView(): JSX.Element {
+function TokenManagement(): JSX.Element {
   const {
     filteredTokenList,
     searchText,
@@ -24,7 +28,7 @@ function SearchView(): JSX.Element {
     loadTokenList,
   } = useSearchableTokenList(false);
 
-  // const navigation = useNavigation<PortfolioNavigationProp>();
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
   function handleRefresh() {
     loadTokenList();
@@ -38,7 +42,7 @@ function SearchView(): JSX.Element {
       : undefined;
 
     return (
-      <SearchListItem
+      <TokenManagementItem
         balance={balance}
         name={token.name}
         symbol={token.symbol}
@@ -90,13 +94,13 @@ function SearchView(): JSX.Element {
           data={filteredTokenList}
           renderItem={renderItem}
           onRefresh={handleRefresh}
-          // ListHeaderComponent={
-          //   <AddCustomTokenButton
-          //     onPress={() =>
-          //       navigation.navigate(AppNavigation.Wallet.AddCustomToken)
-          //     }
-          //   />
-          // }
+          ListHeaderComponent={
+            <AddCustomTokenButton
+              onPress={() =>
+                navigation.navigate(AppNavigation.Wallet.AddCustomToken)
+              }
+            />
+          }
           refreshing={false}
           keyExtractor={(item: TokenWithBalance) => getTokenUID(item)}
           ListEmptyComponent={emptyView}
@@ -131,4 +135,4 @@ const AddCustomTokenButton = ({onPress}: {onPress: () => void}) => {
   );
 };
 
-export default SearchView;
+export default TokenManagement;

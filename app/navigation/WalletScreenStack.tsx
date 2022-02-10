@@ -18,8 +18,8 @@ import BiometricsSDK from 'utils/BiometricsSDK';
 import moment from 'moment';
 import DrawerScreenStack from 'navigation/wallet/DrawerScreenStack';
 import {useWalletSetup} from 'hooks/useWalletSetup';
-import SearchView from 'screens/search/SearchView';
-import AddCustomToken from 'screens/search/AddCustomToken';
+import TokenManagement from 'screens/tokenManagement/TokenManagement';
+import AddCustomToken from 'screens/tokenManagement/AddCustomToken';
 import CurrencySelector from 'screens/drawer/currency-selector/CurrencySelector';
 import SecurityPrivacyStackScreen from 'navigation/wallet/SecurityPrivacyStackScreen';
 import {MainHeaderOptions} from 'navigation/NavUtils';
@@ -53,7 +53,7 @@ type Props = {
 
 export type RootStackParamList = {
   [AppNavigation.Wallet.Drawer]: undefined;
-  [AppNavigation.Wallet.SearchScreen]: undefined;
+  [AppNavigation.Wallet.TokenManagement]: undefined;
   [AppNavigation.Wallet.AddCustomToken]: undefined;
   [AppNavigation.Wallet.AddressBook]: undefined;
   [AppNavigation.Wallet.CurrencySelector]: undefined;
@@ -239,8 +239,8 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
             options={{
               ...MainHeaderOptions('Manage token list'),
             }}
-            name={AppNavigation.Wallet.SearchScreen}
-            component={SearchView}
+            name={AppNavigation.Wallet.TokenManagement}
+            component={TokenManagement}
           />
           <RootStack.Screen
             name={AppNavigation.Wallet.SendTokens}

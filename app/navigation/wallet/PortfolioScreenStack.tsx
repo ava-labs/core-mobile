@@ -10,6 +10,8 @@ type Props = {
 
 export type PortfolioStackParamList = {
   [AppNavigation.Wallet.Drawer]: undefined;
+  [AppNavigation.Wallet.TokenManagement]: undefined;
+  [AppNavigation.Tabs.Watchlist]: undefined;
   Send: undefined;
   Receive: undefined;
   [AppNavigation.Wallet.ReceiveTokens]: undefined;

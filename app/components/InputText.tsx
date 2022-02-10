@@ -194,11 +194,9 @@ export default function InputText(props: Props | Readonly<Props>) {
     return (
       <>
         <View style={[{height: 4}]} />
-        <TextLabel
-          textAlign="left"
-          color={theme.txtError}
-          text={props.errorText || ''}
-        />
+        <AvaText.Body3 textStyle={{textAlign: 'left'}} color={theme.txtError}>
+          {props.errorText || ''}
+        </AvaText.Body3>
       </>
     );
   };
