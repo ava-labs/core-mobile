@@ -1,4 +1,4 @@
-# Avalanche Wallet Apps
+# Core X Mobile
 
 ## Getting Started
 

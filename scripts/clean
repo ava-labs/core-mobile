@@ -9,3 +9,6 @@ yarn install
 cd ios
 pod install --repo-update
 cd ..
+cd android
+./gradlew clean
+cd ..
