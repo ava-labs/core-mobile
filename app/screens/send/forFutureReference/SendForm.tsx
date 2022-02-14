@@ -11,7 +11,7 @@ import {SendHookError} from '@avalabs/wallet-react-components';
 import BN from 'bn.js';
 import InfoSVG from 'components/svg/InfoSVG';
 import {Space} from 'components/Space';
-import {Utils} from '@avalabs/avalanche-wallet-sdk';
+import {bnToBig} from '@avalabs/avalanche-wallet-sdk';
 
 interface Props {
   error?: SendHookError;
@@ -48,7 +48,7 @@ const SendForm: FC<Props> = ({
 
   const usdAmount =
     amount && priceUSD
-      ? Utils.bnToBig(amount, 18).mul(priceUSD).toNumber().toFixed(3)
+      ? bnToBig(amount, 18).mul(priceUSD).toNumber().toFixed(3)
       : '0';
 
   const gasInfo = (text: string) => (
