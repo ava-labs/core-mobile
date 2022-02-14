@@ -1,4 +1,4 @@
-import React, {FC, useState} from 'react';
+import React, {FC, useEffect, useState} from 'react';
 import {ScrollView, StyleSheet, View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {Space} from 'components/Space';
@@ -14,13 +14,20 @@ import Loader from 'components/Loader';
 import AppNavigation from 'navigation/AppNavigation';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {SwapStackParamList} from 'navigation/wallet/SwapScreenStack';
+import {Row} from 'components/Row';
+import InfoSVG from 'components/svg/InfoSVG';
+import {interval, tap} from 'rxjs';
+import {Popable} from 'react-native-popable';
+
+const SECOND = 1000;
 
 const SwapReview: FC = () => {
-  const {swapTo, swapFrom, doSwap} = useSwapContext();
+  const {swapTo, swapFrom, doSwap, refresh} = useSwapContext();
   const theme = useApplicationContext().theme;
   const {goBack, navigate} =
     useNavigation<StackNavigationProp<SwapStackParamList>>();
   const [loading, setLoading] = useState(false);
+  const [secondsLeft, setSecondsLeft] = useState('0s');
 
   function onConfirm() {
     setLoading(true);
@@ -36,15 +43,51 @@ const SwapReview: FC = () => {
       .finally(() => setLoading(false));
   }
 
+  useEffect(() => {
+    const RESET_INTERVAL = 10; // seconds
+    const sub = interval(SECOND)
+      .pipe(
+        tap(value => {
+          const number = RESET_INTERVAL - (value % RESET_INTERVAL) - 1;
+          setSecondsLeft(number.toString() + 's');
+        }),
+        tap(value => {
+          if (value && value % RESET_INTERVAL === 0) {
+            console.log('reset');
+            refresh();
+          }
+        }),
+      )
+      .subscribe();
+    return () => sub.unsubscribe();
+  }, []);
+
   return loading ? (
     <Loader />
   ) : (
     <View style={styles.container}>
       <ScrollView style={styles.container}>
         <Space y={8} />
-        <AvaText.Heading1 textStyle={{marginHorizontal: 16}}>
-          Review Order
-        </AvaText.Heading1>
+        <Row style={{justifyContent: 'space-between', marginHorizontal: 16}}>
+          <AvaText.Heading1>Review Order</AvaText.Heading1>
+          <Popable
+            content={'Quotes are refreshed to reflect current market prices'}
+            position={'left'}
+            style={{minWidth: 200}}
+            backgroundColor={theme.colorBg3}>
+            <Row
+              style={{
+                backgroundColor: theme.listItemBg,
+                padding: 8,
+                borderRadius: 4,
+              }}>
+              <AvaText.Body2>{secondsLeft}</AvaText.Body2>
+
+              <Space x={4} />
+              <InfoSVG />
+            </Row>
+          </Popable>
+        </Row>
         <Space y={20} />
         <AvaText.Heading3 textStyle={{marginHorizontal: 16}}>
           From
