@@ -6,7 +6,10 @@ import QrScannerAva from 'components/QrScannerAva';
 import AvaButton from 'components/AvaButton';
 import QRCode from 'components/svg/QRCodeSVG';
 import {useNavigation} from '@react-navigation/native';
-import {Assets, Utils} from '@avalabs/avalanche-wallet-sdk';
+import {
+  getContractDataErc20,
+  isValidAddress,
+} from '@avalabs/avalanche-wallet-sdk';
 import AvaText from 'components/AvaText';
 import {Space} from 'components/Space';
 import Avatar from 'components/Avatar';
@@ -57,8 +60,8 @@ const AddCustomToken: FC = () => {
     // some validation
     setErrorMessage(undefined);
     (async () => {
-      if (Utils.isValidAddress(tokenAddress)) {
-        Assets.getContractDataErc20(tokenAddress)
+      if (isValidAddress(tokenAddress)) {
+        getContractDataErc20(tokenAddress)
           .then(tokenData => {
             // if there's no error but no data, set error.
             if (!tokenData) {
