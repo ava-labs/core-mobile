@@ -9,7 +9,7 @@ import {useApplicationContext} from 'contexts/ApplicationContext';
 import PortfolioStackScreen from 'navigation/wallet/PortfolioScreenStack';
 import React, {ReactElement} from 'react';
 import {noop} from 'rxjs';
-import ActivityView from 'screens/activity/ActivityView';
+import ActivityList from 'screens/activity/ActivityList';
 import {View} from 'react-native';
 import AddSVG from 'components/svg/AddSVG';
 import AvaText from 'components/AvaText';
@@ -145,7 +145,7 @@ const TabNavigator = () => {
       />
       <Tab.Screen
         name={AppNavigation.Tabs.Activity}
-        component={ActivityView}
+        component={ActivityList}
         options={{
           tabBarIcon: ({focused}) =>
             normalTabButtons(

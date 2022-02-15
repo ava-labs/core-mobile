@@ -45,8 +45,8 @@ import AddressBookStack from 'navigation/wallet/AddressBookStack';
 import HeaderAccountSelector from 'components/HeaderAccountSelector';
 import {Contact} from 'Repo';
 import TokenDetail from 'screens/watchlist/TokenDetail';
-import {TxType} from 'screens/activity/ActivityView';
-import ActivityDetailView from 'screens/activity/ActivityDetailView';
+import {TxType} from 'screens/activity/ActivityList';
+import ActivityDetail from 'screens/activity/ActivityDetail';
 
 type Props = {
   onExit: () => void;
@@ -268,7 +268,7 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
               ...SubHeaderOptions('Transaction Details'),
             }}
             name={AppNavigation.Wallet.ActivityDetail}
-            component={ActivityDetailView}
+            component={ActivityDetail}
           />
           <RootStack.Screen
             options={{
