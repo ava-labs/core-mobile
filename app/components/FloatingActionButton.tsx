@@ -67,7 +67,8 @@ const FloatingActionButton: FC<Props> = ({
 
     Animated.spring(anim, {
       toValue: 1,
-      speed: 1000,
+      speed: 3,
+      bounciness: 2,
       useNativeDriver: false,
     }).start();
 
@@ -80,7 +81,8 @@ const FloatingActionButton: FC<Props> = ({
   const reset = useCallback(() => {
     Animated.spring(anim, {
       toValue: 0,
-      speed: 1000,
+      speed: 3,
+      bounciness: 2,
       useNativeDriver: false,
     }).start(() => {
       setIsActive(false);
