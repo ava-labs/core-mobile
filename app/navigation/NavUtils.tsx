@@ -33,3 +33,23 @@ export const MainHeaderOptions = (
     },
   };
 };
+
+export const SubHeaderOptions = (
+  title: string,
+  hideHeaderLeft = false,
+): Partial<StackNavigationOptions> => {
+  const options: Partial<StackNavigationOptions> = {
+    headerShown: true,
+    headerTitle: () => <AvaText.Heading2>{title}</AvaText.Heading2>,
+    headerTitleAlign: 'center',
+    headerLeft: hideHeaderLeft ? () => null : undefined,
+    headerBackTitleVisible: false,
+    headerStyle: {
+      shadowColor: 'transparent',
+      elevation: 0,
+      shadowOpacity: 0,
+    },
+  };
+
+  return options;
+};
