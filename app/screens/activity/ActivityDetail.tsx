@@ -1,5 +1,5 @@
-import React, {useEffect, useMemo, useState} from 'react';
-import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {Pressable, StyleSheet, View} from 'react-native';
 import AvaText from 'components/AvaText';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import AvaListItem from 'components/AvaListItem';
@@ -29,10 +29,8 @@ function ActivityDetail() {
   const {openUrl} = useInAppBrowser();
   const [contact, setContact] = useState<Contact>();
 
-  const feeBN = Utils.numberToBN(txItem.gasUsed * txItem.gasPrice, 0);
+  const feeBN = Utils.numberToBN(txItem.cumulativeGasUsed * txItem.gasPrice, 0);
   const fees = Utils.bnToLocaleString(feeBN, 18);
-
-  const isOutboundTransaction = useMemo(() => txItem?.isSender, []);
 
   useEffect(() => getContactMatch(), [addressBook]);
 
@@ -53,22 +51,16 @@ function ActivityDetail() {
       symbol={txItem.tokenSymbol}
     />
   ) : (
-    <AvaLogoSVG
-      size={57}
-      logoColor={theme.white}
-      backgroundColor={theme.logoColor}
-    />
+    <Avatar.Custom size={57} name={'Avalanche'} symbol={'AVAX'} />
   );
 
   return (
-    <View
-      style={{
-        flex: 1,
-      }}>
-      <ScrollView
-        contentContainerStyle={{
+    <View style={{flex: 1}}>
+      <View
+        style={{
           backgroundColor: theme.colorBg2,
           marginTop: 45,
+          paddingTop: 10,
           flex: 1,
         }}>
         <View style={styles.logoContainer}>
@@ -143,7 +135,7 @@ function ActivityDetail() {
             <Space y={16} />
           </>
         )}
-      </ScrollView>
+      </View>
     </View>
   );
 }
@@ -153,7 +145,7 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
-    bottom: 15,
+    bottom: 25,
   },
   headerContainer: {
     marginTop: 8,
