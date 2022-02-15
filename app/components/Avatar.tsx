@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   initials: {
-    borderRadius: 20,
+    borderRadius: 50,
     justifyContent: 'center',
     alignItems: 'center',
   },

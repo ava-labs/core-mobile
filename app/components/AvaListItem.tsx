@@ -53,6 +53,7 @@ function BaseListItem({
           backgroundColor: context.theme.listItemBg,
           marginHorizontal: 16,
           borderRadius: 8,
+          marginVertical: 4,
         },
         !!background && {
           backgroundColor: background,
