@@ -1,5 +1,5 @@
 import React, {FC, useEffect, useLayoutEffect, useState} from 'react';
-import {Dimensions, Pressable, ScrollView, Text, View} from 'react-native';
+import {Dimensions, Pressable, ScrollView, View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaListItem from 'components/AvaListItem';
 import Avatar from 'components/Avatar';
@@ -24,6 +24,12 @@ import ChartSelector, {
 import OvalTagBg from 'components/OvalTagBg';
 import useInAppBrowser from 'hooks/useInAppBrowser';
 import AvaButton from 'components/AvaButton';
+import {
+  VictoryAxis,
+  VictoryCandlestick,
+  VictoryChart,
+  VictoryTheme,
+} from 'victory-native';
 
 export const defaultAreaChartFillGradient = (props: GradientProps) => {
   return (
@@ -45,9 +51,21 @@ const TokenDetail: FC<any> = () => {
   const [isFavorite, setIsFavorite] = useState(true);
   const [token, setToken] = useState<TokenWithBalance>();
   const [showLineChart, setShowLineChart] = useState(true);
-  const {openMoonPay} = useInAppBrowser();
+  const {openMoonPay, openUrl} = useInAppBrowser();
 
   const {tokenId} = useRoute<RouteProp<RootStackParamList>>().params;
+
+  function openTwitter() {
+    // data will come from somewhere, something like
+    // token.twitterHandle
+    openUrl('https://twitter.com/avalancheavax');
+  }
+
+  function openWebsite() {
+    // data will come from somewhere, something like
+    // token.website
+    openUrl('https://www.avax.network/');
+  }
 
   useEffect(() => {
     if (filteredTokenList) {
@@ -110,12 +128,12 @@ const TokenDetail: FC<any> = () => {
         title={<AvaText.Body2>Price</AvaText.Body2>}
         titleAlignment={'flex-start'}
         subtitle={
-          <Text>
-            <AvaText.Heading3 currency>{token?.priceUSD}</AvaText.Heading3>
+          <AvaText.Heading3 currency>
+            {token?.priceUSD}
             <AvaText.Body3 color={theme.colorSuccess}>
-              +$1.13(1.29%)
+              {' +$1.13(1.29%)'}
             </AvaText.Body3>
-          </Text>
+          </AvaText.Heading3>
         }
         rightComponent={
           <ChartSelector
@@ -125,11 +143,13 @@ const TokenDetail: FC<any> = () => {
           />
         }
       />
+      <Space y={8} />
       <View
-        style={{height: 110, justifyContent: 'center', alignItems: 'center'}}>
+        style={{height: 120, justifyContent: 'center', alignItems: 'center'}}>
         {showLineChart ? (
           <SlideAreaChart
             scrollable
+            animated={false}
             style={{
               marginTop: 32,
               backgroundColor: theme.transparent,
@@ -184,7 +204,64 @@ const TokenDetail: FC<any> = () => {
             renderFillGradient={defaultAreaChartFillGradient}
           />
         ) : (
-          <AvaText.Heading3>Candle Chart Coming Soon</AvaText.Heading3>
+          <VictoryChart theme={VictoryTheme.material} height={160}>
+            <VictoryAxis
+              scale={'time'}
+              tickFormat={t => `${t}`}
+              fixLabelOverlap
+              style={{
+                grid: {stroke: 'transparent'},
+                axis: {stroke: 'transparent'},
+                ticks: {stroke: 'transparent'},
+                tickLabels: {fill: 'transparent'},
+              }}
+            />
+            <VictoryCandlestick
+              standalone
+              candleColors={{
+                positive: theme.colorSuccess,
+                negative: theme.colorError,
+              }}
+              candleRatio={0.2}
+              data={[
+                {
+                  x: new Date(2016, 6, 1),
+                  open: 5,
+                  close: 10,
+                  high: 15,
+                  low: 0,
+                },
+                {
+                  x: new Date(2016, 6, 2),
+                  open: 10,
+                  close: 15,
+                  high: 20,
+                  low: 5,
+                },
+                {
+                  x: new Date(2016, 6, 3),
+                  open: 15,
+                  close: 20,
+                  high: 22,
+                  low: 10,
+                },
+                {
+                  x: new Date(2016, 6, 4),
+                  open: 20,
+                  close: 10,
+                  high: 25,
+                  low: 7,
+                },
+                {
+                  x: new Date(2016, 6, 5),
+                  open: 10,
+                  close: 8,
+                  high: 15,
+                  low: 5,
+                },
+              ]}
+            />
+          </VictoryChart>
         )}
       </View>
 
@@ -243,7 +320,9 @@ const TokenDetail: FC<any> = () => {
             <AvaText.Body2 textStyle={{alignSelf: 'flex-start'}}>
               Website
             </AvaText.Body2>
-            <AvaText.Heading3 textStyle={{color: '#0A84FF'}}>
+            <AvaText.Heading3
+              textStyle={{color: '#0A84FF'}}
+              onPress={openWebsite}>
               avax.network
             </AvaText.Heading3>
           </View>
@@ -261,7 +340,9 @@ const TokenDetail: FC<any> = () => {
           <View
             style={{justifyContent: 'flex-start', alignItems: 'flex-start'}}>
             <AvaText.Body2>Twitter</AvaText.Body2>
-            <AvaText.Heading3 textStyle={{color: '#0A84FF'}}>
+            <AvaText.Heading3
+              textStyle={{color: '#0A84FF'}}
+              onPress={openTwitter}>
               @avalancheavax
             </AvaText.Heading3>
           </View>
