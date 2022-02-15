@@ -7,6 +7,9 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import AvaText from './AvaText';
+import {useApplicationContext} from 'contexts/ApplicationContext';
+import {Space} from 'components/Space';
 
 interface Props {
   angle?: number;
@@ -39,6 +42,7 @@ const ActionButtonItem: FC<Props> = ({
   children,
   ...rest
 }) => {
+  const {theme} = useApplicationContext();
   const offsetX = radius * Math.cos(angle);
   const offsetY = radius * Math.sin(angle);
   return (
@@ -96,7 +100,10 @@ const ActionButtonItem: FC<Props> = ({
           {children}
         </View>
         {title && (
-          <Text style={{top: 50, fontSize: 12, color: 'white'}}>{title}</Text>
+          <>
+            <Space y={50} />
+            <AvaText.Caption color={theme.white}>{title}</AvaText.Caption>
+          </>
         )}
       </TouchableOpacity>
     </Animated.View>
@@ -107,16 +114,16 @@ const styles = StyleSheet.create({
   actionButton: {
     justifyContent: 'center',
     alignItems: 'center',
-    flexDirection: 'row',
     paddingTop: 2,
     shadowOpacity: 0.3,
+    marginHorizontal: 8,
     shadowOffset: {
       width: 0,
       height: 1,
     },
+    overflow: 'visible',
     shadowColor: '#444',
     shadowRadius: 1,
-    backgroundColor: 'red',
     position: 'absolute',
   },
 });

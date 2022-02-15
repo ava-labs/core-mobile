@@ -224,9 +224,16 @@ const TextButtonSmall: FC<AvaTextProps> = ({
   );
 };
 
-const TextCaption: FC<AvaTextProps> = ({textStyle, children, ...rest}) => {
+const TextCaption: FC<AvaTextProps> = ({
+  textStyle,
+  children,
+  color,
+  ...rest
+}) => {
   return (
-    <AvaxTextBase style={[styles.textCaption, textStyle]} {...rest}>
+    <AvaxTextBase
+      style={[styles.textCaption, textStyle, !!color && {color: color}]}
+      {...rest}>
       {children}
     </AvaxTextBase>
   );

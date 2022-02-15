@@ -17,6 +17,7 @@ import DotSVG from 'components/svg/DotSVG';
 import FlexSpacer from 'components/FlexSpacer';
 import Avatar from 'components/Avatar';
 import {Contact} from 'Repo';
+import {Utils} from '@avalabs/avalanche-wallet-sdk';
 
 function ActivityDetail() {
   const theme = useApplicationContext().theme;
@@ -27,6 +28,9 @@ function ActivityDetail() {
   const date = moment(txItem.timestamp).format('MMM DD, YYYY HH:mm');
   const {openUrl} = useInAppBrowser();
   const [contact, setContact] = useState<Contact>();
+
+  const feeBN = Utils.numberToBN(txItem.gasUsed * txItem.gasPrice, 0);
+  const fees = Utils.bnToLocaleString(feeBN, 18);
 
   const isOutboundTransaction = useMemo(() => txItem?.isSender, []);
 
@@ -82,25 +86,26 @@ function ActivityDetail() {
             </AvaText.Body1>
           </AvaText.Heading1>
           <Space y={4} />
-          <AvaText.Body1
-            currency
-            color={isOutboundTransaction ? theme.colorError : theme.colorIcon3}>
-            {txItem.amountDisplayValue}
-          </AvaText.Body1>
+          <AvaText.Body2>{` Fee ${fees} AVAX`}</AvaText.Body2>
         </View>
         <Space y={16} />
         <AvaListItem.Base
-          title={'Status'}
+          title={<AvaText.Body2>Status</AvaText.Body2>}
+          titleAlignment={'flex-start'}
           rightComponent={<AvaText.Heading3>Complete</AvaText.Heading3>}
         />
-        <Separator />
+        <Separator inset={16} />
         <AvaListItem.Base
-          title={'Date'}
+          title={<AvaText.Body2>Date</AvaText.Body2>}
+          titleAlignment={'flex-start'}
           rightComponent={<AvaText.Heading3>{date}</AvaText.Heading3>}
         />
-        <Separator />
+        <Separator inset={16} />
         <AvaListItem.Base
-          title={txItem.isSender ? 'To' : 'From'}
+          title={
+            <AvaText.Body2>{txItem.isSender ? 'To' : 'From'}</AvaText.Body2>
+          }
+          titleAlignment={'flex-start'}
           rightComponent={
             <View style={{alignItems: 'flex-end'}}>
               {contact && <AvaText.Heading3>{contact?.title}</AvaText.Heading3>}
@@ -110,15 +115,15 @@ function ActivityDetail() {
             </View>
           }
         />
-        <Separator />
+        <Separator inset={16} />
         <AvaListItem.Base
-          title={'Type of transaction'}
-          rightComponent={<AvaText.Body1>Deposit</AvaText.Body1>}
-        />
-        <Separator />
-        <AvaListItem.Base
-          title={'Balance after transaction'}
-          rightComponent={<AvaText.Heading2>$424.23 USD</AvaText.Heading2>}
+          title={<AvaText.Body2>Transaction Type</AvaText.Body2>}
+          titleAlignment={'flex-start'}
+          rightComponent={
+            <AvaText.Body1>
+              {txItem.isSender ? 'Outgoing Transfer' : 'Incoming Transfer'}
+            </AvaText.Body1>
+          }
         />
         <FlexSpacer />
         {!!txItem.explorerLink && (
