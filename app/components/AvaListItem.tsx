@@ -123,7 +123,7 @@ function BaseListItem({
               style={{
                 marginRight: 16,
                 flexDirection: 'row',
-                maxWidth: 190,
+                maxWidth: 160,
                 flexGrow: 0.5,
                 justifyContent: rightComponentHorizontalAlignment,
                 alignSelf: rightComponentVerticalAlignment,
