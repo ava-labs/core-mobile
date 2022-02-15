@@ -29,8 +29,8 @@ function ActivityDetail() {
   const {openUrl} = useInAppBrowser();
   const [contact, setContact] = useState<Contact>();
 
-  const feeBN = Utils.numberToBN(txItem.cumulativeGasUsed * txItem.gasPrice, 0);
-  const fees = Utils.bnToLocaleString(feeBN, 18);
+  const feeBN = Utils.numberToBN(txItem.gasUsed * txItem.gasPrice, 0);
+  const fees = Utils.bnToAvaxC(feeBN);
 
   useEffect(() => getContactMatch(), [addressBook]);
 
