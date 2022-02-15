@@ -78,7 +78,7 @@ const TabNavigator = () => {
         backgroundColor={'#0A84FF'}
         changeBackgroundColor={'#0A84FF'}
         radius={110}
-        size={69}
+        size={48}
         changeIconTextColor={'#000000'}
         icon={children}
         iconTextColor={'#FFFFFF'}>
