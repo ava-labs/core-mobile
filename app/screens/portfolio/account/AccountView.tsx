@@ -23,6 +23,7 @@ function AccountView({onDone}: {onDone: () => void}): JSX.Element {
       title: `Account ${newAccount.index + 1}`,
       active: true,
       address: newAccount.wallet.getAddressC(),
+      balance$: newAccount.balance$,
     });
     saveAccounts(accounts);
     setActiveAccount(newAccount.index);
