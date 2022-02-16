@@ -4,10 +4,10 @@ import {
   StackNavigationOptions,
   StackNavigationProp,
 } from '@react-navigation/stack';
-import React from 'react';
+import React, {useCallback, useEffect, useMemo} from 'react';
 import AddressBook from 'screens/drawer/addressBook/AddressBook';
 import {MainHeaderOptions} from 'navigation/NavUtils';
-import {useNavigation} from '@react-navigation/native';
+import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
 import AvaButton from 'components/AvaButton';
 import AddSVG from 'components/svg/AddSVG';
 import AddContact from 'screens/drawer/addressBook/AddContact';
@@ -15,6 +15,8 @@ import ContactDetails from 'screens/drawer/addressBook/ContactDetails';
 import AvaText from 'components/AvaText';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {RootStackParamList} from 'navigation/WalletScreenStack';
+import useAddressBook from 'screens/drawer/addressBook/useAddressBook';
+import {Contact} from 'Repo';
 
 export type AddressBookStackParamList = {
   [AppNavigation.AddressBook.List]: undefined;
@@ -58,11 +60,6 @@ const AddressBookStack = () => {
       <Stack.Screen
         options={{
           headerShown: true,
-          ...(MainHeaderOptions(
-            '',
-            false,
-            <EditAddressBookContact />,
-          ) as Partial<StackNavigationOptions>),
         }}
         name={AppNavigation.AddressBook.Details}
         component={ContactDetailsComp}
@@ -74,19 +71,63 @@ const AddressBookStack = () => {
 const ContactDetailsComp = () => {
   const {setParams, setOptions} =
     useNavigation<StackNavigationProp<AddressBookStackParamList>>();
-  const {navigate} = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const {navigate, goBack} =
+    useNavigation<StackNavigationProp<RootStackParamList>>();
+  const {onDelete, onSave} = useAddressBook();
+  const {params} = useRoute<RouteProp<AddressBookStackParamList>>();
+  const {addressBook} = useApplicationContext().repo.addressBookRepo;
+
+  const clonedContact = useMemo(
+    () =>
+      (params?.contactId &&
+        Object.assign({}, addressBook.get(params.contactId))) ||
+      ({id: '', title: '', address: ''} as Contact),
+    [addressBook, params?.contactId],
+  );
+
+  const saveContact = useCallback(() => {
+    onSave(clonedContact);
+    setParams({editable: false});
+    setOptions({
+      ...(MainHeaderOptions(
+        '',
+        false,
+        <EditAddressBookContact onEdit={onEdit} />,
+      ) as Partial<StackNavigationOptions>),
+    });
+  }, []);
+
+  const onEdit = useCallback(() => {
+    setParams({editable: true});
+    setOptions({
+      ...(MainHeaderOptions(
+        '',
+        false,
+        <SaveAddressBookContact onSave={saveContact} />,
+      ) as Partial<StackNavigationOptions>),
+    });
+  }, []);
+
+  const deleteContact = useCallback((contact: Contact) => {
+    onDelete(contact);
+    goBack();
+  }, []);
+
+  useEffect(() => {
+    setParams({editable: false});
+    setOptions({
+      ...(MainHeaderOptions(
+        '',
+        false,
+        <EditAddressBookContact onEdit={onEdit} />,
+      ) as Partial<StackNavigationOptions>),
+    });
+  }, []);
+
   return (
     <ContactDetails
-      onEditFinished={() => {
-        setParams({editable: false});
-        setOptions({
-          ...(MainHeaderOptions(
-            '',
-            false,
-            <EditAddressBookContact />,
-          ) as Partial<StackNavigationOptions>),
-        });
-      }}
+      contact={clonedContact}
+      onDelete={contact => deleteContact(contact)}
       onSend={contact => {
         navigate(AppNavigation.Wallet.SendTokens, {contact});
       }}
@@ -104,20 +145,25 @@ const AddAddressBookContact = () => {
   );
 };
 
-const EditAddressBookContact = () => {
+const EditAddressBookContact = ({onEdit}: {onEdit: () => void}) => {
   const {theme} = useApplicationContext();
-  const {setParams, setOptions} =
-    useNavigation<StackNavigationProp<AddressBookStackParamList>>();
+
   return (
-    <AvaButton.Icon
-      onPress={() => {
-        setParams({editable: true});
-        setOptions({
-          ...(MainHeaderOptions('') as Partial<StackNavigationOptions>),
-        });
-      }}>
+    <AvaButton.Icon onPress={() => onEdit()}>
       <AvaText.ButtonLarge textStyle={{color: theme.colorAccent}}>
         Edit
+      </AvaText.ButtonLarge>
+    </AvaButton.Icon>
+  );
+};
+
+const SaveAddressBookContact = ({onSave}: {onSave: () => void}) => {
+  const {theme} = useApplicationContext();
+
+  return (
+    <AvaButton.Icon onPress={() => onSave()}>
+      <AvaText.ButtonLarge textStyle={{color: theme.colorAccent}}>
+        Save
       </AvaText.ButtonLarge>
     </AvaButton.Icon>
   );

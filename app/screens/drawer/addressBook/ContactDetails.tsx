@@ -1,5 +1,5 @@
 import {SafeAreaProvider} from 'react-native-safe-area-context';
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useMemo} from 'react';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from 'components/AvaText';
 import {StyleSheet, View} from 'react-native';
@@ -16,41 +16,20 @@ import {copyToClipboard} from 'utils/DeviceTools';
 import {Contact} from 'Repo';
 
 const ContactDetails = ({
-  onEditFinished,
+  contact,
   onSend,
+  onDelete,
 }: {
-  onEditFinished: () => void;
+  contact: Contact;
   onSend: (contact: Contact) => void;
+  onDelete: (contact: Contact) => void;
 }) => {
-  const {titleToInitials, onSave} = useAddressBook();
+  const {titleToInitials} = useAddressBook();
   const {params} = useRoute<RouteProp<AddressBookStackParamList>>();
-  const {addressBook} = useApplicationContext().repo.addressBookRepo;
 
-  const contact = useMemo(
-    () =>
-      params?.contactId
-        ? Object.assign({}, addressBook.get(params.contactId))
-        : ({id: '', title: '', address: ''} as Contact),
-    [addressBook, params?.contactId],
-  );
   const editable = useMemo(() => {
     return params?.editable ?? false;
   }, [params?.editable]);
-
-  const [editAddress, setEditAddress] = useState('');
-  const [editName, setEditName] = useState('');
-
-  useEffect(() => {
-    if (contact.id) {
-      setEditAddress(contact.address);
-      setEditName(contact.title);
-    }
-  }, [contact]);
-
-  const save = () => {
-    onSave({id: contact.id, title: editName, address: editAddress});
-    onEditFinished();
-  };
 
   return (
     <SafeAreaProvider style={{flex: 1, padding: 16}}>
@@ -58,10 +37,10 @@ const ContactDetails = ({
         <BlockchainCircle
           size={80}
           textSize={32}
-          chain={titleToInitials(editName)}
+          chain={titleToInitials(contact.title)}
         />
         <Space y={24} />
-        <AvaText.Heading2>{editName}</AvaText.Heading2>
+        <AvaText.Heading2>{contact.title}</AvaText.Heading2>
       </View>
       <Space y={40} />
       {editable ? (
@@ -69,19 +48,23 @@ const ContactDetails = ({
           <ContactInput
             initName={contact.title}
             initAddress={contact.address}
-            onNameChange={name1 => setEditName(name1)}
-            onAddressChange={address1 => setEditAddress(address1)}
+            onNameChange={name1 => (contact.title = name1)}
+            onAddressChange={address1 => (contact.address = address1)}
           />
           <FlexSpacer />
-          <AvaButton.PrimaryLarge onPress={save}>Save</AvaButton.PrimaryLarge>
+          <AvaButton.TextLarge onPress={() => onDelete(contact)}>
+            Delete Contact
+          </AvaButton.TextLarge>
         </>
       ) : (
-        <AddressView contact={contact} />
+        <>
+          <AddressView contact={contact} />
+          <FlexSpacer />
+          <AvaButton.PrimaryLarge onPress={() => onSend(contact)}>
+            Send
+          </AvaButton.PrimaryLarge>
+        </>
       )}
-      <FlexSpacer />
-      <AvaButton.PrimaryLarge onPress={() => onSend(contact)}>
-        Send
-      </AvaButton.PrimaryLarge>
     </SafeAreaProvider>
   );
 };
