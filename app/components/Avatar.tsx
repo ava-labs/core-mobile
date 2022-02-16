@@ -35,7 +35,13 @@ const AvatarBase: FC<Props> = ({
   const tokenLogo = useCallback(() => {
     // if AVAX, return our own logo
     if (symbol === 'AVAX') {
-      return <AvaLogoSVG size={size} />;
+      return (
+        <AvaLogoSVG
+          size={size}
+          logoColor={theme.tokenLogoColor}
+          backgroundColor={theme.tokenLogoBg}
+        />
+      );
     }
 
     // if ERC20 or invalid URL, return token initials
@@ -82,6 +88,7 @@ interface TokenAvatarProps {
   token: Erc20Token | TokenWithBalance;
   size?: number;
 }
+
 const TokenAvatar: FC<TokenAvatarProps> = ({token, size}) => {
   const isErc20Token = !isTokenWithBalance(token);
   const name = token.name;
