@@ -41,6 +41,7 @@ enum WalletScreens {
   NetworkSelector = 'WalletScreens.NetworkSelector',
   Swap = 'WalletScreens.Swap',
   TokenDetail = 'WalletScreens.TokenDetail',
+  ActivityDetail = 'WalletScreens.ActivityDetail',
 }
 
 enum SwapScreens {

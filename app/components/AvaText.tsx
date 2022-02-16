@@ -100,6 +100,7 @@ const TextBody1: FC<AvaTextProps> = ({
   ellipsizeMode,
   textStyle,
   children,
+  color,
   ...rest
 }) => {
   const theme = useApplicationContext().theme;
@@ -112,6 +113,7 @@ const TextBody1: FC<AvaTextProps> = ({
         styles.body1,
         {flexShrink: ellipsizeMode ? 1 : 0, color: theme.colorText1},
         textStyle,
+        !!color && {color: color},
       ]}>
       {children}
     </AvaxTextBase>
@@ -222,9 +224,16 @@ const TextButtonSmall: FC<AvaTextProps> = ({
   );
 };
 
-const TextCaption: FC<AvaTextProps> = ({textStyle, children, ...rest}) => {
+const TextCaption: FC<AvaTextProps> = ({
+  textStyle,
+  children,
+  color,
+  ...rest
+}) => {
   return (
-    <AvaxTextBase style={[styles.textCaption, textStyle]} {...rest}>
+    <AvaxTextBase
+      style={[styles.textCaption, textStyle, !!color && {color: color}]}
+      {...rest}>
       {children}
     </AvaxTextBase>
   );

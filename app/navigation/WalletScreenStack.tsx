@@ -11,7 +11,6 @@ import {useApplicationContext} from 'contexts/ApplicationContext';
 import AccountBottomSheet from 'screens/portfolio/account/AccountBottomSheet';
 import AppNavigation from 'navigation/AppNavigation';
 import {SelectedTokenContextProvider} from 'contexts/SelectedTokenContext';
-import ActivityDetailBottomSheet from 'screens/activity/ActivityDetailBottomSheet';
 import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BiometricsSDK from 'utils/BiometricsSDK';
@@ -22,7 +21,7 @@ import TokenManagement from 'screens/tokenManagement/TokenManagement';
 import AddCustomToken from 'screens/tokenManagement/AddCustomToken';
 import CurrencySelector from 'screens/drawer/currency-selector/CurrencySelector';
 import SecurityPrivacyStackScreen from 'navigation/wallet/SecurityPrivacyStackScreen';
-import {MainHeaderOptions} from 'navigation/NavUtils';
+import {MainHeaderOptions, SubHeaderOptions} from 'navigation/NavUtils';
 import WebViewScreen from 'screens/webview/WebViewScreen';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import SignOutBottomSheet from 'screens/mainView/SignOutBottomSheet';
@@ -46,6 +45,8 @@ import AddressBookStack from 'navigation/wallet/AddressBookStack';
 import HeaderAccountSelector from 'components/HeaderAccountSelector';
 import {Contact} from 'Repo';
 import TokenDetail from 'screens/watchlist/TokenDetail';
+import {TxType} from 'screens/activity/ActivityList';
+import ActivityDetail from 'screens/activity/ActivityDetail';
 
 type Props = {
   onExit: () => void;
@@ -66,9 +67,9 @@ export type RootStackParamList = {
   [AppNavigation.Wallet.Swap]: undefined;
   [AppNavigation.Wallet.NetworkSelector]: undefined;
   [AppNavigation.Wallet.TokenDetail]: {tokenId?: string} | undefined;
+  [AppNavigation.Wallet.ActivityDetail]: {tx?: TxType};
   [AppNavigation.Modal.AccountBottomSheet]: undefined;
   [AppNavigation.Modal.AccountDropDown]: undefined;
-  [AppNavigation.Modal.TransactionDetailBottomSheet]: undefined;
   [AppNavigation.Modal.ReceiveOnlyBottomSheet]: undefined;
   [AppNavigation.Modal.SignOut]: undefined;
   [AppNavigation.Modal.SelectToken]: undefined;
@@ -194,10 +195,6 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
           component={AccountBottomSheet}
         />
         <RootStack.Screen
-          name={AppNavigation.Modal.TransactionDetailBottomSheet}
-          component={ActivityDetailBottomSheet}
-        />
-        <RootStack.Screen
           name={AppNavigation.Modal.SignOut}
           component={SignOutBottomSheetScreen}
         />
@@ -265,6 +262,13 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
             }}
             name={AppNavigation.Wallet.TokenDetail}
             component={TokenDetail}
+          />
+          <RootStack.Screen
+            options={{
+              ...SubHeaderOptions('Transaction Details'),
+            }}
+            name={AppNavigation.Wallet.ActivityDetail}
+            component={ActivityDetail}
           />
           <RootStack.Screen
             options={{

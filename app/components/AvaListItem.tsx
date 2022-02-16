@@ -53,6 +53,7 @@ function BaseListItem({
           backgroundColor: context.theme.listItemBg,
           marginHorizontal: 16,
           borderRadius: 8,
+          marginVertical: 4,
         },
         !!background && {
           backgroundColor: background,
@@ -122,7 +123,7 @@ function BaseListItem({
               style={{
                 marginRight: 16,
                 flexDirection: 'row',
-                maxWidth: 150,
+                maxWidth: 160,
                 flexGrow: 0.5,
                 justifyContent: rightComponentHorizontalAlignment,
                 alignSelf: rightComponentVerticalAlignment,
