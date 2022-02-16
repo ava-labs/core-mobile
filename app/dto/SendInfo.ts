@@ -1,4 +1,4 @@
-import {BN, Utils} from '@avalabs/avalanche-wallet-sdk';
+import {BN, bnToAvaxC, numberToBN} from '@avalabs/avalanche-wallet-sdk';
 
 // I know, I'm disgusted by it too, but it's a simple,
 // quick, dirty hack that works. Will remove this when
@@ -9,12 +9,12 @@ export function stringAmountToBN(amount: string, denomination = 9): BN {
     return new BN(0);
   }
   try {
-    return Utils.numberToBN(amount, denomination);
+    return numberToBN(amount, denomination);
   } catch (e) {
     return new BN(0);
   }
 }
 
 export function bnAmountToString(amount?: BN): string {
-  return amount ? Utils.bnToAvaxC(amount) : '0.00';
+  return amount ? bnToAvaxC(amount) : '0.00';
 }

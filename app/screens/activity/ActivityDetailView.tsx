@@ -8,7 +8,7 @@ import AvaButton from 'components/AvaButton';
 import {HistoryItemType} from '@avalabs/avalanche-wallet-sdk/dist/History';
 import moment from 'moment';
 import MovementIndicator from 'components/MovementIndicator';
-import {Utils} from '@avalabs/avalanche-wallet-sdk';
+import {bnToLocaleString} from '@avalabs/avalanche-wallet-sdk';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {
   FUJI_NETWORK,
@@ -21,6 +21,7 @@ import useInAppBrowser from 'hooks/useInAppBrowser';
 interface Props {
   txItem: HistoryItemType;
 }
+
 function ActivityDetailView({txItem}: Props) {
   const theme = useApplicationContext().theme;
   const networkContext = useNetworkContext();
@@ -53,7 +54,7 @@ function ActivityDetailView({txItem}: Props) {
     [],
   );
 
-  const fee = useMemo(() => Utils.bnToLocaleString(txItem.fee, 18), []);
+  const fee = useMemo(() => bnToLocaleString(txItem.fee, 18), []);
 
   const source = useMemo(() => {
     if ('source' in txItem) {

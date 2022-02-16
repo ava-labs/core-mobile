@@ -12,7 +12,13 @@ import {
 import {getSwapRate} from 'swap/getSwapRate';
 import BN from 'bn.js';
 import {getDecimalsForEVM} from 'utils/TokenTools';
-import {Big, Utils} from '@avalabs/avalanche-wallet-sdk';
+import {
+  Big,
+  bigToLocaleString,
+  bnToBig,
+  numberToBN,
+  stringToBN,
+} from '@avalabs/avalanche-wallet-sdk';
 import {SwapSide} from 'paraswap';
 import {firstValueFrom, from} from 'rxjs';
 import {map} from 'rxjs/operators';
@@ -98,24 +104,22 @@ export const SwapContextProvider = ({children}: {children: any}) => {
   }, []);
 
   useEffect(() => {
-    setGasPriceNAvax(
-      usersGasPriceNAvax || Utils.bnToBig(gasPrice.bn, 9).toNumber(),
-    );
+    setGasPriceNAvax(usersGasPriceNAvax || bnToBig(gasPrice.bn, 9).toNumber());
     setGasLimit(usersGasLimit || gasCost);
     const gasPriceBig = usersGasPriceNAvax
       ? new Big(usersGasPriceNAvax).div(Math.pow(10, 9))
-      : Utils.bnToBig(gasPrice.bn, 18);
+      : bnToBig(gasPrice.bn, 18);
     const gasLimitBig = usersGasLimit
       ? new Big(usersGasLimit)
       : new Big(gasCost);
     const feeBig = gasPriceBig.mul(gasLimitBig);
-    const fee = Utils.bigToLocaleString(feeBig, 4);
+    const fee = bigToLocaleString(feeBig, 4);
     setNetworkFee(`${fee} AVAX`);
     setNetworkFeeUsd(`${fee} AVAX`);
   }, [gasPrice, gasCost, usersGasLimit, usersGasPriceNAvax]);
 
   useEffect(() => {
-    const amount = Utils.numberToBN(
+    const amount = numberToBN(
       swapSide === SwapSide.SELL ? srcAmount : destAmount,
       getDecimalsForEVM(swapSide === SwapSide.SELL ? srcToken : destToken) ?? 0,
     ).toString();
@@ -137,11 +141,11 @@ export const SwapContextProvider = ({children}: {children: any}) => {
             throw Error('No result');
           }
 
-          const destAmount = Utils.bnToBig(
+          const destAmount = bnToBig(
             new BN(result.destAmount),
             result.destDecimals,
           );
-          const srcAmount = Utils.bnToBig(
+          const srcAmount = bnToBig(
             new BN(result.srcAmount),
             result.srcDecimals,
           );
@@ -165,9 +169,7 @@ export const SwapContextProvider = ({children}: {children: any}) => {
           );
           const minAmnt = destAmount.times(1 - slipTol / 100).toFixed(8);
           setMinAmount(minAmnt);
-          setMinAmountBig(
-            Utils.stringToBN(minAmnt, result.destDecimals).toString(),
-          );
+          setMinAmountBig(stringToBN(minAmnt, result.destDecimals).toString());
           setError(undefined);
         }),
       )
