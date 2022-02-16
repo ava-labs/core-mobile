@@ -1,5 +1,5 @@
-import React, {FC, useEffect, useState} from 'react';
-import {ScrollView, StyleSheet, View} from 'react-native';
+import React, {FC, useEffect, useMemo, useState} from 'react';
+import {Animated, ScrollView, StyleSheet, View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {Space} from 'components/Space';
 import AvaText from 'components/AvaText';
@@ -28,6 +28,28 @@ const SwapReview: FC = () => {
     useNavigation<StackNavigationProp<SwapStackParamList>>();
   const [loading, setLoading] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState('0s');
+  const [colorAnim] = useState(new Animated.Value(1));
+
+  const animatedColor = useMemo(() => {
+    return colorAnim.interpolate({
+      inputRange: [0, 1],
+      outputRange: ['#ffffff', '#014db7'],
+    });
+  }, [colorAnim]);
+
+  useEffect(() => {
+    Animated.timing(colorAnim, {
+      toValue: 1,
+      duration: 1000,
+      useNativeDriver: false,
+    }).start(() => {
+      Animated.timing(colorAnim, {
+        toValue: 0,
+        duration: 1000,
+        useNativeDriver: false,
+      }).start();
+    });
+  }, [swapTo.amount, swapTo.usdValue]);
 
   function onConfirm() {
     setLoading(true);
@@ -44,7 +66,7 @@ const SwapReview: FC = () => {
   }
 
   useEffect(() => {
-    const RESET_INTERVAL = 10; // seconds
+    const RESET_INTERVAL = 60; // seconds
     const sub = interval(SECOND)
       .pipe(
         tap(value => {
@@ -79,10 +101,9 @@ const SwapReview: FC = () => {
               style={{
                 backgroundColor: theme.listItemBg,
                 padding: 8,
-                borderRadius: 4,
+                borderRadius: 100,
               }}>
-              <AvaText.Body2>{secondsLeft}</AvaText.Body2>
-
+              <AvaText.ButtonSmall>{secondsLeft}</AvaText.ButtonSmall>
               <Space x={4} />
               <InfoSVG />
             </Row>
@@ -97,9 +118,9 @@ const SwapReview: FC = () => {
           leftComponent={<Avatar.Token token={swapFrom.token!} />}
           title={swapFrom.token?.symbol}
           rightComponent={
-            <View>
-              <AvaText.Body1>{swapFrom.amount}</AvaText.Body1>
-              <AvaText.Body3>{swapFrom.usdValue}</AvaText.Body3>
+            <View style={{alignItems: 'flex-end'}}>
+              <AvaText.Body1>{swapFrom.amount.toFixed(5)}</AvaText.Body1>
+              <AvaText.Body3 currency>{swapFrom.usdValue}</AvaText.Body3>
             </View>
           }
         />
@@ -112,9 +133,16 @@ const SwapReview: FC = () => {
           leftComponent={<Avatar.Token token={swapTo.token!} />}
           title={swapTo.token?.symbol}
           rightComponent={
-            <View>
-              <AvaText.Body1>{swapTo.amount}</AvaText.Body1>
-              <AvaText.Body3>{swapTo.usdValue}</AvaText.Body3>
+            <View style={{alignItems: 'flex-end'}}>
+              <AvaText.Body1 animated textStyle={{color: animatedColor}}>
+                {swapTo.amount.toFixed(5)}
+              </AvaText.Body1>
+              <AvaText.Body3
+                currency
+                animated
+                textStyle={{color: animatedColor}}>
+                {swapTo.usdValue}
+              </AvaText.Body3>
             </View>
           }
         />
