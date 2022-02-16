@@ -19,7 +19,12 @@ import {
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import {Alert, Image} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
-import {Utils} from '@avalabs/avalanche-wallet-sdk';
+import {
+  bnToAvaxC,
+  bnToBig,
+  numberToBN,
+  stringToBN,
+} from '@avalabs/avalanche-wallet-sdk';
 import {GasPrice, useGasPrice} from 'utils/GasPriceHook';
 import {mustNumber, mustValue} from 'utils/JsTools';
 import {BN} from 'avalanche';
@@ -174,7 +179,7 @@ export const SendTokenContextProvider = ({children}: {children: any}) => {
     customGasPrice$.next(
       mustValue(
         () =>
-          Utils.numberToBN(
+          numberToBN(
             mustNumber(() => parseFloat(customGasPriceNanoAvax), 0),
             9,
           ),
@@ -198,7 +203,7 @@ export const SendTokenContextProvider = ({children}: {children: any}) => {
 
   const balanceAfterTrx = useMemo(
     () =>
-      Utils.bnToBig(
+      bnToBig(
         sendToken?.balance.sub(amount ?? new BN(0)).sub(sendFee ?? new BN(0)) ??
           new BN(0),
         sendToken?.denomination,
@@ -220,7 +225,7 @@ export const SendTokenContextProvider = ({children}: {children: any}) => {
     [activeAccount],
   );
   const sendFeeAvax = useMemo(
-    () => (sendFee ? Utils.bnToAvaxC(sendFee) : undefined),
+    () => (sendFee ? bnToAvaxC(sendFee) : undefined),
     [sendFee],
   );
   const sendFeeUsd = useMemo(
@@ -238,7 +243,7 @@ export const SendTokenContextProvider = ({children}: {children: any}) => {
   useEffect(() => {
     setAmount(
       mustValue(
-        () => Utils.stringToBN(sendAmount, sendToken?.denomination ?? 0),
+        () => stringToBN(sendAmount, sendToken?.denomination ?? 0),
         new BN(0),
       ),
     );
