@@ -1,7 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {Pressable, StyleSheet, View} from 'react-native';
 import AvaText from 'components/AvaText';
-import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import AvaListItem from 'components/AvaListItem';
 import LinkSVG from 'components/svg/LinkSVG';
 import moment from 'moment';
@@ -17,7 +16,7 @@ import DotSVG from 'components/svg/DotSVG';
 import FlexSpacer from 'components/FlexSpacer';
 import Avatar from 'components/Avatar';
 import {Contact} from 'Repo';
-import {Utils} from '@avalabs/avalanche-wallet-sdk';
+import {bnToAvaxC, numberToBN} from '@avalabs/avalanche-wallet-sdk';
 
 function ActivityDetail() {
   const theme = useApplicationContext().theme;
@@ -29,8 +28,8 @@ function ActivityDetail() {
   const {openUrl} = useInAppBrowser();
   const [contact, setContact] = useState<Contact>();
 
-  const feeBN = Utils.numberToBN(txItem.gasUsed * txItem.gasPrice, 0);
-  const fees = Utils.bnToAvaxC(feeBN);
+  const feeBN = numberToBN(txItem.gasUsed * txItem.gasPrice, 0);
+  const fees = bnToAvaxC(feeBN);
 
   useEffect(() => getContactMatch(), [addressBook]);
 
