@@ -4,64 +4,85 @@ import {useNavigation} from '@react-navigation/native';
 import AppNavigation from 'navigation/AppNavigation';
 import AvaText from 'components/AvaText';
 import Loader from 'components/Loader';
-import CollapsibleSection from 'components/CollapsibleSection';
 import {
+  getHistory,
+  TransactionERC20,
+  TransactionNormal,
   useNetworkContext,
   useWalletContext,
 } from '@avalabs/wallet-react-components';
 import moment from 'moment';
-import ActivityListItem from 'screens/activity/ActivityListItem';
-import {HistoryItemType} from '@avalabs/avalanche-wallet-sdk/dist/History';
-import {History} from '@avalabs/avalanche-wallet-sdk';
 import {ScrollView} from 'react-native-gesture-handler';
 import {MainHeaderOptions} from 'navigation/NavUtils';
-import {PortfolioNavigationProp} from 'screens/portfolio/PortfolioView';
+import ActivityListItem from 'screens/activity/ActivityListItem';
+import {StackNavigationProp} from '@react-navigation/stack';
+import {RootStackParamList} from 'navigation/WalletScreenStack';
 
 const DISPLAY_FORMAT_CURRENT_YEAR = 'MMMM DD';
 const DISPLAY_FORMAT_PAST_YEAR = 'MMMM DD, YYYY';
 
-const TODAY = moment();
-const YESTERDAY = moment().subtract(1, 'days');
-type SectionType = {[x: string]: HistoryItemType[]};
-
 interface Props {
   embedded?: boolean;
+  tokenSymbolFilter?: string;
 }
 
-function ActivityView({embedded}: Props): JSX.Element {
-  const wallet = useWalletContext()?.wallet;
-  const network = useNetworkContext()?.network;
+export type TxType = TransactionNormal | TransactionERC20;
+const TODAY = moment();
+const YESTERDAY = moment().subtract(1, 'days');
+type SectionType = {[x: string]: TxType[]};
+
+function ActivityList({embedded, tokenSymbolFilter}: Props) {
   const [sectionData, setSectionData] = useState<SectionType>({});
   const [loading, setLoading] = useState(true);
-  const navigation = useNavigation<PortfolioNavigationProp>();
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const wallet = useWalletContext()?.wallet;
+  const {network} = useNetworkContext();
+
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  useEffect(() => loadHistory(), [wallet, network]);
 
   const loadHistory = useCallback(async () => {
     setLoading(true);
-    const history = (await wallet?.getHistory(50)) ?? [];
-    // We're only going to show EVMT without inputs at this time. Remove filter in the future
     const newSectionData: SectionType = {};
-    history
-      .filter(ik => History.isHistoryEVMTx(ik) && ik.input === undefined)
-      .map((it: HistoryItemType) => {
-        const date = moment(it.timestamp);
-        if (TODAY.isSame(date, 'day')) {
-          newSectionData.Today = [...[it]];
-        } else if (YESTERDAY.isSame(date, 'day')) {
-          newSectionData.Yesterday = [...[it]];
-        } else {
-          const isCurrentYear = TODAY.year() === date.year();
-          newSectionData[
-            date.format(
+    if (wallet) {
+      const history = (await getHistory(wallet, 50)) ?? [];
+      history
+        .filter((tx: TxType) => {
+          return tokenSymbolFilter
+            ? tokenSymbolFilter === (tx?.tokenSymbol ?? 'AVAX')
+            : true;
+        })
+        .map((it: TxType) => {
+          const date = moment(it.timestamp);
+          if (TODAY.isSame(date, 'day')) {
+            const today = newSectionData.Today;
+            newSectionData.Today = today
+              ? [...newSectionData.Today, it]
+              : [...[it]];
+          } else if (YESTERDAY.isSame(date, 'day')) {
+            const yesterday = newSectionData.Yesterday;
+            newSectionData.Yesterday = yesterday
+              ? [...newSectionData.Yesterday, it]
+              : [...[it]];
+          } else {
+            const isCurrentYear = TODAY.year() === date.year();
+            const titleDate = date.format(
               isCurrentYear
                 ? DISPLAY_FORMAT_CURRENT_YEAR
                 : DISPLAY_FORMAT_PAST_YEAR,
-            )
-          ] = [...[it]];
-        }
-      });
-    setSectionData(newSectionData);
-    setLoading(false);
-  }, [wallet]);
+            );
+            const otherDate = newSectionData[titleDate];
+            newSectionData[titleDate] = otherDate
+              ? [...newSectionData[titleDate], it]
+              : [...[it]];
+          }
+        });
+      setLoading(false);
+      console.log(newSectionData);
+      setSectionData(newSectionData);
+    }
+  }, [wallet, tokenSymbolFilter]);
 
   useEffect(() => {
     if (embedded) {
@@ -78,21 +99,16 @@ function ActivityView({embedded}: Props): JSX.Element {
     }
   }, [embedded]);
 
-  useEffect(() => {
-    loadHistory().catch(reason => console.warn(reason));
-  }, [network]);
-
-  const openDetailBottomSheet = useCallback((item: HistoryItemType) => {
-    return navigation.navigate(
-      AppNavigation.Modal.TransactionDetailBottomSheet,
-      {historyItem: item},
-    );
+  const openTransactionDetails = useCallback((item: TxType) => {
+    return navigation.navigate(AppNavigation.Wallet.ActivityDetail, {
+      tx: item,
+    });
   }, []);
 
   const renderItems = () => {
-    const items = Object.entries(sectionData).map((key, index) => {
+    const items = Object.entries(sectionData).map(key => {
       return (
-        <View>
+        <View key={key[0]}>
           <Animated.View
             style={{
               flex: 1,
@@ -103,11 +119,11 @@ function ActivityView({embedded}: Props): JSX.Element {
             }}>
             <AvaText.ActivityTotal>{key[0]}</AvaText.ActivityTotal>
           </Animated.View>
-          {key[1].map((item: HistoryItemType) => (
+          {key[1].map((item: TxType, index) => (
             <ActivityListItem
-              key={item.id}
-              historyItem={item}
-              onPress={() => openDetailBottomSheet(item)}
+              key={item.transactionIndex + index}
+              tx={item}
+              onPress={() => openTransactionDetails(item)}
             />
           ))}
         </View>
@@ -161,7 +177,11 @@ function ActivityView({embedded}: Props): JSX.Element {
       <ScrollView
         style={{flex: 1}}
         contentContainerStyle={
-          isEmpty && {flex: 1, justifyContent: 'center', alignItems: 'center'}
+          isEmpty
+            ? {flex: 1, justifyContent: 'center', alignItems: 'center'}
+            : {
+                marginVertical: 4,
+              }
         }
         refreshControl={
           <RefreshControl refreshing={loading} onRefresh={onRefresh} />
@@ -180,4 +200,4 @@ function ActivityView({embedded}: Props): JSX.Element {
   );
 }
 
-export default ActivityView;
+export default ActivityList;
