@@ -95,11 +95,14 @@ function TokenManagement(): JSX.Element {
           renderItem={renderItem}
           onRefresh={handleRefresh}
           ListHeaderComponent={
-            <AddCustomTokenButton
-              onPress={() =>
-                navigation.navigate(AppNavigation.Wallet.AddCustomToken)
-              }
-            />
+            <View
+              style={{marginTop: 8, marginBottom: 16, marginHorizontal: 16}}>
+              <AddCustomTokenButton
+                onPress={() =>
+                  navigation.navigate(AppNavigation.Wallet.AddCustomToken)
+                }
+              />
+            </View>
           }
           refreshing={false}
           keyExtractor={(item: TokenWithBalance) => getTokenUID(item)}
@@ -121,9 +124,6 @@ const AddCustomTokenButton = ({onPress}: {onPress: () => void}) => {
         alignItems: 'center',
         backgroundColor: theme.colorBg3 + Opacity50,
         borderRadius: 8,
-        marginTop: 8,
-        marginBottom: 16,
-        marginHorizontal: 16,
         padding: 16,
       }}>
       <AddSVG color={theme.colorPrimary1} hideCircle size={24} />
