@@ -1,115 +1,64 @@
 import React, {FC} from 'react';
 import AvaListItem from 'components/AvaListItem';
-import {History} from '@avalabs/avalanche-wallet-sdk';
-import {
-  HistoryItemType,
-  iHistoryEVMTx,
-  iHistoryImportExport,
-  iHistoryStaking,
-} from '@avalabs/avalanche-wallet-sdk/dist/History';
 import AvaText from 'components/AvaText';
 import MovementIndicator from 'components/MovementIndicator';
+import {TxType} from 'screens/activity/ActivityList';
+import {
+  isTransactionERC20,
+  isTransactionNormal,
+} from '@avalabs/wallet-react-components';
+import {truncateAddress} from 'utils/Utils';
 
 type Props = {
-  historyItem: HistoryItemType;
+  tx: TxType;
   onPress?: () => void;
 };
 
-const ActivityListItem: FC<Props> = ({historyItem, onPress}) => {
-  if (History.isHistoryBaseTx(historyItem)) {
-    const token = historyItem as any;
-    const baseRightComponent = (
-      <AvaListItem.CurrencyAmount
-        value={
-          <AvaText.ActivityTotal>
-            {token.amountDisplayValue}
-          </AvaText.ActivityTotal>
-        }
-        currency={
-          <AvaText.ActivityTotal>{token.asset.symbol}</AvaText.ActivityTotal>
-        }
-      />
-    );
+const ActivityListItem: FC<Props> = ({tx, onPress}) => {
+  if (isTransactionNormal(tx)) {
+    const isContractCall = tx?.input !== '0x';
     return (
       <AvaListItem.Base
-        title={'AVM Tx'}
-        rightComponent={baseRightComponent}
+        title={isContractCall ? 'Contract Call' : 'Avalanche'}
+        subtitle={
+          tx?.isSender
+            ? `To: ${truncateAddress(tx.to ?? '')}`
+            : `From: ${truncateAddress(tx.from) ?? ''}`
+        }
+        leftComponent={<MovementIndicator metric={tx.isSender ? -1 : 0} />}
+        rightComponent={
+          isContractCall || (
+            <AvaText.ActivityTotal>
+              {tx.isSender ? '-' : '+'}
+              {tx.amountDisplayValue} AVAX
+            </AvaText.ActivityTotal>
+          )
+        }
         embedInCard
         onPress={onPress}
       />
     );
-  } else if (History.isHistoryEVMTx(historyItem)) {
-    const token = historyItem as iHistoryEVMTx;
-    const sign = token.isSender ? '-' : '+';
-    const hasInput = !!token.input;
-    const evmRightComponent = hasInput ? (
-      <AvaText.Body2>Contract call</AvaText.Body2>
-    ) : (
-      <AvaListItem.CurrencyAmount
-        value={
-          <AvaText.ActivityTotal ellipsizeMode={'tail'}>
-            {sign + token.amountDisplayValue}
-          </AvaText.ActivityTotal>
-        }
-        currency={<AvaText.ActivityTotal> AVAX</AvaText.ActivityTotal>}
-      />
-    );
-
+  } else if (isTransactionERC20(tx)) {
+    const sign = tx.isSender ? '-' : '+';
     return (
       <AvaListItem.Base
-        title={'Avalanche'}
-        leftComponent={<MovementIndicator metric={token.isSender ? -1 : 0} />}
-        rightComponent={evmRightComponent}
+        title={tx.tokenName}
+        leftComponent={<MovementIndicator metric={tx.isSender ? -1 : 0} />}
+        subtitle={
+          tx?.isSender
+            ? `To: ${truncateAddress(tx.to ?? '')}`
+            : `From: ${truncateAddress(tx.from) ?? ''}`
+        }
+        rightComponent={
+          <AvaText.ActivityTotal ellipsizeMode={'tail'}>
+            {sign + tx.amountDisplayValue} {tx.tokenSymbol}
+          </AvaText.ActivityTotal>
+        }
         embedInCard
-        onPress={onPress}
-      />
-    );
-  } else if (History.isHistoryStakingTx(historyItem)) {
-    const token = historyItem as iHistoryStaking;
-    const stakingRightComponent = (
-      <AvaListItem.CurrencyAmount
-        value={
-          <AvaText.ActivityTotal ellipsizeMode={'tail'}>
-            {token.amountDisplayValue}
-          </AvaText.ActivityTotal>
-        }
-        currency={<AvaText.ActivityTotal> AVAX</AvaText.ActivityTotal>}
-      />
-    );
-    return (
-      <AvaListItem.Base
-        title={'Staking'}
-        rightComponent={stakingRightComponent}
-        embedInCard
-        onPress={onPress}
-      />
-    );
-  } else if (History.isHistoryImportExportTx(historyItem)) {
-    const token = historyItem as iHistoryImportExport;
-    const sign = token.type === 'export' ? '-' : '+';
-    const ImpExpRightComponent = (
-      <AvaListItem.CurrencyAmount
-        value={
-          <AvaText.ActivityTotal ellipsizeMode={'tail'}>
-            {sign + token.amountDisplayValue}
-          </AvaText.ActivityTotal>
-        }
-        currency={<AvaText.ActivityTotal> AVAX</AvaText.ActivityTotal>}
-      />
-    );
-
-    return (
-      <AvaListItem.Base
-        title={'Avalanche'}
-        leftComponent={
-          <MovementIndicator metric={token.type === 'export' ? -1 : 0} />
-        }
-        rightComponent={ImpExpRightComponent}
         onPress={onPress}
       />
     );
   }
-
   return null;
 };
 
