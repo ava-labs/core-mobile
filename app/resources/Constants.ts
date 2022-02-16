@@ -34,6 +34,8 @@ export enum COLORS_DAY {
   colorChain4 = '#4D00DE',
   listItemBg = '#F8F8FB',
 
+  tokenLogoColor = '#ffffff',
+  tokenLogoBg = '#e84142',
   logoColor = '#1A1A1C',
   logoBgColor = '#FFFFFF',
   accentColor = '#F64942',
@@ -96,6 +98,8 @@ export enum COLORS_NIGHT {
   colorChain4 = '#DAC3FB',
   listItemBg = '#1A1A1C',
 
+  tokenLogoColor = '#ffffff',
+  tokenLogoBg = '#e84142',
   logoColor = '#1A1A1C',
   logoBgColor = '#FFFFFF',
   accentColor = '#F1595A',
