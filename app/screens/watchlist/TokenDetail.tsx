@@ -93,6 +93,7 @@ const TokenDetail: FC<any> = () => {
       }
     } else {
       watchlistFavorites.push(tokenId);
+      saveWatchlistFavorites(watchlistFavorites);
     }
     setIsFavorite(!isFavorite);
   }
