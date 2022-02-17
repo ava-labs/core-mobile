@@ -21,23 +21,23 @@ import JailbrokenWarning from 'screens/onboarding/JailbrokenWarning';
 
 export default function ContextApp() {
   const [isWarmingUp, setIsWarmingUp] = useState(true);
-  const [showSplash, setShowSplash] = useState(true);
+  const [showSplash, setShowSplash] = useState(false);
   const [showJailBroken, setShowJailBroken] = useState(false);
 
   useEffect(() => {
     if (JailMonkey.isJailBroken()) {
       console.log('jailbroken');
-      setShowSplash(false);
       setShowJailBroken(true);
-    } else {
-      setTimeout(() => {
-        setShowSplash(false);
-        setIsWarmingUp(false);
-      }, 4500);
     }
     AsyncStorage.getItem(SECURE_ACCESS_SET).then(result => {
       if (result && Platform.OS === 'android') {
-        BiometricsSDK.warmup().then(() => {});
+        setShowSplash(true);
+        BiometricsSDK.warmup().then(() => {
+          setTimeout(() => {
+            setShowSplash(false);
+            setIsWarmingUp(false);
+          }, 1000);
+        });
       } else {
         setIsWarmingUp(false);
       }
