@@ -143,11 +143,18 @@ async function loadWatchlistFavoritesFromStorage() {
   return favorites ? (JSON.parse(favorites) as string[]) : [];
 }
 
+const omitBalance = (key: string, value: any) => {
+  if (key === 'balance$') {
+    return undefined;
+  } else {
+    return value;
+  }
+};
 async function saveAccountsToStorage(
   walletId: string,
   accToStore: Map<AccountId, Account>,
 ) {
-  const stringifiedAccounts = JSON.stringify([...accToStore]);
+  const stringifiedAccounts = JSON.stringify([...accToStore], omitBalance);
   if (stringifiedAccounts === undefined) {
     console.error('Could not stringify accounts: ', accToStore);
   } else {

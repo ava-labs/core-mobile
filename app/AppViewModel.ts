@@ -124,7 +124,7 @@ export function useApp(): AppHook {
   }
 
   async function immediateLogout() {
-    await AsyncStorage.removeItem(SECURE_ACCESS_SET);
+    await AsyncStorage.clear();
     await BiometricsSDK.clearWalletKey();
     setMnemonic('');
     resetNavToRoot(navigation);
