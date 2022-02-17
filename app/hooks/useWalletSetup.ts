@@ -56,6 +56,7 @@ export function useWalletSetup(): WalletSetup {
       AsyncStorage.setItem('HD_CACHE', JSON.stringify(accountsContext.hdCache));
     }
   }, [accountsContext.hdCache]);
+
   /**
    * Inits wallet with Mnemonic phrase,
    * adds account and set it as active.
@@ -81,12 +82,15 @@ export function useWalletSetup(): WalletSetup {
           title: `Account ${newAccount.index + 1}`,
           active: true,
           address: newAccount.wallet.getAddressC(),
+          balance$: newAccount.balance$,
         });
         saveAccounts(accounts);
       } else {
         for (let i = 0; i < existingAccounts.size; i++) {
           const newAccount = accountsContext.addAccount();
-          if (existingAccounts.get(newAccount.index)!.active) {
+          const existingAccount = existingAccounts.get(newAccount.index);
+          existingAccount!.balance$ = newAccount.balance$;
+          if (existingAccount!.active) {
             accountsContext.activateAccount(newAccount.index);
           }
         }

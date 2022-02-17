@@ -1,4 +1,4 @@
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from 'components/AvaText';
@@ -9,7 +9,6 @@ import InputText from 'components/InputText';
 import {Row} from 'components/Row';
 import CopySVG from 'components/svg/CopySVG';
 import {copyToClipboard} from 'utils/DeviceTools';
-import {usePortfolio} from 'screens/portfolio/usePortfolio';
 
 type Props = {
   account: Account;
@@ -27,11 +26,14 @@ function AccountItem({
   blurred,
 }: Props): JSX.Element {
   const context = useApplicationContext();
-  // const accContext = useAccountsContext(); // For some reason this returns empty object
   const {accounts, saveAccounts} = useApplicationContext().repo.accountsRepo;
-  const {balanceTotalInUSD} = usePortfolio();
   const [editAccount, setEditAccount] = useState(false);
   const [editedAccountTitle, setEditedAccountTitle] = useState(account.title);
+  const [accBalance, setAccBalance] = useState('');
+
+  useEffect(() => {
+    account.balance$.subscribe(value => setAccBalance(value));
+  }, [account]);
 
   const bgColor = useMemo(() => {
     if (selected) {
@@ -151,7 +153,7 @@ function AccountItem({
             }}>
             <AddressC />
             <Space y={6} />
-            <AvaText.Body3 currency>{balanceTotalInUSD}</AvaText.Body3>
+            <AvaText.Body3 currency>{accBalance}</AvaText.Body3>
           </View>
         </Row>
       </AvaButton.Base>
