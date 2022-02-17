@@ -2,12 +2,11 @@ import React from 'react';
 import {StyleSheet, View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from 'components/AvaText';
-import LottieView from 'lottie-react-native';
 import SplashLogoSVG from 'components/svg/SplashLogoSVG';
 
 const pkg = require('../../../package.json');
 
-export default function Splash({finished}: {finished?: boolean}): JSX.Element {
+export default function Splash(): JSX.Element {
   const context = useApplicationContext();
 
   return (
@@ -16,12 +15,11 @@ export default function Splash({finished}: {finished?: boolean}): JSX.Element {
         styles.verticalLayout,
         {backgroundColor: context.theme.colorBg2},
       ]}>
-      <LottieView
-        source={require('../../assets/lotties/corex_login_dark.json')}
-        progress={finished ? 1 : 0}
-        autoPlay={!finished}
-        loop={false}
-      />
+      <View style={styles.logoContainer}>
+        <View style={styles.logo}>
+          <SplashLogoSVG />
+        </View>
+      </View>
 
       <AvaText.Body2 textStyle={{position: 'absolute', top: 0, left: 16}}>
         v{pkg.version}
