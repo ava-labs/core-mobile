@@ -25,8 +25,9 @@ export function useSearchableTokenList(hideZeroBalance = true): {
 } {
   const [loading, setLoading] = useState(false);
   const [tokenList, setTokenList] = useState<TokenWithBalance[]>([]);
-  const [filteredTokenList, setFilteredTokenList] =
-    useState<TokenWithBalance[]>([]);
+  const [filteredTokenList, setFilteredTokenList] = useState<
+    TokenWithBalance[]
+  >([]);
   const [searchText, setSearchText] = useState('');
   const [showZeroBalanceList, setZeroBalanceList] = useState<ShowZeroArrayType>(
     {
