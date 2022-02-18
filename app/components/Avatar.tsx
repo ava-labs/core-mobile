@@ -38,8 +38,8 @@ const AvatarBase: FC<Props> = ({
       return (
         <AvaLogoSVG
           size={size}
-          logoColor={theme.white}
-          backgroundColor={theme.logoColor}
+          logoColor={theme.tokenLogoColor}
+          backgroundColor={theme.tokenLogoBg}
         />
       );
     }
@@ -88,6 +88,7 @@ interface TokenAvatarProps {
   token: Erc20Token | TokenWithBalance;
   size?: number;
 }
+
 const TokenAvatar: FC<TokenAvatarProps> = ({token, size}) => {
   const isErc20Token = !isTokenWithBalance(token);
   const name = token.name;
