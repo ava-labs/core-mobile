@@ -8,7 +8,6 @@ import React, {
 import {TokenWithBalance} from '@avalabs/wallet-react-components';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
 import {Image, StyleSheet} from 'react-native';
-import {useApplicationContext} from 'contexts/ApplicationContext';
 
 export enum TokenType {
   AVAX,
@@ -31,17 +30,10 @@ export const SelectedTokenContextProvider = ({children}: {children: any}) => {
   const [selectedToken, setSelectedToken] = useState<
     TokenWithBalance | undefined
   >(undefined);
-  const {theme} = useApplicationContext();
 
   const tokenLogo = () => {
     if (selectedToken?.isAvax) {
-      return (
-        <AvaLogoSVG
-          size={32}
-          logoColor={theme.white}
-          backgroundColor={theme.logoColor}
-        />
-      );
+      return <AvaLogoSVG size={32} />;
     } else {
       return (
         <Image
