@@ -3,7 +3,11 @@ import {StyleSheet, View} from 'react-native';
 import AvaButton from 'components/AvaButton';
 import {Space} from 'components/Space';
 import AvaText from 'components/AvaText';
-import CoreXLogoAnimated from 'components/CoreXLogoAnimated';
+import {Row} from 'components/Row';
+import AddSVG from 'components/svg/AddSVG';
+import Separator from 'components/Separator';
+import WalletSVG from 'components/svg/WalletSVG';
+import AnimatedCoreXLogo from 'components/AnimatedCoreXLogo';
 
 type Props = {
   onCreateWallet: () => void;
@@ -25,27 +29,32 @@ export default function Welcome(props: Props | Readonly<Props>): JSX.Element {
 
   return (
     <View style={styles.verticalLayout}>
-      <View style={styles.logoContainer}>
-        <CoreXLogoAnimated size={'large'} />
-        <Space y={8} />
-        <AvaText.LargeTitleBold textStyle={{textAlign: 'center'}}>
-          Wallet
-        </AvaText.LargeTitleBold>
-        <Space y={8} />
-        <AvaText.Body1 textStyle={{textAlign: 'center'}}>
-          Your simple and secure crypto wallet
-        </AvaText.Body1>
-      </View>
-
-      <AvaButton.TextLarge onPress={onAlreadyHaveWallet}>
-        I already have a wallet
-      </AvaButton.TextLarge>
-
-      <Space y={16} />
-
-      <AvaButton.PrimaryLarge onPress={onCreateWallet}>
-        Create new wallet
-      </AvaButton.PrimaryLarge>
+      <AnimatedCoreXLogo finalState />
+      <Row>
+        <View style={{flex: 1, alignItems: 'center'}}>
+          <AvaButton.Base
+            style={{alignItems: 'center'}}
+            onPress={onCreateWallet}>
+            <AddSVG hideCircle size={64} />
+            <Space y={38} />
+            <AvaText.ActivityTotal textStyle={{textAlign: 'center'}}>
+              {'Create a new\n wallet'}
+            </AvaText.ActivityTotal>
+          </AvaButton.Base>
+        </View>
+        <Separator vertical />
+        <View style={{flex: 1, alignItems: 'center'}}>
+          <AvaButton.Base
+            style={{alignItems: 'center'}}
+            onPress={onAlreadyHaveWallet}>
+            <WalletSVG />
+            <Space y={38} />
+            <AvaText.ActivityTotal textStyle={{textAlign: 'center'}}>
+              {'Access\n existing wallet'}
+            </AvaText.ActivityTotal>
+          </AvaButton.Base>
+        </View>
+      </Row>
 
       <AvaText.Body2 textStyle={{position: 'absolute', top: 0, left: 16}}>
         v{pkg.version}
@@ -58,7 +67,6 @@ const styles = StyleSheet.create({
   verticalLayout: {
     padding: 16,
     height: '100%',
-    justifyContent: 'flex-end',
   },
   buttonWithText: {
     alignItems: 'center',
@@ -66,9 +74,5 @@ const styles = StyleSheet.create({
   logoContainer: {
     flexGrow: 1,
     justifyContent: 'center',
-  },
-  logo: {
-    display: 'flex',
-    alignItems: 'center',
   },
 });

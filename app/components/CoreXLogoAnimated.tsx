@@ -21,9 +21,10 @@ const styles = StyleSheet.create({
 interface Props {
   size?: number | 'small' | 'large';
   white?: boolean;
+  finalState?: boolean;
 }
 
-const CoreXLogoAnimated: FC<Props> = ({size = 50, white}) => {
+const CoreXLogoAnimated: FC<Props> = ({size = 50, white, finalState}) => {
   let customSize = size;
   if (isString(size)) {
     customSize = sizes[size];
@@ -33,7 +34,8 @@ const CoreXLogoAnimated: FC<Props> = ({size = 50, white}) => {
     <View style={styles.container}>
       <View>
         <LottieView
-          autoPlay
+          autoPlay={!finalState}
+          progress={finalState ? 1 : 0}
           loop={false}
           source={white ? CoreXAnimationLight : CoreXAnimationDark}
           style={{

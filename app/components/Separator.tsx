@@ -11,7 +11,7 @@ const Separator = ({
   style?: StyleProp<ViewStyle>;
   inset?: number;
   color?: string;
-  vertical?: string;
+  vertical?: boolean;
 }) => {
   const {theme} = useApplicationContext();
   return (
