@@ -44,6 +44,7 @@ import TokenDetail from 'screens/watchlist/TokenDetail';
 import {TxType} from 'screens/activity/ActivityList';
 import ActivityDetail from 'screens/activity/ActivityDetail';
 import EditGasLimitBottomSheet from 'screens/shared/EditGasLimitBottomSheet';
+import OwnedTokenDetail from 'screens/portfolio/OwnedTokenDetail';
 
 type Props = {
   onExit: () => void;
@@ -64,6 +65,7 @@ export type RootStackParamList = {
   [AppNavigation.Wallet.Swap]: undefined;
   [AppNavigation.Wallet.NetworkSelector]: undefined;
   [AppNavigation.Wallet.TokenDetail]: {tokenId?: string} | undefined;
+  [AppNavigation.Wallet.OwnedTokenDetail]: {tokenId?: string} | undefined;
   [AppNavigation.Wallet.ActivityDetail]: {tx?: TxType};
   [AppNavigation.Modal.AccountBottomSheet]: undefined;
   [AppNavigation.Modal.AccountDropDown]: undefined;
@@ -255,6 +257,13 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
           }}
           name={AppNavigation.Wallet.TokenDetail}
           component={TokenDetail}
+        />
+        <RootStack.Screen
+          options={{
+            ...MainHeaderOptions('Token Details'),
+          }}
+          name={AppNavigation.Wallet.OwnedTokenDetail}
+          component={OwnedTokenDetail}
         />
         <RootStack.Screen
           options={{

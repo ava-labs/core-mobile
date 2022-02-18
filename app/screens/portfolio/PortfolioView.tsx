@@ -86,7 +86,9 @@ const PortfolioView: FC<PortfolioProps> = memo(
 
     function selectToken(token: TokenWithBalance) {
       setSelectedToken?.(token);
-      rootNavigation.navigate(AppNavigation.Wallet.SendTokens, {token});
+      rootNavigation.navigate(AppNavigation.Wallet.OwnedTokenDetail, {
+        tokenId: getTokenUID(token),
+      });
     }
 
     function manageTokens() {
