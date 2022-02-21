@@ -8,6 +8,7 @@ import React, {
 import {
   TokenWithBalance,
   useWalletContext,
+  useWalletStateContext,
 } from '@avalabs/wallet-react-components';
 import {getSwapRate} from 'swap/getSwapRate';
 import BN from 'bn.js';
@@ -43,6 +44,7 @@ export interface TrxDetails {
   avaxWalletFee: string;
   gasLimit: number;
   setGasLimit: Dispatch<number>;
+  gasPrice: number;
   setGasPriceNanoAvax: Dispatch<number>;
 }
 
@@ -64,6 +66,7 @@ export const SwapContext = createContext<SwapContextState>({} as any);
 
 export const SwapContextProvider = ({children}: {children: any}) => {
   const {wallet} = useWalletContext();
+  const {avaxPrice} = useWalletStateContext()!;
   const [srcToken, setSrcToken] = useState<TokenWithBalance>();
   const [srcAmount, setSrcAmount] = useState<number>(0);
   const [srcUsdAmount, setSrcUsdAmount] = useState<string>('');
@@ -89,8 +92,9 @@ export const SwapContextProvider = ({children}: {children: any}) => {
     const gasLimitBig = new Big(gasLimit);
     const feeBig = gasPriceBig.mul(gasLimitBig);
     const fee = bigToLocaleString(feeBig, 4);
+    const feeUsd = bigToLocaleString(feeBig.mul(avaxPrice), 4);
     setNetworkFee(`${fee}`);
-    setNetworkFeeUsd(`${fee}`);
+    setNetworkFeeUsd(`${feeUsd}`);
   }, [gasLimit, gasPriceNanoAvax]);
 
   useEffect(() => {
@@ -237,6 +241,7 @@ export const SwapContextProvider = ({children}: {children: any}) => {
       avaxWalletFee,
       gasLimit,
       setGasLimit,
+      gasPrice: gasPriceNanoAvax,
       setGasPriceNanoAvax,
     },
     refresh,

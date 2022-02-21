@@ -1,4 +1,4 @@
-import React, {FC, useEffect} from 'react';
+import React, {FC} from 'react';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {View} from 'react-native';
 import {Space} from 'components/Space';
@@ -36,6 +36,13 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
     theme.colorBg3,
   );
 
+  const netFeeInfoMessage = popableContent(
+    `Gas limit: ${
+      trxDetails.gasLimit
+    } \nGas price: ${trxDetails.gasPrice.toFixed(2)} nAVAX`,
+    theme.colorBg3,
+  );
+
   return (
     <View style={{flex: 1, paddingHorizontal: 16}}>
       {review || (
@@ -59,7 +66,7 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
           <AvaText.Body2>Slippage tolerance ⓘ</AvaText.Body2>
         </Popable>
         {review ? (
-          <AvaText.Heading3>{trxDetails.slippageTol}</AvaText.Heading3>
+          <AvaText.Heading3>{trxDetails.slippageTol}%</AvaText.Heading3>
         ) : (
           <InputText
             onChangeText={text => trxDetails.setSlippageTol(Number(text))}
@@ -89,7 +96,23 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
           />
         )}
       </Row>
-      {review && <AvaText.Body2>Network Fee</AvaText.Body2>}
+      {review && (
+        <>
+          <Space y={16} />
+          <Row style={{justifyContent: 'space-between', alignItems: 'center'}}>
+            <Popable
+              content={netFeeInfoMessage}
+              position={'right'}
+              style={{minWidth: 200}}
+              backgroundColor={theme.colorBg3}>
+              <AvaText.Body2>Network Fee ⓘ</AvaText.Body2>
+            </Popable>
+            <AvaText.Heading3>
+              {trxDetails.networkFee + ' AVAX'}
+            </AvaText.Heading3>
+          </Row>
+        </>
+      )}
       {!review && (
         <>
           <Space y={16} />
