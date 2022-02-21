@@ -33,7 +33,7 @@ const SwapReview: FC = () => {
   const animatedColor = useMemo(() => {
     return colorAnim.interpolate({
       inputRange: [0, 1],
-      outputRange: ['#ffffff', '#014db7'],
+      outputRange: [theme.white, theme.accentColor],
     });
   }, [colorAnim]);
 
