@@ -18,6 +18,7 @@ import {SECURE_ACCESS_SET} from 'resources/Constants';
 import {Platform} from 'react-native';
 import JailMonkey from 'jail-monkey';
 import JailbrokenWarning from 'screens/onboarding/JailbrokenWarning';
+import {WalletStateContextProvider} from '@avalabs/wallet-react-components';
 
 export default function ContextApp() {
   const [isWarmingUp, setIsWarmingUp] = useState(true);
@@ -45,19 +46,23 @@ export default function ContextApp() {
   }, []);
 
   return (
-    <ApplicationContextProvider>
+    <>
       <NetworkContextProvider>
         <AccountsContextProvider>
           <WalletContextProvider>
-            {!showSplash && showJailBroken && (
-              <JailbrokenWarning onOK={() => setShowJailBroken(false)} />
-            )}
-            {showSplash && !showJailBroken && <Splash />}
-            {!isWarmingUp && !showJailBroken && <App />}
+            <WalletStateContextProvider>
+              <ApplicationContextProvider>
+                {!showSplash && showJailBroken && (
+                  <JailbrokenWarning onOK={() => setShowJailBroken(false)} />
+                )}
+                {showSplash && !showJailBroken && <Splash />}
+                {!isWarmingUp && !showJailBroken && <App />}
+              </ApplicationContextProvider>
+            </WalletStateContextProvider>
           </WalletContextProvider>
         </AccountsContextProvider>
       </NetworkContextProvider>
       <Toast ref={ref => (global.toast = ref)} />
-    </ApplicationContextProvider>
+    </>
   );
 }

@@ -5,7 +5,7 @@
  * @flow strict-local
  */
 
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {
   Alert,
   KeyboardAvoidingView,
@@ -16,14 +16,8 @@ import {
 import WalletScreenStack from 'navigation/WalletScreenStack';
 import {NavigationContainer} from '@react-navigation/native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
-import {
-  FUJI_NETWORK,
-  useNetworkContext,
-  WalletStateContextProvider,
-} from '@avalabs/wallet-react-components';
 import AppNavigation from 'navigation/AppNavigation';
-import {ExitEvents, ExitPromptAnswers, ShowExitPrompt} from 'AppViewModel';
-import {useWalletSetup} from 'hooks/useWalletSetup';
+import {ExitEvents, ExitPromptAnswers, ShowExitPrompt} from 'AppHook';
 import {OnboardScreenStack} from 'navigation/OnboardScreenStack';
 import {createStackNavigator} from '@react-navigation/stack';
 
@@ -70,9 +64,7 @@ const WalletScreenStackWithContext = () => {
   };
 
   return (
-    <WalletStateContextProvider>
-      <WalletScreenStack onExit={doExit} />
-    </WalletStateContextProvider>
+    <WalletScreenStack onExit={doExit} />
   );
 };
 
@@ -104,25 +96,7 @@ const RootScreenStack = () => {
 
 export default function App() {
   const context = useApplicationContext();
-  const networkContext = useNetworkContext();
   const [backgroundStyle] = useState(context.appBackgroundStyle);
-  const {shouldSetupWallet, mnemonic, isNewWallet} = context.appHook;
-  const {initWalletWithMnemonic, createNewWallet} = useWalletSetup();
-  const {accounts} = useApplicationContext().repo.accountsRepo;
-
-  useEffect(() => {
-    networkContext?.setNetwork(FUJI_NETWORK);
-  }, []);
-
-  useEffect(() => {
-    if (shouldSetupWallet) {
-      if (isNewWallet) {
-        createNewWallet(mnemonic);
-      } else {
-        initWalletWithMnemonic(mnemonic, accounts);
-      }
-    }
-  }, [shouldSetupWallet]);
 
   return (
     <SafeAreaView style={backgroundStyle}>
@@ -132,7 +106,7 @@ export default function App() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <NavigationContainer
           theme={context.navContainerTheme}
-          ref={context.appHook.navigation}>
+          ref={context.appNavHook.navigation}>
           <RootScreenStack />
         </NavigationContainer>
       </KeyboardAvoidingView>

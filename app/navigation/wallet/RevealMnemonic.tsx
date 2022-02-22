@@ -1,14 +1,13 @@
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
-import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaButton from 'components/AvaButton';
-import {useNavigation} from '@react-navigation/native';
+import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
 import MnemonicScreen from 'components/MnemonicScreen';
+import {SecurityStackParamList} from 'navigation/wallet/SecurityPrivacyStackScreen';
 
 export default function RevealMnemonic(): JSX.Element {
-  const context = useApplicationContext();
   const {goBack} = useNavigation();
-  const {mnemonic} = context.appHook;
+  const {mnemonic} = useRoute<RouteProp<SecurityStackParamList>>().params!;
 
   const handleSaveMyPhrase = (): void => {
     goBack();
