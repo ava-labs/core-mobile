@@ -1,6 +1,5 @@
 import AppNavigation from 'navigation/AppNavigation';
 import React from 'react';
-import {useApplicationContext} from 'contexts/ApplicationContext';
 import Welcome from 'screens/onboarding/Welcome';
 import {noop} from 'rxjs';
 import CreateWalletStack from 'navigation/onboarding/CreateWalletStack';
@@ -11,6 +10,7 @@ import {
   createStackNavigator,
   StackNavigationProp,
 } from '@react-navigation/stack';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 
 type WelcomeScreenStackParamList = {
   [AppNavigation.Onboard.Welcome]: undefined;
@@ -35,13 +35,13 @@ const WelcomeScreen = () => {
 };
 
 const LoginWithPinOrBiometryScreen = () => {
-  const {onEnterWallet} = useApplicationContext().appHook;
+  const {enterWallet} = useApplicationContext().walletSetupHook;
   const {goBack} = useNavigation();
   return (
     <PinOrBiometryLogin
       onSignInWithRecoveryPhrase={() => goBack()}
       onLoginSuccess={mnemonic => {
-        onEnterWallet(mnemonic);
+        enterWallet(mnemonic);
       }}
     />
   );

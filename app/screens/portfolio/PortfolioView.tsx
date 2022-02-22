@@ -20,8 +20,6 @@ import AvaText from 'components/AvaText';
 import AvaButton from 'components/AvaButton';
 
 type PortfolioProps = {
-  onExit: () => void;
-  onSwitchWallet: () => void;
   tokenList?: TokenWithBalance[];
   loadZeroBalanceList?: () => void;
   handleRefresh?: () => void;
@@ -33,10 +31,7 @@ export type PortfolioNavigationProp =
   StackNavigationProp<PortfolioStackParamList>;
 
 // experimenting with container pattern and stable props to try to reduce re-renders
-function PortfolioContainer({
-  onExit,
-  onSwitchWallet,
-}: PortfolioProps): JSX.Element {
+function PortfolioContainer(): JSX.Element {
   const {tokenList, loadZeroBalanceList, loadTokenList} =
     useSearchableTokenList();
   const {balanceTotalInUSD, isWalletReady, isBalanceLoading, isErc20Loading} =
@@ -58,8 +53,6 @@ function PortfolioContainer({
         <Loader />
       ) : (
         <PortfolioView
-          onExit={onExit}
-          onSwitchWallet={onSwitchWallet}
           tokenList={tokenList}
           loadZeroBalanceList={loadZeroBalanceList}
           handleRefresh={handleRefresh}

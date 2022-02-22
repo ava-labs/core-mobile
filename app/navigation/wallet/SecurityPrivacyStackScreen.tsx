@@ -4,94 +4,23 @@ import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin';
 import CreatePIN from 'screens/onboarding/CreatePIN';
 import SecurityPrivacy from 'screens/drawer/security/SecurityPrivacy';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {useNavigation} from '@react-navigation/native';
+import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
 import {MainHeaderOptions} from 'navigation/NavUtils';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {createStackNavigator} from '@react-navigation/stack';
 import BiometricsSDK from 'utils/BiometricsSDK';
 import RevealMnemonic from 'navigation/wallet/RevealMnemonic';
 
-const SecurityStack = createStackNavigator();
-
-const SecurityPrivacyScreen = () => {
-  const nav = useNavigation<NativeStackNavigationProp<any>>();
-  return (
-    <SecurityPrivacy
-      onChangePin={() => nav.navigate(AppNavigation.SecurityPrivacy.PinChange)}
-      onShowRecoveryPhrase={() =>
-        nav.navigate(AppNavigation.SecurityPrivacy.ShowRecoveryPhrase)
-      }
-      onTurnOnBiometrics={() =>
-        nav.navigate(AppNavigation.SecurityPrivacy.TurnOnBiometrics)
-      }
-    />
-  );
+export type SecurityStackParamList = {
+  [AppNavigation.SecurityPrivacy.SecurityPrivacy]: undefined;
+  [AppNavigation.SecurityPrivacy.PinChange]: undefined;
+  [AppNavigation.SecurityPrivacy.CreatePin]: {mnemonic: string};
+  [AppNavigation.SecurityPrivacy.ShowRecoveryPhrase]: undefined;
+  [AppNavigation.SecurityPrivacy.TurnOnBiometrics]: undefined;
+  [AppNavigation.SecurityPrivacy.RecoveryPhrase]: {mnemonic: string};
 };
 
-const PinOrBiometryLoginForPassChange = memo(() => {
-  const {onSavedMnemonic} = useApplicationContext().appHook;
-  const nav = useNavigation<NativeStackNavigationProp<any>>();
-
-  return (
-    <PinOrBiometryLogin
-      onLoginSuccess={mnemonic => {
-        onSavedMnemonic(mnemonic, true);
-        nav.replace(AppNavigation.SecurityPrivacy.CreatePin);
-      }}
-      onSignInWithRecoveryPhrase={() => console.log('onSignIn')}
-      isResettingPin
-    />
-  );
-});
-
-const PinOrBiometryLoginForRecoveryReveal = memo(() => {
-  const {onSavedMnemonic} = useApplicationContext().appHook;
-  const nav = useNavigation<NativeStackNavigationProp<any>>();
-
-  return (
-    <PinOrBiometryLogin
-      onLoginSuccess={mnemonic => {
-        onSavedMnemonic(mnemonic, true);
-        nav.replace(AppNavigation.SecurityPrivacy.RecoveryPhrase);
-      }}
-      onSignInWithRecoveryPhrase={() => console.log('onSignIn')}
-      hideLoginWithMnemonic
-    />
-  );
-});
-
-const PinForBiometryEnable = memo(() => {
-  const nav = useNavigation<NativeStackNavigationProp<any>>();
-
-  return (
-    <PinOrBiometryLogin
-      onLoginSuccess={mnemonic => {
-        BiometricsSDK.storeWalletWithBiometry(mnemonic).then(() =>
-          nav.navigate(AppNavigation.SecurityPrivacy.SecurityPrivacy),
-        );
-      }}
-      onSignInWithRecoveryPhrase={() => console.log('onSignIn')}
-      isResettingPin
-    />
-  );
-});
-
-const CreatePinScreen = memo(() => {
-  const {onPinCreated} = useApplicationContext().appHook;
-  const nav = useNavigation<NativeStackNavigationProp<any>>();
-  return (
-    <CreatePIN
-      onBack={() => nav.goBack()}
-      onPinSet={pin => {
-        onPinCreated(pin, true).subscribe({
-          error: () => console.log('ignored'),
-        });
-        nav.goBack();
-      }}
-      isResettingPin
-    />
-  );
-});
+const SecurityStack = createStackNavigator<SecurityStackParamList>();
 
 function SecurityPrivacyStackScreen(): JSX.Element {
   return (
@@ -136,5 +65,84 @@ function SecurityPrivacyStackScreen(): JSX.Element {
     </SecurityStack.Navigator>
   );
 }
+
+const SecurityPrivacyScreen = () => {
+  const nav =
+    useNavigation<NativeStackNavigationProp<SecurityStackParamList>>();
+  return (
+    <SecurityPrivacy
+      onChangePin={() => nav.navigate(AppNavigation.SecurityPrivacy.PinChange)}
+      onShowRecoveryPhrase={() =>
+        nav.navigate(AppNavigation.SecurityPrivacy.ShowRecoveryPhrase)
+      }
+      onTurnOnBiometrics={() =>
+        nav.navigate(AppNavigation.SecurityPrivacy.TurnOnBiometrics)
+      }
+    />
+  );
+};
+
+const PinOrBiometryLoginForPassChange = memo(() => {
+  const nav =
+    useNavigation<NativeStackNavigationProp<SecurityStackParamList>>();
+
+  return (
+    <PinOrBiometryLogin
+      onLoginSuccess={mnemonic => {
+        nav.replace(AppNavigation.SecurityPrivacy.CreatePin, {mnemonic});
+      }}
+      onSignInWithRecoveryPhrase={() => console.log('onSignIn')}
+      isResettingPin
+    />
+  );
+});
+
+const PinOrBiometryLoginForRecoveryReveal = memo(() => {
+  const nav =
+    useNavigation<NativeStackNavigationProp<SecurityStackParamList>>();
+
+  return (
+    <PinOrBiometryLogin
+      onLoginSuccess={mnemonic => {
+        nav.replace(AppNavigation.SecurityPrivacy.RecoveryPhrase, {mnemonic});
+      }}
+      onSignInWithRecoveryPhrase={() => console.log('onSignIn')}
+      hideLoginWithMnemonic
+    />
+  );
+});
+
+const PinForBiometryEnable = memo(() => {
+  const nav =
+    useNavigation<NativeStackNavigationProp<SecurityStackParamList>>();
+
+  return (
+    <PinOrBiometryLogin
+      onLoginSuccess={mnemonic => {
+        BiometricsSDK.storeWalletWithBiometry(mnemonic).then(() =>
+          nav.navigate(AppNavigation.SecurityPrivacy.SecurityPrivacy),
+        );
+      }}
+      onSignInWithRecoveryPhrase={() => console.log('onSignIn')}
+      isResettingPin
+    />
+  );
+});
+
+const CreatePinScreen = memo(() => {
+  const {onPinCreated} = useApplicationContext().walletSetupHook;
+  const {mnemonic} = useRoute<RouteProp<SecurityStackParamList>>().params!;
+  const nav =
+    useNavigation<NativeStackNavigationProp<SecurityStackParamList>>();
+  return (
+    <CreatePIN
+      onBack={() => nav.goBack()}
+      onPinSet={pin => {
+        onPinCreated(mnemonic, pin, true).then(() => nav.goBack());
+      }}
+      isResettingPin
+    />
+  );
+});
 
 export default SecurityPrivacyStackScreen;

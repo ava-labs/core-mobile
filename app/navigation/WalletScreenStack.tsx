@@ -16,7 +16,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import BiometricsSDK from 'utils/BiometricsSDK';
 import moment from 'moment';
 import DrawerScreenStack from 'navigation/wallet/DrawerScreenStack';
-import {useWalletSetup} from 'hooks/useWalletSetup';
 import TokenManagement from 'screens/tokenManagement/TokenManagement';
 import AddCustomToken from 'screens/tokenManagement/AddCustomToken';
 import CurrencySelector from 'screens/drawer/currency-selector/CurrencySelector';
@@ -84,12 +83,10 @@ const focusEvent = 'change';
 const TIMEOUT = 5000;
 
 const SignOutBottomSheetScreen = () => {
-  const {destroyWallet} = useWalletSetup();
-  const {immediateLogout} = useApplicationContext().appHook;
+  const {signOut} = useApplicationContext().appHook;
 
   const doSwitchWallet = (): void => {
-    destroyWallet();
-    immediateLogout();
+    signOut().then();
   };
 
   return <SignOutBottomSheet onConfirm={doSwitchWallet} />;
@@ -99,9 +96,7 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
   const [showSecurityModal, setShowSecurityModal] = useState(false);
   const appState = useRef(AppState.currentState);
   const context = useApplicationContext();
-  const {resetHDIndices} = useWalletSetup();
-  const {immediateLogout, resetNavToEnterMnemonic, setSelectedCurrency} =
-    context.appHook;
+  const {signOut, setSelectedCurrency} = context.appHook;
 
   /**
    * This UseEffect handles subscription to
@@ -151,9 +146,6 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
       // this condition calls when app is in foreground mode
       // here you can detect application is in active state again.
       setShowSecurityModal(true);
-      resetHDIndices().then(() => {
-        //ignored
-      });
     }
     appState.current = nextAppState;
   }, []);
@@ -161,7 +153,7 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
   useFocusEffect(
     React.useCallback(() => {
       const onBackPress = () => {
-        if (!context.appHook.navigation.current?.canGoBack()) {
+        if (!context.appNavHook.navigation.current?.canGoBack()) {
           onExit();
           return true;
         } else {
@@ -315,8 +307,8 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
       <Modal visible={showSecurityModal} animationType={'slide'} animated>
         <PinOrBiometryLogin
           onSignInWithRecoveryPhrase={() => {
-            immediateLogout().then(() => {
-              resetNavToEnterMnemonic(context.appHook.navigation);
+            signOut().then(() => {
+              context.appNavHook.resetNavToEnterMnemonic();
               setShowSecurityModal(false);
             });
           }}
