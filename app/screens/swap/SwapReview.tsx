@@ -1,5 +1,5 @@
-import React, {FC, useState} from 'react';
-import {ScrollView, StyleSheet, View} from 'react-native';
+import React, {FC, useEffect, useMemo, useState} from 'react';
+import {Animated, ScrollView, StyleSheet, View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {Space} from 'components/Space';
 import AvaText from 'components/AvaText';
@@ -14,13 +14,42 @@ import Loader from 'components/Loader';
 import AppNavigation from 'navigation/AppNavigation';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {SwapStackParamList} from 'navigation/wallet/SwapScreenStack';
+import {Row} from 'components/Row';
+import InfoSVG from 'components/svg/InfoSVG';
+import {interval, tap} from 'rxjs';
+import {Popable} from 'react-native-popable';
+
+const SECOND = 1000;
 
 const SwapReview: FC = () => {
-  const {swapTo, swapFrom, doSwap} = useSwapContext();
+  const {swapTo, swapFrom, doSwap, refresh} = useSwapContext();
   const theme = useApplicationContext().theme;
   const {goBack, navigate} =
     useNavigation<StackNavigationProp<SwapStackParamList>>();
   const [loading, setLoading] = useState(false);
+  const [secondsLeft, setSecondsLeft] = useState('0s');
+  const [colorAnim] = useState(new Animated.Value(1));
+
+  const animatedColor = useMemo(() => {
+    return colorAnim.interpolate({
+      inputRange: [0, 1],
+      outputRange: [theme.white, theme.accentColor],
+    });
+  }, [colorAnim]);
+
+  useEffect(() => {
+    Animated.timing(colorAnim, {
+      toValue: 1,
+      duration: 1000,
+      useNativeDriver: false,
+    }).start(() => {
+      Animated.timing(colorAnim, {
+        toValue: 0,
+        duration: 1000,
+        useNativeDriver: false,
+      }).start();
+    });
+  }, [swapTo.amount, swapTo.usdValue]);
 
   function onConfirm() {
     setLoading(true);
@@ -36,15 +65,50 @@ const SwapReview: FC = () => {
       .finally(() => setLoading(false));
   }
 
+  useEffect(() => {
+    const RESET_INTERVAL = 60; // seconds
+    const sub = interval(SECOND)
+      .pipe(
+        tap(value => {
+          const number = RESET_INTERVAL - (value % RESET_INTERVAL) - 1;
+          setSecondsLeft(number.toString() + 's');
+        }),
+        tap(value => {
+          if (value && value % RESET_INTERVAL === 0) {
+            console.log('reset');
+            refresh();
+          }
+        }),
+      )
+      .subscribe();
+    return () => sub.unsubscribe();
+  }, []);
+
   return loading ? (
     <Loader />
   ) : (
     <View style={styles.container}>
       <ScrollView style={styles.container}>
         <Space y={8} />
-        <AvaText.Heading1 textStyle={{marginHorizontal: 16}}>
-          Review Order
-        </AvaText.Heading1>
+        <Row style={{justifyContent: 'space-between', marginHorizontal: 16}}>
+          <AvaText.Heading1>Review Order</AvaText.Heading1>
+          <Popable
+            content={'Quotes are refreshed to reflect current market prices'}
+            position={'left'}
+            style={{minWidth: 200}}
+            backgroundColor={theme.colorBg3}>
+            <Row
+              style={{
+                backgroundColor: theme.listItemBg,
+                padding: 8,
+                borderRadius: 100,
+              }}>
+              <AvaText.ButtonSmall>{secondsLeft}</AvaText.ButtonSmall>
+              <Space x={4} />
+              <InfoSVG />
+            </Row>
+          </Popable>
+        </Row>
         <Space y={20} />
         <AvaText.Heading3 textStyle={{marginHorizontal: 16}}>
           From
@@ -54,9 +118,9 @@ const SwapReview: FC = () => {
           leftComponent={<Avatar.Token token={swapFrom.token!} />}
           title={swapFrom.token?.symbol}
           rightComponent={
-            <View>
-              <AvaText.Body1>{swapFrom.amount}</AvaText.Body1>
-              <AvaText.Body3>{swapFrom.usdValue}</AvaText.Body3>
+            <View style={{alignItems: 'flex-end'}}>
+              <AvaText.Body1>{swapFrom.amount.toFixed(5)}</AvaText.Body1>
+              <AvaText.Body3 currency>{swapFrom.usdValue}</AvaText.Body3>
             </View>
           }
         />
@@ -69,9 +133,16 @@ const SwapReview: FC = () => {
           leftComponent={<Avatar.Token token={swapTo.token!} />}
           title={swapTo.token?.symbol}
           rightComponent={
-            <View>
-              <AvaText.Body1>{swapTo.amount}</AvaText.Body1>
-              <AvaText.Body3>{swapTo.usdValue}</AvaText.Body3>
+            <View style={{alignItems: 'flex-end'}}>
+              <AvaText.Body1 animated textStyle={{color: animatedColor}}>
+                {swapTo.amount.toFixed(5)}
+              </AvaText.Body1>
+              <AvaText.Body3
+                currency
+                animated
+                textStyle={{color: animatedColor}}>
+                {swapTo.usdValue}
+              </AvaText.Body3>
             </View>
           }
         />

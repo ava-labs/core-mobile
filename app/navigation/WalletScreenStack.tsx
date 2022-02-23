@@ -32,8 +32,6 @@ import {
 import ReceiveToken2 from 'screens/receive/ReceiveToken2';
 import NetworkSelector from 'network/NetworkSelector';
 import SelectTokenBottomSheet from 'screens/swap/SelectTokenBottomSheet';
-import SwapFeesBottomSheet from 'screens/swap/components/SwapFeesBottomSheet';
-import {SwapContextProvider} from 'contexts/SwapContext';
 import SendScreenStack from 'navigation/wallet/SendScreenStack';
 import {
   currentSelectedCurrency$,
@@ -42,11 +40,11 @@ import {
 import AccountDropdown from 'screens/portfolio/account/AccountDropdown';
 import SwapScreenStack from 'navigation/wallet/SwapScreenStack';
 import AddressBookStack from 'navigation/wallet/AddressBookStack';
-import HeaderAccountSelector from 'components/HeaderAccountSelector';
 import {Contact} from 'Repo';
 import TokenDetail from 'screens/watchlist/TokenDetail';
 import {TxType} from 'screens/activity/ActivityList';
 import ActivityDetail from 'screens/activity/ActivityDetail';
+import EditGasLimitBottomSheet from 'screens/shared/EditGasLimitBottomSheet';
 
 type Props = {
   onExit: () => void;
@@ -73,7 +71,11 @@ export type RootStackParamList = {
   [AppNavigation.Modal.ReceiveOnlyBottomSheet]: undefined;
   [AppNavigation.Modal.SignOut]: undefined;
   [AppNavigation.Modal.SelectToken]: undefined;
-  [AppNavigation.Modal.SwapTransactionFee]: undefined;
+  [AppNavigation.Modal.EditGasLimit]: {
+    onSave: (newGasLimit: number) => void;
+    gasLimit: string;
+    networkFee: string;
+  };
 };
 
 const RootStack = createStackNavigator<RootStackParamList>();
@@ -203,8 +205,8 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
           component={SelectTokenBottomSheet}
         />
         <RootStack.Screen
-          name={AppNavigation.Modal.SwapTransactionFee}
-          component={SwapFeesBottomSheet}
+          name={AppNavigation.Modal.EditGasLimit}
+          component={EditGasLimitBottomSheet}
         />
       </RootStack.Group>
     );
@@ -222,114 +224,108 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
   };
 
   return (
-    <SwapContextProvider>
-      <SelectedTokenContextProvider>
-        <RootStack.Navigator
-          screenOptions={{
+    <SelectedTokenContextProvider>
+      <RootStack.Navigator
+        screenOptions={{
+          headerShown: false,
+        }}>
+        <RootStack.Screen
+          name={AppNavigation.Wallet.Drawer}
+          component={DrawerScreenStack}
+        />
+        <RootStack.Screen
+          options={{
+            ...MainHeaderOptions('Manage token list'),
+          }}
+          name={AppNavigation.Wallet.TokenManagement}
+          component={TokenManagement}
+        />
+        <RootStack.Screen
+          name={AppNavigation.Wallet.SendTokens}
+          options={{
             headerShown: false,
-          }}>
-          <RootStack.Screen
-            name={AppNavigation.Wallet.Drawer}
-            component={DrawerScreenStack}
-          />
-          <RootStack.Screen
-            options={{
-              ...MainHeaderOptions('Manage token list'),
-            }}
-            name={AppNavigation.Wallet.TokenManagement}
-            component={TokenManagement}
-          />
-          <RootStack.Screen
-            name={AppNavigation.Wallet.SendTokens}
-            options={{
-              headerShown: false,
-            }}
-            component={SendScreenStack}
-          />
-          <RootStack.Screen name={AppNavigation.Wallet.ReceiveTokens}>
-            {props => <ReceiveToken2 showBackButton {...props} />}
-          </RootStack.Screen>
-          <RootStack.Screen
-            options={{
-              ...MainHeaderOptions('Add Custom Token'),
-            }}
-            name={AppNavigation.Wallet.AddCustomToken}
-            component={AddCustomToken}
-          />
-          <RootStack.Screen
-            options={{
-              ...MainHeaderOptions(''),
-            }}
-            name={AppNavigation.Wallet.TokenDetail}
-            component={TokenDetail}
-          />
-          <RootStack.Screen
-            options={{
-              ...SubHeaderOptions('Transaction Details'),
-            }}
-            name={AppNavigation.Wallet.ActivityDetail}
-            component={ActivityDetail}
-          />
-          <RootStack.Screen
-            options={{
-              presentation: 'card',
-              headerShown: true,
-              headerBackTitleVisible: false,
-              headerTitleAlign: 'center',
-              headerTitle: () => <HeaderAccountSelector />,
-            }}
-            name={AppNavigation.Wallet.Swap}
-            component={SwapScreenStack}
-          />
-          <RootStack.Screen
-            options={{
-              headerShown: false,
-            }}
-            name={AppNavigation.Wallet.AddressBook}
-            component={AddressBookStack}
-          />
-          <RootStack.Screen
-            options={{
-              ...MainHeaderOptions('Currency'),
-            }}
-            name={AppNavigation.Wallet.CurrencySelector}
-            component={CurrencySelectorScreen}
-          />
-          <RootStack.Screen
-            options={{
-              ...MainHeaderOptions('Network'),
-            }}
-            name={AppNavigation.Wallet.NetworkSelector}
-            component={NetworkSelector}
-          />
-          <RootStack.Screen
-            name={AppNavigation.Wallet.SecurityPrivacy}
-            component={SecurityPrivacyStackScreen}
-          />
-          <RootStack.Screen
-            options={{
-              ...MainHeaderOptions('Legal'),
-            }}
-            name={AppNavigation.Wallet.Legal}
-            component={WebViewScreen}
-          />
-          {BottomSheetGroup}
-        </RootStack.Navigator>
-        <Modal visible={showSecurityModal} animationType={'slide'} animated>
-          <PinOrBiometryLogin
-            onSignInWithRecoveryPhrase={() => {
-              immediateLogout().then(() => {
-                resetNavToEnterMnemonic(context.appHook.navigation);
-                setShowSecurityModal(false);
-              });
-            }}
-            onLoginSuccess={() => {
+          }}
+          component={SendScreenStack}
+        />
+        <RootStack.Screen name={AppNavigation.Wallet.ReceiveTokens}>
+          {props => <ReceiveToken2 showBackButton {...props} />}
+        </RootStack.Screen>
+        <RootStack.Screen
+          options={{
+            ...MainHeaderOptions('Add Custom Token'),
+          }}
+          name={AppNavigation.Wallet.AddCustomToken}
+          component={AddCustomToken}
+        />
+        <RootStack.Screen
+          options={{
+            ...MainHeaderOptions(''),
+          }}
+          name={AppNavigation.Wallet.TokenDetail}
+          component={TokenDetail}
+        />
+        <RootStack.Screen
+          options={{
+            ...SubHeaderOptions('Transaction Details'),
+          }}
+          name={AppNavigation.Wallet.ActivityDetail}
+          component={ActivityDetail}
+        />
+        <RootStack.Screen
+          options={{
+            headerShown: false,
+          }}
+          name={AppNavigation.Wallet.Swap}
+          component={SwapScreenStack}
+        />
+        <RootStack.Screen
+          options={{
+            headerShown: false,
+          }}
+          name={AppNavigation.Wallet.AddressBook}
+          component={AddressBookStack}
+        />
+        <RootStack.Screen
+          options={{
+            ...MainHeaderOptions('Currency'),
+          }}
+          name={AppNavigation.Wallet.CurrencySelector}
+          component={CurrencySelectorScreen}
+        />
+        <RootStack.Screen
+          options={{
+            ...MainHeaderOptions('Network'),
+          }}
+          name={AppNavigation.Wallet.NetworkSelector}
+          component={NetworkSelector}
+        />
+        <RootStack.Screen
+          name={AppNavigation.Wallet.SecurityPrivacy}
+          component={SecurityPrivacyStackScreen}
+        />
+        <RootStack.Screen
+          options={{
+            ...MainHeaderOptions('Legal'),
+          }}
+          name={AppNavigation.Wallet.Legal}
+          component={WebViewScreen}
+        />
+        {BottomSheetGroup}
+      </RootStack.Navigator>
+      <Modal visible={showSecurityModal} animationType={'slide'} animated>
+        <PinOrBiometryLogin
+          onSignInWithRecoveryPhrase={() => {
+            immediateLogout().then(() => {
+              resetNavToEnterMnemonic(context.appHook.navigation);
               setShowSecurityModal(false);
-            }}
-          />
-        </Modal>
-      </SelectedTokenContextProvider>
-    </SwapContextProvider>
+            });
+          }}
+          onLoginSuccess={() => {
+            setShowSecurityModal(false);
+          }}
+        />
+      </Modal>
+    </SelectedTokenContextProvider>
   );
 }
 

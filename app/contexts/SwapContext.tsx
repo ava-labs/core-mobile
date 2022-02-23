@@ -8,6 +8,7 @@ import React, {
 import {
   TokenWithBalance,
   useWalletContext,
+  useWalletStateContext,
 } from '@avalabs/wallet-react-components';
 import {getSwapRate} from 'swap/getSwapRate';
 import BN from 'bn.js';
@@ -20,11 +21,11 @@ import {
   stringToBN,
 } from '@avalabs/avalanche-wallet-sdk';
 import {SwapSide} from 'paraswap';
-import {firstValueFrom, from} from 'rxjs';
+import {from} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {performSwap} from 'swap/performSwap';
 import {OptimalRate} from 'paraswap-core';
-import {GasPrice, useGasPrice} from 'utils/GasPriceHook';
+import moment from 'moment';
 
 export interface SwapEntry {
   token: TokenWithBalance | undefined;
@@ -42,9 +43,9 @@ export interface TrxDetails {
   networkFeeUsd: string;
   avaxWalletFee: string;
   gasLimit: number;
-  gasPriceNAvax: number;
-  setUsersGasLimit: Dispatch<number>;
-  setUsersGasPriceNAvax: Dispatch<number>;
+  setGasLimit: Dispatch<number>;
+  gasPrice: number;
+  setGasPriceNanoAvax: Dispatch<number>;
 }
 
 export interface SwapContextState {
@@ -53,6 +54,7 @@ export interface SwapContextState {
   minDestAmount: string;
   swapFromTo: () => void;
   trxDetails: TrxDetails;
+  refresh: () => void;
   doSwap: () => Promise<{
     swapTxHash: string;
     approveTxHash: string;
@@ -64,11 +66,7 @@ export const SwapContext = createContext<SwapContextState>({} as any);
 
 export const SwapContextProvider = ({children}: {children: any}) => {
   const {wallet} = useWalletContext();
-  const gasPrice$ = useGasPrice().gasPrice$;
-  const [gasPrice, setGasPrice] = useState<GasPrice>({
-    bn: new BN(0),
-    value: '',
-  });
+  const {avaxPrice} = useWalletStateContext()!;
   const [srcToken, setSrcToken] = useState<TokenWithBalance>();
   const [srcAmount, setSrcAmount] = useState<number>(0);
   const [srcUsdAmount, setSrcUsdAmount] = useState<string>('');
@@ -79,44 +77,25 @@ export const SwapContextProvider = ({children}: {children: any}) => {
   const [destUsdAmount, setDestUsdAmount] = useState<string>('');
   const [trxRate, setTrxRate] = useState<string>('');
   const [slipTol, setSlipTol] = useState<number>(12);
-  const [gasCost, setGasCost] = useState<number>(0);
   const [gasLimit, setGasLimit] = useState<number>(0);
-  const [gasPriceNAvax, setGasPriceNAvax] = useState<number>(0);
-  const [usersGasLimit, setUsersGasLimit] = useState<number>(0);
-  const [usersGasPriceNAvax, setUsersGasPriceNAvax] = useState<number>(0);
+  const [gasPriceNanoAvax, setGasPriceNanoAvax] = useState<number>(0);
   const [networkFee, setNetworkFee] = useState<string>('- AVAX');
   const [networkFeeUsd, setNetworkFeeUsd] = useState<string>('$- USD');
   const [avaxWalletFee, setAvaxWalletFee] = useState<string>('0 AVAX');
   const [swapSide, setSwapSide] = useState<SwapSide>(SwapSide.SELL);
   const [error, setError] = useState<string | undefined>(undefined);
   const [priceRoute, setPriceRoute] = useState<OptimalRate>();
+  const [refreshCounter, setRefreshCounter] = useState(0);
 
   useEffect(() => {
-    const subscription = gasPrice$
-      .pipe(
-        map(value => {
-          setGasPrice(value);
-        }),
-      )
-      .subscribe();
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    setGasPriceNAvax(usersGasPriceNAvax || bnToBig(gasPrice.bn, 9).toNumber());
-    setGasLimit(usersGasLimit || gasCost);
-    const gasPriceBig = usersGasPriceNAvax
-      ? new Big(usersGasPriceNAvax).div(Math.pow(10, 9))
-      : bnToBig(gasPrice.bn, 18);
-    const gasLimitBig = usersGasLimit
-      ? new Big(usersGasLimit)
-      : new Big(gasCost);
+    const gasPriceBig = new Big(gasPriceNanoAvax).div(Math.pow(10, 9));
+    const gasLimitBig = new Big(gasLimit);
     const feeBig = gasPriceBig.mul(gasLimitBig);
     const fee = bigToLocaleString(feeBig, 4);
-    setNetworkFee(`${fee} AVAX`);
-    setNetworkFeeUsd(`${fee} AVAX`);
-  }, [gasPrice, gasCost, usersGasLimit, usersGasPriceNAvax]);
+    const feeUsd = bigToLocaleString(feeBig.mul(avaxPrice), 4);
+    setNetworkFee(`${fee}`);
+    setNetworkFeeUsd(`${feeUsd}`);
+  }, [gasLimit, gasPriceNanoAvax]);
 
   useEffect(() => {
     const amount = numberToBN(
@@ -162,7 +141,7 @@ export const SwapContextProvider = ({children}: {children: any}) => {
           setDestAmount(destAmount.toNumber());
           setSrcUsdAmount(result.srcUSD);
           setDestUsdAmount(result.destUSD);
-          setGasCost(Number(result.gasCost));
+          setGasLimit(Number(result.gasCost));
           setAvaxWalletFee(`${result.partnerFee} AVAX`);
           setTrxRate(
             `1 ${srcToken?.symbol} ≈ ${destAmountBySrcAmount} ${destToken?.symbol}`,
@@ -184,7 +163,7 @@ export const SwapContextProvider = ({children}: {children: any}) => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [srcToken, destToken, srcAmount, destAmount]);
+  }, [srcToken, destToken, srcAmount, destAmount, refreshCounter]);
 
   const _setSrcAmount = (amount: number) => {
     setSwapSide(SwapSide.SELL);
@@ -215,7 +194,10 @@ export const SwapContextProvider = ({children}: {children: any}) => {
         srcAmount: priceRoute.srcAmount,
         destAmount: minAmountBig,
         gasLimit: priceRoute.gasCost,
-        gasPrice: await firstValueFrom(gasPrice$),
+        gasPrice: {
+          bn: numberToBN(gasPriceNanoAvax, 9),
+          value: gasPriceNanoAvax.toString(),
+        },
       },
       wallet,
     );
@@ -227,6 +209,10 @@ export const SwapContextProvider = ({children}: {children: any}) => {
     }
 
     return result;
+  };
+
+  const refresh = () => {
+    setRefreshCounter(moment().second());
   };
 
   const state: SwapContextState = {
@@ -254,10 +240,11 @@ export const SwapContextProvider = ({children}: {children: any}) => {
       networkFeeUsd,
       avaxWalletFee,
       gasLimit,
-      gasPriceNAvax,
-      setUsersGasLimit,
-      setUsersGasPriceNAvax,
+      setGasLimit,
+      gasPrice: gasPriceNanoAvax,
+      setGasPriceNanoAvax,
     },
+    refresh,
     doSwap,
     error,
   };

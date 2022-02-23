@@ -120,7 +120,7 @@ export default function InputText(props: Props | Readonly<Props>) {
             end: 16,
           },
         ]}>
-        <AvaText.Heading3>%</AvaText.Heading3>
+        <AvaText.Heading3 textStyle={{color: 'black'}}>%</AvaText.Heading3>
       </View>
     );
   };
@@ -292,7 +292,7 @@ export default function InputText(props: Props | Readonly<Props>) {
         {mode === 'confirmEntry' && (
           <ConfirmBtn onPress={() => props.onConfirm?.(text)} />
         )}
-        {mode === 'percentage' && <Percent />}
+        {/*{mode === 'percentage' && <Percent />}*/}
         {mode === 'currency' && <Currency currency={props.currency} />}
       </View>
 
