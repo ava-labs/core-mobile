@@ -9,17 +9,22 @@ import {CustomTokens} from 'screens/tokenManagement/hooks/useAddCustomToken';
  */
 const WALLET_ID = 'WALLET_ID';
 const ADDR_BOOK = 'ADDR_BOOK_1';
-const ADDR_BOOK_RECENTS = 'ADDR_BOOK_RECENTS';
+const ADDR_BOOK_RECENTS = 'ADDR_BOOK_RECENTS_1';
 const WATCHLIST_FAVORITES = 'WATCHLIST_FAVORITES';
 const CUSTOM_TOKENS = 'CUSTOM_TOKENS';
 
-type AccountId = number;
-type UID = string;
+export type AccountId = number;
+export type UID = string;
 
 export type Contact = {
   address: string;
   title: string;
   id: string;
+};
+
+export type RecentContact = {
+  id: AccountId | UID;
+  type: 'account' | 'address';
 };
 
 export type Repo = {
@@ -35,8 +40,8 @@ export type Repo = {
   addressBookRepo: {
     addressBook: Map<UID, Contact>;
     saveAddressBook: (addressBook: Map<UID, Contact>) => void;
-    recentContacts: UID[];
-    addToRecentContacts: (contactId: UID) => void;
+    recentContacts: RecentContact[];
+    addToRecentContacts: (contact: RecentContact) => void;
   };
   customTokenRepo: {
     customTokens: CustomTokens;
@@ -47,7 +52,7 @@ export type Repo = {
 export function useRepo(): Repo {
   const [accounts, setAccounts] = useState<Map<AccountId, Account>>(new Map());
   const [addressBook, setAddressBook] = useState<Map<UID, Contact>>(new Map());
-  const [recentContacts, setRecentContacts] = useState<UID[]>([]);
+  const [recentContacts, setRecentContacts] = useState<RecentContact[]>([]);
   const [watchlistFavorites, setWatchlistFavorites] = useState<string[]>([]);
   const [customTokens, setCustomTokens] = useState<CustomTokens>({});
 
@@ -83,10 +88,10 @@ export function useRepo(): Repo {
     return saveCustomTokensToStorage(tokens);
   };
 
-  const addToRecentContacts = (contactId: UID) => {
+  const addToRecentContacts = (contact: RecentContact) => {
     const newRecents = [
-      contactId,
-      ...recentContacts.filter(value => value !== contactId),
+      contact,
+      ...recentContacts.filter(value => value.id !== contact.id),
     ].slice(0, 9); //save max 10 recents
     setRecentContacts(newRecents);
     saveRecentContactsToStorage(newRecents).catch(reason =>
@@ -135,7 +140,9 @@ async function loadCustomTokensFromStorage() {
 
 async function loadRecentContactsFromStorage() {
   const rawRecents = await AsyncStorage.getItem(ADDR_BOOK_RECENTS);
-  return rawRecents ? (JSON.parse(rawRecents) as UID[]) : ([] as UID[]);
+  return rawRecents
+    ? (JSON.parse(rawRecents) as RecentContact[])
+    : ([] as RecentContact[]);
 }
 
 async function loadWatchlistFavoritesFromStorage() {
@@ -180,7 +187,7 @@ async function saveCustomTokensToStorage(tokens: CustomTokens) {
   }
 }
 
-async function saveRecentContactsToStorage(recent: UID[]) {
+async function saveRecentContactsToStorage(recent: RecentContact[]) {
   const stringifiedRecentContacts = JSON.stringify([...recent]);
   if (stringifiedRecentContacts === undefined) {
     console.error(recent);
