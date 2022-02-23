@@ -4,40 +4,96 @@ import {TextInput, View} from 'react-native';
 import AvaButton from 'components/AvaButton';
 import SettingsCogSVG from 'components/svg/SettingsCogSVG';
 import {Space} from 'components/Space';
-import React, {FC, useEffect, useRef, useState} from 'react';
+import React, {FC, useEffect, useMemo, useRef, useState} from 'react';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import InputText from 'components/InputText';
 import {Opacity50} from 'resources/Constants';
+import {GasPrice} from 'utils/GasPriceHook';
+import {StackNavigationProp} from '@react-navigation/stack';
+import AppNavigation from 'navigation/AppNavigation';
+import {mustNumber} from 'utils/JsTools';
+import {useNavigation} from '@react-navigation/native';
+import {RootStackParamList} from 'navigation/WalletScreenStack';
+import {bnToLocaleString, numberToBN} from '@avalabs/avalanche-wallet-sdk';
+
+enum FeePreset {
+  Normal = 'Normal',
+  Fast = 'Fast',
+  Instant = 'Instant',
+  Custom = 'Custom',
+}
 
 const NetworkFeeSelector = ({
   networkFeeAvax,
   networkFeeUsd,
-  onSelectedPreset,
-  onGasPriceEntered,
-  onSettings,
+  gasPrice,
+  initGasLimit,
+  onWeightedGas,
+  onCustomGasLimit,
+  gasLimitEditorRoute,
+  weights,
 }: {
   networkFeeAvax: string;
   networkFeeUsd: string;
-  onSelectedPreset: (preset: FeePreset) => void;
-  onGasPriceEntered: (gasPrice: string) => void;
-  onSettings: () => void;
+  gasPrice: GasPrice;
+  initGasLimit: number;
+  onWeightedGas: (price: GasPrice) => void;
+  onCustomGasLimit: (gasLimit: number) => void;
+  gasLimitEditorRoute: string;
+  weights?: Weights;
 }) => {
-  const [selectedPreset, setSelectedPreset] = useState(FeePreset.Normal);
-  useEffect(() => {
-    onSelectedPreset(selectedPreset);
-  }, [selectedPreset]);
-
   const [customGasPrice, setCustomGasPrice] = useState('0');
-  useEffect(() => {
-    onGasPriceEntered(customGasPrice);
+  const presetWeights = useMemo(() => {
+    if (weights) {
+      defaultPresetWeights[FeePreset.Normal] = weights.normal;
+      defaultPresetWeights[FeePreset.Fast] = weights.fast;
+      defaultPresetWeights[FeePreset.Instant] = weights.instant;
+      defaultPresetWeights[FeePreset.Custom] = weights.custom;
+    }
+    if (customGasPrice) {
+      defaultPresetWeights[FeePreset.Custom] = mustNumber(
+        () => Number.parseFloat(customGasPrice),
+        0,
+      );
+    }
+    return {...defaultPresetWeights};
   }, [customGasPrice]);
+
+  const [selectedPreset, setSelectedPreset] = useState(FeePreset.Normal);
+
+  useEffect(() => {
+    const weightedGas = weightedGasPrice(
+      gasPrice,
+      selectedPreset,
+      presetWeights[selectedPreset],
+    );
+    onWeightedGas(weightedGas);
+  }, [selectedPreset, gasPrice, presetWeights]);
+
+  useEffect(() => {
+    //lazy initial setup of customGasPrice
+    if (customGasPrice === '0' && gasPrice.value) {
+      setCustomGasPrice(gasPrice.value);
+    }
+  }, [gasPrice]);
+
+  const {navigate} = useNavigation<StackNavigationProp<RootStackParamList>>();
 
   return (
     <>
       <Row>
         <AvaText.Body2>Network Fee</AvaText.Body2>
         <View style={{position: 'absolute', right: 0, top: -8}}>
-          <AvaButton.Icon onPress={onSettings}>
+          <AvaButton.Icon
+            onPress={() => {
+              navigate(gasLimitEditorRoute, {
+                gasLimit: initGasLimit.toString(),
+                networkFee: networkFeeAvax,
+                onSave: customGasLimit => {
+                  onCustomGasLimit(customGasLimit);
+                },
+              });
+            }}>
             <SettingsCogSVG />
           </AvaButton.Icon>
         </View>
@@ -47,7 +103,7 @@ const NetworkFeeSelector = ({
         <AvaText.Heading3>{networkFeeAvax} AVAX</AvaText.Heading3>
         <Space x={4} />
         <AvaText.Body3 textStyle={{paddingBottom: 2}}>
-          ${networkFeeUsd} USD
+          ${networkFeeUsd}
         </AvaText.Body3>
       </Row>
       <Space y={8} />
@@ -82,6 +138,33 @@ const NetworkFeeSelector = ({
       </Row>
     </>
   );
+};
+
+export type Weights = {
+  normal: number;
+  fast: number;
+  instant: number;
+  custom: number;
+};
+
+const weightedGasPrice = (
+  gasPrice: GasPrice,
+  selectedGasPreset: FeePreset,
+  presetValue: number,
+) => {
+  if (selectedGasPreset === FeePreset.Custom) {
+    const bn = numberToBN(presetValue, 9);
+    return {
+      bn: bn,
+      value: bnToLocaleString(bn, 9),
+    } as GasPrice;
+  } else {
+    const bn1 = gasPrice.bn.muln(presetValue);
+    return {
+      bn: bn1,
+      value: bnToLocaleString(bn1, 9),
+    } as GasPrice;
+  }
 };
 
 const FeeSelector: FC<{
@@ -171,11 +254,11 @@ const FeeSelector: FC<{
   );
 };
 
-export enum FeePreset {
-  Normal = 'Normal',
-  Fast = 'Fast',
-  Instant = 'Instant',
-  Custom = 'Custom',
-}
+const defaultPresetWeights = {
+  [FeePreset.Normal]: 1,
+  [FeePreset.Fast]: 1.05,
+  [FeePreset.Instant]: 1.15,
+  [FeePreset.Custom]: 25,
+};
 
 export default NetworkFeeSelector;

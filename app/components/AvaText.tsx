@@ -1,5 +1,12 @@
 import React, {FC} from 'react';
-import {StyleProp, StyleSheet, Text, TextProps, TextStyle} from 'react-native';
+import {
+  Animated,
+  StyleProp,
+  StyleSheet,
+  Text,
+  TextProps,
+  TextStyle,
+} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 
 type AvaTextProps = {
@@ -7,19 +14,33 @@ type AvaTextProps = {
   color?: string;
   ellipsizeMode?: 'head' | 'middle' | 'tail' | 'clip' | undefined;
   currency?: boolean;
+  animated?: boolean;
 } & TextProps;
 
-const AvaxTextBase: FC<AvaTextProps> = ({currency, children, ...rest}) => {
+const AvaxTextBase: FC<AvaTextProps> = ({
+  animated,
+  currency,
+  children,
+  ...rest
+}) => {
   const {selectedCurrency, currencyFormatter} = useApplicationContext().appHook;
 
   if (typeof children === 'string' && currency) {
-    return (
+    return animated ? (
+      <Animated.Text {...rest}>{`${currencyFormatter(
+        Number(children),
+      )} ${selectedCurrency}`}</Animated.Text>
+    ) : (
       <Text {...rest}>{`${currencyFormatter(
         Number(children),
       )} ${selectedCurrency}`}</Text>
     );
   }
-  return <Text {...rest}>{children}</Text>;
+  return animated ? (
+    <Animated.Text {...rest}>{children}</Animated.Text>
+  ) : (
+    <Text {...rest}>{children}</Text>
+  );
 };
 
 const LargeTitleBold: FC<AvaTextProps> = ({textStyle, children, ...rest}) => {

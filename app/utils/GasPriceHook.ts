@@ -1,5 +1,4 @@
 import {
-  BehaviorSubject,
   filter,
   interval,
   map,
@@ -18,16 +17,17 @@ export interface GasPrice {
 const SECONDS_30 = 1000 * 10;
 
 export function useGasPrice(): {
-  gasPrice$: BehaviorSubject<GasPrice>;
+  gasPrice: GasPrice;
 } {
-  const [gasPrice$] = useState(
-    new BehaviorSubject<GasPrice>({bn: new BN(0), value: ''} as GasPrice),
-  );
+  const [gasPrice, setGasPrice] = useState({
+    bn: new BN(0),
+    value: '',
+  } as GasPrice);
 
   useEffect(() => {
     getGasPrice()
       .then(parseGasPrice)
-      .then(res => gasPrice$.next(res));
+      .then(res => setGasPrice(res));
 
     const subscription = interval(SECONDS_30)
       .pipe(
@@ -38,7 +38,7 @@ export function useGasPrice(): {
         ),
         map(([_, newPrice]) => parseGasPrice(newPrice)),
         tap((res: any) => {
-          gasPrice$.next(res);
+          setGasPrice(res);
         }),
       )
       .subscribe();
@@ -46,15 +46,15 @@ export function useGasPrice(): {
     return () => {
       subscription?.unsubscribe();
     };
-  }, [gasPrice$]);
+  }, []);
 
   return {
-    gasPrice$,
+    gasPrice,
   };
 }
 
 function getGasPrice(): Promise<BN> {
-  return GasHelper.getAdjustedGasPrice();
+  return GasHelper.getGasPrice();
 }
 
 function parseGasPrice(bn: BN) {
