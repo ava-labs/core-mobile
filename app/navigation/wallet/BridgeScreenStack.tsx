@@ -8,58 +8,46 @@ import FailScreen from 'screens/swap/FailScreen';
 import HeaderAccountSelector from 'components/HeaderAccountSelector';
 import {SwapContextProvider} from 'contexts/SwapContext';
 import EditGasLimitBottomSheet from 'screens/shared/EditGasLimitBottomSheet';
+import {BridgeProvider} from 'screens/bridge/BridgeProvider';
+import Bridge from 'screens/bridge/Bridge';
+import BridgeActivityDetail from 'screens/bridge/BridgeActivityDetail';
+import {SubHeaderOptions} from 'navigation/NavUtils';
 
-export type SwapStackParamList = {
-  [AppNavigation.Swap.Swap]: undefined;
-  [AppNavigation.Swap.Review]: undefined;
-  [AppNavigation.Swap.Success]: undefined;
-  [AppNavigation.Swap.Fail]: {errorMsg: string};
-  [AppNavigation.Swap.SwapTransactionFee]: undefined;
+export type BridgeStackParamList = {
+  [AppNavigation.Bridge.Bridge]: undefined;
+  [AppNavigation.Bridge.ActivityDetail]: {
+    blockchain: string;
+    resultHash: string;
+  };
 };
 
-const SwapStack = createStackNavigator<SwapStackParamList>();
+const BridgeStack = createStackNavigator<BridgeStackParamList>();
 
-function SwapScreenStack() {
+function BridgeScreenStack() {
   return (
-    <SwapContextProvider>
-      <SwapStack.Navigator
+    <BridgeProvider>
+      <BridgeStack.Navigator
         screenOptions={{
           presentation: 'card',
           headerShown: true,
           headerBackTitleVisible: false,
           headerTitleAlign: 'center',
-          headerTitle: () => <HeaderAccountSelector />,
         }}>
-        <SwapStack.Screen name={AppNavigation.Swap.Swap} component={SwapView} />
-        <SwapStack.Screen
+        <BridgeStack.Screen
+          options={{headerShown: false}}
+          name={AppNavigation.Bridge.Bridge}
+          component={Bridge}
+        />
+        <BridgeStack.Screen
           options={{
-            headerTitle: '',
+            ...SubHeaderOptions('Transaction Details'),
           }}
-          name={AppNavigation.Swap.Review}
-          component={SwapReview}
+          name={AppNavigation.Bridge.ActivityDetail}
+          component={BridgeActivityDetail}
         />
-        <SwapStack.Screen
-          name={AppNavigation.Swap.Success}
-          component={DoneScreen}
-        />
-        <SwapStack.Screen
-          name={AppNavigation.Swap.Fail}
-          component={FailScreen}
-        />
-        <SwapStack.Screen
-          options={{
-            presentation: 'transparentModal',
-            transitionSpec: {
-              open: {animation: 'timing', config: {duration: 0}},
-              close: {animation: 'timing', config: {duration: 300}},
-            },
-          }}
-          name={AppNavigation.Swap.SwapTransactionFee}
-          component={EditGasLimitBottomSheet}
-        />
-      </SwapStack.Navigator>
-    </SwapContextProvider>
+      </BridgeStack.Navigator>
+    </BridgeProvider>
   );
 }
 
-export default React.memo(SwapScreenStack);
+export default React.memo(BridgeScreenStack);
