@@ -1,43 +1,48 @@
 import React, {FC, useEffect, useMemo, useState} from 'react';
-import {ListRenderItemInfo, ScrollView, StyleSheet, View} from 'react-native';
+import {
+  ListRenderItemInfo,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {Space} from 'components/Space';
 import AvaText from 'components/AvaText';
-import {
-  FUJI_NETWORK,
-  useNetworkContext,
-} from '@avalabs/wallet-react-components';
 import AvaButton from 'components/AvaButton';
 import SwapNarrowSVG from 'components/svg/SwapNarrowSVG';
-import {useNavigation} from '@react-navigation/native';
-import {StackNavigationProp} from '@react-navigation/stack';
-import {SwapStackParamList} from 'navigation/wallet/SwapScreenStack';
-import AppNavigation from 'navigation/AppNavigation';
 import AvaListItem from 'components/AvaListItem';
 import DropDown from 'components/Dropdown';
 import {Row} from 'components/Row';
 import Separator from 'components/Separator';
-import TokenSelectAndAmount from 'components/TokenSelectAndAmount';
 import Avatar from 'components/Avatar';
 import CheckmarkSVG from 'components/svg/CheckmarkSVG';
 import {
-  AssetType,
   BIG_ZERO,
   Blockchain,
   formatTokenAmount,
-  usdFormatter,
   useAssets,
-  useBridgeConfig,
   useBridgeSDK,
-  useTokenInfoContext,
+  useMaxTransferAmount,
+  usePrice,
+  useSwitchFromUnavailableAsset,
   useTransactionFee,
-  useUSDPrice,
   WrapStatus,
 } from '@avalabs/bridge-sdk';
-import {Big, bigToBN, BN, bnToBig} from '@avalabs/avalanche-wallet-sdk';
-import {useAssetBalances} from 'screens/bridge/useAssetBalances';
-import {useAssetBalance} from 'screens/bridge/useAssetBalance';
-import {getAmountBN} from 'components/BNInput';
+import {Big, BN} from '@avalabs/avalanche-wallet-sdk';
+import {useLoadTokenBalance} from 'screens/bridge/hooks/useLoadTokenBalance';
+import AppNavigation from 'navigation/AppNavigation';
+import {
+  useNetworkContext,
+  useWalletStateContext,
+} from '@avalabs/wallet-react-components';
+import {useNavigation} from '@react-navigation/native';
+import {StackNavigationProp} from '@react-navigation/stack';
+import {RootStackParamList} from 'navigation/WalletScreenStack';
+import CarrotSVG from 'components/svg/CarrotSVG';
+import InputText from 'components/InputText';
+import {getAvalancheProvider} from 'screens/bridge/utils/getAvalancheProvider';
+import {getEthereumProvider} from 'screens/bridge/utils/getEthereumProvider';
 
 function splitBN(val: string) {
   return val.includes('.') ? val.split('.') : [val, null];
@@ -48,10 +53,11 @@ const formatBalance = (balance: Big | undefined) => {
 };
 
 const Bridge: FC = () => {
+  useSwitchFromUnavailableAsset(true);
   const theme = useApplicationContext().theme;
-  const networkContext = useNetworkContext();
-  const navigation = useNavigation<StackNavigationProp<SwapStackParamList>>();
-  const {error} = useBridgeConfig();
+  const network = useNetworkContext();
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  // const {error} = useBridgeConfig();
   const {
     currentAsset,
     setCurrentAsset,
@@ -59,9 +65,10 @@ const Bridge: FC = () => {
     setCurrentBlockchain,
     setTransactionDetails,
   } = useBridgeSDK();
-  const {assetsWithBalances, loading} = useAssetBalances();
-  const assetPrice = useUSDPrice(currentAsset);
-  const [amount, setAmount] = useState<Big>(BIG_ZERO);
+
+  // const {assetsWithBalances, loading} = useAssetBalances();
+  const assetPrice = usePrice(currentAsset);
+  const [amount, setAmount] = useState<Big>(new Big(1));
   const [amountTooLowError, setAmountTooLowError] = useState<string>('');
   const [bridgeError, setBridgeError] = useState<string>('');
   const [pending, setPending] = useState<boolean>(false);
@@ -70,21 +77,44 @@ const Bridge: FC = () => {
   const [txHash, setTxHash] = useState<string>();
   const [searchQuery, setSearchQuery] = useState<string>('');
   const assets = useAssets(currentBlockchain);
-  const tokenInfoData = useTokenInfoContext();
-  const asset = assets[currentAsset || ''];
+  // const tokenInfoData = useTokenInfoContext();
+  const assetInfo = assets[currentAsset || ''];
   const [maxValue, setMaxValue] = useState<BN>(new BN(0));
-  const sourceBalance = useAssetBalance(currentAsset, currentBlockchain);
   const transferCost = useTransactionFee(currentBlockchain);
   const minimumTransferAmount = transferCost ? transferCost.mul(3) : BIG_ZERO;
   const tooLowAmount =
     !!transferCost && amount.gt(0) && amount.lt(minimumTransferAmount);
   const txFee = useTransactionFee(currentBlockchain);
-  const [amountStr, setAmountStr] = useState('');
+  const {addresses} = useWalletStateContext();
 
-  const destinationBlockchain =
+  const targetBlockchain =
     currentBlockchain === Blockchain.AVALANCHE
       ? Blockchain.ETHEREUM
       : Blockchain.AVALANCHE;
+
+  const sourceBalance = useLoadTokenBalance(currentBlockchain, assetInfo);
+  const targetBalance = useLoadTokenBalance(targetBlockchain, assetInfo);
+
+  const maxTransferAmount = useMaxTransferAmount(
+    sourceBalance.balance,
+    addresses?.addrC,
+    currentBlockchain === Blockchain.AVALANCHE
+      ? getAvalancheProvider(network)
+      : getEthereumProvider(network),
+  );
+
+  const gasAssetSymbol =
+    currentBlockchain === Blockchain.AVALANCHE ? 'AVAX' : 'ETH';
+
+  console.log(
+    'sourceBalance: ' + sourceBalance?.balance?.toString() ?? 'undefined',
+  );
+  console.log('targetBalance: ' + targetBalance);
+  console.log('currentAsset: ' + currentAsset);
+  console.log('assetInfo: ' + assetInfo);
+  console.log('assetPrice: ' + assetPrice);
+  console.log('transferCost: ' + transferCost);
+  console.log('assets: ' + assets);
 
   /**
    * Used to display currently selected and dropdown items.
@@ -145,22 +175,24 @@ const Bridge: FC = () => {
      * Split the input and make sure the right side never exceeds
      * the denomination length
      */
-    const [, endValue] = splitBN(value);
-    if (!endValue || endValue.length <= asset.denomination) {
-      const valueToBn = getAmountBN(value, asset.denomination);
-      // if (!valueToBn.eq(getAmountBN(amountStr, asset.denomination))) {
-      //   onChange?.({
-      //     // used to removing leading & trailing zeros
-      //     amount: value ? new Big(value).toString() : '0',
-      //     bn: valueToBn,
-      //   });
-      // }
-      setAmountStr(value);
-      setAmount(bnToBig(valueToBn, asset.denomination));
-    }
+    // const [, endValue] = splitBN(value);
+    // if (!endValue || endValue.length <= asset.denomination) {
+    //   const valueToBn = getAmountBN(value, asset.denomination);
+    //   // if (!valueToBn.eq(getAmountBN(amountStr, asset.denomination))) {
+    //   //   onChange?.({
+    //   //     // used to removing leading & trailing zeros
+    //   //     amount: value ? new Big(value).toString() : '0',
+    //   //     bn: valueToBn,
+    //   //   });
+    //   // }
+    //   setAmountStr(value);
+    //   setAmount(bnToBig(valueToBn, asset.denomination));
+    // }
+    setAmount(new Big(value || 0));
   };
 
   const handleSelect = (symbol: string) => {
+    console.log('Selected Asset: ' + symbol);
     setCurrentAsset(symbol);
   };
 
@@ -207,30 +239,39 @@ const Bridge: FC = () => {
       setAmountTooLowError('');
     }
   }, [tooLowAmount, minimumTransferAmount]);
-
-  useEffect(() => {
-    setMaxValue(new BN(0));
-
-    if (sourceBalance?.balance && transferCost) {
-      if (BIG_ZERO.eq(sourceBalance.balance)) {
-        return;
-      }
-
-      const balanceMinusFees = sourceBalance.balance?.minus(transferCost);
-
-      setMaxValue(
-        bigToBN(balanceMinusFees || BIG_ZERO, sourceBalance.asset.denomination),
-      );
-    }
-  }, [transferCost, sourceBalance]);
+  //
+  // useEffect(() => {
+  //   setMaxValue(new BN(0));
+  //
+  //   if (sourceBalance?.balance && transferCost) {
+  //     if (BIG_ZERO.eq(sourceBalance.balance)) {
+  //       return;
+  //     }
+  //
+  //     const balanceMinusFees = sourceBalance.balance?.minus(transferCost);
+  //
+  //     setMaxValue(
+  //       bigToBN(balanceMinusFees || BIG_ZERO, sourceBalance.asset.denomination),
+  //     );
+  //   }
+  // }, [transferCost, sourceBalance]);
 
   const transferDisabled =
     bridgeError.length > 0 ||
     amountTooLowError.length > 0 ||
-    loading ||
     pending ||
     tooLowAmount ||
     BIG_ZERO.eq(amount);
+
+  const calculateEstimatedTotal = () => {
+    if (!transferCost) {
+      return;
+    }
+
+    const amountMinusTransfer = amount.minus(transferCost);
+
+    return `${assetPrice.mul(amountMinusTransfer).toNumber()}`;
+  };
 
   return (
     <View style={styles.container}>
@@ -266,22 +307,39 @@ const Bridge: FC = () => {
               }}>
               Balance {formatBalance(sourceBalance?.balance)}
             </AvaText.Body3>
-            <TokenSelectAndAmount
-              initAmount={'0.00'}
-              onTokenSelect={token => handleSelect(token.symbol)}
-              onAmountSet={handleAmountChanged}
-              maxEnabled
-              getMaxAmount={() => '741.23'}
-              style={{paddingVertical: 0, paddingStart: 0, paddingEnd: 0}}
-              inputWidth={146}
-            />
+            <View
+              style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+              <Pressable
+                onPress={() => {
+                  navigation.navigate(AppNavigation.Modal.BridgeSelectToken, {
+                    onTokenSelected: handleSelect,
+                  });
+                }}>
+                <AvaText.Body1>
+                  {currentAsset} <CarrotSVG direction={'down'} />{' '}
+                </AvaText.Body1>
+              </Pressable>
+              <InputText
+                width={160}
+                mode={'amount'}
+                keyboardType="numeric"
+                onMax={() => {
+                  if (maxTransferAmount) {
+                    setAmount(maxTransferAmount);
+                  }
+                }}
+                onChangeText={handleAmountChanged}
+                text={amount.toString()}
+              />
+            </View>
             <AvaText.Body3
+              currency
               color={theme.colorText2}
               textStyle={{
                 alignSelf: 'flex-end',
                 paddingEnd: 16,
               }}>
-              $350.11 USD
+              {assetPrice.mul(amount).toNumber()}
             </AvaText.Body3>
           </View>
         </View>
@@ -313,7 +371,7 @@ const Bridge: FC = () => {
               <DropDown
                 style={{marginRight: 19}}
                 filterItems={blockChainItems}
-                currentItem={dropdownItemFormat(destinationBlockchain, false)}
+                currentItem={dropdownItemFormat(targetBlockchain, false)}
                 onItemSelected={setCurrentBlockchain}
                 customRenderItem={renderDropdownOptions}
                 minWidth={180}
@@ -335,33 +393,37 @@ const Bridge: FC = () => {
                 textStyle={{marginTop: 8}}>
                 Estimated
               </AvaText.Body3>
+              <AvaText.Body3
+                color={theme.colorText2}
+                textStyle={{marginTop: 8}}>
+                Estimated transfer fee
+              </AvaText.Body3>
             </View>
             <View style={{alignItems: 'flex-end'}}>
               {/* receive amount */}
               <AvaText.Body1>
                 {txFee && amount && !BIG_ZERO.eq(amount)
-                  ? `${amount
-                      .minus(txFee)
-                      .toNumber()
-                      .toFixed(9)} ${currentAsset}`
+                  ? `${amount.minus(txFee).toNumber().toFixed(9)}`
                   : '-'}
-                <AvaText.Body1 color={theme.colorText2}>ETH</AvaText.Body1>
+                <AvaText.Body1 color={theme.colorText2}>
+                  {gasAssetSymbol}
+                </AvaText.Body1>
               </AvaText.Body1>
               {/* estimate amount */}
               <AvaText.Body3
+                currency
                 textStyle={{marginTop: 8}}
                 color={theme.colorText2}>
-                {transferCost && amount && !BIG_ZERO.eq(amount) ? (
-                  <>
-                    ~
-                    {usdFormatter.format(
-                      assetPrice.mul(amount).minus(transferCost).toNumber(),
-                    )}{' '}
-                    USD
-                  </>
-                ) : (
-                  '-'
-                )}
+                {transferCost && amount && !BIG_ZERO.eq(amount)
+                  ? calculateEstimatedTotal()
+                  : '-'}
+              </AvaText.Body3>
+              <AvaText.Body3
+                currency
+                textStyle={{marginTop: 8}}
+                color={theme.colorText2}>
+                {transferCost ? formatTokenAmount(transferCost, 6) : '-'}{' '}
+                {currentAsset}
               </AvaText.Body3>
             </View>
           </View>
@@ -377,7 +439,7 @@ const Bridge: FC = () => {
           marginHorizontal: 16,
           paddingVertical: 12,
           bottom: 40,
-          opacity: transferDisabled && 0.5,
+          opacity: transferDisabled ? 0.5 : 1,
         }}
         onPress={handleTransfer}
         disabled={transferDisabled}>
