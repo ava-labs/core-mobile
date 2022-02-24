@@ -96,6 +96,11 @@ enum AddressBookScreens {
   Details = 'AddressBookScreens.Details',
 }
 
+enum BridgeScreens {
+  Bridge = 'BridgeScreens.Swap',
+  ActivityDetail = 'BridgeScreens.ActivityDetail',
+}
+
 const AppNavigation = {
   Root: Root,
   Onboard: OnboardScreens,
@@ -108,6 +113,8 @@ const AppNavigation = {
   Swap: SwapScreens,
   Send: SendScreens,
   AddressBook: AddressBookScreens,
+  Bridge: BridgeScreens,
+
 };
 
 export default AppNavigation;

@@ -26,6 +26,7 @@ import {RootStackParamList} from 'navigation/WalletScreenStack';
 import WatchlistTab from 'screens/watchlist/WatchlistTabView';
 import Bridge from 'screens/bridge/Bridge';
 import {BridgeProvider} from 'screens/bridge/BridgeProvider';
+import BridgeScreenStack from 'navigation/wallet/BridgeScreenStack';
 
 const Tab = createBottomTabNavigator();
 const TAB_ICON_SIZE = 28;
@@ -108,13 +109,6 @@ const TabNavigator = () => {
     </>
   );
 
-
-  const WrappedBridge = () => (
-    <BridgeProvider>
-      <Bridge />
-    </BridgeProvider>
-  );
-
   /**
    * Due to the use of a custom FAB as a tab icon, spacing needed to be manually manipulated
    * which required the "normal" items to be manually rendered on `options.tabBarIcon` instead of automatically handled
@@ -181,7 +175,7 @@ const TabNavigator = () => {
       />
       <Tab.Screen
         name={AppNavigation.Tabs.Bridge}
-        component={WrappedBridge}
+        component={BridgeScreenStack}
         options={{
           ...MainHeaderOptions('Bridge'),
           tabBarIcon: ({focused}) =>
