@@ -1,22 +1,18 @@
-import {ActiveNetwork, FUJI_NETWORK} from '@avalabs/wallet-react-components';
-import {
-  InfuraProvider,
-  JsonRpcProvider,
-  StaticJsonRpcProvider,
-} from '@ethersproject/providers';
-
+import {ActiveNetwork, MAINNET_NETWORK} from '@avalabs/wallet-react-components';
+import {InfuraProvider, JsonRpcProvider} from '@ethersproject/providers';
+import {Config} from 'react-native-config';
 const providers: Record<string, JsonRpcProvider> = {};
 
-export function getAvalancheProvider(network?: ActiveNetwork | undefined) {
-  const chainId = network?.chainId || FUJI_NETWORK.chainId;
+export function getEthereumProvider(network?: ActiveNetwork): JsonRpcProvider {
+  const isMainnet = network?.chainId === MAINNET_NETWORK.chainId;
+  const networkName = isMainnet ? 'homestead' : 'rinkeby';
 
-  if (network && !providers[chainId]) {
-    const avalancheProvider = new StaticJsonRpcProvider(
-      network.config.rpcUrl.c,
+  if (!providers[networkName]) {
+    providers[networkName] = new InfuraProvider(
+      networkName,
+      Config.INFURA_API_KEY,
     );
-    avalancheProvider.pollingInterval = 1000;
-    providers[chainId] = avalancheProvider;
   }
 
-  return providers[chainId];
+  return providers[networkName];
 }
