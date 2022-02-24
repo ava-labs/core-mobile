@@ -40,19 +40,19 @@
     web3-eth-contract "1.6.0"
     xss "^1.0.10"
 
-"@avalabs/bridge-sdk@0.2.0-alpha.4":
-  version "0.2.0-alpha.4"
-  resolved "https://registry.yarnpkg.com/@avalabs/bridge-sdk/-/bridge-sdk-0.2.0-alpha.4.tgz#9b0ace437968db5099d76780b899883c6c794e31"
-  integrity sha512-qNe28yXNG0Sa0HCNxZj+UfGH/EkV32voqDVG925xL2F77mpNNTn/l5Tj8W5fsFjb8qa4GtIWtkZdLGZlwe0y1w==
+"@avalabs/bridge-sdk@1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@avalabs/bridge-sdk/-/bridge-sdk-1.1.0.tgz#72fd1b2c4cdae7e2ab589f40564b01e71e796ecc"
+  integrity sha512-U6PW0DFHKxeHU7Co94LuulqHG0xNP6p6YlpqDheIL+KDiG0xjwSUoTwbqk2Rcx0Hiyktsy8Na0psZW4LoJ7FSA==
   dependencies:
-    "@avalabs/utils-sdk" "0.2.0-alpha.4"
+    "@avalabs/utils-sdk" "1.1.0"
     big.js "6.1.1"
     ethers "5.2.0"
 
-"@avalabs/utils-sdk@0.2.0-alpha.4":
-  version "0.2.0-alpha.4"
-  resolved "https://registry.yarnpkg.com/@avalabs/utils-sdk/-/utils-sdk-0.2.0-alpha.4.tgz#0794801b00b0e69def36f8ca4a775da320ed9428"
-  integrity sha512-ruvDfLBUBN4PSxkqUUQL6HMcN6lX4tS9LvvO/lTj1YZNPIfUSio9NAQV+ZtCNuO4lXVmwaW4yXwLHlTD+NwYmQ==
+"@avalabs/utils-sdk@1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@avalabs/utils-sdk/-/utils-sdk-1.1.0.tgz#bde3b05d72c45c6f46a86ce2259b582258026d71"
+  integrity sha512-eAwzLVFrZndCZZUR2XLWJOe+3onQ1ByfmB3uWPJk7XodmfkEBU+6wQoQFr6Y0nvOBamGSK0QZLafYImrrVWWfw==
 
 "@avalabs/wallet-react-components@1.24.6":
   version "1.24.6"
