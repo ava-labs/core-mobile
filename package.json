@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@avalabs/avalanche-wallet-sdk": "0.14.5",
-    "@avalabs/bridge-sdk": "0.2.0-alpha.4",
+    "@avalabs/bridge-sdk": "1.1.0",
     "@avalabs/wallet-react-components": "1.24.6",
     "@connectedcars/react-native-slide-charts": "^1.0.5",
     "@eliav2/react-native-collapsible-view": "^1.4.0",
