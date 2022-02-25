@@ -30,7 +30,7 @@ const AvatarBase: FC<Props> = ({
 }) => {
   const {theme, isDarkMode} = useApplicationContext();
   const hasValidLogoUri =
-    logoUri && (logoUri.startsWith('http') || logoUri.startsWith('https'));
+    !!logoUri && (logoUri.startsWith('http') || logoUri.startsWith('https'));
 
   const tokenLogo = useCallback(() => {
     // if AVAX, return our own logo
@@ -79,7 +79,7 @@ const AvatarBase: FC<Props> = ({
         />
       );
     }
-  }, [logoUri]);
+  }, [hasValidLogoUri, isDarkMode, logoUri, name, showBorder, size, symbol]);
 
   return tokenLogo();
 };
