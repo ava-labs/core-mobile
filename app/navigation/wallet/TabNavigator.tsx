@@ -8,7 +8,6 @@ import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import PortfolioStackScreen from 'navigation/wallet/PortfolioScreenStack';
 import React, {ReactElement} from 'react';
-import {noop} from 'rxjs';
 import ActivityList from 'screens/activity/ActivityList';
 import {View} from 'react-native';
 import AddSVG from 'components/svg/AddSVG';
@@ -29,12 +28,6 @@ import WatchlistTab from 'screens/watchlist/WatchlistTabView';
 
 const Tab = createBottomTabNavigator();
 const TAB_ICON_SIZE = 28;
-
-const PortfolioStackScreenWithProps = () => {
-  return (
-    <PortfolioStackScreen onExit={() => noop()} onSwitchWallet={() => noop()} />
-  );
-};
 
 const TabNavigator = () => {
   const theme = useApplicationContext().theme;
@@ -133,7 +126,7 @@ const TabNavigator = () => {
       })}>
       <Tab.Screen
         name={AppNavigation.Tabs.Portfolio}
-        component={PortfolioStackScreenWithProps}
+        component={PortfolioStackScreen}
         options={{
           tabBarIcon: ({focused}) =>
             normalTabButtons(

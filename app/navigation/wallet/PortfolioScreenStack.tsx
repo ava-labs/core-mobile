@@ -3,11 +3,6 @@ import AppNavigation from 'navigation/AppNavigation';
 import PortfolioView from 'screens/portfolio/PortfolioView';
 import {createStackNavigator} from '@react-navigation/stack';
 
-type Props = {
-  onExit: () => void;
-  onSwitchWallet: () => void;
-};
-
 export type PortfolioStackParamList = {
   [AppNavigation.Wallet.Drawer]: undefined;
   [AppNavigation.Wallet.TokenManagement]: undefined;
@@ -19,11 +14,7 @@ export type PortfolioStackParamList = {
 
 const PortfolioStack = createStackNavigator<PortfolioStackParamList>();
 
-function PortfolioScreenStack({onExit, onSwitchWallet}: Props) {
-  const PortfolioViewScreen = () => (
-    <PortfolioView onExit={onExit} onSwitchWallet={onSwitchWallet} />
-  );
-
+function PortfolioScreenStack() {
   return (
     <PortfolioStack.Navigator
       screenOptions={{
@@ -31,7 +22,7 @@ function PortfolioScreenStack({onExit, onSwitchWallet}: Props) {
       }}>
       <PortfolioStack.Screen
         name={AppNavigation.Wallet.Drawer}
-        component={PortfolioViewScreen}
+        component={PortfolioView}
       />
     </PortfolioStack.Navigator>
   );

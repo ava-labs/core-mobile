@@ -1,68 +1,48 @@
 import {
-  AccountsHdCache,
-  customErc20Tokens$,
-  FUJI_NETWORK,
-  MAINNET_NETWORK,
-  setHdCache,
-  setWalletHdCache,
   useAccountsContext,
-  useNetworkContext,
   useWalletContext,
 } from '@avalabs/wallet-react-components';
-import {useEffect} from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import {iHDWalletIndex, MnemonicWallet} from '@avalabs/avalanche-wallet-sdk';
-import {useApplicationContext} from 'contexts/ApplicationContext';
 import {Account} from 'dto/Account';
+import {encrypt, getEncryptionKey} from 'screens/login/utils/EncryptionHelper';
+import BiometricsSDK from 'utils/BiometricsSDK';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {Repo} from 'Repo';
+import {AppNavHook} from 'useAppNav';
 
-interface WalletSetup {
-  initWalletWithMnemonic: (
+export interface WalletSetupHook {
+  onPinCreated: (
     mnemonic: string,
-    existingAccounts: Map<number, Account>,
-  ) => void;
-  createNewWallet: (mnemonic: string) => void;
+    pin: string,
+    isResetting: boolean,
+  ) => Promise<'useBiometry' | 'enterWallet'>;
+  enterWallet: (mnemonic: string) => void;
   destroyWallet: () => void;
-  resetHDIndices: () => Promise<iHDWalletIndex>;
 }
 
-export function useWalletSetup(): WalletSetup {
+/**
+ * This hook handles onboarding process.
+ * setMnemonic - use for temporary storing mnemonic between onbaording
+ * screens.
+ * onPinCreated - use when user sets PIN to encrypt mnemonic end see if
+ * user has biometry turned on
+ * enterWallet - use when ready to enter the wallet
+ */
+export function useWalletSetup(
+  repo: Repo,
+  appNavHook: AppNavHook,
+): WalletSetupHook {
   const walletContext = useWalletContext();
   const accountsContext = useAccountsContext();
-  const networkState = useNetworkContext();
-  const {saveAccounts} = useApplicationContext().repo.accountsRepo;
-  const {customTokens} = useApplicationContext().repo.customTokenRepo;
 
-  useEffect(() => {
-    if (networkState?.network?.chainId) {
-      customErc20Tokens$.next(customTokens[networkState.network.chainId]);
-    }
-  }, [networkState, customTokens]);
-
-  // set cache if there it one
-  useEffect(() => {
-    AsyncStorage.getItem('HD_CACHE').then(value => {
-      if (value) {
-        const cache: AccountsHdCache = JSON.parse(value);
-        setHdCache(cache);
-      }
-    });
-  }, []);
-
-  // save cache
-  useEffect(() => {
-    // persist HDCache JSON
-    // check if empty
-    if (accountsContext?.hdCache) {
-      AsyncStorage.setItem('HD_CACHE', JSON.stringify(accountsContext.hdCache));
-    }
-  }, [accountsContext.hdCache]);
+  const enterWallet = (mnemonic: string) => {
+    initWalletWithMnemonic(mnemonic, repo.accountsRepo.accounts);
+    appNavHook.navigateToRootWallet();
+  };
 
   /**
    * Inits wallet with Mnemonic phrase,
    * adds account and set it as active.
    *
-   * This does not yet handles the scenario of
-   * multiple accounts.
    * @param mnemonic
    * @param existingAccounts
    */
@@ -70,21 +50,20 @@ export function useWalletSetup(): WalletSetup {
     mnemonic: string,
     existingAccounts: Map<number, Account>,
   ) {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    // noinspection JSVoidFunctionReturnValueUsed
+    console.log('initWalletWithMnemonic', existingAccounts);
     walletContext.initWalletMnemonic(mnemonic).then(() => {
       if (existingAccounts.size === 0) {
-        const accounts = new Map();
+        const defaultAccounts = new Map();
         const newAccount = accountsContext.addAccount();
-        accounts.set(newAccount.index, <Account>{
+        accountsContext.activateAccount(newAccount.index);
+        defaultAccounts.set(newAccount.index, <Account>{
           index: newAccount.index,
           title: `Account ${newAccount.index + 1}`,
           active: true,
           address: newAccount.wallet.getAddressC(),
           balance$: newAccount.balance$,
         });
-        saveAccounts(accounts);
+        repo.accountsRepo.saveAccounts(defaultAccounts);
       } else {
         for (let i = 0; i < existingAccounts.size; i++) {
           const newAccount = accountsContext.addAccount();
@@ -99,47 +78,44 @@ export function useWalletSetup(): WalletSetup {
   }
 
   /**
-   * Create new wallet, set cache immediately so we don't have to wait for derivations.
-   * Adds account and set it as active.
-   *
-   * This does not yet handles the scenario of
-   * multiple accounts.
-   * @param mnemonic
-   */
-  function createNewWallet(mnemonic: string) {
-    // setMnemonic should be an async call, because
-    // accountsContext.addAccount() can only be called after the
-    // mnemonic has been set.
-    walletContext.initWalletMnemonic(mnemonic);
-
-    // for this reason we add a small delay between calls.
-    setTimeout(() => {
-      const account = accountsContext.addAccount();
-      setWalletHdCache(account.wallet, MAINNET_NETWORK.config, 0, 0);
-      setWalletHdCache(account.wallet, FUJI_NETWORK.config, 0, 0);
-      accountsContext.activateAccount(0);
-
-      // For multiple accounts we'll need to keep
-      // the meta data on and how many accounts we'll need
-      // to be added and which one was active.
-    }, 1000);
-  }
-
-  /**
    * Destroys the wallet instance
    */
   async function destroyWallet() {
     walletContext?.clearWallet();
-  }
-
-  async function resetHDIndices() {
-    return (walletContext?.wallet as MnemonicWallet)?.resetHdIndices();
+    await AsyncStorage.clear();
+    console.log('cleared async storage');
+    await BiometricsSDK.clearWalletKey();
+    appNavHook.resetNavToRoot();
   }
 
   return {
-    initWalletWithMnemonic,
-    createNewWallet,
+    onPinCreated,
+    enterWallet,
     destroyWallet,
-    resetHDIndices,
   };
+}
+
+async function onPinCreated(
+  mnemonic: string,
+  pin: string,
+  isResetting = false,
+): Promise<'useBiometry' | 'enterWallet'> {
+  const key = await getEncryptionKey(pin);
+  const encryptedData = await encrypt(mnemonic, key);
+  const pinSaved = await BiometricsSDK.storeWalletWithPin(
+    encryptedData,
+    isResetting,
+  );
+  if (pinSaved === false) {
+    throw Error('Pin not saved');
+  }
+  const canUseBiometry = isResetting
+    ? false
+    : await BiometricsSDK.canUseBiometry();
+
+  if (canUseBiometry) {
+    return Promise.resolve('useBiometry');
+  } else {
+    return Promise.resolve('enterWallet');
+  }
 }
