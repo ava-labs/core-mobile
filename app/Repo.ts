@@ -47,6 +47,7 @@ export type Repo = {
     customTokens: CustomTokens;
     saveCustomTokens: (customTokens: CustomTokens) => Promise<void>;
   };
+  destroy: () => void;
 };
 
 export function useRepo(): Repo {
@@ -106,6 +107,15 @@ export function useRepo(): Repo {
     );
   };
 
+  const destroy = () => {
+    console.log('destroy repo');
+    setAccounts(new Map());
+    setAddressBook(new Map());
+    setRecentContacts([]);
+    setWatchlistFavorites([]);
+    setCustomTokens({});
+  };
+
   return {
     accountsRepo: {accounts, saveAccounts, setActiveAccount},
     addressBookRepo: {
@@ -116,6 +126,7 @@ export function useRepo(): Repo {
     },
     watchlistFavoritesRepo: {watchlistFavorites, saveWatchlistFavorites},
     customTokenRepo: {customTokens, saveCustomTokens},
+    destroy,
   };
 }
 
