@@ -169,7 +169,7 @@ const FloatingActionButton: FC<Props> = ({
       pointerEvents="box-none"
       style={[styles.overlay, {height: 400, top: -100}]}>
       <Animated.View
-        pointerEvents={'none'}
+        pointerEvents={isActive ? 'auto' : 'none'}
         style={{
           opacity: anim,
         }}>

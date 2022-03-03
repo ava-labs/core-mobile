@@ -42,6 +42,7 @@ enum WalletScreens {
   TokenDetail = 'WalletScreens.TokenDetail',
   OwnedTokenDetail = 'WalletScreens.OwnedTokenDetail',
   ActivityDetail = 'WalletScreens.ActivityDetail',
+  Bridge = 'WalletScreens.Bridge',
 }
 
 enum SwapScreens {
@@ -98,7 +99,7 @@ enum AddressBookScreens {
 
 enum BridgeScreens {
   Bridge = 'BridgeScreens.Swap',
-  ActivityDetail = 'BridgeScreens.ActivityDetail',
+  BridgeTransactionStatus = 'BridgeScreens.BridgeTransactionStatus',
 }
 
 const AppNavigation = {
