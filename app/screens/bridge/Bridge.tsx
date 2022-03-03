@@ -28,6 +28,7 @@ import {
   useMaxTransferAmount,
   usePrice,
   useSwitchFromUnavailableAsset,
+  useTokenInfoContext,
   useTransactionFee,
 } from '@avalabs/bridge-sdk';
 import {Big} from '@avalabs/avalanche-wallet-sdk';
@@ -46,6 +47,9 @@ import {getEthereumProvider} from 'screens/bridge/utils/getEthereumProvider';
 import {useGetTokenSymbolOnNetwork} from 'screens/bridge/hooks/useGetTokenSymbolOnNetwork';
 import {useTransferAsset} from 'screens/bridge/hooks/useTransferAsset';
 import {BridgeStackParamList} from 'navigation/wallet/BridgeScreenStack';
+import FlexSpacer from 'components/FlexSpacer';
+import TokenSelectAndAmount from 'components/TokenSelectAndAmount';
+import {useAssetBalances} from 'screens/bridge/hooks/useAssetsWithBalances';
 
 const formatBalance = (balance: Big | undefined) => {
   return balance && formatTokenAmount(balance, 6);
@@ -54,6 +58,7 @@ const formatBalance = (balance: Big | undefined) => {
 const Bridge: FC = () => {
   useSwitchFromUnavailableAsset(true);
   const theme = useApplicationContext().theme;
+  const {selectedCurrency} = useApplicationContext().appHook;
   const network = useNetworkContext()?.network;
   const navigation = useNavigation<StackNavigationProp<BridgeStackParamList>>();
   const {getTokenSymbolOnNetwork} = useGetTokenSymbolOnNetwork();
@@ -66,14 +71,14 @@ const Bridge: FC = () => {
     setTransactionDetails,
   } = useBridgeSDK();
 
-  // const {assetsWithBalances, loading} = useAssetBalances();
-  const assetPrice = usePrice(currentAsset);
-  const [amount, setAmount] = useState<Big>(new Big(1));
+  const assetPrice = usePrice(currentAsset, selectedCurrency?.toLowerCase());
+  const [amount, setAmount] = useState<Big>(new Big(0));
   const [amountTooLowError, setAmountTooLowError] = useState<string>('');
-  const [bridgeError, setBridgeError] = useState<string>('');
+  const [bridgeError, setBridgeError] = useState<string>();
   const [pending, setPending] = useState<boolean>(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const assets = useAssets(currentBlockchain);
+  const tokenInfoContext = useTokenInfoContext();
   const assetInfo = assets[currentAsset || ''];
   const transferCost = useTransactionFee(currentBlockchain);
   const minimumTransferAmount = transferCost ? transferCost.mul(3) : BIG_ZERO;
@@ -130,7 +135,7 @@ const Bridge: FC = () => {
           <Avatar.Custom name={'Avalanche'} symbol={'AVAX'} />
         ) : (
           <Avatar.Custom
-            name={'Etherium'}
+            name={'Ethereum'}
             logoUri={
               'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png'
             }
@@ -214,9 +219,10 @@ const Bridge: FC = () => {
       });
 
       // Navigate to transaction status page
-      navigation.navigate(AppNavigation.Bridge.ActivityDetail, {
+      navigation.navigate(AppNavigation.Bridge.BridgeTransactionStatus, {
         blockchain: currentBlockchain as string,
-        resultHash: result.hash,
+        txHash: result.hash,
+        txTimestamp: Date.now().toString(),
       });
     } catch (e) {
       // user declined transaction
@@ -243,7 +249,7 @@ const Bridge: FC = () => {
   const transferDisabled =
     !sourceBalance.balance ||
     (sourceBalance.balance && amount.gt(sourceBalance.balance)) ||
-    bridgeError.length > 0 ||
+    (bridgeError && bridgeError.length > 0) ||
     amountTooLowError.length > 0 ||
     pending ||
     tooLowAmount ||
@@ -255,13 +261,14 @@ const Bridge: FC = () => {
     }
 
     const amountMinusTransfer = amount.minus(transferCost);
-
     return `${assetPrice.mul(amountMinusTransfer).toNumber()}`;
   };
 
+  console.log('Asset Price: ' + assetPrice.toNumber());
+  console.log('Amount: ' + amount.toNumber());
+
   return (
     <View style={styles.container}>
-
       <ScrollView style={styles.container}>
         <Space y={20} />
         <View style={{backgroundColor: theme.colorBg2, borderRadius: 10}}>
@@ -292,7 +299,7 @@ const Bridge: FC = () => {
                 alignSelf: 'flex-end',
                 paddingEnd: 16,
               }}>
-              Balance {formatBalance(sourceBalance?.balance)}{' '}
+              Balance: {formatBalance(sourceBalance?.balance)}{' '}
               {blockchainTokenSymbol}
             </AvaText.Body3>
             <View
@@ -307,9 +314,25 @@ const Bridge: FC = () => {
                     onTokenSelected: handleSelect,
                   });
                 }}>
-                <AvaText.Body1>
-                  {blockchainTokenSymbol} <CarrotSVG direction={'down'} />{' '}
-                </AvaText.Body1>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}>
+                  <Avatar.Custom
+                    name={blockchainTokenSymbol}
+                    symbol={blockchainTokenSymbol}
+                    logoUri={tokenInfoContext?.[blockchainTokenSymbol]?.logo}
+                  />
+                  <AvaText.Body1
+                    textStyle={{
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}>
+                    {blockchainTokenSymbol} <CarrotSVG direction={'down'} />{' '}
+                  </AvaText.Body1>
+                </View>
               </Pressable>
               <InputText
                 width={160}
@@ -324,17 +347,27 @@ const Bridge: FC = () => {
                 text={amount.toString()}
               />
             </View>
-            <AvaText.Body3
-              currency
-              color={theme.colorText2}
-              textStyle={{
-                alignSelf: 'flex-end',
-                paddingEnd: 16,
-              }}>
-              {assetPrice.mul(amount).toNumber()}
-            </AvaText.Body3>
+            {!amount.eq(BIG_ZERO) && (
+              <AvaText.Body3
+                currency
+                color={theme.colorText2}
+                textStyle={{
+                  alignSelf: 'flex-end',
+                  paddingEnd: 16,
+                }}>
+                {assetPrice.mul(amount).toNumber()}
+              </AvaText.Body3>
+            )}
           </View>
         </View>
+        {!!bridgeError ||
+          (!!amountTooLowError && (
+            <AvaText.Body3
+              textStyle={{marginVertical: 4}}
+              color={theme.colorError}>
+              {bridgeError || amountTooLowError}
+            </AvaText.Body3>
+          ))}
         <AvaButton.Base
           onPress={() => {
             setCurrentBlockchain(
@@ -383,7 +416,7 @@ const Bridge: FC = () => {
               <AvaText.Body3
                 color={theme.colorText2}
                 textStyle={{marginTop: 8}}>
-                Estimated
+                Estimated (minus transfer fees)
               </AvaText.Body3>
               <AvaText.Body3
                 color={theme.colorText2}
@@ -408,43 +441,48 @@ const Bridge: FC = () => {
                 color={theme.colorText2}>
                 {transferCost && amount && !BIG_ZERO.eq(amount)
                   ? calculateEstimatedTotal()
-                  : '-'}
+                  : 0}
               </AvaText.Body3>
               <AvaText.Body3
-                currency
                 textStyle={{marginTop: 8}}
                 color={theme.colorText2}>
-                {transferCost ? formatTokenAmount(transferCost, 6) : '-'}{' '}
+                ~{transferCost ? formatTokenAmount(transferCost, 6) : '-'}{' '}
                 {currentAsset}
               </AvaText.Body3>
             </View>
           </View>
         </View>
+        <Space y={80} />
+        <Pressable
+          style={{
+            margin: 16,
+            borderRadius: 50,
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: 'white',
+            marginHorizontal: 16,
+            paddingVertical: 12,
+            // bottom: 40,
+            opacity: transferDisabled ? 0.5 : 1,
+          }}
+          onPress={() => {
+            console.log('transfer pressed');
+            handleTransfer();
+          }}
+          disabled={transferDisabled}>
+          <Row>
+            {pending && (
+              <>
+                <Space x={8} />
+                <ActivityIndicator color={theme.colorPrimary1} />
+              </>
+            )}
+            <AvaText.ButtonLarge textStyle={{color: 'black'}}>
+              Transfer
+            </AvaText.ButtonLarge>
+          </Row>
+        </Pressable>
       </ScrollView>
-      <Pressable
-        style={{
-          margin: 16,
-          borderRadius: 50,
-          justifyContent: 'center',
-          alignItems: 'center',
-          backgroundColor: 'white',
-          marginHorizontal: 16,
-          paddingVertical: 12,
-          bottom: 40,
-          opacity: transferDisabled ? 0.5 : 1,
-        }}
-        onPress={() => {
-          console.log('transfer pressed');
-          handleTransfer();
-        }}
-        disabled={transferDisabled}>
-        <>
-          {pending && <ActivityIndicator color={theme.colorPrimary1} />}
-          <AvaText.ButtonLarge textStyle={{color: 'black'}}>
-            Transfer
-          </AvaText.ButtonLarge>
-        </>
-      </Pressable>
     </View>
   );
 };
