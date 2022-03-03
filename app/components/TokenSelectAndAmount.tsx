@@ -1,6 +1,6 @@
 import React, {FC, useEffect, useState} from 'react';
 import {useApplicationContext} from 'contexts/ApplicationContext';
-import {View} from 'react-native';
+import {StyleProp, View, ViewStyle} from 'react-native';
 import AvaText from 'components/AvaText';
 import {Space} from 'components/Space';
 import AvaButton from 'components/AvaButton';
@@ -19,6 +19,8 @@ interface TokenSelectAndAmountProps {
   onAmountSet: (amount: string) => void;
   maxEnabled: boolean;
   getMaxAmount: () => string;
+  style?: StyleProp<ViewStyle>;
+  inputWidth?: number;
 }
 
 const TokenSelectAndAmount: FC<TokenSelectAndAmountProps> = ({
@@ -28,6 +30,8 @@ const TokenSelectAndAmount: FC<TokenSelectAndAmountProps> = ({
   onAmountSet,
   maxEnabled = false,
   getMaxAmount = undefined,
+  style,
+  inputWidth = 180,
 }) => {
   const context = useApplicationContext();
   const navigation = useNavigation();
@@ -84,7 +88,7 @@ const TokenSelectAndAmount: FC<TokenSelectAndAmountProps> = ({
           backgroundColor: context.theme.colorBg2,
           borderRadius: 10,
         },
-        context.shadow,
+        style,
       ]}>
       <AvaButton.Base
         style={{
@@ -113,17 +117,18 @@ const TokenSelectAndAmount: FC<TokenSelectAndAmountProps> = ({
           color={context.theme.colorText1}
         />
       </AvaButton.Base>
-      <View style={{width: 180}}>
-        <InputText
-          mode={'amount'}
-          keyboardType="numeric"
-          onMax={maxEnabled ? setMax : undefined}
-          onChangeText={text => {
-            setAmount(text);
-          }}
-          text={selectedAmount}
-        />
-      </View>
+      {/*<View style={{width: 180}}>*/}
+      <InputText
+        width={inputWidth}
+        mode={'amount'}
+        keyboardType="numeric"
+        onMax={maxEnabled ? setMax : undefined}
+        onChangeText={text => {
+          setAmount(text);
+        }}
+        text={selectedAmount}
+      />
+      {/*</View>*/}
     </View>
   );
 };

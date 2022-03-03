@@ -9,6 +9,10 @@ import {TransactionResponse} from '@ethersproject/abstract-provider';
 import {createContext, useCallback, useContext, useEffect} from 'react';
 import {Big} from '@avalabs/avalanche-wallet-sdk';
 import {TransferEventType} from './Models';
+import {transferAssetHandler} from 'screens/bridge/transferAssets';
+import {getBridgeConfig} from 'screens/bridge/bridgeConfig';
+import {useNetworkContext} from '@avalabs/wallet-react-components';
+import React from 'react';
 
 const BridgeContext = createContext<{
   transferAsset: (
@@ -19,7 +23,7 @@ const BridgeContext = createContext<{
   ) => Promise<TransactionResponse>;
 }>({} as any);
 
-export function BridgeProvider({children}: {children: React.ReactNode}) {
+export function BridgeProvider({children}: {children: any}) {
   return (
     <BridgeSDKProvider>
       <InnerBridgeProvider>{children}</InnerBridgeProvider>
@@ -27,13 +31,14 @@ export function BridgeProvider({children}: {children: React.ReactNode}) {
   );
 }
 
-export function useBridgeContext(BridgeContext);
+export function useBridgeContext() {
+  return useContext(BridgeContext);
+}
 
 // This component is separate so it has access to useBridgeSDK
 function InnerBridgeProvider({children}: {children: any}) {
   useSyncConfig();
 
-  // const {request, events} = useConnectionContext();
   const {currentBlockchain} = useBridgeSDK();
 
   async function transferAsset(
@@ -42,23 +47,24 @@ function InnerBridgeProvider({children}: {children: any}) {
     onStatusChange: (status: WrapStatus) => void,
     onTxHashChange: (txHash: string) => void,
   ) {
-    const transferEventSubscription = events()
-      .pipe(
-        filter(isBridgeTransferEventListener),
-        map(evt => evt.value),
-      )
-      .subscribe(event => {
-        event.type === TransferEventType.WRAP_STATUS
-          ? onStatusChange(event.status)
-          : onTxHashChange(event.txHash);
-      });
+    // const transferEventSubscription = events()
+    //   .pipe(
+    //     filter(isBridgeTransferEventListener),
+    //     map(evt => evt.value),
+    //   )
+    //   .subscribe(event => {
+    //     event.type === TransferEventType.WRAP_STATUS
+    //       ? onStatusChange(event.status)
+    //       : onTxHashChange(event.txHash);
+    //   });
 
-    const result = await request({
-      method: ExtensionRequest.BRIDGE_TRANSFER_ASSET,
-      params: [currentBlockchain, amount, asset],
-    });
+    const result = await transferAssetHandler(
+      currentBlockchain,
+      asset,
+      amount.toString(),
+    );
 
-    transferEventSubscription.unsubscribe();
+    // transferEventSubscription.unsubscribe();
     return result;
   }
 
@@ -75,29 +81,19 @@ function InnerBridgeProvider({children}: {children: any}) {
 /**
  * Periodically update the bridge config and keep it in sync with the background.
  */
-function useSyncConfig() {
+async function useSyncConfig() {
   const {setBridgeConfig} = useBridgeSDK();
-  const {events, request} = useConnectionContext();
-  const fetchConfig = useCallback(
-    () => request({method: ExtensionRequest.BRIDGE_GET_CONFIG}),
-    [request],
-  );
+  const networkState = useNetworkContext();
+  const fetchConfig = useCallback(() => getBridgeConfig(), [networkState]);
 
   // periodically update the bridge config
   useBridgeConfigUpdater(fetchConfig);
 
   // update the bridge config when the network changes
   useEffect(() => {
-    if (!events) {
-      return;
-    }
-
-    const subscription = events()
-      .pipe(filter(networkUpdatedEventListener))
-      .subscribe(async () => {
-        const newConfig = await fetchConfig();
-        setBridgeConfig(newConfig);
-      });
-    return () => subscription.unsubscribe();
-  }, [events, fetchConfig, setBridgeConfig]);
+    (async () => {
+      const newConfig = await fetchConfig();
+      setBridgeConfig(newConfig);
+    })();
+  }, [networkState]);
 }

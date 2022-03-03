@@ -116,61 +116,61 @@ const PortfolioView: FC<PortfolioProps> = memo(
     return (
       <SafeAreaProvider style={styles.flex}>
         <PortfolioHeader />
-        {!tokenList ? (
-          <Loader />
-        ) : (
-          <>
-            <FlatList
-              ref={listRef}
-              contentContainerStyle={{paddingHorizontal: 16}}
-              style={[tokenList?.length === 1 && {flex: 0}]}
-              data={tokenList}
-              renderItem={renderItem}
-              keyExtractor={(item: TokenWithBalance) => getTokenUID(item)}
-              onRefresh={handleRefresh}
-              refreshing={false}
-              scrollEventThrottle={16}
-              ListHeaderComponent={
-                <>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                    }}>
-                    <AvaText.Heading3 textStyle={{marginVertical: 16}}>
-                      Favorites
-                    </AvaText.Heading3>
-                    <View style={{paddingRight: -10}}>
-                      <AvaButton.TextMedium
-                        textColor={'#0A84FF'}
-                        onPress={viewAllWatchlist}>
-                        View All
-                      </AvaButton.TextMedium>
-                    </View>
-                  </View>
-                  <WatchlistCarrousel />
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                    }}>
-                    <AvaText.Heading3 textStyle={{marginVertical: 16}}>
-                      Tokens
-                    </AvaText.Heading3>
+        {/*{!tokenList ? (*/}
+        {/*  <Loader transparent />*/}
+        {/*) : (*/}
+        <>
+          <FlatList
+            ref={listRef}
+            contentContainerStyle={{paddingHorizontal: 16}}
+            style={[tokenList?.length === 1 && {flex: 0}]}
+            data={tokenList}
+            renderItem={renderItem}
+            keyExtractor={(item: TokenWithBalance) => getTokenUID(item)}
+            onRefresh={handleRefresh}
+            refreshing={false}
+            scrollEventThrottle={16}
+            ListHeaderComponent={
+              <>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}>
+                  <AvaText.Heading3 textStyle={{marginVertical: 16}}>
+                    Favorites
+                  </AvaText.Heading3>
+                  <View style={{paddingRight: -10}}>
                     <AvaButton.TextMedium
                       textColor={'#0A84FF'}
-                      onPress={manageTokens}>
-                      Manage
+                      onPress={viewAllWatchlist}>
+                      View All
                     </AvaButton.TextMedium>
                   </View>
-                </>
-              }
-              ListEmptyComponent={<ZeroState.Portfolio />}
-            />
-          </>
-        )}
+                </View>
+                <WatchlistCarrousel />
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}>
+                  <AvaText.Heading3 textStyle={{marginVertical: 16}}>
+                    Tokens
+                  </AvaText.Heading3>
+                  <AvaButton.TextMedium
+                    textColor={'#0A84FF'}
+                    onPress={manageTokens}>
+                    Manage
+                  </AvaButton.TextMedium>
+                </View>
+              </>
+            }
+            ListEmptyComponent={<ZeroState.Portfolio />}
+          />
+        </>
+        {/*)}*/}
         {tokenList?.length === 1 && hasZeroBalance && (
           <View
             style={{
