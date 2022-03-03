@@ -106,6 +106,12 @@ const TabNavigator = () => {
           onPress={() => navigation.navigate(AppNavigation.Wallet.Swap)}>
           <SwapSVG color={theme.background} size={24} />
         </ActionButtonItem>
+        <ActionButtonItem
+          buttonColor={theme.alternateBackground}
+          title="NFTs"
+          onPress={() => navigation.navigate(AppNavigation.Wallet.NFT)}>
+          <SwapSVG color={theme.background} size={24} />
+        </ActionButtonItem>
         <ActionButtonItem />
       </FloatingActionButton>
     </>
