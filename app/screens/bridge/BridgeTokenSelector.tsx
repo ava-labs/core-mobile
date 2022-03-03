@@ -1,4 +1,4 @@
-import React, {RefObject, useEffect, useRef, useState} from 'react';
+import React, {RefObject, useEffect, useMemo, useRef, useState} from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -10,26 +10,30 @@ import {
 import Loader from 'components/Loader';
 import {Space} from 'components/Space';
 import {
-  Asset,
   AssetType,
+  BIG_ZERO,
   Blockchain,
+  ERC20Asset,
   useAssets,
   useBridgeSDK,
   useGetTokenBalances,
   useTokenInfoContext,
 } from '@avalabs/bridge-sdk';
 import {getEthereumProvider} from 'screens/bridge/utils/getEthereumProvider';
-import {getAvalancheProvider} from 'screens/bridge/utils/getAvalancheProvider';
 import AvaListItem from 'components/AvaListItem';
 import AvaText from 'components/AvaText';
 import {useGetTokenSymbolOnNetwork} from 'screens/bridge/hooks/useGetTokenSymbolOnNetwork';
 import Avatar from 'components/Avatar';
 import {
+  ERC20WithBalance,
   useNetworkContext,
   useWalletStateContext,
 } from '@avalabs/wallet-react-components';
 import {formatTokenAmount} from 'utils/Utils';
 import {useApplicationContext} from 'contexts/ApplicationContext';
+import {Big} from '@avalabs/avalanche-wallet-sdk';
+import {AssetBalance} from 'screens/bridge/hooks/useAssetsWithBalances';
+import {getAvalancheProvider} from 'screens/bridge/utils/getAvalancheProvider';
 
 const DEFAULT_HORIZONTAL_MARGIN = 16;
 
@@ -47,17 +51,16 @@ interface TokenSelectorProps {
 function TokenSelector({
   onTokenSelected,
   horizontalMargin = DEFAULT_HORIZONTAL_MARGIN,
-  selectMode,
 }: TokenSelectorProps) {
   const {currentBlockchain} = useBridgeSDK();
   const assetList = useAssets(currentBlockchain);
   const tokenInfoContext = useTokenInfoContext();
   const textInputRef = useRef() as RefObject<TextInput>;
-  const [assets, setAssets] = useState<[string, Asset][]>([]);
   const {getTokenSymbolOnNetwork} = useGetTokenSymbolOnNetwork();
   const network = useNetworkContext()?.network;
-  const {addresses} = useWalletStateContext();
+  const {addresses, erc20Tokens} = useWalletStateContext();
   const theme = useApplicationContext().theme;
+  const [ethBalances, setEthBalances] = useState<AssetBalance[]>([]);
 
   const balances = useGetTokenBalances(
     currentBlockchain,
@@ -69,44 +72,45 @@ function TokenSelector({
     addresses?.addrC,
   );
 
+  const avalancheBalances = useMemo(() => {
+    erc20Tokens.reduce<{
+      [address: string]: ERC20WithBalance;
+    }>((tokens, token) => {
+      // Need to convert the keys to lowercase because they are mixed case, and this messes up or comparison function
+      tokens[token.address.toLowerCase()] = token;
+      return tokens;
+    }, {});
+    return Object.values(assetList)
+      .filter(
+        // assets won't include a NativeAsset (i.e. AVAX) so we're ignoring it
+        (asset): asset is ERC20Asset => asset.assetType === AssetType.ERC20,
+      )
+      .map(asset => {
+        const symbol = asset.symbol;
+        const balance = balances?.[symbol] ?? BIG_ZERO;
+        return {symbol, asset, balance};
+      });
+  }, [assetList, currentBlockchain, erc20Tokens]);
+
   useEffect(() => {
-    if (!assetList) {
-      setAssets([]);
+    if (currentBlockchain != Blockchain.ETHEREUM) {
       return;
     }
+    (async () => {
+      const bal = Object.entries(assetList).map(([symbol, asset]) => {
+        const balanceStr = balances?.[symbol];
+        const balance = balanceStr ? new Big(balanceStr) : undefined;
 
-    let pmAssets: Record<string, Asset>;
+        return {symbol, asset, balance};
+      });
 
-    // if (selectMode === SelectTokenMode.CONVERT) {
-    //   const convertableAssets: Record<string, Asset> = {};
-    //
-    //   for (const name in assetList) {
-    //     const asset = assetList[name];
-    //     if (
-    //       asset.assetType === AssetType.ERC20 &&
-    //       asset.deprecatedTokenContractAddress
-    //     ) {
-    //       convertableAssets[name] = asset;
-    //     }
-    //   }
-    //
-    //   pmAssets = convertableAssets;
-    // } else {
-    //   pmAssets = {...assetList};
-    // }
+      setEthBalances(bal);
+    })();
+  }, [addresses.addrC, assetList, currentBlockchain]);
 
-    // order
-    const assetsInOrder = Object.entries(assetList).sort(
-      ([symbol1], [symbol2]) => {
-        return (
-          balances?.[symbol2]?.minus(balances?.[symbol1]).toNumber() ||
-          symbol1.localeCompare(symbol2)
-        );
-      },
-    );
-
-    setAssets(assetsInOrder);
-  }, [assetList]);
+  const assetsWithBalances = (
+    currentBlockchain === Blockchain.AVALANCHE ? avalancheBalances : ethBalances
+  ).sort((asset1, asset2) => asset2?.balance?.cmp(asset1.balance || 0) || 0);
 
   useEffect(() => {
     InteractionManager.runAfterInteractions(() => {
@@ -116,22 +120,23 @@ function TokenSelector({
     });
   }, [textInputRef]);
 
-  const renderItem = (item: ListRenderItemInfo<[string, Asset]>) => {
-    const asset = item.item;
-    const name = asset[0];
+  const renderItem = (item: ListRenderItemInfo<AssetBalance>) => {
+    const token = item.item;
+    const symbol = token.asset.symbol;
+    const name = token.symbol === 'ETH' ? 'Ethereum' : token.asset.tokenName;
 
-    const tokenSymbol = getTokenSymbolOnNetwork(name, currentBlockchain);
+    const tokenSymbol = getTokenSymbolOnNetwork(symbol, currentBlockchain);
     const tokenLogo = () => {
-      let logoUrl = '';
-      if (tokenInfoContext && name) {
-        logoUrl = tokenInfoContext[name]?.logo;
-      }
-      return <Avatar.Custom name={name} symbol={name} logoUri={logoUrl} />;
+      return (
+        <Avatar.Custom
+          name={name}
+          symbol={symbol}
+          logoUri={tokenInfoContext?.[symbol.toLowerCase()]?.logo}
+        />
+      );
     };
 
-    const balance = balances?.[name];
-
-    console.log('asset balance in selector: ' + balances?.[name]);
+    const balance = token.balance;
 
     return (
       <AvaListItem.Base
@@ -141,7 +146,8 @@ function TokenSelector({
           balance ? (
             <>
               <AvaText.Body1>
-                {formatTokenAmount(balances?.[name] || null, 6)} {tokenSymbol}
+                {formatTokenAmount(token.balance || new Big(0), 6)}{' '}
+                {tokenSymbol}
               </AvaText.Body1>
             </>
           ) : (
@@ -149,7 +155,7 @@ function TokenSelector({
           )
         }
         onPress={() => {
-          onTokenSelected(name);
+          onTokenSelected(symbol);
         }}
       />
     );
@@ -171,6 +177,8 @@ function TokenSelector({
   //   return undefined;
   // }
 
+  console.log('token info: ' + tokenInfoContext.eth);
+
   return (
     <View style={{flex: 1, marginHorizontal: horizontalMargin}}>
       {/*<SearchBar onTextChanged={handleSearch} searchText={searchText} />*/}
@@ -180,10 +188,10 @@ function TokenSelector({
       ) : (
         <FlatList
           keyboardShouldPersistTaps="handled"
-          data={assets}
+          data={assetsWithBalances}
           renderItem={renderItem}
           refreshing={false}
-          keyExtractor={(item: [string, Asset], index) => item[0] + index}
+          keyExtractor={(item: AssetBalance, index) => item.symbol + index}
         />
       )}
     </View>
