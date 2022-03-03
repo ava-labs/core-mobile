@@ -49,7 +49,7 @@ function PortfolioContainer(): JSX.Element {
 
   return (
     <>
-      {!isWalletReady || isBalanceLoading || isErc20Loading ? (
+      {!isWalletReady || isBalanceLoading ? (
         <Loader />
       ) : (
         <PortfolioView
