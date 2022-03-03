@@ -16,10 +16,12 @@
   },
   "dependencies": {
     "@avalabs/avalanche-wallet-sdk": "0.14.5",
-    "@avalabs/bridge-sdk": "1.1.0",
+    "@avalabs/bridge-sdk": "1.2.0-alpha.1",
     "@avalabs/wallet-react-components": "1.24.6",
     "@connectedcars/react-native-slide-charts": "^1.0.5",
     "@eliav2/react-native-collapsible-view": "^1.4.0",
+    "@ethereumjs/common": "2.6.2",
+    "@ethereumjs/tx": "3.4.0",
     "@gorhom/bottom-sheet": "2.4.1",
     "@react-native-async-storage/async-storage": "^1.15.9",
     "@react-native-clipboard/clipboard": "^1.8.2",

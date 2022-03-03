@@ -40,19 +40,19 @@
     web3-eth-contract "1.6.0"
     xss "^1.0.10"
 
-"@avalabs/bridge-sdk@1.1.0":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@avalabs/bridge-sdk/-/bridge-sdk-1.1.0.tgz#72fd1b2c4cdae7e2ab589f40564b01e71e796ecc"
-  integrity sha512-U6PW0DFHKxeHU7Co94LuulqHG0xNP6p6YlpqDheIL+KDiG0xjwSUoTwbqk2Rcx0Hiyktsy8Na0psZW4LoJ7FSA==
+"@avalabs/bridge-sdk@1.2.0-alpha.1":
+  version "1.2.0-alpha.1"
+  resolved "https://registry.yarnpkg.com/@avalabs/bridge-sdk/-/bridge-sdk-1.2.0-alpha.1.tgz#28526c78d94e2a83ec946231a529f8e01e57e48c"
+  integrity sha512-4TDxYTEl42itOFbaJtYMSn4H6s/3pMhfpe95mzFHgMc+fDfaNpbJxgE6uA/Kj/4o/j7wRjgrLZeQqRzOCZgLSw==
   dependencies:
-    "@avalabs/utils-sdk" "1.1.0"
+    "@avalabs/utils-sdk" "1.2.0-alpha.1"
     big.js "6.1.1"
     ethers "5.2.0"
 
-"@avalabs/utils-sdk@1.1.0":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@avalabs/utils-sdk/-/utils-sdk-1.1.0.tgz#bde3b05d72c45c6f46a86ce2259b582258026d71"
-  integrity sha512-eAwzLVFrZndCZZUR2XLWJOe+3onQ1ByfmB3uWPJk7XodmfkEBU+6wQoQFr6Y0nvOBamGSK0QZLafYImrrVWWfw==
+"@avalabs/utils-sdk@1.2.0-alpha.1":
+  version "1.2.0-alpha.1"
+  resolved "https://registry.yarnpkg.com/@avalabs/utils-sdk/-/utils-sdk-1.2.0-alpha.1.tgz#e36feae7af1744cc45e4a2d384438be9da5423e8"
+  integrity sha512-7HbRz0AsAL1KaY5JPglfbSNo0/81HZLA0Ei4sBLvZgtcVHQvNuxy098t7/Mf4SywmtdEITknfJyd6bO8+GNlPg==
 
 "@avalabs/wallet-react-components@1.24.6":
   version "1.24.6"
@@ -2709,6 +2709,14 @@
   dependencies:
     crc-32 "^1.2.0"
     ethereumjs-util "^7.1.3"
+
+"@ethereumjs/common@2.6.2":
+  version "2.6.2"
+  resolved "https://registry.yarnpkg.com/@ethereumjs/common/-/common-2.6.2.tgz#eb006c9329c75c80f634f340dc1719a5258244df"
+  integrity sha512-vDwye5v0SVeuDky4MtKsu+ogkH2oFUV8pBKzH/eNBzT8oI91pKa8WyzDuYuxOQsgNgv5R34LfFDh2aaw3H4HbQ==
+  dependencies:
+    crc-32 "^1.2.0"
+    ethereumjs-util "^7.1.4"
 
 "@ethereumjs/common@^2.3.0", "@ethereumjs/common@^2.6.1":
   version "2.6.1"
