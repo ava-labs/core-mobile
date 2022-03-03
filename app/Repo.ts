@@ -2,6 +2,7 @@ import {useEffect, useState} from 'react';
 import {Account} from 'dto/Account';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {CustomTokens} from 'screens/tokenManagement/hooks/useAddCustomToken';
+import {NFTItem} from 'screens/nft/NFTItem';
 
 /**
  * Currently we support only one wallet, with multiple accounts.
@@ -12,6 +13,7 @@ const ADDR_BOOK = 'ADDR_BOOK_1';
 const ADDR_BOOK_RECENTS = 'ADDR_BOOK_RECENTS_1';
 const WATCHLIST_FAVORITES = 'WATCHLIST_FAVORITES';
 const CUSTOM_TOKENS = 'CUSTOM_TOKENS';
+const NFTs = 'NFTs';
 const VIEW_ONCE_INFORMATION = 'VIEW_ONCE_INFORMATION';
 
 /**
@@ -58,6 +60,10 @@ export type Repo = {
     saveAccounts: (accounts: Map<AccountId, Account>) => void;
     setActiveAccount: (accountIndex: number) => void;
   };
+  nftRepo: {
+    nfts: Map<UID, NFTItem>;
+    saveNfts: (nfts: Map<UID, NFTItem>) => void;
+  };
   addressBookRepo: {
     addressBook: Map<UID, Contact>;
     saveAddressBook: (addressBook: Map<UID, Contact>) => void;
@@ -73,6 +79,7 @@ export type Repo = {
 
 export function useRepo(): Repo {
   const [accounts, setAccounts] = useState<Map<AccountId, Account>>(new Map());
+  const [nfts, setNfts] = useState<Map<UID, NFTItem>>(new Map());
   const [addressBook, setAddressBook] = useState<Map<UID, Contact>>(new Map());
   const [recentContacts, setRecentContacts] = useState<RecentContact[]>([]);
   const [watchlistFavorites, setWatchlistFavorites] = useState<string[]>([]);
@@ -81,6 +88,7 @@ export function useRepo(): Repo {
 
   useEffect(() => {
     loadAccountsFromStorage().then(value => setAccounts(value));
+    loadNFTsFromStorage().then(value => setNfts(value));
     loadAddressBookFromStorage().then(value => setAddressBook(value));
     loadRecentContactsFromStorage().then(value => setRecentContacts(value));
     loadWatchlistFavoritesFromStorage().then(value =>
@@ -105,6 +113,11 @@ export function useRepo(): Repo {
   const saveAddressBook = (addrBook: Map<UID, Contact>) => {
     setAddressBook(new Map(addrBook));
     saveAddressBookToStorage(addrBook).catch(reason => console.error(reason));
+  };
+
+  const saveNfts = (nfts: Map<UID, NFTItem>) => {
+    setNfts(new Map(nfts));
+    saveNFTsToStorage(nfts).catch(reason => console.error(reason));
   };
 
   const saveCustomTokens = (tokens: CustomTokens) => {
@@ -154,6 +167,7 @@ export function useRepo(): Repo {
 
   return {
     accountsRepo: {accounts, saveAccounts, setActiveAccount},
+    nftRepo: {nfts, saveNfts},
     addressBookRepo: {
       addressBook,
       saveAddressBook,
@@ -176,6 +190,13 @@ async function loadAccountsFromStorage() {
   return rawAccounts
     ? (new Map(JSON.parse(rawAccounts)) as Map<AccountId, Account>)
     : new Map<AccountId, Account>();
+}
+
+async function loadNFTsFromStorage() {
+  const rawNfts = await AsyncStorage.getItem(NFTs);
+  return rawNfts
+    ? (new Map(JSON.parse(rawNfts)) as Map<UID, NFTItem>)
+    : new Map<UID, NFTItem>();
 }
 
 async function loadAddressBookFromStorage() {
@@ -214,6 +235,7 @@ const omitBalance = (key: string, value: any) => {
     return value;
   }
 };
+
 async function saveAccountsToStorage(
   walletId: string,
   accToStore: Map<AccountId, Account>,
@@ -223,6 +245,15 @@ async function saveAccountsToStorage(
     console.error('Could not stringify accounts: ', accToStore);
   } else {
     await AsyncStorage.setItem(walletId, stringifiedAccounts);
+  }
+}
+
+async function saveNFTsToStorage(nfts: Map<UID, NFTItem>) {
+  const stringifiedNFTs = JSON.stringify([...nfts]);
+  if (stringifiedNFTs === undefined) {
+    console.error('Could not stringify nfts: ', nfts);
+  } else {
+    await AsyncStorage.setItem(NFTs, stringifiedNFTs);
   }
 }
 

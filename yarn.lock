@@ -16831,6 +16831,13 @@ react-native-screens@^3.4.0:
     react-freeze "^1.0.0"
     warn-once "^0.1.0"
 
+react-native-sensors@^7.3.5:
+  version "7.3.5"
+  resolved "https://registry.yarnpkg.com/react-native-sensors/-/react-native-sensors-7.3.5.tgz#19ef06ca74197a7e118a44033cd656e964cdce83"
+  integrity sha512-DMxaxSmgUOLTyi7s0tDwaX5VwtljcCj9c1IhOo3EyjTjTrtSFyEHTyI61qvOxk+DXtbVYCybeqYKFe6TiM+Cbg==
+  dependencies:
+    rxjs ">= 6"
+
 react-native-storybook-loader@^2.0.5:
   version "2.0.5"
   resolved "https://registry.yarnpkg.com/react-native-storybook-loader/-/react-native-storybook-loader-2.0.5.tgz#9c446a4235ac4f0d45b4f6419f2da9a9c4355255"
@@ -17661,6 +17668,11 @@ rlp@^2.2.3, rlp@^2.2.4:
   integrity sha512-d5gdPmgQ0Z+AklL2NVXr/IoSjNZFfTVvQWzL/AM2AOcSzYP2xjlb0AC8YyCLc41MSNf6P6QVtjgPdmVtzb+4lQ==
   dependencies:
     bn.js "^5.2.0"
+
+rn-dominant-color@^1.7.2:
+  version "1.7.2"
+  resolved "https://registry.yarnpkg.com/rn-dominant-color/-/rn-dominant-color-1.7.2.tgz#b04b0c17c1dfc7269869f530b33548e3eb0e0d9f"
+  integrity sha512-M9brxZvxZ4G5aPGagy1Tq++Dq1BaI98tqQ3ZPlqCa2SHIBgo3EQrtuHt4uHNv0/OWZXw535BGOC0eWZRT6eI/w==
 
 rollup-plugin-babel@^4.3.3:
   version "4.4.0"

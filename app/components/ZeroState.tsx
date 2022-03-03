@@ -3,6 +3,7 @@ import {Image, View} from 'react-native';
 import AvaText from './AvaText';
 import PersonageWithLantern from 'components/images/PersonageWithLantern';
 import {Space} from 'components/Space';
+import AvaButton from 'components/AvaButton';
 
 interface BaseProps {
   image?: string | ReactNode;
@@ -97,6 +98,21 @@ function ZeroStatePortfolio() {
   return <ZeroStateBase title={title} message={message} />;
 }
 
+function ZeroStateCollectibles() {
+  const title = 'No Collectibles';
+  const message = 'You don’t have any collectibles yet.';
+
+  return (
+    <ZeroStateBase
+      title={title}
+      message={message}
+      additionalComponent={
+        <AvaButton.PrimaryMedium>Explore NFTs</AvaButton.PrimaryMedium>
+      }
+    />
+  );
+}
+
 function ZeroStateNoResultsTextual() {
   const title = 'No results found';
   const message =
@@ -124,6 +140,7 @@ function ZeroStateComingSoon() {
 
 const ZeroState = {
   Portfolio: ZeroStatePortfolio,
+  Collectibles: ZeroStateCollectibles,
   NoResultsGraphical: ZeroStateNoResults,
   NoResultsTextual: ZeroStateNoResultsTextual,
   ComingSoon: ZeroStateComingSoon,

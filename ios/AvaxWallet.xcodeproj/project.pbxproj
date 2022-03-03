@@ -10,6 +10,7 @@
 		00E356F31AD99517003FC87E /* AvaxWalletTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* AvaxWalletTests.m */; };
 		023D45C113F1FF6CF5F92CFE /* libPods-AvaxWallet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F4BA81B3D3760A71D5CFCA4 /* libPods-AvaxWallet.a */; };
 		0B66D74B270B75C3006530A8 /* Inter-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0B66D74A270B75C3006530A8 /* Inter-SemiBold.ttf */; };
+		0BA5138C27D234C200A25188 /* FixBridging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BA5138B27D234C200A25188 /* FixBridging.swift */; };
 		0BAAA734269F480900722C85 /* Inter-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0BAAA732269F480900722C85 /* Inter-Regular.ttf */; };
 		0BAAA735269F480900722C85 /* Inter-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0BAAA733269F480900722C85 /* Inter-Bold.ttf */; };
 		13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.m */; };
@@ -34,6 +35,8 @@
 		00E356F11AD99517003FC87E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		00E356F21AD99517003FC87E /* AvaxWalletTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AvaxWalletTests.m; sourceTree = "<group>"; };
 		0B66D74A270B75C3006530A8 /* Inter-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Inter-SemiBold.ttf"; sourceTree = "<group>"; };
+		0BA5138A27D234C200A25188 /* AvaxWallet-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AvaxWallet-Bridging-Header.h"; sourceTree = "<group>"; };
+		0BA5138B27D234C200A25188 /* FixBridging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FixBridging.swift; sourceTree = "<group>"; };
 		0BAAA732269F480900722C85 /* Inter-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Inter-Regular.ttf"; path = "../android/app/src/main/assets/fonts/Inter-Regular.ttf"; sourceTree = "<group>"; };
 		0BAAA733269F480900722C85 /* Inter-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Inter-Bold.ttf"; path = "../android/app/src/main/assets/fonts/Inter-Bold.ttf"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* AvaxWallet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AvaxWallet.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -100,6 +103,8 @@
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB71A68108700A75B9A /* main.m */,
+				0BA5138B27D234C200A25188 /* FixBridging.swift */,
+				0BA5138A27D234C200A25188 /* AvaxWallet-Bridging-Header.h */,
 			);
 			name = AvaxWallet;
 			sourceTree = "<group>";
@@ -226,7 +231,7 @@
 						TestTargetID = 13B07F861A680F5B00A75B9A;
 					};
 					13B07F861A680F5B00A75B9A = {
-						LastSwiftMigration = 1120;
+						LastSwiftMigration = 1320;
 					};
 				};
 			};
@@ -432,6 +437,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0BA5138C27D234C200A25188 /* FixBridging.swift in Sources */,
 				13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
 			);
@@ -452,6 +458,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 49D759DDE6DA7811CD099B69 /* Pods-AvaxWallet-AvaxWalletTests.debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
@@ -479,6 +486,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 768AB2F6A941B6D6A6F508D4 /* Pods-AvaxWallet-AvaxWalletTests.release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				COPY_PHASE_STRIP = NO;
 				INFOPLIST_FILE = AvaxWalletTests/Info.plist;
@@ -525,6 +533,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = org.avalabs.avaxwallet;
 				PRODUCT_NAME = AvaxWallet;
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "AvaxWallet-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -555,6 +564,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = org.avalabs.avaxwallet;
 				PRODUCT_NAME = AvaxWallet;
 				PROVISIONING_PROFILE_SPECIFIER = "App distribution provisioning profile";
+				SWIFT_OBJC_BRIDGING_HEADER = "AvaxWallet-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
