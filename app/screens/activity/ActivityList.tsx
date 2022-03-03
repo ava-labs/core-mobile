@@ -44,7 +44,6 @@ function ActivityList({embedded, tokenSymbolFilter}: Props) {
     const newSectionData: SectionType = {};
     allHistory
       .filter((tx: TxType) => {
-        console.log('tokenSymbolFilter', tokenSymbolFilter);
         return tokenSymbolFilter
           ? tokenSymbolFilter === (tx?.tokenSymbol ?? 'AVAX')
           : true;

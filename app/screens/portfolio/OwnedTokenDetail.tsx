@@ -30,7 +30,7 @@ const OwnedTokenDetail = () => {
         setToken(result[0]);
       }
     }
-  }, [filteredTokenList]);
+  }, [filteredTokenList, tokenId]);
 
   return (
     <View style={{paddingHorizontal: 16, flex: 1}}>
