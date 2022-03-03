@@ -5,7 +5,6 @@ import {
 import {Account} from 'dto/Account';
 import {encrypt, getEncryptionKey} from 'screens/login/utils/EncryptionHelper';
 import BiometricsSDK from 'utils/BiometricsSDK';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Repo} from 'Repo';
 import {AppNavHook} from 'useAppNav';
 
@@ -82,10 +81,6 @@ export function useWalletSetup(
    */
   async function destroyWallet() {
     walletContext?.clearWallet();
-    await AsyncStorage.clear();
-    console.log('cleared async storage');
-    await BiometricsSDK.clearWalletKey();
-    appNavHook.resetNavToRoot();
   }
 
   return {
