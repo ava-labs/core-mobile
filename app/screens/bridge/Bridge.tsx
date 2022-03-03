@@ -1,5 +1,6 @@
 import React, {FC, useEffect, useMemo, useState} from 'react';
 import {
+  ActivityIndicator,
   ListRenderItemInfo,
   Pressable,
   ScrollView,
@@ -18,6 +19,7 @@ import Separator from 'components/Separator';
 import Avatar from 'components/Avatar';
 import CheckmarkSVG from 'components/svg/CheckmarkSVG';
 import {
+  AssetType,
   BIG_ZERO,
   Blockchain,
   formatTokenAmount,
@@ -43,10 +45,9 @@ import CarrotSVG from 'components/svg/CarrotSVG';
 import InputText from 'components/InputText';
 import {getAvalancheProvider} from 'screens/bridge/utils/getAvalancheProvider';
 import {getEthereumProvider} from 'screens/bridge/utils/getEthereumProvider';
-
-function splitBN(val: string) {
-  return val.includes('.') ? val.split('.') : [val, null];
-}
+import {useGetTokenSymbolOnNetwork} from 'screens/bridge/hooks/useGetTokenSymbolOnNetwork';
+import {useTransferAsset} from 'screens/bridge/hooks/useTransferAsset';
+import {BridgeStackParamList} from 'navigation/wallet/BridgeScreenStack';
 
 const formatBalance = (balance: Big | undefined) => {
   return balance && formatTokenAmount(balance, 6);
@@ -56,7 +57,8 @@ const Bridge: FC = () => {
   useSwitchFromUnavailableAsset(true);
   const theme = useApplicationContext().theme;
   const network = useNetworkContext();
-  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<StackNavigationProp<BridgeStackParamList>>();
+  const {getTokenSymbolOnNetwork} = useGetTokenSymbolOnNetwork();
   // const {error} = useBridgeConfig();
   const {
     currentAsset,
@@ -73,19 +75,24 @@ const Bridge: FC = () => {
   const [bridgeError, setBridgeError] = useState<string>('');
   const [pending, setPending] = useState<boolean>(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [wrapStatus, setWrapStatus] = useState<WrapStatus>(WrapStatus.INITIAL);
-  const [txHash, setTxHash] = useState<string>();
-  const [searchQuery, setSearchQuery] = useState<string>('');
   const assets = useAssets(currentBlockchain);
-  // const tokenInfoData = useTokenInfoContext();
   const assetInfo = assets[currentAsset || ''];
-  const [maxValue, setMaxValue] = useState<BN>(new BN(0));
   const transferCost = useTransactionFee(currentBlockchain);
   const minimumTransferAmount = transferCost ? transferCost.mul(3) : BIG_ZERO;
   const tooLowAmount =
     !!transferCost && amount.gt(0) && amount.lt(minimumTransferAmount);
   const txFee = useTransactionFee(currentBlockchain);
   const {addresses} = useWalletStateContext();
+  const blockchainTokenSymbol = getTokenSymbolOnNetwork(
+    currentAsset ?? '',
+    currentBlockchain,
+  );
+
+  const {
+    transferAsset,
+    status: wrapStatus,
+    txHash,
+  } = useTransferAsset(assetInfo);
 
   const targetBlockchain =
     currentBlockchain === Blockchain.AVALANCHE
@@ -93,7 +100,6 @@ const Bridge: FC = () => {
       : Blockchain.AVALANCHE;
 
   const sourceBalance = useLoadTokenBalance(currentBlockchain, assetInfo);
-  const targetBalance = useLoadTokenBalance(targetBlockchain, assetInfo);
 
   const maxTransferAmount = useMaxTransferAmount(
     sourceBalance.balance,
@@ -102,19 +108,6 @@ const Bridge: FC = () => {
       ? getAvalancheProvider(network)
       : getEthereumProvider(network),
   );
-
-  const gasAssetSymbol =
-    currentBlockchain === Blockchain.AVALANCHE ? 'AVAX' : 'ETH';
-
-  console.log(
-    'sourceBalance: ' + sourceBalance?.balance?.toString() ?? 'undefined',
-  );
-  console.log('targetBalance: ' + targetBalance);
-  console.log('currentAsset: ' + currentAsset);
-  console.log('assetInfo: ' + assetInfo);
-  console.log('assetPrice: ' + assetPrice);
-  console.log('transferCost: ' + transferCost);
-  console.log('assets: ' + assets);
 
   /**
    * Used to display currently selected and dropdown items.
@@ -200,31 +193,38 @@ const Bridge: FC = () => {
    * Handles transfer transaction
    */
   const handleTransfer = async () => {
-    // if (BIG_ZERO.eq(amount)) {
-    //   return;
-    // }
-    //
-    // setPending(true);
-    // const result: any = await transferAsset(
-    //   amount,
-    //   asset,
-    //   setWrapStatus,
-    //   setTxHash,
-    // );
-    // setPending(false);
-    //
-    // const timestamp = Date.now();
-    //
-    // setTransactionDetails({
-    //   tokenSymbol:
-    //     asset.assetType === AssetType.NATIVE
-    //       ? asset.wrappedAssetSymbol
-    //       : currentAsset || '',
-    //   amount,
-    // });
-    //
-    // // Navigate to transaction status page
-    // navigation.navigate(AppNavigation.Swap.Review);
+    if (BIG_ZERO.eq(amount)) {
+      return;
+    }
+
+    try {
+      setPending(true);
+      const result = await transferAsset(amount);
+
+      if (!result?.hash) {
+        return;
+      }
+
+      setTransactionDetails({
+        tokenSymbol:
+          assetInfo.assetType === AssetType.NATIVE
+            ? assetInfo.wrappedAssetSymbol
+            : currentAsset || '',
+        amount,
+      });
+
+      // Navigate to transaction status page
+      navigation.navigate(AppNavigation.Bridge.ActivityDetail, {
+        blockchain: currentBlockchain as string,
+        resultHash: result.hash,
+      });
+    } catch (e) {
+      // user declined transaction
+      console.error(e);
+      return;
+    } finally {
+      setPending(false);
+    }
   };
 
   /**
@@ -239,24 +239,10 @@ const Bridge: FC = () => {
       setAmountTooLowError('');
     }
   }, [tooLowAmount, minimumTransferAmount]);
-  //
-  // useEffect(() => {
-  //   setMaxValue(new BN(0));
-  //
-  //   if (sourceBalance?.balance && transferCost) {
-  //     if (BIG_ZERO.eq(sourceBalance.balance)) {
-  //       return;
-  //     }
-  //
-  //     const balanceMinusFees = sourceBalance.balance?.minus(transferCost);
-  //
-  //     setMaxValue(
-  //       bigToBN(balanceMinusFees || BIG_ZERO, sourceBalance.asset.denomination),
-  //     );
-  //   }
-  // }, [transferCost, sourceBalance]);
 
   const transferDisabled =
+    !sourceBalance.balance ||
+    (sourceBalance.balance && amount.gt(sourceBalance.balance)) ||
     bridgeError.length > 0 ||
     amountTooLowError.length > 0 ||
     pending ||
@@ -275,6 +261,30 @@ const Bridge: FC = () => {
 
   return (
     <View style={styles.container}>
+      <Pressable
+        style={{
+          margin: 16,
+          borderRadius: 50,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: 'white',
+          marginHorizontal: 16,
+          paddingVertical: 12,
+          bottom: 40,
+          opacity: transferDisabled ? 0.5 : 1,
+        }}
+        onPress={() => {
+          console.log('transfer pressed');
+          handleTransfer();
+        }}
+        disabled={transferDisabled}>
+        <>
+          {pending && <ActivityIndicator color={theme.colorPrimary1} />}
+          <AvaText.ButtonLarge textStyle={{color: 'black'}}>
+            Transfer
+          </AvaText.ButtonLarge>
+        </>
+      </Pressable>
       <ScrollView style={styles.container}>
         <Space y={20} />
         <View style={{backgroundColor: theme.colorBg2, borderRadius: 10}}>
@@ -305,10 +315,15 @@ const Bridge: FC = () => {
                 alignSelf: 'flex-end',
                 paddingEnd: 16,
               }}>
-              Balance {formatBalance(sourceBalance?.balance)}
+              Balance {formatBalance(sourceBalance?.balance)}{' '}
+              {blockchainTokenSymbol}
             </AvaText.Body3>
             <View
-              style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}>
               <Pressable
                 onPress={() => {
                   navigation.navigate(AppNavigation.Modal.BridgeSelectToken, {
@@ -316,7 +331,7 @@ const Bridge: FC = () => {
                   });
                 }}>
                 <AvaText.Body1>
-                  {currentAsset} <CarrotSVG direction={'down'} />{' '}
+                  {blockchainTokenSymbol} <CarrotSVG direction={'down'} />{' '}
                 </AvaText.Body1>
               </Pressable>
               <InputText
@@ -403,10 +418,10 @@ const Bridge: FC = () => {
               {/* receive amount */}
               <AvaText.Body1>
                 {txFee && amount && !BIG_ZERO.eq(amount)
-                  ? `${amount.minus(txFee).toNumber().toFixed(9)}`
-                  : '-'}
+                  ? `${amount.minus(txFee).toNumber().toFixed(9)} `
+                  : '- '}
                 <AvaText.Body1 color={theme.colorText2}>
-                  {gasAssetSymbol}
+                  {currentAsset}
                 </AvaText.Body1>
               </AvaText.Body1>
               {/* estimate amount */}
@@ -429,24 +444,6 @@ const Bridge: FC = () => {
           </View>
         </View>
       </ScrollView>
-      <AvaButton.Base
-        style={{
-          margin: 16,
-          borderRadius: 50,
-          justifyContent: 'center',
-          alignItems: 'center',
-          backgroundColor: 'white',
-          marginHorizontal: 16,
-          paddingVertical: 12,
-          bottom: 40,
-          opacity: transferDisabled ? 0.5 : 1,
-        }}
-        onPress={handleTransfer}
-        disabled={transferDisabled}>
-        <AvaText.ButtonLarge textStyle={{color: 'black'}}>
-          Transfer
-        </AvaText.ButtonLarge>
-      </AvaButton.Base>
     </View>
   );
 };
