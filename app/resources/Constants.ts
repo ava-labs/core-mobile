@@ -31,6 +31,8 @@ export enum COLORS_DAY {
   colorChain3 = '#7C1BF21A',
   colorChain4 = '#4D00DE',
   listItemBg = '#F8F8FB',
+  radioBtn = '#2A2A2B',
+  radioBtnSelected = '#EFEEF3',
 
   tokenLogoColor = '#ffffff',
   tokenLogoBg = '#e84142',
@@ -93,6 +95,8 @@ export enum COLORS_NIGHT {
   colorChain3 = '#934AF61A',
   colorChain4 = '#DAC3FB',
   listItemBg = '#1A1A1C',
+  radioBtn = '#2A2A2B',
+  radioBtnSelected = '#EFEEF3',
 
   tokenLogoColor = '#ffffff',
   tokenLogoBg = '#e84142',
