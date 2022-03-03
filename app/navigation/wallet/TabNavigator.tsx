@@ -2,7 +2,6 @@ import AppNavigation from 'navigation/AppNavigation';
 import HomeSVG from 'components/svg/HomeSVG';
 import SwapSVG from 'components/svg/SwapSVG';
 import WatchlistSVG from 'components/svg/WatchlistSVG';
-import WatchlistView from 'screens/watchlist/WatchlistView';
 import {MainHeaderOptions} from 'navigation/NavUtils';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {useApplicationContext} from 'contexts/ApplicationContext';
@@ -25,6 +24,7 @@ import QRCodeSVG from 'components/svg/QRCodeSVG';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {RootStackParamList} from 'navigation/WalletScreenStack';
 import WatchlistTab from 'screens/watchlist/WatchlistTabView';
+import Bridge from 'screens/bridge/Bridge';
 
 const Tab = createBottomTabNavigator();
 const TAB_ICON_SIZE = 28;
@@ -173,7 +173,7 @@ const TabNavigator = () => {
       />
       <Tab.Screen
         name={AppNavigation.Tabs.Bridge}
-        component={WatchlistView}
+        component={Bridge}
         options={{
           ...MainHeaderOptions('Bridge'),
           tabBarIcon: ({focused}) =>

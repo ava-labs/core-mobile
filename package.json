@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@avalabs/avalanche-wallet-sdk": "0.14.5",
+    "@avalabs/bridge-sdk": "0.2.0-alpha.4",
     "@avalabs/wallet-react-components": "1.24.6",
     "@connectedcars/react-native-slide-charts": "^1.0.5",
     "@eliav2/react-native-collapsible-view": "^1.4.0",
@@ -45,6 +46,7 @@
     "bn.js": "^5.2.0",
     "crypto-js": "4.1.1",
     "hdkey": "^2.0.1",
+    "human-standard-token-abi": "^2.0.0",
     "jail-monkey": "^2.6.0",
     "lodash.isstring": "^4.0.1",
     "lottie-react-native": "5.0.1",
