@@ -1,23 +1,21 @@
 import React from 'react';
 import AppNavigation from 'navigation/AppNavigation';
 import {createStackNavigator} from '@react-navigation/stack';
-import SwapView from 'screens/swap/SwapView';
-import SwapReview from 'screens/swap/SwapReview';
-import DoneScreen from 'screens/swap/DoneScreen';
-import FailScreen from 'screens/swap/FailScreen';
-import HeaderAccountSelector from 'components/HeaderAccountSelector';
-import {SwapContextProvider} from 'contexts/SwapContext';
-import EditGasLimitBottomSheet from 'screens/shared/EditGasLimitBottomSheet';
 import {BridgeProvider} from 'screens/bridge/BridgeProvider';
 import Bridge from 'screens/bridge/Bridge';
-import BridgeActivityDetail from 'screens/bridge/BridgeActivityDetail';
-import {SubHeaderOptions} from 'navigation/NavUtils';
+import BridgeTransactionStatus from 'screens/bridge/BridgeTransactionStatus';
+import {MainHeaderOptions, SubHeaderOptions} from 'navigation/NavUtils';
+import BridgeSelectTokenBottomSheet from 'screens/bridge/BridgeSelectTokenBottomSheet';
 
 export type BridgeStackParamList = {
   [AppNavigation.Bridge.Bridge]: undefined;
-  [AppNavigation.Bridge.ActivityDetail]: {
+  [AppNavigation.Bridge.BridgeTransactionStatus]: {
     blockchain: string;
-    resultHash: string;
+    txHash: string;
+    txTimestamp: string;
+  };
+  [AppNavigation.Modal.BridgeSelectToken]: {
+    onTokenSelected: (token: string) => void;
   };
 };
 
@@ -26,25 +24,28 @@ const BridgeStack = createStackNavigator<BridgeStackParamList>();
 function BridgeScreenStack() {
   return (
     <BridgeProvider>
-      <BridgeStack.Navigator
-        screenOptions={{
-          presentation: 'card',
-          headerShown: true,
-          headerBackTitleVisible: false,
-          headerTitleAlign: 'center',
-        }}>
+      <BridgeStack.Navigator>
         <BridgeStack.Screen
-          options={{headerShown: false}}
+          options={{
+            ...MainHeaderOptions('Bridge'),
+          }}
           name={AppNavigation.Bridge.Bridge}
           component={Bridge}
         />
         <BridgeStack.Screen
           options={{
-            ...SubHeaderOptions('Transaction Details'),
+            ...SubHeaderOptions('Transaction Status'),
           }}
-          name={AppNavigation.Bridge.ActivityDetail}
-          component={BridgeActivityDetail}
+          name={AppNavigation.Bridge.BridgeTransactionStatus}
+          component={BridgeTransactionStatus}
         />
+        <BridgeStack.Group screenOptions={{presentation: 'transparentModal'}}>
+          <BridgeStack.Screen
+            options={{headerShown: false}}
+            name={AppNavigation.Modal.BridgeSelectToken}
+            component={BridgeSelectTokenBottomSheet}
+          />
+        </BridgeStack.Group>
       </BridgeStack.Navigator>
     </BridgeProvider>
   );
