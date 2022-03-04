@@ -42,8 +42,10 @@ export type Contact = {
 
 export type RecentContact = {
   id: AccountId | UID;
-  type: 'account' | 'address';
+  type: AddrBookItemType;
 };
+
+export type AddrBookItemType = 'account' | 'contact';
 
 export type Repo = {
   informationViewOnceRepo: {
