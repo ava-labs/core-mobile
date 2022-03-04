@@ -1,5 +1,21 @@
-import React, {FC, Fragment, useContext, useEffect, useRef} from 'react';
-import {Animated, Dimensions, Easing, StyleSheet, View} from 'react-native';
+import React, {
+  FC,
+  Fragment,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import {
+  Animated,
+  Dimensions,
+  Easing,
+  LayoutChangeEvent,
+  StyleSheet,
+  View,
+} from 'react-native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from 'components/AvaText';
 
@@ -32,10 +48,7 @@ const ConfirmationTracker: FC<ConfirmationTrackerProps> = ({
   }, []);
 
   const calculateLineWidth = (fullWidth = false) => {
-    const containerWidth = WINDOW_WIDTH;
-    if (!containerWidth) {
-      return 100;
-    }
+    const containerWidth = 450;
     if (fullWidth) {
       return containerWidth;
     }
@@ -71,15 +84,10 @@ const ConfirmationTracker: FC<ConfirmationTrackerProps> = ({
       Animated.sequence([
         // increase size
         Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 800,
-          useNativeDriver: true,
-        }),
-        // decrease size
-        Animated.timing(pulseAnim, {
-          toValue: 1.5,
+          toValue: 100,
           duration: 1500,
           useNativeDriver: true,
+          easing: Easing.inOut(Easing.ease),
         }),
       ]),
     ).start();
@@ -103,20 +111,17 @@ const ConfirmationTracker: FC<ConfirmationTrackerProps> = ({
     );
   }
 
-  function renderDashedLine(left = false) {
+  function renderDashedLine() {
     return (
       <View
         style={{
           width: 40,
           height: 0,
           backgroundColor: theme.colorBg3,
-          position: 'absolute',
-          left: left ? 20 : -20,
-          top: 9,
           borderStyle: 'dashed',
           borderWidth: 1,
           borderColor: theme.background,
-          zIndex: -1000,
+          alignSelf: 'center',
         }}
       />
     );
@@ -153,7 +158,14 @@ const ConfirmationTracker: FC<ConfirmationTrackerProps> = ({
               height: 20,
               borderRadius: 50,
               backgroundColor: theme.colorBg3,
-              transform: [{scale: pulseAnim}],
+              transform: [
+                {
+                  scale: pulseAnim.interpolate({
+                    inputRange: [5, 50, 100],
+                    outputRange: [1, 2, 1],
+                  }),
+                },
+              ],
               position: 'absolute',
             }}
           />
@@ -169,7 +181,7 @@ const ConfirmationTracker: FC<ConfirmationTrackerProps> = ({
           {
             width: calculateLineWidth(grow),
             height: 2,
-            marginTop: grow ? 22 : 9,
+            marginTop: 9,
             zIndex: -1,
             backgroundColor: active || complete ? theme.white : theme.colorBg3,
           },
@@ -186,42 +198,90 @@ const ConfirmationTracker: FC<ConfirmationTrackerProps> = ({
     );
   }
 
-  function renderFullWidhSingleLine(grow = false) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          top: 0,
-          bottom: 0,
-          left: 0,
-          right: 0,
-          position: 'absolute',
-          zIndex: -1,
-        }}>
-        {renderLine(currentCount >= requiredCount, lastStepActive, grow)}
-      </View>
-    );
-  }
-
-  const dots = [];
-  for (let i = 1; i <= numberOfDots; i++) {
-    const active = started && currentCount < i && currentCount >= i - 1;
-    dots.push(
-      <Fragment key={`container-${i}`}>
-        {renderLine(currentCount >= i, active)}
-        <View style={{justifyContent: 'center', alignItems: 'center'}}>
-          {renderCircle(currentCount >= i, active)}
-          <AvaText.Body1 textStyle={{marginTop: 10, marginHorizontal: -16}}>
-            {i}/{requiredCount}
-          </AvaText.Body1>
-        </View>
-      </Fragment>,
-    );
-  }
+  const confirmations = useMemo(() => {
+    const dots = [];
+    for (let i = 1; i <= numberOfDots; i++) {
+      const active = started && currentCount < i && currentCount >= i - 1;
+      dots.push(
+        <Fragment key={`container-${i}`}>
+          {renderLine(currentCount >= i, active)}
+          <View style={{justifyContent: 'center', alignItems: 'center'}}>
+            {renderCircle(currentCount >= i, active)}
+            <AvaText.Body1 textStyle={{marginTop: 10, marginHorizontal: -16}}>
+              {i}/{requiredCount}
+            </AvaText.Body1>
+          </View>
+        </Fragment>,
+      );
+    }
+    return dots;
+  }, [currentCount]);
 
   const lastStepActive =
     started && currentCount < requiredCount && currentCount >= numberOfDots;
   const showBreakEnd = currentCount < requiredCount - 2 && requiredCount > 3;
+
+  const renderStartCircle = useMemo(
+    () => (
+      <View
+        style={{
+          alignItems: 'flex-start',
+          zIndex: 1,
+          paddingTop: 8,
+          justifyContent: 'center',
+        }}>
+        <View style={{flexDirection: 'row'}}>
+          {renderCircle(started, false)}
+          {currentCount > 1 && renderDashedLine()}
+        </View>
+        <AvaText.Body1
+          textStyle={{marginTop: 10, backgroundColor: theme.colorBg2}}>
+          Start
+        </AvaText.Body1>
+      </View>
+    ),
+    [currentCount],
+  );
+
+  const renderFinalCircle = useMemo(
+    () => (
+      <View
+        style={{
+          alignItems: 'flex-end',
+          zIndex: 1,
+          paddingTop: 8,
+          justifyContent: 'center',
+        }}>
+        <View style={{flexDirection: 'row-reverse'}}>
+          {renderCircle(currentCount >= requiredCount, lastStepActive)}
+          {showBreakEnd && renderDashedLine()}
+        </View>
+        <AvaText.Body1
+          textStyle={{marginTop: 10, backgroundColor: theme.colorBg2}}>
+          Final
+        </AvaText.Body1>
+      </View>
+    ),
+    [currentCount, requiredCount, lastStepActive, showBreakEnd],
+  );
+
+  const renderSingleLine = useMemo(
+    () => (
+      <Animated.View
+        style={{
+          flex: 1,
+          position: 'absolute',
+          overflow: 'hidden',
+          top: 12,
+          bottom: 0,
+          left: 0,
+          right: 12,
+        }}>
+        {renderLine(currentCount >= requiredCount, lastStepActive, true)}
+      </Animated.View>
+    ),
+    [currentCount, requiredCount, lastStepActive],
+  );
 
   let left = 0;
   if (currentCount > 1) {
@@ -237,43 +297,32 @@ const ConfirmationTracker: FC<ConfirmationTrackerProps> = ({
   }
 
   return (
-    <View style={styles.container} ref={containerRef} {...rest}>
-      <View
-        style={{
-          alignItems: 'flex-start',
-          zIndex: 1,
-        }}>
-        {renderCircle(started, false)}
-        <AvaText.Body1
-          textStyle={{marginTop: 10, backgroundColor: theme.colorBg2}}>
-          Start
-        </AvaText.Body1>
-        {currentCount > 1 && renderDashedLine(true)}
-      </View>
+    <View
+      style={[styles.container, {backgroundColor: theme.colorBg2}]}
+      ref={containerRef}
+      {...rest}>
+      {renderStartCircle}
       {requiredCount === 1 ? (
-        renderFullWidhSingleLine(true)
+        renderSingleLine
       ) : (
         <View
           style={{
-            paddingHorizontal: 10,
-            width: '100%',
-            flexDirection: 'row',
             overflow: 'hidden',
             position: 'absolute',
           }}>
           <Animated.View
             style={{
-              width: '100%',
               flexDirection: 'row',
-              display: 'flex',
+              paddingTop: 12,
               flex: 1,
+              paddingRight: 100,
               transform: [
                 {
                   translateX: moveAnim,
                 },
               ],
             }}>
-            {dots}
+            {confirmations}
             {renderLine(
               currentCount >= requiredCount,
               lastStepActive,
@@ -282,18 +331,7 @@ const ConfirmationTracker: FC<ConfirmationTrackerProps> = ({
           </Animated.View>
         </View>
       )}
-      <View
-        style={{
-          alignItems: 'flex-end',
-          zIndex: 1,
-        }}>
-        {renderCircle(currentCount >= requiredCount, lastStepActive)}
-        <AvaText.Body1
-          textStyle={{marginTop: 10, backgroundColor: theme.colorBg2}}>
-          Final
-        </AvaText.Body1>
-        {showBreakEnd && renderDashedLine()}
-      </View>
+      {renderFinalCircle}
     </View>
   );
 };
@@ -301,13 +339,11 @@ const ConfirmationTracker: FC<ConfirmationTrackerProps> = ({
 const styles = StyleSheet.create({
   container: {
     justifyContent: 'space-between',
-    alignItems: 'center',
     minWidth: 311,
     maxWidth: '100%',
-    minHeight: 80,
     flexDirection: 'row',
     overflow: 'hidden',
-    marginHorizontal: 16,
+    paddingTop: 4,
   },
 });
 

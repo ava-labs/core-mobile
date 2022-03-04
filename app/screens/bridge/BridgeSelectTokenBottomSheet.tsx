@@ -1,19 +1,20 @@
 import React, {useCallback, useEffect, useMemo, useRef} from 'react';
 import BottomSheet, {BottomSheetBackdrop} from '@gorhom/bottom-sheet';
 import {InteractionManager} from 'react-native';
-import {useNavigation, useRoute} from '@react-navigation/native';
+import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
 import TabViewBackground from 'screens/portfolio/components/TabViewBackground';
 import AvaxSheetHandle from 'components/AvaxSheetHandle';
 import AvaText from 'components/AvaText';
 import BridgeTokenSelector, {
   SelectTokenMode,
 } from 'screens/bridge/BridgeTokenSelector';
+import {BridgeStackParamList} from 'navigation/wallet/BridgeScreenStack';
 
 function BridgeSelectTokenBottomSheet(): JSX.Element {
   const navigation = useNavigation();
   const bottomSheetModalRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ['0%', '90%'], []);
-  const route = useRoute();
+  const route = useRoute<RouteProp<BridgeStackParamList>>();
 
   useEffect(() => {
     // intentionally setting delay so animation is visible.
@@ -51,7 +52,7 @@ function BridgeSelectTokenBottomSheet(): JSX.Element {
         </AvaText.LargeTitleBold>
         <BridgeTokenSelector
           onTokenSelected={onTokenSelected}
-          selectMode={SelectTokenMode.CONVERT}
+          selectMode={SelectTokenMode.TRANSFER}
         />
       </>
     </BottomSheet>
