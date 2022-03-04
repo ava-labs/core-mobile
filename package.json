@@ -1,6 +1,6 @@
 {
-  "name": "AvaxWallet",
-  "version": "0.5.5",
+  "name": "avalanche-wallet-apps",
+  "version": "0.6.3",
   "private": true,
   "scripts": {
     "android": "react-native run-android",
