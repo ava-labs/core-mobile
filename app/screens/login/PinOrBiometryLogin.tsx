@@ -13,7 +13,7 @@ import AvaText from 'components/AvaText';
 import {Space} from 'components/Space';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaButton from 'components/AvaButton';
-import CoreXLogoAnimated from 'components/CoreXLogoAnimated';
+import OwlLogoSVG from 'components/svg/OwlLogoSVG';
 
 const keymap: Map<string, PinKeys> = new Map([
   ['1', PinKeys.Key1],
@@ -112,17 +112,16 @@ export default function PinOrBiometryLogin({
       <Space y={64} />
       <View style={styles.growContainer}>
         {isResettingPin || (
-          <>
-            <CoreXLogoAnimated size={80} />
+          <View style={{alignItems: 'center'}}>
+            <OwlLogoSVG />
             <Space y={8} />
             <AvaText.Body1
               textStyle={{
-                textAlign: 'center',
                 color: context.theme.colorText1,
               }}>
               Enter your PIN
             </AvaText.Body1>
-          </>
+          </View>
         )}
         <Animated.View
           style={[
