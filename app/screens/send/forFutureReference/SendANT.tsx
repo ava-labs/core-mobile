@@ -69,16 +69,16 @@ export default function SendANT(): JSX.Element {
       address={address}
       setAddress={setAddress}
       onNextPress={() => {
-        navigate(AppNavigation.SendToken.ConfirmTransactionScreen, {
-          payload: {
-            imageUrl: selectedToken?.logoURI,
-            name: selectedToken?.name,
-            fee: bnAmountToString(sendFee),
-            amount: bnAmountToString(amount),
-            address: address,
-            onConfirm: handleOnConfirm,
-          },
-        });
+        // navigate(AppNavigation.SendToken.ConfirmTransactionScreen, {
+        //   payload: {
+        //     imageUrl: selectedToken?.logoURI,
+        //     name: selectedToken?.name,
+        //     fee: bnAmountToString(sendFee),
+        //     amount: bnAmountToString(amount),
+        //     address: address,
+        //     onConfirm: handleOnConfirm,
+        //   },
+        // });
       }}
     />
   );

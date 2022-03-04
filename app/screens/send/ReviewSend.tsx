@@ -25,6 +25,7 @@ export default function ReviewSend({
   const {theme, isDarkMode} = useApplicationContext();
   const {goBack} = useNavigation<StackNavigationProp<SendStackParamList>>();
   const {
+    sendToken,
     tokenLogo,
     sendAmount,
     fromAccount,
@@ -82,10 +83,10 @@ export default function ReviewSend({
         }}>
         <AvaText.Body2 textStyle={{textAlign: 'center'}}>Amount</AvaText.Body2>
         <Space y={4} />
-        <Row style={{justifyContent: 'center'}}>
+        <Row style={{justifyContent: 'center', alignItems: 'flex-end'}}>
           <AvaText.Heading1>{sendAmount}</AvaText.Heading1>
           <Space x={4} />
-          <AvaText.Heading3>AVAX</AvaText.Heading3>
+          <AvaText.Heading3>{sendToken?.symbol ?? ''}</AvaText.Heading3>
         </Row>
         <Space y={8} />
         <SendRow
@@ -115,7 +116,7 @@ export default function ReviewSend({
         <Row style={{justifyContent: 'space-between'}}>
           <AvaText.Body2>Balance After Transaction</AvaText.Body2>
           <AvaText.Heading2>
-            {fromAccount.balanceAfterTrx} AVAX
+            {fromAccount.balanceAfterTrx} {sendToken?.symbol ?? ''}
           </AvaText.Heading2>
         </Row>
         <AvaText.Body3 textStyle={{alignSelf: 'flex-end'}}>
