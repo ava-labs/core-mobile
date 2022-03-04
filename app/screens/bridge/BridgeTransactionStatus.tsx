@@ -31,6 +31,8 @@ import {displaySeconds} from 'utils/Utils';
 import CheckmarkSVG from 'components/svg/CheckmarkSVG';
 import ConfirmationTracker from 'screens/bridge/ConfirmationTracker';
 import BridgeConfirmations from 'components/BridgeConfirmations';
+import {useGetTokenSymbolOnNetwork} from 'screens/bridge/hooks/useGetTokenSymbolOnNetwork';
+import useBridge from 'screens/bridge/hooks/useBridge';
 
 interface Props {}
 
@@ -46,25 +48,23 @@ const BridgeTransactionStatus: FC<Props> = props => {
   const {theme} = useApplicationContext();
   const {params} = useRoute<RouteProp<BridgeStackParamList>>();
   const {selectedCurrency} = useApplicationContext().appHook;
-
-  const tokenInfoData = useTokenInfoContext();
-
   const {addresses} = useWalletStateContext();
+  const {config} = useBridgeConfig();
+  const {network} = useNetworkContext();
+  const etherscanLink = getEtherscanLink(network);
+  const ethereumProvider = getEthereumProvider(network);
+  const avalancheProvider = getAvalancheProvider(network);
+  const {getTokenSymbolOnNetwork} = useGetTokenSymbolOnNetwork();
+  const {tokenInfoContext, assetInfo} = useBridge();
+
   const {
     currentAsset,
     transactionDetails,
     bridgeAssets,
     setTransactionDetails,
+    currentBlockchain,
   } = useBridgeSDK();
-  const {config} = useBridgeConfig();
-  const [fromCardOpen, setFromCardOpen] = useState<boolean>(false);
-  // const [toastShown, setToastShown] = useState<boolean>(
-  //   location.search.includes('complete=true'),
-  // );
-  const {network} = useNetworkContext();
-  const etherscanLink = getEtherscanLink(network);
-  const ethereumProvider = getEthereumProvider(network);
-  const avalancheProvider = getAvalancheProvider(network);
+
   const txProps = useTxTracker(
     params?.blockchain as Blockchain,
     params?.txHash ?? '',
@@ -76,6 +76,11 @@ const BridgeTransactionStatus: FC<Props> = props => {
     addresses?.addrC,
     transactionDetails,
     bridgeAssets,
+  );
+
+  const tokenSymbolOnNetwork = getTokenSymbolOnNetwork(
+    currentAsset ?? '',
+    currentBlockchain,
   );
 
   const assetPrice = usePrice(txProps?.symbol || currentAsset);
@@ -96,9 +101,10 @@ const BridgeTransactionStatus: FC<Props> = props => {
         <DotSVG fillColor={theme.colorBg1} size={72} />
       </View>
       <Avatar.Custom
-        name={transactionDetails?.tokenSymbol ?? ''}
-        symbol={tokenInfoData?.[transactionDetails?.tokenSymbol ?? 0]?.logo}
-        size={60}
+        name={assetInfo.symbol}
+        symbol={assetInfo.symbol}
+        logoUri={tokenInfoContext?.[tokenSymbolOnNetwork]?.logo}
+        size={55}
       />
     </View>
   );
@@ -145,7 +151,7 @@ const BridgeTransactionStatus: FC<Props> = props => {
           minHeight: 200,
           backgroundColor: theme.colorBg2,
           marginHorizontal: 16,
-          paddingBottom: 8,
+          paddingBottom: 16,
           borderRadius: 10,
         }}>
         <AvaListItem.Base
@@ -175,7 +181,13 @@ const BridgeTransactionStatus: FC<Props> = props => {
           }
         />
         <Separator color={theme.colorBg3} inset={16} />
-        <BridgeConfirmations txProps={txProps} />
+        <BridgeConfirmations
+          started={true}
+          requiredConfirmationCount={txProps.requiredConfirmationCount}
+          complete={txProps.complete}
+          tickerSeconds={txProps.sourceSeconds}
+          confirmationCount={txProps.confirmationCount}
+        />
       </View>
       <Space y={16} />
       <View
@@ -183,6 +195,7 @@ const BridgeTransactionStatus: FC<Props> = props => {
           backgroundColor: theme.colorBg2,
           marginHorizontal: 16,
           borderRadius: 10,
+          paddingBottom: 16,
         }}>
         <AvaListItem.Base
           title={'To'}
@@ -195,37 +208,14 @@ const BridgeTransactionStatus: FC<Props> = props => {
           }
         />
         <Separator color={theme.colorBg3} inset={16} />
-        <AvaListItem.Base
-          title={'Confirmations'}
-          rightComponent={
-            <Row style={{alignItems: 'center'}}>
-              <AvaText.Heading3 textStyle={{marginEnd: 8}}>
-                {txProps.complete ? '1' : '0'}/
-                {
-                  1 // On the destination network, we just need 1 confirmation
-                }
-              </AvaText.Heading3>
-              <OvalTagBg
-                color={txProps.complete ? theme.colorSuccess : theme.colorBg3}>
-                <AvaText.ButtonSmall>
-                  {displaySeconds(txProps.targetSeconds)}
-                  {txProps.complete && (
-                    <>
-                      {' '}
-                      <CheckmarkSVG color={theme.white} size={10} />
-                    </>
-                  )}
-                </AvaText.ButtonSmall>
-              </OvalTagBg>
-            </Row>
-          }
-        />
-        <ConfirmationTracker
+        <BridgeConfirmations
           started={txProps.targetSeconds > 0}
-          requiredCount={
+          requiredConfirmationCount={
             1 // On avalanche, we just need 1 confirmation
           }
-          currentCount={txProps.complete ? 1 : 0}
+          complete={txProps.complete}
+          tickerSeconds={txProps.targetSeconds}
+          confirmationCount={txProps.complete ? 1 : 0}
         />
       </View>
     </View>

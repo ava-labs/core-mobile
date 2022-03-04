@@ -118,7 +118,7 @@ const Avatar = {
 const styles = StyleSheet.create({
   tokenLogo: {
     paddingHorizontal: 16,
-    borderRadius: 20,
+    borderRadius: 50,
     overflow: 'hidden',
   },
   initials: {
