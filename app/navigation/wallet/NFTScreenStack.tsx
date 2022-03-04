@@ -4,7 +4,6 @@ import {
   createStackNavigator,
   StackNavigationProp,
 } from '@react-navigation/stack';
-import {SwapContextProvider} from 'contexts/SwapContext';
 import NftListView from 'screens/nft/NftListView';
 import {NFTItem} from 'screens/nft/NFTItem';
 import {useNavigation} from '@react-navigation/native';
@@ -14,11 +13,13 @@ import NftManage from 'screens/nft/NftManage';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {UID} from 'Repo';
 import {v4 as uuidv4} from 'uuid';
+import NFTSendScreenStack from 'navigation/wallet/NFTSendStack';
 
 export type NFTStackParamList = {
   [AppNavigation.Nft.List]: undefined;
   [AppNavigation.Nft.Manage]: undefined;
   [AppNavigation.Nft.Details]: {nft: NFTItem};
+  [AppNavigation.Nft.Send]: {nft: NFTItem};
   [AppNavigation.Nft.FullScreen]: {url: string};
 };
 
@@ -33,36 +34,36 @@ function NFTScreenStack() {
   }, []);
 
   return (
-    <SwapContextProvider>
-      <NFTStack.Navigator
-        screenOptions={{
-          presentation: 'card',
-          headerShown: true,
-          title: '',
-          headerBackTitleVisible: false,
-          headerTitleAlign: 'center',
-        }}>
-        <NFTStack.Screen
-          name={AppNavigation.Nft.List}
-          component={NftListViewScreen}
-        />
-        <NFTStack.Screen
-          name={AppNavigation.Nft.Manage}
-          component={NftManage}
-        />
-        <NFTStack.Screen
-          name={AppNavigation.Nft.Details}
-          component={NftDetailsScreen}
-        />
-        <NFTStack.Screen
-          options={{
-            headerTransparent: true,
-          }}
-          name={AppNavigation.Nft.FullScreen}
-          component={NftFullScreen}
-        />
-      </NFTStack.Navigator>
-    </SwapContextProvider>
+    <NFTStack.Navigator
+      screenOptions={{
+        presentation: 'card',
+        headerShown: true,
+        title: '',
+        headerBackTitleVisible: false,
+        headerTitleAlign: 'center',
+      }}>
+      <NFTStack.Screen
+        name={AppNavigation.Nft.List}
+        component={NftListViewScreen}
+      />
+      <NFTStack.Screen name={AppNavigation.Nft.Manage} component={NftManage} />
+      <NFTStack.Screen
+        name={AppNavigation.Nft.Details}
+        component={NftDetailsScreen}
+      />
+      <NFTStack.Screen
+        options={{headerShown: false}}
+        name={AppNavigation.Nft.Send}
+        component={NFTSendScreenStack}
+      />
+      <NFTStack.Screen
+        options={{
+          headerTransparent: true,
+        }}
+        name={AppNavigation.Nft.FullScreen}
+        component={NftFullScreen}
+      />
+    </NFTStack.Navigator>
   );
 }
 
@@ -87,7 +88,15 @@ const NftDetailsScreen = () => {
   const openImageFull = (url: string) => {
     navigate(AppNavigation.Nft.FullScreen, {url});
   };
-  return <NftDetails onPicturePressed={openImageFull} />;
+  const openSendNftScreen = (item: NFTItem) => {
+    navigate(AppNavigation.Nft.Send, {nft: item});
+  };
+  return (
+    <NftDetails
+      onPicturePressed={openImageFull}
+      onSendPressed={openSendNftScreen}
+    />
+  );
 };
 
 export default React.memo(NFTScreenStack);
