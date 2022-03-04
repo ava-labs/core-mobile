@@ -10,10 +10,10 @@ import LightModeSVG from 'components/svg/LightModeSVG';
 import DarkModeSVG from 'components/svg/DarkModeSVG';
 import {ScrollView} from 'react-native-gesture-handler';
 import SignOutItem from 'screens/drawer/components/SignOutItem';
-import SplashLogoSVG from 'components/svg/SplashLogoSVG';
 import NetworkItem from 'screens/drawer/components/NetworkItem';
 import AddressBookItem from 'screens/drawer/components/AddressBookItem';
 import {Row} from 'components/Row';
+import OwlBrandLogo from 'components/OwlBrandLogo';
 
 const DrawerView = () => {
   const context = useApplicationContext();
@@ -24,7 +24,14 @@ const DrawerView = () => {
 
   const header = (
     <Row style={styles.headerContainer}>
-      <SplashLogoSVG width={142} height={40} />
+      <OwlBrandLogo
+        logoHeight={29}
+        textHeight={15}
+        orientation={'horizontal'}
+        style={{
+          justifyContent: 'flex-start',
+        }}
+      />
       {/* hiding mode toggle until it's implemented */}
       {true || (
         <Pressable
