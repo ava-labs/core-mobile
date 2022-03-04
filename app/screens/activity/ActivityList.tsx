@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {Animated, RefreshControl, View} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import AppNavigation from 'navigation/AppNavigation';
@@ -32,57 +32,54 @@ const YESTERDAY = moment().subtract(1, 'days');
 type SectionType = {[x: string]: TxType[]};
 
 function ActivityList({embedded, tokenSymbolFilter}: Props) {
-  const [sectionData, setSectionData] = useState<SectionType>({});
   const [loading, setLoading] = useState(true);
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const wallet = useWalletContext()?.wallet;
-  const {network} = useNetworkContext();
+  const {network} = useNetworkContext()!;
+  const [allHistory, setAllHistory] = useState<
+    (TransactionNormal | TransactionERC20)[]
+  >([]);
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  useEffect(() => loadHistory(), [wallet, network]);
-
-  const loadHistory = useCallback(async () => {
-    setLoading(true);
+  const sectionData = useMemo(() => {
     const newSectionData: SectionType = {};
-    if (wallet) {
-      const history = (await getHistory(wallet, 50)) ?? [];
-      history
-        .filter((tx: TxType) => {
-          return tokenSymbolFilter
-            ? tokenSymbolFilter === (tx?.tokenSymbol ?? 'AVAX')
-            : true;
-        })
-        .map((it: TxType) => {
-          const date = moment(it.timestamp);
-          if (TODAY.isSame(date, 'day')) {
-            const today = newSectionData.Today;
-            newSectionData.Today = today
-              ? [...newSectionData.Today, it]
-              : [...[it]];
-          } else if (YESTERDAY.isSame(date, 'day')) {
-            const yesterday = newSectionData.Yesterday;
-            newSectionData.Yesterday = yesterday
-              ? [...newSectionData.Yesterday, it]
-              : [...[it]];
-          } else {
-            const isCurrentYear = TODAY.year() === date.year();
-            const titleDate = date.format(
-              isCurrentYear
-                ? DISPLAY_FORMAT_CURRENT_YEAR
-                : DISPLAY_FORMAT_PAST_YEAR,
-            );
-            const otherDate = newSectionData[titleDate];
-            newSectionData[titleDate] = otherDate
-              ? [...newSectionData[titleDate], it]
-              : [...[it]];
-          }
-        });
-      setLoading(false);
-      console.log(newSectionData);
-      setSectionData(newSectionData);
-    }
-  }, [wallet, tokenSymbolFilter]);
+    allHistory
+      .filter((tx: TxType) => {
+        console.log('tokenSymbolFilter', tokenSymbolFilter);
+        return tokenSymbolFilter
+          ? tokenSymbolFilter === (tx?.tokenSymbol ?? 'AVAX')
+          : true;
+      })
+      .forEach((it: TxType) => {
+        const date = moment(it.timestamp);
+        if (TODAY.isSame(date, 'day')) {
+          const today = newSectionData.Today;
+          newSectionData.Today = today
+            ? [...newSectionData.Today, it]
+            : [...[it]];
+        } else if (YESTERDAY.isSame(date, 'day')) {
+          const yesterday = newSectionData.Yesterday;
+          newSectionData.Yesterday = yesterday
+            ? [...newSectionData.Yesterday, it]
+            : [...[it]];
+        } else {
+          const isCurrentYear = TODAY.year() === date.year();
+          const titleDate = date.format(
+            isCurrentYear
+              ? DISPLAY_FORMAT_CURRENT_YEAR
+              : DISPLAY_FORMAT_PAST_YEAR,
+          );
+          const otherDate = newSectionData[titleDate];
+          newSectionData[titleDate] = otherDate
+            ? [...newSectionData[titleDate], it]
+            : [...[it]];
+        }
+      });
+    return newSectionData;
+  }, [allHistory, tokenSymbolFilter]);
+
+  useEffect(() => {
+    loadHistory().then();
+  }, [wallet, network]);
 
   useEffect(() => {
     if (embedded) {
@@ -98,6 +95,15 @@ function ActivityList({embedded, tokenSymbolFilter}: Props) {
       });
     }
   }, [embedded]);
+
+  const loadHistory = async () => {
+    if (!wallet) {
+      return [];
+    }
+    setLoading(true);
+    setAllHistory((await getHistory(wallet, 50)) ?? []);
+    setLoading(false);
+  };
 
   const openTransactionDetails = useCallback((item: TxType) => {
     return navigation.navigate(AppNavigation.Wallet.ActivityDetail, {
@@ -152,7 +158,7 @@ function ActivityList({embedded, tokenSymbolFilter}: Props) {
   };
 
   function onRefresh() {
-    loadHistory();
+    loadHistory().then();
   }
 
   /**

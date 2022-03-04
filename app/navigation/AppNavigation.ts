@@ -37,10 +37,10 @@ enum WalletScreens {
   SendTokens = 'WalletScreens.SendTokens',
   TokenManagement = 'WalletScreens.TokenManagement',
   SecurityPrivacy = 'WalletScreens.SecurityPrivacy',
-  // PortfolioScreen = 'PortfolioScreen',
   NetworkSelector = 'WalletScreens.NetworkSelector',
   Swap = 'WalletScreens.Swap',
   TokenDetail = 'WalletScreens.TokenDetail',
+  OwnedTokenDetail = 'WalletScreens.OwnedTokenDetail',
   ActivityDetail = 'WalletScreens.ActivityDetail',
 }
 
@@ -82,12 +82,6 @@ enum ModalScreens {
   EditGasLimit = 'ModalScreens.EditGasLimit',
 }
 
-enum SendTokenScreens {
-  SendTokenScreen = 'SendTokenScreen',
-  ConfirmTransactionScreen = 'ConfirmTransactionScreen',
-  DoneScreen = 'DoneScreen',
-}
-
 enum SendScreens {
   Send = 'SendScreens.Send',
   Review = 'SendScreens.Review',
@@ -110,7 +104,6 @@ const AppNavigation = {
   SecurityPrivacy: SecurityPrivacyScreens,
   Tabs: Tabs,
   Modal: ModalScreens,
-  SendToken: SendTokenScreens,
   Swap: SwapScreens,
   Send: SendScreens,
   AddressBook: AddressBookScreens,
