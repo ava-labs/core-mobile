@@ -48,7 +48,7 @@ const ConfirmationTracker: FC<ConfirmationTrackerProps> = ({
   }, []);
 
   const calculateLineWidth = (fullWidth = false) => {
-    const containerWidth = 450;
+    const containerWidth = 400;
     if (fullWidth) {
       return containerWidth;
     }
