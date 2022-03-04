@@ -9,9 +9,13 @@ import {NFTItem} from 'screens/nft/NFTItem';
 
 export type NftDetailsProps = {
   onPicturePressed: (url: string) => void;
+  onSendPressed: (item: NFTItem) => void;
 };
 
-export default function NftDetails({onPicturePressed}: NftDetailsProps) {
+export default function NftDetails({
+  onPicturePressed,
+  onSendPressed,
+}: NftDetailsProps) {
   const {params} = useRoute<RouteProp<NFTStackParamList>>();
   const item = useMemo(() => params!.nft, [params]) as NFTItem;
 
@@ -23,7 +27,9 @@ export default function NftDetails({onPicturePressed}: NftDetailsProps) {
         <Image style={styles.imageStyle} source={{uri: item.imageURL}} />
       </AvaButton.Base>
       <Space y={24} />
-      <AvaButton.PrimaryLarge>Send</AvaButton.PrimaryLarge>
+      <AvaButton.PrimaryLarge onPress={() => onSendPressed(item)}>
+        Send
+      </AvaButton.PrimaryLarge>
       <Space y={24} />
       <AvaText.Heading2>Properties</AvaText.Heading2>
       <Space y={16} />

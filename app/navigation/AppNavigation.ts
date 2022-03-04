@@ -58,7 +58,15 @@ enum NftScreens {
   List = 'NftScreens.List',
   Manage = 'NftScreens.Manage',
   Details = 'NftScreens.Details',
+  Send = 'NftScreens.Send',
   FullScreen = 'NftScreens.FullScreen',
+}
+
+enum NftSendScreens {
+  AddressPick = 'NftSendScreens.AddressPick',
+  Review = 'NftSendScreens.Review',
+  Success = 'NftSendScreens.Success',
+  Fail = 'NftSendScreens.Fail',
 }
 
 enum SecurityPrivacyScreens {
@@ -121,6 +129,7 @@ const AppNavigation = {
   Modal: ModalScreens,
   Swap: SwapScreens,
   Nft: NftScreens,
+  NftSend: NftSendScreens,
   Send: SendScreens,
   AddressBook: AddressBookScreens,
   Bridge: BridgeScreens,
