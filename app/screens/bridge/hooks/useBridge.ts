@@ -11,6 +11,7 @@ import {
   useBridgeSDK,
   useMaxTransferAmount,
   usePrice,
+  useSwitchFromUnavailableAsset,
   useTokenInfoContext,
   useTransactionFee,
 } from '@avalabs/bridge-sdk';
@@ -22,6 +23,10 @@ import {getAvalancheProvider} from 'screens/bridge/utils/getAvalancheProvider';
 import {getEthereumProvider} from 'screens/bridge/utils/getEthereumProvider';
 
 export default function useBridge() {
+  // using this hook makes a swap between an unavailable tokens (e.g. ETH on Avalanche > Ethereum)
+  // switch to an available token
+  useSwitchFromUnavailableAsset();
+
   const {selectedCurrency} = useApplicationContext().appHook;
   const network = useNetworkContext()?.network;
   const {getTokenSymbolOnNetwork} = useGetTokenSymbolOnNetwork();
