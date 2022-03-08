@@ -1,5 +1,5 @@
 import React, {useCallback} from 'react';
-import {ListRenderItemInfo, View} from 'react-native';
+import {View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from 'components/AvaText';
 import {Space} from 'components/Space';
@@ -29,24 +29,10 @@ function AccountView({onDone}: {onDone: () => void}): JSX.Element {
     setActiveAccount(newAccount.index);
   }, [accounts, accountsContext, saveAccounts, setActiveAccount]);
 
-  const renderAccountItem = useCallback(
-    (item: ListRenderItemInfo<Account>) => {
-      const account = item.item;
-      return (
-        <AccountItem
-          key={account.title}
-          account={account}
-          editable
-          selected={account.active}
-          onSelectAccount={accountIndex => {
-            accountsContext.activateAccount(accountIndex);
-            setActiveAccount(accountIndex);
-          }}
-        />
-      );
-    },
-    [accountsContext, setActiveAccount],
-  );
+  const onSelectAccount = (accountIndex: number) => {
+    accountsContext.activateAccount(accountIndex);
+    setActiveAccount(accountIndex);
+  };
 
   return (
     <View
@@ -71,7 +57,7 @@ function AccountView({onDone}: {onDone: () => void}): JSX.Element {
       <BottomSheetFlatList
         style={{marginHorizontal: -16}}
         data={[...accounts.values()]}
-        renderItem={renderAccountItem}
+        renderItem={info => renderAccountItem(info.item, onSelectAccount)}
       />
       <AvaButton.PrimaryLarge onPress={addNewAccount}>
         Add Account
@@ -81,4 +67,18 @@ function AccountView({onDone}: {onDone: () => void}): JSX.Element {
   );
 }
 
+const renderAccountItem = (
+  account: Account,
+  onSelectAccount: (accountIndex: number) => void,
+) => {
+  return (
+    <AccountItem
+      key={account.title}
+      account={account}
+      editable
+      selected={account.active}
+      onSelectAccount={onSelectAccount}
+    />
+  );
+};
 export default AccountView;
