@@ -26,6 +26,7 @@ export default function NftFullScreen() {
   const {theme} = useApplicationContext();
   const {params} = useRoute<RouteProp<NFTStackParamList>>();
   const imageUrl = useMemo(() => params!.url, [params]) as string;
+  const imageUrlSmall = useMemo(() => params!.urlSmall, [params]) as string;
   const [grabbedBgColor, setGrabbedBgColor] = useState('black');
   const windowWidth = useMemo(() => Dimensions.get('window').width - 32, []);
   const [imageAspect, setImageAspect] = useState(0);
@@ -93,11 +94,14 @@ export default function NftFullScreen() {
   }, [sensorData]);
 
   useEffect(() => {
-    getColorFromURL(imageUrl).then(colors => {
+    getColorFromURL(imageUrlSmall).then(colors => {
       setGrabbedBgColor(
         Platform.OS === 'ios' ? colors.secondary : colors.background,
       );
     });
+  }, [imageUrlSmall]);
+
+  useEffect(() => {
     Image.getSize(imageUrl, (width, height) => setImageAspect(height / width));
   }, [imageUrl]);
 
