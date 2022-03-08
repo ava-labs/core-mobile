@@ -136,7 +136,6 @@ const CreatePinScreen = memo(() => {
     useNavigation<NativeStackNavigationProp<SecurityStackParamList>>();
   return (
     <CreatePIN
-      onBack={() => nav.goBack()}
       onPinSet={pin => {
         onPinCreated(mnemonic, pin, true).then(() => nav.goBack());
       }}

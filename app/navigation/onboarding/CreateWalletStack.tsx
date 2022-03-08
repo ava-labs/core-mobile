@@ -55,6 +55,7 @@ const CreateWalletStack: () => JSX.Element = () => {
           component={CreatePinScreen}
         />
         <CreateWalletS.Screen
+          options={{headerShown: true, headerTitle: ''}}
           name={AppNavigation.CreateWallet.BiometricLogin}
           component={BiometricLoginScreen}
         />
@@ -126,7 +127,7 @@ const CheckMnemonicScreen = () => {
 const CreatePinScreen = () => {
   const createWalletContext = useContext(CreateWalletContext);
   const walletSetupHook = useApplicationContext().walletSetupHook;
-  const {navigate, goBack} =
+  const {navigate} =
     useNavigation<StackNavigationProp<CreateWalletStackParamList>>();
 
   const onPinSet = (pin: string): void => {
@@ -144,7 +145,7 @@ const CreatePinScreen = () => {
       });
   };
 
-  return <CreatePIN onPinSet={onPinSet} onBack={() => goBack()} />;
+  return <CreatePIN onPinSet={onPinSet} />;
 };
 
 const BiometricLoginScreen = () => {
