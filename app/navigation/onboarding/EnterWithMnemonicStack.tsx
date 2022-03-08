@@ -41,6 +41,7 @@ const EnterWithMnemonicStack = () => {
           component={LoginWithMnemonicScreen}
         />
         <EnterWithMnemonicS.Screen
+          options={{headerShown: true, headerTitle: ''}}
           name={AppNavigation.LoginWithMnemonic.CreatePin}
           component={CreatePinScreen}
         />
@@ -73,7 +74,7 @@ const LoginWithMnemonicScreen = () => {
 const CreatePinScreen = () => {
   const enterWithMnemonicContext = useContext(EnterWithMnemonicContext);
   const walletSetupHook = useApplicationContext().walletSetupHook;
-  const {navigate, goBack} =
+  const {navigate} =
     useNavigation<StackNavigationProp<EnterWithMnemonicStackParamList>>();
 
   const onPinSet = (pin: string): void => {
@@ -92,7 +93,7 @@ const CreatePinScreen = () => {
         });
     }
   };
-  return <CreatePIN onPinSet={onPinSet} onBack={() => goBack()} />;
+  return <CreatePIN onPinSet={onPinSet} />;
 };
 
 const BiometricLoginScreen = () => {
