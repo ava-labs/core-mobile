@@ -74,11 +74,19 @@ const Bridge: FC = () => {
    * When used to render current item, showCheckmarks is false
    * When used to render dropdown items, showCheckmark is true
    * currently selected
+   *
+   * Added additional parameter 'selectedBlockchain' in preparation for Bitcoin'
+   *
    * @param blockchain
+   * @param selectedBlockchain
    * @param showCheckmark
    */
-  function dropdownItemFormat(blockchain: string, showCheckmark = true) {
-    const isSelected = showCheckmark && currentBlockchain === blockchain;
+  function dropdownItemFormat(
+    blockchain: string,
+    selectedBlockchain?: Blockchain,
+    showCheckmark = true,
+  ) {
+    const isSelected = showCheckmark && blockchain === selectedBlockchain;
     return (
       <Row
         style={{
@@ -120,9 +128,13 @@ const Bridge: FC = () => {
   /**
    * Method used to render custom dropdown item
    * @param item
+   * @param blockchain
    */
-  const renderDropdownOptions = (item: ListRenderItemInfo<string>) => {
-    return dropdownItemFormat(item.item);
+  const renderDropdownOptions = (
+    item: ListRenderItemInfo<string>,
+    blockchain = Blockchain.AVALANCHE,
+  ) => {
+    return dropdownItemFormat(item.item, blockchain);
   };
 
   /**
@@ -179,13 +191,13 @@ const Bridge: FC = () => {
     }
   };
 
-  const calculateEstimatedTotal = () => {
+  const calculateEstimatedTotal = useMemo(() => {
     if (!transferCost) {
       return;
     }
     const amountMinusTransfer = amount.minus(transferCost);
     return `${assetPrice.mul(amountMinusTransfer).toNumber()}`;
-  };
+  }, [transferCost, amount, assetPrice]);
 
   return (
     <SafeAreaProvider>
@@ -198,9 +210,15 @@ const Bridge: FC = () => {
               <DropDown
                 style={{marginRight: 19}}
                 filterItems={blockChainItems}
-                currentItem={dropdownItemFormat(currentBlockchain, false)}
+                currentItem={dropdownItemFormat(
+                  currentBlockchain,
+                  undefined,
+                  false,
+                )}
                 onItemSelected={setCurrentBlockchain}
-                customRenderItem={renderDropdownOptions}
+                customRenderItem={item =>
+                  renderDropdownOptions(item, currentBlockchain)
+                }
                 minWidth={180}
               />
             }
@@ -269,7 +287,7 @@ const Bridge: FC = () => {
                   alignSelf: 'flex-end',
                   paddingEnd: 16,
                 }}>
-                {assetPrice.mul(amount).toNumber()}
+                {`${assetPrice.mul(amount).toNumber()}`}
               </AvaText.Body3>
             )}
           </View>
@@ -299,9 +317,15 @@ const Bridge: FC = () => {
               <DropDown
                 style={{marginRight: 19}}
                 filterItems={blockChainItems}
-                currentItem={dropdownItemFormat(targetBlockchain, false)}
+                currentItem={dropdownItemFormat(
+                  targetBlockchain,
+                  targetBlockchain,
+                  false,
+                )}
                 onItemSelected={setCurrentBlockchain}
-                customRenderItem={renderDropdownOptions}
+                customRenderItem={item =>
+                  renderDropdownOptions(item, targetBlockchain)
+                }
                 minWidth={180}
               />
             }
