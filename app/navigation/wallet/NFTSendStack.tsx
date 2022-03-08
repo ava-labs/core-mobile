@@ -10,7 +10,7 @@ import {
   createStackNavigator,
   StackNavigationProp,
 } from '@react-navigation/stack';
-import {NFTItem} from 'screens/nft/NFTItem';
+import {NFTItemData} from 'screens/nft/NftCollection';
 import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
 import {NFTStackParamList} from 'navigation/wallet/NFTScreenStack';
 import NftSend from 'screens/nft/send/NftSend';
@@ -27,7 +27,7 @@ const NFTSendStack = createStackNavigator<NFTSendStackParamList>();
 
 const NFTSendContext = createContext(
   {} as {
-    nft: NFTItem;
+    nft: NFTItemData;
     addressTo: string;
     setAddressTo: Dispatch<string>;
   },
@@ -39,7 +39,7 @@ export function useNftSendContext() {
 
 export default function NFTSendScreenStack() {
   const {params} = useRoute<RouteProp<NFTStackParamList>>();
-  const item = useMemo(() => params!.nft, [params]) as NFTItem;
+  const item = useMemo(() => params!.nft, [params]) as NFTItemData;
   const [addressTo, setAddressTo] = useState('');
 
   return (

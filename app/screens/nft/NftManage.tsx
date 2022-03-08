@@ -2,7 +2,7 @@ import React, {useMemo, useState} from 'react';
 import {FlatList, StyleSheet, View} from 'react-native';
 import AvaText from 'components/AvaText';
 import SearchBar from 'components/SearchBar';
-import {NFTItem} from 'screens/nft/NFTItem';
+import {NFTItemData} from 'screens/nft/NftCollection';
 import ZeroState from 'components/ZeroState';
 import {COLORS_DAY, COLORS_NIGHT} from 'resources/Constants';
 import AvaListItem from 'components/AvaListItem';
@@ -15,11 +15,15 @@ const NftManage = () => {
   const {theme} = useApplicationContext();
   const {nftRepo} = useApplicationContext().repo;
   const [searchText, setSearchText] = useState('');
+
   const filteredData = useMemo(() => {
-    return [...nftRepo.nfts.values()].filter(value => {
+    return [...nftRepo.nfts.values()].filter(nft => {
       return (
         searchText.length === 0 ||
-        value.title.toLowerCase().includes(searchText.toLowerCase())
+        nft.token_id.toLowerCase().includes(searchText.toLowerCase()) ||
+        nft.collection.contract_name
+          .toLowerCase()
+          .includes(searchText.toLowerCase())
       );
     });
   }, [nftRepo.nfts, searchText]);
@@ -28,7 +32,7 @@ const NftManage = () => {
     setSearchText(searchVal);
   };
 
-  const onItemToggled = (item: NFTItem, isVisible: boolean) => {
+  const onItemToggled = (item: NFTItemData, isVisible: boolean) => {
     item.isShowing = isVisible;
     nftRepo.saveNfts(nftRepo.nfts);
   };
@@ -41,7 +45,7 @@ const NftManage = () => {
         style={{flex: 1}}
         data={filteredData}
         ListEmptyComponent={<ZeroState.Collectibles />}
-        keyExtractor={item => item.title}
+        keyExtractor={item => item.token_id}
         ItemSeparatorComponent={() => <View style={{margin: 4}} />}
         renderItem={info => renderItemList(info.item, onItemToggled, theme)}
       />
@@ -50,8 +54,8 @@ const NftManage = () => {
 };
 
 const renderItemList = (
-  item: NFTItem,
-  onItemToggled: (item: NFTItem, isVisible: boolean) => void,
+  item: NFTItemData,
+  onItemToggled: (item: NFTItemData, isVisible: boolean) => void,
   theme: typeof COLORS_DAY | typeof COLORS_NIGHT,
 ) => {
   return (
@@ -62,10 +66,13 @@ const renderItemList = (
         backgroundColor: theme.listItemBg + 'D9',
       }}>
       <AvaListItem.Base
-        title={item.title}
-        subtitle={'test'}
+        title={item.token_id}
+        subtitle={item.collection.contract_name}
         leftComponent={
-          <Avatar.Custom name={item.title} logoUri={item.imageURL} />
+          <Avatar.Custom
+            name={item.collection.contract_name}
+            logoUri={item.external_data.image_256}
+          />
         }
         rightComponent={
           <Switch

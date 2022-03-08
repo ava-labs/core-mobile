@@ -5,17 +5,18 @@ import GridSVG from 'components/svg/GridSVG';
 import {Row} from 'components/Row';
 import AvaButton from 'components/AvaButton';
 import ListSVG from 'components/svg/ListSVG';
-import {NFTItem} from 'screens/nft/NFTItem';
+import {NFTItemData} from 'screens/nft/NftCollection';
 import ZeroState from 'components/ZeroState';
 import AvaListItem from 'components/AvaListItem';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {COLORS_DAY, COLORS_NIGHT} from 'resources/Constants';
 import Avatar from 'components/Avatar';
+import AvaText from 'components/AvaText';
 
 type ListType = 'grid' | 'list';
 
 export type NftListViewProps = {
-  onItemSelected: (item: NFTItem) => void;
+  onItemSelected: (item: NFTItemData) => void;
   onManagePressed: () => void;
 };
 
@@ -49,7 +50,7 @@ export default function NftListView({
         style={{flex: 1}}
         data={filteredData}
         ListEmptyComponent={<ZeroState.Collectibles />}
-        keyExtractor={item => item.title}
+        keyExtractor={item => item.token_id}
         ItemSeparatorComponent={() => <View style={{margin: 4}} />}
         renderItem={info =>
           listType === 'list'
@@ -62,8 +63,8 @@ export default function NftListView({
 }
 
 const renderItemList = (
-  item: NFTItem,
-  onItemSelected: (item: NFTItem) => void,
+  item: NFTItemData,
+  onItemSelected: (item: NFTItemData) => void,
   theme: typeof COLORS_DAY | typeof COLORS_NIGHT,
 ) => {
   return (
@@ -75,10 +76,13 @@ const renderItemList = (
       }}>
       <AvaListItem.Base
         onPress={() => onItemSelected(item)}
-        title={item.title}
-        subtitle={'test'}
+        title={item.token_id}
+        subtitle={item.collection.contract_name}
         leftComponent={
-          <Avatar.Custom name={item.title} logoUri={item.imageURL} />
+          <Avatar.Custom
+            name={item.external_data.name}
+            logoUri={item.external_data.image_256}
+          />
         }
       />
     </View>
@@ -86,14 +90,15 @@ const renderItemList = (
 };
 
 const renderItemGrid = (
-  item: NFTItem,
-  onItemSelected: (item: NFTItem) => void,
+  item: NFTItemData,
+  onItemSelected: (item: NFTItemData) => void,
 ) => {
   return (
     <AvaButton.Base onPress={() => onItemSelected(item)}>
+      <AvaText.Heading1>{item.external_data.name}</AvaText.Heading1>
       <Image
         style={{width: '100%', height: 200, borderRadius: 8}}
-        source={{uri: item.imageURL}}
+        source={{uri: item.external_data.image_256}}
       />
     </AvaButton.Base>
   );

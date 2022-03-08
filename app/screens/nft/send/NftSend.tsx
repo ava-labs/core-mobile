@@ -11,7 +11,7 @@ import FlexSpacer from 'components/FlexSpacer';
 import {useAddressBookLists} from 'components/addressBook/useAddressBookLists';
 import {AddrBookItemType, Contact} from 'Repo';
 import {Account} from 'dto/Account';
-import {NFTItem} from 'screens/nft/NFTItem';
+import {NFTItemData} from 'screens/nft/NftCollection';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {Row} from 'components/Row';
 
@@ -99,7 +99,7 @@ export default function NftSend({onNext}: NftSendScreenProps) {
   );
 }
 
-const CollectibleItem = ({nft}: {nft: NFTItem}) => {
+const CollectibleItem = ({nft}: {nft: NFTItemData}) => {
   const {theme} = useApplicationContext();
   return (
     <View
@@ -112,12 +112,14 @@ const CollectibleItem = ({nft}: {nft: NFTItem}) => {
       <Row>
         <Image
           style={styles.nftImage}
-          source={{uri: nft.imageURL}}
+          source={{uri: nft.external_data.image_256}}
           width={80}
           height={80}
         />
         <Space x={16} />
-        <AvaText.Heading3 textStyle={{flex: 1}}>{nft.title}</AvaText.Heading3>
+        <AvaText.Body2 textStyle={{flex: 1}}>
+          {nft.external_data.name}
+        </AvaText.Body2>
       </Row>
     </View>
   );
