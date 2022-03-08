@@ -64,70 +64,6 @@ function AccountItem({
     [account.index, accounts, saveAccounts],
   );
 
-  const Title = useCallback(() => {
-    return (
-      <AvaText.Heading2 ellipsizeMode={'tail'}>
-        {account.title}
-      </AvaText.Heading2>
-    );
-  }, [account.title]);
-
-  const EditTitle = useCallback(() => {
-    return (
-      <View style={{margin: -12}}>
-        <InputText
-          autoFocus
-          text={account.title}
-          onChangeText={setEditedAccountTitle}
-        />
-      </View>
-    );
-  }, [account.title]);
-
-  const Edit = useCallback(() => {
-    return (
-      <AvaButton.Base
-        rippleBorderless
-        onPress={() => setEditAccount(!editAccount)}
-        style={{paddingVertical: 4, paddingEnd: 8}}>
-        <AvaText.ButtonMedium style={{color: context.theme.colorAccent}}>
-          Edit
-        </AvaText.ButtonMedium>
-      </AvaButton.Base>
-    );
-  }, [context.theme.colorAccent, editAccount]);
-
-  const Save = useCallback(() => {
-    return (
-      <AvaButton.Base
-        rippleBorderless
-        disabled={!editedAccountTitle}
-        onPress={() => saveAccountTitle(editedAccountTitle)}
-        style={{paddingVertical: 4, paddingEnd: 8}}>
-        <AvaText.ButtonMedium style={{color: context.theme.colorAccent}}>
-          Save
-        </AvaText.ButtonMedium>
-      </AvaButton.Base>
-    );
-  }, [context.theme.colorAccent, editedAccountTitle, saveAccountTitle]);
-
-  const AddressC = useCallback(() => {
-    return (
-      <Row
-        style={{
-          alignItems: 'center',
-          height: 16,
-        }}>
-        <AvaButton.Icon onPress={() => copyToClipboard(account.address)}>
-          <CopySVG size={16} />
-        </AvaButton.Icon>
-        <AvaText.ButtonSmall ellipsizeMode={'middle'}>
-          {account.address}
-        </AvaText.ButtonSmall>
-      </Row>
-    );
-  }, [account.address]);
-
   return (
     <>
       <AvaButton.Base
@@ -140,10 +76,27 @@ function AccountItem({
         ]}>
         <Row>
           <View style={{flex: 1, justifyContent: 'center'}}>
-            {editAccount ? <EditTitle /> : <Title />}
+            {editAccount ? (
+              <EditTitle
+                title={account.title}
+                onChangeText={setEditedAccountTitle}
+                onSubmit={() => saveAccountTitle(editedAccountTitle)}
+              />
+            ) : (
+              <Title title={account.title} />
+            )}
             {editable && (
               // For smaller touch area
-              <Row>{editAccount ? <Save /> : <Edit />}</Row>
+              <Row>
+                {editAccount ? (
+                  <Save
+                    disabled={!editedAccountTitle}
+                    onPress={() => saveAccountTitle(editedAccountTitle)}
+                  />
+                ) : (
+                  <Edit onPress={() => setEditAccount(!editAccount)} />
+                )}
+              </Row>
             )}
           </View>
           <View
@@ -151,7 +104,7 @@ function AccountItem({
               width: 116,
               alignItems: 'flex-end',
             }}>
-            <AddressC />
+            <AddressC address={account.address} />
             <Space y={6} />
             <AvaText.Body3 currency>{accBalance}</AvaText.Body3>
           </View>
@@ -171,4 +124,80 @@ function AccountItem({
   );
 }
 
+const AddressC = ({address}: {address: string}) => {
+  return (
+    <Row
+      style={{
+        alignItems: 'center',
+        height: 16,
+      }}>
+      <AvaButton.Icon onPress={() => copyToClipboard(address)}>
+        <CopySVG size={16} />
+      </AvaButton.Icon>
+      <AvaText.ButtonSmall ellipsizeMode={'middle'}>
+        {address}
+      </AvaText.ButtonSmall>
+    </Row>
+  );
+};
+
+const Save = ({
+  disabled,
+  onPress,
+}: {
+  disabled: boolean;
+  onPress: () => void;
+}) => {
+  const {theme} = useApplicationContext();
+  return (
+    <AvaButton.Base
+      rippleBorderless
+      disabled={disabled}
+      onPress={onPress}
+      style={{paddingVertical: 4, paddingEnd: 8}}>
+      <AvaText.ButtonMedium style={{color: theme.colorAccent}}>
+        Save
+      </AvaText.ButtonMedium>
+    </AvaButton.Base>
+  );
+};
+
+const Edit = ({onPress}: {onPress: () => void}) => {
+  const {theme} = useApplicationContext();
+  return (
+    <AvaButton.Base
+      rippleBorderless
+      onPress={onPress}
+      style={{paddingVertical: 4, paddingEnd: 8}}>
+      <AvaText.ButtonMedium style={{color: theme.colorAccent}}>
+        Edit
+      </AvaText.ButtonMedium>
+    </AvaButton.Base>
+  );
+};
+
+const EditTitle = ({
+  title,
+  onChangeText,
+  onSubmit,
+}: {
+  title: string;
+  onChangeText: (text: string) => void;
+  onSubmit: () => void;
+}) => {
+  const {theme} = useApplicationContext();
+  return (
+    <InputText
+      style={{margin: 0, backgroundColor: theme.colorBg1, borderRadius: 8}}
+      autoFocus
+      text={title}
+      onSubmit={onSubmit}
+      onChangeText={onChangeText}
+    />
+  );
+};
+
+const Title = ({title}: {title: string}) => {
+  return <AvaText.Heading2 ellipsizeMode={'tail'}>{title}</AvaText.Heading2>;
+};
 export default AccountItem;
