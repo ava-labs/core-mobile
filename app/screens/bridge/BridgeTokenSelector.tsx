@@ -26,12 +26,12 @@ import {
   useWalletStateContext,
 } from '@avalabs/wallet-react-components';
 import {formatTokenAmount} from 'utils/Utils';
-import {useApplicationContext} from 'contexts/ApplicationContext';
 import {Big} from '@avalabs/avalanche-wallet-sdk';
 import {getAvalancheProvider} from 'screens/bridge/utils/getAvalancheProvider';
 import SearchBar from 'components/SearchBar';
 import useBridge from 'screens/bridge/hooks/useBridge';
 import {AssetBalance} from 'screens/bridge/AssetBalance';
+import {BottomSheetFlatList} from '@gorhom/bottom-sheet';
 
 const DEFAULT_HORIZONTAL_MARGIN = 16;
 
@@ -55,8 +55,7 @@ function BridgeTokenSelector({
   const assetList = useAssets(currentBlockchain);
   const {getTokenSymbolOnNetwork} = useGetTokenSymbolOnNetwork();
   const network = useNetworkContext()?.network;
-  const {addresses, erc20Tokens} = useWalletStateContext();
-  const theme = useApplicationContext().theme;
+  const {addresses} = useWalletStateContext();
   const [searchText, setSearchText] = useState('');
   const {tokenInfoContext} = useBridge();
 
@@ -175,7 +174,7 @@ function BridgeTokenSelector({
       {!assetList ? (
         <Loader />
       ) : (
-        <FlatList
+        <BottomSheetFlatList
           keyboardShouldPersistTaps="handled"
           data={tokens}
           renderItem={renderItem}
