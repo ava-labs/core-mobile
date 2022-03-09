@@ -63,6 +63,13 @@
   dependencies:
     axios "^0.26.0"
 
+"@avalabs/covalent-sdk@2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@avalabs/covalent-sdk/-/covalent-sdk-2.0.0.tgz#9d5e9e53f08be3c92a9ba3957616e7762818c04e"
+  integrity sha512-BuYYxe1PnXXygZPVwb/u8Dg4kMMAyzA/a3BbvOmSpWGkPU8zDVPw9dPl40AEzxEWe/q1aVU/M90oujuleV1HNA==
+  dependencies:
+    axios "^0.21.4"
+
 "@avalabs/utils-sdk@1.2.0-alpha.3":
   version "1.2.0-alpha.3"
   resolved "https://registry.yarnpkg.com/@avalabs/utils-sdk/-/utils-sdk-1.2.0-alpha.3.tgz#b41380a75e6c60aa83d6d9bf50d6328a0df58625"

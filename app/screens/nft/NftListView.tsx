@@ -98,7 +98,7 @@ const renderItemGrid = (
       <AvaText.Heading1>{item.external_data.name}</AvaText.Heading1>
       <Image
         style={{width: '100%', height: 200, borderRadius: 8}}
-        source={{uri: item.external_data.image_256}}
+        source={{uri: item.external_data.image_512}}
       />
     </AvaButton.Base>
   );

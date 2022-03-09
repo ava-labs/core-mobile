@@ -11,9 +11,14 @@ import NftDetails from 'screens/nft/NftDetails';
 import NftFullScreen from 'screens/nft/NftFullScreen';
 import NftManage from 'screens/nft/NftManage';
 import {useApplicationContext} from 'contexts/ApplicationContext';
-import {UID} from 'Repo';
 import NFTSendScreenStack from 'navigation/wallet/NFTSendStack';
-import {NFTs} from 'screens/nft/MockData';
+import {Covalent} from '@avalabs/covalent-sdk';
+import {
+  useAccountsContext,
+  useNetworkContext,
+} from '@avalabs/wallet-react-components';
+import {UID} from 'Repo';
+import {Config} from 'react-native-config';
 
 export type NFTStackParamList = {
   [AppNavigation.Nft.List]: undefined;
@@ -27,18 +32,45 @@ const NFTStack = createStackNavigator<NFTStackParamList>();
 
 function NFTScreenStack() {
   const {repo} = useApplicationContext();
+  const {network} = useNetworkContext()!;
+  const {activeAccount} = useAccountsContext();
+
   useEffect(() => {
-    const nftDataItems = new Map<UID, NFTItemData>();
-    NFTs.forEach(collection => {
-      collection.nft_data.forEach(nftData => {
-        const nft = nftData as NFTItemData;
-        nft.collection = (({nft_data, ...o}) => o)(
-          collection,
-        ) as unknown as NftCollection; // remove nft_data to save on memory
-        nftDataItems.set(nft.token_id, nft);
+    const chainID = 1 || Number.parseInt(network?.chainId ?? '0', 10);
+    const covalent = new Covalent(chainID, Config.COVALENT_API_KEY);
+    const addressC =
+      '0x470820fbbfca29de49c4a474d12af264856d2028' ||
+      '0xe4605d46fd0b3f8329d936a8b258d69276cba264' ||
+      activeAccount?.wallet.getAddressC();
+    console.log(chainID);
+    if (addressC) {
+      covalent.getAddressBalancesV2(addressC, true).then(value => {
+        const nftDataItems = new Map<UID, NFTItemData>();
+        value.data.items.forEach(collection => {
+          collection.nft_data?.forEach(nftData => {
+            const nft = nftData as NFTItemData;
+            nft.collection = (({nft_data, ...o}) => o)(
+              collection,
+            ) as unknown as NftCollection; // remove nft_data to save on memory
+            nft.isShowing = true;
+            nftDataItems.set(nft.token_id, nft);
+          });
+        });
+        repo.nftRepo.saveNfts(nftDataItems);
       });
-    });
-    repo.nftRepo.saveNfts(nftDataItems);
+    }
+
+    // const nftDataItems = new Map<UID, NFTItemData>();
+    // NFTs.forEach(collection => {
+    //   collection.nft_data.forEach(nftData => {
+    //     const nft = nftData as NFTItemData;
+    //     nft.collection = (({nft_data, ...o}) => o)(
+    //       collection,
+    //     ) as unknown as NftCollection; // remove nft_data to save on memory
+    //     nftDataItems.set(nft.token_id, nft);
+    //   });
+    // });
+    // repo.nftRepo.saveNfts(nftDataItems);
   }, []);
 
   return (
