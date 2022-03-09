@@ -20,6 +20,7 @@ import AppNavigation from 'navigation/AppNavigation';
 import {ExitEvents, ExitPromptAnswers, ShowExitPrompt} from 'AppHook';
 import {OnboardScreenStack} from 'navigation/OnboardScreenStack';
 import {createStackNavigator} from '@react-navigation/stack';
+import useDevDebugging from 'utils/debugging/DevDebugging';
 
 const RootStack = createStackNavigator();
 
@@ -63,9 +64,7 @@ const WalletScreenStackWithContext = () => {
     });
   };
 
-  return (
-    <WalletScreenStack onExit={doExit} />
-  );
+  return <WalletScreenStack onExit={doExit} />;
 };
 
 const RootScreenStack = () => {
@@ -95,6 +94,11 @@ const RootScreenStack = () => {
 };
 
 export default function App() {
+  const {configure} = useDevDebugging();
+  const isProduction = process.env.NODE_ENV === 'production';
+  if (!isProduction) {
+    configure();
+  }
   const context = useApplicationContext();
   const [backgroundStyle] = useState(context.appBackgroundStyle);
 

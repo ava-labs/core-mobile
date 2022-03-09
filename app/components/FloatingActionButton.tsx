@@ -169,13 +169,13 @@ const FloatingActionButton: FC<Props> = ({
       pointerEvents="box-none"
       style={[styles.overlay, {height: 400, top: -100}]}>
       <Animated.View
-        pointerEvents={'box-none'}
+        pointerEvents={isActive ? 'auto' : 'none'}
         style={{
           opacity: anim,
         }}>
         <LinearGradient
           nativeID={'linearGradient'}
-          pointerEvents={'box-none'}
+          pointerEvents={'none'}
           colors={['transparent', '#000000D9', '#000000']}
           style={{
             height: 130,

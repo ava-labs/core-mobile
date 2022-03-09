@@ -41,6 +41,7 @@ type Props = {
   text?: string;
   currency?: string;
   onInputRef?: (inputRef: RefObject<TextInput>) => void;
+  width?: number;
 };
 
 export default function InputText(props: Props | Readonly<Props>) {
@@ -279,6 +280,7 @@ export default function InputText(props: Props | Readonly<Props>) {
               paddingTop: 12,
               paddingBottom: 12,
               fontFamily: 'Inter-Regular',
+              width: props.width,
             },
           ]}
           onFocus={() => setFocused(true)}

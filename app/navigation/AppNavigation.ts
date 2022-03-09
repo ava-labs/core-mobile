@@ -42,6 +42,7 @@ enum WalletScreens {
   TokenDetail = 'WalletScreens.TokenDetail',
   OwnedTokenDetail = 'WalletScreens.OwnedTokenDetail',
   ActivityDetail = 'WalletScreens.ActivityDetail',
+  Bridge = 'WalletScreens.Bridge',
 }
 
 enum SwapScreens {
@@ -80,6 +81,7 @@ enum ModalScreens {
   SignOut = 'ModalScreens.SignOut',
   SelectToken = 'ModalScreens.SelectToken',
   EditGasLimit = 'ModalScreens.EditGasLimit',
+  BridgeSelectToken = 'ModalScreens.BridgeSelectToken',
 }
 
 enum SendScreens {
@@ -95,6 +97,11 @@ enum AddressBookScreens {
   Details = 'AddressBookScreens.Details',
 }
 
+enum BridgeScreens {
+  Bridge = 'BridgeScreens.Swap',
+  BridgeTransactionStatus = 'BridgeScreens.BridgeTransactionStatus',
+}
+
 const AppNavigation = {
   Root: Root,
   Onboard: OnboardScreens,
@@ -107,6 +114,8 @@ const AppNavigation = {
   Swap: SwapScreens,
   Send: SendScreens,
   AddressBook: AddressBookScreens,
+  Bridge: BridgeScreens,
+
 };
 
 export default AppNavigation;

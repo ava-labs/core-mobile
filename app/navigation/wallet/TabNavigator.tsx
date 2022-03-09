@@ -2,7 +2,6 @@ import AppNavigation from 'navigation/AppNavigation';
 import HomeSVG from 'components/svg/HomeSVG';
 import SwapSVG from 'components/svg/SwapSVG';
 import WatchlistSVG from 'components/svg/WatchlistSVG';
-import WatchlistView from 'screens/watchlist/WatchlistView';
 import {MainHeaderOptions} from 'navigation/NavUtils';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {useApplicationContext} from 'contexts/ApplicationContext';
@@ -12,7 +11,6 @@ import ActivityList from 'screens/activity/ActivityList';
 import {View} from 'react-native';
 import AddSVG from 'components/svg/AddSVG';
 import AvaText from 'components/AvaText';
-import BuySVG from 'components/svg/BuySVG';
 import ArrowSVG from 'components/svg/ArrowSVG';
 import {useNavigation} from '@react-navigation/native';
 import FloatingActionButton from 'components/FloatingActionButton';
@@ -25,9 +23,15 @@ import QRCodeSVG from 'components/svg/QRCodeSVG';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {RootStackParamList} from 'navigation/WalletScreenStack';
 import WatchlistTab from 'screens/watchlist/WatchlistTabView';
+import BuySVG from 'components/svg/BuySVG';
+import BridgeScreenStack from 'navigation/wallet/BridgeScreenStack';
 
 const Tab = createBottomTabNavigator();
 const TAB_ICON_SIZE = 28;
+
+const DummyBridge = () => (
+  <View style={{flex: 1, backgroundColor: 'transparent'}} />
+);
 
 const TabNavigator = () => {
   const theme = useApplicationContext().theme;
@@ -80,7 +84,7 @@ const TabNavigator = () => {
           buttonColor={theme.alternateBackground}
           title="Buy"
           onPress={() => openMoonPay()}>
-          <BuySVG color={theme.background} size={20} />
+          <BuySVG color={theme.background} />
         </ActionButtonItem>
         <ActionButtonItem
           buttonColor={theme.alternateBackground}
@@ -173,7 +177,7 @@ const TabNavigator = () => {
       />
       <Tab.Screen
         name={AppNavigation.Tabs.Bridge}
-        component={WatchlistView}
+        component={DummyBridge}
         options={{
           ...MainHeaderOptions('Bridge'),
           tabBarIcon: ({focused}) =>
@@ -183,6 +187,12 @@ const TabNavigator = () => {
               <BridgeSVG selected={focused} />,
             ),
         }}
+        listeners={({navigation}) => ({
+          tabPress: e => {
+            e.preventDefault();
+            navigation.navigate(AppNavigation.Wallet.Bridge);
+          },
+        })}
       />
     </Tab.Navigator>
   );

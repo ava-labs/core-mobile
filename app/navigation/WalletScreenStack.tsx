@@ -45,6 +45,8 @@ import {TxType} from 'screens/activity/ActivityList';
 import ActivityDetail from 'screens/activity/ActivityDetail';
 import EditGasLimitBottomSheet from 'screens/shared/EditGasLimitBottomSheet';
 import OwnedTokenDetail from 'screens/portfolio/OwnedTokenDetail';
+import BridgeSelectTokenBottomSheet from 'screens/bridge/BridgeSelectTokenBottomSheet';
+import BridgeScreenStack from 'navigation/wallet/BridgeScreenStack';
 
 type Props = {
   onExit: () => void;
@@ -67,6 +69,7 @@ export type RootStackParamList = {
   [AppNavigation.Wallet.TokenDetail]: {tokenId?: string} | undefined;
   [AppNavigation.Wallet.OwnedTokenDetail]: {tokenId?: string} | undefined;
   [AppNavigation.Wallet.ActivityDetail]: {tx?: TxType};
+  [AppNavigation.Wallet.Bridge]: undefined;
   [AppNavigation.Modal.AccountBottomSheet]: undefined;
   [AppNavigation.Modal.AccountDropDown]: undefined;
   [AppNavigation.Modal.ReceiveOnlyBottomSheet]: undefined;
@@ -310,6 +313,10 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
           }}
           name={AppNavigation.Wallet.Legal}
           component={WebViewScreen}
+        />
+        <RootStack.Screen
+          name={AppNavigation.Wallet.Bridge}
+          component={BridgeScreenStack}
         />
         {BottomSheetGroup}
       </RootStack.Navigator>
