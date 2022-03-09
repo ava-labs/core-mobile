@@ -15,7 +15,7 @@ import {NFTStackParamList} from 'navigation/wallet/NFTScreenStack';
 import {getColorFromURL} from 'rn-dominant-color';
 import LinearGradientSVG from 'components/svg/LinearGradientSVG';
 import {useApplicationContext} from 'contexts/ApplicationContext';
-import {accelerometer, SensorData} from 'react-native-sensors';
+import {orientation, OrientationData} from 'react-native-sensors';
 import {filter, sampleTime, tap} from 'rxjs';
 
 export type NftFullScreenProps = {};
@@ -32,16 +32,14 @@ export default function NftFullScreen() {
   const [imageAspect, setImageAspect] = useState(0);
 
   const [sensorData, setSensorData] = useState({
-    x: 0,
-    y: 0,
-    z: 0,
-    timestamp: 0,
-  } as SensorData);
+    pitch: 0,
+    roll: 0,
+  } as OrientationData);
   const transformValue = useRef({
-    x: new Animated.Value(0),
-    z: new Animated.Value(0),
+    pitch: new Animated.Value(0),
+    roll: new Animated.Value(0),
   });
-  const diff = useRef({x: 0, z: 0});
+  const diff = useRef({pitch: 0, roll: 0});
 
   useEffect(() => {
     if (Platform.OS === 'android') {
@@ -58,20 +56,24 @@ export default function NftFullScreen() {
       // eslint-disable-next-line @typescript-eslint/no-empty-function
       return () => {};
     }
-    const subscription = accelerometer
+
+    const subscription = orientation
       .pipe(
         sampleTime(SAMPLE_TIME),
         filter(
           value =>
-            Math.abs(diff.current.x - value.x) > 0.1 ||
-            Math.abs(diff.current.z - value.z) > 0.1,
+            Math.abs(diff.current.pitch - value.pitch) > 0.001 ||
+            Math.abs(diff.current.roll - value.roll) > 0.001,
         ),
         tap(sensorData => {
-          diff.current.x = sensorData.x;
-          diff.current.z = sensorData.z;
+          diff.current.pitch = sensorData.pitch;
+          diff.current.roll = sensorData.roll;
         }),
       )
-      .subscribe(value => setSensorData(value));
+      .subscribe(value => {
+        setSensorData(value);
+      });
+
     return () => subscription.unsubscribe();
   }, []);
 
@@ -79,14 +81,14 @@ export default function NftFullScreen() {
     // transformValue.current.x.setValue(prevSensorData?.x ?? 0);
     // transformValue.current.z.setValue(prevSensorData?.z ?? 0);
 
-    Animated.timing(transformValue.current.x, {
-      toValue: sensorData.x,
+    Animated.timing(transformValue.current.pitch, {
+      toValue: sensorData.pitch,
       duration: SAMPLE_TIME - 1,
       easing: Easing.linear,
       useNativeDriver: true,
     }).start();
-    Animated.timing(transformValue.current.z, {
-      toValue: sensorData.z,
+    Animated.timing(transformValue.current.roll, {
+      toValue: sensorData.roll,
       duration: SAMPLE_TIME - 1,
       easing: Easing.linear,
       useNativeDriver: true,
@@ -132,15 +134,15 @@ export default function NftFullScreen() {
             shadowOffset: {width: 0, height: 6},
             transform: [
               {
-                rotateY: transformValue.current.x.interpolate({
-                  inputRange: [-10, 10],
-                  outputRange: ['-10deg', '10deg'],
+                rotateX: transformValue.current.pitch.interpolate({
+                  inputRange: [-1.57, 0],
+                  outputRange: ['10deg', '-10deg'],
                 }),
               },
               {
-                rotateX: transformValue.current.z.interpolate({
-                  inputRange: [-10, 10],
-                  outputRange: ['20deg', '0deg'],
+                rotateY: transformValue.current.roll.interpolate({
+                  inputRange: [-0.8, 0.8],
+                  outputRange: ['20deg', '-20deg'],
                 }),
               },
             ],
@@ -159,11 +161,12 @@ export default function NftFullScreen() {
               position: 'absolute',
               transform: [
                 {rotateZ: '-45deg'},
-                {translateY: -100},
+                {translateY: 0},
+                {scaleY: 1.5},
                 {
-                  translateX: transformValue.current.z.interpolate({
-                    inputRange: [4, 9],
-                    outputRange: [-1000, 1500],
+                  translateX: transformValue.current.pitch.interpolate({
+                    inputRange: [-1.57, 0.5],
+                    outputRange: [-5000, 5500],
                   }),
                 },
               ],
