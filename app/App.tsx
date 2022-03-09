@@ -64,9 +64,7 @@ const WalletScreenStackWithContext = () => {
     });
   };
 
-  return (
-    <WalletScreenStack onExit={doExit} />
-  );
+  return <WalletScreenStack onExit={doExit} />;
 };
 
 const RootScreenStack = () => {

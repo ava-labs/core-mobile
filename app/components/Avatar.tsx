@@ -7,7 +7,6 @@ import {TokenWithBalance} from '@avalabs/wallet-react-components';
 import AvaText from './AvaText';
 import {Opacity10} from 'resources/Constants';
 import EthereumSvg from 'components/svg/Ethereum';
-import Ethereum from 'components/svg/Ethereum';
 
 interface Props {
   name: string;
