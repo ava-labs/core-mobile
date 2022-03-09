@@ -215,7 +215,7 @@ const Bridge: FC = () => {
                   undefined,
                   false,
                 )}
-                onItemSelected={setCurrentBlockchain}
+                onItemSelected={bc => setCurrentBlockchain(bc as Blockchain)}
                 customRenderItem={item =>
                   renderDropdownOptions(item, currentBlockchain)
                 }
@@ -322,7 +322,7 @@ const Bridge: FC = () => {
                   targetBlockchain,
                   false,
                 )}
-                onItemSelected={setCurrentBlockchain}
+                onItemSelected={bc => setCurrentBlockchain(bc as Blockchain)}
                 customRenderItem={item =>
                   renderDropdownOptions(item, targetBlockchain)
                 }
@@ -356,7 +356,7 @@ const Bridge: FC = () => {
                 textStyle={{marginTop: 8}}
                 color={theme.colorText2}>
                 {transferCost && amount && !BIG_ZERO.eq(amount)
-                  ? calculateEstimatedTotal()
+                  ? calculateEstimatedTotal
                   : 0}
               </AvaText.Body3>
             </View>

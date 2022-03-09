@@ -1,4 +1,4 @@
-import React, {FC, useState} from 'react';
+import React, {FC} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {RouteProp, useRoute} from '@react-navigation/native';
@@ -9,12 +9,9 @@ import {
   useBridgeConfig,
   useBridgeSDK,
   usePrice,
-  useTokenInfoContext,
   useTxTracker,
 } from '@avalabs/bridge-sdk';
 import {
-  ActiveNetwork,
-  MAINNET_NETWORK,
   useNetworkContext,
   useWalletStateContext,
 } from '@avalabs/wallet-react-components';
@@ -26,32 +23,17 @@ import AvaListItem from 'components/AvaListItem';
 import {Row} from 'components/Row';
 import {Space} from 'components/Space';
 import Separator from 'components/Separator';
-import OvalTagBg from 'components/OvalTagBg';
-import {displaySeconds} from 'utils/Utils';
-import CheckmarkSVG from 'components/svg/CheckmarkSVG';
-import ConfirmationTracker from 'screens/bridge/ConfirmationTracker';
-import BridgeConfirmations from 'components/BridgeConfirmations';
+import BridgeConfirmations from 'screens/bridge/components/BridgeConfirmations';
 import {useGetTokenSymbolOnNetwork} from 'screens/bridge/hooks/useGetTokenSymbolOnNetwork';
 import useBridge from 'screens/bridge/hooks/useBridge';
 
-interface Props {}
-
-function getEtherscanLink(network?: ActiveNetwork) {
-  if (network?.name === MAINNET_NETWORK.name) {
-    return 'https://etherscan.io';
-  }
-
-  return 'https://rinkeby.etherscan.io';
-}
-
-const BridgeTransactionStatus: FC<Props> = props => {
+const BridgeTransactionStatus: FC = () => {
   const {theme} = useApplicationContext();
-  const {params} = useRoute<RouteProp<BridgeStackParamList>>();
-  const {selectedCurrency} = useApplicationContext().appHook;
+  const {blockchain, txHash, txTimestamp} =
+    useRoute<RouteProp<BridgeStackParamList>>()?.params;
   const {addresses} = useWalletStateContext();
   const {config} = useBridgeConfig();
   const {network} = useNetworkContext();
-  const etherscanLink = getEtherscanLink(network);
   const ethereumProvider = getEthereumProvider(network);
   const avalancheProvider = getAvalancheProvider(network);
   const {getTokenSymbolOnNetwork} = useGetTokenSymbolOnNetwork();
@@ -66,9 +48,9 @@ const BridgeTransactionStatus: FC<Props> = props => {
   } = useBridgeSDK();
 
   const txProps = useTxTracker(
-    params?.blockchain as Blockchain,
-    params?.txHash ?? '',
-    params?.txTimestamp ?? '',
+    blockchain as Blockchain,
+    txHash ?? '',
+    txTimestamp ?? '',
     avalancheProvider,
     ethereumProvider,
     setTransactionDetails,
@@ -86,17 +68,7 @@ const BridgeTransactionStatus: FC<Props> = props => {
   const assetPrice = usePrice(txProps?.symbol || currentAsset);
 
   const tokenLogo = (
-    <View
-      style={{
-        justifyContent: 'center',
-        alignItems: 'center',
-        position: 'absolute',
-        left: 0,
-        right: 0,
-        top: 0,
-        bottom: 100,
-        zIndex: 1000,
-      }}>
+    <View style={styles.logoContainer}>
       <View style={{position: 'absolute'}}>
         <DotSVG fillColor={theme.colorBg1} size={72} />
       </View>
@@ -111,14 +83,7 @@ const BridgeTransactionStatus: FC<Props> = props => {
 
   return (
     <View style={{flex: 1}}>
-      <View
-        style={{
-          backgroundColor: theme.colorBg2,
-          marginTop: 30,
-          paddingTop: 30,
-          marginHorizontal: 16,
-          borderRadius: 10,
-        }}>
+      <View style={[styles.infoContainer, {backgroundColor: theme.colorBg2}]}>
         {tokenLogo}
         {txProps && (
           <View>
@@ -146,21 +111,12 @@ const BridgeTransactionStatus: FC<Props> = props => {
         )}
       </View>
       <Space y={16} />
-      <View
-        style={{
-          minHeight: 200,
-          backgroundColor: theme.colorBg2,
-          marginHorizontal: 16,
-          paddingBottom: 16,
-          borderRadius: 10,
-        }}>
+      <View style={[styles.fromContainer, {backgroundColor: theme.colorBg2}]}>
         <AvaListItem.Base
           title={'From'}
           rightComponent={
             <AvaText.Heading3>
-              {params?.blockchain === Blockchain.AVALANCHE
-                ? 'Avalanche'
-                : 'Ethereum'}
+              {blockchain === Blockchain.AVALANCHE ? 'Avalanche' : 'Ethereum'}
             </AvaText.Heading3>
           }
         />
@@ -190,20 +146,12 @@ const BridgeTransactionStatus: FC<Props> = props => {
         />
       </View>
       <Space y={16} />
-      <View
-        style={{
-          backgroundColor: theme.colorBg2,
-          marginHorizontal: 16,
-          borderRadius: 10,
-          paddingBottom: 16,
-        }}>
+      <View style={[styles.toContainer, {backgroundColor: theme.colorBg2}]}>
         <AvaListItem.Base
           title={'To'}
           rightComponent={
             <AvaText.Heading3>
-              {params?.blockchain === Blockchain.AVALANCHE
-                ? 'Ethereum'
-                : 'Avalanche'}
+              {blockchain === Blockchain.AVALANCHE ? 'Ethereum' : 'Avalanche'}
             </AvaText.Heading3>
           }
         />
@@ -224,26 +172,31 @@ const BridgeTransactionStatus: FC<Props> = props => {
 
 const styles = StyleSheet.create({
   logoContainer: {
-    width: '100%',
-    alignItems: 'center',
     justifyContent: 'center',
-    bottom: 25,
-  },
-  tokenLogo: {
-    paddingHorizontal: 16,
-    width: 32,
-    height: 32,
-    borderRadius: 20,
-    overflow: 'hidden',
-  },
-  explorerLink: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    height: 48,
     alignItems: 'center',
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 100,
+    zIndex: 1000,
+  },
+  infoContainer: {
+    marginTop: 30,
+    paddingTop: 30,
     marginHorizontal: 16,
-    borderRadius: 25,
-    backgroundColor: '#FFFFFF26',
+    borderRadius: 10,
+  },
+  fromContainer: {
+    minHeight: 200,
+    marginHorizontal: 16,
+    paddingBottom: 16,
+    borderRadius: 10,
+  },
+  toContainer: {
+    marginHorizontal: 16,
+    borderRadius: 10,
+    paddingBottom: 16,
   },
 });
 

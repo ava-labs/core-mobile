@@ -63,11 +63,7 @@ export default function useBridge() {
 
   const tokenInfoContext = useTokenInfoContext();
 
-  const {
-    transferAsset,
-    status: wrapStatus,
-    txHash,
-  } = useTransferAsset(assetInfo);
+  const {transferAsset, txHash} = useTransferAsset(assetInfo);
 
   const targetBlockchain =
     currentBlockchain === Blockchain.AVALANCHE

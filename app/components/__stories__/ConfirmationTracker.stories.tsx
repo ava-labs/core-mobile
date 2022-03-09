@@ -1,7 +1,7 @@
 import {storiesOf} from '@storybook/react-native';
 import React, {FC, useEffect, useState} from 'react';
 import {Pressable, StyleSheet, View} from 'react-native';
-import ConfirmationTracker from 'screens/bridge/ConfirmationTracker';
+import ConfirmationTracker from 'screens/bridge/components/ConfirmationTracker';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from 'components/AvaText';
 import {Space} from 'components/Space';
@@ -55,6 +55,7 @@ const MultipleContainer: FC = () => {
         style={{
           backgroundColor: theme.colorBg2,
           borderRadius: 10,
+          paddingHorizontal: 16,
           overflow: 'hidden',
         }}>
         <ConfirmationTracker

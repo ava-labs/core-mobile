@@ -12,6 +12,9 @@ import {
 
 /**
  * Get the balance for a single token.
+ * @param blockchain
+ * @param token
+ * @param address
  * @param suspendRefresh pass true to NOT fetch the balance (useful for hidden items)
  */
 export function useLoadTokenBalance(

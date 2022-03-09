@@ -7,7 +7,7 @@ import AvaText from 'components/AvaText';
 import OvalTagBg from 'components/OvalTagBg';
 import {displaySeconds} from 'utils/Utils';
 import CheckmarkSVG from 'components/svg/CheckmarkSVG';
-import ConfirmationTracker from 'screens/bridge/ConfirmationTracker';
+import ConfirmationTracker from 'screens/bridge/components/ConfirmationTracker';
 
 interface Props {
   paddingHorizontal?: number;
