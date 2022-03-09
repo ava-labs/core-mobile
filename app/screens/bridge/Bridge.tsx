@@ -29,9 +29,8 @@ import {
   usePrice,
   useSwitchFromUnavailableAsset,
   useTransactionFee,
-  WrapStatus,
 } from '@avalabs/bridge-sdk';
-import {Big, BN} from '@avalabs/avalanche-wallet-sdk';
+import {Big} from '@avalabs/avalanche-wallet-sdk';
 import {useLoadTokenBalance} from 'screens/bridge/hooks/useLoadTokenBalance';
 import AppNavigation from 'navigation/AppNavigation';
 import {
@@ -40,7 +39,6 @@ import {
 } from '@avalabs/wallet-react-components';
 import {useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
-import {RootStackParamList} from 'navigation/WalletScreenStack';
 import CarrotSVG from 'components/svg/CarrotSVG';
 import InputText from 'components/InputText';
 import {getAvalancheProvider} from 'screens/bridge/utils/getAvalancheProvider';
@@ -56,7 +54,7 @@ const formatBalance = (balance: Big | undefined) => {
 const Bridge: FC = () => {
   useSwitchFromUnavailableAsset(true);
   const theme = useApplicationContext().theme;
-  const network = useNetworkContext();
+  const network = useNetworkContext()?.network;
   const navigation = useNavigation<StackNavigationProp<BridgeStackParamList>>();
   const {getTokenSymbolOnNetwork} = useGetTokenSymbolOnNetwork();
   // const {error} = useBridgeConfig();
@@ -100,13 +98,15 @@ const Bridge: FC = () => {
       : Blockchain.AVALANCHE;
 
   const sourceBalance = useLoadTokenBalance(currentBlockchain, assetInfo);
+  const provider =
+    currentBlockchain === Blockchain.AVALANCHE
+      ? getAvalancheProvider(network)
+      : getEthereumProvider(network);
 
   const maxTransferAmount = useMaxTransferAmount(
     sourceBalance.balance,
     addresses?.addrC,
-    currentBlockchain === Blockchain.AVALANCHE
-      ? getAvalancheProvider(network)
-      : getEthereumProvider(network),
+    provider,
   );
 
   /**
@@ -261,30 +261,7 @@ const Bridge: FC = () => {
 
   return (
     <View style={styles.container}>
-      <Pressable
-        style={{
-          margin: 16,
-          borderRadius: 50,
-          justifyContent: 'center',
-          alignItems: 'center',
-          backgroundColor: 'white',
-          marginHorizontal: 16,
-          paddingVertical: 12,
-          bottom: 40,
-          opacity: transferDisabled ? 0.5 : 1,
-        }}
-        onPress={() => {
-          console.log('transfer pressed');
-          handleTransfer();
-        }}
-        disabled={transferDisabled}>
-        <>
-          {pending && <ActivityIndicator color={theme.colorPrimary1} />}
-          <AvaText.ButtonLarge textStyle={{color: 'black'}}>
-            Transfer
-          </AvaText.ButtonLarge>
-        </>
-      </Pressable>
+
       <ScrollView style={styles.container}>
         <Space y={20} />
         <View style={{backgroundColor: theme.colorBg2, borderRadius: 10}}>
@@ -444,6 +421,30 @@ const Bridge: FC = () => {
           </View>
         </View>
       </ScrollView>
+      <Pressable
+        style={{
+          margin: 16,
+          borderRadius: 50,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: 'white',
+          marginHorizontal: 16,
+          paddingVertical: 12,
+          bottom: 40,
+          opacity: transferDisabled ? 0.5 : 1,
+        }}
+        onPress={() => {
+          console.log('transfer pressed');
+          handleTransfer();
+        }}
+        disabled={transferDisabled}>
+        <>
+          {pending && <ActivityIndicator color={theme.colorPrimary1} />}
+          <AvaText.ButtonLarge textStyle={{color: 'black'}}>
+            Transfer
+          </AvaText.ButtonLarge>
+        </>
+      </Pressable>
     </View>
   );
 };
