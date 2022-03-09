@@ -38,5 +38,4 @@ const ReactStorybookRoot = () => {
 };
 AppRegistry.registerComponent('AvaxWallet', () => ReactStorybookRoot);
 
-//
-// export default ReactStorybookRoot;
+export default ReactStorybookRoot;
