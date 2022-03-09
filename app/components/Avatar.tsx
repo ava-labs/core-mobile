@@ -6,6 +6,8 @@ import {Erc20Token} from '@avalabs/avalanche-wallet-sdk/dist/Asset';
 import {TokenWithBalance} from '@avalabs/wallet-react-components';
 import AvaText from './AvaText';
 import {Opacity10} from 'resources/Constants';
+import EthereumSvg from 'components/svg/Ethereum';
+import Ethereum from 'components/svg/Ethereum';
 
 interface Props {
   name: string;
@@ -34,7 +36,7 @@ const AvatarBase: FC<Props> = ({
 
   const tokenLogo = useCallback(() => {
     // if AVAX, return our own logo
-    if (symbol === 'AVAX') {
+    if (symbol === 'AVAX' || symbol === 'FAU') {
       return (
         <AvaLogoSVG
           size={size}
@@ -42,6 +44,8 @@ const AvatarBase: FC<Props> = ({
           backgroundColor={theme.tokenLogoBg}
         />
       );
+    } else if (symbol === 'ETH') {
+      return <EthereumSvg size={size} />;
     }
 
     // if ERC20 or invalid URL, return token initials
