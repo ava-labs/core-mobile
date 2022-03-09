@@ -19,8 +19,9 @@
   },
   "dependencies": {
     "@avalabs/coingecko-sdk": "2.0.0-alpha.4",
-    "@avalabs/avalanche-wallet-sdk": "0.14.5",
+    "@avalabs/avalanche-wallet-sdk": "0.16.0",
     "@avalabs/bridge-sdk": "1.2.0-alpha.3",
+    "@avalabs/covalent-sdk": "2.0.0",
     "@avalabs/blizzard-sdk": "2.0.0",
     "@avalabs/wallet-react-components": "1.24.6",
     "@babel/plugin-syntax-object-rest-spread": "^7.8.3",
