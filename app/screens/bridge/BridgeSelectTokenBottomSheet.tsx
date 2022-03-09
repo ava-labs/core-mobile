@@ -4,11 +4,12 @@ import {InteractionManager} from 'react-native';
 import {useNavigation, useRoute} from '@react-navigation/native';
 import TabViewBackground from 'screens/portfolio/components/TabViewBackground';
 import AvaxSheetHandle from 'components/AvaxSheetHandle';
-import TokenSelector from 'screens/send/TokenSelector';
 import AvaText from 'components/AvaText';
-import {TokenWithBalance} from '@avalabs/wallet-react-components';
+import BridgeTokenSelector, {
+  SelectTokenMode,
+} from 'screens/bridge/BridgeTokenSelector';
 
-function SelectTokenBottomSheet(): JSX.Element {
+function BridgeSelectTokenBottomSheet(): JSX.Element {
   const navigation = useNavigation();
   const bottomSheetModalRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ['0%', '90%'], []);
@@ -21,9 +22,9 @@ function SelectTokenBottomSheet(): JSX.Element {
     }, 100);
   }, []);
 
-  function onTokenSelected(token: TokenWithBalance) {
+  function onTokenSelected(symbol: string) {
     handleClose();
-    route.params.onTokenSelected(token);
+    route.params.onTokenSelected(symbol);
   }
 
   const handleClose = useCallback(() => {
@@ -48,10 +49,13 @@ function SelectTokenBottomSheet(): JSX.Element {
         <AvaText.LargeTitleBold textStyle={{marginHorizontal: 16}}>
           Select Token
         </AvaText.LargeTitleBold>
-        <TokenSelector onTokenSelected={onTokenSelected} />
+        <BridgeTokenSelector
+          onTokenSelected={onTokenSelected}
+          selectMode={SelectTokenMode.CONVERT}
+        />
       </>
     </BottomSheet>
   );
 }
 
-export default SelectTokenBottomSheet;
+export default BridgeSelectTokenBottomSheet;

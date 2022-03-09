@@ -45,6 +45,7 @@ import {TxType} from 'screens/activity/ActivityList';
 import ActivityDetail from 'screens/activity/ActivityDetail';
 import EditGasLimitBottomSheet from 'screens/shared/EditGasLimitBottomSheet';
 import OwnedTokenDetail from 'screens/portfolio/OwnedTokenDetail';
+import BridgeSelectTokenBottomSheet from 'screens/bridge/BridgeSelectTokenBottomSheet';
 
 type Props = {
   onExit: () => void;
@@ -77,6 +78,7 @@ export type RootStackParamList = {
     gasLimit: string;
     networkFee: string;
   };
+  [AppNavigation.Modal.BridgeSelectToken]: undefined;
 };
 
 const RootStack = createStackNavigator<RootStackParamList>();
@@ -201,6 +203,10 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
         <RootStack.Screen
           name={AppNavigation.Modal.EditGasLimit}
           component={EditGasLimitBottomSheet}
+        />
+        <RootStack.Screen
+          name={AppNavigation.Modal.BridgeSelectToken}
+          component={BridgeSelectTokenBottomSheet}
         />
       </RootStack.Group>
     );

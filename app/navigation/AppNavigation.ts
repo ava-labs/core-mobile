@@ -80,6 +80,7 @@ enum ModalScreens {
   SignOut = 'ModalScreens.SignOut',
   SelectToken = 'ModalScreens.SelectToken',
   EditGasLimit = 'ModalScreens.EditGasLimit',
+  BridgeSelectToken = 'ModalScreens.BridgeSelectToken',
 }
 
 enum SendScreens {
