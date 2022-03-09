@@ -1,25 +1,14 @@
 import React, {
   FC,
   Fragment,
-  useCallback,
   useContext,
   useEffect,
   useMemo,
   useRef,
-  useState,
 } from 'react';
-import {
-  Animated,
-  Dimensions,
-  Easing,
-  LayoutChangeEvent,
-  StyleSheet,
-  View,
-} from 'react-native';
+import {Animated, Easing, StyleSheet, View} from 'react-native';
 import {ApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from 'components/AvaText';
-
-const WINDOW_WIDTH = Dimensions.get('window').width;
 
 interface ConfirmationTrackerProps {
   started: boolean;
@@ -71,7 +60,7 @@ const ConfirmationTracker: FC<ConfirmationTrackerProps> = ({
           toValue: calculateLineWidth(fullWidth),
           duration: fullWidth ? 2500 : 1500,
           useNativeDriver: true,
-          easing: Easing.inOut(Easing.in),
+          easing: Easing.inOut(Easing.linear),
           delay: delay,
         }),
       ]),
