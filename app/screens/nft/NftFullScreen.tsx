@@ -15,7 +15,7 @@ import {NFTStackParamList} from 'navigation/wallet/NFTScreenStack';
 import {getColorFromURL} from 'rn-dominant-color';
 import LinearGradientSVG from 'components/svg/LinearGradientSVG';
 import {useApplicationContext} from 'contexts/ApplicationContext';
-import {orientation, OrientationData} from 'react-native-sensors';
+import {orientation} from 'react-native-sensors';
 import {filter, sampleTime, tap} from 'rxjs';
 
 export type NftFullScreenProps = {};
@@ -34,7 +34,7 @@ export default function NftFullScreen() {
   const [sensorData, setSensorData] = useState({
     pitch: 0,
     roll: 0,
-  } as OrientationData);
+  });
   const transformValue = useRef({
     pitch: new Animated.Value(0),
     roll: new Animated.Value(0),
@@ -71,7 +71,10 @@ export default function NftFullScreen() {
         }),
       )
       .subscribe(value => {
-        setSensorData(value);
+        setSensorData({
+          pitch: isNaN(value.pitch) ? 0 : value.pitch,
+          roll: isNaN(value.roll) ? 0 : value.roll,
+        });
       });
 
     return () => subscription.unsubscribe();

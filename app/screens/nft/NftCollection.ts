@@ -32,6 +32,7 @@ export type NFTItemData = {
 
   collection: NftCollection;
   isShowing: boolean;
+  aspect: number;
 };
 
 export type NftCollection = {

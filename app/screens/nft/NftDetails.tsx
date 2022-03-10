@@ -9,6 +9,7 @@ import {
   NFTItemData,
   NFTItemExternalDataAttribute,
 } from 'screens/nft/NftCollection';
+import {Row} from 'components/Row';
 
 export type NftDetailsProps = {
   onPicturePressed: (url: string, urlSmall: string) => void;
@@ -25,7 +26,7 @@ export default function NftDetails({
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <AvaText.Heading1>
-        {item.collection.contract_name} {item.token_id}
+        {item.collection.contract_name} #{item.token_id}
       </AvaText.Heading1>
       <Space y={24} />
       <AvaButton.Base
@@ -46,7 +47,16 @@ export default function NftDetails({
       </AvaButton.PrimaryLarge>
       <Space y={24} />
       <AvaText.Heading2>Description</AvaText.Heading2>
-      <AvaText.Body2>{item.external_data.owner}</AvaText.Body2>
+      <Row>
+        <View style={{flex: 1}}>
+          <AvaText.Body2>Created by</AvaText.Body2>
+          <AvaText.Body2>{item.external_data.owner}</AvaText.Body2>
+        </View>
+        <View style={{flex: 1}}>
+          <AvaText.Body2>Floor price</AvaText.Body2>
+          <AvaText.Body2>{item.token_price_wei}</AvaText.Body2>
+        </View>
+      </Row>
       <Space y={24} />
       <AvaText.Heading2>Properties</AvaText.Heading2>
       <Space y={16} />
@@ -56,15 +66,31 @@ export default function NftDetails({
 }
 
 const renderProps = (attributes: NFTItemExternalDataAttribute[]) => {
-  return attributes.map((attr, i) => {
-    return (
-      <View key={i}>
-        <AvaText.Body2>{attr.trait_type}</AvaText.Body2>
-        <Space y={4} />
-        <AvaText.Heading3>{attr.value}</AvaText.Heading3>
-      </View>
+  const props = [];
+  for (let i = 0; i < attributes.length; i += 2) {
+    props.push(
+      <>
+        <Space key={i + 1} y={4} />
+        <Row key={i}>
+          {attributes[i] && (
+            <View style={{flex: 1}}>
+              <AvaText.Body2>{attributes[i].trait_type}</AvaText.Body2>
+              <Space y={4} />
+              <AvaText.Heading3>{attributes[i].value}</AvaText.Heading3>
+            </View>
+          )}
+          {attributes[i + 1] && (
+            <View style={{flex: 1}}>
+              <AvaText.Body2>{attributes[i + 1].trait_type}</AvaText.Body2>
+              <Space y={4} />
+              <AvaText.Heading3>{attributes[i + 1].value}</AvaText.Heading3>
+            </View>
+          )}
+        </Row>
+      </>,
     );
-  });
+  }
+  return props;
 };
 
 const styles = StyleSheet.create({

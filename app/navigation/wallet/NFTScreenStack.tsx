@@ -10,15 +10,14 @@ import {useNavigation} from '@react-navigation/native';
 import NftDetails from 'screens/nft/NftDetails';
 import NftFullScreen from 'screens/nft/NftFullScreen';
 import NftManage from 'screens/nft/NftManage';
-import {useApplicationContext} from 'contexts/ApplicationContext';
 import NFTSendScreenStack from 'navigation/wallet/NFTSendStack';
 import {Covalent} from '@avalabs/covalent-sdk';
 import {
   useAccountsContext,
   useNetworkContext,
 } from '@avalabs/wallet-react-components';
-import {UID} from 'Repo';
 import {Config} from 'react-native-config';
+import {useNftLoader} from 'screens/nft/useNftLoader';
 
 export type NFTStackParamList = {
   [AppNavigation.Nft.List]: undefined;
@@ -31,9 +30,9 @@ export type NFTStackParamList = {
 const NFTStack = createStackNavigator<NFTStackParamList>();
 
 function NFTScreenStack() {
-  const {repo} = useApplicationContext();
   const {network} = useNetworkContext()!;
   const {activeAccount} = useAccountsContext();
+  const {parseNftCollections} = useNftLoader();
 
   useEffect(() => {
     const chainID = 1 || Number.parseInt(network?.chainId ?? '0', 10);
@@ -45,32 +44,9 @@ function NFTScreenStack() {
     console.log(chainID);
     if (addressC) {
       covalent.getAddressBalancesV2(addressC, true).then(value => {
-        const nftDataItems = new Map<UID, NFTItemData>();
-        value.data.items.forEach(collection => {
-          collection.nft_data?.forEach(nftData => {
-            const nft = nftData as NFTItemData;
-            nft.collection = (({nft_data, ...o}) => o)(
-              collection,
-            ) as unknown as NftCollection; // remove nft_data to save on memory
-            nft.isShowing = true;
-            nftDataItems.set(nft.token_id, nft);
-          });
-        });
-        repo.nftRepo.saveNfts(nftDataItems);
+        parseNftCollections(value.data.items as unknown as NftCollection[]);
       });
     }
-
-    // const nftDataItems = new Map<UID, NFTItemData>();
-    // NFTs.forEach(collection => {
-    //   collection.nft_data.forEach(nftData => {
-    //     const nft = nftData as NFTItemData;
-    //     nft.collection = (({nft_data, ...o}) => o)(
-    //       collection,
-    //     ) as unknown as NftCollection; // remove nft_data to save on memory
-    //     nftDataItems.set(nft.token_id, nft);
-    //   });
-    // });
-    // repo.nftRepo.saveNfts(nftDataItems);
   }, []);
 
   return (
