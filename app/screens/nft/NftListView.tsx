@@ -1,5 +1,5 @@
 import React, {useMemo, useState} from 'react';
-import {FlatList, Image, StyleSheet, View} from 'react-native';
+import {Dimensions, FlatList, Image, StyleSheet, View} from 'react-native';
 import RadioGroup from 'components/RadioGroup';
 import GridSVG from 'components/svg/GridSVG';
 import {Row} from 'components/Row';
@@ -11,6 +11,7 @@ import AvaListItem from 'components/AvaListItem';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {COLORS_DAY, COLORS_NIGHT} from 'resources/Constants';
 import Avatar from 'components/Avatar';
+import MasonryList from '@react-native-seoul/masonry-list';
 import AvaText from 'components/AvaText';
 
 type ListType = 'grid' | 'list';
@@ -19,6 +20,12 @@ export type NftListViewProps = {
   onItemSelected: (item: NFTItemData) => void;
   onManagePressed: () => void;
 };
+
+const SCREEN_WIDTH = Dimensions.get('window')?.width;
+const GRID_ITEM_MARGIN = 8;
+const PARENT_PADDING = 16;
+const GRID_ITEM_WIDTH =
+  (SCREEN_WIDTH - GRID_ITEM_MARGIN * 4 - PARENT_PADDING * 2) / 2;
 
 export default function NftListView({
   onItemSelected,
@@ -29,7 +36,10 @@ export default function NftListView({
   const {theme} = useApplicationContext();
 
   const filteredData = useMemo(
-    () => [...nftRepo.nfts.values()].filter(value => value.isShowing),
+    () =>
+      [...nftRepo.nfts.values()].filter(
+        value => value.isShowing && !!value.aspect,
+      ),
     [nftRepo.nfts],
   );
 
@@ -46,18 +56,26 @@ export default function NftListView({
           Manage
         </AvaButton.TextMedium>
       </Row>
-      <FlatList
-        style={{flex: 1}}
-        data={filteredData}
-        ListEmptyComponent={<ZeroState.Collectibles />}
-        keyExtractor={item => item.token_id}
-        ItemSeparatorComponent={() => <View style={{margin: 4}} />}
-        renderItem={info =>
-          listType === 'list'
-            ? renderItemList(info.item, onItemSelected, theme)
-            : renderItemGrid(info.item, onItemSelected)
-        }
-      />
+      {listType === 'list' ? (
+        <FlatList
+          style={{flex: 1}}
+          data={filteredData}
+          ListEmptyComponent={<ZeroState.Collectibles />}
+          keyExtractor={item => item.token_id}
+          ItemSeparatorComponent={() => <View style={{margin: 4}} />}
+          renderItem={info => renderItemList(info.item, onItemSelected, theme)}
+        />
+      ) : (
+        <MasonryList
+          data={filteredData}
+          keyExtractor={(item: NFTItemData) =>
+            item.collection.contract_name + item.token_id
+          }
+          numColumns={2}
+          showsVerticalScrollIndicator={true}
+          renderItem={info => renderItemGrid(info.item, onItemSelected)}
+        />
+      )}
     </View>
   );
 }
@@ -76,10 +94,21 @@ const renderItemList = (
       }}>
       <AvaListItem.Base
         onPress={() => onItemSelected(item)}
-        title={item.token_id}
-        subtitle={item.collection.contract_name}
+        title={
+          <AvaText.Heading2
+            style={{alignSelf: 'flex-start'}}
+            ellipsizeMode={'tail'}>
+            {item.token_id}
+          </AvaText.Heading2>
+        }
+        subtitle={
+          <AvaText.Body2 style={{alignSelf: 'flex-start'}}>
+            {item.collection.contract_name}
+          </AvaText.Body2>
+        }
         leftComponent={
           <Avatar.Custom
+            size={40}
             name={item.external_data.name}
             logoUri={item.external_data.image_256}
           />
@@ -94,10 +123,15 @@ const renderItemGrid = (
   onItemSelected: (item: NFTItemData) => void,
 ) => {
   return (
-    <AvaButton.Base onPress={() => onItemSelected(item)}>
-      <AvaText.Heading1>{item.external_data.name}</AvaText.Heading1>
+    <AvaButton.Base
+      onPress={() => onItemSelected(item)}
+      style={{margin: GRID_ITEM_MARGIN}}>
       <Image
-        style={{width: '100%', height: 200, borderRadius: 8}}
+        style={{
+          width: GRID_ITEM_WIDTH,
+          height: item.aspect * GRID_ITEM_WIDTH,
+          borderRadius: 8,
+        }}
         source={{uri: item.external_data.image_512}}
       />
     </AvaButton.Base>

@@ -3105,6 +3105,13 @@
   resolved "https://registry.yarnpkg.com/@react-native-community/masked-view/-/masked-view-0.1.11.tgz#2f4c6e10bee0786abff4604e39a37ded6f3980ce"
   integrity sha512-rQfMIGSR/1r/SyN87+VD8xHHzDYeHaJq6elOSCAD+0iLagXkSI2pfA0LmSXP21uw5i3em7GkkRjfJ8wpqWXZNw==
 
+"@react-native-seoul/masonry-list@^1.1.4":
+  version "1.1.4"
+  resolved "https://registry.yarnpkg.com/@react-native-seoul/masonry-list/-/masonry-list-1.1.4.tgz#67f8b59e19a61c78d03eb007f5ae574aeb7fbfb7"
+  integrity sha512-pHB1vz8cN9gRuOaFJsUOTi0B7w6LimzuqmQP7/iLJkXUnHW45kIMetuM29wPJ44Hz7+1nNZQ2ONCK+WyZ3EtZA==
+  dependencies:
+    dooboolab-welcome "^1.3.2"
+
 "@react-native-windows/cli@0.64.1":
   version "0.64.1"
   resolved "https://registry.yarnpkg.com/@react-native-windows/cli/-/cli-0.64.1.tgz#0f974d1f08c5ff9f72c1d204f6b6c86e7a9983ec"
@@ -8592,6 +8599,11 @@ domutils@^2.5.2, domutils@^2.8.0:
     dom-serializer "^1.0.1"
     domelementtype "^2.2.0"
     domhandler "^4.2.0"
+
+dooboolab-welcome@^1.3.2:
+  version "1.3.2"
+  resolved "https://registry.yarnpkg.com/dooboolab-welcome/-/dooboolab-welcome-1.3.2.tgz#4928595312f0429b4ea1b485ba8767bae6acdab7"
+  integrity sha512-2NbMaIIURElxEf/UAoVUFlXrO+7n/FRhLCiQlk4fkbGRh9cJ3/f8VEMPveR9m4Ug2l2Zey+UCXjd6EcBqHJ5bw==
 
 dot-case@^3.0.4:
   version "3.0.4"
@@ -17811,6 +17823,13 @@ rxjs@7.5.1:
   version "7.5.1"
   resolved "https://registry.yarnpkg.com/rxjs/-/rxjs-7.5.1.tgz#af73df343cbcab37628197f43ea0c8256f54b157"
   integrity sha512-KExVEeZWxMZnZhUZtsJcFwz8IvPvgu4G2Z2QyqjZQzUGr32KDYuSxrEYO4w3tFFNbfLozcrKUTvTPi+E9ywJkQ==
+  dependencies:
+    tslib "^2.1.0"
+
+"rxjs@>= 6":
+  version "7.5.5"
+  resolved "https://registry.yarnpkg.com/rxjs/-/rxjs-7.5.5.tgz#2ebad89af0f560f460ad5cc4213219e1f7dd4e9f"
+  integrity sha512-sy+H0pQofO95VDmFLzyaw9xNJU4KTRSwQIGM6+iG3SypAtCiLDzpeG8sJrNCWn2Up9km+KhkvTdbkrdy+yzZdw==
   dependencies:
     tslib "^2.1.0"
 
