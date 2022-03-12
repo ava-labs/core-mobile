@@ -61,16 +61,14 @@ export default function NftListView({
           style={{flex: 1}}
           data={filteredData}
           ListEmptyComponent={<ZeroState.Collectibles />}
-          keyExtractor={item => item.token_id}
+          keyExtractor={item => item.uid}
           ItemSeparatorComponent={() => <View style={{margin: 4}} />}
           renderItem={info => renderItemList(info.item, onItemSelected, theme)}
         />
       ) : (
         <MasonryList
           data={filteredData}
-          keyExtractor={(item: NFTItemData) =>
-            item.collection.contract_name + item.token_id
-          }
+          keyExtractor={(item: NFTItemData) => item.uid}
           numColumns={2}
           showsVerticalScrollIndicator={true}
           renderItem={info => renderItemGrid(info.item, onItemSelected)}
@@ -94,15 +92,14 @@ const renderItemList = (
       }}>
       <AvaListItem.Base
         onPress={() => onItemSelected(item)}
+        titleAlignment={'flex-start'}
         title={
-          <AvaText.Heading2
-            style={{alignSelf: 'flex-start'}}
-            ellipsizeMode={'tail'}>
-            {item.token_id}
+          <AvaText.Heading2 ellipsizeMode={'tail'}>
+            #{item.token_id}
           </AvaText.Heading2>
         }
         subtitle={
-          <AvaText.Body2 style={{alignSelf: 'flex-start'}}>
+          <AvaText.Body2 ellipsizeMode={'tail'}>
             {item.collection.contract_name}
           </AvaText.Body2>
         }

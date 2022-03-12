@@ -2,19 +2,18 @@ import {NftCollection, NFTItemData} from 'screens/nft/NftCollection';
 import {useCallback, useEffect, useRef} from 'react';
 import {UID} from 'Repo';
 import {
-  bufferCount,
   bufferTime,
+  concat,
   concatMap,
+  delay,
   filter,
   from,
-  interval,
-  startWith,
+  of,
   Subject,
-  switchMap,
-  zipWith,
 } from 'rxjs';
 import {Image} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
+import {getNftUID} from 'utils/TokenTools';
 
 /**
  * Takes nft data and fetches the smallest images to calculate aspect ratio.
@@ -23,23 +22,38 @@ import {useApplicationContext} from 'contexts/ApplicationContext';
 export const useNftLoader = (): {
   parseNftCollections: (nftCollections: NftCollection[]) => void;
 } => {
-  const cache = useRef(new Map<UID, NFTItemData>()).current;
   const loadQueue$ = useRef(new Subject<NFTItemData>()).current;
   const {nftRepo} = useApplicationContext().repo;
+  const nftRepoRef = useRef(new Map());
+
+  useEffect(() => {
+    nftRepoRef.current.clear();
+    nftRepo.nfts.forEach((value, key) => {
+      nftRepoRef.current.set(key, value);
+    });
+  }, [nftRepo.nfts]);
 
   useEffect(() => {
     const subs = loadQueue$
       .pipe(
-        filter(
-          nftData =>
-            !!nftData &&
-            (!cache.has(nftData.token_id) ||
-              !!cache.get(nftData.token_id)!.aspect),
-        ),
-        bufferCount(10),
-        zipWith(interval(1000).pipe(startWith(0))),
-        switchMap(([nfts, _]) => {
-          console.log('expanding batch');
+        filter(nftData => !!nftData),
+        bufferTime(1000),
+        filter(value => value.length !== 0),
+        concatMap(value => {
+          const newObservables = [];
+          const batchCount = 10;
+          for (let i = 0; i < value.length; i += batchCount) {
+            let observable = of(value.slice(i, i + batchCount));
+            //don't delay first batch
+            if (i !== 0) {
+              observable = observable.pipe(delay(1000));
+            }
+            newObservables.push(observable);
+          }
+          return concat(...newObservables);
+        }),
+        concatMap(nfts => {
+          console.log('expanding batch', new Date());
           return from(nfts);
         }),
         concatMap(nftData => {
@@ -52,8 +66,6 @@ export const useNftLoader = (): {
             nftData.external_data.image_256,
             (width: number, height: number) => {
               nftData.aspect = height / width;
-              cache.set(nftData.token_id, nftData);
-              console.log('set to cache');
               resolver(nftData);
             },
             _ => {
@@ -63,15 +75,15 @@ export const useNftLoader = (): {
           );
           return p;
         }),
-        bufferTime(900),
+        bufferTime(1000),
+        filter(value => value.length !== 0),
       )
       .subscribe({
-        next: _ => {
-          const toUpdate = new Map(nftRepo.nfts);
-          cache.forEach((value, key) => {
-            toUpdate.set(key, value);
+        next: nftData => {
+          nftData.forEach(item => {
+            nftRepoRef.current.set(item.uid, item);
           });
-          nftRepo.saveNfts(toUpdate);
+          nftRepo.saveNfts(nftRepoRef.current);
         },
         error: err => console.error(err),
         complete: () => console.warn('completed'),
@@ -111,7 +123,8 @@ function prepareNftData(
         collection,
       ) as unknown as NftCollection; // remove nft_data to save on memory
       nft.isShowing = true;
-      nftDataItems.set(nft.token_id, nft);
+      nft.uid = getNftUID(nft);
+      nftDataItems.set(nft.uid, nft);
     });
   });
   return nftDataItems;
@@ -122,8 +135,8 @@ function applyKnownAspectRatios(
   nfts: Map<UID, NFTItemData>,
 ) {
   for (const [_, token] of nftDataItems) {
-    if (nfts.has(token.token_id)) {
-      token.aspect = nfts.get(token.token_id)!.aspect;
+    if (nfts.has(token.uid)) {
+      token.aspect = nfts.get(token.uid)!.aspect;
     }
   }
 }
