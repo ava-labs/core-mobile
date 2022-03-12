@@ -45,7 +45,7 @@ const NftManage = () => {
         style={{flex: 1}}
         data={filteredData}
         ListEmptyComponent={<ZeroState.Collectibles />}
-        keyExtractor={item => item.token_id}
+        keyExtractor={item => item.uid}
         ItemSeparatorComponent={() => <View style={{margin: 4}} />}
         renderItem={info => renderItemList(info.item, onItemToggled, theme)}
       />

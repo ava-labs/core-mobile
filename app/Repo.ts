@@ -164,6 +164,7 @@ export function useRepo(): Repo {
     console.log('destroy repo');
     setAccounts(new Map());
     setAddressBook(new Map());
+    setNfts(new Map());
     setRecentContacts([]);
     setWatchlistFavorites([]);
     setCustomTokens({});
