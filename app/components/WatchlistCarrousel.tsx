@@ -70,7 +70,7 @@ const WatchlistCarrousel: FC<Props> = () => {
         key={getTokenUID(token)}
         onPress={() =>
           navigation.navigate(AppNavigation.Wallet.TokenDetail, {
-            tokenId: getTokenUID(token),
+            address: getTokenUID(token),
           })
         }
         style={[style.item, {backgroundColor: theme.colorBg3}]}>
