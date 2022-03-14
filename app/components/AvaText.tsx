@@ -25,7 +25,10 @@ const AvaxTextBase: FC<AvaTextProps> = ({
 }) => {
   const {selectedCurrency, currencyFormatter} = useApplicationContext().appHook;
 
-  if (typeof children === 'string' && currency) {
+  if (
+    (typeof children === 'string' || typeof children === 'number') &&
+    currency
+  ) {
     return animated ? (
       <Animated.Text {...rest}>{`${currencyFormatter(
         Number(children),
