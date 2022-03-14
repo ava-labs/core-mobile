@@ -1,5 +1,12 @@
 import React, {RefObject, useEffect, useRef, useState} from 'react';
-import {Appearance, InteractionManager, TextInput, View} from 'react-native';
+import {
+  Appearance,
+  InteractionManager,
+  StyleProp,
+  TextInput,
+  View,
+  ViewStyle,
+} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import TextLabel from 'components/TextLabel';
 import AvaButton from './AvaButton';
@@ -42,6 +49,7 @@ type Props = {
   currency?: string;
   onInputRef?: (inputRef: RefObject<TextInput>) => void;
   width?: number;
+  style?: StyleProp<ViewStyle>;
 };
 
 export default function InputText(props: Props | Readonly<Props>) {
@@ -224,7 +232,7 @@ export default function InputText(props: Props | Readonly<Props>) {
   };
 
   return (
-    <View style={{margin: 12}}>
+    <View style={[{margin: 12}, props.style]}>
       {props.label && <Label />}
       <View
         style={[

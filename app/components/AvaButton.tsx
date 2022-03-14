@@ -26,9 +26,10 @@ const AvaButtonBase: FC<BaseProps> = ({
         color: theme.buttonRipple,
         borderless: rippleBorderless ?? false,
       }}
+      style={style}
       onPress={onPress}
       disabled={disabled}>
-      <View style={style}>{children}</View>
+      {children}
     </Pressable>
   );
 };
