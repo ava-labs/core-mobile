@@ -8,6 +8,7 @@ import {useWalletSetup, WalletSetupHook} from 'hooks/useWalletSetup';
 import {
   customErc20Tokens$,
   FUJI_NETWORK,
+  MAINNET_NETWORK,
   useNetworkContext,
 } from '@avalabs/wallet-react-components';
 
@@ -56,10 +57,10 @@ export const ApplicationContextProvider = ({children}: {children: any}) => {
   const repository = useRepo();
   const walletSetupHook = useWalletSetup(repository, appNavHook);
   const appHook = useApp(appNavHook, walletSetupHook, repository);
-  const networkState = useNetworkContext();
+  const networkState = useNetworkContext()!;
 
   useEffect(() => {
-    networkState.setNetwork(FUJI_NETWORK);
+    networkState.setNetwork(__DEV__ ? FUJI_NETWORK : MAINNET_NETWORK);
   }, []);
 
   const isDarkMode = true; // useState(Appearance.getColorScheme() === 'dark');

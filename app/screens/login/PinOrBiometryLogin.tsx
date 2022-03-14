@@ -1,6 +1,5 @@
 import React, {useEffect} from 'react';
 import {Animated, StyleSheet, View} from 'react-native';
-import Dot from 'components/Dot';
 import PinKey, {PinKeys} from 'screens/onboarding/PinKey';
 import {
   MnemonicLoaded,
@@ -13,6 +12,7 @@ import AvaText from 'components/AvaText';
 import {Space} from 'components/Space';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaButton from 'components/AvaButton';
+import DotSVG from 'components/svg/DotSVG';
 import OwlLogoSVG from 'components/svg/OwlLogoSVG';
 
 const keymap: Map<string, PinKeys> = new Map([
@@ -90,7 +90,12 @@ export default function PinOrBiometryLogin({
     const dots: Element[] = [];
 
     pinDots.forEach((value, key) => {
-      dots.push(<Dot filled={value.filled} key={key} />);
+      dots.push(
+        <DotSVG
+          fillColor={value.filled ? theme.colorPrimary1 : undefined}
+          key={key}
+        />,
+      );
     });
     return dots;
   };

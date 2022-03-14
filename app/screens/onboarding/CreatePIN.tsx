@@ -1,14 +1,12 @@
 import React, {useEffect} from 'react';
 import {Animated, StyleSheet, View} from 'react-native';
 import PinKey, {PinKeys} from './PinKey';
-import Dot from 'components/Dot';
 import {useCreatePin} from './CreatePinViewModel';
 import TextLabel from 'components/TextLabel';
-import HeaderProgress from 'screens/mainView/HeaderProgress';
 import {Space} from 'components/Space';
 import AvaText from 'components/AvaText';
-import {useWalletContext} from '@avalabs/wallet-react-components';
-import {WalletContextType} from 'dto/TypeUtils';
+import DotSVG from 'components/svg/DotSVG';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 
 const keymap: Map<string, PinKeys> = new Map([
   ['1', PinKeys.Key1],
@@ -25,8 +23,7 @@ const keymap: Map<string, PinKeys> = new Map([
 ]);
 
 type Props = {
-  onBack: () => void;
-  onPinSet: (pin: string, walletContext: WalletContextType) => void;
+  onPinSet: (pin: string) => void;
   isResettingPin?: boolean;
 };
 
@@ -38,11 +35,10 @@ type Props = {
  * @constructor
  */
 export default function CreatePIN({
-  onBack,
   onPinSet,
   isResettingPin,
 }: Props): JSX.Element {
-  const walletContext = useWalletContext();
+  const {theme} = useApplicationContext();
   const [
     title,
     errorMessage,
@@ -56,7 +52,7 @@ export default function CreatePIN({
 
   useEffect(() => {
     if (validPin) {
-      onPinSet(validPin, walletContext);
+      onPinSet(validPin);
     }
   }, [validPin, title]);
 
@@ -64,7 +60,12 @@ export default function CreatePIN({
     const dots: Element[] = [];
 
     pinDots.forEach((value, key) => {
-      dots.push(<Dot filled={value.filled} key={key} />);
+      dots.push(
+        <DotSVG
+          fillColor={value.filled ? theme.colorPrimary1 : undefined}
+          key={key}
+        />,
+      );
     });
     return dots;
   };
@@ -90,7 +91,6 @@ export default function CreatePIN({
     <View style={[styles.verticalLayout]}>
       {isResettingPin || (
         <>
-          <HeaderProgress maxDots={0} filledDots={0} showBack onBack={onBack} />
           <Space y={8} />
           <AvaText.Heading1 textStyle={{textAlign: 'center'}}>
             {title}

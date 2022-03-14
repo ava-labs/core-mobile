@@ -4,9 +4,9 @@ import AvaButton from 'components/AvaButton';
 import {Space} from 'components/Space';
 import AvaText from 'components/AvaText';
 import {Row} from 'components/Row';
-import AddSVG from 'components/svg/AddSVG';
 import Separator from 'components/Separator';
 import WalletSVG from 'components/svg/WalletSVG';
+import CreateNewWalletPlusSVG from 'components/svg/CreateNewWalletPlusSVG';
 import OwlBrandLogo from 'components/OwlBrandLogo';
 
 type Props = {
@@ -35,14 +35,14 @@ export default function Welcome(props: Props | Readonly<Props>): JSX.Element {
           <AvaButton.Base
             style={{alignItems: 'center'}}
             onPress={onCreateWallet}>
-            <AddSVG hideCircle size={64} />
+            <CreateNewWalletPlusSVG size={64} />
             <Space y={38} />
             <AvaText.ActivityTotal textStyle={{textAlign: 'center'}}>
-              {'Create a new\n wallet'}
+              {'Create a New\n Wallet'}
             </AvaText.ActivityTotal>
           </AvaButton.Base>
         </View>
-        <Separator vertical />
+        <Separator vertical thickness={3} />
         <View style={{flex: 1, alignItems: 'center'}}>
           <AvaButton.Base
             style={{alignItems: 'center'}}
@@ -50,7 +50,7 @@ export default function Welcome(props: Props | Readonly<Props>): JSX.Element {
             <WalletSVG />
             <Space y={38} />
             <AvaText.ActivityTotal textStyle={{textAlign: 'center'}}>
-              {'Access\n existing wallet'}
+              {'Access\n Existing Wallet'}
             </AvaText.ActivityTotal>
           </AvaButton.Base>
         </View>
