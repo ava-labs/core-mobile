@@ -29,7 +29,16 @@ export function useTokenDetail(tokenAddress: string) {
     maxDate: number;
     minPrice: number;
     maxPrice: number;
-  }>({minDate: 0, maxDate: 0, minPrice: 0, maxPrice: 0});
+    diffValue: number;
+    percentChange: number;
+  }>({
+    minDate: 0,
+    maxDate: 0,
+    minPrice: 0,
+    maxPrice: 0,
+    diffValue: 0,
+    percentChange: 0,
+  });
   const [contractInfo, setContractInfo] = useState<CoinsContractInfoResponse>();
   const [urlHostname, setUrlHostname] = useState<string>('');
   const {watchlistFavorites, saveWatchlistFavorites} =
@@ -59,12 +68,12 @@ export function useTokenDetail(tokenAddress: string) {
   useEffect(() => {
     (async () => {
       if (isERC20Token(token)) {
-        const rawData = await coinsContractMarketChartRange(
-          tokenAddress,
-          'usd' as VsCurrencyType,
-          moment().subtract('24', 'hour').unix(),
-          moment().unix(),
-        );
+        const rawData = await coinsContractMarketChartRange({
+          address: tokenAddress,
+          currency: 'usd' as VsCurrencyType,
+          from: moment().subtract('24', 'hour').unix(),
+          to: moment().unix(),
+        });
         const pd = rawData.prices.map(tu => {
           return {x: tu[0], y: tu[1]};
         });
@@ -76,8 +85,17 @@ export function useTokenDetail(tokenAddress: string) {
         const maxDate = Math.max(...dates);
         const minPrice = Math.min(...prices);
         const maxPrice = Math.max(...prices);
+        const diffValue = prices[prices.length - 1] - prices[0];
+        const percentChange = diffValue / (prices[prices.length - 1] * 100);
 
-        setRanges({minDate, maxDate, minPrice, maxPrice});
+        setRanges({
+          minDate,
+          maxDate,
+          minPrice,
+          maxPrice,
+          diffValue,
+          percentChange,
+        });
         setChartData(pd);
       }
     })();
@@ -87,7 +105,10 @@ export function useTokenDetail(tokenAddress: string) {
   useEffect(() => {
     if (token && isERC20Token(token)) {
       (async () => {
-        const rawData = await coinsContractInfo(token?.address);
+        const rawData = await coinsContractInfo({
+          address: tokenAddress,
+          id: 'avalanche',
+        });
         setContractInfo(rawData);
         if (contractInfo?.links?.homepage?.[0]) {
           const url = new URL(contractInfo?.links?.homepage?.[0]);

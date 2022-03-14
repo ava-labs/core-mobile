@@ -1,4 +1,4 @@
-import React, {FC, useEffect, useLayoutEffect, useState} from 'react';
+import React, {FC, useLayoutEffect, useState} from 'react';
 import {Dimensions, Pressable, ScrollView, View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaListItem from 'components/AvaListItem';
@@ -13,16 +13,12 @@ import {LinearGradient, Stop} from 'react-native-svg';
 import TabViewAva from 'components/TabViewAva';
 import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
 import StarSVG from 'components/svg/StarSVG';
-import {getTokenUID} from 'utils/TokenTools';
-import {useSearchableTokenList} from 'screens/portfolio/useSearchableTokenList';
-import {TokenWithBalance} from '@avalabs/wallet-react-components';
 import {RootStackParamList} from 'navigation/WalletScreenStack';
 import {StackNavigationProp} from '@react-navigation/stack';
 import ChartSelector, {
   ChartType,
 } from 'screens/watchlist/components/ChartSelector';
 import OvalTagBg from 'components/OvalTagBg';
-import useInAppBrowser from 'hooks/useInAppBrowser';
 import AvaButton from 'components/AvaButton';
 import {
   VictoryAxis,
@@ -30,72 +26,63 @@ import {
   VictoryChart,
   VictoryTheme,
 } from 'victory-native';
+import {largeCurrencyFormatter, truncateAddress} from 'utils/Utils';
+import {useTokenDetail} from 'screens/watchlist/useTokenDetail';
 
-export const defaultAreaChartFillGradient = (props: GradientProps) => {
-  return (
-    <LinearGradient x1="50%" y1="0%" x2="50%" y2="100%" {...props}>
-      <Stop stopColor="#FF0000" offset="0%" stopOpacity="0.5" />
-      <Stop stopColor="#000000" offset="100%" stopOpacity="0.2" />
-    </LinearGradient>
-  );
-};
-
-const screenWidth = Dimensions.get('window').width;
+export function formatMarketNumbers(value: number) {
+  return value === 0 ? ' -' : largeCurrencyFormatter(value, 1);
+}
 
 const TokenDetail: FC<any> = () => {
-  const {theme, repo} = useApplicationContext();
-  const {watchlistFavorites, saveWatchlistFavorites} =
-    repo.watchlistFavoritesRepo;
-  const {filteredTokenList} = useSearchableTokenList(false);
-  const {setOptions} = useNavigation<StackNavigationProp<RootStackParamList>>();
-  const [isFavorite, setIsFavorite] = useState(true);
-  const [token, setToken] = useState<TokenWithBalance>();
+  const {theme} = useApplicationContext();
   const [showLineChart, setShowLineChart] = useState(true);
-  const {openMoonPay, openUrl} = useInAppBrowser();
+  const {setOptions} = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const tokenAddress =
+    useRoute<RouteProp<RootStackParamList>>()?.params?.address;
+  const {
+    isFavorite,
+    openMoonPay,
+    openUrl,
+    urlHostname,
+    handleFavorite,
+    marketTotalSupply,
+    currencyFormatter,
+    twitterHandle,
+    marketCirculatingSupply,
+    marketVolume,
+    marketCapRank,
+    marketCap,
+    chartData,
+    token,
+    ranges,
+  } = useTokenDetail(tokenAddress);
 
-  const {tokenId} = useRoute<RouteProp<RootStackParamList>>().params;
+  const defaultAreaChartFillGradient = (
+    props: GradientProps,
+    isNegative: boolean,
+  ) => {
+    return (
+      <LinearGradient x1="50%" y1="0%" x2="50%" y2="100%" {...props}>
+        <Stop
+          stopColor={isNegative ? '#FF0000' : '#53C26E'}
+          offset="0%"
+          stopOpacity="0.5"
+        />
+        <Stop stopColor={theme.listItemBg} offset="100%" stopOpacity="0.2" />
+      </LinearGradient>
+    );
+  };
 
   function openTwitter() {
     // data will come from somewhere, something like
     // token.twitterHandle
-    openUrl('https://twitter.com/avalancheavax');
+    openUrl(`https://twitter.com/${twitterHandle}`);
   }
 
   function openWebsite() {
-    // data will come from somewhere, something like
-    // token.website
-    openUrl('https://www.avax.network/');
-  }
-
-  useEffect(() => {
-    if (filteredTokenList) {
-      const result = filteredTokenList.filter(
-        tk => getTokenUID(tk) === tokenId,
-      );
-      if (result.length > 0) {
-        setToken(result[0]);
-      }
+    if (urlHostname) {
+      openUrl('https://' + urlHostname);
     }
-  }, [filteredTokenList]);
-
-  useEffect(() => {
-    setIsFavorite(
-      watchlistFavorites.filter(value => value === tokenId).length > 0,
-    );
-  }, [watchlistFavorites]);
-
-  function handleFavorite() {
-    if (isFavorite) {
-      const index = watchlistFavorites.indexOf(tokenId);
-      if (index > -1) {
-        watchlistFavorites.splice(index, 1);
-        saveWatchlistFavorites(watchlistFavorites);
-      }
-    } else {
-      watchlistFavorites.push(tokenId);
-      saveWatchlistFavorites(watchlistFavorites);
-    }
-    setIsFavorite(!isFavorite);
   }
 
   useLayoutEffect(() => {
@@ -130,10 +117,7 @@ const TokenDetail: FC<any> = () => {
         titleAlignment={'flex-start'}
         subtitle={
           <AvaText.Heading3 currency>
-            {token?.priceUSD}
-            <AvaText.Body3 color={theme.colorSuccess}>
-              {' +$1.13(1.29%)'}
-            </AvaText.Body3>
+            {token?.priceUSD?.toFixed(10)}
           </AvaText.Heading3>
         }
         rightComponent={
@@ -149,45 +133,28 @@ const TokenDetail: FC<any> = () => {
         style={{height: 120, justifyContent: 'center', alignItems: 'center'}}>
         {showLineChart ? (
           <SlideAreaChart
-            scrollable
             animated={false}
             style={{
               marginTop: 32,
               backgroundColor: theme.transparent,
             }}
-            width={screenWidth + 24}
             shouldCancelWhenOutside={false}
-            data={[
-              {x: 1, y: 5},
-              {x: 2, y: 6},
-              {x: 3, y: 11},
-              {x: 4, y: 50},
-              {x: 5, y: 3},
-              {x: 6, y: 34},
-              {x: 7, y: 5},
-              {x: 8, y: 6},
-              {x: 9, y: 11},
-              {x: 10, y: 50},
-              {x: 11, y: 3},
-              {x: 12, y: 34},
-              {x: 27, y: 11},
-            ]}
-            axisWidth={16}
-            axisHeight={16}
+            data={chartData}
+            xScale={'time'}
             paddingBottom={8}
             alwaysShowIndicator={true}
-            callbackWithX={x => console.log(x)}
-            callbackWithY={y => console.log(y)}
+            chartPaddingTop={24}
+            // callbackWithX={x => console.log(x)}
+            // callbackWithY={y => }
             toolTipProps={{
               toolTipTextRenderers: [
-                ({scaleY, y}) => ({
-                  text: scaleY.invert(y).toFixed(1).toString(),
+                ({scaleY, y, x}) => ({
+                  text: currencyFormatter(
+                    scaleY.invert(y).toFixed(6).toString(),
+                  ),
                 }),
               ],
             }}
-            showIndicatorCallback={opacity =>
-              console.log('opacity: ' + opacity)
-            }
             cursorProps={{
               cursorLine: false,
               cursorMarkerHeight: 18,
@@ -195,14 +162,20 @@ const TokenDetail: FC<any> = () => {
               cursorColor: theme.alternateBackground,
               cursorBorderColor: theme.alternateBackground,
             }}
-            chartLineColor={theme.colorError}
+            chartLineColor={
+              ranges.diffValue < 0 ? theme.colorError : theme.colorSuccess
+            }
             chartLineWidth={2}
             yAxisProps={{
               horizontalLineColor: theme.transparent,
               verticalLineColor: theme.transparent,
               interval: 5,
             }}
-            renderFillGradient={defaultAreaChartFillGradient}
+            renderFillGradient={props =>
+              defaultAreaChartFillGradient(props, ranges.diffValue < 0)
+            }
+            xRange={[ranges.minDate, ranges.maxDate]}
+            yRange={[ranges.minPrice, ranges.maxPrice]}
           />
         ) : (
           <VictoryChart theme={VictoryTheme.material} height={160}>
@@ -287,7 +260,7 @@ const TokenDetail: FC<any> = () => {
           <OvalTagBg
             color={theme.colorBg3}
             style={{height: 21, paddingVertical: 0}}>
-            <AvaText.Body2>Rank: 8</AvaText.Body2>
+            <AvaText.Body2>{`Rank: ${marketCapRank}`}</AvaText.Body2>
           </OvalTagBg>
         }
       />
@@ -298,12 +271,14 @@ const TokenDetail: FC<any> = () => {
         titleAlignment={'flex-start'}
         rightComponentHorizontalAlignment={'flex-start'}
         paddingVertical={4}
-        subtitle={<AvaText.Heading3>$23.4B</AvaText.Heading3>}
+        subtitle={
+          <AvaText.Heading3>${formatMarketNumbers(marketCap)}</AvaText.Heading3>
+        }
         rightComponent={
           <View
             style={{justifyContent: 'flex-start', alignItems: 'flex-start'}}>
             <AvaText.Body2>Contract Address</AvaText.Body2>
-            <AvaText.Heading3>0xB2d...232d</AvaText.Heading3>
+            <AvaText.Heading3>{truncateAddress(tokenAddress)}</AvaText.Heading3>
           </View>
         }
       />
@@ -314,7 +289,11 @@ const TokenDetail: FC<any> = () => {
         titleAlignment={'flex-start'}
         rightComponentHorizontalAlignment={'flex-start'}
         paddingVertical={4}
-        subtitle={<AvaText.Heading3>$1.4B</AvaText.Heading3>}
+        subtitle={
+          <AvaText.Heading3>
+            ${formatMarketNumbers(marketVolume)}
+          </AvaText.Heading3>
+        }
         rightComponent={
           <View
             style={{justifyContent: 'flex-start', alignItems: 'flex-start'}}>
@@ -324,7 +303,7 @@ const TokenDetail: FC<any> = () => {
             <AvaText.Heading3
               textStyle={{color: '#0A84FF'}}
               onPress={openWebsite}>
-              avax.network
+              {urlHostname}
             </AvaText.Heading3>
           </View>
         }
@@ -336,7 +315,11 @@ const TokenDetail: FC<any> = () => {
         titleAlignment={'flex-start'}
         rightComponentHorizontalAlignment={'flex-start'}
         paddingVertical={4}
-        subtitle={<AvaText.Heading3>$220.3M</AvaText.Heading3>}
+        subtitle={
+          <AvaText.Heading3>
+            ${formatMarketNumbers(marketCirculatingSupply)}
+          </AvaText.Heading3>
+        }
         rightComponent={
           <View
             style={{justifyContent: 'flex-start', alignItems: 'flex-start'}}>
@@ -344,7 +327,7 @@ const TokenDetail: FC<any> = () => {
             <AvaText.Heading3
               textStyle={{color: '#0A84FF'}}
               onPress={openTwitter}>
-              @avalancheavax
+              @{twitterHandle}
             </AvaText.Heading3>
           </View>
         }
@@ -352,10 +335,14 @@ const TokenDetail: FC<any> = () => {
 
       {/* Total Supply */}
       <AvaListItem.Base
-        title={<AvaText.Body2>Total Suppy</AvaText.Body2>}
+        title={<AvaText.Body2>Total Supply</AvaText.Body2>}
         titleAlignment={'flex-start'}
         paddingVertical={4}
-        subtitle={<AvaText.Heading3>$377.7M</AvaText.Heading3>}
+        subtitle={
+          <AvaText.Heading3>
+            ${formatMarketNumbers(marketTotalSupply)}
+          </AvaText.Heading3>
+        }
       />
 
       <AvaButton.Base onPress={openMoonPay}>
