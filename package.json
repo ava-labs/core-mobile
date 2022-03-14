@@ -18,8 +18,10 @@
     "build-storybook": "build-storybook"
   },
   "dependencies": {
+    "@avalabs/coingecko-sdk": "file:./../../Work/avalanche-sdks/packages/coingecko-sdk",
     "@avalabs/avalanche-wallet-sdk": "0.14.5",
     "@avalabs/bridge-sdk": "1.2.0-alpha.3",
+    "@avalabs/blizzard-sdk": "2.0.0",
     "@avalabs/wallet-react-components": "1.24.6",
     "@babel/plugin-syntax-object-rest-spread": "^7.8.3",
     "@connectedcars/react-native-slide-charts": "^1.0.5",
