@@ -30,3 +30,37 @@ export const displaySeconds = (timeInSeconds: number): string => {
     ? new Date(timeInSeconds * 1000).toISOString().substr(11, 8) // HH:MM:SS
     : new Date(timeInSeconds * 1000).toISOString().substr(14, 5); // MM:SS
 }
+
+/**
+ * Used to display large USD sums like market cap, volue as such:
+ * $32.2M, $1.6B
+ * @param num
+ * @param digits
+ */
+// source: https://stackoverflow.com/a/9462382
+export function largeCurrencyFormatter(num: number | string, digits: number) {
+  const number = typeof num === 'number' ? num : Number(num);
+  const lookup = [
+    {value: 1, symbol: ''},
+    {value: 1e3, symbol: 'k'},
+    {value: 1e6, symbol: 'M'},
+    {value: 1e9, symbol: 'B'},
+  ];
+  const rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
+  const item = lookup
+    .slice()
+    .reverse()
+    .find(function (item) {
+      return number >= item.value;
+    });
+  return (
+    '$' +
+    (item
+      ? (number / item.value).toFixed(digits).replace(rx, '$1') + item.symbol
+      : '0')
+  );
+}
+
+export function promiseDelay<T>(millis: number): Promise<T> {
+  return new Promise(_ => setTimeout(_, millis));
+}
