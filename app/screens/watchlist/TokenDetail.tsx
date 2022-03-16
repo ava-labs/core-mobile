@@ -423,7 +423,7 @@ const TokenDetail: FC<any> = () => {
         />
         {token?.isAvax && (
           <AvaButton.Base onPress={openMoonPay}>
-            <OvalTagBg color={theme.listItemBg} style={{height: 48}}>
+            <OvalTagBg color={theme.colorBg2} style={{height: 48}}>
               <AvaText.ButtonLarge>Buy {token?.symbol}</AvaText.ButtonLarge>
             </OvalTagBg>
           </AvaButton.Base>

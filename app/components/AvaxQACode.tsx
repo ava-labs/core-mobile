@@ -23,7 +23,7 @@ const AvaxQRCode: FC<Props> = ({
       style={{
         borderWidth: 7 * sizePercentage,
         height: 180 * sizePercentage,
-        borderColor: theme.txtOnBgApp,
+        borderColor: theme.alternateBackground,
         borderRadius: 7,
         alignSelf: 'baseline',
       }}>

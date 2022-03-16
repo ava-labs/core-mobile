@@ -8,7 +8,6 @@ import {
   ViewStyle,
 } from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
-import TextLabel from 'components/TextLabel';
 import AvaButton from './AvaButton';
 import {Opacity50} from 'resources/Constants';
 import ClearInputSVG from 'components/svg/ClearInputSVG';
@@ -174,10 +173,10 @@ export default function InputText(props: Props | Readonly<Props>) {
             position={'right'}
             style={{minWidth: 200}}
             backgroundColor={context.theme.colorBg3}>
-            <TextLabel multiline textAlign="left" text={props.label || ''} />
+            <AvaText.Body2>{props.label ?? ''}</AvaText.Body2>
           </Popable>
         ) : (
-          <TextLabel multiline textAlign="left" text={props.label || ''} />
+          <AvaText.Body2>{props.label ?? ''}</AvaText.Body2>
         )}
         <View style={[{height: 8}]} />
       </View>
@@ -203,7 +202,7 @@ export default function InputText(props: Props | Readonly<Props>) {
     return (
       <>
         <View style={[{height: 4}]} />
-        <AvaText.Body3 textStyle={{textAlign: 'left'}} color={theme.txtError}>
+        <AvaText.Body3 textStyle={{textAlign: 'left'}} color={theme.colorError}>
           {props.errorText || ''}
         </AvaText.Body3>
       </>
@@ -265,7 +264,7 @@ export default function InputText(props: Props | Readonly<Props>) {
               borderWidth: 1,
               textAlignVertical: props.multiline ? 'top' : undefined,
               borderColor: props.errorText
-                ? theme.txtError
+                ? theme.colorError
                 : focused
                 ? theme.colorText2
                 : theme.colorBg3,

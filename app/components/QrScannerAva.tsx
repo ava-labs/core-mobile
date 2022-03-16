@@ -24,9 +24,9 @@ export default function QrScannerAva(props: Props | Readonly<Props>) {
         showMarker={true}
         markerStyle={[
           {
-            borderColor: theme.accentColor,
+            borderColor: theme.colorPrimary1,
             borderRadius: 8,
-            shadowColor: theme.bgOnBgApp,
+            shadowColor: theme.colorBg2,
             shadowOffset: {width: 4, height: 4},
             shadowRadius: 8,
           },

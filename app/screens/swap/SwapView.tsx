@@ -49,7 +49,7 @@ export default function SwapView() {
               style={{
                 alignSelf: 'flex-end',
                 borderRadius: 50,
-                backgroundColor: theme.listItemBg,
+                backgroundColor: theme.colorBg2,
                 width: 40,
                 height: 40,
                 justifyContent: 'center',

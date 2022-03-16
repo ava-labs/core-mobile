@@ -22,11 +22,11 @@ function MnemonicInput(props: InputProps | Readonly<InputProps>) {
         enablesReturnKeyAutomatically={true}
         style={[
           {
-            color: theme.txtOnBgApp,
+            color: theme.colorText1,
             flex: 1,
             fontSize: 16,
             borderWidth: 1,
-            borderColor: theme.btnIconBorder,
+            borderColor: theme.colorStroke,
             padding: 4,
             borderRadius: 4,
             fontFamily: 'Inter-Regular',

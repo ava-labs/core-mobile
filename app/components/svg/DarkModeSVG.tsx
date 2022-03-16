@@ -9,7 +9,7 @@ interface Prop {
 
 function DarkModeSVG({color, size = 24}: Prop) {
   const theme = useApplicationContext().theme;
-  const iconColor = color ?? theme.txtOnBgApp;
+  const iconColor = color ?? theme.alternateBackground;
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path

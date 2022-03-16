@@ -18,7 +18,7 @@ const NetworkItem = () => {
   return (
     <>
       <AvaListItem.Base
-        title={<AvaText.Heading3>Network</AvaText.Heading3>}
+        title={'Network'}
         titleAlignment={'flex-start'}
         rightComponent={selectedNetwork()}
         rightComponentVerticalAlignment={'center'}

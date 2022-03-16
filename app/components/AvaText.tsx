@@ -99,7 +99,7 @@ const TextHeading1: FC<AvaTextProps> = ({
   return (
     <AvaxTextBase
       {...rest}
-      style={[styles.heading1, {color: color ?? theme.txtListItem}, textStyle]}>
+      style={[styles.heading1, {color: color ?? theme.colorText1}, textStyle]}>
       {children}
     </AvaxTextBase>
   );
@@ -119,7 +119,7 @@ const TextHeading2: FC<AvaTextProps> = ({
       numberOfLines={ellipsizeMode ? 1 : undefined}
       style={[
         styles.heading2,
-        {color: theme.txtListItem, flexShrink: ellipsizeMode ? 1 : 0},
+        {color: theme.colorText1, flexShrink: ellipsizeMode ? 1 : 0},
         textStyle,
       ]}
       {...rest}>
@@ -144,7 +144,7 @@ const TextHeading3: FC<AvaTextProps> = ({
       currency={currency}
       style={[
         styles.heading3,
-        {flexShrink: ellipsizeMode ? 1 : 0, color: theme.txtListItem},
+        {flexShrink: ellipsizeMode ? 1 : 0, color: theme.colorText1},
         textStyle,
       ]}>
       {children}
@@ -235,7 +235,7 @@ const TextTag: FC<AvaTextProps> = ({textStyle, children, ...rest}) => {
   const theme = useApplicationContext().theme;
   return (
     <AvaxTextBase
-      style={[styles.textTag, {color: theme.txtListItem}, textStyle]}
+      style={[styles.textTag, {color: theme.colorText1}, textStyle]}
       {...rest}>
       {children}
     </AvaxTextBase>

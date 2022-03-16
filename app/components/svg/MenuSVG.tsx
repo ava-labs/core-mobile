@@ -9,7 +9,7 @@ interface Prop {
 function MenuSVG({color}: Prop) {
   const context = useApplicationContext();
 
-  const iconColor = color ?? context.theme.btnIconIcon;
+  const iconColor = color ?? context.theme.colorIcon1;
   return (
     <Svg width="44" height="44" viewBox="0 0 44 44" fill="none">
       <Rect

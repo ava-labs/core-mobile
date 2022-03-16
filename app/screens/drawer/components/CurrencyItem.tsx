@@ -18,7 +18,7 @@ const CurrencyItem = () => {
   return (
     <>
       <AvaListItem.Base
-        title={<AvaText.Heading3>Currency</AvaText.Heading3>}
+        title={'Currency'}
         titleAlignment={'flex-start'}
         rightComponent={currency()}
         rightComponentVerticalAlignment={'center'}

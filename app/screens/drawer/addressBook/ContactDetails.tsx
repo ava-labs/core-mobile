@@ -79,7 +79,7 @@ const AddressView = ({contact}: {contact: Contact}) => {
         onPress={() => copyToClipboard(contact.address)}
         style={[
           styles.copyAddressContainer,
-          {backgroundColor: theme.listItemBg},
+          {backgroundColor: theme.colorBg2},
         ]}>
         <AvaText.ButtonMedium
           ellipsizeMode={'middle'}

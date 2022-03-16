@@ -25,7 +25,7 @@ const EditFees = ({
   const gasLimitInfoInfoMessage = useMemo(
     () =>
       popableContent(
-        'Gas limit is the maximum units of gas you are willing to use.”',
+        'Gas limit is the maximum units of gas you are willing to use.',
         theme.colorBg3,
       ),
     [theme],

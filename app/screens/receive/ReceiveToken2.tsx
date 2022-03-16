@@ -175,7 +175,7 @@ const Receive: FC<{
           onPress={() => copyToClipboard(props.selectedAddress)}
           style={[
             styles.copyAddressContainer,
-            {backgroundColor: theme.listItemBg},
+            {backgroundColor: theme.colorBg2},
           ]}>
           <AvaText.Body1
             ellipsizeMode={'middle'}

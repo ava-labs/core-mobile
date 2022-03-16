@@ -155,7 +155,7 @@ const Save = ({
       disabled={disabled}
       onPress={onPress}
       style={{paddingVertical: 4, paddingEnd: 8}}>
-      <AvaText.ButtonMedium style={{color: theme.colorAccent}}>
+      <AvaText.ButtonMedium style={{color: theme.colorPrimary1}}>
         Save
       </AvaText.ButtonMedium>
     </AvaButton.Base>
@@ -169,7 +169,7 @@ const Edit = ({onPress}: {onPress: () => void}) => {
       rippleBorderless
       onPress={onPress}
       style={{paddingVertical: 4, paddingEnd: 8}}>
-      <AvaText.ButtonMedium style={{color: theme.colorAccent}}>
+      <AvaText.ButtonMedium style={{color: theme.colorPrimary1}}>
         Edit
       </AvaText.ButtonMedium>
     </AvaButton.Base>

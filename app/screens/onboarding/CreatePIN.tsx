@@ -2,7 +2,6 @@ import React, {useEffect} from 'react';
 import {Animated, StyleSheet, View} from 'react-native';
 import PinKey, {PinKeys} from './PinKey';
 import {useCreatePin} from './CreatePinViewModel';
-import TextLabel from 'components/TextLabel';
 import {Space} from 'components/Space';
 import AvaText from 'components/AvaText';
 import DotSVG from 'components/svg/DotSVG';
@@ -41,7 +40,6 @@ export default function CreatePIN({
   const {theme} = useApplicationContext();
   const [
     title,
-    errorMessage,
     pinDots,
     onEnterChosenPin,
     onEnterConfirmedPin,
@@ -102,7 +100,6 @@ export default function CreatePIN({
           <Space y={8} />
         </>
       )}
-      {errorMessage.length > 0 && <TextLabel text={errorMessage} />}
       <Animated.View
         style={[
           {padding: 68, flexGrow: 1},
