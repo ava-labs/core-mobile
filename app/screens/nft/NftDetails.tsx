@@ -65,7 +65,10 @@ export default function NftDetails({
   );
 }
 
-const renderProps = (attributes: NFTItemExternalDataAttribute[]) => {
+const renderProps = (attributes?: NFTItemExternalDataAttribute[]) => {
+  if (!attributes) {
+    return [];
+  }
   const props = [];
   for (let i = 0; i < attributes.length; i += 2) {
     props.push(
