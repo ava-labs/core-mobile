@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 import {
   isERC20Token,
   TokenWithBalance,
@@ -16,6 +16,7 @@ import {
 } from '@avalabs/coingecko-sdk';
 import {useSearchableTokenList} from 'screens/portfolio/useSearchableTokenList';
 import moment from 'moment';
+import {CG_AVAX_TOKEN_ID} from 'screens/watchlist/WatchlistView';
 
 export function useTokenDetail(tokenAddress: string) {
   const {repo} = useApplicationContext();
@@ -23,7 +24,8 @@ export function useTokenDetail(tokenAddress: string) {
   const [token, setToken] = useState<TokenWithBalance>();
   const {openMoonPay, openUrl} = useInAppBrowser();
   const {selectedCurrency, currencyFormatter} = useApplicationContext().appHook;
-  const [chartData, setChartData] = useState<{x: number; y: number}[]>([]);
+  const [chartData, setChartData] = useState<{x: number; y: number}[]>();
+  const [chartDays, setChartDays] = useState(1);
   const [ranges, setRanges] = useState<{
     minDate: number;
     maxDate: number;
@@ -43,21 +45,22 @@ export function useTokenDetail(tokenAddress: string) {
   const [urlHostname, setUrlHostname] = useState<string>('');
   const {watchlistFavorites, saveWatchlistFavorites} =
     repo.watchlistFavoritesRepo;
-  const {filteredTokenList} = useSearchableTokenList(false);
-  const walletState = useWalletStateContext();
+  const {erc20Tokens, avaxToken} = useWalletStateContext();
+
+  const allTokens = useMemo(
+    () => [{...avaxToken, address: CG_AVAX_TOKEN_ID}, ...erc20Tokens],
+    [erc20Tokens, avaxToken],
+  );
 
   // find token
   useEffect(() => {
-    if (filteredTokenList) {
-      const tk = walletState?.erc20Tokens.find(
-        tk => tk.address === tokenAddress,
-        false,
-      );
+    if (allTokens) {
+      const tk = allTokens.find(tk => tk.address === tokenAddress, false);
       if (tk) {
         setToken(tk);
       }
     }
-  }, [filteredTokenList]);
+  }, [allTokens]);
 
   // checks if contract can be found in favorites list
   useEffect(() => {
@@ -67,73 +70,55 @@ export function useTokenDetail(tokenAddress: string) {
   // get coingecko chart data.
   useEffect(() => {
     (async () => {
-      if (isERC20Token(token)) {
-        const rawData = await coinsContractMarketChartRange({
-          address: tokenAddress,
-          currency: 'usd' as VsCurrencyType,
-          from: moment().subtract('24', 'hour').unix(),
-          to: moment().unix(),
-        });
-        const pd = rawData.prices.map(tu => {
-          return {x: tu[0], y: tu[1]};
-        });
+      const rawData = await coinsContractMarketChart({
+        address: tokenAddress,
+        currency: 'usd' as VsCurrencyType,
+        days: chartDays,
+        id: 'avalanche',
+      });
+      const pd = rawData.prices.map(tu => {
+        return {x: tu[0], y: tu[1]};
+      });
 
-        const dates = rawData.prices.map(value => value[0]);
-        const prices = rawData.prices.map(value => value[1]);
+      const dates = rawData.prices.map(value => value[0]);
+      const prices = rawData.prices.map(value => value[1]);
 
-        const minDate = Math.min(...dates);
-        const maxDate = Math.max(...dates);
-        const minPrice = Math.min(...prices);
-        const maxPrice = Math.max(...prices);
-        const diffValue = prices[prices.length - 1] - prices[0];
-        const percentChange = diffValue / (prices[prices.length - 1] * 100);
+      const minDate = Math.min(...dates);
+      const maxDate = Math.max(...dates);
+      const minPrice = Math.min(...prices);
+      const maxPrice = Math.max(...prices);
+      const diffValue = prices[prices.length - 1] - prices[0];
+      const average = (prices[prices.length - 1] + prices[0]) / 2;
+      const percentChange = (diffValue / average) * 100;
 
-        setRanges({
-          minDate,
-          maxDate,
-          minPrice,
-          maxPrice,
-          diffValue,
-          percentChange,
-        });
-        setChartData(pd);
-      }
+      setRanges({
+        minDate,
+        maxDate,
+        minPrice,
+        maxPrice,
+        diffValue,
+        percentChange,
+      });
+      setChartData(pd);
     })();
-  }, [token]);
+  }, [token, chartDays]);
 
   // get market cap, volume, etc
   useEffect(() => {
-    if (token && isERC20Token(token)) {
-      (async () => {
-        const rawData = await coinsContractInfo({
-          address: tokenAddress,
-          id: 'avalanche',
-        });
-        setContractInfo(rawData);
-        if (contractInfo?.links?.homepage?.[0]) {
-          const url = new URL(contractInfo?.links?.homepage?.[0]);
-          setUrlHostname(url.hostname);
-        }
-      })();
-    }
+    (async () => {
+      const rawData = await coinsContractInfo({
+        address: tokenAddress,
+        id: 'avalanche',
+      });
+      setContractInfo(rawData);
+      if (rawData?.links?.homepage?.[0]) {
+        const url = rawData?.links?.homepage?.[0]
+          ?.replace(/^https?:\/\//, '')
+          ?.replace('www.', '');
+        setUrlHostname(url);
+      }
+    })();
   }, [token]);
-
-  // useEffect(() => {
-  //   if (token && isERC20Token(token)) {
-  //     const addresses = [];
-  //     addresses.push(token.address);
-  //     (async () => {
-  //       try {
-  //         const rawData = await simpleTokenPrice(addresses, [
-  //           (selectedCurrency?.toLowerCase() as VsCurrencyType) ?? 'usd',
-  //         ]);
-  //         console.log(rawData);
-  //       } catch (e) {
-  //         console.error(e);
-  //       }
-  //     })();
-  //   }
-  // }, [token]);
 
   function handleFavorite() {
     if (isFavorite) {
@@ -147,6 +132,11 @@ export function useTokenDetail(tokenAddress: string) {
       saveWatchlistFavorites(watchlistFavorites);
     }
     setIsFavorite(!isFavorite);
+  }
+
+  function changeChartDays(days: number) {
+    setChartData(undefined);
+    setChartDays(days);
   }
 
   return {
@@ -167,5 +157,6 @@ export function useTokenDetail(tokenAddress: string) {
     chartData,
     token,
     ranges,
+    changeChartDays,
   };
 }
