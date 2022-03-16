@@ -31,8 +31,10 @@ const BridgeTransactionStatus: FC = () => {
   const {theme} = useApplicationContext();
   const {blockchain, txHash, txTimestamp} =
     useRoute<RouteProp<BridgeStackParamList>>()?.params;
+  // @ts-ignore addresses exist in walletContext
   const {addresses} = useWalletStateContext();
   const {config} = useBridgeConfig();
+  // @ts-ignore network exist in networkContext
   const {network} = useNetworkContext();
   const ethereumProvider = getEthereumProvider(network);
   const avalancheProvider = getAvalancheProvider(network);

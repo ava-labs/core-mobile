@@ -9,7 +9,7 @@ export function getTokenUID(token: TokenWithBalance): string {
     return '0';
   }
   if (token.isAvax) {
-    return 'ID-AVAX';
+    return 'avalanche-2';
   }
   if (token.isErc20) {
     return (token as ERC20WithBalance).address;

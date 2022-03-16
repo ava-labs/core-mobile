@@ -54,6 +54,9 @@ export function useApp(
     return concat(of(new ShowExitPrompt(exitPrompt)), dialogOp, asyncScheduler);
   }
 
+  /**
+   * Localized currency formatter
+   */
   const currencyFormatter = useMemo(() => {
     const formatter = new Intl.NumberFormat('en-US', {
       style: 'currency',

@@ -25,6 +25,7 @@ import {BufferLike} from 'ethereumjs-util';
  * @param asset
  */
 export function useTransferAsset(asset: Asset | undefined) {
+  // @ts-ignore addresses exist in walletContext
   const {addresses} = useWalletStateContext();
   const network = useNetworkContext()?.network;
   const wallet = useWalletContext().wallet;

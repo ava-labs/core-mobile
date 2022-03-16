@@ -1,9 +1,12 @@
-import React, {FC, useEffect, useState} from 'react';
+import React, {FC, useEffect, useMemo, useState} from 'react';
 import {FlatList, ListRenderItemInfo, StyleSheet, View} from 'react-native';
 import Loader from 'components/Loader';
-import {TokenWithBalance} from '@avalabs/wallet-react-components';
+import {
+  ERC20WithBalance,
+  TokenWithBalance,
+  useWalletStateContext,
+} from '@avalabs/wallet-react-components';
 import {getTokenUID} from 'utils/TokenTools';
-import {useSearchableTokenList} from 'screens/portfolio/useSearchableTokenList';
 import WatchListItem from 'screens/watchlist/components/WatchListItem';
 import ListFilter from 'components/ListFilter';
 import {useNavigation} from '@react-navigation/native';
@@ -14,6 +17,12 @@ import {RootStackParamList} from 'navigation/WalletScreenStack';
 import Separator from 'components/Separator';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import ZeroState from 'components/ZeroState';
+import {
+  SimplePriceInCurrency,
+  simpleTokenPrice,
+  VsCurrencyType,
+} from '@avalabs/coingecko-sdk';
+import {largeCurrencyFormatter} from 'utils/Utils';
 
 interface Props {
   showFavorites?: boolean;
@@ -21,50 +30,144 @@ interface Props {
   searchText?: string;
 }
 
-const filterByOptions = ['Price', 'Market Cap', 'Volume', 'Gainers', 'Losers'];
-const filterTimeOptions = ['1H', '1D', '1W', '1Y'];
+export enum WatchlistFilter {
+  PRICE = 'Price',
+  MARKET_CAP = 'Market Cap',
+  VOLUME = 'Volume',
+  GAINERS = 'Gainers',
+  LOSERS = 'Losers',
+}
+
+export const CG_AVAX_TOKEN_ID =
+  'FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z';
+
+const filterTimeOptions = ['1D', '1W', '1Y'];
+
+type CombinedTokenType = ERC20WithBalance & SimplePriceInCurrency;
 
 const WatchlistView: FC<Props> = ({showFavorites, searchText}) => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const {currencyFormatter} = useApplicationContext().appHook;
   const {watchlistFavorites} =
     useApplicationContext().repo.watchlistFavoritesRepo;
-  const {filteredTokenList, setSearchText, loadTokenList} =
-    useSearchableTokenList(false);
-
-  const data = showFavorites
-    ? filteredTokenList?.filter(token =>
-        watchlistFavorites.includes(getTokenUID(token)),
-      )
-    : filteredTokenList;
-
-  const [filterBy, setFilterBy] = useState(filterByOptions[0]);
+  // @ts-ignore erc20Tokens and avaxToken exist but why it complains needs investigation
+  const {erc20Tokens, avaxToken} = useWalletStateContext();
+  const [combinedData, setCombinedData] = useState<CombinedTokenType[]>([]);
+  const [filterBy, setFilterBy] = useState(WatchlistFilter.PRICE);
   const [filterTime, setFilterTime] = useState(filterTimeOptions[0]);
+  const tokenAddresses = [
+    CG_AVAX_TOKEN_ID,
+    ...(erc20Tokens?.map((t: ERC20WithBalance) => t.address) ?? []),
+  ];
+  const allTokens = [{...avaxToken, address: CG_AVAX_TOKEN_ID}, ...erc20Tokens];
+
+  useEffect(() => {
+    if (combinedData.length === 0) {
+      refreshPrices();
+    }
+  }, [allTokens]);
+
+  const sortedData = useMemo(() => {
+    // get favorite list or regular list
+    const listData = showFavorites
+      ? combinedData.filter(tk => watchlistFavorites.includes(tk.address))
+      : combinedData;
+
+    // sort data by filter option
+    return listData.sort((a, b) => {
+      if (filterBy === WatchlistFilter.PRICE) {
+        return (b.price ?? 0) - (a.price ?? 0);
+      } else if (filterBy === WatchlistFilter.MARKET_CAP) {
+        return (b.marketCap ?? 0) - (a.marketCap ?? 0);
+      } else {
+        return (b.vol24 ?? 0) - (a.vol24 ?? 0);
+      }
+    });
+  }, [combinedData, filterBy]);
+
+  const refreshPrices = async () => {
+    if (allTokens && allTokens.length > 0) {
+      const rawData = await simpleTokenPrice({
+        tokenAddresses,
+        currencies: ['usd'] as VsCurrencyType[],
+        marketCap: true,
+        vol24: true,
+        change24: true,
+      });
+      const mappedData = allTokens?.map(t => {
+        const address =
+          t.address === CG_AVAX_TOKEN_ID
+            ? CG_AVAX_TOKEN_ID
+            : t.address.toLowerCase();
+        return {
+          ...t,
+          ...rawData?.[address]?.usd,
+        } as CombinedTokenType;
+      });
+      setCombinedData(mappedData);
+    }
+  };
 
   useEffect(() => {
     if (!showFavorites) {
-      setSearchText(searchText ?? '');
+      // setSearchText(searchText ?? '');
     }
   }, [searchText]);
 
   function handleRefresh() {
-    loadTokenList();
+    refreshPrices();
   }
 
-  const renderItem = (item: ListRenderItemInfo<TokenWithBalance>) => {
+  const tokens = useMemo(() => {
+    return searchText && searchText.length > 0
+      ? sortedData?.filter(
+          i =>
+            i.name?.toLowerCase().includes(searchText.toLowerCase()) ||
+            i.symbol?.toLowerCase().includes(searchText.toLowerCase()),
+        )
+      : sortedData;
+  }, [searchText, sortedData]);
+
+  const renderItem = (item: ListRenderItemInfo<CombinedTokenType>) => {
     const token = item.item;
     const logoUri = token?.logoURI ?? undefined;
 
+    if (token.name === 'TEDDY') {
+      console.log('teddy');
+    }
+
+    function getDisplayValue() {
+      if (filterBy === WatchlistFilter.PRICE) {
+        return (token?.price ?? 0) === 0
+          ? ' -'
+          : token.price > 0 && token.price < 0.1
+          ? `$${token.price.toFixed(6)}`
+          : currencyFormatter(token.price);
+      } else if (filterBy === WatchlistFilter.MARKET_CAP) {
+        return (token?.marketCap ?? 0) === 0
+          ? ' -'
+          : `$${largeCurrencyFormatter(token?.marketCap ?? 0, 3)}`;
+      } else if (filterBy === WatchlistFilter.VOLUME) {
+        return (token?.vol24 ?? 0) === 0
+          ? ' -'
+          : `$${largeCurrencyFormatter(token?.vol24 ?? 0, 1)}`;
+      }
+    }
+    // rank is currently not displayed because an additional
+    // API call that returns a large data set would need to be made only
+    // to get that information
     return (
       <WatchListItem
         tokenName={token.name}
-        tokenPrice={token?.balanceDisplayValue ?? '0'}
-        tokenPriceUsd={token?.priceUSD?.toString() ?? '0'}
+        tokenAddress={token.address}
+        value={getDisplayValue()}
         symbol={token.symbol}
         image={logoUri}
-        rank={!showFavorites ? item.index + 1 : undefined}
+        filterBy={filterBy}
+        // rank={!showFavorites ? item.index + 1 : undefined}
         onPress={() =>
           navigation.navigate(AppNavigation.Wallet.TokenDetail, {
-            tokenId: getTokenUID(token),
+            address: token.address,
           })
         }
       />
@@ -73,16 +176,22 @@ const WatchlistView: FC<Props> = ({showFavorites, searchText}) => {
 
   return (
     <SafeAreaProvider style={styles.container}>
-      {!filteredTokenList ? (
+      {!sortedData ? (
         <Loader />
       ) : (
         <>
           <View style={styles.filterContainer}>
             <ListFilter
               title={'Sort by'}
-              filterOptions={filterByOptions}
+              filterOptions={[
+                WatchlistFilter.PRICE,
+                WatchlistFilter.MARKET_CAP,
+                WatchlistFilter.VOLUME,
+                WatchlistFilter.GAINERS,
+                WatchlistFilter.LOSERS,
+              ]}
               currentItem={filterBy}
-              onItemSelected={setFilterBy}
+              onItemSelected={filter => setFilterBy(filter as WatchlistFilter)}
               style={{paddingLeft: 25}}
             />
             <ListFilter
@@ -94,11 +203,14 @@ const WatchlistView: FC<Props> = ({showFavorites, searchText}) => {
             />
           </View>
           <FlatList
-            data={data}
+            data={tokens}
             renderItem={renderItem}
             onRefresh={handleRefresh}
             ItemSeparatorComponent={() => (
-              <Separator style={{backgroundColor: '#323232', height: 0.5}} />
+              <Separator
+                style={{backgroundColor: '#323232', height: 0.5}}
+                inset={8}
+              />
             )}
             ListEmptyComponent={<ZeroState.NoResultsTextual />}
             refreshing={false}

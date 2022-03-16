@@ -55,6 +55,7 @@ function BridgeTokenSelector({
   const assetList = useAssets(currentBlockchain);
   const {getTokenSymbolOnNetwork} = useGetTokenSymbolOnNetwork();
   const network = useNetworkContext()?.network;
+  // @ts-ignore addresses exist in walletContext
   const {addresses} = useWalletStateContext();
   const [searchText, setSearchText] = useState('');
   const {tokenInfoContext} = useBridge();
