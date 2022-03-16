@@ -8,10 +8,14 @@ import {largeCurrencyFormatter} from 'utils/Utils';
 interface Props {
   priceChange: number;
   percentChange: number;
-  filterBy: WatchlistFilter;
+  filterBy?: WatchlistFilter;
 }
 
-const MarketMovement: FC<Props> = ({priceChange, percentChange, filterBy}) => {
+const MarketMovement: FC<Props> = ({
+  priceChange,
+  percentChange,
+  filterBy = WatchlistFilter.PRICE,
+}) => {
   const theme = useApplicationContext().theme;
   const {currencyFormatter} = useApplicationContext().appHook;
 

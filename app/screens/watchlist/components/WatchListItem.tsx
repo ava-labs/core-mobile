@@ -133,7 +133,7 @@ const WatchListItem: FC<Props> = ({
                 data={chartData}
                 yRange={[ranges.minPrice, ranges.maxPrice]}
                 xRange={[ranges.minDate, ranges.maxDate]}
-                isNegative={ranges.diffValue < 0}
+                negative={ranges.diffValue < 0}
               />
             </View>
           )}
