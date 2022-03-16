@@ -12,6 +12,22 @@ const ADDR_BOOK = 'ADDR_BOOK_1';
 const ADDR_BOOK_RECENTS = 'ADDR_BOOK_RECENTS_1';
 const WATCHLIST_FAVORITES = 'WATCHLIST_FAVORITES';
 const CUSTOM_TOKENS = 'CUSTOM_TOKENS';
+const VIEW_ONCE_INFORMATION = 'VIEW_ONCE_INFORMATION';
+
+/**
+ * ViewOnceInformation is used by views that needs to display something for the 1st time one.
+ * After the user dismisses it, we persist the fact it has been shown once.
+ *
+ * The enum below can be used to add several items. Check is done simply by retrieving the
+ * array and see if it includes the desired item, OR a convenience function:
+ *
+ * infoHasBeenShown: (info: InformationViewOnce) => boolean;
+ *
+ * will return true/false by passing the emum you want to check.
+ */
+export enum ViewOnceInformation {
+  CHART_INTERACTION,
+}
 
 export type AccountId = number;
 export type UID = string;
@@ -28,6 +44,11 @@ export type RecentContact = {
 };
 
 export type Repo = {
+  informationViewOnceRepo: {
+    viewOnceInfo: ViewOnceInformation[];
+    infoHasBeenShown: (info: ViewOnceInformation) => boolean;
+    saveViewOnceInformation: (info: ViewOnceInformation[]) => void;
+  };
   watchlistFavoritesRepo: {
     watchlistFavorites: string[];
     saveWatchlistFavorites: (favorites: string[]) => void;
@@ -56,6 +77,7 @@ export function useRepo(): Repo {
   const [recentContacts, setRecentContacts] = useState<RecentContact[]>([]);
   const [watchlistFavorites, setWatchlistFavorites] = useState<string[]>([]);
   const [customTokens, setCustomTokens] = useState<CustomTokens>({});
+  const [viewOnceInfo, setViewOnceInfo] = useState<ViewOnceInformation[]>([]);
 
   useEffect(() => {
     loadAccountsFromStorage().then(value => setAccounts(value));
@@ -107,6 +129,16 @@ export function useRepo(): Repo {
     );
   };
 
+  const saveViewOnceInformation = (info: ViewOnceInformation[]) => {
+    // we use set so we don't allow duplicates
+    setViewOnceInfo([...new Set(info)]);
+    saveViewOnceInformationToStorage(info).catch(error => console.error(error));
+  };
+
+  const infoHasBeenShown = (info: ViewOnceInformation) => {
+    return viewOnceInfo.includes(info);
+  };
+
   const destroy = () => {
     console.log('destroy repo');
     setAccounts(new Map());
@@ -126,6 +158,11 @@ export function useRepo(): Repo {
     },
     watchlistFavoritesRepo: {watchlistFavorites, saveWatchlistFavorites},
     customTokenRepo: {customTokens, saveCustomTokens},
+    informationViewOnceRepo: {
+      viewOnceInfo: viewOnceInfo,
+      saveViewOnceInformation,
+      infoHasBeenShown,
+    },
     destroy,
   };
 }
@@ -195,6 +232,15 @@ async function saveCustomTokensToStorage(tokens: CustomTokens) {
     console.error(tokens);
   } else {
     await AsyncStorage.setItem(CUSTOM_TOKENS, tokensString);
+  }
+}
+
+async function saveViewOnceInformationToStorage(info: ViewOnceInformation[]) {
+  const infoString = JSON.stringify(info);
+  if (infoString === undefined) {
+    console.error(info);
+  } else {
+    await AsyncStorage.setItem(VIEW_ONCE_INFORMATION, infoString);
   }
 }
 
