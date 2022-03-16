@@ -9,7 +9,7 @@ import {NFTItemData} from 'screens/nft/NftCollection';
 import ZeroState from 'components/ZeroState';
 import AvaListItem from 'components/AvaListItem';
 import {useApplicationContext} from 'contexts/ApplicationContext';
-import {COLORS_DAY, COLORS_NIGHT} from 'resources/Constants';
+import {COLORS_DAY, COLORS_NIGHT, Opacity85} from 'resources/Constants';
 import Avatar from 'components/Avatar';
 import MasonryList from '@react-native-seoul/masonry-list';
 import AvaText from 'components/AvaText';
@@ -88,7 +88,7 @@ const renderItemList = (
       style={{
         marginVertical: 4,
         borderRadius: 8,
-        backgroundColor: theme.listItemBg + 'D9',
+        backgroundColor: theme.colorBg2 + Opacity85,
       }}>
       <AvaListItem.Base
         onPress={() => onItemSelected(item)}

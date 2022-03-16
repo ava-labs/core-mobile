@@ -51,7 +51,7 @@ const TabNavigator = () => {
         {image}
         <AvaText.Caption
           textStyle={{
-            color: focused ? theme.alternateBackground : theme.txtDim,
+            color: focused ? theme.alternateBackground : theme.colorIcon4,
           }}>
           {routeName}
         </AvaText.Caption>
@@ -70,8 +70,8 @@ const TabNavigator = () => {
         tabBarShowLabel: false,
         headerShown: false,
         tabBarAllowFontScaling: false,
-        tabBarActiveTintColor: theme.accentColor,
-        tabBarInactiveTintColor: theme.onBgSearch,
+        tabBarActiveTintColor: theme.colorPrimary1,
+        tabBarInactiveTintColor: theme.colorText2,
         tabBarStyle: {
           backgroundColor: theme.background,
         },

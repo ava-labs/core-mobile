@@ -12,7 +12,7 @@ interface Prop {
 function ArrowSVG({color = '#FFF', size = 16, rotate}: Prop) {
   const context = useApplicationContext();
 
-  const iconColor = color ?? context.theme.btnIconIcon;
+  const iconColor = color ?? context.theme.colorIcon1;
 
   const Arrow = () => (
     <Svg width={size} height={size} viewBox="0 0 16 16" fill="none">

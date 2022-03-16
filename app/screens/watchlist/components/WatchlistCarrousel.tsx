@@ -22,6 +22,7 @@ import {StackNavigationProp} from '@react-navigation/stack';
 import {CG_AVAX_TOKEN_ID} from 'screens/watchlist/WatchlistView';
 import Coingecko, {ChartData} from 'utils/Coingecko';
 import MarketMovement from 'screens/watchlist/components/MarketMovement';
+import {Opacity85} from 'resources/Constants';
 
 interface Props {
   style?: StyleProp<View>;
@@ -50,7 +51,7 @@ const WatchlistCarrousel: FC<Props> = () => {
     () => (
       <AvaButton.Base
         onPress={goToWatchlist}
-        style={[style.item, {backgroundColor: theme.listItemBg + 'D9'}]}>
+        style={[style.item, {backgroundColor: theme.colorBg2 + Opacity85}]}>
         <Space y={14} />
         <AddSVG circleColor={'white'} size={24} />
         <Space y={4} />

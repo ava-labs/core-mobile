@@ -24,7 +24,6 @@ export function useCreatePin(
   isResettingPin = false,
 ): [
   string,
-  string,
   DotView[],
   (pinKey: PinKeys) => void,
   (pinKey: PinKeys) => void,
@@ -33,7 +32,6 @@ export function useCreatePin(
   Animated.Value,
 ] {
   const [title, setTitle] = useState('Create Pin');
-  const [errorMessage, setErrorMessage] = useState('');
   const [chosenPin, setChosenPin] = useState('');
   const [confirmedPin, setConfirmedPin] = useState('');
   const [pinDots, setPinDots] = useState<DotView[]>([]);
@@ -105,7 +103,6 @@ export function useCreatePin(
   };
 
   const onEnterConfirmedPin = (pinKey: PinKeys): void => {
-    setErrorMessage('');
     if (pinKey === PinKeys.Backspace) {
       setConfirmedPin(confirmedPin.slice(0, -1));
     } else {
@@ -122,7 +119,6 @@ export function useCreatePin(
 
   return [
     title,
-    errorMessage,
     pinDots,
     onEnterChosenPin,
     onEnterConfirmedPin,

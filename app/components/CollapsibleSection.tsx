@@ -46,7 +46,7 @@ const CollapsibleSection: FC<Props> = ({
         }}>
         <AvaText.Body2>{title}</AvaText.Body2>
         <View style={{transform: [{rotate: expanded ? '-90deg' : '90deg'}]}}>
-          <CarrotSVG color={theme.txtDim} />
+          <CarrotSVG color={theme.colorIcon4} />
         </View>
       </Animated.View>
     ) : (

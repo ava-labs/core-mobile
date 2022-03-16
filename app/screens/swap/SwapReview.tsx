@@ -33,7 +33,7 @@ const SwapReview: FC = () => {
   const animatedColor = useMemo(() => {
     return colorAnim.interpolate({
       inputRange: [0, 1],
-      outputRange: [theme.white, theme.accentColor],
+      outputRange: [theme.white, theme.colorPrimary1],
     });
   }, [colorAnim]);
 
@@ -99,7 +99,7 @@ const SwapReview: FC = () => {
             backgroundColor={theme.colorBg3}>
             <Row
               style={{
-                backgroundColor: theme.listItemBg,
+                backgroundColor: theme.colorBg2,
                 padding: 8,
                 borderRadius: 100,
               }}>

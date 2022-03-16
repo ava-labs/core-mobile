@@ -10,7 +10,7 @@ interface Prop {
 function SettingsCogSVG({color, size = 24}: Prop) {
   const context = useApplicationContext();
 
-  const iconColor = color ?? context.theme.btnIconIcon;
+  const iconColor = color ?? context.theme.colorIcon1;
 
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">

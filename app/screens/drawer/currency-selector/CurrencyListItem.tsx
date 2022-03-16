@@ -2,6 +2,7 @@ import React, {FC} from 'react';
 import AvaListItem from 'components/AvaListItem';
 import CheckmarkSVG from 'components/svg/CheckmarkSVG';
 import {useApplicationContext} from 'contexts/ApplicationContext';
+import AvaText from 'components/AvaText';
 
 type Props = {
   name: string;
@@ -14,9 +15,11 @@ const CurrencyListItem: FC<Props> = ({name, selected, onPress}) => {
   return (
     <>
       <AvaListItem.Base
-        title={name}
+        titleAlignment={'flex-start'}
+        title={selected ? name : <AvaText.Body1>{name}</AvaText.Body1>}
         rightComponent={selected && <CheckmarkSVG />}
-        background={selected ? theme.listItemBg : theme.background}
+        rightComponentVerticalAlignment={'center'}
+        background={selected ? theme.colorBg2 : theme.background}
         onPress={onPress}
       />
     </>

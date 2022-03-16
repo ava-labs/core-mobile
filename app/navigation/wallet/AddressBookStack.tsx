@@ -150,7 +150,7 @@ const EditAddressBookContact = ({onEdit}: {onEdit: () => void}) => {
 
   return (
     <AvaButton.Icon onPress={() => onEdit()}>
-      <AvaText.ButtonLarge textStyle={{color: theme.colorAccent}}>
+      <AvaText.ButtonLarge textStyle={{color: theme.colorPrimary1}}>
         Edit
       </AvaText.ButtonLarge>
     </AvaButton.Icon>
@@ -162,7 +162,7 @@ const SaveAddressBookContact = ({onSave}: {onSave: () => void}) => {
 
   return (
     <AvaButton.Icon onPress={() => onSave()}>
-      <AvaText.ButtonLarge textStyle={{color: theme.colorAccent}}>
+      <AvaText.ButtonLarge textStyle={{color: theme.colorPrimary1}}>
         Save
       </AvaText.ButtonLarge>
     </AvaButton.Icon>

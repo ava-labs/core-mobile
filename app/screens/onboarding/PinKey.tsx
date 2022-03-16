@@ -1,13 +1,7 @@
-import React, {useContext} from 'react';
-import {
-  ColorValue,
-  Image,
-  StyleSheet,
-  Text,
-  TouchableNativeFeedback,
-  View,
-} from 'react-native';
+import React from 'react';
+import {Image, StyleSheet, TouchableNativeFeedback, View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
+import AvaText from 'components/AvaText';
 
 export enum PinKeys {
   Key1,
@@ -56,25 +50,15 @@ export default function PinKey(props: Props | Readonly<Props>) {
       background={TouchableNativeFeedback.Ripple(theme.buttonRipple, true)}>
       <View style={[styles.button]}>
         {isBackspace && Backspace(context.isDarkMode)}
-        {!isBackspace && Digit(props.keyboardKey, theme.txtOnBgApp)}
+        {!isBackspace && Digit(props.keyboardKey)}
       </View>
     </TouchableNativeFeedback>
   );
 }
 
-const Digit = (key: PinKeys, color: ColorValue) => {
+const Digit = (key: PinKeys) => {
   return (
-    <Text
-      style={[
-        {
-          color: color,
-          fontFamily: 'Inter-Regular',
-          fontSize: 36,
-          lineHeight: 44,
-        },
-      ]}>
-      {keymap.get(key)}
-    </Text>
+    <AvaText.LargeTitleRegular>{keymap.get(key)}</AvaText.LargeTitleRegular>
   );
 };
 
