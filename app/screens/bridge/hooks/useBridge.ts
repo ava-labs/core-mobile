@@ -49,6 +49,7 @@ export default function useBridge() {
   const transferCost = useTransactionFee(currentBlockchain);
   const minimumTransferAmount = transferCost ? transferCost.mul(3) : BIG_ZERO;
   const txFee = useTransactionFee(currentBlockchain);
+  // @ts-ignore addresses exist in walletContext
   const {addresses} = useWalletStateContext();
   const blockchainTokenSymbol = getTokenSymbolOnNetwork(
     currentAsset ?? '',

@@ -23,6 +23,7 @@ export function useLoadTokenBalance(
   address?: string,
   suspendRefresh?: boolean,
 ) {
+  // @ts-ignore addresses exist but why it complains needs investigation
   const {addresses} = useWalletStateContext();
   const network = useNetworkContext()?.network;
 

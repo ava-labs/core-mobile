@@ -5,15 +5,11 @@ import AvaListItem from 'components/AvaListItem';
 import AvaText from 'components/AvaText';
 import Avatar from 'components/Avatar';
 import {Space} from 'components/Space';
-import {
-  coinsContractMarketChart,
-  ContractMarketChartResponse,
-  VsCurrencyType,
-} from '@avalabs/coingecko-sdk';
 import {WatchlistFilter} from 'screens/watchlist/WatchlistView';
 import SparklineChart from 'components/SparklineChart';
 import MarketMovement from 'screens/watchlist/components/MarketMovement';
 import {Row} from 'components/Row';
+import Coingecko from 'utils/Coingecko';
 
 interface Props {
   tokenName: string;
@@ -54,7 +50,6 @@ const WatchListItem: FC<Props> = ({
     percentChange: 0,
   });
   const [chartData, setChartData] = useState<{x: number; y: number}[]>();
-  const [rawData, setRawData] = useState<ContractMarketChartResponse>();
 
   // get coingecko chart data.
   useEffect(() => {
@@ -62,13 +57,9 @@ const WatchListItem: FC<Props> = ({
       setTimeout(() => {
         (async () => {
           try {
-            const result = await coinsContractMarketChart({
-              address: tokenAddress,
-              currency: 'usd' as VsCurrencyType,
-              days: 1,
-              id: 'avalanche',
-            });
-            setRawData(result);
+            const result = await Coingecko.fetchChartData(tokenAddress, 1);
+            setChartData(result.dataPoints);
+            setRanges(result.ranges);
           } catch (e) {
             // Coingecko does not support all tokens chart data. So here we'll
             // simply set to empty to hide the loading state.
@@ -78,42 +69,6 @@ const WatchListItem: FC<Props> = ({
       }, 3000);
     }
   }, []);
-
-  useEffect(() => {
-    if (rawData) {
-      const dataPoints =
-        filterBy === WatchlistFilter.PRICE
-          ? rawData?.prices
-          : filterBy === WatchlistFilter.MARKET_CAP
-          ? rawData?.marketCaps
-          : rawData?.totalVolumes;
-
-      const pd = dataPoints.map(tu => {
-        return {x: tu[0], y: tu[1]};
-      });
-
-      const dates = dataPoints.map(val => val[0]);
-      const prices = dataPoints.map(val => val[1]);
-
-      const minDate = Math.min(...dates);
-      const maxDate = Math.max(...dates);
-      const minPrice = Math.min(...prices);
-      const maxPrice = Math.max(...prices);
-      const diffValue = prices[prices.length - 1] - prices[0];
-      const average = (prices[prices.length - 1] + prices[0]) / 2;
-      const percentChange = (diffValue / average) * 100;
-
-      setRanges({
-        minDate,
-        maxDate,
-        minPrice,
-        maxPrice,
-        diffValue,
-        percentChange,
-      });
-      setChartData(pd);
-    }
-  }, [filterBy, rawData]);
 
   const usdBalance = useMemo(() => {
     if (value) {

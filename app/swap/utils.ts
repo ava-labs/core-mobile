@@ -1,7 +1,6 @@
 import {ERC20, TokenWithBalance} from '@avalabs/wallet-react-components';
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
+// @ts-ignore generic - ts complains about returning `any`
 export async function incrementalPromiseResolve<T>(
   prom: () => Promise<T>,
   errorParser: (res: any) => boolean,

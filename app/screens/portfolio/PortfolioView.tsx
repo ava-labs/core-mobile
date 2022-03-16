@@ -15,7 +15,7 @@ import Loader from 'components/Loader';
 import {useSelectedTokenContext} from 'contexts/SelectedTokenContext';
 import {getTokenUID} from 'utils/TokenTools';
 import {RootStackParamList} from 'navigation/WalletScreenStack';
-import WatchlistCarrousel from 'components/WatchlistCarrousel';
+import WatchlistCarrousel from 'screens/watchlist/components/WatchlistCarrousel';
 import AvaText from 'components/AvaText';
 import AvaButton from 'components/AvaButton';
 
