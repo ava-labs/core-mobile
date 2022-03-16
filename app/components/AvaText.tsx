@@ -14,12 +14,14 @@ type AvaTextProps = {
   color?: string;
   ellipsizeMode?: 'head' | 'middle' | 'tail' | 'clip' | undefined;
   currency?: boolean;
+  hideTrailingCurrency?: boolean;
   animated?: boolean;
 } & TextProps;
 
 const AvaxTextBase: FC<AvaTextProps> = ({
   animated,
   currency,
+  hideTrailingCurrency,
   children,
   ...rest
 }) => {
@@ -30,13 +32,17 @@ const AvaxTextBase: FC<AvaTextProps> = ({
     currency
   ) {
     return animated ? (
-      <Animated.Text {...rest}>{`${currencyFormatter(
-        Number(children),
-      )} ${selectedCurrency}`}</Animated.Text>
+      <Animated.Text {...rest}>
+        {`${currencyFormatter(Number(children))} ${
+          hideTrailingCurrency ? '' : selectedCurrency
+        }`.trim()}
+      </Animated.Text>
     ) : (
-      <Text {...rest}>{`${currencyFormatter(
-        Number(children),
-      )} ${selectedCurrency}`}</Text>
+      <Text {...rest}>
+        {`${currencyFormatter(Number(children))} ${
+          hideTrailingCurrency ? '' : selectedCurrency
+        }`.trim()}
+      </Text>
     );
   }
   return animated ? (
