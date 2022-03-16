@@ -87,6 +87,7 @@ export function useRepo(): Repo {
       setWatchlistFavorites(value),
     );
     loadCustomTokensFromStorage().then(value => setCustomTokens(value));
+    loadViewOnceInformation().then(value => setViewOnceInfo(value));
   }, []);
 
   const saveAccounts = (accounts: Map<AccountId, Account>) => {
@@ -131,8 +132,11 @@ export function useRepo(): Repo {
 
   const saveViewOnceInformation = (info: ViewOnceInformation[]) => {
     // we use set so we don't allow duplicates
-    setViewOnceInfo([...new Set(info)]);
-    saveViewOnceInformationToStorage(info).catch(error => console.error(error));
+    const infoSet = [...new Set(info)];
+    setViewOnceInfo(infoSet);
+    saveViewOnceInformationToStorage(infoSet).catch(error =>
+      console.error(error),
+    );
   };
 
   const infoHasBeenShown = (info: ViewOnceInformation) => {
@@ -196,6 +200,11 @@ async function loadRecentContactsFromStorage() {
 async function loadWatchlistFavoritesFromStorage() {
   const favorites = await AsyncStorage.getItem(WATCHLIST_FAVORITES);
   return favorites ? (JSON.parse(favorites) as string[]) : [];
+}
+
+async function loadViewOnceInformation() {
+  const info = await AsyncStorage.getItem(VIEW_ONCE_INFORMATION);
+  return info ? (JSON.parse(info) as ViewOnceInformation[]) : [];
 }
 
 const omitBalance = (key: string, value: any) => {

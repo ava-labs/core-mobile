@@ -1,4 +1,4 @@
-import React, {FC, useMemo} from 'react';
+import React, {FC, useEffect, useMemo, useState} from 'react';
 import {
   FlatList,
   ListRenderItemInfo,
@@ -11,13 +11,17 @@ import Avatar from './Avatar';
 import AvaText from './AvaText';
 import {Space} from 'components/Space';
 import AvaButton from './AvaButton';
-import {useSearchableTokenList} from 'screens/portfolio/useSearchableTokenList';
-import {getTokenUID} from 'utils/TokenTools';
-import {TokenWithBalance} from '@avalabs/wallet-react-components';
+import {
+  ERC20WithBalance,
+  useWalletStateContext,
+} from '@avalabs/wallet-react-components';
 import AddSVG from 'components/svg/AddSVG';
 import {useNavigation} from '@react-navigation/native';
 import AppNavigation from 'navigation/AppNavigation';
 import {StackNavigationProp} from '@react-navigation/stack';
+import {CG_AVAX_TOKEN_ID} from 'screens/watchlist/WatchlistView';
+import Coingecko, {ChartData} from 'hooks/Coingecko';
+import MarketMovement from 'screens/watchlist/components/MarketMovement';
 
 interface Props {
   style?: StyleProp<View>;
@@ -25,14 +29,17 @@ interface Props {
 
 const WatchlistCarrousel: FC<Props> = () => {
   const {theme, repo} = useApplicationContext();
-  const {filteredTokenList} = useSearchableTokenList(false);
+  const {avaxToken, erc20Tokens} = useWalletStateContext();
   const {watchlistFavorites} = repo.watchlistFavoritesRepo;
   const navigation = useNavigation<StackNavigationProp<any>>();
 
-  const filteredData =
-    filteredTokenList?.filter(token =>
-      watchlistFavorites.includes(getTokenUID(token)),
-    ) ?? [];
+  const favoriteTokens = useMemo(
+    () =>
+      [{...avaxToken, address: CG_AVAX_TOKEN_ID}, ...erc20Tokens].filter(
+        token => watchlistFavorites.includes(token.address),
+      ) ?? [],
+    [erc20Tokens, avaxToken],
+  );
 
   function goToWatchlist() {
     navigation.navigate(AppNavigation.Tabs.Watchlist);
@@ -60,50 +67,26 @@ const WatchlistCarrousel: FC<Props> = () => {
     [],
   );
 
-  const renderItem = (item: ListRenderItemInfo<TokenWithBalance>) => {
+  const renderItem = (item: ListRenderItemInfo<ERC20WithBalance>) => {
     const token = item.item;
-    const percentChange = (token?.balanceUSD ?? 0).toFixed(2);
-    const isNegative = false; // Math.random() < 0.5; //Math.sign(percentChange) === -1;
-
     return (
-      <AvaButton.Base
-        key={getTokenUID(token)}
-        onPress={() =>
+      <CarrouselItem
+        token={token}
+        onPress={() => {
           navigation.navigate(AppNavigation.Wallet.TokenDetail, {
-            address: getTokenUID(token),
-          })
-        }
-        style={[style.item, {backgroundColor: theme.colorBg3}]}>
-        <Avatar.Custom
-          name={token.name}
-          symbol={token.symbol}
-          logoUri={token.logoURI}
-        />
-        <Space y={4} />
-        <AvaText.ButtonSmall textStyle={{color: theme.colorText1}}>
-          {token?.symbol?.toUpperCase()}
-        </AvaText.ButtonSmall>
-        <Space y={16} />
-        <AvaText.Caption
-          textStyle={{
-            color: isNegative ? theme.colorError : theme.colorSuccess,
-          }}>
-          {`${
-            isNegative
-              ? percentChange
-              : percentChange.toString().split('-').pop()
-          }%`}
-        </AvaText.Caption>
-      </AvaButton.Base>
+            address: token.address,
+          });
+        }}
+      />
     );
   };
 
   return (
     <View>
       <FlatList
-        data={filteredData}
+        data={favoriteTokens}
         renderItem={renderItem}
-        keyExtractor={(item: TokenWithBalance) => getTokenUID(item)}
+        keyExtractor={(item: ERC20WithBalance) => item.address}
         horizontal
         bounces
         ListEmptyComponent={EmptyItem}
@@ -111,6 +94,50 @@ const WatchlistCarrousel: FC<Props> = () => {
         ItemSeparatorComponent={() => <View style={{margin: 4}} />}
       />
     </View>
+  );
+};
+
+interface CarrouselItemProps {
+  token: ERC20WithBalance;
+  onPress: () => void;
+}
+
+const CarrouselItem: FC<CarrouselItemProps> = ({token, onPress}) => {
+  const theme = useApplicationContext().theme;
+  const [chartData, setChartData] = useState<ChartData>();
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const data = await Coingecko.fetchChartData(token.address, 1);
+        setChartData(data);
+      } catch (e) {
+        //ignored
+      }
+    })();
+  }, []);
+
+  return (
+    <AvaButton.Base
+      key={token.address}
+      onPress={onPress}
+      style={[style.item, {backgroundColor: theme.colorBg3}]}>
+      <Avatar.Custom
+        name={token.name}
+        symbol={token.symbol}
+        logoUri={token.logoURI}
+      />
+      <Space y={4} />
+      <AvaText.ButtonSmall textStyle={{color: theme.colorText1}}>
+        {token?.symbol?.toUpperCase()}
+      </AvaText.ButtonSmall>
+      <Space y={16} />
+      <MarketMovement
+        priceChange={chartData?.ranges?.diffValue ?? 0}
+        percentChange={chartData?.ranges?.percentChange ?? 0}
+        hideDifference
+      />
+    </AvaButton.Base>
   );
 };
 

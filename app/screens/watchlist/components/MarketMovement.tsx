@@ -8,12 +8,16 @@ import {largeCurrencyFormatter} from 'utils/Utils';
 interface Props {
   priceChange: number;
   percentChange: number;
+  hideDifference?: boolean;
+  hidePercentage?: boolean;
   filterBy?: WatchlistFilter;
 }
 
 const MarketMovement: FC<Props> = ({
   priceChange,
   percentChange,
+  hideDifference,
+  hidePercentage,
   filterBy = WatchlistFilter.PRICE,
 }) => {
   const theme = useApplicationContext().theme;
@@ -32,9 +36,13 @@ const MarketMovement: FC<Props> = ({
         : largeCurrencyFormatter(priceChange, 3)
     ).replace('-', '');
 
-    const formattedPercent = percentChange.toFixed(2).replace('-', '');
+    const formattedPercent = hideDifference
+      ? `${percentChange.toFixed(2).replace('-', '')}%`
+      : `(${percentChange.toFixed(2).replace('-', '')}%)`;
 
-    return `${formattedPrice} (${formattedPercent})%`;
+    return `${hideDifference ? '' : formattedPrice}  ${
+      hidePercentage ? '' : formattedPercent
+    }`.trim();
   }, [priceChange, percentChange]);
 
   return (
