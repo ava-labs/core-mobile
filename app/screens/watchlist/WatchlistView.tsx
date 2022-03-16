@@ -38,6 +38,9 @@ export enum WatchlistFilter {
   LOSERS = 'Losers',
 }
 
+export const CG_AVAX_TOKEN_ID =
+  'FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z';
+
 const filterTimeOptions = ['1D', '1W', '1Y'];
 
 type CombinedTokenType = ERC20WithBalance & SimplePriceInCurrency;
@@ -49,18 +52,21 @@ const WatchlistView: FC<Props> = ({showFavorites, searchText}) => {
     useApplicationContext().repo.watchlistFavoritesRepo;
   // const {filteredTokenList, setSearchText, loadTokenList} =
   //   useSearchableTokenList(false);
-  const erc20Tokens = useWalletStateContext()?.erc20Tokens;
+  const {erc20Tokens, avaxToken} = useWalletStateContext();
   const [combinedData, setCombinedData] = useState<CombinedTokenType[]>([]);
   const [filterBy, setFilterBy] = useState(WatchlistFilter.PRICE);
   const [filterTime, setFilterTime] = useState(filterTimeOptions[0]);
-  const tokenAddresses =
-    erc20Tokens?.map((t: ERC20WithBalance) => t.address) ?? [];
+  const tokenAddresses = [
+    CG_AVAX_TOKEN_ID,
+    ...(erc20Tokens?.map((t: ERC20WithBalance) => t.address) ?? []),
+  ];
+  const allTokens = [{...avaxToken, address: CG_AVAX_TOKEN_ID}, ...erc20Tokens];
 
   useEffect(() => {
     if (combinedData.length === 0) {
       refreshPrices();
     }
-  }, [erc20Tokens]);
+  }, [allTokens]);
 
   const sortedData = useMemo(() => {
     // get favorite list or regular list
@@ -81,7 +87,7 @@ const WatchlistView: FC<Props> = ({showFavorites, searchText}) => {
   }, [combinedData, filterBy]);
 
   const refreshPrices = async () => {
-    if (erc20Tokens && erc20Tokens.length > 0) {
+    if (allTokens && allTokens.length > 0) {
       const rawData = await simpleTokenPrice({
         tokenAddresses,
         currencies: ['usd'] as VsCurrencyType[],
@@ -89,10 +95,14 @@ const WatchlistView: FC<Props> = ({showFavorites, searchText}) => {
         vol24: true,
         change24: true,
       });
-      const mappedData = erc20Tokens?.map(t => {
+      const mappedData = allTokens?.map(t => {
+        const address =
+          t.address === CG_AVAX_TOKEN_ID
+            ? CG_AVAX_TOKEN_ID
+            : t.address.toLowerCase();
         return {
           ...t,
-          ...rawData?.[t.address?.toLowerCase()]?.usd,
+          ...rawData?.[address]?.usd,
         } as CombinedTokenType;
       });
       setCombinedData(mappedData);
@@ -156,7 +166,7 @@ const WatchlistView: FC<Props> = ({showFavorites, searchText}) => {
         // rank={!showFavorites ? item.index + 1 : undefined}
         onPress={() =>
           navigation.navigate(AppNavigation.Wallet.TokenDetail, {
-            address: getTokenUID(token),
+            address: token.address,
           })
         }
       />

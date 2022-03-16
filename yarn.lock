@@ -47,10 +47,24 @@
   dependencies:
     axios "^0.21.4"
 
+"@avalabs/bridge-sdk@1.2.0-alpha.3":
+  version "1.2.0-alpha.3"
+  resolved "https://registry.yarnpkg.com/@avalabs/bridge-sdk/-/bridge-sdk-1.2.0-alpha.3.tgz#26e7e14c9de0ff126612baf3b7e2739ee59adbd8"
+  integrity sha512-AiRgQpy7wrSj3MRfG7iX2Es39DBsZwmPeZP32t/ce8LCWkZo+kZLn7ojfM/T1QL35wyRtmCVNLYsGeaamtWYEQ==
+  dependencies:
+    "@avalabs/utils-sdk" "1.2.0-alpha.3"
+    big.js "6.1.1"
+    ethers "5.2.0"
+
 "@avalabs/coingecko-sdk@file:../../Work/avalanche-sdks/packages/coingecko-sdk":
   version "2.0.0-alpha.1"
   dependencies:
     axios "^0.26.0"
+
+"@avalabs/utils-sdk@1.2.0-alpha.3":
+  version "1.2.0-alpha.3"
+  resolved "https://registry.yarnpkg.com/@avalabs/utils-sdk/-/utils-sdk-1.2.0-alpha.3.tgz#b41380a75e6c60aa83d6d9bf50d6328a0df58625"
+  integrity sha512-SZPXSAwMNM4dWJU/TOmmeJewp5tjORFwT2HFjWdr6/CqrzwUhq0uMoOAsOtYB161D05/DiS7GNOHlKJ1tBFIQQ==
 
 "@avalabs/wallet-react-components@1.24.6":
   version "1.24.6"
@@ -10027,6 +10041,13 @@ flush-write-stream@^1.0.0:
   dependencies:
     inherits "^2.0.3"
     readable-stream "^2.3.6"
+
+focus-lock@^0.10.2:
+  version "0.10.2"
+  resolved "https://registry.yarnpkg.com/focus-lock/-/focus-lock-0.10.2.tgz#561c62bae8387ecba1dd8e58a6df5ec29835c644"
+  integrity sha512-DSaI/UHZ/02sg1P616aIWgToQcrKKBmcCvomDZ1PZvcJFj350PnWhSJxJ76T3e5/GbtQEARIACtbrdlrF9C5kA==
+  dependencies:
+    tslib "^2.0.3"
 
 follow-redirects@^1.0.0:
   version "1.14.3"
