@@ -11,7 +11,7 @@ interface Props {
   index: number;
 }
 
-function PorfolioCarousel({index}: Props) {
+function PortfolioCarousel({index}: Props) {
   const horizontalScrollViewRef = useRef<ScrollView>();
   const [scrollX] = useState(new Animated.Value(0));
 
@@ -46,9 +46,9 @@ function PorfolioCarousel({index}: Props) {
         width: carouselWidth * 2 + leftOverWidth,
       }}>
       {() => {
-        const scrollLeft = carouselWidth * (0 - 1);
-        const scrollMiddle = carouselWidth * 0;
-        const scrollEnd = carouselWidth * (0 + 1);
+        const scrollLeft = carouselWidth * -1;
+        const scrollMiddle = 0;
+        const scrollEnd = carouselWidth;
 
         return (
           <Animated.View
@@ -84,4 +84,4 @@ function PorfolioCarousel({index}: Props) {
   );
 }
 
-export default PorfolioCarousel;
+export default PortfolioCarousel;

@@ -1,28 +1,26 @@
 import React, {FC, useEffect, useLayoutEffect, useState} from 'react';
-import {Dimensions, Pressable, ScrollView, View} from 'react-native';
+import {
+  ActivityIndicator,
+  Dimensions,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaListItem from 'components/AvaListItem';
 import Avatar from 'components/Avatar';
 import AvaText from 'components/AvaText';
 import {Space} from 'components/Space';
-import {
-  GradientProps,
-  SlideAreaChart,
-} from '@connectedcars/react-native-slide-charts';
-import {LinearGradient, Stop} from 'react-native-svg';
 import TabViewAva from 'components/TabViewAva';
 import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
 import StarSVG from 'components/svg/StarSVG';
-import {getTokenUID} from 'utils/TokenTools';
-import {useSearchableTokenList} from 'screens/portfolio/useSearchableTokenList';
-import {TokenWithBalance} from '@avalabs/wallet-react-components';
 import {RootStackParamList} from 'navigation/WalletScreenStack';
 import {StackNavigationProp} from '@react-navigation/stack';
 import ChartSelector, {
   ChartType,
 } from 'screens/watchlist/components/ChartSelector';
 import OvalTagBg from 'components/OvalTagBg';
-import useInAppBrowser from 'hooks/useInAppBrowser';
 import AvaButton from 'components/AvaButton';
 import {
   VictoryAxis,
@@ -30,73 +28,67 @@ import {
   VictoryChart,
   VictoryTheme,
 } from 'victory-native';
+import {largeCurrencyFormatter, truncateAddress} from 'utils/Utils';
+import {useTokenDetail} from 'screens/watchlist/useTokenDetail';
+import SparklineChart from 'components/SparklineChart';
+import {Row} from 'components/Row';
+import MarketMovement from 'screens/watchlist/components/MarketMovement';
+import {ViewOnceInformation} from 'Repo';
 
-export const defaultAreaChartFillGradient = (props: GradientProps) => {
-  return (
-    <LinearGradient x1="50%" y1="0%" x2="50%" y2="100%" {...props}>
-      <Stop stopColor="#FF0000" offset="0%" stopOpacity="0.5" />
-      <Stop stopColor="#000000" offset="100%" stopOpacity="0.2" />
-    </LinearGradient>
-  );
-};
+const WIDOW_WIDTH = Dimensions.get('window').width;
 
-const screenWidth = Dimensions.get('window').width;
+export function formatMarketNumbers(value: number) {
+  return value === 0 ? ' -' : largeCurrencyFormatter(value, 1);
+}
 
 const TokenDetail: FC<any> = () => {
-  const {theme, repo} = useApplicationContext();
-  const {watchlistFavorites, saveWatchlistFavorites} =
-    repo.watchlistFavoritesRepo;
-  const {filteredTokenList} = useSearchableTokenList(false);
-  const {setOptions} = useNavigation<StackNavigationProp<RootStackParamList>>();
-  const [isFavorite, setIsFavorite] = useState(true);
-  const [token, setToken] = useState<TokenWithBalance>();
+  const {theme} = useApplicationContext();
+  const {saveViewOnceInformation, infoHasBeenShown, viewOnceInfo} =
+    useApplicationContext().repo.informationViewOnceRepo;
   const [showLineChart, setShowLineChart] = useState(true);
-  const {openMoonPay, openUrl} = useInAppBrowser();
-
-  const {tokenId} = useRoute<RouteProp<RootStackParamList>>().params;
+  const {setOptions} = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const [showChartInstruction, setShowChartInstruction] = useState(false);
+  const tokenAddress =
+    useRoute<RouteProp<RootStackParamList>>()?.params?.address;
+  const {
+    isFavorite,
+    openMoonPay,
+    openUrl,
+    urlHostname,
+    handleFavorite,
+    marketTotalSupply,
+    twitterHandle,
+    marketCirculatingSupply,
+    marketVolume,
+    marketCapRank,
+    marketCap,
+    chartData,
+    token,
+    ranges,
+    changeChartDays,
+  } = useTokenDetail(tokenAddress);
 
   function openTwitter() {
     // data will come from somewhere, something like
     // token.twitterHandle
-    openUrl('https://twitter.com/avalancheavax');
+    openUrl(`https://twitter.com/${twitterHandle}`);
   }
 
   function openWebsite() {
-    // data will come from somewhere, something like
-    // token.website
-    openUrl('https://www.avax.network/');
+    if (urlHostname) {
+      openUrl('https://' + urlHostname);
+    }
   }
 
   useEffect(() => {
-    if (filteredTokenList) {
-      const result = filteredTokenList.filter(
-        tk => getTokenUID(tk) === tokenId,
-      );
-      if (result.length > 0) {
-        setToken(result[0]);
-      }
+    if (!infoHasBeenShown(ViewOnceInformation.CHART_INTERACTION)) {
+      setShowChartInstruction(true);
+      saveViewOnceInformation([
+        ...viewOnceInfo,
+        ViewOnceInformation.CHART_INTERACTION,
+      ]);
     }
-  }, [filteredTokenList]);
-
-  useEffect(() => {
-    setIsFavorite(
-      watchlistFavorites.filter(value => value === tokenId).length > 0,
-    );
-  }, [watchlistFavorites]);
-
-  function handleFavorite() {
-    if (isFavorite) {
-      const index = watchlistFavorites.indexOf(tokenId);
-      if (index > -1) {
-        watchlistFavorites.splice(index, 1);
-        saveWatchlistFavorites(watchlistFavorites);
-      }
-    } else {
-      watchlistFavorites.push(tokenId);
-      saveWatchlistFavorites(watchlistFavorites);
-    }
-    setIsFavorite(!isFavorite);
-  }
+  }, []);
 
   useLayoutEffect(() => {
     setOptions({
@@ -108,261 +100,335 @@ const TokenDetail: FC<any> = () => {
     });
   }, [isFavorite]);
 
-  const renderCustomLabel = (title: string, focused: boolean) => {
-    return (
-      <AvaText.Heading3
-        textStyle={{color: focused ? theme.colorText1 : theme.colorText2}}>
-        {title}
-      </AvaText.Heading3>
-    );
+  const getOverlayContent = () => {
+    // loading chart data
+    let content;
+    if (!chartData) {
+      content = <ActivityIndicator />;
+    }
+
+    // chart data is empty, could not be retrieved
+    if (chartData && chartData.length === 0) {
+      content = (
+        <>
+          <AvaText.Heading2 color={'white'}>
+            No chart data available
+          </AvaText.Heading2>
+          <AvaText.Body3 color={'white'}>
+            We are unable to retrieve chart data for this token at this time.
+          </AvaText.Body3>
+        </>
+      );
+    }
+
+    // if we have data and it's 1st time user seing it, show instruction
+    if (chartData && showChartInstruction) {
+      content = (
+        <>
+          <AvaText.Heading2 color={'white'}>Hold and Drag</AvaText.Heading2>
+          <AvaText.Body3
+            color={'white'}
+            textStyle={{textAlignVertical: 'center'}}>
+            Hold and drag over chart for precise price and date
+          </AvaText.Body3>
+          <AvaButton.PrimaryMedium
+            onPress={() => setShowChartInstruction(!showChartInstruction)}>
+            Got it
+          </AvaButton.PrimaryMedium>
+        </>
+      );
+    }
+
+    if (content) {
+      return (
+        <View
+          style={[
+            StyleSheet.absoluteFill,
+            {
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: '#00000080',
+              marginHorizontal: 32,
+            },
+          ]}>
+          {content}
+        </View>
+      );
+    }
+
+    return null;
   };
 
   return (
     <ScrollView style={{paddingHorizontal: 8, flex: 1}}>
-      <AvaListItem.Base
-        title={<AvaText.Heading1>{token?.name}</AvaText.Heading1>}
-        titleAlignment={'flex-start'}
-        subtitle={token?.symbol}
-        leftComponent={token && <Avatar.Token token={token} size={48} />}
-      />
-      <AvaListItem.Base
-        title={<AvaText.Body2>Price</AvaText.Body2>}
-        titleAlignment={'flex-start'}
-        subtitle={
-          <AvaText.Heading3 currency>
-            {token?.priceUSD}
-            <AvaText.Body3 color={theme.colorSuccess}>
-              {' +$1.13(1.29%)'}
-            </AvaText.Body3>
-          </AvaText.Heading3>
-        }
-        rightComponent={
-          <ChartSelector
-            onChartChange={chart => {
-              setShowLineChart(chart === ChartType.LINE);
-            }}
-          />
-        }
-      />
-      <Space y={8} />
-      <View
-        style={{height: 120, justifyContent: 'center', alignItems: 'center'}}>
-        {showLineChart ? (
-          <SlideAreaChart
-            scrollable
-            animated={false}
-            style={{
-              marginTop: 32,
-              backgroundColor: theme.transparent,
-            }}
-            width={screenWidth + 24}
-            shouldCancelWhenOutside={false}
-            data={[
-              {x: 1, y: 5},
-              {x: 2, y: 6},
-              {x: 3, y: 11},
-              {x: 4, y: 50},
-              {x: 5, y: 3},
-              {x: 6, y: 34},
-              {x: 7, y: 5},
-              {x: 8, y: 6},
-              {x: 9, y: 11},
-              {x: 10, y: 50},
-              {x: 11, y: 3},
-              {x: 12, y: 34},
-              {x: 27, y: 11},
-            ]}
-            axisWidth={16}
-            axisHeight={16}
-            paddingBottom={8}
-            alwaysShowIndicator={true}
-            callbackWithX={x => console.log(x)}
-            callbackWithY={y => console.log(y)}
-            toolTipProps={{
-              toolTipTextRenderers: [
-                ({scaleY, y}) => ({
-                  text: scaleY.invert(y).toFixed(1).toString(),
-                }),
-              ],
-            }}
-            showIndicatorCallback={opacity =>
-              console.log('opacity: ' + opacity)
-            }
-            cursorProps={{
-              cursorLine: false,
-              cursorMarkerHeight: 18,
-              cursorMarkerWidth: 18,
-              cursorColor: theme.alternateBackground,
-              cursorBorderColor: theme.alternateBackground,
-            }}
-            chartLineColor={theme.colorError}
-            chartLineWidth={2}
-            yAxisProps={{
-              horizontalLineColor: theme.transparent,
-              verticalLineColor: theme.transparent,
-              interval: 5,
-            }}
-            renderFillGradient={defaultAreaChartFillGradient}
-          />
-        ) : (
-          <VictoryChart theme={VictoryTheme.material} height={160}>
-            <VictoryAxis
-              scale={'time'}
-              tickFormat={t => `${t}`}
-              fixLabelOverlap
+      <View>
+        <AvaListItem.Base
+          title={<AvaText.Heading1>{token?.name}</AvaText.Heading1>}
+          titleAlignment={'flex-start'}
+          subtitle={token?.symbol}
+          leftComponent={token && <Avatar.Token token={token} size={48} />}
+        />
+        <AvaListItem.Base
+          title={<AvaText.Body2>Price</AvaText.Body2>}
+          titleAlignment={'flex-start'}
+          subtitle={
+            <Row style={{alignItems: 'center'}}>
+              <AvaText.Heading3
+                currency
+                hideTrailingCurrency
+                textStyle={{marginEnd: 8}}>
+                {token?.priceUSD?.toFixed(6)}
+              </AvaText.Heading3>
+              <MarketMovement
+                priceChange={ranges.diffValue}
+                percentChange={ranges.percentChange}
+              />
+            </Row>
+          }
+          rightComponent={
+            <ChartSelector
+              onChartChange={chart => {
+                setShowLineChart(chart === ChartType.LINE);
+              }}
+            />
+          }
+        />
+        <Space y={8} />
+        <View
+          style={{height: 120, justifyContent: 'center', alignItems: 'center'}}>
+          {showLineChart ? (
+            <View>
+              <AvaText.Caption
+                textStyle={{
+                  alignSelf: 'flex-end',
+                  color: theme.colorText1,
+                  marginBottom: -10,
+                }}
+                currency
+                hideTrailingCurrency>
+                {ranges.maxPrice}
+              </AvaText.Caption>
+              <SparklineChart
+                interactive
+                data={chartData ?? []}
+                yRange={[ranges.minPrice, ranges.maxPrice]}
+                xRange={[ranges.minDate, ranges.maxDate]}
+                negative={ranges.diffValue < 0}
+                width={WIDOW_WIDTH - 32} // padding
+                height={120}
+              />
+              <AvaText.Caption
+                textStyle={{alignSelf: 'flex-end', color: theme.colorText1}}
+                currency
+                hideTrailingCurrency>
+                {ranges.minPrice}
+              </AvaText.Caption>
+            </View>
+          ) : (
+            <VictoryChart theme={VictoryTheme.material} height={160}>
+              <VictoryAxis
+                scale={'time'}
+                tickFormat={t => `${t}`}
+                fixLabelOverlap
+                style={{
+                  grid: {stroke: 'transparent'},
+                  axis: {stroke: 'transparent'},
+                  ticks: {stroke: 'transparent'},
+                  tickLabels: {fill: 'transparent'},
+                }}
+              />
+              <VictoryCandlestick
+                standalone
+                candleColors={{
+                  positive: theme.colorSuccess,
+                  negative: theme.colorError,
+                }}
+                candleRatio={0.2}
+                data={[
+                  {
+                    x: new Date(2016, 6, 1),
+                    open: 5,
+                    close: 10,
+                    high: 15,
+                    low: 0,
+                  },
+                  {
+                    x: new Date(2016, 6, 2),
+                    open: 10,
+                    close: 15,
+                    high: 20,
+                    low: 5,
+                  },
+                  {
+                    x: new Date(2016, 6, 3),
+                    open: 15,
+                    close: 20,
+                    high: 22,
+                    low: 10,
+                  },
+                  {
+                    x: new Date(2016, 6, 4),
+                    open: 20,
+                    close: 10,
+                    high: 25,
+                    low: 7,
+                  },
+                  {
+                    x: new Date(2016, 6, 5),
+                    open: 10,
+                    close: 8,
+                    high: 15,
+                    low: 5,
+                  },
+                ]}
+              />
+            </VictoryChart>
+          )}
+          {getOverlayContent()}
+        </View>
+
+        <Space y={22} />
+
+        {/* this will change once data component purpose and interaction is defined */}
+        <TabViewAva
+          renderCustomLabel={title => (
+            <AvaText.Heading3>{title}</AvaText.Heading3>
+          )}
+          onTabIndexChange={index => {
+            changeChartDays(
+              index === 0
+                ? 1 // one day
+                : index === 1
+                ? 7 // seven days - 1 week
+                : index === 2
+                ? 30 // 30 days - 1 month
+                : index === 3
+                ? 90 // 90 days - 3 months
+                : 365, // 365 days - 1 year
+            );
+          }}>
+          <View title={'24H'} />
+          <View title={'1W'} />
+          <View title={'1M'} />
+          <View title={'3M'} />
+          <View title={'1Y'} />
+        </TabViewAva>
+
+        {/* Market Data & Rank */}
+        <AvaListItem.Base
+          title={<AvaText.Heading2>Market Data</AvaText.Heading2>}
+          paddingVertical={4}
+          titleAlignment={'flex-start'}
+          rightComponent={
+            <OvalTagBg
+              color={theme.colorBg3}
+              style={{height: 21, paddingVertical: 0}}>
+              <AvaText.Body2>{`Rank: ${marketCapRank}`}</AvaText.Body2>
+            </OvalTagBg>
+          }
+        />
+
+        {/* Market Cap & Contact Address */}
+        <AvaListItem.Base
+          title={<AvaText.Body2>Market Cap</AvaText.Body2>}
+          titleAlignment={'flex-start'}
+          rightComponentHorizontalAlignment={'flex-start'}
+          paddingVertical={4}
+          subtitle={
+            <AvaText.Heading3>
+              {formatMarketNumbers(marketCap)}
+            </AvaText.Heading3>
+          }
+          rightComponent={
+            <View
               style={{
-                grid: {stroke: 'transparent'},
-                axis: {stroke: 'transparent'},
-                ticks: {stroke: 'transparent'},
-                tickLabels: {fill: 'transparent'},
-              }}
-            />
-            <VictoryCandlestick
-              standalone
-              candleColors={{
-                positive: theme.colorSuccess,
-                negative: theme.colorError,
-              }}
-              candleRatio={0.2}
-              data={[
-                {
-                  x: new Date(2016, 6, 1),
-                  open: 5,
-                  close: 10,
-                  high: 15,
-                  low: 0,
-                },
-                {
-                  x: new Date(2016, 6, 2),
-                  open: 10,
-                  close: 15,
-                  high: 20,
-                  low: 5,
-                },
-                {
-                  x: new Date(2016, 6, 3),
-                  open: 15,
-                  close: 20,
-                  high: 22,
-                  low: 10,
-                },
-                {
-                  x: new Date(2016, 6, 4),
-                  open: 20,
-                  close: 10,
-                  high: 25,
-                  low: 7,
-                },
-                {
-                  x: new Date(2016, 6, 5),
-                  open: 10,
-                  close: 8,
-                  high: 15,
-                  low: 5,
-                },
-              ]}
-            />
-          </VictoryChart>
+                justifyContent: 'flex-start',
+                alignItems: 'flex-start',
+                flex: 1,
+              }}>
+              <AvaText.Body2>Contract Address</AvaText.Body2>
+              <AvaText.Heading3>
+                {truncateAddress(tokenAddress)}
+              </AvaText.Heading3>
+            </View>
+          }
+        />
+
+        {/* 24H Volume & Website */}
+        <AvaListItem.Base
+          title={<AvaText.Body2>24h Volume</AvaText.Body2>}
+          titleAlignment={'flex-start'}
+          rightComponentHorizontalAlignment={'flex-start'}
+          paddingVertical={4}
+          subtitle={
+            <AvaText.Heading3>
+              {formatMarketNumbers(marketVolume)}
+            </AvaText.Heading3>
+          }
+          rightComponent={
+            <View
+              style={{
+                justifyContent: 'flex-start',
+                alignItems: 'flex-start',
+                flex: 1,
+              }}>
+              <AvaText.Body2>Website</AvaText.Body2>
+              <AvaText.Heading3
+                textStyle={{color: '#0A84FF'}}
+                onPress={openWebsite}>
+                {urlHostname}
+              </AvaText.Heading3>
+            </View>
+          }
+        />
+
+        {/*  Available Supply & Twitter */}
+        <AvaListItem.Base
+          title={<AvaText.Body2>Available Supply</AvaText.Body2>}
+          titleAlignment={'flex-start'}
+          rightComponentHorizontalAlignment={'flex-start'}
+          paddingVertical={4}
+          subtitle={
+            <AvaText.Heading3>
+              {formatMarketNumbers(marketCirculatingSupply)}
+            </AvaText.Heading3>
+          }
+          rightComponent={
+            <View
+              style={{
+                justifyContent: 'flex-start',
+                alignItems: 'flex-start',
+                flex: 1,
+              }}>
+              <AvaText.Body2>Twitter</AvaText.Body2>
+              <AvaText.Heading3
+                textStyle={{color: '#0A84FF'}}
+                onPress={openTwitter}>
+                @{twitterHandle}
+              </AvaText.Heading3>
+            </View>
+          }
+        />
+
+        {/* Total Supply */}
+        <AvaListItem.Base
+          title={<AvaText.Body2>Total Supply</AvaText.Body2>}
+          titleAlignment={'flex-start'}
+          paddingVertical={4}
+          subtitle={
+            <AvaText.Heading3>
+              {formatMarketNumbers(marketTotalSupply)}
+            </AvaText.Heading3>
+          }
+        />
+        {token?.isAvax && (
+          <AvaButton.Base onPress={openMoonPay}>
+            <OvalTagBg color={theme.listItemBg} style={{height: 48}}>
+              <AvaText.ButtonLarge>Buy {token?.symbol}</AvaText.ButtonLarge>
+            </OvalTagBg>
+          </AvaButton.Base>
         )}
       </View>
-
-      <Space y={22} />
-
-      {/* this will change once data component purpose and interaction is defined */}
-      <TabViewAva renderCustomLabel={renderCustomLabel}>
-        <View title={'24H'} />
-        <View title={'1W'} />
-        <View title={'1M'} />
-        <View title={'3M'} />
-        <View title={'1Y'} />
-        <View title={'ALL'} />
-      </TabViewAva>
-
-      {/* Market Data & Rank */}
-      <AvaListItem.Base
-        title={<AvaText.Heading2>Market Data</AvaText.Heading2>}
-        paddingVertical={4}
-        titleAlignment={'flex-start'}
-        rightComponent={
-          <OvalTagBg
-            color={theme.colorBg3}
-            style={{height: 21, paddingVertical: 0}}>
-            <AvaText.Body2>Rank: 8</AvaText.Body2>
-          </OvalTagBg>
-        }
-      />
-
-      {/* Market Cap & Contact Address */}
-      <AvaListItem.Base
-        title={<AvaText.Body2>Market Cap</AvaText.Body2>}
-        titleAlignment={'flex-start'}
-        rightComponentHorizontalAlignment={'flex-start'}
-        paddingVertical={4}
-        subtitle={<AvaText.Heading3>$23.4B</AvaText.Heading3>}
-        rightComponent={
-          <View
-            style={{justifyContent: 'flex-start', alignItems: 'flex-start'}}>
-            <AvaText.Body2>Contract Address</AvaText.Body2>
-            <AvaText.Heading3>0xB2d...232d</AvaText.Heading3>
-          </View>
-        }
-      />
-
-      {/* 24H Volume & Website */}
-      <AvaListItem.Base
-        title={<AvaText.Body2>24h Volume</AvaText.Body2>}
-        titleAlignment={'flex-start'}
-        rightComponentHorizontalAlignment={'flex-start'}
-        paddingVertical={4}
-        subtitle={<AvaText.Heading3>$1.4B</AvaText.Heading3>}
-        rightComponent={
-          <View
-            style={{justifyContent: 'flex-start', alignItems: 'flex-start'}}>
-            <AvaText.Body2 textStyle={{alignSelf: 'flex-start'}}>
-              Website
-            </AvaText.Body2>
-            <AvaText.Heading3
-              textStyle={{color: '#0A84FF'}}
-              onPress={openWebsite}>
-              avax.network
-            </AvaText.Heading3>
-          </View>
-        }
-      />
-
-      {/*  Available Supply & Twitter */}
-      <AvaListItem.Base
-        title={<AvaText.Body2>Available Supply</AvaText.Body2>}
-        titleAlignment={'flex-start'}
-        rightComponentHorizontalAlignment={'flex-start'}
-        paddingVertical={4}
-        subtitle={<AvaText.Heading3>$220.3M</AvaText.Heading3>}
-        rightComponent={
-          <View
-            style={{justifyContent: 'flex-start', alignItems: 'flex-start'}}>
-            <AvaText.Body2>Twitter</AvaText.Body2>
-            <AvaText.Heading3
-              textStyle={{color: '#0A84FF'}}
-              onPress={openTwitter}>
-              @avalancheavax
-            </AvaText.Heading3>
-          </View>
-        }
-      />
-
-      {/* Total Supply */}
-      <AvaListItem.Base
-        title={<AvaText.Body2>Total Suppy</AvaText.Body2>}
-        titleAlignment={'flex-start'}
-        paddingVertical={4}
-        subtitle={<AvaText.Heading3>$377.7M</AvaText.Heading3>}
-      />
-
-      <AvaButton.Base onPress={openMoonPay}>
-        <OvalTagBg color={theme.listItemBg} style={{height: 48}}>
-          <AvaText.ButtonLarge>Buy {token?.symbol}</AvaText.ButtonLarge>
-        </OvalTagBg>
-      </AvaButton.Base>
     </ScrollView>
   );
 };

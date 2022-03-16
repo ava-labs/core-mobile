@@ -66,7 +66,7 @@ export type RootStackParamList = {
     | undefined;
   [AppNavigation.Wallet.Swap]: undefined;
   [AppNavigation.Wallet.NetworkSelector]: undefined;
-  [AppNavigation.Wallet.TokenDetail]: {tokenId?: string} | undefined;
+  [AppNavigation.Wallet.TokenDetail]: {address?: string} | undefined;
   [AppNavigation.Wallet.OwnedTokenDetail]: {tokenId?: string} | undefined;
   [AppNavigation.Wallet.ActivityDetail]: {tx?: TxType};
   [AppNavigation.Wallet.Bridge]: undefined;
