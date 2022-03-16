@@ -1,10 +1,4 @@
-import React, {
-  createContext,
-  Dispatch,
-  useContext,
-  useMemo,
-  useState,
-} from 'react';
+import React, {useMemo} from 'react';
 import AppNavigation from 'navigation/AppNavigation';
 import {
   createStackNavigator,
@@ -15,35 +9,25 @@ import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
 import {NFTStackParamList} from 'navigation/wallet/NFTScreenStack';
 import NftSend from 'screens/nft/send/NftSend';
 import NftReview from 'screens/nft/send/NftReview';
+import {SendNFTContextProvider} from 'contexts/SendNFTContext';
+import {RootStackParamList} from 'navigation/WalletScreenStack';
+import DoneScreen from 'screens/send/DoneScreen';
 
 export type NFTSendStackParamList = {
   [AppNavigation.NftSend.AddressPick]: undefined;
   [AppNavigation.NftSend.Review]: undefined;
-  [AppNavigation.NftSend.Success]: undefined;
+  [AppNavigation.NftSend.Success]: {transactionId: string};
   [AppNavigation.NftSend.Fail]: undefined;
 };
 
 const NFTSendStack = createStackNavigator<NFTSendStackParamList>();
 
-const NFTSendContext = createContext(
-  {} as {
-    nft: NFTItemData;
-    addressTo: string;
-    setAddressTo: Dispatch<string>;
-  },
-);
-
-export function useNftSendContext() {
-  return useContext(NFTSendContext);
-}
-
 export default function NFTSendScreenStack() {
   const {params} = useRoute<RouteProp<NFTStackParamList>>();
   const item = useMemo(() => params!.nft, [params]) as NFTItemData;
-  const [addressTo, setAddressTo] = useState('');
 
   return (
-    <NFTSendContext.Provider value={{nft: item, addressTo, setAddressTo}}>
+    <SendNFTContextProvider nft={item}>
       <NFTSendStack.Navigator
         screenOptions={{
           presentation: 'card',
@@ -58,10 +42,14 @@ export default function NFTSendScreenStack() {
         />
         <NFTSendStack.Screen
           name={AppNavigation.NftSend.Review}
-          component={NftReview}
+          component={NftReviewScreen}
+        />
+        <NFTSendStack.Screen
+          name={AppNavigation.NftSend.Success}
+          component={SuccessScreen}
         />
       </NFTSendStack.Navigator>
-    </NFTSendContext.Provider>
+    </SendNFTContextProvider>
   );
 }
 
@@ -72,4 +60,23 @@ const NftSendScreen = () => {
     navigate(AppNavigation.NftSend.Review);
   };
   return <NftSend onNext={showReviewScreen} />;
+};
+
+const NftReviewScreen = () => {
+  const {popToTop, replace} =
+    useNavigation<StackNavigationProp<NFTSendStackParamList>>();
+  const showSuccessScreen = (transactionId: string) => {
+    popToTop();
+    replace(AppNavigation.NftSend.Success, {transactionId});
+  };
+  return <NftReview onSuccess={showSuccessScreen} />;
+};
+
+const SuccessScreen = () => {
+  const {goBack} = useNavigation<StackNavigationProp<RootStackParamList>>();
+
+  const transactionId =
+    useRoute<RouteProp<NFTSendStackParamList>>()!.params!.transactionId!;
+
+  return <DoneScreen onClose={() => goBack()} transactionId={transactionId} />;
 };

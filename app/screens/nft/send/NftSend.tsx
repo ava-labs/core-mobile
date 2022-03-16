@@ -1,6 +1,5 @@
 import React, {useEffect} from 'react';
 import {Image, StyleSheet, View} from 'react-native';
-import {useNftSendContext} from 'navigation/wallet/NFTSendStack';
 import AvaText from 'components/AvaText';
 import {Space} from 'components/Space';
 import InputText from 'components/InputText';
@@ -14,13 +13,14 @@ import {Account} from 'dto/Account';
 import {NFTItemData} from 'screens/nft/NftCollection';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {Row} from 'components/Row';
+import {useSendNFTContext} from 'contexts/SendNFTContext';
 
 export type NftSendScreenProps = {
   onNext: () => void;
 };
 
 export default function NftSend({onNext}: NftSendScreenProps) {
-  const {nft, setAddressTo, addressTo} = useNftSendContext();
+  const {sendToken: nft, toAccount, canSubmit} = useSendNFTContext();
   const {
     saveRecentContact,
     onContactSelected: selectContact,
@@ -35,16 +35,17 @@ export default function NftSend({onNext}: NftSendScreenProps) {
   };
 
   useEffect(() => {
-    if (addressTo) {
+    if (toAccount.address) {
       setShowAddressBook(false);
     }
-  }, [addressTo]);
+  }, [toAccount.address]);
 
   const onContactSelected = (
     item: Contact | Account,
     type: AddrBookItemType,
   ) => {
-    setAddressTo(item.address);
+    toAccount.setAddress?.(item.address);
+    toAccount.setTitle?.(item.title);
     selectContact(item, type);
   };
 
@@ -58,12 +59,12 @@ export default function NftSend({onNext}: NftSendScreenProps) {
           placeholder="Enter 0x Address"
           multiline={true}
           onChangeText={text => {
-            setAddressTo(text);
+            toAccount.setAddress?.(text);
             resetAddressBookList();
           }}
-          text={addressTo}
+          text={toAccount.address}
         />
-        {!addressTo && (
+        {!toAccount.address && (
           <View
             style={{
               position: 'absolute',
@@ -90,7 +91,7 @@ export default function NftSend({onNext}: NftSendScreenProps) {
         </>
       )}
       <AvaButton.PrimaryLarge
-        // disabled={!canSubmit}
+        disabled={!canSubmit}
         onPress={onNextPress}
         style={{marginBottom: 16}}>
         Next
