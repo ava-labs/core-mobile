@@ -7,10 +7,10 @@ import {
   View,
 } from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
-import Avatar from './Avatar';
-import AvaText from './AvaText';
+import Avatar from 'components/Avatar';
+import AvaText from 'components/AvaText';
 import {Space} from 'components/Space';
-import AvaButton from './AvaButton';
+import AvaButton from 'components/AvaButton';
 import {
   ERC20WithBalance,
   useWalletStateContext,
@@ -20,7 +20,7 @@ import {useNavigation} from '@react-navigation/native';
 import AppNavigation from 'navigation/AppNavigation';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {CG_AVAX_TOKEN_ID} from 'screens/watchlist/WatchlistView';
-import Coingecko, {ChartData} from 'hooks/Coingecko';
+import Coingecko, {ChartData} from 'utils/Coingecko';
 import MarketMovement from 'screens/watchlist/components/MarketMovement';
 
 interface Props {
@@ -29,6 +29,7 @@ interface Props {
 
 const WatchlistCarrousel: FC<Props> = () => {
   const {theme, repo} = useApplicationContext();
+  // @ts-ignore avaxToken, erc20Tokens exist in walletContext
   const {avaxToken, erc20Tokens} = useWalletStateContext();
   const {watchlistFavorites} = repo.watchlistFavoritesRepo;
   const navigation = useNavigation<StackNavigationProp<any>>();

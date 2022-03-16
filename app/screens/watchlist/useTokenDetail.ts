@@ -1,23 +1,10 @@
 import {useEffect, useMemo, useState} from 'react';
-import {
-  isERC20Token,
-  TokenWithBalance,
-  useWalletStateContext,
-} from '@avalabs/wallet-react-components';
+import {TokenWithBalance, useWalletStateContext} from '@avalabs/wallet-react-components';
 import useInAppBrowser from 'hooks/useInAppBrowser';
 import {useApplicationContext} from 'contexts/ApplicationContext';
-import {
-  coinsContractInfo,
-  CoinsContractInfoResponse,
-  coinsContractMarketChart,
-  coinsContractMarketChartRange,
-  simpleTokenPrice,
-  VsCurrencyType,
-} from '@avalabs/coingecko-sdk';
-import {useSearchableTokenList} from 'screens/portfolio/useSearchableTokenList';
-import moment from 'moment';
+import {CoinsContractInfoResponse} from '@avalabs/coingecko-sdk';
 import {CG_AVAX_TOKEN_ID} from 'screens/watchlist/WatchlistView';
-import Coingecko from 'hooks/Coingecko';
+import Coingecko from 'utils/Coingecko';
 
 export function useTokenDetail(tokenAddress: string) {
   const {repo} = useApplicationContext();
@@ -46,6 +33,7 @@ export function useTokenDetail(tokenAddress: string) {
   const [urlHostname, setUrlHostname] = useState<string>('');
   const {watchlistFavorites, saveWatchlistFavorites} =
     repo.watchlistFavoritesRepo;
+  // @ts-ignore avaxToken, erc20Tokens exist in walletContext
   const {erc20Tokens, avaxToken} = useWalletStateContext();
 
   const allTokens = useMemo(

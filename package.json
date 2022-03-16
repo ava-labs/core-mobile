@@ -18,7 +18,7 @@
     "build-storybook": "build-storybook"
   },
   "dependencies": {
-    "@avalabs/coingecko-sdk": "file:./../../Work/avalanche-sdks/packages/coingecko-sdk",
+    "@avalabs/coingecko-sdk": "2.0.0-alpha.4",
     "@avalabs/avalanche-wallet-sdk": "0.14.5",
     "@avalabs/bridge-sdk": "1.2.0-alpha.3",
     "@avalabs/blizzard-sdk": "2.0.0",

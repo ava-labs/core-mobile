@@ -68,7 +68,6 @@ class Coingecko {
 
       return chartData;
     } catch (e) {
-      console.error(e);
       return Promise.reject(e);
     }
   }

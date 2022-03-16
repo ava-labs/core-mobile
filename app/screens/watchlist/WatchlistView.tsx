@@ -47,11 +47,10 @@ type CombinedTokenType = ERC20WithBalance & SimplePriceInCurrency;
 
 const WatchlistView: FC<Props> = ({showFavorites, searchText}) => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-  const {selectedCurrency, currencyFormatter} = useApplicationContext().appHook;
+  const {currencyFormatter} = useApplicationContext().appHook;
   const {watchlistFavorites} =
     useApplicationContext().repo.watchlistFavoritesRepo;
-  // const {filteredTokenList, setSearchText, loadTokenList} =
-  //   useSearchableTokenList(false);
+  // @ts-ignore erc20Tokens and avaxToken exist but why it complains needs investigation
   const {erc20Tokens, avaxToken} = useWalletStateContext();
   const [combinedData, setCombinedData] = useState<CombinedTokenType[]>([]);
   const [filterBy, setFilterBy] = useState(WatchlistFilter.PRICE);
@@ -154,7 +153,9 @@ const WatchlistView: FC<Props> = ({showFavorites, searchText}) => {
           : `$${largeCurrencyFormatter(token?.vol24 ?? 0, 1)}`;
       }
     }
-
+    // rank is currently not displayed because an additional
+    // API call that returns a large data set would need to be made only
+    // to get that information
     return (
       <WatchListItem
         tokenName={token.name}

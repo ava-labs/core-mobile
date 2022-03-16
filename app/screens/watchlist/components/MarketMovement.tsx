@@ -43,7 +43,7 @@ const MarketMovement: FC<Props> = ({
     return `${hideDifference ? '' : formattedPrice}  ${
       hidePercentage ? '' : formattedPercent
     }`.trim();
-  }, [priceChange, percentChange]);
+  }, [priceChange, percentChange, filterBy, hideDifference, hidePercentage]);
 
   return (
     <AvaText.Caption

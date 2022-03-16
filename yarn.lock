@@ -56,8 +56,10 @@
     big.js "6.1.1"
     ethers "5.2.0"
 
-"@avalabs/coingecko-sdk@file:../../Work/avalanche-sdks/packages/coingecko-sdk":
-  version "2.0.0-alpha.1"
+"@avalabs/coingecko-sdk@2.0.0-alpha.4":
+  version "2.0.0-alpha.4"
+  resolved "https://registry.yarnpkg.com/@avalabs/coingecko-sdk/-/coingecko-sdk-2.0.0-alpha.4.tgz#cce3250bca08334d33fe8e1dbd77aa600abe8302"
+  integrity sha512-xMP5CLMewf795UFf5e1gun/D3rx7fqh5HMV3/XojkWJEy3vaBjuYZCYJyCHmcEc8u5D/avhd3qY1vOVUS9pWNw==
   dependencies:
     axios "^0.26.0"
 

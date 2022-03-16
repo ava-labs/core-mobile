@@ -20,6 +20,7 @@ module.exports = {
     "react-hooks/exhaustive-deps": "off",
     "react-native/no-inline-styles": "off",
     "@typescript-eslint/explicit-module-boundary-types": "off",
-    "@typescript-eslint/no-non-null-assertion": "off"
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/ban-ts-comment" : "off",
   }
 };
