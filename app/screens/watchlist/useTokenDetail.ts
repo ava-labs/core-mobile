@@ -17,6 +17,7 @@ import {
 import {useSearchableTokenList} from 'screens/portfolio/useSearchableTokenList';
 import moment from 'moment';
 import {CG_AVAX_TOKEN_ID} from 'screens/watchlist/WatchlistView';
+import Coingecko from 'hooks/Coingecko';
 
 export function useTokenDetail(tokenAddress: string) {
   const {repo} = useApplicationContext();
@@ -70,49 +71,25 @@ export function useTokenDetail(tokenAddress: string) {
   // get coingecko chart data.
   useEffect(() => {
     (async () => {
-      const rawData = await coinsContractMarketChart({
-        address: tokenAddress,
-        currency: 'usd' as VsCurrencyType,
-        days: chartDays,
-        id: 'avalanche',
-      });
-      const pd = rawData.prices.map(tu => {
-        return {x: tu[0], y: tu[1]};
-      });
-
-      const dates = rawData.prices.map(value => value[0]);
-      const prices = rawData.prices.map(value => value[1]);
-
-      const minDate = Math.min(...dates);
-      const maxDate = Math.max(...dates);
-      const minPrice = Math.min(...prices);
-      const maxPrice = Math.max(...prices);
-      const diffValue = prices[prices.length - 1] - prices[0];
-      const average = (prices[prices.length - 1] + prices[0]) / 2;
-      const percentChange = (diffValue / average) * 100;
-
-      setRanges({
-        minDate,
-        maxDate,
-        minPrice,
-        maxPrice,
-        diffValue,
-        percentChange,
-      });
-      setChartData(pd);
+      try {
+        const data = await Coingecko.fetchChartData(tokenAddress, chartDays);
+        setChartData(data.dataPoints);
+        setRanges(data.ranges);
+      } catch (e) {
+        // Coingecko does not support all tokens chart data. So here we'll
+        // simply set to empty to hide the loading state.
+        setChartData([]);
+      }
     })();
   }, [token, chartDays]);
 
   // get market cap, volume, etc
   useEffect(() => {
     (async () => {
-      const rawData = await coinsContractInfo({
-        address: tokenAddress,
-        id: 'avalanche',
-      });
-      setContractInfo(rawData);
-      if (rawData?.links?.homepage?.[0]) {
-        const url = rawData?.links?.homepage?.[0]
+      const data = await Coingecko.fetchContractInfo(tokenAddress);
+      setContractInfo(data);
+      if (data?.links?.homepage?.[0]) {
+        const url = data?.links?.homepage?.[0]
           ?.replace(/^https?:\/\//, '')
           ?.replace('www.', '');
         setUrlHostname(url);

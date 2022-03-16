@@ -210,7 +210,7 @@ const TokenDetail: FC<any> = () => {
               </AvaText.Caption>
               <SparklineChart
                 interactive
-                data={chartData}
+                data={chartData ?? []}
                 yRange={[ranges.minPrice, ranges.maxPrice]}
                 xRange={[ranges.minDate, ranges.maxDate]}
                 negative={ranges.diffValue < 0}
