@@ -23,7 +23,7 @@
     "@avalabs/bridge-sdk": "1.2.0-alpha.3",
     "@avalabs/covalent-sdk": "2.0.0",
     "@avalabs/blizzard-sdk": "2.0.0",
-    "@avalabs/wallet-react-components": "1.24.6",
+    "@avalabs/wallet-react-components": "1.28.0",
     "@babel/plugin-syntax-object-rest-spread": "^7.8.3",
     "@connectedcars/react-native-slide-charts": "^1.0.5",
     "@eliav2/react-native-collapsible-view": "^1.4.0",
