@@ -6,7 +6,6 @@ import {useNavigation} from '@react-navigation/native';
 import {
   TokenWithBalance,
   useAccountsContext,
-  useNetworkContext,
 } from '@avalabs/wallet-react-components';
 import {useSearchableTokenList} from 'screens/portfolio/useSearchableTokenList';
 import AppNavigation from 'navigation/AppNavigation';
@@ -188,19 +187,19 @@ const PortfolioView: FC<PortfolioProps> = memo(
   },
 );
 
+const AvalancheChainId = 1;
+
 const NftListViewScreen = () => {
   const {navigate} = useNavigation<StackNavigationProp<RootStackParamList>>();
   const {parseNftCollections} = useNftLoader();
-  const {network} = useNetworkContext()!;
   const {activeAccount} = useAccountsContext();
 
   useEffect(() => {
-    const chainID = 1 || Number.parseInt(network?.chainId ?? '0', 10);
+    const chainID = AvalancheChainId;
     const covalent = new Covalent(chainID, Config.COVALENT_API_KEY);
-    const addressC =
-      '0x470820fbbfca29de49c4a474d12af264856d2028' ||
-      '0xe4605d46fd0b3f8329d936a8b258d69276cba264' ||
-      activeAccount?.wallet.getAddressC();
+    const addressC = __DEV__
+      ? '0x470820fbbfca29de49c4a474d12af264856d2028' //address with lots of demo NFTs
+      : activeAccount?.wallet.getAddressC();
     console.log('chainID', chainID);
     console.log('address C', addressC);
     if (addressC) {
