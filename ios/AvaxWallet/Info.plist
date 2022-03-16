@@ -48,6 +48,7 @@
 		<string>Inter-Regular.ttf</string>
 		<string>Inter-Bold.ttf</string>
 		<string>Inter-SemiBold.ttf</string>
+		<string>Inter-ExtraBold.ttf</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
