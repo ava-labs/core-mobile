@@ -52,12 +52,38 @@ const AvaxTextBase: FC<AvaTextProps> = ({
   );
 };
 
+const ExtraLargeTitle: FC<AvaTextProps> = ({textStyle, children, ...rest}) => {
+  const theme = useApplicationContext().theme;
+  return (
+    <AvaxTextBase
+      {...rest}
+      style={[styles.extraLargeTitle, {color: theme.colorText1}, textStyle]}>
+      {children}
+    </AvaxTextBase>
+  );
+};
+
 const LargeTitleBold: FC<AvaTextProps> = ({textStyle, children, ...rest}) => {
   const theme = useApplicationContext().theme;
   return (
     <AvaxTextBase
       {...rest}
       style={[styles.largeTitleBold, {color: theme.colorText1}, textStyle]}>
+      {children}
+    </AvaxTextBase>
+  );
+};
+
+const LargeTitleRegular: FC<AvaTextProps> = ({
+  textStyle,
+  children,
+  ...rest
+}) => {
+  const theme = useApplicationContext().theme;
+  return (
+    <AvaxTextBase
+      {...rest}
+      style={[styles.largeTitleRegular, {color: theme.colorText1}, textStyle]}>
       {children}
     </AvaxTextBase>
   );
@@ -194,6 +220,17 @@ const TextBody4: FC<AvaTextProps> = ({textStyle, children, ...rest}) => {
   );
 };
 
+const TextLink: FC<AvaTextProps> = ({textStyle, children, ...rest}) => {
+  const {theme} = useApplicationContext();
+  return (
+    <AvaxTextBase
+      style={[styles.textLink, {color: theme.colorPrimary1}, textStyle]}
+      {...rest}>
+      {children}
+    </AvaxTextBase>
+  );
+};
+
 const TextTag: FC<AvaTextProps> = ({textStyle, children, ...rest}) => {
   const theme = useApplicationContext().theme;
   return (
@@ -292,7 +329,9 @@ const ActivityTotal: FC<AvaTextProps> = ({
 };
 
 const AvaText = {
+  ExtraLargeTitle: ExtraLargeTitle,
   LargeTitleBold: LargeTitleBold,
+  LargeTitleRegular: LargeTitleRegular,
   Heading1: TextHeading1,
   Heading2: TextHeading2,
   Heading3: TextHeading3,
@@ -300,17 +339,28 @@ const AvaText = {
   Body2: TextBody2,
   Body3: TextBody3,
   Body4: TextBody4, //this font configuration is not named in design at the time of writing
-  Tag: TextTag,
+  TextLink: TextLink, //this font configuration is not named in design at the time of writing
   ButtonLarge: TextButtonLarge,
   ButtonMedium: TextButtonMedium,
   ButtonSmall: TextButtonSmall,
-  ActivityTotal: ActivityTotal, //this font configuration is not named in design at the time of writing
   Caption: TextCaption,
+  ActivityTotal: ActivityTotal, //this font configuration is not named in design at the time of writing
+  Tag: TextTag,
 };
 
 const styles = StyleSheet.create({
+  extraLargeTitle: {
+    fontFamily: 'Inter-ExtraBold',
+    fontSize: 64,
+    lineHeight: 78,
+  },
   largeTitleBold: {
     fontFamily: 'Inter-Bold',
+    fontSize: 36,
+    lineHeight: 44,
+  },
+  largeTitleRegular: {
+    fontFamily: 'Inter-Regular',
     fontSize: 36,
     lineHeight: 44,
   },
@@ -349,6 +399,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 19,
   },
+  textLink: {
+    fontFamily: 'Inter-SemiBold',
+    fontSize: 14,
+    lineHeight: 17,
+  },
   textTag: {
     fontFamily: 'Inter-Bold',
     fontSize: 16,
@@ -375,10 +430,9 @@ const styles = StyleSheet.create({
     lineHeight: 17,
   },
   textCaption: {
-    fontFamily: 'Inter',
+    fontFamily: 'Inter-Regular',
     fontSize: 12,
     lineHeight: 15,
-    fontWeight: '600',
   },
 });
 

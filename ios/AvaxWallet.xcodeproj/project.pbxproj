@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		00E356F31AD99517003FC87E /* AvaxWalletTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* AvaxWalletTests.m */; };
 		023D45C113F1FF6CF5F92CFE /* libPods-AvaxWallet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F4BA81B3D3760A71D5CFCA4 /* libPods-AvaxWallet.a */; };
+		0B1C89B127E4D7EF00C19912 /* Inter-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0B1C89B027E4D7EF00C19912 /* Inter-ExtraBold.ttf */; };
 		0B66D74B270B75C3006530A8 /* Inter-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0B66D74A270B75C3006530A8 /* Inter-SemiBold.ttf */; };
 		0BA5138C27D234C200A25188 /* FixBridging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BA5138B27D234C200A25188 /* FixBridging.swift */; };
 		0BAAA734269F480900722C85 /* Inter-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0BAAA732269F480900722C85 /* Inter-Regular.ttf */; };
@@ -34,6 +35,7 @@
 		00E356EE1AD99517003FC87E /* AvaxWalletTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AvaxWalletTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		00E356F11AD99517003FC87E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		00E356F21AD99517003FC87E /* AvaxWalletTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AvaxWalletTests.m; sourceTree = "<group>"; };
+		0B1C89B027E4D7EF00C19912 /* Inter-ExtraBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Inter-ExtraBold.ttf"; path = "../app/assets/fonts/Inter-ExtraBold.ttf"; sourceTree = "<group>"; };
 		0B66D74A270B75C3006530A8 /* Inter-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Inter-SemiBold.ttf"; sourceTree = "<group>"; };
 		0BA5138A27D234C200A25188 /* AvaxWallet-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AvaxWallet-Bridging-Header.h"; sourceTree = "<group>"; };
 		0BA5138B27D234C200A25188 /* FixBridging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FixBridging.swift; sourceTree = "<group>"; };
@@ -154,6 +156,7 @@
 		D43AD4CD4B1C41E484E6B9ED /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				0B1C89B027E4D7EF00C19912 /* Inter-ExtraBold.ttf */,
 				0B66D74A270B75C3006530A8 /* Inter-SemiBold.ttf */,
 				0BAAA733269F480900722C85 /* Inter-Bold.ttf */,
 				0BAAA732269F480900722C85 /* Inter-Regular.ttf */,
@@ -271,6 +274,7 @@
 				0BAAA734269F480900722C85 /* Inter-Regular.ttf in Resources */,
 				0B66D74B270B75C3006530A8 /* Inter-SemiBold.ttf in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
+				0B1C89B127E4D7EF00C19912 /* Inter-ExtraBold.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
