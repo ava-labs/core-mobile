@@ -13,7 +13,7 @@ interface Props {
   data: {x: number; y: number}[];
   yRange: [number, number];
   xRange: [number, number];
-  isNegative?: boolean;
+  negative?: boolean;
   interactive?: boolean;
 }
 
@@ -24,9 +24,11 @@ const SparklineChart: FC<Props> = ({
   data,
   yRange,
   xRange,
-  isNegative = false,
+  negative = false,
+  interactive = false,
 }) => {
   const theme = useApplicationContext().theme;
+  const {currencyFormatter} = useApplicationContext().appHook;
 
   const defaultAreaChartFillGradient = (
     props: GradientProps,
@@ -39,7 +41,7 @@ const SparklineChart: FC<Props> = ({
           offset="0%"
           stopOpacity="0.5"
         />
-        <Stop stopColor={theme.listItemBg} offset="100%" stopOpacity="0.2" />
+        <Stop stopColor={theme.background} offset="100%" stopOpacity="0.1" />
       </LinearGradient>
     );
   };
@@ -55,10 +57,23 @@ const SparklineChart: FC<Props> = ({
       data={data}
       paddingBottom={16}
       alwaysShowIndicator={false}
-      chartLineColor={isNegative ? theme.colorError : theme.colorSuccess}
-      chartLineWidth={1}
+      chartLineColor={negative ? theme.colorError : theme.colorSuccess}
+      chartLineWidth={interactive ? 2 : 1}
       cursorProps={{
-        displayCursor: false,
+        displayCursor: interactive,
+        cursorMarkerHeight: 12,
+        cursorMarkerWidth: 12,
+        cursorColor: theme.alternateBackground,
+        cursorBorderColor: theme.alternateBackground,
+      }}
+      toolTipProps={{
+        displayToolTip: interactive,
+        borderRadius: 20,
+        toolTipTextRenderers: [
+          ({scaleY, y}) => ({
+            text: currencyFormatter(scaleY.invert(y).toFixed(6).toString()),
+          }),
+        ],
       }}
       yAxisProps={{
         horizontalLineColor: theme.transparent,
@@ -68,7 +83,7 @@ const SparklineChart: FC<Props> = ({
       yRange={yRange}
       xRange={xRange}
       renderFillGradient={props =>
-        defaultAreaChartFillGradient(props, isNegative)
+        defaultAreaChartFillGradient(props, negative)
       }
     />
   );
