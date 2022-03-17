@@ -44,8 +44,8 @@ const MovementIndicator: FC<Props> = ({isNegative = false, metric}) => {
 const styles = StyleSheet.create({
   indicator: {
     paddingHorizontal: 16,
-    width: 32,
-    height: 32,
+    width: 40,
+    height: 40,
     borderRadius: 20,
     overflow: 'hidden',
     justifyContent: 'center',
