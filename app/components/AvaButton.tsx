@@ -3,6 +3,7 @@ import {Pressable, StyleProp, StyleSheet, View, ViewStyle} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from './AvaText';
 import {Space} from 'components/Space';
+import {Opacity12, Opacity15} from 'resources/Constants';
 
 interface BaseProps {
   onPress?: () => void;
@@ -69,8 +70,10 @@ const BtnPrimary: FC<BaseProps> = ({onPress, disabled, children, style}) => {
       style={[
         {
           alignItems: 'center',
-          borderRadius: 8,
-          backgroundColor: disabled ? theme.colorDisabled : theme.colorPrimary1,
+          borderRadius: 25,
+          backgroundColor: disabled
+            ? theme.alternateBackground + Opacity12
+            : theme.alternateBackground,
         },
         style,
       ]}>
@@ -88,11 +91,9 @@ const BtnSecondary: FC<BaseProps> = ({onPress, disabled, children, style}) => {
       style={[
         {
           alignItems: 'center',
-          borderColor: disabled ? theme.colorDisabled : theme.colorPrimary1,
-          backgroundColor: theme.transparent,
+          backgroundColor: theme.alternateBackground + Opacity15,
           justifyContent: 'center',
-          borderRadius: 8,
-          borderWidth: 2,
+          borderRadius: 25,
         },
         style,
       ]}>
@@ -110,7 +111,6 @@ const BtnText: FC<BaseProps> = ({onPress, disabled, children, style}) => {
       style={[
         {
           alignItems: 'center',
-          height: 48,
           justifyContent: 'center',
           backgroundColor: theme.transparent,
         },
@@ -136,7 +136,7 @@ const BtnPrimaryLarge: FC<BaseProps> = ({
       style={[styles.btnPrimaryLarge, style]}>
       <AvaText.ButtonLarge
         textStyle={{
-          color: disabled ? theme.colorText2 : textColor ?? theme.colorText3,
+          color: disabled ? theme.colorDisabled : textColor ?? theme.colorBg2,
         }}>
         {children}
       </AvaText.ButtonLarge>
@@ -152,7 +152,7 @@ const BtnPrimaryMedium: FC<BaseProps> = ({onPress, disabled, children}) => {
       onPress={onPress}
       style={styles.btnPrimaryMedium}>
       <AvaText.ButtonMedium
-        textStyle={{color: disabled ? theme.colorText2 : theme.colorText3}}>
+        textStyle={{color: disabled ? theme.colorDisabled : theme.colorBg2}}>
         {children}
       </AvaText.ButtonMedium>
     </BtnPrimary>
@@ -168,7 +168,7 @@ const BtnSecondaryLarge: FC<BaseProps> = ({onPress, disabled, children}) => {
       style={styles.btnSecondaryLarge}>
       <AvaText.ButtonLarge
         textStyle={{
-          color: disabled ? theme.colorDisabled : theme.colorPrimary1,
+          color: disabled ? theme.colorDisabled : theme.colorText1,
         }}>
         {children}
       </AvaText.ButtonLarge>
@@ -255,10 +255,12 @@ const styles = StyleSheet.create({
   btnTextLarge: {
     paddingHorizontal: 16,
     paddingVertical: 12,
+    height: 46,
   },
   btnTextMedium: {
     paddingHorizontal: 16,
     paddingVertical: 12,
+    height: 40,
   },
 });
 

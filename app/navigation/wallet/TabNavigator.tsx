@@ -105,7 +105,7 @@ const TabNavigator = () => {
         component={CustomTabBarFab}
         options={{
           tabBarIcon: () => (
-            <AddSVG color={theme.white} size={TAB_ICON_SIZE} hideCircle />
+            <AddSVG color={theme.colorBg2} size={TAB_ICON_SIZE} hideCircle />
           ),
           tabBarButton: props => <CustomTabBarFab {...props} />,
         }}
@@ -161,13 +161,13 @@ const CustomTabBarFab = ({children}: {children: ReactElement}) => {
       {/* necessary for spacing between the fab and bottle bar buttons */}
       <Space x={48} />
       <FloatingActionButton
-        backgroundColor={'#0A84FF'}
-        changeBackgroundColor={'#0A84FF'}
+        backgroundColor={theme.colorIcon1}
+        changeBackgroundColor={theme.colorIcon1}
         radius={110}
         size={48}
-        changeIconTextColor={'#000000'}
+        changeIconTextColor={theme.colorBg2}
         icon={children}
-        iconTextColor={'#FFFFFF'}>
+        iconTextColor={theme.colorBg2}>
         <ActionButtonItem />
         <ActionButtonItem
           buttonColor={theme.alternateBackground}

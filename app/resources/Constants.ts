@@ -1,5 +1,7 @@
 export const Opacity05 = '0D';
 export const Opacity10 = '1A';
+export const Opacity12 = '1E';
+export const Opacity15 = '26';
 export const Opacity50 = '7F';
 export const Opacity85 = 'D9';
 
@@ -23,6 +25,7 @@ export enum COLORS_DAY {
   colorText1 = '#1A1A1C',
   colorText2 = '#6C6C6E',
   colorText3 = '#FFFFFF',
+  colorText4 = '#6C6C6E',
   colorIcon1 = '#000000',
   colorIcon2 = '#6C6C6E',
   colorIcon3 = '#018433',
@@ -65,7 +68,7 @@ export enum COLORS_NIGHT {
   colorIcon2 = '#B4B4B7',
   colorIcon3 = '#53C26E',
   colorIcon4 = '#6C6C6E',
-  colorDisabled = '#58585B',
+  colorDisabled = '#464648',
   colorStroke = '#3A3A3C',
   colorStroke2 = '#B4B4B7',
   colorBg1 = '#000000',
