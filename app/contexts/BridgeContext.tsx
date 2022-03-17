@@ -11,10 +11,6 @@ export interface BridgeState {
   };
 }
 
-// export const defaultBridgeState: BridgeState = {
-//   bridgeTransactions: {},
-// };
-
 const BridgeContext = createContext<{
   createBridgeTransaction(tx: TrackerViewProps): Promise<void>;
   removeBridgeTransaction(tx: TrackerViewProps): Promise<void>;
@@ -34,38 +30,38 @@ export function useBridgeContext() {
 }
 
 function LocalBridgeProvider({children}: {children: any}) {
-  const [bridgeTransactions, setBridgeTransactions] = useState<BridgeState>({
+  const [bridgeState, setBridgeState] = useState<BridgeState>({
     bridgeTransactions: {},
   });
 
   async function createBridgeTransaction(bridgeTransaction: TrackerViewProps) {
     const newBridgeState = {
-      ...bridgeTransactions,
+      ...bridgeState,
       bridgeTransactions: {
-        ...bridgeTransactions.bridgeTransactions,
+        ...bridgeState.bridgeTransactions,
         [bridgeTransaction.sourceTxHash]: {
           ...bridgeTransaction,
           createdAt:
-            bridgeTransactions.bridgeTransactions?.[
-              bridgeTransaction.sourceTxHash
-            ]?.createdAt || new Date(),
+            bridgeState.bridgeTransactions?.[bridgeTransaction.sourceTxHash]
+              ?.createdAt || new Date(),
         },
       },
     };
 
-    setBridgeTransactions(newBridgeState);
+    setBridgeState(newBridgeState);
   }
 
   async function removeBridgeTransaction(bridgeTransaction: TrackerViewProps) {
     const {[bridgeTransaction.sourceTxHash]: unused, ...rest} =
-      bridgeTransactions.bridgeTransactions;
-    setBridgeTransactions({...bridgeTransactions, bridgeTransactions: rest});
+      bridgeState.bridgeTransactions;
+
+    setBridgeState({...bridgeState, bridgeTransactions: rest});
   }
 
   return (
     <BridgeContext.Provider
       value={{
-        ...bridgeTransactions,
+        ...bridgeState,
         createBridgeTransaction,
         removeBridgeTransaction,
       }}>

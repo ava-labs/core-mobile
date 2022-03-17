@@ -21,6 +21,7 @@ import {ExitEvents, ExitPromptAnswers, ShowExitPrompt} from 'AppHook';
 import {OnboardScreenStack} from 'navigation/OnboardScreenStack';
 import {createStackNavigator} from '@react-navigation/stack';
 import useDevDebugging from 'utils/debugging/DevDebugging';
+import {useLoadBridgeConfig} from 'screens/bridge/hooks/useLoadBridgeConfig';
 
 const RootStack = createStackNavigator();
 
@@ -96,6 +97,7 @@ const RootScreenStack = () => {
 export default function App() {
   const {configure} = useDevDebugging();
   const isProduction = process.env.NODE_ENV === 'production';
+  useLoadBridgeConfig();
   if (!isProduction) {
     configure();
   }

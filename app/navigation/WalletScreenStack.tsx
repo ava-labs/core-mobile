@@ -49,6 +49,7 @@ import BridgeScreenStack from 'navigation/wallet/BridgeScreenStack';
 import NFTScreenStack from 'navigation/wallet/NFTScreenStack';
 import {NFTItemData} from 'screens/nft/NftCollection';
 import NftManage from 'screens/nft/NftManage';
+import BridgeTransactionStatus from 'screens/bridge/BridgeTransactionStatus';
 
 type Props = {
   onExit: () => void;
@@ -74,6 +75,11 @@ export type RootStackParamList = {
   [AppNavigation.Wallet.OwnedTokenDetail]: {tokenId?: string} | undefined;
   [AppNavigation.Wallet.ActivityDetail]: {tx?: TxType};
   [AppNavigation.Wallet.Bridge]: undefined;
+  [AppNavigation.Bridge.BridgeTransactionStatus]: {
+    blockchain: string;
+    txHash: string;
+    txTimestamp: string;
+  };
   [AppNavigation.Modal.AccountBottomSheet]: undefined;
   [AppNavigation.Modal.AccountDropDown]: undefined;
   [AppNavigation.Modal.ReceiveOnlyBottomSheet]: undefined;
@@ -331,6 +337,13 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
           }}
           name={AppNavigation.Wallet.Legal}
           component={WebViewScreen}
+        />
+        <RootStack.Screen
+          options={{
+            ...SubHeaderOptions('Transaction Details'),
+          }}
+          name={AppNavigation.Bridge.BridgeTransactionStatus}
+          component={BridgeTransactionStatus}
         />
         <RootStack.Screen
           name={AppNavigation.Wallet.Bridge}
