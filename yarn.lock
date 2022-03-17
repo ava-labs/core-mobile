@@ -48,12 +48,12 @@
   dependencies:
     axios "^0.21.4"
 
-"@avalabs/bridge-sdk@1.2.0-alpha.3":
-  version "1.2.0-alpha.3"
-  resolved "https://registry.yarnpkg.com/@avalabs/bridge-sdk/-/bridge-sdk-1.2.0-alpha.3.tgz#26e7e14c9de0ff126612baf3b7e2739ee59adbd8"
-  integrity sha512-AiRgQpy7wrSj3MRfG7iX2Es39DBsZwmPeZP32t/ce8LCWkZo+kZLn7ojfM/T1QL35wyRtmCVNLYsGeaamtWYEQ==
+"@avalabs/bridge-sdk@2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@avalabs/bridge-sdk/-/bridge-sdk-2.0.0.tgz#4e958b95d52d8b5281db5a67f663657c0928d868"
+  integrity sha512-2TFN7UAZTE5azJVM75iOGjsy8A6zQDw1iVJyhtt1Qbu/EtZ172s5Rmcx6KYVU01OWQvKzYTIzUy3vXoibzkZSQ==
   dependencies:
-    "@avalabs/utils-sdk" "1.2.0-alpha.3"
+    "@avalabs/utils-sdk" "2.0.0"
     big.js "6.1.1"
     ethers "5.2.0"
 
@@ -71,10 +71,10 @@
   dependencies:
     axios "^0.21.4"
 
-"@avalabs/utils-sdk@1.2.0-alpha.3":
-  version "1.2.0-alpha.3"
-  resolved "https://registry.yarnpkg.com/@avalabs/utils-sdk/-/utils-sdk-1.2.0-alpha.3.tgz#b41380a75e6c60aa83d6d9bf50d6328a0df58625"
-  integrity sha512-SZPXSAwMNM4dWJU/TOmmeJewp5tjORFwT2HFjWdr6/CqrzwUhq0uMoOAsOtYB161D05/DiS7GNOHlKJ1tBFIQQ==
+"@avalabs/utils-sdk@2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@avalabs/utils-sdk/-/utils-sdk-2.0.0.tgz#dbb8f639c4c5dac85cb59b5f5dc05c91050ab84b"
+  integrity sha512-3cp8uHONpNmt7MNne70rdnPIVaLk9/W+xS7J+tL3+qMuWcfYax77b1s7O0afIThBO9G70kzGxbMktaPaSHnlYQ==
 
 "@avalabs/wallet-react-components@1.28.2":
   version "1.28.2"
