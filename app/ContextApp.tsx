@@ -19,6 +19,7 @@ import {Platform} from 'react-native';
 import JailMonkey from 'jail-monkey';
 import JailbrokenWarning from 'screens/onboarding/JailbrokenWarning';
 import {WalletStateContextProvider} from '@avalabs/wallet-react-components';
+import {BridgeProvider} from 'contexts/BridgeContext';
 
 export default function ContextApp() {
   const [isWarmingUp, setIsWarmingUp] = useState(true);
@@ -27,7 +28,6 @@ export default function ContextApp() {
 
   useEffect(() => {
     if (JailMonkey.isJailBroken()) {
-      console.log('jailbroken');
       setShowSplash(false);
       setShowJailBroken(true);
     } else {
@@ -38,7 +38,7 @@ export default function ContextApp() {
     }
     AsyncStorage.getItem(SECURE_ACCESS_SET).then(result => {
       if (result && Platform.OS === 'android') {
-        BiometricsSDK.warmup().then(() => {});
+        BiometricsSDK.warmup().then();
       } else {
         setIsWarmingUp(false);
       }
@@ -52,11 +52,13 @@ export default function ContextApp() {
           <WalletContextProvider>
             <WalletStateContextProvider>
               <ApplicationContextProvider>
-                {!showSplash && showJailBroken && (
-                  <JailbrokenWarning onOK={() => setShowJailBroken(false)} />
-                )}
-                {showSplash && !showJailBroken && <Splash />}
-                {!isWarmingUp && !showJailBroken && <App />}
+                <BridgeProvider>
+                  {!showSplash && showJailBroken && (
+                    <JailbrokenWarning onOK={() => setShowJailBroken(false)} />
+                  )}
+                  {showSplash && !showJailBroken && <Splash />}
+                  {!isWarmingUp && !showJailBroken && <App />}
+                </BridgeProvider>
               </ApplicationContextProvider>
             </WalletStateContextProvider>
           </WalletContextProvider>
