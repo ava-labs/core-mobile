@@ -31,7 +31,11 @@ import {StackNavigationProp} from '@react-navigation/stack';
 import AvaButton from 'components/AvaButton';
 import AppNavigation from 'navigation/AppNavigation';
 
-const BridgeTransactionStatus: FC = () => {
+interface Props {
+  fromStack?: boolean;
+}
+
+const BridgeTransactionStatus: FC<Props> = ({fromStack}) => {
   const {theme} = useApplicationContext();
   const navigation = useNavigation<StackNavigationProp<BridgeStackParamList>>();
   const {blockchain, txHash, txTimestamp} =
@@ -67,26 +71,12 @@ const BridgeTransactionStatus: FC = () => {
     transactionDetails,
     bridgeAssets,
   );
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerRight: () => (
-        <AvaButton.TextLarge
-          onPress={() => {
-            navigation.navigate(AppNavigation.Bridge.HideWarning);
-          }}>
-          Hide
-        </AvaButton.TextLarge>
-      ),
-    });
-  }, []);
-
   useLayoutEffect(() => {
     if (txProps) {
       navigation.setOptions({
         title: `Transaction ${txProps.complete ? 'Details' : 'Status'}`,
         headerRight: () =>
-          !txProps.complete ? (
+          fromStack ? (
             <AvaButton.TextLarge
               onPress={() => {
                 navigation.navigate(AppNavigation.Bridge.HideWarning);
