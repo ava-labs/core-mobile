@@ -26,10 +26,6 @@ export type BridgeStackParamList = {
 
 const BridgeStack = createStackNavigator<BridgeStackParamList>();
 
-const BridgeTransactionStatusFromStack = () => (
-  <BridgeTransactionStatus fromStack />
-);
-
 function BridgeScreenStack() {
   return (
     <BridgeStack.Navigator>
@@ -45,7 +41,7 @@ function BridgeScreenStack() {
           ...SubHeaderOptions('Transaction Status'),
         }}
         name={AppNavigation.Bridge.BridgeTransactionStatus}
-        component={BridgeTransactionStatusFromStack}
+        component={BridgeTransactionStatus}
       />
       <BridgeStack.Group screenOptions={{presentation: 'transparentModal'}}>
         <BridgeStack.Screen
