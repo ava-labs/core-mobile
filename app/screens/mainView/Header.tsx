@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React from 'react';
 import {Image, StyleSheet, View} from 'react-native';
 import ImgButtonAva from 'components/ImgButtonAva';
 import {useApplicationContext} from 'contexts/ApplicationContext';
