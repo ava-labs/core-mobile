@@ -115,6 +115,7 @@ enum AddressBookScreens {
 enum BridgeScreens {
   Bridge = 'BridgeScreens.Swap',
   BridgeTransactionStatus = 'BridgeScreens.BridgeTransactionStatus',
+  HideWarning = 'BridgeScreens.HideWarning',
 }
 
 const AppNavigation = {

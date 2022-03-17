@@ -25,6 +25,9 @@ import {StyleSheet, View} from 'react-native';
 import AppNavigation from 'navigation/AppNavigation';
 import {useNavigation} from '@react-navigation/native';
 import Spinner from 'components/Spinner';
+import LinkSVG from 'components/svg/LinkSVG';
+import {Space} from 'components/Space';
+import useInAppBrowser from 'hooks/useInAppBrowser';
 
 type TransactionBridgeItem = BridgeTransaction &
   TransactionNormal &
@@ -50,12 +53,10 @@ const BridgeTransactionItem: FC<BridgeTransactionItemProps> = ({
   const {transactionDetails, bridgeAssets, setTransactionDetails} =
     useBridgeSDK();
   const navigation = useNavigation();
+  const {openUrl} = useInAppBrowser();
+  let fallbackRunning = false;
 
   const pending = 'complete' in item && !item.complete;
-
-  if (pending) {
-    console.log('pending');
-  }
 
   const txProps: TrackerViewProps | undefined =
     pending && item?.sourceTxHash
@@ -75,12 +76,38 @@ const BridgeTransactionItem: FC<BridgeTransactionItemProps> = ({
         )
       : undefined;
 
-  useEffect(() => {
-    if (txProps?.complete) {
-      ShowSnackBar(`You have received ${txProps.amount} ${txProps.symbol}`);
-      removeBridgeTransaction({...txProps}).then();
+  // Currently there's a bug where txProps.complete never returns true.
+  // this function will remove the pending transaction if `confirmationCount > requiredConfirmationCount`
+  // but part of the in the SDK is that useTxTracker will keep running in the background and making requests.
+  // The bridge team is aware of that and is working on a fix.
+  function fallbackCountdown() {
+    let seconds = 60;
+    function tick() {
+      seconds--;
+      if (seconds > 0) {
+        setTimeout(tick, 1000);
+      } else {
+        removeBridgeTransaction({...txProps}).then();
+      }
     }
-  }, [txProps?.complete]);
+    tick();
+  }
+
+  useEffect(() => {
+    if (txProps) {
+      if (txProps?.complete) {
+        ShowSnackBar(`You have received ${txProps.amount} ${txProps.symbol}`);
+        removeBridgeTransaction({...txProps}).then();
+      } else if (
+        txProps.confirmationCount > txProps.requiredConfirmationCount
+      ) {
+        if (!fallbackRunning) {
+          fallbackRunning = true;
+          fallbackCountdown();
+        }
+      }
+    }
+  }, [txProps?.complete, txProps?.confirmationCount]);
 
   function openTransactionStatus() {
     navigation.navigate(AppNavigation.Bridge.BridgeTransactionStatus, {
@@ -117,30 +144,26 @@ const BridgeTransactionItem: FC<BridgeTransactionItemProps> = ({
           : 'Ethereum → Avalanche'
       }
       rightComponent={
-        pending ? (
-          <View>
-            <AvaText.ActivityTotal ellipsizeMode={'tail'}>
-              ${item.amount.toString()} {item.symbol}
-            </AvaText.ActivityTotal>
-            {txProps && (
-              <AvaText.Heading3 textStyle={{marginEnd: 8}}>
-                {txProps.confirmationCount > // to avoid showing 16/15 since confirmations keep going up
-                txProps.requiredConfirmationCount
-                  ? txProps.requiredConfirmationCount
-                  : txProps.confirmationCount}
-                /{txProps.requiredConfirmationCount}
-              </AvaText.Heading3>
-            )}
-          </View>
-        ) : (
+        <View style={{justifyContent: 'center', alignItems: 'flex-end'}}>
           <AvaText.ActivityTotal ellipsizeMode={'tail'}>
-            ${item.amountDisplayValue} {item.tokenSymbol}
+            {pending ? item.amount.toString() : item.amountDisplayValue}{' '}
+            {pending ? item.symbol : item.tokenSymbol}
           </AvaText.ActivityTotal>
-        )
+          {item.explorerLink && (
+            <>
+              <Space y={8} />
+              <LinkSVG color={theme.white} />
+            </>
+          )}
+        </View>
       }
       embedInCard
       onPress={() => {
-        pending ? openTransactionStatus() : onPress();
+        if (pending) {
+          openTransactionStatus();
+        } else if (item.explorerLink) {
+          openUrl(item.explorerLink).then();
+        }
       }}
     />
   );
