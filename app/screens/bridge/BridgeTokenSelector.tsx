@@ -1,10 +1,5 @@
 import React, {useMemo, useState} from 'react';
-import {
-  ActivityIndicator,
-  FlatList,
-  ListRenderItemInfo,
-  View,
-} from 'react-native';
+import {ActivityIndicator, ListRenderItemInfo, View} from 'react-native';
 import Loader from 'components/Loader';
 import {Space} from 'components/Space';
 import {
