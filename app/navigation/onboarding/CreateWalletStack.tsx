@@ -5,15 +5,10 @@ import {useNavigation} from '@react-navigation/native';
 import CheckMnemonic from 'screens/onboarding/CheckMnemonic';
 import CreatePIN from 'screens/onboarding/CreatePIN';
 import BiometricLogin from 'screens/onboarding/BiometricLogin';
-import {
-  createStackNavigator,
-  StackNavigationProp,
-} from '@react-navigation/stack';
+import {createStackNavigator, StackNavigationProp} from '@react-navigation/stack';
 import {MainHeaderOptions} from 'navigation/NavUtils';
-import ModalContainer from 'components/ModalContainer';
-import AvaText from 'components/AvaText';
-import AvaButton from 'components/AvaButton';
 import {useApplicationContext} from 'contexts/ApplicationContext';
+import WarningModal from 'components/WarmingModal';
 
 type CreateWalletStackParamList = {
   [AppNavigation.CreateWallet.CreateWallet]: undefined;
@@ -43,7 +38,7 @@ const CreateWalletStack: () => JSX.Element = () => {
         <CreateWalletS.Screen
           options={{presentation: 'transparentModal'}}
           name={AppNavigation.CreateWallet.ProtectFunds}
-          component={WarningModal}
+          component={CreateWalletWarningModal}
         />
         <CreateWalletS.Screen
           options={MainHeaderOptions('Verify Phrase')}
@@ -77,7 +72,7 @@ const CreateWalletScreen = () => {
   return <CreateWallet onSavedMyPhrase={onSavedMyPhrase} />;
 };
 
-const WarningModal = () => {
+const CreateWalletWarningModal = () => {
   const {navigate, goBack} =
     useNavigation<StackNavigationProp<CreateWalletStackParamList>>();
 
@@ -91,21 +86,17 @@ const WarningModal = () => {
   };
 
   return (
-    <ModalContainer>
-      <AvaText.Heading2 textStyle={{marginTop: 8, textAlign: 'center'}}>
-        Protect Your Funds
-      </AvaText.Heading2>
-      <AvaText.Body2 textStyle={{textAlign: 'center', marginTop: 16}}>
-        Losing this phrase will result in lost funds. Please be sure to store it
-        in a secure location.
-      </AvaText.Body2>
-      <AvaButton.PrimaryLarge style={{marginTop: 28}} onPress={onUnderstand}>
-        I understand
-      </AvaButton.PrimaryLarge>
-      <AvaButton.TextLarge style={{marginTop: 16}} onPress={onBack}>
-        Back
-      </AvaButton.TextLarge>
-    </ModalContainer>
+    <WarningModal
+      title={'Protect your funds'}
+      message={
+        ' Losing this phrase will result in lost funds. Please be sure to store it\n' +
+        '        in a secure location.'
+      }
+      actionText={'I understand'}
+      dismissText={'Back'}
+      onAction={onUnderstand}
+      onDismiss={onBack}
+    />
   );
 };
 
