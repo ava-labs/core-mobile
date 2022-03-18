@@ -1,4 +1,4 @@
-import React, {useMemo} from 'react';
+import React from 'react';
 import AppNavigation from 'navigation/AppNavigation';
 import {
   createStackNavigator,
@@ -24,7 +24,7 @@ const NFTSendStack = createStackNavigator<NFTSendStackParamList>();
 
 export default function NFTSendScreenStack() {
   const {params} = useRoute<RouteProp<NFTStackParamList>>();
-  const item = useMemo(() => params!.nft, [params]) as NFTItemData;
+  const item = params?.nft as NFTItemData;
 
   return (
     <SendNFTContextProvider nft={item}>

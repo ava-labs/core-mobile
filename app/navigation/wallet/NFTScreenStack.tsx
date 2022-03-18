@@ -1,4 +1,4 @@
-import React, {useMemo} from 'react';
+import React from 'react';
 import AppNavigation from 'navigation/AppNavigation';
 import {
   createStackNavigator,
@@ -21,7 +21,7 @@ const NFTStack = createStackNavigator<NFTStackParamList>();
 
 function NFTScreenStack() {
   const {params} = useRoute<RouteProp<RootStackParamList>>();
-  const item = useMemo(() => params!.nft, [params]) as NFTItemData;
+  const item = params?.nft as NFTItemData;
 
   return (
     <NFTStack.Navigator

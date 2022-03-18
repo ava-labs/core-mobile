@@ -40,7 +40,7 @@ export default function NftReview({onSuccess}: NftReviewScreenProps) {
 
   const netFeeString = useMemo(() => {
     return fees.sendFeeAvax
-      ? Number.parseFloat(fees.sendFeeAvax).toFixed(6).toString()
+      ? Number.parseFloat(fees.sendFeeAvax).toFixed(6)
       : '-';
   }, [fees.sendFeeAvax]);
 
