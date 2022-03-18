@@ -12,7 +12,7 @@ function HomeSVG({selected, size = 32}: Prop) {
 
   const svgColor = selected
     ? context.theme.alternateBackground
-    : context.theme.colorBg2;
+    : context.theme.colorIcon4;
   return (
     <Svg width={size} height={size} viewBox="0 0 32 33" fill="none">
       <Path
