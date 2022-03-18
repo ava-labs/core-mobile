@@ -1,42 +1,41 @@
 import React, {useEffect, useMemo} from 'react';
-import {ActivityIndicator, View} from 'react-native';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import {Space} from 'components/Space';
+import {ActivityIndicator, StyleSheet, View} from 'react-native';
 import AvaText from 'components/AvaText';
-import {useNavigation} from '@react-navigation/native';
 import DotSVG from 'components/svg/DotSVG';
+import {Space} from 'components/Space';
 import Separator from 'components/Separator';
-import {Row} from 'components/Row';
+import {useApplicationContext} from 'contexts/ApplicationContext';
+import Avatar from 'components/Avatar';
+import NetworkFeeSelector from 'components/NetworkFeeSelector';
+import AppNavigation from 'navigation/AppNavigation';
+import FlexSpacer from 'components/FlexSpacer';
 import AvaButton from 'components/AvaButton';
 import {Opacity10} from 'resources/Constants';
-import FlexSpacer from 'components/FlexSpacer';
-import NetworkFeeSelector from 'components/NetworkFeeSelector';
-import {useSendTokenContext} from 'contexts/SendTokenContext';
-import {StackNavigationProp} from '@react-navigation/stack';
-import {SendStackParamList} from 'navigation/wallet/SendScreenStack';
-import {useGasPrice} from 'utils/GasPriceHook';
-import AppNavigation from 'navigation/AppNavigation';
 import SendRow from 'components/SendRow';
+import {useGasPrice} from 'utils/GasPriceHook';
+import {useSendNFTContext} from 'contexts/SendNFTContext';
+import {useNavigation} from '@react-navigation/native';
+import {NFTStackParamList} from 'navigation/wallet/NFTScreenStack';
+import {StackNavigationProp} from '@react-navigation/stack';
 
-export default function ReviewSend({
-  onSuccess,
-}: {
+export type NftReviewScreenProps = {
   onSuccess: (transactionId: string) => void;
-}) {
-  const {theme, isDarkMode} = useApplicationContext();
-  const {goBack} = useNavigation<StackNavigationProp<SendStackParamList>>();
+};
+
+export default function NftReview({onSuccess}: NftReviewScreenProps) {
   const {
-    sendToken,
-    tokenLogo,
-    sendAmount,
-    fromAccount,
-    toAccount,
-    fees,
-    onSendNow,
+    sendToken: nft,
     sendStatus,
+    onSendNow,
     sendStatusMsg,
+    toAccount,
+    fromAccount,
+    fees,
+    canSubmit,
     transactionId,
-  } = useSendTokenContext();
+  } = useSendNFTContext();
+  const {theme} = useApplicationContext();
+  const {goBack} = useNavigation<StackNavigationProp<NFTStackParamList>>();
   const {gasPrice} = useGasPrice();
 
   const netFeeString = useMemo(() => {
@@ -55,7 +54,7 @@ export default function ReviewSend({
   }, [sendStatus, transactionId]);
 
   return (
-    <View style={{flex: 1}}>
+    <View style={styles.container}>
       <AvaText.Heading1 textStyle={{marginHorizontal: 16}}>
         Send
       </AvaText.Heading1>
@@ -70,7 +69,11 @@ export default function ReviewSend({
         <View style={{position: 'absolute'}}>
           <DotSVG fillColor={theme.colorBg1} size={72} />
         </View>
-        {tokenLogo()}
+        <Avatar.Custom
+          size={56}
+          name={nft.collection.contract_name}
+          logoUri={nft.external_data.image_256}
+        />
       </View>
       <View
         style={{
@@ -82,19 +85,24 @@ export default function ReviewSend({
           borderTopLeftRadius: 8,
           borderTopRightRadius: 8,
         }}>
-        <AvaText.Body2 textStyle={{textAlign: 'center'}}>Amount</AvaText.Body2>
+        <AvaText.Body2 textStyle={{textAlign: 'center'}}>
+          Collectible
+        </AvaText.Body2>
         <Space y={4} />
-        <Row style={{justifyContent: 'center', alignItems: 'flex-end'}}>
-          <AvaText.Heading1>{sendAmount}</AvaText.Heading1>
-          <Space x={4} />
-          <AvaText.Heading3>{sendToken?.symbol ?? ''}</AvaText.Heading3>
-        </Row>
-        <Space y={8} />
+        <AvaText.Heading1 textStyle={{alignSelf: 'center'}}>
+          #{nft.token_id}
+        </AvaText.Heading1>
+        <Space y={4} />
+        <AvaText.Heading3 textStyle={{alignSelf: 'center'}}>
+          {nft.collection.contract_name}
+        </AvaText.Heading3>
+        <Space y={18} />
         <SendRow
           label={'From'}
           title={fromAccount.title}
           address={fromAccount.address}
         />
+        <Space y={8} />
         <SendRow
           label={'To'}
           title={toAccount.title}
@@ -111,31 +119,19 @@ export default function ReviewSend({
           onWeightedGas={price => fees.setCustomGasPriceNanoAvax(price.value)}
           weights={{normal: 1, fast: 1.05, instant: 1.15, custom: 35}}
         />
-        <Space y={16} />
+        <Space y={18} />
         <Separator />
-        <Space y={32} />
-        <Row style={{justifyContent: 'space-between'}}>
-          <AvaText.Body2>Balance After Transaction</AvaText.Body2>
-          <AvaText.Heading2>
-            {fromAccount.balanceAfterTrx} {sendToken?.symbol ?? ''}
-          </AvaText.Heading2>
-        </Row>
-        <AvaText.Body3 textStyle={{alignSelf: 'flex-end'}}>
-          ${fromAccount.balanceAfterTrxUsd} USD
-        </AvaText.Body3>
         <FlexSpacer />
         {sendStatus !== 'Sending' && (
           <>
-            <AvaButton.PrimaryLarge onPress={onSendNow}>
+            <AvaButton.PrimaryLarge onPress={onSendNow} disabled={!canSubmit}>
               Send Now
             </AvaButton.PrimaryLarge>
             <Space y={16} />
             <AvaButton.PrimaryLarge
               onPress={() => goBack()}
               style={{
-                backgroundColor: isDarkMode
-                  ? theme.white + Opacity10
-                  : theme.colorBg1 + Opacity10,
+                backgroundColor: theme.white + Opacity10,
               }}>
               Cancel
             </AvaButton.PrimaryLarge>
@@ -158,3 +154,9 @@ export default function ReviewSend({
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});

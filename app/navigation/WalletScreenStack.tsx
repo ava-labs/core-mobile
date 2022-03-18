@@ -45,8 +45,10 @@ import {TxType} from 'screens/activity/ActivityList';
 import ActivityDetail from 'screens/activity/ActivityDetail';
 import EditGasLimitBottomSheet from 'screens/shared/EditGasLimitBottomSheet';
 import OwnedTokenDetail from 'screens/portfolio/OwnedTokenDetail';
-import BridgeSelectTokenBottomSheet from 'screens/bridge/BridgeSelectTokenBottomSheet';
 import BridgeScreenStack from 'navigation/wallet/BridgeScreenStack';
+import NFTScreenStack from 'navigation/wallet/NFTScreenStack';
+import {NFTItemData} from 'screens/nft/NftCollection';
+import NftManage from 'screens/nft/NftManage';
 
 type Props = {
   onExit: () => void;
@@ -65,6 +67,8 @@ export type RootStackParamList = {
     | {token?: TokenWithBalance; contact?: Contact}
     | undefined;
   [AppNavigation.Wallet.Swap]: undefined;
+  [AppNavigation.Wallet.NFTDetails]: {nft: NFTItemData};
+  [AppNavigation.Wallet.NFTManage]: undefined;
   [AppNavigation.Wallet.NetworkSelector]: undefined;
   [AppNavigation.Wallet.TokenDetail]: {address?: string} | undefined;
   [AppNavigation.Wallet.OwnedTokenDetail]: {tokenId?: string} | undefined;
@@ -281,6 +285,20 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
           }}
           name={AppNavigation.Wallet.Swap}
           component={SwapScreenStack}
+        />
+        <RootStack.Screen
+          options={{
+            headerShown: false,
+          }}
+          name={AppNavigation.Wallet.NFTDetails}
+          component={NFTScreenStack}
+        />
+        <RootStack.Screen
+          options={{
+            headerShown: false,
+          }}
+          name={AppNavigation.Wallet.NFTManage}
+          component={NftManage}
         />
         <RootStack.Screen
           options={{
