@@ -5,10 +5,13 @@ import {useNavigation} from '@react-navigation/native';
 import CheckMnemonic from 'screens/onboarding/CheckMnemonic';
 import CreatePIN from 'screens/onboarding/CreatePIN';
 import BiometricLogin from 'screens/onboarding/BiometricLogin';
-import {createStackNavigator, StackNavigationProp} from '@react-navigation/stack';
+import {
+  createStackNavigator,
+  StackNavigationProp,
+} from '@react-navigation/stack';
 import {MainHeaderOptions} from 'navigation/NavUtils';
 import {useApplicationContext} from 'contexts/ApplicationContext';
-import WarningModal from 'components/WarmingModal';
+import WarningModal from 'components/WarningModal';
 
 type CreateWalletStackParamList = {
   [AppNavigation.CreateWallet.CreateWallet]: undefined;
