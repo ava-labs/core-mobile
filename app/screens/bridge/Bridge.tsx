@@ -1,6 +1,7 @@
 import React, {FC, useMemo} from 'react';
 import {
   ActivityIndicator,
+  Alert,
   ListRenderItemInfo,
   Pressable,
   ScrollView,
@@ -181,8 +182,12 @@ const Bridge: FC = () => {
         txTimestamp: Date.now().toString(),
       });
     } catch (e) {
-      // user declined transaction
-      console.error(e);
+      const error = e as Error;
+      Alert.alert(
+        'Error Bridging',
+        error?.reason ??
+          'An unknown error has occurred. Bridging was halted. Please try again later',
+      );
       return;
     } finally {
       setPending(false);
