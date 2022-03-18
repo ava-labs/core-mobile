@@ -23,6 +23,7 @@ const AvaxTextBase: FC<AvaTextProps> = ({
   currency,
   hideTrailingCurrency,
   children,
+  ellipsizeMode,
   ...rest
 }) => {
   const {selectedCurrency, currencyFormatter} = useApplicationContext().appHook;
@@ -32,13 +33,19 @@ const AvaxTextBase: FC<AvaTextProps> = ({
     currency
   ) {
     return animated ? (
-      <Animated.Text {...rest}>
+      <Animated.Text
+        {...rest}
+        numberOfLines={ellipsizeMode ? 1 : undefined}
+        ellipsizeMode={ellipsizeMode}>
         {`${currencyFormatter(Number(children))} ${
           hideTrailingCurrency ? '' : selectedCurrency
         }`.trim()}
       </Animated.Text>
     ) : (
-      <Text {...rest}>
+      <Text
+        {...rest}
+        numberOfLines={ellipsizeMode ? 1 : undefined}
+        ellipsizeMode={ellipsizeMode}>
         {`${currencyFormatter(Number(children))} ${
           hideTrailingCurrency ? '' : selectedCurrency
         }`.trim()}
@@ -46,9 +53,19 @@ const AvaxTextBase: FC<AvaTextProps> = ({
     );
   }
   return animated ? (
-    <Animated.Text {...rest}>{children}</Animated.Text>
+    <Animated.Text
+      {...rest}
+      numberOfLines={ellipsizeMode ? 1 : undefined}
+      ellipsizeMode={ellipsizeMode}>
+      {children}
+    </Animated.Text>
   ) : (
-    <Text {...rest}>{children}</Text>
+    <Text
+      {...rest}
+      numberOfLines={ellipsizeMode ? 1 : undefined}
+      ellipsizeMode={ellipsizeMode}>
+      {children}
+    </Text>
   );
 };
 
@@ -105,23 +122,12 @@ const TextHeading1: FC<AvaTextProps> = ({
   );
 };
 
-const TextHeading2: FC<AvaTextProps> = ({
-  ellipsizeMode,
-  textStyle,
-  children,
-  ...rest
-}) => {
+const TextHeading2: FC<AvaTextProps> = ({textStyle, children, ...rest}) => {
   const theme = useApplicationContext().theme;
 
   return (
     <AvaxTextBase
-      ellipsizeMode={ellipsizeMode}
-      numberOfLines={ellipsizeMode ? 1 : undefined}
-      style={[
-        styles.heading2,
-        {color: theme.colorText1, flexShrink: ellipsizeMode ? 1 : 0},
-        textStyle,
-      ]}
+      style={[styles.heading2, {color: theme.colorText1}, textStyle]}
       {...rest}>
       {children}
     </AvaxTextBase>
@@ -129,7 +135,6 @@ const TextHeading2: FC<AvaTextProps> = ({
 };
 
 const TextHeading3: FC<AvaTextProps> = ({
-  ellipsizeMode,
   textStyle,
   children,
   currency,
@@ -139,35 +144,21 @@ const TextHeading3: FC<AvaTextProps> = ({
   return (
     <AvaxTextBase
       {...rest}
-      ellipsizeMode={ellipsizeMode}
-      numberOfLines={ellipsizeMode ? 1 : undefined}
       currency={currency}
-      style={[
-        styles.heading3,
-        {flexShrink: ellipsizeMode ? 1 : 0, color: theme.colorText1},
-        textStyle,
-      ]}>
+      style={[styles.heading3, {color: theme.colorText1}, textStyle]}>
       {children}
     </AvaxTextBase>
   );
 };
 
-const TextBody1: FC<AvaTextProps> = ({
-  ellipsizeMode,
-  textStyle,
-  children,
-  color,
-  ...rest
-}) => {
+const TextBody1: FC<AvaTextProps> = ({textStyle, children, color, ...rest}) => {
   const theme = useApplicationContext().theme;
   return (
     <AvaxTextBase
       {...rest}
-      ellipsizeMode={ellipsizeMode}
-      numberOfLines={ellipsizeMode ? 1 : undefined}
       style={[
         styles.body1,
-        {flexShrink: ellipsizeMode ? 1 : 0, color: theme.colorText1},
+        {color: theme.colorText1},
         textStyle,
         !!color && {color: color},
       ]}>
@@ -176,24 +167,12 @@ const TextBody1: FC<AvaTextProps> = ({
   );
 };
 
-const TextBody2: FC<AvaTextProps> = ({
-  ellipsizeMode,
-  color,
-  textStyle,
-  children,
-  ...rest
-}) => {
+const TextBody2: FC<AvaTextProps> = ({color, textStyle, children, ...rest}) => {
   const theme = useApplicationContext().theme;
   return (
     <AvaxTextBase
       {...rest}
-      ellipsizeMode={ellipsizeMode}
-      numberOfLines={ellipsizeMode ? 1 : undefined}
-      style={[
-        styles.body2,
-        {flexShrink: ellipsizeMode ? 1 : 0, color: color ?? theme.colorText2},
-        textStyle,
-      ]}>
+      style={[styles.body2, {color: color ?? theme.colorText2}, textStyle]}>
       {children}
     </AvaxTextBase>
   );
@@ -270,22 +249,9 @@ const TextButtonMedium: FC<AvaTextProps> = ({textStyle, children, ...rest}) => {
   );
 };
 
-const TextButtonSmall: FC<AvaTextProps> = ({
-  ellipsizeMode,
-  textStyle,
-  children,
-  ...rest
-}) => {
+const TextButtonSmall: FC<AvaTextProps> = ({textStyle, children, ...rest}) => {
   return (
-    <AvaxTextBase
-      ellipsizeMode={ellipsizeMode}
-      numberOfLines={ellipsizeMode ? 1 : undefined}
-      style={[
-        styles.textButtonSmall,
-        {flexShrink: ellipsizeMode ? 1 : 0},
-        textStyle,
-      ]}
-      {...rest}>
+    <AvaxTextBase style={[styles.textButtonSmall, textStyle]} {...rest}>
       {children}
     </AvaxTextBase>
   );
@@ -306,23 +272,12 @@ const TextCaption: FC<AvaTextProps> = ({
   );
 };
 
-const ActivityTotal: FC<AvaTextProps> = ({
-  ellipsizeMode,
-  textStyle,
-  children,
-  ...rest
-}) => {
+const ActivityTotal: FC<AvaTextProps> = ({textStyle, children, ...rest}) => {
   const theme = useApplicationContext().theme;
   return (
     <AvaxTextBase
       {...rest}
-      ellipsizeMode={ellipsizeMode}
-      numberOfLines={ellipsizeMode ? 1 : undefined}
-      style={[
-        styles.activityTotal,
-        {flexShrink: ellipsizeMode ? 1 : 0, color: theme.colorText1},
-        textStyle,
-      ]}>
+      style={[styles.activityTotal, {color: theme.colorText1}, textStyle]}>
       {children}
     </AvaxTextBase>
   );
