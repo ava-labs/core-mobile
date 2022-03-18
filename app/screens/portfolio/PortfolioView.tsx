@@ -42,8 +42,7 @@ export type PortfolioNavigationProp =
 function PortfolioContainer(): JSX.Element {
   const {tokenList, loadZeroBalanceList, loadTokenList} =
     useSearchableTokenList();
-  const {balanceTotalInUSD, isWalletReady, isBalanceLoading, isErc20Loading} =
-    usePortfolio();
+  const {balanceTotalInUSD} = usePortfolio();
   const {setSelectedToken} = useSelectedTokenContext();
 
   const hasZeroBalance =
@@ -57,9 +56,6 @@ function PortfolioContainer(): JSX.Element {
 
   return (
     <>
-      {/*{!isWalletReady || isBalanceLoading || isErc20Loading ? (*/}
-      {/*  <Loader />*/}
-      {/*) : (*/}
       <PortfolioView
         tokenList={tokenList}
         loadZeroBalanceList={loadZeroBalanceList}
@@ -67,7 +63,6 @@ function PortfolioContainer(): JSX.Element {
         hasZeroBalance={hasZeroBalance}
         setSelectedToken={setSelectedToken}
       />
-      {/*)}*/}
     </>
   );
 }
@@ -124,9 +119,6 @@ const PortfolioView: FC<PortfolioProps> = memo(
     return (
       <SafeAreaProvider style={styles.flex}>
         <PortfolioHeader />
-        {/*{!tokenList ? (*/}
-        {/*  <Loader transparent />*/}
-        {/*) : (*/}
         <TabViewAva renderCustomLabel={renderCustomLabel}>
           <View title={'Tokens'}>
             <FlatList
@@ -200,8 +192,6 @@ const NftListViewScreen = () => {
     const addressC = __DEV__
       ? '0x470820fbbfca29de49c4a474d12af264856d2028' //address with lots of demo NFTs
       : activeAccount?.wallet.getAddressC();
-    console.log('chainID', chainID);
-    console.log('address C', addressC);
     if (addressC) {
       covalent
         .getAddressBalancesV2(addressC, true)

@@ -40,11 +40,11 @@ export const useNftLoader = (): {
         bufferTime(1000),
         filter(value => value.length !== 0),
         concatMap(value => {
+          // make batches of 10 items, each delayed for 1 sec except first one
           const newObservables = [];
           const batchCount = 10;
           for (let i = 0; i < value.length; i += batchCount) {
             let observable = of(value.slice(i, i + batchCount));
-            //don't delay first batch
             if (i !== 0) {
               observable = observable.pipe(delay(1000));
             }
@@ -53,11 +53,12 @@ export const useNftLoader = (): {
           return concat(...newObservables);
         }),
         concatMap(nfts => {
-          console.log('expanding batch', new Date());
+          // expand batch
           return from(nfts);
         }),
         concatMap(nftData => {
-          console.log('load image for ', nftData.token_id);
+          // for each item create observable which will complete when image is fetched and aspect written
+          // ignore if fetching image fails
           let resolver: (value: NFTItemData) => void;
           const p = from(
             new Promise<NFTItemData>(resolve => (resolver = resolve)),
@@ -69,7 +70,6 @@ export const useNftLoader = (): {
               resolver(nftData);
             },
             _ => {
-              // console.warn(error);
               resolver(nftData);
             },
           );
@@ -80,20 +80,19 @@ export const useNftLoader = (): {
       )
       .subscribe({
         next: nftData => {
+          // update data and save to repo
           nftData.forEach(item => {
             nftRepoRef.current.set(item.uid, item);
           });
           nftRepo.saveNfts(nftRepoRef.current);
         },
         error: err => console.error(err),
-        complete: () => console.warn('completed'),
       });
     return () => subs.unsubscribe();
   }, []);
 
   const parseNftCollections = useCallback(
     (nftCollections: NftCollection[]) => {
-      console.log('******** parseNftCollections ***********');
       const nftDataItems = prepareNftData(nftCollections);
       applyKnownAspectRatios(nftDataItems, nftRepo.nfts);
       nftRepo.saveNfts(nftDataItems);

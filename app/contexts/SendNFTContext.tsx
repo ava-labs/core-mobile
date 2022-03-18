@@ -72,7 +72,7 @@ export const SendNFTContextProvider = ({
   );
 
   useEffect(() => {
-    if (!sendToken || !activeAccount!.wallet) {
+    if (!sendToken || !activeAccount?.wallet) {
       return;
     }
     const subscription = checkAndValidateSendNft(
@@ -80,7 +80,7 @@ export const SendNFTContextProvider = ({
       Number.parseInt(sendToken.token_id, 10),
       customGasPrice$.current,
       of(sendToAddress),
-      of(activeAccount!.wallet),
+      of(activeAccount.wallet),
       gasLimit$.current,
     ).subscribe(value => {
       console.log('checkAndValidateSendNft', value);
@@ -96,7 +96,10 @@ export const SendNFTContextProvider = ({
   }, [sendToken, sendToAddress]);
 
   useEffect(() => {
-    setSendFromAddress(activeAccount!.wallet.getAddressC());
+    if (!activeAccount) {
+      return;
+    }
+    setSendFromAddress(activeAccount.wallet.getAddressC());
     setSendFromTitle(
       repo.accountsRepo.accounts.get(activeAccount?.index ?? -1)?.title ?? '-',
     );
@@ -140,7 +143,7 @@ export const SendNFTContextProvider = ({
     sendNftSubmit(
       nft.collection.contract_address,
       Number.parseInt(sendToken.token_id, 10),
-      Promise.resolve(activeAccount!.wallet),
+      Promise.resolve(activeAccount?.wallet),
       sendToAddress,
       firstValueFrom(customGasPrice$.current),
       gasLimit,
