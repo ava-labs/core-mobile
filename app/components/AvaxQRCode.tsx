@@ -1,5 +1,5 @@
 import React, {FC} from 'react';
-import {View} from 'react-native';
+import {Dimensions, View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import QRCode from 'react-native-qrcode-svg';
 import AvaLogoSVG from 'components/svg/AvaLogoSVG';
@@ -11,23 +11,28 @@ interface Props {
   sizePercentage?: number;
 }
 
+const {width: screenWidth} = Dimensions.get('window');
+
 const AvaxQRCode: FC<Props> = ({
   address,
   circularText = '',
   sizePercentage = 1,
 }: Props) => {
   const theme = useApplicationContext().theme;
-
+  const borderWidth = 16;
   return (
     <View
       style={{
-        borderWidth: 7 * sizePercentage,
-        height: 180 * sizePercentage,
+        borderWidth: borderWidth,
+        height: screenWidth * sizePercentage,
         borderColor: theme.alternateBackground,
-        borderRadius: 7,
-        alignSelf: 'baseline',
+        borderRadius: borderWidth,
       }}>
-      <QRCode ecl={'H'} size={168 * sizePercentage} value={address} />
+      <QRCode
+        ecl={'H'}
+        size={screenWidth * sizePercentage - 2 * borderWidth}
+        value={address}
+      />
       <View
         style={{
           position: 'absolute',
