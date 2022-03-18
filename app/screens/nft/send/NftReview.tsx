@@ -55,9 +55,9 @@ export default function NftReview({onSuccess}: NftReviewScreenProps) {
 
   return (
     <View style={styles.container}>
-      <AvaText.Heading1 textStyle={{marginHorizontal: 16}}>
+      <AvaText.LargeTitleBold textStyle={{marginHorizontal: 16}}>
         Send
-      </AvaText.Heading1>
+      </AvaText.LargeTitleBold>
       <View
         style={{
           width: '100%',

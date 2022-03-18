@@ -113,7 +113,6 @@ const TabNavigator = () => {
       <Tab.Screen
         name={AppNavigation.Tabs.Watchlist}
         options={{
-          ...MainHeaderOptions('WatchList'),
           tabBarIcon: ({focused}) =>
             normalTabButtons(
               AppNavigation.Tabs.Watchlist,
@@ -127,7 +126,6 @@ const TabNavigator = () => {
         name={AppNavigation.Tabs.Bridge}
         component={DummyBridge}
         options={{
-          ...MainHeaderOptions('Bridge'),
           tabBarIcon: ({focused}) =>
             normalTabButtons(
               AppNavigation.Tabs.Bridge,

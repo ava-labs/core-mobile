@@ -89,15 +89,10 @@ export default function CreatePIN({
     <View style={[styles.verticalLayout]}>
       {isResettingPin || (
         <>
-          <Space y={8} />
-          <AvaText.Heading1 textStyle={{textAlign: 'center'}}>
+          <AvaText.LargeTitleBold textStyle={{marginHorizontal: 16}}>
             {title}
-          </AvaText.Heading1>
-          <Space y={8} />
-          <AvaText.Body4 textStyle={{textAlign: 'center'}}>
-            Access your wallet faster
-          </AvaText.Body4>
-          <Space y={8} />
+          </AvaText.LargeTitleBold>
+          <Space y={20} />
         </>
       )}
       <Animated.View

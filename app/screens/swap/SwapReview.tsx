@@ -89,9 +89,8 @@ const SwapReview: FC = () => {
   ) : (
     <View style={styles.container}>
       <ScrollView style={styles.container}>
-        <Space y={8} />
         <Row style={{justifyContent: 'space-between', marginHorizontal: 16}}>
-          <AvaText.Heading1>Review Order</AvaText.Heading1>
+          <AvaText.LargeTitleBold>Review Order</AvaText.LargeTitleBold>
           <Popable
             content={'Quotes are refreshed to reflect current market prices'}
             position={'left'}

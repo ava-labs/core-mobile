@@ -148,10 +148,10 @@ const Receive: FC<{
       <Space y={embedded ? 34 : 8} />
       {embedded || (
         <>
-          <AvaText.Heading1 textStyle={{marginHorizontal: 16}}>
-            Receive Tokens
-          </AvaText.Heading1>
-          <Space y={24} />
+          <AvaText.LargeTitleBold textStyle={{marginHorizontal: 16}}>
+            Receive
+          </AvaText.LargeTitleBold>
+          <Space y={12} />
         </>
       )}
       <Text style={{marginHorizontal: 16, paddingTop: 4}}>
