@@ -1,5 +1,5 @@
-import React, {useEffect, useMemo, useState} from 'react';
-import {FlatList, ListRenderItemInfo, View} from 'react-native';
+import React, {useEffect} from 'react';
+import {View} from 'react-native';
 import AvaText from 'components/AvaText';
 import {Space} from 'components/Space';
 import InputText from 'components/InputText';
@@ -7,22 +7,17 @@ import TokenSelectAndAmount from 'components/TokenSelectAndAmount';
 import AvaButton from 'components/AvaButton';
 import AddressBookSVG from 'components/svg/AddressBookSVG';
 import FlexSpacer from 'components/FlexSpacer';
-import TabViewAva from 'components/TabViewAva';
-import ZeroState from 'components/ZeroState';
-import AddressBookItem from 'components/addressBook/AddressBookItem';
 import {useApplicationContext} from 'contexts/ApplicationContext';
-import {Account} from 'dto/Account';
 import {useSendTokenContext} from 'contexts/SendTokenContext';
 import numeral from 'numeral';
 import {
   ERC20WithBalance,
   TokenWithBalance,
 } from '@avalabs/wallet-react-components';
-import {AccountId, Contact, RecentContact, UID} from 'Repo';
-
-const renderCustomLabel = (title: string) => {
-  return <AvaText.Heading3>{title}</AvaText.Heading3>;
-};
+import {AddrBookItemType, Contact} from 'Repo';
+import AddressBookLists from 'components/addressBook/AddressBookLists';
+import {Account} from 'dto/Account';
+import {useAddressBookLists} from 'components/addressBook/useAddressBookLists';
 
 function SendToken({
   onNext,
@@ -45,31 +40,13 @@ function SendToken({
     canSubmit,
     sdkError,
   } = useSendTokenContext();
-  const [showAddressBook, setShowAddressBook] = useState(false);
-  const {recentContacts, addressBook, addToRecentContacts} =
-    useApplicationContext().repo.addressBookRepo;
-  const {accounts} = useApplicationContext().repo.accountsRepo;
-  const [tempRecentContact, setTempRecentContact] = useState<
-    RecentContact | undefined
-  >(undefined);
-
-  const addressBookContacts = useMemo(
-    () => [...addressBook.values()],
-    [addressBook],
-  );
-
-  const recentAddresses = useMemo(
-    () =>
-      recentContacts.map(contact => {
-        switch (contact.type) {
-          case 'account':
-            return accounts.get(contact.id as AccountId)!;
-          case 'address':
-            return addressBook.get(contact.id as UID)!;
-        }
-      }),
-    [addressBook, recentContacts, accounts],
-  );
+  const {
+    showAddressBook,
+    setShowAddressBook,
+    onContactSelected: selectContact,
+    saveRecentContact,
+    reset: resetAddressBookList,
+  } = useAddressBookLists();
 
   useEffect(() => {
     if (token) {
@@ -89,56 +66,21 @@ function SendToken({
     }
   }, [toAccount.address]);
 
-  function toggleAddressBook() {
-    setShowAddressBook(!showAddressBook);
-  }
-
   function setAddress({address, title}: {address: string; title: string}) {
     toAccount.setAddress?.(address);
     toAccount.setTitle?.(title);
   }
 
-  const renderRecentContactItem = (
-    item: ListRenderItemInfo<Contact | Account>,
+  const onContactSelected = (
+    item: Contact | Account,
+    type: AddrBookItemType,
   ) => {
-    return (
-      <AvaButton.Base
-        onPress={() => {
-          setAddress(item.item);
-        }}>
-        <AddressBookItem title={item.item.title} address={item.item.address} />
-      </AvaButton.Base>
-    );
-  };
-
-  const renderAddressItem = (item: ListRenderItemInfo<Contact>) => {
-    return (
-      <AvaButton.Base
-        onPress={() => {
-          setAddress(item.item);
-          setTempRecentContact({id: item.item.id, type: 'address'});
-        }}>
-        <AddressBookItem title={item.item.title} address={item.item.address} />
-      </AvaButton.Base>
-    );
-  };
-
-  const renderAccountItem = (item: ListRenderItemInfo<Account>) => {
-    return (
-      <AvaButton.Base
-        onPress={() => {
-          setAddress(item.item);
-          setTempRecentContact({id: item.item.index, type: 'account'});
-        }}>
-        <AddressBookItem title={item.item.title} address={item.item.address} />
-      </AvaButton.Base>
-    );
+    setAddress({address: item.address, title: item.title});
+    selectContact(item, type);
   };
 
   const onNextPress = () => {
-    if (tempRecentContact) {
-      addToRecentContacts(tempRecentContact);
-    }
+    saveRecentContact();
     onNext();
   };
 
@@ -160,7 +102,7 @@ function SendToken({
           onChangeText={text => {
             toAccount.setTitle?.('Address');
             toAccount.setAddress?.(text);
-            setTempRecentContact(undefined);
+            resetAddressBookList();
           }}
           text={toAccount.address}
         />
@@ -172,7 +114,8 @@ function SendToken({
               justifyContent: 'center',
               height: '100%',
             }}>
-            <AvaButton.Icon onPress={toggleAddressBook}>
+            <AvaButton.Icon
+              onPress={() => setShowAddressBook(!showAddressBook)}>
               <AddressBookSVG />
             </AvaButton.Icon>
           </View>
@@ -180,31 +123,7 @@ function SendToken({
       </View>
       <Space y={24} />
       {showAddressBook ? (
-        <TabViewAva renderCustomLabel={renderCustomLabel}>
-          <FlatList
-            title={'Recents'}
-            data={recentAddresses}
-            renderItem={renderRecentContactItem}
-            keyExtractor={item => item.title + item.address}
-            contentContainerStyle={{paddingHorizontal: 16}}
-            ListEmptyComponent={<ZeroState.NoResultsGraphical />}
-          />
-          <FlatList
-            title={'Address Book'}
-            data={addressBookContacts}
-            renderItem={renderAddressItem}
-            keyExtractor={item => item.id}
-            contentContainerStyle={{paddingHorizontal: 16}}
-            ListEmptyComponent={<ZeroState.NoResultsGraphical />}
-          />
-          <FlatList
-            title={'My accounts'}
-            data={[...accounts.values()]}
-            renderItem={renderAccountItem}
-            contentContainerStyle={{paddingHorizontal: 16}}
-            ListEmptyComponent={<ZeroState.NoResultsGraphical />}
-          />
-        </TabViewAva>
+        <AddressBookLists onContactSelected={onContactSelected} />
       ) : (
         <>
           <View style={{paddingHorizontal: 16}}>

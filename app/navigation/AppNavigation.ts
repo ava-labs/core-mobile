@@ -39,6 +39,8 @@ enum WalletScreens {
   SecurityPrivacy = 'WalletScreens.SecurityPrivacy',
   NetworkSelector = 'WalletScreens.NetworkSelector',
   Swap = 'WalletScreens.Swap',
+  NFTDetails = 'WalletScreens.NFTDetails',
+  NFTManage = 'WalletScreens.NFTManage',
   TokenDetail = 'WalletScreens.TokenDetail',
   OwnedTokenDetail = 'WalletScreens.OwnedTokenDetail',
   ActivityDetail = 'WalletScreens.ActivityDetail',
@@ -51,6 +53,19 @@ enum SwapScreens {
   Success = 'SwapScreens.Success',
   Fail = 'SwapScreens.Fail',
   SwapTransactionFee = 'ModalScreens.SwapTransactionFees',
+}
+
+enum NftScreens {
+  Details = 'NftScreens.Details',
+  Send = 'NftScreens.Send',
+  FullScreen = 'NftScreens.FullScreen',
+}
+
+enum NftSendScreens {
+  AddressPick = 'NftSendScreens.AddressPick',
+  Review = 'NftSendScreens.Review',
+  Success = 'NftSendScreens.Success',
+  Fail = 'NftSendScreens.Fail',
 }
 
 enum SecurityPrivacyScreens {
@@ -112,10 +127,11 @@ const AppNavigation = {
   Tabs: Tabs,
   Modal: ModalScreens,
   Swap: SwapScreens,
+  Nft: NftScreens,
+  NftSend: NftSendScreens,
   Send: SendScreens,
   AddressBook: AddressBookScreens,
   Bridge: BridgeScreens,
-
 };
 
 export default AppNavigation;

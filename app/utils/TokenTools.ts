@@ -3,6 +3,7 @@ import {
   ERC20WithBalance,
   TokenWithBalance,
 } from '@avalabs/wallet-react-components';
+import {NFTItemData} from 'screens/nft/NftCollection';
 
 export function getTokenUID(token: TokenWithBalance): string {
   if (Object.keys(token).length === 0) {
@@ -18,6 +19,10 @@ export function getTokenUID(token: TokenWithBalance): string {
     return (token as AntWithBalance).assetID;
   }
   throw new Error('unknown token');
+}
+
+export function getNftUID(nft: NFTItemData): string {
+  return nft.collection.contract_address + nft.token_id;
 }
 
 export function getDecimalsForEVM(token?: TokenWithBalance) {
