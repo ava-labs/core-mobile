@@ -83,7 +83,6 @@ export const SendNFTContextProvider = ({
       of(activeAccount.wallet),
       gasLimit$.current,
     ).subscribe(value => {
-      console.log('checkAndValidateSendNft', value);
       setCanSubmit(value.canSubmit ?? false);
       setSdkError(value.error);
       setSendFee(value.sendFee);
@@ -136,7 +135,6 @@ export const SendNFTContextProvider = ({
   }, [gasLimit]);
 
   function onSendNow() {
-    console.log('onsend now');
     setTransactionId(undefined);
     setSendStatus('Sending');
 
@@ -155,14 +153,12 @@ export const SendNFTContextProvider = ({
           if ('txId' in value && value.txId) {
             setTransactionId(value.txId);
             setSendStatus('Success');
-            console.log('send success', value.txId);
           }
         }
       },
       error: err => {
         setSendStatus('Fail');
         setSendStatusMsg(err);
-        console.log('send err', err);
       },
     });
   }

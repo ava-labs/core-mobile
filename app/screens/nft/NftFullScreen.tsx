@@ -25,8 +25,8 @@ const SAMPLE_TIME = 100;
 export default function NftFullScreen() {
   const {theme} = useApplicationContext();
   const {params} = useRoute<RouteProp<NFTStackParamList>>();
-  const imageUrl = useMemo(() => params!.url, [params]) as string;
-  const imageUrlSmall = useMemo(() => params!.urlSmall, [params]) as string;
+  const imageUrl = params?.url as string;
+  const imageUrlSmall = params?.urlSmall as string;
   const [grabbedBgColor, setGrabbedBgColor] = useState('black');
   const windowWidth = useMemo(() => Dimensions.get('window').width - 32, []);
   const [imageAspect, setImageAspect] = useState(0);

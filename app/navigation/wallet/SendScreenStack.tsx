@@ -74,9 +74,11 @@ const ReviewSendComponent = () => {
 const DoneScreenComponent = () => {
   const {goBack} = useNavigation<StackNavigationProp<RootStackParamList>>();
   const transactionId =
-    useRoute<RouteProp<SendStackParamList>>()!.params!.transactionId!;
+    useRoute<RouteProp<SendStackParamList>>()?.params?.transactionId;
 
-  return <DoneScreen onClose={() => goBack()} transactionId={transactionId} />;
+  return (
+    <DoneScreen onClose={() => goBack()} transactionId={transactionId ?? ''} />
+  );
 };
 
 export default SendScreenStack;
