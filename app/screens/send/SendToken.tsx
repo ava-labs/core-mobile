@@ -86,11 +86,10 @@ function SendToken({
 
   return (
     <View style={{flex: 1}}>
-      <Space y={8} />
-      <AvaText.Heading1 textStyle={{marginHorizontal: 16}}>
+      <AvaText.LargeTitleBold textStyle={{marginHorizontal: 16}}>
         Send
-      </AvaText.Heading1>
-      <Space y={24} />
+      </AvaText.LargeTitleBold>
+      <Space y={20} />
       <AvaText.Heading3 textStyle={{marginHorizontal: 16}}>
         Send to
       </AvaText.Heading3>

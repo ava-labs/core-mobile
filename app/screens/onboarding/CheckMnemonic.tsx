@@ -43,6 +43,8 @@ export default function CheckMnemonic(
 
   return (
     <View style={styles.container}>
+      <AvaText.LargeTitleBold>Verify Phrase</AvaText.LargeTitleBold>
+      <Space y={20} />
       <AvaText.Body1>
         Select the words below to verify your Recovery Phrase.
       </AvaText.Body1>
@@ -76,7 +78,8 @@ export default function CheckMnemonic(
 
 const styles: any = StyleSheet.create({
   container: {
-    height: '100%',
-    padding: 16,
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingBottom: 40,
   },
 });

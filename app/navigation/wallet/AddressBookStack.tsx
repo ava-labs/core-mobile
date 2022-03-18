@@ -50,9 +50,7 @@ const AddressBookStack = () => {
       <Stack.Screen
         options={{
           headerShown: true,
-          ...(MainHeaderOptions(
-            'New Contact',
-          ) as Partial<StackNavigationOptions>),
+          ...(MainHeaderOptions('') as Partial<StackNavigationOptions>),
         }}
         name={AppNavigation.AddressBook.Add}
         component={AddContact}

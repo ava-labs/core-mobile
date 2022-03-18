@@ -33,10 +33,9 @@ export default function SwapView() {
   return (
     <View style={styles.container}>
       <ScrollView style={styles.container}>
-        <Space y={8} />
-        <AvaText.Heading1 textStyle={{marginHorizontal: 16}}>
+        <AvaText.LargeTitleBold textStyle={{marginHorizontal: 16}}>
           Swap
-        </AvaText.Heading1>
+        </AvaText.LargeTitleBold>
         {networkContext?.network === FUJI_NETWORK ? (
           <ZeroState.NoResultsGraphical message={'Not available on Testnet'} />
         ) : (

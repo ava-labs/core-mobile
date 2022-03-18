@@ -200,6 +200,9 @@ const Bridge: FC = () => {
   return (
     <SafeAreaProvider>
       <ScrollView style={styles.container}>
+        <AvaText.LargeTitleBold textStyle={{marginHorizontal: 8}}>
+          Bridge
+        </AvaText.LargeTitleBold>
         <Space y={20} />
         <View style={{backgroundColor: theme.colorBg2, borderRadius: 10}}>
           <AvaListItem.Base

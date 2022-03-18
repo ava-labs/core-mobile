@@ -56,9 +56,9 @@ export default function ReviewSend({
 
   return (
     <View style={{flex: 1}}>
-      <AvaText.Heading1 textStyle={{marginHorizontal: 16}}>
+      <AvaText.LargeTitleBold textStyle={{marginHorizontal: 16}}>
         Send
-      </AvaText.Heading1>
+      </AvaText.LargeTitleBold>
       <View
         style={{
           width: '100%',

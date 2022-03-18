@@ -3,7 +3,6 @@ import {ScrollView, StyleSheet, View} from 'react-native';
 import WalletSDK from 'utils/WalletSDK';
 import TextArea from 'components/TextArea';
 import AvaText from 'components/AvaText';
-import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaButton from 'components/AvaButton';
 import * as bip39 from 'bip39';
 
@@ -15,7 +14,6 @@ type Props = {
 export default function HdWalletLogin(
   props: Props | Readonly<Props>,
 ): JSX.Element {
-  const context = useApplicationContext();
   const [errorMessage, setErrorMessage] = useState<string | undefined>(
     undefined,
   );
@@ -56,19 +54,11 @@ export default function HdWalletLogin(
       keyboardShouldPersistTaps="handled">
       <View
         style={{
-          flexGrow: 1,
+          marginHorizontal: 16,
           justifyContent: 'center',
         }}>
-        <AvaText.LargeTitleBold
-          textStyle={{
-            textAlign: 'center',
-          }}>
-          Wallet
-        </AvaText.LargeTitleBold>
+        <AvaText.LargeTitleBold>Recovery Phrase</AvaText.LargeTitleBold>
       </View>
-      <View
-        style={[styles.overlay, {backgroundColor: context.theme.overlay}]}
-      />
       <View style={[{flexGrow: 1, justifyContent: 'flex-end'}]}>
         <EnterTestWalletButton />
         <View style={[{padding: 16}]}>
@@ -76,7 +66,6 @@ export default function HdWalletLogin(
             autoFocus
             btnPrimaryText={'Sign in'}
             btnSecondaryText={'Cancel'}
-            heading={'Recovery phrase'}
             onBtnSecondary={onBack}
             onChangeText={() => setErrorMessage(undefined)}
             errorMessage={errorMessage}
