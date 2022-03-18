@@ -9,7 +9,7 @@ import BridgeTransactionStatus from 'screens/bridge/BridgeTransactionStatus';
 import {MainHeaderOptions, SubHeaderOptions} from 'navigation/NavUtils';
 import BridgeSelectTokenBottomSheet from 'screens/bridge/BridgeSelectTokenBottomSheet';
 import {useNavigation} from '@react-navigation/native';
-import WarningModal from 'components/WarmingModal';
+import WarningModal from 'components/WarningModal';
 
 export type BridgeStackParamList = {
   [AppNavigation.Bridge.Bridge]: undefined;
@@ -26,10 +26,6 @@ export type BridgeStackParamList = {
 
 const BridgeStack = createStackNavigator<BridgeStackParamList>();
 
-const BridgeTransactionStatusFromStack = () => (
-  <BridgeTransactionStatus fromStack />
-);
-
 function BridgeScreenStack() {
   return (
     <BridgeStack.Navigator>
@@ -45,7 +41,7 @@ function BridgeScreenStack() {
           ...SubHeaderOptions('Transaction Status'),
         }}
         name={AppNavigation.Bridge.BridgeTransactionStatus}
-        component={BridgeTransactionStatusFromStack}
+        component={BridgeTransactionStatus}
       />
       <BridgeStack.Group screenOptions={{presentation: 'transparentModal'}}>
         <BridgeStack.Screen
