@@ -17,6 +17,9 @@ import {MainHeaderOptions} from 'navigation/NavUtils';
 import ActivityListItem from 'screens/activity/ActivityListItem';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {RootStackParamList} from 'navigation/WalletScreenStack';
+import {BridgeTransaction, useBridgeContext} from 'contexts/BridgeContext';
+import {Blockchain, useBridgeSDK} from '@avalabs/bridge-sdk';
+import BridgeTransactionItem from 'screens/bridge/components/BridgeTransactionItem';
 
 const DISPLAY_FORMAT_CURRENT_YEAR = 'MMMM DD';
 const DISPLAY_FORMAT_PAST_YEAR = 'MMMM DD, YYYY';
@@ -26,7 +29,7 @@ interface Props {
   tokenSymbolFilter?: string;
 }
 
-export type TxType = TransactionNormal | TransactionERC20;
+export type TxType = TransactionNormal | TransactionERC20 | BridgeTransaction;
 const TODAY = moment();
 const YESTERDAY = moment().subtract(1, 'days');
 type SectionType = {[x: string]: TxType[]};
@@ -38,12 +41,46 @@ function ActivityList({embedded, tokenSymbolFilter}: Props) {
   const {network} = useNetworkContext()!;
   const [allHistory, setAllHistory] = useState<
     (TransactionNormal | TransactionERC20)[]
-  >([]);
+  >();
+  const {bridgeTransactions} = useBridgeContext();
+  const {bridgeAssets} = useBridgeSDK();
+
+  const isTransactionBridge = useCallback(
+    tx => {
+      if (bridgeAssets) {
+        return (
+          Object.values(bridgeAssets).filter(
+            el =>
+              (el.nativeNetwork === Blockchain.AVALANCHE &&
+                el.nativeContractAddress?.toLowerCase() ===
+                  tx.contractAddress?.toLowerCase()) ||
+              el.wrappedContractAddress?.toLowerCase() ===
+                tx.contractAddress?.toLowerCase() ||
+              tx?.to === '0x0000000000000000000000000000000000000000' ||
+              tx?.from === '0x0000000000000000000000000000000000000000',
+          ).length > 0
+        );
+      }
+
+      return false;
+    },
+    [bridgeAssets],
+  );
 
   const sectionData = useMemo(() => {
     const newSectionData: SectionType = {};
+
+    if (Object.values(bridgeTransactions).length > 0) {
+      Object.values(bridgeTransactions).map(tx => {
+        const pending = newSectionData.Pending;
+        newSectionData.Pending = pending
+          ? [...newSectionData.Pending, tx]
+          : [...[tx]];
+      });
+    }
+
     allHistory
-      .filter((tx: TxType) => {
+      ?.filter((tx: TxType) => {
         return tokenSymbolFilter
           ? tokenSymbolFilter === (tx?.tokenSymbol ?? 'AVAX')
           : true;
@@ -78,7 +115,7 @@ function ActivityList({embedded, tokenSymbolFilter}: Props) {
 
   useEffect(() => {
     loadHistory().then();
-  }, [wallet, network]);
+  }, [wallet, network, bridgeTransactions]);
 
   useEffect(() => {
     if (embedded) {
@@ -100,7 +137,13 @@ function ActivityList({embedded, tokenSymbolFilter}: Props) {
       return [];
     }
     setLoading(true);
+    // if (Object.values(bridgeTransactions).length > 0) {
+    //   const txs = await getHistory(wallet, 50);
+    //   const merged = [bridgeTransactions, ...txs];
+    //   setAllHistory(merged);
+    // } else {
     setAllHistory((await getHistory(wallet, 50)) ?? []);
+    // }
     setLoading(false);
   };
 
@@ -124,13 +167,21 @@ function ActivityList({embedded, tokenSymbolFilter}: Props) {
             }}>
             <AvaText.ActivityTotal>{key[0]}</AvaText.ActivityTotal>
           </Animated.View>
-          {key[1].map((item: TxType, index) => (
-            <ActivityListItem
-              key={item.transactionIndex + index}
-              tx={item}
-              onPress={() => openTransactionDetails(item)}
-            />
-          ))}
+          {key[1].map((item: TxType, index) =>
+            isTransactionBridge(item) || 'requiredConfirmationCount' in item ? (
+              <BridgeTransactionItem
+                key={`${item.hash}-${index}`}
+                item={item}
+                onPress={() => openTransactionDetails(item)}
+              />
+            ) : (
+              <ActivityListItem
+                key={(item?.transactionIndex ?? 1) + index}
+                tx={item}
+                onPress={() => openTransactionDetails(item)}
+              />
+            ),
+          )}
         </View>
       );
     });
@@ -196,7 +247,7 @@ function ActivityList({embedded, tokenSymbolFilter}: Props) {
     );
   };
 
-  return !wallet || loading ? (
+  return !allHistory ? (
     <Loader />
   ) : (
     <View style={{flex: 1}}>

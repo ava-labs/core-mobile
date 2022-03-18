@@ -3,17 +3,21 @@ import Svg, {Circle, Path} from 'react-native-svg';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 
 interface Prop {
-  selected: boolean;
+  selected?: boolean;
+  size?: number;
+  color?: string;
 }
 
-function BridgeSVG({selected}: Prop) {
+function BridgeSVG({selected, color, size = 30}: Prop) {
   const context = useApplicationContext();
 
-  const svgColor = selected
+  const svgColor = color
+    ? color
+    : selected
     ? context.theme.alternateBackground
     : context.theme.txtDim;
   return (
-    <Svg width="30" height="31" viewBox="0 0 30 31" fill="none">
+    <Svg width={size} height={size} viewBox="0 0 30 31" fill="none">
       <Circle
         cx="15"
         cy="14.9999"

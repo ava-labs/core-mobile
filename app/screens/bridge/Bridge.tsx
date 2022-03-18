@@ -32,7 +32,6 @@ import {useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {BridgeStackParamList} from 'navigation/wallet/BridgeScreenStack';
 import {useApplicationContext} from 'contexts/ApplicationContext';
-import {useLoadBridgeConfig} from 'screens/bridge/hooks/useLoadBridgeConfig';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 
 const formatBalance = (balance: Big | undefined) => {
@@ -40,7 +39,6 @@ const formatBalance = (balance: Big | undefined) => {
 };
 
 const Bridge: FC = () => {
-  useLoadBridgeConfig();
   const navigation = useNavigation<StackNavigationProp<BridgeStackParamList>>();
   const theme = useApplicationContext().theme;
   const {

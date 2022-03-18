@@ -1,7 +1,7 @@
-import React, {FC} from 'react';
+import React, {FC, useEffect, useLayoutEffect} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
-import {RouteProp, useRoute} from '@react-navigation/native';
+import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
 import {BridgeStackParamList} from 'navigation/wallet/BridgeScreenStack';
 import AvaText from 'components/AvaText';
 import {
@@ -26,9 +26,18 @@ import Separator from 'components/Separator';
 import BridgeConfirmations from 'screens/bridge/components/BridgeConfirmations';
 import {useGetTokenSymbolOnNetwork} from 'screens/bridge/hooks/useGetTokenSymbolOnNetwork';
 import useBridge from 'screens/bridge/hooks/useBridge';
+import {useBridgeContext} from 'contexts/BridgeContext';
+import {StackNavigationProp} from '@react-navigation/stack';
+import AvaButton from 'components/AvaButton';
+import AppNavigation from 'navigation/AppNavigation';
 
-const BridgeTransactionStatus: FC = () => {
+interface Props {
+  fromStack?: boolean;
+}
+
+const BridgeTransactionStatus: FC<Props> = ({fromStack}) => {
   const {theme} = useApplicationContext();
+  const navigation = useNavigation<StackNavigationProp<BridgeStackParamList>>();
   const {blockchain, txHash, txTimestamp} =
     useRoute<RouteProp<BridgeStackParamList>>()?.params;
   // @ts-ignore addresses exist in walletContext
@@ -40,6 +49,7 @@ const BridgeTransactionStatus: FC = () => {
   const avalancheProvider = getAvalancheProvider(network);
   const {getTokenSymbolOnNetwork} = useGetTokenSymbolOnNetwork();
   const {tokenInfoContext, assetInfo} = useBridge();
+  const {createBridgeTransaction, removeBridgeTransaction} = useBridgeContext();
 
   const {
     currentAsset,
@@ -61,6 +71,30 @@ const BridgeTransactionStatus: FC = () => {
     transactionDetails,
     bridgeAssets,
   );
+  useLayoutEffect(() => {
+    if (txProps) {
+      navigation.setOptions({
+        title: `Transaction ${txProps.complete ? 'Details' : 'Status'}`,
+        headerRight: () =>
+          fromStack ? (
+            <AvaButton.TextLarge
+              onPress={() => {
+                navigation.navigate(AppNavigation.Bridge.HideWarning);
+              }}>
+              Hide
+            </AvaButton.TextLarge>
+          ) : null,
+      });
+
+      if (txProps.complete) {
+        removeBridgeTransaction({...txProps});
+      }
+    }
+  }, [txProps?.complete]);
+
+  useEffect(() => {
+    createBridgeTransaction({...txProps}).then();
+  }, []);
 
   const tokenSymbolOnNetwork = getTokenSymbolOnNetwork(
     currentAsset ?? '',
