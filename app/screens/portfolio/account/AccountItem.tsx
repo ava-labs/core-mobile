@@ -9,6 +9,7 @@ import InputText from 'components/InputText';
 import {Row} from 'components/Row';
 import CopySVG from 'components/svg/CopySVG';
 import {copyToClipboard} from 'utils/DeviceTools';
+import {truncateAddress} from 'utils/Utils';
 
 type Props = {
   account: Account;
@@ -134,9 +135,7 @@ const AddressC = ({address}: {address: string}) => {
       <AvaButton.Icon onPress={() => copyToClipboard(address)}>
         <CopySVG size={16} />
       </AvaButton.Icon>
-      <AvaText.ButtonSmall ellipsizeMode={'middle'}>
-        {address}
-      </AvaText.ButtonSmall>
+      <AvaText.ButtonSmall>{truncateAddress(address)}</AvaText.ButtonSmall>
     </Row>
   );
 };
