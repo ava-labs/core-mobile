@@ -1,50 +1,47 @@
 import {InAppBrowser} from 'react-native-inappbrowser-reborn';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {Alert, Linking} from 'react-native';
-import Config from 'react-native-config';
-import {
-  FUJI_NETWORK,
-  useNetworkContext,
-} from '@avalabs/wallet-react-components';
+import {useWalletStateContext} from '@avalabs/wallet-react-components';
+import {Moonpay} from '@avalabs/blizzard-sdk';
 
 const useInAppBrowser = () => {
   const {theme} = useApplicationContext();
-  const networkContext = useNetworkContext();
-  const isTestnet = networkContext?.network === FUJI_NETWORK;
+  const moonAPI = new Moonpay({baseURL: 'https://blizzard.avax.network/'});
+  const addressC = useWalletStateContext()?.addresses?.addrC ?? '';
 
   function failSafe(url: string) {
     Linking.openURL(url);
   }
 
-  function openMoonPay() {
-    const apiKey = isTestnet
-      ? Config.MOONPAY_DEV_API_KEY
-      : Config.MOONPAY_PROD_API_KEY;
-    const apiBaseUrl = isTestnet
-      ? Config.MOONPAY_DEV_URL
-      : Config.MOONPAY_PROD_URL;
-    const widgetConfigs = {
-      apiKey,
-      defaultCurrencyCode: 'avax',
-      colorCode: theme.colorPrimary1,
-    };
-    const params = new URLSearchParams(widgetConfigs);
-    const url = `${apiBaseUrl}?${params.toString()}`;
+  async function openMoonPay() {
+    const moonpayUrl = (
+      await moonAPI.getUrl(addressC, {color: theme.colorPrimary1})
+    ).data;
+
     Alert.alert(
-      'Attention',
-      'Clicking “Continue” will take you to a page powered by our partner MoonPay, data entered here will not be stored by CoreX',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Continue',
-          onPress: () => {
-            openUrl(url);
-          },
-        },
-      ],
+      moonpayUrl ? 'Attention' : 'Oh-oh',
+      moonpayUrl
+        ? "Clicking “Continue” will take you to a page powered by our partner MoonPay, use is subject to MoonPay's terms and policies"
+        : 'We cannot send your to our partner, MoonPay, at this time. Please try again soon',
+      moonpayUrl
+        ? [
+            {
+              text: 'Cancel',
+              style: 'cancel',
+            },
+            {
+              text: 'Continue',
+              onPress: () => {
+                openUrl(moonpayUrl);
+              },
+            },
+          ]
+        : [
+            {
+              text: 'Cancel',
+              style: 'cancel',
+            },
+          ],
     );
   }
 
