@@ -154,14 +154,9 @@ const SwapReview: FC = () => {
           justifyContent: 'space-between',
         }}>
         <View style={{flex: 1, marginHorizontal: 16}}>
-          <AvaButton.PrimaryLarge
-            onPress={goBack}
-            textColor={theme.colorText1}
-            style={{
-              backgroundColor: theme.colorDisabled,
-            }}>
+          <AvaButton.SecondaryLarge onPress={goBack}>
             Cancel
-          </AvaButton.PrimaryLarge>
+          </AvaButton.SecondaryLarge>
         </View>
         <View style={{flex: 1, marginRight: 16}}>
           <AvaButton.PrimaryLarge onPress={onConfirm}>

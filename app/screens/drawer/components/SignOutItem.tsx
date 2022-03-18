@@ -8,13 +8,11 @@ const SignOutItem = () => {
   const navigation = useNavigation<NativeStackNavigatorProps>();
 
   return (
-    <AvaButton.TextLarge
-      style={{
-        alignItems: 'flex-start',
-      }}
+    <AvaButton.SecondaryLarge
+      style={{margin: 16}}
       onPress={() => navigation?.navigate(AppNavigation.Modal.SignOut)}>
       Sign out
-    </AvaButton.TextLarge>
+    </AvaButton.SecondaryLarge>
   );
 };
 
