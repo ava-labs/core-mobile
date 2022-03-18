@@ -29,7 +29,7 @@ export const displaySeconds = (timeInSeconds: number): string => {
   return timeInSeconds >= 3600
     ? new Date(timeInSeconds * 1000).toISOString().substr(11, 8) // HH:MM:SS
     : new Date(timeInSeconds * 1000).toISOString().substr(14, 5); // MM:SS
-}
+};
 
 /**
  * Used to display large USD sums like market cap, volue as such:
@@ -59,8 +59,4 @@ export function largeCurrencyFormatter(num: number | string, digits: number) {
       ? (number / item.value).toFixed(digits).replace(rx, '$1') + item.symbol
       : '0')
   );
-}
-
-export function promiseDelay<T>(millis: number): Promise<T> {
-  return new Promise(_ => setTimeout(_, millis));
 }
