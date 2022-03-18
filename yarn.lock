@@ -76,10 +76,10 @@
   resolved "https://registry.yarnpkg.com/@avalabs/utils-sdk/-/utils-sdk-1.2.0-alpha.3.tgz#b41380a75e6c60aa83d6d9bf50d6328a0df58625"
   integrity sha512-SZPXSAwMNM4dWJU/TOmmeJewp5tjORFwT2HFjWdr6/CqrzwUhq0uMoOAsOtYB161D05/DiS7GNOHlKJ1tBFIQQ==
 
-"@avalabs/wallet-react-components@1.28.0":
-  version "1.28.0"
-  resolved "https://registry.yarnpkg.com/@avalabs/wallet-react-components/-/wallet-react-components-1.28.0.tgz#1d57cddabd749169d6d5a3d8d36e1962b8a79a39"
-  integrity sha512-A949kEfe0sdhpoQrGor5KkEknTW4HFcxpl3Td93+qrwJifJSZF4X2xirKxhbmGkcF93BB86gmhhB3Wemckq9hw==
+"@avalabs/wallet-react-components@1.28.2":
+  version "1.28.2"
+  resolved "https://registry.yarnpkg.com/@avalabs/wallet-react-components/-/wallet-react-components-1.28.2.tgz#2873497e9872f4fa22ae3be43aac7492674135e8"
+  integrity sha512-siaBtYuoDQtMb9Dtx5jUrzr9zHfmEllNs+7iQkH2IxWHszME3bwoWwU6uPyec2i1Q92ko3KMrtHd18gBX4uiEA==
   dependencies:
     "@ledgerhq/hw-transport" "^6.20.0"
     "@testing-library/jest-dom" "^5.14.1"
