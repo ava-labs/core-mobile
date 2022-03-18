@@ -92,7 +92,7 @@ export default function PinOrBiometryLogin({
     pinDots.forEach((value, key) => {
       dots.push(
         <DotSVG
-          fillColor={value.filled ? theme.colorPrimary1 : undefined}
+          fillColor={value.filled ? theme.alternateBackground : undefined}
           key={key}
         />,
       );
