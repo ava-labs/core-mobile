@@ -38,7 +38,7 @@ export default function CreatePIN({
   isResettingPin,
 }: Props): JSX.Element {
   const {theme} = useApplicationContext();
-  const [
+  const {
     title,
     pinDots,
     onEnterChosenPin,
@@ -46,7 +46,7 @@ export default function CreatePIN({
     chosenPinEntered,
     validPin,
     jiggleAnim,
-  ] = useCreatePin(isResettingPin);
+  } = useCreatePin(isResettingPin);
 
   useEffect(() => {
     if (validPin) {
@@ -60,7 +60,7 @@ export default function CreatePIN({
     pinDots.forEach((value, key) => {
       dots.push(
         <DotSVG
-          fillColor={value.filled ? theme.colorPrimary1 : undefined}
+          fillColor={value.filled ? theme.alternateBackground : undefined}
           key={key}
         />,
       );
