@@ -1,7 +1,7 @@
 import {
+  TokenListDict,
   useNetworkContext,
   useWalletStateContext,
-  TokenListDict,
 } from '@avalabs/wallet-react-components';
 import {getContractDataErc20} from '@avalabs/avalanche-wallet-sdk';
 import {Erc20TokenData} from '@avalabs/avalanche-wallet-sdk/dist/Asset/types';
