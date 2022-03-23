@@ -21,6 +21,7 @@ import HeaderAccountSelector from 'components/HeaderAccountSelector';
 import AppNavigation from 'navigation/AppNavigation';
 import {copyToClipboard} from 'utils/DeviceTools';
 import {RootStackParamList} from 'navigation/WalletScreenStack';
+import TokenAddress from 'components/TokenAddress';
 
 type ReceiveStackParams = {
   ReceiveCChain: undefined;
@@ -171,19 +172,18 @@ const Receive: FC<{
           />
         </View>
         <Space y={40} />
-        <AvaButton.Base
-          onPress={() => copyToClipboard(props.selectedAddress)}
+        <View
           style={[
             styles.copyAddressContainer,
             {backgroundColor: theme.colorBg2},
           ]}>
-          <AvaText.ButtonMedium
-            ellipsizeMode={'middle'}
-            textStyle={{flex: 1, marginRight: 16, color: theme.colorText1}}>
-            {props.selectedAddress}
-          </AvaText.ButtonMedium>
-          <CopySVG color={theme.colorText1} />
-        </AvaButton.Base>
+          <TokenAddress
+            address={props.selectedAddress}
+            copyIconEnd
+            showFullAddress
+            textType={'ButtonMedium'}
+          />
+        </View>
         <Space y={16} />
       </View>
     </View>
