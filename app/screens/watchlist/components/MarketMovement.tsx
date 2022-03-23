@@ -3,7 +3,6 @@ import {useApplicationContext} from 'contexts/ApplicationContext';
 import MarketTriangleSVG from 'components/MarketTriangleSVG';
 import AvaText from 'components/AvaText';
 import {WatchlistFilter} from 'screens/watchlist/WatchlistView';
-import {largeCurrencyFormatter} from 'utils/Utils';
 
 interface Props {
   priceChange: number;
@@ -30,10 +29,8 @@ const MarketMovement: FC<Props> = ({
 
     const formattedPrice = (
       filterBy === WatchlistFilter.PRICE
-        ? priceChange > 0 && priceChange < 0.1
-          ? `$${priceChange.toFixed(6)}`
-          : currencyFormatter(priceChange)
-        : largeCurrencyFormatter(priceChange, 3)
+        ? currencyFormatter(priceChange)
+        : currencyFormatter(priceChange, 3)
     ).replace('-', '');
 
     const formattedPercent = hideDifference
