@@ -3,6 +3,8 @@ import {InteractionManager, StyleSheet, TextInput, View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaButton from './AvaButton';
 import AvaText from './AvaText';
+import {Space} from 'components/Space';
+import {Opacity30} from 'resources/Constants';
 
 type Props = {
   btnPrimaryText: string;
@@ -48,20 +50,12 @@ export default function TextArea(props: Props | Readonly<Props>): JSX.Element {
   }, [enteredText]);
 
   return (
-    <View
-      style={[
-        styles.container,
-        {
-          backgroundColor: theme.colorBg2,
-        },
-      ]}>
+    <>
       <View
         style={[
+          styles.container,
           {
-            display: 'flex',
-            flexDirection: 'column',
-            padding: 16,
-            minHeight: 160,
+            backgroundColor: theme.colorBg3 + Opacity30,
           },
         ]}>
         {props.heading && (
@@ -99,23 +93,27 @@ export default function TextArea(props: Props | Readonly<Props>): JSX.Element {
         )}
       </View>
 
-      <View style={[styles.buttonContainer, {backgroundColor: theme.colorBg3}]}>
-        <AvaButton.TextLarge onPress={props.onBtnSecondary}>
-          {props.btnSecondaryText}
-        </AvaButton.TextLarge>
-        <AvaButton.PrimaryMedium
-          disabled={primaryDisabled}
-          onPress={() => props.onBtnPrimary(enteredText)}>
-          {props.btnPrimaryText}
-        </AvaButton.PrimaryMedium>
-      </View>
-    </View>
+      <AvaButton.PrimaryLarge
+        disabled={primaryDisabled}
+        onPress={() => props.onBtnPrimary(enteredText)}>
+        {props.btnPrimaryText}
+      </AvaButton.PrimaryLarge>
+      <Space y={8} />
+      <AvaButton.TextLarge onPress={props.onBtnSecondary}>
+        {props.btnSecondaryText}
+      </AvaButton.TextLarge>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     borderRadius: 8,
+    display: 'flex',
+    flexDirection: 'column',
+    padding: 16,
+    minHeight: 160,
+    marginBottom: 24,
   },
   buttonContainer: {
     margin: 0,
