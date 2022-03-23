@@ -2,11 +2,10 @@ import AppNavigation from 'navigation/AppNavigation';
 import HomeSVG from 'components/svg/HomeSVG';
 import SwapSVG from 'components/svg/SwapSVG';
 import WatchlistSVG from 'components/svg/WatchlistSVG';
-import {MainHeaderOptions} from 'navigation/NavUtils';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import PortfolioStackScreen from 'navigation/wallet/PortfolioScreenStack';
-import React, {ReactElement} from 'react';
+import React, {FC} from 'react';
 import ActivityList from 'screens/activity/ActivityList';
 import {View} from 'react-native';
 import AddSVG from 'components/svg/AddSVG';
@@ -107,7 +106,7 @@ const TabNavigator = () => {
           tabBarIcon: () => (
             <AddSVG color={theme.colorBg2} size={TAB_ICON_SIZE} hideCircle />
           ),
-          tabBarButton: props => <CustomTabBarFab {...props} />,
+          tabBarButton: props => <CustomTabBarFab children={props.children} />,
         }}
       />
       <Tab.Screen
@@ -149,7 +148,7 @@ const TabNavigator = () => {
  * @param children
  * @constructor
  */
-const CustomTabBarFab = ({children}: {children: ReactElement}) => {
+const CustomTabBarFab: FC = ({children}) => {
   const {theme} = useApplicationContext();
   const {openMoonPay} = useInAppBrowser();
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
