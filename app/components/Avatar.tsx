@@ -14,6 +14,7 @@ interface Props {
   logoUri?: string;
   showBorder?: boolean;
   size?: number;
+  circleColor?: string;
 }
 
 function isTokenWithBalance(
@@ -28,6 +29,7 @@ const AvatarBase: FC<Props> = ({
   logoUri,
   showBorder,
   size = 32,
+  circleColor,
 }) => {
   const {theme, isDarkMode} = useApplicationContext();
   const hasValidLogoUri =
@@ -60,9 +62,9 @@ const AvatarBase: FC<Props> = ({
           style={[
             styles.initials,
             {
-              backgroundColor: isDarkMode
-                ? theme.colorStroke2 + Opacity10
-                : theme.white,
+              backgroundColor: circleColor
+                ? circleColor
+                : theme.colorStroke2 + Opacity10,
               width: size,
               height: size,
             },

@@ -3,7 +3,6 @@ import React, {useMemo, useState} from 'react';
 import SearchBar from 'components/SearchBar';
 import {FlatList, ListRenderItemInfo} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
-import AvaButton from 'components/AvaButton';
 import AddressBookItem from 'components/addressBook/AddressBookItem';
 import {useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
@@ -27,15 +26,16 @@ const AddressBook = () => {
 
   const renderAccountItem = (item: ListRenderItemInfo<Contact>) => {
     return (
-      <AvaButton.Base
+      <AddressBookItem
+        title={item.item.title}
+        address={item.item.address}
         onPress={() => {
           navigate(AppNavigation.AddressBook.Details, {
             contactId: item.item.id,
             editable: false,
           });
-        }}>
-        <AddressBookItem title={item.item.title} address={item.item.address} />
-      </AvaButton.Base>
+        }}
+      />
     );
   };
 
