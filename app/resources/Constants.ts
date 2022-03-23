@@ -2,6 +2,7 @@ export const Opacity05 = '0D';
 export const Opacity10 = '1A';
 export const Opacity12 = '1E';
 export const Opacity15 = '26';
+export const Opacity30 = '4C';
 export const Opacity50 = '7F';
 export const Opacity85 = 'D9';
 

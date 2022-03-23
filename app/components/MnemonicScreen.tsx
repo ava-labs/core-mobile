@@ -7,6 +7,7 @@ import MnemonicAva from 'screens/onboarding/MnemonicAva';
 import AvaButton from 'components/AvaButton';
 import CopySVG from 'components/svg/CopySVG';
 import {copyToClipboard} from 'utils/DeviceTools';
+import {Opacity30} from 'resources/Constants';
 
 type Props = {
   mnemonic: string;
@@ -33,7 +34,9 @@ export default function MnemonicScreen({mnemonic}: Props) {
         style={[
           styles.mnemonics,
           {
-            backgroundColor: isDarkMode ? theme.colorBg2 : theme.colorBg1,
+            backgroundColor: isDarkMode
+              ? theme.colorBg3 + Opacity30
+              : theme.colorBg1,
           },
         ]}>
         {mnemonics()}
@@ -58,13 +61,15 @@ export default function MnemonicScreen({mnemonic}: Props) {
 
 const styles = StyleSheet.create({
   mnemonics: {
-    paddingVertical: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 20,
     borderRadius: 8,
     flexDirection: 'column',
     flex: 1,
+    justifyContent: 'space-between',
     flexWrap: 'wrap',
     marginTop: 8,
-    maxHeight: 280,
-    alignContent: 'center',
+    maxHeight: 310,
+    alignContent: 'space-between',
   },
 });
