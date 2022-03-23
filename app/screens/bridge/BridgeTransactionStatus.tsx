@@ -163,7 +163,7 @@ const BridgeTransactionStatus: FC<Props> = ({fromStack}) => {
             <View style={{alignItems: 'flex-end'}}>
               <Row>
                 <AvaText.Heading3>
-                  {txProps.gasCost?.toNumber().toFixed(9)} {txProps.symbol}
+                  {txProps.gasCost?.toNumber().toFixed(6)} {txProps.symbol}
                 </AvaText.Heading3>
               </Row>
               <AvaText.Body3 currency color={theme.colorText1}>

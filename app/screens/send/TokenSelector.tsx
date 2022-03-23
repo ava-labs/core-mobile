@@ -89,7 +89,7 @@ function TokenSelector({
           refreshing={false}
           keyExtractor={(item: TokenWithBalance) => getTokenUID(item)}
           ListEmptyComponent={
-            <ZeroState.NoResultsGraphical message={getNoResultsText()} />
+            <ZeroState.NoResultsTextual message={getNoResultsText()} />
           }
         />
       )}
