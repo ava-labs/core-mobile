@@ -1,5 +1,5 @@
 import React, {useMemo} from 'react';
-import {FlatList} from 'react-native';
+import {FlatList, View} from 'react-native';
 import ZeroState from 'components/ZeroState';
 import TabViewAva from 'components/TabViewAva';
 import AvaText from 'components/AvaText';
@@ -17,6 +17,7 @@ export default function AddressBookLists({
   onContactSelected,
   navigateToAddressBook,
 }: AddressBookListsProps) {
+  const {theme} = useApplicationContext();
   const {recentContacts, addressBook} =
     useApplicationContext().repo.addressBookRepo;
   const {accounts} = useApplicationContext().repo.accountsRepo;
@@ -44,6 +45,22 @@ export default function AddressBookLists({
       }),
     [addressBook, recentContacts, accounts],
   );
+
+  const renderCustomLabel = (title: string, selected: boolean) => {
+    return selected ? (
+      <AvaText.ButtonMedium
+        ellipsizeMode={'tail'}
+        textStyle={{
+          color: theme.alternateBackground,
+        }}>
+        {title}
+      </AvaText.ButtonMedium>
+    ) : (
+      <AvaText.Body2 ellipsizeMode={'tail'} textStyle={{lineHeight: 24}}>
+        {title}
+      </AvaText.Body2>
+    );
+  };
 
   return (
     <TabViewAva renderCustomLabel={renderCustomLabel}>
