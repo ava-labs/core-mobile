@@ -8,7 +8,6 @@ import AppNavigation from 'navigation/AppNavigation';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {SwapStackParamList} from 'navigation/wallet/SwapScreenStack';
 import {useApplicationContext} from 'contexts/ApplicationContext';
-import PersonageWithLantern from 'components/images/PersonageWithLantern';
 
 export default function FailScreen(): JSX.Element {
   const {navigate} = useNavigation<StackNavigationProp<SwapStackParamList>>();
@@ -21,9 +20,6 @@ export default function FailScreen(): JSX.Element {
 
   return (
     <View style={{flex: 1}}>
-      <View style={styles.background}>
-        <PersonageWithLantern />
-      </View>
       <View style={styles.container}>
         <AvaText.Heading1
           textStyle={{

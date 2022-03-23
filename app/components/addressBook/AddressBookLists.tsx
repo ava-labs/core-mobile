@@ -104,7 +104,7 @@ export default function AddressBookLists({
           )
         }
         contentContainerStyle={{paddingHorizontal: 16}}
-        ListEmptyComponent={<ZeroState.NoResultsGraphical />}
+        ListEmptyComponent={<ZeroState.NoResultsTextual />}
       />
     </TabViewAva>
   );
