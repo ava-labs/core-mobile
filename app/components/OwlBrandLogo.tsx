@@ -1,7 +1,7 @@
 import React from 'react';
 import OwlLogoSVG from 'components/svg/OwlLogoSVG';
 import {Space} from 'components/Space';
-import CoreXSVG from 'components/svg/CoreXSVG';
+import CoreSVG from 'components/svg/CoreSVG';
 import {StyleProp, View, ViewStyle} from 'react-native';
 
 export type OwlBrandLogoProps = {
@@ -28,7 +28,7 @@ export default function OwlBrandLogo({
       ]}>
       <OwlLogoSVG height={logoHeight} />
       <Space y={16} x={8} />
-      <CoreXSVG height={textHeight} />
+      <CoreSVG height={textHeight} />
     </View>
   );
 }
