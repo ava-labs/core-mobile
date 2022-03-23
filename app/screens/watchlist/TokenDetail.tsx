@@ -28,7 +28,6 @@ import {
   VictoryChart,
   VictoryTheme,
 } from 'victory-native';
-import {largeCurrencyFormatter} from 'utils/Utils';
 import {useTokenDetail} from 'screens/watchlist/useTokenDetail';
 import SparklineChart from 'components/SparklineChart';
 import {Row} from 'components/Row';
@@ -38,12 +37,8 @@ import TokenAddress from 'components/TokenAddress';
 
 const WIDOW_WIDTH = Dimensions.get('window').width;
 
-export function formatMarketNumbers(value: number) {
-  return value === 0 ? ' -' : largeCurrencyFormatter(value, 1);
-}
-
 const TokenDetail: FC<any> = () => {
-  const {theme} = useApplicationContext();
+  const {theme, appHook} = useApplicationContext();
   const {saveViewOnceInformation, infoHasBeenShown, viewOnceInfo} =
     useApplicationContext().repo.informationViewOnceRepo;
   const [showLineChart, setShowLineChart] = useState(true);
@@ -79,6 +74,10 @@ const TokenDetail: FC<any> = () => {
     if (urlHostname) {
       openUrl('https://' + urlHostname);
     }
+  }
+
+  function formatMarketNumbers(value: number) {
+    return value === 0 ? ' -' : appHook.currencyFormatter(value, 1);
   }
 
   useEffect(() => {
