@@ -13,7 +13,6 @@ export default function QRCodeSVG({color, size = 24}: Prop) {
   const iconColor = color ?? context.theme.alternateBackground;
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Rect width="24" height="24" fill="black" />
       <Path
         d="M15 20C14.4477 20 14 20.4477 14 21C14 21.5523 14.4477 22 15 22H20C21.1046 22 22 21.1046 22 20V15C22 14.4477 21.5523 14 21 14C20.4477 14 20 14.4477 20 15V19.3571C20 19.7122 19.7122 20 19.3571 20H15Z"
         fill={iconColor}
@@ -30,7 +29,7 @@ export default function QRCodeSVG({color, size = 24}: Prop) {
         d="M9 4C9.55228 4 10 3.55228 10 3C10 2.44772 9.55228 2 9 2H4C2.89543 2 2 2.89543 2 4V9C2 9.55228 2.44772 10 3 10C3.55228 10 4 9.55228 4 9V4.64286C4 4.28782 4.28782 4 4.64286 4H9Z"
         fill={iconColor}
       />
-      <Mask id="path-6-inside-1_5088_89422" fill={iconColor}>
+      <Mask id="path-6-inside-1_5088_89422" fill="white">
         <Rect x="6" y="6" width="5" height="5" rx="1" />
       </Mask>
       <Rect
@@ -44,7 +43,7 @@ export default function QRCodeSVG({color, size = 24}: Prop) {
         strokeLinejoin="bevel"
         mask="url(#path-6-inside-1_5088_89422)"
       />
-      <Mask id="path-7-inside-2_5088_89422" fill={iconColor}>
+      <Mask id="path-7-inside-2_5088_89422" fill="white">
         <Rect x="13" y="6" width="5" height="5" rx="1" />
       </Mask>
       <Rect
@@ -58,7 +57,7 @@ export default function QRCodeSVG({color, size = 24}: Prop) {
         strokeLinejoin="bevel"
         mask="url(#path-7-inside-2_5088_89422)"
       />
-      <Mask id="path-8-inside-3_5088_89422" fill={iconColor}>
+      <Mask id="path-8-inside-3_5088_89422" fill="white">
         <Rect x="13" y="13" width="5" height="5" rx="1" />
       </Mask>
       <Rect
@@ -72,7 +71,7 @@ export default function QRCodeSVG({color, size = 24}: Prop) {
         strokeLinejoin="bevel"
         mask="url(#path-8-inside-3_5088_89422)"
       />
-      <Mask id="path-9-inside-4_5088_89422" fill={iconColor}>
+      <Mask id="path-9-inside-4_5088_89422" fill="white">
         <Rect x="6" y="13" width="5" height="5" rx="1" />
       </Mask>
       <Rect
