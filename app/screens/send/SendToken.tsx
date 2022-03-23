@@ -21,10 +21,12 @@ import {useAddressBookLists} from 'components/addressBook/useAddressBookLists';
 
 function SendToken({
   onNext,
+  onOpenAddressBook,
   token,
   contact,
 }: {
   onNext: () => void;
+  onOpenAddressBook: () => void;
   token?: TokenWithBalance;
   contact?: Contact;
 }): JSX.Element {
@@ -122,7 +124,10 @@ function SendToken({
       </View>
       <Space y={24} />
       {showAddressBook ? (
-        <AddressBookLists onContactSelected={onContactSelected} />
+        <AddressBookLists
+          onContactSelected={onContactSelected}
+          navigateToAddressBook={onOpenAddressBook}
+        />
       ) : (
         <>
           <View style={{paddingHorizontal: 16}}>

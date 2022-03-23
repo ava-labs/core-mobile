@@ -121,6 +121,34 @@ function ZeroStateNoResultsTextual() {
   return <ZeroStateBase title={title} message={message} />;
 }
 
+function ZeroStateNoRecentAccounts() {
+  const title = 'No recent recipients';
+  const message = 'Enter the address in the field above.';
+
+  return <ZeroStateBase title={title} message={message} />;
+}
+
+function ZeroStateEmptyAddressBook({
+  onGoToAddressBook,
+}: {
+  onGoToAddressBook: () => void;
+}) {
+  const title = 'No addresses';
+  const message = 'You can add addresses in Address Book';
+
+  return (
+    <ZeroStateBase
+      title={title}
+      message={message}
+      additionalComponent={
+        <AvaButton.PrimaryMedium onPress={onGoToAddressBook}>
+          Go to Address Book
+        </AvaButton.PrimaryMedium>
+      }
+    />
+  );
+}
+
 type NoResultsProps = Pick<BaseProps, 'message'>;
 
 function ZeroStateNoResults({message}: NoResultsProps) {
@@ -143,6 +171,8 @@ const ZeroState = {
   Collectibles: ZeroStateCollectibles,
   NoResultsGraphical: ZeroStateNoResults,
   NoResultsTextual: ZeroStateNoResultsTextual,
+  NoRecentAccounts: ZeroStateNoRecentAccounts,
+  EmptyAddressBook: ZeroStateEmptyAddressBook,
   ComingSoon: ZeroStateComingSoon,
   SendError: ZeroStateSendError,
 };
