@@ -156,13 +156,13 @@ const CustomTabBarFab = ({children}: {children: ReactElement}) => {
 
   return (
     <>
-      {/* necessary for spacing between the fab and bottle bar buttons */}
+      {/* necessary for spacing between the fab and bottom bar buttons */}
       <Space x={48} />
       <FloatingActionButton
         backgroundColor={theme.colorIcon1}
         changeBackgroundColor={theme.colorIcon1}
         radius={110}
-        size={48}
+        size={56}
         changeIconTextColor={theme.colorBg2}
         icon={children}
         iconTextColor={theme.colorBg2}>
