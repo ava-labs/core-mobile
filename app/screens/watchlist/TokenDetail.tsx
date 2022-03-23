@@ -28,12 +28,13 @@ import {
   VictoryChart,
   VictoryTheme,
 } from 'victory-native';
-import {largeCurrencyFormatter, truncateAddress} from 'utils/Utils';
+import {largeCurrencyFormatter} from 'utils/Utils';
 import {useTokenDetail} from 'screens/watchlist/useTokenDetail';
 import SparklineChart from 'components/SparklineChart';
 import {Row} from 'components/Row';
 import MarketMovement from 'screens/watchlist/components/MarketMovement';
 import {ViewOnceInformation} from 'Repo';
+import TokenAddress from 'components/TokenAddress';
 
 const WIDOW_WIDTH = Dimensions.get('window').width;
 
@@ -342,14 +343,13 @@ const TokenDetail: FC<any> = () => {
           rightComponent={
             <View
               style={{
-                justifyContent: 'flex-start',
+                justifyContent: 'center',
                 alignItems: 'flex-start',
                 flex: 1,
               }}>
               <AvaText.Body2>Contract Address</AvaText.Body2>
-              <AvaText.Heading3>
-                {truncateAddress(tokenAddress)}
-              </AvaText.Heading3>
+              <Space y={4} />
+              <TokenAddress address={tokenAddress} textType={'Heading'} />
             </View>
           }
         />
