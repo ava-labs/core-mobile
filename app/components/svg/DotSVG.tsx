@@ -11,7 +11,7 @@ interface Prop {
 export default function DotSVG({borderColor, fillColor, size}: Prop) {
   const context = useApplicationContext();
 
-  const stroke = fillColor ?? borderColor ?? context.theme.inputBorder;
+  const stroke = fillColor ?? borderColor ?? context.theme.colorStroke;
   const computedSize = size ?? 20;
 
   return (

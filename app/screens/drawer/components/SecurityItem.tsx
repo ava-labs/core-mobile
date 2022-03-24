@@ -4,14 +4,13 @@ import CarrotSVG from 'components/svg/CarrotSVG';
 import AppNavigation from 'navigation/AppNavigation';
 import {useNavigation} from '@react-navigation/native';
 import {NativeStackNavigatorProps} from 'react-native-screens/lib/typescript/native-stack/types';
-import AvaText from 'components/AvaText';
 
 const SecurityItem = () => {
   const navigation = useNavigation<NativeStackNavigatorProps>();
 
   return (
     <AvaListItem.Base
-      title={<AvaText.Heading3>Security & Privacy</AvaText.Heading3>}
+      title={'Security & Privacy'}
       titleAlignment={'flex-start'}
       leftComponent={null}
       rightComponent={<CarrotSVG />}

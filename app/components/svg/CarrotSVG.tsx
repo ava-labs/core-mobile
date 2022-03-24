@@ -33,7 +33,7 @@ function CarrotSVG({color, size = 16, direction}: Prop) {
     <Svg width={size} height={size} viewBox="0 0 16 16" fill="none">
       <Path
         d="M5 3L10.25 8.25L5 13.5"
-        stroke={color || theme.txtDim}
+        stroke={color || theme.colorIcon1}
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"

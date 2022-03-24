@@ -9,7 +9,7 @@ interface Prop {
 
 function InfoSVG({color, size = 16}: Prop) {
   const context = useApplicationContext();
-  const iconColor = color ?? context.theme.tabBarIconInactive;
+  const iconColor = color ?? context.theme.colorText2;
   return (
     <Svg width={size} height={size} viewBox="0 0 16 16" fill="none">
       <Path

@@ -16,6 +16,7 @@ const TopNavigationHeader: FC = () => {
     <View
       style={{
         flexDirection: 'row',
+        paddingHorizontal: 8,
         justifyContent: 'space-between',
       }}>
       <AvaButton.Icon
@@ -28,7 +29,6 @@ const TopNavigationHeader: FC = () => {
         }
       />
       <AvaButton.Icon
-        style={{marginRight: 8}}
         onPress={() => navigation.navigate(AppNavigation.Wallet.ReceiveTokens)}>
         <QRCodeSVG />
       </AvaButton.Icon>

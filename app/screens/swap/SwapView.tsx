@@ -33,10 +33,9 @@ export default function SwapView() {
   return (
     <View style={styles.container}>
       <ScrollView style={styles.container}>
-        <Space y={8} />
-        <AvaText.Heading1 textStyle={{marginHorizontal: 16}}>
+        <AvaText.LargeTitleBold textStyle={{marginHorizontal: 16}}>
           Swap
-        </AvaText.Heading1>
+        </AvaText.LargeTitleBold>
         {networkContext?.network === FUJI_NETWORK ? (
           <ZeroState.NoResultsGraphical message={'Not available on Testnet'} />
         ) : (
@@ -49,7 +48,7 @@ export default function SwapView() {
               style={{
                 alignSelf: 'flex-end',
                 borderRadius: 50,
-                backgroundColor: theme.listItemBg,
+                backgroundColor: theme.colorBg2,
                 width: 40,
                 height: 40,
                 justifyContent: 'center',

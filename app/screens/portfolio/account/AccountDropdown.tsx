@@ -117,7 +117,7 @@ function AccountDropdown({
               textStyle={{
                 marginHorizontal: 16,
                 marginVertical: 12,
-                color: theme.colorAccent,
+                color: theme.colorPrimary1,
               }}>
               Add/Edit Accounts
             </AvaText.ButtonLarge>

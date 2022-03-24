@@ -33,7 +33,7 @@ const SwapReview: FC = () => {
   const animatedColor = useMemo(() => {
     return colorAnim.interpolate({
       inputRange: [0, 1],
-      outputRange: [theme.white, theme.accentColor],
+      outputRange: [theme.white, theme.colorPrimary1],
     });
   }, [colorAnim]);
 
@@ -89,9 +89,8 @@ const SwapReview: FC = () => {
   ) : (
     <View style={styles.container}>
       <ScrollView style={styles.container}>
-        <Space y={8} />
         <Row style={{justifyContent: 'space-between', marginHorizontal: 16}}>
-          <AvaText.Heading1>Review Order</AvaText.Heading1>
+          <AvaText.LargeTitleBold>Review Order</AvaText.LargeTitleBold>
           <Popable
             content={'Quotes are refreshed to reflect current market prices'}
             position={'left'}
@@ -99,7 +98,7 @@ const SwapReview: FC = () => {
             backgroundColor={theme.colorBg3}>
             <Row
               style={{
-                backgroundColor: theme.listItemBg,
+                backgroundColor: theme.colorBg2,
                 padding: 8,
                 borderRadius: 100,
               }}>
@@ -155,14 +154,9 @@ const SwapReview: FC = () => {
           justifyContent: 'space-between',
         }}>
         <View style={{flex: 1, marginHorizontal: 16}}>
-          <AvaButton.PrimaryLarge
-            onPress={goBack}
-            textColor={theme.colorText1}
-            style={{
-              backgroundColor: theme.colorDisabled,
-            }}>
+          <AvaButton.SecondaryLarge onPress={goBack}>
             Cancel
-          </AvaButton.PrimaryLarge>
+          </AvaButton.SecondaryLarge>
         </View>
         <View style={{flex: 1, marginRight: 16}}>
           <AvaButton.PrimaryLarge onPress={onConfirm}>

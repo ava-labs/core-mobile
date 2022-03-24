@@ -42,9 +42,7 @@ const RadioGroup: FC<RadioGroupProps> = ({
               borderTopRightRadius: index === children.length - 1 ? 4 : 0,
               borderBottomRightRadius: index === children.length - 1 ? 4 : 0,
               backgroundColor:
-                selected === child.key
-                  ? theme.radioBtnSelected
-                  : theme.radioBtn,
+                selected === child.key ? theme.colorIcon1 : theme.colorBg3,
             },
           ]}>
           {clone}

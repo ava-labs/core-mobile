@@ -37,7 +37,7 @@ export default function HeaderAccountSelector({
           {activeAccount?.title}
         </AvaText.Heading3>
         <View style={{transform: [{rotate: rotation}]}}>
-          <CarrotSVG color={theme.txtListItem} />
+          <CarrotSVG color={theme.colorText1} />
         </View>
       </View>
     </AvaButton.Base>

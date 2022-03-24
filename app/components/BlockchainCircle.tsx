@@ -10,22 +10,8 @@ interface Props {
   textSize?: number;
 }
 
-function BlockchainCircle({
-  chain,
-  active = false,
-  onChainSelected,
-  size,
-  textSize,
-}: Props) {
+function BlockchainCircle({chain, onChainSelected, size, textSize}: Props) {
   const context = useApplicationContext();
-
-  function getBackgroundColor() {
-    if (active) {
-      return context.theme.accentColor;
-    }
-
-    return context.theme.bgSearch;
-  }
 
   return (
     <TouchableOpacity
@@ -33,7 +19,7 @@ function BlockchainCircle({
       style={[
         styles.circle,
         {
-          backgroundColor: getBackgroundColor(),
+          backgroundColor: context.theme.colorBg3,
           width: size ?? 40,
           height: size ?? 40,
         },
@@ -41,7 +27,7 @@ function BlockchainCircle({
       <Text
         style={[
           {
-            color: active ? context.theme.txtOnBgApp : context.theme.txtOnBgApp,
+            color: context.theme.alternateBackground,
             fontSize: textSize ?? 16,
           },
         ]}>

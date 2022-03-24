@@ -8,6 +8,7 @@ import {useApplicationContext} from 'contexts/ApplicationContext';
 import {Space} from 'components/Space';
 import {copyToClipboard} from 'utils/DeviceTools';
 import useAddressBook from 'screens/drawer/addressBook/useAddressBook';
+import {truncateAddress} from 'utils/Utils';
 
 interface Props {
   title: string;
@@ -42,7 +43,7 @@ export default function AddressBookItem({title, address}: Props) {
           <CopySVG color={theme.colorText1} size={16} />
         </AvaButton.Icon>
         <Space x={8} />
-        <AvaText.Body2 ellipsizeMode={'middle'}>{shortAddress}</AvaText.Body2>
+        <AvaText.Body2>{truncateAddress(shortAddress)}</AvaText.Body2>
       </View>
     </View>
   );

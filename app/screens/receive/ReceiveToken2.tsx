@@ -16,7 +16,7 @@ import {
   useFocusEffect,
   useNavigation,
 } from '@react-navigation/native';
-import AvaxQACode from 'components/AvaxQACode';
+import AvaxQACode from 'components/AvaxQRCode';
 import HeaderAccountSelector from 'components/HeaderAccountSelector';
 import AppNavigation from 'navigation/AppNavigation';
 import {copyToClipboard} from 'utils/DeviceTools';
@@ -148,10 +148,10 @@ const Receive: FC<{
       <Space y={embedded ? 34 : 8} />
       {embedded || (
         <>
-          <AvaText.Heading1 textStyle={{marginHorizontal: 16}}>
-            Receive Tokens
-          </AvaText.Heading1>
-          <Space y={24} />
+          <AvaText.LargeTitleBold textStyle={{marginHorizontal: 16}}>
+            Receive
+          </AvaText.LargeTitleBold>
+          <Space y={12} />
         </>
       )}
       <Text style={{marginHorizontal: 16, paddingTop: 4}}>
@@ -162,26 +162,26 @@ const Receive: FC<{
         <AvaText.Body2>address to receive funds.</AvaText.Body2>
       </Text>
       <View style={[styles.container]}>
-        <Space y={40} />
+        <Space y={55} />
         <View style={{alignSelf: 'center'}}>
           <AvaxQACode
             circularText={isXChain ? 'X Chain' : 'C Chain'}
-            sizePercentage={0.8}
+            sizePercentage={0.7}
             address={props.selectedAddress}
           />
         </View>
-        <Space y={32} />
+        <Space y={40} />
         <AvaButton.Base
           onPress={() => copyToClipboard(props.selectedAddress)}
           style={[
             styles.copyAddressContainer,
-            {backgroundColor: theme.listItemBg},
+            {backgroundColor: theme.colorBg2},
           ]}>
-          <AvaText.Body1
+          <AvaText.ButtonMedium
             ellipsizeMode={'middle'}
-            textStyle={{flex: 1, marginRight: 16}}>
+            textStyle={{flex: 1, marginRight: 16, color: theme.colorText1}}>
             {props.selectedAddress}
-          </AvaText.Body1>
+          </AvaText.ButtonMedium>
           <CopySVG color={theme.colorText1} />
         </AvaButton.Base>
         <Space y={16} />
@@ -201,7 +201,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 8,
     marginHorizontal: 16,
-    alignSelf: 'baseline',
   },
 });
 

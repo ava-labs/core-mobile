@@ -8,7 +8,6 @@ import DotSVG from 'components/svg/DotSVG';
 import Separator from 'components/Separator';
 import {Row} from 'components/Row';
 import AvaButton from 'components/AvaButton';
-import {Opacity10} from 'resources/Constants';
 import FlexSpacer from 'components/FlexSpacer';
 import NetworkFeeSelector from 'components/NetworkFeeSelector';
 import {useSendTokenContext} from 'contexts/SendTokenContext';
@@ -56,9 +55,9 @@ export default function ReviewSend({
 
   return (
     <View style={{flex: 1}}>
-      <AvaText.Heading1 textStyle={{marginHorizontal: 16}}>
+      <AvaText.LargeTitleBold textStyle={{marginHorizontal: 16}}>
         Send
-      </AvaText.Heading1>
+      </AvaText.LargeTitleBold>
       <View
         style={{
           width: '100%',
@@ -130,15 +129,9 @@ export default function ReviewSend({
               Send Now
             </AvaButton.PrimaryLarge>
             <Space y={16} />
-            <AvaButton.PrimaryLarge
-              onPress={() => goBack()}
-              style={{
-                backgroundColor: isDarkMode
-                  ? theme.white + Opacity10
-                  : theme.colorBg1 + Opacity10,
-              }}>
+            <AvaButton.SecondaryLarge onPress={() => goBack()}>
               Cancel
-            </AvaButton.PrimaryLarge>
+            </AvaButton.SecondaryLarge>
           </>
         )}
         {sendStatus === 'Sending' && (

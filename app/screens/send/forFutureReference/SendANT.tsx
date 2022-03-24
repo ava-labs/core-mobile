@@ -1,10 +1,8 @@
 import React from 'react';
 import {Alert} from 'react-native';
-import AppNavigation from 'navigation/AppNavigation';
 import {AntWithBalance, useSendAnt} from '@avalabs/wallet-react-components';
 import SendForm from 'screens/send/forFutureReference/SendForm';
 import {useSelectedTokenContext} from 'contexts/SelectedTokenContext';
-import {bnAmountToString} from 'dto/SendInfo';
 import {asyncScheduler, defer, from, scheduled} from 'rxjs';
 
 /**

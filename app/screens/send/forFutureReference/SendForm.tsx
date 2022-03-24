@@ -84,7 +84,7 @@ const SendForm: FC<Props> = ({
         <AvaText.Body3
           textStyle={{
             textAlign: 'right',
-            color: context.theme.txtListItemSubscript,
+            color: context.theme.colorText2,
           }}>
           {`Transaction fee: ${bnAmountToString(sendFee)}`}
         </AvaText.Body3>

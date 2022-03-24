@@ -16,6 +16,7 @@ import {
 } from '@react-navigation/stack';
 import BiometricsSDK from 'utils/BiometricsSDK';
 import {useApplicationContext} from 'contexts/ApplicationContext';
+import {MainHeaderOptions} from 'navigation/NavUtils';
 
 type EnterWithMnemonicStackParamList = {
   [AppNavigation.LoginWithMnemonic.LoginWithMnemonic]: undefined;
@@ -37,6 +38,7 @@ const EnterWithMnemonicStack = () => {
     <EnterWithMnemonicContext.Provider value={{setMnemonic, mnemonic}}>
       <EnterWithMnemonicS.Navigator screenOptions={{headerShown: false}}>
         <EnterWithMnemonicS.Screen
+          options={MainHeaderOptions('')}
           name={AppNavigation.LoginWithMnemonic.LoginWithMnemonic}
           component={LoginWithMnemonicScreen}
         />

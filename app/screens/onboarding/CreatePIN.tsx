@@ -2,7 +2,6 @@ import React, {useEffect} from 'react';
 import {Animated, StyleSheet, View} from 'react-native';
 import PinKey, {PinKeys} from './PinKey';
 import {useCreatePin} from './CreatePinViewModel';
-import TextLabel from 'components/TextLabel';
 import {Space} from 'components/Space';
 import AvaText from 'components/AvaText';
 import DotSVG from 'components/svg/DotSVG';
@@ -39,16 +38,15 @@ export default function CreatePIN({
   isResettingPin,
 }: Props): JSX.Element {
   const {theme} = useApplicationContext();
-  const [
+  const {
     title,
-    errorMessage,
     pinDots,
     onEnterChosenPin,
     onEnterConfirmedPin,
     chosenPinEntered,
     validPin,
     jiggleAnim,
-  ] = useCreatePin(isResettingPin);
+  } = useCreatePin(isResettingPin);
 
   useEffect(() => {
     if (validPin) {
@@ -62,7 +60,7 @@ export default function CreatePIN({
     pinDots.forEach((value, key) => {
       dots.push(
         <DotSVG
-          fillColor={value.filled ? theme.colorPrimary1 : undefined}
+          fillColor={value.filled ? theme.alternateBackground : undefined}
           key={key}
         />,
       );
@@ -91,18 +89,12 @@ export default function CreatePIN({
     <View style={[styles.verticalLayout]}>
       {isResettingPin || (
         <>
-          <Space y={8} />
-          <AvaText.Heading1 textStyle={{textAlign: 'center'}}>
+          <AvaText.LargeTitleBold textStyle={{marginHorizontal: 16}}>
             {title}
-          </AvaText.Heading1>
-          <Space y={8} />
-          <AvaText.Body4 textStyle={{textAlign: 'center'}}>
-            Access your wallet faster
-          </AvaText.Body4>
-          <Space y={8} />
+          </AvaText.LargeTitleBold>
+          <Space y={20} />
         </>
       )}
-      {errorMessage.length > 0 && <TextLabel text={errorMessage} />}
       <Animated.View
         style={[
           {padding: 68, flexGrow: 1},

@@ -3,6 +3,7 @@ import AvaText from 'components/AvaText';
 import InputText from 'components/InputText';
 import {Space} from 'components/Space';
 import {View} from 'react-native';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 
 const ContactInput = ({
   initName,
@@ -15,6 +16,7 @@ const ContactInput = ({
   onNameChange: (name: string) => void;
   onAddressChange: (address: string) => void;
 }) => {
+  const {theme} = useApplicationContext();
   const [name, setName] = useState(initName);
   const [address, setAddress] = useState(initAddress);
 
@@ -28,8 +30,7 @@ const ContactInput = ({
 
   return (
     <>
-      <AvaText.Body2>Name</AvaText.Body2>
-      <Space y={8} />
+      <AvaText.Body2 textStyle={{color: theme.colorText1}}>Name</AvaText.Body2>
       <View style={{marginHorizontal: -16}}>
         <InputText
           placeholder={'Enter contact name'}
@@ -38,8 +39,9 @@ const ContactInput = ({
         />
       </View>
       <Space y={24} />
-      <AvaText.Body2>Address</AvaText.Body2>
-      <Space y={8} />
+      <AvaText.Body2 textStyle={{color: theme.colorText1}}>
+        Address
+      </AvaText.Body2>
       <View style={{marginHorizontal: -16}}>
         <InputText
           multiline

@@ -1,6 +1,7 @@
 import React, {FC, useMemo} from 'react';
 import {
   ActivityIndicator,
+  Alert,
   ListRenderItemInfo,
   Pressable,
   ScrollView,
@@ -181,8 +182,12 @@ const Bridge: FC = () => {
         txTimestamp: Date.now().toString(),
       });
     } catch (e) {
-      // user declined transaction
-      console.error(e);
+      const error = e as Error;
+      Alert.alert(
+        'Error Bridging',
+        error?.reason ??
+          'An unknown error has occurred. Bridging was halted. Please try again later',
+      );
       return;
     } finally {
       setPending(false);
@@ -200,6 +205,9 @@ const Bridge: FC = () => {
   return (
     <SafeAreaProvider>
       <ScrollView style={styles.container}>
+        <AvaText.LargeTitleBold textStyle={{marginHorizontal: 8}}>
+          Bridge
+        </AvaText.LargeTitleBold>
         <Space y={20} />
         <View style={{backgroundColor: theme.colorBg2, borderRadius: 10}}>
           <AvaListItem.Base

@@ -50,12 +50,17 @@ function SendScreenStack() {
 
 const SendTokenComponent = () => {
   const {navigate} = useNavigation<StackNavigationProp<SendStackParamList>>();
+  const {navigate: rootNavigate} =
+    useNavigation<StackNavigationProp<SendStackParamList>>().getParent<
+      StackNavigationProp<RootStackParamList>
+    >();
   const {params} = useRoute<RouteProp<SendStackParamList>>();
   return (
     <SendToken
       contact={params?.contact}
       token={params?.token}
       onNext={() => navigate(AppNavigation.Send.Review)}
+      onOpenAddressBook={() => rootNavigate(AppNavigation.Wallet.AddressBook)}
     />
   );
 };

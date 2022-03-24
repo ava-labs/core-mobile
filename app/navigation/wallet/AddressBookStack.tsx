@@ -50,9 +50,7 @@ const AddressBookStack = () => {
       <Stack.Screen
         options={{
           headerShown: true,
-          ...(MainHeaderOptions(
-            'New Contact',
-          ) as Partial<StackNavigationOptions>),
+          ...(MainHeaderOptions('') as Partial<StackNavigationOptions>),
         }}
         name={AppNavigation.AddressBook.Add}
         component={AddContact}
@@ -150,7 +148,7 @@ const EditAddressBookContact = ({onEdit}: {onEdit: () => void}) => {
 
   return (
     <AvaButton.Icon onPress={() => onEdit()}>
-      <AvaText.ButtonLarge textStyle={{color: theme.colorAccent}}>
+      <AvaText.ButtonLarge textStyle={{color: theme.colorPrimary1}}>
         Edit
       </AvaText.ButtonLarge>
     </AvaButton.Icon>
@@ -162,7 +160,7 @@ const SaveAddressBookContact = ({onSave}: {onSave: () => void}) => {
 
   return (
     <AvaButton.Icon onPress={() => onSave()}>
-      <AvaText.ButtonLarge textStyle={{color: theme.colorAccent}}>
+      <AvaText.ButtonLarge textStyle={{color: theme.colorPrimary1}}>
         Save
       </AvaText.ButtonLarge>
     </AvaButton.Icon>

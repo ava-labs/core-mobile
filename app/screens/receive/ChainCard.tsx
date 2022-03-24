@@ -4,7 +4,7 @@ import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaText from 'components/AvaText';
 import {Opacity05} from 'resources/Constants';
 import {Space} from 'components/Space';
-import AvaxQACode from 'components/AvaxQACode';
+import AvaxQACode from 'components/AvaxQRCode';
 
 interface Props {
   chainName: string;

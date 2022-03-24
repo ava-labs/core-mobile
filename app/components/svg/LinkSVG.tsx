@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React from 'react';
 import Svg, {Path} from 'react-native-svg';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 
@@ -8,7 +8,7 @@ interface Prop {
 
 function ActivitySVG({color}: Prop) {
   const context = useApplicationContext();
-  const svgColor = color ?? context.theme.accentColor;
+  const svgColor = color ?? context.theme.colorPrimary1;
 
   return (
     <Svg width="16" height="16" viewBox="0 0 16 16" fill="none">

@@ -23,6 +23,7 @@ const AvaxTextBase: FC<AvaTextProps> = ({
   currency,
   hideTrailingCurrency,
   children,
+  ellipsizeMode,
   ...rest
 }) => {
   const {selectedCurrency, currencyFormatter} = useApplicationContext().appHook;
@@ -32,13 +33,19 @@ const AvaxTextBase: FC<AvaTextProps> = ({
     currency
   ) {
     return animated ? (
-      <Animated.Text {...rest}>
+      <Animated.Text
+        {...rest}
+        numberOfLines={ellipsizeMode ? 1 : undefined}
+        ellipsizeMode={ellipsizeMode}>
         {`${currencyFormatter(Number(children))} ${
           hideTrailingCurrency ? '' : selectedCurrency
         }`.trim()}
       </Animated.Text>
     ) : (
-      <Text {...rest}>
+      <Text
+        {...rest}
+        numberOfLines={ellipsizeMode ? 1 : undefined}
+        ellipsizeMode={ellipsizeMode}>
         {`${currencyFormatter(Number(children))} ${
           hideTrailingCurrency ? '' : selectedCurrency
         }`.trim()}
@@ -46,9 +53,30 @@ const AvaxTextBase: FC<AvaTextProps> = ({
     );
   }
   return animated ? (
-    <Animated.Text {...rest}>{children}</Animated.Text>
+    <Animated.Text
+      {...rest}
+      numberOfLines={ellipsizeMode ? 1 : undefined}
+      ellipsizeMode={ellipsizeMode}>
+      {children}
+    </Animated.Text>
   ) : (
-    <Text {...rest}>{children}</Text>
+    <Text
+      {...rest}
+      numberOfLines={ellipsizeMode ? 1 : undefined}
+      ellipsizeMode={ellipsizeMode}>
+      {children}
+    </Text>
+  );
+};
+
+const ExtraLargeTitle: FC<AvaTextProps> = ({textStyle, children, ...rest}) => {
+  const theme = useApplicationContext().theme;
+  return (
+    <AvaxTextBase
+      {...rest}
+      style={[styles.extraLargeTitle, {color: theme.colorText1}, textStyle]}>
+      {children}
+    </AvaxTextBase>
   );
 };
 
@@ -58,6 +86,21 @@ const LargeTitleBold: FC<AvaTextProps> = ({textStyle, children, ...rest}) => {
     <AvaxTextBase
       {...rest}
       style={[styles.largeTitleBold, {color: theme.colorText1}, textStyle]}>
+      {children}
+    </AvaxTextBase>
+  );
+};
+
+const LargeTitleRegular: FC<AvaTextProps> = ({
+  textStyle,
+  children,
+  ...rest
+}) => {
+  const theme = useApplicationContext().theme;
+  return (
+    <AvaxTextBase
+      {...rest}
+      style={[styles.largeTitleRegular, {color: theme.colorText1}, textStyle]}>
       {children}
     </AvaxTextBase>
   );
@@ -73,29 +116,18 @@ const TextHeading1: FC<AvaTextProps> = ({
   return (
     <AvaxTextBase
       {...rest}
-      style={[styles.heading1, {color: color ?? theme.txtListItem}, textStyle]}>
+      style={[styles.heading1, {color: color ?? theme.colorText1}, textStyle]}>
       {children}
     </AvaxTextBase>
   );
 };
 
-const TextHeading2: FC<AvaTextProps> = ({
-  ellipsizeMode,
-  textStyle,
-  children,
-  ...rest
-}) => {
+const TextHeading2: FC<AvaTextProps> = ({textStyle, children, ...rest}) => {
   const theme = useApplicationContext().theme;
 
   return (
     <AvaxTextBase
-      ellipsizeMode={ellipsizeMode}
-      numberOfLines={ellipsizeMode ? 1 : undefined}
-      style={[
-        styles.heading2,
-        {color: theme.txtListItem, flexShrink: ellipsizeMode ? 1 : 0},
-        textStyle,
-      ]}
+      style={[styles.heading2, {color: theme.colorText1}, textStyle]}
       {...rest}>
       {children}
     </AvaxTextBase>
@@ -103,7 +135,6 @@ const TextHeading2: FC<AvaTextProps> = ({
 };
 
 const TextHeading3: FC<AvaTextProps> = ({
-  ellipsizeMode,
   textStyle,
   children,
   currency,
@@ -113,35 +144,21 @@ const TextHeading3: FC<AvaTextProps> = ({
   return (
     <AvaxTextBase
       {...rest}
-      ellipsizeMode={ellipsizeMode}
-      numberOfLines={ellipsizeMode ? 1 : undefined}
       currency={currency}
-      style={[
-        styles.heading3,
-        {flexShrink: ellipsizeMode ? 1 : 0, color: theme.txtListItem},
-        textStyle,
-      ]}>
+      style={[styles.heading3, {color: theme.colorText1}, textStyle]}>
       {children}
     </AvaxTextBase>
   );
 };
 
-const TextBody1: FC<AvaTextProps> = ({
-  ellipsizeMode,
-  textStyle,
-  children,
-  color,
-  ...rest
-}) => {
+const TextBody1: FC<AvaTextProps> = ({textStyle, children, color, ...rest}) => {
   const theme = useApplicationContext().theme;
   return (
     <AvaxTextBase
       {...rest}
-      ellipsizeMode={ellipsizeMode}
-      numberOfLines={ellipsizeMode ? 1 : undefined}
       style={[
         styles.body1,
-        {flexShrink: ellipsizeMode ? 1 : 0, color: theme.colorText1},
+        {color: theme.colorText1},
         textStyle,
         !!color && {color: color},
       ]}>
@@ -150,24 +167,12 @@ const TextBody1: FC<AvaTextProps> = ({
   );
 };
 
-const TextBody2: FC<AvaTextProps> = ({
-  ellipsizeMode,
-  color,
-  textStyle,
-  children,
-  ...rest
-}) => {
+const TextBody2: FC<AvaTextProps> = ({color, textStyle, children, ...rest}) => {
   const theme = useApplicationContext().theme;
   return (
     <AvaxTextBase
       {...rest}
-      ellipsizeMode={ellipsizeMode}
-      numberOfLines={ellipsizeMode ? 1 : undefined}
-      style={[
-        styles.body2,
-        {flexShrink: ellipsizeMode ? 1 : 0, color: color ?? theme.colorText2},
-        textStyle,
-      ]}>
+      style={[styles.body2, {color: color ?? theme.colorText2}, textStyle]}>
       {children}
     </AvaxTextBase>
   );
@@ -194,11 +199,22 @@ const TextBody4: FC<AvaTextProps> = ({textStyle, children, ...rest}) => {
   );
 };
 
+const TextLink: FC<AvaTextProps> = ({textStyle, children, ...rest}) => {
+  const {theme} = useApplicationContext();
+  return (
+    <AvaxTextBase
+      style={[styles.textLink, {color: theme.colorPrimary1}, textStyle]}
+      {...rest}>
+      {children}
+    </AvaxTextBase>
+  );
+};
+
 const TextTag: FC<AvaTextProps> = ({textStyle, children, ...rest}) => {
   const theme = useApplicationContext().theme;
   return (
     <AvaxTextBase
-      style={[styles.textTag, {color: theme.txtListItem}, textStyle]}
+      style={[styles.textTag, {color: theme.colorText1}, textStyle]}
       {...rest}>
       {children}
     </AvaxTextBase>
@@ -233,22 +249,9 @@ const TextButtonMedium: FC<AvaTextProps> = ({textStyle, children, ...rest}) => {
   );
 };
 
-const TextButtonSmall: FC<AvaTextProps> = ({
-  ellipsizeMode,
-  textStyle,
-  children,
-  ...rest
-}) => {
+const TextButtonSmall: FC<AvaTextProps> = ({textStyle, children, ...rest}) => {
   return (
-    <AvaxTextBase
-      ellipsizeMode={ellipsizeMode}
-      numberOfLines={ellipsizeMode ? 1 : undefined}
-      style={[
-        styles.textButtonSmall,
-        {flexShrink: ellipsizeMode ? 1 : 0},
-        textStyle,
-      ]}
-      {...rest}>
+    <AvaxTextBase style={[styles.textButtonSmall, textStyle]} {...rest}>
       {children}
     </AvaxTextBase>
   );
@@ -269,30 +272,21 @@ const TextCaption: FC<AvaTextProps> = ({
   );
 };
 
-const ActivityTotal: FC<AvaTextProps> = ({
-  ellipsizeMode,
-  textStyle,
-  children,
-  ...rest
-}) => {
+const ActivityTotal: FC<AvaTextProps> = ({textStyle, children, ...rest}) => {
   const theme = useApplicationContext().theme;
   return (
     <AvaxTextBase
       {...rest}
-      ellipsizeMode={ellipsizeMode}
-      numberOfLines={ellipsizeMode ? 1 : undefined}
-      style={[
-        styles.activityTotal,
-        {flexShrink: ellipsizeMode ? 1 : 0, color: theme.colorText1},
-        textStyle,
-      ]}>
+      style={[styles.activityTotal, {color: theme.colorText1}, textStyle]}>
       {children}
     </AvaxTextBase>
   );
 };
 
 const AvaText = {
+  ExtraLargeTitle: ExtraLargeTitle,
   LargeTitleBold: LargeTitleBold,
+  LargeTitleRegular: LargeTitleRegular,
   Heading1: TextHeading1,
   Heading2: TextHeading2,
   Heading3: TextHeading3,
@@ -300,17 +294,28 @@ const AvaText = {
   Body2: TextBody2,
   Body3: TextBody3,
   Body4: TextBody4, //this font configuration is not named in design at the time of writing
-  Tag: TextTag,
+  TextLink: TextLink, //this font configuration is not named in design at the time of writing
   ButtonLarge: TextButtonLarge,
   ButtonMedium: TextButtonMedium,
   ButtonSmall: TextButtonSmall,
-  ActivityTotal: ActivityTotal, //this font configuration is not named in design at the time of writing
   Caption: TextCaption,
+  ActivityTotal: ActivityTotal, //this font configuration is not named in design at the time of writing
+  Tag: TextTag,
 };
 
 const styles = StyleSheet.create({
+  extraLargeTitle: {
+    fontFamily: 'Inter-ExtraBold',
+    fontSize: 64,
+    lineHeight: 78,
+  },
   largeTitleBold: {
     fontFamily: 'Inter-Bold',
+    fontSize: 36,
+    lineHeight: 44,
+  },
+  largeTitleRegular: {
+    fontFamily: 'Inter-Regular',
     fontSize: 36,
     lineHeight: 44,
   },
@@ -349,6 +354,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 19,
   },
+  textLink: {
+    fontFamily: 'Inter-SemiBold',
+    fontSize: 14,
+    lineHeight: 17,
+  },
   textTag: {
     fontFamily: 'Inter-Bold',
     fontSize: 16,
@@ -375,10 +385,9 @@ const styles = StyleSheet.create({
     lineHeight: 17,
   },
   textCaption: {
-    fontFamily: 'Inter',
+    fontFamily: 'Inter-Regular',
     fontSize: 12,
     lineHeight: 15,
-    fontWeight: '600',
   },
 });
 

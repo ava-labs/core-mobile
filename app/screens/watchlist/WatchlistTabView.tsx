@@ -27,6 +27,10 @@ export default function WatchlistTab() {
 
   return (
     <View style={{flex: 1}}>
+      <AvaText.LargeTitleBold textStyle={{marginHorizontal: 16}}>
+        Watchlist
+      </AvaText.LargeTitleBold>
+      <Space y={10} />
       <SearchBar
         onTextChanged={setSearchText}
         searchText={searchText}

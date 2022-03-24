@@ -10,7 +10,6 @@ import NetworkFeeSelector from 'components/NetworkFeeSelector';
 import AppNavigation from 'navigation/AppNavigation';
 import FlexSpacer from 'components/FlexSpacer';
 import AvaButton from 'components/AvaButton';
-import {Opacity10} from 'resources/Constants';
 import SendRow from 'components/SendRow';
 import {useGasPrice} from 'utils/GasPriceHook';
 import {useSendNFTContext} from 'contexts/SendNFTContext';
@@ -55,9 +54,9 @@ export default function NftReview({onSuccess}: NftReviewScreenProps) {
 
   return (
     <View style={styles.container}>
-      <AvaText.Heading1 textStyle={{marginHorizontal: 16}}>
+      <AvaText.LargeTitleBold textStyle={{marginHorizontal: 16}}>
         Send
-      </AvaText.Heading1>
+      </AvaText.LargeTitleBold>
       <View
         style={{
           width: '100%',
@@ -128,13 +127,9 @@ export default function NftReview({onSuccess}: NftReviewScreenProps) {
               Send Now
             </AvaButton.PrimaryLarge>
             <Space y={16} />
-            <AvaButton.PrimaryLarge
-              onPress={() => goBack()}
-              style={{
-                backgroundColor: theme.white + Opacity10,
-              }}>
+            <AvaButton.SecondaryLarge onPress={() => goBack()}>
               Cancel
-            </AvaButton.PrimaryLarge>
+            </AvaButton.SecondaryLarge>
           </>
         )}
         {sendStatus === 'Sending' && (

@@ -3,19 +3,14 @@ import Svg, {Path} from 'react-native-svg';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 
 interface Prop {
-  selected?: boolean;
   color?: string;
   size?: number;
 }
 
-function SwapSVG({selected, color, size = 24}: Prop) {
+function SwapSVG({color, size = 24}: Prop) {
   const context = useApplicationContext();
 
-  const svgColor = color
-    ? color
-    : selected
-    ? context.theme.accentColor
-    : context.theme.onBgSearch;
+  const svgColor = color ? color : context.theme.colorText1;
 
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">

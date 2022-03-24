@@ -4,6 +4,7 @@ import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaListItem from 'components/AvaListItem';
 import AvaText from 'components/AvaText';
 import Avatar from 'components/Avatar';
+import {Opacity85} from 'resources/Constants';
 
 interface Props {
   tokenName: string;
@@ -39,7 +40,7 @@ const PortfolioListItem: FC<Props> = ({
       style={{
         marginVertical: 4,
         borderRadius: 8,
-        backgroundColor: theme.listItemBg + 'D9',
+        backgroundColor: theme.colorBg2 + Opacity85,
       }}>
       <AvaListItem.Base
         title={<AvaText.Heading2>{title}</AvaText.Heading2>}
