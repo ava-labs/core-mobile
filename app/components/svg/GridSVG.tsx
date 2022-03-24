@@ -10,7 +10,7 @@ interface Prop {
 function GridSVG({color, size = 24}: Prop) {
   const context = useApplicationContext();
 
-  const svgColor = color ? color : context.theme.accentColor;
+  const svgColor = color ? color : context.theme.colorPrimary1;
 
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">

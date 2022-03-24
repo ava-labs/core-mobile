@@ -1,6 +1,5 @@
 import React from 'react';
 import AvaListItem from 'components/AvaListItem';
-import AvaText from 'components/AvaText';
 import {useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import AppNavigation from 'navigation/AppNavigation';
@@ -12,7 +11,7 @@ const AddressBookItem = () => {
   return (
     <>
       <AvaListItem.Base
-        title={<AvaText.Heading3>Address Book</AvaText.Heading3>}
+        title={'Address Book'}
         titleAlignment={'flex-start'}
         showNavigationArrow
         rightComponentVerticalAlignment={'center'}

@@ -9,6 +9,8 @@ import ContactInput from 'screens/drawer/addressBook/components/ContactInput';
 import useAddressBook from 'screens/drawer/addressBook/useAddressBook';
 import {Contact} from 'Repo';
 import {v4 as uuidv4} from 'uuid';
+import AvaText from 'components/AvaText';
+import {Space} from 'components/Space';
 
 const AddContact = () => {
   const {goBack} =
@@ -25,7 +27,10 @@ const AddContact = () => {
   }, [address, goBack, onSave, title]);
 
   return (
-    <SafeAreaProvider style={{flex: 1, padding: 16}}>
+    <SafeAreaProvider
+      style={{flex: 1, paddingHorizontal: 16, paddingBottom: 16}}>
+      <AvaText.LargeTitleBold>New Contact</AvaText.LargeTitleBold>
+      <Space y={30} />
       <ContactInput
         initName={''}
         initAddress={''}

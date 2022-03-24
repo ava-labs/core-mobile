@@ -13,7 +13,6 @@ import {
 } from '@avalabs/wallet-react-components';
 import moment from 'moment';
 import {ScrollView} from 'react-native-gesture-handler';
-import {MainHeaderOptions} from 'navigation/NavUtils';
 import ActivityListItem from 'screens/activity/ActivityListItem';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {RootStackParamList} from 'navigation/WalletScreenStack';
@@ -118,18 +117,7 @@ function ActivityList({embedded, tokenSymbolFilter}: Props) {
   }, [wallet, network, bridgeTransactions]);
 
   useEffect(() => {
-    if (embedded) {
-      navigation.setOptions({headerShown: false});
-    } else {
-      navigation.setOptions({
-        ...MainHeaderOptions('Activity'),
-        headerStyle: {
-          shadowColor: 'transparent',
-          elevation: 0,
-          shadowOpacity: 0,
-        },
-      });
-    }
+    navigation.setOptions({headerShown: false});
   }, [embedded]);
 
   const loadHistory = async () => {
@@ -251,6 +239,11 @@ function ActivityList({embedded, tokenSymbolFilter}: Props) {
     <Loader />
   ) : (
     <View style={{flex: 1}}>
+      {embedded || (
+        <AvaText.LargeTitleBold textStyle={{marginHorizontal: 16}}>
+          Activity
+        </AvaText.LargeTitleBold>
+      )}
       <ScrollableComponent children={renderItems()} />
     </View>
   );

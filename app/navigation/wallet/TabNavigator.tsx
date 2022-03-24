@@ -51,7 +51,7 @@ const TabNavigator = () => {
         {image}
         <AvaText.Caption
           textStyle={{
-            color: focused ? theme.alternateBackground : theme.txtDim,
+            color: focused ? theme.alternateBackground : theme.colorIcon4,
           }}>
           {routeName}
         </AvaText.Caption>
@@ -70,8 +70,8 @@ const TabNavigator = () => {
         tabBarShowLabel: false,
         headerShown: false,
         tabBarAllowFontScaling: false,
-        tabBarActiveTintColor: theme.accentColor,
-        tabBarInactiveTintColor: theme.onBgSearch,
+        tabBarActiveTintColor: theme.colorPrimary1,
+        tabBarInactiveTintColor: theme.colorText2,
         tabBarStyle: {
           backgroundColor: theme.background,
         },
@@ -105,7 +105,7 @@ const TabNavigator = () => {
         component={CustomTabBarFab}
         options={{
           tabBarIcon: () => (
-            <AddSVG color={theme.white} size={TAB_ICON_SIZE} hideCircle />
+            <AddSVG color={theme.colorBg2} size={TAB_ICON_SIZE} hideCircle />
           ),
           tabBarButton: props => <CustomTabBarFab {...props} />,
         }}
@@ -113,7 +113,6 @@ const TabNavigator = () => {
       <Tab.Screen
         name={AppNavigation.Tabs.Watchlist}
         options={{
-          ...MainHeaderOptions('WatchList'),
           tabBarIcon: ({focused}) =>
             normalTabButtons(
               AppNavigation.Tabs.Watchlist,
@@ -127,7 +126,6 @@ const TabNavigator = () => {
         name={AppNavigation.Tabs.Bridge}
         component={DummyBridge}
         options={{
-          ...MainHeaderOptions('Bridge'),
           tabBarIcon: ({focused}) =>
             normalTabButtons(
               AppNavigation.Tabs.Bridge,
@@ -161,13 +159,13 @@ const CustomTabBarFab = ({children}: {children: ReactElement}) => {
       {/* necessary for spacing between the fab and bottle bar buttons */}
       <Space x={48} />
       <FloatingActionButton
-        backgroundColor={'#0A84FF'}
-        changeBackgroundColor={'#0A84FF'}
+        backgroundColor={theme.colorIcon1}
+        changeBackgroundColor={theme.colorIcon1}
         radius={110}
         size={48}
-        changeIconTextColor={'#000000'}
+        changeIconTextColor={theme.colorBg2}
         icon={children}
-        iconTextColor={'#FFFFFF'}>
+        iconTextColor={theme.colorBg2}>
         <ActionButtonItem />
         <ActionButtonItem
           buttonColor={theme.alternateBackground}

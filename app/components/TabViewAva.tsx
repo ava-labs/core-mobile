@@ -1,7 +1,9 @@
 import React, {FC, useCallback, useEffect, useState} from 'react';
-import {TabBar, TabBarProps, TabView} from 'react-native-tab-view';
+import {Route, TabBar, TabBarProps, TabView} from 'react-native-tab-view';
 import {View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
+import {Props as TabBarItemProps} from 'react-native-tab-view/lib/typescript/TabBarItem';
+import AvaButton from 'components/AvaButton';
 
 interface Props {
   renderCustomLabel?: (title: string, selected: boolean) => void;
@@ -44,6 +46,32 @@ const TabViewAva: FC<Props> = ({
     onTabIndexChange?.(index);
   };
 
+  const tabBarItem = useCallback(
+    (
+      props: TabBarItemProps<Route> & {
+        key: string;
+      },
+    ) => {
+      return (
+        <AvaButton.Base
+          style={{
+            flex: 1,
+            paddingVertical: 6,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+          onPress={props.onPress}>
+          {props.renderLabel?.({
+            route: props.route,
+            focused: props.navigationState.index === props.route.index,
+            color: 'white',
+          })}
+        </AvaButton.Base>
+      );
+    },
+    [],
+  );
+
   const tabbar = useCallback((tabBarProps: TabBarProps) => {
     return (
       <View>
@@ -62,7 +90,7 @@ const TabViewAva: FC<Props> = ({
             backgroundColor: theme.alternateBackground,
             height: 2,
           }}
-          tabStyle={{padding: 12}}
+          renderTabBarItem={tabBarItem}
         />
       </View>
     );

@@ -1,5 +1,5 @@
 import React, {useMemo} from 'react';
-import {FlatList} from 'react-native';
+import {FlatList, View} from 'react-native';
 import ZeroState from 'components/ZeroState';
 import TabViewAva from 'components/TabViewAva';
 import AvaText from 'components/AvaText';
@@ -11,10 +11,13 @@ import AddressBookItem from 'components/addressBook/AddressBookItem';
 
 export type AddressBookListsProps = {
   onContactSelected: (item: Contact | Account, type: AddrBookItemType) => void;
+  navigateToAddressBook: () => void;
 };
 export default function AddressBookLists({
   onContactSelected,
+  navigateToAddressBook,
 }: AddressBookListsProps) {
+  const {theme} = useApplicationContext();
   const {recentContacts, addressBook} =
     useApplicationContext().repo.addressBookRepo;
   const {accounts} = useApplicationContext().repo.accountsRepo;
@@ -43,6 +46,22 @@ export default function AddressBookLists({
     [addressBook, recentContacts, accounts],
   );
 
+  const renderCustomLabel = (title: string, selected: boolean) => {
+    return selected ? (
+      <AvaText.ButtonMedium
+        ellipsizeMode={'tail'}
+        textStyle={{
+          color: theme.alternateBackground,
+        }}>
+        {title}
+      </AvaText.ButtonMedium>
+    ) : (
+      <AvaText.Body2 ellipsizeMode={'tail'} textStyle={{lineHeight: 24}}>
+        {title}
+      </AvaText.Body2>
+    );
+  };
+
   return (
     <TabViewAva renderCustomLabel={renderCustomLabel}>
       <FlatList
@@ -53,7 +72,11 @@ export default function AddressBookLists({
         }
         keyExtractor={item => item.item.title + item.item.address}
         contentContainerStyle={{paddingHorizontal: 16}}
-        ListEmptyComponent={<ZeroState.NoResultsGraphical />}
+        ListEmptyComponent={
+          <View style={{marginVertical: 40}}>
+            <ZeroState.NoRecentAccounts />
+          </View>
+        }
       />
       <FlatList
         title={'Address Book'}
@@ -65,7 +88,13 @@ export default function AddressBookLists({
         }
         keyExtractor={item => item.id}
         contentContainerStyle={{paddingHorizontal: 16}}
-        ListEmptyComponent={<ZeroState.NoResultsGraphical />}
+        ListEmptyComponent={
+          <View style={{marginVertical: 40}}>
+            <ZeroState.EmptyAddressBook
+              onGoToAddressBook={navigateToAddressBook}
+            />
+          </View>
+        }
       />
       <FlatList
         title={'My accounts'}
@@ -81,10 +110,6 @@ export default function AddressBookLists({
     </TabViewAva>
   );
 }
-
-const renderCustomLabel = (title: string) => {
-  return <AvaText.Heading3>{title}</AvaText.Heading3>;
-};
 
 const renderItem = (
   item: {item: Contact | Account; type: AddrBookItemType},

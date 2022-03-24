@@ -21,10 +21,12 @@ import {useAddressBookLists} from 'components/addressBook/useAddressBookLists';
 
 function SendToken({
   onNext,
+  onOpenAddressBook,
   token,
   contact,
 }: {
   onNext: () => void;
+  onOpenAddressBook: () => void;
   token?: TokenWithBalance;
   contact?: Contact;
 }): JSX.Element {
@@ -86,11 +88,10 @@ function SendToken({
 
   return (
     <View style={{flex: 1}}>
-      <Space y={8} />
-      <AvaText.Heading1 textStyle={{marginHorizontal: 16}}>
+      <AvaText.LargeTitleBold textStyle={{marginHorizontal: 16}}>
         Send
-      </AvaText.Heading1>
-      <Space y={24} />
+      </AvaText.LargeTitleBold>
+      <Space y={20} />
       <AvaText.Heading3 textStyle={{marginHorizontal: 16}}>
         Send to
       </AvaText.Heading3>
@@ -123,7 +124,10 @@ function SendToken({
       </View>
       <Space y={24} />
       {showAddressBook ? (
-        <AddressBookLists onContactSelected={onContactSelected} />
+        <AddressBookLists
+          onContactSelected={onContactSelected}
+          navigateToAddressBook={onOpenAddressBook}
+        />
       ) : (
         <>
           <View style={{paddingHorizontal: 16}}>

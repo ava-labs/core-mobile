@@ -20,20 +20,18 @@ const keymap: Map<PinKeys, string> = new Map([
   [PinKeys.Key0, '0'],
 ]);
 
-export function useCreatePin(
-  isResettingPin = false,
-): [
-  string,
-  string,
-  DotView[],
-  (pinKey: PinKeys) => void,
-  (pinKey: PinKeys) => void,
-  boolean,
-  string | undefined,
-  Animated.Value,
-] {
+export type UseCreatePinProps = {
+  title: string;
+  pinDots: DotView[];
+  onEnterChosenPin: (pinKey: PinKeys) => void;
+  onEnterConfirmedPin: (pinKey: PinKeys) => void;
+  chosenPinEntered: boolean;
+  validPin: string | undefined;
+  jiggleAnim: Animated.Value;
+};
+
+export function useCreatePin(isResettingPin = false): UseCreatePinProps {
   const [title, setTitle] = useState('Create Pin');
-  const [errorMessage, setErrorMessage] = useState('');
   const [chosenPin, setChosenPin] = useState('');
   const [confirmedPin, setConfirmedPin] = useState('');
   const [pinDots, setPinDots] = useState<DotView[]>([]);
@@ -105,7 +103,6 @@ export function useCreatePin(
   };
 
   const onEnterConfirmedPin = (pinKey: PinKeys): void => {
-    setErrorMessage('');
     if (pinKey === PinKeys.Backspace) {
       setConfirmedPin(confirmedPin.slice(0, -1));
     } else {
@@ -120,14 +117,13 @@ export function useCreatePin(
     }
   };
 
-  return [
+  return {
     title,
-    errorMessage,
     pinDots,
     onEnterChosenPin,
     onEnterConfirmedPin,
     chosenPinEntered,
     validPin,
     jiggleAnim,
-  ];
+  };
 }

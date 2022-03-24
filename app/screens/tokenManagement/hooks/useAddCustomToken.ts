@@ -3,7 +3,7 @@ import {
   useWalletStateContext,
   TokenListDict,
 } from '@avalabs/wallet-react-components';
-import {Assets} from '@avalabs/avalanche-wallet-sdk';
+import {getContractDataErc20} from '@avalabs/avalanche-wallet-sdk';
 import {Erc20TokenData} from '@avalabs/avalanche-wallet-sdk/dist/Asset/types';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 
@@ -41,7 +41,7 @@ const useAddCustomToken = () => {
 
     // we get the contract again...might change this since we already get it in the view
     try {
-      const tokenData = await Assets.getContractDataErc20(tokenAddress);
+      const tokenData = await getContractDataErc20(tokenAddress);
       // no error, no data...reject promisse
       if (!tokenData) {
         return Promise.reject(`ERC20 contract ${tokenAddress} does not exist.`);

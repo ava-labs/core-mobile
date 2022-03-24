@@ -22,11 +22,11 @@ function MnemonicInput(props: InputProps | Readonly<InputProps>) {
         enablesReturnKeyAutomatically={true}
         style={[
           {
-            color: theme.txtOnBgApp,
+            color: theme.colorText1,
             flex: 1,
             fontSize: 16,
             borderWidth: 1,
-            borderColor: theme.btnIconBorder,
+            borderColor: theme.colorStroke,
             padding: 4,
             borderRadius: 4,
             fontFamily: 'Inter-Regular',
@@ -47,12 +47,15 @@ type TextProps = {
 };
 
 function MnemonicText(props: TextProps | Readonly<TextProps>) {
+  const theme = useApplicationContext().theme;
   return (
     <View style={[styles.horizontalLayout]}>
-      <AvaText.Body1 textStyle={{marginEnd: 6}}>
+      <AvaText.Body2 textStyle={{marginEnd: 6, color: theme.colorText1}}>
         {(props.keyNum + 1).toString()}.
-      </AvaText.Body1>
-      <AvaText.Heading3>{props.text}</AvaText.Heading3>
+      </AvaText.Body2>
+      <AvaText.Body2 textStyle={{color: theme.colorText1}}>
+        {props.text}
+      </AvaText.Body2>
     </View>
   );
 }

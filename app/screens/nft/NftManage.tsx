@@ -4,7 +4,7 @@ import AvaText from 'components/AvaText';
 import SearchBar from 'components/SearchBar';
 import {NFTItemData} from 'screens/nft/NftCollection';
 import ZeroState from 'components/ZeroState';
-import {COLORS_DAY, COLORS_NIGHT} from 'resources/Constants';
+import {COLORS_DAY, COLORS_NIGHT, Opacity85} from 'resources/Constants';
 import AvaListItem from 'components/AvaListItem';
 import Avatar from 'components/Avatar';
 import {useApplicationContext} from 'contexts/ApplicationContext';
@@ -63,7 +63,7 @@ const renderItemList = (
       style={{
         marginVertical: 4,
         borderRadius: 8,
-        backgroundColor: theme.listItemBg + 'D9',
+        backgroundColor: theme.colorBg2 + Opacity85,
       }}>
       <AvaListItem.Base
         title={item.token_id}

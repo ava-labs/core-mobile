@@ -12,7 +12,7 @@ function WatchListSVG({selected, size = 32}: Prop) {
 
   const svgColor = selected
     ? context.theme.alternateBackground
-    : context.theme.txtDim;
+    : context.theme.colorIcon4;
   return (
     <Svg width={size} height={size} viewBox="0 0 32 32" fill="none">
       <Rect

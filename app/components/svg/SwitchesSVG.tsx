@@ -9,7 +9,7 @@ interface Prop {
 export default function SwitchesSVG({color}: Prop) {
   const context = useApplicationContext();
 
-  const iconColor = color ?? context.theme.btnIconIcon;
+  const iconColor = color ?? context.theme.colorIcon1;
   return (
     <Svg width="24" height="24" viewBox="0 0 24 24" fill="none">
       <Rect y="5" width="6" height="2.5" rx="1.25" fill={iconColor} />

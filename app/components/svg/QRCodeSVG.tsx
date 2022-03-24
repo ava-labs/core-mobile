@@ -1,5 +1,5 @@
 import React from 'react';
-import Svg, {Path, Rect} from 'react-native-svg';
+import Svg, {Path, Rect, Mask} from 'react-native-svg';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 
 interface Prop {
@@ -29,6 +29,9 @@ export default function QRCodeSVG({color, size = 24}: Prop) {
         d="M9 4C9.55228 4 10 3.55228 10 3C10 2.44772 9.55228 2 9 2H4C2.89543 2 2 2.89543 2 4V9C2 9.55228 2.44772 10 3 10C3.55228 10 4 9.55228 4 9V4.64286C4 4.28782 4.28782 4 4.64286 4H9Z"
         fill={iconColor}
       />
+      <Mask id="path-6-inside-1_5088_89422" fill="white">
+        <Rect x="6" y="6" width="5" height="5" rx="1" />
+      </Mask>
       <Rect
         x="6"
         y="6"
@@ -36,8 +39,13 @@ export default function QRCodeSVG({color, size = 24}: Prop) {
         height="5"
         rx="1"
         stroke={iconColor}
-        strokeWidth="1.5"
+        strokeWidth="3.5"
+        strokeLinejoin="bevel"
+        mask="url(#path-6-inside-1_5088_89422)"
       />
+      <Mask id="path-7-inside-2_5088_89422" fill="white">
+        <Rect x="13" y="6" width="5" height="5" rx="1" />
+      </Mask>
       <Rect
         x="13"
         y="6"
@@ -45,8 +53,13 @@ export default function QRCodeSVG({color, size = 24}: Prop) {
         height="5"
         rx="1"
         stroke={iconColor}
-        strokeWidth="1.5"
+        strokeWidth="3.5"
+        strokeLinejoin="bevel"
+        mask="url(#path-7-inside-2_5088_89422)"
       />
+      <Mask id="path-8-inside-3_5088_89422" fill="white">
+        <Rect x="13" y="13" width="5" height="5" rx="1" />
+      </Mask>
       <Rect
         x="13"
         y="13"
@@ -54,8 +67,13 @@ export default function QRCodeSVG({color, size = 24}: Prop) {
         height="5"
         rx="1"
         stroke={iconColor}
-        strokeWidth="1.5"
+        strokeWidth="3.5"
+        strokeLinejoin="bevel"
+        mask="url(#path-8-inside-3_5088_89422)"
       />
+      <Mask id="path-9-inside-4_5088_89422" fill="white">
+        <Rect x="6" y="13" width="5" height="5" rx="1" />
+      </Mask>
       <Rect
         x="6"
         y="13"
@@ -63,7 +81,9 @@ export default function QRCodeSVG({color, size = 24}: Prop) {
         height="5"
         rx="1"
         stroke={iconColor}
-        strokeWidth="1.5"
+        strokeWidth="3.5"
+        strokeLinejoin="bevel"
+        mask="url(#path-9-inside-4_5088_89422)"
       />
     </Svg>
   );

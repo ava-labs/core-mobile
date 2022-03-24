@@ -10,7 +10,6 @@ import InputText from 'components/InputText';
 import {Opacity50} from 'resources/Constants';
 import {GasPrice} from 'utils/GasPriceHook';
 import {StackNavigationProp} from '@react-navigation/stack';
-import AppNavigation from 'navigation/AppNavigation';
 import {mustNumber} from 'utils/JsTools';
 import {useNavigation} from '@react-navigation/native';
 import {RootStackParamList} from 'navigation/WalletScreenStack';

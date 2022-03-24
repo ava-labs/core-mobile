@@ -112,7 +112,7 @@ const SearchBar: FC<Props> = ({
           styles.searchBackground,
           {backgroundColor: theme.colorBg3 + Opacity50},
         ]}>
-        <SearchSVG color={theme.onBgSearch} size={32} hideBorder />
+        <SearchSVG size={32} hideBorder />
         <TextInput
           autoCorrect={false}
           autoCompleteType={'off'}
@@ -121,10 +121,10 @@ const SearchBar: FC<Props> = ({
           ref={textInputRef}
           style={[
             styles.searchInput,
-            {color: theme.txtOnBgApp, width: textInputWidth},
+            {color: theme.colorText2, width: textInputWidth},
           ]}
           placeholder={placeholder}
-          placeholderTextColor={theme.onBgSearch}
+          placeholderTextColor={theme.colorText2}
           value={searchText}
           onChangeText={onTextChanged}
           onBlur={() => {

@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React from 'react';
 import Svg, {Circle, Path} from 'react-native-svg';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 
@@ -12,8 +12,8 @@ interface Prop {
 function SearchSVG({color, circleColor, size = 44, hideBorder}: Prop) {
   const context = useApplicationContext();
 
-  const iconColor = color ?? context.theme.btnIconIcon;
-  const borderColor = circleColor ?? context.theme.btnIconBorder;
+  const iconColor = color ?? context.theme.colorText2;
+  const borderColor = circleColor ?? context.theme.colorStroke;
 
   return (
     <Svg width={size} height={size} viewBox="0 0 44 44" fill="none">

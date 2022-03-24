@@ -86,12 +86,12 @@ export const ApplicationContextProvider = ({children}: {children: any}) => {
       text: theme.colorText1,
       card: theme.background,
       border: theme.background,
-      notification: theme.accentColor,
+      notification: theme.colorPrimary1,
     },
   } as Theme);
 
   const [shadow] = useState({
-    shadowColor: theme.shadow,
+    shadowColor: theme.overlay,
     shadowRadius: 3,
     shadowOpacity: 0.5,
     elevation: 3,

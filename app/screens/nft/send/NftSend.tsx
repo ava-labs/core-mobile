@@ -14,6 +14,7 @@ import {NFTItemData} from 'screens/nft/NftCollection';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {Row} from 'components/Row';
 import {useSendNFTContext} from 'contexts/SendNFTContext';
+import {Opacity85} from 'resources/Constants';
 
 export type NftSendScreenProps = {
   onNext: () => void;
@@ -107,7 +108,7 @@ const CollectibleItem = ({nft}: {nft: NFTItemData}) => {
       style={[
         styles.collectibleItem,
         {
-          backgroundColor: theme.listItemBg + 'D9',
+          backgroundColor: theme.colorBg2 + Opacity85,
         },
       ]}>
       <Row>

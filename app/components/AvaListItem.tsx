@@ -2,11 +2,11 @@ import React from 'react';
 import {Pressable, StyleSheet, Text, View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import CarrotSVG from 'components/svg/CarrotSVG';
+import AvaText from 'components/AvaText';
 
 interface Props {
   rightComponent?: React.ReactNode;
   leftComponent?: React.ReactNode;
-  label?: React.ReactNode | string;
   title?: React.ReactNode | string;
   subtitle?: React.ReactNode | string;
   showNavigationArrow?: boolean;
@@ -26,7 +26,6 @@ function BaseListItem({
   rightComponent,
   leftComponent,
   subtitle,
-  label,
   title,
   disabled,
   disablePress,
@@ -50,7 +49,7 @@ function BaseListItem({
           justifyContent: 'center',
         },
         embedInCard && {
-          backgroundColor: context.theme.listItemBg,
+          backgroundColor: context.theme.colorBg2,
           marginHorizontal: 16,
           borderRadius: 8,
           marginVertical: 4,
@@ -71,43 +70,30 @@ function BaseListItem({
             </View>
           )}
           <View style={styles.baseMainContent}>
-            {!!label && typeof label === 'string' ? (
-              <Text
+            {typeof title === 'string' ? (
+              <AvaText.Heading3
                 style={[
-                  styles.baseLabel,
-                  {color: context.theme.txtListItemSuperscript},
+                  styles.baseTitleText,
+                  {color: context.theme.colorBgGreen},
                 ]}>
-                {label}
-              </Text>
+                {title}
+              </AvaText.Heading3>
             ) : (
-              <View>{label}</View>
+              <View
+                style={[
+                  styles.baseTitleObject,
+                  titleAlignment && {alignItems: titleAlignment},
+                ]}>
+                {title}
+              </View>
             )}
-            <>
-              {typeof title === 'string' ? (
-                <Text
-                  style={[
-                    styles.baseTitleText,
-                    {color: context.theme.txtListItem},
-                  ]}>
-                  {title}
-                </Text>
-              ) : (
-                <View
-                  style={[
-                    styles.baseTitleObject,
-                    titleAlignment && {alignItems: titleAlignment},
-                  ]}>
-                  {title}
-                </View>
-              )}
-            </>
             {!!subtitle && typeof subtitle === 'string' ? (
               <Text
                 ellipsizeMode="tail"
                 numberOfLines={1}
                 style={[
                   styles.baseSubtitle,
-                  {color: context.theme.txtListItemSubscript},
+                  {color: context.theme.colorText2},
                 ]}>
                 {subtitle}
               </Text>

@@ -11,7 +11,7 @@ const Switch: FC<SwitchProps> = ({value, disabled, ...rest}) => {
     [],
   );
   const thumbColorOff = useMemo(
-    () => (Platform.OS === 'android' ? theme.onBgSearch : theme.onBgSearch),
+    () => (Platform.OS === 'android' ? theme.white : theme.white),
     [],
   );
   const trackColorOn = useMemo(
@@ -20,7 +20,7 @@ const Switch: FC<SwitchProps> = ({value, disabled, ...rest}) => {
     [],
   );
   const trackColorOff = useMemo(
-    () => (Platform.OS === 'android' ? theme.colorBg2 : theme.background),
+    () => (Platform.OS === 'android' ? theme.colorBg2 : theme.colorBg2),
     [],
   );
 
