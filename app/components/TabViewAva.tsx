@@ -54,6 +54,7 @@ const TabViewAva: FC<Props> = ({
     ) => {
       return (
         <AvaButton.Base
+          key={props.key}
           style={{
             flex: 1,
             paddingVertical: 6,
