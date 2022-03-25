@@ -6,6 +6,7 @@ import BiometricsSDK from 'utils/BiometricsSDK';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {SECURE_ACCESS_SET} from 'resources/Constants';
 import Switch from 'components/Switch';
+import {useRepo} from 'Repo';
 
 function SecurityPrivacy({
   onChangePin,
@@ -17,6 +18,7 @@ function SecurityPrivacy({
   onTurnOnBiometrics: () => void;
 }) {
   const theme = useApplicationContext().theme;
+  const {setSetting, getSetting} = useRepo().userSettingsRepo;
   const [isBiometricSwitchEnabled, setIsBiometricSwitchEnabled] =
     useState(false);
   const [isBiometricEnabled, setIsBiometricEnabled] = useState(false);
@@ -37,6 +39,10 @@ function SecurityPrivacy({
     } else {
       AsyncStorage.setItem(SECURE_ACCESS_SET, 'PIN');
     }
+  };
+
+  const handleAnalyticsSwitchChange = (value: boolean) => {
+    setSetting('CoreAnalytics', value);
   };
 
   return (
@@ -65,6 +71,16 @@ function SecurityPrivacy({
           }
         />
       )}
+      <AvaListItem.Base
+        title={'Participate in CoreAnalytics'}
+        background={theme.background}
+        rightComponent={
+          <Switch
+            value={getSetting('CoreAnalytics') as boolean}
+            onValueChange={handleAnalyticsSwitchChange}
+          />
+        }
+      />
     </View>
   );
 }
