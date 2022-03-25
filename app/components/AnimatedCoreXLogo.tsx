@@ -1,7 +1,7 @@
 import React, {useEffect, useRef} from 'react';
 import {Animated, Easing, View} from 'react-native';
-import SplashLogoSVG from 'components/svg/SplashLogoSVG';
 import CoreXLogoAnimated from 'components/CoreXLogoAnimated';
+import CoreSVG from 'components/svg/CoreSVG';
 
 const AnimatedCoreXLogo = ({finalState}: {finalState?: boolean}) => {
   const animTranslateX = useRef(new Animated.Value(0)).current;
@@ -39,7 +39,9 @@ const AnimatedCoreXLogo = ({finalState}: {finalState?: boolean}) => {
           alignItems: 'center',
           width: animWidth,
         }}>
-        <SplashLogoSVG />
+        <View style={{marginLeft: 50}}>
+          <CoreSVG />
+        </View>
       </Animated.View>
       <Animated.View
         style={{
