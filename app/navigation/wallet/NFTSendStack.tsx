@@ -23,7 +23,8 @@ export type NFTSendStackParamList = {
 const NFTSendStack = createStackNavigator<NFTSendStackParamList>();
 
 export default function NFTSendScreenStack() {
-  const {params} = useRoute<RouteProp<NFTStackParamList>>();
+  const {params} =
+    useRoute<RouteProp<NFTStackParamList, typeof AppNavigation.Nft.Send>>();
   const item = params?.nft as NFTItemData;
 
   return (

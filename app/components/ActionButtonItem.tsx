@@ -3,7 +3,6 @@ import {
   Animated,
   StyleProp,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -23,17 +22,17 @@ interface Props {
   activeStyle?: StyleProp<any>;
   active?: boolean;
   title?: string;
+  size?: number;
 }
 
 const ActionButtonItem: FC<Props> = ({
   radius = 100,
   angle = 0,
   anim,
-  size,
+  size = 48,
   startDegree = 0,
   endDegree = 720,
   active = false,
-  activeOpacity,
   onPress,
   buttonColor,
   style,
@@ -83,7 +82,7 @@ const ActionButtonItem: FC<Props> = ({
       <TouchableOpacity
         {...rest}
         style={{flex: 1, alignItems: 'center'}}
-        activeOpacity={activeOpacity || 0.85}
+        activeOpacity={0.85}
         onPress={onPress}>
         <View
           style={[

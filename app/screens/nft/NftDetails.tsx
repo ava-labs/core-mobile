@@ -10,6 +10,7 @@ import {
   NFTItemExternalDataAttribute,
 } from 'screens/nft/NftCollection';
 import {Row} from 'components/Row';
+import AppNavigation from 'navigation/AppNavigation';
 
 export type NftDetailsProps = {
   onPicturePressed: (url: string, urlSmall: string) => void;
@@ -20,7 +21,8 @@ export default function NftDetails({
   onPicturePressed,
   onSendPressed,
 }: NftDetailsProps) {
-  const {params} = useRoute<RouteProp<NFTStackParamList>>();
+  const {params} =
+    useRoute<RouteProp<NFTStackParamList, typeof AppNavigation.Nft.Details>>();
   const item = useMemo(() => params!.nft, [params]) as NFTItemData;
 
   return (

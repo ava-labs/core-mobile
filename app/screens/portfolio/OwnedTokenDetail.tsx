@@ -16,7 +16,13 @@ import {StackNavigationProp} from '@react-navigation/stack';
 import ActivityList from 'screens/activity/ActivityList';
 
 const OwnedTokenDetail = () => {
-  const {tokenId} = useRoute<RouteProp<RootStackParamList>>().params;
+  const tokenId =
+    useRoute<
+      RouteProp<
+        RootStackParamList,
+        typeof AppNavigation.Wallet.OwnedTokenDetail
+      >
+    >()?.params?.tokenId;
   const {navigate} = useNavigation<StackNavigationProp<RootStackParamList>>();
   const {filteredTokenList} = useSearchableTokenList(false);
   const [token, setToken] = useState<TokenWithBalance>();

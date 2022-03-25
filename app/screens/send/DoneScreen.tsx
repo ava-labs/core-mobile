@@ -2,7 +2,6 @@ import React, {useEffect, useState} from 'react';
 import {Linking, StyleSheet, View} from 'react-native';
 import AvaButton from 'components/AvaButton';
 import AvaText from 'components/AvaText';
-import MountainTopFlag from 'components/images/MountainTopFlag';
 import LinkSVG from 'components/svg/LinkSVG';
 import {Space} from 'components/Space';
 import ClearSVG from 'components/svg/ClearSVG';
@@ -36,9 +35,6 @@ export default function DoneScreen({
 
   return (
     <View style={{flex: 1}}>
-      <View style={styles.background}>
-        <MountainTopFlag />
-      </View>
       <AvaButton.Icon style={styles.topClose} onPress={onClose}>
         <ClearSVG
           color={theme.colorIcon1}

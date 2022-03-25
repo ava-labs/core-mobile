@@ -2,8 +2,6 @@ import React, {FC, memo, useCallback} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 import {usePortfolio} from 'screens/portfolio/usePortfolio';
 import {useApplicationContext} from 'contexts/ApplicationContext';
-import AvaButton from 'components/AvaButton';
-import CopySVG from 'components/svg/CopySVG';
 import AvaText from 'components/AvaText';
 import {Space} from 'components/Space';
 import {
@@ -19,8 +17,8 @@ import {
 import AvaxQACode from 'components/AvaxQRCode';
 import HeaderAccountSelector from 'components/HeaderAccountSelector';
 import AppNavigation from 'navigation/AppNavigation';
-import {copyToClipboard} from 'utils/DeviceTools';
 import {RootStackParamList} from 'navigation/WalletScreenStack';
+import TokenAddress from 'components/TokenAddress';
 
 type ReceiveStackParams = {
   ReceiveCChain: undefined;
@@ -171,19 +169,17 @@ const Receive: FC<{
           />
         </View>
         <Space y={40} />
-        <AvaButton.Base
-          onPress={() => copyToClipboard(props.selectedAddress)}
+        <View
           style={[
             styles.copyAddressContainer,
             {backgroundColor: theme.colorBg2},
           ]}>
-          <AvaText.ButtonMedium
-            ellipsizeMode={'middle'}
-            textStyle={{flex: 1, marginRight: 16, color: theme.colorText1}}>
-            {props.selectedAddress}
-          </AvaText.ButtonMedium>
-          <CopySVG color={theme.colorText1} />
-        </AvaButton.Base>
+          <TokenAddress
+            address={props.selectedAddress}
+            showFullAddress
+            textType={'ButtonMedium'}
+          />
+        </View>
         <Space y={16} />
       </View>
     </View>
@@ -195,7 +191,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   copyAddressContainer: {
-    flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 8,

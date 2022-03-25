@@ -1,50 +1,37 @@
-import React, {useMemo} from 'react';
-import {View} from 'react-native';
-import BlockchainCircle from 'components/BlockchainCircle';
+import React, {FC, useMemo} from 'react';
 import AvaText from 'components/AvaText';
-import AvaButton from 'components/AvaButton';
-import CopySVG from 'components/svg/CopySVG';
 import {useApplicationContext} from 'contexts/ApplicationContext';
-import {Space} from 'components/Space';
-import {copyToClipboard} from 'utils/DeviceTools';
-import useAddressBook from 'screens/drawer/addressBook/useAddressBook';
-import {truncateAddress} from 'utils/Utils';
+import TokenAddress from 'components/TokenAddress';
+import AvaListItem from 'components/AvaListItem';
+import Avatar from 'components/Avatar';
 
 interface Props {
   title: string;
   address: string;
+  onPress?: () => void;
 }
 
-export default function AddressBookItem({title, address}: Props) {
-  const {theme} = useApplicationContext();
-  const {titleToInitials} = useAddressBook();
+const AddressBookItem: FC<Props> = ({title, address, onPress}: Props) => {
+  const theme = useApplicationContext().theme;
 
   const shortAddress = useMemo(() => {
     return address;
   }, [address]);
 
   return (
-    <View
-      style={{
-        marginHorizontal: 16,
-        marginVertical: 12,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-      }}>
-      <BlockchainCircle chain={titleToInitials(title)} />
-      <View style={{flex: 1, marginHorizontal: 16}}>
+    <AvaListItem.Base
+      title={
         <AvaText.Heading3 ellipsizeMode={'tail'}>{title}</AvaText.Heading3>
-      </View>
-      <View style={{width: 104, flexDirection: 'row', alignItems: 'center'}}>
-        <AvaButton.Icon
-          onPress={() => copyToClipboard(address)}
-          style={{margin: -8}}>
-          <CopySVG color={theme.colorText1} size={16} />
-        </AvaButton.Icon>
-        <Space x={8} />
-        <AvaText.Body2>{truncateAddress(shortAddress)}</AvaText.Body2>
-      </View>
-    </View>
+      }
+      titleAlignment={'flex-start'}
+      leftComponent={
+        <Avatar.Custom name={title} size={40} circleColor={theme.colorBg3} />
+      }
+      rightComponent={<TokenAddress address={shortAddress} />}
+      rightComponentVerticalAlignment={'center'}
+      onPress={onPress}
+    />
   );
-}
+};
+
+export default AddressBookItem;

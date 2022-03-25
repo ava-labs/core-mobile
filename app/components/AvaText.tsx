@@ -241,17 +241,44 @@ const TextButtonLarge: FC<AvaTextProps> = ({
   );
 };
 
-const TextButtonMedium: FC<AvaTextProps> = ({textStyle, children, ...rest}) => {
+const TextButtonMedium: FC<AvaTextProps> = ({
+  textStyle,
+  children,
+  color,
+  ...rest
+}) => {
+  const theme = useApplicationContext().theme;
   return (
-    <AvaxTextBase style={[styles.textButtonMedium, textStyle]} {...rest}>
+    <AvaxTextBase
+      style={[
+        styles.textButtonMedium,
+        {color: color ?? theme.colorText2},
+        textStyle,
+      ]}
+      {...rest}>
       {children}
     </AvaxTextBase>
   );
 };
 
-const TextButtonSmall: FC<AvaTextProps> = ({textStyle, children, ...rest}) => {
+const TextButtonSmall: FC<AvaTextProps> = ({
+  ellipsizeMode,
+  textStyle,
+  color,
+  children,
+  ...rest
+}) => {
+  const theme = useApplicationContext().theme;
   return (
-    <AvaxTextBase style={[styles.textButtonSmall, textStyle]} {...rest}>
+    <AvaxTextBase
+      ellipsizeMode={ellipsizeMode}
+      numberOfLines={ellipsizeMode ? 1 : undefined}
+      style={[
+        styles.textButtonSmall,
+        {flexShrink: ellipsizeMode ? 1 : 0, color: color ?? theme.colorText2},
+        textStyle,
+      ]}
+      {...rest}>
       {children}
     </AvaxTextBase>
   );

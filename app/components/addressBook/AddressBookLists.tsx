@@ -6,7 +6,6 @@ import AvaText from 'components/AvaText';
 import {AccountId, AddrBookItemType, Contact, UID} from 'Repo';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {Account} from 'dto/Account';
-import AvaButton from 'components/AvaButton';
 import AddressBookItem from 'components/addressBook/AddressBookItem';
 
 export type AddressBookListsProps = {
@@ -105,7 +104,7 @@ export default function AddressBookLists({
           )
         }
         contentContainerStyle={{paddingHorizontal: 16}}
-        ListEmptyComponent={<ZeroState.NoResultsGraphical />}
+        ListEmptyComponent={<ZeroState.NoResultsTextual />}
       />
     </TabViewAva>
   );
@@ -116,11 +115,12 @@ const renderItem = (
   onPress: (item: Contact | Account, type: AddrBookItemType) => void,
 ) => {
   return (
-    <AvaButton.Base
+    <AddressBookItem
+      title={item.item.title}
+      address={item.item.address}
       onPress={() => {
         onPress(item.item, item.type);
-      }}>
-      <AddressBookItem title={item.item.title} address={item.item.address} />
-    </AvaButton.Base>
+      }}
+    />
   );
 };

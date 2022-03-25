@@ -7,7 +7,7 @@ import {Row} from 'components/Row';
 import Separator from 'components/Separator';
 import WalletSVG from 'components/svg/WalletSVG';
 import CreateNewWalletPlusSVG from 'components/svg/CreateNewWalletPlusSVG';
-import OwlBrandLogo from 'components/OwlBrandLogo';
+import CoreLogo from 'components/CoreLogo';
 
 type Props = {
   onCreateWallet: () => void;
@@ -29,7 +29,7 @@ export default function Welcome(props: Props | Readonly<Props>): JSX.Element {
 
   return (
     <View style={styles.verticalLayout}>
-      <OwlBrandLogo style={{minHeight: 400}} />
+      <CoreLogo style={{minHeight: 400}} />
       <Row>
         <View style={{flex: 1, alignItems: 'center'}}>
           <AvaButton.Base
