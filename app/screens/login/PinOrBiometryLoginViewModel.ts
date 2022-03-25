@@ -29,14 +29,14 @@ const keymap: Map<PinKeys, string> = new Map([
   [PinKeys.Key0, '0'],
 ]);
 
-export function usePinOrBiometryLogin(): [
-  string,
-  DotView[],
-  (pinKey: PinKeys) => void,
-  string | undefined,
-  () => Observable<WalletLoadingResults>,
-  Animated.Value,
-] {
+export function usePinOrBiometryLogin(): {
+  title: string;
+  pinDots: DotView[];
+  onEnterPin: (pinKey: PinKeys) => void;
+  mnemonic: string | undefined;
+  promptForWalletLoadingIfExists: () => Observable<WalletLoadingResults>;
+  jiggleAnim: Animated.Value;
+} {
   const [title] = useState('Wallet');
   const [enteredPin, setEnteredPin] = useState('');
   const [pinDots, setPinDots] = useState<DotView[]>([]);
@@ -139,14 +139,14 @@ export function usePinOrBiometryLogin(): [
       );
     };
 
-  return [
+  return {
     title,
     pinDots,
     onEnterPin,
     mnemonic,
     promptForWalletLoadingIfExists,
     jiggleAnim,
-  ];
+  };
 }
 
 export interface WalletLoadingResults {}
