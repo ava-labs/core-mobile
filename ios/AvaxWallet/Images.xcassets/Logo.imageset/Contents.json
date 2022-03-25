@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "CoreXBlack@1.png",
+      "filename" : "core.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "CoreXBlack @2x.png",
+      "filename" : "core@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "CoreXBlack@3x.png",
+      "filename" : "core@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }
