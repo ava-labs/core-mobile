@@ -1,7 +1,6 @@
 import React, {FC, ReactNode} from 'react';
 import {Image, View} from 'react-native';
 import AvaText from './AvaText';
-import PersonageWithLantern from 'components/images/PersonageWithLantern';
 import {Space} from 'components/Space';
 import AvaButton from 'components/AvaButton';
 
@@ -113,14 +112,6 @@ function ZeroStateCollectibles() {
   );
 }
 
-function ZeroStateNoResultsTextual() {
-  const title = 'No results found';
-  const message =
-    'There are no tokens that match your search.\nPlease try again.';
-
-  return <ZeroStateBase title={title} message={message} />;
-}
-
 function ZeroStateNoRecentAccounts() {
   const title = 'No recent recipients';
   const message = 'Enter the address in the field above.';
@@ -151,26 +142,19 @@ function ZeroStateEmptyAddressBook({
 
 type NoResultsProps = Pick<BaseProps, 'message'>;
 
+// removed "man with lantern" as per ux request
 function ZeroStateNoResults({message}: NoResultsProps) {
-  return (
-    <ZeroStateBase
-      message={message ?? 'No results found'}
-      image={<PersonageWithLantern />}
-    />
-  );
+  return <ZeroStateBase message={message ?? 'No results found'} />;
 }
 
 function ZeroStateComingSoon() {
-  return (
-    <ZeroStateBase title={'Coming soon!'} image={<PersonageWithLantern />} />
-  );
+  return <ZeroStateBase title={'Coming soon!'} />;
 }
 
 const ZeroState = {
   Portfolio: ZeroStatePortfolio,
   Collectibles: ZeroStateCollectibles,
-  NoResultsGraphical: ZeroStateNoResults,
-  NoResultsTextual: ZeroStateNoResultsTextual,
+  NoResultsTextual: ZeroStateNoResults,
   NoRecentAccounts: ZeroStateNoRecentAccounts,
   EmptyAddressBook: ZeroStateEmptyAddressBook,
   ComingSoon: ZeroStateComingSoon,

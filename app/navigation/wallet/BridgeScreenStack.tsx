@@ -18,13 +18,17 @@ export type BridgeStackParamList = {
     txHash: string;
     txTimestamp: string;
   };
-  [AppNavigation.Bridge.HideWarning]: undefined;
   [AppNavigation.Modal.BridgeSelectToken]: {
     onTokenSelected: (token: string) => void;
   };
+  [AppNavigation.Bridge.HideWarning]: undefined;
 };
 
 const BridgeStack = createStackNavigator<BridgeStackParamList>();
+
+const BridgeTransactionStatusFromStack = () => (
+  <BridgeTransactionStatus fromStack />
+);
 
 function BridgeScreenStack() {
   return (
@@ -41,7 +45,7 @@ function BridgeScreenStack() {
           ...SubHeaderOptions('Transaction Status'),
         }}
         name={AppNavigation.Bridge.BridgeTransactionStatus}
-        component={BridgeTransactionStatus}
+        component={BridgeTransactionStatusFromStack}
       />
       <BridgeStack.Group screenOptions={{presentation: 'transparentModal'}}>
         <BridgeStack.Screen

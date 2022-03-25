@@ -8,12 +8,11 @@ import {RouteProp, useRoute} from '@react-navigation/native';
 import {AddressBookStackParamList} from 'navigation/wallet/AddressBookStack';
 import BlockchainCircle from 'components/BlockchainCircle';
 import useAddressBook from 'screens/drawer/addressBook/useAddressBook';
-import CopySVG from 'components/svg/CopySVG';
 import ContactInput from 'screens/drawer/addressBook/components/ContactInput';
 import FlexSpacer from 'components/FlexSpacer';
 import {Space} from 'components/Space';
-import {copyToClipboard} from 'utils/DeviceTools';
 import {Contact} from 'Repo';
+import TokenAddress from 'components/TokenAddress';
 
 const ContactDetails = ({
   contact,
@@ -75,31 +74,27 @@ const AddressView = ({contact}: {contact: Contact}) => {
     <>
       <AvaText.Body1>Address</AvaText.Body1>
       <Space y={8} />
-      <AvaButton.Base
-        onPress={() => copyToClipboard(contact.address)}
+      <View
         style={[
           styles.copyAddressContainer,
           {backgroundColor: theme.colorBg2},
         ]}>
-        <AvaText.ButtonMedium
-          ellipsizeMode={'middle'}
-          textStyle={{flex: 1, marginRight: 16}}>
-          {contact.address}
-        </AvaText.ButtonMedium>
-        <CopySVG color={theme.colorText1} />
-      </AvaButton.Base>
+        <TokenAddress
+          address={contact.address}
+          showFullAddress
+          textType={'ButtonMedium'}
+        />
+      </View>
     </>
   );
 };
 
 const styles = StyleSheet.create({
   copyAddressContainer: {
-    flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     paddingVertical: 8,
     borderRadius: 8,
-    alignSelf: 'baseline',
   },
 });
 

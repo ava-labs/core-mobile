@@ -21,7 +21,10 @@ export type SendStackParamList = {
 const SendStack = createStackNavigator<SendStackParamList>();
 
 function SendScreenStack() {
-  const {params} = useRoute<RouteProp<RootStackParamList>>();
+  const {params} =
+    useRoute<
+      RouteProp<RootStackParamList, typeof AppNavigation.Wallet.SendTokens>
+    >();
 
   return (
     <SendTokenContextProvider>
@@ -54,7 +57,10 @@ const SendTokenComponent = () => {
     useNavigation<StackNavigationProp<SendStackParamList>>().getParent<
       StackNavigationProp<RootStackParamList>
     >();
-  const {params} = useRoute<RouteProp<SendStackParamList>>();
+  const {params} =
+    useRoute<
+      RouteProp<RootStackParamList, typeof AppNavigation.Wallet.SendTokens>
+    >();
   return (
     <SendToken
       contact={params?.contact}
@@ -79,7 +85,8 @@ const ReviewSendComponent = () => {
 const DoneScreenComponent = () => {
   const {goBack} = useNavigation<StackNavigationProp<RootStackParamList>>();
   const transactionId =
-    useRoute<RouteProp<SendStackParamList>>()?.params?.transactionId;
+    useRoute<RouteProp<SendStackParamList, typeof AppNavigation.Send.Success>>()
+      ?.params?.transactionId;
 
   return (
     <DoneScreen onClose={() => goBack()} transactionId={transactionId ?? ''} />

@@ -2,7 +2,6 @@ import React from 'react';
 import {StyleSheet, View} from 'react-native';
 import AvaButton from 'components/AvaButton';
 import AvaText from 'components/AvaText';
-import MountainTopFlag from 'components/images/MountainTopFlag';
 import {Space} from 'components/Space';
 import {useNavigation} from '@react-navigation/native';
 import AppNavigation from 'navigation/AppNavigation';
@@ -18,9 +17,6 @@ export default function DoneScreen(): JSX.Element {
 
   return (
     <View style={{flex: 1}}>
-      <View style={styles.background}>
-        <MountainTopFlag />
-      </View>
       <View style={styles.container}>
         <AvaText.Heading1
           textStyle={{

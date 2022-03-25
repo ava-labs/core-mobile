@@ -39,7 +39,12 @@ const BridgeTransactionStatus: FC<Props> = ({fromStack}) => {
   const {theme} = useApplicationContext();
   const navigation = useNavigation<StackNavigationProp<BridgeStackParamList>>();
   const {blockchain, txHash, txTimestamp} =
-    useRoute<RouteProp<BridgeStackParamList>>()?.params;
+    useRoute<
+      RouteProp<
+        BridgeStackParamList,
+        typeof AppNavigation.Bridge.BridgeTransactionStatus
+      >
+    >()?.params;
   // @ts-ignore addresses exist in walletContext
   const {addresses} = useWalletStateContext();
   const {config} = useBridgeConfig();
@@ -163,7 +168,7 @@ const BridgeTransactionStatus: FC<Props> = ({fromStack}) => {
             <View style={{alignItems: 'flex-end'}}>
               <Row>
                 <AvaText.Heading3>
-                  {txProps.gasCost?.toNumber().toFixed(9)} {txProps.symbol}
+                  {txProps.gasCost?.toNumber().toFixed(6)} {txProps.symbol}
                 </AvaText.Heading3>
               </Row>
               <AvaText.Body3 currency color={theme.colorText1}>

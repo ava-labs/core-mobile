@@ -22,7 +22,6 @@ import {
   simpleTokenPrice,
   VsCurrencyType,
 } from '@avalabs/coingecko-sdk';
-import {largeCurrencyFormatter} from 'utils/Utils';
 
 interface Props {
   showFavorites?: boolean;
@@ -146,11 +145,11 @@ const WatchlistView: FC<Props> = ({showFavorites, searchText}) => {
       } else if (filterBy === WatchlistFilter.MARKET_CAP) {
         return (token?.marketCap ?? 0) === 0
           ? ' -'
-          : `$${largeCurrencyFormatter(token?.marketCap ?? 0, 3)}`;
+          : `$${currencyFormatter(token?.marketCap ?? 0, 3)}`;
       } else if (filterBy === WatchlistFilter.VOLUME) {
         return (token?.vol24 ?? 0) === 0
           ? ' -'
-          : `$${largeCurrencyFormatter(token?.vol24 ?? 0, 1)}`;
+          : `$${currencyFormatter(token?.vol24 ?? 0, 1)}`;
       }
     }
     // rank is currently not displayed because an additional

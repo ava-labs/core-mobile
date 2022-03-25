@@ -28,28 +28,27 @@ import {
   VictoryChart,
   VictoryTheme,
 } from 'victory-native';
-import {largeCurrencyFormatter, truncateAddress} from 'utils/Utils';
 import {useTokenDetail} from 'screens/watchlist/useTokenDetail';
 import SparklineChart from 'components/SparklineChart';
 import {Row} from 'components/Row';
 import MarketMovement from 'screens/watchlist/components/MarketMovement';
 import {ViewOnceInformation} from 'Repo';
+import TokenAddress from 'components/TokenAddress';
+import AppNavigation from 'navigation/AppNavigation';
 
 const WIDOW_WIDTH = Dimensions.get('window').width;
 
-export function formatMarketNumbers(value: number) {
-  return value === 0 ? ' -' : largeCurrencyFormatter(value, 1);
-}
-
 const TokenDetail: FC<any> = () => {
-  const {theme} = useApplicationContext();
+  const {theme, appHook} = useApplicationContext();
   const {saveViewOnceInformation, infoHasBeenShown, viewOnceInfo} =
     useApplicationContext().repo.informationViewOnceRepo;
   const [showLineChart, setShowLineChart] = useState(true);
   const {setOptions} = useNavigation<StackNavigationProp<RootStackParamList>>();
   const [showChartInstruction, setShowChartInstruction] = useState(false);
   const tokenAddress =
-    useRoute<RouteProp<RootStackParamList>>()?.params?.address;
+    useRoute<
+      RouteProp<RootStackParamList, typeof AppNavigation.Wallet.TokenDetail>
+    >()?.params?.address;
   const {
     isFavorite,
     openMoonPay,
@@ -78,6 +77,10 @@ const TokenDetail: FC<any> = () => {
     if (urlHostname) {
       openUrl('https://' + urlHostname);
     }
+  }
+
+  function formatMarketNumbers(value: number) {
+    return value === 0 ? ' -' : appHook.currencyFormatter(value, 1);
   }
 
   useEffect(() => {
@@ -342,14 +345,13 @@ const TokenDetail: FC<any> = () => {
           rightComponent={
             <View
               style={{
-                justifyContent: 'flex-start',
+                justifyContent: 'center',
                 alignItems: 'flex-start',
                 flex: 1,
               }}>
               <AvaText.Body2>Contract Address</AvaText.Body2>
-              <AvaText.Heading3>
-                {truncateAddress(tokenAddress)}
-              </AvaText.Heading3>
+              <Space y={4} />
+              <TokenAddress address={tokenAddress} textType={'Heading'} />
             </View>
           }
         />

@@ -9,12 +9,19 @@ import BridgeTokenSelector, {
   SelectTokenMode,
 } from 'screens/bridge/BridgeTokenSelector';
 import {BridgeStackParamList} from 'navigation/wallet/BridgeScreenStack';
+import AppNavigation from 'navigation/AppNavigation';
 
 function BridgeSelectTokenBottomSheet(): JSX.Element {
   const navigation = useNavigation();
   const bottomSheetModalRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ['0%', '90%'], []);
-  const route = useRoute<RouteProp<BridgeStackParamList>>();
+  const route =
+    useRoute<
+      RouteProp<
+        BridgeStackParamList,
+        typeof AppNavigation.Modal.BridgeSelectToken
+      >
+    >();
 
   useEffect(() => {
     // intentionally setting delay so animation is visible.

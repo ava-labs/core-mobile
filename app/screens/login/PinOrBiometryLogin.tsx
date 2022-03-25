@@ -13,7 +13,7 @@ import {Space} from 'components/Space';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaButton from 'components/AvaButton';
 import DotSVG from 'components/svg/DotSVG';
-import OwlLogoSVG from 'components/svg/OwlLogoSVG';
+import CoreSVG from 'components/svg/CoreSVG';
 
 const keymap: Map<string, PinKeys> = new Map([
   ['1', PinKeys.Key1],
@@ -52,14 +52,13 @@ export default function PinOrBiometryLogin({
 }: Props | Readonly<Props>): JSX.Element {
   const theme = useApplicationContext().theme;
 
-  const [
-    title,
+  const {
     pinDots,
     onEnterPin,
     mnemonic,
     promptForWalletLoadingIfExists,
     jiggleAnim,
-  ] = usePinOrBiometryLogin();
+  } = usePinOrBiometryLogin();
 
   const context = useApplicationContext();
 
@@ -118,7 +117,7 @@ export default function PinOrBiometryLogin({
       <View style={styles.growContainer}>
         {isResettingPin || (
           <View style={{alignItems: 'center'}}>
-            <OwlLogoSVG />
+            <CoreSVG />
             <Space y={8} />
             <AvaText.Body1
               textStyle={{

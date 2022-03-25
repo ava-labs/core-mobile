@@ -7,9 +7,7 @@ import {Account} from 'dto/Account';
 import AvaButton from 'components/AvaButton';
 import InputText from 'components/InputText';
 import {Row} from 'components/Row';
-import CopySVG from 'components/svg/CopySVG';
-import {copyToClipboard} from 'utils/DeviceTools';
-import {truncateAddress} from 'utils/Utils';
+import TokenAddress from 'components/TokenAddress';
 
 type Props = {
   account: Account;
@@ -105,7 +103,7 @@ function AccountItem({
               width: 116,
               alignItems: 'flex-end',
             }}>
-            <AddressC address={account.address} />
+            <TokenAddress address={account.address} />
             <Space y={6} />
             <AvaText.Body3 currency>{accBalance}</AvaText.Body3>
           </View>
@@ -124,21 +122,6 @@ function AccountItem({
     </>
   );
 }
-
-const AddressC = ({address}: {address: string}) => {
-  return (
-    <Row
-      style={{
-        alignItems: 'center',
-        height: 16,
-      }}>
-      <AvaButton.Icon onPress={() => copyToClipboard(address)}>
-        <CopySVG size={16} />
-      </AvaButton.Icon>
-      <AvaText.ButtonSmall>{truncateAddress(address)}</AvaText.ButtonSmall>
-    </Row>
-  );
-};
 
 const Save = ({
   disabled,
