@@ -18,10 +18,10 @@ export type BridgeStackParamList = {
     txHash: string;
     txTimestamp: string;
   };
-  [AppNavigation.Bridge.HideWarning]: undefined;
   [AppNavigation.Modal.BridgeSelectToken]: {
     onTokenSelected: (token: string) => void;
   };
+  [AppNavigation.Bridge.HideWarning]: undefined;
 };
 
 const BridgeStack = createStackNavigator<BridgeStackParamList>();

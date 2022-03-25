@@ -20,7 +20,10 @@ export type NFTStackParamList = {
 const NFTStack = createStackNavigator<NFTStackParamList>();
 
 function NFTScreenStack() {
-  const {params} = useRoute<RouteProp<RootStackParamList>>();
+  const {params} =
+    useRoute<
+      RouteProp<RootStackParamList, typeof AppNavigation.Wallet.NFTDetails>
+    >();
   const item = params?.nft as NFTItemData;
 
   return (

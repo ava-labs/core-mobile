@@ -17,6 +17,7 @@ import LinearGradientSVG from 'components/svg/LinearGradientSVG';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {orientation} from 'react-native-sensors';
 import {filter, sampleTime, tap} from 'rxjs';
+import AppNavigation from 'navigation/AppNavigation';
 
 export type NftFullScreenProps = {};
 
@@ -24,7 +25,10 @@ const SAMPLE_TIME = 100;
 
 export default function NftFullScreen() {
   const {theme} = useApplicationContext();
-  const {params} = useRoute<RouteProp<NFTStackParamList>>();
+  const {params} =
+    useRoute<
+      RouteProp<NFTStackParamList, typeof AppNavigation.Nft.FullScreen>
+    >();
   const imageUrl = params?.url as string;
   const imageUrlSmall = params?.urlSmall as string;
   const [grabbedBgColor, setGrabbedBgColor] = useState('black');
