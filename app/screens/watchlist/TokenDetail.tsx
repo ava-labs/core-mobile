@@ -34,6 +34,7 @@ import {Row} from 'components/Row';
 import MarketMovement from 'screens/watchlist/components/MarketMovement';
 import {ViewOnceInformation} from 'Repo';
 import TokenAddress from 'components/TokenAddress';
+import AppNavigation from 'navigation/AppNavigation';
 
 const WIDOW_WIDTH = Dimensions.get('window').width;
 
@@ -45,7 +46,9 @@ const TokenDetail: FC<any> = () => {
   const {setOptions} = useNavigation<StackNavigationProp<RootStackParamList>>();
   const [showChartInstruction, setShowChartInstruction] = useState(false);
   const tokenAddress =
-    useRoute<RouteProp<RootStackParamList>>()?.params?.address;
+    useRoute<
+      RouteProp<RootStackParamList, typeof AppNavigation.Wallet.TokenDetail>
+    >()?.params?.address;
   const {
     isFavorite,
     openMoonPay,

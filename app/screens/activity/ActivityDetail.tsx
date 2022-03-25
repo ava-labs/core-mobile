@@ -17,24 +17,30 @@ import FlexSpacer from 'components/FlexSpacer';
 import Avatar from 'components/Avatar';
 import {Contact} from 'Repo';
 import {bnToAvaxC, numberToBN} from '@avalabs/avalanche-wallet-sdk';
+import AppNavigation from 'navigation/AppNavigation';
 
 function ActivityDetail() {
   const theme = useApplicationContext().theme;
   const {addressBook} = useApplicationContext().repo.addressBookRepo;
   const addressBookArray = Array.from(addressBook);
-  const {params} = useRoute<RouteProp<RootStackParamList>>();
-  const txItem = params?.tx;
-  const date = moment(txItem.timestamp).format('MMM DD, YYYY HH:mm');
+  const txItem =
+    useRoute<
+      RouteProp<RootStackParamList, typeof AppNavigation.Wallet.ActivityDetail>
+    >().params.tx;
+  const date = moment(txItem?.timestamp).format('MMM DD, YYYY HH:mm');
   const {openUrl} = useInAppBrowser();
   const [contact, setContact] = useState<Contact>();
 
-  const feeBN = numberToBN(txItem.gasUsed * txItem.gasPrice, 0);
+  const feeBN = numberToBN(
+    Number(txItem?.gasUsed ?? '0') * Number(txItem?.gasPrice ?? '0'),
+    0,
+  );
   const fees = bnToAvaxC(feeBN);
 
   useEffect(() => getContactMatch(), [addressBook]);
 
   function getContactMatch() {
-    const address = txItem.isSender ? txItem.to : txItem.from;
+    const address = txItem?.isSender ? txItem.to : txItem?.from;
     const filtered = addressBookArray?.filter(
       entry => entry[1].address === address,
     );
@@ -43,98 +49,107 @@ function ActivityDetail() {
     }
   }
 
-  const tokenLogo = isTransactionERC20(txItem) ? (
-    <Avatar.Custom
-      size={57}
-      name={txItem.tokenName}
-      symbol={txItem.tokenSymbol}
-    />
-  ) : (
-    <Avatar.Custom size={57} name={'Avalanche'} symbol={'AVAX'} />
-  );
+  const tokenLogo = () => {
+    if (txItem && isTransactionERC20(txItem)) {
+      return (
+        <Avatar.Custom
+          size={57}
+          name={txItem.tokenName}
+          symbol={txItem.tokenSymbol}
+        />
+      );
+    }
+    return <Avatar.Custom size={57} name={'Avalanche'} symbol={'AVAX'} />;
+  };
 
   return (
     <View style={{flex: 1}}>
-      <View
-        style={{
-          backgroundColor: theme.colorBg2,
-          marginTop: 45,
-          paddingTop: 10,
-          flex: 1,
-        }}>
-        <View style={styles.logoContainer}>
-          <View style={{position: 'absolute'}}>
-            <DotSVG fillColor={theme.colorBg1} size={72} />
-          </View>
-          {tokenLogo}
-        </View>
-        <View style={styles.headerContainer}>
-          <AvaText.Heading1 textStyle={{marginTop: 16}}>
-            {txItem.isSender ? '-' : '+'}
-            {txItem.amountDisplayValue}
-            <AvaText.Body1 color={theme.colorText2}>
-              {isTransactionERC20(txItem) ? ` ${txItem.tokenSymbol}` : ' AVAX'}
-            </AvaText.Body1>
-          </AvaText.Heading1>
-          <Space y={4} />
-          <AvaText.Body2>{` Fee ${fees} AVAX`}</AvaText.Body2>
-        </View>
-        <Space y={16} />
-        <AvaListItem.Base
-          title={<AvaText.Body2>Status</AvaText.Body2>}
-          titleAlignment={'flex-start'}
-          rightComponent={<AvaText.Heading3>Complete</AvaText.Heading3>}
-        />
-        <Separator inset={16} />
-        <AvaListItem.Base
-          title={<AvaText.Body2>Date</AvaText.Body2>}
-          titleAlignment={'flex-start'}
-          rightComponent={<AvaText.Heading3>{date}</AvaText.Heading3>}
-        />
-        <Separator inset={16} />
-        <AvaListItem.Base
-          title={
-            <AvaText.Body2>{txItem.isSender ? 'To' : 'From'}</AvaText.Body2>
-          }
-          titleAlignment={'flex-start'}
-          rightComponent={
-            <View style={{alignItems: 'flex-end'}}>
-              {contact && <AvaText.Heading3>{contact?.title}</AvaText.Heading3>}
-              <AvaText.Body1>
-                {truncateAddress(txItem.isSender ? txItem.to : txItem.from)}
-              </AvaText.Body1>
+      {txItem && (
+        <View
+          style={{
+            backgroundColor: theme.colorBg2,
+            marginTop: 45,
+            paddingTop: 10,
+            flex: 1,
+          }}>
+          <View style={styles.logoContainer}>
+            <View style={{position: 'absolute'}}>
+              <DotSVG fillColor={theme.colorBg1} size={72} />
             </View>
-          }
-        />
-        <Separator inset={16} />
-        <AvaListItem.Base
-          title={<AvaText.Body2>Transaction Type</AvaText.Body2>}
-          titleAlignment={'flex-start'}
-          rightComponent={
-            <AvaText.Body1>
-              {txItem.isSender ? 'Outgoing Transfer' : 'Incoming Transfer'}
-            </AvaText.Body1>
-          }
-        />
-        <FlexSpacer />
-        {!!txItem.explorerLink && (
-          <>
-            <Pressable
-              style={[styles.explorerLink]}
-              onPress={() => {
-                openUrl(txItem.explorerLink);
-              }}>
-              <LinkSVG color={theme.white} />
-              <AvaText.ButtonLarge
-                textStyle={{marginLeft: 8}}
-                color={theme.white}>
-                View on Explorer
-              </AvaText.ButtonLarge>
-            </Pressable>
-            <Space y={16} />
-          </>
-        )}
-      </View>
+            {tokenLogo()}
+          </View>
+          <View style={styles.headerContainer}>
+            <AvaText.Heading1 textStyle={{marginTop: 16}}>
+              {txItem.isSender ? '-' : '+'}
+              {txItem.amountDisplayValue}
+              <AvaText.Body1 color={theme.colorText2}>
+                {isTransactionERC20(txItem)
+                  ? ` ${txItem.tokenSymbol}`
+                  : ' AVAX'}
+              </AvaText.Body1>
+            </AvaText.Heading1>
+            <Space y={4} />
+            <AvaText.Body2>{` Fee ${fees} AVAX`}</AvaText.Body2>
+          </View>
+          <Space y={16} />
+          <AvaListItem.Base
+            title={<AvaText.Body2>Status</AvaText.Body2>}
+            titleAlignment={'flex-start'}
+            rightComponent={<AvaText.Heading3>Complete</AvaText.Heading3>}
+          />
+          <Separator inset={16} />
+          <AvaListItem.Base
+            title={<AvaText.Body2>Date</AvaText.Body2>}
+            titleAlignment={'flex-start'}
+            rightComponent={<AvaText.Heading3>{date}</AvaText.Heading3>}
+          />
+          <Separator inset={16} />
+          <AvaListItem.Base
+            title={
+              <AvaText.Body2>{txItem.isSender ? 'To' : 'From'}</AvaText.Body2>
+            }
+            titleAlignment={'flex-start'}
+            rightComponent={
+              <View style={{alignItems: 'flex-end'}}>
+                {contact && (
+                  <AvaText.Heading3>{contact?.title}</AvaText.Heading3>
+                )}
+                <AvaText.Body1>
+                  {truncateAddress(txItem.isSender ? txItem.to : txItem.from)}
+                </AvaText.Body1>
+              </View>
+            }
+          />
+          <Separator inset={16} />
+          <AvaListItem.Base
+            title={<AvaText.Body2>Transaction Type</AvaText.Body2>}
+            titleAlignment={'flex-start'}
+            rightComponent={
+              <AvaText.Body1>
+                {txItem.isSender ? 'Outgoing Transfer' : 'Incoming Transfer'}
+              </AvaText.Body1>
+            }
+          />
+          <FlexSpacer />
+          {!!txItem.explorerLink && (
+            <>
+              <Pressable
+                style={[styles.explorerLink]}
+                onPress={() => {
+                  openUrl(txItem.explorerLink);
+                }}>
+                <LinkSVG color={theme.white} />
+                <AvaText.ButtonLarge
+                  textStyle={{marginLeft: 8}}
+                  color={theme.white}>
+                  View on Explorer
+                </AvaText.ButtonLarge>
+              </Pressable>
+              <Space y={16} />
+            </>
+          )}
+        </View>
+      )}
     </View>
   );
 }

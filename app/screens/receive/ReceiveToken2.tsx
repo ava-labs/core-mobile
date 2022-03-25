@@ -2,8 +2,6 @@ import React, {FC, memo, useCallback} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 import {usePortfolio} from 'screens/portfolio/usePortfolio';
 import {useApplicationContext} from 'contexts/ApplicationContext';
-import AvaButton from 'components/AvaButton';
-import CopySVG from 'components/svg/CopySVG';
 import AvaText from 'components/AvaText';
 import {Space} from 'components/Space';
 import {
@@ -19,7 +17,6 @@ import {
 import AvaxQACode from 'components/AvaxQRCode';
 import HeaderAccountSelector from 'components/HeaderAccountSelector';
 import AppNavigation from 'navigation/AppNavigation';
-import {copyToClipboard} from 'utils/DeviceTools';
 import {RootStackParamList} from 'navigation/WalletScreenStack';
 import TokenAddress from 'components/TokenAddress';
 
@@ -179,7 +176,6 @@ const Receive: FC<{
           ]}>
           <TokenAddress
             address={props.selectedAddress}
-            copyIconEnd
             showFullAddress
             textType={'ButtonMedium'}
           />
@@ -195,7 +191,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   copyAddressContainer: {
-    flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 8,

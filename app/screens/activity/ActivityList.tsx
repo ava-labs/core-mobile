@@ -38,9 +38,8 @@ function ActivityList({embedded, tokenSymbolFilter}: Props) {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const wallet = useWalletContext()?.wallet;
   const {network} = useNetworkContext()!;
-  const [allHistory, setAllHistory] = useState<
-    (TransactionNormal | TransactionERC20)[]
-  >();
+  const [allHistory, setAllHistory] =
+    useState<(TransactionNormal | TransactionERC20)[]>();
   const {bridgeTransactions} = useBridgeContext();
   const {bridgeAssets} = useBridgeSDK();
 

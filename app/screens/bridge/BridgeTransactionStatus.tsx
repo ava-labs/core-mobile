@@ -38,10 +38,13 @@ interface Props {
 const BridgeTransactionStatus: FC<Props> = ({fromStack}) => {
   const {theme} = useApplicationContext();
   const navigation = useNavigation<StackNavigationProp<BridgeStackParamList>>();
-  //todo: figure out why params is not recognizing types when BridgeStackParamList is specified
-  const {blockchain, txHash, txTimestamp} = useRoute<
-    RouteProp<BridgeStackParamList>
-  >()?.params as {blockchain: string; txHash: string; txTimestamp: string};
+  const {blockchain, txHash, txTimestamp} =
+    useRoute<
+      RouteProp<
+        BridgeStackParamList,
+        typeof AppNavigation.Bridge.BridgeTransactionStatus
+      >
+    >()?.params;
   // @ts-ignore addresses exist in walletContext
   const {addresses} = useWalletStateContext();
   const {config} = useBridgeConfig();
