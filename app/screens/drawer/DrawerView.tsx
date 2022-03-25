@@ -13,7 +13,7 @@ import SignOutItem from 'screens/drawer/components/SignOutItem';
 import NetworkItem from 'screens/drawer/components/NetworkItem';
 import AddressBookItem from 'screens/drawer/components/AddressBookItem';
 import {Row} from 'components/Row';
-import OwlBrandLogo from 'components/OwlBrandLogo';
+import CoreLogo from 'components/CoreLogo';
 
 const DrawerView = () => {
   const context = useApplicationContext();
@@ -24,7 +24,7 @@ const DrawerView = () => {
 
   const header = (
     <Row style={styles.headerContainer}>
-      <OwlBrandLogo
+      <CoreLogo
         logoHeight={29}
         textHeight={15}
         orientation={'horizontal'}
