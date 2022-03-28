@@ -10,6 +10,7 @@ import {
   AccountsContextProvider,
   NetworkContextProvider,
   WalletContextProvider,
+  WalletStateContextProvider,
 } from '@avalabs/wallet-react-components';
 import BiometricsSDK from 'utils/BiometricsSDK';
 import Splash from 'screens/onboarding/Splash';
@@ -18,7 +19,6 @@ import {SECURE_ACCESS_SET} from 'resources/Constants';
 import {Platform} from 'react-native';
 import JailMonkey from 'jail-monkey';
 import JailbrokenWarning from 'screens/onboarding/JailbrokenWarning';
-import {WalletStateContextProvider} from '@avalabs/wallet-react-components';
 import {BridgeProvider} from 'contexts/BridgeContext';
 
 export default function ContextApp() {

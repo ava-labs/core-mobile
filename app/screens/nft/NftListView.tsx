@@ -121,6 +121,7 @@ const renderItemGrid = (
 ) => {
   return (
     <AvaButton.Base
+      key={item.uid}
       onPress={() => onItemSelected(item)}
       style={{margin: GRID_ITEM_MARGIN}}>
       <Image
