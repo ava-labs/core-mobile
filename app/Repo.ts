@@ -11,6 +11,7 @@ import {NFTItemData} from 'screens/nft/NftCollection';
  * Suffix "_<increasing number>" is for destructive migration of database. In the future, we want gracefully migrate data with no data loss.
  */
 const WALLET_ID = 'WALLET_ID';
+const USER_SETTINGS = 'USER_SETTINGS';
 const ADDR_BOOK = 'ADDR_BOOK_1';
 const ADDR_BOOK_RECENTS = 'ADDR_BOOK_RECENTS_1';
 const WATCHLIST_FAVORITES = 'WATCHLIST_FAVORITES';
@@ -47,6 +48,9 @@ export type RecentContact = {
   type: AddrBookItemType;
 };
 
+export type Setting = 'CoreAnalytics';
+export type SettingValue = number | string | boolean;
+
 export type AddrBookItemType = 'account' | 'contact';
 
 export type Repo = {
@@ -78,6 +82,13 @@ export type Repo = {
     customTokens: CustomTokens;
     saveCustomTokens: (customTokens: CustomTokens) => Promise<void>;
   };
+  /**
+   * Store any simple user settings here
+   */
+  userSettingsRepo: {
+    setSetting: (setting: Setting, value: SettingValue) => void;
+    getSetting: (setting: Setting) => SettingValue | undefined;
+  };
   destroy: () => void;
 };
 
@@ -89,18 +100,26 @@ export function useRepo(): Repo {
   const [watchlistFavorites, setWatchlistFavorites] = useState<string[]>([]);
   const [customTokens, setCustomTokens] = useState<CustomTokens>({});
   const [viewOnceInfo, setViewOnceInfo] = useState<ViewOnceInformation[]>([]);
+  const [userSettings, setUserSettings] = useState<Map<Setting, SettingValue>>(
+    new Map(),
+  );
 
   useEffect(() => {
-    loadAccountsFromStorage().then(value => setAccounts(value));
-    loadNFTsFromStorage().then(value => setNfts(value));
-    loadAddressBookFromStorage().then(value => setAddressBook(value));
-    loadRecentContactsFromStorage().then(value => setRecentContacts(value));
-    loadWatchlistFavoritesFromStorage().then(value =>
-      setWatchlistFavorites(value),
-    );
-    loadCustomTokensFromStorage().then(value => setCustomTokens(value));
-    loadViewOnceInformation().then(value => setViewOnceInfo(value));
+    loadInitialStatesFromStorage();
   }, []);
+
+  const setSetting = (setting: Setting, value: SettingValue) => {
+    userSettings.set(setting, value);
+    const updatedSettings = new Map(userSettings);
+    setUserSettings(updatedSettings);
+    saveMapToStorage(USER_SETTINGS, updatedSettings).catch(reason =>
+      console.error(reason),
+    );
+  };
+
+  const getSetting = (setting: Setting) => {
+    return userSettings.get(setting);
+  };
 
   const saveAccounts = (accounts: Map<AccountId, Account>) => {
     setAccounts(new Map(accounts));
@@ -116,17 +135,19 @@ export function useRepo(): Repo {
 
   const saveAddressBook = (addrBook: Map<UID, Contact>) => {
     setAddressBook(new Map(addrBook));
-    saveAddressBookToStorage(addrBook).catch(reason => console.error(reason));
+    saveMapToStorage(ADDR_BOOK, addrBook).catch(reason =>
+      console.error(reason),
+    );
   };
 
   const saveNfts = (nfts: Map<UID, NFTItemData>) => {
     setNfts(new Map(nfts));
-    saveNFTsToStorage(nfts).catch(reason => console.error(reason));
+    saveMapToStorage(NFTs, nfts).catch(reason => console.error(reason));
   };
 
   const saveCustomTokens = (tokens: CustomTokens) => {
     setCustomTokens(tokens);
-    return saveCustomTokensToStorage(tokens);
+    return saveToStorage<CustomTokens>(CUSTOM_TOKENS, tokens);
   };
 
   const addToRecentContacts = (contact: RecentContact) => {
@@ -135,14 +156,14 @@ export function useRepo(): Repo {
       ...recentContacts.filter(value => value.id !== contact.id),
     ].slice(0, 9); //save max 10 recents
     setRecentContacts(newRecents);
-    saveRecentContactsToStorage(newRecents).catch(reason =>
+    saveToStorage(ADDR_BOOK_RECENTS, newRecents).catch(reason =>
       console.error(reason),
     );
   };
 
   const saveWatchlistFavorites = (favorites: string[]) => {
     setWatchlistFavorites(favorites);
-    saveWatchlistFavoritesToStorage(favorites).catch(reason =>
+    saveToStorage(WATCHLIST_FAVORITES, favorites).catch(reason =>
       console.error(reason),
     );
   };
@@ -151,7 +172,7 @@ export function useRepo(): Repo {
     // we use set so we don't allow duplicates
     const infoSet = [...new Set(info)];
     setViewOnceInfo(infoSet);
-    saveViewOnceInformationToStorage(infoSet).catch(error =>
+    saveToStorage(VIEW_ONCE_INFORMATION, infoSet).catch(error =>
       console.error(error),
     );
   };
@@ -168,7 +189,33 @@ export function useRepo(): Repo {
     setRecentContacts([]);
     setWatchlistFavorites([]);
     setCustomTokens({});
+    setUserSettings(new Map());
   };
+
+  function loadInitialStatesFromStorage() {
+    loadFromStorageAsMap<Setting, SettingValue>(USER_SETTINGS).then(value =>
+      setUserSettings(value),
+    );
+    loadFromStorageAsMap<AccountId, Account>(WALLET_ID).then(value =>
+      setAccounts(value),
+    );
+    loadFromStorageAsMap<UID, NFTItemData>(NFTs).then(value => setNfts(value));
+    loadFromStorageAsMap<UID, Contact>(ADDR_BOOK).then(value =>
+      setAddressBook(value),
+    );
+    loadFromStorageAsArray<RecentContact>(ADDR_BOOK_RECENTS).then(value =>
+      setRecentContacts(value),
+    );
+    loadFromStorageAsArray<string>(WATCHLIST_FAVORITES).then(value =>
+      setWatchlistFavorites(value),
+    );
+    loadFromStorageAsObj<CustomTokens>(CUSTOM_TOKENS).then(value =>
+      setCustomTokens(value),
+    );
+    loadFromStorageAsArray<ViewOnceInformation>(VIEW_ONCE_INFORMATION).then(
+      value => setViewOnceInfo(value),
+    );
+  }
 
   return {
     accountsRepo: {accounts, saveAccounts, setActiveAccount},
@@ -181,6 +228,10 @@ export function useRepo(): Repo {
     },
     watchlistFavoritesRepo: {watchlistFavorites, saveWatchlistFavorites},
     customTokenRepo: {customTokens, saveCustomTokens},
+    userSettingsRepo: {
+      setSetting,
+      getSetting,
+    },
     informationViewOnceRepo: {
       viewOnceInfo: viewOnceInfo,
       saveViewOnceInformation,
@@ -190,47 +241,19 @@ export function useRepo(): Repo {
   };
 }
 
-async function loadAccountsFromStorage() {
-  const rawAccounts = await AsyncStorage.getItem(WALLET_ID);
-  return rawAccounts
-    ? (new Map(JSON.parse(rawAccounts)) as Map<AccountId, Account>)
-    : new Map<AccountId, Account>();
+async function loadFromStorageAsMap<K, V>(key: string) {
+  const raw = await AsyncStorage.getItem(key);
+  return raw ? (new Map(JSON.parse(raw)) as Map<K, V>) : new Map<K, V>();
 }
 
-async function loadNFTsFromStorage() {
-  const rawNfts = await AsyncStorage.getItem(NFTs);
-  return rawNfts
-    ? (new Map(JSON.parse(rawNfts)) as Map<UID, NFTItemData>)
-    : new Map<UID, NFTItemData>();
+async function loadFromStorageAsObj<T>(key: string) {
+  const raw = await AsyncStorage.getItem(key);
+  return raw ? (JSON.parse(raw) as T) : {};
 }
 
-async function loadAddressBookFromStorage() {
-  const rawAddrBook = await AsyncStorage.getItem(ADDR_BOOK);
-  return rawAddrBook
-    ? (new Map(JSON.parse(rawAddrBook)) as Map<UID, Contact>)
-    : new Map<UID, Contact>();
-}
-
-async function loadCustomTokensFromStorage() {
-  const tokenString = await AsyncStorage.getItem(CUSTOM_TOKENS);
-  return tokenString ? (JSON.parse(tokenString) as CustomTokens) : {};
-}
-
-async function loadRecentContactsFromStorage() {
-  const rawRecents = await AsyncStorage.getItem(ADDR_BOOK_RECENTS);
-  return rawRecents
-    ? (JSON.parse(rawRecents) as RecentContact[])
-    : ([] as RecentContact[]);
-}
-
-async function loadWatchlistFavoritesFromStorage() {
-  const favorites = await AsyncStorage.getItem(WATCHLIST_FAVORITES);
-  return favorites ? (JSON.parse(favorites) as string[]) : [];
-}
-
-async function loadViewOnceInformation() {
-  const info = await AsyncStorage.getItem(VIEW_ONCE_INFORMATION);
-  return info ? (JSON.parse(info) as ViewOnceInformation[]) : [];
+async function loadFromStorageAsArray<T>(key: string) {
+  const raw = await AsyncStorage.getItem(key);
+  return raw ? (JSON.parse(raw) as T[]) : ([] as T[]);
 }
 
 const omitBalance = (key: string, value: any) => {
@@ -253,56 +276,20 @@ async function saveAccountsToStorage(
   }
 }
 
-async function saveNFTsToStorage(nfts: Map<UID, NFTItemData>) {
-  const stringifiedNFTs = JSON.stringify([...nfts]);
-  if (stringifiedNFTs === undefined) {
-    console.error('Could not stringify nfts: ', nfts);
+async function saveMapToStorage<K, V>(key: string, map: Map<K, V>) {
+  const stringified = JSON.stringify([...map]);
+  if (stringified === undefined) {
+    console.error('Could not stringify: ', map);
   } else {
-    await AsyncStorage.setItem(NFTs, stringifiedNFTs);
+    await AsyncStorage.setItem(key, stringified);
   }
 }
 
-async function saveAddressBookToStorage(addrBook: Map<UID, Contact>) {
-  const stringifiedAddrBook = JSON.stringify([...addrBook]);
-  if (stringifiedAddrBook === undefined) {
-    console.error(addrBook);
+async function saveToStorage<T>(key: string, obj: T | T[]) {
+  const stringified = JSON.stringify(obj);
+  if (stringified === undefined) {
+    console.error('Could not stringify: ', obj);
   } else {
-    await AsyncStorage.setItem(ADDR_BOOK, stringifiedAddrBook);
-  }
-}
-
-async function saveCustomTokensToStorage(tokens: CustomTokens) {
-  const tokensString = JSON.stringify(tokens);
-  if (tokensString === undefined) {
-    console.error(tokens);
-  } else {
-    await AsyncStorage.setItem(CUSTOM_TOKENS, tokensString);
-  }
-}
-
-async function saveViewOnceInformationToStorage(info: ViewOnceInformation[]) {
-  const infoString = JSON.stringify(info);
-  if (infoString === undefined) {
-    console.error(info);
-  } else {
-    await AsyncStorage.setItem(VIEW_ONCE_INFORMATION, infoString);
-  }
-}
-
-async function saveRecentContactsToStorage(recent: RecentContact[]) {
-  const stringifiedRecentContacts = JSON.stringify([...recent]);
-  if (stringifiedRecentContacts === undefined) {
-    console.error(recent);
-  } else {
-    await AsyncStorage.setItem(ADDR_BOOK_RECENTS, stringifiedRecentContacts);
-  }
-}
-
-async function saveWatchlistFavoritesToStorage(favorites: string[]) {
-  const stringifiedFavorites = JSON.stringify(favorites);
-  if (stringifiedFavorites === undefined) {
-    console.error(favorites);
-  } else {
-    await AsyncStorage.setItem(WATCHLIST_FAVORITES, stringifiedFavorites);
+    await AsyncStorage.setItem(key, stringified);
   }
 }

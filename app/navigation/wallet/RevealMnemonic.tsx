@@ -4,10 +4,17 @@ import AvaButton from 'components/AvaButton';
 import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
 import MnemonicScreen from 'components/MnemonicScreen';
 import {SecurityStackParamList} from 'navigation/wallet/SecurityPrivacyStackScreen';
+import AppNavigation from 'navigation/AppNavigation';
 
 export default function RevealMnemonic(): JSX.Element {
   const {goBack} = useNavigation();
-  const {mnemonic} = useRoute<RouteProp<SecurityStackParamList>>().params!;
+  const {mnemonic} =
+    useRoute<
+      RouteProp<
+        SecurityStackParamList,
+        typeof AppNavigation.SecurityPrivacy.RecoveryPhrase
+      >
+    >().params;
 
   const handleSaveMyPhrase = (): void => {
     goBack();
