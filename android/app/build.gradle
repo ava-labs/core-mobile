@@ -146,8 +146,8 @@ android {
         applicationId "com.avaxwallet"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 52
-        versionName "0.7.2"
+        versionCode 53
+        versionName "0.8.0"
 
         missingDimensionStrategy 'react-native-camera', 'general'
     }
