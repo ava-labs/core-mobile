@@ -4,6 +4,7 @@ import {
   Dimensions,
   Easing,
   Image,
+  LayoutChangeEvent,
   NativeModules,
   Platform,
   StatusBar,
@@ -16,12 +17,12 @@ import {getColorFromURL} from 'rn-dominant-color';
 import LinearGradientSVG from 'components/svg/LinearGradientSVG';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {orientation} from 'react-native-sensors';
-import {filter, sampleTime, tap} from 'rxjs';
+import {filter, map, sampleTime, tap} from 'rxjs';
 import AppNavigation from 'navigation/AppNavigation';
 
 export type NftFullScreenProps = {};
 
-const SAMPLE_TIME = 100;
+const SAMPLE_TIME = 50;
 
 export default function NftFullScreen() {
   const {theme} = useApplicationContext();
@@ -34,6 +35,7 @@ export default function NftFullScreen() {
   const [grabbedBgColor, setGrabbedBgColor] = useState('black');
   const windowWidth = useMemo(() => Dimensions.get('window').width - 32, []);
   const [imageAspect, setImageAspect] = useState(0);
+  const [shimmerSize, setShimmerSize] = useState({w: 0, h: 0});
 
   const [sensorData, setSensorData] = useState({
     pitch: 0,
@@ -56,11 +58,6 @@ export default function NftFullScreen() {
   }, []);
 
   useEffect(() => {
-    if (Platform.OS === 'ios' && __DEV__) {
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      return () => {};
-    }
-
     const subscription = orientation
       .pipe(
         sampleTime(SAMPLE_TIME),
@@ -72,6 +69,13 @@ export default function NftFullScreen() {
         tap(sensorData => {
           diff.current.pitch = sensorData.pitch;
           diff.current.roll = sensorData.roll;
+        }),
+        map(value => {
+          return {
+            pitch: value.pitch,
+            roll:
+              value.roll < -0.8 ? -0.8 : value.roll > 0.8 ? 0.8 : value.roll, // constrain for when device is upside-down
+          };
         }),
       )
       .subscribe(value => {
@@ -85,9 +89,6 @@ export default function NftFullScreen() {
   }, []);
 
   useEffect(() => {
-    // transformValue.current.x.setValue(prevSensorData?.x ?? 0);
-    // transformValue.current.z.setValue(prevSensorData?.z ?? 0);
-
     Animated.timing(transformValue.current.pitch, {
       toValue: sensorData.pitch,
       duration: SAMPLE_TIME - 1,
@@ -114,6 +115,14 @@ export default function NftFullScreen() {
     Image.getSize(imageUrl, (width, height) => setImageAspect(height / width));
   }, [imageUrl]);
 
+  const calculateShimmerMaskSize = (event: LayoutChangeEvent) => {
+    // we need separate view for shimmer because iOS removes shadow if parent view has overflow: 'hidden'
+    setShimmerSize({
+      w: event.nativeEvent.layout.width,
+      h: event.nativeEvent.layout.height,
+    });
+  };
+
   return (
     <View style={[styles.container]}>
       <StatusBar translucent backgroundColor={theme.transparent} />
@@ -132,7 +141,6 @@ export default function NftFullScreen() {
         }}>
         <Animated.View
           style={{
-            overflow: Platform.OS === 'ios' ? 'visible' : 'hidden',
             borderRadius: 8,
             elevation: 10,
             shadowColor: 'black',
@@ -142,7 +150,7 @@ export default function NftFullScreen() {
             transform: [
               {
                 rotateX: transformValue.current.pitch.interpolate({
-                  inputRange: [-1.57, 0],
+                  inputRange: Platform.OS === 'ios' ? [0, 1.5] : [-1.57, 0],
                   outputRange: ['10deg', '-10deg'],
                 }),
               },
@@ -155,38 +163,47 @@ export default function NftFullScreen() {
             ],
           }}>
           <Image
+            onLayout={calculateShimmerMaskSize}
             style={[
               styles.imageStyle,
               {width: windowWidth, height: windowWidth * imageAspect},
             ]}
             source={{uri: imageUrl}}
           />
-          <Animated.View
+          <View
             style={{
-              width: 300,
-              height: 600,
+              borderRadius: 8,
               position: 'absolute',
-              transform: [
-                {rotateZ: '-45deg'},
-                {translateY: 0},
-                {scaleY: 1.5},
-                {
-                  translateX: transformValue.current.pitch.interpolate({
-                    inputRange: [-1.57, 0.5],
-                    outputRange: [-5000, 5500],
-                  }),
-                },
-              ],
+              width: shimmerSize.w,
+              height: shimmerSize.h,
+              overflow: 'hidden',
             }}>
-            <LinearGradientSVG
-              orientation={'horizontal'}
-              loop={true}
-              colorTo={'#ffffff'}
-              colorFrom={'#000000'}
-              opacityTo={1}
-              opacityFrom={0}
-            />
-          </Animated.View>
+            <Animated.View
+              style={{
+                width: 300,
+                height: 600,
+                transform: [
+                  {rotateZ: '-45deg'},
+                  {translateY: 0},
+                  {scaleY: 1.5},
+                  {
+                    translateX: transformValue.current.pitch.interpolate({
+                      inputRange: Platform.OS === 'ios' ? [0, 2] : [-1.57, 0.5],
+                      outputRange: [-5000, 5500],
+                    }),
+                  },
+                ],
+              }}>
+              <LinearGradientSVG
+                orientation={'horizontal'}
+                loop={true}
+                colorTo={'#ffffff'}
+                colorFrom={'#000000'}
+                opacityTo={1}
+                opacityFrom={0}
+              />
+            </Animated.View>
+          </View>
         </Animated.View>
       </View>
     </View>
