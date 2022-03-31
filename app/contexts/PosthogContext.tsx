@@ -47,10 +47,15 @@ export const PosthogContextProvider = ({children}: {children: any}) => {
   const swapBlocked = !flags['swap-feature'] || !flags.everything;
   const bridgeBlocked = !flags['bridge-feature'] || !flags.everything;
   const sendBlocked = !flags['send-feature'] || !flags.everything;
+  const eventsBlocked = !flags.events || !flags.everything;
 
   useEffect(initPosthog, []);
   useEffect(reloadFlagsPeriodically, [isPosthogReady]);
-  useEffect(checkConsent, [analyticsConsent, isPosthogReady]);
+  useEffect(setEventsLogging, [
+    analyticsConsent,
+    isPosthogReady,
+    eventsBlocked,
+  ]);
 
   function initPosthog() {
     (async function () {
@@ -86,12 +91,12 @@ export const PosthogContextProvider = ({children}: {children: any}) => {
     return () => subscription?.unsubscribe();
   }
 
-  function checkConsent() {
+  function setEventsLogging() {
     if (!isPosthogReady) {
       return;
     }
-    return; //FIXME: temporary, until Danny says so
-    analyticsConsent ? PostHog.enable() : PostHog.disable();
+    return; //FIXME: exit here until
+    analyticsConsent && !eventsBlocked ? PostHog.enable() : PostHog.disable();
   }
 
   function reloadFeatureFlags() {
