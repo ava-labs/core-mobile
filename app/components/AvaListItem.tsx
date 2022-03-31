@@ -1,8 +1,9 @@
 import React from 'react';
-import {Pressable, StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, Text, View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import CarrotSVG from 'components/svg/CarrotSVG';
 import AvaText from 'components/AvaText';
+import AvaButton from 'components/AvaButton';
 
 interface Props {
   rightComponent?: React.ReactNode;
@@ -11,7 +12,6 @@ interface Props {
   subtitle?: React.ReactNode | string;
   showNavigationArrow?: boolean;
   disabled?: boolean;
-  disablePress?: boolean;
   onPress?: () => void;
   titleAlignment?: 'center' | 'flex-start' | 'flex-end';
   rightComponentHorizontalAlignment?: 'center' | 'flex-start' | 'flex-end';
@@ -28,7 +28,6 @@ function BaseListItem({
   subtitle,
   title,
   disabled,
-  disablePress,
   titleAlignment = 'center',
   rightComponentHorizontalAlignment = 'flex-end',
   rightComponentVerticalAlignment = 'flex-start',
@@ -41,7 +40,9 @@ function BaseListItem({
   const context = useApplicationContext();
 
   return (
-    <View
+    <AvaButton.Base
+      onPress={onPress}
+      disabled={disabled}
       style={[
         {
           paddingVertical: paddingVertical,
@@ -58,11 +59,7 @@ function BaseListItem({
           backgroundColor: background,
         },
       ]}>
-      <Pressable
-        pointerEvents={disablePress ? 'none' : 'auto'}
-        style={styles.baseRowContainer}
-        disabled={disabled}
-        onPress={onPress}>
+      <View style={styles.baseRowContainer}>
         <View style={[styles.baseRow, disabled && {opacity: 0.5}]}>
           {leftComponent && (
             <View style={{marginLeft: 16, flexDirection: 'row'}}>
@@ -118,8 +115,8 @@ function BaseListItem({
             </View>
           )}
         </View>
-      </Pressable>
-    </View>
+      </View>
+    </AvaButton.Base>
   );
 }
 
