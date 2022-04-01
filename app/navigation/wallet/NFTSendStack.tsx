@@ -55,7 +55,14 @@ export default function NFTSendScreenStack() {
           component={SuccessScreen}
         />
       </NFTSendStack.Navigator>
-      {sendBlocked && <FeatureBlocked onOk={goBack} />}
+      {sendBlocked && (
+        <FeatureBlocked
+          onOk={goBack}
+          message={
+            'NFT is currently under maintenance.  Service will resume shortly.'
+          }
+        />
+      )}
     </SendNFTContextProvider>
   );
 }

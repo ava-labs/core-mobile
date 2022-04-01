@@ -95,7 +95,7 @@ export const PosthogContextProvider = ({children}: {children: any}) => {
     if (!isPosthogReady) {
       return;
     }
-    return; //FIXME: exit here until
+    return; //FIXME: exit here until Danny says otherwise
     analyticsConsent && !eventsBlocked ? PostHog.enable() : PostHog.disable();
   }
 
@@ -116,7 +116,6 @@ export const PosthogContextProvider = ({children}: {children: any}) => {
         const result = value as {
           featureFlags: Record<FeatureGates, boolean>;
         };
-        console.log('got flags', result.featureFlags);
         setFlags(result.featureFlags);
       });
   }

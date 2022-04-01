@@ -66,7 +66,14 @@ function BridgeScreenStack() {
           />
         </BridgeStack.Group>
       </BridgeStack.Navigator>
-      {bridgeBlocked && <FeatureBlocked onOk={goBack} />}
+      {bridgeBlocked && (
+        <FeatureBlocked
+          onOk={goBack}
+          message={
+            'Bridge is currently under maintenance.  Service will resume shortly.'
+          }
+        />
+      )}
     </>
   );
 }

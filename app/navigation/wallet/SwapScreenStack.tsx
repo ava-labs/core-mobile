@@ -68,7 +68,14 @@ function SwapScreenStack() {
           component={EditGasLimitBottomSheet}
         />
       </SwapStack.Navigator>
-      {swapBlocked && <FeatureBlocked onOk={goBack} />}
+      {swapBlocked && (
+        <FeatureBlocked
+          onOk={goBack}
+          message={
+            'Swap is currently under maintenance. Service will resume shortly.'
+          }
+        />
+      )}
     </SwapContextProvider>
   );
 }

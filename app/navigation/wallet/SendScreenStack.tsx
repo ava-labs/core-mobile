@@ -51,7 +51,14 @@ function SendScreenStack() {
           component={DoneScreenComponent}
         />
       </SendStack.Navigator>
-      {sendBlocked && <FeatureBlocked onOk={goBack} />}
+      {sendBlocked && (
+        <FeatureBlocked
+          onOk={goBack}
+          message={
+            'Send is currently under maintenance.  Service will resume shortly.'
+          }
+        />
+      )}
     </SendTokenContextProvider>
   );
 }
