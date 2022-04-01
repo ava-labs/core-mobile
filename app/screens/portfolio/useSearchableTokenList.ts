@@ -1,13 +1,15 @@
-import {useEffect, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {BN} from '@avalabs/avalanche-wallet-sdk';
 import {
   TokenWithBalance,
   updateAllBalances,
+  useNetworkContext,
   useWalletContext,
   useWalletStateContext,
 } from '@avalabs/wallet-react-components';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {getTokenUID} from 'utils/TokenTools';
+import {useApplicationContext} from 'contexts/ApplicationContext';
 
 type ShowZeroArrayType = {[x: string]: boolean};
 const bnZero = new BN(0);
@@ -23,8 +25,14 @@ export function useSearchableTokenList(hideZeroBalance = true): {
   loadTokenList: () => void;
   loading: boolean;
 } {
+  const walletState = useWalletStateContext();
+  const wallet = useWalletContext().wallet;
+  const network = useNetworkContext()?.network;
+  const {loadTokensCache, saveTokensCache} =
+    useApplicationContext().repo.portfolioTokensCache;
   const [loading, setLoading] = useState(false);
-  const [tokenList, setTokenList] = useState<TokenWithBalance[]>([]);
+  const tokenMap = useRef(new Map<string, TokenWithBalance>());
+  const [tokenList, setTokenList] = useState([] as TokenWithBalance[]);
   const [filteredTokenList, setFilteredTokenList] = useState<
     TokenWithBalance[]
   >([]);
@@ -34,24 +42,74 @@ export function useSearchableTokenList(hideZeroBalance = true): {
       ['init']: false,
     },
   );
+  const [isLoadingCache, setIsLoadingCache] = useState(true);
 
-  const walletState = useWalletStateContext();
-  const wallet = useWalletContext().wallet;
+  useEffect(loadZeroBalanceList, []);
+  useEffect(initTokensFromCache, [network]);
+  useEffect(setAvaxToken, [walletState?.avaxToken, isLoadingCache]);
+  useEffect(setErc20Tokens, [walletState?.erc20Tokens, isLoadingCache]);
+  useEffect(filterTokensBySearchText, [tokenList, searchText]);
 
-  const loadZeroBalanceList = () => {
-    AsyncStorage.getItem('showZeroBalanceList.v2').then(value => {
-      if (value) {
-        const list: ShowZeroArrayType = JSON.parse(value);
-        setZeroBalanceList({...list});
+  function initTokensFromCache() {
+    if (!network) {
+      return;
+    }
+    loadTokensCache(network.name).then(value => {
+      tokenMap.current = new Map(value);
+      sortAndSetTokenList(Array.from(tokenMap.current.values()));
+      setIsLoadingCache(false);
+    });
+  }
+
+  function sortAndSetTokenList(tokens: TokenWithBalance[]) {
+    setTokenList(
+      tokens.sort((a, b) => {
+        if (a.isAvax && b.isAvax) {
+          return 0;
+        } else if (a.isAvax) {
+          return -1;
+        } else {
+          return 1;
+        }
+      }),
+    );
+  }
+
+  function setAvaxToken() {
+    if (!walletState || isLoadingCache) {
+      return;
+    }
+    const avaxUid = getTokenUID(walletState.avaxToken);
+    if (avaxUid === '0') {
+      return; //sometimes walletState.avaxToken is empty object
+    }
+    tokenMap.current.set(avaxUid, walletState.avaxToken);
+    sortAndSetTokenList(Array.from(tokenMap.current.values()));
+
+    if (network) {
+      saveTokensCache(network.name, tokenMap.current);
+    }
+  }
+
+  function setErc20Tokens() {
+    if (isLoadingCache) {
+      return;
+    }
+    walletState?.erc20Tokens?.forEach(value => {
+      const tokenUID = getTokenUID(value);
+      if (
+        !hideZeroBalance ||
+        (hideZeroBalance &&
+          (value.balance.gt(bnZero) || showZeroBalanceList[tokenUID]))
+      ) {
+        tokenMap.current.set(tokenUID, value);
       }
     });
-  };
-
-  const setShowZeroBalanceList = (list: ShowZeroArrayType) => {
-    AsyncStorage.setItem('showZeroBalanceList.v2', JSON.stringify(list)).then(
-      () => setZeroBalanceList(list),
-    );
-  };
+    sortAndSetTokenList(Array.from(tokenMap.current.values()));
+    if (network) {
+      saveTokensCache(network.name, tokenMap.current);
+    }
+  }
 
   function loadTokenList() {
     if (wallet) {
@@ -60,31 +118,22 @@ export function useSearchableTokenList(hideZeroBalance = true): {
     }
   }
 
-  useEffect(() => loadZeroBalanceList(), []);
+  function loadZeroBalanceList() {
+    AsyncStorage.getItem('showZeroBalanceList.v2').then(value => {
+      if (value) {
+        const list: ShowZeroArrayType = JSON.parse(value);
+        setZeroBalanceList({...list});
+      }
+    });
+  }
 
-  useEffect(() => {
-    if (!walletState) {
-      return; //('wallet state not available');
-    }
+  const setShowZeroBalanceList = (list: ShowZeroArrayType) => {
+    AsyncStorage.setItem('showZeroBalanceList.v2', JSON.stringify(list)).then(
+      () => setZeroBalanceList(list),
+    );
+  };
 
-    const tokens = [
-      walletState?.avaxToken,
-      ...walletState?.erc20Tokens?.filter(value => {
-        return hideZeroBalance
-          ? value.balance.gt(bnZero) || showZeroBalanceList[getTokenUID(value)]
-          : true;
-      }),
-    ] as TokenWithBalance[];
-
-    setTokenList(tokens);
-  }, [
-    walletState?.erc20Tokens,
-    walletState?.avaxToken,
-    showZeroBalanceList,
-    hideZeroBalance,
-  ]);
-
-  useEffect(() => {
+  function filterTokensBySearchText() {
     if (tokenList) {
       const regExp = new RegExp(searchText, 'i');
       setFilteredTokenList(
@@ -95,7 +144,7 @@ export function useSearchableTokenList(hideZeroBalance = true): {
         ),
       );
     }
-  }, [tokenList, searchText]);
+  }
 
   return {
     tokenList,

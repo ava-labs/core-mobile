@@ -3,6 +3,7 @@ import {Account} from 'dto/Account';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {CustomTokens} from 'screens/tokenManagement/hooks/useAddCustomToken';
 import {NFTItemData} from 'screens/nft/NftCollection';
+import {TokenWithBalance} from '@avalabs/wallet-react-components';
 
 /**
  * Currently we support only one wallet, with multiple accounts.
@@ -18,6 +19,7 @@ const WATCHLIST_FAVORITES = 'WATCHLIST_FAVORITES';
 const CUSTOM_TOKENS = 'CUSTOM_TOKENS';
 const NFTs = 'NFTs_2';
 const VIEW_ONCE_INFORMATION = 'VIEW_ONCE_INFORMATION';
+const PORTFOLIO_TOKEN_LIST = 'PORTFOLIO_TOKEN_LIST_2';
 
 /**
  * ViewOnceInformation is used by views that needs to display something for the 1st time one.
@@ -82,6 +84,15 @@ export type Repo = {
     customTokens: CustomTokens;
     saveCustomTokens: (customTokens: CustomTokens) => Promise<void>;
   };
+  portfolioTokensCache: {
+    loadTokensCache: (
+      networkName: string,
+    ) => Promise<Map<string, TokenWithBalance>>;
+    saveTokensCache: (
+      networkName: string,
+      tokens: Map<string, TokenWithBalance>,
+    ) => void;
+  };
   /**
    * Store any simple user settings here
    */
@@ -89,7 +100,7 @@ export type Repo = {
     setSetting: (setting: Setting, value: SettingValue) => void;
     getSetting: (setting: Setting) => SettingValue | undefined;
   };
-  destroy: () => void;
+  flush: () => void;
 };
 
 export function useRepo(): Repo {
@@ -150,6 +161,15 @@ export function useRepo(): Repo {
     return saveToStorage<CustomTokens>(CUSTOM_TOKENS, tokens);
   };
 
+  const savePortfolioTokens = (
+    networkName: string,
+    tokens: Map<string, TokenWithBalance>,
+  ) => {
+    saveMapToStorage(networkName + PORTFOLIO_TOKEN_LIST, tokens).catch(reason =>
+      console.error(reason),
+    );
+  };
+
   const addToRecentContacts = (contact: RecentContact) => {
     const newRecents = [
       contact,
@@ -181,8 +201,10 @@ export function useRepo(): Repo {
     return viewOnceInfo.includes(info);
   };
 
-  const destroy = () => {
-    console.log('destroy repo');
+  /**
+   * Clear hook states
+   */
+  const flush = () => {
     setAccounts(new Map());
     setAddressBook(new Map());
     setNfts(new Map());
@@ -237,7 +259,12 @@ export function useRepo(): Repo {
       saveViewOnceInformation,
       infoHasBeenShown,
     },
-    destroy,
+    portfolioTokensCache: {
+      loadTokensCache: (networkName: string) =>
+        loadFromStorageAsMap(networkName + PORTFOLIO_TOKEN_LIST),
+      saveTokensCache: savePortfolioTokens,
+    },
+    flush,
   };
 }
 
