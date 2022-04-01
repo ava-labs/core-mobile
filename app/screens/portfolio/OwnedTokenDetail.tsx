@@ -1,6 +1,6 @@
 import {View} from 'react-native';
 import {Space} from 'components/Space';
-import React, {useEffect, useState} from 'react';
+import React, {FC, useEffect, useState} from 'react';
 import AvaText from 'components/AvaText';
 import AvaListItem from 'components/AvaListItem';
 import Avatar from 'components/Avatar';
@@ -15,7 +15,7 @@ import AppNavigation from 'navigation/AppNavigation';
 import {StackNavigationProp} from '@react-navigation/stack';
 import ActivityList from 'screens/activity/ActivityList';
 
-const OwnedTokenDetail = () => {
+const OwnedTokenDetail: FC = () => {
   const tokenId =
     useRoute<
       RouteProp<
@@ -27,7 +27,9 @@ const OwnedTokenDetail = () => {
   const {filteredTokenList} = useSearchableTokenList(false);
   const [token, setToken] = useState<TokenWithBalance>();
 
-  useEffect(() => {
+  useEffect(loadToken, [filteredTokenList, tokenId]);
+
+  function loadToken() {
     if (filteredTokenList) {
       const result = filteredTokenList.filter(
         tk => getTokenUID(tk) === tokenId,
@@ -36,16 +38,23 @@ const OwnedTokenDetail = () => {
         setToken(result[0]);
       }
     }
-  }, [filteredTokenList, tokenId]);
+  }
 
+  const subtitle = (
+    <Row style={{alignItems: 'center'}}>
+      <AvaText.Body1>{token?.balanceDisplayValue ?? '0'}</AvaText.Body1>
+      <AvaText.Body2>{' ' + token?.symbol}</AvaText.Body2>
+    </Row>
+  );
   return (
     <View style={{paddingHorizontal: 16, flex: 1}}>
+      <AvaText.LargeTitleBold>Token Details</AvaText.LargeTitleBold>
       <Space y={8} />
       <View style={{marginHorizontal: -16}}>
         <AvaListItem.Base
-          title={<AvaText.Heading2>{token?.name}</AvaText.Heading2>}
+          title={<AvaText.Heading1>{token?.name}</AvaText.Heading1>}
           titleAlignment={'flex-start'}
-          subtitle={(token?.balanceDisplayValue ?? '0') + ' ' + token?.symbol}
+          subtitle={subtitle}
           leftComponent={
             <Avatar.Custom
               name={token?.name ?? ''}
@@ -55,33 +64,38 @@ const OwnedTokenDetail = () => {
             />
           }
           rightComponent={
-            <AvaText.Heading3 currency ellipsizeMode={'tail'}>
+            <AvaText.Body1
+              textStyle={{marginTop: 4}}
+              currency
+              ellipsizeMode={'tail'}>
               {token?.balanceUsdDisplayValue ?? '0'}
-            </AvaText.Heading3>
+            </AvaText.Body1>
           }
         />
       </View>
       <Space y={16} />
       <Row>
         <View style={{flex: 1}}>
-          <AvaButton.PrimaryMedium
+          <AvaButton.SecondaryMedium
             onPress={() => navigate(AppNavigation.Wallet.ReceiveTokens)}>
             Receive
-          </AvaButton.PrimaryMedium>
+          </AvaButton.SecondaryMedium>
         </View>
         <Space x={16} />
         <View style={{flex: 1}}>
-          <AvaButton.PrimaryMedium
+          <AvaButton.SecondaryMedium
             onPress={() =>
               navigate(AppNavigation.Wallet.SendTokens, {token: token})
             }>
             Send
-          </AvaButton.PrimaryMedium>
+          </AvaButton.SecondaryMedium>
         </View>
       </Row>
-      <Space y={16} />
-      <AvaText.Heading3> Activity </AvaText.Heading3>
-      <ActivityList tokenSymbolFilter={token?.symbol} />
+      <Space y={24} />
+      <AvaText.Heading2>Activity</AvaText.Heading2>
+      <View style={{marginHorizontal: -16, flex: 1}}>
+        <ActivityList tokenSymbolFilter={token?.symbol} embedded />
+      </View>
     </View>
   );
 };
