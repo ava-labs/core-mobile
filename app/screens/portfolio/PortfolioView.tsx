@@ -6,6 +6,7 @@ import {useNavigation} from '@react-navigation/native';
 import {
   TokenWithBalance,
   useAccountsContext,
+  useWalletStateContext,
 } from '@avalabs/wallet-react-components';
 import {useSearchableTokenList} from 'screens/portfolio/useSearchableTokenList';
 import AppNavigation from 'navigation/AppNavigation';
@@ -40,7 +41,7 @@ export type PortfolioNavigationProp =
 
 // experimenting with container pattern and stable props to try to reduce re-renders
 function PortfolioContainer(): JSX.Element {
-  const {tokenList, loadZeroBalanceList, loadTokenList} =
+  const {filteredTokenList, loadZeroBalanceList, loadTokenList} =
     useSearchableTokenList();
   const {balanceTotalInUSD} = usePortfolio();
   const {setSelectedToken} = useSelectedTokenContext();
@@ -57,7 +58,7 @@ function PortfolioContainer(): JSX.Element {
   return (
     <>
       <PortfolioView
-        tokenList={tokenList}
+        tokenList={filteredTokenList}
         loadZeroBalanceList={loadZeroBalanceList}
         handleRefresh={handleRefresh}
         hasZeroBalance={hasZeroBalance}
@@ -79,6 +80,7 @@ const PortfolioView: FC<PortfolioProps> = memo(
     const navigation = useNavigation<PortfolioNavigationProp>();
     const rootNavigation =
       useNavigation<StackNavigationProp<RootStackParamList>>();
+    const walletState = useWalletStateContext();
 
     useEffect(() => {
       const unsubscribe = navigation.addListener('focus', () => {
@@ -106,6 +108,7 @@ const PortfolioView: FC<PortfolioProps> = memo(
       const token = item.item;
       return (
         <PortfolioListItem
+          showLoading={walletState?.isErc20TokenListLoading ?? false}
           tokenName={token.name}
           tokenPrice={token.balanceDisplayValue ?? '0'}
           tokenPriceUsd={token.balanceUsdDisplayValue}
