@@ -115,10 +115,6 @@ function ActivityList({embedded, tokenSymbolFilter}: Props) {
     loadHistory().then();
   }, [wallet, network, bridgeTransactions]);
 
-  useEffect(() => {
-    navigation.setOptions({headerShown: false});
-  }, [embedded]);
-
   const loadHistory = async () => {
     if (!wallet) {
       return [];
