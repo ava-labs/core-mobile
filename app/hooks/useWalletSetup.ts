@@ -49,7 +49,6 @@ export function useWalletSetup(
     mnemonic: string,
     existingAccounts: Map<number, Account>,
   ) {
-    console.log('initWalletWithMnemonic', existingAccounts);
     walletContext.initWalletMnemonic(mnemonic).then(() => {
       if (existingAccounts.size === 0) {
         const defaultAccounts = new Map();

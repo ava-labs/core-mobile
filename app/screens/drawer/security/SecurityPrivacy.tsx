@@ -6,7 +6,6 @@ import BiometricsSDK from 'utils/BiometricsSDK';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {SECURE_ACCESS_SET} from 'resources/Constants';
 import Switch from 'components/Switch';
-import {useRepo} from 'Repo';
 
 function SecurityPrivacy({
   onChangePin,
@@ -18,7 +17,8 @@ function SecurityPrivacy({
   onTurnOnBiometrics: () => void;
 }) {
   const theme = useApplicationContext().theme;
-  const {setSetting, getSetting} = useRepo().userSettingsRepo;
+  const {setSetting, getSetting} =
+    useApplicationContext().repo.userSettingsRepo;
   const [isBiometricSwitchEnabled, setIsBiometricSwitchEnabled] =
     useState(false);
   const [isBiometricEnabled, setIsBiometricEnabled] = useState(false);
