@@ -3,7 +3,6 @@ import {
   MAINNET_NETWORK
 } from '@avalabs/wallet-react-components'
 import { InfuraProvider, JsonRpcProvider } from '@ethersproject/providers'
-import { Config } from 'react-native-config'
 const providers: Record<string, JsonRpcProvider> = {}
 
 export function getEthereumProvider(network?: ActiveNetwork): JsonRpcProvider {
@@ -13,7 +12,7 @@ export function getEthereumProvider(network?: ActiveNetwork): JsonRpcProvider {
   if (!providers[networkName]) {
     providers[networkName] = new InfuraProvider(
       networkName,
-      Config.INFURA_API_KEY
+      process.env.INFURA_API_KEY
     )
   }
 
