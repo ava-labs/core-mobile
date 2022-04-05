@@ -64,7 +64,7 @@ export default function PinOrBiometryLogin({
 
   useEffect(() => {
     // check if if the login is biometric
-    promptForWalletLoadingIfExists().subscribe({
+    const sub = promptForWalletLoadingIfExists().subscribe({
       next: (value: WalletLoadingResults) => {
         if (value instanceof MnemonicLoaded) {
           // do nothing. We only rely on `setMnemonic` being called
@@ -77,6 +77,8 @@ export default function PinOrBiometryLogin({
       },
       error: err => console.log(err.message),
     });
+
+    return () => sub.unsubscribe();
   }, []);
 
   useEffect(() => {
