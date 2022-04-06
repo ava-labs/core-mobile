@@ -20,7 +20,7 @@
   "dependencies": {
     "@avalabs/avalanche-wallet-sdk": "0.16.0",
     "@avalabs/blizzard-sdk": "2.0.0",
-    "@avalabs/bridge-sdk": "2.0.0",
+    "@avalabs/bridge-sdk": "2.1.4",
     "@avalabs/coingecko-sdk": "2.0.0-alpha.4",
     "@avalabs/covalent-sdk": "2.0.0",
     "@avalabs/wallet-react-components": "1.28.2",
