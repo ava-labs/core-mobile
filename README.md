@@ -15,10 +15,18 @@ Next, install the dependencies.
 yarn install
 ```
 
-## Create an environment (.env) file
-Create a `.env` file in the root of the project. The contents of the .env file are in 1Password. Ask permission to access it (TBD on who or which group in 1Password you need to be part of). Once access is given copy and paste the contents from the 1Password Secure Note into your local .env file. 
+Notes: Before running yarn install, you will need to generate an npm token from your npmjs account and add that as an environment variable named `NPM_TOKEN` on your mac (for example, `.zshenv` if using zsh or `.bash_profile` if not). This is necessary for yarn to be able to download Ava Labs' private libraries/sdks
+
+
+## Add config files
+
+### Environment file
+Create a `.env` file in the root of the project. The contents of the .env file are in 1Password. Ask permission to access it (the vault name is Mobile team). Once access is given copy and paste the contents from the 1Password Secure Note into your local .env file. 
 
 IMPORTANT: the `.env` is never to be committed to the repo, and is already added to .gitignore. 
+
+### Android configs
+Download `keystore.properties` from 1Password and place it in the `android` folder
 
 ## Setup dev environment
 
