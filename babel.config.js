@@ -18,5 +18,6 @@ module.exports = {
       },
     ],
     'react-require',
+    'inline-dotenv'
   ],
 };

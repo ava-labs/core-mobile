@@ -150,6 +150,9 @@ android {
         versionName "0.7.2"
 
         missingDimensionStrategy 'react-native-camera', 'general'
+
+        // required for react native config to work properly across different build variants
+        resValue "string", "build_config_package", "com.avaxwallet"
     }
     splits {
         abi {
