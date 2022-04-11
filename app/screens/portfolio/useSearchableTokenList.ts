@@ -1,4 +1,4 @@
-import {useEffect, useRef, useState} from 'react';
+import {useEffect, useState, useMemo } from 'react';
 import {BN} from '@avalabs/avalanche-wallet-sdk';
 import {
   TokenWithBalance,
@@ -31,8 +31,18 @@ export function useSearchableTokenList(hideZeroBalance = true): {
   const {loadTokensCache, saveTokensCache} =
     useApplicationContext().repo.portfolioTokensCache;
   const [loading, setLoading] = useState(false);
-  const tokenMap = useRef(new Map<string, TokenWithBalance>());
-  const [tokenList, setTokenList] = useState([] as TokenWithBalance[]);
+  const [tokens, setTokens] = useState<Map<string, TokenWithBalance>>(new Map<string, TokenWithBalance>())
+
+  const tokenList = useMemo(()=> Array.from(tokens.values()).sort((a, b) => {
+    if (a.isAvax && b.isAvax) {
+      return 0;
+    } else if (a.isAvax) {
+      return -1;
+    } else {
+      return 1;
+    }
+  }), [tokens])
+
   const [filteredTokenList, setFilteredTokenList] = useState<
     TokenWithBalance[]
   >([]);
@@ -49,52 +59,45 @@ export function useSearchableTokenList(hideZeroBalance = true): {
   useEffect(setAvaxToken, [walletState?.avaxToken, isLoadingCache]);
   useEffect(setErc20Tokens, [walletState?.erc20Tokens, isLoadingCache]);
   useEffect(filterTokensBySearchText, [tokenList, searchText]);
+  useEffect(saveTokens,[tokens, network, isLoadingCache])
+
+  function saveTokens(){
+    if (!isLoadingCache && network) {
+      saveTokensCache(network.name, tokens);
+    }
+  }
 
   function initTokensFromCache() {
     if (!network) {
       return;
     }
     loadTokensCache(network.name).then(value => {
-      tokenMap.current = new Map(value);
-      sortAndSetTokenList(Array.from(tokenMap.current.values()));
+      setTokens(new Map(value))
       setIsLoadingCache(false);
     });
-  }
-
-  function sortAndSetTokenList(tokens: TokenWithBalance[]) {
-    setTokenList(
-      tokens.sort((a, b) => {
-        if (a.isAvax && b.isAvax) {
-          return 0;
-        } else if (a.isAvax) {
-          return -1;
-        } else {
-          return 1;
-        }
-      }),
-    );
   }
 
   function setAvaxToken() {
     if (!walletState || isLoadingCache) {
       return;
     }
+
     const avaxUid = getTokenUID(walletState.avaxToken);
+
     if (avaxUid === '0') {
       return; //sometimes walletState.avaxToken is empty object
     }
-    tokenMap.current.set(avaxUid, walletState.avaxToken);
-    sortAndSetTokenList(Array.from(tokenMap.current.values()));
-
-    if (network) {
-      saveTokensCache(network.name, tokenMap.current);
-    }
+   
+    setTokens(currentTokens => new Map(currentTokens.set(avaxUid, walletState.avaxToken)))
   }
 
   function setErc20Tokens() {
     if (isLoadingCache) {
       return;
     }
+    
+    let erc20Tokens = new Map<string, TokenWithBalance>()
+    
     walletState?.erc20Tokens?.forEach(value => {
       const tokenUID = getTokenUID(value);
       if (
@@ -102,12 +105,12 @@ export function useSearchableTokenList(hideZeroBalance = true): {
         (hideZeroBalance &&
           (value.balance.gt(bnZero) || showZeroBalanceList[tokenUID]))
       ) {
-        tokenMap.current.set(tokenUID, value);
+        erc20Tokens.set(tokenUID, value)
       }
     });
-    sortAndSetTokenList(Array.from(tokenMap.current.values()));
-    if (network) {
-      saveTokensCache(network.name, tokenMap.current);
+
+    if (erc20Tokens.size > 0){
+      setTokens(currentTokens => new Map([...currentTokens, ...erc20Tokens]))
     }
   }
 

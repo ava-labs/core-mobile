@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {CustomTokens} from 'screens/tokenManagement/hooks/useAddCustomToken';
 import {NFTItemData} from 'screens/nft/NftCollection';
 import {TokenWithBalance} from '@avalabs/wallet-react-components';
-
+import {BN} from '@avalabs/avalanche-wallet-sdk';
 /**
  * Currently we support only one wallet, with multiple accounts.
  * If we want to support multiple wallets we need to keep track of different wallet id-s.
@@ -260,8 +260,20 @@ export function useRepo(): Repo {
       infoHasBeenShown,
     },
     portfolioTokensCache: {
-      loadTokensCache: (networkName: string) =>
-        loadFromStorageAsMap(networkName + PORTFOLIO_TOKEN_LIST),
+      loadTokensCache: async (networkName: string) => {
+        const tokens = await loadFromStorageAsMap<string, TokenWithBalance>(networkName + PORTFOLIO_TOKEN_LIST)
+        
+        // balance field, which is of big number type, is serialized into string with a 16 base
+        // https://github.com/indutny/bn.js/blob/db57519421f0c47c9f68c05fa6fc12273dcca2c2/lib/bn.js#L470
+        // here we are transforming the string back into the big number type with the same 16 base
+        for (let [key, value] of tokens) {
+          tokens.set(key, 
+            {...value, balance: new BN(value.balance, 16)},
+          );    
+        }
+
+        return tokens
+      },
       saveTokensCache: savePortfolioTokens,
     },
     flush,
