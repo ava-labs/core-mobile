@@ -7,9 +7,8 @@ import Avatar from 'components/Avatar'
 import { Space } from 'components/Space'
 import { WatchlistFilter } from 'screens/watchlist/WatchlistView'
 import SparklineChart from 'components/SparklineChart'
-import MarketMovement from 'screens/watchlist/components/MarketMovement'
 import { Row } from 'components/Row'
-import Coingecko from 'utils/Coingecko'
+import MarketMovement from 'screens/watchlist/components/MarketMovement'
 
 interface Props {
   tokenName: string
@@ -32,8 +31,9 @@ const WatchListItem: FC<Props> = ({
   tokenAddress,
   filterBy
 }) => {
-  const theme = useApplicationContext().theme
-  const { selectedCurrency } = useApplicationContext().appHook
+  const { theme, repo, appHook } = useApplicationContext()
+  const { getCharData } = repo.coingeckoRepo
+  const { selectedCurrency } = appHook
   const [ranges, setRanges] = useState<{
     minDate: number
     maxDate: number
@@ -50,23 +50,19 @@ const WatchListItem: FC<Props> = ({
     percentChange: 0
   })
   const [chartData, setChartData] = useState<{ x: number; y: number }[]>()
+  const [isLoadingChartData, setIsLoadingChartData] = useState(true)
 
   // get coingecko chart data.
   useEffect(() => {
     if (tokenAddress) {
-      setTimeout(() => {
-        ;(async () => {
-          try {
-            const result = await Coingecko.fetchChartData(tokenAddress, 1)
-            setChartData(result.dataPoints)
-            setRanges(result.ranges)
-          } catch (e) {
-            // Coingecko does not support all tokens chart data. So here we'll
-            // simply set to empty to hide the loading state.
-            setChartData([])
-          }
-        })()
-      }, 3000)
+      ;(async () => {
+        const result = await getCharData(tokenAddress, 1)
+        if (result) {
+          setChartData(result.dataPoints)
+          setRanges(result.ranges)
+        }
+        setIsLoadingChartData(false)
+      })()
     }
   }, [])
 
@@ -74,7 +70,7 @@ const WatchListItem: FC<Props> = ({
     if (value) {
       return (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          {!chartData ? (
+          {isLoadingChartData ? (
             <ActivityIndicator
               style={{ alignSelf: 'center' }}
               color={theme.colorPrimary1}
@@ -114,7 +110,7 @@ const WatchListItem: FC<Props> = ({
     }
 
     return null
-  }, [chartData, ranges])
+  }, [isLoadingChartData, chartData, ranges])
 
   return (
     <AvaListItem.Base
