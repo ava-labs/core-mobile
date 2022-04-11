@@ -6,7 +6,7 @@ import React, {
   useState,
 } from 'react';
 import PostHog from 'posthog-react-native';
-import {interval, startWith} from 'rxjs';
+import {timer} from 'rxjs';
 import Config from 'react-native-config';
 
 export const PosthogContext = createContext<PosthogContextState>(
@@ -36,7 +36,7 @@ const DefaultFeatureFlagConfig = {
   [FeatureGates.SEND]: true,
 };
 
-const ONE_MINUTE = 6000;
+const ONE_MINUTE = 60 * 1000;
 
 export const PosthogContextProvider = ({children}: {children: any}) => {
   const [isPosthogReady, setIsPosthogReady] = useState(false);
@@ -75,18 +75,19 @@ export const PosthogContextProvider = ({children}: {children: any}) => {
     if (!isPosthogReady) {
       return;
     }
-    const subscription = interval(ONE_MINUTE)
-      .pipe(startWith(-1))
-      .subscribe({
-        next: i => {
-          if (__DEV__ && i !== -1) {
-            flags.everything = i % 2 === 0;
-            setFlags({...flags});
-          } else {
-            reloadFeatureFlags();
-          }
-        },
-      });
+    const subscription = timer(0, ONE_MINUTE).subscribe({
+      next: i => {
+        if (__DEV__) {
+          //for testing purposes, change flags each period of timer
+          setFlags({
+            ...flags,
+            everything: i % 2 === 0,
+          });
+        } else {
+          reloadFeatureFlags();
+        }
+      },
+    });
 
     return () => subscription?.unsubscribe();
   }
