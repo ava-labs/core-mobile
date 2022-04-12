@@ -181,6 +181,28 @@ const BtnSecondaryLarge: FC<BaseProps> = ({
   );
 };
 
+const BtnSecondaryMedium: FC<BaseProps> = ({
+  onPress,
+  disabled,
+  children,
+  style,
+}) => {
+  const theme = useApplicationContext().theme;
+  return (
+    <BtnSecondary
+      onPress={onPress}
+      disabled={disabled}
+      style={[styles.btnSecondaryMedium, style]}>
+      <AvaText.ButtonMedium
+        textStyle={{
+          color: disabled ? theme.colorDisabled : theme.colorText1,
+        }}>
+        {children}
+      </AvaText.ButtonMedium>
+    </BtnSecondary>
+  );
+};
+
 const BtnTextLarge: FC<BaseProps> = ({onPress, disabled, children, style}) => {
   const theme = useApplicationContext().theme;
   return (
@@ -225,6 +247,7 @@ const AvaButton = {
   PrimaryLarge: BtnPrimaryLarge,
   PrimaryMedium: BtnPrimaryMedium,
   SecondaryLarge: BtnSecondaryLarge,
+  SecondaryMedium: BtnSecondaryMedium,
   TextLarge: BtnTextLarge,
   TextMedium: BtnTextMedium,
   Base: AvaButtonBase,
@@ -247,6 +270,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   btnPrimaryMedium: {
+    paddingHorizontal: 32,
+    paddingVertical: 8,
+    height: 40,
+  },
+  btnSecondaryMedium: {
     paddingHorizontal: 32,
     paddingVertical: 8,
     height: 40,

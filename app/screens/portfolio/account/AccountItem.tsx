@@ -31,7 +31,8 @@ function AccountItem({
   const [accBalance, setAccBalance] = useState('');
 
   useEffect(() => {
-    account.balance$.subscribe(value => setAccBalance(value));
+    const sub = account.balance$.subscribe(value => setAccBalance(value));
+    return () => sub.unsubscribe();
   }, [account]);
 
   const bgColor = useMemo(() => {

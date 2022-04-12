@@ -44,12 +44,10 @@ function SelectTokenBottomSheet(): JSX.Element {
       snapPoints={snapPoints}
       backgroundComponent={TabViewBackground}
       onChange={handleChange}>
-      <>
-        <AvaText.LargeTitleBold textStyle={{marginHorizontal: 16}}>
-          Select Token
-        </AvaText.LargeTitleBold>
-        <TokenSelector onTokenSelected={onTokenSelected} />
-      </>
+      <AvaText.LargeTitleBold textStyle={{marginHorizontal: 16}}>
+        Select Token
+      </AvaText.LargeTitleBold>
+      <TokenSelector onTokenSelected={onTokenSelected} />
     </BottomSheet>
   );
 }

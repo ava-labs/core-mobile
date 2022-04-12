@@ -32,21 +32,25 @@ function AccountDropdown({
   const animTranslateY = useRef(new Animated.Value(-370)).current;
 
   useEffect(() => {
-    Animated.timing(animScale, {
+    const compositeAnimation = Animated.timing(animScale, {
       toValue: 1,
       duration: 400,
       useNativeDriver: true,
       easing: Easing.elastic(1),
-    }).start();
+    });
+    compositeAnimation.start();
+    return () => compositeAnimation.stop();
   }, [animScale]);
 
   useEffect(() => {
-    Animated.timing(animTranslateY, {
+    const compositeAnimation1 = Animated.timing(animTranslateY, {
       toValue: 0,
       duration: 600,
       useNativeDriver: true,
       easing: Easing.elastic(1.2),
-    }).start();
+    });
+    compositeAnimation1.start();
+    return () => compositeAnimation1.stop();
   }, [animTranslateY]);
 
   const renderAccountItem = useCallback(

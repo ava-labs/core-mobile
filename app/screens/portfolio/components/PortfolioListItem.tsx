@@ -1,5 +1,5 @@
 import React, {FC} from 'react';
-import {View} from 'react-native';
+import {ActivityIndicator, View} from 'react-native';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import AvaListItem from 'components/AvaListItem';
 import AvaText from 'components/AvaText';
@@ -13,6 +13,7 @@ interface Props {
   image?: string;
   symbol?: string;
   onPress?: () => void;
+  showLoading?: boolean;
 }
 
 const PortfolioListItem: FC<Props> = ({
@@ -22,6 +23,7 @@ const PortfolioListItem: FC<Props> = ({
   image,
   symbol,
   onPress,
+  showLoading,
 }) => {
   const theme = useApplicationContext().theme;
   const title = tokenName;
@@ -54,10 +56,15 @@ const PortfolioListItem: FC<Props> = ({
             size={40}
           />
         }
+        rightComponentVerticalAlignment={'center'}
         rightComponent={
-          <AvaText.Heading3 currency ellipsizeMode={'tail'}>
-            {tokenPriceUsd}
-          </AvaText.Heading3>
+          showLoading ? (
+            <ActivityIndicator size="small" color={theme.colorPrimary1} />
+          ) : (
+            <AvaText.Heading3 currency ellipsizeMode={'tail'}>
+              {tokenPriceUsd}
+            </AvaText.Heading3>
+          )
         }
         onPress={onPress}
       />
