@@ -1,6 +1,5 @@
 import React, {RefObject, useEffect, useRef} from 'react';
 import {
-  FlatList,
   InteractionManager,
   ListRenderItemInfo,
   TextInput,
@@ -14,6 +13,7 @@ import PortfolioListItem from 'screens/portfolio/components/PortfolioListItem';
 import {Space} from 'components/Space';
 import {getTokenUID} from 'utils/TokenTools';
 import SearchBar from 'components/SearchBar';
+import {BottomSheetFlatList} from '@gorhom/bottom-sheet';
 
 const DEFAULT_HORIZONTAL_MARGIN = 16;
 
@@ -26,7 +26,7 @@ function TokenSelector({
   onTokenSelected,
   horizontalMargin = DEFAULT_HORIZONTAL_MARGIN,
 }: TokenSelectorProps) {
-  const {filteredTokenList, searchText, setSearchText, loadTokenList} =
+  const {filteredTokenList, searchText, setSearchText} =
     useSearchableTokenList(false);
   const textInputRef = useRef() as RefObject<TextInput>;
 
@@ -37,10 +37,6 @@ function TokenSelector({
       }, 300); //delay is for some weird bug effect when opening select token on swap page
     });
   }, [textInputRef]);
-
-  function handleRefresh() {
-    loadTokenList();
-  }
 
   const renderItem = (item: ListRenderItemInfo<TokenWithBalance>) => {
     const token = item.item;
@@ -81,11 +77,10 @@ function TokenSelector({
       {!filteredTokenList ? (
         <Loader />
       ) : (
-        <FlatList
+        <BottomSheetFlatList
           keyboardShouldPersistTaps="handled"
           data={filteredTokenList}
           renderItem={renderItem}
-          onRefresh={handleRefresh}
           refreshing={false}
           keyExtractor={(item: TokenWithBalance) => getTokenUID(item)}
           ListEmptyComponent={

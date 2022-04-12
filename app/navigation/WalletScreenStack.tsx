@@ -273,7 +273,7 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
         />
         <RootStack.Screen
           options={{
-            ...MainHeaderOptions('Token Details'),
+            ...MainHeaderOptions(''),
           }}
           name={AppNavigation.Wallet.OwnedTokenDetail}
           component={OwnedTokenDetail}

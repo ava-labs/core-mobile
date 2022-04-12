@@ -28,7 +28,7 @@ export function useApp(
     await AsyncStorage.clear();
     console.log('cleared async storage');
     await BiometricsSDK.clearWalletKey();
-    repository.destroy();
+    repository.flush();
     appNavHook.resetNavToRoot();
   }
 
