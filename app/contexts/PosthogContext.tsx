@@ -7,7 +7,7 @@ import React, {
 } from 'react';
 import PostHog from 'posthog-react-native';
 import {timer} from 'rxjs';
-import Config from 'react-native-config';
+import {JsonMap} from 'posthog-react-native/src/bridge';
 
 export const PosthogContext = createContext<PosthogContextState>(
   {} as PosthogContextState,
@@ -18,13 +18,18 @@ enum FeatureGates {
   EVENTS = 'events',
   SWAP = 'swap-feature',
   BRIDGE = 'bridge-feature',
+  BRIDGE_BTC = 'bridge-feature-btc',
+  BRIDGE_ETH = 'bridge-feature-eth',
   SEND = 'send-feature',
 }
 
 export interface PosthogContextState {
+  capture: (event: string, properties?: JsonMap) => Promise<void>;
   setAnalyticsConsent: Dispatch<boolean>;
   swapBlocked: boolean;
   bridgeBlocked: boolean;
+  bridgeBtcBlocked: boolean;
+  bridgeEthBlocked: boolean;
   sendBlocked: boolean;
 }
 
@@ -33,6 +38,8 @@ const DefaultFeatureFlagConfig = {
   [FeatureGates.EVENTS]: true,
   [FeatureGates.SWAP]: true,
   [FeatureGates.BRIDGE]: true,
+  [FeatureGates.BRIDGE_BTC]: true,
+  [FeatureGates.BRIDGE_ETH]: true,
   [FeatureGates.SEND]: true,
 };
 
@@ -46,6 +53,8 @@ export const PosthogContextProvider = ({children}: {children: any}) => {
   const [analyticsConsent, setAnalyticsConsent] = useState(false);
   const swapBlocked = !flags['swap-feature'] || !flags.everything;
   const bridgeBlocked = !flags['bridge-feature'] || !flags.everything;
+  const bridgeBtcBlocked = !flags['bridge-feature-btc'] || !flags.everything;
+  const bridgeEthBlocked = !flags['bridge-feature-eth'] || !flags.everything;
   const sendBlocked = !flags['send-feature'] || !flags.everything;
   const eventsBlocked = !flags.events || !flags.everything;
 
@@ -59,7 +68,7 @@ export const PosthogContextProvider = ({children}: {children: any}) => {
 
   function initPosthog() {
     (async function () {
-      await PostHog.setup(Config.POSTHOG_API_KEY, {
+      await PostHog.setup(process.env.POSTHOG_API_KEY as string, {
         debug: true,
         host: 'https://data-posthog.avax.network',
         android: {
@@ -107,13 +116,14 @@ export const PosthogContextProvider = ({children}: {children: any}) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        api_key: Config.POSTHOG_API_KEY,
-        distinct_id: '1234',
+        api_key: process.env.POSTHOG_API_KEY,
+        distinct_id: '',
       }),
     })
       .catch(reason => console.error(reason))
       .then(value => value!.json())
       .then(value => {
+        console.log('flags', value);
         const result = value as {
           featureFlags: Record<FeatureGates, boolean>;
         };
@@ -127,6 +137,8 @@ export const PosthogContextProvider = ({children}: {children: any}) => {
         setAnalyticsConsent,
         swapBlocked,
         bridgeBlocked,
+        bridgeBtcBlocked,
+        bridgeEthBlocked,
         sendBlocked,
       }}>
       {children}
