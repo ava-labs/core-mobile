@@ -4,6 +4,7 @@ import React, {
   Dispatch,
   useCallback,
   useContext,
+  useEffect,
   useState,
 } from 'react';
 import {useNavigation} from '@react-navigation/native';
@@ -17,6 +18,7 @@ import {
 import BiometricsSDK from 'utils/BiometricsSDK';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {MainHeaderOptions} from 'navigation/NavUtils';
+import {usePosthogContext} from 'contexts/PosthogContext';
 
 type EnterWithMnemonicStackParamList = {
   [AppNavigation.LoginWithMnemonic.LoginWithMnemonic]: undefined;
@@ -58,8 +60,21 @@ const EnterWithMnemonicStack = () => {
 
 const LoginWithMnemonicScreen = () => {
   const enterWithMnemonicContext = useContext(EnterWithMnemonicContext);
-  const {navigate, goBack} =
+  const {navigate, goBack, addListener, removeListener} =
     useNavigation<StackNavigationProp<EnterWithMnemonicStackParamList>>();
+  const {capture} = usePosthogContext();
+
+  useEffect(captureBackEventFx, []);
+
+  function captureBackEventFx() {
+    const callback = (e: {data: {action: {type: string}}}) => {
+      if (e.data.action.type === 'GO_BACK') {
+        capture('OnboardingCancelled').catch(() => undefined);
+      }
+    };
+    addListener('beforeRemove', callback);
+    return () => removeListener('beforeRemove', callback);
+  }
 
   const onEnterWallet = useCallback(m => {
     BiometricsSDK.clearWalletKey().then(() => {
@@ -78,8 +93,10 @@ const CreatePinScreen = () => {
   const walletSetupHook = useApplicationContext().walletSetupHook;
   const {navigate} =
     useNavigation<StackNavigationProp<EnterWithMnemonicStackParamList>>();
+  const {capture} = usePosthogContext();
 
   const onPinSet = (pin: string): void => {
+    capture('OnboardingPasswordSet').catch(() => undefined);
     if (enterWithMnemonicContext.mnemonic) {
       walletSetupHook
         .onPinCreated(enterWithMnemonicContext.mnemonic, pin, false)

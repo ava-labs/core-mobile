@@ -1,5 +1,11 @@
 import AppNavigation from 'navigation/AppNavigation';
-import React, {createContext, Dispatch, useContext, useState} from 'react';
+import React, {
+  createContext,
+  Dispatch,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 import CreateWallet from 'screens/onboarding/CreateWallet';
 import {useNavigation} from '@react-navigation/native';
 import CheckMnemonic from 'screens/onboarding/CheckMnemonic';
@@ -12,6 +18,7 @@ import {
 import {MainHeaderOptions} from 'navigation/NavUtils';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import WarningModal from 'components/WarningModal';
+import {usePosthogContext} from 'contexts/PosthogContext';
 
 type CreateWalletStackParamList = {
   [AppNavigation.CreateWallet.CreateWallet]: undefined;
@@ -65,8 +72,21 @@ const CreateWalletStack: () => JSX.Element = () => {
 
 const CreateWalletScreen = () => {
   const createWalletContext = useContext(CreateWalletContext);
-  const {navigate} =
+  const {navigate, addListener, removeListener} =
     useNavigation<StackNavigationProp<CreateWalletStackParamList>>();
+  const {capture} = usePosthogContext();
+
+  useEffect(captureBackEventFx, []);
+
+  function captureBackEventFx() {
+    const callback = (e: {data: {action: {type: string}}}) => {
+      if (e.data.action.type === 'GO_BACK') {
+        capture('OnboardingCancelled').catch(() => undefined);
+      }
+    };
+    addListener('beforeRemove', callback);
+    return () => removeListener('beforeRemove', callback);
+  }
 
   const onSavedMyPhrase = (mnemonic: string) => {
     createWalletContext.setMnemonic(mnemonic);
@@ -79,8 +99,10 @@ const CreateWalletScreen = () => {
 const CreateWalletWarningModal = () => {
   const {navigate, goBack} =
     useNavigation<StackNavigationProp<CreateWalletStackParamList>>();
+  const {capture} = usePosthogContext();
 
   const onUnderstand = () => {
+    capture('OnboardingMnemonicCreated').catch(() => undefined);
     goBack();
     navigate(AppNavigation.CreateWallet.CheckMnemonic);
   };
@@ -124,8 +146,10 @@ const CreatePinScreen = () => {
   const walletSetupHook = useApplicationContext().walletSetupHook;
   const {navigate} =
     useNavigation<StackNavigationProp<CreateWalletStackParamList>>();
+  const {capture} = usePosthogContext();
 
   const onPinSet = (pin: string): void => {
+    capture('OnboardingPasswordSet').catch(() => undefined);
     walletSetupHook
       .onPinCreated(createWalletContext.mnemonic, pin, false)
       .then(value => {

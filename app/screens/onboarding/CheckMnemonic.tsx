@@ -6,6 +6,7 @@ import {Space} from 'components/Space';
 import WordSelection from 'screens/onboarding/WordSelection';
 import {ShowSnackBar} from 'components/Snackbar';
 import {useCheckMnemonic} from 'screens/onboarding/useCheckMnemonic';
+import {usePosthogContext} from 'contexts/PosthogContext';
 
 type Props = {
   onSuccess: () => void;
@@ -18,6 +19,7 @@ export default function CheckMnemonic(
 ): JSX.Element {
   const {firstWordSelection, secondWordSelection, thirdWordSelection, verify} =
     useCheckMnemonic(props.mnemonic);
+  const {capture} = usePosthogContext();
 
   const onVerify = (): void => {
     if (
@@ -29,6 +31,7 @@ export default function CheckMnemonic(
     }
 
     if (verify(selectedWord1, selectedWord2, selectedWord3)) {
+      capture('OnboardingMnemonicVerified').catch(() => undefined);
       props.onSuccess();
     } else {
       ShowSnackBar('Incorrect! Try again, please.');
