@@ -1,20 +1,20 @@
-import {useEffect, useState} from 'react';
-import BiometricsSDK, {KeystoreConfig} from 'utils/BiometricsSDK';
-import {UserCredentials} from 'react-native-keychain';
-import {PinKeys} from 'screens/onboarding/PinKey';
-import {asyncScheduler, Observable, of, timer} from 'rxjs';
-import {catchError, concatMap, map} from 'rxjs/operators';
-import {Animated} from 'react-native';
+import {useEffect, useState} from 'react'
+import BiometricsSDK, {KeystoreConfig} from 'utils/BiometricsSDK'
+import {UserCredentials} from 'react-native-keychain'
+import {PinKeys} from 'screens/onboarding/PinKey'
+import {asyncScheduler, Observable, of, timer} from 'rxjs'
+import {catchError, concatMap, map} from 'rxjs/operators'
+import {Animated} from 'react-native'
 import {
   decrypt,
   EncryptedData,
-  getEncryptionKey,
-} from 'screens/login/utils/EncryptionHelper';
-import {useJigglyPinIndicator} from 'utils/JigglyPinIndicatorHook';
+  getEncryptionKey
+} from 'screens/login/utils/EncryptionHelper'
+import {useJigglyPinIndicator} from 'utils/JigglyPinIndicatorHook'
 
 export type DotView = {
-  filled: boolean;
-};
+  filled: boolean
+}
 
 const keymap: Map<PinKeys, string> = new Map([
   [PinKeys.Key1, '1'],
@@ -26,32 +26,32 @@ const keymap: Map<PinKeys, string> = new Map([
   [PinKeys.Key7, '7'],
   [PinKeys.Key8, '8'],
   [PinKeys.Key9, '9'],
-  [PinKeys.Key0, '0'],
-]);
+  [PinKeys.Key0, '0']
+])
 
 export function usePinOrBiometryLogin(): {
-  title: string;
-  pinDots: DotView[];
-  onEnterPin: (pinKey: PinKeys) => void;
-  mnemonic: string | undefined;
-  promptForWalletLoadingIfExists: () => Observable<WalletLoadingResults>;
-  jiggleAnim: Animated.Value;
+  title: string
+  pinDots: DotView[]
+  onEnterPin: (pinKey: PinKeys) => void
+  mnemonic: string | undefined
+  promptForWalletLoadingIfExists: () => Observable<WalletLoadingResults>
+  jiggleAnim: Animated.Value
 } {
-  const [title] = useState('Wallet');
-  const [enteredPin, setEnteredPin] = useState('');
-  const [pinDots, setPinDots] = useState<DotView[]>([]);
-  const [pinEntered, setPinEntered] = useState(false);
-  const [mnemonic, setMnemonic] = useState<string | undefined>(undefined);
-  const {jiggleAnim, fireJiggleAnimation} = useJigglyPinIndicator();
+  const [title] = useState('Wallet')
+  const [enteredPin, setEnteredPin] = useState('')
+  const [pinDots, setPinDots] = useState<DotView[]>([])
+  const [pinEntered, setPinEntered] = useState(false)
+  const [mnemonic, setMnemonic] = useState<string | undefined>(undefined)
+  const {jiggleAnim, fireJiggleAnimation} = useJigglyPinIndicator()
 
   useEffect(() => {
-    setPinDots(getPinDots(enteredPin));
-  }, [enteredPin]);
+    setPinDots(getPinDots(enteredPin))
+  }, [enteredPin])
 
   function resetConfirmPinProcess() {
-    setEnteredPin('');
-    setPinEntered(false);
-    setMnemonic(undefined);
+    setEnteredPin('')
+    setPinEntered(false)
+    setMnemonic(undefined)
   }
 
   useEffect(() => {
@@ -59,53 +59,53 @@ export function usePinOrBiometryLogin(): {
       if (pinEntered) {
         try {
           const credentials =
-            (await BiometricsSDK.loadWalletWithPin()) as UserCredentials;
-          const key = await getEncryptionKey(enteredPin);
-          const encryptedData: EncryptedData = JSON.parse(credentials.password);
-          const data = await decrypt(encryptedData, key);
-          setMnemonic(data);
+            (await BiometricsSDK.loadWalletWithPin()) as UserCredentials
+          const key = await getEncryptionKey(enteredPin)
+          const encryptedData: EncryptedData = JSON.parse(credentials.password)
+          const data = await decrypt(encryptedData, key)
+          setMnemonic(data)
         } catch (err) {
           if (
             err instanceof Error &&
             (err?.message?.includes('BAD_DECRYPT') || // Android
               err?.message?.includes('Decrypt failed')) // iOS
           ) {
-            resetConfirmPinProcess();
-            fireJiggleAnimation();
+            resetConfirmPinProcess()
+            fireJiggleAnimation()
           }
         }
       }
     }
 
-    checkPinEntered();
-  }, [pinEntered]);
+    checkPinEntered()
+  }, [pinEntered])
 
   const getPinDots = (pin: string): DotView[] => {
-    const dots: DotView[] = [];
+    const dots: DotView[] = []
     for (let i = 0; i < 6; i++) {
       if (i < pin.length) {
-        dots.push({filled: true});
+        dots.push({filled: true})
       } else {
-        dots.push({filled: false});
+        dots.push({filled: false})
       }
     }
-    return dots;
-  };
+    return dots
+  }
 
   const onEnterPin = (pinKey: PinKeys): void => {
     if (pinKey === PinKeys.Backspace) {
-      setEnteredPin(enteredPin.slice(0, -1));
+      setEnteredPin(enteredPin.slice(0, -1))
     } else {
       if (enteredPin.length === 6) {
-        return;
+        return
       }
-      const newPin = enteredPin + keymap.get(pinKey)!;
-      setEnteredPin(newPin);
+      const newPin = enteredPin + keymap.get(pinKey)!
+      setEnteredPin(newPin)
       if (newPin.length === 6) {
-        setPinEntered(true);
+        setPinEntered(true)
       }
     }
-  };
+  }
 
   const promptForWalletLoadingIfExists =
     (): Observable<WalletLoadingResults> => {
@@ -115,29 +115,29 @@ export function usePinOrBiometryLogin(): {
         concatMap((value: string | null) => {
           if (value && value === 'BIO') {
             return BiometricsSDK.loadWalletKey(
-              KeystoreConfig.KEYSTORE_BIO_OPTIONS,
-            );
+              KeystoreConfig.KEYSTORE_BIO_OPTIONS
+            )
           }
-          return of(false);
+          return of(false)
         }),
         map((value: boolean | UserCredentials) => {
           if (value !== false) {
-            const keyOrMnemonic = (value as UserCredentials).password;
+            const keyOrMnemonic = (value as UserCredentials).password
             if (keyOrMnemonic.startsWith('PrivateKey')) {
-              return new PrivateKeyLoaded(keyOrMnemonic);
+              return new PrivateKeyLoaded(keyOrMnemonic)
             } else {
-              setMnemonic(keyOrMnemonic);
-              return new NothingToLoad();
+              setMnemonic(keyOrMnemonic)
+              return new NothingToLoad()
             }
           } else {
-            return new NothingToLoad();
+            return new NothingToLoad()
           }
         }),
         catchError(err => {
-          throw err;
-        }),
-      );
-    };
+          throw err
+        })
+      )
+    }
 
   return {
     title,
@@ -145,25 +145,26 @@ export function usePinOrBiometryLogin(): {
     onEnterPin,
     mnemonic,
     promptForWalletLoadingIfExists,
-    jiggleAnim,
-  };
+    jiggleAnim
+  }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface WalletLoadingResults {}
 
 export class MnemonicLoaded implements WalletLoadingResults {
-  mnemonic: string;
+  mnemonic: string
 
   constructor(mnemonic: string) {
-    this.mnemonic = mnemonic;
+    this.mnemonic = mnemonic
   }
 }
 
 export class PrivateKeyLoaded implements WalletLoadingResults {
-  privateKey: string;
+  privateKey: string
 
   constructor(privateKey: string) {
-    this.privateKey = privateKey;
+    this.privateKey = privateKey
   }
 }
 

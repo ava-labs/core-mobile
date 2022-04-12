@@ -1,25 +1,25 @@
-import React, {useEffect, useMemo} from 'react';
-import {ActivityIndicator, StyleSheet, View} from 'react-native';
-import AvaText from 'components/AvaText';
-import DotSVG from 'components/svg/DotSVG';
-import {Space} from 'components/Space';
-import Separator from 'components/Separator';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import Avatar from 'components/Avatar';
-import NetworkFeeSelector from 'components/NetworkFeeSelector';
-import AppNavigation from 'navigation/AppNavigation';
-import FlexSpacer from 'components/FlexSpacer';
-import AvaButton from 'components/AvaButton';
-import SendRow from 'components/SendRow';
-import {useGasPrice} from 'utils/GasPriceHook';
-import {useSendNFTContext} from 'contexts/SendNFTContext';
-import {useNavigation} from '@react-navigation/native';
-import {NFTStackParamList} from 'navigation/wallet/NFTScreenStack';
-import {StackNavigationProp} from '@react-navigation/stack';
+import React, {useEffect, useMemo} from 'react'
+import {ActivityIndicator, StyleSheet, View} from 'react-native'
+import AvaText from 'components/AvaText'
+import DotSVG from 'components/svg/DotSVG'
+import {Space} from 'components/Space'
+import Separator from 'components/Separator'
+import {useApplicationContext} from 'contexts/ApplicationContext'
+import Avatar from 'components/Avatar'
+import NetworkFeeSelector from 'components/NetworkFeeSelector'
+import AppNavigation from 'navigation/AppNavigation'
+import FlexSpacer from 'components/FlexSpacer'
+import AvaButton from 'components/AvaButton'
+import SendRow from 'components/SendRow'
+import {useGasPrice} from 'utils/GasPriceHook'
+import {useSendNFTContext} from 'contexts/SendNFTContext'
+import {useNavigation} from '@react-navigation/native'
+import {NFTStackParamList} from 'navigation/wallet/NFTScreenStack'
+import {StackNavigationProp} from '@react-navigation/stack'
 
 export type NftReviewScreenProps = {
-  onSuccess: (transactionId: string) => void;
-};
+  onSuccess: (transactionId: string) => void
+}
 
 export default function NftReview({onSuccess}: NftReviewScreenProps) {
   const {
@@ -31,26 +31,26 @@ export default function NftReview({onSuccess}: NftReviewScreenProps) {
     fromAccount,
     fees,
     canSubmit,
-    transactionId,
-  } = useSendNFTContext();
-  const {theme} = useApplicationContext();
-  const {goBack} = useNavigation<StackNavigationProp<NFTStackParamList>>();
-  const {gasPrice} = useGasPrice();
+    transactionId
+  } = useSendNFTContext()
+  const {theme} = useApplicationContext()
+  const {goBack} = useNavigation<StackNavigationProp<NFTStackParamList>>()
+  const {gasPrice} = useGasPrice()
 
   const netFeeString = useMemo(() => {
     return fees.sendFeeAvax
       ? Number.parseFloat(fees.sendFeeAvax).toFixed(6)
-      : '-';
-  }, [fees.sendFeeAvax]);
+      : '-'
+  }, [fees.sendFeeAvax])
 
   useEffect(() => {
     switch (sendStatus) {
       case 'Success':
         if (transactionId) {
-          onSuccess(transactionId);
+          onSuccess(transactionId)
         }
     }
-  }, [sendStatus, transactionId]);
+  }, [sendStatus, transactionId])
 
   return (
     <View style={styles.container}>
@@ -63,7 +63,7 @@ export default function NftReview({onSuccess}: NftReviewScreenProps) {
           alignItems: 'center',
           justifyContent: 'center',
           marginBottom: -36,
-          zIndex: 2,
+          zIndex: 2
         }}>
         <View style={{position: 'absolute'}}>
           <DotSVG fillColor={theme.colorBg1} size={72} />
@@ -82,7 +82,7 @@ export default function NftReview({onSuccess}: NftReviewScreenProps) {
           paddingBottom: 16,
           flex: 1,
           borderTopLeftRadius: 8,
-          borderTopRightRadius: 8,
+          borderTopRightRadius: 8
         }}>
         <AvaText.Body2 textStyle={{textAlign: 'center'}}>
           Collectible
@@ -147,11 +147,11 @@ export default function NftReview({onSuccess}: NftReviewScreenProps) {
         )}
       </View>
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-  },
-});
+    flex: 1
+  }
+})

@@ -1,20 +1,20 @@
-import React, {FC, useContext} from 'react';
-import {ApplicationContext} from 'contexts/ApplicationContext';
-import {copyToClipboard} from 'utils/DeviceTools';
-import CopySVG from 'components/svg/CopySVG';
-import {Space} from 'components/Space';
-import AvaText from 'components/AvaText';
-import {truncateAddress} from 'utils/Utils';
-import AvaButton from 'components/AvaButton';
-import {noop} from 'rxjs';
+import React, {FC, useContext} from 'react'
+import {ApplicationContext} from 'contexts/ApplicationContext'
+import {copyToClipboard} from 'utils/DeviceTools'
+import CopySVG from 'components/svg/CopySVG'
+import {Space} from 'components/Space'
+import AvaText from 'components/AvaText'
+import {truncateAddress} from 'utils/Utils'
+import AvaButton from 'components/AvaButton'
+import {noop} from 'rxjs'
 
 interface Props {
-  address: string;
-  textType?: 'Heading' | 'ButtonSmall' | 'ButtonMedium' | 'Body';
-  hideCopy?: boolean;
-  showFullAddress?: boolean;
-  color?: string;
-  copyIconEnd?: boolean;
+  address: string
+  textType?: 'Heading' | 'ButtonSmall' | 'ButtonMedium' | 'Body'
+  hideCopy?: boolean
+  showFullAddress?: boolean
+  color?: string
+  copyIconEnd?: boolean
 }
 
 const TokenAddress: FC<Props> = ({
@@ -23,10 +23,10 @@ const TokenAddress: FC<Props> = ({
   showFullAddress,
   hideCopy,
   color,
-  copyIconEnd,
+  copyIconEnd
 }) => {
-  const theme = useContext(ApplicationContext).theme;
-  const tokenAddress = showFullAddress ? address : truncateAddress(address);
+  const theme = useContext(ApplicationContext).theme
+  const tokenAddress = showFullAddress ? address : truncateAddress(address)
 
   const TokenAddressComposed = () => {
     switch (textType) {
@@ -35,7 +35,7 @@ const TokenAddress: FC<Props> = ({
           <AvaText.ButtonSmall color={color ? color : theme.colorText1}>
             {tokenAddress}
           </AvaText.ButtonSmall>
-        );
+        )
       case 'ButtonMedium':
         return (
           <AvaText.ButtonMedium
@@ -43,7 +43,7 @@ const TokenAddress: FC<Props> = ({
             color={color ? color : theme.colorText1}>
             {tokenAddress}
           </AvaText.ButtonMedium>
-        );
+        )
       case 'Heading':
         return (
           <AvaText.Heading3
@@ -51,15 +51,15 @@ const TokenAddress: FC<Props> = ({
             color={color ? color : theme.colorText1}>
             {tokenAddress}
           </AvaText.Heading3>
-        );
+        )
       case 'Body':
         return (
           <AvaText.Body2 color={color ? color : theme.colorText1}>
             {tokenAddress}
           </AvaText.Body2>
-        );
+        )
     }
-  };
+  }
 
   return (
     <AvaButton.Base
@@ -67,7 +67,7 @@ const TokenAddress: FC<Props> = ({
       style={{
         flexDirection: 'row',
         alignItems: 'center',
-        marginRight: showFullAddress && copyIconEnd ? 16 : 0,
+        marginRight: showFullAddress && copyIconEnd ? 16 : 0
       }}>
       {hideCopy || copyIconEnd || (
         <>
@@ -84,7 +84,7 @@ const TokenAddress: FC<Props> = ({
           </>
         ))}
     </AvaButton.Base>
-  );
-};
+  )
+}
 
-export default TokenAddress;
+export default TokenAddress

@@ -1,35 +1,35 @@
-import AvaText from 'components/AvaText';
-import {Space} from 'components/Space';
-import {View} from 'react-native';
-import InputText from 'components/InputText';
-import AvaButton from 'components/AvaButton';
-import React, {useMemo, useState} from 'react';
-import {popableContent} from 'screens/swap/components/SwapTransactionDetails';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import FlexSpacer from 'components/FlexSpacer';
-import {Row} from 'components/Row';
-import {mustNumber} from 'utils/JsTools';
+import AvaText from 'components/AvaText'
+import {Space} from 'components/Space'
+import {View} from 'react-native'
+import InputText from 'components/InputText'
+import AvaButton from 'components/AvaButton'
+import React, {useMemo, useState} from 'react'
+import {popableContent} from 'screens/swap/components/SwapTransactionDetails'
+import {useApplicationContext} from 'contexts/ApplicationContext'
+import FlexSpacer from 'components/FlexSpacer'
+import {Row} from 'components/Row'
+import {mustNumber} from 'utils/JsTools'
 
 const EditFees = ({
   networkFee,
   gasLimit,
-  onSave,
+  onSave
 }: {
-  networkFee: string;
-  gasLimit: string;
-  onSave: (newGasLimit: number) => void;
+  networkFee: string
+  gasLimit: string
+  onSave: (newGasLimit: number) => void
 }) => {
-  const {theme} = useApplicationContext();
-  const [newGasLimit, setNewGasLimit] = useState(gasLimit);
+  const {theme} = useApplicationContext()
+  const [newGasLimit, setNewGasLimit] = useState(gasLimit)
 
   const gasLimitInfoInfoMessage = useMemo(
     () =>
       popableContent(
         'Gas limit is the maximum units of gas you are willing to use.',
-        theme.colorBg3,
+        theme.colorBg3
       ),
-    [theme],
-  );
+    [theme]
+  )
 
   return (
     <View style={{flex: 1, paddingBottom: 16}}>
@@ -58,6 +58,6 @@ const EditFees = ({
         Save
       </AvaButton.PrimaryLarge>
     </View>
-  );
-};
-export default EditFees;
+  )
+}
+export default EditFees

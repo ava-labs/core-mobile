@@ -1,13 +1,13 @@
-import React from 'react';
-import Svg, {Path} from 'react-native-svg';
+import React from 'react'
+import Svg, {Path} from 'react-native-svg'
 
 interface Prop {
-  color?: string;
-  size?: number;
+  color?: string
+  size?: number
 }
 
 function ListChartSVG({color, size = 24}: Prop) {
-  const iconColor = color ?? '#B4B4B7';
+  const iconColor = color ?? '#B4B4B7'
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
@@ -17,7 +17,7 @@ function ListChartSVG({color, size = 24}: Prop) {
         strokeLinecap={'round'}
       />
     </Svg>
-  );
+  )
 }
 
-export default ListChartSVG;
+export default ListChartSVG

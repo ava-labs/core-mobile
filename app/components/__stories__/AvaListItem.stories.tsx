@@ -1,23 +1,22 @@
-import {storiesOf} from '@storybook/react-native';
-import AvaListItem from 'components/AvaListItem';
-import Avatar from 'components/Avatar';
-import AvaText from 'components/AvaText';
-import React from 'react';
-import {ActivityIndicator, ScrollView, StyleSheet, View} from 'react-native';
-import TokenAddress from 'components/TokenAddress';
-import {Space} from 'components/Space';
-import {Row} from 'components/Row';
-import SparklineChart from 'components/SparklineChart';
-import MarketMovement from 'screens/watchlist/components/MarketMovement';
-import {truncateAddress} from 'utils/Utils';
+import {storiesOf} from '@storybook/react-native'
+import AvaListItem from 'components/AvaListItem'
+import Avatar from 'components/Avatar'
+import AvaText from 'components/AvaText'
+import React from 'react'
+import {ScrollView, StyleSheet, View} from 'react-native'
+import TokenAddress from 'components/TokenAddress'
+import {Space} from 'components/Space'
+import {Row} from 'components/Row'
+import SparklineChart from 'components/SparklineChart'
+import MarketMovement from 'screens/watchlist/components/MarketMovement'
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    backgroundColor: 'gray',
-  },
-});
+    backgroundColor: 'gray'
+  }
+})
 
 storiesOf('AvaListItem', module).add('Examples', () => {
   return (
@@ -118,7 +117,7 @@ storiesOf('AvaListItem', module).add('Examples', () => {
               style={{
                 alignItems: 'center',
                 justifyContent: 'flex-end',
-                flex: 1,
+                flex: 1
               }}>
               <View style={{position: 'absolute', left: -20, bottom: -25}}>
                 <SparklineChart
@@ -127,7 +126,7 @@ storiesOf('AvaListItem', module).add('Examples', () => {
                     {x: 2, y: 3},
                     {x: 3, y: 5},
                     {x: 4, y: 4},
-                    {x: 5, y: 7},
+                    {x: 5, y: 7}
                   ]}
                   yRange={[1, 5]}
                   xRange={[2, 7]}
@@ -206,5 +205,5 @@ storiesOf('AvaListItem', module).add('Examples', () => {
         />
       </>
     </ScrollView>
-  );
-});
+  )
+})

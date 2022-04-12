@@ -1,25 +1,25 @@
-import {Row} from 'components/Row';
-import AvaText from 'components/AvaText';
-import {TextInput, View} from 'react-native';
-import AvaButton from 'components/AvaButton';
-import SettingsCogSVG from 'components/svg/SettingsCogSVG';
-import {Space} from 'components/Space';
-import React, {FC, useEffect, useMemo, useRef, useState} from 'react';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import InputText from 'components/InputText';
-import {Opacity50} from 'resources/Constants';
-import {GasPrice} from 'utils/GasPriceHook';
-import {StackNavigationProp} from '@react-navigation/stack';
-import {mustNumber} from 'utils/JsTools';
-import {useNavigation} from '@react-navigation/native';
-import {RootStackParamList} from 'navigation/WalletScreenStack';
-import {bnToLocaleString, numberToBN} from '@avalabs/avalanche-wallet-sdk';
+import {Row} from 'components/Row'
+import AvaText from 'components/AvaText'
+import {TextInput, View} from 'react-native'
+import AvaButton from 'components/AvaButton'
+import SettingsCogSVG from 'components/svg/SettingsCogSVG'
+import {Space} from 'components/Space'
+import React, {FC, useEffect, useMemo, useRef, useState} from 'react'
+import {useApplicationContext} from 'contexts/ApplicationContext'
+import InputText from 'components/InputText'
+import {Opacity50} from 'resources/Constants'
+import {GasPrice} from 'utils/GasPriceHook'
+import {StackNavigationProp} from '@react-navigation/stack'
+import {mustNumber} from 'utils/JsTools'
+import {useNavigation} from '@react-navigation/native'
+import {RootStackParamList} from 'navigation/WalletScreenStack'
+import {bnToLocaleString, numberToBN} from '@avalabs/avalanche-wallet-sdk'
 
 enum FeePreset {
   Normal = 'Normal',
   Fast = 'Fast',
   Instant = 'Instant',
-  Custom = 'Custom',
+  Custom = 'Custom'
 }
 
 const NetworkFeeSelector = ({
@@ -30,53 +30,53 @@ const NetworkFeeSelector = ({
   onWeightedGas,
   onCustomGasLimit,
   gasLimitEditorRoute,
-  weights,
+  weights
 }: {
-  networkFeeAvax: string;
-  networkFeeUsd: string;
-  gasPrice: GasPrice;
-  initGasLimit: number;
-  onWeightedGas: (price: GasPrice) => void;
-  onCustomGasLimit: (gasLimit: number) => void;
-  gasLimitEditorRoute: string;
-  weights?: Weights;
+  networkFeeAvax: string
+  networkFeeUsd: string
+  gasPrice: GasPrice
+  initGasLimit: number
+  onWeightedGas: (price: GasPrice) => void
+  onCustomGasLimit: (gasLimit: number) => void
+  gasLimitEditorRoute: string
+  weights?: Weights
 }) => {
-  const [customGasPrice, setCustomGasPrice] = useState('0');
+  const [customGasPrice, setCustomGasPrice] = useState('0')
   const presetWeights = useMemo(() => {
     if (weights) {
-      defaultPresetWeights[FeePreset.Normal] = weights.normal;
-      defaultPresetWeights[FeePreset.Fast] = weights.fast;
-      defaultPresetWeights[FeePreset.Instant] = weights.instant;
-      defaultPresetWeights[FeePreset.Custom] = weights.custom;
+      defaultPresetWeights[FeePreset.Normal] = weights.normal
+      defaultPresetWeights[FeePreset.Fast] = weights.fast
+      defaultPresetWeights[FeePreset.Instant] = weights.instant
+      defaultPresetWeights[FeePreset.Custom] = weights.custom
     }
     if (customGasPrice) {
       defaultPresetWeights[FeePreset.Custom] = mustNumber(
         () => Number.parseFloat(customGasPrice),
-        0,
-      );
+        0
+      )
     }
-    return {...defaultPresetWeights};
-  }, [customGasPrice]);
+    return {...defaultPresetWeights}
+  }, [customGasPrice])
 
-  const [selectedPreset, setSelectedPreset] = useState(FeePreset.Normal);
+  const [selectedPreset, setSelectedPreset] = useState(FeePreset.Normal)
 
   useEffect(() => {
     const weightedGas = weightedGasPrice(
       gasPrice,
       selectedPreset,
-      presetWeights[selectedPreset],
-    );
-    onWeightedGas(weightedGas);
-  }, [selectedPreset, gasPrice, presetWeights]);
+      presetWeights[selectedPreset]
+    )
+    onWeightedGas(weightedGas)
+  }, [selectedPreset, gasPrice, presetWeights])
 
   useEffect(() => {
     //lazy initial setup of customGasPrice
     if (customGasPrice === '0' && gasPrice.value) {
-      setCustomGasPrice(gasPrice.value);
+      setCustomGasPrice(gasPrice.value)
     }
-  }, [gasPrice]);
+  }, [gasPrice])
 
-  const {navigate} = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const {navigate} = useNavigation<StackNavigationProp<RootStackParamList>>()
 
   return (
     <>
@@ -89,9 +89,9 @@ const NetworkFeeSelector = ({
                 gasLimit: initGasLimit.toString(),
                 networkFee: networkFeeAvax,
                 onSave: customGasLimit => {
-                  onCustomGasLimit(customGasLimit);
-                },
-              });
+                  onCustomGasLimit(customGasLimit)
+                }
+              })
             }}>
             <SettingsCogSVG />
           </AvaButton.Icon>
@@ -109,7 +109,7 @@ const NetworkFeeSelector = ({
       <Row
         style={{
           justifyContent: 'space-evenly',
-          alignItems: 'center',
+          alignItems: 'center'
         }}>
         <FeeSelector
           label={FeePreset.Normal}
@@ -136,67 +136,67 @@ const NetworkFeeSelector = ({
         />
       </Row>
     </>
-  );
-};
+  )
+}
 
 export type Weights = {
-  normal: number;
-  fast: number;
-  instant: number;
-  custom: number;
-};
+  normal: number
+  fast: number
+  instant: number
+  custom: number
+}
 
 const weightedGasPrice = (
   gasPrice: GasPrice,
   selectedGasPreset: FeePreset,
-  presetValue: number,
+  presetValue: number
 ) => {
   if (selectedGasPreset === FeePreset.Custom) {
-    const bn = numberToBN(presetValue, 9);
+    const bn = numberToBN(presetValue, 9)
     return {
       bn: bn,
-      value: bnToLocaleString(bn, 9),
-    } as GasPrice;
+      value: bnToLocaleString(bn, 9)
+    } as GasPrice
   } else {
-    const bn1 = gasPrice.bn.muln(presetValue);
+    const bn1 = gasPrice.bn.muln(presetValue)
     return {
       bn: bn1,
-      value: bnToLocaleString(bn1, 9),
-    } as GasPrice;
+      value: bnToLocaleString(bn1, 9)
+    } as GasPrice
   }
-};
+}
 
 const FeeSelector: FC<{
-  label: string;
-  value?: string;
-  selected: boolean;
-  onSelect: (value: string) => void;
-  editable?: boolean;
-  onValueEntered?: (value: string) => void;
+  label: string
+  value?: string
+  selected: boolean
+  onSelect: (value: string) => void
+  editable?: boolean
+  onValueEntered?: (value: string) => void
 }> = ({label, selected, onSelect, onValueEntered, value, editable = false}) => {
-  const {theme} = useApplicationContext();
-  const [showInput, setShowInput] = useState(false);
-  const [selectedAtLeastOnce, setSelectedAtLeastOnce] = useState(false);
+  const {theme} = useApplicationContext()
+  const [showInput, setShowInput] = useState(false)
+  const [selectedAtLeastOnce, setSelectedAtLeastOnce] = useState(false)
 
-  let inputRef = useRef<TextInput>(null);
+  let inputRef = useRef<TextInput>(null)
 
   useEffect(() => {
     if (selected && editable) {
-      setShowInput(true);
-      setSelectedAtLeastOnce(true);
+      setShowInput(true)
+      setSelectedAtLeastOnce(true)
     }
     if (!selected) {
-      setShowInput(false);
-      inputRef.current?.blur();
+      setShowInput(false)
+      inputRef.current?.blur()
     }
-  }, [selected]);
+  }, [selected])
 
   return (
     <View
       style={{
         alignItems: 'center',
         width: 66,
-        height: 40,
+        height: 40
       }}>
       {showInput && (
         <InputText
@@ -205,7 +205,7 @@ const FeeSelector: FC<{
           onChangeText={text => onValueEntered?.(text)}
           keyboardType={'numeric'}
           onInputRef={inputRef1 => {
-            inputRef = inputRef1;
+            inputRef = inputRef1
             inputRef1.current?.setNativeProps({
               style: {
                 backgroundColor: theme.colorText1,
@@ -221,9 +221,9 @@ const FeeSelector: FC<{
                 paddingRight: 0,
                 color: theme.colorBg2,
                 fontSize: 14,
-                lineHeight: 24,
-              },
-            });
+                lineHeight: 24
+              }
+            })
           }}
           mode={'amount'}
         />
@@ -240,7 +240,7 @@ const FeeSelector: FC<{
               justifyContent: 'center',
               backgroundColor: selected
                 ? theme.colorText1
-                : theme.colorBg3 + Opacity50,
+                : theme.colorBg3 + Opacity50
             }}>
             <AvaText.ButtonMedium
               textStyle={{color: selected ? theme.colorBg2 : theme.colorText2}}>
@@ -250,14 +250,14 @@ const FeeSelector: FC<{
         </AvaButton.Base>
       )}
     </View>
-  );
-};
+  )
+}
 
 const defaultPresetWeights = {
   [FeePreset.Normal]: 1,
   [FeePreset.Fast]: 1.05,
   [FeePreset.Instant]: 1.15,
-  [FeePreset.Custom]: 25,
-};
+  [FeePreset.Custom]: 25
+}
 
-export default NetworkFeeSelector;
+export default NetworkFeeSelector

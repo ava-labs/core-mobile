@@ -1,19 +1,19 @@
-import React from 'react';
-import {View} from 'react-native';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import AvaText from 'components/AvaText';
-import {Opacity05} from 'resources/Constants';
-import {Space} from 'components/Space';
-import AvaxQACode from 'components/AvaxQRCode';
+import React from 'react'
+import {View} from 'react-native'
+import {useApplicationContext} from 'contexts/ApplicationContext'
+import AvaText from 'components/AvaText'
+import {Opacity05} from 'resources/Constants'
+import {Space} from 'components/Space'
+import AvaxQACode from 'components/AvaxQRCode'
 
 interface Props {
-  chainName: string;
-  description: string;
-  address?: string;
+  chainName: string
+  description: string
+  address?: string
 }
 
 function ChainCard({chainName, description, address}: Props) {
-  const {theme, isDarkMode} = useApplicationContext();
+  const {theme, isDarkMode} = useApplicationContext()
   return (
     <View
       style={[
@@ -28,12 +28,12 @@ function ChainCard({chainName, description, address}: Props) {
           paddingBottom: 8,
           justifyContent: 'center',
           alignItems: 'center',
-          alignSelf: 'baseline',
+          alignSelf: 'baseline'
         },
         isDarkMode && {
           backgroundColor: theme.colorIcon1 + Opacity05,
-          borderWidth: 0,
-        },
+          borderWidth: 0
+        }
       ]}>
       <View style={{paddingHorizontal: 50}}>
         <Space y={8} />
@@ -42,14 +42,14 @@ function ChainCard({chainName, description, address}: Props) {
           textStyle={{
             paddingTop: 8,
             paddingBottom: 16,
-            textAlign: 'justify',
+            textAlign: 'justify'
           }}>
           {description}
         </AvaText.Body2>
         <AvaxQACode address={address} circularText={chainName} />
       </View>
     </View>
-  );
+  )
 }
 
-export default ChainCard;
+export default ChainCard

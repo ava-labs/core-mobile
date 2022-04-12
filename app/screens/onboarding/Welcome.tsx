@@ -1,31 +1,30 @@
-import React from 'react';
-import {StyleSheet, View} from 'react-native';
-import AvaButton from 'components/AvaButton';
-import {Space} from 'components/Space';
-import AvaText from 'components/AvaText';
-import {Row} from 'components/Row';
-import Separator from 'components/Separator';
-import WalletSVG from 'components/svg/WalletSVG';
-import CreateNewWalletPlusSVG from 'components/svg/CreateNewWalletPlusSVG';
-import CoreLogo from 'components/CoreLogo';
+import React from 'react'
+import {StyleSheet, View} from 'react-native'
+import AvaButton from 'components/AvaButton'
+import {Space} from 'components/Space'
+import AvaText from 'components/AvaText'
+import {Row} from 'components/Row'
+import Separator from 'components/Separator'
+import WalletSVG from 'components/svg/WalletSVG'
+import CreateNewWalletPlusSVG from 'components/svg/CreateNewWalletPlusSVG'
+import CoreLogo from 'components/CoreLogo'
 
 type Props = {
-  onCreateWallet: () => void;
-  onAlreadyHaveWallet: () => void;
-  onEnterWallet: (mnemonic: string) => void;
-};
+  onCreateWallet: () => void
+  onAlreadyHaveWallet: () => void
+  onEnterWallet: (mnemonic: string) => void
+}
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const pkg = require('../../../package.json');
+const pkg = require('../../../package.json')
 
 export default function Welcome(props: Props | Readonly<Props>): JSX.Element {
   const onCreateWallet = (): void => {
-    props.onCreateWallet();
-  };
+    props.onCreateWallet()
+  }
 
   const onAlreadyHaveWallet = (): void => {
-    props.onAlreadyHaveWallet();
-  };
+    props.onAlreadyHaveWallet()
+  }
 
   return (
     <View style={styles.verticalLayout}>
@@ -60,19 +59,19 @@ export default function Welcome(props: Props | Readonly<Props>): JSX.Element {
         v{pkg.version}
       </AvaText.Body2>
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
   verticalLayout: {
     padding: 16,
-    height: '100%',
+    height: '100%'
   },
   buttonWithText: {
-    alignItems: 'center',
+    alignItems: 'center'
   },
   logoContainer: {
     flexGrow: 1,
-    justifyContent: 'center',
-  },
-});
+    justifyContent: 'center'
+  }
+})

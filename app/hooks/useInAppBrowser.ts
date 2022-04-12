@@ -1,22 +1,22 @@
-import {InAppBrowser} from 'react-native-inappbrowser-reborn';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import {Alert, Linking} from 'react-native';
-import {useWalletStateContext} from '@avalabs/wallet-react-components';
-import {Moonpay} from '@avalabs/blizzard-sdk';
+import {InAppBrowser} from 'react-native-inappbrowser-reborn'
+import {useApplicationContext} from 'contexts/ApplicationContext'
+import {Alert, Linking} from 'react-native'
+import {useWalletStateContext} from '@avalabs/wallet-react-components'
+import {Moonpay} from '@avalabs/blizzard-sdk'
 
 const useInAppBrowser = () => {
-  const {theme} = useApplicationContext();
-  const moonAPI = new Moonpay({baseURL: 'https://blizzard.avax.network/'});
-  const addressC = useWalletStateContext()?.addresses?.addrC ?? '';
+  const {theme} = useApplicationContext()
+  const moonAPI = new Moonpay({baseURL: 'https://blizzard.avax.network/'})
+  const addressC = useWalletStateContext()?.addresses?.addrC ?? ''
 
   function failSafe(url: string) {
-    Linking.openURL(url);
+    Linking.openURL(url)
   }
 
   async function openMoonPay() {
     const moonpayUrl = (
       await moonAPI.getUrl(addressC, {color: theme.colorPrimary1})
-    ).data;
+    ).data
 
     Alert.alert(
       moonpayUrl ? 'Attention' : 'Oh-oh',
@@ -27,22 +27,22 @@ const useInAppBrowser = () => {
         ? [
             {
               text: 'Cancel',
-              style: 'cancel',
+              style: 'cancel'
             },
             {
               text: 'Continue',
               onPress: () => {
-                openUrl(moonpayUrl);
-              },
-            },
+                openUrl(moonpayUrl)
+              }
+            }
           ]
         : [
             {
               text: 'Cancel',
-              style: 'cancel',
-            },
-          ],
-    );
+              style: 'cancel'
+            }
+          ]
+    )
   }
 
   async function openUrl(url: string) {
@@ -67,17 +67,17 @@ const useInAppBrowser = () => {
           navigationBarDividerColor: 'white',
           enableUrlBarHiding: false,
           enableDefaultShare: true,
-          forceCloseOnRedirection: false,
-        });
+          forceCloseOnRedirection: false
+        })
       } else {
-        failSafe(url);
+        failSafe(url)
       }
     } catch (e) {
-      failSafe(url);
+      failSafe(url)
     }
   }
 
-  return {openUrl, openMoonPay};
-};
+  return {openUrl, openMoonPay}
+}
 
-export default useInAppBrowser;
+export default useInAppBrowser

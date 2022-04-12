@@ -3,7 +3,7 @@ const DevDebuggingConfig = {
   LOGBOX_DISABLED: false,
   WHY_DID_YOU_RENDER_ENABLED: false,
   REDSCREEN_DISABLED: true,
-  LOGBOX_IGNORED_WARNINGS: [],
-};
+  LOGBOX_IGNORED_WARNINGS: []
+}
 
-export default DevDebuggingConfig;
+export default DevDebuggingConfig

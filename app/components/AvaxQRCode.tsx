@@ -1,32 +1,32 @@
-import React, {FC} from 'react';
-import {Dimensions, View} from 'react-native';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import QRCode from 'react-native-qrcode-svg';
-import AvaLogoSVG from 'components/svg/AvaLogoSVG';
-import CircularText from 'components/svg/CircularText';
+import React, {FC} from 'react'
+import {Dimensions, View} from 'react-native'
+import {useApplicationContext} from 'contexts/ApplicationContext'
+import QRCode from 'react-native-qrcode-svg'
+import AvaLogoSVG from 'components/svg/AvaLogoSVG'
+import CircularText from 'components/svg/CircularText'
 
 interface Props {
-  address?: string;
-  circularText?: string;
-  sizePercentage?: number;
+  address?: string
+  circularText?: string
+  sizePercentage?: number
 }
 
-const {width: screenWidth} = Dimensions.get('window');
+const {width: screenWidth} = Dimensions.get('window')
 
 const AvaxQRCode: FC<Props> = ({
   address,
   circularText = '',
-  sizePercentage = 1,
+  sizePercentage = 1
 }: Props) => {
-  const theme = useApplicationContext().theme;
-  const borderWidth = 16;
+  const theme = useApplicationContext().theme
+  const borderWidth = 16
   return (
     <View
       style={{
         borderWidth: borderWidth,
         height: screenWidth * sizePercentage,
         borderColor: theme.alternateBackground,
-        borderRadius: borderWidth,
+        borderRadius: borderWidth
       }}>
       <QRCode
         ecl={'H'}
@@ -41,13 +41,13 @@ const AvaxQRCode: FC<Props> = ({
           left: 0,
           right: 0,
           justifyContent: 'center',
-          alignItems: 'center',
+          alignItems: 'center'
         }}>
         <AvaLogoSVG absolutePosition size={40} />
         <CircularText text={circularText} />
       </View>
     </View>
-  );
-};
+  )
+}
 
-export default AvaxQRCode;
+export default AvaxQRCode

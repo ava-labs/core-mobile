@@ -1,15 +1,15 @@
-import React, {FC} from 'react';
-import ModalContainer from 'components/ModalContainer';
-import AvaText from 'components/AvaText';
-import AvaButton from 'components/AvaButton';
+import React, {FC} from 'react'
+import ModalContainer from 'components/ModalContainer'
+import AvaText from 'components/AvaText'
+import AvaButton from 'components/AvaButton'
 
 interface Props {
-  onAction: () => void;
-  onDismiss: () => void;
-  title?: string;
-  message?: string;
-  actionText?: string;
-  dismissText?: string;
+  onAction: () => void
+  onDismiss: () => void
+  title?: string
+  message?: string
+  actionText?: string
+  dismissText?: string
 }
 
 const WarningModal: FC<Props> = ({
@@ -18,7 +18,7 @@ const WarningModal: FC<Props> = ({
   actionText = 'Ok',
   dismissText = 'Back',
   onAction,
-  onDismiss,
+  onDismiss
 }) => {
   return (
     <ModalContainer>
@@ -35,7 +35,7 @@ const WarningModal: FC<Props> = ({
         {dismissText}
       </AvaButton.TextLarge>
     </ModalContainer>
-  );
-};
+  )
+}
 
-export default WarningModal;
+export default WarningModal

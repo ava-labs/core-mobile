@@ -1,75 +1,75 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react'
 import {
   Dimensions,
   NativeScrollEvent,
   NativeSyntheticEvent,
   Share,
-  View,
-} from 'react-native';
-import ChainCard from './ChainCard';
-import {usePortfolio} from 'screens/portfolio/usePortfolio';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import AvaButton from 'components/AvaButton';
-import CopySVG from 'components/svg/CopySVG';
-import AvaText from 'components/AvaText';
-import {Opacity05} from 'resources/Constants';
-import {ScrollView} from 'react-native-gesture-handler';
-import {copyToClipboard} from 'utils/DeviceTools';
+  View
+} from 'react-native'
+import {usePortfolio} from 'screens/portfolio/usePortfolio'
+import {useApplicationContext} from 'contexts/ApplicationContext'
+import AvaButton from 'components/AvaButton'
+import CopySVG from 'components/svg/CopySVG'
+import AvaText from 'components/AvaText'
+import {Opacity05} from 'resources/Constants'
+import {ScrollView} from 'react-native-gesture-handler'
+import {copyToClipboard} from 'utils/DeviceTools'
+import ChainCard from './ChainCard'
 
-const SCREEN_WIDTH = Dimensions.get('window')?.width;
+const SCREEN_WIDTH = Dimensions.get('window')?.width
 
 function ReceiveToken() {
-  const {addressC, addressX} = usePortfolio();
-  const {theme, isDarkMode} = useApplicationContext();
-  const [selectedAddress, setSelectedAddress] = useState('');
-  const [currentSlide, setCurrentSlide] = useState(0);
+  const {addressC, addressX} = usePortfolio()
+  const {theme, isDarkMode} = useApplicationContext()
+  const [selectedAddress, setSelectedAddress] = useState('')
+  const [currentSlide, setCurrentSlide] = useState(0)
 
   useEffect(() => {
     switch (currentSlide) {
       case 0:
-        setSelectedAddress(addressC);
-        break;
+        setSelectedAddress(addressC)
+        break
       case 1:
-        setSelectedAddress(addressX);
-        break;
+        setSelectedAddress(addressX)
+        break
     }
-  }, [currentSlide, addressC, addressX]);
+  }, [currentSlide, addressC, addressX])
 
   const onShare = async (address: string) => {
     try {
       const result = await Share.share({
-        message: address,
-      });
+        message: address
+      })
       if (result.action === Share.sharedAction) {
         if (result.activityType) {
-          console.log('shared with activity type of ', result.activityType);
+          console.log('shared with activity type of ', result.activityType)
         } else {
-          console.log('shared');
+          console.log('shared')
         }
       } else if (result.action === Share.dismissedAction) {
-        console.log('dismissed');
+        console.log('dismissed')
       }
     } catch (error) {
-      console.error(error);
+      console.error(error)
     }
-  };
+  }
 
   const calculateCurrentPage = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     if (!e) {
-      return;
+      return
     }
-    const {nativeEvent} = e;
+    const {nativeEvent} = e
     if (nativeEvent && nativeEvent.contentOffset) {
-      let cs = 0;
+      let cs = 0
       if (nativeEvent.contentOffset.x === 0) {
-        setCurrentSlide(cs);
+        setCurrentSlide(cs)
       } else {
-        const approxCurrentSlide = nativeEvent.contentOffset.x / SCREEN_WIDTH;
-        cs = Math.ceil(parseInt(approxCurrentSlide.toFixed(2), 10)) + 1;
-        setCurrentSlide(cs);
+        const approxCurrentSlide = nativeEvent.contentOffset.x / SCREEN_WIDTH
+        cs = Math.ceil(parseInt(approxCurrentSlide.toFixed(2), 10)) + 1
+        setCurrentSlide(cs)
       }
     }
-  };
+  }
 
   return (
     <View style={{flex: 1, justifyContent: 'space-between'}}>
@@ -105,12 +105,12 @@ function ReceiveToken() {
                 borderColor: theme.colorIcon1 + Opacity05,
                 borderRadius: 8,
                 marginBottom: 8,
-                marginHorizontal: 16,
+                marginHorizontal: 16
               },
               isDarkMode && {
                 backgroundColor: theme.colorIcon1 + Opacity05,
-                borderWidth: 0,
-              },
+                borderWidth: 0
+              }
             ]}>
             <CopySVG />
             <AvaText.Body1 textStyle={{flex: 1, marginLeft: 16}}>
@@ -126,7 +126,7 @@ function ReceiveToken() {
         Share
       </AvaButton.PrimaryLarge>
     </View>
-  );
+  )
 }
 
-export default ReceiveToken;
+export default ReceiveToken

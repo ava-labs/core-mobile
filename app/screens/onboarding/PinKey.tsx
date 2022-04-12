@@ -1,7 +1,7 @@
-import React from 'react';
-import {Image, StyleSheet, TouchableNativeFeedback, View} from 'react-native';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import AvaText from 'components/AvaText';
+import React from 'react'
+import {Image, StyleSheet, TouchableNativeFeedback, View} from 'react-native'
+import {useApplicationContext} from 'contexts/ApplicationContext'
+import AvaText from 'components/AvaText'
 
 export enum PinKeys {
   Key1,
@@ -14,13 +14,13 @@ export enum PinKeys {
   Key8,
   Key9,
   Key0,
-  Backspace,
+  Backspace
 }
 
 type Props = {
-  keyboardKey: PinKeys;
-  onPress: (key: PinKeys) => void;
-};
+  keyboardKey: PinKeys
+  onPress: (key: PinKeys) => void
+}
 
 const keymap: Map<PinKeys, string> = new Map([
   [PinKeys.Key1, '1'],
@@ -33,15 +33,15 @@ const keymap: Map<PinKeys, string> = new Map([
   [PinKeys.Key8, '8'],
   [PinKeys.Key9, '9'],
   [PinKeys.Key0, '0'],
-  [PinKeys.Backspace, '<'],
-]);
+  [PinKeys.Backspace, '<']
+])
 
 export default function PinKey(props: Props | Readonly<Props>) {
-  const context = useApplicationContext();
-  const theme = context.theme;
-  const isBackspace = props.keyboardKey === PinKeys.Backspace;
+  const context = useApplicationContext()
+  const theme = context.theme
+  const isBackspace = props.keyboardKey === PinKeys.Backspace
   if (props.keyboardKey === undefined) {
-    return <View />;
+    return <View />
   }
   return (
     <TouchableNativeFeedback
@@ -53,27 +53,27 @@ export default function PinKey(props: Props | Readonly<Props>) {
         {!isBackspace && Digit(props.keyboardKey)}
       </View>
     </TouchableNativeFeedback>
-  );
+  )
 }
 
 const Digit = (key: PinKeys) => {
   return (
     <AvaText.LargeTitleRegular>{keymap.get(key)}</AvaText.LargeTitleRegular>
-  );
-};
+  )
+}
 
 const Backspace = (isDarkMode: boolean) => {
   const backspaceIcon = isDarkMode
     ? require('assets/icons/backspace_dark.png')
-    : require('assets/icons/backspace_light.png');
-  return <Image source={backspaceIcon} style={[{width: 24, height: 24}]} />;
-};
+    : require('assets/icons/backspace_light.png')
+  return <Image source={backspaceIcon} style={[{width: 24, height: 24}]} />
+}
 
 const styles: any = StyleSheet.create({
   button: {
     height: 44,
     justifyContent: 'center',
     alignItems: 'center',
-    width: '100%',
-  },
-});
+    width: '100%'
+  }
+})

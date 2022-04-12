@@ -1,68 +1,68 @@
-import React, {FC, useEffect, useLayoutEffect} from 'react';
-import {StyleSheet, View} from 'react-native';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
-import {BridgeStackParamList} from 'navigation/wallet/BridgeScreenStack';
-import AvaText from 'components/AvaText';
+import React, {FC, useEffect, useLayoutEffect} from 'react'
+import {StyleSheet, View} from 'react-native'
+import {useApplicationContext} from 'contexts/ApplicationContext'
+import {RouteProp, useNavigation, useRoute} from '@react-navigation/native'
+import {BridgeStackParamList} from 'navigation/wallet/BridgeScreenStack'
+import AvaText from 'components/AvaText'
 import {
   Blockchain,
   useBridgeConfig,
   useBridgeSDK,
   usePrice,
-  useTxTracker,
-} from '@avalabs/bridge-sdk';
+  useTxTracker
+} from '@avalabs/bridge-sdk'
 import {
   useNetworkContext,
-  useWalletStateContext,
-} from '@avalabs/wallet-react-components';
-import {getEthereumProvider} from 'screens/bridge/utils/getEthereumProvider';
-import {getAvalancheProvider} from 'screens/bridge/utils/getAvalancheProvider';
-import DotSVG from 'components/svg/DotSVG';
-import Avatar from 'components/Avatar';
-import AvaListItem from 'components/AvaListItem';
-import {Row} from 'components/Row';
-import {Space} from 'components/Space';
-import Separator from 'components/Separator';
-import BridgeConfirmations from 'screens/bridge/components/BridgeConfirmations';
-import {useGetTokenSymbolOnNetwork} from 'screens/bridge/hooks/useGetTokenSymbolOnNetwork';
-import useBridge from 'screens/bridge/hooks/useBridge';
-import {useBridgeContext} from 'contexts/BridgeContext';
-import {StackNavigationProp} from '@react-navigation/stack';
-import AvaButton from 'components/AvaButton';
-import AppNavigation from 'navigation/AppNavigation';
+  useWalletStateContext
+} from '@avalabs/wallet-react-components'
+import {getEthereumProvider} from 'screens/bridge/utils/getEthereumProvider'
+import {getAvalancheProvider} from 'screens/bridge/utils/getAvalancheProvider'
+import DotSVG from 'components/svg/DotSVG'
+import Avatar from 'components/Avatar'
+import AvaListItem from 'components/AvaListItem'
+import {Row} from 'components/Row'
+import {Space} from 'components/Space'
+import Separator from 'components/Separator'
+import BridgeConfirmations from 'screens/bridge/components/BridgeConfirmations'
+import {useGetTokenSymbolOnNetwork} from 'screens/bridge/hooks/useGetTokenSymbolOnNetwork'
+import useBridge from 'screens/bridge/hooks/useBridge'
+import {useBridgeContext} from 'contexts/BridgeContext'
+import {StackNavigationProp} from '@react-navigation/stack'
+import AvaButton from 'components/AvaButton'
+import AppNavigation from 'navigation/AppNavigation'
 
 interface Props {
-  fromStack?: boolean;
+  fromStack?: boolean
 }
 
 const BridgeTransactionStatus: FC<Props> = ({fromStack}) => {
-  const {theme} = useApplicationContext();
-  const navigation = useNavigation<StackNavigationProp<BridgeStackParamList>>();
+  const {theme} = useApplicationContext()
+  const navigation = useNavigation<StackNavigationProp<BridgeStackParamList>>()
   const {blockchain, txHash, txTimestamp} =
     useRoute<
       RouteProp<
         BridgeStackParamList,
         typeof AppNavigation.Bridge.BridgeTransactionStatus
       >
-    >()?.params;
+    >()?.params || {}
   // @ts-ignore addresses exist in walletContext
-  const {addresses} = useWalletStateContext();
-  const {config} = useBridgeConfig();
+  const {addresses} = useWalletStateContext()
+  const {config} = useBridgeConfig()
   // @ts-ignore network exist in networkContext
-  const {network} = useNetworkContext();
-  const ethereumProvider = getEthereumProvider(network);
-  const avalancheProvider = getAvalancheProvider(network);
-  const {getTokenSymbolOnNetwork} = useGetTokenSymbolOnNetwork();
-  const {tokenInfoContext, assetInfo} = useBridge();
-  const {createBridgeTransaction, removeBridgeTransaction} = useBridgeContext();
+  const {network} = useNetworkContext()
+  const ethereumProvider = getEthereumProvider(network)
+  const avalancheProvider = getAvalancheProvider(network)
+  const {getTokenSymbolOnNetwork} = useGetTokenSymbolOnNetwork()
+  const {tokenInfoContext, assetInfo} = useBridge()
+  const {createBridgeTransaction, removeBridgeTransaction} = useBridgeContext()
 
   const {
     currentAsset,
     transactionDetails,
     bridgeAssets,
     setTransactionDetails,
-    currentBlockchain,
-  } = useBridgeSDK();
+    currentBlockchain
+  } = useBridgeSDK()
 
   const txProps = useTxTracker(
     blockchain as Blockchain,
@@ -74,8 +74,8 @@ const BridgeTransactionStatus: FC<Props> = ({fromStack}) => {
     config,
     addresses?.addrC,
     transactionDetails,
-    bridgeAssets,
-  );
+    bridgeAssets
+  )
   useLayoutEffect(() => {
     if (txProps) {
       navigation.setOptions({
@@ -84,29 +84,29 @@ const BridgeTransactionStatus: FC<Props> = ({fromStack}) => {
           fromStack ? (
             <AvaButton.TextLarge
               onPress={() => {
-                navigation.navigate(AppNavigation.Bridge.HideWarning);
+                navigation.navigate(AppNavigation.Bridge.HideWarning)
               }}>
               Hide
             </AvaButton.TextLarge>
-          ) : null,
-      });
+          ) : null
+      })
 
       if (txProps.complete) {
-        removeBridgeTransaction({...txProps});
+        removeBridgeTransaction({...txProps})
       }
     }
-  }, [txProps?.complete]);
+  }, [txProps?.complete])
 
   useEffect(() => {
-    createBridgeTransaction({...txProps}).then();
-  }, []);
+    createBridgeTransaction({...txProps}).then()
+  }, [])
 
   const tokenSymbolOnNetwork = getTokenSymbolOnNetwork(
     currentAsset ?? '',
-    currentBlockchain,
-  );
+    currentBlockchain
+  )
 
-  const assetPrice = usePrice(txProps?.symbol || currentAsset);
+  const assetPrice = usePrice(txProps?.symbol || currentAsset)
 
   const tokenLogo = (
     <View style={styles.logoContainer}>
@@ -120,7 +120,7 @@ const BridgeTransactionStatus: FC<Props> = ({fromStack}) => {
         size={55}
       />
     </View>
-  );
+  )
 
   return (
     <View style={{flex: 1}}>
@@ -208,8 +208,8 @@ const BridgeTransactionStatus: FC<Props> = ({fromStack}) => {
         />
       </View>
     </View>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   logoContainer: {
@@ -220,25 +220,25 @@ const styles = StyleSheet.create({
     right: 0,
     top: 0,
     bottom: 100,
-    zIndex: 1000,
+    zIndex: 1000
   },
   infoContainer: {
     marginTop: 30,
     paddingTop: 30,
     marginHorizontal: 16,
-    borderRadius: 10,
+    borderRadius: 10
   },
   fromContainer: {
     minHeight: 200,
     marginHorizontal: 16,
     paddingBottom: 16,
-    borderRadius: 10,
+    borderRadius: 10
   },
   toContainer: {
     marginHorizontal: 16,
     borderRadius: 10,
-    paddingBottom: 16,
-  },
-});
+    paddingBottom: 16
+  }
+})
 
-export default BridgeTransactionStatus;
+export default BridgeTransactionStatus

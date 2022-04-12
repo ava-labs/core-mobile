@@ -1,12 +1,12 @@
-import React from 'react';
-import AvaListItem from 'components/AvaListItem';
-import CarrotSVG from 'components/svg/CarrotSVG';
-import useInAppBrowser from 'hooks/useInAppBrowser';
+import React from 'react'
+import AvaListItem from 'components/AvaListItem'
+import CarrotSVG from 'components/svg/CarrotSVG'
+import useInAppBrowser from 'hooks/useInAppBrowser'
 
-const LEGAL_URL = 'https://wallet.avax.network/legal';
+const LEGAL_URL = 'https://wallet.avax.network/legal'
 
 const LegalItem = () => {
-  const {openUrl} = useInAppBrowser();
+  const {openUrl} = useInAppBrowser()
   return (
     <>
       <AvaListItem.Base
@@ -16,11 +16,11 @@ const LegalItem = () => {
         rightComponent={<CarrotSVG />}
         rightComponentVerticalAlignment={'center'}
         onPress={() => {
-          openUrl(LEGAL_URL);
+          openUrl(LEGAL_URL)
         }}
       />
     </>
-  );
-};
+  )
+}
 
-export default LegalItem;
+export default LegalItem

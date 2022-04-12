@@ -1,14 +1,14 @@
 import {
   Asset,
   Blockchain,
-  useGetTokenBalance as useGetTokenBalanceSDK,
-} from '@avalabs/bridge-sdk';
-import {getAvalancheProvider} from 'screens/bridge/utils/getAvalancheProvider';
-import {getEthereumProvider} from 'screens/bridge/utils/getEthereumProvider';
+  useGetTokenBalance as useGetTokenBalanceSDK
+} from '@avalabs/bridge-sdk'
+import {getAvalancheProvider} from 'screens/bridge/utils/getAvalancheProvider'
+import {getEthereumProvider} from 'screens/bridge/utils/getEthereumProvider'
 import {
   useNetworkContext,
-  useWalletStateContext,
-} from '@avalabs/wallet-react-components';
+  useWalletStateContext
+} from '@avalabs/wallet-react-components'
 
 /**
  * Get the balance for a single token.
@@ -21,24 +21,24 @@ export function useLoadTokenBalance(
   blockchain: Blockchain,
   token?: Asset,
   address?: string,
-  suspendRefresh?: boolean,
+  suspendRefresh?: boolean
 ) {
   // @ts-ignore addresses exist but why it complains needs investigation
-  const {addresses} = useWalletStateContext();
-  const network = useNetworkContext()?.network;
+  const {addresses} = useWalletStateContext()
+  const network = useNetworkContext()?.network
 
   const provider =
     blockchain === Blockchain.AVALANCHE
       ? getAvalancheProvider(network)
-      : getEthereumProvider(network);
+      : getEthereumProvider(network)
 
   const balance = useGetTokenBalanceSDK(
     blockchain,
     suspendRefresh ? undefined : token,
     provider,
     true,
-    address ?? addresses.addrC,
-  );
+    address ?? addresses.addrC
+  )
 
-  return {balance};
+  return {balance}
 }

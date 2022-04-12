@@ -1,82 +1,82 @@
-import React, {createContext, useContext, useEffect, useState} from 'react';
-import {COLORS_DAY, COLORS_NIGHT} from 'resources/Constants';
-import type {Theme} from '@react-navigation/native';
-import {AppHook, useApp} from 'AppHook';
-import {Repo, useRepo} from 'Repo';
-import {AppNavHook, useAppNav} from 'useAppNav';
-import {useWalletSetup, WalletSetupHook} from 'hooks/useWalletSetup';
+import React, {createContext, useContext, useEffect, useState} from 'react'
+import {COLORS_DAY, COLORS_NIGHT} from 'resources/Constants'
+import type {Theme} from '@react-navigation/native'
+import {AppHook, useApp} from 'AppHook'
+import {Repo, useRepo} from 'Repo'
+import {AppNavHook, useAppNav} from 'useAppNav'
+import {useWalletSetup, WalletSetupHook} from 'hooks/useWalletSetup'
 import {
   customErc20Tokens$,
   FUJI_NETWORK,
   MAINNET_NETWORK,
-  useNetworkContext,
-} from '@avalabs/wallet-react-components';
+  useNetworkContext
+} from '@avalabs/wallet-react-components'
 
 export interface ApplicationContextState {
-  theme: typeof COLORS_DAY | typeof COLORS_NIGHT;
-  isDarkMode: boolean;
-  backgroundStyle: BackgroundStyle;
-  appBackgroundStyle: AppBackgroundStyle;
-  navContainerTheme: Theme;
-  shadow: Shadow;
-  keyboardAvoidingViewEnabled: boolean;
-  setKeyboardAvoidingViewEnabled: (value: boolean) => void;
-  appHook: AppHook;
-  repo: Repo;
-  appNavHook: AppNavHook;
-  walletSetupHook: WalletSetupHook;
+  theme: typeof COLORS_DAY | typeof COLORS_NIGHT
+  isDarkMode: boolean
+  backgroundStyle: BackgroundStyle
+  appBackgroundStyle: AppBackgroundStyle
+  navContainerTheme: Theme
+  shadow: Shadow
+  keyboardAvoidingViewEnabled: boolean
+  setKeyboardAvoidingViewEnabled: (value: boolean) => void
+  appHook: AppHook
+  repo: Repo
+  appNavHook: AppNavHook
+  walletSetupHook: WalletSetupHook
 }
 
 export declare type BackgroundStyle = {
-  backgroundColor: string;
-  flex: number;
-  paddingBottom?: number;
-  paddingStart?: number;
-  paddingEnd?: number;
-};
+  backgroundColor: string
+  flex: number
+  paddingBottom?: number
+  paddingStart?: number
+  paddingEnd?: number
+}
 
 export declare type Shadow = {
-  shadowColor: string;
-  shadowRadius: number;
-  shadowOpacity: number;
-  elevation: number;
-  shadowOffset: {width: number; height: number};
-};
+  shadowColor: string
+  shadowRadius: number
+  shadowOpacity: number
+  elevation: number
+  shadowOffset: {width: number; height: number}
+}
 
 export declare type AppBackgroundStyle = {
-  flex: number;
-  backgroundColor: string;
-};
+  flex: number
+  backgroundColor: string
+}
 
 export const ApplicationContext = createContext<ApplicationContextState>(
-  {} as any,
-);
+  {} as any
+)
 
 export const ApplicationContextProvider = ({children}: {children: any}) => {
-  const appNavHook = useAppNav();
-  const repository = useRepo();
-  const walletSetupHook = useWalletSetup(repository, appNavHook);
-  const appHook = useApp(appNavHook, walletSetupHook, repository);
-  const networkState = useNetworkContext()!;
+  const appNavHook = useAppNav()
+  const repository = useRepo()
+  const walletSetupHook = useWalletSetup(repository, appNavHook)
+  const appHook = useApp(appNavHook, walletSetupHook, repository)
+  const networkState = useNetworkContext()!
 
   useEffect(() => {
-    networkState.setNetwork(__DEV__ ? FUJI_NETWORK : MAINNET_NETWORK);
-  }, []);
+    networkState.setNetwork(__DEV__ ? FUJI_NETWORK : MAINNET_NETWORK)
+  }, [])
 
-  const isDarkMode = true; // useState(Appearance.getColorScheme() === 'dark');
-  const [theme] = useState(isDarkMode ? COLORS_NIGHT : COLORS_DAY);
+  const isDarkMode = true // useState(Appearance.getColorScheme() === 'dark');
+  const [theme] = useState(isDarkMode ? COLORS_NIGHT : COLORS_DAY)
   const [backgroundStyle] = useState({
     backgroundColor: theme.background,
     flex: 1,
     paddingBottom: 16,
     paddingStart: 16,
-    paddingEnd: 16,
-  } as BackgroundStyle);
+    paddingEnd: 16
+  } as BackgroundStyle)
 
   const [appBackgroundStyle] = useState({
     backgroundColor: theme.background,
-    flex: 1,
-  } as AppBackgroundStyle);
+    flex: 1
+  } as AppBackgroundStyle)
 
   const [navContainerTheme] = useState({
     dark: isDarkMode,
@@ -86,28 +86,28 @@ export const ApplicationContextProvider = ({children}: {children: any}) => {
       text: theme.colorText1,
       card: theme.background,
       border: theme.background,
-      notification: theme.colorPrimary1,
-    },
-  } as Theme);
+      notification: theme.colorPrimary1
+    }
+  } as Theme)
 
   const [shadow] = useState({
     shadowColor: theme.overlay,
     shadowRadius: 3,
     shadowOpacity: 0.5,
     elevation: 3,
-    shadowOffset: {width: 0, height: 1},
-  } as Shadow);
+    shadowOffset: {width: 0, height: 1}
+  } as Shadow)
 
   const [keyboardAvoidingViewEnabled, setKeyboardAvoidingViewEnabled] =
-    useState(true);
+    useState(true)
 
   useEffect(() => {
     if (networkState?.network?.chainId) {
       customErc20Tokens$.next(
-        repository.customTokenRepo.customTokens[networkState.network.chainId],
-      );
+        repository.customTokenRepo.customTokens[networkState.network.chainId]
+      )
     }
-  }, [networkState?.network?.chainId, repository.customTokenRepo.customTokens]);
+  }, [networkState?.network?.chainId, repository.customTokenRepo.customTokens])
 
   const appContextState: ApplicationContextState = {
     theme,
@@ -121,15 +121,15 @@ export const ApplicationContextProvider = ({children}: {children: any}) => {
     appHook,
     repo: repository,
     appNavHook,
-    walletSetupHook,
-  };
+    walletSetupHook
+  }
   return (
     <ApplicationContext.Provider value={appContextState}>
       {children}
     </ApplicationContext.Provider>
-  );
-};
+  )
+}
 
 export function useApplicationContext() {
-  return useContext(ApplicationContext);
+  return useContext(ApplicationContext)
 }

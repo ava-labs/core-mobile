@@ -1,18 +1,18 @@
-import {Space} from 'components/Space';
-import AvaText from 'components/AvaText';
-import {Row} from 'components/Row';
-import Separator from 'components/Separator';
-import React from 'react';
-import {truncateAddress} from 'utils/Utils';
+import {Space} from 'components/Space'
+import AvaText from 'components/AvaText'
+import {Row} from 'components/Row'
+import Separator from 'components/Separator'
+import React from 'react'
+import {truncateAddress} from 'utils/Utils'
 
 export default function SendRow({
   label,
   title,
-  address,
+  address
 }: {
-  label: string;
-  title: string;
-  address: string;
+  label: string
+  title: string
+  address: string
 }) {
   return (
     <>
@@ -25,5 +25,5 @@ export default function SendRow({
       <Space y={4} />
       <Separator />
     </>
-  );
+  )
 }

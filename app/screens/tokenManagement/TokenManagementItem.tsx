@@ -1,20 +1,20 @@
-import React, {FC} from 'react';
-import {View} from 'react-native';
-import AvaListItem from 'components/AvaListItem';
-import AvaText from 'components/AvaText';
-import Switch from 'components/Switch';
-import Avatar from 'components/Avatar';
+import React, {FC} from 'react'
+import {View} from 'react-native'
+import AvaListItem from 'components/AvaListItem'
+import AvaText from 'components/AvaText'
+import Switch from 'components/Switch'
+import Avatar from 'components/Avatar'
 
 type Props = {
-  balance?: string;
-  name: string;
-  image?: string;
-  symbol?: string;
-  position: number;
-  onPress?: () => void;
-  onSwitchChanged: (value: boolean) => void;
-  isShowingZeroBalanceForToken?: boolean;
-};
+  balance?: string
+  name: string
+  image?: string
+  symbol?: string
+  position: number
+  onPress?: () => void
+  onSwitchChanged: (value: boolean) => void
+  isShowingZeroBalanceForToken?: boolean
+}
 
 const TokenManagementItem: FC<Props> = ({
   balance,
@@ -22,10 +22,10 @@ const TokenManagementItem: FC<Props> = ({
   image,
   symbol,
   isShowingZeroBalanceForToken,
-  onSwitchChanged,
+  onSwitchChanged
 }) => {
   function handleChange(value: boolean) {
-    onSwitchChanged(value);
+    onSwitchChanged(value)
   }
 
   const tokenLogo = (
@@ -33,11 +33,11 @@ const TokenManagementItem: FC<Props> = ({
       style={{
         flexDirection: 'row',
         justifyContent: 'center',
-        alignItems: 'center',
+        alignItems: 'center'
       }}>
       <Avatar.Custom name={name} symbol={symbol} logoUri={image} showBorder />
     </View>
-  );
+  )
 
   const rightComponent = () => {
     if (balance === undefined) {
@@ -46,11 +46,11 @@ const TokenManagementItem: FC<Props> = ({
           value={isShowingZeroBalanceForToken}
           onValueChange={handleChange}
         />
-      );
+      )
     } else {
-      return <AvaText.Body2>{balance}</AvaText.Body2>;
+      return <AvaText.Body2>{balance}</AvaText.Body2>
     }
-  };
+  }
 
   return (
     <AvaListItem.Base
@@ -58,7 +58,7 @@ const TokenManagementItem: FC<Props> = ({
       leftComponent={tokenLogo}
       rightComponent={rightComponent()}
     />
-  );
-};
+  )
+}
 
-export default TokenManagementItem;
+export default TokenManagementItem

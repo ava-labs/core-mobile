@@ -1,37 +1,37 @@
-import React, {FC, useEffect, useState} from 'react';
-import {Animated, View} from 'react-native';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import AvaText from 'components/AvaText';
-import Collapsible from 'react-native-collapsible';
-import CarrotSVG from 'components/svg/CarrotSVG';
-import AvaButton from 'components/AvaButton';
+import React, {FC, useEffect, useState} from 'react'
+import {Animated, View} from 'react-native'
+import {useApplicationContext} from 'contexts/ApplicationContext'
+import AvaText from 'components/AvaText'
+import Collapsible from 'react-native-collapsible'
+import CarrotSVG from 'components/svg/CarrotSVG'
+import AvaButton from 'components/AvaButton'
 
 interface Props {
-  title: React.ReactNode | string;
-  startExpanded?: boolean;
-  onExpandedChange?: (isExpanded: boolean) => void;
+  title: React.ReactNode | string
+  startExpanded?: boolean
+  onExpandedChange?: (isExpanded: boolean) => void
 }
 
 const CollapsibleSection: FC<Props> = ({
   startExpanded = false,
   title,
   children,
-  onExpandedChange,
+  onExpandedChange
 }) => {
-  const theme = useApplicationContext().theme;
-  const [expanded, setExpanded] = useState(startExpanded);
-  const [startExp, setStartExp] = useState(startExpanded);
+  const theme = useApplicationContext().theme
+  const [expanded, setExpanded] = useState(startExpanded)
+  const [startExp, setStartExp] = useState(startExpanded)
 
   useEffect(() => {
     if (startExp !== startExpanded) {
-      setStartExp(startExpanded);
-      setExpanded(startExpanded);
+      setStartExp(startExpanded)
+      setExpanded(startExpanded)
     }
-  });
+  })
 
   useEffect(() => {
-    onExpandedChange?.(expanded);
-  }, [expanded]);
+    onExpandedChange?.(expanded)
+  }, [expanded])
 
   const getTitle = () => {
     return typeof title === 'string' ? (
@@ -42,7 +42,7 @@ const CollapsibleSection: FC<Props> = ({
           justifyContent: 'space-between',
           padding: 16,
           marginRight: 8,
-          backgroundColor: theme.colorBg1,
+          backgroundColor: theme.colorBg1
         }}>
         <AvaText.Body2>{title}</AvaText.Body2>
         <View style={{transform: [{rotate: expanded ? '-90deg' : '90deg'}]}}>
@@ -51,11 +51,11 @@ const CollapsibleSection: FC<Props> = ({
       </Animated.View>
     ) : (
       title
-    );
-  };
+    )
+  }
 
   function toggleExpanded() {
-    setExpanded(!expanded);
+    setExpanded(!expanded)
   }
   return (
     <View>
@@ -66,7 +66,7 @@ const CollapsibleSection: FC<Props> = ({
         {children}
       </Collapsible>
     </View>
-  );
-};
+  )
+}
 
-export default CollapsibleSection;
+export default CollapsibleSection

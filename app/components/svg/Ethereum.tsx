@@ -1,8 +1,8 @@
-import React from 'react';
-import Svg, {ClipPath, Defs, G, Path, Rect} from 'react-native-svg';
+import React from 'react'
+import Svg, {ClipPath, Defs, G, Path, Rect} from 'react-native-svg'
 
 interface Prop {
-  size?: number;
+  size?: number
 }
 
 function EthereumSvg({size = 41, ...props}: Prop) {
@@ -55,7 +55,7 @@ function EthereumSvg({size = 41, ...props}: Prop) {
         </ClipPath>
       </Defs>
     </Svg>
-  );
+  )
 }
 
-export default EthereumSvg;
+export default EthereumSvg

@@ -1,32 +1,32 @@
-import React, {useEffect, useState} from 'react';
-import AvaText from 'components/AvaText';
-import InputText from 'components/InputText';
-import {Space} from 'components/Space';
-import {View} from 'react-native';
-import {useApplicationContext} from 'contexts/ApplicationContext';
+import React, {useEffect, useState} from 'react'
+import AvaText from 'components/AvaText'
+import InputText from 'components/InputText'
+import {Space} from 'components/Space'
+import {View} from 'react-native'
+import {useApplicationContext} from 'contexts/ApplicationContext'
 
 const ContactInput = ({
   initName,
   initAddress,
   onNameChange,
-  onAddressChange,
+  onAddressChange
 }: {
-  initName: string;
-  initAddress: string;
-  onNameChange: (name: string) => void;
-  onAddressChange: (address: string) => void;
+  initName: string
+  initAddress: string
+  onNameChange: (name: string) => void
+  onAddressChange: (address: string) => void
 }) => {
-  const {theme} = useApplicationContext();
-  const [name, setName] = useState(initName);
-  const [address, setAddress] = useState(initAddress);
+  const {theme} = useApplicationContext()
+  const [name, setName] = useState(initName)
+  const [address, setAddress] = useState(initAddress)
 
   useEffect(() => {
-    onNameChange(name);
-  }, [name, onNameChange]);
+    onNameChange(name)
+  }, [name, onNameChange])
 
   useEffect(() => {
-    onAddressChange(address);
-  }, [address, onAddressChange]);
+    onAddressChange(address)
+  }, [address, onAddressChange])
 
   return (
     <>
@@ -51,7 +51,7 @@ const ContactInput = ({
         />
       </View>
     </>
-  );
-};
+  )
+}
 
-export default ContactInput;
+export default ContactInput

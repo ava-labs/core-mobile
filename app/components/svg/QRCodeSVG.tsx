@@ -1,16 +1,16 @@
-import React from 'react';
-import Svg, {Path, Rect, Mask} from 'react-native-svg';
-import {useApplicationContext} from 'contexts/ApplicationContext';
+import React from 'react'
+import Svg, {Path, Rect, Mask} from 'react-native-svg'
+import {useApplicationContext} from 'contexts/ApplicationContext'
 
 interface Prop {
-  color?: string;
-  size?: number;
+  color?: string
+  size?: number
 }
 
 export default function QRCodeSVG({color, size = 24}: Prop) {
-  const context = useApplicationContext();
+  const context = useApplicationContext()
 
-  const iconColor = color ?? context.theme.alternateBackground;
+  const iconColor = color ?? context.theme.alternateBackground
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
@@ -86,5 +86,5 @@ export default function QRCodeSVG({color, size = 24}: Prop) {
         mask="url(#path-9-inside-4_5088_89422)"
       />
     </Svg>
-  );
+  )
 }

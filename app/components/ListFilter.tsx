@@ -1,26 +1,26 @@
-import React, {FC, useMemo, useRef, useState} from 'react';
+import React, {FC, useMemo, useRef, useState} from 'react'
 import {
   FlatList,
   ListRenderItemInfo,
   StyleProp,
   StyleSheet,
   View,
-  ViewStyle,
-} from 'react-native';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import AvaText from 'components/AvaText';
-import CarrotSVG from 'components/svg/CarrotSVG';
-import {Popable, PopableManager} from 'react-native-popable';
-import Separator from 'components/Separator';
+  ViewStyle
+} from 'react-native'
+import {useApplicationContext} from 'contexts/ApplicationContext'
+import AvaText from 'components/AvaText'
+import CarrotSVG from 'components/svg/CarrotSVG'
+import {Popable, PopableManager} from 'react-native-popable'
+import Separator from 'components/Separator'
 
 interface Props {
-  filterOptions: string[];
-  title?: string;
-  currentItem: string;
-  onItemSelected?: (selectedItem: string) => void;
-  minWidth?: number;
-  style?: StyleProp<ViewStyle>;
-  icon?: React.ReactNode;
+  filterOptions: string[]
+  title?: string
+  currentItem: string
+  onItemSelected?: (selectedItem: string) => void
+  minWidth?: number
+  style?: StyleProp<ViewStyle>
+  icon?: React.ReactNode
 }
 
 /**
@@ -39,17 +39,17 @@ const ListFilter: FC<Props> = ({
   onItemSelected,
   minWidth = 150,
   style,
-  icon,
+  icon
 }) => {
-  const theme = useApplicationContext().theme;
-  const ref = useRef<PopableManager>(null);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const theme = useApplicationContext().theme
+  const ref = useRef<PopableManager>(null)
+  const [isFilterOpen, setIsFilterOpen] = useState(false)
   const blurBackground = useMemo(() => {
     return (
       <View
         style={[
           StyleSheet.absoluteFill,
-          {backgroundColor: '#000000', opacity: 0.9},
+          {backgroundColor: '#000000', opacity: 0.9}
         ]}
       />
       // <BlurView
@@ -58,22 +58,22 @@ const ListFilter: FC<Props> = ({
       //   blurAmount={10}
       //   reducedTransparencyFallbackColor={'black'}
       // />
-    );
-  }, []);
+    )
+  }, [])
 
   const renderItem = (item: ListRenderItemInfo<string>) => {
     return (
       <AvaText.Body1
         textStyle={{paddingVertical: 8}}
         onPress={() => {
-          onItemSelected?.(item.item);
-          ref?.current?.hide();
-          setIsFilterOpen(!isFilterOpen);
+          onItemSelected?.(item.item)
+          ref?.current?.hide()
+          setIsFilterOpen(!isFilterOpen)
         }}>
         {item.item}
       </AvaText.Body1>
-    );
-  };
+    )
+  }
 
   function filterContent() {
     return (
@@ -86,7 +86,7 @@ const ListFilter: FC<Props> = ({
           ItemSeparatorComponent={Separator}
         />
       </>
-    );
+    )
   }
 
   return (
@@ -99,9 +99,9 @@ const ListFilter: FC<Props> = ({
       style={[
         {
           minWidth: minWidth,
-          marginTop: -10,
+          marginTop: -10
         },
-        style,
+        style
       ]}
       backgroundColor={theme.transparent}>
       <View style={{padding: 16, flexDirection: 'row'}}>
@@ -122,7 +122,7 @@ const ListFilter: FC<Props> = ({
         )}
       </View>
     </Popable>
-  );
-};
+  )
+}
 
-export default ListFilter;
+export default ListFilter

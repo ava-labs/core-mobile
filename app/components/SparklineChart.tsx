@@ -1,20 +1,20 @@
-import React, {FC} from 'react';
-import {useApplicationContext} from 'contexts/ApplicationContext';
+import React, {FC} from 'react'
+import {useApplicationContext} from 'contexts/ApplicationContext'
 import {
   GradientProps,
-  SlideAreaChart,
-} from '@connectedcars/react-native-slide-charts';
-import {LinearGradient, Stop} from 'react-native-svg';
+  SlideAreaChart
+} from '@connectedcars/react-native-slide-charts'
+import {LinearGradient, Stop} from 'react-native-svg'
 
 interface Props {
-  width?: number;
-  height?: number;
-  animated?: boolean;
-  data: {x: number; y: number}[];
-  yRange: [number, number];
-  xRange: [number, number];
-  negative?: boolean;
-  interactive?: boolean;
+  width?: number
+  height?: number
+  animated?: boolean
+  data: {x: number; y: number}[]
+  yRange: [number, number]
+  xRange: [number, number]
+  negative?: boolean
+  interactive?: boolean
 }
 
 const SparklineChart: FC<Props> = ({
@@ -25,14 +25,14 @@ const SparklineChart: FC<Props> = ({
   yRange,
   xRange,
   negative = false,
-  interactive = false,
+  interactive = false
 }) => {
-  const theme = useApplicationContext().theme;
-  const {currencyFormatter} = useApplicationContext().appHook;
+  const theme = useApplicationContext().theme
+  const {currencyFormatter} = useApplicationContext().appHook
 
   const defaultAreaChartFillGradient = (
     props: GradientProps,
-    isNegative: boolean,
+    isNegative: boolean
   ) => {
     return (
       <LinearGradient x1="50%" y1="0%" x2="50%" y2="100%" {...props}>
@@ -43,13 +43,13 @@ const SparklineChart: FC<Props> = ({
         />
         <Stop stopColor={theme.background} offset="100%" stopOpacity="0.1" />
       </LinearGradient>
-    );
-  };
+    )
+  }
 
   return (
     <SlideAreaChart
       style={{
-        backgroundColor: theme.transparent,
+        backgroundColor: theme.transparent
       }}
       width={width}
       height={height}
@@ -64,21 +64,21 @@ const SparklineChart: FC<Props> = ({
         cursorMarkerHeight: 12,
         cursorMarkerWidth: 12,
         cursorColor: theme.alternateBackground,
-        cursorBorderColor: theme.alternateBackground,
+        cursorBorderColor: theme.alternateBackground
       }}
       toolTipProps={{
         displayToolTip: interactive,
         borderRadius: 20,
         toolTipTextRenderers: [
           ({scaleY, y}) => ({
-            text: currencyFormatter(scaleY.invert(y).toFixed(6).toString()),
-          }),
-        ],
+            text: currencyFormatter(scaleY.invert(y).toFixed(6).toString())
+          })
+        ]
       }}
       yAxisProps={{
         horizontalLineColor: theme.transparent,
         verticalLineColor: theme.transparent,
-        interval: 1,
+        interval: 1
       }}
       yRange={yRange}
       xRange={xRange}
@@ -86,7 +86,7 @@ const SparklineChart: FC<Props> = ({
         defaultAreaChartFillGradient(props, negative)
       }
     />
-  );
-};
+  )
+}
 
-export default SparklineChart;
+export default SparklineChart

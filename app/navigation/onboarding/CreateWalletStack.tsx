@@ -1,34 +1,34 @@
-import AppNavigation from 'navigation/AppNavigation';
-import React, {createContext, Dispatch, useContext, useState} from 'react';
-import CreateWallet from 'screens/onboarding/CreateWallet';
-import {useNavigation} from '@react-navigation/native';
-import CheckMnemonic from 'screens/onboarding/CheckMnemonic';
-import CreatePIN from 'screens/onboarding/CreatePIN';
-import BiometricLogin from 'screens/onboarding/BiometricLogin';
+import AppNavigation from 'navigation/AppNavigation'
+import React, {createContext, Dispatch, useContext, useState} from 'react'
+import CreateWallet from 'screens/onboarding/CreateWallet'
+import {useNavigation} from '@react-navigation/native'
+import CheckMnemonic from 'screens/onboarding/CheckMnemonic'
+import CreatePIN from 'screens/onboarding/CreatePIN'
+import BiometricLogin from 'screens/onboarding/BiometricLogin'
 import {
   createStackNavigator,
-  StackNavigationProp,
-} from '@react-navigation/stack';
-import {MainHeaderOptions} from 'navigation/NavUtils';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import WarningModal from 'components/WarningModal';
+  StackNavigationProp
+} from '@react-navigation/stack'
+import {MainHeaderOptions} from 'navigation/NavUtils'
+import {useApplicationContext} from 'contexts/ApplicationContext'
+import WarningModal from 'components/WarningModal'
 
 type CreateWalletStackParamList = {
-  [AppNavigation.CreateWallet.CreateWallet]: undefined;
-  [AppNavigation.CreateWallet.ProtectFunds]: undefined;
-  [AppNavigation.CreateWallet.CheckMnemonic]: undefined;
-  [AppNavigation.CreateWallet.CreatePin]: undefined;
-  [AppNavigation.CreateWallet.BiometricLogin]: undefined;
-};
-const CreateWalletS = createStackNavigator<CreateWalletStackParamList>();
+  [AppNavigation.CreateWallet.CreateWallet]: undefined
+  [AppNavigation.CreateWallet.ProtectFunds]: undefined
+  [AppNavigation.CreateWallet.CheckMnemonic]: undefined
+  [AppNavigation.CreateWallet.CreatePin]: undefined
+  [AppNavigation.CreateWallet.BiometricLogin]: undefined
+}
+const CreateWalletS = createStackNavigator<CreateWalletStackParamList>()
 
 const CreateWalletContext = createContext<{
-  mnemonic: string;
-  setMnemonic: Dispatch<string>;
-}>({} as any);
+  mnemonic: string
+  setMnemonic: Dispatch<string>
+}>({} as any)
 
 const CreateWalletStack: () => JSX.Element = () => {
-  const [mnemonic, setMnemonic] = useState('');
+  const [mnemonic, setMnemonic] = useState('')
 
   return (
     <CreateWalletContext.Provider value={{setMnemonic, mnemonic}}>
@@ -60,34 +60,34 @@ const CreateWalletStack: () => JSX.Element = () => {
         />
       </CreateWalletS.Navigator>
     </CreateWalletContext.Provider>
-  );
-};
+  )
+}
 
 const CreateWalletScreen = () => {
-  const createWalletContext = useContext(CreateWalletContext);
+  const createWalletContext = useContext(CreateWalletContext)
   const {navigate} =
-    useNavigation<StackNavigationProp<CreateWalletStackParamList>>();
+    useNavigation<StackNavigationProp<CreateWalletStackParamList>>()
 
   const onSavedMyPhrase = (mnemonic: string) => {
-    createWalletContext.setMnemonic(mnemonic);
-    navigate(AppNavigation.CreateWallet.ProtectFunds);
-  };
+    createWalletContext.setMnemonic(mnemonic)
+    navigate(AppNavigation.CreateWallet.ProtectFunds)
+  }
 
-  return <CreateWallet onSavedMyPhrase={onSavedMyPhrase} />;
-};
+  return <CreateWallet onSavedMyPhrase={onSavedMyPhrase} />
+}
 
 const CreateWalletWarningModal = () => {
   const {navigate, goBack} =
-    useNavigation<StackNavigationProp<CreateWalletStackParamList>>();
+    useNavigation<StackNavigationProp<CreateWalletStackParamList>>()
 
   const onUnderstand = () => {
-    goBack();
-    navigate(AppNavigation.CreateWallet.CheckMnemonic);
-  };
+    goBack()
+    navigate(AppNavigation.CreateWallet.CheckMnemonic)
+  }
 
   const onBack = () => {
-    goBack();
-  };
+    goBack()
+  }
 
   return (
     <WarningModal
@@ -101,29 +101,29 @@ const CreateWalletWarningModal = () => {
       onAction={onUnderstand}
       onDismiss={onBack}
     />
-  );
-};
+  )
+}
 
 const CheckMnemonicScreen = () => {
-  const createWalletContext = useContext(CreateWalletContext);
+  const createWalletContext = useContext(CreateWalletContext)
   const {navigate, goBack} =
-    useNavigation<StackNavigationProp<CreateWalletStackParamList>>();
+    useNavigation<StackNavigationProp<CreateWalletStackParamList>>()
   return (
     <CheckMnemonic
       onSuccess={() => {
-        navigate(AppNavigation.CreateWallet.CreatePin);
+        navigate(AppNavigation.CreateWallet.CreatePin)
       }}
       onBack={() => goBack()}
       mnemonic={createWalletContext.mnemonic}
     />
-  );
-};
+  )
+}
 
 const CreatePinScreen = () => {
-  const createWalletContext = useContext(CreateWalletContext);
-  const walletSetupHook = useApplicationContext().walletSetupHook;
+  const createWalletContext = useContext(CreateWalletContext)
+  const walletSetupHook = useApplicationContext().walletSetupHook
   const {navigate} =
-    useNavigation<StackNavigationProp<CreateWalletStackParamList>>();
+    useNavigation<StackNavigationProp<CreateWalletStackParamList>>()
 
   const onPinSet = (pin: string): void => {
     walletSetupHook
@@ -131,30 +131,30 @@ const CreatePinScreen = () => {
       .then(value => {
         switch (value) {
           case 'useBiometry':
-            navigate(AppNavigation.CreateWallet.BiometricLogin);
-            break;
+            navigate(AppNavigation.CreateWallet.BiometricLogin)
+            break
           case 'enterWallet':
-            walletSetupHook.enterWallet(createWalletContext.mnemonic);
-            break;
+            walletSetupHook.enterWallet(createWalletContext.mnemonic)
+            break
         }
-      });
-  };
+      })
+  }
 
-  return <CreatePIN onPinSet={onPinSet} />;
-};
+  return <CreatePIN onPinSet={onPinSet} />
+}
 
 const BiometricLoginScreen = () => {
-  const createWalletContext = useContext(CreateWalletContext);
-  const walletSetupHook = useApplicationContext().walletSetupHook;
+  const createWalletContext = useContext(CreateWalletContext)
+  const walletSetupHook = useApplicationContext().walletSetupHook
   return (
     <BiometricLogin
       mnemonic={createWalletContext.mnemonic}
       onBiometrySet={() => {
-        walletSetupHook.enterWallet(createWalletContext.mnemonic);
+        walletSetupHook.enterWallet(createWalletContext.mnemonic)
       }}
       onSkip={() => walletSetupHook.enterWallet(createWalletContext.mnemonic)}
     />
-  );
-};
+  )
+}
 
-export default CreateWalletStack;
+export default CreateWalletStack

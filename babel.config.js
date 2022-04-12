@@ -12,12 +12,12 @@ module.exports = {
           '.android.js',
           '.android.tsx',
           '.ios.js',
-          '.ios.tsx',
+          '.ios.tsx'
         ],
-        root: ['./app'],
-      },
+        root: ['./app']
+      }
     ],
     'react-require',
     'inline-dotenv'
-  ],
-};
+  ]
+}

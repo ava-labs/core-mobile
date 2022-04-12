@@ -1,49 +1,48 @@
-import React, {useEffect, useState} from 'react';
-import {View} from 'react-native';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import AvaListItem from 'components/AvaListItem';
-import BiometricsSDK from 'utils/BiometricsSDK';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import {SECURE_ACCESS_SET} from 'resources/Constants';
-import Switch from 'components/Switch';
+import React, {useEffect, useState} from 'react'
+import {View} from 'react-native'
+import {useApplicationContext} from 'contexts/ApplicationContext'
+import AvaListItem from 'components/AvaListItem'
+import BiometricsSDK from 'utils/BiometricsSDK'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import {SECURE_ACCESS_SET} from 'resources/Constants'
+import Switch from 'components/Switch'
 
 function SecurityPrivacy({
   onChangePin,
   onShowRecoveryPhrase,
-  onTurnOnBiometrics,
+  onTurnOnBiometrics
 }: {
-  onChangePin: () => void;
-  onShowRecoveryPhrase: () => void;
-  onTurnOnBiometrics: () => void;
+  onChangePin: () => void
+  onShowRecoveryPhrase: () => void
+  onTurnOnBiometrics: () => void
 }) {
-  const theme = useApplicationContext().theme;
-  const {setSetting, getSetting} =
-    useApplicationContext().repo.userSettingsRepo;
+  const theme = useApplicationContext().theme
+  const {setSetting, getSetting} = useApplicationContext().repo.userSettingsRepo
   const [isBiometricSwitchEnabled, setIsBiometricSwitchEnabled] =
-    useState(false);
-  const [isBiometricEnabled, setIsBiometricEnabled] = useState(false);
+    useState(false)
+  const [isBiometricEnabled, setIsBiometricEnabled] = useState(false)
 
   useEffect(() => {
     BiometricsSDK.canUseBiometry().then((biometryAvailable: boolean) => {
-      setIsBiometricEnabled(biometryAvailable);
-    });
+      setIsBiometricEnabled(biometryAvailable)
+    })
     AsyncStorage.getItem(SECURE_ACCESS_SET).then(type => {
-      setIsBiometricSwitchEnabled(type === 'BIO');
-    });
-  }, []);
+      setIsBiometricSwitchEnabled(type === 'BIO')
+    })
+  }, [])
 
   const handleSwitchChange = (value: boolean) => {
-    setIsBiometricSwitchEnabled(value);
+    setIsBiometricSwitchEnabled(value)
     if (value) {
-      onTurnOnBiometrics();
+      onTurnOnBiometrics()
     } else {
-      AsyncStorage.setItem(SECURE_ACCESS_SET, 'PIN');
+      AsyncStorage.setItem(SECURE_ACCESS_SET, 'PIN')
     }
-  };
+  }
 
   const handleAnalyticsSwitchChange = (value: boolean) => {
-    setSetting('CoreAnalytics', value);
-  };
+    setSetting('CoreAnalytics', value)
+  }
 
   return (
     <View style={{backgroundColor: theme.colorBg2}}>
@@ -82,7 +81,7 @@ function SecurityPrivacy({
         }
       />
     </View>
-  );
+  )
 }
 
-export default SecurityPrivacy;
+export default SecurityPrivacy

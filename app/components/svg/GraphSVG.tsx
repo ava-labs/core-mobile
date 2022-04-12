@@ -1,17 +1,17 @@
-import React from 'react';
-import Svg, {Circle, Path} from 'react-native-svg';
-import {useApplicationContext} from 'contexts/ApplicationContext';
+import React from 'react'
+import Svg, {Circle, Path} from 'react-native-svg'
+import {useApplicationContext} from 'contexts/ApplicationContext'
 
 interface Prop {
-  color?: string;
-  circleColor?: string;
+  color?: string
+  circleColor?: string
 }
 
 function GraphSVG({color, circleColor}: Prop) {
-  const context = useApplicationContext();
+  const context = useApplicationContext()
 
-  const iconColor = color ?? context.theme.colorIcon1;
-  const borderColor = circleColor ?? context.theme.colorStroke;
+  const iconColor = color ?? context.theme.colorIcon1
+  const borderColor = circleColor ?? context.theme.colorStroke
 
   return (
     <Svg width="44" height="44" viewBox="0 0 44 44" fill="none">
@@ -28,7 +28,7 @@ function GraphSVG({color, circleColor}: Prop) {
         fill-rule="evenodd"
       />
     </Svg>
-  );
+  )
 }
 
-export default GraphSVG;
+export default GraphSVG

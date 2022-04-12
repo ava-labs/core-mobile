@@ -1,24 +1,24 @@
-import React from 'react';
-import {StyleSheet, View} from 'react-native';
-import AvaButton from 'components/AvaButton';
-import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
-import MnemonicScreen from 'components/MnemonicScreen';
-import {SecurityStackParamList} from 'navigation/wallet/SecurityPrivacyStackScreen';
-import AppNavigation from 'navigation/AppNavigation';
+import React from 'react'
+import {StyleSheet, View} from 'react-native'
+import AvaButton from 'components/AvaButton'
+import {RouteProp, useNavigation, useRoute} from '@react-navigation/native'
+import MnemonicScreen from 'components/MnemonicScreen'
+import {SecurityStackParamList} from 'navigation/wallet/SecurityPrivacyStackScreen'
+import AppNavigation from 'navigation/AppNavigation'
 
 export default function RevealMnemonic(): JSX.Element {
-  const {goBack} = useNavigation();
+  const {goBack} = useNavigation()
   const {mnemonic} =
     useRoute<
       RouteProp<
         SecurityStackParamList,
         typeof AppNavigation.SecurityPrivacy.RecoveryPhrase
       >
-    >().params;
+    >().params
 
   const handleSaveMyPhrase = (): void => {
-    goBack();
-  };
+    goBack()
+  }
 
   return (
     <View style={styles.verticalLayout}>
@@ -34,12 +34,12 @@ export default function RevealMnemonic(): JSX.Element {
         </AvaButton.PrimaryLarge>
       </View>
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
   verticalLayout: {
     flex: 1,
-    marginHorizontal: 16,
-  },
-});
+    marginHorizontal: 16
+  }
+})

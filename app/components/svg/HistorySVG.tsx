@@ -1,18 +1,18 @@
-import React from 'react';
-import Svg, {Path} from 'react-native-svg';
-import {useApplicationContext} from 'contexts/ApplicationContext';
+import React from 'react'
+import Svg, {Path} from 'react-native-svg'
+import {useApplicationContext} from 'contexts/ApplicationContext'
 
 interface Prop {
-  selected: boolean;
-  size: number;
+  selected: boolean
+  size: number
 }
 
 function HistorySVG({selected, size = 32}: Prop) {
-  const context = useApplicationContext();
+  const context = useApplicationContext()
 
   const svgColor = selected
     ? context.theme.alternateBackground
-    : context.theme.colorIcon4;
+    : context.theme.colorIcon4
   return (
     <Svg width={size} height={size} viewBox="0 0 32 32" fill="none">
       <Path
@@ -22,7 +22,7 @@ function HistorySVG({selected, size = 32}: Prop) {
         fill={svgColor}
       />
     </Svg>
-  );
+  )
 }
 
-export default HistorySVG;
+export default HistorySVG

@@ -1,14 +1,14 @@
-import React from 'react';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import Svg, {Path} from 'react-native-svg';
+import React from 'react'
+import {useApplicationContext} from 'contexts/ApplicationContext'
+import Svg, {Path} from 'react-native-svg'
 
 type Props = {
-  negative?: boolean;
-  margin?: number;
-};
+  negative?: boolean
+  margin?: number
+}
 
 export default function MarketTriangleSVG({negative}: Props) {
-  const theme = useApplicationContext().theme;
+  const theme = useApplicationContext().theme
 
   return (
     <Svg
@@ -24,5 +24,5 @@ export default function MarketTriangleSVG({negative}: Props) {
         fill={negative ? theme.colorError : theme.colorSuccess}
       />
     </Svg>
-  );
+  )
 }

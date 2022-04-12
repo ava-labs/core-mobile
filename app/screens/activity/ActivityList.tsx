@@ -1,47 +1,47 @@
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {Animated, RefreshControl, View} from 'react-native';
-import {useNavigation} from '@react-navigation/native';
-import AppNavigation from 'navigation/AppNavigation';
-import AvaText from 'components/AvaText';
-import Loader from 'components/Loader';
+import React, {useCallback, useEffect, useMemo, useState} from 'react'
+import {Animated, RefreshControl, View} from 'react-native'
+import {useNavigation} from '@react-navigation/native'
+import AppNavigation from 'navigation/AppNavigation'
+import AvaText from 'components/AvaText'
+import Loader from 'components/Loader'
 import {
   getHistory,
   TransactionERC20,
   TransactionNormal,
   useNetworkContext,
-  useWalletContext,
-} from '@avalabs/wallet-react-components';
-import moment from 'moment';
-import {ScrollView} from 'react-native-gesture-handler';
-import ActivityListItem from 'screens/activity/ActivityListItem';
-import {StackNavigationProp} from '@react-navigation/stack';
-import {RootStackParamList} from 'navigation/WalletScreenStack';
-import {BridgeTransaction, useBridgeContext} from 'contexts/BridgeContext';
-import {Blockchain, useBridgeSDK} from '@avalabs/bridge-sdk';
-import BridgeTransactionItem from 'screens/bridge/components/BridgeTransactionItem';
+  useWalletContext
+} from '@avalabs/wallet-react-components'
+import moment from 'moment'
+import {ScrollView} from 'react-native-gesture-handler'
+import ActivityListItem from 'screens/activity/ActivityListItem'
+import {StackNavigationProp} from '@react-navigation/stack'
+import {RootStackParamList} from 'navigation/WalletScreenStack'
+import {BridgeTransaction, useBridgeContext} from 'contexts/BridgeContext'
+import {Blockchain, useBridgeSDK} from '@avalabs/bridge-sdk'
+import BridgeTransactionItem from 'screens/bridge/components/BridgeTransactionItem'
 
-const DISPLAY_FORMAT_CURRENT_YEAR = 'MMMM DD';
-const DISPLAY_FORMAT_PAST_YEAR = 'MMMM DD, YYYY';
+const DISPLAY_FORMAT_CURRENT_YEAR = 'MMMM DD'
+const DISPLAY_FORMAT_PAST_YEAR = 'MMMM DD, YYYY'
 
 interface Props {
-  embedded?: boolean;
-  tokenSymbolFilter?: string;
+  embedded?: boolean
+  tokenSymbolFilter?: string
 }
 
-export type TxType = TransactionNormal | TransactionERC20 | BridgeTransaction;
-const TODAY = moment();
-const YESTERDAY = moment().subtract(1, 'days');
-type SectionType = {[x: string]: TxType[]};
+export type TxType = TransactionNormal | TransactionERC20 | BridgeTransaction
+const TODAY = moment()
+const YESTERDAY = moment().subtract(1, 'days')
+type SectionType = {[x: string]: TxType[]}
 
 function ActivityList({embedded, tokenSymbolFilter}: Props) {
-  const [loading, setLoading] = useState(true);
-  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-  const wallet = useWalletContext()?.wallet;
-  const {network} = useNetworkContext()!;
+  const [loading, setLoading] = useState(true)
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>()
+  const wallet = useWalletContext()?.wallet
+  const {network} = useNetworkContext()!
   const [allHistory, setAllHistory] =
-    useState<(TransactionNormal | TransactionERC20)[]>();
-  const {bridgeTransactions} = useBridgeContext();
-  const {bridgeAssets} = useBridgeSDK();
+    useState<(TransactionNormal | TransactionERC20)[]>()
+  const {bridgeTransactions} = useBridgeContext()
+  const {bridgeAssets} = useBridgeSDK()
 
   const isTransactionBridge = useCallback(
     tx => {
@@ -55,86 +55,86 @@ function ActivityList({embedded, tokenSymbolFilter}: Props) {
               el.wrappedContractAddress?.toLowerCase() ===
                 tx.contractAddress?.toLowerCase() ||
               tx?.to === '0x0000000000000000000000000000000000000000' ||
-              tx?.from === '0x0000000000000000000000000000000000000000',
+              tx?.from === '0x0000000000000000000000000000000000000000'
           ).length > 0
-        );
+        )
       }
 
-      return false;
+      return false
     },
-    [bridgeAssets],
-  );
+    [bridgeAssets]
+  )
 
   const sectionData = useMemo(() => {
-    const newSectionData: SectionType = {};
+    const newSectionData: SectionType = {}
 
     if (Object.values(bridgeTransactions).length > 0) {
       Object.values(bridgeTransactions).map(tx => {
-        const pending = newSectionData.Pending;
+        const pending = newSectionData.Pending
         newSectionData.Pending = pending
           ? [...newSectionData.Pending, tx]
-          : [...[tx]];
-      });
+          : [...[tx]]
+      })
     }
 
     allHistory
       ?.filter((tx: TxType) => {
         return tokenSymbolFilter
           ? tokenSymbolFilter === (tx?.tokenSymbol ?? 'AVAX')
-          : true;
+          : true
       })
       .forEach((it: TxType) => {
-        const date = moment(it.timestamp);
+        const date = moment(it.timestamp)
         if (TODAY.isSame(date, 'day')) {
-          const today = newSectionData.Today;
+          const today = newSectionData.Today
           newSectionData.Today = today
             ? [...newSectionData.Today, it]
-            : [...[it]];
+            : [...[it]]
         } else if (YESTERDAY.isSame(date, 'day')) {
-          const yesterday = newSectionData.Yesterday;
+          const yesterday = newSectionData.Yesterday
           newSectionData.Yesterday = yesterday
             ? [...newSectionData.Yesterday, it]
-            : [...[it]];
+            : [...[it]]
         } else {
-          const isCurrentYear = TODAY.year() === date.year();
+          const isCurrentYear = TODAY.year() === date.year()
           const titleDate = date.format(
             isCurrentYear
               ? DISPLAY_FORMAT_CURRENT_YEAR
-              : DISPLAY_FORMAT_PAST_YEAR,
-          );
-          const otherDate = newSectionData[titleDate];
+              : DISPLAY_FORMAT_PAST_YEAR
+          )
+          const otherDate = newSectionData[titleDate]
           newSectionData[titleDate] = otherDate
             ? [...newSectionData[titleDate], it]
-            : [...[it]];
+            : [...[it]]
         }
-      });
-    return newSectionData;
-  }, [allHistory, tokenSymbolFilter]);
+      })
+    return newSectionData
+  }, [allHistory, tokenSymbolFilter])
 
   useEffect(() => {
-    loadHistory().then();
-  }, [wallet, network, bridgeTransactions]);
+    loadHistory().then()
+  }, [wallet, network, bridgeTransactions])
 
   const loadHistory = async () => {
     if (!wallet) {
-      return [];
+      return []
     }
-    setLoading(true);
+    setLoading(true)
     // if (Object.values(bridgeTransactions).length > 0) {
     //   const txs = await getHistory(wallet, 50);
     //   const merged = [bridgeTransactions, ...txs];
     //   setAllHistory(merged);
     // } else {
-    setAllHistory((await getHistory(wallet, 50)) ?? []);
+    setAllHistory((await getHistory(wallet, 50)) ?? [])
     // }
-    setLoading(false);
-  };
+    setLoading(false)
+  }
 
   const openTransactionDetails = useCallback((item: TxType) => {
     return navigation.navigate(AppNavigation.Wallet.ActivityDetail, {
-      tx: item,
-    });
-  }, []);
+      tx: item
+    })
+  }, [])
 
   const renderItems = () => {
     const items = Object.entries(sectionData).map(key => {
@@ -146,7 +146,7 @@ function ActivityList({embedded, tokenSymbolFilter}: Props) {
               flexDirection: 'row',
               justifyContent: 'space-between',
               padding: 16,
-              marginRight: 8,
+              marginRight: 8
             }}>
             <AvaText.ActivityTotal>{key[0]}</AvaText.ActivityTotal>
           </Animated.View>
@@ -163,14 +163,14 @@ function ActivityList({embedded, tokenSymbolFilter}: Props) {
                 tx={item}
                 onPress={() => openTransactionDetails(item)}
               />
-            ),
+            )
           )}
         </View>
-      );
-    });
+      )
+    })
 
     if (items.length > 0) {
-      return items;
+      return items
     }
 
     // if no items we return zero state
@@ -181,17 +181,17 @@ function ActivityList({embedded, tokenSymbolFilter}: Props) {
           flex: 1,
           justifyContent: 'center',
           alignItems: 'center',
-          marginHorizontal: 16,
+          marginHorizontal: 16
         }}>
         <AvaText.Heading3 textStyle={{textAlign: 'center'}}>
           As transactions take place, they will show up here.
         </AvaText.Heading3>
       </View>
-    );
-  };
+    )
+  }
 
   function onRefresh() {
-    loadHistory().then();
+    loadHistory().then()
   }
 
   /**
@@ -202,7 +202,7 @@ function ActivityList({embedded, tokenSymbolFilter}: Props) {
    * @param children
    */
   const ScrollableComponent = ({children}: {children: React.ReactNode}) => {
-    const isEmpty = Object.entries(sectionData).length === 0;
+    const isEmpty = Object.entries(sectionData).length === 0
 
     return embedded ? (
       <ScrollView
@@ -219,7 +219,7 @@ function ActivityList({embedded, tokenSymbolFilter}: Props) {
           isEmpty
             ? {flex: 1, justifyContent: 'center', alignItems: 'center'}
             : {
-                marginVertical: 4,
+                marginVertical: 4
               }
         }
         refreshControl={
@@ -227,8 +227,8 @@ function ActivityList({embedded, tokenSymbolFilter}: Props) {
         }>
         {children}
       </ScrollView>
-    );
-  };
+    )
+  }
 
   return !allHistory ? (
     <Loader />
@@ -241,7 +241,7 @@ function ActivityList({embedded, tokenSymbolFilter}: Props) {
       )}
       <ScrollableComponent children={renderItems()} />
     </View>
-  );
+  )
 }
 
-export default ActivityList;
+export default ActivityList

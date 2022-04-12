@@ -1,16 +1,16 @@
-import React from 'react';
-import Svg, {Path} from 'react-native-svg';
-import {useApplicationContext} from 'contexts/ApplicationContext';
+import React from 'react'
+import Svg, {Path} from 'react-native-svg'
+import {useApplicationContext} from 'contexts/ApplicationContext'
 
 interface Prop {
-  color?: string;
-  size?: number;
+  color?: string
+  size?: number
 }
 
 function SwapSVG({color, size = 24}: Prop) {
-  const context = useApplicationContext();
+  const context = useApplicationContext()
 
-  const svgColor = color ? color : context.theme.colorText1;
+  const svgColor = color ? color : context.theme.colorText1
 
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
@@ -27,7 +27,7 @@ function SwapSVG({color, size = 24}: Prop) {
         fill={svgColor}
       />
     </Svg>
-  );
+  )
 }
 
-export default SwapSVG;
+export default SwapSVG

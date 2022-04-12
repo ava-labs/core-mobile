@@ -1,18 +1,18 @@
-import React, {FC} from 'react';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import {View} from 'react-native';
-import {Space} from 'components/Space';
-import AvaText from 'components/AvaText';
-import InputText from 'components/InputText';
-import {useSwapContext} from 'contexts/SwapContext';
-import {Popable} from 'react-native-popable';
-import NetworkFeeSelector from 'components/NetworkFeeSelector';
-import {useGasPrice} from 'utils/GasPriceHook';
-import {Row} from 'components/Row';
-import AppNavigation from 'navigation/AppNavigation';
+import React, {FC} from 'react'
+import {useApplicationContext} from 'contexts/ApplicationContext'
+import {View} from 'react-native'
+import {Space} from 'components/Space'
+import AvaText from 'components/AvaText'
+import InputText from 'components/InputText'
+import {useSwapContext} from 'contexts/SwapContext'
+import {Popable} from 'react-native-popable'
+import NetworkFeeSelector from 'components/NetworkFeeSelector'
+import {useGasPrice} from 'utils/GasPriceHook'
+import {Row} from 'components/Row'
+import AppNavigation from 'navigation/AppNavigation'
 
 interface SwapTransactionDetailProps {
-  review?: boolean;
+  review?: boolean
 }
 
 export function popableContent(message: string, backgroundColor: string) {
@@ -21,27 +21,27 @@ export function popableContent(message: string, backgroundColor: string) {
       style={{padding: 8, backgroundColor: backgroundColor, borderRadius: 8}}>
       <AvaText.Body3>{message}</AvaText.Body3>
     </View>
-  );
+  )
 }
 
 const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
-  review = false,
+  review = false
 }) => {
-  const {gasPrice} = useGasPrice();
-  const {theme} = useApplicationContext();
-  const {trxDetails} = useSwapContext();
+  const {gasPrice} = useGasPrice()
+  const {theme} = useApplicationContext()
+  const {trxDetails} = useSwapContext()
 
   const slippageInfoMessage = popableContent(
     'Suggested slippage – your transaction will fail if the price changes unfavorably more than this percentage',
-    theme.colorBg3,
-  );
+    theme.colorBg3
+  )
 
   const netFeeInfoMessage = popableContent(
     `Gas limit: ${
       trxDetails.gasLimit
     } \nGas price: ${trxDetails.gasPrice.toFixed(2)} nAVAX`,
-    theme.colorBg3,
-  );
+    theme.colorBg3
+  )
 
   return (
     <View style={{flex: 1, paddingHorizontal: 16}}>
@@ -89,9 +89,9 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
                   paddingRight: 0,
                   color: theme.colorBg2,
                   fontSize: 14,
-                  lineHeight: 24,
-                },
-              });
+                  lineHeight: 24
+                }
+              })
             }}
           />
         )}
@@ -135,7 +135,7 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
         <AvaText.Heading3>{trxDetails.avaxWalletFee}</AvaText.Heading3>
       </Row>
     </View>
-  );
-};
+  )
+}
 
-export default SwapTransactionDetail;
+export default SwapTransactionDetail

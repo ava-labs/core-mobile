@@ -1,31 +1,31 @@
-import React from 'react';
-import AppNavigation from 'navigation/AppNavigation';
+import React from 'react'
+import AppNavigation from 'navigation/AppNavigation'
 import {
   createStackNavigator,
-  StackNavigationProp,
-} from '@react-navigation/stack';
-import {NFTItemData} from 'screens/nft/NftCollection';
-import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
-import {NFTStackParamList} from 'navigation/wallet/NFTScreenStack';
-import NftSend from 'screens/nft/send/NftSend';
-import NftReview from 'screens/nft/send/NftReview';
-import {SendNFTContextProvider} from 'contexts/SendNFTContext';
-import {RootStackParamList} from 'navigation/WalletScreenStack';
-import DoneScreen from 'screens/send/DoneScreen';
+  StackNavigationProp
+} from '@react-navigation/stack'
+import {NFTItemData} from 'screens/nft/NftCollection'
+import {RouteProp, useNavigation, useRoute} from '@react-navigation/native'
+import {NFTStackParamList} from 'navigation/wallet/NFTScreenStack'
+import NftSend from 'screens/nft/send/NftSend'
+import NftReview from 'screens/nft/send/NftReview'
+import {SendNFTContextProvider} from 'contexts/SendNFTContext'
+import {RootStackParamList} from 'navigation/WalletScreenStack'
+import DoneScreen from 'screens/send/DoneScreen'
 
 export type NFTSendStackParamList = {
-  [AppNavigation.NftSend.AddressPick]: undefined;
-  [AppNavigation.NftSend.Review]: undefined;
-  [AppNavigation.NftSend.Success]: {transactionId: string};
-  [AppNavigation.NftSend.Fail]: undefined;
-};
+  [AppNavigation.NftSend.AddressPick]: undefined
+  [AppNavigation.NftSend.Review]: undefined
+  [AppNavigation.NftSend.Success]: {transactionId: string}
+  [AppNavigation.NftSend.Fail]: undefined
+}
 
-const NFTSendStack = createStackNavigator<NFTSendStackParamList>();
+const NFTSendStack = createStackNavigator<NFTSendStackParamList>()
 
 export default function NFTSendScreenStack() {
   const {params} =
-    useRoute<RouteProp<NFTStackParamList, typeof AppNavigation.Nft.Send>>();
-  const item = params?.nft as NFTItemData;
+    useRoute<RouteProp<NFTStackParamList, typeof AppNavigation.Nft.Send>>()
+  const item = params?.nft as NFTItemData
 
   return (
     <SendNFTContextProvider nft={item}>
@@ -35,7 +35,7 @@ export default function NFTSendScreenStack() {
           headerShown: true,
           title: '',
           headerBackTitleVisible: false,
-          headerTitleAlign: 'center',
+          headerTitleAlign: 'center'
         }}>
         <NFTSendStack.Screen
           name={AppNavigation.NftSend.AddressPick}
@@ -51,33 +51,32 @@ export default function NFTSendScreenStack() {
         />
       </NFTSendStack.Navigator>
     </SendNFTContextProvider>
-  );
+  )
 }
 
 const NftSendScreen = () => {
-  const {navigate} =
-    useNavigation<StackNavigationProp<NFTSendStackParamList>>();
+  const {navigate} = useNavigation<StackNavigationProp<NFTSendStackParamList>>()
   const showReviewScreen = () => {
-    navigate(AppNavigation.NftSend.Review);
-  };
-  return <NftSend onNext={showReviewScreen} />;
-};
+    navigate(AppNavigation.NftSend.Review)
+  }
+  return <NftSend onNext={showReviewScreen} />
+}
 
 const NftReviewScreen = () => {
   const {popToTop, replace} =
-    useNavigation<StackNavigationProp<NFTSendStackParamList>>();
+    useNavigation<StackNavigationProp<NFTSendStackParamList>>()
   const showSuccessScreen = (transactionId: string) => {
-    popToTop();
-    replace(AppNavigation.NftSend.Success, {transactionId});
-  };
-  return <NftReview onSuccess={showSuccessScreen} />;
-};
+    popToTop()
+    replace(AppNavigation.NftSend.Success, {transactionId})
+  }
+  return <NftReview onSuccess={showSuccessScreen} />
+}
 
 const SuccessScreen = () => {
-  const {goBack} = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const {goBack} = useNavigation<StackNavigationProp<RootStackParamList>>()
 
   const transactionId =
-    useRoute<RouteProp<NFTSendStackParamList>>()!.params!.transactionId!;
+    useRoute<RouteProp<NFTSendStackParamList>>()!.params!.transactionId!
 
-  return <DoneScreen onClose={() => goBack()} transactionId={transactionId} />;
-};
+  return <DoneScreen onClose={() => goBack()} transactionId={transactionId} />
+}

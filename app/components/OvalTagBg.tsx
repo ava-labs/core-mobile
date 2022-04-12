@@ -1,16 +1,16 @@
-import React from 'react';
-import {View, ViewStyle} from 'react-native';
+import React from 'react'
+import {View, ViewStyle} from 'react-native'
 
 type Props = {
-  color: string;
-  children: any;
-  style?: ViewStyle;
-};
+  color: string
+  children: any
+  style?: ViewStyle
+}
 
 export default function OvalTagBg({
   color,
   children,
-  style,
+  style
 }: Props): JSX.Element {
   return (
     <View
@@ -21,11 +21,11 @@ export default function OvalTagBg({
           paddingHorizontal: 12,
           paddingVertical: 8,
           justifyContent: 'center',
-          alignItems: 'center',
+          alignItems: 'center'
         },
-        style,
+        style
       ]}>
       {children}
     </View>
-  );
+  )
 }

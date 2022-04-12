@@ -1,17 +1,17 @@
-import React from 'react';
-import {StyleSheet, TextInput, View} from 'react-native';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import AvaText from 'components/AvaText';
+import React from 'react'
+import {StyleSheet, TextInput, View} from 'react-native'
+import {useApplicationContext} from 'contexts/ApplicationContext'
+import AvaText from 'components/AvaText'
 
 type InputProps = {
-  keyNum: number;
-  text: string;
-  onChangeText?: (text: string) => void;
-};
+  keyNum: number
+  text: string
+  onChangeText?: (text: string) => void
+}
 
 function MnemonicInput(props: InputProps | Readonly<InputProps>) {
-  const context = useApplicationContext();
-  const theme = context.theme;
+  const context = useApplicationContext()
+  const theme = context.theme
   return (
     <View style={styles.horizontalLayout}>
       <AvaText.Body1 textStyle={{marginEnd: 4}}>
@@ -31,23 +31,23 @@ function MnemonicInput(props: InputProps | Readonly<InputProps>) {
             borderRadius: 4,
             fontFamily: 'Inter-Regular',
             marginEnd: 4,
-            marginVertical: 1,
-          },
+            marginVertical: 1
+          }
         ]}
         onChangeText={props.onChangeText}
         value={props.text}
       />
     </View>
-  );
+  )
 }
 
 type TextProps = {
-  keyNum: number;
-  text: string;
-};
+  keyNum: number
+  text: string
+}
 
 function MnemonicText(props: TextProps | Readonly<TextProps>) {
-  const theme = useApplicationContext().theme;
+  const theme = useApplicationContext().theme
   return (
     <View style={[styles.horizontalLayout]}>
       <AvaText.Body2 textStyle={{marginEnd: 6, color: theme.colorText1}}>
@@ -57,7 +57,7 @@ function MnemonicText(props: TextProps | Readonly<TextProps>) {
         {props.text}
       </AvaText.Body2>
     </View>
-  );
+  )
 }
 
 const styles: any = StyleSheet.create({
@@ -65,13 +65,13 @@ const styles: any = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     width: 100,
-    height: 32,
-  },
-});
+    height: 32
+  }
+})
 
 const MnemonicAva = {
   Input: MnemonicInput,
-  Text: MnemonicText,
-};
+  Text: MnemonicText
+}
 
-export default MnemonicAva;
+export default MnemonicAva

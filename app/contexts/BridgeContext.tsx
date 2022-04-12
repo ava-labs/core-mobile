@@ -1,38 +1,38 @@
-import React, {createContext, useContext, useState} from 'react';
-import {BridgeSDKProvider, TrackerViewProps} from '@avalabs/bridge-sdk';
+import React, {createContext, useContext, useState} from 'react'
+import {BridgeSDKProvider, TrackerViewProps} from '@avalabs/bridge-sdk'
 
 export interface BridgeTransaction extends TrackerViewProps {
-  createdAt?: Date;
+  createdAt?: Date
 }
 
 export interface BridgeState {
   bridgeTransactions: {
-    [key: string]: BridgeTransaction;
-  };
+    [key: string]: BridgeTransaction
+  }
 }
 
 const BridgeContext = createContext<{
-  createBridgeTransaction(tx: TrackerViewProps): Promise<void>;
-  removeBridgeTransaction(tx: TrackerViewProps): Promise<void>;
-  bridgeTransactions: BridgeState['bridgeTransactions'];
-}>({} as any);
+  createBridgeTransaction(tx: TrackerViewProps): Promise<void>
+  removeBridgeTransaction(tx: TrackerViewProps): Promise<void>
+  bridgeTransactions: BridgeState['bridgeTransactions']
+}>({} as any)
 
 export function BridgeProvider({children}: {children: any}) {
   return (
     <BridgeSDKProvider>
       <LocalBridgeProvider>{children}</LocalBridgeProvider>
     </BridgeSDKProvider>
-  );
+  )
 }
 
 export function useBridgeContext() {
-  return useContext(BridgeContext);
+  return useContext(BridgeContext)
 }
 
 function LocalBridgeProvider({children}: {children: any}) {
   const [bridgeState, setBridgeState] = useState<BridgeState>({
-    bridgeTransactions: {},
-  });
+    bridgeTransactions: {}
+  })
 
   async function createBridgeTransaction(bridgeTransaction: TrackerViewProps) {
     const newBridgeState = {
@@ -43,19 +43,19 @@ function LocalBridgeProvider({children}: {children: any}) {
           ...bridgeTransaction,
           createdAt:
             bridgeState.bridgeTransactions?.[bridgeTransaction.sourceTxHash]
-              ?.createdAt || new Date(),
-        },
-      },
-    };
+              ?.createdAt || new Date()
+        }
+      }
+    }
 
-    setBridgeState(newBridgeState);
+    setBridgeState(newBridgeState)
   }
 
   async function removeBridgeTransaction(bridgeTransaction: TrackerViewProps) {
     const {[bridgeTransaction.sourceTxHash]: unused, ...rest} =
-      bridgeState.bridgeTransactions;
+      bridgeState.bridgeTransactions
 
-    setBridgeState({...bridgeState, bridgeTransactions: rest});
+    setBridgeState({...bridgeState, bridgeTransactions: rest})
   }
 
   return (
@@ -63,9 +63,9 @@ function LocalBridgeProvider({children}: {children: any}) {
       value={{
         ...bridgeState,
         createBridgeTransaction,
-        removeBridgeTransaction,
+        removeBridgeTransaction
       }}>
       {children}
     </BridgeContext.Provider>
-  );
+  )
 }

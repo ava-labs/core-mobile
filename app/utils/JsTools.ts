@@ -1,16 +1,16 @@
 export function mustValue<T>(func: () => T, failValue: T) {
   try {
-    return func();
+    return func()
   } catch (e) {
-    console.warn('mustValue', e);
-    return failValue;
+    console.warn('mustValue', e)
+    return failValue
   }
 }
 
 export function mustNumber(func: () => number, failValue: number) {
-  const f = func();
+  const f = func()
   if (isNaN(f)) {
-    return failValue;
+    return failValue
   }
-  return f;
+  return f
 }

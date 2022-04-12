@@ -1,13 +1,13 @@
-import React from 'react';
-import Svg, {Defs, LinearGradient, Rect, Stop} from 'react-native-svg';
+import React from 'react'
+import Svg, {Defs, LinearGradient, Rect, Stop} from 'react-native-svg'
 
 interface Prop {
-  colorFrom: string;
-  colorTo: string;
-  loop?: boolean;
-  orientation?: 'horizontal' | 'vertical';
-  opacityFrom?: number;
-  opacityTo?: number;
+  colorFrom: string
+  colorTo: string
+  loop?: boolean
+  orientation?: 'horizontal' | 'vertical'
+  opacityFrom?: number
+  opacityTo?: number
 }
 
 function LinearGradientSVG({
@@ -16,9 +16,9 @@ function LinearGradientSVG({
   orientation = 'vertical',
   loop = false,
   opacityFrom = 1,
-  opacityTo = 1,
+  opacityTo = 1
 }: Prop) {
-  const endPoint = orientation === 'horizontal' ? {x: 1, y: 0} : {x: 0, y: 1};
+  const endPoint = orientation === 'horizontal' ? {x: 1, y: 0} : {x: 0, y: 1}
   return (
     <Svg
       width="100%"
@@ -52,7 +52,7 @@ function LinearGradientSVG({
 
       <Rect x="0" y="0" width="24" height="24" fill="url(#grad)" />
     </Svg>
-  );
+  )
 }
 
-export default LinearGradientSVG;
+export default LinearGradientSVG

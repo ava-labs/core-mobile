@@ -4,17 +4,17 @@ import React, {
   useContext,
   useEffect,
   useMemo,
-  useRef,
-} from 'react';
-import {Animated, Easing, StyleSheet, View} from 'react-native';
-import {ApplicationContext} from 'contexts/ApplicationContext';
-import AvaText from 'components/AvaText';
+  useRef
+} from 'react'
+import {Animated, Easing, StyleSheet, View} from 'react-native'
+import {ApplicationContext} from 'contexts/ApplicationContext'
+import AvaText from 'components/AvaText'
 
 interface ConfirmationTrackerProps {
-  started: boolean;
-  requiredCount: number;
-  currentCount: number;
-  className?: string;
+  started: boolean
+  requiredCount: number
+  currentCount: number
+  className?: string
 }
 
 const ConfirmationTracker: FC<ConfirmationTrackerProps> = ({
@@ -23,34 +23,34 @@ const ConfirmationTracker: FC<ConfirmationTrackerProps> = ({
   currentCount,
   ...rest
 }) => {
-  const theme = useContext(ApplicationContext).theme;
-  const numberOfDots = requiredCount - 1;
-  const containerRef = useRef<View>(null);
-  const moveAnim = useRef(new Animated.Value(0)).current;
-  const dot1Anim = useRef(new Animated.Value(0)).current;
-  const dot2Anim = useRef(new Animated.Value(0)).current;
-  const dot3Anim = useRef(new Animated.Value(0)).current;
-  const pulseAnim = useRef(new Animated.Value(1.5)).current;
+  const theme = useContext(ApplicationContext).theme
+  const numberOfDots = requiredCount - 1
+  const containerRef = useRef<View>(null)
+  const moveAnim = useRef(new Animated.Value(0)).current
+  const dot1Anim = useRef(new Animated.Value(0)).current
+  const dot2Anim = useRef(new Animated.Value(0)).current
+  const dot3Anim = useRef(new Animated.Value(0)).current
+  const pulseAnim = useRef(new Animated.Value(1.5)).current
 
   useEffect(() => {
-    pulse();
-  }, []);
+    pulse()
+  }, [])
 
   const calculateLineWidth = (fullWidth = false) => {
-    const containerWidth = 400;
+    const containerWidth = 400
     if (fullWidth) {
-      return containerWidth;
+      return containerWidth
     }
-    return (containerWidth - 4 * 20) / 3;
-  };
+    return (containerWidth - 4 * 20) / 3
+  }
 
   const moveBatch = (left: number) => {
     Animated.timing(moveAnim, {
       toValue: left,
       duration: 600,
-      useNativeDriver: true,
-    }).start();
-  };
+      useNativeDriver: true
+    }).start()
+  }
 
   const move = (value: Animated.Value, delay = 0, fullWidth = false) => {
     Animated.loop(
@@ -61,11 +61,11 @@ const ConfirmationTracker: FC<ConfirmationTrackerProps> = ({
           duration: fullWidth ? 2500 : 1500,
           useNativeDriver: true,
           easing: Easing.inOut(Easing.linear),
-          delay: delay,
-        }),
-      ]),
-    ).start();
-  };
+          delay: delay
+        })
+      ])
+    ).start()
+  }
 
   const pulse = () => {
     Animated.loop(
@@ -76,14 +76,14 @@ const ConfirmationTracker: FC<ConfirmationTrackerProps> = ({
           toValue: 100,
           duration: 1500,
           useNativeDriver: true,
-          easing: Easing.inOut(Easing.ease),
-        }),
-      ]),
-    ).start();
-  };
+          easing: Easing.inOut(Easing.ease)
+        })
+      ])
+    ).start()
+  }
 
   function renderDot(value: Animated.Value, delay = 0, fullWidth = false) {
-    move(value, delay, fullWidth);
+    move(value, delay, fullWidth)
     return (
       <Animated.View
         style={{
@@ -94,10 +94,10 @@ const ConfirmationTracker: FC<ConfirmationTrackerProps> = ({
           position: 'absolute',
           top: -2,
           zIndex: 5000,
-          transform: [{translateX: value}],
+          transform: [{translateX: value}]
         }}
       />
-    );
+    )
   }
 
   function renderDashedLine() {
@@ -110,10 +110,10 @@ const ConfirmationTracker: FC<ConfirmationTrackerProps> = ({
           borderStyle: 'dashed',
           borderWidth: 1,
           borderColor: theme.background,
-          alignSelf: 'center',
+          alignSelf: 'center'
         }}
       />
-    );
+    )
   }
 
   function renderCircle(complete: boolean, active: boolean) {
@@ -122,7 +122,7 @@ const ConfirmationTracker: FC<ConfirmationTrackerProps> = ({
         style={{
           justifyContent: 'center',
           alignItems: 'center',
-          backgroundColor: theme.colorBg2,
+          backgroundColor: theme.colorBg2
         }}>
         <Animated.View
           style={[
@@ -136,8 +136,8 @@ const ConfirmationTracker: FC<ConfirmationTrackerProps> = ({
               alignItems: 'center',
               zIndex: 5,
               backgroundColor: complete ? theme.colorBg3 : theme.transparent,
-              padding: 0,
-            },
+              padding: 0
+            }
           ]}
         />
         {active && (
@@ -151,16 +151,16 @@ const ConfirmationTracker: FC<ConfirmationTrackerProps> = ({
                 {
                   scale: pulseAnim.interpolate({
                     inputRange: [5, 50, 100],
-                    outputRange: [1, 2, 1],
-                  }),
-                },
+                    outputRange: [1, 2, 1]
+                  })
+                }
               ],
-              position: 'absolute',
+              position: 'absolute'
             }}
           />
         )}
       </View>
-    );
+    )
   }
 
   function renderLine(complete: boolean, active: boolean, grow = false) {
@@ -172,9 +172,9 @@ const ConfirmationTracker: FC<ConfirmationTrackerProps> = ({
             height: 2,
             marginTop: 9,
             zIndex: -1,
-            backgroundColor: active || complete ? theme.white : theme.colorBg3,
+            backgroundColor: active || complete ? theme.white : theme.colorBg3
           },
-          grow && {width: '100%'},
+          grow && {width: '100%'}
         ]}>
         {active && (
           <>
@@ -184,13 +184,13 @@ const ConfirmationTracker: FC<ConfirmationTrackerProps> = ({
           </>
         )}
       </View>
-    );
+    )
   }
 
   const confirmations = useMemo(() => {
-    const dots = [];
+    const dots = []
     for (let i = 1; i <= numberOfDots; i++) {
-      const active = started && currentCount < i && currentCount >= i - 1;
+      const active = started && currentCount < i && currentCount >= i - 1
       dots.push(
         <Fragment key={`container-${i}`}>
           {renderLine(currentCount >= i, active)}
@@ -200,15 +200,15 @@ const ConfirmationTracker: FC<ConfirmationTrackerProps> = ({
               {i}/{requiredCount}
             </AvaText.Body1>
           </View>
-        </Fragment>,
-      );
+        </Fragment>
+      )
     }
-    return dots;
-  }, [currentCount]);
+    return dots
+  }, [currentCount])
 
   const lastStepActive =
-    started && currentCount < requiredCount && currentCount >= numberOfDots;
-  const showBreakEnd = currentCount < requiredCount - 2 && requiredCount > 3;
+    started && currentCount < requiredCount && currentCount >= numberOfDots
+  const showBreakEnd = currentCount < requiredCount - 2 && requiredCount > 3
 
   const renderStartCircle = useMemo(
     () => (
@@ -217,7 +217,7 @@ const ConfirmationTracker: FC<ConfirmationTrackerProps> = ({
           alignItems: 'flex-start',
           zIndex: 1,
           paddingTop: 8,
-          justifyContent: 'center',
+          justifyContent: 'center'
         }}>
         <View style={{flexDirection: 'row'}}>
           {renderCircle(started, false)}
@@ -229,8 +229,8 @@ const ConfirmationTracker: FC<ConfirmationTrackerProps> = ({
         </AvaText.Body1>
       </View>
     ),
-    [currentCount],
-  );
+    [currentCount]
+  )
 
   const renderFinalCircle = useMemo(
     () => (
@@ -239,7 +239,7 @@ const ConfirmationTracker: FC<ConfirmationTrackerProps> = ({
           alignItems: 'flex-end',
           zIndex: 1,
           paddingTop: 8,
-          justifyContent: 'center',
+          justifyContent: 'center'
         }}>
         <View style={{flexDirection: 'row-reverse'}}>
           {renderCircle(currentCount >= requiredCount, lastStepActive)}
@@ -251,8 +251,8 @@ const ConfirmationTracker: FC<ConfirmationTrackerProps> = ({
         </AvaText.Body1>
       </View>
     ),
-    [currentCount, requiredCount, lastStepActive, showBreakEnd],
-  );
+    [currentCount, requiredCount, lastStepActive, showBreakEnd]
+  )
 
   const renderSingleLine = useMemo(
     () => (
@@ -264,25 +264,25 @@ const ConfirmationTracker: FC<ConfirmationTrackerProps> = ({
           top: 12,
           bottom: 0,
           left: 0,
-          right: 12,
+          right: 12
         }}>
         {renderLine(currentCount >= requiredCount, lastStepActive, true)}
       </Animated.View>
     ),
-    [currentCount, requiredCount, lastStepActive],
-  );
+    [currentCount, requiredCount, lastStepActive]
+  )
 
-  let left = 0;
+  let left = 0
   if (currentCount > 1) {
     if (!showBreakEnd) {
-      left = -(calculateLineWidth() + 20) * (requiredCount - 3);
+      left = -(calculateLineWidth() + 20) * (requiredCount - 3)
     } else {
-      left = -(calculateLineWidth() + 20) * (currentCount - 1);
+      left = -(calculateLineWidth() + 20) * (currentCount - 1)
     }
   }
 
   if (requiredCount !== 1) {
-    moveBatch(left);
+    moveBatch(left)
   }
 
   return (
@@ -297,7 +297,7 @@ const ConfirmationTracker: FC<ConfirmationTrackerProps> = ({
         <View
           style={{
             overflow: 'hidden',
-            position: 'absolute',
+            position: 'absolute'
           }}>
           <Animated.View
             style={{
@@ -307,23 +307,23 @@ const ConfirmationTracker: FC<ConfirmationTrackerProps> = ({
               paddingRight: 100,
               transform: [
                 {
-                  translateX: moveAnim,
-                },
-              ],
+                  translateX: moveAnim
+                }
+              ]
             }}>
             {confirmations}
             {renderLine(
               currentCount >= requiredCount,
               lastStepActive,
-              requiredCount === 1,
+              requiredCount === 1
             )}
           </Animated.View>
         </View>
       )}
       {renderFinalCircle}
     </View>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -332,8 +332,8 @@ const styles = StyleSheet.create({
     maxWidth: '100%',
     flexDirection: 'row',
     overflow: 'hidden',
-    paddingTop: 4,
-  },
-});
+    paddingTop: 4
+  }
+})
 
-export default ConfirmationTracker;
+export default ConfirmationTracker

@@ -1,15 +1,15 @@
-import React from 'react';
-import Svg, {Path, Rect} from 'react-native-svg';
-import {useApplicationContext} from 'contexts/ApplicationContext';
+import React from 'react'
+import Svg, {Path, Rect} from 'react-native-svg'
+import {useApplicationContext} from 'contexts/ApplicationContext'
 
 interface Prop {
-  backgroundColor?: string;
-  size?: number;
+  backgroundColor?: string
+  size?: number
 }
 
 function WalletSVG({size = 65, backgroundColor}: Prop) {
-  const theme = useApplicationContext().theme;
-  const bgColor = backgroundColor ?? theme.colorBg1;
+  const theme = useApplicationContext().theme
+  const bgColor = backgroundColor ?? theme.colorBg1
 
   return (
     <Svg width={size} height={size} viewBox="0 0 65 65" fill="none">
@@ -39,7 +39,7 @@ function WalletSVG({size = 65, backgroundColor}: Prop) {
         strokeWidth="3.25"
       />
     </Svg>
-  );
+  )
 }
 
-export default WalletSVG;
+export default WalletSVG

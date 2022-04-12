@@ -1,33 +1,33 @@
-import React, {FC} from 'react';
-import {Dimensions, StyleSheet, View} from 'react-native';
-import CoreXAnimationDark from '../assets/lotties/corex_login_dark.json';
-import CoreXAnimationLight from '../assets/lotties/corex_login_light.json';
-import LottieView from 'lottie-react-native';
-import isString from 'lodash.isstring';
+import React, {FC} from 'react'
+import {Dimensions, StyleSheet, View} from 'react-native'
+import LottieView from 'lottie-react-native'
+import isString from 'lodash.isstring'
+import CoreXAnimationDark from '../assets/lotties/corex_login_dark.json'
+import CoreXAnimationLight from '../assets/lotties/corex_login_light.json'
 
-const {width} = Dimensions.get('window');
+const {width} = Dimensions.get('window')
 const sizes = {
   small: 40,
-  large: width / 3,
-};
+  large: width / 3
+}
 
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+    justifyContent: 'center'
+  }
+})
 
 interface Props {
-  size?: number | 'small' | 'large';
-  white?: boolean;
-  finalState?: boolean;
+  size?: number | 'small' | 'large'
+  white?: boolean
+  finalState?: boolean
 }
 
 const CoreXLogoAnimated: FC<Props> = ({size = 50, white, finalState}) => {
-  let customSize = size;
+  let customSize = size
   if (isString(size)) {
-    customSize = sizes[size];
+    customSize = sizes[size]
   }
 
   return (
@@ -40,12 +40,12 @@ const CoreXLogoAnimated: FC<Props> = ({size = 50, white, finalState}) => {
           source={white ? CoreXAnimationLight : CoreXAnimationDark}
           style={{
             width: customSize,
-            height: customSize,
+            height: customSize
           }}
         />
       </View>
     </View>
-  );
-};
+  )
+}
 
-export default CoreXLogoAnimated;
+export default CoreXLogoAnimated

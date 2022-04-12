@@ -1,38 +1,38 @@
-import AppNavigation from 'navigation/AppNavigation';
-import HomeSVG from 'components/svg/HomeSVG';
-import SwapSVG from 'components/svg/SwapSVG';
-import WatchlistSVG from 'components/svg/WatchlistSVG';
-import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import PortfolioStackScreen from 'navigation/wallet/PortfolioScreenStack';
-import React, {FC} from 'react';
-import ActivityList from 'screens/activity/ActivityList';
-import {View} from 'react-native';
-import AddSVG from 'components/svg/AddSVG';
-import AvaText from 'components/AvaText';
-import ArrowSVG from 'components/svg/ArrowSVG';
-import {useNavigation} from '@react-navigation/native';
-import FloatingActionButton from 'components/FloatingActionButton';
-import useInAppBrowser from 'hooks/useInAppBrowser';
-import HistorySVG from 'components/svg/HistorySVG';
-import BridgeSVG from 'components/svg/BridgeSVG';
-import {Space} from 'components/Space';
-import ActionButtonItem from 'components/ActionButtonItem';
-import QRCodeSVG from 'components/svg/QRCodeSVG';
-import {StackNavigationProp} from '@react-navigation/stack';
-import {RootStackParamList} from 'navigation/WalletScreenStack';
-import WatchlistTab from 'screens/watchlist/WatchlistTabView';
-import BuySVG from 'components/svg/BuySVG';
+import AppNavigation from 'navigation/AppNavigation'
+import HomeSVG from 'components/svg/HomeSVG'
+import SwapSVG from 'components/svg/SwapSVG'
+import WatchlistSVG from 'components/svg/WatchlistSVG'
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs'
+import {useApplicationContext} from 'contexts/ApplicationContext'
+import PortfolioStackScreen from 'navigation/wallet/PortfolioScreenStack'
+import React, {FC} from 'react'
+import ActivityList from 'screens/activity/ActivityList'
+import {View} from 'react-native'
+import AddSVG from 'components/svg/AddSVG'
+import AvaText from 'components/AvaText'
+import ArrowSVG from 'components/svg/ArrowSVG'
+import {useNavigation} from '@react-navigation/native'
+import FloatingActionButton from 'components/FloatingActionButton'
+import useInAppBrowser from 'hooks/useInAppBrowser'
+import HistorySVG from 'components/svg/HistorySVG'
+import BridgeSVG from 'components/svg/BridgeSVG'
+import {Space} from 'components/Space'
+import ActionButtonItem from 'components/ActionButtonItem'
+import QRCodeSVG from 'components/svg/QRCodeSVG'
+import {StackNavigationProp} from '@react-navigation/stack'
+import {RootStackParamList} from 'navigation/WalletScreenStack'
+import WatchlistTab from 'screens/watchlist/WatchlistTabView'
+import BuySVG from 'components/svg/BuySVG'
 
-const Tab = createBottomTabNavigator();
-const TAB_ICON_SIZE = 28;
+const Tab = createBottomTabNavigator()
+const TAB_ICON_SIZE = 28
 
 const DummyBridge = () => (
   <View style={{flex: 1, backgroundColor: 'transparent'}} />
-);
+)
 
 const TabNavigator = () => {
-  const theme = useApplicationContext().theme;
+  const theme = useApplicationContext().theme
 
   /**
    * extracts creation of "normal" tab items
@@ -43,19 +43,19 @@ const TabNavigator = () => {
   function normalTabButtons(
     routeName: string,
     focused: boolean,
-    image: React.ReactNode,
+    image: React.ReactNode
   ) {
     return (
       <View style={{justifyContent: 'center', alignItems: 'center', top: 2}}>
         {image}
         <AvaText.Caption
           textStyle={{
-            color: focused ? theme.alternateBackground : theme.colorIcon4,
+            color: focused ? theme.alternateBackground : theme.colorIcon4
           }}>
           {routeName}
         </AvaText.Caption>
       </View>
-    );
+    )
   }
 
   /**
@@ -72,8 +72,8 @@ const TabNavigator = () => {
         tabBarActiveTintColor: theme.colorPrimary1,
         tabBarInactiveTintColor: theme.colorText2,
         tabBarStyle: {
-          backgroundColor: theme.background,
-        },
+          backgroundColor: theme.background
+        }
       })}>
       <Tab.Screen
         name={AppNavigation.Tabs.Portfolio}
@@ -83,8 +83,8 @@ const TabNavigator = () => {
             normalTabButtons(
               AppNavigation.Tabs.Portfolio,
               focused,
-              <HomeSVG selected={focused} size={TAB_ICON_SIZE} />,
-            ),
+              <HomeSVG selected={focused} size={TAB_ICON_SIZE} />
+            )
         }}
       />
       <Tab.Screen
@@ -95,8 +95,8 @@ const TabNavigator = () => {
             normalTabButtons(
               AppNavigation.Tabs.Activity,
               focused,
-              <HistorySVG selected={focused} size={TAB_ICON_SIZE} />,
-            ),
+              <HistorySVG selected={focused} size={TAB_ICON_SIZE} />
+            )
         }}
       />
       <Tab.Screen
@@ -106,7 +106,7 @@ const TabNavigator = () => {
           tabBarIcon: () => (
             <AddSVG color={theme.colorBg2} size={TAB_ICON_SIZE} hideCircle />
           ),
-          tabBarButton: props => <CustomTabBarFab children={props.children} />,
+          tabBarButton: props => <CustomTabBarFab children={props.children} />
         }}
       />
       <Tab.Screen
@@ -116,8 +116,8 @@ const TabNavigator = () => {
             normalTabButtons(
               AppNavigation.Tabs.Watchlist,
               focused,
-              <WatchlistSVG selected={focused} size={TAB_ICON_SIZE} />,
-            ),
+              <WatchlistSVG selected={focused} size={TAB_ICON_SIZE} />
+            )
         }}
         component={WatchlistTab}
       />
@@ -129,19 +129,19 @@ const TabNavigator = () => {
             normalTabButtons(
               AppNavigation.Tabs.Bridge,
               focused,
-              <BridgeSVG selected={focused} />,
-            ),
+              <BridgeSVG selected={focused} />
+            )
         }}
         listeners={({navigation}) => ({
           tabPress: e => {
-            e.preventDefault();
-            navigation.navigate(AppNavigation.Wallet.Bridge);
-          },
+            e.preventDefault()
+            navigation.navigate(AppNavigation.Wallet.Bridge)
+          }
         })}
       />
     </Tab.Navigator>
-  );
-};
+  )
+}
 
 /**
  * extracts creation of "custom" tab item
@@ -149,9 +149,9 @@ const TabNavigator = () => {
  * @constructor
  */
 const CustomTabBarFab: FC = ({children}) => {
-  const {theme} = useApplicationContext();
-  const {openMoonPay} = useInAppBrowser();
-  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const {theme} = useApplicationContext()
+  const {openMoonPay} = useInAppBrowser()
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>()
 
   return (
     <>
@@ -182,7 +182,7 @@ const CustomTabBarFab: FC = ({children}) => {
           buttonColor={theme.alternateBackground}
           title="Receive"
           onPress={() => {
-            navigation.navigate(AppNavigation.Wallet.ReceiveTokens);
+            navigation.navigate(AppNavigation.Wallet.ReceiveTokens)
           }}>
           <QRCodeSVG color={theme.background} size={24} />
         </ActionButtonItem>
@@ -195,7 +195,7 @@ const CustomTabBarFab: FC = ({children}) => {
         <ActionButtonItem />
       </FloatingActionButton>
     </>
-  );
-};
+  )
+}
 
-export default React.memo(TabNavigator);
+export default React.memo(TabNavigator)

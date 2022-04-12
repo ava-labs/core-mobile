@@ -1,25 +1,26 @@
-import React from 'react';
-import {StyleSheet, Text, View} from 'react-native';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import CarrotSVG from 'components/svg/CarrotSVG';
-import AvaText from 'components/AvaText';
-import AvaButton from 'components/AvaButton';
+import React from 'react'
+import {StyleSheet, Text, View} from 'react-native'
+import {useApplicationContext} from 'contexts/ApplicationContext'
+import CarrotSVG from 'components/svg/CarrotSVG'
+import AvaText from 'components/AvaText'
+import AvaButton from 'components/AvaButton'
 
 interface Props {
-  rightComponent?: React.ReactNode;
-  leftComponent?: React.ReactNode;
-  title?: React.ReactNode | string;
-  subtitle?: React.ReactNode | string;
-  showNavigationArrow?: boolean;
-  disabled?: boolean;
-  onPress?: () => void;
-  titleAlignment?: 'center' | 'flex-start' | 'flex-end';
-  rightComponentHorizontalAlignment?: 'center' | 'flex-start' | 'flex-end';
-  rightComponentVerticalAlignment?: 'center' | 'flex-start' | 'flex-end';
-  embedInCard?: boolean;
-  roundedEdges?: boolean;
-  background?: string;
-  paddingVertical?: number;
+  rightComponent?: React.ReactNode
+  leftComponent?: React.ReactNode
+  title?: React.ReactNode | string
+  subtitle?: React.ReactNode | string
+  showNavigationArrow?: boolean
+  disabled?: boolean
+  disablePress?: boolean
+  onPress?: () => void
+  titleAlignment?: 'center' | 'flex-start' | 'flex-end'
+  rightComponentHorizontalAlignment?: 'center' | 'flex-start' | 'flex-end'
+  rightComponentVerticalAlignment?: 'center' | 'flex-start' | 'flex-end'
+  embedInCard?: boolean
+  roundedEdges?: boolean
+  background?: string
+  paddingVertical?: number
 }
 
 function BaseListItem({
@@ -35,9 +36,9 @@ function BaseListItem({
   onPress,
   embedInCard,
   background,
-  paddingVertical = 4,
+  paddingVertical = 4
 }: Props) {
-  const context = useApplicationContext();
+  const context = useApplicationContext()
 
   return (
     <AvaButton.Base
@@ -47,17 +48,17 @@ function BaseListItem({
         {
           paddingVertical: paddingVertical,
           height: 64,
-          justifyContent: 'center',
+          justifyContent: 'center'
         },
         embedInCard && {
           backgroundColor: context.theme.colorBg2,
           marginHorizontal: 16,
           borderRadius: 8,
-          marginVertical: 4,
+          marginVertical: 4
         },
         !!background && {
-          backgroundColor: background,
-        },
+          backgroundColor: background
+        }
       ]}>
       <View style={styles.baseRowContainer}>
         <View style={[styles.baseRow, disabled && {opacity: 0.5}]}>
@@ -71,7 +72,7 @@ function BaseListItem({
               <AvaText.Heading3
                 style={[
                   styles.baseTitleText,
-                  {color: context.theme.colorBgGreen},
+                  {color: context.theme.colorBgGreen}
                 ]}>
                 {title}
               </AvaText.Heading3>
@@ -79,7 +80,7 @@ function BaseListItem({
               <View
                 style={[
                   styles.baseTitleObject,
-                  titleAlignment && {alignItems: titleAlignment},
+                  titleAlignment && {alignItems: titleAlignment}
                 ]}>
                 {title}
               </View>
@@ -90,7 +91,7 @@ function BaseListItem({
                 numberOfLines={1}
                 style={[
                   styles.baseSubtitle,
-                  {color: context.theme.colorText2},
+                  {color: context.theme.colorText2}
                 ]}>
                 {subtitle}
               </Text>
@@ -108,7 +109,7 @@ function BaseListItem({
                 flexDirection: 'row',
                 maxWidth: 160,
                 justifyContent: rightComponentHorizontalAlignment,
-                alignSelf: rightComponentVerticalAlignment,
+                alignSelf: rightComponentVerticalAlignment
               }}>
               {rightComponent}
               {showNavigationArrow && <CarrotSVG />}
@@ -117,11 +118,11 @@ function BaseListItem({
         </View>
       </View>
     </AvaButton.Base>
-  );
+  )
 }
 
 function BaseItem(props: Props) {
-  return <BaseListItem {...props} />;
+  return <BaseListItem {...props} />
 }
 
 /**
@@ -134,11 +135,11 @@ function BaseItem(props: Props) {
 function CurrencyAmountHelper({
   value,
   currency,
-  justifyContent,
+  justifyContent
 }: {
-  value: React.ReactNode;
-  currency: React.ReactNode;
-  justifyContent?: 'flex-start' | 'flex-end' | 'center';
+  value: React.ReactNode
+  currency: React.ReactNode
+  justifyContent?: 'flex-start' | 'flex-end' | 'center'
 }): JSX.Element {
   return (
     <View
@@ -146,72 +147,72 @@ function CurrencyAmountHelper({
         flexDirection: 'row',
         justifyContent: justifyContent || 'flex-start',
         flexShrink: 1,
-        alignItems: 'flex-end',
+        alignItems: 'flex-end'
       }}>
       {value}
       {currency}
     </View>
-  );
+  )
 }
 
 // Even tho we only have a single case for now, we'll leave it as is
 // so we take advantage of this pattern in the future.
 const AvaListItem = {
   Base: BaseItem,
-  CurrencyAmount: CurrencyAmountHelper,
-};
+  CurrencyAmount: CurrencyAmountHelper
+}
 
-export default AvaListItem;
+export default AvaListItem
 
 const styles = StyleSheet.create({
   baseRowContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'center'
   },
   baseRow: {
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row',
-    flex: 1,
+    flex: 1
   },
   baseMainContent: {flex: 1, marginLeft: 16},
   baseLabel: {
     fontSize: 14,
     lineHeight: 17,
-    justifyContent: 'center',
+    justifyContent: 'center'
   },
   baseTitleText: {
     fontSize: 16,
-    lineHeight: 24,
+    lineHeight: 24
   },
   baseTitleObject: {
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'center'
   },
   baseSubtitle: {
     fontSize: 14,
-    lineHeight: 17,
+    lineHeight: 17
   },
   tokenLogo: {
     width: 32,
     height: 32,
     borderRadius: 20,
-    overflow: 'hidden',
+    overflow: 'hidden'
   },
   tokenItem: {
     marginHorizontal: 8,
     borderRadius: 8,
-    marginVertical: 4,
+    marginVertical: 4
   },
   tokenNativeValue: {
     fontFamily: 'Inter-Bold',
     fontSize: 16,
-    lineHeight: 24,
+    lineHeight: 24
   },
   tokenUsdValue: {
     fontSize: 14,
-    lineHeight: 17,
+    lineHeight: 17
   },
   accountTitleContainer: {
     flexDirection: 'row',
@@ -220,13 +221,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    minHeight: 44,
+    minHeight: 44
   },
   accountTitleText: {
     paddingRight: 16,
     textAlign: 'center',
     fontSize: 16,
     fontFamily: 'Inter-SemiBold',
-    lineHeight: 24,
-  },
-});
+    lineHeight: 24
+  }
+})

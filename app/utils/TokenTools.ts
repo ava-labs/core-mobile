@@ -1,39 +1,39 @@
 import {
   AntWithBalance,
   ERC20WithBalance,
-  TokenWithBalance,
-} from '@avalabs/wallet-react-components';
-import {NFTItemData} from 'screens/nft/NftCollection';
+  TokenWithBalance
+} from '@avalabs/wallet-react-components'
+import {NFTItemData} from 'screens/nft/NftCollection'
 
 export function getTokenUID(token: TokenWithBalance): string {
   if (Object.keys(token).length === 0) {
-    return '0';
+    return '0'
   }
   if (token.isAvax) {
-    return 'avalanche-2';
+    return 'avalanche-2'
   }
   if (token.isErc20) {
-    return (token as ERC20WithBalance).address;
+    return (token as ERC20WithBalance).address
   }
   if (token.isAnt) {
-    return (token as AntWithBalance).assetID;
+    return (token as AntWithBalance).assetID
   }
-  throw new Error('unknown token');
+  throw new Error('unknown token')
 }
 
 export function getNftUID(nft: NFTItemData): string {
-  return nft.collection.contract_address + nft.token_id;
+  return nft.collection.contract_address + nft.token_id
 }
 
 export function getDecimalsForEVM(token?: TokenWithBalance) {
   if (!token) {
-    return undefined;
+    return undefined
   }
   if (token.isAvax) {
-    return 18; //on X chain Avax has 9 decimals, but on C it has 18
+    return 18 //on X chain Avax has 9 decimals, but on C it has 18
   }
   if (token.isAnt) {
-    return undefined;
+    return undefined
   }
-  return token.denomination;
+  return token.denomination
 }

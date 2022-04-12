@@ -1,88 +1,88 @@
-import React, {FC, useEffect, useMemo, useState} from 'react';
-import {Animated, ScrollView, StyleSheet, View} from 'react-native';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import {Space} from 'components/Space';
-import AvaText from 'components/AvaText';
-import AvaListItem from 'components/AvaListItem';
-import Avatar from 'components/Avatar';
-import Separator from 'components/Separator';
-import SwapTransactionDetail from 'screens/swap/components/SwapTransactionDetails';
-import {useSwapContext} from 'contexts/SwapContext';
-import AvaButton from 'components/AvaButton';
-import {useNavigation} from '@react-navigation/native';
-import Loader from 'components/Loader';
-import AppNavigation from 'navigation/AppNavigation';
-import {StackNavigationProp} from '@react-navigation/stack';
-import {SwapStackParamList} from 'navigation/wallet/SwapScreenStack';
-import {Row} from 'components/Row';
-import InfoSVG from 'components/svg/InfoSVG';
-import {interval, tap} from 'rxjs';
-import {Popable} from 'react-native-popable';
+import React, {FC, useEffect, useMemo, useState} from 'react'
+import {Animated, ScrollView, StyleSheet, View} from 'react-native'
+import {useApplicationContext} from 'contexts/ApplicationContext'
+import {Space} from 'components/Space'
+import AvaText from 'components/AvaText'
+import AvaListItem from 'components/AvaListItem'
+import Avatar from 'components/Avatar'
+import Separator from 'components/Separator'
+import SwapTransactionDetail from 'screens/swap/components/SwapTransactionDetails'
+import {useSwapContext} from 'contexts/SwapContext'
+import AvaButton from 'components/AvaButton'
+import {useNavigation} from '@react-navigation/native'
+import Loader from 'components/Loader'
+import AppNavigation from 'navigation/AppNavigation'
+import {StackNavigationProp} from '@react-navigation/stack'
+import {SwapStackParamList} from 'navigation/wallet/SwapScreenStack'
+import {Row} from 'components/Row'
+import InfoSVG from 'components/svg/InfoSVG'
+import {interval, tap} from 'rxjs'
+import {Popable} from 'react-native-popable'
 
-const SECOND = 1000;
+const SECOND = 1000
 
 const SwapReview: FC = () => {
-  const {swapTo, swapFrom, doSwap, refresh} = useSwapContext();
-  const theme = useApplicationContext().theme;
+  const {swapTo, swapFrom, doSwap, refresh} = useSwapContext()
+  const theme = useApplicationContext().theme
   const {goBack, navigate} =
-    useNavigation<StackNavigationProp<SwapStackParamList>>();
-  const [loading, setLoading] = useState(false);
-  const [secondsLeft, setSecondsLeft] = useState('0s');
-  const [colorAnim] = useState(new Animated.Value(1));
+    useNavigation<StackNavigationProp<SwapStackParamList>>()
+  const [loading, setLoading] = useState(false)
+  const [secondsLeft, setSecondsLeft] = useState('0s')
+  const [colorAnim] = useState(new Animated.Value(1))
 
   const animatedColor = useMemo(() => {
     return colorAnim.interpolate({
       inputRange: [0, 1],
-      outputRange: [theme.white, theme.colorPrimary1],
-    });
-  }, [colorAnim]);
+      outputRange: [theme.white, theme.colorPrimary1]
+    })
+  }, [colorAnim])
 
   useEffect(() => {
     Animated.timing(colorAnim, {
       toValue: 1,
       duration: 1000,
-      useNativeDriver: false,
+      useNativeDriver: false
     }).start(() => {
       Animated.timing(colorAnim, {
         toValue: 0,
         duration: 1000,
-        useNativeDriver: false,
-      }).start();
-    });
-  }, [swapTo.amount, swapTo.usdValue]);
+        useNativeDriver: false
+      }).start()
+    })
+  }, [swapTo.amount, swapTo.usdValue])
 
   function onConfirm() {
-    setLoading(true);
+    setLoading(true)
     doSwap()
       .then(value => {
-        console.log(value);
-        navigate(AppNavigation.Swap.Success);
+        console.log(value)
+        navigate(AppNavigation.Swap.Success)
       })
       .catch((reason: Error) => {
-        console.error(reason);
-        navigate(AppNavigation.Swap.Fail, {errorMsg: reason.message ?? ''});
+        console.error(reason)
+        navigate(AppNavigation.Swap.Fail, {errorMsg: reason.message ?? ''})
       })
-      .finally(() => setLoading(false));
+      .finally(() => setLoading(false))
   }
 
   useEffect(() => {
-    const RESET_INTERVAL = 60; // seconds
+    const RESET_INTERVAL = 60 // seconds
     const sub = interval(SECOND)
       .pipe(
         tap(value => {
-          const number = RESET_INTERVAL - (value % RESET_INTERVAL) - 1;
-          setSecondsLeft(number.toString() + 's');
+          const number = RESET_INTERVAL - (value % RESET_INTERVAL) - 1
+          setSecondsLeft(number.toString() + 's')
         }),
         tap(value => {
           if (value && value % RESET_INTERVAL === 0) {
-            console.log('reset');
-            refresh();
+            console.log('reset')
+            refresh()
           }
-        }),
+        })
       )
-      .subscribe();
-    return () => sub.unsubscribe();
-  }, []);
+      .subscribe()
+    return () => sub.unsubscribe()
+  }, [])
 
   return loading ? (
     <Loader />
@@ -100,7 +100,7 @@ const SwapReview: FC = () => {
               style={{
                 backgroundColor: theme.colorBg2,
                 padding: 8,
-                borderRadius: 100,
+                borderRadius: 100
               }}>
               <AvaText.ButtonSmall>{secondsLeft}</AvaText.ButtonSmall>
               <Space x={4} />
@@ -151,7 +151,7 @@ const SwapReview: FC = () => {
       <View
         style={{
           flexDirection: 'row',
-          justifyContent: 'space-between',
+          justifyContent: 'space-between'
         }}>
         <View style={{flex: 1, marginHorizontal: 16}}>
           <AvaButton.SecondaryLarge onPress={goBack}>
@@ -166,13 +166,13 @@ const SwapReview: FC = () => {
       </View>
       <Space y={8} />
     </View>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-  },
-});
+    flex: 1
+  }
+})
 
-export default SwapReview;
+export default SwapReview

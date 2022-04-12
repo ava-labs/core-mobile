@@ -1,9 +1,9 @@
-import {useApplicationContext} from 'contexts/ApplicationContext';
+import {useApplicationContext} from 'contexts/ApplicationContext'
 import {
   useNetworkContext,
-  useWalletStateContext,
-} from '@avalabs/wallet-react-components';
-import {useGetTokenSymbolOnNetwork} from 'screens/bridge/hooks/useGetTokenSymbolOnNetwork';
+  useWalletStateContext
+} from '@avalabs/wallet-react-components'
+import {useGetTokenSymbolOnNetwork} from 'screens/bridge/hooks/useGetTokenSymbolOnNetwork'
 import {
   BIG_ZERO,
   Blockchain,
@@ -13,85 +13,85 @@ import {
   usePrice,
   useSwitchFromUnavailableAsset,
   useTokenInfoContext,
-  useTransactionFee,
-} from '@avalabs/bridge-sdk';
-import {useEffect, useState} from 'react';
-import {Big} from '@avalabs/avalanche-wallet-sdk';
-import {useTransferAsset} from 'screens/bridge/hooks/useTransferAsset';
-import {useLoadTokenBalance} from 'screens/bridge/hooks/useLoadTokenBalance';
-import {getAvalancheProvider} from 'screens/bridge/utils/getAvalancheProvider';
-import {getEthereumProvider} from 'screens/bridge/utils/getEthereumProvider';
+  useTransactionFee
+} from '@avalabs/bridge-sdk'
+import {useEffect, useState} from 'react'
+import {Big} from '@avalabs/avalanche-wallet-sdk'
+import {useTransferAsset} from 'screens/bridge/hooks/useTransferAsset'
+import {useLoadTokenBalance} from 'screens/bridge/hooks/useLoadTokenBalance'
+import {getAvalancheProvider} from 'screens/bridge/utils/getAvalancheProvider'
+import {getEthereumProvider} from 'screens/bridge/utils/getEthereumProvider'
 
 export default function useBridge() {
   // using this hook makes a swap between an unavailable tokens (e.g. ETH on Avalanche > Ethereum)
   // switch to an available token
-  useSwitchFromUnavailableAsset();
+  useSwitchFromUnavailableAsset()
 
-  const {selectedCurrency} = useApplicationContext().appHook;
-  const network = useNetworkContext()?.network;
-  const {getTokenSymbolOnNetwork} = useGetTokenSymbolOnNetwork();
+  const {selectedCurrency} = useApplicationContext().appHook
+  const network = useNetworkContext()?.network
+  const {getTokenSymbolOnNetwork} = useGetTokenSymbolOnNetwork()
   const {
     currentAsset,
     setCurrentAsset,
     currentBlockchain,
     setCurrentBlockchain,
-    setTransactionDetails,
-  } = useBridgeSDK();
+    setTransactionDetails
+  } = useBridgeSDK()
 
-  const assetPrice = usePrice(currentAsset, selectedCurrency?.toLowerCase());
-  const [amount, setAmount] = useState<Big>(new Big(0));
-  const [amountTooLowError, setAmountTooLowError] = useState<string>('');
-  const [amountTooHighError, setAmountTooHighError] = useState<string>('');
-  const [bridgeError, setBridgeError] = useState<string>();
-  const [pending, setPending] = useState<boolean>(false);
-  const assets = useAssets(currentBlockchain);
-  const assetInfo = assets[currentAsset || ''];
-  const transferCost = useTransactionFee(currentBlockchain);
-  const minimumTransferAmount = transferCost ? transferCost.mul(3) : BIG_ZERO;
-  const txFee = useTransactionFee(currentBlockchain);
+  const assetPrice = usePrice(currentAsset, selectedCurrency?.toLowerCase())
+  const [amount, setAmount] = useState<Big>(new Big(0))
+  const [amountTooLowError, setAmountTooLowError] = useState<string>('')
+  const [amountTooHighError, setAmountTooHighError] = useState<string>('')
+  const [bridgeError, setBridgeError] = useState<string>()
+  const [pending, setPending] = useState<boolean>(false)
+  const assets = useAssets(currentBlockchain)
+  const assetInfo = assets[currentAsset || '']
+  const transferCost = useTransactionFee(currentBlockchain)
+  const minimumTransferAmount = transferCost ? transferCost.mul(3) : BIG_ZERO
+  const txFee = useTransactionFee(currentBlockchain)
   // @ts-ignore addresses exist in walletContext
-  const {addresses} = useWalletStateContext();
+  const {addresses} = useWalletStateContext()
   const blockchainTokenSymbol = getTokenSymbolOnNetwork(
     currentAsset ?? '',
-    currentBlockchain,
-  );
-  const sourceBalance = useLoadTokenBalance(currentBlockchain, assetInfo);
+    currentBlockchain
+  )
+  const sourceBalance = useLoadTokenBalance(currentBlockchain, assetInfo)
   const tooHighAmount =
-    sourceBalance?.balance && amount.gt(sourceBalance.balance);
+    sourceBalance?.balance && amount.gt(sourceBalance.balance)
 
   const tooLowAmount =
-    !!transferCost && amount.gt(0) && amount.lt(minimumTransferAmount);
+    !!transferCost && amount.gt(0) && amount.lt(minimumTransferAmount)
 
-  const tokenInfoContext = useTokenInfoContext();
+  const tokenInfoContext = useTokenInfoContext()
 
-  const {transferAsset, txHash} = useTransferAsset(assetInfo);
+  const {transferAsset, txHash} = useTransferAsset(assetInfo)
 
   const targetBlockchain =
     currentBlockchain === Blockchain.AVALANCHE
       ? Blockchain.ETHEREUM
-      : Blockchain.AVALANCHE;
+      : Blockchain.AVALANCHE
 
   const provider =
     currentBlockchain === Blockchain.AVALANCHE
       ? getAvalancheProvider(network)
-      : getEthereumProvider(network);
+      : getEthereumProvider(network)
 
   const maxTransferAmount = useMaxTransferAmount(
     sourceBalance.balance,
     addresses?.addrC,
-    provider,
-  );
+    provider
+  )
 
   /**
    * Too high amount check
    */
   useEffect(() => {
     if (tooHighAmount) {
-      setAmountTooHighError('Amount is greater than balance');
+      setAmountTooHighError('Amount is greater than balance')
     } else {
-      setAmountTooHighError('');
+      setAmountTooHighError('')
     }
-  }, [amount, sourceBalance]);
+  }, [amount, sourceBalance])
 
   /**
    * Amount too low check
@@ -99,12 +99,12 @@ export default function useBridge() {
   useEffect(() => {
     if (tooLowAmount) {
       setAmountTooLowError(
-        `Amount too low. Minimum is ${minimumTransferAmount.toFixed(9)}`,
-      );
+        `Amount too low. Minimum is ${minimumTransferAmount.toFixed(9)}`
+      )
     } else {
-      setAmountTooLowError('');
+      setAmountTooLowError('')
     }
-  }, [tooLowAmount, minimumTransferAmount]);
+  }, [tooLowAmount, minimumTransferAmount])
 
   /**
    * Conditionals to enable or disable transfer button
@@ -116,7 +116,7 @@ export default function useBridge() {
     amountTooLowError.length > 0 ||
     pending ||
     tooLowAmount ||
-    BIG_ZERO.eq(amount);
+    BIG_ZERO.eq(amount)
 
   return {
     assetPrice,
@@ -146,6 +146,6 @@ export default function useBridge() {
     assetInfo,
     pending,
     amountTooHighError,
-    transferDisabled,
-  };
+    transferDisabled
+  }
 }

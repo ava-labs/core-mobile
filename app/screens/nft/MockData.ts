@@ -44,13 +44,13 @@ const mockData = {
               animation_url: null,
               external_url: null,
               attributes: [],
-              owner: null,
+              owner: null
             },
             owner: '0x01cc3af889baa977f67dd3d5c2bfa463dc163b66',
             owner_address: null,
-            burned: null,
-          },
-        ],
+            burned: null
+          }
+        ]
       },
       {
         contract_decimals: 0,
@@ -95,48 +95,48 @@ const mockData = {
               attributes: [
                 {
                   trait_type: 'distortion',
-                  value: '2.6876079951',
+                  value: '2.6876079951'
                 },
                 {
                   trait_type: 'distortionStrength',
-                  value: '1.6989639608',
+                  value: '1.6989639608'
                 },
                 {
                   trait_type: 'frequency',
-                  value: '4.6140235248',
+                  value: '4.6140235248'
                 },
                 {
                   trait_type: 'strength',
-                  value: '0.2399262193',
+                  value: '0.2399262193'
                 },
                 {
                   trait_type: 'red',
-                  value: '0.6751419496',
+                  value: '0.6751419496'
                 },
                 {
                   trait_type: 'green',
-                  value: '0.8557117948',
+                  value: '0.8557117948'
                 },
                 {
                   trait_type: 'blue',
-                  value: '0.8570613473',
+                  value: '0.8570613473'
                 },
                 {
                   trait_type: 'speed',
-                  value: '3.6225069677',
+                  value: '3.6225069677'
                 },
                 {
                   trait_type: 'gen',
-                  value: '2',
-                },
+                  value: '2'
+                }
               ],
-              owner: null,
+              owner: null
             },
             owner: '0x01cc3af889baa977f67dd3d5c2bfa463dc163b66',
             owner_address: null,
-            burned: null,
-          },
-        ],
+            burned: null
+          }
+        ]
       },
       {
         contract_decimals: 0,
@@ -179,114 +179,114 @@ const mockData = {
               attributes: [
                 {
                   trait_type: 'Rarity',
-                  value: 'Laguna Seca',
+                  value: 'Laguna Seca'
                 },
                 {
                   trait_type: 'Model',
-                  value: 'LS1',
+                  value: 'LS1'
                 },
                 {
                   trait_type: 'Colour',
-                  value: 'Blue',
+                  value: 'Blue'
                 },
                 {
                   trait_type: 'Wheel',
-                  value: 'LS1RCX2',
+                  value: 'LS1RCX2'
                 },
                 {
                   trait_type: 'KW',
-                  value: '993',
+                  value: '993'
                 },
                 {
                   trait_type: 'HP',
-                  value: '1,332',
+                  value: '1,332'
                 },
                 {
                   trait_type: '0-60mph / 0-96kmh(seconds)',
-                  value: '2.8',
+                  value: '2.8'
                 },
                 {
                   trait_type: '0-100kmh / 0-62mph(seconds)',
-                  value: '2.8',
+                  value: '2.8'
                 },
                 {
                   trait_type: '100-200kmh(seconds)',
-                  value: '4.1 ',
+                  value: '4.1 '
                 },
                 {
                   trait_type: 'Wheel Size',
-                  value: '20',
+                  value: '20'
                 },
                 {
                   trait_type: 'Top Speed km/h',
-                  value: '350',
+                  value: '350'
                 },
                 {
                   trait_type: 'Top Speed mph',
-                  value: '217',
+                  value: '217'
                 },
                 {
                   trait_type: 'Max RPM',
-                  value: '9200',
+                  value: '9200'
                 },
                 {
                   trait_type: 'Braking',
-                  value: '10',
+                  value: '10'
                 },
                 {
                   trait_type: 'Handling',
-                  value: '10',
+                  value: '10'
                 },
                 {
                   trait_type: 'Grip',
-                  value: '9',
+                  value: '9'
                 },
                 {
                   trait_type: 'DriveTrain',
-                  value: 'RWD',
+                  value: 'RWD'
                 },
                 {
                   trait_type: 'Weight',
-                  value: '1285',
+                  value: '1285'
                 },
                 {
                   trait_type: 'Aero',
-                  value: '10',
+                  value: '10'
                 },
                 {
                   trait_type: 'Transmission Type',
-                  value: 'AUTO',
+                  value: 'AUTO'
                 },
                 {
                   trait_type: 'Gears',
-                  value: '7',
+                  value: '7'
                 },
                 {
                   trait_type: 'Gearshift',
-                  value: '7',
+                  value: '7'
                 },
                 {
                   trait_type: 'Torque Nm',
-                  value: '900NM',
+                  value: '900NM'
                 },
                 {
                   trait_type: 'Induction',
-                  value: 'NATURALLY ASPIRATED',
+                  value: 'NATURALLY ASPIRATED'
                 },
                 {
                   trait_type: 'Torque lb.ft',
-                  value: '664',
+                  value: '664'
                 },
                 {
                   trait_type: 'Acceleration',
-                  value: '10',
-                },
+                  value: '10'
+                }
               ],
-              owner: null,
+              owner: null
             },
             owner: '0x0077f2c8452eb223d573bc9931f341fb1711bdd5',
             owner_address: null,
-            burned: null,
+            burned: null
           },
           {
             token_id: '1990',
@@ -312,114 +312,114 @@ const mockData = {
               attributes: [
                 {
                   trait_type: 'Rarity',
-                  value: 'MONZA',
+                  value: 'MONZA'
                 },
                 {
                   trait_type: 'Model',
-                  value: 'MZ2',
+                  value: 'MZ2'
                 },
                 {
                   trait_type: 'Colour',
-                  value: 'Black',
+                  value: 'Black'
                 },
                 {
                   trait_type: 'Wheel',
-                  value: 'MZ2RCX1',
+                  value: 'MZ2RCX1'
                 },
                 {
                   trait_type: 'KW',
-                  value: '283',
+                  value: '283'
                 },
                 {
                   trait_type: 'HP',
-                  value: '379',
+                  value: '379'
                 },
                 {
                   trait_type: '0-60mph / 0-96kmh(seconds)',
-                  value: '3.5',
+                  value: '3.5'
                 },
                 {
                   trait_type: '0-100kmh / 0-62mph(seconds)',
-                  value: '3.7',
+                  value: '3.7'
                 },
                 {
                   trait_type: '100-200kmh(seconds)',
-                  value: '7',
+                  value: '7'
                 },
                 {
                   trait_type: 'Wheel Size',
-                  value: '20',
+                  value: '20'
                 },
                 {
                   trait_type: 'Top Speed km/h',
-                  value: '306',
+                  value: '306'
                 },
                 {
                   trait_type: 'Top Speed mph',
-                  value: '191',
+                  value: '191'
                 },
                 {
                   trait_type: 'Max RPM',
-                  value: '6500',
+                  value: '6500'
                 },
                 {
                   trait_type: 'Braking',
-                  value: '9',
+                  value: '9'
                 },
                 {
                   trait_type: 'Handling',
-                  value: '8',
+                  value: '8'
                 },
                 {
                   trait_type: 'Grip',
-                  value: '8',
+                  value: '8'
                 },
                 {
                   trait_type: 'DriveTrain',
-                  value: 'RWD',
+                  value: 'RWD'
                 },
                 {
                   trait_type: 'Weight',
-                  value: '1680',
+                  value: '1680'
                 },
                 {
                   trait_type: 'Aero',
-                  value: '8',
+                  value: '8'
                 },
                 {
                   trait_type: 'Transmission Type',
-                  value: 'MANUAL',
+                  value: 'MANUAL'
                 },
                 {
                   trait_type: 'Gears',
-                  value: '7',
+                  value: '7'
                 },
                 {
                   trait_type: 'Gearshift',
-                  value: '7',
+                  value: '7'
                 },
                 {
                   trait_type: 'Torque Nm',
-                  value: '550',
+                  value: '550'
                 },
                 {
                   trait_type: 'Induction',
-                  value: 'NATURALLY ASPIRATED',
+                  value: 'NATURALLY ASPIRATED'
                 },
                 {
                   trait_type: 'Torque lb.ft',
-                  value: '331',
+                  value: '331'
                 },
                 {
                   trait_type: 'Acceleration',
-                  value: '8',
-                },
+                  value: '8'
+                }
               ],
-              owner: null,
+              owner: null
             },
             owner: '0x0077f2c8452eb223d573bc9931f341fb1711bdd5',
             owner_address: null,
-            burned: null,
+            burned: null
           },
           {
             token_id: '1989',
@@ -445,114 +445,114 @@ const mockData = {
               attributes: [
                 {
                   trait_type: 'Rarity',
-                  value: 'NURBURGRING',
+                  value: 'NURBURGRING'
                 },
                 {
                   trait_type: 'Model',
-                  value: 'NB29',
+                  value: 'NB29'
                 },
                 {
                   trait_type: 'Colour',
-                  value: 'Orange',
+                  value: 'Orange'
                 },
                 {
                   trait_type: 'Wheel',
-                  value: 'NB29RCX7',
+                  value: 'NB29RCX7'
                 },
                 {
                   trait_type: 'KW',
-                  value: '235',
+                  value: '235'
                 },
                 {
                   trait_type: 'HP',
-                  value: '316',
+                  value: '316'
                 },
                 {
                   trait_type: '0-60mph / 0-96kmh(seconds)',
-                  value: '4.9',
+                  value: '4.9'
                 },
                 {
                   trait_type: '0-100kmh / 0-62mph(seconds)',
-                  value: '6.5',
+                  value: '6.5'
                 },
                 {
                   trait_type: '100-200kmh(seconds)',
-                  value: '13.5',
+                  value: '13.5'
                 },
                 {
                   trait_type: 'Wheel Size',
-                  value: '19',
+                  value: '19'
                 },
                 {
                   trait_type: 'Top Speed km/h',
-                  value: '272',
+                  value: '272'
                 },
                 {
                   trait_type: 'Top Speed mph',
-                  value: '169',
+                  value: '169'
                 },
                 {
                   trait_type: 'Max RPM',
-                  value: '6800',
+                  value: '6800'
                 },
                 {
                   trait_type: 'Braking',
-                  value: '7',
+                  value: '7'
                 },
                 {
                   trait_type: 'Handling',
-                  value: '7',
+                  value: '7'
                 },
                 {
                   trait_type: 'Grip',
-                  value: '7',
+                  value: '7'
                 },
                 {
                   trait_type: 'DriveTrain',
-                  value: 'FWD',
+                  value: 'FWD'
                 },
                 {
                   trait_type: 'Weight',
-                  value: '1395',
+                  value: '1395'
                 },
                 {
                   trait_type: 'Aero',
-                  value: '7',
+                  value: '7'
                 },
                 {
                   trait_type: 'Transmission Type',
-                  value: 'MANUAL',
+                  value: 'MANUAL'
                 },
                 {
                   trait_type: 'Gears',
-                  value: '6',
+                  value: '6'
                 },
                 {
                   trait_type: 'Gearshift',
-                  value: '6',
+                  value: '6'
                 },
                 {
                   trait_type: 'Torque Nm',
-                  value: '400',
+                  value: '400'
                 },
                 {
                   trait_type: 'Induction',
-                  value: 'TURBO',
+                  value: 'TURBO'
                 },
                 {
                   trait_type: 'Torque lb.ft',
-                  value: '295',
+                  value: '295'
                 },
                 {
                   trait_type: 'Acceleration',
-                  value: '6',
-                },
+                  value: '6'
+                }
               ],
-              owner: null,
+              owner: null
             },
             owner: '0x0077f2c8452eb223d573bc9931f341fb1711bdd5',
             owner_address: null,
-            burned: null,
+            burned: null
           },
           {
             token_id: '1988',
@@ -578,116 +578,116 @@ const mockData = {
               attributes: [
                 {
                   trait_type: 'Rarity',
-                  value: 'MONZA',
+                  value: 'MONZA'
                 },
                 {
                   trait_type: 'Model',
-                  value: 'MZ15',
+                  value: 'MZ15'
                 },
                 {
                   trait_type: 'Colour',
-                  value: 'Black Pink',
+                  value: 'Black Pink'
                 },
                 {
                   trait_type: 'Wheel',
-                  value: 'MZ15RCX6',
+                  value: 'MZ15RCX6'
                 },
                 {
                   trait_type: 'KW',
-                  value: '386',
+                  value: '386'
                 },
                 {
                   trait_type: 'HP',
-                  value: '518',
+                  value: '518'
                 },
                 {
                   trait_type: '0-60mph / 0-96kmh(seconds)',
-                  value: '3.7',
+                  value: '3.7'
                 },
                 {
                   trait_type: '0-100kmh / 0-62mph(seconds)',
-                  value: '3.9',
+                  value: '3.9'
                 },
                 {
                   trait_type: '100-200kmh(seconds)',
-                  value: '8.4',
+                  value: '8.4'
                 },
                 {
                   trait_type: 'Wheel Size',
-                  value: '19',
+                  value: '19'
                 },
                 {
                   trait_type: 'Top Speed km/h',
-                  value: '316',
+                  value: '316'
                 },
                 {
                   trait_type: 'Top Speed mph',
-                  value: '196',
+                  value: '196'
                 },
                 {
                   trait_type: 'Max RPM',
-                  value: '9000',
+                  value: '9000'
                 },
                 {
                   trait_type: 'Braking',
-                  value: '8',
+                  value: '8'
                 },
                 {
                   trait_type: 'Handling',
-                  value: '8',
+                  value: '8'
                 },
                 {
                   trait_type: 'Grip',
-                  value: '8',
+                  value: '8'
                 },
                 {
                   trait_type: 'DriveTrain',
-                  value: 'AWD',
+                  value: 'AWD'
                 },
                 {
                   trait_type: 'Weight',
-                  value: '1692',
+                  value: '1692'
                 },
                 {
                   trait_type: 'Aero',
-                  value: '7',
+                  value: '7'
                 },
                 {
                   trait_type: 'Transmission Type',
-                  value: 'AUTO',
+                  value: 'AUTO'
                 },
                 {
                   trait_type: 'Gears',
-                  value: '6',
+                  value: '6'
                 },
                 {
                   trait_type: 'Gearshift',
-                  value: '6',
+                  value: '6'
                 },
                 {
                   trait_type: 'Torque Nm',
-                  value: '530',
+                  value: '530'
                 },
                 {
                   trait_type: 'Induction',
-                  value: 'NATURALLY ASPIRATED',
+                  value: 'NATURALLY ASPIRATED'
                 },
                 {
                   trait_type: 'Torque lb.ft',
-                  value: '391',
+                  value: '391'
                 },
                 {
                   trait_type: 'Acceleration',
-                  value: '7',
-                },
+                  value: '7'
+                }
               ],
-              owner: null,
+              owner: null
             },
             owner: '0x0077f2c8452eb223d573bc9931f341fb1711bdd5',
             owner_address: null,
-            burned: null,
-          },
-        ],
+            burned: null
+          }
+        ]
       },
       {
         contract_decimals: 0,
@@ -733,34 +733,34 @@ const mockData = {
                 {
                   trait_type: 'Background',
                   value: 'Checkerboard Pink',
-                  percentOwned: 6,
+                  percentOwned: 6
                 },
                 {
                   trait_type: 'Head',
                   value: 'Cheshire Cat Pink',
-                  percentOwned: 9,
+                  percentOwned: 9
                 },
                 {
                   trait_type: 'Body',
                   value: 'Card Red Suit',
-                  percentOwned: 10,
+                  percentOwned: 10
                 },
                 {
                   trait_type: 'Accessory',
                   value: 'Tweedledee Hat',
-                  percentOwned: 10,
+                  percentOwned: 10
                 },
                 {
                   trait_type: 'Held Object',
                   value: 'Watch',
-                  percentOwned: 14,
-                },
+                  percentOwned: 14
+                }
               ],
-              owner: null,
+              owner: null
             },
             owner: '0x0077f2c8452eb223d573bc9931f341fb1711bdd5',
             owner_address: null,
-            burned: null,
+            burned: null
           },
           {
             token_id: '885',
@@ -789,34 +789,34 @@ const mockData = {
                 {
                   trait_type: 'Background',
                   value: 'Solid Pink',
-                  percentOwned: 8,
+                  percentOwned: 8
                 },
                 {
                   trait_type: 'Head',
                   value: 'Rabbit',
-                  percentOwned: 10,
+                  percentOwned: 10
                 },
                 {
                   trait_type: 'Body',
                   value: 'Hatter Pink Suit',
-                  percentOwned: 8,
+                  percentOwned: 8
                 },
                 {
                   trait_type: 'Accessory',
                   value: 'Tweedledee Hat',
-                  percentOwned: 10,
+                  percentOwned: 10
                 },
                 {
                   trait_type: 'Held Object',
                   value: 'Drink Me',
-                  percentOwned: 14,
-                },
+                  percentOwned: 14
+                }
               ],
-              owner: null,
+              owner: null
             },
             owner: '0x0077f2c8452eb223d573bc9931f341fb1711bdd5',
             owner_address: null,
-            burned: null,
+            burned: null
           },
           {
             token_id: '886',
@@ -845,34 +845,34 @@ const mockData = {
                 {
                   trait_type: 'Background',
                   value: 'Flowers Purple',
-                  percentOwned: 4,
+                  percentOwned: 4
                 },
                 {
                   trait_type: 'Head',
                   value: 'Alice Laser',
-                  percentOwned: 3,
+                  percentOwned: 3
                 },
                 {
                   trait_type: 'Body',
                   value: 'Cheshire Cat Purple Suit',
-                  percentOwned: 4,
+                  percentOwned: 4
                 },
                 {
                   trait_type: 'Accessory',
                   value: 'Bunny Top Hat',
-                  percentOwned: 8,
+                  percentOwned: 8
                 },
                 {
                   trait_type: 'Held Object',
                   value: 'Heart Staff',
-                  percentOwned: 10,
-                },
+                  percentOwned: 10
+                }
               ],
-              owner: null,
+              owner: null
             },
             owner: '0x0077f2c8452eb223d573bc9931f341fb1711bdd5',
             owner_address: null,
-            burned: null,
+            burned: null
           },
           {
             token_id: '887',
@@ -901,34 +901,34 @@ const mockData = {
                 {
                   trait_type: 'Background',
                   value: 'Solid Hot Purple',
-                  percentOwned: 8,
+                  percentOwned: 8
                 },
                 {
                   trait_type: 'Head',
                   value: 'Catepillar',
-                  percentOwned: 7,
+                  percentOwned: 7
                 },
                 {
                   trait_type: 'Body',
                   value: 'Alice Blue Dress',
-                  percentOwned: 10,
+                  percentOwned: 10
                 },
                 {
                   trait_type: 'Accessory',
                   value: 'Avax Necklace',
-                  percentOwned: 6,
+                  percentOwned: 6
                 },
                 {
                   trait_type: 'Held Object',
                   value: 'Cards',
-                  percentOwned: 11,
-                },
+                  percentOwned: 11
+                }
               ],
-              owner: null,
+              owner: null
             },
             owner: '0x0077f2c8452eb223d573bc9931f341fb1711bdd5',
             owner_address: null,
-            burned: null,
+            burned: null
           },
           {
             token_id: '888',
@@ -957,34 +957,34 @@ const mockData = {
                 {
                   trait_type: 'Background',
                   value: 'Solid Orange',
-                  percentOwned: 8,
+                  percentOwned: 8
                 },
                 {
                   trait_type: 'Head',
                   value: 'Catepillar',
-                  percentOwned: 7,
+                  percentOwned: 7
                 },
                 {
                   trait_type: 'Body',
                   value: 'Queen Red Dress',
-                  percentOwned: 8,
+                  percentOwned: 8
                 },
                 {
                   trait_type: 'Accessory',
                   value: 'Bunny Top Hat',
-                  percentOwned: 8,
+                  percentOwned: 8
                 },
                 {
                   trait_type: 'Held Object',
                   value: 'Eat Me',
-                  percentOwned: 14,
-                },
+                  percentOwned: 14
+                }
               ],
-              owner: null,
+              owner: null
             },
             owner: '0x0077f2c8452eb223d573bc9931f341fb1711bdd5',
             owner_address: null,
-            burned: null,
+            burned: null
           },
           {
             token_id: '889',
@@ -1013,34 +1013,34 @@ const mockData = {
                 {
                   trait_type: 'Background',
                   value: 'Checkerboard Orange',
-                  percentOwned: 7,
+                  percentOwned: 7
                 },
                 {
                   trait_type: 'Head',
                   value: 'Frog Bitcoin',
-                  percentOwned: 8,
+                  percentOwned: 8
                 },
                 {
                   trait_type: 'Body',
                   value: 'Queen Purple Dress',
-                  percentOwned: 10,
+                  percentOwned: 10
                 },
                 {
                   trait_type: 'Accessory',
                   value: 'Rose Hat',
-                  percentOwned: 4,
+                  percentOwned: 4
                 },
                 {
                   trait_type: 'Held Object',
                   value: 'Teacups',
-                  percentOwned: 10,
-                },
+                  percentOwned: 10
+                }
               ],
-              owner: null,
+              owner: null
             },
             owner: '0x0077f2c8452eb223d573bc9931f341fb1711bdd5',
             owner_address: null,
-            burned: null,
+            burned: null
           },
           {
             token_id: '890',
@@ -1069,43 +1069,43 @@ const mockData = {
                 {
                   trait_type: 'Background',
                   value: 'Occupy Defi Pink',
-                  percentOwned: 4,
+                  percentOwned: 4
                 },
                 {
                   trait_type: 'Head',
                   value: 'Queen',
-                  percentOwned: 10,
+                  percentOwned: 10
                 },
                 {
                   trait_type: 'Body',
                   value: 'Card Purple Suit',
-                  percentOwned: 7,
+                  percentOwned: 7
                 },
                 {
                   trait_type: 'Accessory',
                   value: 'Gold Top Hat',
-                  percentOwned: 3,
+                  percentOwned: 3
                 },
                 {
                   trait_type: 'Held Object',
                   value: 'Drink Me',
-                  percentOwned: 14,
-                },
+                  percentOwned: 14
+                }
               ],
-              owner: null,
+              owner: null
             },
             owner: '0x0077f2c8452eb223d573bc9931f341fb1711bdd5',
             owner_address: null,
-            burned: null,
-          },
-        ],
-      },
+            burned: null
+          }
+        ]
+      }
     ],
-    pagination: null,
+    pagination: null
   },
   error: false,
   error_message: null,
-  error_code: null,
-};
+  error_code: null
+}
 
-export const NFTs = mockData.data.items.filter((i) => i.type === 'nft');
+export const NFTs = mockData.data.items.filter(i => i.type === 'nft')

@@ -1,17 +1,17 @@
-import React from 'react';
-import CoreSVG from 'components/svg/CoreSVG';
-import {StyleProp, View, ViewStyle} from 'react-native';
+import React from 'react'
+import CoreSVG from 'components/svg/CoreSVG'
+import {StyleProp, View, ViewStyle} from 'react-native'
 
 type OwlBrandLogoProps = {
-  logoHeight?: number;
-  textHeight?: number;
-  style?: StyleProp<ViewStyle>;
-  orientation?: 'horizontal' | 'vertical';
-};
+  logoHeight?: number
+  textHeight?: number
+  style?: StyleProp<ViewStyle>
+  orientation?: 'horizontal' | 'vertical'
+}
 export default function CoreLogo({
   textHeight,
   style,
-  orientation = 'vertical',
+  orientation = 'vertical'
 }: OwlBrandLogoProps) {
   return (
     <View
@@ -19,11 +19,11 @@ export default function CoreLogo({
         {
           flexDirection: orientation === 'vertical' ? 'column' : 'row',
           justifyContent: 'center',
-          alignItems: 'center',
+          alignItems: 'center'
         },
-        style,
+        style
       ]}>
       <CoreSVG height={textHeight} />
     </View>
-  );
+  )
 }

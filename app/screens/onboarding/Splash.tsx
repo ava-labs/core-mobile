@@ -1,13 +1,13 @@
-import React from 'react';
-import {SafeAreaView, StyleSheet, View} from 'react-native';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import AvaText from 'components/AvaText';
-import AnimatedCoreXLogo from 'components/AnimatedCoreXLogo';
+import React from 'react'
+import {SafeAreaView, StyleSheet, View} from 'react-native'
+import {useApplicationContext} from 'contexts/ApplicationContext'
+import AvaText from 'components/AvaText'
+import AnimatedCoreXLogo from 'components/AnimatedCoreXLogo'
 
-const pkg = require('../../../package.json');
+const pkg = require('../../../package.json')
 
 export default function Splash({noAnim}: {noAnim?: boolean}): JSX.Element {
-  const {theme} = useApplicationContext();
+  const {theme} = useApplicationContext()
 
   return (
     <SafeAreaView style={{backgroundColor: theme.colorBg1}}>
@@ -18,12 +18,12 @@ export default function Splash({noAnim}: {noAnim?: boolean}): JSX.Element {
         </AvaText.Body2>
       </View>
     </SafeAreaView>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
   verticalLayout: {
     padding: 16,
-    height: '100%',
-  },
-});
+    height: '100%'
+  }
+})

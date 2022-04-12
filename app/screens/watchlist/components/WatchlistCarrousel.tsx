@@ -1,50 +1,50 @@
-import React, {FC, useEffect, useMemo, useState} from 'react';
+import React, {FC, useEffect, useMemo, useState} from 'react'
 import {
   FlatList,
   ListRenderItemInfo,
   StyleProp,
   StyleSheet,
-  View,
-} from 'react-native';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import Avatar from 'components/Avatar';
-import AvaText from 'components/AvaText';
-import {Space} from 'components/Space';
-import AvaButton from 'components/AvaButton';
+  View
+} from 'react-native'
+import {useApplicationContext} from 'contexts/ApplicationContext'
+import Avatar from 'components/Avatar'
+import AvaText from 'components/AvaText'
+import {Space} from 'components/Space'
+import AvaButton from 'components/AvaButton'
 import {
   ERC20WithBalance,
-  useWalletStateContext,
-} from '@avalabs/wallet-react-components';
-import AddSVG from 'components/svg/AddSVG';
-import {useNavigation} from '@react-navigation/native';
-import AppNavigation from 'navigation/AppNavigation';
-import {StackNavigationProp} from '@react-navigation/stack';
-import {CG_AVAX_TOKEN_ID} from 'screens/watchlist/WatchlistView';
-import Coingecko, {ChartData} from 'utils/Coingecko';
-import MarketMovement from 'screens/watchlist/components/MarketMovement';
-import {Opacity85} from 'resources/Constants';
+  useWalletStateContext
+} from '@avalabs/wallet-react-components'
+import AddSVG from 'components/svg/AddSVG'
+import {useNavigation} from '@react-navigation/native'
+import AppNavigation from 'navigation/AppNavigation'
+import {StackNavigationProp} from '@react-navigation/stack'
+import {CG_AVAX_TOKEN_ID} from 'screens/watchlist/WatchlistView'
+import Coingecko, {ChartData} from 'utils/Coingecko'
+import MarketMovement from 'screens/watchlist/components/MarketMovement'
+import {Opacity85} from 'resources/Constants'
 
 interface Props {
-  style?: StyleProp<View>;
+  style?: StyleProp<View>
 }
 
 const WatchlistCarrousel: FC<Props> = () => {
-  const {theme, repo} = useApplicationContext();
+  const {theme, repo} = useApplicationContext()
   // @ts-ignore avaxToken, erc20Tokens exist in walletContext
-  const {avaxToken, erc20Tokens} = useWalletStateContext();
-  const {watchlistFavorites} = repo.watchlistFavoritesRepo;
-  const navigation = useNavigation<StackNavigationProp<any>>();
+  const {avaxToken, erc20Tokens} = useWalletStateContext()
+  const {watchlistFavorites} = repo.watchlistFavoritesRepo
+  const navigation = useNavigation<StackNavigationProp<any>>()
 
   const favoriteTokens = useMemo(
     () =>
       [{...avaxToken, address: CG_AVAX_TOKEN_ID}, ...erc20Tokens].filter(
-        token => watchlistFavorites.includes(token.address),
+        token => watchlistFavorites.includes(token.address)
       ) ?? [],
-    [erc20Tokens, avaxToken],
-  );
+    [erc20Tokens, avaxToken]
+  )
 
   function goToWatchlist() {
-    navigation.navigate(AppNavigation.Tabs.Watchlist);
+    navigation.navigate(AppNavigation.Tabs.Watchlist)
   }
 
   const EmptyItem = useMemo(
@@ -59,29 +59,29 @@ const WatchlistCarrousel: FC<Props> = () => {
           textStyle={{
             color: theme.colorText1,
             textAlign: 'center',
-            paddingVertical: 8,
+            paddingVertical: 8
           }}>
           Add to Watchlist
         </AvaText.ButtonSmall>
         <Space y={16} />
       </AvaButton.Base>
     ),
-    [],
-  );
+    []
+  )
 
   const renderItem = (item: ListRenderItemInfo<ERC20WithBalance>) => {
-    const token = item.item;
+    const token = item.item
     return (
       <CarrouselItem
         token={token}
         onPress={() => {
           navigation.navigate(AppNavigation.Wallet.TokenDetail, {
-            address: token.address,
-          });
+            address: token.address
+          })
         }}
       />
-    );
-  };
+    )
+  }
 
   return (
     <View>
@@ -96,28 +96,28 @@ const WatchlistCarrousel: FC<Props> = () => {
         ItemSeparatorComponent={() => <View style={{margin: 4}} />}
       />
     </View>
-  );
-};
+  )
+}
 
 interface CarrouselItemProps {
-  token: ERC20WithBalance;
-  onPress: () => void;
+  token: ERC20WithBalance
+  onPress: () => void
 }
 
 const CarrouselItem: FC<CarrouselItemProps> = ({token, onPress}) => {
-  const theme = useApplicationContext().theme;
-  const [chartData, setChartData] = useState<ChartData>();
+  const theme = useApplicationContext().theme
+  const [chartData, setChartData] = useState<ChartData>()
 
   useEffect(() => {
-    (async () => {
+    ;(async () => {
       try {
-        const data = await Coingecko.fetchChartData(token.address, 1);
-        setChartData(data);
+        const data = await Coingecko.fetchChartData(token.address, 1)
+        setChartData(data)
       } catch (e) {
         //ignored
       }
-    })();
-  }, []);
+    })()
+  }, [])
 
   return (
     <AvaButton.Base
@@ -140,8 +140,8 @@ const CarrouselItem: FC<CarrouselItemProps> = ({token, onPress}) => {
         hideDifference
       />
     </AvaButton.Base>
-  );
-};
+  )
+}
 
 const style = StyleSheet.create({
   item: {
@@ -149,8 +149,8 @@ const style = StyleSheet.create({
     width: 72,
     alignItems: 'center',
     borderRadius: 10,
-    paddingVertical: 8,
-  },
-});
+    paddingVertical: 8
+  }
+})
 
-export default WatchlistCarrousel;
+export default WatchlistCarrousel

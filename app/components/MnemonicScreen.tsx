@@ -1,28 +1,28 @@
-import React from 'react';
-import {StyleSheet, View} from 'react-native';
-import AvaText from 'components/AvaText';
-import {Space} from 'components/Space';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import MnemonicAva from 'screens/onboarding/MnemonicAva';
-import AvaButton from 'components/AvaButton';
-import CopySVG from 'components/svg/CopySVG';
-import {copyToClipboard} from 'utils/DeviceTools';
-import {Opacity30} from 'resources/Constants';
+import React from 'react'
+import {StyleSheet, View} from 'react-native'
+import AvaText from 'components/AvaText'
+import {Space} from 'components/Space'
+import {useApplicationContext} from 'contexts/ApplicationContext'
+import MnemonicAva from 'screens/onboarding/MnemonicAva'
+import AvaButton from 'components/AvaButton'
+import CopySVG from 'components/svg/CopySVG'
+import {copyToClipboard} from 'utils/DeviceTools'
+import {Opacity30} from 'resources/Constants'
 
 type Props = {
-  mnemonic: string;
-};
+  mnemonic: string
+}
 
 export default function MnemonicScreen({mnemonic}: Props) {
-  const {theme, isDarkMode} = useApplicationContext();
+  const {theme, isDarkMode} = useApplicationContext()
 
   const mnemonics = () => {
-    const mnemonics: Element[] = [];
+    const mnemonics: Element[] = []
     mnemonic?.split(' ').forEach((value, key) => {
-      mnemonics.push(<MnemonicAva.Text key={key} keyNum={key} text={value} />);
-    });
-    return mnemonics;
-  };
+      mnemonics.push(<MnemonicAva.Text key={key} keyNum={key} text={value} />)
+    })
+    return mnemonics
+  }
 
   return (
     <View style={{flex: 1}}>
@@ -36,8 +36,8 @@ export default function MnemonicScreen({mnemonic}: Props) {
           {
             backgroundColor: isDarkMode
               ? theme.colorBg3 + Opacity30
-              : theme.colorBg1,
-          },
+              : theme.colorBg1
+          }
         ]}>
         {mnemonics()}
       </View>
@@ -56,7 +56,7 @@ export default function MnemonicScreen({mnemonic}: Props) {
         />
       </View>
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -70,6 +70,6 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     marginTop: 8,
     maxHeight: 310,
-    alignContent: 'space-between',
-  },
-});
+    alignContent: 'space-between'
+  }
+})

@@ -1,48 +1,48 @@
-import React from 'react';
-import AppNavigation from 'navigation/AppNavigation';
+import React from 'react'
+import AppNavigation from 'navigation/AppNavigation'
 import {
   createStackNavigator,
-  StackNavigationProp,
-} from '@react-navigation/stack';
-import Bridge from 'screens/bridge/Bridge';
-import BridgeTransactionStatus from 'screens/bridge/BridgeTransactionStatus';
-import {MainHeaderOptions, SubHeaderOptions} from 'navigation/NavUtils';
-import BridgeSelectTokenBottomSheet from 'screens/bridge/BridgeSelectTokenBottomSheet';
-import {useNavigation} from '@react-navigation/native';
-import WarningModal from 'components/WarningModal';
+  StackNavigationProp
+} from '@react-navigation/stack'
+import Bridge from 'screens/bridge/Bridge'
+import BridgeTransactionStatus from 'screens/bridge/BridgeTransactionStatus'
+import {MainHeaderOptions, SubHeaderOptions} from 'navigation/NavUtils'
+import BridgeSelectTokenBottomSheet from 'screens/bridge/BridgeSelectTokenBottomSheet'
+import {useNavigation} from '@react-navigation/native'
+import WarningModal from 'components/WarningModal'
 
 export type BridgeStackParamList = {
-  [AppNavigation.Bridge.Bridge]: undefined;
+  [AppNavigation.Bridge.Bridge]: undefined
   [AppNavigation.Bridge.BridgeTransactionStatus]: {
-    blockchain: string;
-    txHash: string;
-    txTimestamp: string;
-  };
+    blockchain: string
+    txHash: string
+    txTimestamp: string
+  }
   [AppNavigation.Modal.BridgeSelectToken]: {
-    onTokenSelected: (token: string) => void;
-  };
-  [AppNavigation.Bridge.HideWarning]: undefined;
-};
+    onTokenSelected: (token: string) => void
+  }
+  [AppNavigation.Bridge.HideWarning]: undefined
+}
 
-const BridgeStack = createStackNavigator<BridgeStackParamList>();
+const BridgeStack = createStackNavigator<BridgeStackParamList>()
 
 const BridgeTransactionStatusFromStack = () => (
   <BridgeTransactionStatus fromStack />
-);
+)
 
 function BridgeScreenStack() {
   return (
     <BridgeStack.Navigator>
       <BridgeStack.Screen
         options={{
-          ...MainHeaderOptions(''),
+          ...MainHeaderOptions('')
         }}
         name={AppNavigation.Bridge.Bridge}
         component={Bridge}
       />
       <BridgeStack.Screen
         options={{
-          ...SubHeaderOptions('Transaction Status'),
+          ...SubHeaderOptions('Transaction Status')
         }}
         name={AppNavigation.Bridge.BridgeTransactionStatus}
         component={BridgeTransactionStatusFromStack}
@@ -60,19 +60,19 @@ function BridgeScreenStack() {
         />
       </BridgeStack.Group>
     </BridgeStack.Navigator>
-  );
+  )
 }
 
 const HideTransactionWarningModal = () => {
-  const navigation = useNavigation<StackNavigationProp<BridgeStackParamList>>();
+  const navigation = useNavigation<StackNavigationProp<BridgeStackParamList>>()
 
   const onHide = () => {
-    navigation.getParent()?.goBack();
-  };
+    navigation.getParent()?.goBack()
+  }
 
   const onBack = () => {
-    navigation.goBack();
-  };
+    navigation.goBack()
+  }
 
   return (
     <WarningModal
@@ -85,7 +85,7 @@ const HideTransactionWarningModal = () => {
       onAction={onHide}
       onDismiss={onBack}
     />
-  );
-};
+  )
+}
 
-export default React.memo(BridgeScreenStack);
+export default React.memo(BridgeScreenStack)

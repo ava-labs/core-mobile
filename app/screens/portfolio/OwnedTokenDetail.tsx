@@ -1,19 +1,19 @@
-import {View} from 'react-native';
-import {Space} from 'components/Space';
-import React, {FC, useEffect, useState} from 'react';
-import AvaText from 'components/AvaText';
-import AvaListItem from 'components/AvaListItem';
-import Avatar from 'components/Avatar';
-import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
-import {RootStackParamList} from 'navigation/WalletScreenStack';
-import {useSearchableTokenList} from 'screens/portfolio/useSearchableTokenList';
-import {getTokenUID} from 'utils/TokenTools';
-import {TokenWithBalance} from '@avalabs/wallet-react-components';
-import {Row} from 'components/Row';
-import AvaButton from 'components/AvaButton';
-import AppNavigation from 'navigation/AppNavigation';
-import {StackNavigationProp} from '@react-navigation/stack';
-import ActivityList from 'screens/activity/ActivityList';
+import {View} from 'react-native'
+import {Space} from 'components/Space'
+import React, {FC, useEffect, useState} from 'react'
+import AvaText from 'components/AvaText'
+import AvaListItem from 'components/AvaListItem'
+import Avatar from 'components/Avatar'
+import {RouteProp, useNavigation, useRoute} from '@react-navigation/native'
+import {RootStackParamList} from 'navigation/WalletScreenStack'
+import {useSearchableTokenList} from 'screens/portfolio/useSearchableTokenList'
+import {getTokenUID} from 'utils/TokenTools'
+import {TokenWithBalance} from '@avalabs/wallet-react-components'
+import {Row} from 'components/Row'
+import AvaButton from 'components/AvaButton'
+import AppNavigation from 'navigation/AppNavigation'
+import {StackNavigationProp} from '@react-navigation/stack'
+import ActivityList from 'screens/activity/ActivityList'
 
 const OwnedTokenDetail: FC = () => {
   const tokenId =
@@ -22,20 +22,18 @@ const OwnedTokenDetail: FC = () => {
         RootStackParamList,
         typeof AppNavigation.Wallet.OwnedTokenDetail
       >
-    >()?.params?.tokenId;
-  const {navigate} = useNavigation<StackNavigationProp<RootStackParamList>>();
-  const {filteredTokenList} = useSearchableTokenList(false);
-  const [token, setToken] = useState<TokenWithBalance>();
+    >()?.params?.tokenId
+  const {navigate} = useNavigation<StackNavigationProp<RootStackParamList>>()
+  const {filteredTokenList} = useSearchableTokenList(false)
+  const [token, setToken] = useState<TokenWithBalance>()
 
-  useEffect(loadToken, [filteredTokenList, tokenId]);
+  useEffect(loadToken, [filteredTokenList, tokenId])
 
   function loadToken() {
     if (filteredTokenList) {
-      const result = filteredTokenList.filter(
-        tk => getTokenUID(tk) === tokenId,
-      );
+      const result = filteredTokenList.filter(tk => getTokenUID(tk) === tokenId)
       if (result.length > 0) {
-        setToken(result[0]);
+        setToken(result[0])
       }
     }
   }
@@ -45,7 +43,7 @@ const OwnedTokenDetail: FC = () => {
       <AvaText.Body1>{token?.balanceDisplayValue ?? '0'}</AvaText.Body1>
       <AvaText.Body2>{' ' + token?.symbol}</AvaText.Body2>
     </Row>
-  );
+  )
   return (
     <View style={{paddingHorizontal: 16, flex: 1}}>
       <AvaText.LargeTitleBold>Token Details</AvaText.LargeTitleBold>
@@ -97,7 +95,7 @@ const OwnedTokenDetail: FC = () => {
         <ActivityList tokenSymbolFilter={token?.symbol} embedded />
       </View>
     </View>
-  );
-};
+  )
+}
 
-export default OwnedTokenDetail;
+export default OwnedTokenDetail

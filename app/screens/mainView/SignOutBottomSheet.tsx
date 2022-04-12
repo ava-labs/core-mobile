@@ -1,21 +1,21 @@
-import React, {useCallback, useEffect, useMemo, useRef} from 'react';
-import {useNavigation} from '@react-navigation/native';
-import BottomSheet, {BottomSheetBackdrop} from '@gorhom/bottom-sheet';
-import {Space} from 'components/Space';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import {View} from 'react-native';
-import AvaText from 'components/AvaText';
-import AvaButton from 'components/AvaButton';
-import TabViewBackground from 'screens/portfolio/components/TabViewBackground';
+import React, {useCallback, useEffect, useMemo, useRef} from 'react'
+import {useNavigation} from '@react-navigation/native'
+import BottomSheet, {BottomSheetBackdrop} from '@gorhom/bottom-sheet'
+import {Space} from 'components/Space'
+import {useApplicationContext} from 'contexts/ApplicationContext'
+import {View} from 'react-native'
+import AvaText from 'components/AvaText'
+import AvaButton from 'components/AvaButton'
+import TabViewBackground from 'screens/portfolio/components/TabViewBackground'
 
 const LogoutScreen = ({
   onConfirm,
-  onCancel,
+  onCancel
 }: {
-  onConfirm: () => void;
-  onCancel: () => void;
+  onConfirm: () => void
+  onCancel: () => void
 }) => {
-  const {theme} = useApplicationContext();
+  const {theme} = useApplicationContext()
   return (
     <View
       style={[
@@ -28,8 +28,8 @@ const LogoutScreen = ({
           marginVertical: 16,
           justifyContent: 'flex-end',
           position: 'absolute',
-          bottom: 0,
-        },
+          bottom: 0
+        }
       ]}>
       <AvaText.Heading2 textStyle={{textAlign: 'center'}}>
         Have you recorded your recovery phrase?
@@ -41,30 +41,30 @@ const LogoutScreen = ({
       <Space y={8} />
       <AvaButton.TextLarge onPress={onCancel}>No</AvaButton.TextLarge>
     </View>
-  );
-};
+  )
+}
 
 const SignOutBottomSheet = ({onConfirm}: {onConfirm: () => void}) => {
-  const bottomSheetRef = useRef<BottomSheet>(null);
-  const {goBack, canGoBack} = useNavigation();
-  const snapPoints = useMemo(() => ['0%', '40%'], []);
+  const bottomSheetRef = useRef<BottomSheet>(null)
+  const {goBack, canGoBack} = useNavigation()
+  const snapPoints = useMemo(() => ['0%', '40%'], [])
 
   useEffect(() => {
     // intentionally setting delay so animation is visible.
     setTimeout(() => {
-      bottomSheetRef?.current?.snapTo(1);
-    }, 50);
-  }, []);
+      bottomSheetRef?.current?.snapTo(1)
+    }, 50)
+  }, [])
 
   const handleChange = useCallback(index => {
     if (index === 0 && canGoBack()) {
-      goBack();
+      goBack()
     }
-  }, []);
+  }, [])
 
   const MyHandle = () => {
-    return <Space y={24} />;
-  };
+    return <Space y={24} />
+  }
 
   // renders
   return (
@@ -78,7 +78,7 @@ const SignOutBottomSheet = ({onConfirm}: {onConfirm: () => void}) => {
       backdropComponent={BottomSheetBackdrop}>
       <LogoutScreen onConfirm={onConfirm} onCancel={() => goBack()} />
     </BottomSheet>
-  );
-};
+  )
+}
 
-export default SignOutBottomSheet;
+export default SignOutBottomSheet

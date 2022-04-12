@@ -1,23 +1,23 @@
-import {storiesOf} from '@storybook/react-native';
-import React, {FC, useEffect, useState} from 'react';
-import {Pressable, StyleSheet, View} from 'react-native';
-import ConfirmationTracker from 'screens/bridge/components/ConfirmationTracker';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import AvaText from 'components/AvaText';
-import {Space} from 'components/Space';
+import {storiesOf} from '@storybook/react-native'
+import React, {FC, useEffect, useState} from 'react'
+import {Pressable, StyleSheet, View} from 'react-native'
+import ConfirmationTracker from 'screens/bridge/components/ConfirmationTracker'
+import {useApplicationContext} from 'contexts/ApplicationContext'
+import AvaText from 'components/AvaText'
+import {Space} from 'components/Space'
 
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     flex: 1,
     justifyContent: 'center',
-    backgroundColor: 'black',
-  },
-});
+    backgroundColor: 'black'
+  }
+})
 
 storiesOf('Confirmation Tracker', module)
   .add('SingleConfirmation', () => <SingleContainer />)
-  .add('Multiple Confirmations', () => <MultipleContainer />);
+  .add('Multiple Confirmations', () => <MultipleContainer />)
 
 /**
  * Use Container if need to access hooks prior to calling component. Otherwise just use component directly. See other
@@ -25,25 +25,25 @@ storiesOf('Confirmation Tracker', module)
  * @constructor
  */
 const MultipleContainer: FC = () => {
-  const theme = useApplicationContext().theme;
-  const [testStep, setTestStep] = useState(0);
-  const requiredSteps = 4;
+  const theme = useApplicationContext().theme
+  const [testStep, setTestStep] = useState(0)
+  const requiredSteps = 4
 
   useEffect(() => {
-    let counter = 0;
+    let counter = 0
     const interval = setInterval(() => {
-      counter++;
+      counter++
       if (counter % 5) {
-        const nextStep = testStep + 1;
-        setTestStep(nextStep);
+        const nextStep = testStep + 1
+        setTestStep(nextStep)
       }
 
       if (testStep === 15) {
-        clearInterval(interval);
+        clearInterval(interval)
       }
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [testStep]);
+    }, 3000)
+    return () => clearInterval(interval)
+  }, [testStep])
 
   return (
     <View style={styles.container}>
@@ -56,7 +56,7 @@ const MultipleContainer: FC = () => {
           backgroundColor: theme.colorBg2,
           borderRadius: 10,
           paddingHorizontal: 16,
-          overflow: 'hidden',
+          overflow: 'hidden'
         }}>
         <ConfirmationTracker
           started={true}
@@ -65,13 +65,13 @@ const MultipleContainer: FC = () => {
         />
       </View>
     </View>
-  );
-};
+  )
+}
 
 const SingleContainer: FC = () => {
-  const theme = useApplicationContext().theme;
-  const [testStep, setTestStep] = useState(0);
-  const requiredSteps = 1;
+  const theme = useApplicationContext().theme
+  const [testStep, setTestStep] = useState(0)
+  const requiredSteps = 1
 
   return (
     <View style={styles.container}>
@@ -84,7 +84,7 @@ const SingleContainer: FC = () => {
           backgroundColor: theme.colorBg2,
           borderRadius: 10,
           paddingHorizontal: 16,
-          overflow: 'hidden',
+          overflow: 'hidden'
         }}>
         <ConfirmationTracker
           started={true}
@@ -93,5 +93,5 @@ const SingleContainer: FC = () => {
         />
       </View>
     </View>
-  );
-};
+  )
+}

@@ -1,15 +1,15 @@
-import React from 'react';
-import Svg, {G, Path} from 'react-native-svg';
-import {useApplicationContext} from 'contexts/ApplicationContext';
+import React from 'react'
+import Svg, {G, Path} from 'react-native-svg'
+import {useApplicationContext} from 'contexts/ApplicationContext'
 
 interface Prop {
-  color?: string;
+  color?: string
 }
 
 export default function AddressBookSVG({color}: Prop) {
-  const context = useApplicationContext();
+  const context = useApplicationContext()
 
-  const iconColor = color ?? context.theme.colorIcon1;
+  const iconColor = color ?? context.theme.colorIcon1
   return (
     <Svg width="24" height="24" viewBox="0 0 24 24">
       <G fill={iconColor}>
@@ -27,5 +27,5 @@ export default function AddressBookSVG({color}: Prop) {
         />
       </G>
     </Svg>
-  );
+  )
 }

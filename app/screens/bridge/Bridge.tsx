@@ -1,4 +1,4 @@
-import React, {FC, useMemo} from 'react';
+import React, {FC, useMemo} from 'react'
 import {
   ActivityIndicator,
   Alert,
@@ -6,42 +6,42 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  View,
-} from 'react-native';
-import {Space} from 'components/Space';
-import AvaText from 'components/AvaText';
-import AvaButton from 'components/AvaButton';
-import SwapNarrowSVG from 'components/svg/SwapNarrowSVG';
-import AvaListItem from 'components/AvaListItem';
-import DropDown from 'components/Dropdown';
-import {Row} from 'components/Row';
-import Separator from 'components/Separator';
-import Avatar from 'components/Avatar';
-import CheckmarkSVG from 'components/svg/CheckmarkSVG';
+  View
+} from 'react-native'
+import {Space} from 'components/Space'
+import AvaText from 'components/AvaText'
+import AvaButton from 'components/AvaButton'
+import SwapNarrowSVG from 'components/svg/SwapNarrowSVG'
+import AvaListItem from 'components/AvaListItem'
+import DropDown from 'components/Dropdown'
+import {Row} from 'components/Row'
+import Separator from 'components/Separator'
+import Avatar from 'components/Avatar'
+import CheckmarkSVG from 'components/svg/CheckmarkSVG'
 import {
   AssetType,
   BIG_ZERO,
   Blockchain,
-  formatTokenAmount,
-} from '@avalabs/bridge-sdk';
-import {Big} from '@avalabs/avalanche-wallet-sdk';
-import AppNavigation from 'navigation/AppNavigation';
-import CarrotSVG from 'components/svg/CarrotSVG';
-import InputText from 'components/InputText';
-import useBridge from 'screens/bridge/hooks/useBridge';
-import {useNavigation} from '@react-navigation/native';
-import {StackNavigationProp} from '@react-navigation/stack';
-import {BridgeStackParamList} from 'navigation/wallet/BridgeScreenStack';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import {SafeAreaProvider} from 'react-native-safe-area-context';
+  formatTokenAmount
+} from '@avalabs/bridge-sdk'
+import {Big} from '@avalabs/avalanche-wallet-sdk'
+import AppNavigation from 'navigation/AppNavigation'
+import CarrotSVG from 'components/svg/CarrotSVG'
+import InputText from 'components/InputText'
+import useBridge from 'screens/bridge/hooks/useBridge'
+import {useNavigation} from '@react-navigation/native'
+import {StackNavigationProp} from '@react-navigation/stack'
+import {BridgeStackParamList} from 'navigation/wallet/BridgeScreenStack'
+import {useApplicationContext} from 'contexts/ApplicationContext'
+import {SafeAreaProvider} from 'react-native-safe-area-context'
 
 const formatBalance = (balance: Big | undefined) => {
-  return balance && formatTokenAmount(balance, 6);
-};
+  return balance && formatTokenAmount(balance, 6)
+}
 
 const Bridge: FC = () => {
-  const navigation = useNavigation<StackNavigationProp<BridgeStackParamList>>();
-  const theme = useApplicationContext().theme;
+  const navigation = useNavigation<StackNavigationProp<BridgeStackParamList>>()
+  const theme = useApplicationContext().theme
   const {
     assetPrice,
     currentBlockchain,
@@ -65,8 +65,8 @@ const Bridge: FC = () => {
     assetInfo,
     pending,
     amountTooHighError,
-    transferDisabled,
-  } = useBridge();
+    transferDisabled
+  } = useBridge()
 
   /**
    * Used to display currently selected and dropdown items.
@@ -83,15 +83,15 @@ const Bridge: FC = () => {
   function dropdownItemFormat(
     blockchain: string,
     selectedBlockchain?: Blockchain,
-    showCheckmark = true,
+    showCheckmark = true
   ) {
-    const isSelected = showCheckmark && blockchain === selectedBlockchain;
+    const isSelected = showCheckmark && blockchain === selectedBlockchain
     return (
       <Row
         style={{
           paddingVertical: 8,
           paddingHorizontal: 8,
-          alignItems: 'center',
+          alignItems: 'center'
         }}>
         {blockchain === Blockchain.AVALANCHE ? (
           <Avatar.Custom name={'Avalanche'} symbol={'AVAX'} />
@@ -112,7 +112,7 @@ const Bridge: FC = () => {
           </>
         )}
       </Row>
-    );
+    )
   }
 
   /**
@@ -120,9 +120,9 @@ const Bridge: FC = () => {
    */
   const navigateToTokenSelector = () => {
     navigation.navigate(AppNavigation.Modal.BridgeSelectToken, {
-      onTokenSelected: setCurrentAsset,
-    });
-  };
+      onTokenSelected: setCurrentAsset
+    })
+  }
 
   /**
    * Method used to render custom dropdown item
@@ -131,40 +131,40 @@ const Bridge: FC = () => {
    */
   const renderDropdownOptions = (
     item: ListRenderItemInfo<string>,
-    blockchain = Blockchain.AVALANCHE,
+    blockchain = Blockchain.AVALANCHE
   ) => {
-    return dropdownItemFormat(item.item, blockchain);
-  };
+    return dropdownItemFormat(item.item, blockchain)
+  }
 
   /**
    * Blockchain array that's fed to dropdown
    */
   const blockChainItems = useMemo(() => {
-    return [Blockchain.AVALANCHE, Blockchain.ETHEREUM];
-  }, []);
+    return [Blockchain.AVALANCHE, Blockchain.ETHEREUM]
+  }, [])
 
   const handleAmountChanged = (value: string) => {
     /**
      * Split the input and make sure the right side never exceeds
      * the denomination length
      */
-    setAmount(new Big(value || 0));
-  };
+    setAmount(new Big(value || 0))
+  }
 
   /**
    * Handles transfer transaction
    */
   const handleTransfer = async () => {
     if (BIG_ZERO.eq(amount)) {
-      return;
+      return
     }
 
     try {
-      setPending(true);
-      const result = await transferAsset(amount);
+      setPending(true)
+      const result = await transferAsset(amount)
 
       if (!result?.hash) {
-        return;
+        return
       }
 
       setTransactionDetails({
@@ -172,35 +172,35 @@ const Bridge: FC = () => {
           assetInfo.assetType === AssetType.NATIVE
             ? assetInfo.wrappedAssetSymbol
             : currentAsset || '',
-        amount,
-      });
+        amount
+      })
 
       // Navigate to transaction status page
       navigation.navigate(AppNavigation.Bridge.BridgeTransactionStatus, {
         blockchain: currentBlockchain as string,
         txHash: result.hash,
-        txTimestamp: Date.now().toString(),
-      });
+        txTimestamp: Date.now().toString()
+      })
     } catch (e) {
-      const error = e as Error;
+      const error = e as Error
       Alert.alert(
         'Error Bridging',
         error?.reason ??
-          'An unknown error has occurred. Bridging was halted. Please try again later',
-      );
-      return;
+          'An unknown error has occurred. Bridging was halted. Please try again later'
+      )
+      return
     } finally {
-      setPending(false);
+      setPending(false)
     }
-  };
+  }
 
   const calculateEstimatedTotal = useMemo(() => {
     if (!transferCost) {
-      return;
+      return
     }
-    const amountMinusTransfer = amount.minus(transferCost);
-    return `${assetPrice.mul(amountMinusTransfer).toNumber()}`;
-  }, [transferCost, amount, assetPrice]);
+    const amountMinusTransfer = amount.minus(transferCost)
+    return `${assetPrice.mul(amountMinusTransfer).toNumber()}`
+  }, [transferCost, amount, assetPrice])
 
   return (
     <SafeAreaProvider>
@@ -219,7 +219,7 @@ const Bridge: FC = () => {
                 currentItem={dropdownItemFormat(
                   currentBlockchain,
                   undefined,
-                  false,
+                  false
                 )}
                 onItemSelected={bc => setCurrentBlockchain(bc as Blockchain)}
                 customRenderItem={item =>
@@ -235,7 +235,7 @@ const Bridge: FC = () => {
               color={theme.colorText2}
               textStyle={{
                 alignSelf: 'flex-end',
-                paddingEnd: 16,
+                paddingEnd: 16
               }}>
               Balance:
               {sourceBalance?.balance
@@ -271,7 +271,7 @@ const Bridge: FC = () => {
                   keyboardType="numeric"
                   onMax={() => {
                     if (maxTransferAmount) {
-                      setAmount(maxTransferAmount.round(6, 0));
+                      setAmount(maxTransferAmount.round(6, 0))
                     }
                   }}
                   onChangeText={handleAmountChanged}
@@ -291,7 +291,7 @@ const Bridge: FC = () => {
                 color={theme.colorText2}
                 textStyle={{
                   alignSelf: 'flex-end',
-                  paddingEnd: 16,
+                  paddingEnd: 16
                 }}>
                 {`${assetPrice.mul(amount).toNumber()}`}
               </AvaText.Body3>
@@ -310,8 +310,8 @@ const Bridge: FC = () => {
             setCurrentBlockchain(
               currentBlockchain === Blockchain.AVALANCHE
                 ? Blockchain.ETHEREUM
-                : Blockchain.AVALANCHE,
-            );
+                : Blockchain.AVALANCHE
+            )
           }}
           style={[styles.swapButton, {backgroundColor: theme.colorBg2}]}>
           <SwapNarrowSVG />
@@ -326,7 +326,7 @@ const Bridge: FC = () => {
                 currentItem={dropdownItemFormat(
                   targetBlockchain,
                   targetBlockchain,
-                  false,
+                  false
                 )}
                 onItemSelected={bc => setCurrentBlockchain(bc as Blockchain)}
                 customRenderItem={item =>
@@ -372,10 +372,10 @@ const Bridge: FC = () => {
       <AvaButton.Base
         style={[
           styles.transferButton,
-          {backgroundColor: transferDisabled ? '#FFFFFF80' : theme.white},
+          {backgroundColor: transferDisabled ? '#FFFFFF80' : theme.white}
         ]}
         onPress={() => {
-          handleTransfer();
+          handleTransfer()
         }}
         disabled={transferDisabled}>
         <Row>
@@ -387,32 +387,32 @@ const Bridge: FC = () => {
         </Row>
       </AvaButton.Base>
     </SafeAreaProvider>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginHorizontal: 8,
+    marginHorizontal: 8
   },
   fromContainer: {
     flex: 1,
     paddingStart: 16,
     paddingTop: 16,
-    paddingBottom: 16,
+    paddingBottom: 16
   },
   tokenSelectContainer: {
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'center'
   },
   tokenRow: {
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'center'
   },
   tokenSelectorText: {
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 8,
+    marginRight: 8
   },
   swapButton: {
     alignSelf: 'flex-end',
@@ -422,12 +422,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginHorizontal: 16,
-    marginVertical: 16,
+    marginVertical: 16
   },
   receiveRow: {
     flex: 1,
     padding: 16,
-    justifyContent: 'space-between',
+    justifyContent: 'space-between'
   },
   transferButton: {
     margin: 16,
@@ -435,8 +435,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginHorizontal: 16,
-    paddingVertical: 12,
-  },
-});
+    paddingVertical: 12
+  }
+})
 
-export default Bridge;
+export default Bridge

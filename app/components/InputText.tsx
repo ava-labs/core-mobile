@@ -1,36 +1,36 @@
-import React, {RefObject, useEffect, useRef, useState} from 'react';
+import React, {RefObject, useEffect, useRef, useState} from 'react'
 import {
   Appearance,
   InteractionManager,
   StyleProp,
   TextInput,
   View,
-  ViewStyle,
-} from 'react-native';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import AvaButton from './AvaButton';
-import {Opacity50} from 'resources/Constants';
-import ClearInputSVG from 'components/svg/ClearInputSVG';
-import {Space} from 'components/Space';
-import AvaText from './AvaText';
-import CheckmarkSVG from 'components/svg/CheckmarkSVG';
-import {Popable} from 'react-native-popable';
+  ViewStyle
+} from 'react-native'
+import {useApplicationContext} from 'contexts/ApplicationContext'
+import {Opacity50} from 'resources/Constants'
+import ClearInputSVG from 'components/svg/ClearInputSVG'
+import {Space} from 'components/Space'
+import CheckmarkSVG from 'components/svg/CheckmarkSVG'
+import {Popable} from 'react-native-popable'
+import AvaText from './AvaText'
+import AvaButton from './AvaButton'
 
 type Props = {
-  onChangeText?: (text: string) => void;
-  editable?: boolean;
-  multiline?: boolean;
-  minHeight?: number;
-  onSubmit?: () => void;
-  onMax?: () => void;
-  onConfirm?: (text: string) => void;
-  placeholder?: string;
+  onChangeText?: (text: string) => void
+  editable?: boolean
+  multiline?: boolean
+  minHeight?: number
+  onSubmit?: () => void
+  onMax?: () => void
+  onConfirm?: (text: string) => void
+  placeholder?: string
   // Shows label above input
-  label?: string;
+  label?: string
   // Shows helper text under input
-  helperText?: string | React.ReactNode;
+  helperText?: string | React.ReactNode
   // Shows error message and error color border
-  errorText?: string;
+  errorText?: string
   // Private - Hides input, shows toggle button to show input, neon color border. Will disable multiline.
   mode?:
     | 'default'
@@ -38,68 +38,68 @@ type Props = {
     | 'amount'
     | 'confirmEntry'
     | 'percentage'
-    | 'currency';
+    | 'currency'
   // Set keyboard type (numeric, text)
-  keyboardType?: 'numeric';
+  keyboardType?: 'numeric'
   // shows popover info if provided
-  popOverInfoText?: string | React.ReactElement;
-  autoFocus?: boolean;
-  text?: string;
-  currency?: string;
-  onInputRef?: (inputRef: RefObject<TextInput>) => void;
-  width?: number;
-  style?: StyleProp<ViewStyle>;
-};
+  popOverInfoText?: string | React.ReactElement
+  autoFocus?: boolean
+  text?: string
+  currency?: string
+  onInputRef?: (inputRef: RefObject<TextInput>) => void
+  width?: number
+  style?: StyleProp<ViewStyle>
+}
 
 export default function InputText(props: Props | Readonly<Props>) {
-  const context = useApplicationContext();
-  const [text, setText] = useState(props.text ?? '');
-  const [showInput, setShowInput] = useState(false);
-  const [focused, setFocused] = useState(false);
-  const [toggleShowText, setToggleShowText] = useState('Show');
-  const [mode] = useState(props.mode ?? 'default');
-  const textInputRef = useRef() as RefObject<TextInput>;
-  const [initText, setInitText] = useState(props.text);
+  const context = useApplicationContext()
+  const [text, setText] = useState(props.text ?? '')
+  const [showInput, setShowInput] = useState(false)
+  const [focused, setFocused] = useState(false)
+  const [toggleShowText, setToggleShowText] = useState('Show')
+  const [mode] = useState(props.mode ?? 'default')
+  const textInputRef = useRef() as RefObject<TextInput>
+  const [initText, setInitText] = useState(props.text)
 
   useEffect(() => {
-    props.onInputRef?.(textInputRef);
-  }, [textInputRef]);
+    props.onInputRef?.(textInputRef)
+  }, [textInputRef])
 
   useEffect(() => {
     if (props.text !== undefined && isNaN(Number(props.text))) {
-      return;
+      return
     }
     //detects change in param, without it, changing param won't trigger redraw
     if (initText !== props.text) {
-      setInitText(props.text);
-      setText(props.text ?? '');
+      setInitText(props.text)
+      setText(props.text ?? '')
     }
-  });
+  })
 
   useEffect(() => {
-    setToggleShowText(showInput ? 'Hide' : 'Show');
-  }, [showInput]);
+    setToggleShowText(showInput ? 'Hide' : 'Show')
+  }, [showInput])
 
   useEffect(() => {
     if (props.autoFocus) {
       InteractionManager.runAfterInteractions(() => {
-        textInputRef.current?.focus();
-      });
+        textInputRef.current?.focus()
+      })
     }
-  }, [props.autoFocus, textInputRef]);
+  }, [props.autoFocus, textInputRef])
 
   const onSubmit = (): void => {
-    props.onSubmit?.();
-  };
+    props.onSubmit?.()
+  }
   const onClear = (): void => {
-    setText('');
-    props.onChangeText?.('');
-  };
+    setText('')
+    props.onChangeText?.('')
+  }
   const onToggleShowInput = (): void => {
-    setShowInput(!showInput);
-  };
+    setShowInput(!showInput)
+  }
 
-  const theme = context.theme;
+  const theme = context.theme
 
   const ClearBtn = () => {
     return (
@@ -108,16 +108,17 @@ export default function InputText(props: Props | Readonly<Props>) {
           {
             position: 'absolute',
             end: 8,
-            top: 2,
-          },
+            top: 2
+          }
         ]}>
         <AvaButton.Icon onPress={onClear}>
           <ClearInputSVG color={theme.colorText2} size={14} />
         </AvaButton.Icon>
       </View>
-    );
-  };
+    )
+  }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const Percent = () => {
     return (
       <View
@@ -125,13 +126,13 @@ export default function InputText(props: Props | Readonly<Props>) {
           {
             position: 'absolute',
             justifyContent: 'center',
-            end: 16,
-          },
+            end: 16
+          }
         ]}>
         <AvaText.Heading3 textStyle={{color: 'black'}}>%</AvaText.Heading3>
       </View>
-    );
-  };
+    )
+  }
 
   const Currency = ({currency}: {currency?: string}) => {
     return (
@@ -140,13 +141,13 @@ export default function InputText(props: Props | Readonly<Props>) {
           {
             position: 'absolute',
             justifyContent: 'center',
-            end: 16,
-          },
+            end: 16
+          }
         ]}>
         <AvaText.Heading3>{currency}</AvaText.Heading3>
       </View>
-    );
-  };
+    )
+  }
 
   const ShowPassBtn = () => {
     return (
@@ -154,15 +155,15 @@ export default function InputText(props: Props | Readonly<Props>) {
         style={[
           {
             position: 'absolute',
-            end: 0,
-          },
+            end: 0
+          }
         ]}>
         <AvaButton.TextMedium onPress={onToggleShowInput}>
           {toggleShowText}
         </AvaButton.TextMedium>
       </View>
-    );
-  };
+    )
+  }
 
   const Label = () => {
     return (
@@ -180,8 +181,8 @@ export default function InputText(props: Props | Readonly<Props>) {
         )}
         <View style={[{height: 8}]} />
       </View>
-    );
-  };
+    )
+  }
 
   const HelperText = () => {
     return (
@@ -195,8 +196,8 @@ export default function InputText(props: Props | Readonly<Props>) {
           <View>{props.helperText}</View>
         )}
       </>
-    );
-  };
+    )
+  }
 
   const ErrorText = () => {
     return (
@@ -206,29 +207,29 @@ export default function InputText(props: Props | Readonly<Props>) {
           {props.errorText || ''}
         </AvaText.Body3>
       </>
-    );
-  };
+    )
+  }
 
   const onChangeText = (text: string): void => {
     if (props.keyboardType === 'numeric') {
-      text = text.replace(',', '.');
-      text = text.replace(/[^.\d]/g, ''); //remove non-digits
-      text = text.replace(/^0+/g, '0'); //remove starting double 0
-      text = text.replace(/^0(?=\d)/g, ''); //remove starting 0 if next one is digit
-      let numOfDots = 0;
+      text = text.replace(',', '.')
+      text = text.replace(/[^.\d]/g, '') //remove non-digits
+      text = text.replace(/^0+/g, '0') //remove starting double 0
+      text = text.replace(/^0(?=\d)/g, '') //remove starting 0 if next one is digit
+      let numOfDots = 0
       text = text.replace(/\./g, substring => {
         //remove extra decimal points
         if (numOfDots === 0) {
-          numOfDots++;
-          return substring;
+          numOfDots++
+          return substring
         } else {
-          return '';
+          return ''
         }
-      });
+      })
     }
-    setText(text);
-    props.onChangeText?.(text);
-  };
+    setText(text)
+    props.onChangeText?.(text)
+  }
 
   return (
     <View style={[{margin: 12}, props.style]}>
@@ -236,8 +237,8 @@ export default function InputText(props: Props | Readonly<Props>) {
       <View
         style={[
           {
-            justifyContent: 'center',
-          },
+            justifyContent: 'center'
+          }
         ]}>
         <TextInput
           keyboardAppearance={Appearance.getColorScheme() || 'default'}
@@ -287,8 +288,8 @@ export default function InputText(props: Props | Readonly<Props>) {
               paddingTop: 12,
               paddingBottom: 12,
               fontFamily: 'Inter-Regular',
-              width: props.width,
-            },
+              width: props.width
+            }
           ]}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
@@ -309,7 +310,7 @@ export default function InputText(props: Props | Readonly<Props>) {
 
       {(props.errorText || false) && <ErrorText />}
     </View>
-  );
+  )
 }
 
 function MaxBtn({onPress}: {onPress?: () => void}) {
@@ -318,12 +319,12 @@ function MaxBtn({onPress}: {onPress?: () => void}) {
       style={[
         {
           position: 'absolute',
-          end: 0,
-        },
+          end: 0
+        }
       ]}>
       <AvaButton.TextMedium onPress={onPress}>Max</AvaButton.TextMedium>
     </View>
-  );
+  )
 }
 
 function ConfirmBtn({onPress}: {onPress?: () => void}) {
@@ -332,12 +333,12 @@ function ConfirmBtn({onPress}: {onPress?: () => void}) {
       style={[
         {
           position: 'absolute',
-          end: 16,
-        },
+          end: 16
+        }
       ]}>
       <AvaButton.Icon onPress={onPress}>
         <CheckmarkSVG />
       </AvaButton.Icon>
     </View>
-  );
+  )
 }

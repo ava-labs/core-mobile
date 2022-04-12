@@ -1,19 +1,19 @@
-import React, {useEffect} from 'react';
-import {Animated, StyleSheet, View} from 'react-native';
-import PinKey, {PinKeys} from 'screens/onboarding/PinKey';
+import React, {useEffect} from 'react'
+import {Animated, StyleSheet, View} from 'react-native'
+import PinKey, {PinKeys} from 'screens/onboarding/PinKey'
+import AvaText from 'components/AvaText'
+import {Space} from 'components/Space'
+import {useApplicationContext} from 'contexts/ApplicationContext'
+import AvaButton from 'components/AvaButton'
+import DotSVG from 'components/svg/DotSVG'
+import CoreSVG from 'components/svg/CoreSVG'
 import {
   MnemonicLoaded,
   NothingToLoad,
   PrivateKeyLoaded,
   usePinOrBiometryLogin,
-  WalletLoadingResults,
-} from './PinOrBiometryLoginViewModel';
-import AvaText from 'components/AvaText';
-import {Space} from 'components/Space';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import AvaButton from 'components/AvaButton';
-import DotSVG from 'components/svg/DotSVG';
-import CoreSVG from 'components/svg/CoreSVG';
+  WalletLoadingResults
+} from './PinOrBiometryLoginViewModel'
 
 const keymap: Map<string, PinKeys> = new Map([
   ['1', PinKeys.Key1],
@@ -26,15 +26,15 @@ const keymap: Map<string, PinKeys> = new Map([
   ['8', PinKeys.Key8],
   ['9', PinKeys.Key9],
   ['0', PinKeys.Key0],
-  ['<', PinKeys.Backspace],
-]);
+  ['<', PinKeys.Backspace]
+])
 
 type Props = {
-  onSignInWithRecoveryPhrase: () => void;
-  onLoginSuccess: (mnemonic: string) => void;
-  isResettingPin?: boolean;
-  hideLoginWithMnemonic?: boolean;
-};
+  onSignInWithRecoveryPhrase: () => void
+  onLoginSuccess: (mnemonic: string) => void
+  isResettingPin?: boolean
+  hideLoginWithMnemonic?: boolean
+}
 
 /**
  * This screen will select appropriate login method (pin or biometry) and call onLoginSuccess upon successful login.
@@ -48,19 +48,19 @@ export default function PinOrBiometryLogin({
   onSignInWithRecoveryPhrase,
   onLoginSuccess,
   isResettingPin,
-  hideLoginWithMnemonic = false,
+  hideLoginWithMnemonic = false
 }: Props | Readonly<Props>): JSX.Element {
-  const theme = useApplicationContext().theme;
+  const theme = useApplicationContext().theme
 
   const {
     pinDots,
     onEnterPin,
     mnemonic,
     promptForWalletLoadingIfExists,
-    jiggleAnim,
-  } = usePinOrBiometryLogin();
+    jiggleAnim
+  } = usePinOrBiometryLogin()
 
-  const context = useApplicationContext();
+  const context = useApplicationContext()
 
   useEffect(() => {
     // check if if the login is biometric
@@ -75,43 +75,43 @@ export default function PinOrBiometryLogin({
           //do nothing
         }
       },
-      error: err => console.log(err.message),
-    });
+      error: err => console.log(err.message)
+    })
 
-    return () => sub.unsubscribe();
-  }, []);
+    return () => sub.unsubscribe()
+  }, [])
 
   useEffect(() => {
     if (mnemonic) {
-      onLoginSuccess(mnemonic);
+      onLoginSuccess(mnemonic)
     }
-  }, [mnemonic]);
+  }, [mnemonic])
 
   const generatePinDots = (): Element[] => {
-    const dots: Element[] = [];
+    const dots: Element[] = []
 
     pinDots.forEach((value, key) => {
       dots.push(
         <DotSVG
           fillColor={value.filled ? theme.alternateBackground : undefined}
           key={key}
-        />,
-      );
-    });
-    return dots;
-  };
+        />
+      )
+    })
+    return dots
+  }
 
   const keyboard = () => {
-    const keys: Element[] = [];
+    const keys: Element[] = []
     '123456789 0<'.split('').forEach((value, key) => {
       keys.push(
         <View key={key} style={styles.pinKey}>
           <PinKey keyboardKey={keymap.get(value)!} onPress={onEnterPin} />
-        </View>,
-      );
-    });
-    return keys;
-  };
+        </View>
+      )
+    })
+    return keys
+  }
 
   return (
     <View style={[styles.verticalLayout, {backgroundColor: theme.background}]}>
@@ -123,7 +123,7 @@ export default function PinOrBiometryLogin({
             <Space y={8} />
             <AvaText.Body1
               textStyle={{
-                color: context.theme.colorText1,
+                color: context.theme.colorText1
               }}>
               Enter your PIN
             </AvaText.Body1>
@@ -135,10 +135,10 @@ export default function PinOrBiometryLogin({
             {
               transform: [
                 {
-                  translateX: jiggleAnim,
-                },
-              ],
-            },
+                  translateX: jiggleAnim
+                }
+              ]
+            }
           ]}>
           <View style={styles.dots}>{generatePinDots()}</View>
         </Animated.View>
@@ -153,32 +153,32 @@ export default function PinOrBiometryLogin({
         </>
       )}
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
   verticalLayout: {
     height: '100%',
-    justifyContent: 'flex-end',
+    justifyContent: 'flex-end'
   },
   growContainer: {
-    flexGrow: 1,
+    flexGrow: 1
   },
   keyboard: {
     marginHorizontal: 24,
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginBottom: 32,
+    marginBottom: 32
   },
   dots: {
     flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'space-between',
     width: '100%',
-    flexDirection: 'row',
+    flexDirection: 'row'
   },
   pinKey: {
     flexBasis: '33%',
-    padding: 16,
-  },
-});
+    padding: 16
+  }
+})

@@ -1,15 +1,15 @@
-import React from 'react';
-import Svg, {Path} from 'react-native-svg';
-import {useApplicationContext} from 'contexts/ApplicationContext';
+import React from 'react'
+import Svg, {Path} from 'react-native-svg'
+import {useApplicationContext} from 'contexts/ApplicationContext'
 
 interface Prop {
-  color?: string;
-  size?: number;
+  color?: string
+  size?: number
 }
 
 function LightModeSVG({color, size = 24}: Prop) {
-  const theme = useApplicationContext().theme;
-  const iconColor = color ?? theme.alternateBackground;
+  const theme = useApplicationContext().theme
+  const iconColor = color ?? theme.alternateBackground
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
@@ -49,7 +49,7 @@ function LightModeSVG({color, size = 24}: Prop) {
         fill={iconColor}
       />
     </Svg>
-  );
+  )
 }
 
-export default LightModeSVG;
+export default LightModeSVG

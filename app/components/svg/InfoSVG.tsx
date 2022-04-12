@@ -1,15 +1,15 @@
-import React from 'react';
-import Svg, {Path} from 'react-native-svg';
-import {useApplicationContext} from 'contexts/ApplicationContext';
+import React from 'react'
+import Svg, {Path} from 'react-native-svg'
+import {useApplicationContext} from 'contexts/ApplicationContext'
 
 interface Prop {
-  color?: string;
-  size?: number;
+  color?: string
+  size?: number
 }
 
 function InfoSVG({color, size = 16}: Prop) {
-  const context = useApplicationContext();
-  const iconColor = color ?? context.theme.colorText2;
+  const context = useApplicationContext()
+  const iconColor = color ?? context.theme.colorText2
   return (
     <Svg width={size} height={size} viewBox="0 0 16 16" fill="none">
       <Path
@@ -25,7 +25,7 @@ function InfoSVG({color, size = 16}: Prop) {
         fill={iconColor}
       />
     </Svg>
-  );
+  )
 }
 
-export default InfoSVG;
+export default InfoSVG

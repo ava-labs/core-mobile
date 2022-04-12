@@ -1,14 +1,14 @@
-import React from 'react';
-import Svg, {Path} from 'react-native-svg';
-import {useApplicationContext} from 'contexts/ApplicationContext';
+import React from 'react'
+import Svg, {Path} from 'react-native-svg'
+import {useApplicationContext} from 'contexts/ApplicationContext'
 
 interface Prop {
-  color?: string;
+  color?: string
 }
 
 function ActivitySVG({color}: Prop) {
-  const context = useApplicationContext();
-  const svgColor = color ?? context.theme.colorPrimary1;
+  const context = useApplicationContext()
+  const svgColor = color ?? context.theme.colorPrimary1
 
   return (
     <Svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -29,7 +29,7 @@ function ActivitySVG({color}: Prop) {
         fill={svgColor}
       />
     </Svg>
-  );
+  )
 }
 
-export default ActivitySVG;
+export default ActivitySVG
