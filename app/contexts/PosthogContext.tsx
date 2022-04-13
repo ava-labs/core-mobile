@@ -85,16 +85,8 @@ export const PosthogContextProvider = ({children}: {children: any}) => {
       return;
     }
     const subscription = timer(0, ONE_MINUTE).subscribe({
-      next: i => {
-        if (__DEV__) {
-          //for testing purposes, change flags each period of timer
-          setFlags({
-            ...flags,
-            everything: i % 2 === 0,
-          });
-        } else {
-          reloadFeatureFlags();
-        }
+      next: _ => {
+        reloadFeatureFlags();
       },
     });
 
