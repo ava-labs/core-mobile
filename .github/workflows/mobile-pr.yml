@@ -1,0 +1,28 @@
+name: Mobile PR
+
+on:
+  pull_request:
+    branches:
+      - 'development'
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Eslint
+        run: yarn lint:ci
+
+      - name: Annotate Eslint Results
+        uses: ataylorme/eslint-annotate-action@1.2.0
+        if: always()
+        with:
+          repo-token: '${{ secrets.GITHUB_TOKEN }}'
+          report-json: 'eslint_report.json'

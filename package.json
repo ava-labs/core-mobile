@@ -12,7 +12,7 @@
     "test": "jest",
     "tsc": "tsc",
     "lint": "eslint .",
-    "lint:ci": "yarn run lint --quiet",
+    "lint:ci": "yarn run lint --format json --output-file eslint_report.json",
     "postversion": "react-native-version --never-amend",
     "clean": "./scripts/clean",
     "prestorybook": "rnstl",
