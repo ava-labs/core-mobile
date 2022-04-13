@@ -1,14 +1,14 @@
-import React, {FC} from 'react'
-import {useApplicationContext} from 'contexts/ApplicationContext'
-import {View} from 'react-native'
-import {Space} from 'components/Space'
+import React, { FC } from 'react'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { View } from 'react-native'
+import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
 import InputText from 'components/InputText'
-import {useSwapContext} from 'contexts/SwapContext'
-import {Popable} from 'react-native-popable'
+import { useSwapContext } from 'contexts/SwapContext'
+import { Popable } from 'react-native-popable'
 import NetworkFeeSelector from 'components/NetworkFeeSelector'
-import {useGasPrice} from 'utils/GasPriceHook'
-import {Row} from 'components/Row'
+import { useGasPrice } from 'utils/GasPriceHook'
+import { Row } from 'components/Row'
 import AppNavigation from 'navigation/AppNavigation'
 
 interface SwapTransactionDetailProps {
@@ -18,7 +18,7 @@ interface SwapTransactionDetailProps {
 export function popableContent(message: string, backgroundColor: string) {
   return (
     <View
-      style={{padding: 8, backgroundColor: backgroundColor, borderRadius: 8}}>
+      style={{ padding: 8, backgroundColor: backgroundColor, borderRadius: 8 }}>
       <AvaText.Body3>{message}</AvaText.Body3>
     </View>
   )
@@ -27,9 +27,9 @@ export function popableContent(message: string, backgroundColor: string) {
 const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
   review = false
 }) => {
-  const {gasPrice} = useGasPrice()
-  const {theme} = useApplicationContext()
-  const {trxDetails} = useSwapContext()
+  const { gasPrice } = useGasPrice()
+  const { theme } = useApplicationContext()
+  const { trxDetails } = useSwapContext()
 
   const slippageInfoMessage = popableContent(
     'Suggested slippage – your transaction will fail if the price changes unfavorably more than this percentage',
@@ -44,7 +44,7 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
   )
 
   return (
-    <View style={{flex: 1, paddingHorizontal: 16}}>
+    <View style={{ flex: 1, paddingHorizontal: 16 }}>
       {review || (
         <>
           <Space y={16} />
@@ -52,16 +52,16 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
           <Space y={16} />
         </>
       )}
-      <Row style={{justifyContent: 'space-between', alignItems: 'center'}}>
+      <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
         <AvaText.Body2>Rate</AvaText.Body2>
         <AvaText.Heading3>{trxDetails.rate}</AvaText.Heading3>
       </Row>
       <Space y={16} />
-      <Row style={{justifyContent: 'space-between', alignItems: 'center'}}>
+      <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
         <Popable
           content={slippageInfoMessage}
           position={'right'}
-          style={{minWidth: 200}}
+          style={{ minWidth: 200 }}
           backgroundColor={theme.colorBg3}>
           <AvaText.Body2>Slippage tolerance ⓘ</AvaText.Body2>
         </Popable>
@@ -99,11 +99,12 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
       {review && (
         <>
           <Space y={16} />
-          <Row style={{justifyContent: 'space-between', alignItems: 'center'}}>
+          <Row
+            style={{ justifyContent: 'space-between', alignItems: 'center' }}>
             <Popable
               content={netFeeInfoMessage}
               position={'right'}
-              style={{minWidth: 200}}
+              style={{ minWidth: 200 }}
               backgroundColor={theme.colorBg3}>
               <AvaText.Body2>Network Fee ⓘ</AvaText.Body2>
             </Popable>
@@ -130,7 +131,7 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
         </>
       )}
       <Space y={16} />
-      <Row style={{justifyContent: 'space-between', alignItems: 'center'}}>
+      <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
         <AvaText.Body2>Avalanche wallet fee</AvaText.Body2>
         <AvaText.Heading3>{trxDetails.avaxWalletFee}</AvaText.Heading3>
       </Row>

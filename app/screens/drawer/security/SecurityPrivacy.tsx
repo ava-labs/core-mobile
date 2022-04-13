@@ -1,10 +1,10 @@
-import React, {useEffect, useState} from 'react'
-import {View} from 'react-native'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import React, { useEffect, useState } from 'react'
+import { View } from 'react-native'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaListItem from 'components/AvaListItem'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import {SECURE_ACCESS_SET} from 'resources/Constants'
+import { SECURE_ACCESS_SET } from 'resources/Constants'
 import Switch from 'components/Switch'
 
 function SecurityPrivacy({
@@ -17,7 +17,8 @@ function SecurityPrivacy({
   onTurnOnBiometrics: () => void
 }) {
   const theme = useApplicationContext().theme
-  const {setSetting, getSetting} = useApplicationContext().repo.userSettingsRepo
+  const { setSetting, getSetting } =
+    useApplicationContext().repo.userSettingsRepo
   const [isBiometricSwitchEnabled, setIsBiometricSwitchEnabled] =
     useState(false)
   const [isBiometricEnabled, setIsBiometricEnabled] = useState(false)
@@ -45,7 +46,7 @@ function SecurityPrivacy({
   }
 
   return (
-    <View style={{backgroundColor: theme.colorBg2}}>
+    <View style={{ backgroundColor: theme.colorBg2 }}>
       <AvaListItem.Base
         title={'Change PIN'}
         background={theme.background}

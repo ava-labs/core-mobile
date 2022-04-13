@@ -1,6 +1,6 @@
-import React, {FC, useEffect, useState} from 'react'
-import {Animated, View} from 'react-native'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import React, { FC, useEffect, useState } from 'react'
+import { Animated, View } from 'react-native'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
 import Collapsible from 'react-native-collapsible'
 import CarrotSVG from 'components/svg/CarrotSVG'
@@ -45,7 +45,8 @@ const CollapsibleSection: FC<Props> = ({
           backgroundColor: theme.colorBg1
         }}>
         <AvaText.Body2>{title}</AvaText.Body2>
-        <View style={{transform: [{rotate: expanded ? '-90deg' : '90deg'}]}}>
+        <View
+          style={{ transform: [{ rotate: expanded ? '-90deg' : '90deg' }] }}>
           <CarrotSVG color={theme.colorIcon4} />
         </View>
       </Animated.View>
@@ -61,7 +62,7 @@ const CollapsibleSection: FC<Props> = ({
     <View>
       <AvaButton.Base onPress={toggleExpanded}>{getTitle()}</AvaButton.Base>
       <Collapsible
-        style={{backgroundColor: theme.colorBg1}}
+        style={{ backgroundColor: theme.colorBg1 }}
         collapsed={!expanded}>
         {children}
       </Collapsible>

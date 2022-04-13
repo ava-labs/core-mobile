@@ -6,11 +6,11 @@ import React, {
   useRef,
   useState
 } from 'react'
-import {AppState, BackHandler, Modal} from 'react-native'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import { AppState, BackHandler, Modal } from 'react-native'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import AccountBottomSheet from 'screens/portfolio/account/AccountBottomSheet'
 import AppNavigation from 'navigation/AppNavigation'
-import {SelectedTokenContextProvider} from 'contexts/SelectedTokenContext'
+import { SelectedTokenContextProvider } from 'contexts/SelectedTokenContext'
 import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import BiometricsSDK from 'utils/BiometricsSDK'
@@ -20,9 +20,9 @@ import TokenManagement from 'screens/tokenManagement/TokenManagement'
 import AddCustomToken from 'screens/tokenManagement/AddCustomToken'
 import CurrencySelector from 'screens/drawer/currency-selector/CurrencySelector'
 import SecurityPrivacyStackScreen from 'navigation/wallet/SecurityPrivacyStackScreen'
-import {MainHeaderOptions, SubHeaderOptions} from 'navigation/NavUtils'
+import { MainHeaderOptions, SubHeaderOptions } from 'navigation/NavUtils'
 import WebViewScreen from 'screens/webview/WebViewScreen'
-import {useFocusEffect, useNavigation} from '@react-navigation/native'
+import { useFocusEffect, useNavigation } from '@react-navigation/native'
 import SignOutBottomSheet from 'screens/mainView/SignOutBottomSheet'
 import {
   createStackNavigator,
@@ -39,15 +39,15 @@ import {
 import AccountDropdown from 'screens/portfolio/account/AccountDropdown'
 import SwapScreenStack from 'navigation/wallet/SwapScreenStack'
 import AddressBookStack from 'navigation/wallet/AddressBookStack'
-import {Contact} from 'Repo'
+import { Contact } from 'Repo'
 import TokenDetail from 'screens/watchlist/TokenDetail'
-import {TxType} from 'screens/activity/ActivityList'
+import { TxType } from 'screens/activity/ActivityList'
 import ActivityDetail from 'screens/activity/ActivityDetail'
 import EditGasLimitBottomSheet from 'screens/shared/EditGasLimitBottomSheet'
 import OwnedTokenDetail from 'screens/portfolio/OwnedTokenDetail'
 import BridgeScreenStack from 'navigation/wallet/BridgeScreenStack'
 import NFTScreenStack from 'navigation/wallet/NFTScreenStack'
-import {NFTItemData} from 'screens/nft/NftCollection'
+import { NFTItemData } from 'screens/nft/NftCollection'
 import NftManage from 'screens/nft/NftManage'
 import BridgeTransactionStatus from 'screens/bridge/BridgeTransactionStatus'
 
@@ -65,15 +65,15 @@ export type RootStackParamList = {
   [AppNavigation.Wallet.Legal]: undefined
   [AppNavigation.Wallet.ReceiveTokens]: undefined
   [AppNavigation.Wallet.SendTokens]:
-    | {token?: TokenWithBalance; contact?: Contact}
+    | { token?: TokenWithBalance; contact?: Contact }
     | undefined
   [AppNavigation.Wallet.Swap]: undefined
-  [AppNavigation.Wallet.NFTDetails]: {nft: NFTItemData}
+  [AppNavigation.Wallet.NFTDetails]: { nft: NFTItemData }
   [AppNavigation.Wallet.NFTManage]: undefined
   [AppNavigation.Wallet.NetworkSelector]: undefined
-  [AppNavigation.Wallet.TokenDetail]: {address?: string} | undefined
-  [AppNavigation.Wallet.OwnedTokenDetail]: {tokenId?: string} | undefined
-  [AppNavigation.Wallet.ActivityDetail]: {tx?: TxType}
+  [AppNavigation.Wallet.TokenDetail]: { address?: string } | undefined
+  [AppNavigation.Wallet.OwnedTokenDetail]: { tokenId?: string } | undefined
+  [AppNavigation.Wallet.ActivityDetail]: { tx?: TxType }
   [AppNavigation.Wallet.Bridge]: undefined
   [AppNavigation.Bridge.BridgeTransactionStatus]: {
     blockchain: string
@@ -98,7 +98,7 @@ const focusEvent = 'change'
 const TIMEOUT = 5000
 
 const SignOutBottomSheetScreen = () => {
-  const {signOut} = useApplicationContext().appHook
+  const { signOut } = useApplicationContext().appHook
 
   const doSwitchWallet = (): void => {
     signOut().then()
@@ -111,7 +111,7 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
   const [showSecurityModal, setShowSecurityModal] = useState(false)
   const appState = useRef(AppState.currentState)
   const context = useApplicationContext()
-  const {signOut, setSelectedCurrency} = context.appHook
+  const { signOut, setSelectedCurrency } = context.appHook
 
   /**
    * This UseEffect handles subscription to
@@ -186,12 +186,12 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
 
   const BottomSheetGroup = useMemo(() => {
     return (
-      <RootStack.Group screenOptions={{presentation: 'transparentModal'}}>
+      <RootStack.Group screenOptions={{ presentation: 'transparentModal' }}>
         <RootStack.Screen
           options={{
             transitionSpec: {
-              open: {animation: 'timing', config: {duration: 0}},
-              close: {animation: 'timing', config: {duration: 300}}
+              open: { animation: 'timing', config: { duration: 0 } },
+              close: { animation: 'timing', config: { duration: 300 } }
             }
           }}
           name={AppNavigation.Modal.AccountDropDown}

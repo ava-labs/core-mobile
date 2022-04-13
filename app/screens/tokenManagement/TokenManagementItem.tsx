@@ -1,5 +1,5 @@
-import React, {FC} from 'react'
-import {View} from 'react-native'
+import React, { FC } from 'react'
+import { View } from 'react-native'
 import AvaListItem from 'components/AvaListItem'
 import AvaText from 'components/AvaText'
 import Switch from 'components/Switch'

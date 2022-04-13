@@ -1,13 +1,13 @@
 import React from 'react'
-import Svg, {Path, Rect} from 'react-native-svg'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import Svg, { Path, Rect } from 'react-native-svg'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 interface Prop {
   backgroundColor?: string
   size?: number
 }
 
-function WalletSVG({size = 65, backgroundColor}: Prop) {
+function WalletSVG({ size = 65, backgroundColor }: Prop) {
   const theme = useApplicationContext().theme
   const bgColor = backgroundColor ?? theme.colorBg1
 

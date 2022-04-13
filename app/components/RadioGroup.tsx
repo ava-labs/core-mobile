@@ -1,8 +1,8 @@
-import React, {FC, ReactElement, useEffect, useMemo, useState} from 'react'
-import {Row} from 'components/Row'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import React, { FC, ReactElement, useEffect, useMemo, useState } from 'react'
+import { Row } from 'components/Row'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaButton from 'components/AvaButton'
-import {StyleSheet} from 'react-native'
+import { StyleSheet } from 'react-native'
 
 export type RadioGroupProps = {
   onSelected: (selectedKey: string) => void
@@ -13,7 +13,7 @@ const RadioGroup: FC<RadioGroupProps> = ({
   preselectedKey = '',
   children
 }: RadioGroupProps) => {
-  const {theme} = useApplicationContext()
+  const { theme } = useApplicationContext()
   const [selected, setSelected] = useState(preselectedKey)
 
   useEffect(() => {

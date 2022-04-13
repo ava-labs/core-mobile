@@ -1,13 +1,13 @@
 import React from 'react'
-import Svg, {Rect} from 'react-native-svg'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import Svg, { Rect } from 'react-native-svg'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 interface Prop {
   color?: string
   size?: number
 }
 
-function ListSVG({color, size = 24}: Prop) {
+function ListSVG({ color, size = 24 }: Prop) {
   const context = useApplicationContext()
 
   const svgColor = color ? color : context.theme.colorPrimary1

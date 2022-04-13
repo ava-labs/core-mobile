@@ -4,8 +4,8 @@ import Keychain, {
   UserCredentials
 } from 'react-native-keychain'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import {SECURE_ACCESS_SET} from 'resources/Constants'
-import {Platform} from 'react-native'
+import { SECURE_ACCESS_SET } from 'resources/Constants'
+import { Platform } from 'react-native'
 
 const SERVICE_KEY = 'sec-storage-service'
 const SERVICE_KEY_BIO = 'sec-storage-service-bio'

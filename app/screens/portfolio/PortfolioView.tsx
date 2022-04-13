@@ -1,31 +1,31 @@
-import React, {FC, memo, useEffect, useRef} from 'react'
-import {FlatList, ListRenderItemInfo, StyleSheet, View} from 'react-native'
+import React, { FC, memo, useEffect, useRef } from 'react'
+import { FlatList, ListRenderItemInfo, StyleSheet, View } from 'react-native'
 import PortfolioHeader from 'screens/portfolio/PortfolioHeader'
-import {SafeAreaProvider} from 'react-native-safe-area-context'
-import {useNavigation} from '@react-navigation/native'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
+import { useNavigation } from '@react-navigation/native'
 import {
   TokenWithBalance,
   useAccountsContext,
   useWalletStateContext
 } from '@avalabs/wallet-react-components'
-import {useSearchableTokenList} from 'screens/portfolio/useSearchableTokenList'
+import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 import AppNavigation from 'navigation/AppNavigation'
-import {StackNavigationProp} from '@react-navigation/stack'
-import {PortfolioStackParamList} from 'navigation/wallet/PortfolioScreenStack'
+import { StackNavigationProp } from '@react-navigation/stack'
+import { PortfolioStackParamList } from 'navigation/wallet/PortfolioScreenStack'
 import PortfolioListItem from 'screens/portfolio/components/PortfolioListItem'
 import ZeroState from 'components/ZeroState'
-import {usePortfolio} from 'screens/portfolio/usePortfolio'
-import {useSelectedTokenContext} from 'contexts/SelectedTokenContext'
-import {getTokenUID} from 'utils/TokenTools'
-import {RootStackParamList} from 'navigation/WalletScreenStack'
+import { usePortfolio } from 'screens/portfolio/usePortfolio'
+import { useSelectedTokenContext } from 'contexts/SelectedTokenContext'
+import { getTokenUID } from 'utils/TokenTools'
+import { RootStackParamList } from 'navigation/WalletScreenStack'
 import WatchlistCarrousel from 'screens/watchlist/components/WatchlistCarrousel'
 import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
 import TabViewAva from 'components/TabViewAva'
-import {NftCollection, NFTItemData} from 'screens/nft/NftCollection'
+import { NftCollection, NFTItemData } from 'screens/nft/NftCollection'
 import NftListView from 'screens/nft/NftListView'
-import {useNftLoader} from 'screens/nft/useNftLoader'
-import {Covalent} from '@avalabs/covalent-sdk'
+import { useNftLoader } from 'screens/nft/useNftLoader'
+import { Covalent } from '@avalabs/covalent-sdk'
 import Config from 'react-native-config'
 
 type PortfolioProps = {
@@ -41,10 +41,10 @@ export type PortfolioNavigationProp =
 
 // experimenting with container pattern and stable props to try to reduce re-renders
 function PortfolioContainer(): JSX.Element {
-  const {filteredTokenList, loadZeroBalanceList, loadTokenList} =
+  const { filteredTokenList, loadZeroBalanceList, loadTokenList } =
     useSearchableTokenList()
-  const {balanceTotalInUSD} = usePortfolio()
-  const {setSelectedToken} = useSelectedTokenContext()
+  const { balanceTotalInUSD } = usePortfolio()
+  const { setSelectedToken } = useSelectedTokenContext()
 
   const hasZeroBalance =
     !balanceTotalInUSD ||
@@ -126,8 +126,8 @@ const PortfolioView: FC<PortfolioProps> = memo(
             <View>
               <FlatList
                 ref={listRef}
-                contentContainerStyle={{paddingHorizontal: 16}}
-                style={[tokenList?.length === 1 && {flex: 0}]}
+                contentContainerStyle={{ paddingHorizontal: 16 }}
+                style={[tokenList?.length === 1 && { flex: 0 }]}
                 data={tokenList}
                 renderItem={renderItem}
                 keyExtractor={(item: TokenWithBalance) => getTokenUID(item)}
@@ -142,10 +142,10 @@ const PortfolioView: FC<PortfolioProps> = memo(
                         alignItems: 'center',
                         justifyContent: 'space-between'
                       }}>
-                      <AvaText.Heading3 textStyle={{marginVertical: 16}}>
+                      <AvaText.Heading3 textStyle={{ marginVertical: 16 }}>
                         Favorites
                       </AvaText.Heading3>
-                      <View style={{paddingRight: -10}}>
+                      <View style={{ paddingRight: -10 }}>
                         <AvaButton.TextMedium
                           textColor={'#0A84FF'}
                           onPress={viewAllWatchlist}>
@@ -160,7 +160,7 @@ const PortfolioView: FC<PortfolioProps> = memo(
                         alignItems: 'center',
                         justifyContent: 'space-between'
                       }}>
-                      <AvaText.Heading3 textStyle={{marginVertical: 16}}>
+                      <AvaText.Heading3 textStyle={{ marginVertical: 16 }}>
                         Tokens
                       </AvaText.Heading3>
                       <AvaButton.TextMedium
@@ -187,9 +187,9 @@ const PortfolioView: FC<PortfolioProps> = memo(
 const AvalancheChainId = 1
 
 const NftListViewScreen = () => {
-  const {navigate} = useNavigation<StackNavigationProp<RootStackParamList>>()
-  const {parseNftCollections} = useNftLoader()
-  const {activeAccount} = useAccountsContext()
+  const { navigate } = useNavigation<StackNavigationProp<RootStackParamList>>()
+  const { parseNftCollections } = useNftLoader()
+  const { activeAccount } = useAccountsContext()
 
   useEffect(() => {
     const chainID = AvalancheChainId
@@ -208,7 +208,7 @@ const NftListViewScreen = () => {
   }, [])
 
   const openNftDetails = (item: NFTItemData) => {
-    navigate(AppNavigation.Wallet.NFTDetails, {nft: item})
+    navigate(AppNavigation.Wallet.NFTDetails, { nft: item })
   }
   const openNftManage = () => {
     navigate(AppNavigation.Wallet.NFTManage)

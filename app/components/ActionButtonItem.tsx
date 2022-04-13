@@ -1,4 +1,4 @@
-import React, {FC} from 'react'
+import React, { FC } from 'react'
 import {
   Animated,
   StyleProp,
@@ -6,8 +6,8 @@ import {
   TouchableOpacity,
   View
 } from 'react-native'
-import {useApplicationContext} from 'contexts/ApplicationContext'
-import {Space} from 'components/Space'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { Space } from 'components/Space'
 import AvaText from './AvaText'
 
 interface Props {
@@ -42,7 +42,7 @@ const ActionButtonItem: FC<Props> = ({
   children,
   ...rest
 }) => {
-  const {theme} = useApplicationContext()
+  const { theme } = useApplicationContext()
   const offsetX = radius * Math.cos(angle)
   const offsetY = radius * Math.sin(angle)
   return (
@@ -82,7 +82,7 @@ const ActionButtonItem: FC<Props> = ({
       ]}>
       <TouchableOpacity
         {...rest}
-        style={{flex: 1, alignItems: 'center'}}
+        style={{ flex: 1, alignItems: 'center' }}
         activeOpacity={0.85}
         onPress={onPress}>
         <View

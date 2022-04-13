@@ -1,7 +1,7 @@
-import {storiesOf} from '@storybook/react-native'
+import { storiesOf } from '@storybook/react-native'
 import AvaText from 'components/AvaText'
 import React from 'react'
-import {StyleSheet, View} from 'react-native'
+import { StyleSheet, View } from 'react-native'
 
 const styles = StyleSheet.create({
   container: {

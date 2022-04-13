@@ -1,15 +1,15 @@
-import React, {useMemo} from 'react'
-import {Image, ScrollView, StyleSheet, View} from 'react-native'
-import {RouteProp, useRoute} from '@react-navigation/native'
-import {NFTStackParamList} from 'navigation/wallet/NFTScreenStack'
+import React, { useMemo } from 'react'
+import { Image, ScrollView, StyleSheet, View } from 'react-native'
+import { RouteProp, useRoute } from '@react-navigation/native'
+import { NFTStackParamList } from 'navigation/wallet/NFTScreenStack'
 import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
-import {Space} from 'components/Space'
+import { Space } from 'components/Space'
 import {
   NFTItemData,
   NFTItemExternalDataAttribute
 } from 'screens/nft/NftCollection'
-import {Row} from 'components/Row'
+import { Row } from 'components/Row'
 import AppNavigation from 'navigation/AppNavigation'
 
 export type NftDetailsProps = {
@@ -21,7 +21,7 @@ export default function NftDetails({
   onPicturePressed,
   onSendPressed
 }: NftDetailsProps) {
-  const {params} =
+  const { params } =
     useRoute<RouteProp<NFTStackParamList, typeof AppNavigation.Nft.Details>>()
   const item = useMemo(() => params!.nft, [params]) as NFTItemData
 
@@ -40,7 +40,7 @@ export default function NftDetails({
         }>
         <Image
           style={styles.imageStyle}
-          source={{uri: item.external_data.image_512}}
+          source={{ uri: item.external_data.image_512 }}
         />
       </AvaButton.Base>
       <Space y={24} />
@@ -50,11 +50,11 @@ export default function NftDetails({
       <Space y={24} />
       <AvaText.Heading2>Description</AvaText.Heading2>
       <Row>
-        <View style={{flex: 1}}>
+        <View style={{ flex: 1 }}>
           <AvaText.Body2>Created by</AvaText.Body2>
           <AvaText.Body2>{item.external_data.owner}</AvaText.Body2>
         </View>
-        <View style={{flex: 1}}>
+        <View style={{ flex: 1 }}>
           <AvaText.Body2>Floor price</AvaText.Body2>
           <AvaText.Body2>{item.token_price_wei}</AvaText.Body2>
         </View>
@@ -78,14 +78,14 @@ const renderProps = (attributes?: NFTItemExternalDataAttribute[]) => {
         <Space key={i + 1} y={4} />
         <Row key={i}>
           {attributes[i] && (
-            <View style={{flex: 1}}>
+            <View style={{ flex: 1 }}>
               <AvaText.Body2>{attributes[i].trait_type}</AvaText.Body2>
               <Space y={4} />
               <AvaText.Heading3>{attributes[i].value}</AvaText.Heading3>
             </View>
           )}
           {attributes[i + 1] && (
-            <View style={{flex: 1}}>
+            <View style={{ flex: 1 }}>
               <AvaText.Body2>{attributes[i + 1].trait_type}</AvaText.Body2>
               <Space y={4} />
               <AvaText.Heading3>{attributes[i + 1].value}</AvaText.Heading3>

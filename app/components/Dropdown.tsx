@@ -1,4 +1,4 @@
-import React, {FC, useMemo, useRef, useState} from 'react'
+import React, { FC, useMemo, useRef, useState } from 'react'
 import {
   FlatList,
   ListRenderItemInfo,
@@ -9,15 +9,15 @@ import {
   View,
   ViewStyle
 } from 'react-native'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
 import CarrotSVG from 'components/svg/CarrotSVG'
-import {Popable, PopableManager} from 'react-native-popable'
+import { Popable, PopableManager } from 'react-native-popable'
 import Separator from 'components/Separator'
 import CheckmarkSVG from 'components/svg/CheckmarkSVG'
 import isString from 'lodash.isstring'
-import {Space} from 'components/Space'
-import {BlurView} from '@react-native-community/blur'
+import { Space } from 'components/Space'
+import { BlurView } from '@react-native-community/blur'
 
 interface Props {
   filterItems: string[]
@@ -60,7 +60,7 @@ const DropDown: FC<Props> = ({
       <View
         style={[
           StyleSheet.absoluteFill,
-          {backgroundColor: '#000000', opacity: 0.9}
+          { backgroundColor: '#000000', opacity: 0.9 }
         ]}
       />
     ) : (
@@ -81,7 +81,7 @@ const DropDown: FC<Props> = ({
     return (
       <View>
         <AvaText.Body1
-          textStyle={{paddingVertical: 8}}
+          textStyle={{ paddingVertical: 8 }}
           onPress={() => {
             onItemSelected?.(item.item)
             ref?.current?.hide()
@@ -159,7 +159,7 @@ const DropDown: FC<Props> = ({
         }}>
         {isString(currentItem) ? (
           <AvaText.ButtonSmall
-            textStyle={{color: theme.colorText1, paddingEnd: 4}}>
+            textStyle={{ color: theme.colorText1, paddingEnd: 4 }}>
             {title && title + ': '}
             {currentItem}
           </AvaText.ButtonSmall>

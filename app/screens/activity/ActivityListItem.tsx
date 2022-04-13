@@ -1,20 +1,20 @@
-import React, {FC} from 'react'
+import React, { FC } from 'react'
 import AvaListItem from 'components/AvaListItem'
 import AvaText from 'components/AvaText'
 import MovementIndicator from 'components/MovementIndicator'
-import {TxType} from 'screens/activity/ActivityList'
+import { TxType } from 'screens/activity/ActivityList'
 import {
   isTransactionERC20,
   isTransactionNormal
 } from '@avalabs/wallet-react-components'
-import {truncateAddress} from 'utils/Utils'
+import { truncateAddress } from 'utils/Utils'
 
 type Props = {
   tx: TxType
   onPress?: () => void
 }
 
-const ActivityListItem: FC<Props> = ({tx, onPress}) => {
+const ActivityListItem: FC<Props> = ({ tx, onPress }) => {
   if (isTransactionNormal(tx)) {
     const isContractCall = tx?.input !== '0x'
     return (

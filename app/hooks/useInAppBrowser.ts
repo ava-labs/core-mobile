@@ -1,12 +1,12 @@
-import {InAppBrowser} from 'react-native-inappbrowser-reborn'
-import {useApplicationContext} from 'contexts/ApplicationContext'
-import {Alert, Linking} from 'react-native'
-import {useWalletStateContext} from '@avalabs/wallet-react-components'
-import {Moonpay} from '@avalabs/blizzard-sdk'
+import { InAppBrowser } from 'react-native-inappbrowser-reborn'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { Alert, Linking } from 'react-native'
+import { useWalletStateContext } from '@avalabs/wallet-react-components'
+import { Moonpay } from '@avalabs/blizzard-sdk'
 
 const useInAppBrowser = () => {
-  const {theme} = useApplicationContext()
-  const moonAPI = new Moonpay({baseURL: 'https://blizzard.avax.network/'})
+  const { theme } = useApplicationContext()
+  const moonAPI = new Moonpay({ baseURL: 'https://blizzard.avax.network/' })
   const addressC = useWalletStateContext()?.addresses?.addrC ?? ''
 
   function failSafe(url: string) {
@@ -15,7 +15,7 @@ const useInAppBrowser = () => {
 
   async function openMoonPay() {
     const moonpayUrl = (
-      await moonAPI.getUrl(addressC, {color: theme.colorPrimary1})
+      await moonAPI.getUrl(addressC, { color: theme.colorPrimary1 })
     ).data
 
     Alert.alert(
@@ -77,7 +77,7 @@ const useInAppBrowser = () => {
     }
   }
 
-  return {openUrl, openMoonPay}
+  return { openUrl, openMoonPay }
 }
 
 export default useInAppBrowser

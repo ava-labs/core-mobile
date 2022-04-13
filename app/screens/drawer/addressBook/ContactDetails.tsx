@@ -1,17 +1,17 @@
-import {SafeAreaProvider} from 'react-native-safe-area-context'
-import React, {useMemo} from 'react'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
+import React, { useMemo } from 'react'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
-import {StyleSheet, View} from 'react-native'
+import { StyleSheet, View } from 'react-native'
 import AvaButton from 'components/AvaButton'
-import {RouteProp, useRoute} from '@react-navigation/native'
-import {AddressBookStackParamList} from 'navigation/wallet/AddressBookStack'
+import { RouteProp, useRoute } from '@react-navigation/native'
+import { AddressBookStackParamList } from 'navigation/wallet/AddressBookStack'
 import BlockchainCircle from 'components/BlockchainCircle'
 import useAddressBook from 'screens/drawer/addressBook/useAddressBook'
 import ContactInput from 'screens/drawer/addressBook/components/ContactInput'
 import FlexSpacer from 'components/FlexSpacer'
-import {Space} from 'components/Space'
-import {Contact} from 'Repo'
+import { Space } from 'components/Space'
+import { Contact } from 'Repo'
 import TokenAddress from 'components/TokenAddress'
 
 const ContactDetails = ({
@@ -23,16 +23,16 @@ const ContactDetails = ({
   onSend: (contact: Contact) => void
   onDelete: (contact: Contact) => void
 }) => {
-  const {titleToInitials} = useAddressBook()
-  const {params} = useRoute<RouteProp<AddressBookStackParamList>>()
+  const { titleToInitials } = useAddressBook()
+  const { params } = useRoute<RouteProp<AddressBookStackParamList>>()
 
   const editable = useMemo(() => {
     return params?.editable ?? false
   }, [params?.editable])
 
   return (
-    <SafeAreaProvider style={{flex: 1, padding: 16}}>
-      <View style={{alignItems: 'center'}}>
+    <SafeAreaProvider style={{ flex: 1, padding: 16 }}>
+      <View style={{ alignItems: 'center' }}>
         <BlockchainCircle
           size={80}
           textSize={32}
@@ -68,8 +68,8 @@ const ContactDetails = ({
   )
 }
 
-const AddressView = ({contact}: {contact: Contact}) => {
-  const {theme} = useApplicationContext()
+const AddressView = ({ contact }: { contact: Contact }) => {
+  const { theme } = useApplicationContext()
   return (
     <>
       <AvaText.Body1>Address</AvaText.Body1>
@@ -77,7 +77,7 @@ const AddressView = ({contact}: {contact: Contact}) => {
       <View
         style={[
           styles.copyAddressContainer,
-          {backgroundColor: theme.colorBg2}
+          { backgroundColor: theme.colorBg2 }
         ]}>
         <TokenAddress
           address={contact.address}

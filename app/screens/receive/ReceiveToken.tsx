@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   Dimensions,
   NativeScrollEvent,
@@ -6,21 +6,21 @@ import {
   Share,
   View
 } from 'react-native'
-import {usePortfolio} from 'screens/portfolio/usePortfolio'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import { usePortfolio } from 'screens/portfolio/usePortfolio'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaButton from 'components/AvaButton'
 import CopySVG from 'components/svg/CopySVG'
 import AvaText from 'components/AvaText'
-import {Opacity05} from 'resources/Constants'
-import {ScrollView} from 'react-native-gesture-handler'
-import {copyToClipboard} from 'utils/DeviceTools'
+import { Opacity05 } from 'resources/Constants'
+import { ScrollView } from 'react-native-gesture-handler'
+import { copyToClipboard } from 'utils/DeviceTools'
 import ChainCard from './ChainCard'
 
 const SCREEN_WIDTH = Dimensions.get('window')?.width
 
 function ReceiveToken() {
-  const {addressC, addressX} = usePortfolio()
-  const {theme, isDarkMode} = useApplicationContext()
+  const { addressC, addressX } = usePortfolio()
+  const { theme, isDarkMode } = useApplicationContext()
   const [selectedAddress, setSelectedAddress] = useState('')
   const [currentSlide, setCurrentSlide] = useState(0)
 
@@ -58,7 +58,7 @@ function ReceiveToken() {
     if (!e) {
       return
     }
-    const {nativeEvent} = e
+    const { nativeEvent } = e
     if (nativeEvent && nativeEvent.contentOffset) {
       let cs = 0
       if (nativeEvent.contentOffset.x === 0) {
@@ -72,8 +72,8 @@ function ReceiveToken() {
   }
 
   return (
-    <View style={{flex: 1, justifyContent: 'space-between'}}>
-      <View style={{height: 320}}>
+    <View style={{ flex: 1, justifyContent: 'space-between' }}>
+      <View style={{ height: 320 }}>
         <ScrollView
           horizontal
           pagingEnabled={true}
@@ -91,7 +91,7 @@ function ReceiveToken() {
           />
         </ScrollView>
       </View>
-      <View style={{flex: 1}}>
+      <View style={{ flex: 1 }}>
         <ScrollView>
           <AvaButton.Base
             onPress={() => copyToClipboard(selectedAddress)}
@@ -113,7 +113,7 @@ function ReceiveToken() {
               }
             ]}>
             <CopySVG />
-            <AvaText.Body1 textStyle={{flex: 1, marginLeft: 16}}>
+            <AvaText.Body1 textStyle={{ flex: 1, marginLeft: 16 }}>
               {selectedAddress}
             </AvaText.Body1>
           </AvaButton.Base>
@@ -121,7 +121,7 @@ function ReceiveToken() {
       </View>
 
       <AvaButton.PrimaryLarge
-        style={{marginHorizontal: 16, marginBottom: 16}}
+        style={{ marginHorizontal: 16, marginBottom: 16 }}
         onPress={() => onShare(selectedAddress)}>
         Share
       </AvaButton.PrimaryLarge>

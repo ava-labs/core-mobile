@@ -1,6 +1,9 @@
-import {ActiveNetwork, MAINNET_NETWORK} from '@avalabs/wallet-react-components'
-import {InfuraProvider, JsonRpcProvider} from '@ethersproject/providers'
-import {Config} from 'react-native-config'
+import {
+  ActiveNetwork,
+  MAINNET_NETWORK
+} from '@avalabs/wallet-react-components'
+import { InfuraProvider, JsonRpcProvider } from '@ethersproject/providers'
+import { Config } from 'react-native-config'
 const providers: Record<string, JsonRpcProvider> = {}
 
 export function getEthereumProvider(network?: ActiveNetwork): JsonRpcProvider {

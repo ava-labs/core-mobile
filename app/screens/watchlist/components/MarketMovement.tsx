@@ -1,8 +1,8 @@
-import React, {FC, useMemo} from 'react'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import React, { FC, useMemo } from 'react'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import MarketTriangleSVG from 'components/MarketTriangleSVG'
 import AvaText from 'components/AvaText'
-import {WatchlistFilter} from 'screens/watchlist/WatchlistView'
+import { WatchlistFilter } from 'screens/watchlist/WatchlistView'
 
 interface Props {
   priceChange: number
@@ -20,7 +20,7 @@ const MarketMovement: FC<Props> = ({
   filterBy = WatchlistFilter.PRICE
 }) => {
   const theme = useApplicationContext().theme
-  const {currencyFormatter} = useApplicationContext().appHook
+  const { currencyFormatter } = useApplicationContext().appHook
 
   const getDisplayChangeNumbers = useMemo(() => {
     if (priceChange === 0 && percentChange === 0) {

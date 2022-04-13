@@ -1,18 +1,18 @@
-import React, {useMemo, useState} from 'react'
-import {FlatList, StyleSheet, View} from 'react-native'
+import React, { useMemo, useState } from 'react'
+import { FlatList, StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import SearchBar from 'components/SearchBar'
-import {NFTItemData} from 'screens/nft/NftCollection'
+import { NFTItemData } from 'screens/nft/NftCollection'
 import ZeroState from 'components/ZeroState'
-import {COLORS_DAY, COLORS_NIGHT, Opacity85} from 'resources/Constants'
+import { COLORS_DAY, COLORS_NIGHT, Opacity85 } from 'resources/Constants'
 import AvaListItem from 'components/AvaListItem'
 import Avatar from 'components/Avatar'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import Switch from 'components/Switch'
 
 const NftManage = () => {
-  const {theme} = useApplicationContext()
-  const {nftRepo} = useApplicationContext().repo
+  const { theme } = useApplicationContext()
+  const { nftRepo } = useApplicationContext().repo
   const [searchText, setSearchText] = useState('')
 
   const filteredData = useMemo(() => {
@@ -41,11 +41,11 @@ const NftManage = () => {
       <AvaText.LargeTitleBold>Manage List</AvaText.LargeTitleBold>
       <SearchBar onTextChanged={updateSearch} searchText={searchText} />
       <FlatList
-        style={{flex: 1}}
+        style={{ flex: 1 }}
         data={filteredData}
         ListEmptyComponent={<ZeroState.Collectibles />}
         keyExtractor={item => item.uid}
-        ItemSeparatorComponent={() => <View style={{margin: 4}} />}
+        ItemSeparatorComponent={() => <View style={{ margin: 4 }} />}
         renderItem={info => renderItemList(info.item, onItemToggled, theme)}
       />
     </View>

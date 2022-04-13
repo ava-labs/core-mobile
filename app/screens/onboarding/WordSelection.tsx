@@ -1,10 +1,10 @@
-import React, {Dispatch, useState} from 'react'
-import {StyleSheet, View} from 'react-native'
+import React, { Dispatch, useState } from 'react'
+import { StyleSheet, View } from 'react-native'
 import AvaButton from 'components/AvaButton'
 import AvaText from 'components/AvaText'
-import {Space} from 'components/Space'
-import {useApplicationContext} from 'contexts/ApplicationContext'
-import {Opacity10} from 'resources/Constants'
+import { Space } from 'components/Space'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { Opacity10 } from 'resources/Constants'
 
 type Props = {
   wordIndex: number
@@ -60,14 +60,14 @@ function Word({
   onSelected: (word: string) => void
   selected: boolean
 }) {
-  const {theme, isDarkMode} = useApplicationContext()
+  const { theme, isDarkMode } = useApplicationContext()
   //until designers fix the design system we'll bear with this
   const bgColor = isDarkMode ? theme.white + Opacity10 : theme.colorBg1
   const colorSelected = isDarkMode ? theme.alternateBackground : theme.colorBg3
   const textColor = theme.colorText1
   const textColorSelected = theme.colorBg2
   return (
-    <View style={{flexGrow: 1}}>
+    <View style={{ flexGrow: 1 }}>
       <AvaButton.Base
         onPress={() => onSelected(word)}
         style={{
@@ -77,7 +77,7 @@ function Word({
           padding: 12
         }}>
         <AvaText.ButtonMedium
-          textStyle={{color: selected ? textColorSelected : textColor}}>
+          textStyle={{ color: selected ? textColorSelected : textColor }}>
           {word}
         </AvaText.ButtonMedium>
       </AvaButton.Base>

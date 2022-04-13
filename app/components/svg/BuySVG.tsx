@@ -1,13 +1,13 @@
 import React from 'react'
-import Svg, {Circle, G, Path} from 'react-native-svg'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import Svg, { Circle, G, Path } from 'react-native-svg'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 interface Prop {
   color?: string
   size?: number
 }
 
-function BuySVG({color, size = 32}: Prop) {
+function BuySVG({ color, size = 32 }: Prop) {
   const theme = useApplicationContext().theme
   const iconColor = color ?? theme.alternateBackground
   return (

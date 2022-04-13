@@ -1,12 +1,12 @@
 import React from 'react'
-import Svg, {Circle, Rect} from 'react-native-svg'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import Svg, { Circle, Rect } from 'react-native-svg'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 interface Prop {
   color?: string
 }
 
-export default function SwitchesSVG({color}: Prop) {
+export default function SwitchesSVG({ color }: Prop) {
   const context = useApplicationContext()
 
   const iconColor = color ?? context.theme.colorIcon1

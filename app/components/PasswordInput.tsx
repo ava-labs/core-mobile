@@ -1,5 +1,5 @@
-import React, {useState} from 'react'
-import {View} from 'react-native'
+import React, { useState } from 'react'
+import { View } from 'react-native'
 import Dialog from 'react-native-dialog'
 
 type Props = {

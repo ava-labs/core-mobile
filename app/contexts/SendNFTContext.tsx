@@ -13,13 +13,13 @@ import {
   useAccountsContext,
   useWalletStateContext
 } from '@avalabs/wallet-react-components'
-import {useApplicationContext} from 'contexts/ApplicationContext'
-import {bnToAvaxC, numberToBN} from '@avalabs/avalanche-wallet-sdk'
-import {mustNumber, mustValue} from 'utils/JsTools'
-import {BN} from 'avalanche'
-import {BehaviorSubject, firstValueFrom, of} from 'rxjs'
-import {NFTItemData} from 'screens/nft/NftCollection'
-import {Alert} from 'react-native'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { bnToAvaxC, numberToBN } from '@avalabs/avalanche-wallet-sdk'
+import { mustNumber, mustValue } from 'utils/JsTools'
+import { BN } from 'avalanche'
+import { BehaviorSubject, firstValueFrom, of } from 'rxjs'
+import { NFTItemData } from 'screens/nft/NftCollection'
+import { Alert } from 'react-native'
 
 export interface SendNFTContextState {
   sendToken: NFTItemData
@@ -43,12 +43,12 @@ export const SendNFTContextProvider = ({
   nft: NFTItemData
   children: any
 }) => {
-  const {repo} = useApplicationContext()
-  const {activeAccount} = useAccountsContext()
-  const {avaxPrice} = useWalletStateContext()!
+  const { repo } = useApplicationContext()
+  const { activeAccount } = useAccountsContext()
+  const { avaxPrice } = useWalletStateContext()!
   const [sendToken] = useState<NFTItemData>(nft)
 
-  const customGasPrice$ = useRef(new BehaviorSubject({bn: new BN(0)}))
+  const customGasPrice$ = useRef(new BehaviorSubject({ bn: new BN(0) }))
   const gasLimit$ = useRef(new BehaviorSubject<number>(0))
 
   const [sendToAddress, setSendToAddress] = useState('')
@@ -123,7 +123,7 @@ export const SendNFTContextProvider = ({
             )
           }
         },
-        {bn: new BN(0)}
+        { bn: new BN(0) }
       )
     )
   }, [customGasPriceNanoAvax])

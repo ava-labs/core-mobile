@@ -1,5 +1,5 @@
 import React from 'react'
-import Svg, {Path} from 'react-native-svg'
+import Svg, { Path } from 'react-native-svg'
 
 interface Props {
   size?: number
@@ -7,7 +7,7 @@ interface Props {
   backgroundColor: string
 }
 
-function ClearSVG({color, backgroundColor, size = 24}: Props) {
+function ClearSVG({ color, backgroundColor, size = 24 }: Props) {
   const svgColor = color
   const bgColor = backgroundColor
   return (

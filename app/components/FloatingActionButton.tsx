@@ -6,7 +6,7 @@ import React, {
   useRef,
   useState
 } from 'react'
-import {Animated, Pressable, StyleSheet, View} from 'react-native'
+import { Animated, Pressable, StyleSheet, View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 import ActionButtonItem from 'components/ActionButtonItem'
 
@@ -115,7 +115,7 @@ const FloatingActionButton: FC<Props> = ({
           style={[
             styles.overlay,
             styles.actionContainer,
-            {alignItems: 'center', justifyContent: 'center', top: 100}
+            { alignItems: 'center', justifyContent: 'center', top: 100 }
           ]}>
           <ActionButtonItem
             key={index}
@@ -167,7 +167,7 @@ const FloatingActionButton: FC<Props> = ({
   return (
     <View
       pointerEvents="box-none"
-      style={[styles.overlay, {height: 400, top: -100}]}>
+      style={[styles.overlay, { height: 400, top: -100 }]}>
       <Animated.View
         pointerEvents={isActive ? 'auto' : 'none'}
         style={{

@@ -2,9 +2,9 @@
  * Context wrapper for App
  **/
 
-import React, {useEffect, useState} from 'react'
+import React, { useEffect, useState } from 'react'
 import App from 'App'
-import {ApplicationContextProvider} from 'contexts/ApplicationContext'
+import { ApplicationContextProvider } from 'contexts/ApplicationContext'
 import Toast from 'react-native-toast-notifications'
 import {
   AccountsContextProvider,
@@ -15,11 +15,11 @@ import {
 import BiometricsSDK from 'utils/BiometricsSDK'
 import Splash from 'screens/onboarding/Splash'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import {SECURE_ACCESS_SET} from 'resources/Constants'
-import {Platform} from 'react-native'
+import { SECURE_ACCESS_SET } from 'resources/Constants'
+import { Platform } from 'react-native'
 import JailMonkey from 'jail-monkey'
 import JailbrokenWarning from 'screens/onboarding/JailbrokenWarning'
-import {BridgeProvider} from 'contexts/BridgeContext'
+import { BridgeProvider } from 'contexts/BridgeContext'
 
 export default function ContextApp() {
   const [isWarmingUp, setIsWarmingUp] = useState(true)

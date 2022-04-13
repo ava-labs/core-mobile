@@ -1,6 +1,6 @@
-import {useEffect, useState} from 'react'
+import { useEffect, useState } from 'react'
 import BiometricsSDK from 'utils/BiometricsSDK'
-import {BIOMETRY_TYPE, UserCredentials} from 'react-native-keychain'
+import { BIOMETRY_TYPE, UserCredentials } from 'react-native-keychain'
 
 interface BiometricLoginTypes {
   biometryType: string
@@ -55,5 +55,5 @@ export function useBiometricLogin(
     return BiometricsSDK.storeWalletWithBiometry(mnemonic)
   }
 
-  return {biometryType, storeMnemonicWithBiometric, fingerprintIcon}
+  return { biometryType, storeMnemonicWithBiometric, fingerprintIcon }
 }

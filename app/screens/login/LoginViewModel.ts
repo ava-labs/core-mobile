@@ -7,8 +7,8 @@ import {
   of,
   zip
 } from 'rxjs'
-import {concatMap, map} from 'rxjs/operators'
-import {Keystore} from '@avalabs/avalanche-wallet-sdk'
+import { concatMap, map } from 'rxjs/operators'
+import { Keystore } from '@avalabs/avalanche-wallet-sdk'
 import DocumentPicker from 'react-native-document-picker'
 import * as RNFS from 'react-native-fs'
 import {
@@ -21,7 +21,7 @@ export default class {
     const passwordPrompt = new AsyncSubject<string>()
 
     return from(
-      DocumentPicker.pick({type: [DocumentPicker.types.allFiles]})
+      DocumentPicker.pick({ type: [DocumentPicker.types.allFiles] })
     ).pipe(
       concatMap(file => RNFS.readFile(file.uri)),
       concatMap((fileContent: string) => {

@@ -1,28 +1,28 @@
-import React, {FC, useEffect, useState} from 'react'
-import {useApplicationContext} from 'contexts/ApplicationContext'
-import {View} from 'react-native'
+import React, { FC, useEffect, useState } from 'react'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { View } from 'react-native'
 import AvaText from 'components/AvaText'
-import {Space} from 'components/Space'
+import { Space } from 'components/Space'
 import {
   ERC20WithBalance,
   useWalletStateContext
 } from '@avalabs/wallet-react-components'
-import {useSwapContext} from 'contexts/SwapContext'
-import {getTokenUID} from 'utils/TokenTools'
+import { useSwapContext } from 'contexts/SwapContext'
+import { getTokenUID } from 'utils/TokenTools'
 import numeral from 'numeral'
 import FlexSpacer from 'components/FlexSpacer'
 import TokenSelectAndAmount from 'components/TokenSelectAndAmount'
-import {mustNumber} from 'utils/JsTools'
+import { mustNumber } from 'utils/JsTools'
 
 interface TokenDropDownProps {
   type?: 'From' | 'To'
   error?: string
 }
 
-const TokenDropDown: FC<TokenDropDownProps> = ({type, error}) => {
+const TokenDropDown: FC<TokenDropDownProps> = ({ type, error }) => {
   const context = useApplicationContext()
   const swapContext = useSwapContext()
-  const {avaxToken, erc20Tokens} = useWalletStateContext()!
+  const { avaxToken, erc20Tokens } = useWalletStateContext()!
   const [srcTokenBalance, setSrcTokenBalance] = useState('-')
 
   const isFrom = type === 'From'
@@ -67,7 +67,7 @@ const TokenDropDown: FC<TokenDropDownProps> = ({type, error}) => {
   }, [swapContext.swapFrom.token])
 
   return (
-    <View style={{marginHorizontal: 16, flex: 1}}>
+    <View style={{ marginHorizontal: 16, flex: 1 }}>
       <View
         style={{
           flexDirection: 'row',

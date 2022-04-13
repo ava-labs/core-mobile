@@ -6,7 +6,7 @@ import {
   TouchableNativeFeedback,
   View
 } from 'react-native'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 type Props = {
   src: ImageSourcePropType
@@ -27,7 +27,7 @@ export default function ImgButtonAva(props: Props | Readonly<Props>) {
           source={props.src}
           style={[
             styles.button,
-            {width: props.width || 24, height: props.height || 24}
+            { width: props.width || 24, height: props.height || 24 }
           ]}
         />
       </View>

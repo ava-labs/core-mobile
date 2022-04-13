@@ -1,5 +1,5 @@
 import React from 'react'
-import {Alert} from 'react-native'
+import { Alert } from 'react-native'
 import AvaListItem from 'components/AvaListItem'
 import AvaText from 'components/AvaText'
 

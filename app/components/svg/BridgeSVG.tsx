@@ -1,6 +1,6 @@
 import React from 'react'
-import Svg, {Circle, Path} from 'react-native-svg'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import Svg, { Circle, Path } from 'react-native-svg'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 interface Prop {
   selected?: boolean
@@ -8,7 +8,7 @@ interface Prop {
   color?: string
 }
 
-function BridgeSVG({selected, color, size = 30}: Prop) {
+function BridgeSVG({ selected, color, size = 30 }: Prop) {
   const context = useApplicationContext()
 
   const svgColor = color

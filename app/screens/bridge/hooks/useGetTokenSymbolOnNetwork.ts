@@ -1,4 +1,4 @@
-import {useCallback} from 'react'
+import { useCallback } from 'react'
 import {
   AssetType,
   Blockchain,
@@ -7,7 +7,7 @@ import {
 } from '@avalabs/bridge-sdk'
 
 export function useGetTokenSymbolOnNetwork() {
-  const {currentBlockchain} = useBridgeSDK()
+  const { currentBlockchain } = useBridgeSDK()
   const assets = useAssets(currentBlockchain)
 
   const getTokenSymbolOnNetwork = useCallback(
@@ -34,5 +34,5 @@ export function useGetTokenSymbolOnNetwork() {
     [assets]
   )
 
-  return {getTokenSymbolOnNetwork}
+  return { getTokenSymbolOnNetwork }
 }

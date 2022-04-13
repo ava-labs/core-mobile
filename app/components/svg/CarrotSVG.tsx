@@ -1,7 +1,7 @@
 import React from 'react'
-import Svg, {Path} from 'react-native-svg'
-import {useApplicationContext} from 'contexts/ApplicationContext'
-import {View} from 'react-native'
+import Svg, { Path } from 'react-native-svg'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { View } from 'react-native'
 
 interface Prop {
   color?: string
@@ -9,8 +9,8 @@ interface Prop {
   direction?: 'up' | 'down' | 'left' //default is `right`
 }
 
-function CarrotSVG({color, size = 16, direction}: Prop) {
-  const {theme} = useApplicationContext()
+function CarrotSVG({ color, size = 16, direction }: Prop) {
+  const { theme } = useApplicationContext()
 
   function getDegrees() {
     let degrees = 0
@@ -46,7 +46,7 @@ function CarrotSVG({color, size = 16, direction}: Prop) {
    * transform rotation/rotate in the SVG itself behaves differently and not the desired way we want.
    */
   return direction ? (
-    <View style={{transform: [{rotate: getDegrees()}]}}>
+    <View style={{ transform: [{ rotate: getDegrees() }] }}>
       <Carrot />
     </View>
   ) : (

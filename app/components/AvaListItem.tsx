@@ -1,6 +1,6 @@
 import React from 'react'
-import {StyleSheet, Text, View} from 'react-native'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import { StyleSheet, Text, View } from 'react-native'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import CarrotSVG from 'components/svg/CarrotSVG'
 import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
@@ -61,9 +61,9 @@ function BaseListItem({
         }
       ]}>
       <View style={styles.baseRowContainer}>
-        <View style={[styles.baseRow, disabled && {opacity: 0.5}]}>
+        <View style={[styles.baseRow, disabled && { opacity: 0.5 }]}>
           {leftComponent && (
-            <View style={{marginLeft: 16, flexDirection: 'row'}}>
+            <View style={{ marginLeft: 16, flexDirection: 'row' }}>
               {leftComponent}
             </View>
           )}
@@ -72,7 +72,7 @@ function BaseListItem({
               <AvaText.Heading3
                 style={[
                   styles.baseTitleText,
-                  {color: context.theme.colorBgGreen}
+                  { color: context.theme.colorBgGreen }
                 ]}>
                 {title}
               </AvaText.Heading3>
@@ -80,7 +80,7 @@ function BaseListItem({
               <View
                 style={[
                   styles.baseTitleObject,
-                  titleAlignment && {alignItems: titleAlignment}
+                  titleAlignment && { alignItems: titleAlignment }
                 ]}>
                 {title}
               </View>
@@ -91,7 +91,7 @@ function BaseListItem({
                 numberOfLines={1}
                 style={[
                   styles.baseSubtitle,
-                  {color: context.theme.colorText2}
+                  { color: context.theme.colorText2 }
                 ]}>
                 {subtitle}
               </Text>
@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flex: 1
   },
-  baseMainContent: {flex: 1, marginLeft: 16},
+  baseMainContent: { flex: 1, marginLeft: 16 },
   baseLabel: {
     fontSize: 14,
     lineHeight: 17,

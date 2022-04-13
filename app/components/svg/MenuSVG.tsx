@@ -1,12 +1,12 @@
 import React from 'react'
-import Svg, {Path} from 'react-native-svg'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import Svg, { Path } from 'react-native-svg'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 interface Prop {
   color?: string
 }
 
-function MenuSVG({color}: Prop) {
+function MenuSVG({ color }: Prop) {
   const context = useApplicationContext()
 
   const iconColor = color ?? context.theme.colorIcon1

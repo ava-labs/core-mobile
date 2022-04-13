@@ -1,5 +1,5 @@
-import React, {FC, useEffect} from 'react'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import React, { FC, useEffect } from 'react'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import {
   Blockchain,
   TrackerViewProps,
@@ -8,25 +8,25 @@ import {
   useBridgeSDK,
   useTxTracker
 } from '@avalabs/bridge-sdk'
-import {BridgeTransaction, useBridgeContext} from 'contexts/BridgeContext'
+import { BridgeTransaction, useBridgeContext } from 'contexts/BridgeContext'
 import {
   TransactionNormal,
   useNetworkContext,
   useWalletStateContext
 } from '@avalabs/wallet-react-components'
-import {getAvalancheProvider} from 'screens/bridge/utils/getAvalancheProvider'
-import {getEthereumProvider} from 'screens/bridge/utils/getEthereumProvider'
-import {ShowSnackBar} from 'components/Snackbar'
+import { getAvalancheProvider } from 'screens/bridge/utils/getAvalancheProvider'
+import { getEthereumProvider } from 'screens/bridge/utils/getEthereumProvider'
+import { ShowSnackBar } from 'components/Snackbar'
 import AvaText from 'components/AvaText'
 import AvaListItem from 'components/AvaListItem'
 import BridgeSVG from 'components/svg/BridgeSVG'
-import {Opacity10} from 'resources/Constants'
-import {StyleSheet, View} from 'react-native'
+import { Opacity10 } from 'resources/Constants'
+import { StyleSheet, View } from 'react-native'
 import AppNavigation from 'navigation/AppNavigation'
-import {useNavigation} from '@react-navigation/native'
+import { useNavigation } from '@react-navigation/native'
 import Spinner from 'components/Spinner'
 import LinkSVG from 'components/svg/LinkSVG'
-import {Space} from 'components/Space'
+import { Space } from 'components/Space'
 import useInAppBrowser from 'hooks/useInAppBrowser'
 
 type TransactionBridgeItem = BridgeTransaction &
@@ -38,19 +38,19 @@ interface BridgeTransactionItemProps {
   onPress: () => void
 }
 
-const BridgeTransactionItem: FC<BridgeTransactionItemProps> = ({item}) => {
+const BridgeTransactionItem: FC<BridgeTransactionItemProps> = ({ item }) => {
   const theme = useApplicationContext().theme
   const fromAvalancheToEthereum =
     item.sourceNetwork === Blockchain.AVALANCHE ||
     item.to === '0x0000000000000000000000000000000000000000'
-  const {network} = useNetworkContext()
-  const {config} = useBridgeConfig()
-  const {removeBridgeTransaction} = useBridgeContext()
-  const {addresses} = useWalletStateContext()
-  const {transactionDetails, bridgeAssets, setTransactionDetails} =
+  const { network } = useNetworkContext()
+  const { config } = useBridgeConfig()
+  const { removeBridgeTransaction } = useBridgeContext()
+  const { addresses } = useWalletStateContext()
+  const { transactionDetails, bridgeAssets, setTransactionDetails } =
     useBridgeSDK()
   const navigation = useNavigation()
-  const {openUrl} = useInAppBrowser()
+  const { openUrl } = useInAppBrowser()
   let fallbackRunning = false
 
   const pending = 'complete' in item && !item.complete
@@ -84,7 +84,7 @@ const BridgeTransactionItem: FC<BridgeTransactionItemProps> = ({item}) => {
       if (seconds > 0) {
         setTimeout(tick, 1000)
       } else {
-        removeBridgeTransaction({...txProps}).then()
+        removeBridgeTransaction({ ...txProps }).then()
       }
     }
     tick()
@@ -94,7 +94,7 @@ const BridgeTransactionItem: FC<BridgeTransactionItemProps> = ({item}) => {
     if (txProps) {
       if (txProps?.complete) {
         ShowSnackBar(`You have received ${txProps.amount} ${txProps.symbol}`)
-        removeBridgeTransaction({...txProps}).then()
+        removeBridgeTransaction({ ...txProps }).then()
       } else if (
         txProps.confirmationCount > txProps.requiredConfirmationCount
       ) {
@@ -129,7 +129,7 @@ const BridgeTransactionItem: FC<BridgeTransactionItemProps> = ({item}) => {
           ]}>
           <BridgeSVG size={20} color={theme.colorPrimary1} />
           {pending && txProps && (
-            <View style={{position: 'absolute'}}>
+            <View style={{ position: 'absolute' }}>
               <Spinner size={50} />
             </View>
           )}
@@ -141,7 +141,7 @@ const BridgeTransactionItem: FC<BridgeTransactionItemProps> = ({item}) => {
           : 'Ethereum → Avalanche'
       }
       rightComponent={
-        <View style={{justifyContent: 'center', alignItems: 'flex-end'}}>
+        <View style={{ justifyContent: 'center', alignItems: 'flex-end' }}>
           <AvaText.ActivityTotal ellipsizeMode={'tail'}>
             {pending ? item.amount.toString() : item.amountDisplayValue}{' '}
             {pending ? item.symbol : item.tokenSymbol}

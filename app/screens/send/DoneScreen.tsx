@@ -1,12 +1,15 @@
-import React, {useEffect, useState} from 'react'
-import {Linking, StyleSheet, View} from 'react-native'
+import React, { useEffect, useState } from 'react'
+import { Linking, StyleSheet, View } from 'react-native'
 import AvaButton from 'components/AvaButton'
 import AvaText from 'components/AvaText'
 import LinkSVG from 'components/svg/LinkSVG'
-import {Space} from 'components/Space'
+import { Space } from 'components/Space'
 import ClearSVG from 'components/svg/ClearSVG'
-import {useApplicationContext} from 'contexts/ApplicationContext'
-import {FUJI_NETWORK, useNetworkContext} from '@avalabs/wallet-react-components'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import {
+  FUJI_NETWORK,
+  useNetworkContext
+} from '@avalabs/wallet-react-components'
 
 interface DoneProps {
   transactionId: string
@@ -31,7 +34,7 @@ export default function DoneScreen({
   }, [networkContext])
 
   return (
-    <View style={{flex: 1}}>
+    <View style={{ flex: 1 }}>
       <AvaButton.Icon style={styles.topClose} onPress={onClose}>
         <ClearSVG
           color={theme.colorIcon1}
@@ -58,7 +61,7 @@ export default function DoneScreen({
             </AvaButton.TextLarge>
           )}
         </View>
-        <AvaButton.PrimaryLarge style={{margin: 18}} onPress={onClose}>
+        <AvaButton.PrimaryLarge style={{ margin: 18 }} onPress={onClose}>
           Done
         </AvaButton.PrimaryLarge>
       </View>
@@ -77,8 +80,8 @@ const styles = StyleSheet.create({
     zIndex: 0,
     elevation: 0
   },
-  topClose: {alignSelf: 'flex-end'},
-  container: {flex: 1, justifyContent: 'flex-end'},
+  topClose: { alignSelf: 'flex-end' },
+  container: { flex: 1, justifyContent: 'flex-end' },
   link: {
     flexDirection: 'row',
     justifyContent: 'center',

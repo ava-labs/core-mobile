@@ -1,16 +1,16 @@
-import React, {FC, memo} from 'react'
-import {ActivityIndicator, StyleSheet, View} from 'react-native'
-import {useApplicationContext} from 'contexts/ApplicationContext'
-import {usePortfolio} from 'screens/portfolio/usePortfolio'
+import React, { FC, memo } from 'react'
+import { ActivityIndicator, StyleSheet, View } from 'react-native'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { usePortfolio } from 'screens/portfolio/usePortfolio'
 import AvaText from 'components/AvaText'
-import {Space} from 'components/Space'
+import { Space } from 'components/Space'
 import TokenAddress from 'components/TokenAddress'
 
 // experimenting with container pattern and stable props to try to reduce re-renders
 function PortfolioHeaderContainer() {
   const context = useApplicationContext()
-  const {balanceTotalInUSD, isBalanceLoading, addressC} = usePortfolio()
-  const {selectedCurrency, currencyFormatter} = context.appHook
+  const { balanceTotalInUSD, isBalanceLoading, addressC } = usePortfolio()
+  const { selectedCurrency, currencyFormatter } = context.appHook
   const currencyBalance = currencyFormatter(Number(balanceTotalInUSD))
 
   return (
@@ -31,7 +31,12 @@ interface PortfolioHeaderProps {
 }
 
 const PortfolioHeader: FC<PortfolioHeaderProps> = memo(
-  ({addressC, balanceTotalUSD = 0, isBalanceLoading = false, currencyCode}) => {
+  ({
+    addressC,
+    balanceTotalUSD = 0,
+    isBalanceLoading = false,
+    currencyCode
+  }) => {
     return (
       <View pointerEvents="box-none">
         <View style={styles.copyAddressContainer}>
@@ -39,10 +44,10 @@ const PortfolioHeader: FC<PortfolioHeaderProps> = memo(
         </View>
         <View style={styles.balanceContainer}>
           {isBalanceLoading && (
-            <ActivityIndicator style={{alignSelf: 'center'}} size="small" />
+            <ActivityIndicator style={{ alignSelf: 'center' }} size="small" />
           )}
           <AvaText.LargeTitleBold>{balanceTotalUSD}</AvaText.LargeTitleBold>
-          <AvaText.Heading3 textStyle={{paddingBottom: 4, marginLeft: 4}}>
+          <AvaText.Heading3 textStyle={{ paddingBottom: 4, marginLeft: 4 }}>
             {currencyCode}
           </AvaText.Heading3>
         </View>

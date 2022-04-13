@@ -1,10 +1,10 @@
-import React, {FC} from 'react'
-import {ActivityIndicator, View} from 'react-native'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import React, { FC } from 'react'
+import { ActivityIndicator, View } from 'react-native'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaListItem from 'components/AvaListItem'
 import AvaText from 'components/AvaText'
 import Avatar from 'components/Avatar'
-import {Opacity85} from 'resources/Constants'
+import { Opacity85 } from 'resources/Constants'
 
 interface Props {
   tokenName: string

@@ -1,8 +1,8 @@
-import {MutableRefObject, useEffect, useRef} from 'react'
+import { MutableRefObject, useEffect, useRef } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import {SECURE_ACCESS_SET} from 'resources/Constants'
+import { SECURE_ACCESS_SET } from 'resources/Constants'
 import AppNavigation from 'navigation/AppNavigation'
-import {NavigationContainerRef} from '@react-navigation/native'
+import { NavigationContainerRef } from '@react-navigation/native'
 
 export type AppNavHook = {
   navigation: MutableRefObject<NavigationContainerRef<any> | undefined>
@@ -67,7 +67,7 @@ function resetNavToRoot(
     routes: [
       {
         name: AppNavigation.Root.Onboard,
-        params: {screen: AppNavigation.Root.Welcome}
+        params: { screen: AppNavigation.Root.Welcome }
       }
     ]
   })
@@ -81,7 +81,7 @@ function resetNavToEnterMnemonic(
     routes: [
       {
         name: AppNavigation.Root.Onboard,
-        params: {screen: AppNavigation.Root.Welcome}
+        params: { screen: AppNavigation.Root.Welcome }
       },
       {
         name: AppNavigation.Root.Onboard,
@@ -104,7 +104,7 @@ function setLoginRoute(
     routes: [
       {
         name: AppNavigation.Root.Onboard,
-        params: {screen: AppNavigation.Root.Welcome}
+        params: { screen: AppNavigation.Root.Welcome }
       },
       {
         name: AppNavigation.Root.Onboard,

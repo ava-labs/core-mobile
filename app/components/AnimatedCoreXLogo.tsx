@@ -1,9 +1,9 @@
-import React, {useEffect, useRef} from 'react'
-import {Animated, Easing, View} from 'react-native'
+import React, { useEffect, useRef } from 'react'
+import { Animated, Easing, View } from 'react-native'
 import CoreXLogoAnimated from 'components/CoreXLogoAnimated'
 import CoreSVG from 'components/svg/CoreSVG'
 
-const AnimatedCoreXLogo = ({finalState}: {finalState?: boolean}) => {
+const AnimatedCoreXLogo = ({ finalState }: { finalState?: boolean }) => {
   const animTranslateX = useRef(new Animated.Value(0)).current
   useEffect(() => {
     Animated.timing(animTranslateX, {
@@ -39,7 +39,7 @@ const AnimatedCoreXLogo = ({finalState}: {finalState?: boolean}) => {
           alignItems: 'center',
           width: animWidth
         }}>
-        <View style={{marginLeft: 50}}>
+        <View style={{ marginLeft: 50 }}>
           <CoreSVG />
         </View>
       </Animated.View>

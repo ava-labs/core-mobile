@@ -1,8 +1,8 @@
-import React, {FC, useMemo} from 'react'
-import {Platform, Switch as RNSwitch, SwitchProps} from 'react-native'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import React, { FC, useMemo } from 'react'
+import { Platform, Switch as RNSwitch, SwitchProps } from 'react-native'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
-const Switch: FC<SwitchProps> = ({value, disabled, ...rest}) => {
+const Switch: FC<SwitchProps> = ({ value, disabled, ...rest }) => {
   const theme = useApplicationContext().theme
 
   // waiting for UX to give the colors for Android.
@@ -30,7 +30,7 @@ const Switch: FC<SwitchProps> = ({value, disabled, ...rest}) => {
       value={value}
       disabled={disabled}
       thumbColor={value ? thumbColorOn : thumbColorOff}
-      trackColor={{false: trackColorOff, true: trackColorOn}}
+      trackColor={{ false: trackColorOff, true: trackColorOn }}
       ios_backgroundColor={trackColorOff}
     />
   )

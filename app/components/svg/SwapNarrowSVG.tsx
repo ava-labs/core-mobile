@@ -1,14 +1,14 @@
 import React from 'react'
-import Svg, {Path} from 'react-native-svg'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import Svg, { Path } from 'react-native-svg'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 interface Prop {
   color?: string
   size?: number
 }
 
-function SwapNarrowSVG({color, size = 20}: Prop) {
-  const {theme} = useApplicationContext()
+function SwapNarrowSVG({ color, size = 20 }: Prop) {
+  const { theme } = useApplicationContext()
 
   const svgColor = color ?? theme.alternateBackground
 

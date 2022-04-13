@@ -1,8 +1,8 @@
-import React, {FC, useState} from 'react'
-import {Pressable, StyleSheet, View} from 'react-native'
+import React, { FC, useState } from 'react'
+import { Pressable, StyleSheet, View } from 'react-native'
 import LineChartSVG from 'components/svg/LineChartSVG'
 import CandleChartSVG from 'components/svg/CandleChartSVG'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 export enum ChartType {
   LINE,
@@ -18,7 +18,7 @@ interface Props {
   onChartChange: (chart: ChartType) => void
 }
 
-const ChartSelector: FC<Props> = ({onChartChange}) => {
+const ChartSelector: FC<Props> = ({ onChartChange }) => {
   const [chartSelected, setChartSelected] = useState(ChartType.LINE)
 
   const lineSelected = chartSelected === ChartType.LINE
@@ -28,14 +28,14 @@ const ChartSelector: FC<Props> = ({onChartChange}) => {
     onChartChange(chart)
   }
 
-  const {theme} = useApplicationContext()
+  const { theme } = useApplicationContext()
   return (
     <View style={style.container}>
       <Pressable
         onPress={() => handleChartChange(ChartType.LINE)}
         style={[
           style.line,
-          {backgroundColor: lineSelected ? '#F1F1F4' : theme.transparent}
+          { backgroundColor: lineSelected ? '#F1F1F4' : theme.transparent }
         ]}>
         <LineChartSVG
           color={
@@ -54,7 +54,7 @@ const ChartSelector: FC<Props> = ({onChartChange}) => {
         onPress={() => handleChartChange(ChartType.CANDLE)}
         style={[
           style.candle,
-          {backgroundColor: lineSelected ? theme.transparent : '#F1F1F4'}
+          { backgroundColor: lineSelected ? theme.transparent : '#F1F1F4' }
         ]}>
         <CandleChartSVG
           color={

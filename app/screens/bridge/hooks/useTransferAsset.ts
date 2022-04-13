@@ -10,15 +10,15 @@ import {
   useWalletContext,
   useWalletStateContext
 } from '@avalabs/wallet-react-components'
-import {getAvalancheProvider} from 'screens/bridge/utils/getAvalancheProvider'
-import {getEthereumProvider} from 'screens/bridge/utils/getEthereumProvider'
-import {WalletType} from '@avalabs/avalanche-wallet-sdk'
-import Common, {Chain} from '@ethereumjs/common'
+import { getAvalancheProvider } from 'screens/bridge/utils/getAvalancheProvider'
+import { getEthereumProvider } from 'screens/bridge/utils/getEthereumProvider'
+import { WalletType } from '@avalabs/avalanche-wallet-sdk'
+import Common, { Chain } from '@ethereumjs/common'
 
-import {TransactionRequest} from '@ethersproject/abstract-provider'
-import {Transaction, TxData} from '@ethereumjs/tx'
-import {makeBNLike} from 'utils/Utils'
-import {BufferLike} from 'ethereumjs-util'
+import { TransactionRequest } from '@ethersproject/abstract-provider'
+import { Transaction, TxData } from '@ethereumjs/tx'
+import { makeBNLike } from 'utils/Utils'
+import { BufferLike } from 'ethereumjs-util'
 
 /**
  * prepares asset to be transfered by check creating a TransactionRequest, signing with wallet.signEvm;
@@ -26,10 +26,10 @@ import {BufferLike} from 'ethereumjs-util'
  */
 export function useTransferAsset(asset: Asset | undefined) {
   // @ts-ignore addresses exist in walletContext
-  const {addresses} = useWalletStateContext()
+  const { addresses } = useWalletStateContext()
   const network = useNetworkContext()?.network
   const wallet = useWalletContext().wallet
-  const {currentBlockchain} = useBridgeSDK()
+  const { currentBlockchain } = useBridgeSDK()
 
   const account = addresses.addrC
   // Use the wallet provider for the current blockchain so transactions can be signed

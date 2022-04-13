@@ -1,7 +1,7 @@
-import {useEffect, useState} from 'react'
-import {useJigglyPinIndicator} from 'utils/JigglyPinIndicatorHook'
-import {Animated} from 'react-native'
-import {PinKeys} from './PinKey'
+import { useEffect, useState } from 'react'
+import { useJigglyPinIndicator } from 'utils/JigglyPinIndicatorHook'
+import { Animated } from 'react-native'
+import { PinKeys } from './PinKey'
 
 export type DotView = {
   filled: boolean
@@ -38,7 +38,7 @@ export function useCreatePin(isResettingPin = false): UseCreatePinProps {
   const [chosenPinEntered, setChosenPinEntered] = useState(false)
   const [confirmedPinEntered, setConfirmedPinEntered] = useState(false)
   const [validPin, setValidPin] = useState<string | undefined>(undefined)
-  const {jiggleAnim, fireJiggleAnimation} = useJigglyPinIndicator()
+  const { jiggleAnim, fireJiggleAnimation } = useJigglyPinIndicator()
 
   useEffect(() => {
     if (chosenPinEntered) {
@@ -77,9 +77,9 @@ export function useCreatePin(isResettingPin = false): UseCreatePinProps {
     const dots: DotView[] = []
     for (let i = 0; i < 6; i++) {
       if (i < pin.length) {
-        dots.push({filled: true})
+        dots.push({ filled: true })
       } else {
-        dots.push({filled: false})
+        dots.push({ filled: false })
       }
     }
     return dots

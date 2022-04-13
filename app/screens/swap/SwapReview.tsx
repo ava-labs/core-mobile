@@ -1,30 +1,30 @@
-import React, {FC, useEffect, useMemo, useState} from 'react'
-import {Animated, ScrollView, StyleSheet, View} from 'react-native'
-import {useApplicationContext} from 'contexts/ApplicationContext'
-import {Space} from 'components/Space'
+import React, { FC, useEffect, useMemo, useState } from 'react'
+import { Animated, ScrollView, StyleSheet, View } from 'react-native'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
 import AvaListItem from 'components/AvaListItem'
 import Avatar from 'components/Avatar'
 import Separator from 'components/Separator'
 import SwapTransactionDetail from 'screens/swap/components/SwapTransactionDetails'
-import {useSwapContext} from 'contexts/SwapContext'
+import { useSwapContext } from 'contexts/SwapContext'
 import AvaButton from 'components/AvaButton'
-import {useNavigation} from '@react-navigation/native'
+import { useNavigation } from '@react-navigation/native'
 import Loader from 'components/Loader'
 import AppNavigation from 'navigation/AppNavigation'
-import {StackNavigationProp} from '@react-navigation/stack'
-import {SwapStackParamList} from 'navigation/wallet/SwapScreenStack'
-import {Row} from 'components/Row'
+import { StackNavigationProp } from '@react-navigation/stack'
+import { SwapStackParamList } from 'navigation/wallet/SwapScreenStack'
+import { Row } from 'components/Row'
 import InfoSVG from 'components/svg/InfoSVG'
-import {interval, tap} from 'rxjs'
-import {Popable} from 'react-native-popable'
+import { interval, tap } from 'rxjs'
+import { Popable } from 'react-native-popable'
 
 const SECOND = 1000
 
 const SwapReview: FC = () => {
-  const {swapTo, swapFrom, doSwap, refresh} = useSwapContext()
+  const { swapTo, swapFrom, doSwap, refresh } = useSwapContext()
   const theme = useApplicationContext().theme
-  const {goBack, navigate} =
+  const { goBack, navigate } =
     useNavigation<StackNavigationProp<SwapStackParamList>>()
   const [loading, setLoading] = useState(false)
   const [secondsLeft, setSecondsLeft] = useState('0s')
@@ -60,7 +60,7 @@ const SwapReview: FC = () => {
       })
       .catch((reason: Error) => {
         console.error(reason)
-        navigate(AppNavigation.Swap.Fail, {errorMsg: reason.message ?? ''})
+        navigate(AppNavigation.Swap.Fail, { errorMsg: reason.message ?? '' })
       })
       .finally(() => setLoading(false))
   }
@@ -89,12 +89,12 @@ const SwapReview: FC = () => {
   ) : (
     <View style={styles.container}>
       <ScrollView style={styles.container}>
-        <Row style={{justifyContent: 'space-between', marginHorizontal: 16}}>
+        <Row style={{ justifyContent: 'space-between', marginHorizontal: 16 }}>
           <AvaText.LargeTitleBold>Review Order</AvaText.LargeTitleBold>
           <Popable
             content={'Quotes are refreshed to reflect current market prices'}
             position={'left'}
-            style={{minWidth: 200}}
+            style={{ minWidth: 200 }}
             backgroundColor={theme.colorBg3}>
             <Row
               style={{
@@ -109,7 +109,7 @@ const SwapReview: FC = () => {
           </Popable>
         </Row>
         <Space y={20} />
-        <AvaText.Heading3 textStyle={{marginHorizontal: 16}}>
+        <AvaText.Heading3 textStyle={{ marginHorizontal: 16 }}>
           From
         </AvaText.Heading3>
         <AvaListItem.Base
@@ -117,14 +117,14 @@ const SwapReview: FC = () => {
           leftComponent={<Avatar.Token token={swapFrom.token!} />}
           title={swapFrom.token?.symbol}
           rightComponent={
-            <View style={{alignItems: 'flex-end'}}>
+            <View style={{ alignItems: 'flex-end' }}>
               <AvaText.Body1>{swapFrom.amount.toFixed(5)}</AvaText.Body1>
               <AvaText.Body3 currency>{swapFrom.usdValue}</AvaText.Body3>
             </View>
           }
         />
         <Space y={16} />
-        <AvaText.Heading3 textStyle={{marginHorizontal: 16}}>
+        <AvaText.Heading3 textStyle={{ marginHorizontal: 16 }}>
           To
         </AvaText.Heading3>
         <AvaListItem.Base
@@ -132,20 +132,20 @@ const SwapReview: FC = () => {
           leftComponent={<Avatar.Token token={swapTo.token!} />}
           title={swapTo.token?.symbol}
           rightComponent={
-            <View style={{alignItems: 'flex-end'}}>
-              <AvaText.Body1 animated textStyle={{color: animatedColor}}>
+            <View style={{ alignItems: 'flex-end' }}>
+              <AvaText.Body1 animated textStyle={{ color: animatedColor }}>
                 {swapTo.amount.toFixed(5)}
               </AvaText.Body1>
               <AvaText.Body3
                 currency
                 animated
-                textStyle={{color: animatedColor}}>
+                textStyle={{ color: animatedColor }}>
                 {swapTo.usdValue}
               </AvaText.Body3>
             </View>
           }
         />
-        <Separator style={{marginHorizontal: 16, marginVertical: 24}} />
+        <Separator style={{ marginHorizontal: 16, marginVertical: 24 }} />
         <SwapTransactionDetail review />
       </ScrollView>
       <View
@@ -153,12 +153,12 @@ const SwapReview: FC = () => {
           flexDirection: 'row',
           justifyContent: 'space-between'
         }}>
-        <View style={{flex: 1, marginHorizontal: 16}}>
+        <View style={{ flex: 1, marginHorizontal: 16 }}>
           <AvaButton.SecondaryLarge onPress={goBack}>
             Cancel
           </AvaButton.SecondaryLarge>
         </View>
-        <View style={{flex: 1, marginRight: 16}}>
+        <View style={{ flex: 1, marginRight: 16 }}>
           <AvaButton.PrimaryLarge onPress={onConfirm}>
             Confirm
           </AvaButton.PrimaryLarge>

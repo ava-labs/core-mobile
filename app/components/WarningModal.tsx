@@ -1,4 +1,4 @@
-import React, {FC} from 'react'
+import React, { FC } from 'react'
 import ModalContainer from 'components/ModalContainer'
 import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
@@ -22,16 +22,16 @@ const WarningModal: FC<Props> = ({
 }) => {
   return (
     <ModalContainer>
-      <AvaText.Heading2 textStyle={{marginTop: 8, textAlign: 'center'}}>
+      <AvaText.Heading2 textStyle={{ marginTop: 8, textAlign: 'center' }}>
         {title}
       </AvaText.Heading2>
-      <AvaText.Body2 textStyle={{textAlign: 'center', marginTop: 16}}>
+      <AvaText.Body2 textStyle={{ textAlign: 'center', marginTop: 16 }}>
         {message}
       </AvaText.Body2>
-      <AvaButton.PrimaryLarge style={{marginTop: 28}} onPress={onAction}>
+      <AvaButton.PrimaryLarge style={{ marginTop: 28 }} onPress={onAction}>
         {actionText}
       </AvaButton.PrimaryLarge>
-      <AvaButton.TextLarge style={{marginTop: 16}} onPress={onDismiss}>
+      <AvaButton.TextLarge style={{ marginTop: 16 }} onPress={onDismiss}>
         {dismissText}
       </AvaButton.TextLarge>
     </ModalContainer>

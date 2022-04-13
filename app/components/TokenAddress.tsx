@@ -1,12 +1,12 @@
-import React, {FC, useContext} from 'react'
-import {ApplicationContext} from 'contexts/ApplicationContext'
-import {copyToClipboard} from 'utils/DeviceTools'
+import React, { FC, useContext } from 'react'
+import { ApplicationContext } from 'contexts/ApplicationContext'
+import { copyToClipboard } from 'utils/DeviceTools'
 import CopySVG from 'components/svg/CopySVG'
-import {Space} from 'components/Space'
+import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
-import {truncateAddress} from 'utils/Utils'
+import { truncateAddress } from 'utils/Utils'
 import AvaButton from 'components/AvaButton'
-import {noop} from 'rxjs'
+import { noop } from 'rxjs'
 
 interface Props {
   address: string

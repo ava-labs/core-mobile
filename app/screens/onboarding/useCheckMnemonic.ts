@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react'
+import { useEffect, useState } from 'react'
 
 type WordSelection = {
   index: number
@@ -57,9 +57,12 @@ export function useCheckMnemonic(mnemonic: string): UseCheckMnemonicData {
       mnemonics
     )
 
-    setFirstWordSelection({index: indices[0], wordOptions: firstWordOptions})
-    setSecondWordSelection({index: indices[1], wordOptions: secondWordOptions})
-    setThirdWordSelection({index: indices[2], wordOptions: thirdWordOptions})
+    setFirstWordSelection({ index: indices[0], wordOptions: firstWordOptions })
+    setSecondWordSelection({
+      index: indices[1],
+      wordOptions: secondWordOptions
+    })
+    setThirdWordSelection({ index: indices[2], wordOptions: thirdWordOptions })
   }, [])
 
   const verify = (first: string, second: string, third: string) => {

@@ -6,7 +6,7 @@ import React, {
   useContext,
   useState
 } from 'react'
-import {useNavigation} from '@react-navigation/native'
+import { useNavigation } from '@react-navigation/native'
 import CreatePIN from 'screens/onboarding/CreatePIN'
 import BiometricLogin from 'screens/onboarding/BiometricLogin'
 import HdWalletLogin from 'screens/login/HdWalletLogin'
@@ -15,8 +15,8 @@ import {
   StackNavigationProp
 } from '@react-navigation/stack'
 import BiometricsSDK from 'utils/BiometricsSDK'
-import {useApplicationContext} from 'contexts/ApplicationContext'
-import {MainHeaderOptions} from 'navigation/NavUtils'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { MainHeaderOptions } from 'navigation/NavUtils'
 
 type EnterWithMnemonicStackParamList = {
   [AppNavigation.LoginWithMnemonic.LoginWithMnemonic]: undefined
@@ -35,15 +35,15 @@ const EnterWithMnemonicStack = () => {
   const [mnemonic, setMnemonic] = useState('')
 
   return (
-    <EnterWithMnemonicContext.Provider value={{setMnemonic, mnemonic}}>
-      <EnterWithMnemonicS.Navigator screenOptions={{headerShown: false}}>
+    <EnterWithMnemonicContext.Provider value={{ setMnemonic, mnemonic }}>
+      <EnterWithMnemonicS.Navigator screenOptions={{ headerShown: false }}>
         <EnterWithMnemonicS.Screen
           options={MainHeaderOptions('')}
           name={AppNavigation.LoginWithMnemonic.LoginWithMnemonic}
           component={LoginWithMnemonicScreen}
         />
         <EnterWithMnemonicS.Screen
-          options={{headerShown: true, headerTitle: ''}}
+          options={{ headerShown: true, headerTitle: '' }}
           name={AppNavigation.LoginWithMnemonic.CreatePin}
           component={CreatePinScreen}
         />
@@ -58,7 +58,7 @@ const EnterWithMnemonicStack = () => {
 
 const LoginWithMnemonicScreen = () => {
   const enterWithMnemonicContext = useContext(EnterWithMnemonicContext)
-  const {navigate, goBack} =
+  const { navigate, goBack } =
     useNavigation<StackNavigationProp<EnterWithMnemonicStackParamList>>()
 
   const onEnterWallet = useCallback(m => {
@@ -74,7 +74,7 @@ const LoginWithMnemonicScreen = () => {
 const CreatePinScreen = () => {
   const enterWithMnemonicContext = useContext(EnterWithMnemonicContext)
   const walletSetupHook = useApplicationContext().walletSetupHook
-  const {navigate} =
+  const { navigate } =
     useNavigation<StackNavigationProp<EnterWithMnemonicStackParamList>>()
 
   const onPinSet = (pin: string): void => {

@@ -11,7 +11,7 @@ interface Props {
   text: string
 }
 
-function CircularText({text}: Props) {
+function CircularText({ text }: Props) {
   return (
     <Svg height="100" width="100" viewBox="0 0 300 300">
       <G id="circle">

@@ -1,9 +1,9 @@
-import React, {useCallback, useEffect, useMemo, useRef} from 'react'
-import {useNavigation} from '@react-navigation/native'
-import BottomSheet, {BottomSheetBackdrop} from '@gorhom/bottom-sheet'
-import {Space} from 'components/Space'
-import {useApplicationContext} from 'contexts/ApplicationContext'
-import {View} from 'react-native'
+import React, { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useNavigation } from '@react-navigation/native'
+import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet'
+import { Space } from 'components/Space'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { View } from 'react-native'
 import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
 import TabViewBackground from 'screens/portfolio/components/TabViewBackground'
@@ -15,7 +15,7 @@ const LogoutScreen = ({
   onConfirm: () => void
   onCancel: () => void
 }) => {
-  const {theme} = useApplicationContext()
+  const { theme } = useApplicationContext()
   return (
     <View
       style={[
@@ -31,10 +31,10 @@ const LogoutScreen = ({
           bottom: 0
         }
       ]}>
-      <AvaText.Heading2 textStyle={{textAlign: 'center'}}>
+      <AvaText.Heading2 textStyle={{ textAlign: 'center' }}>
         Have you recorded your recovery phrase?
       </AvaText.Heading2>
-      <AvaText.Body2 textStyle={{textAlign: 'center', marginVertical: 16}}>
+      <AvaText.Body2 textStyle={{ textAlign: 'center', marginVertical: 16 }}>
         Without this you will not be able to sign back in to your account.
       </AvaText.Body2>
       <AvaButton.PrimaryLarge onPress={onConfirm}>Yes</AvaButton.PrimaryLarge>
@@ -44,9 +44,9 @@ const LogoutScreen = ({
   )
 }
 
-const SignOutBottomSheet = ({onConfirm}: {onConfirm: () => void}) => {
+const SignOutBottomSheet = ({ onConfirm }: { onConfirm: () => void }) => {
   const bottomSheetRef = useRef<BottomSheet>(null)
-  const {goBack, canGoBack} = useNavigation()
+  const { goBack, canGoBack } = useNavigation()
   const snapPoints = useMemo(() => ['0%', '40%'], [])
 
   useEffect(() => {

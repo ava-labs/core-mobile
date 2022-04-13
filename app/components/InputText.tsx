@@ -1,4 +1,4 @@
-import React, {RefObject, useEffect, useRef, useState} from 'react'
+import React, { RefObject, useEffect, useRef, useState } from 'react'
 import {
   Appearance,
   InteractionManager,
@@ -7,12 +7,12 @@ import {
   View,
   ViewStyle
 } from 'react-native'
-import {useApplicationContext} from 'contexts/ApplicationContext'
-import {Opacity50} from 'resources/Constants'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { Opacity50 } from 'resources/Constants'
 import ClearInputSVG from 'components/svg/ClearInputSVG'
-import {Space} from 'components/Space'
+import { Space } from 'components/Space'
 import CheckmarkSVG from 'components/svg/CheckmarkSVG'
-import {Popable} from 'react-native-popable'
+import { Popable } from 'react-native-popable'
 import AvaText from './AvaText'
 import AvaButton from './AvaButton'
 
@@ -129,12 +129,12 @@ export default function InputText(props: Props | Readonly<Props>) {
             end: 16
           }
         ]}>
-        <AvaText.Heading3 textStyle={{color: 'black'}}>%</AvaText.Heading3>
+        <AvaText.Heading3 textStyle={{ color: 'black' }}>%</AvaText.Heading3>
       </View>
     )
   }
 
-  const Currency = ({currency}: {currency?: string}) => {
+  const Currency = ({ currency }: { currency?: string }) => {
     return (
       <View
         style={[
@@ -167,19 +167,19 @@ export default function InputText(props: Props | Readonly<Props>) {
 
   const Label = () => {
     return (
-      <View style={{alignSelf: 'baseline'}}>
+      <View style={{ alignSelf: 'baseline' }}>
         {props.popOverInfoText ? (
           <Popable
             content={props.popOverInfoText}
             position={'right'}
-            style={{minWidth: 200}}
+            style={{ minWidth: 200 }}
             backgroundColor={context.theme.colorBg3}>
             <AvaText.Body2>{props.label ?? ''}</AvaText.Body2>
           </Popable>
         ) : (
           <AvaText.Body2>{props.label ?? ''}</AvaText.Body2>
         )}
-        <View style={[{height: 8}]} />
+        <View style={[{ height: 8 }]} />
       </View>
     )
   }
@@ -189,7 +189,7 @@ export default function InputText(props: Props | Readonly<Props>) {
       <>
         <Space y={5} />
         {!!props.helperText && typeof props.helperText === 'string' ? (
-          <AvaText.Body2 textStyle={{textAlign: 'left'}}>
+          <AvaText.Body2 textStyle={{ textAlign: 'left' }}>
             {props.helperText}
           </AvaText.Body2>
         ) : (
@@ -202,8 +202,10 @@ export default function InputText(props: Props | Readonly<Props>) {
   const ErrorText = () => {
     return (
       <>
-        <View style={[{height: 4}]} />
-        <AvaText.Body3 textStyle={{textAlign: 'left'}} color={theme.colorError}>
+        <View style={[{ height: 4 }]} />
+        <AvaText.Body3
+          textStyle={{ textAlign: 'left' }}
+          color={theme.colorError}>
           {props.errorText || ''}
         </AvaText.Body3>
       </>
@@ -232,7 +234,7 @@ export default function InputText(props: Props | Readonly<Props>) {
   }
 
   return (
-    <View style={[{margin: 12}, props.style]}>
+    <View style={[{ margin: 12 }, props.style]}>
       {props.label && <Label />}
       <View
         style={[
@@ -313,7 +315,7 @@ export default function InputText(props: Props | Readonly<Props>) {
   )
 }
 
-function MaxBtn({onPress}: {onPress?: () => void}) {
+function MaxBtn({ onPress }: { onPress?: () => void }) {
   return (
     <View
       style={[
@@ -327,7 +329,7 @@ function MaxBtn({onPress}: {onPress?: () => void}) {
   )
 }
 
-function ConfirmBtn({onPress}: {onPress?: () => void}) {
+function ConfirmBtn({ onPress }: { onPress?: () => void }) {
   return (
     <View
       style={[

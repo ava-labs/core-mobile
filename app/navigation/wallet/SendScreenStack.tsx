@@ -6,22 +6,22 @@ import {
 } from '@react-navigation/stack'
 import DoneScreen from 'screens/send/DoneScreen'
 import SendToken from 'screens/send/SendToken'
-import {RouteProp, useNavigation, useRoute} from '@react-navigation/native'
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import ReviewSend from 'screens/send/ReviewSend'
-import {SendTokenContextProvider} from 'contexts/SendTokenContext'
-import {RootStackParamList} from 'navigation/WalletScreenStack'
-import {TokenWithBalance} from '@avalabs/wallet-react-components'
+import { SendTokenContextProvider } from 'contexts/SendTokenContext'
+import { RootStackParamList } from 'navigation/WalletScreenStack'
+import { TokenWithBalance } from '@avalabs/wallet-react-components'
 
 export type SendStackParamList = {
-  [AppNavigation.Send.Send]: {token?: TokenWithBalance} | undefined
+  [AppNavigation.Send.Send]: { token?: TokenWithBalance } | undefined
   [AppNavigation.Send.Review]: undefined
-  [AppNavigation.Send.Success]: {transactionId: string}
+  [AppNavigation.Send.Success]: { transactionId: string }
 }
 
 const SendStack = createStackNavigator<SendStackParamList>()
 
 function SendScreenStack() {
-  const {params} =
+  const { params } =
     useRoute<
       RouteProp<RootStackParamList, typeof AppNavigation.Wallet.SendTokens>
     >()
@@ -52,12 +52,12 @@ function SendScreenStack() {
 }
 
 const SendTokenComponent = () => {
-  const {navigate} = useNavigation<StackNavigationProp<SendStackParamList>>()
-  const {navigate: rootNavigate} =
+  const { navigate } = useNavigation<StackNavigationProp<SendStackParamList>>()
+  const { navigate: rootNavigate } =
     useNavigation<StackNavigationProp<SendStackParamList>>().getParent<
       StackNavigationProp<RootStackParamList>
     >()
-  const {params} =
+  const { params } =
     useRoute<
       RouteProp<RootStackParamList, typeof AppNavigation.Wallet.SendTokens>
     >()
@@ -76,14 +76,14 @@ const ReviewSendComponent = () => {
 
   const onSuccess = (transactionId: string) => {
     navigation.popToTop()
-    navigation.replace(AppNavigation.Send.Success, {transactionId})
+    navigation.replace(AppNavigation.Send.Success, { transactionId })
   }
 
   return <ReviewSend onSuccess={onSuccess} />
 }
 
 const DoneScreenComponent = () => {
-  const {goBack} = useNavigation<StackNavigationProp<RootStackParamList>>()
+  const { goBack } = useNavigation<StackNavigationProp<RootStackParamList>>()
   const transactionId =
     useRoute<RouteProp<SendStackParamList, typeof AppNavigation.Send.Success>>()
       ?.params?.transactionId

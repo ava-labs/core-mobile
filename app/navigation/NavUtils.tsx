@@ -1,7 +1,7 @@
-import {StackNavigationOptions} from '@react-navigation/stack'
+import { StackNavigationOptions } from '@react-navigation/stack'
 import AvaText from 'components/AvaText'
 import React from 'react'
-import {Row} from 'components/Row'
+import { Row } from 'components/Row'
 
 export const MainHeaderOptions = (
   title: string,

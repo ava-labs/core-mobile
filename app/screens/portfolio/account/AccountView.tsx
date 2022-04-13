@@ -1,17 +1,17 @@
-import React, {useCallback} from 'react'
-import {View} from 'react-native'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import React, { useCallback } from 'react'
+import { View } from 'react-native'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
-import {Space} from 'components/Space'
+import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
-import {useAccountsContext} from '@avalabs/wallet-react-components'
-import {Account} from 'dto/Account'
+import { useAccountsContext } from '@avalabs/wallet-react-components'
+import { Account } from 'dto/Account'
 import AccountItem from 'screens/portfolio/account/AccountItem'
-import {BottomSheetFlatList} from '@gorhom/bottom-sheet'
+import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 
-function AccountView({onDone}: {onDone: () => void}): JSX.Element {
-  const {theme} = useApplicationContext()
-  const {accounts, saveAccounts, setActiveAccount} =
+function AccountView({ onDone }: { onDone: () => void }): JSX.Element {
+  const { theme } = useApplicationContext()
+  const { accounts, saveAccounts, setActiveAccount } =
     useApplicationContext().repo.accountsRepo
   const accountsContext = useAccountsContext()
 
@@ -48,14 +48,14 @@ function AccountView({onDone}: {onDone: () => void}): JSX.Element {
         }}>
         <AvaText.Heading1>My accounts</AvaText.Heading1>
         <AvaButton.Base rippleBorderless onPress={onDone}>
-          <AvaText.ButtonLarge textStyle={{color: theme.colorPrimary1}}>
+          <AvaText.ButtonLarge textStyle={{ color: theme.colorPrimary1 }}>
             Done
           </AvaText.ButtonLarge>
         </AvaButton.Base>
       </View>
       <Space y={16} />
       <BottomSheetFlatList
-        style={{marginHorizontal: -16}}
+        style={{ marginHorizontal: -16 }}
         data={[...accounts.values()]}
         renderItem={info => renderAccountItem(info.item, onSelectAccount)}
       />

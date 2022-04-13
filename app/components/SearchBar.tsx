@@ -7,12 +7,12 @@ import {
   TouchableOpacity,
   View
 } from 'react-native'
-import {Opacity50} from 'resources/Constants'
+import { Opacity50 } from 'resources/Constants'
 import SearchSVG from 'components/svg/SearchSVG'
-import React, {FC, useLayoutEffect, useRef, useState} from 'react'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import React, { FC, useLayoutEffect, useRef, useState } from 'react'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import ClearSVG from 'components/svg/ClearSVG'
-import {useNavigation} from '@react-navigation/native'
+import { useNavigation } from '@react-navigation/native'
 import AvaText from './AvaText'
 import AvaButton from './AvaButton'
 
@@ -51,7 +51,7 @@ const SearchBar: FC<Props> = ({
 }) => {
   const textInputRef = useRef<TextInput>(null)
   const navigation = useNavigation()
-  const {theme} = useApplicationContext()
+  const { theme } = useApplicationContext()
   const [isFocused, setIsFocused] = useState(false)
 
   /**
@@ -61,7 +61,7 @@ const SearchBar: FC<Props> = ({
   useLayoutEffect(() => {
     if (hideBottomNav) {
       navigation.setOptions({
-        tabBarStyle: {display: isFocused ? 'none' : 'flex'}
+        tabBarStyle: { display: isFocused ? 'none' : 'flex' }
       })
     }
   }, [isFocused])
@@ -110,7 +110,7 @@ const SearchBar: FC<Props> = ({
       <View
         style={[
           styles.searchBackground,
-          {backgroundColor: theme.colorBg3 + Opacity50}
+          { backgroundColor: theme.colorBg3 + Opacity50 }
         ]}>
         <SearchSVG size={32} hideBorder />
         <TextInput
@@ -121,7 +121,7 @@ const SearchBar: FC<Props> = ({
           ref={textInputRef}
           style={[
             styles.searchInput,
-            {color: theme.colorText2, width: textInputWidth}
+            { color: theme.colorText2, width: textInputWidth }
           ]}
           placeholder={placeholder}
           placeholderTextColor={theme.colorText2}
@@ -139,13 +139,13 @@ const SearchBar: FC<Props> = ({
           {...rest}
         />
         {isEmpty && (
-          <TouchableOpacity style={{marginEnd: 4}} onPress={clearText}>
+          <TouchableOpacity style={{ marginEnd: 4 }} onPress={clearText}>
             <ClearSVG color={theme.background} backgroundColor={theme.white} />
           </TouchableOpacity>
         )}
       </View>
       {isFocused && (
-        <AvaButton.Base style={{marginStart: 16}} onPress={onCancel}>
+        <AvaButton.Base style={{ marginStart: 16 }} onPress={onCancel}>
           <AvaText.ButtonLarge color={'#0A84FF'}>Cancel</AvaText.ButtonLarge>
         </AvaButton.Base>
       )}

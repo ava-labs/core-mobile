@@ -1,7 +1,7 @@
 import React from 'react'
-import {View} from 'react-native'
+import { View } from 'react-native'
 
-export function Space({x, y}: {x?: number; y?: number}): JSX.Element {
+export function Space({ x, y }: { x?: number; y?: number }): JSX.Element {
   return (
     <View
       style={[

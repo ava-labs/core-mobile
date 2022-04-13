@@ -1,12 +1,12 @@
 import React from 'react'
-import Svg, {G, Path} from 'react-native-svg'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import Svg, { G, Path } from 'react-native-svg'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 interface Prop {
   color?: string
 }
 
-export default function AddressBookSVG({color}: Prop) {
+export default function AddressBookSVG({ color }: Prop) {
   const context = useApplicationContext()
 
   const iconColor = color ?? context.theme.colorIcon1

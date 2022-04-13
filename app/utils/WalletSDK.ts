@@ -1,4 +1,4 @@
-import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk'
+import { MnemonicWallet } from '@avalabs/avalanche-wallet-sdk'
 
 export default {
   async generateMnemonic(): Promise<string> {

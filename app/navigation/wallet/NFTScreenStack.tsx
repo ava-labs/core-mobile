@@ -4,23 +4,23 @@ import {
   createStackNavigator,
   StackNavigationProp
 } from '@react-navigation/stack'
-import {NFTItemData} from 'screens/nft/NftCollection'
-import {RouteProp, useNavigation, useRoute} from '@react-navigation/native'
+import { NFTItemData } from 'screens/nft/NftCollection'
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import NftDetails from 'screens/nft/NftDetails'
 import NftFullScreen from 'screens/nft/NftFullScreen'
 import NFTSendScreenStack from 'navigation/wallet/NFTSendStack'
-import {RootStackParamList} from 'navigation/WalletScreenStack'
+import { RootStackParamList } from 'navigation/WalletScreenStack'
 
 export type NFTStackParamList = {
-  [AppNavigation.Nft.Details]: {nft: NFTItemData}
-  [AppNavigation.Nft.Send]: {nft: NFTItemData}
-  [AppNavigation.Nft.FullScreen]: {url: string; urlSmall: string}
+  [AppNavigation.Nft.Details]: { nft: NFTItemData }
+  [AppNavigation.Nft.Send]: { nft: NFTItemData }
+  [AppNavigation.Nft.FullScreen]: { url: string; urlSmall: string }
 }
 
 const NFTStack = createStackNavigator<NFTStackParamList>()
 
 function NFTScreenStack() {
-  const {params} =
+  const { params } =
     useRoute<
       RouteProp<RootStackParamList, typeof AppNavigation.Wallet.NFTDetails>
     >()
@@ -38,10 +38,10 @@ function NFTScreenStack() {
       <NFTStack.Screen
         name={AppNavigation.Nft.Details}
         component={NftDetailsScreen}
-        initialParams={{nft: item}}
+        initialParams={{ nft: item }}
       />
       <NFTStack.Screen
-        options={{headerShown: false}}
+        options={{ headerShown: false }}
         name={AppNavigation.Nft.Send}
         component={NFTSendScreenStack}
       />
@@ -57,12 +57,12 @@ function NFTScreenStack() {
 }
 
 const NftDetailsScreen = () => {
-  const {navigate} = useNavigation<StackNavigationProp<NFTStackParamList>>()
+  const { navigate } = useNavigation<StackNavigationProp<NFTStackParamList>>()
   const openImageFull = (url: string, urlSmall: string) => {
-    navigate(AppNavigation.Nft.FullScreen, {url, urlSmall})
+    navigate(AppNavigation.Nft.FullScreen, { url, urlSmall })
   }
   const openSendNftScreen = (item: NFTItemData) => {
-    navigate(AppNavigation.Nft.Send, {nft: item})
+    navigate(AppNavigation.Nft.Send, { nft: item })
   }
   return (
     <NftDetails

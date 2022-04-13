@@ -1,7 +1,7 @@
-import React, {FC} from 'react'
+import React, { FC } from 'react'
 import AvaListItem from 'components/AvaListItem'
 import CheckmarkSVG from 'components/svg/CheckmarkSVG'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
 
 type Props = {
@@ -10,7 +10,7 @@ type Props = {
   onPress: () => void
 }
 
-const CurrencyListItem: FC<Props> = ({name, selected, onPress}) => {
+const CurrencyListItem: FC<Props> = ({ name, selected, onPress }) => {
   const theme = useApplicationContext().theme
   return (
     <>

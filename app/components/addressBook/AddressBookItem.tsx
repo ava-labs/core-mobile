@@ -1,6 +1,6 @@
-import React, {FC, useMemo} from 'react'
+import React, { FC, useMemo } from 'react'
 import AvaText from 'components/AvaText'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import TokenAddress from 'components/TokenAddress'
 import AvaListItem from 'components/AvaListItem'
 import Avatar from 'components/Avatar'
@@ -11,7 +11,7 @@ interface Props {
   onPress?: () => void
 }
 
-const AddressBookItem: FC<Props> = ({title, address, onPress}: Props) => {
+const AddressBookItem: FC<Props> = ({ title, address, onPress }: Props) => {
   const theme = useApplicationContext().theme
 
   const shortAddress = useMemo(() => {

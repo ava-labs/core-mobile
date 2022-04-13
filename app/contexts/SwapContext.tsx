@@ -10,9 +10,9 @@ import {
   useWalletContext,
   useWalletStateContext
 } from '@avalabs/wallet-react-components'
-import {getSwapRate} from 'swap/getSwapRate'
+import { getSwapRate } from 'swap/getSwapRate'
 import BN from 'bn.js'
-import {getDecimalsForEVM} from 'utils/TokenTools'
+import { getDecimalsForEVM } from 'utils/TokenTools'
 import {
   Big,
   bigToLocaleString,
@@ -20,11 +20,11 @@ import {
   numberToBN,
   stringToBN
 } from '@avalabs/avalanche-wallet-sdk'
-import {SwapSide} from 'paraswap'
-import {from} from 'rxjs'
-import {map} from 'rxjs/operators'
-import {performSwap} from 'swap/performSwap'
-import {OptimalRate} from 'paraswap-core'
+import { SwapSide } from 'paraswap'
+import { from } from 'rxjs'
+import { map } from 'rxjs/operators'
+import { performSwap } from 'swap/performSwap'
+import { OptimalRate } from 'paraswap-core'
 import moment from 'moment'
 
 export interface SwapEntry {
@@ -64,9 +64,9 @@ export interface SwapContextState {
 
 export const SwapContext = createContext<SwapContextState>({} as any)
 
-export const SwapContextProvider = ({children}: {children: any}) => {
-  const {wallet} = useWalletContext()
-  const {avaxPrice} = useWalletStateContext()!
+export const SwapContextProvider = ({ children }: { children: any }) => {
+  const { wallet } = useWalletContext()
+  const { avaxPrice } = useWalletStateContext()!
   const [srcToken, setSrcToken] = useState<TokenWithBalance>()
   const [srcAmount, setSrcAmount] = useState<number>(0)
   const [srcUsdAmount, setSrcUsdAmount] = useState<string>('')
@@ -112,7 +112,7 @@ export const SwapContextProvider = ({children}: {children: any}) => {
       })
     )
       .pipe(
-        map(({result, error}) => {
+        map(({ result, error }) => {
           if (error) {
             throw Error(error)
           }
@@ -188,7 +188,7 @@ export const SwapContextProvider = ({children}: {children: any}) => {
       throw Error('no price route')
     }
 
-    const {result, error} = await performSwap(
+    const { result, error } = await performSwap(
       {
         priceRoute: priceRoute,
         srcAmount: priceRoute.srcAmount,

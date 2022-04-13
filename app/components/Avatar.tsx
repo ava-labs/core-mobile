@@ -1,10 +1,10 @@
-import React, {FC, useCallback} from 'react'
-import {Image, StyleSheet, View} from 'react-native'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import React, { FC, useCallback } from 'react'
+import { Image, StyleSheet, View } from 'react-native'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaLogoSVG from 'components/svg/AvaLogoSVG'
-import {Erc20Token} from '@avalabs/avalanche-wallet-sdk/dist/Asset'
-import {TokenWithBalance} from '@avalabs/wallet-react-components'
-import {Opacity10} from 'resources/Constants'
+import { Erc20Token } from '@avalabs/avalanche-wallet-sdk/dist/Asset'
+import { TokenWithBalance } from '@avalabs/wallet-react-components'
+import { Opacity10 } from 'resources/Constants'
 import EthereumSvg from 'components/svg/Ethereum'
 import AvaText from './AvaText'
 
@@ -31,7 +31,7 @@ const AvatarBase: FC<Props> = ({
   size = 32,
   circleColor
 }) => {
-  const {theme, isDarkMode} = useApplicationContext()
+  const { theme, isDarkMode } = useApplicationContext()
   const hasValidLogoUri =
     !!logoUri && (logoUri.startsWith('http') || logoUri.startsWith('https'))
 
@@ -68,7 +68,7 @@ const AvatarBase: FC<Props> = ({
               width: size,
               height: size
             },
-            showBorder && {borderWidth: 0.5, borderColor: theme.colorDisabled}
+            showBorder && { borderWidth: 0.5, borderColor: theme.colorDisabled }
           ]}>
           <AvaText.Body1>{initials}</AvaText.Body1>
         </View>
@@ -78,7 +78,7 @@ const AvatarBase: FC<Props> = ({
       return (
         <Image
           style={styles.tokenLogo}
-          source={{uri: logoUri!}}
+          source={{ uri: logoUri! }}
           width={size}
           height={size}
         />
@@ -94,7 +94,7 @@ interface TokenAvatarProps {
   size?: number
 }
 
-const TokenAvatar: FC<TokenAvatarProps> = ({token, size}) => {
+const TokenAvatar: FC<TokenAvatarProps> = ({ token, size }) => {
   const isErc20Token = !isTokenWithBalance(token)
   const name = token.name
   const symbol = token.symbol

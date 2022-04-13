@@ -1,4 +1,4 @@
-import React, {FC, useCallback, useEffect, useState} from 'react'
+import React, { FC, useCallback, useEffect, useState } from 'react'
 import {
   TabBar,
   SceneRendererProps,
@@ -6,8 +6,8 @@ import {
   NavigationState,
   TabView
 } from 'react-native-tab-view'
-import {View} from 'react-native'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import { View } from 'react-native'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaButton from 'components/AvaButton'
 
 type Route = {
@@ -26,7 +26,7 @@ type TabViewAvaFC = FC<{
   renderCustomLabel?: (title: string, selected: boolean) => React.ReactNode
   currentTabIndex?: number
   onTabIndexChange?: (tabIndex: number) => void
-}> & {Item: FC<TabViewAvaItemProps>}
+}> & { Item: FC<TabViewAvaItemProps> }
 
 const TabViewAva: TabViewAvaFC = ({
   renderCustomLabel,
@@ -96,7 +96,7 @@ const TabViewAva: TabViewAvaFC = ({
   )
 
   const tabbar = useCallback(
-    (tabBarProps: SceneRendererProps & {navigationState: State}) => {
+    (tabBarProps: SceneRendererProps & { navigationState: State }) => {
       return (
         <View>
           <TabBar
@@ -107,7 +107,7 @@ const TabViewAva: TabViewAvaFC = ({
               backgroundColor: theme.transparent,
               marginHorizontal: 16
             }}
-            renderLabel={({route, focused}) =>
+            renderLabel={({ route, focused }) =>
               renderCustomLabel?.(route?.title ?? '', focused)
             }
             indicatorStyle={{
@@ -124,13 +124,13 @@ const TabViewAva: TabViewAvaFC = ({
   return (
     <TabView
       onIndexChange={handleIndexChange}
-      navigationState={{index: currentIndex, routes}}
+      navigationState={{ index: currentIndex, routes }}
       renderScene={scenes}
       renderTabBar={tabbar}
     />
   )
 }
 
-TabViewAva.Item = ({children}) => <>{children}</>
+TabViewAva.Item = ({ children }) => <>{children}</>
 
 export default TabViewAva

@@ -1,8 +1,8 @@
-import React, {ReactNode} from 'react'
-import {Pressable, StyleProp, StyleSheet, View, ViewStyle} from 'react-native'
-import {useApplicationContext} from 'contexts/ApplicationContext'
-import {Space} from 'components/Space'
-import {Opacity10} from 'resources/Constants'
+import React, { ReactNode } from 'react'
+import { Pressable, StyleProp, StyleSheet, View, ViewStyle } from 'react-native'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { Space } from 'components/Space'
+import { Opacity10 } from 'resources/Constants'
 import AvaText from './AvaText'
 
 type CircularButtonProps = {
@@ -20,7 +20,7 @@ export default function CircularButton({
   style,
   onPress
 }: CircularButtonProps) {
-  const {theme, isDarkMode} = useApplicationContext()
+  const { theme, isDarkMode } = useApplicationContext()
   return (
     <View style={styles.container}>
       <Pressable
@@ -42,7 +42,7 @@ export default function CircularButton({
         {image}
       </Pressable>
       <Space y={8} />
-      <AvaText.ButtonSmall textStyle={{color: theme.colorText1}}>
+      <AvaText.ButtonSmall textStyle={{ color: theme.colorText1 }}>
         {caption}
       </AvaText.ButtonSmall>
     </View>

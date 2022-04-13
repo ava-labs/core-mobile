@@ -1,7 +1,7 @@
-import React, {FC} from 'react'
-import {View, ViewProps} from 'react-native'
+import React, { FC } from 'react'
+import { View, ViewProps } from 'react-native'
 
-export const Row: FC<ViewProps> = ({style, children}) => {
+export const Row: FC<ViewProps> = ({ style, children }) => {
   return (
     <View
       style={[

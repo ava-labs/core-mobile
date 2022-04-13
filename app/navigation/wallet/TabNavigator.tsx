@@ -2,25 +2,25 @@ import AppNavigation from 'navigation/AppNavigation'
 import HomeSVG from 'components/svg/HomeSVG'
 import SwapSVG from 'components/svg/SwapSVG'
 import WatchlistSVG from 'components/svg/WatchlistSVG'
-import {createBottomTabNavigator} from '@react-navigation/bottom-tabs'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import PortfolioStackScreen from 'navigation/wallet/PortfolioScreenStack'
-import React, {FC} from 'react'
+import React, { FC } from 'react'
 import ActivityList from 'screens/activity/ActivityList'
-import {View} from 'react-native'
+import { View } from 'react-native'
 import AddSVG from 'components/svg/AddSVG'
 import AvaText from 'components/AvaText'
 import ArrowSVG from 'components/svg/ArrowSVG'
-import {useNavigation} from '@react-navigation/native'
+import { useNavigation } from '@react-navigation/native'
 import FloatingActionButton from 'components/FloatingActionButton'
 import useInAppBrowser from 'hooks/useInAppBrowser'
 import HistorySVG from 'components/svg/HistorySVG'
 import BridgeSVG from 'components/svg/BridgeSVG'
-import {Space} from 'components/Space'
+import { Space } from 'components/Space'
 import ActionButtonItem from 'components/ActionButtonItem'
 import QRCodeSVG from 'components/svg/QRCodeSVG'
-import {StackNavigationProp} from '@react-navigation/stack'
-import {RootStackParamList} from 'navigation/WalletScreenStack'
+import { StackNavigationProp } from '@react-navigation/stack'
+import { RootStackParamList } from 'navigation/WalletScreenStack'
 import WatchlistTab from 'screens/watchlist/WatchlistTabView'
 import BuySVG from 'components/svg/BuySVG'
 
@@ -28,7 +28,7 @@ const Tab = createBottomTabNavigator()
 const TAB_ICON_SIZE = 28
 
 const DummyBridge = () => (
-  <View style={{flex: 1, backgroundColor: 'transparent'}} />
+  <View style={{ flex: 1, backgroundColor: 'transparent' }} />
 )
 
 const TabNavigator = () => {
@@ -46,7 +46,7 @@ const TabNavigator = () => {
     image: React.ReactNode
   ) {
     return (
-      <View style={{justifyContent: 'center', alignItems: 'center', top: 2}}>
+      <View style={{ justifyContent: 'center', alignItems: 'center', top: 2 }}>
         {image}
         <AvaText.Caption
           textStyle={{
@@ -79,7 +79,7 @@ const TabNavigator = () => {
         name={AppNavigation.Tabs.Portfolio}
         component={PortfolioStackScreen}
         options={{
-          tabBarIcon: ({focused}) =>
+          tabBarIcon: ({ focused }) =>
             normalTabButtons(
               AppNavigation.Tabs.Portfolio,
               focused,
@@ -91,7 +91,7 @@ const TabNavigator = () => {
         name={AppNavigation.Tabs.Activity}
         component={ActivityList}
         options={{
-          tabBarIcon: ({focused}) =>
+          tabBarIcon: ({ focused }) =>
             normalTabButtons(
               AppNavigation.Tabs.Activity,
               focused,
@@ -112,7 +112,7 @@ const TabNavigator = () => {
       <Tab.Screen
         name={AppNavigation.Tabs.Watchlist}
         options={{
-          tabBarIcon: ({focused}) =>
+          tabBarIcon: ({ focused }) =>
             normalTabButtons(
               AppNavigation.Tabs.Watchlist,
               focused,
@@ -125,14 +125,14 @@ const TabNavigator = () => {
         name={AppNavigation.Tabs.Bridge}
         component={DummyBridge}
         options={{
-          tabBarIcon: ({focused}) =>
+          tabBarIcon: ({ focused }) =>
             normalTabButtons(
               AppNavigation.Tabs.Bridge,
               focused,
               <BridgeSVG selected={focused} />
             )
         }}
-        listeners={({navigation}) => ({
+        listeners={({ navigation }) => ({
           tabPress: e => {
             e.preventDefault()
             navigation.navigate(AppNavigation.Wallet.Bridge)
@@ -148,9 +148,9 @@ const TabNavigator = () => {
  * @param children
  * @constructor
  */
-const CustomTabBarFab: FC = ({children}) => {
-  const {theme} = useApplicationContext()
-  const {openMoonPay} = useInAppBrowser()
+const CustomTabBarFab: FC = ({ children }) => {
+  const { theme } = useApplicationContext()
+  const { openMoonPay } = useInAppBrowser()
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>()
 
   return (

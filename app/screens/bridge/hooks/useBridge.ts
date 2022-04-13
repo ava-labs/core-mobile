@@ -1,9 +1,9 @@
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import {
   useNetworkContext,
   useWalletStateContext
 } from '@avalabs/wallet-react-components'
-import {useGetTokenSymbolOnNetwork} from 'screens/bridge/hooks/useGetTokenSymbolOnNetwork'
+import { useGetTokenSymbolOnNetwork } from 'screens/bridge/hooks/useGetTokenSymbolOnNetwork'
 import {
   BIG_ZERO,
   Blockchain,
@@ -15,21 +15,21 @@ import {
   useTokenInfoContext,
   useTransactionFee
 } from '@avalabs/bridge-sdk'
-import {useEffect, useState} from 'react'
-import {Big} from '@avalabs/avalanche-wallet-sdk'
-import {useTransferAsset} from 'screens/bridge/hooks/useTransferAsset'
-import {useLoadTokenBalance} from 'screens/bridge/hooks/useLoadTokenBalance'
-import {getAvalancheProvider} from 'screens/bridge/utils/getAvalancheProvider'
-import {getEthereumProvider} from 'screens/bridge/utils/getEthereumProvider'
+import { useEffect, useState } from 'react'
+import { Big } from '@avalabs/avalanche-wallet-sdk'
+import { useTransferAsset } from 'screens/bridge/hooks/useTransferAsset'
+import { useLoadTokenBalance } from 'screens/bridge/hooks/useLoadTokenBalance'
+import { getAvalancheProvider } from 'screens/bridge/utils/getAvalancheProvider'
+import { getEthereumProvider } from 'screens/bridge/utils/getEthereumProvider'
 
 export default function useBridge() {
   // using this hook makes a swap between an unavailable tokens (e.g. ETH on Avalanche > Ethereum)
   // switch to an available token
   useSwitchFromUnavailableAsset()
 
-  const {selectedCurrency} = useApplicationContext().appHook
+  const { selectedCurrency } = useApplicationContext().appHook
   const network = useNetworkContext()?.network
-  const {getTokenSymbolOnNetwork} = useGetTokenSymbolOnNetwork()
+  const { getTokenSymbolOnNetwork } = useGetTokenSymbolOnNetwork()
   const {
     currentAsset,
     setCurrentAsset,
@@ -50,7 +50,7 @@ export default function useBridge() {
   const minimumTransferAmount = transferCost ? transferCost.mul(3) : BIG_ZERO
   const txFee = useTransactionFee(currentBlockchain)
   // @ts-ignore addresses exist in walletContext
-  const {addresses} = useWalletStateContext()
+  const { addresses } = useWalletStateContext()
   const blockchainTokenSymbol = getTokenSymbolOnNetwork(
     currentAsset ?? '',
     currentBlockchain
@@ -64,7 +64,7 @@ export default function useBridge() {
 
   const tokenInfoContext = useTokenInfoContext()
 
-  const {transferAsset, txHash} = useTransferAsset(assetInfo)
+  const { transferAsset, txHash } = useTransferAsset(assetInfo)
 
   const targetBlockchain =
     currentBlockchain === Blockchain.AVALANCHE

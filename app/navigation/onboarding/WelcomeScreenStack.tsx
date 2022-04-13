@@ -1,16 +1,16 @@
 import AppNavigation from 'navigation/AppNavigation'
 import React from 'react'
 import Welcome from 'screens/onboarding/Welcome'
-import {noop} from 'rxjs'
+import { noop } from 'rxjs'
 import CreateWalletStack from 'navigation/onboarding/CreateWalletStack'
-import {useNavigation} from '@react-navigation/native'
+import { useNavigation } from '@react-navigation/native'
 import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin'
 import EnterWithMnemonicStack from 'navigation/onboarding/EnterWithMnemonicStack'
 import {
   createStackNavigator,
   StackNavigationProp
 } from '@react-navigation/stack'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 type WelcomeScreenStackParamList = {
   [AppNavigation.Onboard.Welcome]: undefined
@@ -21,7 +21,7 @@ type WelcomeScreenStackParamList = {
 const WelcomeScreenS = createStackNavigator<WelcomeScreenStackParamList>()
 
 const WelcomeScreen = () => {
-  const {navigate} =
+  const { navigate } =
     useNavigation<StackNavigationProp<WelcomeScreenStackParamList>>()
   return (
     <Welcome
@@ -35,8 +35,8 @@ const WelcomeScreen = () => {
 }
 
 const LoginWithPinOrBiometryScreen = () => {
-  const {enterWallet} = useApplicationContext().walletSetupHook
-  const {goBack} = useNavigation()
+  const { enterWallet } = useApplicationContext().walletSetupHook
+  const { goBack } = useNavigation()
   return (
     <PinOrBiometryLogin
       onSignInWithRecoveryPhrase={() => goBack()}
@@ -48,7 +48,7 @@ const LoginWithPinOrBiometryScreen = () => {
 }
 
 const WelcomeScreenStack: () => JSX.Element = () => (
-  <WelcomeScreenS.Navigator screenOptions={{headerShown: false}}>
+  <WelcomeScreenS.Navigator screenOptions={{ headerShown: false }}>
     <WelcomeScreenS.Screen
       name={AppNavigation.Onboard.Welcome}
       component={WelcomeScreen}
@@ -62,7 +62,7 @@ const WelcomeScreenStack: () => JSX.Element = () => (
       component={EnterWithMnemonicStack}
     />
     <WelcomeScreenS.Screen
-      options={{presentation: 'modal'}}
+      options={{ presentation: 'modal' }}
       name={AppNavigation.Onboard.Login}
       component={LoginWithPinOrBiometryScreen}
     />

@@ -1,13 +1,13 @@
 import React from 'react'
-import Svg, {Circle, Path} from 'react-native-svg'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import Svg, { Circle, Path } from 'react-native-svg'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 interface Prop {
   color?: string
   circleColor?: string
 }
 
-function GraphSVG({color, circleColor}: Prop) {
+function GraphSVG({ color, circleColor }: Prop) {
   const context = useApplicationContext()
 
   const iconColor = color ?? context.theme.colorIcon1

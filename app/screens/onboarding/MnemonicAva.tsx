@@ -1,6 +1,6 @@
 import React from 'react'
-import {StyleSheet, TextInput, View} from 'react-native'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import { StyleSheet, TextInput, View } from 'react-native'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
 
 type InputProps = {
@@ -14,7 +14,7 @@ function MnemonicInput(props: InputProps | Readonly<InputProps>) {
   const theme = context.theme
   return (
     <View style={styles.horizontalLayout}>
-      <AvaText.Body1 textStyle={{marginEnd: 4}}>
+      <AvaText.Body1 textStyle={{ marginEnd: 4 }}>
         {(props.keyNum + 1).toString()}
       </AvaText.Body1>
       <TextInput
@@ -50,10 +50,10 @@ function MnemonicText(props: TextProps | Readonly<TextProps>) {
   const theme = useApplicationContext().theme
   return (
     <View style={[styles.horizontalLayout]}>
-      <AvaText.Body2 textStyle={{marginEnd: 6, color: theme.colorText1}}>
+      <AvaText.Body2 textStyle={{ marginEnd: 6, color: theme.colorText1 }}>
         {(props.keyNum + 1).toString()}.
       </AvaText.Body2>
-      <AvaText.Body2 textStyle={{color: theme.colorText1}}>
+      <AvaText.Body2 textStyle={{ color: theme.colorText1 }}>
         {props.text}
       </AvaText.Body2>
     </View>

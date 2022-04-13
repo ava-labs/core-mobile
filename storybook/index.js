@@ -1,12 +1,16 @@
 // if you use expo remove this line
 import './rn-addons'
-import {AppRegistry} from 'react-native'
-import {addDecorator, configure, getStorybookUI} from '@storybook/react-native'
-import {withKnobs} from '@storybook/addon-knobs'
-import {NetworkContextProvider} from '@avalabs/wallet-react-components'
-import {ApplicationContextProvider} from '../app/contexts/ApplicationContext'
+import { AppRegistry } from 'react-native'
+import {
+  addDecorator,
+  configure,
+  getStorybookUI
+} from '@storybook/react-native'
+import { withKnobs } from '@storybook/addon-knobs'
+import { NetworkContextProvider } from '@avalabs/wallet-react-components'
+import { ApplicationContextProvider } from '../app/contexts/ApplicationContext'
 import useDevDebugging from '../app/utils/debugging/DevDebugging'
-import {loadStories} from './storyLoader'
+import { loadStories } from './storyLoader'
 
 // enables knobs for all stories
 addDecorator(withKnobs)

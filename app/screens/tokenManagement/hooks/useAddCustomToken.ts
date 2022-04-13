@@ -3,9 +3,9 @@ import {
   useNetworkContext,
   useWalletStateContext
 } from '@avalabs/wallet-react-components'
-import {getContractDataErc20} from '@avalabs/avalanche-wallet-sdk'
-import {Erc20TokenData} from '@avalabs/avalanche-wallet-sdk/dist/Asset/types'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import { getContractDataErc20 } from '@avalabs/avalanche-wallet-sdk'
+import { Erc20TokenData } from '@avalabs/avalanche-wallet-sdk/dist/Asset/types'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 export type CustomTokens = {
   [chain: string]: TokenListDict
@@ -14,7 +14,7 @@ export type CustomTokens = {
 const useAddCustomToken = () => {
   const networkState = useNetworkContext()
   const walletState = useWalletStateContext()
-  const {customTokens, saveCustomTokens} =
+  const { customTokens, saveCustomTokens } =
     useApplicationContext().repo.customTokenRepo
 
   async function addCustomToken(tokenAddress: string): Promise<Erc20TokenData> {
@@ -66,7 +66,7 @@ const useAddCustomToken = () => {
     }
   }
 
-  return {addCustomToken}
+  return { addCustomToken }
 }
 
 export default useAddCustomToken

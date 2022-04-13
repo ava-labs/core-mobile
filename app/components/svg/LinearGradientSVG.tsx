@@ -1,5 +1,5 @@
 import React from 'react'
-import Svg, {Defs, LinearGradient, Rect, Stop} from 'react-native-svg'
+import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg'
 
 interface Prop {
   colorFrom: string
@@ -18,7 +18,8 @@ function LinearGradientSVG({
   opacityFrom = 1,
   opacityTo = 1
 }: Prop) {
-  const endPoint = orientation === 'horizontal' ? {x: 1, y: 0} : {x: 0, y: 1}
+  const endPoint =
+    orientation === 'horizontal' ? { x: 1, y: 0 } : { x: 0, y: 1 }
   return (
     <Svg
       width="100%"

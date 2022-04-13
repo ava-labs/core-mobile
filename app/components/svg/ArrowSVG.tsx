@@ -1,7 +1,7 @@
 import React from 'react'
-import Svg, {Path} from 'react-native-svg'
-import {useApplicationContext} from 'contexts/ApplicationContext'
-import {View} from 'react-native'
+import Svg, { Path } from 'react-native-svg'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { View } from 'react-native'
 
 interface Prop {
   color?: string
@@ -9,7 +9,7 @@ interface Prop {
   rotate?: number
 }
 
-function ArrowSVG({color = '#FFF', size = 16, rotate}: Prop) {
+function ArrowSVG({ color = '#FFF', size = 16, rotate }: Prop) {
   const context = useApplicationContext()
 
   const iconColor = color ?? context.theme.colorIcon1
@@ -28,7 +28,7 @@ function ArrowSVG({color = '#FFF', size = 16, rotate}: Prop) {
       style={{
         justifyContent: 'center',
         alignItems: 'center',
-        transform: [{rotate: `${rotate}deg`}]
+        transform: [{ rotate: `${rotate}deg` }]
       }}>
       <Arrow />
     </View>

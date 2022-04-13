@@ -1,11 +1,11 @@
-import {WalletType} from '@avalabs/avalanche-wallet-sdk'
-import {TokenWithBalance, wallet$} from '@avalabs/wallet-react-components'
-import {APIError, ParaSwap, SwapSide} from 'paraswap'
-import {OptimalRate} from 'paraswap-core'
-import {firstValueFrom} from 'rxjs'
-import {getDecimalsForEVM} from 'utils/TokenTools'
-import {getSrcToken, incrementalPromiseResolve, resolve} from 'swap/utils'
-import {paraSwap$} from './swap'
+import { WalletType } from '@avalabs/avalanche-wallet-sdk'
+import { TokenWithBalance, wallet$ } from '@avalabs/wallet-react-components'
+import { APIError, ParaSwap, SwapSide } from 'paraswap'
+import { OptimalRate } from 'paraswap-core'
+import { firstValueFrom } from 'rxjs'
+import { getDecimalsForEVM } from 'utils/TokenTools'
+import { getSrcToken, incrementalPromiseResolve, resolve } from 'swap/utils'
+import { paraSwap$ } from './swap'
 
 const SERVER_BUSY_ERROR = 'Server too busy'
 
@@ -15,7 +15,7 @@ export async function getSwapRate(request: {
   amount?: string
   swapSide: SwapSide
 }) {
-  const {srcToken, destToken, amount, swapSide} = request || []
+  const { srcToken, destToken, amount, swapSide } = request || []
 
   if (!srcToken) {
     return {

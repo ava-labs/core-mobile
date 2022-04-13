@@ -4,19 +4,19 @@ import {
   StackNavigationOptions,
   StackNavigationProp
 } from '@react-navigation/stack'
-import React, {useCallback, useEffect, useMemo} from 'react'
+import React, { useCallback, useEffect, useMemo } from 'react'
 import AddressBook from 'screens/drawer/addressBook/AddressBook'
-import {MainHeaderOptions} from 'navigation/NavUtils'
-import {RouteProp, useNavigation, useRoute} from '@react-navigation/native'
+import { MainHeaderOptions } from 'navigation/NavUtils'
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import AvaButton from 'components/AvaButton'
 import AddSVG from 'components/svg/AddSVG'
 import AddContact from 'screens/drawer/addressBook/AddContact'
 import ContactDetails from 'screens/drawer/addressBook/ContactDetails'
 import AvaText from 'components/AvaText'
-import {useApplicationContext} from 'contexts/ApplicationContext'
-import {RootStackParamList} from 'navigation/WalletScreenStack'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { RootStackParamList } from 'navigation/WalletScreenStack'
 import useAddressBook from 'screens/drawer/addressBook/useAddressBook'
-import {Contact} from 'Repo'
+import { Contact } from 'Repo'
 
 export type AddressBookStackParamList = {
   [AppNavigation.AddressBook.List]: undefined
@@ -67,25 +67,25 @@ const AddressBookStack = () => {
 }
 
 const ContactDetailsComp = () => {
-  const {setParams, setOptions} =
+  const { setParams, setOptions } =
     useNavigation<StackNavigationProp<AddressBookStackParamList>>()
-  const {navigate, goBack} =
+  const { navigate, goBack } =
     useNavigation<StackNavigationProp<RootStackParamList>>()
-  const {onDelete, onSave} = useAddressBook()
-  const {params} = useRoute<RouteProp<AddressBookStackParamList>>()
-  const {addressBook} = useApplicationContext().repo.addressBookRepo
+  const { onDelete, onSave } = useAddressBook()
+  const { params } = useRoute<RouteProp<AddressBookStackParamList>>()
+  const { addressBook } = useApplicationContext().repo.addressBookRepo
 
   const clonedContact = useMemo(
     () =>
       (params?.contactId &&
         Object.assign({}, addressBook.get(params.contactId))) ||
-      ({id: '', title: '', address: ''} as Contact),
+      ({ id: '', title: '', address: '' } as Contact),
     [addressBook, params?.contactId]
   )
 
   const saveContact = useCallback(() => {
     onSave(clonedContact)
-    setParams({editable: false})
+    setParams({ editable: false })
     setOptions({
       ...(MainHeaderOptions(
         '',
@@ -96,7 +96,7 @@ const ContactDetailsComp = () => {
   }, [])
 
   const onEdit = useCallback(() => {
-    setParams({editable: true})
+    setParams({ editable: true })
     setOptions({
       ...(MainHeaderOptions(
         '',
@@ -112,7 +112,7 @@ const ContactDetailsComp = () => {
   }, [])
 
   useEffect(() => {
-    setParams({editable: false})
+    setParams({ editable: false })
     setOptions({
       ...(MainHeaderOptions(
         '',
@@ -127,14 +127,14 @@ const ContactDetailsComp = () => {
       contact={clonedContact}
       onDelete={contact => deleteContact(contact)}
       onSend={contact => {
-        navigate(AppNavigation.Wallet.SendTokens, {contact})
+        navigate(AppNavigation.Wallet.SendTokens, { contact })
       }}
     />
   )
 }
 
 const AddAddressBookContact = () => {
-  const {navigate} =
+  const { navigate } =
     useNavigation<StackNavigationProp<AddressBookStackParamList>>()
   return (
     <AvaButton.Icon onPress={() => navigate(AppNavigation.AddressBook.Add)}>
@@ -143,24 +143,24 @@ const AddAddressBookContact = () => {
   )
 }
 
-const EditAddressBookContact = ({onEdit}: {onEdit: () => void}) => {
-  const {theme} = useApplicationContext()
+const EditAddressBookContact = ({ onEdit }: { onEdit: () => void }) => {
+  const { theme } = useApplicationContext()
 
   return (
     <AvaButton.Icon onPress={() => onEdit()}>
-      <AvaText.ButtonLarge textStyle={{color: theme.colorPrimary1}}>
+      <AvaText.ButtonLarge textStyle={{ color: theme.colorPrimary1 }}>
         Edit
       </AvaText.ButtonLarge>
     </AvaButton.Icon>
   )
 }
 
-const SaveAddressBookContact = ({onSave}: {onSave: () => void}) => {
-  const {theme} = useApplicationContext()
+const SaveAddressBookContact = ({ onSave }: { onSave: () => void }) => {
+  const { theme } = useApplicationContext()
 
   return (
     <AvaButton.Icon onPress={() => onSave()}>
-      <AvaText.ButtonLarge textStyle={{color: theme.colorPrimary1}}>
+      <AvaText.ButtonLarge textStyle={{ color: theme.colorPrimary1 }}>
         Save
       </AvaText.ButtonLarge>
     </AvaButton.Icon>

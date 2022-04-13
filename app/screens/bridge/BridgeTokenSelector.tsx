@@ -1,7 +1,7 @@
-import React, {useMemo, useState} from 'react'
-import {ActivityIndicator, ListRenderItemInfo, View} from 'react-native'
+import React, { useMemo, useState } from 'react'
+import { ActivityIndicator, ListRenderItemInfo, View } from 'react-native'
 import Loader from 'components/Loader'
-import {Space} from 'components/Space'
+import { Space } from 'components/Space'
 import {
   AssetType,
   BIG_ZERO,
@@ -11,22 +11,22 @@ import {
   useBridgeSDK,
   useGetTokenBalances
 } from '@avalabs/bridge-sdk'
-import {getEthereumProvider} from 'screens/bridge/utils/getEthereumProvider'
+import { getEthereumProvider } from 'screens/bridge/utils/getEthereumProvider'
 import AvaListItem from 'components/AvaListItem'
 import AvaText from 'components/AvaText'
-import {useGetTokenSymbolOnNetwork} from 'screens/bridge/hooks/useGetTokenSymbolOnNetwork'
+import { useGetTokenSymbolOnNetwork } from 'screens/bridge/hooks/useGetTokenSymbolOnNetwork'
 import Avatar from 'components/Avatar'
 import {
   useNetworkContext,
   useWalletStateContext
 } from '@avalabs/wallet-react-components'
-import {formatTokenAmount} from 'utils/Utils'
-import {Big} from '@avalabs/avalanche-wallet-sdk'
-import {getAvalancheProvider} from 'screens/bridge/utils/getAvalancheProvider'
+import { formatTokenAmount } from 'utils/Utils'
+import { Big } from '@avalabs/avalanche-wallet-sdk'
+import { getAvalancheProvider } from 'screens/bridge/utils/getAvalancheProvider'
 import SearchBar from 'components/SearchBar'
 import useBridge from 'screens/bridge/hooks/useBridge'
-import {AssetBalance} from 'screens/bridge/AssetBalance'
-import {BottomSheetFlatList} from '@gorhom/bottom-sheet'
+import { AssetBalance } from 'screens/bridge/AssetBalance'
+import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 
 const DEFAULT_HORIZONTAL_MARGIN = 16
 
@@ -46,14 +46,14 @@ function BridgeTokenSelector({
   onTokenSelected,
   horizontalMargin = DEFAULT_HORIZONTAL_MARGIN
 }: TokenSelectorProps) {
-  const {currentBlockchain} = useBridgeSDK()
+  const { currentBlockchain } = useBridgeSDK()
   const assetList = useAssets(currentBlockchain)
-  const {getTokenSymbolOnNetwork} = useGetTokenSymbolOnNetwork()
+  const { getTokenSymbolOnNetwork } = useGetTokenSymbolOnNetwork()
   const network = useNetworkContext()?.network
   // @ts-ignore addresses exist in walletContext
-  const {addresses} = useWalletStateContext()
+  const { addresses } = useWalletStateContext()
   const [searchText, setSearchText] = useState('')
-  const {tokenInfoContext} = useBridge()
+  const { tokenInfoContext } = useBridge()
 
   /**
    * Get asset balances for the current blockchain
@@ -81,7 +81,7 @@ function BridgeTokenSelector({
         const symbol = asset.symbol
         const balance = balances?.[symbol] ?? BIG_ZERO
         console.log(symbol + ': ' + asset.wrappedContractAddress)
-        return {symbol, asset, balance}
+        return { symbol, asset, balance }
       })
   }, [assetList, currentBlockchain, balances])
 
@@ -93,7 +93,7 @@ function BridgeTokenSelector({
       const balanceStr = balances?.[symbol]
       const balance = balanceStr ? new Big(balanceStr) : undefined
 
-      return {symbol, asset, balance}
+      return { symbol, asset, balance }
     })
   }, [addresses.addrC, assetList, currentBlockchain, balances])
 
@@ -164,7 +164,7 @@ function BridgeTokenSelector({
   }, [assetsWithBalances, searchText])
 
   return (
-    <View style={{flex: 1, marginHorizontal: horizontalMargin}}>
+    <View style={{ flex: 1, marginHorizontal: horizontalMargin }}>
       <SearchBar onTextChanged={setSearchText} searchText={searchText} />
       <Space y={16} />
       {!assetList ? (

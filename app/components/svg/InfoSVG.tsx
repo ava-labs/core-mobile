@@ -1,13 +1,13 @@
 import React from 'react'
-import Svg, {Path} from 'react-native-svg'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import Svg, { Path } from 'react-native-svg'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 interface Prop {
   color?: string
   size?: number
 }
 
-function InfoSVG({color, size = 16}: Prop) {
+function InfoSVG({ color, size = 16 }: Prop) {
   const context = useApplicationContext()
   const iconColor = color ?? context.theme.colorText2
   return (

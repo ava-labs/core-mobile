@@ -1,4 +1,4 @@
-import React, {FC, useMemo, useRef, useState} from 'react'
+import React, { FC, useMemo, useRef, useState } from 'react'
 import {
   FlatList,
   ListRenderItemInfo,
@@ -7,10 +7,10 @@ import {
   View,
   ViewStyle
 } from 'react-native'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
 import CarrotSVG from 'components/svg/CarrotSVG'
-import {Popable, PopableManager} from 'react-native-popable'
+import { Popable, PopableManager } from 'react-native-popable'
 import Separator from 'components/Separator'
 
 interface Props {
@@ -49,7 +49,7 @@ const ListFilter: FC<Props> = ({
       <View
         style={[
           StyleSheet.absoluteFill,
-          {backgroundColor: '#000000', opacity: 0.9}
+          { backgroundColor: '#000000', opacity: 0.9 }
         ]}
       />
       // <BlurView
@@ -64,7 +64,7 @@ const ListFilter: FC<Props> = ({
   const renderItem = (item: ListRenderItemInfo<string>) => {
     return (
       <AvaText.Body1
-        textStyle={{paddingVertical: 8}}
+        textStyle={{ paddingVertical: 8 }}
         onPress={() => {
           onItemSelected?.(item.item)
           ref?.current?.hide()
@@ -82,7 +82,7 @@ const ListFilter: FC<Props> = ({
         <FlatList
           data={filterOptions}
           renderItem={renderItem}
-          contentContainerStyle={{paddingHorizontal: 16}}
+          contentContainerStyle={{ paddingHorizontal: 16 }}
           ItemSeparatorComponent={Separator}
         />
       </>
@@ -104,13 +104,13 @@ const ListFilter: FC<Props> = ({
         style
       ]}
       backgroundColor={theme.transparent}>
-      <View style={{padding: 16, flexDirection: 'row'}}>
+      <View style={{ padding: 16, flexDirection: 'row' }}>
         {icon ? (
           <View>{icon}</View>
         ) : (
           <>
             <AvaText.ButtonSmall
-              textStyle={{color: theme.colorText1, paddingEnd: 4}}>
+              textStyle={{ color: theme.colorText1, paddingEnd: 4 }}>
               {title && title + ': '}
               {currentItem}
             </AvaText.ButtonSmall>

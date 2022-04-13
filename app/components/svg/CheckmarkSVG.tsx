@@ -1,13 +1,13 @@
 import React from 'react'
-import Svg, {Path} from 'react-native-svg'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import Svg, { Path } from 'react-native-svg'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 interface Prop {
   color?: string
   size?: number
 }
 
-function CheckmarkSVG({color, size = 16}: Prop) {
+function CheckmarkSVG({ color, size = 16 }: Prop) {
   const context = useApplicationContext()
 
   const iconColor = color ?? context.theme.alternateBackground

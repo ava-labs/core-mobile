@@ -1,15 +1,15 @@
-import React, {FC} from 'react'
-import {StyleSheet, View} from 'react-native'
+import React, { FC } from 'react'
+import { StyleSheet, View } from 'react-native'
 import LottieView from 'lottie-react-native'
 import SpinnerSource from 'assets/lotties/spinner.json'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 interface Props {
   size: number
   color?: string
 }
 
-const Spinner: FC<Props> = ({size = 40, color}) => {
+const Spinner: FC<Props> = ({ size = 40, color }) => {
   const theme = useApplicationContext().theme
   const spinnerColor = color ?? theme.colorPrimary1
   return (

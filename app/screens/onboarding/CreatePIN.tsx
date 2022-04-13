@@ -1,11 +1,11 @@
-import React, {useEffect} from 'react'
-import {Animated, StyleSheet, View} from 'react-native'
-import {Space} from 'components/Space'
+import React, { useEffect } from 'react'
+import { Animated, StyleSheet, View } from 'react-native'
+import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
 import DotSVG from 'components/svg/DotSVG'
-import {useApplicationContext} from 'contexts/ApplicationContext'
-import {useCreatePin} from './CreatePinViewModel'
-import PinKey, {PinKeys} from './PinKey'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { useCreatePin } from './CreatePinViewModel'
+import PinKey, { PinKeys } from './PinKey'
 
 const keymap: Map<string, PinKeys> = new Map([
   ['1', PinKeys.Key1],
@@ -37,7 +37,7 @@ export default function CreatePIN({
   onPinSet,
   isResettingPin
 }: Props): JSX.Element {
-  const {theme} = useApplicationContext()
+  const { theme } = useApplicationContext()
   const {
     title,
     pinDots,
@@ -89,7 +89,7 @@ export default function CreatePIN({
     <View style={[styles.verticalLayout]}>
       {isResettingPin || (
         <>
-          <AvaText.LargeTitleBold textStyle={{marginHorizontal: 16}}>
+          <AvaText.LargeTitleBold textStyle={{ marginHorizontal: 16 }}>
             {title}
           </AvaText.LargeTitleBold>
           <Space y={20} />
@@ -97,7 +97,7 @@ export default function CreatePIN({
       )}
       <Animated.View
         style={[
-          {padding: 68, flexGrow: 1},
+          { padding: 68, flexGrow: 1 },
           {
             transform: [
               {

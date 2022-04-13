@@ -6,7 +6,7 @@ import useInAppBrowser from 'hooks/useInAppBrowser'
 const LEGAL_URL = 'https://wallet.avax.network/legal'
 
 const LegalItem = () => {
-  const {openUrl} = useInAppBrowser()
+  const { openUrl } = useInAppBrowser()
   return (
     <>
       <AvaListItem.Base

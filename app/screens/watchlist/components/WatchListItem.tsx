@@ -1,14 +1,14 @@
-import React, {FC, useEffect, useMemo, useState} from 'react'
-import {ActivityIndicator, View} from 'react-native'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import React, { FC, useEffect, useMemo, useState } from 'react'
+import { ActivityIndicator, View } from 'react-native'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaListItem from 'components/AvaListItem'
 import AvaText from 'components/AvaText'
 import Avatar from 'components/Avatar'
-import {Space} from 'components/Space'
-import {WatchlistFilter} from 'screens/watchlist/WatchlistView'
+import { Space } from 'components/Space'
+import { WatchlistFilter } from 'screens/watchlist/WatchlistView'
 import SparklineChart from 'components/SparklineChart'
 import MarketMovement from 'screens/watchlist/components/MarketMovement'
-import {Row} from 'components/Row'
+import { Row } from 'components/Row'
 import Coingecko from 'utils/Coingecko'
 
 interface Props {
@@ -33,7 +33,7 @@ const WatchListItem: FC<Props> = ({
   filterBy
 }) => {
   const theme = useApplicationContext().theme
-  const {selectedCurrency} = useApplicationContext().appHook
+  const { selectedCurrency } = useApplicationContext().appHook
   const [ranges, setRanges] = useState<{
     minDate: number
     maxDate: number
@@ -49,7 +49,7 @@ const WatchListItem: FC<Props> = ({
     diffValue: 0,
     percentChange: 0
   })
-  const [chartData, setChartData] = useState<{x: number; y: number}[]>()
+  const [chartData, setChartData] = useState<{ x: number; y: number }[]>()
 
   // get coingecko chart data.
   useEffect(() => {
@@ -73,14 +73,14 @@ const WatchListItem: FC<Props> = ({
   const usdBalance = useMemo(() => {
     if (value) {
       return (
-        <View style={{flexDirection: 'row', alignItems: 'center'}}>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           {!chartData ? (
             <ActivityIndicator
-              style={{alignSelf: 'center'}}
+              style={{ alignSelf: 'center' }}
               color={theme.colorPrimary1}
             />
           ) : (
-            <View style={{position: 'absolute', left: -40, flex: 1}}>
+            <View style={{ position: 'absolute', left: -40, flex: 1 }}>
               <SparklineChart
                 width={90}
                 height={80}
@@ -92,14 +92,14 @@ const WatchListItem: FC<Props> = ({
               />
             </View>
           )}
-          <View style={{alignItems: 'flex-end', flex: 1}}>
-            <Row style={{alignItems: 'flex-end'}}>
+          <View style={{ alignItems: 'flex-end', flex: 1 }}>
+            <Row style={{ alignItems: 'flex-end' }}>
               <AvaText.Heading3 ellipsizeMode={'tail'}>
                 {value}
               </AvaText.Heading3>
               <Space x={4} />
               <AvaText.Body3
-                textStyle={{color: theme.colorText2, lineHeight: 20}}>
+                textStyle={{ color: theme.colorText2, lineHeight: 20 }}>
                 {selectedCurrency.toUpperCase()}
               </AvaText.Body3>
             </Row>

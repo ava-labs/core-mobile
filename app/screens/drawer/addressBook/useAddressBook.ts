@@ -1,6 +1,6 @@
-import {useCallback} from 'react'
-import {useApplicationContext} from 'contexts/ApplicationContext'
-import {Contact} from 'Repo'
+import { useCallback } from 'react'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { Contact } from 'Repo'
 
 interface IUseAddressBook {
   titleToInitials: (title: string) => string
@@ -9,7 +9,7 @@ interface IUseAddressBook {
 }
 
 const useAddressBook = (): IUseAddressBook => {
-  const {addressBook, saveAddressBook} =
+  const { addressBook, saveAddressBook } =
     useApplicationContext().repo.addressBookRepo
 
   const titleToInitials = useCallback((title: string) => {

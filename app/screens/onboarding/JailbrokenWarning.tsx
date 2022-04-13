@@ -1,6 +1,6 @@
 import React from 'react'
-import {StyleSheet, View} from 'react-native'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import { StyleSheet, View } from 'react-native'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
 
@@ -15,7 +15,7 @@ export default function JailbrokenWarning({
     <View
       style={[
         styles.verticalLayout,
-        {backgroundColor: context.theme.colorBg2}
+        { backgroundColor: context.theme.colorBg2 }
       ]}>
       <View style={styles.logoContainer}>
         <View style={styles.logo}>

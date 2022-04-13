@@ -1,12 +1,12 @@
-import {asyncScheduler, AsyncSubject, concat, Observable, of} from 'rxjs'
-import {map} from 'rxjs/operators'
-import {BackHandler} from 'react-native'
+import { asyncScheduler, AsyncSubject, concat, Observable, of } from 'rxjs'
+import { map } from 'rxjs/operators'
+import { BackHandler } from 'react-native'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import {Dispatch, useCallback, useState} from 'react'
-import {WalletSetupHook} from 'hooks/useWalletSetup'
-import {AppNavHook} from 'useAppNav'
-import {Repo} from 'Repo'
+import { Dispatch, useCallback, useState } from 'react'
+import { WalletSetupHook } from 'hooks/useWalletSetup'
+import { AppNavHook } from 'useAppNav'
+import { Repo } from 'Repo'
 
 export type AppHook = {
   onExit: () => Observable<ExitEvents>
@@ -84,10 +84,10 @@ export function useApp(
       const number = typeof num === 'number' ? num : Number(num)
 
       const lookup = [
-        {value: 1, symbol: ''},
-        {value: 1e3, symbol: 'k'},
-        {value: 1e6, symbol: 'M'},
-        {value: 1e9, symbol: 'B'}
+        { value: 1, symbol: '' },
+        { value: 1e3, symbol: 'k' },
+        { value: 1e6, symbol: 'M' },
+        { value: 1e9, symbol: 'B' }
       ]
       const rx = /\.0+$|(\.[0-9]*[1-9])0+$/
       const item = lookup

@@ -1,4 +1,4 @@
-import React, {FC, useEffect, useLayoutEffect, useState} from 'react'
+import React, { FC, useEffect, useLayoutEffect, useState } from 'react'
 import {
   ActivityIndicator,
   Dimensions,
@@ -7,16 +7,16 @@ import {
   StyleSheet,
   View
 } from 'react-native'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaListItem from 'components/AvaListItem'
 import Avatar from 'components/Avatar'
 import AvaText from 'components/AvaText'
-import {Space} from 'components/Space'
+import { Space } from 'components/Space'
 import TabViewAva from 'components/TabViewAva'
-import {RouteProp, useNavigation, useRoute} from '@react-navigation/native'
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import StarSVG from 'components/svg/StarSVG'
-import {RootStackParamList} from 'navigation/WalletScreenStack'
-import {StackNavigationProp} from '@react-navigation/stack'
+import { RootStackParamList } from 'navigation/WalletScreenStack'
+import { StackNavigationProp } from '@react-navigation/stack'
 import ChartSelector, {
   ChartType
 } from 'screens/watchlist/components/ChartSelector'
@@ -28,22 +28,23 @@ import {
   VictoryChart,
   VictoryTheme
 } from 'victory-native'
-import {useTokenDetail} from 'screens/watchlist/useTokenDetail'
+import { useTokenDetail } from 'screens/watchlist/useTokenDetail'
 import SparklineChart from 'components/SparklineChart'
-import {Row} from 'components/Row'
+import { Row } from 'components/Row'
 import MarketMovement from 'screens/watchlist/components/MarketMovement'
-import {ViewOnceInformation} from 'Repo'
+import { ViewOnceInformation } from 'Repo'
 import TokenAddress from 'components/TokenAddress'
 import AppNavigation from 'navigation/AppNavigation'
 
 const WIDOW_WIDTH = Dimensions.get('window').width
 
 const TokenDetail: FC<any> = () => {
-  const {theme, appHook} = useApplicationContext()
-  const {saveViewOnceInformation, infoHasBeenShown, viewOnceInfo} =
+  const { theme, appHook } = useApplicationContext()
+  const { saveViewOnceInformation, infoHasBeenShown, viewOnceInfo } =
     useApplicationContext().repo.informationViewOnceRepo
   const [showLineChart, setShowLineChart] = useState(true)
-  const {setOptions} = useNavigation<StackNavigationProp<RootStackParamList>>()
+  const { setOptions } =
+    useNavigation<StackNavigationProp<RootStackParamList>>()
   const [showChartInstruction, setShowChartInstruction] = useState(false)
   const tokenAddress =
     useRoute<
@@ -96,7 +97,7 @@ const TokenDetail: FC<any> = () => {
   useLayoutEffect(() => {
     setOptions({
       headerRight: () => (
-        <Pressable style={{paddingEnd: 8}} onPress={handleFavorite}>
+        <Pressable style={{ paddingEnd: 8 }} onPress={handleFavorite}>
           <StarSVG selected={isFavorite} />
         </Pressable>
       )
@@ -131,7 +132,7 @@ const TokenDetail: FC<any> = () => {
           <AvaText.Heading2 color={'white'}>Hold and Drag</AvaText.Heading2>
           <AvaText.Body3
             color={'white'}
-            textStyle={{textAlignVertical: 'center'}}>
+            textStyle={{ textAlignVertical: 'center' }}>
             Hold and drag over chart for precise price and date
           </AvaText.Body3>
           <AvaButton.PrimaryMedium
@@ -163,7 +164,7 @@ const TokenDetail: FC<any> = () => {
   }
 
   return (
-    <ScrollView style={{paddingHorizontal: 8, flex: 1}}>
+    <ScrollView style={{ paddingHorizontal: 8, flex: 1 }}>
       <View>
         <AvaListItem.Base
           title={<AvaText.Heading1>{token?.name}</AvaText.Heading1>}
@@ -175,11 +176,11 @@ const TokenDetail: FC<any> = () => {
           title={<AvaText.Body2>Price</AvaText.Body2>}
           titleAlignment={'flex-start'}
           subtitle={
-            <Row style={{alignItems: 'center'}}>
+            <Row style={{ alignItems: 'center' }}>
               <AvaText.Heading3
                 currency
                 hideTrailingCurrency
-                textStyle={{marginEnd: 8}}>
+                textStyle={{ marginEnd: 8 }}>
                 {token?.priceUSD?.toFixed(6)}
               </AvaText.Heading3>
               <MarketMovement
@@ -198,7 +199,11 @@ const TokenDetail: FC<any> = () => {
         />
         <Space y={8} />
         <View
-          style={{height: 120, justifyContent: 'center', alignItems: 'center'}}>
+          style={{
+            height: 120,
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}>
           {showLineChart ? (
             <View>
               <AvaText.Caption
@@ -221,7 +226,7 @@ const TokenDetail: FC<any> = () => {
                 height={120}
               />
               <AvaText.Caption
-                textStyle={{alignSelf: 'flex-end', color: theme.colorText1}}
+                textStyle={{ alignSelf: 'flex-end', color: theme.colorText1 }}
                 currency
                 hideTrailingCurrency>
                 {ranges.minPrice}
@@ -234,10 +239,10 @@ const TokenDetail: FC<any> = () => {
                 tickFormat={t => `${t}`}
                 fixLabelOverlap
                 style={{
-                  grid: {stroke: 'transparent'},
-                  axis: {stroke: 'transparent'},
-                  ticks: {stroke: 'transparent'},
-                  tickLabels: {fill: 'transparent'}
+                  grid: { stroke: 'transparent' },
+                  axis: { stroke: 'transparent' },
+                  ticks: { stroke: 'transparent' },
+                  tickLabels: { fill: 'transparent' }
                 }}
               />
               <VictoryCandlestick
@@ -325,7 +330,7 @@ const TokenDetail: FC<any> = () => {
           rightComponent={
             <OvalTagBg
               color={theme.colorBg3}
-              style={{height: 21, paddingVertical: 0}}>
+              style={{ height: 21, paddingVertical: 0 }}>
               <AvaText.Body2>{`Rank: ${marketCapRank}`}</AvaText.Body2>
             </OvalTagBg>
           }
@@ -376,7 +381,7 @@ const TokenDetail: FC<any> = () => {
               }}>
               <AvaText.Body2>Website</AvaText.Body2>
               <AvaText.Heading3
-                textStyle={{color: '#0A84FF'}}
+                textStyle={{ color: '#0A84FF' }}
                 onPress={openWebsite}>
                 {urlHostname}
               </AvaText.Heading3>
@@ -404,7 +409,7 @@ const TokenDetail: FC<any> = () => {
               }}>
               <AvaText.Body2>Twitter</AvaText.Body2>
               <AvaText.Heading3
-                textStyle={{color: '#0A84FF'}}
+                textStyle={{ color: '#0A84FF' }}
                 onPress={openTwitter}>
                 @{twitterHandle}
               </AvaText.Heading3>
@@ -425,7 +430,7 @@ const TokenDetail: FC<any> = () => {
         />
         {token?.isAvax && (
           <AvaButton.Base onPress={openMoonPay}>
-            <OvalTagBg color={theme.colorBg2} style={{height: 48}}>
+            <OvalTagBg color={theme.colorBg2} style={{ height: 48 }}>
               <AvaText.ButtonLarge>Buy {token?.symbol}</AvaText.ButtonLarge>
             </OvalTagBg>
           </AvaButton.Base>

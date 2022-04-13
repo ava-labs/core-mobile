@@ -1,12 +1,12 @@
 import React from 'react'
-import Svg, {Path} from 'react-native-svg'
+import Svg, { Path } from 'react-native-svg'
 
 interface Prop {
   color?: string
   size?: number
 }
 
-function ListChartSVG({color, size = 24}: Prop) {
+function ListChartSVG({ color, size = 24 }: Prop) {
   const iconColor = color ?? '#B4B4B7'
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">

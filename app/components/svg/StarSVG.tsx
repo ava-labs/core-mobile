@@ -1,13 +1,13 @@
 import React from 'react'
-import Svg, {Path} from 'react-native-svg'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import Svg, { Path } from 'react-native-svg'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 interface Prop {
   selected?: boolean
   size?: number
 }
 
-function StarSVG({selected = false, size = 24}: Prop) {
+function StarSVG({ selected = false, size = 24 }: Prop) {
   const theme = useApplicationContext().theme
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">

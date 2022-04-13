@@ -1,11 +1,11 @@
 import React from 'react'
-import Svg, {Line} from 'react-native-svg'
+import Svg, { Line } from 'react-native-svg'
 
 interface Prop {
   size?: number
 }
 
-function CreateNewWalletPlusSVG({size = 65}: Prop) {
+function CreateNewWalletPlusSVG({ size = 65 }: Prop) {
   return (
     <Svg width={size} height={size} viewBox="0 0 65 65" fill="none">
       <Line

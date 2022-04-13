@@ -1,6 +1,6 @@
-import {NftCollection, NFTItemData} from 'screens/nft/NftCollection'
-import {useCallback, useEffect, useRef} from 'react'
-import {UID} from 'Repo'
+import { NftCollection, NFTItemData } from 'screens/nft/NftCollection'
+import { useCallback, useEffect, useRef } from 'react'
+import { UID } from 'Repo'
 import {
   bufferTime,
   concat,
@@ -11,9 +11,9 @@ import {
   of,
   Subject
 } from 'rxjs'
-import {Image} from 'react-native'
-import {useApplicationContext} from 'contexts/ApplicationContext'
-import {getNftUID} from 'utils/TokenTools'
+import { Image } from 'react-native'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { getNftUID } from 'utils/TokenTools'
 
 /**
  * Takes nft data and fetches the smallest images to calculate aspect ratio.
@@ -23,7 +23,7 @@ export const useNftLoader = (): {
   parseNftCollections: (nftCollections: NftCollection[]) => void
 } => {
   const loadQueue$ = useRef(new Subject<NFTItemData>()).current
-  const {nftRepo} = useApplicationContext().repo
+  const { nftRepo } = useApplicationContext().repo
   const nftRepoRef = useRef(new Map())
 
   useEffect(() => {
@@ -118,7 +118,7 @@ function prepareNftData(
   nftCollections.forEach(collection => {
     collection.nft_data?.forEach(nftData => {
       const nft = nftData as NFTItemData
-      nft.collection = (({nft_data, ...o}) => o)(
+      nft.collection = (({ nft_data, ...o }) => o)(
         collection
       ) as unknown as NftCollection // remove nft_data to save on memory
       nft.isShowing = true

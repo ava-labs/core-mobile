@@ -1,13 +1,13 @@
 import React from 'react'
-import Svg, {Path, Rect, Mask} from 'react-native-svg'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import Svg, { Path, Rect, Mask } from 'react-native-svg'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 interface Prop {
   color?: string
   size?: number
 }
 
-export default function QRCodeSVG({color, size = 24}: Prop) {
+export default function QRCodeSVG({ color, size = 24 }: Prop) {
   const context = useApplicationContext()
 
   const iconColor = color ?? context.theme.alternateBackground

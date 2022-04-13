@@ -1,16 +1,16 @@
 import React from 'react'
-import {Alert} from 'react-native'
-import {AntWithBalance, useSendAnt} from '@avalabs/wallet-react-components'
+import { Alert } from 'react-native'
+import { AntWithBalance, useSendAnt } from '@avalabs/wallet-react-components'
 import SendForm from 'screens/send/forFutureReference/SendForm'
-import {useSelectedTokenContext} from 'contexts/SelectedTokenContext'
-import {asyncScheduler, defer, from, scheduled} from 'rxjs'
+import { useSelectedTokenContext } from 'contexts/SelectedTokenContext'
+import { asyncScheduler, defer, from, scheduled } from 'rxjs'
 
 /**
  * LEFT FOR FUTURE REFERENCE WHEN WE AGAIN IMPLEMENT ANT TOKENS
  */
 
 export default function SendANT(): JSX.Element {
-  const {selectedToken} = useSelectedTokenContext()
+  const { selectedToken } = useSelectedTokenContext()
   const {
     sendFee,
     address,

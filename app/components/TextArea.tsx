@@ -1,8 +1,8 @@
-import React, {useEffect, useRef, useState} from 'react'
-import {InteractionManager, StyleSheet, TextInput, View} from 'react-native'
-import {useApplicationContext} from 'contexts/ApplicationContext'
-import {Space} from 'components/Space'
-import {Opacity30} from 'resources/Constants'
+import React, { useEffect, useRef, useState } from 'react'
+import { InteractionManager, StyleSheet, TextInput, View } from 'react-native'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { Space } from 'components/Space'
+import { Opacity30 } from 'resources/Constants'
 import AvaButton from './AvaButton'
 import AvaText from './AvaText'
 
@@ -59,7 +59,7 @@ export default function TextArea(props: Props | Readonly<Props>): JSX.Element {
           }
         ]}>
         {props.heading && (
-          <AvaText.Heading2 textStyle={{marginBottom: 16}}>
+          <AvaText.Heading2 textStyle={{ marginBottom: 16 }}>
             Recovery phrase
           </AvaText.Heading2>
         )}
@@ -87,7 +87,7 @@ export default function TextArea(props: Props | Readonly<Props>): JSX.Element {
           ]}
         />
         {errorMessage && (
-          <AvaText.Body3 textStyle={{color: theme.colorError, marginTop: 4}}>
+          <AvaText.Body3 textStyle={{ color: theme.colorError, marginTop: 4 }}>
             {errorMessage}
           </AvaText.Body3>
         )}

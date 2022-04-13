@@ -1,12 +1,12 @@
 import React from 'react'
-import Svg, {Circle, G, Path} from 'react-native-svg'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import Svg, { Circle, G, Path } from 'react-native-svg'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 interface Prop {
   color?: string
 }
 
-export default function AvaToken({color}: Prop) {
+export default function AvaToken({ color }: Prop) {
   const context = useApplicationContext()
 
   const iconColor = color ?? context.theme.logoColor

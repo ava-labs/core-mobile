@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useRef} from 'react'
+import React, { useCallback, useEffect, useRef } from 'react'
 import {
   Animated,
   Easing,
@@ -7,26 +7,27 @@ import {
   Pressable,
   View
 } from 'react-native'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import HeaderAccountSelector from 'components/HeaderAccountSelector'
-import {Account} from 'dto/Account'
+import { Account } from 'dto/Account'
 import AccountItem from 'screens/portfolio/account/AccountItem'
 import AvaText from 'components/AvaText'
 import Separator from 'components/Separator'
 import AvaButton from 'components/AvaButton'
-import {useAccountsContext} from '@avalabs/wallet-react-components'
-import {useNavigation} from '@react-navigation/native'
-import {ShowSnackBar} from 'components/Snackbar'
+import { useAccountsContext } from '@avalabs/wallet-react-components'
+import { useNavigation } from '@react-navigation/native'
+import { ShowSnackBar } from 'components/Snackbar'
 
 function AccountDropdown({
   onAddEditAccounts
 }: {
   onAddEditAccounts: () => void
 }): JSX.Element {
-  const {theme} = useApplicationContext()
-  const {accounts, setActiveAccount} = useApplicationContext().repo.accountsRepo
+  const { theme } = useApplicationContext()
+  const { accounts, setActiveAccount } =
+    useApplicationContext().repo.accountsRepo
   const accountsContext = useAccountsContext()
-  const {goBack} = useNavigation()
+  const { goBack } = useNavigation()
   const animScale = useRef(new Animated.Value(0)).current
   const animTranslateY = useRef(new Animated.Value(-370)).current
 
@@ -71,7 +72,7 @@ function AccountDropdown({
   )
 
   return (
-    <Pressable style={{flex: 1}} onPress={goBack}>
+    <Pressable style={{ flex: 1 }} onPress={goBack}>
       <View
         style={{
           backgroundColor: theme.overlay,
@@ -79,7 +80,7 @@ function AccountDropdown({
           paddingHorizontal: 16
         }}>
         <AvaButton.Base
-          style={{paddingLeft: 12}}
+          style={{ paddingLeft: 12 }}
           onPress={() => {
             ShowSnackBar('Copied')
             goBack()

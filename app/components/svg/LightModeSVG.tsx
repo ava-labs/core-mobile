@@ -1,13 +1,13 @@
 import React from 'react'
-import Svg, {Path} from 'react-native-svg'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import Svg, { Path } from 'react-native-svg'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 interface Prop {
   color?: string
   size?: number
 }
 
-function LightModeSVG({color, size = 24}: Prop) {
+function LightModeSVG({ color, size = 24 }: Prop) {
   const theme = useApplicationContext().theme
   const iconColor = color ?? theme.alternateBackground
   return (

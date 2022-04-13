@@ -2,11 +2,11 @@ import {
   useAccountsContext,
   useWalletContext
 } from '@avalabs/wallet-react-components'
-import {Account} from 'dto/Account'
-import {encrypt, getEncryptionKey} from 'screens/login/utils/EncryptionHelper'
+import { Account } from 'dto/Account'
+import { encrypt, getEncryptionKey } from 'screens/login/utils/EncryptionHelper'
 import BiometricsSDK from 'utils/BiometricsSDK'
-import {Repo} from 'Repo'
-import {AppNavHook} from 'useAppNav'
+import { Repo } from 'Repo'
+import { AppNavHook } from 'useAppNav'
 
 export interface WalletSetupHook {
   onPinCreated: (

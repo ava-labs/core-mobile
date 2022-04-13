@@ -1,12 +1,12 @@
-import React, {useCallback, useEffect, useMemo, useState} from 'react'
-import {View} from 'react-native'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { View } from 'react-native'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
-import {Space} from 'components/Space'
-import {Account} from 'dto/Account'
+import { Space } from 'components/Space'
+import { Account } from 'dto/Account'
 import AvaButton from 'components/AvaButton'
 import InputText from 'components/InputText'
-import {Row} from 'components/Row'
+import { Row } from 'components/Row'
 import TokenAddress from 'components/TokenAddress'
 
 type Props = {
@@ -25,7 +25,7 @@ function AccountItem({
   blurred
 }: Props): JSX.Element {
   const context = useApplicationContext()
-  const {accounts, saveAccounts} = useApplicationContext().repo.accountsRepo
+  const { accounts, saveAccounts } = useApplicationContext().repo.accountsRepo
   const [editAccount, setEditAccount] = useState(false)
   const [editedAccountTitle, setEditedAccountTitle] = useState(account.title)
   const [accBalance, setAccBalance] = useState('')
@@ -75,7 +75,7 @@ function AccountItem({
           }
         ]}>
         <Row>
-          <View style={{flex: 1, justifyContent: 'center'}}>
+          <View style={{ flex: 1, justifyContent: 'center' }}>
             {editAccount ? (
               <EditTitle
                 title={account.title}
@@ -131,28 +131,28 @@ const Save = ({
   disabled: boolean
   onPress: () => void
 }) => {
-  const {theme} = useApplicationContext()
+  const { theme } = useApplicationContext()
   return (
     <AvaButton.Base
       rippleBorderless
       disabled={disabled}
       onPress={onPress}
-      style={{paddingVertical: 4, paddingEnd: 8}}>
-      <AvaText.ButtonMedium style={{color: theme.colorPrimary1}}>
+      style={{ paddingVertical: 4, paddingEnd: 8 }}>
+      <AvaText.ButtonMedium style={{ color: theme.colorPrimary1 }}>
         Save
       </AvaText.ButtonMedium>
     </AvaButton.Base>
   )
 }
 
-const Edit = ({onPress}: {onPress: () => void}) => {
-  const {theme} = useApplicationContext()
+const Edit = ({ onPress }: { onPress: () => void }) => {
+  const { theme } = useApplicationContext()
   return (
     <AvaButton.Base
       rippleBorderless
       onPress={onPress}
-      style={{paddingVertical: 4, paddingEnd: 8}}>
-      <AvaText.ButtonMedium style={{color: theme.colorPrimary1}}>
+      style={{ paddingVertical: 4, paddingEnd: 8 }}>
+      <AvaText.ButtonMedium style={{ color: theme.colorPrimary1 }}>
         Edit
       </AvaText.ButtonMedium>
     </AvaButton.Base>
@@ -168,10 +168,10 @@ const EditTitle = ({
   onChangeText: (text: string) => void
   onSubmit: () => void
 }) => {
-  const {theme} = useApplicationContext()
+  const { theme } = useApplicationContext()
   return (
     <InputText
-      style={{margin: 0, backgroundColor: theme.colorBg1, borderRadius: 8}}
+      style={{ margin: 0, backgroundColor: theme.colorBg1, borderRadius: 8 }}
       autoFocus
       text={title}
       onSubmit={onSubmit}
@@ -180,7 +180,7 @@ const EditTitle = ({
   )
 }
 
-const Title = ({title}: {title: string}) => {
+const Title = ({ title }: { title: string }) => {
   return <AvaText.Heading2 ellipsizeMode={'tail'}>{title}</AvaText.Heading2>
 }
 export default AccountItem

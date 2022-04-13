@@ -4,9 +4,9 @@ import {
   useAccountsContext,
   useWalletContext
 } from '@avalabs/wallet-react-components'
-import {useEffect} from 'react'
+import { useEffect } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import {MnemonicWallet} from '@avalabs/avalanche-wallet-sdk'
+import { MnemonicWallet } from '@avalabs/avalanche-wallet-sdk'
 
 /**
  * These are not used anymore because we don't support P & X chains

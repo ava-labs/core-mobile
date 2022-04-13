@@ -1,5 +1,5 @@
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
-import {LogBox} from 'react-native'
+import { LogBox } from 'react-native'
 
 const useDevDebugging = () => {
   const {
@@ -19,7 +19,7 @@ const useDevDebugging = () => {
   }
 
   const isStorybookEnabled = STORYBOOK_ENABLED
-  return {configure, isStorybookEnabled}
+  return { configure, isStorybookEnabled }
 }
 
 export default useDevDebugging

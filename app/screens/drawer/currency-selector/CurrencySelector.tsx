@@ -1,18 +1,18 @@
 import React from 'react'
-import {FlatList, ListRenderItemInfo, StyleSheet} from 'react-native'
-import {SafeAreaProvider} from 'react-native-safe-area-context'
+import { FlatList, ListRenderItemInfo, StyleSheet } from 'react-native'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
 import CurrencyListItem from 'screens/drawer/currency-selector/CurrencyListItem'
-import {currencies} from '@avalabs/wallet-react-components'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import { currencies } from '@avalabs/wallet-react-components'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 const CurrencySelector = ({
   onSelectedCurrency
 }: {
   onSelectedCurrency: (code: string) => void
 }) => {
-  const {selectedCurrency} = useApplicationContext().appHook
+  const { selectedCurrency } = useApplicationContext().appHook
   const renderItem = (
-    item: ListRenderItemInfo<{name: string; symbol: string}>
+    item: ListRenderItemInfo<{ name: string; symbol: string }>
   ) => {
     const currency = item.item
 

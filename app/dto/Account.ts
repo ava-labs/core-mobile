@@ -1,4 +1,4 @@
-import {Observable} from 'rxjs'
+import { Observable } from 'rxjs'
 
 export type Account = {
   index: number

@@ -1,6 +1,6 @@
-import React, {FC, ReactNode} from 'react'
-import {Image, View} from 'react-native'
-import {Space} from 'components/Space'
+import React, { FC, ReactNode } from 'react'
+import { Image, View } from 'react-native'
+import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
 import AvaText from './AvaText'
 
@@ -23,7 +23,7 @@ const ZeroStateBase: FC<BaseProps> = ({
     }
 
     if (typeof image === 'string') {
-      return <Image source={{uri: image}} />
+      return <Image source={{ uri: image }} />
     }
     return <View>{image}</View>
   }
@@ -31,10 +31,12 @@ const ZeroStateBase: FC<BaseProps> = ({
   function getTitle() {
     if (typeof title === 'string') {
       return (
-        <AvaText.Heading2 textStyle={{marginTop: 16}}>{title}</AvaText.Heading2>
+        <AvaText.Heading2 textStyle={{ marginTop: 16 }}>
+          {title}
+        </AvaText.Heading2>
       )
     }
-    return <View style={{marginTop: 16}}>{title}</View>
+    return <View style={{ marginTop: 16 }}>{title}</View>
   }
 
   function getMessage() {
@@ -143,7 +145,7 @@ function ZeroStateEmptyAddressBook({
 type NoResultsProps = Pick<BaseProps, 'message'>
 
 // removed "man with lantern" as per ux request
-function ZeroStateNoResults({message}: NoResultsProps) {
+function ZeroStateNoResults({ message }: NoResultsProps) {
   return <ZeroStateBase message={message ?? 'No results found'} />
 }
 

@@ -1,10 +1,10 @@
-import React, {createContext, useContext, useEffect, useState} from 'react'
-import {COLORS_DAY, COLORS_NIGHT} from 'resources/Constants'
-import type {Theme} from '@react-navigation/native'
-import {AppHook, useApp} from 'AppHook'
-import {Repo, useRepo} from 'Repo'
-import {AppNavHook, useAppNav} from 'useAppNav'
-import {useWalletSetup, WalletSetupHook} from 'hooks/useWalletSetup'
+import React, { createContext, useContext, useEffect, useState } from 'react'
+import { COLORS_DAY, COLORS_NIGHT } from 'resources/Constants'
+import type { Theme } from '@react-navigation/native'
+import { AppHook, useApp } from 'AppHook'
+import { Repo, useRepo } from 'Repo'
+import { AppNavHook, useAppNav } from 'useAppNav'
+import { useWalletSetup, WalletSetupHook } from 'hooks/useWalletSetup'
 import {
   customErc20Tokens$,
   FUJI_NETWORK,
@@ -40,7 +40,7 @@ export declare type Shadow = {
   shadowRadius: number
   shadowOpacity: number
   elevation: number
-  shadowOffset: {width: number; height: number}
+  shadowOffset: { width: number; height: number }
 }
 
 export declare type AppBackgroundStyle = {
@@ -52,7 +52,7 @@ export const ApplicationContext = createContext<ApplicationContextState>(
   {} as any
 )
 
-export const ApplicationContextProvider = ({children}: {children: any}) => {
+export const ApplicationContextProvider = ({ children }: { children: any }) => {
   const appNavHook = useAppNav()
   const repository = useRepo()
   const walletSetupHook = useWalletSetup(repository, appNavHook)
@@ -95,7 +95,7 @@ export const ApplicationContextProvider = ({children}: {children: any}) => {
     shadowRadius: 3,
     shadowOpacity: 0.5,
     elevation: 3,
-    shadowOffset: {width: 0, height: 1}
+    shadowOffset: { width: 0, height: 1 }
   } as Shadow)
 
   const [keyboardAvoidingViewEnabled, setKeyboardAvoidingViewEnabled] =

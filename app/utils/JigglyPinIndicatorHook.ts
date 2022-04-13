@@ -1,5 +1,5 @@
-import {useMemo, useRef} from 'react'
-import {Animated, Platform, Vibration} from 'react-native'
+import { useMemo, useRef } from 'react'
+import { Animated, Platform, Vibration } from 'react-native'
 
 export function useJigglyPinIndicator(): {
   jiggleAnim: Animated.Value

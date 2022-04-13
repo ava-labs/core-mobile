@@ -1,12 +1,12 @@
-import React, {useCallback, useEffect, useMemo, useRef} from 'react'
-import BottomSheet, {BottomSheetBackdrop} from '@gorhom/bottom-sheet'
-import {InteractionManager} from 'react-native'
-import {useNavigation, useRoute} from '@react-navigation/native'
+import React, { useCallback, useEffect, useMemo, useRef } from 'react'
+import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet'
+import { InteractionManager } from 'react-native'
+import { useNavigation, useRoute } from '@react-navigation/native'
 import TabViewBackground from 'screens/portfolio/components/TabViewBackground'
 import AvaxSheetHandle from 'components/AvaxSheetHandle'
 import TokenSelector from 'screens/send/TokenSelector'
 import AvaText from 'components/AvaText'
-import {TokenWithBalance} from '@avalabs/wallet-react-components'
+import { TokenWithBalance } from '@avalabs/wallet-react-components'
 
 function SelectTokenBottomSheet(): JSX.Element {
   const navigation = useNavigation()
@@ -44,7 +44,7 @@ function SelectTokenBottomSheet(): JSX.Element {
       snapPoints={snapPoints}
       backgroundComponent={TabViewBackground}
       onChange={handleChange}>
-      <AvaText.LargeTitleBold textStyle={{marginHorizontal: 16}}>
+      <AvaText.LargeTitleBold textStyle={{ marginHorizontal: 16 }}>
         Select Token
       </AvaText.LargeTitleBold>
       <TokenSelector onTokenSelected={onTokenSelected} />

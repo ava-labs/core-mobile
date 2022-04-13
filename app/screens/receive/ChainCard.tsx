@@ -1,9 +1,9 @@
 import React from 'react'
-import {View} from 'react-native'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import { View } from 'react-native'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
-import {Opacity05} from 'resources/Constants'
-import {Space} from 'components/Space'
+import { Opacity05 } from 'resources/Constants'
+import { Space } from 'components/Space'
 import AvaxQACode from 'components/AvaxQRCode'
 
 interface Props {
@@ -12,8 +12,8 @@ interface Props {
   address?: string
 }
 
-function ChainCard({chainName, description, address}: Props) {
-  const {theme, isDarkMode} = useApplicationContext()
+function ChainCard({ chainName, description, address }: Props) {
+  const { theme, isDarkMode } = useApplicationContext()
   return (
     <View
       style={[
@@ -35,7 +35,7 @@ function ChainCard({chainName, description, address}: Props) {
           borderWidth: 0
         }
       ]}>
-      <View style={{paddingHorizontal: 50}}>
+      <View style={{ paddingHorizontal: 50 }}>
         <Space y={8} />
         <AvaText.Heading2>{chainName}</AvaText.Heading2>
         <AvaText.Body2

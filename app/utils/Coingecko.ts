@@ -8,7 +8,7 @@ import {
 type Cache = {
   [address: string]:
     | {
-        charts?: {[days: string]: ChartData}
+        charts?: { [days: string]: ChartData }
         contract?: CoinsContractInfoResponse
       }
     | undefined
@@ -25,7 +25,7 @@ export interface ChartData {
     diffValue: number
     percentChange: number
   }
-  dataPoints: {x: number; y: number}[]
+  dataPoints: { x: number; y: number }[]
 }
 
 class Coingecko {
@@ -64,7 +64,7 @@ class Coingecko {
           percentChange
         },
         dataPoints: rawData.prices.map(tu => {
-          return {x: tu[0], y: tu[1]}
+          return { x: tu[0], y: tu[1] }
         })
       } as ChartData
 

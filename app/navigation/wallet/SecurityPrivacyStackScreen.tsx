@@ -1,23 +1,23 @@
-import React, {memo} from 'react'
+import React, { memo } from 'react'
 import AppNavigation from 'navigation/AppNavigation'
 import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin'
 import CreatePIN from 'screens/onboarding/CreatePIN'
 import SecurityPrivacy from 'screens/drawer/security/SecurityPrivacy'
-import {NativeStackNavigationProp} from '@react-navigation/native-stack'
-import {RouteProp, useNavigation, useRoute} from '@react-navigation/native'
-import {MainHeaderOptions} from 'navigation/NavUtils'
-import {useApplicationContext} from 'contexts/ApplicationContext'
-import {createStackNavigator} from '@react-navigation/stack'
+import { NativeStackNavigationProp } from '@react-navigation/native-stack'
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
+import { MainHeaderOptions } from 'navigation/NavUtils'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { createStackNavigator } from '@react-navigation/stack'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import RevealMnemonic from 'navigation/wallet/RevealMnemonic'
 
 export type SecurityStackParamList = {
   [AppNavigation.SecurityPrivacy.SecurityPrivacy]: undefined
   [AppNavigation.SecurityPrivacy.PinChange]: undefined
-  [AppNavigation.SecurityPrivacy.CreatePin]: {mnemonic: string}
+  [AppNavigation.SecurityPrivacy.CreatePin]: { mnemonic: string }
   [AppNavigation.SecurityPrivacy.ShowRecoveryPhrase]: undefined
   [AppNavigation.SecurityPrivacy.TurnOnBiometrics]: undefined
-  [AppNavigation.SecurityPrivacy.RecoveryPhrase]: {mnemonic: string}
+  [AppNavigation.SecurityPrivacy.RecoveryPhrase]: { mnemonic: string }
 }
 
 const SecurityStack = createStackNavigator<SecurityStackParamList>()
@@ -35,7 +35,7 @@ function SecurityPrivacyStackScreen(): JSX.Element {
           component={SecurityPrivacyScreen}
         />
       </SecurityStack.Group>
-      <SecurityStack.Group screenOptions={{presentation: 'modal'}}>
+      <SecurityStack.Group screenOptions={{ presentation: 'modal' }}>
         <SecurityStack.Screen
           options={MainHeaderOptions('Enter your pin')}
           name={AppNavigation.SecurityPrivacy.PinChange}
@@ -87,7 +87,7 @@ const PinOrBiometryLoginForPassChange = memo(() => {
   return (
     <PinOrBiometryLogin
       onLoginSuccess={mnemonic => {
-        nav.replace(AppNavigation.SecurityPrivacy.CreatePin, {mnemonic})
+        nav.replace(AppNavigation.SecurityPrivacy.CreatePin, { mnemonic })
       }}
       onSignInWithRecoveryPhrase={() => console.log('onSignIn')}
       isResettingPin
@@ -101,7 +101,7 @@ const PinOrBiometryLoginForRecoveryReveal = memo(() => {
   return (
     <PinOrBiometryLogin
       onLoginSuccess={mnemonic => {
-        nav.replace(AppNavigation.SecurityPrivacy.RecoveryPhrase, {mnemonic})
+        nav.replace(AppNavigation.SecurityPrivacy.RecoveryPhrase, { mnemonic })
       }}
       onSignInWithRecoveryPhrase={() => console.log('onSignIn')}
       hideLoginWithMnemonic
@@ -126,8 +126,8 @@ const PinForBiometryEnable = memo(() => {
 })
 
 const CreatePinScreen = memo(() => {
-  const {onPinCreated} = useApplicationContext().walletSetupHook
-  const {mnemonic} = useRoute<RouteProp<SecurityStackParamList>>().params!
+  const { onPinCreated } = useApplicationContext().walletSetupHook
+  const { mnemonic } = useRoute<RouteProp<SecurityStackParamList>>().params!
   const nav = useNavigation<NativeStackNavigationProp<SecurityStackParamList>>()
   return (
     <CreatePIN

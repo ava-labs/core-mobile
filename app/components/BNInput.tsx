@@ -1,6 +1,6 @@
-import React, {useEffect, useState} from 'react'
-import {Big, BN} from '@avalabs/avalanche-wallet-sdk'
-import {StyleSheet, TextInputProps, View} from 'react-native'
+import React, { useEffect, useState } from 'react'
+import { Big, BN } from '@avalabs/avalanche-wallet-sdk'
+import { StyleSheet, TextInputProps, View } from 'react-native'
 import InputText from 'components/InputText'
 import Loader from 'components/Loader'
 
@@ -16,7 +16,7 @@ interface BNInputProps
   value?: BN
   denomination: number
 
-  onChange?(val: {bn: BN; amount: string}): void
+  onChange?(val: { bn: BN; amount: string }): void
 
   placeholder?: string
   min?: BN
@@ -143,7 +143,7 @@ export function BNInput({
   }
 
   return (
-    <View style={{flexDirection: 'row', justifyContent: 'center'}}>
+    <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
       <InputText
         mode={'amount'}
         keyboardType="numeric"

@@ -5,7 +5,7 @@ import {
   useBridgeConfig,
   useBridgeConfigUpdater
 } from '@avalabs/bridge-sdk'
-import {useEffect, useState} from 'react'
+import { useEffect, useState } from 'react'
 import {
   MAINNET_NETWORK,
   useNetworkContext

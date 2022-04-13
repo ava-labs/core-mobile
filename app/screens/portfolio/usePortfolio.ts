@@ -1,6 +1,6 @@
-import {useMemo} from 'react'
-import {useWalletStateContext} from '@avalabs/wallet-react-components'
-import {mustNumber} from 'utils/JsTools'
+import { useMemo } from 'react'
+import { useWalletStateContext } from '@avalabs/wallet-react-components'
+import { mustNumber } from 'utils/JsTools'
 
 export type UsePortfolioData = {
   addressC: string

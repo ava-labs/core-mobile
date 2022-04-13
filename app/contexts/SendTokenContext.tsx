@@ -17,18 +17,18 @@ import {
   useWalletStateContext
 } from '@avalabs/wallet-react-components'
 import AvaLogoSVG from 'components/svg/AvaLogoSVG'
-import {Alert, Image} from 'react-native'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import { Alert, Image } from 'react-native'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import {
   bnToAvaxC,
   bnToBig,
   numberToBN,
   stringToBN
 } from '@avalabs/avalanche-wallet-sdk'
-import {mustNumber, mustValue} from 'utils/JsTools'
-import {BN} from 'avalanche'
-import {BehaviorSubject, firstValueFrom, of, Subject} from 'rxjs'
-import {useSend} from 'screens/send/useSend'
+import { mustNumber, mustValue } from 'utils/JsTools'
+import { BN } from 'avalanche'
+import { BehaviorSubject, firstValueFrom, of, Subject } from 'rxjs'
+import { useSend } from 'screens/send/useSend'
 
 export enum TokenType {
   AVAX,
@@ -70,17 +70,17 @@ const tokenType = (token?: TokenWithBalance) => {
   }
 }
 
-export const SendTokenContextProvider = ({children}: {children: any}) => {
-  const {theme, repo} = useApplicationContext()
-  const {wallet} = useWalletContext()
-  const {activeAccount} = useAccountsContext()
-  const {avaxPrice, erc20Tokens} = useWalletStateContext()!
+export const SendTokenContextProvider = ({ children }: { children: any }) => {
+  const { theme, repo } = useApplicationContext()
+  const { wallet } = useWalletContext()
+  const { activeAccount } = useAccountsContext()
+  const { avaxPrice, erc20Tokens } = useWalletStateContext()!
   const [sendToken, setSendToken] = useState<TokenWithBalance | undefined>(
     undefined
   )
 
   const customGasPrice$ = useMemo(
-    () => new BehaviorSubject({bn: new BN(0)}),
+    () => new BehaviorSubject({ bn: new BN(0) }),
     []
   )
 
@@ -158,13 +158,13 @@ export const SendTokenContextProvider = ({children}: {children: any}) => {
             )
           }
         },
-        {bn: new BN(0)}
+        { bn: new BN(0) }
       )
     )
   }, [customGasPriceNanoAvax])
   useEffect(() => {
     if (sendToken?.isErc20) {
-      setTokenBalances?.({[(sendToken as ERC20).address]: sendToken as ERC20})
+      setTokenBalances?.({ [(sendToken as ERC20).address]: sendToken as ERC20 })
     }
   }, [sendToken])
 
@@ -187,7 +187,7 @@ export const SendTokenContextProvider = ({children}: {children: any}) => {
     setSendStatus('Sending')
 
     const balances = erc20Tokens.reduce(
-      (acc: {[key: string]: ERC20WithBalance}, tk) => {
+      (acc: { [key: string]: ERC20WithBalance }, tk) => {
         return {
           ...acc,
           [tk.address]: tk
@@ -230,7 +230,7 @@ export const SendTokenContextProvider = ({children}: {children: any}) => {
     } else {
       return (
         <Image
-          style={{width: 57, height: 57}}
+          style={{ width: 57, height: 57 }}
           source={{
             uri: sendToken?.logoURI
           }}

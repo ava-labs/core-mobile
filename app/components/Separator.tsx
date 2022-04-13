@@ -1,6 +1,6 @@
 import React from 'react'
-import {StyleProp, View, ViewStyle} from 'react-native'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import { StyleProp, View, ViewStyle } from 'react-native'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 const Separator = ({
   style,
@@ -15,7 +15,7 @@ const Separator = ({
   vertical?: boolean
   thickness?: number
 }) => {
-  const {theme} = useApplicationContext()
+  const { theme } = useApplicationContext()
   return (
     <View
       style={[

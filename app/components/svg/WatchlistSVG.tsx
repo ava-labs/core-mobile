@@ -1,13 +1,13 @@
 import React from 'react'
-import Svg, {Rect} from 'react-native-svg'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import Svg, { Rect } from 'react-native-svg'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 interface Prop {
   selected: boolean
   size?: number
 }
 
-function WatchListSVG({selected, size = 32}: Prop) {
+function WatchListSVG({ selected, size = 32 }: Prop) {
   const context = useApplicationContext()
 
   const svgColor = selected

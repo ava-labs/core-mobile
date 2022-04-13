@@ -1,11 +1,11 @@
-import React, {useState} from 'react'
-import {StyleSheet, View} from 'react-native'
+import React, { useState } from 'react'
+import { StyleSheet, View } from 'react-native'
 import AvaButton from 'components/AvaButton'
 import AvaText from 'components/AvaText'
-import {Space} from 'components/Space'
+import { Space } from 'components/Space'
 import WordSelection from 'screens/onboarding/WordSelection'
-import {ShowSnackBar} from 'components/Snackbar'
-import {useCheckMnemonic} from 'screens/onboarding/useCheckMnemonic'
+import { ShowSnackBar } from 'components/Snackbar'
+import { useCheckMnemonic } from 'screens/onboarding/useCheckMnemonic'
 
 type Props = {
   onSuccess: () => void
@@ -16,8 +16,12 @@ type Props = {
 export default function CheckMnemonic(
   props: Props | Readonly<Props>
 ): JSX.Element {
-  const {firstWordSelection, secondWordSelection, thirdWordSelection, verify} =
-    useCheckMnemonic(props.mnemonic)
+  const {
+    firstWordSelection,
+    secondWordSelection,
+    thirdWordSelection,
+    verify
+  } = useCheckMnemonic(props.mnemonic)
 
   const onVerify = (): void => {
     if (
@@ -66,7 +70,7 @@ export default function CheckMnemonic(
         wordOptions={thirdWordSelection.wordOptions}
         setSelectedWord={setSelectedWord3}
       />
-      <View style={{flex: 1}} />
+      <View style={{ flex: 1 }} />
       <View>
         <AvaButton.PrimaryLarge onPress={onVerify}>
           Verify phrase

@@ -1,4 +1,4 @@
-import {ERC20, TokenWithBalance} from '@avalabs/wallet-react-components'
+import { ERC20, TokenWithBalance } from '@avalabs/wallet-react-components'
 
 // @ts-ignore generic - ts complains about returning `any`
 export async function incrementalPromiseResolve<T>(

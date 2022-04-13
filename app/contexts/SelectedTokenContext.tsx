@@ -5,9 +5,9 @@ import React, {
   useContext,
   useState
 } from 'react'
-import {TokenWithBalance} from '@avalabs/wallet-react-components'
+import { TokenWithBalance } from '@avalabs/wallet-react-components'
 import AvaLogoSVG from 'components/svg/AvaLogoSVG'
-import {Image, StyleSheet} from 'react-native'
+import { Image, StyleSheet } from 'react-native'
 
 export enum TokenType {
   AVAX,
@@ -26,7 +26,11 @@ export const SelectedTokenContext = createContext<SelectedTokenContextState>(
   {} as any
 )
 
-export const SelectedTokenContextProvider = ({children}: {children: any}) => {
+export const SelectedTokenContextProvider = ({
+  children
+}: {
+  children: any
+}) => {
   const [selectedToken, setSelectedToken] = useState<
     TokenWithBalance | undefined
   >(undefined)

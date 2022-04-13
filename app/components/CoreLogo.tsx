@@ -1,6 +1,6 @@
 import React from 'react'
 import CoreSVG from 'components/svg/CoreSVG'
-import {StyleProp, View, ViewStyle} from 'react-native'
+import { StyleProp, View, ViewStyle } from 'react-native'
 
 type OwlBrandLogoProps = {
   logoHeight?: number

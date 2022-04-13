@@ -1,6 +1,6 @@
 import Big from 'big.js'
-import {BigNumber, BigNumberish} from 'ethers'
-import {BNLike} from 'ethereumjs-util'
+import { BigNumber, BigNumberish } from 'ethers'
+import { BNLike } from 'ethereumjs-util'
 
 export const truncateAddress = (address: string, size = 6): string => {
   const firstChunk = address.substring(0, size)

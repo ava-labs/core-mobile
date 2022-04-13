@@ -1,10 +1,10 @@
-import {storiesOf} from '@storybook/react-native'
-import React, {FC, useEffect, useState} from 'react'
-import {Pressable, StyleSheet, View} from 'react-native'
+import { storiesOf } from '@storybook/react-native'
+import React, { FC, useEffect, useState } from 'react'
+import { Pressable, StyleSheet, View } from 'react-native'
 import ConfirmationTracker from 'screens/bridge/components/ConfirmationTracker'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
-import {Space} from 'components/Space'
+import { Space } from 'components/Space'
 
 const styles = StyleSheet.create({
   container: {

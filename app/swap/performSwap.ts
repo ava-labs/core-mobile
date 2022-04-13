@@ -1,13 +1,13 @@
-import {APIError, ParaSwap} from 'paraswap'
-import {firstValueFrom} from 'rxjs'
-import {paraSwap$} from 'swap/swap'
-import {GasPrice} from 'utils/GasPriceHook'
-import {WalletType} from '@avalabs/avalanche-wallet-sdk'
+import { APIError, ParaSwap } from 'paraswap'
+import { firstValueFrom } from 'rxjs'
+import { paraSwap$ } from 'swap/swap'
+import { GasPrice } from 'utils/GasPriceHook'
+import { WalletType } from '@avalabs/avalanche-wallet-sdk'
 import Web3 from 'web3'
-import {Allowance} from 'paraswap/build/types'
-import {OptimalRate} from 'paraswap-core'
-import {incrementalPromiseResolve, resolve} from 'swap/utils'
-import {BN} from 'avalanche'
+import { Allowance } from 'paraswap/build/types'
+import { OptimalRate } from 'paraswap-core'
+import { incrementalPromiseResolve, resolve } from 'swap/utils'
+import { BN } from 'avalanche'
 import ERC20_ABI from '../contracts/erc20.abi.json'
 
 const SERVER_BUSY_ERROR = 'Server too busy'
@@ -23,7 +23,7 @@ export async function performSwap(
   wallet?: WalletType
 ) {
   console.log('~~~~~~~~~ perform swap')
-  const {srcAmount, destAmount, priceRoute, gasLimit, gasPrice} = request
+  const { srcAmount, destAmount, priceRoute, gasLimit, gasPrice } = request
   console.log('~~~~~~~~~ srcAmount', srcAmount)
   console.log('~~~~~~~~~ destAmount', destAmount)
   console.log('~~~~~~~~~ priceRoute', priceRoute)

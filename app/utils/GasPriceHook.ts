@@ -1,6 +1,6 @@
-import {filter, interval, map, pairwise, switchMap, tap} from 'rxjs'
-import {BN, bnToLocaleString, GasHelper} from '@avalabs/avalanche-wallet-sdk'
-import {useEffect, useState} from 'react'
+import { filter, interval, map, pairwise, switchMap, tap } from 'rxjs'
+import { BN, bnToLocaleString, GasHelper } from '@avalabs/avalanche-wallet-sdk'
+import { useEffect, useState } from 'react'
 
 export interface GasPrice {
   bn: BN

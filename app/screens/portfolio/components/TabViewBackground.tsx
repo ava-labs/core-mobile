@@ -1,9 +1,9 @@
-import React, {useMemo} from 'react'
-import {BottomSheetBackgroundProps} from '@gorhom/bottom-sheet'
-import {useApplicationContext} from 'contexts/ApplicationContext'
-import {View} from 'react-native'
+import React, { useMemo } from 'react'
+import { BottomSheetBackgroundProps } from '@gorhom/bottom-sheet'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { View } from 'react-native'
 
-const TabViewBackground = ({style}: BottomSheetBackgroundProps) => {
+const TabViewBackground = ({ style }: BottomSheetBackgroundProps) => {
   const theme = useApplicationContext().theme
 
   // styles
@@ -21,7 +21,7 @@ const TabViewBackground = ({style}: BottomSheetBackgroundProps) => {
     <View
       style={[
         containerStyle,
-        {borderTopLeftRadius: 12, borderTopRightRadius: 12}
+        { borderTopLeftRadius: 12, borderTopRightRadius: 12 }
       ]}
     />
   )

@@ -1,16 +1,16 @@
-import {useEffect, useState} from 'react'
-import BiometricsSDK, {KeystoreConfig} from 'utils/BiometricsSDK'
-import {UserCredentials} from 'react-native-keychain'
-import {PinKeys} from 'screens/onboarding/PinKey'
-import {asyncScheduler, Observable, of, timer} from 'rxjs'
-import {catchError, concatMap, map} from 'rxjs/operators'
-import {Animated} from 'react-native'
+import { useEffect, useState } from 'react'
+import BiometricsSDK, { KeystoreConfig } from 'utils/BiometricsSDK'
+import { UserCredentials } from 'react-native-keychain'
+import { PinKeys } from 'screens/onboarding/PinKey'
+import { asyncScheduler, Observable, of, timer } from 'rxjs'
+import { catchError, concatMap, map } from 'rxjs/operators'
+import { Animated } from 'react-native'
 import {
   decrypt,
   EncryptedData,
   getEncryptionKey
 } from 'screens/login/utils/EncryptionHelper'
-import {useJigglyPinIndicator} from 'utils/JigglyPinIndicatorHook'
+import { useJigglyPinIndicator } from 'utils/JigglyPinIndicatorHook'
 
 export type DotView = {
   filled: boolean
@@ -42,7 +42,7 @@ export function usePinOrBiometryLogin(): {
   const [pinDots, setPinDots] = useState<DotView[]>([])
   const [pinEntered, setPinEntered] = useState(false)
   const [mnemonic, setMnemonic] = useState<string | undefined>(undefined)
-  const {jiggleAnim, fireJiggleAnimation} = useJigglyPinIndicator()
+  const { jiggleAnim, fireJiggleAnimation } = useJigglyPinIndicator()
 
   useEffect(() => {
     setPinDots(getPinDots(enteredPin))
@@ -84,9 +84,9 @@ export function usePinOrBiometryLogin(): {
     const dots: DotView[] = []
     for (let i = 0; i < 6; i++) {
       if (i < pin.length) {
-        dots.push({filled: true})
+        dots.push({ filled: true })
       } else {
-        dots.push({filled: false})
+        dots.push({ filled: false })
       }
     }
     return dots

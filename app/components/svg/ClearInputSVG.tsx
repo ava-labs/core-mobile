@@ -1,12 +1,12 @@
 import React from 'react'
-import Svg, {Path} from 'react-native-svg'
+import Svg, { Path } from 'react-native-svg'
 
 interface Props {
   size?: number
   color: string
 }
 
-function ClearInputSVG({color, size = 24}: Props) {
+function ClearInputSVG({ color, size = 24 }: Props) {
   return (
     <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} fill="none">
       <Path

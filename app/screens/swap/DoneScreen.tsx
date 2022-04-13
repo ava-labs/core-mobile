@@ -1,22 +1,22 @@
 import React from 'react'
-import {StyleSheet, View} from 'react-native'
+import { StyleSheet, View } from 'react-native'
 import AvaButton from 'components/AvaButton'
 import AvaText from 'components/AvaText'
-import {Space} from 'components/Space'
-import {useNavigation} from '@react-navigation/native'
+import { Space } from 'components/Space'
+import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
-import {StackNavigationProp} from '@react-navigation/stack'
-import {SwapStackParamList} from 'navigation/wallet/SwapScreenStack'
+import { StackNavigationProp } from '@react-navigation/stack'
+import { SwapStackParamList } from 'navigation/wallet/SwapScreenStack'
 
 export default function DoneScreen(): JSX.Element {
-  const {navigate} = useNavigation<StackNavigationProp<SwapStackParamList>>()
+  const { navigate } = useNavigation<StackNavigationProp<SwapStackParamList>>()
 
   function onClose() {
     navigate(AppNavigation.Swap.Swap)
   }
 
   return (
-    <View style={{flex: 1}}>
+    <View style={{ flex: 1 }}>
       <View style={styles.container}>
         <AvaText.Heading1
           textStyle={{
@@ -26,7 +26,7 @@ export default function DoneScreen(): JSX.Element {
           Swap{'\n'}successful!
         </AvaText.Heading1>
         <Space y={100} />
-        <AvaButton.PrimaryLarge style={{margin: 18}} onPress={onClose}>
+        <AvaButton.PrimaryLarge style={{ margin: 18 }} onPress={onClose}>
           OK
         </AvaButton.PrimaryLarge>
       </View>
@@ -45,5 +45,5 @@ const styles = StyleSheet.create({
     zIndex: 0,
     elevation: 0
   },
-  container: {flex: 1, justifyContent: 'flex-end'}
+  container: { flex: 1, justifyContent: 'flex-end' }
 })

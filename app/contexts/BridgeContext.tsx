@@ -1,5 +1,5 @@
-import React, {createContext, useContext, useState} from 'react'
-import {BridgeSDKProvider, TrackerViewProps} from '@avalabs/bridge-sdk'
+import React, { createContext, useContext, useState } from 'react'
+import { BridgeSDKProvider, TrackerViewProps } from '@avalabs/bridge-sdk'
 
 export interface BridgeTransaction extends TrackerViewProps {
   createdAt?: Date
@@ -17,7 +17,7 @@ const BridgeContext = createContext<{
   bridgeTransactions: BridgeState['bridgeTransactions']
 }>({} as any)
 
-export function BridgeProvider({children}: {children: any}) {
+export function BridgeProvider({ children }: { children: any }) {
   return (
     <BridgeSDKProvider>
       <LocalBridgeProvider>{children}</LocalBridgeProvider>
@@ -29,7 +29,7 @@ export function useBridgeContext() {
   return useContext(BridgeContext)
 }
 
-function LocalBridgeProvider({children}: {children: any}) {
+function LocalBridgeProvider({ children }: { children: any }) {
   const [bridgeState, setBridgeState] = useState<BridgeState>({
     bridgeTransactions: {}
   })
@@ -52,10 +52,10 @@ function LocalBridgeProvider({children}: {children: any}) {
   }
 
   async function removeBridgeTransaction(bridgeTransaction: TrackerViewProps) {
-    const {[bridgeTransaction.sourceTxHash]: unused, ...rest} =
+    const { [bridgeTransaction.sourceTxHash]: unused, ...rest } =
       bridgeState.bridgeTransactions
 
-    setBridgeState({...bridgeState, bridgeTransactions: rest})
+    setBridgeState({ ...bridgeState, bridgeTransactions: rest })
   }
 
   return (

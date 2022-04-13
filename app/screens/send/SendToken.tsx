@@ -1,23 +1,23 @@
-import React, {useEffect} from 'react'
-import {View} from 'react-native'
+import React, { useEffect } from 'react'
+import { View } from 'react-native'
 import AvaText from 'components/AvaText'
-import {Space} from 'components/Space'
+import { Space } from 'components/Space'
 import InputText from 'components/InputText'
 import TokenSelectAndAmount from 'components/TokenSelectAndAmount'
 import AvaButton from 'components/AvaButton'
 import AddressBookSVG from 'components/svg/AddressBookSVG'
 import FlexSpacer from 'components/FlexSpacer'
-import {useApplicationContext} from 'contexts/ApplicationContext'
-import {useSendTokenContext} from 'contexts/SendTokenContext'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { useSendTokenContext } from 'contexts/SendTokenContext'
 import numeral from 'numeral'
 import {
   ERC20WithBalance,
   TokenWithBalance
 } from '@avalabs/wallet-react-components'
-import {AddrBookItemType, Contact} from 'Repo'
+import { AddrBookItemType, Contact } from 'Repo'
 import AddressBookLists from 'components/addressBook/AddressBookLists'
-import {Account} from 'dto/Account'
-import {useAddressBookLists} from 'components/addressBook/useAddressBookLists'
+import { Account } from 'dto/Account'
+import { useAddressBookLists } from 'components/addressBook/useAddressBookLists'
 
 function SendToken({
   onNext,
@@ -30,7 +30,7 @@ function SendToken({
   token?: TokenWithBalance
   contact?: Contact
 }): JSX.Element {
-  const {theme} = useApplicationContext()
+  const { theme } = useApplicationContext()
 
   const {
     setSendToken,
@@ -68,7 +68,7 @@ function SendToken({
     }
   }, [toAccount.address])
 
-  function setAddress({address, title}: {address: string; title: string}) {
+  function setAddress({ address, title }: { address: string; title: string }) {
     toAccount.setAddress?.(address)
     toAccount.setTitle?.(title)
   }
@@ -77,7 +77,7 @@ function SendToken({
     item: Contact | Account,
     type: AddrBookItemType
   ) => {
-    setAddress({address: item.address, title: item.title})
+    setAddress({ address: item.address, title: item.title })
     selectContact(item, type)
   }
 
@@ -87,16 +87,16 @@ function SendToken({
   }
 
   return (
-    <View style={{flex: 1}}>
-      <AvaText.LargeTitleBold textStyle={{marginHorizontal: 16}}>
+    <View style={{ flex: 1 }}>
+      <AvaText.LargeTitleBold textStyle={{ marginHorizontal: 16 }}>
         Send
       </AvaText.LargeTitleBold>
       <Space y={20} />
-      <AvaText.Heading3 textStyle={{marginHorizontal: 16}}>
+      <AvaText.Heading3 textStyle={{ marginHorizontal: 16 }}>
         Send to
       </AvaText.Heading3>
       <Space y={4} />
-      <View style={[{flex: 0, paddingStart: 4, paddingEnd: 4}]}>
+      <View style={[{ flex: 0, paddingStart: 4, paddingEnd: 4 }]}>
         <InputText
           placeholder="Enter 0x Address"
           multiline={true}
@@ -130,7 +130,7 @@ function SendToken({
         />
       ) : (
         <>
-          <View style={{paddingHorizontal: 16}}>
+          <View style={{ paddingHorizontal: 16 }}>
             <TokenSelectAndAmount
               initAmount={sendAmount.toString()}
               initToken={sendToken}
@@ -145,7 +145,7 @@ function SendToken({
               }}
             />
             <Space y={8} />
-            <AvaText.Body3 textStyle={{color: theme.colorError}}>
+            <AvaText.Body3 textStyle={{ color: theme.colorError }}>
               {sdkError?.message ?? ''}
             </AvaText.Body3>
           </View>
@@ -155,7 +155,7 @@ function SendToken({
       <AvaButton.PrimaryLarge
         disabled={!canSubmit}
         onPress={onNextPress}
-        style={{margin: 16}}>
+        style={{ margin: 16 }}>
         Next
       </AvaButton.PrimaryLarge>
     </View>

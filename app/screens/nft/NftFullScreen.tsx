@@ -1,4 +1,4 @@
-import React, {useEffect, useMemo, useRef, useState} from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import {
   Animated,
   Dimensions,
@@ -11,20 +11,20 @@ import {
   StyleSheet,
   View
 } from 'react-native'
-import {RouteProp, useRoute} from '@react-navigation/native'
-import {NFTStackParamList} from 'navigation/wallet/NFTScreenStack'
-import {getColorFromURL} from 'rn-dominant-color'
+import { RouteProp, useRoute } from '@react-navigation/native'
+import { NFTStackParamList } from 'navigation/wallet/NFTScreenStack'
+import { getColorFromURL } from 'rn-dominant-color'
 import LinearGradientSVG from 'components/svg/LinearGradientSVG'
-import {useApplicationContext} from 'contexts/ApplicationContext'
-import {orientation} from 'react-native-sensors'
-import {filter, map, sampleTime, tap} from 'rxjs'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { orientation } from 'react-native-sensors'
+import { filter, map, sampleTime, tap } from 'rxjs'
 import AppNavigation from 'navigation/AppNavigation'
 
 const SAMPLE_TIME = 50
 
 export default function NftFullScreen() {
-  const {theme} = useApplicationContext()
-  const {params} =
+  const { theme } = useApplicationContext()
+  const { params } =
     useRoute<
       RouteProp<NFTStackParamList, typeof AppNavigation.Nft.FullScreen>
     >()
@@ -33,7 +33,7 @@ export default function NftFullScreen() {
   const [grabbedBgColor, setGrabbedBgColor] = useState('black')
   const windowWidth = useMemo(() => Dimensions.get('window').width - 32, [])
   const [imageAspect, setImageAspect] = useState(0)
-  const [shimmerSize, setShimmerSize] = useState({w: 0, h: 0})
+  const [shimmerSize, setShimmerSize] = useState({ w: 0, h: 0 })
 
   const [sensorData, setSensorData] = useState({
     pitch: 0,
@@ -43,11 +43,11 @@ export default function NftFullScreen() {
     pitch: new Animated.Value(0),
     roll: new Animated.Value(0)
   })
-  const diff = useRef({pitch: 0, roll: 0})
+  const diff = useRef({ pitch: 0, roll: 0 })
 
   useEffect(() => {
     if (Platform.OS === 'android') {
-      const {FullScreenActivity} = NativeModules
+      const { FullScreenActivity } = NativeModules
       FullScreenActivity.onCreate()
       return () => {
         FullScreenActivity.onDestroy()
@@ -144,7 +144,7 @@ export default function NftFullScreen() {
             shadowColor: 'black',
             shadowRadius: 10,
             shadowOpacity: 0.5,
-            shadowOffset: {width: 0, height: 6},
+            shadowOffset: { width: 0, height: 6 },
             transform: [
               {
                 rotateX: transformValue.current.pitch.interpolate({
@@ -164,9 +164,9 @@ export default function NftFullScreen() {
             onLayout={calculateShimmerMaskSize}
             style={[
               styles.imageStyle,
-              {width: windowWidth, height: windowWidth * imageAspect}
+              { width: windowWidth, height: windowWidth * imageAspect }
             ]}
-            source={{uri: imageUrl}}
+            source={{ uri: imageUrl }}
           />
           <View
             style={{
@@ -181,9 +181,9 @@ export default function NftFullScreen() {
                 width: 300,
                 height: 600,
                 transform: [
-                  {rotateZ: '-45deg'},
-                  {translateY: 0},
-                  {scaleY: 1.5},
+                  { rotateZ: '-45deg' },
+                  { translateY: 0 },
+                  { scaleY: 1.5 },
                   {
                     translateX: transformValue.current.pitch.interpolate({
                       inputRange: Platform.OS === 'ios' ? [0, 2] : [-1.57, 0.5],

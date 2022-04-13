@@ -1,7 +1,7 @@
 import AppNavigation from 'navigation/AppNavigation'
-import React, {createContext, Dispatch, useContext, useState} from 'react'
+import React, { createContext, Dispatch, useContext, useState } from 'react'
 import CreateWallet from 'screens/onboarding/CreateWallet'
-import {useNavigation} from '@react-navigation/native'
+import { useNavigation } from '@react-navigation/native'
 import CheckMnemonic from 'screens/onboarding/CheckMnemonic'
 import CreatePIN from 'screens/onboarding/CreatePIN'
 import BiometricLogin from 'screens/onboarding/BiometricLogin'
@@ -9,8 +9,8 @@ import {
   createStackNavigator,
   StackNavigationProp
 } from '@react-navigation/stack'
-import {MainHeaderOptions} from 'navigation/NavUtils'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import { MainHeaderOptions } from 'navigation/NavUtils'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import WarningModal from 'components/WarningModal'
 
 type CreateWalletStackParamList = {
@@ -31,15 +31,15 @@ const CreateWalletStack: () => JSX.Element = () => {
   const [mnemonic, setMnemonic] = useState('')
 
   return (
-    <CreateWalletContext.Provider value={{setMnemonic, mnemonic}}>
-      <CreateWalletS.Navigator screenOptions={{headerShown: false}}>
+    <CreateWalletContext.Provider value={{ setMnemonic, mnemonic }}>
+      <CreateWalletS.Navigator screenOptions={{ headerShown: false }}>
         <CreateWalletS.Screen
           options={MainHeaderOptions('')}
           name={AppNavigation.CreateWallet.CreateWallet}
           component={CreateWalletScreen}
         />
         <CreateWalletS.Screen
-          options={{presentation: 'transparentModal'}}
+          options={{ presentation: 'transparentModal' }}
           name={AppNavigation.CreateWallet.ProtectFunds}
           component={CreateWalletWarningModal}
         />
@@ -54,7 +54,7 @@ const CreateWalletStack: () => JSX.Element = () => {
           component={CreatePinScreen}
         />
         <CreateWalletS.Screen
-          options={{headerShown: true, headerTitle: ''}}
+          options={{ headerShown: true, headerTitle: '' }}
           name={AppNavigation.CreateWallet.BiometricLogin}
           component={BiometricLoginScreen}
         />
@@ -65,7 +65,7 @@ const CreateWalletStack: () => JSX.Element = () => {
 
 const CreateWalletScreen = () => {
   const createWalletContext = useContext(CreateWalletContext)
-  const {navigate} =
+  const { navigate } =
     useNavigation<StackNavigationProp<CreateWalletStackParamList>>()
 
   const onSavedMyPhrase = (mnemonic: string) => {
@@ -77,7 +77,7 @@ const CreateWalletScreen = () => {
 }
 
 const CreateWalletWarningModal = () => {
-  const {navigate, goBack} =
+  const { navigate, goBack } =
     useNavigation<StackNavigationProp<CreateWalletStackParamList>>()
 
   const onUnderstand = () => {
@@ -106,7 +106,7 @@ const CreateWalletWarningModal = () => {
 
 const CheckMnemonicScreen = () => {
   const createWalletContext = useContext(CreateWalletContext)
-  const {navigate, goBack} =
+  const { navigate, goBack } =
     useNavigation<StackNavigationProp<CreateWalletStackParamList>>()
   return (
     <CheckMnemonic
@@ -122,7 +122,7 @@ const CheckMnemonicScreen = () => {
 const CreatePinScreen = () => {
   const createWalletContext = useContext(CreateWalletContext)
   const walletSetupHook = useApplicationContext().walletSetupHook
-  const {navigate} =
+  const { navigate } =
     useNavigation<StackNavigationProp<CreateWalletStackParamList>>()
 
   const onPinSet = (pin: string): void => {

@@ -1,11 +1,11 @@
-import {NetworkID, ParaSwap} from 'paraswap'
+import { NetworkID, ParaSwap } from 'paraswap'
 import {
   network$,
   FUJI_NETWORK,
   ActiveNetwork,
   MAINNET_NETWORK
 } from '@avalabs/wallet-react-components'
-import {filter, map, OperatorFunction} from 'rxjs'
+import { filter, map, OperatorFunction } from 'rxjs'
 import Web3 from 'web3'
 
 export const NETWORK_UNSUPPORTED_ERROR = new Error(

@@ -7,12 +7,12 @@ import {
   useSendAvax,
   useSendErc20Form
 } from '@avalabs/wallet-react-components'
-import {BN, WalletType} from '@avalabs/avalanche-wallet-sdk'
-import {Observable} from 'rxjs'
+import { BN, WalletType } from '@avalabs/avalanche-wallet-sdk'
+import { Observable } from 'rxjs'
 
 export function useSend(
   token: TokenWithBalance | ERC20WithBalance | undefined,
-  gasPrice$: Observable<{bn: BN}>
+  gasPrice$: Observable<{ bn: BN }>
 ) {
   const sendAvax = useSendAvax(gasPrice$)
   const sendErc20 = useSendErc20Form(
@@ -21,7 +21,7 @@ export function useSend(
   )
 
   return (
-    token?.isAvax ? {...sendAvax} : {...sendErc20, submit: sendErc20Submit}
+    token?.isAvax ? { ...sendAvax } : { ...sendErc20, submit: sendErc20Submit }
   ) as SendTokenInterface
 }
 
@@ -65,7 +65,7 @@ interface SendTokenInterface {
   gasLimit?: number | undefined
   canSubmit?: boolean | undefined
   //region ERC20 specific
-  setTokenBalances?(tokenBalances: {[address: string]: ERC20}): void
+  setTokenBalances?(tokenBalances: { [address: string]: ERC20 }): void
   sendFeeDisplayValue?: string | undefined
   token?: ERC20 | undefined
   //endregion

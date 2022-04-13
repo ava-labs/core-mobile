@@ -1,14 +1,14 @@
 import React from 'react'
-import {StyleSheet, View} from 'react-native'
+import { StyleSheet, View } from 'react-native'
 import AvaButton from 'components/AvaButton'
-import {RouteProp, useNavigation, useRoute} from '@react-navigation/native'
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import MnemonicScreen from 'components/MnemonicScreen'
-import {SecurityStackParamList} from 'navigation/wallet/SecurityPrivacyStackScreen'
+import { SecurityStackParamList } from 'navigation/wallet/SecurityPrivacyStackScreen'
 import AppNavigation from 'navigation/AppNavigation'
 
 export default function RevealMnemonic(): JSX.Element {
-  const {goBack} = useNavigation()
-  const {mnemonic} =
+  const { goBack } = useNavigation()
+  const { mnemonic } =
     useRoute<
       RouteProp<
         SecurityStackParamList,
@@ -26,7 +26,7 @@ export default function RevealMnemonic(): JSX.Element {
       <MnemonicScreen mnemonic={mnemonic} />
 
       {/* This serves as grouping so we can achieve desired behavior with `justifyContent: 'space-between'`   */}
-      <View style={{marginTop: 28, marginBottom: 40}}>
+      <View style={{ marginTop: 28, marginBottom: 40 }}>
         <AvaButton.PrimaryLarge
           disabled={!mnemonic}
           onPress={handleSaveMyPhrase}>

@@ -1,6 +1,6 @@
 import React from 'react'
-import {Image, StyleSheet, TouchableNativeFeedback, View} from 'react-native'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import { Image, StyleSheet, TouchableNativeFeedback, View } from 'react-native'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
 
 export enum PinKeys {
@@ -66,7 +66,7 @@ const Backspace = (isDarkMode: boolean) => {
   const backspaceIcon = isDarkMode
     ? require('assets/icons/backspace_dark.png')
     : require('assets/icons/backspace_light.png')
-  return <Image source={backspaceIcon} style={[{width: 24, height: 24}]} />
+  return <Image source={backspaceIcon} style={[{ width: 24, height: 24 }]} />
 }
 
 const styles: any = StyleSheet.create({

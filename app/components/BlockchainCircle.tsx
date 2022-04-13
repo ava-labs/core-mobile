@@ -1,6 +1,6 @@
 import React from 'react'
-import {StyleSheet, Text, TouchableOpacity} from 'react-native'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import { StyleSheet, Text, TouchableOpacity } from 'react-native'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 interface Props {
   chain: string
@@ -10,7 +10,7 @@ interface Props {
   textSize?: number
 }
 
-function BlockchainCircle({chain, onChainSelected, size, textSize}: Props) {
+function BlockchainCircle({ chain, onChainSelected, size, textSize }: Props) {
   const context = useApplicationContext()
 
   return (

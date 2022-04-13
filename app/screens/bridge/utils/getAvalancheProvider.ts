@@ -1,5 +1,8 @@
-import {ActiveNetwork, FUJI_NETWORK} from '@avalabs/wallet-react-components'
-import {JsonRpcProvider, StaticJsonRpcProvider} from '@ethersproject/providers'
+import { ActiveNetwork, FUJI_NETWORK } from '@avalabs/wallet-react-components'
+import {
+  JsonRpcProvider,
+  StaticJsonRpcProvider
+} from '@ethersproject/providers'
 
 const providers: Record<string, JsonRpcProvider> = {}
 

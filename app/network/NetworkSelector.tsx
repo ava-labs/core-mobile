@@ -1,6 +1,6 @@
-import React, {FC, useEffect, useMemo, useState} from 'react'
-import {ActivityIndicator, StyleSheet, UIManager, View} from 'react-native'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import React, { FC, useEffect, useMemo, useState } from 'react'
+import { ActivityIndicator, StyleSheet, UIManager, View } from 'react-native'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import {
   FUJI_NETWORK,
   MAINNET_NETWORK,
@@ -8,7 +8,7 @@ import {
 } from '@avalabs/wallet-react-components'
 import CheckmarkSVG from 'components/svg/CheckmarkSVG'
 import AvaListItem from 'components/AvaListItem'
-import {useNavigation} from '@react-navigation/native'
+import { useNavigation } from '@react-navigation/native'
 import AvaText from 'components/AvaText'
 
 UIManager.setLayoutAnimationEnabledExperimental &&
@@ -20,7 +20,7 @@ const NetworkSelector: FC = () => {
   const context = useApplicationContext()
   const theme = context.theme
   const networkContext = useNetworkContext()
-  const {goBack} = useNavigation()
+  const { goBack } = useNavigation()
   const [networkName, setNetworkName] = useState('')
   const [loading, setLoading] = useState(false)
   const [isChanging, setIsChanging] = useState(false)
@@ -116,7 +116,7 @@ const NetworkSelector: FC = () => {
 
 const selectedTitle = (title: string) => {
   return (
-    <AvaText.Heading3 textStyle={{alignSelf: 'flex-start'}}>
+    <AvaText.Heading3 textStyle={{ alignSelf: 'flex-start' }}>
       {title}
     </AvaText.Heading3>
   )
@@ -124,7 +124,9 @@ const selectedTitle = (title: string) => {
 
 const unselectedTitle = (title: string) => {
   return (
-    <AvaText.Body1 textStyle={{alignSelf: 'flex-start'}}>{title}</AvaText.Body1>
+    <AvaText.Body1 textStyle={{ alignSelf: 'flex-start' }}>
+      {title}
+    </AvaText.Body1>
   )
 }
 

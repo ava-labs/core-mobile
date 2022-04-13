@@ -1,6 +1,6 @@
-import React, {useCallback, useEffect, useMemo, useState} from 'react'
-import {Animated, RefreshControl, View} from 'react-native'
-import {useNavigation} from '@react-navigation/native'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { Animated, RefreshControl, View } from 'react-native'
+import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import AvaText from 'components/AvaText'
 import Loader from 'components/Loader'
@@ -12,12 +12,12 @@ import {
   useWalletContext
 } from '@avalabs/wallet-react-components'
 import moment from 'moment'
-import {ScrollView} from 'react-native-gesture-handler'
+import { ScrollView } from 'react-native-gesture-handler'
 import ActivityListItem from 'screens/activity/ActivityListItem'
-import {StackNavigationProp} from '@react-navigation/stack'
-import {RootStackParamList} from 'navigation/WalletScreenStack'
-import {BridgeTransaction, useBridgeContext} from 'contexts/BridgeContext'
-import {Blockchain, useBridgeSDK} from '@avalabs/bridge-sdk'
+import { StackNavigationProp } from '@react-navigation/stack'
+import { RootStackParamList } from 'navigation/WalletScreenStack'
+import { BridgeTransaction, useBridgeContext } from 'contexts/BridgeContext'
+import { Blockchain, useBridgeSDK } from '@avalabs/bridge-sdk'
 import BridgeTransactionItem from 'screens/bridge/components/BridgeTransactionItem'
 
 const DISPLAY_FORMAT_CURRENT_YEAR = 'MMMM DD'
@@ -31,17 +31,17 @@ interface Props {
 export type TxType = TransactionNormal | TransactionERC20 | BridgeTransaction
 const TODAY = moment()
 const YESTERDAY = moment().subtract(1, 'days')
-type SectionType = {[x: string]: TxType[]}
+type SectionType = { [x: string]: TxType[] }
 
-function ActivityList({embedded, tokenSymbolFilter}: Props) {
+function ActivityList({ embedded, tokenSymbolFilter }: Props) {
   const [loading, setLoading] = useState(true)
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>()
   const wallet = useWalletContext()?.wallet
-  const {network} = useNetworkContext()!
+  const { network } = useNetworkContext()!
   const [allHistory, setAllHistory] =
     useState<(TransactionNormal | TransactionERC20)[]>()
-  const {bridgeTransactions} = useBridgeContext()
-  const {bridgeAssets} = useBridgeSDK()
+  const { bridgeTransactions } = useBridgeContext()
+  const { bridgeAssets } = useBridgeSDK()
 
   const isTransactionBridge = useCallback(
     tx => {
@@ -183,7 +183,7 @@ function ActivityList({embedded, tokenSymbolFilter}: Props) {
           alignItems: 'center',
           marginHorizontal: 16
         }}>
-        <AvaText.Heading3 textStyle={{textAlign: 'center'}}>
+        <AvaText.Heading3 textStyle={{ textAlign: 'center' }}>
           As transactions take place, they will show up here.
         </AvaText.Heading3>
       </View>
@@ -201,12 +201,12 @@ function ActivityList({embedded, tokenSymbolFilter}: Props) {
    * We also don't show the 'header'
    * @param children
    */
-  const ScrollableComponent = ({children}: {children: React.ReactNode}) => {
+  const ScrollableComponent = ({ children }: { children: React.ReactNode }) => {
     const isEmpty = Object.entries(sectionData).length === 0
 
     return embedded ? (
       <ScrollView
-        style={{flex: 1}}
+        style={{ flex: 1 }}
         refreshControl={
           <RefreshControl refreshing={loading} onRefresh={onRefresh} />
         }>
@@ -214,10 +214,10 @@ function ActivityList({embedded, tokenSymbolFilter}: Props) {
       </ScrollView>
     ) : (
       <ScrollView
-        style={{flex: 1}}
+        style={{ flex: 1 }}
         contentContainerStyle={
           isEmpty
-            ? {flex: 1, justifyContent: 'center', alignItems: 'center'}
+            ? { flex: 1, justifyContent: 'center', alignItems: 'center' }
             : {
                 marginVertical: 4
               }
@@ -233,9 +233,9 @@ function ActivityList({embedded, tokenSymbolFilter}: Props) {
   return !allHistory ? (
     <Loader />
   ) : (
-    <View style={{flex: 1}}>
+    <View style={{ flex: 1 }}>
       {embedded || (
-        <AvaText.LargeTitleBold textStyle={{marginHorizontal: 16}}>
+        <AvaText.LargeTitleBold textStyle={{ marginHorizontal: 16 }}>
           Activity
         </AvaText.LargeTitleBold>
       )}

@@ -1,6 +1,6 @@
 import React from 'react'
-import Svg, {Circle} from 'react-native-svg'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import Svg, { Circle } from 'react-native-svg'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 interface Prop {
   borderColor?: string
@@ -8,7 +8,7 @@ interface Prop {
   size?: number
 }
 
-export default function DotSVG({borderColor, fillColor, size}: Prop) {
+export default function DotSVG({ borderColor, fillColor, size }: Prop) {
   const context = useApplicationContext()
 
   const stroke = fillColor ?? borderColor ?? context.theme.colorStroke

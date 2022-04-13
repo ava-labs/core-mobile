@@ -1,6 +1,6 @@
 import React from 'react'
-import Svg, {Circle, G, Path} from 'react-native-svg'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import Svg, { Circle, G, Path } from 'react-native-svg'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 interface Prop {
   color?: string
@@ -9,7 +9,7 @@ interface Prop {
   size?: number
 }
 
-function AddSVG({color, circleColor, hideCircle = false, size = 44}: Prop) {
+function AddSVG({ color, circleColor, hideCircle = false, size = 44 }: Prop) {
   const context = useApplicationContext()
 
   const iconColor = color ?? context.theme.colorIcon1

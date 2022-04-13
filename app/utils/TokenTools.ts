@@ -3,7 +3,7 @@ import {
   ERC20WithBalance,
   TokenWithBalance
 } from '@avalabs/wallet-react-components'
-import {NFTItemData} from 'screens/nft/NftCollection'
+import { NFTItemData } from 'screens/nft/NftCollection'
 
 export function getTokenUID(token: TokenWithBalance): string {
   if (Object.keys(token).length === 0) {

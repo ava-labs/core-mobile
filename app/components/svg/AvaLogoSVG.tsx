@@ -1,6 +1,6 @@
 import React from 'react'
-import Svg, {Circle, Path} from 'react-native-svg'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import Svg, { Circle, Path } from 'react-native-svg'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 interface Props {
   absolutePosition?: boolean
@@ -15,12 +15,12 @@ function AvaLogoSVG({
   logoColor,
   backgroundColor
 }: Props) {
-  const {theme} = useApplicationContext()
+  const { theme } = useApplicationContext()
   const lgColor = logoColor ?? theme.logoColor
   const bgColor = backgroundColor ?? theme.logoBgColor
   return (
     <Svg
-      style={absolutePosition && {position: 'absolute'}}
+      style={absolutePosition && { position: 'absolute' }}
       width={size}
       height={size}
       viewBox="0 0 102 102"

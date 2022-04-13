@@ -1,4 +1,4 @@
-import React, {FC, useMemo} from 'react'
+import React, { FC, useMemo } from 'react'
 import {
   ActivityIndicator,
   Alert,
@@ -8,13 +8,13 @@ import {
   StyleSheet,
   View
 } from 'react-native'
-import {Space} from 'components/Space'
+import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
 import SwapNarrowSVG from 'components/svg/SwapNarrowSVG'
 import AvaListItem from 'components/AvaListItem'
 import DropDown from 'components/Dropdown'
-import {Row} from 'components/Row'
+import { Row } from 'components/Row'
 import Separator from 'components/Separator'
 import Avatar from 'components/Avatar'
 import CheckmarkSVG from 'components/svg/CheckmarkSVG'
@@ -24,16 +24,16 @@ import {
   Blockchain,
   formatTokenAmount
 } from '@avalabs/bridge-sdk'
-import {Big} from '@avalabs/avalanche-wallet-sdk'
+import { Big } from '@avalabs/avalanche-wallet-sdk'
 import AppNavigation from 'navigation/AppNavigation'
 import CarrotSVG from 'components/svg/CarrotSVG'
 import InputText from 'components/InputText'
 import useBridge from 'screens/bridge/hooks/useBridge'
-import {useNavigation} from '@react-navigation/native'
-import {StackNavigationProp} from '@react-navigation/stack'
-import {BridgeStackParamList} from 'navigation/wallet/BridgeScreenStack'
-import {useApplicationContext} from 'contexts/ApplicationContext'
-import {SafeAreaProvider} from 'react-native-safe-area-context'
+import { useNavigation } from '@react-navigation/native'
+import { StackNavigationProp } from '@react-navigation/stack'
+import { BridgeStackParamList } from 'navigation/wallet/BridgeScreenStack'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
 
 const formatBalance = (balance: Big | undefined) => {
   return balance && formatTokenAmount(balance, 6)
@@ -205,16 +205,16 @@ const Bridge: FC = () => {
   return (
     <SafeAreaProvider>
       <ScrollView style={styles.container}>
-        <AvaText.LargeTitleBold textStyle={{marginHorizontal: 8}}>
+        <AvaText.LargeTitleBold textStyle={{ marginHorizontal: 8 }}>
           Bridge
         </AvaText.LargeTitleBold>
         <Space y={20} />
-        <View style={{backgroundColor: theme.colorBg2, borderRadius: 10}}>
+        <View style={{ backgroundColor: theme.colorBg2, borderRadius: 10 }}>
           <AvaListItem.Base
             title={'From'}
             rightComponent={
               <DropDown
-                style={{marginRight: 19}}
+                style={{ marginRight: 19 }}
                 filterItems={blockChainItems}
                 currentItem={dropdownItemFormat(
                   currentBlockchain,
@@ -300,7 +300,7 @@ const Bridge: FC = () => {
         </View>
         {(!!bridgeError || !!amountTooLowError || !!amountTooHighError) && (
           <AvaText.Body3
-            textStyle={{marginVertical: 4}}
+            textStyle={{ marginVertical: 4 }}
             color={theme.colorError}>
             {bridgeError || amountTooLowError || amountTooHighError}
           </AvaText.Body3>
@@ -313,15 +313,15 @@ const Bridge: FC = () => {
                 : Blockchain.AVALANCHE
             )
           }}
-          style={[styles.swapButton, {backgroundColor: theme.colorBg2}]}>
+          style={[styles.swapButton, { backgroundColor: theme.colorBg2 }]}>
           <SwapNarrowSVG />
         </AvaButton.Base>
-        <View style={{backgroundColor: theme.colorBg2, borderRadius: 10}}>
+        <View style={{ backgroundColor: theme.colorBg2, borderRadius: 10 }}>
           <AvaListItem.Base
             title={'To'}
             rightComponent={
               <DropDown
-                style={{marginRight: 19}}
+                style={{ marginRight: 19 }}
                 filterItems={blockChainItems}
                 currentItem={dropdownItemFormat(
                   targetBlockchain,
@@ -342,11 +342,11 @@ const Bridge: FC = () => {
               <AvaText.ButtonLarge>Receive</AvaText.ButtonLarge>
               <AvaText.Body3
                 color={theme.colorText2}
-                textStyle={{marginTop: 8}}>
+                textStyle={{ marginTop: 8 }}>
                 Estimated (minus transfer fees)
               </AvaText.Body3>
             </View>
-            <View style={{alignItems: 'flex-end'}}>
+            <View style={{ alignItems: 'flex-end' }}>
               {/* receive amount */}
               <AvaText.Body1>
                 {txFee && amount && !BIG_ZERO.eq(amount)
@@ -359,7 +359,7 @@ const Bridge: FC = () => {
               {/* estimate amount */}
               <AvaText.Body3
                 currency
-                textStyle={{marginTop: 8}}
+                textStyle={{ marginTop: 8 }}
                 color={theme.colorText2}>
                 {transferCost && amount && !BIG_ZERO.eq(amount)
                   ? calculateEstimatedTotal
@@ -372,7 +372,7 @@ const Bridge: FC = () => {
       <AvaButton.Base
         style={[
           styles.transferButton,
-          {backgroundColor: transferDisabled ? '#FFFFFF80' : theme.white}
+          { backgroundColor: transferDisabled ? '#FFFFFF80' : theme.white }
         ]}
         onPress={() => {
           handleTransfer()
@@ -381,7 +381,7 @@ const Bridge: FC = () => {
         <Row>
           {pending && <ActivityIndicator color={theme.background} />}
           <AvaText.ButtonLarge
-            textStyle={{color: theme.background, marginStart: 4}}>
+            textStyle={{ color: theme.background, marginStart: 4 }}>
             Transfer
           </AvaText.ButtonLarge>
         </Row>

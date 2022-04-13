@@ -1,5 +1,5 @@
-import React, {useState} from 'react'
-import {ScrollView, StyleSheet, View} from 'react-native'
+import React, { useState } from 'react'
+import { ScrollView, StyleSheet, View } from 'react-native'
 import WalletSDK from 'utils/WalletSDK'
 import TextArea from 'components/TextArea'
 import AvaText from 'components/AvaText'
@@ -59,9 +59,9 @@ export default function HdWalletLogin(
         }}>
         <AvaText.LargeTitleBold>Recovery Phrase</AvaText.LargeTitleBold>
       </View>
-      <View style={[{flexGrow: 1, justifyContent: 'flex-end'}]}>
+      <View style={[{ flexGrow: 1, justifyContent: 'flex-end' }]}>
         <EnterTestWalletButton />
-        <View style={[{padding: 16}]}>
+        <View style={[{ padding: 16 }]}>
           <TextArea
             autoFocus
             btnPrimaryText={'Sign in'}

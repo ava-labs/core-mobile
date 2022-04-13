@@ -1,9 +1,9 @@
-import React, {useEffect} from 'react'
-import {Animated, StyleSheet, View} from 'react-native'
-import PinKey, {PinKeys} from 'screens/onboarding/PinKey'
+import React, { useEffect } from 'react'
+import { Animated, StyleSheet, View } from 'react-native'
+import PinKey, { PinKeys } from 'screens/onboarding/PinKey'
 import AvaText from 'components/AvaText'
-import {Space} from 'components/Space'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import { Space } from 'components/Space'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaButton from 'components/AvaButton'
 import DotSVG from 'components/svg/DotSVG'
 import CoreSVG from 'components/svg/CoreSVG'
@@ -114,11 +114,12 @@ export default function PinOrBiometryLogin({
   }
 
   return (
-    <View style={[styles.verticalLayout, {backgroundColor: theme.background}]}>
+    <View
+      style={[styles.verticalLayout, { backgroundColor: theme.background }]}>
       <Space y={64} />
       <View style={styles.growContainer}>
         {isResettingPin || (
-          <View style={{alignItems: 'center'}}>
+          <View style={{ alignItems: 'center' }}>
             <CoreSVG />
             <Space y={8} />
             <AvaText.Body1
@@ -131,7 +132,7 @@ export default function PinOrBiometryLogin({
         )}
         <Animated.View
           style={[
-            {padding: 68},
+            { padding: 68 },
             {
               transform: [
                 {

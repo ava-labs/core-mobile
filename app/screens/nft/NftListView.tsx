@@ -1,15 +1,15 @@
-import React, {useMemo, useState} from 'react'
-import {Dimensions, FlatList, Image, StyleSheet, View} from 'react-native'
+import React, { useMemo, useState } from 'react'
+import { Dimensions, FlatList, Image, StyleSheet, View } from 'react-native'
 import RadioGroup from 'components/RadioGroup'
 import GridSVG from 'components/svg/GridSVG'
-import {Row} from 'components/Row'
+import { Row } from 'components/Row'
 import AvaButton from 'components/AvaButton'
 import ListSVG from 'components/svg/ListSVG'
-import {NFTItemData} from 'screens/nft/NftCollection'
+import { NFTItemData } from 'screens/nft/NftCollection'
 import ZeroState from 'components/ZeroState'
 import AvaListItem from 'components/AvaListItem'
-import {useApplicationContext} from 'contexts/ApplicationContext'
-import {COLORS_DAY, COLORS_NIGHT, Opacity85} from 'resources/Constants'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { COLORS_DAY, COLORS_NIGHT, Opacity85 } from 'resources/Constants'
 import Avatar from 'components/Avatar'
 import MasonryList from '@react-native-seoul/masonry-list'
 import AvaText from 'components/AvaText'
@@ -31,9 +31,9 @@ export default function NftListView({
   onItemSelected,
   onManagePressed
 }: NftListViewProps) {
-  const {nftRepo} = useApplicationContext().repo
+  const { nftRepo } = useApplicationContext().repo
   const [listType, setListType] = useState<ListType>()
-  const {theme} = useApplicationContext()
+  const { theme } = useApplicationContext()
 
   const filteredData = useMemo(
     () =>
@@ -58,11 +58,11 @@ export default function NftListView({
       </Row>
       {listType === 'list' ? (
         <FlatList
-          style={{flex: 1}}
+          style={{ flex: 1 }}
           data={filteredData}
           ListEmptyComponent={<ZeroState.Collectibles />}
           keyExtractor={item => item.uid}
-          ItemSeparatorComponent={() => <View style={{margin: 4}} />}
+          ItemSeparatorComponent={() => <View style={{ margin: 4 }} />}
           renderItem={info => renderItemList(info.item, onItemSelected, theme)}
         />
       ) : (
@@ -123,14 +123,14 @@ const renderItemGrid = (
     <AvaButton.Base
       key={item.uid}
       onPress={() => onItemSelected(item)}
-      style={{margin: GRID_ITEM_MARGIN}}>
+      style={{ margin: GRID_ITEM_MARGIN }}>
       <Image
         style={{
           width: GRID_ITEM_WIDTH,
           height: item.aspect * GRID_ITEM_WIDTH,
           borderRadius: 8
         }}
-        source={{uri: item.external_data.image_512}}
+        source={{ uri: item.external_data.image_512 }}
       />
     </AvaButton.Base>
   )

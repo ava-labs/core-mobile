@@ -1,10 +1,10 @@
-import {useEffect, useState} from 'react'
-import {Account} from 'dto/Account'
+import { useEffect, useState } from 'react'
+import { Account } from 'dto/Account'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import {CustomTokens} from 'screens/tokenManagement/hooks/useAddCustomToken'
-import {NFTItemData} from 'screens/nft/NftCollection'
-import {TokenWithBalance} from '@avalabs/wallet-react-components'
-import {BN} from '@avalabs/avalanche-wallet-sdk'
+import { CustomTokens } from 'screens/tokenManagement/hooks/useAddCustomToken'
+import { NFTItemData } from 'screens/nft/NftCollection'
+import { TokenWithBalance } from '@avalabs/wallet-react-components'
+import { BN } from '@avalabs/avalanche-wallet-sdk'
 
 /**
  * Currently we support only one wallet, with multiple accounts.
@@ -249,16 +249,16 @@ export function useRepo(): Repo {
   }
 
   return {
-    accountsRepo: {accounts, saveAccounts, setActiveAccount},
-    nftRepo: {nfts, saveNfts},
+    accountsRepo: { accounts, saveAccounts, setActiveAccount },
+    nftRepo: { nfts, saveNfts },
     addressBookRepo: {
       addressBook,
       saveAddressBook,
       recentContacts,
       addToRecentContacts
     },
-    watchlistFavoritesRepo: {watchlistFavorites, saveWatchlistFavorites},
-    customTokenRepo: {customTokens, saveCustomTokens},
+    watchlistFavoritesRepo: { watchlistFavorites, saveWatchlistFavorites },
+    customTokenRepo: { customTokens, saveCustomTokens },
     userSettingsRepo: {
       setSetting,
       getSetting

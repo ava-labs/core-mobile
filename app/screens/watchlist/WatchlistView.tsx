@@ -1,21 +1,21 @@
-import React, {FC, useEffect, useMemo, useState} from 'react'
-import {FlatList, ListRenderItemInfo, StyleSheet, View} from 'react-native'
+import React, { FC, useEffect, useMemo, useState } from 'react'
+import { FlatList, ListRenderItemInfo, StyleSheet, View } from 'react-native'
 import Loader from 'components/Loader'
 import {
   ERC20WithBalance,
   TokenWithBalance,
   useWalletStateContext
 } from '@avalabs/wallet-react-components'
-import {getTokenUID} from 'utils/TokenTools'
+import { getTokenUID } from 'utils/TokenTools'
 import WatchListItem from 'screens/watchlist/components/WatchListItem'
 import ListFilter from 'components/ListFilter'
-import {useNavigation} from '@react-navigation/native'
+import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
-import {useApplicationContext} from 'contexts/ApplicationContext'
-import {StackNavigationProp} from '@react-navigation/stack'
-import {RootStackParamList} from 'navigation/WalletScreenStack'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { StackNavigationProp } from '@react-navigation/stack'
+import { RootStackParamList } from 'navigation/WalletScreenStack'
 import Separator from 'components/Separator'
-import {SafeAreaProvider} from 'react-native-safe-area-context'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
 import ZeroState from 'components/ZeroState'
 import {
   SimplePriceInCurrency,
@@ -43,13 +43,13 @@ const filterTimeOptions = ['1D', '1W', '1Y']
 
 type CombinedTokenType = ERC20WithBalance & SimplePriceInCurrency
 
-const WatchlistView: FC<Props> = ({showFavorites, searchText}) => {
+const WatchlistView: FC<Props> = ({ showFavorites, searchText }) => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>()
-  const {currencyFormatter} = useApplicationContext().appHook
-  const {watchlistFavorites} =
+  const { currencyFormatter } = useApplicationContext().appHook
+  const { watchlistFavorites } =
     useApplicationContext().repo.watchlistFavoritesRepo
   // @ts-ignore erc20Tokens and avaxToken exist but why it complains needs investigation
-  const {erc20Tokens, avaxToken} = useWalletStateContext()
+  const { erc20Tokens, avaxToken } = useWalletStateContext()
   const [combinedData, setCombinedData] = useState<CombinedTokenType[]>([])
   const [filterBy, setFilterBy] = useState(WatchlistFilter.PRICE)
   const [filterTime, setFilterTime] = useState(filterTimeOptions[0])
@@ -57,7 +57,10 @@ const WatchlistView: FC<Props> = ({showFavorites, searchText}) => {
     CG_AVAX_TOKEN_ID,
     ...(erc20Tokens?.map((t: ERC20WithBalance) => t.address) ?? [])
   ]
-  const allTokens = [{...avaxToken, address: CG_AVAX_TOKEN_ID}, ...erc20Tokens]
+  const allTokens = [
+    { ...avaxToken, address: CG_AVAX_TOKEN_ID },
+    ...erc20Tokens
+  ]
 
   useEffect(() => {
     if (combinedData.length === 0) {
@@ -190,14 +193,14 @@ const WatchlistView: FC<Props> = ({showFavorites, searchText}) => {
               ]}
               currentItem={filterBy}
               onItemSelected={filter => setFilterBy(filter as WatchlistFilter)}
-              style={{paddingLeft: 25}}
+              style={{ paddingLeft: 25 }}
             />
             <ListFilter
               filterOptions={filterTimeOptions}
               currentItem={filterTime}
               onItemSelected={setFilterTime}
               minWidth={50}
-              style={{paddingRight: 30}}
+              style={{ paddingRight: 30 }}
             />
           </View>
           <FlatList
@@ -206,7 +209,7 @@ const WatchlistView: FC<Props> = ({showFavorites, searchText}) => {
             onRefresh={handleRefresh}
             ItemSeparatorComponent={() => (
               <Separator
-                style={{backgroundColor: '#323232', height: 0.5}}
+                style={{ backgroundColor: '#323232', height: 0.5 }}
                 inset={8}
               />
             )}

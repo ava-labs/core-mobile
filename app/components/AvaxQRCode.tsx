@@ -1,6 +1,6 @@
-import React, {FC} from 'react'
-import {Dimensions, View} from 'react-native'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import React, { FC } from 'react'
+import { Dimensions, View } from 'react-native'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import QRCode from 'react-native-qrcode-svg'
 import AvaLogoSVG from 'components/svg/AvaLogoSVG'
 import CircularText from 'components/svg/CircularText'
@@ -11,7 +11,7 @@ interface Props {
   sizePercentage?: number
 }
 
-const {width: screenWidth} = Dimensions.get('window')
+const { width: screenWidth } = Dimensions.get('window')
 
 const AvaxQRCode: FC<Props> = ({
   address,

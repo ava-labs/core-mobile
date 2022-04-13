@@ -1,10 +1,10 @@
 import React from 'react'
-import {Alert, Image, StyleSheet, View} from 'react-native'
-import {useApplicationContext} from 'contexts/ApplicationContext'
-import {Space} from 'components/Space'
+import { Alert, Image, StyleSheet, View } from 'react-native'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
-import {useBiometricLogin} from './BiometricLoginViewModel'
+import { useBiometricLogin } from './BiometricLoginViewModel'
 
 type Props = {
   mnemonic: string
@@ -17,7 +17,7 @@ export default function BiometricLogin(
 ): JSX.Element {
   const context = useApplicationContext()
 
-  const {biometryType, storeMnemonicWithBiometric, fingerprintIcon} =
+  const { biometryType, storeMnemonicWithBiometric, fingerprintIcon } =
     useBiometricLogin(props.mnemonic, context.isDarkMode)
 
   async function handleUseBiometry() {

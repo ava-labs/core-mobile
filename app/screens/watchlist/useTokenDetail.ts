@@ -1,21 +1,22 @@
-import {useEffect, useMemo, useState} from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   TokenWithBalance,
   useWalletStateContext
 } from '@avalabs/wallet-react-components'
 import useInAppBrowser from 'hooks/useInAppBrowser'
-import {useApplicationContext} from 'contexts/ApplicationContext'
-import {CoinsContractInfoResponse} from '@avalabs/coingecko-sdk'
-import {CG_AVAX_TOKEN_ID} from 'screens/watchlist/WatchlistView'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { CoinsContractInfoResponse } from '@avalabs/coingecko-sdk'
+import { CG_AVAX_TOKEN_ID } from 'screens/watchlist/WatchlistView'
 import Coingecko from 'utils/Coingecko'
 
 export function useTokenDetail(tokenAddress: string) {
-  const {repo} = useApplicationContext()
+  const { repo } = useApplicationContext()
   const [isFavorite, setIsFavorite] = useState(true)
   const [token, setToken] = useState<TokenWithBalance>()
-  const {openMoonPay, openUrl} = useInAppBrowser()
-  const {selectedCurrency, currencyFormatter} = useApplicationContext().appHook
-  const [chartData, setChartData] = useState<{x: number; y: number}[]>()
+  const { openMoonPay, openUrl } = useInAppBrowser()
+  const { selectedCurrency, currencyFormatter } =
+    useApplicationContext().appHook
+  const [chartData, setChartData] = useState<{ x: number; y: number }[]>()
   const [chartDays, setChartDays] = useState(1)
   const [ranges, setRanges] = useState<{
     minDate: number
@@ -34,13 +35,13 @@ export function useTokenDetail(tokenAddress: string) {
   })
   const [contractInfo, setContractInfo] = useState<CoinsContractInfoResponse>()
   const [urlHostname, setUrlHostname] = useState<string>('')
-  const {watchlistFavorites, saveWatchlistFavorites} =
+  const { watchlistFavorites, saveWatchlistFavorites } =
     repo.watchlistFavoritesRepo
   // @ts-ignore avaxToken, erc20Tokens exist in walletContext
-  const {erc20Tokens, avaxToken} = useWalletStateContext()
+  const { erc20Tokens, avaxToken } = useWalletStateContext()
 
   const allTokens = useMemo(
-    () => [{...avaxToken, address: CG_AVAX_TOKEN_ID}, ...erc20Tokens],
+    () => [{ ...avaxToken, address: CG_AVAX_TOKEN_ID }, ...erc20Tokens],
     [erc20Tokens, avaxToken]
   )
 

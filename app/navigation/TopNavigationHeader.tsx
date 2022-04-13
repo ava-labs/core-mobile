@@ -1,12 +1,12 @@
-import React, {FC} from 'react'
-import {View} from 'react-native'
+import React, { FC } from 'react'
+import { View } from 'react-native'
 import AvaButton from 'components/AvaButton'
-import {DrawerActions, useNavigation} from '@react-navigation/native'
+import { DrawerActions, useNavigation } from '@react-navigation/native'
 import MenuSVG from 'components/svg/MenuSVG'
 import AppNavigation from 'navigation/AppNavigation'
 import HeaderAccountSelector from 'components/HeaderAccountSelector'
-import {StackNavigationProp} from '@react-navigation/stack'
-import {RootStackParamList} from 'navigation/WalletScreenStack'
+import { StackNavigationProp } from '@react-navigation/stack'
+import { RootStackParamList } from 'navigation/WalletScreenStack'
 import QRCodeSVG from 'components/svg/QRCodeSVG'
 
 const TopNavigationHeader: FC = () => {

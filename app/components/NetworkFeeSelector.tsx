@@ -1,19 +1,19 @@
-import {Row} from 'components/Row'
+import { Row } from 'components/Row'
 import AvaText from 'components/AvaText'
-import {TextInput, View} from 'react-native'
+import { TextInput, View } from 'react-native'
 import AvaButton from 'components/AvaButton'
 import SettingsCogSVG from 'components/svg/SettingsCogSVG'
-import {Space} from 'components/Space'
-import React, {FC, useEffect, useMemo, useRef, useState} from 'react'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import { Space } from 'components/Space'
+import React, { FC, useEffect, useMemo, useRef, useState } from 'react'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import InputText from 'components/InputText'
-import {Opacity50} from 'resources/Constants'
-import {GasPrice} from 'utils/GasPriceHook'
-import {StackNavigationProp} from '@react-navigation/stack'
-import {mustNumber} from 'utils/JsTools'
-import {useNavigation} from '@react-navigation/native'
-import {RootStackParamList} from 'navigation/WalletScreenStack'
-import {bnToLocaleString, numberToBN} from '@avalabs/avalanche-wallet-sdk'
+import { Opacity50 } from 'resources/Constants'
+import { GasPrice } from 'utils/GasPriceHook'
+import { StackNavigationProp } from '@react-navigation/stack'
+import { mustNumber } from 'utils/JsTools'
+import { useNavigation } from '@react-navigation/native'
+import { RootStackParamList } from 'navigation/WalletScreenStack'
+import { bnToLocaleString, numberToBN } from '@avalabs/avalanche-wallet-sdk'
 
 enum FeePreset {
   Normal = 'Normal',
@@ -55,7 +55,7 @@ const NetworkFeeSelector = ({
         0
       )
     }
-    return {...defaultPresetWeights}
+    return { ...defaultPresetWeights }
   }, [customGasPrice])
 
   const [selectedPreset, setSelectedPreset] = useState(FeePreset.Normal)
@@ -76,13 +76,13 @@ const NetworkFeeSelector = ({
     }
   }, [gasPrice])
 
-  const {navigate} = useNavigation<StackNavigationProp<RootStackParamList>>()
+  const { navigate } = useNavigation<StackNavigationProp<RootStackParamList>>()
 
   return (
     <>
       <Row>
         <AvaText.Body2>Network Fee</AvaText.Body2>
-        <View style={{position: 'absolute', right: 0, top: -8}}>
+        <View style={{ position: 'absolute', right: 0, top: -8 }}>
           <AvaButton.Icon
             onPress={() => {
               navigate(gasLimitEditorRoute, {
@@ -98,10 +98,10 @@ const NetworkFeeSelector = ({
         </View>
       </Row>
       <Space y={4} />
-      <Row style={{alignItems: 'baseline'}}>
+      <Row style={{ alignItems: 'baseline' }}>
         <AvaText.Heading3>{networkFeeAvax} AVAX</AvaText.Heading3>
         <Space x={4} />
-        <AvaText.Body3 textStyle={{paddingBottom: 2}}>
+        <AvaText.Body3 textStyle={{ paddingBottom: 2 }}>
           ${networkFeeUsd}
         </AvaText.Body3>
       </Row>
@@ -173,8 +173,15 @@ const FeeSelector: FC<{
   onSelect: (value: string) => void
   editable?: boolean
   onValueEntered?: (value: string) => void
-}> = ({label, selected, onSelect, onValueEntered, value, editable = false}) => {
-  const {theme} = useApplicationContext()
+}> = ({
+  label,
+  selected,
+  onSelect,
+  onValueEntered,
+  value,
+  editable = false
+}) => {
+  const { theme } = useApplicationContext()
   const [showInput, setShowInput] = useState(false)
   const [selectedAtLeastOnce, setSelectedAtLeastOnce] = useState(false)
 
@@ -243,7 +250,9 @@ const FeeSelector: FC<{
                 : theme.colorBg3 + Opacity50
             }}>
             <AvaText.ButtonMedium
-              textStyle={{color: selected ? theme.colorBg2 : theme.colorText2}}>
+              textStyle={{
+                color: selected ? theme.colorBg2 : theme.colorText2
+              }}>
               {editable && selectedAtLeastOnce && value ? value : label}
             </AvaText.ButtonMedium>
           </View>

@@ -1,7 +1,7 @@
 import React from 'react'
 import AppNavigation from 'navigation/AppNavigation'
 import PortfolioView from 'screens/portfolio/PortfolioView'
-import {createStackNavigator} from '@react-navigation/stack'
+import { createStackNavigator } from '@react-navigation/stack'
 
 export type PortfolioStackParamList = {
   [AppNavigation.Wallet.Drawer]: undefined

@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import {
   Animated,
   Dimensions,
@@ -17,7 +17,7 @@ interface Props {
   index: number
 }
 
-function PortfolioCarousel({index}: Props) {
+function PortfolioCarousel({ index }: Props) {
   const horizontalScrollViewRef = useRef<ScrollView>()
   const [scrollX] = useState(new Animated.Value(0))
 

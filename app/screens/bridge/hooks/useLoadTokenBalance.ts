@@ -3,8 +3,8 @@ import {
   Blockchain,
   useGetTokenBalance as useGetTokenBalanceSDK
 } from '@avalabs/bridge-sdk'
-import {getAvalancheProvider} from 'screens/bridge/utils/getAvalancheProvider'
-import {getEthereumProvider} from 'screens/bridge/utils/getEthereumProvider'
+import { getAvalancheProvider } from 'screens/bridge/utils/getAvalancheProvider'
+import { getEthereumProvider } from 'screens/bridge/utils/getEthereumProvider'
 import {
   useNetworkContext,
   useWalletStateContext
@@ -24,7 +24,7 @@ export function useLoadTokenBalance(
   suspendRefresh?: boolean
 ) {
   // @ts-ignore addresses exist but why it complains needs investigation
-  const {addresses} = useWalletStateContext()
+  const { addresses } = useWalletStateContext()
   const network = useNetworkContext()?.network
 
   const provider =
@@ -40,5 +40,5 @@ export function useLoadTokenBalance(
     address ?? addresses.addrC
   )
 
-  return {balance}
+  return { balance }
 }

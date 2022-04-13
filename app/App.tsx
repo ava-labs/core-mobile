@@ -5,7 +5,7 @@
  * @flow strict-local
  */
 
-import React, {useState} from 'react'
+import React, { useState } from 'react'
 import {
   Alert,
   KeyboardAvoidingView,
@@ -14,14 +14,14 @@ import {
   SafeAreaView
 } from 'react-native'
 import WalletScreenStack from 'navigation/WalletScreenStack'
-import {NavigationContainer} from '@react-navigation/native'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import { NavigationContainer } from '@react-navigation/native'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import AppNavigation from 'navigation/AppNavigation'
-import {ExitEvents, ExitPromptAnswers, ShowExitPrompt} from 'AppHook'
-import {OnboardScreenStack} from 'navigation/OnboardScreenStack'
-import {createStackNavigator} from '@react-navigation/stack'
+import { ExitEvents, ExitPromptAnswers, ShowExitPrompt } from 'AppHook'
+import { OnboardScreenStack } from 'navigation/OnboardScreenStack'
+import { createStackNavigator } from '@react-navigation/stack'
 import useDevDebugging from 'utils/debugging/DevDebugging'
-import {useLoadBridgeConfig} from 'screens/bridge/hooks/useLoadBridgeConfig'
+import { useLoadBridgeConfig } from 'screens/bridge/hooks/useLoadBridgeConfig'
 
 const RootStack = createStackNavigator()
 
@@ -38,7 +38,7 @@ const onNo = (value: ShowExitPrompt): void => {
 }
 
 const WalletScreenStackWithContext = () => {
-  const {onExit} = useApplicationContext().appHook
+  const { onExit } = useApplicationContext().appHook
 
   const doExit = () => {
     onExit().subscribe({
@@ -95,7 +95,7 @@ const RootScreenStack = () => {
 }
 
 export default function App() {
-  const {configure} = useDevDebugging()
+  const { configure } = useDevDebugging()
   const isProduction = process.env.NODE_ENV === 'production'
   useLoadBridgeConfig()
   if (!isProduction) {
@@ -108,7 +108,7 @@ export default function App() {
     <SafeAreaView style={backgroundStyle}>
       <KeyboardAvoidingView
         enabled={context.keyboardAvoidingViewEnabled}
-        style={{flex: 1}}
+        style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <NavigationContainer
           theme={context.navContainerTheme}

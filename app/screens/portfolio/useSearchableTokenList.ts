@@ -1,5 +1,5 @@
-import {useEffect, useMemo, useState} from 'react'
-import {BN} from '@avalabs/avalanche-wallet-sdk'
+import { useEffect, useMemo, useState } from 'react'
+import { BN } from '@avalabs/avalanche-wallet-sdk'
 import {
   TokenWithBalance,
   updateAllBalances,
@@ -8,10 +8,10 @@ import {
   useWalletStateContext
 } from '@avalabs/wallet-react-components'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import {getTokenUID} from 'utils/TokenTools'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import { getTokenUID } from 'utils/TokenTools'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
-type ShowZeroArrayType = {[x: string]: boolean}
+type ShowZeroArrayType = { [x: string]: boolean }
 const bnZero = new BN(0)
 
 export function useSearchableTokenList(hideZeroBalance = true): {
@@ -27,7 +27,7 @@ export function useSearchableTokenList(hideZeroBalance = true): {
   const walletState = useWalletStateContext()
   const wallet = useWalletContext().wallet
   const network = useNetworkContext()?.network
-  const {loadTokensCache, saveTokensCache} =
+  const { loadTokensCache, saveTokensCache } =
     useApplicationContext().repo.portfolioTokensCache
   const [loading, setLoading] = useState(false)
   const [tokenMap, setTokenMap] = useState(new Map<string, TokenWithBalance>())
@@ -132,7 +132,7 @@ export function useSearchableTokenList(hideZeroBalance = true): {
     AsyncStorage.getItem('showZeroBalanceList.v2').then(value => {
       if (value) {
         const list: ShowZeroArrayType = JSON.parse(value)
-        setZeroBalanceList({...list})
+        setZeroBalanceList({ ...list })
       }
     })
   }

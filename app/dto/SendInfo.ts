@@ -1,4 +1,4 @@
-import {BN, bnToAvaxC, numberToBN} from '@avalabs/avalanche-wallet-sdk'
+import { BN, bnToAvaxC, numberToBN } from '@avalabs/avalanche-wallet-sdk'
 
 // I know, I'm disgusted by it too, but it's a simple,
 // quick, dirty hack that works. Will remove this when

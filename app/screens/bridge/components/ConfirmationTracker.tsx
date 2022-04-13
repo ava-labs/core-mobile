@@ -6,8 +6,8 @@ import React, {
   useMemo,
   useRef
 } from 'react'
-import {Animated, Easing, StyleSheet, View} from 'react-native'
-import {ApplicationContext} from 'contexts/ApplicationContext'
+import { Animated, Easing, StyleSheet, View } from 'react-native'
+import { ApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
 
 interface ConfirmationTrackerProps {
@@ -94,7 +94,7 @@ const ConfirmationTracker: FC<ConfirmationTrackerProps> = ({
           position: 'absolute',
           top: -2,
           zIndex: 5000,
-          transform: [{translateX: value}]
+          transform: [{ translateX: value }]
         }}
       />
     )
@@ -174,7 +174,7 @@ const ConfirmationTracker: FC<ConfirmationTrackerProps> = ({
             zIndex: -1,
             backgroundColor: active || complete ? theme.white : theme.colorBg3
           },
-          grow && {width: '100%'}
+          grow && { width: '100%' }
         ]}>
         {active && (
           <>
@@ -194,9 +194,9 @@ const ConfirmationTracker: FC<ConfirmationTrackerProps> = ({
       dots.push(
         <Fragment key={`container-${i}`}>
           {renderLine(currentCount >= i, active)}
-          <View style={{justifyContent: 'center', alignItems: 'center'}}>
+          <View style={{ justifyContent: 'center', alignItems: 'center' }}>
             {renderCircle(currentCount >= i, active)}
-            <AvaText.Body1 textStyle={{marginTop: 10, marginHorizontal: -16}}>
+            <AvaText.Body1 textStyle={{ marginTop: 10, marginHorizontal: -16 }}>
               {i}/{requiredCount}
             </AvaText.Body1>
           </View>
@@ -219,12 +219,12 @@ const ConfirmationTracker: FC<ConfirmationTrackerProps> = ({
           paddingTop: 8,
           justifyContent: 'center'
         }}>
-        <View style={{flexDirection: 'row'}}>
+        <View style={{ flexDirection: 'row' }}>
           {renderCircle(started, false)}
           {currentCount > 1 && renderDashedLine()}
         </View>
         <AvaText.Body1
-          textStyle={{marginTop: 10, backgroundColor: theme.colorBg2}}>
+          textStyle={{ marginTop: 10, backgroundColor: theme.colorBg2 }}>
           Start
         </AvaText.Body1>
       </View>
@@ -241,12 +241,12 @@ const ConfirmationTracker: FC<ConfirmationTrackerProps> = ({
           paddingTop: 8,
           justifyContent: 'center'
         }}>
-        <View style={{flexDirection: 'row-reverse'}}>
+        <View style={{ flexDirection: 'row-reverse' }}>
           {renderCircle(currentCount >= requiredCount, lastStepActive)}
           {showBreakEnd && renderDashedLine()}
         </View>
         <AvaText.Body1
-          textStyle={{marginTop: 10, backgroundColor: theme.colorBg2}}>
+          textStyle={{ marginTop: 10, backgroundColor: theme.colorBg2 }}>
           Final
         </AvaText.Body1>
       </View>
@@ -287,7 +287,7 @@ const ConfirmationTracker: FC<ConfirmationTrackerProps> = ({
 
   return (
     <View
-      style={[styles.container, {backgroundColor: theme.colorBg2}]}
+      style={[styles.container, { backgroundColor: theme.colorBg2 }]}
       ref={containerRef}
       {...rest}>
       {renderStartCircle}

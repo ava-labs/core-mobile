@@ -1,9 +1,9 @@
 import React from 'react'
-import {View} from 'react-native'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import { View } from 'react-native'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
-export default function ModalContainer({children}: {children: any}) {
-  const {theme} = useApplicationContext()
+export default function ModalContainer({ children }: { children: any }) {
+  const { theme } = useApplicationContext()
 
   return (
     <View

@@ -1,17 +1,17 @@
-import React, {FC, useRef} from 'react'
-import {Animated, Platform, Pressable, StyleSheet, View} from 'react-native'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import React, { FC, useRef } from 'react'
+import { Animated, Platform, Pressable, StyleSheet, View } from 'react-native'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import InputText from 'components/InputText'
-import {bnAmountToString, stringAmountToBN} from 'dto/SendInfo'
+import { bnAmountToString, stringAmountToBN } from 'dto/SendInfo'
 import AvaText from 'components/AvaText'
 import FlexSpacer from 'components/FlexSpacer'
 import AvaButton from 'components/AvaButton'
-import {ScrollView} from 'react-native-gesture-handler'
-import {SendHookError} from '@avalabs/wallet-react-components'
+import { ScrollView } from 'react-native-gesture-handler'
+import { SendHookError } from '@avalabs/wallet-react-components'
 import BN from 'bn.js'
 import InfoSVG from 'components/svg/InfoSVG'
-import {Space} from 'components/Space'
-import {bnToBig} from '@avalabs/avalanche-wallet-sdk'
+import { Space } from 'components/Space'
+import { bnToBig } from '@avalabs/avalanche-wallet-sdk'
 
 interface Props {
   error?: SendHookError
@@ -79,8 +79,8 @@ const SendForm: FC<Props> = ({
         alignItems: 'center'
       }}>
       <AvaText.Body2
-        textStyle={{textAlign: 'left'}}>{`$${usdAmount}`}</AvaText.Body2>
-      <View style={{flexDirection: 'row', justifyContent: 'flex-end'}}>
+        textStyle={{ textAlign: 'left' }}>{`$${usdAmount}`}</AvaText.Body2>
+      <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
         <AvaText.Body3
           textStyle={{
             textAlign: 'right',
@@ -98,7 +98,7 @@ const SendForm: FC<Props> = ({
 
   return (
     <ScrollView
-      contentContainerStyle={{flexGrow: 1}}
+      contentContainerStyle={{ flexGrow: 1 }}
       keyboardShouldPersistTaps="handled">
       <View
         style={[
@@ -110,9 +110,9 @@ const SendForm: FC<Props> = ({
             paddingBottom: 0
           }
         ]}>
-        <View style={[{paddingStart: 4, paddingEnd: 4, marginTop: 20}]}>
+        <View style={[{ paddingStart: 4, paddingEnd: 4, marginTop: 20 }]}>
           <View style={styles.horizontalLayout}>
-            <View style={[{flex: 1, paddingStart: 4, paddingEnd: 4}]}>
+            <View style={[{ flex: 1, paddingStart: 4, paddingEnd: 4 }]}>
               <InputText
                 label={'Address'}
                 placeholder="Enter the address"
@@ -174,7 +174,7 @@ const SendForm: FC<Props> = ({
 
         <AvaButton.PrimaryLarge
           disabled={!canSubmit}
-          style={{margin: 16}}
+          style={{ margin: 16 }}
           onPress={onNextPress}>
           Next
         </AvaButton.PrimaryLarge>

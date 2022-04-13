@@ -1,14 +1,14 @@
-import React, {useCallback, useEffect, useMemo, useRef} from 'react'
-import BottomSheet, {BottomSheetBackdrop} from '@gorhom/bottom-sheet'
-import {InteractionManager} from 'react-native'
-import {RouteProp, useNavigation, useRoute} from '@react-navigation/native'
+import React, { useCallback, useEffect, useMemo, useRef } from 'react'
+import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet'
+import { InteractionManager } from 'react-native'
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import TabViewBackground from 'screens/portfolio/components/TabViewBackground'
 import AvaxSheetHandle from 'components/AvaxSheetHandle'
 import AvaText from 'components/AvaText'
 import BridgeTokenSelector, {
   SelectTokenMode
 } from 'screens/bridge/BridgeTokenSelector'
-import {BridgeStackParamList} from 'navigation/wallet/BridgeScreenStack'
+import { BridgeStackParamList } from 'navigation/wallet/BridgeScreenStack'
 import AppNavigation from 'navigation/AppNavigation'
 
 function BridgeSelectTokenBottomSheet(): JSX.Element {
@@ -54,7 +54,7 @@ function BridgeSelectTokenBottomSheet(): JSX.Element {
       backgroundComponent={TabViewBackground}
       onChange={handleChange}>
       <>
-        <AvaText.LargeTitleBold textStyle={{marginHorizontal: 16}}>
+        <AvaText.LargeTitleBold textStyle={{ marginHorizontal: 16 }}>
           Select Token
         </AvaText.LargeTitleBold>
         <BridgeTokenSelector

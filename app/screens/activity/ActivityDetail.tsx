@@ -1,34 +1,34 @@
-import React, {useEffect, useState} from 'react'
-import {Pressable, StyleSheet, View} from 'react-native'
+import React, { useEffect, useState } from 'react'
+import { Pressable, StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import AvaListItem from 'components/AvaListItem'
 import LinkSVG from 'components/svg/LinkSVG'
 import moment from 'moment'
-import {useApplicationContext} from 'contexts/ApplicationContext'
-import {isTransactionERC20} from '@avalabs/wallet-react-components'
-import {Space} from 'components/Space'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { isTransactionERC20 } from '@avalabs/wallet-react-components'
+import { Space } from 'components/Space'
 import useInAppBrowser from 'hooks/useInAppBrowser'
 import Separator from 'components/Separator'
-import {truncateAddress} from 'utils/Utils'
-import {RouteProp, useRoute} from '@react-navigation/native'
-import {RootStackParamList} from 'navigation/WalletScreenStack'
+import { truncateAddress } from 'utils/Utils'
+import { RouteProp, useRoute } from '@react-navigation/native'
+import { RootStackParamList } from 'navigation/WalletScreenStack'
 import DotSVG from 'components/svg/DotSVG'
 import FlexSpacer from 'components/FlexSpacer'
 import Avatar from 'components/Avatar'
-import {Contact} from 'Repo'
-import {bnToAvaxC, numberToBN} from '@avalabs/avalanche-wallet-sdk'
+import { Contact } from 'Repo'
+import { bnToAvaxC, numberToBN } from '@avalabs/avalanche-wallet-sdk'
 import AppNavigation from 'navigation/AppNavigation'
 
 function ActivityDetail() {
   const theme = useApplicationContext().theme
-  const {addressBook} = useApplicationContext().repo.addressBookRepo
+  const { addressBook } = useApplicationContext().repo.addressBookRepo
   const addressBookArray = Array.from(addressBook)
   const txItem =
     useRoute<
       RouteProp<RootStackParamList, typeof AppNavigation.Wallet.ActivityDetail>
     >().params.tx
   const date = moment(txItem?.timestamp).format('MMM DD, YYYY HH:mm')
-  const {openUrl} = useInAppBrowser()
+  const { openUrl } = useInAppBrowser()
   const [contact, setContact] = useState<Contact>()
 
   const feeBN = numberToBN(
@@ -63,7 +63,7 @@ function ActivityDetail() {
   }
 
   return (
-    <View style={{flex: 1}}>
+    <View style={{ flex: 1 }}>
       {txItem && (
         <View
           style={{
@@ -73,13 +73,13 @@ function ActivityDetail() {
             flex: 1
           }}>
           <View style={styles.logoContainer}>
-            <View style={{position: 'absolute'}}>
+            <View style={{ position: 'absolute' }}>
               <DotSVG fillColor={theme.colorBg1} size={72} />
             </View>
             {tokenLogo()}
           </View>
           <View style={styles.headerContainer}>
-            <AvaText.Heading1 textStyle={{marginTop: 16}}>
+            <AvaText.Heading1 textStyle={{ marginTop: 16 }}>
               {txItem.isSender ? '-' : '+'}
               {txItem.amountDisplayValue}
               <AvaText.Body1 color={theme.colorText2}>
@@ -110,7 +110,7 @@ function ActivityDetail() {
             }
             titleAlignment={'flex-start'}
             rightComponent={
-              <View style={{alignItems: 'flex-end'}}>
+              <View style={{ alignItems: 'flex-end' }}>
                 {contact && (
                   <AvaText.Heading3>{contact?.title}</AvaText.Heading3>
                 )}
@@ -140,7 +140,7 @@ function ActivityDetail() {
                 }}>
                 <LinkSVG color={theme.white} />
                 <AvaText.ButtonLarge
-                  textStyle={{marginLeft: 8}}
+                  textStyle={{ marginLeft: 8 }}
                   color={theme.white}>
                   View on Explorer
                 </AvaText.ButtonLarge>

@@ -1,13 +1,13 @@
 import React from 'react'
-import {useApplicationContext} from 'contexts/ApplicationContext'
-import Svg, {Path} from 'react-native-svg'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import Svg, { Path } from 'react-native-svg'
 
 type Props = {
   negative?: boolean
   margin?: number
 }
 
-export default function MarketTriangleSVG({negative}: Props) {
+export default function MarketTriangleSVG({ negative }: Props) {
   const theme = useApplicationContext().theme
 
   return (
@@ -16,7 +16,7 @@ export default function MarketTriangleSVG({negative}: Props) {
       height="7"
       viewBox="0 0 8 7"
       fill="none"
-      style={negative && {transform: [{rotateX: '180deg'}]}}>
+      style={negative && { transform: [{ rotateX: '180deg' }] }}>
       <Path
         fillRule="evenodd"
         clipRule="evenodd"

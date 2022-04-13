@@ -1,16 +1,16 @@
-import React, {FC} from 'react'
-import {useApplicationContext} from 'contexts/ApplicationContext'
+import React, { FC } from 'react'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import {
   GradientProps,
   SlideAreaChart
 } from '@connectedcars/react-native-slide-charts'
-import {LinearGradient, Stop} from 'react-native-svg'
+import { LinearGradient, Stop } from 'react-native-svg'
 
 interface Props {
   width?: number
   height?: number
   animated?: boolean
-  data: {x: number; y: number}[]
+  data: { x: number; y: number }[]
   yRange: [number, number]
   xRange: [number, number]
   negative?: boolean
@@ -28,7 +28,7 @@ const SparklineChart: FC<Props> = ({
   interactive = false
 }) => {
   const theme = useApplicationContext().theme
-  const {currencyFormatter} = useApplicationContext().appHook
+  const { currencyFormatter } = useApplicationContext().appHook
 
   const defaultAreaChartFillGradient = (
     props: GradientProps,
@@ -70,7 +70,7 @@ const SparklineChart: FC<Props> = ({
         displayToolTip: interactive,
         borderRadius: 20,
         toolTipTextRenderers: [
-          ({scaleY, y}) => ({
+          ({ scaleY, y }) => ({
             text: currencyFormatter(scaleY.invert(y).toFixed(6).toString())
           })
         ]

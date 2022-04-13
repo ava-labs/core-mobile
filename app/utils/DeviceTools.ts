@@ -1,5 +1,5 @@
 import Clipboard from '@react-native-clipboard/clipboard'
-import {ShowSnackBar} from 'components/Snackbar'
+import { ShowSnackBar } from 'components/Snackbar'
 
 export const copyToClipboard = (str?: string): void => {
   if (str) {

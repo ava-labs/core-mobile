@@ -1,6 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import {View, Text} from 'react-native'
+import { View, Text } from 'react-native'
 
 export default class Welcome extends React.Component {
   styles = {
@@ -21,7 +21,7 @@ export default class Welcome extends React.Component {
   }
 
   showApp = event => {
-    const {showApp} = this.props
+    const { showApp } = this.props
     event.preventDefault()
 
     if (showApp) {
