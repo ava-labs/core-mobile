@@ -135,7 +135,9 @@ export const PosthogContextProvider = ({children}: {children: any}) => {
     <PosthogContext.Provider
       value={{
         capture: async (event: string) => {
-          console.log(event);
+          if (__DEV__) {
+            console.log(event);
+          }
           return PostHog.capture(event);
         },
         setAnalyticsConsent,
