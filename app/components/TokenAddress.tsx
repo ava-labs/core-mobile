@@ -10,7 +10,7 @@ import { noop } from 'rxjs'
 
 interface Props {
   address: string
-  textType?: "Heading" | 'ButtonSmall' | 'ButtonMedium' | 'Body'
+  textType?: 'Heading' | 'ButtonSmall' | 'ButtonMedium' | 'Body'
   hideCopy?: boolean
   showFullAddress?: boolean
   color?: string
