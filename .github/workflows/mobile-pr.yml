@@ -18,8 +18,6 @@ jobs:
 
       - name: Install dependencies
         run: yarn install
-        env:
-          
 
       - name: Eslint
         run: yarn lint:ci
