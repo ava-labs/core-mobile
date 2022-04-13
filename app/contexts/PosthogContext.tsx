@@ -112,10 +112,9 @@ export const PosthogContextProvider = ({children}: {children: any}) => {
         distinct_id: '',
       }),
     })
-      .catch(reason => console.error(reason))
+      .catch(reason => (__DEV__ ? console.error(reason) : undefined))
       .then(value => value!.json())
       .then(value => {
-        console.log('flags', value);
         const result = value as {
           featureFlags: Record<FeatureGates, boolean>;
         };
