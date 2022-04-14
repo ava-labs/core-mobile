@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import ModalContainer from 'components/ModalContainer';
 import AvaText from 'components/AvaText';
 import AvaButton from 'components/AvaButton';
@@ -8,16 +8,35 @@ import {useApplicationContext} from 'contexts/ApplicationContext';
 import {Linking, StyleSheet} from 'react-native';
 import CheckBoxSVG from 'components/svg/CheckBoxSVG';
 import CheckBoxEmptySVG from 'components/svg/CheckBoxEmptySVG';
+import {useNavigation} from '@react-navigation/native';
 
 interface Props {
   onNext: () => void;
+  onReject: () => void;
 }
 
-const TermsNConditionsModal = ({onNext}: Props) => {
+const TermsNConditionsModal = ({onNext, onReject}: Props) => {
   const {theme, repo} = useApplicationContext();
   const [touChecked, setTouChecked] = useState(false);
   const [ppChecked, setPpChecked] = useState(false);
   const nextBtnEnabled = touChecked && ppChecked;
+  const {addListener, removeListener} = useNavigation();
+
+  useEffect(captureBackEventFx, []);
+
+  function captureBackEventFx() {
+    const callback = (e: {
+      data: {action: {type: string}};
+      preventDefault: () => void;
+    }) => {
+      if (e.data.action.type === 'GO_BACK') {
+        e.preventDefault();
+        onReject();
+      }
+    };
+    addListener('beforeRemove', callback);
+    return () => removeListener('beforeRemove', callback);
+  }
 
   // After setting pin and/or biometry we store that data immediately.
   // Because of that, user can kill app when shown this screen and on next start

@@ -191,12 +191,14 @@ const BiometricLoginScreen = () => {
 const TermsNConditionsModalScreen = () => {
   const createWalletContext = useContext(CreateWalletContext);
   const walletSetupHook = useApplicationContext().walletSetupHook;
+  const {resetNavToRoot} = useApplicationContext().appNavHook;
 
   return (
     <TermsNConditionsModal
       onNext={() => {
         walletSetupHook.enterWallet(createWalletContext.mnemonic);
       }}
+      onReject={() => resetNavToRoot()}
     />
   );
 };

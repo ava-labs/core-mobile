@@ -142,12 +142,14 @@ const BiometricLoginScreen = () => {
 const TermsNConditionsModalScreen = () => {
   const enterWithMnemonicContext = useContext(EnterWithMnemonicContext);
   const walletSetupHook = useApplicationContext().walletSetupHook;
+  const {resetNavToRoot} = useApplicationContext().appNavHook;
 
   return (
     <TermsNConditionsModal
       onNext={() => {
         walletSetupHook.enterWallet(enterWithMnemonicContext.mnemonic);
       }}
+      onReject={() => resetNavToRoot()}
     />
   );
 };
