@@ -51,7 +51,7 @@ export type RecentContact = {
   type: AddrBookItemType;
 };
 
-export type Setting = 'CoreAnalytics';
+export type Setting = 'CoreAnalytics' | 'ConsentToTOU&PP';
 export type SettingValue = number | string | boolean;
 
 export type AddrBookItemType = 'account' | 'contact';

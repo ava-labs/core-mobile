@@ -19,6 +19,7 @@ import {MainHeaderOptions} from 'navigation/NavUtils';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import WarningModal from 'components/WarningModal';
 import {usePosthogContext} from 'contexts/PosthogContext';
+import TermsNConditionsModal from 'components/TermsNConditionsModal';
 
 type CreateWalletStackParamList = {
   [AppNavigation.CreateWallet.CreateWallet]: undefined;
@@ -26,6 +27,7 @@ type CreateWalletStackParamList = {
   [AppNavigation.CreateWallet.CheckMnemonic]: undefined;
   [AppNavigation.CreateWallet.CreatePin]: undefined;
   [AppNavigation.CreateWallet.BiometricLogin]: undefined;
+  [AppNavigation.CreateWallet.TermsNConditions]: undefined;
 };
 const CreateWalletS = createStackNavigator<CreateWalletStackParamList>();
 
@@ -64,6 +66,11 @@ const CreateWalletStack: () => JSX.Element = () => {
           options={{headerShown: true, headerTitle: ''}}
           name={AppNavigation.CreateWallet.BiometricLogin}
           component={BiometricLoginScreen}
+        />
+        <CreateWalletS.Screen
+          options={{presentation: 'transparentModal'}}
+          name={AppNavigation.CreateWallet.TermsNConditions}
+          component={TermsNConditionsModalScreen}
         />
       </CreateWalletS.Navigator>
     </CreateWalletContext.Provider>
@@ -158,7 +165,7 @@ const CreatePinScreen = () => {
             navigate(AppNavigation.CreateWallet.BiometricLogin);
             break;
           case 'enterWallet':
-            walletSetupHook.enterWallet(createWalletContext.mnemonic);
+            navigate(AppNavigation.CreateWallet.TermsNConditions);
             break;
         }
       });
@@ -177,6 +184,19 @@ const BiometricLoginScreen = () => {
         walletSetupHook.enterWallet(createWalletContext.mnemonic);
       }}
       onSkip={() => walletSetupHook.enterWallet(createWalletContext.mnemonic)}
+    />
+  );
+};
+
+const TermsNConditionsModalScreen = () => {
+  const createWalletContext = useContext(CreateWalletContext);
+  const walletSetupHook = useApplicationContext().walletSetupHook;
+
+  return (
+    <TermsNConditionsModal
+      onNext={() => {
+        walletSetupHook.enterWallet(createWalletContext.mnemonic);
+      }}
     />
   );
 };

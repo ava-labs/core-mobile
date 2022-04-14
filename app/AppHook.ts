@@ -3,10 +3,12 @@ import {map} from 'rxjs/operators';
 import {BackHandler} from 'react-native';
 import BiometricsSDK from 'utils/BiometricsSDK';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {Dispatch, useCallback, useState} from 'react';
+import {Dispatch, useCallback, useEffect, useState} from 'react';
 import {WalletSetupHook} from 'hooks/useWalletSetup';
 import {AppNavHook} from 'useAppNav';
 import {Repo} from 'Repo';
+import {SECURE_ACCESS_SET} from 'resources/Constants';
+import AppNavigation from 'navigation/AppNavigation';
 
 export type AppHook = {
   onExit: () => Observable<ExitEvents>;
@@ -22,6 +24,52 @@ export function useApp(
   repository: Repo,
 ): AppHook {
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
+  const [navigationContainerSet, setNavigationContainerSet] = useState(false);
+  const [initRouteSet, setInitRouteSet] = useState(false);
+
+  useEffect(waitForNavigationContainer, []);
+  useEffect(decideInitialRoute, [
+    appNavHook,
+    initRouteSet,
+    navigationContainerSet,
+    repository,
+  ]);
+
+  function waitForNavigationContainer() {
+    async function onFirstLoad() {
+      if (!appNavHook.navigation.current) {
+        console.log('waiting for navigation container...');
+        setTimeout(() => onFirstLoad(), 1000);
+        return;
+      }
+      setNavigationContainerSet(true);
+      console.log('done.');
+    }
+
+    onFirstLoad().then();
+  }
+
+  function decideInitialRoute() {
+    if (!navigationContainerSet || initRouteSet) {
+      return;
+    }
+    setInitRouteSet(true);
+    AsyncStorage.getItem(SECURE_ACCESS_SET).then(result => {
+      if (result) {
+        if (!repository.userSettingsRepo.getSetting('ConsentToTOU&PP')) {
+          //User has probably killed app before consent to TOU, so we'll clear all data and
+          //return him to onboarding
+          signOut().catch(() => undefined);
+        } else {
+          appNavHook.setLoginRoute();
+        }
+      } else {
+        appNavHook.navigation.current?.navigate(AppNavigation.Root.Onboard, {
+          screen: AppNavigation.Root.Welcome,
+        });
+      }
+    });
+  }
 
   async function signOut() {
     walletSetupHook.destroyWallet();

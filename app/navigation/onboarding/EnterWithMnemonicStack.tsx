@@ -19,11 +19,13 @@ import BiometricsSDK from 'utils/BiometricsSDK';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {MainHeaderOptions} from 'navigation/NavUtils';
 import {usePosthogContext} from 'contexts/PosthogContext';
+import TermsNConditionsModal from 'components/TermsNConditionsModal';
 
 type EnterWithMnemonicStackParamList = {
   [AppNavigation.LoginWithMnemonic.LoginWithMnemonic]: undefined;
   [AppNavigation.LoginWithMnemonic.CreatePin]: undefined;
   [AppNavigation.LoginWithMnemonic.BiometricLogin]: undefined;
+  [AppNavigation.LoginWithMnemonic.TermsNConditions]: undefined;
 };
 const EnterWithMnemonicS =
   createStackNavigator<EnterWithMnemonicStackParamList>();
@@ -52,6 +54,11 @@ const EnterWithMnemonicStack = () => {
         <EnterWithMnemonicS.Screen
           name={AppNavigation.LoginWithMnemonic.BiometricLogin}
           component={BiometricLoginScreen}
+        />
+        <EnterWithMnemonicS.Screen
+          options={{presentation: 'transparentModal'}}
+          name={AppNavigation.LoginWithMnemonic.TermsNConditions}
+          component={TermsNConditionsModalScreen}
         />
       </EnterWithMnemonicS.Navigator>
     </EnterWithMnemonicContext.Provider>
@@ -106,7 +113,7 @@ const CreatePinScreen = () => {
               navigate(AppNavigation.LoginWithMnemonic.BiometricLogin);
               break;
             case 'enterWallet':
-              walletSetupHook.enterWallet(enterWithMnemonicContext.mnemonic);
+              navigate(AppNavigation.LoginWithMnemonic.TermsNConditions);
               break;
           }
         });
@@ -128,6 +135,19 @@ const BiometricLoginScreen = () => {
       onSkip={() =>
         walletSetupHook.enterWallet(enterWithMnemonicContext.mnemonic)
       }
+    />
+  );
+};
+
+const TermsNConditionsModalScreen = () => {
+  const enterWithMnemonicContext = useContext(EnterWithMnemonicContext);
+  const walletSetupHook = useApplicationContext().walletSetupHook;
+
+  return (
+    <TermsNConditionsModal
+      onNext={() => {
+        walletSetupHook.enterWallet(enterWithMnemonicContext.mnemonic);
+      }}
     />
   );
 };
