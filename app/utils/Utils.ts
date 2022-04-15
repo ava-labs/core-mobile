@@ -54,3 +54,13 @@ export function formatLargeNumber(num: number | string, digits = 2) {
   const rx = /\.0+$|(\.[0-9]*[1-9])0+$/
   return (number / item.value).toFixed(digits).replace(rx, '$1') + item.symbol
 }
+
+export async function catchAndLog(f: () => Promise<void>, devOnly = true) {
+  try {
+    await f()
+  } catch (e) {
+    if (!devOnly || __DEV__) {
+      console.error(e)
+    }
+  }
+}

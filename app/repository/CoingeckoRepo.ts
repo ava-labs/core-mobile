@@ -1,4 +1,5 @@
 import {
+  COINGECKO_PRO_URL,
   coinsContractInfo,
   CoinsContractInfoResponse,
   coinsContractMarketChart,
@@ -12,6 +13,9 @@ import {
   useWalletStateContext
 } from '@avalabs/wallet-react-components'
 import { CG_AVAX_TOKEN_ID } from 'screens/watchlist/WatchlistView'
+import { HttpClient } from '@avalabs/utils-sdk'
+import { catchAndLog } from 'utils/Utils'
+import Config from 'react-native-config'
 
 export function useCoingeckoRepo() {
   const chartCacheRef = useRef({} as ChartCollection)
@@ -27,11 +31,13 @@ export function useCoingeckoRepo() {
     ]
 
     if (fresh || !tokensPrice || isDataStale(tokensPrice)) {
-      const freshData = await fetchTokensPrice(tokenAddresses)
-      if (freshData) {
-        tokensPriceCacheRef.current = freshData
-      }
-      tokensPrice = freshData
+      await catchAndLog(async () => {
+        const freshData = await fetchTokensPrice(tokenAddresses)
+        if (freshData) {
+          tokensPriceCacheRef.current = freshData
+        }
+        tokensPrice = freshData
+      })
     } else {
       console.log('getTokensPrice cache hit')
     }
@@ -42,11 +48,13 @@ export function useCoingeckoRepo() {
     const chartsForAddress = getCachedChartForAddressOrInit(address)
     let chartData = chartsForAddress[days]
     if (fresh || !chartData || isDataStale(chartData)) {
-      const freshData = await fetchChartData(address, days)
-      if (freshData) {
-        chartsForAddress[days] = freshData
-      }
-      chartData = freshData
+      await catchAndLog(async () => {
+        const freshData = await fetchChartData(address, days)
+        if (freshData) {
+          chartsForAddress[days] = freshData
+        }
+        chartData = freshData
+      })
     } else {
       console.log('getCharData cache hit')
     }
@@ -56,11 +64,13 @@ export function useCoingeckoRepo() {
   async function getContractInfo(address: string, fresh = false) {
     let contractInfo = contractInfoCacheRef.current[address]
     if (fresh || !contractInfo || isDataStale(contractInfo)) {
-      const freshData = await fetchContractInfo(address)
-      if (freshData) {
-        contractInfoCacheRef.current[address] = freshData
-      }
-      contractInfo = freshData
+      await catchAndLog(async () => {
+        const freshData = await fetchContractInfo(address)
+        if (freshData) {
+          contractInfoCacheRef.current[address] = freshData
+        }
+        contractInfo = freshData
+      })
     } else {
       console.log('getContractInfo cache hit')
     }
@@ -84,12 +94,16 @@ export function useCoingeckoRepo() {
 
   async function fetchChartData(address: string, days: number) {
     try {
-      const rawData = await coinsContractMarketChart({
-        address: address,
-        currency: 'usd' as VsCurrencyType,
-        days: days,
-        id: 'avalanche'
-      })
+      const rawData = await coinsContractMarketChart(
+        new HttpClient(COINGECKO_PRO_URL),
+        {
+          assetPlatformId: 'avalanche',
+          address: address,
+          currency: 'usd' as VsCurrencyType,
+          days: days,
+          coinGeckoProApiKey: Config.COINGECKO_API_KEY
+        }
+      )
 
       const dates = rawData.prices.map(value => value[0])
       const prices = rawData.prices.map(value => value[1])
@@ -123,9 +137,10 @@ export function useCoingeckoRepo() {
 
   async function fetchContractInfo(address: string) {
     try {
-      const raw = await coinsContractInfo({
+      const raw = await coinsContractInfo(new HttpClient(COINGECKO_PRO_URL), {
         address: address,
-        id: 'avalanche'
+        assetPlatformId: 'avalanche',
+        coinGeckoProApiKey: Config.COINGECKO_API_KEY
       })
       return {
         ...raw,
@@ -137,7 +152,9 @@ export function useCoingeckoRepo() {
   }
 
   async function fetchTokensPrice(tokenAddresses: string[]) {
-    const raw = (await simpleTokenPrice({
+    const raw = (await simpleTokenPrice(new HttpClient(COINGECKO_PRO_URL), {
+      assetPlatformId: 'avalanche',
+      coinGeckoProApiKey: Config.COINGECKO_API_KEY,
       tokenAddresses,
       currencies: ['usd'] as VsCurrencyType[],
       marketCap: true,
