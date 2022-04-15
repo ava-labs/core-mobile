@@ -9,6 +9,7 @@ import {AppNavHook} from 'useAppNav';
 import {Repo} from 'Repo';
 import {SECURE_ACCESS_SET} from 'resources/Constants';
 import AppNavigation from 'navigation/AppNavigation';
+import {usePosthogContext} from 'contexts/PosthogContext';
 
 export type AppHook = {
   onExit: () => Observable<ExitEvents>;
@@ -26,14 +27,22 @@ export function useApp(
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
   const [navigationContainerSet, setNavigationContainerSet] = useState(false);
   const [initRouteSet, setInitRouteSet] = useState(false);
+  const {getSetting} = repository.userSettingsRepo;
+  const {setAnalyticsConsent} = usePosthogContext();
 
   useEffect(waitForNavigationContainer, []);
+  useEffect(watchCoreAnalyticsFlagFx, [getSetting, setAnalyticsConsent]);
   useEffect(decideInitialRoute, [
     appNavHook,
     initRouteSet,
     navigationContainerSet,
     repository,
   ]);
+
+  function watchCoreAnalyticsFlagFx() {
+    const analyticsConsent = (getSetting('CoreAnalytics') as boolean) ?? false;
+    setAnalyticsConsent(analyticsConsent);
+  }
 
   function waitForNavigationContainer() {
     async function onFirstLoad() {

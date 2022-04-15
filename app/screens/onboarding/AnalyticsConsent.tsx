@@ -22,8 +22,8 @@ type Props = {
 };
 
 const AnalyticsConsent = ({onNextScreen, nextScreen}: Props) => {
-  const {theme} = useApplicationContext();
-  const {setAnalyticsConsent, capture} = usePosthogContext();
+  const {theme, repo} = useApplicationContext();
+  const {capture} = usePosthogContext();
 
   function openPrivacyPolicy() {
     Linking.openURL('https://wallet.avax.network/legal').catch(() => undefined);
@@ -31,13 +31,13 @@ const AnalyticsConsent = ({onNextScreen, nextScreen}: Props) => {
 
   function acceptAnalytics() {
     capture('OnboardingAnalyticsAccepted').catch(() => undefined);
-    setAnalyticsConsent(true);
+    repo.userSettingsRepo.setSetting('CoreAnalytics', true);
     onNextScreen(nextScreen);
   }
 
   function rejectAnalytics() {
     capture('OnboardingAnalyticsRejected').catch(() => undefined);
-    setAnalyticsConsent(false);
+    repo.userSettingsRepo.setSetting('CoreAnalytics', false);
     onNextScreen(nextScreen);
   }
 
