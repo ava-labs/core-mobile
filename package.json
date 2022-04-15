@@ -24,7 +24,7 @@
     "@avalabs/avalanche-wallet-sdk": "0.17.1",
     "@avalabs/blizzard-sdk": "2.1.4",
     "@avalabs/bridge-sdk": "2.1.4",
-    "@avalabs/coingecko-sdk": "2.0.0-alpha.4",
+    "@avalabs/coingecko-sdk": "2.2.0",
     "@avalabs/covalent-sdk": "2.0.0",
     "@avalabs/wallet-react-components": "1.30.2",
     "@babel/plugin-syntax-object-rest-spread": "^7.8.3",
