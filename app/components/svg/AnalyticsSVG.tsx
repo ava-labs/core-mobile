@@ -1,17 +1,17 @@
-import React from 'react';
-import Svg, {Circle, Rect} from 'react-native-svg';
-import {useApplicationContext} from 'contexts/ApplicationContext';
+import React from 'react'
+import Svg, { Circle, Rect } from 'react-native-svg'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 interface Prop {
-  color?: string;
-  circleColor?: string;
+  color?: string
+  circleColor?: string
 }
 
-function AnalyticsSVG({color, circleColor}: Prop) {
-  const context = useApplicationContext();
+function AnalyticsSVG({ color, circleColor }: Prop) {
+  const context = useApplicationContext()
 
-  const iconColor = color ?? context.theme.colorIcon1;
-  const borderColor = circleColor ?? context.theme.colorStroke;
+  const iconColor = color ?? context.theme.colorIcon1
+  const borderColor = circleColor ?? context.theme.colorStroke
   return (
     <Svg width="44" height="44" viewBox="0 0 44 44" fill="none">
       <Circle cx="22" cy="22" r="21.5" stroke={borderColor} />
@@ -34,7 +34,7 @@ function AnalyticsSVG({color, circleColor}: Prop) {
         fill={iconColor}
       />
     </Svg>
-  );
+  )
 }
 
-export default AnalyticsSVG;
+export default AnalyticsSVG

@@ -1,7 +1,7 @@
 enum Root {
   Wallet = 'Stacks.Wallet',
   Onboard = 'Stacks.Onboard',
-  Welcome = 'Stacks.Welcome',
+  Welcome = 'Stacks.Welcome'
 }
 
 enum OnboardScreens {
@@ -10,7 +10,7 @@ enum OnboardScreens {
   AnalyticsConsent = 'OnboardScreens.AnalyticsConsent',
   CreateWalletStack = 'OnboardScreens.CreateWalletStack',
   EnterWithMnemonicStack = 'OnboardScreens.EnterWithMnemonicStack',
-  Login = 'OnboardScreens.Login',
+  Login = 'OnboardScreens.Login'
 }
 
 enum CreateWalletNavigationScreens {
@@ -19,14 +19,14 @@ enum CreateWalletNavigationScreens {
   CreatePin = 'CreateWalletNavigationScreens.CreatePin',
   BiometricLogin = 'CreateWalletNavigationScreens.BiometricLogin',
   TermsNConditions = 'CreateWalletNavigationScreens.TermsNConditions',
-  ProtectFunds = 'CreateWalletNavigationScreens.ProtectFunds',
+  ProtectFunds = 'CreateWalletNavigationScreens.ProtectFunds'
 }
 
 enum LoginWithMnemonicStackScreens {
   LoginWithMnemonic = 'LoginWithMnemonicStackScreens.LoginWithMnemonic',
   CreatePin = 'LoginWithMnemonicStackScreens.CreatePin',
   BiometricLogin = 'LoginWithMnemonicStackScreens.BiometricLogin',
-  TermsNConditions = 'LoginWithMnemonicStackScreens.TermsNConditions',
+  TermsNConditions = 'LoginWithMnemonicStackScreens.TermsNConditions'
 }
 
 enum WalletScreens {
@@ -47,7 +47,7 @@ enum WalletScreens {
   TokenDetail = 'WalletScreens.TokenDetail',
   OwnedTokenDetail = 'WalletScreens.OwnedTokenDetail',
   ActivityDetail = 'WalletScreens.ActivityDetail',
-  Bridge = 'WalletScreens.Bridge',
+  Bridge = 'WalletScreens.Bridge'
 }
 
 enum SwapScreens {
@@ -55,20 +55,20 @@ enum SwapScreens {
   Review = 'SwapScreens.Review',
   Success = 'SwapScreens.Success',
   Fail = 'SwapScreens.Fail',
-  SwapTransactionFee = 'ModalScreens.SwapTransactionFees',
+  SwapTransactionFee = 'ModalScreens.SwapTransactionFees'
 }
 
 enum NftScreens {
   Details = 'NftScreens.Details',
   Send = 'NftScreens.Send',
-  FullScreen = 'NftScreens.FullScreen',
+  FullScreen = 'NftScreens.FullScreen'
 }
 
 enum NftSendScreens {
   AddressPick = 'NftSendScreens.AddressPick',
   Review = 'NftSendScreens.Review',
   Success = 'NftSendScreens.Success',
-  Fail = 'NftSendScreens.Fail',
+  Fail = 'NftSendScreens.Fail'
 }
 
 enum SecurityPrivacyScreens {
@@ -77,7 +77,7 @@ enum SecurityPrivacyScreens {
   CreatePin = 'SecurityPrivacyScreens.CreatePin',
   ShowRecoveryPhrase = 'SecurityPrivacyScreens.ShowRecoveryPhrase',
   TurnOnBiometrics = 'SecurityPrivacyScreens.TurnOnBiometrics',
-  RecoveryPhrase = 'SecurityPrivacyScreens.RecoveryPhrase',
+  RecoveryPhrase = 'SecurityPrivacyScreens.RecoveryPhrase'
 }
 
 enum Tabs {
@@ -88,7 +88,7 @@ enum Tabs {
   Watchlist = 'Watchlist',
   Tabs = 'Tabs',
   Fab = 'Fab',
-  Bridge = 'Bridge',
+  Bridge = 'Bridge'
 }
 
 enum ModalScreens {
@@ -99,27 +99,27 @@ enum ModalScreens {
   SignOut = 'ModalScreens.SignOut',
   SelectToken = 'ModalScreens.SelectToken',
   EditGasLimit = 'ModalScreens.EditGasLimit',
-  BridgeSelectToken = 'ModalScreens.BridgeSelectToken',
+  BridgeSelectToken = 'ModalScreens.BridgeSelectToken'
 }
 
 enum SendScreens {
   Send = 'SendScreens.Send',
   Review = 'SendScreens.Review',
-  Success = 'SendScreens.Success',
+  Success = 'SendScreens.Success'
 }
 
 enum AddressBookScreens {
   List = 'AddressBookScreens.List',
   Add = 'AddressBookScreens.Add',
   Edit = 'AddressBookScreens.Edit',
-  Details = 'AddressBookScreens.Details',
+  Details = 'AddressBookScreens.Details'
 }
 
 enum BridgeScreens {
   Bridge = 'BridgeScreens.Swap',
   BridgeTransactionStatus = 'BridgeScreens.BridgeTransactionStatus',
   HideWarning = 'BridgeScreens.HideWarning',
-  AddInstructions = 'BridgeScreens.AddInstructions',
+  AddInstructions = 'BridgeScreens.AddInstructions'
 }
 
 const AppNavigation = {
@@ -136,7 +136,7 @@ const AppNavigation = {
   NftSend: NftSendScreens,
   Send: SendScreens,
   AddressBook: AddressBookScreens,
-  Bridge: BridgeScreens,
-};
+  Bridge: BridgeScreens
+}
 
-export default AppNavigation;
+export default AppNavigation

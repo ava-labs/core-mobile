@@ -1,31 +1,31 @@
-import React from 'react';
-import {StyleSheet, View} from 'react-native';
-import AvaText from 'components/AvaText';
-import {Space} from 'components/Space';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import MnemonicAva from 'screens/onboarding/MnemonicAva';
-import AvaButton from 'components/AvaButton';
-import CopySVG from 'components/svg/CopySVG';
-import {copyToClipboard} from 'utils/DeviceTools';
-import {Opacity30} from 'resources/Constants';
+import React from 'react'
+import { StyleSheet, View } from 'react-native'
+import AvaText from 'components/AvaText'
+import { Space } from 'components/Space'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import MnemonicAva from 'screens/onboarding/MnemonicAva'
+import AvaButton from 'components/AvaButton'
+import CopySVG from 'components/svg/CopySVG'
+import { copyToClipboard } from 'utils/DeviceTools'
+import { Opacity30 } from 'resources/Constants'
 
 type Props = {
-  mnemonic: string;
-};
+  mnemonic: string
+}
 
-export default function MnemonicScreen({mnemonic}: Props) {
-  const {theme, isDarkMode} = useApplicationContext();
+export default function MnemonicScreen({ mnemonic }: Props) {
+  const { theme, isDarkMode } = useApplicationContext()
 
   const mnemonics = () => {
-    const mnemonics: Element[] = [];
+    const mnemonics: Element[] = []
     mnemonic?.split(' ').forEach((value, key) => {
-      mnemonics.push(<MnemonicAva.Text key={key} keyNum={key} text={value} />);
-    });
-    return mnemonics;
-  };
+      mnemonics.push(<MnemonicAva.Text key={key} keyNum={key} text={value} />)
+    })
+    return mnemonics
+  }
 
   return (
-    <View style={{flex: 1}}>
+    <View style={{ flex: 1 }}>
       <AvaText.Body1>
         Write down the recovery phrase and store it in a secure location.
       </AvaText.Body1>
@@ -36,27 +36,27 @@ export default function MnemonicScreen({mnemonic}: Props) {
           {
             backgroundColor: isDarkMode
               ? theme.colorBg3 + Opacity30
-              : theme.colorBg1,
-          },
+              : theme.colorBg1
+          }
         ]}>
         {mnemonics()}
       </View>
 
-      <View style={{alignSelf: 'flex-end', marginTop: 16}}>
+      <View style={{ alignSelf: 'flex-end', marginTop: 16 }}>
         <AvaButton.TextWithIcon
           disabled={!mnemonic}
           onPress={() => copyToClipboard(mnemonic)}
           icon={<CopySVG />}
           text={
             <AvaText.ButtonMedium
-              textStyle={{color: theme.alternateBackground}}>
+              textStyle={{ color: theme.alternateBackground }}>
               Copy Phrase
             </AvaText.ButtonMedium>
           }
         />
       </View>
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -70,6 +70,6 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     marginTop: 8,
     maxHeight: 310,
-    alignContent: 'space-between',
-  },
-});
+    alignContent: 'space-between'
+  }
+})

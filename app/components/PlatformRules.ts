@@ -1,2 +1,1 @@
-export class PlatformRules {
-}
+export class PlatformRules {}

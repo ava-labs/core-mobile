@@ -62,3 +62,6 @@ buck-out/
 package-lock.json
 .markdownlint.json
 /.env
+
+# Eslint
+eslint_report.json

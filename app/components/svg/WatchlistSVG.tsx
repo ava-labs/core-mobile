@@ -1,18 +1,18 @@
-import React from 'react';
-import Svg, {Rect} from 'react-native-svg';
-import {useApplicationContext} from 'contexts/ApplicationContext';
+import React from 'react'
+import Svg, { Rect } from 'react-native-svg'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 interface Prop {
-  selected: boolean;
-  size?: number;
+  selected: boolean
+  size?: number
 }
 
-function WatchListSVG({selected, size = 32}: Prop) {
-  const context = useApplicationContext();
+function WatchListSVG({ selected, size = 32 }: Prop) {
+  const context = useApplicationContext()
 
   const svgColor = selected
     ? context.theme.alternateBackground
-    : context.theme.colorIcon4;
+    : context.theme.colorIcon4
   return (
     <Svg width={size} height={size} viewBox="0 0 32 32" fill="none">
       <Rect
@@ -70,7 +70,7 @@ function WatchListSVG({selected, size = 32}: Prop) {
         stroke={svgColor}
       />
     </Svg>
-  );
+  )
 }
 
-export default WatchListSVG;
+export default WatchListSVG

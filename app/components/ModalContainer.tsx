@@ -1,21 +1,24 @@
-import React from 'react';
-import {StyleProp, View, ViewStyle} from 'react-native';
-import {useApplicationContext} from 'contexts/ApplicationContext';
+import React from 'react'
+import { StyleProp, View, ViewStyle } from 'react-native'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 interface ModalProps {
-  containerStyle?: StyleProp<ViewStyle>;
-  children: any;
+  containerStyle?: StyleProp<ViewStyle>
+  children: any
 }
 
-export default function ModalContainer({containerStyle, children}: ModalProps) {
-  const {theme} = useApplicationContext();
+export default function ModalContainer({
+  containerStyle,
+  children
+}: ModalProps) {
+  const { theme } = useApplicationContext()
 
   return (
     <View
       style={{
         height: '100%',
         justifyContent: 'center',
-        backgroundColor: theme.overlay,
+        backgroundColor: theme.overlay
       }}>
       <View
         style={[
@@ -26,12 +29,12 @@ export default function ModalContainer({containerStyle, children}: ModalProps) {
             marginHorizontal: 16,
             marginVertical: 16,
             justifyContent: 'center',
-            bottom: 0,
+            bottom: 0
           },
-          containerStyle,
+          containerStyle
         ]}>
         {children}
       </View>
     </View>
-  );
+  )
 }

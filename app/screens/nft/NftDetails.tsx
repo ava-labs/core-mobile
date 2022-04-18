@@ -1,29 +1,29 @@
-import React, {useMemo} from 'react';
-import {Image, ScrollView, StyleSheet, View} from 'react-native';
-import {RouteProp, useRoute} from '@react-navigation/native';
-import {NFTStackParamList} from 'navigation/wallet/NFTScreenStack';
-import AvaText from 'components/AvaText';
-import AvaButton from 'components/AvaButton';
-import {Space} from 'components/Space';
+import React, { useMemo } from 'react'
+import { Image, ScrollView, StyleSheet, View } from 'react-native'
+import { RouteProp, useRoute } from '@react-navigation/native'
+import { NFTStackParamList } from 'navigation/wallet/NFTScreenStack'
+import AvaText from 'components/AvaText'
+import AvaButton from 'components/AvaButton'
+import { Space } from 'components/Space'
 import {
   NFTItemData,
-  NFTItemExternalDataAttribute,
-} from 'screens/nft/NftCollection';
-import {Row} from 'components/Row';
-import AppNavigation from 'navigation/AppNavigation';
+  NFTItemExternalDataAttribute
+} from 'screens/nft/NftCollection'
+import { Row } from 'components/Row'
+import AppNavigation from 'navigation/AppNavigation'
 
 export type NftDetailsProps = {
-  onPicturePressed: (url: string, urlSmall: string) => void;
-  onSendPressed: (item: NFTItemData) => void;
-};
+  onPicturePressed: (url: string, urlSmall: string) => void
+  onSendPressed: (item: NFTItemData) => void
+}
 
 export default function NftDetails({
   onPicturePressed,
-  onSendPressed,
+  onSendPressed
 }: NftDetailsProps) {
-  const {params} =
-    useRoute<RouteProp<NFTStackParamList, typeof AppNavigation.Nft.Details>>();
-  const item = useMemo(() => params!.nft, [params]) as NFTItemData;
+  const { params } =
+    useRoute<RouteProp<NFTStackParamList, typeof AppNavigation.Nft.Details>>()
+  const item = useMemo(() => params!.nft, [params]) as NFTItemData
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -35,12 +35,12 @@ export default function NftDetails({
         onPress={() =>
           onPicturePressed(
             item.external_data.image,
-            item.external_data.image_256,
+            item.external_data.image_256
           )
         }>
         <Image
           style={styles.imageStyle}
-          source={{uri: item.external_data.image_512}}
+          source={{ uri: item.external_data.image_512 }}
         />
       </AvaButton.Base>
       <Space y={24} />
@@ -50,11 +50,11 @@ export default function NftDetails({
       <Space y={24} />
       <AvaText.Heading2>Description</AvaText.Heading2>
       <Row>
-        <View style={{flex: 1}}>
+        <View style={{ flex: 1 }}>
           <AvaText.Body2>Created by</AvaText.Body2>
           <AvaText.Body2>{item.external_data.owner}</AvaText.Body2>
         </View>
-        <View style={{flex: 1}}>
+        <View style={{ flex: 1 }}>
           <AvaText.Body2>Floor price</AvaText.Body2>
           <AvaText.Body2>{item.token_price_wei}</AvaText.Body2>
         </View>
@@ -64,48 +64,48 @@ export default function NftDetails({
       <Space y={16} />
       {renderProps(item.external_data.attributes)}
     </ScrollView>
-  );
+  )
 }
 
 const renderProps = (attributes?: NFTItemExternalDataAttribute[]) => {
   if (!attributes) {
-    return [];
+    return []
   }
-  const props = [];
+  const props = []
   for (let i = 0; i < attributes.length; i += 2) {
     props.push(
       <>
         <Space key={i + 1} y={4} />
         <Row key={i}>
           {attributes[i] && (
-            <View style={{flex: 1}}>
+            <View style={{ flex: 1 }}>
               <AvaText.Body2>{attributes[i].trait_type}</AvaText.Body2>
               <Space y={4} />
               <AvaText.Heading3>{attributes[i].value}</AvaText.Heading3>
             </View>
           )}
           {attributes[i + 1] && (
-            <View style={{flex: 1}}>
+            <View style={{ flex: 1 }}>
               <AvaText.Body2>{attributes[i + 1].trait_type}</AvaText.Body2>
               <Space y={4} />
               <AvaText.Heading3>{attributes[i + 1].value}</AvaText.Heading3>
             </View>
           )}
         </Row>
-      </>,
-    );
+      </>
+    )
   }
-  return props;
-};
+  return props
+}
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 16
   },
   imageStyle: {
     width: '100%',
     height: 200,
     borderRadius: 8,
-    resizeMode: 'contain',
-  },
-});
+    resizeMode: 'contain'
+  }
+})

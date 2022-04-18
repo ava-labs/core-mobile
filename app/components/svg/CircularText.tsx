@@ -1,22 +1,22 @@
-import React from 'react';
+import React from 'react'
 import Svg, {
   Circle,
   G,
   Text as SvgText,
   TextPath,
-  TSpan,
-} from 'react-native-svg';
+  TSpan
+} from 'react-native-svg'
 
 interface Props {
-  text: string;
-  textColor?: string;
-  circleBackgroundColor?: string;
+  text: string
+  textColor?: string
+  circleBackgroundColor?: string
 }
 
 function CircularText({
   text,
   textColor = 'white',
-  circleBackgroundColor = '#3A3A3C',
+  circleBackgroundColor = '#3A3A3C'
 }: Props) {
   return (
     <Svg height="100" width="100" viewBox="0 0 300 300">
@@ -39,7 +39,7 @@ function CircularText({
         </TextPath>
       </SvgText>
     </Svg>
-  );
+  )
 }
 
-export default CircularText;
+export default CircularText

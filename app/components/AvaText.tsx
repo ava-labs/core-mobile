@@ -1,22 +1,22 @@
-import React, {FC} from 'react';
+import React, { FC } from 'react'
 import {
   Animated,
   StyleProp,
   StyleSheet,
   Text,
   TextProps,
-  TextStyle,
-} from 'react-native';
-import {useApplicationContext} from 'contexts/ApplicationContext';
+  TextStyle
+} from 'react-native'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 type AvaTextProps = {
-  textStyle?: StyleProp<TextStyle>;
-  color?: string;
-  ellipsizeMode?: 'head' | 'middle' | 'tail' | 'clip' | undefined;
-  currency?: boolean;
-  hideTrailingCurrency?: boolean;
-  animated?: boolean;
-} & TextProps;
+  textStyle?: StyleProp<TextStyle>
+  color?: string
+  ellipsizeMode?: 'head' | 'middle' | 'tail' | 'clip' | undefined
+  currency?: boolean
+  hideTrailingCurrency?: boolean
+  animated?: boolean
+} & TextProps
 
 const AvaxTextBase: FC<AvaTextProps> = ({
   animated,
@@ -26,7 +26,8 @@ const AvaxTextBase: FC<AvaTextProps> = ({
   ellipsizeMode,
   ...rest
 }) => {
-  const {selectedCurrency, currencyFormatter} = useApplicationContext().appHook;
+  const { selectedCurrency, currencyFormatter } =
+    useApplicationContext().appHook
 
   if (
     (typeof children === 'string' || typeof children === 'number') &&
@@ -50,7 +51,7 @@ const AvaxTextBase: FC<AvaTextProps> = ({
           hideTrailingCurrency ? '' : selectedCurrency
         }`.trim()}
       </Text>
-    );
+    )
   }
   return animated ? (
     <Animated.Text
@@ -66,45 +67,53 @@ const AvaxTextBase: FC<AvaTextProps> = ({
       ellipsizeMode={ellipsizeMode}>
       {children}
     </Text>
-  );
-};
+  )
+}
 
-const ExtraLargeTitle: FC<AvaTextProps> = ({textStyle, children, ...rest}) => {
-  const theme = useApplicationContext().theme;
+const ExtraLargeTitle: FC<AvaTextProps> = ({
+  textStyle,
+  children,
+  ...rest
+}) => {
+  const theme = useApplicationContext().theme
   return (
     <AvaxTextBase
       {...rest}
-      style={[styles.extraLargeTitle, {color: theme.colorText1}, textStyle]}>
+      style={[styles.extraLargeTitle, { color: theme.colorText1 }, textStyle]}>
       {children}
     </AvaxTextBase>
-  );
-};
+  )
+}
 
-const LargeTitleBold: FC<AvaTextProps> = ({textStyle, children, ...rest}) => {
-  const theme = useApplicationContext().theme;
+const LargeTitleBold: FC<AvaTextProps> = ({ textStyle, children, ...rest }) => {
+  const theme = useApplicationContext().theme
   return (
     <AvaxTextBase
       {...rest}
-      style={[styles.largeTitleBold, {color: theme.colorText1}, textStyle]}>
+      style={[styles.largeTitleBold, { color: theme.colorText1 }, textStyle]}>
       {children}
     </AvaxTextBase>
-  );
-};
+  )
+}
 
 const LargeTitleRegular: FC<AvaTextProps> = ({
   textStyle,
   children,
   ...rest
 }) => {
-  const theme = useApplicationContext().theme;
+  const theme = useApplicationContext().theme
   return (
     <AvaxTextBase
       {...rest}
-      style={[styles.largeTitleRegular, {color: theme.colorText1}, textStyle]}>
+      style={[
+        styles.largeTitleRegular,
+        { color: theme.colorText1 },
+        textStyle
+      ]}>
       {children}
     </AvaxTextBase>
-  );
-};
+  )
+}
 
 const TextHeading1: FC<AvaTextProps> = ({
   textStyle,
@@ -112,27 +121,31 @@ const TextHeading1: FC<AvaTextProps> = ({
   children,
   ...rest
 }) => {
-  const theme = useApplicationContext().theme;
+  const theme = useApplicationContext().theme
   return (
     <AvaxTextBase
       {...rest}
-      style={[styles.heading1, {color: color ?? theme.colorText1}, textStyle]}>
+      style={[
+        styles.heading1,
+        { color: color ?? theme.colorText1 },
+        textStyle
+      ]}>
       {children}
     </AvaxTextBase>
-  );
-};
+  )
+}
 
-const TextHeading2: FC<AvaTextProps> = ({textStyle, children, ...rest}) => {
-  const theme = useApplicationContext().theme;
+const TextHeading2: FC<AvaTextProps> = ({ textStyle, children, ...rest }) => {
+  const theme = useApplicationContext().theme
 
   return (
     <AvaxTextBase
-      style={[styles.heading2, {color: theme.colorText1}, textStyle]}
+      style={[styles.heading2, { color: theme.colorText1 }, textStyle]}
       {...rest}>
       {children}
     </AvaxTextBase>
-  );
-};
+  )
+}
 
 const TextHeading3: FC<AvaTextProps> = ({
   textStyle,
@@ -140,86 +153,101 @@ const TextHeading3: FC<AvaTextProps> = ({
   currency,
   ...rest
 }) => {
-  const theme = useApplicationContext().theme;
+  const theme = useApplicationContext().theme
   return (
     <AvaxTextBase
       {...rest}
       currency={currency}
-      style={[styles.heading3, {color: theme.colorText1}, textStyle]}>
+      style={[styles.heading3, { color: theme.colorText1 }, textStyle]}>
       {children}
     </AvaxTextBase>
-  );
-};
+  )
+}
 
-const TextBody1: FC<AvaTextProps> = ({textStyle, children, color, ...rest}) => {
-  const theme = useApplicationContext().theme;
+const TextBody1: FC<AvaTextProps> = ({
+  textStyle,
+  children,
+  color,
+  ...rest
+}) => {
+  const theme = useApplicationContext().theme
   return (
     <AvaxTextBase
       {...rest}
       style={[
         styles.body1,
-        {color: theme.colorText1},
+        { color: theme.colorText1 },
         textStyle,
-        !!color && {color: color},
+        !!color && { color: color }
       ]}>
       {children}
     </AvaxTextBase>
-  );
-};
+  )
+}
 
-const TextBody2: FC<AvaTextProps> = ({color, textStyle, children, ...rest}) => {
-  const theme = useApplicationContext().theme;
+const TextBody2: FC<AvaTextProps> = ({
+  color,
+  textStyle,
+  children,
+  ...rest
+}) => {
+  const theme = useApplicationContext().theme
   return (
     <AvaxTextBase
       {...rest}
-      style={[styles.body2, {color: color ?? theme.colorText2}, textStyle]}>
+      style={[styles.body2, { color: color ?? theme.colorText2 }, textStyle]}>
       {children}
     </AvaxTextBase>
-  );
-};
+  )
+}
 
-const TextBody3: FC<AvaTextProps> = ({textStyle, color, children, ...rest}) => {
+const TextBody3: FC<AvaTextProps> = ({
+  textStyle,
+  color,
+  children,
+  ...rest
+}) => {
   return (
     <AvaxTextBase
-      style={[styles.body3, textStyle, !!color && {color: color}]}
+      style={[styles.body3, textStyle, !!color && { color: color }]}
       {...rest}>
       {children}
     </AvaxTextBase>
-  );
-};
+  )
+}
 
-const TextBody4: FC<AvaTextProps> = ({textStyle, children, ...rest}) => {
-  const {theme} = useApplicationContext();
+const TextBody4: FC<AvaTextProps> = ({ textStyle, children, ...rest }) => {
+  const { theme } = useApplicationContext()
   return (
     <AvaxTextBase
-      style={[styles.body4, {color: theme.colorText1}, textStyle]}
+      style={[styles.body4, { color: theme.colorText1 }, textStyle]}
       {...rest}>
       {children}
     </AvaxTextBase>
-  );
-};
+  )
+}
 
-const TextLink: FC<AvaTextProps> = ({textStyle, children, ...rest}) => {
-  const {theme} = useApplicationContext();
+const TextLink: FC<AvaTextProps> = ({ textStyle, children, ...rest }) => {
+  const { theme } = useApplicationContext()
   return (
     <AvaxTextBase
-      style={[styles.textLink, {color: theme.colorPrimary1}, textStyle]}
+      style={[styles.textLink, { color: theme.colorPrimary1 }, textStyle]}
       {...rest}>
       {children}
     </AvaxTextBase>
-  );
-};
+  )
+}
 
-const TextTag: FC<AvaTextProps> = ({textStyle, children, ...rest}) => {
-  const theme = useApplicationContext().theme;
+const TextTag: FC<AvaTextProps> = ({ textStyle, children, ...rest }) => {
+  const theme = useApplicationContext().theme
   return (
     <AvaxTextBase
-      style={[styles.textTag, {color: theme.colorText1}, textStyle]}
+      style={[styles.textTag, { color: theme.colorText1 }, textStyle]}
       {...rest}>
       {children}
     </AvaxTextBase>
-  );
-};
+  )
+}
 
 const TextButtonLarge: FC<AvaTextProps> = ({
   textStyle,
@@ -227,19 +255,19 @@ const TextButtonLarge: FC<AvaTextProps> = ({
   children,
   ...rest
 }) => {
-  const theme = useApplicationContext().theme;
+  const theme = useApplicationContext().theme
   return (
     <AvaxTextBase
       style={[
         styles.textButtonLarge,
-        {color: color ?? theme.colorText2},
-        textStyle,
+        { color: color ?? theme.colorText2 },
+        textStyle
       ]}
       {...rest}>
       {children}
     </AvaxTextBase>
-  );
-};
+  )
+}
 
 const TextButtonMedium: FC<AvaTextProps> = ({
   textStyle,
@@ -247,19 +275,19 @@ const TextButtonMedium: FC<AvaTextProps> = ({
   color,
   ...rest
 }) => {
-  const theme = useApplicationContext().theme;
+  const theme = useApplicationContext().theme
   return (
     <AvaxTextBase
       style={[
         styles.textButtonMedium,
-        {color: color ?? theme.colorText2},
-        textStyle,
+        { color: color ?? theme.colorText2 },
+        textStyle
       ]}
       {...rest}>
       {children}
     </AvaxTextBase>
-  );
-};
+  )
+}
 
 const TextButtonSmall: FC<AvaTextProps> = ({
   ellipsizeMode,
@@ -268,21 +296,21 @@ const TextButtonSmall: FC<AvaTextProps> = ({
   children,
   ...rest
 }) => {
-  const theme = useApplicationContext().theme;
+  const theme = useApplicationContext().theme
   return (
     <AvaxTextBase
       ellipsizeMode={ellipsizeMode}
       numberOfLines={ellipsizeMode ? 1 : undefined}
       style={[
         styles.textButtonSmall,
-        {flexShrink: ellipsizeMode ? 1 : 0, color: color ?? theme.colorText2},
-        textStyle,
+        { flexShrink: ellipsizeMode ? 1 : 0, color: color ?? theme.colorText2 },
+        textStyle
       ]}
       {...rest}>
       {children}
     </AvaxTextBase>
-  );
-};
+  )
+}
 
 const TextCaption: FC<AvaTextProps> = ({
   textStyle,
@@ -292,23 +320,23 @@ const TextCaption: FC<AvaTextProps> = ({
 }) => {
   return (
     <AvaxTextBase
-      style={[styles.textCaption, textStyle, !!color && {color: color}]}
+      style={[styles.textCaption, textStyle, !!color && { color: color }]}
       {...rest}>
       {children}
     </AvaxTextBase>
-  );
-};
+  )
+}
 
-const ActivityTotal: FC<AvaTextProps> = ({textStyle, children, ...rest}) => {
-  const theme = useApplicationContext().theme;
+const ActivityTotal: FC<AvaTextProps> = ({ textStyle, children, ...rest }) => {
+  const theme = useApplicationContext().theme
   return (
     <AvaxTextBase
       {...rest}
-      style={[styles.activityTotal, {color: theme.colorText1}, textStyle]}>
+      style={[styles.activityTotal, { color: theme.colorText1 }, textStyle]}>
       {children}
     </AvaxTextBase>
-  );
-};
+  )
+}
 
 const AvaText = {
   ExtraLargeTitle: ExtraLargeTitle,
@@ -327,95 +355,95 @@ const AvaText = {
   ButtonSmall: TextButtonSmall,
   Caption: TextCaption,
   ActivityTotal: ActivityTotal, //this font configuration is not named in design at the time of writing
-  Tag: TextTag,
-};
+  Tag: TextTag
+}
 
 const styles = StyleSheet.create({
   extraLargeTitle: {
     fontFamily: 'Inter-ExtraBold',
     fontSize: 64,
-    lineHeight: 78,
+    lineHeight: 78
   },
   largeTitleBold: {
     fontFamily: 'Inter-Bold',
     fontSize: 36,
-    lineHeight: 44,
+    lineHeight: 44
   },
   largeTitleRegular: {
     fontFamily: 'Inter-Regular',
     fontSize: 36,
-    lineHeight: 44,
+    lineHeight: 44
   },
   heading1: {
     fontFamily: 'Inter-Bold',
     fontSize: 24,
-    lineHeight: 29,
+    lineHeight: 29
   },
   heading2: {
     fontFamily: 'Inter-Bold',
     fontSize: 18,
-    lineHeight: 22,
+    lineHeight: 22
   },
   heading3: {
     fontFamily: 'Inter-SemiBold',
     fontSize: 16,
-    lineHeight: 24,
+    lineHeight: 24
   },
   body1: {
     fontFamily: 'Inter-Regular',
     fontSize: 16,
-    lineHeight: 24,
+    lineHeight: 24
   },
   body2: {
     fontFamily: 'Inter-Regular',
     fontSize: 14,
-    lineHeight: 17,
+    lineHeight: 17
   },
   body3: {
     fontFamily: 'Inter-Regular',
     fontSize: 12,
-    lineHeight: 15,
+    lineHeight: 15
   },
   body4: {
     fontFamily: 'Inter-Regular',
     fontSize: 16,
-    lineHeight: 19,
+    lineHeight: 19
   },
   textLink: {
     fontFamily: 'Inter-SemiBold',
     fontSize: 14,
-    lineHeight: 17,
+    lineHeight: 17
   },
   textTag: {
     fontFamily: 'Inter-Bold',
     fontSize: 16,
-    lineHeight: 24,
+    lineHeight: 24
   },
   textButtonLarge: {
     fontFamily: 'Inter-SemiBold',
     fontSize: 18,
-    lineHeight: 22,
+    lineHeight: 22
   },
   textButtonMedium: {
     fontFamily: 'Inter-SemiBold',
     fontSize: 14,
-    lineHeight: 24,
+    lineHeight: 24
   },
   textButtonSmall: {
     fontFamily: 'Inter-SemiBold',
     fontSize: 12,
-    lineHeight: 16,
+    lineHeight: 16
   },
   activityTotal: {
     fontFamily: 'Inter-SemiBold',
     fontSize: 14,
-    lineHeight: 17,
+    lineHeight: 17
   },
   textCaption: {
     fontFamily: 'Inter-Regular',
     fontSize: 12,
-    lineHeight: 15,
-  },
-});
+    lineHeight: 15
+  }
+})
 
-export default AvaText;
+export default AvaText

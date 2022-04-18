@@ -1,16 +1,16 @@
-import React, {FC, ReactNode} from 'react';
-import {Pressable, StyleProp, StyleSheet, View, ViewStyle} from 'react-native';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import AvaText from './AvaText';
-import {Space} from 'components/Space';
-import {Opacity12, Opacity15} from 'resources/Constants';
+import React, { FC, ReactNode } from 'react'
+import { Pressable, StyleProp, StyleSheet, View, ViewStyle } from 'react-native'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { Space } from 'components/Space'
+import { Opacity12, Opacity15 } from 'resources/Constants'
+import AvaText from './AvaText'
 
 interface BaseProps {
-  onPress?: () => void;
-  disabled?: boolean;
-  style?: StyleProp<ViewStyle>;
-  rippleBorderless?: boolean;
-  textColor?: string;
+  onPress?: () => void
+  disabled?: boolean
+  style?: StyleProp<ViewStyle>
+  rippleBorderless?: boolean
+  textColor?: string
 }
 
 const AvaButtonBase: FC<BaseProps> = ({
@@ -18,24 +18,29 @@ const AvaButtonBase: FC<BaseProps> = ({
   onPress,
   style,
   disabled,
-  children,
+  children
 }) => {
-  const theme = useApplicationContext().theme;
+  const theme = useApplicationContext().theme
   return (
     <Pressable
       android_ripple={{
         color: theme.buttonRipple,
-        borderless: rippleBorderless ?? false,
+        borderless: rippleBorderless ?? false
       }}
       style={style}
       onPress={onPress}
       disabled={disabled}>
       {children}
     </Pressable>
-  );
-};
+  )
+}
 
-const AvaButtonIcon: FC<BaseProps> = ({style, disabled, onPress, children}) => {
+const AvaButtonIcon: FC<BaseProps> = ({
+  style,
+  disabled,
+  onPress,
+  children
+}) => {
   return (
     <AvaButtonBase
       disabled={disabled}
@@ -44,25 +49,25 @@ const AvaButtonIcon: FC<BaseProps> = ({style, disabled, onPress, children}) => {
       style={[styles.buttonIcon, style]}>
       {children}
     </AvaButtonBase>
-  );
-};
+  )
+}
 
 const TextWithIcon: FC<
-  BaseProps & {icon: ReactNode; text: ReactNode; gap?: number}
-> = ({style, disabled, onPress, icon, text, gap = 8}) => {
+  BaseProps & { icon: ReactNode; text: ReactNode; gap?: number }
+> = ({ style, disabled, onPress, icon, text, gap = 8 }) => {
   return (
     <AvaButton.Base disabled={disabled} onPress={onPress} style={[style]}>
-      <View style={{flexDirection: 'row', alignItems: 'center', margin: 8}}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', margin: 8 }}>
         {icon}
         <Space x={gap} />
         {text}
       </View>
     </AvaButton.Base>
-  );
-};
+  )
+}
 
-const BtnPrimary: FC<BaseProps> = ({onPress, disabled, children, style}) => {
-  const theme = useApplicationContext().theme;
+const BtnPrimary: FC<BaseProps> = ({ onPress, disabled, children, style }) => {
+  const theme = useApplicationContext().theme
   return (
     <AvaButtonBase
       disabled={disabled}
@@ -73,17 +78,22 @@ const BtnPrimary: FC<BaseProps> = ({onPress, disabled, children, style}) => {
           borderRadius: 25,
           backgroundColor: disabled
             ? theme.alternateBackground + Opacity12
-            : theme.alternateBackground,
+            : theme.alternateBackground
         },
-        style,
+        style
       ]}>
       {children}
     </AvaButtonBase>
-  );
-};
+  )
+}
 
-const BtnSecondary: FC<BaseProps> = ({onPress, disabled, children, style}) => {
-  const theme = useApplicationContext().theme;
+const BtnSecondary: FC<BaseProps> = ({
+  onPress,
+  disabled,
+  children,
+  style
+}) => {
+  const theme = useApplicationContext().theme
   return (
     <AvaButtonBase
       disabled={disabled}
@@ -93,17 +103,17 @@ const BtnSecondary: FC<BaseProps> = ({onPress, disabled, children, style}) => {
           alignItems: 'center',
           backgroundColor: theme.alternateBackground + Opacity15,
           justifyContent: 'center',
-          borderRadius: 25,
+          borderRadius: 25
         },
-        style,
+        style
       ]}>
       {children}
     </AvaButtonBase>
-  );
-};
+  )
+}
 
-const BtnText: FC<BaseProps> = ({onPress, disabled, children, style}) => {
-  const theme = useApplicationContext().theme;
+const BtnText: FC<BaseProps> = ({ onPress, disabled, children, style }) => {
+  const theme = useApplicationContext().theme
   return (
     <AvaButtonBase
       disabled={disabled}
@@ -112,23 +122,23 @@ const BtnText: FC<BaseProps> = ({onPress, disabled, children, style}) => {
         {
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: theme.transparent,
+          backgroundColor: theme.transparent
         },
-        style,
+        style
       ]}>
       {children}
     </AvaButtonBase>
-  );
-};
+  )
+}
 
 const BtnPrimaryLarge: FC<BaseProps> = ({
   onPress,
   disabled,
   children,
   style,
-  textColor,
+  textColor
 }) => {
-  const theme = useApplicationContext().theme;
+  const theme = useApplicationContext().theme
   return (
     <BtnPrimary
       disabled={disabled}
@@ -136,36 +146,36 @@ const BtnPrimaryLarge: FC<BaseProps> = ({
       style={[styles.btnPrimaryLarge, style]}>
       <AvaText.ButtonLarge
         textStyle={{
-          color: disabled ? theme.colorDisabled : textColor ?? theme.colorBg2,
+          color: disabled ? theme.colorDisabled : textColor ?? theme.colorBg2
         }}>
         {children}
       </AvaText.ButtonLarge>
     </BtnPrimary>
-  );
-};
+  )
+}
 
-const BtnPrimaryMedium: FC<BaseProps> = ({onPress, disabled, children}) => {
-  const theme = useApplicationContext().theme;
+const BtnPrimaryMedium: FC<BaseProps> = ({ onPress, disabled, children }) => {
+  const theme = useApplicationContext().theme
   return (
     <BtnPrimary
       disabled={disabled}
       onPress={onPress}
       style={styles.btnPrimaryMedium}>
       <AvaText.ButtonMedium
-        textStyle={{color: disabled ? theme.colorDisabled : theme.colorBg2}}>
+        textStyle={{ color: disabled ? theme.colorDisabled : theme.colorBg2 }}>
         {children}
       </AvaText.ButtonMedium>
     </BtnPrimary>
-  );
-};
+  )
+}
 
 const BtnSecondaryLarge: FC<BaseProps> = ({
   onPress,
   disabled,
   children,
-  style,
+  style
 }) => {
-  const theme = useApplicationContext().theme;
+  const theme = useApplicationContext().theme
   return (
     <BtnSecondary
       onPress={onPress}
@@ -173,21 +183,21 @@ const BtnSecondaryLarge: FC<BaseProps> = ({
       style={[styles.btnSecondaryLarge, style]}>
       <AvaText.ButtonLarge
         textStyle={{
-          color: disabled ? theme.colorDisabled : theme.colorText1,
+          color: disabled ? theme.colorDisabled : theme.colorText1
         }}>
         {children}
       </AvaText.ButtonLarge>
     </BtnSecondary>
-  );
-};
+  )
+}
 
 const BtnSecondaryMedium: FC<BaseProps> = ({
   onPress,
   disabled,
   children,
-  style,
+  style
 }) => {
-  const theme = useApplicationContext().theme;
+  const theme = useApplicationContext().theme
   return (
     <BtnSecondary
       onPress={onPress}
@@ -195,16 +205,21 @@ const BtnSecondaryMedium: FC<BaseProps> = ({
       style={[styles.btnSecondaryMedium, style]}>
       <AvaText.ButtonMedium
         textStyle={{
-          color: disabled ? theme.colorDisabled : theme.colorText1,
+          color: disabled ? theme.colorDisabled : theme.colorText1
         }}>
         {children}
       </AvaText.ButtonMedium>
     </BtnSecondary>
-  );
-};
+  )
+}
 
-const BtnTextLarge: FC<BaseProps> = ({onPress, disabled, children, style}) => {
-  const theme = useApplicationContext().theme;
+const BtnTextLarge: FC<BaseProps> = ({
+  onPress,
+  disabled,
+  children,
+  style
+}) => {
+  const theme = useApplicationContext().theme
   return (
     <BtnText
       onPress={onPress}
@@ -212,21 +227,21 @@ const BtnTextLarge: FC<BaseProps> = ({onPress, disabled, children, style}) => {
       disabled={disabled}>
       <AvaText.ButtonLarge
         textStyle={{
-          color: disabled ? theme.colorDisabled : theme.colorPrimary1,
+          color: disabled ? theme.colorDisabled : theme.colorPrimary1
         }}>
         {children}
       </AvaText.ButtonLarge>
     </BtnText>
-  );
-};
+  )
+}
 
 const BtnTextMedium: FC<BaseProps> = ({
   onPress,
   disabled,
   textColor,
-  children,
+  children
 }) => {
-  const theme = useApplicationContext().theme;
+  const theme = useApplicationContext().theme
   return (
     <BtnText onPress={onPress} style={styles.btnTextMedium} disabled={disabled}>
       <AvaText.ButtonSmall
@@ -235,13 +250,13 @@ const BtnTextMedium: FC<BaseProps> = ({
             ? theme.colorDisabled
             : textColor
             ? textColor
-            : theme.colorPrimary1,
+            : theme.colorPrimary1
         }}>
         {children}
       </AvaText.ButtonSmall>
     </BtnText>
-  );
-};
+  )
+}
 
 const AvaButton = {
   PrimaryLarge: BtnPrimaryLarge,
@@ -252,49 +267,49 @@ const AvaButton = {
   TextMedium: BtnTextMedium,
   Base: AvaButtonBase,
   Icon: AvaButtonIcon,
-  TextWithIcon: TextWithIcon,
-};
+  TextWithIcon: TextWithIcon
+}
 
 const styles = StyleSheet.create({
   buttonIcon: {
     height: 48,
     justifyContent: 'center',
     padding: 8,
-    borderRadius: 8,
+    borderRadius: 8
   },
   btnPrimaryLarge: {
     paddingHorizontal: 24,
     paddingVertical: 12,
     width: 'auto',
     height: 48,
-    justifyContent: 'center',
+    justifyContent: 'center'
   },
   btnPrimaryMedium: {
     paddingHorizontal: 32,
     paddingVertical: 8,
-    height: 40,
+    height: 40
   },
   btnSecondaryMedium: {
     paddingHorizontal: 32,
     paddingVertical: 8,
-    height: 40,
+    height: 40
   },
   btnSecondaryLarge: {
     paddingVertical: 12,
     paddingHorizontal: 24,
     width: 'auto',
-    height: 48,
+    height: 48
   },
   btnTextLarge: {
     paddingHorizontal: 16,
     paddingVertical: 12,
-    height: 46,
+    height: 46
   },
   btnTextMedium: {
     paddingHorizontal: 16,
     paddingVertical: 12,
-    height: 40,
-  },
-});
+    height: 40
+  }
+})
 
-export default AvaButton;
+export default AvaButton

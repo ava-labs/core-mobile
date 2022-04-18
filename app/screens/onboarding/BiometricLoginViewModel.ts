@@ -1,26 +1,26 @@
-import {useEffect, useState} from 'react';
-import BiometricsSDK from 'utils/BiometricsSDK';
-import {BIOMETRY_TYPE, UserCredentials} from 'react-native-keychain';
+import { useEffect, useState } from 'react'
+import BiometricsSDK from 'utils/BiometricsSDK'
+import { BIOMETRY_TYPE, UserCredentials } from 'react-native-keychain'
 
 interface BiometricLoginTypes {
-  biometryType: string;
-  storeMnemonicWithBiometric: () => Promise<boolean | UserCredentials>;
-  fingerprintIcon: any;
+  biometryType: string
+  storeMnemonicWithBiometric: () => Promise<boolean | UserCredentials>
+  fingerprintIcon: any
 }
 
 export function useBiometricLogin(
   m: string,
-  isDarkMode: boolean,
+  isDarkMode: boolean
 ): BiometricLoginTypes {
-  const [mnemonic] = useState(m);
-  const [biometryType, setBiometryType] = useState<string>('');
-  const [fingerprintIcon, setFingerprintIcon] = useState<any>();
+  const [mnemonic] = useState(m)
+  const [biometryType, setBiometryType] = useState<string>('')
+  const [fingerprintIcon, setFingerprintIcon] = useState<any>()
 
   useEffect(() => {
     BiometricsSDK.getBiometryType().then(value => {
-      setBiometryType(value?.toString() ?? '');
-    });
-  }, []);
+      setBiometryType(value?.toString() ?? '')
+    })
+  }, [])
 
   useEffect(() => {
     switch (biometryType) {
@@ -29,31 +29,31 @@ export function useBiometricLogin(
         setFingerprintIcon(
           isDarkMode
             ? require('assets/icons/fingerprint_dark.png')
-            : require('assets/icons/fingerprint_light.png'),
-        );
-        break;
+            : require('assets/icons/fingerprint_light.png')
+        )
+        break
       case BIOMETRY_TYPE.FACE:
       case BIOMETRY_TYPE.FACE_ID:
         setFingerprintIcon(
           isDarkMode
             ? require('assets/icons/face_id_dark.png')
-            : require('assets/icons/face_id_light.png'),
-        );
-        break;
+            : require('assets/icons/face_id_light.png')
+        )
+        break
       case BIOMETRY_TYPE.IRIS:
         setFingerprintIcon(
           isDarkMode
             ? require('assets/icons/face_id_dark.png')
-            : require('assets/icons/face_id_light.png'),
-        );
+            : require('assets/icons/face_id_light.png')
+        )
         //todo add correct icon
-        break;
+        break
     }
-  }, [biometryType]);
+  }, [biometryType])
 
   const storeMnemonicWithBiometric = () => {
-    return BiometricsSDK.storeWalletWithBiometry(mnemonic);
-  };
+    return BiometricsSDK.storeWalletWithBiometry(mnemonic)
+  }
 
-  return {biometryType, storeMnemonicWithBiometric, fingerprintIcon};
+  return { biometryType, storeMnemonicWithBiometric, fingerprintIcon }
 }

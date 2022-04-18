@@ -1,16 +1,16 @@
-import React from 'react';
-import {Alert} from 'react-native';
-import {AntWithBalance, useSendAnt} from '@avalabs/wallet-react-components';
-import SendForm from 'screens/send/forFutureReference/SendForm';
-import {useSelectedTokenContext} from 'contexts/SelectedTokenContext';
-import {asyncScheduler, defer, from, scheduled} from 'rxjs';
+import React from 'react'
+import { Alert } from 'react-native'
+import { AntWithBalance, useSendAnt } from '@avalabs/wallet-react-components'
+import SendForm from 'screens/send/forFutureReference/SendForm'
+import { useSelectedTokenContext } from 'contexts/SelectedTokenContext'
+import { asyncScheduler, defer, from, scheduled } from 'rxjs'
 
 /**
  * LEFT FOR FUTURE REFERENCE WHEN WE AGAIN IMPLEMENT ANT TOKENS
  */
 
 export default function SendANT(): JSX.Element {
-  const {selectedToken} = useSelectedTokenContext();
+  const { selectedToken } = useSelectedTokenContext()
   const {
     sendFee,
     address,
@@ -19,41 +19,42 @@ export default function SendANT(): JSX.Element {
     error,
     submit,
     setAddress,
-    setAmount,
-  } = useSendAnt(selectedToken as AntWithBalance);
+    setAmount
+  } = useSendAnt(selectedToken as AntWithBalance)
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async function handleOnConfirm(
     onSuccess: () => void,
-    onError: (error: any) => void,
+    onError: (error: any) => void
   ) {
     if (!address) {
-      Alert.alert('Error', 'Address not set ');
-      return;
+      Alert.alert('Error', 'Address not set ')
+      return
     }
     if (!amount || amount.isZero()) {
-      Alert.alert('Error', 'Amount not set ');
-      return;
+      Alert.alert('Error', 'Amount not set ')
+      return
     }
 
     scheduled(
       defer(() => from(submit())),
-      asyncScheduler,
+      asyncScheduler
     ).subscribe({
       next: (value: any) => {
         if (value === undefined) {
-          Alert.alert('Error', 'Undefined error');
+          Alert.alert('Error', 'Undefined error')
         } else {
-          console.log(value);
+          console.log(value)
           // navigate(AppNavigation.SendToken.DoneScreen, {
           //   transactionId: value.txId,
           // });
-          onSuccess();
+          onSuccess()
         }
       },
       error: (err: any) => {
-        onError(err);
-      },
-    });
+        onError(err)
+      }
+    })
   }
 
   return (
@@ -79,5 +80,5 @@ export default function SendANT(): JSX.Element {
         // });
       }}
     />
-  );
+  )
 }

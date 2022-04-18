@@ -1,3 +1,3 @@
 export type DotView = {
-  filled: boolean;
-};
+  filled: boolean
+}

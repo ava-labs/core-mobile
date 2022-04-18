@@ -1,47 +1,49 @@
-import React, {FC, ReactNode} from 'react';
-import {Image, View} from 'react-native';
-import AvaText from './AvaText';
-import {Space} from 'components/Space';
-import AvaButton from 'components/AvaButton';
+import React, { FC, ReactNode } from 'react'
+import { Image, View } from 'react-native'
+import { Space } from 'components/Space'
+import AvaButton from 'components/AvaButton'
+import AvaText from './AvaText'
 
 interface BaseProps {
-  image?: string | ReactNode;
-  title?: string | ReactNode;
-  message?: string | ReactNode;
-  additionalComponent?: ReactNode;
+  image?: string | ReactNode
+  title?: string | ReactNode
+  message?: string | ReactNode
+  additionalComponent?: ReactNode
 }
 
 const ZeroStateBase: FC<BaseProps> = ({
   image,
   title,
   message,
-  additionalComponent,
+  additionalComponent
 }) => {
   function getImage() {
     if (!image) {
-      return null;
+      return null
     }
 
     if (typeof image === 'string') {
-      return <Image source={{uri: image}} />;
+      return <Image source={{ uri: image }} />
     }
-    return <View>{image}</View>;
+    return <View>{image}</View>
   }
 
   function getTitle() {
     if (typeof title === 'string') {
       return (
-        <AvaText.Heading2 textStyle={{marginTop: 16}}>{title}</AvaText.Heading2>
-      );
+        <AvaText.Heading2 textStyle={{ marginTop: 16 }}>
+          {title}
+        </AvaText.Heading2>
+      )
     }
-    return <View style={{marginTop: 16}}>{title}</View>;
+    return <View style={{ marginTop: 16 }}>{title}</View>
   }
 
   function getMessage() {
     if (typeof message === 'string') {
-      return <AvaText.Body2>{message}</AvaText.Body2>;
+      return <AvaText.Body2>{message}</AvaText.Body2>
     }
-    return <View>{message}</View>;
+    return <View>{message}</View>
   }
 
   return (
@@ -49,7 +51,7 @@ const ZeroStateBase: FC<BaseProps> = ({
       style={{
         justifyContent: 'center',
         alignItems: 'center',
-        flex: 1,
+        flex: 1
       }}>
       {getImage() && (
         <>
@@ -68,38 +70,38 @@ const ZeroStateBase: FC<BaseProps> = ({
         </>
       )}
     </View>
-  );
-};
+  )
+}
 
 type ZeroStateSendErrorProps = Pick<
   BaseProps,
   'additionalComponent' | 'message'
->;
+>
 
 function ZeroStateSendError({
   additionalComponent,
-  message,
+  message
 }: ZeroStateSendErrorProps) {
-  const title = 'Oops, something went wrong';
+  const title = 'Oops, something went wrong'
   return (
     <ZeroStateBase
       title={title}
       message={message ?? 'An unknown error as occurred.'}
       additionalComponent={additionalComponent}
     />
-  );
+  )
 }
 
 function ZeroStatePortfolio() {
-  const title = 'Your wallet is empty';
-  const message = 'Add tokens using the receive button above';
+  const title = 'Your wallet is empty'
+  const message = 'Add tokens using the receive button above'
 
-  return <ZeroStateBase title={title} message={message} />;
+  return <ZeroStateBase title={title} message={message} />
 }
 
 function ZeroStateCollectibles() {
-  const title = 'No Collectibles';
-  const message = 'You don’t have any collectibles yet.';
+  const title = 'No Collectibles'
+  const message = 'You don’t have any collectibles yet.'
 
   return (
     <ZeroStateBase
@@ -109,23 +111,23 @@ function ZeroStateCollectibles() {
         <AvaButton.PrimaryMedium>Explore NFTs</AvaButton.PrimaryMedium>
       }
     />
-  );
+  )
 }
 
 function ZeroStateNoRecentAccounts() {
-  const title = 'No recent recipients';
-  const message = 'Enter the address in the field above.';
+  const title = 'No recent recipients'
+  const message = 'Enter the address in the field above.'
 
-  return <ZeroStateBase title={title} message={message} />;
+  return <ZeroStateBase title={title} message={message} />
 }
 
 function ZeroStateEmptyAddressBook({
-  onGoToAddressBook,
+  onGoToAddressBook
 }: {
-  onGoToAddressBook: () => void;
+  onGoToAddressBook: () => void
 }) {
-  const title = 'No addresses';
-  const message = 'You can add addresses in Address Book';
+  const title = 'No addresses'
+  const message = 'You can add addresses in Address Book'
 
   return (
     <ZeroStateBase
@@ -137,18 +139,18 @@ function ZeroStateEmptyAddressBook({
         </AvaButton.PrimaryMedium>
       }
     />
-  );
+  )
 }
 
-type NoResultsProps = Pick<BaseProps, 'message'>;
+type NoResultsProps = Pick<BaseProps, 'message'>
 
 // removed "man with lantern" as per ux request
-function ZeroStateNoResults({message}: NoResultsProps) {
-  return <ZeroStateBase message={message ?? 'No results found'} />;
+function ZeroStateNoResults({ message }: NoResultsProps) {
+  return <ZeroStateBase message={message ?? 'No results found'} />
 }
 
 function ZeroStateComingSoon() {
-  return <ZeroStateBase title={'Coming soon!'} />;
+  return <ZeroStateBase title={'Coming soon!'} />
 }
 
 const ZeroState = {
@@ -158,7 +160,7 @@ const ZeroState = {
   NoRecentAccounts: ZeroStateNoRecentAccounts,
   EmptyAddressBook: ZeroStateEmptyAddressBook,
   ComingSoon: ZeroStateComingSoon,
-  SendError: ZeroStateSendError,
-};
+  SendError: ZeroStateSendError
+}
 
-export default ZeroState;
+export default ZeroState

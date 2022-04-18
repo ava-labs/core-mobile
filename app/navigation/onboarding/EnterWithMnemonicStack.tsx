@@ -1,53 +1,53 @@
-import AppNavigation from 'navigation/AppNavigation';
+import AppNavigation from 'navigation/AppNavigation'
 import React, {
   createContext,
   Dispatch,
   useCallback,
   useContext,
   useEffect,
-  useState,
-} from 'react';
-import {useNavigation} from '@react-navigation/native';
-import CreatePIN from 'screens/onboarding/CreatePIN';
-import BiometricLogin from 'screens/onboarding/BiometricLogin';
-import HdWalletLogin from 'screens/login/HdWalletLogin';
+  useState
+} from 'react'
+import { useNavigation } from '@react-navigation/native'
+import CreatePIN from 'screens/onboarding/CreatePIN'
+import BiometricLogin from 'screens/onboarding/BiometricLogin'
+import HdWalletLogin from 'screens/login/HdWalletLogin'
 import {
   createStackNavigator,
-  StackNavigationProp,
-} from '@react-navigation/stack';
-import BiometricsSDK from 'utils/BiometricsSDK';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import {MainHeaderOptions} from 'navigation/NavUtils';
-import {usePosthogContext} from 'contexts/PosthogContext';
-import TermsNConditionsModal from 'components/TermsNConditionsModal';
+  StackNavigationProp
+} from '@react-navigation/stack'
+import BiometricsSDK from 'utils/BiometricsSDK'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { MainHeaderOptions } from 'navigation/NavUtils'
+import { usePosthogContext } from 'contexts/PosthogContext'
+import TermsNConditionsModal from 'components/TermsNConditionsModal'
 
 type EnterWithMnemonicStackParamList = {
-  [AppNavigation.LoginWithMnemonic.LoginWithMnemonic]: undefined;
-  [AppNavigation.LoginWithMnemonic.CreatePin]: undefined;
-  [AppNavigation.LoginWithMnemonic.BiometricLogin]: undefined;
-  [AppNavigation.LoginWithMnemonic.TermsNConditions]: undefined;
-};
+  [AppNavigation.LoginWithMnemonic.LoginWithMnemonic]: undefined
+  [AppNavigation.LoginWithMnemonic.CreatePin]: undefined
+  [AppNavigation.LoginWithMnemonic.BiometricLogin]: undefined
+  [AppNavigation.LoginWithMnemonic.TermsNConditions]: undefined
+}
 const EnterWithMnemonicS =
-  createStackNavigator<EnterWithMnemonicStackParamList>();
+  createStackNavigator<EnterWithMnemonicStackParamList>()
 
 const EnterWithMnemonicContext = createContext<{
-  mnemonic: string;
-  setMnemonic: Dispatch<string>;
-}>({} as any);
+  mnemonic: string
+  setMnemonic: Dispatch<string>
+}>({} as any)
 
 const EnterWithMnemonicStack = () => {
-  const [mnemonic, setMnemonic] = useState('');
+  const [mnemonic, setMnemonic] = useState('')
 
   return (
-    <EnterWithMnemonicContext.Provider value={{setMnemonic, mnemonic}}>
-      <EnterWithMnemonicS.Navigator screenOptions={{headerShown: false}}>
+    <EnterWithMnemonicContext.Provider value={{ setMnemonic, mnemonic }}>
+      <EnterWithMnemonicS.Navigator screenOptions={{ headerShown: false }}>
         <EnterWithMnemonicS.Screen
           options={MainHeaderOptions('')}
           name={AppNavigation.LoginWithMnemonic.LoginWithMnemonic}
           component={LoginWithMnemonicScreen}
         />
         <EnterWithMnemonicS.Screen
-          options={{headerShown: true, headerTitle: ''}}
+          options={{ headerShown: true, headerTitle: '' }}
           name={AppNavigation.LoginWithMnemonic.CreatePin}
           component={CreatePinScreen}
         />
@@ -56,102 +56,100 @@ const EnterWithMnemonicStack = () => {
           component={BiometricLoginScreen}
         />
         <EnterWithMnemonicS.Screen
-          options={{presentation: 'transparentModal'}}
+          options={{ presentation: 'transparentModal' }}
           name={AppNavigation.LoginWithMnemonic.TermsNConditions}
           component={TermsNConditionsModalScreen}
         />
       </EnterWithMnemonicS.Navigator>
     </EnterWithMnemonicContext.Provider>
-  );
-};
+  )
+}
 
 const LoginWithMnemonicScreen = () => {
-  const enterWithMnemonicContext = useContext(EnterWithMnemonicContext);
-  const {navigate, goBack, addListener, removeListener} =
-    useNavigation<StackNavigationProp<EnterWithMnemonicStackParamList>>();
-  const {capture} = usePosthogContext();
+  const enterWithMnemonicContext = useContext(EnterWithMnemonicContext)
+  const { navigate, goBack, addListener, removeListener } =
+    useNavigation<StackNavigationProp<EnterWithMnemonicStackParamList>>()
+  const { capture } = usePosthogContext()
 
-  useEffect(captureBackEventFx, []);
+  useEffect(captureBackEventFx, [])
 
   function captureBackEventFx() {
-    const callback = (e: {data: {action: {type: string}}}) => {
+    const callback = (e: { data: { action: { type: string } } }) => {
       if (e.data.action.type === 'GO_BACK') {
-        capture('OnboardingCancelled').catch(() => undefined);
+        capture('OnboardingCancelled').catch(() => undefined)
       }
-    };
-    addListener('beforeRemove', callback);
-    return () => removeListener('beforeRemove', callback);
+    }
+    addListener('beforeRemove', callback)
+    return () => removeListener('beforeRemove', callback)
   }
 
   const onEnterWallet = useCallback(m => {
     BiometricsSDK.clearWalletKey().then(() => {
-      enterWithMnemonicContext.setMnemonic(m);
-      navigate(AppNavigation.LoginWithMnemonic.CreatePin);
-    });
-  }, []);
+      enterWithMnemonicContext.setMnemonic(m)
+      navigate(AppNavigation.LoginWithMnemonic.CreatePin)
+    })
+  }, [])
 
-  return (
-    <HdWalletLogin onEnterWallet={onEnterWallet} onBack={() => goBack()} />
-  );
-};
+  return <HdWalletLogin onEnterWallet={onEnterWallet} onBack={() => goBack()} />
+}
 
 const CreatePinScreen = () => {
-  const enterWithMnemonicContext = useContext(EnterWithMnemonicContext);
-  const walletSetupHook = useApplicationContext().walletSetupHook;
-  const {navigate} =
-    useNavigation<StackNavigationProp<EnterWithMnemonicStackParamList>>();
-  const {capture} = usePosthogContext();
+  const enterWithMnemonicContext = useContext(EnterWithMnemonicContext)
+  const walletSetupHook = useApplicationContext().walletSetupHook
+  const { navigate } =
+    useNavigation<StackNavigationProp<EnterWithMnemonicStackParamList>>()
+  const { capture } = usePosthogContext()
 
   const onPinSet = (pin: string): void => {
-    capture('OnboardingPasswordSet').catch(() => undefined);
+    capture('OnboardingPasswordSet').catch(() => undefined)
     if (enterWithMnemonicContext.mnemonic) {
       walletSetupHook
         .onPinCreated(enterWithMnemonicContext.mnemonic, pin, false)
         .then(value => {
           switch (value) {
             case 'useBiometry':
-              navigate(AppNavigation.LoginWithMnemonic.BiometricLogin);
-              break;
+              navigate(AppNavigation.LoginWithMnemonic.BiometricLogin)
+              break
             case 'enterWallet':
-              navigate(AppNavigation.LoginWithMnemonic.TermsNConditions);
-              break;
+              navigate(AppNavigation.LoginWithMnemonic.TermsNConditions)
+              break
           }
-        });
+        })
     }
-  };
-  return <CreatePIN onPinSet={onPinSet} />;
-};
+  }
+  return <CreatePIN onPinSet={onPinSet} />
+}
 
 const BiometricLoginScreen = () => {
-  const enterWithMnemonicContext = useContext(EnterWithMnemonicContext);
-  const walletSetupHook = useApplicationContext().walletSetupHook;
+  const enterWithMnemonicContext = useContext(EnterWithMnemonicContext)
+  const walletSetupHook = useApplicationContext().walletSetupHook
 
   return (
     <BiometricLogin
       mnemonic={enterWithMnemonicContext.mnemonic}
       onBiometrySet={() => {
-        walletSetupHook.enterWallet(enterWithMnemonicContext.mnemonic);
+        walletSetupHook.enterWallet(enterWithMnemonicContext.mnemonic)
       }}
       onSkip={() =>
         walletSetupHook.enterWallet(enterWithMnemonicContext.mnemonic)
       }
     />
-  );
-};
+  )
+}
 
 const TermsNConditionsModalScreen = () => {
-  const enterWithMnemonicContext = useContext(EnterWithMnemonicContext);
-  const walletSetupHook = useApplicationContext().walletSetupHook;
-  const {resetNavToRoot} = useApplicationContext().appNavHook;
+  const enterWithMnemonicContext = useContext(EnterWithMnemonicContext)
+  const walletSetupHook = useApplicationContext().walletSetupHook
+  const { resetNavToRoot } = useApplicationContext().appNavHook
 
   return (
     <TermsNConditionsModal
       onNext={() => {
-        walletSetupHook.enterWallet(enterWithMnemonicContext.mnemonic);
+        walletSetupHook.enterWallet(enterWithMnemonicContext.mnemonic)
       }}
       onReject={() => resetNavToRoot()}
     />
-  );
-};
+  )
+}
 
-export default EnterWithMnemonicStack;
+export default EnterWithMnemonicStack

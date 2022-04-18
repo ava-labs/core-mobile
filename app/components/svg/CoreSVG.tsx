@@ -1,11 +1,11 @@
-import React from 'react';
-import Svg, {Path} from 'react-native-svg';
+import React from 'react'
+import Svg, { Path } from 'react-native-svg'
 
 interface Prop {
-  height?: number;
+  height?: number
 }
 
-function CoreSVG({height = 27}: Prop) {
+function CoreSVG({ height = 27 }: Prop) {
   return (
     <Svg width={height * 6.53} height={height} viewBox="0 0 136 27" fill="none">
       <Path
@@ -15,7 +15,7 @@ function CoreSVG({height = 27}: Prop) {
         fill="white"
       />
     </Svg>
-  );
+  )
 }
 
-export default CoreSVG;
+export default CoreSVG

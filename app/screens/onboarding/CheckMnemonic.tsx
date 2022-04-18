@@ -1,48 +1,52 @@
-import React, {useEffect, useState} from 'react';
-import {StyleSheet, View} from 'react-native';
-import AvaButton from 'components/AvaButton';
-import AvaText from 'components/AvaText';
-import {Space} from 'components/Space';
-import WordSelection from 'screens/onboarding/WordSelection';
-import {ShowSnackBar} from 'components/Snackbar';
-import {useCheckMnemonic} from 'screens/onboarding/useCheckMnemonic';
-import {usePosthogContext} from 'contexts/PosthogContext';
+import React, { useState } from 'react'
+import { StyleSheet, View } from 'react-native'
+import AvaButton from 'components/AvaButton'
+import AvaText from 'components/AvaText'
+import { Space } from 'components/Space'
+import WordSelection from 'screens/onboarding/WordSelection'
+import { ShowSnackBar } from 'components/Snackbar'
+import { useCheckMnemonic } from 'screens/onboarding/useCheckMnemonic'
+import { usePosthogContext } from 'contexts/PosthogContext'
 
 type Props = {
-  onSuccess: () => void;
-  onBack: () => void;
-  mnemonic: string;
-};
+  onSuccess: () => void
+  onBack: () => void
+  mnemonic: string
+}
 
 export default function CheckMnemonic(
-  props: Props | Readonly<Props>,
+  props: Props | Readonly<Props>
 ): JSX.Element {
-  const {firstWordSelection, secondWordSelection, thirdWordSelection, verify} =
-    useCheckMnemonic(props.mnemonic);
-  const {capture} = usePosthogContext();
+  const {
+    firstWordSelection,
+    secondWordSelection,
+    thirdWordSelection,
+    verify
+  } = useCheckMnemonic(props.mnemonic)
+  const { capture } = usePosthogContext()
 
   const onVerify = (): void => {
     if (
       [selectedWord1, selectedWord2, selectedWord3].find(value => !value) !==
       undefined
     ) {
-      ShowSnackBar('Select all words');
-      return;
+      ShowSnackBar('Select all words')
+      return
     }
 
     if (verify(selectedWord1, selectedWord2, selectedWord3)) {
-      capture('OnboardingMnemonicVerified').catch(() => undefined);
-      props.onSuccess();
+      capture('OnboardingMnemonicVerified').catch(() => undefined)
+      props.onSuccess()
     } else {
-      ShowSnackBar('Incorrect! Try again, please.');
+      ShowSnackBar('Incorrect! Try again, please.')
     }
-  };
+  }
 
-  const [selectedWord1, setSelectedWord1] = useState('');
-  const [selectedWord2, setSelectedWord2] = useState('');
-  const [selectedWord3, setSelectedWord3] = useState('');
+  const [selectedWord1, setSelectedWord1] = useState('')
+  const [selectedWord2, setSelectedWord2] = useState('')
+  const [selectedWord3, setSelectedWord3] = useState('')
 
-  useEffect(() => {}, [selectedWord1, selectedWord2, selectedWord3]);
+  // useEffect(() => {}, [selectedWord1, selectedWord2, selectedWord3])
 
   return (
     <View style={styles.container}>
@@ -69,20 +73,20 @@ export default function CheckMnemonic(
         wordOptions={thirdWordSelection.wordOptions}
         setSelectedWord={setSelectedWord3}
       />
-      <View style={{flex: 1}} />
+      <View style={{ flex: 1 }} />
       <View>
         <AvaButton.PrimaryLarge onPress={onVerify}>
           Verify phrase
         </AvaButton.PrimaryLarge>
       </View>
     </View>
-  );
+  )
 }
 
 const styles: any = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 16,
-    paddingBottom: 40,
-  },
-});
+    paddingBottom: 40
+  }
+})

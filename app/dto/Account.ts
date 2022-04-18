@@ -1,9 +1,9 @@
-import {Observable} from 'rxjs';
+import { Observable } from 'rxjs'
 
 export type Account = {
-  index: number;
-  title: string;
-  address: string;
-  active: boolean;
-  balance$: Observable<string>;
-};
+  index: number
+  title: string
+  address: string
+  active: boolean
+  balance$: Observable<string>
+}

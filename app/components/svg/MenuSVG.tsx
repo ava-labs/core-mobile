@@ -1,15 +1,15 @@
-import React from 'react';
-import Svg, {Path} from 'react-native-svg';
-import {useApplicationContext} from 'contexts/ApplicationContext';
+import React from 'react'
+import Svg, { Path } from 'react-native-svg'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 interface Prop {
-  color?: string;
+  color?: string
 }
 
-function MenuSVG({color}: Prop) {
-  const context = useApplicationContext();
+function MenuSVG({ color }: Prop) {
+  const context = useApplicationContext()
 
-  const iconColor = color ?? context.theme.colorIcon1;
+  const iconColor = color ?? context.theme.colorIcon1
   return (
     <Svg width="24" height="24" viewBox="0 0 24 24" fill="none">
       <Path
@@ -17,7 +17,7 @@ function MenuSVG({color}: Prop) {
         fill={iconColor}
       />
     </Svg>
-  );
+  )
 }
 
-export default MenuSVG;
+export default MenuSVG
