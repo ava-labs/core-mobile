@@ -18,12 +18,12 @@
     "build-storybook": "build-storybook"
   },
   "dependencies": {
-    "@avalabs/avalanche-wallet-sdk": "0.16.0",
-    "@avalabs/blizzard-sdk": "2.0.0",
-    "@avalabs/bridge-sdk": "2.0.0",
+    "@avalabs/avalanche-wallet-sdk": "0.17.1",
+    "@avalabs/blizzard-sdk": "2.1.4",
+    "@avalabs/bridge-sdk": "2.1.4",
     "@avalabs/coingecko-sdk": "2.0.0-alpha.4",
     "@avalabs/covalent-sdk": "2.0.0",
-    "@avalabs/wallet-react-components": "1.28.2",
+    "@avalabs/wallet-react-components": "1.30.2",
     "@babel/plugin-syntax-object-rest-spread": "^7.8.3",
     "@connectedcars/react-native-slide-charts": "^1.0.5",
     "@eliav2/react-native-collapsible-view": "^1.4.0",

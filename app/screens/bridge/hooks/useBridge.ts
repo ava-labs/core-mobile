@@ -66,10 +66,9 @@ export default function useBridge() {
 
   const {transferAsset, txHash} = useTransferAsset(assetInfo);
 
-  const targetBlockchain =
-    currentBlockchain === Blockchain.AVALANCHE
-      ? Blockchain.ETHEREUM
-      : Blockchain.AVALANCHE;
+  const [targetBlockchain, setTargetBlockchain] = useState(
+    Blockchain.AVALANCHE,
+  );
 
   const provider =
     currentBlockchain === Blockchain.AVALANCHE
@@ -133,6 +132,7 @@ export default function useBridge() {
     transferAsset,
     blockchainTokenSymbol,
     targetBlockchain,
+    setTargetBlockchain,
     sourceBalance,
     setCurrentAsset,
     setPending,
