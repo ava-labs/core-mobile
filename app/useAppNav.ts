@@ -1,6 +1,4 @@
-import {MutableRefObject, useEffect, useRef} from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import {SECURE_ACCESS_SET} from 'resources/Constants';
+import {MutableRefObject, useRef} from 'react';
 import AppNavigation from 'navigation/AppNavigation';
 import {NavigationContainerRef} from '@react-navigation/native';
 
@@ -14,28 +12,6 @@ export type AppNavHook = {
 
 export function useAppNav(): AppNavHook {
   const navigation = useRef<NavigationContainerRef<any>>();
-
-  useEffect(() => {
-    async function onFirstLoad() {
-      if (!navigation.current) {
-        console.log('waiting for navigation container...');
-        setTimeout(() => onFirstLoad(), 1000);
-        return;
-      }
-      console.log('done.');
-      AsyncStorage.getItem(SECURE_ACCESS_SET).then(result => {
-        if (result) {
-          setLoginRoute(navigation);
-        } else {
-          navigation.current?.navigate(AppNavigation.Root.Onboard, {
-            screen: AppNavigation.Root.Welcome,
-          });
-        }
-      });
-    }
-
-    onFirstLoad().then();
-  }, []);
 
   return {
     navigation,

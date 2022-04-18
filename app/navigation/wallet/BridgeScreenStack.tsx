@@ -10,6 +10,9 @@ import {MainHeaderOptions, SubHeaderOptions} from 'navigation/NavUtils';
 import BridgeSelectTokenBottomSheet from 'screens/bridge/BridgeSelectTokenBottomSheet';
 import {useNavigation} from '@react-navigation/native';
 import WarningModal from 'components/WarningModal';
+import {usePosthogContext} from 'contexts/PosthogContext';
+import {RootStackParamList} from 'navigation/WalletScreenStack';
+import FeatureBlocked from 'screens/posthog/FeatureBlocked';
 
 export type BridgeStackParamList = {
   [AppNavigation.Bridge.Bridge]: undefined;
@@ -31,35 +34,47 @@ const BridgeTransactionStatusFromStack = () => (
 );
 
 function BridgeScreenStack() {
+  const {bridgeBlocked} = usePosthogContext();
+  const {goBack} = useNavigation<StackNavigationProp<RootStackParamList>>();
   return (
-    <BridgeStack.Navigator>
-      <BridgeStack.Screen
-        options={{
-          ...MainHeaderOptions(''),
-        }}
-        name={AppNavigation.Bridge.Bridge}
-        component={Bridge}
-      />
-      <BridgeStack.Screen
-        options={{
-          ...SubHeaderOptions('Transaction Status'),
-        }}
-        name={AppNavigation.Bridge.BridgeTransactionStatus}
-        component={BridgeTransactionStatusFromStack}
-      />
-      <BridgeStack.Group screenOptions={{presentation: 'transparentModal'}}>
+    <>
+      <BridgeStack.Navigator>
         <BridgeStack.Screen
-          options={{headerShown: false}}
-          name={AppNavigation.Modal.BridgeSelectToken}
-          component={BridgeSelectTokenBottomSheet}
+          options={{
+            ...MainHeaderOptions(''),
+          }}
+          name={AppNavigation.Bridge.Bridge}
+          component={Bridge}
         />
         <BridgeStack.Screen
-          options={{presentation: 'transparentModal', headerShown: false}}
-          name={AppNavigation.Bridge.HideWarning}
-          component={HideTransactionWarningModal}
+          options={{
+            ...SubHeaderOptions('Transaction Status'),
+          }}
+          name={AppNavigation.Bridge.BridgeTransactionStatus}
+          component={BridgeTransactionStatusFromStack}
         />
-      </BridgeStack.Group>
-    </BridgeStack.Navigator>
+        <BridgeStack.Group screenOptions={{presentation: 'transparentModal'}}>
+          <BridgeStack.Screen
+            options={{headerShown: false}}
+            name={AppNavigation.Modal.BridgeSelectToken}
+            component={BridgeSelectTokenBottomSheet}
+          />
+          <BridgeStack.Screen
+            options={{presentation: 'transparentModal', headerShown: false}}
+            name={AppNavigation.Bridge.HideWarning}
+            component={HideTransactionWarningModal}
+          />
+        </BridgeStack.Group>
+      </BridgeStack.Navigator>
+      {bridgeBlocked && (
+        <FeatureBlocked
+          onOk={goBack}
+          message={
+            'Bridge is currently under maintenance.  Service will resume shortly.'
+          }
+        />
+      )}
+    </>
   );
 }
 
