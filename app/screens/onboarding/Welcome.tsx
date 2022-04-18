@@ -8,6 +8,7 @@ import Separator from 'components/Separator'
 import WalletSVG from 'components/svg/WalletSVG'
 import CreateNewWalletPlusSVG from 'components/svg/CreateNewWalletPlusSVG'
 import CoreLogo from 'components/CoreLogo'
+import { usePosthogContext } from 'contexts/PosthogContext'
 
 type Props = {
   onCreateWallet: () => void
@@ -18,11 +19,16 @@ type Props = {
 const pkg = require('../../../package.json')
 
 export default function Welcome(props: Props | Readonly<Props>): JSX.Element {
+  const { capture } = usePosthogContext()
+
   const onCreateWallet = (): void => {
+    capture('OnboardingCreateNewWalletSelected').catch(() => undefined)
     props.onCreateWallet()
   }
 
   const onAlreadyHaveWallet = (): void => {
+    capture('OnboardingImportWalletSelected').catch(() => undefined)
+    capture('OnboardingImportMnemonicSelected').catch(() => undefined)
     props.onAlreadyHaveWallet()
   }
 

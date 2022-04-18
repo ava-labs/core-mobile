@@ -4,8 +4,8 @@ import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
 
 interface Props {
-  onAction: () => void
-  onDismiss: () => void
+  onAction?: () => void
+  onDismiss?: () => void
   title?: string
   message?: string
   actionText?: string
@@ -28,12 +28,16 @@ const WarningModal: FC<Props> = ({
       <AvaText.Body2 textStyle={{ textAlign: 'center', marginTop: 16 }}>
         {message}
       </AvaText.Body2>
-      <AvaButton.PrimaryLarge style={{ marginTop: 28 }} onPress={onAction}>
-        {actionText}
-      </AvaButton.PrimaryLarge>
-      <AvaButton.TextLarge style={{ marginTop: 16 }} onPress={onDismiss}>
-        {dismissText}
-      </AvaButton.TextLarge>
+      {onAction && (
+        <AvaButton.PrimaryLarge style={{ marginTop: 28 }} onPress={onAction}>
+          {actionText}
+        </AvaButton.PrimaryLarge>
+      )}
+      {onDismiss && (
+        <AvaButton.TextLarge style={{ marginTop: 16 }} onPress={onDismiss}>
+          {dismissText}
+        </AvaButton.TextLarge>
+      )}
     </ModalContainer>
   )
 }

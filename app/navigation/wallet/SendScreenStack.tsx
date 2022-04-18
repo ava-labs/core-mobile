@@ -11,6 +11,8 @@ import ReviewSend from 'screens/send/ReviewSend'
 import { SendTokenContextProvider } from 'contexts/SendTokenContext'
 import { RootStackParamList } from 'navigation/WalletScreenStack'
 import { TokenWithBalance } from '@avalabs/wallet-react-components'
+import { usePosthogContext } from 'contexts/PosthogContext'
+import FeatureBlocked from 'screens/posthog/FeatureBlocked'
 
 export type SendStackParamList = {
   [AppNavigation.Send.Send]: { token?: TokenWithBalance } | undefined
@@ -25,6 +27,8 @@ function SendScreenStack() {
     useRoute<
       RouteProp<RootStackParamList, typeof AppNavigation.Wallet.SendTokens>
     >()
+  const { sendBlocked } = usePosthogContext()
+  const { goBack } = useNavigation<StackNavigationProp<RootStackParamList>>()
 
   return (
     <SendTokenContextProvider>
@@ -47,6 +51,14 @@ function SendScreenStack() {
           component={DoneScreenComponent}
         />
       </SendStack.Navigator>
+      {sendBlocked && (
+        <FeatureBlocked
+          onOk={goBack}
+          message={
+            'Send is currently under maintenance.  Service will resume shortly.'
+          }
+        />
+      )}
     </SendTokenContextProvider>
   )
 }

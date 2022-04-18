@@ -5,24 +5,24 @@ import TextArea from 'components/TextArea'
 import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
 import * as bip39 from 'bip39'
+import { usePosthogContext } from 'contexts/PosthogContext'
 
 type Props = {
   onEnterWallet: (mnemonic: string) => void
   onBack: () => void
 }
 
-export default function HdWalletLogin(
-  props: Props | Readonly<Props>
-): JSX.Element {
+export default function HdWalletLogin(props: Props) {
+  const { capture } = usePosthogContext()
   const [errorMessage, setErrorMessage] = useState<string | undefined>(
     undefined
   )
 
-  const onEnterTestWallet = (): void => {
+  const onEnterTestWallet = () => {
     onEnterWallet(WalletSDK.testMnemonic())
   }
 
-  const onBack = (): void => {
+  const onBack = () => {
     props.onBack()
   }
 
@@ -31,6 +31,7 @@ export default function HdWalletLogin(
     const isValid = bip39.validateMnemonic(trimmed)
     try {
       if (isValid) {
+        capture('OnboardingMnemonicImported').catch(() => undefined)
         props.onEnterWallet(trimmed)
       } else {
         throw new Error()

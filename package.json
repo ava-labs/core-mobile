@@ -69,6 +69,7 @@
     "node-libs-react-native": "^1.2.1",
     "numeral": "^2.0.6",
     "paraswap": "^5.0.1",
+    "posthog-react-native": "1.1.5",
     "promise.allsettled": "^1.0.5",
     "react": "17.0.2",
     "react-native": "0.66.4",

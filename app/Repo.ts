@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Account } from 'dto/Account'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { CustomTokens } from 'screens/tokenManagement/hooks/useAddCustomToken'
@@ -51,7 +51,7 @@ export type RecentContact = {
   type: AddrBookItemType
 }
 
-export type Setting = 'CoreAnalytics'
+export type Setting = 'CoreAnalytics' | 'ConsentToTOU&PP'
 export type SettingValue = number | string | boolean
 
 export type AddrBookItemType = 'account' | 'contact'
@@ -129,9 +129,12 @@ export function useRepo(): Repo {
     )
   }
 
-  const getSetting = (setting: Setting) => {
-    return userSettings.get(setting)
-  }
+  const getSetting = useCallback(
+    (setting: Setting) => {
+      return userSettings.get(setting)
+    },
+    [userSettings]
+  )
 
   const saveAccounts = (accounts: Map<AccountId, Account>) => {
     setAccounts(new Map(accounts))

@@ -7,6 +7,7 @@ enum Root {
 enum OnboardScreens {
   Init = 'OnboardScreens.Init',
   Welcome = 'OnboardScreens.Welcome',
+  AnalyticsConsent = 'OnboardScreens.AnalyticsConsent',
   CreateWalletStack = 'OnboardScreens.CreateWalletStack',
   EnterWithMnemonicStack = 'OnboardScreens.EnterWithMnemonicStack',
   Login = 'OnboardScreens.Login'
@@ -17,13 +18,15 @@ enum CreateWalletNavigationScreens {
   CheckMnemonic = 'CreateWalletNavigationScreens.CheckMnemonic',
   CreatePin = 'CreateWalletNavigationScreens.CreatePin',
   BiometricLogin = 'CreateWalletNavigationScreens.BiometricLogin',
+  TermsNConditions = 'CreateWalletNavigationScreens.TermsNConditions',
   ProtectFunds = 'CreateWalletNavigationScreens.ProtectFunds'
 }
 
 enum LoginWithMnemonicStackScreens {
   LoginWithMnemonic = 'LoginWithMnemonicStackScreens.LoginWithMnemonic',
   CreatePin = 'LoginWithMnemonicStackScreens.CreatePin',
-  BiometricLogin = 'LoginWithMnemonicStackScreens.BiometricLogin'
+  BiometricLogin = 'LoginWithMnemonicStackScreens.BiometricLogin',
+  TermsNConditions = 'LoginWithMnemonicStackScreens.TermsNConditions'
 }
 
 enum WalletScreens {

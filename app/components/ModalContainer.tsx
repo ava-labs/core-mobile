@@ -1,8 +1,16 @@
 import React from 'react'
-import { View } from 'react-native'
+import { StyleProp, View, ViewStyle } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 
-export default function ModalContainer({ children }: { children: any }) {
+interface ModalProps {
+  containerStyle?: StyleProp<ViewStyle>
+  children: any
+}
+
+export default function ModalContainer({
+  containerStyle,
+  children
+}: ModalProps) {
   const { theme } = useApplicationContext()
 
   return (
@@ -22,7 +30,8 @@ export default function ModalContainer({ children }: { children: any }) {
             marginVertical: 16,
             justifyContent: 'center',
             bottom: 0
-          }
+          },
+          containerStyle
         ]}>
         {children}
       </View>

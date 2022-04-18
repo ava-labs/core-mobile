@@ -16457,6 +16457,11 @@ postcss@^8.1.0:
     picocolors "^1.0.0"
     source-map-js "^1.0.2"
 
+posthog-react-native@1.1.5:
+  version "1.1.5"
+  resolved "https://registry.yarnpkg.com/posthog-react-native/-/posthog-react-native-1.1.5.tgz#ba8da733b29114f9831fc1649b406a279ac86e1d"
+  integrity sha512-Dn2mYI7aMDujz6jPHPt1nhz1j/EzqxPe/td458Oly7VafBbwV76fH+KgHAgI9bh4u+YHp8XCxzTMjkKhby4IQA==
+
 prelude-ls@^1.2.1:
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/prelude-ls/-/prelude-ls-1.2.1.tgz#debc6489d7a6e6b0e7611888cec880337d316396"
