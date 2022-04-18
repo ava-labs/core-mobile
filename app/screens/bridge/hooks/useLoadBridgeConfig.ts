@@ -3,34 +3,34 @@ import {
   fetchConfig,
   setBridgeEnvironment,
   useBridgeConfig,
-  useBridgeConfigUpdater,
-} from '@avalabs/bridge-sdk';
-import {useEffect, useState} from 'react';
+  useBridgeConfigUpdater
+} from '@avalabs/bridge-sdk'
+import { useEffect, useState } from 'react'
 import {
   MAINNET_NETWORK,
-  useNetworkContext,
-} from '@avalabs/wallet-react-components';
+  useNetworkContext
+} from '@avalabs/wallet-react-components'
 
 export function useLoadBridgeConfig() {
-  const [bridgeAvailable, setBridgeAvailable] = useState(false);
-  const bridgeConfig = useBridgeConfig();
-  const network = useNetworkContext()?.network;
+  const [bridgeAvailable, setBridgeAvailable] = useState(false)
+  const bridgeConfig = useBridgeConfig()
+  const network = useNetworkContext()?.network
 
   useEffect(() => {
     setBridgeEnvironment(
       network?.chainId === MAINNET_NETWORK.chainId
         ? Environment.PROD
-        : Environment.TEST,
-    );
-  }, [network]);
+        : Environment.TEST
+    )
+  }, [network])
 
-  useBridgeConfigUpdater(() => fetchConfig());
+  useBridgeConfigUpdater(() => fetchConfig())
 
   useEffect(() => {
     if (bridgeConfig?.config) {
-      setBridgeAvailable(true);
+      setBridgeAvailable(true)
     }
-  }, [bridgeConfig, network]);
+  }, [bridgeConfig, network])
 
-  return bridgeAvailable;
+  return bridgeAvailable
 }

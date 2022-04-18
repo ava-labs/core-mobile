@@ -1,34 +1,33 @@
-import React, {useEffect, useState} from 'react';
-import {Big, BN} from '@avalabs/avalanche-wallet-sdk';
-import {StyleSheet, TextInputProps, View} from 'react-native';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import InputText from 'components/InputText';
-import Loader from 'components/Loader';
+import React, { useEffect, useState } from 'react'
+import { Big, BN } from '@avalabs/avalanche-wallet-sdk'
+import { StyleSheet, TextInputProps, View } from 'react-native'
+import InputText from 'components/InputText'
+import Loader from 'components/Loader'
 
-Big.PE = 99;
-Big.NE = -18;
-const big10 = new BN(10);
+Big.PE = 99
+Big.NE = -18
+const big10 = new BN(10)
 
 interface BNInputProps
   extends Omit<
     TextInputProps,
     'max' | 'min' | 'value' | 'onChange' | 'onError'
   > {
-  value?: BN;
-  denomination: number;
+  value?: BN
+  denomination: number
 
-  onChange?(val: {bn: BN; amount: string}): void;
+  onChange?(val: { bn: BN; amount: string }): void
 
-  placeholder?: string;
-  min?: BN;
-  max?: BN;
-  isValueLoading?: boolean;
-  hideErrorMessage?: boolean;
-  onError?: (errorMessage: string) => void;
+  placeholder?: string
+  min?: BN
+  max?: BN
+  isValueLoading?: boolean
+  hideErrorMessage?: boolean
+  onError?: (errorMessage: string) => void
 }
 
 export function splitBN(val: string) {
-  return val.includes('.') ? val.split('.') : [val, null];
+  return val.includes('.') ? val.split('.') : [val, null]
 }
 
 /**
@@ -44,24 +43,24 @@ export function splitBN(val: string) {
  * @returns BN
  */
 export function getAmountBN(val: number | string, denomination: number): BN {
-  const bigDemoniation = new BN(denomination || 0);
-  const [beginningValue, endValue] = splitBN(val.toString());
+  const bigDemoniation = new BN(denomination || 0)
+  const [beginningValue, endValue] = splitBN(val.toString())
 
   const bigLeftSide = beginningValue
     ? new BN(beginningValue).mul(big10.pow(bigDemoniation))
-    : new BN(0);
+    : new BN(0)
 
   const bigRightSide = endValue
     ? new BN(endValue).mul(
-        big10.pow(bigDemoniation.sub(new BN(endValue.split('').length))),
+        big10.pow(bigDemoniation.sub(new BN(endValue.split('').length)))
       )
-    : new BN(0);
+    : new BN(0)
 
   try {
-    return bigRightSide ? bigLeftSide.add(bigRightSide) : bigLeftSide;
+    return bigRightSide ? bigLeftSide.add(bigRightSide) : bigLeftSide
   } catch (e) {
-    console.log('error when parsing input: ', e);
-    return new BN(0);
+    console.log('error when parsing input: ', e)
+    return new BN(0)
   }
 }
 
@@ -69,21 +68,21 @@ export function BNInput({
   value,
   denomination,
   onChange,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   min = new BN(0),
   max,
   isValueLoading,
   hideErrorMessage,
   onError,
-  ...props
+  ..._props
 }: BNInputProps) {
-  const [valStr, setValStr] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
-  const theme = useApplicationContext().theme;
+  const [valStr, setValStr] = useState('')
+  const [errorMessage, setErrorMessage] = useState('')
   useEffect(() => {
     if (value) {
       const valueAsBig = new Big(value.toString()).div(
-        Math.pow(10, denomination),
-      );
+        Math.pow(10, denomination)
+      )
 
       /**
        * When deleting zeros after decimal, all zeros delete without this check.
@@ -94,57 +93,57 @@ export function BNInput({
         (!valStr || !valueAsBig.eq(valStr)) &&
         valueAsBig.toString() !== '0'
       ) {
-        setValStr(valueAsBig.toString());
+        setValStr(valueAsBig.toString())
       }
     } else {
-      setValStr('');
+      setValStr('')
     }
-  }, [value]);
+  }, [value])
 
   useEffect(() => {
     if (max && valStr && getAmountBN(valStr, denomination).gt(max)) {
-      setErrorMessage('Invalid amount');
+      setErrorMessage('Invalid amount')
     } else {
-      setErrorMessage('');
+      setErrorMessage('')
     }
-  }, [valStr, max]);
+  }, [valStr, max])
 
   useEffect(() => {
     if (valStr && onError) {
-      onError(errorMessage);
+      onError(errorMessage)
     }
-  }, [valStr, errorMessage]);
+  }, [valStr, errorMessage])
 
   const onValueChanged = (value: string) => {
     /**
      * Split the input and make sure the right side never exceeds
      * the denomination length
      */
-    const [, endValue] = splitBN(value);
+    const [, endValue] = splitBN(value)
     if (!endValue || endValue.length <= denomination) {
-      const valueToBn = getAmountBN(value, denomination);
+      const valueToBn = getAmountBN(value, denomination)
       if (!valueToBn.eq(getAmountBN(valStr, denomination))) {
         onChange?.({
           // used to removing leading & trailing zeros
           amount: value ? new Big(value).toString() : '0',
-          bn: valueToBn,
-        });
+          bn: valueToBn
+        })
       }
-      setValStr(value);
+      setValStr(value)
     }
-  };
+  }
 
   const setMax = () => {
     if (!max) {
-      return;
+      return
     }
 
-    const big = new Big(max.toString()).div(Math.pow(10, denomination));
-    onValueChanged(big.toString());
-  };
+    const big = new Big(max.toString()).div(Math.pow(10, denomination))
+    onValueChanged(big.toString())
+  }
 
   return (
-    <View style={{flexDirection: 'row', justifyContent: 'center'}}>
+    <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
       <InputText
         mode={'amount'}
         keyboardType="numeric"
@@ -158,5 +157,5 @@ export function BNInput({
         </View>
       )}
     </View>
-  );
+  )
 }

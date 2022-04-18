@@ -1,32 +1,31 @@
-import React, {FC, useEffect, useMemo, useState} from 'react';
-import {FlatList, ListRenderItemInfo, StyleSheet, View} from 'react-native';
-import Loader from 'components/Loader';
+import React, { FC, useEffect, useMemo, useState } from 'react'
+import { FlatList, ListRenderItemInfo, StyleSheet, View } from 'react-native'
+import Loader from 'components/Loader'
 import {
   ERC20WithBalance,
   TokenWithBalance,
-  useWalletStateContext,
-} from '@avalabs/wallet-react-components';
-import {getTokenUID} from 'utils/TokenTools';
-import WatchListItem from 'screens/watchlist/components/WatchListItem';
-import ListFilter from 'components/ListFilter';
-import {useNavigation} from '@react-navigation/native';
-import AppNavigation from 'navigation/AppNavigation';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import {StackNavigationProp} from '@react-navigation/stack';
-import {RootStackParamList} from 'navigation/WalletScreenStack';
-import Separator from 'components/Separator';
-import {SafeAreaProvider} from 'react-native-safe-area-context';
-import ZeroState from 'components/ZeroState';
+  useWalletStateContext
+} from '@avalabs/wallet-react-components'
+import { getTokenUID } from 'utils/TokenTools'
+import WatchListItem from 'screens/watchlist/components/WatchListItem'
+import ListFilter from 'components/ListFilter'
+import { useNavigation } from '@react-navigation/native'
+import AppNavigation from 'navigation/AppNavigation'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { StackNavigationProp } from '@react-navigation/stack'
+import { RootStackParamList } from 'navigation/WalletScreenStack'
+import Separator from 'components/Separator'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
+import ZeroState from 'components/ZeroState'
 import {
   SimplePriceInCurrency,
   simpleTokenPrice,
-  VsCurrencyType,
-} from '@avalabs/coingecko-sdk';
+  VsCurrencyType
+} from '@avalabs/coingecko-sdk'
 
 interface Props {
-  showFavorites?: boolean;
-  title?: string;
-  searchText?: string;
+  showFavorites?: boolean
+  searchText?: string
 }
 
 export enum WatchlistFilter {
@@ -34,55 +33,58 @@ export enum WatchlistFilter {
   MARKET_CAP = 'Market Cap',
   VOLUME = 'Volume',
   GAINERS = 'Gainers',
-  LOSERS = 'Losers',
+  LOSERS = 'Losers'
 }
 
 export const CG_AVAX_TOKEN_ID =
-  'FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z';
+  'FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z'
 
-const filterTimeOptions = ['1D', '1W', '1Y'];
+const filterTimeOptions = ['1D', '1W', '1Y']
 
-type CombinedTokenType = ERC20WithBalance & SimplePriceInCurrency;
+type CombinedTokenType = ERC20WithBalance & SimplePriceInCurrency
 
-const WatchlistView: FC<Props> = ({showFavorites, searchText}) => {
-  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-  const {currencyFormatter} = useApplicationContext().appHook;
-  const {watchlistFavorites} =
-    useApplicationContext().repo.watchlistFavoritesRepo;
+const WatchlistView: FC<Props> = ({ showFavorites, searchText }) => {
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>()
+  const { currencyFormatter } = useApplicationContext().appHook
+  const { watchlistFavorites } =
+    useApplicationContext().repo.watchlistFavoritesRepo
   // @ts-ignore erc20Tokens and avaxToken exist but why it complains needs investigation
-  const {erc20Tokens, avaxToken} = useWalletStateContext();
-  const [combinedData, setCombinedData] = useState<CombinedTokenType[]>([]);
-  const [filterBy, setFilterBy] = useState(WatchlistFilter.PRICE);
-  const [filterTime, setFilterTime] = useState(filterTimeOptions[0]);
+  const { erc20Tokens, avaxToken } = useWalletStateContext()
+  const [combinedData, setCombinedData] = useState<CombinedTokenType[]>([])
+  const [filterBy, setFilterBy] = useState(WatchlistFilter.PRICE)
+  const [filterTime, setFilterTime] = useState(filterTimeOptions[0])
   const tokenAddresses = [
     CG_AVAX_TOKEN_ID,
-    ...(erc20Tokens?.map((t: ERC20WithBalance) => t.address) ?? []),
-  ];
-  const allTokens = [{...avaxToken, address: CG_AVAX_TOKEN_ID}, ...erc20Tokens];
+    ...(erc20Tokens?.map((t: ERC20WithBalance) => t.address) ?? [])
+  ]
+  const allTokens = [
+    { ...avaxToken, address: CG_AVAX_TOKEN_ID },
+    ...erc20Tokens
+  ]
 
   useEffect(() => {
     if (combinedData.length === 0) {
-      refreshPrices();
+      refreshPrices()
     }
-  }, [allTokens]);
+  }, [allTokens])
 
   const sortedData = useMemo(() => {
     // get favorite list or regular list
     const listData = showFavorites
       ? combinedData.filter(tk => watchlistFavorites.includes(tk.address))
-      : combinedData;
+      : combinedData
 
     // sort data by filter option
     return listData.sort((a, b) => {
       if (filterBy === WatchlistFilter.PRICE) {
-        return (b.price ?? 0) - (a.price ?? 0);
+        return (b.price ?? 0) - (a.price ?? 0)
       } else if (filterBy === WatchlistFilter.MARKET_CAP) {
-        return (b.marketCap ?? 0) - (a.marketCap ?? 0);
+        return (b.marketCap ?? 0) - (a.marketCap ?? 0)
       } else {
-        return (b.vol24 ?? 0) - (a.vol24 ?? 0);
+        return (b.vol24 ?? 0) - (a.vol24 ?? 0)
       }
-    });
-  }, [combinedData, filterBy]);
+    })
+  }, [combinedData, filterBy])
 
   const refreshPrices = async () => {
     if (allTokens && allTokens.length > 0) {
@@ -91,30 +93,30 @@ const WatchlistView: FC<Props> = ({showFavorites, searchText}) => {
         currencies: ['usd'] as VsCurrencyType[],
         marketCap: true,
         vol24: true,
-        change24: true,
-      });
+        change24: true
+      })
       const mappedData = allTokens?.map(t => {
         const address =
           t.address === CG_AVAX_TOKEN_ID
             ? CG_AVAX_TOKEN_ID
-            : t.address.toLowerCase();
+            : t.address.toLowerCase()
         return {
           ...t,
-          ...rawData?.[address]?.usd,
-        } as CombinedTokenType;
-      });
-      setCombinedData(mappedData);
+          ...rawData?.[address]?.usd
+        } as CombinedTokenType
+      })
+      setCombinedData(mappedData)
     }
-  };
+  }
 
   useEffect(() => {
     if (!showFavorites) {
       // setSearchText(searchText ?? '');
     }
-  }, [searchText]);
+  }, [searchText])
 
   function handleRefresh() {
-    refreshPrices();
+    refreshPrices()
   }
 
   const tokens = useMemo(() => {
@@ -122,17 +124,17 @@ const WatchlistView: FC<Props> = ({showFavorites, searchText}) => {
       ? sortedData?.filter(
           i =>
             i.name?.toLowerCase().includes(searchText.toLowerCase()) ||
-            i.symbol?.toLowerCase().includes(searchText.toLowerCase()),
+            i.symbol?.toLowerCase().includes(searchText.toLowerCase())
         )
-      : sortedData;
-  }, [searchText, sortedData]);
+      : sortedData
+  }, [searchText, sortedData])
 
   const renderItem = (item: ListRenderItemInfo<CombinedTokenType>) => {
-    const token = item.item;
-    const logoUri = token?.logoURI ?? undefined;
+    const token = item.item
+    const logoUri = token?.logoURI ?? undefined
 
     if (token.name === 'TEDDY') {
-      console.log('teddy');
+      console.log('teddy')
     }
 
     function getDisplayValue() {
@@ -141,15 +143,15 @@ const WatchlistView: FC<Props> = ({showFavorites, searchText}) => {
           ? ' -'
           : token.price > 0 && token.price < 0.1
           ? `$${token.price.toFixed(6)}`
-          : currencyFormatter(token.price);
+          : currencyFormatter(token.price)
       } else if (filterBy === WatchlistFilter.MARKET_CAP) {
         return (token?.marketCap ?? 0) === 0
           ? ' -'
-          : `$${currencyFormatter(token?.marketCap ?? 0, 3)}`;
+          : `$${currencyFormatter(token?.marketCap ?? 0, 3)}`
       } else if (filterBy === WatchlistFilter.VOLUME) {
         return (token?.vol24 ?? 0) === 0
           ? ' -'
-          : `$${currencyFormatter(token?.vol24 ?? 0, 1)}`;
+          : `$${currencyFormatter(token?.vol24 ?? 0, 1)}`
       }
     }
     // rank is currently not displayed because an additional
@@ -166,12 +168,12 @@ const WatchlistView: FC<Props> = ({showFavorites, searchText}) => {
         // rank={!showFavorites ? item.index + 1 : undefined}
         onPress={() =>
           navigation.navigate(AppNavigation.Wallet.TokenDetail, {
-            address: token.address,
+            address: token.address
           })
         }
       />
-    );
-  };
+    )
+  }
 
   return (
     <SafeAreaProvider style={styles.container}>
@@ -187,18 +189,18 @@ const WatchlistView: FC<Props> = ({showFavorites, searchText}) => {
                 WatchlistFilter.MARKET_CAP,
                 WatchlistFilter.VOLUME,
                 WatchlistFilter.GAINERS,
-                WatchlistFilter.LOSERS,
+                WatchlistFilter.LOSERS
               ]}
               currentItem={filterBy}
               onItemSelected={filter => setFilterBy(filter as WatchlistFilter)}
-              style={{paddingLeft: 25}}
+              style={{ paddingLeft: 25 }}
             />
             <ListFilter
               filterOptions={filterTimeOptions}
               currentItem={filterTime}
               onItemSelected={setFilterTime}
               minWidth={50}
-              style={{paddingRight: 30}}
+              style={{ paddingRight: 30 }}
             />
           </View>
           <FlatList
@@ -207,7 +209,7 @@ const WatchlistView: FC<Props> = ({showFavorites, searchText}) => {
             onRefresh={handleRefresh}
             ItemSeparatorComponent={() => (
               <Separator
-                style={{backgroundColor: '#323232', height: 0.5}}
+                style={{ backgroundColor: '#323232', height: 0.5 }}
                 inset={8}
               />
             )}
@@ -218,16 +220,16 @@ const WatchlistView: FC<Props> = ({showFavorites, searchText}) => {
         </>
       )}
     </SafeAreaProvider>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex: 1
   },
   filterContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-between'
   },
   searchBackground: {
     alignItems: 'center',
@@ -236,15 +238,15 @@ const styles = StyleSheet.create({
     height: 40,
     flex: 1,
     justifyContent: 'center',
-    paddingStart: 12,
+    paddingStart: 12
   },
   searchInput: {
     paddingLeft: 4,
     height: 40,
     flex: 1,
     marginRight: 24,
-    fontSize: 16,
-  },
-});
+    fontSize: 16
+  }
+})
 
-export default WatchlistView;
+export default WatchlistView

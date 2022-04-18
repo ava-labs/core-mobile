@@ -7,14 +7,14 @@
 
 module.exports = {
   resolver: {
-    extraNodeModules: require('node-libs-react-native'),
+    extraNodeModules: require('node-libs-react-native')
   },
   transformer: {
     getTransformOptions: async () => ({
       transform: {
         experimentalImportSupport: false,
-        inlineRequires: true,
-      },
-    }),
-  },
-};
+        inlineRequires: true
+      }
+    })
+  }
+}

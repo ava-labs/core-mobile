@@ -1,15 +1,15 @@
-import React from 'react';
-import Svg, {Path} from 'react-native-svg';
+import React from 'react'
+import Svg, { Path } from 'react-native-svg'
 
 interface Props {
-  size?: number;
-  color: string;
-  backgroundColor: string;
+  size?: number
+  color: string
+  backgroundColor: string
 }
 
-function ClearSVG({color, backgroundColor, size = 24}: Props) {
-  const svgColor = color;
-  const bgColor = backgroundColor;
+function ClearSVG({ color, backgroundColor, size = 24 }: Props) {
+  const svgColor = color
+  const bgColor = backgroundColor
   return (
     <Svg fill="none" height={size} viewBox="0 0 24 24" width={size}>
       <Path
@@ -25,7 +25,7 @@ function ClearSVG({color, backgroundColor, size = 24}: Props) {
         fill-rule="evenodd"
       />
     </Svg>
-  );
+  )
 }
 
-export default ClearSVG;
+export default ClearSVG

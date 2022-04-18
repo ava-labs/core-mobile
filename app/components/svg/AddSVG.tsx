@@ -1,19 +1,19 @@
-import React from 'react';
-import Svg, {Circle, G, Path} from 'react-native-svg';
-import {useApplicationContext} from 'contexts/ApplicationContext';
+import React from 'react'
+import Svg, { Circle, G, Path } from 'react-native-svg'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 interface Prop {
-  color?: string;
-  circleColor?: string;
-  hideCircle?: boolean;
-  size?: number;
+  color?: string
+  circleColor?: string
+  hideCircle?: boolean
+  size?: number
 }
 
-function AddSVG({color, circleColor, hideCircle = false, size = 44}: Prop) {
-  const context = useApplicationContext();
+function AddSVG({ color, circleColor, hideCircle = false, size = 44 }: Prop) {
+  const context = useApplicationContext()
 
-  const iconColor = color ?? context.theme.colorIcon1;
-  const borderColor = circleColor ?? context.theme.colorStroke;
+  const iconColor = color ?? context.theme.colorIcon1
+  const borderColor = circleColor ?? context.theme.colorStroke
   return (
     <Svg width={size} height={size} viewBox="0 0 44 44" fill="none">
       {hideCircle || <Circle cx="22" cy="22" r="21.5" stroke={borderColor} />}
@@ -24,7 +24,7 @@ function AddSVG({color, circleColor, hideCircle = false, size = 44}: Prop) {
         />
       </G>
     </Svg>
-  );
+  )
 }
 
-export default AddSVG;
+export default AddSVG

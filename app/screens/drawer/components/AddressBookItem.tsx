@@ -1,12 +1,12 @@
-import React from 'react';
-import AvaListItem from 'components/AvaListItem';
-import {useNavigation} from '@react-navigation/native';
-import {StackNavigationProp} from '@react-navigation/stack';
-import AppNavigation from 'navigation/AppNavigation';
-import {RootStackParamList} from 'navigation/WalletScreenStack';
+import React from 'react'
+import AvaListItem from 'components/AvaListItem'
+import { useNavigation } from '@react-navigation/native'
+import { StackNavigationProp } from '@react-navigation/stack'
+import AppNavigation from 'navigation/AppNavigation'
+import { RootStackParamList } from 'navigation/WalletScreenStack'
 
 const AddressBookItem = () => {
-  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>()
 
   return (
     <>
@@ -16,11 +16,11 @@ const AddressBookItem = () => {
         showNavigationArrow
         rightComponentVerticalAlignment={'center'}
         onPress={() => {
-          navigation?.navigate(AppNavigation.Wallet.AddressBook);
+          navigation?.navigate(AppNavigation.Wallet.AddressBook)
         }}
       />
     </>
-  );
-};
+  )
+}
 
-export default AddressBookItem;
+export default AddressBookItem

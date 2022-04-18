@@ -1,31 +1,31 @@
-import React, {FC, useRef} from 'react';
-import {Animated, Platform, Pressable, StyleSheet, View} from 'react-native';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import InputText from 'components/InputText';
-import {bnAmountToString, stringAmountToBN} from 'dto/SendInfo';
-import AvaText from 'components/AvaText';
-import FlexSpacer from 'components/FlexSpacer';
-import AvaButton from 'components/AvaButton';
-import {ScrollView} from 'react-native-gesture-handler';
-import {SendHookError} from '@avalabs/wallet-react-components';
-import BN from 'bn.js';
-import InfoSVG from 'components/svg/InfoSVG';
-import {Space} from 'components/Space';
-import {bnToBig} from '@avalabs/avalanche-wallet-sdk';
+import React, { FC, useRef } from 'react'
+import { Animated, Platform, Pressable, StyleSheet, View } from 'react-native'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import InputText from 'components/InputText'
+import { bnAmountToString, stringAmountToBN } from 'dto/SendInfo'
+import AvaText from 'components/AvaText'
+import FlexSpacer from 'components/FlexSpacer'
+import AvaButton from 'components/AvaButton'
+import { ScrollView } from 'react-native-gesture-handler'
+import { SendHookError } from '@avalabs/wallet-react-components'
+import BN from 'bn.js'
+import InfoSVG from 'components/svg/InfoSVG'
+import { Space } from 'components/Space'
+import { bnToBig } from '@avalabs/avalanche-wallet-sdk'
 
 interface Props {
-  error?: SendHookError;
-  setAmount: (amount: BN) => void;
-  amount?: BN;
-  priceUSD?: number;
-  denomination: number;
-  setAddress: (address: string) => void;
-  sendFee?: BN;
-  gasLimit?: number;
-  gasPrice?: BN;
-  address?: string;
-  canSubmit?: boolean;
-  onNextPress?: () => void;
+  error?: SendHookError
+  setAmount: (amount: BN) => void
+  amount?: BN
+  priceUSD?: number
+  denomination: number
+  setAddress: (address: string) => void
+  sendFee?: BN
+  gasLimit?: number
+  gasPrice?: BN
+  address?: string
+  canSubmit?: boolean
+  onNextPress?: () => void
 }
 
 const SendForm: FC<Props> = ({
@@ -40,35 +40,35 @@ const SendForm: FC<Props> = ({
   address,
   canSubmit,
   onNextPress,
-  denomination,
+  denomination
 }) => {
-  const context = useApplicationContext();
-  const fadeAnimation = useRef(new Animated.Value(0)).current;
-  const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+  const context = useApplicationContext()
+  const fadeAnimation = useRef(new Animated.Value(0)).current
+  const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
 
   const usdAmount =
     amount && priceUSD
       ? bnToBig(amount, 18).mul(priceUSD).toNumber().toFixed(3)
-      : '0';
+      : '0'
 
   const gasInfo = (text: string) => (
     <AvaText.Body3 color={context.theme.background}>{text}</AvaText.Body3>
-  );
+  )
 
   function fadeIn() {
     Animated.timing(fadeAnimation, {
       toValue: 1,
       duration: 100,
-      useNativeDriver: true,
-    }).start();
+      useNativeDriver: true
+    }).start()
   }
 
   function fadeOut() {
     Animated.timing(fadeAnimation, {
       toValue: 0,
       duration: 100,
-      useNativeDriver: true,
-    }).start();
+      useNativeDriver: true
+    }).start()
   }
 
   const helperText = (
@@ -76,15 +76,15 @@ const SendForm: FC<Props> = ({
       style={{
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'center',
+        alignItems: 'center'
       }}>
       <AvaText.Body2
-        textStyle={{textAlign: 'left'}}>{`$${usdAmount}`}</AvaText.Body2>
-      <View style={{flexDirection: 'row', justifyContent: 'flex-end'}}>
+        textStyle={{ textAlign: 'left' }}>{`$${usdAmount}`}</AvaText.Body2>
+      <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
         <AvaText.Body3
           textStyle={{
             textAlign: 'right',
-            color: context.theme.colorText2,
+            color: context.theme.colorText2
           }}>
           {`Transaction fee: ${bnAmountToString(sendFee)}`}
         </AvaText.Body3>
@@ -94,11 +94,11 @@ const SendForm: FC<Props> = ({
         </AvaButton.Base>
       </View>
     </View>
-  );
+  )
 
   return (
     <ScrollView
-      contentContainerStyle={{flexGrow: 1}}
+      contentContainerStyle={{ flexGrow: 1 }}
       keyboardShouldPersistTaps="handled">
       <View
         style={[
@@ -107,12 +107,12 @@ const SendForm: FC<Props> = ({
             backgroundColor: undefined,
             paddingStart: 0,
             paddingEnd: 0,
-            paddingBottom: 0,
-          },
+            paddingBottom: 0
+          }
         ]}>
-        <View style={[{paddingStart: 4, paddingEnd: 4, marginTop: 20}]}>
+        <View style={[{ paddingStart: 4, paddingEnd: 4, marginTop: 20 }]}>
           <View style={styles.horizontalLayout}>
-            <View style={[{flex: 1, paddingStart: 4, paddingEnd: 4}]}>
+            <View style={[{ flex: 1, paddingStart: 4, paddingEnd: 4 }]}>
               <InputText
                 label={'Address'}
                 placeholder="Enter the address"
@@ -123,7 +123,7 @@ const SendForm: FC<Props> = ({
                     : undefined
                 }
                 onChangeText={text => {
-                  setAddress(text);
+                  setAddress(text)
                 }}
               />
               {address?.length === 0 && (
@@ -143,7 +143,7 @@ const SendForm: FC<Props> = ({
             }
             keyboardType="numeric"
             onChangeText={text => {
-              setAmount(stringAmountToBN(text, denomination));
+              setAmount(stringAmountToBN(text, denomination))
             }}
           />
         </View>
@@ -154,8 +154,8 @@ const SendForm: FC<Props> = ({
             styles.transactionFeeInfo,
             {
               backgroundColor: context.theme.alternateBackground,
-              opacity: fadeAnimation,
-            },
+              opacity: fadeAnimation
+            }
           ]}>
           <View style={styles.gasInfo}>
             {gasInfo('Gas Limit')}
@@ -174,24 +174,24 @@ const SendForm: FC<Props> = ({
 
         <AvaButton.PrimaryLarge
           disabled={!canSubmit}
-          style={{margin: 16}}
+          style={{ margin: 16 }}
           onPress={onNextPress}>
           Next
         </AvaButton.PrimaryLarge>
       </View>
     </ScrollView>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   gasInfo: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-between'
   },
   horizontalLayout: {
     position: 'relative',
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'center'
   },
   transactionFeeInfo: {
     padding: 16,
@@ -199,8 +199,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     minWidth: 150,
     bottom: Platform.OS === 'ios' ? 200 : 160,
-    right: 16,
-  },
-});
+    right: 16
+  }
+})
 
-export default SendForm;
+export default SendForm

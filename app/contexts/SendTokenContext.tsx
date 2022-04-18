@@ -5,8 +5,8 @@ import React, {
   useContext,
   useEffect,
   useMemo,
-  useState,
-} from 'react';
+  useState
+} from 'react'
 import {
   ERC20,
   ERC20WithBalance,
@@ -14,75 +14,75 @@ import {
   TokenWithBalance,
   useAccountsContext,
   useWalletContext,
-  useWalletStateContext,
-} from '@avalabs/wallet-react-components';
-import AvaLogoSVG from 'components/svg/AvaLogoSVG';
-import {Alert, Image} from 'react-native';
-import {useApplicationContext} from 'contexts/ApplicationContext';
+  useWalletStateContext
+} from '@avalabs/wallet-react-components'
+import AvaLogoSVG from 'components/svg/AvaLogoSVG'
+import { Alert, Image } from 'react-native'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import {
   bnToAvaxC,
   bnToBig,
   numberToBN,
-  stringToBN,
-} from '@avalabs/avalanche-wallet-sdk';
-import {mustNumber, mustValue} from 'utils/JsTools';
-import {BN} from 'avalanche';
-import {BehaviorSubject, firstValueFrom, of, Subject} from 'rxjs';
-import {useSend} from 'screens/send/useSend';
+  stringToBN
+} from '@avalabs/avalanche-wallet-sdk'
+import { mustNumber, mustValue } from 'utils/JsTools'
+import { BN } from 'avalanche'
+import { BehaviorSubject, firstValueFrom, of, Subject } from 'rxjs'
+import { useSend } from 'screens/send/useSend'
 
 export enum TokenType {
   AVAX,
   ERC20,
-  ANT,
+  ANT
 }
 
 export interface SendTokenContextState {
-  sendToken: TokenWithBalance | undefined;
-  setSendToken: Dispatch<ERC20WithBalance | undefined>;
-  sendAmount: string;
-  setSendAmount: Dispatch<string>;
-  fromAccount: Account;
-  toAccount: Account;
-  tokenLogo: () => JSX.Element;
-  tokenType: (token?: TokenWithBalance) => TokenType | undefined;
-  fees: Fees;
-  canSubmit: boolean;
-  sendStatus: 'Idle' | 'Sending' | 'Success' | 'Fail';
-  sendStatusMsg: string;
-  onSendNow: () => void;
-  transactionId: string | undefined;
-  sdkError: SendHookError | undefined;
+  sendToken: TokenWithBalance | undefined
+  setSendToken: Dispatch<ERC20WithBalance | undefined>
+  sendAmount: string
+  setSendAmount: Dispatch<string>
+  fromAccount: Account
+  toAccount: Account
+  tokenLogo: () => JSX.Element
+  tokenType: (token?: TokenWithBalance) => TokenType | undefined
+  fees: Fees
+  canSubmit: boolean
+  sendStatus: 'Idle' | 'Sending' | 'Success' | 'Fail'
+  sendStatusMsg: string
+  onSendNow: () => void
+  transactionId: string | undefined
+  sdkError: SendHookError | undefined
 }
 
-export const SendTokenContext = createContext<SendTokenContextState>({} as any);
+export const SendTokenContext = createContext<SendTokenContextState>({} as any)
 
 const tokenType = (token?: TokenWithBalance) => {
   if (token === undefined) {
-    return undefined;
+    return undefined
   } else if (token.isAvax) {
-    return TokenType.AVAX;
+    return TokenType.AVAX
   } else if (token.isErc20) {
-    return TokenType.ERC20;
+    return TokenType.ERC20
   } else if (token.isAnt) {
-    return TokenType.ANT;
+    return TokenType.ANT
   } else {
-    return undefined;
+    return undefined
   }
-};
+}
 
-export const SendTokenContextProvider = ({children}: {children: any}) => {
-  const {theme, repo} = useApplicationContext();
-  const {wallet} = useWalletContext();
-  const {activeAccount} = useAccountsContext();
-  const {avaxPrice, erc20Tokens} = useWalletStateContext()!;
+export const SendTokenContextProvider = ({ children }: { children: any }) => {
+  const { theme, repo } = useApplicationContext()
+  const { wallet } = useWalletContext()
+  const { activeAccount } = useAccountsContext()
+  const { avaxPrice, erc20Tokens } = useWalletStateContext()!
   const [sendToken, setSendToken] = useState<TokenWithBalance | undefined>(
-    undefined,
-  );
+    undefined
+  )
 
   const customGasPrice$ = useMemo(
-    () => new BehaviorSubject({bn: new BN(0)}),
-    [],
-  );
+    () => new BehaviorSubject({ bn: new BN(0) }),
+    []
+  )
 
   const {
     submit,
@@ -95,57 +95,57 @@ export const SendTokenContextProvider = ({children}: {children: any}) => {
     setTokenBalances,
     gasLimit,
     setGasLimit,
-    error,
-  } = useSend(sendToken, customGasPrice$);
+    error
+  } = useSend(sendToken, customGasPrice$)
 
-  const [sendAmount, setSendAmount] = useState('0');
-  const [sendToAddress, setSendToAddress] = useState('');
-  const [sendToTitle, setSendToTitle] = useState('');
-  const [sendFromAddress, setSendFromAddress] = useState<string>('');
-  const [sendFromTitle, setSendFromTitle] = useState<string>('');
-  const [sendFeeAvax, setSendFeeAvax] = useState<string | undefined>();
-  const [sendFeeUsd, setSendFeeUsd] = useState<number | undefined>();
-  const [balanceAfterTrx, setBalanceAfterTrx] = useState<string>('-');
-  const [balanceAfterTrxUsd, setBalanceAfterTrxUsd] = useState<string>('-');
-  const [customGasPriceNanoAvax, setCustomGasPriceNanoAvax] = useState('0');
+  const [sendAmount, setSendAmount] = useState('0')
+  const [sendToAddress, setSendToAddress] = useState('')
+  const [sendToTitle, setSendToTitle] = useState('')
+  const [sendFromAddress, setSendFromAddress] = useState<string>('')
+  const [sendFromTitle, setSendFromTitle] = useState<string>('')
+  const [sendFeeAvax, setSendFeeAvax] = useState<string | undefined>()
+  const [sendFeeUsd, setSendFeeUsd] = useState<number | undefined>()
+  const [balanceAfterTrx, setBalanceAfterTrx] = useState<string>('-')
+  const [balanceAfterTrxUsd, setBalanceAfterTrxUsd] = useState<string>('-')
+  const [customGasPriceNanoAvax, setCustomGasPriceNanoAvax] = useState('0')
   const [sendStatus, setSendStatus] = useState<
     'Idle' | 'Sending' | 'Success' | 'Fail'
-  >('Idle');
-  const [sendStatusMsg, setSendStatusMsg] = useState('');
-  const [transactionId, setTransactionId] = useState<string>();
+  >('Idle')
+  const [sendStatusMsg, setSendStatusMsg] = useState('')
+  const [transactionId, setTransactionId] = useState<string>()
 
   useEffect(() => {
     setBalanceAfterTrx(
       bnToBig(
         sendToken?.balance.sub(amount ?? new BN(0)).sub(sendFee ?? new BN(0)) ??
           new BN(0),
-        sendToken?.denomination,
-      ).toFixed(4),
-    );
-  }, [sendFee, amount]);
+        sendToken?.denomination
+      ).toFixed(4)
+    )
+  }, [sendFee, amount])
 
   useEffect(() => {
     setBalanceAfterTrxUsd(
-      (avaxPrice * mustNumber(() => parseFloat(balanceAfterTrx), 0)).toFixed(2),
-    );
-  }, [balanceAfterTrx]);
+      (avaxPrice * mustNumber(() => parseFloat(balanceAfterTrx), 0)).toFixed(2)
+    )
+  }, [balanceAfterTrx])
 
   useEffect(() => {
-    setSendFromAddress(activeAccount!.wallet.getAddressC());
+    setSendFromAddress(activeAccount!.wallet.getAddressC())
     setSendFromTitle(
-      repo.accountsRepo.accounts.get(activeAccount?.index ?? -1)?.title ?? '-',
-    );
-  }, [activeAccount]);
+      repo.accountsRepo.accounts.get(activeAccount?.index ?? -1)?.title ?? '-'
+    )
+  }, [activeAccount])
 
   useEffect(() => {
-    setSendFeeAvax(sendFee ? bnToAvaxC(sendFee) : undefined);
-  }, [sendFee]);
+    setSendFeeAvax(sendFee ? bnToAvaxC(sendFee) : undefined)
+  }, [sendFee])
 
   useEffect(() => {
     setSendFeeUsd(
-      sendFeeAvax ? Number.parseFloat(sendFeeAvax) * avaxPrice : undefined,
-    );
-  }, [sendFeeAvax, avaxPrice]);
+      sendFeeAvax ? Number.parseFloat(sendFeeAvax) * avaxPrice : undefined
+    )
+  }, [sendFeeAvax, avaxPrice])
 
   useEffect(() => {
     customGasPrice$.next(
@@ -154,47 +154,47 @@ export const SendTokenContextProvider = ({children}: {children: any}) => {
           return {
             bn: numberToBN(
               mustNumber(() => parseFloat(customGasPriceNanoAvax), 0),
-              9,
-            ),
-          };
+              9
+            )
+          }
         },
-        {bn: new BN(0)},
-      ),
-    );
-  }, [customGasPriceNanoAvax]);
+        { bn: new BN(0) }
+      )
+    )
+  }, [customGasPriceNanoAvax])
   useEffect(() => {
     if (sendToken?.isErc20) {
-      setTokenBalances?.({[(sendToken as ERC20).address]: sendToken as ERC20});
+      setTokenBalances?.({ [(sendToken as ERC20).address]: sendToken as ERC20 })
     }
-  }, [sendToken]);
+  }, [sendToken])
 
   useEffect(() => {
     setAmount(
       mustValue(
         () => stringToBN(sendAmount, sendToken?.denomination ?? 0),
-        new BN(0),
-      ),
-    );
-  }, [sendAmount, sendToken]);
+        new BN(0)
+      )
+    )
+  }, [sendAmount, sendToken])
 
   useEffect(() => {
-    setAddress(sendToAddress);
-  }, [sendToAddress, sendToken]);
+    setAddress(sendToAddress)
+  }, [sendToAddress, sendToken])
 
   function onSendNow() {
-    console.log('onsend now');
-    setTransactionId(undefined);
-    setSendStatus('Sending');
+    console.log('onsend now')
+    setTransactionId(undefined)
+    setSendStatus('Sending')
 
     const balances = erc20Tokens.reduce(
-      (acc: {[key: string]: ERC20WithBalance}, tk) => {
+      (acc: { [key: string]: ERC20WithBalance }, tk) => {
         return {
           ...acc,
-          [tk.address]: tk,
-        };
+          [tk.address]: tk
+        }
       },
-      {},
-    );
+      {}
+    )
 
     submit?.(
       sendToken?.isErc20 ? (sendToken as ERC20) : undefined,
@@ -203,41 +203,41 @@ export const SendTokenContextProvider = ({children}: {children: any}) => {
       address!,
       firstValueFrom(customGasPrice$),
       of(balances) as Subject<any>,
-      gasLimit,
+      gasLimit
     ).subscribe({
       next: value => {
         if (value === undefined) {
-          Alert.alert('Error', 'Undefined error');
+          Alert.alert('Error', 'Undefined error')
         } else {
           if ('txId' in value && value.txId) {
-            setTransactionId(value.txId);
-            setSendStatus('Success');
-            console.log('send success', value.txId);
+            setTransactionId(value.txId)
+            setSendStatus('Success')
+            console.log('send success', value.txId)
           }
         }
       },
       error: err => {
-        setSendStatus('Fail');
-        setSendStatusMsg(err);
-        console.log('send err', err);
-      },
-    });
+        setSendStatus('Fail')
+        setSendStatusMsg(err)
+        console.log('send err', err)
+      }
+    })
   }
 
   const tokenLogo = useCallback(() => {
     if (sendToken?.isAvax) {
-      return <AvaLogoSVG size={57} />;
+      return <AvaLogoSVG size={57} />
     } else {
       return (
         <Image
-          style={{width: 57, height: 57}}
+          style={{ width: 57, height: 57 }}
           source={{
-            uri: sendToken?.logoURI,
+            uri: sendToken?.logoURI
           }}
         />
-      );
+      )
     }
-  }, [sendToken, theme]);
+  }, [sendToken, theme])
 
   const state: SendTokenContextState = {
     sendToken,
@@ -248,13 +248,13 @@ export const SendTokenContextProvider = ({children}: {children: any}) => {
       address: sendFromAddress,
       title: sendFromTitle,
       balanceAfterTrx,
-      balanceAfterTrxUsd,
+      balanceAfterTrxUsd
     },
     toAccount: {
       title: sendToTitle,
       address: sendToAddress,
       setTitle: setSendToTitle,
-      setAddress: setSendToAddress,
+      setAddress: setSendToAddress
     },
     fees: {
       sendFeeAvax,
@@ -262,7 +262,7 @@ export const SendTokenContextProvider = ({children}: {children: any}) => {
       customGasPriceNanoAvax,
       setCustomGasPriceNanoAvax,
       gasLimit,
-      setGasLimit,
+      setGasLimit
     },
     tokenLogo,
     tokenType,
@@ -271,33 +271,33 @@ export const SendTokenContextProvider = ({children}: {children: any}) => {
     sendStatusMsg,
     onSendNow,
     transactionId,
-    sdkError: error,
-  };
+    sdkError: error
+  }
   return (
     <SendTokenContext.Provider value={state}>
       {children}
     </SendTokenContext.Provider>
-  );
-};
+  )
+}
 
 export function useSendTokenContext() {
-  return useContext(SendTokenContext);
+  return useContext(SendTokenContext)
 }
 
 export interface Account {
-  title: string;
-  setTitle?: Dispatch<string>;
-  address: string;
-  setAddress?: Dispatch<string>;
-  balanceAfterTrx?: string;
-  balanceAfterTrxUsd?: string;
+  title: string
+  setTitle?: Dispatch<string>
+  address: string
+  setAddress?: Dispatch<string>
+  balanceAfterTrx?: string
+  balanceAfterTrxUsd?: string
 }
 
 export interface Fees {
-  sendFeeAvax: string | undefined;
-  sendFeeUsd: number | undefined;
-  customGasPriceNanoAvax: string;
-  setCustomGasPriceNanoAvax: Dispatch<string>;
-  gasLimit: number | undefined;
-  setGasLimit: Dispatch<number>;
+  sendFeeAvax: string | undefined
+  sendFeeUsd: number | undefined
+  customGasPriceNanoAvax: string
+  setCustomGasPriceNanoAvax: Dispatch<string>
+  gasLimit: number | undefined
+  setGasLimit: Dispatch<number>
 }

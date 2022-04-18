@@ -1,18 +1,18 @@
-import React from 'react';
-import Svg, {Path} from 'react-native-svg';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import {View} from 'react-native';
+import React from 'react'
+import Svg, { Path } from 'react-native-svg'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { View } from 'react-native'
 
 interface Prop {
-  color?: string;
-  size?: number;
-  rotate?: number;
+  color?: string
+  size?: number
+  rotate?: number
 }
 
-function ArrowSVG({color = '#FFF', size = 16, rotate}: Prop) {
-  const context = useApplicationContext();
+function ArrowSVG({ color = '#FFF', size = 16, rotate }: Prop) {
+  const context = useApplicationContext()
 
-  const iconColor = color ?? context.theme.colorIcon1;
+  const iconColor = color ?? context.theme.colorIcon1
 
   const Arrow = () => (
     <Svg width={size} height={size} viewBox="0 0 16 16" fill="none">
@@ -21,20 +21,20 @@ function ArrowSVG({color = '#FFF', size = 16, rotate}: Prop) {
         fill={iconColor}
       />
     </Svg>
-  );
+  )
 
   return rotate ? (
     <View
       style={{
         justifyContent: 'center',
         alignItems: 'center',
-        transform: [{rotate: `${rotate}deg`}],
+        transform: [{ rotate: `${rotate}deg` }]
       }}>
       <Arrow />
     </View>
   ) : (
     <Arrow />
-  );
+  )
 }
 
-export default ArrowSVG;
+export default ArrowSVG

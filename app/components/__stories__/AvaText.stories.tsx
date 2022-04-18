@@ -1,19 +1,18 @@
-import {storiesOf} from '@storybook/react-native';
-import AvaText from 'components/AvaText';
-import React from 'react';
-import {StyleSheet, View} from 'react-native';
+import { storiesOf } from '@storybook/react-native'
+import AvaText from 'components/AvaText'
+import React from 'react'
+import { StyleSheet, View } from 'react-native'
 
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     flex: 1,
     justifyContent: 'center',
-    backgroundColor: 'black',
-  },
-});
+    backgroundColor: 'black'
+  }
+})
 
-storiesOf('AvaText', module)
-  .add('Examples', () => {
+storiesOf('AvaText', module).add('Examples', () => {
   return (
     <View style={styles.container}>
       <AvaText.Heading1>Heading One</AvaText.Heading1>
@@ -31,5 +30,5 @@ storiesOf('AvaText', module)
       <AvaText.LargeTitleBold>Large title bold</AvaText.LargeTitleBold>
       <AvaText.ActivityTotal>Activity total</AvaText.ActivityTotal>
     </View>
-  );
-});
+  )
+})

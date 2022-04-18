@@ -3,192 +3,192 @@ import React, {
   Dispatch,
   useContext,
   useEffect,
-  useState,
-} from 'react';
+  useState
+} from 'react'
 import {
   TokenWithBalance,
   useWalletContext,
-  useWalletStateContext,
-} from '@avalabs/wallet-react-components';
-import {getSwapRate} from 'swap/getSwapRate';
-import BN from 'bn.js';
-import {getDecimalsForEVM} from 'utils/TokenTools';
+  useWalletStateContext
+} from '@avalabs/wallet-react-components'
+import { getSwapRate } from 'swap/getSwapRate'
+import BN from 'bn.js'
+import { getDecimalsForEVM } from 'utils/TokenTools'
 import {
   Big,
   bigToLocaleString,
   bnToBig,
   numberToBN,
-  stringToBN,
-} from '@avalabs/avalanche-wallet-sdk';
-import {SwapSide} from 'paraswap';
-import {from} from 'rxjs';
-import {map} from 'rxjs/operators';
-import {performSwap} from 'swap/performSwap';
-import {OptimalRate} from 'paraswap-core';
-import moment from 'moment';
+  stringToBN
+} from '@avalabs/avalanche-wallet-sdk'
+import { SwapSide } from 'paraswap'
+import { from } from 'rxjs'
+import { map } from 'rxjs/operators'
+import { performSwap } from 'swap/performSwap'
+import { OptimalRate } from 'paraswap-core'
+import moment from 'moment'
 
 export interface SwapEntry {
-  token: TokenWithBalance | undefined;
-  setToken: Dispatch<TokenWithBalance>;
-  amount: number;
-  setAmount: Dispatch<number>;
-  usdValue: string;
+  token: TokenWithBalance | undefined
+  setToken: Dispatch<TokenWithBalance>
+  amount: number
+  setAmount: Dispatch<number>
+  usdValue: string
 }
 
 export interface TrxDetails {
-  rate: string;
-  slippageTol: number;
-  setSlippageTol: Dispatch<number>;
-  networkFee: string;
-  networkFeeUsd: string;
-  avaxWalletFee: string;
-  gasLimit: number;
-  setGasLimit: Dispatch<number>;
-  gasPrice: number;
-  setGasPriceNanoAvax: Dispatch<number>;
+  rate: string
+  slippageTol: number
+  setSlippageTol: Dispatch<number>
+  networkFee: string
+  networkFeeUsd: string
+  avaxWalletFee: string
+  gasLimit: number
+  setGasLimit: Dispatch<number>
+  gasPrice: number
+  setGasPriceNanoAvax: Dispatch<number>
 }
 
 export interface SwapContextState {
-  swapFrom: SwapEntry;
-  swapTo: SwapEntry;
-  minDestAmount: string;
-  swapFromTo: () => void;
-  trxDetails: TrxDetails;
-  refresh: () => void;
+  swapFrom: SwapEntry
+  swapTo: SwapEntry
+  minDestAmount: string
+  swapFromTo: () => void
+  trxDetails: TrxDetails
+  refresh: () => void
   doSwap: () => Promise<{
-    swapTxHash: string;
-    approveTxHash: string;
-  }>;
-  error: string | undefined;
+    swapTxHash: string
+    approveTxHash: string
+  }>
+  error: string | undefined
 }
 
-export const SwapContext = createContext<SwapContextState>({} as any);
+export const SwapContext = createContext<SwapContextState>({} as any)
 
-export const SwapContextProvider = ({children}: {children: any}) => {
-  const {wallet} = useWalletContext();
-  const {avaxPrice} = useWalletStateContext()!;
-  const [srcToken, setSrcToken] = useState<TokenWithBalance>();
-  const [srcAmount, setSrcAmount] = useState<number>(0);
-  const [srcUsdAmount, setSrcUsdAmount] = useState<string>('');
-  const [destToken, setDestToken] = useState<TokenWithBalance>();
-  const [destAmount, setDestAmount] = useState<number>(0);
-  const [minAmount, setMinAmount] = useState<string>('0');
-  const [minAmountBig, setMinAmountBig] = useState<string>('');
-  const [destUsdAmount, setDestUsdAmount] = useState<string>('');
-  const [trxRate, setTrxRate] = useState<string>('');
-  const [slipTol, setSlipTol] = useState<number>(12);
-  const [gasLimit, setGasLimit] = useState<number>(0);
-  const [gasPriceNanoAvax, setGasPriceNanoAvax] = useState<number>(0);
-  const [networkFee, setNetworkFee] = useState<string>('- AVAX');
-  const [networkFeeUsd, setNetworkFeeUsd] = useState<string>('$- USD');
-  const [avaxWalletFee, setAvaxWalletFee] = useState<string>('0 AVAX');
-  const [swapSide, setSwapSide] = useState<SwapSide>(SwapSide.SELL);
-  const [error, setError] = useState<string | undefined>(undefined);
-  const [priceRoute, setPriceRoute] = useState<OptimalRate>();
-  const [refreshCounter, setRefreshCounter] = useState(0);
+export const SwapContextProvider = ({ children }: { children: any }) => {
+  const { wallet } = useWalletContext()
+  const { avaxPrice } = useWalletStateContext()!
+  const [srcToken, setSrcToken] = useState<TokenWithBalance>()
+  const [srcAmount, setSrcAmount] = useState<number>(0)
+  const [srcUsdAmount, setSrcUsdAmount] = useState<string>('')
+  const [destToken, setDestToken] = useState<TokenWithBalance>()
+  const [destAmount, setDestAmount] = useState<number>(0)
+  const [minAmount, setMinAmount] = useState<string>('0')
+  const [minAmountBig, setMinAmountBig] = useState<string>('')
+  const [destUsdAmount, setDestUsdAmount] = useState<string>('')
+  const [trxRate, setTrxRate] = useState<string>('')
+  const [slipTol, setSlipTol] = useState<number>(12)
+  const [gasLimit, setGasLimit] = useState<number>(0)
+  const [gasPriceNanoAvax, setGasPriceNanoAvax] = useState<number>(0)
+  const [networkFee, setNetworkFee] = useState<string>('- AVAX')
+  const [networkFeeUsd, setNetworkFeeUsd] = useState<string>('$- USD')
+  const [avaxWalletFee, setAvaxWalletFee] = useState<string>('0 AVAX')
+  const [swapSide, setSwapSide] = useState<SwapSide>(SwapSide.SELL)
+  const [error, setError] = useState<string | undefined>(undefined)
+  const [priceRoute, setPriceRoute] = useState<OptimalRate>()
+  const [refreshCounter, setRefreshCounter] = useState(0)
 
   useEffect(() => {
-    const gasPriceBig = new Big(gasPriceNanoAvax).div(Math.pow(10, 9));
-    const gasLimitBig = new Big(gasLimit);
-    const feeBig = gasPriceBig.mul(gasLimitBig);
-    const fee = bigToLocaleString(feeBig, 4);
-    const feeUsd = bigToLocaleString(feeBig.mul(avaxPrice), 4);
-    setNetworkFee(`${fee}`);
-    setNetworkFeeUsd(`${feeUsd}`);
-  }, [gasLimit, gasPriceNanoAvax]);
+    const gasPriceBig = new Big(gasPriceNanoAvax).div(Math.pow(10, 9))
+    const gasLimitBig = new Big(gasLimit)
+    const feeBig = gasPriceBig.mul(gasLimitBig)
+    const fee = bigToLocaleString(feeBig, 4)
+    const feeUsd = bigToLocaleString(feeBig.mul(avaxPrice), 4)
+    setNetworkFee(`${fee}`)
+    setNetworkFeeUsd(`${feeUsd}`)
+  }, [gasLimit, gasPriceNanoAvax])
 
   useEffect(() => {
     const amount = numberToBN(
       swapSide === SwapSide.SELL ? srcAmount : destAmount,
-      getDecimalsForEVM(swapSide === SwapSide.SELL ? srcToken : destToken) ?? 0,
-    ).toString();
+      getDecimalsForEVM(swapSide === SwapSide.SELL ? srcToken : destToken) ?? 0
+    ).toString()
 
     const subscription = from(
       getSwapRate({
         srcToken: srcToken,
         destToken: destToken,
         amount: amount,
-        swapSide,
-      }),
+        swapSide
+      })
     )
       .pipe(
-        map(({result, error}) => {
+        map(({ result, error }) => {
           if (error) {
-            throw Error(error);
+            throw Error(error)
           }
           if (!result) {
-            throw Error('No result');
+            throw Error('No result')
           }
 
           const destAmount = bnToBig(
             new BN(result.destAmount),
-            result.destDecimals,
-          );
+            result.destDecimals
+          )
           const srcAmount = bnToBig(
             new BN(result.srcAmount),
-            result.srcDecimals,
-          );
+            result.srcDecimals
+          )
           if (srcAmount.toNumber() === 0) {
-            return;
+            return
           }
           const destAmountBySrcAmount = destAmount
             .div(srcAmount)
             .toFixed(4)
-            .toString();
+            .toString()
 
-          setPriceRoute(result);
-          setSrcAmount(srcAmount.toNumber());
-          setDestAmount(destAmount.toNumber());
-          setSrcUsdAmount(result.srcUSD);
-          setDestUsdAmount(result.destUSD);
-          setGasLimit(Number(result.gasCost));
-          setAvaxWalletFee(`${result.partnerFee} AVAX`);
+          setPriceRoute(result)
+          setSrcAmount(srcAmount.toNumber())
+          setDestAmount(destAmount.toNumber())
+          setSrcUsdAmount(result.srcUSD)
+          setDestUsdAmount(result.destUSD)
+          setGasLimit(Number(result.gasCost))
+          setAvaxWalletFee(`${result.partnerFee} AVAX`)
           setTrxRate(
-            `1 ${srcToken?.symbol} ≈ ${destAmountBySrcAmount} ${destToken?.symbol}`,
-          );
-          const minAmnt = destAmount.times(1 - slipTol / 100).toFixed(8);
-          setMinAmount(minAmnt);
-          setMinAmountBig(stringToBN(minAmnt, result.destDecimals).toString());
-          setError(undefined);
-        }),
+            `1 ${srcToken?.symbol} ≈ ${destAmountBySrcAmount} ${destToken?.symbol}`
+          )
+          const minAmnt = destAmount.times(1 - slipTol / 100).toFixed(8)
+          setMinAmount(minAmnt)
+          setMinAmountBig(stringToBN(minAmnt, result.destDecimals).toString())
+          setError(undefined)
+        })
       )
       .subscribe({
         error: err => {
-          setPriceRoute(undefined);
-          setError(err.message);
-          console.error(err);
-        },
-      });
+          setPriceRoute(undefined)
+          setError(err.message)
+          console.error(err)
+        }
+      })
 
     return () => {
-      subscription.unsubscribe();
-    };
-  }, [srcToken, destToken, srcAmount, destAmount, refreshCounter]);
+      subscription.unsubscribe()
+    }
+  }, [srcToken, destToken, srcAmount, destAmount, refreshCounter])
 
   const _setSrcAmount = (amount: number) => {
-    setSwapSide(SwapSide.SELL);
-    setSrcAmount(amount);
-  };
+    setSwapSide(SwapSide.SELL)
+    setSrcAmount(amount)
+  }
   const _setDestAmount = (amount: number) => {
-    setSwapSide(SwapSide.BUY);
-    setDestAmount(amount);
-  };
+    setSwapSide(SwapSide.BUY)
+    setDestAmount(amount)
+  }
 
   const swapFromTo = () => {
-    const tempToken = destToken;
-    setDestToken(srcToken);
-    setSrcToken(tempToken);
-    const tempAmount = destAmount;
-    setDestAmount(srcAmount);
-    setSrcAmount(tempAmount);
-  };
+    const tempToken = destToken
+    setDestToken(srcToken)
+    setSrcToken(tempToken)
+    const tempAmount = destAmount
+    setDestAmount(srcAmount)
+    setSrcAmount(tempAmount)
+  }
 
   const doSwap = async () => {
     if (!priceRoute) {
-      throw Error('no price route');
+      throw Error('no price route')
     }
 
-    const {result, error} = await performSwap(
+    const { result, error } = await performSwap(
       {
         priceRoute: priceRoute,
         srcAmount: priceRoute.srcAmount,
@@ -196,24 +196,24 @@ export const SwapContextProvider = ({children}: {children: any}) => {
         gasLimit: priceRoute.gasCost,
         gasPrice: {
           bn: numberToBN(gasPriceNanoAvax, 9),
-          value: gasPriceNanoAvax.toString(),
-        },
+          value: gasPriceNanoAvax.toString()
+        }
       },
-      wallet,
-    );
+      wallet
+    )
     if (error) {
-      throw Error(error);
+      throw Error(error)
     }
     if (!result) {
-      throw Error('undefined result');
+      throw Error('undefined result')
     }
 
-    return result;
-  };
+    return result
+  }
 
   const refresh = () => {
-    setRefreshCounter(moment().second());
-  };
+    setRefreshCounter(moment().second())
+  }
 
   const state: SwapContextState = {
     swapFrom: {
@@ -221,14 +221,14 @@ export const SwapContextProvider = ({children}: {children: any}) => {
       setToken: setSrcToken,
       amount: srcAmount,
       setAmount: _setSrcAmount,
-      usdValue: srcUsdAmount,
+      usdValue: srcUsdAmount
     },
     swapTo: {
       token: destToken,
       setToken: setDestToken,
       amount: destAmount,
       setAmount: _setDestAmount,
-      usdValue: destUsdAmount,
+      usdValue: destUsdAmount
     },
     minDestAmount: minAmount,
     swapFromTo,
@@ -242,15 +242,15 @@ export const SwapContextProvider = ({children}: {children: any}) => {
       gasLimit,
       setGasLimit,
       gasPrice: gasPriceNanoAvax,
-      setGasPriceNanoAvax,
+      setGasPriceNanoAvax
     },
     refresh,
     doSwap,
-    error,
-  };
-  return <SwapContext.Provider value={state}>{children}</SwapContext.Provider>;
-};
+    error
+  }
+  return <SwapContext.Provider value={state}>{children}</SwapContext.Provider>
+}
 
 export function useSwapContext() {
-  return useContext(SwapContext);
+  return useContext(SwapContext)
 }

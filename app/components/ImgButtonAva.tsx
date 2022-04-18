@@ -1,22 +1,22 @@
-import React from 'react';
+import React from 'react'
 import {
   Image,
   ImageSourcePropType,
   StyleSheet,
   TouchableNativeFeedback,
-  View,
-} from 'react-native';
-import {useApplicationContext} from 'contexts/ApplicationContext';
+  View
+} from 'react-native'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 type Props = {
-  src: ImageSourcePropType;
-  onPress: () => void;
-  width?: number;
-  height?: number;
-};
+  src: ImageSourcePropType
+  onPress: () => void
+  width?: number
+  height?: number
+}
 export default function ImgButtonAva(props: Props | Readonly<Props>) {
-  const context = useApplicationContext();
-  const theme = context.theme;
+  const context = useApplicationContext()
+  const theme = context.theme
   return (
     <TouchableNativeFeedback
       useForeground={true}
@@ -27,19 +27,19 @@ export default function ImgButtonAva(props: Props | Readonly<Props>) {
           source={props.src}
           style={[
             styles.button,
-            {width: props.width || 24, height: props.height || 24},
+            { width: props.width || 24, height: props.height || 24 }
           ]}
         />
       </View>
     </TouchableNativeFeedback>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
   container: {
-    alignSelf: 'baseline',
+    alignSelf: 'baseline'
   },
   button: {
-    margin: 10,
-  },
-});
+    margin: 10
+  }
+})

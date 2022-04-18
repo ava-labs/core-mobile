@@ -1,53 +1,53 @@
-import React, {useEffect, useRef, useState} from 'react';
-import {InteractionManager, StyleSheet, TextInput, View} from 'react-native';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import AvaButton from './AvaButton';
-import AvaText from './AvaText';
-import {Space} from 'components/Space';
-import {Opacity30} from 'resources/Constants';
+import React, { useEffect, useRef, useState } from 'react'
+import { InteractionManager, StyleSheet, TextInput, View } from 'react-native'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { Space } from 'components/Space'
+import { Opacity30 } from 'resources/Constants'
+import AvaButton from './AvaButton'
+import AvaText from './AvaText'
 
 type Props = {
-  btnPrimaryText: string;
-  btnSecondaryText: string;
-  onBtnPrimary: (text: string) => void;
-  onBtnSecondary: () => void;
-  onChangeText: (text: string) => void;
-  heading?: string;
-  errorMessage?: string;
-  autoFocus?: boolean;
-  autoCorrect?: boolean;
-};
+  btnPrimaryText: string
+  btnSecondaryText: string
+  onBtnPrimary: (text: string) => void
+  onBtnSecondary: () => void
+  onChangeText: (text: string) => void
+  heading?: string
+  errorMessage?: string
+  autoFocus?: boolean
+  autoCorrect?: boolean
+}
 
 export default function TextArea(props: Props | Readonly<Props>): JSX.Element {
-  const context = useApplicationContext();
-  const theme = context.theme;
-  const [enteredText, setEnteredText] = useState('');
+  const context = useApplicationContext()
+  const theme = context.theme
+  const [enteredText, setEnteredText] = useState('')
   const [errorMessage, setErrorMessage] = useState<string | undefined>(
-    props.errorMessage,
-  );
+    props.errorMessage
+  )
 
-  const [primaryDisabled, setPrimaryDisabled] = useState(true);
-  const textInputRef = useRef<TextInput>(null);
+  const [primaryDisabled, setPrimaryDisabled] = useState(true)
+  const textInputRef = useRef<TextInput>(null)
 
   useEffect(() => {
     if (props.autoFocus) {
       InteractionManager.runAfterInteractions(() => {
-        textInputRef.current?.focus();
-      });
+        textInputRef.current?.focus()
+      })
     }
-  }, [props.autoFocus, textInputRef]);
+  }, [props.autoFocus, textInputRef])
 
   useEffect(() => {
-    setErrorMessage(props.errorMessage);
-  }, [props.errorMessage]);
+    setErrorMessage(props.errorMessage)
+  }, [props.errorMessage])
 
   useEffect(() => {
     if (enteredText) {
-      setPrimaryDisabled(false);
+      setPrimaryDisabled(false)
     } else {
-      setPrimaryDisabled(true);
+      setPrimaryDisabled(true)
     }
-  }, [enteredText]);
+  }, [enteredText])
 
   return (
     <>
@@ -55,11 +55,11 @@ export default function TextArea(props: Props | Readonly<Props>): JSX.Element {
         style={[
           styles.container,
           {
-            backgroundColor: theme.colorBg3 + Opacity30,
-          },
+            backgroundColor: theme.colorBg3 + Opacity30
+          }
         ]}>
         {props.heading && (
-          <AvaText.Heading2 textStyle={{marginBottom: 16}}>
+          <AvaText.Heading2 textStyle={{ marginBottom: 16 }}>
             Recovery phrase
           </AvaText.Heading2>
         )}
@@ -71,8 +71,8 @@ export default function TextArea(props: Props | Readonly<Props>): JSX.Element {
           multiline={true}
           value={enteredText}
           onChangeText={text => {
-            setEnteredText(text);
-            props.onChangeText(text);
+            setEnteredText(text)
+            props.onChangeText(text)
           }}
           style={[
             {
@@ -82,12 +82,12 @@ export default function TextArea(props: Props | Readonly<Props>): JSX.Element {
               fontSize: 16,
               padding: 0,
               lineHeight: 24,
-              fontFamily: 'Inter-Regular',
-            },
+              fontFamily: 'Inter-Regular'
+            }
           ]}
         />
         {errorMessage && (
-          <AvaText.Body3 textStyle={{color: theme.colorError, marginTop: 4}}>
+          <AvaText.Body3 textStyle={{ color: theme.colorError, marginTop: 4 }}>
             {errorMessage}
           </AvaText.Body3>
         )}
@@ -103,7 +103,7 @@ export default function TextArea(props: Props | Readonly<Props>): JSX.Element {
         {props.btnSecondaryText}
       </AvaButton.TextLarge>
     </>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     padding: 16,
     minHeight: 160,
-    marginBottom: 24,
+    marginBottom: 24
   },
   buttonContainer: {
     margin: 0,
@@ -122,6 +122,6 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 8,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-});
+    alignItems: 'center'
+  }
+})

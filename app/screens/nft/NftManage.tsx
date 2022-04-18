@@ -1,20 +1,19 @@
-import React, {useMemo, useState} from 'react';
-import {FlatList, StyleSheet, View} from 'react-native';
-import AvaText from 'components/AvaText';
-import SearchBar from 'components/SearchBar';
-import {NFTItemData} from 'screens/nft/NftCollection';
-import ZeroState from 'components/ZeroState';
-import {COLORS_DAY, COLORS_NIGHT, Opacity85} from 'resources/Constants';
-import AvaListItem from 'components/AvaListItem';
-import Avatar from 'components/Avatar';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import Switch from 'components/Switch';
+import React, { useMemo, useState } from 'react'
+import { FlatList, StyleSheet, View } from 'react-native'
+import AvaText from 'components/AvaText'
+import SearchBar from 'components/SearchBar'
+import { NFTItemData } from 'screens/nft/NftCollection'
+import ZeroState from 'components/ZeroState'
+import { COLORS_DAY, COLORS_NIGHT, Opacity85 } from 'resources/Constants'
+import AvaListItem from 'components/AvaListItem'
+import Avatar from 'components/Avatar'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import Switch from 'components/Switch'
 
-export type NftManageProps = {};
 const NftManage = () => {
-  const {theme} = useApplicationContext();
-  const {nftRepo} = useApplicationContext().repo;
-  const [searchText, setSearchText] = useState('');
+  const { theme } = useApplicationContext()
+  const { nftRepo } = useApplicationContext().repo
+  const [searchText, setSearchText] = useState('')
 
   const filteredData = useMemo(() => {
     return [...nftRepo.nfts.values()].filter(nft => {
@@ -24,46 +23,46 @@ const NftManage = () => {
         nft.collection.contract_name
           .toLowerCase()
           .includes(searchText.toLowerCase())
-      );
-    });
-  }, [nftRepo.nfts, searchText]);
+      )
+    })
+  }, [nftRepo.nfts, searchText])
 
   const updateSearch = (searchVal: string) => {
-    setSearchText(searchVal);
-  };
+    setSearchText(searchVal)
+  }
 
   const onItemToggled = (item: NFTItemData, isVisible: boolean) => {
-    item.isShowing = isVisible;
-    nftRepo.saveNfts(nftRepo.nfts);
-  };
+    item.isShowing = isVisible
+    nftRepo.saveNfts(nftRepo.nfts)
+  }
 
   return (
     <View style={styles.container}>
       <AvaText.LargeTitleBold>Manage List</AvaText.LargeTitleBold>
       <SearchBar onTextChanged={updateSearch} searchText={searchText} />
       <FlatList
-        style={{flex: 1}}
+        style={{ flex: 1 }}
         data={filteredData}
         ListEmptyComponent={<ZeroState.Collectibles />}
         keyExtractor={item => item.uid}
-        ItemSeparatorComponent={() => <View style={{margin: 4}} />}
+        ItemSeparatorComponent={() => <View style={{ margin: 4 }} />}
         renderItem={info => renderItemList(info.item, onItemToggled, theme)}
       />
     </View>
-  );
-};
+  )
+}
 
 const renderItemList = (
   item: NFTItemData,
   onItemToggled: (item: NFTItemData, isVisible: boolean) => void,
-  theme: typeof COLORS_DAY | typeof COLORS_NIGHT,
+  theme: typeof COLORS_DAY | typeof COLORS_NIGHT
 ) => {
   return (
     <View
       style={{
         marginVertical: 4,
         borderRadius: 8,
-        backgroundColor: theme.colorBg2 + Opacity85,
+        backgroundColor: theme.colorBg2 + Opacity85
       }}>
       <AvaListItem.Base
         title={item.token_id}
@@ -82,14 +81,14 @@ const renderItemList = (
         }
       />
     </View>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 16,
-    flex: 1,
-  },
-});
+    flex: 1
+  }
+})
 
-export default NftManage;
+export default NftManage

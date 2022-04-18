@@ -1,16 +1,16 @@
-import React from 'react';
-import Svg, {Path} from 'react-native-svg';
-import {useApplicationContext} from 'contexts/ApplicationContext';
+import React from 'react'
+import Svg, { Path } from 'react-native-svg'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 interface Prop {
-  color?: string;
-  size?: number;
+  color?: string
+  size?: number
 }
 
-function CheckmarkSVG({color, size = 16}: Prop) {
-  const context = useApplicationContext();
+function CheckmarkSVG({ color, size = 16 }: Prop) {
+  const context = useApplicationContext()
 
-  const iconColor = color ?? context.theme.alternateBackground;
+  const iconColor = color ?? context.theme.alternateBackground
   return (
     <Svg width={size} height={size * 0.75} viewBox="0 0 16 12" fill="none">
       <Path
@@ -18,7 +18,7 @@ function CheckmarkSVG({color, size = 16}: Prop) {
         fill={iconColor}
       />
     </Svg>
-  );
+  )
 }
 
-export default CheckmarkSVG;
+export default CheckmarkSVG

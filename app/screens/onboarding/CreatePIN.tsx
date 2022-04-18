@@ -1,11 +1,11 @@
-import React, {useEffect} from 'react';
-import {Animated, StyleSheet, View} from 'react-native';
-import PinKey, {PinKeys} from './PinKey';
-import {useCreatePin} from './CreatePinViewModel';
-import {Space} from 'components/Space';
-import AvaText from 'components/AvaText';
-import DotSVG from 'components/svg/DotSVG';
-import {useApplicationContext} from 'contexts/ApplicationContext';
+import React, { useEffect } from 'react'
+import { Animated, StyleSheet, View } from 'react-native'
+import { Space } from 'components/Space'
+import AvaText from 'components/AvaText'
+import DotSVG from 'components/svg/DotSVG'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { useCreatePin } from './CreatePinViewModel'
+import PinKey, { PinKeys } from './PinKey'
 
 const keymap: Map<string, PinKeys> = new Map([
   ['1', PinKeys.Key1],
@@ -18,13 +18,13 @@ const keymap: Map<string, PinKeys> = new Map([
   ['8', PinKeys.Key8],
   ['9', PinKeys.Key9],
   ['0', PinKeys.Key0],
-  ['<', PinKeys.Backspace],
-]);
+  ['<', PinKeys.Backspace]
+])
 
 type Props = {
-  onPinSet: (pin: string) => void;
-  isResettingPin?: boolean;
-};
+  onPinSet: (pin: string) => void
+  isResettingPin?: boolean
+}
 
 /**
  * This screen will prompt user for PIN creation and confirmation, and upon success onPinSet will be called.
@@ -35,9 +35,9 @@ type Props = {
  */
 export default function CreatePIN({
   onPinSet,
-  isResettingPin,
+  isResettingPin
 }: Props): JSX.Element {
-  const {theme} = useApplicationContext();
+  const { theme } = useApplicationContext()
   const {
     title,
     pinDots,
@@ -45,31 +45,31 @@ export default function CreatePIN({
     onEnterConfirmedPin,
     chosenPinEntered,
     validPin,
-    jiggleAnim,
-  } = useCreatePin(isResettingPin);
+    jiggleAnim
+  } = useCreatePin(isResettingPin)
 
   useEffect(() => {
     if (validPin) {
-      onPinSet(validPin);
+      onPinSet(validPin)
     }
-  }, [validPin, title]);
+  }, [validPin, title])
 
   const generatePinDots = (): Element[] => {
-    const dots: Element[] = [];
+    const dots: Element[] = []
 
     pinDots.forEach((value, key) => {
       dots.push(
         <DotSVG
           fillColor={value.filled ? theme.alternateBackground : undefined}
           key={key}
-        />,
-      );
-    });
-    return dots;
-  };
+        />
+      )
+    })
+    return dots
+  }
 
   const keyboard = (isChosenPinEntered: boolean) => {
-    const keys: Element[] = [];
+    const keys: Element[] = []
     '123456789 0<'.split('').forEach((value, key) => {
       keys.push(
         <View key={key} style={styles.pinKey}>
@@ -79,17 +79,17 @@ export default function CreatePIN({
               isChosenPinEntered ? onEnterConfirmedPin : onEnterChosenPin
             }
           />
-        </View>,
-      );
-    });
-    return keys;
-  };
+        </View>
+      )
+    })
+    return keys
+  }
 
   return (
     <View style={[styles.verticalLayout]}>
       {isResettingPin || (
         <>
-          <AvaText.LargeTitleBold textStyle={{marginHorizontal: 16}}>
+          <AvaText.LargeTitleBold textStyle={{ marginHorizontal: 16 }}>
             {title}
           </AvaText.LargeTitleBold>
           <Space y={20} />
@@ -97,44 +97,44 @@ export default function CreatePIN({
       )}
       <Animated.View
         style={[
-          {padding: 68, flexGrow: 1},
+          { padding: 68, flexGrow: 1 },
           {
             transform: [
               {
-                translateX: jiggleAnim,
-              },
-            ],
-          },
+                translateX: jiggleAnim
+              }
+            ]
+          }
         ]}>
         <View style={styles.dots}>{generatePinDots()}</View>
       </Animated.View>
       <View style={styles.keyboard}>{keyboard(chosenPinEntered)}</View>
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
   verticalLayout: {
     height: '100%',
-    justifyContent: 'flex-end',
+    justifyContent: 'flex-end'
   },
   growContainer: {
-    flexGrow: 1,
+    flexGrow: 1
   },
   keyboard: {
     marginHorizontal: 24,
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexWrap: 'wrap'
   },
   dots: {
     flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'space-between',
     width: '100%',
-    flexDirection: 'row',
+    flexDirection: 'row'
   },
   pinKey: {
     flexBasis: '33%',
-    padding: 16,
-  },
-});
+    padding: 16
+  }
+})

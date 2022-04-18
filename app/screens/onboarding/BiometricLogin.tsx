@@ -1,31 +1,31 @@
-import React from 'react';
-import {Alert, Image, StyleSheet, View} from 'react-native';
-import {useBiometricLogin} from './BiometricLoginViewModel';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import {Space} from 'components/Space';
-import AvaText from 'components/AvaText';
-import AvaButton from 'components/AvaButton';
+import React from 'react'
+import { Alert, Image, StyleSheet, View } from 'react-native'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { Space } from 'components/Space'
+import AvaText from 'components/AvaText'
+import AvaButton from 'components/AvaButton'
+import { useBiometricLogin } from './BiometricLoginViewModel'
 
 type Props = {
-  mnemonic: string;
-  onSkip: () => void;
-  onBiometrySet: () => void;
-};
+  mnemonic: string
+  onSkip: () => void
+  onBiometrySet: () => void
+}
 
 export default function BiometricLogin(
-  props: Props | Readonly<Props>,
+  props: Props | Readonly<Props>
 ): JSX.Element {
-  const context = useApplicationContext();
+  const context = useApplicationContext()
 
-  const {biometryType, storeMnemonicWithBiometric, fingerprintIcon} =
-    useBiometricLogin(props.mnemonic, context.isDarkMode);
+  const { biometryType, storeMnemonicWithBiometric, fingerprintIcon } =
+    useBiometricLogin(props.mnemonic, context.isDarkMode)
 
   async function handleUseBiometry() {
     try {
-      await storeMnemonicWithBiometric();
-      props.onBiometrySet();
+      await storeMnemonicWithBiometric()
+      props.onBiometrySet()
     } catch (e: any) {
-      Alert.alert(e?.message || 'error');
+      Alert.alert(e?.message || 'error')
     }
   }
 
@@ -37,8 +37,8 @@ export default function BiometricLogin(
           style={[
             {
               width: 120,
-              height: 120,
-            },
+              height: 120
+            }
           ]}
         />
         <Space y={90} />
@@ -50,7 +50,7 @@ export default function BiometricLogin(
             textAlign: 'center',
             alignSelf: 'stretch',
             paddingRight: 8,
-            paddingLeft: 8,
+            paddingLeft: 8
           }}>
           Sign in quickly using your {biometryType?.toLowerCase()}. Change this
           anytime in settings
@@ -63,18 +63,18 @@ export default function BiometricLogin(
         {'Use ' + biometryType?.toLowerCase()}
       </AvaButton.PrimaryLarge>
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
   verticalLayout: {
     padding: 16,
     justifyContent: 'flex-end',
-    height: '100%',
+    height: '100%'
   },
   centerLayout: {
     flexGrow: 1,
     alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+    justifyContent: 'center'
+  }
+})

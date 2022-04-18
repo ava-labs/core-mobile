@@ -1,12 +1,12 @@
-import React from 'react';
-import Svg, {Path} from 'react-native-svg';
+import React from 'react'
+import Svg, { Path } from 'react-native-svg'
 
-const BITCOIN_BACKGROUND_COLOR = '#F7931A';
+const BITCOIN_BACKGROUND_COLOR = '#F7931A'
 
 interface Prop {
-  size?: number;
-  absolutePosition?: boolean;
-  backgroundColor?: string;
+  size?: number
+  absolutePosition?: boolean
+  backgroundColor?: string
 }
 
 function BitcoinSVG({
@@ -18,7 +18,7 @@ function BitcoinSVG({
   return (
     <Svg
       {...props}
-      style={absolutePosition && {position: 'absolute'}}
+      style={absolutePosition && { position: 'absolute' }}
       width={size}
       height={size}
       viewBox="0 0 24 24"
@@ -32,7 +32,7 @@ function BitcoinSVG({
         fill="white"
       />
     </Svg>
-  );
+  )
 }
 
-export default BitcoinSVG;
+export default BitcoinSVG

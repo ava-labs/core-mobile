@@ -1,15 +1,15 @@
-import React from 'react';
-import Svg, {Circle, G, Path} from 'react-native-svg';
-import {useApplicationContext} from 'contexts/ApplicationContext';
+import React from 'react'
+import Svg, { Circle, G, Path } from 'react-native-svg'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 interface Prop {
-  color?: string;
-  size?: number;
+  color?: string
+  size?: number
 }
 
-function BuySVG({color, size = 32}: Prop) {
-  const theme = useApplicationContext().theme;
-  const iconColor = color ?? theme.alternateBackground;
+function BuySVG({ color, size = 32 }: Prop) {
+  const theme = useApplicationContext().theme
+  const iconColor = color ?? theme.alternateBackground
   return (
     <Svg width={size} height={size} viewBox="0 0 32 32" fill="none">
       <G clip-path="url(#clip0_2961_5605)">
@@ -28,7 +28,7 @@ function BuySVG({color, size = 32}: Prop) {
         </G>
       </G>
     </Svg>
-  );
+  )
 }
 
-export default BuySVG;
+export default BuySVG

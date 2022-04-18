@@ -1,18 +1,18 @@
-import React, {useState} from 'react';
-import {StyleSheet, View} from 'react-native';
-import Dialog from 'react-native-dialog';
+import React, { useState } from 'react'
+import { View } from 'react-native'
+import Dialog from 'react-native-dialog'
 
 type Props = {
-  onCancel: () => void;
-  onOk: (password?: string) => void;
-};
+  onCancel: () => void
+  onOk: (password?: string) => void
+}
 
 export default function PasswordInput(props: Props | Readonly<Props>) {
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState('')
 
   const onSubmit = (): void => {
-    props.onOk(password);
-  };
+    props.onOk(password)
+  }
 
   return (
     <View>
@@ -28,18 +28,16 @@ export default function PasswordInput(props: Props | Readonly<Props>) {
         <Dialog.Button
           label="Cancel"
           onPress={() => {
-            props.onCancel();
+            props.onCancel()
           }}
         />
         <Dialog.Button
           label="Ok"
           onPress={() => {
-            onSubmit();
+            onSubmit()
           }}
         />
       </Dialog.Container>
     </View>
-  );
+  )
 }
-
-const styles = StyleSheet.create({});

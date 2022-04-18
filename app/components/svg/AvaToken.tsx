@@ -1,15 +1,15 @@
-import React from 'react';
-import Svg, {Circle, G, Path} from 'react-native-svg';
-import {useApplicationContext} from 'contexts/ApplicationContext';
+import React from 'react'
+import Svg, { Circle, G, Path } from 'react-native-svg'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 interface Prop {
-  color?: string;
+  color?: string
 }
 
-export default function AvaToken({color}: Prop) {
-  const context = useApplicationContext();
+export default function AvaToken({ color }: Prop) {
+  const context = useApplicationContext()
 
-  const iconColor = color ?? context.theme.logoColor;
+  const iconColor = color ?? context.theme.logoColor
   return (
     <Svg width="40" height="40" viewBox="0 0 40 40">
       <G>
@@ -22,5 +22,5 @@ export default function AvaToken({color}: Prop) {
         />
       </G>
     </Svg>
-  );
+  )
 }

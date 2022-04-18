@@ -1,51 +1,51 @@
-import React, {useEffect, useState} from 'react';
-import {Pressable, StyleSheet, View} from 'react-native';
-import AvaText from 'components/AvaText';
-import AvaListItem from 'components/AvaListItem';
-import LinkSVG from 'components/svg/LinkSVG';
-import moment from 'moment';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import {isTransactionERC20} from '@avalabs/wallet-react-components';
-import {Space} from 'components/Space';
-import useInAppBrowser from 'hooks/useInAppBrowser';
-import Separator from 'components/Separator';
-import {truncateAddress} from 'utils/Utils';
-import {RouteProp, useRoute} from '@react-navigation/native';
-import {RootStackParamList} from 'navigation/WalletScreenStack';
-import DotSVG from 'components/svg/DotSVG';
-import FlexSpacer from 'components/FlexSpacer';
-import Avatar from 'components/Avatar';
-import {Contact} from 'Repo';
-import {bnToAvaxC, numberToBN} from '@avalabs/avalanche-wallet-sdk';
-import AppNavigation from 'navigation/AppNavigation';
+import React, { useEffect, useState } from 'react'
+import { Pressable, StyleSheet, View } from 'react-native'
+import AvaText from 'components/AvaText'
+import AvaListItem from 'components/AvaListItem'
+import LinkSVG from 'components/svg/LinkSVG'
+import moment from 'moment'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { isTransactionERC20 } from '@avalabs/wallet-react-components'
+import { Space } from 'components/Space'
+import useInAppBrowser from 'hooks/useInAppBrowser'
+import Separator from 'components/Separator'
+import { truncateAddress } from 'utils/Utils'
+import { RouteProp, useRoute } from '@react-navigation/native'
+import { RootStackParamList } from 'navigation/WalletScreenStack'
+import DotSVG from 'components/svg/DotSVG'
+import FlexSpacer from 'components/FlexSpacer'
+import Avatar from 'components/Avatar'
+import { Contact } from 'Repo'
+import { bnToAvaxC, numberToBN } from '@avalabs/avalanche-wallet-sdk'
+import AppNavigation from 'navigation/AppNavigation'
 
 function ActivityDetail() {
-  const theme = useApplicationContext().theme;
-  const {addressBook} = useApplicationContext().repo.addressBookRepo;
-  const addressBookArray = Array.from(addressBook);
+  const theme = useApplicationContext().theme
+  const { addressBook } = useApplicationContext().repo.addressBookRepo
+  const addressBookArray = Array.from(addressBook)
   const txItem =
     useRoute<
       RouteProp<RootStackParamList, typeof AppNavigation.Wallet.ActivityDetail>
-    >().params.tx;
-  const date = moment(txItem?.timestamp).format('MMM DD, YYYY HH:mm');
-  const {openUrl} = useInAppBrowser();
-  const [contact, setContact] = useState<Contact>();
+    >().params.tx
+  const date = moment(txItem?.timestamp).format('MMM DD, YYYY HH:mm')
+  const { openUrl } = useInAppBrowser()
+  const [contact, setContact] = useState<Contact>()
 
   const feeBN = numberToBN(
     Number(txItem?.gasUsed ?? '0') * Number(txItem?.gasPrice ?? '0'),
-    0,
-  );
-  const fees = bnToAvaxC(feeBN);
+    0
+  )
+  const fees = bnToAvaxC(feeBN)
 
-  useEffect(() => getContactMatch(), [addressBook]);
+  useEffect(() => getContactMatch(), [addressBook])
 
   function getContactMatch() {
-    const address = txItem?.isSender ? txItem.to : txItem?.from;
+    const address = txItem?.isSender ? txItem.to : txItem?.from
     const filtered = addressBookArray?.filter(
-      entry => entry[1].address === address,
-    );
+      entry => entry[1].address === address
+    )
     if (filtered.length > 0) {
-      setContact(filtered[0][1]);
+      setContact(filtered[0][1])
     }
   }
 
@@ -57,29 +57,29 @@ function ActivityDetail() {
           name={txItem.tokenName}
           symbol={txItem.tokenSymbol}
         />
-      );
+      )
     }
-    return <Avatar.Custom size={57} name={'Avalanche'} symbol={'AVAX'} />;
-  };
+    return <Avatar.Custom size={57} name={'Avalanche'} symbol={'AVAX'} />
+  }
 
   return (
-    <View style={{flex: 1}}>
+    <View style={{ flex: 1 }}>
       {txItem && (
         <View
           style={{
             backgroundColor: theme.colorBg2,
             marginTop: 45,
             paddingTop: 10,
-            flex: 1,
+            flex: 1
           }}>
           <View style={styles.logoContainer}>
-            <View style={{position: 'absolute'}}>
+            <View style={{ position: 'absolute' }}>
               <DotSVG fillColor={theme.colorBg1} size={72} />
             </View>
             {tokenLogo()}
           </View>
           <View style={styles.headerContainer}>
-            <AvaText.Heading1 textStyle={{marginTop: 16}}>
+            <AvaText.Heading1 textStyle={{ marginTop: 16 }}>
               {txItem.isSender ? '-' : '+'}
               {txItem.amountDisplayValue}
               <AvaText.Body1 color={theme.colorText2}>
@@ -110,7 +110,7 @@ function ActivityDetail() {
             }
             titleAlignment={'flex-start'}
             rightComponent={
-              <View style={{alignItems: 'flex-end'}}>
+              <View style={{ alignItems: 'flex-end' }}>
                 {contact && (
                   <AvaText.Heading3>{contact?.title}</AvaText.Heading3>
                 )}
@@ -136,11 +136,11 @@ function ActivityDetail() {
               <Pressable
                 style={[styles.explorerLink]}
                 onPress={() => {
-                  openUrl(txItem.explorerLink);
+                  openUrl(txItem.explorerLink)
                 }}>
                 <LinkSVG color={theme.white} />
                 <AvaText.ButtonLarge
-                  textStyle={{marginLeft: 8}}
+                  textStyle={{ marginLeft: 8 }}
                   color={theme.white}>
                   View on Explorer
                 </AvaText.ButtonLarge>
@@ -151,7 +151,7 @@ function ActivityDetail() {
         </View>
       )}
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -159,19 +159,19 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
-    bottom: 25,
+    bottom: 25
   },
   headerContainer: {
     marginTop: 8,
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'center'
   },
   tokenLogo: {
     paddingHorizontal: 16,
     width: 32,
     height: 32,
     borderRadius: 20,
-    overflow: 'hidden',
+    overflow: 'hidden'
   },
   explorerLink: {
     flexDirection: 'row',
@@ -180,8 +180,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginHorizontal: 16,
     borderRadius: 25,
-    backgroundColor: '#FFFFFF26',
-  },
-});
+    backgroundColor: '#FFFFFF26'
+  }
+})
 
-export default ActivityDetail;
+export default ActivityDetail

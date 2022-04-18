@@ -1,65 +1,65 @@
-import React, {FC, useEffect, useMemo, useState} from 'react';
-import {ActivityIndicator, StyleSheet, UIManager, View} from 'react-native';
-import {useApplicationContext} from 'contexts/ApplicationContext';
+import React, { FC, useEffect, useMemo, useState } from 'react'
+import { ActivityIndicator, StyleSheet, UIManager, View } from 'react-native'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import {
   FUJI_NETWORK,
   MAINNET_NETWORK,
-  useNetworkContext,
-} from '@avalabs/wallet-react-components';
-import CheckmarkSVG from 'components/svg/CheckmarkSVG';
-import AvaListItem from 'components/AvaListItem';
-import {useNavigation} from '@react-navigation/native';
-import AvaText from 'components/AvaText';
+  useNetworkContext
+} from '@avalabs/wallet-react-components'
+import CheckmarkSVG from 'components/svg/CheckmarkSVG'
+import AvaListItem from 'components/AvaListItem'
+import { useNavigation } from '@react-navigation/native'
+import AvaText from 'components/AvaText'
 
 UIManager.setLayoutAnimationEnabledExperimental &&
-  UIManager.setLayoutAnimationEnabledExperimental(true);
+  UIManager.setLayoutAnimationEnabledExperimental(true)
 
 //const DOT = '\u25CF';
 
 const NetworkSelector: FC = () => {
-  const context = useApplicationContext();
-  const theme = context.theme;
-  const networkContext = useNetworkContext();
-  const {goBack} = useNavigation();
-  const [networkName, setNetworkName] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [isChanging, setIsChanging] = useState(false);
+  const context = useApplicationContext()
+  const theme = context.theme
+  const networkContext = useNetworkContext()
+  const { goBack } = useNavigation()
+  const [networkName, setNetworkName] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [isChanging, setIsChanging] = useState(false)
 
   const availableNetworks = useMemo(() => {
     return {
       [MAINNET_NETWORK.name]: MAINNET_NETWORK,
-      [FUJI_NETWORK.name]: FUJI_NETWORK,
-    };
-  }, []);
+      [FUJI_NETWORK.name]: FUJI_NETWORK
+    }
+  }, [])
 
   useEffect(() => {
     if (networkName !== networkContext?.network?.name) {
-      setNetworkName(networkContext?.network?.name ?? '');
-      setLoading(false);
+      setNetworkName(networkContext?.network?.name ?? '')
+      setLoading(false)
       if (isChanging) {
-        setIsChanging(false);
-        goBack();
+        setIsChanging(false)
+        goBack()
       }
     }
-  }, [networkContext?.network?.config]);
+  }, [networkContext?.network?.config])
 
   function handleChangeNetwork(network: string) {
     if (network === networkContext?.network?.name) {
-      return;
+      return
     }
-    setLoading(true);
-    setIsChanging(true);
+    setLoading(true)
+    setIsChanging(true)
     // give chance for loading to be set and show the activity indicator.
     setTimeout(() => {
-      networkContext?.setNetwork(availableNetworks[network]);
-    }, 500);
+      networkContext?.setNetwork(availableNetworks[network])
+    }, 500)
   }
 
   return (
     <View
       style={{
         flex: 1,
-        marginVertical: 16,
+        marginVertical: 16
       }}>
       <AvaListItem.Base
         title={
@@ -105,27 +105,29 @@ const NetworkSelector: FC = () => {
               top: 0,
               bottom: 0,
               alignItems: 'center',
-              justifyContent: 'center',
-            },
+              justifyContent: 'center'
+            }
           ]}
         />
       )}
     </View>
-  );
-};
+  )
+}
 
 const selectedTitle = (title: string) => {
   return (
-    <AvaText.Heading3 textStyle={{alignSelf: 'flex-start'}}>
+    <AvaText.Heading3 textStyle={{ alignSelf: 'flex-start' }}>
       {title}
     </AvaText.Heading3>
-  );
-};
+  )
+}
 
 const unselectedTitle = (title: string) => {
   return (
-    <AvaText.Body1 textStyle={{alignSelf: 'flex-start'}}>{title}</AvaText.Body1>
-  );
-};
+    <AvaText.Body1 textStyle={{ alignSelf: 'flex-start' }}>
+      {title}
+    </AvaText.Body1>
+  )
+}
 
-export default NetworkSelector;
+export default NetworkSelector

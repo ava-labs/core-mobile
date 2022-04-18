@@ -1,32 +1,32 @@
-import React from 'react';
-import Svg, {Path} from 'react-native-svg';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import {View} from 'react-native';
+import React from 'react'
+import Svg, { Path } from 'react-native-svg'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { View } from 'react-native'
 
 interface Prop {
-  color?: string;
-  size?: number;
-  direction?: 'up' | 'down' | 'left'; //default is `right`
+  color?: string
+  size?: number
+  direction?: 'up' | 'down' | 'left' //default is `right`
 }
 
-function CarrotSVG({color, size = 16, direction}: Prop) {
-  const {theme} = useApplicationContext();
+function CarrotSVG({ color, size = 16, direction }: Prop) {
+  const { theme } = useApplicationContext()
 
   function getDegrees() {
-    let degrees = 0;
+    let degrees = 0
     switch (direction) {
       case 'up':
-        degrees = -90;
-        break;
+        degrees = -90
+        break
       case 'down':
-        degrees = 90;
-        break;
+        degrees = 90
+        break
       case 'left':
-        degrees = 180;
-        break;
+        degrees = 180
+        break
     }
 
-    return `${degrees}deg`;
+    return `${degrees}deg`
   }
 
   const Carrot = () => (
@@ -39,19 +39,19 @@ function CarrotSVG({color, size = 16, direction}: Prop) {
         strokeLinejoin="round"
       />
     </Svg>
-  );
+  )
 
   /**
    * If user defines a direction, we wrap it in a view and apply the transfor in int since the
    * transform rotation/rotate in the SVG itself behaves differently and not the desired way we want.
    */
   return direction ? (
-    <View style={{transform: [{rotate: getDegrees()}]}}>
+    <View style={{ transform: [{ rotate: getDegrees() }] }}>
       <Carrot />
     </View>
   ) : (
     <Carrot />
-  );
+  )
 }
 
-export default CarrotSVG;
+export default CarrotSVG

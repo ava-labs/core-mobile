@@ -1,29 +1,29 @@
-import React, {useEffect, useMemo} from 'react';
-import {ActivityIndicator, View} from 'react-native';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import {Space} from 'components/Space';
-import AvaText from 'components/AvaText';
-import {useNavigation} from '@react-navigation/native';
-import DotSVG from 'components/svg/DotSVG';
-import Separator from 'components/Separator';
-import {Row} from 'components/Row';
-import AvaButton from 'components/AvaButton';
-import FlexSpacer from 'components/FlexSpacer';
-import NetworkFeeSelector from 'components/NetworkFeeSelector';
-import {useSendTokenContext} from 'contexts/SendTokenContext';
-import {StackNavigationProp} from '@react-navigation/stack';
-import {SendStackParamList} from 'navigation/wallet/SendScreenStack';
-import {useGasPrice} from 'utils/GasPriceHook';
-import AppNavigation from 'navigation/AppNavigation';
-import SendRow from 'components/SendRow';
+import React, { useEffect, useMemo } from 'react'
+import { ActivityIndicator, View } from 'react-native'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { Space } from 'components/Space'
+import AvaText from 'components/AvaText'
+import { useNavigation } from '@react-navigation/native'
+import DotSVG from 'components/svg/DotSVG'
+import Separator from 'components/Separator'
+import { Row } from 'components/Row'
+import AvaButton from 'components/AvaButton'
+import FlexSpacer from 'components/FlexSpacer'
+import NetworkFeeSelector from 'components/NetworkFeeSelector'
+import { useSendTokenContext } from 'contexts/SendTokenContext'
+import { StackNavigationProp } from '@react-navigation/stack'
+import { SendStackParamList } from 'navigation/wallet/SendScreenStack'
+import { useGasPrice } from 'utils/GasPriceHook'
+import AppNavigation from 'navigation/AppNavigation'
+import SendRow from 'components/SendRow'
 
 export default function ReviewSend({
-  onSuccess,
+  onSuccess
 }: {
-  onSuccess: (transactionId: string) => void;
+  onSuccess: (transactionId: string) => void
 }) {
-  const {theme, isDarkMode} = useApplicationContext();
-  const {goBack} = useNavigation<StackNavigationProp<SendStackParamList>>();
+  const { theme } = useApplicationContext()
+  const { goBack } = useNavigation<StackNavigationProp<SendStackParamList>>()
   const {
     sendToken,
     tokenLogo,
@@ -34,28 +34,28 @@ export default function ReviewSend({
     onSendNow,
     sendStatus,
     sendStatusMsg,
-    transactionId,
-  } = useSendTokenContext();
-  const {gasPrice} = useGasPrice();
+    transactionId
+  } = useSendTokenContext()
+  const { gasPrice } = useGasPrice()
 
   const netFeeString = useMemo(() => {
     return fees.sendFeeAvax
       ? Number.parseFloat(fees.sendFeeAvax).toFixed(6).toString()
-      : '-';
-  }, [fees.sendFeeAvax]);
+      : '-'
+  }, [fees.sendFeeAvax])
 
   useEffect(() => {
     switch (sendStatus) {
       case 'Success':
         if (transactionId) {
-          onSuccess(transactionId);
+          onSuccess(transactionId)
         }
     }
-  }, [sendStatus, transactionId]);
+  }, [sendStatus, transactionId])
 
   return (
-    <View style={{flex: 1}}>
-      <AvaText.LargeTitleBold textStyle={{marginHorizontal: 16}}>
+    <View style={{ flex: 1 }}>
+      <AvaText.LargeTitleBold textStyle={{ marginHorizontal: 16 }}>
         Send
       </AvaText.LargeTitleBold>
       <View
@@ -64,9 +64,9 @@ export default function ReviewSend({
           alignItems: 'center',
           justifyContent: 'center',
           marginBottom: -36,
-          zIndex: 2,
+          zIndex: 2
         }}>
-        <View style={{position: 'absolute'}}>
+        <View style={{ position: 'absolute' }}>
           <DotSVG fillColor={theme.colorBg1} size={72} />
         </View>
         {tokenLogo()}
@@ -79,11 +79,13 @@ export default function ReviewSend({
           paddingBottom: 16,
           flex: 1,
           borderTopLeftRadius: 8,
-          borderTopRightRadius: 8,
+          borderTopRightRadius: 8
         }}>
-        <AvaText.Body2 textStyle={{textAlign: 'center'}}>Amount</AvaText.Body2>
+        <AvaText.Body2 textStyle={{ textAlign: 'center' }}>
+          Amount
+        </AvaText.Body2>
         <Space y={4} />
-        <Row style={{justifyContent: 'center', alignItems: 'flex-end'}}>
+        <Row style={{ justifyContent: 'center', alignItems: 'flex-end' }}>
           <AvaText.Heading1>{sendAmount}</AvaText.Heading1>
           <Space x={4} />
           <AvaText.Heading3>{sendToken?.symbol ?? ''}</AvaText.Heading3>
@@ -108,18 +110,18 @@ export default function ReviewSend({
           initGasLimit={fees.gasLimit || 0}
           onCustomGasLimit={gasLimit => fees.setGasLimit(gasLimit)}
           onWeightedGas={price => fees.setCustomGasPriceNanoAvax(price.value)}
-          weights={{normal: 1, fast: 1.05, instant: 1.15, custom: 35}}
+          weights={{ normal: 1, fast: 1.05, instant: 1.15, custom: 35 }}
         />
         <Space y={16} />
         <Separator />
         <Space y={32} />
-        <Row style={{justifyContent: 'space-between'}}>
+        <Row style={{ justifyContent: 'space-between' }}>
           <AvaText.Body2>Balance After Transaction</AvaText.Body2>
           <AvaText.Heading2>
             {fromAccount.balanceAfterTrx} {sendToken?.symbol ?? ''}
           </AvaText.Heading2>
         </Row>
-        <AvaText.Body3 textStyle={{alignSelf: 'flex-end'}}>
+        <AvaText.Body3 textStyle={{ alignSelf: 'flex-end' }}>
           ${fromAccount.balanceAfterTrxUsd} USD
         </AvaText.Body3>
         <FlexSpacer />
@@ -142,12 +144,12 @@ export default function ReviewSend({
         )}
         {sendStatus === 'Fail' && (
           <>
-            <AvaText.Body2 textStyle={{color: theme.colorError}}>
+            <AvaText.Body2 textStyle={{ color: theme.colorError }}>
               {sendStatusMsg.toString()}
             </AvaText.Body2>
           </>
         )}
       </View>
     </View>
-  );
+  )
 }

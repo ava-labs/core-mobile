@@ -1,12 +1,12 @@
-import {StackNavigationOptions} from '@react-navigation/stack';
-import AvaText from 'components/AvaText';
-import React from 'react';
-import {Row} from 'components/Row';
+import { StackNavigationOptions } from '@react-navigation/stack'
+import AvaText from 'components/AvaText'
+import React from 'react'
+import { Row } from 'components/Row'
 
 export const MainHeaderOptions = (
   title: string,
   hideHeaderLeft = false,
-  actionComponent?: React.ReactNode,
+  actionComponent?: React.ReactNode
 ): Partial<StackNavigationOptions> => {
   return {
     headerShown: true,
@@ -16,12 +16,12 @@ export const MainHeaderOptions = (
           style={{
             width: '100%',
             alignItems: 'center',
-            justifyContent: 'space-between',
+            justifyContent: 'space-between'
           }}>
           <AvaText.Heading1>{title}</AvaText.Heading1>
           {actionComponent}
         </Row>
-      );
+      )
     },
     headerTitleAlign: 'left',
     headerLeft: hideHeaderLeft ? () => null : undefined,
@@ -29,14 +29,14 @@ export const MainHeaderOptions = (
     headerStyle: {
       shadowColor: 'transparent',
       elevation: 0,
-      shadowOpacity: 0,
-    },
-  };
-};
+      shadowOpacity: 0
+    }
+  }
+}
 
 export const SubHeaderOptions = (
   title: string,
-  hideHeaderLeft = false,
+  hideHeaderLeft = false
 ): Partial<StackNavigationOptions> => {
   const options: Partial<StackNavigationOptions> = {
     headerShown: true,
@@ -47,9 +47,9 @@ export const SubHeaderOptions = (
     headerStyle: {
       shadowColor: 'transparent',
       elevation: 0,
-      shadowOpacity: 0,
-    },
-  };
+      shadowOpacity: 0
+    }
+  }
 
-  return options;
-};
+  return options
+}

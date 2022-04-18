@@ -1,107 +1,111 @@
-import {useEffect, useMemo, useState} from 'react';
-import {TokenWithBalance, useWalletStateContext} from '@avalabs/wallet-react-components';
-import useInAppBrowser from 'hooks/useInAppBrowser';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import {CoinsContractInfoResponse} from '@avalabs/coingecko-sdk';
-import {CG_AVAX_TOKEN_ID} from 'screens/watchlist/WatchlistView';
-import Coingecko from 'utils/Coingecko';
+import { useEffect, useMemo, useState } from 'react'
+import {
+  TokenWithBalance,
+  useWalletStateContext
+} from '@avalabs/wallet-react-components'
+import useInAppBrowser from 'hooks/useInAppBrowser'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { CoinsContractInfoResponse } from '@avalabs/coingecko-sdk'
+import { CG_AVAX_TOKEN_ID } from 'screens/watchlist/WatchlistView'
+import Coingecko from 'utils/Coingecko'
 
 export function useTokenDetail(tokenAddress: string) {
-  const {repo} = useApplicationContext();
-  const [isFavorite, setIsFavorite] = useState(true);
-  const [token, setToken] = useState<TokenWithBalance>();
-  const {openMoonPay, openUrl} = useInAppBrowser();
-  const {selectedCurrency, currencyFormatter} = useApplicationContext().appHook;
-  const [chartData, setChartData] = useState<{x: number; y: number}[]>();
-  const [chartDays, setChartDays] = useState(1);
+  const { repo } = useApplicationContext()
+  const [isFavorite, setIsFavorite] = useState(true)
+  const [token, setToken] = useState<TokenWithBalance>()
+  const { openMoonPay, openUrl } = useInAppBrowser()
+  const { selectedCurrency, currencyFormatter } =
+    useApplicationContext().appHook
+  const [chartData, setChartData] = useState<{ x: number; y: number }[]>()
+  const [chartDays, setChartDays] = useState(1)
   const [ranges, setRanges] = useState<{
-    minDate: number;
-    maxDate: number;
-    minPrice: number;
-    maxPrice: number;
-    diffValue: number;
-    percentChange: number;
+    minDate: number
+    maxDate: number
+    minPrice: number
+    maxPrice: number
+    diffValue: number
+    percentChange: number
   }>({
     minDate: 0,
     maxDate: 0,
     minPrice: 0,
     maxPrice: 0,
     diffValue: 0,
-    percentChange: 0,
-  });
-  const [contractInfo, setContractInfo] = useState<CoinsContractInfoResponse>();
-  const [urlHostname, setUrlHostname] = useState<string>('');
-  const {watchlistFavorites, saveWatchlistFavorites} =
-    repo.watchlistFavoritesRepo;
+    percentChange: 0
+  })
+  const [contractInfo, setContractInfo] = useState<CoinsContractInfoResponse>()
+  const [urlHostname, setUrlHostname] = useState<string>('')
+  const { watchlistFavorites, saveWatchlistFavorites } =
+    repo.watchlistFavoritesRepo
   // @ts-ignore avaxToken, erc20Tokens exist in walletContext
-  const {erc20Tokens, avaxToken} = useWalletStateContext();
+  const { erc20Tokens, avaxToken } = useWalletStateContext()
 
   const allTokens = useMemo(
-    () => [{...avaxToken, address: CG_AVAX_TOKEN_ID}, ...erc20Tokens],
-    [erc20Tokens, avaxToken],
-  );
+    () => [{ ...avaxToken, address: CG_AVAX_TOKEN_ID }, ...erc20Tokens],
+    [erc20Tokens, avaxToken]
+  )
 
   // find token
   useEffect(() => {
     if (allTokens) {
-      const tk = allTokens.find(tk => tk.address === tokenAddress, false);
+      const tk = allTokens.find(tk => tk.address === tokenAddress, false)
       if (tk) {
-        setToken(tk);
+        setToken(tk)
       }
     }
-  }, [allTokens]);
+  }, [allTokens])
 
   // checks if contract can be found in favorites list
   useEffect(() => {
-    setIsFavorite(!!watchlistFavorites.find(value => value === tokenAddress));
-  }, [watchlistFavorites]);
+    setIsFavorite(!!watchlistFavorites.find(value => value === tokenAddress))
+  }, [watchlistFavorites])
 
   // get coingecko chart data.
   useEffect(() => {
-    (async () => {
+    ;(async () => {
       try {
-        const data = await Coingecko.fetchChartData(tokenAddress, chartDays);
-        setChartData(data.dataPoints);
-        setRanges(data.ranges);
+        const data = await Coingecko.fetchChartData(tokenAddress, chartDays)
+        setChartData(data.dataPoints)
+        setRanges(data.ranges)
       } catch (e) {
         // Coingecko does not support all tokens chart data. So here we'll
         // simply set to empty to hide the loading state.
-        setChartData([]);
+        setChartData([])
       }
-    })();
-  }, [token, chartDays]);
+    })()
+  }, [token, chartDays])
 
   // get market cap, volume, etc
   useEffect(() => {
-    (async () => {
-      const data = await Coingecko.fetchContractInfo(tokenAddress);
-      setContractInfo(data);
+    ;(async () => {
+      const data = await Coingecko.fetchContractInfo(tokenAddress)
+      setContractInfo(data)
       if (data?.links?.homepage?.[0]) {
         const url = data?.links?.homepage?.[0]
           ?.replace(/^https?:\/\//, '')
-          ?.replace('www.', '');
-        setUrlHostname(url);
+          ?.replace('www.', '')
+        setUrlHostname(url)
       }
-    })();
-  }, [token]);
+    })()
+  }, [token])
 
   function handleFavorite() {
     if (isFavorite) {
-      const index = watchlistFavorites.indexOf(tokenAddress);
+      const index = watchlistFavorites.indexOf(tokenAddress)
       if (index > -1) {
-        watchlistFavorites.splice(index, 1);
-        saveWatchlistFavorites(watchlistFavorites);
+        watchlistFavorites.splice(index, 1)
+        saveWatchlistFavorites(watchlistFavorites)
       }
     } else {
-      watchlistFavorites.push(tokenAddress);
-      saveWatchlistFavorites(watchlistFavorites);
+      watchlistFavorites.push(tokenAddress)
+      saveWatchlistFavorites(watchlistFavorites)
     }
-    setIsFavorite(!isFavorite);
+    setIsFavorite(!isFavorite)
   }
 
   function changeChartDays(days: number) {
-    setChartData(undefined);
-    setChartDays(days);
+    setChartData(undefined)
+    setChartDays(days)
   }
 
   return {
@@ -122,6 +126,6 @@ export function useTokenDetail(tokenAddress: string) {
     chartData,
     token,
     ranges,
-    changeChartDays,
-  };
+    changeChartDays
+  }
 }

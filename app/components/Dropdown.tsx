@@ -1,4 +1,4 @@
-import React, {FC, useMemo, useRef, useState} from 'react';
+import React, { FC, useMemo, useRef, useState } from 'react'
 import {
   FlatList,
   ListRenderItemInfo,
@@ -7,26 +7,26 @@ import {
   StyleProp,
   StyleSheet,
   View,
-  ViewStyle,
-} from 'react-native';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import AvaText from 'components/AvaText';
-import CarrotSVG from 'components/svg/CarrotSVG';
-import {Popable, PopableManager} from 'react-native-popable';
-import Separator from 'components/Separator';
-import CheckmarkSVG from 'components/svg/CheckmarkSVG';
-import isString from 'lodash.isstring';
-import {Space} from 'components/Space';
-import {BlurView} from '@react-native-community/blur';
+  ViewStyle
+} from 'react-native'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import AvaText from 'components/AvaText'
+import CarrotSVG from 'components/svg/CarrotSVG'
+import { Popable, PopableManager } from 'react-native-popable'
+import Separator from 'components/Separator'
+import CheckmarkSVG from 'components/svg/CheckmarkSVG'
+import isString from 'lodash.isstring'
+import { Space } from 'components/Space'
+import { BlurView } from '@react-native-community/blur'
 
 interface Props {
-  filterItems: string[];
-  title?: string;
-  currentItem: string | React.ReactNode;
-  onItemSelected?: (selectedItem: string) => void;
-  minWidth?: number;
-  style?: StyleProp<ViewStyle>;
-  customRenderItem?: (item: ListRenderItemInfo<string>) => React.ReactNode;
+  filterItems: string[]
+  title?: string
+  currentItem: string | React.ReactNode
+  onItemSelected?: (selectedItem: string) => void
+  minWidth?: number
+  style?: StyleProp<ViewStyle>
+  customRenderItem?: (item: ListRenderItemInfo<string>) => React.ReactNode
 }
 
 /**
@@ -46,11 +46,11 @@ const DropDown: FC<Props> = ({
   onItemSelected,
   minWidth = 150,
   style,
-  customRenderItem,
+  customRenderItem
 }) => {
-  const theme = useApplicationContext().theme;
-  const ref = useRef<PopableManager>(null);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const theme = useApplicationContext().theme
+  const ref = useRef<PopableManager>(null)
+  const [isFilterOpen, setIsFilterOpen] = useState(false)
 
   /**
    * background to be used for items when its visible
@@ -60,7 +60,7 @@ const DropDown: FC<Props> = ({
       <View
         style={[
           StyleSheet.absoluteFill,
-          {backgroundColor: '#000000', opacity: 0.9},
+          { backgroundColor: '#000000', opacity: 0.9 }
         ]}
       />
     ) : (
@@ -70,8 +70,8 @@ const DropDown: FC<Props> = ({
         blurAmount={10}
         reducedTransparencyFallbackColor={'black'}
       />
-    );
-  }, []);
+    )
+  }, [])
 
   /**
    * Used when no custom rendering is passed
@@ -81,18 +81,18 @@ const DropDown: FC<Props> = ({
     return (
       <View>
         <AvaText.Body1
-          textStyle={{paddingVertical: 8}}
+          textStyle={{ paddingVertical: 8 }}
           onPress={() => {
-            onItemSelected?.(item.item);
-            ref?.current?.hide();
-            setIsFilterOpen(!isFilterOpen);
+            onItemSelected?.(item.item)
+            ref?.current?.hide()
+            setIsFilterOpen(!isFilterOpen)
           }}>
           {item.item}
         </AvaText.Body1>
         {currentItem === item.item && <CheckmarkSVG color={'white'} />}
       </View>
-    );
-  };
+    )
+  }
 
   /**
    * Used when custom rendering is defined. Wrapped here with pressable
@@ -103,14 +103,14 @@ const DropDown: FC<Props> = ({
     return (
       <Pressable
         onPress={() => {
-          onItemSelected?.(item.item);
-          ref?.current?.hide();
-          setIsFilterOpen(!isFilterOpen);
+          onItemSelected?.(item.item)
+          ref?.current?.hide()
+          setIsFilterOpen(!isFilterOpen)
         }}>
         {customRenderItem?.(item)}
       </Pressable>
-    );
-  };
+    )
+  }
 
   /**
    * List with content items
@@ -125,7 +125,7 @@ const DropDown: FC<Props> = ({
           ItemSeparatorComponent={Separator}
         />
       </>
-    );
+    )
   }
 
   /**
@@ -146,20 +146,20 @@ const DropDown: FC<Props> = ({
         {
           minWidth: minWidth,
           marginTop: 0,
-          left: -10,
+          left: -10
         },
-        style,
+        style
       ]}
       backgroundColor={theme.transparent}>
       <View
         style={{
           flexDirection: 'row',
           alignItems: 'center',
-          justifyContent: 'flex-end',
+          justifyContent: 'flex-end'
         }}>
         {isString(currentItem) ? (
           <AvaText.ButtonSmall
-            textStyle={{color: theme.colorText1, paddingEnd: 4}}>
+            textStyle={{ color: theme.colorText1, paddingEnd: 4 }}>
             {title && title + ': '}
             {currentItem}
           </AvaText.ButtonSmall>
@@ -175,7 +175,7 @@ const DropDown: FC<Props> = ({
         </>
       </View>
     </Popable>
-  );
-};
+  )
+}
 
-export default DropDown;
+export default DropDown

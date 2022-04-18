@@ -1,40 +1,40 @@
-import React, {useEffect, useState} from 'react';
-import {Linking, StyleSheet, View} from 'react-native';
-import AvaButton from 'components/AvaButton';
-import AvaText from 'components/AvaText';
-import LinkSVG from 'components/svg/LinkSVG';
-import {Space} from 'components/Space';
-import ClearSVG from 'components/svg/ClearSVG';
-import {useApplicationContext} from 'contexts/ApplicationContext';
+import React, { useEffect, useState } from 'react'
+import { Linking, StyleSheet, View } from 'react-native'
+import AvaButton from 'components/AvaButton'
+import AvaText from 'components/AvaText'
+import LinkSVG from 'components/svg/LinkSVG'
+import { Space } from 'components/Space'
+import ClearSVG from 'components/svg/ClearSVG'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import {
   FUJI_NETWORK,
-  useNetworkContext,
-} from '@avalabs/wallet-react-components';
+  useNetworkContext
+} from '@avalabs/wallet-react-components'
 
 interface DoneProps {
-  transactionId: string;
-  onClose: () => void;
+  transactionId: string
+  onClose: () => void
 }
 
 export default function DoneScreen({
   onClose,
-  transactionId,
+  transactionId
 }: DoneProps): JSX.Element {
-  const theme = useApplicationContext().theme;
-  const networkContext = useNetworkContext();
-  const [explorerUrl, setExplorerUrl] = useState<string>();
+  const theme = useApplicationContext().theme
+  const networkContext = useNetworkContext()
+  const [explorerUrl, setExplorerUrl] = useState<string>()
 
   useEffect(() => {
     if (networkContext) {
-      const isFuji = networkContext.network === FUJI_NETWORK;
+      const isFuji = networkContext.network === FUJI_NETWORK
       setExplorerUrl(
-        `https://${isFuji ? 'testnet.' : ''}snowtrace.io/tx/${transactionId}`,
-      );
+        `https://${isFuji ? 'testnet.' : ''}snowtrace.io/tx/${transactionId}`
+      )
     }
-  }, [networkContext]);
+  }, [networkContext])
 
   return (
-    <View style={{flex: 1}}>
+    <View style={{ flex: 1 }}>
       <AvaButton.Icon style={styles.topClose} onPress={onClose}>
         <ClearSVG
           color={theme.colorIcon1}
@@ -45,7 +45,7 @@ export default function DoneScreen({
       <View style={styles.container}>
         <AvaText.Heading1
           textStyle={{
-            alignSelf: 'center',
+            alignSelf: 'center'
           }}>
           Asset sent
         </AvaText.Heading1>
@@ -55,18 +55,18 @@ export default function DoneScreen({
           {!!explorerUrl && (
             <AvaButton.TextLarge
               onPress={() => {
-                Linking.openURL(explorerUrl);
+                Linking.openURL(explorerUrl)
               }}>
               View on Explorer
             </AvaButton.TextLarge>
           )}
         </View>
-        <AvaButton.PrimaryLarge style={{margin: 18}} onPress={onClose}>
+        <AvaButton.PrimaryLarge style={{ margin: 18 }} onPress={onClose}>
           Done
         </AvaButton.PrimaryLarge>
       </View>
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -78,16 +78,16 @@ const styles = StyleSheet.create({
     left: -10,
     right: 0,
     zIndex: 0,
-    elevation: 0,
+    elevation: 0
   },
-  topClose: {alignSelf: 'flex-end'},
-  container: {flex: 1, justifyContent: 'flex-end'},
+  topClose: { alignSelf: 'flex-end' },
+  container: { flex: 1, justifyContent: 'flex-end' },
   link: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingBottom: 16,
-    paddingTop: 12,
-  },
-});
+    paddingTop: 12
+  }
+})

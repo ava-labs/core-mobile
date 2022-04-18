@@ -1,10 +1,10 @@
-export const Opacity05 = '0D';
-export const Opacity10 = '1A';
-export const Opacity12 = '1E';
-export const Opacity15 = '26';
-export const Opacity30 = '4C';
-export const Opacity50 = '7F';
-export const Opacity85 = 'D9';
+export const Opacity05 = '0D'
+export const Opacity10 = '1A'
+export const Opacity12 = '1E'
+export const Opacity15 = '26'
+export const Opacity30 = '4C'
+export const Opacity50 = '7F'
+export const Opacity85 = 'D9'
 
 export enum COLORS_DAY {
   transparent = '#00000000',
@@ -41,7 +41,7 @@ export enum COLORS_DAY {
   colorChain = '#00D3BC1A',
   colorChain2 = '#00A087',
   colorChain3 = '#7C1BF21A',
-  colorChain4 = '#4D00DE',
+  colorChain4 = '#4D00DE'
 }
 
 export enum COLORS_NIGHT {
@@ -80,7 +80,7 @@ export enum COLORS_NIGHT {
   colorChain = '#00DDCB0D',
   colorChain2 = '#00DDCB',
   colorChain3 = '#934AF61A',
-  colorChain4 = '#DAC3FB',
+  colorChain4 = '#DAC3FB'
 }
 
-export const SECURE_ACCESS_SET = 'secureAccessSet';
+export const SECURE_ACCESS_SET = 'secureAccessSet'

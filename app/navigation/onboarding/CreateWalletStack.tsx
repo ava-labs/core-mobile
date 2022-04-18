@@ -1,54 +1,54 @@
-import AppNavigation from 'navigation/AppNavigation';
+import AppNavigation from 'navigation/AppNavigation'
 import React, {
   createContext,
   Dispatch,
   useContext,
   useEffect,
-  useState,
-} from 'react';
-import CreateWallet from 'screens/onboarding/CreateWallet';
-import {useNavigation} from '@react-navigation/native';
-import CheckMnemonic from 'screens/onboarding/CheckMnemonic';
-import CreatePIN from 'screens/onboarding/CreatePIN';
-import BiometricLogin from 'screens/onboarding/BiometricLogin';
+  useState
+} from 'react'
+import CreateWallet from 'screens/onboarding/CreateWallet'
+import { useNavigation } from '@react-navigation/native'
+import CheckMnemonic from 'screens/onboarding/CheckMnemonic'
+import CreatePIN from 'screens/onboarding/CreatePIN'
+import BiometricLogin from 'screens/onboarding/BiometricLogin'
 import {
   createStackNavigator,
-  StackNavigationProp,
-} from '@react-navigation/stack';
-import {MainHeaderOptions} from 'navigation/NavUtils';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import WarningModal from 'components/WarningModal';
-import {usePosthogContext} from 'contexts/PosthogContext';
-import TermsNConditionsModal from 'components/TermsNConditionsModal';
+  StackNavigationProp
+} from '@react-navigation/stack'
+import { MainHeaderOptions } from 'navigation/NavUtils'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import WarningModal from 'components/WarningModal'
+import { usePosthogContext } from 'contexts/PosthogContext'
+import TermsNConditionsModal from 'components/TermsNConditionsModal'
 
 type CreateWalletStackParamList = {
-  [AppNavigation.CreateWallet.CreateWallet]: undefined;
-  [AppNavigation.CreateWallet.ProtectFunds]: undefined;
-  [AppNavigation.CreateWallet.CheckMnemonic]: undefined;
-  [AppNavigation.CreateWallet.CreatePin]: undefined;
-  [AppNavigation.CreateWallet.BiometricLogin]: undefined;
-  [AppNavigation.CreateWallet.TermsNConditions]: undefined;
-};
-const CreateWalletS = createStackNavigator<CreateWalletStackParamList>();
+  [AppNavigation.CreateWallet.CreateWallet]: undefined
+  [AppNavigation.CreateWallet.ProtectFunds]: undefined
+  [AppNavigation.CreateWallet.CheckMnemonic]: undefined
+  [AppNavigation.CreateWallet.CreatePin]: undefined
+  [AppNavigation.CreateWallet.BiometricLogin]: undefined
+  [AppNavigation.CreateWallet.TermsNConditions]: undefined
+}
+const CreateWalletS = createStackNavigator<CreateWalletStackParamList>()
 
 const CreateWalletContext = createContext<{
-  mnemonic: string;
-  setMnemonic: Dispatch<string>;
-}>({} as any);
+  mnemonic: string
+  setMnemonic: Dispatch<string>
+}>({} as any)
 
 const CreateWalletStack: () => JSX.Element = () => {
-  const [mnemonic, setMnemonic] = useState('');
+  const [mnemonic, setMnemonic] = useState('')
 
   return (
-    <CreateWalletContext.Provider value={{setMnemonic, mnemonic}}>
-      <CreateWalletS.Navigator screenOptions={{headerShown: false}}>
+    <CreateWalletContext.Provider value={{ setMnemonic, mnemonic }}>
+      <CreateWalletS.Navigator screenOptions={{ headerShown: false }}>
         <CreateWalletS.Screen
           options={MainHeaderOptions('')}
           name={AppNavigation.CreateWallet.CreateWallet}
           component={CreateWalletScreen}
         />
         <CreateWalletS.Screen
-          options={{presentation: 'transparentModal'}}
+          options={{ presentation: 'transparentModal' }}
           name={AppNavigation.CreateWallet.ProtectFunds}
           component={CreateWalletWarningModal}
         />
@@ -63,60 +63,60 @@ const CreateWalletStack: () => JSX.Element = () => {
           component={CreatePinScreen}
         />
         <CreateWalletS.Screen
-          options={{headerShown: true, headerTitle: ''}}
+          options={{ headerShown: true, headerTitle: '' }}
           name={AppNavigation.CreateWallet.BiometricLogin}
           component={BiometricLoginScreen}
         />
         <CreateWalletS.Screen
-          options={{presentation: 'transparentModal'}}
+          options={{ presentation: 'transparentModal' }}
           name={AppNavigation.CreateWallet.TermsNConditions}
           component={TermsNConditionsModalScreen}
         />
       </CreateWalletS.Navigator>
     </CreateWalletContext.Provider>
-  );
-};
+  )
+}
 
 const CreateWalletScreen = () => {
-  const createWalletContext = useContext(CreateWalletContext);
-  const {navigate, addListener, removeListener} =
-    useNavigation<StackNavigationProp<CreateWalletStackParamList>>();
-  const {capture} = usePosthogContext();
+  const createWalletContext = useContext(CreateWalletContext)
+  const { navigate, addListener, removeListener } =
+    useNavigation<StackNavigationProp<CreateWalletStackParamList>>()
+  const { capture } = usePosthogContext()
 
-  useEffect(captureBackEventFx, []);
+  useEffect(captureBackEventFx, [])
 
   function captureBackEventFx() {
-    const callback = (e: {data: {action: {type: string}}}) => {
+    const callback = (e: { data: { action: { type: string } } }) => {
       if (e.data.action.type === 'GO_BACK') {
-        capture('OnboardingCancelled').catch(() => undefined);
+        capture('OnboardingCancelled').catch(() => undefined)
       }
-    };
-    addListener('beforeRemove', callback);
-    return () => removeListener('beforeRemove', callback);
+    }
+    addListener('beforeRemove', callback)
+    return () => removeListener('beforeRemove', callback)
   }
 
   const onSavedMyPhrase = (mnemonic: string) => {
-    createWalletContext.setMnemonic(mnemonic);
-    navigate(AppNavigation.CreateWallet.ProtectFunds);
-  };
+    createWalletContext.setMnemonic(mnemonic)
+    navigate(AppNavigation.CreateWallet.ProtectFunds)
+  }
 
-  return <CreateWallet onSavedMyPhrase={onSavedMyPhrase} />;
-};
+  return <CreateWallet onSavedMyPhrase={onSavedMyPhrase} />
+}
 
 const CreateWalletWarningModal = () => {
-  const {navigate, goBack} =
-    useNavigation<StackNavigationProp<CreateWalletStackParamList>>();
-  const {capture} = usePosthogContext();
+  const { navigate, goBack } =
+    useNavigation<StackNavigationProp<CreateWalletStackParamList>>()
+  const { capture } = usePosthogContext()
 
   const onUnderstand = () => {
-    capture('OnboardingMnemonicCreated').catch(() => undefined);
-    goBack();
-    navigate(AppNavigation.CreateWallet.CheckMnemonic);
-  };
+    capture('OnboardingMnemonicCreated').catch(() => undefined)
+    goBack()
+    navigate(AppNavigation.CreateWallet.CheckMnemonic)
+  }
 
   const onBack = () => {
-    goBack();
-  };
+    goBack()
+  }
 
   return (
     <WarningModal
@@ -130,77 +130,77 @@ const CreateWalletWarningModal = () => {
       onAction={onUnderstand}
       onDismiss={onBack}
     />
-  );
-};
+  )
+}
 
 const CheckMnemonicScreen = () => {
-  const createWalletContext = useContext(CreateWalletContext);
-  const {navigate, goBack} =
-    useNavigation<StackNavigationProp<CreateWalletStackParamList>>();
+  const createWalletContext = useContext(CreateWalletContext)
+  const { navigate, goBack } =
+    useNavigation<StackNavigationProp<CreateWalletStackParamList>>()
   return (
     <CheckMnemonic
       onSuccess={() => {
-        navigate(AppNavigation.CreateWallet.CreatePin);
+        navigate(AppNavigation.CreateWallet.CreatePin)
       }}
       onBack={() => goBack()}
       mnemonic={createWalletContext.mnemonic}
     />
-  );
-};
+  )
+}
 
 const CreatePinScreen = () => {
-  const createWalletContext = useContext(CreateWalletContext);
-  const walletSetupHook = useApplicationContext().walletSetupHook;
-  const {navigate} =
-    useNavigation<StackNavigationProp<CreateWalletStackParamList>>();
-  const {capture} = usePosthogContext();
+  const createWalletContext = useContext(CreateWalletContext)
+  const walletSetupHook = useApplicationContext().walletSetupHook
+  const { navigate } =
+    useNavigation<StackNavigationProp<CreateWalletStackParamList>>()
+  const { capture } = usePosthogContext()
 
   const onPinSet = (pin: string): void => {
-    capture('OnboardingPasswordSet').catch(() => undefined);
+    capture('OnboardingPasswordSet').catch(() => undefined)
     walletSetupHook
       .onPinCreated(createWalletContext.mnemonic, pin, false)
       .then(value => {
         switch (value) {
           case 'useBiometry':
-            navigate(AppNavigation.CreateWallet.BiometricLogin);
-            break;
+            navigate(AppNavigation.CreateWallet.BiometricLogin)
+            break
           case 'enterWallet':
-            navigate(AppNavigation.CreateWallet.TermsNConditions);
-            break;
+            navigate(AppNavigation.CreateWallet.TermsNConditions)
+            break
         }
-      });
-  };
+      })
+  }
 
-  return <CreatePIN onPinSet={onPinSet} />;
-};
+  return <CreatePIN onPinSet={onPinSet} />
+}
 
 const BiometricLoginScreen = () => {
-  const createWalletContext = useContext(CreateWalletContext);
-  const walletSetupHook = useApplicationContext().walletSetupHook;
+  const createWalletContext = useContext(CreateWalletContext)
+  const walletSetupHook = useApplicationContext().walletSetupHook
   return (
     <BiometricLogin
       mnemonic={createWalletContext.mnemonic}
       onBiometrySet={() => {
-        walletSetupHook.enterWallet(createWalletContext.mnemonic);
+        walletSetupHook.enterWallet(createWalletContext.mnemonic)
       }}
       onSkip={() => walletSetupHook.enterWallet(createWalletContext.mnemonic)}
     />
-  );
-};
+  )
+}
 
 const TermsNConditionsModalScreen = () => {
-  const createWalletContext = useContext(CreateWalletContext);
-  const walletSetupHook = useApplicationContext().walletSetupHook;
-  const {resetNavToRoot} = useApplicationContext().appNavHook;
+  const createWalletContext = useContext(CreateWalletContext)
+  const walletSetupHook = useApplicationContext().walletSetupHook
+  const { resetNavToRoot } = useApplicationContext().appNavHook
 
   return (
     <TermsNConditionsModal
       onNext={() => {
-        walletSetupHook.enterWallet(createWalletContext.mnemonic);
+        walletSetupHook.enterWallet(createWalletContext.mnemonic)
       }}
       onReject={() => resetNavToRoot()}
     />
-  );
-};
+  )
+}
 
-export default CreateWalletStack;
+export default CreateWalletStack

@@ -1,45 +1,45 @@
-import React, {FC, memo, useCallback} from 'react';
-import {StyleSheet, Text, View} from 'react-native';
-import {usePortfolio} from 'screens/portfolio/usePortfolio';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import AvaText from 'components/AvaText';
-import {Space} from 'components/Space';
+import React, { FC, memo, useCallback } from 'react'
+import { StyleSheet, Text, View } from 'react-native'
+import { usePortfolio } from 'screens/portfolio/usePortfolio'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import AvaText from 'components/AvaText'
+import { Space } from 'components/Space'
 import {
   createStackNavigator,
   StackNavigationProp,
-  TransitionPresets,
-} from '@react-navigation/stack';
+  TransitionPresets
+} from '@react-navigation/stack'
 import {
   NavigationContainer,
   useFocusEffect,
-  useNavigation,
-} from '@react-navigation/native';
-import AvaxQACode from 'components/AvaxQRCode';
-import HeaderAccountSelector from 'components/HeaderAccountSelector';
-import AppNavigation from 'navigation/AppNavigation';
-import {RootStackParamList} from 'navigation/WalletScreenStack';
-import TokenAddress from 'components/TokenAddress';
+  useNavigation
+} from '@react-navigation/native'
+import AvaxQACode from 'components/AvaxQRCode'
+import HeaderAccountSelector from 'components/HeaderAccountSelector'
+import AppNavigation from 'navigation/AppNavigation'
+import { RootStackParamList } from 'navigation/WalletScreenStack'
+import TokenAddress from 'components/TokenAddress'
 
 type ReceiveStackParams = {
-  ReceiveCChain: undefined;
+  ReceiveCChain: undefined
   // ReceiveXChain: undefined;
-};
+}
 
-const ReceiveStack = createStackNavigator<ReceiveStackParams>();
+const ReceiveStack = createStackNavigator<ReceiveStackParams>()
 
 interface Props {
-  showBackButton?: boolean;
-  setPosition?: (position: number) => void;
-  embedded?: boolean;
+  showBackButton?: boolean
+  setPosition?: (position: number) => void
+  embedded?: boolean
 }
 
 function ReceiveToken2({
   setPosition,
   showBackButton = false,
-  embedded = false,
+  embedded = false
 }: Props) {
-  const {addressC} = usePortfolio();
-  const {navContainerTheme, theme} = useApplicationContext();
+  const { addressC } = usePortfolio()
+  const { navContainerTheme, theme } = useApplicationContext()
 
   //Share has been decommissioned yet again :(
   // const handleShare = async (address: string) => {
@@ -62,15 +62,15 @@ function ReceiveToken2({
   // };
 
   const HeaderAccountSelectorComp = () => {
-    const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+    const navigation = useNavigation<StackNavigationProp<RootStackParamList>>()
     return (
       <HeaderAccountSelector
         onPressed={() =>
           navigation.navigate(AppNavigation.Modal.AccountDropDown)
         }
       />
-    );
-  };
+    )
+  }
 
   const receiveNavigator = (
     <ReceiveStack.Navigator
@@ -82,17 +82,17 @@ function ReceiveToken2({
         headerStyle: {
           elevation: 0,
           shadowOpacity: 0,
-          backgroundColor: embedded ? theme.colorBg2 : theme.background,
+          backgroundColor: embedded ? theme.colorBg2 : theme.background
         },
-        ...TransitionPresets.SlideFromRightIOS,
+        ...TransitionPresets.SlideFromRightIOS
       }}>
       <ReceiveStack.Screen
         name={'ReceiveCChain'}
         options={
           embedded
-            ? {headerShown: false}
+            ? { headerShown: false }
             : {
-                headerTitle: () => <HeaderAccountSelectorComp />,
+                headerTitle: () => <HeaderAccountSelectorComp />
               }
         }>
         {props => (
@@ -105,54 +105,54 @@ function ReceiveToken2({
         )}
       </ReceiveStack.Screen>
     </ReceiveStack.Navigator>
-  );
+  )
 
-  const switchTheme = {...navContainerTheme};
-  switchTheme.colors.background = embedded ? theme.colorBg2 : theme.background;
+  const switchTheme = { ...navContainerTheme }
+  switchTheme.colors.background = embedded ? theme.colorBg2 : theme.background
 
   if (showBackButton) {
-    return receiveNavigator;
+    return receiveNavigator
   } else {
     return (
       <NavigationContainer independent={!showBackButton} theme={switchTheme}>
         {receiveNavigator}
       </NavigationContainer>
-    );
+    )
   }
 }
 
 const Receive: FC<{
-  selectedAddress: string;
-  isXChain?: boolean;
-  onShare?: (address: string) => void;
-  positionCallback?: (position: number) => void;
-  embedded: boolean;
+  selectedAddress: string
+  isXChain?: boolean
+  onShare?: (address: string) => void
+  positionCallback?: (position: number) => void
+  embedded: boolean
 }> = memo(props => {
-  const theme = useApplicationContext().theme;
-  const isXChain = !!props?.isXChain;
-  const embedded = !!props?.embedded;
+  const theme = useApplicationContext().theme
+  const isXChain = !!props?.isXChain
+  const embedded = !!props?.embedded
 
   useFocusEffect(
     useCallback(() => {
-      props?.positionCallback?.(isXChain ? 1 : 0);
-    }, []),
-  );
+      props?.positionCallback?.(isXChain ? 1 : 0)
+    }, [])
+  )
 
   return (
     <View
       style={{
-        flex: 1,
+        flex: 1
       }}>
       <Space y={embedded ? 34 : 8} />
       {embedded || (
         <>
-          <AvaText.LargeTitleBold textStyle={{marginHorizontal: 16}}>
+          <AvaText.LargeTitleBold textStyle={{ marginHorizontal: 16 }}>
             Receive
           </AvaText.LargeTitleBold>
           <Space y={12} />
         </>
       )}
-      <Text style={{marginHorizontal: 16, paddingTop: 4}}>
+      <Text style={{ marginHorizontal: 16, paddingTop: 4 }}>
         <AvaText.Body2>This is your </AvaText.Body2>
         <AvaText.Heading3>
           {isXChain ? 'X chain ' : 'C chain '}
@@ -161,7 +161,7 @@ const Receive: FC<{
       </Text>
       <View style={[styles.container]}>
         <Space y={55} />
-        <View style={{alignSelf: 'center'}}>
+        <View style={{ alignSelf: 'center' }}>
           <AvaxQACode
             circularText={isXChain ? 'X Chain' : 'C Chain'}
             sizePercentage={0.7}
@@ -172,7 +172,7 @@ const Receive: FC<{
         <View
           style={[
             styles.copyAddressContainer,
-            {backgroundColor: theme.colorBg2},
+            { backgroundColor: theme.colorBg2 }
           ]}>
           <TokenAddress
             address={props.selectedAddress}
@@ -183,20 +183,20 @@ const Receive: FC<{
         <Space y={16} />
       </View>
     </View>
-  );
-});
+  )
+})
 
 const styles = StyleSheet.create({
   container: {
-    alignItems: 'center',
+    alignItems: 'center'
   },
   copyAddressContainer: {
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,
-    marginHorizontal: 16,
-  },
-});
+    marginHorizontal: 16
+  }
+})
 
-export default ReceiveToken2;
+export default ReceiveToken2

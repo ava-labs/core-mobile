@@ -1,16 +1,16 @@
-import React from 'react';
-import Svg, {Path} from 'react-native-svg';
-import {useApplicationContext} from 'contexts/ApplicationContext';
+import React from 'react'
+import Svg, { Path } from 'react-native-svg'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 interface Prop {
-  color?: string;
-  size?: number;
+  color?: string
+  size?: number
 }
 
-function SettingsCogSVG({color, size = 24}: Prop) {
-  const context = useApplicationContext();
+function SettingsCogSVG({ color, size = 24 }: Prop) {
+  const context = useApplicationContext()
 
-  const iconColor = color ?? context.theme.colorIcon1;
+  const iconColor = color ?? context.theme.colorIcon1
 
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
@@ -19,7 +19,7 @@ function SettingsCogSVG({color, size = 24}: Prop) {
         fill={iconColor}
       />
     </Svg>
-  );
+  )
 }
 
-export default SettingsCogSVG;
+export default SettingsCogSVG

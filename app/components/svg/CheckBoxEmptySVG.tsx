@@ -1,14 +1,14 @@
-import React from 'react';
-import Svg, {Path} from 'react-native-svg';
+import React from 'react'
+import Svg, { Path } from 'react-native-svg'
 
 interface Prop {
-  fillColor?: string;
-  size?: number;
+  fillColor?: string
+  size?: number
 }
 
 export default function CheckBoxEmptySVG({
   fillColor = 'white',
-  size = 24,
+  size = 24
 }: Prop) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
@@ -17,5 +17,5 @@ export default function CheckBoxEmptySVG({
         fill={fillColor}
       />
     </Svg>
-  );
+  )
 }

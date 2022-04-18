@@ -1,16 +1,16 @@
-import React from 'react';
-import Svg, {Path} from 'react-native-svg';
-import {useApplicationContext} from 'contexts/ApplicationContext';
+import React from 'react'
+import Svg, { Path } from 'react-native-svg'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 interface Prop {
-  color?: string;
-  size?: number;
+  color?: string
+  size?: number
 }
 
-function SwapNarrowSVG({color, size = 20}: Prop) {
-  const {theme} = useApplicationContext();
+function SwapNarrowSVG({ color, size = 20 }: Prop) {
+  const { theme } = useApplicationContext()
 
-  const svgColor = color ?? theme.alternateBackground;
+  const svgColor = color ?? theme.alternateBackground
 
   return (
     <Svg width={size} height={size} viewBox="0 0 20 20" fill="none">
@@ -23,7 +23,7 @@ function SwapNarrowSVG({color, size = 20}: Prop) {
         fill={svgColor}
       />
     </Svg>
-  );
+  )
 }
 
-export default SwapNarrowSVG;
+export default SwapNarrowSVG

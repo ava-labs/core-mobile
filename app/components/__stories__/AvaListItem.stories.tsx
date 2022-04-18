@@ -1,23 +1,22 @@
-import {storiesOf} from '@storybook/react-native';
-import AvaListItem from 'components/AvaListItem';
-import Avatar from 'components/Avatar';
-import AvaText from 'components/AvaText';
-import React from 'react';
-import {ActivityIndicator, ScrollView, StyleSheet, View} from 'react-native';
-import TokenAddress from 'components/TokenAddress';
-import {Space} from 'components/Space';
-import {Row} from 'components/Row';
-import SparklineChart from 'components/SparklineChart';
-import MarketMovement from 'screens/watchlist/components/MarketMovement';
-import {truncateAddress} from 'utils/Utils';
+import { storiesOf } from '@storybook/react-native'
+import AvaListItem from 'components/AvaListItem'
+import Avatar from 'components/Avatar'
+import AvaText from 'components/AvaText'
+import React from 'react'
+import { ScrollView, StyleSheet, View } from 'react-native'
+import TokenAddress from 'components/TokenAddress'
+import { Space } from 'components/Space'
+import { Row } from 'components/Row'
+import SparklineChart from 'components/SparklineChart'
+import MarketMovement from 'screens/watchlist/components/MarketMovement'
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    backgroundColor: 'gray',
-  },
-});
+    backgroundColor: 'gray'
+  }
+})
 
 storiesOf('AvaListItem', module).add('Examples', () => {
   return (
@@ -48,7 +47,9 @@ storiesOf('AvaListItem', module).add('Examples', () => {
         <AvaListItem.Base
           title={'Network'}
           rightComponent={
-            <AvaText.Body2 textStyle={{marginRight: 8}}>Mainnet</AvaText.Body2>
+            <AvaText.Body2 textStyle={{ marginRight: 8 }}>
+              Mainnet
+            </AvaText.Body2>
           }
           rightComponentVerticalAlignment={'center'}
           showNavigationArrow
@@ -79,7 +80,7 @@ storiesOf('AvaListItem', module).add('Examples', () => {
           title={'Account 1'}
           subtitle={<AvaText.TextLink>Edit</AvaText.TextLink>}
           rightComponent={
-            <View style={{alignItems: 'flex-end'}}>
+            <View style={{ alignItems: 'flex-end' }}>
               <TokenAddress
                 address={'0x7d269823f20316c3602681f83b7a581828e78717'}
               />
@@ -107,7 +108,7 @@ storiesOf('AvaListItem', module).add('Examples', () => {
           title={'AVAX'}
           subtitle={'Avalanche'}
           leftComponent={
-            <Row style={{alignItems: 'center'}}>
+            <Row style={{ alignItems: 'center' }}>
               <AvaText.Heading3>1</AvaText.Heading3>
               <Space x={8} />
               <Avatar.Custom name={'Avalanche'} symbol={'AVAX'} />
@@ -118,22 +119,22 @@ storiesOf('AvaListItem', module).add('Examples', () => {
               style={{
                 alignItems: 'center',
                 justifyContent: 'flex-end',
-                flex: 1,
+                flex: 1
               }}>
-              <View style={{position: 'absolute', left: -20, bottom: -25}}>
+              <View style={{ position: 'absolute', left: -20, bottom: -25 }}>
                 <SparklineChart
                   data={[
-                    {x: 1, y: 2},
-                    {x: 2, y: 3},
-                    {x: 3, y: 5},
-                    {x: 4, y: 4},
-                    {x: 5, y: 7},
+                    { x: 1, y: 2 },
+                    { x: 2, y: 3 },
+                    { x: 3, y: 5 },
+                    { x: 4, y: 4 },
+                    { x: 5, y: 7 }
                   ]}
                   yRange={[1, 5]}
                   xRange={[2, 7]}
                 />
               </View>
-              <View style={{alignItems: 'flex-end'}}>
+              <View style={{ alignItems: 'flex-end' }}>
                 <AvaText.Heading3>$94.02</AvaText.Heading3>
                 <Space y={4} />
                 <MarketMovement priceChange={2.32} percentChange={1.04} />
@@ -148,7 +149,7 @@ storiesOf('AvaListItem', module).add('Examples', () => {
           title={<AvaText.Body2>From</AvaText.Body2>}
           titleAlignment={'flex-start'}
           subtitle={
-            <Row style={{justifyContent: 'space-between', marginEnd: 16}}>
+            <Row style={{ justifyContent: 'space-between', marginEnd: 16 }}>
               <AvaText.Heading3>Nick Personal 1</AvaText.Heading3>
               <TokenAddress
                 address={'0x7d269823f20316c3602681f83b7a581828e78717'}
@@ -206,5 +207,5 @@ storiesOf('AvaListItem', module).add('Examples', () => {
         />
       </>
     </ScrollView>
-  );
-});
+  )
+})

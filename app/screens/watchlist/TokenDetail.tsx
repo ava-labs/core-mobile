@@ -1,54 +1,55 @@
-import React, {FC, useEffect, useLayoutEffect, useState} from 'react';
+import React, { FC, useEffect, useLayoutEffect, useState } from 'react'
 import {
   ActivityIndicator,
   Dimensions,
   Pressable,
   ScrollView,
   StyleSheet,
-  View,
-} from 'react-native';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import AvaListItem from 'components/AvaListItem';
-import Avatar from 'components/Avatar';
-import AvaText from 'components/AvaText';
-import {Space} from 'components/Space';
-import TabViewAva from 'components/TabViewAva';
-import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
-import StarSVG from 'components/svg/StarSVG';
-import {RootStackParamList} from 'navigation/WalletScreenStack';
-import {StackNavigationProp} from '@react-navigation/stack';
+  View
+} from 'react-native'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import AvaListItem from 'components/AvaListItem'
+import Avatar from 'components/Avatar'
+import AvaText from 'components/AvaText'
+import { Space } from 'components/Space'
+import TabViewAva from 'components/TabViewAva'
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
+import StarSVG from 'components/svg/StarSVG'
+import { RootStackParamList } from 'navigation/WalletScreenStack'
+import { StackNavigationProp } from '@react-navigation/stack'
 import ChartSelector, {
-  ChartType,
-} from 'screens/watchlist/components/ChartSelector';
-import OvalTagBg from 'components/OvalTagBg';
-import AvaButton from 'components/AvaButton';
+  ChartType
+} from 'screens/watchlist/components/ChartSelector'
+import OvalTagBg from 'components/OvalTagBg'
+import AvaButton from 'components/AvaButton'
 import {
   VictoryAxis,
   VictoryCandlestick,
   VictoryChart,
-  VictoryTheme,
-} from 'victory-native';
-import {useTokenDetail} from 'screens/watchlist/useTokenDetail';
-import SparklineChart from 'components/SparklineChart';
-import {Row} from 'components/Row';
-import MarketMovement from 'screens/watchlist/components/MarketMovement';
-import {ViewOnceInformation} from 'Repo';
-import TokenAddress from 'components/TokenAddress';
-import AppNavigation from 'navigation/AppNavigation';
+  VictoryTheme
+} from 'victory-native'
+import { useTokenDetail } from 'screens/watchlist/useTokenDetail'
+import SparklineChart from 'components/SparklineChart'
+import { Row } from 'components/Row'
+import MarketMovement from 'screens/watchlist/components/MarketMovement'
+import { ViewOnceInformation } from 'Repo'
+import TokenAddress from 'components/TokenAddress'
+import AppNavigation from 'navigation/AppNavigation'
 
-const WIDOW_WIDTH = Dimensions.get('window').width;
+const WIDOW_WIDTH = Dimensions.get('window').width
 
 const TokenDetail: FC<any> = () => {
-  const {theme, appHook} = useApplicationContext();
-  const {saveViewOnceInformation, infoHasBeenShown, viewOnceInfo} =
-    useApplicationContext().repo.informationViewOnceRepo;
-  const [showLineChart, setShowLineChart] = useState(true);
-  const {setOptions} = useNavigation<StackNavigationProp<RootStackParamList>>();
-  const [showChartInstruction, setShowChartInstruction] = useState(false);
+  const { theme, appHook } = useApplicationContext()
+  const { saveViewOnceInformation, infoHasBeenShown, viewOnceInfo } =
+    useApplicationContext().repo.informationViewOnceRepo
+  const [showLineChart, setShowLineChart] = useState(true)
+  const { setOptions } =
+    useNavigation<StackNavigationProp<RootStackParamList>>()
+  const [showChartInstruction, setShowChartInstruction] = useState(false)
   const tokenAddress =
     useRoute<
       RouteProp<RootStackParamList, typeof AppNavigation.Wallet.TokenDetail>
-    >()?.params?.address;
+    >()?.params?.address
   const {
     isFavorite,
     openMoonPay,
@@ -64,50 +65,50 @@ const TokenDetail: FC<any> = () => {
     chartData,
     token,
     ranges,
-    changeChartDays,
-  } = useTokenDetail(tokenAddress);
+    changeChartDays
+  } = useTokenDetail(tokenAddress)
 
   function openTwitter() {
     // data will come from somewhere, something like
     // token.twitterHandle
-    openUrl(`https://twitter.com/${twitterHandle}`);
+    openUrl(`https://twitter.com/${twitterHandle}`)
   }
 
   function openWebsite() {
     if (urlHostname) {
-      openUrl('https://' + urlHostname);
+      openUrl('https://' + urlHostname)
     }
   }
 
   function formatMarketNumbers(value: number) {
-    return value === 0 ? ' -' : appHook.currencyFormatter(value, 1);
+    return value === 0 ? ' -' : appHook.currencyFormatter(value, 1)
   }
 
   useEffect(() => {
     if (!infoHasBeenShown(ViewOnceInformation.CHART_INTERACTION)) {
-      setShowChartInstruction(true);
+      setShowChartInstruction(true)
       saveViewOnceInformation([
         ...viewOnceInfo,
-        ViewOnceInformation.CHART_INTERACTION,
-      ]);
+        ViewOnceInformation.CHART_INTERACTION
+      ])
     }
-  }, []);
+  }, [])
 
   useLayoutEffect(() => {
     setOptions({
       headerRight: () => (
-        <Pressable style={{paddingEnd: 8}} onPress={handleFavorite}>
+        <Pressable style={{ paddingEnd: 8 }} onPress={handleFavorite}>
           <StarSVG selected={isFavorite} />
         </Pressable>
-      ),
-    });
-  }, [isFavorite]);
+      )
+    })
+  }, [isFavorite])
 
   const getOverlayContent = () => {
     // loading chart data
-    let content;
+    let content
     if (!chartData) {
-      content = <ActivityIndicator />;
+      content = <ActivityIndicator />
     }
 
     // chart data is empty, could not be retrieved
@@ -121,7 +122,7 @@ const TokenDetail: FC<any> = () => {
             We are unable to retrieve chart data for this token at this time.
           </AvaText.Body3>
         </>
-      );
+      )
     }
 
     // if we have data and it's 1st time user seing it, show instruction
@@ -131,7 +132,7 @@ const TokenDetail: FC<any> = () => {
           <AvaText.Heading2 color={'white'}>Hold and Drag</AvaText.Heading2>
           <AvaText.Body3
             color={'white'}
-            textStyle={{textAlignVertical: 'center'}}>
+            textStyle={{ textAlignVertical: 'center' }}>
             Hold and drag over chart for precise price and date
           </AvaText.Body3>
           <AvaButton.PrimaryMedium
@@ -139,7 +140,7 @@ const TokenDetail: FC<any> = () => {
             Got it
           </AvaButton.PrimaryMedium>
         </>
-      );
+      )
     }
 
     if (content) {
@@ -151,19 +152,19 @@ const TokenDetail: FC<any> = () => {
               alignItems: 'center',
               justifyContent: 'center',
               backgroundColor: '#00000080',
-              marginHorizontal: 32,
-            },
+              marginHorizontal: 32
+            }
           ]}>
           {content}
         </View>
-      );
+      )
     }
 
-    return null;
-  };
+    return null
+  }
 
   return (
-    <ScrollView style={{paddingHorizontal: 8, flex: 1}}>
+    <ScrollView style={{ paddingHorizontal: 8, flex: 1 }}>
       <View>
         <AvaListItem.Base
           title={<AvaText.Heading1>{token?.name}</AvaText.Heading1>}
@@ -175,11 +176,11 @@ const TokenDetail: FC<any> = () => {
           title={<AvaText.Body2>Price</AvaText.Body2>}
           titleAlignment={'flex-start'}
           subtitle={
-            <Row style={{alignItems: 'center'}}>
+            <Row style={{ alignItems: 'center' }}>
               <AvaText.Heading3
                 currency
                 hideTrailingCurrency
-                textStyle={{marginEnd: 8}}>
+                textStyle={{ marginEnd: 8 }}>
                 {token?.priceUSD?.toFixed(6)}
               </AvaText.Heading3>
               <MarketMovement
@@ -191,21 +192,25 @@ const TokenDetail: FC<any> = () => {
           rightComponent={
             <ChartSelector
               onChartChange={chart => {
-                setShowLineChart(chart === ChartType.LINE);
+                setShowLineChart(chart === ChartType.LINE)
               }}
             />
           }
         />
         <Space y={8} />
         <View
-          style={{height: 120, justifyContent: 'center', alignItems: 'center'}}>
+          style={{
+            height: 120,
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}>
           {showLineChart ? (
             <View>
               <AvaText.Caption
                 textStyle={{
                   alignSelf: 'flex-end',
                   color: theme.colorText1,
-                  marginBottom: -10,
+                  marginBottom: -10
                 }}
                 currency
                 hideTrailingCurrency>
@@ -221,7 +226,7 @@ const TokenDetail: FC<any> = () => {
                 height={120}
               />
               <AvaText.Caption
-                textStyle={{alignSelf: 'flex-end', color: theme.colorText1}}
+                textStyle={{ alignSelf: 'flex-end', color: theme.colorText1 }}
                 currency
                 hideTrailingCurrency>
                 {ranges.minPrice}
@@ -234,17 +239,17 @@ const TokenDetail: FC<any> = () => {
                 tickFormat={t => `${t}`}
                 fixLabelOverlap
                 style={{
-                  grid: {stroke: 'transparent'},
-                  axis: {stroke: 'transparent'},
-                  ticks: {stroke: 'transparent'},
-                  tickLabels: {fill: 'transparent'},
+                  grid: { stroke: 'transparent' },
+                  axis: { stroke: 'transparent' },
+                  ticks: { stroke: 'transparent' },
+                  tickLabels: { fill: 'transparent' }
                 }}
               />
               <VictoryCandlestick
                 standalone
                 candleColors={{
                   positive: theme.colorSuccess,
-                  negative: theme.colorError,
+                  negative: theme.colorError
                 }}
                 candleRatio={0.2}
                 data={[
@@ -253,36 +258,36 @@ const TokenDetail: FC<any> = () => {
                     open: 5,
                     close: 10,
                     high: 15,
-                    low: 0,
+                    low: 0
                   },
                   {
                     x: new Date(2016, 6, 2),
                     open: 10,
                     close: 15,
                     high: 20,
-                    low: 5,
+                    low: 5
                   },
                   {
                     x: new Date(2016, 6, 3),
                     open: 15,
                     close: 20,
                     high: 22,
-                    low: 10,
+                    low: 10
                   },
                   {
                     x: new Date(2016, 6, 4),
                     open: 20,
                     close: 10,
                     high: 25,
-                    low: 7,
+                    low: 7
                   },
                   {
                     x: new Date(2016, 6, 5),
                     open: 10,
                     close: 8,
                     high: 15,
-                    low: 5,
-                  },
+                    low: 5
+                  }
                 ]}
               />
             </VictoryChart>
@@ -307,14 +312,14 @@ const TokenDetail: FC<any> = () => {
                 ? 30 // 30 days - 1 month
                 : index === 3
                 ? 90 // 90 days - 3 months
-                : 365, // 365 days - 1 year
-            );
+                : 365 // 365 days - 1 year
+            )
           }}>
-          <View title={'24H'} />
-          <View title={'1W'} />
-          <View title={'1M'} />
-          <View title={'3M'} />
-          <View title={'1Y'} />
+          <TabViewAva.Item title={'24H'} />
+          <TabViewAva.Item title={'1W'} />
+          <TabViewAva.Item title={'1M'} />
+          <TabViewAva.Item title={'3M'} />
+          <TabViewAva.Item title={'1Y'} />
         </TabViewAva>
 
         {/* Market Data & Rank */}
@@ -325,7 +330,7 @@ const TokenDetail: FC<any> = () => {
           rightComponent={
             <OvalTagBg
               color={theme.colorBg3}
-              style={{height: 21, paddingVertical: 0}}>
+              style={{ height: 21, paddingVertical: 0 }}>
               <AvaText.Body2>{`Rank: ${marketCapRank}`}</AvaText.Body2>
             </OvalTagBg>
           }
@@ -347,7 +352,7 @@ const TokenDetail: FC<any> = () => {
               style={{
                 justifyContent: 'center',
                 alignItems: 'flex-start',
-                flex: 1,
+                flex: 1
               }}>
               <AvaText.Body2>Contract Address</AvaText.Body2>
               <Space y={4} />
@@ -372,11 +377,11 @@ const TokenDetail: FC<any> = () => {
               style={{
                 justifyContent: 'flex-start',
                 alignItems: 'flex-start',
-                flex: 1,
+                flex: 1
               }}>
               <AvaText.Body2>Website</AvaText.Body2>
               <AvaText.Heading3
-                textStyle={{color: '#0A84FF'}}
+                textStyle={{ color: '#0A84FF' }}
                 onPress={openWebsite}>
                 {urlHostname}
               </AvaText.Heading3>
@@ -400,11 +405,11 @@ const TokenDetail: FC<any> = () => {
               style={{
                 justifyContent: 'flex-start',
                 alignItems: 'flex-start',
-                flex: 1,
+                flex: 1
               }}>
               <AvaText.Body2>Twitter</AvaText.Body2>
               <AvaText.Heading3
-                textStyle={{color: '#0A84FF'}}
+                textStyle={{ color: '#0A84FF' }}
                 onPress={openTwitter}>
                 @{twitterHandle}
               </AvaText.Heading3>
@@ -425,14 +430,14 @@ const TokenDetail: FC<any> = () => {
         />
         {token?.isAvax && (
           <AvaButton.Base onPress={openMoonPay}>
-            <OvalTagBg color={theme.colorBg2} style={{height: 48}}>
+            <OvalTagBg color={theme.colorBg2} style={{ height: 48 }}>
               <AvaText.ButtonLarge>Buy {token?.symbol}</AvaText.ButtonLarge>
             </OvalTagBg>
           </AvaButton.Base>
         )}
       </View>
     </ScrollView>
-  );
-};
+  )
+}
 
-export default TokenDetail;
+export default TokenDetail

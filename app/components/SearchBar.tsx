@@ -5,28 +5,28 @@ import {
   TextInput,
   TextInputProps,
   TouchableOpacity,
-  View,
-} from 'react-native';
-import {Opacity50} from 'resources/Constants';
-import SearchSVG from 'components/svg/SearchSVG';
-import React, {FC, useLayoutEffect, useRef, useState} from 'react';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import AvaText from './AvaText';
-import ClearSVG from 'components/svg/ClearSVG';
-import AvaButton from './AvaButton';
-import {useNavigation} from '@react-navigation/native';
+  View
+} from 'react-native'
+import { Opacity50 } from 'resources/Constants'
+import SearchSVG from 'components/svg/SearchSVG'
+import React, { FC, useLayoutEffect, useRef, useState } from 'react'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import ClearSVG from 'components/svg/ClearSVG'
+import { useNavigation } from '@react-navigation/native'
+import AvaText from './AvaText'
+import AvaButton from './AvaButton'
 
 interface Props extends Omit<TextInputProps, 'value' | 'onChangeText'> {
-  onTextChanged: (value: string) => void;
-  searchText: string;
-  placeholder?: string;
-  hideBottomNav?: boolean;
+  onTextChanged: (value: string) => void
+  searchText: string
+  placeholder?: string
+  hideBottomNav?: boolean
 }
 
-const SCREEN_WIDTH = Dimensions.get('window').width;
-const INPUT_SIZE = SCREEN_WIDTH - 82;
-const INPUT_SIZE_FOCUSED = SCREEN_WIDTH - 160;
-const INPUT_SIZE_FOCUSED_SHOWING_CLEAR = SCREEN_WIDTH - 188;
+const SCREEN_WIDTH = Dimensions.get('window').width
+const INPUT_SIZE = SCREEN_WIDTH - 82
+const INPUT_SIZE_FOCUSED = SCREEN_WIDTH - 160
+const INPUT_SIZE_FOCUSED_SHOWING_CLEAR = SCREEN_WIDTH - 188
 
 /**
  * SearchBar component. Text state is handled outside the
@@ -49,10 +49,10 @@ const SearchBar: FC<Props> = ({
   hideBottomNav = false,
   ...rest
 }) => {
-  const textInputRef = useRef<TextInput>(null);
-  const navigation = useNavigation();
-  const {theme} = useApplicationContext();
-  const [isFocused, setIsFocused] = useState(false);
+  const textInputRef = useRef<TextInput>(null)
+  const navigation = useNavigation()
+  const { theme } = useApplicationContext()
+  const [isFocused, setIsFocused] = useState(false)
 
   /**
    * An attempt to hide bottom tabs when the search is focused.
@@ -61,17 +61,17 @@ const SearchBar: FC<Props> = ({
   useLayoutEffect(() => {
     if (hideBottomNav) {
       navigation.setOptions({
-        tabBarStyle: {display: isFocused ? 'none' : 'flex'},
-      });
+        tabBarStyle: { display: isFocused ? 'none' : 'flex' }
+      })
     }
-  }, [isFocused]);
+  }, [isFocused])
 
   /**
    * Clears the input by reference and state,
    */
   function clearText() {
-    textInputRef?.current?.clear();
-    onTextChanged('');
+    textInputRef?.current?.clear()
+    onTextChanged('')
   }
 
   /**
@@ -79,9 +79,9 @@ const SearchBar: FC<Props> = ({
    * the search
    */
   function onCancel() {
-    setIsFocused(false);
-    clearText();
-    textInputRef.current?.blur();
+    setIsFocused(false)
+    clearText()
+    textInputRef.current?.blur()
   }
 
   /**
@@ -89,20 +89,20 @@ const SearchBar: FC<Props> = ({
    * Used to determine if we show the clear button or not
    * and used to tweak input's width
    */
-  let isEmpty = false;
+  let isEmpty = false
   if (isFocused && searchText && searchText.length > 0) {
-    isEmpty = true;
+    isEmpty = true
   }
 
   /**
    * Sets textInputWidth
    * Used to the set the with and animate based on that.
    */
-  let textInputWidth = INPUT_SIZE;
+  let textInputWidth = INPUT_SIZE
   if (isEmpty) {
-    textInputWidth = INPUT_SIZE_FOCUSED_SHOWING_CLEAR;
+    textInputWidth = INPUT_SIZE_FOCUSED_SHOWING_CLEAR
   } else if (isFocused) {
-    textInputWidth = INPUT_SIZE_FOCUSED;
+    textInputWidth = INPUT_SIZE_FOCUSED
   }
 
   return (
@@ -110,7 +110,7 @@ const SearchBar: FC<Props> = ({
       <View
         style={[
           styles.searchBackground,
-          {backgroundColor: theme.colorBg3 + Opacity50},
+          { backgroundColor: theme.colorBg3 + Opacity50 }
         ]}>
         <SearchSVG size={32} hideBorder />
         <TextInput
@@ -121,43 +121,43 @@ const SearchBar: FC<Props> = ({
           ref={textInputRef}
           style={[
             styles.searchInput,
-            {color: theme.colorText2, width: textInputWidth},
+            { color: theme.colorText2, width: textInputWidth }
           ]}
           placeholder={placeholder}
           placeholderTextColor={theme.colorText2}
           value={searchText}
           onChangeText={onTextChanged}
           onBlur={() => {
-            LayoutAnimation.easeInEaseOut();
-            setIsFocused(false);
+            LayoutAnimation.easeInEaseOut()
+            setIsFocused(false)
           }}
           onFocus={() => {
-            LayoutAnimation.easeInEaseOut();
-            setIsFocused(true);
+            LayoutAnimation.easeInEaseOut()
+            setIsFocused(true)
           }}
           underlineColorAndroid="transparent"
           {...rest}
         />
         {isEmpty && (
-          <TouchableOpacity style={{marginEnd: 4}} onPress={clearText}>
+          <TouchableOpacity style={{ marginEnd: 4 }} onPress={clearText}>
             <ClearSVG color={theme.background} backgroundColor={theme.white} />
           </TouchableOpacity>
         )}
       </View>
       {isFocused && (
-        <AvaButton.Base style={{marginStart: 16}} onPress={onCancel}>
+        <AvaButton.Base style={{ marginStart: 16 }} onPress={onCancel}>
           <AvaText.ButtonLarge color={'#0A84FF'}>Cancel</AvaText.ButtonLarge>
         </AvaButton.Base>
       )}
     </View>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    alignSelf: 'center',
+    alignSelf: 'center'
   },
   searchBackground: {
     alignItems: 'center',
@@ -166,11 +166,11 @@ const styles = StyleSheet.create({
     height: 40,
     paddingLeft: 12,
     paddingRight: 8,
-    marginVertical: 8,
+    marginVertical: 8
   },
   searchInput: {
-    paddingLeft: 4,
-  },
-});
+    paddingLeft: 4
+  }
+})
 
-export default SearchBar;
+export default SearchBar

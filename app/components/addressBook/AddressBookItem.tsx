@@ -1,22 +1,22 @@
-import React, {FC, useMemo} from 'react';
-import AvaText from 'components/AvaText';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import TokenAddress from 'components/TokenAddress';
-import AvaListItem from 'components/AvaListItem';
-import Avatar from 'components/Avatar';
+import React, { FC, useMemo } from 'react'
+import AvaText from 'components/AvaText'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import TokenAddress from 'components/TokenAddress'
+import AvaListItem from 'components/AvaListItem'
+import Avatar from 'components/Avatar'
 
 interface Props {
-  title: string;
-  address: string;
-  onPress?: () => void;
+  title: string
+  address: string
+  onPress?: () => void
 }
 
-const AddressBookItem: FC<Props> = ({title, address, onPress}: Props) => {
-  const theme = useApplicationContext().theme;
+const AddressBookItem: FC<Props> = ({ title, address, onPress }: Props) => {
+  const theme = useApplicationContext().theme
 
   const shortAddress = useMemo(() => {
-    return address;
-  }, [address]);
+    return address
+  }, [address])
 
   return (
     <AvaListItem.Base
@@ -31,7 +31,7 @@ const AddressBookItem: FC<Props> = ({title, address, onPress}: Props) => {
       rightComponentVerticalAlignment={'center'}
       onPress={onPress}
     />
-  );
-};
+  )
+}
 
-export default AddressBookItem;
+export default AddressBookItem
