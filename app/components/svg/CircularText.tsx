@@ -9,9 +9,15 @@ import Svg, {
 
 interface Props {
   text: string
+  textColor?: string
+  circleBackgroundColor?: string
 }
 
-function CircularText({ text }: Props) {
+function CircularText({
+  text,
+  textColor = 'white',
+  circleBackgroundColor = '#3A3A3C'
+}: Props) {
   return (
     <Svg height="100" width="100" viewBox="0 0 300 300">
       <G id="circle">
@@ -20,12 +26,12 @@ function CircularText({ text }: Props) {
           x={150}
           y={150}
           fill="none"
-          stroke="#3A3A3C"
+          stroke={circleBackgroundColor}
           strokeWidth={44}
           transform="rotate(-145)"
         />
       </G>
-      <SvgText fill="#FFF" fontSize="14">
+      <SvgText fill={textColor} fontSize="14">
         <TextPath href="#circle">
           <TSpan dx="0" dy={5}>
             {`${text.trim()} `.repeat(10)}

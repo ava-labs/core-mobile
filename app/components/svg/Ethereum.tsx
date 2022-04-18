@@ -3,12 +3,13 @@ import Svg, { ClipPath, Defs, G, Path, Rect } from 'react-native-svg'
 
 interface Prop {
   size?: number
+  absolutePosition?: boolean
 }
 
-function EthereumSvg({ size = 41, ...props }: Prop) {
+function EthereumSvg({ size = 41, absolutePosition = false, ...props }: Prop) {
   return (
     <Svg
-      style={{ flexShrink: 0 }}
+      style={[{ flexShrink: 0 }, absolutePosition && { position: 'absolute' }]}
       width={size}
       height={size}
       viewBox="0 0 43 44"

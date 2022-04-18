@@ -55,6 +55,7 @@ const Bridge: FC = () => {
     transferAsset,
     blockchainTokenSymbol,
     targetBlockchain,
+    setTargetBlockchain,
     sourceBalance,
     setCurrentAsset,
     setPending,
@@ -67,6 +68,10 @@ const Bridge: FC = () => {
     amountTooHighError,
     transferDisabled
   } = useBridge()
+
+  const isBitcoinBalanceZero =
+    (sourceBalance?.balance?.lte(BIG_ZERO) ?? true) &&
+    currentBlockchain === Blockchain.BITCOIN
 
   /**
    * Used to display currently selected and dropdown items.
@@ -93,16 +98,16 @@ const Bridge: FC = () => {
           paddingHorizontal: 8,
           alignItems: 'center'
         }}>
-        {blockchain === Blockchain.AVALANCHE ? (
-          <Avatar.Custom name={'Avalanche'} symbol={'AVAX'} />
-        ) : (
-          <Avatar.Custom
-            name={'Ethereum'}
-            logoUri={
-              'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png'
-            }
-          />
-        )}
+        <Avatar.Custom
+          name={blockchain}
+          symbol={
+            blockchain === Blockchain.AVALANCHE
+              ? 'AVAX'
+              : blockchain === Blockchain.ETHEREUM
+              ? 'ETH'
+              : 'BTC'
+          }
+        />
         <Space x={8} />
         <AvaText.Body1>{blockchain.toUpperCase()}</AvaText.Body1>
         {isSelected && (
@@ -125,6 +130,15 @@ const Bridge: FC = () => {
   }
 
   /**
+   * Opens Add bitcoin instructions modal
+   */
+  const navigateToAddBitcoinInstructions = () => {
+    navigation.navigate(AppNavigation.Bridge.AddInstructions, {
+      onTokenSelected: setCurrentAsset
+    })
+  }
+
+  /**
    * Method used to render custom dropdown item
    * @param item
    * @param blockchain
@@ -140,7 +154,7 @@ const Bridge: FC = () => {
    * Blockchain array that's fed to dropdown
    */
   const blockChainItems = useMemo(() => {
-    return [Blockchain.AVALANCHE, Blockchain.ETHEREUM]
+    return [Blockchain.AVALANCHE, Blockchain.BITCOIN, Blockchain.ETHEREUM]
   }, [])
 
   const handleAmountChanged = (value: string) => {
@@ -229,6 +243,15 @@ const Bridge: FC = () => {
               />
             }
           />
+          {isBitcoinBalanceZero && (
+            <Row style={{ justifyContent: 'flex-end' }}>
+              <AvaButton.Base
+                style={{ marginEnd: 16, marginBottom: 8 }}
+                onPress={navigateToAddBitcoinInstructions}>
+                <AvaText.TextLink>Add Bitcoin</AvaText.TextLink>
+              </AvaButton.Base>
+            </Row>
+          )}
           <Separator inset={16} />
           <View style={styles.fromContainer}>
             <AvaText.Body3
@@ -328,7 +351,7 @@ const Bridge: FC = () => {
                   targetBlockchain,
                   false
                 )}
-                onItemSelected={bc => setCurrentBlockchain(bc as Blockchain)}
+                onItemSelected={bc => setTargetBlockchain(bc as Blockchain)}
                 customRenderItem={item =>
                   renderDropdownOptions(item, targetBlockchain)
                 }
