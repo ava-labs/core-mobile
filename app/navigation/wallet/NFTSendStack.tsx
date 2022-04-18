@@ -12,6 +12,8 @@ import NftReview from 'screens/nft/send/NftReview';
 import {SendNFTContextProvider} from 'contexts/SendNFTContext';
 import {RootStackParamList} from 'navigation/WalletScreenStack';
 import DoneScreen from 'screens/send/DoneScreen';
+import {usePosthogContext} from 'contexts/PosthogContext';
+import FeatureBlocked from 'screens/posthog/FeatureBlocked';
 
 export type NFTSendStackParamList = {
   [AppNavigation.NftSend.AddressPick]: undefined;
@@ -26,6 +28,9 @@ export default function NFTSendScreenStack() {
   const {params} =
     useRoute<RouteProp<NFTStackParamList, typeof AppNavigation.Nft.Send>>();
   const item = params?.nft as NFTItemData;
+
+  const {sendBlocked} = usePosthogContext();
+  const {goBack} = useNavigation<StackNavigationProp<NFTStackParamList>>();
 
   return (
     <SendNFTContextProvider nft={item}>
@@ -50,6 +55,14 @@ export default function NFTSendScreenStack() {
           component={SuccessScreen}
         />
       </NFTSendStack.Navigator>
+      {sendBlocked && (
+        <FeatureBlocked
+          onOk={goBack}
+          message={
+            'NFT is currently under maintenance.  Service will resume shortly.'
+          }
+        />
+      )}
     </SendNFTContextProvider>
   );
 }

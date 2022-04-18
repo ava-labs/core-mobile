@@ -20,6 +20,7 @@ import {Platform} from 'react-native';
 import JailMonkey from 'jail-monkey';
 import JailbrokenWarning from 'screens/onboarding/JailbrokenWarning';
 import {BridgeProvider} from 'contexts/BridgeContext';
+import {PosthogContextProvider} from 'contexts/PosthogContext';
 
 export default function ContextApp() {
   const [isWarmingUp, setIsWarmingUp] = useState(true);
@@ -47,23 +48,27 @@ export default function ContextApp() {
 
   return (
     <>
-      <NetworkContextProvider>
-        <AccountsContextProvider>
-          <WalletContextProvider>
-            <WalletStateContextProvider>
-              <ApplicationContextProvider>
-                <BridgeProvider>
-                  {!showSplash && showJailBroken && (
-                    <JailbrokenWarning onOK={() => setShowJailBroken(false)} />
-                  )}
-                  {showSplash && !showJailBroken && <Splash />}
-                  {!isWarmingUp && !showJailBroken && <App />}
-                </BridgeProvider>
-              </ApplicationContextProvider>
-            </WalletStateContextProvider>
-          </WalletContextProvider>
-        </AccountsContextProvider>
-      </NetworkContextProvider>
+      <PosthogContextProvider>
+        <NetworkContextProvider>
+          <AccountsContextProvider>
+            <WalletContextProvider>
+              <WalletStateContextProvider>
+                <ApplicationContextProvider>
+                  <BridgeProvider>
+                    {!showSplash && showJailBroken && (
+                      <JailbrokenWarning
+                        onOK={() => setShowJailBroken(false)}
+                      />
+                    )}
+                    {showSplash && !showJailBroken && <Splash />}
+                    {!isWarmingUp && !showJailBroken && <App />}
+                  </BridgeProvider>
+                </ApplicationContextProvider>
+              </WalletStateContextProvider>
+            </WalletContextProvider>
+          </AccountsContextProvider>
+        </NetworkContextProvider>
+      </PosthogContextProvider>
       <Toast ref={ref => (global.toast = ref)} />
     </>
   );
