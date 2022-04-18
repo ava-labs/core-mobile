@@ -119,6 +119,7 @@ enum BridgeScreens {
   Bridge = 'BridgeScreens.Swap',
   BridgeTransactionStatus = 'BridgeScreens.BridgeTransactionStatus',
   HideWarning = 'BridgeScreens.HideWarning',
+  AddInstructions = 'BridgeScreens.AddInstructions',
 }
 
 const AppNavigation = {

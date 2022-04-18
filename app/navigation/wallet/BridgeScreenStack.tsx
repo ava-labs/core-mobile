@@ -13,6 +13,7 @@ import WarningModal from 'components/WarningModal';
 import {usePosthogContext} from 'contexts/PosthogContext';
 import {RootStackParamList} from 'navigation/WalletScreenStack';
 import FeatureBlocked from 'screens/posthog/FeatureBlocked';
+import AddBitcoinInstructionsBottomSheet from 'screens/bridge/AddBitcoinInstructionsBottomSheet';
 
 export type BridgeStackParamList = {
   [AppNavigation.Bridge.Bridge]: undefined;
@@ -25,6 +26,7 @@ export type BridgeStackParamList = {
     onTokenSelected: (token: string) => void;
   };
   [AppNavigation.Bridge.HideWarning]: undefined;
+  [AppNavigation.Bridge.AddInstructions]: undefined;
 };
 
 const BridgeStack = createStackNavigator<BridgeStackParamList>();
@@ -59,6 +61,12 @@ function BridgeScreenStack() {
             name={AppNavigation.Modal.BridgeSelectToken}
             component={BridgeSelectTokenBottomSheet}
           />
+<BridgeStack.Screen
+options={{headerShown: false}}
+name={AppNavigation.Bridge.AddInstructions}
+component={AddBitcoinInstructionsBottomSheet}
+/>
+
           <BridgeStack.Screen
             options={{presentation: 'transparentModal', headerShown: false}}
             name={AppNavigation.Bridge.HideWarning}
