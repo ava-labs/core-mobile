@@ -40,7 +40,7 @@ const FloatingActionButton: FC<Props> = ({
 }) => {
   const anim = useRef(new Animated.Value(0)).current
   const [isActive, setIsActive] = useState(false)
-  let timeout: number | null
+  let timeout: NodeJS.Timeout | null
 
   /**
    * This clears the timout once it's used.
@@ -109,6 +109,9 @@ const FloatingActionButton: FC<Props> = ({
     }
 
     return React.Children.map(children, (button, index) => {
+      const isValidButton =
+        React.isValidElement(button) && button.type === ActionButtonItem
+
       return (
         <View
           pointerEvents="box-none"
@@ -125,14 +128,14 @@ const FloatingActionButton: FC<Props> = ({
             radius={radius}
             angle={startRadian + index * offset}
             btnColor={backgroundColor}
-            {...button?.props}
+            {...(isValidButton ? button.props : {})}
             onPress={() => {
               if (resetOnItemPress) {
                 timeout = setTimeout(() => {
                   reset()
                 }, 200)
               }
-              button?.props?.onPress()
+              isValidButton && button.props?.onPress()
             }}
           />
         </View>

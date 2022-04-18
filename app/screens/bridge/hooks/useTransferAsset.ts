@@ -58,10 +58,12 @@ export function useTransferAsset(asset: Asset | undefined) {
 }
 
 async function signTransaction(
-  wallet: WalletType,
+  wallet: WalletType | undefined,
   common: Common,
   txData: TransactionRequest
 ): Promise<string> {
+  if (!wallet) return ''
+
   const tx = Transaction.fromTxData(convertTxData(txData), {
     common: common as any /* fix "private property '_chainParams'" conflict */
   })

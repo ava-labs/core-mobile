@@ -54,11 +54,11 @@ const AnalyticsConsent = ({ onNextScreen, nextScreen }: Props) => {
         {
           'This enables us to develop improvements. To learn more please read our '
         }
-        <AvaText.ButtonMedium
-          style={{ color: theme.colorPrimary1 }}
+        <AvaText.Body1
+          textStyle={{ color: theme.colorPrimary1 }}
           onPress={openPrivacyPolicy}>
           Privacy Policy
-        </AvaText.ButtonMedium>
+        </AvaText.Body1>
         . You can always opt out by visiting the settings page.
       </AvaText.Body1>
       <FlexSpacer />

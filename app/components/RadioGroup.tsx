@@ -1,4 +1,4 @@
-import React, { FC, ReactElement, useEffect, useMemo, useState } from 'react'
+import React, { FC, useEffect, useMemo, useState } from 'react'
 import { Row } from 'components/Row'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaButton from 'components/AvaButton'
@@ -12,7 +12,7 @@ const RadioGroup: FC<RadioGroupProps> = ({
   onSelected,
   preselectedKey = '',
   children
-}: RadioGroupProps) => {
+}) => {
   const { theme } = useApplicationContext()
   const [selected, setSelected] = useState(preselectedKey)
 
@@ -21,13 +21,17 @@ const RadioGroup: FC<RadioGroupProps> = ({
   }, [onSelected, selected])
 
   const wrapped = useMemo(() => {
-    return (children as ReactElement[]).map((child, index) => {
+    return React.Children.map(children, (child, index) => {
+      if (!React.isValidElement(child)) return null
+
       if (!child.key) {
         throw Error('children must define key')
       }
+
       const clone = React.cloneElement(child, {
         color: selected === child.key ? theme.colorBg2 : theme.colorIcon2
       })
+
       return (
         <AvaButton.Base
           key={index}
@@ -39,8 +43,10 @@ const RadioGroup: FC<RadioGroupProps> = ({
             {
               borderTopLeftRadius: index === 0 ? 4 : 0,
               borderBottomLeftRadius: index === 0 ? 4 : 0,
-              borderTopRightRadius: index === children.length - 1 ? 4 : 0,
-              borderBottomRightRadius: index === children.length - 1 ? 4 : 0,
+              borderTopRightRadius:
+                index === React.Children.count(children) - 1 ? 4 : 0,
+              borderBottomRightRadius:
+                index === React.Children.count(children) - 1 ? 4 : 0,
               backgroundColor:
                 selected === child.key ? theme.colorIcon1 : theme.colorBg3
             }

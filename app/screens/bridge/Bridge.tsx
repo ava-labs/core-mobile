@@ -1,3 +1,4 @@
+// @ts-nocheck TODO CP-1725: Fix Typescript Errors - React Navigation
 import React, { FC, useMemo } from 'react'
 import {
   ActivityIndicator,
@@ -195,13 +196,12 @@ const Bridge: FC = () => {
         txHash: result.hash,
         txTimestamp: Date.now().toString()
       })
-    } catch (e) {
-      const error = e as Error
-      Alert.alert(
-        'Error Bridging',
-        error?.reason ??
-          'An unknown error has occurred. Bridging was halted. Please try again later'
-      )
+    } catch (e: any) {
+      const message =
+        e?.reason ??
+        'An unknown error has occurred. Bridging was halted. Please try again later'
+
+      Alert.alert('Error Bridging', message)
       return
     } finally {
       setPending(false)

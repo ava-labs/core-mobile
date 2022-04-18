@@ -8,7 +8,10 @@ import {
   zip
 } from 'rxjs'
 import { concatMap, map } from 'rxjs/operators'
-import { Keystore } from '@avalabs/avalanche-wallet-sdk'
+import {
+  readKeyFile,
+  extractKeysFromDecryptedFile
+} from '@avalabs/avalanche-wallet-sdk'
 import DocumentPicker from 'react-native-document-picker'
 import * as RNFS from 'react-native-fs'
 import {
@@ -23,6 +26,8 @@ export default class {
     return from(
       DocumentPicker.pick({ type: [DocumentPicker.types.allFiles] })
     ).pipe(
+      // @ts-expect-error this is a strange error
+      // tsc complains that uri doesn't exist on type DocumentPickerResponse but it does
       concatMap(file => RNFS.readFile(file.uri)),
       concatMap((fileContent: string) => {
         const json = JSON.parse(fileContent)
@@ -43,11 +48,11 @@ export default class {
       concatMap((value: [any, string]) => {
         const json = value[0]
         const password = value[1]
-        return Keystore.readKeyFile(json, password)
+        return readKeyFile(json, password)
       }),
       map((keyfile: AllKeyFileDecryptedTypes) => {
         const keys: AccessWalletMultipleInput[] =
-          Keystore.extractKeysFromDecryptedFile(keyfile)
+          extractKeysFromDecryptedFile(keyfile)
         const mnemonicKeyphrase = keys[0].key
         return new Finished(mnemonicKeyphrase)
       })

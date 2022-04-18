@@ -2,8 +2,10 @@ import { MutableRefObject, useRef } from 'react'
 import AppNavigation from 'navigation/AppNavigation'
 import { NavigationContainerRef } from '@react-navigation/native'
 
+type NavigationRef = MutableRefObject<NavigationContainerRef<any> | null>
+
 export type AppNavHook = {
-  navigation: MutableRefObject<NavigationContainerRef<any> | undefined>
+  navigation: NavigationRef
   navigateToRootWallet: () => void
   resetNavToRoot: () => void
   resetNavToEnterMnemonic: () => void
@@ -11,7 +13,7 @@ export type AppNavHook = {
 }
 
 export function useAppNav(): AppNavHook {
-  const navigation = useRef<NavigationContainerRef<any>>()
+  const navigation = useRef<NavigationContainerRef<any> | null>(null)
 
   return {
     navigation,
@@ -22,9 +24,7 @@ export function useAppNav(): AppNavHook {
   }
 }
 
-function navigateToRootWallet(
-  navigation: MutableRefObject<NavigationContainerRef<any> | undefined>
-) {
+function navigateToRootWallet(navigation: NavigationRef) {
   navigation.current?.reset({
     index: 0,
     routes: [
@@ -35,9 +35,7 @@ function navigateToRootWallet(
   })
 }
 
-function resetNavToRoot(
-  navigation: MutableRefObject<NavigationContainerRef<any> | undefined>
-) {
+function resetNavToRoot(navigation: NavigationRef) {
   navigation.current?.reset({
     index: 0,
     routes: [
@@ -49,9 +47,7 @@ function resetNavToRoot(
   })
 }
 
-function resetNavToEnterMnemonic(
-  navigation: MutableRefObject<NavigationContainerRef<any> | undefined>
-) {
+function resetNavToEnterMnemonic(navigation: NavigationRef) {
   navigation.current?.reset({
     index: 0,
     routes: [
@@ -72,9 +68,7 @@ function resetNavToEnterMnemonic(
   })
 }
 
-function setLoginRoute(
-  navigation: MutableRefObject<NavigationContainerRef<any> | undefined>
-) {
+function setLoginRoute(navigation: NavigationRef) {
   navigation.current?.reset({
     index: 0,
     routes: [

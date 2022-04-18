@@ -82,7 +82,12 @@ export default function NftSend({ onNext }: NftSendScreenProps) {
       </View>
       {showAddressBook ? (
         <View style={{ marginHorizontal: -16, flex: 1 }}>
-          <AddressBookLists onContactSelected={onContactSelected} />
+          <AddressBookLists
+            onContactSelected={onContactSelected}
+            navigateToAddressBook={() => {
+              // TODO: navigate to address book
+            }}
+          />
         </View>
       ) : (
         <>

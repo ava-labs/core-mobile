@@ -1,3 +1,4 @@
+// @ts-nocheck TODO CP-1728: Fix Typescript Errors - Activity Details/Transactions
 import React, { useEffect, useState } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'

@@ -22,6 +22,7 @@ export default function SendANT(): JSX.Element {
     setAmount
   } = useSendAnt(selectedToken as AntWithBalance)
 
+  // @ts-expect-error unused function
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async function handleOnConfirm(
     onSuccess: () => void,

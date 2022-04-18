@@ -1,3 +1,4 @@
+// @ts-nocheck TODO CP-1728: Fix Typescript Errors - Activity Details/Transactions
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Animated, RefreshControl, View } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
@@ -80,11 +81,12 @@ function ActivityList({ embedded, tokenSymbolFilter }: Props) {
     allHistory
       ?.filter((tx: TxType) => {
         return tokenSymbolFilter
-          ? tokenSymbolFilter === (tx?.tokenSymbol ?? 'AVAX')
+          ? tokenSymbolFilter ===
+              ('tokenSymbol' in tx ? tx.tokenSymbol : 'AVAX')
           : true
       })
       .forEach((it: TxType) => {
-        const date = moment(it.timestamp)
+        const date = moment('timestamp' in it ? it.timestamp : '')
         if (TODAY.isSame(date, 'day')) {
           const today = newSectionData.Today
           newSectionData.Today = today
@@ -150,21 +152,27 @@ function ActivityList({ embedded, tokenSymbolFilter }: Props) {
             }}>
             <AvaText.ActivityTotal>{key[0]}</AvaText.ActivityTotal>
           </Animated.View>
-          {key[1].map((item: TxType, index) =>
-            isTransactionBridge(item) || 'requiredConfirmationCount' in item ? (
-              <BridgeTransactionItem
-                key={`${item.hash}-${index}`}
-                item={item}
-                onPress={() => openTransactionDetails(item)}
-              />
-            ) : (
-              <ActivityListItem
-                key={(item?.transactionIndex ?? 1) + index}
-                tx={item}
-                onPress={() => openTransactionDetails(item)}
-              />
-            )
-          )}
+          {key[1].map((item: TxType, index) => {
+            if ('requiredConfirmationCount' in item) {
+              if (isTransactionBridge(item)) {
+                return (
+                  <BridgeTransactionItem
+                    key={`${item.sourceTxHash}-${item.targetTxHash}-${index}`}
+                    item={item}
+                    onPress={() => openTransactionDetails(item)}
+                  />
+                )
+              }
+            } else {
+              return (
+                <ActivityListItem
+                  key={(item.transactionIndex ?? 1) + index}
+                  tx={item}
+                  onPress={() => openTransactionDetails(item)}
+                />
+              )
+            }
+          })}
         </View>
       )
     })

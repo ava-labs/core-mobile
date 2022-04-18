@@ -109,6 +109,8 @@ function BridgeTokenSelector({
   const renderItem = (item: ListRenderItemInfo<AssetBalance>) => {
     const token = item.item
     const symbol = token.asset.symbol
+    // @ts-expect-error tokenName is actually valid. we just have to upgrade bridge-sdk to latest version
+    // TODO: remove this comment once bridge-sdk is upgraded
     const name = token.symbol === 'ETH' ? 'Ethereum' : token.asset.tokenName
     const tokenSymbolOnNetwork = getTokenSymbolOnNetwork(
       symbol,
@@ -155,6 +157,8 @@ function BridgeTokenSelector({
     return searchText && searchText.length > 0
       ? assetsWithBalances?.filter(
           i =>
+            // @ts-expect-error tokenName is actually valid. we just have to upgrade bridge-sdk to latest version
+            // TODO: remove this comment once bridge-sdk is upgraded
             i.asset.tokenName
               ?.toLowerCase()
               .includes(searchText.toLowerCase()) ||

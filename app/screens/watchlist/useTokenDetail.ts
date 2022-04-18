@@ -117,10 +117,14 @@ export function useTokenDetail(tokenAddress: string) {
     contractInfo,
     urlHostname,
     handleFavorite,
+    // @ts-ignore market_data exists in CoinsContractInfoResponse
     marketTotalSupply: contractInfo?.market_data.total_supply ?? 0,
     twitterHandle: contractInfo?.links?.twitter_screen_name,
+    // @ts-ignore market_data exists in CoinsContractInfoResponse
     marketCirculatingSupply: contractInfo?.market_data?.circulating_supply ?? 0,
+    // @ts-ignore market_data exists in CoinsContractInfoResponse
     marketVolume: contractInfo?.market_data?.total_volume.usd ?? 0,
+    // @ts-ignore market_data exists in CoinsContractInfoResponse
     marketCap: contractInfo?.market_data?.market_cap.usd ?? 0,
     marketCapRank: contractInfo?.market_cap_rank ?? 0,
     chartData,

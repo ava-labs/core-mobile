@@ -69,13 +69,7 @@ function BaseListItem({
           )}
           <View style={styles.baseMainContent}>
             {typeof title === 'string' ? (
-              <AvaText.Heading3
-                style={[
-                  styles.baseTitleText,
-                  { color: context.theme.colorBgGreen }
-                ]}>
-                {title}
-              </AvaText.Heading3>
+              <AvaText.Heading3>{title}</AvaText.Heading3>
             ) : (
               <View
                 style={[
@@ -181,10 +175,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 17,
     justifyContent: 'center'
-  },
-  baseTitleText: {
-    fontSize: 16,
-    lineHeight: 24
   },
   baseTitleObject: {
     justifyContent: 'center',

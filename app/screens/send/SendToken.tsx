@@ -138,10 +138,10 @@ function SendToken({
               onAmountSet={amount => setSendAmount(amount)}
               onTokenSelect={token => setSendToken(token as ERC20WithBalance)}
               getMaxAmount={() => {
-                return (
-                  numeral(sendToken?.balanceDisplayValue ?? 0).value() -
-                  numeral(fees.sendFeeAvax ?? 0).value()
-                ).toFixed(4)
+                const balance =
+                  numeral(sendToken?.balanceDisplayValue ?? 0).value() || 0
+                const fee = numeral(fees.sendFeeAvax ?? 0).value() || 0
+                return (balance - fee).toFixed(4)
               }}
             />
             <Space y={8} />
