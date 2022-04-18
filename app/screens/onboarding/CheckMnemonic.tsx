@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import AvaButton from 'components/AvaButton'
 import AvaText from 'components/AvaText'
