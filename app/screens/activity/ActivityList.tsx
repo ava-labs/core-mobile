@@ -86,7 +86,14 @@ function ActivityList({ embedded, tokenSymbolFilter }: Props) {
           : true
       })
       .forEach((it: TxType) => {
-        const date = moment('timestamp' in it ? it.timestamp : '')
+        const date = moment(
+          'createdAt' in it
+            ? it.createdAt
+            : 'timestamp' in it
+            ? it.timestamp
+            : Date()
+        )
+
         if (TODAY.isSame(date, 'day')) {
           const today = newSectionData.Today
           newSectionData.Today = today

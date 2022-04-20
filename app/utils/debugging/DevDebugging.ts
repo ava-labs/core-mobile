@@ -2,8 +2,12 @@ import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
 import { LogBox } from 'react-native'
 
 const useDevDebugging = () => {
-  const { LOGBOX_IGNORED_WARNINGS, LOGBOX_DISABLED, STORYBOOK_ENABLED } =
-    DevDebuggingConfig
+  const {
+    LOGBOX_IGNORED_WARNINGS,
+    LOGBOX_DISABLED,
+    STORYBOOK_ENABLED,
+    REDSCREEN_DISABLED
+  } = DevDebuggingConfig
   function configure() {
     LogBox.ignoreLogs(LOGBOX_IGNORED_WARNINGS)
     LogBox.ignoreAllLogs(LOGBOX_DISABLED)
@@ -11,7 +15,7 @@ const useDevDebugging = () => {
       console.warn('Logbox warnings are disabled')
     }
     // @ts-ignore
-    console.reportErrorsAsExceptions = false
+    console.reportErrorsAsExceptions = REDSCREEN_DISABLED
   }
 
   const isStorybookEnabled = STORYBOOK_ENABLED

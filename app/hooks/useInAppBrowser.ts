@@ -6,7 +6,7 @@ import { Moonpay } from '@avalabs/blizzard-sdk'
 
 const useInAppBrowser = () => {
   const { theme } = useApplicationContext()
-  const moonAPI = new Moonpay({ baseUrl: 'https://blizzard.avax.network/' })
+  const moonAPI = new Moonpay({ baseUrl: 'https://blizzard.avax.network' })
   const addressC = useWalletStateContext()?.addresses?.addrC ?? ''
 
   function failSafe(url: string) {
