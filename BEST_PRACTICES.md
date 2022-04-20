@@ -395,3 +395,19 @@ Now we have clear view of how screens interact with each other and we are free t
 without any additional refactoring.
 
 The same would apply if we're about to navigate to different `Navigation stack`.
+
+### Making routes more readable
+
+To avoid lengthy route types we can extract them in navigation stack host:
+
+```typescript jsx
+// NFTScreenStack.tsx
+
+type NftDetailsRoute = RouteProp<NFTStackParamList, typeof AppNavigation.Nft.Details>
+
+...
+
+const NftDetailsScreen = () => {
+   const { params } = useRoute<NftDetailsRoute>()
+   ...
+}
