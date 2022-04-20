@@ -154,7 +154,7 @@ export function useApp(
         return localizedFormatter(digits).format(number)
       }
     },
-    [selectedCurrency]
+    [localizedFormatter]
   )
 
   return {
