@@ -14,7 +14,7 @@ const DrawerScreenStack = () => (
       drawerStyle: { width: '80%' }
     }}
     useLegacyImplementation
-    drawerContent={props => <DrawerView {...props} />}>
+    drawerContent={() => <DrawerView />}>
     <DrawerStack.Screen
       name={AppNavigation.Wallet.Tabs}
       options={{

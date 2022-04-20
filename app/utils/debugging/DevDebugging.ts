@@ -6,7 +6,7 @@ const useDevDebugging = () => {
     LOGBOX_IGNORED_WARNINGS,
     LOGBOX_DISABLED,
     STORYBOOK_ENABLED,
-    REDSCREEN_ENABLED
+    REDSCREEN_DISABLED
   } = DevDebuggingConfig
   function configure() {
     LogBox.ignoreLogs(LOGBOX_IGNORED_WARNINGS)
@@ -15,7 +15,7 @@ const useDevDebugging = () => {
       console.warn('Logbox warnings are disabled')
     }
     // @ts-ignore
-    console.reportErrorsAsExceptions = REDSCREEN_ENABLED
+    console.reportErrorsAsExceptions = REDSCREEN_DISABLED
   }
 
   const isStorybookEnabled = STORYBOOK_ENABLED

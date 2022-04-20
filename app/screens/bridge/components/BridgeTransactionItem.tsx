@@ -1,3 +1,4 @@
+// @ts-nocheck TODO CP-1725: Fix Typescript Errors - React Navigation
 import React, { FC, useEffect } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import {
@@ -43,10 +44,10 @@ const BridgeTransactionItem: FC<BridgeTransactionItemProps> = ({ item }) => {
   const fromAvalancheToEthereum =
     item.sourceNetwork === Blockchain.AVALANCHE ||
     item.to === '0x0000000000000000000000000000000000000000'
-  const { network } = useNetworkContext()
+  const { network } = useNetworkContext() || {}
   const { config } = useBridgeConfig()
   const { removeBridgeTransaction } = useBridgeContext()
-  const { addresses } = useWalletStateContext()
+  const { addresses } = useWalletStateContext() || {}
   const { transactionDetails, bridgeAssets, setTransactionDetails } =
     useBridgeSDK()
   const navigation = useNavigation()
@@ -84,7 +85,7 @@ const BridgeTransactionItem: FC<BridgeTransactionItemProps> = ({ item }) => {
       if (seconds > 0) {
         setTimeout(tick, 1000)
       } else {
-        removeBridgeTransaction({ ...txProps }).then()
+        txProps && removeBridgeTransaction({ ...txProps }).then()
       }
     }
     tick()

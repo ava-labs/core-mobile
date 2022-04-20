@@ -9,21 +9,25 @@ import {
 } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 
-type AvaTextProps = {
-  textStyle?: StyleProp<TextStyle>
+type BaseAvaTextProps = {
   color?: string
   ellipsizeMode?: 'head' | 'middle' | 'tail' | 'clip' | undefined
   currency?: boolean
   hideTrailingCurrency?: boolean
   animated?: boolean
-} & TextProps
+  textStyle?: Animated.WithAnimatedValue<StyleProp<TextStyle>>
+  style: Animated.WithAnimatedValue<StyleProp<TextStyle>>
+} & Omit<TextProps, 'style'>
 
-const AvaxTextBase: FC<AvaTextProps> = ({
+type AvaTextProps = Omit<BaseAvaTextProps, 'style'>
+
+const AvaxTextBase: FC<BaseAvaTextProps> = ({
   animated,
   currency,
   hideTrailingCurrency,
   children,
   ellipsizeMode,
+  style,
   ...rest
 }) => {
   const { selectedCurrency, currencyFormatter } =
@@ -45,6 +49,7 @@ const AvaxTextBase: FC<AvaTextProps> = ({
     ) : (
       <Text
         {...rest}
+        style={style as StyleProp<TextStyle>}
         numberOfLines={ellipsizeMode ? 1 : undefined}
         ellipsizeMode={ellipsizeMode}>
         {`${currencyFormatter(Number(children))} ${
@@ -63,6 +68,7 @@ const AvaxTextBase: FC<AvaTextProps> = ({
   ) : (
     <Text
       {...rest}
+      style={style as StyleProp<TextStyle>}
       numberOfLines={ellipsizeMode ? 1 : undefined}
       ellipsizeMode={ellipsizeMode}>
       {children}
@@ -76,6 +82,7 @@ const ExtraLargeTitle: FC<AvaTextProps> = ({
   ...rest
 }) => {
   const theme = useApplicationContext().theme
+
   return (
     <AvaxTextBase
       {...rest}

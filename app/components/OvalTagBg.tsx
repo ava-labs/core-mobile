@@ -2,7 +2,7 @@ import React from 'react'
 import { View, ViewStyle } from 'react-native'
 
 type Props = {
-  color: string
+  color?: string
   children: any
   style?: ViewStyle
 }

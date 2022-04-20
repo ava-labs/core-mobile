@@ -1,3 +1,4 @@
+// @ts-nocheck TODO CP-1725: Fix Typescript Errors - React Navigation
 import React, { FC, useEffect, useState } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { StyleProp, View, ViewStyle } from 'react-native'
@@ -18,7 +19,7 @@ interface TokenSelectAndAmountProps {
   onTokenSelect: (token: TokenWithBalance) => void
   onAmountSet: (amount: string) => void
   maxEnabled: boolean
-  getMaxAmount: () => string
+  getMaxAmount?: () => string
   style?: StyleProp<ViewStyle>
   inputWidth?: number
 }
@@ -68,11 +69,12 @@ const TokenSelectAndAmount: FC<TokenSelectAndAmountProps> = ({
 
   function setMax() {
     if (selectedToken) {
-      setAmount(
-        getMaxAmount
-          ? getMaxAmount?.()
-          : numeral(selectedToken.balanceDisplayValue).value()
-      )
+      const amount =
+        getMaxAmount?.() ||
+        numeral(selectedToken.balanceDisplayValue).value()?.toString() ||
+        '0'
+
+      setAmount(amount)
     }
   }
 

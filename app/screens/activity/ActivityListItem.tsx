@@ -2,15 +2,16 @@ import React, { FC } from 'react'
 import AvaListItem from 'components/AvaListItem'
 import AvaText from 'components/AvaText'
 import MovementIndicator from 'components/MovementIndicator'
-import { TxType } from 'screens/activity/ActivityList'
 import {
   isTransactionERC20,
-  isTransactionNormal
+  isTransactionNormal,
+  TransactionNormal,
+  TransactionERC20
 } from '@avalabs/wallet-react-components'
 import { truncateAddress } from 'utils/Utils'
 
 type Props = {
-  tx: TxType
+  tx: TransactionNormal | TransactionERC20
   onPress?: () => void
 }
 

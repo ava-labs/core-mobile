@@ -49,7 +49,7 @@ const TokenDetail: FC<any> = () => {
   const tokenAddress =
     useRoute<
       RouteProp<RootStackParamList, typeof AppNavigation.Wallet.TokenDetail>
-    >()?.params?.address
+    >()?.params?.address || ''
   const {
     isFavorite,
     openMoonPay,

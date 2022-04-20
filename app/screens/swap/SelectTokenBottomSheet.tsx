@@ -1,3 +1,4 @@
+// @ts-nocheck TODO CP-1725: Fix Typescript Errors - React Navigation
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet'
 import { InteractionManager } from 'react-native'

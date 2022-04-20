@@ -7,11 +7,6 @@ export {}
 type ToastType = import('react-native-toast-notifications').ToastType
 
 declare global {
-  namespace NodeJS {
-    interface Global {
-      toast: ToastType | null
-    }
-  }
+  // eslint-disable-next-line no-var
+  var toast: ToastType | null
 }
-
-declare const toast: ToastType

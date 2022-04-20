@@ -23,7 +23,7 @@ function AddBitcoinInstructionsBottomSheet() {
   const snapPoints = useMemo(() => ['0%', '80%'], [])
   const network = useNetworkContext()?.network
   const wallet = useWalletContext().wallet
-  const isMainnet = isMainnetNetwork(network?.config)
+  const isMainnet = network?.config ? isMainnetNetwork(network.config) : false
   const btcAddress = wallet?.getAddressBTC(isMainnet ? 'bitcoin' : 'testnet')
 
   useEffect(() => {
