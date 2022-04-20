@@ -26,6 +26,7 @@ import { NftCollection, NFTItemData } from 'screens/nft/NftCollection'
 import NftListView from 'screens/nft/NftListView'
 import { useNftLoader } from 'screens/nft/useNftLoader'
 import { Covalent } from '@avalabs/covalent-sdk'
+import Config from 'react-native-config'
 
 type PortfolioProps = {
   tokenList?: TokenWithBalance[]
@@ -191,8 +192,7 @@ const NftListViewScreen = () => {
   const { activeAccount } = useAccountsContext()
 
   useEffect(() => {
-    const chainID = AvalancheChainId
-    const covalent = new Covalent(chainID, process.env.COVALENT_API_KEY)
+    const covalent = new Covalent(AvalancheChainId, Config.COVALENT_API_KEY)
     const addressC = __DEV__
       ? '0x470820fbbfca29de49c4a474d12af264856d2028' //address with lots of demo NFTs
       : activeAccount?.wallet.getAddressC()
