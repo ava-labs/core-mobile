@@ -30,3 +30,27 @@ export const displaySeconds = (timeInSeconds: number): string => {
     ? new Date(timeInSeconds * 1000).toISOString().substr(11, 8) // HH:MM:SS
     : new Date(timeInSeconds * 1000).toISOString().substr(14, 5) // MM:SS
 }
+
+/**
+ * Used to format large numbers =>
+ * values over 1 Million:  32.2M, 1.6B
+ * values under 1 Million: as is
+ * @param num
+ * @param digits - default: 2 - fraction digits to be used by large and normal amounts.
+ */
+// adapted from: https://stackoverflow.com/a/9462382
+export function formatLargeNumber(num: number | string, digits = 2) {
+  const number = typeof num === 'number' ? num : Number(num)
+
+  const lookup = [
+    { value: 1e9, symbol: 'B' },
+    { value: 1e6, symbol: 'M' },
+    { value: 1e3, symbol: 'k' }
+  ]
+  const item = lookup.find(function (it) {
+    return number >= it.value
+  }) ?? { value: 1, symbol: '' }
+
+  const rx = /\.0+$|(\.[0-9]*[1-9])0+$/
+  return (number / item.value).toFixed(digits).replace(rx, '$1') + item.symbol
+}

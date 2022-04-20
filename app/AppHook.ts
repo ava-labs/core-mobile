@@ -10,6 +10,7 @@ import { Repo } from 'Repo'
 import { SECURE_ACCESS_SET } from 'resources/Constants'
 import AppNavigation from 'navigation/AppNavigation'
 import { usePosthogContext } from 'contexts/PosthogContext'
+import { formatLargeNumber } from 'utils/Utils'
 
 export type AppHook = {
   onExit: () => Observable<ExitEvents>
@@ -135,43 +136,23 @@ export function useApp(
    * @param num
    * @param digits - default: 2 - fraction digits to be used by large and normal amounts.
    */
-  // adapted from: https://stackoverflow.com/a/9462382
   const currencyFormatter = useCallback(
     (num: number | string, digits = 2) => {
       const number = typeof num === 'number' ? num : Number(num)
 
-      const lookup = [
-        { value: 1, symbol: '' },
-        { value: 1e3, symbol: 'k' },
-        { value: 1e6, symbol: 'M' },
-        { value: 1e9, symbol: 'B' }
-      ]
-      const rx = /\.0+$|(\.[0-9]*[1-9])0+$/
-      const item = lookup
-        .slice()
-        .reverse()
-        .find(function (item) {
-          return number >= item.value
-        })
-
       // only formatting large numbers. example: $1.32B or $2.1M
       // this may change with UX requirements. Currently anything above
       // Millions will return USD only
-      if (item && (item.value === 1e6 || item.value === 1e9)) {
-        return (
-          '$' +
-          (number / item.value).toFixed(digits).replace(rx, '$1') +
-          item.symbol
-        )
-      }
-
       // everything else gets the localized number format, with 2 digits. or 6 if number is too small
       // example: 2,023.03 (usd) or 0.000321
-      const formatter = localizedFormatter(
-        number > -0.1 && number < 0.1 ? 6 : digits
-      )
-
-      return formatter.format(number)
+      if (number >= 1e6) {
+        const formatted = formatLargeNumber(num, digits)
+        return '$' + formatted
+      } else if (number > -0.1 && number < 0.1) {
+        return localizedFormatter(6).format(number)
+      } else {
+        return localizedFormatter(digits).format(number)
+      }
     },
     [selectedCurrency]
   )
