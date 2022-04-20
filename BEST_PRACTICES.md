@@ -20,6 +20,11 @@ A best practice or pattern should have the following attributes:
 
 The process for adding to this document is similar to the RFC process. Document your idea in a clear and concise way. Use the mark down language to help convey your idea, eg. code snippets, bullet points, headers, etc... Explain why this pattern is better than alternatives. Once you feel your idea is ready you can submit a merge request. Merging this file will require approval from all members of the guild. This ensures everyone has a chance to submit feedback as well as stay informed of changes to this document. Once you have resolved any feedback and have the requisite approvals you can merge the changes.
 
+# Table of contents
+- [Colocation](#colocation)
+- [Destructuring props Parameter in Function Components](#destructuring-props-parameter-in-function-components)
+- [Navigation](#navigation)
+
 ## Colocation
 Colocation entails the practice of locating the data and UI requirements of a component in the same file as that component.
 
@@ -284,3 +289,109 @@ If we want to add a default prop we don't have to go to a separate part of the f
 - [Typescript 3.0 release notes: Explicit types on default props](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-0.html#explicit-types-on-defaultprops)
 - [Mozilla Javascript reference: Default parameters](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Default_parameters)
 - [Mozilla Javascript reference: Spread syntax](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_syntax)
+
+
+## Navigation
+
+We are using React Navigation as means to navigate between screens. 
+
+This enables us to use 2 important concepts: navigating from one to another screen and sharing data between two.
+
+To depict this consider an example where we have 2 screens as part of same Navigation stack:
+```typescript jsx
+// NFTScreenStack.tsx
+
+<NFTStack.Navigator>
+   <NFTStack.Screen
+     name={AppNavigation.Nft.Details}
+     component={NftDetails}
+   />
+   <NFTStack.Screen
+     name={AppNavigation.Nft.Send}
+     component={NFTSendScreenStack}
+   />
+</NFTStack.Navigator>
+```
+
+If we want to switch from `NftDetails` to `NFTSendScreenStack` we could write following in `NftDetails` component:
+
+```typescript jsx
+// NftDetails.tsx
+
+const NftDetails = ({
+  onPicturePressed,
+  onSendPressed
+}: NftDetailsProps) => {
+   const { params } = useRoute<RouteProp<NFTStackParamList, typeof AppNavigation.Nft.Details>>()
+   const nftToShow = params.nft
+   
+   const {navigate} = useNavigation<StackNavigationProp<NFTStackParamList>>()
+   ...
+   navigate(AppNavigation.Nft.Send, {nft: nftToShow})
+   ...
+}
+```
+
+`NftDetails` has responsibility of showing NFT details on screen and signal if user presses picture or button send.
+However, by adding above code we are giving it another responsibility: to navigate to appropriate screen on user interaction.
+But what if this screen should be used in different Navigation stacks, or perhaps there is UI flow which opens this screen
+as `BottomSheet`, or we want to switch the order of screens, or add another in between etc. Then it starts to build up with
+responsibility and complexity from/to where we collect/send data.
+
+To avoid this we can put that responsibility to component that hosts screen stack by creating wrapper component like this:
+
+```typescript jsx
+// NFTScreenStack.tsx
+
+function NFTScreenStack() {
+   return (
+     <NFTStack.Navigator>
+        <NFTStack.Screen
+          name={AppNavigation.Nft.Details}
+          component={NftDetailsScreen} // <-- this has changed
+        />
+        <NFTStack.Screen
+          name={AppNavigation.Nft.Send}
+          component={NFTSendScreenStack}
+        />
+     </NFTStack.Navigator>
+   )
+}
+
+const NftDetailsScreen = () => {
+   const { params } = useRoute<RouteProp<NFTStackParamList, typeof AppNavigation.Nft.Details>>()
+   const { navigate } = useNavigation<StackNavigationProp<NFTStackParamList>>()
+   const openSendNftScreen = (item: NFTItemData) => {
+      navigate(AppNavigation.Nft.Send, { nft: item })
+   }
+   return (
+     <NftDetails
+       nft={params.nft}
+       onSendPressed={openSendNftScreen}
+       ...
+     />
+   )
+}
+```
+
+And `NftDetails` would now look like this:
+
+```typescript jsx
+// NftDetails.tsx
+
+const NftDetails = ({
+  nft,
+  onPicturePressed,
+  onSendPressed
+}: NftDetailsProps) => {
+   ...
+   onSendPressed(nft)
+   ...
+}
+```
+
+
+Now we have clear view of how screens interact with each other and we are free to use `NftDetails` in any other screen stack
+without any additional refactoring.
+
+The same would apply if we're about to navigate to different `Navigation stack`.
