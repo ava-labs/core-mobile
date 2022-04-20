@@ -35,6 +35,7 @@ import MarketMovement from 'screens/watchlist/components/MarketMovement'
 import { ViewOnceInformation } from 'Repo'
 import TokenAddress from 'components/TokenAddress'
 import AppNavigation from 'navigation/AppNavigation'
+import { formatLargeNumber } from 'utils/Utils'
 
 const WIDOW_WIDTH = Dimensions.get('window').width
 
@@ -336,98 +337,59 @@ const TokenDetail: FC<any> = () => {
           }
         />
 
-        {/* Market Cap & Contact Address */}
-        <AvaListItem.Base
-          title={<AvaText.Body2>Market Cap</AvaText.Body2>}
-          titleAlignment={'flex-start'}
-          rightComponentHorizontalAlignment={'flex-start'}
-          paddingVertical={4}
-          subtitle={
-            <AvaText.Heading3>
-              {formatMarketNumbers(marketCap)}
-            </AvaText.Heading3>
-          }
-          rightComponent={
-            <View
-              style={{
-                justifyContent: 'center',
-                alignItems: 'flex-start',
-                flex: 1
-              }}>
-              <AvaText.Body2>Contract Address</AvaText.Body2>
-              <Space y={4} />
-              <TokenAddress address={tokenAddress} textType={'Heading'} />
-            </View>
-          }
-        />
-
-        {/* 24H Volume & Website */}
-        <AvaListItem.Base
-          title={<AvaText.Body2>24h Volume</AvaText.Body2>}
-          titleAlignment={'flex-start'}
-          rightComponentHorizontalAlignment={'flex-start'}
-          paddingVertical={4}
-          subtitle={
-            <AvaText.Heading3>
-              {formatMarketNumbers(marketVolume)}
-            </AvaText.Heading3>
-          }
-          rightComponent={
-            <View
-              style={{
-                justifyContent: 'flex-start',
-                alignItems: 'flex-start',
-                flex: 1
-              }}>
-              <AvaText.Body2>Website</AvaText.Body2>
+        <Row style={styles.row}>
+          <DataItem
+            title={'MarketCap'}
+            value={formatMarketNumbers(marketCap)}
+          />
+          {token?.isAvax ? null : (
+            <DataItem
+              title={'Contract Address'}
+              value={
+                <TokenAddress address={tokenAddress} textType={'Heading'} />
+              }
+            />
+          )}
+        </Row>
+        <Row style={styles.row}>
+          <DataItem
+            title={'24h Volume'}
+            value={formatMarketNumbers(marketVolume)}
+          />
+          <DataItem
+            title={'Website'}
+            value={
               <AvaText.Heading3
                 textStyle={{ color: '#0A84FF' }}
                 onPress={openWebsite}>
                 {urlHostname}
               </AvaText.Heading3>
-            </View>
-          }
-        />
-
-        {/*  Available Supply & Twitter */}
-        <AvaListItem.Base
-          title={<AvaText.Body2>Available Supply</AvaText.Body2>}
-          titleAlignment={'flex-start'}
-          rightComponentHorizontalAlignment={'flex-start'}
-          paddingVertical={4}
-          subtitle={
-            <AvaText.Heading3>
-              {formatMarketNumbers(marketCirculatingSupply)}
-            </AvaText.Heading3>
-          }
-          rightComponent={
-            <View
-              style={{
-                justifyContent: 'flex-start',
-                alignItems: 'flex-start',
-                flex: 1
-              }}>
-              <AvaText.Body2>Twitter</AvaText.Body2>
+            }
+          />
+        </Row>
+        <Row style={styles.row}>
+          <DataItem
+            title={'Available Supply'}
+            value={formatLargeNumber(marketCirculatingSupply)}
+          />
+          <DataItem
+            title={'Twitter'}
+            value={
               <AvaText.Heading3
                 textStyle={{ color: '#0A84FF' }}
                 onPress={openTwitter}>
                 @{twitterHandle}
               </AvaText.Heading3>
-            </View>
-          }
-        />
+            }
+          />
+        </Row>
+        <Row style={styles.row}>
+          <DataItem
+            title={'Total Supply'}
+            value={formatLargeNumber(marketTotalSupply)}
+          />
+        </Row>
 
-        {/* Total Supply */}
-        <AvaListItem.Base
-          title={<AvaText.Body2>Total Supply</AvaText.Body2>}
-          titleAlignment={'flex-start'}
-          paddingVertical={4}
-          subtitle={
-            <AvaText.Heading3>
-              {formatMarketNumbers(marketTotalSupply)}
-            </AvaText.Heading3>
-          }
-        />
         {token?.isAvax && (
           <AvaButton.Base onPress={openMoonPay}>
             <OvalTagBg color={theme.colorBg2} style={{ height: 48 }}>
@@ -439,5 +401,31 @@ const TokenDetail: FC<any> = () => {
     </ScrollView>
   )
 }
+
+const DataItem = ({
+  title,
+  value
+}: {
+  title: string
+  value: string | React.ReactNode
+}) => {
+  return (
+    <View style={{ flex: 1 }}>
+      <AvaText.Body2>{title}</AvaText.Body2>
+      {typeof value === 'string' ? (
+        <AvaText.Heading3>{value}</AvaText.Heading3>
+      ) : (
+        value
+      )}
+    </View>
+  )
+}
+
+const styles = StyleSheet.create({
+  row: {
+    paddingHorizontal: 16,
+    paddingVertical: 8
+  }
+})
 
 export default TokenDetail
