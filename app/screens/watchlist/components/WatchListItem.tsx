@@ -49,21 +49,19 @@ const WatchListItem: FC<Props> = ({
     diffValue: 0,
     percentChange: 0
   })
-  const [chartData, setChartData] = useState<{ x: number; y: number }[]>()
+  const [chartData, setChartData] = useState<{ x: number; y: number }[]>([])
   const [isLoadingChartData, setIsLoadingChartData] = useState(true)
 
   // get coingecko chart data.
   useEffect(() => {
-    if (tokenAddress) {
-      ;(async () => {
-        const result = await getCharData(tokenAddress, 1)
-        if (result) {
-          setChartData(result.dataPoints)
-          setRanges(result.ranges)
-        }
-        setIsLoadingChartData(false)
-      })()
-    }
+    ;(async () => {
+      const result = await getCharData(tokenAddress, 1)
+      if (result) {
+        setChartData(result.dataPoints)
+        setRanges(result.ranges)
+      }
+      setIsLoadingChartData(false)
+    })()
   }, [])
 
   const usdBalance = useMemo(() => {

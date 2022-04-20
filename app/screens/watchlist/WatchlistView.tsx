@@ -25,7 +25,6 @@ import useCoingecko from 'hooks/useCoingecko'
 
 interface Props {
   showFavorites?: boolean
-  title?: string
   searchText?: string
 }
 
