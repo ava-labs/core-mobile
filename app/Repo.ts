@@ -221,7 +221,7 @@ export function useRepo(): Repo {
   }
 
   const saveWatchlistFavorites = (favorites: string[]) => {
-    setWatchlistFavorites(favorites)
+    setWatchlistFavorites([...favorites])
     StorageTools.saveToStorage(WATCHLIST_FAVORITES, favorites).catch(reason =>
       console.error(reason)
     )
