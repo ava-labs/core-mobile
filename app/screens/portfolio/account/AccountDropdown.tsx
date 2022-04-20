@@ -18,6 +18,8 @@ import { useAccountsContext } from '@avalabs/wallet-react-components'
 import { useNavigation } from '@react-navigation/native'
 import { ShowSnackBar } from 'components/Snackbar'
 
+const Y_START = -400
+
 function AccountDropdown({
   onAddEditAccounts
 }: {
@@ -28,19 +30,7 @@ function AccountDropdown({
     useApplicationContext().repo.accountsRepo
   const accountsContext = useAccountsContext()
   const { goBack } = useNavigation()
-  const animScale = useRef(new Animated.Value(0)).current
-  const animTranslateY = useRef(new Animated.Value(-370)).current
-
-  useEffect(() => {
-    const compositeAnimation = Animated.timing(animScale, {
-      toValue: 1,
-      duration: 400,
-      useNativeDriver: true,
-      easing: Easing.elastic(1)
-    })
-    compositeAnimation.start()
-    return () => compositeAnimation.stop()
-  }, [animScale])
+  const animTranslateY = useRef(new Animated.Value(Y_START)).current
 
   useEffect(() => {
     const compositeAnimation1 = Animated.timing(animTranslateY, {
@@ -53,6 +43,16 @@ function AccountDropdown({
     return () => compositeAnimation1.stop()
   }, [animTranslateY])
 
+  const animatedDismiss = useCallback(() => {
+    const compositeAnimation1 = Animated.timing(animTranslateY, {
+      toValue: Y_START,
+      duration: 600,
+      useNativeDriver: true,
+      easing: Easing.elastic(1.2)
+    })
+    compositeAnimation1.start(() => goBack())
+  }, [animTranslateY, goBack])
+
   const renderAccountItem = useCallback(
     (item: ListRenderItemInfo<Account>) => {
       const account = item.item
@@ -64,11 +64,12 @@ function AccountDropdown({
           onSelectAccount={accountIndex => {
             accountsContext.activateAccount(accountIndex)
             setActiveAccount(accountIndex)
+            animatedDismiss()
           }}
         />
       )
     },
-    [accountsContext, setActiveAccount]
+    [accountsContext, animatedDismiss, setActiveAccount]
   )
 
   return (
