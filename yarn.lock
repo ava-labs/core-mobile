@@ -1892,57 +1892,7 @@
   dependencies:
     "@ethersproject/logger" "^5.6.0"
 
-"@ethersproject/providers@5.5.3":
-  version "5.5.3"
-  resolved "https://registry.yarnpkg.com/@ethersproject/providers/-/providers-5.5.3.tgz#56c2b070542ac44eb5de2ed3cf6784acd60a3130"
-  integrity sha512-ZHXxXXXWHuwCQKrgdpIkbzMNJMvs+9YWemanwp1fA7XZEv7QlilseysPvQe0D7Q7DlkJX/w/bGA1MdgK2TbGvA==
-  dependencies:
-    "@ethersproject/abstract-provider" "^5.5.0"
-    "@ethersproject/abstract-signer" "^5.5.0"
-    "@ethersproject/address" "^5.5.0"
-    "@ethersproject/basex" "^5.5.0"
-    "@ethersproject/bignumber" "^5.5.0"
-    "@ethersproject/bytes" "^5.5.0"
-    "@ethersproject/constants" "^5.5.0"
-    "@ethersproject/hash" "^5.5.0"
-    "@ethersproject/logger" "^5.5.0"
-    "@ethersproject/networks" "^5.5.0"
-    "@ethersproject/properties" "^5.5.0"
-    "@ethersproject/random" "^5.5.0"
-    "@ethersproject/rlp" "^5.5.0"
-    "@ethersproject/sha2" "^5.5.0"
-    "@ethersproject/strings" "^5.5.0"
-    "@ethersproject/transactions" "^5.5.0"
-    "@ethersproject/web" "^5.5.0"
-    bech32 "1.1.4"
-    ws "7.4.6"
-
-"@ethersproject/providers@5.6.0":
-  version "5.6.0"
-  resolved "https://registry.yarnpkg.com/@ethersproject/providers/-/providers-5.6.0.tgz#08ec8e2666771e3a347e66c8f664a2af97366534"
-  integrity sha512-6+5PKXTWAttJWFWF8+xCDTCa2/dtq9BNrdKQHGl0IyIOwj99vM6OeThmIRcsIAzIOb8m0XS6w+1KFZwrf3j9nw==
-  dependencies:
-    "@ethersproject/abstract-provider" "^5.6.0"
-    "@ethersproject/abstract-signer" "^5.6.0"
-    "@ethersproject/address" "^5.6.0"
-    "@ethersproject/basex" "^5.6.0"
-    "@ethersproject/bignumber" "^5.6.0"
-    "@ethersproject/bytes" "^5.6.0"
-    "@ethersproject/constants" "^5.6.0"
-    "@ethersproject/hash" "^5.6.0"
-    "@ethersproject/logger" "^5.6.0"
-    "@ethersproject/networks" "^5.6.0"
-    "@ethersproject/properties" "^5.6.0"
-    "@ethersproject/random" "^5.6.0"
-    "@ethersproject/rlp" "^5.6.0"
-    "@ethersproject/sha2" "^5.6.0"
-    "@ethersproject/strings" "^5.6.0"
-    "@ethersproject/transactions" "^5.6.0"
-    "@ethersproject/web" "^5.6.0"
-    bech32 "1.1.4"
-    ws "7.4.6"
-
-"@ethersproject/providers@5.6.2":
+"@ethersproject/providers@5.5.3", "@ethersproject/providers@5.6.0", "@ethersproject/providers@5.6.2":
   version "5.6.2"
   resolved "https://registry.yarnpkg.com/@ethersproject/providers/-/providers-5.6.2.tgz#b9807b1c8c6f59fa2ee4b3cf6519724d07a9f422"
   integrity sha512-6/EaFW/hNWz+224FXwl8+HdMRzVHt8DpPmu5MZaIQqx/K/ELnC9eY236SMV7mleCM3NnEArFwcAAxH5kUUgaRg==
@@ -3059,10 +3009,10 @@
   resolved "https://registry.yarnpkg.com/@react-native-community/masked-view/-/masked-view-0.1.11.tgz#2f4c6e10bee0786abff4604e39a37ded6f3980ce"
   integrity sha512-rQfMIGSR/1r/SyN87+VD8xHHzDYeHaJq6elOSCAD+0iLagXkSI2pfA0LmSXP21uw5i3em7GkkRjfJ8wpqWXZNw==
 
-"@react-native-seoul/masonry-list@^1.1.4":
-  version "1.1.4"
-  resolved "https://registry.yarnpkg.com/@react-native-seoul/masonry-list/-/masonry-list-1.1.4.tgz#67f8b59e19a61c78d03eb007f5ae574aeb7fbfb7"
-  integrity sha512-pHB1vz8cN9gRuOaFJsUOTi0B7w6LimzuqmQP7/iLJkXUnHW45kIMetuM29wPJ44Hz7+1nNZQ2ONCK+WyZ3EtZA==
+"@react-native-seoul/masonry-list@1.3.0":
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/@react-native-seoul/masonry-list/-/masonry-list-1.3.0.tgz#ef12b8ff12d77e151fb3de4a5a795696a413aed0"
+  integrity sha512-aKScZmVdWtfPsm2sRRMTU+WHxMfhEs4deyAxOf28kg9IDzoPKCE7+Tdl4RUnpbS27cZ9X9hoBWdZwerzhyGjhg==
   dependencies:
     dooboolab-welcome "^1.3.2"
 
@@ -4269,6 +4219,11 @@
   resolved "https://registry.yarnpkg.com/@types/npmlog/-/npmlog-4.1.4.tgz#30eb872153c7ead3e8688c476054ddca004115f6"
   integrity sha512-WKG4gTr8przEZBiJ5r3s8ZIAoMXNbOgQ+j/d5O4X3x6kZJRLNvyUJuUK/KoG3+8BaOHPhp2m7WC6JKKeovDSzQ==
 
+"@types/numeral@2.0.2":
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/@types/numeral/-/numeral-2.0.2.tgz#8ea2c4f4e64c0cc948ad7da375f6f827778a7912"
+  integrity sha512-A8F30k2gYJ/6e07spSCPpkuZu79LCnkPTvqmIWQzNGcrzwFKpVOydG41lNt5wZXjSI149qjyzC2L1+F2PD/NUA==
+
 "@types/parse-json@^4.0.0":
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/@types/parse-json/-/parse-json-4.0.0.tgz#2f8bb441434d163b35fb8ffdccd7138927ffb8c0"
@@ -4421,6 +4376,11 @@
   integrity sha512-O3MmRAk6ZuAKa9CHgg0Pr0+lUOqoMLpc9AS4R8ano2auvsg7IE8syF3Xh/NPr26TWklxYcqoEEFdzLLs1fV9PQ==
   dependencies:
     source-map "^0.6.1"
+
+"@types/uuid@8.3.4":
+  version "8.3.4"
+  resolved "https://registry.yarnpkg.com/@types/uuid/-/uuid-8.3.4.tgz#bd86a43617df0594787d38b735f55c805becf1bc"
+  integrity sha512-c/I8ZRb51j+pYGAu5CrFMRxqZ2ke4y2grEBO5AUjgSkSk+qT2Ea+OdWElz/OiMf5MNpn2b17kuVBwZLQJXzihw==
 
 "@types/webpack-env@^1.15.0":
   version "1.16.3"

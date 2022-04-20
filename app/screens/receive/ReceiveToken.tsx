@@ -19,6 +19,7 @@ import ChainCard from './ChainCard'
 const SCREEN_WIDTH = Dimensions.get('window')?.width
 
 function ReceiveToken() {
+  // @ts-expect-error: x chain is temporarily disabled
   const { addressC, addressX } = usePortfolio()
   const { theme, isDarkMode } = useApplicationContext()
   const [selectedAddress, setSelectedAddress] = useState('')

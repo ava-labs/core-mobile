@@ -35,6 +35,8 @@ function LocalBridgeProvider({ children }: { children: any }) {
   })
 
   async function createBridgeTransaction(bridgeTransaction: TrackerViewProps) {
+    if (typeof bridgeTransaction.sourceTxHash !== 'string') return
+
     const newBridgeState = {
       ...bridgeState,
       bridgeTransactions: {
@@ -52,6 +54,8 @@ function LocalBridgeProvider({ children }: { children: any }) {
   }
 
   async function removeBridgeTransaction(bridgeTransaction: TrackerViewProps) {
+    if (typeof bridgeTransaction.sourceTxHash !== 'string') return
+
     const { [bridgeTransaction.sourceTxHash]: unused, ...rest } =
       bridgeState.bridgeTransactions
 

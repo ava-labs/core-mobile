@@ -12,7 +12,7 @@ import AvaText from './AvaText'
 
 interface Props {
   angle?: number
-  anim: Animated.Value
+  anim?: Animated.Value
   radius?: number
   buttonColor?: string
   onPress?: () => void
@@ -29,7 +29,7 @@ interface Props {
 const ActionButtonItem: FC<Props> = ({
   radius = 100,
   angle = 0,
-  anim,
+  anim = new Animated.Value(0),
   size = 48,
   startDegree = 0,
   endDegree = 720,

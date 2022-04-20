@@ -18,7 +18,7 @@ interface Props {
   setAmount: (amount: BN) => void
   amount?: BN
   priceUSD?: number
-  denomination: number
+  denomination?: number
   setAddress: (address: string) => void
   sendFee?: BN
   gasLimit?: number

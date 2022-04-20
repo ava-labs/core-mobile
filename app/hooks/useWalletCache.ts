@@ -1,3 +1,4 @@
+// @ts-nocheck These are not used anymore because we don't support P & X chains
 import {
   AccountsHdCache,
   setHdCache,

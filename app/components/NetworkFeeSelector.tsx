@@ -1,3 +1,4 @@
+// @ts-nocheck TODO CP-1725: Fix Typescript Errors - React Navigation
 import { Row } from 'components/Row'
 import AvaText from 'components/AvaText'
 import { TextInput, View } from 'react-native'
@@ -88,7 +89,7 @@ const NetworkFeeSelector = ({
               navigate(gasLimitEditorRoute, {
                 gasLimit: initGasLimit.toString(),
                 networkFee: networkFeeAvax,
-                onSave: customGasLimit => {
+                onSave: (customGasLimit: number) => {
                   onCustomGasLimit(customGasLimit)
                 }
               })
