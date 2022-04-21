@@ -26,22 +26,19 @@ export function usePortfolio(): UsePortfolioData {
       mustNumber(
         () =>
           Number.parseFloat(
-            walletStateContext!.avaxToken.balanceUsdDisplayValue ?? '0'
+            walletStateContext?.avaxToken.balanceUsdDisplayValue ?? '0'
           ),
         0
       ) + erc20TokensTotalUsd
     ).toFixed(2)
-  }, [
-    walletStateContext?.avaxToken.balanceUSD,
-    walletStateContext?.erc20Tokens
-  ])
+  }, [walletStateContext])
 
   return {
     // addressX: walletStateContext?.addresses?.addrX ?? '',
     // addressP: walletStateContext?.addresses?.addrP ?? '',
     addressC: walletStateContext?.addresses?.addrC ?? '',
     balanceTotalInUSD,
-    isBalanceLoading: walletStateContext?.isBalanceLoading ?? true,
+    isBalanceLoading: walletStateContext?.isErc20TokenListLoading ?? true, // walletStateContext?.isBalanceLoading is not reflecting correct state, needs fixing on sdk side
     isWalletReady: walletStateContext?.isWalletReady ?? false,
     isErc20Loading: walletStateContext?.isErc20TokenListLoading ?? true
   }
