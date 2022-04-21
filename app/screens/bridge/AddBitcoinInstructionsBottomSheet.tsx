@@ -37,16 +37,24 @@ import AvaText from 'components/AvaText';
 import {Space} from 'components/Space';
 import {Row} from 'components/Row';
 import AvaxQACode from 'components/AvaxQRCode';
-import {useWalletStateContext} from '@avalabs/wallet-react-components';
+import {
+  useNetworkContext,
+  useWalletContext,
+  useWalletStateContext,
+} from '@avalabs/wallet-react-components';
 import TokenAddress from 'components/TokenAddress';
 import {useApplicationContext} from 'contexts/ApplicationContext';
+import {isMainnetNetwork} from '@avalabs/avalanche-wallet-sdk';
 
 function AddBitcoinInstructionsBottomSheet() {
   const theme = useApplicationContext().theme;
   const navigation = useNavigation();
   const bottomSheetModalRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ['0%', '80%'], []);
-  const addressC = useWalletStateContext()?.addresses?.addrC;
+  const network = useNetworkContext()?.network;
+  const wallet = useWalletContext().wallet;
+  const isMainnet = isMainnetNetwork(network?.config);
+  const btcAddress = wallet?.getAddressBTC(isMainnet ? 'bitcoin' : 'testnet');
 
   useEffect(() => {
     // intentionally setting delay so animation is visible.
@@ -121,7 +129,7 @@ function AddBitcoinInstructionsBottomSheet() {
           <AvaxQACode
             circularText={'C Chain'}
             sizePercentage={0.5}
-            address={addressC}
+            address={btcAddress}
             token={'BTC'}
             circularTextColor={'black'}
             circularTextBackgroundColor={'white'}
@@ -135,7 +143,7 @@ function AddBitcoinInstructionsBottomSheet() {
             {backgroundColor: theme.colorStroke},
           ]}>
           <TokenAddress
-            address={addressC ?? ''}
+            address={btcAddress ?? ''}
             showFullAddress
             textType={'ButtonMedium'}
           />
