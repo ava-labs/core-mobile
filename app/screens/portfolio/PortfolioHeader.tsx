@@ -43,13 +43,16 @@ const PortfolioHeader: FC<PortfolioHeaderProps> = memo(
           <TokenAddress address={addressC ?? ''} textType={'Body'} />
         </View>
         <View style={styles.balanceContainer}>
-          {isBalanceLoading && (
+          {isBalanceLoading ? (
             <ActivityIndicator style={{ alignSelf: 'center' }} size="small" />
+          ) : (
+            <>
+              <AvaText.LargeTitleBold>{balanceTotalUSD}</AvaText.LargeTitleBold>
+              <AvaText.Heading3 textStyle={{ paddingBottom: 4, marginLeft: 4 }}>
+                {currencyCode}
+              </AvaText.Heading3>
+            </>
           )}
-          <AvaText.LargeTitleBold>{balanceTotalUSD}</AvaText.LargeTitleBold>
-          <AvaText.Heading3 textStyle={{ paddingBottom: 4, marginLeft: 4 }}>
-            {currencyCode}
-          </AvaText.Heading3>
         </View>
         <Space y={18} />
       </View>
@@ -72,6 +75,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     justifyContent: 'center',
     flexDirection: 'row',
+    height: 44,
     marginTop: 25
   }
 })
