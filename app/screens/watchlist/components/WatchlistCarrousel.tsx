@@ -20,9 +20,9 @@ import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { StackNavigationProp } from '@react-navigation/stack'
 import { CG_AVAX_TOKEN_ID } from 'screens/watchlist/WatchlistView'
-import Coingecko, { ChartData } from 'utils/Coingecko'
 import MarketMovement from 'screens/watchlist/components/MarketMovement'
 import { Opacity85 } from 'resources/Constants'
+import { ChartData } from 'repository/CoingeckoRepo'
 
 interface Props {
   style?: StyleProp<View>
@@ -40,7 +40,7 @@ const WatchlistCarrousel: FC<Props> = () => {
       [{ ...avaxToken, address: CG_AVAX_TOKEN_ID }, ...erc20Tokens].filter(
         token => watchlistFavorites.includes(token.address)
       ) ?? [],
-    [erc20Tokens, avaxToken]
+    [erc20Tokens, avaxToken, watchlistFavorites]
   )
 
   function goToWatchlist() {
@@ -105,15 +105,16 @@ interface CarrouselItemProps {
 }
 
 const CarrouselItem: FC<CarrouselItemProps> = ({ token, onPress }) => {
-  const theme = useApplicationContext().theme
+  const { theme, repo } = useApplicationContext()
+  const { getCharData } = repo.coingeckoRepo
   const [chartData, setChartData] = useState<ChartData>()
 
   useEffect(() => {
     ;(async () => {
-      try {
-        const data = await Coingecko.fetchChartData(token.address, 1)
+      const data = await getCharData(token.address, 1)
+      if (data) {
         setChartData(data)
-      } catch (e) {
+      } else {
         //ignored
       }
     })()

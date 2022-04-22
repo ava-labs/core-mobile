@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { FlatList, ListRenderItemInfo, StyleSheet, View } from 'react-native'
 import Loader from 'components/Loader'
 import {
@@ -19,9 +19,9 @@ import { SafeAreaProvider } from 'react-native-safe-area-context'
 import ZeroState from 'components/ZeroState'
 import {
   SimplePriceInCurrency,
-  simpleTokenPrice,
-  VsCurrencyType
+  SimpleTokenPriceResponse
 } from '@avalabs/coingecko-sdk'
+import useCoingecko from 'hooks/useCoingecko'
 
 interface Props {
   showFavorites?: boolean
@@ -43,39 +43,31 @@ const filterTimeOptions = ['1D', '1W', '1Y']
 
 type CombinedTokenType = ERC20WithBalance & SimplePriceInCurrency
 
-const WatchlistView: FC<Props> = ({ showFavorites, searchText }) => {
+const WatchlistView = ({ showFavorites, searchText }: Props) => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>()
   const { currencyFormatter } = useApplicationContext().appHook
   const { watchlistFavorites } =
     useApplicationContext().repo.watchlistFavoritesRepo
+  const { tokenPrices } = useCoingecko()
   // @ts-ignore erc20Tokens and avaxToken exist but why it complains needs investigation
-  const { erc20Tokens, avaxToken } = useWalletStateContext()
-  const [combinedData, setCombinedData] = useState<CombinedTokenType[]>([])
+  const { erc20Tokens, avaxToken } = useWalletStateContext()!
   const [filterBy, setFilterBy] = useState(WatchlistFilter.PRICE)
   const [filterTime, setFilterTime] = useState(filterTimeOptions[0])
-  const tokenAddresses = [
-    CG_AVAX_TOKEN_ID,
-    ...(erc20Tokens?.map((t: ERC20WithBalance) => t.address) ?? [])
-  ]
-  const allTokens = [
-    { ...avaxToken, address: CG_AVAX_TOKEN_ID },
-    ...erc20Tokens
-  ]
-
-  useEffect(() => {
-    if (combinedData.length === 0) {
-      refreshPrices()
+  const tokens = useMemo(() => {
+    let pricedTokens = addPriceToTokenList(tokenPrices, avaxToken, erc20Tokens)
+    if (showFavorites) {
+      pricedTokens = pricedTokens?.filter(tk =>
+        watchlistFavorites.includes(tk.address)
+      )
     }
-  }, [allTokens])
-
-  const sortedData = useMemo(() => {
-    // get favorite list or regular list
-    const listData = showFavorites
-      ? combinedData.filter(tk => watchlistFavorites.includes(tk.address))
-      : combinedData
-
-    // sort data by filter option
-    return listData.sort((a, b) => {
+    if (searchText && searchText.length > 0) {
+      pricedTokens = pricedTokens?.filter(
+        i =>
+          i.name?.toLowerCase().includes(searchText.toLowerCase()) ||
+          i.symbol?.toLowerCase().includes(searchText.toLowerCase())
+      )
+    }
+    pricedTokens?.sort((a, b) => {
       if (filterBy === WatchlistFilter.PRICE) {
         return (b.price ?? 0) - (a.price ?? 0)
       } else if (filterBy === WatchlistFilter.MARKET_CAP) {
@@ -84,29 +76,41 @@ const WatchlistView: FC<Props> = ({ showFavorites, searchText }) => {
         return (b.vol24 ?? 0) - (a.vol24 ?? 0)
       }
     })
-  }, [combinedData, filterBy])
+    return pricedTokens
+  }, [
+    tokenPrices,
+    avaxToken,
+    erc20Tokens,
+    showFavorites,
+    searchText,
+    watchlistFavorites,
+    filterBy
+  ])
 
-  const refreshPrices = async () => {
-    if (allTokens && allTokens.length > 0) {
-      const rawData = await simpleTokenPrice({
-        tokenAddresses,
-        currencies: ['usd'] as VsCurrencyType[],
-        marketCap: true,
-        vol24: true,
-        change24: true
-      })
-      const mappedData = allTokens?.map(t => {
-        const address =
-          t.address === CG_AVAX_TOKEN_ID
-            ? CG_AVAX_TOKEN_ID
-            : t.address.toLowerCase()
-        return {
-          ...t,
-          ...rawData?.[address]?.usd
-        } as CombinedTokenType
-      })
-      setCombinedData(mappedData)
+  function addPriceToTokenList(
+    tPrices: SimpleTokenPriceResponse | undefined,
+    avax: TokenWithBalance,
+    erc20s: ERC20WithBalance[]
+  ) {
+    const allTokens = [{ ...avax, address: CG_AVAX_TOKEN_ID }, ...erc20s]
+    if (
+      !tPrices ||
+      Object.keys(tPrices).length === 0 ||
+      allTokens.length === 0
+    ) {
+      return
     }
+    const mappedData = allTokens?.map(t => {
+      const address =
+        t.address === CG_AVAX_TOKEN_ID
+          ? CG_AVAX_TOKEN_ID
+          : t.address.toLowerCase()
+      return {
+        ...t,
+        ...tPrices?.[address]?.usd
+      } as CombinedTokenType
+    })
+    return mappedData
   }
 
   useEffect(() => {
@@ -114,20 +118,6 @@ const WatchlistView: FC<Props> = ({ showFavorites, searchText }) => {
       // setSearchText(searchText ?? '');
     }
   }, [searchText])
-
-  function handleRefresh() {
-    refreshPrices()
-  }
-
-  const tokens = useMemo(() => {
-    return searchText && searchText.length > 0
-      ? sortedData?.filter(
-          i =>
-            i.name?.toLowerCase().includes(searchText.toLowerCase()) ||
-            i.symbol?.toLowerCase().includes(searchText.toLowerCase())
-        )
-      : sortedData
-  }, [searchText, sortedData])
 
   const renderItem = (item: ListRenderItemInfo<CombinedTokenType>) => {
     const token = item.item
@@ -154,6 +144,7 @@ const WatchlistView: FC<Props> = ({ showFavorites, searchText }) => {
           : `$${currencyFormatter(token?.vol24 ?? 0, 1)}`
       }
     }
+
     // rank is currently not displayed because an additional
     // API call that returns a large data set would need to be made only
     // to get that information
@@ -177,7 +168,7 @@ const WatchlistView: FC<Props> = ({ showFavorites, searchText }) => {
 
   return (
     <SafeAreaProvider style={styles.container}>
-      {!sortedData ? (
+      {!tokens ? (
         <Loader />
       ) : (
         <>
@@ -206,7 +197,6 @@ const WatchlistView: FC<Props> = ({ showFavorites, searchText }) => {
           <FlatList
             data={tokens}
             renderItem={renderItem}
-            onRefresh={handleRefresh}
             ItemSeparatorComponent={() => (
               <Separator
                 style={{ backgroundColor: '#323232', height: 0.5 }}

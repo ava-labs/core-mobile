@@ -13,6 +13,7 @@
     "tsc": "tsc",
     "lint": "eslint .",
     "lint:ci": "yarn run lint --quiet --format json --output-file eslint_report.json",
+    "postinstall": "./scripts/patch",
     "postversion": "react-native-version --never-amend",
     "clean": "./scripts/clean",
     "prestorybook": "rnstl",

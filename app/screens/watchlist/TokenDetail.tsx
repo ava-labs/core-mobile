@@ -50,7 +50,7 @@ const TokenDetail: FC<any> = () => {
   const tokenAddress =
     useRoute<
       RouteProp<RootStackParamList, typeof AppNavigation.Wallet.TokenDetail>
-    >()?.params?.address || ''
+    >().params.address
   const {
     isFavorite,
     openMoonPay,
@@ -254,6 +254,7 @@ const TokenDetail: FC<any> = () => {
                 }}
                 candleRatio={0.2}
                 data={[
+                  //TODO implement real data
                   {
                     x: new Date(2016, 6, 1),
                     open: 5,

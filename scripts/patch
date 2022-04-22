@@ -1,0 +1,2 @@
+#!/bin/bash
+patch -N ./node_modules/@connectedcars/react-native-slide-charts/src/lib/utils/SVGPathYFromX.ts ./patches/react-native-slide-charts.patch
