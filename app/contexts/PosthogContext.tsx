@@ -8,6 +8,7 @@ import React, {
 import PostHog from 'posthog-react-native'
 import { timer } from 'rxjs'
 import { JsonMap } from 'posthog-react-native/src/bridge'
+import Config from 'react-native-config'
 
 export const PosthogContext = createContext<PosthogContextState>(
   {} as PosthogContextState
@@ -64,7 +65,7 @@ export const PosthogContextProvider = ({ children }: { children: any }) => {
 
   function initPosthog() {
     ;(async function () {
-      await PostHog.setup(process.env.POSTHOG_API_KEY as string, {
+      await PostHog.setup(Config.POSTHOG_API_KEY as string, {
         debug: true,
         host: 'https://data-posthog.avax.network',
         android: {
@@ -104,7 +105,7 @@ export const PosthogContextProvider = ({ children }: { children: any }) => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        api_key: process.env.POSTHOG_API_KEY,
+        api_key: Config.POSTHOG_API_KEY,
         distinct_id: ''
       })
     })

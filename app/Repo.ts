@@ -5,6 +5,12 @@ import { CustomTokens } from 'screens/tokenManagement/hooks/useAddCustomToken'
 import { NFTItemData } from 'screens/nft/NftCollection'
 import { TokenWithBalance } from '@avalabs/wallet-react-components'
 import { BN } from '@avalabs/avalanche-wallet-sdk'
+import StorageTools from 'repository/StorageTools'
+import { ChartData, useCoingeckoRepo } from 'repository/CoingeckoRepo'
+import {
+  CoinsContractInfoResponse,
+  SimpleTokenPriceResponse
+} from '@avalabs/coingecko-sdk'
 
 /**
  * Currently we support only one wallet, with multiple accounts.
@@ -94,6 +100,20 @@ export type Repo = {
       tokens: Map<string, TokenWithBalance>
     ) => void
   }
+  coingeckoRepo: {
+    getCharData: (
+      address: string,
+      days: number,
+      fresh?: boolean
+    ) => Promise<ChartData | undefined>
+    getContractInfo: (
+      address: string,
+      fresh?: boolean
+    ) => Promise<CoinsContractInfoResponse | undefined>
+    getTokensPrice: (
+      fresh?: boolean
+    ) => Promise<SimpleTokenPriceResponse | undefined>
+  }
   /**
    * Store any simple user settings here
    */
@@ -115,6 +135,7 @@ export function useRepo(): Repo {
   const [userSettings, setUserSettings] = useState<Map<Setting, SettingValue>>(
     new Map()
   )
+  const { getCharData, getContractInfo, getTokensPrice } = useCoingeckoRepo()
 
   useEffect(() => {
     loadInitialStatesFromStorage()
@@ -124,8 +145,8 @@ export function useRepo(): Repo {
     userSettings.set(setting, value)
     const updatedSettings = new Map(userSettings)
     setUserSettings(updatedSettings)
-    saveMapToStorage(USER_SETTINGS, updatedSettings).catch(reason =>
-      console.error(reason)
+    StorageTools.saveMapToStorage(USER_SETTINGS, updatedSettings).catch(
+      reason => console.error(reason)
     )
   }
 
@@ -150,32 +171,38 @@ export function useRepo(): Repo {
 
   const saveAddressBook = (addrBook: Map<UID, Contact>) => {
     setAddressBook(new Map(addrBook))
-    saveMapToStorage(ADDR_BOOK, addrBook).catch(reason => console.error(reason))
+    StorageTools.saveMapToStorage(ADDR_BOOK, addrBook).catch(reason =>
+      console.error(reason)
+    )
   }
 
   const saveNfts = (nfts: Map<UID, NFTItemData>) => {
     setNfts(new Map(nfts))
-    saveMapToStorage(NFTs, nfts).catch(reason => console.error(reason))
+    StorageTools.saveMapToStorage(NFTs, nfts).catch(reason =>
+      console.error(reason)
+    )
   }
 
   const saveCustomTokens = (tokens: CustomTokens) => {
     setCustomTokens(tokens)
-    return saveToStorage<CustomTokens>(CUSTOM_TOKENS, tokens)
+    return StorageTools.saveToStorage<CustomTokens>(CUSTOM_TOKENS, tokens)
   }
 
   const savePortfolioTokens = (
     networkName: string,
     tokens: Map<string, TokenWithBalance>
   ) => {
-    saveMapToStorage(networkName + PORTFOLIO_TOKEN_LIST, tokens).catch(reason =>
-      console.error(reason)
-    )
+    StorageTools.saveMapToStorage(
+      networkName + PORTFOLIO_TOKEN_LIST,
+      tokens
+    ).catch(reason => console.error(reason))
   }
 
   const loadPortfolioTokens = async (networkName: string) => {
-    const tokens = await loadFromStorageAsMap<string, TokenWithBalance>(
-      networkName + PORTFOLIO_TOKEN_LIST
-    )
+    const tokens = await StorageTools.loadFromStorageAsMap<
+      string,
+      TokenWithBalance
+    >(networkName + PORTFOLIO_TOKEN_LIST)
     for (const token of tokens.values()) {
       token.balance = new BN(token.balance, token.denomination)
     }
@@ -188,14 +215,14 @@ export function useRepo(): Repo {
       ...recentContacts.filter(value => value.id !== contact.id)
     ].slice(0, 9) //save max 10 recents
     setRecentContacts(newRecents)
-    saveToStorage(ADDR_BOOK_RECENTS, newRecents).catch(reason =>
+    StorageTools.saveToStorage(ADDR_BOOK_RECENTS, newRecents).catch(reason =>
       console.error(reason)
     )
   }
 
   const saveWatchlistFavorites = (favorites: string[]) => {
-    setWatchlistFavorites(favorites)
-    saveToStorage(WATCHLIST_FAVORITES, favorites).catch(reason =>
+    setWatchlistFavorites([...favorites])
+    StorageTools.saveToStorage(WATCHLIST_FAVORITES, favorites).catch(reason =>
       console.error(reason)
     )
   }
@@ -204,7 +231,7 @@ export function useRepo(): Repo {
     // we use set so we don't allow duplicates
     const infoSet = [...new Set(info)]
     setViewOnceInfo(infoSet)
-    saveToStorage(VIEW_ONCE_INFORMATION, infoSet).catch(error =>
+    StorageTools.saveToStorage(VIEW_ONCE_INFORMATION, infoSet).catch(error =>
       console.error(error)
     )
   }
@@ -227,28 +254,30 @@ export function useRepo(): Repo {
   }
 
   function loadInitialStatesFromStorage() {
-    loadFromStorageAsMap<Setting, SettingValue>(USER_SETTINGS).then(value =>
-      setUserSettings(value)
+    StorageTools.loadFromStorageAsMap<Setting, SettingValue>(
+      USER_SETTINGS
+    ).then(value => setUserSettings(value))
+    StorageTools.loadFromStorageAsMap<AccountId, Account>(WALLET_ID).then(
+      value => setAccounts(value)
     )
-    loadFromStorageAsMap<AccountId, Account>(WALLET_ID).then(value =>
-      setAccounts(value)
+    StorageTools.loadFromStorageAsMap<UID, NFTItemData>(NFTs).then(value =>
+      setNfts(value)
     )
-    loadFromStorageAsMap<UID, NFTItemData>(NFTs).then(value => setNfts(value))
-    loadFromStorageAsMap<UID, Contact>(ADDR_BOOK).then(value =>
+    StorageTools.loadFromStorageAsMap<UID, Contact>(ADDR_BOOK).then(value =>
       setAddressBook(value)
     )
-    loadFromStorageAsArray<RecentContact>(ADDR_BOOK_RECENTS).then(value =>
-      setRecentContacts(value)
+    StorageTools.loadFromStorageAsArray<RecentContact>(ADDR_BOOK_RECENTS).then(
+      value => setRecentContacts(value)
     )
-    loadFromStorageAsArray<string>(WATCHLIST_FAVORITES).then(value =>
-      setWatchlistFavorites(value)
+    StorageTools.loadFromStorageAsArray<string>(WATCHLIST_FAVORITES).then(
+      value => setWatchlistFavorites(value)
     )
-    loadFromStorageAsObj<CustomTokens>(CUSTOM_TOKENS).then(value =>
+    StorageTools.loadFromStorageAsObj<CustomTokens>(CUSTOM_TOKENS).then(value =>
       setCustomTokens(value)
     )
-    loadFromStorageAsArray<ViewOnceInformation>(VIEW_ONCE_INFORMATION).then(
-      value => setViewOnceInfo(value)
-    )
+    StorageTools.loadFromStorageAsArray<ViewOnceInformation>(
+      VIEW_ONCE_INFORMATION
+    ).then(value => setViewOnceInfo(value))
   }
 
   return {
@@ -275,23 +304,13 @@ export function useRepo(): Repo {
       loadTokensCache: loadPortfolioTokens,
       saveTokensCache: savePortfolioTokens
     },
+    coingeckoRepo: {
+      getCharData,
+      getContractInfo,
+      getTokensPrice
+    },
     flush
   }
-}
-
-async function loadFromStorageAsMap<K, V>(key: string) {
-  const raw = await AsyncStorage.getItem(key)
-  return raw ? (new Map(JSON.parse(raw)) as Map<K, V>) : new Map<K, V>()
-}
-
-async function loadFromStorageAsObj<T>(key: string) {
-  const raw = await AsyncStorage.getItem(key)
-  return raw ? (JSON.parse(raw) as T) : {}
-}
-
-async function loadFromStorageAsArray<T>(key: string) {
-  const raw = await AsyncStorage.getItem(key)
-  return raw ? (JSON.parse(raw) as T[]) : ([] as T[])
 }
 
 const omitBalance = (key: string, value: any) => {
@@ -311,23 +330,5 @@ async function saveAccountsToStorage(
     console.error('Could not stringify accounts: ', accToStore)
   } else {
     await AsyncStorage.setItem(walletId, stringifiedAccounts)
-  }
-}
-
-async function saveMapToStorage<K, V>(key: string, map: Map<K, V>) {
-  const stringified = JSON.stringify([...map])
-  if (stringified === undefined) {
-    console.error('Could not stringify: ', map)
-  } else {
-    await AsyncStorage.setItem(key, stringified)
-  }
-}
-
-async function saveToStorage<T>(key: string, obj: T | T[]) {
-  const stringified = JSON.stringify(obj)
-  if (stringified === undefined) {
-    console.error('Could not stringify: ', obj)
-  } else {
-    await AsyncStorage.setItem(key, stringified)
   }
 }

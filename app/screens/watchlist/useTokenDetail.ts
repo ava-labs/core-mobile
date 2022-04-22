@@ -7,7 +7,6 @@ import useInAppBrowser from 'hooks/useInAppBrowser'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { CoinsContractInfoResponse } from '@avalabs/coingecko-sdk'
 import { CG_AVAX_TOKEN_ID } from 'screens/watchlist/WatchlistView'
-import Coingecko from 'utils/Coingecko'
 
 export function useTokenDetail(tokenAddress: string) {
   const { repo } = useApplicationContext()
@@ -53,7 +52,7 @@ export function useTokenDetail(tokenAddress: string) {
         setToken(tk)
       }
     }
-  }, [allTokens])
+  }, [allTokens, tokenAddress])
 
   // checks if contract can be found in favorites list
   useEffect(() => {
@@ -63,22 +62,22 @@ export function useTokenDetail(tokenAddress: string) {
   // get coingecko chart data.
   useEffect(() => {
     ;(async () => {
-      try {
-        const data = await Coingecko.fetchChartData(tokenAddress, chartDays)
+      const data = await repo.coingeckoRepo.getCharData(tokenAddress, chartDays)
+      if (data) {
         setChartData(data.dataPoints)
         setRanges(data.ranges)
-      } catch (e) {
+      } else {
         // Coingecko does not support all tokens chart data. So here we'll
         // simply set to empty to hide the loading state.
         setChartData([])
       }
     })()
-  }, [token, chartDays])
+  }, [tokenAddress, chartDays])
 
   // get market cap, volume, etc
   useEffect(() => {
     ;(async () => {
-      const data = await Coingecko.fetchContractInfo(tokenAddress)
+      const data = await repo.coingeckoRepo.getContractInfo(tokenAddress)
       setContractInfo(data)
       if (data?.links?.homepage?.[0]) {
         const url = data?.links?.homepage?.[0]
@@ -87,7 +86,7 @@ export function useTokenDetail(tokenAddress: string) {
         setUrlHostname(url)
       }
     })()
-  }, [token])
+  }, [tokenAddress])
 
   function handleFavorite() {
     if (isFavorite) {
@@ -103,7 +102,7 @@ export function useTokenDetail(tokenAddress: string) {
     setIsFavorite(!isFavorite)
   }
 
-  function changeChartDays(days: number) {
+  async function changeChartDays(days: number) {
     setChartData(undefined)
     setChartDays(days)
   }
