@@ -6,6 +6,7 @@ import { useNavigation } from '@react-navigation/native'
 import {
   TokenWithBalance,
   useAccountsContext,
+  useNetworkContext,
   useWalletStateContext
 } from '@avalabs/wallet-react-components'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
@@ -184,18 +185,19 @@ const PortfolioView: FC<PortfolioProps> = memo(
   }
 )
 
-const AvalancheChainId = 1
+const Ethereum = 1
 
 const NftListViewScreen = () => {
   const { navigate } = useNavigation<StackNavigationProp<RootStackParamList>>()
   const { parseNftCollections } = useNftLoader()
   const { activeAccount } = useAccountsContext()
+  const { network } = useNetworkContext()!
 
   useEffect(() => {
-    const covalent = new Covalent(AvalancheChainId, Config.COVALENT_API_KEY)
-    const addressC = __DEV__
-      ? '0x470820fbbfca29de49c4a474d12af264856d2028' //address with lots of demo NFTs
-      : activeAccount?.wallet.getAddressC()
+    const isDev = __DEV__
+    const chainID = isDev ? Ethereum : Number(network?.chainId ?? 0)
+    const covalent = new Covalent(chainID, Config.COVALENT_API_KEY)
+    const addressC = isDev ? 'demo.eth' : activeAccount?.wallet.getAddressC()
     if (addressC) {
       covalent
         .getAddressBalancesV2(addressC, true)
