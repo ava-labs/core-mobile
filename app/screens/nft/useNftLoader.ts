@@ -104,7 +104,7 @@ export const useNftLoader = (): {
         }
       })
     },
-    [nftRepo.nfts]
+    [loadQueue$, nftRepo]
   )
 
   return {

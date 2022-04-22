@@ -206,7 +206,7 @@ const NftListViewScreen = () => {
         })
         .catch(reason => console.error(reason))
     }
-  }, [])
+  }, [network?.chainId, activeAccount?.wallet]) // adding parseNftCollections as dependency starts infinite loop
 
   const openNftDetails = (item: NFTItemData) => {
     navigate(AppNavigation.Wallet.NFTDetails, { nft: item })
