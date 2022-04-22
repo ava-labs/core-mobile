@@ -58,7 +58,7 @@ export const useNftLoader = (): {
         }),
         concatMap(nftData => {
           // for each item create observable which will complete when image is fetched and aspect written
-          // ignore if fetching image fails
+          // Set aspect to 1 if image load fails
           let resolver: (value: NFTItemData) => void
           const p = from(
             new Promise<NFTItemData>(resolve => (resolver = resolve))
@@ -70,6 +70,7 @@ export const useNftLoader = (): {
               resolver(nftData)
             },
             _ => {
+              nftData.aspect = 1
               resolver(nftData)
             }
           )
