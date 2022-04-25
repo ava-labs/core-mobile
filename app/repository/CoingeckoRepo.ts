@@ -17,6 +17,8 @@ import { HttpClient } from '@avalabs/utils-sdk'
 import { catchAndLog } from 'utils/Utils'
 import Config from 'react-native-config'
 
+const coingeckoProClient = new HttpClient(COINGECKO_PRO_URL)
+
 export function useCoingeckoRepo() {
   const chartCacheRef = useRef({} as ChartCollection)
   const contractInfoCacheRef = useRef({} as InfoCollection)
@@ -94,16 +96,13 @@ export function useCoingeckoRepo() {
 
   async function fetchChartData(address: string, days: number) {
     try {
-      const rawData = await coinsContractMarketChart(
-        new HttpClient(COINGECKO_PRO_URL),
-        {
-          assetPlatformId: 'avalanche',
-          address: address,
-          currency: 'usd' as VsCurrencyType,
-          days: days,
-          coinGeckoProApiKey: Config.COINGECKO_API_KEY
-        }
-      )
+      const rawData = await coinsContractMarketChart(coingeckoProClient, {
+        assetPlatformId: 'avalanche',
+        address: address,
+        currency: 'usd' as VsCurrencyType,
+        days: days,
+        coinGeckoProApiKey: Config.COINGECKO_API_KEY
+      })
 
       const dates = rawData.prices.map(value => value[0])
       const prices = rawData.prices.map(value => value[1])
@@ -137,7 +136,7 @@ export function useCoingeckoRepo() {
 
   async function fetchContractInfo(address: string) {
     try {
-      const raw = await coinsContractInfo(new HttpClient(COINGECKO_PRO_URL), {
+      const raw = await coinsContractInfo(coingeckoProClient, {
         address: address,
         assetPlatformId: 'avalanche',
         coinGeckoProApiKey: Config.COINGECKO_API_KEY
@@ -152,7 +151,7 @@ export function useCoingeckoRepo() {
   }
 
   async function fetchTokensPrice(tokenAddresses: string[]) {
-    const raw = (await simpleTokenPrice(new HttpClient(COINGECKO_PRO_URL), {
+    const raw = (await simpleTokenPrice(coingeckoProClient, {
       assetPlatformId: 'avalanche',
       coinGeckoProApiKey: Config.COINGECKO_API_KEY,
       tokenAddresses,
