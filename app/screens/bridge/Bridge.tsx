@@ -230,13 +230,13 @@ const Bridge: FC = () => {
               <DropDown
                 style={{ marginRight: 19 }}
                 filterItems={blockChainItems}
-                currentItem={dropdownItemFormat(
+                selectionRenderItem={dropdownItemFormat(
                   currentBlockchain,
                   undefined,
                   false
                 )}
                 onItemSelected={bc => setCurrentBlockchain(bc as Blockchain)}
-                customRenderItem={item =>
+                optionsRenderItem={item =>
                   renderDropdownOptions(item, currentBlockchain)
                 }
                 minWidth={180}
@@ -346,13 +346,13 @@ const Bridge: FC = () => {
               <DropDown
                 style={{ marginRight: 19 }}
                 filterItems={blockChainItems}
-                currentItem={dropdownItemFormat(
+                selectionRenderItem={dropdownItemFormat(
                   targetBlockchain,
                   targetBlockchain,
                   false
                 )}
                 onItemSelected={bc => setTargetBlockchain(bc as Blockchain)}
-                customRenderItem={item =>
+                optionsRenderItem={item =>
                   renderDropdownOptions(item, targetBlockchain)
                 }
                 minWidth={180}

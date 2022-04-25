@@ -22,11 +22,11 @@ import { BlurView } from '@react-native-community/blur'
 interface Props {
   filterItems: string[]
   title?: string
-  currentItem: string | React.ReactNode
+  selectionRenderItem: string | React.ReactNode
   onItemSelected?: (selectedItem: string) => void
   minWidth?: number
   style?: StyleProp<ViewStyle>
-  customRenderItem?: (item: ListRenderItemInfo<string>) => React.ReactNode
+  optionsRenderItem?: (item: ListRenderItemInfo<string>) => React.ReactNode
 }
 
 /**
@@ -34,19 +34,20 @@ interface Props {
  *
  * @param filterOptions Array of string items to be selected
  * @param title If not using icon, title of the filter
- * @param currentItem If not using icon, current filter selection
+ * @param selectionRenderItem Render item for selected option
  * @param onItemSelected selection callback
  * @param minWidth minWidth of Popable
  * @param style Popable style
+ * @param optionsRenderItem Render item for dropdown options
  */
 const DropDown: FC<Props> = ({
   filterItems,
   title,
-  currentItem,
+  selectionRenderItem,
   onItemSelected,
   minWidth = 150,
   style,
-  customRenderItem
+  optionsRenderItem
 }) => {
   const theme = useApplicationContext().theme
   const ref = useRef<PopableManager>(null)
@@ -89,7 +90,7 @@ const DropDown: FC<Props> = ({
           }}>
           {item.item}
         </AvaText.Body1>
-        {currentItem === item.item && <CheckmarkSVG color={'white'} />}
+        {selectionRenderItem === item.item && <CheckmarkSVG color={'white'} />}
       </View>
     )
   }
@@ -107,7 +108,7 @@ const DropDown: FC<Props> = ({
           ref?.current?.hide()
           setIsFilterOpen(!isFilterOpen)
         }}>
-        {customRenderItem?.(item)}
+        {optionsRenderItem?.(item)}
       </Pressable>
     )
   }
@@ -121,7 +122,7 @@ const DropDown: FC<Props> = ({
         {blurBackground}
         <FlatList
           data={filterItems}
-          renderItem={customRenderItem ? renderCustomItem : renderItem}
+          renderItem={optionsRenderItem ? renderCustomItem : renderItem}
           ItemSeparatorComponent={Separator}
         />
       </>
@@ -157,14 +158,14 @@ const DropDown: FC<Props> = ({
           alignItems: 'center',
           justifyContent: 'flex-end'
         }}>
-        {isString(currentItem) ? (
+        {isString(selectionRenderItem) ? (
           <AvaText.ButtonSmall
             textStyle={{ color: theme.colorText1, paddingEnd: 4 }}>
             {title && title + ': '}
-            {currentItem}
+            {selectionRenderItem}
           </AvaText.ButtonSmall>
         ) : (
-          <>{currentItem}</>
+          <>{selectionRenderItem}</>
         )}
         <>
           <Space x={4} />
