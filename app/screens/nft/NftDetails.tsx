@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Image, ScrollView, StyleSheet, View } from 'react-native'
 import { RouteProp, useRoute } from '@react-navigation/native'
 import { NFTStackParamList } from 'navigation/wallet/NFTScreenStack'
@@ -11,6 +11,7 @@ import {
 } from 'screens/nft/NftCollection'
 import { Row } from 'components/Row'
 import AppNavigation from 'navigation/AppNavigation'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 export type NftDetailsProps = {
   onPicturePressed: (url: string, urlSmall: string) => void
@@ -24,6 +25,8 @@ export default function NftDetails({
   const { params } =
     useRoute<RouteProp<NFTStackParamList, typeof AppNavigation.Nft.Details>>()
   const item = useMemo(() => params!.nft, [params]) as NFTItemData
+  const [imgLoadFailed, setImgLoadFailed] = useState(false)
+  const { theme } = useApplicationContext()
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -38,10 +41,24 @@ export default function NftDetails({
             item.external_data.image_256
           )
         }>
-        <Image
-          style={styles.imageStyle}
-          source={{ uri: item.external_data.image_512 }}
-        />
+        {imgLoadFailed ? (
+          <View
+            style={{
+              padding: 10,
+              justifyContent: 'center'
+            }}>
+            <AvaText.Heading3
+              textStyle={{ color: theme.colorError, textAlign: 'center' }}>
+              Could not load image
+            </AvaText.Heading3>
+          </View>
+        ) : (
+          <Image
+            onError={_ => setImgLoadFailed(true)}
+            style={styles.imageStyle}
+            source={{ uri: item.external_data.image_512 }}
+          />
+        )}
       </AvaButton.Base>
       <Space y={24} />
       <AvaButton.PrimaryLarge onPress={() => onSendPressed(item)}>
