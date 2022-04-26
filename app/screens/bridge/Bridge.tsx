@@ -228,18 +228,17 @@ const Bridge: FC = () => {
             title={'From'}
             rightComponent={
               <DropDown
-                style={{ marginRight: 19 }}
-                filterItems={blockChainItems}
-                selectionRenderItem={dropdownItemFormat(
-                  currentBlockchain,
-                  undefined,
-                  false
-                )}
-                onItemSelected={bc => setCurrentBlockchain(bc as Blockchain)}
+                alignment={'flex-end'}
+                preselectedIndex={1}
+                data={blockChainItems}
+                selectionRenderItem={selectedItem =>
+                  dropdownItemFormat(selectedItem, selectedItem, false)
+                }
+                onItemSelected={bc => setCurrentBlockchain(bc)}
                 optionsRenderItem={item =>
                   renderDropdownOptions(item, currentBlockchain)
                 }
-                minWidth={180}
+                width={180}
               />
             }
           />
@@ -344,18 +343,16 @@ const Bridge: FC = () => {
             title={'To'}
             rightComponent={
               <DropDown
-                style={{ marginRight: 19 }}
-                filterItems={blockChainItems}
-                selectionRenderItem={dropdownItemFormat(
-                  targetBlockchain,
-                  targetBlockchain,
-                  false
-                )}
-                onItemSelected={bc => setTargetBlockchain(bc as Blockchain)}
+                alignment={'flex-end'}
+                data={blockChainItems}
+                selectionRenderItem={selectedItem =>
+                  dropdownItemFormat(targetBlockchain, selectedItem, false)
+                }
+                onItemSelected={bc => setTargetBlockchain(bc)}
                 optionsRenderItem={item =>
                   renderDropdownOptions(item, targetBlockchain)
                 }
-                minWidth={180}
+                width={180}
               />
             }
           />
