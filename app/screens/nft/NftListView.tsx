@@ -9,7 +9,12 @@ import { NFTItemData } from 'screens/nft/NftCollection'
 import ZeroState from 'components/ZeroState'
 import AvaListItem from 'components/AvaListItem'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { COLORS_DAY, COLORS_NIGHT, Opacity85 } from 'resources/Constants'
+import {
+  COLORS_DAY,
+  COLORS_NIGHT,
+  Opacity15,
+  Opacity85
+} from 'resources/Constants'
 import Avatar from 'components/Avatar'
 import MasonryList from '@react-native-seoul/masonry-list'
 import AvaText from 'components/AvaText'
@@ -71,7 +76,9 @@ export default function NftListView({
           keyExtractor={(item: NFTItemData) => item.uid}
           numColumns={2}
           showsVerticalScrollIndicator={true}
-          renderItem={info => renderItemGrid(info.item, onItemSelected)}
+          renderItem={info => (
+            <GridItem item={info.item} onItemSelected={onItemSelected} />
+          )}
         />
       )}
     </View>
@@ -115,23 +122,51 @@ const renderItemList = (
   )
 }
 
-const renderItemGrid = (
-  item: NFTItemData,
+function GridItem({
+  item,
+  onItemSelected
+}: {
+  item: NFTItemData
   onItemSelected: (item: NFTItemData) => void
-) => {
+}) {
+  const { theme } = useApplicationContext()
+  const [imgLoadFailed, setImgLoadFailed] = useState(false)
+
   return (
     <AvaButton.Base
       key={item.uid}
       onPress={() => onItemSelected(item)}
-      style={{ margin: GRID_ITEM_MARGIN }}>
-      <Image
-        style={{
-          width: GRID_ITEM_WIDTH,
-          height: item.aspect * GRID_ITEM_WIDTH,
-          borderRadius: 8
-        }}
-        source={{ uri: item.external_data.image_512 }}
-      />
+      style={{
+        margin: GRID_ITEM_MARGIN
+      }}>
+      {imgLoadFailed ? (
+        <View
+          style={{
+            backgroundColor: theme.colorPrimary1 + Opacity15,
+            padding: 10,
+            borderRadius: 8,
+            width: GRID_ITEM_WIDTH,
+            height: GRID_ITEM_WIDTH,
+            justifyContent: 'center'
+          }}>
+          <AvaText.Heading2 ellipsizeMode={'tail'}>
+            #{item.token_id}
+          </AvaText.Heading2>
+          <AvaText.Body2 ellipsizeMode={'tail'}>
+            {item.collection.contract_name}
+          </AvaText.Body2>
+        </View>
+      ) : (
+        <Image
+          onError={_ => setImgLoadFailed(true)}
+          style={{
+            width: GRID_ITEM_WIDTH,
+            height: item.aspect * GRID_ITEM_WIDTH,
+            borderRadius: 8
+          }}
+          source={{ uri: item.external_data.image_512 }}
+        />
+      )}
     </AvaButton.Base>
   )
 }
