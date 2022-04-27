@@ -122,9 +122,11 @@ export type Repo = {
     getSetting: (setting: Setting) => SettingValue | undefined
   }
   flush: () => void
+  initialized: boolean
 }
 
 export function useRepo(): Repo {
+  const [initialized, setInitialized] = useState(false)
   const [accounts, setAccounts] = useState<Map<AccountId, Account>>(new Map())
   const [nfts, setNfts] = useState<Map<UID, NFTItemData>>(new Map())
   const [addressBook, setAddressBook] = useState<Map<UID, Contact>>(new Map())
@@ -138,12 +140,15 @@ export function useRepo(): Repo {
   const { getCharData, getContractInfo, getTokensPrice } = useCoingeckoRepo()
 
   useEffect(() => {
-    loadInitialStatesFromStorage()
+    ;(async () => {
+      await loadInitialStatesFromStorage()
+      setInitialized(true)
+    })()
   }, [])
 
   const setSetting = (setting: Setting, value: SettingValue) => {
-    userSettings.set(setting, value)
     const updatedSettings = new Map(userSettings)
+    updatedSettings.set(setting, value)
     setUserSettings(updatedSettings)
     StorageTools.saveMapToStorage(USER_SETTINGS, updatedSettings).catch(
       reason => console.error(reason)
@@ -251,33 +256,38 @@ export function useRepo(): Repo {
     setWatchlistFavorites([])
     setCustomTokens({})
     setUserSettings(new Map())
+    setInitialized(false)
   }
 
-  function loadInitialStatesFromStorage() {
-    StorageTools.loadFromStorageAsMap<Setting, SettingValue>(
-      USER_SETTINGS
-    ).then(value => setUserSettings(value))
-    StorageTools.loadFromStorageAsMap<AccountId, Account>(WALLET_ID).then(
-      value => setAccounts(value)
+  async function loadInitialStatesFromStorage() {
+    setUserSettings(
+      await StorageTools.loadFromStorageAsMap<Setting, SettingValue>(
+        USER_SETTINGS
+      )
     )
-    StorageTools.loadFromStorageAsMap<UID, NFTItemData>(NFTs).then(value =>
-      setNfts(value)
+    setAccounts(
+      await StorageTools.loadFromStorageAsMap<AccountId, Account>(WALLET_ID)
     )
-    StorageTools.loadFromStorageAsMap<UID, Contact>(ADDR_BOOK).then(value =>
-      setAddressBook(value)
+    setNfts(await StorageTools.loadFromStorageAsMap<UID, NFTItemData>(NFTs))
+    setAddressBook(
+      await StorageTools.loadFromStorageAsMap<UID, Contact>(ADDR_BOOK)
     )
-    StorageTools.loadFromStorageAsArray<RecentContact>(ADDR_BOOK_RECENTS).then(
-      value => setRecentContacts(value)
+    setRecentContacts(
+      await StorageTools.loadFromStorageAsArray<RecentContact>(
+        ADDR_BOOK_RECENTS
+      )
     )
-    StorageTools.loadFromStorageAsArray<string>(WATCHLIST_FAVORITES).then(
-      value => setWatchlistFavorites(value)
+    setWatchlistFavorites(
+      await StorageTools.loadFromStorageAsArray<string>(WATCHLIST_FAVORITES)
     )
-    StorageTools.loadFromStorageAsObj<CustomTokens>(CUSTOM_TOKENS).then(value =>
-      setCustomTokens(value)
+    setCustomTokens(
+      await StorageTools.loadFromStorageAsObj<CustomTokens>(CUSTOM_TOKENS)
     )
-    StorageTools.loadFromStorageAsArray<ViewOnceInformation>(
-      VIEW_ONCE_INFORMATION
-    ).then(value => setViewOnceInfo(value))
+    setViewOnceInfo(
+      await StorageTools.loadFromStorageAsArray<ViewOnceInformation>(
+        VIEW_ONCE_INFORMATION
+      )
+    )
   }
 
   return {
@@ -309,7 +319,8 @@ export function useRepo(): Repo {
       getContractInfo,
       getTokensPrice
     },
-    flush
+    flush,
+    initialized
   }
 }
 
