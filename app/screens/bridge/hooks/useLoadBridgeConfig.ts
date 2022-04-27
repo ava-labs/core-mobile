@@ -20,9 +20,9 @@ export function useLoadBridgeConfig() {
     setBridgeEnvironment(
       network?.chainId === MAINNET_NETWORK.chainId
         ? Environment.PROD
-        : Environment.DEV,
-    );
-  }, [network]);
+        : Environment.DEV
+    )
+  }, [network])
 
   useBridgeConfigUpdater(() => fetchConfig())
 
