@@ -15,6 +15,11 @@ import {
   BridgeState,
   defaultBridgeState
 } from 'screens/bridge/utils/BridgeState'
+import {
+  Network,
+  NetworksCollection,
+  useNetworksRepo
+} from 'repository/NetworksRepo'
 
 /**
  * Currently we support only one wallet, with multiple accounts.
@@ -32,6 +37,7 @@ const NFTs = 'NFTs_2'
 const VIEW_ONCE_INFORMATION = 'VIEW_ONCE_INFORMATION'
 const PORTFOLIO_TOKEN_LIST = 'PORTFOLIO_TOKEN_LIST_3'
 const PENDING_BRIDGE_TRANSACTIONS = 'PENDING_BRIDGE_TRANSACTIONS'
+const NETWORKS = 'NETWORKS'
 
 /**
  * ViewOnceInformation is used by views that needs to display something for the 1st time one.
@@ -123,6 +129,11 @@ export type Repo = {
     pendingBridgeTransactions: BridgeState
     savePendingBridgeTransactions: (newState: BridgeState) => void
   }
+  networksRepo: {
+    setFavorite: (network: Network) => void
+    unsetFavorite: (network: Network) => void
+    networks: NetworksCollection
+  }
   /**
    * Store any simple user settings here
    */
@@ -149,6 +160,8 @@ export function useRepo(): Repo {
   const { getCharData, getContractInfo, getTokensPrice } = useCoingeckoRepo()
   const [pendingBridgeTransactions, setPendingBridgeTransactions] =
     useState<BridgeState>(defaultBridgeState)
+  const { networks, setNetworks, setFavorite, unsetFavorite } =
+    useNetworksRepo()
 
   useEffect(() => {
     ;(async () => {
@@ -276,6 +289,7 @@ export function useRepo(): Repo {
     setCustomTokens({})
     setUserSettings(new Map())
     setPendingBridgeTransactions(defaultBridgeState)
+    setNetworks({})
     setInitialized(false)
   }
 
@@ -308,7 +322,6 @@ export function useRepo(): Repo {
         VIEW_ONCE_INFORMATION
       )
     )
-
     StorageTools.loadFromStorageAsObj<BridgeState>(
       PENDING_BRIDGE_TRANSACTIONS
     ).then(value => {
@@ -317,6 +330,16 @@ export function useRepo(): Repo {
           ? (value as BridgeState)
           : defaultBridgeState
       )
+    })
+    setNetworks(
+      await StorageTools.loadFromStorageAsObj<NetworksCollection>(NETWORKS)
+    )
+    //FIXME: remove this
+    setNetworks({
+      Avalanche: { name: 'Avalanche', isFavorite: false, isTest: false },
+      AvalancheTest: { name: 'AvalancheTest', isFavorite: false, isTest: true },
+      Bitcoin: { name: 'Bitcoin', isFavorite: false, isTest: false },
+      BitcoinTest: { name: 'BitcoinTest', isFavorite: false, isTest: true }
     })
   }
 
@@ -352,6 +375,11 @@ export function useRepo(): Repo {
     pendingBridgeTransactions: {
       pendingBridgeTransactions: pendingBridgeTransactions,
       savePendingBridgeTransactions: savePendingBridgeTransactions
+    },
+    networksRepo: {
+      networks,
+      setFavorite,
+      unsetFavorite
     },
     flush,
     initialized
