@@ -1,21 +1,22 @@
 import React from 'react'
 import AppNavigation from 'navigation/AppNavigation'
-import {
-  createStackNavigator,
-  StackNavigationProp
-} from '@react-navigation/stack'
+import { createStackNavigator } from '@react-navigation/stack'
+import { ERC20WithBalance } from '@avalabs/wallet-react-components'
 import DoneScreen from 'screens/send/DoneScreen'
 import SendToken from 'screens/send/SendToken'
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
+import { useNavigation, useRoute } from '@react-navigation/native'
 import ReviewSend from 'screens/send/ReviewSend'
 import { SendTokenContextProvider } from 'contexts/SendTokenContext'
-import { RootStackParamList } from 'navigation/WalletScreenStack'
+import { SendTokensScreenProps } from 'navigation/types'
 import { TokenWithBalance } from '@avalabs/wallet-react-components'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
+import { Contact } from 'Repo'
 
 export type SendStackParamList = {
-  [AppNavigation.Send.Send]: { token?: TokenWithBalance } | undefined
+  [AppNavigation.Send.Send]:
+    | { token?: TokenWithBalance; contact?: Contact }
+    | undefined
   [AppNavigation.Send.Review]: undefined
   [AppNavigation.Send.Success]: { transactionId: string }
 }
@@ -23,12 +24,8 @@ export type SendStackParamList = {
 const SendStack = createStackNavigator<SendStackParamList>()
 
 function SendScreenStack() {
-  const { params } =
-    useRoute<
-      RouteProp<RootStackParamList, typeof AppNavigation.Wallet.SendTokens>
-    >()
   const { sendBlocked } = usePosthogContext()
-  const { goBack } = useNavigation<StackNavigationProp<RootStackParamList>>()
+  const { goBack } = useNavigation()
 
   return (
     <SendTokenContextProvider>
@@ -40,7 +37,6 @@ function SendScreenStack() {
         <SendStack.Screen
           name={AppNavigation.Send.Send}
           component={SendTokenComponent}
-          initialParams={params}
         />
         <SendStack.Screen
           name={AppNavigation.Send.Review}
@@ -63,28 +59,39 @@ function SendScreenStack() {
   )
 }
 
+type SendScreenProps = SendTokensScreenProps<typeof AppNavigation.Send.Send>
+
 const SendTokenComponent = () => {
-  const { navigate } = useNavigation<StackNavigationProp<SendStackParamList>>()
-  const { navigate: rootNavigate } =
-    useNavigation<StackNavigationProp<SendStackParamList>>().getParent<
-      StackNavigationProp<RootStackParamList>
-    >()
-  const { params } =
-    useRoute<
-      RouteProp<RootStackParamList, typeof AppNavigation.Wallet.SendTokens>
-    >()
+  const { navigate } = useNavigation<SendScreenProps['navigation']>()
+  const { params } = useRoute<SendScreenProps['route']>()
+
+  const onOpenSelectToken = (
+    onTokenSelected: (token: ERC20WithBalance) => void
+  ) => {
+    navigate(AppNavigation.Modal.SelectToken, {
+      onTokenSelected: (token: TokenWithBalance) => {
+        onTokenSelected(token as ERC20WithBalance)
+      }
+    })
+  }
+
   return (
     <SendToken
       contact={params?.contact}
       token={params?.token}
       onNext={() => navigate(AppNavigation.Send.Review)}
-      onOpenAddressBook={() => rootNavigate(AppNavigation.Wallet.AddressBook)}
+      onOpenAddressBook={() => navigate(AppNavigation.Wallet.AddressBook)}
+      onOpenSelectToken={onOpenSelectToken}
     />
   )
 }
 
+type ReviewNavigationProp = SendTokensScreenProps<
+  typeof AppNavigation.Send.Review
+>['navigation']
+
 const ReviewSendComponent = () => {
-  const navigation = useNavigation<StackNavigationProp<SendStackParamList>>()
+  const navigation = useNavigation<ReviewNavigationProp>()
 
   const onSuccess = (transactionId: string) => {
     navigation.popToTop()
@@ -94,11 +101,13 @@ const ReviewSendComponent = () => {
   return <ReviewSend onSuccess={onSuccess} />
 }
 
+type SuccessScreenProps = SendTokensScreenProps<
+  typeof AppNavigation.Send.Success
+>
+
 const DoneScreenComponent = () => {
-  const { goBack } = useNavigation<StackNavigationProp<RootStackParamList>>()
-  const transactionId =
-    useRoute<RouteProp<SendStackParamList, typeof AppNavigation.Send.Success>>()
-      ?.params?.transactionId
+  const { goBack } = useNavigation<SuccessScreenProps['navigation']>()
+  const { transactionId } = useRoute<SuccessScreenProps['route']>().params
 
   return (
     <DoneScreen onClose={() => goBack()} transactionId={transactionId ?? ''} />
