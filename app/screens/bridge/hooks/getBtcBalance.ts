@@ -1,18 +1,18 @@
-import {Big} from '@avalabs/avalanche-wallet-sdk';
+import { Big } from '@avalabs/avalanche-wallet-sdk'
 import {
   AppConfig,
   Blockchain,
   fetchTokenBalances,
   getBtcAsset,
-  getUTXOs,
-} from '@avalabs/bridge-sdk';
-import {JsonRpcProvider} from '@ethersproject/providers';
+  getUTXOs
+} from '@avalabs/bridge-sdk'
+import { JsonRpcProvider } from '@ethersproject/providers'
 
 export async function getBtcBalance(
   bridgeConfig: AppConfig,
   btcAddress: string,
   avalancheAddress: string,
-  avalancheProvider: JsonRpcProvider,
+  avalancheProvider: JsonRpcProvider
 ) {
   // const network = useNetworkContext()!.network!;
   // const wallet = useWalletContext()!.wallet!;
@@ -23,39 +23,39 @@ export async function getBtcBalance(
       await getBtcBalanceAvalanche(
         bridgeConfig,
         avalancheAddress,
-        avalancheProvider,
+        avalancheProvider
       )
-    )?.toNumber();
+    )?.toNumber()
   }
 
-  const {balance: btcBalanceBitcoin, utxos: bitcoinUtxos} = await getUTXOs(
+  const { balance: btcBalanceBitcoin, utxos: bitcoinUtxos } = await getUTXOs(
     bridgeConfig,
-    btcAddress,
-  );
+    btcAddress
+  )
 
   return {
     bitcoinUtxos,
     btcBalanceAvalanche: await loadBalance(),
-    btcBalanceBitcoin,
-  };
+    btcBalanceBitcoin
+  }
 }
 
 async function getBtcBalanceAvalanche(
   config: AppConfig,
   address: string,
-  provider: JsonRpcProvider,
+  provider: JsonRpcProvider
 ): Promise<Big | undefined> {
-  const btcAsset = getBtcAsset(config);
+  const btcAsset = getBtcAsset(config)
   if (!btcAsset) {
-    return;
+    return
   }
 
   const balanchesBySymbol = await fetchTokenBalances(
-    {[btcAsset.symbol]: btcAsset},
+    { [btcAsset.symbol]: btcAsset },
     Blockchain.AVALANCHE,
     provider,
-    address,
-  );
+    address
+  )
 
-  return balanchesBySymbol?.[btcAsset.symbol];
+  return balanchesBySymbol?.[btcAsset.symbol]
 }

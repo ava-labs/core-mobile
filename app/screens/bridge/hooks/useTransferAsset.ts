@@ -46,6 +46,10 @@ export function useTransferAsset() {
     amount: Big,
     asset: EthereumConfigAsset | NativeAsset
   ) {
+    if (!config || !network) {
+      return Promise.reject('Wallet not ready')
+    }
+
     // Use the wallet provider for the current blockchain so transactions can be signed
     const avalancheProvider = getAvalancheProvider(network)
     const ethereumProvider = getEthereumProvider(network)
@@ -57,7 +61,7 @@ export function useTransferAsset() {
       events.emit(TransferEventType.TX_HASH, txHash)
     }
 
-    const isMainnet = network?.chainId === MAINNET_NETWORK.chainId
+    const isMainnet = network.chainId === MAINNET_NETWORK.chainId
 
     const common =
       currentBlockchain === Blockchain.AVALANCHE

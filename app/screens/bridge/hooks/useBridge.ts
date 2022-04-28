@@ -39,13 +39,13 @@ export interface BridgeAdapter {
   transfer: () => Promise<string | undefined>
 }
 
-interface Bridge extends BridgeAdapter {
-  amount: Big
-  setAmount: (amount: Big) => void
-  bridgeFee?: Big
-  /** Price for the current asset & currency code */
-  price?: Big
-}
+// interface Bridge extends BridgeAdapter {
+//   amount: Big
+//   setAmount: (amount: Big) => void
+//   bridgeFee?: Big
+//   /** Price for the current asset & currency code */
+//   price?: Big
+// }
 
 export default function useBridge() {
   const { selectedCurrency: currency } = useApplicationContext().appHook

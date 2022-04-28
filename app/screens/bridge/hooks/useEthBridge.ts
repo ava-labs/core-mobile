@@ -19,8 +19,6 @@ import {
 } from '@avalabs/wallet-react-components'
 import { getEthereumProvider } from 'screens/bridge/utils/getEthereumProvider'
 import { useCallback, useState } from 'react'
-import { isMainnetNetwork } from '@avalabs/avalanche-wallet-sdk'
-import { useApplicationContext } from 'contexts/ApplicationContext'
 
 /**
  * Hook for when the bridge source chain is Ethereum
@@ -35,8 +33,7 @@ export function useEthBridge(amount: Big, bridgeFee: Big): BridgeAdapter {
 
   const isEthereumBridge = currentBlockchain === Blockchain.ETHEREUM
 
-  const { createBridgeTransaction, transferAsset, bridgeTransactions } =
-    useBridgeContext()
+  const { createBridgeTransaction, transferAsset } = useBridgeContext()
   const sourceBalance = useSingularAssetBalanceEVM(
     isEthereumBridge ? currentAssetData : undefined,
     Blockchain.ETHEREUM
@@ -54,9 +51,6 @@ export function useEthBridge(amount: Big, bridgeFee: Big): BridgeAdapter {
     isEthereumBridge ? addresses.addrC : undefined,
     ethereumProvider
   )
-
-  const isMainnet = isMainnetNetwork(network?.config)
-
   const [wrapStatus, setWrapStatus] = useState<WrapStatus>(WrapStatus.INITIAL)
   const [txHash, setTxHash] = useState<string>()
 
@@ -88,21 +82,14 @@ export function useEthBridge(amount: Big, bridgeFee: Big): BridgeAdapter {
       amount
     })
 
-    createBridgeTransaction(
-      {
-        sourceChain: Blockchain.ETHEREUM,
-        sourceTxHash: result?.hash ?? '',
-        sourceStartedAt: timestamp,
-        targetChain: Blockchain.AVALANCHE,
-        amount,
-        symbol
-      },
-      bridgeTransactions,
-      config,
-      network,
-      wallet.getAddressC(),
-      wallet.getAddressBTC(isMainnet ? 'bitcoin' : 'testnet')
-    )
+    createBridgeTransaction({
+      sourceChain: Blockchain.ETHEREUM,
+      sourceTxHash: result?.hash ?? '',
+      sourceStartedAt: timestamp,
+      targetChain: Blockchain.AVALANCHE,
+      amount,
+      symbol
+    })
 
     return result?.hash
   }, [

@@ -26,7 +26,7 @@ import { getAvalancheProvider } from 'screens/bridge/utils/getAvalancheProvider'
 export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
   const network = useNetworkContext()?.network
   const bridgeConfig = useBridgeConfig()!.config!
-  const { createBridgeTransaction, signIssueBtc, bridgeTransactions } =
+  const { createBridgeTransaction, signIssueBtc } =
     useBridgeContext()
   const config = useBridgeConfig().config
   const wallet = useWalletContext().wallet
@@ -34,7 +34,7 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
     useBridgeSDK()
 
   const avalancheProvider = getAvalancheProvider(network)
-  const isMainnet = isMainnetNetwork(network?.config)
+  const isMainnet = network ? isMainnetNetwork(network?.config) : false
   const btcAddress =
     wallet?.getAddressBTC(isMainnet ? 'bitcoin' : 'testnet') ?? ''
   const avalancheAddress = wallet?.getAddressC()
@@ -158,21 +158,14 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
       amount: amountInBtc
     })
 
-    createBridgeTransaction(
-      {
-        sourceChain: Blockchain.BITCOIN,
-        sourceTxHash: result?.hash,
-        sourceStartedAt: timestamp,
-        targetChain: Blockchain.AVALANCHE,
-        amount: amountInBtc,
-        symbol
-      },
-      bridgeTransactions,
-      config,
-      network,
-      wallet.getAddressC(),
-      wallet.getAddressBTC(isMainnet ? 'bitcoin' : 'testnet')
-    )
+    createBridgeTransaction({
+      sourceChain: Blockchain.BITCOIN,
+      sourceTxHash: result?.hash ?? '', // error?
+      sourceStartedAt: timestamp,
+      targetChain: Blockchain.AVALANCHE,
+      amount: amountInBtc,
+      symbol
+    })
 
     return result?.hash
   }, [

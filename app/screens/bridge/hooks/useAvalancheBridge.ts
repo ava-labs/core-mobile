@@ -45,11 +45,11 @@ export function useAvalancheBridge(amount: Big, bridgeFee: Big): BridgeAdapter {
     Blockchain.AVALANCHE
   )
 
-  const { addresses } = useWalletStateContext()!
-  const { network } = useNetworkContext()!
+  const addresses = useWalletStateContext()?.addresses
+  const network = useNetworkContext()?.network
   const avalancheProvider = getAvalancheProvider(network)
   const hasEnoughForNetworkFee = useHasEnoughForGas(
-    isAvalancheBridge ? addresses.addrC : undefined,
+    isAvalancheBridge ? addresses?.addrC : undefined,
     avalancheProvider
   )
 
@@ -78,16 +78,14 @@ export function useAvalancheBridge(amount: Big, bridgeFee: Big): BridgeAdapter {
     }
 
     const timestamp = Date.now()
-    const hash = (
-      await transferAsset(
-        amount,
-        currentAssetData,
-        () => {
-          //not used
-        },
-        setTxHash
-      )
-    )?.toString()
+    const result = await transferAsset(
+      amount,
+      currentAssetData,
+      () => {
+        //not used
+      },
+      setTxHash
+    )
 
     setTransactionDetails({
       tokenSymbol: currentAssetData.symbol,
@@ -96,14 +94,14 @@ export function useAvalancheBridge(amount: Big, bridgeFee: Big): BridgeAdapter {
 
     createBridgeTransaction({
       sourceChain: Blockchain.AVALANCHE,
-      sourceTxHash: hash ?? '',
+      sourceTxHash: result?.hash ?? '',
       sourceStartedAt: timestamp,
       targetChain: targetBlockchain,
       amount,
       symbol: currentAssetData.symbol
     })
 
-    return hash
+    return result?.hash
   }, [
     amount,
     createBridgeTransaction,
