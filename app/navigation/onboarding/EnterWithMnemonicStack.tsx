@@ -122,17 +122,16 @@ const CreatePinScreen = () => {
 
 const BiometricLoginScreen = () => {
   const enterWithMnemonicContext = useContext(EnterWithMnemonicContext)
-  const walletSetupHook = useApplicationContext().walletSetupHook
+  const { navigate } =
+    useNavigation<StackNavigationProp<EnterWithMnemonicStackParamList>>()
 
   return (
     <BiometricLogin
       mnemonic={enterWithMnemonicContext.mnemonic}
       onBiometrySet={() => {
-        walletSetupHook.enterWallet(enterWithMnemonicContext.mnemonic)
+        navigate(AppNavigation.LoginWithMnemonic.TermsNConditions)
       }}
-      onSkip={() =>
-        walletSetupHook.enterWallet(enterWithMnemonicContext.mnemonic)
-      }
+      onSkip={() => navigate(AppNavigation.LoginWithMnemonic.TermsNConditions)}
     />
   )
 }

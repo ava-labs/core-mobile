@@ -60,7 +60,7 @@ export function useApp(
   }
 
   function decideInitialRoute() {
-    if (!navigationContainerSet || initRouteSet) {
+    if (!navigationContainerSet || initRouteSet || !repository.initialized) {
       return
     }
     setInitRouteSet(true)
