@@ -1,11 +1,9 @@
 import { SafeAreaProvider } from 'react-native-safe-area-context'
-import React, { useMemo } from 'react'
+import React from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
 import { StyleSheet, View } from 'react-native'
 import AvaButton from 'components/AvaButton'
-import { RouteProp, useRoute } from '@react-navigation/native'
-import { AddressBookStackParamList } from 'navigation/wallet/AddressBookStack'
 import BlockchainCircle from 'components/BlockchainCircle'
 import useAddressBook from 'screens/drawer/addressBook/useAddressBook'
 import ContactInput from 'screens/drawer/addressBook/components/ContactInput'
@@ -17,18 +15,15 @@ import TokenAddress from 'components/TokenAddress'
 const ContactDetails = ({
   contact,
   onSend,
-  onDelete
+  onDelete,
+  editable = false
 }: {
   contact: Contact
   onSend: (contact: Contact) => void
   onDelete: (contact: Contact) => void
+  editable?: boolean
 }) => {
   const { titleToInitials } = useAddressBook()
-  const { params } = useRoute<RouteProp<AddressBookStackParamList>>()
-
-  const editable = useMemo(() => {
-    return params?.editable ?? false
-  }, [params?.editable])
 
   return (
     <SafeAreaProvider style={{ flex: 1, padding: 16 }}>
