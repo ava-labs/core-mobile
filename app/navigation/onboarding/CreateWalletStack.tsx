@@ -176,14 +176,15 @@ const CreatePinScreen = () => {
 
 const BiometricLoginScreen = () => {
   const createWalletContext = useContext(CreateWalletContext)
-  const walletSetupHook = useApplicationContext().walletSetupHook
+  const { navigate } =
+    useNavigation<StackNavigationProp<CreateWalletStackParamList>>()
   return (
     <BiometricLogin
       mnemonic={createWalletContext.mnemonic}
       onBiometrySet={() => {
-        walletSetupHook.enterWallet(createWalletContext.mnemonic)
+        navigate(AppNavigation.CreateWallet.TermsNConditions)
       }}
-      onSkip={() => walletSetupHook.enterWallet(createWalletContext.mnemonic)}
+      onSkip={() => navigate(AppNavigation.CreateWallet.TermsNConditions)}
     />
   )
 }
