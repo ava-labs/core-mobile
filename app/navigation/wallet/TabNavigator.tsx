@@ -3,10 +3,14 @@ import HomeSVG from 'components/svg/HomeSVG'
 import SwapSVG from 'components/svg/SwapSVG'
 import WatchlistSVG from 'components/svg/WatchlistSVG'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
+import {
+  TransactionNormal,
+  TransactionERC20
+} from '@avalabs/wallet-react-components'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import PortfolioStackScreen from 'navigation/wallet/PortfolioScreenStack'
 import React, { FC } from 'react'
-import ActivityList from 'screens/activity/ActivityList'
+import ActivityList from 'screens/shared/ActivityList'
 import { View } from 'react-native'
 import AddSVG from 'components/svg/AddSVG'
 import AvaText from 'components/AvaText'
@@ -19,12 +23,20 @@ import BridgeSVG from 'components/svg/BridgeSVG'
 import { Space } from 'components/Space'
 import ActionButtonItem from 'components/ActionButtonItem'
 import QRCodeSVG from 'components/svg/QRCodeSVG'
-import { StackNavigationProp } from '@react-navigation/stack'
-import { RootStackParamList } from 'navigation/WalletScreenStack'
+import { TabsScreenProps } from 'navigation/types'
 import WatchlistTab from 'screens/watchlist/WatchlistTabView'
 import BuySVG from 'components/svg/BuySVG'
+import { BridgeTransactionStatusParams } from 'navigation/types'
 
-const Tab = createBottomTabNavigator()
+export type TabNavigatorParamList = {
+  [AppNavigation.Tabs.Portfolio]: undefined
+  [AppNavigation.Tabs.Activity]: undefined
+  [AppNavigation.Tabs.Fab]: undefined
+  [AppNavigation.Tabs.Watchlist]: undefined
+  [AppNavigation.Tabs.Bridge]: undefined
+}
+
+const Tab = createBottomTabNavigator<TabNavigatorParamList>()
 const TAB_ICON_SIZE = 28
 
 const DummyBridge = () => (
@@ -89,7 +101,7 @@ const TabNavigator = () => {
       />
       <Tab.Screen
         name={AppNavigation.Tabs.Activity}
-        component={ActivityList}
+        component={Activities}
         options={{
           tabBarIcon: ({ focused }) =>
             normalTabButtons(
@@ -143,6 +155,10 @@ const TabNavigator = () => {
   )
 }
 
+type FabNavigationProp = TabsScreenProps<
+  typeof AppNavigation.Tabs.Fab
+>['navigation']
+
 /**
  * extracts creation of "custom" tab item
  * @param children
@@ -151,7 +167,7 @@ const TabNavigator = () => {
 const CustomTabBarFab: FC = ({ children }) => {
   const { theme } = useApplicationContext()
   const { openMoonPay } = useInAppBrowser()
-  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>()
+  const navigation = useNavigation<FabNavigationProp>()
 
   return (
     <>
@@ -195,6 +211,33 @@ const CustomTabBarFab: FC = ({ children }) => {
         <ActionButtonItem />
       </FloatingActionButton>
     </>
+  )
+}
+
+type ActivitiesNavigationProp = TabsScreenProps<
+  typeof AppNavigation.Tabs.Activity
+>['navigation']
+
+const Activities = () => {
+  const { navigate } = useNavigation<ActivitiesNavigationProp>()
+
+  const openTransactionDetails = (
+    item: TransactionNormal | TransactionERC20
+  ) => {
+    navigate(AppNavigation.Wallet.ActivityDetail, {
+      tx: item
+    })
+  }
+
+  const openTransactionStatus = (params: BridgeTransactionStatusParams) => {
+    navigate(AppNavigation.Bridge.BridgeTransactionStatus, params)
+  }
+
+  return (
+    <ActivityList
+      openTransactionDetails={openTransactionDetails}
+      openTransactionStatus={openTransactionStatus}
+    />
   )
 }
 
