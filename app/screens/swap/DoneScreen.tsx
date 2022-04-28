@@ -5,11 +5,14 @@ import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
-import { StackNavigationProp } from '@react-navigation/stack'
-import { SwapStackParamList } from 'navigation/wallet/SwapScreenStack'
+import { SwapScreenProps } from 'navigation/types'
+
+type NavigationProp = SwapScreenProps<
+  typeof AppNavigation.Swap.Success
+>['navigation']
 
 export default function DoneScreen(): JSX.Element {
-  const { navigate } = useNavigation<StackNavigationProp<SwapStackParamList>>()
+  const { navigate } = useNavigation<NavigationProp>()
 
   function onClose() {
     navigate(AppNavigation.Swap.Swap)

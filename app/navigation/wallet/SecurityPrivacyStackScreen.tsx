@@ -3,13 +3,13 @@ import AppNavigation from 'navigation/AppNavigation'
 import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin'
 import CreatePIN from 'screens/onboarding/CreatePIN'
 import SecurityPrivacy from 'screens/drawer/security/SecurityPrivacy'
-import { NativeStackNavigationProp } from '@react-navigation/native-stack'
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
+import { useNavigation, useRoute } from '@react-navigation/native'
 import { MainHeaderOptions } from 'navigation/NavUtils'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { createStackNavigator } from '@react-navigation/stack'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import RevealMnemonic from 'navigation/wallet/RevealMnemonic'
+import { SecurityPrivacyScreenProps } from 'navigation/types'
 
 export type SecurityStackParamList = {
   [AppNavigation.SecurityPrivacy.SecurityPrivacy]: undefined
@@ -66,8 +66,12 @@ function SecurityPrivacyStackScreen(): JSX.Element {
   )
 }
 
+type SecurityPrivacyNavigationProp = SecurityPrivacyScreenProps<
+  typeof AppNavigation.SecurityPrivacy.SecurityPrivacy
+>['navigation']
+
 const SecurityPrivacyScreen = () => {
-  const nav = useNavigation<NativeStackNavigationProp<SecurityStackParamList>>()
+  const nav = useNavigation<SecurityPrivacyNavigationProp>()
   return (
     <SecurityPrivacy
       onChangePin={() => nav.navigate(AppNavigation.SecurityPrivacy.PinChange)}
@@ -81,8 +85,12 @@ const SecurityPrivacyScreen = () => {
   )
 }
 
+type PinChangeNavigationProp = SecurityPrivacyScreenProps<
+  typeof AppNavigation.SecurityPrivacy.PinChange
+>['navigation']
+
 const PinOrBiometryLoginForPassChange = memo(() => {
-  const nav = useNavigation<NativeStackNavigationProp<SecurityStackParamList>>()
+  const nav = useNavigation<PinChangeNavigationProp>()
 
   return (
     <PinOrBiometryLogin
@@ -95,8 +103,12 @@ const PinOrBiometryLoginForPassChange = memo(() => {
   )
 })
 
+type RecoveryNavigationProp = SecurityPrivacyScreenProps<
+  typeof AppNavigation.SecurityPrivacy.ShowRecoveryPhrase
+>['navigation']
+
 const PinOrBiometryLoginForRecoveryReveal = memo(() => {
-  const nav = useNavigation<NativeStackNavigationProp<SecurityStackParamList>>()
+  const nav = useNavigation<RecoveryNavigationProp>()
 
   return (
     <PinOrBiometryLogin
@@ -109,8 +121,12 @@ const PinOrBiometryLoginForRecoveryReveal = memo(() => {
   )
 })
 
+type TurnOnBiometricsNavigationProp = SecurityPrivacyScreenProps<
+  typeof AppNavigation.SecurityPrivacy.TurnOnBiometrics
+>['navigation']
+
 const PinForBiometryEnable = memo(() => {
-  const nav = useNavigation<NativeStackNavigationProp<SecurityStackParamList>>()
+  const nav = useNavigation<TurnOnBiometricsNavigationProp>()
 
   return (
     <PinOrBiometryLogin
@@ -125,10 +141,14 @@ const PinForBiometryEnable = memo(() => {
   )
 })
 
+type CreatePinScreenProps = SecurityPrivacyScreenProps<
+  typeof AppNavigation.SecurityPrivacy.CreatePin
+>
+
 const CreatePinScreen = memo(() => {
   const { onPinCreated } = useApplicationContext().walletSetupHook
-  const { mnemonic } = useRoute<RouteProp<SecurityStackParamList>>().params!
-  const nav = useNavigation<NativeStackNavigationProp<SecurityStackParamList>>()
+  const { mnemonic } = useRoute<CreatePinScreenProps['route']>().params
+  const nav = useNavigation<CreatePinScreenProps['navigation']>()
   return (
     <CreatePIN
       onPinSet={pin => {

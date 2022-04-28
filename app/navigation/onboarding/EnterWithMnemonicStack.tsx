@@ -11,17 +11,15 @@ import { useNavigation } from '@react-navigation/native'
 import CreatePIN from 'screens/onboarding/CreatePIN'
 import BiometricLogin from 'screens/onboarding/BiometricLogin'
 import HdWalletLogin from 'screens/login/HdWalletLogin'
-import {
-  createStackNavigator,
-  StackNavigationProp
-} from '@react-navigation/stack'
+import { createStackNavigator } from '@react-navigation/stack'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { MainHeaderOptions } from 'navigation/NavUtils'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import TermsNConditionsModal from 'components/TermsNConditionsModal'
+import { EnterWithMnemonicScreenProps } from '../types'
 
-type EnterWithMnemonicStackParamList = {
+export type EnterWithMnemonicStackParamList = {
   [AppNavigation.LoginWithMnemonic.LoginWithMnemonic]: undefined
   [AppNavigation.LoginWithMnemonic.CreatePin]: undefined
   [AppNavigation.LoginWithMnemonic.BiometricLogin]: undefined
@@ -65,10 +63,14 @@ const EnterWithMnemonicStack = () => {
   )
 }
 
+type LoginNavigationProp = EnterWithMnemonicScreenProps<
+  typeof AppNavigation.LoginWithMnemonic.LoginWithMnemonic
+>['navigation']
+
 const LoginWithMnemonicScreen = () => {
   const enterWithMnemonicContext = useContext(EnterWithMnemonicContext)
   const { navigate, goBack, addListener, removeListener } =
-    useNavigation<StackNavigationProp<EnterWithMnemonicStackParamList>>()
+    useNavigation<LoginNavigationProp>()
   const { capture } = usePosthogContext()
 
   useEffect(captureBackEventFx, [])
@@ -93,11 +95,14 @@ const LoginWithMnemonicScreen = () => {
   return <HdWalletLogin onEnterWallet={onEnterWallet} onBack={() => goBack()} />
 }
 
+type CreatePinNavigationProp = EnterWithMnemonicScreenProps<
+  typeof AppNavigation.LoginWithMnemonic.CreatePin
+>['navigation']
+
 const CreatePinScreen = () => {
   const enterWithMnemonicContext = useContext(EnterWithMnemonicContext)
   const walletSetupHook = useApplicationContext().walletSetupHook
-  const { navigate } =
-    useNavigation<StackNavigationProp<EnterWithMnemonicStackParamList>>()
+  const { navigate } = useNavigation<CreatePinNavigationProp>()
   const { capture } = usePosthogContext()
 
   const onPinSet = (pin: string): void => {
@@ -120,10 +125,13 @@ const CreatePinScreen = () => {
   return <CreatePIN onPinSet={onPinSet} />
 }
 
+type BiometricLoginNavigationProp = EnterWithMnemonicScreenProps<
+  typeof AppNavigation.LoginWithMnemonic.BiometricLogin
+>['navigation']
+
 const BiometricLoginScreen = () => {
   const enterWithMnemonicContext = useContext(EnterWithMnemonicContext)
-  const { navigate } =
-    useNavigation<StackNavigationProp<EnterWithMnemonicStackParamList>>()
+  const { navigate } = useNavigation<BiometricLoginNavigationProp>()
 
   return (
     <BiometricLogin

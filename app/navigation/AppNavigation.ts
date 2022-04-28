@@ -50,6 +50,10 @@ enum WalletScreens {
   Bridge = 'WalletScreens.Bridge'
 }
 
+enum ReceiveTokensScreens {
+  ReceiveCChain = 'ReceiveTokensScreens.ReceiveCChain'
+}
+
 enum SwapScreens {
   Swap = 'SwapScreens.Swap',
   Review = 'SwapScreens.Review',
@@ -67,8 +71,7 @@ enum NftScreens {
 enum NftSendScreens {
   AddressPick = 'NftSendScreens.AddressPick',
   Review = 'NftSendScreens.Review',
-  Success = 'NftSendScreens.Success',
-  Fail = 'NftSendScreens.Fail'
+  Success = 'NftSendScreens.Success'
 }
 
 enum SecurityPrivacyScreens {
@@ -95,7 +98,6 @@ enum ModalScreens {
   AccountDropDown = 'ModalScreens.AccountDropDown',
   AccountBottomSheet = 'ModalScreens.AccountBottomSheet',
   TransactionDetailBottomSheet = 'ModalScreens.TransactionDetailBottomSheet',
-  ReceiveOnlyBottomSheet = 'ModalScreens.ReceiveOnlyBottomSheet',
   SignOut = 'ModalScreens.SignOut',
   SelectToken = 'ModalScreens.SelectToken',
   EditGasLimit = 'ModalScreens.EditGasLimit',
@@ -111,7 +113,6 @@ enum SendScreens {
 enum AddressBookScreens {
   List = 'AddressBookScreens.List',
   Add = 'AddressBookScreens.Add',
-  Edit = 'AddressBookScreens.Edit',
   Details = 'AddressBookScreens.Details'
 }
 
@@ -120,6 +121,10 @@ enum BridgeScreens {
   BridgeTransactionStatus = 'BridgeScreens.BridgeTransactionStatus',
   HideWarning = 'BridgeScreens.HideWarning',
   AddInstructions = 'BridgeScreens.AddInstructions'
+}
+
+enum PortfolioScreens {
+  Portfolio = 'PortfolioScreens.Portfolio'
 }
 
 const AppNavigation = {
@@ -136,7 +141,9 @@ const AppNavigation = {
   NftSend: NftSendScreens,
   Send: SendScreens,
   AddressBook: AddressBookScreens,
-  Bridge: BridgeScreens
+  Bridge: BridgeScreens,
+  Portfolio: PortfolioScreens,
+  ReceiveTokens: ReceiveTokensScreens
 }
 
 export default AppNavigation

@@ -1,4 +1,3 @@
-// @ts-nocheck TODO CP-1728: Fix Typescript Errors - Activity Details/Transactions
 import React, { useEffect, useState } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
@@ -11,23 +10,24 @@ import { Space } from 'components/Space'
 import useInAppBrowser from 'hooks/useInAppBrowser'
 import Separator from 'components/Separator'
 import { truncateAddress } from 'utils/Utils'
-import { RouteProp, useRoute } from '@react-navigation/native'
-import { RootStackParamList } from 'navigation/WalletScreenStack'
+import { useRoute } from '@react-navigation/native'
 import DotSVG from 'components/svg/DotSVG'
 import FlexSpacer from 'components/FlexSpacer'
 import Avatar from 'components/Avatar'
 import { Contact } from 'Repo'
 import { bnToAvaxC, numberToBN } from '@avalabs/avalanche-wallet-sdk'
 import AppNavigation from 'navigation/AppNavigation'
+import { WalletScreenProps } from 'navigation/types'
+
+type RouteProp = WalletScreenProps<
+  typeof AppNavigation.Wallet.ActivityDetail
+>['route']
 
 function ActivityDetail() {
   const theme = useApplicationContext().theme
   const { addressBook } = useApplicationContext().repo.addressBookRepo
   const addressBookArray = Array.from(addressBook)
-  const txItem =
-    useRoute<
-      RouteProp<RootStackParamList, typeof AppNavigation.Wallet.ActivityDetail>
-    >().params.tx
+  const txItem = useRoute<RouteProp>().params.tx
   const date = moment(txItem?.timestamp).format('MMM DD, YYYY HH:mm')
   const { openUrl } = useInAppBrowser()
   const [contact, setContact] = useState<Contact>()

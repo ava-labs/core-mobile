@@ -7,7 +7,7 @@ import TabViewBackground from 'screens/portfolio/components/TabViewBackground'
 import AvaxSheetHandle from 'components/AvaxSheetHandle'
 
 function AccountBottomSheet(): JSX.Element {
-  const navigation = useNavigation()
+  const { goBack } = useNavigation()
   const bottomSheetModalRef = useRef<BottomSheet>(null)
   const snapPoints = useMemo(() => ['0%', '90%'], [])
 
@@ -20,7 +20,7 @@ function AccountBottomSheet(): JSX.Element {
 
   const handleClose = useCallback(() => {
     bottomSheetModalRef?.current?.close()
-    InteractionManager.runAfterInteractions(() => navigation.goBack())
+    InteractionManager.runAfterInteractions(() => goBack())
   }, [])
 
   const handleChange = useCallback(index => {
@@ -36,7 +36,7 @@ function AccountBottomSheet(): JSX.Element {
       snapPoints={snapPoints}
       backgroundComponent={TabViewBackground}
       onChange={handleChange}>
-      <AccountView onDone={() => navigation.goBack()} />
+      <AccountView onDone={() => goBack()} />
     </BottomSheet>
   )
 }
