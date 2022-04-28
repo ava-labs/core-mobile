@@ -29,6 +29,10 @@ export type NetworksCollection = { [networkName: string]: Network }
 
 export type Network = {
   name: string
+  rpcUrl: string
+  chainId: string
+  nativeToken: string
   isFavorite: boolean
   isTest: boolean
+  explorerUrl?: string
 }

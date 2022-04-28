@@ -41,6 +41,7 @@ enum WalletScreens {
   TokenManagement = 'WalletScreens.TokenManagement',
   SecurityPrivacy = 'WalletScreens.SecurityPrivacy',
   NetworkSelector = 'WalletScreens.NetworkSelector',
+  NetworkDetails = 'WalletScreens.NetworkDetails',
   Swap = 'WalletScreens.Swap',
   NFTDetails = 'WalletScreens.NFTDetails',
   NFTManage = 'WalletScreens.NFTManage',

@@ -336,10 +336,42 @@ export function useRepo(): Repo {
     )
     //FIXME: remove this
     setNetworks({
-      Avalanche: { name: 'Avalanche', isFavorite: false, isTest: false },
-      AvalancheTest: { name: 'AvalancheTest', isFavorite: false, isTest: true },
-      Bitcoin: { name: 'Bitcoin', isFavorite: false, isTest: false },
-      BitcoinTest: { name: 'BitcoinTest', isFavorite: false, isTest: true }
+      Avalanche: {
+        name: 'Avalanche',
+        isFavorite: true,
+        isTest: false,
+        chainId: '123',
+        rpcUrl: 'thisistherpcurl.com',
+        explorerUrl: 'thisisanexplorerurl.com',
+        nativeToken: 'AVAX'
+      },
+      AvalancheTest: {
+        name: 'AvalancheTest',
+        isFavorite: true,
+        isTest: true,
+        chainId: '123',
+        rpcUrl: 'thisistherpcurl.com',
+        explorerUrl: 'thisisanexplorerurl.com',
+        nativeToken: 'AVAX'
+      },
+      Bitcoin: {
+        name: 'Bitcoin',
+        isFavorite: false,
+        isTest: false,
+        chainId: '123',
+        rpcUrl: 'thisistherpcurl.com',
+        explorerUrl: 'thisisanexplorerurl.com',
+        nativeToken: 'BTC'
+      },
+      BitcoinTest: {
+        name: 'BitcoinTest',
+        isFavorite: false,
+        isTest: true,
+        chainId: '123',
+        rpcUrl: 'thisistherpcurl.com',
+        explorerUrl: 'thisisanexplorerurl.com',
+        nativeToken: 'BTC'
+      }
     })
   }
 

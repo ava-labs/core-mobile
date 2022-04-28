@@ -7,7 +7,12 @@ import React, {
   useState
 } from 'react'
 import { AppState, BackHandler, Modal } from 'react-native'
-import { NavigatorScreenParams } from '@react-navigation/native'
+import {
+  NavigatorScreenParams,
+  useFocusEffect,
+  useNavigation,
+  useRoute
+} from '@react-navigation/native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AccountBottomSheet from 'screens/portfolio/account/AccountBottomSheet'
 import AppNavigation from 'navigation/AppNavigation'
@@ -15,9 +20,10 @@ import { SelectedTokenContextProvider } from 'contexts/SelectedTokenContext'
 import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import {
+  currentSelectedCurrency$,
   TokenWithBalance,
-  TransactionNormal,
-  TransactionERC20
+  TransactionERC20,
+  TransactionNormal
 } from '@avalabs/wallet-react-components'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import moment from 'moment'
@@ -32,22 +38,15 @@ import SecurityPrivacyStackScreen, {
 } from 'navigation/wallet/SecurityPrivacyStackScreen'
 import { MainHeaderOptions, SubHeaderOptions } from 'navigation/NavUtils'
 import WebViewScreen from 'screens/webview/WebViewScreen'
-import {
-  useFocusEffect,
-  useNavigation,
-  useRoute
-} from '@react-navigation/native'
 import SignOutBottomSheet from 'screens/mainView/SignOutBottomSheet'
 import { createStackNavigator } from '@react-navigation/stack'
 import ReceiveScreenStack, {
   ReceiveStackParamList
 } from 'navigation/wallet/ReceiveScreenStack'
-import NetworkSelector from 'network/NetworkSelector'
 import SelectTokenBottomSheet from 'screens/swap/SelectTokenBottomSheet'
 import SendScreenStack, {
   SendStackParamList
 } from 'navigation/wallet/SendScreenStack'
-import { currentSelectedCurrency$ } from '@avalabs/wallet-react-components'
 import AccountDropdown from 'screens/portfolio/account/AccountDropdown'
 import SwapScreenStack, {
   SwapStackParamList
@@ -65,10 +64,15 @@ import NFTScreenStack, {
 } from 'navigation/wallet/NFTScreenStack'
 import NftManage from 'screens/nft/NftManage'
 import SharedBridgeTransactionStatus from 'screens/shared/BridgeTransactionStatus'
+import { Network } from 'repository/NetworksRepo'
+import NetworkManager from 'screens/network/NetworkManager'
+import NetworkDetails from 'screens/network/NetworkDetails'
+import AvaButton from 'components/AvaButton'
+import StarSVG from 'components/svg/StarSVG'
 import { BridgeStackParamList } from './wallet/BridgeScreenStack'
 import {
-  EditGasLimitParams,
   BridgeTransactionStatusParams,
+  EditGasLimitParams,
   WalletScreenProps
 } from './types'
 
@@ -101,6 +105,7 @@ export type WalletScreenStackParams = {
     | undefined
   [AppNavigation.Wallet.CurrencySelector]: undefined
   [AppNavigation.Wallet.NetworkSelector]: undefined
+  [AppNavigation.Wallet.NetworkDetails]: { network: Network }
   [AppNavigation.Wallet.SecurityPrivacy]:
     | NavigatorScreenParams<SecurityStackParamList>
     | undefined
@@ -345,10 +350,17 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
         />
         <WalletScreenS.Screen
           options={{
-            ...MainHeaderOptions('Network')
+            ...MainHeaderOptions('')
           }}
           name={AppNavigation.Wallet.NetworkSelector}
-          component={NetworkSelector}
+          component={NetworkSelectorScreen}
+        />
+        <WalletScreenS.Screen
+          options={{
+            ...MainHeaderOptions('', false, <ToggleFavoriteNetwork />)
+          }}
+          name={AppNavigation.Wallet.NetworkDetails}
+          component={NetworkDetailsScreen}
         />
         <WalletScreenS.Screen
           name={AppNavigation.Wallet.SecurityPrivacy}
@@ -406,7 +418,6 @@ const AccountDropdownComp = () => {
     />
   )
 }
-
 type EditGasLimitScreenProps = WalletScreenProps<
   typeof AppNavigation.Modal.EditGasLimit
 >
@@ -445,6 +456,47 @@ const BridgeTransactionStatus = () => {
       txHash={txHash}
       txTimestamp={txTimestamp}
     />
+  )
+}
+
+type NetworkSelectorScreenProps = WalletScreenProps<
+  typeof AppNavigation.Wallet.NetworkSelector
+>
+function NetworkSelectorScreen() {
+  const { navigate } = useNavigation<NetworkSelectorScreenProps['navigation']>()
+
+  function showNetworkDetails(network: Network) {
+    navigate(AppNavigation.Wallet.NetworkDetails, {
+      network: network
+    })
+  }
+
+  return <NetworkManager onShowInfo={showNetworkDetails} />
+}
+
+type NetworkDetailsScreenProps = WalletScreenProps<
+  typeof AppNavigation.Wallet.NetworkDetails
+>
+function NetworkDetailsScreen() {
+  const { params } = useRoute<NetworkDetailsScreenProps['route']>()
+
+  return <NetworkDetails network={params.network} />
+}
+
+function ToggleFavoriteNetwork() {
+  const { params } = useRoute<NetworkDetailsScreenProps['route']>()
+  const { networks, unsetFavorite, setFavorite } =
+    useApplicationContext().repo.networksRepo
+
+  function toggleFavorite(networkName: string) {
+    const network = networks[networkName]
+    network.isFavorite ? unsetFavorite(network) : setFavorite(network)
+  }
+
+  return (
+    <AvaButton.Icon onPress={() => toggleFavorite(params.network.name)}>
+      <StarSVG selected={params.network.isFavorite} />
+    </AvaButton.Icon>
   )
 }
 
