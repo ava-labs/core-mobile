@@ -1,8 +1,6 @@
-import React, { FC, useEffect, useLayoutEffect } from 'react'
+import React, { FC, ReactNode, useEffect, useLayoutEffect } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { BridgeStackParamList } from 'navigation/wallet/BridgeScreenStack'
 import AvaText from 'components/AvaText'
 import {
   Blockchain,
@@ -15,6 +13,7 @@ import {
   useNetworkContext,
   useWalletStateContext
 } from '@avalabs/wallet-react-components'
+import { StackNavigationOptions } from '@react-navigation/stack'
 import { getEthereumProvider } from 'screens/bridge/utils/getEthereumProvider'
 import { getAvalancheProvider } from 'screens/bridge/utils/getAvalancheProvider'
 import DotSVG from 'components/svg/DotSVG'
@@ -27,24 +26,23 @@ import BridgeConfirmations from 'screens/bridge/components/BridgeConfirmations'
 import { useGetTokenSymbolOnNetwork } from 'screens/bridge/hooks/useGetTokenSymbolOnNetwork'
 import useBridge from 'screens/bridge/hooks/useBridge'
 import { useBridgeContext } from 'contexts/BridgeContext'
-import { StackNavigationProp } from '@react-navigation/stack'
-import AvaButton from 'components/AvaButton'
-import AppNavigation from 'navigation/AppNavigation'
 
-interface Props {
-  fromStack?: boolean
+type Props = {
+  blockchain: string
+  txHash: string
+  txTimestamp: string
+  setNavOptions: (options: StackNavigationOptions) => void
+  HeaderRight?: ReactNode
 }
 
-const BridgeTransactionStatus: FC<Props> = ({ fromStack }) => {
+const BridgeTransactionStatus: FC<Props> = ({
+  blockchain,
+  txHash,
+  txTimestamp,
+  setNavOptions,
+  HeaderRight = null
+}) => {
   const { theme } = useApplicationContext()
-  const navigation = useNavigation<StackNavigationProp<BridgeStackParamList>>()
-  const { blockchain, txHash, txTimestamp } =
-    useRoute<
-      RouteProp<
-        BridgeStackParamList,
-        typeof AppNavigation.Bridge.BridgeTransactionStatus
-      >
-    >()?.params || {}
   // @ts-ignore addresses exist in walletContext
   const { addresses } = useWalletStateContext()
   const { config } = useBridgeConfig()
@@ -77,19 +75,12 @@ const BridgeTransactionStatus: FC<Props> = ({ fromStack }) => {
     transactionDetails,
     bridgeAssets
   )
+
   useLayoutEffect(() => {
     if (txProps) {
-      navigation.setOptions({
+      setNavOptions({
         title: `Transaction ${txProps.complete ? 'Details' : 'Status'}`,
-        headerRight: () =>
-          fromStack ? (
-            <AvaButton.TextLarge
-              onPress={() => {
-                navigation.navigate(AppNavigation.Bridge.HideWarning)
-              }}>
-              Hide
-            </AvaButton.TextLarge>
-          ) : null
+        headerRight: () => HeaderRight
       })
 
       if (txProps.complete) {
