@@ -11,6 +11,7 @@ import {
   CoinsContractInfoResponse,
   SimpleTokenPriceResponse
 } from '@avalabs/coingecko-sdk'
+import { PartialBridgeTransaction } from 'screens/bridge/handlers/createBridgeTransaction'
 
 /**
  * Currently we support only one wallet, with multiple accounts.
@@ -27,6 +28,7 @@ const CUSTOM_TOKENS = 'CUSTOM_TOKENS'
 const NFTs = 'NFTs_2'
 const VIEW_ONCE_INFORMATION = 'VIEW_ONCE_INFORMATION'
 const PORTFOLIO_TOKEN_LIST = 'PORTFOLIO_TOKEN_LIST_3'
+const PENDING_BRIDGE_TRANSACTIONS = 'PENDING_BRIDGE_TRANSACTIONS'
 
 /**
  * ViewOnceInformation is used by views that needs to display something for the 1st time one.
@@ -114,6 +116,12 @@ export type Repo = {
       fresh?: boolean
     ) => Promise<SimpleTokenPriceResponse | undefined>
   }
+  pendingBridgeTransactions: {
+    pendingBridgeTransactions: Map<string, PartialBridgeTransaction[]>
+    savePendingBridgeTransactions: (
+      transactions: Map<string, PartialBridgeTransaction[]>
+    ) => void
+  }
   /**
    * Store any simple user settings here
    */
@@ -138,6 +146,9 @@ export function useRepo(): Repo {
     new Map()
   )
   const { getCharData, getContractInfo, getTokensPrice } = useCoingeckoRepo()
+  const [pendingBridgeTransactions, setPendingBridgeTransactions] = useState<
+    Map<string, PartialBridgeTransaction[]>
+  >(new Map())
 
   useEffect(() => {
     ;(async () => {
@@ -168,6 +179,10 @@ export function useRepo(): Repo {
       console.error(reason)
     )
   }
+
+  // loadFromStorageAsMap<Record<string, PartialBridgeTransaction>>(PENDING_BRIDGE_TRANSACTIONS).then(
+  //   value => setPendingBridgeTransactions(value)
+  // )
 
   const setActiveAccount = (accountIndex: number) => {
     accounts.forEach(acc => (acc.active = acc.index === accountIndex))
@@ -238,6 +253,15 @@ export function useRepo(): Repo {
     setViewOnceInfo(infoSet)
     StorageTools.saveToStorage(VIEW_ONCE_INFORMATION, infoSet).catch(error =>
       console.error(error)
+    )
+  }
+
+  const savePendingBridgeTransactions = (
+    pendingTransactions: Map<string, PartialBridgeTransaction[]>
+  ) => {
+    setPendingBridgeTransactions(pendingTransactions)
+    saveMapToStorage(PENDING_BRIDGE_TRANSACTIONS, pendingTransactions).catch(
+      error => console.error(error)
     )
   }
 
@@ -319,7 +343,11 @@ export function useRepo(): Repo {
       getContractInfo,
       getTokensPrice
     },
-    flush,
+    pendingBridgeTransactions: {
+      pendingBridgeTransactions: pendingBridgeTransactions,
+      savePendingBridgeTransactions: savePendingBridgeTransactions
+    },
+    flush
     initialized
   }
 }
