@@ -1,32 +1,3 @@
-<<<<<<< HEAD
-import React, { useCallback, useEffect, useMemo, useRef } from 'react'
-import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet'
-import { InteractionManager, StyleSheet, View } from 'react-native'
-import { useNavigation } from '@react-navigation/native'
-import TabViewBackground from 'screens/portfolio/components/TabViewBackground'
-import AvaxSheetHandle from 'components/AvaxSheetHandle'
-import AvaText from 'components/AvaText'
-import { Space } from 'components/Space'
-import { Row } from 'components/Row'
-import AvaxQACode from 'components/AvaxQRCode'
-import {
-  useNetworkContext,
-  useWalletContext
-} from '@avalabs/wallet-react-components'
-import TokenAddress from 'components/TokenAddress'
-import { useApplicationContext } from 'contexts/ApplicationContext'
-import { isMainnetNetwork } from '@avalabs/avalanche-wallet-sdk'
-
-function AddBitcoinInstructionsBottomSheet() {
-  const theme = useApplicationContext().theme
-  const { goBack } = useNavigation()
-  const bottomSheetModalRef = useRef<BottomSheet>(null)
-  const snapPoints = useMemo(() => ['0%', '80%'], [])
-  const network = useNetworkContext()?.network
-  const wallet = useWalletContext().wallet
-  const isMainnet = network?.config ? isMainnetNetwork(network.config) : false
-  const btcAddress = wallet?.getAddressBTC(isMainnet ? 'bitcoin' : 'testnet')
-=======
 import React, {useCallback, useEffect, useMemo, useRef} from 'react';
 import BottomSheet, {BottomSheetBackdrop} from '@gorhom/bottom-sheet';
 import {InteractionManager, StyleSheet, View} from 'react-native';
@@ -37,11 +8,7 @@ import AvaText from 'components/AvaText';
 import {Space} from 'components/Space';
 import {Row} from 'components/Row';
 import AvaxQACode from 'components/AvaxQRCode';
-import {
-  useNetworkContext,
-  useWalletContext,
-  useWalletStateContext,
-} from '@avalabs/wallet-react-components';
+import {useNetworkContext, useWalletContext} from '@avalabs/wallet-react-components';
 import TokenAddress from 'components/TokenAddress';
 import {useApplicationContext} from 'contexts/ApplicationContext';
 import {isMainnetNetwork} from '@avalabs/avalanche-wallet-sdk';
@@ -59,20 +26,6 @@ function AddBitcoinInstructionsBottomSheet() {
   useEffect(() => {
     // intentionally setting delay so animation is visible.
     setTimeout(() => {
-<<<<<<< HEAD
-      bottomSheetModalRef?.current?.snapTo(1)
-    }, 100)
-  }, [])
-
-  const handleClose = useCallback(() => {
-    bottomSheetModalRef?.current?.close()
-    InteractionManager.runAfterInteractions(() => goBack())
-  }, [])
-
-  const handleChange = useCallback(index => {
-    index === 0 && handleClose()
-  }, [])
-=======
       bottomSheetModalRef?.current?.snapTo(1);
     }, 100);
   }, []);
@@ -85,7 +38,6 @@ function AddBitcoinInstructionsBottomSheet() {
   const handleChange = useCallback(index => {
     index === 0 && handleClose();
   }, []);
->>>>>>> 538e4cb (bridge sdk bump)
 
   return (
     <BottomSheet
