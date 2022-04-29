@@ -11,7 +11,8 @@ import {
   CoinsContractInfoResponse,
   SimpleTokenPriceResponse
 } from '@avalabs/coingecko-sdk'
-import { PartialBridgeTransaction } from 'screens/bridge/handlers/createBridgeTransaction'
+import { BridgeState, defaultBridgeState } from 'screens/bridge/BridgeState'
+import Bridge from 'screens/bridge/Bridge'
 
 /**
  * Currently we support only one wallet, with multiple accounts.
@@ -117,10 +118,8 @@ export type Repo = {
     ) => Promise<SimpleTokenPriceResponse | undefined>
   }
   pendingBridgeTransactions: {
-    pendingBridgeTransactions: Map<string, PartialBridgeTransaction[]>
-    savePendingBridgeTransactions: (
-      transactions: Map<string, PartialBridgeTransaction[]>
-    ) => void
+    pendingBridgeTransactions: BridgeState
+    savePendingBridgeTransactions: (newState: BridgeState) => void
   }
   /**
    * Store any simple user settings here
@@ -146,9 +145,8 @@ export function useRepo(): Repo {
     new Map()
   )
   const { getCharData, getContractInfo, getTokensPrice } = useCoingeckoRepo()
-  const [pendingBridgeTransactions, setPendingBridgeTransactions] = useState<
-    Map<string, PartialBridgeTransaction[]>
-  >(new Map())
+  const [pendingBridgeTransactions, setPendingBridgeTransactions] =
+    useState<BridgeState>(defaultBridgeState)
 
   useEffect(() => {
     ;(async () => {
@@ -256,13 +254,12 @@ export function useRepo(): Repo {
     )
   }
 
-  const savePendingBridgeTransactions = (
-    pendingTransactions: Map<string, PartialBridgeTransaction[]>
-  ) => {
+  const savePendingBridgeTransactions = (pendingTransactions: BridgeState) => {
     setPendingBridgeTransactions(pendingTransactions)
-    saveMapToStorage(PENDING_BRIDGE_TRANSACTIONS, pendingTransactions).catch(
-      error => console.error(error)
-    )
+    StorageTools.saveToStorage(
+      PENDING_BRIDGE_TRANSACTIONS,
+      pendingTransactions
+    ).catch(error => console.error(error))
   }
 
   const infoHasBeenShown = (info: ViewOnceInformation) => {
@@ -280,38 +277,38 @@ export function useRepo(): Repo {
     setWatchlistFavorites([])
     setCustomTokens({})
     setUserSettings(new Map())
+    setPendingBridgeTransactions(defaultBridgeState)
     setInitialized(false)
   }
 
-  async function loadInitialStatesFromStorage() {
-    setUserSettings(
-      await StorageTools.loadFromStorageAsMap<Setting, SettingValue>(
-        USER_SETTINGS
-      )
+  function loadInitialStatesFromStorage() {
+    StorageTools.loadFromStorageAsMap<Setting, SettingValue>(
+      USER_SETTINGS
+    ).then(value => setUserSettings(value))
+    StorageTools.loadFromStorageAsMap<AccountId, Account>(WALLET_ID).then(
+      value => setAccounts(value)
     )
-    setAccounts(
-      await StorageTools.loadFromStorageAsMap<AccountId, Account>(WALLET_ID)
+    StorageTools.loadFromStorageAsMap<UID, NFTItemData>(NFTs).then(value =>
+      setNfts(value)
     )
-    setNfts(await StorageTools.loadFromStorageAsMap<UID, NFTItemData>(NFTs))
-    setAddressBook(
-      await StorageTools.loadFromStorageAsMap<UID, Contact>(ADDR_BOOK)
+    StorageTools.loadFromStorageAsMap<UID, Contact>(ADDR_BOOK).then(value =>
+      setAddressBook(value)
     )
-    setRecentContacts(
-      await StorageTools.loadFromStorageAsArray<RecentContact>(
-        ADDR_BOOK_RECENTS
-      )
+    StorageTools.loadFromStorageAsArray<RecentContact>(ADDR_BOOK_RECENTS).then(
+      value => setRecentContacts(value)
     )
-    setWatchlistFavorites(
-      await StorageTools.loadFromStorageAsArray<string>(WATCHLIST_FAVORITES)
+    StorageTools.loadFromStorageAsArray<string>(WATCHLIST_FAVORITES).then(
+      value => setWatchlistFavorites(value)
     )
-    setCustomTokens(
-      await StorageTools.loadFromStorageAsObj<CustomTokens>(CUSTOM_TOKENS)
+    StorageTools.loadFromStorageAsObj<CustomTokens>(CUSTOM_TOKENS).then(value =>
+      setCustomTokens(value)
     )
-    setViewOnceInfo(
-      await StorageTools.loadFromStorageAsArray<ViewOnceInformation>(
-        VIEW_ONCE_INFORMATION
-      )
-    )
+    StorageTools.loadFromStorageAsArray<ViewOnceInformation>(
+      VIEW_ONCE_INFORMATION
+    ).then(value => setViewOnceInfo(value))
+    StorageTools.loadFromStorageAsObj<BridgeState>(
+      PENDING_BRIDGE_TRANSACTIONS
+    ).then(value => setPendingBridgeTransactions(value))
   }
 
   return {

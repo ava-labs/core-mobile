@@ -1,21 +1,21 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import {
-  AppConfig,
   BridgeSDKProvider,
   BridgeTransaction,
   getMinimumConfirmations,
+  trackBridgeTransaction,
+  TrackerSubscription,
   useBridgeConfig,
   useBridgeSDK,
-  WrapStatus,
-  trackBridgeTransaction
+  WrapStatus
 } from '@avalabs/bridge-sdk'
 import { useLoadBridgeConfig } from 'screens/bridge/hooks/useLoadBridgeConfig'
 import Big from 'big.js'
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import {
   ActiveNetwork,
-  useAccountsContext,
-  useNetworkContext
+  useNetworkContext,
+  useWalletContext
 } from '@avalabs/wallet-react-components'
 import { isMainnetNetwork } from '@avalabs/avalanche-wallet-sdk'
 import { useTransferAsset } from 'screens/bridge/hooks/useTransferAsset'
@@ -27,6 +27,7 @@ import { getAvalancheProvider } from 'screens/bridge/utils/getAvalancheProvider'
 import { getEthereumProvider } from 'screens/bridge/utils/getEthereumProvider'
 import { BridgeState, defaultBridgeState } from 'screens/bridge/BridgeState'
 import useSignAndIssueBtcTx from 'screens/bridge/hooks/useSignAndIssueBtcTx'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 export enum TransferEventType {
   WRAP_STATUS = 'wrap_status',
@@ -36,24 +37,19 @@ export enum TransferEventType {
 
 interface BridgeContext {
   createBridgeTransaction(
-    tx: PartialBridgeTransaction,
-    bridgeTransactions: { [key: string]: BridgeTransaction },
-    config: AppConfig,
-    network: ActiveNetwork,
-    addressC: string,
-    addressBTC: string
+    tx: PartialBridgeTransaction
   ): Promise<void | { error: string }>
   removeBridgeTransaction(tx: string): Promise<void>
+  signIssueBtc(
+    unsignedTxHex: string
+  ): Promise<BTCTransactionResponse | undefined>
   bridgeTransactions: BridgeState['bridgeTransactions']
   transferAsset: (
     amount: Big,
     asset: any,
     onStatusChange: (status: WrapStatus) => void,
     onTxHashChange: (txHash: string) => void
-  ) => Promise<TransactionResponse> | undefined
-  signIssueBtc(
-    unsignedTxHex: string
-  ): Promise<BTCTransactionResponse | undefined>
+  ) => Promise<TransactionResponse | undefined>
 }
 
 const bridgeContext = createContext<BridgeContext>({} as any)
@@ -70,18 +66,23 @@ export function useBridgeContext() {
   return useContext(bridgeContext)
 }
 
+const TrackerSubscriptions = new Map<string, TrackerSubscription>()
+
 function LocalBridgeProvider({ children }: { children: any }) {
   useLoadBridgeConfig()
-  const [trackedTransaction, setTrackedTransaction] =
-    useState<BridgeTransaction>()
-  const activeAccount = useAccountsContext().activeAccount
+
+  const config = useBridgeConfig().config
+  const network = useNetworkContext()?.network
+  const wallet = useWalletContext().wallet
+  const { pendingBridgeTransactions, savePendingBridgeTransactions } =
+    useApplicationContext().repo.pendingBridgeTransactions
+
   const { currentBlockchain } = useBridgeSDK()
   const { transferHandler, events } = useTransferAsset()
   const { signAndIssueBtcTx } = useSignAndIssueBtcTx()
-  const network = useNetworkContext()?.network
   const avalancheProvider = getAvalancheProvider(network)
   const ethereumProvider = getEthereumProvider(network)
-  const config = useBridgeConfig().config
+  const isMainnet = network ? isMainnetNetwork(network?.config) : false
 
   const [bridgeState, setBridgeState] =
     useState<BridgeState>(defaultBridgeState)
@@ -110,38 +111,61 @@ function LocalBridgeProvider({ children }: { children: any }) {
         }
       }
     }
-    // setBridgeState(newBridgeState)
-    setBridgeTransactions(newBridgeState.bridgeTransactions)
+    savePendingBridgeTransactions(newBridgeState)
+    setBridgeState(newBridgeState)
+    return newBridgeState
   }
 
+  // load pending txs from storage
   useEffect(() => {
-    // load transactions from storage
-  }, [events])
+    if (
+      Object.values(pendingBridgeTransactions.bridgeTransactions).length > 0
+    ) {
+      const restoredState = deserializeBridgeState(pendingBridgeTransactions)
+      setBridgeState(restoredState)
+      Object.values(restoredState.bridgeTransactions).forEach(tx => {
+        subscribeToTransaction(tx)
+      })
+    }
+  }, [pendingBridgeTransactions, config])
 
+  // filter tsx by network
   useEffect(() => {
     if (!network) return
     const filteredState = filterBridgeStateToNetwork(bridgeState, network)
     setBridgeTransactions(filteredState.bridgeTransactions)
-  }, [network])
+  }, [network, bridgeState])
 
-  useEffect(() => {
-    if (trackedTransaction && config) {
-      console.log('bridge context tracker subscription')
+  // init tracking updates for txs
+  function subscribeToTransaction(trackedTransaction: BridgeTransaction) {
+    if (
+      trackedTransaction &&
+      config &&
+      !TrackerSubscriptions.has(trackedTransaction.sourceTxHash)
+    ) {
+      console.log('Subscribing to tx', trackedTransaction)
       // Start transaction tracking process (no need to await)
-      const subscription = trackBridgeTransaction({
-        bridgeTransaction: trackedTransaction,
-        onBridgeTransactionUpdate: onUpdate,
-        config,
-        avalancheProvider,
-        ethereumProvider
-      })
+      try {
+        const subscription = trackBridgeTransaction({
+          bridgeTransaction: trackedTransaction,
+          onBridgeTransactionUpdate: onUpdate,
+          config,
+          avalancheProvider,
+          ethereumProvider
+        })
 
-      return () => {
-        console.log('bridge context tracker unsubscribed')
-        subscription.unsubscribe()
+        TrackerSubscriptions.set(trackedTransaction.sourceTxHash, subscription)
+      } catch (e) {
+        console.log(e)
       }
+
+      // return () => {
+      //   console.log('bridge context tracker unsubscribed')
+      //   TrackerSubscriptions.forEach(sub => sub.unsubscribe())
+      //   TrackerSubscriptions.clear()
+      // }
     }
-  }, [trackedTransaction])
+  }
 
   async function transferAsset(
     amount: Big,
@@ -173,13 +197,12 @@ function LocalBridgeProvider({ children }: { children: any }) {
    * transaction tracking process.
    */
   async function createBridgeTransaction(
-    partialBridgeTransaction: PartialBridgeTransaction,
-    bridgeTransactions: { [key: string]: BridgeTransaction },
-    config: AppConfig,
-    network: ActiveNetwork,
-    addressC: string,
-    addressBTC: string
+    partialBridgeTransaction: PartialBridgeTransaction
   ) {
+    if (!config || !network || !wallet) {
+      return Promise.reject('Wallet not ready')
+    }
+
     const {
       sourceChain,
       sourceTxHash,
@@ -188,6 +211,9 @@ function LocalBridgeProvider({ children }: { children: any }) {
       amount,
       symbol
     } = partialBridgeTransaction
+
+    const addressBTC = wallet.getAddressBTC(isMainnet ? 'bitcoin' : 'testnet')
+    const addressC = wallet.getAddressC()
 
     if (!sourceChain) return { error: 'missing sourceChain' }
     if (!sourceTxHash) return { error: 'missing sourceTxHash' }
@@ -198,8 +224,6 @@ function LocalBridgeProvider({ children }: { children: any }) {
     if (!config) return { error: 'missing bridge config' }
     if (bridgeTransactions[sourceTxHash])
       return { error: 'bridge tx already exists' }
-
-    const isMainnet = isMainnetNetwork(network.config)
     const requiredConfirmationCount = getMinimumConfirmations(
       sourceChain,
       config
@@ -222,19 +246,13 @@ function LocalBridgeProvider({ children }: { children: any }) {
       requiredConfirmationCount
     }
 
-    // Save the initial version
-    const error = false // Save the initial version
     // const error = await saveBridgeTransaction(bridgeTransaction);
-    onUpdate(bridgeTransaction)
 
-    setTrackedTransaction(bridgeTransaction)
+    //set 1st state of this transaction
+    const newBridgeState = onUpdate(bridgeTransaction)
+    savePendingBridgeTransactions(newBridgeState)
+    subscribeToTransaction(bridgeTransaction)
   }
-
-  //   const nextBridgeState = new Map()
-  //   nextBridgeState.set(activeAccount?.wallet?.getAddressC(), newBridgeState)
-  //   setBridgeState(newBridgeState)
-  //   // return savePendingBridgeTransactions(nextBridgeState)
-  // }
 
   async function removeBridgeTransaction(sourceHash: string) {
     const { [sourceHash]: unused, ...rest } = bridgeState.bridgeTransactions
@@ -242,10 +260,8 @@ function LocalBridgeProvider({ children }: { children: any }) {
       ...bridgeState,
       bridgeTransactions: rest
     }
-    const nextBridgeState = new Map()
-    nextBridgeState.set(activeAccount?.wallet?.getAddressC(), newBridgeState)
+    savePendingBridgeTransactions(newBridgeState)
     setBridgeState(newBridgeState)
-    // return savePendingBridgeTransactions(nextBridgeState)
   }
 
   return (
