@@ -1,31 +1,35 @@
-import React, { FC, ReactNode, useEffect, useLayoutEffect } from 'react'
-import { StyleSheet, View } from 'react-native'
-import { useApplicationContext } from 'contexts/ApplicationContext'
-import AvaText from 'components/AvaText'
+import React, {FC} from 'react';
+import {StyleSheet, View} from 'react-native';
+import {useApplicationContext} from 'contexts/ApplicationContext';
+import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
+import {BridgeStackParamList} from 'navigation/wallet/BridgeScreenStack';
+import AvaText from 'components/AvaText';
 import {
   Blockchain,
+  BridgeTransaction,
+  getNativeSymbol,
   useBridgeConfig,
   useBridgeSDK,
   usePrice,
-  useTxTracker
-} from '@avalabs/bridge-sdk'
-import {
-  useNetworkContext,
-  useWalletStateContext
-} from '@avalabs/wallet-react-components'
-import { StackNavigationOptions } from '@react-navigation/stack'
-import { getEthereumProvider } from 'screens/bridge/utils/getEthereumProvider'
-import { getAvalancheProvider } from 'screens/bridge/utils/getAvalancheProvider'
-import DotSVG from 'components/svg/DotSVG'
-import Avatar from 'components/Avatar'
-import AvaListItem from 'components/AvaListItem'
-import { Row } from 'components/Row'
-import { Space } from 'components/Space'
-import Separator from 'components/Separator'
-import BridgeConfirmations from 'screens/bridge/components/BridgeConfirmations'
-import { useGetTokenSymbolOnNetwork } from 'screens/bridge/hooks/useGetTokenSymbolOnNetwork'
-import useBridge from 'screens/bridge/hooks/useBridge'
-import { useBridgeContext } from 'contexts/BridgeContext'
+  usePriceForChain,
+  useTokenInfoContext,
+} from '@avalabs/bridge-sdk';
+import {useNetworkContext, useWalletStateContext} from '@avalabs/wallet-react-components';
+import {getEthereumProvider} from 'screens/bridge/utils/getEthereumProvider';
+import {getAvalancheProvider} from 'screens/bridge/utils/getAvalancheProvider';
+import DotSVG from 'components/svg/DotSVG';
+import Avatar from 'components/Avatar';
+import AvaListItem from 'components/AvaListItem';
+import {Row} from 'components/Row';
+import {Space} from 'components/Space';
+import Separator from 'components/Separator';
+import BridgeConfirmations from 'screens/bridge/components/BridgeConfirmations';
+import {useGetTokenSymbolOnNetwork} from 'screens/bridge/hooks/useGetTokenSymbolOnNetwork';
+import {useBridgeContext} from 'contexts/BridgeContext';
+import {StackNavigationProp} from '@react-navigation/stack';
+import AppNavigation from 'navigation/AppNavigation';
+import {useIsMainnet} from 'hooks/isMainnet';
+import {VsCurrencyType} from '@avalabs/coingecko-sdk';
 
 type Props = {
   blockchain: string
@@ -45,60 +49,65 @@ const BridgeTransactionStatus: FC<Props> = ({
   const { theme } = useApplicationContext()
   // @ts-ignore addresses exist in walletContext
   const { addresses } = useWalletStateContext()
+  const tokenInfoData = useTokenInfoContext();
   const { config } = useBridgeConfig()
   // @ts-ignore network exist in networkContext
   const { network } = useNetworkContext()
   const ethereumProvider = getEthereumProvider(network)
   const avalancheProvider = getAvalancheProvider(network)
   const { getTokenSymbolOnNetwork } = useGetTokenSymbolOnNetwork()
-  const { tokenInfoContext, assetInfo } = useBridge()
-  const { createBridgeTransaction, removeBridgeTransaction } =
-    useBridgeContext()
+  const { currentAsset, transactionDetails } = useBridgeSDK()
+  const { bridgeTransactions, removeBridgeTransaction } = useBridgeContext()
+  const isMainnet = useIsMainnet()
+  const bridgeTransaction = bridgeTransactions[txHash] as
+    | BridgeTransaction
+    | undefined
 
-  const {
-    currentAsset,
-    transactionDetails,
-    bridgeAssets,
-    setTransactionDetails,
-    currentBlockchain
-  } = useBridgeSDK()
-
-  const txProps = useTxTracker(
-    blockchain as Blockchain,
-    txHash ?? '',
-    txTimestamp ?? '',
-    avalancheProvider,
-    ethereumProvider,
-    setTransactionDetails,
-    config,
-    addresses?.addrC,
-    transactionDetails,
-    bridgeAssets
+  const assetPrice = usePrice(
+    bridgeTransaction?.symbol || currentAsset,
+    selectedCurrency.toLowerCase() as VsCurrencyType
   )
+  const networkPrice = usePriceForChain(bridgeTransaction?.sourceChain)
 
-  useLayoutEffect(() => {
-    if (txProps) {
-      setNavOptions({
-        title: `Transaction ${txProps.complete ? 'Details' : 'Status'}`,
-        headerRight: () => HeaderRight
-      })
+  const formattedNetworkPrice =
+    networkPrice && bridgeTransaction?.sourceNetworkFee
+      ? currencyFormatter(
+          networkPrice.mul(bridgeTransaction.sourceNetworkFee).toNumber()
+        )
+      : '-'
 
-      if (txProps.complete) {
-        removeBridgeTransaction({ ...txProps })
-      }
-    }
-  }, [txProps?.complete])
-
-  useEffect(() => {
-    createBridgeTransaction({ ...txProps }).then()
-  }, [])
-
-  const tokenSymbolOnNetwork = getTokenSymbolOnNetwork(
-    currentAsset ?? '',
-    currentBlockchain
-  )
-
-  const assetPrice = usePrice(txProps?.symbol || currentAsset)
+  // const txProps = useTxTracker(
+  //   blockchain as Blockchain,
+  //   txHash ?? '',
+  //   txTimestamp ?? '',
+  //   avalancheProvider,
+  //   ethereumProvider,
+  //   setTransactionDetails,
+  //   config,
+  //   addresses?.addrC,
+  //   transactionDetails,
+  //   bridgeAssets
+  // )
+  // useLayoutEffect(() => {
+  //   if (txProps) {
+  //     navigation.setOptions({
+  //       title: `Transaction ${txProps.complete ? 'Details' : 'Status'}`,
+  //       headerRight: () =>
+  //         fromStack ? (
+  //           <AvaButton.TextLarge
+  //             onPress={() => {
+  //               navigation.navigate(AppNavigation.Bridge.HideWarning)
+  //             }}>
+  //             Hide
+  //           </AvaButton.TextLarge>
+  //         ) : null
+  //     })
+  //
+  //     if (txProps.complete) {
+  //       removeBridgeTransaction({ ...txProps })
+  //     }
+  //   }
+  // }, [txProps?.complete])
 
   const tokenLogo = (
     <View style={styles.logoContainer}>
@@ -106,9 +115,8 @@ const BridgeTransactionStatus: FC<Props> = ({
         <DotSVG fillColor={theme.colorBg1} size={72} />
       </View>
       <Avatar.Custom
-        name={assetInfo.symbol}
-        symbol={assetInfo.symbol}
-        logoUri={tokenInfoContext?.[tokenSymbolOnNetwork]?.logo}
+        name={transactionDetails?.tokenSymbol ?? ''}
+        logoUri={transactionDetails?.tokenSymbol && tokenInfoData?.[transactionDetails?.tokenSymbol]?.logo}
         size={55}
       />
     </View>
@@ -118,7 +126,7 @@ const BridgeTransactionStatus: FC<Props> = ({
     <View style={{ flex: 1 }}>
       <View style={[styles.infoContainer, { backgroundColor: theme.colorBg2 }]}>
         {tokenLogo}
-        {txProps && (
+        {bridgeTransaction && (
           <View>
             <AvaListItem.Base
               title={'Sending amount'}
@@ -128,14 +136,14 @@ const BridgeTransactionStatus: FC<Props> = ({
                 <View style={{ alignItems: 'flex-end' }}>
                   <Row>
                     <AvaText.Heading3>
-                      {txProps?.amount?.toNumber()}
+                      {bridgeTransaction?.amount?.toNumber()}
                     </AvaText.Heading3>
                     <AvaText.Heading3 color={theme.colorText3}>
-                      {txProps?.symbol}
+                      {bridgeTransaction?.symbol}
                     </AvaText.Heading3>
                   </Row>
                   <AvaText.Body3 currency color={theme.colorText1}>
-                    {assetPrice.mul(txProps?.amount ?? 0).toNumber()}
+                    {assetPrice.mul(bridgeTransaction?.amount ?? 0).toNumber()}
                   </AvaText.Body3>
                 </View>
               }
@@ -149,7 +157,7 @@ const BridgeTransactionStatus: FC<Props> = ({
           title={'From'}
           rightComponent={
             <AvaText.Heading3>
-              {blockchain === Blockchain.AVALANCHE ? 'Avalanche' : 'Ethereum'}
+              {bridgeTransaction?.sourceChain}
             </AvaText.Heading3>
           }
         />
@@ -160,23 +168,29 @@ const BridgeTransactionStatus: FC<Props> = ({
             <View style={{ alignItems: 'flex-end' }}>
               <Row>
                 <AvaText.Heading3>
-                  {txProps.gasCost?.toNumber().toFixed(6)} {txProps.symbol}
+                  {bridgeTransaction?.sourceNetworkFee?.toNumber().toFixed(6)}{' '}
+                  {getNativeSymbol(bridgeTransaction?.sourceChain ?? Blockchain.UNKNOWN)}
                 </AvaText.Heading3>
               </Row>
               <AvaText.Body3 currency color={theme.colorText1}>
-                ~{txProps.gasValue?.toNumber().toFixed(2)} USD
+                ~{formattedNetworkPrice} {selectedCurrency}
               </AvaText.Body3>
             </View>
           }
         />
         <Separator color={theme.colorBg3} inset={16} />
-        <BridgeConfirmations
-          started={true}
-          requiredConfirmationCount={txProps.requiredConfirmationCount}
-          complete={txProps.complete}
-          tickerSeconds={txProps.sourceSeconds}
-          confirmationCount={txProps.confirmationCount}
-        />
+        {bridgeTransaction && (
+          <BridgeConfirmations
+            started={true}
+            requiredConfirmationCount={
+              bridgeTransaction.requiredConfirmationCount
+            }
+            complete={bridgeTransaction.complete}
+            startTime={bridgeTransaction.sourceStartedAt}
+            endTime={bridgeTransaction.targetStartedAt}
+            confirmationCount={bridgeTransaction.confirmationCount}
+          />
+        )}
       </View>
       <Space y={16} />
       <View style={[styles.toContainer, { backgroundColor: theme.colorBg2 }]}>
@@ -184,20 +198,23 @@ const BridgeTransactionStatus: FC<Props> = ({
           title={'To'}
           rightComponent={
             <AvaText.Heading3>
-              {blockchain === Blockchain.AVALANCHE ? 'Ethereum' : 'Avalanche'}
+              {bridgeTransaction?.targetChain}
             </AvaText.Heading3>
           }
         />
         <Separator color={theme.colorBg3} inset={16} />
-        <BridgeConfirmations
-          started={txProps.targetSeconds > 0}
-          requiredConfirmationCount={
-            1 // On avalanche, we just need 1 confirmation
-          }
-          complete={txProps.complete}
-          tickerSeconds={txProps.targetSeconds}
-          confirmationCount={txProps.complete ? 1 : 0}
-        />
+        {bridgeTransaction && (
+          <BridgeConfirmations
+            started={!!bridgeTransaction.targetStartedAt}
+            startTime={bridgeTransaction.targetStartedAt ?? 0}
+            endTime={bridgeTransaction.completedAt}
+                        requiredConfirmationCount={
+              1 // On avalanche, we just need 1 confirmation
+            }
+            complete={bridgeTransaction.complete}
+            confirmationCount={bridgeTransaction.complete ? 1 : 0}
+          />
+        )}
       </View>
     </View>
   )
