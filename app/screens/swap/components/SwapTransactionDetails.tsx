@@ -6,10 +6,12 @@ import AvaText from 'components/AvaText'
 import InputText from 'components/InputText'
 import { useSwapContext } from 'contexts/SwapContext'
 import { Popable } from 'react-native-popable'
+import { useNavigation } from '@react-navigation/native'
 import NetworkFeeSelector from 'components/NetworkFeeSelector'
 import { useGasPrice } from 'utils/GasPriceHook'
 import { Row } from 'components/Row'
 import AppNavigation from 'navigation/AppNavigation'
+import { SwapScreenProps } from 'navigation/types'
 
 interface SwapTransactionDetailProps {
   review?: boolean
@@ -24,13 +26,17 @@ export function popableContent(message: string, backgroundColor: string) {
   )
 }
 
+type NavigationProp =
+  | SwapScreenProps<typeof AppNavigation.Swap.Review>['navigation']
+  | SwapScreenProps<typeof AppNavigation.Swap.Swap>['navigation']
+
 const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
   review = false
 }) => {
   const { gasPrice } = useGasPrice()
   const { theme } = useApplicationContext()
   const { trxDetails } = useSwapContext()
-
+  const { navigate } = useNavigation<NavigationProp>()
   const slippageInfoMessage = popableContent(
     'Suggested slippage – your transaction will fail if the price changes unfavorably more than this percentage',
     theme.colorBg3
@@ -118,15 +124,24 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
         <>
           <Space y={16} />
           <NetworkFeeSelector
-            gasLimitEditorRoute={AppNavigation.Swap.SwapTransactionFee}
             networkFeeAvax={trxDetails.networkFee}
             networkFeeUsd={trxDetails.networkFeeUsd}
             gasPrice={gasPrice}
-            initGasLimit={trxDetails.gasLimit}
-            onCustomGasLimit={gasLimit => trxDetails.setGasLimit(gasLimit)}
             onWeightedGas={price =>
               trxDetails.setGasPriceNanoAvax(Number.parseFloat(price.value))
             }
+            onSettingsPressed={() => {
+              const initGasLimit = trxDetails.gasLimit
+
+              const onCustomGasLimit = (gasLimit: number) =>
+                trxDetails.setGasLimit(gasLimit)
+
+              navigate(AppNavigation.Swap.SwapTransactionFee, {
+                gasLimit: initGasLimit.toString(),
+                networkFee: trxDetails.networkFee,
+                onSave: onCustomGasLimit
+              })
+            }}
           />
         </>
       )}

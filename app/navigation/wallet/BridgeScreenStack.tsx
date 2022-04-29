@@ -1,43 +1,42 @@
 import React from 'react'
 import AppNavigation from 'navigation/AppNavigation'
-import {
-  createStackNavigator,
-  StackNavigationProp
-} from '@react-navigation/stack'
+import { createStackNavigator } from '@react-navigation/stack'
 import Bridge from 'screens/bridge/Bridge'
-import BridgeTransactionStatus from 'screens/bridge/BridgeTransactionStatus'
+import SharedBridgeTransactionStatus from 'screens/shared/BridgeTransactionStatus'
 import { MainHeaderOptions, SubHeaderOptions } from 'navigation/NavUtils'
 import BridgeSelectTokenBottomSheet from 'screens/bridge/BridgeSelectTokenBottomSheet'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, useRoute } from '@react-navigation/native'
 import WarningModal from 'components/WarningModal'
 import { usePosthogContext } from 'contexts/PosthogContext'
-import { RootStackParamList } from 'navigation/WalletScreenStack'
+import {
+  BridgeTransactionStatusParams,
+  WalletScreenProps,
+  BridgeScreenProps
+} from 'navigation/types'
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
 import AddBitcoinInstructionsBottomSheet from 'screens/bridge/AddBitcoinInstructionsBottomSheet'
+import AvaButton from 'components/AvaButton'
 
 export type BridgeStackParamList = {
   [AppNavigation.Bridge.Bridge]: undefined
-  [AppNavigation.Bridge.BridgeTransactionStatus]: {
-    blockchain: string
-    txHash: string
-    txTimestamp: string
-  }
+  [AppNavigation.Bridge.BridgeTransactionStatus]: BridgeTransactionStatusParams
   [AppNavigation.Modal.BridgeSelectToken]: {
     onTokenSelected: (token: string) => void
   }
-  [AppNavigation.Bridge.HideWarning]: undefined
   [AppNavigation.Bridge.AddInstructions]: undefined
+  [AppNavigation.Bridge.HideWarning]: undefined
 }
 
 const BridgeStack = createStackNavigator<BridgeStackParamList>()
 
-const BridgeTransactionStatusFromStack = () => (
-  <BridgeTransactionStatus fromStack />
-)
+type BridgeNavigationProp = WalletScreenProps<
+  typeof AppNavigation.Wallet.Bridge
+>['navigation']
 
 function BridgeScreenStack() {
   const { bridgeBlocked } = usePosthogContext()
-  const { goBack } = useNavigation<StackNavigationProp<RootStackParamList>>()
+  const { goBack } = useNavigation<BridgeNavigationProp>()
+
   return (
     <>
       <BridgeStack.Navigator>
@@ -53,7 +52,7 @@ function BridgeScreenStack() {
             ...SubHeaderOptions('Transaction Status')
           }}
           name={AppNavigation.Bridge.BridgeTransactionStatus}
-          component={BridgeTransactionStatusFromStack}
+          component={BridgeTransactionStatus}
         />
         <BridgeStack.Group screenOptions={{ presentation: 'transparentModal' }}>
           <BridgeStack.Screen
@@ -86,8 +85,12 @@ function BridgeScreenStack() {
   )
 }
 
+type HideTransactionNavigationProp = BridgeScreenProps<
+  typeof AppNavigation.Bridge.HideWarning
+>['navigation']
+
 const HideTransactionWarningModal = () => {
-  const navigation = useNavigation<StackNavigationProp<BridgeStackParamList>>()
+  const navigation = useNavigation<HideTransactionNavigationProp>()
 
   const onHide = () => {
     navigation.getParent()?.goBack()
@@ -107,6 +110,37 @@ const HideTransactionWarningModal = () => {
       dismissText={'Back'}
       onAction={onHide}
       onDismiss={onBack}
+    />
+  )
+}
+
+type BridgeTransactionStatusScreenProps = BridgeScreenProps<
+  typeof AppNavigation.Bridge.BridgeTransactionStatus
+>
+
+const BridgeTransactionStatus = () => {
+  const { navigate, setOptions } =
+    useNavigation<BridgeTransactionStatusScreenProps['navigation']>()
+
+  const { blockchain, txHash, txTimestamp } =
+    useRoute<BridgeTransactionStatusScreenProps['route']>().params
+
+  const HeaderRight = (
+    <AvaButton.TextLarge
+      onPress={() => {
+        navigate(AppNavigation.Bridge.HideWarning)
+      }}>
+      Hide
+    </AvaButton.TextLarge>
+  )
+
+  return (
+    <SharedBridgeTransactionStatus
+      setNavOptions={setOptions}
+      HeaderRight={HeaderRight}
+      blockchain={blockchain}
+      txHash={txHash}
+      txTimestamp={txTimestamp}
     />
   )
 }

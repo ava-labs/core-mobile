@@ -4,30 +4,46 @@ import React, { FC, useEffect, useState } from 'react'
 import AvaText from 'components/AvaText'
 import AvaListItem from 'components/AvaListItem'
 import Avatar from 'components/Avatar'
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { RootStackParamList } from 'navigation/WalletScreenStack'
+import { useNavigation, useRoute } from '@react-navigation/native'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 import { getTokenUID } from 'utils/TokenTools'
-import { TokenWithBalance } from '@avalabs/wallet-react-components'
+import {
+  TokenWithBalance,
+  TransactionNormal,
+  TransactionERC20
+} from '@avalabs/wallet-react-components'
 import { Row } from 'components/Row'
 import AvaButton from 'components/AvaButton'
 import AppNavigation from 'navigation/AppNavigation'
-import { StackNavigationProp } from '@react-navigation/stack'
-import ActivityList from 'screens/activity/ActivityList'
+import {
+  WalletScreenProps,
+  BridgeTransactionStatusParams
+} from 'navigation/types'
+import ActivityList from 'screens/shared/ActivityList'
+
+type ScreenProps = WalletScreenProps<
+  typeof AppNavigation.Wallet.OwnedTokenDetail
+>
 
 const OwnedTokenDetail: FC = () => {
-  const tokenId =
-    useRoute<
-      RouteProp<
-        RootStackParamList,
-        typeof AppNavigation.Wallet.OwnedTokenDetail
-      >
-    >()?.params?.tokenId
-  const { navigate } = useNavigation<StackNavigationProp<RootStackParamList>>()
+  const { tokenId } = useRoute<ScreenProps['route']>().params
+  const { navigate } = useNavigation<ScreenProps['navigation']>()
   const { filteredTokenList } = useSearchableTokenList(false)
   const [token, setToken] = useState<TokenWithBalance>()
 
   useEffect(loadToken, [filteredTokenList, tokenId])
+
+  const openTransactionDetails = (
+    item: TransactionNormal | TransactionERC20
+  ) => {
+    return navigate(AppNavigation.Wallet.ActivityDetail, {
+      tx: item
+    })
+  }
+
+  const openTransactionStatus = (params: BridgeTransactionStatusParams) => {
+    navigate(AppNavigation.Bridge.BridgeTransactionStatus, params)
+  }
 
   function loadToken() {
     if (filteredTokenList) {
@@ -83,7 +99,10 @@ const OwnedTokenDetail: FC = () => {
         <View style={{ flex: 1 }}>
           <AvaButton.SecondaryMedium
             onPress={() =>
-              navigate(AppNavigation.Wallet.SendTokens, { token: token })
+              navigate(AppNavigation.Wallet.SendTokens, {
+                screen: AppNavigation.Send.Send,
+                params: { token: token }
+              })
             }>
             Send
           </AvaButton.SecondaryMedium>
@@ -92,7 +111,12 @@ const OwnedTokenDetail: FC = () => {
       <Space y={24} />
       <AvaText.Heading2>Activity</AvaText.Heading2>
       <View style={{ marginHorizontal: -16, flex: 1 }}>
-        <ActivityList tokenSymbolFilter={token?.symbol} embedded />
+        <ActivityList
+          tokenSymbolFilter={token?.symbol}
+          embedded
+          openTransactionDetails={openTransactionDetails}
+          openTransactionStatus={openTransactionStatus}
+        />
       </View>
     </View>
   )

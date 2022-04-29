@@ -4,12 +4,7 @@ import PortfolioView from 'screens/portfolio/PortfolioView'
 import { createStackNavigator } from '@react-navigation/stack'
 
 export type PortfolioStackParamList = {
-  [AppNavigation.Wallet.Drawer]: undefined
-  [AppNavigation.Wallet.TokenManagement]: undefined
-  [AppNavigation.Tabs.Watchlist]: undefined
-  Send: undefined
-  Receive: undefined
-  [AppNavigation.Wallet.ReceiveTokens]: undefined
+  [AppNavigation.Portfolio.Portfolio]: undefined
 }
 
 const PortfolioStack = createStackNavigator<PortfolioStackParamList>()
@@ -21,7 +16,7 @@ function PortfolioScreenStack() {
         headerShown: false
       }}>
       <PortfolioStack.Screen
-        name={AppNavigation.Wallet.Drawer}
+        name={AppNavigation.Portfolio.Portfolio}
         component={PortfolioView}
       />
     </PortfolioStack.Navigator>

@@ -1,27 +1,25 @@
 import AppNavigation from 'navigation/AppNavigation'
 import {
   createStackNavigator,
-  StackNavigationOptions,
-  StackNavigationProp
+  StackNavigationOptions
 } from '@react-navigation/stack'
 import React, { useCallback, useEffect, useMemo } from 'react'
 import AddressBook from 'screens/drawer/addressBook/AddressBook'
 import { MainHeaderOptions } from 'navigation/NavUtils'
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
+import { useNavigation, useRoute } from '@react-navigation/native'
 import AvaButton from 'components/AvaButton'
 import AddSVG from 'components/svg/AddSVG'
 import AddContact from 'screens/drawer/addressBook/AddContact'
 import ContactDetails from 'screens/drawer/addressBook/ContactDetails'
 import AvaText from 'components/AvaText'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { RootStackParamList } from 'navigation/WalletScreenStack'
 import useAddressBook from 'screens/drawer/addressBook/useAddressBook'
 import { Contact } from 'Repo'
+import { AddressBookScreenProps } from '../types'
 
 export type AddressBookStackParamList = {
   [AppNavigation.AddressBook.List]: undefined
   [AppNavigation.AddressBook.Add]: undefined
-  [AppNavigation.AddressBook.Edit]: undefined
   [AppNavigation.AddressBook.Details]: {
     contactId: string
     editable: boolean
@@ -66,13 +64,16 @@ const AddressBookStack = () => {
   )
 }
 
+type ContactDetailsScreenProps = AddressBookScreenProps<
+  typeof AppNavigation.AddressBook.Details
+>
+
 const ContactDetailsComp = () => {
-  const { setParams, setOptions } =
-    useNavigation<StackNavigationProp<AddressBookStackParamList>>()
-  const { navigate, goBack } =
-    useNavigation<StackNavigationProp<RootStackParamList>>()
+  const { setParams, setOptions, navigate, goBack } =
+    useNavigation<ContactDetailsScreenProps['navigation']>()
+
   const { onDelete, onSave } = useAddressBook()
-  const { params } = useRoute<RouteProp<AddressBookStackParamList>>()
+  const { params } = useRoute<ContactDetailsScreenProps['route']>()
   const { addressBook } = useApplicationContext().repo.addressBookRepo
 
   const clonedContact = useMemo(
@@ -82,6 +83,8 @@ const ContactDetailsComp = () => {
       ({ id: '', title: '', address: '' } as Contact),
     [addressBook, params?.contactId]
   )
+
+  const editable = params?.editable ?? false
 
   const saveContact = useCallback(() => {
     onSave(clonedContact)
@@ -124,18 +127,25 @@ const ContactDetailsComp = () => {
 
   return (
     <ContactDetails
+      editable={editable}
       contact={clonedContact}
       onDelete={contact => deleteContact(contact)}
       onSend={contact => {
-        navigate(AppNavigation.Wallet.SendTokens, { contact })
+        navigate(AppNavigation.Wallet.SendTokens, {
+          screen: AppNavigation.Send.Send,
+          params: { contact }
+        })
       }}
     />
   )
 }
 
+type AddContactNavigationProp = AddressBookScreenProps<
+  typeof AppNavigation.AddressBook.List
+>['navigation']
+
 const AddAddressBookContact = () => {
-  const { navigate } =
-    useNavigation<StackNavigationProp<AddressBookStackParamList>>()
+  const { navigate } = useNavigation<AddContactNavigationProp>()
   return (
     <AvaButton.Icon onPress={() => navigate(AppNavigation.AddressBook.Add)}>
       <AddSVG hideCircle />

@@ -1,5 +1,4 @@
-// @ts-nocheck TODO CP-1725: Fix Typescript Errors - React Navigation
-import React, { FC, useEffect, useState } from 'react'
+import React, { FC } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { StyleProp, View, ViewStyle } from 'react-native'
 import AvaText from 'components/AvaText'
@@ -7,16 +6,14 @@ import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
 import CarrotSVG from 'components/svg/CarrotSVG'
 import InputText from 'components/InputText'
-import { useNavigation } from '@react-navigation/native'
 import { TokenWithBalance } from '@avalabs/wallet-react-components'
-import AppNavigation from 'navigation/AppNavigation'
 import Avatar from 'components/Avatar'
 import numeral from 'numeral'
 
 interface TokenSelectAndAmountProps {
-  initAmount: string
-  initToken?: TokenWithBalance | undefined
-  onTokenSelect: (token: TokenWithBalance) => void
+  selectedToken: TokenWithBalance | undefined
+  amount: string
+  onOpenSelectToken: () => void
   onAmountSet: (amount: string) => void
   maxEnabled: boolean
   getMaxAmount?: () => string
@@ -25,9 +22,9 @@ interface TokenSelectAndAmountProps {
 }
 
 const TokenSelectAndAmount: FC<TokenSelectAndAmountProps> = ({
-  initAmount,
-  initToken,
-  onTokenSelect,
+  selectedToken,
+  amount,
+  onOpenSelectToken,
   onAmountSet,
   maxEnabled = false,
   getMaxAmount = undefined,
@@ -35,37 +32,6 @@ const TokenSelectAndAmount: FC<TokenSelectAndAmountProps> = ({
   inputWidth = 180
 }) => {
   const context = useApplicationContext()
-  const navigation = useNavigation()
-  const [selectedToken, setSelectedToken] = useState<
-    TokenWithBalance | undefined
-  >(undefined)
-  const [selectedAmount, setSelectedAmount] = useState('0')
-
-  useEffect(() => {
-    if (selectedAmount !== initAmount) {
-      setSelectedAmount(initAmount)
-    }
-  }, [initAmount])
-
-  useEffect(() => {
-    if (selectedToken !== initToken) {
-      setSelectedToken(initToken)
-    }
-  }, [initToken])
-
-  function selectToken() {
-    navigation.navigate(AppNavigation.Modal.SelectToken, {
-      onTokenSelected: (token: TokenWithBalance) => {
-        onTokenSelect(token)
-        setSelectedToken(token)
-      }
-    })
-  }
-
-  function setAmount(amount: string) {
-    onAmountSet(amount)
-    setSelectedAmount(amount)
-  }
 
   function setMax() {
     if (selectedToken) {
@@ -74,7 +40,7 @@ const TokenSelectAndAmount: FC<TokenSelectAndAmountProps> = ({
         numeral(selectedToken.balanceDisplayValue).value()?.toString() ||
         '0'
 
-      setAmount(amount)
+      onAmountSet(amount)
     }
   }
 
@@ -98,7 +64,7 @@ const TokenSelectAndAmount: FC<TokenSelectAndAmountProps> = ({
           alignItems: 'center',
           flex: 1
         }}
-        onPress={selectToken}>
+        onPress={onOpenSelectToken}>
         {selectedToken ? (
           <>
             <Avatar.Custom
@@ -125,10 +91,8 @@ const TokenSelectAndAmount: FC<TokenSelectAndAmountProps> = ({
         mode={'amount'}
         keyboardType="numeric"
         onMax={maxEnabled ? setMax : undefined}
-        onChangeText={text => {
-          setAmount(text)
-        }}
-        text={selectedAmount}
+        onChangeText={onAmountSet}
+        text={amount}
       />
       {/*</View>*/}
     </View>

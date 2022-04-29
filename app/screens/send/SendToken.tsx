@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, FC } from 'react'
 import { View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
@@ -19,19 +19,24 @@ import AddressBookLists from 'components/addressBook/AddressBookLists'
 import { Account } from 'dto/Account'
 import { useAddressBookLists } from 'components/addressBook/useAddressBookLists'
 
-function SendToken({
-  onNext,
-  onOpenAddressBook,
-  token,
-  contact
-}: {
+type Props = {
   onNext: () => void
   onOpenAddressBook: () => void
+  onOpenSelectToken: (
+    onTokenSelected: (token: ERC20WithBalance) => void
+  ) => void
   token?: TokenWithBalance
   contact?: Contact
-}): JSX.Element {
-  const { theme } = useApplicationContext()
+}
 
+const SendToken: FC<Props> = ({
+  onNext,
+  onOpenAddressBook,
+  onOpenSelectToken,
+  token,
+  contact
+}) => {
+  const { theme } = useApplicationContext()
   const {
     setSendToken,
     sendToken,
@@ -42,6 +47,7 @@ function SendToken({
     canSubmit,
     sdkError
   } = useSendTokenContext()
+
   const {
     showAddressBook,
     setShowAddressBook,
@@ -132,11 +138,11 @@ function SendToken({
         <>
           <View style={{ paddingHorizontal: 16 }}>
             <TokenSelectAndAmount
-              initAmount={sendAmount.toString()}
-              initToken={sendToken}
+              selectedToken={sendToken}
+              amount={sendAmount.toString()}
               maxEnabled={!!toAccount.address && !!sendToken}
               onAmountSet={amount => setSendAmount(amount)}
-              onTokenSelect={token => setSendToken(token as ERC20WithBalance)}
+              onOpenSelectToken={() => onOpenSelectToken(setSendToken)}
               getMaxAmount={() => {
                 const balance =
                   numeral(sendToken?.balanceDisplayValue ?? 0).value() || 0

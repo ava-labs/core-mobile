@@ -3,18 +3,21 @@ import React, { useCallback, useState } from 'react'
 import FlexSpacer from 'components/FlexSpacer'
 import AvaButton from 'components/AvaButton'
 import { useNavigation } from '@react-navigation/native'
-import { StackNavigationProp } from '@react-navigation/stack'
-import { AddressBookStackParamList } from 'navigation/wallet/AddressBookStack'
 import ContactInput from 'screens/drawer/addressBook/components/ContactInput'
 import useAddressBook from 'screens/drawer/addressBook/useAddressBook'
 import { Contact } from 'Repo'
 import { v4 as uuidv4 } from 'uuid'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
+import { AddressBookScreenProps } from 'navigation/types'
+import AppNavigation from 'navigation/AppNavigation'
+
+type NavigationProp = AddressBookScreenProps<
+  typeof AppNavigation.AddressBook.Add
+>['navigation']
 
 const AddContact = () => {
-  const { goBack } =
-    useNavigation<StackNavigationProp<AddressBookStackParamList>>()
+  const { goBack } = useNavigation<NavigationProp>()
   const { onSave } = useAddressBook()
 
   const [title, setTitle] = useState('')

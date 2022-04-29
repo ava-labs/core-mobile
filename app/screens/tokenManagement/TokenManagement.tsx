@@ -21,8 +21,11 @@ import { getTokenUID } from 'utils/TokenTools'
 import SearchBar from 'components/SearchBar'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
-import { StackNavigationProp } from '@react-navigation/stack'
-import { RootStackParamList } from 'navigation/WalletScreenStack'
+import { WalletScreenProps } from 'navigation/types'
+
+type NavigationProp = WalletScreenProps<
+  typeof AppNavigation.Wallet.TokenManagement
+>['navigation']
 
 function TokenManagement(): JSX.Element {
   const {
@@ -34,7 +37,7 @@ function TokenManagement(): JSX.Element {
     loadTokenList
   } = useSearchableTokenList(false)
 
-  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>()
+  const navigation = useNavigation<NavigationProp>()
 
   function handleRefresh() {
     loadTokenList()

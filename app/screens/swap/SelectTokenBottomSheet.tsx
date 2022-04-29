@@ -1,4 +1,3 @@
-// @ts-nocheck TODO CP-1725: Fix Typescript Errors - React Navigation
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet'
 import { InteractionManager } from 'react-native'
@@ -8,12 +7,18 @@ import AvaxSheetHandle from 'components/AvaxSheetHandle'
 import TokenSelector from 'screens/send/TokenSelector'
 import AvaText from 'components/AvaText'
 import { TokenWithBalance } from '@avalabs/wallet-react-components'
+import { WalletScreenProps } from 'navigation/types'
+import AppNavigation from 'navigation/AppNavigation'
+
+type RouteProp = WalletScreenProps<
+  typeof AppNavigation.Modal.SelectToken
+>['route']
 
 function SelectTokenBottomSheet(): JSX.Element {
-  const navigation = useNavigation()
+  const { goBack } = useNavigation()
   const bottomSheetModalRef = useRef<BottomSheet>(null)
   const snapPoints = useMemo(() => ['0%', '90%'], [])
-  const route = useRoute()
+  const { params } = useRoute<RouteProp>()
 
   useEffect(() => {
     // intentionally setting delay so animation is visible.
@@ -24,12 +29,12 @@ function SelectTokenBottomSheet(): JSX.Element {
 
   function onTokenSelected(token: TokenWithBalance) {
     handleClose()
-    route.params.onTokenSelected(token)
+    params.onTokenSelected(token)
   }
 
   const handleClose = useCallback(() => {
     bottomSheetModalRef?.current?.close()
-    InteractionManager.runAfterInteractions(() => navigation.goBack())
+    InteractionManager.runAfterInteractions(() => goBack())
   }, [])
 
   const handleChange = useCallback(index => {

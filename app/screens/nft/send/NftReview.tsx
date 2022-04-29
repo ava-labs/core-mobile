@@ -14,8 +14,11 @@ import SendRow from 'components/SendRow'
 import { useGasPrice } from 'utils/GasPriceHook'
 import { useSendNFTContext } from 'contexts/SendNFTContext'
 import { useNavigation } from '@react-navigation/native'
-import { NFTStackParamList } from 'navigation/wallet/NFTScreenStack'
-import { StackNavigationProp } from '@react-navigation/stack'
+import { NFTDetailsSendScreenProps } from 'navigation/types'
+
+type NavigationProp = NFTDetailsSendScreenProps<
+  typeof AppNavigation.NftSend.Review
+>['navigation']
 
 export type NftReviewScreenProps = {
   onSuccess: (transactionId: string) => void
@@ -34,7 +37,7 @@ export default function NftReview({ onSuccess }: NftReviewScreenProps) {
     transactionId
   } = useSendNFTContext()
   const { theme } = useApplicationContext()
-  const { goBack } = useNavigation<StackNavigationProp<NFTStackParamList>>()
+  const { goBack, navigate } = useNavigation<NavigationProp>()
   const { gasPrice } = useGasPrice()
 
   const netFeeString = useMemo(() => {
@@ -111,12 +114,21 @@ export default function NftReview({ onSuccess }: NftReviewScreenProps) {
         <NetworkFeeSelector
           networkFeeAvax={netFeeString}
           networkFeeUsd={`${fees.sendFeeUsd?.toFixed(4)} USD`}
-          gasLimitEditorRoute={AppNavigation.Modal.EditGasLimit}
           gasPrice={gasPrice}
-          initGasLimit={fees.gasLimit || 0}
-          onCustomGasLimit={gasLimit => fees.setGasLimit(gasLimit)}
           onWeightedGas={price => fees.setCustomGasPriceNanoAvax(price.value)}
           weights={{ normal: 1, fast: 1.05, instant: 1.15, custom: 35 }}
+          onSettingsPressed={() => {
+            const initGasLimit = fees.gasLimit || 0
+
+            const onCustomGasLimit = (gasLimit: number) =>
+              fees.setGasLimit(gasLimit)
+
+            navigate(AppNavigation.Modal.EditGasLimit, {
+              gasLimit: initGasLimit.toString(),
+              networkFee: netFeeString,
+              onSave: onCustomGasLimit
+            })
+          }}
         />
         <Space y={18} />
         <Separator />

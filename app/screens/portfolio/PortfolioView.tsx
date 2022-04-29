@@ -11,14 +11,11 @@ import {
 } from '@avalabs/wallet-react-components'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 import AppNavigation from 'navigation/AppNavigation'
-import { StackNavigationProp } from '@react-navigation/stack'
-import { PortfolioStackParamList } from 'navigation/wallet/PortfolioScreenStack'
 import PortfolioListItem from 'screens/portfolio/components/PortfolioListItem'
 import ZeroState from 'components/ZeroState'
 import { usePortfolio } from 'screens/portfolio/usePortfolio'
 import { useSelectedTokenContext } from 'contexts/SelectedTokenContext'
 import { getTokenUID } from 'utils/TokenTools'
-import { RootStackParamList } from 'navigation/WalletScreenStack'
 import WatchlistCarrousel from 'screens/watchlist/components/WatchlistCarrousel'
 import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
@@ -28,6 +25,7 @@ import NftListView from 'screens/nft/NftListView'
 import { useNftLoader } from 'screens/nft/useNftLoader'
 import { Covalent } from '@avalabs/covalent-sdk'
 import Config from 'react-native-config'
+import { PortfolioScreenProps } from 'navigation/types'
 
 type PortfolioProps = {
   tokenList?: TokenWithBalance[]
@@ -36,9 +34,6 @@ type PortfolioProps = {
   hasZeroBalance?: boolean
   setSelectedToken?: (token: TokenWithBalance) => void
 }
-
-export type PortfolioNavigationProp =
-  StackNavigationProp<PortfolioStackParamList>
 
 // experimenting with container pattern and stable props to try to reduce re-renders
 function PortfolioContainer(): JSX.Element {
@@ -69,6 +64,10 @@ function PortfolioContainer(): JSX.Element {
   )
 }
 
+type PortfolioNavigationProp = PortfolioScreenProps<
+  typeof AppNavigation.Portfolio.Portfolio
+>['navigation']
+
 const PortfolioView: FC<PortfolioProps> = memo(
   ({
     tokenList,
@@ -77,31 +76,31 @@ const PortfolioView: FC<PortfolioProps> = memo(
     setSelectedToken
   }: PortfolioProps) => {
     const listRef = useRef<FlatList>(null)
-    const navigation = useNavigation<PortfolioNavigationProp>()
-    const rootNavigation =
-      useNavigation<StackNavigationProp<RootStackParamList>>()
+    const { navigate, addListener, removeListener } =
+      useNavigation<PortfolioNavigationProp>()
     const walletState = useWalletStateContext()
 
     useEffect(() => {
-      const unsubscribe = navigation.addListener('focus', () => {
+      const unsubscribe = addListener('focus', () => {
         loadZeroBalanceList?.()
       })
-      return () => navigation.removeListener('focus', unsubscribe)
-    }, [navigation])
+      return () => removeListener('focus', unsubscribe)
+    }, [addListener, removeListener])
 
     function selectToken(token: TokenWithBalance) {
       setSelectedToken?.(token)
-      rootNavigation.navigate(AppNavigation.Wallet.OwnedTokenDetail, {
+
+      navigate(AppNavigation.Wallet.OwnedTokenDetail, {
         tokenId: getTokenUID(token)
       })
     }
 
     function manageTokens() {
-      navigation.navigate(AppNavigation.Wallet.TokenManagement)
+      navigate(AppNavigation.Wallet.TokenManagement)
     }
 
     function viewAllWatchlist() {
-      navigation.navigate(AppNavigation.Tabs.Watchlist)
+      navigate(AppNavigation.Tabs.Watchlist)
     }
 
     const renderItem = (item: ListRenderItemInfo<TokenWithBalance>) => {
@@ -188,7 +187,7 @@ const PortfolioView: FC<PortfolioProps> = memo(
 const Ethereum = 1
 
 const NftListViewScreen = () => {
-  const { navigate } = useNavigation<StackNavigationProp<RootStackParamList>>()
+  const { navigate } = useNavigation<PortfolioNavigationProp>()
   const { parseNftCollections } = useNftLoader()
   const { activeAccount } = useAccountsContext()
   const { network } = useNetworkContext()!
@@ -209,7 +208,10 @@ const NftListViewScreen = () => {
   }, [network?.chainId, activeAccount?.wallet]) // adding parseNftCollections as dependency starts infinite loop
 
   const openNftDetails = (item: NFTItemData) => {
-    navigate(AppNavigation.Wallet.NFTDetails, { nft: item })
+    navigate(AppNavigation.Wallet.NFTDetails, {
+      screen: AppNavigation.Nft.Details,
+      params: { nft: item }
+    })
   }
   const openNftManage = () => {
     navigate(AppNavigation.Wallet.NFTManage)

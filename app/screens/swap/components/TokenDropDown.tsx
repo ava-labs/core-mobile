@@ -4,6 +4,7 @@ import { View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import {
+  TokenWithBalance,
   ERC20WithBalance,
   useWalletStateContext
 } from '@avalabs/wallet-react-components'
@@ -17,9 +18,16 @@ import { mustNumber } from 'utils/JsTools'
 interface TokenDropDownProps {
   type?: 'From' | 'To'
   error?: string
+  onOpenSelectToken: (
+    onTokenSelected: (token: TokenWithBalance) => void
+  ) => void
 }
 
-const TokenDropDown: FC<TokenDropDownProps> = ({ type, error }) => {
+const TokenDropDown: FC<TokenDropDownProps> = ({
+  type,
+  error,
+  onOpenSelectToken
+}) => {
   const context = useApplicationContext()
   const swapContext = useSwapContext()
   const { avaxToken, erc20Tokens } = useWalletStateContext()!
@@ -78,13 +86,13 @@ const TokenDropDown: FC<TokenDropDownProps> = ({ type, error }) => {
       </View>
       <Space y={4} />
       <TokenSelectAndAmount
-        initToken={selectedToken}
-        initAmount={amount.toString()}
-        onTokenSelect={token => setToken(token)}
+        selectedToken={selectedToken}
+        amount={amount.toString()}
+        maxEnabled={isFrom}
         onAmountSet={amount1 =>
           setAmount(mustNumber(() => Number.parseFloat(amount1), 0))
         }
-        maxEnabled={isFrom}
+        onOpenSelectToken={() => onOpenSelectToken(setToken)}
       />
       <Space y={8} />
       <View

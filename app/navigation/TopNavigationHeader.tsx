@@ -5,12 +5,15 @@ import { DrawerActions, useNavigation } from '@react-navigation/native'
 import MenuSVG from 'components/svg/MenuSVG'
 import AppNavigation from 'navigation/AppNavigation'
 import HeaderAccountSelector from 'components/HeaderAccountSelector'
-import { StackNavigationProp } from '@react-navigation/stack'
-import { RootStackParamList } from 'navigation/WalletScreenStack'
+import { DrawerScreenProps } from 'navigation/types'
 import QRCodeSVG from 'components/svg/QRCodeSVG'
 
+type NavigationProp = DrawerScreenProps<
+  typeof AppNavigation.Wallet.Tabs
+>['navigation']
+
 const TopNavigationHeader: FC = () => {
-  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>()
+  const navigation = useNavigation<NavigationProp>()
 
   return (
     <View

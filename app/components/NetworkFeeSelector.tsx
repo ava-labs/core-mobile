@@ -1,4 +1,3 @@
-// @ts-nocheck TODO CP-1725: Fix Typescript Errors - React Navigation
 import { Row } from 'components/Row'
 import AvaText from 'components/AvaText'
 import { TextInput, View } from 'react-native'
@@ -10,10 +9,7 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import InputText from 'components/InputText'
 import { Opacity50 } from 'resources/Constants'
 import { GasPrice } from 'utils/GasPriceHook'
-import { StackNavigationProp } from '@react-navigation/stack'
 import { mustNumber } from 'utils/JsTools'
-import { useNavigation } from '@react-navigation/native'
-import { RootStackParamList } from 'navigation/WalletScreenStack'
 import { bnToLocaleString, numberToBN } from '@avalabs/avalanche-wallet-sdk'
 
 enum FeePreset {
@@ -24,22 +20,18 @@ enum FeePreset {
 }
 
 const NetworkFeeSelector = ({
+  onSettingsPressed,
   networkFeeAvax,
   networkFeeUsd,
   gasPrice,
-  initGasLimit,
   onWeightedGas,
-  onCustomGasLimit,
-  gasLimitEditorRoute,
   weights
 }: {
+  onSettingsPressed: () => void
   networkFeeAvax: string
   networkFeeUsd: string
   gasPrice: GasPrice
-  initGasLimit: number
   onWeightedGas: (price: GasPrice) => void
-  onCustomGasLimit: (gasLimit: number) => void
-  gasLimitEditorRoute: string
   weights?: Weights
 }) => {
   const [customGasPrice, setCustomGasPrice] = useState('0')
@@ -77,23 +69,12 @@ const NetworkFeeSelector = ({
     }
   }, [gasPrice])
 
-  const { navigate } = useNavigation<StackNavigationProp<RootStackParamList>>()
-
   return (
     <>
       <Row>
         <AvaText.Body2>Network Fee</AvaText.Body2>
         <View style={{ position: 'absolute', right: 0, top: -8 }}>
-          <AvaButton.Icon
-            onPress={() => {
-              navigate(gasLimitEditorRoute, {
-                gasLimit: initGasLimit.toString(),
-                networkFee: networkFeeAvax,
-                onSave: (customGasLimit: number) => {
-                  onCustomGasLimit(customGasLimit)
-                }
-              })
-            }}>
+          <AvaButton.Icon onPress={onSettingsPressed}>
             <SettingsCogSVG />
           </AvaButton.Icon>
         </View>

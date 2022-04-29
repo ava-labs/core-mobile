@@ -3,10 +3,14 @@ import AvaListItem from 'components/AvaListItem'
 import CarrotSVG from 'components/svg/CarrotSVG'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation } from '@react-navigation/native'
-import { NativeStackNavigatorProps } from 'react-native-screens/lib/typescript/native-stack/types'
+import { WalletScreenProps } from 'navigation/types'
+
+type NavigationProp = WalletScreenProps<
+  typeof AppNavigation.Wallet.Drawer
+>['navigation']
 
 const SecurityItem = () => {
-  const navigation = useNavigation<NativeStackNavigatorProps>()
+  const navigation = useNavigation<NavigationProp>()
 
   return (
     <AvaListItem.Base
@@ -16,7 +20,7 @@ const SecurityItem = () => {
       rightComponent={<CarrotSVG />}
       rightComponentVerticalAlignment={'center'}
       onPress={() => {
-        navigation?.navigate(AppNavigation.Wallet.SecurityPrivacy)
+        navigation.navigate(AppNavigation.Wallet.SecurityPrivacy)
       }}
     />
   )

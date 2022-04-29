@@ -9,25 +9,39 @@ import TokenDropDown from 'screens/swap/components/TokenDropDown'
 import SwapTransactionDetail from 'screens/swap/components/SwapTransactionDetails'
 import { useSwapContext } from 'contexts/SwapContext'
 import { useNavigation } from '@react-navigation/native'
+import { TokenWithBalance } from '@avalabs/wallet-react-components'
 import AppNavigation from 'navigation/AppNavigation'
-import { StackNavigationProp } from '@react-navigation/stack'
-import { SwapStackParamList } from 'navigation/wallet/SwapScreenStack'
+import { SwapScreenProps } from 'navigation/types'
 import {
   FUJI_NETWORK,
   useNetworkContext
 } from '@avalabs/wallet-react-components'
 import ZeroState from 'components/ZeroState'
 
+type NavigationProp = SwapScreenProps<
+  typeof AppNavigation.Swap.Swap
+>['navigation']
+
 export default function SwapView() {
   const { theme } = useApplicationContext()
   const { swapFromTo, swapFrom, swapTo, error } = useSwapContext()
   const networkContext = useNetworkContext()
-  const navigation = useNavigation<StackNavigationProp<SwapStackParamList>>()
+  const { navigate } = useNavigation<NavigationProp>()
 
   const reviewButtonDisabled = !swapTo.amount || !swapFrom.amount
 
-  function confirm() {
-    navigation.navigate(AppNavigation.Swap.Review)
+  const confirm = () => {
+    navigate(AppNavigation.Swap.Review)
+  }
+
+  const onOpenSelectToken = (
+    onTokenSelected: (token: TokenWithBalance) => void
+  ) => {
+    navigate(AppNavigation.Modal.SelectToken, {
+      onTokenSelected: (token: TokenWithBalance) => {
+        onTokenSelected(token)
+      }
+    })
   }
 
   return (
@@ -41,7 +55,11 @@ export default function SwapView() {
         ) : (
           <>
             <Space y={20} />
-            <TokenDropDown type={'From'} error={error} />
+            <TokenDropDown
+              type={'From'}
+              error={error}
+              onOpenSelectToken={onOpenSelectToken}
+            />
             <Space y={20} />
             <AvaButton.Base
               onPress={swapFromTo}
@@ -57,7 +75,7 @@ export default function SwapView() {
               }}>
               <SwapNarrowSVG />
             </AvaButton.Base>
-            <TokenDropDown type={'To'} />
+            <TokenDropDown type={'To'} onOpenSelectToken={onOpenSelectToken} />
             <SwapTransactionDetail />
           </>
         )}

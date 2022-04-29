@@ -1,8 +1,5 @@
-// @ts-nocheck TODO CP-1728: Fix Typescript Errors - Activity Details/Transactions
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Animated, RefreshControl, View } from 'react-native'
-import { useNavigation } from '@react-navigation/native'
-import AppNavigation from 'navigation/AppNavigation'
 import AvaText from 'components/AvaText'
 import Loader from 'components/Loader'
 import {
@@ -15,11 +12,13 @@ import {
 import moment from 'moment'
 import { ScrollView } from 'react-native-gesture-handler'
 import ActivityListItem from 'screens/activity/ActivityListItem'
-import { StackNavigationProp } from '@react-navigation/stack'
-import { RootStackParamList } from 'navigation/WalletScreenStack'
-import { BridgeTransaction, useBridgeContext } from 'contexts/BridgeContext'
+import { useBridgeContext } from 'contexts/BridgeContext'
 import { Blockchain, useBridgeSDK } from '@avalabs/bridge-sdk'
-import BridgeTransactionItem from 'screens/bridge/components/BridgeTransactionItem'
+import BridgeTransactionItem, {
+  TransactionBridgeItem
+} from 'screens/bridge/components/BridgeTransactionItem'
+import { BridgeTransactionStatusParams } from 'navigation/types'
+import useInAppBrowser from 'hooks/useInAppBrowser'
 
 const DISPLAY_FORMAT_CURRENT_YEAR = 'MMMM DD'
 const DISPLAY_FORMAT_PAST_YEAR = 'MMMM DD, YYYY'
@@ -27,25 +26,33 @@ const DISPLAY_FORMAT_PAST_YEAR = 'MMMM DD, YYYY'
 interface Props {
   embedded?: boolean
   tokenSymbolFilter?: string
+  openTransactionDetails: (item: TransactionNormal | TransactionERC20) => void
+  openTransactionStatus: (params: BridgeTransactionStatusParams) => void
 }
 
-export type TxType = TransactionNormal | TransactionERC20 | BridgeTransaction
+type TxType = TransactionNormal | TransactionERC20 | TransactionBridgeItem
+
 const TODAY = moment()
 const YESTERDAY = moment().subtract(1, 'days')
 type SectionType = { [x: string]: TxType[] }
 
-function ActivityList({ embedded, tokenSymbolFilter }: Props) {
+function ActivityList({
+  embedded,
+  tokenSymbolFilter,
+  openTransactionDetails,
+  openTransactionStatus
+}: Props) {
   const [loading, setLoading] = useState(true)
-  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>()
   const wallet = useWalletContext()?.wallet
   const { network } = useNetworkContext()!
+  const { openUrl } = useInAppBrowser()
   const [allHistory, setAllHistory] =
     useState<(TransactionNormal | TransactionERC20)[]>()
   const { bridgeTransactions } = useBridgeContext()
   const { bridgeAssets } = useBridgeSDK()
 
   const isTransactionBridge = useCallback(
-    tx => {
+    (tx): tx is TransactionBridgeItem => {
       if (bridgeAssets) {
         return (
           Object.values(bridgeAssets).filter(
@@ -139,12 +146,6 @@ function ActivityList({ embedded, tokenSymbolFilter }: Props) {
     setLoading(false)
   }
 
-  const openTransactionDetails = useCallback((item: TxType) => {
-    return navigation.navigate(AppNavigation.Wallet.ActivityDetail, {
-      tx: item
-    })
-  }, [])
-
   const renderItems = () => {
     const items = Object.entries(sectionData).map(key => {
       return (
@@ -160,16 +161,36 @@ function ActivityList({ embedded, tokenSymbolFilter }: Props) {
             <AvaText.ActivityTotal>{key[0]}</AvaText.ActivityTotal>
           </Animated.View>
           {key[1].map((item: TxType, index) => {
-            if ('requiredConfirmationCount' in item) {
-              if (isTransactionBridge(item)) {
-                return (
-                  <BridgeTransactionItem
-                    key={`${item.sourceTxHash}-${item.targetTxHash}-${index}`}
-                    item={item}
-                    onPress={() => openTransactionDetails(item)}
-                  />
-                )
-              }
+            if (
+              isTransactionBridge(item) ||
+              'requiredConfirmationCount' in item
+            ) {
+              const pending = 'complete' in item && !item.complete
+              const itemKey =
+                'sourceTxHash' in item && 'targetTxHash' in item
+                  ? `${item.sourceTxHash}-${item.targetTxHash}-${index}`
+                  : `${index}`
+
+              return (
+                <BridgeTransactionItem
+                  key={itemKey}
+                  item={item}
+                  pending={pending}
+                  onPress={() => {
+                    if (pending) {
+                      openTransactionStatus({
+                        blockchain: item.sourceNetwork,
+                        txHash: item.sourceTxHash || '',
+                        txTimestamp: item.createdAt
+                          ? Date.parse(item.createdAt.toString()).toString()
+                          : Date.now().toString()
+                      })
+                    } else if ('explorerLink' in item && item.explorerLink) {
+                      openUrl(item.explorerLink).then()
+                    }
+                  }}
+                />
+              )
             } else {
               return (
                 <ActivityListItem

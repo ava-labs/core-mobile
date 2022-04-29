@@ -1,9 +1,16 @@
+import { NavigatorScreenParams } from '@react-navigation/native'
 import DrawerView from 'screens/drawer/DrawerView'
 import AppNavigation from 'navigation/AppNavigation'
-import TabNavigator from 'navigation/wallet/TabNavigator'
+import TabNavigator, {
+  TabNavigatorParamList
+} from 'navigation/wallet/TabNavigator'
 import React from 'react'
 import { createDrawerNavigator } from '@react-navigation/drawer'
 import TopNavigationHeader from 'navigation/TopNavigationHeader'
+
+export type DrawerParamList = {
+  [AppNavigation.Wallet.Tabs]: NavigatorScreenParams<TabNavigatorParamList>
+}
 
 const DrawerStack = createDrawerNavigator()
 
