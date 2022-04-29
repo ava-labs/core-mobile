@@ -371,6 +371,15 @@ export function useRepo(): Repo {
         rpcUrl: 'thisistherpcurl.com',
         explorerUrl: 'thisisanexplorerurl.com',
         nativeToken: 'BTC'
+      },
+      Ethereum: {
+        name: 'Ethereum',
+        isFavorite: false,
+        isTest: false,
+        chainId: '123',
+        rpcUrl: 'thisistherpcurl.com',
+        explorerUrl: 'thisisanexplorerurl.com',
+        nativeToken: 'ETH'
       }
     })
   }

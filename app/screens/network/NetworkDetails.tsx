@@ -20,7 +20,7 @@ export default function NetworkDetails({ network }: Props) {
 
   function connect() {
     //TODO
-    ShowSnackBar('TBD')
+    ShowSnackBar('Connect')
     // if (networkName === networkContext?.network?.name) {
     //   return
     // }

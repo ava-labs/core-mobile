@@ -25,9 +25,14 @@ interface Props<ItemT> {
   width: number
   alignment?: 'flex-start' | 'flex-end' | 'center'
   preselectedIndex?: number
-  optionsRenderItem?: (item: ListRenderItemInfo<ItemT>) => React.ReactNode
-  onItemSelected?: (selectedItem: ItemT) => void
+  optionsRenderItem?: (item: OptionsItemInfo<ItemT>) => React.ReactNode
+  onItemSelected: (selectedItem: ItemT) => boolean | void
   disabled?: boolean
+}
+
+interface OptionsItemInfo<ItemT> {
+  item: ItemT
+  isSelected: boolean
 }
 
 /**
@@ -39,7 +44,7 @@ interface Props<ItemT> {
  * @param selectionRenderItem Component to be rendered for selected option
  * @param preselectedIndex Set which item from data shoul be pre-selected
  * @param optionsRenderItem Render item for dropdown options
- * @param onItemSelected On selected option callback
+ * @param onItemSelected On selected option callback. Callback should return false if item should not be selectable.
  * @param width Set this to max width of rendered items
  * @param alignment How should dropdown options be aligned relative to selected option.
  * @param disabled if set to true, dropdown won't show anything
@@ -93,8 +98,9 @@ function DropDown<ItemT>({
     return (
       <AvaButton.Base
         onPress={() => {
-          setSelectedItem(item.item)
-          onItemSelected?.(item.item)
+          if (onItemSelected(item.item) !== false) {
+            setSelectedItem(item.item)
+          }
           ref?.current?.hide()
           setIsFilterOpen(!isFilterOpen)
         }}>
@@ -122,12 +128,16 @@ function DropDown<ItemT>({
     return (
       <Pressable
         onPress={() => {
-          setSelectedItem(item.item)
-          onItemSelected?.(item.item)
+          if (onItemSelected(item.item) !== false) {
+            setSelectedItem(item.item)
+          }
           ref?.current?.hide()
           setIsFilterOpen(!isFilterOpen)
         }}>
-        {optionsRenderItem?.(item)}
+        {optionsRenderItem?.({
+          item: item.item,
+          isSelected: selectedItem === item.item
+        })}
       </Pressable>
     )
   }

@@ -8,8 +8,7 @@ import ZeroState from 'components/ZeroState'
 import { NetworkListItem } from 'screens/network/NetworkListItem'
 import { Network } from 'repository/NetworksRepo'
 import { ShowSnackBar } from 'components/Snackbar'
-import Avatar from 'components/Avatar'
-import { AVAX_TOKEN } from '@avalabs/wallet-react-components'
+import { getIcon } from 'screens/network/NetworkIconSelector'
 
 type Props = {
   onShowInfo: (network: Network) => void
@@ -20,7 +19,7 @@ export default function NetworkManager({ onShowInfo }: Props) {
   const [searchText, setSearchText] = useState('')
   const { networks, setFavorite, unsetFavorite } = repo.networksRepo
 
-  const nonTestnets = useMemo(
+  const mainNets = useMemo(
     () =>
       Object.values(networks)
         .filter(network => !network.isTest)
@@ -29,7 +28,7 @@ export default function NetworkManager({ onShowInfo }: Props) {
         ),
     [networks, searchText]
   )
-  const testnets = useMemo(
+  const testNets = useMemo(
     () =>
       Object.values(networks)
         .filter(network => network.isTest)
@@ -76,7 +75,7 @@ export default function NetworkManager({ onShowInfo }: Props) {
 
   function connect(networkName: string) {
     //TODO
-    ShowSnackBar('TBD connect')
+    ShowSnackBar('Will connect to ' + networkName)
   }
 
   return (
@@ -96,7 +95,7 @@ export default function NetworkManager({ onShowInfo }: Props) {
               <NetworkListItem
                 onPress={connect}
                 networkName={info.item.name}
-                icon={<Avatar.Token token={AVAX_TOKEN} />} //TODO: set real url
+                icon={getIcon(info.item.name, 32)} //TODO: set real url
                 isFavorite={info.item.isFavorite}
                 onFavorite={toggleFavorite}
                 onInfo={showInfo}
@@ -113,12 +112,12 @@ export default function NetworkManager({ onShowInfo }: Props) {
         </TabViewAva.Item>
         <TabViewAva.Item title={'Networks'}>
           <FlatList
-            data={nonTestnets}
+            data={mainNets}
             renderItem={info => (
               <NetworkListItem
                 onPress={connect}
                 networkName={info.item.name}
-                icon={<Avatar.Token token={AVAX_TOKEN} />} //TODO: set real url
+                icon={getIcon(info.item.name, 32)} //TODO: set real url
                 isFavorite={info.item.isFavorite}
                 onFavorite={toggleFavorite}
                 onInfo={showInfo}
@@ -135,12 +134,12 @@ export default function NetworkManager({ onShowInfo }: Props) {
         </TabViewAva.Item>
         <TabViewAva.Item title={'Testnets'}>
           <FlatList
-            data={testnets}
+            data={testNets}
             renderItem={info => (
               <NetworkListItem
                 onPress={connect}
                 networkName={info.item.name}
-                icon={<Avatar.Token token={AVAX_TOKEN} />} //TODO: set real url
+                icon={getIcon(info.item.name, 32)} //TODO: set real url
                 isFavorite={info.item.isFavorite}
                 onFavorite={toggleFavorite}
                 onInfo={showInfo}
