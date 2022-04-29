@@ -2,27 +2,37 @@ import AppNavigation from 'navigation/AppNavigation'
 import React from 'react'
 import Welcome from 'screens/onboarding/Welcome'
 import { noop } from 'rxjs'
-import CreateWalletStack from 'navigation/onboarding/CreateWalletStack'
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin'
-import EnterWithMnemonicStack from 'navigation/onboarding/EnterWithMnemonicStack'
 import {
-  createStackNavigator,
-  StackNavigationProp
-} from '@react-navigation/stack'
+  useNavigation,
+  useRoute,
+  NavigatorScreenParams
+} from '@react-navigation/native'
+import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin'
+import { createStackNavigator } from '@react-navigation/stack'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AnalyticsConsent from 'screens/onboarding/AnalyticsConsent'
 import { MainHeaderOptions } from 'navigation/NavUtils'
+import { WelcomeScreenProps } from '../types'
+import CreateWalletStack, {
+  CreateWalletStackParamList
+} from './CreateWalletStack'
+import EnterWithMnemonicStack, {
+  EnterWithMnemonicStackParamList
+} from './EnterWithMnemonicStack'
 
-type WelcomeScreenStackParamList = {
+export type WelcomeScreenStackParamList = {
   [AppNavigation.Onboard.Welcome]: undefined
   [AppNavigation.Onboard.AnalyticsConsent]: {
     nextScreen:
       | typeof AppNavigation.Onboard.CreateWalletStack
       | typeof AppNavigation.Onboard.EnterWithMnemonicStack
   }
-  [AppNavigation.Onboard.CreateWalletStack]: undefined
-  [AppNavigation.Onboard.EnterWithMnemonicStack]: undefined
+  [AppNavigation.Onboard.CreateWalletStack]:
+    | NavigatorScreenParams<CreateWalletStackParamList>
+    | undefined
+  [AppNavigation.Onboard.EnterWithMnemonicStack]:
+    | NavigatorScreenParams<EnterWithMnemonicStackParamList>
+    | undefined
   [AppNavigation.Onboard.Login]: undefined
 }
 const WelcomeScreenS = createStackNavigator<WelcomeScreenStackParamList>()
@@ -54,9 +64,12 @@ const WelcomeScreenStack: () => JSX.Element = () => (
   </WelcomeScreenS.Navigator>
 )
 
+type WelcomeScreenNavigationProp = WelcomeScreenProps<
+  typeof AppNavigation.Onboard.Welcome
+>['navigation']
+
 const WelcomeScreen = () => {
-  const { navigate } =
-    useNavigation<StackNavigationProp<WelcomeScreenStackParamList>>()
+  const { navigate } = useNavigation<WelcomeScreenNavigationProp>()
   return (
     <Welcome
       onAlreadyHaveWallet={() =>
@@ -87,16 +100,14 @@ const LoginWithPinOrBiometryScreen = () => {
   )
 }
 
+type AnalyticsConsentScreenProps = WelcomeScreenProps<
+  typeof AppNavigation.Onboard.AnalyticsConsent
+>
+
 const AnalyticsConsentScreen = () => {
   const { goBack, navigate } =
-    useNavigation<StackNavigationProp<WelcomeScreenStackParamList>>()
-  const { params } =
-    useRoute<
-      RouteProp<
-        WelcomeScreenStackParamList,
-        typeof AppNavigation.Onboard.AnalyticsConsent
-      >
-    >()
+    useNavigation<AnalyticsConsentScreenProps['navigation']>()
+  const { params } = useRoute<AnalyticsConsentScreenProps['route']>()
 
   return (
     <AnalyticsConsent

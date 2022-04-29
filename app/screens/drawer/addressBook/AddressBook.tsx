@@ -5,14 +5,16 @@ import { FlatList, ListRenderItemInfo } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AddressBookItem from 'components/addressBook/AddressBookItem'
 import { useNavigation } from '@react-navigation/native'
-import { StackNavigationProp } from '@react-navigation/stack'
-import { AddressBookStackParamList } from 'navigation/wallet/AddressBookStack'
 import AppNavigation from 'navigation/AppNavigation'
+import { AddressBookScreenProps } from 'navigation/types'
 import { Contact } from 'Repo'
 
+type NavigationProp = AddressBookScreenProps<
+  typeof AppNavigation.AddressBook.List
+>['navigation']
+
 const AddressBook = () => {
-  const { navigate } =
-    useNavigation<StackNavigationProp<AddressBookStackParamList>>()
+  const { navigate } = useNavigation<NavigationProp>()
   const { addressBook } = useApplicationContext().repo.addressBookRepo
   const [searchFilter, setSearchFilter] = useState('')
 

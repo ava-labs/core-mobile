@@ -3,16 +3,17 @@ import { StyleSheet, View } from 'react-native'
 import AvaButton from 'components/AvaButton'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
+import { useNavigation, useRoute } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
-import { StackNavigationProp } from '@react-navigation/stack'
-import { SwapStackParamList } from 'navigation/wallet/SwapScreenStack'
+import { SwapScreenProps } from 'navigation/types'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 
+type ScreenProps = SwapScreenProps<typeof AppNavigation.Swap.Fail>
+
 export default function FailScreen(): JSX.Element {
-  const { navigate } = useNavigation<StackNavigationProp<SwapStackParamList>>()
+  const { navigate } = useNavigation<ScreenProps['navigation']>()
   const { theme } = useApplicationContext()
-  const errorMsg = useRoute<RouteProp<SwapStackParamList>>()?.params?.errorMsg
+  const { errorMsg } = useRoute<ScreenProps['route']>().params
 
   function onClose() {
     navigate(AppNavigation.Swap.Swap)

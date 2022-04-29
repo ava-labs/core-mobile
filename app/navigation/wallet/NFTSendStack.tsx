@@ -1,16 +1,14 @@
 import React from 'react'
 import AppNavigation from 'navigation/AppNavigation'
-import {
-  createStackNavigator,
-  StackNavigationProp
-} from '@react-navigation/stack'
-import { NFTItemData } from 'screens/nft/NftCollection'
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { NFTStackParamList } from 'navigation/wallet/NFTScreenStack'
+import { createStackNavigator } from '@react-navigation/stack'
+import { useNavigation, useRoute } from '@react-navigation/native'
 import NftSend from 'screens/nft/send/NftSend'
 import NftReview from 'screens/nft/send/NftReview'
 import { SendNFTContextProvider } from 'contexts/SendNFTContext'
-import { RootStackParamList } from 'navigation/WalletScreenStack'
+import {
+  NFTDetailsScreenProps,
+  NFTDetailsSendScreenProps
+} from 'navigation/types'
 import DoneScreen from 'screens/send/DoneScreen'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
@@ -19,18 +17,19 @@ export type NFTSendStackParamList = {
   [AppNavigation.NftSend.AddressPick]: undefined
   [AppNavigation.NftSend.Review]: undefined
   [AppNavigation.NftSend.Success]: { transactionId: string }
-  [AppNavigation.NftSend.Fail]: undefined
 }
 
 const NFTSendStack = createStackNavigator<NFTSendStackParamList>()
 
-export default function NFTSendScreenStack() {
-  const { params } =
-    useRoute<RouteProp<NFTStackParamList, typeof AppNavigation.Nft.Send>>()
-  const item = params?.nft as NFTItemData
+type NFTSendScreenProp = NFTDetailsScreenProps<typeof AppNavigation.Nft.Send>
 
+export default function NFTSendScreenStack() {
+  const { params } = useRoute<NFTSendScreenProp['route']>()
+  const item = 'nft' in params ? params.nft : undefined
   const { sendBlocked } = usePosthogContext()
-  const { goBack } = useNavigation<StackNavigationProp<NFTStackParamList>>()
+  const { goBack } = useNavigation<NFTSendScreenProp['navigation']>()
+
+  if (item === undefined) return null
 
   return (
     <SendNFTContextProvider nft={item}>
@@ -67,18 +66,24 @@ export default function NFTSendScreenStack() {
   )
 }
 
+type AddressPickNavigationProp = NFTDetailsSendScreenProps<
+  typeof AppNavigation.NftSend.AddressPick
+>['navigation']
+
 const NftSendScreen = () => {
-  const { navigate } =
-    useNavigation<StackNavigationProp<NFTSendStackParamList>>()
+  const { navigate } = useNavigation<AddressPickNavigationProp>()
   const showReviewScreen = () => {
     navigate(AppNavigation.NftSend.Review)
   }
   return <NftSend onNext={showReviewScreen} />
 }
 
+type ReviewNavigationProp = NFTDetailsSendScreenProps<
+  typeof AppNavigation.NftSend.Review
+>['navigation']
+
 const NftReviewScreen = () => {
-  const { popToTop, replace } =
-    useNavigation<StackNavigationProp<NFTSendStackParamList>>()
+  const { popToTop, replace } = useNavigation<ReviewNavigationProp>()
   const showSuccessScreen = (transactionId: string) => {
     popToTop()
     replace(AppNavigation.NftSend.Success, { transactionId })
@@ -86,11 +91,14 @@ const NftReviewScreen = () => {
   return <NftReview onSuccess={showSuccessScreen} />
 }
 
-const SuccessScreen = () => {
-  const { goBack } = useNavigation<StackNavigationProp<RootStackParamList>>()
+type SuccessScreenProp = NFTDetailsSendScreenProps<
+  typeof AppNavigation.NftSend.Success
+>
 
-  const transactionId =
-    useRoute<RouteProp<NFTSendStackParamList>>()!.params!.transactionId!
+const SuccessScreen = () => {
+  const { goBack } = useNavigation<SuccessScreenProp['navigation']>()
+
+  const { transactionId } = useRoute<SuccessScreenProp['route']>().params
 
   return <DoneScreen onClose={() => goBack()} transactionId={transactionId} />
 }

@@ -18,22 +18,26 @@ import {
 import AddSVG from 'components/svg/AddSVG'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
-import { StackNavigationProp } from '@react-navigation/stack'
 import { CG_AVAX_TOKEN_ID } from 'screens/watchlist/WatchlistView'
 import MarketMovement from 'screens/watchlist/components/MarketMovement'
 import { Opacity85 } from 'resources/Constants'
 import { ChartData } from 'repository/CoingeckoRepo'
+import { PortfolioScreenProps } from 'navigation/types'
 
 interface Props {
   style?: StyleProp<View>
 }
+
+type NavigationProp = PortfolioScreenProps<
+  typeof AppNavigation.Portfolio.Portfolio
+>['navigation']
 
 const WatchlistCarrousel: FC<Props> = () => {
   const { theme, repo } = useApplicationContext()
   // @ts-ignore avaxToken, erc20Tokens exist in walletContext
   const { avaxToken, erc20Tokens } = useWalletStateContext()
   const { watchlistFavorites } = repo.watchlistFavoritesRepo
-  const navigation = useNavigation<StackNavigationProp<any>>()
+  const navigation = useNavigation<NavigationProp>()
 
   const favoriteTokens = useMemo(
     () =>

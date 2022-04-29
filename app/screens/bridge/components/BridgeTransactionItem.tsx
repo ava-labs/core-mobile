@@ -1,4 +1,3 @@
-// @ts-nocheck TODO CP-1725: Fix Typescript Errors - React Navigation
 import React, { FC, useEffect } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import {
@@ -23,47 +22,48 @@ import AvaListItem from 'components/AvaListItem'
 import BridgeSVG from 'components/svg/BridgeSVG'
 import { Opacity10 } from 'resources/Constants'
 import { StyleSheet, View } from 'react-native'
-import AppNavigation from 'navigation/AppNavigation'
-import { useNavigation } from '@react-navigation/native'
 import Spinner from 'components/Spinner'
 import LinkSVG from 'components/svg/LinkSVG'
 import { Space } from 'components/Space'
-import useInAppBrowser from 'hooks/useInAppBrowser'
 
-type TransactionBridgeItem = BridgeTransaction &
-  TransactionNormal &
-  TransactionDetails
+// when state is pending, transaction has type BridgeTransaction
+// when transaction is complete, transaction has type TransactionNormal & TransactionDetails
+export type TransactionBridgeItem =
+  | BridgeTransaction
+  | (TransactionNormal & TransactionDetails)
 
 interface BridgeTransactionItemProps {
   item: TransactionBridgeItem
   onPress: () => void
+  pending: boolean
 }
 
-const BridgeTransactionItem: FC<BridgeTransactionItemProps> = ({ item }) => {
+const BridgeTransactionItem: FC<BridgeTransactionItemProps> = ({
+  item,
+  onPress,
+  pending
+}) => {
   const theme = useApplicationContext().theme
   const fromAvalancheToEthereum =
-    item.sourceNetwork === Blockchain.AVALANCHE ||
-    item.to === '0x0000000000000000000000000000000000000000'
+    ('sourceNetwork' in item && item.sourceNetwork === Blockchain.AVALANCHE) ||
+    ('to' in item && item.to === '0x0000000000000000000000000000000000000000')
   const { network } = useNetworkContext() || {}
   const { config } = useBridgeConfig()
   const { removeBridgeTransaction } = useBridgeContext()
   const { addresses } = useWalletStateContext() || {}
   const { transactionDetails, bridgeAssets, setTransactionDetails } =
     useBridgeSDK()
-  const navigation = useNavigation()
-  const { openUrl } = useInAppBrowser()
+
   let fallbackRunning = false
 
-  const pending = 'complete' in item && !item.complete
-
   const txProps: TrackerViewProps | undefined =
-    pending && item?.sourceTxHash
+    pending && 'sourceTxHash' in item && item.sourceTxHash
       ? // @TODO: breaking rules of hook.. useTxTracker should prob not be a hook
         // eslint-disable-next-line react-hooks/rules-of-hooks
         useTxTracker(
           item.sourceNetwork,
           item.sourceTxHash,
-          item.timeStamp,
+          item.createdAt?.toString() || '',
           getAvalancheProvider(network),
           getEthereumProvider(network),
           setTransactionDetails,
@@ -107,15 +107,15 @@ const BridgeTransactionItem: FC<BridgeTransactionItemProps> = ({ item }) => {
     }
   }, [txProps?.complete, txProps?.confirmationCount])
 
-  function openTransactionStatus() {
-    navigation.navigate(AppNavigation.Bridge.BridgeTransactionStatus, {
-      blockchain: item.sourceNetwork,
-      txHash: item.sourceTxHash,
-      txTimestamp: item.createdAt
-        ? Date.parse(item.createdAt.toString())
-        : item.timestamp || item.timeStamp || Date.now().toString()
-    })
-  }
+  const amount =
+    (pending
+      ? item.amount?.toString()
+      : 'amountDisplayValue' in item && item.amountDisplayValue) || ''
+
+  const symbol =
+    (pending
+      ? 'symbol' in item && item.symbol
+      : 'tokenSymbol' in item && item.tokenSymbol) || ''
 
   return (
     <AvaListItem.Base
@@ -144,10 +144,9 @@ const BridgeTransactionItem: FC<BridgeTransactionItemProps> = ({ item }) => {
       rightComponent={
         <View style={{ justifyContent: 'center', alignItems: 'flex-end' }}>
           <AvaText.ActivityTotal ellipsizeMode={'tail'}>
-            {pending ? item.amount.toString() : item.amountDisplayValue}{' '}
-            {pending ? item.symbol : item.tokenSymbol}
+            {amount} {symbol}
           </AvaText.ActivityTotal>
-          {item.explorerLink && (
+          {'explorerLink' in item && item.explorerLink && (
             <>
               <Space y={8} />
               <LinkSVG color={theme.white} />
@@ -156,13 +155,7 @@ const BridgeTransactionItem: FC<BridgeTransactionItemProps> = ({ item }) => {
         </View>
       }
       embedInCard
-      onPress={() => {
-        if (pending) {
-          openTransactionStatus()
-        } else if (item.explorerLink) {
-          openUrl(item.explorerLink).then()
-        }
-      }}
+      onPress={onPress}
     />
   )
 }

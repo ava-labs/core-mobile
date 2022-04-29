@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useLayoutEffect, useState } from 'react'
+import React, { useEffect, useLayoutEffect, useState } from 'react'
 import {
   ActivityIndicator,
   Dimensions,
@@ -13,10 +13,9 @@ import Avatar from 'components/Avatar'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import TabViewAva from 'components/TabViewAva'
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
+import { useNavigation, useRoute } from '@react-navigation/native'
 import StarSVG from 'components/svg/StarSVG'
-import { RootStackParamList } from 'navigation/WalletScreenStack'
-import { StackNavigationProp } from '@react-navigation/stack'
+import { WalletScreenProps } from 'navigation/types'
 import ChartSelector, {
   ChartType
 } from 'screens/watchlist/components/ChartSelector'
@@ -37,20 +36,18 @@ import TokenAddress from 'components/TokenAddress'
 import AppNavigation from 'navigation/AppNavigation'
 import { formatLargeNumber } from 'utils/Utils'
 
-const WIDOW_WIDTH = Dimensions.get('window').width
+const WINDOW_WIDTH = Dimensions.get('window').width
 
-const TokenDetail: FC<any> = () => {
+type ScreenProps = WalletScreenProps<typeof AppNavigation.Wallet.TokenDetail>
+
+const TokenDetail = () => {
   const { theme, appHook } = useApplicationContext()
   const { saveViewOnceInformation, infoHasBeenShown, viewOnceInfo } =
     useApplicationContext().repo.informationViewOnceRepo
   const [showLineChart, setShowLineChart] = useState(true)
-  const { setOptions } =
-    useNavigation<StackNavigationProp<RootStackParamList>>()
+  const { setOptions } = useNavigation<ScreenProps['navigation']>()
   const [showChartInstruction, setShowChartInstruction] = useState(false)
-  const tokenAddress =
-    useRoute<
-      RouteProp<RootStackParamList, typeof AppNavigation.Wallet.TokenDetail>
-    >().params.address
+  const tokenAddress = useRoute<ScreenProps['route']>().params.address
   const {
     isFavorite,
     openMoonPay,
@@ -223,7 +220,7 @@ const TokenDetail: FC<any> = () => {
                 yRange={[ranges.minPrice, ranges.maxPrice]}
                 xRange={[ranges.minDate, ranges.maxDate]}
                 negative={ranges.diffValue < 0}
-                width={WIDOW_WIDTH - 32} // padding
+                width={WINDOW_WIDTH - 32} // padding
                 height={120}
               />
               <AvaText.Caption

@@ -11,17 +11,15 @@ import { useNavigation } from '@react-navigation/native'
 import CheckMnemonic from 'screens/onboarding/CheckMnemonic'
 import CreatePIN from 'screens/onboarding/CreatePIN'
 import BiometricLogin from 'screens/onboarding/BiometricLogin'
-import {
-  createStackNavigator,
-  StackNavigationProp
-} from '@react-navigation/stack'
+import { createStackNavigator } from '@react-navigation/stack'
 import { MainHeaderOptions } from 'navigation/NavUtils'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import WarningModal from 'components/WarningModal'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import TermsNConditionsModal from 'components/TermsNConditionsModal'
+import { CreateWalletScreenProps } from '../types'
 
-type CreateWalletStackParamList = {
+export type CreateWalletStackParamList = {
   [AppNavigation.CreateWallet.CreateWallet]: undefined
   [AppNavigation.CreateWallet.ProtectFunds]: undefined
   [AppNavigation.CreateWallet.CheckMnemonic]: undefined
@@ -77,10 +75,14 @@ const CreateWalletStack: () => JSX.Element = () => {
   )
 }
 
+type CreateWalletNavigationProp = CreateWalletScreenProps<
+  typeof AppNavigation.CreateWallet.CreateWallet
+>['navigation']
+
 const CreateWalletScreen = () => {
   const createWalletContext = useContext(CreateWalletContext)
   const { navigate, addListener, removeListener } =
-    useNavigation<StackNavigationProp<CreateWalletStackParamList>>()
+    useNavigation<CreateWalletNavigationProp>()
   const { capture } = usePosthogContext()
 
   useEffect(captureBackEventFx, [])
@@ -103,9 +105,12 @@ const CreateWalletScreen = () => {
   return <CreateWallet onSavedMyPhrase={onSavedMyPhrase} />
 }
 
+type ProtectFundsNavigationProp = CreateWalletScreenProps<
+  typeof AppNavigation.CreateWallet.ProtectFunds
+>['navigation']
+
 const CreateWalletWarningModal = () => {
-  const { navigate, goBack } =
-    useNavigation<StackNavigationProp<CreateWalletStackParamList>>()
+  const { navigate, goBack } = useNavigation<ProtectFundsNavigationProp>()
   const { capture } = usePosthogContext()
 
   const onUnderstand = () => {
@@ -133,10 +138,13 @@ const CreateWalletWarningModal = () => {
   )
 }
 
+type CheckMnemonicNavigationProp = CreateWalletScreenProps<
+  typeof AppNavigation.CreateWallet.CheckMnemonic
+>['navigation']
+
 const CheckMnemonicScreen = () => {
   const createWalletContext = useContext(CreateWalletContext)
-  const { navigate, goBack } =
-    useNavigation<StackNavigationProp<CreateWalletStackParamList>>()
+  const { navigate, goBack } = useNavigation<CheckMnemonicNavigationProp>()
   return (
     <CheckMnemonic
       onSuccess={() => {
@@ -148,11 +156,14 @@ const CheckMnemonicScreen = () => {
   )
 }
 
+type CreatePinNavigationProp = CreateWalletScreenProps<
+  typeof AppNavigation.CreateWallet.CreatePin
+>['navigation']
+
 const CreatePinScreen = () => {
   const createWalletContext = useContext(CreateWalletContext)
   const walletSetupHook = useApplicationContext().walletSetupHook
-  const { navigate } =
-    useNavigation<StackNavigationProp<CreateWalletStackParamList>>()
+  const { navigate } = useNavigation<CreatePinNavigationProp>()
   const { capture } = usePosthogContext()
 
   const onPinSet = (pin: string): void => {
@@ -174,10 +185,13 @@ const CreatePinScreen = () => {
   return <CreatePIN onPinSet={onPinSet} />
 }
 
+type BiometricLoginNavigationProp = CreateWalletScreenProps<
+  typeof AppNavigation.CreateWallet.BiometricLogin
+>['navigation']
+
 const BiometricLoginScreen = () => {
   const createWalletContext = useContext(CreateWalletContext)
-  const { navigate } =
-    useNavigation<StackNavigationProp<CreateWalletStackParamList>>()
+  const { navigate } = useNavigation<BiometricLoginNavigationProp>()
   return (
     <BiometricLogin
       mnemonic={createWalletContext.mnemonic}

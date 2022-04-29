@@ -11,25 +11,25 @@ import {
   StyleSheet,
   View
 } from 'react-native'
-import { RouteProp, useRoute } from '@react-navigation/native'
-import { NFTStackParamList } from 'navigation/wallet/NFTScreenStack'
+import { useRoute } from '@react-navigation/native'
 import { getColorFromURL } from 'rn-dominant-color'
 import LinearGradientSVG from 'components/svg/LinearGradientSVG'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { orientation } from 'react-native-sensors'
 import { filter, map, sampleTime, tap } from 'rxjs'
 import AppNavigation from 'navigation/AppNavigation'
+import { NFTDetailsScreenProps } from 'navigation/types'
 
 const SAMPLE_TIME = 50
 
+type RouteProp = NFTDetailsScreenProps<
+  typeof AppNavigation.Nft.FullScreen
+>['route']
+
 export default function NftFullScreen() {
   const { theme } = useApplicationContext()
-  const { params } =
-    useRoute<
-      RouteProp<NFTStackParamList, typeof AppNavigation.Nft.FullScreen>
-    >()
-  const imageUrl = params?.url as string
-  const imageUrlSmall = params?.urlSmall as string
+  const { url: imageUrl, urlSmall: imageUrlSmall } =
+    useRoute<RouteProp>().params
   const [grabbedBgColor, setGrabbedBgColor] = useState('black')
   const windowWidth = useMemo(() => Dimensions.get('window').width - 32, [])
   const [imageAspect, setImageAspect] = useState(0)

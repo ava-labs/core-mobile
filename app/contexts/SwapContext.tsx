@@ -248,6 +248,7 @@ export const SwapContextProvider = ({ children }: { children: any }) => {
     doSwap,
     error
   }
+
   return <SwapContext.Provider value={state}>{children}</SwapContext.Provider>
 }
 

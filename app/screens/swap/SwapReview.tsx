@@ -12,8 +12,7 @@ import AvaButton from 'components/AvaButton'
 import { useNavigation } from '@react-navigation/native'
 import Loader from 'components/Loader'
 import AppNavigation from 'navigation/AppNavigation'
-import { StackNavigationProp } from '@react-navigation/stack'
-import { SwapStackParamList } from 'navigation/wallet/SwapScreenStack'
+import { SwapScreenProps } from 'navigation/types'
 import { Row } from 'components/Row'
 import InfoSVG from 'components/svg/InfoSVG'
 import { interval, tap } from 'rxjs'
@@ -21,11 +20,14 @@ import { Popable } from 'react-native-popable'
 
 const SECOND = 1000
 
+type NavigationProp = SwapScreenProps<
+  typeof AppNavigation.Swap.Review
+>['navigation']
+
 const SwapReview: FC = () => {
   const { swapTo, swapFrom, doSwap, refresh } = useSwapContext()
   const theme = useApplicationContext().theme
-  const { goBack, navigate } =
-    useNavigation<StackNavigationProp<SwapStackParamList>>()
+  const { goBack, navigate } = useNavigation<NavigationProp>()
   const [loading, setLoading] = useState(false)
   const [secondsLeft, setSecondsLeft] = useState('0s')
   const [colorAnim] = useState(new Animated.Value(1))

@@ -18,7 +18,7 @@ import { isMainnetNetwork } from '@avalabs/avalanche-wallet-sdk'
 
 function AddBitcoinInstructionsBottomSheet() {
   const theme = useApplicationContext().theme
-  const navigation = useNavigation()
+  const { goBack } = useNavigation()
   const bottomSheetModalRef = useRef<BottomSheet>(null)
   const snapPoints = useMemo(() => ['0%', '80%'], [])
   const network = useNetworkContext()?.network
@@ -35,7 +35,7 @@ function AddBitcoinInstructionsBottomSheet() {
 
   const handleClose = useCallback(() => {
     bottomSheetModalRef?.current?.close()
-    InteractionManager.runAfterInteractions(() => navigation.goBack())
+    InteractionManager.runAfterInteractions(() => goBack())
   }, [])
 
   const handleChange = useCallback(index => {

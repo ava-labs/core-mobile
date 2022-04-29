@@ -11,9 +11,8 @@ import WatchListItem from 'screens/watchlist/components/WatchListItem'
 import ListFilter from 'components/ListFilter'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
+import { TabsScreenProps } from 'navigation/types'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { StackNavigationProp } from '@react-navigation/stack'
-import { RootStackParamList } from 'navigation/WalletScreenStack'
 import Separator from 'components/Separator'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import ZeroState from 'components/ZeroState'
@@ -43,8 +42,12 @@ const filterTimeOptions = ['1D', '1W', '1Y']
 
 type CombinedTokenType = ERC20WithBalance & SimplePriceInCurrency
 
-const WatchlistView = ({ showFavorites, searchText }: Props) => {
-  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>()
+type NavigationProp = TabsScreenProps<
+  typeof AppNavigation.Tabs.Watchlist
+>['navigation']
+
+const WatchlistView: React.FC<Props> = ({ showFavorites, searchText }) => {
+  const navigation = useNavigation<NavigationProp>()
   const { currencyFormatter } = useApplicationContext().appHook
   const { watchlistFavorites } =
     useApplicationContext().repo.watchlistFavoritesRepo

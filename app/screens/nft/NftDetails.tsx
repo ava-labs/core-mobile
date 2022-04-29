@@ -1,7 +1,5 @@
 import React, { useMemo, useState } from 'react'
 import { Image, ScrollView, StyleSheet, View } from 'react-native'
-import { RouteProp, useRoute } from '@react-navigation/native'
-import { NFTStackParamList } from 'navigation/wallet/NFTScreenStack'
 import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
 import { Space } from 'components/Space'
@@ -10,23 +8,22 @@ import {
   NFTItemExternalDataAttribute
 } from 'screens/nft/NftCollection'
 import { Row } from 'components/Row'
-import AppNavigation from 'navigation/AppNavigation'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 
 export type NftDetailsProps = {
+  nft: NFTItemData
   onPicturePressed: (url: string, urlSmall: string) => void
   onSendPressed: (item: NFTItemData) => void
 }
 
 export default function NftDetails({
+  nft,
   onPicturePressed,
   onSendPressed
 }: NftDetailsProps) {
-  const { params } =
-    useRoute<RouteProp<NFTStackParamList, typeof AppNavigation.Nft.Details>>()
-  const item = useMemo(() => params!.nft, [params]) as NFTItemData
   const [imgLoadFailed, setImgLoadFailed] = useState(false)
   const { theme } = useApplicationContext()
+  const item = useMemo(() => nft, [nft])
 
   return (
     <ScrollView contentContainerStyle={styles.container}>

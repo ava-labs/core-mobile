@@ -1,4 +1,3 @@
-// @ts-nocheck TODO CP-1725: Fix Typescript Errors - React Navigation
 import React, { FC, useMemo } from 'react'
 import {
   ActivityIndicator,
@@ -31,17 +30,20 @@ import CarrotSVG from 'components/svg/CarrotSVG'
 import InputText from 'components/InputText'
 import useBridge from 'screens/bridge/hooks/useBridge'
 import { useNavigation } from '@react-navigation/native'
-import { StackNavigationProp } from '@react-navigation/stack'
-import { BridgeStackParamList } from 'navigation/wallet/BridgeScreenStack'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
+import { BridgeScreenProps } from 'navigation/types'
 
 const formatBalance = (balance: Big | undefined) => {
   return balance && formatTokenAmount(balance, 6)
 }
 
+type NavigationProp = BridgeScreenProps<
+  typeof AppNavigation.Bridge.Bridge
+>['navigation']
+
 const Bridge: FC = () => {
-  const navigation = useNavigation<StackNavigationProp<BridgeStackParamList>>()
+  const navigation = useNavigation<NavigationProp>()
   const theme = useApplicationContext().theme
   const {
     assetPrice,
@@ -134,9 +136,7 @@ const Bridge: FC = () => {
    * Opens Add bitcoin instructions modal
    */
   const navigateToAddBitcoinInstructions = () => {
-    navigation.navigate(AppNavigation.Bridge.AddInstructions, {
-      onTokenSelected: setCurrentAsset
-    })
+    navigation.navigate(AppNavigation.Bridge.AddInstructions)
   }
 
   /**

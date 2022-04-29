@@ -11,11 +11,14 @@ import AvaButton from 'components/AvaButton'
 import FlexSpacer from 'components/FlexSpacer'
 import NetworkFeeSelector from 'components/NetworkFeeSelector'
 import { useSendTokenContext } from 'contexts/SendTokenContext'
-import { StackNavigationProp } from '@react-navigation/stack'
-import { SendStackParamList } from 'navigation/wallet/SendScreenStack'
 import { useGasPrice } from 'utils/GasPriceHook'
 import AppNavigation from 'navigation/AppNavigation'
+import { SendTokensScreenProps } from 'navigation/types'
 import SendRow from 'components/SendRow'
+
+type NavigationProp = SendTokensScreenProps<
+  typeof AppNavigation.Send.Review
+>['navigation']
 
 export default function ReviewSend({
   onSuccess
@@ -23,7 +26,7 @@ export default function ReviewSend({
   onSuccess: (transactionId: string) => void
 }) {
   const { theme } = useApplicationContext()
-  const { goBack } = useNavigation<StackNavigationProp<SendStackParamList>>()
+  const { goBack, navigate } = useNavigation<NavigationProp>()
   const {
     sendToken,
     tokenLogo,
@@ -105,12 +108,21 @@ export default function ReviewSend({
         <NetworkFeeSelector
           networkFeeAvax={netFeeString}
           networkFeeUsd={`${fees.sendFeeUsd?.toFixed(4)} USD`}
-          gasLimitEditorRoute={AppNavigation.Modal.EditGasLimit}
           gasPrice={gasPrice}
-          initGasLimit={fees.gasLimit || 0}
-          onCustomGasLimit={gasLimit => fees.setGasLimit(gasLimit)}
           onWeightedGas={price => fees.setCustomGasPriceNanoAvax(price.value)}
           weights={{ normal: 1, fast: 1.05, instant: 1.15, custom: 35 }}
+          onSettingsPressed={() => {
+            const initGasLimit = fees.gasLimit || 0
+
+            const onCustomGasLimit = (gasLimit: number) =>
+              fees.setGasLimit(gasLimit)
+
+            navigate(AppNavigation.Modal.EditGasLimit, {
+              gasLimit: initGasLimit.toString(),
+              networkFee: netFeeString,
+              onSave: onCustomGasLimit
+            })
+          }}
         />
         <Space y={16} />
         <Separator />
