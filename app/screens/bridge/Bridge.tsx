@@ -76,6 +76,10 @@ const Bridge: FC = () => {
     (sourceBalance?.balance?.lte(BIG_ZERO) ?? true) &&
     currentBlockchain === Blockchain.BITCOIN
 
+  const isBitcoinBalanceZero =
+    (sourceBalance?.balance?.lte(BIG_ZERO) ?? true) &&
+    currentBlockchain === Blockchain.BITCOIN;
+
   /**
    * Used to display currently selected and dropdown items.
    * When used to render current item, showCheckmarks is false
@@ -140,6 +144,15 @@ const Bridge: FC = () => {
   }
 
   /**
+   * Opens Add bitcoin instructions modal
+   */
+  const navigateToAddBitcoinInstructions = () => {
+    navigation.navigate(AppNavigation.Bridge.AddInstructions, {
+      onTokenSelected: setCurrentAsset,
+    });
+  };
+
+  /**
    * Method used to render custom dropdown item
    * @param item
    * @param blockchain
@@ -155,8 +168,8 @@ const Bridge: FC = () => {
    * Blockchain array that's fed to dropdown
    */
   const blockChainItems = useMemo(() => {
-    return [Blockchain.AVALANCHE, Blockchain.BITCOIN, Blockchain.ETHEREUM]
-  }, [])
+    return [Blockchain.AVALANCHE, Blockchain.BITCOIN, Blockchain.ETHEREUM];
+  }, []);
 
   const handleAmountChanged = (value: string) => {
     /**
@@ -243,9 +256,9 @@ const Bridge: FC = () => {
             }
           />
           {isBitcoinBalanceZero && (
-            <Row style={{ justifyContent: 'flex-end' }}>
+            <Row style={{justifyContent: 'flex-end'}}>
               <AvaButton.Base
-                style={{ marginEnd: 16, marginBottom: 8 }}
+                style={{marginEnd: 16, marginBottom: 8}}
                 onPress={navigateToAddBitcoinInstructions}>
                 <AvaText.TextLink>Add Bitcoin</AvaText.TextLink>
               </AvaButton.Base>

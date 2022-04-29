@@ -120,7 +120,7 @@ enum BridgeScreens {
   Bridge = 'BridgeScreens.Swap',
   BridgeTransactionStatus = 'BridgeScreens.BridgeTransactionStatus',
   HideWarning = 'BridgeScreens.HideWarning',
-  AddInstructions = 'BridgeScreens.AddInstructions'
+  AddInstructions = 'BridgeScreens.AddInstructions',
 }
 
 enum PortfolioScreens {

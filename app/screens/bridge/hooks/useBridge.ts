@@ -60,13 +60,15 @@ export default function useBridge() {
     sourceBalance?.balance && amount.gt(sourceBalance.balance)
 
   const tooLowAmount =
-    !!transferCost && amount.gt(0) && amount.lt(minimumTransferAmount)
+    !!transferCost && amount.gt(0) && amount.lt(minimumTransferAmount);
 
-  const tokenInfoContext = useTokenInfoContext()
+  const tokenInfoContext = useTokenInfoContext();
 
-  const { transferAsset, txHash } = useTransferAsset(assetInfo)
+  const {transferAsset, txHash} = useTransferAsset(assetInfo);
 
-  const [targetBlockchain, setTargetBlockchain] = useState(Blockchain.AVALANCHE)
+  const [targetBlockchain, setTargetBlockchain] = useState(
+    Blockchain.AVALANCHE,
+  );
 
   const provider =
     currentBlockchain === Blockchain.AVALANCHE
