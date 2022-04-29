@@ -1,6 +1,5 @@
 import React from 'react'
 import AvaListItem from 'components/AvaListItem'
-import CarrotSVG from 'components/svg/CarrotSVG'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation } from '@react-navigation/native'
 import { WalletScreenProps } from 'navigation/types'
@@ -15,10 +14,6 @@ const SecurityItem = () => {
   return (
     <AvaListItem.Base
       title={'Security & Privacy'}
-      titleAlignment={'flex-start'}
-      leftComponent={null}
-      rightComponent={<CarrotSVG />}
-      rightComponentVerticalAlignment={'center'}
       onPress={() => {
         navigation.navigate(AppNavigation.Wallet.SecurityPrivacy)
       }}
