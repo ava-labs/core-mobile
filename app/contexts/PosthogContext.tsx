@@ -65,8 +65,8 @@ export const PosthogContextProvider = ({ children }: { children: any }) => {
 
   function initPosthog() {
     ;(async function () {
-      await PostHog.setup(Config.POSTHOG_API_KEY as string, {
-        debug: true,
+      await PostHog.setup(Config.POSTHOG_ANALYTICS_KEY as string, {
+        debug: __DEV__,
         host: 'https://data-posthog.avax.network',
         android: {
           collectDeviceId: false
@@ -94,7 +94,9 @@ export const PosthogContextProvider = ({ children }: { children: any }) => {
     if (!isPosthogReady) {
       return
     }
-    return //FIXME: exit here until Danny says otherwise
+    if (__DEV__) {
+      return
+    }
     analyticsConsent && !eventsBlocked ? PostHog.enable() : PostHog.disable()
   }
 
@@ -105,12 +107,12 @@ export const PosthogContextProvider = ({ children }: { children: any }) => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        api_key: Config.POSTHOG_API_KEY,
+        api_key: Config.POSTHOG_FEATURE_FLAGS_KEY,
         distinct_id: ''
       })
     })
       .catch(reason => (__DEV__ ? console.error(reason) : undefined))
-      .then(value => value!.json())
+      .then(value => value?.json())
       .then(value => {
         const result = value as {
           featureFlags: Record<FeatureGates, boolean>
