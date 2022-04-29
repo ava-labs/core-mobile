@@ -26,7 +26,7 @@ enum FeatureGates {
 
 export interface PosthogContextState {
   capture: (event: string, properties?: JsonMap) => Promise<void>
-  setAnalyticsConsent: Dispatch<boolean>
+  setAnalyticsConsent: Dispatch<boolean | undefined>
   swapBlocked: boolean
   bridgeBlocked: boolean
   bridgeBtcBlocked: boolean
@@ -51,7 +51,9 @@ export const PosthogContextProvider = ({ children }: { children: any }) => {
   const [flags, setFlags] = useState<Record<FeatureGates, boolean>>(
     DefaultFeatureFlagConfig
   )
-  const [analyticsConsent, setAnalyticsConsent] = useState(false)
+  const [analyticsConsent, setAnalyticsConsent] = useState<
+    boolean | undefined
+  >()
   const swapBlocked = !flags['swap-feature'] || !flags.everything
   const bridgeBlocked = !flags['bridge-feature'] || !flags.everything
   const bridgeBtcBlocked = !flags['bridge-feature-btc'] || !flags.everything
@@ -90,14 +92,25 @@ export const PosthogContextProvider = ({ children }: { children: any }) => {
     return () => subscription?.unsubscribe()
   }
 
+  /**
+   * If analyticsConsent is undefinded it means user havent got to analytics
+   * consent and we are collecting events up to the the point of consent screen.
+   * After that user either consents or not and according to it we collect or not
+   * events.
+   */
   function setEventsLogging() {
     if (!isPosthogReady) {
       return
     }
-    if (__DEV__) {
+    if (!__DEV__ || eventsBlocked) {
+      PostHog.disable()
       return
     }
-    analyticsConsent && !eventsBlocked ? PostHog.enable() : PostHog.disable()
+    if (analyticsConsent || analyticsConsent === undefined) {
+      PostHog.enable()
+    } else {
+      PostHog.disable()
+    }
   }
 
   function reloadFeatureFlags() {
