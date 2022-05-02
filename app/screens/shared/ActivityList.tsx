@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Animated, RefreshControl, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import Loader from 'components/Loader'
@@ -12,20 +12,20 @@ import {
 import moment from 'moment'
 import { ScrollView } from 'react-native-gesture-handler'
 import ActivityListItem from 'screens/activity/ActivityListItem'
-import { useBridgeContext } from 'contexts/BridgeContext'
-import { Blockchain, useBridgeSDK } from '@avalabs/bridge-sdk'
+import { BridgeTransaction, useBridgeContext } from 'contexts/BridgeContext'
+import { useBridgeSDK } from '@avalabs/bridge-sdk'
 import BridgeTransactionItem, {
   TransactionBridgeItem
 } from 'screens/bridge/components/BridgeTransactionItem'
 import { BridgeTransactionStatusParams } from 'navigation/types'
-import useInAppBrowser from 'hooks/useInAppBrowser'
 import {
-isBridge,
-isContractCall,
-isIncoming,
-isOutgoing
+  isBridge,
+  isContractCall,
+  isIncoming,
+  isOutgoing
 } from 'utils/TrxTools'
-
+import { Row } from 'components/Row'
+import DropDown from 'components/Dropdown'
 
 const DISPLAY_FORMAT_CURRENT_YEAR = 'MMMM DD'
 const DISPLAY_FORMAT_PAST_YEAR = 'MMMM DD, YYYY'
@@ -37,7 +37,10 @@ interface Props {
   openTransactionStatus: (params: BridgeTransactionStatusParams) => void
 }
 
-type TxType = TransactionNormal | TransactionERC20 | TransactionBridgeItem
+export type TxType =
+  | TransactionNormal
+  | TransactionERC20
+  | TransactionBridgeItem
 
 const TODAY = moment()
 const YESTERDAY = moment().subtract(1, 'days')
@@ -52,7 +55,6 @@ function ActivityList({
   const [loading, setLoading] = useState(true)
   const wallet = useWalletContext()?.wallet
   const { network } = useNetworkContext()!
-  const { openUrl } = useInAppBrowser()
   const [allHistory, setAllHistory] =
     useState<(TransactionNormal | TransactionERC20)[]>()
   const { bridgeTransactions } = useBridgeContext()
@@ -164,19 +166,29 @@ function ActivityList({
           </Animated.View>
           {key[1].map((item: TxType, index) => {
             if (isBridge(item, bridgeAssets)) {
+              const bridgeItem = item as BridgeTransaction
               return (
                 <BridgeTransactionItem
-                  key={`${item.sourceTxHash}-${item.targetTxHash}-${index}`}
-                  item={item}
-                  onPress={() => openTransactionDetails(item)}
+                  key={`${bridgeItem.sourceTxHash}-${bridgeItem.targetTxHash}-${index}`}
+                  item={bridgeItem}
+                  onPress={() =>
+                    openTransactionStatus({
+                      blockchain: bridgeItem.sourceNetwork,
+                      txHash: bridgeItem.sourceTxHash ?? '',
+                      txTimestamp:
+                        bridgeItem?.createdAt?.toString() ??
+                        Date.now().toString()
+                    })
+                  }
                 />
               )
             } else {
+              const ercNormalItem = item as TransactionNormal | TransactionERC20
               return (
                 <ActivityListItem
-                  key={(item.transactionIndex ?? 1) + index}
-                  tx={item}
-                  onPress={() => openTransactionDetails(item)}
+                  key={(ercNormalItem.transactionIndex ?? 1) + index}
+                  tx={ercNormalItem}
+                  onPress={() => openTransactionDetails(ercNormalItem)}
                 />
               )
             }

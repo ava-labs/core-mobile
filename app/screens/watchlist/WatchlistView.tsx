@@ -49,14 +49,15 @@ type NavigationProp = TabsScreenProps<
 
 const WatchlistView: React.FC<Props> = ({ showFavorites, searchText }) => {
   const navigation = useNavigation<NavigationProp>()
+  const theme = useApplicationContext().theme
   const { currencyFormatter } = useApplicationContext().appHook
   const { watchlistFavorites } =
     useApplicationContext().repo.watchlistFavoritesRepo
   const { tokenPrices } = useCoingecko()
-  // @ts-ignore erc20Tokens and avaxToken exist but why it complains needs investigation
   const { erc20Tokens, avaxToken } = useWalletStateContext()!
   const [filterBy, setFilterBy] = useState(WatchlistFilter.PRICE)
-  const [filterTime, setFilterTime] = useState(filterTimeOptions[0])
+  // filter time needs implementation
+  const [, setFilterTime] = useState(filterTimeOptions[0])
   const tokens = useMemo(() => {
     let pricedTokens = addPriceToTokenList(tokenPrices, avaxToken, erc20Tokens)
     if (showFavorites) {

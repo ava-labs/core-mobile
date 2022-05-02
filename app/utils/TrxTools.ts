@@ -1,19 +1,28 @@
-import { TxType } from 'screens/activity/ActivityList'
 import { ERC20Asset } from '@avalabs/bridge-sdk/src/types'
 import { Blockchain } from '@avalabs/bridge-sdk'
+import { TxType } from 'screens/shared/ActivityList'
+import {
+  TransactionERC20,
+  TransactionNormal
+} from '@avalabs/wallet-react-components'
 
-export function isBridge(tx: TxType, bridgeAssets: Record<string, ERC20Asset>) {
+export function isBridge(
+  tx: TxType,
+  bridgeAssets?: Record<string, ERC20Asset>
+) {
+  if (!bridgeAssets) return false
+  const ercNormalTx = tx as TransactionNormal | TransactionERC20
   if ('requiredConfirmationCount' in tx) {
     return (
       Object.values(bridgeAssets).filter(
         el =>
           (el.nativeNetwork === Blockchain.AVALANCHE &&
             el.nativeContractAddress?.toLowerCase() ===
-              tx.contractAddress?.toLowerCase()) ||
+              ercNormalTx.contractAddress?.toLowerCase()) ||
           el.wrappedContractAddress?.toLowerCase() ===
-            tx.contractAddress?.toLowerCase() ||
-          tx?.to === '0x0000000000000000000000000000000000000000' ||
-          tx?.from === '0x0000000000000000000000000000000000000000'
+            ercNormalTx.contractAddress?.toLowerCase() ||
+          ercNormalTx?.to === '0x0000000000000000000000000000000000000000' ||
+          ercNormalTx?.from === '0x0000000000000000000000000000000000000000'
       ).length > 0
     )
   } else {
