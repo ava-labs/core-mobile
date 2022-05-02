@@ -1,15 +1,23 @@
-import React, {FC, useEffect, useState} from 'react';
-import {ActivityIndicator, Alert, ListRenderItemInfo, Pressable, ScrollView, StyleSheet, View} from 'react-native';
-import {Space} from 'components/Space';
-import AvaText from 'components/AvaText';
-import AvaButton from 'components/AvaButton';
-import SwapNarrowSVG from 'components/svg/SwapNarrowSVG';
-import AvaListItem from 'components/AvaListItem';
-import DropDown from 'components/Dropdown';
-import {Row} from 'components/Row';
-import Separator from 'components/Separator';
-import Avatar from 'components/Avatar';
-import CheckmarkSVG from 'components/svg/CheckmarkSVG';
+import React, { FC, useEffect, useState } from 'react'
+import {
+  ActivityIndicator,
+  Alert,
+  ListRenderItemInfo,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View
+} from 'react-native'
+import { Space } from 'components/Space'
+import AvaText from 'components/AvaText'
+import AvaButton from 'components/AvaButton'
+import SwapNarrowSVG from 'components/svg/SwapNarrowSVG'
+import AvaListItem from 'components/AvaListItem'
+import DropDown from 'components/Dropdown'
+import { Row } from 'components/Row'
+import Separator from 'components/Separator'
+import Avatar from 'components/Avatar'
+import CheckmarkSVG from 'components/svg/CheckmarkSVG'
 import {
   BIG_ZERO,
   Blockchain,
@@ -18,19 +26,20 @@ import {
   useBridgeSDK,
   useGetTokenSymbolOnNetwork,
   useTokenInfoContext,
-  WrapStatus,
-} from '@avalabs/bridge-sdk';
-import {Big, bnToBig, numberToBN} from '@avalabs/avalanche-wallet-sdk';
-import AppNavigation from 'navigation/AppNavigation';
-import CarrotSVG from 'components/svg/CarrotSVG';
-import InputText from 'components/InputText';
-import useBridge from 'screens/bridge/hooks/useBridge';
-import {useNavigation} from '@react-navigation/native';
-import {StackNavigationProp} from '@react-navigation/stack';
-import {BridgeStackParamList} from 'navigation/wallet/BridgeScreenStack';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import {SafeAreaProvider} from 'react-native-safe-area-context';
-import {useIsMainnet} from 'hooks/isMainnet';
+  WrapStatus
+} from '@avalabs/bridge-sdk'
+import { Big, bnToBig, numberToBN } from '@avalabs/avalanche-wallet-sdk'
+import AppNavigation from 'navigation/AppNavigation'
+import CarrotSVG from 'components/svg/CarrotSVG'
+import InputText from 'components/InputText'
+import useBridge from 'screens/bridge/hooks/useBridge'
+import { useNavigation } from '@react-navigation/native'
+import { StackNavigationProp } from '@react-navigation/stack'
+import { BridgeStackParamList } from 'navigation/wallet/BridgeScreenStack'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
+import { useIsMainnet } from 'hooks/isMainnet'
+import { trackBridgeTransaction as trackBridgeTransactionSDK } from '@avalabs/bridge-sdk/dist/src/lib/tracker/trackBridgeTransaction'
 
 const formatBalance = (balance: Big | undefined) => {
   return balance && formatTokenAmount(balance, 6)
@@ -41,8 +50,8 @@ type NavigationProp = BridgeScreenProps<
 >['navigation']
 
 const Bridge: FC = () => {
-  const navigation = useNavigation<StackNavigationProp<BridgeStackParamList>>();
-  const theme = useApplicationContext().theme;
+  const navigation = useNavigation<StackNavigationProp<BridgeStackParamList>>()
+  const theme = useApplicationContext().theme
 
   const {
     address,
@@ -57,64 +66,60 @@ const Bridge: FC = () => {
     minimum,
     receiveAmount,
     wrapStatus,
-    transfer,
-  } = useBridge();
+    transfer
+  } = useBridge()
 
-  const isMainnet = useIsMainnet();
-  const {error} = useBridgeConfig();
+  const isMainnet = useIsMainnet()
+  const { error } = useBridgeConfig()
   const {
     currentAsset,
     setCurrentAsset,
     currentBlockchain,
     setCurrentBlockchain,
     targetBlockchain,
-    targetChains,
-  } = useBridgeSDK();
-  const {getTokenSymbolOnNetwork} = useGetTokenSymbolOnNetwork();
+    targetChains
+  } = useBridgeSDK()
+  const { getTokenSymbolOnNetwork } = useGetTokenSymbolOnNetwork()
 
-  // const isBitcoinBalanceZero =
-  //   (sourceBalance?.balance?.lte(BIG_ZERO) ?? true) &&
-  //   currentBlockchain === Blockchain.BITCOIN;
-
-  const [bridgeError, setBridgeError] = useState<string>('');
-  const [isPending, setIsPending] = useState<boolean>(false);
-  const tokenInfoData = useTokenInfoContext();
-  const denomination = sourceBalance?.asset.denomination || 0;
-  const [isSwitched, setIsSwitched] = useState(false);
+  const [bridgeError, setBridgeError] = useState<string>('')
+  const [isPending, setIsPending] = useState<boolean>(false)
+  const tokenInfoData = useTokenInfoContext()
+  const denomination = sourceBalance?.asset.denomination || 0
+  const [isSwitched, setIsSwitched] = useState(false)
   const blockchainTokenSymbol = getTokenSymbolOnNetwork(
     currentAsset ?? '',
-    currentBlockchain,
-  );
-  const {currencyFormatter} = useApplicationContext().appHook;
+    currentBlockchain
+  )
+  const { currencyFormatter } = useApplicationContext().appHook
 
-  const isAmountTooHigh = amount && amount.gt(maximum);
+  const isAmountTooHigh = amount && amount.gt(maximum)
   const isAmountTooLow =
-    amount && !amount.eq(BIG_ZERO) && amount.lt(minimum || BIG_ZERO);
-  const hasValidAmount = !isAmountTooLow && amount.gt(BIG_ZERO);
+    amount && !amount.eq(BIG_ZERO) && amount.lt(minimum || BIG_ZERO)
+  const hasValidAmount = !isAmountTooLow && amount.gt(BIG_ZERO)
 
-  console.log('isAmountTooHigh:', isAmountTooHigh);
-  console.log('hasValidAmount:', hasValidAmount);
-  console.log('amount:', amount.toNumber());
-  console.log('receiveAmount:', receiveAmount?.toNumber());
-  console.log('price:', price.toNumber());
-  console.log('Maximum', maximum.toNumber());
-  console.log(
-    'receiveAmountCurrency: ',
-    currencyFormatter(price.mul(receiveAmount).toNumber()),
-  );
+  // console.log('isAmountTooHigh:', isAmountTooHigh)
+  // console.log('hasValidAmount:', hasValidAmount)
+  // console.log('amount:', amount.toNumber())
+  // console.log('receiveAmount:', receiveAmount?.toNumber())
+  // console.log('price:', price.toNumber())
+  // console.log('Maximum', maximum.toNumber())
+  // console.log(
+  //   'receiveAmountCurrency: ',
+  //   currencyFormatter(price.mul(receiveAmount).toNumber())
+  // )
 
   const formattedReceiveAmount =
     hasValidAmount && receiveAmount
       ? `~${receiveAmount.toFixed(9)} ${currentAsset}`
-      : '-';
+      : '-'
   const formattedReceiveAmountCurrency =
     hasValidAmount && price && receiveAmount
       ? `~${currencyFormatter(price.mul(receiveAmount).toNumber())}`
-      : '-';
+      : '-'
 
   useEffect(() => {
-    setBridgeError(bridgeError);
-  }, [bridgeError]);
+    setBridgeError(bridgeError)
+  }, [bridgeError])
 
   /**
    * Used to display currently selected and dropdown items.
@@ -169,18 +174,18 @@ const Bridge: FC = () => {
   const navigateToTokenSelector = () => {
     navigation.navigate(AppNavigation.Modal.BridgeSelectToken, {
       onTokenSelected: handleSelect,
-      bridgeTokenList: assetsWithBalances,
-    });
-  };
+      bridgeTokenList: assetsWithBalances ?? []
+    })
+  }
 
   /**
    * Opens Add bitcoin instructions modal
    */
   const navigateToAddBitcoinInstructions = () => {
     navigation.navigate(AppNavigation.Bridge.AddInstructions, {
-      onTokenSelected: setCurrentAsset,
-    });
-  };
+      onTokenSelected: setCurrentAsset
+    })
+  }
 
   /**
    * Method used to render custom dropdown item
@@ -200,28 +205,28 @@ const Bridge: FC = () => {
   const sourceBlockchains = [
     Blockchain.AVALANCHE,
     Blockchain.BITCOIN,
-    Blockchain.ETHEREUM,
-  ];
+    Blockchain.ETHEREUM
+  ]
 
   const handleAmountChanged = (value: string) => {
-    const bn = numberToBN(Number(value), denomination);
+    const bn = numberToBN(Number(value), denomination)
     try {
-      setAmount(bnToBig(bn, denomination));
+      setAmount(bnToBig(bn, denomination))
     } catch (e) {
-      console.log(e);
+      console.log(e)
     }
-  };
+  }
 
   const handleBlockchainToggle = () => {
     if (targetBlockchain) {
-      setCurrentBlockchain(targetBlockchain);
-      setIsSwitched(!isSwitched);
+      setCurrentBlockchain(targetBlockchain)
+      setIsSwitched(!isSwitched)
     }
-  };
+  }
 
   const handleSelect = (symbol: string) => {
-    setCurrentAsset(symbol);
-  };
+    setCurrentAsset(symbol)
+  }
 
   /**
    * Handles transfer transaction
@@ -232,35 +237,26 @@ const Bridge: FC = () => {
     }
 
     try {
-      setIsPending(true);
-      const hash = await transfer();
-      setIsPending(false);
-
-      // sent to bridge context
-      // setTransactionDetails({
-      //   tokenSymbol:
-      //     assetInfo.assetType === AssetType.NATIVE
-      //       ? assetInfo.wrappedAssetSymbol
-      //       : currentAsset || '',
-      //   amount,
-      // });
+      setIsPending(true)
+      const hash = await transfer()
+      setIsPending(false)
 
       // Navigate to transaction status page
       navigation.navigate(AppNavigation.Bridge.BridgeTransactionStatus, {
         blockchain: currentBlockchain as string,
         txHash: hash ?? '',
-        txTimestamp: Date.now().toString(),
-      });
+        txTimestamp: Date.now().toString()
+      })
     } catch (e) {
-      const error = e as Error;
+      const error = e as Error
       Alert.alert(
         'Error Bridging',
         error?.reason ??
-          'An unknown error has occurred. Bridging was halted. Please try again later',
-      );
-      return;
+          'An unknown error has occurred. Bridging was halted. Please try again later'
+      )
+      return
     } finally {
-      setIsPending(false);
+      setIsPending(false)
     }
   }
 
@@ -271,7 +267,7 @@ const Bridge: FC = () => {
     isAmountTooLow ||
     isAmountTooHigh ||
     BIG_ZERO.eq(amount) ||
-    !hasEnoughForNetworkFee;
+    !hasEnoughForNetworkFee
 
   return (
     <SafeAreaProvider>
@@ -287,11 +283,11 @@ const Bridge: FC = () => {
               <DropDown
                 alignment={'flex-end'}
                 preselectedIndex={1}
-                data={blockChainItems}
+                data={sourceBlockchains}
                 selectionRenderItem={selectedItem =>
                   dropdownItemFormat(selectedItem, selectedItem, false)
                 }
-                onItemSelected={bc => setCurrentBlockchain(bc)}
+                onItemSelected={bc => setCurrentBlockchain(bc as Blockchain)}
                 optionsRenderItem={item =>
                   renderDropdownOptions(item, currentBlockchain)
                 }
@@ -300,9 +296,9 @@ const Bridge: FC = () => {
             }
           />
           {currentBlockchain === Blockchain.BITCOIN && (
-            <Row style={{justifyContent: 'flex-end'}}>
+            <Row style={{ justifyContent: 'flex-end' }}>
               <AvaButton.Base
-                style={{marginEnd: 16, marginBottom: 8}}
+                style={{ marginEnd: 16, marginBottom: 8 }}
                 onPress={navigateToAddBitcoinInstructions}>
                 <AvaText.TextLink>Add Bitcoin</AvaText.TextLink>
               </AvaButton.Base>
@@ -348,7 +344,7 @@ const Bridge: FC = () => {
                   keyboardType="numeric"
                   onMax={() => {
                     if (maximum) {
-                      setAmount(maximum.round(6, 0));
+                      setAmount(maximum.round(6, 0))
                     }
                   }}
                   onChangeText={handleAmountChanged}
@@ -383,7 +379,7 @@ const Bridge: FC = () => {
           <>
             {!hasEnoughForNetworkFee && (
               <AvaText.Body3
-                textStyle={{marginVertical: 4}}
+                textStyle={{ marginVertical: 4 }}
                 color={theme.colorError}>
                 {`Insufficient balance to cover gas costs.\nPlease add ${
                   currentBlockchain === Blockchain.AVALANCHE ? 'AVAX' : 'ETH'
@@ -392,14 +388,14 @@ const Bridge: FC = () => {
             )}
             {isAmountTooLow && (
               <AvaText.Body3
-                textStyle={{marginVertical: 4}}
+                textStyle={{ marginVertical: 4 }}
                 color={theme.colorError}>
                 {`Amount too low -- minimum is ${minimum?.toFixed(9)}`}
               </AvaText.Body3>
             )}
             {isAmountTooHigh && (
               <AvaText.Body3
-                textStyle={{marginVertical: 4}}
+                textStyle={{ marginVertical: 4 }}
                 color={theme.colorError}>
                 {`Amount too high -- maximum is ${maximum?.toFixed(9)}`}
               </AvaText.Body3>
@@ -417,7 +413,7 @@ const Bridge: FC = () => {
 
         <AvaButton.Base
           onPress={handleBlockchainToggle}
-          style={[styles.swapButton, {backgroundColor: theme.colorBg2}]}>
+          style={[styles.swapButton, { backgroundColor: theme.colorBg2 }]}>
           <SwapNarrowSVG />
         </AvaButton.Base>
         <View style={{ backgroundColor: theme.colorBg2, borderRadius: 10 }}>
@@ -425,7 +421,7 @@ const Bridge: FC = () => {
             title={'To'}
             rightComponent={
               <DropDown
-                style={{marginRight: 19}}
+                style={{ marginRight: 19 }}
                 filterItems={targetChains}
                 currentItem={dropdownItemFormat(
                   targetBlockchain,
@@ -454,7 +450,7 @@ const Bridge: FC = () => {
               <AvaText.Body1>{formattedReceiveAmount}</AvaText.Body1>
               {/* estimate amount */}
               <AvaText.Body3
-                textStyle={{marginTop: 8}}
+                textStyle={{ marginTop: 8 }}
                 color={theme.colorText2}>
                 {formattedReceiveAmountCurrency}
               </AvaText.Body3>

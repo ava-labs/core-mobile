@@ -6,97 +6,96 @@ import {
   useBridgeFeeEstimate,
   useBridgeSDK,
   usePrice,
-  WrapStatus,
-} from '@avalabs/bridge-sdk';
-import {useState} from 'react';
-import {Big} from '@avalabs/avalanche-wallet-sdk';
-import {AssetBalance} from 'screens/bridge/AssetBalance';
-import {VsCurrencyType} from '@avalabs/coingecko-sdk';
-import {useBtcBridge} from 'screens/bridge/hooks/useBtcBridge';
-import {useEthBridge} from 'screens/bridge/hooks/useEthBridge';
-import {useAvalancheBridge} from 'screens/bridge/hooks/useAvalancheBridge';
+  WrapStatus
+} from '@avalabs/bridge-sdk'
+import { useState } from 'react'
+import { Big } from '@avalabs/avalanche-wallet-sdk'
+import { AssetBalance } from 'screens/bridge/AssetBalance'
+import { VsCurrencyType } from '@avalabs/coingecko-sdk'
+import { useBtcBridge } from 'screens/bridge/hooks/useBtcBridge'
+import { useEthBridge } from 'screens/bridge/hooks/useEthBridge'
+import { useAvalancheBridge } from 'screens/bridge/hooks/useAvalancheBridge'
 
 export interface BridgeAdapter {
-  address?: string;
-  sourceBalance?: AssetBalance;
-  targetBalance?: AssetBalance;
-  assetsWithBalances?: AssetBalance[];
-  hasEnoughForNetworkFee: boolean;
-  loading?: boolean;
-  networkFee?: Big;
+  address?: string
+  sourceBalance?: AssetBalance
+  targetBalance?: AssetBalance
+  assetsWithBalances?: AssetBalance[]
+  hasEnoughForNetworkFee: boolean
+  loading?: boolean
+  networkFee?: Big
   /** Amount minus network and bridge fees */
-  receiveAmount?: Big;
+  receiveAmount?: Big
   /** Maximum transfer amount */
-  maximum?: Big;
+  maximum?: Big
   /** Minimum transfer amount */
-  minimum?: Big;
-  wrapStatus?: WrapStatus;
-  txHash?: string;
+  minimum?: Big
+  wrapStatus?: WrapStatus
+  txHash?: string
   /**
    * Transfer funds to the target blockchain
    * @returns the transaction hash
    */
-  transfer: () => Promise<string | undefined>;
+  transfer: () => Promise<string | undefined>
 }
 
 interface Bridge extends BridgeAdapter {
-  amount: Big;
-  setAmount: (amount: Big) => void;
-  bridgeFee?: Big;
+  amount: Big
+  setAmount: (amount: Big) => void
+  bridgeFee?: Big
   /** Price for the current asset & currency code */
-  price?: Big;
+  price?: Big
 }
 
 export default function useBridge() {
-  const {selectedCurrency: currency} = useApplicationContext().appHook;
+  const { selectedCurrency: currency } = useApplicationContext().appHook
 
-  const {currentBlockchain, currentAsset, currentAssetData} = useBridgeSDK();
+  const { currentBlockchain, currentAsset, currentAssetData } = useBridgeSDK()
 
-  const [amount, setAmount] = useState<Big>(new Big(0));
+  const [amount, setAmount] = useState<Big>(new Big(0))
   const price = usePrice(
     currentAssetData?.assetType === AssetType.BTC ? 'bitcoin' : currentAsset,
-    currency?.toLowerCase() as VsCurrencyType,
-  );
+    currency?.toLowerCase() as VsCurrencyType
+  )
 
-  const bridgeFee = useBridgeFeeEstimate(amount) || BIG_ZERO;
+  const bridgeFee = useBridgeFeeEstimate(amount) || BIG_ZERO
 
-  const btc = useBtcBridge(amount);
-  const eth = useEthBridge(amount, bridgeFee);
-  const avalanche = useAvalancheBridge(amount, bridgeFee);
+  const btc = useBtcBridge(amount)
+  const eth = useEthBridge(amount, bridgeFee)
+  const avalanche = useAvalancheBridge(amount, bridgeFee)
 
   const defaults = {
     amount,
     setAmount,
     bridgeFee,
-    price,
-  };
+    price
+  }
 
   if (currentBlockchain === Blockchain.BITCOIN) {
     return {
       ...defaults,
-      ...btc,
-    };
+      ...btc
+    }
   } else if (currentBlockchain === Blockchain.ETHEREUM) {
     return {
       ...defaults,
-      ...eth,
-    };
+      ...eth
+    }
   } else if (currentBlockchain === Blockchain.AVALANCHE) {
     return {
       ...defaults,
-      ...avalanche,
-    };
+      ...avalanche
+    }
   } else {
     return {
       ...defaults,
       hasEnoughForNetworkFee: true,
-      transfer: () => Promise.reject('invalid bridge'),
-    };
+      transfer: () => Promise.reject('invalid bridge')
+    }
   }
 
   // const {selectedCurrency} = useApplicationContext().appHook;
   // const network = useNetworkContext()?.network;
-  // const {getTokenSymbolOnNetwork} = useGetTokenSymbolOnNetwork();
   //
   // const assetPrice = usePrice(currentAsset, selectedCurrency?.toLowerCase());
   // const [amountTooLowError, setAmountTooLowError] = useState<string>('');

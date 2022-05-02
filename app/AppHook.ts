@@ -10,7 +10,6 @@ import { Repo } from 'Repo'
 import { SECURE_ACCESS_SET } from 'resources/Constants'
 import AppNavigation from 'navigation/AppNavigation'
 import { usePosthogContext } from 'contexts/PosthogContext'
-import { formatLargeNumber } from 'utils/Utils'
 
 export type AppHook = {
   onExit: () => Observable<ExitEvents>
@@ -136,26 +135,38 @@ export function useApp(
    * @param num
    * @param digits - default: 2 - fraction digits to be used by large and normal amounts.
    */
+  // adapted from: https://stackoverflow.com/a/9462382
   const currencyFormatter = useCallback(
     (num: number | string, digits = 2) => {
-      let number = typeof num === 'number' ? num : Number(num);
+      let number = typeof num === 'number' ? num : Number(num)
 
       if (isNaN(number)) {
-        number = 0;
+        number = 0
       }
+
+      const lookup = [
+        { value: 1, symbol: '' },
+        { value: 1e3, symbol: 'k' },
+        { value: 1e6, symbol: 'M' },
+        { value: 1e9, symbol: 'B' }
+      ]
+      const rx = /\.0+$|(\.[0-9]*[1-9])0+$/
+      const item = lookup
+        .slice()
+        .reverse()
+        .find(function (item) {
+          return number >= item.value
+        })
 
       // only formatting large numbers. example: $1.32B or $2.1M
       // this may change with UX requirements. Currently anything above
       // Millions will return USD only
       if (item && (item.value === 1e6 || item.value === 1e9)) {
-        const formattedNumber =
+        return (
           '$' +
           (number / item.value).toFixed(digits).replace(rx, '$1') +
-          item.symbol;
-        console.log(
-          `to be formatted: ${number} - formatted: ${formattedNumber}`,
-        );
-        return formattedNumber;
+          item.symbol
+        )
       }
 
       // everything else gets the localized number format, with 2 digits. or 6 if number is too small
@@ -164,9 +175,7 @@ export function useApp(
         number > -0.1 && number < 0.1 ? 6 : digits
       )
 
-      const formattedNumber = formatter.format(number);
-      console.log(`to be formatted: ${number} - formatted: ${formattedNumber}`);
-      return formattedNumber;
+      return formatter.format(number)
     },
     [localizedFormatter]
   )

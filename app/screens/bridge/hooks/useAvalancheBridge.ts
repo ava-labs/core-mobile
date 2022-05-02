@@ -5,16 +5,19 @@ import {
   getMinimumTransferAmount,
   satoshiToBtc,
   useBridgeSDK,
-  useHasEnoughForGas,
-} from '@avalabs/bridge-sdk';
-import {Big} from '@avalabs/avalanche-wallet-sdk';
-import {BridgeAdapter} from 'screens/bridge/hooks/useBridge';
-import {useBridgeContext} from 'contexts/BridgeContext';
-import {useCallback, useMemo, useState} from 'react';
-import {useSingularAssetBalanceEVM} from 'screens/bridge/hooks/useSingularAssetBalanceEVM';
-import {useAssetBalancesEVM} from 'screens/bridge/hooks/useAssetBalancesEVM';
-import {useNetworkContext, useWalletStateContext} from '@avalabs/wallet-react-components';
-import {getAvalancheProvider} from 'screens/bridge/utils/getAvalancheProvider';
+  useHasEnoughForGas
+} from '@avalabs/bridge-sdk'
+import { Big } from '@avalabs/avalanche-wallet-sdk'
+import { BridgeAdapter } from 'screens/bridge/hooks/useBridge'
+import { useBridgeContext } from 'contexts/BridgeContext'
+import { useCallback, useMemo, useState } from 'react'
+import { useSingularAssetBalanceEVM } from 'screens/bridge/hooks/useSingularAssetBalanceEVM'
+import { useAssetBalancesEVM } from 'screens/bridge/hooks/useAssetBalancesEVM'
+import {
+  useNetworkContext,
+  useWalletStateContext
+} from '@avalabs/wallet-react-components'
+import { getAvalancheProvider } from 'screens/bridge/utils/getAvalancheProvider'
 
 /**
  * Hook for when the source is Avalanche
@@ -25,88 +28,90 @@ export function useAvalancheBridge(amount: Big, bridgeFee: Big): BridgeAdapter {
     bridgeConfig,
     currentBlockchain,
     setTransactionDetails,
-    currentAssetData,
-  } = useBridgeSDK();
+    currentAssetData
+  } = useBridgeSDK()
 
-  const {createBridgeTransaction, transferAsset} = useBridgeContext();
+  const { createBridgeTransaction, transferAsset } = useBridgeContext()
 
-  const isAvalancheBridge = currentBlockchain === Blockchain.AVALANCHE;
-  const [txHash, setTxHash] = useState<string>();
+  const isAvalancheBridge = currentBlockchain === Blockchain.AVALANCHE
+  const [txHash, setTxHash] = useState<string>()
 
   const sourceBalance = useSingularAssetBalanceEVM(
     isAvalancheBridge ? currentAssetData : undefined,
-    Blockchain.AVALANCHE,
-  );
+    Blockchain.AVALANCHE
+  )
 
-  const {assetsWithBalances, loading} = useAssetBalancesEVM(
-    Blockchain.AVALANCHE,
-  );
+  const { assetsWithBalances, loading } = useAssetBalancesEVM(
+    Blockchain.AVALANCHE
+  )
 
-  const {addresses} = useWalletStateContext()!;
-  const {network} = useNetworkContext()!;
-  const avalancheProvider = getAvalancheProvider(network);
+  const { addresses } = useWalletStateContext()!
+  const { network } = useNetworkContext()!
+  const avalancheProvider = getAvalancheProvider(network)
   const hasEnoughForNetworkFee = useHasEnoughForGas(
     isAvalancheBridge ? addresses.addrC : undefined,
-    avalancheProvider,
-  );
+    avalancheProvider
+  )
 
-  const maximum = sourceBalance?.balance || BIG_ZERO;
+  const maximum = sourceBalance?.balance || BIG_ZERO
   const minimum = useMemo(() => {
     if (!bridgeConfig.config) {
-      return BIG_ZERO;
+      return BIG_ZERO
     }
     if (currentAssetData?.assetType === AssetType.ERC20) {
-      return bridgeFee.mul(3);
+      return bridgeFee.mul(3)
     } else {
       return satoshiToBtc(
         getMinimumTransferAmount(
           Blockchain.AVALANCHE,
           bridgeConfig.config,
-          amount,
-        ),
-      );
+          amount.toNumber()
+        )
+      )
     }
-  }, [amount, bridgeConfig.config, bridgeFee, currentAssetData?.assetType]);
-  const receiveAmount = amount.gt(minimum) ? amount.minus(bridgeFee) : BIG_ZERO;
+  }, [amount, bridgeConfig.config, bridgeFee, currentAssetData?.assetType])
+  const receiveAmount = amount.gt(minimum) ? amount.minus(bridgeFee) : BIG_ZERO
 
   const transfer = useCallback(async () => {
     if (!currentAssetData) {
-      return Promise.reject();
+      return Promise.reject()
     }
 
-    const timestamp = Date.now();
-    // const result = await transferAsset(
-    //   amount,
-    //   currentAssetData,
-    //   () => {
-    //     //not used
-    //   },
-    //   setTxHash,
-    // );
+    const timestamp = Date.now()
+    const hash = (
+      await transferAsset(
+        amount,
+        currentAssetData,
+        () => {
+          //not used
+        },
+        setTxHash
+      )
+    )?.toString()
 
     setTransactionDetails({
       tokenSymbol: currentAssetData.symbol,
+      amount
+    })
+
+    createBridgeTransaction({
+      sourceChain: Blockchain.AVALANCHE,
+      sourceTxHash: hash ?? '',
+      sourceStartedAt: timestamp,
+      targetChain: targetBlockchain,
       amount,
-    });
+      symbol: currentAssetData.symbol
+    })
 
-    // createBridgeTransaction({
-    //   sourceChain: Blockchain.AVALANCHE,
-    //   sourceTxHash: result.hash,
-    //   sourceStartedAt: timestamp,
-    //   targetChain: targetBlockchain,
-    //   amount,
-    //   symbol: currentAssetData.symbol,
-    // });
-
-    // return result.hash;
+    return hash
   }, [
     amount,
     createBridgeTransaction,
     currentAssetData,
     setTransactionDetails,
     targetBlockchain,
-    transferAsset,
-  ]);
+    transferAsset
+  ])
 
   return {
     sourceBalance,
@@ -117,6 +122,6 @@ export function useAvalancheBridge(amount: Big, bridgeFee: Big): BridgeAdapter {
     maximum,
     minimum,
     txHash,
-    transfer,
-  };
+    transfer
+  }
 }

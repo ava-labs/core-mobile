@@ -1,34 +1,33 @@
-import React, {FC, useContext, useEffect} from 'react';
+import React, { FC, useEffect } from 'react'
 import { View } from 'react-native'
-import {ApplicationContext, useApplicationContext} from 'contexts/ApplicationContext';
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaListItem from 'components/AvaListItem'
 import { Row } from 'components/Row'
 import AvaText from 'components/AvaText'
 import OvalTagBg from 'components/OvalTagBg'
-import { displaySeconds } from 'utils/Utils'
 import CheckmarkSVG from 'components/svg/CheckmarkSVG'
 import ConfirmationTracker from 'screens/bridge/components/ConfirmationTracker'
-import {useStopwatch} from 'react-timer-hook';
+import { useStopwatch } from 'react-timer-hook'
 
 interface Props {
   paddingHorizontal?: number
   confirmationCount: number
   requiredConfirmationCount: number
   complete: boolean
-  startTime: number;
-  endTime?: number;
+  startTime?: number
+  endTime?: number
   started: boolean
 }
 
 const padTimeElapsed = (startTime: number, endTime?: number): Date => {
   // based on created time, set elapsed time offset
 
-  const now = Date.now();
-  const diff = (endTime || now) - startTime;
-  const offset = new Date(now + diff);
+  const now = Date.now()
+  const diff = (endTime || now) - startTime
+  const offset = new Date(now + diff)
 
-  return offset;
-};
+  return offset
+}
 
 function ElapsedTimer({
   startTime,
@@ -37,30 +36,30 @@ function ElapsedTimer({
   startTime: number
   endTime?: number
 }) {
-  const theme = useApplicationContext().theme;
+  const theme = useApplicationContext().theme
   const { hours, minutes, seconds, reset } = useStopwatch({
     autoStart: !endTime,
-    offsetTimestamp: padTimeElapsed(startTime, endTime),
-  });
+    offsetTimestamp: padTimeElapsed(startTime, endTime)
+  })
 
   // Stop the timer when we know the endTime
   useEffect(() => {
     if (endTime) {
-      reset(padTimeElapsed(startTime, endTime), false);
+      reset(padTimeElapsed(startTime, endTime), false)
     }
     // Cannot add `reset` because it changes on every render
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [endTime]);
+  }, [endTime])
 
   const displayedSeconds = seconds.toLocaleString('en-US', {
-    minimumIntegerDigits: 2,
-  });
+    minimumIntegerDigits: 2
+  })
   const displayedMinutes = minutes.toLocaleString('en-US', {
-    minimumIntegerDigits: 2,
-  });
-  const displayedHours = hours > 0 ? hours.toLocaleString('en-US') : undefined;
+    minimumIntegerDigits: 2
+  })
+  const displayedHours = hours > 0 ? hours.toLocaleString('en-US') : undefined
 
-  const complete = !!endTime;
+  const complete = !!endTime
 
   return (
     <OvalTagBg
@@ -89,7 +88,8 @@ function ElapsedTimer({
 const BridgeConfirmations: FC<Props> = ({
   confirmationCount,
   requiredConfirmationCount,
-  startTime, endTime= 0,
+  startTime,
+  endTime = 0,
   paddingHorizontal = 16,
   started = false
 }) => {
@@ -106,7 +106,9 @@ const BridgeConfirmations: FC<Props> = ({
                 : confirmationCount}
               /{requiredConfirmationCount}
             </AvaText.Heading3>
-            <ElapsedTimer startTime={startTime} endTime={endTime} />
+            {startTime && (
+              <ElapsedTimer startTime={startTime} endTime={endTime} />
+            )}
           </Row>
         }
       />

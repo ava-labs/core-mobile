@@ -1,19 +1,26 @@
-import Big from 'big.js';
+import Big from 'big.js'
 import {
   AssetType,
   BIG_ZERO,
   Blockchain,
+  useBridgeConfig,
   useBridgeSDK,
   useHasEnoughForGas,
-  WrapStatus,
-} from '@avalabs/bridge-sdk';
-import {BridgeAdapter} from 'screens/bridge/hooks/useBridge';
-import {useBridgeContext} from 'contexts/BridgeContext';
-import {useSingularAssetBalanceEVM} from 'screens/bridge/hooks/useSingularAssetBalanceEVM';
-import {useAssetBalancesEVM} from 'screens/bridge/hooks/useAssetBalancesEVM';
-import {useNetworkContext, useWalletStateContext} from '@avalabs/wallet-react-components';
-import {getEthereumProvider} from 'screens/bridge/utils/getEthereumProvider';
-import {useCallback, useState} from 'react';
+  WrapStatus
+} from '@avalabs/bridge-sdk'
+import { BridgeAdapter } from 'screens/bridge/hooks/useBridge'
+import { useBridgeContext } from 'contexts/BridgeContext'
+import { useSingularAssetBalanceEVM } from 'screens/bridge/hooks/useSingularAssetBalanceEVM'
+import { useAssetBalancesEVM } from 'screens/bridge/hooks/useAssetBalancesEVM'
+import {
+  useNetworkContext,
+  useWalletContext,
+  useWalletStateContext
+} from '@avalabs/wallet-react-components'
+import { getEthereumProvider } from 'screens/bridge/utils/getEthereumProvider'
+import { useCallback, useState } from 'react'
+import { isMainnetNetwork } from '@avalabs/avalanche-wallet-sdk'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 /**
  * Hook for when the bridge source chain is Ethereum
@@ -23,76 +30,89 @@ export function useEthBridge(amount: Big, bridgeFee: Big): BridgeAdapter {
     currentAsset,
     currentAssetData,
     setTransactionDetails,
-    currentBlockchain,
-  } = useBridgeSDK();
+    currentBlockchain
+  } = useBridgeSDK()
 
-  const isEthereumBridge = currentBlockchain === Blockchain.ETHEREUM;
+  const isEthereumBridge = currentBlockchain === Blockchain.ETHEREUM
 
-  const {createBridgeTransaction, transferAsset} = useBridgeContext();
+  const { createBridgeTransaction, transferAsset, bridgeTransactions } =
+    useBridgeContext()
   const sourceBalance = useSingularAssetBalanceEVM(
     isEthereumBridge ? currentAssetData : undefined,
-    Blockchain.ETHEREUM,
-  );
-  const {assetsWithBalances, loading} = useAssetBalancesEVM(
-    Blockchain.ETHEREUM,
-  );
+    Blockchain.ETHEREUM
+  )
+  const { assetsWithBalances, loading } = useAssetBalancesEVM(
+    Blockchain.ETHEREUM
+  )
 
-  const {addresses} = useWalletStateContext()!;
-  const network = useNetworkContext()?.network;
-  const ethereumProvider = getEthereumProvider(network);
+  const { addresses } = useWalletStateContext()!
+  const network = useNetworkContext()?.network
+  const config = useBridgeConfig().config
+  const wallet = useWalletContext().wallet
+  const ethereumProvider = getEthereumProvider(network)
   const hasEnoughForNetworkFee = useHasEnoughForGas(
     isEthereumBridge ? addresses.addrC : undefined,
-    ethereumProvider,
-  );
+    ethereumProvider
+  )
 
-  const [wrapStatus, setWrapStatus] = useState<WrapStatus>(WrapStatus.INITIAL);
-  const [txHash, setTxHash] = useState<string>();
+  const isMainnet = isMainnetNetwork(network?.config)
 
-  const maximum = sourceBalance?.balance || BIG_ZERO;
-  const minimum = bridgeFee?.mul(3);
-  const receiveAmount = amount.gt(minimum) ? amount.minus(bridgeFee) : BIG_ZERO;
+  const [wrapStatus, setWrapStatus] = useState<WrapStatus>(WrapStatus.INITIAL)
+  const [txHash, setTxHash] = useState<string>()
+
+  const maximum = sourceBalance?.balance || BIG_ZERO
+  const minimum = bridgeFee?.mul(3)
+  const receiveAmount = amount.gt(minimum) ? amount.minus(bridgeFee) : BIG_ZERO
 
   const transfer = useCallback(async () => {
-    if (!currentAssetData) {
-      return Promise.reject();
+    if (!currentAssetData || !wallet || !network || !config) {
+      return Promise.reject()
     }
 
-    const timestamp = Date.now();
+    const timestamp = Date.now()
     const symbol =
       currentAssetData.assetType === AssetType.NATIVE
         ? currentAssetData.wrappedAssetSymbol
-        : currentAsset || '';
+        : currentAsset || ''
 
     //this transfer is part of the Bridge context
-    // const result = await transferAsset(
-    //   amount,
-    //   currentAssetData,
-    //   setWrapStatus,
-    //   setTxHash,
-    // );
+    const result = await transferAsset(
+      amount,
+      currentAssetData,
+      setWrapStatus,
+      setTxHash
+    )
 
     setTransactionDetails({
       tokenSymbol: symbol,
-      amount,
-    });
-    // createBridgeTransaction({
-    //   sourceChain: Blockchain.ETHEREUM,
-    //   sourceTxHash: result.hash,
-    //   sourceStartedAt: timestamp,
-    //   targetChain: Blockchain.AVALANCHE,
-    //   amount,
-    //   symbol,
-    // });
+      amount
+    })
 
-    return result.hash;
+    createBridgeTransaction(
+      {
+        sourceChain: Blockchain.ETHEREUM,
+        sourceTxHash: result?.hash ?? '',
+        sourceStartedAt: timestamp,
+        targetChain: Blockchain.AVALANCHE,
+        amount,
+        symbol
+      },
+      bridgeTransactions,
+      config,
+      network,
+      wallet.getAddressC(),
+      wallet.getAddressBTC(isMainnet ? 'bitcoin' : 'testnet')
+    )
+
+    return result?.hash
   }, [
     amount,
     currentAssetData,
     createBridgeTransaction,
     currentAsset,
     setTransactionDetails,
-    transferAsset,
-  ]);
+    transferAsset
+  ])
 
   return {
     sourceBalance,
@@ -104,6 +124,6 @@ export function useEthBridge(amount: Big, bridgeFee: Big): BridgeAdapter {
     minimum,
     wrapStatus,
     txHash,
-    transfer,
-  };
+    transfer
+  }
 }

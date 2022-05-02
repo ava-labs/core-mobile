@@ -1,16 +1,16 @@
 import {
   Blockchain,
   useBridgeSDK,
-  useGetTokenSymbolOnNetwork,
-} from '@avalabs/bridge-sdk';
+  useGetTokenSymbolOnNetwork
+} from '@avalabs/bridge-sdk'
 import {
   useNetworkContext,
-  useWalletStateContext,
-} from '@avalabs/wallet-react-components';
-import {AssetBalance} from 'screens/bridge/AssetBalance';
-import {useEffect, useMemo, useState} from 'react';
-import {getEthereumBalances} from 'screens/bridge/handlers/getEthereumBalances';
-import {getAvalancheBalances} from 'screens/bridge/handlers/getAvalancheBalances';
+  useWalletStateContext
+} from '@avalabs/wallet-react-components'
+import { AssetBalance } from 'screens/bridge/AssetBalance'
+import { useEffect, useMemo, useState } from 'react'
+import { getEthereumBalances } from 'screens/bridge/handlers/getEthereumBalances'
+import { getAvalancheBalances } from 'screens/bridge/handlers/getAvalancheBalances'
 
 /**
  * Get for the current chain.
@@ -18,21 +18,21 @@ import {getAvalancheBalances} from 'screens/bridge/handlers/getAvalancheBalances
  * The list is sorted by balance.
  */
 export function useAssetBalancesEVM(
-  chain: Blockchain.AVALANCHE | Blockchain.ETHEREUM,
+  chain: Blockchain.AVALANCHE | Blockchain.ETHEREUM
 ): {
-  assetsWithBalances: AssetBalance[];
-  loading: boolean;
+  assetsWithBalances: AssetBalance[]
+  loading: boolean
 } {
-  const [loading, setLoading] = useState(false);
-  const [ethBalances, setEthBalances] = useState<AssetBalance[]>([]);
+  const [loading, setLoading] = useState(false)
+  const [ethBalances, setEthBalances] = useState<AssetBalance[]>([])
   // TODO update this when adding support for /convert
-  const showDeprecated = false;
+  const showDeprecated = false
 
   // still dont like this forced unwrapping :(
-  const {addresses, erc20Tokens} = useWalletStateContext()!;
-  const network = useNetworkContext()?.network;
-  const {avalancheAssets, ethereumAssets, currentBlockchain} = useBridgeSDK();
-  const {getTokenSymbolOnNetwork} = useGetTokenSymbolOnNetwork();
+  const { addresses, erc20Tokens } = useWalletStateContext()!
+  const network = useNetworkContext()?.network
+  const { avalancheAssets, ethereumAssets, currentBlockchain } = useBridgeSDK()
+  const { getTokenSymbolOnNetwork } = useGetTokenSymbolOnNetwork()
 
   // For balances on the Avalanche side, for all bridge assets on avalanche
   const avalancheBalances = useMemo(() => {
@@ -40,22 +40,22 @@ export function useAssetBalancesEVM(
       chain !== Blockchain.AVALANCHE ||
       currentBlockchain !== Blockchain.AVALANCHE
     ) {
-      return [];
+      return []
     }
     return getAvalancheBalances(avalancheAssets, erc20Tokens).map(token => ({
       ...token,
       symbolOnNetwork: getTokenSymbolOnNetwork(
         token.symbol,
-        Blockchain.AVALANCHE,
-      ),
-    }));
+        Blockchain.AVALANCHE
+      )
+    }))
   }, [
     chain,
     currentBlockchain,
     avalancheAssets,
     erc20Tokens,
-    getTokenSymbolOnNetwork,
-  ]);
+    getTokenSymbolOnNetwork
+  ])
 
   // Fetch balances from Ethereum (including native)
   useEffect(() => {
@@ -63,27 +63,26 @@ export function useAssetBalancesEVM(
       chain !== Blockchain.ETHEREUM ||
       currentBlockchain !== Blockchain.ETHEREUM
     ) {
-      return;
+      return
     }
-    setLoading(true);
-
-    (async function getBalances() {
+    setLoading(true)
+    ;(async function getBalances() {
       const balances = await getEthereumBalances(
         ethereumAssets,
         addresses.addrC,
         showDeprecated,
-        network,
-      );
-      setLoading(false);
-      setEthBalances(balances);
-    })();
+        network
+      )
+      setLoading(false)
+      setEthBalances(balances)
+    })()
   }, [
     addresses.addrC,
     ethereumAssets,
     chain,
     showDeprecated,
-    currentBlockchain,
-  ]);
+    currentBlockchain
+  ])
 
   const assetsWithBalances = (
     chain === Blockchain.AVALANCHE
@@ -91,7 +90,7 @@ export function useAssetBalancesEVM(
       : chain === Blockchain.ETHEREUM
       ? ethBalances
       : []
-  ).sort((asset1, asset2) => asset2.balance?.cmp(asset1.balance || 0) || 0);
+  ).sort((asset1, asset2) => asset2.balance?.cmp(asset1.balance || 0) || 0)
 
-  return {assetsWithBalances, loading};
+  return { assetsWithBalances, loading }
 }

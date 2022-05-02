@@ -46,13 +46,19 @@
   resolved "https://registry.yarnpkg.com/@avalabs/blizzard-sdk/-/blizzard-sdk-2.1.4.tgz#62e2b110ef46ce39381016ba242b786aca22be53"
   integrity sha512-7u4sz9l8xAbs5jFXSJIJIGZPEwlEC4uBBrizHLm/s2hu3+CqYmaOxRYxArbvktOQkAiCqyN9RhwMQshmd4vwpw==
 
-"@avalabs/bridge-sdk@2.2.0":
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/@avalabs/bridge-sdk/-/bridge-sdk-2.2.0.tgz#a0bb92ed4cdda601b034f85a7a82c5d0735c18f2"
-  integrity sha512-6mzaxiUEOpl6vJG0Ox76RWBvT7dJqTainjc/FP8xxUUZ9XD9Xbrh6H50stHIeBPtMLwwLOH+6N1qCr1l4+fftQ==
+"@avalabs/blockcypher-sdk@2.3.0-alpha.5":
+  version "2.3.0-alpha.5"
+  resolved "https://registry.yarnpkg.com/@avalabs/blockcypher-sdk/-/blockcypher-sdk-2.3.0-alpha.5.tgz#5ab917adb30639f99b3b9f45a9743c53923f1b18"
+  integrity sha512-woTffjfZ+KxGyW5BI4lmG0jp5aVLQ8lgz5dOMJan9PtYIm88IlyQ7kv/oiMBUeZMjSYtotOU4VvGY9YT8ruy8g==
+
+"@avalabs/bridge-sdk@2.3.0-alpha.5":
+  version "2.3.0-alpha.5"
+  resolved "https://registry.yarnpkg.com/@avalabs/bridge-sdk/-/bridge-sdk-2.3.0-alpha.5.tgz#8a87b54cf8897c29a9e8b2bd79bc84fd00f0dd55"
+  integrity sha512-jO/15Qjk+iFtsNgPFD0S7YKYie6CBvCfX9dKherdcDz+cj0Dj2H4JPOR/KSRxPXoYXh0Y8sadxNuP2yKhaERMA==
   dependencies:
-    "@avalabs/coingecko-sdk" "2.2.0"
-    "@avalabs/utils-sdk" "2.2.0"
+    "@avalabs/blockcypher-sdk" "2.3.0-alpha.5"
+    "@avalabs/coingecko-sdk" "2.3.0-alpha.5"
+    "@avalabs/utils-sdk" "2.3.0-alpha.5"
     big.js "6.1.1"
     bitcoinjs-lib "5.2.0"
     coinselect "3.1.12"
@@ -65,12 +71,12 @@
   dependencies:
     "@avalabs/utils-sdk" "2.2.0"
 
-"@avalabs/coingecko-sdk@2.2.0":
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/@avalabs/coingecko-sdk/-/coingecko-sdk-2.2.0.tgz#6a5bcde8bd8856bc466f456989f9533196ac993a"
-  integrity sha512-e96vW/23S8jSZSxpsrWcm5bO9XSR2O7b54hWM+7ippE4f0ejKObPudV05HBy8LOESFgXBP4xgrZHBooNeRbDLA==
+"@avalabs/coingecko-sdk@2.3.0-alpha.5":
+  version "2.3.0-alpha.5"
+  resolved "https://registry.yarnpkg.com/@avalabs/coingecko-sdk/-/coingecko-sdk-2.3.0-alpha.5.tgz#8b21a537d720f3593c9e95f45ddfc8ebb87c1b23"
+  integrity sha512-g35bJUYgcSa4ji89Dq8Usnb/dmmsedRK5JNRLxHWiLZyq1rs9lPgdYBL4rPJVor+L7fphL9Ew7g/J4GYw5aI5A==
   dependencies:
-    "@avalabs/utils-sdk" "2.2.0"
+    "@avalabs/utils-sdk" "2.3.0-alpha.5"
 
 "@avalabs/covalent-sdk@2.0.0":
   version "2.0.0"
@@ -98,11 +104,10 @@
   resolved "https://registry.yarnpkg.com/@avalabs/utils-sdk/-/utils-sdk-2.2.0.tgz#14d771f98ba5ed164410fa0cf7c263ba9e3a0dea"
   integrity sha512-W/CsP0J0587v39XVXi/z2ptkD/inEWg9HrvhtRz3cCreGEjwoJhwODFrPpCyxhM38GfwMEXNiMYcrcKBt9jJpQ==
 
-"@avalabs/utils-sdk@2.2.0":
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/@avalabs/utils-sdk/-/utils-sdk-2.2.0.tgz#14d771f98ba5ed164410fa0cf7c263ba9e3a0dea"
-  integrity sha512-W/CsP0J0587v39XVXi/z2ptkD/inEWg9HrvhtRz3cCreGEjwoJhwODFrPpCyxhM38GfwMEXNiMYcrcKBt9jJpQ==
-
+"@avalabs/utils-sdk@2.3.0-alpha.5":
+  version "2.3.0-alpha.5"
+  resolved "https://registry.yarnpkg.com/@avalabs/utils-sdk/-/utils-sdk-2.3.0-alpha.5.tgz#7d0240e5342a5973d8d29366974e36985a787d43"
+  integrity sha512-mOjh5tWnrsT2RYzv8RZGrfm+MLIAf14v5Az5Ym8Z+jSfqXqJksET2fjq5LW9UUYoCQs8W8nC5J13+rsOrlCvLw==
 
 "@avalabs/wallet-react-components@1.30.3":
   version "1.30.3"
