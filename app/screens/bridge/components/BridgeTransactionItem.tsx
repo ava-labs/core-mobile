@@ -35,7 +35,7 @@ export type TransactionBridgeItem =
 interface BridgeTransactionItemProps {
   item: TransactionBridgeItem
   onPress: () => void
-  pending: boolean
+  pending?: boolean
 }
 
 const BridgeTransactionItem: FC<BridgeTransactionItemProps> = ({

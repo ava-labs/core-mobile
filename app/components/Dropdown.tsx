@@ -1,13 +1,11 @@
-import React, { FC, useMemo, useRef, useState } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 import {
   FlatList,
   ListRenderItemInfo,
   Platform,
   Pressable,
-  StyleProp,
   StyleSheet,
-  View,
-  ViewStyle
+  View
 } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
@@ -16,41 +14,52 @@ import { Popable, PopableManager } from 'react-native-popable'
 import Separator from 'components/Separator'
 import CheckmarkSVG from 'components/svg/CheckmarkSVG'
 import isString from 'lodash.isstring'
-import { Space } from 'components/Space'
 import { BlurView } from '@react-native-community/blur'
+import { Row } from 'components/Row'
+import { Space } from 'components/Space'
+import AvaButton from 'components/AvaButton'
 
-interface Props {
-  filterItems: string[]
-  title?: string
-  currentItem: string | React.ReactNode
-  onItemSelected?: (selectedItem: string) => void
-  minWidth?: number
-  style?: StyleProp<ViewStyle>
-  customRenderItem?: (item: ListRenderItemInfo<string>) => React.ReactNode
+interface Props<ItemT> {
+  data: ItemT[]
+  selectionRenderItem: (selectedItem: ItemT) => string | React.ReactNode
+  width: number
+  alignment?: 'flex-start' | 'flex-end' | 'center'
+  preselectedIndex?: number
+  optionsRenderItem?: (item: ListRenderItemInfo<ItemT>) => React.ReactNode
+  onItemSelected?: (selectedItem: ItemT) => void
 }
 
 /**
  * Pure component - NOT to be attached to any process such as Send, Swap, Bridge, etc.
+ * Not the right tool for job because Popable doesnt calculate children size correctly and it cannot align Popover element
+ * relative to selected item.
  *
- * @param filterOptions Array of string items to be selected
- * @param title If not using icon, title of the filter
- * @param currentItem If not using icon, current filter selection
- * @param onItemSelected selection callback
- * @param minWidth minWidth of Popable
- * @param style Popable style
+ * @param data Array of options to be selected
+ * @param selectionRenderItem Component to be rendered for selected option
+ * @param preselectedIndex Set which item from data shoul be pre-selected
+ * @param optionsRenderItem Render item for dropdown options
+ * @param onItemSelected On selected option callback
+ * @param width Set this to max width of rendered items
+ * @param alignment How should dropdown options be aligned relative to selected option.
  */
-const DropDown: FC<Props> = ({
-  filterItems,
-  title,
-  currentItem,
+function DropDown<ItemT>({
+  data,
+  selectionRenderItem,
+  preselectedIndex = 0,
+  optionsRenderItem,
   onItemSelected,
-  minWidth = 150,
-  style,
-  customRenderItem
-}) => {
+  width = 150,
+  alignment = 'center'
+}: Props<ItemT>) {
   const theme = useApplicationContext().theme
   const ref = useRef<PopableManager>(null)
   const [isFilterOpen, setIsFilterOpen] = useState(false)
+  const [selectedItem, setSelectedItem] = useState(
+    data.length ? data[preselectedIndex] : undefined
+  )
+  const selectionItem = selectedItem
+    ? selectionRenderItem(selectedItem)
+    : undefined
 
   /**
    * background to be used for items when its visible
@@ -77,20 +86,27 @@ const DropDown: FC<Props> = ({
    * Used when no custom rendering is passed
    * @param item
    */
-  const renderItem = (item: ListRenderItemInfo<string>) => {
+  const renderItem = (item: ListRenderItemInfo<ItemT>) => {
     return (
-      <View>
-        <AvaText.Body1
-          textStyle={{ paddingVertical: 8 }}
-          onPress={() => {
-            onItemSelected?.(item.item)
-            ref?.current?.hide()
-            setIsFilterOpen(!isFilterOpen)
+      <AvaButton.Base
+        onPress={() => {
+          setSelectedItem(item.item)
+          onItemSelected?.(item.item)
+          ref?.current?.hide()
+          setIsFilterOpen(!isFilterOpen)
+        }}>
+        <Row
+          style={{
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            paddingHorizontal: 16
           }}>
-          {item.item}
-        </AvaText.Body1>
-        {currentItem === item.item && <CheckmarkSVG color={'white'} />}
-      </View>
+          <AvaText.Body1 textStyle={{ paddingVertical: 8 }}>
+            {item.item}
+          </AvaText.Body1>
+          {selectedItem === item.item && <CheckmarkSVG color={'white'} />}
+        </Row>
+      </AvaButton.Base>
     )
   }
 
@@ -99,15 +115,16 @@ const DropDown: FC<Props> = ({
    * so to capture the manual dismissal of popable
    * @param item
    */
-  const renderCustomItem = (item: ListRenderItemInfo<string>) => {
+  const renderCustomItem = (item: ListRenderItemInfo<ItemT>) => {
     return (
       <Pressable
         onPress={() => {
+          setSelectedItem(item.item)
           onItemSelected?.(item.item)
           ref?.current?.hide()
           setIsFilterOpen(!isFilterOpen)
         }}>
-        {customRenderItem?.(item)}
+        {optionsRenderItem?.(item)}
       </Pressable>
     )
   }
@@ -120,8 +137,8 @@ const DropDown: FC<Props> = ({
       <>
         {blurBackground}
         <FlatList
-          data={filterItems}
-          renderItem={customRenderItem ? renderCustomItem : renderItem}
+          data={data}
+          renderItem={optionsRenderItem ? renderCustomItem : renderItem}
           ItemSeparatorComponent={Separator}
         />
       </>
@@ -142,38 +159,35 @@ const DropDown: FC<Props> = ({
       action={'press'}
       onAction={setIsFilterOpen}
       position={'bottom'}
-      style={[
-        {
-          minWidth: minWidth,
-          marginTop: 0,
-          left: -10
-        },
-        style
-      ]}
+      style={{
+        width: width,
+        overflow: 'visible'
+      }}
+      wrapperStyle={{
+        width: width,
+        overflow: 'visible'
+      }}
+      caret={false}
       backgroundColor={theme.transparent}>
-      <View
+      <Row
         style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'flex-end'
+          justifyContent: alignment,
+          alignItems: 'center'
         }}>
-        {isString(currentItem) ? (
+        {isString(selectionItem) ? (
           <AvaText.ButtonSmall
             textStyle={{ color: theme.colorText1, paddingEnd: 4 }}>
-            {title && title + ': '}
-            {currentItem}
+            {selectionItem}
           </AvaText.ButtonSmall>
         ) : (
-          <>{currentItem}</>
+          <>{selectionItem}</>
         )}
-        <>
-          <Space x={4} />
-          <CarrotSVG
-            direction={isFilterOpen ? 'up' : 'down'}
-            color={theme.colorText1}
-          />
-        </>
-      </View>
+        <Space x={4} />
+        <CarrotSVG
+          direction={isFilterOpen ? 'up' : 'down'}
+          color={theme.colorText1}
+        />
+      </Row>
     </Popable>
   )
 }
