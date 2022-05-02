@@ -18,6 +18,7 @@ import { BlurView } from '@react-native-community/blur'
 import { Row } from 'components/Row'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
+import { noop } from 'rxjs'
 
 interface Props<ItemT> {
   data: ItemT[]
@@ -27,6 +28,7 @@ interface Props<ItemT> {
   preselectedIndex?: number
   optionsRenderItem?: (item: ListRenderItemInfo<ItemT>) => React.ReactNode
   onItemSelected?: (selectedItem: ItemT) => void
+  disabled?: boolean
 }
 
 /**
@@ -49,7 +51,8 @@ function DropDown<ItemT>({
   optionsRenderItem,
   onItemSelected,
   width = 150,
-  alignment = 'center'
+  alignment = 'center',
+  disabled
 }: Props<ItemT>) {
   const theme = useApplicationContext().theme
   const ref = useRef<PopableManager>(null)
@@ -155,7 +158,7 @@ function DropDown<ItemT>({
   return (
     <Popable
       ref={ref}
-      content={filterContent()}
+      content={disabled ? <View /> : filterContent()}
       action={'press'}
       onAction={setIsFilterOpen}
       position={'bottom'}
@@ -182,12 +185,16 @@ function DropDown<ItemT>({
         ) : (
           <>{selectionItem}</>
         )}
-        <Space x={4} />
-        <CarrotSVG
-          direction={isFilterOpen ? 'up' : 'down'}
-          color={theme.colorText1}
-        />
-      </Row>
+        {!disabled && (
+          <>
+            <Space x={4} />
+            <CarrotSVG
+              direction={isFilterOpen ? 'up' : 'down'}
+              color={theme.colorText1}
+            />
+          </>
+        )}
+      </View>
     </Popable>
   )
 }

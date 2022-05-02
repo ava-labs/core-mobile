@@ -13,8 +13,8 @@ import {
 } from '@avalabs/wallet-react-components'
 
 import { useEffect, useMemo, useState } from 'react'
-import { AssetBalance } from 'screens/bridge/AssetBalance'
 import { getEthereumBalance } from 'screens/bridge/handlers/getEthereumBalance'
+import { AssetBalance } from 'screens/bridge/utils/types'
 
 /**
  * Get the balance of a bridge supported asset for the given blockchain.

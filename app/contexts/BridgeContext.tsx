@@ -25,9 +25,10 @@ import {
 } from 'screens/bridge/handlers/createBridgeTransaction'
 import { getAvalancheProvider } from 'screens/bridge/utils/getAvalancheProvider'
 import { getEthereumProvider } from 'screens/bridge/utils/getEthereumProvider'
-import { BridgeState, defaultBridgeState } from 'screens/bridge/BridgeState'
+import { BridgeState, defaultBridgeState } from 'screens/bridge/utils/BridgeState'
 import useSignAndIssueBtcTx from 'screens/bridge/hooks/useSignAndIssueBtcTx'
 import { useApplicationContext } from 'contexts/ApplicationContext'
+import {useIsMainnet} from 'hooks/isMainnet';
 
 export enum TransferEventType {
   WRAP_STATUS = 'wrap_status',
@@ -82,7 +83,7 @@ function LocalBridgeProvider({ children }: { children: any }) {
   const { signAndIssueBtcTx } = useSignAndIssueBtcTx()
   const avalancheProvider = getAvalancheProvider(network)
   const ethereumProvider = getEthereumProvider(network)
-  const isMainnet = network ? isMainnetNetwork(network?.config) : false
+  const isMainnet = useIsMainnet()
 
   const [bridgeState, setBridgeState] =
     useState<BridgeState>(defaultBridgeState)

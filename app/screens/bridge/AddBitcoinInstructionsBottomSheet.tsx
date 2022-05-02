@@ -8,22 +8,18 @@ import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import { Row } from 'components/Row'
 import AvaxQACode from 'components/AvaxQRCode'
-import {
-  useNetworkContext,
-  useWalletContext
-} from '@avalabs/wallet-react-components'
+import { useWalletContext } from '@avalabs/wallet-react-components'
 import TokenAddress from 'components/TokenAddress'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { isMainnetNetwork } from '@avalabs/avalanche-wallet-sdk'
+import { useIsMainnet } from 'hooks/isMainnet'
 
 function AddBitcoinInstructionsBottomSheet(): JSX.Element {
   const theme = useApplicationContext().theme
   const navigation = useNavigation()
   const bottomSheetModalRef = useRef<BottomSheet>(null)
   const snapPoints = useMemo(() => ['0%', '80%'], [])
-  const network = useNetworkContext()?.network
   const wallet = useWalletContext().wallet
-  const isMainnet = isMainnetNetwork(network?.config)
+  const isMainnet = useIsMainnet()
   const btcAddress = wallet?.getAddressBTC(isMainnet ? 'bitcoin' : 'testnet')
 
   useEffect(() => {

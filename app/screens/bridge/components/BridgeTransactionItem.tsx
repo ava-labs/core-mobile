@@ -1,21 +1,7 @@
 import React, { FC, useEffect } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import {
-  Blockchain,
-  TrackerViewProps,
-  TransactionDetails,
-  useBridgeConfig,
-  useBridgeSDK,
-  useTxTracker
-} from '@avalabs/bridge-sdk'
-import { BridgeTransaction, useBridgeContext } from 'contexts/BridgeContext'
-import {
-  TransactionNormal,
-  useNetworkContext,
-  useWalletStateContext
-} from '@avalabs/wallet-react-components'
-import { getAvalancheProvider } from 'screens/bridge/utils/getAvalancheProvider'
-import { getEthereumProvider } from 'screens/bridge/utils/getEthereumProvider'
+import { BridgeTransaction } from '@avalabs/bridge-sdk'
+import { TransactionERC20 } from '@avalabs/wallet-react-components'
 import { ShowSnackBar } from 'components/Snackbar'
 import AvaText from 'components/AvaText'
 import AvaListItem from 'components/AvaListItem'
@@ -25,97 +11,30 @@ import { StyleSheet, View } from 'react-native'
 import Spinner from 'components/Spinner'
 import LinkSVG from 'components/svg/LinkSVG'
 import { Space } from 'components/Space'
-
-// when state is pending, transaction has type BridgeTransaction
-// when transaction is complete, transaction has type TransactionNormal & TransactionDetails
-export type TransactionBridgeItem =
-  | BridgeTransaction
-  | (TransactionNormal & TransactionDetails)
+import { useBridgeContext } from 'contexts/BridgeContext'
+import { isPendingBridgeTransaction } from 'screens/bridge/utils/bridgeTransactionUtils'
+import { useBlockchainNames } from 'screens/activity/hooks/useBlockchainNames'
 
 interface BridgeTransactionItemProps {
-  item: TransactionBridgeItem
+  item: TransactionERC20 | BridgeTransaction
   onPress: () => void
-  pending?: boolean
 }
 
 const BridgeTransactionItem: FC<BridgeTransactionItemProps> = ({
   item,
-  onPress,
-  pending
+  onPress
 }) => {
+  const pending = isPendingBridgeTransaction(item)
   const theme = useApplicationContext().theme
-  const fromAvalancheToEthereum =
-    ('sourceNetwork' in item && item.sourceNetwork === Blockchain.AVALANCHE) ||
-    ('to' in item && item.to === '0x0000000000000000000000000000000000000000')
-  const { network } = useNetworkContext() || {}
-  const { config } = useBridgeConfig()
   const { removeBridgeTransaction } = useBridgeContext()
-  const { addresses } = useWalletStateContext() || {}
-  const { transactionDetails, bridgeAssets, setTransactionDetails } =
-    useBridgeSDK()
-
-  let fallbackRunning = false
-
-  const txProps: TrackerViewProps | undefined =
-    pending && 'sourceTxHash' in item && item.sourceTxHash
-      ? // @TODO: breaking rules of hook.. useTxTracker should prob not be a hook
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        useTxTracker(
-          item.sourceNetwork,
-          item.sourceTxHash,
-          item.createdAt?.toString() || '',
-          getAvalancheProvider(network),
-          getEthereumProvider(network),
-          setTransactionDetails,
-          config,
-          addresses?.addrC,
-          transactionDetails,
-          bridgeAssets
-        )
-      : undefined
-
-  // Currently there's a bug where txProps.complete never returns true.
-  // this function will remove the pending transaction if `confirmationCount > requiredConfirmationCount`
-  // but part of the in the SDK is that useTxTracker will keep running in the background and making requests.
-  // The bridge team is aware of that and is working on a fix.
-  function fallbackCountdown() {
-    let seconds = 60
-    function tick() {
-      seconds--
-      if (seconds > 0) {
-        setTimeout(tick, 1000)
-      } else {
-        txProps && removeBridgeTransaction({ ...txProps }).then()
-      }
-    }
-    tick()
-  }
+  const { sourceBlockchain, targetBlockchain } = useBlockchainNames(item)
 
   useEffect(() => {
-    if (txProps) {
-      if (txProps?.complete) {
-        ShowSnackBar(`You have received ${txProps.amount} ${txProps.symbol}`)
-        removeBridgeTransaction({ ...txProps }).then()
-      } else if (
-        txProps.confirmationCount > txProps.requiredConfirmationCount
-      ) {
-        if (!fallbackRunning) {
-          fallbackRunning = true
-          fallbackCountdown()
-        }
-      }
+    if (pending && item.complete) {
+      ShowSnackBar(`You have received ${item.amount} ${item.symbol}`)
+      removeBridgeTransaction(item.sourceTxHash).then()
     }
-  }, [txProps?.complete, txProps?.confirmationCount])
-
-  const amount =
-    (pending
-      ? item.amount?.toString()
-      : 'amountDisplayValue' in item && item.amountDisplayValue) || ''
-
-  const symbol =
-    (pending
-      ? 'symbol' in item && item.symbol
-      : 'tokenSymbol' in item && item.tokenSymbol) || ''
+  }, [pending && item.complete])
 
   return (
     <AvaListItem.Base
@@ -129,24 +48,21 @@ const BridgeTransactionItem: FC<BridgeTransactionItemProps> = ({
             }
           ]}>
           <BridgeSVG size={20} color={theme.colorPrimary1} />
-          {pending && txProps && (
+          {pending && item && (
             <View style={{ position: 'absolute' }}>
               <Spinner size={50} />
             </View>
           )}
         </View>
       }
-      subtitle={
-        fromAvalancheToEthereum
-          ? 'Avalanche → Ethereum'
-          : 'Ethereum → Avalanche'
-      }
+      subtitle={`${sourceBlockchain} → ${targetBlockchain}`}
       rightComponent={
         <View style={{ justifyContent: 'center', alignItems: 'flex-end' }}>
           <AvaText.ActivityTotal ellipsizeMode={'tail'}>
-            {amount} {symbol}
+            {pending ? item.amount.toString() : item.amountDisplayValue}{' '}
+            {pending ? item.symbol : item.tokenSymbol}
           </AvaText.ActivityTotal>
-          {'explorerLink' in item && item.explorerLink && (
+          {'explorerLink' in item && item?.explorerLink && (
             <>
               <Space y={8} />
               <LinkSVG color={theme.white} />

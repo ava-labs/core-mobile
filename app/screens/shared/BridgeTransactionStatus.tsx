@@ -1,8 +1,6 @@
-import React, { FC, useLayoutEffect } from 'react'
+import React, { FC, ReactNode, useLayoutEffect } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { BridgeStackParamList } from 'navigation/wallet/BridgeScreenStack'
 import AvaText from 'components/AvaText'
 import {
   Blockchain,
@@ -21,10 +19,8 @@ import { Space } from 'components/Space'
 import Separator from 'components/Separator'
 import BridgeConfirmations from 'screens/bridge/components/BridgeConfirmations'
 import { useBridgeContext } from 'contexts/BridgeContext'
-import { StackNavigationProp } from '@react-navigation/stack'
-import AppNavigation from 'navigation/AppNavigation'
+import { StackNavigationOptions } from '@react-navigation/stack'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
-import AvaButton from 'components/AvaButton'
 
 type Props = {
   blockchain: string
@@ -41,17 +37,17 @@ const BridgeTransactionStatus: FC<Props> = ({
   setNavOptions,
   HeaderRight = null
 }) => {
-  const { theme } = useApplicationContext()
-  // @ts-ignore addresses exist in walletContext
-  const { addresses } = useWalletStateContext()
-  const tokenInfoData = useTokenInfoContext();
-  const { config } = useBridgeConfig()
+  // const { theme } = useApplicationContext()
+  // // @ts-ignore addresses exist in walletContext
+  // const { addresses } = useWalletStateContext()
+  // const tokenInfoData = useTokenInfoContext()
+  // const { config } = useBridgeConfig()
   // @ts-ignore network exist in networkContext
-  const { network } = useNetworkContext()
-  const ethereumProvider = getEthereumProvider(network)
-  const avalancheProvider = getAvalancheProvider(network)
-  const { getTokenSymbolOnNetwork } = useGetTokenSymbolOnNetwork()
-  const { currentAsset, transactionDetails } = useBridgeSDK()
+  // const { network } = useNetworkContext()
+  // const ethereumProvider = getEthereumProvider(network)
+  // const avalancheProvider = getAvalancheProvider(network)
+  // const { getTokenSymbolOnNetwork } = useGetTokenSymbolOnNetwork()
+  // const { currentAsset, transactionDetails } = useBridgeSDK()
   const { bridgeTransactions, removeBridgeTransaction } = useBridgeContext()
   const bridgeTransaction = bridgeTransactions[txHash] as
     | BridgeTransaction
@@ -65,7 +61,6 @@ const BridgeTransactionStatus: FC<Props> = ({
   )
   const { theme, appHook } = useApplicationContext()
   const { selectedCurrency, currencyFormatter } = appHook
-  const navigation = useNavigation<StackNavigationProp<BridgeStackParamList>>()
   const tokenInfoData = useTokenInfoContext()
   const { currentAsset, transactionDetails } = useBridgeSDK()
 
@@ -84,19 +79,11 @@ const BridgeTransactionStatus: FC<Props> = ({
 
   useLayoutEffect(() => {
     if (bridgeTransaction) {
-      navigation.setOptions({
+      setNavOptions({
         title: `Transaction ${
           bridgeTransaction.complete ? 'Details' : 'Status'
         }`,
-        headerRight: () =>
-          fromStack ? (
-            <AvaButton.TextLarge
-              onPress={() => {
-                navigation.navigate(AppNavigation.Bridge.HideWarning)
-              }}>
-              Hide
-            </AvaButton.TextLarge>
-          ) : null
+        headerRight: () => HeaderRight
       })
 
       if (bridgeTransaction.complete) {

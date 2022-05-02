@@ -11,7 +11,7 @@ import {
   CoinsContractInfoResponse,
   SimpleTokenPriceResponse
 } from '@avalabs/coingecko-sdk'
-import { BridgeState, defaultBridgeState } from 'screens/bridge/BridgeState'
+import { BridgeState, defaultBridgeState } from 'screens/bridge/utils/BridgeState'
 import Bridge from 'screens/bridge/Bridge'
 
 /**
@@ -308,7 +308,13 @@ export function useRepo(): Repo {
     ).then(value => setViewOnceInfo(value))
     StorageTools.loadFromStorageAsObj<BridgeState>(
       PENDING_BRIDGE_TRANSACTIONS
-    ).then(value => setPendingBridgeTransactions(value))
+    ).then(value => {
+      setPendingBridgeTransactions(
+        'bridgeTransactions' in value
+          ? (value as BridgeState)
+          : defaultBridgeState
+      )
+    })
   }
 
   return {
@@ -344,7 +350,7 @@ export function useRepo(): Repo {
       pendingBridgeTransactions: pendingBridgeTransactions,
       savePendingBridgeTransactions: savePendingBridgeTransactions
     },
-    flush
+    flush,
     initialized
   }
 }

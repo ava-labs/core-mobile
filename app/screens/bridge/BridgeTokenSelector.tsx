@@ -1,16 +1,16 @@
-import React, {useMemo, useState} from 'react';
-import {ActivityIndicator, ListRenderItemInfo, View} from 'react-native';
-import Loader from 'components/Loader';
-import {Space} from 'components/Space';
-import {BIG_ZERO, useTokenInfoContext} from '@avalabs/bridge-sdk';
-import AvaListItem from 'components/AvaListItem';
-import AvaText from 'components/AvaText';
-import Avatar from 'components/Avatar';
-import {formatTokenAmount} from 'utils/Utils';
-import {Big} from '@avalabs/avalanche-wallet-sdk';
-import SearchBar from 'components/SearchBar';
-import {AssetBalance} from 'screens/bridge/AssetBalance';
-import {BottomSheetFlatList} from '@gorhom/bottom-sheet';
+import React, { useMemo, useState } from 'react'
+import { ListRenderItemInfo, View } from 'react-native'
+import Loader from 'components/Loader'
+import { Space } from 'components/Space'
+import { BIG_ZERO, useTokenInfoContext } from '@avalabs/bridge-sdk'
+import AvaListItem from 'components/AvaListItem'
+import AvaText from 'components/AvaText'
+import Avatar from 'components/Avatar'
+import { formatTokenAmount } from 'utils/Utils'
+import SearchBar from 'components/SearchBar'
+
+import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
+import { AssetBalance } from 'screens/bridge/utils/types'
 
 const DEFAULT_HORIZONTAL_MARGIN = 16
 
@@ -21,16 +21,16 @@ export enum SelectTokenMode {
 }
 
 interface TokenSelectorProps {
-  onTokenSelected: (symbol: string) => void;
-  bridgeTokenList: AssetBalance[];
-  horizontalMargin?: number;
-  selectMode: SelectTokenMode;
+  onTokenSelected: (symbol: string) => void
+  bridgeTokenList: AssetBalance[]
+  horizontalMargin?: number
+  selectMode: SelectTokenMode
 }
 
 function BridgeTokenSelector({
   onTokenSelected,
   bridgeTokenList,
-  horizontalMargin = DEFAULT_HORIZONTAL_MARGIN,
+  horizontalMargin = DEFAULT_HORIZONTAL_MARGIN
 }: TokenSelectorProps) {
   // const {currentBlockchain} = useBridgeSDK();
   // const assetList = useAssets(currentBlockchain);
@@ -38,8 +38,8 @@ function BridgeTokenSelector({
   // const network = useNetworkContext()?.network;
   // // @ts-ignore addresses exist in walletContext
   // const {addresses} = useWalletStateContext();
-  const [searchText, setSearchText] = useState('');
-  const tokenInfoData = useTokenInfoContext();
+  const [searchText, setSearchText] = useState('')
+  const tokenInfoData = useTokenInfoContext()
   //
   // /**
   //  * Get asset balances for the current blockchain
@@ -93,9 +93,9 @@ function BridgeTokenSelector({
   // ).sort((asset1, asset2) => asset2?.balance?.cmp(asset1.balance || 0) || 0);
 
   const renderItem = (item: ListRenderItemInfo<AssetBalance>) => {
-    const token = item.item;
-    const symbol = token.asset.symbol;
-    const name = token.symbol === 'ETH' ? 'Ethereum' : token.asset.tokenName;
+    const token = item.item
+    const symbol = token.asset.symbol
+    const name = token.symbol === 'ETH' ? 'Ethereum' : token.asset.tokenName
     // const tokenSymbolOnNetwork = getTokenSymbolOnNetwork(
     //   symbol,
     //   currentBlockchain,
@@ -136,15 +136,13 @@ function BridgeTokenSelector({
     return searchText && searchText.length > 0
       ? bridgeTokenList?.filter(
           i =>
-            // @ts-expect-error tokenName is actually valid. we just have to upgrade bridge-sdk to latest version
-            // TODO: remove this comment once bridge-sdk is upgraded
             i.asset.tokenName
               ?.toLowerCase()
               .includes(searchText.toLowerCase()) ||
             i.symbol?.toLowerCase().includes(searchText.toLowerCase())
         )
-      : bridgeTokenList;
-  }, [bridgeTokenList, searchText]);
+      : bridgeTokenList
+  }, [bridgeTokenList, searchText])
 
   return (
     <View style={{ flex: 1, marginHorizontal: horizontalMargin }}>

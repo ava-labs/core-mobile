@@ -22,7 +22,6 @@ import {
   BIG_ZERO,
   Blockchain,
   formatTokenAmount,
-  useBridgeConfig,
   useBridgeSDK,
   useGetTokenSymbolOnNetwork,
   useTokenInfoContext,
@@ -34,12 +33,11 @@ import CarrotSVG from 'components/svg/CarrotSVG'
 import InputText from 'components/InputText'
 import useBridge from 'screens/bridge/hooks/useBridge'
 import { useNavigation } from '@react-navigation/native'
-import { StackNavigationProp } from '@react-navigation/stack'
-import { BridgeStackParamList } from 'navigation/wallet/BridgeScreenStack'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
+import { BridgeScreenProps } from 'navigation/types'
 import { useIsMainnet } from 'hooks/isMainnet'
-import { trackBridgeTransaction as trackBridgeTransactionSDK } from '@avalabs/bridge-sdk/dist/src/lib/tracker/trackBridgeTransaction'
+import { usePosthogContext } from 'contexts/PosthogContext'
 
 const formatBalance = (balance: Big | undefined) => {
   return balance && formatTokenAmount(balance, 6)
@@ -50,11 +48,10 @@ type NavigationProp = BridgeScreenProps<
 >['navigation']
 
 const Bridge: FC = () => {
-  const navigation = useNavigation<StackNavigationProp<BridgeStackParamList>>()
+  const navigation = useNavigation<NavigationProp>()
   const theme = useApplicationContext().theme
 
   const {
-    address,
     sourceBalance,
     amount,
     setAmount,
@@ -69,8 +66,6 @@ const Bridge: FC = () => {
     transfer
   } = useBridge()
 
-  const isMainnet = useIsMainnet()
-  const { error } = useBridgeConfig()
   const {
     currentAsset,
     setCurrentAsset,
@@ -80,33 +75,22 @@ const Bridge: FC = () => {
     targetChains
   } = useBridgeSDK()
   const { getTokenSymbolOnNetwork } = useGetTokenSymbolOnNetwork()
-
+  const isMainnet = useIsMainnet()
   const [bridgeError, setBridgeError] = useState<string>('')
   const [isPending, setIsPending] = useState<boolean>(false)
   const tokenInfoData = useTokenInfoContext()
   const denomination = sourceBalance?.asset.denomination || 0
-  const [isSwitched, setIsSwitched] = useState(false)
   const blockchainTokenSymbol = getTokenSymbolOnNetwork(
     currentAsset ?? '',
     currentBlockchain
   )
+  const { bridgeBtcBlocked, bridgeEthBlocked } = usePosthogContext()
   const { currencyFormatter } = useApplicationContext().appHook
 
   const isAmountTooHigh = amount && amount.gt(maximum)
   const isAmountTooLow =
     amount && !amount.eq(BIG_ZERO) && amount.lt(minimum || BIG_ZERO)
   const hasValidAmount = !isAmountTooLow && amount.gt(BIG_ZERO)
-
-  // console.log('isAmountTooHigh:', isAmountTooHigh)
-  // console.log('hasValidAmount:', hasValidAmount)
-  // console.log('amount:', amount.toNumber())
-  // console.log('receiveAmount:', receiveAmount?.toNumber())
-  // console.log('price:', price.toNumber())
-  // console.log('Maximum', maximum.toNumber())
-  // console.log(
-  //   'receiveAmountCurrency: ',
-  //   currencyFormatter(price.mul(receiveAmount).toNumber())
-  // )
 
   const formattedReceiveAmount =
     hasValidAmount && receiveAmount
@@ -116,6 +100,20 @@ const Bridge: FC = () => {
     hasValidAmount && price && receiveAmount
       ? `~${currencyFormatter(price.mul(receiveAmount).toNumber())}`
       : '-'
+
+  // Remove chains turned off by the feature flags
+  const filterChains = (chains: Blockchain[]) =>
+    chains.filter(chain => {
+      switch (chain) {
+        case Blockchain.BITCOIN:
+          // TODO remove !isMainnet check when mainnet is supported
+          return !isMainnet && bridgeBtcBlocked
+        case Blockchain.ETHEREUM:
+          return bridgeEthBlocked
+        default:
+          return true
+      }
+    })
 
   useEffect(() => {
     setBridgeError(bridgeError)
@@ -182,9 +180,7 @@ const Bridge: FC = () => {
    * Opens Add bitcoin instructions modal
    */
   const navigateToAddBitcoinInstructions = () => {
-    navigation.navigate(AppNavigation.Bridge.AddInstructions, {
-      onTokenSelected: setCurrentAsset
-    })
+    navigation.navigate(AppNavigation.Bridge.AddInstructions)
   }
 
   /**
@@ -220,7 +216,6 @@ const Bridge: FC = () => {
   const handleBlockchainToggle = () => {
     if (targetBlockchain) {
       setCurrentBlockchain(targetBlockchain)
-      setIsSwitched(!isSwitched)
     }
   }
 
@@ -281,12 +276,13 @@ const Bridge: FC = () => {
             title={'From'}
             rightComponent={
               <DropDown
-                alignment={'flex-end'}
-                preselectedIndex={1}
-                data={sourceBlockchains}
-                selectionRenderItem={selectedItem =>
-                  dropdownItemFormat(selectedItem, selectedItem, false)
-                }
+                style={{ marginRight: 19 }}
+                filterItems={filterChains(sourceBlockchains)}
+                currentItem={dropdownItemFormat(
+                  currentBlockchain,
+                  undefined,
+                  false
+                )}
                 onItemSelected={bc => setCurrentBlockchain(bc as Blockchain)}
                 optionsRenderItem={item =>
                   renderDropdownOptions(item, currentBlockchain)
@@ -422,16 +418,14 @@ const Bridge: FC = () => {
             rightComponent={
               <DropDown
                 style={{ marginRight: 19 }}
-                filterItems={targetChains}
+                filterItems={filterChains(targetChains)}
                 currentItem={dropdownItemFormat(
                   targetBlockchain,
-                  targetBlockchain,
+                  undefined,
                   false
                 )}
-                customRenderItem={item =>
-                  renderDropdownOptions(item, targetBlockchain)
-                }
-                width={180}
+                disabled
+                minWidth={180}
               />
             }
           />

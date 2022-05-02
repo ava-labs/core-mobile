@@ -8,7 +8,6 @@ import {
   getBtcTransaction,
   getMinimumTransferAmount,
   satoshiToBtc,
-  TxSimple,
   useBridgeConfig,
   useBridgeSDK
 } from '@avalabs/bridge-sdk'
@@ -18,23 +17,23 @@ import {
 } from '@avalabs/wallet-react-components'
 import { useBridgeContext } from 'contexts/BridgeContext'
 import { useCallback, useEffect, useState } from 'react'
-import { AssetBalance } from 'screens/bridge/AssetBalance'
 import { getBtcBalance } from 'screens/bridge/hooks/getBtcBalance'
-import { isMainnetNetwork } from '@avalabs/avalanche-wallet-sdk'
 import { getAvalancheProvider } from 'screens/bridge/utils/getAvalancheProvider'
+import { TxSimple } from '@avalabs/blockcypher-sdk'
+import { useIsMainnet } from 'hooks/isMainnet'
+import { AssetBalance } from 'screens/bridge/utils/types'
 
 export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
   const network = useNetworkContext()?.network
   const bridgeConfig = useBridgeConfig()!.config!
-  const { createBridgeTransaction, signIssueBtc } =
-    useBridgeContext()
+  const { createBridgeTransaction, signIssueBtc } = useBridgeContext()
   const config = useBridgeConfig().config
   const wallet = useWalletContext().wallet
   const { currentAsset, setTransactionDetails, currentBlockchain } =
     useBridgeSDK()
 
   const avalancheProvider = getAvalancheProvider(network)
-  const isMainnet = network ? isMainnetNetwork(network?.config) : false
+  const isMainnet = useIsMainnet()
   const btcAddress =
     wallet?.getAddressBTC(isMainnet ? 'bitcoin' : 'testnet') ?? ''
   const avalancheAddress = wallet?.getAddressC()
@@ -45,7 +44,6 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
   const [btcBalance, setBtcBalance] = useState<AssetBalance>()
   const [btcBalanceAvalanche, setBtcBalanceAvalanche] = useState<AssetBalance>()
   const [utxos, setUtxos] = useState<TxSimple[]>()
-  // const [btcAddress, setBtcAddress] = useState<string>();
 
   /** Network fee (in BTC) */
   const [networkFee, setFee] = useState<Big>(BIG_ZERO)

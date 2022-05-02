@@ -7,10 +7,10 @@ import {
   useNetworkContext,
   useWalletStateContext
 } from '@avalabs/wallet-react-components'
-import { AssetBalance } from 'screens/bridge/AssetBalance'
 import { useEffect, useMemo, useState } from 'react'
 import { getEthereumBalances } from 'screens/bridge/handlers/getEthereumBalances'
 import { getAvalancheBalances } from 'screens/bridge/handlers/getAvalancheBalances'
+import { AssetBalance } from 'screens/bridge/utils/types'
 
 /**
  * Get for the current chain.
