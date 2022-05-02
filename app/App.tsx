@@ -21,9 +21,8 @@ import { useLoadBridgeConfig } from 'screens/bridge/hooks/useLoadBridgeConfig'
 LogBox.ignoreAllLogs()
 
 export default function App() {
-  const { configure } = useDevDebugging()
-  const isProduction = process.env.NODE_ENV === 'production'
-  useLoadBridgeConfig()
+  const {configure} = useDevDebugging();
+  const isProduction = process.env.NODE_ENV === 'production';
   if (!isProduction) {
     configure()
   }

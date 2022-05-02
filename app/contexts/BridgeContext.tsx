@@ -1,5 +1,11 @@
-import React, { createContext, useContext, useState } from 'react'
-import { BridgeSDKProvider, TrackerViewProps } from '@avalabs/bridge-sdk'
+import React, {createContext, useContext, useState} from 'react';
+import {
+  BridgeSDKProvider,
+  TrackerViewProps,
+  useBridgeSDK,
+} from '@avalabs/bridge-sdk';
+import {useNetworkContext} from '@avalabs/wallet-react-components';
+import {useLoadBridgeConfig} from 'screens/bridge/hooks/useLoadBridgeConfig';
 
 export interface BridgeTransaction extends TrackerViewProps {
   createdAt?: Date
@@ -12,10 +18,11 @@ export interface BridgeState {
 }
 
 const BridgeContext = createContext<{
-  createBridgeTransaction(tx: TrackerViewProps): Promise<void>
-  removeBridgeTransaction(tx: TrackerViewProps): Promise<void>
-  bridgeTransactions: BridgeState['bridgeTransactions']
-}>({} as any)
+  createBridgeTransaction(tx: TrackerViewProps): Promise<void>;
+  removeBridgeTransaction(tx: TrackerViewProps): Promise<void>;
+  transferAsset(): Promise<void>;
+  bridgeTransactions: BridgeState['bridgeTransactions'];
+}>({} as any);
 
 export function BridgeProvider({ children }: { children: any }) {
   return (
@@ -29,10 +36,14 @@ export function useBridgeContext() {
   return useContext(BridgeContext)
 }
 
-function LocalBridgeProvider({ children }: { children: any }) {
+function LocalBridgeProvider({children}: {children: any}) {
+  useLoadBridgeConfig();
+
   const [bridgeState, setBridgeState] = useState<BridgeState>({
     bridgeTransactions: {}
   })
+
+  async function transferAsset() {}
 
   async function createBridgeTransaction(bridgeTransaction: TrackerViewProps) {
     if (typeof bridgeTransaction.sourceTxHash !== 'string') return
@@ -67,7 +78,8 @@ function LocalBridgeProvider({ children }: { children: any }) {
       value={{
         ...bridgeState,
         createBridgeTransaction,
-        removeBridgeTransaction
+        removeBridgeTransaction,
+        transferAsset,
       }}>
       {children}
     </BridgeContext.Provider>

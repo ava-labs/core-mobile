@@ -138,21 +138,35 @@ export function useApp(
    */
   const currencyFormatter = useCallback(
     (num: number | string, digits = 2) => {
-      const number = typeof num === 'number' ? num : Number(num)
+      let number = typeof num === 'number' ? num : Number(num);
+
+      if (isNaN(number)) {
+        number = 0;
+      }
 
       // only formatting large numbers. example: $1.32B or $2.1M
       // this may change with UX requirements. Currently anything above
       // Millions will return USD only
+      if (item && (item.value === 1e6 || item.value === 1e9)) {
+        const formattedNumber =
+          '$' +
+          (number / item.value).toFixed(digits).replace(rx, '$1') +
+          item.symbol;
+        console.log(
+          `to be formatted: ${number} - formatted: ${formattedNumber}`,
+        );
+        return formattedNumber;
+      }
+
       // everything else gets the localized number format, with 2 digits. or 6 if number is too small
       // example: 2,023.03 (usd) or 0.000321
-      if (number >= 1e6) {
-        const formatted = formatLargeNumber(num, digits)
-        return '$' + formatted
-      } else if (number > -0.1 && number < 0.1) {
-        return localizedFormatter(6).format(number)
-      } else {
-        return localizedFormatter(digits).format(number)
-      }
+      const formatter = localizedFormatter(
+        number > -0.1 && number < 0.1 ? 6 : digits
+      )
+
+      const formattedNumber = formatter.format(number);
+      console.log(`to be formatted: ${number} - formatted: ${formattedNumber}`);
+      return formattedNumber;
     },
     [localizedFormatter]
   )

@@ -46,14 +46,24 @@
   resolved "https://registry.yarnpkg.com/@avalabs/blizzard-sdk/-/blizzard-sdk-2.1.4.tgz#62e2b110ef46ce39381016ba242b786aca22be53"
   integrity sha512-7u4sz9l8xAbs5jFXSJIJIGZPEwlEC4uBBrizHLm/s2hu3+CqYmaOxRYxArbvktOQkAiCqyN9RhwMQshmd4vwpw==
 
-"@avalabs/bridge-sdk@2.1.4":
-  version "2.1.4"
-  resolved "https://registry.yarnpkg.com/@avalabs/bridge-sdk/-/bridge-sdk-2.1.4.tgz#49ecbc557690b9a5966fb01874ee8e97addac07f"
-  integrity sha512-ZONDsKS05x2tSumFBxX5O08E+23ePsmVOJ7yRf+6r7ffYVYbo5vFHI4agiiF3xPiZfJjPQcmzvjgIt6qf1v1lg==
+"@avalabs/bridge-sdk@2.2.0":
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/@avalabs/bridge-sdk/-/bridge-sdk-2.2.0.tgz#a0bb92ed4cdda601b034f85a7a82c5d0735c18f2"
+  integrity sha512-6mzaxiUEOpl6vJG0Ox76RWBvT7dJqTainjc/FP8xxUUZ9XD9Xbrh6H50stHIeBPtMLwwLOH+6N1qCr1l4+fftQ==
   dependencies:
-    "@avalabs/utils-sdk" "2.1.4"
+    "@avalabs/coingecko-sdk" "2.2.0"
+    "@avalabs/utils-sdk" "2.2.0"
     big.js "6.1.1"
+    bitcoinjs-lib "5.2.0"
+    coinselect "3.1.12"
     ethers "5.6.2"
+
+"@avalabs/coingecko-sdk@2.2.0":
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/@avalabs/coingecko-sdk/-/coingecko-sdk-2.2.0.tgz#6a5bcde8bd8856bc466f456989f9533196ac993a"
+  integrity sha512-e96vW/23S8jSZSxpsrWcm5bO9XSR2O7b54hWM+7ippE4f0ejKObPudV05HBy8LOESFgXBP4xgrZHBooNeRbDLA==
+  dependencies:
+    "@avalabs/utils-sdk" "2.2.0"
 
 "@avalabs/coingecko-sdk@2.2.0":
   version "2.2.0"
@@ -74,20 +84,21 @@
   resolved "https://registry.yarnpkg.com/@avalabs/utils-sdk/-/utils-sdk-2.1.0.tgz#e2ed85cf85b9bb19a0026fa65152d53c6fdb4f98"
   integrity sha512-+2/Wrerv5LdnO9psVofMdBciY93kx44bTPNMJgmQcLxGSAg9rn5oV9SNtBeF8NmAdDUyRnCxZiDOcJXHzcq5sg==
 
-"@avalabs/utils-sdk@2.1.4":
-  version "2.1.4"
-  resolved "https://registry.yarnpkg.com/@avalabs/utils-sdk/-/utils-sdk-2.1.4.tgz#9f42580a44d44154420703242b9a9568531eed9a"
-  integrity sha512-wzVeyD/RVbIfBVvoTVFbaMiZzHhiz9sSS0ErFAwHSi0LzuQdr25FzsQAANtBWouImWyfDomKUmZCaGvE5J3BxA==
+"@avalabs/utils-sdk@2.2.0":
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/@avalabs/utils-sdk/-/utils-sdk-2.2.0.tgz#14d771f98ba5ed164410fa0cf7c263ba9e3a0dea"
+  integrity sha512-W/CsP0J0587v39XVXi/z2ptkD/inEWg9HrvhtRz3cCreGEjwoJhwODFrPpCyxhM38GfwMEXNiMYcrcKBt9jJpQ==
 
 "@avalabs/utils-sdk@2.2.0":
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/@avalabs/utils-sdk/-/utils-sdk-2.2.0.tgz#14d771f98ba5ed164410fa0cf7c263ba9e3a0dea"
   integrity sha512-W/CsP0J0587v39XVXi/z2ptkD/inEWg9HrvhtRz3cCreGEjwoJhwODFrPpCyxhM38GfwMEXNiMYcrcKBt9jJpQ==
 
-"@avalabs/wallet-react-components@1.30.2":
-  version "1.30.2"
-  resolved "https://registry.yarnpkg.com/@avalabs/wallet-react-components/-/wallet-react-components-1.30.2.tgz#2e9d19b04d16ef1a6e72f82bf5ab3d1d6e301119"
-  integrity sha512-g/HWnPzV5XE+hVVhToOSzgCFGk6s6HvMZ8+YoufefViJDpS+AV+py/JumaEl6odc20jhQR8/ZQJLO741WtNb1g==
+
+"@avalabs/wallet-react-components@1.30.3":
+  version "1.30.3"
+  resolved "https://registry.yarnpkg.com/@avalabs/wallet-react-components/-/wallet-react-components-1.30.3.tgz#407ed1c0f03a0dba3371a22135c025c3dd219f10"
+  integrity sha512-p0PYCsoxd6UQUNfht/CXsBMXoPydsoeOn6ox7X8lqxEK35uEmeud4BObJ7XNUpyhDhltGDjXRqEDMsCiYcFBiQ==
   dependencies:
     "@avalabs/utils-sdk" "2.1.0"
     "@ledgerhq/hw-transport" "6.20.0"
@@ -7036,6 +7047,11 @@ code-point-at@^1.0.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/code-point-at/-/code-point-at-1.1.0.tgz#0d070b4d043a5bea33a2f1a40e2edb3d9a4ccf77"
   integrity sha1-DQcLTQQ6W+ozovGkDi7bPZpMz3c=
+
+coinselect@3.1.12:
+  version "3.1.12"
+  resolved "https://registry.yarnpkg.com/coinselect/-/coinselect-3.1.12.tgz#2255794c4002f7ecac9cf6d1cefe9f0adfd2fe7f"
+  integrity sha512-XKnm9wwZzJRGuvR1BGNbFZEfa4SEr38do8Z5riq0797QwMT836EqhdPuhtbn8uAX8vCMqJ7+gS4CHa1G9M5xhw==
 
 collect-v8-coverage@^1.0.0:
   version "1.0.1"
