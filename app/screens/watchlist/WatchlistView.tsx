@@ -8,7 +8,6 @@ import {
 } from '@avalabs/wallet-react-components'
 import { getTokenUID } from 'utils/TokenTools'
 import WatchListItem from 'screens/watchlist/components/WatchListItem'
-import ListFilter from 'components/ListFilter'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { TabsScreenProps } from 'navigation/types'
@@ -21,6 +20,8 @@ import {
   SimpleTokenPriceResponse
 } from '@avalabs/coingecko-sdk'
 import useCoingecko from 'hooks/useCoingecko'
+import Dropdown from 'components/Dropdown'
+import AvaText from 'components/AvaText'
 
 interface Props {
   showFavorites?: boolean
@@ -176,25 +177,33 @@ const WatchlistView: React.FC<Props> = ({ showFavorites, searchText }) => {
       ) : (
         <>
           <View style={styles.filterContainer}>
-            <ListFilter
-              title={'Sort by'}
-              filterOptions={[
+            <Dropdown
+              alignment={'flex-start'}
+              width={140}
+              data={[
                 WatchlistFilter.PRICE,
                 WatchlistFilter.MARKET_CAP,
                 WatchlistFilter.VOLUME,
                 WatchlistFilter.GAINERS,
                 WatchlistFilter.LOSERS
               ]}
-              currentItem={filterBy}
-              onItemSelected={filter => setFilterBy(filter as WatchlistFilter)}
-              style={{ paddingLeft: 25 }}
+              onItemSelected={selectedItem => setFilterBy(selectedItem)}
+              selectionRenderItem={selectedItem => (
+                <AvaText.ButtonSmall textStyle={{ color: theme.colorText1 }}>
+                  Sort by: {selectedItem}
+                </AvaText.ButtonSmall>
+              )}
             />
-            <ListFilter
-              filterOptions={filterTimeOptions}
-              currentItem={filterTime}
-              onItemSelected={setFilterTime}
-              minWidth={50}
-              style={{ paddingRight: 30 }}
+            <Dropdown
+              alignment={'flex-end'}
+              width={80}
+              data={filterTimeOptions}
+              onItemSelected={selectedItem => setFilterTime(selectedItem)}
+              selectionRenderItem={selectedItem => (
+                <AvaText.ButtonSmall textStyle={{ color: theme.colorText1 }}>
+                  {selectedItem}
+                </AvaText.ButtonSmall>
+              )}
             />
           </View>
           <FlatList
@@ -222,7 +231,9 @@ const styles = StyleSheet.create({
   },
   filterContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between'
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16
   },
   searchBackground: {
     alignItems: 'center',
