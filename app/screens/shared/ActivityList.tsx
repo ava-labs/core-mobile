@@ -19,6 +19,13 @@ import BridgeTransactionItem, {
 } from 'screens/bridge/components/BridgeTransactionItem'
 import { BridgeTransactionStatusParams } from 'navigation/types'
 import useInAppBrowser from 'hooks/useInAppBrowser'
+import {
+isBridge,
+isContractCall,
+isIncoming,
+isOutgoing
+} from 'utils/TrxTools'
+
 
 const DISPLAY_FORMAT_CURRENT_YEAR = 'MMMM DD'
 const DISPLAY_FORMAT_PAST_YEAR = 'MMMM DD, YYYY'
@@ -50,28 +57,7 @@ function ActivityList({
     useState<(TransactionNormal | TransactionERC20)[]>()
   const { bridgeTransactions } = useBridgeContext()
   const { bridgeAssets } = useBridgeSDK()
-
-  const isTransactionBridge = useCallback(
-    (tx): tx is TransactionBridgeItem => {
-      if (bridgeAssets) {
-        return (
-          Object.values(bridgeAssets).filter(
-            el =>
-              (el.nativeNetwork === Blockchain.AVALANCHE &&
-                el.nativeContractAddress?.toLowerCase() ===
-                  tx.contractAddress?.toLowerCase()) ||
-              el.wrappedContractAddress?.toLowerCase() ===
-                tx.contractAddress?.toLowerCase() ||
-              tx?.to === '0x0000000000000000000000000000000000000000' ||
-              tx?.from === '0x0000000000000000000000000000000000000000'
-          ).length > 0
-        )
-      }
-
-      return false
-    },
-    [bridgeAssets]
-  )
+  const [filter, setFilter] = useState(ActivityFilter.All)
 
   const sectionData = useMemo(() => {
     const newSectionData: SectionType = {}
@@ -87,6 +73,22 @@ function ActivityList({
 
     allHistory
       ?.filter((tx: TxType) => {
+        switch (filter) {
+          case ActivityFilter.ContractApprovals:
+            return isContractCall(tx)
+          case ActivityFilter.Incoming:
+            return isIncoming(tx)
+          case ActivityFilter.Outgoing:
+            return isOutgoing(tx)
+          case ActivityFilter.All:
+            return true
+          case ActivityFilter.Bridge:
+            return isBridge(tx, bridgeAssets)
+          default:
+            return false
+        }
+      })
+      .filter((tx: TxType) => {
         return tokenSymbolFilter
           ? tokenSymbolFilter ===
               ('tokenSymbol' in tx ? tx.tokenSymbol : 'AVAX')
@@ -125,7 +127,7 @@ function ActivityList({
         }
       })
     return newSectionData
-  }, [allHistory, tokenSymbolFilter])
+  }, [allHistory, bridgeTransactions, filter, tokenSymbolFilter])
 
   useEffect(() => {
     loadHistory().then()
@@ -161,34 +163,12 @@ function ActivityList({
             <AvaText.ActivityTotal>{key[0]}</AvaText.ActivityTotal>
           </Animated.View>
           {key[1].map((item: TxType, index) => {
-            if (
-              isTransactionBridge(item) ||
-              'requiredConfirmationCount' in item
-            ) {
-              const pending = 'complete' in item && !item.complete
-              const itemKey =
-                'sourceTxHash' in item && 'targetTxHash' in item
-                  ? `${item.sourceTxHash}-${item.targetTxHash}-${index}`
-                  : `${index}`
-
+            if (isBridge(item, bridgeAssets)) {
               return (
                 <BridgeTransactionItem
-                  key={itemKey}
+                  key={`${item.sourceTxHash}-${item.targetTxHash}-${index}`}
                   item={item}
-                  pending={pending}
-                  onPress={() => {
-                    if (pending) {
-                      openTransactionStatus({
-                        blockchain: item.sourceNetwork,
-                        txHash: item.sourceTxHash || '',
-                        txTimestamp: item.createdAt
-                          ? Date.parse(item.createdAt.toString()).toString()
-                          : Date.now().toString()
-                      })
-                    } else if ('explorerLink' in item && item.explorerLink) {
-                      openUrl(item.explorerLink).then()
-                    }
-                  }}
+                  onPress={() => openTransactionDetails(item)}
                 />
               )
             } else {
@@ -275,7 +255,47 @@ function ActivityList({
           Activity
         </AvaText.LargeTitleBold>
       )}
+      <Row style={{ justifyContent: 'flex-end', paddingHorizontal: 16 }}>
+        <DropDown
+          alignment={'flex-end'}
+          width={200}
+          data={[
+            ActivityFilter.All,
+            ActivityFilter.ContractApprovals,
+            ActivityFilter.Incoming,
+            ActivityFilter.Outgoing,
+            ActivityFilter.Bridge
+          ]}
+          selectionRenderItem={selectedItem => (
+            <SelectionRenderItem text={selectedItem} />
+          )}
+          onItemSelected={selectedItem => setFilter(selectedItem)}
+          optionsRenderItem={item => {
+            return <OptionsRenderItem text={item.item} />
+          }}
+        />
+      </Row>
       <ScrollableComponent children={renderItems()} />
+    </View>
+  )
+}
+
+enum ActivityFilter {
+  All = 'All',
+  ContractApprovals = 'Contract Approvals',
+  Incoming = 'Incoming',
+  Outgoing = 'Outgoing',
+  Bridge = 'Bridge'
+}
+
+function SelectionRenderItem({ text }: { text: string }) {
+  return <AvaText.ButtonSmall>Display: {text}</AvaText.ButtonSmall>
+}
+
+function OptionsRenderItem({ text }: { text: string }) {
+  return (
+    <View style={{ paddingHorizontal: 16, paddingVertical: 8 }}>
+      <AvaText.Body1>{text}</AvaText.Body1>
     </View>
   )
 }
