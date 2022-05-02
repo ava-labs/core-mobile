@@ -1,35 +1,28 @@
-import {Big, isMainnetNetwork} from '@avalabs/avalanche-wallet-sdk';
+import {Big} from '@avalabs/avalanche-wallet-sdk';
 import {
   AppConfig,
   Blockchain,
   fetchTokenBalances,
   getBtcAsset,
   getUTXOs,
-  useBridgeConfig,
 } from '@avalabs/bridge-sdk';
-import {
-  useNetworkContext,
-  useWalletContext,
-} from '@avalabs/wallet-react-components';
 import {JsonRpcProvider} from '@ethersproject/providers';
-import {getAvalancheProvider} from 'screens/bridge/utils/getAvalancheProvider';
 
-export async function useGetBtcBalances() {
-  const network = useNetworkContext()!.network!;
-  const wallet = useWalletContext()!.wallet!;
-  const bridgeConfig = useBridgeConfig()!.config!;
-
-  const isMainnet = isMainnetNetwork(network.config);
-  const btcAddress =
-    wallet?.getAddressBTC(isMainnet ? 'bitcoin' : 'testnet') ?? '';
-
-  const avalancheProvider = getAvalancheProvider(network);
+export async function getBtcBalance(
+  bridgeConfig: AppConfig,
+  btcAddress: string,
+  avalancheAddress: string,
+  avalancheProvider: JsonRpcProvider,
+) {
+  // const network = useNetworkContext()!.network!;
+  // const wallet = useWalletContext()!.wallet!;
+  // const bridgeConfig = useBridgeConfig()!.config!;
 
   async function loadBalance() {
     return (
       await getBtcBalanceAvalanche(
         bridgeConfig,
-        wallet?.getAddressC(),
+        avalancheAddress,
         avalancheProvider,
       )
     )?.toNumber();
@@ -42,8 +35,7 @@ export async function useGetBtcBalances() {
 
   return {
     bitcoinUtxos,
-    btcAddress,
-    btcBalanceAvalanche: loadBalance(),
+    btcBalanceAvalanche: await loadBalance(),
     btcBalanceBitcoin,
   };
 }

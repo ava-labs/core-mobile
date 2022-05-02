@@ -1,34 +1,26 @@
-import React, { FC, useMemo } from 'react'
-import {
-  ActivityIndicator,
-  Alert,
-  ListRenderItemInfo,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View
-} from 'react-native'
-import { Space } from 'components/Space'
-import AvaText from 'components/AvaText'
-import AvaButton from 'components/AvaButton'
-import SwapNarrowSVG from 'components/svg/SwapNarrowSVG'
-import AvaListItem from 'components/AvaListItem'
-import DropDown from 'components/Dropdown'
-import { Row } from 'components/Row'
-import Separator from 'components/Separator'
-import Avatar from 'components/Avatar'
-import CheckmarkSVG from 'components/svg/CheckmarkSVG'
+import React, {FC, useEffect, useState} from 'react';
+import {ActivityIndicator, Alert, ListRenderItemInfo, Pressable, ScrollView, StyleSheet, View} from 'react-native';
+import {Space} from 'components/Space';
+import AvaText from 'components/AvaText';
+import AvaButton from 'components/AvaButton';
+import SwapNarrowSVG from 'components/svg/SwapNarrowSVG';
+import AvaListItem from 'components/AvaListItem';
+import DropDown from 'components/Dropdown';
+import {Row} from 'components/Row';
+import Separator from 'components/Separator';
+import Avatar from 'components/Avatar';
+import CheckmarkSVG from 'components/svg/CheckmarkSVG';
 import {
   BIG_ZERO,
   Blockchain,
   formatTokenAmount,
   useBridgeConfig,
   useBridgeSDK,
+  useGetTokenSymbolOnNetwork,
   useTokenInfoContext,
   WrapStatus,
-  useGetTokenSymbolOnNetwork,
 } from '@avalabs/bridge-sdk';
-import {Big, bigToBN, bnToBig, numberToBN} from '@avalabs/avalanche-wallet-sdk';
+import {Big, bnToBig, numberToBN} from '@avalabs/avalanche-wallet-sdk';
 import AppNavigation from 'navigation/AppNavigation';
 import CarrotSVG from 'components/svg/CarrotSVG';
 import InputText from 'components/InputText';
@@ -51,32 +43,6 @@ type NavigationProp = BridgeScreenProps<
 const Bridge: FC = () => {
   const navigation = useNavigation<StackNavigationProp<BridgeStackParamList>>();
   const theme = useApplicationContext().theme;
-  // const {
-  //   assetPrice,
-  //   currentBlockchain,
-  //   currentAsset,
-  //   setCurrentBlockchain,
-  //   setAmount,
-  //   amount,
-  //   amountTooLowError,
-  //   txFee,
-  //   transferCost,
-  //   transferAsset,
-  //   blockchainTokenSymbol,
-  //   targetBlockchain,
-  //   setTargetBlockchain,
-  //   sourceBalance,
-  //   setCurrentAsset,
-  //   setPending,
-  //   bridgeError,
-  //   tokenInfoContext,
-  //   maxTransferAmount,
-  //   setTransactionDetails,
-  //   assetInfo,
-  //   pending,
-  //   amountTooHighError,
-  //   transferDisabled,
-  // } = useBridge();
 
   const {
     address,
@@ -106,9 +72,9 @@ const Bridge: FC = () => {
   } = useBridgeSDK();
   const {getTokenSymbolOnNetwork} = useGetTokenSymbolOnNetwork();
 
-  const isBitcoinBalanceZero =
-    (sourceBalance?.balance?.lte(BIG_ZERO) ?? true) &&
-    currentBlockchain === Blockchain.BITCOIN;
+  // const isBitcoinBalanceZero =
+  //   (sourceBalance?.balance?.lte(BIG_ZERO) ?? true) &&
+  //   currentBlockchain === Blockchain.BITCOIN;
 
   const [bridgeError, setBridgeError] = useState<string>('');
   const [isPending, setIsPending] = useState<boolean>(false);
@@ -163,7 +129,7 @@ const Bridge: FC = () => {
    * @param showCheckmark
    */
   function dropdownItemFormat(
-    blockchain: string,
+    blockchain?: string,
     selectedBlockchain?: Blockchain,
     showCheckmark = true
   ) {
@@ -176,7 +142,7 @@ const Bridge: FC = () => {
           alignItems: 'center'
         }}>
         <Avatar.Custom
-          name={blockchain}
+          name={blockchain ?? ''}
           symbol={
             blockchain === Blockchain.AVALANCHE
               ? 'AVAX'
@@ -186,7 +152,7 @@ const Bridge: FC = () => {
           }
         />
         <Space x={8} />
-        <AvaText.Body1>{blockchain.toUpperCase()}</AvaText.Body1>
+        <AvaText.Body1>{blockchain?.toUpperCase()}</AvaText.Body1>
         {isSelected && (
           <>
             <Space x={8} />
@@ -231,13 +197,19 @@ const Bridge: FC = () => {
   /**
    * Blockchain array that's fed to dropdown
    */
-  const blockChainItems = useMemo(() => {
-    return [Blockchain.AVALANCHE, Blockchain.BITCOIN, Blockchain.ETHEREUM];
-  }, []);
+  const sourceBlockchains = [
+    Blockchain.AVALANCHE,
+    Blockchain.BITCOIN,
+    Blockchain.ETHEREUM,
+  ];
 
   const handleAmountChanged = (value: string) => {
     const bn = numberToBN(Number(value), denomination);
-    setAmount(bnToBig(bn, denomination));
+    try {
+      setAmount(bnToBig(bn, denomination));
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   const handleBlockchainToggle = () => {
@@ -327,7 +299,7 @@ const Bridge: FC = () => {
               />
             }
           />
-          {isBitcoinBalanceZero && (
+          {currentBlockchain === Blockchain.BITCOIN && (
             <Row style={{justifyContent: 'flex-end'}}>
               <AvaButton.Base
                 style={{marginEnd: 16, marginBottom: 8}}
@@ -453,13 +425,14 @@ const Bridge: FC = () => {
             title={'To'}
             rightComponent={
               <DropDown
-                alignment={'flex-end'}
-                data={blockChainItems}
-                selectionRenderItem={selectedItem =>
-                  dropdownItemFormat(targetBlockchain, selectedItem, false)
-                }
-                onItemSelected={bc => setTargetBlockchain(bc)}
-                optionsRenderItem={item =>
+                style={{marginRight: 19}}
+                filterItems={targetChains}
+                currentItem={dropdownItemFormat(
+                  targetBlockchain,
+                  targetBlockchain,
+                  false
+                )}
+                customRenderItem={item =>
                   renderDropdownOptions(item, targetBlockchain)
                 }
                 width={180}

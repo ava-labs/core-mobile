@@ -12,19 +12,32 @@ import {
   useBridgeConfig,
   useBridgeSDK,
 } from '@avalabs/bridge-sdk';
-import {useNetworkContext} from '@avalabs/wallet-react-components';
+import {
+  useNetworkContext,
+  useWalletContext,
+} from '@avalabs/wallet-react-components';
 import {useBridgeContext} from 'contexts/BridgeContext';
 import {useCallback, useEffect, useState} from 'react';
 import {AssetBalance} from 'screens/bridge/AssetBalance';
-import {useGetBtcBalances} from 'screens/bridge/hooks/useGetBtcBalances';
+import {getBtcBalance} from 'screens/bridge/hooks/getBtcBalance';
+import {isMainnetNetwork} from '@avalabs/avalanche-wallet-sdk';
+import {getAvalancheProvider} from 'screens/bridge/utils/getAvalancheProvider';
 
 export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
   const network = useNetworkContext()?.network;
   const bridgeConfig = useBridgeConfig()!.config!;
+  const wallet = useWalletContext().wallet;
   const {createBridgeTransaction} = useBridgeContext();
 
   const {currentAsset, setTransactionDetails, currentBlockchain} =
     useBridgeSDK();
+
+  const avalancheProvider = getAvalancheProvider(network);
+  const btcAddress =
+    wallet?.getAddressBTC(
+      isMainnetNetwork(network?.config) ? 'bitcoin' : 'testnet',
+    ) ?? '';
+  const avalancheAddress = wallet?.getAddressC();
 
   const isBitcoinBridge = currentBlockchain === Blockchain.BITCOIN;
 
@@ -33,14 +46,14 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
   const [btcBalanceAvalanche, setBtcBalanceAvalanche] =
     useState<AssetBalance>();
   const [utxos, setUtxos] = useState<TxSimple[]>();
-  const [btcAddress, setBtcAddress] = useState<string>();
+  // const [btcAddress, setBtcAddress] = useState<string>();
 
   /** Network fee (in BTC) */
-  const [networkFee, setFee] = useState<Big>();
+  const [networkFee, setFee] = useState<Big>(BIG_ZERO);
   /** Amount minus network and bridge fees (in BTC) */
-  const [receiveAmount, setReceiveAmount] = useState<Big>();
+  const [receiveAmount, setReceiveAmount] = useState<Big>(BIG_ZERO);
   /** Minimum transfer amount (in BTC) */
-  const [minimum, setMinimum] = useState<Big>();
+  const [minimum, setMinimum] = useState<Big>(BIG_ZERO);
 
   const amountInSatoshis = btcToSatoshi(amountInBtc);
 
@@ -61,14 +74,14 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
     async function load() {
       if (isBitcoinBridge && btcAsset) {
         setLoading(true);
-        const {
-          bitcoinUtxos,
-          btcAddress,
-          btcBalanceAvalanche,
-          btcBalanceBitcoin,
-        } = useGetBtcBalances();
+        const {bitcoinUtxos, btcBalanceAvalanche, btcBalanceBitcoin} =
+          await getBtcBalance(
+            bridgeConfig,
+            btcAddress,
+            avalancheAddress!,
+            avalancheProvider!,
+          );
 
-        setBtcAddress(btcAddress);
         setUtxos(bitcoinUtxos);
         setBtcBalance({
           symbol: btcAsset.symbol,
@@ -78,7 +91,7 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
         setBtcBalanceAvalanche({
           symbol: btcAsset.symbol,
           asset: btcAsset,
-          balance: satoshiToBtc(btcBalanceAvalanche),
+          balance: satoshiToBtc(btcBalanceAvalanche ?? 0),
         });
         setLoading(false);
       }
@@ -138,14 +151,14 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
       amount: amountInBtc,
     });
 
-    createBridgeTransaction({
-      sourceChain: Blockchain.BITCOIN,
-      sourceTxHash: signedHex,
-      sourceStartedAt: timestamp,
-      targetChain: Blockchain.AVALANCHE,
-      amount: amountInBtc,
-      symbol,
-    });
+    // createBridgeTransaction({
+    //   sourceChain: Blockchain.BITCOIN,
+    //   sourceTxHash: signedHex,
+    //   sourceStartedAt: timestamp,
+    //   targetChain: Blockchain.AVALANCHE,
+    //   amount: amountInBtc,
+    //   symbol,
+    // });
 
     return signedHex;
   }, [
