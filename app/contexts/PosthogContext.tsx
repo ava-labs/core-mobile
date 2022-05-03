@@ -102,7 +102,7 @@ export const PosthogContextProvider = ({ children }: { children: any }) => {
     if (!isPosthogReady) {
       return
     }
-    if (!__DEV__ || eventsBlocked) {
+    if (__DEV__ || eventsBlocked) {
       PostHog.disable()
       return
     }
