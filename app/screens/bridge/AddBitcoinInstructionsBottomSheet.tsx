@@ -77,14 +77,7 @@ function AddBitcoinInstructionsBottomSheet(): JSX.Element {
           </AvaText.ButtonSmall>
         </Row>
         <View style={{ alignSelf: 'center', marginVertical: 24 }}>
-          <AvaxQACode
-            circularText={'C Chain'}
-            sizePercentage={0.5}
-            address={btcAddress}
-            token={'BTC'}
-            circularTextColor={'black'}
-            circularTextBackgroundColor={'white'}
-          />
+          <AvaxQACode sizePercentage={0.5} address={btcAddress} token={'BTC'} />
         </View>
         <AvaText.Heading2>Core X bitcoin Address</AvaText.Heading2>
         <Space y={8} />

@@ -11,15 +11,17 @@ interface Props {
   text: string
   textColor?: string
   circleBackgroundColor?: string
+  size: number
 }
 
 function CircularText({
   text,
-  textColor = 'white',
-  circleBackgroundColor = '#3A3A3C'
+  textColor = '#000000',
+  circleBackgroundColor = '#FFFFFF',
+  size
 }: Props) {
   return (
-    <Svg height="100" width="100" viewBox="0 0 300 300">
+    <Svg height={size} width={size} viewBox="0 0 300 300">
       <G id="circle">
         <Circle
           r={75}
