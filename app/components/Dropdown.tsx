@@ -18,7 +18,6 @@ import { BlurView } from '@react-native-community/blur'
 import { Row } from 'components/Row'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
-import { noop } from 'rxjs'
 
 interface Props<ItemT> {
   data: ItemT[]
@@ -43,6 +42,7 @@ interface Props<ItemT> {
  * @param onItemSelected On selected option callback
  * @param width Set this to max width of rendered items
  * @param alignment How should dropdown options be aligned relative to selected option.
+ * @param disabled if set to true, dropdown won't show anything
  */
 function DropDown<ItemT>({
   data,
@@ -194,7 +194,7 @@ function DropDown<ItemT>({
             />
           </>
         )}
-      </View>
+      </Row>
     </Popable>
   )
 }

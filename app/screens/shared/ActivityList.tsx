@@ -1,10 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Animated, RefreshControl, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import Loader from 'components/Loader'
 import {
   getHistory,
-  isTransactionNormal,
   TransactionERC20,
   TransactionNormal,
   useWalletContext
@@ -15,17 +14,16 @@ import { endOfToday, endOfYesterday, format, isSameDay } from 'date-fns'
 import { useBridgeSDK } from '@avalabs/bridge-sdk'
 import BridgeTransactionItem from 'screens/bridge/components/BridgeTransactionItem'
 import { BridgeTransactionStatusParams } from 'navigation/types'
-import {
-  isBridge,
-  isContractCall,
-  isIncoming,
-  isOutgoing
-} from 'utils/TrxTools'
 import { Row } from 'components/Row'
 import DropDown from 'components/Dropdown'
 import useInAppBrowser from 'hooks/useInAppBrowser'
 import { isBridgeTransaction } from 'screens/bridge/utils/bridgeTransactionUtils'
 import { useApplicationContext } from 'contexts/ApplicationContext'
+import {
+  isContractCallTransaction,
+  isIncomingTransaction,
+  isOutgoingTransaction
+} from 'utils/TransactionTools'
 
 const yesterday = endOfYesterday()
 const today = endOfToday()
@@ -54,6 +52,7 @@ function ActivityList({
     useApplicationContext().repo.pendingBridgeTransactions
   const { bitcoinAssets, ethereumWrappedAssets } = useBridgeSDK()
   const bridgeTransactions = pendingBridgeTransactions.bridgeTransactions
+  const [filter, setFilter] = useState(ActivityFilter.All)
 
   const isBridgeTx = useCallback(
     (tx: typeof allHistory[0]): tx is TransactionERC20 => {
@@ -75,12 +74,19 @@ function ActivityList({
   const filteredHistory = useMemo(
     () =>
       allHistory?.filter(tx => {
-        const showAll = true // filter show all
-        const isBridge = isBridgeTx(tx) && showAll // or filter === showBridge
-        const isIncoming = !tx.isSender && showAll // or filter === showIncoming;
-        const isOutgoing = tx.input === '0x' && tx.isSender && showAll // or filter === show outgoing
+        const showAll = filter === ActivityFilter.All
+        const isBridge =
+          isBridgeTx(tx) && (showAll || filter === ActivityFilter.Bridge)
+        const isIncoming =
+          isIncomingTransaction(tx) &&
+          !isBridge &&
+          (showAll || filter === ActivityFilter.Incoming)
+        const isOutgoing =
+          isOutgoingTransaction(tx) &&
+          (showAll || filter === ActivityFilter.Outgoing)
         const isContractCall =
-          isTransactionNormal(tx) && tx.input !== '0x' && showAll // or filger === contract call
+          isContractCallTransaction(tx) &&
+          (showAll || filter === ActivityFilter.ContractApprovals)
 
         if (
           // Return empty if the tx doesn't fit in the currently selected filter
@@ -94,8 +100,8 @@ function ActivityList({
               (('tokenSymbol' in tx && tx.tokenSymbol) || 'AVAX')
           : true
       }),
-    [allHistory, tokenSymbolFilter, isBridgeTx]
-  ) // filter
+    [allHistory, tokenSymbolFilter, isBridgeTx, filter]
+  )
 
   useEffect(() => {
     loadHistory().then()
@@ -138,9 +144,6 @@ function ActivityList({
                         ? Date.parse(tx.sourceStartedAt.toString()).toString()
                         : Date.now().toString()
                     })
-                    // } else if ('explorerLink' in tx && (tx as TransactionERC20).explorerLink) {
-                    //   openUrl(item.explorerLink).then()
-                    // }
                   }}
                 />
               )

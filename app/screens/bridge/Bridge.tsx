@@ -71,8 +71,7 @@ const Bridge: FC = () => {
     setCurrentAsset,
     currentBlockchain,
     setCurrentBlockchain,
-    targetBlockchain,
-    targetChains
+    targetBlockchain
   } = useBridgeSDK()
   const { getTokenSymbolOnNetwork } = useGetTokenSymbolOnNetwork()
   const isMainnet = useIsMainnet()
@@ -151,7 +150,9 @@ const Bridge: FC = () => {
               ? 'AVAX'
               : blockchain === Blockchain.ETHEREUM
               ? 'ETH'
-              : 'BTC'
+              : blockchain === Blockchain.BITCOIN
+              ? 'BTC'
+              : undefined
           }
         />
         <Space x={8} />
@@ -276,16 +277,14 @@ const Bridge: FC = () => {
             title={'From'}
             rightComponent={
               <DropDown
-                style={{ marginRight: 19 }}
-                filterItems={filterChains(sourceBlockchains)}
-                currentItem={dropdownItemFormat(
-                  currentBlockchain,
-                  undefined,
-                  false
-                )}
+                data={filterChains(sourceBlockchains)}
+                preselectedIndex={sourceBlockchains.indexOf(currentBlockchain)}
                 onItemSelected={bc => setCurrentBlockchain(bc as Blockchain)}
                 optionsRenderItem={item =>
                   renderDropdownOptions(item, currentBlockchain)
+                }
+                selectionRenderItem={item =>
+                  dropdownItemFormat(item, currentBlockchain, false)
                 }
                 width={180}
               />
@@ -415,19 +414,11 @@ const Bridge: FC = () => {
         <View style={{ backgroundColor: theme.colorBg2, borderRadius: 10 }}>
           <AvaListItem.Base
             title={'To'}
-            rightComponent={
-              <DropDown
-                style={{ marginRight: 19 }}
-                filterItems={filterChains(targetChains)}
-                currentItem={dropdownItemFormat(
-                  targetBlockchain,
-                  undefined,
-                  false
-                )}
-                disabled
-                minWidth={180}
-              />
-            }
+            rightComponent={dropdownItemFormat(
+              targetBlockchain,
+              undefined,
+              false
+            )}
           />
           <Separator inset={16} />
           <Row style={styles.receiveRow}>
