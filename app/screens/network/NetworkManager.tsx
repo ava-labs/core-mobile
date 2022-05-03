@@ -9,6 +9,8 @@ import { NetworkListItem } from 'screens/network/NetworkListItem'
 import { Network } from 'repository/NetworksRepo'
 import { ShowSnackBar } from 'components/Snackbar'
 import { getIcon } from 'screens/network/NetworkIconSelector'
+import { getActiveNetwork } from 'screens/network/SupportedNetworkMapper'
+import { useNetworkContext } from '@avalabs/wallet-react-components'
 
 type Props = {
   onShowInfo: (network: Network) => void
@@ -18,6 +20,7 @@ export default function NetworkManager({ onShowInfo }: Props) {
   const { theme, repo } = useApplicationContext()
   const [searchText, setSearchText] = useState('')
   const { networks, setFavorite, unsetFavorite } = repo.networksRepo
+  const networkContext = useNetworkContext()
 
   const mainNets = useMemo(
     () =>
@@ -74,8 +77,12 @@ export default function NetworkManager({ onShowInfo }: Props) {
   }
 
   function connect(networkName: string) {
-    //TODO
-    ShowSnackBar('Will connect to ' + networkName)
+    const activeNetwork = getActiveNetwork(networkName)
+    if (activeNetwork) {
+      networkContext?.setNetwork(activeNetwork)
+    } else {
+      ShowSnackBar('Not yet supported')
+    }
   }
 
   return (

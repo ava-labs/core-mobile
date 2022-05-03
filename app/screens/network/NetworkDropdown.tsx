@@ -13,12 +13,15 @@ import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation } from '@react-navigation/native'
 import { NativeStackNavigatorProps } from 'react-native-screens/lib/typescript/native-stack/types'
 import { getIcon } from 'screens/network/NetworkIconSelector'
+import { getActiveNetwork } from 'screens/network/SupportedNetworkMapper'
+import { useNetworkContext } from '@avalabs/wallet-react-components'
 
 const ManageNetworks = 'Manage networks'
 export default function NetworkDropdown() {
   const { networks } = useApplicationContext().repo.networksRepo
   const { theme } = useApplicationContext()
   const navigation = useNavigation<NativeStackNavigatorProps>()
+  const networkContext = useNetworkContext()
 
   const data = useMemo(
     () => [
@@ -53,7 +56,12 @@ export default function NetworkDropdown() {
             navigation?.navigate(AppNavigation.Wallet.NetworkSelector)
             return false
           } else {
-            ShowSnackBar(selectedItem)
+            const activeNetwork = getActiveNetwork(selectedItem)
+            if (activeNetwork) {
+              networkContext?.setNetwork(activeNetwork)
+            } else {
+              ShowSnackBar('Not yet supported')
+            }
           }
         }}
         alignment={'flex-end'}

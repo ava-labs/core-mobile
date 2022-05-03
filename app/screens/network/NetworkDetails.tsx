@@ -1,36 +1,45 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import AvaLogoSVG from 'components/svg/AvaLogoSVG'
 import AvaButton from 'components/AvaButton'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Network } from 'repository/NetworksRepo'
-import { View } from 'react-native'
+import { ActivityIndicator, View } from 'react-native'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
 import FlexSpacer from 'components/FlexSpacer'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import TextFieldBg from 'components/styling/TextFieldBg'
 import { ShowSnackBar } from 'components/Snackbar'
+import { useNetworkContext } from '@avalabs/wallet-react-components'
+import { getActiveNetwork } from 'screens/network/SupportedNetworkMapper'
 
 type Props = {
   network: Network
 }
 
 export default function NetworkDetails({ network }: Props) {
-  // const networkContext = useNetworkContext()
+  const networkContext = useNetworkContext()
+  const connectedNetwork = networkContext?.network?.name?.trim() ?? ''
+  const { theme } = useApplicationContext()
+
+  const [loading, setLoading] = useState(false)
+
+  useEffect(resetLoadingFx, [connectedNetwork, loading, network.name])
+
+  function resetLoadingFx() {
+    if (loading && network.name === connectedNetwork) {
+      setLoading(false)
+    }
+  }
 
   function connect() {
-    //TODO
-    ShowSnackBar('Connect')
-    // if (networkName === networkContext?.network?.name) {
-    //   return
-    // }
-    // setLoading(true)
-    //
-    // setIsChanging(true)
-    // // give chance for loading to be set and show the activity indicator.
-    // setTimeout(() => {
-    //   networkContext?.setNetwork(network.name)
-    // }, 500)
+    setLoading(true)
+    const activeNetwork = getActiveNetwork(network.name)
+    if (activeNetwork) {
+      networkContext?.setNetwork(activeNetwork)
+    } else {
+      ShowSnackBar('Not yet supported')
+    }
   }
 
   return (
@@ -49,7 +58,15 @@ export default function NetworkDetails({ network }: Props) {
       <Space y={24} />
       <DetailItem title={'Explorer URL'} value={network.explorerUrl ?? ''} />
       <FlexSpacer />
-      <AvaButton.PrimaryLarge onPress={connect}>Connect</AvaButton.PrimaryLarge>
+      {loading ? (
+        <ActivityIndicator size="large" color={theme.colorPrimary1} />
+      ) : (
+        <AvaButton.PrimaryLarge
+          disabled={network.name === connectedNetwork}
+          onPress={connect}>
+          {network.name === connectedNetwork ? 'Connected' : 'Connect'}
+        </AvaButton.PrimaryLarge>
+      )}
     </SafeAreaProvider>
   )
 }

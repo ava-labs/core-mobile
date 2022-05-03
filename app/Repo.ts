@@ -336,8 +336,8 @@ export function useRepo(): Repo {
     )
     //FIXME: remove this
     setNetworks({
-      Avalanche: {
-        name: 'Avalanche',
+      'Avalanche Mainnet': {
+        name: 'Avalanche Mainnet',
         isFavorite: true,
         isTest: false,
         chainId: '123',
@@ -345,8 +345,8 @@ export function useRepo(): Repo {
         explorerUrl: 'thisisanexplorerurl.com',
         nativeToken: 'AVAX'
       },
-      AvalancheTest: {
-        name: 'AvalancheTest',
+      'Avalanche FUJI': {
+        name: 'Avalanche FUJI',
         isFavorite: true,
         isTest: true,
         chainId: '123',
