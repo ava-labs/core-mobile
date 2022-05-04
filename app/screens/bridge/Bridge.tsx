@@ -314,7 +314,9 @@ const Bridge: FC = () => {
               {blockchainTokenSymbol}
             </AvaText.Body3>
             <Row style={styles.tokenSelectContainer}>
-              <Pressable onPress={() => navigateToTokenSelector()}>
+              <Pressable
+                disabled={loading}
+                onPress={() => navigateToTokenSelector()}>
                 <Row style={styles.tokenRow}>
                   {!!currentAsset && (
                     <>
@@ -333,20 +335,34 @@ const Bridge: FC = () => {
                 </Row>
               </Pressable>
               <View>
-                <InputText
-                  width={160}
-                  mode={'amount'}
-                  keyboardType="numeric"
-                  onMax={() => {
-                    if (maximum) {
-                      setAmount(maximum.round(6, 0))
-                    }
-                  }}
-                  onChangeText={handleAmountChanged}
-                  text={amount.toString()}
-                />
+                <>
+                  <InputText
+                    width={160}
+                    mode={'amount'}
+                    keyboardType="numeric"
+                    onMax={() => {
+                      if (maximum) {
+                        setAmount(maximum.round(6, 0))
+                      }
+                    }}
+                    onChangeText={handleAmountChanged}
+                    text={amount.toString()}
+                  />
+                  {loading && (
+                    <ActivityIndicator
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        bottom: 0,
+                        left: -12
+                      }}
+                      size="small"
+                    />
+                  )}
+                </>
                 {!currentAsset && (
                   <Pressable
+                    disabled={loading}
                     style={StyleSheet.absoluteFill}
                     onPress={() => navigateToTokenSelector()}
                   />
