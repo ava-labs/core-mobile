@@ -11,8 +11,10 @@ import {
   CoinsContractInfoResponse,
   SimpleTokenPriceResponse
 } from '@avalabs/coingecko-sdk'
-import { BridgeState, defaultBridgeState } from 'screens/bridge/utils/BridgeState'
-import Bridge from 'screens/bridge/Bridge'
+import {
+  BridgeState,
+  defaultBridgeState
+} from 'screens/bridge/utils/BridgeState'
 
 /**
  * Currently we support only one wallet, with multiple accounts.
@@ -178,10 +180,6 @@ export function useRepo(): Repo {
     )
   }
 
-  // loadFromStorageAsMap<Record<string, PartialBridgeTransaction>>(PENDING_BRIDGE_TRANSACTIONS).then(
-  //   value => setPendingBridgeTransactions(value)
-  // )
-
   const setActiveAccount = (accountIndex: number) => {
     accounts.forEach(acc => (acc.active = acc.index === accountIndex))
     saveAccounts(accounts)
@@ -281,31 +279,36 @@ export function useRepo(): Repo {
     setInitialized(false)
   }
 
-  function loadInitialStatesFromStorage() {
-    StorageTools.loadFromStorageAsMap<Setting, SettingValue>(
-      USER_SETTINGS
-    ).then(value => setUserSettings(value))
-    StorageTools.loadFromStorageAsMap<AccountId, Account>(WALLET_ID).then(
-      value => setAccounts(value)
+  async function loadInitialStatesFromStorage() {
+    setUserSettings(
+      await StorageTools.loadFromStorageAsMap<Setting, SettingValue>(
+        USER_SETTINGS
+      )
     )
-    StorageTools.loadFromStorageAsMap<UID, NFTItemData>(NFTs).then(value =>
-      setNfts(value)
+    setAccounts(
+      await StorageTools.loadFromStorageAsMap<AccountId, Account>(WALLET_ID)
     )
-    StorageTools.loadFromStorageAsMap<UID, Contact>(ADDR_BOOK).then(value =>
-      setAddressBook(value)
+    setNfts(await StorageTools.loadFromStorageAsMap<UID, NFTItemData>(NFTs))
+    setAddressBook(
+      await StorageTools.loadFromStorageAsMap<UID, Contact>(ADDR_BOOK)
     )
-    StorageTools.loadFromStorageAsArray<RecentContact>(ADDR_BOOK_RECENTS).then(
-      value => setRecentContacts(value)
+    setRecentContacts(
+      await StorageTools.loadFromStorageAsArray<RecentContact>(
+        ADDR_BOOK_RECENTS
+      )
     )
-    StorageTools.loadFromStorageAsArray<string>(WATCHLIST_FAVORITES).then(
-      value => setWatchlistFavorites(value)
+    setWatchlistFavorites(
+      await StorageTools.loadFromStorageAsArray<string>(WATCHLIST_FAVORITES)
     )
-    StorageTools.loadFromStorageAsObj<CustomTokens>(CUSTOM_TOKENS).then(value =>
-      setCustomTokens(value)
+    setCustomTokens(
+      await StorageTools.loadFromStorageAsObj<CustomTokens>(CUSTOM_TOKENS)
     )
-    StorageTools.loadFromStorageAsArray<ViewOnceInformation>(
-      VIEW_ONCE_INFORMATION
-    ).then(value => setViewOnceInfo(value))
+    setViewOnceInfo(
+      await StorageTools.loadFromStorageAsArray<ViewOnceInformation>(
+        VIEW_ONCE_INFORMATION
+      )
+    )
+
     StorageTools.loadFromStorageAsObj<BridgeState>(
       PENDING_BRIDGE_TRANSACTIONS
     ).then(value => {
