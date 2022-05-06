@@ -27,8 +27,8 @@ export default function NetworkDropdown() {
     () => [
       ...Object.values(networks)
         .filter(item => item.isFavorite)
-        .map(item => item.name),
-      ManageNetworks
+        .map(item => item.name)
+      // ManageNetworks //TODO: currently we wont support this, but let's keep it because eventually we will
     ],
     [networks]
   )
