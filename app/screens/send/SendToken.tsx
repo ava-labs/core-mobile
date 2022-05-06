@@ -1,5 +1,5 @@
-import React, { useEffect, FC } from 'react'
-import { View } from 'react-native'
+import React, { FC, useEffect, useState } from 'react'
+import { Modal, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import InputText from 'components/InputText'
@@ -18,6 +18,8 @@ import { AddrBookItemType, Contact } from 'Repo'
 import AddressBookLists from 'components/addressBook/AddressBookLists'
 import { Account } from 'dto/Account'
 import { useAddressBookLists } from 'components/addressBook/useAddressBookLists'
+import QrScannerAva from 'components/QrScannerAva'
+import QRScanSVG from 'components/svg/QRScanSVG'
 
 type Props = {
   onNext: () => void
@@ -47,6 +49,7 @@ const SendToken: FC<Props> = ({
     canSubmit,
     sdkError
   } = useSendTokenContext()
+  const [showQrCamera, setShowQrCamera] = useState(false)
 
   const {
     showAddressBook,
@@ -127,6 +130,19 @@ const SendToken: FC<Props> = ({
             </AvaButton.Icon>
           </View>
         )}
+        {!toAccount.address && (
+          <View
+            style={{
+              position: 'absolute',
+              right: 64,
+              justifyContent: 'center',
+              height: '100%'
+            }}>
+            <AvaButton.Icon onPress={() => setShowQrCamera(true)}>
+              <QRScanSVG />
+            </AvaButton.Icon>
+          </View>
+        )}
       </View>
       <Space y={24} />
       {showAddressBook ? (
@@ -164,6 +180,20 @@ const SendToken: FC<Props> = ({
         style={{ margin: 16 }}>
         Next
       </AvaButton.PrimaryLarge>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowQrCamera(false)}
+        visible={showQrCamera}>
+        <QrScannerAva
+          onSuccess={data => {
+            setAddress({ address: data, title: '' })
+            setShowQrCamera(false)
+          }}
+          onCancel={() => setShowQrCamera(false)}
+        />
+      </Modal>
     </View>
   )
 }
