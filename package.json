@@ -70,7 +70,7 @@
     "lodash.capitalize": "^4.2.1",
     "lodash.isstring": "^4.0.1",
     "lottie-react-native": "5.0.1",
-    "moment": "^2.29.1",
+    "moment": "^2.29.2",
     "node-libs-react-native": "^1.2.1",
     "numeral": "^2.0.6",
     "paraswap": "^5.0.1",
