@@ -11,6 +11,10 @@ import {
   CoinsContractInfoResponse,
   SimpleTokenPriceResponse
 } from '@avalabs/coingecko-sdk'
+import {
+  BridgeState,
+  defaultBridgeState
+} from 'screens/bridge/utils/BridgeState'
 
 /**
  * Currently we support only one wallet, with multiple accounts.
@@ -27,6 +31,7 @@ const CUSTOM_TOKENS = 'CUSTOM_TOKENS'
 const NFTs = 'NFTs_2'
 const VIEW_ONCE_INFORMATION = 'VIEW_ONCE_INFORMATION'
 const PORTFOLIO_TOKEN_LIST = 'PORTFOLIO_TOKEN_LIST_3'
+const PENDING_BRIDGE_TRANSACTIONS = 'PENDING_BRIDGE_TRANSACTIONS'
 
 /**
  * ViewOnceInformation is used by views that needs to display something for the 1st time one.
@@ -114,6 +119,10 @@ export type Repo = {
       fresh?: boolean
     ) => Promise<SimpleTokenPriceResponse | undefined>
   }
+  pendingBridgeTransactions: {
+    pendingBridgeTransactions: BridgeState
+    savePendingBridgeTransactions: (newState: BridgeState) => void
+  }
   /**
    * Store any simple user settings here
    */
@@ -138,6 +147,8 @@ export function useRepo(): Repo {
     new Map()
   )
   const { getCharData, getContractInfo, getTokensPrice } = useCoingeckoRepo()
+  const [pendingBridgeTransactions, setPendingBridgeTransactions] =
+    useState<BridgeState>(defaultBridgeState)
 
   useEffect(() => {
     ;(async () => {
@@ -241,6 +252,14 @@ export function useRepo(): Repo {
     )
   }
 
+  const savePendingBridgeTransactions = (pendingTransactions: BridgeState) => {
+    setPendingBridgeTransactions(pendingTransactions)
+    StorageTools.saveToStorage(
+      PENDING_BRIDGE_TRANSACTIONS,
+      pendingTransactions
+    ).catch(error => console.error(error))
+  }
+
   const infoHasBeenShown = (info: ViewOnceInformation) => {
     return viewOnceInfo.includes(info)
   }
@@ -256,6 +275,7 @@ export function useRepo(): Repo {
     setWatchlistFavorites([])
     setCustomTokens({})
     setUserSettings(new Map())
+    setPendingBridgeTransactions(defaultBridgeState)
     setInitialized(false)
   }
 
@@ -288,6 +308,16 @@ export function useRepo(): Repo {
         VIEW_ONCE_INFORMATION
       )
     )
+
+    StorageTools.loadFromStorageAsObj<BridgeState>(
+      PENDING_BRIDGE_TRANSACTIONS
+    ).then(value => {
+      setPendingBridgeTransactions(
+        'bridgeTransactions' in value
+          ? (value as BridgeState)
+          : defaultBridgeState
+      )
+    })
   }
 
   return {
@@ -318,6 +348,10 @@ export function useRepo(): Repo {
       getCharData,
       getContractInfo,
       getTokensPrice
+    },
+    pendingBridgeTransactions: {
+      pendingBridgeTransactions: pendingBridgeTransactions,
+      savePendingBridgeTransactions: savePendingBridgeTransactions
     },
     flush,
     initialized

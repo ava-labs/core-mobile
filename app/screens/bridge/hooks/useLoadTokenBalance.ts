@@ -1,7 +1,7 @@
 import {
   Asset,
   Blockchain,
-  useGetTokenBalance as useGetTokenBalanceSDK
+  useGetTokenBalanceEVM as useGetTokenBalanceSDK
 } from '@avalabs/bridge-sdk'
 import { getAvalancheProvider } from 'screens/bridge/utils/getAvalancheProvider'
 import { getEthereumProvider } from 'screens/bridge/utils/getEthereumProvider'
@@ -18,7 +18,7 @@ import {
  * @param suspendRefresh pass true to NOT fetch the balance (useful for hidden items)
  */
 export function useLoadTokenBalance(
-  blockchain: Blockchain,
+  blockchain: Blockchain.AVALANCHE | Blockchain.ETHEREUM,
   token?: Asset,
   address?: string,
   suspendRefresh?: boolean

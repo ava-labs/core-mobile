@@ -27,6 +27,7 @@ interface Props<ItemT> {
   preselectedIndex?: number
   optionsRenderItem?: (item: ListRenderItemInfo<ItemT>) => React.ReactNode
   onItemSelected?: (selectedItem: ItemT) => void
+  disabled?: boolean
 }
 
 /**
@@ -41,6 +42,7 @@ interface Props<ItemT> {
  * @param onItemSelected On selected option callback
  * @param width Set this to max width of rendered items
  * @param alignment How should dropdown options be aligned relative to selected option.
+ * @param disabled if set to true, dropdown won't show anything
  */
 function DropDown<ItemT>({
   data,
@@ -49,7 +51,8 @@ function DropDown<ItemT>({
   optionsRenderItem,
   onItemSelected,
   width = 150,
-  alignment = 'center'
+  alignment = 'center',
+  disabled
 }: Props<ItemT>) {
   const theme = useApplicationContext().theme
   const ref = useRef<PopableManager>(null)
@@ -155,7 +158,7 @@ function DropDown<ItemT>({
   return (
     <Popable
       ref={ref}
-      content={filterContent()}
+      content={disabled ? <View /> : filterContent()}
       action={'press'}
       onAction={setIsFilterOpen}
       position={'bottom'}
@@ -182,11 +185,15 @@ function DropDown<ItemT>({
         ) : (
           <>{selectionItem}</>
         )}
-        <Space x={4} />
-        <CarrotSVG
-          direction={isFilterOpen ? 'up' : 'down'}
-          color={theme.colorText1}
-        />
+        {!disabled && (
+          <>
+            <Space x={4} />
+            <CarrotSVG
+              direction={isFilterOpen ? 'up' : 'down'}
+              color={theme.colorText1}
+            />
+          </>
+        )}
       </Row>
     </Popable>
   )

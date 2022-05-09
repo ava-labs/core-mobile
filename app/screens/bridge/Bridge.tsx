@@ -1,4 +1,4 @@
-import React, { FC, useMemo } from 'react'
+import React, { FC, useEffect, useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
@@ -19,12 +19,15 @@ import Separator from 'components/Separator'
 import Avatar from 'components/Avatar'
 import CheckmarkSVG from 'components/svg/CheckmarkSVG'
 import {
-  AssetType,
   BIG_ZERO,
   Blockchain,
-  formatTokenAmount
+  formatTokenAmount,
+  useBridgeSDK,
+  useGetTokenSymbolOnNetwork,
+  useTokenInfoContext,
+  WrapStatus
 } from '@avalabs/bridge-sdk'
-import { Big } from '@avalabs/avalanche-wallet-sdk'
+import { Big, bnToBig, numberToBN } from '@avalabs/avalanche-wallet-sdk'
 import AppNavigation from 'navigation/AppNavigation'
 import CarrotSVG from 'components/svg/CarrotSVG'
 import InputText from 'components/InputText'
@@ -33,6 +36,8 @@ import { useNavigation } from '@react-navigation/native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { BridgeScreenProps } from 'navigation/types'
+import { useIsMainnet } from 'hooks/isMainnet'
+import { usePosthogContext } from 'contexts/PosthogContext'
 
 const formatBalance = (balance: Big | undefined) => {
   return balance && formatTokenAmount(balance, 6)
@@ -45,36 +50,73 @@ type NavigationProp = BridgeScreenProps<
 const Bridge: FC = () => {
   const navigation = useNavigation<NavigationProp>()
   const theme = useApplicationContext().theme
+
   const {
-    assetPrice,
-    currentBlockchain,
-    currentAsset,
-    setCurrentBlockchain,
-    setAmount,
-    amount,
-    amountTooLowError,
-    txFee,
-    transferCost,
-    transferAsset,
-    blockchainTokenSymbol,
-    targetBlockchain,
-    setTargetBlockchain,
     sourceBalance,
-    setCurrentAsset,
-    setPending,
-    bridgeError,
-    tokenInfoContext,
-    maxTransferAmount,
-    setTransactionDetails,
-    assetInfo,
-    pending,
-    amountTooHighError,
-    transferDisabled
+    amount,
+    setAmount,
+    assetsWithBalances,
+    hasEnoughForNetworkFee,
+    loading,
+    price,
+    maximum = BIG_ZERO,
+    minimum,
+    receiveAmount,
+    wrapStatus,
+    transfer
   } = useBridge()
 
-  const isBitcoinBalanceZero =
-    (sourceBalance?.balance?.lte(BIG_ZERO) ?? true) &&
-    currentBlockchain === Blockchain.BITCOIN
+  const {
+    currentAsset,
+    setCurrentAsset,
+    currentBlockchain,
+    setCurrentBlockchain,
+    targetBlockchain
+  } = useBridgeSDK()
+  const { getTokenSymbolOnNetwork } = useGetTokenSymbolOnNetwork()
+  const isMainnet = useIsMainnet()
+  const [bridgeError, setBridgeError] = useState<string>('')
+  const [isPending, setIsPending] = useState<boolean>(false)
+  const tokenInfoData = useTokenInfoContext()
+  const denomination = sourceBalance?.asset.denomination || 0
+  const blockchainTokenSymbol = getTokenSymbolOnNetwork(
+    currentAsset ?? '',
+    currentBlockchain
+  )
+  const { bridgeBtcBlocked, bridgeEthBlocked } = usePosthogContext()
+  const { currencyFormatter } = useApplicationContext().appHook
+
+  const isAmountTooHigh = amount && amount.gt(maximum)
+  const isAmountTooLow =
+    amount && !amount.eq(BIG_ZERO) && amount.lt(minimum || BIG_ZERO)
+  const hasValidAmount = !isAmountTooLow && amount.gt(BIG_ZERO)
+
+  const formattedReceiveAmount =
+    hasValidAmount && receiveAmount
+      ? `~${receiveAmount.toFixed(9)} ${currentAsset}`
+      : '-'
+  const formattedReceiveAmountCurrency =
+    hasValidAmount && price && receiveAmount
+      ? `~${currencyFormatter(price.mul(receiveAmount).toNumber())}`
+      : '-'
+
+  // Remove chains turned off by the feature flags
+  const filterChains = (chains: Blockchain[]) =>
+    chains.filter(chain => {
+      switch (chain) {
+        case Blockchain.BITCOIN:
+          // TODO remove !isMainnet check when mainnet is supported
+          return !isMainnet && !bridgeBtcBlocked
+        case Blockchain.ETHEREUM:
+          return !bridgeEthBlocked
+        default:
+          return true
+      }
+    })
+
+  useEffect(() => {
+    setBridgeError(bridgeError)
+  }, [bridgeError])
 
   /**
    * Used to display currently selected and dropdown items.
@@ -89,7 +131,7 @@ const Bridge: FC = () => {
    * @param showCheckmark
    */
   function dropdownItemFormat(
-    blockchain: string,
+    blockchain?: string,
     selectedBlockchain?: Blockchain,
     showCheckmark = true
   ) {
@@ -102,17 +144,19 @@ const Bridge: FC = () => {
           alignItems: 'center'
         }}>
         <Avatar.Custom
-          name={blockchain}
+          name={blockchain ?? ''}
           symbol={
             blockchain === Blockchain.AVALANCHE
               ? 'AVAX'
               : blockchain === Blockchain.ETHEREUM
               ? 'ETH'
-              : 'BTC'
+              : blockchain === Blockchain.BITCOIN
+              ? 'BTC'
+              : undefined
           }
         />
         <Space x={8} />
-        <AvaText.Body1>{blockchain.toUpperCase()}</AvaText.Body1>
+        <AvaText.Body1>{blockchain?.toUpperCase()}</AvaText.Body1>
         {isSelected && (
           <>
             <Space x={8} />
@@ -128,7 +172,8 @@ const Bridge: FC = () => {
    */
   const navigateToTokenSelector = () => {
     navigation.navigate(AppNavigation.Modal.BridgeSelectToken, {
-      onTokenSelected: setCurrentAsset
+      onTokenSelected: handleSelect,
+      bridgeTokenList: assetsWithBalances ?? []
     })
   }
 
@@ -154,16 +199,29 @@ const Bridge: FC = () => {
   /**
    * Blockchain array that's fed to dropdown
    */
-  const blockChainItems = useMemo(() => {
-    return [Blockchain.AVALANCHE, Blockchain.BITCOIN, Blockchain.ETHEREUM]
-  }, [])
+  const sourceBlockchains = [
+    Blockchain.AVALANCHE,
+    Blockchain.BITCOIN,
+    Blockchain.ETHEREUM
+  ]
 
   const handleAmountChanged = (value: string) => {
-    /**
-     * Split the input and make sure the right side never exceeds
-     * the denomination length
-     */
-    setAmount(new Big(value || 0))
+    const bn = numberToBN(Number(value), denomination)
+    try {
+      setAmount(bnToBig(bn, denomination))
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  const handleBlockchainToggle = () => {
+    if (targetBlockchain) {
+      setCurrentBlockchain(targetBlockchain)
+    }
+  }
+
+  const handleSelect = (symbol: string) => {
+    setCurrentAsset(symbol)
   }
 
   /**
@@ -175,46 +233,38 @@ const Bridge: FC = () => {
     }
 
     try {
-      setPending(true)
-      const result = await transferAsset(amount)
-
-      if (!result?.hash) {
-        return
-      }
-
-      setTransactionDetails({
-        tokenSymbol:
-          assetInfo.assetType === AssetType.NATIVE
-            ? assetInfo.wrappedAssetSymbol
-            : currentAsset || '',
-        amount
-      })
+      setIsPending(true)
+      const hash = await transfer()
+      setIsPending(false)
 
       // Navigate to transaction status page
       navigation.navigate(AppNavigation.Bridge.BridgeTransactionStatus, {
         blockchain: currentBlockchain as string,
-        txHash: result.hash,
+        txHash: hash ?? '',
         txTimestamp: Date.now().toString()
       })
     } catch (e: any) {
-      const message =
-        e?.reason ??
-        'An unknown error has occurred. Bridging was halted. Please try again later'
-
-      Alert.alert('Error Bridging', message)
+      Alert.alert(
+        'Error Bridging',
+        'reason' in e
+          ? e?.reason
+          : e?.message ??
+              'An unknown error has occurred. Bridging was halted. Please try again later'
+      )
       return
     } finally {
-      setPending(false)
+      setIsPending(false)
     }
   }
 
-  const calculateEstimatedTotal = useMemo(() => {
-    if (!transferCost) {
-      return
-    }
-    const amountMinusTransfer = amount.minus(transferCost)
-    return `${assetPrice.mul(amountMinusTransfer).toNumber()}`
-  }, [transferCost, amount, assetPrice])
+  const transferDisabled =
+    bridgeError.length > 0 ||
+    loading ||
+    isPending ||
+    isAmountTooLow ||
+    isAmountTooHigh ||
+    BIG_ZERO.eq(amount) ||
+    !hasEnoughForNetworkFee
 
   return (
     <SafeAreaProvider>
@@ -228,21 +278,20 @@ const Bridge: FC = () => {
             title={'From'}
             rightComponent={
               <DropDown
-                alignment={'flex-end'}
-                preselectedIndex={1}
-                data={blockChainItems}
-                selectionRenderItem={selectedItem =>
-                  dropdownItemFormat(selectedItem, selectedItem, false)
-                }
-                onItemSelected={bc => setCurrentBlockchain(bc)}
+                data={filterChains(sourceBlockchains)}
+                preselectedIndex={sourceBlockchains.indexOf(currentBlockchain)}
+                onItemSelected={bc => setCurrentBlockchain(bc as Blockchain)}
                 optionsRenderItem={item =>
                   renderDropdownOptions(item, currentBlockchain)
+                }
+                selectionRenderItem={item =>
+                  dropdownItemFormat(item, currentBlockchain, false)
                 }
                 width={180}
               />
             }
           />
-          {isBitcoinBalanceZero && (
+          {currentBlockchain === Blockchain.BITCOIN && (
             <Row style={{ justifyContent: 'flex-end' }}>
               <AvaButton.Base
                 style={{ marginEnd: 16, marginBottom: 8 }}
@@ -266,16 +315,16 @@ const Bridge: FC = () => {
               {blockchainTokenSymbol}
             </AvaText.Body3>
             <Row style={styles.tokenSelectContainer}>
-              <Pressable onPress={() => navigateToTokenSelector()}>
+              <Pressable
+                disabled={loading}
+                onPress={() => navigateToTokenSelector()}>
                 <Row style={styles.tokenRow}>
                   {!!currentAsset && (
                     <>
                       <Avatar.Custom
                         name={blockchainTokenSymbol}
                         symbol={blockchainTokenSymbol}
-                        logoUri={
-                          tokenInfoContext?.[blockchainTokenSymbol]?.logo
-                        }
+                        logoUri={tokenInfoData?.[blockchainTokenSymbol]?.logo}
                       />
                       <Space x={8} />
                     </>
@@ -287,20 +336,34 @@ const Bridge: FC = () => {
                 </Row>
               </Pressable>
               <View>
-                <InputText
-                  width={160}
-                  mode={'amount'}
-                  keyboardType="numeric"
-                  onMax={() => {
-                    if (maxTransferAmount) {
-                      setAmount(maxTransferAmount.round(6, 0))
-                    }
-                  }}
-                  onChangeText={handleAmountChanged}
-                  text={amount.toString()}
-                />
+                <>
+                  <InputText
+                    width={160}
+                    mode={'amount'}
+                    keyboardType="numeric"
+                    onMax={() => {
+                      if (maximum) {
+                        setAmount(maximum.round(6, 0))
+                      }
+                    }}
+                    onChangeText={handleAmountChanged}
+                    text={amount.toString()}
+                  />
+                  {loading && (
+                    <ActivityIndicator
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        bottom: 0,
+                        left: -12
+                      }}
+                      size="small"
+                    />
+                  )}
+                </>
                 {!currentAsset && (
                   <Pressable
+                    disabled={loading}
                     style={StyleSheet.absoluteFill}
                     onPress={() => navigateToTokenSelector()}
                   />
@@ -315,46 +378,64 @@ const Bridge: FC = () => {
                   alignSelf: 'flex-end',
                   paddingEnd: 16
                 }}>
-                {`${assetPrice.mul(amount).toNumber()}`}
+                {`${price.mul(amount).toNumber()}`}
               </AvaText.Body3>
             )}
           </View>
         </View>
-        {(!!bridgeError || !!amountTooLowError || !!amountTooHighError) && (
+
+        {(!!bridgeError ||
+          isAmountTooLow ||
+          !hasEnoughForNetworkFee ||
+          isAmountTooHigh) && (
+          <>
+            {!hasEnoughForNetworkFee && (
+              <AvaText.Body3
+                textStyle={{ marginVertical: 4 }}
+                color={theme.colorError}>
+                {`Insufficient balance to cover gas costs.\nPlease add ${
+                  currentBlockchain === Blockchain.AVALANCHE ? 'AVAX' : 'ETH'
+                }.`}
+              </AvaText.Body3>
+            )}
+            {isAmountTooLow && (
+              <AvaText.Body3
+                textStyle={{ marginVertical: 4 }}
+                color={theme.colorError}>
+                {`Amount too low -- minimum is ${minimum?.toFixed(9)}`}
+              </AvaText.Body3>
+            )}
+            {isAmountTooHigh && (
+              <AvaText.Body3
+                textStyle={{ marginVertical: 4 }}
+                color={theme.colorError}>
+                {`Amount too high -- maximum is ${maximum?.toFixed(9)}`}
+              </AvaText.Body3>
+            )}
+          </>
+        )}
+
+        {wrapStatus === WrapStatus.WAITING_FOR_DEPOSIT && (
           <AvaText.Body3
             textStyle={{ marginVertical: 4 }}
             color={theme.colorError}>
-            {bridgeError || amountTooLowError || amountTooHighError}
+            Waiting for deposit confirmation
           </AvaText.Body3>
         )}
+
         <AvaButton.Base
-          onPress={() => {
-            setCurrentBlockchain(
-              currentBlockchain === Blockchain.AVALANCHE
-                ? Blockchain.ETHEREUM
-                : Blockchain.AVALANCHE
-            )
-          }}
+          onPress={handleBlockchainToggle}
           style={[styles.swapButton, { backgroundColor: theme.colorBg2 }]}>
           <SwapNarrowSVG />
         </AvaButton.Base>
         <View style={{ backgroundColor: theme.colorBg2, borderRadius: 10 }}>
           <AvaListItem.Base
             title={'To'}
-            rightComponent={
-              <DropDown
-                alignment={'flex-end'}
-                data={blockChainItems}
-                selectionRenderItem={selectedItem =>
-                  dropdownItemFormat(targetBlockchain, selectedItem, false)
-                }
-                onItemSelected={bc => setTargetBlockchain(bc)}
-                optionsRenderItem={item =>
-                  renderDropdownOptions(item, targetBlockchain)
-                }
-                width={180}
-              />
-            }
+            rightComponent={dropdownItemFormat(
+              targetBlockchain,
+              undefined,
+              false
+            )}
           />
           <Separator inset={16} />
           <Row style={styles.receiveRow}>
@@ -368,22 +449,12 @@ const Bridge: FC = () => {
             </View>
             <View style={{ alignItems: 'flex-end' }}>
               {/* receive amount */}
-              <AvaText.Body1>
-                {txFee && amount && !BIG_ZERO.eq(amount)
-                  ? `${amount.minus(txFee).toNumber().toFixed(9)} `
-                  : '- '}
-                <AvaText.Body1 color={theme.colorText2}>
-                  {currentAsset}
-                </AvaText.Body1>
-              </AvaText.Body1>
+              <AvaText.Body1>{formattedReceiveAmount}</AvaText.Body1>
               {/* estimate amount */}
               <AvaText.Body3
-                currency
                 textStyle={{ marginTop: 8 }}
                 color={theme.colorText2}>
-                {transferCost && amount && !BIG_ZERO.eq(amount)
-                  ? calculateEstimatedTotal
-                  : 0}
+                {formattedReceiveAmountCurrency}
               </AvaText.Body3>
             </View>
           </Row>
@@ -399,7 +470,7 @@ const Bridge: FC = () => {
         }}
         disabled={transferDisabled}>
         <Row>
-          {pending && <ActivityIndicator color={theme.background} />}
+          {isPending && <ActivityIndicator color={theme.background} />}
           <AvaText.ButtonLarge
             textStyle={{ color: theme.background, marginStart: 4 }}>
             Transfer

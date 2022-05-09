@@ -1,8 +1,12 @@
+import { EventEmitter } from 'events'
 import {
-  Asset,
   Blockchain,
+  EthereumConfigAsset,
+  NativeAsset,
+  transferAsset as transferAssetSDK,
+  useBridgeConfig,
   useBridgeSDK,
-  useTransferAsset as useTransferAssetSDK
+  WrapStatus
 } from '@avalabs/bridge-sdk'
 import {
   MAINNET_NETWORK,
@@ -14,47 +18,79 @@ import { getAvalancheProvider } from 'screens/bridge/utils/getAvalancheProvider'
 import { getEthereumProvider } from 'screens/bridge/utils/getEthereumProvider'
 import { WalletType } from '@avalabs/avalanche-wallet-sdk'
 import Common, { Chain } from '@ethereumjs/common'
-
 import { TransactionRequest } from '@ethersproject/abstract-provider'
 import { Transaction, TxData } from '@ethereumjs/tx'
 import { makeBNLike } from 'utils/Utils'
 import { BufferLike } from 'ethereumjs-util'
+import Big from 'big.js'
+import { TransferEventType } from 'contexts/BridgeContext'
+
+const events = new EventEmitter()
 
 /**
  * prepares asset to be transfered by check creating a TransactionRequest, signing with wallet.signEvm;
  * @param asset
  */
-export function useTransferAsset(asset: Asset | undefined) {
+export function useTransferAsset() {
   // @ts-ignore addresses exist in walletContext
   const { addresses } = useWalletStateContext()
   const network = useNetworkContext()?.network
   const wallet = useWalletContext().wallet
+  const config = useBridgeConfig().config
   const { currentBlockchain } = useBridgeSDK()
 
   const account = addresses.addrC
-  // Use the wallet provider for the current blockchain so transactions can be signed
-  const avalanche = getAvalancheProvider(network)
-  const ethereum = getEthereumProvider(network)
 
-  const isMainnet = network?.chainId === MAINNET_NETWORK.chainId
+  async function transferHandler(
+    blockChain: Blockchain,
+    amount: Big,
+    asset: EthereumConfigAsset | NativeAsset
+  ) {
+    if (!config || !network) {
+      return Promise.reject('Wallet not ready')
+    }
 
-  const common =
-    currentBlockchain === Blockchain.AVALANCHE
-      ? Common.custom({
-          networkId: network?.config.networkID,
-          chainId: parseInt(network?.chainId ?? '')
-        })
-      : new Common({
-          chain: isMainnet ? Chain.Mainnet : Chain.Rinkeby
-        })
+    // Use the wallet provider for the current blockchain so transactions can be signed
+    const avalancheProvider = getAvalancheProvider(network)
+    const ethereumProvider = getEthereumProvider(network)
 
-  return useTransferAssetSDK(
-    asset,
-    account,
-    avalanche,
-    ethereum,
-    (txData: TransactionRequest) => signTransaction(wallet, common, txData)
-  )
+    const handleStatusChange = (status: WrapStatus) => {
+      events.emit(TransferEventType.WRAP_STATUS, status)
+    }
+    const handleTxHashChange = (txHash: string) => {
+      events.emit(TransferEventType.TX_HASH, txHash)
+    }
+
+    const isMainnet = network.chainId === MAINNET_NETWORK.chainId
+
+    const common =
+      currentBlockchain === Blockchain.AVALANCHE
+        ? Common.custom({
+            networkId: network?.config.networkID,
+            chainId: parseInt(network?.chainId)
+          })
+        : new Common({
+            chain: isMainnet ? Chain.Mainnet : Chain.Rinkeby
+          })
+
+    return await transferAssetSDK(
+      currentBlockchain,
+      amount,
+      account,
+      asset,
+      avalancheProvider,
+      ethereumProvider,
+      config,
+      handleStatusChange,
+      handleTxHashChange,
+      txData => signTransaction(wallet, common, txData)
+    )
+  }
+
+  return {
+    transferHandler,
+    events
+  }
 }
 
 async function signTransaction(
