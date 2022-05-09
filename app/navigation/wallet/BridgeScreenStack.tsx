@@ -16,7 +16,7 @@ import {
 import AddBitcoinInstructionsBottomSheet from 'screens/bridge/AddBitcoinInstructionsBottomSheet'
 import AvaButton from 'components/AvaButton'
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
-import {AssetBalance} from 'screens/bridge/utils/types';
+import { AssetBalance } from 'screens/bridge/utils/types'
 
 export type BridgeStackParamList = {
   [AppNavigation.Bridge.Bridge]: undefined

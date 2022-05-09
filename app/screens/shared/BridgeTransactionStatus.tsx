@@ -31,23 +31,10 @@ type Props = {
 }
 
 const BridgeTransactionStatus: FC<Props> = ({
-  blockchain,
   txHash,
-  txTimestamp,
   setNavOptions,
   HeaderRight = null
 }) => {
-  // const { theme } = useApplicationContext()
-  // // @ts-ignore addresses exist in walletContext
-  // const { addresses } = useWalletStateContext()
-  // const tokenInfoData = useTokenInfoContext()
-  // const { config } = useBridgeConfig()
-  // @ts-ignore network exist in networkContext
-  // const { network } = useNetworkContext()
-  // const ethereumProvider = getEthereumProvider(network)
-  // const avalancheProvider = getAvalancheProvider(network)
-  // const { getTokenSymbolOnNetwork } = useGetTokenSymbolOnNetwork()
-  // const { currentAsset, transactionDetails } = useBridgeSDK()
   const { bridgeTransactions, removeBridgeTransaction } = useBridgeContext()
   const bridgeTransaction = bridgeTransactions[txHash] as
     | BridgeTransaction

@@ -32,74 +32,14 @@ function BridgeTokenSelector({
   bridgeTokenList,
   horizontalMargin = DEFAULT_HORIZONTAL_MARGIN
 }: TokenSelectorProps) {
-  // const {currentBlockchain} = useBridgeSDK();
-  // const assetList = useAssets(currentBlockchain);
-  // const {getTokenSymbolOnNetwork} = useGetTokenSymbolOnNetwork();
-  // const network = useNetworkContext()?.network;
-  // // @ts-ignore addresses exist in walletContext
-  // const {addresses} = useWalletStateContext();
   const [searchText, setSearchText] = useState('')
   const tokenInfoData = useTokenInfoContext()
-  //
-  // /**
-  //  * Get asset balances for the current blockchain
-  //  */
-  // const balances = useGetTokenBalances(
-  //   currentBlockchain,
-  //   assetList,
-  //   currentBlockchain === Blockchain.AVALANCHE
-  //     ? getAvalancheProvider(network)
-  //     : getEthereumProvider(network),
-  //   true,
-  //   addresses?.addrC,
-  // );
-  //
-  // /**
-  //  * Avalanche blockchain assets balances formatted as AssetBalance;
-  //  */
-  // const avalancheBalances = useMemo(() => {
-  //   return Object.values(assetList)
-  //     .filter(
-  //       // assets won't include a NativeAsset (i.e. AVAX) so we're ignoring it
-  //       (asset): asset is ERC20Asset => asset.assetType === AssetType.ERC20,
-  //     )
-  //     .map(asset => {
-  //       const symbol = asset.symbol;
-  //       const balance = balances?.[symbol] ?? BIG_ZERO;
-  //       console.log(symbol + ': ' + asset.wrappedContractAddress);
-  //       return {symbol, asset, balance};
-  //     });
-  // }, [assetList, currentBlockchain, balances]);
-  //
-  // /**
-  //  * Ethereum blockchain assets balances formatted as AssetBalance;
-  //  */
-  // const ethereumBalances = useMemo(() => {
-  //   return Object.entries(assetList).map(([symbol, asset]) => {
-  //     const balanceStr = balances?.[symbol];
-  //     const balance = balanceStr ? new Big(balanceStr) : undefined;
-  //
-  //     return {symbol, asset, balance};
-  //   });
-  // }, [addresses.addrC, assetList, currentBlockchain, balances]);
-  //
-  // /**
-  //  * Pick the dataset based on the blockchain and sort it
-  //  */
-  // const assetsWithBalances = (
-  //   currentBlockchain === Blockchain.AVALANCHE
-  //     ? avalancheBalances
-  //     : ethereumBalances
-  // ).sort((asset1, asset2) => asset2?.balance?.cmp(asset1.balance || 0) || 0);
 
   const renderItem = (item: ListRenderItemInfo<AssetBalance>) => {
     const token = item.item
     const symbol = token.asset.symbol
     const name = token.symbol === 'ETH' ? 'Ethereum' : token.asset.tokenName
-    // const tokenSymbolOnNetwork = getTokenSymbolOnNetwork(
-    //   symbol,
-    //   currentBlockchain,
-    // );
+
     const tokenLogo = () => {
       return (
         <Avatar.Custom

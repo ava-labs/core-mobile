@@ -25,10 +25,13 @@ import {
 } from 'screens/bridge/handlers/createBridgeTransaction'
 import { getAvalancheProvider } from 'screens/bridge/utils/getAvalancheProvider'
 import { getEthereumProvider } from 'screens/bridge/utils/getEthereumProvider'
-import { BridgeState, defaultBridgeState } from 'screens/bridge/utils/BridgeState'
+import {
+  BridgeState,
+  defaultBridgeState
+} from 'screens/bridge/utils/BridgeState'
 import useSignAndIssueBtcTx from 'screens/bridge/hooks/useSignAndIssueBtcTx'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import {useIsMainnet} from 'hooks/isMainnet';
+import { useIsMainnet } from 'hooks/isMainnet'
 
 export enum TransferEventType {
   WRAP_STATUS = 'wrap_status',
@@ -180,9 +183,6 @@ function LocalBridgeProvider({ children }: { children: any }) {
     events.on(TransferEventType.TX_HASH, txHash => {
       onTxHashChange(txHash)
     })
-    events.on(TransferEventType.UPDATED, bridgeTransaction => {
-      console.log('updated transaction', bridgeTransaction)
-    })
 
     return transferHandler(currentBlockchain, amount, asset)
   }
@@ -246,8 +246,6 @@ function LocalBridgeProvider({ children }: { children: any }) {
       environment: isMainnet ? 'main' : 'test',
       requiredConfirmationCount
     }
-
-    // const error = await saveBridgeTransaction(bridgeTransaction);
 
     //set 1st state of this transaction
     const newBridgeState = onUpdate(bridgeTransaction)

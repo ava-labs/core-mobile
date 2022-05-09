@@ -106,9 +106,9 @@ const Bridge: FC = () => {
       switch (chain) {
         case Blockchain.BITCOIN:
           // TODO remove !isMainnet check when mainnet is supported
-          return !isMainnet && bridgeBtcBlocked
+          return !isMainnet && !bridgeBtcBlocked
         case Blockchain.ETHEREUM:
-          return bridgeEthBlocked
+          return !bridgeEthBlocked
         default:
           return true
       }
@@ -243,12 +243,13 @@ const Bridge: FC = () => {
         txHash: hash ?? '',
         txTimestamp: Date.now().toString()
       })
-    } catch (e) {
-      const error = e as Error
+    } catch (e: any) {
       Alert.alert(
         'Error Bridging',
-        error?.reason ??
-          'An unknown error has occurred. Bridging was halted. Please try again later'
+        'reason' in e
+          ? e?.reason
+          : e?.message ??
+              'An unknown error has occurred. Bridging was halted. Please try again later'
       )
       return
     } finally {

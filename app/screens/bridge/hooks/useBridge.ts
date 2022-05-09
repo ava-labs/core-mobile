@@ -14,7 +14,7 @@ import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { useBtcBridge } from 'screens/bridge/hooks/useBtcBridge'
 import { useEthBridge } from 'screens/bridge/hooks/useEthBridge'
 import { useAvalancheBridge } from 'screens/bridge/hooks/useAvalancheBridge'
-import {AssetBalance} from 'screens/bridge/utils/types';
+import { AssetBalance } from 'screens/bridge/utils/types'
 
 export interface BridgeAdapter {
   address?: string

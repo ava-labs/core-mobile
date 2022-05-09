@@ -1,8 +1,8 @@
 import {
   isTransactionNormal,
   TransactionERC20,
-  TransactionNormal,
-} from '@avalabs/wallet-react-components';
+  TransactionNormal
+} from '@avalabs/wallet-react-components'
 
 export function isIncomingTransaction(
   tx: TransactionERC20 | TransactionNormal
