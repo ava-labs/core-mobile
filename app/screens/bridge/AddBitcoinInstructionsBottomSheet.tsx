@@ -8,22 +8,18 @@ import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import { Row } from 'components/Row'
 import AvaxQACode from 'components/AvaxQRCode'
-import {
-  useNetworkContext,
-  useWalletContext
-} from '@avalabs/wallet-react-components'
+import { useWalletContext } from '@avalabs/wallet-react-components'
 import TokenAddress from 'components/TokenAddress'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { isMainnetNetwork } from '@avalabs/avalanche-wallet-sdk'
+import { useIsMainnet } from 'hooks/isMainnet'
 
-function AddBitcoinInstructionsBottomSheet() {
+function AddBitcoinInstructionsBottomSheet(): JSX.Element {
   const theme = useApplicationContext().theme
-  const { goBack } = useNavigation()
+  const navigation = useNavigation()
   const bottomSheetModalRef = useRef<BottomSheet>(null)
   const snapPoints = useMemo(() => ['0%', '80%'], [])
-  const network = useNetworkContext()?.network
   const wallet = useWalletContext().wallet
-  const isMainnet = network?.config ? isMainnetNetwork(network.config) : false
+  const isMainnet = useIsMainnet()
   const btcAddress = wallet?.getAddressBTC(isMainnet ? 'bitcoin' : 'testnet')
 
   useEffect(() => {
@@ -35,7 +31,7 @@ function AddBitcoinInstructionsBottomSheet() {
 
   const handleClose = useCallback(() => {
     bottomSheetModalRef?.current?.close()
-    InteractionManager.runAfterInteractions(() => goBack())
+    InteractionManager.runAfterInteractions(() => navigation.goBack())
   }, [])
 
   const handleChange = useCallback(index => {

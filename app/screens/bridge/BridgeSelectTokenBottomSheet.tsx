@@ -57,7 +57,9 @@ function BridgeSelectTokenBottomSheet(): JSX.Element {
         </AvaText.LargeTitleBold>
         <BridgeTokenSelector
           onTokenSelected={onTokenSelected}
+          bridgeTokenList={params.bridgeTokenList ?? []}
           selectMode={SelectTokenMode.TRANSFER}
+          horizontalMargin={0}
         />
       </>
     </BottomSheet>

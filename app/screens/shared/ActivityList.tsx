@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Animated, RefreshControl, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import Loader from 'components/Loader'
@@ -6,29 +6,27 @@ import {
   getHistory,
   TransactionERC20,
   TransactionNormal,
-  useNetworkContext,
   useWalletContext
 } from '@avalabs/wallet-react-components'
-import moment from 'moment'
 import { ScrollView } from 'react-native-gesture-handler'
 import ActivityListItem from 'screens/activity/ActivityListItem'
-import { BridgeTransaction, useBridgeContext } from 'contexts/BridgeContext'
+import { endOfToday, endOfYesterday, format, isSameDay } from 'date-fns'
 import { useBridgeSDK } from '@avalabs/bridge-sdk'
-import BridgeTransactionItem, {
-  TransactionBridgeItem
-} from 'screens/bridge/components/BridgeTransactionItem'
+import BridgeTransactionItem from 'screens/bridge/components/BridgeTransactionItem'
 import { BridgeTransactionStatusParams } from 'navigation/types'
-import {
-  isBridge,
-  isContractCall,
-  isIncoming,
-  isOutgoing
-} from 'utils/TrxTools'
 import { Row } from 'components/Row'
 import DropDown from 'components/Dropdown'
+import useInAppBrowser from 'hooks/useInAppBrowser'
+import { isBridgeTransaction } from 'screens/bridge/utils/bridgeTransactionUtils'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import {
+  isContractCallTransaction,
+  isIncomingTransaction,
+  isOutgoingTransaction
+} from 'utils/TransactionTools'
 
-const DISPLAY_FORMAT_CURRENT_YEAR = 'MMMM DD'
-const DISPLAY_FORMAT_PAST_YEAR = 'MMMM DD, YYYY'
+const yesterday = endOfYesterday()
+const today = endOfToday()
 
 interface Props {
   embedded?: boolean
@@ -36,15 +34,6 @@ interface Props {
   openTransactionDetails: (item: TransactionNormal | TransactionERC20) => void
   openTransactionStatus: (params: BridgeTransactionStatusParams) => void
 }
-
-export type TxType =
-  | TransactionNormal
-  | TransactionERC20
-  | TransactionBridgeItem
-
-const TODAY = moment()
-const YESTERDAY = moment().subtract(1, 'days')
-type SectionType = { [x: string]: TxType[] }
 
 function ActivityList({
   embedded,
@@ -54,166 +43,148 @@ function ActivityList({
 }: Props) {
   const [loading, setLoading] = useState(true)
   const wallet = useWalletContext()?.wallet
-  const { network } = useNetworkContext()!
-  const [allHistory, setAllHistory] =
-    useState<(TransactionNormal | TransactionERC20)[]>()
-  const { bridgeTransactions } = useBridgeContext()
-  const { bridgeAssets } = useBridgeSDK()
+  // const { network } = useNetworkContext()!
+  const { openUrl } = useInAppBrowser()
+  const [allHistory, setAllHistory] = useState<
+    (TransactionNormal | TransactionERC20)[]
+  >([])
+  const { pendingBridgeTransactions } =
+    useApplicationContext().repo.pendingBridgeTransactions
+  const { bitcoinAssets, ethereumWrappedAssets } = useBridgeSDK()
+  const bridgeTransactions = pendingBridgeTransactions.bridgeTransactions
   const [filter, setFilter] = useState(ActivityFilter.All)
 
-  const sectionData = useMemo(() => {
-    const newSectionData: SectionType = {}
+  const isBridgeTx = useCallback(
+    (tx: typeof allHistory[0]): tx is TransactionERC20 => {
+      return isBridgeTransaction(tx, ethereumWrappedAssets, bitcoinAssets)
+    },
+    [bitcoinAssets, ethereumWrappedAssets]
+  )
 
-    if (Object.values(bridgeTransactions).length > 0) {
-      Object.values(bridgeTransactions).map(tx => {
-        const pending = newSectionData.Pending
-        newSectionData.Pending = pending
-          ? [...newSectionData.Pending, tx]
-          : [...[tx]]
-      })
-    }
+  const getDayString = (date: Date) => {
+    const isToday = isSameDay(today, date)
+    const isYesterday = isSameDay(yesterday, date)
+    return isToday
+      ? 'Today'
+      : isYesterday
+      ? 'Yesterday'
+      : format(date, 'MMMM do')
+  }
 
-    allHistory
-      ?.filter((tx: TxType) => {
-        switch (filter) {
-          case ActivityFilter.ContractApprovals:
-            return isContractCall(tx)
-          case ActivityFilter.Incoming:
-            return isIncoming(tx)
-          case ActivityFilter.Outgoing:
-            return isOutgoing(tx)
-          case ActivityFilter.All:
-            return true
-          case ActivityFilter.Bridge:
-            return isBridge(tx, bridgeAssets)
-          default:
-            return false
+  const filteredHistory = useMemo(
+    () =>
+      allHistory?.filter(tx => {
+        const showAll = filter === ActivityFilter.All
+        const isBridge =
+          isBridgeTx(tx) && (showAll || filter === ActivityFilter.Bridge)
+        const isIncoming =
+          isIncomingTransaction(tx) &&
+          !isBridge &&
+          (showAll || filter === ActivityFilter.Incoming)
+        const isOutgoing =
+          isOutgoingTransaction(tx) &&
+          (showAll || filter === ActivityFilter.Outgoing)
+        const isContractCall =
+          isContractCallTransaction(tx) &&
+          (showAll || filter === ActivityFilter.ContractApprovals)
+
+        if (
+          // Return empty if the tx doesn't fit in the currently selected filter
+          !(showAll || isBridge || isIncoming || isOutgoing || isContractCall)
+        ) {
+          return
         }
-      })
-      .filter((tx: TxType) => {
+
         return tokenSymbolFilter
           ? tokenSymbolFilter ===
-              ('tokenSymbol' in tx ? tx.tokenSymbol : 'AVAX')
+              (('tokenSymbol' in tx && tx.tokenSymbol) || 'AVAX')
           : true
-      })
-      .forEach((it: TxType) => {
-        const date = moment(
-          'createdAt' in it
-            ? it.createdAt
-            : 'timestamp' in it
-            ? it.timestamp
-            : Date()
-        )
-
-        if (TODAY.isSame(date, 'day')) {
-          const today = newSectionData.Today
-          newSectionData.Today = today
-            ? [...newSectionData.Today, it]
-            : [...[it]]
-        } else if (YESTERDAY.isSame(date, 'day')) {
-          const yesterday = newSectionData.Yesterday
-          newSectionData.Yesterday = yesterday
-            ? [...newSectionData.Yesterday, it]
-            : [...[it]]
-        } else {
-          const isCurrentYear = TODAY.year() === date.year()
-          const titleDate = date.format(
-            isCurrentYear
-              ? DISPLAY_FORMAT_CURRENT_YEAR
-              : DISPLAY_FORMAT_PAST_YEAR
-          )
-          const otherDate = newSectionData[titleDate]
-          newSectionData[titleDate] = otherDate
-            ? [...newSectionData[titleDate], it]
-            : [...[it]]
-        }
-      })
-    return newSectionData
-  }, [allHistory, bridgeTransactions, filter, tokenSymbolFilter])
+      }),
+    [allHistory, tokenSymbolFilter, isBridgeTx, filter]
+  )
 
   useEffect(() => {
     loadHistory().then()
-  }, [wallet, network, bridgeTransactions])
+  }, [wallet])
 
   const loadHistory = async () => {
     if (!wallet) {
       return []
     }
     setLoading(true)
-    // if (Object.values(bridgeTransactions).length > 0) {
-    //   const txs = await getHistory(wallet, 50);
-    //   const merged = [bridgeTransactions, ...txs];
-    //   setAllHistory(merged);
-    // } else {
     setAllHistory((await getHistory(wallet, 50)) ?? [])
-    // }
     setLoading(false)
   }
 
   const renderItems = () => {
-    const items = Object.entries(sectionData).map(key => {
-      return (
-        <View key={key[0]}>
-          <Animated.View
-            style={{
-              flex: 1,
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              padding: 16,
-              marginRight: 8
-            }}>
-            <AvaText.ActivityTotal>{key[0]}</AvaText.ActivityTotal>
-          </Animated.View>
-          {key[1].map((item: TxType, index) => {
-            if (isBridge(item, bridgeAssets)) {
-              const bridgeItem = item as BridgeTransaction
+    return (
+      <View>
+        {bridgeTransactions && Object.values(bridgeTransactions).length > 0 && (
+          <>
+            <Animated.View
+              style={{
+                flex: 1,
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                padding: 16,
+                marginRight: 8
+              }}>
+              <AvaText.ActivityTotal>Pending</AvaText.ActivityTotal>
+            </Animated.View>
+            {Object.values(bridgeTransactions).map((tx, i) => {
               return (
                 <BridgeTransactionItem
-                  key={`${bridgeItem.sourceTxHash}-${bridgeItem.targetTxHash}-${index}`}
-                  item={bridgeItem}
-                  onPress={() =>
+                  key={tx.sourceTxHash + i}
+                  item={tx}
+                  onPress={() => {
                     openTransactionStatus({
-                      blockchain: bridgeItem.sourceNetwork,
-                      txHash: bridgeItem.sourceTxHash ?? '',
-                      txTimestamp:
-                        bridgeItem?.createdAt?.toString() ??
-                        Date.now().toString()
+                      blockchain: tx.sourceChain,
+                      txHash: tx.sourceTxHash || '',
+                      txTimestamp: tx.sourceStartedAt
+                        ? Date.parse(tx.sourceStartedAt.toString()).toString()
+                        : Date.now().toString()
                     })
-                  }
+                  }}
                 />
               )
-            } else {
-              const ercNormalItem = item as TransactionNormal | TransactionERC20
-              return (
+            })}
+          </>
+        )}
+        {filteredHistory.map((tx, index) => {
+          const isNewDay =
+            index === 0 ||
+            !isSameDay(tx.timestamp, filteredHistory[index - 1].timestamp)
+
+          return (
+            <>
+              {isNewDay && (
+                <Animated.View
+                  style={{
+                    flex: 1,
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    padding: 16,
+                    marginRight: 8
+                  }}>
+                  <AvaText.ActivityTotal>
+                    {getDayString(tx.timestamp)}
+                  </AvaText.ActivityTotal>
+                </Animated.View>
+              )}
+              {isBridgeTx(tx) ? (
+                <BridgeTransactionItem
+                  item={tx}
+                  onPress={() => openUrl(tx.explorerLink)}
+                />
+              ) : (
                 <ActivityListItem
-                  key={(ercNormalItem.transactionIndex ?? 1) + index}
-                  tx={ercNormalItem}
-                  onPress={() => openTransactionDetails(ercNormalItem)}
+                  tx={tx}
+                  onPress={() => openTransactionDetails(tx)}
                 />
-              )
-            }
-          })}
-        </View>
-      )
-    })
-
-    if (items.length > 0) {
-      return items
-    }
-
-    // if no items we return zero state
-    return (
-      // replace with zero states once we have them
-      <View
-        style={{
-          flex: 1,
-          justifyContent: 'center',
-          alignItems: 'center',
-          marginHorizontal: 16
-        }}>
-        <AvaText.Heading3 textStyle={{ textAlign: 'center' }}>
-          As transactions take place, they will show up here.
-        </AvaText.Heading3>
+              )}
+            </>
+          )
+        })}
       </View>
     )
   }
@@ -230,7 +201,7 @@ function ActivityList({
    * @param children
    */
   const ScrollableComponent = ({ children }: { children: React.ReactNode }) => {
-    const isEmpty = Object.entries(sectionData).length === 0
+    const isEmpty = filteredHistory.length === 0
 
     return embedded ? (
       <ScrollView

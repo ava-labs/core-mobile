@@ -16,14 +16,12 @@ import RootScreenStack from 'navigation/RootScreenStack'
 import { NavigationContainer } from '@react-navigation/native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import useDevDebugging from 'utils/debugging/DevDebugging'
-import { useLoadBridgeConfig } from 'screens/bridge/hooks/useLoadBridgeConfig'
 
 LogBox.ignoreAllLogs()
 
 export default function App() {
   const { configure } = useDevDebugging()
   const isProduction = process.env.NODE_ENV === 'production'
-  useLoadBridgeConfig()
   if (!isProduction) {
     configure()
   }

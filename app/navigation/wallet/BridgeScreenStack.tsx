@@ -9,19 +9,21 @@ import { useNavigation, useRoute } from '@react-navigation/native'
 import WarningModal from 'components/WarningModal'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import {
+  BridgeScreenProps,
   BridgeTransactionStatusParams,
-  WalletScreenProps,
-  BridgeScreenProps
+  WalletScreenProps
 } from 'navigation/types'
-import FeatureBlocked from 'screens/posthog/FeatureBlocked'
 import AddBitcoinInstructionsBottomSheet from 'screens/bridge/AddBitcoinInstructionsBottomSheet'
 import AvaButton from 'components/AvaButton'
+import FeatureBlocked from 'screens/posthog/FeatureBlocked'
+import { AssetBalance } from 'screens/bridge/utils/types'
 
 export type BridgeStackParamList = {
   [AppNavigation.Bridge.Bridge]: undefined
   [AppNavigation.Bridge.BridgeTransactionStatus]: BridgeTransactionStatusParams
   [AppNavigation.Modal.BridgeSelectToken]: {
     onTokenSelected: (token: string) => void
+    bridgeTokenList: AssetBalance[] | undefined
   }
   [AppNavigation.Bridge.AddInstructions]: undefined
   [AppNavigation.Bridge.HideWarning]: undefined
