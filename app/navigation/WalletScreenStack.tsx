@@ -1,12 +1,10 @@
 import React, {
   memo,
-  useCallback,
   useEffect,
   useMemo,
-  useRef,
   useState
 } from 'react'
-import { AppState, BackHandler, Modal } from 'react-native'
+import { BackHandler, Modal } from 'react-native'
 import {
   NavigatorScreenParams,
   useFocusEffect,
@@ -25,8 +23,6 @@ import {
   TransactionERC20,
   TransactionNormal
 } from '@avalabs/wallet-react-components'
-import BiometricsSDK from 'utils/BiometricsSDK'
-import moment from 'moment'
 import DrawerScreenStack, {
   DrawerParamList
 } from 'navigation/wallet/DrawerScreenStack'
@@ -69,6 +65,7 @@ import NetworkManager from 'screens/network/NetworkManager'
 import NetworkDetails from 'screens/network/NetworkDetails'
 import AvaButton from 'components/AvaButton'
 import StarSVG from 'components/svg/StarSVG'
+import useAppBackgroundTracker from 'hooks/useAppBackgroundTracker'
 import { BridgeStackParamList } from './wallet/BridgeScreenStack'
 import {
   BridgeTransactionStatusParams,
@@ -123,9 +120,6 @@ export type WalletScreenStackParams = {
 
 const WalletScreenS = createStackNavigator<WalletScreenStackParams>()
 
-const focusEvent = 'change'
-const TIMEOUT = 5000
-
 const SignOutBottomSheetScreen = () => {
   const { signOut } = useApplicationContext().appHook
 
@@ -138,59 +132,19 @@ const SignOutBottomSheetScreen = () => {
 
 function WalletScreenStack(props: Props | Readonly<Props>) {
   const [showSecurityModal, setShowSecurityModal] = useState(false)
-  const appState = useRef(AppState.currentState)
   const context = useApplicationContext()
   const { signOut, setSelectedCurrency } = context.appHook
+  const { timeoutPassed } = useAppBackgroundTracker({
+    timeoutMs: 5000,
+    getTime: async () => AsyncStorage.getItem('TIME_APP_SUSPENDED'),
+    setTime: async time => AsyncStorage.setItem('TIME_APP_SUSPENDED', time)
+  })
 
-  /**
-   * This UseEffect handles subscription to
-   * AppState listener which tells us if the app is
-   * backgrounded or foregrounded.
-   */
   useEffect(() => {
-    AppState.addEventListener(focusEvent, handleAppStateChange)
-
-    return () => {
-      AppState.removeEventListener(focusEvent, handleAppStateChange)
-    }
-  }, [])
-
-  /**
-   * Handles AppState change. When app is being backgrounded we save the current
-   * timestamp.
-   *
-   * When returning to the foreground take the time the apps was suspended, check the propper
-   * states, see if AccessType is set (that determines if user has logged in or not)
-   * and we check IF the diff between "now" and the suspended time is greater then our
-   * TIMEOUT of 5 sec.
-   * @param nextAppState
-   */
-  const handleAppStateChange = useCallback(async (nextAppState: any) => {
-    const value = await BiometricsSDK.getAccessType()
-    const timeAppWasSuspended = await AsyncStorage.getItem('TIME_APP_SUSPENDED')
-    const suspended = timeAppWasSuspended ?? moment().toISOString()
-
-    const overTimeOut = moment().diff(moment(suspended)) >= TIMEOUT
-
-    if (
-      (appState.current === 'active' && nextAppState.match(/background/)) ||
-      (appState.current === 'inactive' && nextAppState.match(/background/))
-    ) {
-      // this condition calls when app is in background mode
-      // here you can detect application is going to background or inactive.
-      await AsyncStorage.setItem('TIME_APP_SUSPENDED', moment().toISOString())
-    } else if (
-      appState.current.match(/background/) &&
-      nextAppState === 'active' &&
-      value &&
-      overTimeOut
-    ) {
-      // this condition calls when app is in foreground mode
-      // here you can detect application is in active state again.
+    if (timeoutPassed) {
       setShowSecurityModal(true)
     }
-    appState.current = nextAppState
-  }, [])
+  }, [timeoutPassed])
 
   useFocusEffect(
     React.useCallback(() => {
