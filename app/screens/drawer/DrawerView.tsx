@@ -4,6 +4,7 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import CurrencyItem from 'screens/drawer/components/CurrencyItem'
 import SecurityItem from 'screens/drawer/components/SecurityItem'
 import LegalItem from 'screens/drawer/components/LegalItem'
+import HelpItem from 'screens/drawer/components/HelpItem'
 import Separator from 'components/Separator'
 import VersionItem from 'screens/drawer/components/VersionItem'
 import LightModeSVG from 'components/svg/LightModeSVG'
@@ -65,6 +66,7 @@ const Main = () => {
         <Separator style={{ marginHorizontal: 16 }} />
         <SecurityItem />
         <LegalItem />
+        <HelpItem />
         {/*<AdvancedItem />*/}
       </ScrollView>
       <Separator style={{ marginHorizontal: 16 }} />

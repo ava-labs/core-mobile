@@ -40,8 +40,8 @@ export function useApp(
   ])
 
   function watchCoreAnalyticsFlagFx() {
-    const analyticsConsent = (getSetting('CoreAnalytics') as boolean) ?? false
-    setAnalyticsConsent(analyticsConsent)
+    const setting = getSetting('CoreAnalytics') as boolean | undefined
+    setAnalyticsConsent(setting)
   }
 
   function waitForNavigationContainer() {
