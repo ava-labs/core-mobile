@@ -1,6 +1,5 @@
 import { SafeAreaProvider } from 'react-native-safe-area-context'
-import React, { useMemo } from 'react'
-import { useApplicationContext } from 'contexts/ApplicationContext'
+import React from 'react'
 import AvaText from 'components/AvaText'
 import { StyleSheet, View } from 'react-native'
 import AvaButton from 'components/AvaButton'
