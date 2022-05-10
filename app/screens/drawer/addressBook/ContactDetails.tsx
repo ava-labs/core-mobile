@@ -1,6 +1,5 @@
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import React from 'react'
-import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
 import { StyleSheet, View } from 'react-native'
 import AvaButton from 'components/AvaButton'
@@ -11,6 +10,7 @@ import FlexSpacer from 'components/FlexSpacer'
 import { Space } from 'components/Space'
 import { Contact } from 'Repo'
 import TokenAddress from 'components/TokenAddress'
+import TextFieldBg from 'components/styling/TextFieldBg'
 
 const ContactDetails = ({
   contact,
@@ -64,32 +64,25 @@ const ContactDetails = ({
 }
 
 const AddressView = ({ contact }: { contact: Contact }) => {
-  const { theme } = useApplicationContext()
   return (
     <>
       <AvaText.Body1>Address</AvaText.Body1>
       <Space y={8} />
-      <View
-        style={[
-          styles.copyAddressContainer,
-          { backgroundColor: theme.colorBg2 }
-        ]}>
+
+      <TextFieldBg style={styles.copyAddressContainer}>
         <TokenAddress
           address={contact.address}
           showFullAddress
           textType={'ButtonMedium'}
         />
-      </View>
+      </TextFieldBg>
     </>
   )
 }
 
 const styles = StyleSheet.create({
   copyAddressContainer: {
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 8
+    alignItems: 'center'
   }
 })
 
