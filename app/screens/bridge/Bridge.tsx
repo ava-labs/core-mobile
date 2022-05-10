@@ -2,7 +2,6 @@ import React, { FC, useEffect, useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
-  ListRenderItemInfo,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -185,18 +184,6 @@ const Bridge: FC = () => {
   }
 
   /**
-   * Method used to render custom dropdown item
-   * @param item
-   * @param blockchain
-   */
-  const renderDropdownOptions = (
-    item: ListRenderItemInfo<string>,
-    blockchain = Blockchain.AVALANCHE
-  ) => {
-    return dropdownItemFormat(item.item, blockchain)
-  }
-
-  /**
    * Blockchain array that's fed to dropdown
    */
   const sourceBlockchains = [
@@ -282,7 +269,7 @@ const Bridge: FC = () => {
                 preselectedIndex={sourceBlockchains.indexOf(currentBlockchain)}
                 onItemSelected={bc => setCurrentBlockchain(bc as Blockchain)}
                 optionsRenderItem={item =>
-                  renderDropdownOptions(item, currentBlockchain)
+                  dropdownItemFormat(item.item, currentBlockchain)
                 }
                 selectionRenderItem={item =>
                   dropdownItemFormat(item, currentBlockchain, false)

@@ -6,7 +6,7 @@ import MenuSVG from 'components/svg/MenuSVG'
 import AppNavigation from 'navigation/AppNavigation'
 import HeaderAccountSelector from 'components/HeaderAccountSelector'
 import { DrawerScreenProps } from 'navigation/types'
-import QRCodeSVG from 'components/svg/QRCodeSVG'
+import NetworkDropdown from 'screens/network/NetworkDropdown'
 
 type NavigationProp = DrawerScreenProps<
   typeof AppNavigation.Wallet.Tabs
@@ -19,22 +19,23 @@ const TopNavigationHeader: FC = () => {
     <View
       style={{
         flexDirection: 'row',
-        paddingHorizontal: 8,
+        paddingLeft: 8,
+        paddingRight: 16,
+        alignItems: 'center',
         justifyContent: 'space-between'
       }}>
       <AvaButton.Icon
         onPress={() => navigation.dispatch(DrawerActions.openDrawer())}>
         <MenuSVG />
       </AvaButton.Icon>
-      <HeaderAccountSelector
-        onPressed={() =>
-          navigation.navigate(AppNavigation.Modal.AccountDropDown)
-        }
-      />
-      <AvaButton.Icon
-        onPress={() => navigation.navigate(AppNavigation.Wallet.ReceiveTokens)}>
-        <QRCodeSVG />
-      </AvaButton.Icon>
+      <View style={{ zIndex: 1 }}>
+        <HeaderAccountSelector
+          onPressed={() =>
+            navigation.navigate(AppNavigation.Modal.AccountDropDown)
+          }
+        />
+      </View>
+      <NetworkDropdown />
     </View>
   )
 }

@@ -11,7 +11,6 @@ import LightModeSVG from 'components/svg/LightModeSVG'
 import DarkModeSVG from 'components/svg/DarkModeSVG'
 import { ScrollView } from 'react-native-gesture-handler'
 import SignOutItem from 'screens/drawer/components/SignOutItem'
-import NetworkItem from 'screens/drawer/components/NetworkItem'
 import AddressBookItem from 'screens/drawer/components/AddressBookItem'
 import { Row } from 'components/Row'
 import CoreLogo from 'components/CoreLogo'
@@ -60,7 +59,6 @@ const Main = () => {
         flex: 1
       }}>
       <ScrollView>
-        <NetworkItem />
         <AddressBookItem />
         <CurrencyItem />
         <Separator style={{ marginHorizontal: 16 }} />
