@@ -1,9 +1,4 @@
-import React, {
-  memo,
-  useEffect,
-  useMemo,
-  useState
-} from 'react'
+import React, { memo, useEffect, useMemo, useState } from 'react'
 import { BackHandler, Modal } from 'react-native'
 import {
   NavigatorScreenParams,
@@ -416,6 +411,7 @@ const BridgeTransactionStatus = () => {
 type NetworkSelectorScreenProps = WalletScreenProps<
   typeof AppNavigation.Wallet.NetworkSelector
 >
+
 function NetworkSelectorScreen() {
   const { navigate } = useNavigation<NetworkSelectorScreenProps['navigation']>()
 
@@ -431,6 +427,7 @@ function NetworkSelectorScreen() {
 type NetworkDetailsScreenProps = WalletScreenProps<
   typeof AppNavigation.Wallet.NetworkDetails
 >
+
 function NetworkDetailsScreen() {
   const { params } = useRoute<NetworkDetailsScreenProps['route']>()
 

@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import {
+  MutableRefObject,
+  useCallback,
+  useEffect,
+  useRef,
+  useState
+} from 'react'
 import { AppState } from 'react-native'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import moment from 'moment'
@@ -25,36 +31,20 @@ export default function useAppBackgroundTracker({
    * Handles AppState change. When app is being backgrounded we save the current
    * timestamp.
    *
-   * When returning to the foreground take the time the apps was suspended, check the propper
+   * When returning to the foreground take the time the apps was suspended, check the proper
    * states, see if AccessType is set (that determines if user has logged in or not)
-   * and we check IF the diff between "now" and the suspended time is greater then our
-   * TIMEOUT of 5 sec.
+   * and we check IF the diff between "now" and the suspended time is greater than timeoutMs
    * @param nextAppState
    */
   const handleAppStateChange = useCallback(
     async (nextAppState: any) => {
-      const value = await BiometricsSDK.getAccessType()
-      const timeAppWasSuspended = await getTime()
-      const suspended = timeAppWasSuspended ?? moment().toISOString()
-
-      const overTimeOut = moment().diff(moment(suspended)) >= timeoutMs
-
-      if (
-        (appState.current === 'active' && nextAppState.match(/background/)) ||
-        (appState.current === 'inactive' && nextAppState.match(/background/))
-      ) {
-        // this condition calls when app is in background mode
-        // here you can detect application is going to background or inactive.
+      if (isGoingToBackground(appState, nextAppState)) {
         await setTime(moment().toISOString())
         setTimeoutPassed(false)
       } else if (
-        appState.current.match(/background/) &&
-        nextAppState === 'active' &&
-        value &&
-        overTimeOut
+        (await isForegroundAndLoggedIn(appState, nextAppState)) &&
+        (await isOverTimeout(getTime, timeoutMs))
       ) {
-        // this condition calls when app is in foreground mode
-        // here you can detect application is in active state again.
         setTimeoutPassed(true)
       }
       appState.current = nextAppState
@@ -73,4 +63,38 @@ export default function useAppBackgroundTracker({
   return {
     timeoutPassed
   }
+}
+
+function isGoingToBackground(
+  appState: MutableRefObject<
+    'active' | 'background' | 'inactive' | 'unknown' | 'extension'
+  >,
+  nextAppState: any
+) {
+  return (
+    (appState.current === 'active' && nextAppState.match(/background/)) ||
+    (appState.current === 'inactive' && nextAppState.match(/background/))
+  )
+}
+
+async function isForegroundAndLoggedIn(
+  appState: MutableRefObject<
+    'active' | 'background' | 'inactive' | 'unknown' | 'extension'
+  >,
+  nextAppState: any
+) {
+  return (
+    appState.current.match(/background/) &&
+    nextAppState === 'active' &&
+    (await BiometricsSDK.getAccessType())
+  )
+}
+
+async function isOverTimeout(
+  getTime: () => Promise<string | null>,
+  timeoutMs: number
+) {
+  const timeAppWasSuspended = await getTime()
+  const suspended = timeAppWasSuspended ?? moment().toISOString()
+  return moment().diff(moment(suspended)) >= timeoutMs
 }
