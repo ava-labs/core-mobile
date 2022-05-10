@@ -69,7 +69,7 @@ export type RecentContact = {
 }
 
 export type Setting = 'CoreAnalytics' | 'ConsentToTOU&PP'
-export type SettingValue = number | string | boolean
+export type SettingValue = number | string | boolean | undefined
 
 export type AddrBookItemType = 'account' | 'contact'
 

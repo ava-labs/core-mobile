@@ -9,6 +9,8 @@ import PostHog from 'posthog-react-native'
 import { timer } from 'rxjs'
 import { JsonMap } from 'posthog-react-native/src/bridge'
 import Config from 'react-native-config'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import useAppBackgroundTracker from 'hooks/useAppBackgroundTracker'
 
 export const PosthogContext = createContext<PosthogContextState>(
   {} as PosthogContextState
@@ -48,6 +50,14 @@ const ONE_MINUTE = 60 * 1000
 
 export const PosthogContextProvider = ({ children }: { children: any }) => {
   const [isPosthogReady, setIsPosthogReady] = useState(false)
+  const [isAnalyticsEnabled, setIsAnalyticsEnabled] = useState(false)
+
+  const { timeoutPassed } = useAppBackgroundTracker({
+    timeoutMs: 30 * 60 * 1000,
+    getTime: async () => AsyncStorage.getItem('POSTHOG_SUSPENDED'),
+    setTime: async time => AsyncStorage.setItem('POSTHOG_SUSPENDED', time)
+  })
+
   const [flags, setFlags] = useState<Record<FeatureGates, boolean>>(
     DefaultFeatureFlagConfig
   )
@@ -63,7 +73,19 @@ export const PosthogContextProvider = ({ children }: { children: any }) => {
 
   useEffect(initPosthog, [])
   useEffect(reloadFlagsPeriodically, [isPosthogReady])
-  useEffect(setEventsLogging, [analyticsConsent, isPosthogReady, eventsBlocked])
+  useEffect(setEventsLogging, [
+    analyticsConsent,
+    isPosthogReady,
+    eventsBlocked,
+    isAnalyticsEnabled
+  ])
+  useEffect(checkRestartSession, [timeoutPassed])
+
+  function checkRestartSession() {
+    if (timeoutPassed) {
+      capture('$opt_in')
+    }
+  }
 
   function initPosthog() {
     ;(async function () {
@@ -74,7 +96,7 @@ export const PosthogContextProvider = ({ children }: { children: any }) => {
           collectDeviceId: false
         }
       })
-      await PostHog.disable()
+      await disableAnalytics()
       setIsPosthogReady(true)
     })()
   }
@@ -103,14 +125,27 @@ export const PosthogContextProvider = ({ children }: { children: any }) => {
       return
     }
     if (__DEV__ || eventsBlocked) {
-      PostHog.disable()
+      disableAnalytics()
       return
     }
     if (analyticsConsent || analyticsConsent === undefined) {
-      PostHog.enable()
+      if (!isAnalyticsEnabled) {
+        enableAnalytics()
+        capture('$opt_in')
+      }
     } else {
-      PostHog.disable()
+      disableAnalytics()
     }
+  }
+
+  async function enableAnalytics() {
+    await PostHog.enable()
+    setIsAnalyticsEnabled(true)
+  }
+
+  async function disableAnalytics() {
+    await PostHog.disable()
+    setIsAnalyticsEnabled(false)
   }
 
   function reloadFeatureFlags() {
@@ -134,15 +169,17 @@ export const PosthogContextProvider = ({ children }: { children: any }) => {
       })
   }
 
+  const capture = async (event: string) => {
+    if (__DEV__) {
+      console.log(event)
+    }
+    return PostHog.capture(event)
+  }
+
   return (
     <PosthogContext.Provider
       value={{
-        capture: async (event: string) => {
-          if (__DEV__) {
-            console.log(event)
-          }
-          return PostHog.capture(event)
-        },
+        capture,
         setAnalyticsConsent,
         swapBlocked,
         bridgeBlocked,
