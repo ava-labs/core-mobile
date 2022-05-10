@@ -72,13 +72,20 @@ const LoginWithMnemonicScreen = () => {
   const { navigate, goBack, addListener, removeListener } =
     useNavigation<LoginNavigationProp>()
   const { capture } = usePosthogContext()
+  const { userSettingsRepo } = useApplicationContext().repo
 
-  useEffect(captureBackEventFx, [])
+  useEffect(captureBackEventFx, [
+    addListener,
+    capture,
+    removeListener,
+    userSettingsRepo
+  ])
 
   function captureBackEventFx() {
     const callback = (e: { data: { action: { type: string } } }) => {
       if (e.data.action.type === 'GO_BACK') {
         capture('OnboardingCancelled').catch(() => undefined)
+        userSettingsRepo.setSetting('CoreAnalytics', undefined)
       }
     }
     addListener('beforeRemove', callback)
