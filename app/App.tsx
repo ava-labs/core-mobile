@@ -12,10 +12,13 @@ import {
   Platform,
   SafeAreaView
 } from 'react-native'
+import { Provider } from 'react-redux'
+import { PersistGate } from 'redux-persist/integration/react'
 import RootScreenStack from 'navigation/RootScreenStack'
 import { NavigationContainer } from '@react-navigation/native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import useDevDebugging from 'utils/debugging/DevDebugging'
+import { store, persistor } from 'store'
 
 LogBox.ignoreAllLogs()
 
@@ -29,17 +32,21 @@ export default function App() {
   const [backgroundStyle] = useState(context.appBackgroundStyle)
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <KeyboardAvoidingView
-        enabled={context.keyboardAvoidingViewEnabled}
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <NavigationContainer
-          theme={context.navContainerTheme}
-          ref={context.appNavHook.navigation}>
-          <RootScreenStack />
-        </NavigationContainer>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <SafeAreaView style={backgroundStyle}>
+          <KeyboardAvoidingView
+            enabled={context.keyboardAvoidingViewEnabled}
+            style={{ flex: 1 }}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+            <NavigationContainer
+              theme={context.navContainerTheme}
+              ref={context.appNavHook.navigation}>
+              <RootScreenStack />
+            </NavigationContainer>
+          </KeyboardAvoidingView>
+        </SafeAreaView>
+      </PersistGate>
+    </Provider>
   )
 }

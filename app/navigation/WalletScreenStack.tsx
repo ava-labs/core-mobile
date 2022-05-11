@@ -6,6 +6,7 @@ import {
   useNavigation,
   useRoute
 } from '@react-navigation/native'
+import { useSelector, useDispatch } from 'react-redux'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AccountBottomSheet from 'screens/portfolio/account/AccountBottomSheet'
 import AppNavigation from 'navigation/AppNavigation'
@@ -55,12 +56,12 @@ import NFTScreenStack, {
 } from 'navigation/wallet/NFTScreenStack'
 import NftManage from 'screens/nft/NftManage'
 import SharedBridgeTransactionStatus from 'screens/shared/BridgeTransactionStatus'
-import { Network } from 'repository/NetworksRepo'
 import NetworkManager from 'screens/network/NetworkManager'
 import NetworkDetails from 'screens/network/NetworkDetails'
 import AvaButton from 'components/AvaButton'
 import StarSVG from 'components/svg/StarSVG'
 import useAppBackgroundTracker from 'hooks/useAppBackgroundTracker'
+import { toggleFavorite, Network, selectFavoriteNetworks } from 'store/network'
 import { BridgeStackParamList } from './wallet/BridgeScreenStack'
 import {
   BridgeTransactionStatusParams,
@@ -435,18 +436,18 @@ function NetworkDetailsScreen() {
 }
 
 function ToggleFavoriteNetwork() {
-  const { params } = useRoute<NetworkDetailsScreenProps['route']>()
-  const { networks, unsetFavorite, setFavorite } =
-    useApplicationContext().repo.networksRepo
-
-  function toggleFavorite(networkName: string) {
-    const network = networks[networkName]
-    network.isFavorite ? unsetFavorite(network) : setFavorite(network)
-  }
+  const {
+    network: { chainId }
+  } = useRoute<NetworkDetailsScreenProps['route']>().params
+  const favoriteNetworks = useSelector(selectFavoriteNetworks)
+  const dispatch = useDispatch()
+  const isFavorite = favoriteNetworks.some(
+    network => network.chainId === chainId
+  )
 
   return (
-    <AvaButton.Icon onPress={() => toggleFavorite(params.network.name)}>
-      <StarSVG selected={params.network.isFavorite} />
+    <AvaButton.Icon onPress={() => dispatch(toggleFavorite(chainId))}>
+      <StarSVG selected={isFavorite} />
     </AvaButton.Icon>
   )
 }
