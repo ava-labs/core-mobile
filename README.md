@@ -82,6 +82,10 @@ To add custom font, add it to src/assets folder and then run:
 yarn link
 ```
 
+## Navigation System
+
+https://whimsical.com/mobile-navigation-system-4WaXLt2DgAutCmbfFF6wpS
+
 ## Releasing apps
 
 ### Android
