@@ -43,7 +43,7 @@ interface OptionsItemInfo<ItemT> {
  * @param selectionRenderItem Component to be rendered for selected option
  * @param selectedIndex Set which item from data shoul be selected
  * @param optionsRenderItem Render item for dropdown options
- * @param onItemSelected On selected option callback. Callback should return false if item should not be selectable.
+ * @param onItemSelected On selected option callback.
  * @param width Set this to max width of rendered items
  * @param alignment How should dropdown options be aligned relative to selected option.
  * @param disabled if set to true, dropdown won't show anything
