@@ -89,33 +89,29 @@ function ActivityList({
 
   const filteredHistory = useMemo(
     () =>
-      allHistory?.filter(tx => {
-        const showAll = filter === ActivityFilter.All
-        const isBridge =
-          isBridgeTx(tx) && (showAll || filter === ActivityFilter.Bridge)
-        const isIncoming =
-          isIncomingTransaction(tx) &&
-          !isBridge &&
-          (showAll || filter === ActivityFilter.Incoming)
-        const isOutgoing =
-          isOutgoingTransaction(tx) &&
-          (showAll || filter === ActivityFilter.Outgoing)
-        const isContractCall =
-          isContractCallTransaction(tx) &&
-          (showAll || filter === ActivityFilter.ContractApprovals)
-
-        if (
-          // Return empty if the tx doesn't fit in the currently selected filter
-          !(showAll || isBridge || isIncoming || isOutgoing || isContractCall)
-        ) {
-          return
-        }
-
-        return tokenSymbolFilter
-          ? tokenSymbolFilter ===
-              (('tokenSymbol' in tx && tx.tokenSymbol) || 'AVAX')
-          : true
-      }),
+      allHistory
+        ?.filter(tx => {
+          switch (filter) {
+            case ActivityFilter.ContractApprovals:
+              return isContractCallTransaction(tx)
+            case ActivityFilter.Incoming:
+              return isIncomingTransaction(tx) && !isBridgeTx(tx)
+            case ActivityFilter.Outgoing:
+              return isOutgoingTransaction(tx)
+            case ActivityFilter.All:
+              return true
+            case ActivityFilter.Bridge:
+              return isBridgeTx(tx)
+            default:
+              return false
+          }
+        })
+        .filter(tx => {
+          return tokenSymbolFilter
+            ? tokenSymbolFilter ===
+                ('tokenSymbol' in tx ? tx.tokenSymbol : 'AVAX')
+            : true
+        }),
     [allHistory, tokenSymbolFilter, isBridgeTx, filter]
   )
 
