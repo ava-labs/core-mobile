@@ -211,10 +211,6 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
           name={AppNavigation.Modal.EditGasLimit}
           component={EditGasLimit}
         />
-        <WalletScreenS.Screen
-          name={AppNavigation.Modal.RpcMethodsUI}
-          component={RpcMethodsUI}
-        />
       </WalletScreenS.Group>
     )
   }, [])
@@ -361,7 +357,8 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
         />
         {BottomSheetGroup}
       </WalletScreenS.Navigator>
-      <Modal visible={showSecurityModal} animationType={'slide'} animated>
+      <RpcMethodsUI />
+      <Modal visible={showSecurityModal} animationType={'slide'}>
         <PinOrBiometryLogin
           onSignInWithRecoveryPhrase={() => {
             signOut().then(() => {
