@@ -9,16 +9,16 @@ import { ISessionStatus } from '@walletconnect/types'
 export const CLIENT_OPTIONS = {
   clientMeta: {
     // Required
-    description: 'WalletApp',
-    url: 'https://metamask.io',
+    description: 'Core Mobile',
+    url: 'https://www.avax.network',
     icons: [
-      'https://raw.githubusercontent.com/MetaMask/brand-resources/master/SVG/metamask-fox.svg'
+      'https://assets.website-files.com/5fec984ac113c1d4eec8f1ef/62602f568fb4677b559827e5_core.jpg'
     ],
-    name: 'WalletApp',
-    ssl: true
+    name: 'Core',
+    ssl: !__DEV__
   }
 }
-
+let initialized = false
 let connectors: WalletConnect[] = []
 const tempCallIds: string[] = []
 const hub = new EventEmitter()
@@ -52,13 +52,13 @@ const persistSessions = async () => {
   await AsyncStorage.setItem(WALLETCONNECT_SESSIONS, JSON.stringify(sessions))
 }
 
-// const waitForInitialization = async () => {
-//   let i = 0
-//   while (!initialized) {
-//     await new Promise(res => setTimeout(() => res(), 1000))
-//     if (i++ > 5) initialized = true
-//   }
-// }
+const waitForInitialization = async () => {
+  let i = 0
+  while (!initialized) {
+    await new Promise(res => setTimeout(() => res(), 1000))
+    if (i++ > 5) initialized = true
+  }
+}
 
 class WalletConnect {
   redirectUrl?: string
@@ -71,17 +71,17 @@ class WalletConnect {
   walletConnectClient: WalletConnectClient | null
 
   constructor(options: SessionOptions, existing = false) {
-    if (options.session.redirectUrl) {
-      this.redirectUrl = options.session.redirectUrl
-    }
-
-    if (options.session.autoSign) {
-      this.autoSign = options.session.autoSign
-    }
-
-    if (options.session.requestOriginatedFrom) {
-      this.requestOriginatedFrom = options.session.requestOriginatedFrom
-    }
+    // if (options.session.redirectUrl) {
+    //   this.redirectUrl = options.session.redirectUrl
+    // }
+    //
+    // if (options.session.autoSign) {
+    //   this.autoSign = options.session.autoSign
+    // }
+    //
+    // if (options.session.requestOriginatedFrom) {
+    //   this.requestOriginatedFrom = options.session.requestOriginatedFrom
+    // }
 
     const connOptions = { ...options, ...CLIENT_OPTIONS }
 
@@ -106,6 +106,7 @@ class WalletConnect {
           requestOriginatedFrom: this.requestOriginatedFrom
         }
 
+        await waitForInitialization()
         await this.sessionRequest(sessionData)
         this.startSession(sessionData, existing)
 
@@ -126,10 +127,14 @@ class WalletConnect {
       }
 
       try {
-        await this.callRequests(payload)
-        this.walletConnectClient?.approveRequest({ id: payload.id })
+        const signedResult = await this.callRequests(payload)
+        console.log('signedResult', signedResult)
+        this.walletConnectClient?.approveRequest({
+          id: payload.id,
+          result: signedResult
+        })
       } catch (e) {
-        console.log('error or canceled call')
+        console.log('error or canceled call', e)
         this.walletConnectClient?.rejectRequest({
           id: payload.id,
           error: {
@@ -150,8 +155,19 @@ class WalletConnect {
         throw error
       }
       this.killSession()
-      persistSessions()
+      // persistSessions()
     })
+
+    this.walletConnectClient.on('session_update', (error, payload) => {
+      console.log('WC: Session update', payload)
+      if (error) {
+        throw error
+      }
+    })
+
+    if (existing) {
+      this.startSession(options.session, existing)
+    }
   }
 
   killSession = () => {
@@ -179,9 +195,10 @@ class WalletConnect {
     new Promise((resolve, reject) => {
       hub.emit('walletconnectCallRequest', payload)
 
-      hub.on('walletconnectCallRequest::approved', id => {
+      hub.on('walletconnectCallRequest::approved', args => {
+        const { id, hash } = args
         if (payload.id === id) {
-          resolve(true)
+          resolve(hash)
         }
       })
       hub.on('walletconnectCallRequest::rejected', id => {
@@ -192,17 +209,18 @@ class WalletConnect {
     })
 
   startSession = async (sessionData: any, existing: boolean) => {
-    const chainId = (await firstValueFrom(network$))?.chainId
+    const network = await firstValueFrom(network$)
+    const chainId = parseInt(network?.chainId ?? '1', 10)
     const selectedAddress = (await firstValueFrom(wallet$))?.getAddressC() ?? ''
     const approveData: ISessionStatus = {
-      chainId: parseInt(chainId ?? '1', 10),
+      chainId: 43113,
       accounts: [selectedAddress]
     }
     if (existing) {
       this.walletConnectClient?.updateSession(approveData)
     } else {
       await this.walletConnectClient?.approveSession(approveData)
-      persistSessions()
+      // persistSessions()
     }
   }
 }
@@ -216,13 +234,13 @@ const instance = {
         connectors.push(new WalletConnect(session, true))
       })
     }
-    // initialized = true
+    initialized = true
   },
   newSession(
     uri: string,
-    redirectUrl: string,
-    autoSign: boolean,
-    requestOriginatedFrom: string
+    redirectUrl?: string,
+    autoSign?: boolean,
+    requestOriginatedFrom?: string
   ) {
     const alreadyConnected = this.isSessionConnected(uri)
     if (alreadyConnected) {
@@ -271,7 +289,7 @@ const instance = {
         connector.walletConnectClient.session.peerId !== id
     )
     // 3) Persist the list
-    await persistSessions()
+    // await persistSessions()
   },
   hub,
   isSessionConnected(uri: string) {
