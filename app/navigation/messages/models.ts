@@ -1,4 +1,8 @@
+import { JsonRpcRequest } from '@walletconnect/jsonrpc-types'
+import { DomainMetadata } from 'rpc/parseDisplayValues'
+
 export enum MessageType {
+  ETH_SEND = 'eth_sendTransaction',
   SIGN_TYPED_DATA_V3 = 'eth_signTypedData_v3',
   SIGN_TYPED_DATA_V4 = 'eth_signTypedData_v4',
   SIGN_TYPED_DATA_V1 = 'eth_signTypedData_v1',
@@ -42,4 +46,12 @@ export const PREFIXES = {
   [ACTIONS.APPROVE]: 'ethereum:',
   [ACTIONS.FOCUS]: '',
   [ACTIONS.EMPTY]: ''
+}
+
+export interface Action extends JsonRpcRequest<any> {
+  result?: any
+  error?: string
+  displayData: any
+  method: string
+  site: DomainMetadata
 }
