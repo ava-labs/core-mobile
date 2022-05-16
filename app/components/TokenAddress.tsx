@@ -67,7 +67,7 @@ const TokenAddress: FC<Props> = ({
       style={{
         flexDirection: 'row',
         alignItems: 'center',
-        marginRight: showFullAddress && copyIconEnd ? 16 : 0
+        marginRight: 0
       }}>
       {hideCopy || copyIconEnd || (
         <>

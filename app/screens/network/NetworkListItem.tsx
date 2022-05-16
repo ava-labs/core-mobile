@@ -8,15 +8,17 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import Avatar from 'components/Avatar'
 
 type Props = {
+  networkChainId: string
   networkName: string
   icon: string | JSX.Element
   isFavorite: boolean
-  onPress: (networkName: string) => void
-  onFavorite: (networkName: string) => void
-  onInfo: (networkName: string) => void
+  onPress: (networkName: string, chainId: string) => void
+  onFavorite: (chainId: string) => void
+  onInfo: (chainId: string) => void
 }
 
 export function NetworkListItem({
+  networkChainId,
   networkName,
   icon,
   isFavorite,
@@ -29,10 +31,10 @@ export function NetworkListItem({
   function getButtons() {
     return (
       <Row style={{ alignItems: 'center' }}>
-        <AvaButton.Icon onPress={() => onFavorite(networkName)}>
+        <AvaButton.Icon onPress={() => onFavorite(networkChainId)}>
           <StarSVG selected={isFavorite} />
         </AvaButton.Icon>
-        <AvaButton.Icon onPress={() => onInfo(networkName)}>
+        <AvaButton.Icon onPress={() => onInfo(networkChainId)}>
           <InfoSVG size={24} color={theme.colorIcon1} />
         </AvaButton.Icon>
       </Row>
@@ -41,7 +43,7 @@ export function NetworkListItem({
 
   return (
     <AvaListItem.Base
-      onPress={() => onPress(networkName)}
+      onPress={() => onPress(networkName, networkChainId)}
       leftComponent={
         typeof icon === 'string' ? (
           <Avatar.Custom size={40} name={networkName} logoUri={icon} />

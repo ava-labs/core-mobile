@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   View
 } from 'react-native'
+import { noop } from 'rxjs'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
 import AvaText from './AvaText'
@@ -34,7 +35,7 @@ const ActionButtonItem: FC<Props> = ({
   startDegree = 0,
   endDegree = 720,
   active = false,
-  onPress,
+  onPress = noop,
   buttonColor,
   style,
   activeStyle,

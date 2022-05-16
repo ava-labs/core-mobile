@@ -1,31 +1,58 @@
-import React, { FC, memo, useCallback } from 'react'
-import { StyleSheet, Text, View } from 'react-native'
+import React, { FC, memo } from 'react'
+import { StyleSheet, View } from 'react-native'
+import { useSelector } from 'react-redux'
 import { usePortfolio } from 'screens/portfolio/usePortfolio'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
-import { useFocusEffect } from '@react-navigation/native'
 import AvaxQACode from 'components/AvaxQRCode'
 import TokenAddress from 'components/TokenAddress'
+import {
+  selectActiveNetwork,
+  BITCOIN_NETWORK,
+  MAINNET_NETWORK,
+  FUJI_NETWORK
+} from 'store/network'
+import { useWalletContext } from '@avalabs/wallet-react-components'
+import { useIsMainnet } from 'hooks/isMainnet'
 
 type Props = {
-  isXChain?: boolean
-  onShare?: (address: string) => void
-  positionCallback?: (position: number) => void
   embedded: boolean
 }
 
 const ReceiveToken2: FC<Props> = memo(props => {
-  const { addressC: selectedAddress } = usePortfolio()
   const theme = useApplicationContext().theme
-  const isXChain = !!props?.isXChain
   const embedded = !!props?.embedded
+  const activeNetwork = useSelector(selectActiveNetwork)
+  const { chainId, nativeToken } = activeNetwork
+  const { addressC } = usePortfolio()
+  const wallet = useWalletContext().wallet
+  const isMainnet = useIsMainnet()
+  const btcAddress =
+    wallet?.getAddressBTC(isMainnet ? 'bitcoin' : 'testnet') ?? ''
 
-  useFocusEffect(
-    useCallback(() => {
-      props?.positionCallback?.(isXChain ? 1 : 0)
-    }, [])
-  )
+  const receiveAddress = () => {
+    switch (chainId) {
+      case BITCOIN_NETWORK.chainId:
+        return btcAddress
+      case MAINNET_NETWORK.chainId:
+      case FUJI_NETWORK.chainId:
+      default:
+        return addressC
+    }
+  }
+
+  // TODO: replace this with actual chainName
+  const networkLabel = () => {
+    switch (chainId) {
+      case BITCOIN_NETWORK.chainId:
+        return 'Bitcoin'
+      case MAINNET_NETWORK.chainId:
+      case FUJI_NETWORK.chainId:
+      default:
+        return 'C-Chain'
+    }
+  }
 
   return (
     <View
@@ -41,32 +68,30 @@ const ReceiveToken2: FC<Props> = memo(props => {
           <Space y={12} />
         </>
       )}
-      <Text style={{ marginHorizontal: 16, paddingTop: 4 }}>
-        <AvaText.Body2>This is your </AvaText.Body2>
-        <AvaText.Heading3>
-          {isXChain ? 'X chain ' : 'C chain '}
-        </AvaText.Heading3>
-        <AvaText.Body2>address to receive funds.</AvaText.Body2>
-      </Text>
-      <View style={[styles.container]}>
-        <Space y={55} />
+
+      <View style={styles.container}>
+        <Space y={52} />
         <View style={{ alignSelf: 'center' }}>
           <AvaxQACode
-            circularText={isXChain ? 'X Chain' : 'C Chain'}
             sizePercentage={0.7}
-            address={selectedAddress}
+            address={receiveAddress()}
+            token={nativeToken.symbol}
           />
         </View>
-        <Space y={40} />
+        <Space y={47} />
+        <View style={styles.networkContainer}>
+          <AvaText.Heading3>{networkLabel()} Address</AvaText.Heading3>
+        </View>
         <View
           style={[
             styles.copyAddressContainer,
             { backgroundColor: theme.colorBg2 }
           ]}>
           <TokenAddress
-            address={selectedAddress}
+            address={receiveAddress()}
             showFullAddress
             textType={'ButtonMedium'}
+            copyIconEnd
           />
         </View>
         <Space y={16} />
@@ -79,12 +104,17 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center'
   },
+  networkContainer: {
+    alignSelf: 'flex-start',
+    marginHorizontal: 16,
+    marginBottom: 8
+  },
   copyAddressContainer: {
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,
-    marginHorizontal: 16
+    marginHorizontal: 24
   }
 })
 

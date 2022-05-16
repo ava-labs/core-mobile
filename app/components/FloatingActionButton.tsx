@@ -102,16 +102,22 @@ const FloatingActionButton: FC<Props> = ({
     const startRadian = (startDegree * Math.PI) / 180
     const endRadian = (endDegree * Math.PI) / 180
 
-    const childrenCount = React.Children.count(children)
+    const validChildren: React.ReactElement[] = []
+
+    React.Children.forEach(children, child => {
+      const isValidButton =
+        React.isValidElement(child) && child.type === ActionButtonItem
+      isValidButton && validChildren.push(child)
+    })
+
+    const childrenCount = validChildren.length
+
     let offset = 0
     if (childrenCount !== 1) {
       offset = (endRadian - startRadian) / (childrenCount - 1)
     }
 
-    return React.Children.map(children, (button, index) => {
-      const isValidButton =
-        React.isValidElement(button) && button.type === ActionButtonItem
-
+    return validChildren.map((button, index) => {
       return (
         <View
           pointerEvents="box-none"
@@ -128,14 +134,14 @@ const FloatingActionButton: FC<Props> = ({
             radius={radius}
             angle={startRadian + index * offset}
             btnColor={backgroundColor}
-            {...(isValidButton ? button.props : {})}
+            {...button.props}
             onPress={() => {
               if (resetOnItemPress) {
                 timeout = setTimeout(() => {
                   reset()
                 }, 200)
               }
-              isValidButton && button.props?.onPress()
+              button.props?.onPress()
             }}
           />
         </View>

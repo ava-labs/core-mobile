@@ -266,7 +266,7 @@ const Bridge: FC = () => {
             rightComponent={
               <DropDown
                 data={filterChains(sourceBlockchains)}
-                preselectedIndex={sourceBlockchains.indexOf(currentBlockchain)}
+                selectedIndex={sourceBlockchains.indexOf(currentBlockchain)}
                 onItemSelected={bc => setCurrentBlockchain(bc as Blockchain)}
                 optionsRenderItem={item =>
                   dropdownItemFormat(item.item, currentBlockchain)

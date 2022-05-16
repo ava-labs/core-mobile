@@ -9,36 +9,61 @@ import EthereumSvg from 'components/svg/Ethereum'
 
 interface Props {
   address?: string
-  circularText?: string
   sizePercentage?: number
-  token?: 'AVAX' | 'ETH' | 'BTC'
-  circularTextColor?: string
-  circularTextBackgroundColor?: string
+  token?: string
 }
 
 const { width: screenWidth } = Dimensions.get('window')
 
 const AvaxQRCode: FC<Props> = ({
   address,
-  circularText = '',
   sizePercentage = 1,
-  token = 'AVAX',
-  circularTextBackgroundColor,
-  circularTextColor
+  token = 'AVAX'
 }: Props) => {
-  const theme = useApplicationContext().theme
+  const { theme } = useApplicationContext()
+  const logoColor = theme.colorIcon1
+  const logoBgColor = theme.colorBg1
   const borderWidth = 16
+  const containerSize = screenWidth * sizePercentage
+  const qrCodeSize = containerSize - borderWidth * 2
+  const qrTokenSize = qrCodeSize * 0.3
+  const circularTextSize = (qrTokenSize * 100) / 40
 
   const qrToken = () => {
     switch (token) {
       case 'BTC':
         return (
-          <BitcoinSVG absolutePosition backgroundColor={'black'} size={40} />
+          <BitcoinSVG
+            absolutePosition
+            backgroundColor={logoBgColor}
+            logoColor={logoColor}
+            size={qrTokenSize}
+          />
         )
       case 'ETH':
-        return <EthereumSvg absolutePosition size={40} />
+        return <EthereumSvg absolutePosition size={qrTokenSize} />
+      case 'AVAX':
       default:
-        return <AvaLogoSVG absolutePosition size={40} />
+        return (
+          <AvaLogoSVG
+            absolutePosition
+            backgroundColor={logoBgColor}
+            logoColor={logoColor}
+            size={qrTokenSize}
+          />
+        )
+    }
+  }
+
+  // TODO: replace this with actual chainName
+  const circularText = () => {
+    switch (token) {
+      case 'BTC':
+        return 'Bitcoin'
+      case 'ETH':
+      case 'AVAX':
+      default:
+        return 'C-Chain'
     }
   }
 
@@ -46,15 +71,11 @@ const AvaxQRCode: FC<Props> = ({
     <View
       style={{
         borderWidth: borderWidth,
-        height: screenWidth * sizePercentage,
+        height: containerSize,
         borderColor: theme.alternateBackground,
         borderRadius: 7
       }}>
-      <QRCode
-        ecl={'H'}
-        size={screenWidth * sizePercentage - 2 * borderWidth}
-        value={address}
-      />
+      <QRCode ecl={'H'} size={qrCodeSize} value={address} />
       <View
         style={{
           position: 'absolute',
@@ -66,11 +87,7 @@ const AvaxQRCode: FC<Props> = ({
           alignItems: 'center'
         }}>
         {qrToken()}
-        <CircularText
-          text={circularText}
-          textColor={circularTextColor}
-          circleBackgroundColor={circularTextBackgroundColor}
-        />
+        <CircularText text={circularText()} size={circularTextSize} />
       </View>
     </View>
   )
