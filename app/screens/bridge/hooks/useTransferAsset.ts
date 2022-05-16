@@ -9,8 +9,6 @@ import {
   WrapStatus
 } from '@avalabs/bridge-sdk'
 import {
-  MAINNET_NETWORK,
-  useNetworkContext,
   useWalletContext,
   useWalletStateContext
 } from '@avalabs/wallet-react-components'
@@ -24,6 +22,8 @@ import { makeBNLike } from 'utils/Utils'
 import { BufferLike } from 'ethereumjs-util'
 import Big from 'big.js'
 import { TransferEventType } from 'contexts/BridgeContext'
+import { useSelector } from 'react-redux'
+import { selectActiveNetwork, MAINNET_NETWORK } from 'store/network'
 
 const events = new EventEmitter()
 
@@ -34,7 +34,7 @@ const events = new EventEmitter()
 export function useTransferAsset() {
   // @ts-ignore addresses exist in walletContext
   const { addresses } = useWalletStateContext()
-  const network = useNetworkContext()?.network
+  const network = useSelector(selectActiveNetwork)
   const wallet = useWalletContext().wallet
   const config = useBridgeConfig().config
   const { currentBlockchain } = useBridgeSDK()
@@ -66,7 +66,7 @@ export function useTransferAsset() {
     const common =
       currentBlockchain === Blockchain.AVALANCHE
         ? Common.custom({
-            networkId: network?.config.networkID,
+            networkId: network.config.networkID,
             chainId: parseInt(network?.chainId)
           })
         : new Common({

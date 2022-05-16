@@ -9,6 +9,8 @@ import {
 } from 'store/network'
 
 export class NetworkService implements OnStorageReady {
+  // we might not need to store active network here since the data is already in the redux store
+  // leaving it here for now
   private _activeNetwork?: Network
 
   get activeNetwork(): Network | undefined {
@@ -20,7 +22,7 @@ export class NetworkService implements OnStorageReady {
   }
 
   onStorageReady(state: RootState): void {
-    this._activeNetwork = selectActiveNetwork(state)
+    this.activeNetwork = selectActiveNetwork(state)
   }
 
   getProviderForNetwork(network: Network, numberOfRequestsPerBatch = 40) {

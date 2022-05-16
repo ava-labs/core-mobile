@@ -1,21 +1,28 @@
 import {
   TokenListDict,
-  useNetworkContext,
   useWalletStateContext
 } from '@avalabs/wallet-react-components'
 import { getContractDataErc20 } from '@avalabs/avalanche-wallet-sdk'
 import { Erc20TokenData } from '@avalabs/avalanche-wallet-sdk/dist/Asset/types'
 import { useApplicationContext } from 'contexts/ApplicationContext'
+import { useSelector } from 'react-redux'
+import { selectActiveNetwork } from 'store/network'
+import { useEffect } from 'react'
+import { customErc20Tokens$ } from '@avalabs/wallet-react-components'
 
 export type CustomTokens = {
   [chain: string]: TokenListDict
 }
 
 const useAddCustomToken = () => {
-  const networkState = useNetworkContext()
+  const network = useSelector(selectActiveNetwork)
   const walletState = useWalletStateContext()
   const { customTokens, saveCustomTokens } =
     useApplicationContext().repo.customTokenRepo
+
+  useEffect(() => {
+    customErc20Tokens$.next(customTokens[network.chainId])
+  }, [customTokens, network.chainId])
 
   async function addCustomToken(tokenAddress: string): Promise<Erc20TokenData> {
     // make sure we have an erc20 token list
@@ -34,10 +41,7 @@ const useAddCustomToken = () => {
     }
 
     // we need to get the chain to be able to save custom token under correct chain
-    const chain = networkState?.network?.chainId
-    if (!chain) {
-      return Promise.reject('Unable to detect current network selection.')
-    }
+    const chain = network.chainId
 
     // we get the contract again...might change this since we already get it in the view
     try {

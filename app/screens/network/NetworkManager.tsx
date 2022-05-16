@@ -14,10 +14,7 @@ import AvaText from 'components/AvaText'
 import TabViewAva from 'components/TabViewAva'
 import ZeroState from 'components/ZeroState'
 import { NetworkListItem } from 'screens/network/NetworkListItem'
-import { ShowSnackBar } from 'components/Snackbar'
 import { getIcon } from 'screens/network/NetworkIconSelector'
-import { getActiveNetwork } from 'screens/network/SupportedNetworkMapper'
-import { useNetworkContext } from '@avalabs/wallet-react-components'
 
 type Props = {
   onShowInfo: (network: Network) => void
@@ -29,7 +26,6 @@ export default function NetworkManager({ onShowInfo }: Props) {
   const dispatch = useDispatch()
   const { theme } = useApplicationContext()
   const [searchText, setSearchText] = useState('')
-  const networkContext = useNetworkContext()
 
   const mainNets = useMemo(
     () =>
@@ -78,16 +74,7 @@ export default function NetworkManager({ onShowInfo }: Props) {
     onShowInfo(network)
   }
 
-  function connect(networkName: string, chainId: string) {
-    // TODO: remove this once we finish refactoring network stuff
-    const activeNetwork = getActiveNetwork(networkName)
-    if (activeNetwork) {
-      networkContext?.setNetwork(activeNetwork)
-    } else {
-      ShowSnackBar('Not yet supported')
-    }
-
-    // update redux store
+  function connect(chainId: string) {
     dispatch(setActive(chainId))
   }
 

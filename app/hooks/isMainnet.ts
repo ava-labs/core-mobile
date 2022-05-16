@@ -1,7 +1,7 @@
-import { isMainnetNetwork } from '@avalabs/avalanche-wallet-sdk'
-import { useNetworkContext } from '@avalabs/wallet-react-components'
+import { useSelector } from 'react-redux'
+import { selectActiveNetwork, MAINNET_NETWORK } from 'store/network'
 
 export const useIsMainnet = () => {
-  const network = useNetworkContext()?.network
-  return network ? isMainnetNetwork(network.config) : true
+  const network = useSelector(selectActiveNetwork)
+  return network.chainId === MAINNET_NETWORK.chainId
 }

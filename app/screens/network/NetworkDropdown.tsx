@@ -3,7 +3,6 @@ import { useSelector, useDispatch } from 'react-redux'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import Dropdown from 'components/Dropdown'
 import Avatar from 'components/Avatar'
-import { ShowSnackBar } from 'components/Snackbar'
 import { View } from 'react-native'
 import { Row } from 'components/Row'
 import AvaText from 'components/AvaText'
@@ -14,8 +13,6 @@ import AppNavigation from 'navigation/AppNavigation'
 import { DrawerScreenProps } from 'navigation/types'
 import { useNavigation } from '@react-navigation/native'
 import { getIcon } from 'screens/network/NetworkIconSelector'
-import { getActiveNetwork } from 'screens/network/SupportedNetworkMapper'
-import { useNetworkContext } from '@avalabs/wallet-react-components'
 import {
   selectFavoriteNetworks,
   selectActiveNetwork,
@@ -34,7 +31,6 @@ export default function NetworkDropdown() {
   const dispatch = useDispatch()
   const { theme } = useApplicationContext()
   const navigation = useNavigation<NetworkDropdownNavigationProp>()
-  const networkContext = useNetworkContext()
 
   const data = useMemo(
     () => [
@@ -73,15 +69,6 @@ export default function NetworkDropdown() {
           if (selectedItem.name === ManageNetworks) {
             navigation.navigate(AppNavigation.Wallet.NetworkSelector)
           } else {
-            // TODO: remove this once we finish refactoring network stuff
-            const activeNetwork = getActiveNetwork(selectedItem.name)
-            if (activeNetwork) {
-              networkContext?.setNetwork(activeNetwork)
-            } else {
-              ShowSnackBar('Not yet supported')
-            }
-
-            // update redux store
             dispatch(setActive(selectedItem.chainId))
           }
         }}
