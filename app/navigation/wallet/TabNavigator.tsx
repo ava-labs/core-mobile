@@ -18,6 +18,7 @@ import ArrowSVG from 'components/svg/ArrowSVG'
 import { useNavigation } from '@react-navigation/native'
 import FloatingActionButton from 'components/FloatingActionButton'
 import useInAppBrowser from 'hooks/useInAppBrowser'
+import { useIsUIDisabled, UI } from 'hooks/useIsUIDisabled'
 import HistorySVG from 'components/svg/HistorySVG'
 import BridgeSVG from 'components/svg/BridgeSVG'
 import { Space } from 'components/Space'
@@ -165,10 +166,49 @@ type FabNavigationProp = TabsScreenProps<
  * @constructor
  */
 const CustomTabBarFab: FC = ({ children }) => {
+  const swapDisabled = useIsUIDisabled(UI.Swap)
+  const buyDisabled = useIsUIDisabled(UI.Buy)
   const { theme } = useApplicationContext()
   const { openMoonPay } = useInAppBrowser()
   const navigation = useNavigation<FabNavigationProp>()
 
+  const renderBuyBtn = () => (
+    <ActionButtonItem
+      buttonColor={theme.alternateBackground}
+      title="Buy"
+      onPress={() => openMoonPay()}>
+      <BuySVG color={theme.background} />
+    </ActionButtonItem>
+  )
+
+  const renderSendBtn = () => (
+    <ActionButtonItem
+      buttonColor={theme.alternateBackground}
+      title="Send"
+      onPress={() => navigation.navigate(AppNavigation.Wallet.SendTokens)}>
+      <ArrowSVG rotate={225} color={theme.background} size={20} />
+    </ActionButtonItem>
+  )
+
+  const renderReceiveBtn = () => (
+    <ActionButtonItem
+      buttonColor={theme.alternateBackground}
+      title="Receive"
+      onPress={() => {
+        navigation.navigate(AppNavigation.Wallet.ReceiveTokens)
+      }}>
+      <QRCodeSVG color={theme.background} size={24} />
+    </ActionButtonItem>
+  )
+
+  const renderSwapBtn = () => (
+    <ActionButtonItem
+      buttonColor={theme.alternateBackground}
+      title="Swap"
+      onPress={() => navigation.navigate(AppNavigation.Wallet.Swap)}>
+      <SwapSVG color={theme.background} size={24} />
+    </ActionButtonItem>
+  )
   return (
     <>
       {/* necessary for spacing between the fab and bottom bar buttons */}
@@ -181,33 +221,13 @@ const CustomTabBarFab: FC = ({ children }) => {
         changeIconTextColor={theme.colorBg2}
         icon={children}
         iconTextColor={theme.colorBg2}>
+        {/* invisible button item to make our buttons match the design */}
         <ActionButtonItem />
-        <ActionButtonItem
-          buttonColor={theme.alternateBackground}
-          title="Buy"
-          onPress={() => openMoonPay()}>
-          <BuySVG color={theme.background} />
-        </ActionButtonItem>
-        <ActionButtonItem
-          buttonColor={theme.alternateBackground}
-          title="Send"
-          onPress={() => navigation.navigate(AppNavigation.Wallet.SendTokens)}>
-          <ArrowSVG rotate={225} color={theme.background} size={20} />
-        </ActionButtonItem>
-        <ActionButtonItem
-          buttonColor={theme.alternateBackground}
-          title="Receive"
-          onPress={() => {
-            navigation.navigate(AppNavigation.Wallet.ReceiveTokens)
-          }}>
-          <QRCodeSVG color={theme.background} size={24} />
-        </ActionButtonItem>
-        <ActionButtonItem
-          buttonColor={theme.alternateBackground}
-          title="Swap"
-          onPress={() => navigation.navigate(AppNavigation.Wallet.Swap)}>
-          <SwapSVG color={theme.background} size={24} />
-        </ActionButtonItem>
+        {!buyDisabled && renderBuyBtn()}
+        {renderSendBtn()}
+        {renderReceiveBtn()}
+        {!swapDisabled && renderSwapBtn()}
+        {/* invisible button item to make our buttons match the design */}
         <ActionButtonItem />
       </FloatingActionButton>
     </>

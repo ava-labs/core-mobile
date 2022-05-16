@@ -26,12 +26,14 @@ type TabViewAvaFC = FC<{
   renderCustomLabel?: (title: string, selected: boolean) => React.ReactNode
   currentTabIndex?: number
   onTabIndexChange?: (tabIndex: number) => void
+  shouldDisableTouch?: boolean
 }> & { Item: FC<TabViewAvaItemProps> }
 
 const TabViewAva: TabViewAvaFC = ({
   renderCustomLabel,
   currentTabIndex = 0,
   onTabIndexChange,
+  shouldDisableTouch = false,
   children
 }) => {
   const [currentIndex, setCurrentIndex] = useState(currentTabIndex)
@@ -102,6 +104,7 @@ const TabViewAva: TabViewAvaFC = ({
           <TabBar
             {...tabBarProps}
             style={{
+              opacity: shouldDisableTouch ? 0.4 : 1,
               elevation: 0,
               shadowOpacity: 0,
               backgroundColor: theme.transparent,
@@ -115,11 +118,14 @@ const TabViewAva: TabViewAvaFC = ({
               height: 2
             }}
             renderTabBarItem={tabBarItem}
+            onTabPress={({ preventDefault }) => {
+              shouldDisableTouch && preventDefault()
+            }}
           />
         </View>
       )
     },
-    []
+    [shouldDisableTouch]
   )
   return (
     <TabView
@@ -127,6 +133,7 @@ const TabViewAva: TabViewAvaFC = ({
       navigationState={{ index: currentIndex, routes }}
       renderScene={scenes}
       renderTabBar={tabbar}
+      lazy={shouldDisableTouch}
     />
   )
 }
