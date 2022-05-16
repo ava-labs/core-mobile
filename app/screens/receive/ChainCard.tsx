@@ -46,7 +46,7 @@ function ChainCard({ chainName, description, address }: Props) {
           }}>
           {description}
         </AvaText.Body2>
-        <AvaxQACode address={address} circularText={chainName} />
+        <AvaxQACode address={address} />
       </View>
     </View>
   )
