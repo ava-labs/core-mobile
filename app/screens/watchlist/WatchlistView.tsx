@@ -36,6 +36,14 @@ export enum WatchlistFilter {
   LOSERS = 'Losers'
 }
 
+const filterPriceOptions = [
+  WatchlistFilter.PRICE,
+  WatchlistFilter.MARKET_CAP,
+  WatchlistFilter.VOLUME,
+  WatchlistFilter.GAINERS,
+  WatchlistFilter.LOSERS
+]
+
 export const CG_AVAX_TOKEN_ID =
   'FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z'
 
@@ -170,6 +178,9 @@ const WatchlistView: React.FC<Props> = ({ showFavorites, searchText }) => {
       />
     )
   }
+  const selectedPriceFilter = filterPriceOptions.findIndex(
+    item => item === filterBy
+  )
 
   return (
     <SafeAreaProvider style={styles.container}>
@@ -181,13 +192,8 @@ const WatchlistView: React.FC<Props> = ({ showFavorites, searchText }) => {
             <Dropdown
               alignment={'flex-start'}
               width={140}
-              data={[
-                WatchlistFilter.PRICE,
-                WatchlistFilter.MARKET_CAP,
-                WatchlistFilter.VOLUME,
-                WatchlistFilter.GAINERS,
-                WatchlistFilter.LOSERS
-              ]}
+              data={filterPriceOptions}
+              selectedIndex={selectedPriceFilter}
               onItemSelected={selectedItem => setFilterBy(selectedItem)}
               selectionRenderItem={selectedItem => (
                 <AvaText.ButtonSmall textStyle={{ color: theme.colorText1 }}>

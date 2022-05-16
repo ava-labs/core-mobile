@@ -28,6 +28,22 @@ import {
 const yesterday = endOfYesterday()
 const today = endOfToday()
 
+enum ActivityFilter {
+  All = 'All',
+  ContractApprovals = 'Contract Approvals',
+  Incoming = 'Incoming',
+  Outgoing = 'Outgoing',
+  Bridge = 'Bridge'
+}
+
+const filterOptions = [
+  ActivityFilter.All,
+  ActivityFilter.ContractApprovals,
+  ActivityFilter.Incoming,
+  ActivityFilter.Outgoing,
+  ActivityFilter.Bridge
+]
+
 interface Props {
   embedded?: boolean
   tokenSymbolFilter?: string
@@ -225,6 +241,8 @@ function ActivityList({
     )
   }
 
+  const selectedFilter = filterOptions.findIndex(option => option === filter)
+
   return !allHistory ? (
     <Loader />
   ) : (
@@ -238,13 +256,8 @@ function ActivityList({
         <DropDown
           alignment={'flex-end'}
           width={200}
-          data={[
-            ActivityFilter.All,
-            ActivityFilter.ContractApprovals,
-            ActivityFilter.Incoming,
-            ActivityFilter.Outgoing,
-            ActivityFilter.Bridge
-          ]}
+          data={filterOptions}
+          selectedIndex={selectedFilter}
           selectionRenderItem={selectedItem => (
             <SelectionRenderItem text={selectedItem} />
           )}
@@ -257,14 +270,6 @@ function ActivityList({
       <ScrollableComponent children={renderItems()} />
     </View>
   )
-}
-
-enum ActivityFilter {
-  All = 'All',
-  ContractApprovals = 'Contract Approvals',
-  Incoming = 'Incoming',
-  Outgoing = 'Outgoing',
-  Bridge = 'Bridge'
 }
 
 function SelectionRenderItem({ text }: { text: string }) {

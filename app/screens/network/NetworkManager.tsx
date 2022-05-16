@@ -1,12 +1,19 @@
 import React, { useMemo, useState } from 'react'
 import { FlatList, View } from 'react-native'
+import { useSelector, useDispatch } from 'react-redux'
+import {
+  toggleFavorite,
+  Network,
+  selectFavoriteNetworks,
+  selectNetworks,
+  setActive
+} from 'store/network'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import SearchBar from 'components/SearchBar'
 import AvaText from 'components/AvaText'
 import TabViewAva from 'components/TabViewAva'
 import ZeroState from 'components/ZeroState'
 import { NetworkListItem } from 'screens/network/NetworkListItem'
-import { Network } from 'repository/NetworksRepo'
 import { ShowSnackBar } from 'components/Snackbar'
 import { getIcon } from 'screens/network/NetworkIconSelector'
 import { getActiveNetwork } from 'screens/network/SupportedNetworkMapper'
@@ -17,9 +24,11 @@ type Props = {
 }
 
 export default function NetworkManager({ onShowInfo }: Props) {
-  const { theme, repo } = useApplicationContext()
+  const networks = useSelector(selectNetworks)
+  const favoriteNetworks = useSelector(selectFavoriteNetworks)
+  const dispatch = useDispatch()
+  const { theme } = useApplicationContext()
   const [searchText, setSearchText] = useState('')
-  const { networks, setFavorite, unsetFavorite } = repo.networksRepo
   const networkContext = useNetworkContext()
 
   const mainNets = useMemo(
@@ -42,12 +51,10 @@ export default function NetworkManager({ onShowInfo }: Props) {
   )
   const favorites = useMemo(
     () =>
-      Object.values(networks)
-        .filter(network => network.isFavorite)
-        .filter(network =>
-          network.name.toLowerCase().includes(searchText.toLowerCase())
-        ),
-    [networks, searchText]
+      favoriteNetworks.filter(network =>
+        network.name.toLowerCase().includes(searchText.toLowerCase())
+      ),
+    [favoriteNetworks, searchText]
   )
 
   const renderCustomLabel = (title: string, selected: boolean) => {
@@ -66,23 +73,40 @@ export default function NetworkManager({ onShowInfo }: Props) {
     )
   }
 
-  function toggleFavorite(networkName: string) {
-    const network = networks[networkName]
-    network.isFavorite ? unsetFavorite(network) : setFavorite(network)
-  }
-
-  function showInfo(networkName: string) {
-    const network = networks[networkName]
+  function showInfo(chainId: string) {
+    const network = networks[chainId]
     onShowInfo(network)
   }
 
-  function connect(networkName: string) {
+  function connect(networkName: string, chainId: string) {
+    // TODO: remove this once we finish refactoring network stuff
     const activeNetwork = getActiveNetwork(networkName)
     if (activeNetwork) {
       networkContext?.setNetwork(activeNetwork)
     } else {
       ShowSnackBar('Not yet supported')
     }
+
+    // update redux store
+    dispatch(setActive(chainId))
+  }
+
+  const renderNetwork = ({ item }: { item: Network }) => {
+    const isFavorite = favoriteNetworks.some(
+      network => network.chainId === item.chainId
+    )
+
+    return (
+      <NetworkListItem
+        onPress={connect}
+        networkChainId={item.chainId}
+        networkName={item.name}
+        icon={getIcon(item.chainId, 32)} //TODO: set real url
+        isFavorite={isFavorite}
+        onFavorite={() => dispatch(toggleFavorite(item.chainId))}
+        onInfo={showInfo}
+      />
+    )
   }
 
   return (
@@ -98,16 +122,7 @@ export default function NetworkManager({ onShowInfo }: Props) {
         <TabViewAva.Item title={'Favorites'}>
           <FlatList
             data={favorites}
-            renderItem={info => (
-              <NetworkListItem
-                onPress={connect}
-                networkName={info.item.name}
-                icon={getIcon(info.item.name, 32)} //TODO: set real url
-                isFavorite={info.item.isFavorite}
-                onFavorite={toggleFavorite}
-                onInfo={showInfo}
-              />
-            )}
+            renderItem={renderNetwork}
             keyExtractor={item => item.name}
             contentContainerStyle={{ paddingHorizontal: 16 }}
             ListEmptyComponent={
@@ -120,16 +135,7 @@ export default function NetworkManager({ onShowInfo }: Props) {
         <TabViewAva.Item title={'Networks'}>
           <FlatList
             data={mainNets}
-            renderItem={info => (
-              <NetworkListItem
-                onPress={connect}
-                networkName={info.item.name}
-                icon={getIcon(info.item.name, 32)} //TODO: set real url
-                isFavorite={info.item.isFavorite}
-                onFavorite={toggleFavorite}
-                onInfo={showInfo}
-              />
-            )}
+            renderItem={renderNetwork}
             keyExtractor={item => item.name}
             contentContainerStyle={{ paddingHorizontal: 16 }}
             ListEmptyComponent={
@@ -142,16 +148,7 @@ export default function NetworkManager({ onShowInfo }: Props) {
         <TabViewAva.Item title={'Testnets'}>
           <FlatList
             data={testNets}
-            renderItem={info => (
-              <NetworkListItem
-                onPress={connect}
-                networkName={info.item.name}
-                icon={getIcon(info.item.name, 32)} //TODO: set real url
-                isFavorite={info.item.isFavorite}
-                onFavorite={toggleFavorite}
-                onInfo={showInfo}
-              />
-            )}
+            renderItem={renderNetwork}
             keyExtractor={item => item.name}
             contentContainerStyle={{ paddingHorizontal: 16 }}
             ListEmptyComponent={

@@ -1,45 +1,33 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
+import { useSelector, useDispatch } from 'react-redux'
 import AvaLogoSVG from 'components/svg/AvaLogoSVG'
 import AvaButton from 'components/AvaButton'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { Network } from 'repository/NetworksRepo'
-import { ActivityIndicator, View } from 'react-native'
+import { Network, selectActiveNetwork, setActive } from 'store/network'
+import { View } from 'react-native'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
 import FlexSpacer from 'components/FlexSpacer'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import TextFieldBg from 'components/styling/TextFieldBg'
-import { ShowSnackBar } from 'components/Snackbar'
-import { useNetworkContext } from '@avalabs/wallet-react-components'
-import { getActiveNetwork } from 'screens/network/SupportedNetworkMapper'
 
 type Props = {
   network: Network
 }
 
 export default function NetworkDetails({ network }: Props) {
-  const networkContext = useNetworkContext()
-  const connectedNetwork = networkContext?.network?.name?.trim() ?? ''
-  const { theme } = useApplicationContext()
+  const {
+    config: { rpcUrl, explorerURL },
+    chainId,
+    nativeToken
+  } = network
+  const activeNetwork = useSelector(selectActiveNetwork)
+  const dispatch = useDispatch()
 
-  const [loading, setLoading] = useState(false)
-
-  useEffect(resetLoadingFx, [connectedNetwork, loading, network.name])
-
-  function resetLoadingFx() {
-    if (loading && network.name === connectedNetwork) {
-      setLoading(false)
-    }
-  }
+  const isConnected = activeNetwork.chainId === chainId
 
   function connect() {
-    setLoading(true)
-    const activeNetwork = getActiveNetwork(network.name)
-    if (activeNetwork) {
-      networkContext?.setNetwork(activeNetwork)
-    } else {
-      ShowSnackBar('Not yet supported')
-    }
+    dispatch(setActive(chainId))
   }
 
   return (
@@ -50,23 +38,17 @@ export default function NetworkDetails({ network }: Props) {
         <AvaText.Heading2>{network.name}</AvaText.Heading2>
       </View>
       <Space y={40} />
-      <DetailItem title={'Network RPC URL'} value={network.rpcUrl} />
+      <DetailItem title={'Network RPC URL'} value={rpcUrl.c} />
       <Space y={24} />
-      <DetailItem title={'Chain ID'} value={network.chainId} />
+      <DetailItem title={'Chain ID'} value={chainId} />
       <Space y={24} />
-      <DetailItem title={'Native Token'} value={network.nativeToken} />
+      <DetailItem title={'Native Token'} value={nativeToken.name} />
       <Space y={24} />
-      <DetailItem title={'Explorer URL'} value={network.explorerUrl ?? ''} />
+      <DetailItem title={'Explorer URL'} value={explorerURL ?? ''} />
       <FlexSpacer />
-      {loading ? (
-        <ActivityIndicator size="large" color={theme.colorPrimary1} />
-      ) : (
-        <AvaButton.PrimaryLarge
-          disabled={network.name === connectedNetwork}
-          onPress={connect}>
-          {network.name === connectedNetwork ? 'Connected' : 'Connect'}
-        </AvaButton.PrimaryLarge>
-      )}
+      <AvaButton.PrimaryLarge disabled={isConnected} onPress={connect}>
+        {isConnected ? 'Connected' : 'Connect'}
+      </AvaButton.PrimaryLarge>
     </SafeAreaProvider>
   )
 }

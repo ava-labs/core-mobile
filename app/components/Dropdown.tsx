@@ -24,15 +24,14 @@ interface Props<ItemT> {
   selectionRenderItem: (selectedItem: ItemT) => string | React.ReactNode
   width: number
   alignment?: 'flex-start' | 'flex-end' | 'center'
-  preselectedIndex?: number
+  selectedIndex?: number
   optionsRenderItem?: (item: OptionsItemInfo<ItemT>) => React.ReactNode
-  onItemSelected: (selectedItem: ItemT) => boolean | void
+  onItemSelected: (selectedItem: ItemT) => void
   disabled?: boolean
 }
 
 interface OptionsItemInfo<ItemT> {
   item: ItemT
-  isSelected: boolean
 }
 
 /**
@@ -42,9 +41,9 @@ interface OptionsItemInfo<ItemT> {
  *
  * @param data Array of options to be selected
  * @param selectionRenderItem Component to be rendered for selected option
- * @param preselectedIndex Set which item from data shoul be pre-selected
+ * @param selectedIndex Set which item from data shoul be selected
  * @param optionsRenderItem Render item for dropdown options
- * @param onItemSelected On selected option callback. Callback should return false if item should not be selectable.
+ * @param onItemSelected On selected option callback.
  * @param width Set this to max width of rendered items
  * @param alignment How should dropdown options be aligned relative to selected option.
  * @param disabled if set to true, dropdown won't show anything
@@ -52,7 +51,7 @@ interface OptionsItemInfo<ItemT> {
 function DropDown<ItemT>({
   data,
   selectionRenderItem,
-  preselectedIndex = 0,
+  selectedIndex = 0,
   optionsRenderItem,
   onItemSelected,
   width = 150,
@@ -62,9 +61,7 @@ function DropDown<ItemT>({
   const theme = useApplicationContext().theme
   const ref = useRef<PopableManager>(null)
   const [isFilterOpen, setIsFilterOpen] = useState(false)
-  const [selectedItem, setSelectedItem] = useState(
-    data.length ? data[preselectedIndex] : undefined
-  )
+  const selectedItem = data.length ? data[selectedIndex] : undefined
   const selectionItem = selectedItem
     ? selectionRenderItem(selectedItem)
     : undefined
@@ -98,9 +95,7 @@ function DropDown<ItemT>({
     return (
       <AvaButton.Base
         onPress={() => {
-          if (onItemSelected(item.item) !== false) {
-            setSelectedItem(item.item)
-          }
+          onItemSelected(item.item)
           ref?.current?.hide()
           setIsFilterOpen(!isFilterOpen)
         }}>
@@ -128,15 +123,12 @@ function DropDown<ItemT>({
     return (
       <Pressable
         onPress={() => {
-          if (onItemSelected(item.item) !== false) {
-            setSelectedItem(item.item)
-          }
+          onItemSelected(item.item)
           ref?.current?.hide()
           setIsFilterOpen(!isFilterOpen)
         }}>
         {optionsRenderItem?.({
-          item: item.item,
-          isSelected: selectedItem === item.item
+          item: item.item
         })}
       </Pressable>
     )

@@ -26,6 +26,7 @@ import { useNftLoader } from 'screens/nft/useNftLoader'
 import { Covalent } from '@avalabs/covalent-sdk'
 import Config from 'react-native-config'
 import { PortfolioScreenProps } from 'navigation/types'
+import { useIsUIDisabled, UI } from 'hooks/useIsUIDisabled'
 
 type PortfolioProps = {
   tokenList?: TokenWithBalance[]
@@ -33,10 +34,14 @@ type PortfolioProps = {
   handleRefresh?: () => void
   hasZeroBalance?: boolean
   setSelectedToken?: (token: TokenWithBalance) => void
+  shouldDisableManage?: boolean
+  shouldDisableCollectibles?: boolean
 }
 
 // experimenting with container pattern and stable props to try to reduce re-renders
 function PortfolioContainer(): JSX.Element {
+  const manageDisabled = useIsUIDisabled(UI.ManageTokens)
+  const collectiblesDisabled = useIsUIDisabled(UI.Collectibles)
   const { filteredTokenList, loadZeroBalanceList, loadTokenList } =
     useSearchableTokenList()
   const { balanceTotalInUSD } = usePortfolio()
@@ -59,6 +64,8 @@ function PortfolioContainer(): JSX.Element {
         handleRefresh={handleRefresh}
         hasZeroBalance={hasZeroBalance}
         setSelectedToken={setSelectedToken}
+        shouldDisableManage={manageDisabled}
+        shouldDisableCollectibles={collectiblesDisabled}
       />
     </>
   )
@@ -73,8 +80,10 @@ const PortfolioView: FC<PortfolioProps> = memo(
     tokenList,
     loadZeroBalanceList,
     handleRefresh,
-    setSelectedToken
-  }: PortfolioProps) => {
+    setSelectedToken,
+    shouldDisableManage = false,
+    shouldDisableCollectibles = false
+  }) => {
     const listRef = useRef<FlatList>(null)
     const { navigate, addListener, removeListener } =
       useNavigation<PortfolioNavigationProp>()
@@ -121,7 +130,9 @@ const PortfolioView: FC<PortfolioProps> = memo(
     return (
       <SafeAreaProvider style={styles.flex}>
         <PortfolioHeader />
-        <TabViewAva renderCustomLabel={renderCustomLabel}>
+        <TabViewAva
+          renderCustomLabel={renderCustomLabel}
+          shouldDisableTouch={shouldDisableCollectibles}>
           <TabViewAva.Item title={'Tokens'}>
             <View>
               <FlatList
@@ -165,7 +176,8 @@ const PortfolioView: FC<PortfolioProps> = memo(
                       </AvaText.Heading3>
                       <AvaButton.TextMedium
                         textColor={'#0A84FF'}
-                        onPress={manageTokens}>
+                        onPress={manageTokens}
+                        disabled={shouldDisableManage}>
                         Manage
                       </AvaButton.TextMedium>
                     </View>

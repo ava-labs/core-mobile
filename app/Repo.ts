@@ -15,11 +15,6 @@ import {
   BridgeState,
   defaultBridgeState
 } from 'screens/bridge/utils/BridgeState'
-import {
-  Network,
-  NetworksCollection,
-  useNetworksRepo
-} from 'repository/NetworksRepo'
 
 /**
  * Currently we support only one wallet, with multiple accounts.
@@ -37,7 +32,6 @@ const NFTs = 'NFTs_2'
 const VIEW_ONCE_INFORMATION = 'VIEW_ONCE_INFORMATION'
 const PORTFOLIO_TOKEN_LIST = 'PORTFOLIO_TOKEN_LIST_3'
 const PENDING_BRIDGE_TRANSACTIONS = 'PENDING_BRIDGE_TRANSACTIONS'
-const NETWORKS = 'NETWORKS'
 
 /**
  * ViewOnceInformation is used by views that needs to display something for the 1st time one.
@@ -129,11 +123,6 @@ export type Repo = {
     pendingBridgeTransactions: BridgeState
     savePendingBridgeTransactions: (newState: BridgeState) => void
   }
-  networksRepo: {
-    setFavorite: (network: Network) => void
-    unsetFavorite: (network: Network) => void
-    networks: NetworksCollection
-  }
   /**
    * Store any simple user settings here
    */
@@ -160,8 +149,6 @@ export function useRepo(): Repo {
   const { getCharData, getContractInfo, getTokensPrice } = useCoingeckoRepo()
   const [pendingBridgeTransactions, setPendingBridgeTransactions] =
     useState<BridgeState>(defaultBridgeState)
-  const { networks, setNetworks, setFavorite, unsetFavorite } =
-    useNetworksRepo()
 
   useEffect(() => {
     ;(async () => {
@@ -289,7 +276,6 @@ export function useRepo(): Repo {
     setCustomTokens({})
     setUserSettings(new Map())
     setPendingBridgeTransactions(defaultBridgeState)
-    setNetworks({})
     setInitialized(false)
   }
 
@@ -331,57 +317,6 @@ export function useRepo(): Repo {
           : defaultBridgeState
       )
     })
-    setNetworks(
-      await StorageTools.loadFromStorageAsObj<NetworksCollection>(NETWORKS)
-    )
-    //FIXME: remove this
-    setNetworks({
-      'Avalanche Mainnet': {
-        name: 'Avalanche Mainnet',
-        isFavorite: true,
-        isTest: false,
-        chainId: '123',
-        rpcUrl: 'thisistherpcurl.com',
-        explorerUrl: 'thisisanexplorerurl.com',
-        nativeToken: 'AVAX'
-      },
-      'Avalanche FUJI': {
-        name: 'Avalanche FUJI',
-        isFavorite: true,
-        isTest: true,
-        chainId: '123',
-        rpcUrl: 'thisistherpcurl.com',
-        explorerUrl: 'thisisanexplorerurl.com',
-        nativeToken: 'AVAX'
-      },
-      Bitcoin: {
-        name: 'Bitcoin',
-        isFavorite: false,
-        isTest: false,
-        chainId: '123',
-        rpcUrl: 'thisistherpcurl.com',
-        explorerUrl: 'thisisanexplorerurl.com',
-        nativeToken: 'BTC'
-      },
-      BitcoinTest: {
-        name: 'BitcoinTest',
-        isFavorite: false,
-        isTest: true,
-        chainId: '123',
-        rpcUrl: 'thisistherpcurl.com',
-        explorerUrl: 'thisisanexplorerurl.com',
-        nativeToken: 'BTC'
-      },
-      Ethereum: {
-        name: 'Ethereum',
-        isFavorite: false,
-        isTest: false,
-        chainId: '123',
-        rpcUrl: 'thisistherpcurl.com',
-        explorerUrl: 'thisisanexplorerurl.com',
-        nativeToken: 'ETH'
-      }
-    })
   }
 
   return {
@@ -416,11 +351,6 @@ export function useRepo(): Repo {
     pendingBridgeTransactions: {
       pendingBridgeTransactions: pendingBridgeTransactions,
       savePendingBridgeTransactions: savePendingBridgeTransactions
-    },
-    networksRepo: {
-      networks,
-      setFavorite,
-      unsetFavorite
     },
     flush,
     initialized
