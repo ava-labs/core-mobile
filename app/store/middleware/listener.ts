@@ -18,7 +18,7 @@ startListening({
     const state = listenerApi.getState()
     NetworkService.onStorageReady(state)
 
-    // wallet-react-components sets MAINNET as network on app start
+    // wallet-react-components sets MAINNET as the active network on app start
     // we need to set it back to whatever network persisted in our app
     // TODO: remove this once network refactor is done
     const network = selectActiveNetwork(state)
@@ -31,10 +31,10 @@ startListening({
   actionCreator: setActive,
   effect: async (action, listenerApi) => {
     const state = listenerApi.getState()
-    const network = selectActiveNetwork(state)
-    NetworkService.activeNetwork = network
 
     // TODO: remove this once network refactor is done
+    // for now, still need to also set active network in wallet-react-components
+    const network = selectActiveNetwork(state)
     setNetwork(network)
   }
 })

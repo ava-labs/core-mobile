@@ -1,28 +1,13 @@
 import { BlockCypherProvider, JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 import { OnStorageReady } from 'services/types'
 import { RootState } from 'store'
-import {
-  Network,
-  NetworkVM,
-  BITCOIN_NETWORK,
-  selectActiveNetwork
-} from 'store/network'
+import { Network, NetworkVM, BITCOIN_NETWORK } from 'store/network'
 
 export class NetworkService implements OnStorageReady {
-  // we might not need to store active network here since the data is already in the redux store
-  // leaving it here for now
-  private _activeNetwork?: Network
-
-  get activeNetwork(): Network | undefined {
-    return this._activeNetwork
-  }
-
-  set activeNetwork(network: Network | undefined) {
-    this._activeNetwork = network
-  }
-
-  onStorageReady(state: RootState): void {
-    this.activeNetwork = selectActiveNetwork(state)
+  // leaving this empty method for now
+  // if it turns out we don't need it, we can remove it later
+  onStorageReady(_state: RootState): void {
+    // do nothing
   }
 
   getProviderForNetwork(network: Network, numberOfRequestsPerBatch = 40) {
