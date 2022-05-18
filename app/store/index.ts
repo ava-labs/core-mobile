@@ -12,6 +12,7 @@ import {
   REGISTER
 } from 'redux-persist'
 import network from './network'
+import AccountsStore from './accounts/accountsStore'
 import balance, { setBalance } from './balance'
 import app, { onRehydrationComplete } from './app'
 import { listener } from './middleware/listener'
@@ -21,13 +22,14 @@ const persistActions = [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER]
 const rootReducer = combineReducers({
   app,
   network,
-  balance
+  balance,
+  AccountsStore
 })
 
 const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
-  whitelist: ['network']
+  whitelist: ['network', 'AccountsStore']
 }
 
 const persistedReducer = persistReducer(persistConfig, rootReducer)

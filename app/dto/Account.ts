@@ -1,9 +1,6 @@
-import { Observable } from 'rxjs'
-
 export type Account = {
   index: number
   title: string
+  addressBtc: string
   address: string
-  active: boolean
-  balance$: Observable<string>
 }
