@@ -1,12 +1,5 @@
 import React, { useCallback, useEffect, useRef } from 'react'
-import {
-  Animated,
-  Easing,
-  FlatList,
-  ListRenderItemInfo,
-  Pressable,
-  View
-} from 'react-native'
+import { Animated, Easing, FlatList, Pressable, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import HeaderAccountSelector from 'components/HeaderAccountSelector'
 import { Account } from 'dto/Account'
@@ -14,9 +7,16 @@ import AccountItem from 'screens/portfolio/account/AccountItem'
 import AvaText from 'components/AvaText'
 import Separator from 'components/Separator'
 import AvaButton from 'components/AvaButton'
-import { useAccountsContext } from '@avalabs/wallet-react-components'
 import { useNavigation } from '@react-navigation/native'
 import { ShowSnackBar } from 'components/Snackbar'
+import { useSelector } from 'react-redux'
+import {
+  selectAccounts,
+  selectActiveAccount
+} from 'store/accounts/accountsStore'
+import { activateAccount } from 'services/accounts/AccountsService'
+import { store } from 'store'
+import { useAccountsContext } from '@avalabs/wallet-react-components'
 
 const Y_START = -400
 
@@ -26,11 +26,10 @@ function AccountDropdown({
   onAddEditAccounts: () => void
 }): JSX.Element {
   const { theme } = useApplicationContext()
-  const { accounts, setActiveAccount } =
-    useApplicationContext().repo.accountsRepo
-  const accountsContext = useAccountsContext()
+  const accounts = useSelector(selectAccounts)
   const { goBack } = useNavigation()
   const animTranslateY = useRef(new Animated.Value(Y_START)).current
+  const accountsContext = useAccountsContext()
 
   useEffect(() => {
     const compositeAnimation1 = Animated.timing(animTranslateY, {
@@ -53,24 +52,11 @@ function AccountDropdown({
     compositeAnimation1.start(() => goBack())
   }, [animTranslateY, goBack])
 
-  const renderAccountItem = useCallback(
-    (item: ListRenderItemInfo<Account>) => {
-      const account = item.item
-      return (
-        <AccountItem
-          key={account.title}
-          account={account}
-          selected={account.active}
-          onSelectAccount={accountIndex => {
-            accountsContext.activateAccount(accountIndex)
-            setActiveAccount(accountIndex)
-            animatedDismiss()
-          }}
-        />
-      )
-    },
-    [accountsContext, animatedDismiss, setActiveAccount]
-  )
+  function onSelectAccount(accountIndex: number) {
+    accountsContext.activateAccount(accountIndex)
+    activateAccount(accountIndex, store)
+    animatedDismiss()
+  }
 
   return (
     <Pressable style={{ flex: 1 }} onPress={goBack}>
@@ -113,8 +99,13 @@ function AccountDropdown({
             borderRadius: 12
           }}>
           <FlatList
-            data={[...accounts.values()]}
-            renderItem={renderAccountItem}
+            data={[...Object.values(accounts)]}
+            renderItem={info => (
+              <AccountItemRenderer
+                account={info.item}
+                onSelectAccount={onSelectAccount}
+              />
+            )}
           />
           <Separator />
           <AvaButton.Base onPress={onAddEditAccounts}>
@@ -130,6 +121,24 @@ function AccountDropdown({
         </Animated.View>
       </View>
     </Pressable>
+  )
+}
+
+function AccountItemRenderer({
+  account,
+  onSelectAccount
+}: {
+  account: Account
+  onSelectAccount: (accountIndex: number) => void
+}) {
+  const activeAccount = useSelector(selectActiveAccount)
+  return (
+    <AccountItem
+      key={account.title}
+      account={account}
+      selected={account.index === activeAccount?.index}
+      onSelectAccount={onSelectAccount}
+    />
   )
 }
 

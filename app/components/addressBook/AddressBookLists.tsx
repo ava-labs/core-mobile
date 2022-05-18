@@ -7,6 +7,8 @@ import { AccountId, AddrBookItemType, Contact, UID } from 'Repo'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Account } from 'dto/Account'
 import AddressBookItem from 'components/addressBook/AddressBookItem'
+import { useSelector } from 'react-redux'
+import { selectAccounts } from 'store/accounts/accountsStore'
 
 export type AddressBookListsProps = {
   onContactSelected: (item: Contact | Account, type: AddrBookItemType) => void
@@ -19,7 +21,7 @@ export default function AddressBookLists({
   const { theme } = useApplicationContext()
   const { recentContacts, addressBook } =
     useApplicationContext().repo.addressBookRepo
-  const { accounts } = useApplicationContext().repo.accountsRepo
+  const accounts = useSelector(selectAccounts)
 
   const addressBookContacts = useMemo(
     () => [...addressBook.values()],
@@ -32,7 +34,7 @@ export default function AddressBookLists({
         switch (contact.type) {
           case 'account':
             return {
-              item: accounts.get(contact.id as AccountId)!,
+              item: accounts[contact.id as AccountId]!,
               type: contact.type
             }
           case 'contact':
@@ -99,7 +101,7 @@ export default function AddressBookLists({
       </TabViewAva.Item>
       <TabViewAva.Item title={'My accounts'}>
         <FlatList
-          data={[...accounts.values()]}
+          data={[...Object.values(accounts)]}
           renderItem={info =>
             renderItem({ item: info.item, type: 'account' }, (item, type) =>
               onContactSelected(item, type)
