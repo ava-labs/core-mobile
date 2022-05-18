@@ -1,6 +1,4 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Account } from 'dto/Account'
-import AsyncStorage from '@react-native-async-storage/async-storage'
 import { CustomTokens } from 'screens/tokenManagement/hooks/useAddCustomToken'
 import { NFTItemData } from 'screens/nft/NftCollection'
 import StorageTools from 'repository/StorageTools'
@@ -15,7 +13,6 @@ import {
  *
  * Suffix "_<increasing number>" is for destructive migration of database. In the future, we want gracefully migrate data with no data loss.
  */
-const WALLET_ID = 'WALLET_ID'
 const USER_SETTINGS = 'USER_SETTINGS'
 const ADDR_BOOK = 'ADDR_BOOK_1'
 const ADDR_BOOK_RECENTS = 'ADDR_BOOK_RECENTS_1'
@@ -69,11 +66,6 @@ export type Repo = {
     watchlistFavorites: string[]
     saveWatchlistFavorites: (favorites: string[]) => void
   }
-  accountsRepo: {
-    accounts: Map<AccountId, Account>
-    saveAccounts: (accounts: Map<AccountId, Account>) => void
-    setActiveAccount: (accountIndex: number) => void
-  }
   nftRepo: {
     nfts: Map<UID, NFTItemData>
     saveNfts: (nfts: Map<UID, NFTItemData>) => void
@@ -105,7 +97,6 @@ export type Repo = {
 
 export function useRepo(): Repo {
   const [initialized, setInitialized] = useState(false)
-  const [accounts, setAccounts] = useState<Map<AccountId, Account>>(new Map())
   const [nfts, setNfts] = useState<Map<UID, NFTItemData>>(new Map())
   const [addressBook, setAddressBook] = useState<Map<UID, Contact>>(new Map())
   const [recentContacts, setRecentContacts] = useState<RecentContact[]>([])
@@ -140,18 +131,6 @@ export function useRepo(): Repo {
     },
     [userSettings]
   )
-
-  const saveAccounts = (accounts: Map<AccountId, Account>) => {
-    setAccounts(new Map(accounts))
-    saveAccountsToStorage(WALLET_ID, accounts).catch(reason =>
-      console.error(reason)
-    )
-  }
-
-  const setActiveAccount = (accountIndex: number) => {
-    accounts.forEach(acc => (acc.active = acc.index === accountIndex))
-    saveAccounts(accounts)
-  }
 
   const saveAddressBook = (addrBook: Map<UID, Contact>) => {
     setAddressBook(new Map(addrBook))
@@ -215,7 +194,6 @@ export function useRepo(): Repo {
    * Clear hook states
    */
   const flush = () => {
-    setAccounts(new Map())
     setAddressBook(new Map())
     setNfts(new Map())
     setRecentContacts([])
@@ -231,9 +209,6 @@ export function useRepo(): Repo {
       await StorageTools.loadFromStorageAsMap<Setting, SettingValue>(
         USER_SETTINGS
       )
-    )
-    setAccounts(
-      await StorageTools.loadFromStorageAsMap<AccountId, Account>(WALLET_ID)
     )
     setNfts(await StorageTools.loadFromStorageAsMap<UID, NFTItemData>(NFTs))
     setAddressBook(
@@ -267,7 +242,6 @@ export function useRepo(): Repo {
   }
 
   return {
-    accountsRepo: { accounts, saveAccounts, setActiveAccount },
     nftRepo: { nfts, saveNfts },
     addressBookRepo: {
       addressBook,
@@ -292,25 +266,5 @@ export function useRepo(): Repo {
     },
     flush,
     initialized
-  }
-}
-
-const omitBalance = (key: string, value: any) => {
-  if (key === 'balance$') {
-    return undefined
-  } else {
-    return value
-  }
-}
-
-async function saveAccountsToStorage(
-  walletId: string,
-  accToStore: Map<AccountId, Account>
-) {
-  const stringifiedAccounts = JSON.stringify([...accToStore], omitBalance)
-  if (stringifiedAccounts === undefined) {
-    console.error('Could not stringify accounts: ', accToStore)
-  } else {
-    await AsyncStorage.setItem(walletId, stringifiedAccounts)
   }
 }

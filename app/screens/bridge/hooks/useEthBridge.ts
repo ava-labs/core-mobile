@@ -12,10 +12,7 @@ import { BridgeAdapter } from 'screens/bridge/hooks/useBridge'
 import { useBridgeContext } from 'contexts/BridgeContext'
 import { useSingularAssetBalanceEVM } from 'screens/bridge/hooks/useSingularAssetBalanceEVM'
 import { useAssetBalancesEVM } from 'screens/bridge/hooks/useAssetBalancesEVM'
-import {
-  useWalletContext,
-  useWalletStateContext
-} from '@avalabs/wallet-react-components'
+import { useWalletStateContext } from '@avalabs/wallet-react-components'
 import { getEthereumProvider } from 'screens/bridge/utils/getEthereumProvider'
 import { useCallback, useState } from 'react'
 import { useSelector } from 'react-redux'
@@ -46,7 +43,6 @@ export function useEthBridge(amount: Big, bridgeFee: Big): BridgeAdapter {
   const { addresses } = useWalletStateContext()!
   const network = useSelector(selectActiveNetwork)
   const config = useBridgeConfig().config
-  const wallet = useWalletContext().wallet
   const ethereumProvider = getEthereumProvider(network)
   const hasEnoughForNetworkFee = useHasEnoughForGas(
     isEthereumBridge ? addresses.addrC : undefined,
@@ -60,7 +56,7 @@ export function useEthBridge(amount: Big, bridgeFee: Big): BridgeAdapter {
   const receiveAmount = amount.gt(minimum) ? amount.minus(bridgeFee) : BIG_ZERO
 
   const transfer = useCallback(async () => {
-    if (!currentAssetData || !wallet || !network || !config) {
+    if (!currentAssetData || !network || !config) {
       return Promise.reject()
     }
 

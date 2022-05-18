@@ -12,7 +12,6 @@ import {
 import { useLoadBridgeConfig } from 'screens/bridge/hooks/useLoadBridgeConfig'
 import Big from 'big.js'
 import { TransactionResponse } from '@ethersproject/abstract-provider'
-import { useWalletContext } from '@avalabs/wallet-react-components'
 import { useTransferAsset } from 'screens/bridge/hooks/useTransferAsset'
 import {
   BTCTransactionResponse,
@@ -28,6 +27,7 @@ import useSignAndIssueBtcTx from 'screens/bridge/hooks/useSignAndIssueBtcTx'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
+import { selectActiveAccount } from 'store/accounts/accountsStore'
 import { ChainId, Network } from '@avalabs/chains-sdk'
 
 export enum TransferEventType {
@@ -74,7 +74,7 @@ function LocalBridgeProvider({ children }: { children: any }) {
 
   const config = useBridgeConfig().config
   const network = useSelector(selectActiveNetwork)
-  const wallet = useWalletContext().wallet
+  const activeAccount = useSelector(selectActiveAccount)
   const { pendingBridgeTransactions, savePendingBridgeTransactions } =
     useApplicationContext().repo.pendingBridgeTransactions
 
@@ -197,7 +197,7 @@ function LocalBridgeProvider({ children }: { children: any }) {
   async function createBridgeTransaction(
     partialBridgeTransaction: PartialBridgeTransaction
   ) {
-    if (!config || !network || !wallet) {
+    if (!config || !network || !activeAccount) {
       return Promise.reject('Wallet not ready')
     }
 
@@ -210,9 +210,11 @@ function LocalBridgeProvider({ children }: { children: any }) {
       symbol
     } = partialBridgeTransaction
 
-    const addressBTC = wallet.getAddressBTC(isMainnet ? 'bitcoin' : 'testnet')
-    const addressC = wallet.getAddressC()
+    const addressC = activeAccount.address //todo: before -> wallet.getAddressBTC(isMainnet ? 'bitcoin' : 'testnet'); why this "bitcoin" and "testnet"?
+    const addressBTC = activeAccount.addressBtc
 
+    if (!addressBTC) return { error: 'missing addressBTC' }
+    if (!addressC) return { error: 'missing addressC' }
     if (!sourceChain) return { error: 'missing sourceChain' }
     if (!sourceTxHash) return { error: 'missing sourceTxHash' }
     if (!sourceStartedAt) return { error: 'missing sourceStartedAt' }

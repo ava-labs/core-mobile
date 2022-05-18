@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
@@ -8,6 +8,8 @@ import AvaButton from 'components/AvaButton'
 import InputText from 'components/InputText'
 import { Row } from 'components/Row'
 import TokenAddress from 'components/TokenAddress'
+import { setAccountTitle } from 'services/accounts/AccountsService'
+import { store } from 'store'
 
 type Props = {
   account: Account
@@ -25,15 +27,14 @@ function AccountItem({
   blurred
 }: Props): JSX.Element {
   const context = useApplicationContext()
-  const { accounts, saveAccounts } = useApplicationContext().repo.accountsRepo
   const [editAccount, setEditAccount] = useState(false)
   const [editedAccountTitle, setEditedAccountTitle] = useState(account.title)
   const [accBalance, setAccBalance] = useState('')
 
-  useEffect(() => {
-    const sub = account.balance$.subscribe(value => setAccBalance(value))
-    return () => sub.unsubscribe()
-  }, [account])
+  // useEffect(() => {
+  //   const sub = account.balance$.subscribe(value => setAccBalance(value))
+  //   return () => sub.unsubscribe()
+  // }, [account])
 
   const bgColor = useMemo(() => {
     if (selected) {
@@ -55,13 +56,9 @@ function AccountItem({
   const saveAccountTitle = useCallback(
     (newAccountName: string) => {
       setEditAccount(false)
-      const accToUpdate = accounts.get(account.index)
-      if (accToUpdate) {
-        accToUpdate.title = newAccountName
-        saveAccounts(accounts)
-      }
+      setAccountTitle(newAccountName, account.index, store)
     },
-    [account.index, accounts, saveAccounts]
+    [account.index, setAccountTitle]
   )
 
   return (

@@ -10,7 +10,6 @@ import React, {
 import {
   ERC20WithBalance,
   SendHookError,
-  useAccountsContext,
   useWalletContext,
   useWalletStateContext
 } from '@avalabs/wallet-react-components'
@@ -29,6 +28,8 @@ import { BehaviorSubject, firstValueFrom, of, Subject } from 'rxjs'
 import { useSend } from 'screens/send/useSend'
 import { TokenWithBalance } from 'store/balance'
 import { TokenSymbol } from 'store/network'
+import { useSelector } from 'react-redux'
+import { selectActiveAccount } from 'store/accounts/accountsStore'
 
 export interface SendTokenContextState {
   sendToken: TokenWithBalance | undefined
@@ -50,9 +51,9 @@ export interface SendTokenContextState {
 export const SendTokenContext = createContext<SendTokenContextState>({} as any)
 
 export const SendTokenContextProvider = ({ children }: { children: any }) => {
-  const { theme, repo } = useApplicationContext()
+  const { theme } = useApplicationContext()
   const { wallet } = useWalletContext()
-  const { activeAccount } = useAccountsContext()
+  const activeAccount = useSelector(selectActiveAccount)
   const { avaxPrice, erc20Tokens } = useWalletStateContext()!
   const [sendToken, setSendToken] = useState<TokenWithBalance | undefined>(
     undefined
@@ -110,10 +111,8 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
   }, [balanceAfterTrx])
 
   useEffect(() => {
-    setSendFromAddress(activeAccount!.wallet.getAddressC())
-    setSendFromTitle(
-      repo.accountsRepo.accounts.get(activeAccount?.index ?? -1)?.title ?? '-'
-    )
+    setSendFromAddress(activeAccount?.address ?? '')
+    setSendFromTitle(activeAccount?.title ?? '-')
   }, [activeAccount])
 
   useEffect(() => {
