@@ -10,16 +10,17 @@ import {
   checkAndValidateSendNft,
   SendHookError,
   sendNftSubmit,
-  useAccountsContext,
   useWalletStateContext
 } from '@avalabs/wallet-react-components'
-import { useApplicationContext } from 'contexts/ApplicationContext'
 import { bnToAvaxC, numberToBN } from '@avalabs/avalanche-wallet-sdk'
 import { mustNumber, mustValue } from 'utils/JsTools'
 import { BN } from 'avalanche'
 import { BehaviorSubject, firstValueFrom, of } from 'rxjs'
 import { NFTItemData } from 'screens/nft/NftCollection'
 import { Alert } from 'react-native'
+import { walletServiceInstance } from 'services/wallet/WalletService'
+import { useSelector } from 'react-redux'
+import { selectActiveAccount } from 'store/accounts/accountsStore'
 
 export interface SendNFTContextState {
   sendToken: NFTItemData
@@ -43,8 +44,7 @@ export const SendNFTContextProvider = ({
   nft: NFTItemData
   children: any
 }) => {
-  const { repo } = useApplicationContext()
-  const { activeAccount } = useAccountsContext()
+  const activeAccount = useSelector(selectActiveAccount)
   const { avaxPrice } = useWalletStateContext()!
   const [sendToken] = useState<NFTItemData>(nft)
 
@@ -70,7 +70,7 @@ export const SendNFTContextProvider = ({
   const [sdkError, setSdkError] = useState<SendHookError | undefined>(undefined)
 
   useEffect(() => {
-    if (!sendToken || !activeAccount?.wallet) {
+    if (!sendToken || !activeAccount) {
       return
     }
     const subscription = checkAndValidateSendNft(
@@ -78,7 +78,7 @@ export const SendNFTContextProvider = ({
       Number.parseInt(sendToken.token_id, 10),
       customGasPrice$.current,
       of(sendToAddress),
-      of(activeAccount.wallet),
+      of(walletServiceInstance.getEvmWallet(activeAccount.index)), //fixme
       gasLimit$.current
     ).subscribe(value => {
       setCanSubmit(value.canSubmit ?? false)
@@ -90,16 +90,14 @@ export const SendNFTContextProvider = ({
     return () => {
       return subscription.unsubscribe()
     }
-  }, [sendToken, sendToAddress])
+  }, [sendToken, sendToAddress, activeAccount])
 
   useEffect(() => {
     if (!activeAccount) {
       return
     }
-    setSendFromAddress(activeAccount.wallet.getAddressC())
-    setSendFromTitle(
-      repo.accountsRepo.accounts.get(activeAccount?.index ?? -1)?.title ?? '-'
-    )
+    setSendFromAddress(activeAccount.address)
+    setSendFromTitle(activeAccount.title)
   }, [activeAccount])
 
   useEffect(() => {
@@ -139,7 +137,7 @@ export const SendNFTContextProvider = ({
     sendNftSubmit(
       nft.collection.contract_address,
       Number.parseInt(sendToken.token_id, 10),
-      Promise.resolve(activeAccount?.wallet),
+      Promise.resolve(walletServiceInstance.getEvmWallet(activeAccount!.index)), //fixme
       sendToAddress,
       firstValueFrom(customGasPrice$.current),
       gasLimit

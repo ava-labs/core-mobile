@@ -1,5 +1,4 @@
 import { GasPrice } from 'utils/GasPriceHook'
-import { WalletType } from '@avalabs/avalanche-wallet-sdk'
 import Web3 from 'web3'
 import { Allowance } from 'paraswap/build/types'
 import { OptimalRate } from 'paraswap-core'
@@ -19,7 +18,15 @@ export async function performSwap(
     gasLimit?: any
     gasPrice?: GasPrice
   },
-  wallet?: WalletType
+  userAddress: string,
+  sendCustomTx: (
+    gasPrice: BN,
+    gasLimit: number,
+    data?: string | undefined,
+    to?: string | undefined,
+    value?: string | undefined,
+    nonce?: number | undefined
+  ) => Promise<string>
 ) {
   log('~~~~~~~~~ perform swap')
   const { srcAmount, destAmount, priceRoute, gasLimit, gasPrice } = request
@@ -35,9 +42,9 @@ export async function performSwap(
     }
   }
 
-  if (!wallet) {
+  if (!userAddress) {
     return {
-      error: 'no wallet on request'
+      error: 'no userAddress on request'
     }
   }
 
@@ -66,7 +73,6 @@ export async function performSwap(
   const buildOptions = undefined,
     partnerAddress = undefined,
     partner = 'Avalanche',
-    userAddress = (wallet as WalletType).getAddressC(),
     receiver = undefined,
     permit = undefined,
     deadline = undefined,
@@ -110,7 +116,7 @@ export async function performSwap(
        */
       (allowance as Allowance).tokenAddress
         ? (Promise.resolve([]) as any)
-        : (wallet as WalletType).sendCustomEvmTx(
+        : sendCustomTx(
             (gasPrice as GasPrice).bn,
             Number(gasLimit),
             contract.methods.approve(spender, srcAmount).encodeABI(),
@@ -170,7 +176,7 @@ export async function performSwap(
   }
 
   const [swapTxHash, txError] = await resolve(
-    (wallet as WalletType).sendCustomEvmTx(
+    sendCustomTx(
       (gasPrice as GasPrice).bn,
       Number(txBuildData.gas),
       txBuildData.data,

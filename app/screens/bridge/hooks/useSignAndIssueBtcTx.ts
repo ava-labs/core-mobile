@@ -1,19 +1,23 @@
 import { issueRawTx, signPsbt, useBridgeConfig } from '@avalabs/bridge-sdk'
-import { useWalletContext } from '@avalabs/wallet-react-components'
 import * as bitcoin from 'bitcoinjs-lib'
-import { MnemonicWallet } from '@avalabs/avalanche-wallet-sdk'
+import { useSelector } from 'react-redux'
+import { selectActiveNetwork } from 'store/network'
+import { walletServiceInstance } from 'services/wallet/WalletService'
+import { selectActiveAccount } from 'store/accounts/accountsStore'
 
 export default function useSignAndIssueBtcTx() {
   const config = useBridgeConfig().config
-  const wallet = useWalletContext().wallet as MnemonicWallet
+  const activeAccount = useSelector(selectActiveAccount)
+  const activeNetwork = useSelector(selectActiveNetwork)
 
   async function signAndIssueBtcTx(unsignedHex: string) {
-    if (!config || !wallet) {
+    if (!config || !activeAccount) {
       return Promise.reject('Wallet not ready')
     }
     const psbt = bitcoin.Psbt.fromHex(unsignedHex)
     const signedTx = signPsbt(
-      wallet?.evmWallet?.getPrivateKeyHex(),
+      walletServiceInstance.getEvmWallet(activeAccount.index, activeNetwork)
+        .privateKey,
       psbt
     ).extractTransaction()
 
