@@ -56,15 +56,6 @@ export type TokenWithBalance =
   | TokenWithBalanceERC20
   | TokenWithBalanceERC721
 
-// export type TokenWithBalance = {
-//
-
-//   isNetworkToken: boolean
-
-//   // network token properties
-//   coingeckoId?: string
-// }
-
 export type Balance = {
   accountIndex: number
   chainId: number
