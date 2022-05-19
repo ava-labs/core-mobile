@@ -5,10 +5,7 @@ import React, {
   useEffect,
   useState
 } from 'react'
-import {
-  useWalletContext,
-  useWalletStateContext
-} from '@avalabs/wallet-react-components'
+import { useWalletStateContext } from '@avalabs/wallet-react-components'
 import { getSwapRate } from 'swap/getSwapRate'
 import BN from 'bn.js'
 import {
@@ -24,6 +21,8 @@ import { map } from 'rxjs/operators'
 import { performSwap } from 'swap/performSwap'
 import { OptimalRate } from 'paraswap-core'
 import moment from 'moment'
+import { useSelector } from 'react-redux'
+import { selectActiveAccount } from 'store/accounts/accountsStore'
 import { TokenWithBalance } from 'store/balance'
 
 export interface SwapEntry {
@@ -64,7 +63,7 @@ export interface SwapContextState {
 export const SwapContext = createContext<SwapContextState>({} as any)
 
 export const SwapContextProvider = ({ children }: { children: any }) => {
-  const { wallet } = useWalletContext()
+  const activeAccount = useSelector(selectActiveAccount)
   const { avaxPrice } = useWalletStateContext()!
   const [srcToken, setSrcToken] = useState<TokenWithBalance>()
   const [srcAmount, setSrcAmount] = useState<number>(0)
@@ -187,6 +186,9 @@ export const SwapContextProvider = ({ children }: { children: any }) => {
     if (!priceRoute) {
       throw Error('no price route')
     }
+    if (!activeAccount) {
+      throw Error('wallet not ready')
+    }
 
     const { result, error } = await performSwap(
       {
@@ -199,7 +201,8 @@ export const SwapContextProvider = ({ children }: { children: any }) => {
           value: gasPriceNanoAvax.toString()
         }
       },
-      wallet
+      activeAccount.address,
+      sendCustomTx //fixme
     )
     if (error) {
       throw Error(error)
