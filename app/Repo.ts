@@ -223,7 +223,8 @@ export function useRepo(): Repo {
       await StorageTools.loadFromStorageAsArray<string>(WATCHLIST_FAVORITES)
     )
     setCustomTokens(
-      await StorageTools.loadFromStorageAsObj<CustomTokens>(CUSTOM_TOKENS)
+      (await StorageTools.loadFromStorageAsObj<CustomTokens>(CUSTOM_TOKENS)) ??
+        {}
     )
     setViewOnceInfo(
       await StorageTools.loadFromStorageAsArray<ViewOnceInformation>(
@@ -234,7 +235,7 @@ export function useRepo(): Repo {
       PENDING_BRIDGE_TRANSACTIONS
     ).then(value => {
       setPendingBridgeTransactions(
-        'bridgeTransactions' in value
+        value && 'bridgeTransactions' in value
           ? (value as BridgeState)
           : defaultBridgeState
       )
