@@ -69,12 +69,12 @@ export default function NetworkManager({ onShowInfo }: Props) {
     )
   }
 
-  function showInfo(chainId: string) {
+  function showInfo(chainId: number) {
     const network = networks[chainId]
     onShowInfo(network)
   }
 
-  function connect(chainId: string) {
+  function connect(chainId: number) {
     dispatch(setActive(chainId))
   }
 

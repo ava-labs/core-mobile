@@ -46,7 +46,7 @@ export enum NetworkVM {
 export type Network = {
   config: NetworkConfig
   name: string
-  chainId: string
+  chainId: number
   nativeToken: NativeToken
   vm: NetworkVM
   platformId: string
@@ -56,7 +56,7 @@ export type Network = {
 export const MAINNET_NETWORK: Network = {
   config: MainnetConfig,
   name: 'Avalanche Mainnet',
-  chainId: '43114',
+  chainId: 43114,
   nativeToken: AVAX_TOKEN,
   vm: NetworkVM.EVM,
   platformId: AVALANCHE_PLATFORM_ID,
@@ -66,7 +66,7 @@ export const MAINNET_NETWORK: Network = {
 export const FUJI_NETWORK: Network = {
   config: TestnetConfig,
   name: 'Avalanche FUJI',
-  chainId: '43113',
+  chainId: 43113,
   nativeToken: AVAX_TOKEN,
   vm: NetworkVM.EVM,
   platformId: AVALANCHE_PLATFORM_ID,
@@ -76,7 +76,7 @@ export const FUJI_NETWORK: Network = {
 export const BITCOIN_NETWORK: Network = {
   config: MainnetConfig,
   name: 'Bitcoin Mainnet',
-  chainId: 'btc',
+  chainId: -1,
   nativeToken: BTC_TOKEN,
   vm: NetworkVM.BITCOIN,
   platformId: NULL_PLATFORM_ID,
@@ -90,7 +90,7 @@ export const supportedNetworks = {
 }
 
 export type NetworkState = {
-  networks: Record<string, Network>
-  favorites: string[]
-  active: string
+  networks: Record<number, Network>
+  favorites: number[]
+  active: number
 }

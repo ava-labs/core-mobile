@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { setNetwork } from '@avalabs/wallet-react-components'
-import { onStorageReady } from 'store/actions'
+import { onRehydrationComplete } from 'store/actions'
 import { AppStartListening } from 'store/middleware/listener'
 import { RootState } from '../index'
 import {
@@ -25,10 +25,10 @@ export const networkSlice = createSlice({
   name: 'network',
   initialState,
   reducers: {
-    setActive: (state, action: PayloadAction<string>) => {
+    setActive: (state, action: PayloadAction<number>) => {
       state.active = action.payload
     },
-    toggleFavorite: (state, action: PayloadAction<string>) => {
+    toggleFavorite: (state, action: PayloadAction<number>) => {
       const chainId = action.payload
       if (!state.favorites.includes(chainId)) {
         // set favorite
@@ -57,7 +57,7 @@ export const { setActive, toggleFavorite } = networkSlice.actions
 // listeners
 export const addNetworkListeners = (startListening: AppStartListening) => {
   startListening({
-    actionCreator: onStorageReady,
+    actionCreator: onRehydrationComplete,
     effect: async (action, listenerApi) => {
       const state = listenerApi.getState()
 
@@ -65,7 +65,7 @@ export const addNetworkListeners = (startListening: AppStartListening) => {
       // wallet-react-components sets MAINNET as the active network on app start
       // we need to set it back to whatever network persisted in our app
       const network = selectActiveNetwork(state)
-      setNetwork(network)
+      setNetwork(network as any)
     }
   })
 
@@ -77,7 +77,7 @@ export const addNetworkListeners = (startListening: AppStartListening) => {
       // TODO: remove this once network refactor is done
       // for now, still need to also set active network in wallet-react-components
       const network = selectActiveNetwork(state)
-      setNetwork(network)
+      setNetwork(network as any)
     }
   })
 }

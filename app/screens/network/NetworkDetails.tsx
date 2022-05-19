@@ -40,7 +40,7 @@ export default function NetworkDetails({ network }: Props) {
       <Space y={40} />
       <DetailItem title={'Network RPC URL'} value={rpcUrl.c} />
       <Space y={24} />
-      <DetailItem title={'Chain ID'} value={chainId} />
+      <DetailItem title={'Chain ID'} value={chainId.toString()} />
       <Space y={24} />
       <DetailItem title={'Native Token'} value={nativeToken.name} />
       <Space y={24} />
