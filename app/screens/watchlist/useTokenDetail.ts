@@ -1,12 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
-import {
-  TokenWithBalance,
-  useWalletStateContext
-} from '@avalabs/wallet-react-components'
+import { useWalletStateContext } from '@avalabs/wallet-react-components'
 import useInAppBrowser from 'hooks/useInAppBrowser'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { CoinsContractInfoResponse } from '@avalabs/coingecko-sdk'
 import { CG_AVAX_TOKEN_ID } from 'screens/watchlist/WatchlistView'
+import { TokenWithBalance } from 'store/balance'
 
 export function useTokenDetail(tokenAddress: string) {
   const { repo } = useApplicationContext()

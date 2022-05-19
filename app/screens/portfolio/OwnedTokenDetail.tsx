@@ -6,9 +6,7 @@ import AvaListItem from 'components/AvaListItem'
 import Avatar from 'components/Avatar'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
-import { getTokenUID } from 'utils/TokenTools'
 import {
-  TokenWithBalance,
   TransactionNormal,
   TransactionERC20
 } from '@avalabs/wallet-react-components'
@@ -20,6 +18,7 @@ import {
   BridgeTransactionStatusParams
 } from 'navigation/types'
 import ActivityList from 'screens/shared/ActivityList'
+import { TokenWithBalance } from 'store/balance'
 
 type ScreenProps = WalletScreenProps<
   typeof AppNavigation.Wallet.OwnedTokenDetail
@@ -47,7 +46,7 @@ const OwnedTokenDetail: FC = () => {
 
   function loadToken() {
     if (filteredTokenList) {
-      const result = filteredTokenList.filter(tk => getTokenUID(tk) === tokenId)
+      const result = filteredTokenList.filter(tk => tk.symbol === tokenId)
       if (result.length > 0) {
         setToken(result[0])
       }
@@ -73,7 +72,7 @@ const OwnedTokenDetail: FC = () => {
             <Avatar.Custom
               name={token?.name ?? ''}
               symbol={token?.symbol}
-              logoUri={token?.logoURI}
+              logoUri={token?.logoUri}
               size={40}
             />
           }

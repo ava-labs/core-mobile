@@ -25,6 +25,7 @@
     "@avalabs/avalanche-wallet-sdk": "0.17.1",
     "@avalabs/blizzard-sdk": "2.4.0-alpha.26",
     "@avalabs/bridge-sdk": "2.3.0-alpha.5",
+    "@avalabs/chains-sdk": "2.4.0-alpha.34",
     "@avalabs/coingecko-sdk": "2.4.0-alpha.26",
     "@avalabs/token-prices-sdk": "2.4.0-alpha.26",
     "@avalabs/covalent-sdk": "2.0.0",

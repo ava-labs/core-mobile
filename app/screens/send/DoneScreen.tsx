@@ -7,7 +7,8 @@ import { Space } from 'components/Space'
 import ClearSVG from 'components/svg/ClearSVG'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useSelector } from 'react-redux'
-import { selectActiveNetwork, FUJI_NETWORK } from 'store/network'
+import { selectActiveNetwork } from 'store/network'
+import { ChainId } from '@avalabs/chains-sdk'
 
 interface DoneProps {
   transactionId: string
@@ -23,7 +24,7 @@ export default function DoneScreen({
   const [explorerUrl, setExplorerUrl] = useState<string>()
 
   useEffect(() => {
-    const isFuji = network.chainId === FUJI_NETWORK.chainId
+    const isFuji = network.chainId === ChainId.AVALANCHE_TESTNET_ID
     setExplorerUrl(
       `https://${isFuji ? 'testnet.' : ''}snowtrace.io/tx/${transactionId}`
     )

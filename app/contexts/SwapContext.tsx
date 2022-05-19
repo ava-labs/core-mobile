@@ -6,13 +6,11 @@ import React, {
   useState
 } from 'react'
 import {
-  TokenWithBalance,
   useWalletContext,
   useWalletStateContext
 } from '@avalabs/wallet-react-components'
 import { getSwapRate } from 'swap/getSwapRate'
 import BN from 'bn.js'
-import { getDecimalsForEVM } from 'utils/TokenTools'
 import {
   Big,
   bigToLocaleString,
@@ -26,6 +24,7 @@ import { map } from 'rxjs/operators'
 import { performSwap } from 'swap/performSwap'
 import { OptimalRate } from 'paraswap-core'
 import moment from 'moment'
+import { TokenWithBalance } from 'store/balance'
 
 export interface SwapEntry {
   token: TokenWithBalance | undefined
@@ -98,9 +97,10 @@ export const SwapContextProvider = ({ children }: { children: any }) => {
   }, [gasLimit, gasPriceNanoAvax])
 
   useEffect(() => {
+    const token = swapSide === SwapSide.SELL ? srcToken : destToken
     const amount = numberToBN(
       swapSide === SwapSide.SELL ? srcAmount : destAmount,
-      getDecimalsForEVM(swapSide === SwapSide.SELL ? srcToken : destToken) ?? 0
+      token?.decimals ?? 0
     ).toString()
 
     const subscription = from(

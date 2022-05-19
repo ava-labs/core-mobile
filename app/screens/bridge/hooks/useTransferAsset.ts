@@ -23,7 +23,8 @@ import { BufferLike } from 'ethereumjs-util'
 import Big from 'big.js'
 import { TransferEventType } from 'contexts/BridgeContext'
 import { useSelector } from 'react-redux'
-import { selectActiveNetwork, MAINNET_NETWORK } from 'store/network'
+import { selectActiveNetwork } from 'store/network'
+import { ChainId } from '@avalabs/chains-sdk'
 
 const events = new EventEmitter()
 
@@ -61,12 +62,12 @@ export function useTransferAsset() {
       events.emit(TransferEventType.TX_HASH, txHash)
     }
 
-    const isMainnet = network.chainId === MAINNET_NETWORK.chainId
+    const isMainnet = network.chainId === ChainId.AVALANCHE_MAINNET_ID
 
     const common =
       currentBlockchain === Blockchain.AVALANCHE
         ? Common.custom({
-            networkId: network.config.networkID,
+            networkId: network.chainId,
             chainId: network.chainId
           })
         : new Common({

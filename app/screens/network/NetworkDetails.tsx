@@ -3,24 +3,22 @@ import { useSelector, useDispatch } from 'react-redux'
 import AvaLogoSVG from 'components/svg/AvaLogoSVG'
 import AvaButton from 'components/AvaButton'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { Network, selectActiveNetwork, setActive } from 'store/network'
+import { selectActiveNetwork, setActive } from 'store/network'
 import { View } from 'react-native'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
 import FlexSpacer from 'components/FlexSpacer'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import TextFieldBg from 'components/styling/TextFieldBg'
+import { Network } from '@avalabs/chains-sdk'
 
 type Props = {
   network: Network
 }
 
+// TODO add explorer url
 export default function NetworkDetails({ network }: Props) {
-  const {
-    config: { rpcUrl, explorerURL },
-    chainId,
-    nativeToken
-  } = network
+  const { rpcUrl, chainId, networkToken } = network
   const activeNetwork = useSelector(selectActiveNetwork)
   const dispatch = useDispatch()
 
@@ -35,16 +33,16 @@ export default function NetworkDetails({ network }: Props) {
       <View style={{ alignItems: 'center' }}>
         <AvaLogoSVG size={80} />
         <Space y={24} />
-        <AvaText.Heading2>{network.name}</AvaText.Heading2>
+        <AvaText.Heading2>{network.chainName}</AvaText.Heading2>
       </View>
       <Space y={40} />
-      <DetailItem title={'Network RPC URL'} value={rpcUrl.c} />
+      <DetailItem title={'Network RPC URL'} value={rpcUrl} />
       <Space y={24} />
       <DetailItem title={'Chain ID'} value={chainId.toString()} />
       <Space y={24} />
-      <DetailItem title={'Native Token'} value={nativeToken.name} />
+      <DetailItem title={'Native Token'} value={networkToken.name} />
       <Space y={24} />
-      <DetailItem title={'Explorer URL'} value={explorerURL ?? ''} />
+      <DetailItem title={'Explorer URL'} value={''} />
       <FlexSpacer />
       <AvaButton.PrimaryLarge disabled={isConnected} onPress={connect}>
         {isConnected ? 'Connected' : 'Connect'}

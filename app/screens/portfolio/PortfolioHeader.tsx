@@ -1,17 +1,22 @@
 import React, { FC, memo } from 'react'
 import { ActivityIndicator, StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { usePortfolio } from 'screens/portfolio/usePortfolio'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import TokenAddress from 'components/TokenAddress'
+import { useSelector } from 'react-redux'
+import { selectBalanceTotalInUSD } from 'store/balance'
+import { useWalletContext } from '@avalabs/wallet-react-components'
 
-// experimenting with container pattern and stable props to try to reduce re-renders
+// TODO: reimplement balance loading
 function PortfolioHeaderContainer() {
   const context = useApplicationContext()
-  const { balanceTotalInUSD, isBalanceLoading, addressC } = usePortfolio()
+  const balanceTotalInUSD = useSelector(selectBalanceTotalInUSD(0))
+  const wallet = useWalletContext().wallet
+  const addressC = wallet?.getAddressC()
   const { selectedCurrency, currencyFormatter } = context.appHook
-  const currencyBalance = currencyFormatter(Number(balanceTotalInUSD))
+  const currencyBalance = currencyFormatter(balanceTotalInUSD)
+  const isBalanceLoading = false
 
   return (
     <PortfolioHeader

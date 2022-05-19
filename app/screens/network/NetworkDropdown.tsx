@@ -35,7 +35,7 @@ export default function NetworkDropdown() {
   const data = useMemo(
     () => [
       ...favoriteNetworks.map(item => ({
-        name: item.name,
+        name: item.chainName,
         chainId: item.chainId
       }))
       //{ name: ManageNetworks, chainId: '' } //TODO: currently we wont support this, but let's keep it because eventually we will

@@ -47,12 +47,10 @@ export function useApp(
   function waitForNavigationContainer() {
     async function onFirstLoad() {
       if (!appNavHook.navigation.current) {
-        console.log('waiting for navigation container...')
         setTimeout(() => onFirstLoad(), 1000)
         return
       }
       setNavigationContainerSet(true)
-      console.log('done.')
     }
 
     onFirstLoad().then()

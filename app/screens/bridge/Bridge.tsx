@@ -35,8 +35,10 @@ import { useNavigation } from '@react-navigation/native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { BridgeScreenProps } from 'navigation/types'
-import { useIsMainnet } from 'hooks/isMainnet'
 import { usePosthogContext } from 'contexts/PosthogContext'
+import { useSelector } from 'react-redux'
+import { selectActiveNetwork } from 'store/network'
+import { ChainId } from '@avalabs/chains-sdk'
 
 const formatBalance = (balance: Big | undefined) => {
   return balance && formatTokenAmount(balance, 6)
@@ -73,7 +75,8 @@ const Bridge: FC = () => {
     targetBlockchain
   } = useBridgeSDK()
   const { getTokenSymbolOnNetwork } = useGetTokenSymbolOnNetwork()
-  const isMainnet = useIsMainnet()
+  const network = useSelector(selectActiveNetwork)
+  const isMainnet = network.chainId === ChainId.AVALANCHE_MAINNET_ID
   const [bridgeError, setBridgeError] = useState<string>('')
   const [isPending, setIsPending] = useState<boolean>(false)
   const tokenInfoData = useTokenInfoContext()

@@ -3,8 +3,6 @@ import { Account } from 'dto/Account'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { CustomTokens } from 'screens/tokenManagement/hooks/useAddCustomToken'
 import { NFTItemData } from 'screens/nft/NftCollection'
-import { TokenWithBalance } from '@avalabs/wallet-react-components'
-import { BN } from '@avalabs/avalanche-wallet-sdk'
 import StorageTools from 'repository/StorageTools'
 import { ChartData, useCoingeckoRepo } from 'repository/CoingeckoRepo'
 import {
@@ -30,7 +28,6 @@ const WATCHLIST_FAVORITES = 'WATCHLIST_FAVORITES'
 const CUSTOM_TOKENS = 'CUSTOM_TOKENS'
 const NFTs = 'NFTs_2'
 const VIEW_ONCE_INFORMATION = 'VIEW_ONCE_INFORMATION'
-const PORTFOLIO_TOKEN_LIST = 'PORTFOLIO_TOKEN_LIST_3'
 const PENDING_BRIDGE_TRANSACTIONS = 'PENDING_BRIDGE_TRANSACTIONS'
 
 /**
@@ -95,15 +92,6 @@ export type Repo = {
   customTokenRepo: {
     customTokens: CustomTokens
     saveCustomTokens: (customTokens: CustomTokens) => Promise<void>
-  }
-  portfolioTokensCache: {
-    loadTokensCache: (
-      networkName: string
-    ) => Promise<Map<string, TokenWithBalance>>
-    saveTokensCache: (
-      networkName: string,
-      tokens: Map<string, TokenWithBalance>
-    ) => void
   }
   coingeckoRepo: {
     getCharData: (
@@ -202,27 +190,6 @@ export function useRepo(): Repo {
   const saveCustomTokens = (tokens: CustomTokens) => {
     setCustomTokens(tokens)
     return StorageTools.saveToStorage<CustomTokens>(CUSTOM_TOKENS, tokens)
-  }
-
-  const savePortfolioTokens = (
-    networkName: string,
-    tokens: Map<string, TokenWithBalance>
-  ) => {
-    StorageTools.saveMapToStorage(
-      networkName + PORTFOLIO_TOKEN_LIST,
-      tokens
-    ).catch(reason => console.error(reason))
-  }
-
-  const loadPortfolioTokens = async (networkName: string) => {
-    const tokens = await StorageTools.loadFromStorageAsMap<
-      string,
-      TokenWithBalance
-    >(networkName + PORTFOLIO_TOKEN_LIST)
-    for (const token of tokens.values()) {
-      token.balance = new BN(token.balance, token.denomination)
-    }
-    return tokens
   }
 
   const addToRecentContacts = (contact: RecentContact) => {
@@ -338,10 +305,6 @@ export function useRepo(): Repo {
       viewOnceInfo: viewOnceInfo,
       saveViewOnceInformation,
       infoHasBeenShown
-    },
-    portfolioTokensCache: {
-      loadTokensCache: loadPortfolioTokens,
-      saveTokensCache: savePortfolioTokens
     },
     coingeckoRepo: {
       getCharData,

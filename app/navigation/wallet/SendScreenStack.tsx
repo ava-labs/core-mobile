@@ -8,10 +8,10 @@ import { useNavigation, useRoute } from '@react-navigation/native'
 import ReviewSend from 'screens/send/ReviewSend'
 import { SendTokenContextProvider } from 'contexts/SendTokenContext'
 import { SendTokensScreenProps } from 'navigation/types'
-import { TokenWithBalance } from '@avalabs/wallet-react-components'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
 import { Contact } from 'Repo'
+import { TokenWithBalance } from 'store/balance'
 
 export type SendStackParamList = {
   [AppNavigation.Send.Send]:
