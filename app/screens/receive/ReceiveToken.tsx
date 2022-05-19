@@ -18,7 +18,7 @@ const ReceiveToken: FC<Props> = memo(props => {
   const theme = useApplicationContext().theme
   const embedded = !!props?.embedded
   const activeNetwork = useSelector(selectActiveNetwork)
-  const { chainId, networkToken } = activeNetwork
+  const { chainId, networkToken, chainName } = activeNetwork
   const wallet = useWalletContext().wallet
   const addressC = wallet?.getAddressC() ?? ''
   const isMainnet = activeNetwork.chainId === ChainId.AVALANCHE_MAINNET_ID
@@ -58,6 +58,7 @@ const ReceiveToken: FC<Props> = memo(props => {
             sizePercentage={0.7}
             address={receiveAddress()}
             token={networkToken.symbol}
+            label={chainName}
           />
         </View>
         <Space y={47} />

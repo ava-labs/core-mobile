@@ -8,7 +8,6 @@ import React, {
   useState
 } from 'react'
 import {
-  ERC20,
   ERC20WithBalance,
   SendHookError,
   useAccountsContext,
@@ -32,7 +31,7 @@ import { TokenWithBalance } from 'store/balance'
 
 export interface SendTokenContextState {
   sendToken: TokenWithBalance | undefined
-  setSendToken: Dispatch<ERC20WithBalance | undefined>
+  setSendToken: Dispatch<TokenWithBalance | undefined>
   sendAmount: string
   setSendAmount: Dispatch<string>
   fromAccount: Account
@@ -143,8 +142,8 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
   }, [customGasPriceNanoAvax])
 
   useEffect(() => {
-    if (sendToken?.contractType === 'ERC-20') {
-      setTokenBalances?.({ [(sendToken as ERC20).address]: sendToken as ERC20 })
+    if (sendToken?.contractType === 'ERC-20' && sendToken.address) {
+      setTokenBalances?.({ [sendToken.address]: sendToken })
     }
   }, [sendToken])
 
@@ -177,7 +176,9 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
     )
 
     submit?.(
-      sendToken?.contractType === 'ERC-20' ? (sendToken as ERC20) : undefined,
+      sendToken?.contractType === 'ERC-20' && sendToken.address
+        ? sendToken
+        : undefined,
       Promise.resolve(wallet),
       amount!,
       address!,

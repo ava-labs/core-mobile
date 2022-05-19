@@ -81,7 +81,7 @@ function TokenSelector({
           data={filteredTokenList}
           renderItem={renderItem}
           refreshing={false}
-          keyExtractor={(item: TokenWithBalance) => item.symbol}
+          keyExtractor={(item: TokenWithBalance) => item.id}
           ListEmptyComponent={
             <ZeroState.NoResultsTextual message={getNoResultsText()} />
           }

@@ -113,7 +113,7 @@ function TokenManagement(): JSX.Element {
             </View>
           }
           refreshing={false}
-          keyExtractor={(item: TokenWithBalance) => item.symbol}
+          keyExtractor={(item: TokenWithBalance) => item.id}
           ListEmptyComponent={emptyView}
         />
       )}

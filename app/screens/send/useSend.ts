@@ -17,7 +17,7 @@ export function useSend(
   const isERC20 = token?.contractType === 'ERC-20'
   const sendAvax = useSendAvax(gasPrice$)
   const sendErc20 = useSendErc20Form(
-    isERC20 ? (token as ERC20) : undefined,
+    isERC20 ? (token as unknown as ERC20) : undefined,
     gasPrice$
   )
 

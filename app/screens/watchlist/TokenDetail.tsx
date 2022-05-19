@@ -47,7 +47,8 @@ const TokenDetail = () => {
   const [showLineChart, setShowLineChart] = useState(true)
   const { setOptions } = useNavigation<ScreenProps['navigation']>()
   const [showChartInstruction, setShowChartInstruction] = useState(false)
-  const tokenAddress = useRoute<ScreenProps['route']>().params.address
+  const tokenId = useRoute<ScreenProps['route']>().params.tokenId
+
   const {
     isFavorite,
     openMoonPay,
@@ -64,7 +65,7 @@ const TokenDetail = () => {
     token,
     ranges,
     changeChartDays
-  } = useTokenDetail(tokenAddress)
+  } = useTokenDetail(tokenId)
 
   function openTwitter() {
     // data will come from somewhere, something like
@@ -344,7 +345,7 @@ const TokenDetail = () => {
             <DataItem
               title={'Contract Address'}
               value={
-                <TokenAddress address={tokenAddress} textType={'Heading'} />
+                <TokenAddress address={token.address} textType={'Heading'} />
               }
             />
           )}

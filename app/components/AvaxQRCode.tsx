@@ -11,6 +11,7 @@ interface Props {
   address?: string
   sizePercentage?: number
   token?: string
+  label?: string
 }
 
 const { width: screenWidth } = Dimensions.get('window')
@@ -18,7 +19,8 @@ const { width: screenWidth } = Dimensions.get('window')
 const AvaxQRCode: FC<Props> = ({
   address,
   sizePercentage = 1,
-  token = 'AVAX'
+  token = 'AVAX',
+  label = ''
 }: Props) => {
   const { theme } = useApplicationContext()
   const logoColor = theme.colorIcon1
@@ -55,18 +57,6 @@ const AvaxQRCode: FC<Props> = ({
     }
   }
 
-  // TODO: replace this with actual chainName
-  const circularText = () => {
-    switch (token) {
-      case 'BTC':
-        return 'Bitcoin'
-      case 'ETH':
-      case 'AVAX':
-      default:
-        return 'C-Chain'
-    }
-  }
-
   return (
     <View
       style={{
@@ -87,7 +77,7 @@ const AvaxQRCode: FC<Props> = ({
           alignItems: 'center'
         }}>
         {qrToken()}
-        <CircularText text={circularText()} size={circularTextSize} />
+        <CircularText text={label} size={circularTextSize} />
       </View>
     </View>
   )

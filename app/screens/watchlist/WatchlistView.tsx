@@ -1,10 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { FlatList, ListRenderItemInfo, StyleSheet, View } from 'react-native'
 import Loader from 'components/Loader'
-import {
-  ERC20WithBalance,
-  useWalletStateContext
-} from '@avalabs/wallet-react-components'
 import WatchListItem from 'screens/watchlist/components/WatchListItem'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
@@ -13,14 +9,10 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import Separator from 'components/Separator'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import ZeroState from 'components/ZeroState'
-import {
-  SimplePriceInCurrency,
-  SimpleTokenPriceResponse
-} from '@avalabs/coingecko-sdk'
-import useCoingecko from 'hooks/useCoingecko'
 import Dropdown from 'components/Dropdown'
 import AvaText from 'components/AvaText'
 import { TokenWithBalance } from 'store/balance'
+import { useTokens } from 'hooks/useTokens'
 
 interface Props {
   showFavorites?: boolean
@@ -43,16 +35,17 @@ const filterPriceOptions = [
   WatchlistFilter.LOSERS
 ]
 
-export const CG_AVAX_TOKEN_ID =
-  'FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z'
-
 enum FilterTimeOptions {
   Day = '1D',
   Week = '1W',
   Year = '1Y'
 }
 
-type CombinedTokenType = ERC20WithBalance & SimplePriceInCurrency
+const filterTimeOptions = [
+  FilterTimeOptions.Day,
+  FilterTimeOptions.Week,
+  FilterTimeOptions.Year
+]
 
 type NavigationProp = TabsScreenProps<
   typeof AppNavigation.Tabs.Watchlist
@@ -64,8 +57,7 @@ const WatchlistView: React.FC<Props> = ({ showFavorites, searchText }) => {
   const { currencyFormatter } = useApplicationContext().appHook
   const { watchlistFavorites } =
     useApplicationContext().repo.watchlistFavoritesRepo
-  const { tokenPrices } = useCoingecko()
-  const { erc20Tokens, avaxToken } = useWalletStateContext()!
+  const tokensWithBalance = useTokens()
   const [filterBy, setFilterBy] = useState(WatchlistFilter.PRICE)
   // filter time needs implementation
   const [filterTime, setFilterTime] = useState(FilterTimeOptions.Day)
@@ -81,64 +73,38 @@ const WatchlistView: React.FC<Props> = ({ showFavorites, searchText }) => {
   }, [filterTime])
 
   const tokens = useMemo(() => {
-    let pricedTokens = addPriceToTokenList(tokenPrices, avaxToken, erc20Tokens)
+    let items: TokenWithBalance[] = tokensWithBalance
+
     if (showFavorites) {
-      pricedTokens = pricedTokens?.filter(tk =>
-        watchlistFavorites.includes(tk.address)
-      )
+      items = items.filter(tk => {
+        return watchlistFavorites.includes(tk.id)
+      })
     }
+
     if (searchText && searchText.length > 0) {
-      pricedTokens = pricedTokens?.filter(
+      items = items.filter(
         i =>
           i.name?.toLowerCase().includes(searchText.toLowerCase()) ||
           i.symbol?.toLowerCase().includes(searchText.toLowerCase())
       )
     }
-    pricedTokens?.sort((a, b) => {
+
+    return items.slice().sort((a, b) => {
       if (filterBy === WatchlistFilter.PRICE) {
-        return (b.price ?? 0) - (a.price ?? 0)
+        return (b.priceUSD ?? 0) - (a.priceUSD ?? 0)
       } else if (filterBy === WatchlistFilter.MARKET_CAP) {
         return (b.marketCap ?? 0) - (a.marketCap ?? 0)
       } else {
         return (b.vol24 ?? 0) - (a.vol24 ?? 0)
       }
     })
-    return pricedTokens
   }, [
-    tokenPrices,
-    avaxToken,
-    erc20Tokens,
+    tokensWithBalance,
     showFavorites,
     searchText,
     watchlistFavorites,
     filterBy
   ])
-
-  function addPriceToTokenList(
-    tPrices: SimpleTokenPriceResponse | undefined,
-    avax: TokenWithBalance,
-    erc20s: ERC20WithBalance[]
-  ) {
-    const allTokens = [{ ...avax, address: CG_AVAX_TOKEN_ID }, ...erc20s]
-    if (
-      !tPrices ||
-      Object.keys(tPrices).length === 0 ||
-      allTokens.length === 0
-    ) {
-      return
-    }
-    const mappedData = allTokens?.map(t => {
-      const address =
-        t.address === CG_AVAX_TOKEN_ID
-          ? CG_AVAX_TOKEN_ID
-          : t.address.toLowerCase()
-      return {
-        ...t,
-        ...tPrices?.[address]?.usd
-      } as CombinedTokenType
-    })
-    return mappedData
-  }
 
   useEffect(() => {
     if (!showFavorites) {
@@ -146,29 +112,24 @@ const WatchlistView: React.FC<Props> = ({ showFavorites, searchText }) => {
     }
   }, [searchText])
 
-  const renderItem = (item: ListRenderItemInfo<CombinedTokenType>) => {
+  const renderItem = (item: ListRenderItemInfo<TokenWithBalance>) => {
     const token = item.item
-    const logoUri = token?.logoURI ?? undefined
-
-    if (token.name === 'TEDDY') {
-      console.log('teddy')
-    }
+    const logoUri = token?.logoUri ?? undefined
 
     function getDisplayValue() {
       if (filterBy === WatchlistFilter.PRICE) {
-        return (token?.price ?? 0) === 0
+        const tokenPriceUsd = token.priceUSD
+        return tokenPriceUsd === 0
           ? ' -'
-          : token.price > 0 && token.price < 0.1
-          ? `$${token.price.toFixed(6)}`
-          : currencyFormatter(token.price)
+          : tokenPriceUsd > 0 && tokenPriceUsd < 0.1
+          ? `${tokenPriceUsd.toFixed(6)}`
+          : currencyFormatter(tokenPriceUsd)
       } else if (filterBy === WatchlistFilter.MARKET_CAP) {
-        return (token?.marketCap ?? 0) === 0
+        return token.marketCap === 0
           ? ' -'
-          : `$${currencyFormatter(token?.marketCap ?? 0, 3)}`
+          : currencyFormatter(token.marketCap ?? 0, 3)
       } else if (filterBy === WatchlistFilter.VOLUME) {
-        return (token?.vol24 ?? 0) === 0
-          ? ' -'
-          : `$${currencyFormatter(token?.vol24 ?? 0, 1)}`
+        return token.vol24 === 0 ? ' -' : currencyFormatter(token.vol24 ?? 0, 1)
       }
     }
 
@@ -180,21 +141,27 @@ const WatchlistView: React.FC<Props> = ({ showFavorites, searchText }) => {
         tokenName={token.name}
         chartDays={filterTimeDays}
         tokenAddress={token.address}
+        tokenId={token.coingeckoId}
         value={getDisplayValue()}
         symbol={token.symbol}
         image={logoUri}
         filterBy={filterBy}
         // rank={!showFavorites ? item.index + 1 : undefined}
-        onPress={() =>
+        onPress={() => {
           navigation.navigate(AppNavigation.Wallet.TokenDetail, {
-            address: token.address
+            tokenId: token.id
           })
-        }
+        }}
       />
     )
   }
+
   const selectedPriceFilter = filterPriceOptions.findIndex(
     item => item === filterBy
+  )
+
+  const selectedTimeFilter = filterTimeOptions.findIndex(
+    item => item === filterTime
   )
 
   return (
@@ -219,11 +186,8 @@ const WatchlistView: React.FC<Props> = ({ showFavorites, searchText }) => {
             <Dropdown
               alignment={'flex-end'}
               width={80}
-              data={[
-                FilterTimeOptions.Day,
-                FilterTimeOptions.Week,
-                FilterTimeOptions.Year
-              ]}
+              data={filterTimeOptions}
+              selectedIndex={selectedTimeFilter}
               onItemSelected={selectedItem => setFilterTime(selectedItem)}
               selectionRenderItem={selectedItem => (
                 <AvaText.ButtonSmall textStyle={{ color: theme.colorText1 }}>
@@ -243,7 +207,7 @@ const WatchlistView: React.FC<Props> = ({ showFavorites, searchText }) => {
             )}
             ListEmptyComponent={<ZeroState.NoResultsTextual />}
             refreshing={false}
-            keyExtractor={(item: TokenWithBalance) => item.symbol}
+            keyExtractor={(item: TokenWithBalance) => item.id}
           />
         </>
       )}

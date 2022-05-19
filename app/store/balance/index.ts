@@ -38,11 +38,25 @@ export const balanceSlice = createSlice({
 })
 
 // selectors
+// TODO CP-2114 remove chainId and address params once we have accounts reducer
+// we can infer chainId from active network and address from accounts reducer
 export const selectTokensWithBalance =
   (chainId: number, address: string) => (state: RootState) => {
     const key = getKey(chainId, address)
     return state.balance.balances[key]?.tokens ?? []
   }
+
+export const selectTokenById = (tokenId: string) => (state: RootState) => {
+  const balances = Object.values(state.balance.balances)
+
+  for (const balance of balances) {
+    for (const token of balance.tokens) {
+      if (token.id === tokenId) return token
+    }
+  }
+
+  return undefined
+}
 
 export const selectBalanceTotalInUSD =
   (accountIndex: number) => (state: RootState) => {
@@ -75,7 +89,7 @@ export const getBalance = createAction<GetBalanceActionPayload>(
 
 // listeners
 export const addBalanceListeners = (startListening: AppStartListening) => {
-  // TODO remove this after we switch to new balance fetch logic (for all accounts)
+  // TODO CP-2114 remove this after we switch to new balance fetch logic (for all accounts)
   startListening({
     actionCreator: getBalance,
     effect: async (action, listenerApi) => {

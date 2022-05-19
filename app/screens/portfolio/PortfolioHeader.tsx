@@ -8,7 +8,7 @@ import { useSelector } from 'react-redux'
 import { selectBalanceTotalInUSD } from 'store/balance'
 import { useWalletContext } from '@avalabs/wallet-react-components'
 
-// TODO: reimplement balance loading
+// TODO: reimplement balance loading CP-2114
 function PortfolioHeaderContainer() {
   const context = useApplicationContext()
   const balanceTotalInUSD = useSelector(selectBalanceTotalInUSD(0))

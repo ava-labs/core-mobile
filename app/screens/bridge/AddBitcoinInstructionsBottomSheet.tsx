@@ -13,7 +13,7 @@ import TokenAddress from 'components/TokenAddress'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
-import { ChainId, BITCOIN_NETWORK } from '@avalabs/chains-sdk'
+import { BITCOIN_NETWORK, ChainId } from '@avalabs/chains-sdk'
 
 function AddBitcoinInstructionsBottomSheet(): JSX.Element {
   const theme = useApplicationContext().theme
@@ -84,6 +84,7 @@ function AddBitcoinInstructionsBottomSheet(): JSX.Element {
             sizePercentage={0.5}
             address={btcAddress}
             token={BITCOIN_NETWORK.networkToken.symbol}
+            label={BITCOIN_NETWORK.chainName}
           />
         </View>
         <AvaText.Heading2>Core X bitcoin Address</AvaText.Heading2>

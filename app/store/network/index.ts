@@ -9,8 +9,9 @@ import {
   Network,
   ChainId,
   BITCOIN_NETWORK,
-  BITCOIN_TEST_NETWORK
+  ETHEREUM_NETWORK
 } from '@avalabs/chains-sdk'
+import isEmpty from 'lodash.isempty'
 import { onRehydrationComplete } from 'store/app'
 import { AppStartListening } from 'store/middleware/listener'
 import { RootState } from '../index'
@@ -56,15 +57,6 @@ export const networkSlice = createSlice({
 export const selectActiveNetwork = (state: RootState) =>
   state.network.networks[state.network.active] ?? {}
 
-export const selectActiveTokens = (state: RootState) => {
-  const { networkToken, tokens } = selectActiveNetwork(state)
-  if (tokens) {
-    return [networkToken, ...tokens]
-  } else {
-    return [networkToken]
-  }
-}
-
 export const selectNetworks = (state: RootState) => state.network.networks
 
 export const selectFavoriteNetworks = (state: RootState) =>
@@ -77,20 +69,25 @@ export const selectAvaxTestnet = (state: RootState) =>
   state.network.networks[ChainId.AVALANCHE_TESTNET_ID] ?? {}
 
 // actions
-export const getNetworks = createAsyncThunk(
+export const getNetworks = createAsyncThunk<void, void, { state: RootState }>(
   `${reducerName}/getNetworks`,
   async (params, thunkAPI) => {
     const dispatch = thunkAPI.dispatch
+    const state = thunkAPI.getState()
 
     const erc20Networks = await getChainsAndTokens()
     const networks = {
       ...erc20Networks,
       [ChainId.BITCOIN]: BITCOIN_NETWORK,
-      [ChainId.BITCOIN_TESTNET]: BITCOIN_TEST_NETWORK
+      [ChainId.ETHEREUM_HOMESTEAD]: ETHEREUM_NETWORK
     }
     dispatch(setNetworks(networks))
 
-    dispatch(setActive(ChainId.AVALANCHE_MAINNET_ID))
+    const network = selectActiveNetwork(state)
+
+    if (isEmpty(network)) {
+      dispatch(setActive(ChainId.AVALANCHE_MAINNET_ID))
+    }
   }
 )
 

@@ -11,6 +11,10 @@ import {
 import { firstValueFrom } from 'rxjs'
 import { TokenWithBalance } from 'store/balance'
 import { Network, NetworkContractToken } from '@avalabs/chains-sdk'
+import {
+  SimpleTokenPriceResponse,
+  VsCurrencyType
+} from '@avalabs/coingecko-sdk'
 import TokenService from './TokenService'
 
 const hstABI = require('human-standard-token-abi')
@@ -24,20 +28,30 @@ export class EvmBalanceService {
     network: Network,
     selectedCurrency: string
   ): Promise<TokenWithBalance> {
+    const { networkToken, chainId } = network
+    const nativeTokenId =
+      network.pricingProviders?.coingecko?.nativeTokenId ?? ''
+
+    const id = `${chainId}-${nativeTokenId}`
     const balanceEthersBig = await provider.getBalance(userAddress)
-    const priceUSD = await TokenService.getPriceByCoinId(
-      network.networkToken.coingeckoId,
+    const {
+      price: priceUSD,
+      marketCap,
+      vol24,
+      change24
+    } = await TokenService.getPriceWithMarketDataByCoinId(
+      nativeTokenId,
       selectedCurrency
     )
     const balanceBig = ethersBigNumberToBig(
       balanceEthersBig,
-      network.networkToken.decimals
+      networkToken.decimals
     )
     const balanceNum = balanceBig.toNumber()
-    const balance = bigToBN(balanceBig, network.networkToken.decimals)
+    const balance = bigToBN(balanceBig, networkToken.decimals)
     const balanceDisplayValue = balanceToDisplayValue(
       balance,
-      network.networkToken.decimals
+      networkToken.decimals
     )
     const balanceUSD = priceUSD && balanceNum ? priceUSD * balanceNum : 0
     const balanceUsdDisplayValue = priceUSD
@@ -45,25 +59,38 @@ export class EvmBalanceService {
       : '0'
 
     return {
-      ...network.networkToken,
+      ...networkToken,
+      id,
+      coingeckoId: nativeTokenId,
+      isNetworkToken: true,
       balance,
       balanceDisplayValue,
       balanceUSD,
       balanceUsdDisplayValue,
-      priceUSD
+      priceUSD,
+      marketCap,
+      vol24,
+      change24
     }
   }
 
   private async getErc20Balances(
     provider: Provider,
     activeTokenList: NetworkContractToken[],
-    tokenPriceDict: {
-      [address: string]: number
-    },
-    userAddress: string
+    tokenPriceDict: SimpleTokenPriceResponse,
+    userAddress: string,
+    network: Network,
+    selectedCurrency: string
   ): Promise<TokenWithBalance[]> {
+    const { chainId } = network
+
     return Promise.allSettled(
       activeTokenList.map(async token => {
+        const id = `${chainId}-${token.address ?? token.symbol}`
+        const tokenPrice =
+          tokenPriceDict[token.address.toLowerCase()]?.[
+            selectedCurrency as VsCurrencyType
+          ]
         const contract = new ethers.Contract(token.address, hstABI, provider)
         const balanceEthersBig = await contract.balanceOf(userAddress)
         const balanceBig = ethersBigNumberToBig(
@@ -71,7 +98,10 @@ export class EvmBalanceService {
           token.decimals
         )
         const balance = bigToBN(balanceBig, token.decimals)
-        const priceUSD = tokenPriceDict[token.address.toLowerCase()]
+        const priceUSD = tokenPrice?.price ?? 0
+        const marketCap = tokenPrice?.marketCap ?? 0
+        const change24 = tokenPrice?.change24 ?? 0
+        const vol24 = tokenPrice?.vol24 ?? 0
         const balanceNum = balanceBig.toNumber()
         const balanceUSD = priceUSD && balanceNum ? priceUSD * balanceNum : 0
         const balanceDisplayValue = balanceToDisplayValue(
@@ -84,11 +114,16 @@ export class EvmBalanceService {
 
         return {
           ...token,
+          id,
+          isNetworkToken: false,
           balance,
           balanceDisplayValue,
           balanceUSD,
           balanceUsdDisplayValue,
-          priceUSD
+          priceUSD,
+          marketCap,
+          change24,
+          vol24
         }
       })
     ).then(res => {
@@ -111,15 +146,22 @@ export class EvmBalanceService {
     provider: Provider,
     userAddress: string
   ): Promise<TokenWithBalance[]> {
-    const selectedCurrency = await firstValueFrom(currentSelectedCurrency$)
+    const selectedCurrency = await (
+      await firstValueFrom(currentSelectedCurrency$)
+    ).toLowerCase()
     const activeTokenList = network.tokens ?? []
 
-    const tokenPriceDict = await TokenService.getTokenPricesByAddresses(
-      activeTokenList as { address: string }[],
-      network.coingeckoAssetPlatformId,
-      network.networkToken.coingeckoId,
-      selectedCurrency
-    )
+    const tokenAddresses = activeTokenList.map(token => token.address)
+
+    const assetPlatformId =
+      network.pricingProviders?.coingecko?.assetPlatformId ?? ''
+
+    const tokenPriceDict =
+      (await TokenService.getPricesWithMarketDataByAddresses(
+        tokenAddresses,
+        assetPlatformId,
+        selectedCurrency
+      )) ?? {}
 
     const nativeToken = await this.getNativeTokenBalance(
       provider,
@@ -132,7 +174,9 @@ export class EvmBalanceService {
       provider,
       activeTokenList,
       tokenPriceDict,
-      userAddress
+      userAddress,
+      network,
+      selectedCurrency
     )
 
     const nftStates = await this.getErc721Balances(userAddress)

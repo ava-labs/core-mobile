@@ -12,7 +12,6 @@ import FlexSpacer from 'components/FlexSpacer'
 import AppNavigation from 'navigation/AppNavigation'
 import { DrawerScreenProps } from 'navigation/types'
 import { useNavigation } from '@react-navigation/native'
-import { getIcon } from 'screens/network/NetworkIconSelector'
 import {
   selectFavoriteNetworks,
   selectActiveNetwork,
@@ -36,7 +35,8 @@ export default function NetworkDropdown() {
     () => [
       ...favoriteNetworks.map(item => ({
         name: item.chainName,
-        chainId: item.chainId
+        chainId: item.chainId,
+        logoUri: item.logoUri
       }))
       //{ name: ManageNetworks, chainId: '' } //TODO: currently we wont support this, but let's keep it because eventually we will
     ],
@@ -74,12 +74,12 @@ export default function NetworkDropdown() {
         }}
         alignment={'flex-end'}
         selectionRenderItem={selectedItem => (
-          <Selection icon={getIcon(selectedItem.chainId)} />
+          <Selection icon={selectedItem.logoUri} />
         )}
         optionsRenderItem={({ item }) => (
           <Option
-            networkChainId={item.chainId}
             networkName={item.name}
+            networkLogo={item.logoUri}
             isSelected={item.chainId === activeNetwork.chainId}
           />
         )}
@@ -90,18 +90,18 @@ export default function NetworkDropdown() {
 
 function Selection({ icon }: { icon: string | JSX.Element }) {
   return typeof icon === 'string' ? (
-    <Avatar.Custom size={40} name={''} logoUri={icon} />
+    <Avatar.Custom size={16} name={''} logoUri={icon} />
   ) : (
     icon
   )
 }
 
 function Option({
-  networkChainId,
+  networkLogo,
   networkName,
   isSelected
 }: {
-  networkChainId: number
+  networkLogo: string
   networkName: string
   isSelected: boolean
 }) {
@@ -111,7 +111,7 @@ function Option({
         alignItems: 'center',
         paddingHorizontal: 16
       }}>
-      <Selection icon={getIcon(networkChainId)} />
+      <Selection icon={networkLogo} />
       <Space x={8} />
       <AvaText.Body1 textStyle={{ paddingVertical: 8 }}>
         {networkName}

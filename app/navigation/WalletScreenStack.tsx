@@ -85,7 +85,7 @@ export type WalletScreenStackParams = {
     | NavigatorScreenParams<ReceiveStackParamList>
     | undefined
   [AppNavigation.Wallet.AddCustomToken]: undefined
-  [AppNavigation.Wallet.TokenDetail]: { address: string }
+  [AppNavigation.Wallet.TokenDetail]: { tokenId: string }
   [AppNavigation.Wallet.OwnedTokenDetail]: { tokenId: string }
   [AppNavigation.Wallet.ActivityDetail]: {
     tx?: TransactionNormal | TransactionERC20
