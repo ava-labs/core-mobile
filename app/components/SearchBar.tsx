@@ -1,5 +1,6 @@
 import {
   Dimensions,
+  Keyboard,
   LayoutAnimation,
   StyleSheet,
   TextInput,
@@ -54,17 +55,32 @@ const SearchBar: FC<Props> = ({
   const { theme } = useApplicationContext()
   const [isFocused, setIsFocused] = useState(false)
 
+  useLayoutEffect(keyboardListenerFx, [hideBottomNav, navigation])
+
   /**
    * An attempt to hide bottom tabs when the search is focused.
    * It's kinda working.
    */
-  useLayoutEffect(() => {
-    if (hideBottomNav) {
-      navigation.setOptions({
-        tabBarStyle: { display: isFocused ? 'none' : 'flex' }
-      })
+  function keyboardListenerFx() {
+    if (!hideBottomNav) {
+      return
     }
-  }, [isFocused])
+    const sub1 = Keyboard.addListener('keyboardDidShow', _ => {
+      navigation.setOptions({
+        tabBarStyle: { display: 'none' }
+      })
+    })
+    const sub2 = Keyboard.addListener('keyboardDidHide', _ => {
+      navigation.setOptions({
+        tabBarStyle: { display: 'flex' }
+      })
+    })
+
+    return () => {
+      sub1.remove()
+      sub2.remove()
+    }
+  }
 
   /**
    * Clears the input by reference and state,
