@@ -6,7 +6,6 @@ import { useNavigation } from '@react-navigation/native'
 import {
   TokenWithBalance,
   useAccountsContext,
-  useNetworkContext,
   useWalletStateContext
 } from '@avalabs/wallet-react-components'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
@@ -27,6 +26,8 @@ import { Covalent } from '@avalabs/covalent-sdk'
 import Config from 'react-native-config'
 import { PortfolioScreenProps } from 'navigation/types'
 import { useIsUIDisabled, UI } from 'hooks/useIsUIDisabled'
+import { useSelector } from 'react-redux'
+import { selectActiveNetwork } from 'store/network'
 
 type PortfolioProps = {
   tokenList?: TokenWithBalance[]
@@ -202,11 +203,11 @@ const NftListViewScreen = () => {
   const { navigate } = useNavigation<PortfolioNavigationProp>()
   const { parseNftCollections } = useNftLoader()
   const { activeAccount } = useAccountsContext()
-  const { network } = useNetworkContext()!
+  const network = useSelector(selectActiveNetwork)
 
   useEffect(() => {
     const isDev = __DEV__
-    const chainID = isDev ? Ethereum : Number(network?.chainId ?? 0)
+    const chainID = isDev ? Ethereum : Number(network.chainId ?? 0)
     const covalent = new Covalent(chainID, Config.COVALENT_API_KEY)
     const addressC = isDev ? 'demo.eth' : activeAccount?.wallet.getAddressC()
     if (addressC) {

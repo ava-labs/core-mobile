@@ -1,13 +1,13 @@
-import { ActiveNetwork, FUJI_NETWORK } from '@avalabs/wallet-react-components'
 import {
   JsonRpcProvider,
   StaticJsonRpcProvider
 } from '@ethersproject/providers'
+import { Network } from 'store/network'
 
 const providers: Record<string, JsonRpcProvider> = {}
 
-export function getAvalancheProvider(network?: ActiveNetwork): JsonRpcProvider {
-  const chainId = network?.chainId || FUJI_NETWORK.chainId
+export function getAvalancheProvider(network: Network): JsonRpcProvider {
+  const chainId = network.chainId
 
   if (network && !providers[chainId]) {
     const avalancheProvider = new StaticJsonRpcProvider(network.config.rpcUrl.c)

@@ -6,10 +6,8 @@ import LinkSVG from 'components/svg/LinkSVG'
 import { Space } from 'components/Space'
 import ClearSVG from 'components/svg/ClearSVG'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import {
-  FUJI_NETWORK,
-  useNetworkContext
-} from '@avalabs/wallet-react-components'
+import { useSelector } from 'react-redux'
+import { selectActiveNetwork, FUJI_NETWORK } from 'store/network'
 
 interface DoneProps {
   transactionId: string
@@ -21,17 +19,15 @@ export default function DoneScreen({
   transactionId
 }: DoneProps): JSX.Element {
   const theme = useApplicationContext().theme
-  const networkContext = useNetworkContext()
+  const network = useSelector(selectActiveNetwork)
   const [explorerUrl, setExplorerUrl] = useState<string>()
 
   useEffect(() => {
-    if (networkContext) {
-      const isFuji = networkContext.network === FUJI_NETWORK
-      setExplorerUrl(
-        `https://${isFuji ? 'testnet.' : ''}snowtrace.io/tx/${transactionId}`
-      )
-    }
-  }, [networkContext])
+    const isFuji = network.chainId === FUJI_NETWORK.chainId
+    setExplorerUrl(
+      `https://${isFuji ? 'testnet.' : ''}snowtrace.io/tx/${transactionId}`
+    )
+  }, [network.chainId, transactionId])
 
   return (
     <View style={{ flex: 1 }}>

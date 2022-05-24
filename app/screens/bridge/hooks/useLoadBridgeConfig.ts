@@ -6,19 +6,17 @@ import {
   useBridgeConfigUpdater
 } from '@avalabs/bridge-sdk'
 import { useEffect, useState } from 'react'
-import {
-  MAINNET_NETWORK,
-  useNetworkContext
-} from '@avalabs/wallet-react-components'
+import { useSelector } from 'react-redux'
+import { selectActiveNetwork, MAINNET_NETWORK } from 'store/network'
 
 export function useLoadBridgeConfig() {
   const [bridgeAvailable, setBridgeAvailable] = useState(false)
   const bridgeConfig = useBridgeConfig()
-  const network = useNetworkContext()?.network
+  const network = useSelector(selectActiveNetwork)
 
   useEffect(() => {
     setBridgeEnvironment(
-      network?.chainId === MAINNET_NETWORK.chainId
+      network.chainId === MAINNET_NETWORK.chainId
         ? Environment.PROD
         : Environment.DEV
     )
