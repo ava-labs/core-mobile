@@ -3,14 +3,13 @@ import {
   useBridgeSDK,
   useGetTokenSymbolOnNetwork
 } from '@avalabs/bridge-sdk'
-import {
-  useNetworkContext,
-  useWalletStateContext
-} from '@avalabs/wallet-react-components'
+import { useWalletStateContext } from '@avalabs/wallet-react-components'
 import { useEffect, useMemo, useState } from 'react'
 import { getEthereumBalances } from 'screens/bridge/handlers/getEthereumBalances'
 import { getAvalancheBalances } from 'screens/bridge/handlers/getAvalancheBalances'
 import { AssetBalance } from 'screens/bridge/utils/types'
+import { useSelector } from 'react-redux'
+import { selectActiveNetwork } from 'store/network'
 
 /**
  * Get for the current chain.
@@ -30,7 +29,7 @@ export function useAssetBalancesEVM(
 
   // still dont like this forced unwrapping :(
   const { addresses, erc20Tokens } = useWalletStateContext()!
-  const network = useNetworkContext()?.network
+  const network = useSelector(selectActiveNetwork)
   const { avalancheAssets, ethereumAssets, currentBlockchain } = useBridgeSDK()
   const { getTokenSymbolOnNetwork } = useGetTokenSymbolOnNetwork()
 

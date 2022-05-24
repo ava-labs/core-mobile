@@ -12,6 +12,8 @@ import {
   REGISTER
 } from 'redux-persist'
 import network from './network'
+import { onStorageReady } from './actions'
+import { listener } from './middleware/listener'
 
 const persistActions = [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER]
 
@@ -35,10 +37,13 @@ export const store = configureStore({
       serializableCheck: {
         ignoredActions: [...persistActions]
       }
-    })
+    }).prepend(listener.middleware)
 })
 
-export const persistor = persistStore(store)
+export const persistor = persistStore(store, null, () => {
+  // this block runs after rehydration is complete
+  store.dispatch(onStorageReady())
+})
 
 export type RootState = ReturnType<typeof store.getState>
 export type AppDispatch = typeof store.dispatch

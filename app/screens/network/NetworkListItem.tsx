@@ -12,7 +12,7 @@ type Props = {
   networkName: string
   icon: string | JSX.Element
   isFavorite: boolean
-  onPress: (networkName: string, chainId: string) => void
+  onPress: (chainId: string) => void
   onFavorite: (chainId: string) => void
   onInfo: (chainId: string) => void
 }
@@ -43,7 +43,7 @@ export function NetworkListItem({
 
   return (
     <AvaListItem.Base
-      onPress={() => onPress(networkName, networkChainId)}
+      onPress={() => onPress(networkChainId)}
       leftComponent={
         typeof icon === 'string' ? (
           <Avatar.Custom size={40} name={networkName} logoUri={icon} />

@@ -12,11 +12,7 @@ import {
 import { useLoadBridgeConfig } from 'screens/bridge/hooks/useLoadBridgeConfig'
 import Big from 'big.js'
 import { TransactionResponse } from '@ethersproject/abstract-provider'
-import {
-  ActiveNetwork,
-  useNetworkContext,
-  useWalletContext
-} from '@avalabs/wallet-react-components'
+import { useWalletContext } from '@avalabs/wallet-react-components'
 import { isMainnetNetwork } from '@avalabs/avalanche-wallet-sdk'
 import { useTransferAsset } from 'screens/bridge/hooks/useTransferAsset'
 import {
@@ -32,6 +28,8 @@ import {
 import useSignAndIssueBtcTx from 'screens/bridge/hooks/useSignAndIssueBtcTx'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useIsMainnet } from 'hooks/isMainnet'
+import { useSelector } from 'react-redux'
+import { selectActiveNetwork, Network } from 'store/network'
 
 export enum TransferEventType {
   WRAP_STATUS = 'wrap_status',
@@ -76,7 +74,7 @@ function LocalBridgeProvider({ children }: { children: any }) {
   useLoadBridgeConfig()
 
   const config = useBridgeConfig().config
-  const network = useNetworkContext()?.network
+  const network = useSelector(selectActiveNetwork)
   const wallet = useWalletContext().wallet
   const { pendingBridgeTransactions, savePendingBridgeTransactions } =
     useApplicationContext().repo.pendingBridgeTransactions
@@ -305,7 +303,7 @@ export function deserializeBridgeState(state: any): BridgeState {
  */
 export function filterBridgeStateToNetwork(
   bridge: BridgeState,
-  network: ActiveNetwork
+  network: Network
 ): BridgeState {
   const isMainnet = isMainnetNetwork(network.config)
   const bridgeTransactions = Object.values(bridge.bridgeTransactions).reduce<

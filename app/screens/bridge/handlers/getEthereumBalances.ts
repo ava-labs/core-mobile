@@ -1,13 +1,13 @@
-import { ActiveNetwork } from '@avalabs/wallet-react-components'
 import { Assets, Blockchain, fetchTokenBalances } from '@avalabs/bridge-sdk'
 import Big from 'big.js'
+import { Network } from 'store/network'
 import { getEthereumProvider } from '../utils/getEthereumProvider'
 
 export async function getEthereumBalances(
   assets: Assets,
   account: string,
   deprecated: boolean,
-  network?: ActiveNetwork
+  network: Network
 ) {
   const provider = getEthereumProvider(network)
   const ethereumBalancesBySymbol = await fetchTokenBalances(

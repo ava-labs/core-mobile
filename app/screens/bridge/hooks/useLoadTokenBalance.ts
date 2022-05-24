@@ -5,10 +5,9 @@ import {
 } from '@avalabs/bridge-sdk'
 import { getAvalancheProvider } from 'screens/bridge/utils/getAvalancheProvider'
 import { getEthereumProvider } from 'screens/bridge/utils/getEthereumProvider'
-import {
-  useNetworkContext,
-  useWalletStateContext
-} from '@avalabs/wallet-react-components'
+import { useWalletStateContext } from '@avalabs/wallet-react-components'
+import { useSelector } from 'react-redux'
+import { selectActiveNetwork } from 'store/network'
 
 /**
  * Get the balance for a single token.
@@ -25,7 +24,7 @@ export function useLoadTokenBalance(
 ) {
   // @ts-ignore addresses exist but why it complains needs investigation
   const { addresses } = useWalletStateContext()
-  const network = useNetworkContext()?.network
+  const network = useSelector(selectActiveNetwork)
 
   const provider =
     blockchain === Blockchain.AVALANCHE

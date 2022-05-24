@@ -21,6 +21,7 @@
     "build-storybook": "build-storybook"
   },
   "dependencies": {
+    "@avalabs/wallets-sdk": "2.4.0-alpha.15",
     "@avalabs/avalanche-wallet-sdk": "0.17.1",
     "@avalabs/blizzard-sdk": "2.1.4",
     "@avalabs/bridge-sdk": "2.3.0-alpha.5",

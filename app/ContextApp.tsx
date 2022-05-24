@@ -3,12 +3,14 @@
  **/
 
 import React, { useEffect, useState } from 'react'
+
+import { Provider } from 'react-redux'
+import { PersistGate } from 'redux-persist/integration/react'
 import App from 'App'
 import { ApplicationContextProvider } from 'contexts/ApplicationContext'
 import Toast from 'react-native-toast-notifications'
 import {
   AccountsContextProvider,
-  NetworkContextProvider,
   WalletContextProvider,
   WalletStateContextProvider
 } from '@avalabs/wallet-react-components'
@@ -21,6 +23,7 @@ import JailMonkey from 'jail-monkey'
 import JailbrokenWarning from 'screens/onboarding/JailbrokenWarning'
 import { BridgeProvider } from 'contexts/BridgeContext'
 import { PosthogContextProvider } from 'contexts/PosthogContext'
+import { store, persistor } from 'store'
 
 export default function ContextApp() {
   const [isWarmingUp, setIsWarmingUp] = useState(true)
@@ -47,9 +50,9 @@ export default function ContextApp() {
   }, [])
 
   return (
-    <>
-      <PosthogContextProvider>
-        <NetworkContextProvider>
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <PosthogContextProvider>
           <AccountsContextProvider>
             <WalletContextProvider>
               <WalletStateContextProvider>
@@ -67,9 +70,9 @@ export default function ContextApp() {
               </WalletStateContextProvider>
             </WalletContextProvider>
           </AccountsContextProvider>
-        </NetworkContextProvider>
-      </PosthogContextProvider>
-      <Toast ref={ref => (global.toast = ref)} />
-    </>
+        </PosthogContextProvider>
+        <Toast ref={ref => (global.toast = ref)} />
+      </PersistGate>
+    </Provider>
   )
 }

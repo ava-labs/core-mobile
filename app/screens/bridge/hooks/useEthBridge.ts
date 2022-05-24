@@ -13,12 +13,13 @@ import { useBridgeContext } from 'contexts/BridgeContext'
 import { useSingularAssetBalanceEVM } from 'screens/bridge/hooks/useSingularAssetBalanceEVM'
 import { useAssetBalancesEVM } from 'screens/bridge/hooks/useAssetBalancesEVM'
 import {
-  useNetworkContext,
   useWalletContext,
   useWalletStateContext
 } from '@avalabs/wallet-react-components'
 import { getEthereumProvider } from 'screens/bridge/utils/getEthereumProvider'
 import { useCallback, useState } from 'react'
+import { useSelector } from 'react-redux'
+import { selectActiveNetwork } from 'store/network'
 
 /**
  * Hook for when the bridge source chain is Ethereum
@@ -43,7 +44,7 @@ export function useEthBridge(amount: Big, bridgeFee: Big): BridgeAdapter {
   )
 
   const { addresses } = useWalletStateContext()!
-  const network = useNetworkContext()?.network
+  const network = useSelector(selectActiveNetwork)
   const config = useBridgeConfig().config
   const wallet = useWalletContext().wallet
   const ethereumProvider = getEthereumProvider(network)

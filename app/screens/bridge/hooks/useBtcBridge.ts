@@ -11,10 +11,7 @@ import {
   useBridgeConfig,
   useBridgeSDK
 } from '@avalabs/bridge-sdk'
-import {
-  useNetworkContext,
-  useWalletContext
-} from '@avalabs/wallet-react-components'
+import { useWalletContext } from '@avalabs/wallet-react-components'
 import { useBridgeContext } from 'contexts/BridgeContext'
 import { useCallback, useEffect, useState } from 'react'
 import { getBtcBalance } from 'screens/bridge/hooks/getBtcBalance'
@@ -22,9 +19,11 @@ import { getAvalancheProvider } from 'screens/bridge/utils/getAvalancheProvider'
 import { TxSimple } from '@avalabs/blockcypher-sdk'
 import { useIsMainnet } from 'hooks/isMainnet'
 import { AssetBalance } from 'screens/bridge/utils/types'
+import { useSelector } from 'react-redux'
+import { selectActiveNetwork } from 'store/network'
 
 export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
-  const network = useNetworkContext()?.network
+  const network = useSelector(selectActiveNetwork)
   const bridgeConfig = useBridgeConfig()!.config!
   const { createBridgeTransaction, signIssueBtc } = useBridgeContext()
   const config = useBridgeConfig().config

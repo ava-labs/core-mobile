@@ -1,16 +1,10 @@
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useContext, useState } from 'react'
 import { COLORS_DAY, COLORS_NIGHT } from 'resources/Constants'
 import type { Theme } from '@react-navigation/native'
 import { AppHook, useApp } from 'AppHook'
 import { Repo, useRepo } from 'Repo'
 import { AppNavHook, useAppNav } from 'useAppNav'
 import { useWalletSetup, WalletSetupHook } from 'hooks/useWalletSetup'
-import {
-  customErc20Tokens$,
-  FUJI_NETWORK,
-  MAINNET_NETWORK,
-  useNetworkContext
-} from '@avalabs/wallet-react-components'
 
 export interface ApplicationContextState {
   theme: typeof COLORS_DAY | typeof COLORS_NIGHT
@@ -57,11 +51,6 @@ export const ApplicationContextProvider = ({ children }: { children: any }) => {
   const repository = useRepo()
   const walletSetupHook = useWalletSetup(repository, appNavHook)
   const appHook = useApp(appNavHook, walletSetupHook, repository)
-  const networkState = useNetworkContext()!
-
-  useEffect(() => {
-    networkState.setNetwork(__DEV__ ? FUJI_NETWORK : MAINNET_NETWORK)
-  }, [])
 
   const isDarkMode = true // useState(Appearance.getColorScheme() === 'dark');
   const [theme] = useState(isDarkMode ? COLORS_NIGHT : COLORS_DAY)
@@ -100,14 +89,6 @@ export const ApplicationContextProvider = ({ children }: { children: any }) => {
 
   const [keyboardAvoidingViewEnabled, setKeyboardAvoidingViewEnabled] =
     useState(true)
-
-  useEffect(() => {
-    if (networkState?.network?.chainId) {
-      customErc20Tokens$.next(
-        repository.customTokenRepo.customTokens[networkState.network.chainId]
-      )
-    }
-  }, [networkState?.network?.chainId, repository.customTokenRepo.customTokens])
 
   const appContextState: ApplicationContextState = {
     theme,

@@ -4,6 +4,7 @@ import AvaText from 'components/AvaText'
 import Loader from 'components/Loader'
 import {
   getHistory,
+  network$,
   TransactionERC20,
   TransactionNormal,
   useWalletContext
@@ -59,7 +60,6 @@ function ActivityList({
 }: Props) {
   const [loading, setLoading] = useState(true)
   const wallet = useWalletContext()?.wallet
-  // const { network } = useNetworkContext()!
   const { openUrl } = useInAppBrowser()
   const [allHistory, setAllHistory] = useState<
     (TransactionNormal | TransactionERC20)[]
@@ -116,8 +116,17 @@ function ActivityList({
   )
 
   useEffect(() => {
-    loadHistory().then()
-  }, [wallet])
+    // fetch history on first mount and whenever a new network is selected
+    // notes: we are relying the network$ observable
+    // because the network update logic in the old wallet sdk is async
+    const subscription = network$.subscribe(() => {
+      loadHistory().then()
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [])
 
   const loadHistory = async () => {
     if (!wallet) {

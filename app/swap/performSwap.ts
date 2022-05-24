@@ -1,6 +1,3 @@
-import { APIError, ParaSwap } from 'paraswap'
-import { firstValueFrom } from 'rxjs'
-import { paraSwap$ } from 'swap/swap'
 import { GasPrice } from 'utils/GasPriceHook'
 import { WalletType } from '@avalabs/avalanche-wallet-sdk'
 import Web3 from 'web3'
@@ -8,6 +5,8 @@ import { Allowance } from 'paraswap/build/types'
 import { OptimalRate } from 'paraswap-core'
 import { incrementalPromiseResolve, resolve } from 'swap/utils'
 import { BN } from 'avalanche'
+import { MAINNET_NETWORK } from 'store/network'
+import { NetworkID, APIError, ParaSwap } from 'paraswap'
 import ERC20_ABI from '../contracts/erc20.abi.json'
 
 const SERVER_BUSY_ERROR = 'Server too busy'
@@ -60,15 +59,9 @@ export async function performSwap(
     }
   }
 
-  const [paraSwap, err] = await resolve(firstValueFrom(paraSwap$))
-
-  if (err) {
-    return {
-      error: `Paraswap Init Error: ${err}`
-    }
-  }
-
-  const pSwap = paraSwap as ParaSwap
+  // only Mainnet has swap UI enabled and can perform swap
+  const chainId = Number(MAINNET_NETWORK.chainId)
+  const pSwap = new ParaSwap(chainId as NetworkID, undefined, new Web3())
 
   const buildOptions = undefined,
     partnerAddress = undefined,

@@ -8,13 +8,14 @@ import {
 } from '@avalabs/bridge-sdk'
 import {
   ERC20WithBalance,
-  useNetworkContext,
   useWalletStateContext
 } from '@avalabs/wallet-react-components'
 
 import { useEffect, useMemo, useState } from 'react'
+import { useSelector } from 'react-redux'
 import { getEthereumBalance } from 'screens/bridge/handlers/getEthereumBalance'
 import { AssetBalance } from 'screens/bridge/utils/types'
+import { selectActiveNetwork } from 'store/network'
 
 /**
  * Get the balance of a bridge supported asset for the given blockchain.
@@ -25,7 +26,7 @@ export function useSingularAssetBalanceEVM(
 ): AssetBalance | undefined {
   const [ethBalance, setEthBalance] = useState<Big>()
   const { addresses, erc20Tokens } = useWalletStateContext()!
-  const network = useNetworkContext()?.network
+  const network = useSelector(selectActiveNetwork)
   // const refetchInterval = useInterval(BALANCE_REFRESH_INTERVAL);
 
   // TODO update this when adding support for /convert
