@@ -12,6 +12,7 @@ import MarketMovement from 'screens/watchlist/components/MarketMovement'
 
 interface Props {
   tokenName: string
+  chartDays: number
   value?: string
   tokenAddress: string
   image?: string
@@ -23,6 +24,7 @@ interface Props {
 
 const WatchListItem: FC<Props> = ({
   tokenName,
+  chartDays,
   value = '0',
   image,
   symbol,
@@ -50,19 +52,20 @@ const WatchListItem: FC<Props> = ({
     percentChange: 0
   })
   const [chartData, setChartData] = useState<{ x: number; y: number }[]>([])
-  const [isLoadingChartData, setIsLoadingChartData] = useState(true)
+  const [isLoadingChartData, setIsLoadingChartData] = useState(false)
 
   // get coingecko chart data.
   useEffect(() => {
     ;(async () => {
-      const result = await getCharData(tokenAddress, 1)
+      setIsLoadingChartData(true)
+      const result = await getCharData(tokenAddress, chartDays)
       if (result) {
         setChartData(result.dataPoints)
         setRanges(result.ranges)
       }
       setIsLoadingChartData(false)
     })()
-  }, [])
+  }, [chartDays, tokenAddress])
 
   const usdBalance = useMemo(() => {
     if (value) {

@@ -47,7 +47,11 @@ const filterPriceOptions = [
 export const CG_AVAX_TOKEN_ID =
   'FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z'
 
-const filterTimeOptions = ['1D', '1W', '1Y']
+enum FilterTimeOptions {
+  Day = '1D',
+  Week = '1W',
+  Year = '1Y'
+}
 
 type CombinedTokenType = ERC20WithBalance & SimplePriceInCurrency
 
@@ -65,7 +69,18 @@ const WatchlistView: React.FC<Props> = ({ showFavorites, searchText }) => {
   const { erc20Tokens, avaxToken } = useWalletStateContext()!
   const [filterBy, setFilterBy] = useState(WatchlistFilter.PRICE)
   // filter time needs implementation
-  const [, setFilterTime] = useState(filterTimeOptions[0])
+  const [filterTime, setFilterTime] = useState(FilterTimeOptions.Day)
+  const filterTimeDays = useMemo(() => {
+    switch (filterTime) {
+      case FilterTimeOptions.Day:
+        return 1
+      case FilterTimeOptions.Week:
+        return 7
+      case FilterTimeOptions.Year:
+        return 365
+    }
+  }, [filterTime])
+
   const tokens = useMemo(() => {
     let pricedTokens = addPriceToTokenList(tokenPrices, avaxToken, erc20Tokens)
     if (showFavorites) {
@@ -164,6 +179,7 @@ const WatchlistView: React.FC<Props> = ({ showFavorites, searchText }) => {
     return (
       <WatchListItem
         tokenName={token.name}
+        chartDays={filterTimeDays}
         tokenAddress={token.address}
         value={getDisplayValue()}
         symbol={token.symbol}
@@ -204,7 +220,11 @@ const WatchlistView: React.FC<Props> = ({ showFavorites, searchText }) => {
             <Dropdown
               alignment={'flex-end'}
               width={80}
-              data={filterTimeOptions}
+              data={[
+                FilterTimeOptions.Day,
+                FilterTimeOptions.Week,
+                FilterTimeOptions.Year
+              ]}
               onItemSelected={selectedItem => setFilterTime(selectedItem)}
               selectionRenderItem={selectedItem => (
                 <AvaText.ButtonSmall textStyle={{ color: theme.colorText1 }}>

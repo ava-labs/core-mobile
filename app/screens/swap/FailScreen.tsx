@@ -3,21 +3,14 @@ import { StyleSheet, View } from 'react-native'
 import AvaButton from 'components/AvaButton'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
-import { useNavigation, useRoute } from '@react-navigation/native'
-import AppNavigation from 'navigation/AppNavigation'
-import { SwapScreenProps } from 'navigation/types'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 
-type ScreenProps = SwapScreenProps<typeof AppNavigation.Swap.Fail>
-
-export default function FailScreen(): JSX.Element {
-  const { navigate } = useNavigation<ScreenProps['navigation']>()
+type Props = {
+  errMsg: string
+  onOk: () => void
+}
+export default function FailScreen({ errMsg, onOk }: Props): JSX.Element {
   const { theme } = useApplicationContext()
-  const { errorMsg } = useRoute<ScreenProps['route']>().params
-
-  function onClose() {
-    navigate(AppNavigation.Swap.Swap)
-  }
 
   return (
     <View style={{ flex: 1 }}>
@@ -36,10 +29,10 @@ export default function FailScreen(): JSX.Element {
             textAlign: 'center',
             alignSelf: 'center'
           }}>
-          {errorMsg}
+          {errMsg}
         </AvaText.Body1>
         <Space y={100} />
-        <AvaButton.PrimaryLarge style={{ margin: 18 }} onPress={onClose}>
+        <AvaButton.PrimaryLarge style={{ margin: 18 }} onPress={onOk}>
           OK
         </AvaButton.PrimaryLarge>
       </View>

@@ -58,6 +58,7 @@ enum ReceiveTokensScreens {
 enum SwapScreens {
   Swap = 'SwapScreens.Swap',
   Review = 'SwapScreens.Review',
+  Pending = 'SwapScreens.Pending',
   Success = 'SwapScreens.Success',
   Fail = 'SwapScreens.Fail',
   SwapTransactionFee = 'ModalScreens.SwapTransactionFees'

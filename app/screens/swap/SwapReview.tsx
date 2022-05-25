@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Animated, ScrollView, StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
@@ -9,10 +9,6 @@ import Separator from 'components/Separator'
 import SwapTransactionDetail from 'screens/swap/components/SwapTransactionDetails'
 import { useSwapContext } from 'contexts/SwapContext'
 import AvaButton from 'components/AvaButton'
-import { useNavigation } from '@react-navigation/native'
-import Loader from 'components/Loader'
-import AppNavigation from 'navigation/AppNavigation'
-import { SwapScreenProps } from 'navigation/types'
 import { Row } from 'components/Row'
 import InfoSVG from 'components/svg/InfoSVG'
 import { interval, tap } from 'rxjs'
@@ -20,15 +16,14 @@ import { Popable } from 'react-native-popable'
 
 const SECOND = 1000
 
-type NavigationProp = SwapScreenProps<
-  typeof AppNavigation.Swap.Review
->['navigation']
+type Props = {
+  onCancel: () => void
+  onConfirm: () => void
+}
 
-const SwapReview: FC = () => {
-  const { swapTo, swapFrom, doSwap, refresh } = useSwapContext()
+const SwapReview = ({ onCancel, onConfirm }: Props) => {
+  const { swapTo, swapFrom, refresh } = useSwapContext()
   const theme = useApplicationContext().theme
-  const { goBack, navigate } = useNavigation<NavigationProp>()
-  const [loading, setLoading] = useState(false)
   const [secondsLeft, setSecondsLeft] = useState('0s')
   const [colorAnim] = useState(new Animated.Value(1))
 
@@ -53,20 +48,6 @@ const SwapReview: FC = () => {
     })
   }, [swapTo.amount, swapTo.usdValue])
 
-  function onConfirm() {
-    setLoading(true)
-    doSwap()
-      .then(value => {
-        console.log(value)
-        navigate(AppNavigation.Swap.Success)
-      })
-      .catch((reason: Error) => {
-        console.error(reason)
-        navigate(AppNavigation.Swap.Fail, { errorMsg: reason.message ?? '' })
-      })
-      .finally(() => setLoading(false))
-  }
-
   useEffect(() => {
     const RESET_INTERVAL = 60 // seconds
     const sub = interval(SECOND)
@@ -86,9 +67,7 @@ const SwapReview: FC = () => {
     return () => sub.unsubscribe()
   }, [])
 
-  return loading ? (
-    <Loader />
-  ) : (
+  return (
     <View style={styles.container}>
       <ScrollView style={styles.container}>
         <Row style={{ justifyContent: 'space-between', marginHorizontal: 16 }}>
@@ -156,7 +135,7 @@ const SwapReview: FC = () => {
           justifyContent: 'space-between'
         }}>
         <View style={{ flex: 1, marginHorizontal: 16 }}>
-          <AvaButton.SecondaryLarge onPress={goBack}>
+          <AvaButton.SecondaryLarge onPress={onCancel}>
             Cancel
           </AvaButton.SecondaryLarge>
         </View>
