@@ -114,9 +114,15 @@ export function usePinOrBiometryLogin(): {
         concatMap(() => BiometricsSDK.getAccessType()),
         concatMap((value: string | null) => {
           if (value && value === 'BIO') {
-            return BiometricsSDK.loadWalletKey(
-              KeystoreConfig.KEYSTORE_BIO_OPTIONS
-            )
+            return BiometricsSDK.loadWalletKey({
+              ...KeystoreConfig.KEYSTORE_BIO_OPTIONS,
+              authenticationPrompt: {
+                title: 'Access Wallet',
+                subtitle:
+                  'Use biometric data to access securely stored wallet information',
+                cancel: 'cancel'
+              }
+            })
           }
           return of(false)
         }),
