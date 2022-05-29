@@ -67,7 +67,7 @@ export function useTransferAsset() {
       currentBlockchain === Blockchain.AVALANCHE
         ? Common.custom({
             networkId: network.config.networkID,
-            chainId: parseInt(network?.chainId)
+            chainId: network.chainId
           })
         : new Common({
             chain: isMainnet ? Chain.Mainnet : Chain.Rinkeby

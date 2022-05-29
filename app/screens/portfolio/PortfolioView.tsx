@@ -26,8 +26,9 @@ import { Covalent } from '@avalabs/covalent-sdk'
 import Config from 'react-native-config'
 import { PortfolioScreenProps } from 'navigation/types'
 import { useIsUIDisabled, UI } from 'hooks/useIsUIDisabled'
-import { useSelector } from 'react-redux'
-import { selectActiveNetwork } from 'store/network'
+import { useDispatch, useSelector } from 'react-redux'
+import { BITCOIN_NETWORK, selectActiveNetwork } from 'store/network'
+import { getBalance } from 'store/balance'
 
 type PortfolioProps = {
   tokenList?: TokenWithBalance[]
@@ -41,12 +42,40 @@ type PortfolioProps = {
 
 // experimenting with container pattern and stable props to try to reduce re-renders
 function PortfolioContainer(): JSX.Element {
+  const { activeAccount } = useAccountsContext()
+  const addressC = activeAccount?.wallet.getAddressC() ?? ''
+  const addressBtc = activeAccount?.wallet.getAddressBTC('bitcoin') ?? ''
+  const accountIndex = activeAccount?.index ?? 0
+  const network = useSelector(selectActiveNetwork)
+  const dispatch = useDispatch()
   const manageDisabled = useIsUIDisabled(UI.ManageTokens)
   const collectiblesDisabled = useIsUIDisabled(UI.Collectibles)
   const { filteredTokenList, loadZeroBalanceList, loadTokenList } =
     useSearchableTokenList()
   const { balanceTotalInUSD } = usePortfolio()
   const { setSelectedToken } = useSelectedTokenContext()
+
+  useEffect(() => {
+    if (!addressC || !addressBtc) return
+
+    let payload
+
+    if (network.chainId === BITCOIN_NETWORK.chainId) {
+      payload = {
+        address: addressBtc,
+        accountIndex,
+        network
+      }
+    } else {
+      payload = {
+        address: addressC,
+        accountIndex,
+        network
+      }
+    }
+
+    dispatch(getBalance(payload))
+  }, [accountIndex, addressBtc, addressC, network, dispatch])
 
   const hasZeroBalance =
     !balanceTotalInUSD ||

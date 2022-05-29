@@ -5,7 +5,7 @@ import BitcoinSVG from 'components/svg/BitcoinSVG'
 import SettingsCogSVG from 'components/svg/SettingsCogSVG'
 import { MAINNET_NETWORK, FUJI_NETWORK, BITCOIN_NETWORK } from 'store/network'
 
-export function getIcon(chainId: string, size = 16) {
+export function getIcon(chainId: number, size = 16) {
   switch (chainId) {
     case MAINNET_NETWORK.chainId:
     case FUJI_NETWORK.chainId:

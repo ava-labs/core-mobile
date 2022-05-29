@@ -12,13 +12,15 @@ import {
   REGISTER
 } from 'redux-persist'
 import network from './network'
-import { onStorageReady } from './actions'
+import balance, { setBalance } from './balance'
+import { onRehydrationComplete } from './actions'
 import { listener } from './middleware/listener'
 
 const persistActions = [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER]
 
 const rootReducer = combineReducers({
-  network
+  network,
+  balance
 })
 
 const persistConfig = {
@@ -35,14 +37,15 @@ export const store = configureStore({
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware({
       serializableCheck: {
-        ignoredActions: [...persistActions]
+        ignoredActions: [...persistActions, setBalance.type],
+        ignoredPaths: ['balance']
       }
     }).prepend(listener.middleware)
 })
 
 export const persistor = persistStore(store, null, () => {
   // this block runs after rehydration is complete
-  store.dispatch(onStorageReady())
+  store.dispatch(onRehydrationComplete())
 })
 
 export type RootState = ReturnType<typeof store.getState>
