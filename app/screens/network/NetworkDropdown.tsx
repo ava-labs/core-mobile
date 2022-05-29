@@ -101,7 +101,7 @@ function Option({
   networkName,
   isSelected
 }: {
-  networkChainId: string
+  networkChainId: number
   networkName: string
   isSelected: boolean
 }) {

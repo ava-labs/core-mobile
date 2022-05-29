@@ -1,20 +1,53 @@
+import { InfuraProvider } from '@ethersproject/providers'
 import { BlockCypherProvider, JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
-import { Network, NetworkVM, BITCOIN_NETWORK } from 'store/network'
+import {
+  Network,
+  BITCOIN_NETWORK,
+  MAINNET_NETWORK,
+  FUJI_NETWORK
+} from 'store/network'
 
+const evmNetworks = [MAINNET_NETWORK.chainId, FUJI_NETWORK.chainId]
+const btcNetworks = [BITCOIN_NETWORK.chainId]
+const ethNetworks: number[] = []
+
+// TODO: add support for ETH NETWORKS and BITCOIN TEST NET
 export class NetworkService {
-  getProviderForNetwork(network: Network, numberOfRequestsPerBatch = 40) {
-    if (network.vm === NetworkVM.BITCOIN) {
-      const isMainnet = network.name === BITCOIN_NETWORK.name
-      return new BlockCypherProvider(isMainnet)
-    } else if (network.vm === NetworkVM.EVM) {
-      return new JsonRpcBatchInternal(
-        numberOfRequestsPerBatch,
-        network.config.rpcUrl.c,
-        network.chainId
-      )
-    } else {
-      throw new Error('unsupported network')
+  getEvmProvider(network: Network, numerOfChunksPerRequestBatch = 40) {
+    return new JsonRpcBatchInternal(
+      numerOfChunksPerRequestBatch,
+      network.config.rpcUrl.c,
+      network.chainId
+    )
+  }
+
+  getAvalancheProvider(isTest: boolean) {
+    const network = isTest ? FUJI_NETWORK : MAINNET_NETWORK
+    return this.getEvmProvider(network)
+  }
+
+  getEthereumProvider(isTest: boolean) {
+    return new InfuraProvider(
+      isTest ? 'rinkeby' : 'homestead',
+      process.env.INFURA_API_KEY
+    )
+  }
+
+  getBitcoinProvider(_isDeveloperMode: boolean) {
+    // TODO support test nets
+    return new BlockCypherProvider(true)
+  }
+
+  getProviderForNetwork(network: Network) {
+    if (evmNetworks.includes(network.chainId)) {
+      return this.getEvmProvider(network)
+    } else if (btcNetworks.includes(network.chainId)) {
+      return this.getBitcoinProvider(network.isTest)
+    } else if (ethNetworks.includes(network.chainId)) {
+      return this.getEthereumProvider(network.isTest)
     }
+
+    throw new Error('unsupported network')
   }
 }
 

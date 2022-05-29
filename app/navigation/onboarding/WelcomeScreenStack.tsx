@@ -12,6 +12,8 @@ import { createStackNavigator } from '@react-navigation/stack'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AnalyticsConsent from 'screens/onboarding/AnalyticsConsent'
 import { MainHeaderOptions } from 'navigation/NavUtils'
+import { useDispatch } from 'react-redux'
+import { onLoginSuccess } from 'store/actions'
 import { WelcomeScreenProps } from '../types'
 import CreateWalletStack, {
   CreateWalletStackParamList
@@ -90,11 +92,14 @@ const WelcomeScreen = () => {
 const LoginWithPinOrBiometryScreen = () => {
   const { enterWallet } = useApplicationContext().walletSetupHook
   const { goBack } = useNavigation()
+  const dispatch = useDispatch()
+
   return (
     <PinOrBiometryLogin
       onSignInWithRecoveryPhrase={() => goBack()}
       onLoginSuccess={mnemonic => {
         enterWallet(mnemonic)
+        dispatch(onLoginSuccess())
       }}
     />
   )

@@ -8,13 +8,13 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import Avatar from 'components/Avatar'
 
 type Props = {
-  networkChainId: string
+  networkChainId: number
   networkName: string
   icon: string | JSX.Element
   isFavorite: boolean
-  onPress: (chainId: string) => void
-  onFavorite: (chainId: string) => void
-  onInfo: (chainId: string) => void
+  onPress: (chainId: number) => void
+  onFavorite: (chainId: number) => void
+  onInfo: (chainId: number) => void
 }
 
 export function NetworkListItem({

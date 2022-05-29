@@ -62,6 +62,7 @@ import AvaButton from 'components/AvaButton'
 import StarSVG from 'components/svg/StarSVG'
 import useAppBackgroundTracker from 'hooks/useAppBackgroundTracker'
 import { toggleFavorite, Network, selectFavoriteNetworks } from 'store/network'
+import { onLoginSuccess } from 'store/actions'
 import { BridgeStackParamList } from './wallet/BridgeScreenStack'
 import {
   BridgeTransactionStatusParams,
@@ -127,6 +128,7 @@ const SignOutBottomSheetScreen = () => {
 }
 
 function WalletScreenStack(props: Props | Readonly<Props>) {
+  const dispatch = useDispatch()
   const [showSecurityModal, setShowSecurityModal] = useState(false)
   const context = useApplicationContext()
   const { signOut, setSelectedCurrency } = context.appHook
@@ -346,6 +348,7 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
           }}
           onLoginSuccess={() => {
             setShowSecurityModal(false)
+            dispatch(onLoginSuccess())
           }}
         />
       </Modal>
