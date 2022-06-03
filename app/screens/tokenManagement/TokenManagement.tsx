@@ -8,7 +8,6 @@ import {
 } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaLogoSVG from 'components/svg/AvaLogoSVG'
-import { TokenWithBalance } from '@avalabs/wallet-react-components'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 import TokenManagementItem from 'screens/tokenManagement/TokenManagementItem'
 import AvaText from 'components/AvaText'
@@ -17,11 +16,11 @@ import CarrotSVG from 'components/svg/CarrotSVG'
 import AvaButton from 'components/AvaButton'
 import { Opacity50 } from 'resources/Constants'
 import Loader from 'components/Loader'
-import { getTokenUID } from 'utils/TokenTools'
 import SearchBar from 'components/SearchBar'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { WalletScreenProps } from 'navigation/types'
+import { TokenWithBalance } from 'store/balance'
 
 type NavigationProp = WalletScreenProps<
   typeof AppNavigation.Wallet.TokenManagement
@@ -45,7 +44,7 @@ function TokenManagement(): JSX.Element {
 
   const renderItem = (item: ListRenderItemInfo<TokenWithBalance>) => {
     const token = item.item
-    const logoUri = token?.logoURI ?? undefined
+    const logoUri = token?.logoUri ?? undefined
     const balance = !token.balance.isZero()
       ? `${token.balanceDisplayValue} ${token.symbol}`
       : undefined
@@ -57,9 +56,9 @@ function TokenManagement(): JSX.Element {
         symbol={token.symbol}
         position={item.index + 1}
         image={logoUri}
-        isShowingZeroBalanceForToken={showZeroBalanceList[getTokenUID(token)]}
+        isShowingZeroBalanceForToken={showZeroBalanceList[token.symbol]}
         onSwitchChanged={value => {
-          showZeroBalanceList[getTokenUID(token)] = value
+          showZeroBalanceList[token.symbol] = value
           setShowZeroBalanceList({ ...showZeroBalanceList })
         }}
       />
@@ -114,7 +113,7 @@ function TokenManagement(): JSX.Element {
             </View>
           }
           refreshing={false}
-          keyExtractor={(item: TokenWithBalance) => getTokenUID(item)}
+          keyExtractor={(item: TokenWithBalance) => item.symbol}
           ListEmptyComponent={emptyView}
         />
       )}

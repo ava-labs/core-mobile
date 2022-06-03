@@ -5,9 +5,10 @@ import {
   useBridgeConfig,
   useBridgeConfigUpdater
 } from '@avalabs/bridge-sdk'
+import { ChainId } from '@avalabs/chains-sdk'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
-import { selectActiveNetwork, MAINNET_NETWORK } from 'store/network'
+import { selectActiveNetwork } from 'store/network'
 
 export function useLoadBridgeConfig() {
   const [bridgeAvailable, setBridgeAvailable] = useState(false)
@@ -16,7 +17,7 @@ export function useLoadBridgeConfig() {
 
   useEffect(() => {
     setBridgeEnvironment(
-      network.chainId === MAINNET_NETWORK.chainId
+      network.chainId === ChainId.AVALANCHE_MAINNET_ID
         ? Environment.PROD
         : Environment.DEV
     )

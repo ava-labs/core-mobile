@@ -1,6 +1,6 @@
 import { Asset, Blockchain, fetchTokenBalances } from '@avalabs/bridge-sdk'
+import { Network } from '@avalabs/chains-sdk'
 import Big from 'big.js'
-import { Network } from 'store/network'
 import { getEthereumProvider } from '../utils/getEthereumProvider'
 
 export async function getEthereumBalance(

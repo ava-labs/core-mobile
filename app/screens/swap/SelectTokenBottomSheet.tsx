@@ -6,9 +6,9 @@ import TabViewBackground from 'screens/portfolio/components/TabViewBackground'
 import AvaxSheetHandle from 'components/AvaxSheetHandle'
 import TokenSelector from 'screens/send/TokenSelector'
 import AvaText from 'components/AvaText'
-import { TokenWithBalance } from '@avalabs/wallet-react-components'
 import { WalletScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
+import { TokenWithBalance } from 'store/balance'
 
 type RouteProp = WalletScreenProps<
   typeof AppNavigation.Modal.SelectToken

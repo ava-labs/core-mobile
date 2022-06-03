@@ -1,9 +1,6 @@
+import { ChainId } from '@avalabs/chains-sdk'
 import { useSelector } from 'react-redux'
-import {
-  BITCOIN_NETWORK,
-  FUJI_NETWORK,
-  selectActiveNetwork
-} from 'store/network'
+import { selectActiveNetwork } from 'store/network'
 
 export enum UI {
   Collectibles = 'Collectibles',
@@ -12,14 +9,9 @@ export enum UI {
   ManageTokens = 'ManageTokens'
 }
 
-const disabledUIs = {
-  [BITCOIN_NETWORK.chainId]: [
-    UI.Collectibles,
-    UI.Swap,
-    UI.Buy,
-    UI.ManageTokens
-  ],
-  [FUJI_NETWORK.chainId]: [UI.Swap]
+const disabledUIs: Record<number, UI[]> = {
+  [ChainId.BITCOIN]: [UI.Collectibles, UI.Swap, UI.Buy, UI.ManageTokens],
+  [ChainId.AVALANCHE_TESTNET_ID]: [UI.Swap]
 }
 
 export const useIsUIDisabled = (ui: UI) => {

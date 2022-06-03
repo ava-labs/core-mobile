@@ -1,16 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { BN } from '@avalabs/avalanche-wallet-sdk'
-import {
-  TokenWithBalance,
-  updateAllBalances,
-  useWalletContext,
-  useWalletStateContext
-} from '@avalabs/wallet-react-components'
+import { useWalletContext } from '@avalabs/wallet-react-components'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { getTokenUID } from 'utils/TokenTools'
-import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
+import { ChainId } from '@avalabs/chains-sdk'
+import { selectTokensWithBalance, TokenWithBalance } from 'store/balance'
 
 type ShowZeroArrayType = { [x: string]: boolean }
 const bnZero = new BN(0)
@@ -25,18 +20,26 @@ export function useSearchableTokenList(hideZeroBalance = true): {
   loadTokenList: () => void
   loading: boolean
 } {
-  const walletState = useWalletStateContext()
-  const wallet = useWalletContext().wallet
   const network = useSelector(selectActiveNetwork)
-  const { loadTokensCache, saveTokensCache } =
-    useApplicationContext().repo.portfolioTokensCache
-  const [loading, setLoading] = useState(false)
-  const [tokenMap, setTokenMap] = useState(new Map<string, TokenWithBalance>())
+  const wallet = useWalletContext().wallet
+  const addressC = wallet?.getAddressC() ?? ''
+  const addressBtc = wallet?.getAddressBTC('bitcoin') ?? ''
+
+  let addressToFetch
+
+  if (network.chainId === ChainId.BITCOIN) {
+    addressToFetch = addressBtc
+  } else {
+    addressToFetch = addressC
+  }
+  // TODO reimplement loading
+  // const [loading, setLoading] = useState(false)
   const [searchText, setSearchText] = useState('')
-  const sortedTokens = useMemo(
-    () => sortTokenList(Array.from(tokenMap.values())),
-    [tokenMap]
+
+  const tokensWithBalance = useSelector(
+    selectTokensWithBalance(network.chainId, addressToFetch)
   )
+
   const [showZeroBalanceList, setZeroBalanceList] = useState<ShowZeroArrayType>(
     {
       ['init']: false
@@ -44,92 +47,27 @@ export function useSearchableTokenList(hideZeroBalance = true): {
   )
   const tokensFilteredByZeroBal = useMemo(
     () =>
-      filterByZeroBalance(sortedTokens, hideZeroBalance, showZeroBalanceList),
-    [sortedTokens, hideZeroBalance, showZeroBalanceList]
+      filterByZeroBalance(
+        tokensWithBalance,
+        hideZeroBalance
+        //showZeroBalanceList
+      ),
+    [tokensWithBalance, hideZeroBalance]
   )
 
   const filteredTokenList = useMemo(
     () => filterTokensBySearchText(tokensFilteredByZeroBal, searchText),
     [tokensFilteredByZeroBal, searchText]
   )
-  const [isLoadingCache, setIsLoadingCache] = useState(true)
 
   useEffect(loadZeroBalanceList, [])
-  useEffect(initTokensFromCache, [network])
-  useEffect(setAvaxToken, [walletState?.avaxToken, isLoadingCache])
-  useEffect(setErc20Tokens, [walletState?.erc20Tokens, isLoadingCache])
-  useEffect(cacheTokens, [network, tokenMap, isLoadingCache])
 
-  function cacheTokens() {
-    if (network && !isLoadingCache) {
-      saveTokensCache(network.name, tokenMap)
-    }
-  }
-
-  function initTokensFromCache() {
-    if (!network) {
-      return
-    }
-
-    loadTokensCache(network.name).then(value => {
-      setTokenMap(new Map(value))
-
-      setIsLoadingCache(false)
-    })
-    setIsLoadingCache(false)
-  }
-
-  function sortTokenList(tokens: TokenWithBalance[]) {
-    tokens.sort((a, b) => {
-      if (a.isAvax && b.isAvax) {
-        return 0
-      } else if (a.isAvax) {
-        return -1
-      } else {
-        return 1
-      }
-    })
-    return tokens
-  }
-
-  function setAvaxToken() {
-    if (!walletState || isLoadingCache) {
-      return
-    }
-    const avaxUid = getTokenUID(walletState.avaxToken)
-    if (avaxUid === '0') {
-      return //sometimes walletState.avaxToken is empty object
-    }
-    setTokenMap(prevState => {
-      prevState.set(avaxUid, walletState.avaxToken)
-      return new Map(prevState)
-    })
-  }
-
-  function setErc20Tokens() {
-    if (!walletState || isLoadingCache) {
-      return
-    }
-    setTokenMap(prevState => {
-      const avaxId = getTokenUID(walletState.avaxToken)
-      const avax = prevState.get(avaxId) //leave avax if there, replace others
-      prevState.clear()
-      if (avax) {
-        prevState.set(avaxId, avax)
-      }
-      walletState.erc20Tokens?.forEach(value => {
-        const tokenUID = getTokenUID(value)
-        prevState.set(tokenUID, value)
-      })
-      return new Map(prevState)
-    })
-  }
-
+  // TODO reimplement refresh
   function loadTokenList() {
-    if (wallet) {
-      setLoading(true)
-      updateAllBalances(wallet).then(() => setLoading(false))
-    }
+    // if (wallet) {
+    //   setLoading(true)
+    //   updateAllBalances(wallet).then(() => setLoading(false))
+    // }
   }
 
   function loadZeroBalanceList() {
@@ -147,18 +85,20 @@ export function useSearchableTokenList(hideZeroBalance = true): {
     )
   }
 
+  // TODO reimplement zero balance white list
   function filterByZeroBalance(
     tokens: TokenWithBalance[],
-    hideZeroBalance: boolean,
-    zeroBalanceWhitelist: ShowZeroArrayType
+    hideZeroBalance: boolean
+    // zeroBalanceWhitelist: ShowZeroArrayType
   ) {
+    if (!hideZeroBalance) return tokens
+
     return tokens.filter(
       token =>
-        token.isAvax ||
-        !hideZeroBalance ||
-        (hideZeroBalance &&
-          (token.balance?.gt(bnZero) ||
-            zeroBalanceWhitelist[getTokenUID(token)]))
+        'coingeckoId' in token || // this is a network token -> always show it
+        token.balance?.gt(bnZero)
+      // ||
+      //   zeroBalanceWhitelist[getTokenUID(token)]
     )
   }
 
@@ -179,6 +119,6 @@ export function useSearchableTokenList(hideZeroBalance = true): {
     showZeroBalanceList,
     loadZeroBalanceList,
     loadTokenList,
-    loading
+    loading: false
   }
 }

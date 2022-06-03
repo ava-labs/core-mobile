@@ -4,7 +4,6 @@ import PortfolioHeader from 'screens/portfolio/PortfolioHeader'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { useNavigation } from '@react-navigation/native'
 import {
-  TokenWithBalance,
   useAccountsContext,
   useWalletStateContext
 } from '@avalabs/wallet-react-components'
@@ -12,9 +11,7 @@ import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList
 import AppNavigation from 'navigation/AppNavigation'
 import PortfolioListItem from 'screens/portfolio/components/PortfolioListItem'
 import ZeroState from 'components/ZeroState'
-import { usePortfolio } from 'screens/portfolio/usePortfolio'
 import { useSelectedTokenContext } from 'contexts/SelectedTokenContext'
-import { getTokenUID } from 'utils/TokenTools'
 import WatchlistCarrousel from 'screens/watchlist/components/WatchlistCarrousel'
 import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
@@ -27,8 +24,13 @@ import Config from 'react-native-config'
 import { PortfolioScreenProps } from 'navigation/types'
 import { useIsUIDisabled, UI } from 'hooks/useIsUIDisabled'
 import { useDispatch, useSelector } from 'react-redux'
-import { BITCOIN_NETWORK, selectActiveNetwork } from 'store/network'
-import { getBalance } from 'store/balance'
+import {
+  selectActiveNetwork,
+  selectAvaxMainnet,
+  selectAvaxTestnet
+} from 'store/network'
+import { getBalance, TokenWithBalance } from 'store/balance'
+import { BITCOIN_NETWORK } from '@avalabs/chains-sdk'
 
 type PortfolioProps = {
   tokenList?: TokenWithBalance[]
@@ -46,41 +48,41 @@ function PortfolioContainer(): JSX.Element {
   const addressC = activeAccount?.wallet.getAddressC() ?? ''
   const addressBtc = activeAccount?.wallet.getAddressBTC('bitcoin') ?? ''
   const accountIndex = activeAccount?.index ?? 0
-  const network = useSelector(selectActiveNetwork)
+  const avaxMainnet = useSelector(selectAvaxMainnet)
+  const avaxTestnet = useSelector(selectAvaxTestnet)
   const dispatch = useDispatch()
   const manageDisabled = useIsUIDisabled(UI.ManageTokens)
   const collectiblesDisabled = useIsUIDisabled(UI.Collectibles)
   const { filteredTokenList, loadZeroBalanceList, loadTokenList } =
     useSearchableTokenList()
-  const { balanceTotalInUSD } = usePortfolio()
   const { setSelectedToken } = useSelectedTokenContext()
 
+  // TODO move this logic inside redux once accounts are stored in redux
   useEffect(() => {
     if (!addressC || !addressBtc) return
 
-    let payload
-
-    if (network.chainId === BITCOIN_NETWORK.chainId) {
-      payload = {
-        address: addressBtc,
-        accountIndex,
-        network
-      }
-    } else {
-      payload = {
-        address: addressC,
-        accountIndex,
-        network
-      }
+    const avaxMainnetPayload = {
+      address: addressC,
+      accountIndex,
+      network: avaxMainnet
     }
 
-    dispatch(getBalance(payload))
-  }, [accountIndex, addressBtc, addressC, network, dispatch])
+    const avaxtTestnetPayload = {
+      address: addressC,
+      accountIndex,
+      network: avaxTestnet
+    }
 
-  const hasZeroBalance =
-    !balanceTotalInUSD ||
-    balanceTotalInUSD === '0' ||
-    balanceTotalInUSD === '$0.00'
+    const btcMainnetPayload = {
+      address: addressBtc,
+      accountIndex,
+      network: BITCOIN_NETWORK
+    }
+
+    dispatch(getBalance(avaxMainnetPayload))
+    dispatch(getBalance(avaxtTestnetPayload))
+    dispatch(getBalance(btcMainnetPayload))
+  }, [accountIndex, addressBtc, addressC, dispatch, avaxMainnet, avaxTestnet])
 
   function handleRefresh() {
     loadTokenList()
@@ -92,7 +94,6 @@ function PortfolioContainer(): JSX.Element {
         tokenList={filteredTokenList}
         loadZeroBalanceList={loadZeroBalanceList}
         handleRefresh={handleRefresh}
-        hasZeroBalance={hasZeroBalance}
         setSelectedToken={setSelectedToken}
         shouldDisableManage={manageDisabled}
         shouldDisableCollectibles={collectiblesDisabled}
@@ -130,7 +131,7 @@ const PortfolioView: FC<PortfolioProps> = memo(
       setSelectedToken?.(token)
 
       navigate(AppNavigation.Wallet.OwnedTokenDetail, {
-        tokenId: getTokenUID(token)
+        tokenId: token.symbol
       })
     }
 
@@ -150,7 +151,7 @@ const PortfolioView: FC<PortfolioProps> = memo(
           tokenName={token.name}
           tokenPrice={token.balanceDisplayValue ?? '0'}
           tokenPriceUsd={token.balanceUsdDisplayValue}
-          image={token?.logoURI}
+          image={token?.logoUri}
           symbol={token.symbol}
           onPress={() => selectToken(token)}
         />
@@ -171,7 +172,9 @@ const PortfolioView: FC<PortfolioProps> = memo(
                 style={[tokenList?.length === 1 && { flex: 0 }]}
                 data={tokenList}
                 renderItem={renderItem}
-                keyExtractor={(item: TokenWithBalance) => getTokenUID(item)}
+                keyExtractor={(item: TokenWithBalance, index: number) =>
+                  item.address ?? index.toString()
+                }
                 onRefresh={handleRefresh}
                 refreshing={false}
                 scrollEventThrottle={16}

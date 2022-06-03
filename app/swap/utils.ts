@@ -1,4 +1,4 @@
-import { ERC20, TokenWithBalance } from '@avalabs/wallet-react-components'
+import { TokenWithBalance } from 'store/balance'
 
 // @ts-ignore generic - ts complains about returning `any`
 export async function incrementalPromiseResolve<T>(
@@ -26,8 +26,8 @@ function incrementAndCall<T>(prom: Promise<T>, interval = 0) {
 }
 
 export function getSrcToken(token: TokenWithBalance) {
-  if (token.isErc20) {
-    return (token as ERC20).address
+  if (token.contractType === 'ERC-20') {
+    return token.address ?? token.symbol
   }
   return token.symbol
 }

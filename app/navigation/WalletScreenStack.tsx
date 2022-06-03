@@ -15,7 +15,6 @@ import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import {
   currentSelectedCurrency$,
-  TokenWithBalance,
   TransactionERC20,
   TransactionNormal
 } from '@avalabs/wallet-react-components'
@@ -61,8 +60,10 @@ import NetworkDetails from 'screens/network/NetworkDetails'
 import AvaButton from 'components/AvaButton'
 import StarSVG from 'components/svg/StarSVG'
 import useAppBackgroundTracker from 'hooks/useAppBackgroundTracker'
-import { toggleFavorite, Network, selectFavoriteNetworks } from 'store/network'
-import { onLoginSuccess } from 'store/actions'
+import { toggleFavorite, selectFavoriteNetworks } from 'store/network'
+import { onLoginSuccess } from 'store/app'
+import { Network } from '@avalabs/chains-sdk'
+import { TokenWithBalance } from 'store/balance'
 import { BridgeStackParamList } from './wallet/BridgeScreenStack'
 import {
   BridgeTransactionStatusParams,

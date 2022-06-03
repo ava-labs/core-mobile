@@ -1,23 +1,37 @@
-import { BitcoinInputUTXO } from '@avalabs/wallets-sdk'
+import { NetworkContractTokenResourceLink } from '@avalabs/chains-sdk'
 import BN from 'bn.js'
+import { StringOrNumberOrList } from 'victory-core'
+
+export interface NetworkContractToken {
+  resourceLinks: NetworkContractTokenResourceLink[]
+}
+
+export interface NetworkToken {
+  coingeckoId: string
+}
 
 export type TokenWithBalance = {
   name: string
   symbol: string
-  address?: string
-  logoURI?: string
-  isErc20?: boolean
-  isAvax?: boolean
-  isAnt?: boolean
+  description?: string
+  logoUri?: string
   balance: BN
   balanceUSD?: number
   balanceDisplayValue?: string
   balanceUsdDisplayValue?: string
   priceUSD?: number
-  color?: string
-  denomination?: number
   decimals?: number
-  utxos?: BitcoinInputUTXO[]
+
+  // network token properties
+  coingeckoId?: string
+
+  // erc-20 token properties
+  address?: string
+  assetType?: string
+  contractType?: string
+  chainId?: StringOrNumberOrList
+  officialSite?: string
+  resourceLinks?: NetworkContractTokenResourceLink[]
 }
 
 export type Balance = {
@@ -25,6 +39,7 @@ export type Balance = {
   chainId: number
   tokens: TokenWithBalance[]
 }
+
 export type BalanceState = {
-  balances: Record<string, Balance>
+  balances: { [chainId_address: string]: Balance }
 }

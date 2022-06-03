@@ -3,10 +3,8 @@ import { FlatList, ListRenderItemInfo, StyleSheet, View } from 'react-native'
 import Loader from 'components/Loader'
 import {
   ERC20WithBalance,
-  TokenWithBalance,
   useWalletStateContext
 } from '@avalabs/wallet-react-components'
-import { getTokenUID } from 'utils/TokenTools'
 import WatchListItem from 'screens/watchlist/components/WatchListItem'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
@@ -22,6 +20,7 @@ import {
 import useCoingecko from 'hooks/useCoingecko'
 import Dropdown from 'components/Dropdown'
 import AvaText from 'components/AvaText'
+import { TokenWithBalance } from 'store/balance'
 
 interface Props {
   showFavorites?: boolean
@@ -244,7 +243,7 @@ const WatchlistView: React.FC<Props> = ({ showFavorites, searchText }) => {
             )}
             ListEmptyComponent={<ZeroState.NoResultsTextual />}
             refreshing={false}
-            keyExtractor={(item: TokenWithBalance) => getTokenUID(item)}
+            keyExtractor={(item: TokenWithBalance) => item.symbol}
           />
         </>
       )}

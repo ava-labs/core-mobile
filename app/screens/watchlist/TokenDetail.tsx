@@ -340,7 +340,7 @@ const TokenDetail = () => {
             title={'MarketCap'}
             value={formatMarketNumbers(marketCap)}
           />
-          {token?.isAvax ? null : (
+          {token?.address && (
             <DataItem
               title={'Contract Address'}
               value={
@@ -388,7 +388,7 @@ const TokenDetail = () => {
           />
         </Row>
 
-        {token?.isAvax && (
+        {token?.symbol === 'AVAX' && (
           <AvaButton.Base onPress={openMoonPay}>
             <OvalTagBg color={theme.colorBg2} style={{ height: 48 }}>
               <AvaText.ButtonLarge>Buy {token?.symbol}</AvaText.ButtonLarge>

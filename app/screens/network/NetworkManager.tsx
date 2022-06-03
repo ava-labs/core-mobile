@@ -3,7 +3,6 @@ import { FlatList, View } from 'react-native'
 import { useSelector, useDispatch } from 'react-redux'
 import {
   toggleFavorite,
-  Network,
   selectFavoriteNetworks,
   selectNetworks,
   setActive
@@ -15,6 +14,7 @@ import TabViewAva from 'components/TabViewAva'
 import ZeroState from 'components/ZeroState'
 import { NetworkListItem } from 'screens/network/NetworkListItem'
 import { getIcon } from 'screens/network/NetworkIconSelector'
+import { Network } from '@avalabs/chains-sdk'
 
 type Props = {
   onShowInfo: (network: Network) => void
@@ -30,25 +30,25 @@ export default function NetworkManager({ onShowInfo }: Props) {
   const mainNets = useMemo(
     () =>
       Object.values(networks)
-        .filter(network => !network.isTest)
+        .filter(network => !network.isTestnet)
         .filter(network =>
-          network.name.toLowerCase().includes(searchText.toLowerCase())
+          network.chainName.toLowerCase().includes(searchText.toLowerCase())
         ),
     [networks, searchText]
   )
   const testNets = useMemo(
     () =>
       Object.values(networks)
-        .filter(network => network.isTest)
+        .filter(network => network.isTestnet)
         .filter(network =>
-          network.name.toLowerCase().includes(searchText.toLowerCase())
+          network.chainName.toLowerCase().includes(searchText.toLowerCase())
         ),
     [networks, searchText]
   )
   const favorites = useMemo(
     () =>
       favoriteNetworks.filter(network =>
-        network.name.toLowerCase().includes(searchText.toLowerCase())
+        network.chainName.toLowerCase().includes(searchText.toLowerCase())
       ),
     [favoriteNetworks, searchText]
   )
@@ -87,7 +87,7 @@ export default function NetworkManager({ onShowInfo }: Props) {
       <NetworkListItem
         onPress={connect}
         networkChainId={item.chainId}
-        networkName={item.name}
+        networkName={item.chainName}
         icon={getIcon(item.chainId, 32)} //TODO: set real url
         isFavorite={isFavorite}
         onFavorite={() => dispatch(toggleFavorite(item.chainId))}
@@ -110,7 +110,7 @@ export default function NetworkManager({ onShowInfo }: Props) {
           <FlatList
             data={favorites}
             renderItem={renderNetwork}
-            keyExtractor={item => item.name}
+            keyExtractor={item => item.chainId.toString()}
             contentContainerStyle={{ paddingHorizontal: 16 }}
             ListEmptyComponent={
               <View style={{ marginVertical: 40 }}>
@@ -123,7 +123,7 @@ export default function NetworkManager({ onShowInfo }: Props) {
           <FlatList
             data={mainNets}
             renderItem={renderNetwork}
-            keyExtractor={item => item.name}
+            keyExtractor={item => item.chainName}
             contentContainerStyle={{ paddingHorizontal: 16 }}
             ListEmptyComponent={
               <View style={{ marginVertical: 40 }}>
@@ -136,7 +136,7 @@ export default function NetworkManager({ onShowInfo }: Props) {
           <FlatList
             data={testNets}
             renderItem={renderNetwork}
-            keyExtractor={item => item.name}
+            keyExtractor={item => item.chainId.toString()}
             contentContainerStyle={{ paddingHorizontal: 16 }}
             ListEmptyComponent={
               <View style={{ marginVertical: 40 }}>

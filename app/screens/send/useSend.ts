@@ -1,33 +1,34 @@
 import {
   ERC20,
-  ERC20WithBalance,
   sendErc20Submit,
   SendHookError,
-  TokenWithBalance,
   useSendAvax,
   useSendErc20Form
 } from '@avalabs/wallet-react-components'
 import { BN, WalletType } from '@avalabs/avalanche-wallet-sdk'
 import { Observable } from 'rxjs'
+import { TokenWithBalance } from 'store/balance'
 
+// TODO: refactor send logic to deal with multiple chains
 export function useSend(
-  token: TokenWithBalance | ERC20WithBalance | undefined,
+  token: TokenWithBalance | undefined,
   gasPrice$: Observable<{ bn: BN }>
 ) {
+  const isERC20 = token?.contractType === 'ERC-20'
   const sendAvax = useSendAvax(gasPrice$)
   const sendErc20 = useSendErc20Form(
-    token?.isErc20 ? (token as ERC20) : undefined,
+    isERC20 ? (token as ERC20) : undefined,
     gasPrice$
   )
 
   return (
-    token?.isAvax ? { ...sendAvax } : { ...sendErc20, submit: sendErc20Submit }
+    !isERC20 ? { ...sendAvax } : { ...sendErc20, submit: sendErc20Submit }
   ) as SendTokenInterface
 }
 
 interface SendTokenInterface {
   submit?: (
-    token?: ERC20,
+    token?: TokenWithBalance,
     wall?: Promise<WalletType | undefined> | undefined,
     amount?: BN,
     address?: string,
@@ -35,7 +36,7 @@ interface SendTokenInterface {
       bn: BN
     }>,
     balances$?: import('rxjs').Subject<{
-      [address: string]: ERC20
+      [address: string]: TokenWithBalance
     }>,
     gasLimit?: number
   ) => Observable<
@@ -65,8 +66,10 @@ interface SendTokenInterface {
   gasLimit?: number | undefined
   canSubmit?: boolean | undefined
   //region ERC20 specific
-  setTokenBalances?(tokenBalances: { [address: string]: ERC20 }): void
+  setTokenBalances?(tokenBalances: {
+    [address: string]: TokenWithBalance
+  }): void
   sendFeeDisplayValue?: string | undefined
-  token?: ERC20 | undefined
+  token?: TokenWithBalance | undefined
   //endregion
 }

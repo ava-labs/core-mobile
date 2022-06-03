@@ -17,10 +17,10 @@ import { useCallback, useEffect, useState } from 'react'
 import { getBtcBalance } from 'screens/bridge/hooks/getBtcBalance'
 import { getAvalancheProvider } from 'screens/bridge/utils/getAvalancheProvider'
 import { TxSimple } from '@avalabs/blockcypher-sdk'
-import { useIsMainnet } from 'hooks/isMainnet'
 import { AssetBalance } from 'screens/bridge/utils/types'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
+import { ChainId } from '@avalabs/chains-sdk'
 
 export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
   const network = useSelector(selectActiveNetwork)
@@ -32,7 +32,7 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
     useBridgeSDK()
 
   const avalancheProvider = getAvalancheProvider(network)
-  const isMainnet = useIsMainnet()
+  const isMainnet = network.chainId === ChainId.AVALANCHE_MAINNET_ID
   const btcAddress =
     wallet?.getAddressBTC(isMainnet ? 'bitcoin' : 'testnet') ?? ''
   const avalancheAddress = wallet?.getAddressC()

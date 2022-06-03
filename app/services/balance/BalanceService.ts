@@ -1,12 +1,13 @@
-import { Network, NetworkVM } from 'store/network'
 import { TokenWithBalance } from 'store/balance'
 import NetworkService from 'services/network/NetworkService'
+import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import BtcBalanceService from './BtcBalanceService'
 import EvmBalanceService from './EvmBalanceService'
 
 const serviceMap = {
-  [NetworkVM.BITCOIN]: BtcBalanceService,
-  [NetworkVM.EVM]: EvmBalanceService
+  [NetworkVMType.BITCOIN]: BtcBalanceService,
+  [NetworkVMType.EVM]: EvmBalanceService,
+  [NetworkVMType.ETHEREUM]: EvmBalanceService
 }
 
 type ServiceMap = typeof serviceMap
@@ -19,7 +20,7 @@ class BalanceServiceFactory {
 }
 export class BalanceService {
   private getBalanceServiceForNetwork(network: Network) {
-    const balanceService = BalanceServiceFactory.getService(network.vm)
+    const balanceService = BalanceServiceFactory.getService(network.vmName)
 
     if (!balanceService)
       throw new Error(`no balance service found for network ${network.chainId}`)

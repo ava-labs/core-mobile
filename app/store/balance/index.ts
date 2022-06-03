@@ -1,15 +1,17 @@
 import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { TokenWithBalance } from '@avalabs/wallet-react-components'
 import { AppStartListening } from 'store/middleware/listener'
+import { RootState } from 'store'
+import { Network } from '@avalabs/chains-sdk'
 import BalanceService from 'services/balance/BalanceService'
-import { Network } from 'store/network'
-import { BalanceState } from './types'
+import { BalanceState, TokenWithBalance } from './types'
 
 const reducerName = 'balance'
 
 const initialState: BalanceState = {
   balances: {}
 }
+
+const getKey = (chainId: number, address: string) => `${chainId}-${address}`
 
 export const balanceSlice = createSlice({
   name: reducerName,
@@ -25,7 +27,8 @@ export const balanceSlice = createSlice({
       }>
     ) => {
       const { address, accountIndex, chainId, tokens } = action.payload
-      state.balances[address] = {
+      const key = getKey(chainId, address)
+      state.balances[key] = {
         accountIndex,
         chainId,
         tokens
@@ -33,6 +36,30 @@ export const balanceSlice = createSlice({
     }
   }
 })
+
+// selectors
+export const selectTokensWithBalance =
+  (chainId: number, address: string) => (state: RootState) => {
+    const key = getKey(chainId, address)
+    return state.balance.balances[key]?.tokens ?? []
+  }
+
+export const selectBalanceTotalInUSD =
+  (accountIndex: number) => (state: RootState) => {
+    const balances = Object.values(state.balance.balances).filter(
+      balance => balance.accountIndex === accountIndex
+    )
+
+    let totalInUSD = 0
+
+    for (const balance of balances) {
+      for (const token of balance.tokens) {
+        totalInUSD += token.balanceUSD ?? 0
+      }
+    }
+
+    return totalInUSD
+  }
 
 // actions
 export const { setBalance } = balanceSlice.actions
@@ -53,7 +80,6 @@ export const addBalanceListeners = (startListening: AppStartListening) => {
     actionCreator: getBalance,
     effect: async (action, listenerApi) => {
       const { accountIndex, address, network } = action.payload
-
       const tokens = await BalanceService.getBalances(network, address)
 
       listenerApi.dispatch(

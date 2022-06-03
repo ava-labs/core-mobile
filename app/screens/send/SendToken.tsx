@@ -10,16 +10,14 @@ import FlexSpacer from 'components/FlexSpacer'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useSendTokenContext } from 'contexts/SendTokenContext'
 import numeral from 'numeral'
-import {
-  ERC20WithBalance,
-  TokenWithBalance
-} from '@avalabs/wallet-react-components'
+import { ERC20WithBalance } from '@avalabs/wallet-react-components'
 import { AddrBookItemType, Contact } from 'Repo'
 import AddressBookLists from 'components/addressBook/AddressBookLists'
 import { Account } from 'dto/Account'
 import { useAddressBookLists } from 'components/addressBook/useAddressBookLists'
 import QrScannerAva from 'components/QrScannerAva'
 import QRScanSVG from 'components/svg/QRScanSVG'
+import { TokenWithBalance } from 'store/balance'
 
 type Props = {
   onNext: () => void
