@@ -47,6 +47,22 @@ export class NetworkService {
 
     throw new Error('unsupported network')
   }
+
+  async sendTransaction(signedTx: string, network: Network) {
+    if (!network) {
+      throw new Error('No active network')
+    }
+    const provider = this.getProviderForNetwork(network)
+    if (provider instanceof JsonRpcBatchInternal) {
+      return (await provider.sendTransaction(signedTx)).hash
+    }
+
+    if (provider instanceof BlockCypherProvider) {
+      return (await provider.issueRawTx(signedTx)).hash
+    }
+
+    throw new Error('No provider found')
+  }
 }
 
 export default new NetworkService()

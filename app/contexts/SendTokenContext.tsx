@@ -10,11 +10,10 @@ import React, {
 import {
   ERC20WithBalance,
   SendHookError,
-  useWalletContext,
   useWalletStateContext
 } from '@avalabs/wallet-react-components'
 import AvaLogoSVG from 'components/svg/AvaLogoSVG'
-import { Alert, Image } from 'react-native'
+import { Image } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import {
   bnToAvaxC,
@@ -24,12 +23,19 @@ import {
 } from '@avalabs/avalanche-wallet-sdk'
 import { mustNumber, mustValue } from 'utils/JsTools'
 import { BN } from 'avalanche'
-import { BehaviorSubject, firstValueFrom, of, Subject } from 'rxjs'
+import { BehaviorSubject } from 'rxjs'
 import { useSend } from 'screens/send/useSend'
 import { TokenWithBalance } from 'store/balance'
 import { TokenSymbol } from 'store/network'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/accounts/accountsStore'
+import { SendService } from 'services/send/SendService'
+import { walletServiceInstance } from 'services/wallet/WalletService'
+import networkService from 'services/network/NetworkService'
+import { selectActiveNetwork } from 'store/network'
+import { SendState } from 'services/send/types'
+import { BigNumber } from 'ethers'
+import { bnToEthersBigNumber } from '@avalabs/utils-sdk'
 
 export interface SendTokenContextState {
   sendToken: TokenWithBalance | undefined
@@ -52,9 +58,9 @@ export const SendTokenContext = createContext<SendTokenContextState>({} as any)
 
 export const SendTokenContextProvider = ({ children }: { children: any }) => {
   const { theme } = useApplicationContext()
-  const { wallet } = useWalletContext()
   const activeAccount = useSelector(selectActiveAccount)
-  const { avaxPrice, erc20Tokens } = useWalletStateContext()!
+  const activeNetwork = useSelector(selectActiveNetwork)
+  const { avaxPrice } = useWalletStateContext()!
   const [sendToken, setSendToken] = useState<TokenWithBalance | undefined>(
     undefined
   )
@@ -65,7 +71,6 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
   )
 
   const {
-    submit,
     setAmount,
     amount,
     setAddress,
@@ -75,7 +80,8 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
     setTokenBalances,
     gasLimit,
     setGasLimit,
-    error
+    error,
+    gasPrice
   } = useSend(sendToken, customGasPrice$)
 
   const [sendAmount, setSendAmount] = useState('0')
@@ -162,47 +168,31 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
 
   function onSendNow() {
     console.log('onsend now')
+    if (!activeAccount) {
+      setSendStatus('Fail')
+      setSendStatusMsg('No active account')
+      return
+    }
     setTransactionId(undefined)
     setSendStatus('Sending')
 
-    const balances = erc20Tokens.reduce(
-      (acc: { [key: string]: ERC20WithBalance }, tk) => {
-        return {
-          ...acc,
-          [tk.address]: tk
-        }
-      },
-      {}
-    )
-
-    submit?.(
-      sendToken?.contractType === 'ERC-20' && sendToken.address
-        ? sendToken
-        : undefined,
-      Promise.resolve(wallet),
-      amount!,
-      address!,
-      firstValueFrom(customGasPrice$),
-      of(balances) as Subject<any>,
-      gasLimit
-    ).subscribe({
-      next: value => {
-        if (value === undefined) {
-          Alert.alert('Error', 'Undefined error')
-        } else {
-          if ('txId' in value && value.txId) {
-            setTransactionId(value.txId)
-            setSendStatus('Success')
-            console.log('send success', value.txId)
-          }
-        }
-      },
-      error: err => {
+    const sendService = new SendService(walletServiceInstance, networkService)
+    const sendState = {
+      address,
+      amount,
+      gasPrice: gasPrice ? bnToEthersBigNumber(gasPrice) : BigNumber.from(0),
+      token: sendToken
+    } as SendState
+    sendService
+      .send(sendState, activeNetwork, activeAccount)
+      .then(txId => {
+        setTransactionId(txId)
+        setSendStatus('Success')
+      })
+      .catch(reason => {
         setSendStatus('Fail')
-        setSendStatusMsg(err)
-        console.log('send err', err)
-      }
-    })
+        setSendStatusMsg(reason)
+      })
   }
 
   const tokenLogo = useCallback(() => {
