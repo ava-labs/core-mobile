@@ -16,7 +16,6 @@ type Props = {
   network: Network
 }
 
-// TODO add explorer url
 export default function NetworkDetails({ network }: Props) {
   const { rpcUrl, chainId, networkToken } = network
   const activeNetwork = useSelector(selectActiveNetwork)
@@ -42,7 +41,7 @@ export default function NetworkDetails({ network }: Props) {
       <Space y={24} />
       <DetailItem title={'Native Token'} value={networkToken.name} />
       <Space y={24} />
-      <DetailItem title={'Explorer URL'} value={''} />
+      <DetailItem title={'Explorer URL'} value={activeNetwork.explorerUrl} />
       <FlexSpacer />
       <AvaButton.PrimaryLarge disabled={isConnected} onPress={connect}>
         {isConnected ? 'Connected' : 'Connect'}
