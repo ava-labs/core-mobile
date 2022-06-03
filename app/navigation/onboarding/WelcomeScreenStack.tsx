@@ -13,7 +13,7 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import AnalyticsConsent from 'screens/onboarding/AnalyticsConsent'
 import { MainHeaderOptions } from 'navigation/NavUtils'
 import { useDispatch } from 'react-redux'
-import { onLoginSuccess } from 'store/actions'
+import { onLoginSuccess } from 'store/app'
 import { WelcomeScreenProps } from '../types'
 import CreateWalletStack, {
   CreateWalletStackParamList

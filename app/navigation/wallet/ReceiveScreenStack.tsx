@@ -10,7 +10,7 @@ import { useNavigation } from '@react-navigation/native'
 import HeaderAccountSelector from 'components/HeaderAccountSelector'
 import AppNavigation from 'navigation/AppNavigation'
 import { ReceiveTokensScreenProps } from 'navigation/types'
-import ReceiveToken2 from 'screens/receive/ReceiveToken2'
+import ReceiveToken from 'screens/receive/ReceiveToken'
 import NetworkDropdown from 'screens/network/NetworkDropdown'
 
 export type ReceiveStackParamList = {
@@ -76,6 +76,6 @@ const HeaderAccountSelectorComp = () => {
   )
 }
 
-const ReceiveTokenScreen = () => <ReceiveToken2 embedded={false} />
+const ReceiveTokenScreen = () => <ReceiveToken embedded={false} />
 
 export default ReceiveScreenStack

@@ -11,7 +11,9 @@ import AvaxQACode from 'components/AvaxQRCode'
 import { useWalletContext } from '@avalabs/wallet-react-components'
 import TokenAddress from 'components/TokenAddress'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { useIsMainnet } from 'hooks/isMainnet'
+import { useSelector } from 'react-redux'
+import { selectActiveNetwork } from 'store/network'
+import { ChainId, BITCOIN_NETWORK } from '@avalabs/chains-sdk'
 
 function AddBitcoinInstructionsBottomSheet(): JSX.Element {
   const theme = useApplicationContext().theme
@@ -19,7 +21,8 @@ function AddBitcoinInstructionsBottomSheet(): JSX.Element {
   const bottomSheetModalRef = useRef<BottomSheet>(null)
   const snapPoints = useMemo(() => ['0%', '80%'], [])
   const wallet = useWalletContext().wallet
-  const isMainnet = useIsMainnet()
+  const network = useSelector(selectActiveNetwork)
+  const isMainnet = network.chainId === ChainId.AVALANCHE_MAINNET_ID
   const btcAddress = wallet?.getAddressBTC(isMainnet ? 'bitcoin' : 'testnet')
 
   useEffect(() => {
@@ -77,7 +80,11 @@ function AddBitcoinInstructionsBottomSheet(): JSX.Element {
           </AvaText.ButtonSmall>
         </Row>
         <View style={{ alignSelf: 'center', marginVertical: 24 }}>
-          <AvaxQACode sizePercentage={0.5} address={btcAddress} token={'BTC'} />
+          <AvaxQACode
+            sizePercentage={0.5}
+            address={btcAddress}
+            token={BITCOIN_NETWORK.networkToken.symbol}
+          />
         </View>
         <AvaText.Heading2>Core X bitcoin Address</AvaText.Heading2>
         <Space y={8} />

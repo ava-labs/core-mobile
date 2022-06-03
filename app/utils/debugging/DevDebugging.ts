@@ -6,7 +6,8 @@ const useDevDebugging = () => {
     LOGBOX_IGNORED_WARNINGS,
     LOGBOX_DISABLED,
     STORYBOOK_ENABLED,
-    REDSCREEN_DISABLED
+    REDSCREEN_DISABLED,
+    SPLASH_ENABLED
   } = DevDebuggingConfig
   function configure() {
     LogBox.ignoreLogs(LOGBOX_IGNORED_WARNINGS)
@@ -19,7 +20,8 @@ const useDevDebugging = () => {
   }
 
   const isStorybookEnabled = STORYBOOK_ENABLED
-  return { configure, isStorybookEnabled }
+  const isSplashEnabled = SPLASH_ENABLED
+  return { configure, isStorybookEnabled, isSplashEnabled }
 }
 
 export default useDevDebugging

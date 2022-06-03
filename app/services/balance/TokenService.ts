@@ -4,7 +4,6 @@ import {
   VsCurrencyType
 } from '@avalabs/coingecko-sdk'
 import { getTokensPrice } from '@avalabs/token-prices-sdk'
-import { MAINNET_NETWORK } from 'store/network'
 
 export class TokenService {
   /**
@@ -37,7 +36,7 @@ export class TokenService {
   async getTokenPricesByAddresses(
     tokens: { address: string }[],
     assetPlatformId: string,
-    coinId = MAINNET_NETWORK.nativeToken.coinId,
+    coinId: string,
     selectedCurrency: string
   ): Promise<Record<string, number>> {
     const avaxPrice = await this.getPriceByCoinId(coinId, selectedCurrency)
@@ -49,7 +48,6 @@ export class TokenService {
       avaxPrice || 0,
       assetPlatformId
     )
-    console.log('tokenPriceRes', tokenPriceRes)
 
     return tokenPriceRes
   }

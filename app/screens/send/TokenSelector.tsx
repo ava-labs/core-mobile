@@ -5,15 +5,14 @@ import {
   TextInput,
   View
 } from 'react-native'
-import { TokenWithBalance } from '@avalabs/wallet-react-components'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 import Loader from 'components/Loader'
 import ZeroState from 'components/ZeroState'
 import PortfolioListItem from 'screens/portfolio/components/PortfolioListItem'
 import { Space } from 'components/Space'
-import { getTokenUID } from 'utils/TokenTools'
 import SearchBar from 'components/SearchBar'
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
+import { TokenWithBalance } from 'store/balance'
 
 const DEFAULT_HORIZONTAL_MARGIN = 16
 
@@ -45,7 +44,7 @@ function TokenSelector({
         tokenName={token.name}
         tokenPrice={token.balanceDisplayValue ?? '0'}
         tokenPriceUsd={token.balanceUsdDisplayValue}
-        image={token?.logoURI}
+        image={token?.logoUri}
         symbol={token.symbol}
         onPress={() => {
           onTokenSelected(token)
@@ -82,7 +81,7 @@ function TokenSelector({
           data={filteredTokenList}
           renderItem={renderItem}
           refreshing={false}
-          keyExtractor={(item: TokenWithBalance) => getTokenUID(item)}
+          keyExtractor={(item: TokenWithBalance) => item.symbol}
           ListEmptyComponent={
             <ZeroState.NoResultsTextual message={getNoResultsText()} />
           }

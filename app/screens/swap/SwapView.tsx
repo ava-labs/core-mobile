@@ -9,9 +9,9 @@ import TokenDropDown from 'screens/swap/components/TokenDropDown'
 import SwapTransactionDetail from 'screens/swap/components/SwapTransactionDetails'
 import { useSwapContext } from 'contexts/SwapContext'
 import { useNavigation } from '@react-navigation/native'
-import { TokenWithBalance } from '@avalabs/wallet-react-components'
 import AppNavigation from 'navigation/AppNavigation'
 import { SwapScreenProps } from 'navigation/types'
+import { TokenWithBalance } from 'store/balance'
 
 type NavigationProp = SwapScreenProps<
   typeof AppNavigation.Swap.Swap

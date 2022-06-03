@@ -3,10 +3,10 @@ import { Image, StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaLogoSVG from 'components/svg/AvaLogoSVG'
 import { Erc20Token } from '@avalabs/avalanche-wallet-sdk/dist/Asset'
-import { TokenWithBalance } from '@avalabs/wallet-react-components'
 import { Opacity10 } from 'resources/Constants'
 import EthereumSvg from 'components/svg/Ethereum'
 import BitcoinSVG from 'components/svg/BitcoinSVG'
+import { TokenWithBalance } from 'store/balance'
 import AvaText from './AvaText'
 
 interface Props {
@@ -101,7 +101,7 @@ const TokenAvatar: FC<TokenAvatarProps> = ({ token, size }) => {
   const isErc20Token = !isTokenWithBalance(token)
   const name = token.name
   const symbol = token.symbol
-  const logoUri = isErc20Token ? undefined : (token as TokenWithBalance).logoURI
+  const logoUri = isErc20Token ? undefined : (token as TokenWithBalance).logoUri
 
   return (
     <AvatarBase name={name} symbol={symbol} logoUri={logoUri} size={size} />

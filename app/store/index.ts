@@ -13,12 +13,13 @@ import {
 } from 'redux-persist'
 import network from './network'
 import balance, { setBalance } from './balance'
-import { onRehydrationComplete } from './actions'
+import app, { onRehydrationComplete } from './app'
 import { listener } from './middleware/listener'
 
 const persistActions = [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER]
 
 const rootReducer = combineReducers({
+  app,
   network,
   balance
 })

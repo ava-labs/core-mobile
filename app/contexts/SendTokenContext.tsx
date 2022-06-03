@@ -11,7 +11,6 @@ import {
   ERC20,
   ERC20WithBalance,
   SendHookError,
-  TokenWithBalance,
   useAccountsContext,
   useWalletContext,
   useWalletStateContext
@@ -29,12 +28,7 @@ import { mustNumber, mustValue } from 'utils/JsTools'
 import { BN } from 'avalanche'
 import { BehaviorSubject, firstValueFrom, of, Subject } from 'rxjs'
 import { useSend } from 'screens/send/useSend'
-
-export enum TokenType {
-  AVAX,
-  ERC20,
-  ANT
-}
+import { TokenWithBalance } from 'store/balance'
 
 export interface SendTokenContextState {
   sendToken: TokenWithBalance | undefined
@@ -44,7 +38,6 @@ export interface SendTokenContextState {
   fromAccount: Account
   toAccount: Account
   tokenLogo: () => JSX.Element
-  tokenType: (token?: TokenWithBalance) => TokenType | undefined
   fees: Fees
   canSubmit: boolean
   sendStatus: 'Idle' | 'Sending' | 'Success' | 'Fail'
@@ -55,20 +48,6 @@ export interface SendTokenContextState {
 }
 
 export const SendTokenContext = createContext<SendTokenContextState>({} as any)
-
-const tokenType = (token?: TokenWithBalance) => {
-  if (token === undefined) {
-    return undefined
-  } else if (token.isAvax) {
-    return TokenType.AVAX
-  } else if (token.isErc20) {
-    return TokenType.ERC20
-  } else if (token.isAnt) {
-    return TokenType.ANT
-  } else {
-    return undefined
-  }
-}
 
 export const SendTokenContextProvider = ({ children }: { children: any }) => {
   const { theme, repo } = useApplicationContext()
@@ -119,7 +98,7 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
       bnToBig(
         sendToken?.balance.sub(amount ?? new BN(0)).sub(sendFee ?? new BN(0)) ??
           new BN(0),
-        sendToken?.denomination
+        sendToken?.decimals
       ).toFixed(4)
     )
   }, [sendFee, amount])
@@ -162,8 +141,9 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
       )
     )
   }, [customGasPriceNanoAvax])
+
   useEffect(() => {
-    if (sendToken?.isErc20) {
+    if (sendToken?.contractType === 'ERC-20') {
       setTokenBalances?.({ [(sendToken as ERC20).address]: sendToken as ERC20 })
     }
   }, [sendToken])
@@ -171,7 +151,7 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
   useEffect(() => {
     setAmount(
       mustValue(
-        () => stringToBN(sendAmount, sendToken?.denomination ?? 0),
+        () => stringToBN(sendAmount, sendToken?.decimals ?? 0),
         new BN(0)
       )
     )
@@ -197,7 +177,7 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
     )
 
     submit?.(
-      sendToken?.isErc20 ? (sendToken as ERC20) : undefined,
+      sendToken?.contractType === 'ERC-20' ? (sendToken as ERC20) : undefined,
       Promise.resolve(wallet),
       amount!,
       address!,
@@ -225,14 +205,14 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
   }
 
   const tokenLogo = useCallback(() => {
-    if (sendToken?.isAvax) {
+    if (sendToken?.symbol === 'AVAX') {
       return <AvaLogoSVG size={57} />
     } else {
       return (
         <Image
           style={{ width: 57, height: 57 }}
           source={{
-            uri: sendToken?.logoURI
+            uri: sendToken?.logoUri
           }}
         />
       )
@@ -265,7 +245,6 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
       setGasLimit
     },
     tokenLogo,
-    tokenType,
     canSubmit: canSubmit ?? false,
     sendStatus,
     sendStatusMsg,

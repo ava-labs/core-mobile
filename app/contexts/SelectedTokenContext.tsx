@@ -5,21 +5,14 @@ import React, {
   useContext,
   useState
 } from 'react'
-import { TokenWithBalance } from '@avalabs/wallet-react-components'
 import AvaLogoSVG from 'components/svg/AvaLogoSVG'
 import { Image, StyleSheet } from 'react-native'
-
-export enum TokenType {
-  AVAX,
-  ERC20,
-  ANT
-}
+import { TokenWithBalance } from 'store/balance'
 
 export interface SelectedTokenContextState {
   selectedToken: TokenWithBalance | undefined
   setSelectedToken: Dispatch<SetStateAction<TokenWithBalance | undefined>>
   tokenLogo: () => JSX.Element
-  tokenType: (token?: TokenWithBalance) => TokenType | undefined
 }
 
 export const SelectedTokenContext = createContext<SelectedTokenContextState>(
@@ -36,40 +29,26 @@ export const SelectedTokenContextProvider = ({
   >(undefined)
 
   const tokenLogo = () => {
-    if (selectedToken?.isAvax) {
+    if (selectedToken?.symbol === 'AVAX') {
       return <AvaLogoSVG size={32} />
     } else {
       return (
         <Image
           style={styles.tokenLogo}
           source={{
-            uri: selectedToken?.logoURI
+            uri: selectedToken?.logoUri
           }}
         />
       )
     }
   }
 
-  const tokenType = (token?: TokenWithBalance) => {
-    if (token === undefined) {
-      return undefined
-    } else if (token.isAvax) {
-      return TokenType.AVAX
-    } else if (token.isErc20) {
-      return TokenType.ERC20
-    } else if (token.isAnt) {
-      return TokenType.ANT
-    } else {
-      return undefined
-    }
-  }
-
   const state: SelectedTokenContextState = {
     selectedToken,
     setSelectedToken,
-    tokenLogo,
-    tokenType
+    tokenLogo
   }
+
   return (
     <SelectedTokenContext.Provider value={state}>
       {children}

@@ -6,9 +6,9 @@ import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
 import CarrotSVG from 'components/svg/CarrotSVG'
 import InputText from 'components/InputText'
-import { TokenWithBalance } from '@avalabs/wallet-react-components'
 import Avatar from 'components/Avatar'
 import numeral from 'numeral'
+import { TokenWithBalance } from 'store/balance'
 
 interface TokenSelectAndAmountProps {
   selectedToken: TokenWithBalance | undefined
@@ -70,7 +70,7 @@ const TokenSelectAndAmount: FC<TokenSelectAndAmountProps> = ({
             <Avatar.Custom
               name={selectedToken.name}
               symbol={selectedToken.symbol}
-              logoUri={selectedToken.logoURI}
+              logoUri={selectedToken.logoUri}
             />
             <Space x={8} />
             <AvaText.Heading3>{selectedToken.symbol}</AvaText.Heading3>

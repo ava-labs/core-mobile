@@ -5,8 +5,8 @@ import { Allowance } from 'paraswap/build/types'
 import { OptimalRate } from 'paraswap-core'
 import { incrementalPromiseResolve, resolve } from 'swap/utils'
 import { BN } from 'avalanche'
-import { MAINNET_NETWORK } from 'store/network'
 import { NetworkID, APIError, ParaSwap } from 'paraswap'
+import { ChainId } from '@avalabs/chains-sdk'
 import ERC20_ABI from '../contracts/erc20.abi.json'
 
 const SERVER_BUSY_ERROR = 'Server too busy'
@@ -60,7 +60,7 @@ export async function performSwap(
   }
 
   // only Mainnet has swap UI enabled and can perform swap
-  const chainId = Number(MAINNET_NETWORK.chainId)
+  const chainId = Number(ChainId.AVALANCHE_MAINNET_ID)
   const pSwap = new ParaSwap(chainId as NetworkID, undefined, new Web3())
 
   const buildOptions = undefined,
