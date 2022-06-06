@@ -14,6 +14,7 @@ import {
 import { networkReducer as network } from './network'
 import { balanceReducer as balance, setBalance } from './balance'
 import { appReducer as app, onRehydrationComplete } from './app'
+import settings from './settings'
 import { listener } from './middleware/listener'
 import { accountsReducer as account } from './account'
 
@@ -23,13 +24,14 @@ const rootReducer = combineReducers({
   app,
   network,
   balance,
-  account
+  account,
+  settings
 })
 
 const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
-  whitelist: ['network', 'account']
+  whitelist: ['network', 'account', 'settings']
 }
 
 const persistedReducer = persistReducer(persistConfig, rootReducer)

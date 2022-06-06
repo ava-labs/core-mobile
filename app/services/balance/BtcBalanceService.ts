@@ -2,8 +2,6 @@ import { BlockCypherProvider } from '@avalabs/wallets-sdk'
 import { satoshiToBtc } from '@avalabs/bridge-sdk'
 import { balanceToDisplayValue, bigToBN } from '@avalabs/utils-sdk'
 import { TokenType, TokenWithBalance } from 'store/balance'
-import { currentSelectedCurrency$ } from '@avalabs/wallet-react-components'
-import { firstValueFrom } from 'rxjs'
 import { Network } from '@avalabs/chains-sdk'
 import TokenService from './TokenService'
 
@@ -11,11 +9,9 @@ export class BtcBalanceService {
   async getBalances(
     network: Network,
     provider: BlockCypherProvider,
-    userAddress: string
+    userAddress: string,
+    selectedCurrency: string
   ): Promise<TokenWithBalance[]> {
-    // TODO store selected currency in redux
-    const selectedCurrency = await firstValueFrom(currentSelectedCurrency$)
-
     const { networkToken, chainId } = network
 
     const nativeTokenId =

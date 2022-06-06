@@ -2,13 +2,11 @@ import { ethers } from 'ethers'
 import { User } from '@avalabs/blizzard-sdk'
 import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 import { InfuraProvider } from '@ethersproject/providers'
-import { currentSelectedCurrency$ } from '@avalabs/wallet-react-components'
 import {
   balanceToDisplayValue,
   bigToBN,
   ethersBigNumberToBig
 } from '@avalabs/utils-sdk'
-import { firstValueFrom } from 'rxjs'
 import {
   NetworkTokenWithBalance,
   TokenType,
@@ -151,11 +149,9 @@ export class EvmBalanceService {
   async getBalances(
     network: Network,
     provider: Provider,
-    userAddress: string
+    userAddress: string,
+    selectedCurrency: string
   ): Promise<TokenWithBalance[]> {
-    const selectedCurrency = await (
-      await firstValueFrom(currentSelectedCurrency$)
-    ).toLowerCase()
     const activeTokenList = network.tokens ?? []
 
     const tokenAddresses = activeTokenList.map(token => token.address)
