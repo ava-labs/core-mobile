@@ -6,6 +6,7 @@ import { Opacity10 } from 'resources/Constants'
 import EthereumSvg from 'components/svg/Ethereum'
 import BitcoinSVG from 'components/svg/BitcoinSVG'
 import { TokenWithBalance } from 'store/balance'
+import { TokenSymbol } from 'store/network'
 import AvaText from './AvaText'
 
 interface Props {
@@ -31,7 +32,7 @@ const AvatarBase: FC<Props> = ({
 
   const tokenLogo = useCallback(() => {
     // if AVAX, return our own logo
-    if (symbol === 'AVAX' || symbol === 'FAU') {
+    if (symbol === TokenSymbol.AVAX || symbol === 'FAU') {
       return (
         <AvaLogoSVG
           size={size}
@@ -39,9 +40,9 @@ const AvatarBase: FC<Props> = ({
           backgroundColor={theme.tokenLogoBg}
         />
       )
-    } else if (symbol === 'ETH') {
+    } else if (symbol === TokenSymbol.ETH) {
       return <EthereumSvg size={size} />
-    } else if (symbol === 'BTC') {
+    } else if (symbol === TokenSymbol.BTC) {
       return <BitcoinSVG size={size} />
     }
 

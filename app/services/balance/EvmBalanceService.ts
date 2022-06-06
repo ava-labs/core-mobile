@@ -86,7 +86,7 @@ export class EvmBalanceService {
 
     return Promise.allSettled(
       activeTokenList.map(async token => {
-        const id = `${chainId}-${token.address ?? token.symbol}`
+        const id = `${chainId}-${token.address}`
         const tokenPrice =
           tokenPriceDict[token.address.toLowerCase()]?.[
             selectedCurrency as VsCurrencyType

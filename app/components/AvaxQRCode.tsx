@@ -6,6 +6,7 @@ import AvaLogoSVG from 'components/svg/AvaLogoSVG'
 import CircularText from 'components/svg/CircularText'
 import BitcoinSVG from 'components/svg/BitcoinSVG'
 import EthereumSvg from 'components/svg/Ethereum'
+import { TokenSymbol } from 'store/network'
 
 interface Props {
   address?: string
@@ -19,7 +20,7 @@ const { width: screenWidth } = Dimensions.get('window')
 const AvaxQRCode: FC<Props> = ({
   address,
   sizePercentage = 1,
-  token = 'AVAX',
+  token = TokenSymbol.AVAX,
   label = ''
 }: Props) => {
   const { theme } = useApplicationContext()
@@ -33,7 +34,7 @@ const AvaxQRCode: FC<Props> = ({
 
   const qrToken = () => {
     switch (token) {
-      case 'BTC':
+      case TokenSymbol.BTC:
         return (
           <BitcoinSVG
             absolutePosition
@@ -42,9 +43,9 @@ const AvaxQRCode: FC<Props> = ({
             size={qrTokenSize}
           />
         )
-      case 'ETH':
+      case TokenSymbol.ETH:
         return <EthereumSvg absolutePosition size={qrTokenSize} />
-      case 'AVAX':
+      case TokenSymbol.AVAX:
       default:
         return (
           <AvaLogoSVG

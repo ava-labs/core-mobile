@@ -35,6 +35,7 @@ import { ViewOnceInformation } from 'Repo'
 import TokenAddress from 'components/TokenAddress'
 import AppNavigation from 'navigation/AppNavigation'
 import { formatLargeNumber } from 'utils/Utils'
+import { TokenSymbol } from 'store/network'
 
 const WINDOW_WIDTH = Dimensions.get('window').width
 
@@ -389,7 +390,7 @@ const TokenDetail = () => {
           />
         </Row>
 
-        {token?.symbol === 'AVAX' && (
+        {token?.symbol === TokenSymbol.AVAX && (
           <AvaButton.Base onPress={openMoonPay}>
             <OvalTagBg color={theme.colorBg2} style={{ height: 48 }}>
               <AvaText.ButtonLarge>Buy {token?.symbol}</AvaText.ButtonLarge>

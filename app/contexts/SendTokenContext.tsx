@@ -28,6 +28,7 @@ import { BN } from 'avalanche'
 import { BehaviorSubject, firstValueFrom, of, Subject } from 'rxjs'
 import { useSend } from 'screens/send/useSend'
 import { TokenWithBalance } from 'store/balance'
+import { TokenSymbol } from 'store/network'
 
 export interface SendTokenContextState {
   sendToken: TokenWithBalance | undefined
@@ -206,7 +207,7 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
   }
 
   const tokenLogo = useCallback(() => {
-    if (sendToken?.symbol === 'AVAX') {
+    if (sendToken?.symbol === TokenSymbol.AVAX) {
       return <AvaLogoSVG size={57} />
     } else {
       return (

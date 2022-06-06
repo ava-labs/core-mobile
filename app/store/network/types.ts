@@ -5,3 +5,9 @@ export type NetworkState = {
   favorites: string[]
   active: number
 }
+
+export enum TokenSymbol {
+  AVAX = 'AVAX',
+  ETH = 'ETH',
+  BTC = 'BTC'
+}
