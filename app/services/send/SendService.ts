@@ -1,31 +1,12 @@
-import { EventEmitter } from 'events'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import networkService from 'services/network/NetworkService'
 import walletService from 'services/wallet/WalletService'
 import { Account } from 'dto/Account'
 import { SendServiceEVM } from 'services/send/SendServiceEVM'
-import {
-  isValidSendState,
-  SendEvent,
-  SendServiceHelper,
-  SendState
-} from './models'
+import { isValidSendState, SendServiceHelper, SendState } from './types'
 import sendServiceBTC from './SendServiceBTC'
 
 class SendService {
-  // do we want to track transactions?
-  private eventEmitter = new EventEmitter()
-
-  // do we want to track transactions?
-  transactionUpdated(txData: { txId: string }) {
-    this.eventEmitter.emit(SendEvent.TX_DETAILS, txData)
-  }
-
-  // do we want to track transactions?
-  addListener(event: SendEvent, callback: (data: unknown) => void) {
-    this.eventEmitter.on(event, callback)
-  }
-
   async send(
     sendState: SendState,
     activeNetwork: Network,
@@ -61,9 +42,7 @@ class SendService {
       account.index,
       activeNetwork
     )
-    const txId = await networkService.sendTransaction(signedTx, activeNetwork)
-    this.transactionUpdated({ txId })
-    return txId
+    return await networkService.sendTransaction(signedTx, activeNetwork)
   }
 
   async validateStateAndCalculateFees(

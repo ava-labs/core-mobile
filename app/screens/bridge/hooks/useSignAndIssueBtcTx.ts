@@ -2,7 +2,7 @@ import { issueRawTx, signPsbt, useBridgeConfig } from '@avalabs/bridge-sdk'
 import * as bitcoin from 'bitcoinjs-lib'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
-import { walletServiceInstance } from 'services/wallet/WalletService'
+import walletService from 'services/wallet/WalletService'
 import { selectActiveAccount } from 'store/accounts'
 
 export default function useSignAndIssueBtcTx() {
@@ -16,8 +16,7 @@ export default function useSignAndIssueBtcTx() {
     }
     const psbt = bitcoin.Psbt.fromHex(unsignedHex)
     const signedTx = signPsbt(
-      walletServiceInstance.getEvmWallet(activeAccount.index, activeNetwork)
-        .privateKey,
+      walletService.getEvmWallet(activeAccount.index, activeNetwork).privateKey,
       psbt
     ).extractTransaction()
 

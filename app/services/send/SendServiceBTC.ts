@@ -11,7 +11,7 @@ import {
   SendServiceHelper,
   SendState,
   ValidSendState
-} from 'services/send/models'
+} from 'services/send/types'
 
 // singleton services
 import balanceService from 'services/balance/BalanceService'

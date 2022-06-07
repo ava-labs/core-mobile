@@ -8,19 +8,9 @@ const ethNetworks: number[] = []
 
 // TODO: add support for ETH NETWORKS and BITCOIN TEST NET
 class NetworkService {
-  activeNetwork?: Network
-
-  setActiveNetwork(network: Network) {
-    this.activeNetwork = network
-  }
-
-  async isMainnet() {
-    return this.activeNetwork ? !this.activeNetwork?.isTestnet : false
-  }
-
-  getEvmProvider(network: Network, numerOfChunksPerRequestBatch = 40) {
+  getEvmProvider(network: Network, numberOfChunksPerRequestBatch = 40) {
     return new JsonRpcBatchInternal(
-      numerOfChunksPerRequestBatch,
+      numberOfChunksPerRequestBatch,
       network.rpcUrl,
       network.chainId
     )

@@ -15,11 +15,11 @@ import { useBridgeContext } from 'contexts/BridgeContext'
 import { useCallback, useEffect, useState } from 'react'
 import { getBtcBalance } from 'screens/bridge/hooks/getBtcBalance'
 import { getAvalancheProvider } from 'screens/bridge/utils/getAvalancheProvider'
-import { TxSimple } from '@avalabs/blockcypher-sdk'
 import { AssetBalance } from 'screens/bridge/utils/types'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
 import { selectActiveAccount } from 'store/accounts'
+import { BitcoinInputUTXO } from '@avalabs/wallets-sdk'
 
 export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
   const network = useSelector(selectActiveNetwork)
@@ -39,7 +39,7 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
   const [loading, setLoading] = useState(false)
   const [btcBalance, setBtcBalance] = useState<AssetBalance>()
   const [btcBalanceAvalanche, setBtcBalanceAvalanche] = useState<AssetBalance>()
-  const [utxos, setUtxos] = useState<TxSimple[]>()
+  const [utxos, setUtxos] = useState<BitcoinInputUTXO[]>([])
 
   /** Network fee (in BTC) */
   const [networkFee, setFee] = useState<Big>(BIG_ZERO)
@@ -65,7 +65,7 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
   // loads balances, utxos, btcAddress
   useEffect(() => {
     async function load() {
-      if (isBitcoinBridge && btcAsset) {
+      if (isBitcoinBridge && btcAsset && btcAddress) {
         setLoading(true)
         const { bitcoinUtxos, btcBalanceAvalanche, btcBalanceBitcoin } =
           await getBtcBalance(
@@ -103,7 +103,8 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
         bridgeConfig,
         btcAddress,
         utxos,
-        amountInSatoshis
+        amountInSatoshis,
+        0
       )
 
       setFee(satoshiToBtc(fee))
@@ -142,7 +143,8 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
       bridgeConfig,
       btcAddress,
       utxos,
-      amountInSatoshis
+      amountInSatoshis,
+      0
     )
     const unsignedTxHex = tx.toHex()
     const result = await signIssueBtc(unsignedTxHex)
