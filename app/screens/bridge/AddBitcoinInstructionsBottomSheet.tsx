@@ -12,7 +12,7 @@ import TokenAddress from 'components/TokenAddress'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/accounts'
-import { BITCOIN_NETWORK, ChainId } from '@avalabs/chains-sdk'
+import { BITCOIN_NETWORK } from '@avalabs/chains-sdk'
 
 function AddBitcoinInstructionsBottomSheet(): JSX.Element {
   const theme = useApplicationContext().theme

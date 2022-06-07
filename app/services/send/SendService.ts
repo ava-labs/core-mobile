@@ -1,10 +1,10 @@
 import { WalletService } from 'services/wallet/WalletService'
 import { NetworkService } from 'services/network/NetworkService'
-import { Network, NetworkVM } from 'store/network'
 import { SendServiceHelper, SendState } from 'services/send/types'
 import { SendServiceEVM } from 'services/send/SendServiceEVM'
 import { SendServiceBTC } from 'services/send/SendServiceBTC'
 import { Account } from 'dto/Account'
+import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 
 export class SendService {
   constructor(
@@ -18,7 +18,7 @@ export class SendService {
     account: Account
   ): Promise<string> {
     const fromAddress =
-      activeNetwork.vm === NetworkVM.BITCOIN
+      activeNetwork.vmName === NetworkVMType.BITCOIN
         ? account.addressBtc
         : account.address
 
@@ -46,10 +46,10 @@ export class SendService {
     activeNetwork: Network,
     fromAddress: string
   ): SendServiceHelper {
-    switch (activeNetwork?.vm) {
-      case NetworkVM.BITCOIN:
+    switch (activeNetwork?.vmName) {
+      case NetworkVMType.BITCOIN:
         return new SendServiceBTC() //TODO
-      case NetworkVM.EVM:
+      case NetworkVMType.EVM:
         return new SendServiceEVM(
           this.networkService,
           activeNetwork,

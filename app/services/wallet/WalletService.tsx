@@ -4,11 +4,11 @@ import {
   JsonRpcBatchInternal
 } from '@avalabs/wallets-sdk'
 import { BitcoinProviderAbstract } from '@avalabs/wallets-sdk/src/BitcoinVM/providers/BitcoinProviderAbstract'
-import { Network, NetworkVM } from 'store/network'
 import { now } from 'moment'
 import { SignTransactionRequest } from 'services/wallet/types'
 import { Wallet } from 'ethers'
 import networkService, { NetworkService } from 'services/network/NetworkService'
+import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 
 export class WalletService {
   constructor(
@@ -25,7 +25,7 @@ export class WalletService {
     if (!this.mnemonic) {
       throw new Error('not initialized')
     }
-    if (network.vm !== NetworkVM.BITCOIN) {
+    if (network.vmName !== NetworkVMType.BITCOIN) {
       throw new Error('Only Bitcoin networks supported')
     }
     const provider = this.networkService.getProviderForNetwork(network)
@@ -44,7 +44,7 @@ export class WalletService {
     if (!this.mnemonic) {
       throw new Error('not initialized')
     }
-    if (network.vm !== NetworkVM.EVM) {
+    if (network.vmName !== NetworkVMType.EVM) {
       throw new Error('Only EVM networks supported')
     }
     log('evmWallet', now())
@@ -87,10 +87,10 @@ export class WalletService {
   }
 
   private async getWallet(accountIndex: number, network: Network) {
-    switch (network.vm) {
-      case NetworkVM.EVM:
+    switch (network.vmName) {
+      case NetworkVMType.EVM:
         return this.getEvmWallet(accountIndex, network)
-      case NetworkVM.BITCOIN:
+      case NetworkVMType.BITCOIN:
         return await this.getBtcWallet(accountIndex, network)
       default:
         return undefined
