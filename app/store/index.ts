@@ -2,34 +2,34 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { combineReducers } from 'redux'
 import { configureStore } from '@reduxjs/toolkit'
 import {
-  persistStore,
-  persistReducer,
   FLUSH,
-  REHYDRATE,
   PAUSE,
   PERSIST,
+  persistReducer,
+  persistStore,
   PURGE,
-  REGISTER
+  REGISTER,
+  REHYDRATE
 } from 'redux-persist'
-import network from './network'
-import AccountsStore from './accounts/accountsStore'
-import balance, { setBalance } from './balance'
-import app, { onRehydrationComplete } from './app'
+import { networkReducer } from './network'
+import { balanceReducer, setBalance } from './balance'
+import { appReducer, onRehydrationComplete } from './app'
 import { listener } from './middleware/listener'
+import { accountsReducer } from './accounts'
 
 const persistActions = [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER]
 
 const rootReducer = combineReducers({
-  app,
-  network,
-  balance,
-  AccountsStore
+  appReducer,
+  networkReducer,
+  balanceReducer,
+  accountsReducer
 })
 
 const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
-  whitelist: ['network', 'AccountsStore']
+  whitelist: ['networkReducer', 'accountsReducer']
 }
 
 const persistedReducer = persistReducer(persistConfig, rootReducer)

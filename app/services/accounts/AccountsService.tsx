@@ -6,7 +6,7 @@ import {
   addAccount as addAccountToStore,
   setAccountTitle as setAccountTitleStore,
   setActiveAccountIndex
-} from 'store/accounts/accountsStore'
+} from 'store/accounts'
 import { Store } from 'redux'
 
 export async function addAccount(
