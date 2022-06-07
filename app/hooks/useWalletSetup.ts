@@ -2,10 +2,14 @@ import { encrypt, getEncryptionKey } from 'screens/login/utils/EncryptionHelper'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import { AppNavHook } from 'useAppNav'
 import { walletServiceInstance } from 'services/wallet/WalletService'
-import { useSelector } from 'react-redux'
-import { selectAccounts, selectActiveAccount } from 'store/accounts'
-import { activateAccount, addAccount } from 'services/accounts/AccountsService'
-import { store } from 'store'
+import { useDispatch, useSelector } from 'react-redux'
+import {
+  addAccount as addAccountToStore,
+  selectAccounts,
+  selectActiveAccount,
+  setActiveAccountIndex
+} from 'store/accounts'
+import { createNextAccount } from 'services/accounts/AccountsService'
 import {
   useAccountsContext,
   useWalletContext
@@ -34,6 +38,7 @@ export function useWalletSetup(appNavHook: AppNavHook): WalletSetupHook {
     useAccountsContext()
   const accounts = useSelector(selectAccounts)
   const activeAccount = useSelector(selectActiveAccount)
+  const dispatch = useDispatch()
 
   const enterWallet = (mnemonic: string) => {
     initWalletWithMnemonic(mnemonic).then(_ =>
@@ -50,8 +55,9 @@ export function useWalletSetup(appNavHook: AppNavHook): WalletSetupHook {
     await walletContext2.initWalletMnemonic(mnemonic)
     walletServiceInstance.setMnemonic(mnemonic)
     if (Object.keys(accounts).length === 0) {
-      const acc = await addAccount(walletServiceInstance, accounts, store)
-      activateAccount(acc.index, store)
+      const acc = await createNextAccount(walletServiceInstance, accounts)
+      dispatch(addAccountToStore(acc))
+      dispatch(setActiveAccountIndex(acc.index))
 
       //fixme to be removed after ditching wallet-react-components
       const acc2 = addAccount2()

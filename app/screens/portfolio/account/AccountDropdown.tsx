@@ -9,10 +9,12 @@ import Separator from 'components/Separator'
 import AvaButton from 'components/AvaButton'
 import { useNavigation } from '@react-navigation/native'
 import { ShowSnackBar } from 'components/Snackbar'
-import { useSelector } from 'react-redux'
-import { selectAccounts, selectActiveAccount } from 'store/accounts'
-import { activateAccount } from 'services/accounts/AccountsService'
-import { store } from 'store'
+import { useDispatch, useSelector } from 'react-redux'
+import {
+  selectAccounts,
+  selectActiveAccount,
+  setActiveAccountIndex
+} from 'store/accounts'
 import { useAccountsContext } from '@avalabs/wallet-react-components'
 
 const Y_START = -400
@@ -27,6 +29,7 @@ function AccountDropdown({
   const { goBack } = useNavigation()
   const animTranslateY = useRef(new Animated.Value(Y_START)).current
   const accountsContext = useAccountsContext()
+  const dispatch = useDispatch()
 
   useEffect(() => {
     const compositeAnimation1 = Animated.timing(animTranslateY, {
@@ -51,7 +54,7 @@ function AccountDropdown({
 
   function onSelectAccount(accountIndex: number) {
     accountsContext.activateAccount(accountIndex)
-    activateAccount(accountIndex, store)
+    dispatch(setActiveAccountIndex(accountIndex))
     animatedDismiss()
   }
 

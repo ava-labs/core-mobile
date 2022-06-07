@@ -8,8 +8,8 @@ import AvaButton from 'components/AvaButton'
 import InputText from 'components/InputText'
 import { Row } from 'components/Row'
 import TokenAddress from 'components/TokenAddress'
-import { setAccountTitle } from 'services/accounts/AccountsService'
-import { store } from 'store'
+import { setAccountTitle as setAccountTitleStore } from 'store/accounts'
+import { useDispatch } from 'react-redux'
 
 type Props = {
   account: Account
@@ -30,6 +30,7 @@ function AccountItem({
   const [editAccount, setEditAccount] = useState(false)
   const [editedAccountTitle, setEditedAccountTitle] = useState(account.title)
   const [accBalance, setAccBalance] = useState('')
+  const dispatch = useDispatch()
 
   // useEffect(() => {
   //   const sub = account.balance$.subscribe(value => setAccBalance(value))
@@ -56,9 +57,14 @@ function AccountItem({
   const saveAccountTitle = useCallback(
     (newAccountName: string) => {
       setEditAccount(false)
-      setAccountTitle(newAccountName, account.index, store)
+      dispatch(
+        setAccountTitleStore({
+          title: newAccountName,
+          accountIndex: account.index
+        })
+      )
     },
-    [account.index, setAccountTitle]
+    [account.index]
   )
 
   return (

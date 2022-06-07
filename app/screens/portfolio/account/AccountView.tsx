@@ -8,18 +8,24 @@ import { Account } from 'dto/Account'
 import AccountItem from 'screens/portfolio/account/AccountItem'
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import { walletServiceInstance } from 'services/wallet/WalletService'
-import { useSelector } from 'react-redux'
-import { selectAccounts, selectActiveAccount } from 'store/accounts'
-import { activateAccount, addAccount } from 'services/accounts/AccountsService'
-import { store } from 'store'
+import { useDispatch, useSelector } from 'react-redux'
+import {
+  addAccount as addAccountToStore,
+  selectAccounts,
+  selectActiveAccount,
+  setActiveAccountIndex
+} from 'store/accounts'
+import { createNextAccount } from 'services/accounts/AccountsService'
 
 function AccountView({ onDone }: { onDone: () => void }): JSX.Element {
   const { theme } = useApplicationContext()
   const accounts = useSelector(selectAccounts)
+  const dispatch = useDispatch()
 
   const addAccountAndSetActive = async () => {
-    const acc = await addAccount(walletServiceInstance, accounts, store)
-    activateAccount(acc.index, store)
+    const acc = await createNextAccount(walletServiceInstance, accounts)
+    dispatch(addAccountToStore(acc))
+    dispatch(setActiveAccountIndex(acc.index))
   }
 
   return (
@@ -49,7 +55,7 @@ function AccountView({ onDone }: { onDone: () => void }): JSX.Element {
           <AccountItemRenderer
             account={info.item}
             onSelectAccount={accountIndex =>
-              activateAccount(accountIndex, store)
+              dispatch(setActiveAccountIndex(accountIndex))
             }
           />
         )}
