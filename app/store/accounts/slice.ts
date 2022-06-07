@@ -35,15 +35,13 @@ const accountsSlice = createSlice({
 })
 
 // selectors
-export const selectAccounts = (state: RootState) => state.AccountsStore.accounts
+export const selectAccounts = (state: RootState) =>
+  state.accountsReducer.accounts
 export const selectActiveAccount = (state: RootState): Account | undefined =>
-  state.AccountsStore.accounts[state.AccountsStore.activeAccountIndex]
+  state.accountsReducer.accounts[state.accountsReducer.activeAccountIndex]
 
 // actions
 export const { setAccountTitle, setActiveAccountIndex, addAccount } =
   accountsSlice.actions
 
-// types
-export * from './types'
-
-export default accountsSlice.reducer
+export const accountsReducer = accountsSlice.reducer
