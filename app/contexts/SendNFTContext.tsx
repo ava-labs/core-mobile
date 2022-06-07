@@ -18,7 +18,7 @@ import { BN } from 'avalanche'
 import { BehaviorSubject, firstValueFrom, of } from 'rxjs'
 import { NFTItemData } from 'screens/nft/NftCollection'
 import { Alert } from 'react-native'
-import { walletServiceInstance } from 'services/wallet/WalletService'
+import walletService from 'services/wallet/WalletService'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/accounts'
 
@@ -70,7 +70,7 @@ export const SendNFTContextProvider = ({
   const [sdkError, setSdkError] = useState<SendHookError | undefined>(undefined)
 
   useEffect(() => {
-    if (!sendToken || !activeAccount) {
+    if (!sendToken || !activeAccount || !walletService) {
       return
     }
     const subscription = checkAndValidateSendNft(
@@ -78,7 +78,7 @@ export const SendNFTContextProvider = ({
       Number.parseInt(sendToken.token_id, 10),
       customGasPrice$.current,
       of(sendToAddress),
-      of(walletServiceInstance.getEvmWallet(activeAccount.index)), //fixme
+      of(walletService.getEvmWallet(activeAccount.index)), //fixme: needs to be refactored to move away from wallet-react-components/RxJS
       gasLimit$.current
     ).subscribe(value => {
       setCanSubmit(value.canSubmit ?? false)
@@ -137,7 +137,7 @@ export const SendNFTContextProvider = ({
     sendNftSubmit(
       nft.collection.contract_address,
       Number.parseInt(sendToken.token_id, 10),
-      Promise.resolve(walletServiceInstance.getEvmWallet(activeAccount!.index)), //fixme
+      Promise.resolve(walletService.getEvmWallet(activeAccount!.index)), //fixme
       sendToAddress,
       firstValueFrom(customGasPrice$.current),
       gasLimit

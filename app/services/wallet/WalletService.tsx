@@ -7,14 +7,11 @@ import { BitcoinProviderAbstract } from '@avalabs/wallets-sdk/src/BitcoinVM/prov
 import { now } from 'moment'
 import { SignTransactionRequest } from 'services/wallet/types'
 import { Wallet } from 'ethers'
-import networkService, { NetworkService } from 'services/network/NetworkService'
+import networkService from 'services/network/NetworkService'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 
-export class WalletService {
-  constructor(
-    private networkService: NetworkService,
-    private mnemonic: string
-  ) {}
+class WalletService {
+  private mnemonic?: string
 
   setMnemonic(mnemonic: string) {
     this.mnemonic = mnemonic
@@ -28,7 +25,7 @@ export class WalletService {
     if (network.vmName !== NetworkVMType.BITCOIN) {
       throw new Error('Only Bitcoin networks supported')
     }
-    const provider = this.networkService.getProviderForNetwork(network)
+    const provider = networkService.getProviderForNetwork(network)
 
     log('btcWallet', now())
     const btcWallet = await BitcoinWallet.fromMnemonic(
@@ -54,7 +51,7 @@ export class WalletService {
     )
     log('evmWallet getWalletFromMnemonic', now())
     walletFromMnemonic.connect(
-      this.networkService.getProviderForNetwork(network) as JsonRpcBatchInternal
+      networkService.getProviderForNetwork(network) as JsonRpcBatchInternal
     )
     log('evmWallet end', now())
     return walletFromMnemonic
@@ -118,7 +115,7 @@ export class WalletService {
   // }
 }
 
-export const walletServiceInstance = new WalletService(networkService, '')
+export default new WalletService()
 
 function log(message?: any, ...optionalParams: any[]) {
   if (__DEV__) {

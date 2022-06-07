@@ -6,19 +6,18 @@ import {
   createTransferTx
 } from '@avalabs/wallets-sdk'
 import BN from 'bn.js'
-import NetworkService from 'services/network/NetworkService'
 import {
   SendErrorMessage,
   SendServiceHelper,
   SendState,
   ValidSendState
 } from 'services/send/models'
-import BalanceService from 'services/balance/BalanceService'
+
+// singleton services
+import balanceService from 'services/balance/BalanceService'
+import networkService from 'services/network/NetworkService'
 
 class SendServiceBTC implements SendServiceHelper {
-  private networkService = NetworkService
-  private networkBalancesService = BalanceService
-
   async getTransactionRequest(
     sendState: ValidSendState,
     isMainnet: boolean,
@@ -29,7 +28,7 @@ class SendServiceBTC implements SendServiceHelper {
   }> {
     const { address: toAddress, amount } = sendState
     const feeRate = sendState.gasPrice.toNumber()
-    const provider = await this.networkService.getBitcoinProvider(__DEV__)
+    const provider = await networkService.getBitcoinProvider(__DEV__)
     const { utxos } = await this.getBalance(isMainnet, fromAddress)
 
     const { inputs, outputs } = createTransferTx(
@@ -58,7 +57,7 @@ class SendServiceBTC implements SendServiceHelper {
     const toAddress = address || fromAddress // in case address from form is blank
     const amountInSatoshis = amount?.toNumber() || 0
     const { balance, utxos } = await this.getBalance(isMainnet, fromAddress)
-    const provider = await this.networkService.getBitcoinProvider(isMainnet)
+    const provider = await networkService.getBitcoinProvider(isMainnet)
 
     const { fee: maxFee } = createTransferTx(
       toAddress,
@@ -66,7 +65,7 @@ class SendServiceBTC implements SendServiceHelper {
       balance,
       feeRate || 0,
       utxos,
-      provider
+      provider.getNetwork()
     )
     let maxAmount = maxFee ? balance - maxFee : 0
     if (maxAmount < 0) {
@@ -79,7 +78,7 @@ class SendServiceBTC implements SendServiceHelper {
       amountInSatoshis,
       feeRate || 0,
       utxos,
-      provider
+      provider.getNetwork()
     )
 
     const newState: SendState = {
@@ -116,7 +115,7 @@ class SendServiceBTC implements SendServiceHelper {
     balance: number
     utxos: BitcoinInputUTXO[]
   }> {
-    const token = await this.networkBalancesService.getBalances(
+    const token = await balanceService.getBalances(
       isMainnet ? BITCOIN_NETWORK : BITCOIN_TEST_NETWORK,
       address
     )
