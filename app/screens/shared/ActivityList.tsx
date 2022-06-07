@@ -25,6 +25,7 @@ import {
   isIncomingTransaction,
   isOutgoingTransaction
 } from 'utils/TransactionTools'
+import { TokenSymbol } from 'store/network'
 
 const yesterday = endOfYesterday()
 const today = endOfToday()
@@ -109,7 +110,7 @@ function ActivityList({
         .filter(tx => {
           return tokenSymbolFilter
             ? tokenSymbolFilter ===
-                ('tokenSymbol' in tx ? tx.tokenSymbol : 'AVAX')
+                ('tokenSymbol' in tx ? tx.tokenSymbol : TokenSymbol.AVAX)
             : true
         }),
     [allHistory, tokenSymbolFilter, isBridgeTx, filter]

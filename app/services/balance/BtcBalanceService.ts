@@ -16,29 +16,45 @@ export class BtcBalanceService {
     // TODO store selected currency in redux
     const selectedCurrency = await firstValueFrom(currentSelectedCurrency$)
 
-    const tokenPrice = await TokenService.getPriceByCoinId(
-      network.networkToken.coingeckoId,
+    const { networkToken, chainId } = network
+
+    const nativeTokenId =
+      network.pricingProviders?.coingecko?.nativeTokenId ?? ''
+
+    const id = `${chainId}-${nativeTokenId}`
+    const {
+      price: priceUSD,
+      marketCap,
+      vol24,
+      change24
+    } = await TokenService.getPriceWithMarketDataByCoinId(
+      nativeTokenId,
       selectedCurrency
     )
-
-    const denomination = network.networkToken.decimals
+    const denomination = networkToken.decimals
     const { balance: balanceSatoshis } = await provider.getUtxoBalance(
       userAddress
     )
     const balanceBig = satoshiToBtc(balanceSatoshis)
     const balance = bigToBN(balanceBig, denomination)
     const balanceDisplayValue = balanceToDisplayValue(balance, denomination)
-    const balanceUsdDisplayValue = tokenPrice
-      ? balanceBig.mul(tokenPrice).toFixed(2)
+    const balanceUsdDisplayValue = priceUSD
+      ? balanceBig.mul(priceUSD).toFixed(2)
       : undefined
 
     return [
       {
-        ...network.networkToken,
+        ...networkToken,
+        isNetworkToken: true,
+        id,
+        coingeckoId: nativeTokenId,
         balance,
         balanceDisplayValue,
         balanceUsdDisplayValue,
-        priceUSD: tokenPrice
+        priceUSD,
+        marketCap,
+        vol24,
+        change24
       }
     ]
   }

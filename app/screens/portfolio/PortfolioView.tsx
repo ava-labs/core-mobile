@@ -57,7 +57,7 @@ function PortfolioContainer(): JSX.Element {
     useSearchableTokenList()
   const { setSelectedToken } = useSelectedTokenContext()
 
-  // TODO move this logic inside redux once accounts are stored in redux
+  // TODO CP-2114 move this logic inside redux once accounts are stored in redux
   useEffect(() => {
     if (!addressC || !addressBtc) return
 
@@ -131,7 +131,7 @@ const PortfolioView: FC<PortfolioProps> = memo(
       setSelectedToken?.(token)
 
       navigate(AppNavigation.Wallet.OwnedTokenDetail, {
-        tokenId: token.symbol
+        tokenId: token.id
       })
     }
 
@@ -172,9 +172,7 @@ const PortfolioView: FC<PortfolioProps> = memo(
                 style={[tokenList?.length === 1 && { flex: 0 }]}
                 data={tokenList}
                 renderItem={renderItem}
-                keyExtractor={(item: TokenWithBalance, index: number) =>
-                  item.address ?? index.toString()
-                }
+                keyExtractor={(item: TokenWithBalance) => item.id}
                 onRefresh={handleRefresh}
                 refreshing={false}
                 scrollEventThrottle={16}

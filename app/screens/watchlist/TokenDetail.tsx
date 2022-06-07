@@ -35,6 +35,7 @@ import { ViewOnceInformation } from 'Repo'
 import TokenAddress from 'components/TokenAddress'
 import AppNavigation from 'navigation/AppNavigation'
 import { formatLargeNumber } from 'utils/Utils'
+import { TokenSymbol } from 'store/network'
 
 const WINDOW_WIDTH = Dimensions.get('window').width
 
@@ -47,7 +48,8 @@ const TokenDetail = () => {
   const [showLineChart, setShowLineChart] = useState(true)
   const { setOptions } = useNavigation<ScreenProps['navigation']>()
   const [showChartInstruction, setShowChartInstruction] = useState(false)
-  const tokenAddress = useRoute<ScreenProps['route']>().params.address
+  const tokenId = useRoute<ScreenProps['route']>().params.tokenId
+
   const {
     isFavorite,
     openMoonPay,
@@ -64,7 +66,7 @@ const TokenDetail = () => {
     token,
     ranges,
     changeChartDays
-  } = useTokenDetail(tokenAddress)
+  } = useTokenDetail(tokenId)
 
   function openTwitter() {
     // data will come from somewhere, something like
@@ -344,7 +346,7 @@ const TokenDetail = () => {
             <DataItem
               title={'Contract Address'}
               value={
-                <TokenAddress address={tokenAddress} textType={'Heading'} />
+                <TokenAddress address={token.address} textType={'Heading'} />
               }
             />
           )}
@@ -388,7 +390,7 @@ const TokenDetail = () => {
           />
         </Row>
 
-        {token?.symbol === 'AVAX' && (
+        {token?.symbol === TokenSymbol.AVAX && (
           <AvaButton.Base onPress={openMoonPay}>
             <OvalTagBg color={theme.colorBg2} style={{ height: 48 }}>
               <AvaText.ButtonLarge>Buy {token?.symbol}</AvaText.ButtonLarge>

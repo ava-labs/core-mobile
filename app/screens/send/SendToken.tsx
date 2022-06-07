@@ -10,7 +10,6 @@ import FlexSpacer from 'components/FlexSpacer'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useSendTokenContext } from 'contexts/SendTokenContext'
 import numeral from 'numeral'
-import { ERC20WithBalance } from '@avalabs/wallet-react-components'
 import { AddrBookItemType, Contact } from 'Repo'
 import AddressBookLists from 'components/addressBook/AddressBookLists'
 import { Account } from 'dto/Account'
@@ -23,7 +22,7 @@ type Props = {
   onNext: () => void
   onOpenAddressBook: () => void
   onOpenSelectToken: (
-    onTokenSelected: (token: ERC20WithBalance) => void
+    onTokenSelected: (token: TokenWithBalance) => void
   ) => void
   token?: TokenWithBalance
   contact?: Contact
@@ -59,7 +58,7 @@ const SendToken: FC<Props> = ({
 
   useEffect(() => {
     if (token) {
-      setSendToken(token as ERC20WithBalance)
+      setSendToken(token)
     }
   }, [setSendToken, token])
 

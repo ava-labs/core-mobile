@@ -18,6 +18,7 @@ import { Contact } from 'Repo'
 import { bnToAvaxC, numberToBN } from '@avalabs/avalanche-wallet-sdk'
 import AppNavigation from 'navigation/AppNavigation'
 import { WalletScreenProps } from 'navigation/types'
+import { TokenSymbol } from 'store/network'
 
 type RouteProp = WalletScreenProps<
   typeof AppNavigation.Wallet.ActivityDetail
@@ -60,7 +61,9 @@ function ActivityDetail() {
         />
       )
     }
-    return <Avatar.Custom size={57} name={'Avalanche'} symbol={'AVAX'} />
+    return (
+      <Avatar.Custom size={57} name={'Avalanche'} symbol={TokenSymbol.AVAX} />
+    )
   }
 
   return (

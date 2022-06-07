@@ -20,7 +20,7 @@ export default function SendANT(): JSX.Element {
     submit,
     setAddress,
     setAmount
-  } = useSendAnt(selectedToken as AntWithBalance)
+  } = useSendAnt(selectedToken as unknown as AntWithBalance)
 
   // @ts-expect-error unused function
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

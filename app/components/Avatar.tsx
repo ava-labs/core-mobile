@@ -2,11 +2,11 @@ import React, { FC, useCallback } from 'react'
 import { Image, StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaLogoSVG from 'components/svg/AvaLogoSVG'
-import { Erc20Token } from '@avalabs/avalanche-wallet-sdk/dist/Asset'
 import { Opacity10 } from 'resources/Constants'
 import EthereumSvg from 'components/svg/Ethereum'
 import BitcoinSVG from 'components/svg/BitcoinSVG'
 import { TokenWithBalance } from 'store/balance'
+import { TokenSymbol } from 'store/network'
 import AvaText from './AvaText'
 
 interface Props {
@@ -18,12 +18,6 @@ interface Props {
   circleColor?: string
 }
 
-function isTokenWithBalance(
-  token: Erc20Token | TokenWithBalance
-): token is TokenWithBalance {
-  return 'logoURI' in token
-}
-
 const AvatarBase: FC<Props> = ({
   name,
   symbol,
@@ -32,13 +26,13 @@ const AvatarBase: FC<Props> = ({
   size = 32,
   circleColor
 }) => {
-  const { theme, isDarkMode } = useApplicationContext()
+  const { theme } = useApplicationContext()
   const hasValidLogoUri =
     !!logoUri && (logoUri.startsWith('http') || logoUri.startsWith('https'))
 
   const tokenLogo = useCallback(() => {
     // if AVAX, return our own logo
-    if (symbol === 'AVAX' || symbol === 'FAU') {
+    if (symbol === TokenSymbol.AVAX || symbol === 'FAU') {
       return (
         <AvaLogoSVG
           size={size}
@@ -46,9 +40,9 @@ const AvatarBase: FC<Props> = ({
           backgroundColor={theme.tokenLogoBg}
         />
       )
-    } else if (symbol === 'ETH') {
+    } else if (symbol === TokenSymbol.ETH) {
       return <EthereumSvg size={size} />
-    } else if (symbol === 'BTC') {
+    } else if (symbol === TokenSymbol.BTC) {
       return <BitcoinSVG size={size} />
     }
 
@@ -78,30 +72,39 @@ const AvatarBase: FC<Props> = ({
       )
       // if TokenWithBalance and valid URI get load it.
     } else {
-      return (
-        <Image
-          style={styles.tokenLogo}
-          source={{ uri: logoUri! }}
-          width={size}
-          height={size}
-        />
-      )
+      const style = {
+        borderRadius: size / 2,
+        width: size,
+        height: size
+      }
+      return <Image style={style} source={{ uri: logoUri }} />
     }
-  }, [hasValidLogoUri, isDarkMode, logoUri, name, showBorder, size, symbol])
+  }, [
+    circleColor,
+    hasValidLogoUri,
+    logoUri,
+    name,
+    showBorder,
+    size,
+    symbol,
+    theme.colorDisabled,
+    theme.colorStroke2,
+    theme.tokenLogoBg,
+    theme.tokenLogoColor
+  ])
 
   return tokenLogo()
 }
 
 interface TokenAvatarProps {
-  token: Erc20Token | TokenWithBalance
+  token: TokenWithBalance
   size?: number
 }
 
 const TokenAvatar: FC<TokenAvatarProps> = ({ token, size }) => {
-  const isErc20Token = !isTokenWithBalance(token)
   const name = token.name
   const symbol = token.symbol
-  const logoUri = isErc20Token ? undefined : (token as TokenWithBalance).logoUri
+  const logoUri = token.logoUri
 
   return (
     <AvatarBase name={name} symbol={symbol} logoUri={logoUri} size={size} />

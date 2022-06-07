@@ -1,15 +1,17 @@
-import { useEffect, useMemo, useState } from 'react'
-import { useWalletStateContext } from '@avalabs/wallet-react-components'
+import { useEffect, useState } from 'react'
 import useInAppBrowser from 'hooks/useInAppBrowser'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { CoinsContractInfoResponse } from '@avalabs/coingecko-sdk'
-import { CG_AVAX_TOKEN_ID } from 'screens/watchlist/WatchlistView'
-import { TokenWithBalance } from 'store/balance'
+import {
+  CoinsContractInfoResponse,
+  CoinsInfoResponse
+} from '@avalabs/coingecko-sdk'
+import { selectTokenById } from 'store/balance'
+import { useSelector } from 'react-redux'
+import TokenService from 'services/balance/TokenService'
 
-export function useTokenDetail(tokenAddress: string) {
+export function useTokenDetail(tokenId: string) {
   const { repo } = useApplicationContext()
   const [isFavorite, setIsFavorite] = useState(true)
-  const [token, setToken] = useState<TokenWithBalance>()
   const { openMoonPay, openUrl } = useInAppBrowser()
   const { selectedCurrency, currencyFormatter } =
     useApplicationContext().appHook
@@ -30,37 +32,30 @@ export function useTokenDetail(tokenAddress: string) {
     diffValue: 0,
     percentChange: 0
   })
-  const [contractInfo, setContractInfo] = useState<CoinsContractInfoResponse>()
+  const [contractInfo, setContractInfo] = useState<
+    CoinsContractInfoResponse | CoinsInfoResponse
+  >()
   const [urlHostname, setUrlHostname] = useState<string>('')
   const { watchlistFavorites, saveWatchlistFavorites } =
     repo.watchlistFavoritesRepo
-  // @ts-ignore avaxToken, erc20Tokens exist in walletContext
-  const { erc20Tokens, avaxToken } = useWalletStateContext()
+  const token = useSelector(selectTokenById(tokenId))
+  const coingeckoId = token?.coingeckoId
+  const tokenAddress = token?.address
 
-  const allTokens = useMemo(
-    () => [{ ...avaxToken, address: CG_AVAX_TOKEN_ID }, ...erc20Tokens],
-    [erc20Tokens, avaxToken]
-  )
-
-  // find token
-  useEffect(() => {
-    if (allTokens) {
-      const tk = allTokens.find(tk => tk.address === tokenAddress, false)
-      if (tk) {
-        setToken(tk)
-      }
-    }
-  }, [allTokens, tokenAddress])
-
+  // TODO cp-2164 move watchlist favorites logic to redux
   // checks if contract can be found in favorites list
   useEffect(() => {
-    setIsFavorite(!!watchlistFavorites.find(value => value === tokenAddress))
-  }, [watchlistFavorites])
+    setIsFavorite(watchlistFavorites.includes(tokenId))
+  }, [])
 
   // get coingecko chart data.
   useEffect(() => {
     ;(async () => {
-      const data = await repo.coingeckoRepo.getCharData(tokenAddress, chartDays)
+      const data = await TokenService.getChartData({
+        coingeckoId,
+        address: tokenAddress,
+        days: chartDays
+      })
       if (data) {
         setChartData(data.dataPoints)
         setRanges(data.ranges)
@@ -70,12 +65,18 @@ export function useTokenDetail(tokenAddress: string) {
         setChartData([])
       }
     })()
-  }, [tokenAddress, chartDays])
+  }, [chartDays, coingeckoId, tokenAddress])
 
   // get market cap, volume, etc
   useEffect(() => {
     ;(async () => {
-      const data = await repo.coingeckoRepo.getContractInfo(tokenAddress)
+      const data = await TokenService.getTokenInfo({
+        coingeckoId: token?.coingeckoId,
+        address: tokenAddress
+      })
+
+      if (!data) return
+
       setContractInfo(data)
       if (data?.links?.homepage?.[0]) {
         const url = data?.links?.homepage?.[0]
@@ -84,19 +85,20 @@ export function useTokenDetail(tokenAddress: string) {
         setUrlHostname(url)
       }
     })()
-  }, [tokenAddress])
+  }, [token?.coingeckoId, tokenAddress])
 
   function handleFavorite() {
+    if (!token) return
+
     if (isFavorite) {
-      const index = watchlistFavorites.indexOf(tokenAddress)
+      const index = watchlistFavorites.indexOf(token.id)
       if (index > -1) {
-        watchlistFavorites.splice(index, 1)
-        saveWatchlistFavorites(watchlistFavorites)
+        saveWatchlistFavorites(watchlistFavorites.filter(id => id !== token.id))
       }
     } else {
-      watchlistFavorites.push(tokenAddress)
-      saveWatchlistFavorites(watchlistFavorites)
+      saveWatchlistFavorites([...watchlistFavorites, token.id])
     }
+
     setIsFavorite(!isFavorite)
   }
 
