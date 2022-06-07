@@ -1,7 +1,6 @@
 import React from 'react'
 import AppNavigation from 'navigation/AppNavigation'
 import { createStackNavigator } from '@react-navigation/stack'
-import { ERC20WithBalance } from '@avalabs/wallet-react-components'
 import DoneScreen from 'screens/send/DoneScreen'
 import SendToken from 'screens/send/SendToken'
 import { useNavigation, useRoute } from '@react-navigation/native'
@@ -66,11 +65,11 @@ const SendTokenComponent = () => {
   const { params } = useRoute<SendScreenProps['route']>()
 
   const onOpenSelectToken = (
-    onTokenSelected: (token: ERC20WithBalance) => void
+    onTokenSelected: (token: TokenWithBalance) => void
   ) => {
     navigate(AppNavigation.Modal.SelectToken, {
       onTokenSelected: (token: TokenWithBalance) => {
-        onTokenSelected(token as ERC20WithBalance)
+        onTokenSelected(token)
       }
     })
   }

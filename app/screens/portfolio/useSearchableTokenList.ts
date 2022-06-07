@@ -1,15 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import { BN } from '@avalabs/avalanche-wallet-sdk'
-import { useWalletContext } from '@avalabs/wallet-react-components'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { useSelector } from 'react-redux'
-import { selectActiveNetwork } from 'store/network'
-import { ChainId } from '@avalabs/chains-sdk'
-import { selectTokensWithBalance, TokenWithBalance } from 'store/balance'
+import { TokenWithBalance } from 'store/balance'
+import { useTokens } from 'hooks/useTokens'
 
 type ShowZeroArrayType = { [x: string]: boolean }
 const bnZero = new BN(0)
 
+// TODO reimplement loading CP-2114
 export function useSearchableTokenList(hideZeroBalance = true): {
   searchText: string
   setShowZeroBalanceList: (list: ShowZeroArrayType) => void
@@ -20,25 +18,9 @@ export function useSearchableTokenList(hideZeroBalance = true): {
   loadTokenList: () => void
   loading: boolean
 } {
-  const network = useSelector(selectActiveNetwork)
-  const wallet = useWalletContext().wallet
-  const addressC = wallet?.getAddressC() ?? ''
-  const addressBtc = wallet?.getAddressBTC('bitcoin') ?? ''
-
-  let addressToFetch
-
-  if (network.chainId === ChainId.BITCOIN) {
-    addressToFetch = addressBtc
-  } else {
-    addressToFetch = addressC
-  }
-  // TODO reimplement loading
-  // const [loading, setLoading] = useState(false)
   const [searchText, setSearchText] = useState('')
 
-  const tokensWithBalance = useSelector(
-    selectTokensWithBalance(network.chainId, addressToFetch)
-  )
+  const tokensWithBalance = useTokens()
 
   const [showZeroBalanceList, setZeroBalanceList] = useState<ShowZeroArrayType>(
     {
@@ -62,7 +44,7 @@ export function useSearchableTokenList(hideZeroBalance = true): {
 
   useEffect(loadZeroBalanceList, [])
 
-  // TODO reimplement refresh
+  // TODO reimplement refresh CP-2114
   function loadTokenList() {
     // if (wallet) {
     //   setLoading(true)
@@ -85,7 +67,7 @@ export function useSearchableTokenList(hideZeroBalance = true): {
     )
   }
 
-  // TODO reimplement zero balance white list
+  // TODO reimplement zero balance white list cp-2163
   function filterByZeroBalance(
     tokens: TokenWithBalance[],
     hideZeroBalance: boolean
@@ -95,7 +77,7 @@ export function useSearchableTokenList(hideZeroBalance = true): {
 
     return tokens.filter(
       token =>
-        'coingeckoId' in token || // this is a network token -> always show it
+        token.isNetworkToken || // always show network token
         token.balance?.gt(bnZero)
       // ||
       //   zeroBalanceWhitelist[getTokenUID(token)]

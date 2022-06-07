@@ -117,7 +117,8 @@ export function useApp(
       const formatter = new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency: selectedCurrency,
-        maximumFractionDigits: digits
+        maximumFractionDigits: digits,
+        minimumFractionDigits: 0
       })
 
       return formatter

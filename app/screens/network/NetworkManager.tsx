@@ -13,7 +13,6 @@ import AvaText from 'components/AvaText'
 import TabViewAva from 'components/TabViewAva'
 import ZeroState from 'components/ZeroState'
 import { NetworkListItem } from 'screens/network/NetworkListItem'
-import { getIcon } from 'screens/network/NetworkIconSelector'
 import { Network } from '@avalabs/chains-sdk'
 
 type Props = {
@@ -88,7 +87,7 @@ export default function NetworkManager({ onShowInfo }: Props) {
         onPress={connect}
         networkChainId={item.chainId}
         networkName={item.chainName}
-        icon={getIcon(item.chainId, 32)} //TODO: set real url
+        icon={item.logoUri}
         isFavorite={isFavorite}
         onFavorite={() => dispatch(toggleFavorite(item.chainId))}
         onInfo={showInfo}

@@ -37,7 +37,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { BridgeScreenProps } from 'navigation/types'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import { useSelector } from 'react-redux'
-import { selectActiveNetwork } from 'store/network'
+import { selectActiveNetwork, TokenSymbol } from 'store/network'
 import { ChainId } from '@avalabs/chains-sdk'
 
 const formatBalance = (balance: Big | undefined) => {
@@ -149,11 +149,11 @@ const Bridge: FC = () => {
           name={blockchain ?? ''}
           symbol={
             blockchain === Blockchain.AVALANCHE
-              ? 'AVAX'
+              ? TokenSymbol.AVAX
               : blockchain === Blockchain.ETHEREUM
-              ? 'ETH'
+              ? TokenSymbol.ETH
               : blockchain === Blockchain.BITCOIN
-              ? 'BTC'
+              ? TokenSymbol.BTC
               : undefined
           }
         />
@@ -384,7 +384,9 @@ const Bridge: FC = () => {
                 textStyle={{ marginVertical: 4 }}
                 color={theme.colorError}>
                 {`Insufficient balance to cover gas costs.\nPlease add ${
-                  currentBlockchain === Blockchain.AVALANCHE ? 'AVAX' : 'ETH'
+                  currentBlockchain === Blockchain.AVALANCHE
+                    ? TokenSymbol.AVAX
+                    : TokenSymbol.ETH
                 }.`}
               </AvaText.Body3>
             )}

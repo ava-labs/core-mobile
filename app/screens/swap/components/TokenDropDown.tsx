@@ -3,10 +3,6 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import { View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
-import {
-  ERC20WithBalance,
-  useWalletStateContext
-} from '@avalabs/wallet-react-components'
 import { useSwapContext } from 'contexts/SwapContext'
 import numeral from 'numeral'
 import FlexSpacer from 'components/FlexSpacer'
@@ -29,7 +25,6 @@ const TokenDropDown: FC<TokenDropDownProps> = ({
 }) => {
   const context = useApplicationContext()
   const swapContext = useSwapContext()
-  const { avaxToken, erc20Tokens } = useWalletStateContext()!
   const [srcTokenBalance, setSrcTokenBalance] = useState('-')
 
   const isFrom = type === 'From'
@@ -56,13 +51,7 @@ const TokenDropDown: FC<TokenDropDownProps> = ({
       return
     }
 
-    const srcTokenUid = swapContext.swapFrom.token!.symbol
-    const tokenWithBal =
-      srcTokenUid === avaxToken.symbol
-        ? avaxToken
-        : (erc20Tokens as ERC20WithBalance[]).find(
-            erc20Token => srcTokenUid === erc20Token.symbol
-          )
+    const tokenWithBal = swapContext.swapFrom.token
 
     if (tokenWithBal) {
       setSrcTokenBalance(

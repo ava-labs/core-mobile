@@ -4,11 +4,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { CustomTokens } from 'screens/tokenManagement/hooks/useAddCustomToken'
 import { NFTItemData } from 'screens/nft/NftCollection'
 import StorageTools from 'repository/StorageTools'
-import { ChartData, useCoingeckoRepo } from 'repository/CoingeckoRepo'
-import {
-  CoinsContractInfoResponse,
-  SimpleTokenPriceResponse
-} from '@avalabs/coingecko-sdk'
 import {
   BridgeState,
   defaultBridgeState
@@ -93,20 +88,6 @@ export type Repo = {
     customTokens: CustomTokens
     saveCustomTokens: (customTokens: CustomTokens) => Promise<void>
   }
-  coingeckoRepo: {
-    getCharData: (
-      address: string,
-      days: number,
-      fresh?: boolean
-    ) => Promise<ChartData | undefined>
-    getContractInfo: (
-      address: string,
-      fresh?: boolean
-    ) => Promise<CoinsContractInfoResponse | undefined>
-    getTokensPrice: (
-      fresh?: boolean
-    ) => Promise<SimpleTokenPriceResponse | undefined>
-  }
   pendingBridgeTransactions: {
     pendingBridgeTransactions: BridgeState
     savePendingBridgeTransactions: (newState: BridgeState) => void
@@ -134,7 +115,6 @@ export function useRepo(): Repo {
   const [userSettings, setUserSettings] = useState<Map<Setting, SettingValue>>(
     new Map()
   )
-  const { getCharData, getContractInfo, getTokensPrice } = useCoingeckoRepo()
   const [pendingBridgeTransactions, setPendingBridgeTransactions] =
     useState<BridgeState>(defaultBridgeState)
 
@@ -305,11 +285,6 @@ export function useRepo(): Repo {
       viewOnceInfo: viewOnceInfo,
       saveViewOnceInformation,
       infoHasBeenShown
-    },
-    coingeckoRepo: {
-      getCharData,
-      getContractInfo,
-      getTokensPrice
     },
     pendingBridgeTransactions: {
       pendingBridgeTransactions: pendingBridgeTransactions,

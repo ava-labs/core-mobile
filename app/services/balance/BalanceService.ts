@@ -6,8 +6,7 @@ import EvmBalanceService from './EvmBalanceService'
 
 const serviceMap = {
   [NetworkVMType.BITCOIN]: BtcBalanceService,
-  [NetworkVMType.EVM]: EvmBalanceService,
-  [NetworkVMType.ETHEREUM]: EvmBalanceService
+  [NetworkVMType.EVM]: EvmBalanceService
 }
 
 type ServiceMap = typeof serviceMap

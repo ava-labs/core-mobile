@@ -11,6 +11,7 @@ export interface NetworkToken {
 }
 
 export type TokenWithBalance = {
+  id: string // the id is chainId + tokenId (either coingeckoId, address)
   name: string
   symbol: string
   description?: string
@@ -19,8 +20,12 @@ export type TokenWithBalance = {
   balanceUSD?: number
   balanceDisplayValue?: string
   balanceUsdDisplayValue?: string
-  priceUSD?: number
+  priceUSD: number
   decimals?: number
+  marketCap: number
+  change24: number
+  vol24: number
+  isNetworkToken: boolean
 
   // network token properties
   coingeckoId?: string
