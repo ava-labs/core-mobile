@@ -8,7 +8,6 @@ import React, {
   useState
 } from 'react'
 import {
-  ERC20WithBalance,
   SendHookError,
   useWalletStateContext
 } from '@avalabs/wallet-react-components'

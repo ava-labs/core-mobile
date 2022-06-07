@@ -15,8 +15,8 @@ import {
   SendState,
   ValidSendState
 } from 'services/send/types'
-import { Network } from 'store/network'
 import { NetworkService } from 'services/network/NetworkService'
+import { Network } from '@avalabs/chains-sdk'
 
 export class SendServiceEVM implements SendServiceHelper {
   private readonly networkProvider: JsonRpcBatchInternal
@@ -153,13 +153,13 @@ export class SendServiceEVM implements SendServiceHelper {
   ): Promise<TransactionRequest> {
     if (!sendState.token) throw new Error('Missing token')
 
-    if (sendState.token.isNetworkToken) {
+    if (sendState.token.contractType === 'NATIVE') {
+      //fixme - check what is real value here
       return this.getUnsignedTxNative(sendState)
-    } else if (sendState.token.isErc20) {
-      return this.getUnsignedTxERC20(sendState)
-      // TODO ERC721
-      // } else if (sendState.token.isERC20) {
-      //   return this.getUnsignedTxERC721(sendState);
+    } else if (sendState.token.contractType === 'ERC20') {
+      return this.getUnsignedTxERC20(sendState as SendState)
+    } else if (sendState.token.contractType === 'ERC721') {
+      return this.getUnsignedTxERC721(sendState as SendState)
     } else {
       throw new Error('Unsupported token')
     }

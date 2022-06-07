@@ -1,7 +1,7 @@
-import { BITCOIN_NETWORK, FUJI_NETWORK } from 'store/network'
 import { WalletService } from 'services/wallet/WalletService'
 import { Account } from 'dto/Account'
 import { AccountCollection } from 'store/accounts'
+import { BITCOIN_NETWORK } from '@avalabs/chains-sdk'
 
 export async function createNextAccount(
   walletService: WalletService,
@@ -14,6 +14,6 @@ export async function createNextAccount(
     addressBtc: (
       await walletService.getBtcWallet(newIndex, BITCOIN_NETWORK)
     ).getAddressBech32(),
-    address: walletService.getEvmWallet(newIndex, FUJI_NETWORK).address
+    address: walletService.getEvmWallet(newIndex).address //fixme - get avax c chain
   } as Account
 }
