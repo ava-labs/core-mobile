@@ -27,7 +27,7 @@ import useSignAndIssueBtcTx from 'screens/bridge/hooks/useSignAndIssueBtcTx'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
-import { selectActiveAccount } from 'store/accounts/accountsStore'
+import { selectActiveAccount } from 'store/accounts'
 import { ChainId, Network } from '@avalabs/chains-sdk'
 
 export enum TransferEventType {

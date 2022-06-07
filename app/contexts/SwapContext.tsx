@@ -22,7 +22,7 @@ import { performSwap } from 'swap/performSwap'
 import { OptimalRate } from 'paraswap-core'
 import moment from 'moment'
 import { useSelector } from 'react-redux'
-import { selectActiveAccount } from 'store/accounts/accountsStore'
+import { selectActiveAccount } from 'store/accounts'
 import { TokenWithBalance } from 'store/balance'
 
 export interface SwapEntry {
