@@ -1,6 +1,7 @@
 import { NetworkContractTokenResourceLink } from '@avalabs/chains-sdk'
 import BN from 'bn.js'
 import { StringOrNumberOrList } from 'victory-core'
+import {BitcoinInputUTXO} from '@avalabs/wallets-sdk';
 
 export interface NetworkContractToken {
   resourceLinks: NetworkContractTokenResourceLink[]
@@ -21,6 +22,7 @@ export type TokenWithBalance = {
   balanceDisplayValue?: string
   balanceUsdDisplayValue?: string
   priceUSD: number
+  utxos?: BitcoinInputUTXO[]
   decimals?: number
   marketCap: number
   change24: number
