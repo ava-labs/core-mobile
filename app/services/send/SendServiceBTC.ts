@@ -1,43 +1,72 @@
-import {
-  SendErrorMessage,
-  SendServiceHelper,
-  SendState,
-  ValidSendState
-} from 'services/send/types'
-import { BN } from 'avalanche'
+import { isBech32AddressInNetwork } from '@avalabs/bridge-sdk'
+import { BITCOIN_NETWORK, BITCOIN_TEST_NETWORK } from '@avalabs/chains-sdk'
 import {
   BitcoinInputUTXO,
   BitcoinOutputUTXO,
   createTransferTx
 } from '@avalabs/wallets-sdk'
-import { NetworkService } from 'services/network/NetworkService'
-import { isBech32AddressInNetwork } from '@avalabs/bridge-sdk'
-import { ChainId } from '@avalabs/chains-sdk'
+import BN from 'bn.js'
+import NetworkService from 'services/network/NetworkService'
+import {
+  SendErrorMessage,
+  SendServiceHelper,
+  SendState,
+  ValidSendState
+} from 'services/send/models'
+import BalanceService from 'services/balance/BalanceService'
 
-//TODO
-export class SendServiceBTC implements SendServiceHelper {
-  constructor(
-    private networkService: NetworkService,
-    private networkBalancesService: NetworkBalanceAggregatorService
-  ) {}
+class SendServiceBTC implements SendServiceHelper {
+  private networkService = NetworkService
+  private networkBalancesService = BalanceService
+
+  async getTransactionRequest(
+    sendState: ValidSendState,
+    isMainnet: boolean,
+    fromAddress: string
+  ): Promise<{
+    inputs: BitcoinInputUTXO[]
+    outputs: BitcoinOutputUTXO[]
+  }> {
+    const { address: toAddress, amount } = sendState
+    const feeRate = sendState.gasPrice.toNumber()
+    const provider = await this.networkService.getBitcoinProvider(__DEV__)
+    const { utxos } = await this.getBalance(isMainnet, fromAddress)
+
+    const { ins: inputs, outs: outputs } = createTransferTx(
+      toAddress,
+      fromAddress,
+      amount.toNumber(),
+      feeRate,
+      utxos,
+      provider
+    )
+
+    if (!inputs || !outputs) {
+      throw new Error('Unable to create transaction')
+    }
+
+    return { inputs, outputs }
+  }
 
   async validateStateAndCalculateFees(
-    sendState: SendState
-  ): Promise<SendState> {
+    sendState: SendState,
+    isMainnet: boolean,
+    fromAddress: string
+  ): Promise<SendState | ValidSendState> {
     const { amount, address } = sendState
     const feeRate = sendState.gasPrice?.toNumber()
-    const toAddress = address
+    const toAddress = address || fromAddress // in case address from form is blank
     const amountInSatoshis = amount?.toNumber() || 0
-    const { balance, utxos } = await this.getBalance()
-    const provider = await this.networkService.getBitcoinProvider(false)
+    const { balance, utxos } = await this.getBalance(isMainnet, fromAddress)
+    const provider = await this.networkService.getBitcoinProvider(isMainnet)
 
     const { fee: maxFee } = createTransferTx(
       toAddress,
-      this.address,
+      fromAddress,
       balance,
       feeRate || 0,
       utxos,
-      provider.getNetwork()
+      provider
     )
     let maxAmount = maxFee ? balance - maxFee : 0
     if (maxAmount < 0) {
@@ -46,11 +75,11 @@ export class SendServiceBTC implements SendServiceHelper {
 
     const { fee, psbt } = createTransferTx(
       toAddress,
-      this.address,
+      fromAddress,
       amountInSatoshis,
       feeRate || 0,
       utxos,
-      provider.getNetwork()
+      provider
     )
 
     const newState: SendState = {
@@ -62,17 +91,17 @@ export class SendServiceBTC implements SendServiceHelper {
       sendFee: new BN(fee)
     }
 
-    if (!feeRate)
-      return this.getErrorState(newState, SendErrorMessage.INVALID_NETWORK_FEE)
-
-    if (!amountInSatoshis)
-      return this.getErrorState(newState, SendErrorMessage.AMOUNT_REQUIRED)
-
     if (!toAddress)
       return this.getErrorState(newState, SendErrorMessage.ADDRESS_REQUIRED)
 
     if (toAddress && !isBech32AddressInNetwork(toAddress, isMainnet))
       return this.getErrorState(newState, SendErrorMessage.INVALID_ADDRESS)
+
+    if (!feeRate)
+      return this.getErrorState(newState, SendErrorMessage.INVALID_NETWORK_FEE)
+
+    if (!amountInSatoshis)
+      return this.getErrorState(newState, SendErrorMessage.AMOUNT_REQUIRED)
 
     if (!psbt && amountInSatoshis > 0)
       return this.getErrorState(newState, SendErrorMessage.INSUFFICIENT_BALANCE)
@@ -80,45 +109,21 @@ export class SendServiceBTC implements SendServiceHelper {
     return newState
   }
 
-  async getTransactionRequest(sendState: ValidSendState): Promise<{
-    inputs: BitcoinInputUTXO[]
-    outputs: BitcoinOutputUTXO[]
-  }> {
-    const { address: toAddress, amount } = sendState
-    const feeRate = sendState.gasPrice.toNumber()
-    const provider = await this.networkService.getBitcoinProvider()
-    const { utxos } = await this.getBalance()
-
-    const { inputs, outputs } = createTransferTx(
-      toAddress,
-      this.address,
-      amount.toNumber(),
-      feeRate,
-      utxos,
-      provider.getNetwork()
-    )
-
-    if (!inputs || !outputs) {
-      throw new Error('Unable to create transaction')
-    }
-
-    return { inputs, outputs }
-  }
-
-  private async getBalance(): Promise<{
+  private async getBalance(
+    isMainnet: boolean,
+    address: string
+  ): Promise<{
     balance: number
     utxos: BitcoinInputUTXO[]
   }> {
-    const token =
-      this.networkBalancesService.balances[
-        (await this.networkService.isMainnet())
-          ? ChainId.BITCOIN
-          : ChainId.BITCOIN_TESTNET
-      ]?.[this.address]?.[0]
+    const token = await this.networkBalancesService.getBalances(
+      isMainnet ? BITCOIN_NETWORK : BITCOIN_TEST_NETWORK,
+      address
+    )
 
     return {
-      balance: token?.balance.toNumber() || 0,
-      utxos: token?.utxos || []
+      balance: token?.[0]?.balance.toNumber() || 0,
+      utxos: token?.[0]?.utxos || []
     }
   }
 
@@ -130,3 +135,5 @@ export class SendServiceBTC implements SendServiceHelper {
     }
   }
 }
+
+export default new SendServiceBTC()
