@@ -32,13 +32,13 @@ class SendServiceBTC implements SendServiceHelper {
     const provider = await this.networkService.getBitcoinProvider(__DEV__)
     const { utxos } = await this.getBalance(isMainnet, fromAddress)
 
-    const { ins: inputs, outs: outputs } = createTransferTx(
+    const { inputs, outputs } = createTransferTx(
       toAddress,
       fromAddress,
       amount.toNumber(),
       feeRate,
       utxos,
-      provider
+      provider.getNetwork()
     )
 
     if (!inputs || !outputs) {
