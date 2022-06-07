@@ -19,7 +19,7 @@ import { TxSimple } from '@avalabs/blockcypher-sdk'
 import { AssetBalance } from 'screens/bridge/utils/types'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
-import { selectActiveAccount } from 'store/accounts/accountsStore'
+import { selectActiveAccount } from 'store/accounts'
 
 export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
   const network = useSelector(selectActiveNetwork)

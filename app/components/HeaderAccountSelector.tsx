@@ -5,7 +5,7 @@ import { StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import CarrotSVG from 'components/svg/CarrotSVG'
 import { useSelector } from 'react-redux'
-import { selectActiveAccount } from 'store/accounts/accountsStore'
+import { selectActiveAccount } from 'store/accounts'
 
 export type Direction = 'up' | 'down'
 

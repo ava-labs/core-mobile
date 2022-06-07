@@ -8,7 +8,7 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Account } from 'dto/Account'
 import AddressBookItem from 'components/addressBook/AddressBookItem'
 import { useSelector } from 'react-redux'
-import { selectAccounts } from 'store/accounts/accountsStore'
+import { selectAccounts } from 'store/accounts'
 
 export type AddressBookListsProps = {
   onContactSelected: (item: Contact | Account, type: AddrBookItemType) => void

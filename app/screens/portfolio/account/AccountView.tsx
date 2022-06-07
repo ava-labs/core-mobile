@@ -9,10 +9,7 @@ import AccountItem from 'screens/portfolio/account/AccountItem'
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import { walletServiceInstance } from 'services/wallet/WalletService'
 import { useSelector } from 'react-redux'
-import {
-  selectAccounts,
-  selectActiveAccount
-} from 'store/accounts/accountsStore'
+import { selectAccounts, selectActiveAccount } from 'store/accounts'
 import { activateAccount, addAccount } from 'services/accounts/AccountsService'
 import { store } from 'store'
 

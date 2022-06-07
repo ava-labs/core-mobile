@@ -10,10 +10,7 @@ import AvaButton from 'components/AvaButton'
 import { useNavigation } from '@react-navigation/native'
 import { ShowSnackBar } from 'components/Snackbar'
 import { useSelector } from 'react-redux'
-import {
-  selectAccounts,
-  selectActiveAccount
-} from 'store/accounts/accountsStore'
+import { selectAccounts, selectActiveAccount } from 'store/accounts'
 import { activateAccount } from 'services/accounts/AccountsService'
 import { store } from 'store'
 import { useAccountsContext } from '@avalabs/wallet-react-components'

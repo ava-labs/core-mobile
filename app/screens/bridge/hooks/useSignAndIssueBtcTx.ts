@@ -3,7 +3,7 @@ import * as bitcoin from 'bitcoinjs-lib'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
 import { walletServiceInstance } from 'services/wallet/WalletService'
-import { selectActiveAccount } from 'store/accounts/accountsStore'
+import { selectActiveAccount } from 'store/accounts'
 
 export default function useSignAndIssueBtcTx() {
   const config = useBridgeConfig().config
