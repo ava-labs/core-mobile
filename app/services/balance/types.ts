@@ -26,19 +26,6 @@ export interface ChartData {
 export type TokenAddress = string
 export type ChartDays = number
 
-export type CharDataParams = {
-  coingeckoId?: string
-  address?: string
-  days?: number
-  fresh?: boolean
-}
-
-export type ContractInfoParams = {
-  coingeckoId?: string
-  address?: string
-  fresh?: boolean
-}
-
 export type PriceWithMarketData = {
   price: number
   change24: number

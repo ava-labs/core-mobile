@@ -5,7 +5,7 @@ import {
   CoinsContractInfoResponse,
   CoinsInfoResponse
 } from '@avalabs/coingecko-sdk'
-import { selectTokenById } from 'store/balance'
+import { selectTokenById, TokenType } from 'store/balance'
 import { useSelector } from 'react-redux'
 import TokenService from 'services/balance/TokenService'
 
@@ -39,8 +39,6 @@ export function useTokenDetail(tokenId: string) {
   const { watchlistFavorites, saveWatchlistFavorites } =
     repo.watchlistFavoritesRepo
   const token = useSelector(selectTokenById(tokenId))
-  const coingeckoId = token?.coingeckoId
-  const tokenAddress = token?.address
 
   // TODO cp-2164 move watchlist favorites logic to redux
   // checks if contract can be found in favorites list
@@ -51,11 +49,20 @@ export function useTokenDetail(tokenId: string) {
   // get coingecko chart data.
   useEffect(() => {
     ;(async () => {
-      const data = await TokenService.getChartData({
-        coingeckoId,
-        address: tokenAddress,
-        days: chartDays
-      })
+      let data
+
+      if (token?.type === TokenType.NATIVE) {
+        data = await TokenService.getChartDataForCoinId({
+          coingeckoId: token?.coingeckoId,
+          days: chartDays
+        })
+      } else if (token?.type === TokenType.ERC20) {
+        data = await TokenService.getChartDataForAddress({
+          address: token?.address,
+          days: chartDays
+        })
+      }
+
       if (data) {
         setChartData(data.dataPoints)
         setRanges(data.ranges)
@@ -65,19 +72,27 @@ export function useTokenDetail(tokenId: string) {
         setChartData([])
       }
     })()
-  }, [chartDays, coingeckoId, tokenAddress])
+  }, [chartDays, token?.type])
 
   // get market cap, volume, etc
   useEffect(() => {
     ;(async () => {
-      const data = await TokenService.getTokenInfo({
-        coingeckoId: token?.coingeckoId,
-        address: tokenAddress
-      })
+      let data
+
+      if (token?.type === TokenType.NATIVE) {
+        data = await TokenService.getCoinInfo({
+          coingeckoId: token?.coingeckoId
+        })
+      } else if (token?.type === TokenType.ERC20) {
+        data = await TokenService.getContractInfo({
+          address: token?.address
+        })
+      }
 
       if (!data) return
 
       setContractInfo(data)
+
       if (data?.links?.homepage?.[0]) {
         const url = data?.links?.homepage?.[0]
           ?.replace(/^https?:\/\//, '')
@@ -85,7 +100,7 @@ export function useTokenDetail(tokenId: string) {
         setUrlHostname(url)
       }
     })()
-  }, [token?.coingeckoId, tokenAddress])
+  }, [token?.type])
 
   function handleFavorite() {
     if (!token) return
