@@ -29,6 +29,7 @@ import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
 import { selectActiveAccount } from 'store/accounts'
 import { ChainId, Network } from '@avalabs/chains-sdk'
+import networkService from 'services/network/NetworkService'
 
 export enum TransferEventType {
   WRAP_STATUS = 'wrap_status',
@@ -84,6 +85,7 @@ function LocalBridgeProvider({ children }: { children: any }) {
   const avalancheProvider = getAvalancheProvider(network)
   const ethereumProvider = getEthereumProvider(network)
   const isMainnet = network.chainId === ChainId.AVALANCHE_MAINNET_ID
+  const bitcoinProvider = networkService.getBitcoinProvider(isMainnet)
 
   const [bridgeState, setBridgeState] =
     useState<BridgeState>(defaultBridgeState)
@@ -146,13 +148,23 @@ function LocalBridgeProvider({ children }: { children: any }) {
     ) {
       console.log('Subscribing to tx', trackedTransaction)
       // Start transaction tracking process (no need to await)
+
+      /**
+       * bridgeTransaction: BridgeTransaction;
+       *   onBridgeTransactionUpdate: (bridgeTransaction: BridgeTransaction) => void;
+       *   config: AppConfig;
+       *   avalancheProvider: Provider;
+       *   ethereumProvider: Provider;
+       *   bitcoinProvider: BlockCypherProvider;
+       */
       try {
         const subscription = trackBridgeTransaction({
           bridgeTransaction: trackedTransaction,
           onBridgeTransactionUpdate: onUpdate,
           config,
           avalancheProvider,
-          ethereumProvider
+          ethereumProvider,
+          bitcoinProvider
         })
 
         TrackerSubscriptions.set(trackedTransaction.sourceTxHash, subscription)

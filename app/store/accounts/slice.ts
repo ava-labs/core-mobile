@@ -1,7 +1,14 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { AccountCollection, AccountsState } from 'store/accounts/types'
 import { RootState } from 'store/index'
 import { Account } from 'dto/Account'
+import accountService from 'services/accounts/AccountsService'
+import { AppStartListening } from 'store/middleware/listener'
+import { selectActiveNetwork } from 'store/network'
+import {
+  activateAccount as legacyActivateAccount,
+  addAccount as legacyAddAccount
+} from '@avalabs/wallet-react-components'
 
 const reducerName = 'accounts'
 
@@ -14,7 +21,7 @@ const accountsSlice = createSlice({
   name: reducerName,
   initialState,
   reducers: {
-    addAccount: (state, action: PayloadAction<Account>) => {
+    persistAccount: (state, action: PayloadAction<Account>) => {
       const newAccount = action.payload
       state.accounts[newAccount.index] = newAccount
     },
@@ -29,19 +36,42 @@ const accountsSlice = createSlice({
       }
     },
     setActiveAccountIndex: (state, action: PayloadAction<number>) => {
+      legacyActivateAccount(action.payload)
       state.activeAccountIndex = action.payload
     }
   }
 })
 
 // selectors
-export const selectAccounts = (state: RootState) =>
-  state.accountsReducer.accounts
+export const selectAccounts = (state: RootState) => state.account.accounts
 export const selectActiveAccount = (state: RootState): Account | undefined =>
-  state.accountsReducer.accounts[state.accountsReducer.activeAccountIndex]
+  state.account.accounts[state.account.activeAccountIndex]
 
 // actions
-export const { setAccountTitle, setActiveAccountIndex, addAccount } =
+export const addAccount = createAction(`${reducerName}/addAccount`)
+export const { setAccountTitle, setActiveAccountIndex, persistAccount } =
   accountsSlice.actions
+
+// listeners
+export const addAccountListener = (startListening: AppStartListening) => {
+  startListening({
+    actionCreator: addAccount,
+    effect: async (action, listenerApi) => {
+      const state = listenerApi.getState()
+      const activeNetwork = selectActiveNetwork(state)
+      const accounts = selectAccounts(state)
+      const acc = await accountService.createNextAccount(
+        activeNetwork,
+        accounts
+      )
+
+      listenerApi.dispatch(persistAccount(acc))
+      listenerApi.dispatch(setActiveAccountIndex(acc.index))
+
+      const acc2 = legacyAddAccount()
+      legacyActivateAccount(acc2.index)
+    }
+  })
+}
 
 export const accountsReducer = accountsSlice.reducer
