@@ -17,7 +17,7 @@ import AppNavigation from 'navigation/AppNavigation'
 import MarketMovement from 'screens/watchlist/components/MarketMovement'
 import { Opacity85 } from 'resources/Constants'
 import { PortfolioScreenProps } from 'navigation/types'
-import { TokenWithBalance } from 'store/balance'
+import { TokenType, TokenWithBalance } from 'store/balance'
 import { useTokens } from 'hooks/useTokens'
 import TokenService from 'services/balance/TokenService'
 import { ChartData } from 'services/balance/types'
@@ -107,18 +107,27 @@ const CarrouselItem: FC<CarrouselItemProps> = ({ token, onPress }) => {
 
   useEffect(() => {
     ;(async () => {
-      const data = await TokenService.getChartData({
-        coingeckoId: token.coingeckoId,
-        address: token.address,
-        days: 1
-      })
+      let data
+
+      if (token.type === TokenType.NATIVE) {
+        data = await TokenService.getChartDataForCoinId({
+          coingeckoId: token.coingeckoId,
+          days: 1
+        })
+      } else if (token.type === TokenType.ERC20) {
+        data = await TokenService.getChartDataForAddress({
+          address: token.address,
+          days: 1
+        })
+      }
+
       data && setChartData(data)
     })()
   }, [])
 
   return (
     <AvaButton.Base
-      key={token.address}
+      key={token.id}
       onPress={onPress}
       style={[style.item, { backgroundColor: theme.colorBg3 }]}>
       <Avatar.Custom

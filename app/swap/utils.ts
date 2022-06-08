@@ -1,4 +1,4 @@
-import { TokenWithBalance } from 'store/balance'
+import { TokenType, TokenWithBalance } from 'store/balance'
 
 // @ts-ignore generic - ts complains about returning `any`
 export async function incrementalPromiseResolve<T>(
@@ -26,8 +26,8 @@ function incrementAndCall<T>(prom: Promise<T>, interval = 0) {
 }
 
 export function getSrcToken(token: TokenWithBalance) {
-  if (token.contractType === 'ERC-20') {
-    return token.address ?? token.symbol
+  if (token.type === TokenType.ERC20) {
+    return token.address
   }
   return token.symbol
 }

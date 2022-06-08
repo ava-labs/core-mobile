@@ -1,7 +1,7 @@
 import { BlockCypherProvider } from '@avalabs/wallets-sdk'
 import { satoshiToBtc } from '@avalabs/bridge-sdk'
 import { balanceToDisplayValue, bigToBN } from '@avalabs/utils-sdk'
-import { TokenWithBalance } from 'store/balance'
+import { TokenType, TokenWithBalance } from 'store/balance'
 import { currentSelectedCurrency$ } from '@avalabs/wallet-react-components'
 import { firstValueFrom } from 'rxjs'
 import { Network } from '@avalabs/chains-sdk'
@@ -32,26 +32,30 @@ export class BtcBalanceService {
       selectedCurrency
     )
     const denomination = networkToken.decimals
-    const { balance: balanceSatoshis } = await provider.getUtxoBalance(
+    const { balance: balanceSatoshis, utxos } = await provider.getUtxoBalance(
       userAddress
     )
     const balanceBig = satoshiToBtc(balanceSatoshis)
+    const balanceNum = balanceBig.toNumber()
     const balance = bigToBN(balanceBig, denomination)
     const balanceDisplayValue = balanceToDisplayValue(balance, denomination)
     const balanceUsdDisplayValue = priceUSD
       ? balanceBig.mul(priceUSD).toFixed(2)
-      : undefined
+      : ''
+    const balanceUSD = priceUSD && balanceNum ? priceUSD * balanceNum : 0
 
     return [
       {
         ...networkToken,
-        isNetworkToken: true,
+        type: TokenType.NATIVE,
         id,
         coingeckoId: nativeTokenId,
         balance,
         balanceDisplayValue,
+        balanceUSD,
         balanceUsdDisplayValue,
         priceUSD,
+        utxos,
         marketCap,
         vol24,
         change24

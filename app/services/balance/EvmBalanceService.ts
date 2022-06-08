@@ -9,7 +9,13 @@ import {
   ethersBigNumberToBig
 } from '@avalabs/utils-sdk'
 import { firstValueFrom } from 'rxjs'
-import { TokenWithBalance } from 'store/balance'
+import {
+  NetworkTokenWithBalance,
+  TokenType,
+  TokenWithBalance,
+  TokenWithBalanceERC20,
+  TokenWithBalanceERC721
+} from 'store/balance'
 import { Network, NetworkContractToken } from '@avalabs/chains-sdk'
 import {
   SimpleTokenPriceResponse,
@@ -27,7 +33,7 @@ export class EvmBalanceService {
     userAddress: string,
     network: Network,
     selectedCurrency: string
-  ): Promise<TokenWithBalance> {
+  ): Promise<NetworkTokenWithBalance> {
     const { networkToken, chainId } = network
     const nativeTokenId =
       network.pricingProviders?.coingecko?.nativeTokenId ?? ''
@@ -62,7 +68,7 @@ export class EvmBalanceService {
       ...networkToken,
       id,
       coingeckoId: nativeTokenId,
-      isNetworkToken: true,
+      type: TokenType.NATIVE,
       balance,
       balanceDisplayValue,
       balanceUSD,
@@ -81,7 +87,7 @@ export class EvmBalanceService {
     userAddress: string,
     network: Network,
     selectedCurrency: string
-  ): Promise<TokenWithBalance[]> {
+  ): Promise<TokenWithBalanceERC20[]> {
     const { chainId } = network
 
     return Promise.allSettled(
@@ -115,7 +121,7 @@ export class EvmBalanceService {
         return {
           ...token,
           id,
-          isNetworkToken: false,
+          type: TokenType.ERC20,
           balance,
           balanceDisplayValue,
           balanceUSD,
@@ -124,18 +130,19 @@ export class EvmBalanceService {
           marketCap,
           change24,
           vol24
-        }
+        } as TokenWithBalanceERC20
       })
     ).then(res => {
-      return res.reduce<TokenWithBalance[]>((acc, result) => {
+      return res.reduce<TokenWithBalanceERC20[]>((acc, result) => {
         return result.status === 'fulfilled' ? [...acc, result.value] : acc
       }, [])
     })
   }
 
+  // TODO add support for nft
   private async getErc721Balances(
     userAddress: string
-  ): Promise<TokenWithBalance[]> {
+  ): Promise<TokenWithBalanceERC721[]> {
     const user = new User({ baseUrl: 'https://blizzard.avax.network' })
     const result = await user.getNftState(userAddress)
     return (result.data ?? []) as any[] // TODO fit to TokenWithBalance interface

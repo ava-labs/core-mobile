@@ -17,12 +17,7 @@ import {
 import Config from 'react-native-config'
 import { getCache, setCache } from 'utils/InMemoryCache'
 import { arrayHash } from 'utils/Utils'
-import {
-  CharDataParams,
-  ChartData,
-  ContractInfoParams,
-  PriceWithMarketData
-} from './types'
+import { ChartData, PriceWithMarketData } from './types'
 
 const coingeckoBasicClient = getBasicCoingeckoHttp()
 const coingeckoProClient = getProCoingeckoHttp()
@@ -100,30 +95,64 @@ export class TokenService {
   }
 
   /**
-   * Get chart data for either a coin or a contract address
-   * @param address the contract addresses
+   * Get chart data for a coin
    * @param coingeckoId the coin id
    * @param days data up to number of days ago
    * @param fresh whether to ignore cache
    * @returns chart data
    */
-  async getChartData({
+  async getChartDataForCoinId({
     coingeckoId,
-    address,
     days = 1,
     fresh = false
-  }: CharDataParams) {
+  }: {
+    coingeckoId: string
+    days?: number
+    fresh?: boolean
+  }) {
     let data: ChartData | undefined
 
-    const key = `${coingeckoId || address || ''}-${days.toString()}`
-    const cacheId = `getChartData-${key}`
+    const key = `${coingeckoId}-${days.toString()}`
+    const cacheId = `getChartDataForCoinId-${key}`
 
     data = fresh ? undefined : getCache(cacheId)
 
     if (data === undefined) {
       if (coingeckoId) {
         data = await this.fetchChartDataForCoin(coingeckoId, days)
-      } else if (address) {
+      }
+
+      setCache(cacheId, data)
+    }
+
+    return data
+  }
+
+  /**
+   * Get chart data for a contract address
+   * @param address the contract addresses
+   * @param days data up to number of days ago
+   * @param fresh whether to ignore cache
+   * @returns chart data
+   */
+  async getChartDataForAddress({
+    address,
+    days = 1,
+    fresh = false
+  }: {
+    address: string
+    days?: number
+    fresh?: boolean
+  }) {
+    let data: ChartData | undefined
+
+    const key = `${address}-${days.toString()}`
+    const cacheId = `getChartDataForAddress-${key}`
+
+    data = fresh ? undefined : getCache(cacheId)
+
+    if (data === undefined) {
+      if (address) {
         data = await this.fetchChartDataForAddress(address, days)
       }
 
@@ -134,30 +163,57 @@ export class TokenService {
   }
 
   /**
-   * Get info for either a coin or a contract address
-   * @param address the contract addresses
+   * Get info for a coin
    * @param coingeckoId the coin id
    * @param fresh whether to ignore cache
-   * @returns token info
+   * @returns coin info
    */
-  async getTokenInfo({
+  async getCoinInfo({
     coingeckoId,
-    address,
     fresh = false
-  }: ContractInfoParams): Promise<
-    CoinsInfoResponse | CoinsContractInfoResponse | undefined
-  > {
-    let data: CoinsInfoResponse | CoinsContractInfoResponse | undefined
+  }: {
+    coingeckoId: string
+    fresh?: boolean
+  }): Promise<CoinsInfoResponse | undefined> {
+    let data: CoinsInfoResponse | undefined
 
-    const key = coingeckoId || address || ''
-    const cacheId = `getTokenInfo-${key}`
+    const key = coingeckoId
+    const cacheId = `getCoinInfo-${key}`
 
     data = fresh ? undefined : getCache(cacheId)
 
     if (data === undefined) {
       if (coingeckoId) {
         data = await this.fetchCoinInfo(coingeckoId)
-      } else if (address) {
+      }
+      setCache(cacheId, data)
+    }
+
+    return data
+  }
+
+  /**
+   * Get info for a contract address
+   * @param address the contract addresses
+   * @param fresh whether to ignore cache
+   * @returns token info
+   */
+  async getContractInfo({
+    address,
+    fresh = false
+  }: {
+    address: string
+    fresh?: boolean
+  }): Promise<CoinsContractInfoResponse | undefined> {
+    let data: CoinsContractInfoResponse | undefined
+
+    const key = address
+    const cacheId = `getContractInfo-${key}`
+
+    data = fresh ? undefined : getCache(cacheId)
+
+    if (data === undefined) {
+      if (address) {
         data = await this.fetchContractInfo(address)
       }
       setCache(cacheId, data)

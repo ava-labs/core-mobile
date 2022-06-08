@@ -10,32 +10,26 @@ import SparklineChart from 'components/SparklineChart'
 import { Row } from 'components/Row'
 import MarketMovement from 'screens/watchlist/components/MarketMovement'
 import TokenService from 'services/balance/TokenService'
+import { TokenType, TokenWithBalance } from 'store/balance'
 
 interface Props {
-  tokenName: string
+  token: TokenWithBalance
   chartDays: number
-  tokenId?: string
   value?: string
-  tokenAddress?: string
-  image?: string
-  symbol?: string
   onPress?: () => void
   rank?: number
   filterBy: WatchlistFilter
 }
 
 const WatchListItem: FC<Props> = ({
-  tokenId,
-  tokenName,
+  token,
   chartDays,
   value = '0',
-  image,
-  symbol,
   onPress,
   rank,
-  tokenAddress,
   filterBy
 }) => {
+  const { type, logoUri, symbol, name } = token
   const { theme, appHook } = useApplicationContext()
   const { selectedCurrency } = appHook
   const [ranges, setRanges] = useState<{
@@ -60,11 +54,19 @@ const WatchListItem: FC<Props> = ({
   useEffect(() => {
     ;(async () => {
       setIsLoadingChartData(true)
-      const result = await TokenService.getChartData({
-        coingeckoId: tokenId,
-        address: tokenAddress,
-        days: chartDays
-      })
+
+      let result
+      if (type === TokenType.NATIVE) {
+        result = await TokenService.getChartDataForCoinId({
+          coingeckoId: token.coingeckoId,
+          days: chartDays
+        })
+      } else if (type === TokenType.ERC20) {
+        result = await TokenService.getChartDataForAddress({
+          address: token.address,
+          days: chartDays
+        })
+      }
 
       if (result) {
         setChartData(result.dataPoints)
@@ -72,7 +74,7 @@ const WatchListItem: FC<Props> = ({
       }
       setIsLoadingChartData(false)
     })()
-  }, [chartDays, tokenAddress, tokenId])
+  }, [chartDays, token])
 
   const usdBalance = useMemo(() => {
     if (value) {
@@ -140,7 +142,7 @@ const WatchListItem: FC<Props> = ({
         <AvaText.Heading2 ellipsizeMode={'tail'}>{symbol}</AvaText.Heading2>
       }
       titleAlignment={'flex-start'}
-      subtitle={tokenName}
+      subtitle={name}
       embedInCard={false}
       leftComponent={
         <View
@@ -156,9 +158,9 @@ const WatchListItem: FC<Props> = ({
             </>
           )}
           <Avatar.Custom
-            name={tokenName}
+            name={name}
             symbol={symbol}
-            logoUri={image}
+            logoUri={logoUri}
             size={32}
           />
         </View>
