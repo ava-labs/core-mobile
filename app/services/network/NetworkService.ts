@@ -7,10 +7,10 @@ const btcNetworks = [ChainId.BITCOIN]
 const ethNetworks: number[] = []
 
 // TODO: add support for ETH NETWORKS and BITCOIN TEST NET
-export class NetworkService {
-  getEvmProvider(network: Network, numerOfChunksPerRequestBatch = 40) {
+class NetworkService {
+  getEvmProvider(network: Network, numberOfChunksPerRequestBatch = 40) {
     return new JsonRpcBatchInternal(
-      numerOfChunksPerRequestBatch,
+      numberOfChunksPerRequestBatch,
       network.rpcUrl,
       network.chainId
     )

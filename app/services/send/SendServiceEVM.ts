@@ -15,18 +15,14 @@ import {
   SendState,
   ValidSendState
 } from 'services/send/types'
-import { NetworkService } from 'services/network/NetworkService'
+import networkService from 'services/network/NetworkService'
 import { Network } from '@avalabs/chains-sdk'
 
 export class SendServiceEVM implements SendServiceHelper {
   private readonly networkProvider: JsonRpcBatchInternal
 
-  constructor(
-    private networkService: NetworkService,
-    private activeNetwork: Network,
-    private fromAddress: string
-  ) {
-    const provider = this.networkService.getProviderForNetwork(activeNetwork)
+  constructor(private activeNetwork: Network, private fromAddress: string) {
+    const provider = networkService.getProviderForNetwork(activeNetwork)
     if (!(provider instanceof JsonRpcBatchInternal))
       throw new Error('Not EVM provider')
     this.networkProvider = provider
@@ -158,8 +154,8 @@ export class SendServiceEVM implements SendServiceHelper {
       return this.getUnsignedTxNative(sendState)
     } else if (sendState.token.contractType === 'ERC20') {
       return this.getUnsignedTxERC20(sendState as SendState)
-    } else if (sendState.token.contractType === 'ERC721') {
-      return this.getUnsignedTxERC721(sendState as SendState)
+      // } else if (sendState.token.contractType === 'ERC721') {
+      //   return this.getUnsignedTxERC721(sendState as SendState)
     } else {
       throw new Error('Unsupported token')
     }

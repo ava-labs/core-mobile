@@ -1,7 +1,7 @@
 import { encrypt, getEncryptionKey } from 'screens/login/utils/EncryptionHelper'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import { AppNavHook } from 'useAppNav'
-import { walletServiceInstance } from 'services/wallet/WalletService'
+import walletService from 'services/wallet/WalletService'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   addAccount as addAccountToStore,
@@ -53,9 +53,9 @@ export function useWalletSetup(appNavHook: AppNavHook): WalletSetupHook {
    */
   async function initWalletWithMnemonic(mnemonic: string) {
     await walletContext2.initWalletMnemonic(mnemonic)
-    walletServiceInstance.setMnemonic(mnemonic)
+    walletService.setMnemonic(mnemonic)
     if (Object.keys(accounts).length === 0) {
-      const acc = await createNextAccount(walletServiceInstance, accounts)
+      const acc = await createNextAccount(walletService, accounts)
       dispatch(addAccountToStore(acc))
       dispatch(setActiveAccountIndex(acc.index))
 
@@ -77,7 +77,7 @@ export function useWalletSetup(appNavHook: AppNavHook): WalletSetupHook {
    * Destroys the wallet instance
    */
   async function destroyWallet() {
-    walletServiceInstance.destroy()
+    walletService.destroy()
   }
 
   return {

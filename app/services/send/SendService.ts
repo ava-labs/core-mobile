@@ -1,17 +1,12 @@
-import { WalletService } from 'services/wallet/WalletService'
-import { NetworkService } from 'services/network/NetworkService'
-import { SendServiceHelper, SendState } from 'services/send/types'
-import { SendServiceEVM } from 'services/send/SendServiceEVM'
-import { SendServiceBTC } from 'services/send/SendServiceBTC'
-import { Account } from 'dto/Account'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
+import networkService from 'services/network/NetworkService'
+import walletService from 'services/wallet/WalletService'
+import { Account } from 'dto/Account'
+import { SendServiceEVM } from 'services/send/SendServiceEVM'
+import { isValidSendState, SendServiceHelper, SendState } from './types'
+import sendServiceBTC from './SendServiceBTC'
 
-export class SendService {
-  constructor(
-    private walletService: WalletService,
-    private networkService: NetworkService
-  ) {}
-
+class SendService {
   async send(
     sendState: SendState,
     activeNetwork: Network,
@@ -22,41 +17,65 @@ export class SendService {
         ? account.addressBtc
         : account.address
 
-    const sendService = this.pickSendService(activeNetwork, fromAddress)
-    sendState = await sendService.validateStateAndCalculateFees(sendState)
+    const service = await this.getService(activeNetwork, fromAddress)
+    sendState = await service.validateStateAndCalculateFees(
+      sendState,
+      !activeNetwork.isTestnet,
+      fromAddress
+    )
 
     if (sendState.error?.error) {
       throw new Error(sendState.error.message)
     }
 
-    if (!sendState.canSubmit) {
+    if (!isValidSendState(sendState)) {
       throw new Error('Unknown error, unable to submit')
     }
 
-    const txRequest = await sendService.getTransactionRequest(sendState)
-    const signedTx = await this.walletService.sign(
+    const txRequest = await service.getTransactionRequest(
+      sendState,
+      !activeNetwork.isTestnet,
+      fromAddress
+    )
+    const signedTx = await walletService.sign(
       txRequest,
       account.index,
       activeNetwork
     )
-    return await this.networkService.sendTransaction(signedTx, activeNetwork)
+    return await networkService.sendTransaction(signedTx, activeNetwork)
   }
 
-  private pickSendService(
+  async validateStateAndCalculateFees(
+    sendState: SendState,
+    activeNetwork: Network,
+    account: Account
+  ): Promise<SendState> {
+    const fromAddress =
+      activeNetwork.vmName === NetworkVMType.BITCOIN
+        ? account.addressBtc
+        : account.address
+
+    const service = await this.getService(activeNetwork, fromAddress)
+    return service.validateStateAndCalculateFees(
+      sendState,
+      !activeNetwork.isTestnet,
+      fromAddress
+    )
+  }
+
+  private async getService(
     activeNetwork: Network,
     fromAddress: string
-  ): SendServiceHelper {
+  ): Promise<SendServiceHelper> {
     switch (activeNetwork?.vmName) {
       case NetworkVMType.BITCOIN:
-        return new SendServiceBTC() //TODO
-      case NetworkVMType.EVM:
-        return new SendServiceEVM(
-          this.networkService,
-          activeNetwork,
-          fromAddress
-        )
+        return sendServiceBTC
+      case NetworkVMType.EVM: // we might be able to change this to be a singleton too
+        return new SendServiceEVM(activeNetwork, fromAddress)
       default:
         throw new Error('unhandled send helper')
     }
   }
 }
+
+export default new SendService()

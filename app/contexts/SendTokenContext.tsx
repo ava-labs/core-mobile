@@ -28,10 +28,7 @@ import { TokenType, TokenWithBalance } from 'store/balance'
 import { TokenSymbol } from 'store/network'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/accounts'
-import { SendService } from 'services/send/SendService'
-import { walletServiceInstance } from 'services/wallet/WalletService'
-import networkService from 'services/network/NetworkService'
-import { selectActiveNetwork } from 'store/network'
+import sendService from 'services/send/SendService'
 import { SendState } from 'services/send/types'
 import { BigNumber } from 'ethers'
 import { bnToEthersBigNumber } from '@avalabs/utils-sdk'
@@ -175,7 +172,6 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
     setTransactionId(undefined)
     setSendStatus('Sending')
 
-    const sendService = new SendService(walletServiceInstance, networkService)
     const sendState = {
       address,
       amount,
