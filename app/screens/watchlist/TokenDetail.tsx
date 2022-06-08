@@ -36,6 +36,7 @@ import TokenAddress from 'components/TokenAddress'
 import AppNavigation from 'navigation/AppNavigation'
 import { formatLargeNumber } from 'utils/Utils'
 import { TokenSymbol } from 'store/network'
+import { TokenType } from 'store/balance'
 
 const WINDOW_WIDTH = Dimensions.get('window').width
 
@@ -342,7 +343,7 @@ const TokenDetail = () => {
             title={'MarketCap'}
             value={formatMarketNumbers(marketCap)}
           />
-          {token?.address && (
+          {token?.type === TokenType.ERC20 && (
             <DataItem
               title={'Contract Address'}
               value={

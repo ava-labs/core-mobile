@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { BN } from '@avalabs/avalanche-wallet-sdk'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { TokenWithBalance } from 'store/balance'
+import { TokenType, TokenWithBalance } from 'store/balance'
 import { useTokens } from 'hooks/useTokens'
 
 type ShowZeroArrayType = { [x: string]: boolean }
@@ -77,7 +77,7 @@ export function useSearchableTokenList(hideZeroBalance = true): {
 
     return tokens.filter(
       token =>
-        token.isNetworkToken || // always show network token
+        token.type === TokenType.NATIVE || // always show native tokens
         token.balance?.gt(bnZero)
       // ||
       //   zeroBalanceWhitelist[getTokenUID(token)]

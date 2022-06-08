@@ -1,43 +1,69 @@
-import { NetworkContractTokenResourceLink } from '@avalabs/chains-sdk'
+import { NetworkContractToken, NetworkToken } from '@avalabs/chains-sdk'
+import { BitcoinInputUTXO } from '@avalabs/wallets-sdk'
 import BN from 'bn.js'
-import { StringOrNumberOrList } from 'victory-core'
 
-export interface NetworkContractToken {
-  resourceLinks: NetworkContractTokenResourceLink[]
+export enum TokenType {
+  NATIVE = 'NATIVE',
+  ERC20 = 'ERC20',
+  ERC721 = 'ERC721'
 }
 
-export interface NetworkToken {
-  coingeckoId: string
-}
-
-export type TokenWithBalance = {
-  id: string // the id is chainId + tokenId (either coingeckoId, address)
-  name: string
-  symbol: string
-  description?: string
-  logoUri?: string
+type TokenBalanceData = {
+  type: TokenType
   balance: BN
-  balanceUSD?: number
-  balanceDisplayValue?: string
-  balanceUsdDisplayValue?: string
+  balanceUSD: number
+  balanceDisplayValue: string
+  balanceUsdDisplayValue: string
   priceUSD: number
-  decimals?: number
+  utxos?: BitcoinInputUTXO[]
+}
+
+type TokenMarketData = {
   marketCap: number
   change24: number
   vol24: number
-  isNetworkToken: boolean
-
-  // network token properties
-  coingeckoId?: string
-
-  // erc-20 token properties
-  address?: string
-  assetType?: string
-  contractType?: string
-  chainId?: StringOrNumberOrList
-  officialSite?: string
-  resourceLinks?: NetworkContractTokenResourceLink[]
 }
+
+export type NetworkTokenWithBalance = TokenBalanceData &
+  TokenMarketData &
+  NetworkToken & {
+    id: string // chainId + coingeckoId
+    coingeckoId: string
+    type: TokenType.NATIVE
+  }
+
+export type TokenWithBalanceERC20 = TokenBalanceData &
+  TokenMarketData &
+  NetworkContractToken & {
+    id: string // chainId + token contract address
+    type: TokenType.ERC20
+  }
+
+export type TokenWithBalanceERC721 = TokenBalanceData &
+  TokenMarketData & {
+    id: string
+    type: TokenType.ERC721
+    address: string
+    decimals: number
+    description: string
+    logoUri: string
+    name: string
+    symbol: string
+  }
+
+export type TokenWithBalance =
+  | NetworkTokenWithBalance
+  | TokenWithBalanceERC20
+  | TokenWithBalanceERC721
+
+// export type TokenWithBalance = {
+//
+
+//   isNetworkToken: boolean
+
+//   // network token properties
+//   coingeckoId?: string
+// }
 
 export type Balance = {
   accountIndex: number

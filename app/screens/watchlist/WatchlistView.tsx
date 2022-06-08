@@ -114,7 +114,6 @@ const WatchlistView: React.FC<Props> = ({ showFavorites, searchText }) => {
 
   const renderItem = (item: ListRenderItemInfo<TokenWithBalance>) => {
     const token = item.item
-    const logoUri = token?.logoUri ?? undefined
 
     function getDisplayValue() {
       if (filterBy === WatchlistFilter.PRICE) {
@@ -138,13 +137,9 @@ const WatchlistView: React.FC<Props> = ({ showFavorites, searchText }) => {
     // to get that information
     return (
       <WatchListItem
-        tokenName={token.name}
+        token={token}
         chartDays={filterTimeDays}
-        tokenAddress={token.address}
-        tokenId={token.coingeckoId}
         value={getDisplayValue()}
-        symbol={token.symbol}
-        image={logoUri}
         filterBy={filterBy}
         // rank={!showFavorites ? item.index + 1 : undefined}
         onPress={() => {

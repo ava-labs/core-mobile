@@ -27,7 +27,7 @@ import { mustNumber, mustValue } from 'utils/JsTools'
 import { BN } from 'avalanche'
 import { BehaviorSubject, firstValueFrom, of, Subject } from 'rxjs'
 import { useSend } from 'screens/send/useSend'
-import { TokenWithBalance } from 'store/balance'
+import { TokenType, TokenWithBalance } from 'store/balance'
 import { TokenSymbol } from 'store/network'
 
 export interface SendTokenContextState {
@@ -143,7 +143,7 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
   }, [customGasPriceNanoAvax])
 
   useEffect(() => {
-    if (sendToken?.contractType === 'ERC-20' && sendToken.address) {
+    if (sendToken?.type === TokenType.ERC20 && sendToken.address) {
       setTokenBalances?.({ [sendToken.address]: sendToken })
     }
   }, [sendToken])
@@ -177,7 +177,7 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
     )
 
     submit?.(
-      sendToken?.contractType === 'ERC-20' && sendToken.address
+      sendToken?.type === TokenType.ERC20 && sendToken.address
         ? sendToken
         : undefined,
       Promise.resolve(wallet),

@@ -7,14 +7,14 @@ import {
 } from '@avalabs/wallet-react-components'
 import { BN, WalletType } from '@avalabs/avalanche-wallet-sdk'
 import { Observable } from 'rxjs'
-import { TokenWithBalance } from 'store/balance'
+import { TokenType, TokenWithBalance } from 'store/balance'
 
 // TODO: refactor send logic to deal with multiple chains
 export function useSend(
   token: TokenWithBalance | undefined,
   gasPrice$: Observable<{ bn: BN }>
 ) {
-  const isERC20 = token?.contractType === 'ERC-20'
+  const isERC20 = token?.type === TokenType.ERC20
   const sendAvax = useSendAvax(gasPrice$)
   const sendErc20 = useSendErc20Form(
     isERC20 ? (token as unknown as ERC20) : undefined,
