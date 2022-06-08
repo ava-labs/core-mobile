@@ -127,25 +127,16 @@
   resolved "https://registry.yarnpkg.com/@avalabs/utils-sdk/-/utils-sdk-2.2.0.tgz#14d771f98ba5ed164410fa0cf7c263ba9e3a0dea"
   integrity sha512-W/CsP0J0587v39XVXi/z2ptkD/inEWg9HrvhtRz3cCreGEjwoJhwODFrPpCyxhM38GfwMEXNiMYcrcKBt9jJpQ==
 
-"@avalabs/utils-sdk@2.3.0-alpha.3":
-  version "2.3.0-alpha.3"
-  resolved "https://registry.yarnpkg.com/@avalabs/utils-sdk/-/utils-sdk-2.3.0-alpha.3.tgz#4ac34f6872f4282b7d0defa50a1f4c2f740c389b"
-  integrity sha512-1FtTrvSD1ggNYAemMz9iLnEgb2oeOtOtycIPhXmTgIkPUGhblQQ3a3Odyqt/95b79z6ugc2hxrGWX8EwDUifhg==
-
 "@avalabs/utils-sdk@2.3.0-alpha.5":
   version "2.3.0-alpha.5"
   resolved "https://registry.yarnpkg.com/@avalabs/utils-sdk/-/utils-sdk-2.3.0-alpha.5.tgz#7d0240e5342a5973d8d29366974e36985a787d43"
   integrity sha512-mOjh5tWnrsT2RYzv8RZGrfm+MLIAf14v5Az5Ym8Z+jSfqXqJksET2fjq5LW9UUYoCQs8W8nC5J13+rsOrlCvLw==
 
-"@avalabs/utils-sdk@2.4.0-alpha.26":
-  version "2.4.0-alpha.26"
-  resolved "https://registry.yarnpkg.com/@avalabs/utils-sdk/-/utils-sdk-2.4.0-alpha.26.tgz#026ce22574a074891418fce2fff2c053a3ea6f70"
-  integrity sha512-G51nIhBADSljZHBAwQ3SUORyFjpoCwmVhE1bLL0IaqKfZWj7igMB2dOwQbqW6FtZdVfbw2WJ8Wxaddl3/ysFcQ==
-
 "@avalabs/utils-sdk@2.4.0-alpha.39":
   version "2.4.0-alpha.39"
   resolved "https://registry.yarnpkg.com/@avalabs/utils-sdk/-/utils-sdk-2.4.0-alpha.39.tgz#3ec8ce2fee63aa0646e0145f423aaa78c708e435"
   integrity sha512-02qMtnV+wT+3j+Ws7kT2cfXlNMpPeD13qgEKFTk637WRVjagQ/dUeuKQQFQAMF+txLJW7M7VFE594f5P9habUg==
+
 "@avalabs/utils-sdk@2.4.0-alpha.44":
   version "2.4.0-alpha.44"
   resolved "https://registry.yarnpkg.com/@avalabs/utils-sdk/-/utils-sdk-2.4.0-alpha.44.tgz#9a2e8c94374590997f61b64eecc9c98560c23d29"
