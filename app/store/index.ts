@@ -11,25 +11,25 @@ import {
   REGISTER,
   REHYDRATE
 } from 'redux-persist'
-import { networkReducer } from './network'
-import { balanceReducer, setBalance } from './balance'
-import { appReducer, onRehydrationComplete } from './app'
+import { networkReducer as network } from './network'
+import { balanceReducer as balance, setBalance } from './balance'
+import { appReducer as app, onRehydrationComplete } from './app'
 import { listener } from './middleware/listener'
-import { accountsReducer } from './accounts'
+import { accountsReducer as account } from './accounts'
 
 const persistActions = [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER]
 
 const rootReducer = combineReducers({
-  appReducer,
-  networkReducer,
-  balanceReducer,
-  accountsReducer
+  app,
+  network,
+  balance,
+  account
 })
 
 const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
-  whitelist: ['networkReducer', 'accountsReducer']
+  whitelist: ['network', 'account']
 }
 
 const persistedReducer = persistReducer(persistConfig, rootReducer)

@@ -55,19 +55,18 @@ export const networkSlice = createSlice({
 // selectors
 // TODO remove {}
 export const selectActiveNetwork = (state: RootState) =>
-  state.networkReducer.networks[state.networkReducer.active] ?? {}
+  state.network.networks[state.network.active] ?? {}
 
-export const selectNetworks = (state: RootState) =>
-  state.networkReducer.networks
+export const selectNetworks = (state: RootState) => state.network.networks
 
 export const selectFavoriteNetworks = (state: RootState) =>
-  state.networkReducer.favorites.map(id => state.networkReducer.networks[id])
+  state.network.favorites.map(id => state.network.networks[id])
 
 export const selectAvaxMainnet = (state: RootState) =>
-  state.networkReducer.networks[ChainId.AVALANCHE_MAINNET_ID] ?? {}
+  state.network.networks[ChainId.AVALANCHE_MAINNET_ID] ?? {}
 
 export const selectAvaxTestnet = (state: RootState) =>
-  state.networkReducer.networks[ChainId.AVALANCHE_TESTNET_ID] ?? {}
+  state.network.networks[ChainId.AVALANCHE_TESTNET_ID] ?? {}
 
 // actions
 export const getNetworks = createAsyncThunk<void, void, { state: RootState }>(
