@@ -1,6 +1,6 @@
 import walletService from 'services/wallet/WalletService'
 import { Account } from 'dto/Account'
-import { AccountCollection } from 'store/accounts'
+import { AccountCollection } from 'store/account'
 import {
   BITCOIN_NETWORK,
   BITCOIN_TEST_NETWORK,

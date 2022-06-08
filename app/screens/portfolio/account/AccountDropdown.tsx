@@ -14,7 +14,7 @@ import {
   selectAccounts,
   selectActiveAccount,
   setActiveAccountIndex
-} from 'store/accounts'
+} from 'store/account'
 import { activateAccount as legacyActivateAccount } from '@avalabs/wallet-react-components'
 
 const Y_START = -400

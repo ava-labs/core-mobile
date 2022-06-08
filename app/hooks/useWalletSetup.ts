@@ -3,7 +3,7 @@ import BiometricsSDK from 'utils/BiometricsSDK'
 import { AppNavHook } from 'useAppNav'
 import walletService from 'services/wallet/WalletService'
 import { useDispatch, useSelector } from 'react-redux'
-import { addAccount, selectAccounts, selectActiveAccount } from 'store/accounts'
+import { addAccount, selectAccounts, selectActiveAccount } from 'store/account'
 import {
   useAccountsContext,
   useWalletContext

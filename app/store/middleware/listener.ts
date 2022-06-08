@@ -3,7 +3,7 @@ import type { RootState, AppDispatch } from 'store'
 import { addAppListeners } from 'store/app'
 import { addNetworkListeners } from 'store/network'
 import { addBalanceListeners } from 'store/balance'
-import { addAccountListener } from 'store/accounts'
+import { addAccountListener } from 'store/account'
 
 export type AppStartListening = TypedStartListening<RootState, AppDispatch>
 

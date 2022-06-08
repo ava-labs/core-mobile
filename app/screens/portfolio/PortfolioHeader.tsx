@@ -8,7 +8,7 @@ import { useSelector } from 'react-redux'
 import { selectBalanceTotalInUSD } from 'store/balance'
 import { NetworkVMType } from '@avalabs/chains-sdk'
 import { selectActiveNetwork } from 'store/network'
-import { selectActiveAccount } from 'store/accounts'
+import { selectActiveAccount } from 'store/account'
 
 // TODO: reimplement balance loading CP-2114
 function PortfolioHeaderContainer() {

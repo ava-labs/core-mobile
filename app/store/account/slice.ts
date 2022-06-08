@@ -1,8 +1,8 @@
 import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { AccountCollection, AccountsState } from 'store/accounts/types'
+import { AccountCollection, AccountsState } from 'store/account/types'
 import { RootState } from 'store/index'
 import { Account } from 'dto/Account'
-import accountService from 'services/accounts/AccountsService'
+import accountService from 'services/account/AccountsService'
 import { AppStartListening } from 'store/middleware/listener'
 import { selectActiveNetwork } from 'store/network'
 import {
@@ -10,7 +10,7 @@ import {
   addAccount as legacyAddAccount
 } from '@avalabs/wallet-react-components'
 
-const reducerName = 'accounts'
+const reducerName = 'account'
 
 const initialState = {
   accounts: {} as AccountCollection,
@@ -36,7 +36,6 @@ const accountsSlice = createSlice({
       }
     },
     setActiveAccountIndex: (state, action: PayloadAction<number>) => {
-      legacyActivateAccount(action.payload)
       state.activeAccountIndex = action.payload
     }
   }

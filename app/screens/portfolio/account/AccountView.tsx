@@ -13,7 +13,7 @@ import {
   selectAccounts,
   selectActiveAccount,
   setActiveAccountIndex
-} from 'store/accounts'
+} from 'store/account'
 
 function AccountView({ onDone }: { onDone: () => void }): JSX.Element {
   const { theme } = useApplicationContext()

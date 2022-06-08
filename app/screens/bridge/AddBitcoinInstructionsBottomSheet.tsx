@@ -11,7 +11,7 @@ import AvaxQACode from 'components/AvaxQRCode'
 import TokenAddress from 'components/TokenAddress'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useSelector } from 'react-redux'
-import { selectActiveAccount } from 'store/accounts'
+import { selectActiveAccount } from 'store/account'
 import { BITCOIN_NETWORK } from '@avalabs/chains-sdk'
 
 function AddBitcoinInstructionsBottomSheet(): JSX.Element {
