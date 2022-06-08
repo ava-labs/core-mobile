@@ -7,15 +7,13 @@ import AvaButton from 'components/AvaButton'
 import { Account } from 'dto/Account'
 import AccountItem from 'screens/portfolio/account/AccountItem'
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
-import walletService from 'services/wallet/WalletService'
 import { useDispatch, useSelector } from 'react-redux'
 import {
-  addAccount as addAccountToStore,
+  addAccount,
   selectAccounts,
   selectActiveAccount,
   setActiveAccountIndex
-} from 'store/accounts'
-import { createNextAccount } from 'services/accounts/AccountsService'
+} from 'store/account'
 
 function AccountView({ onDone }: { onDone: () => void }): JSX.Element {
   const { theme } = useApplicationContext()
@@ -23,9 +21,7 @@ function AccountView({ onDone }: { onDone: () => void }): JSX.Element {
   const dispatch = useDispatch()
 
   const addAccountAndSetActive = async () => {
-    const acc = await createNextAccount(walletService, accounts)
-    dispatch(addAccountToStore(acc))
-    dispatch(setActiveAccountIndex(acc.index))
+    dispatch(addAccount())
   }
 
   return (

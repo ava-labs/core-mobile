@@ -27,7 +27,7 @@ export const appSlice = createSlice({
 })
 
 // selectors
-export const selectIsReady = (state: RootState) => state.appReducer.isReady
+export const selectIsReady = (state: RootState) => state.app.isReady
 
 // actions
 // when app rehydration is complete

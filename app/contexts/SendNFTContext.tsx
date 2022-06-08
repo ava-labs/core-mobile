@@ -20,7 +20,7 @@ import { NFTItemData } from 'screens/nft/NftCollection'
 import { Alert } from 'react-native'
 import walletService from 'services/wallet/WalletService'
 import { useSelector } from 'react-redux'
-import { selectActiveAccount } from 'store/accounts'
+import { selectActiveAccount } from 'store/account'
 
 export interface SendNFTContextState {
   sendToken: NFTItemData

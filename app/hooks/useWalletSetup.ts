@@ -3,13 +3,7 @@ import BiometricsSDK from 'utils/BiometricsSDK'
 import { AppNavHook } from 'useAppNav'
 import walletService from 'services/wallet/WalletService'
 import { useDispatch, useSelector } from 'react-redux'
-import {
-  addAccount as addAccountToStore,
-  selectAccounts,
-  selectActiveAccount,
-  setActiveAccountIndex
-} from 'store/accounts'
-import { createNextAccount } from 'services/accounts/AccountsService'
+import { addAccount, selectAccounts, selectActiveAccount } from 'store/account'
 import {
   useAccountsContext,
   useWalletContext
@@ -55,13 +49,7 @@ export function useWalletSetup(appNavHook: AppNavHook): WalletSetupHook {
     await walletContext2.initWalletMnemonic(mnemonic)
     walletService.setMnemonic(mnemonic)
     if (Object.keys(accounts).length === 0) {
-      const acc = await createNextAccount(walletService, accounts)
-      dispatch(addAccountToStore(acc))
-      dispatch(setActiveAccountIndex(acc.index))
-
-      //fixme to be removed after ditching wallet-react-components
-      const acc2 = addAccount2()
-      activateAccount2(acc2.index)
+      dispatch(addAccount())
     } else {
       Object.values(accounts).forEach(account => {
         //fixme to be removed after ditching wallet-react-components

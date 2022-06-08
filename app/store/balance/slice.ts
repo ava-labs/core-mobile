@@ -43,11 +43,11 @@ export const balanceSlice = createSlice({
 export const selectTokensWithBalance =
   (chainId: number, address: string) => (state: RootState) => {
     const key = getKey(chainId, address)
-    return state.balanceReducer.balances[key]?.tokens ?? []
+    return state.balance.balances[key]?.tokens ?? []
   }
 
 export const selectTokenById = (tokenId: string) => (state: RootState) => {
-  const balances = Object.values(state.balanceReducer.balances)
+  const balances = Object.values(state.balance.balances)
 
   for (const balance of balances) {
     for (const token of balance.tokens) {
@@ -60,7 +60,7 @@ export const selectTokenById = (tokenId: string) => (state: RootState) => {
 
 export const selectBalanceTotalInUSD =
   (accountIndex: number) => (state: RootState) => {
-    const balances = Object.values(state.balanceReducer.balances).filter(
+    const balances = Object.values(state.balance.balances).filter(
       balance => balance.accountIndex === accountIndex
     )
 

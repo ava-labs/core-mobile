@@ -8,7 +8,7 @@ import AvaButton from 'components/AvaButton'
 import InputText from 'components/InputText'
 import { Row } from 'components/Row'
 import TokenAddress from 'components/TokenAddress'
-import { setAccountTitle as setAccountTitleStore } from 'store/accounts'
+import { setAccountTitle as setAccountTitleStore } from 'store/account'
 import { useDispatch } from 'react-redux'
 
 type Props = {

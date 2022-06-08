@@ -1,7 +1,7 @@
 import BN from 'bn.js'
 import { BigNumber } from 'ethers'
 import { TokenWithBalance } from 'store/balance'
-import {SignTransactionRequest} from 'services/wallet/types';
+import { SignTransactionRequest } from 'services/wallet/types'
 
 export enum SendEvent {
   TX_DETAILS = 'SendEvent: TX_DETAILS'

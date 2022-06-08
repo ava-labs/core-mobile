@@ -18,7 +18,7 @@ import { getAvalancheProvider } from 'screens/bridge/utils/getAvalancheProvider'
 import { AssetBalance } from 'screens/bridge/utils/types'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
-import { selectActiveAccount } from 'store/accounts'
+import { selectActiveAccount } from 'store/account'
 import { BitcoinInputUTXO } from '@avalabs/wallets-sdk'
 
 export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
