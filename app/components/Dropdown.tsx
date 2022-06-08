@@ -4,8 +4,10 @@ import {
   ListRenderItemInfo,
   Platform,
   Pressable,
+  StyleProp,
   StyleSheet,
-  View
+  View,
+  ViewStyle
 } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
@@ -19,12 +21,16 @@ import { Row } from 'components/Row'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
 
+const BORDER_RADIUS = 8
+const BACKGROUND = '#252525'
+
 interface Props<ItemT> {
   data: ItemT[]
   selectionRenderItem: (selectedItem: ItemT) => string | React.ReactNode
   width: number
   alignment?: 'flex-start' | 'flex-end' | 'center'
   selectedIndex?: number
+  style?: StyleProp<ViewStyle>
   optionsRenderItem?: (item: OptionsItemInfo<ItemT>) => React.ReactNode
   onItemSelected: (selectedItem: ItemT) => void
   disabled?: boolean
@@ -45,6 +51,7 @@ interface OptionsItemInfo<ItemT> {
  * @param optionsRenderItem Render item for dropdown options
  * @param onItemSelected On selected option callback.
  * @param width Set this to max width of rendered items
+ * @param style Extra style to pass to Popable
  * @param alignment How should dropdown options be aligned relative to selected option.
  * @param disabled if set to true, dropdown won't show anything
  */
@@ -55,6 +62,7 @@ function DropDown<ItemT>({
   optionsRenderItem,
   onItemSelected,
   width = 150,
+  style,
   alignment = 'center',
   disabled
 }: Props<ItemT>) {
@@ -74,16 +82,28 @@ function DropDown<ItemT>({
       <View
         style={[
           StyleSheet.absoluteFill,
-          { backgroundColor: '#000000', opacity: 0.9 }
+          { backgroundColor: BACKGROUND, opacity: 0.95 }
         ]}
       />
     ) : (
-      <BlurView
-        style={StyleSheet.absoluteFill}
-        blurType={'light'}
-        blurAmount={10}
-        reducedTransparencyFallbackColor={'black'}
-      />
+      <>
+        <BlurView
+          style={[StyleSheet.absoluteFill, { borderRadius: BORDER_RADIUS }]}
+          blurType={'dark'}
+          blurAmount={10}
+          reducedTransparencyFallbackColor={'black'}
+        />
+        <View
+          style={[
+            StyleSheet.absoluteFill,
+            {
+              backgroundColor: BACKGROUND,
+              opacity: 0.5,
+              borderRadius: BORDER_RADIUS
+            }
+          ]}
+        />
+      </>
     )
   }, [])
 
@@ -164,10 +184,14 @@ function DropDown<ItemT>({
       action={'press'}
       onAction={setIsFilterOpen}
       position={'bottom'}
-      style={{
-        width: width,
-        overflow: 'visible'
-      }}
+      style={[
+        {
+          width: width,
+          borderRadius: BORDER_RADIUS,
+          overflow: 'visible'
+        },
+        style
+      ]}
       wrapperStyle={{
         width: width,
         overflow: 'visible'
