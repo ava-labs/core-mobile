@@ -55,7 +55,7 @@ class SendService {
         ? account.addressBtc
         : account.address
 
-    const service = await this.getService(activeNetwork, fromAddress)
+    const service = this.getService(activeNetwork, fromAddress)
     return service.validateStateAndCalculateFees(
       sendState,
       !activeNetwork.isTestnet,
@@ -63,10 +63,10 @@ class SendService {
     )
   }
 
-  private async getService(
+  private getService(
     activeNetwork: Network,
     fromAddress: string
-  ): Promise<SendServiceHelper> {
+  ): SendServiceHelper {
     switch (activeNetwork?.vmName) {
       case NetworkVMType.BITCOIN:
         return sendServiceBTC

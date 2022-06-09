@@ -3,19 +3,20 @@ import { map } from 'rxjs/operators'
 import { BackHandler } from 'react-native'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { Dispatch, useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { WalletSetupHook } from 'hooks/useWalletSetup'
 import { AppNavHook } from 'useAppNav'
 import { Repo } from 'Repo'
 import { SECURE_ACCESS_SET } from 'resources/Constants'
 import AppNavigation from 'navigation/AppNavigation'
 import { usePosthogContext } from 'contexts/PosthogContext'
+import { useSelector } from 'react-redux'
+import { selectSelectedCurrency } from 'store/settings'
 
 export type AppHook = {
   onExit: () => Observable<ExitEvents>
   selectedCurrency: string
   signOut: () => Promise<void>
-  setSelectedCurrency: Dispatch<string>
   currencyFormatter(num: number | string, digits?: number): string
 }
 
@@ -24,7 +25,7 @@ export function useApp(
   walletSetupHook: WalletSetupHook,
   repository: Repo
 ): AppHook {
-  const [selectedCurrency, setSelectedCurrency] = useState('USD')
+  const selectedCurrency = useSelector(selectSelectedCurrency)
   const [navigationContainerSet, setNavigationContainerSet] = useState(false)
   const [initRouteSet, setInitRouteSet] = useState(false)
   const { getSetting } = repository.userSettingsRepo
@@ -183,7 +184,6 @@ export function useApp(
     signOut,
     onExit,
     selectedCurrency,
-    setSelectedCurrency,
     currencyFormatter
   }
 }

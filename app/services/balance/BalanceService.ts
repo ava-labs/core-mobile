@@ -29,12 +29,18 @@ export class BalanceService {
 
   async getBalances(
     network: Network,
-    userAddress: string
+    userAddress: string,
+    currency: string
   ): Promise<TokenWithBalance[]> {
     const provider = NetworkService.getProviderForNetwork(network)
     const balanceService = this.getBalanceServiceForNetwork(network)
 
-    return balanceService.getBalances(network, provider as any, userAddress)
+    return balanceService.getBalances(
+      network,
+      provider as any,
+      userAddress,
+      currency
+    )
   }
 }
 

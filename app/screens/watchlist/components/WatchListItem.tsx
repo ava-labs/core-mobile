@@ -15,6 +15,7 @@ import { TokenType, TokenWithBalance } from 'store/balance'
 interface Props {
   token: TokenWithBalance
   chartDays: number
+  tokenId?: string
   value?: string
   onPress?: () => void
   rank?: number

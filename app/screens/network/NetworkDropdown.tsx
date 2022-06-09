@@ -62,8 +62,13 @@ export default function NetworkDropdown() {
         }
       ]}>
       <Dropdown
+        style={{
+          position: 'absolute',
+          top: 14,
+          right: 41
+        }}
         data={data}
-        width={220}
+        width={300}
         selectedIndex={selectedNetworkIndex === -1 ? 0 : selectedNetworkIndex}
         onItemSelected={selectedItem => {
           if (selectedItem.name === ManageNetworks) {
@@ -113,7 +118,9 @@ function Option({
       }}>
       <Selection icon={networkLogo} />
       <Space x={8} />
-      <AvaText.Body1 textStyle={{ paddingVertical: 8 }}>
+      <AvaText.Body1
+        textStyle={{ paddingVertical: 8, maxWidth: 220 }}
+        ellipsizeMode="tail">
         {networkName}
       </AvaText.Body1>
       <FlexSpacer />
