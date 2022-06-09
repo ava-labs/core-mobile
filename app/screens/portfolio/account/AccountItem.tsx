@@ -29,7 +29,7 @@ function AccountItem({
   const context = useApplicationContext()
   const [editAccount, setEditAccount] = useState(false)
   const [editedAccountTitle, setEditedAccountTitle] = useState(account.title)
-  const [accBalance, setAccBalance] = useState('')
+  const [accBalance] = useState('')
   const dispatch = useDispatch()
 
   // useEffect(() => {
