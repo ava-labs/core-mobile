@@ -1,6 +1,9 @@
 import {
   BitcoinWallet,
+  getAddressFromXPub,
+  getBech32AddressFromXPub,
   getWalletFromMnemonic,
+  getXpubFromMnemonic,
   JsonRpcBatchInternal
 } from '@avalabs/wallets-sdk'
 import { BitcoinProviderAbstract } from '@avalabs/wallets-sdk/src/BitcoinVM/providers/BitcoinProviderAbstract'
@@ -10,12 +13,15 @@ import { Wallet } from 'ethers'
 import networkService from 'services/network/NetworkService'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import { BN } from 'avalanche'
+import { networks } from 'bitcoinjs-lib'
 
 class WalletService {
   private mnemonic?: string
+  private xpub?: string
 
-  setMnemonic(mnemonic: string) {
+  async setMnemonic(mnemonic: string) {
     this.mnemonic = mnemonic
+    this.xpub = await getXpubFromMnemonic(mnemonic)
   }
 
   async getBtcWallet(accountIndex: number, network: Network) {
@@ -81,6 +87,29 @@ class WalletService {
 
   destroy() {
     this.mnemonic = ''
+  }
+
+  /**
+   * Generates addresses with helpers from wallets-sdk
+   * xpub is set at the time the nmemonic is set and is a derived 'read-only' key used for Ledger (not supported)
+   * and to derive BTC, EVM addresses
+   *
+   * @param index
+   * @param isMainnet
+   */
+  getAddress(index: number, isMainnet: boolean): Record<NetworkVMType, string> {
+    if (!this.xpub) {
+      throw new Error('no xpub generated')
+    }
+
+    return {
+      [NetworkVMType.EVM]: getAddressFromXPub(this.xpub, index),
+      [NetworkVMType.BITCOIN]: getBech32AddressFromXPub(
+        this.xpub,
+        index,
+        isMainnet ? networks.bitcoin : networks.testnet
+      )
+    }
   }
 
   private async getWallet(accountIndex: number, network: Network) {
