@@ -1,10 +1,11 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaButton from 'components/AvaButton'
 import { StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import CarrotSVG from 'components/svg/CarrotSVG'
-import { Account } from 'dto/Account'
+import { useSelector } from 'react-redux'
+import { selectActiveAccount } from 'store/account'
 
 export type Direction = 'up' | 'down'
 
@@ -15,18 +16,12 @@ export default function HeaderAccountSelector({
   onPressed?: () => void
   direction?: Direction
 }) {
-  const { accounts } = useApplicationContext().repo.accountsRepo
-  const [activeAccount, setActiveAccount] = useState<Account | undefined>()
+  const activeAccount = useSelector(selectActiveAccount)
   const theme = useApplicationContext().theme
   const rotation = useMemo(
     () => (direction === 'up' ? '-90deg' : '90deg'),
     [direction]
   )
-
-  useEffect(() => {
-    const activeAcc = [...accounts.values()].find(acc => acc.active)
-    setActiveAccount(activeAcc)
-  }, [accounts])
 
   return (
     <AvaButton.Base onPress={onPressed}>

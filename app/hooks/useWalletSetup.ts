@@ -1,12 +1,13 @@
+import { encrypt, getEncryptionKey } from 'screens/login/utils/EncryptionHelper'
+import BiometricsSDK from 'utils/BiometricsSDK'
+import { AppNavHook } from 'useAppNav'
+import walletService from 'services/wallet/WalletService'
+import { useDispatch, useSelector } from 'react-redux'
+import { addAccount, selectAccounts, selectActiveAccount } from 'store/account'
 import {
   useAccountsContext,
   useWalletContext
 } from '@avalabs/wallet-react-components'
-import { Account } from 'dto/Account'
-import { encrypt, getEncryptionKey } from 'screens/login/utils/EncryptionHelper'
-import BiometricsSDK from 'utils/BiometricsSDK'
-import { Repo } from 'Repo'
-import { AppNavHook } from 'useAppNav'
 
 export interface WalletSetupHook {
   onPinCreated: (
@@ -20,66 +21,51 @@ export interface WalletSetupHook {
 
 /**
  * This hook handles onboarding process.
- * setMnemonic - use for temporary storing mnemonic between onbaording
- * screens.
  * onPinCreated - use when user sets PIN to encrypt mnemonic end see if
  * user has biometry turned on
  * enterWallet - use when ready to enter the wallet
+ * destroyWallet - call when user ends session
  */
-export function useWalletSetup(
-  repo: Repo,
-  appNavHook: AppNavHook
-): WalletSetupHook {
-  const walletContext = useWalletContext()
-  const accountsContext = useAccountsContext()
+export function useWalletSetup(appNavHook: AppNavHook): WalletSetupHook {
+  const walletContext2 = useWalletContext()
+  const { addAccount: addAccount2, activateAccount: activateAccount2 } =
+    useAccountsContext()
+  const accounts = useSelector(selectAccounts)
+  const activeAccount = useSelector(selectActiveAccount)
+  const dispatch = useDispatch()
 
   const enterWallet = (mnemonic: string) => {
-    initWalletWithMnemonic(mnemonic, repo.accountsRepo.accounts)
-    appNavHook.navigateToRootWallet()
+    initWalletWithMnemonic(mnemonic).then(_ =>
+      appNavHook.navigateToRootWallet()
+    )
   }
 
   /**
-   * Inits wallet with Mnemonic phrase,
-   * adds account and set it as active.
+   * Inits wallet with Mnemonic phrase
    *
    * @param mnemonic
-   * @param existingAccounts
    */
-  function initWalletWithMnemonic(
-    mnemonic: string,
-    existingAccounts: Map<number, Account>
-  ) {
-    walletContext.initWalletMnemonic(mnemonic).then(() => {
-      if (existingAccounts.size === 0) {
-        const defaultAccounts = new Map()
-        const newAccount = accountsContext.addAccount()
-        accountsContext.activateAccount(newAccount.index)
-        defaultAccounts.set(newAccount.index, <Account>{
-          index: newAccount.index,
-          title: `Account ${newAccount.index + 1}`,
-          active: true,
-          address: newAccount.wallet.getAddressC(),
-          balance$: newAccount.balance$
-        })
-        repo.accountsRepo.saveAccounts(defaultAccounts)
-      } else {
-        for (let i = 0; i < existingAccounts.size; i++) {
-          const newAccount = accountsContext.addAccount()
-          const existingAccount = existingAccounts.get(newAccount.index)
-          existingAccount!.balance$ = newAccount.balance$
-          if (existingAccount!.active) {
-            accountsContext.activateAccount(newAccount.index)
-          }
+  async function initWalletWithMnemonic(mnemonic: string) {
+    await walletContext2.initWalletMnemonic(mnemonic)
+    walletService.setMnemonic(mnemonic)
+    if (Object.keys(accounts).length === 0) {
+      dispatch(addAccount())
+    } else {
+      Object.values(accounts).forEach(account => {
+        //fixme to be removed after ditching wallet-react-components
+        const acc2 = addAccount2()
+        if (account.index === activeAccount?.index) {
+          activateAccount2(acc2.index)
         }
-      }
-    })
+      })
+    }
   }
 
   /**
    * Destroys the wallet instance
    */
   async function destroyWallet() {
-    walletContext?.clearWallet()
+    walletService.destroy()
   }
 
   return {

@@ -8,22 +8,19 @@ import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import { Row } from 'components/Row'
 import AvaxQACode from 'components/AvaxQRCode'
-import { useWalletContext } from '@avalabs/wallet-react-components'
 import TokenAddress from 'components/TokenAddress'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useSelector } from 'react-redux'
-import { selectActiveNetwork } from 'store/network'
-import { BITCOIN_NETWORK, ChainId } from '@avalabs/chains-sdk'
+import { selectActiveAccount } from 'store/account'
+import { BITCOIN_NETWORK } from '@avalabs/chains-sdk'
 
 function AddBitcoinInstructionsBottomSheet(): JSX.Element {
   const theme = useApplicationContext().theme
   const navigation = useNavigation()
   const bottomSheetModalRef = useRef<BottomSheet>(null)
   const snapPoints = useMemo(() => ['0%', '80%'], [])
-  const wallet = useWalletContext().wallet
-  const network = useSelector(selectActiveNetwork)
-  const isMainnet = network.chainId === ChainId.AVALANCHE_MAINNET_ID
-  const btcAddress = wallet?.getAddressBTC(isMainnet ? 'bitcoin' : 'testnet')
+  const activeAccount = useSelector(selectActiveAccount)
+  const btcAddress = activeAccount?.addressBtc //todo: before -> wallet?.getAddressBTC(isMainnet ? 'bitcoin' : 'testnet'); why "bitcoin" and "testnet"
 
   useEffect(() => {
     // intentionally setting delay so animation is visible.

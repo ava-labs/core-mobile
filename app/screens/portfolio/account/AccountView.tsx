@@ -1,37 +1,27 @@
-import React, { useCallback } from 'react'
+import React from 'react'
 import { View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
-import { useAccountsContext } from '@avalabs/wallet-react-components'
 import { Account } from 'dto/Account'
 import AccountItem from 'screens/portfolio/account/AccountItem'
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
+import { useDispatch, useSelector } from 'react-redux'
+import {
+  addAccount,
+  selectAccounts,
+  selectActiveAccount,
+  setActiveAccountIndex
+} from 'store/account'
 
 function AccountView({ onDone }: { onDone: () => void }): JSX.Element {
   const { theme } = useApplicationContext()
-  const { accounts, saveAccounts, setActiveAccount } =
-    useApplicationContext().repo.accountsRepo
-  const accountsContext = useAccountsContext()
+  const accounts = useSelector(selectAccounts)
+  const dispatch = useDispatch()
 
-  const addNewAccount = useCallback(() => {
-    const newAccount = accountsContext.addAccount()
-    accountsContext.activateAccount(newAccount.index)
-    accounts.set(newAccount.index, {
-      index: newAccount.index,
-      title: `Account ${newAccount.index + 1}`,
-      active: true,
-      address: newAccount.wallet.getAddressC(),
-      balance$: newAccount.balance$
-    })
-    saveAccounts(accounts)
-    setActiveAccount(newAccount.index)
-  }, [accounts, accountsContext, saveAccounts, setActiveAccount])
-
-  const onSelectAccount = (accountIndex: number) => {
-    accountsContext.activateAccount(accountIndex)
-    setActiveAccount(accountIndex)
+  const addAccountAndSetActive = async () => {
+    dispatch(addAccount())
   }
 
   return (
@@ -56,10 +46,17 @@ function AccountView({ onDone }: { onDone: () => void }): JSX.Element {
       <Space y={16} />
       <BottomSheetFlatList
         style={{ marginHorizontal: -16 }}
-        data={[...accounts.values()]}
-        renderItem={info => renderAccountItem(info.item, onSelectAccount)}
+        data={[...Object.values(accounts)]}
+        renderItem={info => (
+          <AccountItemRenderer
+            account={info.item}
+            onSelectAccount={accountIndex =>
+              dispatch(setActiveAccountIndex(accountIndex))
+            }
+          />
+        )}
       />
-      <AvaButton.PrimaryLarge onPress={addNewAccount}>
+      <AvaButton.PrimaryLarge onPress={addAccountAndSetActive}>
         Add Account
       </AvaButton.PrimaryLarge>
       <Space y={16} />
@@ -67,18 +64,23 @@ function AccountView({ onDone }: { onDone: () => void }): JSX.Element {
   )
 }
 
-const renderAccountItem = (
-  account: Account,
+function AccountItemRenderer({
+  account,
+  onSelectAccount
+}: {
+  account: Account
   onSelectAccount: (accountIndex: number) => void
-) => {
+}) {
+  const activeAccount = useSelector(selectActiveAccount)
   return (
     <AccountItem
       key={account.title}
       account={account}
       editable
-      selected={account.active}
+      selected={activeAccount?.index === account.index}
       onSelectAccount={onSelectAccount}
     />
   )
 }
+
 export default AccountView

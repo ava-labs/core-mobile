@@ -6,24 +6,32 @@ import { Space } from 'components/Space'
 import TokenAddress from 'components/TokenAddress'
 import { useSelector } from 'react-redux'
 import { selectBalanceTotalInUSD } from 'store/balance'
-import { useWalletContext } from '@avalabs/wallet-react-components'
+import { NetworkVMType } from '@avalabs/chains-sdk'
+import { selectActiveNetwork } from 'store/network'
+import { selectActiveAccount } from 'store/account'
 
 // TODO: reimplement balance loading CP-2114
 function PortfolioHeaderContainer() {
   const context = useApplicationContext()
-  const balanceTotalInUSD = useSelector(selectBalanceTotalInUSD(0))
-  const wallet = useWalletContext().wallet
-  const addressC = wallet?.getAddressC()
+  const activeAccount = useSelector(selectActiveAccount)
+  const activeNetwork = useSelector(selectActiveNetwork)
+  const balanceTotalInUSD = useSelector(
+    selectBalanceTotalInUSD(activeAccount?.index ?? 0)
+  )
   const { selectedCurrency, currencyFormatter } = context.appHook
   const currencyBalance = currencyFormatter(balanceTotalInUSD)
   const isBalanceLoading = false
+  const address =
+    activeNetwork.vmName === NetworkVMType.BITCOIN
+      ? activeAccount?.addressBtc
+      : activeAccount?.address
 
   return (
     <PortfolioHeader
       balanceTotalUSD={currencyBalance}
       isBalanceLoading={isBalanceLoading}
       currencyCode={selectedCurrency}
-      addressC={addressC}
+      address={address}
     />
   )
 }
@@ -32,12 +40,12 @@ interface PortfolioHeaderProps {
   balanceTotalUSD: string
   isBalanceLoading: boolean
   currencyCode: string
-  addressC?: string
+  address?: string
 }
 
 const PortfolioHeader: FC<PortfolioHeaderProps> = memo(
   ({
-    addressC,
+    address,
     balanceTotalUSD = 0,
     isBalanceLoading = false,
     currencyCode
@@ -45,7 +53,7 @@ const PortfolioHeader: FC<PortfolioHeaderProps> = memo(
     return (
       <View pointerEvents="box-none">
         <View style={styles.copyAddressContainer}>
-          <TokenAddress address={addressC ?? ''} textType={'Body'} />
+          <TokenAddress address={address ?? ''} textType={'Body'} />
         </View>
         <View style={styles.balanceContainer}>
           {isBalanceLoading ? (

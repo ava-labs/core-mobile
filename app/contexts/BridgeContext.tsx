@@ -12,7 +12,6 @@ import {
 import { useLoadBridgeConfig } from 'screens/bridge/hooks/useLoadBridgeConfig'
 import Big from 'big.js'
 import { TransactionResponse } from '@ethersproject/abstract-provider'
-import { useWalletContext } from '@avalabs/wallet-react-components'
 import { useTransferAsset } from 'screens/bridge/hooks/useTransferAsset'
 import {
   BTCTransactionResponse,
@@ -28,7 +27,10 @@ import useSignAndIssueBtcTx from 'screens/bridge/hooks/useSignAndIssueBtcTx'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
+import { selectActiveAccount } from 'store/account'
 import { ChainId, Network } from '@avalabs/chains-sdk'
+import networkService from 'services/network/NetworkService'
+import { TrackerArgs } from '@avalabs/bridge-sdk/dist/src/lib/tracker/models'
 
 export enum TransferEventType {
   WRAP_STATUS = 'wrap_status',
@@ -40,10 +42,13 @@ interface BridgeContext {
   createBridgeTransaction(
     tx: PartialBridgeTransaction
   ): Promise<void | { error: string }>
+
   removeBridgeTransaction(tx: string): Promise<void>
+
   signIssueBtc(
     unsignedTxHex: string
   ): Promise<BTCTransactionResponse | undefined>
+
   bridgeTransactions: BridgeState['bridgeTransactions']
   transferAsset: (
     amount: Big,
@@ -74,7 +79,7 @@ function LocalBridgeProvider({ children }: { children: any }) {
 
   const config = useBridgeConfig().config
   const network = useSelector(selectActiveNetwork)
-  const wallet = useWalletContext().wallet
+  const activeAccount = useSelector(selectActiveAccount)
   const { pendingBridgeTransactions, savePendingBridgeTransactions } =
     useApplicationContext().repo.pendingBridgeTransactions
 
@@ -84,6 +89,7 @@ function LocalBridgeProvider({ children }: { children: any }) {
   const avalancheProvider = getAvalancheProvider(network)
   const ethereumProvider = getEthereumProvider(network)
   const isMainnet = network.chainId === ChainId.AVALANCHE_MAINNET_ID
+  const bitcoinProvider = networkService.getBitcoinProvider(isMainnet)
 
   const [bridgeState, setBridgeState] =
     useState<BridgeState>(defaultBridgeState)
@@ -146,14 +152,24 @@ function LocalBridgeProvider({ children }: { children: any }) {
     ) {
       console.log('Subscribing to tx', trackedTransaction)
       // Start transaction tracking process (no need to await)
+
+      /**
+       * bridgeTransaction: BridgeTransaction;
+       *   onBridgeTransactionUpdate: (bridgeTransaction: BridgeTransaction) => void;
+       *   config: AppConfig;
+       *   avalancheProvider: Provider;
+       *   ethereumProvider: Provider;
+       *   bitcoinProvider: BlockCypherProvider;
+       */
       try {
         const subscription = trackBridgeTransaction({
           bridgeTransaction: trackedTransaction,
           onBridgeTransactionUpdate: onUpdate,
           config,
           avalancheProvider,
-          ethereumProvider
-        })
+          ethereumProvider,
+          bitcoinProvider
+        } as unknown as TrackerArgs)
 
         TrackerSubscriptions.set(trackedTransaction.sourceTxHash, subscription)
       } catch (e) {
@@ -197,7 +213,7 @@ function LocalBridgeProvider({ children }: { children: any }) {
   async function createBridgeTransaction(
     partialBridgeTransaction: PartialBridgeTransaction
   ) {
-    if (!config || !network || !wallet) {
+    if (!config || !network || !activeAccount) {
       return Promise.reject('Wallet not ready')
     }
 
@@ -210,9 +226,11 @@ function LocalBridgeProvider({ children }: { children: any }) {
       symbol
     } = partialBridgeTransaction
 
-    const addressBTC = wallet.getAddressBTC(isMainnet ? 'bitcoin' : 'testnet')
-    const addressC = wallet.getAddressC()
+    const addressC = activeAccount.address //todo: before -> wallet.getAddressBTC(isMainnet ? 'bitcoin' : 'testnet'); why this "bitcoin" and "testnet"?
+    const addressBTC = activeAccount.addressBtc
 
+    if (!addressBTC) return { error: 'missing addressBTC' }
+    if (!addressC) return { error: 'missing addressC' }
     if (!sourceChain) return { error: 'missing sourceChain' }
     if (!sourceTxHash) return { error: 'missing sourceTxHash' }
     if (!sourceStartedAt) return { error: 'missing sourceStartedAt' }
