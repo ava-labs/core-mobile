@@ -11,6 +11,9 @@ import { Row } from 'components/Row'
 import MarketMovement from 'screens/watchlist/components/MarketMovement'
 import TokenService from 'services/balance/TokenService'
 import { TokenType, TokenWithBalance } from 'store/balance'
+import { VsCurrencyType } from '@avalabs/coingecko-sdk'
+import { selectActiveNetwork } from 'store/network'
+import { useSelector } from 'react-redux'
 
 interface Props {
   token: TokenWithBalance
@@ -30,7 +33,7 @@ const WatchListItem: FC<Props> = ({
   rank,
   filterBy
 }) => {
-  const { type, logoUri, symbol, name } = token
+  const { logoUri, symbol, name } = token
   const { theme, appHook } = useApplicationContext()
   const { selectedCurrency } = appHook
   const [ranges, setRanges] = useState<{
@@ -50,6 +53,10 @@ const WatchListItem: FC<Props> = ({
   })
   const [chartData, setChartData] = useState<{ x: number; y: number }[]>([])
   const [isLoadingChartData, setIsLoadingChartData] = useState(false)
+  const network = useSelector(selectActiveNetwork)
+  const assetPlatformId =
+    network.pricingProviders?.coingecko.assetPlatformId ?? ''
+  const currency = selectedCurrency.toLowerCase() as VsCurrencyType
 
   // get coingecko chart data.
   useEffect(() => {
@@ -57,15 +64,18 @@ const WatchListItem: FC<Props> = ({
       setIsLoadingChartData(true)
 
       let result
-      if (type === TokenType.NATIVE) {
+      if (token.type === TokenType.NATIVE) {
         result = await TokenService.getChartDataForCoinId({
           coingeckoId: token.coingeckoId,
-          days: chartDays
+          days: chartDays,
+          currency
         })
-      } else if (type === TokenType.ERC20) {
+      } else if (token.type === TokenType.ERC20) {
         result = await TokenService.getChartDataForAddress({
+          assetPlatformId,
           address: token.address,
-          days: chartDays
+          days: chartDays,
+          currency
         })
       }
 
@@ -75,7 +85,7 @@ const WatchListItem: FC<Props> = ({
       }
       setIsLoadingChartData(false)
     })()
-  }, [chartDays, token])
+  }, [assetPlatformId, chartDays, currency, token])
 
   const usdBalance = useMemo(() => {
     if (value) {
@@ -107,7 +117,7 @@ const WatchListItem: FC<Props> = ({
               <Space x={4} />
               <AvaText.Body3
                 textStyle={{ color: theme.colorText2, lineHeight: 20 }}>
-                {selectedCurrency.toUpperCase()}
+                {selectedCurrency}
               </AvaText.Body3>
             </Row>
             <MarketMovement

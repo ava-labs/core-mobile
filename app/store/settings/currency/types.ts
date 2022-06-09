@@ -14,14 +14,12 @@ export const currencies = [
   { name: 'Indian Rupee', symbol: 'INR' }
 ]
 
-export const currencyInitialState = {
+export const initialState = {
   currencies,
   selected: 'USD'
 }
 
-export type SettingsState = {
-  currency: {
-    currencies: { name: string; symbol: string }[]
-    selected: string
-  }
+export type CurrencyState = {
+  currencies: { name: string; symbol: string }[]
+  selected: string
 }

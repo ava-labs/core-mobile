@@ -31,7 +31,6 @@ import { selectActiveAccount } from 'store/account'
 
 type PortfolioProps = {
   tokenList?: TokenWithBalance[]
-  loadZeroBalanceList?: () => void
   handleRefresh?: () => void
   hasZeroBalance?: boolean
   setSelectedToken?: (token: TokenWithBalance) => void
@@ -50,8 +49,7 @@ function PortfolioContainer(): JSX.Element {
   const dispatch = useDispatch()
   const manageDisabled = useIsUIDisabled(UI.ManageTokens)
   const collectiblesDisabled = useIsUIDisabled(UI.Collectibles)
-  const { filteredTokenList, loadZeroBalanceList, loadTokenList } =
-    useSearchableTokenList()
+  const { filteredTokenList, loadTokenList } = useSearchableTokenList()
   const { setSelectedToken } = useSelectedTokenContext()
 
   // TODO CP-2114 move this logic inside redux once accounts are stored in redux
@@ -89,7 +87,6 @@ function PortfolioContainer(): JSX.Element {
     <>
       <PortfolioView
         tokenList={filteredTokenList}
-        loadZeroBalanceList={loadZeroBalanceList}
         handleRefresh={handleRefresh}
         setSelectedToken={setSelectedToken}
         shouldDisableManage={manageDisabled}
@@ -106,22 +103,13 @@ type PortfolioNavigationProp = PortfolioScreenProps<
 const PortfolioView: FC<PortfolioProps> = memo(
   ({
     tokenList,
-    loadZeroBalanceList,
     handleRefresh,
     setSelectedToken,
     shouldDisableManage = false,
     shouldDisableCollectibles = false
   }) => {
     const listRef = useRef<FlatList>(null)
-    const { navigate, addListener, removeListener } =
-      useNavigation<PortfolioNavigationProp>()
-
-    useEffect(() => {
-      const unsubscribe = addListener('focus', () => {
-        loadZeroBalanceList?.()
-      })
-      return () => removeListener('focus', unsubscribe)
-    }, [addListener, removeListener])
+    const { navigate } = useNavigation<PortfolioNavigationProp>()
 
     function selectToken(token: TokenWithBalance) {
       setSelectedToken?.(token)

@@ -45,7 +45,7 @@ export class EvmBalanceService {
       change24
     } = await TokenService.getPriceWithMarketDataByCoinId(
       nativeTokenId,
-      currency
+      currency as VsCurrencyType
     )
     const balanceBig = ethersBigNumberToBig(
       balanceEthersBig,
@@ -87,7 +87,6 @@ export class EvmBalanceService {
     currency: string
   ): Promise<TokenWithBalanceERC20[]> {
     const { chainId } = network
-
     return Promise.allSettled(
       activeTokenList.map(async token => {
         const id = `${chainId}-${token.address}`
@@ -163,7 +162,7 @@ export class EvmBalanceService {
       (await TokenService.getPricesWithMarketDataByAddresses(
         tokenAddresses,
         assetPlatformId,
-        currency
+        currency as VsCurrencyType
       )) ?? {}
 
     const nativeToken = await this.getNativeTokenBalance(

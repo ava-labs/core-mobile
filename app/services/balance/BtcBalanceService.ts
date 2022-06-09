@@ -3,6 +3,7 @@ import { satoshiToBtc } from '@avalabs/bridge-sdk'
 import { balanceToDisplayValue, bigToBN } from '@avalabs/utils-sdk'
 import { TokenType, TokenWithBalance } from 'store/balance'
 import { Network } from '@avalabs/chains-sdk'
+import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import TokenService from './TokenService'
 
 export class BtcBalanceService {
@@ -25,7 +26,7 @@ export class BtcBalanceService {
       change24
     } = await TokenService.getPriceWithMarketDataByCoinId(
       nativeTokenId,
-      currency
+      currency as VsCurrencyType
     )
     const denomination = networkToken.decimals
     const { balance: balanceSatoshis, utxos } = await provider.getUtxoBalance(

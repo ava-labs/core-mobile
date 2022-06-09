@@ -31,11 +31,9 @@ export class TokenService {
    */
   async getPriceWithMarketDataByCoinId(
     coinId: string,
-    currency: string
+    currency: VsCurrencyType
   ): Promise<PriceWithMarketData> {
     let data: SimplePriceResponse | undefined
-
-    const currencyCode = currency.toLowerCase() as VsCurrencyType
 
     const key = `${coinId}-${currency}`
     const cacheId = `getPriceWithMarketDataByCoinId-${key}`
@@ -43,12 +41,12 @@ export class TokenService {
     data = getCache(cacheId)
 
     if (data === undefined) {
-      data = await this.fetchPriceWithMarketData(coinId, currencyCode)
+      data = await this.fetchPriceWithMarketData(coinId, currency)
 
       setCache(cacheId, data)
     }
 
-    const coin = data?.[coinId]?.[currencyCode]
+    const coin = data?.[coinId]?.[currency]
 
     return {
       price: coin?.price ?? 0,
@@ -68,11 +66,9 @@ export class TokenService {
   async getPricesWithMarketDataByAddresses(
     tokenAddresses: string[],
     assetPlatformId: string,
-    currency: string
+    currency: VsCurrencyType
   ) {
     let data: SimpleTokenPriceResponse | undefined
-
-    const currencyCode = currency.toLowerCase() as VsCurrencyType
 
     const key = `${arrayHash(tokenAddresses)}-${assetPlatformId}-${currency}`
 
@@ -83,7 +79,7 @@ export class TokenService {
       data = await this.fetchPricesWithMarketDataByAddresses(
         assetPlatformId,
         tokenAddresses,
-        currencyCode
+        currency
       )
 
       setCache(cacheId, data)
@@ -96,28 +92,31 @@ export class TokenService {
    * Get chart data for a coin
    * @param coingeckoId the coin id
    * @param days data up to number of days ago
+   * @param currency the currency to be used
    * @param fresh whether to ignore cache
    * @returns chart data
    */
   async getChartDataForCoinId({
     coingeckoId,
     days = 1,
+    currency = VsCurrencyType.USD,
     fresh = false
   }: {
     coingeckoId: string
     days?: number
+    currency?: VsCurrencyType
     fresh?: boolean
   }) {
     let data: ChartData | undefined
 
-    const key = `${coingeckoId}-${days.toString()}`
+    const key = `${coingeckoId}-${days.toString()}-${currency}`
     const cacheId = `getChartDataForCoinId-${key}`
 
     data = fresh ? undefined : getCache(cacheId)
 
     if (data === undefined) {
       if (coingeckoId) {
-        data = await this.fetchChartDataForCoin(coingeckoId, days)
+        data = await this.fetchChartDataForCoin(coingeckoId, days, currency)
       }
 
       setCache(cacheId, data)
@@ -128,30 +127,41 @@ export class TokenService {
 
   /**
    * Get chart data for a contract address
-   * @param address the contract addresses
+   * @param assetPlatformId the asset platform where the provided address lives
+   * @param address the contract address
    * @param days data up to number of days ago
+   * @param currency the currency to be used
    * @param fresh whether to ignore cache
    * @returns chart data
    */
   async getChartDataForAddress({
+    assetPlatformId,
     address,
     days = 1,
+    currency = VsCurrencyType.USD,
     fresh = false
   }: {
+    assetPlatformId: string
     address: string
     days?: number
+    currency?: VsCurrencyType
     fresh?: boolean
   }) {
     let data: ChartData | undefined
 
-    const key = `${address}-${days.toString()}`
+    const key = `${address}-${days.toString()}-${currency}`
     const cacheId = `getChartDataForAddress-${key}`
 
     data = fresh ? undefined : getCache(cacheId)
 
     if (data === undefined) {
       if (address) {
-        data = await this.fetchChartDataForAddress(address, days)
+        data = await this.fetchChartDataForAddress(
+          assetPlatformId,
+          address,
+          days,
+          currency
+        )
       }
 
       setCache(cacheId, data)
@@ -192,14 +202,17 @@ export class TokenService {
 
   /**
    * Get info for a contract address
+   * @param assetPlatformId the asset platform where the provided address lives
    * @param address the contract addresses
    * @param fresh whether to ignore cache
    * @returns token info
    */
   async getContractInfo({
+    assetPlatformId,
     address,
     fresh = false
   }: {
+    assetPlatformId: string
     address: string
     fresh?: boolean
   }): Promise<CoinsContractInfoResponse | undefined> {
@@ -212,7 +225,7 @@ export class TokenService {
 
     if (data === undefined) {
       if (address) {
-        data = await this.fetchContractInfo(address)
+        data = await this.fetchContractInfo(assetPlatformId, address)
       }
       setCache(cacheId, data)
     }
@@ -247,12 +260,17 @@ export class TokenService {
     } as ChartData
   }
 
-  private async fetchChartDataForAddress(address: string, days: number) {
+  private async fetchChartDataForAddress(
+    assetPlatformId: string,
+    address: string,
+    days: number,
+    currency: VsCurrencyType
+  ) {
     try {
       const rawData = await coinsContractMarketChart(coingeckoProClient, {
-        assetPlatformId: 'avalanche',
+        assetPlatformId,
         address: address,
-        currency: 'usd' as VsCurrencyType,
+        currency,
         days,
         coinGeckoProApiKey: Config.COINGECKO_API_KEY
       })
@@ -263,11 +281,15 @@ export class TokenService {
     }
   }
 
-  private async fetchChartDataForCoin(coingeckoId: string, days: number) {
+  private async fetchChartDataForCoin(
+    coingeckoId: string,
+    days: number,
+    currency: VsCurrencyType
+  ) {
     try {
       const rawData = await coinsMarketChart(coingeckoProClient, {
         assetPlatformId: coingeckoId,
-        currency: 'usd' as VsCurrencyType,
+        currency,
         days,
         coinGeckoProApiKey: Config.COINGECKO_API_KEY
       })
@@ -278,11 +300,11 @@ export class TokenService {
     }
   }
 
-  private async fetchContractInfo(address: string) {
+  private async fetchContractInfo(assetPlatformId: string, address: string) {
     try {
       return coinsContractInfo(coingeckoProClient, {
         address: address,
-        assetPlatformId: 'avalanche',
+        assetPlatformId,
         coinGeckoProApiKey: Config.COINGECKO_API_KEY
       })
     } catch (e) {
