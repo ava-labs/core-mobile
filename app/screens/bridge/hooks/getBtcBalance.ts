@@ -3,8 +3,7 @@ import {
   AppConfig,
   Blockchain,
   fetchTokenBalances,
-  getBtcAsset,
-  getUTXOs
+  getBtcAsset
 } from '@avalabs/bridge-sdk'
 import { JsonRpcProvider } from '@ethersproject/providers'
 
@@ -28,15 +27,16 @@ export async function getBtcBalance(
     )?.toNumber()
   }
 
-  const { balance: btcBalanceBitcoin, utxos: bitcoinUtxos } = await getUTXOs(
-    bridgeConfig,
-    btcAddress
-  )
+  //fixme - bridge-sdk doesnt have getUTXOs
+  // const { balance: btcBalanceBitcoin, utxos: bitcoinUtxos } = await getUTXOs(
+  //   bridgeConfig,
+  //   btcAddress
+  // )
 
   return {
-    bitcoinUtxos,
+    bitcoinUtxos: [], //fixme
     btcBalanceAvalanche: await loadBalance(),
-    btcBalanceBitcoin
+    btcBalanceBitcoin: 0 //fixme
   }
 }
 

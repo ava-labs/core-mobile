@@ -46,13 +46,6 @@
   resolved "https://registry.yarnpkg.com/@avalabs/blizzard-sdk/-/blizzard-sdk-2.4.0-alpha.26.tgz#f782f4b600b14b7d17f93abc2713ad5e4fbcc507"
   integrity sha512-fL+gafHNA1hoTJaoxkZ/UFmJ3rYIQxEWccXUmuCFOBN4ai3x5oQ91kPRgz1TJeaqORnam2qPSH1gU6RDkIhEtw==
 
-"@avalabs/blockcypher-sdk@2.4.0-alpha.39":
-  version "2.4.0-alpha.39"
-  resolved "https://registry.yarnpkg.com/@avalabs/blockcypher-sdk/-/blockcypher-sdk-2.4.0-alpha.39.tgz#5df98e247dca1277de3014038203ccee64d304b1"
-  integrity sha512-WSZEDuRrYs4TBs7U/uldx7ivXfTQQL2yTs59oifBN+S+HDdR3w5o/Et2E/ZjyYo7ikIaYQ59c5PZ/QZg5SNbIw==
-  dependencies:
-    "@avalabs/utils-sdk" "2.4.0-alpha.39"
-
 "@avalabs/blockcypher-sdk@2.4.0-alpha.47":
   version "2.4.0-alpha.47"
   resolved "https://registry.yarnpkg.com/@avalabs/blockcypher-sdk/-/blockcypher-sdk-2.4.0-alpha.47.tgz#ac1aa0074c4e39bcb4f60a3503ba8f505b8beb19"
@@ -130,11 +123,6 @@
   resolved "https://registry.yarnpkg.com/@avalabs/utils-sdk/-/utils-sdk-2.2.0.tgz#14d771f98ba5ed164410fa0cf7c263ba9e3a0dea"
   integrity sha512-W/CsP0J0587v39XVXi/z2ptkD/inEWg9HrvhtRz3cCreGEjwoJhwODFrPpCyxhM38GfwMEXNiMYcrcKBt9jJpQ==
 
-"@avalabs/utils-sdk@2.4.0-alpha.39":
-  version "2.4.0-alpha.39"
-  resolved "https://registry.yarnpkg.com/@avalabs/utils-sdk/-/utils-sdk-2.4.0-alpha.39.tgz#3ec8ce2fee63aa0646e0145f423aaa78c708e435"
-  integrity sha512-02qMtnV+wT+3j+Ws7kT2cfXlNMpPeD13qgEKFTk637WRVjagQ/dUeuKQQFQAMF+txLJW7M7VFE594f5P9habUg==
-
 "@avalabs/utils-sdk@2.4.0-alpha.44":
   version "2.4.0-alpha.44"
   resolved "https://registry.yarnpkg.com/@avalabs/utils-sdk/-/utils-sdk-2.4.0-alpha.44.tgz#9a2e8c94374590997f61b64eecc9c98560c23d29"
@@ -157,31 +145,6 @@
     human-standard-token-abi "2.0.0"
     rxjs "7.5.1"
     web-vitals "1.1.2"
-
-"@avalabs/wallets-sdk@2.4.0-alpha.39":
-  version "2.4.0-alpha.39"
-  resolved "https://registry.yarnpkg.com/@avalabs/wallets-sdk/-/wallets-sdk-2.4.0-alpha.39.tgz#29e1ed56e939a87e20f5cef42205828e1632c866"
-  integrity sha512-NpomtpVKuWTexkaJZVDxbIkB213hXkYQfCwfijItyamwfMPpx3URwGY1jocGLCZY0Ra9lVKf9MHVDxf2sHSbfw==
-  dependencies:
-    "@avalabs/blockcypher-sdk" "2.4.0-alpha.39"
-    "@ethereumjs/common" "2.6.0"
-    "@ethereumjs/tx" "3.4.0"
-    "@ethersproject/abstract-provider" "5.6.0"
-    "@ethersproject/abstract-signer" "5.6.0"
-    "@ledgerhq/hw-app-btc" "6.27.1"
-    "@ledgerhq/hw-app-eth" "6.27.1"
-    "@ledgerhq/hw-transport" "6.27.1"
-    "@metamask/eth-sig-util" "4.0.0"
-    "@openzeppelin/contracts" "4.5.0"
-    avalanche "3.13.3"
-    bip32 "2.0.6"
-    bip39 "3.0.4"
-    bitcoinjs-lib "5.2.0"
-    coinselect "3.1.12"
-    ethers "5.6.2"
-    hdkey "2.0.1"
-    micro-signals "2.4.0"
-    web3 "1.7.1"
 
 "@avalabs/wallets-sdk@2.4.0-alpha.47":
   version "2.4.0-alpha.47"

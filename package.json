@@ -31,7 +31,7 @@
     "@avalabs/token-prices-sdk": "2.4.0-alpha.44",
     "@avalabs/utils-sdk": "2.4.0-alpha.44",
     "@avalabs/wallet-react-components": "1.30.3",
-    "@avalabs/wallets-sdk": "2.4.0-alpha.39",
+    "@avalabs/wallets-sdk": "2.4.0-alpha.47",
     "@babel/plugin-syntax-object-rest-spread": "^7.8.3",
     "@connectedcars/react-native-slide-charts": "^1.0.5",
     "@eliav2/react-native-collapsible-view": "^1.4.0",

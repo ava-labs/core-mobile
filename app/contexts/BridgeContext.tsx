@@ -30,6 +30,7 @@ import { selectActiveNetwork } from 'store/network'
 import { selectActiveAccount } from 'store/account'
 import { ChainId, Network } from '@avalabs/chains-sdk'
 import networkService from 'services/network/NetworkService'
+import { TrackerArgs } from '@avalabs/bridge-sdk/dist/src/lib/tracker/models'
 
 export enum TransferEventType {
   WRAP_STATUS = 'wrap_status',
@@ -41,10 +42,13 @@ interface BridgeContext {
   createBridgeTransaction(
     tx: PartialBridgeTransaction
   ): Promise<void | { error: string }>
+
   removeBridgeTransaction(tx: string): Promise<void>
+
   signIssueBtc(
     unsignedTxHex: string
   ): Promise<BTCTransactionResponse | undefined>
+
   bridgeTransactions: BridgeState['bridgeTransactions']
   transferAsset: (
     amount: Big,
@@ -165,7 +169,7 @@ function LocalBridgeProvider({ children }: { children: any }) {
           avalancheProvider,
           ethereumProvider,
           bitcoinProvider
-        })
+        } as unknown as TrackerArgs)
 
         TrackerSubscriptions.set(trackedTransaction.sourceTxHash, subscription)
       } catch (e) {

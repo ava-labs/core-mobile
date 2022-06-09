@@ -7,18 +7,14 @@ import React, {
   useState
 } from 'react'
 import {
-  checkAndValidateSendNft,
   SendHookError,
-  sendNftSubmit,
   useWalletStateContext
 } from '@avalabs/wallet-react-components'
 import { bnToAvaxC, numberToBN } from '@avalabs/avalanche-wallet-sdk'
 import { mustNumber, mustValue } from 'utils/JsTools'
 import { BN } from 'avalanche'
-import { BehaviorSubject, firstValueFrom, of } from 'rxjs'
+import { BehaviorSubject } from 'rxjs'
 import { NFTItemData } from 'screens/nft/NftCollection'
-import { Alert } from 'react-native'
-import walletService from 'services/wallet/WalletService'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 
@@ -69,28 +65,34 @@ export const SendNFTContextProvider = ({
   const [canSubmit, setCanSubmit] = useState(false)
   const [sdkError, setSdkError] = useState<SendHookError | undefined>(undefined)
 
-  useEffect(() => {
-    if (!sendToken || !activeAccount || !walletService) {
-      return
-    }
-    const subscription = checkAndValidateSendNft(
-      sendToken.collection.contract_address,
-      Number.parseInt(sendToken.token_id, 10),
-      customGasPrice$.current,
-      of(sendToAddress),
-      of(walletService.getEvmWallet(activeAccount.index)), //fixme: needs to be refactored to move away from wallet-react-components/RxJS
-      gasLimit$.current
-    ).subscribe(value => {
-      setCanSubmit(value.canSubmit ?? false)
-      setSdkError(value.error)
-      setSendFee(value.sendFee)
-      setGasLimit(value.gasLimit ?? 0)
-    })
+  setSendFee
+  setSendStatusMsg
+  setCanSubmit
+  setSdkError
 
-    return () => {
-      return subscription.unsubscribe()
-    }
-  }, [sendToken, sendToAddress, activeAccount])
+  //fixme - validate without using wallet-react-components
+  // useEffect(() => {
+  //   if (!sendToken || !activeAccount || !walletService) {
+  //     return
+  //   }
+  //   const subscription = checkAndValidateSendNft(
+  //     sendToken.collection.contract_address,
+  //     Number.parseInt(sendToken.token_id, 10),
+  //     customGasPrice$.current,
+  //     of(sendToAddress),
+  //     of(walletService.getEvmWallet(activeAccount.index)), //fixme: needs to be refactored to move away from wallet-react-components/RxJS
+  //     gasLimit$.current
+  //   ).subscribe(value => {
+  //     setCanSubmit(value.canSubmit ?? false)
+  //     setSdkError(value.error)
+  //     setSendFee(value.sendFee)
+  //     setGasLimit(value.gasLimit ?? 0)
+  //   })
+  //
+  //   return () => {
+  //     return subscription.unsubscribe()
+  //   }
+  // }, [sendToken, sendToAddress, activeAccount])
 
   useEffect(() => {
     if (!activeAccount) {
@@ -134,29 +136,30 @@ export const SendNFTContextProvider = ({
     setTransactionId(undefined)
     setSendStatus('Sending')
 
-    sendNftSubmit(
-      nft.collection.contract_address,
-      Number.parseInt(sendToken.token_id, 10),
-      Promise.resolve(walletService.getEvmWallet(activeAccount!.index)), //fixme
-      sendToAddress,
-      firstValueFrom(customGasPrice$.current),
-      gasLimit
-    ).subscribe({
-      next: value => {
-        if (value === undefined) {
-          Alert.alert('Error', 'Undefined error')
-        } else {
-          if ('txId' in value && value.txId) {
-            setTransactionId(value.txId)
-            setSendStatus('Success')
-          }
-        }
-      },
-      error: err => {
-        setSendStatus('Fail')
-        setSendStatusMsg(err)
-      }
-    })
+    //fixme - send without using wallet-react-components
+    // sendNftSubmit(
+    //   nft.collection.contract_address,
+    //   Number.parseInt(sendToken.token_id, 10),
+    //   Promise.resolve(walletService.getEvmWallet(activeAccount!.index)), //fixme
+    //   sendToAddress,
+    //   firstValueFrom(customGasPrice$.current),
+    //   gasLimit
+    // ).subscribe({
+    //   next: value => {
+    //     if (value === undefined) {
+    //       Alert.alert('Error', 'Undefined error')
+    //     } else {
+    //       if ('txId' in value && value.txId) {
+    //         setTransactionId(value.txId)
+    //         setSendStatus('Success')
+    //       }
+    //     }
+    //   },
+    //   error: err => {
+    //     setSendStatus('Fail')
+    //     setSendStatusMsg(err)
+    //   }
+    // })
   }
 
   const state: SendNFTContextState = {

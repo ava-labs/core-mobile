@@ -201,8 +201,7 @@ export const SwapContextProvider = ({ children }: { children: any }) => {
           value: gasPriceNanoAvax.toString()
         }
       },
-      activeAccount.address,
-      sendCustomTx //fixme
+      activeAccount.address
     )
     if (error) {
       throw Error(error)

@@ -4,8 +4,9 @@ import { Allowance } from 'paraswap/build/types'
 import { OptimalRate } from 'paraswap-core'
 import { incrementalPromiseResolve, resolve } from 'swap/utils'
 import { BN } from 'avalanche'
-import { NetworkID, APIError, ParaSwap } from 'paraswap'
+import { APIError, NetworkID, ParaSwap } from 'paraswap'
 import { ChainId } from '@avalabs/chains-sdk'
+import walletService from 'services/wallet/WalletService'
 import ERC20_ABI from '../contracts/erc20.abi.json'
 
 const SERVER_BUSY_ERROR = 'Server too busy'
@@ -18,15 +19,7 @@ export async function performSwap(
     gasLimit?: any
     gasPrice?: GasPrice
   },
-  userAddress: string,
-  sendCustomTx: (
-    gasPrice: BN,
-    gasLimit: number,
-    data?: string | undefined,
-    to?: string | undefined,
-    value?: string | undefined,
-    nonce?: number | undefined
-  ) => Promise<string>
+  userAddress: string
 ) {
   log('~~~~~~~~~ perform swap')
   const { srcAmount, destAmount, priceRoute, gasLimit, gasPrice } = request
@@ -116,12 +109,7 @@ export async function performSwap(
        */
       (allowance as Allowance).tokenAddress
         ? (Promise.resolve([]) as any)
-        : sendCustomTx(
-            (gasPrice as GasPrice).bn,
-            Number(gasLimit),
-            contract.methods.approve(spender, srcAmount).encodeABI(),
-            priceRoute.srcToken
-          )
+        : undefined //fixme
     )
     log('~~~~~~~~~approveTxHash', approveHash)
     log('~~~~~~~~~approveError', approveError)
@@ -175,16 +163,14 @@ export async function performSwap(
     }
   }
 
-  const [swapTxHash, txError] = await resolve(
-    sendCustomTx(
-      (gasPrice as GasPrice).bn,
-      Number(txBuildData.gas),
-      txBuildData.data,
-      txBuildData.to,
-      priceRoute.srcToken === '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
-        ? `0x${new BN(srcAmount).toString('hex')}`
-        : undefined // AVAX value needs to be sent with the transaction
-    )
+  const [swapTxHash, txError] = walletService.sendCustomTx(
+    (gasPrice as GasPrice).bn,
+    Number(txBuildData.gas),
+    txBuildData.data,
+    txBuildData.to,
+    priceRoute.srcToken === '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
+      ? `0x${new BN(srcAmount).toString('hex')}`
+      : undefined // AVAX value needs to be sent with the transaction
   )
   log('~~~~~~~~~swapTxHash', swapTxHash)
   log('~~~~~~~~~txError', txError)

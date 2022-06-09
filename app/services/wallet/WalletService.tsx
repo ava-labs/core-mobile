@@ -9,6 +9,7 @@ import { SignTransactionRequest } from 'services/wallet/types'
 import { Wallet } from 'ethers'
 import networkService from 'services/network/NetworkService'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
+import { BN } from 'avalanche'
 
 class WalletService {
   private mnemonic?: string
@@ -94,25 +95,23 @@ class WalletService {
     }
   }
 
-  // sendCustomTx(
-  //   accountIndex: number,
-  //   gasPrice: BN,
-  //   gasLimit: number,
-  //   data?: string | undefined,
-  //   to?: string | undefined,
-  //   value?: string | undefined,
-  //   nonce?: number | undefined
-  // ) {
-  //   //TODO: will be changed to provider / signer pattern
-  //   return this.getEvmWallet(accountIndex).sendCustomEvmTx(
-  //     gasPrice,
-  //     gasLimit,
-  //     data,
-  //     to,
-  //     value,
-  //     nonce
-  //   )
-  // }
+  //fixme - remove and use network.send
+  sendCustomTx(
+    gasPrice: BN,
+    gasLimit: number,
+    data?: string | undefined,
+    to?: string | undefined,
+    value?: string | undefined,
+    nonce?: number | undefined
+  ): [string, Error | undefined] {
+    gasPrice
+    gasLimit
+    data
+    to
+    value
+    nonce
+    return ['', undefined]
+  }
 }
 
 export default new WalletService()
