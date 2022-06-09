@@ -1,27 +1,22 @@
 import walletService from 'services/wallet/WalletService'
 import { Account } from 'dto/Account'
 import { AccountCollection } from 'store/account'
-import {
-  BITCOIN_NETWORK,
-  BITCOIN_TEST_NETWORK,
-  Network
-} from '@avalabs/chains-sdk'
+import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 
 class AccountsService {
+  //todo: refresh addresses in case the user switches to testnet the BTC address gets updated
+  //todo: potentially just listening to "developer mode" change and re-loading the accounts
   async createNextAccount(network: Network, accounts: AccountCollection) {
     const newIndex = Object.keys(accounts).length
-    const addressBtc = (
-      await walletService.getBtcWallet(
-        newIndex,
-        network.isTestnet ? BITCOIN_TEST_NETWORK : BITCOIN_NETWORK
-      )
-    ).getAddressBech32()
-    const address = walletService.getEvmWallet(newIndex, network).address
+    const addresses = await walletService.getAddress(
+      newIndex,
+      !network.isTestnet
+    )
     return {
       index: newIndex,
       title: `Account ${newIndex + 1}`,
-      addressBtc,
-      address
+      addressBtc: addresses[NetworkVMType.BITCOIN],
+      address: addresses[NetworkVMType.EVM]
     } as Account
   }
 }
