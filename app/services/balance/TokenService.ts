@@ -31,7 +31,7 @@ export class TokenService {
    */
   async getPriceWithMarketDataByCoinId(
     coinId: string,
-    currency: VsCurrencyType
+    currency: VsCurrencyType = VsCurrencyType.USD
   ): Promise<PriceWithMarketData> {
     let data: SimplePriceResponse | undefined
 
@@ -66,7 +66,7 @@ export class TokenService {
   async getPricesWithMarketDataByAddresses(
     tokenAddresses: string[],
     assetPlatformId: string,
-    currency: VsCurrencyType
+    currency: VsCurrencyType = VsCurrencyType.USD
   ) {
     let data: SimpleTokenPriceResponse | undefined
 
@@ -264,7 +264,7 @@ export class TokenService {
     assetPlatformId: string,
     address: string,
     days: number,
-    currency: VsCurrencyType
+    currency: VsCurrencyType = VsCurrencyType.USD
   ) {
     try {
       const rawData = await coinsContractMarketChart(coingeckoProClient, {
@@ -284,7 +284,7 @@ export class TokenService {
   private async fetchChartDataForCoin(
     coingeckoId: string,
     days: number,
-    currency: VsCurrencyType
+    currency: VsCurrencyType = VsCurrencyType.USD
   ) {
     try {
       const rawData = await coinsMarketChart(coingeckoProClient, {
@@ -325,7 +325,7 @@ export class TokenService {
 
   private async fetchPriceWithMarketData(
     coingeckoId: string,
-    currencyCode: VsCurrencyType
+    currencyCode: VsCurrencyType = VsCurrencyType.USD
   ) {
     try {
       return simplePrice(coingeckoBasicClient, {
@@ -343,7 +343,7 @@ export class TokenService {
   private async fetchPricesWithMarketDataByAddresses(
     assetPlatformId: string,
     tokenAddresses: string[],
-    currencyCode: VsCurrencyType
+    currencyCode: VsCurrencyType = VsCurrencyType.USD
   ) {
     try {
       return simpleTokenPrice(coingeckoBasicClient, {
