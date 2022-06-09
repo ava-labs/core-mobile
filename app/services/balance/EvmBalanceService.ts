@@ -30,7 +30,7 @@ export class EvmBalanceService {
     provider: Provider,
     userAddress: string,
     network: Network,
-    selectedCurrency: string
+    currency: string
   ): Promise<NetworkTokenWithBalance> {
     const { networkToken, chainId } = network
     const nativeTokenId =
@@ -45,7 +45,7 @@ export class EvmBalanceService {
       change24
     } = await TokenService.getPriceWithMarketDataByCoinId(
       nativeTokenId,
-      selectedCurrency
+      currency
     )
     const balanceBig = ethersBigNumberToBig(
       balanceEthersBig,
@@ -84,7 +84,7 @@ export class EvmBalanceService {
     tokenPriceDict: SimpleTokenPriceResponse,
     userAddress: string,
     network: Network,
-    selectedCurrency: string
+    currency: string
   ): Promise<TokenWithBalanceERC20[]> {
     const { chainId } = network
 
@@ -93,7 +93,7 @@ export class EvmBalanceService {
         const id = `${chainId}-${token.address}`
         const tokenPrice =
           tokenPriceDict[token.address.toLowerCase()]?.[
-            selectedCurrency as VsCurrencyType
+            currency as VsCurrencyType
           ]
         const contract = new ethers.Contract(token.address, hstABI, provider)
         const balanceEthersBig = await contract.balanceOf(userAddress)
@@ -150,7 +150,7 @@ export class EvmBalanceService {
     network: Network,
     provider: Provider,
     userAddress: string,
-    selectedCurrency: string
+    currency: string
   ): Promise<TokenWithBalance[]> {
     const activeTokenList = network.tokens ?? []
 
@@ -163,14 +163,14 @@ export class EvmBalanceService {
       (await TokenService.getPricesWithMarketDataByAddresses(
         tokenAddresses,
         assetPlatformId,
-        selectedCurrency
+        currency
       )) ?? {}
 
     const nativeToken = await this.getNativeTokenBalance(
       provider,
       userAddress,
       network,
-      selectedCurrency
+      currency
     )
 
     const erc20Tokens = await this.getErc20Balances(
@@ -179,7 +179,7 @@ export class EvmBalanceService {
       tokenPriceDict,
       userAddress,
       network,
-      selectedCurrency
+      currency
     )
 
     const nftStates = await this.getErc721Balances(userAddress)

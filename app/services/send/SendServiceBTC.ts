@@ -21,7 +21,8 @@ class SendServiceBTC implements SendServiceHelper {
   async getTransactionRequest(
     sendState: ValidSendState,
     isMainnet: boolean,
-    fromAddress: string
+    fromAddress: string,
+    currency: string
   ): Promise<{
     inputs: BitcoinInputUTXO[]
     outputs: BitcoinOutputUTXO[]
@@ -29,7 +30,7 @@ class SendServiceBTC implements SendServiceHelper {
     const { address: toAddress, amount } = sendState
     const feeRate = sendState.gasPrice.toNumber()
     const provider = await networkService.getBitcoinProvider(__DEV__)
-    const { utxos } = await this.getBalance(isMainnet, fromAddress)
+    const { utxos } = await this.getBalance(isMainnet, fromAddress, currency)
 
     const { inputs, outputs } = createTransferTx(
       toAddress,
@@ -50,13 +51,18 @@ class SendServiceBTC implements SendServiceHelper {
   async validateStateAndCalculateFees(
     sendState: SendState,
     isMainnet: boolean,
-    fromAddress: string
+    fromAddress: string,
+    currency: string
   ): Promise<SendState | ValidSendState> {
     const { amount, address } = sendState
     const feeRate = sendState.gasPrice?.toNumber()
     const toAddress = address || fromAddress // in case address from form is blank
     const amountInSatoshis = amount?.toNumber() || 0
-    const { balance, utxos } = await this.getBalance(isMainnet, fromAddress)
+    const { balance, utxos } = await this.getBalance(
+      isMainnet,
+      fromAddress,
+      currency
+    )
     const provider = await networkService.getBitcoinProvider(isMainnet)
 
     const { fee: maxFee } = createTransferTx(
@@ -110,14 +116,16 @@ class SendServiceBTC implements SendServiceHelper {
 
   private async getBalance(
     isMainnet: boolean,
-    address: string
+    address: string,
+    currency: string
   ): Promise<{
     balance: number
     utxos: BitcoinInputUTXO[]
   }> {
     const token = await balanceService.getBalances(
       isMainnet ? BITCOIN_NETWORK : BITCOIN_TEST_NETWORK,
-      address
+      address,
+      currency
     )
 
     return {

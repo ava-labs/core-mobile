@@ -10,7 +10,7 @@ export class BtcBalanceService {
     network: Network,
     provider: BlockCypherProvider,
     userAddress: string,
-    selectedCurrency: string
+    currency: string
   ): Promise<TokenWithBalance[]> {
     const { networkToken, chainId } = network
 
@@ -25,7 +25,7 @@ export class BtcBalanceService {
       change24
     } = await TokenService.getPriceWithMarketDataByCoinId(
       nativeTokenId,
-      selectedCurrency
+      currency
     )
     const denomination = networkToken.decimals
     const { balance: balanceSatoshis, utxos } = await provider.getUtxoBalance(

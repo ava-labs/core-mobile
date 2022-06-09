@@ -61,11 +61,13 @@ export interface SendServiceHelper {
   getTransactionRequest(
     sendState: SendState,
     isMainnet: boolean,
-    fromAddress: string
+    fromAddress: string,
+    currency?: string
   ): Promise<SignTransactionRequest>
   validateStateAndCalculateFees(
     sendState: SendState,
     isMainnet: boolean,
-    fromAddress: string
+    fromAddress: string,
+    currency?: string
   ): Promise<SendState>
 }
