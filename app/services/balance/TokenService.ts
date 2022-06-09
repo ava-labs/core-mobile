@@ -26,18 +26,18 @@ export class TokenService {
   /**
    * Get the native token price with market data for a coin
    * @param coinId the coin id ie avalanche-2 for avax
-   * @param selectedCurrency the currency selected
+   * @param currency the currency to be used
    * @returns the native token price with market data
    */
   async getPriceWithMarketDataByCoinId(
     coinId: string,
-    selectedCurrency: string
+    currency: string
   ): Promise<PriceWithMarketData> {
     let data: SimplePriceResponse | undefined
 
-    const currencyCode = selectedCurrency.toLowerCase() as VsCurrencyType
+    const currencyCode = currency.toLowerCase() as VsCurrencyType
 
-    const key = `${coinId}-${selectedCurrency}`
+    const key = `${coinId}-${currency}`
     const cacheId = `getPriceWithMarketDataByCoinId-${key}`
 
     data = getCache(cacheId)
@@ -62,21 +62,19 @@ export class TokenService {
    * Get token price with market data for a list of addresses
    * @param tokenAddresses the token addresses
    * @param assetPlatformId The platform id for all the tokens in the list
-   * @param selectedCurrency the currency selected
+   * @param currency the currency to be used
    * @returns a list of token price with market data
    */
   async getPricesWithMarketDataByAddresses(
     tokenAddresses: string[],
     assetPlatformId: string,
-    selectedCurrency: string
+    currency: string
   ) {
     let data: SimpleTokenPriceResponse | undefined
 
-    const currencyCode = selectedCurrency.toLowerCase() as VsCurrencyType
+    const currencyCode = currency.toLowerCase() as VsCurrencyType
 
-    const key = `${arrayHash(
-      tokenAddresses
-    )}-${assetPlatformId}-${selectedCurrency}`
+    const key = `${arrayHash(tokenAddresses)}-${assetPlatformId}-${currency}`
 
     const cacheId = `getPricesWithMarketDataByAddresses-${key}`
     data = getCache(cacheId)

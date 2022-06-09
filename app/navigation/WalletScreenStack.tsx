@@ -14,7 +14,6 @@ import { SelectedTokenContextProvider } from 'contexts/SelectedTokenContext'
 import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import {
-  currentSelectedCurrency$,
   TransactionERC20,
   TransactionNormal
 } from '@avalabs/wallet-react-components'
@@ -132,7 +131,7 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
   const dispatch = useDispatch()
   const [showSecurityModal, setShowSecurityModal] = useState(false)
   const context = useApplicationContext()
-  const { signOut, setSelectedCurrency } = context.appHook
+  const { signOut } = context.appHook
   const { timeoutPassed } = useAppBackgroundTracker({
     timeoutMs: 5000,
     getTime: async () => AsyncStorage.getItem('TIME_APP_SUSPENDED'),
@@ -198,17 +197,6 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
       </WalletScreenS.Group>
     )
   }, [])
-
-  const CurrencySelectorScreen = () => {
-    return (
-      <CurrencySelector
-        onSelectedCurrency={code => {
-          currentSelectedCurrency$.next(code)
-          setSelectedCurrency(code)
-        }}
-      />
-    )
-  }
 
   return (
     <SelectedTokenContextProvider>
@@ -299,7 +287,7 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
             ...MainHeaderOptions('Currency')
           }}
           name={AppNavigation.Wallet.CurrencySelector}
-          component={CurrencySelectorScreen}
+          component={CurrencySelector}
         />
         <WalletScreenS.Screen
           options={{

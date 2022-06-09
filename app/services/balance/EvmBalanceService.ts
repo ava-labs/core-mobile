@@ -2,13 +2,11 @@ import { ethers } from 'ethers'
 import { User } from '@avalabs/blizzard-sdk'
 import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 import { InfuraProvider } from '@ethersproject/providers'
-import { currentSelectedCurrency$ } from '@avalabs/wallet-react-components'
 import {
   balanceToDisplayValue,
   bigToBN,
   ethersBigNumberToBig
 } from '@avalabs/utils-sdk'
-import { firstValueFrom } from 'rxjs'
 import {
   NetworkTokenWithBalance,
   TokenType,
@@ -32,7 +30,7 @@ export class EvmBalanceService {
     provider: Provider,
     userAddress: string,
     network: Network,
-    selectedCurrency: string
+    currency: string
   ): Promise<NetworkTokenWithBalance> {
     const { networkToken, chainId } = network
     const nativeTokenId =
@@ -47,7 +45,7 @@ export class EvmBalanceService {
       change24
     } = await TokenService.getPriceWithMarketDataByCoinId(
       nativeTokenId,
-      selectedCurrency
+      currency
     )
     const balanceBig = ethersBigNumberToBig(
       balanceEthersBig,
@@ -86,7 +84,7 @@ export class EvmBalanceService {
     tokenPriceDict: SimpleTokenPriceResponse,
     userAddress: string,
     network: Network,
-    selectedCurrency: string
+    currency: string
   ): Promise<TokenWithBalanceERC20[]> {
     const { chainId } = network
 
@@ -95,7 +93,7 @@ export class EvmBalanceService {
         const id = `${chainId}-${token.address}`
         const tokenPrice =
           tokenPriceDict[token.address.toLowerCase()]?.[
-            selectedCurrency as VsCurrencyType
+            currency as VsCurrencyType
           ]
         const contract = new ethers.Contract(token.address, hstABI, provider)
         const balanceEthersBig = await contract.balanceOf(userAddress)
@@ -151,11 +149,9 @@ export class EvmBalanceService {
   async getBalances(
     network: Network,
     provider: Provider,
-    userAddress: string
+    userAddress: string,
+    currency: string
   ): Promise<TokenWithBalance[]> {
-    const selectedCurrency = await (
-      await firstValueFrom(currentSelectedCurrency$)
-    ).toLowerCase()
     const activeTokenList = network.tokens ?? []
 
     const tokenAddresses = activeTokenList.map(token => token.address)
@@ -167,14 +163,14 @@ export class EvmBalanceService {
       (await TokenService.getPricesWithMarketDataByAddresses(
         tokenAddresses,
         assetPlatformId,
-        selectedCurrency
+        currency
       )) ?? {}
 
     const nativeToken = await this.getNativeTokenBalance(
       provider,
       userAddress,
       network,
-      selectedCurrency
+      currency
     )
 
     const erc20Tokens = await this.getErc20Balances(
@@ -183,7 +179,7 @@ export class EvmBalanceService {
       tokenPriceDict,
       userAddress,
       network,
-      selectedCurrency
+      currency
     )
 
     const nftStates = await this.getErc721Balances(userAddress)

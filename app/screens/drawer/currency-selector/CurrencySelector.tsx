@@ -2,25 +2,35 @@ import React from 'react'
 import { FlatList, ListRenderItemInfo, StyleSheet } from 'react-native'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import CurrencyListItem from 'screens/drawer/currency-selector/CurrencyListItem'
-import { currencies } from '@avalabs/wallet-react-components'
-import { useApplicationContext } from 'contexts/ApplicationContext'
+import { useDispatch, useSelector } from 'react-redux'
+import {
+  selectCurrencies,
+  selectSelectedCurrency,
+  setSelectedCurrency
+} from 'store/settings'
+import { useNavigation } from '@react-navigation/native'
 
-const CurrencySelector = ({
-  onSelectedCurrency
-}: {
-  onSelectedCurrency: (code: string) => void
-}) => {
-  const { selectedCurrency } = useApplicationContext().appHook
+const CurrencySelector = () => {
+  const navigation = useNavigation()
+  const currencies = useSelector(selectCurrencies)
+  const selectedCurrency = useSelector(selectSelectedCurrency)
+  const dispatch = useDispatch()
+
   const renderItem = (
     item: ListRenderItemInfo<{ name: string; symbol: string }>
   ) => {
     const currency = item.item
 
+    const onPress = () => {
+      dispatch(setSelectedCurrency(currency.symbol))
+      navigation.goBack()
+    }
+
     return (
       <CurrencyListItem
         name={`${currency.name} (${currency.symbol})`}
         selected={selectedCurrency === currency.symbol}
-        onPress={() => onSelectedCurrency(currency.symbol)}
+        onPress={onPress}
       />
     )
   }
