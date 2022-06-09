@@ -7,10 +7,10 @@ const btcNetworks = [ChainId.BITCOIN]
 const ethNetworks: number[] = []
 
 // TODO: add support for ETH NETWORKS and BITCOIN TEST NET
-export class NetworkService {
-  getEvmProvider(network: Network, numerOfChunksPerRequestBatch = 40) {
+class NetworkService {
+  getEvmProvider(network: Network, numberOfChunksPerRequestBatch = 40) {
     return new JsonRpcBatchInternal(
-      numerOfChunksPerRequestBatch,
+      numberOfChunksPerRequestBatch,
       network.rpcUrl,
       network.chainId
     )
@@ -46,6 +46,22 @@ export class NetworkService {
     }
 
     throw new Error('unsupported network')
+  }
+
+  async sendTransaction(signedTx: string, network: Network) {
+    if (!network) {
+      throw new Error('No active network')
+    }
+    const provider = this.getProviderForNetwork(network)
+    if (provider instanceof JsonRpcBatchInternal) {
+      return (await provider.sendTransaction(signedTx)).hash
+    }
+
+    if (provider instanceof BlockCypherProvider) {
+      return (await provider.issueRawTx(signedTx)).hash
+    }
+
+    throw new Error('No provider found')
   }
 }
 

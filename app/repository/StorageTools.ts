@@ -8,7 +8,7 @@ class StorageTools {
 
   static async loadFromStorageAsObj<T>(key: string) {
     const raw = await AsyncStorage.getItem(key)
-    return raw ? (JSON.parse(raw) as T) : {}
+    return raw ? (JSON.parse(raw) as T) : undefined
   }
 
   static async loadFromStorageAsArray<T>(key: string) {

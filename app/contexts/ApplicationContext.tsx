@@ -49,7 +49,7 @@ export const ApplicationContext = createContext<ApplicationContextState>(
 export const ApplicationContextProvider = ({ children }: { children: any }) => {
   const appNavHook = useAppNav()
   const repository = useRepo()
-  const walletSetupHook = useWalletSetup(repository, appNavHook)
+  const walletSetupHook = useWalletSetup(appNavHook)
   const appHook = useApp(appNavHook, walletSetupHook, repository)
 
   const isDarkMode = true // useState(Appearance.getColorScheme() === 'dark');
