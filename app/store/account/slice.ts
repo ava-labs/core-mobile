@@ -9,7 +9,7 @@ import {
   activateAccount as legacyActivateAccount,
   addAccount as legacyAddAccount
 } from '@avalabs/wallet-react-components'
-import { onRehydrationComplete } from 'store/app'
+import { onLegacyWalletStarted } from 'store/app'
 
 const reducerName = 'account'
 
@@ -55,12 +55,22 @@ export const { setAccountTitle, setActiveAccountIndex, persistAccount } =
 // listeners
 export const addAccountListener = (startListening: AppStartListening) => {
   startListening({
-    actionCreator: onRehydrationComplete,
+    actionCreator: onLegacyWalletStarted,
     effect: async (action, listenerApi) => {
       const state = listenerApi.getState()
       const activeAccount = selectActiveAccount(state)
-      // TODO: remove this side effect call after the refactor
-      activeAccount && legacyActivateAccount(activeAccount.index)
+      const accounts = selectAccounts(state)
+      if (Object.keys(accounts).length === 0) {
+        listenerApi.dispatch(addAccount())
+      } else {
+        Object.values(accounts).forEach(account => {
+          //fixme to be removed after ditching wallet-react-components
+          const acc2 = legacyAddAccount()
+          if (account.index === activeAccount?.index) {
+            legacyActivateAccount(acc2.index)
+          }
+        })
+      }
     }
   })
 

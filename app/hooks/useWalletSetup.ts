@@ -2,12 +2,9 @@ import { encrypt, getEncryptionKey } from 'screens/login/utils/EncryptionHelper'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import { AppNavHook } from 'useAppNav'
 import walletService from 'services/wallet/WalletService'
-import { useDispatch, useSelector } from 'react-redux'
-import { addAccount, selectAccounts, selectActiveAccount } from 'store/account'
-import {
-  useAccountsContext,
-  useWalletContext
-} from '@avalabs/wallet-react-components'
+import { useDispatch } from 'react-redux'
+import { useWalletContext } from '@avalabs/wallet-react-components'
+import { onLegacyWalletStarted } from 'store/app'
 
 export interface WalletSetupHook {
   onPinCreated: (
@@ -28,10 +25,6 @@ export interface WalletSetupHook {
  */
 export function useWalletSetup(appNavHook: AppNavHook): WalletSetupHook {
   const walletContext2 = useWalletContext()
-  const { addAccount: addAccount2, activateAccount: activateAccount2 } =
-    useAccountsContext()
-  const accounts = useSelector(selectAccounts)
-  const activeAccount = useSelector(selectActiveAccount)
   const dispatch = useDispatch()
 
   const enterWallet = (mnemonic: string) => {
@@ -48,17 +41,7 @@ export function useWalletSetup(appNavHook: AppNavHook): WalletSetupHook {
   async function initWalletWithMnemonic(mnemonic: string) {
     await walletContext2.initWalletMnemonic(mnemonic)
     walletService.setMnemonic(mnemonic)
-    if (Object.keys(accounts).length === 0) {
-      dispatch(addAccount())
-    } else {
-      Object.values(accounts).forEach(account => {
-        //fixme to be removed after ditching wallet-react-components
-        const acc2 = addAccount2()
-        if (account.index === activeAccount?.index) {
-          activateAccount2(acc2.index)
-        }
-      })
-    }
+    dispatch(onLegacyWalletStarted)
   }
 
   /**
