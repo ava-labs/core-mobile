@@ -20,7 +20,10 @@ const AddressBook = () => {
 
   const contacts = useMemo<Contact[]>(() => {
     return [...addressBook.entries()]
-      .filter(([, contact]) => contact.title.search(searchFilter) !== -1)
+      .filter(
+        ([, contact]) =>
+          contact.title.toLowerCase().search(searchFilter.toLowerCase()) !== -1
+      )
       .map(([, contact]) => {
         return contact
       })
