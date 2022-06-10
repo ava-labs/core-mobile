@@ -3,11 +3,8 @@ import { Animated, RefreshControl, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import Loader from 'components/Loader'
 import {
-  getHistory,
-  network$,
   TransactionERC20,
-  TransactionNormal,
-  useWalletContext
+  TransactionNormal
 } from '@avalabs/wallet-react-components'
 import { ScrollView } from 'react-native-gesture-handler'
 import ActivityListItem from 'screens/activity/ActivityListItem'
@@ -25,7 +22,8 @@ import {
   isIncomingTransaction,
   isOutgoingTransaction
 } from 'utils/TransactionTools'
-import { TokenSymbol } from 'store/network'
+import { selectActiveNetwork, TokenSymbol } from 'store/network'
+import { useSelector } from 'react-redux'
 
 const yesterday = endOfYesterday()
 const today = endOfToday()
@@ -60,7 +58,6 @@ function ActivityList({
   openTransactionStatus
 }: Props) {
   const [loading, setLoading] = useState(true)
-  const wallet = useWalletContext()?.wallet
   const { openUrl } = useInAppBrowser()
   const [allHistory, setAllHistory] = useState<
     (TransactionNormal | TransactionERC20)[]
@@ -70,6 +67,11 @@ function ActivityList({
   const { bitcoinAssets, ethereumWrappedAssets } = useBridgeSDK()
   const bridgeTransactions = pendingBridgeTransactions.bridgeTransactions
   const [filter, setFilter] = useState(ActivityFilter.All)
+  const activeNetwork = useSelector(selectActiveNetwork)
+
+  //bow to lint gods
+  setLoading
+  setAllHistory
 
   const isBridgeTx = useCallback(
     (tx: typeof allHistory[0]): tx is TransactionERC20 => {
@@ -117,25 +119,17 @@ function ActivityList({
   )
 
   useEffect(() => {
-    // fetch history on first mount and whenever a new network is selected
-    // notes: we are relying the network$ observable
-    // because the network update logic in the old wallet sdk is async
-    const subscription = network$.subscribe(() => {
-      loadHistory().then()
-    })
-
-    return () => {
-      subscription.unsubscribe()
-    }
-  }, [])
+    loadHistory().then()
+  }, [activeNetwork])
 
   const loadHistory = async () => {
-    if (!wallet) {
-      return []
-    }
-    setLoading(true)
-    setAllHistory((await getHistory(wallet, 50)) ?? [])
-    setLoading(false)
+    //todo - make and use ActivityService
+    // if (!wallet) {
+    //   return []
+    // }
+    // setLoading(true)
+    // setAllHistory((await getHistory(wallet, 50)) ?? []) //fixme: get history from glacier?
+    // setLoading(false)
   }
 
   const renderItems = () => {

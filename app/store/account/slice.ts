@@ -5,11 +5,6 @@ import { Account } from 'dto/Account'
 import accountService from 'services/account/AccountsService'
 import { AppStartListening } from 'store/middleware/listener'
 import { selectActiveNetwork } from 'store/network'
-import {
-  activateAccount as legacyActivateAccount,
-  addAccount as legacyAddAccount
-} from '@avalabs/wallet-react-components'
-import { onRehydrationComplete } from 'store/app'
 
 const reducerName = 'account'
 
@@ -55,16 +50,6 @@ export const { setAccountTitle, setActiveAccountIndex, persistAccount } =
 // listeners
 export const addAccountListener = (startListening: AppStartListening) => {
   startListening({
-    actionCreator: onRehydrationComplete,
-    effect: async (action, listenerApi) => {
-      const state = listenerApi.getState()
-      const activeAccount = selectActiveAccount(state)
-      // TODO: remove this side effect call after the refactor
-      activeAccount && legacyActivateAccount(activeAccount.index)
-    }
-  })
-
-  startListening({
     actionCreator: addAccount,
     effect: async (action, listenerApi) => {
       const state = listenerApi.getState()
@@ -77,9 +62,6 @@ export const addAccountListener = (startListening: AppStartListening) => {
 
       listenerApi.dispatch(persistAccount(acc))
       listenerApi.dispatch(setActiveAccountIndex(acc.index))
-
-      const acc2 = legacyAddAccount()
-      legacyActivateAccount(acc2.index)
     }
   })
 }

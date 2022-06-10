@@ -7,8 +7,8 @@ import { Space } from 'components/Space'
 import AvaxQACode from 'components/AvaxQRCode'
 import TokenAddress from 'components/TokenAddress'
 import { selectActiveNetwork } from 'store/network'
-import { useWalletContext } from '@avalabs/wallet-react-components'
 import { ChainId } from '@avalabs/chains-sdk'
+import { selectActiveAccount } from 'store/account'
 
 type Props = {
   embedded: boolean
@@ -18,21 +18,19 @@ const ReceiveToken: FC<Props> = memo(props => {
   const theme = useApplicationContext().theme
   const embedded = !!props?.embedded
   const activeNetwork = useSelector(selectActiveNetwork)
+  const activeAccount = useSelector(selectActiveAccount)
   const { chainId, networkToken, chainName } = activeNetwork
-  const wallet = useWalletContext().wallet
-  const addressC = wallet?.getAddressC() ?? ''
-  const isMainnet = activeNetwork.chainId === ChainId.AVALANCHE_MAINNET_ID
-  const btcAddress =
-    wallet?.getAddressBTC(isMainnet ? 'bitcoin' : 'testnet') ?? ''
+  const addressC = activeAccount?.address
+  const btcAddress = activeAccount?.addressBtc //todo: check for testnet
 
   const receiveAddress = () => {
     switch (chainId) {
       case ChainId.BITCOIN:
-        return btcAddress
+        return btcAddress ?? ''
       case ChainId.AVALANCHE_MAINNET_ID:
       case ChainId.AVALANCHE_TESTNET_ID:
       default:
-        return addressC
+        return addressC ?? ''
     }
   }
 

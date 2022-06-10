@@ -19,7 +19,6 @@ class WalletService {
   }
 
   async getBtcWallet(accountIndex: number, network: Network) {
-    log('getBtcWallet', this.mnemonic)
     if (!this.mnemonic) {
       throw new Error('not initialized')
     }
