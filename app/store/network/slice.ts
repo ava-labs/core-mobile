@@ -1,10 +1,5 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import {
-  FUJI_NETWORK,
-  MAINNET_NETWORK,
-  setNetwork
-} from '@avalabs/wallet-react-components'
-import {
   BITCOIN_NETWORK,
   ChainId,
   ETHEREUM_NETWORK,
@@ -12,8 +7,6 @@ import {
   Network
 } from '@avalabs/chains-sdk'
 import isEmpty from 'lodash.isempty'
-import { onRehydrationComplete } from 'store/app'
-import { AppStartListening } from 'store/middleware/listener'
 import { RootState } from '../index'
 import { NetworkState } from './types'
 
@@ -92,33 +85,5 @@ export const getNetworks = createAsyncThunk<void, void, { state: RootState }>(
 )
 
 export const { setNetworks, setActive, toggleFavorite } = networkSlice.actions
-
-// listeners
-export const addNetworkListeners = (startListening: AppStartListening) => {
-  startListening({
-    actionCreator: onRehydrationComplete,
-    effect: async (action, listenerApi) => {
-      const state = listenerApi.getState()
-
-      // TODO: remove this once network refactor is done
-      // wallet-react-components sets MAINNET as the active network on app start
-      // we need to set it back to whatever network persisted in our app
-      const network = selectActiveNetwork(state)
-      setNetwork(network.isTestnet ? FUJI_NETWORK : MAINNET_NETWORK)
-    }
-  })
-
-  startListening({
-    actionCreator: setActive,
-    effect: async (action, listenerApi) => {
-      const state = listenerApi.getState()
-
-      // TODO: remove this once network refactor is done
-      // for now, still need to also set active network in wallet-react-components
-      const network = selectActiveNetwork(state)
-      setNetwork(network.isTestnet ? FUJI_NETWORK : MAINNET_NETWORK)
-    }
-  })
-}
 
 export const networkReducer = networkSlice.reducer

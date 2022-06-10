@@ -6,10 +6,7 @@ import React, {
   useRef,
   useState
 } from 'react'
-import {
-  SendHookError,
-  useWalletStateContext
-} from '@avalabs/wallet-react-components'
+import { SendHookError } from '@avalabs/wallet-react-components'
 import { bnToAvaxC, numberToBN } from '@avalabs/avalanche-wallet-sdk'
 import { mustNumber, mustValue } from 'utils/JsTools'
 import { BN } from 'avalanche'
@@ -17,6 +14,9 @@ import { BehaviorSubject } from 'rxjs'
 import { NFTItemData } from 'screens/nft/NftCollection'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
+import tokenService from 'services/balance/TokenService'
+import { selectActiveNetwork } from 'store/network'
+import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 
 export interface SendNFTContextState {
   sendToken: NFTItemData
@@ -40,10 +40,10 @@ export const SendNFTContextProvider = ({
   nft: NFTItemData
   children: any
 }) => {
-  const activeAccount = useSelector(selectActiveAccount)
-  const { avaxPrice } = useWalletStateContext()!
-  const [sendToken] = useState<NFTItemData>(nft)
+  const network = useSelector(selectActiveNetwork)
 
+  const activeAccount = useSelector(selectActiveAccount)
+  const [sendToken] = useState<NFTItemData>(nft)
   const customGasPrice$ = useRef(new BehaviorSubject({ bn: new BN(0) }))
   const gasLimit$ = useRef(new BehaviorSubject<number>(0))
 
@@ -65,12 +65,28 @@ export const SendNFTContextProvider = ({
   const [canSubmit, setCanSubmit] = useState(false)
   const [sdkError, setSdkError] = useState<SendHookError | undefined>(undefined)
 
+  const [avaxPrice, setAvaxPrice] = useState(0)
+
+  //bow to the lint gods
   setSendFee
   setSendStatusMsg
   setCanSubmit
   setSdkError
 
+  useEffect(watchPriceFx, [])
+
+  function watchPriceFx() {
+    ;(async () => {
+      const avaxPrice = await tokenService.getPriceWithMarketDataByCoinId(
+        network.pricingProviders?.coingecko.nativeTokenId ?? '',
+        VsCurrencyType.USD
+      )
+      setAvaxPrice(avaxPrice.price)
+    })()
+  }
+
   //fixme - validate without using wallet-react-components
+
   // useEffect(() => {
   //   if (!sendToken || !activeAccount || !walletService) {
   //     return
@@ -80,7 +96,7 @@ export const SendNFTContextProvider = ({
   //     Number.parseInt(sendToken.token_id, 10),
   //     customGasPrice$.current,
   //     of(sendToAddress),
-  //     of(walletService.getEvmWallet(activeAccount.index)), //fixme: needs to be refactored to move away from wallet-react-components/RxJS
+  //     of(walletService.getEvmWallet(activeAccount.index)),
   //     gasLimit$.current
   //   ).subscribe(value => {
   //     setCanSubmit(value.canSubmit ?? false)
@@ -137,6 +153,7 @@ export const SendNFTContextProvider = ({
     setSendStatus('Sending')
 
     //fixme - send without using wallet-react-components
+
     // sendNftSubmit(
     //   nft.collection.contract_address,
     //   Number.parseInt(sendToken.token_id, 10),

@@ -34,6 +34,10 @@ export const selectIsReady = (state: RootState) => state.app.isReady
 export const onRehydrationComplete = createAction(
   `${reducerName}/onRehydrationComplete`
 )
+// todo: remove when no longer relying on wallet-react-components
+export const onLegacyWalletStarted = createAction(
+  `${reducerName}/onLegacyWalletStarted`
+)
 
 // when user has successfully entered pin or biometrics to unlock the app
 export const onLoginSuccess = createAction(`${reducerName}/onLoginSuccess`)

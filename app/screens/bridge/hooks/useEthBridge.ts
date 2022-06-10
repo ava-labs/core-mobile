@@ -12,11 +12,11 @@ import { BridgeAdapter } from 'screens/bridge/hooks/useBridge'
 import { useBridgeContext } from 'contexts/BridgeContext'
 import { useSingularAssetBalanceEVM } from 'screens/bridge/hooks/useSingularAssetBalanceEVM'
 import { useAssetBalancesEVM } from 'screens/bridge/hooks/useAssetBalancesEVM'
-import { useWalletStateContext } from '@avalabs/wallet-react-components'
 import { getEthereumProvider } from 'screens/bridge/utils/getEthereumProvider'
 import { useCallback, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
+import { selectActiveAccount } from 'store/account'
 
 /**
  * Hook for when the bridge source chain is Ethereum
@@ -40,12 +40,12 @@ export function useEthBridge(amount: Big, bridgeFee: Big): BridgeAdapter {
     Blockchain.ETHEREUM
   )
 
-  const { addresses } = useWalletStateContext()!
   const network = useSelector(selectActiveNetwork)
+  const activeAccount = useSelector(selectActiveAccount)
   const config = useBridgeConfig().config
   const ethereumProvider = getEthereumProvider(network)
   const hasEnoughForNetworkFee = useHasEnoughForGas(
-    isEthereumBridge ? addresses.addrC : undefined,
+    isEthereumBridge ? activeAccount?.address : undefined,
     ethereumProvider
   )
   const [wrapStatus, setWrapStatus] = useState<WrapStatus>(WrapStatus.INITIAL)
