@@ -1,4 +1,3 @@
-import { Big } from '@avalabs/avalanche-wallet-sdk'
 import {
   AppConfig,
   Blockchain,
@@ -6,41 +5,32 @@ import {
   getBtcAsset
 } from '@avalabs/bridge-sdk'
 import { JsonRpcProvider } from '@ethersproject/providers'
+import Big from 'big.js'
+import { BitcoinInputUTXO } from '@avalabs/wallets-sdk'
+import balanceService from 'services/balance/BalanceService'
+import { BITCOIN_NETWORK, BITCOIN_TEST_NETWORK } from '@avalabs/chains-sdk'
 
 export async function getBtcBalance(
-  bridgeConfig: AppConfig,
-  btcAddress: string,
-  avalancheAddress: string,
-  avalancheProvider: JsonRpcProvider
-) {
-  // const network = useNetworkContext()!.network!;
-  // const wallet = useWalletContext()!.wallet!;
-  // const bridgeConfig = useBridgeConfig()!.config!;
-
-  async function loadBalance() {
-    return (
-      await getBtcBalanceAvalanche(
-        bridgeConfig,
-        avalancheAddress,
-        avalancheProvider
-      )
-    )?.toNumber()
-  }
-
-  //fixme - bridge-sdk doesnt have getUTXOs
-  // const { balance: btcBalanceBitcoin, utxos: bitcoinUtxos } = await getUTXOs(
-  //   bridgeConfig,
-  //   btcAddress
-  // )
+  isMainnet: boolean,
+  address: string,
+  currency: string
+): Promise<{
+  balance: number
+  utxos: BitcoinInputUTXO[]
+}> {
+  const token = await balanceService.getBalances(
+    isMainnet ? BITCOIN_NETWORK : BITCOIN_TEST_NETWORK,
+    address,
+    currency
+  )
 
   return {
-    bitcoinUtxos: [], //fixme
-    btcBalanceAvalanche: await loadBalance(),
-    btcBalanceBitcoin: 0 //fixme
+    balance: token?.[0]?.balance.toNumber() || 0,
+    utxos: token?.[0]?.utxos || []
   }
 }
 
-async function getBtcBalanceAvalanche(
+export async function getAvalancheBtcBalance(
   config: AppConfig,
   address: string,
   provider: JsonRpcProvider

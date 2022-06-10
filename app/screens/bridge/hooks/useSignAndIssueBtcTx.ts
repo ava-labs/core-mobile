@@ -3,13 +3,23 @@ import * as bitcoin from 'bitcoinjs-lib'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { BTCTransactionResponse } from 'screens/bridge/handlers/createBridgeTransaction'
+import { useActiveAccount } from 'hooks/useActiveAccount'
+import { useActiveNetwork } from 'hooks/useActiveNetwork'
+import networkService from 'services/network/NetworkService'
+import walletService from 'services/wallet/WalletService'
+import balanceService from 'services/balance/BalanceService'
+import { BITCOIN_NETWORK, BITCOIN_TEST_NETWORK } from '@avalabs/chains-sdk'
 
 //fixme - no more issueRawTx, signPsbt in bridge-sdk
 export default function useSignAndIssueBtcTx() {
   const config = useBridgeConfig().config
-  const activeAccount = useSelector(selectActiveAccount)
+  const activeAccount = useActiveAccount()
+  const { isDeveloperMode } = useActiveNetwork()
+  const bitcoinNetwork = isDeveloperMode
+    ? BITCOIN_TEST_NETWORK
+    : BITCOIN_NETWORK
 
-  // const activeNetwork = useSelector(selectActiveNetwork)
+
 
   async function signAndIssueBtcTx(unsignedHex: string) {
     if (!config || !activeAccount) {

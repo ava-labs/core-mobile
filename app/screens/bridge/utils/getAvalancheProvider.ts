@@ -1,19 +1,6 @@
 import { Network } from '@avalabs/chains-sdk'
-import {
-  JsonRpcProvider,
-  StaticJsonRpcProvider
-} from '@ethersproject/providers'
+import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 
-const providers: Record<string, JsonRpcProvider> = {}
-
-export function getAvalancheProvider(network: Network): JsonRpcProvider {
-  const chainId = network.chainId
-
-  if (network && !providers[chainId]) {
-    const avalancheProvider = new StaticJsonRpcProvider(network.rpcUrl)
-    avalancheProvider.pollingInterval = 1000
-    providers[chainId] = avalancheProvider
-  }
-
-  return providers[chainId]
+export function getAvalancheProvider(network: Network): JsonRpcBatchInternal {
+  return new JsonRpcBatchInternal(40, network?.rpcUrl, network?.chainId)
 }
