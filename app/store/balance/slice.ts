@@ -42,7 +42,10 @@ export const balanceSlice = createSlice({
 // TODO CP-2114 remove chainId and address params once we have accounts reducer
 // we can infer chainId from active network and address from accounts reducer
 export const selectTokensWithBalance =
-  (chainId: number, address: string) => (state: RootState) => {
+  (chainId: number, address?: string) => (state: RootState) => {
+    if (!address) {
+      return []
+    }
     const key = getKey(chainId, address)
     return state.balance.balances[key]?.tokens ?? []
   }

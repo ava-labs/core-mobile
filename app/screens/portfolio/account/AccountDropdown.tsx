@@ -15,7 +15,6 @@ import {
   selectActiveAccount,
   setActiveAccountIndex
 } from 'store/account'
-import { activateAccount as legacyActivateAccount } from '@avalabs/wallet-react-components'
 
 const Y_START = -400
 
@@ -52,7 +51,6 @@ function AccountDropdown({
   }, [animTranslateY, goBack])
 
   function onSelectAccount(accountIndex: number) {
-    legacyActivateAccount(accountIndex)
     dispatch(setActiveAccountIndex(accountIndex))
     animatedDismiss()
   }

@@ -5,7 +5,6 @@ import {
 } from '@avalabs/bridge-sdk'
 import { getAvalancheProvider } from 'screens/bridge/utils/getAvalancheProvider'
 import { getEthereumProvider } from 'screens/bridge/utils/getEthereumProvider'
-import { useWalletStateContext } from '@avalabs/wallet-react-components'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
 

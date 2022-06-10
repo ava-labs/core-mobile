@@ -16,17 +16,18 @@ import Avatar from 'components/Avatar'
 import useAddCustomToken from 'screens/tokenManagement/hooks/useAddCustomToken'
 import { Erc20TokenData } from '@avalabs/avalanche-wallet-sdk/dist/Asset/types'
 import { ShowSnackBar } from 'components/Snackbar'
-import { useWalletStateContext } from '@avalabs/wallet-react-components'
+import { useSelector } from 'react-redux'
+import { selectActiveNetwork } from 'store/network'
 
 const AddCustomToken: FC = () => {
   const theme = useApplicationContext().theme
   const [tokenAddress, setTokenAddress] = useState('')
   const [errorMessage, setErrorMessage] = useState<string>()
-  const walletState = useWalletStateContext()
   const [token, setToken] = useState<Erc20TokenData>()
   const [showQrCamera, setShowQrCamera] = useState(false)
   const { addCustomToken } = useAddCustomToken()
   const { goBack } = useNavigation()
+  const activeNetwork = useSelector(selectActiveNetwork)
 
   /**
    * Calls addCustom token where other checks are done
@@ -50,10 +51,10 @@ const AddCustomToken: FC = () => {
   const tokenAlreadyExists = useMemo(
     () =>
       tokenAddress?.length &&
-      walletState?.erc20Tokens.some(
+      activeNetwork.tokens?.some(
         ({ address }: { address: string }) => address === tokenAddress
       ),
-    [walletState?.erc20Tokens, tokenAddress]
+    [activeNetwork.tokens, tokenAddress]
   )
 
   useEffect(() => {

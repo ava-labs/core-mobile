@@ -3,10 +3,6 @@ import { FlatList, ListRenderItemInfo, StyleSheet, View } from 'react-native'
 import PortfolioHeader from 'screens/portfolio/PortfolioHeader'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { useNavigation } from '@react-navigation/native'
-import {
-  useAccountsContext,
-  useWalletStateContext
-} from '@avalabs/wallet-react-components'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 import AppNavigation from 'navigation/AppNavigation'
 import PortfolioListItem from 'screens/portfolio/components/PortfolioListItem'
@@ -31,6 +27,7 @@ import {
 } from 'store/network'
 import { getBalance, TokenWithBalance } from 'store/balance'
 import { BITCOIN_NETWORK } from '@avalabs/chains-sdk'
+import { selectActiveAccount } from 'store/account'
 
 type PortfolioProps = {
   tokenList?: TokenWithBalance[]
@@ -44,9 +41,9 @@ type PortfolioProps = {
 
 // experimenting with container pattern and stable props to try to reduce re-renders
 function PortfolioContainer(): JSX.Element {
-  const { activeAccount } = useAccountsContext()
-  const addressC = activeAccount?.wallet.getAddressC() ?? ''
-  const addressBtc = activeAccount?.wallet.getAddressBTC('bitcoin') ?? ''
+  const activeAccount = useSelector(selectActiveAccount)
+  const addressC = activeAccount?.address
+  const addressBtc = activeAccount?.addressBtc
   const accountIndex = activeAccount?.index ?? 0
   const avaxMainnet = useSelector(selectAvaxMainnet)
   const avaxTestnet = useSelector(selectAvaxTestnet)
@@ -118,7 +115,6 @@ const PortfolioView: FC<PortfolioProps> = memo(
     const listRef = useRef<FlatList>(null)
     const { navigate, addListener, removeListener } =
       useNavigation<PortfolioNavigationProp>()
-    const walletState = useWalletStateContext()
 
     useEffect(() => {
       const unsubscribe = addListener('focus', () => {
@@ -147,7 +143,7 @@ const PortfolioView: FC<PortfolioProps> = memo(
       const token = item.item
       return (
         <PortfolioListItem
-          showLoading={walletState?.isErc20TokenListLoading ?? false}
+          showLoading={false} //fixme: add this state to redux
           tokenName={token.name}
           tokenPrice={token.balanceDisplayValue ?? '0'}
           tokenPriceUsd={token.balanceUsdDisplayValue}
@@ -232,14 +228,14 @@ const Ethereum = 1
 const NftListViewScreen = () => {
   const { navigate } = useNavigation<PortfolioNavigationProp>()
   const { parseNftCollections } = useNftLoader()
-  const { activeAccount } = useAccountsContext()
+  const activeAccount = useSelector(selectActiveAccount)
   const network = useSelector(selectActiveNetwork)
 
   useEffect(() => {
     const isDev = __DEV__
     const chainID = isDev ? Ethereum : Number(network.chainId ?? 0)
     const covalent = new Covalent(chainID, Config.COVALENT_API_KEY)
-    const addressC = isDev ? 'demo.eth' : activeAccount?.wallet.getAddressC()
+    const addressC = isDev ? 'demo.eth' : activeAccount?.address
     if (addressC) {
       covalent
         .getAddressBalancesV2(addressC, true)
@@ -248,7 +244,7 @@ const NftListViewScreen = () => {
         })
         .catch(reason => console.error(reason))
     }
-  }, [network?.chainId, activeAccount?.wallet]) // adding parseNftCollections as dependency starts infinite loop
+  }, [activeAccount?.address, network.chainId]) // adding parseNftCollections as dependency starts infinite loop
 
   const openNftDetails = (item: NFTItemData) => {
     navigate(AppNavigation.Wallet.NFTDetails, {

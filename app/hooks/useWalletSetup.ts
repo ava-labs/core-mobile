@@ -2,9 +2,8 @@ import { encrypt, getEncryptionKey } from 'screens/login/utils/EncryptionHelper'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import { AppNavHook } from 'useAppNav'
 import walletService from 'services/wallet/WalletService'
-import { useDispatch } from 'react-redux'
-import { useWalletContext } from '@avalabs/wallet-react-components'
-import { onLegacyWalletStarted } from 'store/app'
+import { useDispatch, useSelector } from 'react-redux'
+import { addAccount, selectAccounts } from 'store/account'
 
 export interface WalletSetupHook {
   onPinCreated: (
@@ -24,7 +23,7 @@ export interface WalletSetupHook {
  * destroyWallet - call when user ends session
  */
 export function useWalletSetup(appNavHook: AppNavHook): WalletSetupHook {
-  const walletContext2 = useWalletContext()
+  const accounts = useSelector(selectAccounts)
   const dispatch = useDispatch()
 
   const enterWallet = (mnemonic: string) => {
@@ -39,9 +38,10 @@ export function useWalletSetup(appNavHook: AppNavHook): WalletSetupHook {
    * @param mnemonic
    */
   async function initWalletWithMnemonic(mnemonic: string) {
-    await walletContext2.initWalletMnemonic(mnemonic)
     walletService.setMnemonic(mnemonic)
-    dispatch(onLegacyWalletStarted)
+    if (Object.keys(accounts).length === 0) {
+      dispatch(addAccount())
+    }
   }
 
   /**
