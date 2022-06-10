@@ -164,7 +164,7 @@ function GridItem({
             height: item.aspect * GRID_ITEM_WIDTH,
             borderRadius: 8
           }}
-          source={{ uri: item.external_data.image_512 }}
+          source={{ uri: item.external_data?.image_512 }}
         />
       )}
     </AvaButton.Base>
