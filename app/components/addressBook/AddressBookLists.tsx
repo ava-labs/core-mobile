@@ -123,6 +123,7 @@ const renderItem = (
     <AddressBookItem
       title={item.item.title}
       address={item.item.address}
+      addressBtc={item.item.addressBtc}
       onPress={() => {
         onPress(item.item, item.type)
       }}

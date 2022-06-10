@@ -26,11 +26,12 @@ const AddressBook = () => {
       })
   }, [addressBook, searchFilter])
 
-  const renderAccountItem = (item: ListRenderItemInfo<Contact>) => {
+  const renderContactItem = (item: ListRenderItemInfo<Contact>) => {
     return (
       <AddressBookItem
         title={item.item.title}
         address={item.item.address}
+        addressBtc={item.item.addressBtc}
         onPress={() => {
           navigate(AppNavigation.AddressBook.Details, {
             contactId: item.item.id,
@@ -44,7 +45,7 @@ const AddressBook = () => {
   return (
     <SafeAreaProvider style={{ flex: 1, paddingHorizontal: 16 }}>
       <SearchBar searchText={searchFilter} onTextChanged={setSearchFilter} />
-      <FlatList data={contacts} renderItem={renderAccountItem} />
+      <FlatList data={contacts} renderItem={renderContactItem} />
     </SafeAreaProvider>
   )
 }

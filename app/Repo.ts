@@ -42,6 +42,7 @@ export type UID = string
 
 export type Contact = {
   address: string
+  addressBtc: string
   title: string
   id: string
 }

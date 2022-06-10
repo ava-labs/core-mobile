@@ -40,10 +40,12 @@ const ContactDetails = ({
       {editable ? (
         <>
           <ContactInput
-            initName={contact.title}
-            initAddress={contact.address}
+            name={contact.title}
+            address={contact.address}
+            addressBtc={contact.addressBtc}
             onNameChange={name1 => (contact.title = name1)}
             onAddressChange={address1 => (contact.address = address1)}
+            onAddressBtcChange={address1 => (contact.addressBtc = address1)}
           />
           <FlexSpacer />
           <AvaButton.TextLarge onPress={() => onDelete(contact)}>

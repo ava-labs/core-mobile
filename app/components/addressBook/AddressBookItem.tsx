@@ -1,22 +1,26 @@
-import React, { FC, useMemo } from 'react'
+import React, { FC } from 'react'
 import AvaText from 'components/AvaText'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import TokenAddress from 'components/TokenAddress'
 import AvaListItem from 'components/AvaListItem'
 import Avatar from 'components/Avatar'
+import { View } from 'react-native'
+import { Space } from 'components/Space'
 
 interface Props {
   title: string
   address: string
+  addressBtc?: string
   onPress?: () => void
 }
 
-const AddressBookItem: FC<Props> = ({ title, address, onPress }: Props) => {
+const AddressBookItem: FC<Props> = ({
+  title,
+  address,
+  addressBtc,
+  onPress
+}: Props) => {
   const theme = useApplicationContext().theme
-
-  const shortAddress = useMemo(() => {
-    return address
-  }, [address])
 
   return (
     <AvaListItem.Base
@@ -27,7 +31,13 @@ const AddressBookItem: FC<Props> = ({ title, address, onPress }: Props) => {
       leftComponent={
         <Avatar.Custom name={title} size={40} circleColor={theme.colorBg3} />
       }
-      rightComponent={<TokenAddress address={shortAddress} />}
+      rightComponent={
+        <View>
+          {!!address && <TokenAddress address={address} showIcon />}
+          {!!address && !!addressBtc && <Space y={8} />}
+          {!!addressBtc && <TokenAddress address={addressBtc} showIcon />}
+        </View>
+      }
       rightComponentVerticalAlignment={'center'}
       onPress={onPress}
     />
