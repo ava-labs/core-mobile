@@ -54,7 +54,13 @@ const ContactDetails = ({
         </>
       ) : (
         <>
-          <AddressView contact={contact} />
+          {!!contact.address && (
+            <AddressView title={'Address'} address={contact.address} />
+          )}
+          {!!contact.address && !!contact.addressBtc && <Space y={40} />}
+          {!!contact.addressBtc && (
+            <AddressView title={'Address BTC'} address={contact.addressBtc} />
+          )}
           <FlexSpacer />
           <AvaButton.PrimaryLarge onPress={() => onSend(contact)}>
             Send
@@ -65,15 +71,21 @@ const ContactDetails = ({
   )
 }
 
-const AddressView = ({ contact }: { contact: Contact }) => {
+const AddressView = ({
+  title,
+  address
+}: {
+  title: string
+  address: string
+}) => {
   return (
     <>
-      <AvaText.Body1>Address</AvaText.Body1>
+      <AvaText.Body1>{title}</AvaText.Body1>
       <Space y={8} />
 
       <TextFieldBg style={styles.copyAddressContainer}>
         <TokenAddress
-          address={contact.address}
+          address={address}
           showFullAddress
           textType={'ButtonMedium'}
         />
