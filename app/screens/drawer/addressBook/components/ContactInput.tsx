@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import AvaText from 'components/AvaText'
 import InputText from 'components/InputText'
 import { Space } from 'components/Space'
@@ -6,19 +6,21 @@ import { View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 
 const ContactInput = ({
-  initName,
-  initAddress,
+  name,
+  address,
+  addressBtc,
   onNameChange,
-  onAddressChange
+  onAddressChange,
+  onAddressBtcChange
 }: {
-  initName: string
-  initAddress: string
+  name: string
+  address: string
+  addressBtc: string
   onNameChange: (name: string) => void
   onAddressChange: (address: string) => void
+  onAddressBtcChange: (address: string) => void
 }) => {
   const { theme } = useApplicationContext()
-  const [name, setName] = useState(initName)
-  const [address, setAddress] = useState(initAddress)
 
   useEffect(() => {
     onNameChange(name)
@@ -37,7 +39,7 @@ const ContactInput = ({
         <InputText
           placeholder={'Enter contact name'}
           text={name}
-          onChangeText={text => setName(text)}
+          onChangeText={onNameChange}
         />
       </View>
       <Space y={24} />
@@ -49,7 +51,19 @@ const ContactInput = ({
           multiline
           placeholder={'Enter the address'}
           text={address}
-          onChangeText={text => setAddress(text)}
+          onChangeText={onAddressChange}
+        />
+      </View>
+      <Space y={24} />
+      <AvaText.Body2 textStyle={{ color: theme.colorText1 }}>
+        Address BTC
+      </AvaText.Body2>
+      <View style={{ marginHorizontal: -16 }}>
+        <InputText
+          multiline
+          placeholder={'Enter the BTC address'}
+          text={addressBtc}
+          onChangeText={onAddressBtcChange}
         />
       </View>
     </>

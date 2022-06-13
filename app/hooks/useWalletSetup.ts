@@ -38,7 +38,7 @@ export function useWalletSetup(appNavHook: AppNavHook): WalletSetupHook {
    * @param mnemonic
    */
   async function initWalletWithMnemonic(mnemonic: string) {
-    walletService.setMnemonic(mnemonic)
+    await walletService.setMnemonic(mnemonic)
     if (Object.keys(accounts).length === 0) {
       dispatch(addAccount())
     }

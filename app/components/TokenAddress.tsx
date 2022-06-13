@@ -7,11 +7,16 @@ import AvaText from 'components/AvaText'
 import { truncateAddress } from 'utils/Utils'
 import AvaButton from 'components/AvaButton'
 import { noop } from 'rxjs'
+import BitcoinSVG from 'components/svg/BitcoinSVG'
+import { isBech32Address } from '@avalabs/bridge-sdk'
+import { isAddress } from '@ethersproject/address'
+import AvaLogoSVG from 'components/svg/AvaLogoSVG'
 
 interface Props {
   address: string
   textType?: 'Heading' | 'ButtonSmall' | 'ButtonMedium' | 'Body'
   hideCopy?: boolean
+  showIcon?: boolean
   showFullAddress?: boolean
   color?: string
   copyIconEnd?: boolean
@@ -22,6 +27,7 @@ const TokenAddress: FC<Props> = ({
   textType = 'ButtonSmall',
   showFullAddress,
   hideCopy,
+  showIcon,
   color,
   copyIconEnd
 }) => {
@@ -69,6 +75,22 @@ const TokenAddress: FC<Props> = ({
         alignItems: 'center',
         marginRight: 0
       }}>
+      {showIcon && isBech32Address(address) && (
+        <>
+          <BitcoinSVG size={16} />
+          <Space x={8} />
+        </>
+      )}
+      {showIcon && isAddress(address) && (
+        <>
+          <AvaLogoSVG
+            size={16}
+            logoColor={theme.tokenLogoColor}
+            backgroundColor={theme.tokenLogoBg}
+          />
+          <Space x={8} />
+        </>
+      )}
       {hideCopy || copyIconEnd || (
         <>
           <CopySVG color={color ? color : theme.colorText1} size={16} />
