@@ -11,6 +11,9 @@ import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import { AddressBookScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
+import { isAddress } from '@ethersproject/address'
+import { isBech32Address } from '@avalabs/bridge-sdk'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 type NavigationProp = AddressBookScreenProps<
   typeof AppNavigation.AddressBook.Add
@@ -19,15 +22,30 @@ type NavigationProp = AddressBookScreenProps<
 const AddContact = () => {
   const { goBack } = useNavigation<NavigationProp>()
   const { onSave } = useAddressBook()
+  const { theme } = useApplicationContext()
 
   const [title, setTitle] = useState('')
   const [address, setAddress] = useState('')
+  const [addressBtc, setAddressBtc] = useState('')
+  const [error, setError] = useState('')
 
   const save = useCallback(() => {
+    if (!address && !addressBtc) {
+      setError('Address required')
+      return
+    }
+    if (address && !isAddress(address)) {
+      setError('Not valid EVM address')
+      return
+    }
+    if (addressBtc && !isBech32Address(addressBtc)) {
+      setError('invalid BTC address')
+      return
+    }
     const id = uuidv4()
-    onSave({ id, title, address } as Contact)
+    onSave({ id, title, address, addressBtc } as Contact)
     goBack()
-  }, [address, goBack, onSave, title])
+  }, [address, addressBtc, goBack, onSave, title])
 
   return (
     <SafeAreaProvider
@@ -35,13 +53,21 @@ const AddContact = () => {
       <AvaText.LargeTitleBold>New Contact</AvaText.LargeTitleBold>
       <Space y={30} />
       <ContactInput
-        initName={''}
-        initAddress={''}
+        name={title}
+        address={address}
+        addressBtc={addressBtc}
         onNameChange={name1 => setTitle(name1)}
         onAddressChange={address1 => setAddress(address1)}
+        onAddressBtcChange={address1 => setAddressBtc(address1)}
       />
       <FlexSpacer />
-      <AvaButton.PrimaryLarge disabled={!title || !address} onPress={save}>
+      {!!error && (
+        <AvaText.Body2 color={theme.colorError}>{error}</AvaText.Body2>
+      )}
+      <Space y={16} />
+      <AvaButton.PrimaryLarge
+        disabled={!title || (!address && !addressBtc)}
+        onPress={save}>
         Save
       </AvaButton.PrimaryLarge>
     </SafeAreaProvider>
