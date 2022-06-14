@@ -11,8 +11,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context'
 import ZeroState from 'components/ZeroState'
 import Dropdown from 'components/Dropdown'
 import AvaText from 'components/AvaText'
-import { TokenWithBalance } from 'store/balance'
-import { useTokens } from 'hooks/useTokens'
+import { selectTokensWithBalance, TokenWithBalance } from 'store/balance'
+import { useSelector } from 'react-redux'
 
 interface Props {
   showFavorites?: boolean
@@ -57,7 +57,7 @@ const WatchlistView: React.FC<Props> = ({ showFavorites, searchText }) => {
   const { currencyFormatter } = useApplicationContext().appHook
   const { watchlistFavorites } =
     useApplicationContext().repo.watchlistFavoritesRepo
-  const tokensWithBalance = useTokens()
+  const tokensWithBalance = useSelector(selectTokensWithBalance)
   const [filterBy, setFilterBy] = useState(WatchlistFilter.PRICE)
   // filter time needs implementation
   const [filterTime, setFilterTime] = useState(FilterTimeOptions.Day)

@@ -1,6 +1,8 @@
 import { TokenWithBalance } from 'store/balance'
 import NetworkService from 'services/network/NetworkService'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
+import { Account } from 'dto/Account'
+import AccountsService from 'services/account/AccountsService'
 import BtcBalanceService from './BtcBalanceService'
 import EvmBalanceService from './EvmBalanceService'
 
@@ -27,9 +29,36 @@ export class BalanceService {
     return balanceService
   }
 
-  async getBalances(
+  async getBalancesForAccount(
     network: Network,
-    userAddress: string,
+    account: Account,
+    currency: string
+  ): Promise<{
+    accountIndex: number
+    chainId: number
+    address: string
+    tokens: TokenWithBalance[]
+  }> {
+    const address = AccountsService.getAddressForNetwork(account, network)
+    const provider = NetworkService.getProviderForNetwork(network)
+    const balanceService = this.getBalanceServiceForNetwork(network)
+    const tokens = await balanceService.getBalances(
+      network,
+      provider as any,
+      address,
+      currency
+    )
+    return {
+      accountIndex: account.index,
+      chainId: network.chainId,
+      address,
+      tokens
+    }
+  }
+
+  async getBalancesForAddress(
+    network: Network,
+    address: string,
     currency: string
   ): Promise<TokenWithBalance[]> {
     const provider = NetworkService.getProviderForNetwork(network)
@@ -38,7 +67,7 @@ export class BalanceService {
     return balanceService.getBalances(
       network,
       provider as any,
-      userAddress,
+      address,
       currency
     )
   }

@@ -1,23 +1,30 @@
 import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { AppStartListening } from 'store/middleware/listener'
 import { RootState } from 'store'
-import { Network } from '@avalabs/chains-sdk'
-import BalanceService from 'services/balance/BalanceService'
-import { selectSelectedCurrency } from 'store/settings/currency'
-import { BalanceState, TokenWithBalance } from './types'
+import { selectActiveAccount } from 'store/account'
+import { selectActiveNetwork } from 'store/network'
+import AccountsService from 'services/account/AccountsService'
+import { Balances, BalanceState, QueryStatus, TokenWithBalance } from './types'
 
 const reducerName = 'balance'
 
 const initialState: BalanceState = {
+  status: QueryStatus.IDLE,
   balances: {}
 }
 
-const getKey = (chainId: number, address: string) => `${chainId}-${address}`
+export const getKey = (chainId: number, address: string) =>
+  `${chainId}-${address}`
 
 export const balanceSlice = createSlice({
   name: reducerName,
   initialState,
   reducers: {
+    setStatus: (state, action: PayloadAction<QueryStatus>) => {
+      state.status = action.payload
+    },
+    setBalances: (state, action: PayloadAction<Balances>) => {
+      state.balances = action.payload
+    },
     setBalance: (
       state,
       action: PayloadAction<{
@@ -39,16 +46,27 @@ export const balanceSlice = createSlice({
 })
 
 // selectors
-// TODO CP-2114 remove chainId and address params once we have accounts reducer
-// we can infer chainId from active network and address from accounts reducer
-export const selectTokensWithBalance =
-  (chainId: number, address?: string) => (state: RootState) => {
-    if (!address) {
-      return []
-    }
-    const key = getKey(chainId, address)
-    return state.balance.balances[key]?.tokens ?? []
-  }
+export const selectBalanceStatus = (state: RootState) => state.balance.status
+
+export const selectIsLoadingBalances = (state: RootState) =>
+  state.balance.status === QueryStatus.LOADING
+
+export const selectIsRefetchingBalances = (state: RootState) =>
+  state.balance.status === QueryStatus.REFETCHING
+
+// get the list of tokens for the active network
+// each token will have info such as: balance, price, market cap,...
+export const selectTokensWithBalance = (state: RootState) => {
+  const network = selectActiveNetwork(state)
+  const activeAccount = selectActiveAccount(state)
+
+  if (!activeAccount) return []
+
+  const address = AccountsService.getAddressForNetwork(activeAccount, network)
+
+  const key = getKey(network.chainId, address)
+  return state.balance.balances[key]?.tokens ?? []
+}
 
 export const selectTokenById = (tokenId: string) => (state: RootState) => {
   const balances = Object.values(state.balance.balances)
@@ -80,42 +98,8 @@ export const selectBalanceTotalInUSD =
   }
 
 // actions
-export const { setBalance } = balanceSlice.actions
+export const { setStatus, setBalances, setBalance } = balanceSlice.actions
 
-type GetBalanceActionPayload = {
-  accountIndex: number
-  address: string
-  network: Network
-}
-export const getBalance = createAction<GetBalanceActionPayload>(
-  `${reducerName}/getBalance`
-)
-
-// listeners
-export const addBalanceListeners = (startListening: AppStartListening) => {
-  // TODO CP-2114 remove this after we switch to new balance fetch logic (for all accounts)
-  startListening({
-    actionCreator: getBalance,
-    effect: async (action, listenerApi) => {
-      const state = listenerApi.getState()
-      const currency = selectSelectedCurrency(state)
-      const { accountIndex, address, network } = action.payload
-      const tokens = await BalanceService.getBalances(
-        network,
-        address,
-        currency.toLowerCase()
-      )
-
-      listenerApi.dispatch(
-        setBalance({
-          address,
-          accountIndex,
-          chainId: network.chainId,
-          tokens
-        })
-      )
-    }
-  })
-}
+export const refetchBalance = createAction(`${reducerName}/refetchBalance`)
 
 export const balanceReducer = balanceSlice.reducer
