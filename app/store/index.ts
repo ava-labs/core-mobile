@@ -14,7 +14,6 @@ import {
 import { networkReducer as network } from './network'
 import { balanceReducer as balance, setBalance } from './balance'
 import { appReducer as app, onRehydrationComplete } from './app'
-import settings from './settings'
 import { listener } from './middleware/listener'
 import { accountsReducer as account } from './account'
 import settings from './settings'

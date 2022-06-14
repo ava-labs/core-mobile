@@ -10,9 +10,7 @@ import { BigNumber, BigNumberish } from 'ethers'
 import { isSwimmer } from 'services/network/isSwimmerNetwork'
 
 class NetworkFeeService {
-  async getNetworkFee(otherNetwork?: Network): Promise<NetworkFee | null> {
-    const network = otherNetwork ?? networkService.getActiveNetwork()
-
+  async getNetworkFee(network?: Network): Promise<NetworkFee | null> {
     if (!network) return null
 
     const provider = networkService.getProviderForNetwork(network)
