@@ -17,6 +17,8 @@ import { appReducer as app, onRehydrationComplete } from './app'
 import settings from './settings'
 import { listener } from './middleware/listener'
 import { accountsReducer as account } from './account'
+import settings from './settings'
+import networkFee from './networkFee'
 
 const persistActions = [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER]
 
@@ -25,7 +27,8 @@ const rootReducer = combineReducers({
   network,
   balance,
   account,
-  settings
+  settings,
+  networkFee
 })
 
 const persistConfig = {
@@ -43,7 +46,7 @@ export const store = configureStore({
     getDefaultMiddleware({
       serializableCheck: {
         ignoredActions: [...persistActions, setBalance.type],
-        ignoredPaths: ['balance']
+        ignoredPaths: ['balance', 'networkFee']
       }
     }).prepend(listener.middleware)
 })
