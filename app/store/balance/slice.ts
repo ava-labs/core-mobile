@@ -3,7 +3,7 @@ import { AppStartListening } from 'store/middleware/listener'
 import { RootState } from 'store'
 import { Network } from '@avalabs/chains-sdk'
 import BalanceService from 'services/balance/BalanceService'
-import { selectSelectedCurrency } from 'store/settings'
+import { selectSelectedCurrency } from 'store/settings/currency'
 import { BalanceState, TokenWithBalance } from './types'
 
 const reducerName = 'balance'
@@ -103,7 +103,7 @@ export const addBalanceListeners = (startListening: AppStartListening) => {
       const tokens = await BalanceService.getBalances(
         network,
         address,
-        currency
+        currency.toLowerCase()
       )
 
       listenerApi.dispatch(

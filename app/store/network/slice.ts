@@ -1,12 +1,7 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
-import {
-  BITCOIN_NETWORK,
-  ChainId,
-  ETHEREUM_NETWORK,
-  getChainsAndTokens,
-  Network
-} from '@avalabs/chains-sdk'
+import { ChainId, Network } from '@avalabs/chains-sdk'
 import isEmpty from 'lodash.isempty'
+import NetworkService from 'services/network/NetworkService'
 import { RootState } from '../index'
 import { NetworkState } from './types'
 
@@ -68,12 +63,7 @@ export const getNetworks = createAsyncThunk<void, void, { state: RootState }>(
     const dispatch = thunkAPI.dispatch
     const state = thunkAPI.getState()
 
-    const erc20Networks = await getChainsAndTokens()
-    const networks = {
-      ...erc20Networks,
-      [ChainId.BITCOIN]: BITCOIN_NETWORK,
-      [ChainId.ETHEREUM_HOMESTEAD]: ETHEREUM_NETWORK
-    }
+    const networks = await NetworkService.getNetworks()
     dispatch(setNetworks(networks))
 
     const network = selectActiveNetwork(state)

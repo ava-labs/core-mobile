@@ -55,7 +55,7 @@ export default function useBridge() {
   const [amount, setAmount] = useState<Big>(new Big(0))
   const price = usePrice(
     currentAssetData?.assetType === AssetType.BTC ? 'bitcoin' : currentAsset,
-    currency?.toLowerCase() as VsCurrencyType
+    currency.toLowerCase() as VsCurrencyType
   )
 
   const bridgeFee = useBridgeFeeEstimate(amount) || BIG_ZERO

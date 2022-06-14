@@ -1,48 +1,48 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { BN } from '@avalabs/avalanche-wallet-sdk'
-import AsyncStorage from '@react-native-async-storage/async-storage'
 import { TokenType, TokenWithBalance } from 'store/balance'
 import { useTokens } from 'hooks/useTokens'
+import { useSelector } from 'react-redux'
+import { selectZeroBalanceWhiteList } from 'store/settings/zeroBalance'
 
-type ShowZeroArrayType = { [x: string]: boolean }
 const bnZero = new BN(0)
 
 // TODO reimplement loading CP-2114
 export function useSearchableTokenList(hideZeroBalance = true): {
   searchText: string
-  setShowZeroBalanceList: (list: ShowZeroArrayType) => void
-  loadZeroBalanceList: () => void
   filteredTokenList?: TokenWithBalance[]
-  showZeroBalanceList: ShowZeroArrayType
   setSearchText: (value: ((prevState: string) => string) | string) => void
   loadTokenList: () => void
   loading: boolean
 } {
   const [searchText, setSearchText] = useState('')
 
+  const zeroBalanceWhitelist = useSelector(selectZeroBalanceWhiteList)
+
   const tokensWithBalance = useTokens()
 
-  const [showZeroBalanceList, setZeroBalanceList] = useState<ShowZeroArrayType>(
-    {
-      ['init']: false
-    }
-  )
   const tokensFilteredByZeroBal = useMemo(
     () =>
       filterByZeroBalance(
         tokensWithBalance,
-        hideZeroBalance
-        //showZeroBalanceList
+        hideZeroBalance,
+        zeroBalanceWhitelist
       ),
-    [tokensWithBalance, hideZeroBalance]
+    [tokensWithBalance, hideZeroBalance, zeroBalanceWhitelist]
+  )
+
+  const tokensSortedByAmount = useMemo(
+    () =>
+      tokensFilteredByZeroBal.slice().sort((a, b) => {
+        return b.balanceUSD - a.balanceUSD
+      }),
+    [tokensFilteredByZeroBal]
   )
 
   const filteredTokenList = useMemo(
-    () => filterTokensBySearchText(tokensFilteredByZeroBal, searchText),
+    () => filterTokensBySearchText(tokensSortedByAmount, searchText),
     [tokensFilteredByZeroBal, searchText]
   )
-
-  useEffect(loadZeroBalanceList, [])
 
   // TODO reimplement refresh CP-2114
   function loadTokenList() {
@@ -52,35 +52,18 @@ export function useSearchableTokenList(hideZeroBalance = true): {
     // }
   }
 
-  function loadZeroBalanceList() {
-    AsyncStorage.getItem('showZeroBalanceList.v2').then(value => {
-      if (value) {
-        const list: ShowZeroArrayType = JSON.parse(value)
-        setZeroBalanceList({ ...list })
-      }
-    })
-  }
-
-  const setShowZeroBalanceList = (list: ShowZeroArrayType) => {
-    AsyncStorage.setItem('showZeroBalanceList.v2', JSON.stringify(list)).then(
-      () => setZeroBalanceList(list)
-    )
-  }
-
-  // TODO reimplement zero balance white list cp-2163
   function filterByZeroBalance(
     tokens: TokenWithBalance[],
-    hideZeroBalance: boolean
-    // zeroBalanceWhitelist: ShowZeroArrayType
+    hideZeroBalance: boolean,
+    zeroBalanceWhitelist: string[]
   ) {
     if (!hideZeroBalance) return tokens
 
     return tokens.filter(
       token =>
         token.type === TokenType.NATIVE || // always show native tokens
-        token.balance?.gt(bnZero)
-      // ||
-      //   zeroBalanceWhitelist[getTokenUID(token)]
+        token.balance?.gt(bnZero) ||
+        zeroBalanceWhitelist.includes(token.id)
     )
   }
 
@@ -97,9 +80,6 @@ export function useSearchableTokenList(hideZeroBalance = true): {
     filteredTokenList,
     searchText,
     setSearchText,
-    setShowZeroBalanceList,
-    showZeroBalanceList,
-    loadZeroBalanceList,
     loadTokenList,
     loading: false
   }

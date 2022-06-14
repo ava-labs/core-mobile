@@ -4,28 +4,36 @@ import AvaListItem from 'components/AvaListItem'
 import AvaText from 'components/AvaText'
 import Switch from 'components/Switch'
 import Avatar from 'components/Avatar'
+import { useDispatch, useSelector } from 'react-redux'
+import {
+  selectIsZeroBalanceWhiteListed,
+  toggleWhitelist
+} from 'store/settings/zeroBalance'
 
 type Props = {
+  id: string
   balance?: string
   name: string
   image?: string
   symbol?: string
   position: number
   onPress?: () => void
-  onSwitchChanged: (value: boolean) => void
-  isShowingZeroBalanceForToken?: boolean
 }
 
 const TokenManagementItem: FC<Props> = ({
+  id,
   balance,
   name,
   image,
-  symbol,
-  isShowingZeroBalanceForToken,
-  onSwitchChanged
+  symbol
 }) => {
-  function handleChange(value: boolean) {
-    onSwitchChanged(value)
+  const dispatch = useDispatch()
+  const isZeroBalanceWhiteListed = useSelector(
+    selectIsZeroBalanceWhiteListed(id)
+  )
+
+  function handleChange() {
+    dispatch(toggleWhitelist(id))
   }
 
   const tokenLogo = (
@@ -42,10 +50,7 @@ const TokenManagementItem: FC<Props> = ({
   const rightComponent = () => {
     if (balance === undefined) {
       return (
-        <Switch
-          value={isShowingZeroBalanceForToken}
-          onValueChange={handleChange}
-        />
+        <Switch value={isZeroBalanceWhiteListed} onValueChange={handleChange} />
       )
     } else {
       return <AvaText.Body2>{balance}</AvaText.Body2>

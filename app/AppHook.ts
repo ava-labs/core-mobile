@@ -11,7 +11,7 @@ import { SECURE_ACCESS_SET } from 'resources/Constants'
 import AppNavigation from 'navigation/AppNavigation'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import { useSelector } from 'react-redux'
-import { selectSelectedCurrency } from 'store/settings'
+import { selectSelectedCurrency } from 'store/settings/currency'
 
 export type AppHook = {
   onExit: () => Observable<ExitEvents>
