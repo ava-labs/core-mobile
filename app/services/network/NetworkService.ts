@@ -1,6 +1,12 @@
 import { InfuraProvider } from '@ethersproject/providers'
 import { BlockCypherProvider, JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
-import { ChainId, Network } from '@avalabs/chains-sdk'
+import {
+  BITCOIN_NETWORK,
+  ChainId,
+  ETHEREUM_NETWORK,
+  getChainsAndTokens,
+  Network
+} from '@avalabs/chains-sdk'
 
 const evmNetworks = [ChainId.AVALANCHE_MAINNET_ID, ChainId.AVALANCHE_TESTNET_ID]
 const btcNetworks = [ChainId.BITCOIN]
@@ -46,6 +52,17 @@ class NetworkService {
     }
 
     throw new Error('unsupported network')
+  }
+
+  async getNetworks() {
+    const erc20Networks = await getChainsAndTokens()
+    const networks = {
+      ...erc20Networks,
+      [ChainId.BITCOIN]: BITCOIN_NETWORK,
+      [ChainId.ETHEREUM_HOMESTEAD]: ETHEREUM_NETWORK
+    }
+
+    return networks
   }
 
   async sendTransaction(signedTx: string, network: Network) {

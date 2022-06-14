@@ -32,6 +32,7 @@ import sendService from 'services/send/SendService'
 import { SendState } from 'services/send/types'
 import { BigNumber } from 'ethers'
 import { bnToEthersBigNumber } from '@avalabs/utils-sdk'
+import { selectSelectedCurrency } from 'store/settings/currency'
 
 export interface SendTokenContextState {
   sendToken: TokenWithBalance | undefined
@@ -95,6 +96,7 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
   >('Idle')
   const [sendStatusMsg, setSendStatusMsg] = useState('')
   const [transactionId, setTransactionId] = useState<string>()
+  const selectedCurrency = useSelector(selectSelectedCurrency)
 
   useEffect(() => {
     setBalanceAfterTrx(
@@ -179,7 +181,12 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
       token: sendToken
     } as SendState
     sendService
-      .send(sendState, activeNetwork, activeAccount)
+      .send(
+        sendState,
+        activeNetwork,
+        activeAccount,
+        selectedCurrency.toLowerCase()
+      )
       .then(txId => {
         setTransactionId(txId)
         setSendStatus('Success')

@@ -1,5 +1,10 @@
 import React from 'react'
-import { FlatList, ListRenderItemInfo, StyleSheet } from 'react-native'
+import {
+  FlatList,
+  InteractionManager,
+  ListRenderItemInfo,
+  StyleSheet
+} from 'react-native'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import CurrencyListItem from 'screens/drawer/currency-selector/CurrencyListItem'
 import { useDispatch, useSelector } from 'react-redux'
@@ -7,7 +12,7 @@ import {
   selectCurrencies,
   selectSelectedCurrency,
   setSelectedCurrency
-} from 'store/settings'
+} from 'store/settings/currency'
 import { useNavigation } from '@react-navigation/native'
 
 const CurrencySelector = () => {
@@ -23,7 +28,9 @@ const CurrencySelector = () => {
 
     const onPress = () => {
       dispatch(setSelectedCurrency(currency.symbol))
-      navigation.goBack()
+      InteractionManager.runAfterInteractions(() => {
+        navigation.goBack()
+      })
     }
 
     return (

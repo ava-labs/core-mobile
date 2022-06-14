@@ -10,7 +10,8 @@ class SendService {
   async send(
     sendState: SendState,
     activeNetwork: Network,
-    account: Account
+    account: Account,
+    currency: string
   ): Promise<string> {
     const fromAddress =
       activeNetwork.vmName === NetworkVMType.BITCOIN
@@ -21,7 +22,8 @@ class SendService {
     sendState = await service.validateStateAndCalculateFees(
       sendState,
       !activeNetwork.isTestnet,
-      fromAddress
+      fromAddress,
+      currency
     )
 
     if (sendState.error?.error) {
@@ -35,7 +37,8 @@ class SendService {
     const txRequest = await service.getTransactionRequest(
       sendState,
       !activeNetwork.isTestnet,
-      fromAddress
+      fromAddress,
+      currency
     )
     const signedTx = await walletService.sign(
       txRequest,
@@ -48,7 +51,8 @@ class SendService {
   async validateStateAndCalculateFees(
     sendState: SendState,
     activeNetwork: Network,
-    account: Account
+    account: Account,
+    currency: string
   ): Promise<SendState> {
     const fromAddress =
       activeNetwork.vmName === NetworkVMType.BITCOIN
@@ -59,7 +63,8 @@ class SendService {
     return service.validateStateAndCalculateFees(
       sendState,
       !activeNetwork.isTestnet,
-      fromAddress
+      fromAddress,
+      currency
     )
   }
 

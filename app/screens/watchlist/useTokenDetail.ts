@@ -3,11 +3,13 @@ import useInAppBrowser from 'hooks/useInAppBrowser'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import {
   CoinsContractInfoResponse,
-  CoinsInfoResponse
+  CoinsInfoResponse,
+  VsCurrencyType
 } from '@avalabs/coingecko-sdk'
 import { selectTokenById, TokenType } from 'store/balance'
 import { useSelector } from 'react-redux'
 import TokenService from 'services/balance/TokenService'
+import { selectActiveNetwork } from 'store/network'
 
 export function useTokenDetail(tokenId: string) {
   const { repo } = useApplicationContext()
@@ -39,6 +41,10 @@ export function useTokenDetail(tokenId: string) {
   const { watchlistFavorites, saveWatchlistFavorites } =
     repo.watchlistFavoritesRepo
   const token = useSelector(selectTokenById(tokenId))
+  const network = useSelector(selectActiveNetwork)
+  const assetPlatformId =
+    network.pricingProviders?.coingecko.assetPlatformId ?? ''
+  const currency = selectedCurrency.toLowerCase() as VsCurrencyType
 
   // TODO cp-2164 move watchlist favorites logic to redux
   // checks if contract can be found in favorites list
@@ -54,12 +60,15 @@ export function useTokenDetail(tokenId: string) {
       if (token?.type === TokenType.NATIVE) {
         data = await TokenService.getChartDataForCoinId({
           coingeckoId: token?.coingeckoId,
-          days: chartDays
+          days: chartDays,
+          currency: currency
         })
       } else if (token?.type === TokenType.ERC20) {
         data = await TokenService.getChartDataForAddress({
+          assetPlatformId,
           address: token?.address,
-          days: chartDays
+          days: chartDays,
+          currency: currency
         })
       }
 
@@ -72,7 +81,7 @@ export function useTokenDetail(tokenId: string) {
         setChartData([])
       }
     })()
-  }, [chartDays, token?.type])
+  }, [assetPlatformId, chartDays, currency, token])
 
   // get market cap, volume, etc
   useEffect(() => {
@@ -85,6 +94,7 @@ export function useTokenDetail(tokenId: string) {
         })
       } else if (token?.type === TokenType.ERC20) {
         data = await TokenService.getContractInfo({
+          assetPlatformId,
           address: token?.address
         })
       }
@@ -100,7 +110,7 @@ export function useTokenDetail(tokenId: string) {
         setUrlHostname(url)
       }
     })()
-  }, [token?.type])
+  }, [assetPlatformId, token])
 
   function handleFavorite() {
     if (!token) return
@@ -126,7 +136,6 @@ export function useTokenDetail(tokenId: string) {
     isFavorite,
     openMoonPay,
     openUrl,
-    selectedCurrency,
     currencyFormatter,
     contractInfo,
     urlHostname,
@@ -136,10 +145,11 @@ export function useTokenDetail(tokenId: string) {
     twitterHandle: contractInfo?.links?.twitter_screen_name,
     // @ts-ignore market_data exists in CoinsContractInfoResponse
     marketCirculatingSupply: contractInfo?.market_data?.circulating_supply ?? 0,
+    marketVolume:
+      // @ts-ignore market_data exists in CoinsContractInfoResponse
+      contractInfo?.market_data?.total_volume[currency] ?? 0,
     // @ts-ignore market_data exists in CoinsContractInfoResponse
-    marketVolume: contractInfo?.market_data?.total_volume.usd ?? 0,
-    // @ts-ignore market_data exists in CoinsContractInfoResponse
-    marketCap: contractInfo?.market_data?.market_cap.usd ?? 0,
+    marketCap: contractInfo?.market_data?.market_cap[currency] ?? 0,
     marketCapRank: contractInfo?.market_cap_rank ?? 0,
     chartData,
     token,

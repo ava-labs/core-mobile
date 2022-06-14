@@ -21,6 +21,10 @@ import { TokenType, TokenWithBalance } from 'store/balance'
 import { useTokens } from 'hooks/useTokens'
 import TokenService from 'services/balance/TokenService'
 import { ChartData } from 'services/balance/types'
+import { useSelector } from 'react-redux'
+import { selectSelectedCurrency } from 'store/settings/currency'
+import { VsCurrencyType } from '@avalabs/coingecko-sdk'
+import { selectActiveNetwork } from 'store/network'
 
 interface Props {
   style?: StyleProp<View>
@@ -104,6 +108,11 @@ interface CarrouselItemProps {
 const CarrouselItem: FC<CarrouselItemProps> = ({ token, onPress }) => {
   const { theme } = useApplicationContext()
   const [chartData, setChartData] = useState<ChartData>()
+  const selectedCurrency = useSelector(selectSelectedCurrency)
+  const network = useSelector(selectActiveNetwork)
+  const assetPlatformId =
+    network.pricingProviders?.coingecko.assetPlatformId ?? ''
+  const currency = selectedCurrency.toLowerCase() as VsCurrencyType
 
   useEffect(() => {
     ;(async () => {
@@ -112,18 +121,21 @@ const CarrouselItem: FC<CarrouselItemProps> = ({ token, onPress }) => {
       if (token.type === TokenType.NATIVE) {
         data = await TokenService.getChartDataForCoinId({
           coingeckoId: token.coingeckoId,
-          days: 1
+          days: 1,
+          currency
         })
       } else if (token.type === TokenType.ERC20) {
         data = await TokenService.getChartDataForAddress({
+          assetPlatformId,
           address: token.address,
-          days: 1
+          days: 1,
+          currency
         })
       }
 
       data && setChartData(data)
     })()
-  }, [])
+  }, [assetPlatformId, currency, token])
 
   return (
     <AvaButton.Base

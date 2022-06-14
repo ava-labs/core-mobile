@@ -91,11 +91,11 @@ const WatchlistView: React.FC<Props> = ({ showFavorites, searchText }) => {
 
     return items.slice().sort((a, b) => {
       if (filterBy === WatchlistFilter.PRICE) {
-        return (b.priceUSD ?? 0) - (a.priceUSD ?? 0)
+        return b.priceUSD - a.priceUSD
       } else if (filterBy === WatchlistFilter.MARKET_CAP) {
-        return (b.marketCap ?? 0) - (a.marketCap ?? 0)
+        return b.marketCap - a.marketCap
       } else {
-        return (b.vol24 ?? 0) - (a.vol24 ?? 0)
+        return b.vol24 - a.vol24
       }
     })
   }, [

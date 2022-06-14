@@ -27,14 +27,8 @@ type NavigationProp = WalletScreenProps<
 >['navigation']
 
 function TokenManagement(): JSX.Element {
-  const {
-    filteredTokenList,
-    searchText,
-    setSearchText,
-    setShowZeroBalanceList,
-    showZeroBalanceList,
-    loadTokenList
-  } = useSearchableTokenList(false)
+  const { filteredTokenList, searchText, setSearchText, loadTokenList } =
+    useSearchableTokenList(false)
 
   const navigation = useNavigation<NavigationProp>()
 
@@ -44,23 +38,19 @@ function TokenManagement(): JSX.Element {
 
   const renderItem = (item: ListRenderItemInfo<TokenWithBalance>) => {
     const token = item.item
-    const logoUri = token?.logoUri ?? undefined
+    const logoUri = token.logoUri
     const balance = !token.balance.isZero()
       ? `${token.balanceDisplayValue} ${token.symbol}`
       : undefined
 
     return (
       <TokenManagementItem
+        id={token.id}
         balance={balance}
         name={token.name}
         symbol={token.symbol}
         position={item.index + 1}
         image={logoUri}
-        isShowingZeroBalanceForToken={showZeroBalanceList[token.symbol]}
-        onSwitchChanged={value => {
-          showZeroBalanceList[token.symbol] = value
-          setShowZeroBalanceList({ ...showZeroBalanceList })
-        }}
       />
     )
   }
