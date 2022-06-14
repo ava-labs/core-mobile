@@ -40,12 +40,12 @@ const onBalanceUpdate = async (
   dispatch(setStatus(queryStatus))
 
   const currency = selectSelectedCurrency(state).toLowerCase()
-  const activeNetworks = selectFavoriteNetworks(state)
+  const favoriteNetworks = selectFavoriteNetworks(state)
   const accounts = Object.values(selectAccounts(state))
 
   const promises = []
 
-  for (const network of activeNetworks) {
+  for (const network of favoriteNetworks) {
     promises.push(
       ...accounts.map(account => {
         return BalanceService.getBalancesForAccount(network, account, currency)
