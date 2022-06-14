@@ -1,7 +1,20 @@
-import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { ChainId, Network } from '@avalabs/chains-sdk'
+import {
+  createAction,
+  createAsyncThunk,
+  createSlice,
+  PayloadAction
+} from '@reduxjs/toolkit'
+import {
+  BITCOIN_NETWORK, BITCOIN_TEST_NETWORK,
+  ChainId,
+  ETHEREUM_NETWORK, ETHEREUM_TEST_NETWORK_RINKEBY,
+  getChainsAndTokens,
+  Network,
+} from '@avalabs/chains-sdk';
 import isEmpty from 'lodash.isempty'
 import NetworkService from 'services/network/NetworkService'
+import { AppStartListening } from 'store/middleware/listener'
+import { setBridgeFilter } from 'store/bridge/BridgeReducer'
 import { RootState } from '../index'
 import { NetworkState } from './types'
 
@@ -21,7 +34,7 @@ export const networkSlice = createSlice({
       state.networks = action.payload
       state.favorites = Object.keys(action.payload)
     },
-    setActive: (state, action: PayloadAction<number>) => {
+    setActiveNetwork: (state, action: PayloadAction<number>) => {
       state.active = action.payload
     },
     toggleFavorite: (state, action: PayloadAction<number>) => {
@@ -74,6 +87,24 @@ export const getNetworks = createAsyncThunk<void, void, { state: RootState }>(
   }
 )
 
-export const { setNetworks, setActive, toggleFavorite } = networkSlice.actions
+export const setActive = createAction<number>(`${reducerName}/setActive`)
+export const { setNetworks, toggleFavorite } = networkSlice.actions
+const { setActiveNetwork } = networkSlice.actions
+
+export const addSetActiveListener = (startListening: AppStartListening) => {
+  startListening({
+    actionCreator: setActive,
+    effect: (action, listenerApi) => {
+      listenerApi.dispatch(setActiveNetwork(action.payload))
+
+      // not sure if this is the best way to add a dependency
+      // to setActiveNetwork...but it works :)
+      const state = listenerApi.getState()
+      const networks = selectNetworks(state)
+      // updates bridge isMainnet filter based on selected network
+      listenerApi.dispatch(setBridgeFilter(!networks[action.payload].isTestnet))
+    }
+  })
+}
 
 export const networkReducer = networkSlice.reducer
