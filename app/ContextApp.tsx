@@ -9,17 +9,13 @@ import { PersistGate } from 'redux-persist/integration/react'
 import App from 'App'
 import { ApplicationContextProvider } from 'contexts/ApplicationContext'
 import Toast from 'react-native-toast-notifications'
-import {
-  AccountsContextProvider,
-  WalletContextProvider,
-  WalletStateContextProvider
-} from '@avalabs/wallet-react-components'
+import { WalletStateContextProvider } from '@avalabs/wallet-react-components'
 import Splash from 'screens/onboarding/Splash'
 import JailMonkey from 'jail-monkey'
 import JailbrokenWarning from 'screens/onboarding/JailbrokenWarning'
 import { BridgeProvider } from 'contexts/BridgeContext'
 import { PosthogContextProvider } from 'contexts/PosthogContext'
-import { store, persistor } from 'store'
+import { persistor, store } from 'store'
 import { selectIsReady } from 'store/app'
 import useDevDebugging from 'utils/debugging/DevDebugging'
 
@@ -30,15 +26,11 @@ const ContextAppWithRedux = () => {
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
         <PosthogContextProvider>
-          <AccountsContextProvider>
-            <WalletContextProvider>
-              <WalletStateContextProvider>
-                <ApplicationContextProvider>
-                  <ContextApp />
-                </ApplicationContextProvider>
-              </WalletStateContextProvider>
-            </WalletContextProvider>
-          </AccountsContextProvider>
+          <WalletStateContextProvider>
+            <ApplicationContextProvider>
+              <ContextApp />
+            </ApplicationContextProvider>
+          </WalletStateContextProvider>
         </PosthogContextProvider>
         <Toast ref={ref => (global.toast = ref)} />
       </PersistGate>
