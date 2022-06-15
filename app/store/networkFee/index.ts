@@ -33,7 +33,7 @@ const networkFeeSlice = createSlice({
 export const getNetworkFee = (state: RootState) => state.networkFee
 
 // actions
-export const fetchNetworkFee = createAction(`${reducerName}/updateNetworkFee`)
+export const fetchNetworkFee = createAction(`${reducerName}/fetchNetworkFee`)
 export const { updateNetworkFee } = networkFeeSlice.actions
 
 // listeners
