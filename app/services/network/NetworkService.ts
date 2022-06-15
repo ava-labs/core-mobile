@@ -8,6 +8,7 @@ import {
   Network,
   NetworkVMType
 } from '@avalabs/chains-sdk'
+import { POLLING_INTERVAL } from 'store/balance'
 
 const BLOCKCYPHER_PROXY_URL =
   'https://glacier-api.avax-test.network/proxy/blockcypher'
@@ -30,7 +31,7 @@ class NetworkService {
       chainId
     )
 
-    provider.pollingInterval = 2000
+    provider.pollingInterval = POLLING_INTERVAL
 
     return provider
   }

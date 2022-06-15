@@ -3,13 +3,27 @@ import { RootState } from 'store'
 import { selectActiveAccount } from 'store/account'
 import { selectActiveNetwork } from 'store/network'
 import AccountsService from 'services/account/AccountsService'
-import { Balances, BalanceState, QueryStatus, TokenWithBalance } from './types'
+import {
+  Balance,
+  Balances,
+  BalanceState,
+  QueryStatus,
+  TokenWithBalance
+} from './types'
 
 const reducerName = 'balance'
 
 const initialState: BalanceState = {
   status: QueryStatus.IDLE,
   balances: {}
+}
+
+const updateBalanceForKey = (
+  state: BalanceState,
+  key: string,
+  balance: Balance
+) => {
+  state.balances[key] = balance
 }
 
 export const getKey = (chainId: number, address: string) =>
@@ -23,7 +37,9 @@ export const balanceSlice = createSlice({
       state.status = action.payload
     },
     setBalances: (state, action: PayloadAction<Balances>) => {
-      state.balances = action.payload
+      for (const [key, balance] of Object.entries(action.payload)) {
+        updateBalanceForKey(state, key, balance)
+      }
     },
     setBalance: (
       state,
@@ -36,11 +52,12 @@ export const balanceSlice = createSlice({
     ) => {
       const { address, accountIndex, chainId, tokens } = action.payload
       const key = getKey(chainId, address)
-      state.balances[key] = {
+      const balance = {
         accountIndex,
         chainId,
         tokens
       }
+      updateBalanceForKey(state, key, balance)
     }
   }
 })
