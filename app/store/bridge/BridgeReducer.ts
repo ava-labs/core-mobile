@@ -1,13 +1,9 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store'
-import { BridgeState, defaultBridgeState } from 'store/bridge/BridgeState'
+import { BridgeState, initialState } from 'store/bridge/BridgeState'
 import { BridgeTransaction } from '@avalabs/bridge-sdk'
 
 const reducerName = 'bridge'
-
-const initialState = {
-  bridge: defaultBridgeState
-}
 
 export const bridgeSlice = createSlice({
   name: reducerName,
@@ -48,7 +44,9 @@ export const selectBridgeTransactions = (state: RootState) => {
   >((txs, btx) => {
     // go figure
     const bridgeTx = btx as BridgeTransaction
-    if (bridgeTx.environment === (state.bridge.isMainnet ? 'main' : 'test')) {
+    if (
+      bridgeTx.environment === (state.bridge.bridge.isMainnet ? 'main' : 'test')
+    ) {
       txs[bridgeTx.sourceTxHash] = bridgeTx
     }
     return txs

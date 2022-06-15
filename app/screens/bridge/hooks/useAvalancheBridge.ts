@@ -49,7 +49,7 @@ export function useAvalancheBridge(amount: Big, bridgeFee: Big): BridgeAdapter {
   const network = useActiveNetwork()
   const allNetworks = useSelector(selectNetworks)
   const avalancheProvider = networkService.getAvalancheProvider(
-    network,
+    network.isTestnet,
     allNetworks
   )
   const hasEnoughForNetworkFee = useHasEnoughForGas(

@@ -14,7 +14,7 @@ import Big from 'big.js'
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { useTransferAsset } from 'screens/bridge/hooks/useTransferAsset'
 import { PartialBridgeTransaction } from 'screens/bridge/handlers/createBridgeTransaction'
-import { BridgeState } from 'store/bridge/BridgeState'
+import { BridgeReducerState, BridgeState } from 'store/bridge/BridgeState'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectActiveNetwork, selectNetworks } from 'store/network'
 import { selectActiveAccount } from 'store/account'
@@ -228,10 +228,10 @@ function LocalBridgeProvider({ children }: { children: any }) {
  * Deserialize bridgeState after retrieving from storage.
  * (i.e. convert Big string values back to Big)
  */
-export function deserializeBridgeState(state: any): BridgeState {
-  const bridgeTransactions = Object.entries<any>(
-    state.bridgeTransactions
-  ).reduce((txs, [txHash, tx]) => {
+export function deserializeBridgeState(state: BridgeReducerState) {
+  const bridgeTransactions = Object.entries(
+    state.bridge.bridgeTransactions
+  ).reduce<Record<string, BridgeTransaction>>((txs, [txHash, tx]) => {
     txs[txHash] = {
       ...tx,
       amount: new Big(tx.amount),
@@ -239,10 +239,13 @@ export function deserializeBridgeState(state: any): BridgeState {
       targetNetworkFee: tx.targetNetworkFee && new Big(tx.targetNetworkFee)
     }
     return txs
-  }, {} as BridgeState['bridgeTransactions'])
+  }, {})
 
   return {
     ...state,
-    allBridgeTransactions: bridgeTransactions
+    bridge: {
+      ...state.bridge,
+      bridgeTransactions: bridgeTransactions
+    }
   }
 }

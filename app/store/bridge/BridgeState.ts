@@ -7,7 +7,15 @@ export interface BridgeState {
   isMainnet: boolean
 }
 
+export interface BridgeReducerState {
+  bridge: BridgeState
+}
+
 export const defaultBridgeState: BridgeState = {
   bridgeTransactions: {},
   isMainnet: false
+}
+
+export const initialState: BridgeReducerState = {
+  bridge: defaultBridgeState
 }

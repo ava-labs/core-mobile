@@ -41,7 +41,7 @@ export function useTransferAsset() {
     } else if (currentBlockchain === Blockchain.BITCOIN) {
       return activeNetwork.isTestnet
         ? networks[ChainId.BITCOIN_TESTNET]
-        : networks[ChainId.BITCOIN]``
+        : networks[ChainId.BITCOIN]
     } else if (currentBlockchain === Blockchain.ETHEREUM) {
       return activeNetwork.isTestnet
         ? networks[ChainId.ETHEREUM_TEST_RINKEBY]

@@ -11,7 +11,6 @@ import {
   REGISTER,
   REHYDRATE
 } from 'redux-persist'
-import { PersistConfig } from 'redux-persist/es/types'
 import { DeserializeBridgeTransform } from 'store/transforms'
 import { networkReducer as network } from './network'
 import { balanceReducer as balance, setBalance, setBalances } from './balance'
@@ -34,7 +33,7 @@ const rootReducer = combineReducers({
   bridge
 })
 
-const persistConfig: PersistConfig<any> = {
+const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
   whitelist: ['network', 'account', 'settings', 'bridge'],
@@ -60,6 +59,7 @@ export const persistor = persistStore(store, null, () => {
   store.dispatch(onRehydrationComplete())
 })
 
+export type RawRootState = ReturnType<typeof rootReducer>
 export type RootState = ReturnType<typeof store.getState>
 export type AppDispatch = typeof store.dispatch
 export type AppListenerEffectAPI = ListenerEffectAPI<RootState, AppDispatch>

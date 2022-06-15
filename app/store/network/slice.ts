@@ -55,7 +55,7 @@ export const selectActiveNetwork = (state: RootState) =>
 export const selectNetworks = (state: RootState) => state.network.networks
 
 export const selectFavoriteNetworks = (state: RootState) =>
-  state.network.favorites.map((id: number) => state.network.networks[id])
+  state.network.favorites.map((id: string) => state.network.networks[id])
 
 export const selectAvaxMainnet = (state: RootState) =>
   state.network.networks[ChainId.AVALANCHE_MAINNET_ID] ?? {}
