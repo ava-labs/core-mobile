@@ -21,7 +21,22 @@ import {
 } from './slice'
 import { Balances, QueryStatus } from './types'
 
-export const POLLING_INTERVAL = 2000
+/**
+ * In production:
+ *  - Update balances every 2 seconds for the active network
+ *  - Update balances for all networks and accounts every 30 seconds
+ *
+ * In development:
+ *  - Update balances every 30 seconds for the active network
+ *  - Update balances for all networks and accounts every 60 seconds
+ */
+export const PollingConfig = {
+  activeNetwork: __DEV__ ? 30000 : 2000,
+  allNetworks: __DEV__ ? 60000 : 30000
+}
+
+const allNetworksOperand =
+  PollingConfig.allNetworks / PollingConfig.activeNetwork
 
 const onBalanceUpdate = async (
   queryStatus: QueryStatus,
@@ -117,11 +132,9 @@ const fetchBalancePeriodically = async (
 
   let intervalCount = 1
 
-  // update balances every 2 seconds for the active network
-  // update balances for all networks and accounts every 30 seconds
   const interval = setInterval(() => {
     let fetchActiveOnly
-    if (intervalCount % 15 === 0) {
+    if (intervalCount % allNetworksOperand === 0) {
       fetchActiveOnly = false
     } else {
       fetchActiveOnly = true
@@ -130,7 +143,7 @@ const fetchBalancePeriodically = async (
     onBalanceUpdate(QueryStatus.POLLING, listenerApi, fetchActiveOnly)
 
     intervalCount += 1
-  }, POLLING_INTERVAL)
+  }, PollingConfig.activeNetwork)
 
   await condition(isAnyOf(onAppLocked))
 
