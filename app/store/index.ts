@@ -19,7 +19,6 @@ import { listener } from './middleware/listener'
 import { accountsReducer as account } from './account'
 import networkFee from './networkFee'
 import settings from './settings'
-import bridge from './bridge/BridgeReducer'
 import bridge, { addBridgeTransaction } from './bridge/BridgeReducer'
 
 const persistActions = [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER]

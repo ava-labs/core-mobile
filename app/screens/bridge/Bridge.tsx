@@ -3,7 +3,6 @@ import {
   ActivityIndicator,
   Alert,
   Pressable,
-  ScrollView,
   StyleSheet,
   View
 } from 'react-native'
@@ -39,6 +38,7 @@ import { TokenSymbol } from 'store/network'
 import { useActiveNetwork } from 'hooks/useActiveNetwork'
 import { bnToBig, numberToBN, resolve } from '@avalabs/utils-sdk'
 import Big from 'big.js'
+import ScrollViewList from 'components/ScrollViewList'
 
 const formatBalance = (balance: Big | undefined) => {
   return balance && formatTokenAmount(balance, 6)
@@ -262,7 +262,7 @@ const Bridge: FC = () => {
 
   return (
     <SafeAreaProvider>
-      <ScrollView style={styles.container}>
+      <ScrollViewList style={styles.container}>
         <AvaText.LargeTitleBold textStyle={{ marginHorizontal: 8 }}>
           Bridge
         </AvaText.LargeTitleBold>
@@ -452,7 +452,7 @@ const Bridge: FC = () => {
             </View>
           </Row>
         </View>
-      </ScrollView>
+      </ScrollViewList>
       <AvaButton.Base
         style={[
           styles.transferButton,
