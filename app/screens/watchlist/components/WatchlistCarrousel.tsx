@@ -17,8 +17,11 @@ import AppNavigation from 'navigation/AppNavigation'
 import MarketMovement from 'screens/watchlist/components/MarketMovement'
 import { Opacity85 } from 'resources/Constants'
 import { PortfolioScreenProps } from 'navigation/types'
-import { TokenType, TokenWithBalance } from 'store/balance'
-import { useTokens } from 'hooks/useTokens'
+import {
+  selectTokensWithBalance,
+  TokenType,
+  TokenWithBalance
+} from 'store/balance'
 import TokenService from 'services/balance/TokenService'
 import { ChartData } from 'services/balance/types'
 import { useSelector } from 'react-redux'
@@ -39,7 +42,7 @@ const WatchlistCarrousel: FC<Props> = () => {
   const { watchlistFavorites } = repo.watchlistFavoritesRepo
   const navigation = useNavigation<NavigationProp>()
 
-  const tokensWithBalance = useTokens()
+  const tokensWithBalance = useSelector(selectTokensWithBalance)
 
   const favoriteTokens = tokensWithBalance.filter(tk => {
     return watchlistFavorites.includes(tk.id)

@@ -122,7 +122,7 @@ class SendServiceBTC implements SendServiceHelper {
     balance: number
     utxos: BitcoinInputUTXO[]
   }> {
-    const token = await balanceService.getBalances(
+    const token = await balanceService.getBalancesForAddress(
       isMainnet ? BITCOIN_NETWORK : BITCOIN_TEST_NETWORK,
       address,
       currency

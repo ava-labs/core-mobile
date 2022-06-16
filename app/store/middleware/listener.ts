@@ -7,7 +7,9 @@ import { fetchNetworkFeeListener } from 'store/networkFee'
 
 export type AppStartListening = TypedStartListening<RootState, AppDispatch>
 
-const listener = createListenerMiddleware()
+const listener = createListenerMiddleware({
+  onError: (error, errorInfo) => console.error(error, errorInfo)
+})
 
 const startListening = listener.startListening as AppStartListening
 

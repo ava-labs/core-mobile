@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { combineReducers } from 'redux'
-import { configureStore } from '@reduxjs/toolkit'
+import { configureStore, ListenerEffectAPI } from '@reduxjs/toolkit'
 import {
   FLUSH,
   PAUSE,
@@ -12,7 +12,7 @@ import {
   REHYDRATE
 } from 'redux-persist'
 import { networkReducer as network } from './network'
-import { balanceReducer as balance, setBalance } from './balance'
+import { balanceReducer as balance, setBalance, setBalances } from './balance'
 import { appReducer as app, onRehydrationComplete } from './app'
 import { listener } from './middleware/listener'
 import { accountsReducer as account } from './account'
@@ -44,7 +44,7 @@ export const store = configureStore({
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware({
       serializableCheck: {
-        ignoredActions: [...persistActions, setBalance.type],
+        ignoredActions: [...persistActions, setBalance.type, setBalances.type],
         ignoredPaths: ['balance', 'networkFee']
       }
     }).prepend(listener.middleware)
@@ -57,3 +57,4 @@ export const persistor = persistStore(store, null, () => {
 
 export type RootState = ReturnType<typeof store.getState>
 export type AppDispatch = typeof store.dispatch
+export type AppListenerEffectAPI = ListenerEffectAPI<RootState, AppDispatch>

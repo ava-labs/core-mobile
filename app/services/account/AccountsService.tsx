@@ -19,6 +19,18 @@ class AccountsService {
       address: addresses[NetworkVMType.EVM]
     } as Account
   }
+
+  getAddressForNetwork(account: Account, network: Network) {
+    if (network.vmName === NetworkVMType.BITCOIN) {
+      return account.addressBtc
+    }
+
+    if (network.vmName === NetworkVMType.EVM) {
+      return account.address
+    }
+
+    throw new Error('unsupported network')
+  }
 }
 
 export default new AccountsService()
