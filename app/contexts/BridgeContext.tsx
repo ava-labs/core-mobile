@@ -100,9 +100,6 @@ function LocalBridgeProvider({ children }: { children: any }) {
       config &&
       !TrackerSubscriptions.has(trackedTransaction.sourceTxHash)
     ) {
-      console.log('Subscribing to tx', trackedTransaction)
-      // Start transaction tracking process (no need to await)
-
       /**
        * bridgeTransaction: BridgeTransaction;
        *   onBridgeTransactionUpdate: (bridgeTransaction: BridgeTransaction) => void;
@@ -111,6 +108,7 @@ function LocalBridgeProvider({ children }: { children: any }) {
        *   ethereumProvider: Provider;
        *   bitcoinProvider: BlockCypherProvider;
        */
+      // Start transaction tracking process (no need to await)
       try {
         const subscription = trackBridgeTransaction({
           bridgeTransaction: trackedTransaction,
