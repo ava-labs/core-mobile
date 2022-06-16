@@ -51,7 +51,7 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
   const [btcBalanceAvalanche, setBtcBalanceAvalanche] = useState<AssetBalance>()
   const [utxos, setUtxos] = useState<BitcoinInputUTXO[]>()
   const [feeRates, setFeeRates] = useState<NetworkFee | null>()
-  const [networkFee, setFee] = useState<Big>(BIG_ZERO)
+  const [networkFee, setNetworkFee] = useState<Big>(BIG_ZERO)
   const [receiveAmount, setReceiveAmount] = useState<Big>(BIG_ZERO)
   const [minimum, setMinimum] = useState<Big>(BIG_ZERO)
 
@@ -149,14 +149,14 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
         feeRate
       )
 
-      setFee(satoshiToBtc(fee))
+      setNetworkFee(satoshiToBtc(fee))
       setReceiveAmount(satoshiToBtc(receiveAmount))
     } catch (e) {
       // getBtcTransaction throws an error when the amount is too low
       // so set these to 0
       const errMessage = (e as any)?.toString()
       if (!errMessage.includes('Amount must be at least')) console.error(e)
-      setFee(BIG_ZERO)
+      setNetworkFee(BIG_ZERO)
       setReceiveAmount(BIG_ZERO)
     }
 

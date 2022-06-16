@@ -15,7 +15,7 @@ import { useAvalancheBridge } from 'screens/bridge/hooks/useAvalancheBridge'
 import { AssetBalance } from 'screens/bridge/utils/types'
 import Big from 'big.js'
 import { useSelector } from 'react-redux'
-import { selectSelectedCurrency } from 'store/settings'
+import {selectSelectedCurrency} from 'store/settings/currency';
 
 export interface BridgeAdapter {
   address?: string

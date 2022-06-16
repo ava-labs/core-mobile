@@ -4,15 +4,7 @@ import {
   createSlice,
   PayloadAction
 } from '@reduxjs/toolkit'
-import {
-  BITCOIN_NETWORK,
-  BITCOIN_TEST_NETWORK,
-  ChainId,
-  ETHEREUM_NETWORK,
-  ETHEREUM_TEST_NETWORK_RINKEBY,
-  getChainsAndTokens,
-  Network
-} from '@avalabs/chains-sdk'
+import { ChainId, Network } from '@avalabs/chains-sdk'
 import isEmpty from 'lodash.isempty'
 import NetworkService from 'services/network/NetworkService'
 import { AppStartListening } from 'store/middleware/listener'
@@ -84,7 +76,7 @@ export const getNetworks = createAsyncThunk<void, void, { state: RootState }>(
     const network = selectActiveNetwork(state)
 
     if (isEmpty(network)) {
-      dispatch(setActive(ChainId.AVALANCHE_MAINNET_ID))
+      dispatch(setActive(ChainId.AVALANCHE_TESTNET_ID))
     }
   }
 )

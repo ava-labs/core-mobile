@@ -26,7 +26,6 @@ import {
   useTokenInfoContext,
   WrapStatus
 } from '@avalabs/bridge-sdk'
-import { Big, bnToBig, numberToBN } from '@avalabs/avalanche-wallet-sdk'
 import AppNavigation from 'navigation/AppNavigation'
 import CarrotSVG from 'components/svg/CarrotSVG'
 import InputText from 'components/InputText'
@@ -37,9 +36,9 @@ import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { BridgeScreenProps } from 'navigation/types'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import { TokenSymbol } from 'store/network'
-import { ChainId } from '@avalabs/chains-sdk'
 import { useActiveNetwork } from 'hooks/useActiveNetwork'
-import { resolve } from '@avalabs/utils-sdk'
+import { bnToBig, numberToBN, resolve } from '@avalabs/utils-sdk'
+import Big from 'big.js'
 
 const formatBalance = (balance: Big | undefined) => {
   return balance && formatTokenAmount(balance, 6)
@@ -77,7 +76,7 @@ const Bridge: FC = () => {
   } = useBridgeSDK()
   const { getTokenSymbolOnNetwork } = useGetTokenSymbolOnNetwork()
   const activeNetwork = useActiveNetwork()
-  const isMainnet = activeNetwork.chainId === ChainId.AVALANCHE_MAINNET_ID
+  const isMainnet = !activeNetwork.isTestnet
   const [bridgeError, setBridgeError] = useState<string>('')
   const [isPending, setIsPending] = useState<boolean>(false)
   const tokenInfoData = useTokenInfoContext()
