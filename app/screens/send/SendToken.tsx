@@ -159,13 +159,13 @@ const SendToken: FC<Props> = ({
               getMaxAmount={() => {
                 const balance =
                   numeral(sendToken?.balanceDisplayValue ?? 0).value() || 0
-                const fee = numeral(fees.sendFeeAvax ?? 0).value() || 0
+                const fee = numeral(fees.sendFeeNative ?? 0).value() || 0
                 return (balance - fee).toFixed(4)
               }}
             />
             <Space y={8} />
             <AvaText.Body3 textStyle={{ color: theme.colorError }}>
-              {sdkError?.message ?? ''}
+              {sdkError ?? ''}
             </AvaText.Body3>
           </View>
           <FlexSpacer />

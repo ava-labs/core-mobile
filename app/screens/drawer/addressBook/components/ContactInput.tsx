@@ -44,7 +44,7 @@ const ContactInput = ({
       </View>
       <Space y={24} />
       <AvaText.Body2 textStyle={{ color: theme.colorText1 }}>
-        Address
+        Avalanche C-Chain Address
       </AvaText.Body2>
       <View style={{ marginHorizontal: -16 }}>
         <InputText
@@ -56,12 +56,12 @@ const ContactInput = ({
       </View>
       <Space y={24} />
       <AvaText.Body2 textStyle={{ color: theme.colorText1 }}>
-        Address BTC
+        Bitcoin Address
       </AvaText.Body2>
       <View style={{ marginHorizontal: -16 }}>
         <InputText
           multiline
-          placeholder={'Enter the BTC address'}
+          placeholder={'Enter the Bitcoin address'}
           text={addressBtc}
           onChangeText={onAddressBtcChange}
         />

@@ -16,8 +16,8 @@ import { balanceReducer as balance, setBalance, setBalances } from './balance'
 import { appReducer as app, onRehydrationComplete } from './app'
 import { listener } from './middleware/listener'
 import { accountsReducer as account } from './account'
-import settings from './settings'
 import networkFee from './networkFee'
+import settings from './settings'
 
 const persistActions = [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER]
 

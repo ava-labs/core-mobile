@@ -7,31 +7,23 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import {
-  SendHookError,
-  useWalletStateContext
-} from '@avalabs/wallet-react-components'
 import AvaLogoSVG from 'components/svg/AvaLogoSVG'
 import { Image } from 'react-native'
-import { useApplicationContext } from 'contexts/ApplicationContext'
-import {
-  bnToAvaxC,
-  bnToBig,
-  numberToBN,
-  stringToBN
-} from '@avalabs/avalanche-wallet-sdk'
-import { mustNumber, mustValue } from 'utils/JsTools'
+import { bnToBig, stringToBN } from '@avalabs/avalanche-wallet-sdk'
+import { mustNumber } from 'utils/JsTools'
 import { BN } from 'avalanche'
-import { BehaviorSubject } from 'rxjs'
-import { useSend } from 'screens/send/useSend'
-import { TokenType, TokenWithBalance } from 'store/balance'
+import { TokenWithBalance } from 'store/balance'
 import { selectActiveNetwork, TokenSymbol } from 'store/network'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import sendService from 'services/send/SendService'
 import { SendState } from 'services/send/types'
-import { BigNumber } from 'ethers'
-import { bnToEthersBigNumber } from '@avalabs/utils-sdk'
+import { bnToLocaleString, ethersBigNumberToBN } from '@avalabs/utils-sdk'
+import { useNativeTokenPrice } from 'hooks/useNativeTokenPrice'
+import { isAddress } from '@ethersproject/address'
+import { NetworkVMType } from '@avalabs/chains-sdk'
+import { isBech32Address } from '@avalabs/bridge-sdk'
+import { fetchNetworkFee, selectSendFee } from 'store/networkFee'
 import { selectSelectedCurrency } from 'store/settings/currency'
 
 export interface SendTokenContextState {
@@ -48,46 +40,34 @@ export interface SendTokenContextState {
   sendStatusMsg: string
   onSendNow: () => void
   transactionId: string | undefined
-  sdkError: SendHookError | undefined
+  sdkError: string | undefined
 }
 
 export const SendTokenContext = createContext<SendTokenContextState>({} as any)
 
 export const SendTokenContextProvider = ({ children }: { children: any }) => {
-  const { theme } = useApplicationContext()
+  const dispatch = useDispatch()
   const activeAccount = useSelector(selectActiveAccount)
   const activeNetwork = useSelector(selectActiveNetwork)
-  const { avaxPrice } = useWalletStateContext()!
+  const sendFee = useSelector(selectSendFee)
+
+  const { nativeTokenPrice } = useNativeTokenPrice()
   const [sendToken, setSendToken] = useState<TokenWithBalance | undefined>(
     undefined
   )
 
-  const customGasPrice$ = useMemo(
-    () => new BehaviorSubject({ bn: new BN(0) }),
-    []
-  )
-
-  const {
-    setAmount,
-    amount,
-    setAddress,
-    address,
-    canSubmit,
-    sendFee,
-    setTokenBalances,
-    gasLimit,
-    setGasLimit,
-    error,
-    gasPrice
-  } = useSend(sendToken, customGasPrice$)
-
   const [sendAmount, setSendAmount] = useState('0')
+  const sendAmountBN = stringToBN(sendAmount || '0', sendToken?.decimals ?? 0)
   const [sendToAddress, setSendToAddress] = useState('')
   const [sendToTitle, setSendToTitle] = useState('')
   const [sendFromAddress, setSendFromAddress] = useState<string>('')
   const [sendFromTitle, setSendFromTitle] = useState<string>('')
-  const [sendFeeAvax, setSendFeeAvax] = useState<string | undefined>()
-  const [sendFeeUsd, setSendFeeUsd] = useState<number | undefined>()
+  const sendFeeBN = useMemo(() => ethersBigNumberToBN(sendFee), [sendFee])
+  const sendFeeNative = useMemo(
+    () => bnToLocaleString(sendFeeBN, activeNetwork.networkToken.decimals),
+    [activeNetwork.networkToken.decimals, sendFeeBN]
+  )
+  const sendFeeUsd = Number.parseFloat(sendFeeNative) * nativeTokenPrice
   const [balanceAfterTrx, setBalanceAfterTrx] = useState<string>('-')
   const [balanceAfterTrxUsd, setBalanceAfterTrxUsd] = useState<string>('-')
   const [customGasPriceNanoAvax, setCustomGasPriceNanoAvax] = useState('0')
@@ -96,73 +76,41 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
   >('Idle')
   const [sendStatusMsg, setSendStatusMsg] = useState('')
   const [transactionId, setTransactionId] = useState<string>()
+  const [canSubmit, setCanSubmit] = useState(false)
+  const [error, setError] = useState<string | undefined>()
   const selectedCurrency = useSelector(selectSelectedCurrency)
+
+  useEffect(() => {
+    dispatch(fetchNetworkFee)
+  }, [dispatch])
+
+  useEffect(validateStateFx, [
+    activeNetwork.vmName,
+    sendAmountBN,
+    sendToAddress
+  ])
 
   useEffect(() => {
     setBalanceAfterTrx(
       bnToBig(
-        sendToken?.balance.sub(amount ?? new BN(0)).sub(sendFee ?? new BN(0)) ??
-          new BN(0),
+        sendToken?.balance.sub(sendAmountBN).sub(sendFeeBN) ?? new BN(0),
         sendToken?.decimals
       ).toFixed(4)
     )
-  }, [sendFee, amount])
+  }, [sendAmountBN, sendFeeBN, sendToken?.balance, sendToken?.decimals])
 
   useEffect(() => {
     setBalanceAfterTrxUsd(
-      (avaxPrice * mustNumber(() => parseFloat(balanceAfterTrx), 0)).toFixed(2)
+      (
+        nativeTokenPrice * mustNumber(() => parseFloat(balanceAfterTrx), 0)
+      ).toFixed(2)
     )
-  }, [balanceAfterTrx])
+  }, [balanceAfterTrx, nativeTokenPrice])
 
   useEffect(() => {
     setSendFromAddress(activeAccount?.address ?? '')
     setSendFromTitle(activeAccount?.title ?? '-')
   }, [activeAccount])
-
-  useEffect(() => {
-    setSendFeeAvax(sendFee ? bnToAvaxC(sendFee) : undefined)
-  }, [sendFee])
-
-  useEffect(() => {
-    setSendFeeUsd(
-      sendFeeAvax ? Number.parseFloat(sendFeeAvax) * avaxPrice : undefined
-    )
-  }, [sendFeeAvax, avaxPrice])
-
-  useEffect(() => {
-    customGasPrice$.next(
-      mustValue(
-        () => {
-          return {
-            bn: numberToBN(
-              mustNumber(() => parseFloat(customGasPriceNanoAvax), 0),
-              9
-            )
-          }
-        },
-        { bn: new BN(0) }
-      )
-    )
-  }, [customGasPriceNanoAvax])
-
-  useEffect(() => {
-    if (sendToken?.type === TokenType.ERC20 && sendToken.address) {
-      setTokenBalances?.({ [sendToken.address]: sendToken })
-    }
-  }, [sendToken])
-
-  useEffect(() => {
-    setAmount(
-      mustValue(
-        () => stringToBN(sendAmount, sendToken?.decimals ?? 0),
-        new BN(0)
-      )
-    )
-  }, [sendAmount, sendToken])
-
-  useEffect(() => {
-    setAddress(sendToAddress)
-  }, [sendToAddress, sendToken])
 
   function onSendNow() {
     console.log('onsend now')
@@ -175,9 +123,9 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
     setSendStatus('Sending')
 
     const sendState = {
-      address,
-      amount,
-      gasPrice: gasPrice ? bnToEthersBigNumber(gasPrice) : BigNumber.from(0),
+      address: sendToAddress,
+      amount: sendAmountBN,
+      gasPrice: sendFee,
       token: sendToken
     } as SendState
     sendService
@@ -210,7 +158,34 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
         />
       )
     }
-  }, [sendToken, theme])
+  }, [sendToken])
+
+  function validateStateFx() {
+    if (
+      activeNetwork.vmName === NetworkVMType.EVM &&
+      !isAddress(sendToAddress)
+    ) {
+      setCanSubmit(false)
+      setError('No address')
+      return
+    }
+    if (
+      activeNetwork.vmName === NetworkVMType.BITCOIN &&
+      !isBech32Address(sendToAddress)
+    ) {
+      setCanSubmit(false)
+      setError('Not valid address')
+      return
+    }
+    if (sendAmountBN.isZero()) {
+      setCanSubmit(false)
+      setError('Amount must be greater than zero')
+      return
+    }
+    //TODO: check balance
+    setError(undefined)
+    setCanSubmit(true)
+  }
 
   const state: SendTokenContextState = {
     sendToken,
@@ -230,12 +205,11 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
       setAddress: setSendToAddress
     },
     fees: {
-      sendFeeAvax,
+      sendFeeNative,
       sendFeeUsd,
       customGasPriceNanoAvax,
       setCustomGasPriceNanoAvax,
-      gasLimit,
-      setGasLimit
+      gasLimit: 21000 //todo unfix this
     },
     tokenLogo,
     canSubmit: canSubmit ?? false,
@@ -266,10 +240,9 @@ export interface Account {
 }
 
 export interface Fees {
-  sendFeeAvax: string | undefined
+  sendFeeNative: string | undefined
   sendFeeUsd: number | undefined
   customGasPriceNanoAvax: string
   setCustomGasPriceNanoAvax: Dispatch<string>
   gasLimit: number | undefined
-  setGasLimit: Dispatch<number>
 }

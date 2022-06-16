@@ -189,7 +189,7 @@ const FeeSelector: FC<{
       }}>
       {showInput && (
         <InputText
-          text={value?.toString()}
+          text={value ?? ''}
           autoFocus
           onChangeText={text => onValueEntered?.(text)}
           keyboardType={'numeric'}

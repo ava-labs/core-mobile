@@ -50,17 +50,18 @@ class WalletService {
     if (network.vmName !== NetworkVMType.EVM) {
       throw new Error('Only EVM networks supported')
     }
-    log('evmWallet', now())
+    const start = now()
+    log('evmWallet', now() - start)
     const walletFromMnemonic = getWalletFromMnemonic(
       this.mnemonic,
       accountIndex
     )
-    log('evmWallet getWalletFromMnemonic', now())
-    walletFromMnemonic.connect(
+    log('evmWallet getWalletFromMnemonic', now() - start)
+    const connectedWallet = walletFromMnemonic.connect(
       networkService.getProviderForNetwork(network) as JsonRpcBatchInternal
     )
-    log('evmWallet end', now())
-    return walletFromMnemonic
+    log('evmWallet end', now() - start)
+    return connectedWallet
   }
 
   async sign(

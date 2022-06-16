@@ -44,7 +44,7 @@ type Props = {
   // shows popover info if provided
   popOverInfoText?: string | React.ReactElement
   autoFocus?: boolean
-  text?: string
+  text: string
   currency?: string
   onInputRef?: (inputRef: RefObject<TextInput>) => void
   width?: number
@@ -53,28 +53,15 @@ type Props = {
 
 export default function InputText(props: Props | Readonly<Props>) {
   const context = useApplicationContext()
-  const [text, setText] = useState(props.text ?? '')
   const [showInput, setShowInput] = useState(false)
   const [focused, setFocused] = useState(false)
   const [toggleShowText, setToggleShowText] = useState('Show')
   const [mode] = useState(props.mode ?? 'default')
   const textInputRef = useRef() as RefObject<TextInput>
-  const [initText, setInitText] = useState(props.text)
 
   useEffect(() => {
     props.onInputRef?.(textInputRef)
   }, [textInputRef])
-
-  useEffect(() => {
-    if (props.text !== undefined && isNaN(Number(props.text))) {
-      return
-    }
-    //detects change in param, without it, changing param won't trigger redraw
-    if (initText !== props.text) {
-      setInitText(props.text)
-      setText(props.text ?? '')
-    }
-  })
 
   useEffect(() => {
     setToggleShowText(showInput ? 'Hide' : 'Show')
@@ -92,7 +79,6 @@ export default function InputText(props: Props | Readonly<Props>) {
     props.onSubmit?.()
   }
   const onClear = (): void => {
-    setText('')
     props.onChangeText?.('')
   }
   const onToggleShowInput = (): void => {
@@ -230,7 +216,6 @@ export default function InputText(props: Props | Readonly<Props>) {
         }
       })
     }
-    setText(text)
     props.onChangeText?.(text)
   }
 
@@ -273,7 +258,7 @@ export default function InputText(props: Props | Readonly<Props>) {
                 ? theme.colorText2
                 : theme.colorBg3,
               backgroundColor:
-                text.length > 0
+                props.text.length > 0
                   ? theme.transparent
                   : focused
                   ? theme.transparent
@@ -297,13 +282,13 @@ export default function InputText(props: Props | Readonly<Props>) {
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           onChangeText={onChangeText}
-          value={text}
+          value={props.text}
         />
-        {mode === 'default' && text.length > 0 && <ClearBtn />}
-        {mode === 'private' && text.length > 0 && <ShowPassBtn />}
+        {mode === 'default' && props.text.length > 0 && <ClearBtn />}
+        {mode === 'private' && props.text.length > 0 && <ShowPassBtn />}
         {mode === 'amount' && props.onMax && <MaxBtn onPress={props.onMax} />}
         {mode === 'confirmEntry' && (
-          <ConfirmBtn onPress={() => props.onConfirm?.(text)} />
+          <ConfirmBtn onPress={() => props.onConfirm?.(props.text)} />
         )}
         {/*{mode === 'percentage' && <Percent />}*/}
         {mode === 'currency' && <Currency currency={props.currency} />}

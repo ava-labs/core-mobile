@@ -110,6 +110,7 @@ const AddCustomToken: FC = () => {
             multiline={true}
             errorText={errorMessage}
             onChangeText={setTokenAddress}
+            text={tokenAddress}
           />
           {tokenAddress.length === 0 && (
             <View
