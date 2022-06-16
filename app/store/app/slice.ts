@@ -1,19 +1,14 @@
 import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { Platform } from 'react-native'
+import { AppStateStatus } from 'react-native'
 import { RootState } from 'store'
-import { AppStartListening } from 'store/middleware/listener'
-import { getNetworks } from 'store/network'
-import BiometricsSDK from 'utils/BiometricsSDK'
-
-type AppState = {
-  // we use this flag to show a splash screen while preparing the app (fetching networks, warming up BiometricsSDK,...)
-  isReady: boolean
-}
+import { AppState } from './types'
 
 const reducerName = 'app'
 
 const initialState: AppState = {
-  isReady: false
+  isReady: false,
+  isLocked: true,
+  appState: 'active'
 }
 
 export const appSlice = createSlice({
@@ -22,12 +17,22 @@ export const appSlice = createSlice({
   reducers: {
     setIsReady: (state, action: PayloadAction<boolean>) => {
       state.isReady = action.payload
+    },
+    setIsLocked: (state, action: PayloadAction<boolean>) => {
+      state.isLocked = action.payload
+    },
+    setAppState: (state, action: PayloadAction<AppStateStatus>) => {
+      state.appState = action.payload
     }
   }
 })
 
 // selectors
 export const selectIsReady = (state: RootState) => state.app.isReady
+
+export const selectIsLocked = (state: RootState) => state.app.isLocked
+
+export const selectAppState = (state: RootState) => state.app.appState
 
 // actions
 // when app rehydration is complete
@@ -40,26 +45,15 @@ export const onLegacyWalletStarted = createAction(
 )
 
 // when user has successfully entered pin or biometrics to unlock the app
-export const onLoginSuccess = createAction(`${reducerName}/onLoginSuccess`)
+export const onAppUnlocked = createAction(`${reducerName}/onAppUnlocked`)
 
-export const { setIsReady } = appSlice.actions
+// when app is locked and user is required to unlock to use app again
+export const onAppLocked = createAction(`${reducerName}/onAppLocked`)
 
-// listeners
-export const addAppListeners = (startListening: AppStartListening) => {
-  startListening({
-    actionCreator: onRehydrationComplete,
-    effect: async (action, listenerApi) => {
-      const dispatch = listenerApi.dispatch
-      dispatch(getNetworks())
+export const onBackground = createAction(`${reducerName}/onBackground`)
 
-      if (Platform.OS === 'android') BiometricsSDK.warmup()
+export const onForeground = createAction(`${reducerName}/onForeground`)
 
-      // artificially delay for 4.5s to allow splash screen's animation to finish
-      await new Promise(resolve => setTimeout(resolve, 4500))
-
-      dispatch(setIsReady(true))
-    }
-  })
-}
+export const { setIsReady, setIsLocked, setAppState } = appSlice.actions
 
 export const appReducer = appSlice.reducer

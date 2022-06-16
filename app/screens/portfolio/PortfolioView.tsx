@@ -19,17 +19,14 @@ import { Covalent } from '@avalabs/covalent-sdk'
 import Config from 'react-native-config'
 import { PortfolioScreenProps } from 'navigation/types'
 import { useIsUIDisabled, UI } from 'hooks/useIsUIDisabled'
-import { useDispatch, useSelector } from 'react-redux'
-import {
-  selectActiveNetwork,
-  selectAvaxMainnet,
-  selectAvaxTestnet
-} from 'store/network'
-import { getBalance, TokenWithBalance } from 'store/balance'
-import { BITCOIN_NETWORK } from '@avalabs/chains-sdk'
+import { useSelector } from 'react-redux'
+import { selectActiveNetwork } from 'store/network'
+import { TokenWithBalance } from 'store/balance'
 import { selectActiveAccount } from 'store/account'
 
 type PortfolioProps = {
+  isLoading?: boolean
+  isRefreshing?: boolean
   tokenList?: TokenWithBalance[]
   handleRefresh?: () => void
   hasZeroBalance?: boolean
@@ -40,59 +37,22 @@ type PortfolioProps = {
 
 // experimenting with container pattern and stable props to try to reduce re-renders
 function PortfolioContainer(): JSX.Element {
-  const activeAccount = useSelector(selectActiveAccount)
-  const addressC = activeAccount?.address
-  const addressBtc = activeAccount?.addressBtc
-  const accountIndex = activeAccount?.index ?? 0
-  const avaxMainnet = useSelector(selectAvaxMainnet)
-  const avaxTestnet = useSelector(selectAvaxTestnet)
-  const dispatch = useDispatch()
   const manageDisabled = useIsUIDisabled(UI.ManageTokens)
   const collectiblesDisabled = useIsUIDisabled(UI.Collectibles)
-  const { filteredTokenList, loadTokenList } = useSearchableTokenList()
+  const { isLoading, isRefetching, filteredTokenList, refetch } =
+    useSearchableTokenList()
   const { setSelectedToken } = useSelectedTokenContext()
 
-  // TODO CP-2114 move this logic inside redux once accounts are stored in redux
-  useEffect(() => {
-    if (!addressC || !addressBtc) return
-
-    const avaxMainnetPayload = {
-      address: addressC,
-      accountIndex,
-      network: avaxMainnet
-    }
-
-    const avaxtTestnetPayload = {
-      address: addressC,
-      accountIndex,
-      network: avaxTestnet
-    }
-
-    const btcMainnetPayload = {
-      address: addressBtc,
-      accountIndex,
-      network: BITCOIN_NETWORK
-    }
-
-    dispatch(getBalance(avaxMainnetPayload))
-    dispatch(getBalance(avaxtTestnetPayload))
-    dispatch(getBalance(btcMainnetPayload))
-  }, [accountIndex, addressBtc, addressC, dispatch, avaxMainnet, avaxTestnet])
-
-  function handleRefresh() {
-    loadTokenList()
-  }
-
   return (
-    <>
-      <PortfolioView
-        tokenList={filteredTokenList}
-        handleRefresh={handleRefresh}
-        setSelectedToken={setSelectedToken}
-        shouldDisableManage={manageDisabled}
-        shouldDisableCollectibles={collectiblesDisabled}
-      />
-    </>
+    <PortfolioView
+      isLoading={isLoading}
+      isRefreshing={isRefetching}
+      tokenList={filteredTokenList}
+      handleRefresh={refetch}
+      setSelectedToken={setSelectedToken}
+      shouldDisableManage={manageDisabled}
+      shouldDisableCollectibles={collectiblesDisabled}
+    />
   )
 }
 
@@ -104,6 +64,8 @@ const PortfolioView: FC<PortfolioProps> = memo(
   ({
     tokenList,
     handleRefresh,
+    isLoading = false,
+    isRefreshing = false,
     setSelectedToken,
     shouldDisableManage = false,
     shouldDisableCollectibles = false
@@ -131,7 +93,7 @@ const PortfolioView: FC<PortfolioProps> = memo(
       const token = item.item
       return (
         <PortfolioListItem
-          showLoading={false} //fixme: add this state to redux
+          showLoading={isLoading || isRefreshing}
           tokenName={token.name}
           tokenPrice={token.balanceDisplayValue ?? '0'}
           tokenPriceUsd={token.balanceUsdDisplayValue}
@@ -158,7 +120,7 @@ const PortfolioView: FC<PortfolioProps> = memo(
                 renderItem={renderItem}
                 keyExtractor={(item: TokenWithBalance) => item.id}
                 onRefresh={handleRefresh}
-                refreshing={false}
+                refreshing={isRefreshing}
                 scrollEventThrottle={16}
                 ListHeaderComponent={
                   <>

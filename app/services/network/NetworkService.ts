@@ -2,32 +2,38 @@ import { InfuraProvider } from '@ethersproject/providers'
 import { BlockCypherProvider, JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 import {
   BITCOIN_NETWORK,
+  BITCOIN_TEST_NETWORK,
   ChainId,
-  ETHEREUM_NETWORK,
   getChainsAndTokens,
-  Network
+  Network,
+  NetworkVMType
 } from '@avalabs/chains-sdk'
+import { PollingConfig } from 'store/balance'
 
-const evmNetworks = [ChainId.AVALANCHE_MAINNET_ID, ChainId.AVALANCHE_TESTNET_ID]
-const btcNetworks = [ChainId.BITCOIN]
-const ethNetworks: number[] = []
+const BLOCKCYPHER_PROXY_URL =
+  'https://glacier-api.avax-test.network/proxy/blockcypher'
 
-// TODO: add support for ETH NETWORKS and BITCOIN TEST NET
+const ethNetworks = [ChainId.ETHEREUM_HOMESTEAD, ChainId.ETHEREUM_TEST_RINKEBY]
+
+// TODO: add support for ETH NETWORKS
 class NetworkService {
-  getEvmProvider(network: Network, numberOfChunksPerRequestBatch = 40) {
-    return new JsonRpcBatchInternal(
-      numberOfChunksPerRequestBatch,
-      network.rpcUrl,
-      network.chainId
+  getEvmProvider(
+    multiContractAddress: string | undefined,
+    rpcUrl: string,
+    chainId: number
+  ) {
+    const provider = new JsonRpcBatchInternal(
+      {
+        maxCalls: 40,
+        multiContractAddress
+      },
+      rpcUrl,
+      chainId
     )
-  }
 
-  getAvalancheProvider(isTest: boolean, networks: Network[]) {
-    const network = isTest
-      ? networks[ChainId.AVALANCHE_TESTNET_ID]
-      : networks[ChainId.AVALANCHE_MAINNET_ID]
+    provider.pollingInterval = PollingConfig.activeNetwork
 
-    return this.getEvmProvider(network)
+    return provider
   }
 
   getEthereumProvider(isTest: boolean) {
@@ -37,18 +43,31 @@ class NetworkService {
     )
   }
 
-  getBitcoinProvider(_isDeveloperMode: boolean) {
-    // TODO support test nets
-    return new BlockCypherProvider(true)
+  getBitcoinProvider(isMainnet: boolean) {
+    return new BlockCypherProvider(isMainnet, undefined, BLOCKCYPHER_PROXY_URL)
   }
 
   getProviderForNetwork(network: Network) {
-    if (evmNetworks.includes(network.chainId)) {
-      return this.getEvmProvider(network)
-    } else if (btcNetworks.includes(network.chainId)) {
-      return this.getBitcoinProvider(network.isTestnet)
-    } else if (ethNetworks.includes(network.chainId)) {
+    if (network.vmName === NetworkVMType.BITCOIN) {
+      return this.getBitcoinProvider(!network.isTestnet)
+    }
+
+    if (ethNetworks.includes(network.chainId)) {
       return this.getEthereumProvider(network.isTestnet)
+    }
+
+    if (network.vmName === NetworkVMType.EVM) {
+      const multiContractAddress = network.utilityAddresses?.multicall
+      const rpcUrl = network.rpcUrl
+      const chainId = network.chainId
+
+      const provider = this.getEvmProvider(
+        multiContractAddress,
+        rpcUrl,
+        chainId
+      )
+
+      return provider
     }
 
     throw new Error('unsupported network')
@@ -56,10 +75,13 @@ class NetworkService {
 
   async getNetworks() {
     const erc20Networks = await getChainsAndTokens()
+
+    delete erc20Networks[ChainId.AVALANCHE_LOCAL_ID]
+
     const networks = {
       ...erc20Networks,
       [ChainId.BITCOIN]: BITCOIN_NETWORK,
-      [ChainId.ETHEREUM_HOMESTEAD]: ETHEREUM_NETWORK
+      [ChainId.BITCOIN_TESTNET]: BITCOIN_TEST_NETWORK
     }
 
     return networks
