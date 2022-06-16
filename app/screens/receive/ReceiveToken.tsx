@@ -21,11 +21,12 @@ const ReceiveToken: FC<Props> = memo(props => {
   const activeAccount = useSelector(selectActiveAccount)
   const { chainId, networkToken, chainName } = activeNetwork
   const addressC = activeAccount?.address
-  const btcAddress = activeAccount?.addressBtc //todo: check for testnet
+  const btcAddress = activeAccount?.addressBtc
 
   const receiveAddress = () => {
     switch (chainId) {
       case ChainId.BITCOIN:
+      case ChainId.BITCOIN_TESTNET:
         return btcAddress ?? ''
       case ChainId.AVALANCHE_MAINNET_ID:
       case ChainId.AVALANCHE_TESTNET_ID:

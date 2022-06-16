@@ -120,6 +120,7 @@ const FloatingActionButton: FC<Props> = ({
     return validChildren.map((button, index) => {
       return (
         <View
+          key={index}
           pointerEvents="box-none"
           style={[
             styles.overlay,
@@ -127,7 +128,6 @@ const FloatingActionButton: FC<Props> = ({
             { alignItems: 'center', justifyContent: 'center', top: 100 }
           ]}>
           <ActionButtonItem
-            key={index}
             position={'center'}
             anim={anim}
             size={48}

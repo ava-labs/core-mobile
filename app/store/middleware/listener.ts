@@ -2,9 +2,10 @@ import { createListenerMiddleware, TypedStartListening } from '@reduxjs/toolkit'
 import type { AppDispatch, RootState } from 'store'
 import { addAppListeners } from 'store/app'
 import { addBalanceListeners } from 'store/balance'
-import { addAccountListener } from 'store/account'
-import { fetchNetworkFeeListener } from 'store/networkFee'
-import { addSetBridgeFilterListener } from 'store/bridge'
+import { addAccountListeners } from 'store/account'
+import { addNetworkListeners } from 'store/network'
+import { addNetworkFeeListeners } from 'store/networkFee'
+import { addBridgeListeners } from 'store/bridge'
 
 export type AppStartListening = TypedStartListening<RootState, AppDispatch>
 
@@ -18,10 +19,12 @@ addAppListeners(startListening)
 
 addBalanceListeners(startListening)
 
-addAccountListener(startListening)
+addAccountListeners(startListening)
 
-addSetBridgeFilterListener(startListening)
+addNetworkListeners(startListening)
 
-fetchNetworkFeeListener(startListening)
+addBridgeListeners(startListening)
+
+addNetworkFeeListeners(startListening)
 
 export { listener }

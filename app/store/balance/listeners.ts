@@ -3,7 +3,7 @@ import { isAnyOf } from '@reduxjs/toolkit'
 import { Account } from 'dto/Account'
 import BalanceService from 'services/balance/BalanceService'
 import { AppListenerEffectAPI } from 'store'
-import { selectAccounts, selectActiveAccount } from 'store/account'
+import { selectAccounts, selectActiveAccount, setAccounts } from 'store/account'
 import { onAppLocked, onAppUnlocked } from 'store/app'
 import { AppStartListening } from 'store/middleware/listener'
 import { selectActiveNetwork, selectFavoriteNetworks } from 'store/network'
@@ -158,7 +158,7 @@ export const addBalanceListeners = (startListening: AppStartListening) => {
   })
 
   startListening({
-    matcher: isAnyOf(refetchBalance, setSelectedCurrency),
+    matcher: isAnyOf(refetchBalance, setSelectedCurrency, setAccounts),
     effect: async (action, listenerApi) =>
       onBalanceUpdate(QueryStatus.REFETCHING, listenerApi, false)
   })

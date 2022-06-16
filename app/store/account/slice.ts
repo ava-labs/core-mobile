@@ -2,14 +2,11 @@ import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { AccountCollection, AccountsState } from 'store/account/types'
 import { RootState } from 'store/index'
 import { Account } from 'dto/Account'
-import accountService from 'services/account/AccountsService'
-import { AppStartListening } from 'store/middleware/listener'
-import { selectActiveNetwork } from 'store/network'
 
 const reducerName = 'account'
 
 const initialState = {
-  accounts: {} as AccountCollection,
+  accounts: {},
   activeAccountIndex: 0
 } as AccountsState
 
@@ -17,7 +14,10 @@ const accountsSlice = createSlice({
   name: reducerName,
   initialState,
   reducers: {
-    persistAccount: (state, action: PayloadAction<Account>) => {
+    setAccounts: (state, action: PayloadAction<AccountCollection>) => {
+      state.accounts = action.payload
+    },
+    setAccount: (state, action: PayloadAction<Account>) => {
       const newAccount = action.payload
       state.accounts[newAccount.index] = newAccount
     },
@@ -44,26 +44,11 @@ export const selectActiveAccount = (state: RootState): Account | undefined =>
 
 // actions
 export const addAccount = createAction(`${reducerName}/addAccount`)
-export const { setAccountTitle, setActiveAccountIndex, persistAccount } =
-  accountsSlice.actions
-
-// listeners
-export const addAccountListener = (startListening: AppStartListening) => {
-  startListening({
-    actionCreator: addAccount,
-    effect: async (action, listenerApi) => {
-      const state = listenerApi.getState()
-      const activeNetwork = selectActiveNetwork(state)
-      const accounts = selectAccounts(state)
-      const acc = await accountService.createNextAccount(
-        activeNetwork,
-        accounts
-      )
-
-      listenerApi.dispatch(persistAccount(acc))
-      listenerApi.dispatch(setActiveAccountIndex(acc.index))
-    }
-  })
-}
+export const {
+  setAccountTitle,
+  setActiveAccountIndex,
+  setAccount,
+  setAccounts
+} = accountsSlice.actions
 
 export const accountsReducer = accountsSlice.reducer

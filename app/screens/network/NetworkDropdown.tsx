@@ -17,6 +17,7 @@ import {
   selectActiveNetwork,
   setActive
 } from 'store/network'
+import { arrayHash } from 'utils/Utils'
 
 const ManageNetworks = 'Manage networks'
 
@@ -43,6 +44,11 @@ export default function NetworkDropdown() {
     [favoriteNetworks]
   )
 
+  const dropdownUniqueId = useMemo(() => {
+    const chainIds = data.map(item => item.chainId.toString())
+    return arrayHash(chainIds)
+  }, [data])
+
   const selectedNetworkIndex = data.findIndex(
     item => item.chainId === activeNetwork.chainId
   )
@@ -62,9 +68,8 @@ export default function NetworkDropdown() {
         }
       ]}>
       <Dropdown
+        key={dropdownUniqueId}
         style={{
-          position: 'absolute',
-          top: 14,
           right: 41
         }}
         data={data}
