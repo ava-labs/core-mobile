@@ -56,7 +56,7 @@ export function useSingularAssetBalanceEVM(
     }
 
     async function getBalances() {
-      if (!asset || !activeAccount) return
+      if (!asset || !activeAccount || !network) return
       const balance = await getEthereumBalance(
         asset,
         activeAccount.address,
@@ -67,7 +67,7 @@ export function useSingularAssetBalanceEVM(
       setEthBalance(balance)
     }
 
-    getBalances().then()
+    getBalances()
   }, [
     activeAccount?.address,
     asset,

@@ -25,9 +25,10 @@ import networkFeeService from 'services/networkFee/NetworkFeeService'
 import { useTokens } from 'hooks/useTokens'
 import walletService from 'services/wallet/WalletService'
 import { resolve } from '@avalabs/utils-sdk'
+import networkService from 'services/network/NetworkService'
 
 export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
-  const { activeNetwork } = useActiveNetwork()
+  const activeNetwork = useActiveNetwork()
   const activeAccount = useActiveAccount()
   const bridgeConfig = useBridgeConfig()!.config!
   const { createBridgeTransaction } = useBridgeContext()
@@ -211,11 +212,11 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
       )
     )
 
-    if (error) {
-      return {
-        error: (error as any).toString()
-      }
+    if (error || !signedTx) {
+      return Promise.reject((error as any)?.toString())
     }
+
+    const hash = await networkService.sendTransaction(signedTx, bitcoinNetwork)
 
     setTransactionDetails({
       tokenSymbol: symbol,
@@ -224,14 +225,14 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
 
     createBridgeTransaction({
       sourceChain: Blockchain.BITCOIN,
-      sourceTxHash: signedTx ?? '', // error?
+      sourceTxHash: hash,
       sourceStartedAt: timestamp,
       targetChain: Blockchain.AVALANCHE,
       amount: amountInBtc,
       symbol
     })
 
-    return signedTx
+    return hash
   }, [
     amountInBtc,
     amountInSatoshis,

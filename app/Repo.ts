@@ -5,7 +5,7 @@ import StorageTools from 'repository/StorageTools'
 import {
   BridgeState,
   defaultBridgeState
-} from 'screens/bridge/utils/BridgeState'
+} from 'store/bridge/BridgeState'
 
 /**
  * Currently we support only one wallet, with multiple accounts.

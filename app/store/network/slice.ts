@@ -5,12 +5,14 @@ import {
   PayloadAction
 } from '@reduxjs/toolkit'
 import {
-  BITCOIN_NETWORK, BITCOIN_TEST_NETWORK,
+  BITCOIN_NETWORK,
+  BITCOIN_TEST_NETWORK,
   ChainId,
-  ETHEREUM_NETWORK, ETHEREUM_TEST_NETWORK_RINKEBY,
+  ETHEREUM_NETWORK,
+  ETHEREUM_TEST_NETWORK_RINKEBY,
   getChainsAndTokens,
-  Network,
-} from '@avalabs/chains-sdk';
+  Network
+} from '@avalabs/chains-sdk'
 import isEmpty from 'lodash.isempty'
 import NetworkService from 'services/network/NetworkService'
 import { AppStartListening } from 'store/middleware/listener'
@@ -61,7 +63,7 @@ export const selectActiveNetwork = (state: RootState) =>
 export const selectNetworks = (state: RootState) => state.network.networks
 
 export const selectFavoriteNetworks = (state: RootState) =>
-  state.network.favorites.map(id => state.network.networks[id])
+  state.network.favorites.map((id: number) => state.network.networks[id])
 
 export const selectAvaxMainnet = (state: RootState) =>
   state.network.networks[ChainId.AVALANCHE_MAINNET_ID] ?? {}

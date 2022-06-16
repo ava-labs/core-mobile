@@ -1,4 +1,3 @@
-import { useApplicationContext } from 'contexts/ApplicationContext'
 import {
   AssetType,
   BIG_ZERO,
@@ -15,6 +14,8 @@ import { useEthBridge } from 'screens/bridge/hooks/useEthBridge'
 import { useAvalancheBridge } from 'screens/bridge/hooks/useAvalancheBridge'
 import { AssetBalance } from 'screens/bridge/utils/types'
 import Big from 'big.js'
+import { useSelector } from 'react-redux'
+import { selectSelectedCurrency } from 'store/settings'
 
 export interface BridgeAdapter {
   address?: string
@@ -40,7 +41,7 @@ export interface BridgeAdapter {
 }
 
 export default function useBridge() {
-  const { selectedCurrency: currency } = useApplicationContext().appHook
+  const currency = useSelector(selectSelectedCurrency)
 
   const { currentBlockchain, currentAsset, currentAssetData } = useBridgeSDK()
 

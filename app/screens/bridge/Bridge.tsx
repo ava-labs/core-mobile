@@ -36,9 +36,10 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { BridgeScreenProps } from 'navigation/types'
 import { usePosthogContext } from 'contexts/PosthogContext'
-import { useSelector } from 'react-redux'
-import { selectActiveNetwork, TokenSymbol } from 'store/network'
+import { TokenSymbol } from 'store/network'
 import { ChainId } from '@avalabs/chains-sdk'
+import { useActiveNetwork } from 'hooks/useActiveNetwork'
+import { resolve } from '@avalabs/utils-sdk'
 
 const formatBalance = (balance: Big | undefined) => {
   return balance && formatTokenAmount(balance, 6)
@@ -60,7 +61,7 @@ const Bridge: FC = () => {
     hasEnoughForNetworkFee,
     loading,
     price,
-    maximum = BIG_ZERO,
+    maximum,
     minimum,
     receiveAmount,
     wrapStatus,
@@ -75,8 +76,8 @@ const Bridge: FC = () => {
     targetBlockchain
   } = useBridgeSDK()
   const { getTokenSymbolOnNetwork } = useGetTokenSymbolOnNetwork()
-  const network = useSelector(selectActiveNetwork)
-  const isMainnet = network.chainId === ChainId.AVALANCHE_MAINNET_ID
+  const activeNetwork = useActiveNetwork()
+  const isMainnet = activeNetwork.chainId === ChainId.AVALANCHE_MAINNET_ID
   const [bridgeError, setBridgeError] = useState<string>('')
   const [isPending, setIsPending] = useState<boolean>(false)
   const tokenInfoData = useTokenInfoContext()
@@ -88,7 +89,6 @@ const Bridge: FC = () => {
   const { bridgeBtcBlocked, bridgeEthBlocked } = usePosthogContext()
   const { currencyFormatter } = useApplicationContext().appHook
 
-  const isAmountTooHigh = amount && amount.gt(maximum)
   const isAmountTooLow =
     amount && !amount.eq(BIG_ZERO) && amount.lt(minimum || BIG_ZERO)
   const hasValidAmount = !isAmountTooLow && amount.gt(BIG_ZERO)
@@ -224,8 +224,14 @@ const Bridge: FC = () => {
 
     try {
       setIsPending(true)
-      const hash = await transfer()
+      const [hash, error] = await resolve(transfer())
       setIsPending(false)
+
+      if (error || !hash) {
+        console.error(error)
+        setBridgeError('There was a problem with the transfer.')
+        return
+      }
 
       // Navigate to transaction status page
       navigation.navigate(AppNavigation.Bridge.BridgeTransactionStatus, {
@@ -252,7 +258,6 @@ const Bridge: FC = () => {
     loading ||
     isPending ||
     isAmountTooLow ||
-    isAmountTooHigh ||
     BIG_ZERO.eq(amount) ||
     !hasEnoughForNetworkFee
 
@@ -374,10 +379,7 @@ const Bridge: FC = () => {
           </View>
         </View>
 
-        {(!!bridgeError ||
-          isAmountTooLow ||
-          !hasEnoughForNetworkFee ||
-          isAmountTooHigh) && (
+        {(!!bridgeError || isAmountTooLow || !hasEnoughForNetworkFee) && (
           <>
             {!hasEnoughForNetworkFee && (
               <AvaText.Body3
@@ -397,11 +399,11 @@ const Bridge: FC = () => {
                 {`Amount too low -- minimum is ${minimum?.toFixed(9)}`}
               </AvaText.Body3>
             )}
-            {isAmountTooHigh && (
+            {!!bridgeError && (
               <AvaText.Body3
                 textStyle={{ marginVertical: 4 }}
                 color={theme.colorError}>
-                {`Amount too high -- maximum is ${maximum?.toFixed(9)}`}
+                {bridgeError}
               </AvaText.Body3>
             )}
           </>

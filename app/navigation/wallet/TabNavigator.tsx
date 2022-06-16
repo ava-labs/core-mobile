@@ -176,7 +176,10 @@ const CustomTabBarFab: FC = ({ children }) => {
     <ActionButtonItem
       buttonColor={theme.alternateBackground}
       title="Buy"
-      onPress={() => openMoonPay()}>
+      onPress={() => {
+        console.log('pressed on buy')
+        openMoonPay()
+      }}>
       <BuySVG color={theme.background} />
     </ActionButtonItem>
   )
