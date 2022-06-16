@@ -11,6 +11,8 @@ import {
   REGISTER,
   REHYDRATE
 } from 'redux-persist'
+import { PersistConfig } from 'redux-persist/es/types'
+import { DeserializeBridgeTransform } from 'store/transforms'
 import { networkReducer as network } from './network'
 import { balanceReducer as balance, setBalance, setBalances } from './balance'
 import { appReducer as app, onRehydrationComplete } from './app'
@@ -18,6 +20,7 @@ import { listener } from './middleware/listener'
 import { accountsReducer as account } from './account'
 import networkFee from './networkFee'
 import settings from './settings'
+import bridge from './bridge/BridgeReducer'
 
 const persistActions = [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER]
 
@@ -27,13 +30,15 @@ const rootReducer = combineReducers({
   balance,
   account,
   settings,
-  networkFee
+  networkFee,
+  bridge
 })
 
-const persistConfig = {
+const persistConfig: PersistConfig<any> = {
   key: 'root',
   storage: AsyncStorage,
-  whitelist: ['network', 'account', 'settings']
+  whitelist: ['network', 'account', 'settings', 'bridge'],
+  transforms: [DeserializeBridgeTransform]
 }
 
 const persistedReducer = persistReducer(persistConfig, rootReducer)
