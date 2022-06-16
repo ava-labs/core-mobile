@@ -42,10 +42,10 @@ export default function ReviewSend({
   const { gasPrice } = useGasPrice()
 
   const netFeeString = useMemo(() => {
-    return fees.sendFeeAvax
-      ? Number.parseFloat(fees.sendFeeAvax).toFixed(6).toString()
+    return fees.sendFeeNative
+      ? Number.parseFloat(fees.sendFeeNative).toFixed(6).toString()
       : '-'
-  }, [fees.sendFeeAvax])
+  }, [fees.sendFeeNative])
 
   useEffect(() => {
     switch (sendStatus) {
@@ -114,8 +114,11 @@ export default function ReviewSend({
           onSettingsPressed={() => {
             const initGasLimit = fees.gasLimit || 0
 
-            const onCustomGasLimit = (gasLimit: number) =>
-              fees.setGasLimit(gasLimit)
+            const onCustomGasLimit = (gasLimit: number) => {
+              gasLimit //fixme in CP-1775
+              console.log('oncustom gas limit')
+              // fees.setGasLimit(gasLimit)
+            }
 
             navigate(AppNavigation.Modal.EditGasLimit, {
               gasLimit: initGasLimit.toString(),
