@@ -17,6 +17,7 @@ import { appReducer as app, onRehydrationComplete } from './app'
 import { listener } from './middleware/listener'
 import { accountsReducer as account } from './account'
 import networkFee from './networkFee'
+import settings from './settings'
 
 const persistActions = [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER]
 
