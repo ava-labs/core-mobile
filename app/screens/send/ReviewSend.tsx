@@ -115,6 +115,7 @@ export default function ReviewSend({
             const initGasLimit = fees.gasLimit || 0
 
             const onCustomGasLimit = (gasLimit: number) => {
+              gasLimit //fixme in CP-1775
               console.log('oncustom gas limit')
               // fees.setGasLimit(gasLimit)
             }
