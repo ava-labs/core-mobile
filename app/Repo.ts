@@ -2,10 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { CustomTokens } from 'screens/tokenManagement/hooks/useAddCustomToken'
 import { NFTItemData } from 'screens/nft/NftCollection'
 import StorageTools from 'repository/StorageTools'
-import {
-  BridgeState,
-  defaultBridgeState
-} from 'store/bridge/BridgeState'
+import { BridgeState, defaultBridgeState } from 'store/bridge/BridgeState'
 
 /**
  * Currently we support only one wallet, with multiple accounts.

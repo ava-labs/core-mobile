@@ -11,7 +11,7 @@ import {
   TokenWithBalance,
   TokenWithBalanceERC20
 } from 'store/balance'
-import {bnToBig} from '@avalabs/utils-sdk';
+import { bnToBig } from '@avalabs/utils-sdk'
 
 /**
  * Get balances of wrapped erc20 tokens on Avalanche
