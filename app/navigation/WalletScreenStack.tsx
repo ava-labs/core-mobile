@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useMemo, useState } from 'react'
+import React, { memo, useMemo } from 'react'
 import { BackHandler, Modal } from 'react-native'
 import {
   NavigatorScreenParams,
@@ -12,7 +12,6 @@ import AccountBottomSheet from 'screens/portfolio/account/AccountBottomSheet'
 import AppNavigation from 'navigation/AppNavigation'
 import { SelectedTokenContextProvider } from 'contexts/SelectedTokenContext'
 import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin'
-import AsyncStorage from '@react-native-async-storage/async-storage'
 import {
   TransactionERC20,
   TransactionNormal
@@ -58,9 +57,8 @@ import NetworkManager from 'screens/network/NetworkManager'
 import NetworkDetails from 'screens/network/NetworkDetails'
 import AvaButton from 'components/AvaButton'
 import StarSVG from 'components/svg/StarSVG'
-import useAppBackgroundTracker from 'hooks/useAppBackgroundTracker'
 import { toggleFavorite, selectFavoriteNetworks } from 'store/network'
-import { onLoginSuccess } from 'store/app'
+import { onAppUnlocked, selectIsLocked } from 'store/app'
 import { Network } from '@avalabs/chains-sdk'
 import { TokenWithBalance } from 'store/balance'
 import { BridgeStackParamList } from './wallet/BridgeScreenStack'
@@ -129,20 +127,9 @@ const SignOutBottomSheetScreen = () => {
 
 function WalletScreenStack(props: Props | Readonly<Props>) {
   const dispatch = useDispatch()
-  const [showSecurityModal, setShowSecurityModal] = useState(false)
+  const showSecurityModal = useSelector(selectIsLocked)
   const context = useApplicationContext()
   const { signOut } = context.appHook
-  const { timeoutPassed } = useAppBackgroundTracker({
-    timeoutMs: 5000,
-    getTime: async () => AsyncStorage.getItem('TIME_APP_SUSPENDED'),
-    setTime: async time => AsyncStorage.setItem('TIME_APP_SUSPENDED', time)
-  })
-
-  useEffect(() => {
-    if (timeoutPassed) {
-      setShowSecurityModal(true)
-    }
-  }, [timeoutPassed])
 
   useFocusEffect(
     React.useCallback(() => {
@@ -332,12 +319,10 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
           onSignInWithRecoveryPhrase={() => {
             signOut().then(() => {
               context.appNavHook.resetNavToEnterMnemonic()
-              setShowSecurityModal(false)
             })
           }}
           onLoginSuccess={() => {
-            setShowSecurityModal(false)
-            dispatch(onLoginSuccess())
+            dispatch(onAppUnlocked())
           }}
         />
       </Modal>

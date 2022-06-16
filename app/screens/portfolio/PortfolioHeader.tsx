@@ -5,22 +5,26 @@ import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import TokenAddress from 'components/TokenAddress'
 import { useSelector } from 'react-redux'
-import { selectBalanceTotalInUSD } from 'store/balance'
+import {
+  selectBalanceTotalInUSD,
+  selectIsLoadingBalances,
+  selectIsRefetchingBalances
+} from 'store/balance'
 import { NetworkVMType } from '@avalabs/chains-sdk'
 import { selectActiveNetwork } from 'store/network'
 import { selectActiveAccount } from 'store/account'
 
-// TODO: reimplement balance loading CP-2114
 function PortfolioHeaderContainer() {
   const context = useApplicationContext()
   const activeAccount = useSelector(selectActiveAccount)
   const activeNetwork = useSelector(selectActiveNetwork)
+  const isLoadingBalance = useSelector(selectIsLoadingBalances)
+  const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
   const balanceTotalInUSD = useSelector(
     selectBalanceTotalInUSD(activeAccount?.index ?? 0)
   )
   const { selectedCurrency, currencyFormatter } = context.appHook
   const currencyBalance = currencyFormatter(balanceTotalInUSD)
-  const isBalanceLoading = false
   const address =
     activeNetwork.vmName === NetworkVMType.BITCOIN
       ? activeAccount?.addressBtc
@@ -29,7 +33,7 @@ function PortfolioHeaderContainer() {
   return (
     <PortfolioHeader
       balanceTotalUSD={currencyBalance}
-      isBalanceLoading={isBalanceLoading}
+      isBalanceLoading={isLoadingBalance || isRefetchingBalance}
       currencyCode={selectedCurrency}
       address={address}
     />

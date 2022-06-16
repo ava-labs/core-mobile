@@ -1,25 +1,32 @@
 import { useMemo, useState } from 'react'
 import { BN } from '@avalabs/avalanche-wallet-sdk'
-import { TokenType, TokenWithBalance } from 'store/balance'
-import { useTokens } from 'hooks/useTokens'
-import { useSelector } from 'react-redux'
+import {
+  refetchBalance,
+  selectIsLoadingBalances,
+  selectIsRefetchingBalances,
+  selectTokensWithBalance,
+  TokenType,
+  TokenWithBalance
+} from 'store/balance'
+import { useDispatch, useSelector } from 'react-redux'
 import { selectZeroBalanceWhiteList } from 'store/settings/zeroBalance'
 
 const bnZero = new BN(0)
 
-// TODO reimplement loading CP-2114
 export function useSearchableTokenList(hideZeroBalance = true): {
   searchText: string
   filteredTokenList?: TokenWithBalance[]
   setSearchText: (value: ((prevState: string) => string) | string) => void
-  loadTokenList: () => void
-  loading: boolean
+  isLoading: boolean
+  refetch: () => void
+  isRefetching: boolean
 } {
+  const dispatch = useDispatch()
   const [searchText, setSearchText] = useState('')
-
   const zeroBalanceWhitelist = useSelector(selectZeroBalanceWhiteList)
-
-  const tokensWithBalance = useTokens()
+  const isLoadingBalances = useSelector(selectIsLoadingBalances)
+  const isRefetchingBalances = useSelector(selectIsRefetchingBalances)
+  const tokensWithBalance = useSelector(selectTokensWithBalance)
 
   const tokensFilteredByZeroBal = useMemo(
     () =>
@@ -44,12 +51,8 @@ export function useSearchableTokenList(hideZeroBalance = true): {
     [tokensFilteredByZeroBal, searchText]
   )
 
-  // TODO reimplement refresh CP-2114
-  function loadTokenList() {
-    // if (wallet) {
-    //   setLoading(true)
-    //   updateAllBalances(wallet).then(() => setLoading(false))
-    // }
+  function refetch() {
+    dispatch(refetchBalance())
   }
 
   function filterByZeroBalance(
@@ -80,7 +83,8 @@ export function useSearchableTokenList(hideZeroBalance = true): {
     filteredTokenList,
     searchText,
     setSearchText,
-    loadTokenList,
-    loading: false
+    isLoading: isLoadingBalances,
+    refetch,
+    isRefetching: isRefetchingBalances
   }
 }

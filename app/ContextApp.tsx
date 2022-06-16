@@ -44,17 +44,17 @@ const ContextApp = () => {
   const { isSplashEnabled } = useDevDebugging()
 
   useEffect(() => {
-    if (JailMonkey.isJailBroken()) {
+    if (!__DEV__ && JailMonkey.isJailBroken()) {
       setShowJailBroken(true)
     }
   }, [])
 
-  if (!appIsReady && isSplashEnabled) {
-    return <Splash />
-  }
-
   if (showJailBroken) {
     return <JailbrokenWarning onOK={() => setShowJailBroken(false)} />
+  }
+
+  if (!appIsReady && isSplashEnabled) {
+    return <Splash />
   }
 
   return (

@@ -1,5 +1,4 @@
 import { ethers } from 'ethers'
-import { User } from '@avalabs/blizzard-sdk'
 import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 import { InfuraProvider } from '@ethersproject/providers'
 import {
@@ -11,8 +10,7 @@ import {
   NetworkTokenWithBalance,
   TokenType,
   TokenWithBalance,
-  TokenWithBalanceERC20,
-  TokenWithBalanceERC721
+  TokenWithBalanceERC20
 } from 'store/balance'
 import { Network, NetworkContractToken } from '@avalabs/chains-sdk'
 import {
@@ -25,7 +23,53 @@ const hstABI = require('human-standard-token-abi')
 
 type Provider = JsonRpcBatchInternal | InfuraProvider
 
+const DEFAULT_DECIMALS = 18
+
 export class EvmBalanceService {
+  async getBalances(
+    network: Network,
+    provider: Provider,
+    userAddress: string,
+    currency: string
+  ): Promise<TokenWithBalance[]> {
+    const activeTokenList = network.tokens ?? []
+
+    const tokenAddresses = activeTokenList.map(token => token.address)
+
+    const assetPlatformId =
+      network.pricingProviders?.coingecko?.assetPlatformId ?? ''
+
+    const tokenPriceDict =
+      (assetPlatformId &&
+        (await TokenService.getPricesWithMarketDataByAddresses(
+          tokenAddresses,
+          assetPlatformId,
+          currency as VsCurrencyType
+        ))) ||
+      {}
+
+    const nativeToken = await this.getNativeTokenBalance(
+      provider,
+      userAddress,
+      network,
+      currency
+    )
+
+    const erc20Tokens = await this.getErc20Balances(
+      provider,
+      activeTokenList,
+      tokenPriceDict,
+      userAddress,
+      network,
+      currency
+    )
+
+    //const nftStates = []
+    //const nftStates = await this.getErc721Balances(userAddress)
+
+    return [nativeToken, ...erc20Tokens]
+  }
+
   private async getNativeTokenBalance(
     provider: Provider,
     userAddress: string,
@@ -33,11 +77,13 @@ export class EvmBalanceService {
     currency: string
   ): Promise<NetworkTokenWithBalance> {
     const { networkToken, chainId } = network
+    const tokenDecimals = networkToken.decimals ?? DEFAULT_DECIMALS
     const nativeTokenId =
       network.pricingProviders?.coingecko?.nativeTokenId ?? ''
 
     const id = `${chainId}-${nativeTokenId}`
     const balanceEthersBig = await provider.getBalance(userAddress)
+
     const {
       price: priceUSD,
       marketCap,
@@ -47,16 +93,11 @@ export class EvmBalanceService {
       nativeTokenId,
       currency as VsCurrencyType
     )
-    const balanceBig = ethersBigNumberToBig(
-      balanceEthersBig,
-      networkToken.decimals
-    )
+
+    const balanceBig = ethersBigNumberToBig(balanceEthersBig, tokenDecimals)
     const balanceNum = balanceBig.toNumber()
-    const balance = bigToBN(balanceBig, networkToken.decimals)
-    const balanceDisplayValue = balanceToDisplayValue(
-      balance,
-      networkToken.decimals
-    )
+    const balance = bigToBN(balanceBig, tokenDecimals)
+    const balanceDisplayValue = balanceToDisplayValue(balance, tokenDecimals)
     const balanceUSD = priceUSD && balanceNum ? priceUSD * balanceNum : 0
     const balanceUsdDisplayValue = priceUSD
       ? balanceBig.mul(priceUSD).toFixed(2)
@@ -87,20 +128,19 @@ export class EvmBalanceService {
     currency: string
   ): Promise<TokenWithBalanceERC20[]> {
     const { chainId } = network
+
     return Promise.allSettled(
       activeTokenList.map(async token => {
         const id = `${chainId}-${token.address}`
+        const tokenDecimals = token.decimals ?? DEFAULT_DECIMALS
         const tokenPrice =
           tokenPriceDict[token.address.toLowerCase()]?.[
             currency as VsCurrencyType
           ]
         const contract = new ethers.Contract(token.address, hstABI, provider)
         const balanceEthersBig = await contract.balanceOf(userAddress)
-        const balanceBig = ethersBigNumberToBig(
-          balanceEthersBig,
-          token.decimals
-        )
-        const balance = bigToBN(balanceBig, token.decimals)
+        const balanceBig = ethersBigNumberToBig(balanceEthersBig, tokenDecimals)
+        const balance = bigToBN(balanceBig, tokenDecimals)
         const priceUSD = tokenPrice?.price ?? 0
         const marketCap = tokenPrice?.marketCap ?? 0
         const change24 = tokenPrice?.change24 ?? 0
@@ -109,7 +149,7 @@ export class EvmBalanceService {
         const balanceUSD = priceUSD && balanceNum ? priceUSD * balanceNum : 0
         const balanceDisplayValue = balanceToDisplayValue(
           balance,
-          token.decimals
+          tokenDecimals
         )
         const balanceUsdDisplayValue = priceUSD
           ? balanceBig.mul(priceUSD).toFixed(2)
@@ -137,54 +177,13 @@ export class EvmBalanceService {
   }
 
   // TODO add support for nft
-  private async getErc721Balances(
-    userAddress: string
-  ): Promise<TokenWithBalanceERC721[]> {
-    const user = new User({ baseUrl: 'https://blizzard.avax.network' })
-    const result = await user.getNftState(userAddress)
-    return (result.data ?? []) as any[] // TODO fit to TokenWithBalance interface
-  }
-
-  async getBalances(
-    network: Network,
-    provider: Provider,
-    userAddress: string,
-    currency: string
-  ): Promise<TokenWithBalance[]> {
-    const activeTokenList = network.tokens ?? []
-
-    const tokenAddresses = activeTokenList.map(token => token.address)
-
-    const assetPlatformId =
-      network.pricingProviders?.coingecko?.assetPlatformId ?? ''
-
-    const tokenPriceDict =
-      (await TokenService.getPricesWithMarketDataByAddresses(
-        tokenAddresses,
-        assetPlatformId,
-        currency as VsCurrencyType
-      )) ?? {}
-
-    const nativeToken = await this.getNativeTokenBalance(
-      provider,
-      userAddress,
-      network,
-      currency
-    )
-
-    const erc20Tokens = await this.getErc20Balances(
-      provider,
-      activeTokenList,
-      tokenPriceDict,
-      userAddress,
-      network,
-      currency
-    )
-
-    const nftStates = await this.getErc721Balances(userAddress)
-
-    return [nativeToken, ...erc20Tokens, ...nftStates]
-  }
+  // private async getErc721Balances(
+  //   userAddress: string
+  // ): Promise<TokenWithBalanceERC721[]> {
+  //   const user = new User({ baseUrl: 'https://blizzard.avax.network' })
+  //   const result = await user.getNftState(userAddress)
+  //   return (result.data ?? []) as any[] // TODO fit to TokenWithBalance interface
+  // }
 }
 
 export default new EvmBalanceService()

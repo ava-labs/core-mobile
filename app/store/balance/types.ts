@@ -62,6 +62,34 @@ export type Balance = {
   tokens: TokenWithBalance[]
 }
 
+export type Balances = { [chainId_address: string]: Balance }
+
+export enum QueryStatus {
+  /**
+   * Indicates no query is in flight
+   */
+  IDLE = 'idle',
+
+  /**
+   * Indicates the query is being run for the first time
+   */
+  LOADING = 'loading',
+
+  /**
+   * Indicates the query is being re-run on demand (user clicks refetch for example)
+   */
+  REFETCHING = 'refetching',
+
+  /**
+   * Indicates that a polling query is currently in flight.
+   * For example if the query runs every 10 seconds then
+   * the status will switch to `polling` every 10 seconds until
+   * the query has resolved.
+   */
+  POLLING = 'polling'
+}
+
 export type BalanceState = {
-  balances: { [chainId_address: string]: Balance }
+  status: QueryStatus
+  balances: Balances
 }

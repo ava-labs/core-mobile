@@ -27,14 +27,10 @@ type NavigationProp = WalletScreenProps<
 >['navigation']
 
 function TokenManagement(): JSX.Element {
-  const { filteredTokenList, searchText, setSearchText, loadTokenList } =
+  const { filteredTokenList, searchText, setSearchText, refetch } =
     useSearchableTokenList(false)
 
   const navigation = useNavigation<NavigationProp>()
-
-  function handleRefresh() {
-    loadTokenList()
-  }
 
   const renderItem = (item: ListRenderItemInfo<TokenWithBalance>) => {
     const token = item.item
@@ -91,7 +87,7 @@ function TokenManagement(): JSX.Element {
         <FlatList
           data={filteredTokenList}
           renderItem={renderItem}
-          onRefresh={handleRefresh}
+          onRefresh={refetch}
           ListHeaderComponent={
             <View
               style={{ marginTop: 8, marginBottom: 16, marginHorizontal: 16 }}>
