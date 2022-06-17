@@ -15,14 +15,20 @@ import { selectNetworks } from 'store/network'
 import walletService from 'services/wallet/WalletService'
 import { selectActiveAccount } from 'store/account'
 import { useActiveNetwork } from 'hooks/useActiveNetwork'
-import { ChainId } from '@avalabs/chains-sdk'
+import {
+  BITCOIN_NETWORK,
+  BITCOIN_TEST_NETWORK,
+  ChainId,
+  ETHEREUM_NETWORK,
+  ETHEREUM_TEST_NETWORK_RINKEBY
+} from '@avalabs/chains-sdk'
 import networkService from 'services/network/NetworkService'
 import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 
 const events = new EventEmitter()
 
 /**
- * prepares asset to be transfered by check creating a TransactionRequest, signing with wallet.signEvm;
+ * prepares asset to be transferred by check creating a TransactionRequest, signing with wallet.signEvm;
  * @param asset
  */
 export function useTransferAsset() {
@@ -40,13 +46,11 @@ export function useTransferAsset() {
         ? allNetworks[ChainId.AVALANCHE_TESTNET_ID]
         : allNetworks[ChainId.AVALANCHE_MAINNET_ID]
     } else if (currentBlockchain === Blockchain.BITCOIN) {
-      return activeNetwork.isTestnet
-        ? allNetworks[ChainId.BITCOIN_TESTNET]
-        : allNetworks[ChainId.BITCOIN]
+      return activeNetwork.isTestnet ? BITCOIN_TEST_NETWORK : BITCOIN_NETWORK
     } else if (currentBlockchain === Blockchain.ETHEREUM) {
       return activeNetwork.isTestnet
-        ? allNetworks[ChainId.ETHEREUM_TEST_RINKEBY]
-        : allNetworks[ChainId.ETHEREUM_HOMESTEAD]
+        ? ETHEREUM_TEST_NETWORK_RINKEBY
+        : ETHEREUM_NETWORK
     }
   }
 

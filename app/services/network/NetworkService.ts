@@ -5,7 +5,6 @@ import {
   BITCOIN_TEST_NETWORK,
   ChainId,
   ETHEREUM_NETWORK,
-  ETHEREUM_TEST_NETWORK_RINKEBY,
   getChainsAndTokens,
   Network,
   NetworkVMType
@@ -84,8 +83,7 @@ class NetworkService {
       ...erc20Networks,
       [ChainId.BITCOIN]: BITCOIN_NETWORK,
       [ChainId.BITCOIN_TESTNET]: BITCOIN_TEST_NETWORK,
-      [ChainId.ETHEREUM_HOMESTEAD]: ETHEREUM_NETWORK,
-      [ChainId.ETHEREUM_TEST_RINKEBY]: ETHEREUM_TEST_NETWORK_RINKEBY
+      [ChainId.ETHEREUM_HOMESTEAD]: ETHEREUM_NETWORK
     }
 
     return networks
