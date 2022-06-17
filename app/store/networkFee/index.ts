@@ -31,8 +31,6 @@ const networkFeeSlice = createSlice({
 
 // selectors
 export const getNetworkFee = (state: RootState) => state.networkFee
-export const selectSendFee = (state: RootState) =>
-  state.networkFee.networkFees.low
 
 // actions
 export const fetchNetworkFee = createAction(`${reducerName}/fetchNetworkFee`)
