@@ -1,4 +1,4 @@
-import React, { FC } from 'react'
+import React, { FC, useMemo } from 'react'
 import { FlatList, StyleProp, View, ViewStyle } from 'react-native'
 
 interface Props {
@@ -6,12 +6,17 @@ interface Props {
 }
 
 const ScrollViewList: FC<Props> = ({ style, children }) => {
+  const Content = useMemo(
+    () => <View style={style}>{children}</View>,
+    [style, children]
+  )
+
   return (
     <FlatList
       data={[]}
       renderItem={null}
       ListEmptyComponent={null}
-      ListHeaderComponent={() => <View style={style}>{children}</View>}
+      ListHeaderComponent={Content}
     />
   )
 }

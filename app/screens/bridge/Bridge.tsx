@@ -519,4 +519,4 @@ const styles = StyleSheet.create({
   }
 })
 
-export default Bridge
+export default React.memo(Bridge)
