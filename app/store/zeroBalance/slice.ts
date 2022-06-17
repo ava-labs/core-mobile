@@ -25,11 +25,11 @@ export const zeroBalanceSlice = createSlice({
 
 // selectors
 export const selectZeroBalanceWhiteList = (state: RootState) =>
-  state.settings.zeroBalance.whitelist
+  state.zeroBalance.whitelist
 
 export const selectIsZeroBalanceWhiteListed =
   (tokenId: string) => (state: RootState) =>
-    state.settings.zeroBalance.whitelist.includes(tokenId)
+    state.zeroBalance.whitelist.includes(tokenId)
 
 // actions
 export const { toggleWhitelist } = zeroBalanceSlice.actions

@@ -12,7 +12,6 @@ import StorageTools from 'repository/StorageTools'
 const USER_SETTINGS = 'USER_SETTINGS'
 const ADDR_BOOK = 'ADDR_BOOK_1'
 const ADDR_BOOK_RECENTS = 'ADDR_BOOK_RECENTS_1'
-const WATCHLIST_FAVORITES = 'WATCHLIST_FAVORITES'
 const CUSTOM_TOKENS = 'CUSTOM_TOKENS'
 const NFTs = 'NFTs_2'
 const VIEW_ONCE_INFORMATION = 'VIEW_ONCE_INFORMATION'
@@ -58,10 +57,6 @@ export type Repo = {
     infoHasBeenShown: (info: ViewOnceInformation) => boolean
     saveViewOnceInformation: (info: ViewOnceInformation[]) => void
   }
-  watchlistFavoritesRepo: {
-    watchlistFavorites: string[]
-    saveWatchlistFavorites: (favorites: string[]) => void
-  }
   nftRepo: {
     nfts: Map<UID, NFTItemData>
     saveNfts: (nfts: Map<UID, NFTItemData>) => void
@@ -92,7 +87,6 @@ export function useRepo(): Repo {
   const [nfts, setNfts] = useState<Map<UID, NFTItemData>>(new Map())
   const [addressBook, setAddressBook] = useState<Map<UID, Contact>>(new Map())
   const [recentContacts, setRecentContacts] = useState<RecentContact[]>([])
-  const [watchlistFavorites, setWatchlistFavorites] = useState<string[]>([])
   const [customTokens, setCustomTokens] = useState<CustomTokens>({})
   const [viewOnceInfo, setViewOnceInfo] = useState<ViewOnceInformation[]>([])
   const [userSettings, setUserSettings] = useState<Map<Setting, SettingValue>>(
@@ -152,13 +146,6 @@ export function useRepo(): Repo {
     )
   }
 
-  const saveWatchlistFavorites = (favorites: string[]) => {
-    setWatchlistFavorites([...favorites])
-    StorageTools.saveToStorage(WATCHLIST_FAVORITES, favorites).catch(reason =>
-      console.error(reason)
-    )
-  }
-
   const saveViewOnceInformation = (info: ViewOnceInformation[]) => {
     // we use set so we don't allow duplicates
     const infoSet = [...new Set(info)]
@@ -179,7 +166,6 @@ export function useRepo(): Repo {
     setAddressBook(new Map())
     setNfts(new Map())
     setRecentContacts([])
-    setWatchlistFavorites([])
     setCustomTokens({})
     setUserSettings(new Map())
     setInitialized(false)
@@ -200,9 +186,6 @@ export function useRepo(): Repo {
         ADDR_BOOK_RECENTS
       )
     )
-    setWatchlistFavorites(
-      await StorageTools.loadFromStorageAsArray<string>(WATCHLIST_FAVORITES)
-    )
     setCustomTokens(
       (await StorageTools.loadFromStorageAsObj<CustomTokens>(CUSTOM_TOKENS)) ??
         {}
@@ -222,7 +205,6 @@ export function useRepo(): Repo {
       recentContacts,
       addToRecentContacts
     },
-    watchlistFavoritesRepo: { watchlistFavorites, saveWatchlistFavorites },
     customTokenRepo: { customTokens, saveCustomTokens },
     userSettingsRepo: {
       setSetting,
