@@ -7,8 +7,7 @@ import React, {
   useState
 } from 'react'
 import { SendHookError } from '@avalabs/wallet-react-components'
-import { bnToAvaxC, numberToBN } from '@avalabs/avalanche-wallet-sdk'
-import { mustNumber, mustValue } from 'utils/JsTools'
+import { bnToAvaxC } from '@avalabs/avalanche-wallet-sdk'
 import { BN } from 'avalanche'
 import { BehaviorSubject } from 'rxjs'
 import { NFTItemData } from 'screens/nft/NftCollection'
@@ -44,7 +43,6 @@ export const SendNFTContextProvider = ({
 
   const activeAccount = useSelector(selectActiveAccount)
   const [sendToken] = useState<NFTItemData>(nft)
-  const customGasPrice$ = useRef(new BehaviorSubject({ bn: new BN(0) }))
   const gasLimit$ = useRef(new BehaviorSubject<number>(0))
 
   const [sendToAddress, setSendToAddress] = useState('')
@@ -56,7 +54,7 @@ export const SendNFTContextProvider = ({
 
   const [sendFeeAvax, setSendFeeAvax] = useState<string | undefined>()
   const [sendFeeUsd, setSendFeeUsd] = useState<number | undefined>()
-  const [customGasPriceNanoAvax, setCustomGasPriceNanoAvax] = useState('0')
+  const [customGasPrice, setCustomGasPrice] = useState(new BN(0))
   const [sendStatus, setSendStatus] = useState<
     'Idle' | 'Sending' | 'Success' | 'Fail'
   >('Idle')
@@ -94,7 +92,7 @@ export const SendNFTContextProvider = ({
   //   const subscription = checkAndValidateSendNft(
   //     sendToken.collection.contract_address,
   //     Number.parseInt(sendToken.token_id, 10),
-  //     customGasPrice$.current,
+  //     customGasPrice,
   //     of(sendToAddress),
   //     of(walletService.getEvmWallet(activeAccount.index)),
   //     gasLimit$.current
@@ -129,22 +127,6 @@ export const SendNFTContextProvider = ({
   }, [sendFeeAvax, avaxPrice])
 
   useEffect(() => {
-    customGasPrice$.current.next(
-      mustValue(
-        () => {
-          return {
-            bn: numberToBN(
-              mustNumber(() => parseFloat(customGasPriceNanoAvax), 0),
-              9
-            )
-          }
-        },
-        { bn: new BN(0) }
-      )
-    )
-  }, [customGasPriceNanoAvax])
-
-  useEffect(() => {
     gasLimit$.current.next(gasLimit)
   }, [gasLimit])
 
@@ -159,7 +141,7 @@ export const SendNFTContextProvider = ({
     //   Number.parseInt(sendToken.token_id, 10),
     //   Promise.resolve(walletService.getEvmWallet(activeAccount!.index)), //fixme
     //   sendToAddress,
-    //   firstValueFrom(customGasPrice$.current),
+    //   customGasPrice,
     //   gasLimit
     // ).subscribe({
     //   next: value => {
@@ -194,8 +176,8 @@ export const SendNFTContextProvider = ({
     fees: {
       sendFeeAvax,
       sendFeeUsd,
-      customGasPriceNanoAvax,
-      setCustomGasPriceNanoAvax,
+      customGasPrice,
+      setCustomGasPrice,
       gasLimit,
       setGasLimit
     },
@@ -227,8 +209,8 @@ export interface Account {
 export interface Fees {
   sendFeeAvax: string | undefined
   sendFeeUsd: number | undefined
-  customGasPriceNanoAvax: string
-  setCustomGasPriceNanoAvax: Dispatch<string>
+  customGasPrice: BN
+  setCustomGasPrice: Dispatch<BN>
   gasLimit: number | undefined
   setGasLimit: Dispatch<number>
 }

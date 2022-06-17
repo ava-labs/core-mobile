@@ -12,6 +12,8 @@ import { useGasPrice } from 'utils/GasPriceHook'
 import { Row } from 'components/Row'
 import AppNavigation from 'navigation/AppNavigation'
 import { SwapScreenProps } from 'navigation/types'
+import { useSelector } from 'react-redux'
+import { selectActiveNetwork } from 'store/network'
 
 interface SwapTransactionDetailProps {
   review?: boolean
@@ -36,6 +38,7 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
   const { gasPrice } = useGasPrice()
   const { theme } = useApplicationContext()
   const { trxDetails } = useSwapContext()
+  const activeNetwork = useSelector(selectActiveNetwork)
   const { navigate } = useNavigation<NavigationProp>()
   const slippageInfoMessage = popableContent(
     'Suggested slippage – your transaction will fail if the price changes unfavorably more than this percentage',
@@ -124,6 +127,7 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
         <>
           <Space y={16} />
           <NetworkFeeSelector
+            network={activeNetwork}
             networkFeeAvax={trxDetails.networkFee}
             networkFeeUsd={trxDetails.networkFeeUsd}
             gasPrice={gasPrice}
