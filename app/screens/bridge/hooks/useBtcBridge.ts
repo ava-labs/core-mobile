@@ -21,11 +21,11 @@ import { useActiveAccount } from 'hooks/useActiveAccount'
 import { NetworkFee } from 'services/networkFee/types'
 import { BITCOIN_NETWORK, BITCOIN_TEST_NETWORK } from '@avalabs/chains-sdk'
 import networkFeeService from 'services/networkFee/NetworkFeeService'
-
-import { useTokens } from 'hooks/useTokens'
 import walletService from 'services/wallet/WalletService'
 import { resolve } from '@avalabs/utils-sdk'
 import networkService from 'services/network/NetworkService'
+import { useSelector } from 'react-redux'
+import { selectTokensWithBalance } from 'store/balance'
 
 export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
   const activeNetwork = useActiveNetwork()
@@ -41,7 +41,7 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
   } = useBridgeSDK()
   const isDeveloperMode = activeNetwork.isTestnet
   const btcAddress = activeAccount?.addressBtc
-  const tokens = useTokens()
+  const tokens = useSelector(selectTokensWithBalance)
 
   const isBitcoinBridge =
     currentBlockchain === Blockchain.BITCOIN ||

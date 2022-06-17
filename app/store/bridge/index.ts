@@ -1,7 +1,9 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store'
-import { BridgeState, initialState } from 'store/bridge/BridgeState'
 import { BridgeTransaction } from '@avalabs/bridge-sdk'
+import { AppStartListening } from 'store/middleware/listener'
+import { selectNetworks, setActive } from 'store/network'
+import { BridgeState, initialState } from 'store/bridge/types'
 
 const reducerName = 'bridge'
 
@@ -11,25 +13,11 @@ export const bridgeSlice = createSlice({
   reducers: {
     addBridgeTransaction: (state, action: PayloadAction<BridgeTransaction>) => {
       const bridgeTx = action.payload
-      const currentBridgeState = state.bridge
-
-      state.bridge = {
-        ...currentBridgeState,
-        bridgeTransactions: {
-          ...currentBridgeState.bridgeTransactions,
-          [bridgeTx.sourceTxHash]: bridgeTx
-        }
-      }
+      state.bridge.bridgeTransactions[bridgeTx.sourceTxHash] = bridgeTx
     },
     popBridgeTransaction: (state, action: PayloadAction<string>) => {
       const sourceTxHash = action.payload
-      const { [sourceTxHash]: unused, ...rest } =
-        state.bridge.bridgeTransactions
-
-      state.bridge = {
-        ...state.bridge,
-        bridgeTransactions: rest
-      }
+      delete state.bridge.bridgeTransactions[sourceTxHash]
     },
     setBridgeFilter(state, action: PayloadAction<boolean>) {
       state.bridge.isMainnet = action.payload
@@ -55,5 +43,20 @@ export const selectBridgeTransactions = (state: RootState) => {
 
 export const { addBridgeTransaction, popBridgeTransaction, setBridgeFilter } =
   bridgeSlice.actions
+
+export const addSetBridgeFilterListener = (
+  startListening: AppStartListening
+) => {
+  // listen to network changes here to update filter
+  startListening({
+    actionCreator: setActive,
+    effect: (action, listenerApi) => {
+      const state = listenerApi.getState()
+      const networks = selectNetworks(state)
+      // updates bridge isMainnet filter based on selected network
+      listenerApi.dispatch(setBridgeFilter(!networks[action.payload].isTestnet))
+    }
+  })
+}
 
 export default bridgeSlice.reducer

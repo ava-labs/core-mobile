@@ -4,7 +4,7 @@ import { addAppListeners } from 'store/app'
 import { addBalanceListeners } from 'store/balance'
 import { addAccountListener } from 'store/account'
 import { fetchNetworkFeeListener } from 'store/networkFee'
-import { addSetActiveListener } from 'store/network'
+import { addSetBridgeFilterListener } from 'store/bridge'
 
 export type AppStartListening = TypedStartListening<RootState, AppDispatch>
 
@@ -20,7 +20,7 @@ addBalanceListeners(startListening)
 
 addAccountListener(startListening)
 
-addSetActiveListener(startListening)
+addSetBridgeFilterListener(startListening)
 
 fetchNetworkFeeListener(startListening)
 

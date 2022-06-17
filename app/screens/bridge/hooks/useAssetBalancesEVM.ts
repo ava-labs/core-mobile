@@ -7,9 +7,10 @@ import { useEffect, useMemo, useState } from 'react'
 import { getEthereumBalances } from 'screens/bridge/handlers/getEthereumBalances'
 import { getAvalancheBalances } from 'screens/bridge/handlers/getAvalancheBalances'
 import { AssetBalance } from 'screens/bridge/utils/types'
-import { useTokens } from 'hooks/useTokens'
 import { useActiveAccount } from 'hooks/useActiveAccount'
 import { useActiveNetwork } from 'hooks/useActiveNetwork'
+import { useSelector } from 'react-redux'
+import { selectTokensWithBalance } from 'store/balance'
 
 /**
  * Get for the current chain.
@@ -27,7 +28,7 @@ export function useAssetBalancesEVM(
   // TODO update this when adding support for /convert
   const showDeprecated = false
 
-  const tokens = useTokens()
+  const tokens = useSelector(selectTokensWithBalance)
   const activeAccount = useActiveAccount()
   const network = useActiveNetwork()
   const { avalancheAssets, ethereumAssets, currentBlockchain } = useBridgeSDK()

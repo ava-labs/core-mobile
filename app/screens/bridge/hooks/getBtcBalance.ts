@@ -18,7 +18,7 @@ export async function getBtcBalance(
   balance: number
   utxos: BitcoinInputUTXO[]
 }> {
-  const token = await balanceService.getBalances(
+  const token = await balanceService.getBalancesForAddress(
     isMainnet ? BITCOIN_NETWORK : BITCOIN_TEST_NETWORK,
     address,
     currency

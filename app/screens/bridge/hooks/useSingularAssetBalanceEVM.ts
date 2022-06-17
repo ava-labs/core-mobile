@@ -10,15 +10,16 @@ import { useEffect, useMemo, useState } from 'react'
 import { getEthereumBalance } from 'screens/bridge/handlers/getEthereumBalance'
 import { AssetBalance } from 'screens/bridge/utils/types'
 import Big from 'big.js'
-import { useTokens } from 'hooks/useTokens'
 import { useActiveNetwork } from 'hooks/useActiveNetwork'
 import { useActiveAccount } from 'hooks/useActiveAccount'
 import {
+  selectTokensWithBalance,
   TokenType,
   TokenWithBalance,
   TokenWithBalanceERC20
 } from 'store/balance'
 import { bnToBig } from '@avalabs/utils-sdk'
+import { useSelector } from 'react-redux'
 
 /**
  * Get the balance of a bridge supported asset for the given blockchain.
@@ -28,7 +29,7 @@ export function useSingularAssetBalanceEVM(
   source: Blockchain
 ): AssetBalance | undefined {
   const [ethBalance, setEthBalance] = useState<Big>()
-  const tokens = useTokens()
+  const tokens = useSelector(selectTokensWithBalance)
   const network = useActiveNetwork()
   const activeAccount = useActiveAccount()
 

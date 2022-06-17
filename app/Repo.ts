@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from 'react'
 import { CustomTokens } from 'screens/tokenManagement/hooks/useAddCustomToken'
 import { NFTItemData } from 'screens/nft/NftCollection'
 import StorageTools from 'repository/StorageTools'
-import { BridgeState, defaultBridgeState } from 'store/bridge/BridgeState'
 
 /**
  * Currently we support only one wallet, with multiple accounts.
@@ -17,7 +16,6 @@ const WATCHLIST_FAVORITES = 'WATCHLIST_FAVORITES'
 const CUSTOM_TOKENS = 'CUSTOM_TOKENS'
 const NFTs = 'NFTs_2'
 const VIEW_ONCE_INFORMATION = 'VIEW_ONCE_INFORMATION'
-const PENDING_BRIDGE_TRANSACTIONS = 'PENDING_BRIDGE_TRANSACTIONS'
 
 /**
  * ViewOnceInformation is used by views that needs to display something for the 1st time one.
@@ -78,10 +76,6 @@ export type Repo = {
     customTokens: CustomTokens
     saveCustomTokens: (customTokens: CustomTokens) => Promise<void>
   }
-  pendingBridgeTransactions: {
-    pendingBridgeTransactions: BridgeState
-    savePendingBridgeTransactions: (newState: BridgeState) => void
-  }
   /**
    * Store any simple user settings here
    */
@@ -104,8 +98,6 @@ export function useRepo(): Repo {
   const [userSettings, setUserSettings] = useState<Map<Setting, SettingValue>>(
     new Map()
   )
-  const [pendingBridgeTransactions, setPendingBridgeTransactions] =
-    useState<BridgeState>(defaultBridgeState)
 
   useEffect(() => {
     ;(async () => {
@@ -176,14 +168,6 @@ export function useRepo(): Repo {
     )
   }
 
-  const savePendingBridgeTransactions = (pendingTransactions: BridgeState) => {
-    setPendingBridgeTransactions(pendingTransactions)
-    StorageTools.saveToStorage(
-      PENDING_BRIDGE_TRANSACTIONS,
-      pendingTransactions
-    ).catch(error => console.error(error))
-  }
-
   const infoHasBeenShown = (info: ViewOnceInformation) => {
     return viewOnceInfo.includes(info)
   }
@@ -198,7 +182,6 @@ export function useRepo(): Repo {
     setWatchlistFavorites([])
     setCustomTokens({})
     setUserSettings(new Map())
-    setPendingBridgeTransactions(defaultBridgeState)
     setInitialized(false)
   }
 
@@ -229,15 +212,6 @@ export function useRepo(): Repo {
         VIEW_ONCE_INFORMATION
       )
     )
-    StorageTools.loadFromStorageAsObj<BridgeState>(
-      PENDING_BRIDGE_TRANSACTIONS
-    ).then(value => {
-      setPendingBridgeTransactions(
-        value && 'bridgeTransactions' in value
-          ? (value as BridgeState)
-          : defaultBridgeState
-      )
-    })
   }
 
   return {
@@ -258,10 +232,6 @@ export function useRepo(): Repo {
       viewOnceInfo: viewOnceInfo,
       saveViewOnceInformation,
       infoHasBeenShown
-    },
-    pendingBridgeTransactions: {
-      pendingBridgeTransactions: pendingBridgeTransactions,
-      savePendingBridgeTransactions: savePendingBridgeTransactions
     },
     flush,
     initialized

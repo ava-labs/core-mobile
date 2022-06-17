@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useState } from 'react'
+import React, { FC, useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
@@ -114,10 +114,6 @@ const Bridge: FC = () => {
           return true
       }
     })
-
-  useEffect(() => {
-    setBridgeError(bridgeError)
-  }, [bridgeError])
 
   /**
    * Used to display currently selected and dropdown items.

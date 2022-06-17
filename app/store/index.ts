@@ -12,6 +12,7 @@ import {
   REHYDRATE
 } from 'redux-persist'
 import { DeserializeBridgeTransform } from 'store/transforms'
+import bridge, { addBridgeTransaction } from 'store/bridge'
 import { networkReducer as network } from './network'
 import { balanceReducer as balance, setBalance, setBalances } from './balance'
 import { appReducer as app, onRehydrationComplete } from './app'
@@ -19,7 +20,6 @@ import { listener } from './middleware/listener'
 import { accountsReducer as account } from './account'
 import networkFee from './networkFee'
 import settings from './settings'
-import bridge, { addBridgeTransaction } from './bridge/BridgeReducer'
 
 const persistActions = [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER]
 
@@ -51,6 +51,7 @@ export const store = configureStore({
         ignoredActions: [
           ...persistActions,
           setBalance.type,
+          setBalances.type,
           addBridgeTransaction.type
         ],
         ignoredPaths: ['balance', 'networkFee', 'bridge']

@@ -14,7 +14,7 @@ import Big from 'big.js'
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { useTransferAsset } from 'screens/bridge/hooks/useTransferAsset'
 import { PartialBridgeTransaction } from 'screens/bridge/handlers/createBridgeTransaction'
-import { BridgeReducerState, BridgeState } from 'store/bridge/BridgeState'
+import { BridgeReducerState, BridgeState } from 'store/bridge/types'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectActiveNetwork, selectNetworks } from 'store/network'
 import { selectActiveAccount } from 'store/account'
@@ -24,8 +24,10 @@ import {
   addBridgeTransaction,
   popBridgeTransaction,
   selectBridgeTransactions
-} from 'store/bridge/BridgeReducer'
+} from 'store/bridge'
 import { selectIsReady } from 'store/app'
+import { ChainId } from '@avalabs/chains-sdk'
+import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 
 export enum TransferEventType {
   WRAP_STATUS = 'wrap_status',
@@ -70,19 +72,21 @@ function LocalBridgeProvider({ children }: { children: any }) {
   const dispatch = useDispatch()
   const config = useBridgeConfig().config
   const network = useSelector(selectActiveNetwork)
-  const networks = useSelector(selectNetworks)
+  const allNetworks = useSelector(selectNetworks)
   const activeAccount = useSelector(selectActiveAccount)
   const bridgeTransactions = useSelector(selectBridgeTransactions)
   const hydrationComplete = useSelector(selectIsReady)
   const { currentBlockchain } = useBridgeSDK()
   const { transferHandler, events } = useTransferAsset()
-  const avalancheProvider = networkService.getAvalancheProvider(
-    network.isTestnet,
-    networks
-  )
+  const avalancheNetwork = network.isTestnet
+    ? allNetworks[ChainId.AVALANCHE_TESTNET_ID]
+    : allNetworks[ChainId.AVALANCHE_MAINNET_ID]
 
   const ethereumProvider = networkService.getEthereumProvider(network.isTestnet)
   const bitcoinProvider = networkService.getBitcoinProvider(network.isTestnet)
+  const avalancheProvider = networkService.getProviderForNetwork(
+    avalancheNetwork
+  ) as JsonRpcBatchInternal
 
   // load pending txs from storage
   useEffect(() => {

@@ -17,6 +17,7 @@ import { selectActiveAccount } from 'store/account'
 import { useActiveNetwork } from 'hooks/useActiveNetwork'
 import { ChainId } from '@avalabs/chains-sdk'
 import networkService from 'services/network/NetworkService'
+import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 
 const events = new EventEmitter()
 
@@ -27,7 +28,7 @@ const events = new EventEmitter()
 export function useTransferAsset() {
   const activeAccount = useSelector(selectActiveAccount)
   const activeNetwork = useActiveNetwork()
-  const networks = useSelector(selectNetworks)
+  const allNetworks = useSelector(selectNetworks)
   const config = useBridgeConfig().config
   const { currentBlockchain } = useBridgeSDK()
   const address = activeAccount?.address ?? ''
@@ -36,16 +37,16 @@ export function useTransferAsset() {
     // We have to get the network for the current blockchain
     if (currentBlockchain === Blockchain.AVALANCHE) {
       return activeNetwork.isTestnet
-        ? networks[ChainId.AVALANCHE_TESTNET_ID]
-        : networks[ChainId.AVALANCHE_MAINNET_ID]
+        ? allNetworks[ChainId.AVALANCHE_TESTNET_ID]
+        : allNetworks[ChainId.AVALANCHE_MAINNET_ID]
     } else if (currentBlockchain === Blockchain.BITCOIN) {
       return activeNetwork.isTestnet
-        ? networks[ChainId.BITCOIN_TESTNET]
-        : networks[ChainId.BITCOIN]
+        ? allNetworks[ChainId.BITCOIN_TESTNET]
+        : allNetworks[ChainId.BITCOIN]
     } else if (currentBlockchain === Blockchain.ETHEREUM) {
       return activeNetwork.isTestnet
-        ? networks[ChainId.ETHEREUM_TEST_RINKEBY]
-        : networks[ChainId.ETHEREUM_HOMESTEAD]
+        ? allNetworks[ChainId.ETHEREUM_TEST_RINKEBY]
+        : allNetworks[ChainId.ETHEREUM_HOMESTEAD]
     }
   }
 
@@ -59,11 +60,12 @@ export function useTransferAsset() {
     if (!config || !blockchainNetwork) {
       return Promise.reject('Wallet not ready')
     }
-
-    const avalancheProvider = networkService.getAvalancheProvider(
-      activeNetwork.isTestnet,
-      networks
-    )
+    const avalancheNetwork = activeNetwork.isTestnet
+      ? allNetworks[ChainId.AVALANCHE_TESTNET_ID]
+      : allNetworks[ChainId.AVALANCHE_MAINNET_ID]
+    const avalancheProvider = networkService.getProviderForNetwork(
+      avalancheNetwork
+    ) as JsonRpcBatchInternal
     const ethereumProvider = networkService.getEthereumProvider(
       activeNetwork.isTestnet
     )

@@ -75,7 +75,7 @@ class NetworkService {
     throw new Error('unsupported network')
   }
 
-  async getNetworks() {
+  async getNetworks(): Promise<{ [chainId: number]: Network }> {
     const erc20Networks = await getChainsAndTokens()
 
     delete erc20Networks[ChainId.AVALANCHE_LOCAL_ID]
