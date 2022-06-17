@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useEffect } from 'react'
 import { ActivityIndicator, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
@@ -9,9 +9,7 @@ import Separator from 'components/Separator'
 import { Row } from 'components/Row'
 import AvaButton from 'components/AvaButton'
 import FlexSpacer from 'components/FlexSpacer'
-import NetworkFeeSelector from 'components/NetworkFeeSelector'
 import { useSendTokenContext } from 'contexts/SendTokenContext'
-import { useGasPrice } from 'utils/GasPriceHook'
 import AppNavigation from 'navigation/AppNavigation'
 import { SendTokensScreenProps } from 'navigation/types'
 import SendRow from 'components/SendRow'
@@ -26,26 +24,18 @@ export default function ReviewSend({
   onSuccess: (transactionId: string) => void
 }) {
   const { theme } = useApplicationContext()
-  const { goBack, navigate } = useNavigation<NavigationProp>()
+  const { goBack } = useNavigation<NavigationProp>()
   const {
     sendToken,
     tokenLogo,
     sendAmount,
     fromAccount,
     toAccount,
-    fees,
     onSendNow,
     sendStatus,
     sendStatusMsg,
     transactionId
   } = useSendTokenContext()
-  const { gasPrice } = useGasPrice()
-
-  const netFeeString = useMemo(() => {
-    return fees.sendFeeNative
-      ? Number.parseFloat(fees.sendFeeNative).toFixed(6).toString()
-      : '-'
-  }, [fees.sendFeeNative])
 
   useEffect(() => {
     switch (sendStatus) {
@@ -103,29 +93,6 @@ export default function ReviewSend({
           label={'To'}
           title={toAccount.title}
           address={toAccount.address}
-        />
-        <Space y={8} />
-        <NetworkFeeSelector
-          networkFeeAvax={netFeeString}
-          networkFeeUsd={`${fees.sendFeeUsd?.toFixed(4)} USD`}
-          gasPrice={gasPrice}
-          onWeightedGas={price => fees.setCustomGasPriceNanoAvax(price.value)}
-          weights={{ normal: 1, fast: 1.05, instant: 1.15, custom: 35 }}
-          onSettingsPressed={() => {
-            const initGasLimit = fees.gasLimit || 0
-
-            const onCustomGasLimit = (gasLimit: number) => {
-              gasLimit //fixme in CP-1775
-              console.log('oncustom gas limit')
-              // fees.setGasLimit(gasLimit)
-            }
-
-            navigate(AppNavigation.Modal.EditGasLimit, {
-              gasLimit: initGasLimit.toString(),
-              networkFee: netFeeString,
-              onSave: onCustomGasLimit
-            })
-          }}
         />
         <Space y={16} />
         <Separator />

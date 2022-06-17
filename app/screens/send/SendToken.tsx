@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useState } from 'react'
+import React, { FC, useEffect, useMemo, useState } from 'react'
 import { Modal, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
@@ -20,6 +20,12 @@ import { TokenWithBalance } from 'store/balance'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
 import { NetworkVMType } from '@avalabs/chains-sdk'
+import AppNavigation from 'navigation/AppNavigation'
+import NetworkFeeSelector from 'components/NetworkFeeSelector'
+import { useGasPrice } from 'utils/GasPriceHook'
+import { useNavigation } from '@react-navigation/native'
+import { SendTokensScreenProps } from 'navigation/types'
+import { Row } from 'components/Row'
 
 type Props = {
   onNext: () => void
@@ -31,6 +37,10 @@ type Props = {
   contact?: Contact
 }
 
+type NavigationProp = SendTokensScreenProps<
+  typeof AppNavigation.Send.Review
+>['navigation']
+
 const SendToken: FC<Props> = ({
   onNext,
   onOpenAddressBook,
@@ -39,6 +49,7 @@ const SendToken: FC<Props> = ({
   contact
 }) => {
   const { theme } = useApplicationContext()
+  const { navigate } = useNavigation<NavigationProp>()
   const {
     setSendToken,
     sendToken,
@@ -47,7 +58,8 @@ const SendToken: FC<Props> = ({
     toAccount,
     fees,
     canSubmit,
-    sdkError
+    sdkError,
+    maxAmount
   } = useSendTokenContext()
   const activeNetwork = useSelector(selectActiveNetwork)
   const [showQrCamera, setShowQrCamera] = useState(false)
@@ -55,6 +67,15 @@ const SendToken: FC<Props> = ({
     activeNetwork.vmName === NetworkVMType.EVM
       ? 'Enter 0x Address'
       : 'Enter Bitcoin Address'
+
+  const { gasPrice } = useGasPrice()
+  const balance = numeral(sendToken?.balanceDisplayValue ?? 0).value() || 0
+
+  const netFeeString = useMemo(() => {
+    return fees.sendFeeNative
+      ? Number.parseFloat(fees.sendFeeNative).toFixed(6).toString()
+      : '-'
+  }, [fees.sendFeeNative])
 
   const {
     showAddressBook,
@@ -169,23 +190,51 @@ const SendToken: FC<Props> = ({
       ) : (
         <>
           <View style={{ paddingHorizontal: 16 }}>
+            <Row
+              style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+              <AvaText.Heading3>{'Token'}</AvaText.Heading3>
+              <AvaText.Body3>{`Balance: ${balance} ${
+                sendToken?.symbol ?? ''
+              }`}</AvaText.Body3>
+            </Row>
             <TokenSelectAndAmount
               selectedToken={sendToken}
               amount={sendAmount.toString()}
               maxEnabled={!!toAccount.address && !!sendToken}
               onAmountSet={amount => setSendAmount(amount)}
               onOpenSelectToken={() => onOpenSelectToken(setSendToken)}
-              getMaxAmount={() => {
-                const balance =
-                  numeral(sendToken?.balanceDisplayValue ?? 0).value() || 0
-                const fee = numeral(fees.sendFeeNative ?? 0).value() || 0
-                return (balance - fee).toFixed(4)
-              }}
+              getMaxAmount={() => maxAmount}
             />
+            <Space y={4} />
+            <Row style={{ justifyContent: 'flex-end' }}>
+              <AvaText.Body3 currency>TODO</AvaText.Body3>
+            </Row>
             <Space y={8} />
             <AvaText.Body3 textStyle={{ color: theme.colorError }}>
               {sdkError ?? ''}
             </AvaText.Body3>
+            <Space y={8} />
+            <NetworkFeeSelector
+              network={activeNetwork}
+              networkFeeAvax={netFeeString}
+              networkFeeUsd={`${fees.sendFeeUsd?.toFixed(4)} USD`}
+              gasPrice={gasPrice}
+              onWeightedGas={price => fees.setCustomGasPrice(price.bn)}
+              weights={{ Normal: 1, Fast: 1.05, Instant: 1.15, Custom: 35 }}
+              onSettingsPressed={() => {
+                const initGasLimit = fees.gasLimit || 0
+
+                const onCustomGasLimit = (gasLimit: number) => {
+                  fees.setGasLimit(gasLimit)
+                }
+
+                navigate(AppNavigation.Modal.EditGasLimit, {
+                  gasLimit: initGasLimit.toString(),
+                  networkFee: netFeeString,
+                  onSave: onCustomGasLimit
+                })
+              }}
+            />
           </View>
           <FlexSpacer />
         </>
