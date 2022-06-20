@@ -22,6 +22,7 @@ import { bnToEthersBigNumber, bnToLocaleString } from '@avalabs/utils-sdk'
 import { useNativeTokenPrice } from 'hooks/useNativeTokenPrice'
 import { fetchNetworkFee } from 'store/networkFee'
 import { selectSelectedCurrency } from 'store/settings/currency'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 export interface SendTokenContextState {
   sendToken: TokenWithBalance | undefined
@@ -44,6 +45,7 @@ export interface SendTokenContextState {
 export const SendTokenContext = createContext<SendTokenContextState>({} as any)
 
 export const SendTokenContextProvider = ({ children }: { children: any }) => {
+  const { theme } = useApplicationContext()
   const dispatch = useDispatch()
   const activeAccount = useSelector(selectActiveAccount)
   const activeNetwork = useSelector(selectActiveNetwork)
@@ -150,7 +152,13 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
 
   const tokenLogo = useCallback(() => {
     if (sendToken?.symbol === TokenSymbol.AVAX) {
-      return <AvaLogoSVG size={57} />
+      return (
+        <AvaLogoSVG
+          backgroundColor={theme.tokenLogoBg}
+          logoColor={theme.tokenLogoColor}
+          size={57}
+        />
+      )
     } else {
       return (
         <Image
@@ -161,7 +169,7 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
         />
       )
     }
-  }, [sendToken])
+  }, [sendToken, theme])
 
   function validateStateFx() {
     if (!activeAccount) {
