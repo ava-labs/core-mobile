@@ -12,6 +12,8 @@ import { GasPrice } from 'utils/GasPriceHook'
 import { bnToLocaleString, numberToBN } from '@avalabs/avalanche-wallet-sdk'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import { BN } from 'avalanche'
+import { Popable } from 'react-native-popable'
+import PoppableGasAndLimit from 'components/PoppableGasAndLimit'
 
 enum FeePreset {
   Normal = 'Normal',
@@ -26,6 +28,7 @@ const NetworkFeeSelector = ({
   networkFeeAvax,
   networkFeeInCurrency,
   gasPrice,
+  gasLimit,
   onWeightedGas,
   weights = defaultPresetWeights
 }: {
@@ -34,9 +37,11 @@ const NetworkFeeSelector = ({
   networkFeeAvax: string
   networkFeeInCurrency: number
   gasPrice: GasPrice
+  gasLimit: number
   onWeightedGas: (price: GasPrice) => void
   weights?: Weights
 }) => {
+  const { theme } = useApplicationContext()
   const [selectedPreset, setSelectedPreset] = useState(FeePreset.Normal)
   const [customGasPrice, setCustomGasPrice] = useState(
     weights[FeePreset.Custom].toString()
@@ -80,7 +85,18 @@ const NetworkFeeSelector = ({
   return (
     <>
       <Row>
-        <AvaText.Body2>Network Fee</AvaText.Body2>
+        <Popable
+          content={
+            <PoppableGasAndLimit
+              gasLimit={gasLimit}
+              gasPrice={bnToLocaleString(selectedGasBn, decimals)}
+            />
+          }
+          position={'right'}
+          style={{ minWidth: 200 }}
+          backgroundColor={theme.colorBg3}>
+          <AvaText.Body2>{`Network Fee ${gasLimit ? 'ⓘ' : ''}`}</AvaText.Body2>
+        </Popable>
         <View style={{ position: 'absolute', right: 0, top: -8 }}>
           <AvaButton.Icon onPress={onSettingsPressed}>
             <SettingsCogSVG />

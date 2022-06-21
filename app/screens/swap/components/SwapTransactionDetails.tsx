@@ -127,6 +127,7 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
         <>
           <Space y={16} />
           <NetworkFeeSelector
+            gasLimit={trxDetails.gasLimit}
             network={activeNetwork}
             networkFeeAvax={trxDetails.networkFee}
             networkFeeInCurrency={0} //FIXME

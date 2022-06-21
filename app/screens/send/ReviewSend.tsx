@@ -15,6 +15,8 @@ import { SendTokensScreenProps } from 'navigation/types'
 import { formatLargeNumber } from 'utils/Utils'
 import SendRow from 'components/SendRow'
 import { Popable } from 'react-native-popable'
+import { bnToLocaleString } from '@avalabs/utils-sdk'
+import PoppableGasAndLimit from 'components/PoppableGasAndLimit'
 
 type NavigationProp = SendTokensScreenProps<
   typeof AppNavigation.Send.Review
@@ -111,7 +113,12 @@ export default function ReviewSend({
         <Space y={16} />
         <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
           <Popable
-            content={'TBD'}
+            content={
+              <PoppableGasAndLimit
+                gasLimit={fees.gasLimit ?? 0}
+                gasPrice={bnToLocaleString(fees.customGasPrice)}
+              />
+            }
             position={'right'}
             style={{ minWidth: 200 }}
             backgroundColor={theme.colorBg3}>

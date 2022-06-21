@@ -115,6 +115,7 @@ export default function NftReview({ onSuccess }: NftReviewScreenProps) {
         />
         <Space y={8} />
         <NetworkFeeSelector
+          gasLimit={fees.gasLimit || 0}
           network={activeNetwork}
           networkFeeAvax={netFeeString}
           networkFeeInCurrency={fees.sendFeeUsd ?? 0}

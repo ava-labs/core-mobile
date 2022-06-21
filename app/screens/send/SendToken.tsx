@@ -220,6 +220,7 @@ const SendToken: FC<Props> = ({
               networkFeeAvax={netFeeString}
               networkFeeInCurrency={fees.sendFeeInCurrency ?? 0}
               gasPrice={gasPrice}
+              gasLimit={fees.gasLimit ?? 0}
               onWeightedGas={price => fees.setCustomGasPrice(price.bn)}
               weights={{ Normal: 1, Fast: 1.05, Instant: 1.15, Custom: 35 }}
               onSettingsPressed={() => {
