@@ -62,6 +62,12 @@ function BridgeScreenStack() {
             name={AppNavigation.Modal.BridgeSelectToken}
             component={BridgeSelectTokenBottomSheet}
           />
+<BridgeStack.Screen
+options={{headerShown: false}}
+name={AppNavigation.Bridge.AddInstructions}
+component={AddBitcoinInstructionsBottomSheet}
+/>
+
           <BridgeStack.Screen
             options={{ headerShown: false }}
             name={AppNavigation.Bridge.AddInstructions}
