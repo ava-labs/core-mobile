@@ -117,6 +117,7 @@ const PinOrBiometryLoginForRecoveryReveal = memo(() => {
       }}
       onSignInWithRecoveryPhrase={() => console.log('onSignIn')}
       hideLoginWithMnemonic
+      isResettingPin
     />
   )
 })

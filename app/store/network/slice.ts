@@ -2,6 +2,7 @@ import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { ChainId, Network } from '@avalabs/chains-sdk'
 import isEmpty from 'lodash.isempty'
 import NetworkService from 'services/network/NetworkService'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { RootState } from '../index'
 import { NetworkState } from './types'
 
@@ -47,8 +48,13 @@ export const selectActiveNetwork = (state: RootState) =>
 
 export const selectNetworks = (state: RootState) => state.network.networks
 
-export const selectFavoriteNetworks = (state: RootState) =>
-  state.network.favorites.map(id => state.network.networks[id])
+export const selectFavoriteNetworks = (state: RootState) => {
+  const isDeveloperMode = selectIsDeveloperMode(state)
+
+  return state.network.favorites
+    .map(id => state.network.networks[id])
+    .filter(network => network.isTestnet === isDeveloperMode)
+}
 
 export const selectAvaxMainnet = (state: RootState) =>
   state.network.networks[ChainId.AVALANCHE_MAINNET_ID] ?? {}

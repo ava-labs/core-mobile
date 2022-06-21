@@ -13,7 +13,8 @@ import { ScrollView } from 'react-native-gesture-handler'
 import SignOutItem from 'screens/drawer/components/SignOutItem'
 import AddressBookItem from 'screens/drawer/components/AddressBookItem'
 import { Row } from 'components/Row'
-import CoreLogo from 'components/CoreLogo'
+import AdvancedItem from 'screens/drawer/components/AdvancedItem'
+import DrawerLogo from 'screens/drawer/components/DrawerLogo'
 
 const DrawerView = () => {
   const context = useApplicationContext()
@@ -24,14 +25,7 @@ const DrawerView = () => {
 
   const header = (
     <Row style={styles.headerContainer}>
-      <CoreLogo
-        logoHeight={29}
-        textHeight={15}
-        orientation={'horizontal'}
-        style={{
-          justifyContent: 'flex-start'
-        }}
-      />
+      <DrawerLogo />
       {/* hiding mode toggle until it's implemented */}
       {true || (
         <Pressable
@@ -61,11 +55,11 @@ const Main = () => {
       <ScrollView>
         <AddressBookItem />
         <CurrencyItem />
+        <AdvancedItem />
         <Separator style={{ marginHorizontal: 16 }} />
         <SecurityItem />
         <LegalItem />
         <HelpItem />
-        {/*<AdvancedItem />*/}
       </ScrollView>
       <Separator style={{ marginHorizontal: 16 }} />
       <VersionItem />

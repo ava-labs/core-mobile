@@ -44,9 +44,7 @@ export const selectBridgeTransactions = (state: RootState) => {
 export const { addBridgeTransaction, popBridgeTransaction, setBridgeFilter } =
   bridgeSlice.actions
 
-export const addSetBridgeFilterListener = (
-  startListening: AppStartListening
-) => {
+export const addBridgeListeners = (startListening: AppStartListening) => {
   // listen to network changes here to update filter
   startListening({
     actionCreator: setActive,

@@ -67,6 +67,7 @@ import {
   EditGasLimitParams,
   WalletScreenProps
 } from './types'
+import AdvancedStackScreen from './wallet/AdvancedStackScreen'
 
 type Props = {
   onExit: () => void
@@ -98,6 +99,7 @@ export type WalletScreenStackParams = {
   [AppNavigation.Wallet.CurrencySelector]: undefined
   [AppNavigation.Wallet.NetworkSelector]: undefined
   [AppNavigation.Wallet.NetworkDetails]: { network: Network }
+  [AppNavigation.Wallet.Advanced]: undefined
   [AppNavigation.Wallet.SecurityPrivacy]:
     | NavigatorScreenParams<SecurityStackParamList>
     | undefined
@@ -289,6 +291,10 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
           }}
           name={AppNavigation.Wallet.NetworkDetails}
           component={NetworkDetailsScreen}
+        />
+        <WalletScreenS.Screen
+          name={AppNavigation.Wallet.Advanced}
+          component={AdvancedStackScreen}
         />
         <WalletScreenS.Screen
           name={AppNavigation.Wallet.SecurityPrivacy}
