@@ -103,7 +103,7 @@ export function useDeepLinking(unlocked: boolean) {
             wcCleanUrl,
             !!params?.autosign,
             origin,
-            activeAccount?.address,
+            activeAccount,
             activeNetwork
           )
         } catch (e) {
@@ -121,7 +121,7 @@ export function useDeepLinking(unlocked: boolean) {
               params.uri.toString(),
               false,
               origin,
-              activeAccount?.address,
+              activeAccount,
               activeNetwork
             )
           } else if (action === ACTIONS.WC) {
@@ -150,7 +150,7 @@ export function useDeepLinking(unlocked: boolean) {
             href,
             !!params?.autosign,
             origin,
-            activeAccount?.address,
+            activeAccount,
             activeNetwork
           )
         }

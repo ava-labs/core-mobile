@@ -3,10 +3,10 @@ import { ScrollView, View } from 'react-native'
 import { ApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
-import { Action } from 'services/walletconnect/types'
+import { MessageAction } from 'services/walletconnect/types'
 
 interface Props {
-  action: Action
+  action: MessageAction
 }
 
 const SignData: FC<Props> = ({ action }) => {

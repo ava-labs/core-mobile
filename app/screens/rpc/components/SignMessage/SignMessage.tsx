@@ -1,7 +1,6 @@
 import React, { FC } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { Action, MessageType } from 'services/walletconnect/types'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
@@ -13,9 +12,10 @@ import PersonalSign from 'screens/rpc/components/SignMessage/PersonalSign'
 import SignDataV4 from 'screens/rpc/components/SignMessage/SignDataV4'
 import { NativeViewGestureHandler } from 'react-native-gesture-handler'
 import FlexSpacer from 'components/FlexSpacer'
+import { MessageAction, MessageType } from 'services/walletconnect/types'
 
 interface Props {
-  action: Action
+  action: MessageAction
   onRejected: () => void
   onApproved: (customParams: any) => Promise<void>
 }

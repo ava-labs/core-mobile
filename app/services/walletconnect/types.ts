@@ -70,7 +70,7 @@ export const PREFIXES = {
   [ACTIONS.EMPTY]: ''
 }
 
-export interface Action extends JsonRpcRequest<any> {
+export interface MessageAction extends JsonRpcRequest {
   result?: any
   error?: string
   displayData: any
