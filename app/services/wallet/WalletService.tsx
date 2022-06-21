@@ -14,6 +14,12 @@ import networkService from 'services/network/NetworkService'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import { BN } from 'avalanche'
 import { networks } from 'bitcoinjs-lib'
+import { MessageType } from 'services/walletconnect/types'
+import {
+  personalSign,
+  signTypedData,
+  SignTypedDataVersion
+} from '@metamask/eth-sig-util'
 
 class WalletService {
   private mnemonic?: string
@@ -84,6 +90,65 @@ class WalletService {
       // }
 
       return await (wallet as Wallet).signTransaction(tx)
+    }
+  }
+
+  async signMessage(
+    messageType: MessageType,
+    data: any,
+    accountIndex: number,
+    network: Network
+  ) {
+    const wallet = await this.getWallet(accountIndex, network)
+    if (!wallet || !(wallet instanceof Wallet)) {
+      throw new Error(
+        wallet
+          ? `this function not supported on your wallet`
+          : 'wallet undefined in sign tx'
+      )
+    }
+
+    const privateKey = wallet.privateKey.toLowerCase().startsWith('0x')
+      ? wallet.privateKey.slice(2)
+      : wallet.privateKey
+
+    const key = Buffer.from(privateKey, 'hex')
+
+    // instances were observed where SignTypeData version was not specified,
+    // however, payload was V4
+    const isV4 =
+      typeof data === 'object' && 'types' in data && 'primaryType' in data
+
+    if (data) {
+      switch (messageType) {
+        case MessageType.ETH_SIGN:
+        case MessageType.PERSONAL_SIGN:
+          return personalSign({ privateKey: key, data })
+        case MessageType.SIGN_TYPED_DATA:
+        case MessageType.SIGN_TYPED_DATA_V1: {
+          return signTypedData({
+            privateKey: key,
+            data,
+            version: isV4 ? SignTypedDataVersion.V4 : SignTypedDataVersion.V1
+          })
+        }
+        case MessageType.SIGN_TYPED_DATA_V3:
+          return signTypedData({
+            privateKey: key,
+            data,
+            version: SignTypedDataVersion.V3
+          })
+        case MessageType.SIGN_TYPED_DATA_V4:
+          return signTypedData({
+            privateKey: key,
+            data,
+            version: SignTypedDataVersion.V4
+          })
+        default:
+          throw new Error('unknown method')
+      }
+    } else {
+      throw new Error('no message to sign')
     }
   }
 

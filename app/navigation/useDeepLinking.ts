@@ -6,15 +6,19 @@ import {
   DeepLinkOrigin,
   PREFIXES,
   PROTOCOLS
-} from 'screens/rpc/walletconnect/types'
+} from 'services/walletconnect/types'
 import URL from 'url-parse'
 import URLParse from 'url-parse'
 import qs, { ParsedQs } from 'qs'
 import { CORE_UNIVERSAL_LINK_HOST } from 'resources/Constants'
-import WalletConnect from 'screens/rpc/walletconnect/WalletConnect'
+import { useActiveAccount } from 'hooks/useActiveAccount'
+import { useActiveNetwork } from 'hooks/useActiveNetwork'
+import walletConnectService from 'services/walletconnect/WalletConnectService'
 
 export function useDeepLinking(unlocked: boolean) {
   const [pendingDeepLink, setPendingDeepLink] = useState<DeepLink>()
+  const activeAccount = useActiveAccount()
+  const activeNetwork = useActiveNetwork()
   function expireDeepLink() {
     setPendingDeepLink(undefined)
   }
@@ -92,10 +96,16 @@ export function useDeepLinking(unlocked: boolean) {
       case PROTOCOLS.WC: {
         try {
           const wcCleanUrl = originalUrl.replace('wc://wc?uri=', '')
-          if (!WalletConnect.isValidUri(wcCleanUrl)) {
+          if (!walletConnectService.isValidUri(wcCleanUrl)) {
             return
           }
-          WalletConnect.newSession(wcCleanUrl, !!params?.autosign, origin)
+          walletConnectService.newSession(
+            wcCleanUrl,
+            !!params?.autosign,
+            origin,
+            activeAccount?.address,
+            activeNetwork
+          )
         } catch (e) {
           Alert.alert((e as Error)?.message)
         }
@@ -107,7 +117,13 @@ export function useDeepLinking(unlocked: boolean) {
         if (urlObj.hostname === CORE_UNIVERSAL_LINK_HOST) {
           const action = urlObj.pathname.split('/')[1]
           if (action === ACTIONS.WC && params?.uri) {
-            WalletConnect.newSession(params.uri.toString(), false, origin)
+            walletConnectService.newSession(
+              params.uri.toString(),
+              false,
+              origin,
+              activeAccount?.address,
+              activeNetwork
+            )
           } else if (action === ACTIONS.WC) {
             // This is called from WC just to open the app, and it's not supposed to do anything
             return
@@ -127,10 +143,16 @@ export function useDeepLinking(unlocked: boolean) {
           const cleanUrlObj = new URL(urlObj.query.replace('?uri=', ''))
           const href = cleanUrlObj.href
 
-          if (!WalletConnect.isValidUri(href)) {
+          if (!walletConnectService.isValidUri(href)) {
             return
           }
-          WalletConnect.newSession(href, !!params?.autosign, origin)
+          walletConnectService.newSession(
+            href,
+            !!params?.autosign,
+            origin,
+            activeAccount?.address,
+            activeNetwork
+          )
         }
         break
       default:

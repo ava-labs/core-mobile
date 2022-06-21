@@ -1,14 +1,12 @@
-import React, { FC } from 'react'
-import { StyleSheet, View } from 'react-native'
+import React from 'react'
 import AccountApproval from 'screens/rpc/components/AccountApproval'
 import SignTransaction from 'screens/rpc/components/SignTransaction'
 import SignMessage from 'screens/rpc/components/SignMessage/SignMessage'
 import BottomSheet from 'components/BottomSheet'
-import Spinner from 'components/Spinner'
 import { useRpcTxHandler } from 'screens/rpc/useRpcTxHandler'
 import { RPC_EVENT } from 'screens/rpc/util/types'
 
-const RpcMethodsUI: FC = () => {
+const RpcMethodsUI = () => {
   const {
     loading,
     hash,
@@ -22,15 +20,7 @@ const RpcMethodsUI: FC = () => {
     onSessionRejected
   } = useRpcTxHandler()
 
-  // const onWalletConnectCallApproval = async (customParams: any) => {
-  //   await onCallApproved(customParams)
-  // }
-  //
-  // const onWalletConnectCallRejected = () => {
-  //   onCallRejected()
-  // }
-
-  function renderTransactionApproval() {
+  function renderSignTransaction() {
     const isEventTx = eventType === RPC_EVENT.TRANSACTION
     return (
       <BottomSheet
@@ -73,7 +63,7 @@ const RpcMethodsUI: FC = () => {
     )
   }
 
-  function renderPersonalSign() {
+  function renderSignMessage() {
     const isEventSign = eventType === RPC_EVENT.SESSION
     return (
       <BottomSheet
@@ -96,9 +86,9 @@ const RpcMethodsUI: FC = () => {
 
   return (
     <>
-      {renderTransactionApproval()}
+      {renderSignTransaction()}
+      {renderSignMessage()}
       {renderSessionRequest()}
-      {renderPersonalSign()}
     </>
   )
 }
