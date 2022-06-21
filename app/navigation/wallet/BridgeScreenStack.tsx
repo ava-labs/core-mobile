@@ -62,12 +62,11 @@ function BridgeScreenStack() {
             name={AppNavigation.Modal.BridgeSelectToken}
             component={BridgeSelectTokenBottomSheet}
           />
-<BridgeStack.Screen
-options={{headerShown: false}}
-name={AppNavigation.Bridge.AddInstructions}
-component={AddBitcoinInstructionsBottomSheet}
-/>
-
+          <BridgeStack.Screen
+            options={{headerShown: false}}
+            name={AppNavigation.Bridge.AddInstructions}
+            component={AddBitcoinInstructionsBottomSheet}
+          />
           <BridgeStack.Screen
             options={{ headerShown: false }}
             name={AppNavigation.Bridge.AddInstructions}
@@ -81,14 +80,14 @@ component={AddBitcoinInstructionsBottomSheet}
           />
         </BridgeStack.Group>
       </BridgeStack.Navigator>
-      {bridgeBlocked && (
-        <FeatureBlocked
-          onOk={goBack}
-          message={
-            'Bridge is currently under maintenance.  Service will resume shortly.'
-          }
-        />
-      )}
+      {/*{bridgeBlocked && (*/}
+      {/*  <FeatureBlocked*/}
+      {/*    onOk={goBack}*/}
+      {/*    message={*/}
+      {/*      'Bridge is currently under maintenance.  Service will resume shortly.'*/}
+      {/*    }*/}
+      {/*  />*/}
+      {/*)}*/}
     </>
   )
 }
