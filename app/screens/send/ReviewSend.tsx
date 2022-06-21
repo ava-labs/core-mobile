@@ -12,6 +12,7 @@ import FlexSpacer from 'components/FlexSpacer'
 import { useSendTokenContext } from 'contexts/SendTokenContext'
 import AppNavigation from 'navigation/AppNavigation'
 import { SendTokensScreenProps } from 'navigation/types'
+import { formatLargeNumber } from 'utils/Utils'
 import SendRow from 'components/SendRow'
 
 type NavigationProp = SendTokensScreenProps<
@@ -27,6 +28,7 @@ export default function ReviewSend({
   const { goBack } = useNavigation<NavigationProp>()
   const {
     sendToken,
+    sendAmountInCurrency,
     tokenLogo,
     sendAmount,
     fromAccount,
@@ -74,14 +76,24 @@ export default function ReviewSend({
           borderTopLeftRadius: 8,
           borderTopRightRadius: 8
         }}>
-        <AvaText.Body2 textStyle={{ textAlign: 'center' }}>
-          Amount
-        </AvaText.Body2>
-        <Space y={4} />
-        <Row style={{ justifyContent: 'center', alignItems: 'flex-end' }}>
-          <AvaText.Heading1>{sendAmount}</AvaText.Heading1>
-          <Space x={4} />
-          <AvaText.Heading3>{sendToken?.symbol ?? ''}</AvaText.Heading3>
+        <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+          <AvaText.Body2 textStyle={{ textAlign: 'center' }}>
+            Amount
+          </AvaText.Body2>
+          <Row style={{ alignItems: 'baseline' }}>
+            <AvaText.Heading1>
+              {formatLargeNumber(sendAmount, 4)}
+            </AvaText.Heading1>
+            <Space x={4} />
+            <AvaText.Heading3 textStyle={{ color: theme.colorText2 }}>
+              {sendToken?.symbol ?? ''}
+            </AvaText.Heading3>
+          </Row>
+        </Row>
+        <Row style={{ justifyContent: 'flex-end' }}>
+          <AvaText.Heading3 currency textStyle={{ color: theme.colorText2 }}>
+            {sendAmountInCurrency}
+          </AvaText.Heading3>
         </Row>
         <Space y={8} />
         <SendRow

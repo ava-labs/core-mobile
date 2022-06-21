@@ -54,6 +54,7 @@ const SendToken: FC<Props> = ({
     setSendToken,
     sendToken,
     setSendAmount,
+    sendAmountInCurrency,
     sendAmount,
     toAccount,
     fees,
@@ -207,7 +208,7 @@ const SendToken: FC<Props> = ({
             />
             <Space y={4} />
             <Row style={{ justifyContent: 'flex-end' }}>
-              <AvaText.Body3 currency>TODO</AvaText.Body3>
+              <AvaText.Body3 currency>{sendAmountInCurrency}</AvaText.Body3>
             </Row>
             <Space y={8} />
             <AvaText.Body3 textStyle={{ color: theme.colorError }}>

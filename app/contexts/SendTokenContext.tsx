@@ -23,12 +23,15 @@ import { useNativeTokenPrice } from 'hooks/useNativeTokenPrice'
 import { fetchNetworkFee } from 'store/networkFee'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useApplicationContext } from 'contexts/ApplicationContext'
+import { VsCurrencyType } from '@avalabs/coingecko-sdk'
+import { useTokenPriceInCurrency } from 'hooks/useTokenPriceInCurrency'
 
 export interface SendTokenContextState {
   sendToken: TokenWithBalance | undefined
   setSendToken: Dispatch<TokenWithBalance | undefined>
   sendAmount: string
   setSendAmount: Dispatch<string>
+  sendAmountInCurrency: number
   fromAccount: Account
   toAccount: Account
   tokenLogo: () => JSX.Element
@@ -50,6 +53,7 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
   const activeAccount = useSelector(selectActiveAccount)
   const activeNetwork = useSelector(selectActiveNetwork)
   const { nativeTokenPrice } = useNativeTokenPrice()
+  const selectedCurrency = useSelector(selectSelectedCurrency)
 
   const [sendToken, setSendToken] = useState<TokenWithBalance | undefined>()
   const [maxAmount, setMaxAmount] = useState('')
@@ -57,6 +61,15 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
   const sendAmountBN = useMemo(
     () => stringToBN(sendAmount || '0', sendToken?.decimals ?? 0),
     [sendAmount, sendToken?.decimals]
+  )
+  const { tokenPriceInSelectedCurrency } = useTokenPriceInCurrency({
+    network: activeNetwork,
+    token: sendToken,
+    currency: selectedCurrency.toLowerCase() as VsCurrencyType
+  })
+  const sendAmountInCurrency = useMemo(
+    () => tokenPriceInSelectedCurrency * Number(sendAmount),
+    [sendAmount, tokenPriceInSelectedCurrency]
   )
 
   const [sendToAddress, setSendToAddress] = useState('')
@@ -100,7 +113,6 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
   const [transactionId, setTransactionId] = useState<string>()
   const [canSubmit, setCanSubmit] = useState(false)
   const [error, setError] = useState<string | undefined>()
-  const selectedCurrency = useSelector(selectSelectedCurrency)
 
   useEffect(() => {
     dispatch(fetchNetworkFee)
@@ -209,6 +221,7 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
     setSendToken,
     sendAmount,
     setSendAmount,
+    sendAmountInCurrency,
     fromAccount: {
       address: sendFromAddress,
       title: sendFromTitle,
