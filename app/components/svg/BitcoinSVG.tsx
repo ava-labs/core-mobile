@@ -41,7 +41,7 @@ export default BitcoinSVG
 import React from 'react';
 import Svg, {Path} from 'react-native-svg';
 
-const BITCOIN_BACKGROUND_COLOR = 'F7931A';
+const BITCOIN_BACKGROUND_COLOR = '#F7931A';
 
 interface Prop {
   size?: number;
