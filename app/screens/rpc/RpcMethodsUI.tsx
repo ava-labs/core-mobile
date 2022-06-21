@@ -1,13 +1,16 @@
 import React, { FC, useEffect, useState } from 'react'
-import { InteractionManager, Modal, StyleSheet } from 'react-native'
+import { InteractionManager, StyleSheet, View } from 'react-native'
 import WalletConnect from 'WalletConnect'
 import AccountApproval from 'screens/rpc/AccountApproval'
 import TransactionSummary from 'screens/rpc/TransactionSummary'
 import { Action, MessageType } from 'navigation/messages/models'
-import { useWalletContext } from '@avalabs/wallet-react-components'
+import { useAccountsContext } from '@avalabs/wallet-react-components'
 import { useGasPrice } from 'utils/GasPriceHook'
 import { paramsToMessageParams } from 'rpc/paramsToMessageParams'
 import SignMessage from 'screens/rpc/SignMessage/SignMessage'
+import BottomSheet from 'components/BottomSheet'
+import { ShowSnackBar } from 'components/Snackbar'
+import Spinner from 'components/Spinner'
 
 const RpcMethodsUI: FC = () => {
   const [showPendingApproval, setShowPendingApproval] = useState(false)
@@ -17,10 +20,11 @@ const RpcMethodsUI: FC = () => {
   >(false)
   // const [showExpandedMessage, setShowExpandedMessage] = useState(false)
   const [currentPageMeta, setCurrentPageMeta] = useState({})
-  const wallet = useWalletContext().wallet
+  const { activeAccount } = useAccountsContext()
+  const wallet = activeAccount?.wallet
   const { gasPrice } = useGasPrice()
-
   const [signMessageParams, setSignMessageParams] = useState<Action>()
+  const [loading, setLoading] = useState(false)
   // const [signType, setSignType] = useState<any | null>(false)
   // const [customNetworkToAdd, setCustomNetworkToAdd] = useState(null)
   // const [customNetworkToSwitch, setCustomNetworkToSwitch] = useState(null)
@@ -29,6 +33,14 @@ const RpcMethodsUI: FC = () => {
   //
   // const [watchAsset, setWatchAsset] = useState(false)
   // const [suggestedAssetMeta, setSuggestedAssetMeta] = useState(undefined)
+
+  // useEffect(() => {
+  //   if (showPendingApproval || signMessageParams || walletConnectRequest) {
+  //     setShowBottomSheet(1)
+  //   } else {
+  //     setShowBottomSheet(0)
+  //   }
+  // }, [showPendingApproval, signMessageParams, walletConnectRequest])
 
   const initializeWalletConnect = () => {
     WalletConnect.hub.on('walletconnectSessionRequest', peerInfo => {
@@ -128,6 +140,7 @@ const RpcMethodsUI: FC = () => {
     setWalletConnectRequest(false)
     setWalletConnectRequestInfo({})
     WalletConnect.hub.emit('walletconnectSessionRequest::approved', peerId)
+    ShowSnackBar('You can now go back to the browser')
   }
 
   const onWalletConnectSessionRejected = () => {
@@ -135,9 +148,11 @@ const RpcMethodsUI: FC = () => {
     setWalletConnectRequest(false)
     setWalletConnectRequestInfo({})
     WalletConnect.hub.emit('walletconnectSessionRequest::rejected', peerId)
+    ShowSnackBar('Rejected')
   }
 
   const onWalletConnectCallApproval = async () => {
+    setLoading(true)
     try {
       const { id } = walletConnectRequestInfo
       const { method, params } = currentPageMeta
@@ -162,8 +177,12 @@ const RpcMethodsUI: FC = () => {
         id,
         hash
       })
+      ShowSnackBar('You can now go back to the browser')
     } catch (e) {
+      ShowSnackBar('An error occurred. Go back to the browser')
       console.log('error approving', e)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -171,6 +190,7 @@ const RpcMethodsUI: FC = () => {
     const peerId = walletConnectRequestInfo.peerId
     onSignAction()
     WalletConnect.hub.emit('walletconnectCallRequest::rejected', peerId)
+    ShowSnackBar('Rejected')
   }
 
   const onSignAction = () => {
@@ -178,76 +198,79 @@ const RpcMethodsUI: FC = () => {
     setSignMessageParams(undefined)
   }
 
-  // const toggleExpandedMessage = () =>
-  //   setShowExpandedMessage(!showExpandedMessage)
-
   useEffect(() => {
     initializeWalletConnect()
   }, [])
 
-  function renderSigningModal() {
+  function renderTransactionApproval() {
     return (
-      <Modal
-        visible={showPendingApproval}
-        animationType="slide"
-        style={styles.bottomModal}
-        onDismiss={onSignAction}>
-        <TransactionSummary
-          onCancel={onWalletConnectCallRejected}
-          onConfirm={onWalletConnectCallApproval}
-          payload={currentPageMeta}
-          walletConnectRequest
-        />
-      </Modal>
+      <BottomSheet
+        snapPoints={['0%', '90%']}
+        snapTo={showPendingApproval ? 1 : 0}
+        disablePanningGesture
+        children={
+          <TransactionSummary
+            onCancel={onWalletConnectCallRejected}
+            onConfirm={onWalletConnectCallApproval}
+            payload={currentPageMeta}
+          />
+        }
+      />
     )
   }
 
   function renderWalletConnectSessionRequestModal() {
     const meta = walletConnectRequestInfo.peerMeta || null
     return (
-      <Modal
-        visible={walletConnectRequest}
-        animationType="slide"
-        style={styles.bottomModal}
-        onDismiss={onWalletConnectSessionRejected}>
-        <AccountApproval
-          onCancel={onWalletConnectSessionRejected}
-          onConfirm={onWalletConnectSessionApproval}
-          currentPageInformation={{
-            title: meta && meta.name,
-            url: meta && meta.url,
-            icon: meta && meta.icons[0],
-            description: meta && meta.description
-          }}
-          walletConnectRequest
-        />
-      </Modal>
+      <BottomSheet
+        snapPoints={['0%', '90%']}
+        snapTo={walletConnectRequest ? 1 : 0}
+        disablePanningGesture
+        children={
+          <AccountApproval
+            onCancel={onWalletConnectSessionRejected}
+            onConfirm={onWalletConnectSessionApproval}
+            currentPageInformation={{
+              title: meta && meta.name,
+              url: meta && meta.url,
+              icon: meta && meta.icons[0],
+              description: meta && meta.description
+            }}
+          />
+        }
+      />
     )
   }
 
   function renderPersonalSignModal() {
     return (
-      <Modal
-        visible={!!signMessageParams}
-        animationType="slide"
-        style={styles.bottomModal}
-        onDismiss={onWalletConnectCallRejected}>
-        {signMessageParams && (
-          <SignMessage
-            onCancel={onWalletConnectCallRejected}
-            onConfirm={onWalletConnectCallApproval}
-            action={signMessageParams}
-          />
-        )}
-      </Modal>
+      <BottomSheet
+        snapPoints={['0%', '85%']}
+        snapTo={signMessageParams ? 1 : 0}
+        disablePanningGesture
+        children={
+          signMessageParams && (
+            <SignMessage
+              onCancel={onWalletConnectCallRejected}
+              onConfirm={onWalletConnectCallApproval}
+              action={signMessageParams}
+            />
+          )
+        }
+      />
     )
   }
 
   return (
     <>
-      {renderSigningModal()}
+      {renderTransactionApproval()}
       {renderWalletConnectSessionRequestModal()}
       {renderPersonalSignModal()}
+      {loading && (
+        <View style={StyleSheet.absoluteFill}>
+          <Spinner size={40} />
+        </View>
+      )}
     </>
   )
 }

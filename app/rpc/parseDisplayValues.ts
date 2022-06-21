@@ -39,7 +39,7 @@ export function parseDisplayValues(
   let displayValue = ''
   if (description?.args?._amount) {
     const big = bnToBig(hexToBN(description.args?._amount?.toHexString()), 18)
-    displayValue = `Deposiging ${bigToLocaleString(big, 18)}`
+    displayValue = `Depositing ${bigToLocaleString(big, 18)}`
   }
 
   return {

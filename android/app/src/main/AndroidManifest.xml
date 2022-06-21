@@ -14,8 +14,6 @@
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="wc"/>
         <data android:scheme="core"/>
-        <data android:scheme="https" android:host="www.avax.network/" />
-        <data android:scheme="http" android:host="www.avax.network/" />
       </intent-filter>
     </activity>
   </application>

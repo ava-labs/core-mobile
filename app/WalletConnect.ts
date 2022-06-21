@@ -3,7 +3,11 @@ import WalletConnectClient from '@walletconnect/client'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { parseWalletConnectUri } from '@walletconnect/utils'
 import { firstValueFrom } from 'rxjs'
-import { network$, wallet$ } from '@avalabs/wallet-react-components'
+import {
+  activeAccount$,
+  network$,
+  wallet$
+} from '@avalabs/wallet-react-components'
 import { ISessionStatus } from '@walletconnect/types'
 
 export const CLIENT_OPTIONS = {
@@ -22,7 +26,6 @@ let initialized = false
 let connectors: WalletConnect[] = []
 const tempCallIds: string[] = []
 const hub = new EventEmitter()
-// let initialized = false
 type SessionOptions = {
   session: {
     redirectUrl: string
@@ -55,7 +58,7 @@ const persistSessions = async () => {
 const waitForInitialization = async () => {
   let i = 0
   while (!initialized) {
-    await new Promise(res => setTimeout(() => res(), 1000))
+    await new Promise<void>(res => setTimeout(() => res(), 1000))
     if (i++ > 5) initialized = true
   }
 }
@@ -86,10 +89,7 @@ class WalletConnect {
     const connOptions = { ...options, ...CLIENT_OPTIONS }
 
     //init wallet
-    this.walletConnectClient = new WalletConnectClient({
-      ...connOptions,
-      bridge: 'https://bridge.walletconnect.org'
-    })
+    this.walletConnectClient = new WalletConnectClient({ ...connOptions })
 
     this.walletConnectClient.on('session_request', async (error, payload) => {
       if (error) {
@@ -210,10 +210,11 @@ class WalletConnect {
 
   startSession = async (sessionData: any, existing: boolean) => {
     const network = await firstValueFrom(network$)
-    const chainId = parseInt(network?.chainId ?? '1', 10)
-    const selectedAddress = (await firstValueFrom(wallet$))?.getAddressC() ?? ''
+    const chainId = parseInt(network?.chainId ?? '1')
+    const selectedAddress =
+      (await firstValueFrom(activeAccount$))?.wallet?.getAddressC() ?? ''
     const approveData: ISessionStatus = {
-      chainId: 43113,
+      chainId: chainId,
       accounts: [selectedAddress]
     }
     if (existing) {
