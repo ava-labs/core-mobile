@@ -117,7 +117,7 @@ export default function NftReview({ onSuccess }: NftReviewScreenProps) {
         <NetworkFeeSelector
           network={activeNetwork}
           networkFeeAvax={netFeeString}
-          networkFeeUsd={`${fees.sendFeeUsd?.toFixed(4)} USD`}
+          networkFeeInCurrency={fees.sendFeeUsd ?? 0}
           gasPrice={gasPrice}
           onWeightedGas={price => fees.setCustomGasPrice(price.bn)}
           weights={{ Normal: 1, Fast: 1.05, Instant: 1.15, Custom: 35 }}

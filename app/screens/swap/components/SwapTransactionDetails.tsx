@@ -129,7 +129,7 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
           <NetworkFeeSelector
             network={activeNetwork}
             networkFeeAvax={trxDetails.networkFee}
-            networkFeeUsd={trxDetails.networkFeeUsd}
+            networkFeeInCurrency={0} //FIXME
             gasPrice={gasPrice}
             onWeightedGas={price =>
               trxDetails.setGasPriceNanoAvax(Number.parseFloat(price.value))

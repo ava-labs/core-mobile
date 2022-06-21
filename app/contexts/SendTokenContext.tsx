@@ -52,8 +52,10 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
   const dispatch = useDispatch()
   const activeAccount = useSelector(selectActiveAccount)
   const activeNetwork = useSelector(selectActiveNetwork)
-  const { nativeTokenPrice } = useNativeTokenPrice()
   const selectedCurrency = useSelector(selectSelectedCurrency)
+  const { nativeTokenPrice } = useNativeTokenPrice({
+    currency: selectedCurrency.toLowerCase() as VsCurrencyType
+  })
 
   const [sendToken, setSendToken] = useState<TokenWithBalance | undefined>()
   const [maxAmount, setMaxAmount] = useState('')
@@ -83,7 +85,7 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
     sendFeeBN,
     activeNetwork.networkToken.decimals
   )
-  const sendFeeUsd = Number.parseFloat(sendFeeNative) * nativeTokenPrice
+  const sendFeeInCurrency = Number.parseFloat(sendFeeNative) * nativeTokenPrice
   const [customGasPrice, setCustomGasPrice] = useState(new BN(0))
   const customGasPriceBig = useMemo(
     () => bnToEthersBigNumber(customGasPrice),
@@ -98,7 +100,7 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
       ).toFixed(4),
     [sendAmountBN, sendFeeBN, sendToken?.balance, sendToken?.decimals]
   )
-  const balanceAfterTrxUsd = useMemo(
+  const balanceAfterTrxInCurrency = useMemo(
     () =>
       (
         nativeTokenPrice * mustNumber(() => parseFloat(balanceAfterTrx), 0)
@@ -226,7 +228,7 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
       address: sendFromAddress,
       title: sendFromTitle,
       balanceAfterTrx,
-      balanceAfterTrxUsd
+      balanceAfterTrxInCurrency
     },
     toAccount: {
       title: sendToTitle,
@@ -236,7 +238,7 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
     },
     fees: {
       sendFeeNative,
-      sendFeeUsd,
+      sendFeeInCurrency: sendFeeInCurrency,
       customGasPrice,
       setCustomGasPrice,
       gasLimit,
@@ -268,12 +270,12 @@ export interface Account {
   address: string
   setAddress?: Dispatch<string>
   balanceAfterTrx?: string
-  balanceAfterTrxUsd?: string
+  balanceAfterTrxInCurrency?: string
 }
 
 export interface Fees {
   sendFeeNative: string | undefined
-  sendFeeUsd: number | undefined
+  sendFeeInCurrency: number | undefined
   customGasPrice: BN
   setCustomGasPrice: Dispatch<BN>
   gasLimit: number | undefined

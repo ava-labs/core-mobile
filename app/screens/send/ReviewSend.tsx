@@ -14,6 +14,7 @@ import AppNavigation from 'navigation/AppNavigation'
 import { SendTokensScreenProps } from 'navigation/types'
 import { formatLargeNumber } from 'utils/Utils'
 import SendRow from 'components/SendRow'
+import { Popable } from 'react-native-popable'
 
 type NavigationProp = SendTokensScreenProps<
   typeof AppNavigation.Send.Review
@@ -31,6 +32,7 @@ export default function ReviewSend({
     sendAmountInCurrency,
     tokenLogo,
     sendAmount,
+    fees,
     fromAccount,
     toAccount,
     onSendNow,
@@ -107,16 +109,27 @@ export default function ReviewSend({
           address={toAccount.address}
         />
         <Space y={16} />
+        <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+          <Popable
+            content={'TBD'}
+            position={'right'}
+            style={{ minWidth: 200 }}
+            backgroundColor={theme.colorBg3}>
+            <AvaText.Body2>Network Fee ⓘ</AvaText.Body2>
+          </Popable>
+          <AvaText.Heading2 currency>{fees.sendFeeInCurrency}</AvaText.Heading2>
+        </Row>
+        <Space y={16} />
         <Separator />
-        <Space y={32} />
+        <Space y={16} />
         <Row style={{ justifyContent: 'space-between' }}>
           <AvaText.Body2>Balance After Transaction</AvaText.Body2>
           <AvaText.Heading2>
             {fromAccount.balanceAfterTrx} {sendToken?.symbol ?? ''}
           </AvaText.Heading2>
         </Row>
-        <AvaText.Body3 textStyle={{ alignSelf: 'flex-end' }}>
-          ${fromAccount.balanceAfterTrxUsd} USD
+        <AvaText.Body3 textStyle={{ alignSelf: 'flex-end' }} currency>
+          {fromAccount.balanceAfterTrxInCurrency}
         </AvaText.Body3>
         <FlexSpacer />
         {sendStatus !== 'Sending' && (

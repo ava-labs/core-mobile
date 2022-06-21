@@ -24,7 +24,7 @@ const NetworkFeeSelector = ({
   network,
   onSettingsPressed,
   networkFeeAvax,
-  networkFeeUsd,
+  networkFeeInCurrency,
   gasPrice,
   onWeightedGas,
   weights = defaultPresetWeights
@@ -32,7 +32,7 @@ const NetworkFeeSelector = ({
   network: Network
   onSettingsPressed: () => void
   networkFeeAvax: string
-  networkFeeUsd: string
+  networkFeeInCurrency: number
   gasPrice: GasPrice
   onWeightedGas: (price: GasPrice) => void
   weights?: Weights
@@ -91,8 +91,8 @@ const NetworkFeeSelector = ({
       <Row style={{ alignItems: 'baseline' }}>
         <AvaText.Heading3>{networkFeeAvax} AVAX</AvaText.Heading3>
         <Space x={4} />
-        <AvaText.Body3 textStyle={{ paddingBottom: 2 }}>
-          ${networkFeeUsd}
+        <AvaText.Body3 textStyle={{ paddingBottom: 2 }} currency>
+          {networkFeeInCurrency}
         </AvaText.Body3>
       </Row>
       <Space y={8} />
