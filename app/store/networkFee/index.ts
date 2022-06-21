@@ -39,7 +39,7 @@ export const fetchNetworkFee = createAction(`${reducerName}/fetchNetworkFee`)
 export const { updateNetworkFee } = networkFeeSlice.actions
 
 // listeners
-export const fetchNetworkFeeListener = (startListening: AppStartListening) => {
+export const addNetworkFeeListeners = (startListening: AppStartListening) => {
   startListening({
     actionCreator: fetchNetworkFee,
     effect: async (action, listenerApi) => {

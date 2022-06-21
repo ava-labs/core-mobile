@@ -39,6 +39,7 @@ enum WalletScreens {
   ReceiveTokens = 'WalletScreens.ReceiveTokens',
   SendTokens = 'WalletScreens.SendTokens',
   TokenManagement = 'WalletScreens.TokenManagement',
+  Advanced = 'WalletScreens.Advanced',
   SecurityPrivacy = 'WalletScreens.SecurityPrivacy',
   NetworkSelector = 'WalletScreens.NetworkSelector',
   NetworkDetails = 'WalletScreens.NetworkDetails',
@@ -83,6 +84,10 @@ enum SecurityPrivacyScreens {
   ShowRecoveryPhrase = 'SecurityPrivacyScreens.ShowRecoveryPhrase',
   TurnOnBiometrics = 'SecurityPrivacyScreens.TurnOnBiometrics',
   RecoveryPhrase = 'SecurityPrivacyScreens.RecoveryPhrase'
+}
+
+enum AdvancedScreens {
+  Advanced = 'AdvancedScreens.Advanced'
 }
 
 enum Tabs {
@@ -136,6 +141,7 @@ const AppNavigation = {
   LoginWithMnemonic: LoginWithMnemonicStackScreens,
   Wallet: WalletScreens,
   SecurityPrivacy: SecurityPrivacyScreens,
+  Advanced: AdvancedScreens,
   Tabs: Tabs,
   Modal: ModalScreens,
   Swap: SwapScreens,

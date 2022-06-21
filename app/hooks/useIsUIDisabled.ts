@@ -9,8 +9,11 @@ export enum UI {
   ManageTokens = 'ManageTokens'
 }
 
+const btcDisabledUIs = [UI.Collectibles, UI.Swap, UI.Buy, UI.ManageTokens]
+
 const disabledUIs: Record<number, UI[]> = {
-  [ChainId.BITCOIN]: [UI.Collectibles, UI.Swap, UI.Buy, UI.ManageTokens],
+  [ChainId.BITCOIN]: btcDisabledUIs,
+  [ChainId.BITCOIN_TESTNET]: btcDisabledUIs,
   [ChainId.AVALANCHE_TESTNET_ID]: [UI.Swap]
 }
 

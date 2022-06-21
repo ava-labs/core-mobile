@@ -1,9 +1,17 @@
 import React from 'react'
-import { Alert } from 'react-native'
 import AvaListItem from 'components/AvaListItem'
 import CarrotSVG from 'components/svg/CarrotSVG'
+import { WalletScreenProps } from 'navigation/types'
+import AppNavigation from 'navigation/AppNavigation'
+import { useNavigation } from '@react-navigation/native'
+
+type NavigationProp = WalletScreenProps<
+  typeof AppNavigation.Wallet.Drawer
+>['navigation']
 
 export default function AdvancedItem() {
+  const navigation = useNavigation<NavigationProp>()
+
   return (
     <>
       <AvaListItem.Base
@@ -11,7 +19,7 @@ export default function AdvancedItem() {
         leftComponent={null}
         rightComponent={<CarrotSVG />}
         onPress={() => {
-          Alert.alert('naviagate to advanced')
+          navigation.navigate(AppNavigation.Wallet.Advanced)
         }}
       />
     </>

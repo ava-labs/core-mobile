@@ -189,7 +189,8 @@ function DropDown<ItemT>({
         {
           width: width,
           borderRadius: BORDER_RADIUS,
-          overflow: 'visible'
+          overflow: 'visible',
+          top: 14
         },
         style
       ]}
