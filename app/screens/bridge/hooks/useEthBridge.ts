@@ -6,17 +6,18 @@ import {
   useBridgeConfig,
   useBridgeSDK,
   useHasEnoughForGas,
+  useMaxTransferAmount,
   WrapStatus
 } from '@avalabs/bridge-sdk'
 import { BridgeAdapter } from 'screens/bridge/hooks/useBridge'
 import { useBridgeContext } from 'contexts/BridgeContext'
 import { useSingularAssetBalanceEVM } from 'screens/bridge/hooks/useSingularAssetBalanceEVM'
 import { useAssetBalancesEVM } from 'screens/bridge/hooks/useAssetBalancesEVM'
-import { getEthereumProvider } from 'screens/bridge/utils/getEthereumProvider'
 import { useCallback, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
 import { selectActiveAccount } from 'store/account'
+import networkService from 'services/network/NetworkService'
 
 /**
  * Hook for when the bridge source chain is Ethereum
@@ -43,7 +44,7 @@ export function useEthBridge(amount: Big, bridgeFee: Big): BridgeAdapter {
   const network = useSelector(selectActiveNetwork)
   const activeAccount = useSelector(selectActiveAccount)
   const config = useBridgeConfig().config
-  const ethereumProvider = getEthereumProvider(network)
+  const ethereumProvider = networkService.getEthereumProvider(network.isTestnet)
   const hasEnoughForNetworkFee = useHasEnoughForGas(
     isEthereumBridge ? activeAccount?.address : undefined,
     ethereumProvider
@@ -51,7 +52,12 @@ export function useEthBridge(amount: Big, bridgeFee: Big): BridgeAdapter {
   const [wrapStatus, setWrapStatus] = useState<WrapStatus>(WrapStatus.INITIAL)
   const [txHash, setTxHash] = useState<string>()
 
-  const maximum = sourceBalance?.balance || BIG_ZERO
+  const maximum =
+    useMaxTransferAmount(
+      sourceBalance?.balance,
+      activeAccount?.address,
+      ethereumProvider
+    ) || undefined
   const minimum = bridgeFee?.mul(3)
   const receiveAmount = amount.gt(minimum) ? amount.minus(bridgeFee) : BIG_ZERO
 

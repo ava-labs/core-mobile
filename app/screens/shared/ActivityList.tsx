@@ -16,7 +16,6 @@ import { Row } from 'components/Row'
 import DropDown from 'components/Dropdown'
 import useInAppBrowser from 'hooks/useInAppBrowser'
 import { isBridgeTransaction } from 'screens/bridge/utils/bridgeTransactionUtils'
-import { useApplicationContext } from 'contexts/ApplicationContext'
 import {
   isContractCallTransaction,
   isIncomingTransaction,
@@ -24,6 +23,7 @@ import {
 } from 'utils/TransactionTools'
 import { selectActiveNetwork, TokenSymbol } from 'store/network'
 import { useSelector } from 'react-redux'
+import { selectBridgeTransactions } from 'store/bridge'
 
 const yesterday = endOfYesterday()
 const today = endOfToday()
@@ -62,10 +62,8 @@ function ActivityList({
   const [allHistory, setAllHistory] = useState<
     (TransactionNormal | TransactionERC20)[]
   >([])
-  const { pendingBridgeTransactions } =
-    useApplicationContext().repo.pendingBridgeTransactions
   const { bitcoinAssets, ethereumWrappedAssets } = useBridgeSDK()
-  const bridgeTransactions = pendingBridgeTransactions.bridgeTransactions
+  const bridgeTransactions = useSelector(selectBridgeTransactions)
   const [filter, setFilter] = useState(ActivityFilter.All)
   const activeNetwork = useSelector(selectActiveNetwork)
 
@@ -134,12 +132,11 @@ function ActivityList({
 
   const renderItems = () => {
     return (
-      <View>
+      <View style={{ flex: 1 }}>
         {bridgeTransactions && Object.values(bridgeTransactions).length > 0 && (
           <>
             <Animated.View
               style={{
-                flex: 1,
                 flexDirection: 'row',
                 justifyContent: 'space-between',
                 padding: 16,

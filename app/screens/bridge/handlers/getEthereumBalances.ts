@@ -1,7 +1,7 @@
 import { Assets, Blockchain, fetchTokenBalances } from '@avalabs/bridge-sdk'
 import { Network } from '@avalabs/chains-sdk'
 import Big from 'big.js'
-import { getEthereumProvider } from '../utils/getEthereumProvider'
+import networkService from 'services/network/NetworkService'
 
 export async function getEthereumBalances(
   assets: Assets,
@@ -9,7 +9,7 @@ export async function getEthereumBalances(
   deprecated: boolean,
   network: Network
 ) {
-  const provider = getEthereumProvider(network)
+  const provider = networkService.getEthereumProvider(network.isTestnet)
   const ethereumBalancesBySymbol = await fetchTokenBalances(
     assets,
     Blockchain.ETHEREUM,
