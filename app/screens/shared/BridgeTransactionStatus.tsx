@@ -21,6 +21,7 @@ import BridgeConfirmations from 'screens/bridge/components/BridgeConfirmations'
 import { useBridgeContext } from 'contexts/BridgeContext'
 import { StackNavigationOptions } from '@react-navigation/stack'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
+import { useNavigation } from '@react-navigation/native'
 
 type Props = {
   blockchain: string
@@ -50,6 +51,7 @@ const BridgeTransactionStatus: FC<Props> = ({
   const { selectedCurrency, currencyFormatter } = appHook
   const tokenInfoData = useTokenInfoContext()
   const { currentAsset, transactionDetails } = useBridgeSDK()
+  const navigation = useNavigation()
 
   const assetPrice = usePrice(
     bridgeTransaction?.symbol || currentAsset,
@@ -75,6 +77,11 @@ const BridgeTransactionStatus: FC<Props> = ({
 
       if (bridgeTransaction.complete) {
         removeBridgeTransaction(bridgeTransaction.sourceTxHash)
+        if (HeaderRight) {
+          navigation.getParent()?.goBack()
+        } else {
+          navigation.goBack()
+        }
       }
     }
   }, [bridgeTransaction?.complete])
@@ -187,7 +194,7 @@ const BridgeTransactionStatus: FC<Props> = ({
               1 // On avalanche, we just need 1 confirmation
             }
             complete={bridgeTransaction.complete}
-            confirmationCount={bridgeTransaction.confirmationCount}
+            confirmationCount={bridgeTransaction.complete ? 1 : 0}
           />
         )}
       </View>

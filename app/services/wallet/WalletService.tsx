@@ -79,10 +79,11 @@ class WalletService {
       const signedTx = await wallet.signTx(tx.inputs, tx.outputs)
       return signedTx.toHex()
     } else {
-      if (!(wallet instanceof Wallet)) {
-        throw new Error('Signing error, wrong network')
-      }
-      return await wallet.signTransaction(tx)
+      // if (!(wallet instanceof Wallet)) {
+      //   throw new Error('Signing error, wrong network')
+      // }
+
+      return await (wallet as Wallet).signTransaction(tx)
     }
   }
 

@@ -4,6 +4,7 @@ import {
   BITCOIN_NETWORK,
   BITCOIN_TEST_NETWORK,
   ChainId,
+  ETHEREUM_NETWORK,
   getChainsAndTokens,
   Network,
   NetworkVMType
@@ -73,7 +74,7 @@ class NetworkService {
     throw new Error('unsupported network')
   }
 
-  async getNetworks() {
+  async getNetworks(): Promise<{ [chainId: number]: Network }> {
     const erc20Networks = await getChainsAndTokens()
 
     delete erc20Networks[ChainId.AVALANCHE_LOCAL_ID]
@@ -81,7 +82,8 @@ class NetworkService {
     const networks = {
       ...erc20Networks,
       [ChainId.BITCOIN]: BITCOIN_NETWORK,
-      [ChainId.BITCOIN_TESTNET]: BITCOIN_TEST_NETWORK
+      [ChainId.BITCOIN_TESTNET]: BITCOIN_TEST_NETWORK,
+      [ChainId.ETHEREUM_HOMESTEAD]: ETHEREUM_NETWORK
     }
 
     return networks

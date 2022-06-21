@@ -11,6 +11,8 @@ import {
   REGISTER,
   REHYDRATE
 } from 'redux-persist'
+import { DeserializeBridgeTransform } from 'store/transforms'
+import bridge, { addBridgeTransaction } from 'store/bridge'
 import { networkReducer as network } from './network'
 import { balanceReducer as balance, setBalance, setBalances } from './balance'
 import { appReducer as app, onRehydrationComplete } from './app'
@@ -27,13 +29,15 @@ const rootReducer = combineReducers({
   balance,
   account,
   settings,
-  networkFee
+  networkFee,
+  bridge
 })
 
 const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
-  whitelist: ['network', 'account', 'settings']
+  whitelist: ['network', 'account', 'settings', 'bridge'],
+  transforms: [DeserializeBridgeTransform]
 }
 
 const persistedReducer = persistReducer(persistConfig, rootReducer)
@@ -44,8 +48,13 @@ export const store = configureStore({
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware({
       serializableCheck: {
-        ignoredActions: [...persistActions, setBalance.type, setBalances.type],
-        ignoredPaths: ['balance', 'networkFee']
+        ignoredActions: [
+          ...persistActions,
+          setBalance.type,
+          setBalances.type,
+          addBridgeTransaction.type
+        ],
+        ignoredPaths: ['balance', 'networkFee', 'bridge']
       }
     }).prepend(listener.middleware)
 })
@@ -55,6 +64,7 @@ export const persistor = persistStore(store, null, () => {
   store.dispatch(onRehydrationComplete())
 })
 
+export type RawRootState = ReturnType<typeof rootReducer>
 export type RootState = ReturnType<typeof store.getState>
 export type AppDispatch = typeof store.dispatch
 export type AppListenerEffectAPI = ListenerEffectAPI<RootState, AppDispatch>

@@ -3,13 +3,14 @@ import {
   useBridgeSDK,
   useGetTokenSymbolOnNetwork
 } from '@avalabs/bridge-sdk'
-import { useWalletStateContext } from '@avalabs/wallet-react-components'
 import { useEffect, useMemo, useState } from 'react'
 import { getEthereumBalances } from 'screens/bridge/handlers/getEthereumBalances'
 import { getAvalancheBalances } from 'screens/bridge/handlers/getAvalancheBalances'
 import { AssetBalance } from 'screens/bridge/utils/types'
+import { useActiveAccount } from 'hooks/useActiveAccount'
+import { useActiveNetwork } from 'hooks/useActiveNetwork'
 import { useSelector } from 'react-redux'
-import { selectActiveNetwork } from 'store/network'
+import { selectTokensWithBalance } from 'store/balance'
 
 /**
  * Get for the current chain.
@@ -27,9 +28,9 @@ export function useAssetBalancesEVM(
   // TODO update this when adding support for /convert
   const showDeprecated = false
 
-  // still dont like this forced unwrapping :(
-  const { addresses, erc20Tokens } = useWalletStateContext()!
-  const network = useSelector(selectActiveNetwork)
+  const tokens = useSelector(selectTokensWithBalance)
+  const activeAccount = useActiveAccount()
+  const network = useActiveNetwork()
   const { avalancheAssets, ethereumAssets, currentBlockchain } = useBridgeSDK()
   const { getTokenSymbolOnNetwork } = useGetTokenSymbolOnNetwork()
 
@@ -41,7 +42,7 @@ export function useAssetBalancesEVM(
     ) {
       return []
     }
-    return getAvalancheBalances(avalancheAssets, erc20Tokens).map(token => ({
+    return getAvalancheBalances(avalancheAssets, tokens).map(token => ({
       ...token,
       symbolOnNetwork: getTokenSymbolOnNetwork(
         token.symbol,
@@ -52,7 +53,7 @@ export function useAssetBalancesEVM(
     chain,
     currentBlockchain,
     avalancheAssets,
-    erc20Tokens,
+    tokens,
     getTokenSymbolOnNetwork
   ])
 
@@ -68,7 +69,7 @@ export function useAssetBalancesEVM(
     ;(async function getBalances() {
       const balances = await getEthereumBalances(
         ethereumAssets,
-        addresses.addrC,
+        activeAccount?.address ?? '',
         showDeprecated,
         network
       )
@@ -76,7 +77,7 @@ export function useAssetBalancesEVM(
       setEthBalances(balances)
     })()
   }, [
-    addresses.addrC,
+    activeAccount?.address,
     ethereumAssets,
     chain,
     showDeprecated,

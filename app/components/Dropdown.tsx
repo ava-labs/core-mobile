@@ -1,7 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react'
 import {
-  FlatList,
-  ListRenderItemInfo,
   Platform,
   Pressable,
   StyleProp,
@@ -13,13 +11,13 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
 import CarrotSVG from 'components/svg/CarrotSVG'
 import { Popable, PopableManager } from 'react-native-popable'
-import Separator from 'components/Separator'
 import CheckmarkSVG from 'components/svg/CheckmarkSVG'
 import isString from 'lodash.isstring'
 import { BlurView } from '@react-native-community/blur'
 import { Row } from 'components/Row'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
+import Separator from 'components/Separator'
 
 const BORDER_RADIUS = 8
 const BACKGROUND = '#252525'
@@ -111,11 +109,11 @@ function DropDown<ItemT>({
    * Used when no custom rendering is passed
    * @param item
    */
-  const renderItem = (item: ListRenderItemInfo<ItemT>) => {
+  const renderItem = (item: ItemT) => {
     return (
       <AvaButton.Base
         onPress={() => {
-          onItemSelected(item.item)
+          onItemSelected(item)
           ref?.current?.hide()
           setIsFilterOpen(!isFilterOpen)
         }}>
@@ -126,9 +124,9 @@ function DropDown<ItemT>({
             paddingHorizontal: 16
           }}>
           <AvaText.Body1 textStyle={{ paddingVertical: 8 }}>
-            {item.item}
+            {item}
           </AvaText.Body1>
-          {selectedItem === item.item && <CheckmarkSVG color={'white'} />}
+          {selectedItem === item && <CheckmarkSVG color={'white'} />}
         </Row>
       </AvaButton.Base>
     )
@@ -139,16 +137,16 @@ function DropDown<ItemT>({
    * so to capture the manual dismissal of popable
    * @param item
    */
-  const renderCustomItem = (item: ListRenderItemInfo<ItemT>) => {
+  const renderCustomItem = (item: ItemT) => {
     return (
       <Pressable
         onPress={() => {
-          onItemSelected(item.item)
+          onItemSelected(item)
           ref?.current?.hide()
           setIsFilterOpen(!isFilterOpen)
         }}>
         {optionsRenderItem?.({
-          item: item.item
+          item: item
         })}
       </Pressable>
     )
@@ -161,11 +159,14 @@ function DropDown<ItemT>({
     return (
       <>
         {blurBackground}
-        <FlatList
-          data={data}
-          renderItem={optionsRenderItem ? renderCustomItem : renderItem}
-          ItemSeparatorComponent={Separator}
-        />
+        {data.map((item, index) => {
+          return (
+            <>
+              {optionsRenderItem ? renderCustomItem(item) : renderItem(item)}
+              {index < data.length - 1 && <Separator />}
+            </>
+          )
+        })}
       </>
     )
   }
