@@ -6,7 +6,7 @@ import { Space } from 'components/Space'
 import TokenAddress from 'components/TokenAddress'
 import { useSelector } from 'react-redux'
 import {
-  selectBalanceTotalInUSD,
+  selectBalanceTotalInCurrency,
   selectIsLoadingBalances,
   selectIsRefetchingBalances
 } from 'store/balance'
@@ -20,11 +20,11 @@ function PortfolioHeaderContainer() {
   const activeNetwork = useSelector(selectActiveNetwork)
   const isLoadingBalance = useSelector(selectIsLoadingBalances)
   const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
-  const balanceTotalInUSD = useSelector(
-    selectBalanceTotalInUSD(activeAccount?.index ?? 0)
+  const balanceTotalInCurrency = useSelector(
+    selectBalanceTotalInCurrency(activeAccount?.index ?? 0)
   )
   const { selectedCurrency, currencyFormatter } = context.appHook
-  const currencyBalance = currencyFormatter(balanceTotalInUSD)
+  const currencyBalance = currencyFormatter(balanceTotalInCurrency)
   const address =
     activeNetwork.vmName === NetworkVMType.BITCOIN
       ? activeAccount?.addressBtc
@@ -32,7 +32,7 @@ function PortfolioHeaderContainer() {
 
   return (
     <PortfolioHeader
-      balanceTotalUSD={currencyBalance}
+      balanceTotalInCurrency={currencyBalance}
       isBalanceLoading={isLoadingBalance || isRefetchingBalance}
       currencyCode={selectedCurrency}
       address={address}
@@ -41,7 +41,7 @@ function PortfolioHeaderContainer() {
 }
 
 interface PortfolioHeaderProps {
-  balanceTotalUSD: string
+  balanceTotalInCurrency: string
   isBalanceLoading: boolean
   currencyCode: string
   address?: string
@@ -50,7 +50,7 @@ interface PortfolioHeaderProps {
 const PortfolioHeader: FC<PortfolioHeaderProps> = memo(
   ({
     address,
-    balanceTotalUSD = 0,
+    balanceTotalInCurrency = 0,
     isBalanceLoading = false,
     currencyCode
   }) => {
@@ -64,7 +64,9 @@ const PortfolioHeader: FC<PortfolioHeaderProps> = memo(
             <ActivityIndicator style={{ alignSelf: 'center' }} size="small" />
           ) : (
             <>
-              <AvaText.LargeTitleBold>{balanceTotalUSD}</AvaText.LargeTitleBold>
+              <AvaText.LargeTitleBold>
+                {balanceTotalInCurrency}
+              </AvaText.LargeTitleBold>
               <AvaText.Heading3 textStyle={{ paddingBottom: 4, marginLeft: 4 }}>
                 {currencyCode}
               </AvaText.Heading3>

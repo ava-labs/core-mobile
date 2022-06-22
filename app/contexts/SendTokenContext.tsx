@@ -24,7 +24,6 @@ import { fetchNetworkFee } from 'store/networkFee'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
-import { useTokenPriceInCurrency } from 'hooks/useTokenPriceInCurrency'
 
 export interface SendTokenContextState {
   sendToken: TokenWithBalance | undefined
@@ -64,15 +63,8 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
     () => stringToBN(sendAmount || '0', sendToken?.decimals ?? 0),
     [sendAmount, sendToken?.decimals]
   )
-  const { tokenPriceInSelectedCurrency } = useTokenPriceInCurrency({
-    network: activeNetwork,
-    token: sendToken,
-    currency: selectedCurrency.toLowerCase() as VsCurrencyType
-  })
-  const sendAmountInCurrency = useMemo(
-    () => tokenPriceInSelectedCurrency * Number(sendAmount),
-    [sendAmount, tokenPriceInSelectedCurrency]
-  )
+  const tokenPriceInSelectedCurrency = sendToken?.priceInCurrency ?? 0
+  const sendAmountInCurrency = tokenPriceInSelectedCurrency * Number(sendAmount)
 
   const [sendToAddress, setSendToAddress] = useState('')
   const [sendToTitle, setSendToTitle] = useState('')

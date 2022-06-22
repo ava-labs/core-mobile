@@ -182,7 +182,7 @@ const TokenDetail = () => {
                 currency
                 hideTrailingCurrency
                 textStyle={{ marginEnd: 8 }}>
-                {token?.priceUSD?.toFixed(6)}
+                {token?.priceInCurrency?.toFixed(6)}
               </AvaText.Heading3>
               <MarketMovement
                 priceChange={ranges.diffValue}
