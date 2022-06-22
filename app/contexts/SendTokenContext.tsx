@@ -197,7 +197,6 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
         selectedCurrency
       )
       .then(state => {
-        console.log('state', state)
         setGasLimit(state.gasLimit ?? 0)
         setMaxAmount(
           state.maxAmount
