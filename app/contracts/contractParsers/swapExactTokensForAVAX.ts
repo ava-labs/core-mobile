@@ -1,14 +1,14 @@
 import { bigToLocaleString, bnToBig } from '@avalabs/avalanche-wallet-sdk'
 import { BigNumber } from 'ethers'
+import { parseDisplayValues } from 'screens/rpc/util/parseDisplayValues'
+import { hexToBN } from '@avalabs/utils-sdk'
 import {
   ContractCall,
   ContractParser,
   DisplayValueParserProps,
-  parseDisplayValues,
   RpcTxParams,
   SwapExactTokensForTokenDisplayValues
-} from 'screens/rpc/util/parseDisplayValues'
-import { hexToBN } from '@avalabs/utils-sdk'
+} from 'screens/rpc/util/types'
 import { findToken } from './utils/findToken'
 
 export interface SwapExactTokensForAVAXData {

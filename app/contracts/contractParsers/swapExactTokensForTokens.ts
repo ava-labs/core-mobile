@@ -6,9 +6,10 @@ import {
   ContractParser,
   DisplayValueParserProps,
   erc20PathToken,
-  parseDisplayValues, RpcTxParams,
-  SwapExactTokensForTokenDisplayValues,
-} from 'screens/rpc/util/parseDisplayValues';
+  parseDisplayValues,
+  RpcTxParams,
+  SwapExactTokensForTokenDisplayValues
+} from 'screens/rpc/util/parseDisplayValues'
 import { hexToBN } from '@avalabs/utils-sdk'
 import { findToken } from './utils/findToken'
 

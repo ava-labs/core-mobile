@@ -1,12 +1,12 @@
 import React, { FC, useEffect, useState } from 'react'
 import { FlatList } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import WalletConnect from 'services/walletconnect/WalletConnect'
 import Avatar from 'components/Avatar'
 import AvaButton from 'components/AvaButton'
 import { IWalletConnectSession } from '@walletconnect/types'
 import TrashSVG from 'components/svg/TrashSVG'
 import AvaListItem from 'components/AvaListItem'
+import walletConnectService from 'services/walletconnect/WalletConnectService'
 
 const ConnectedDapps: FC = () => {
   const [connectedDappsSessions, setConnectedDappSessions] = useState<
@@ -14,7 +14,7 @@ const ConnectedDapps: FC = () => {
   >([])
 
   async function refresh() {
-    setConnectedDappSessions(await WalletConnect.getConnections())
+    setConnectedDappSessions(await walletConnectService.getConnections())
   }
 
   useEffect(() => {
@@ -25,7 +25,7 @@ const ConnectedDapps: FC = () => {
     <SafeAreaView style={{ flex: 1 }}>
       <AvaButton.PrimaryMedium
         onPress={() => {
-          WalletConnect.killAllSessions()
+          walletConnectService.killAllSessions()
         }}>
         Delete All Sessions
       </AvaButton.PrimaryMedium>

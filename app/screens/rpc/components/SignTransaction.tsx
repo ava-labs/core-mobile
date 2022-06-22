@@ -27,6 +27,8 @@ import AddSVG from 'components/svg/AddSVG'
 import ArrowSVG from 'components/svg/ArrowSVG'
 import { Limit } from 'components/EditFees'
 import Spinner from 'components/Spinner'
+import TabViewAva from 'components/TabViewAva'
+import { getHexStringToBytes } from 'utils/getHexStringToBytes'
 
 interface Props {
   txParams: RpcTxParams
@@ -402,30 +404,39 @@ function RpcTransaction({
           })}
       </View>
       <Space y={16} />
-      {gasPrice.value !== '' && gasPrice.value !== '0' && (
-        <CustomFees
-          gasPrice={rest.fees.gasPrice}
-          limit={gasLimit?.toString() ?? '0'}
-          defaultGasPrice={gasPrice}
-          onChange={onCustomFeeSet}
-          selectedGasFeeModifier={selectedGasFee}
-        />
-      )}
-      {/*    <Row style={{ justifyContent: 'space-between' }}>*/}
-      {/*      <AvaText.Body1>Hex Data:</AvaText.Body1>*/}
-      {/*      <AvaText.Body1>*/}
-      {/*        {getHexStringToBytes(txParams?.data)} Bytes*/}
-      {/*      </AvaText.Body1>*/}
-      {/*    </Row>*/}
-      {/*    <View style={{ flex: 1, paddingVertical: 14 }}>*/}
-      {/*      <AvaText.Body3*/}
-      {/*        textStyle={{*/}
-      {/*          padding: 16,*/}
-      {/*          backgroundColor: theme.colorBg3,*/}
-      {/*          borderRadius: 15*/}
-      {/*        }}>*/}
-      {/*        {dataString}*/}
-      {/*      </AvaText.Body3>*/}
+      <TabViewAva>
+        <TabViewAva.Item title={'Feeds'}>
+          {gasPrice.value !== '' && gasPrice.value !== '0' && (
+            <CustomFees
+              gasPrice={rest.fees.gasPrice}
+              limit={gasLimit?.toString() ?? '0'}
+              defaultGasPrice={gasPrice}
+              onChange={onCustomFeeSet}
+              selectedGasFeeModifier={selectedGasFee}
+            />
+          )}
+        </TabViewAva.Item>
+        <TabViewAva.Item title={'Data'}>
+          <>
+            <Row style={{ justifyContent: 'space-between' }}>
+              <AvaText.Body1>Hex Data:</AvaText.Body1>
+              <AvaText.Body1>
+                {getHexStringToBytes(txParams?.data)} Bytes
+              </AvaText.Body1>
+            </Row>
+            <View style={{ flex: 1, paddingVertical: 14 }}>
+              <AvaText.Body3
+                textStyle={{
+                  padding: 16,
+                  backgroundColor: theme.colorBg3,
+                  borderRadius: 15
+                }}>
+                {dataString}
+              </AvaText.Body3>
+            </View>
+          </>
+        </TabViewAva.Item>
+      </TabViewAva>
     </>
   )
 }

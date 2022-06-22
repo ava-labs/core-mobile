@@ -13,9 +13,10 @@ import { bnToLocaleString } from '@avalabs/avalanche-wallet-sdk'
 import { calculateGasAndFees, Fees } from 'utils/calculateGasAndFees'
 import { bigToBN, stringToBN } from '@avalabs/utils-sdk'
 import Big from 'big.js'
-import { useWalletStateContext } from '@avalabs/wallet-react-components'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
+import { useSelector } from 'react-redux'
+import { selectTokenById } from 'store/balance'
 
 export enum GasFeeModifier {
   NORMAL = 'NORMAL',
@@ -47,9 +48,9 @@ function CustomFees({
   const theme = useApplicationContext().theme
   const [customGasPrice, setCustomGasPrice] = useState(gasPrice)
   const [customGasLimit, setCustomGasLimit] = useState<string>(limit)
-  const { avaxPrice } = useWalletStateContext()
+  const avaxToken = useSelector(selectTokenById('AVAX'))
   const [newFees, setNewFees] = useState<Fees>(
-    calculateGasAndFees(gasPrice, limit, avaxPrice)
+    calculateGasAndFees(gasPrice, limit, avaxToken?.priceUSD ?? 0)
   )
   const navigation = useNavigation()
   const [originalGas] = useState<GasPrice>(defaultGasPrice || gasPrice)
@@ -68,7 +69,11 @@ function CustomFees({
     (gas: GasPrice, modifier: GasFeeModifier) => {
       setIsGasPriceTooHigh(false)
       setCustomGasPrice(gas)
-      const newFees = calculateGasAndFees(gas, customGasLimit, avaxPrice)
+      const newFees = calculateGasAndFees(
+        gas,
+        customGasLimit,
+        avaxToken?.priceUSD ?? 0
+      )
       if (maxGasPrice && newFees.bnFee.gte(stringToBN(maxGasPrice, 0))) {
         setIsGasPriceTooHigh(true)
         return
@@ -82,7 +87,7 @@ function CustomFees({
 
       onChange(customGasLimit, gas, modifier)
     },
-    [avaxPrice, customGasLimit, maxGasPrice, onChange]
+    [avaxToken, customGasLimit, maxGasPrice, onChange]
   )
 
   const gasModifier = useCallback(
@@ -145,7 +150,11 @@ function CustomFees({
               onSave: (newLimit: number) => {
                 setCustomGasLimit(newLimit.toString())
                 setNewFees(
-                  calculateGasAndFees(customGasPrice, limit, avaxPrice)
+                  calculateGasAndFees(
+                    customGasPrice,
+                    limit,
+                    avaxToken?.priceUSD ?? 0
+                  )
                 )
                 onChange(
                   limit,
@@ -285,7 +294,7 @@ const FeeSelector: FC<{
       }}>
       {showInput && (
         <InputText
-          text={value?.toString()}
+          text={value?.toString() ?? ''}
           autoFocus
           onChangeText={text => onValueEntered?.(text)}
           keyboardType={'numeric'}

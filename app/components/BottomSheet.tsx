@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef } from 'react'
-import { BottomSheetBackdrop } from '@gorhom/bottom-sheet'
 import * as RNBottomSheet from '@gorhom/bottom-sheet'
+import { BottomSheetBackdrop } from '@gorhom/bottom-sheet'
 import { InteractionManager } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import TabViewBackground from 'screens/portfolio/components/TabViewBackground'
@@ -13,7 +13,12 @@ interface Props {
   disablePanningGesture?: boolean
 }
 
-function AvaBottomSheet({ snapPoints, children, snapTo, disablePanningGesture }: Props): JSX.Element {
+function AvaBottomSheet({
+  snapPoints,
+  children,
+  snapTo,
+  disablePanningGesture
+}: Props): JSX.Element {
   const { goBack } = useNavigation()
   const bottomSheetModalRef = useRef<RNBottomSheet.default>(null)
 

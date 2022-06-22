@@ -1,5 +1,4 @@
 import { Transaction } from 'screens/rpc/util/types'
-import { hexToBN } from '@avalabs/utils-sdk'
 import { GasPrice } from 'utils/GasPriceHook'
 
 export function txToCustomEvmTx(gasPrice: GasPrice, tx?: Transaction) {

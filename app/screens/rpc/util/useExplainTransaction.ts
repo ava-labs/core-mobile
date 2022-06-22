@@ -1,26 +1,26 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { RpcTxParams, Transaction } from 'screens/rpc/util/types'
-import {
-  useWalletContext,
-  useWalletStateContext
-} from '@avalabs/wallet-react-components'
 import { GasPrice, useGasPrice } from 'utils/GasPriceHook'
 import { Limit, SpendLimit } from 'components/EditFees'
 import { web3 } from '@avalabs/avalanche-wallet-sdk'
 // @ts-ignore javascript
 import ERC20_ABI from 'human-standard-token-abi'
 import { getTxInfo } from 'screens/rpc/util/getTransactionInfo'
-import { useIsMainnet } from 'hooks/isMainnet'
 import { calculateGasAndFees, Fees } from 'utils/calculateGasAndFees'
 import { GasFeeModifier } from 'components/CustomFees'
+import { useActiveNetwork } from 'hooks/useActiveNetwork'
+import networkFeeService from 'services/networkFee/NetworkFeeService'
+import { bnToEthersBigNumber, stringToBN } from '@avalabs/utils-sdk'
+import { useSelector } from 'react-redux'
+import { selectTokenById } from 'store/balance'
 
 const UNLIMITED_SPEND_LIMIT_LABEL = 'Unlimited'
 
 export function useExplainTransaction(txParams: RpcTxParams) {
-  const isMainnet = useIsMainnet()
   const avaxGasPrice = useGasPrice().gasPrice
-  const avaxPrice = useWalletStateContext()?.avaxPrice
-  const wallet = useWalletContext().wallet
+  const avaxToken = useSelector(selectTokenById('avax'))
+  const avaxPrice = avaxToken?.priceUSD ?? 0
+  const activeNetwork = useActiveNetwork()
   const [transaction, setTransaction] = useState<Transaction | null>(null)
   const [defaultGasPrice, setDefaultGasPrice] = useState<GasPrice | null>(null)
   const [feeDisplayValues, setFeeDisplayValues] = useState<Fees>()
@@ -101,7 +101,10 @@ export function useExplainTransaction(txParams: RpcTxParams) {
     ;(async () => {
       if (txParams && avaxPrice && avaxGasPrice) {
         try {
-          const txExplanation = await getTxInfo(txParams, isMainnet)
+          const txExplanation = await getTxInfo(
+            txParams,
+            !activeNetwork.isTestnet
+          )
           const displayTxData = {
             ...txExplanation.data,
             ...calculateGasAndFees(
@@ -116,9 +119,16 @@ export function useExplainTransaction(txParams: RpcTxParams) {
 
           setDefaultGasPrice(displayTxData?.gasPrice)
 
+          // todo: check network fee service
           const gasLimit = await (txParams.gas
             ? Promise.resolve(false)
-            : wallet?.estimateGas(txParams.to, txParams.data ?? ''))
+            : networkFeeService?.estimateGasLimit(
+                txParams.from,
+                txParams.to,
+                txParams.data ?? '',
+                bnToEthersBigNumber(stringToBN(txParams.value ?? '0', 9)),
+                activeNetwork
+              ))
 
           const txParamsWithGasLimit = gasLimit
             ? { gas: `${gasLimit}`, ...txParams }
