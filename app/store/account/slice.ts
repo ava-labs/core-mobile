@@ -1,7 +1,6 @@
 import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { AccountCollection, AccountsState } from 'store/account/types'
+import { Account, AccountCollection, AccountsState } from 'store/account/types'
 import { RootState } from 'store/index'
-import { Account } from 'dto/Account'
 
 const reducerName = 'account'
 
