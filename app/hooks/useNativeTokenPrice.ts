@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { from, timer } from 'rxjs'
 import { concatMap } from 'rxjs/operators'
-import tokenService from 'services/balance/TokenService'
+import tokenService from 'services/token/TokenService'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'

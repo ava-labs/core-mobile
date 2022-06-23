@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useMemo, useState } from 'react'
+import React, { FC, useCallback, useState } from 'react'
 import { Modal, StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import InputText from 'components/InputText'
@@ -6,90 +6,24 @@ import QrScannerAva from 'components/QrScannerAva'
 import AvaButton from 'components/AvaButton'
 import QRCode from 'components/svg/QRCodeSVG'
 import { useNavigation } from '@react-navigation/native'
-import {
-  getContractDataErc20,
-  isValidAddress
-} from '@avalabs/avalanche-wallet-sdk'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import Avatar from 'components/Avatar'
 import useAddCustomToken from 'screens/tokenManagement/hooks/useAddCustomToken'
-import { Erc20TokenData } from '@avalabs/avalanche-wallet-sdk/dist/Asset/types'
 import { ShowSnackBar } from 'components/Snackbar'
-import { useSelector } from 'react-redux'
-import { selectActiveNetwork } from 'store/network'
 
 const AddCustomToken: FC = () => {
   const theme = useApplicationContext().theme
-  const [tokenAddress, setTokenAddress] = useState('')
-  const [errorMessage, setErrorMessage] = useState<string>()
-  const [token, setToken] = useState<Erc20TokenData>()
   const [showQrCamera, setShowQrCamera] = useState(false)
-  const { addCustomToken } = useAddCustomToken()
   const { goBack } = useNavigation()
-  const activeNetwork = useSelector(selectActiveNetwork)
 
-  /**
-   * Calls addCustom token where other checks are done
-   * and saves it to the repo.
-   */
-  async function addToken() {
-    addCustomToken(tokenAddress)
-      .then(() => {
-        ShowSnackBar('Added!')
-        goBack()
-      })
-      .catch(error => {
-        // console.error(error);
-        setErrorMessage(error)
-      })
-  }
+  const showSuccess = useCallback(() => {
+    ShowSnackBar('Added!')
+    goBack()
+  }, [])
 
-  /**
-   * Checks if token is already coming through in the wallet state
-   */
-  const tokenAlreadyExists = useMemo(
-    () =>
-      tokenAddress?.length &&
-      activeNetwork.tokens?.some(
-        ({ address }: { address: string }) => address === tokenAddress
-      ),
-    [activeNetwork.tokens, tokenAddress]
-  )
-
-  useEffect(() => {
-    // some validation
-    setErrorMessage(undefined)
-    ;(async () => {
-      if (isValidAddress(tokenAddress)) {
-        getContractDataErc20(tokenAddress)
-          .then(tokenData => {
-            // if there's no error but no data, set error.
-            if (!tokenData) {
-              setErrorMessage('Invalid ERC-20 token address.')
-            }
-
-            // set token data
-            setToken(tokenData)
-
-            // if token aready exists in list, just want user, do nothing
-            if (tokenAlreadyExists) {
-              setErrorMessage('Token already exists in your wallet.')
-            }
-          })
-          .catch(error => {
-            setErrorMessage(error.message)
-          })
-      } else {
-        // reset token
-        setToken(undefined)
-        // only start showing error after a certain length
-        if (tokenAddress.length > 10) {
-          setErrorMessage('Invalid ERC-20 token address.')
-        }
-      }
-    })()
-  }, [tokenAddress])
+  const { tokenAddress, setTokenAddress, errorMessage, token, addCustomToken } =
+    useAddCustomToken(showSuccess)
 
   // only enable button if we have token and no error message
   const disabled = !!(errorMessage || !token)
@@ -139,7 +73,7 @@ const AddCustomToken: FC = () => {
       <AvaButton.PrimaryLarge
         disabled={disabled}
         style={{ margin: 16 }}
-        onPress={addToken}>
+        onPress={addCustomToken}>
         Add
       </AvaButton.PrimaryLarge>
 

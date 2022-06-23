@@ -22,8 +22,8 @@ import {
   TokenType,
   TokenWithBalance
 } from 'store/balance'
-import TokenService from 'services/balance/TokenService'
-import { ChartData } from 'services/balance/types'
+import TokenService from 'services/token/TokenService'
+import { ChartData } from 'services/token/types'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'

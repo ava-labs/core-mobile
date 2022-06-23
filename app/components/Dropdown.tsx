@@ -161,10 +161,10 @@ function DropDown<ItemT>({
         {blurBackground}
         {data.map((item, index) => {
           return (
-            <>
+            <View key={index}>
               {optionsRenderItem ? renderCustomItem(item) : renderItem(item)}
               {index < data.length - 1 && <Separator />}
-            </>
+            </View>
           )
         })}
       </>

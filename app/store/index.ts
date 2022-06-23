@@ -20,6 +20,7 @@ import { listener } from './middleware/listener'
 import { accountsReducer as account } from './account'
 import { watchlistReducer as watchlist } from './watchlist'
 import { zeroBalanceReducer as zeroBalance } from './zeroBalance'
+import { customTokenReducer as customToken } from './customToken'
 import networkFee from './networkFee'
 import settings from './settings'
 
@@ -32,6 +33,7 @@ const rootReducer = combineReducers({
   account,
   networkFee,
   bridge,
+  customToken,
 
   // user preferences
   settings,
@@ -42,14 +44,7 @@ const rootReducer = combineReducers({
 const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
-  whitelist: [
-    'network',
-    'account',
-    'settings',
-    'bridge',
-    'watchlist',
-    'zeroBalance'
-  ],
+  blacklist: ['app', 'balance', 'networkFee'],
   transforms: [DeserializeBridgeTransform]
 }
 
