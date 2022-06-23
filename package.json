@@ -141,7 +141,8 @@
     "@types/react": "17.0.44",
     "@types/react-dom": "17.0.16",
     "@ethersproject/providers": "5.6.2",
-    "react-devtools-core": "4.14.0"
+    "react-devtools-core": "4.14.0",
+    "hermes-engine": "0.10.0"
   },
   "devDependencies": {
     "@babel/core": "7.14.3",
@@ -180,6 +181,7 @@
     "metro-react-native-babel-preset": "0.66.2",
     "prettier": "2.6.2",
     "react-dom": "^18.1.0",
+    "react-native": "0.66.4",
     "react-native-storybook-loader": "^2.0.5",
     "react-native-version": "^4.0.0",
     "react-test-renderer": "17.0.2",
