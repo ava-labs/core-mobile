@@ -84,3 +84,13 @@ function charsum(s: string) {
   }
   return sum
 }
+
+export function titleToInitials(title: string) {
+  return (
+    title?.split(' ').reduce((previousValue, currentValue) => {
+      return currentValue.length > 0
+        ? previousValue + currentValue[0]
+        : previousValue
+    }, '') ?? ''
+  )
+}
