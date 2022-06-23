@@ -1,12 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react'
-import {
-  Platform,
-  Pressable,
-  StyleProp,
-  StyleSheet,
-  View,
-  ViewStyle
-} from 'react-native'
+import { Pressable, StyleProp, StyleSheet, View, ViewStyle } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
 import CarrotSVG from 'components/svg/CarrotSVG'
@@ -76,14 +69,7 @@ function DropDown<ItemT>({
    * background to be used for items when its visible
    */
   const blurBackground = useMemo(() => {
-    return Platform.OS === 'android' ? (
-      <View
-        style={[
-          StyleSheet.absoluteFill,
-          { backgroundColor: BACKGROUND, opacity: 0.95 }
-        ]}
-      />
-    ) : (
+    return (
       <>
         <BlurView
           style={[StyleSheet.absoluteFill, { borderRadius: BORDER_RADIUS }]}
@@ -161,10 +147,10 @@ function DropDown<ItemT>({
         {blurBackground}
         {data.map((item, index) => {
           return (
-            <>
+            <View key={`${item}-${index}`}>
               {optionsRenderItem ? renderCustomItem(item) : renderItem(item)}
               {index < data.length - 1 && <Separator />}
-            </>
+            </View>
           )
         })}
       </>
