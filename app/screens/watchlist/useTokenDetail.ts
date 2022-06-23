@@ -8,7 +8,7 @@ import {
 } from '@avalabs/coingecko-sdk'
 import { selectTokenById, TokenType } from 'store/balance'
 import { useDispatch, useSelector } from 'react-redux'
-import TokenService from 'services/balance/TokenService'
+import TokenService from 'services/token/TokenService'
 import { selectActiveNetwork } from 'store/network'
 import {
   selectIsWatchlistFavorite,

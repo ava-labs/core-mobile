@@ -4,7 +4,6 @@ import {
   BITCOIN_NETWORK,
   BITCOIN_TEST_NETWORK,
   ChainId,
-  ETHEREUM_NETWORK,
   getChainsAndTokens,
   Network,
   NetworkVMType
@@ -82,8 +81,7 @@ class NetworkService {
     const networks = {
       ...erc20Networks,
       [ChainId.BITCOIN]: BITCOIN_NETWORK,
-      [ChainId.BITCOIN_TESTNET]: BITCOIN_TEST_NETWORK,
-      [ChainId.ETHEREUM_HOMESTEAD]: ETHEREUM_NETWORK
+      [ChainId.BITCOIN_TESTNET]: BITCOIN_TEST_NETWORK
     }
 
     return networks

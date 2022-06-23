@@ -17,7 +17,7 @@ import {
   SimpleTokenPriceResponse,
   VsCurrencyType
 } from '@avalabs/coingecko-sdk'
-import TokenService from './TokenService'
+import TokenService from 'services/token/TokenService'
 
 const hstABI = require('human-standard-token-abi')
 
@@ -33,7 +33,6 @@ export class EvmBalanceService {
     currency: string
   ): Promise<TokenWithBalance[]> {
     const activeTokenList = network.tokens ?? []
-
     const tokenAddresses = activeTokenList.map(token => token.address)
 
     const assetPlatformId =

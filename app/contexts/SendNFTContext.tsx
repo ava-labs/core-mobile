@@ -13,7 +13,7 @@ import { BehaviorSubject } from 'rxjs'
 import { NFTItemData } from 'screens/nft/NftCollection'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
-import tokenService from 'services/balance/TokenService'
+import tokenService from 'services/token/TokenService'
 import { selectActiveNetwork } from 'store/network'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 
