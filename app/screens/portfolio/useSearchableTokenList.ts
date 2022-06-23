@@ -9,7 +9,7 @@ import {
   TokenWithBalance
 } from 'store/balance'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectZeroBalanceWhiteList } from 'store/settings/zeroBalance'
+import { selectZeroBalanceWhiteList } from 'store/zeroBalance'
 
 const bnZero = new BN(0)
 

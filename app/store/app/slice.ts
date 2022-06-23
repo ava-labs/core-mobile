@@ -12,7 +12,7 @@ const initialState: AppState = {
 }
 
 export const appSlice = createSlice({
-  name: 'app',
+  name: reducerName,
   initialState,
   reducers: {
     setIsReady: (state, action: PayloadAction<boolean>) => {

@@ -8,7 +8,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import {
   selectIsZeroBalanceWhiteListed,
   toggleWhitelist
-} from 'store/settings/zeroBalance'
+} from 'store/zeroBalance'
 
 type Props = {
   id: string
