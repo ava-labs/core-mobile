@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from 'react'
-import { CustomTokens } from 'screens/tokenManagement/hooks/useAddCustomToken'
 import { NFTItemData } from 'screens/nft/NftCollection'
 import StorageTools from 'repository/StorageTools'
 
@@ -12,7 +11,6 @@ import StorageTools from 'repository/StorageTools'
 const USER_SETTINGS = 'USER_SETTINGS'
 const ADDR_BOOK = 'ADDR_BOOK_1'
 const ADDR_BOOK_RECENTS = 'ADDR_BOOK_RECENTS_1'
-const CUSTOM_TOKENS = 'CUSTOM_TOKENS'
 const NFTs = 'NFTs_2'
 const VIEW_ONCE_INFORMATION = 'VIEW_ONCE_INFORMATION'
 
@@ -67,10 +65,6 @@ export type Repo = {
     recentContacts: RecentContact[]
     addToRecentContacts: (contact: RecentContact) => void
   }
-  customTokenRepo: {
-    customTokens: CustomTokens
-    saveCustomTokens: (customTokens: CustomTokens) => Promise<void>
-  }
   /**
    * Store any simple user settings here
    */
@@ -87,7 +81,6 @@ export function useRepo(): Repo {
   const [nfts, setNfts] = useState<Map<UID, NFTItemData>>(new Map())
   const [addressBook, setAddressBook] = useState<Map<UID, Contact>>(new Map())
   const [recentContacts, setRecentContacts] = useState<RecentContact[]>([])
-  const [customTokens, setCustomTokens] = useState<CustomTokens>({})
   const [viewOnceInfo, setViewOnceInfo] = useState<ViewOnceInformation[]>([])
   const [userSettings, setUserSettings] = useState<Map<Setting, SettingValue>>(
     new Map()
@@ -130,11 +123,6 @@ export function useRepo(): Repo {
     )
   }
 
-  const saveCustomTokens = (tokens: CustomTokens) => {
-    setCustomTokens(tokens)
-    return StorageTools.saveToStorage<CustomTokens>(CUSTOM_TOKENS, tokens)
-  }
-
   const addToRecentContacts = (contact: RecentContact) => {
     const newRecents = [
       contact,
@@ -166,7 +154,6 @@ export function useRepo(): Repo {
     setAddressBook(new Map())
     setNfts(new Map())
     setRecentContacts([])
-    setCustomTokens({})
     setUserSettings(new Map())
     setInitialized(false)
   }
@@ -186,10 +173,6 @@ export function useRepo(): Repo {
         ADDR_BOOK_RECENTS
       )
     )
-    setCustomTokens(
-      (await StorageTools.loadFromStorageAsObj<CustomTokens>(CUSTOM_TOKENS)) ??
-        {}
-    )
     setViewOnceInfo(
       await StorageTools.loadFromStorageAsArray<ViewOnceInformation>(
         VIEW_ONCE_INFORMATION
@@ -205,7 +188,6 @@ export function useRepo(): Repo {
       recentContacts,
       addToRecentContacts
     },
-    customTokenRepo: { customTokens, saveCustomTokens },
     userSettingsRepo: {
       setSetting,
       getSetting
