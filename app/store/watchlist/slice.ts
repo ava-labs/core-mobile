@@ -9,7 +9,6 @@ export const watchlistSlice = createSlice({
   initialState,
   reducers: {
     toggleFavorite: (state, action: PayloadAction<string>) => {
-      console.log(action.payload)
       const tokenId = action.payload
       if (!state.favorites.includes(tokenId)) {
         // set favorite
