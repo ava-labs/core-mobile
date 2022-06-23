@@ -89,7 +89,7 @@ const WatchlistView: React.FC<Props> = ({ showFavorites, searchText }) => {
 
     return items.slice().sort((a, b) => {
       if (filterBy === WatchlistFilter.PRICE) {
-        return b.priceUSD - a.priceUSD
+        return b.priceInCurrency - a.priceInCurrency
       } else if (filterBy === WatchlistFilter.MARKET_CAP) {
         return b.marketCap - a.marketCap
       } else {
@@ -115,12 +115,12 @@ const WatchlistView: React.FC<Props> = ({ showFavorites, searchText }) => {
 
     function getDisplayValue() {
       if (filterBy === WatchlistFilter.PRICE) {
-        const tokenPriceUsd = token.priceUSD
-        return tokenPriceUsd === 0
+        const priceInCurrency = token.priceInCurrency
+        return priceInCurrency === 0
           ? ' -'
-          : tokenPriceUsd > 0 && tokenPriceUsd < 0.1
-          ? `${tokenPriceUsd.toFixed(6)}`
-          : currencyFormatter(tokenPriceUsd)
+          : priceInCurrency > 0 && priceInCurrency < 0.1
+          ? `${priceInCurrency.toFixed(6)}`
+          : currencyFormatter(priceInCurrency)
       } else if (filterBy === WatchlistFilter.MARKET_CAP) {
         return token.marketCap === 0
           ? ' -'

@@ -9,7 +9,7 @@ import { Opacity85 } from 'resources/Constants'
 interface Props {
   tokenName: string
   tokenPrice: string
-  tokenPriceUsd?: string
+  tokenPriceInCurrency?: string
   image?: string
   symbol?: string
   onPress?: () => void
@@ -19,7 +19,7 @@ interface Props {
 const PortfolioListItem: FC<Props> = ({
   tokenName,
   tokenPrice,
-  tokenPriceUsd,
+  tokenPriceInCurrency,
   image,
   symbol,
   onPress,
@@ -62,7 +62,7 @@ const PortfolioListItem: FC<Props> = ({
             <ActivityIndicator size="small" color={theme.colorPrimary1} />
           ) : (
             <AvaText.Heading3 currency ellipsizeMode={'tail'}>
-              {tokenPriceUsd}
+              {tokenPriceInCurrency}
             </AvaText.Heading3>
           )
         }

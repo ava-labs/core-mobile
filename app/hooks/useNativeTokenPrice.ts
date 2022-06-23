@@ -6,12 +6,17 @@ import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
 
-export function useNativeTokenPrice() {
+export function useNativeTokenPrice({
+  currency
+}: {
+  currency: VsCurrencyType
+}) {
   const [nativeTokenPrice, setNativeTokenPrice] = useState(0)
   const activeNetwork = useSelector(selectActiveNetwork)
 
   useEffect(refreshPriceFx, [
-    activeNetwork.pricingProviders?.coingecko.nativeTokenId
+    activeNetwork.pricingProviders?.coingecko.nativeTokenId,
+    currency
   ])
 
   function refreshPriceFx() {
@@ -22,7 +27,7 @@ export function useNativeTokenPrice() {
           return from(
             tokenService.getPriceWithMarketDataByCoinId(
               activeNetwork.pricingProviders?.coingecko.nativeTokenId ?? '',
-              VsCurrencyType.USD
+              currency
             )
           )
         })

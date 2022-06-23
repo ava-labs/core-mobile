@@ -85,7 +85,7 @@ export class EvmBalanceService {
     const balanceEthersBig = await provider.getBalance(userAddress)
 
     const {
-      price: priceUSD,
+      price: priceInCurrency,
       marketCap,
       vol24,
       change24
@@ -98,9 +98,10 @@ export class EvmBalanceService {
     const balanceNum = balanceBig.toNumber()
     const balance = bigToBN(balanceBig, tokenDecimals)
     const balanceDisplayValue = balanceToDisplayValue(balance, tokenDecimals)
-    const balanceUSD = priceUSD && balanceNum ? priceUSD * balanceNum : 0
-    const balanceUsdDisplayValue = priceUSD
-      ? balanceBig.mul(priceUSD).toFixed(2)
+    const balanceInCurrency =
+      priceInCurrency && balanceNum ? priceInCurrency * balanceNum : 0
+    const balanceCurrencyDisplayValue = priceInCurrency
+      ? balanceBig.mul(priceInCurrency).toFixed(2)
       : '0'
 
     return {
@@ -110,9 +111,9 @@ export class EvmBalanceService {
       type: TokenType.NATIVE,
       balance,
       balanceDisplayValue,
-      balanceUSD,
-      balanceUsdDisplayValue,
-      priceUSD,
+      balanceInCurrency,
+      balanceCurrencyDisplayValue,
+      priceInCurrency,
       marketCap,
       vol24,
       change24
@@ -161,9 +162,9 @@ export class EvmBalanceService {
           type: TokenType.ERC20,
           balance,
           balanceDisplayValue,
-          balanceUSD,
-          balanceUsdDisplayValue,
-          priceUSD,
+          balanceInCurrency: balanceUSD,
+          balanceCurrencyDisplayValue: balanceUsdDisplayValue,
+          priceInCurrency: priceUSD,
           marketCap,
           change24,
           vol24

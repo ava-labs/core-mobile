@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useEffect } from 'react'
 import { ActivityIndicator, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
@@ -9,12 +9,14 @@ import Separator from 'components/Separator'
 import { Row } from 'components/Row'
 import AvaButton from 'components/AvaButton'
 import FlexSpacer from 'components/FlexSpacer'
-import NetworkFeeSelector from 'components/NetworkFeeSelector'
 import { useSendTokenContext } from 'contexts/SendTokenContext'
-import { useGasPrice } from 'utils/GasPriceHook'
 import AppNavigation from 'navigation/AppNavigation'
 import { SendTokensScreenProps } from 'navigation/types'
+import { formatLargeNumber } from 'utils/Utils'
 import SendRow from 'components/SendRow'
+import { Popable } from 'react-native-popable'
+import { bnToLocaleString } from '@avalabs/utils-sdk'
+import PoppableGasAndLimit from 'components/PoppableGasAndLimit'
 
 type NavigationProp = SendTokensScreenProps<
   typeof AppNavigation.Send.Review
@@ -26,26 +28,20 @@ export default function ReviewSend({
   onSuccess: (transactionId: string) => void
 }) {
   const { theme } = useApplicationContext()
-  const { goBack, navigate } = useNavigation<NavigationProp>()
+  const { goBack } = useNavigation<NavigationProp>()
   const {
     sendToken,
+    sendAmountInCurrency,
     tokenLogo,
     sendAmount,
+    fees,
     fromAccount,
     toAccount,
-    fees,
     onSendNow,
     sendStatus,
     sendStatusMsg,
     transactionId
   } = useSendTokenContext()
-  const { gasPrice } = useGasPrice()
-
-  const netFeeString = useMemo(() => {
-    return fees.sendFeeNative
-      ? Number.parseFloat(fees.sendFeeNative).toFixed(6).toString()
-      : '-'
-  }, [fees.sendFeeNative])
 
   useEffect(() => {
     switch (sendStatus) {
@@ -84,14 +80,24 @@ export default function ReviewSend({
           borderTopLeftRadius: 8,
           borderTopRightRadius: 8
         }}>
-        <AvaText.Body2 textStyle={{ textAlign: 'center' }}>
-          Amount
-        </AvaText.Body2>
-        <Space y={4} />
-        <Row style={{ justifyContent: 'center', alignItems: 'flex-end' }}>
-          <AvaText.Heading1>{sendAmount}</AvaText.Heading1>
-          <Space x={4} />
-          <AvaText.Heading3>{sendToken?.symbol ?? ''}</AvaText.Heading3>
+        <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+          <AvaText.Body2 textStyle={{ textAlign: 'center' }}>
+            Amount
+          </AvaText.Body2>
+          <Row style={{ alignItems: 'baseline' }}>
+            <AvaText.Heading1>
+              {formatLargeNumber(sendAmount, 4)}
+            </AvaText.Heading1>
+            <Space x={4} />
+            <AvaText.Heading3 textStyle={{ color: theme.colorText2 }}>
+              {sendToken?.symbol ?? ''}
+            </AvaText.Heading3>
+          </Row>
+        </Row>
+        <Row style={{ justifyContent: 'flex-end' }}>
+          <AvaText.Heading3 currency textStyle={{ color: theme.colorText2 }}>
+            {sendAmountInCurrency}
+          </AvaText.Heading3>
         </Row>
         <Space y={8} />
         <SendRow
@@ -104,40 +110,33 @@ export default function ReviewSend({
           title={toAccount.title}
           address={toAccount.address}
         />
-        <Space y={8} />
-        <NetworkFeeSelector
-          networkFeeAvax={netFeeString}
-          networkFeeUsd={`${fees.sendFeeUsd?.toFixed(4)} USD`}
-          gasPrice={gasPrice}
-          onWeightedGas={price => fees.setCustomGasPriceNanoAvax(price.value)}
-          weights={{ normal: 1, fast: 1.05, instant: 1.15, custom: 35 }}
-          onSettingsPressed={() => {
-            const initGasLimit = fees.gasLimit || 0
-
-            const onCustomGasLimit = (gasLimit: number) => {
-              gasLimit //fixme in CP-1775
-              console.log('oncustom gas limit')
-              // fees.setGasLimit(gasLimit)
+        <Space y={16} />
+        <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+          <Popable
+            content={
+              <PoppableGasAndLimit
+                gasLimit={fees.gasLimit ?? 0}
+                gasPrice={bnToLocaleString(fees.customGasPrice)}
+              />
             }
-
-            navigate(AppNavigation.Modal.EditGasLimit, {
-              gasLimit: initGasLimit.toString(),
-              networkFee: netFeeString,
-              onSave: onCustomGasLimit
-            })
-          }}
-        />
+            position={'right'}
+            style={{ minWidth: 200 }}
+            backgroundColor={theme.colorBg3}>
+            <AvaText.Body2>Network Fee ⓘ</AvaText.Body2>
+          </Popable>
+          <AvaText.Heading2 currency>{fees.sendFeeInCurrency}</AvaText.Heading2>
+        </Row>
         <Space y={16} />
         <Separator />
-        <Space y={32} />
+        <Space y={16} />
         <Row style={{ justifyContent: 'space-between' }}>
           <AvaText.Body2>Balance After Transaction</AvaText.Body2>
           <AvaText.Heading2>
             {fromAccount.balanceAfterTrx} {sendToken?.symbol ?? ''}
           </AvaText.Heading2>
         </Row>
-        <AvaText.Body3 textStyle={{ alignSelf: 'flex-end' }}>
-          ${fromAccount.balanceAfterTrxUsd} USD
+        <AvaText.Body3 textStyle={{ alignSelf: 'flex-end' }} currency>
+          {fromAccount.balanceAfterTrxInCurrency}
         </AvaText.Body3>
         <FlexSpacer />
         {sendStatus !== 'Sending' && (

@@ -41,7 +41,7 @@ export function useSearchableTokenList(hideZeroBalance = true): {
   const tokensSortedByAmount = useMemo(
     () =>
       tokensFilteredByZeroBal.slice().sort((a, b) => {
-        return b.balanceUSD - a.balanceUSD
+        return b.balanceInCurrency - a.balanceInCurrency
       }),
     [tokensFilteredByZeroBal]
   )
