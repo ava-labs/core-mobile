@@ -48,7 +48,7 @@ const NetworkFeeSelector = ({
   )
   const decimals = useMemo(
     () =>
-      network.vmName === NetworkVMType.EVM
+      network.vmName === NetworkVMType.EVM && network.networkToken.decimals >= 9
         ? network.networkToken.decimals - 9
         : network.networkToken.decimals,
     [network]
