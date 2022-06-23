@@ -7,8 +7,8 @@ import React, {
   useState
 } from 'react'
 import { Animated, Pressable, StyleSheet, View } from 'react-native'
-import LinearGradient from 'react-native-linear-gradient'
 import ActionButtonItem from 'components/ActionButtonItem'
+import LinearGradientSVG from 'components/svg/LinearGradientSVG'
 
 interface Props {
   backgroundColor?: string
@@ -182,15 +182,18 @@ const FloatingActionButton: FC<Props> = ({
         style={{
           opacity: anim
         }}>
-        <LinearGradient
-          nativeID={'linearGradient'}
-          pointerEvents={'none'}
-          colors={['transparent', '#000000D9', '#000000']}
+        <View
           style={{
             height: 130,
             bottom: 30
-          }}
-        />
+          }}>
+          <LinearGradientSVG
+            colorFrom={'#000000D9'}
+            colorTo={'#000000'}
+            opacityFrom={0.5}
+            opacityTo={1}
+          />
+        </View>
         {children && renderActionItems}
       </Animated.View>
       <Pressable
