@@ -13,10 +13,12 @@ import { selectAccounts } from 'store/account'
 export type AddressBookListsProps = {
   onContactSelected: (item: Contact | Account, type: AddrBookItemType) => void
   navigateToAddressBook: () => void
+  onlyBtc?: boolean
 }
 export default function AddressBookLists({
   onContactSelected,
-  navigateToAddressBook
+  navigateToAddressBook,
+  onlyBtc = false
 }: AddressBookListsProps) {
   const { theme } = useApplicationContext()
   const { recentContacts, addressBook } =
@@ -24,27 +26,37 @@ export default function AddressBookLists({
   const accounts = useSelector(selectAccounts)
 
   const addressBookContacts = useMemo(
-    () => [...addressBook.values()],
-    [addressBook]
+    () =>
+      [...addressBook.values()].filter(
+        value => (onlyBtc && value.addressBtc) || !onlyBtc
+      ),
+    [addressBook, onlyBtc]
   )
 
   const recentAddresses = useMemo(
     () =>
-      recentContacts.map(contact => {
-        switch (contact.type) {
-          case 'account':
-            return {
-              item: accounts[contact.id as AccountId]!,
-              type: contact.type
-            }
-          case 'contact':
-            return {
-              item: addressBook.get(contact.id as UID)!,
-              type: contact.type
-            }
-        }
-      }),
-    [addressBook, recentContacts, accounts]
+      recentContacts
+        .map(contact => {
+          switch (contact.type) {
+            case 'account':
+              return {
+                item: accounts[contact.id as AccountId]!,
+                type: contact.type
+              }
+            case 'contact':
+              return {
+                item: addressBook.get(contact.id as UID)!,
+                type: contact.type
+              }
+          }
+        })
+        .filter(
+          value =>
+            (onlyBtc && value.type === 'contact' && value.item.addressBtc) ||
+            (onlyBtc && value.type === 'account') ||
+            !onlyBtc
+        ),
+    [recentContacts, accounts, addressBook, onlyBtc]
   )
 
   const renderCustomLabel = (title: string, selected: boolean) => {

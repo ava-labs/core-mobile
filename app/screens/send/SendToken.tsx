@@ -17,6 +17,9 @@ import { useAddressBookLists } from 'components/addressBook/useAddressBookLists'
 import QrScannerAva from 'components/QrScannerAva'
 import QRScanSVG from 'components/svg/QRScanSVG'
 import { TokenWithBalance } from 'store/balance'
+import { useSelector } from 'react-redux'
+import { selectActiveNetwork } from 'store/network'
+import { NetworkVMType } from '@avalabs/chains-sdk'
 
 type Props = {
   onNext: () => void
@@ -46,7 +49,12 @@ const SendToken: FC<Props> = ({
     canSubmit,
     sdkError
   } = useSendTokenContext()
+  const activeNetwork = useSelector(selectActiveNetwork)
   const [showQrCamera, setShowQrCamera] = useState(false)
+  const placeholder =
+    activeNetwork.vmName === NetworkVMType.EVM
+      ? 'Enter 0x Address'
+      : 'Enter Bitcoin Address'
 
   const {
     showAddressBook,
@@ -83,7 +91,17 @@ const SendToken: FC<Props> = ({
     item: Contact | Account,
     type: AddrBookItemType
   ) => {
-    setAddress({ address: item.address, title: item.title })
+    switch (activeNetwork.vmName) {
+      case NetworkVMType.EVM:
+        setAddress({ address: item.address, title: item.title })
+        break
+      case NetworkVMType.BITCOIN:
+        setAddress({
+          address: item.addressBtc,
+          title: item.title
+        })
+        break
+    }
     selectContact(item, type)
   }
 
@@ -104,7 +122,7 @@ const SendToken: FC<Props> = ({
       <Space y={4} />
       <View style={[{ flex: 0, paddingStart: 4, paddingEnd: 4 }]}>
         <InputText
-          placeholder="Enter 0x Address"
+          placeholder={placeholder}
           multiline={true}
           onChangeText={text => {
             toAccount.setTitle?.('Address')
@@ -144,6 +162,7 @@ const SendToken: FC<Props> = ({
       <Space y={24} />
       {showAddressBook ? (
         <AddressBookLists
+          onlyBtc={activeNetwork.vmName === NetworkVMType.BITCOIN}
           onContactSelected={onContactSelected}
           navigateToAddressBook={onOpenAddressBook}
         />
