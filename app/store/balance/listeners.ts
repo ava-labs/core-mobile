@@ -5,6 +5,7 @@ import BalanceService from 'services/balance/BalanceService'
 import { AppListenerEffectAPI } from 'store'
 import { selectAccounts, selectActiveAccount, setAccounts } from 'store/account'
 import { onAppLocked, onAppUnlocked } from 'store/app'
+import { addCustomToken } from 'store/customToken'
 import { AppStartListening } from 'store/middleware/listener'
 import { selectActiveNetwork, selectFavoriteNetworks } from 'store/network'
 import {
@@ -158,7 +159,12 @@ export const addBalanceListeners = (startListening: AppStartListening) => {
   })
 
   startListening({
-    matcher: isAnyOf(refetchBalance, setSelectedCurrency, setAccounts),
+    matcher: isAnyOf(
+      refetchBalance,
+      setSelectedCurrency,
+      setAccounts,
+      addCustomToken
+    ),
     effect: async (action, listenerApi) =>
       onBalanceUpdate(QueryStatus.REFETCHING, listenerApi, false)
   })
