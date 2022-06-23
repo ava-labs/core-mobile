@@ -4,7 +4,7 @@ import { balanceToDisplayValue, bigToBN } from '@avalabs/utils-sdk'
 import { TokenType, TokenWithBalance } from 'store/balance'
 import { Network } from '@avalabs/chains-sdk'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
-import TokenService from './TokenService'
+import TokenService from 'services/token/TokenService'
 
 export class BtcBalanceService {
   async getBalances(

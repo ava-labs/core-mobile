@@ -14,15 +14,67 @@ import {
   SimplePriceResponse,
   SimpleTokenPriceResponse
 } from '@avalabs/coingecko-sdk'
+import { ethers } from 'ethers'
+import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 import Config from 'react-native-config'
+import xss from 'xss'
+import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
 import { getCache, setCache } from 'utils/InMemoryCache'
 import { arrayHash } from 'utils/Utils'
+import {
+  Network,
+  NetworkContractToken,
+  NetworkVMType
+} from '@avalabs/chains-sdk'
+import NetworkService from 'services/network/NetworkService'
 import { ChartData, PriceWithMarketData } from './types'
 
 const coingeckoBasicClient = getBasicCoingeckoHttp()
 const coingeckoProClient = getProCoingeckoHttp()
 
 export class TokenService {
+  /**
+   * Get token data for a contract address
+   * @param address the contract address
+   * @param network the network the contract address is on
+   * @returns token data
+   */
+  async getTokenData(
+    address: string,
+    network: Network
+  ): Promise<NetworkContractToken | undefined> {
+    if (!network || network.vmName !== NetworkVMType.EVM) {
+      throw new Error('No network')
+    }
+
+    const provider = await NetworkService.getProviderForNetwork(network)
+
+    if (!provider || !(provider instanceof JsonRpcBatchInternal)) {
+      throw new Error('No provider')
+    }
+
+    const contract = new ethers.Contract(address, ERC20.abi, provider)
+
+    const contractCalls = await Promise.all([
+      contract.name(),
+      contract.symbol(),
+      contract.decimals()
+    ])
+    // Purify the values for XSS protection
+    const name = xss(contractCalls[0])
+    const symbol = xss(contractCalls[1])
+    const decimals = parseInt(contractCalls[2], 10)
+
+    return {
+      name,
+      symbol,
+      decimals,
+      address,
+      contractType: 'ERC-20',
+      description: ''
+    }
+  }
+
   /**
    * Get the native token price with market data for a coin
    * @param coinId the coin id ie avalanche-2 for avax

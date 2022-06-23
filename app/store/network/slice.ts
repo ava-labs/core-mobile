@@ -1,40 +1,49 @@
-import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { ChainId, Network } from '@avalabs/chains-sdk'
-import isEmpty from 'lodash.isempty'
+import {
+  createAsyncThunk,
+  createSelector,
+  createSlice,
+  PayloadAction
+} from '@reduxjs/toolkit'
+import { BITCOIN_NETWORK, ChainId, Network } from '@avalabs/chains-sdk'
 import NetworkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { selectAllCustomTokens } from 'store/customToken'
 import { RootState } from '../index'
 import { NetworkState } from './types'
+import { mergeWithCustomTokens } from './utils'
+
+const defaultNetwork = BITCOIN_NETWORK
+const noActiveNetwork = 0
 
 const reducerName = 'network'
 
 const initialState: NetworkState = {
   networks: {},
   favorites: [],
-  active: 0 // no active network
+  active: noActiveNetwork
 }
 
 export const networkSlice = createSlice({
   name: reducerName,
   initialState,
   reducers: {
-    setNetworks: (state, action: PayloadAction<Record<string, Network>>) => {
+    setNetworks: (state, action: PayloadAction<Record<number, Network>>) => {
       state.networks = action.payload
-      state.favorites = Object.keys(action.payload)
+      state.favorites = Object.keys(action.payload).map(key =>
+        parseInt(key, 10)
+      )
     },
     setActive: (state, action: PayloadAction<number>) => {
       state.active = action.payload
     },
     toggleFavorite: (state, action: PayloadAction<number>) => {
       const chainId = action.payload
-      if (!state.favorites.includes(chainId.toString())) {
+      if (!state.favorites.includes(chainId)) {
         // set favorite
-        state.favorites.push(chainId.toString())
+        state.favorites.push(chainId)
       } else {
         // unset favorite
-        const newFavorites = state.favorites.filter(
-          id => id !== chainId.toString()
-        )
+        const newFavorites = state.favorites.filter(id => id !== chainId)
         state.favorites = newFavorites
       }
     }
@@ -42,25 +51,45 @@ export const networkSlice = createSlice({
 })
 
 // selectors
-// TODO remove {}
-export const selectActiveNetwork = (state: RootState) =>
-  state.network.networks[state.network.active] ?? {}
+const selectActiveChainId = (state: RootState) => state.network.active
+
+const selectFavorites = (state: RootState) => state.network.favorites
 
 export const selectNetworks = (state: RootState) => state.network.networks
 
-export const selectFavoriteNetworks = (state: RootState) => {
-  const isDeveloperMode = selectIsDeveloperMode(state)
+export const selectActiveNetwork = createSelector(
+  [selectNetworks, selectActiveChainId, selectAllCustomTokens],
+  (networks, chainId, allCustomTokens) => {
+    const network = networks[chainId]
 
-  return state.network.favorites
-    .map(id => state.network.networks[id])
-    .filter(network => network.isTestnet === isDeveloperMode)
+    if (!network) return defaultNetwork
+
+    return mergeWithCustomTokens(network, allCustomTokens)
+  }
+)
+
+export const selectFavoriteNetworks = createSelector(
+  [
+    selectFavorites,
+    selectNetworks,
+    selectIsDeveloperMode,
+    selectAllCustomTokens
+  ],
+  (favorites, networks, isDeveloperMode, allCustomTokens) => {
+    return favorites
+      .map(id => {
+        const network = networks[id]
+        return mergeWithCustomTokens(network, allCustomTokens)
+      })
+      .filter(network => network.isTestnet === isDeveloperMode)
+  }
+)
+
+// get the list of contract tokens for the active network
+export const selectNetworkContractTokens = (state: RootState) => {
+  const network = selectActiveNetwork(state)
+  return network.tokens ?? []
 }
-
-export const selectAvaxMainnet = (state: RootState) =>
-  state.network.networks[ChainId.AVALANCHE_MAINNET_ID] ?? {}
-
-export const selectAvaxTestnet = (state: RootState) =>
-  state.network.networks[ChainId.AVALANCHE_TESTNET_ID] ?? {}
 
 // actions
 export const getNetworks = createAsyncThunk<void, void, { state: RootState }>(
@@ -72,9 +101,7 @@ export const getNetworks = createAsyncThunk<void, void, { state: RootState }>(
     const networks = await NetworkService.getNetworks()
     dispatch(setNetworks(networks))
 
-    const network = selectActiveNetwork(state)
-
-    if (isEmpty(network)) {
+    if (state.network.active === noActiveNetwork) {
       dispatch(setActive(ChainId.AVALANCHE_MAINNET_ID))
     }
   }
