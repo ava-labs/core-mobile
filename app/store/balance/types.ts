@@ -11,10 +11,10 @@ export enum TokenType {
 type TokenBalanceData = {
   type: TokenType
   balance: BN
-  balanceUSD: number
+  balanceInCurrency: number
   balanceDisplayValue: string
-  balanceUsdDisplayValue: string
-  priceUSD: number
+  balanceCurrencyDisplayValue: string
+  priceInCurrency: number
   utxos?: BitcoinInputUTXO[]
 }
 

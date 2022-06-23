@@ -15,6 +15,8 @@ import { useGasPrice } from 'utils/GasPriceHook'
 import { useSendNFTContext } from 'contexts/SendNFTContext'
 import { useNavigation } from '@react-navigation/native'
 import { NFTDetailsSendScreenProps } from 'navigation/types'
+import { useSelector } from 'react-redux'
+import { selectActiveNetwork } from 'store/network'
 
 type NavigationProp = NFTDetailsSendScreenProps<
   typeof AppNavigation.NftSend.Review
@@ -38,6 +40,7 @@ export default function NftReview({ onSuccess }: NftReviewScreenProps) {
   } = useSendNFTContext()
   const { theme } = useApplicationContext()
   const { goBack, navigate } = useNavigation<NavigationProp>()
+  const activeNetwork = useSelector(selectActiveNetwork)
   const { gasPrice } = useGasPrice()
 
   const netFeeString = useMemo(() => {
@@ -112,11 +115,13 @@ export default function NftReview({ onSuccess }: NftReviewScreenProps) {
         />
         <Space y={8} />
         <NetworkFeeSelector
+          gasLimit={fees.gasLimit || 0}
+          network={activeNetwork}
           networkFeeAvax={netFeeString}
-          networkFeeUsd={`${fees.sendFeeUsd?.toFixed(4)} USD`}
+          networkFeeInCurrency={fees.sendFeeUsd ?? 0}
           gasPrice={gasPrice}
-          onWeightedGas={price => fees.setCustomGasPriceNanoAvax(price.value)}
-          weights={{ normal: 1, fast: 1.05, instant: 1.15, custom: 35 }}
+          onWeightedGas={price => fees.setCustomGasPrice(price.bn)}
+          weights={{ Normal: 1, Fast: 1.05, Instant: 1.15, Custom: 35 }}
           onSettingsPressed={() => {
             const initGasLimit = fees.gasLimit || 0
 

@@ -97,21 +97,21 @@ export const selectTokenById = (tokenId: string) => (state: RootState) => {
   return undefined
 }
 
-export const selectBalanceTotalInUSD =
+export const selectBalanceTotalInCurrency =
   (accountIndex: number) => (state: RootState) => {
     const balances = Object.values(state.balance.balances).filter(
       balance => balance.accountIndex === accountIndex
     )
 
-    let totalInUSD = 0
+    let totalInCurrency = 0
 
     for (const balance of balances) {
       for (const token of balance.tokens) {
-        totalInUSD += token.balanceUSD ?? 0
+        totalInCurrency += token.balanceInCurrency ?? 0
       }
     }
 
-    return totalInUSD
+    return totalInCurrency
   }
 
 // actions

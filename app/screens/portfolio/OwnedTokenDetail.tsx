@@ -7,15 +7,15 @@ import Avatar from 'components/Avatar'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 import {
-  TransactionNormal,
-  TransactionERC20
+  TransactionERC20,
+  TransactionNormal
 } from '@avalabs/wallet-react-components'
 import { Row } from 'components/Row'
 import AvaButton from 'components/AvaButton'
 import AppNavigation from 'navigation/AppNavigation'
 import {
-  WalletScreenProps,
-  BridgeTransactionStatusParams
+  BridgeTransactionStatusParams,
+  WalletScreenProps
 } from 'navigation/types'
 import ActivityList from 'screens/shared/ActivityList'
 import { TokenWithBalance } from 'store/balance'
@@ -81,7 +81,7 @@ const OwnedTokenDetail: FC = () => {
               textStyle={{ marginTop: 4 }}
               currency
               ellipsizeMode={'tail'}>
-              {token?.balanceUsdDisplayValue ?? '0'}
+              {token?.balanceCurrencyDisplayValue ?? '0'}
             </AvaText.Body1>
           }
         />

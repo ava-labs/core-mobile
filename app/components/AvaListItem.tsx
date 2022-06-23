@@ -200,10 +200,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24
   },
-  tokenUsdValue: {
-    fontSize: 14,
-    lineHeight: 17
-  },
   accountTitleContainer: {
     flexDirection: 'row',
     borderRadius: 100,

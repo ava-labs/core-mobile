@@ -43,7 +43,7 @@ function TokenSelector({
       <PortfolioListItem
         tokenName={token.name}
         tokenPrice={token.balanceDisplayValue ?? '0'}
-        tokenPriceUsd={token.balanceUsdDisplayValue}
+        tokenPriceInCurrency={token.balanceCurrencyDisplayValue}
         image={token?.logoUri}
         symbol={token.symbol}
         onPress={() => {

@@ -20,7 +20,7 @@ export class BtcBalanceService {
 
     const id = `${chainId}-${nativeTokenId}`
     const {
-      price: priceUSD,
+      price: priceInCurrency,
       marketCap,
       vol24,
       change24
@@ -36,10 +36,11 @@ export class BtcBalanceService {
     const balanceNum = balanceBig.toNumber()
     const balance = bigToBN(balanceBig, denomination)
     const balanceDisplayValue = balanceToDisplayValue(balance, denomination)
-    const balanceUsdDisplayValue = priceUSD
-      ? balanceBig.mul(priceUSD).toFixed(2)
+    const balanceCurrencyDisplayValue = priceInCurrency
+      ? balanceBig.mul(priceInCurrency).toFixed(2)
       : ''
-    const balanceUSD = priceUSD && balanceNum ? priceUSD * balanceNum : 0
+    const balanceInCurrency =
+      priceInCurrency && balanceNum ? priceInCurrency * balanceNum : 0
 
     return [
       {
@@ -49,9 +50,9 @@ export class BtcBalanceService {
         coingeckoId: nativeTokenId,
         balance,
         balanceDisplayValue,
-        balanceUSD,
-        balanceUsdDisplayValue,
-        priceUSD,
+        balanceInCurrency,
+        balanceCurrencyDisplayValue,
+        priceInCurrency,
         utxos,
         marketCap,
         vol24,

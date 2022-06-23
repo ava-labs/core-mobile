@@ -22,7 +22,7 @@ export default function SendRow({
         <AvaText.Heading3>{title}</AvaText.Heading3>
         <AvaText.Body1>{truncateAddress(address)}</AvaText.Body1>
       </Row>
-      <Space y={4} />
+      <Space y={8} />
       <Separator />
     </>
   )
