@@ -18,6 +18,8 @@ import { balanceReducer as balance, setBalance, setBalances } from './balance'
 import { appReducer as app, onRehydrationComplete } from './app'
 import { listener } from './middleware/listener'
 import { accountsReducer as account } from './account'
+import { watchlistReducer as watchlist } from './watchlist'
+import { zeroBalanceReducer as zeroBalance } from './zeroBalance'
 import networkFee from './networkFee'
 import settings from './settings'
 
@@ -28,15 +30,26 @@ const rootReducer = combineReducers({
   network,
   balance,
   account,
-  settings,
   networkFee,
-  bridge
+  bridge,
+
+  // user preferences
+  settings,
+  watchlist,
+  zeroBalance
 })
 
 const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
-  whitelist: ['network', 'account', 'settings', 'bridge'],
+  whitelist: [
+    'network',
+    'account',
+    'settings',
+    'bridge',
+    'watchlist',
+    'zeroBalance'
+  ],
   transforms: [DeserializeBridgeTransform]
 }
 

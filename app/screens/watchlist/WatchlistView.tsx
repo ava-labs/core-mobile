@@ -13,6 +13,7 @@ import Dropdown from 'components/Dropdown'
 import AvaText from 'components/AvaText'
 import { selectTokensWithBalance, TokenWithBalance } from 'store/balance'
 import { useSelector } from 'react-redux'
+import { selectWatchlistFavorites } from 'store/watchlist'
 
 interface Props {
   showFavorites?: boolean
@@ -55,8 +56,7 @@ const WatchlistView: React.FC<Props> = ({ showFavorites, searchText }) => {
   const navigation = useNavigation<NavigationProp>()
   const theme = useApplicationContext().theme
   const { currencyFormatter } = useApplicationContext().appHook
-  const { watchlistFavorites } =
-    useApplicationContext().repo.watchlistFavoritesRepo
+  const watchlistFavorites = useSelector(selectWatchlistFavorites)
   const tokensWithBalance = useSelector(selectTokensWithBalance)
   const [filterBy, setFilterBy] = useState(WatchlistFilter.PRICE)
   // filter time needs implementation
@@ -76,9 +76,7 @@ const WatchlistView: React.FC<Props> = ({ showFavorites, searchText }) => {
     let items: TokenWithBalance[] = tokensWithBalance
 
     if (showFavorites) {
-      items = items.filter(tk => {
-        return watchlistFavorites.includes(tk.id)
-      })
+      items = items.filter(tk => watchlistFavorites.includes(tk.id))
     }
 
     if (searchText && searchText.length > 0) {

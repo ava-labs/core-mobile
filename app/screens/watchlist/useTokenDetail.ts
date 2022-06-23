@@ -7,13 +7,17 @@ import {
   VsCurrencyType
 } from '@avalabs/coingecko-sdk'
 import { selectTokenById, TokenType } from 'store/balance'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import TokenService from 'services/balance/TokenService'
 import { selectActiveNetwork } from 'store/network'
+import {
+  selectIsWatchlistFavorite,
+  toggleWatchListFavorite
+} from 'store/watchlist'
 
 export function useTokenDetail(tokenId: string) {
-  const { repo } = useApplicationContext()
-  const [isFavorite, setIsFavorite] = useState(true)
+  const dispatch = useDispatch()
+  const isFavorite = useSelector(selectIsWatchlistFavorite(tokenId))
   const { openMoonPay, openUrl } = useInAppBrowser()
   const { selectedCurrency, currencyFormatter } =
     useApplicationContext().appHook
@@ -38,19 +42,11 @@ export function useTokenDetail(tokenId: string) {
     CoinsContractInfoResponse | CoinsInfoResponse
   >()
   const [urlHostname, setUrlHostname] = useState<string>('')
-  const { watchlistFavorites, saveWatchlistFavorites } =
-    repo.watchlistFavoritesRepo
   const token = useSelector(selectTokenById(tokenId))
   const network = useSelector(selectActiveNetwork)
   const assetPlatformId =
     network.pricingProviders?.coingecko.assetPlatformId ?? ''
   const currency = selectedCurrency.toLowerCase() as VsCurrencyType
-
-  // TODO cp-2164 move watchlist favorites logic to redux
-  // checks if contract can be found in favorites list
-  useEffect(() => {
-    setIsFavorite(watchlistFavorites.includes(tokenId))
-  }, [])
 
   // get coingecko chart data.
   useEffect(() => {
@@ -113,18 +109,7 @@ export function useTokenDetail(tokenId: string) {
   }, [assetPlatformId, token])
 
   function handleFavorite() {
-    if (!token) return
-
-    if (isFavorite) {
-      const index = watchlistFavorites.indexOf(token.id)
-      if (index > -1) {
-        saveWatchlistFavorites(watchlistFavorites.filter(id => id !== token.id))
-      }
-    } else {
-      saveWatchlistFavorites([...watchlistFavorites, token.id])
-    }
-
-    setIsFavorite(!isFavorite)
+    dispatch(toggleWatchListFavorite(tokenId))
   }
 
   async function changeChartDays(days: number) {

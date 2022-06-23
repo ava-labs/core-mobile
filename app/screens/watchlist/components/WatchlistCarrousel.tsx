@@ -28,6 +28,7 @@ import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { selectActiveNetwork } from 'store/network'
+import { selectWatchlistFavorites } from 'store/watchlist'
 
 interface Props {
   style?: StyleProp<View>
@@ -38,15 +39,15 @@ type NavigationProp = PortfolioScreenProps<
 >['navigation']
 
 const WatchlistCarrousel: FC<Props> = () => {
-  const { theme, repo } = useApplicationContext()
-  const { watchlistFavorites } = repo.watchlistFavoritesRepo
+  const { theme } = useApplicationContext()
+  const watchlistFavorites = useSelector(selectWatchlistFavorites)
   const navigation = useNavigation<NavigationProp>()
 
   const tokensWithBalance = useSelector(selectTokensWithBalance)
 
-  const favoriteTokens = tokensWithBalance.filter(tk => {
-    return watchlistFavorites.includes(tk.id)
-  })
+  const favoriteTokens = tokensWithBalance.filter(tk =>
+    watchlistFavorites.includes(tk.id)
+  )
 
   function goToWatchlist() {
     navigation.navigate(AppNavigation.Tabs.Watchlist)
