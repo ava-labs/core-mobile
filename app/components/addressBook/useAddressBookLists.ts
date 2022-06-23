@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { AddrBookItemType, Contact, RecentContact } from 'Repo'
-import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Account } from 'store/account'
+import { useDispatch } from 'react-redux'
+import { addRecentContact } from 'store/addressBook'
 
 export function useAddressBookLists() {
-  const { addToRecentContacts } = useApplicationContext().repo.addressBookRepo
+  const dispatch = useDispatch()
   const [showAddressBook, setShowAddressBook] = useState(false)
   const [tempRecentContact, setTempRecentContact] = useState<
     RecentContact | undefined
@@ -26,7 +27,7 @@ export function useAddressBookLists() {
 
   const saveRecentContact = () => {
     if (tempRecentContact) {
-      addToRecentContacts(tempRecentContact)
+      dispatch(addRecentContact(tempRecentContact))
     }
   }
 

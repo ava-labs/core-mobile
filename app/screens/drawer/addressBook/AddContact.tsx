@@ -4,8 +4,6 @@ import FlexSpacer from 'components/FlexSpacer'
 import AvaButton from 'components/AvaButton'
 import { useNavigation } from '@react-navigation/native'
 import ContactInput from 'screens/drawer/addressBook/components/ContactInput'
-import useAddressBook from 'screens/drawer/addressBook/useAddressBook'
-import { Contact } from 'Repo'
 import { v4 as uuidv4 } from 'uuid'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
@@ -14,6 +12,8 @@ import AppNavigation from 'navigation/AppNavigation'
 import { isAddress } from '@ethersproject/address'
 import { isBech32Address } from '@avalabs/bridge-sdk'
 import { useApplicationContext } from 'contexts/ApplicationContext'
+import { addContact } from 'store/addressBook'
+import { useDispatch } from 'react-redux'
 
 type NavigationProp = AddressBookScreenProps<
   typeof AppNavigation.AddressBook.Add
@@ -21,7 +21,7 @@ type NavigationProp = AddressBookScreenProps<
 
 const AddContact = () => {
   const { goBack } = useNavigation<NavigationProp>()
-  const { onSave } = useAddressBook()
+  const dispatch = useDispatch()
   const { theme } = useApplicationContext()
 
   const [title, setTitle] = useState('')
@@ -43,9 +43,9 @@ const AddContact = () => {
       return
     }
     const id = uuidv4()
-    onSave({ id, title, address, addressBtc } as Contact)
+    dispatch(addContact({ id, title, address, addressBtc }))
     goBack()
-  }, [address, addressBtc, goBack, onSave, title])
+  }, [address, addressBtc, dispatch, goBack, title])
 
   return (
     <SafeAreaProvider
