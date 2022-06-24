@@ -11,6 +11,8 @@ import { JsonMap } from 'posthog-react-native/src/bridge'
 import Config from 'react-native-config'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import useAppBackgroundTracker from 'hooks/useAppBackgroundTracker'
+import { useSelector } from 'react-redux'
+import { selectUserID } from 'store/posthog'
 
 export const PosthogContext = createContext<PosthogContextState>(
   {} as PosthogContextState
@@ -51,6 +53,7 @@ const ONE_MINUTE = 60 * 1000
 export const PosthogContextProvider = ({ children }: { children: any }) => {
   const [isPosthogReady, setIsPosthogReady] = useState(false)
   const [isAnalyticsEnabled, setIsAnalyticsEnabled] = useState(false)
+  const posthogUserId = useSelector(selectUserID)
 
   const { timeoutPassed } = useAppBackgroundTracker({
     timeoutMs: 30 * 60 * 1000,
@@ -173,7 +176,7 @@ export const PosthogContextProvider = ({ children }: { children: any }) => {
     if (__DEV__) {
       console.log(event)
     }
-    return PostHog.capture(event)
+    return PostHog.capture(event, { $ip: '', $user_id: posthogUserId })
   }
 
   return (
