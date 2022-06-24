@@ -92,13 +92,28 @@ export const PosthogContextProvider = ({ children }: { children: any }) => {
 
   function initPosthog() {
     ;(async function () {
-      await PostHog.setup(Config.POSTHOG_ANALYTICS_KEY as string, {
-        debug: __DEV__,
-        host: 'https://data-posthog.avax.network',
-        android: {
-          collectDeviceId: false
-        }
-      })
+      const config = __DEV__
+        ? {
+            debug: true,
+            host: 'https://data-posthog.avax-test.network',
+            android: {
+              collectDeviceId: false
+            },
+            flushAt: 1,
+            flushInterval: 10
+          }
+        : {
+            debug: false,
+            host: 'https://data-posthog.avax.network',
+            android: {
+              collectDeviceId: false
+            }
+          }
+      const apiKey = __DEV__
+        ? Config.POSTHOG_ANALYTICS_KEY_DEV
+        : Config.POSTHOG_ANALYTICS_KEY
+      await PostHog.setup(apiKey, config)
+
       await disableAnalytics()
       setIsPosthogReady(true)
     })()
@@ -127,7 +142,7 @@ export const PosthogContextProvider = ({ children }: { children: any }) => {
     if (!isPosthogReady) {
       return
     }
-    if (__DEV__ || eventsBlocked) {
+    if (eventsBlocked) {
       disableAnalytics()
       return
     }
