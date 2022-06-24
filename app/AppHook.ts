@@ -10,8 +10,9 @@ import { Repo } from 'Repo'
 import { SECURE_ACCESS_SET } from 'resources/Constants'
 import AppNavigation from 'navigation/AppNavigation'
 import { usePosthogContext } from 'contexts/PosthogContext'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
+import { onLogOut } from 'store/app'
 
 export type AppHook = {
   onExit: () => Observable<ExitEvents>
@@ -25,6 +26,7 @@ export function useApp(
   walletSetupHook: WalletSetupHook,
   repository: Repo
 ): AppHook {
+  const dispatch = useDispatch()
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const [navigationContainerSet, setNavigationContainerSet] = useState(false)
   const [initRouteSet, setInitRouteSet] = useState(false)
@@ -86,6 +88,7 @@ export function useApp(
     await BiometricsSDK.clearWalletKey()
     repository.flush()
     appNavHook.resetNavToRoot()
+    dispatch(onLogOut())
   }
 
   function onExit(): Observable<ExitEvents> {
