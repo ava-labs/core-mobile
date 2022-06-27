@@ -11,7 +11,9 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useSendTokenContext } from 'contexts/SendTokenContext'
 import numeral from 'numeral'
 import { AddrBookItemType, Contact } from 'Repo'
-import AddressBookLists from 'components/addressBook/AddressBookLists'
+import AddressBookLists, {
+  AddressBookSource
+} from 'components/addressBook/AddressBookLists'
 import { Account } from 'store/account'
 import { useAddressBookLists } from 'components/addressBook/useAddressBookLists'
 import QrScannerAva from 'components/QrScannerAva'
@@ -26,6 +28,7 @@ import { useGasPrice } from 'utils/GasPriceHook'
 import { useNavigation } from '@react-navigation/native'
 import { SendTokensScreenProps } from 'navigation/types'
 import { Row } from 'components/Row'
+import { usePosthogContext } from 'contexts/PosthogContext'
 
 type Props = {
   onNext: () => void
@@ -49,6 +52,7 @@ const SendToken: FC<Props> = ({
   contact
 }) => {
   const { theme } = useApplicationContext()
+  const { capture } = usePosthogContext()
   const { navigate } = useNavigation<NavigationProp>()
   const {
     setSendToken,
@@ -111,7 +115,8 @@ const SendToken: FC<Props> = ({
 
   const onContactSelected = (
     item: Contact | Account,
-    type: AddrBookItemType
+    type: AddrBookItemType,
+    source: AddressBookSource
   ) => {
     switch (activeNetwork.vmName) {
       case NetworkVMType.EVM:
@@ -125,6 +130,7 @@ const SendToken: FC<Props> = ({
         break
     }
     selectContact(item, type)
+    capture('SendContactSelected', { contactSource: source })
   }
 
   const onNextPress = () => {
