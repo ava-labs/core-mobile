@@ -60,7 +60,9 @@ const useAddCustomToken = (callback: () => void) => {
       return
     }
 
-    fetchTokenData(network, tokenAddress).then(setToken).catch(setErrorMessage)
+    fetchTokenData(network, tokenAddress)
+      .then(setToken)
+      .catch(err => setErrorMessage(err.toString()))
   }, [network, tokenAddress, tokens])
 
   const addCustomToken = async () => {
