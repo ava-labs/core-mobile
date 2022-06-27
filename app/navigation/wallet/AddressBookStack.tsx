@@ -3,7 +3,7 @@ import {
   createStackNavigator,
   StackNavigationOptions
 } from '@react-navigation/stack'
-import React, { useCallback, useEffect, useMemo } from 'react'
+import React, { useCallback, useEffect } from 'react'
 import AddressBook from 'screens/drawer/addressBook/AddressBook'
 import { MainHeaderOptions } from 'navigation/NavUtils'
 import { useNavigation, useRoute } from '@react-navigation/native'
@@ -13,8 +13,15 @@ import AddContact from 'screens/drawer/addressBook/AddContact'
 import ContactDetails from 'screens/drawer/addressBook/ContactDetails'
 import AvaText from 'components/AvaText'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import useAddressBook from 'screens/drawer/addressBook/useAddressBook'
 import { Contact } from 'Repo'
+import { useDispatch, useSelector } from 'react-redux'
+import {
+  removeContact,
+  saveEditingContact,
+  selectContact,
+  selectEditingContact,
+  setEditingContact
+} from 'store/addressBook'
 import { AddressBookScreenProps } from '../types'
 
 export type AddressBookStackParamList = {
@@ -69,25 +76,23 @@ type ContactDetailsScreenProps = AddressBookScreenProps<
 >
 
 const ContactDetailsComp = () => {
+  const dispatch = useDispatch()
   const { setParams, setOptions, navigate, goBack } =
     useNavigation<ContactDetailsScreenProps['navigation']>()
 
-  const { onDelete, onSave } = useAddressBook()
   const { params } = useRoute<ContactDetailsScreenProps['route']>()
-  const { addressBook } = useApplicationContext().repo.addressBookRepo
-
-  const clonedContact = useMemo(
-    () =>
-      (params?.contactId &&
-        Object.assign({}, addressBook.get(params.contactId))) ||
-      ({ id: '', title: '', address: '' } as Contact),
-    [addressBook, params?.contactId]
-  )
-
   const editable = params?.editable ?? false
+  const contact = useSelector(selectContact(params.contactId))
+  const editingContact = useSelector(selectEditingContact)
 
-  const saveContact = useCallback(() => {
-    onSave(clonedContact)
+  useEffect(init, [])
+
+  function init() {
+    dispatch(
+      setEditingContact(
+        params?.contactId ? Object.assign({}, contact) : undefined
+      )
+    )
     setParams({ editable: false })
     setOptions({
       ...(MainHeaderOptions(
@@ -96,9 +101,25 @@ const ContactDetailsComp = () => {
         <EditAddressBookContact onEdit={onEdit} />
       ) as Partial<StackNavigationOptions>)
     })
-  }, [])
 
-  const onEdit = useCallback(() => {
+    return () => {
+      setEditingContact(undefined)
+    }
+  }
+
+  function saveContact() {
+    dispatch(saveEditingContact())
+    setParams({ editable: false })
+    setOptions({
+      ...(MainHeaderOptions(
+        '',
+        false,
+        <EditAddressBookContact onEdit={onEdit} />
+      ) as Partial<StackNavigationOptions>)
+    })
+  }
+
+  function onEdit() {
     setParams({ editable: true })
     setOptions({
       ...(MainHeaderOptions(
@@ -107,29 +128,31 @@ const ContactDetailsComp = () => {
         <SaveAddressBookContact onSave={saveContact} />
       ) as Partial<StackNavigationOptions>)
     })
-  }, [])
+  }
 
-  const deleteContact = useCallback((contact: Contact) => {
-    onDelete(contact)
-    goBack()
-  }, [])
+  const deleteContact = useCallback(
+    (contact: Contact) => {
+      dispatch(removeContact(contact.id))
+      goBack()
+    },
+    [dispatch, goBack]
+  )
 
-  useEffect(() => {
-    setParams({ editable: false })
-    setOptions({
-      ...(MainHeaderOptions(
-        '',
-        false,
-        <EditAddressBookContact onEdit={onEdit} />
-      ) as Partial<StackNavigationOptions>)
-    })
-  }, [])
+  const onChange = useCallback(
+    (contact: Contact) => {
+      dispatch(setEditingContact(contact))
+    },
+    [dispatch]
+  )
 
   return (
     <ContactDetails
       editable={editable}
-      contact={clonedContact}
-      onDelete={contact => deleteContact(contact)}
+      contact={
+        editingContact ?? ({ id: '', title: '', address: '' } as Contact)
+      }
+      onChange={onChange}
+      onDelete={deleteContact}
       onSend={contact => {
         navigate(AppNavigation.Wallet.SendTokens, {
           screen: AppNavigation.Send.Send,

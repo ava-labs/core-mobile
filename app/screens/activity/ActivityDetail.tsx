@@ -19,6 +19,8 @@ import { bnToAvaxC, numberToBN } from '@avalabs/avalanche-wallet-sdk'
 import AppNavigation from 'navigation/AppNavigation'
 import { WalletScreenProps } from 'navigation/types'
 import { TokenSymbol } from 'store/network'
+import { useSelector } from 'react-redux'
+import { selectContacts } from 'store/addressBook'
 
 type RouteProp = WalletScreenProps<
   typeof AppNavigation.Wallet.ActivityDetail
@@ -26,8 +28,7 @@ type RouteProp = WalletScreenProps<
 
 function ActivityDetail() {
   const theme = useApplicationContext().theme
-  const { addressBook } = useApplicationContext().repo.addressBookRepo
-  const addressBookArray = Array.from(addressBook)
+  const contacts = useSelector(selectContacts)
   const txItem = useRoute<RouteProp>().params.tx
   const date = moment(txItem?.timestamp).format('MMM DD, YYYY HH:mm')
   const { openUrl } = useInAppBrowser()
@@ -39,15 +40,15 @@ function ActivityDetail() {
   )
   const fees = bnToAvaxC(feeBN)
 
-  useEffect(() => getContactMatch(), [addressBook])
+  useEffect(getContactMatchFx, [contacts, txItem])
 
-  function getContactMatch() {
+  function getContactMatchFx() {
     const address = txItem?.isSender ? txItem.to : txItem?.from
-    const filtered = addressBookArray?.filter(
-      entry => entry[1].address === address
+    const filtered = Object.values(contacts).filter(
+      value => value.address === address
     )
     if (filtered.length > 0) {
-      setContact(filtered[0][1])
+      setContact(filtered[0])
     }
   }
 

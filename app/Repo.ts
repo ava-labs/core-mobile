@@ -9,8 +9,6 @@ import StorageTools from 'repository/StorageTools'
  * Suffix "_<increasing number>" is for destructive migration of database. In the future, we want gracefully migrate data with no data loss.
  */
 const USER_SETTINGS = 'USER_SETTINGS'
-const ADDR_BOOK = 'ADDR_BOOK_1'
-const ADDR_BOOK_RECENTS = 'ADDR_BOOK_RECENTS_1'
 const NFTs = 'NFTs_2'
 const VIEW_ONCE_INFORMATION = 'VIEW_ONCE_INFORMATION'
 
@@ -59,12 +57,6 @@ export type Repo = {
     nfts: Map<UID, NFTItemData>
     saveNfts: (nfts: Map<UID, NFTItemData>) => void
   }
-  addressBookRepo: {
-    addressBook: Map<UID, Contact>
-    saveAddressBook: (addressBook: Map<UID, Contact>) => void
-    recentContacts: RecentContact[]
-    addToRecentContacts: (contact: RecentContact) => void
-  }
   /**
    * Store any simple user settings here
    */
@@ -79,8 +71,6 @@ export type Repo = {
 export function useRepo(): Repo {
   const [initialized, setInitialized] = useState(false)
   const [nfts, setNfts] = useState<Map<UID, NFTItemData>>(new Map())
-  const [addressBook, setAddressBook] = useState<Map<UID, Contact>>(new Map())
-  const [recentContacts, setRecentContacts] = useState<RecentContact[]>([])
   const [viewOnceInfo, setViewOnceInfo] = useState<ViewOnceInformation[]>([])
   const [userSettings, setUserSettings] = useState<Map<Setting, SettingValue>>(
     new Map()
@@ -109,27 +99,9 @@ export function useRepo(): Repo {
     [userSettings]
   )
 
-  const saveAddressBook = (addrBook: Map<UID, Contact>) => {
-    setAddressBook(new Map(addrBook))
-    StorageTools.saveMapToStorage(ADDR_BOOK, addrBook).catch(reason =>
-      console.error(reason)
-    )
-  }
-
   const saveNfts = (nfts: Map<UID, NFTItemData>) => {
     setNfts(new Map(nfts))
     StorageTools.saveMapToStorage(NFTs, nfts).catch(reason =>
-      console.error(reason)
-    )
-  }
-
-  const addToRecentContacts = (contact: RecentContact) => {
-    const newRecents = [
-      contact,
-      ...recentContacts.filter(value => value.id !== contact.id)
-    ].slice(0, 9) //save max 10 recents
-    setRecentContacts(newRecents)
-    StorageTools.saveToStorage(ADDR_BOOK_RECENTS, newRecents).catch(reason =>
       console.error(reason)
     )
   }
@@ -151,9 +123,7 @@ export function useRepo(): Repo {
    * Clear hook states
    */
   const flush = () => {
-    setAddressBook(new Map())
     setNfts(new Map())
-    setRecentContacts([])
     setUserSettings(new Map())
     setInitialized(false)
   }
@@ -165,14 +135,6 @@ export function useRepo(): Repo {
       )
     )
     setNfts(await StorageTools.loadFromStorageAsMap<UID, NFTItemData>(NFTs))
-    setAddressBook(
-      await StorageTools.loadFromStorageAsMap<UID, Contact>(ADDR_BOOK)
-    )
-    setRecentContacts(
-      await StorageTools.loadFromStorageAsArray<RecentContact>(
-        ADDR_BOOK_RECENTS
-      )
-    )
     setViewOnceInfo(
       await StorageTools.loadFromStorageAsArray<ViewOnceInformation>(
         VIEW_ONCE_INFORMATION
@@ -182,12 +144,6 @@ export function useRepo(): Repo {
 
   return {
     nftRepo: { nfts, saveNfts },
-    addressBookRepo: {
-      addressBook,
-      saveAddressBook,
-      recentContacts,
-      addToRecentContacts
-    },
     userSettingsRepo: {
       setSetting,
       getSetting
