@@ -2,12 +2,13 @@ import { SafeAreaProvider } from 'react-native-safe-area-context'
 import React, { useMemo, useState } from 'react'
 import SearchBar from 'components/SearchBar'
 import { FlatList, ListRenderItemInfo } from 'react-native'
-import { useApplicationContext } from 'contexts/ApplicationContext'
 import AddressBookItem from 'components/addressBook/AddressBookItem'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { AddressBookScreenProps } from 'navigation/types'
 import { Contact } from 'Repo'
+import { useSelector } from 'react-redux'
+import { selectContacts } from 'store/addressBook'
 
 type NavigationProp = AddressBookScreenProps<
   typeof AppNavigation.AddressBook.List
@@ -15,19 +16,15 @@ type NavigationProp = AddressBookScreenProps<
 
 const AddressBook = () => {
   const { navigate } = useNavigation<NavigationProp>()
-  const { addressBook } = useApplicationContext().repo.addressBookRepo
+  const contacts = useSelector(selectContacts)
   const [searchFilter, setSearchFilter] = useState('')
 
-  const contacts = useMemo<Contact[]>(() => {
-    return [...addressBook.entries()]
-      .filter(
-        ([, contact]) =>
-          contact.title.toLowerCase().search(searchFilter.toLowerCase()) !== -1
-      )
-      .map(([, contact]) => {
-        return contact
-      })
-  }, [addressBook, searchFilter])
+  const filteredContacts = useMemo<Contact[]>(() => {
+    return Object.values(contacts).filter(
+      contact =>
+        contact.title.toLowerCase().search(searchFilter.toLowerCase()) !== -1
+    )
+  }, [contacts, searchFilter])
 
   const renderContactItem = (item: ListRenderItemInfo<Contact>) => {
     return (
@@ -48,7 +45,7 @@ const AddressBook = () => {
   return (
     <SafeAreaProvider style={{ flex: 1, paddingHorizontal: 16 }}>
       <SearchBar searchText={searchFilter} onTextChanged={setSearchFilter} />
-      <FlatList data={contacts} renderItem={renderContactItem} />
+      <FlatList data={filteredContacts} renderItem={renderContactItem} />
     </SafeAreaProvider>
   )
 }

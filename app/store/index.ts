@@ -23,6 +23,7 @@ import { zeroBalanceReducer as zeroBalance } from './zeroBalance'
 import { customTokenReducer as customToken } from './customToken'
 import { posthogReducer as posthog } from './posthog'
 import networkFee from './networkFee'
+import { addressBookReducer as addressBook } from './addressBook'
 import settings from './settings'
 
 const persistActions = [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER]
@@ -33,6 +34,7 @@ const rootReducer = combineReducers({
   balance,
   account,
   networkFee,
+  addressBook,
   bridge,
   customToken,
   posthog,
