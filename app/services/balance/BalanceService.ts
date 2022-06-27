@@ -1,7 +1,7 @@
 import { TokenWithBalance } from 'store/balance'
 import NetworkService from 'services/network/NetworkService'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
-import { Account } from 'dto/Account'
+import { Account } from 'store/account'
 import AccountsService from 'services/account/AccountsService'
 import BtcBalanceService from './BtcBalanceService'
 import EvmBalanceService from './EvmBalanceService'
