@@ -5,6 +5,7 @@ import TokenService from 'services/token/TokenService'
 import { addCustomToken as addCustomTokenAction } from 'store/customToken'
 import { useState, useEffect } from 'react'
 import { Network, NetworkContractToken } from '@avalabs/chains-sdk'
+import { usePosthogContext } from 'contexts/PosthogContext'
 
 const validateAddress = (
   tokenAddress: string,
@@ -44,6 +45,7 @@ const useAddCustomToken = (callback: () => void) => {
   const tokens = useSelector(selectNetworkContractTokens)
   const dispatch = useDispatch()
   const chainId = network.chainId
+  const { capture } = usePosthogContext()
 
   useEffect(() => {
     setErrorMessage('')
@@ -70,6 +72,10 @@ const useAddCustomToken = (callback: () => void) => {
       dispatch(addCustomTokenAction({ chainId, token }))
       setTokenAddress('')
       callback()
+      capture('ManageTokensAddCustomToken', {
+        status: 'success',
+        address: token.address
+      })
     }
   }
 
