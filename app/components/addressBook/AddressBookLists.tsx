@@ -5,10 +5,9 @@ import TabViewAva from 'components/TabViewAva'
 import AvaText from 'components/AvaText'
 import { AccountId, AddrBookItemType, Contact, UID } from 'Repo'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { Account } from 'dto/Account'
 import AddressBookItem from 'components/addressBook/AddressBookItem'
 import { useSelector } from 'react-redux'
-import { selectAccounts } from 'store/account'
+import { Account, selectAccounts } from 'store/account'
 
 export type AddressBookListsProps = {
   onContactSelected: (item: Contact | Account, type: AddrBookItemType) => void

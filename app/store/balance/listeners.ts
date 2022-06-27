@@ -1,9 +1,13 @@
 import { Network } from '@avalabs/chains-sdk'
 import { isAnyOf } from '@reduxjs/toolkit'
-import { Account } from 'dto/Account'
 import BalanceService from 'services/balance/BalanceService'
 import { AppListenerEffectAPI } from 'store'
-import { selectAccounts, selectActiveAccount, setAccounts } from 'store/account'
+import {
+  Account,
+  selectAccounts,
+  selectActiveAccount,
+  setAccounts
+} from 'store/account'
 import { onAppLocked, onAppUnlocked } from 'store/app'
 import { addCustomToken } from 'store/customToken'
 import { AppStartListening } from 'store/middleware/listener'

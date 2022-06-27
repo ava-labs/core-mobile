@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { AddrBookItemType, Contact, RecentContact } from 'Repo'
-import { Account } from 'dto/Account'
 import { useApplicationContext } from 'contexts/ApplicationContext'
+import { Account } from 'store/account'
 
 export function useAddressBookLists() {
   const { addToRecentContacts } = useApplicationContext().repo.addressBookRepo

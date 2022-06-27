@@ -3,12 +3,11 @@ import { View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
-import { Account } from 'dto/Account'
 import AvaButton from 'components/AvaButton'
 import InputText from 'components/InputText'
 import { Row } from 'components/Row'
 import TokenAddress from 'components/TokenAddress'
-import { setAccountTitle as setAccountTitleStore } from 'store/account'
+import { Account, setAccountTitle as setAccountTitleStore } from 'store/account'
 import { useDispatch } from 'react-redux'
 
 type Props = {
