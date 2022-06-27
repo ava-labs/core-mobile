@@ -21,6 +21,7 @@ import { accountsReducer as account } from './account'
 import { watchlistReducer as watchlist } from './watchlist'
 import { zeroBalanceReducer as zeroBalance } from './zeroBalance'
 import { customTokenReducer as customToken } from './customToken'
+import { posthogReducer as posthog } from './posthog'
 import networkFee from './networkFee'
 import settings from './settings'
 
@@ -34,6 +35,7 @@ const rootReducer = combineReducers({
   networkFee,
   bridge,
   customToken,
+  posthog,
 
   // user preferences
   settings,

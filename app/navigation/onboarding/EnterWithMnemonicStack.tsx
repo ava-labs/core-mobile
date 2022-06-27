@@ -17,6 +17,8 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import { MainHeaderOptions } from 'navigation/NavUtils'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import TermsNConditionsModal from 'components/TermsNConditionsModal'
+import { onLogIn } from 'store/app'
+import { useDispatch } from 'react-redux'
 import { EnterWithMnemonicScreenProps } from '../types'
 
 export type EnterWithMnemonicStackParamList = {
@@ -155,11 +157,13 @@ const TermsNConditionsModalScreen = () => {
   const enterWithMnemonicContext = useContext(EnterWithMnemonicContext)
   const walletSetupHook = useApplicationContext().walletSetupHook
   const { resetNavToRoot } = useApplicationContext().appNavHook
+  const dispatch = useDispatch()
 
   return (
     <TermsNConditionsModal
       onNext={() => {
         walletSetupHook.enterWallet(enterWithMnemonicContext.mnemonic)
+        dispatch(onLogIn())
       }}
       onReject={() => resetNavToRoot()}
     />

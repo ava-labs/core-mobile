@@ -5,8 +5,8 @@ import { AppListenerEffectAPI } from 'store'
 import {
   onRehydrationComplete,
   setAppState,
-  setIsReady,
-  setIsLocked
+  setIsLocked,
+  setIsReady
 } from 'store/app'
 import { AppStartListening } from 'store/middleware/listener'
 import { getNetworks } from 'store/network'

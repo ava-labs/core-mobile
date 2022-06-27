@@ -54,6 +54,10 @@ export const onBackground = createAction(`${reducerName}/onBackground`)
 
 export const onForeground = createAction(`${reducerName}/onForeground`)
 
+export const onLogIn = createAction(`${reducerName}/onLogIn`)
+
+export const onLogOut = createAction(`${reducerName}/onLogOut`)
+
 export const { setIsReady, setIsLocked, setAppState } = appSlice.actions
 
 export const appReducer = appSlice.reducer

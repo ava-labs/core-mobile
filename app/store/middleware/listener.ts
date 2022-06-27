@@ -6,6 +6,7 @@ import { addAccountListeners } from 'store/account'
 import { addNetworkListeners } from 'store/network'
 import { addNetworkFeeListeners } from 'store/networkFee'
 import { addBridgeListeners } from 'store/bridge'
+import { addPosthogListeners } from 'store/posthog/listeners'
 
 export type AppStartListening = TypedStartListening<RootState, AppDispatch>
 
@@ -26,5 +27,7 @@ addNetworkListeners(startListening)
 addBridgeListeners(startListening)
 
 addNetworkFeeListeners(startListening)
+
+addPosthogListeners(startListening)
 
 export { listener }
