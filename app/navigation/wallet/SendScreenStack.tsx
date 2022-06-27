@@ -63,6 +63,7 @@ type SendScreenProps = SendTokensScreenProps<typeof AppNavigation.Send.Send>
 const SendTokenComponent = () => {
   const { navigate } = useNavigation<SendScreenProps['navigation']>()
   const { params } = useRoute<SendScreenProps['route']>()
+  const { capture } = usePosthogContext()
 
   const onOpenSelectToken = (
     onTokenSelected: (token: TokenWithBalance) => void
@@ -70,6 +71,7 @@ const SendTokenComponent = () => {
     navigate(AppNavigation.Modal.SelectToken, {
       onTokenSelected: (token: TokenWithBalance) => {
         onTokenSelected(token)
+        capture('Send_TokenSelected')
       }
     })
   }

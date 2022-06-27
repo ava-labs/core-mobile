@@ -34,6 +34,7 @@ export default function SwapView() {
     navigate(AppNavigation.Modal.SelectToken, {
       onTokenSelected: (token: TokenWithBalance) => {
         onTokenSelected(token)
+        capture('Swap_TokenSelected')
       }
     })
   }
