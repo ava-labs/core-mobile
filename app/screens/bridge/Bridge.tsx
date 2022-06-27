@@ -46,6 +46,7 @@ type NavigationProp = BridgeScreenProps<
 const Bridge: FC = () => {
   const navigation = useNavigation<NavigationProp>()
   const theme = useApplicationContext().theme
+  const { capture } = usePosthogContext()
 
   const {
     sourceBalance,
@@ -211,6 +212,11 @@ const Bridge: FC = () => {
     if (BIG_ZERO.eq(amount)) {
       return
     }
+
+    capture('BridgeTransferStarted', {
+      sourceBlockchain: currentBlockchain,
+      targetBlockchain
+    })
 
     try {
       setIsPending(true)
