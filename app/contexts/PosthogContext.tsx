@@ -187,11 +187,15 @@ export const PosthogContextProvider = ({ children }: { children: any }) => {
       })
   }
 
-  const capture = async (event: string) => {
+  const capture = async (event: string, properties?: JsonMap) => {
     if (__DEV__) {
-      console.log(event)
+      console.log(event, properties)
     }
-    return PostHog.capture(event, { $ip: '', $user_id: posthogUserId })
+    return PostHog.capture(event, {
+      ...properties,
+      $ip: '',
+      $user_id: posthogUserId
+    })
   }
 
   return (
