@@ -11,6 +11,8 @@ import { JsonMap } from 'posthog-react-native/src/bridge'
 import Config from 'react-native-config'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import useAppBackgroundTracker from 'hooks/useAppBackgroundTracker'
+import { useSelector } from 'react-redux'
+import { selectUserID } from 'store/posthog'
 
 export const PosthogContext = createContext<PosthogContextState>(
   {} as PosthogContextState
@@ -51,6 +53,7 @@ const ONE_MINUTE = 60 * 1000
 export const PosthogContextProvider = ({ children }: { children: any }) => {
   const [isPosthogReady, setIsPosthogReady] = useState(false)
   const [isAnalyticsEnabled, setIsAnalyticsEnabled] = useState(false)
+  const posthogUserId = useSelector(selectUserID)
 
   const { timeoutPassed } = useAppBackgroundTracker({
     timeoutMs: 30 * 60 * 1000,
@@ -89,13 +92,28 @@ export const PosthogContextProvider = ({ children }: { children: any }) => {
 
   function initPosthog() {
     ;(async function () {
-      await PostHog.setup(Config.POSTHOG_ANALYTICS_KEY as string, {
-        debug: __DEV__,
-        host: 'https://data-posthog.avax.network',
-        android: {
-          collectDeviceId: false
-        }
-      })
+      const config = __DEV__
+        ? {
+            debug: true,
+            host: 'https://data-posthog.avax-test.network',
+            android: {
+              collectDeviceId: false
+            },
+            flushAt: 1,
+            flushInterval: 10
+          }
+        : {
+            debug: false,
+            host: 'https://data-posthog.avax.network',
+            android: {
+              collectDeviceId: false
+            }
+          }
+      const apiKey = __DEV__
+        ? Config.POSTHOG_ANALYTICS_KEY_DEV
+        : Config.POSTHOG_ANALYTICS_KEY
+      await PostHog.setup(apiKey, config)
+
       await disableAnalytics()
       setIsPosthogReady(true)
     })()
@@ -124,7 +142,7 @@ export const PosthogContextProvider = ({ children }: { children: any }) => {
     if (!isPosthogReady) {
       return
     }
-    if (__DEV__ || eventsBlocked) {
+    if (eventsBlocked) {
       disableAnalytics()
       return
     }
@@ -173,7 +191,7 @@ export const PosthogContextProvider = ({ children }: { children: any }) => {
     if (__DEV__) {
       console.log(event)
     }
-    return PostHog.capture(event)
+    return PostHog.capture(event, { $ip: '', $user_id: posthogUserId })
   }
 
   return (
