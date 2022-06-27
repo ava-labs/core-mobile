@@ -9,12 +9,12 @@ import AddressBookLists from 'components/addressBook/AddressBookLists'
 import FlexSpacer from 'components/FlexSpacer'
 import { useAddressBookLists } from 'components/addressBook/useAddressBookLists'
 import { AddrBookItemType, Contact } from 'Repo'
-import { Account } from 'dto/Account'
 import { NFTItemData } from 'screens/nft/NftCollection'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Row } from 'components/Row'
 import { useSendNFTContext } from 'contexts/SendNFTContext'
 import { Opacity85 } from 'resources/Constants'
+import { Account } from 'store/account'
 
 export type NftSendScreenProps = {
   onNext: () => void

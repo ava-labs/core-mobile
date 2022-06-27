@@ -1,7 +1,7 @@
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import networkService from 'services/network/NetworkService'
 import walletService from 'services/wallet/WalletService'
-import { Account } from 'dto/Account'
+import { Account } from 'store/account'
 import { SendServiceEVM } from 'services/send/SendServiceEVM'
 import { isValidSendState, SendServiceHelper, SendState } from './types'
 import sendServiceBTC from './SendServiceBTC'

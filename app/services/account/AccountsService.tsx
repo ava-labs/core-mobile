@@ -1,6 +1,5 @@
 import walletService from 'services/wallet/WalletService'
-import { Account } from 'dto/Account'
-import { AccountCollection } from 'store/account'
+import { Account, AccountCollection } from 'store/account'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 
 class AccountsService {
