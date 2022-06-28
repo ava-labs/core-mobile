@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useCallback, useEffect } from 'react'
 import { View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
@@ -18,6 +18,11 @@ import { Popable } from 'react-native-popable'
 import { bnToLocaleString } from '@avalabs/utils-sdk'
 import PoppableGasAndLimit from 'components/PoppableGasAndLimit'
 import { ActivityIndicator } from 'components/ActivityIndicator'
+import { usePosthogContext } from 'contexts/PosthogContext'
+import {
+  RemoveEvents,
+  useBeforeRemoveListener
+} from 'hooks/useBeforeRemoveListener'
 
 type NavigationProp = SendTokensScreenProps<
   typeof AppNavigation.Send.Review
@@ -30,6 +35,7 @@ export default function ReviewSend({
 }) {
   const { theme } = useApplicationContext()
   const { goBack } = useNavigation<NavigationProp>()
+  const { capture } = usePosthogContext()
   const {
     sendToken,
     sendAmountInCurrency,
@@ -44,6 +50,13 @@ export default function ReviewSend({
     transactionId
   } = useSendTokenContext()
 
+  useBeforeRemoveListener(
+    useCallback(() => {
+      capture('SendCancel')
+    }, [capture]),
+    [RemoveEvents.GO_BACK, RemoveEvents.POP]
+  )
+
   useEffect(() => {
     switch (sendStatus) {
       case 'Success':
@@ -51,7 +64,7 @@ export default function ReviewSend({
           onSuccess(transactionId)
         }
     }
-  }, [sendStatus, transactionId])
+  }, [onSuccess, sendStatus, transactionId])
 
   return (
     <View style={{ flex: 1 }}>
