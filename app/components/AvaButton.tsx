@@ -258,6 +258,30 @@ const BtnTextMedium: FC<BaseProps> = ({
   )
 }
 
+const BtnTextLink: FC<BaseProps> = ({
+  onPress,
+  disabled,
+  children,
+  style,
+  textColor
+}) => {
+  const theme = useApplicationContext().theme
+
+  return (
+    <BtnText
+      disabled={disabled}
+      onPress={onPress}
+      style={[styles.btnTextLink, style]}>
+      <AvaText.TextLink
+        textStyle={{
+          color: disabled ? theme.colorDisabled : textColor ?? theme.colorBg2
+        }}>
+        {children}
+      </AvaText.TextLink>
+    </BtnText>
+  )
+}
+
 const AvaButton = {
   PrimaryLarge: BtnPrimaryLarge,
   PrimaryMedium: BtnPrimaryMedium,
@@ -267,7 +291,8 @@ const AvaButton = {
   TextMedium: BtnTextMedium,
   Base: AvaButtonBase,
   Icon: AvaButtonIcon,
-  TextWithIcon: TextWithIcon
+  TextWithIcon: TextWithIcon,
+  TextLink: BtnTextLink
 }
 
 const styles = StyleSheet.create({
@@ -309,6 +334,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     height: 40
+  },
+  btnTextLink: {
+    height: 48
   }
 })
 
