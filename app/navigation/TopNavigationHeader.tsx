@@ -30,6 +30,7 @@ const TopNavigationHeader: FC = () => {
       </AvaButton.Icon>
       <View style={{ zIndex: 1 }}>
         <HeaderAccountSelector
+          direction="down"
           onPressed={() =>
             navigation.navigate(AppNavigation.Modal.AccountDropDown)
           }

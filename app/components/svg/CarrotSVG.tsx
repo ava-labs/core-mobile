@@ -1,4 +1,5 @@
 import React from 'react'
+import { View } from 'react-native'
 import Svg, { Path } from 'react-native-svg'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 
@@ -29,27 +30,29 @@ function CarrotSVG({ color, size = 16, direction }: Prop) {
   }
 
   const Carrot = ({ rotation = 0 }: { rotation?: number }) => (
-    <Svg
-      width={size}
-      height={size}
-      viewBox="0 0 16 16"
-      fill="none"
-      origin={8}
-      rotation={rotation}>
-      <Path
-        d="M5 3L10.25 8.25L5 13.5"
-        stroke={color || theme.colorIcon1}
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </Svg>
+    <View style={{ transform: [{ rotate: `${rotation}deg` }] }}>
+      <Svg
+        width={size}
+        height={size}
+        viewBox="0 0 16 16"
+        fill="none"
+        origin={8}>
+        <Path
+          d="M5 3L10.25 8.25L5 13.5"
+          stroke={color || theme.colorIcon1}
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </Svg>
+    </View>
   )
 
   /**
    * If user defines a direction, we wrap it in a view and apply the transfor in int since the
    * transform rotation/rotate in the SVG itself behaves differently and not the desired way we want.
    */
+  console.log(getDegrees())
   return direction ? <Carrot rotation={getDegrees()} /> : <Carrot />
 }
 

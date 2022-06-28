@@ -58,7 +58,7 @@ export default function NetworkDropdown() {
       style={[
         {
           height: 24,
-          width: 52,
+          width: 54,
           justifyContent: 'center',
           paddingHorizontal: 8,
           paddingVertical: 4,
@@ -70,7 +70,7 @@ export default function NetworkDropdown() {
       <Dropdown
         key={dropdownUniqueId}
         style={{
-          right: 41
+          right: 53
         }}
         data={data}
         width={300}
