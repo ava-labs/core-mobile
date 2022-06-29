@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { ActivityIndicator, View } from 'react-native'
+import { View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
@@ -17,6 +17,7 @@ import SendRow from 'components/SendRow'
 import { Popable } from 'react-native-popable'
 import { bnToLocaleString } from '@avalabs/utils-sdk'
 import PoppableGasAndLimit from 'components/PoppableGasAndLimit'
+import { ActivityIndicator } from 'components/ActivityIndicator'
 
 type NavigationProp = SendTokensScreenProps<
   typeof AppNavigation.Send.Review
@@ -152,7 +153,7 @@ export default function ReviewSend({
         )}
         {sendStatus === 'Sending' && (
           <>
-            <ActivityIndicator size="large" color={theme.colorPrimary1} />
+            <ActivityIndicator size="large" />
             <Space y={32} />
           </>
         )}

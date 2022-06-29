@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from 'react'
-import { ActivityIndicator, StyleSheet, View } from 'react-native'
+import { StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import DotSVG from 'components/svg/DotSVG'
 import { Space } from 'components/Space'
@@ -17,6 +17,7 @@ import { useNavigation } from '@react-navigation/native'
 import { NFTDetailsSendScreenProps } from 'navigation/types'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
+import { ActivityIndicator } from 'components/ActivityIndicator'
 
 type NavigationProp = NFTDetailsSendScreenProps<
   typeof AppNavigation.NftSend.Review
@@ -151,7 +152,7 @@ export default function NftReview({ onSuccess }: NftReviewScreenProps) {
         )}
         {sendStatus === 'Sending' && (
           <>
-            <ActivityIndicator size="large" color={theme.colorPrimary1} />
+            <ActivityIndicator size="large" />
             <Space y={32} />
           </>
         )}

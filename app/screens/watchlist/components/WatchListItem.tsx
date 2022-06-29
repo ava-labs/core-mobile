@@ -1,5 +1,5 @@
 import React, { FC, useEffect, useMemo, useState } from 'react'
-import { ActivityIndicator, View } from 'react-native'
+import { View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaListItem from 'components/AvaListItem'
 import AvaText from 'components/AvaText'
@@ -14,6 +14,7 @@ import { TokenType, TokenWithBalance } from 'store/balance'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { selectActiveNetwork } from 'store/network'
 import { useSelector } from 'react-redux'
+import { ActivityIndicator } from 'components/ActivityIndicator'
 
 interface Props {
   token: TokenWithBalance
@@ -92,10 +93,7 @@ const WatchListItem: FC<Props> = ({
       return (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           {isLoadingChartData ? (
-            <ActivityIndicator
-              style={{ alignSelf: 'center' }}
-              color={theme.colorPrimary1}
-            />
+            <ActivityIndicator style={{ alignSelf: 'center' }} />
           ) : (
             <View style={{ position: 'absolute', left: -40, flex: 1 }}>
               <SparklineChart
