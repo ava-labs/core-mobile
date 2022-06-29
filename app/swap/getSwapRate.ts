@@ -1,12 +1,10 @@
-import { WalletType } from '@avalabs/avalanche-wallet-sdk'
-import { wallet$ } from '@avalabs/wallet-react-components'
 import Web3 from 'web3'
-import { NetworkID, APIError, ParaSwap, SwapSide } from 'paraswap'
+import { APIError, NetworkID, ParaSwap, SwapSide } from 'paraswap'
 import { OptimalRate } from 'paraswap-core'
-import { firstValueFrom } from 'rxjs'
-import { getSrcToken, incrementalPromiseResolve, resolve } from 'swap/utils'
+import { getSrcToken, incrementalPromiseResolve } from 'swap/utils'
 import { ChainId } from '@avalabs/chains-sdk'
 import { TokenWithBalance } from 'store/balance'
+import { Account } from 'store/account'
 
 const SERVER_BUSY_ERROR = 'Server too busy'
 
@@ -15,8 +13,9 @@ export async function getSwapRate(request: {
   destToken?: TokenWithBalance
   amount?: string
   swapSide: SwapSide
+  account: Account
 }) {
-  const { srcToken, destToken, amount, swapSide } = request || []
+  const { srcToken, destToken, amount, swapSide, account } = request || []
 
   if (!srcToken) {
     return {
@@ -40,19 +39,11 @@ export async function getSwapRate(request: {
   const chainId = Number(ChainId.AVALANCHE_MAINNET_ID)
   const paraSwap = new ParaSwap(chainId as NetworkID, undefined, new Web3())
 
-  const [wallet, walletError] = await resolve(firstValueFrom(wallet$))
-
-  if (walletError) {
-    return {
-      error: walletError
-    }
-  }
-
   const optimalRates = paraSwap.getRate(
     getSrcToken(srcToken),
     getSrcToken(destToken),
     amount,
-    (wallet as WalletType).getAddressC(),
+    account.address,
     swapSide,
     {
       partner: 'Avalanche'

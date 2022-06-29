@@ -107,7 +107,8 @@ export const SwapContextProvider = ({ children }: { children: any }) => {
         srcToken: srcToken,
         destToken: destToken,
         amount: amount,
-        swapSide
+        swapSide,
+        account: activeAccount!
       })
     )
       .pipe(
