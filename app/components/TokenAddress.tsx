@@ -33,12 +33,13 @@ const TokenAddress: FC<Props> = ({
 }) => {
   const theme = useContext(ApplicationContext).theme
   const tokenAddress = showFullAddress ? address : truncateAddress(address)
+  const textColor = color ? color : theme.colorText1
 
   const TokenAddressComposed = () => {
     switch (textType) {
       case 'ButtonSmall':
         return (
-          <AvaText.ButtonSmall color={color ? color : theme.colorText1}>
+          <AvaText.ButtonSmall color={textColor}>
             {tokenAddress}
           </AvaText.ButtonSmall>
         )
@@ -46,7 +47,7 @@ const TokenAddress: FC<Props> = ({
         return (
           <AvaText.ButtonMedium
             ellipsizeMode={showFullAddress ? 'middle' : undefined}
-            color={color ? color : theme.colorText1}>
+            color={textColor}>
             {tokenAddress}
           </AvaText.ButtonMedium>
         )
@@ -54,16 +55,12 @@ const TokenAddress: FC<Props> = ({
         return (
           <AvaText.Heading3
             ellipsizeMode={showFullAddress ? 'middle' : undefined}
-            color={color ? color : theme.colorText1}>
+            color={textColor}>
             {tokenAddress}
           </AvaText.Heading3>
         )
       case 'Body':
-        return (
-          <AvaText.Body2 color={color ? color : theme.colorText1}>
-            {tokenAddress}
-          </AvaText.Body2>
-        )
+        return <AvaText.Body2 color={textColor}>{tokenAddress}</AvaText.Body2>
     }
   }
 
