@@ -11,6 +11,7 @@ interface BaseProps {
   style?: StyleProp<ViewStyle>
   rippleBorderless?: boolean
   textColor?: string
+  icon?: React.ReactNode
 }
 
 const AvaButtonBase: FC<BaseProps> = ({
@@ -195,20 +196,32 @@ const BtnSecondaryMedium: FC<BaseProps> = ({
   onPress,
   disabled,
   children,
+  icon,
   style
 }) => {
   const theme = useApplicationContext().theme
+  const textStyles = {
+    color: disabled ? theme.colorDisabled : theme.colorText1
+  }
+
+  const renderIcon = () => (
+    <>
+      {icon}
+      <Space x={8} />
+    </>
+  )
+
   return (
     <BtnSecondary
       onPress={onPress}
       disabled={disabled}
       style={[styles.btnSecondaryMedium, style]}>
-      <AvaText.ButtonMedium
-        textStyle={{
-          color: disabled ? theme.colorDisabled : theme.colorText1
-        }}>
-        {children}
-      </AvaText.ButtonMedium>
+      <View style={{ flexDirection: 'row' }}>
+        {icon && renderIcon()}
+        <AvaText.ButtonMedium textStyle={textStyles}>
+          {children}
+        </AvaText.ButtonMedium>
+      </View>
     </BtnSecondary>
   )
 }
@@ -336,7 +349,8 @@ const styles = StyleSheet.create({
     height: 40
   },
   btnTextLink: {
-    height: 48
+    height: 48,
+    paddingHorizontal: 16
   }
 })
 

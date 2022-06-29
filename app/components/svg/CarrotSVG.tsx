@@ -52,7 +52,6 @@ function CarrotSVG({ color, size = 16, direction }: Prop) {
    * If user defines a direction, we wrap it in a view and apply the transfor in int since the
    * transform rotation/rotate in the SVG itself behaves differently and not the desired way we want.
    */
-  console.log(getDegrees())
   return direction ? <Carrot rotation={getDegrees()} /> : <Carrot />
 }
 
