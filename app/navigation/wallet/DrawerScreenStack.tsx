@@ -6,7 +6,6 @@ import TabNavigator, {
 } from 'navigation/wallet/TabNavigator'
 import React from 'react'
 import { createDrawerNavigator } from '@react-navigation/drawer'
-import TopNavigationHeader from 'navigation/TopNavigationHeader'
 
 export type DrawerParamList = {
   [AppNavigation.Wallet.Tabs]: NavigatorScreenParams<TabNavigatorParamList>
@@ -24,10 +23,6 @@ const DrawerScreenStack = () => (
     drawerContent={() => <DrawerView />}>
     <DrawerStack.Screen
       name={AppNavigation.Wallet.Tabs}
-      options={{
-        headerShown: true,
-        header: () => <TopNavigationHeader />
-      }}
       component={TabNavigator}
     />
   </DrawerStack.Navigator>
