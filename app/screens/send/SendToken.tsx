@@ -23,7 +23,7 @@ import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
 import { NetworkVMType } from '@avalabs/chains-sdk'
 import AppNavigation from 'navigation/AppNavigation'
-import NetworkFeeSelector from 'components/NetworkFeeSelector'
+import NetworkFeeSelector, { FeePreset } from 'components/NetworkFeeSelector'
 import { useGasPrice } from 'utils/GasPriceHook'
 import { useNavigation } from '@react-navigation/native'
 import { SendTokensScreenProps } from 'navigation/types'
@@ -227,7 +227,10 @@ const SendToken: FC<Props> = ({
               networkFeeInCurrency={fees.sendFeeInCurrency ?? 0}
               gasPrice={gasPrice}
               gasLimit={fees.gasLimit ?? 0}
-              onWeightedGas={price => fees.setCustomGasPrice(price.bn)}
+              onWeightedGas={price => {
+                fees.setCustomGasPrice(price.bn)
+                fees.setSelectedFeePreset(price.label as FeePreset)
+              }}
               weights={{ Normal: 1, Fast: 1.05, Instant: 1.15, Custom: 35 }}
               onSettingsPressed={() => {
                 const initGasLimit = fees.gasLimit || 0
