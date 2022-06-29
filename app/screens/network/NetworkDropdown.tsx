@@ -70,7 +70,7 @@ export default function NetworkDropdown() {
       <Dropdown
         key={dropdownUniqueId}
         style={{
-          right: 53
+          left: 4
         }}
         data={data}
         width={300}
