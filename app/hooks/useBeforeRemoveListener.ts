@@ -8,17 +8,21 @@ export enum RemoveEvents {
 
 export function useBeforeRemoveListener(
   callback: () => void,
-  events: RemoveEvents[]
+  events: RemoveEvents[],
+  preventDefault?: boolean
 ) {
   const { addListener, removeListener } = useNavigation()
 
   const innerCallback = useCallback(
-    (e: { data: { action: { type: string } } }) => {
+    (e: { data: { action: { type: string } }; preventDefault: () => void }) => {
       if (events.includes(e.data.action.type as RemoveEvents)) {
+        if (preventDefault) {
+          e.preventDefault()
+        }
         callback()
       }
     },
-    [events, callback]
+    [events, preventDefault, callback]
   )
 
   useEffect(() => {
