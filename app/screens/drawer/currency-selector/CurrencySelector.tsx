@@ -48,7 +48,7 @@ const CurrencySelector = () => {
         style={styles.tokenList}
         data={currencies}
         renderItem={renderItem}
-        keyExtractor={(item: any) => item.name}
+        keyExtractor={item => item.name}
         scrollEventThrottle={16}
       />
     </SafeAreaProvider>

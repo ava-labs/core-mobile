@@ -8,7 +8,7 @@ import {
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 import Loader from 'components/Loader'
 import ZeroState from 'components/ZeroState'
-import PortfolioListItem from 'screens/portfolio/components/PortfolioListItem'
+import PortfolioListItem from 'components/PortfolioListItem'
 import { Space } from 'components/Space'
 import SearchBar from 'components/SearchBar'
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
@@ -43,7 +43,7 @@ function TokenSelector({
       <PortfolioListItem
         tokenName={token.name}
         tokenPrice={token.balanceDisplayValue ?? '0'}
-        tokenPriceInCurrency={token.balanceCurrencyDisplayValue}
+        tokenPriceInCurrency={token.balanceInCurrency}
         image={token?.logoUri}
         symbol={token.symbol}
         onPress={() => {

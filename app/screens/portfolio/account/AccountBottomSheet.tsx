@@ -3,7 +3,7 @@ import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet'
 import { InteractionManager } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import AccountView from 'screens/portfolio/account/AccountView'
-import TabViewBackground from 'screens/portfolio/components/TabViewBackground'
+import TabViewBackground from 'components/TabViewBackground'
 import AvaxSheetHandle from 'components/AvaxSheetHandle'
 
 function AccountBottomSheet(): JSX.Element {
