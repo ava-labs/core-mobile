@@ -98,40 +98,24 @@ function ZeroStateSendError({
   )
 }
 
-function ZeroStateNetworkTokens({
-  showReceiveBtn = false,
-  goToReceive,
-  goToAddAssets
-}: {
-  showReceiveBtn: boolean
-  goToReceive: () => void
-  goToAddAssets: () => void
-}) {
+function ZeroStateNetworkTokens({ goToReceive }: { goToReceive: () => void }) {
   const title = 'No assets'
+  const message = 'Add assets by clicking the button below.'
 
-  const renderButton = (label: string, onPress: () => void) => (
+  const renderButton = () => (
     <AvaButton.PrimaryMedium
       style={{ width: '100%' }}
       textStyle={{ fontSize: 16 }}
-      onPress={onPress}>
-      {label}
+      onPress={goToReceive}>
+      Add Assets
     </AvaButton.PrimaryMedium>
   )
-  if (showReceiveBtn) {
-    return (
-      <ZeroStateBase
-        title={title}
-        message="Receive assets by clicking the button below."
-        additionalComponent={renderButton('Receive', goToReceive)}
-      />
-    )
-  }
 
   return (
     <ZeroStateBase
       title={title}
-      message="Add assets by clicking the button below."
-      additionalComponent={renderButton('Add Assets', goToAddAssets)}
+      message={message}
+      additionalComponent={renderButton()}
     />
   )
 }

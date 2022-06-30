@@ -108,11 +108,7 @@ const NetworkTokens = () => {
   const renderZeroState = () => {
     return (
       <View style={{ paddingHorizontal: 16, flex: 1, marginTop: -160 }}>
-        <ZeroState.NetworkTokens
-          goToAddAssets={manageTokens}
-          goToReceive={goToReceive}
-          showReceiveBtn={manageDisabled}
-        />
+        <ZeroState.NetworkTokens goToReceive={goToReceive} />
       </View>
     )
   }
