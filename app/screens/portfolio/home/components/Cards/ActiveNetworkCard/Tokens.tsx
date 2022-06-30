@@ -3,7 +3,7 @@ import { View, Image, StyleSheet } from 'react-native'
 import { TokenWithBalance } from 'store/balance'
 import AvaText from 'components/AvaText'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { useSearchableTokenList } from '../../useSearchableTokenList'
+import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 
 const Tokens = () => {
   const { filteredTokenList: tokens } = useSearchableTokenList()
@@ -26,7 +26,7 @@ const Tokens = () => {
     const tokenTextColor = theme.colorText1
 
     return (
-      <View style={[styles.tokenRow, { marginBottom }]}>
+      <View style={[styles.tokenRow, { marginBottom }]} key={index.toString()}>
         <Image source={{ uri: token.logoUri }} style={styles.smallIcon} />
         <AvaText.ButtonSmall
           color={tokenTextColor}
