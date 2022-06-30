@@ -1,7 +1,7 @@
 import React from 'react'
 import AppNavigation from 'navigation/AppNavigation'
-import Portfolio from 'screens/portfolio/Portfolio'
-import NetworkTokens from 'screens/portfolio/NetworkTokens'
+import Portfolio from 'screens/portfolio/home/Portfolio'
+import NetworkTokens from 'screens/portfolio/network/NetworkTokens'
 import { createStackNavigator } from '@react-navigation/stack'
 
 export type PortfolioStackParamList = {
