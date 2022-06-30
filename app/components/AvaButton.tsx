@@ -1,5 +1,12 @@
 import React, { FC, ReactNode } from 'react'
-import { Pressable, StyleProp, StyleSheet, View, ViewStyle } from 'react-native'
+import {
+  Pressable,
+  StyleProp,
+  StyleSheet,
+  TextStyle,
+  View,
+  ViewStyle
+} from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
 import { Opacity12, Opacity15 } from 'resources/Constants'
@@ -9,6 +16,7 @@ interface BaseProps {
   onPress?: () => void
   disabled?: boolean
   style?: StyleProp<ViewStyle>
+  textStyle?: StyleProp<TextStyle>
   rippleBorderless?: boolean
   textColor?: string
   icon?: React.ReactNode
@@ -155,15 +163,24 @@ const BtnPrimaryLarge: FC<BaseProps> = ({
   )
 }
 
-const BtnPrimaryMedium: FC<BaseProps> = ({ onPress, disabled, children }) => {
+const BtnPrimaryMedium: FC<BaseProps> = ({
+  onPress,
+  disabled,
+  children,
+  style,
+  textStyle
+}) => {
   const theme = useApplicationContext().theme
   return (
     <BtnPrimary
       disabled={disabled}
       onPress={onPress}
-      style={styles.btnPrimaryMedium}>
+      style={[styles.btnPrimaryMedium, style]}>
       <AvaText.ButtonMedium
-        textStyle={{ color: disabled ? theme.colorDisabled : theme.colorBg2 }}>
+        textStyle={[
+          { color: disabled ? theme.colorDisabled : theme.colorBg2 },
+          textStyle
+        ]}>
         {children}
       </AvaText.ButtonMedium>
     </BtnPrimary>
