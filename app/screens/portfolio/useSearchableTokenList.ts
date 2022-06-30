@@ -15,7 +15,7 @@ const bnZero = new BN(0)
 
 export function useSearchableTokenList(hideZeroBalance = true): {
   searchText: string
-  filteredTokenList?: TokenWithBalance[]
+  filteredTokenList: TokenWithBalance[]
   setSearchText: (value: ((prevState: string) => string) | string) => void
   isLoading: boolean
   refetch: () => void
@@ -46,10 +46,11 @@ export function useSearchableTokenList(hideZeroBalance = true): {
     [tokensFilteredByZeroBal]
   )
 
-  const filteredTokenList = useMemo(
-    () => filterTokensBySearchText(tokensSortedByAmount, searchText),
-    [tokensFilteredByZeroBal, searchText]
-  )
+  const filteredTokenList =
+    useMemo(
+      () => filterTokensBySearchText(tokensSortedByAmount, searchText),
+      [tokensFilteredByZeroBal, searchText]
+    ) ?? []
 
   function refetch() {
     dispatch(refetchBalance())
