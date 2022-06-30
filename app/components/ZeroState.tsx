@@ -2,6 +2,7 @@ import React, { FC, ReactNode } from 'react'
 import { Image, View } from 'react-native'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from './AvaText'
 
 interface BaseProps {
@@ -17,6 +18,7 @@ const ZeroStateBase: FC<BaseProps> = ({
   message,
   additionalComponent
 }) => {
+  const { theme } = useApplicationContext()
   function getImage() {
     if (!image) {
       return null
@@ -41,7 +43,11 @@ const ZeroStateBase: FC<BaseProps> = ({
 
   function getMessage() {
     if (typeof message === 'string') {
-      return <AvaText.Body2>{message}</AvaText.Body2>
+      return (
+        <AvaText.Body2 textStyle={{ color: theme.colorText1 }}>
+          {message}
+        </AvaText.Body2>
+      )
     }
     return <View>{message}</View>
   }
@@ -65,7 +71,7 @@ const ZeroStateBase: FC<BaseProps> = ({
       {getMessage()}
       {additionalComponent && (
         <>
-          <Space y={24} />
+          <Space y={48} />
           {additionalComponent}
         </>
       )}
@@ -92,11 +98,42 @@ function ZeroStateSendError({
   )
 }
 
-function ZeroStatePortfolio() {
-  const title = 'Your wallet is empty'
-  const message = 'Add tokens using the receive button above'
+function ZeroStateNetworkTokens({
+  showReceiveBtn = false,
+  goToReceive,
+  goToAddAssets
+}: {
+  showReceiveBtn: boolean
+  goToReceive: () => void
+  goToAddAssets: () => void
+}) {
+  const title = 'No assets'
 
-  return <ZeroStateBase title={title} message={message} />
+  const renderButton = (label: string, onPress: () => void) => (
+    <AvaButton.PrimaryMedium
+      style={{ width: '100%' }}
+      textStyle={{ fontSize: 16 }}
+      onPress={onPress}>
+      {label}
+    </AvaButton.PrimaryMedium>
+  )
+  if (showReceiveBtn) {
+    return (
+      <ZeroStateBase
+        title={title}
+        message="Receive assets by clicking the button below."
+        additionalComponent={renderButton('Receive', goToReceive)}
+      />
+    )
+  }
+
+  return (
+    <ZeroStateBase
+      title={title}
+      message="Add assets by clicking the button below."
+      additionalComponent={renderButton('Add Assets', goToAddAssets)}
+    />
+  )
 }
 
 function ZeroStateCollectibles() {
@@ -161,7 +198,7 @@ function ZeroStateComingSoon() {
 }
 
 const ZeroState = {
-  Portfolio: ZeroStatePortfolio,
+  NetworkTokens: ZeroStateNetworkTokens,
   Collectibles: ZeroStateCollectibles,
   NoResultsTextual: ZeroStateNoResults,
   NoRecentAccounts: ZeroStateNoRecentAccounts,
