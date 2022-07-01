@@ -85,10 +85,22 @@ export const selectFavoriteNetworks = createSelector(
   }
 )
 
+export const selectInactiveNetworks = createSelector(
+  [selectActiveChainId, selectFavoriteNetworks],
+  (activeChainId, favoriteNetworks) => {
+    return favoriteNetworks.filter(network => network.chainId !== activeChainId)
+  }
+)
+
 // get the list of contract tokens for the active network
 export const selectNetworkContractTokens = (state: RootState) => {
   const network = selectActiveNetwork(state)
   return network.tokens ?? []
+}
+
+export const selectIsTestnet = (chainId: number) => (state: RootState) => {
+  const network = state.network.networks[chainId]
+  return network.isTestnet
 }
 
 // actions

@@ -1,11 +1,5 @@
 import React, { FC, useState } from 'react'
-import {
-  ActivityIndicator,
-  Alert,
-  Pressable,
-  StyleSheet,
-  View
-} from 'react-native'
+import { Alert, Pressable, StyleSheet, View } from 'react-native'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
@@ -39,6 +33,7 @@ import { useActiveNetwork } from 'hooks/useActiveNetwork'
 import { bnToBig, numberToBN, resolve } from '@avalabs/utils-sdk'
 import Big from 'big.js'
 import ScrollViewList from 'components/ScrollViewList'
+import { ActivityIndicator } from 'components/ActivityIndicator'
 
 const formatBalance = (balance: Big | undefined) => {
   return balance && formatTokenAmount(balance, 6)
@@ -459,7 +454,7 @@ const Bridge: FC = () => {
         }}
         disabled={transferDisabled}>
         <Row>
-          {isPending && <ActivityIndicator color={theme.background} />}
+          {isPending && <ActivityIndicator />}
           <AvaText.ButtonLarge
             textStyle={{ color: theme.background, marginStart: 4 }}>
             Transfer

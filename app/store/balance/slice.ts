@@ -1,8 +1,9 @@
 import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store'
 import { selectActiveAccount } from 'store/account'
-import { selectActiveNetwork } from 'store/network'
+import { selectActiveNetwork, selectIsTestnet } from 'store/network'
 import AccountsService from 'services/account/AccountsService'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import {
   Balance,
   Balances,
@@ -97,10 +98,35 @@ export const selectTokenById = (tokenId: string) => (state: RootState) => {
   return undefined
 }
 
-export const selectBalanceTotalInCurrency =
+export const selectBalanceTotalInCurrencyForAccount =
   (accountIndex: number) => (state: RootState) => {
+    const isDeveloperMode = selectIsDeveloperMode(state)
+
     const balances = Object.values(state.balance.balances).filter(
       balance => balance.accountIndex === accountIndex
+    )
+
+    let totalInCurrency = 0
+
+    for (const balance of balances) {
+      const isTestnet = selectIsTestnet(balance.chainId)(state)
+
+      // when developer mode is on, only add testnet balances
+      // when developer mode is off, only add mainnet balances
+      if ((isDeveloperMode && isTestnet) || (!isDeveloperMode && !isTestnet)) {
+        for (const token of balance.tokens) {
+          totalInCurrency += token.balanceInCurrency ?? 0
+        }
+      }
+    }
+
+    return totalInCurrency
+  }
+
+export const selectBalanceTotalInCurrencyForNetwork =
+  (chainId: number) => (state: RootState) => {
+    const balances = Object.values(state.balance.balances).filter(
+      balance => balance.chainId === chainId
     )
 
     let totalInCurrency = 0

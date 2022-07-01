@@ -1,7 +1,8 @@
 import React from 'react'
-import { ActivityIndicator, SafeAreaView, StyleSheet, View } from 'react-native'
+import { SafeAreaView, StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
+import { ActivityIndicator } from 'components/ActivityIndicator'
 
 type LoaderProps = {
   message?: string
@@ -27,7 +28,7 @@ export default function Loader({
           transparent && { backgroundColor: context.theme.transparent }
         ]}>
         <View style={styles.container}>
-          <ActivityIndicator size="large" color={context.theme.colorPrimary1} />
+          <ActivityIndicator size="large" />
           {!!message && (
             <AvaText.LargeTitleRegular textStyle={{ alignSelf: 'center' }}>
               {message}

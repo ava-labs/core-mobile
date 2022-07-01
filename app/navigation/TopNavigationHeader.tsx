@@ -1,42 +1,105 @@
 import React, { FC } from 'react'
 import { View } from 'react-native'
 import AvaButton from 'components/AvaButton'
-import { DrawerActions, useNavigation } from '@react-navigation/native'
+import { useNavigation } from '@react-navigation/native'
 import MenuSVG from 'components/svg/MenuSVG'
 import AppNavigation from 'navigation/AppNavigation'
 import HeaderAccountSelector from 'components/HeaderAccountSelector'
 import { DrawerScreenProps } from 'navigation/types'
 import NetworkDropdown from 'screens/network/NetworkDropdown'
+import TokenAddress from 'components/TokenAddress'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { useSelector } from 'react-redux'
+import { selectActiveNetwork } from 'store/network'
+import { NetworkVMType } from '@avalabs/chains-sdk'
+import { selectActiveAccount } from 'store/account'
+import CarrotSVG from 'components/svg/CarrotSVG'
+import { Row } from 'components/Row'
+
+type Props = {
+  showAddress?: boolean
+  showBackButton?: boolean
+}
 
 type NavigationProp = DrawerScreenProps<
   typeof AppNavigation.Wallet.Tabs
 >['navigation']
 
-const TopNavigationHeader: FC = () => {
+const TopNavigationHeader: FC<Props> = ({
+  showAddress = false,
+  showBackButton = false
+}) => {
+  const { theme } = useApplicationContext()
   const navigation = useNavigation<NavigationProp>()
+  const activeAccount = useSelector(selectActiveAccount)
+  const activeNetwork = useSelector(selectActiveNetwork)
+  const address =
+    activeNetwork.vmName === NetworkVMType.BITCOIN
+      ? activeAccount?.addressBtc
+      : activeAccount?.address
 
-  return (
-    <View
-      style={{
-        flexDirection: 'row',
-        paddingLeft: 8,
-        paddingRight: 16,
-        alignItems: 'center',
-        justifyContent: 'space-between'
-      }}>
+  const renderAddress = () => {
+    if (!showAddress) return null
+
+    return (
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: 10,
+          width: 150,
+          alignSelf: 'center'
+        }}>
+        <TokenAddress address={address ?? ''} color={theme.colorText2} />
+      </View>
+    )
+  }
+
+  const renderLeftButton = () => {
+    if (showBackButton) {
+      return (
+        <AvaButton.Icon
+          onPress={navigation.goBack}
+          style={{
+            paddingLeft: -5,
+            paddingRight: 20,
+            paddingVertical: 1.5
+          }}>
+          <CarrotSVG direction="left" size={24} />
+        </AvaButton.Icon>
+      )
+    }
+
+    return (
       <AvaButton.Icon
-        onPress={() => navigation.dispatch(DrawerActions.openDrawer())}>
+        onPress={navigation.openDrawer}
+        style={{ paddingRight: 11.5 }}>
         <MenuSVG />
       </AvaButton.Icon>
-      <View style={{ zIndex: 1 }}>
-        <HeaderAccountSelector
-          onPressed={() =>
-            navigation.navigate(AppNavigation.Modal.AccountDropDown)
-          }
-        />
-      </View>
-      <NetworkDropdown />
-    </View>
+    )
+  }
+  return (
+    <>
+      <Row
+        style={{
+          paddingLeft: 8,
+          paddingRight: 16,
+          alignItems: 'center',
+          justifyContent: 'space-between'
+        }}>
+        {renderLeftButton()}
+        <View style={{ zIndex: 1 }}>
+          <HeaderAccountSelector
+            direction="down"
+            onPressed={() =>
+              navigation.navigate(AppNavigation.Modal.AccountDropDown)
+            }
+          />
+        </View>
+        <NetworkDropdown />
+      </Row>
+      {renderAddress()}
+    </>
   )
 }
 

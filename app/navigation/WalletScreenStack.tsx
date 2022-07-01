@@ -10,7 +10,6 @@ import { useSelector, useDispatch } from 'react-redux'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AccountBottomSheet from 'screens/portfolio/account/AccountBottomSheet'
 import AppNavigation from 'navigation/AppNavigation'
-import { SelectedTokenContextProvider } from 'contexts/SelectedTokenContext'
 import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin'
 import {
   TransactionERC20,
@@ -188,7 +187,7 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
   }, [])
 
   return (
-    <SelectedTokenContextProvider>
+    <>
       <WalletScreenS.Navigator
         screenOptions={{
           headerShown: false
@@ -332,7 +331,7 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
           }}
         />
       </Modal>
-    </SelectedTokenContextProvider>
+    </>
   )
 }
 

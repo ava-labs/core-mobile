@@ -8,7 +8,6 @@ import AvaText from 'components/AvaText'
 import Separator from 'components/Separator'
 import AvaButton from 'components/AvaButton'
 import { useNavigation } from '@react-navigation/native'
-import { ShowSnackBar } from 'components/Snackbar'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   selectAccounts,
@@ -63,24 +62,16 @@ function AccountDropdown({
           flex: 1,
           paddingHorizontal: 16
         }}>
-        <AvaButton.Base
-          style={{ paddingLeft: 12 }}
-          onPress={() => {
-            ShowSnackBar('Copied')
-            goBack()
+        <View
+          style={{
+            alignSelf: 'center',
+            width: 180,
+            marginTop: 2,
+            marginLeft: -18,
+            backgroundColor: theme.colorBg1
           }}>
-          <View
-            style={{
-              width: 180,
-              alignSelf: 'center',
-              backgroundColor: theme.colorBg1
-            }}>
-            <HeaderAccountSelector
-              direction={'up'}
-              onPressed={() => goBack()}
-            />
-          </View>
-        </AvaButton.Base>
+          <HeaderAccountSelector direction={'up'} onPressed={() => goBack()} />
+        </View>
 
         <Animated.View
           key="some key"
