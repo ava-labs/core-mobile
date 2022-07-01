@@ -3,12 +3,9 @@ import { Image, ScrollView, StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
 import { Space } from 'components/Space'
-import {
-  NFTItemData,
-  NFTItemExternalDataAttribute
-} from 'screens/nft/NftCollection'
 import { Row } from 'components/Row'
 import { useApplicationContext } from 'contexts/ApplicationContext'
+import { NFTItemData, NFTItemExternalDataAttribute } from 'store/nft'
 
 export type NftDetailsProps = {
   nft: NFTItemData
@@ -28,16 +25,11 @@ export default function NftDetails({
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <AvaText.Heading1>
-        {item.collection.contract_name} #{item.token_id}
+        {item.name} #{item.tokenId}
       </AvaText.Heading1>
       <Space y={24} />
       <AvaButton.Base
-        onPress={() =>
-          onPicturePressed(
-            item.external_data.image,
-            item.external_data.image_256
-          )
-        }>
+        onPress={() => onPicturePressed(item.image, item.image_256)}>
         {imgLoadFailed ? (
           <View
             style={{
@@ -53,7 +45,7 @@ export default function NftDetails({
           <Image
             onError={_ => setImgLoadFailed(true)}
             style={styles.imageStyle}
-            source={{ uri: item.external_data.image_512 }}
+            source={{ uri: item.image }}
           />
         )}
       </AvaButton.Base>
@@ -66,17 +58,17 @@ export default function NftDetails({
       <Row>
         <View style={{ flex: 1 }}>
           <AvaText.Body2>Created by</AvaText.Body2>
-          <AvaText.Body2>{item.external_data.owner}</AvaText.Body2>
+          <AvaText.Body2>{item.owner}</AvaText.Body2>
         </View>
         <View style={{ flex: 1 }}>
           <AvaText.Body2>Floor price</AvaText.Body2>
-          <AvaText.Body2>{item.token_price_wei}</AvaText.Body2>
+          <AvaText.Body2>Token price not available</AvaText.Body2>
         </View>
       </Row>
       <Space y={24} />
       <AvaText.Heading2>Properties</AvaText.Heading2>
       <Space y={16} />
-      {renderProps(item.external_data.attributes)}
+      {renderProps(item.attributes)}
     </ScrollView>
   )
 }

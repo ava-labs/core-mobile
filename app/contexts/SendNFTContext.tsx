@@ -10,12 +10,12 @@ import { SendHookError } from '@avalabs/wallet-react-components'
 import { bnToAvaxC } from '@avalabs/avalanche-wallet-sdk'
 import { BN } from 'avalanche'
 import { BehaviorSubject } from 'rxjs'
-import { NFTItemData } from 'screens/nft/NftCollection'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import tokenService from 'services/token/TokenService'
 import { selectActiveNetwork } from 'store/network'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
+import { NFTItemData } from 'store/nft'
 
 export interface SendNFTContextState {
   sendToken: NFTItemData

@@ -76,11 +76,7 @@ export default function NftReview({ onSuccess }: NftReviewScreenProps) {
         <View style={{ position: 'absolute' }}>
           <DotSVG fillColor={theme.colorBg1} size={72} />
         </View>
-        <Avatar.Custom
-          size={56}
-          name={nft.collection.contract_name}
-          logoUri={nft.external_data.image_256}
-        />
+        <Avatar.Custom size={56} name={nft.name} logoUri={nft.image} />
       </View>
       <View
         style={{
@@ -97,11 +93,11 @@ export default function NftReview({ onSuccess }: NftReviewScreenProps) {
         </AvaText.Body2>
         <Space y={4} />
         <AvaText.Heading1 textStyle={{ alignSelf: 'center' }}>
-          #{nft.token_id}
+          #{nft.tokenId}
         </AvaText.Heading1>
         <Space y={4} />
         <AvaText.Heading3 textStyle={{ alignSelf: 'center' }}>
-          {nft.collection.contract_name}
+          {nft.name}
         </AvaText.Heading3>
         <Space y={18} />
         <SendRow
