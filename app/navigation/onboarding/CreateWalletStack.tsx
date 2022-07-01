@@ -17,7 +17,7 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import WarningModal from 'components/WarningModal'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import TermsNConditionsModal from 'components/TermsNConditionsModal'
-import { onLogIn } from 'store/app'
+import { onAppUnlocked, onLogIn } from 'store/app'
 import { useDispatch } from 'react-redux'
 import { CreateWalletScreenProps } from '../types'
 
@@ -223,6 +223,7 @@ const TermsNConditionsModalScreen = () => {
       onNext={() => {
         walletSetupHook.enterWallet(createWalletContext.mnemonic)
         dispatch(onLogIn())
+        dispatch(onAppUnlocked())
       }}
       onReject={() => resetNavToRoot()}
     />

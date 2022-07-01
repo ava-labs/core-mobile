@@ -122,9 +122,11 @@ class BiometricsSDK {
   async clearWalletKey() {
     return Keychain.resetGenericPassword(
       KeystoreConfig.KEYSTORE_PASSCODE_OPTIONS
-    ).then(() =>
-      Keychain.resetGenericPassword(KeystoreConfig.KEYSTORE_BIO_OPTIONS)
     )
+      .then(() =>
+        Keychain.resetGenericPassword(KeystoreConfig.KEYSTORE_BIO_OPTIONS)
+      )
+      .then(() => AsyncStorage.removeItem(SECURE_ACCESS_SET))
   }
 
   async canUseBiometry() {
