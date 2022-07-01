@@ -20,7 +20,7 @@ import SearchBar from 'components/SearchBar'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { WalletScreenProps } from 'navigation/types'
-import { TokenWithBalance } from 'store/balance'
+import { TokenType, TokenWithBalance } from 'store/balance'
 
 type NavigationProp = WalletScreenProps<
   typeof AppNavigation.Wallet.TokenManagement
@@ -29,6 +29,11 @@ type NavigationProp = WalletScreenProps<
 function TokenManagement(): JSX.Element {
   const { filteredTokenList, searchText, setSearchText, refetch } =
     useSearchableTokenList(false)
+
+  // only show erc20 tokens here
+  const tokenList = filteredTokenList.filter(
+    token => token.type !== TokenType.NATIVE
+  )
 
   const navigation = useNavigation<NavigationProp>()
 
@@ -81,11 +86,11 @@ function TokenManagement(): JSX.Element {
       <View style={{ marginHorizontal: 16 }}>
         <SearchBar onTextChanged={handleSearch} searchText={searchText} />
       </View>
-      {!filteredTokenList ? (
+      {!tokenList ? (
         <Loader />
       ) : (
         <FlatList
-          data={filteredTokenList}
+          data={tokenList}
           renderItem={renderItem}
           onRefresh={refetch}
           ListHeaderComponent={

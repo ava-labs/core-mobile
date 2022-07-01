@@ -28,9 +28,10 @@ import { TabsScreenProps } from 'navigation/types'
 import WatchlistTab from 'screens/watchlist/WatchlistTabView'
 import BuySVG from 'components/svg/BuySVG'
 import { BridgeTransactionStatusParams } from 'navigation/types'
+import TopNavigationHeader from 'navigation/TopNavigationHeader'
 
 export type TabNavigatorParamList = {
-  [AppNavigation.Tabs.Portfolio]: undefined
+  [AppNavigation.Tabs.Portfolio]: { showBackButton?: boolean }
   [AppNavigation.Tabs.Activity]: undefined
   [AppNavigation.Tabs.Fab]: undefined
   [AppNavigation.Tabs.Watchlist]: undefined
@@ -80,25 +81,35 @@ const TabNavigator = () => {
     <Tab.Navigator
       screenOptions={() => ({
         tabBarShowLabel: false,
-        headerShown: false,
+        headerShown: true,
         tabBarAllowFontScaling: false,
         tabBarActiveTintColor: theme.colorPrimary1,
         tabBarInactiveTintColor: theme.colorText2,
         tabBarStyle: {
           backgroundColor: theme.background
-        }
+        },
+        header: () => <TopNavigationHeader />
       })}>
       <Tab.Screen
         name={AppNavigation.Tabs.Portfolio}
         component={PortfolioStackScreen}
-        options={{
+        options={({ route }) => ({
+          header: () => {
+            const showBackButton = route.params?.showBackButton
+            return (
+              <TopNavigationHeader
+                showAddress
+                showBackButton={showBackButton}
+              />
+            )
+          },
           tabBarIcon: ({ focused }) =>
             normalTabButtons(
               AppNavigation.Tabs.Portfolio,
               focused,
               <HomeSVG selected={focused} size={TAB_ICON_SIZE} />
             )
-        }}
+        })}
       />
       <Tab.Screen
         name={AppNavigation.Tabs.Activity}
@@ -176,10 +187,7 @@ const CustomTabBarFab: FC = ({ children }) => {
     <ActionButtonItem
       buttonColor={theme.alternateBackground}
       title="Buy"
-      onPress={() => {
-        console.log('pressed on buy')
-        openMoonPay()
-      }}>
+      onPress={openMoonPay}>
       <BuySVG color={theme.background} />
     </ActionButtonItem>
   )

@@ -27,11 +27,13 @@ const AvaxTextBase: FC<BaseAvaTextProps> = ({
   hideTrailingCurrency,
   children,
   ellipsizeMode,
+  numberOfLines,
   style,
   ...rest
 }) => {
   const { selectedCurrency, currencyFormatter } =
     useApplicationContext().appHook
+  const numOfLines = ellipsizeMode ? numberOfLines || 1 : undefined
 
   if (
     (typeof children === 'string' || typeof children === 'number') &&
@@ -40,7 +42,7 @@ const AvaxTextBase: FC<BaseAvaTextProps> = ({
     return animated ? (
       <Animated.Text
         {...rest}
-        numberOfLines={ellipsizeMode ? 1 : undefined}
+        numberOfLines={numOfLines}
         ellipsizeMode={ellipsizeMode}>
         {`${currencyFormatter(Number(children))} ${
           hideTrailingCurrency ? '' : selectedCurrency
@@ -50,7 +52,7 @@ const AvaxTextBase: FC<BaseAvaTextProps> = ({
       <Text
         {...rest}
         style={style as StyleProp<TextStyle>}
-        numberOfLines={ellipsizeMode ? 1 : undefined}
+        numberOfLines={numOfLines}
         ellipsizeMode={ellipsizeMode}>
         {`${currencyFormatter(Number(children))} ${
           hideTrailingCurrency ? '' : selectedCurrency
@@ -61,7 +63,7 @@ const AvaxTextBase: FC<BaseAvaTextProps> = ({
   return animated ? (
     <Animated.Text
       {...rest}
-      numberOfLines={ellipsizeMode ? 1 : undefined}
+      numberOfLines={numOfLines}
       ellipsizeMode={ellipsizeMode}>
       {children}
     </Animated.Text>
@@ -69,7 +71,7 @@ const AvaxTextBase: FC<BaseAvaTextProps> = ({
     <Text
       {...rest}
       style={style as StyleProp<TextStyle>}
-      numberOfLines={ellipsizeMode ? 1 : undefined}
+      numberOfLines={numOfLines}
       ellipsizeMode={ellipsizeMode}>
       {children}
     </Text>
@@ -307,7 +309,6 @@ const TextButtonSmall: FC<AvaTextProps> = ({
   return (
     <AvaxTextBase
       ellipsizeMode={ellipsizeMode}
-      numberOfLines={ellipsizeMode ? 1 : undefined}
       style={[
         styles.textButtonSmall,
         { flexShrink: ellipsizeMode ? 1 : 0, color: color ?? theme.colorText2 },

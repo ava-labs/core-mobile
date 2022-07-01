@@ -1,10 +1,12 @@
 import React from 'react'
 import AppNavigation from 'navigation/AppNavigation'
-import PortfolioView from 'screens/portfolio/PortfolioView'
+import Portfolio from 'screens/portfolio/home/Portfolio'
+import NetworkTokens from 'screens/portfolio/network/NetworkTokens'
 import { createStackNavigator } from '@react-navigation/stack'
 
 export type PortfolioStackParamList = {
   [AppNavigation.Portfolio.Portfolio]: undefined
+  [AppNavigation.Portfolio.NetworkTokens]: undefined
 }
 
 const PortfolioStack = createStackNavigator<PortfolioStackParamList>()
@@ -17,7 +19,11 @@ function PortfolioScreenStack() {
       }}>
       <PortfolioStack.Screen
         name={AppNavigation.Portfolio.Portfolio}
-        component={PortfolioView}
+        component={Portfolio}
+      />
+      <PortfolioStack.Screen
+        name={AppNavigation.Portfolio.NetworkTokens}
+        component={NetworkTokens}
       />
     </PortfolioStack.Navigator>
   )

@@ -6,18 +6,11 @@
  */
 
 import React, { useState } from 'react'
-import {
-  KeyboardAvoidingView,
-  LogBox,
-  Platform,
-  SafeAreaView
-} from 'react-native'
+import { KeyboardAvoidingView, Platform, SafeAreaView } from 'react-native'
 import RootScreenStack from 'navigation/RootScreenStack'
 import { NavigationContainer } from '@react-navigation/native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import useDevDebugging from 'utils/debugging/DevDebugging'
-
-LogBox.ignoreAllLogs()
 
 export default function App() {
   const { configure } = useDevDebugging()

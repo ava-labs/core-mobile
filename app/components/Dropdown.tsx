@@ -215,7 +215,7 @@ function DropDown<ItemT>({
         )}
         {!disabled && (
           <>
-            <Space x={4} />
+            <Space x={8} />
             <CarrotSVG
               direction={isFilterOpen ? 'up' : 'down'}
               color={theme.colorText1}

@@ -38,7 +38,7 @@ function SwapScreenStack() {
           headerShown: true,
           headerBackTitleVisible: false,
           headerTitleAlign: 'center',
-          headerTitle: () => <HeaderAccountSelector />
+          headerTitle: () => <HeaderAccountSelector direction="down" />
         }}>
         <SwapStack.Screen name={AppNavigation.Swap.Swap} component={SwapView} />
         <SwapStack.Screen

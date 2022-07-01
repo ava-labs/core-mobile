@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet'
 import { InteractionManager } from 'react-native'
-import TabViewBackground from 'screens/portfolio/components/TabViewBackground'
+import TabViewBackground from 'components/TabViewBackground'
 import AvaxSheetHandle from 'components/AvaxSheetHandle'
 import EditFees from 'components/EditFees'
 

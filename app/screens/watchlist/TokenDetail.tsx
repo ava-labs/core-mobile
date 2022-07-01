@@ -1,6 +1,5 @@
 import React, { useEffect, useLayoutEffect, useState } from 'react'
 import {
-  ActivityIndicator,
   Dimensions,
   Pressable,
   ScrollView,
@@ -37,6 +36,7 @@ import AppNavigation from 'navigation/AppNavigation'
 import { formatLargeNumber } from 'utils/Utils'
 import { TokenSymbol } from 'store/network'
 import { TokenType } from 'store/balance'
+import { ActivityIndicator } from 'components/ActivityIndicator'
 
 const WINDOW_WIDTH = Dimensions.get('window').width
 

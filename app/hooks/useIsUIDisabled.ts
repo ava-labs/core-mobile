@@ -6,19 +6,41 @@ export enum UI {
   Collectibles = 'Collectibles',
   Swap = 'Swap',
   Buy = 'Buy',
-  ManageTokens = 'ManageTokens'
+  ManageTokens = 'ManageTokens',
+  Bridge = 'Bridge'
 }
 
-const btcDisabledUIs = [UI.Collectibles, UI.Swap, UI.Buy, UI.ManageTokens]
+// The list of features we want to enable on certain networks (whitelist)
+const enabledUIs: Partial<Record<UI, number[]>> = {
+  [UI.Collectibles]: [
+    ChainId.AVALANCHE_MAINNET_ID,
+    ChainId.AVALANCHE_TESTNET_ID
+  ],
+  [UI.Swap]: [ChainId.AVALANCHE_MAINNET_ID],
+  [UI.Buy]: [ChainId.AVALANCHE_MAINNET_ID, ChainId.AVALANCHE_TESTNET_ID]
+}
 
-const disabledUIs: Record<number, UI[]> = {
-  [ChainId.BITCOIN]: btcDisabledUIs,
-  [ChainId.BITCOIN_TESTNET]: btcDisabledUIs,
-  [ChainId.AVALANCHE_TESTNET_ID]: [UI.Swap]
+// The list of features we want to disable on certain networks (blacklist)
+const disabledUIs: Partial<Record<UI, number[]>> = {
+  [UI.ManageTokens]: [ChainId.BITCOIN, ChainId.BITCOIN_TESTNET],
+  [UI.Bridge]: [
+    ChainId.DFK,
+    ChainId.DFK_TESTNET,
+    ChainId.SWIMMER,
+    ChainId.SWIMMER_TESTNET
+  ]
 }
 
 export const useIsUIDisabled = (ui: UI) => {
-  const activeNetwork = useSelector(selectActiveNetwork)
+  const { chainId } = useSelector(selectActiveNetwork)
 
-  return disabledUIs[activeNetwork.chainId]?.includes(ui) ?? false
+  if (enabledUIs[ui] && enabledUIs[ui]!.includes(chainId)) {
+    return false
+  }
+
+  if (disabledUIs[ui] && !disabledUIs[ui]!.includes(chainId)) {
+    return false
+  }
+
+  return true
 }

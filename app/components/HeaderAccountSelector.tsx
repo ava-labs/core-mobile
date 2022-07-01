@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaButton from 'components/AvaButton'
 import { StyleSheet, View } from 'react-native'
@@ -18,22 +18,16 @@ export default function HeaderAccountSelector({
 }) {
   const activeAccount = useSelector(selectActiveAccount)
   const theme = useApplicationContext().theme
-  const rotation = useMemo(
-    () => (direction === 'up' ? '-90deg' : '90deg'),
-    [direction]
-  )
 
   return (
     <AvaButton.Base onPress={onPressed}>
       <View style={[styles.accountTitleContainer]}>
         <AvaText.Heading3
           ellipsizeMode={'middle'}
-          textStyle={{ marginRight: 16 }}>
+          textStyle={{ marginRight: 8 }}>
           {activeAccount?.title}
         </AvaText.Heading3>
-        <View style={{ transform: [{ rotate: rotation }] }}>
-          <CarrotSVG color={theme.colorText1} />
-        </View>
+        <CarrotSVG color={theme.colorText1} direction={direction} />
       </View>
     </AvaButton.Base>
   )

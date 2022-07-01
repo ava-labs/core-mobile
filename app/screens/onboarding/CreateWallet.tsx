@@ -1,15 +1,11 @@
 import React, { useEffect, useState } from 'react'
-import {
-  ActivityIndicator,
-  InteractionManager,
-  StyleSheet,
-  View
-} from 'react-native'
+import { InteractionManager, StyleSheet, View } from 'react-native'
 import AvaButton from 'components/AvaButton'
 import WalletSDK from 'utils/WalletSDK'
 import MnemonicScreen from 'components/MnemonicScreen'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
+import { ActivityIndicator } from 'components/ActivityIndicator'
 
 type Props = {
   onSavedMyPhrase?: (mnemonic: string) => void

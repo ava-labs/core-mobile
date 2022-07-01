@@ -1,15 +1,16 @@
 import React, { FC } from 'react'
-import { ActivityIndicator, View } from 'react-native'
+import { View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaListItem from 'components/AvaListItem'
 import AvaText from 'components/AvaText'
 import Avatar from 'components/Avatar'
 import { Opacity85 } from 'resources/Constants'
+import { ActivityIndicator } from 'components/ActivityIndicator'
 
 interface Props {
   tokenName: string
   tokenPrice: string
-  tokenPriceInCurrency?: string
+  tokenPriceInCurrency?: number
   image?: string
   symbol?: string
   onPress?: () => void
@@ -19,13 +20,16 @@ interface Props {
 const PortfolioListItem: FC<Props> = ({
   tokenName,
   tokenPrice,
-  tokenPriceInCurrency,
+  tokenPriceInCurrency = 0,
   image,
   symbol,
   onPress,
   showLoading
 }) => {
-  const theme = useApplicationContext().theme
+  const {
+    theme,
+    appHook: { currencyFormatter }
+  } = useApplicationContext()
   const title = tokenName
 
   const subTitle = (
@@ -59,10 +63,10 @@ const PortfolioListItem: FC<Props> = ({
         rightComponentVerticalAlignment={'center'}
         rightComponent={
           showLoading ? (
-            <ActivityIndicator size="small" color={theme.colorPrimary1} />
+            <ActivityIndicator size="small" />
           ) : (
-            <AvaText.Heading3 currency ellipsizeMode={'tail'}>
-              {tokenPriceInCurrency}
+            <AvaText.Heading3 ellipsizeMode={'tail'}>
+              {currencyFormatter(tokenPriceInCurrency)}
             </AvaText.Heading3>
           )
         }

@@ -6,7 +6,7 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import { View } from 'react-native'
 import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
-import TabViewBackground from 'screens/portfolio/components/TabViewBackground'
+import TabViewBackground from 'components/TabViewBackground'
 
 const LogoutScreen = ({
   onConfirm,

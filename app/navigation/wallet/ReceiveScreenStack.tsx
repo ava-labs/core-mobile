@@ -1,17 +1,12 @@
 import React from 'react'
-import { View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import {
   createStackNavigator,
   TransitionPresets
 } from '@react-navigation/stack'
-import { HeaderBackButton } from '@react-navigation/elements'
-import { useNavigation } from '@react-navigation/native'
-import HeaderAccountSelector from 'components/HeaderAccountSelector'
 import AppNavigation from 'navigation/AppNavigation'
-import { ReceiveTokensScreenProps } from 'navigation/types'
 import ReceiveToken from 'screens/receive/ReceiveToken'
-import NetworkDropdown from 'screens/network/NetworkDropdown'
+import TopNavigationHeader from 'navigation/TopNavigationHeader'
 
 export type ReceiveStackParamList = {
   [AppNavigation.ReceiveTokens.ReceiveCChain]: undefined
@@ -38,7 +33,7 @@ const ReceiveScreenStack = () => {
       <ReceiveStack.Screen
         name={AppNavigation.ReceiveTokens.ReceiveCChain}
         options={{
-          header: () => <HeaderAccountSelectorComp />
+          header: () => <TopNavigationHeader showBackButton />
         }}
         component={ReceiveTokenScreen}
       />
@@ -46,34 +41,6 @@ const ReceiveScreenStack = () => {
   )
 
   return receiveNavigator
-}
-
-type HeaderAccountSelectorNavigationProp = ReceiveTokensScreenProps<
-  typeof AppNavigation.ReceiveTokens.ReceiveCChain
->['navigation']
-
-const HeaderAccountSelectorComp = () => {
-  const { navigate, goBack } =
-    useNavigation<HeaderAccountSelectorNavigationProp>()
-
-  return (
-    <View
-      style={{
-        flexDirection: 'row',
-        paddingLeft: 8,
-        paddingRight: 16,
-        alignItems: 'center',
-        justifyContent: 'space-between'
-      }}>
-      <HeaderBackButton onPress={goBack} />
-      <View style={{ zIndex: 1 }}>
-        <HeaderAccountSelector
-          onPressed={() => navigate(AppNavigation.Modal.AccountDropDown)}
-        />
-      </View>
-      <NetworkDropdown />
-    </View>
-  )
 }
 
 const ReceiveTokenScreen = () => <ReceiveToken embedded={false} />
