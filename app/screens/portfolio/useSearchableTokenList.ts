@@ -46,11 +46,10 @@ export function useSearchableTokenList(hideZeroBalance = true): {
     [tokensFilteredByZeroBal]
   )
 
-  const filteredTokenList =
-    useMemo(
-      () => filterTokensBySearchText(tokensSortedByAmount, searchText),
-      [tokensFilteredByZeroBal, searchText]
-    ) ?? []
+  const filteredTokenList = useMemo(
+    () => filterTokensBySearchText(tokensSortedByAmount, searchText),
+    [tokensFilteredByZeroBal, searchText]
+  )
 
   function refetch() {
     dispatch(refetchBalance())

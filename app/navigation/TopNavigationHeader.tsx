@@ -14,6 +14,7 @@ import { selectActiveNetwork } from 'store/network'
 import { NetworkVMType } from '@avalabs/chains-sdk'
 import { selectActiveAccount } from 'store/account'
 import CarrotSVG from 'components/svg/CarrotSVG'
+import { Row } from 'components/Row'
 
 type Props = {
   showAddress?: boolean
@@ -79,9 +80,8 @@ const TopNavigationHeader: FC<Props> = ({
   }
   return (
     <>
-      <View
+      <Row
         style={{
-          flexDirection: 'row',
           paddingLeft: 8,
           paddingRight: 16,
           alignItems: 'center',
@@ -97,7 +97,7 @@ const TopNavigationHeader: FC<Props> = ({
           />
         </View>
         <NetworkDropdown />
-      </View>
+      </Row>
       {renderAddress()}
     </>
   )
