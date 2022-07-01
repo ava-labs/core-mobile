@@ -1,15 +1,22 @@
 import { AppStartListening } from 'store/middleware/listener'
 import { fetchNfts } from 'store/nft/slice'
 import nftService from 'services/nft/NftService'
+import Logger from 'utils/Logger'
+import { selectSelectedCurrency } from 'store/settings/currency'
 
 export const addNftListeners = (startListening: AppStartListening) => {
   startListening({
     actionCreator: fetchNfts,
-    effect: async action => {
+    effect: async (action, listenerApi) => {
+      const state = listenerApi.getState()
+      const selectedCurrency = selectSelectedCurrency(state)
       const { chainId, address } = action.payload
-      const response = await nftService.fetchNfts(chainId, address)
-      console.log('fetching done', !!response.erc721TokenBalances)
-      nftService.processNfts(response.erc721TokenBalances, address)
+      const provider = await nftService.getProvider(chainId)
+      if (!provider) {
+        Logger.error('no available providers')
+        return
+      }
+      await provider.fetchNfts(chainId, address, selectedCurrency)
     }
   })
 }

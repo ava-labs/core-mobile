@@ -1,5 +1,5 @@
-import { NFTItemData } from 'screens/nft/NftCollection'
+import { Erc721TokenBalanceDto } from '@avalabs/glacier-sdk'
 
-export function getNftUID(nft: NFTItemData): string {
-  return nft.collection.contract_address + nft.token_id
+export function getNftUID(nft: Erc721TokenBalanceDto): string {
+  return nft.contractAddress + nft.tokenId
 }
