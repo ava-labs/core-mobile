@@ -24,7 +24,7 @@ const TermsNConditionsModal = ({ onNext, onReject }: Props) => {
   const [ppChecked, setPpChecked] = useState(false)
   const nextBtnEnabled = touChecked && ppChecked
 
-  useBeforeRemoveListener(() => onReject(), [RemoveEvents.GO_BACK], true)
+  useBeforeRemoveListener(onReject, [RemoveEvents.GO_BACK], true)
 
   // After setting pin and/or biometry we store that data immediately.
   // Because of that, user can kill app when shown this screen and on next start
