@@ -51,6 +51,7 @@ export interface SwapContextState {
   swapTo: SwapEntry
   minDestAmount: string
   swapFromTo: () => void
+  swapSide: SwapSide
   trxDetails: TrxDetails
   refresh: () => void
   doSwap: () => Promise<{
@@ -107,7 +108,8 @@ export const SwapContextProvider = ({ children }: { children: any }) => {
         srcToken: srcToken,
         destToken: destToken,
         amount: amount,
-        swapSide
+        swapSide,
+        account: activeAccount!
       })
     )
       .pipe(
@@ -246,6 +248,7 @@ export const SwapContextProvider = ({ children }: { children: any }) => {
       gasPrice: gasPriceNanoAvax,
       setGasPriceNanoAvax
     },
+    swapSide,
     refresh,
     doSwap,
     error

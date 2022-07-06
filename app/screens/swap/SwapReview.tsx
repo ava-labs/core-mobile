@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Animated, ScrollView, StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
@@ -13,6 +13,11 @@ import { Row } from 'components/Row'
 import InfoSVG from 'components/svg/InfoSVG'
 import { interval, tap } from 'rxjs'
 import { Popable } from 'react-native-popable'
+import {
+  RemoveEvents,
+  useBeforeRemoveListener
+} from 'hooks/useBeforeRemoveListener'
+import { usePosthogContext } from 'contexts/PosthogContext'
 
 const SECOND = 1000
 
@@ -26,6 +31,8 @@ const SwapReview = ({ onCancel, onConfirm }: Props) => {
   const theme = useApplicationContext().theme
   const [secondsLeft, setSecondsLeft] = useState('0s')
   const [colorAnim] = useState(new Animated.Value(1))
+  const { capture } = usePosthogContext()
+  const [hasConfirmed, setHasConfirmed] = useState(false)
 
   const animatedColor = useMemo(() => {
     return colorAnim.interpolate({
@@ -33,6 +40,23 @@ const SwapReview = ({ onCancel, onConfirm }: Props) => {
       outputRange: [theme.white, theme.colorPrimary1]
     })
   }, [colorAnim])
+
+  useEffect(() => {
+    //this is so that useBeforeRemoveListener has a chance to update callback
+    if (hasConfirmed) {
+      capture('SwapConfirmed')
+      onConfirm()
+    }
+  }, [capture, hasConfirmed, onConfirm])
+
+  useBeforeRemoveListener(
+    useCallback(() => {
+      if (!hasConfirmed) {
+        capture('SwapCancelled')
+      }
+    }, [capture, hasConfirmed]),
+    [RemoveEvents.GO_BACK, RemoveEvents.POP]
+  )
 
   useEffect(() => {
     Animated.timing(colorAnim, {
@@ -60,6 +84,7 @@ const SwapReview = ({ onCancel, onConfirm }: Props) => {
           if (value && value % RESET_INTERVAL === 0) {
             console.log('reset')
             refresh()
+            capture('SwapReviewTimerRestarted')
           }
         })
       )
@@ -140,7 +165,7 @@ const SwapReview = ({ onCancel, onConfirm }: Props) => {
           </AvaButton.SecondaryLarge>
         </View>
         <View style={{ flex: 1, marginRight: 16 }}>
-          <AvaButton.PrimaryLarge onPress={onConfirm}>
+          <AvaButton.PrimaryLarge onPress={() => setHasConfirmed(true)}>
             Confirm
           </AvaButton.PrimaryLarge>
         </View>

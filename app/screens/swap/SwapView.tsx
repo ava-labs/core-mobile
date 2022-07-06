@@ -12,6 +12,8 @@ import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { SwapScreenProps } from 'navigation/types'
 import { TokenWithBalance } from 'store/balance'
+import { SwapSide } from 'paraswap'
+import { usePosthogContext } from 'contexts/PosthogContext'
 
 type NavigationProp = SwapScreenProps<
   typeof AppNavigation.Swap.Swap
@@ -19,13 +21,20 @@ type NavigationProp = SwapScreenProps<
 
 export default function SwapView() {
   const { theme } = useApplicationContext()
-  const { swapFromTo, swapFrom, swapTo, error } = useSwapContext()
+  const { swapFromTo, swapFrom, swapTo, error, swapSide, trxDetails } =
+    useSwapContext()
   const { navigate } = useNavigation<NavigationProp>()
+  const { capture } = usePosthogContext()
 
   const reviewButtonDisabled = !swapTo.amount || !swapFrom.amount
 
   const confirm = () => {
     navigate(AppNavigation.Swap.Review)
+    capture('SwapReviewOrder', {
+      destinationInputField: swapSide === SwapSide.SELL ? 'to' : 'from',
+      slippageTolerance: trxDetails.slippageTol,
+      customGasPrice: trxDetails.gasPrice
+    })
   }
 
   const onOpenSelectToken = (
@@ -34,6 +43,7 @@ export default function SwapView() {
     navigate(AppNavigation.Modal.SelectToken, {
       onTokenSelected: (token: TokenWithBalance) => {
         onTokenSelected(token)
+        capture('Swap_TokenSelected')
       }
     })
   }

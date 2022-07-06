@@ -15,7 +15,7 @@ import { BN } from 'avalanche'
 import { Popable } from 'react-native-popable'
 import PoppableGasAndLimit from 'components/PoppableGasAndLimit'
 
-enum FeePreset {
+export enum FeePreset {
   Normal = 'Normal',
   Fast = 'Fast',
   Instant = 'Instant',
@@ -79,7 +79,11 @@ const NetworkFeeSelector = ({
   )
 
   useEffect(() => {
-    onWeightedGas({ bn: selectedGasBn, value: selectedGasValue })
+    onWeightedGas({
+      bn: selectedGasBn,
+      value: selectedGasValue,
+      label: selectedPreset
+    })
   }, [onWeightedGas, selectedGasBn, selectedGasValue, selectedPreset])
 
   return (

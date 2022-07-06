@@ -4,7 +4,6 @@ import React, {
   Dispatch,
   useCallback,
   useContext,
-  useEffect,
   useState
 } from 'react'
 import { useNavigation } from '@react-navigation/native'
@@ -19,6 +18,10 @@ import { usePosthogContext } from 'contexts/PosthogContext'
 import TermsNConditionsModal from 'components/TermsNConditionsModal'
 import { onAppUnlocked, onLogIn } from 'store/app'
 import { useDispatch } from 'react-redux'
+import {
+  RemoveEvents,
+  useBeforeRemoveListener
+} from 'hooks/useBeforeRemoveListener'
 import { EnterWithMnemonicScreenProps } from '../types'
 
 export type EnterWithMnemonicStackParamList = {
@@ -71,28 +74,17 @@ type LoginNavigationProp = EnterWithMnemonicScreenProps<
 
 const LoginWithMnemonicScreen = () => {
   const enterWithMnemonicContext = useContext(EnterWithMnemonicContext)
-  const { navigate, goBack, addListener, removeListener } =
-    useNavigation<LoginNavigationProp>()
+  const { navigate, goBack } = useNavigation<LoginNavigationProp>()
   const { capture } = usePosthogContext()
   const { userSettingsRepo } = useApplicationContext().repo
 
-  useEffect(captureBackEventFx, [
-    addListener,
-    capture,
-    removeListener,
-    userSettingsRepo
-  ])
-
-  function captureBackEventFx() {
-    const callback = (e: { data: { action: { type: string } } }) => {
-      if (e.data.action.type === 'GO_BACK') {
-        capture('OnboardingCancelled').catch(() => undefined)
-        userSettingsRepo.setSetting('CoreAnalytics', undefined)
-      }
-    }
-    addListener('beforeRemove', callback)
-    return () => removeListener('beforeRemove', callback)
-  }
+  useBeforeRemoveListener(
+    useCallback(() => {
+      capture('OnboardingCancelled').catch(() => undefined)
+      userSettingsRepo.setSetting('CoreAnalytics', undefined)
+    }, [capture, userSettingsRepo]),
+    [RemoveEvents.GO_BACK]
+  )
 
   const onEnterWallet = useCallback(m => {
     BiometricsSDK.clearWalletKey().then(() => {

@@ -93,13 +93,16 @@ type HideTransactionNavigationProp = BridgeScreenProps<
 
 const HideTransactionWarningModal = () => {
   const navigation = useNavigation<HideTransactionNavigationProp>()
+  const { capture } = usePosthogContext()
 
   const onHide = () => {
     navigation.getParent()?.goBack()
+    capture('BridgeTransactionHide')
   }
 
   const onBack = () => {
     navigation.goBack()
+    capture('BridgeTransactionHideCancel')
   }
 
   return (

@@ -10,8 +10,14 @@ import { useSelector } from 'react-redux'
 import { Account, selectAccounts } from 'store/account'
 import { selectContacts, selectRecentContacts } from 'store/addressBook'
 
+export type AddressBookSource = 'recents' | 'addressBook' | 'accounts'
+
 export type AddressBookListsProps = {
-  onContactSelected: (item: Contact | Account, type: AddrBookItemType) => void
+  onContactSelected: (
+    item: Contact | Account,
+    type: AddrBookItemType,
+    source: AddressBookSource
+  ) => void
   navigateToAddressBook: () => void
   onlyBtc?: boolean
 }
@@ -81,7 +87,9 @@ export default function AddressBookLists({
         <FlatList
           data={recentAddresses}
           renderItem={info =>
-            renderItem(info.item, (item, type) => onContactSelected(item, type))
+            renderItem(info.item, (item, type) =>
+              onContactSelected(item, type, 'recents')
+            )
           }
           keyExtractor={item => item.item.title + item.item.address}
           contentContainerStyle={{ paddingHorizontal: 16 }}
@@ -97,7 +105,7 @@ export default function AddressBookLists({
           data={addressBookContacts}
           renderItem={info =>
             renderItem({ item: info.item, type: 'contact' }, (item, type) =>
-              onContactSelected(item, type)
+              onContactSelected(item, type, 'addressBook')
             )
           }
           keyExtractor={item => item.id}
@@ -116,7 +124,7 @@ export default function AddressBookLists({
           data={[...Object.values(accounts)]}
           renderItem={info =>
             renderItem({ item: info.item, type: 'account' }, (item, type) =>
-              onContactSelected(item, type)
+              onContactSelected(item, type, 'accounts')
             )
           }
           contentContainerStyle={{ paddingHorizontal: 16 }}
