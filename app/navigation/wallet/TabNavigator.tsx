@@ -29,6 +29,7 @@ import WatchlistTab from 'screens/watchlist/WatchlistTabView'
 import BuySVG from 'components/svg/BuySVG'
 import { BridgeTransactionStatusParams } from 'navigation/types'
 import TopNavigationHeader from 'navigation/TopNavigationHeader'
+import { usePosthogContext } from 'contexts/PosthogContext'
 
 export type TabNavigatorParamList = {
   [AppNavigation.Tabs.Portfolio]: { showBackButton?: boolean }
@@ -47,6 +48,7 @@ const DummyBridge = () => (
 
 const TabNavigator = () => {
   const theme = useApplicationContext().theme
+  const { capture } = usePosthogContext()
 
   /**
    * extracts creation of "normal" tab items
@@ -122,6 +124,11 @@ const TabNavigator = () => {
               <HistorySVG selected={focused} size={TAB_ICON_SIZE} />
             )
         }}
+        listeners={() => ({
+          tabPress: () => {
+            capture('PortfolioActivityClicked')
+          }
+        })}
       />
       <Tab.Screen
         name={AppNavigation.Tabs.Fab}

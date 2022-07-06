@@ -2,8 +2,8 @@ import AppNavigation from 'navigation/AppNavigation'
 import React, {
   createContext,
   Dispatch,
+  useCallback,
   useContext,
-  useEffect,
   useState
 } from 'react'
 import CreateWallet from 'screens/onboarding/CreateWallet'
@@ -19,6 +19,10 @@ import { usePosthogContext } from 'contexts/PosthogContext'
 import TermsNConditionsModal from 'components/TermsNConditionsModal'
 import { onAppUnlocked, onLogIn } from 'store/app'
 import { useDispatch } from 'react-redux'
+import {
+  RemoveEvents,
+  useBeforeRemoveListener
+} from 'hooks/useBeforeRemoveListener'
 import { CreateWalletScreenProps } from '../types'
 
 export type CreateWalletStackParamList = {
@@ -83,28 +87,17 @@ type CreateWalletNavigationProp = CreateWalletScreenProps<
 
 const CreateWalletScreen = () => {
   const createWalletContext = useContext(CreateWalletContext)
-  const { navigate, addListener, removeListener } =
-    useNavigation<CreateWalletNavigationProp>()
+  const { navigate } = useNavigation<CreateWalletNavigationProp>()
   const { capture } = usePosthogContext()
   const { userSettingsRepo } = useApplicationContext().repo
 
-  useEffect(captureBackEventFx, [
-    addListener,
-    capture,
-    removeListener,
-    userSettingsRepo
-  ])
-
-  function captureBackEventFx() {
-    const callback = (e: { data: { action: { type: string } } }) => {
-      if (e.data.action.type === 'GO_BACK') {
-        capture('OnboardingCancelled').catch(() => undefined)
-        userSettingsRepo.setSetting('CoreAnalytics', undefined)
-      }
-    }
-    addListener('beforeRemove', callback)
-    return () => removeListener('beforeRemove', callback)
-  }
+  useBeforeRemoveListener(
+    useCallback(() => {
+      capture('OnboardingCancelled').catch(() => undefined)
+      userSettingsRepo.setSetting('CoreAnalytics', undefined)
+    }, [capture, userSettingsRepo]),
+    [RemoveEvents.GO_BACK]
+  )
 
   const onSavedMyPhrase = (mnemonic: string) => {
     createWalletContext.setMnemonic(mnemonic)

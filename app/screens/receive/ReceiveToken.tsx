@@ -1,4 +1,4 @@
-import React, { FC, memo } from 'react'
+import React, { FC, memo, useEffect } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { useSelector } from 'react-redux'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -9,6 +9,7 @@ import TokenAddress from 'components/TokenAddress'
 import { selectActiveNetwork } from 'store/network'
 import { ChainId } from '@avalabs/chains-sdk'
 import { selectActiveAccount } from 'store/account'
+import { usePosthogContext } from 'contexts/PosthogContext'
 
 type Props = {
   embedded: boolean
@@ -16,12 +17,17 @@ type Props = {
 
 const ReceiveToken: FC<Props> = memo(props => {
   const theme = useApplicationContext().theme
+  const { capture } = usePosthogContext()
   const embedded = !!props?.embedded
   const activeNetwork = useSelector(selectActiveNetwork)
   const activeAccount = useSelector(selectActiveAccount)
   const { chainId, networkToken, chainName } = activeNetwork
   const addressC = activeAccount?.address
   const btcAddress = activeAccount?.addressBtc
+
+  useEffect(() => {
+    capture('ReceivePageVisited')
+  }, [capture])
 
   const receiveAddress = () => {
     switch (chainId) {

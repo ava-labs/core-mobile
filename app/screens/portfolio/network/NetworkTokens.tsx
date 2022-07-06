@@ -10,11 +10,13 @@ import { PortfolioScreenProps } from 'navigation/types'
 import { useIsUIDisabled, UI } from 'hooks/useIsUIDisabled'
 import {
   selectBalanceTotalInCurrencyForNetwork,
+  TokenType,
   TokenWithBalance
 } from 'store/balance'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
+import { usePosthogContext } from 'contexts/PosthogContext'
 import NetworkTokensHeader from './components/NetworkTokensHeader'
 
 type NavigationProp = PortfolioScreenProps<
@@ -23,6 +25,7 @@ type NavigationProp = PortfolioScreenProps<
 
 const NetworkTokens = () => {
   const { theme } = useApplicationContext()
+  const { capture } = usePosthogContext()
   const { navigate, getParent } = useNavigation<NavigationProp>()
   const {
     isLoading,
@@ -50,6 +53,11 @@ const NetworkTokens = () => {
   const selectToken = (token: TokenWithBalance) => {
     navigate(AppNavigation.Wallet.OwnedTokenDetail, {
       tokenId: token.id
+    })
+
+    capture('TokenListTokenSelected', {
+      selectedToken:
+        token.type === TokenType.ERC20 ? token.address : token.symbol
     })
   }
 

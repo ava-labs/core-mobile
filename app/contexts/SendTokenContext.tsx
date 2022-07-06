@@ -24,6 +24,8 @@ import { fetchNetworkFee } from 'store/networkFee'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
+import { usePosthogContext } from 'contexts/PosthogContext'
+import { FeePreset } from 'components/NetworkFeeSelector'
 
 export interface SendTokenContextState {
   sendToken: TokenWithBalance | undefined
@@ -49,6 +51,7 @@ export const SendTokenContext = createContext<SendTokenContextState>({} as any)
 export const SendTokenContextProvider = ({ children }: { children: any }) => {
   const { theme } = useApplicationContext()
   const dispatch = useDispatch()
+  const { capture } = usePosthogContext()
   const activeAccount = useSelector(selectActiveAccount)
   const activeNetwork = useSelector(selectActiveNetwork)
   const selectedCurrency = useSelector(selectSelectedCurrency)
@@ -78,6 +81,9 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
     activeNetwork.networkToken.decimals
   )
   const sendFeeInCurrency = Number.parseFloat(sendFeeNative) * nativeTokenPrice
+  const [selectedFeePreset, setSelectedFeePreset] = useState<FeePreset>(
+    FeePreset.Normal
+  )
   const [customGasPrice, setCustomGasPrice] = useState(new BN(0))
   const customGasPriceBig = useMemo(
     () => bnToEthersBigNumber(customGasPrice),
@@ -124,12 +130,13 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
   ])
 
   function onSendNow() {
-    console.log('onsend now')
     if (!activeAccount) {
       setSendStatus('Fail')
       setSendStatusMsg('No active account')
       return
     }
+
+    capture('SendApproved', { selectedGasFee: selectedFeePreset.toUpperCase() })
     setTransactionId(undefined)
     setSendStatus('Sending')
 
@@ -233,7 +240,8 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
       customGasPrice,
       setCustomGasPrice,
       gasLimit,
-      setGasLimit
+      setGasLimit,
+      setSelectedFeePreset
     },
     tokenLogo,
     canSubmit: canSubmit ?? false,
@@ -271,4 +279,5 @@ export interface Fees {
   setCustomGasPrice: Dispatch<BN>
   gasLimit: number | undefined
   setGasLimit: Dispatch<number>
+  setSelectedFeePreset: Dispatch<FeePreset>
 }

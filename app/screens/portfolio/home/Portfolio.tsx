@@ -17,6 +17,7 @@ import { selectActiveNetwork, selectInactiveNetworks } from 'store/network'
 import { selectActiveAccount } from 'store/account'
 import { Network } from '@avalabs/chains-sdk'
 import { Space } from 'components/Space'
+import { usePosthogContext } from 'contexts/PosthogContext'
 import InactiveNetworkCard from './components/Cards/InactiveNetworkCard'
 import { PortfolioTokensLoader } from './components/Loaders/PortfolioTokensLoader'
 import PortfolioHeader from './components/PortfolioHeader'
@@ -28,11 +29,24 @@ type PortfolioNavigationProp = PortfolioScreenProps<
 
 const Portfolio = () => {
   const collectiblesDisabled = useIsUIDisabled(UI.Collectibles)
+  const { capture } = usePosthogContext()
+
+  function capturePosthogEvents(tabIndex: number) {
+    switch (tabIndex) {
+      case 0:
+        capture('PortfolioAssetsClicked')
+        break
+      case 1:
+        capture('PortfolioCollectiblesClicked')
+        break
+    }
+  }
 
   return (
     <>
       <PortfolioHeader />
       <TabViewAva
+        onTabIndexChange={tabIndex => capturePosthogEvents(tabIndex)}
         renderCustomLabel={renderCustomLabel}
         shouldDisableTouch={collectiblesDisabled}>
         <TabViewAva.Item title={'Tokens'}>

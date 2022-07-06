@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 export interface GasPrice {
   bn: BN
   value: string
+  label?: string
 }
 
 const SECONDS_30 = 1000 * 10

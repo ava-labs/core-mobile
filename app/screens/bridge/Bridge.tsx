@@ -46,6 +46,7 @@ type NavigationProp = BridgeScreenProps<
 const Bridge: FC = () => {
   const navigation = useNavigation<NavigationProp>()
   const theme = useApplicationContext().theme
+  const { capture } = usePosthogContext()
 
   const {
     sourceBalance,
@@ -212,6 +213,11 @@ const Bridge: FC = () => {
       return
     }
 
+    capture('BridgeTransferStarted', {
+      sourceBlockchain: currentBlockchain,
+      targetBlockchain
+    })
+
     try {
       setIsPending(true)
       const [hash, error] = await resolve(transfer())
@@ -230,13 +236,15 @@ const Bridge: FC = () => {
         txTimestamp: Date.now().toString()
       })
     } catch (e: any) {
-      Alert.alert(
-        'Error Bridging',
+      const errorMessage =
         'reason' in e
           ? e?.reason
           : e?.message ??
-              'An unknown error has occurred. Bridging was halted. Please try again later'
-      )
+            'An unknown error has occurred. Bridging was halted. Please try again later'
+      Alert.alert('Error Bridging', errorMessage)
+      capture('BridgeTokenSelectError', {
+        errorMessage
+      })
       return
     } finally {
       setIsPending(false)
