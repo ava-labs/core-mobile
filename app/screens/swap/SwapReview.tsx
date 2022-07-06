@@ -1,5 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { Animated, ScrollView, StyleSheet, View } from 'react-native'
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import {
+  ActivityIndicator,
+  Animated,
+  ScrollView,
+  StyleSheet,
+  View
+} from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
@@ -13,6 +19,10 @@ import { Row } from 'components/Row'
 import InfoSVG from 'components/svg/InfoSVG'
 import { interval, tap } from 'rxjs'
 import { Popable } from 'react-native-popable'
+import { bnToLocaleString, resolve } from '@avalabs/utils-sdk'
+import BN from 'bn.js'
+import { getTokenAddress } from 'swap/getSwapRate'
+import { ShowSnackBar } from 'components/Snackbar'
 import {
   RemoveEvents,
   useBeforeRemoveListener
@@ -27,17 +37,67 @@ type Props = {
 }
 
 const SwapReview = ({ onCancel, onConfirm }: Props) => {
-  const { swapTo, swapFrom, refresh } = useSwapContext()
+  const [swapInProgress, setSwapInProgress] = useState(false)
+  const {
+    fromToken,
+    toToken,
+    optimalRate,
+    gasLimit,
+    gasPrice,
+    slippage,
+    rate,
+    refresh,
+    swap
+  } = useSwapContext()
   const theme = useApplicationContext().theme
   const [secondsLeft, setSecondsLeft] = useState('0s')
   const [colorAnim] = useState(new Animated.Value(1))
   const { capture } = usePosthogContext()
   const [hasConfirmed, setHasConfirmed] = useState(false)
 
+  const [swapError, setSwapError] = useState('')
+
+  const onHandleSwap = async () => {
+    if (
+      fromToken &&
+      toToken &&
+      optimalRate &&
+      gasLimit &&
+      gasPrice &&
+      slippage
+    ) {
+      setSwapInProgress(true)
+      const [result, error] = await resolve(
+        swap(
+          getTokenAddress(fromToken),
+          getTokenAddress(toToken),
+          toToken?.decimals ?? 0,
+          fromToken?.decimals ?? 0,
+          optimalRate.srcAmount,
+          optimalRate,
+          optimalRate.destAmount,
+          gasLimit,
+          gasPrice,
+          slippage
+        )
+      )
+      setSwapInProgress(false)
+      if (error || (result && 'error' in result)) {
+        setSwapError(error?.toString || result?.error?.message)
+        ShowSnackBar('Swap Failed')
+        return
+      }
+
+      ShowSnackBar('Swap Successful')
+    }
+  }
+
+  //todo: fix color update anim
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const animatedColor = useMemo(() => {
     return colorAnim.interpolate({
       inputRange: [0, 1],
-      outputRange: [theme.white, theme.colorPrimary1]
+      outputRange: [theme.colorText1, theme.colorPrimary1]
     })
   }, [colorAnim])
 
@@ -70,7 +130,7 @@ const SwapReview = ({ onCancel, onConfirm }: Props) => {
         useNativeDriver: false
       }).start()
     })
-  }, [swapTo.amount, swapTo.usdValue])
+  }, [optimalRate?.destAmount, optimalRate?.destUSD])
 
   useEffect(() => {
     const RESET_INTERVAL = 60 // seconds
@@ -120,12 +180,19 @@ const SwapReview = ({ onCancel, onConfirm }: Props) => {
         </AvaText.Heading3>
         <AvaListItem.Base
           embedInCard
-          leftComponent={<Avatar.Token token={swapFrom.token!} />}
-          title={swapFrom.token?.symbol}
+          leftComponent={fromToken && <Avatar.Token token={fromToken} />}
+          title={fromToken?.symbol}
           rightComponent={
             <View style={{ alignItems: 'flex-end' }}>
-              <AvaText.Body1>{swapFrom.amount.toFixed(5)}</AvaText.Body1>
-              <AvaText.Body3 currency>{swapFrom.usdValue}</AvaText.Body3>
+              <AvaText.Body1>
+                {bnToLocaleString(
+                  new BN(optimalRate?.srcAmount || '0'),
+                  optimalRate?.srcDecimals
+                )}
+              </AvaText.Body1>
+              <AvaText.Body3 color={theme.colorText2} currency>
+                {optimalRate?.srcUSD}
+              </AvaText.Body3>
             </View>
           }
         />
@@ -135,24 +202,31 @@ const SwapReview = ({ onCancel, onConfirm }: Props) => {
         </AvaText.Heading3>
         <AvaListItem.Base
           embedInCard
-          leftComponent={<Avatar.Token token={swapTo.token!} />}
-          title={swapTo.token?.symbol}
+          leftComponent={toToken && <Avatar.Token token={toToken} />}
+          title={toToken?.symbol}
           rightComponent={
             <View style={{ alignItems: 'flex-end' }}>
-              <AvaText.Body1 animated textStyle={{ color: animatedColor }}>
-                {swapTo.amount.toFixed(5)}
+              <AvaText.Body1>
+                {bnToLocaleString(
+                  new BN(optimalRate?.destAmount || '0'),
+                  optimalRate?.destDecimals
+                )}
               </AvaText.Body1>
-              <AvaText.Body3
-                currency
-                animated
-                textStyle={{ color: animatedColor }}>
-                {swapTo.usdValue}
+              <AvaText.Body3 currency color={theme.colorText2}>
+                {optimalRate?.destUSD}
               </AvaText.Body3>
             </View>
           }
         />
         <Separator style={{ marginHorizontal: 16, marginVertical: 24 }} />
-        <SwapTransactionDetail review />
+        <SwapTransactionDetail
+          review
+          gasPrice={gasPrice}
+          gasLimit={gasLimit}
+          rate={rate}
+          slippage={slippage}
+          walletFee={optimalRate?.partnerFee}
+        />
       </ScrollView>
       <View
         style={{
@@ -171,6 +245,19 @@ const SwapReview = ({ onCancel, onConfirm }: Props) => {
         </View>
       </View>
       <Space y={8} />
+      {swapInProgress && (
+        <View
+          style={[
+            StyleSheet.absoluteFill,
+            {
+              backgroundColor: '#00000080',
+              justifyContent: 'center',
+              alignItems: 'center'
+            }
+          ]}>
+          <ActivityIndicator size={'large'} />
+        </View>
+      )}
     </View>
   )
 }
