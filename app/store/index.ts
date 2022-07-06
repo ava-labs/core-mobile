@@ -25,6 +25,7 @@ import { posthogReducer as posthog } from './posthog'
 import networkFee from './networkFee'
 import { addressBookReducer as addressBook } from './addressBook'
 import settings from './settings'
+import swap from './swap'
 
 const persistActions = [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER]
 
@@ -38,7 +39,7 @@ const rootReducer = combineReducers({
   bridge,
   customToken,
   posthog,
-
+  swap,
   // user preferences
   settings,
   watchlist,

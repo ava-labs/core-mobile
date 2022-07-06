@@ -11,6 +11,9 @@ import {
   QueryStatus,
   TokenWithBalance
 } from './types'
+import BN from 'bn.js';
+
+const BN_ZERO = new BN(0)
 
 const reducerName = 'balance'
 
@@ -86,6 +89,22 @@ export const selectTokensWithBalance = (state: RootState) => {
   return state.balance.balances[key]?.tokens ?? []
 }
 
+export const selectTokensWithZeroBalance = (state: RootState) => {
+  const allTokens = selectTokensWithBalance(state)
+  return allTokens.filter(t => t.balance.eq(BN_ZERO))
+}
+
+export const selectAvaxPrice = (state: RootState) => {
+  const balances = Object.values(state.balance.balances)
+
+  for (const balance of balances) {
+    for (const token of balance.tokens) {
+      if (token.id === 'avax') return token.priceInCurrency
+    }
+  }
+  return 0
+}
+
 export const selectTokenById = (tokenId: string) => (state: RootState) => {
   const balances = Object.values(state.balance.balances)
 
@@ -94,7 +113,6 @@ export const selectTokenById = (tokenId: string) => (state: RootState) => {
       if (token.id === tokenId) return token
     }
   }
-
   return undefined
 }
 
