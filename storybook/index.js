@@ -8,9 +8,12 @@ import {
 } from '@storybook/react-native'
 import { withKnobs } from '@storybook/addon-knobs'
 import { NetworkContextProvider } from '@avalabs/wallet-react-components'
+import { Provider } from 'react-redux'
 import { ApplicationContextProvider } from '../app/contexts/ApplicationContext'
 import useDevDebugging from '../app/utils/debugging/DevDebugging'
+import { store } from '../app/store'
 import { loadStories } from './storyLoader'
+import { PosthogContextProvider } from "../app/contexts/PosthogContext";
 
 // enables knobs for all stories
 addDecorator(withKnobs)
@@ -21,9 +24,13 @@ configure(() => {
 }, module)
 
 addDecorator(getStory => (
-  <NetworkContextProvider>
-    <ApplicationContextProvider>{getStory()}</ApplicationContextProvider>
-  </NetworkContextProvider>
+  <Provider store={store}>
+    <PosthogContextProvider>
+      <NetworkContextProvider>
+        <ApplicationContextProvider>{getStory()}</ApplicationContextProvider>
+      </NetworkContextProvider>
+    </PosthogContextProvider>
+  </Provider>
 ))
 
 // Refer to https://github.com/storybookjs/react-native/tree/master/app/react-native#getstorybookui-options
