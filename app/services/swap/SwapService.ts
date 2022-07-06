@@ -81,13 +81,8 @@ class SwapService {
     return result
   }
 
-  async getParaswapSpender(): Promise<string> {
-    const response = await fetch(
-      `${this.apiUrl}/adapters/contracts?network=${ChainId.AVALANCHE_MAINNET_ID}`
-    )
-
-    const result = await response.json()
-    return result.TokenTransferProxy
+  async getParaswapSpender(): Promise<string | APIError> {
+    return this.paraSwap.getTokenTransferProxy()
   }
 
   async buildTx(

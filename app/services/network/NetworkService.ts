@@ -47,6 +47,14 @@ class NetworkService {
     return new BlockCypherProvider(isMainnet, undefined, BLOCKCYPHER_PROXY_URL)
   }
 
+  async getAvalancheProvider(isTest: boolean) {
+    const allNetworks = await this.getNetworks()
+    const avaxNetwork = isTest
+      ? allNetworks[ChainId.AVALANCHE_TESTNET_ID]
+      : allNetworks[ChainId.AVALANCHE_MAINNET_ID]
+    return this.getProviderForNetwork(avaxNetwork)
+  }
+
   getProviderForNetwork(network: Network) {
     if (network.vmName === NetworkVMType.BITCOIN) {
       return this.getBitcoinProvider(!network.isTestnet)
