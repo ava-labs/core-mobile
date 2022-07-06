@@ -18,7 +18,6 @@ import { BNInput } from 'components/BNInput'
 import FlexSpacer from 'components/FlexSpacer'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
-import Logger from 'utils/Logger'
 
 interface Props {
   selectedToken?: TokenWithBalance
@@ -56,9 +55,7 @@ const UniversalTokenSelector: FC<Props> = ({
   const { currencyFormatter } = useApplicationContext().appHook
   const [isMaxAmount, setIsMaxAmount] = useState(false)
   const navigation = useNavigation()
-  const maxAmountString = maxAmount
-    ? bnToLocaleString(maxAmount, 18)
-    : undefined
+  const maxAmountString = maxAmount ? bnToLocaleString(maxAmount, 18) : '0'
   const hasError = !!error || !!bnError
 
   const openTokenSelectorBottomSheet = () => {
@@ -73,31 +70,34 @@ const UniversalTokenSelector: FC<Props> = ({
         onAmountChange && onAmountChange(value)
         return
       }
-      setIsMaxAmount(maxAmountString === value.amount)
-
-      const wtf = currencyFormatter(
-        Number(value?.amount ?? 0) * (selectedToken?.priceInCurrency ?? 0),
-        4
-      )
-
-      Logger.info(wtf)
-
       setAmountInCurrency(
-        !value.bn.isZero() && selectedToken?.priceInCurrency ? wtf : ''
+        !value.bn.isZero() && selectedToken?.priceInCurrency
+          ? currencyFormatter(
+              Number(value?.amount ?? 0) *
+                (selectedToken?.priceInCurrency ?? 0),
+              4
+            )
+          : ''
       )
+      setIsMaxAmount(maxAmountString === value.amount)
       onAmountChange && onAmountChange(value)
     },
-    [onAmountChange, selectedToken?.priceInCurrency, maxAmountString]
+    [
+      onAmountChange,
+      selectedToken?.priceInCurrency,
+      maxAmountString,
+      inputAmount
+    ]
   )
 
   // When setting to the max, pin the input value to the max value
   useEffect(() => {
-    if (!isMaxAmount || !maxAmountString || skipHandleMaxAmount) return
+    if (!isMaxAmount || !maxAmountString || skipHandleMaxAmount) return;
     handleAmountChange({
       amount: maxAmountString,
-      bn: numberToBN(maxAmountString, 18)
-    })
-  }, [maxAmountString, handleAmountChange, isMaxAmount, skipHandleMaxAmount])
+      bn: numberToBN(maxAmountString, 18),
+    });
+  }, [maxAmountString, handleAmountChange, isMaxAmount, skipHandleMaxAmount]);
 
   return (
     <View>
@@ -109,11 +109,17 @@ const UniversalTokenSelector: FC<Props> = ({
             `Balance ${selectedToken.balanceDisplayValue} ${selectedToken.symbol}`}
         </AvaText.Body2>
       </Row>
-      <Row style={{ justifyContent: 'space-between' }}>
+      <Row
+        style={{
+          justifyContent: 'space-between',
+          backgroundColor: theme.colorBg2,
+          borderRadius: 8
+        }}>
         <AvaButton.Base
           style={{
             flexDirection: 'row',
             alignItems: 'center',
+            paddingStart: 16,
             flex: 1
           }}
           onPress={openTokenSelectorBottomSheet}>
@@ -125,10 +131,10 @@ const UniversalTokenSelector: FC<Props> = ({
                 logoUri={selectedToken.logoUri}
               />
               <Space x={8} />
-              <AvaText.Heading3>{selectedToken.symbol}</AvaText.Heading3>
+              <AvaText.Heading2>{selectedToken.symbol}</AvaText.Heading2>
             </>
           ) : (
-            <AvaText.Heading3>Select</AvaText.Heading3>
+            <AvaText.Heading2>Select</AvaText.Heading2>
           )}
           <Space x={8} />
           <CarrotSVG direction={'down'} size={12} color={theme.colorText1} />
@@ -154,7 +160,11 @@ const UniversalTokenSelector: FC<Props> = ({
               }}
               hideErrorMessage={hideErrorMessage}
               isValueLoading={isValueLoading}
-              style={{ width: 180 }}
+              style={{
+                width: 180,
+                backgroundColor: theme.colorBg3,
+                borderRadius: 8
+              }}
             />
             {!selectedToken && (
               <Pressable
@@ -174,7 +184,9 @@ const UniversalTokenSelector: FC<Props> = ({
         )}
         <FlexSpacer />
         <AvaText.Body2>
-          {selectedToken ? `${amountInCurrency} ${currency}` : '$0.00 USD'}
+          {selectedToken && amountInCurrency
+            ? `${amountInCurrency} ${currency}`
+            : '$0.00 USD'}
         </AvaText.Body2>
       </Row>
     </View>
