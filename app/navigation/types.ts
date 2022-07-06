@@ -19,6 +19,7 @@ import { AddressBookStackParamList } from './wallet/AddressBookStack'
 import { SecurityStackParamList } from './wallet/SecurityPrivacyStackScreen'
 import { BridgeStackParamList } from './wallet/BridgeScreenStack'
 import { PortfolioStackParamList } from './wallet/PortfolioScreenStack'
+import {BigNumber} from 'ethers';
 export type { RootScreenStackParamList }
 
 export type BridgeTransactionStatusParams = {
@@ -29,8 +30,8 @@ export type BridgeTransactionStatusParams = {
 
 export type EditGasLimitParams = {
   onSave: (newGasLimit: number) => void
-  gasLimit: string
-  networkFee: string
+  gasLimit: number
+  gasPrice: BigNumber
 }
 
 /** ROOT **/

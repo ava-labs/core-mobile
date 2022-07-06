@@ -4,19 +4,45 @@ import { View } from 'react-native'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
 import InputText from 'components/InputText'
-import { useSwapContext } from 'contexts/SwapContext'
 import { Popable } from 'react-native-popable'
-import { useNavigation } from '@react-navigation/native'
-import NetworkFeeSelector from 'components/NetworkFeeSelector'
-import { useGasPrice } from 'utils/GasPriceHook'
+import NetworkFeeSelector, { FeePreset } from 'components/NetworkFeeSelector'
 import { Row } from 'components/Row'
 import AppNavigation from 'navigation/AppNavigation'
 import { SwapScreenProps } from 'navigation/types'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
+import { BigNumber } from 'ethers'
+import Big from 'big.js'
+
+const isSlippageValid = (value: string) => {
+  if (
+    (parseFloat(value) >= 0 &&
+      parseFloat(value) <= 100 &&
+      value?.length <= 4) ||
+    !value
+  ) {
+    return true
+  }
+  return false
+}
 
 interface SwapTransactionDetailProps {
   review?: boolean
+  fromTokenSymbol?: string
+  toTokenSymbol?: string
+  rate: number
+  walletFee?: number
+  onGasChange?: (
+    gasLimit: number,
+    gasPrice: BigNumber,
+    feeType: FeePreset
+  ) => void
+  gasLimit: number
+  gasPrice: BigNumber
+  slippage: number
+  setSlippage?: (slippage: number) => void
+  selectedGasFee?: FeePreset
+  maxGasPrice?: string
 }
 
 export function popableContent(message: string, backgroundColor: string) {
@@ -33,22 +59,32 @@ type NavigationProp =
   | SwapScreenProps<typeof AppNavigation.Swap.Swap>['navigation']
 
 const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
-  review = false
+  review = false,
+  fromTokenSymbol,
+  toTokenSymbol,
+  rate,
+  walletFee,
+  onGasChange,
+  gasLimit,
+  gasPrice,
+  slippage,
+  setSlippage,
+  maxGasPrice,
+  selectedGasFee
 }) => {
-  const { gasPrice } = useGasPrice()
+  // const { gasPrice } = useGasPrice()
   const { theme } = useApplicationContext()
-  const { trxDetails } = useSwapContext()
+  // const { trxDetails } = useSwapContext()
+
   const activeNetwork = useSelector(selectActiveNetwork)
-  const { navigate } = useNavigation<NavigationProp>()
+  // const { navigate } = useNavigation<NavigationProp>()
   const slippageInfoMessage = popableContent(
     'Suggested slippage – your transaction will fail if the price changes unfavorably more than this percentage',
     theme.colorBg3
   )
 
   const netFeeInfoMessage = popableContent(
-    `Gas limit: ${
-      trxDetails.gasLimit
-    } \nGas price: ${trxDetails.gasPrice.toFixed(2)} nAVAX`,
+    `Gas limit: ${gasLimit} \nGas price: ${gasPrice.toString()} nAVAX`,
     theme.colorBg3
   )
 
@@ -62,8 +98,10 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
         </>
       )}
       <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-        <AvaText.Body2>Rate</AvaText.Body2>
-        <AvaText.Heading3>{trxDetails.rate}</AvaText.Heading3>
+        <AvaText.Body2 color={theme.white}>Rate</AvaText.Body2>
+        <AvaText.Heading3>
+          1 {fromTokenSymbol} ≈ {rate?.toFixed(4)} {toTokenSymbol}
+        </AvaText.Heading3>
       </Row>
       <Space y={16} />
       <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
@@ -72,35 +110,28 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
           position={'right'}
           style={{ minWidth: 200 }}
           backgroundColor={theme.colorBg3}>
-          <AvaText.Body2>Slippage tolerance ⓘ</AvaText.Body2>
+          <AvaText.Body2 color={theme.white}>
+            Slippage tolerance ⓘ
+          </AvaText.Body2>
         </Popable>
         {review ? (
-          <AvaText.Heading3>{trxDetails.slippageTol}%</AvaText.Heading3>
+          <AvaText.Heading3>{slippage}%</AvaText.Heading3>
         ) : (
           <InputText
-            onChangeText={text => trxDetails.setSlippageTol(Number(text))}
-            text={`${trxDetails.slippageTol}`}
+            onChangeText={value => {
+              const sanitizedValue = value.startsWith('.') ? '0.' : value
+              isSlippageValid(sanitizedValue) &&
+                setSlippage?.(Number(sanitizedValue))
+            }}
+            text={slippage.toString()}
             mode={'percentage'}
             keyboardType={'numeric'}
-            onInputRef={inputRef1 => {
-              inputRef1.current?.setNativeProps({
-                style: {
-                  backgroundColor: theme.colorText1,
-                  width: 66,
-                  height: 40,
-                  marginTop: -12,
-                  fontFamily: 'Inter-SemiBold',
-                  textAlign: 'center',
-                  textAlignVertical: 'center',
-                  paddingTop: 0,
-                  paddingBottom: 0,
-                  paddingLeft: 0,
-                  paddingRight: 0,
-                  color: theme.colorBg2,
-                  fontSize: 14,
-                  lineHeight: 24
-                }
-              })
+            minHeight={32}
+            paddingVertical={0}
+            {...{ maxLength: 2, fontSize: 14, lineHeight: 14 }}
+            style={{
+              backgroundColor: theme.colorBg3,
+              borderRadius: 8
             }}
           />
         )}
@@ -115,10 +146,14 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
               position={'right'}
               style={{ minWidth: 200 }}
               backgroundColor={theme.colorBg3}>
-              <AvaText.Body2>Network Fee ⓘ</AvaText.Body2>
+              <AvaText.Body2 color={theme.white}>Network Fee ⓘ</AvaText.Body2>
             </Popable>
             <AvaText.Heading3>
-              {trxDetails.networkFee + ' AVAX'}
+              {new Big(gasPrice.toString())
+                .mul(gasLimit)
+                .div(10 ** 18)
+                .toFixed(6)}{' '}
+              AVAX
             </AvaText.Heading3>
           </Row>
         </>
@@ -127,33 +162,19 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
         <>
           <Space y={16} />
           <NetworkFeeSelector
-            gasLimit={trxDetails.gasLimit}
-            network={activeNetwork}
-            networkFeeAvax={trxDetails.networkFee}
-            networkFeeInCurrency={0} //FIXME
             gasPrice={gasPrice}
-            onWeightedGas={price =>
-              trxDetails.setGasPriceNanoAvax(Number.parseFloat(price.value))
-            }
-            onSettingsPressed={() => {
-              const initGasLimit = trxDetails.gasLimit
-
-              const onCustomGasLimit = (gasLimit: number) =>
-                trxDetails.setGasLimit(gasLimit)
-
-              navigate(AppNavigation.Swap.SwapTransactionFee, {
-                gasLimit: initGasLimit.toString(),
-                networkFee: trxDetails.networkFee,
-                onSave: onCustomGasLimit
-              })
-            }}
+            limit={gasLimit}
+            maxGasPrice={maxGasPrice}
+            network={activeNetwork}
+            currentModifier={selectedGasFee}
+            onChange={onGasChange}
           />
         </>
       )}
       <Space y={16} />
       <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-        <AvaText.Body2>Avalanche wallet fee</AvaText.Body2>
-        <AvaText.Heading3>{trxDetails.avaxWalletFee}</AvaText.Heading3>
+        <AvaText.Body2>Avalanche Wallet fee</AvaText.Body2>
+        <AvaText.Heading3>{walletFee}</AvaText.Heading3>
       </Row>
     </View>
   )
