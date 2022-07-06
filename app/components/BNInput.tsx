@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Big, BN } from '@avalabs/avalanche-wallet-sdk'
-import { StyleSheet, TextInputProps, View } from 'react-native'
+import { TextInputProps, View } from 'react-native'
 import InputText from 'components/InputText'
-import Loader from 'components/Loader'
 
 Big.PE = 99
 Big.NE = -18
@@ -114,7 +113,8 @@ export function BNInput({
     }
   }, [valStr, errorMessage])
 
-  const onValueChanged = (value: string) => {
+  const onValueChanged = (rawValue: string) => {
+    const value = rawValue.startsWith('.') ? '0.' : rawValue
     /**
      * Split the input and make sure the right side never exceeds
      * the denomination length
@@ -145,17 +145,14 @@ export function BNInput({
   return (
     <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
       <InputText
+        {..._props}
         mode={'amount'}
         keyboardType="numeric"
-        onMax={setMax}
+        onMax={max && setMax}
         onChangeText={onValueChanged}
         text={valStr}
+        loading={isValueLoading}
       />
-      {isValueLoading && (
-        <View style={StyleSheet.absoluteFill}>
-          <Loader transparent />
-        </View>
-      )}
     </View>
   )
 }

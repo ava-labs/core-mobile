@@ -1,5 +1,6 @@
 import React, { RefObject, useEffect, useRef, useState } from 'react'
 import {
+  ActivityIndicator,
   Appearance,
   InteractionManager,
   StyleProp,
@@ -49,18 +50,42 @@ type Props = {
   onInputRef?: (inputRef: RefObject<TextInput>) => void
   width?: number
   style?: StyleProp<ViewStyle>
+  loading?: boolean
+  paddingVertical?: number
 }
 
-export default function InputText(props: Props | Readonly<Props>) {
+export default function InputText({
+  text,
+  helperText,
+  errorText,
+  onChangeText,
+  onInputRef,
+  currency,
+  style,
+  keyboardType,
+  editable,
+  label,
+  popOverInfoText,
+  mode,
+  onMax,
+  width,
+  minHeight,
+  placeholder,
+  loading,
+  multiline,
+  onSubmit,
+  onConfirm,
+  autoFocus,
+  paddingVertical = 12
+}: Props | Readonly<Props>) {
   const context = useApplicationContext()
   const [showInput, setShowInput] = useState(false)
   const [focused, setFocused] = useState(false)
   const [toggleShowText, setToggleShowText] = useState('Show')
-  const [mode] = useState(props.mode ?? 'default')
   const textInputRef = useRef() as RefObject<TextInput>
 
   useEffect(() => {
-    props.onInputRef?.(textInputRef)
+    onInputRef?.(textInputRef)
   }, [textInputRef])
 
   useEffect(() => {
@@ -68,18 +93,18 @@ export default function InputText(props: Props | Readonly<Props>) {
   }, [showInput])
 
   useEffect(() => {
-    if (props.autoFocus) {
+    if (autoFocus) {
       InteractionManager.runAfterInteractions(() => {
         textInputRef.current?.focus()
       })
     }
-  }, [props.autoFocus, textInputRef])
+  }, [autoFocus, textInputRef])
 
-  const onSubmit = (): void => {
-    props.onSubmit?.()
+  const submit = (): void => {
+    onSubmit?.()
   }
   const onClear = (): void => {
-    props.onChangeText?.('')
+    onTextChanged?.('')
   }
   const onToggleShowInput = (): void => {
     setShowInput(!showInput)
@@ -116,7 +141,7 @@ export default function InputText(props: Props | Readonly<Props>) {
             end: 16
           }
         ]}>
-        <AvaText.Heading3 textStyle={{ color: 'black' }}>%</AvaText.Heading3>
+        <AvaText.Heading3>%</AvaText.Heading3>
       </View>
     )
   }
@@ -155,16 +180,16 @@ export default function InputText(props: Props | Readonly<Props>) {
   const Label = () => {
     return (
       <View style={{ alignSelf: 'baseline' }}>
-        {props.popOverInfoText ? (
+        {popOverInfoText ? (
           <Popable
-            content={props.popOverInfoText}
+            content={popOverInfoText}
             position={'right'}
             style={{ minWidth: 200 }}
             backgroundColor={context.theme.colorBg3}>
-            <AvaText.Body2>{props.label ?? ''}</AvaText.Body2>
+            <AvaText.Body2>{label ?? ''}</AvaText.Body2>
           </Popable>
         ) : (
-          <AvaText.Body2>{props.label ?? ''}</AvaText.Body2>
+          <AvaText.Body2>{label ?? ''}</AvaText.Body2>
         )}
         <View style={[{ height: 8 }]} />
       </View>
@@ -175,12 +200,12 @@ export default function InputText(props: Props | Readonly<Props>) {
     return (
       <>
         <Space y={5} />
-        {!!props.helperText && typeof props.helperText === 'string' ? (
+        {!!helperText && typeof helperText === 'string' ? (
           <AvaText.Body2 textStyle={{ textAlign: 'left' }}>
-            {props.helperText}
+            {helperText}
           </AvaText.Body2>
         ) : (
-          <View>{props.helperText}</View>
+          <View>{helperText}</View>
         )}
       </>
     )
@@ -193,14 +218,14 @@ export default function InputText(props: Props | Readonly<Props>) {
         <AvaText.Body3
           textStyle={{ textAlign: 'left' }}
           color={theme.colorError}>
-          {props.errorText || ''}
+          {errorText || ''}
         </AvaText.Body3>
       </>
     )
   }
 
-  const onChangeText = (text: string): void => {
-    if (props.keyboardType === 'numeric') {
+  const onTextChanged = (text: string): void => {
+    if (keyboardType === 'numeric') {
       text = text.replace(',', '.')
       text = text.replace(/[^.\d]/g, '') //remove non-digits
       text = text.replace(/^0+/g, '0') //remove starting double 0
@@ -216,12 +241,12 @@ export default function InputText(props: Props | Readonly<Props>) {
         }
       })
     }
-    props.onChangeText?.(text)
+    onChangeText?.(text)
   }
 
   return (
-    <View style={[{ margin: 12 }, props.style]}>
-      {props.label && <Label />}
+    <View style={[{ margin: 12 }, style]}>
+      {label && <Label />}
       <View
         style={[
           {
@@ -232,33 +257,31 @@ export default function InputText(props: Props | Readonly<Props>) {
           keyboardAppearance={Appearance.getColorScheme() || 'default'}
           ref={textInputRef}
           autoCapitalize="none"
-          placeholder={props.placeholder}
+          placeholder={placeholder}
           placeholderTextColor={theme.colorText2}
           blurOnSubmit={true}
           secureTextEntry={mode === 'private' && !showInput}
-          onSubmitEditing={onSubmit}
-          returnKeyType={props.onSubmit && 'go'}
+          onSubmitEditing={submit}
+          returnKeyType={onSubmit && 'go'}
           enablesReturnKeyAutomatically={true}
-          editable={props.editable !== false}
-          keyboardType={props.keyboardType}
-          multiline={
-            props.multiline && mode === 'default' ? props.multiline : false
-          }
+          editable={editable !== false}
+          keyboardType={keyboardType}
+          multiline={multiline && mode === 'default' ? multiline : false}
           style={[
             {
-              minHeight: props.minHeight,
+              minHeight: minHeight,
               flexGrow: 0,
               color: theme.colorText1,
               fontSize: 16,
               borderWidth: 1,
-              textAlignVertical: props.multiline ? 'top' : undefined,
-              borderColor: props.errorText
+              textAlignVertical: multiline ? 'top' : undefined,
+              borderColor: errorText
                 ? theme.colorError
                 : focused
                 ? theme.colorText2
                 : theme.colorBg3,
               backgroundColor:
-                props.text.length > 0
+                text.length > 0
                   ? theme.transparent
                   : focused
                   ? theme.transparent
@@ -268,35 +291,40 @@ export default function InputText(props: Props | Readonly<Props>) {
               paddingEnd:
                 mode === 'private'
                   ? 80
-                  : mode === 'amount' && !props.onMax
+                  : mode === 'amount' && !onMax
                   ? 16
                   : mode === 'currency'
                   ? 50
                   : 46,
-              paddingTop: 12,
-              paddingBottom: 12,
+              paddingVertical: paddingVertical,
               fontFamily: 'Inter-Regular',
-              width: props.width
+              width: width
             }
           ]}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          onChangeText={onChangeText}
-          value={props.text}
+          onChangeText={onTextChanged}
+          value={text}
         />
-        {mode === 'default' && props.text.length > 0 && <ClearBtn />}
-        {mode === 'private' && props.text.length > 0 && <ShowPassBtn />}
-        {mode === 'amount' && props.onMax && <MaxBtn onPress={props.onMax} />}
+        {mode === 'default' && text.length > 0 && <ClearBtn />}
+        {mode === 'private' && text.length > 0 && <ShowPassBtn />}
+        {mode === 'amount' && onMax && <MaxBtn onPress={onMax} />}
         {mode === 'confirmEntry' && (
-          <ConfirmBtn onPress={() => props.onConfirm?.(props.text)} />
+          <ConfirmBtn onPress={() => onConfirm?.(text)} />
         )}
-        {/*{mode === 'percentage' && <Percent />}*/}
-        {mode === 'currency' && <Currency currency={props.currency} />}
+        {mode === 'percentage' && <Percent />}
+        {mode === 'currency' && <Currency currency={currency} />}
+        {loading && (
+          <ActivityIndicator
+            style={{ position: 'absolute', right: 16 }}
+            size={'small'}
+          />
+        )}
       </View>
 
-      {props.helperText && <HelperText />}
+      {helperText && <HelperText />}
 
-      {(props.errorText || false) && <ErrorText />}
+      {(errorText || false) && <ErrorText />}
     </View>
   )
 }
