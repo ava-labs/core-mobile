@@ -4,19 +4,20 @@ import { InteractionManager } from 'react-native'
 import TabViewBackground from 'components/TabViewBackground'
 import AvaxSheetHandle from 'components/AvaxSheetHandle'
 import EditFees from 'components/EditFees'
+import { BigNumber } from 'ethers'
 
 type Props = {
-  onClose: () => void
+  onClose?: () => void
   onSave: (newGasLimit: number) => void
-  gasLimit: string
-  networkFee: string
+  gasLimit: number
+  gasPrice: BigNumber
 }
 
 const EditGasLimitBottomSheet: React.FC<Props> = ({
   onClose,
   onSave,
   gasLimit,
-  networkFee
+  gasPrice
 }) => {
   const bottomSheetModalRef = useRef<BottomSheet>(null)
   const snapPoints = useMemo(() => ['0%', '90%'], [])
@@ -32,7 +33,7 @@ const EditGasLimitBottomSheet: React.FC<Props> = ({
     bottomSheetModalRef?.current?.close()
 
     InteractionManager.runAfterInteractions(() => {
-      onClose()
+      onClose?.()
     })
   }, [])
 
@@ -55,7 +56,7 @@ const EditGasLimitBottomSheet: React.FC<Props> = ({
           handleClose()
         }}
         gasLimit={gasLimit}
-        networkFee={networkFee}
+        gasPrice={gasPrice}
       />
     </BottomSheet>
   )

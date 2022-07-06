@@ -7,13 +7,12 @@ import DoneScreen from 'screens/swap/DoneScreen'
 import FailScreen from 'screens/swap/FailScreen'
 import HeaderAccountSelector from 'components/HeaderAccountSelector'
 import { SwapContextProvider } from 'contexts/SwapContext'
-import SwapTransactionFee from 'screens/swap/SwapTransactionFee'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import { useNavigation } from '@react-navigation/native'
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
 import PendingScreen from 'screens/swap/PendingScreen'
 import { useRoute } from '@react-navigation/core'
-import { EditGasLimitParams, SwapScreenProps } from '../types'
+import { SwapScreenProps } from '../types'
 
 export type SwapStackParamList = {
   [AppNavigation.Swap.Swap]: undefined
@@ -21,7 +20,6 @@ export type SwapStackParamList = {
   [AppNavigation.Swap.Pending]: undefined
   [AppNavigation.Swap.Success]: undefined
   [AppNavigation.Swap.Fail]: { errorMsg: string }
-  [AppNavigation.Swap.SwapTransactionFee]: EditGasLimitParams
 }
 
 const SwapStack = createStackNavigator<SwapStackParamList>()
@@ -61,17 +59,17 @@ function SwapScreenStack() {
           name={AppNavigation.Swap.Fail}
           component={FailScreenComp}
         />
-        <SwapStack.Screen
-          options={{
-            presentation: 'transparentModal',
-            transitionSpec: {
-              open: { animation: 'timing', config: { duration: 0 } },
-              close: { animation: 'timing', config: { duration: 300 } }
-            }
-          }}
-          name={AppNavigation.Swap.SwapTransactionFee}
-          component={SwapTransactionFee}
-        />
+        {/*<SwapStack.Screen*/}
+        {/*  options={{*/}
+        {/*    presentation: 'transparentModal',*/}
+        {/*    transitionSpec: {*/}
+        {/*      open: { animation: 'timing', config: { duration: 0 } },*/}
+        {/*      close: { animation: 'timing', config: { duration: 300 } }*/}
+        {/*    }*/}
+        {/*  }}*/}
+        {/*  name={AppNavigation.Swap.SwapTransactionFee}*/}
+        {/*  component={SwapTransactionFee}*/}
+        {/*/>*/}
       </SwapStack.Navigator>
       {swapBlocked && (
         <FeatureBlocked

@@ -105,7 +105,7 @@ const SwapReview = ({ onCancel, onConfirm }: Props) => {
     //this is so that useBeforeRemoveListener has a chance to update callback
     if (hasConfirmed) {
       capture('SwapConfirmed')
-      onConfirm()
+      onHandleSwap()
     }
   }, [capture, hasConfirmed, onConfirm])
 

@@ -364,8 +364,8 @@ const EditGasLimit = () => {
     <EditGasLimitBottomSheet
       onClose={goBack}
       onSave={onSave}
-      networkFee={params.networkFee}
       gasLimit={params.gasLimit}
+      gasPrice={params.gasPrice}
     />
   )
 }
