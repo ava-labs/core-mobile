@@ -3,11 +3,10 @@ import { FeeSelector } from 'components/NetworkFeeSelector'
 import React, { FC, useState } from 'react'
 import { Row } from 'components/Row'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import InputText from 'components/InputText'
 import { TextInput } from 'react-native'
 import { bnToEthersBigNumber, stringToBN } from '@avalabs/utils-sdk'
 import Logger from 'utils/Logger'
-import {BigNumber} from 'ethers';
+import { BigNumber } from 'ethers'
 
 storiesOf('Confirmation Tracker', module).add('Normal', () => <Container />)
 
@@ -44,7 +43,7 @@ const Container: FC = () => {
             const tx = bnToEthersBigNumber(
               stringToBN(text === '' ? '0.0' : text, 9)
             )
-            Logger.warn('from Method', tx.toNumber())
+            Logger.warn('single Method', singleMethod.toNumber())
             Logger.warn('other Method', tx.toNumber())
             setTextString(text)
           }}

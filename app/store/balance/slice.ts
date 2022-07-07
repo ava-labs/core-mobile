@@ -4,6 +4,7 @@ import { selectActiveAccount } from 'store/account'
 import { selectActiveNetwork, selectIsTestnet } from 'store/network'
 import AccountsService from 'services/account/AccountsService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import BN from 'bn.js'
 import {
   Balance,
   Balances,
@@ -11,7 +12,6 @@ import {
   QueryStatus,
   TokenWithBalance
 } from './types'
-import BN from 'bn.js';
 
 const BN_ZERO = new BN(0)
 

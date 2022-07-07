@@ -6,7 +6,7 @@ import networkFeeService from 'services/networkFee/NetworkFeeService'
 import { selectActiveNetwork } from 'store/network'
 import { NetworkFee } from 'services/networkFee/types'
 import { NetworkFeeState } from 'store/networkFee/types'
-import {onAppUnlocked} from 'store/app';
+import { onAppUnlocked } from 'store/app'
 
 const reducerName = 'networkFee'
 

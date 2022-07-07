@@ -8,8 +8,8 @@ import {
   TextStyle
 } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import {useSelector} from 'react-redux';
-import {selectSelectedCurrency} from 'store/settings/currency';
+import { useSelector } from 'react-redux'
+import { selectSelectedCurrency } from 'store/settings/currency'
 
 type BaseAvaTextProps = {
   color?: string

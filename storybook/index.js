@@ -12,8 +12,8 @@ import { Provider } from 'react-redux'
 import { ApplicationContextProvider } from '../app/contexts/ApplicationContext'
 import useDevDebugging from '../app/utils/debugging/DevDebugging'
 import { store } from '../app/store'
+import { PosthogContextProvider } from '../app/contexts/PosthogContext'
 import { loadStories } from './storyLoader'
-import { PosthogContextProvider } from "../app/contexts/PosthogContext";
 
 // enables knobs for all stories
 addDecorator(withKnobs)
