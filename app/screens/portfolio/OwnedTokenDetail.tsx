@@ -17,7 +17,7 @@ import {
   BridgeTransactionStatusParams,
   WalletScreenProps
 } from 'navigation/types'
-import ActivityList from 'screens/shared/ActivityList'
+import ActivityList from 'screens/shared/ActivityList/ActivityList'
 import { TokenWithBalance } from 'store/balance'
 
 type ScreenProps = WalletScreenProps<

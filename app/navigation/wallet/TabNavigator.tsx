@@ -10,7 +10,7 @@ import {
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import PortfolioStackScreen from 'navigation/wallet/PortfolioScreenStack'
 import React, { FC } from 'react'
-import ActivityList from 'screens/shared/ActivityList'
+import ActivityList from 'screens/shared/ActivityList/ActivityList'
 import { View } from 'react-native'
 import AddSVG from 'components/svg/AddSVG'
 import AvaText from 'components/AvaText'
