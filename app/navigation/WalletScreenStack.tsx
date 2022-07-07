@@ -66,7 +66,9 @@ import { Transaction } from 'store/transaction'
 import { TokenWithBalance } from 'store/balance'
 import { DEEPLINKS } from 'navigation/messages/models'
 import RpcMethodsUI from 'screens/rpc/RpcMethodsUI'
-import WalletConnect from 'WalletConnect'
+import WalletConnect from 'screens/rpc/walletconnect/WalletConnect'
+import { useDeepLinking } from 'navigation/useDeepLinking'
+import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin'
 import { BridgeStackParamList } from './wallet/BridgeScreenStack'
 import {
   BridgeTransactionStatusParams,
@@ -140,27 +142,27 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
   const context = useApplicationContext()
   const { signOut } = context.appHook
 
-  // init DeepLinkManager
-  useEffect(() => {
-    SharedDeepLinkManager.init()
-    Linking.addEventListener('url', ({ url }) => {
-      if (url) {
-        // navigation.navigate('test')
-        SharedDeepLinkManager.expireDeepLink()
-        SharedDeepLinkManager.parse(url, { origin: DEEPLINKS.ORIGIN_DEEPLINK })
-        console.log('received linking event')
-      }
-    })
-    async function checkDeepLink() {
-      const url = await Linking.getInitialURL() // get from firebase in the future?
-      if (url) {
-        // navigation.navigate('test')
-        SharedDeepLinkManager.parse(url, { origin: DEEPLINKS.ORIGIN_DEEPLINK })
-        console.log('received linking event, initial url')
-      }
-    }
-    checkDeepLink()
-  }, [])
+  // // init DeepLinkManager
+  // useEffect(() => {
+  //   SharedDeepLinkManager.init()
+  //   Linking.addEventListener('url', ({ url }) => {
+  //     if (url) {
+  //       // navigation.navigate('test')
+  //       SharedDeepLinkManager.expireDeepLink()
+  //       SharedDeepLinkManager.parse(url, { origin: DeepLinkOrigin.ORIGIN_DEEPLINK })
+  //       console.log('received linking event')
+  //     }
+  //   })
+  //   async function checkDeepLink() {
+  //     const url = await Linking.getInitialURL() // get from firebase in the future?
+  //     if (url) {
+  //       // navigation.navigate('test')
+  //       SharedDeepLinkManager.parse(url, { origin: DeepLinkOrigin.ORIGIN_DEEPLINK })
+  //       console.log('received linking event, initial url')
+  //     }
+  //   }
+  //   checkDeepLink()
+  // }, [])
 
   useFocusEffect(
     React.useCallback(() => {
@@ -179,6 +181,9 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
     }, [])
   )
 
+  // init linking listeners
+  useDeepLinking(!timeoutPassed)
+
   const onExit = (): void => {
     props.onExit()
   }
@@ -186,7 +191,6 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
   const BottomSheetGroup = useMemo(() => {
     return (
       <WalletScreenS.Group screenOptions={{ presentation: 'transparentModal' }}>
-        <WalletScreenS.Screen name={'test'} component={RpcMethodsUI} />
         <WalletScreenS.Screen
           options={{
             transitionSpec: {

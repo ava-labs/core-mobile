@@ -8,7 +8,7 @@ import {
   LiquidityPoolToken,
   parseDisplayValues,
   RpcTxParams
-} from 'rpc/parseDisplayValues'
+} from 'screens/rpc/util/parseDisplayValues'
 import { hexToBN } from '@avalabs/utils-sdk'
 
 export interface AddLiquidityAvaxData {

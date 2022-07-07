@@ -1,6 +1,6 @@
 import AvaText from 'components/AvaText'
-import React, { useEffect } from 'react'
-import { StyleSheet, View } from 'react-native'
+import React, { FC, useEffect } from 'react'
+import { View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
@@ -8,15 +8,17 @@ import AvaButton from 'components/AvaButton'
 import { Row } from 'components/Row'
 import Avatar from 'components/Avatar'
 import TokenAddress from 'components/TokenAddress'
-// @ts-ignore @javascript
 import {
   ApproveTransactionData,
   ContractCall,
+  PeerMetadata,
+  RpcTokenReceive,
+  RpcTokenSend,
   RpcTxParams,
   SwapExactTokensForTokenDisplayValues,
   TransactionDisplayValues
-} from 'rpc/models'
-import { useExplainTransaction } from 'rpc/useExplainTransaction'
+} from 'screens/rpc/util/types'
+import { useExplainTransaction } from 'screens/rpc/util/useExplainTransaction'
 import CustomFees from 'components/CustomFees'
 import Separator from 'components/Separator'
 import BN from 'bn.js'
@@ -24,13 +26,25 @@ import { bnToLocaleString, stringToBN } from '@avalabs/utils-sdk'
 import AddSVG from 'components/svg/AddSVG'
 import ArrowSVG from 'components/svg/ArrowSVG'
 import { Limit } from 'components/EditFees'
+import Spinner from 'components/Spinner'
 
-const SignTransaction = props => {
-  const { params } = props.payload
-  const peerMeta = props.peerMeta
-  const txParams: RpcTxParams = params ? (params[0] as RpcTxParams) : undefined
-  const styles = createStyles()
+interface Props {
+  txParams: RpcTxParams
+  peerMeta?: PeerMetadata
+  onApprove: (values: TransactionDisplayValues) => void
+  onReject: () => void
+  loading?: boolean
+  hash?: string
+}
 
+const SignTransaction: FC<Props> = ({
+  txParams,
+  peerMeta,
+  onApprove,
+  onReject,
+  loading,
+  hash
+}) => {
   const {
     setCustomFee,
     showCustomSpendLimit,
@@ -49,7 +63,7 @@ const SignTransaction = props => {
 
   const isApprove = !!(contractType && contractType === ContractCall.APPROVE)
   const isUnknown = !contractType || contractType === 'UNKNOWN'
-  const isTransAction = !isApprove && !isUnknown
+  const isTransaction = !isApprove && !isUnknown
 
   return (
     <SafeAreaView
@@ -68,33 +82,47 @@ const SignTransaction = props => {
             onCustomFeeSet={setCustomFee}
             selectedGasFee={selectedGasFee}
             setSpendLimit={setSpendLimit}
+            peerMeta={peerMeta}
           />
         )}
-        {isTransAction && (
-          <>
-            <RpcTransaction
-              {...(displayData as any)}
-              onCustomFeeSet={setCustomFee}
-              selectedGasFee={selectedGasFee}
-            />
-          </>
+        {isTransaction && (
+          <RpcTransaction
+            {...(displayData as any)}
+            onCustomFeeSet={setCustomFee}
+            selectedGasFee={selectedGasFee}
+            peerMeta={peerMeta}
+          />
         )}
       </View>
-      <View style={styles.actionContainer}>
-        <AvaButton.PrimaryMedium onPress={() => props.onConfirm(displayData)}>
-          Approve
-        </AvaButton.PrimaryMedium>
-        <Space y={20} />
-        <AvaButton.SecondaryMedium onPress={() => props.onCancel()}>
-          Reject
-        </AvaButton.SecondaryMedium>
-      </View>
+      {loading ? (
+        <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+          <Spinner size={40} />
+        </View>
+      ) : hash ? (
+        <View>
+          <Row style={{ justifyContent: 'space-between' }}>
+            <AvaText.Body2>Transaction hash</AvaText.Body2>
+            <TokenAddress address={hash} copyIconEnd />
+          </Row>
+        </View>
+      ) : (
+        <View
+          style={{
+            flex: 0,
+            paddingVertical: 16,
+            paddingHorizontal: 24
+          }}>
+          <AvaButton.PrimaryMedium onPress={() => onApprove(displayData)}>
+            Approve
+          </AvaButton.PrimaryMedium>
+          <Space y={20} />
+          <AvaButton.SecondaryMedium onPress={onReject}>
+            Reject
+          </AvaButton.SecondaryMedium>
+        </View>
+      )}
     </SafeAreaView>
   )
-}
-
-const renderCustomLabel = (title: string) => {
-  return <AvaText.Heading3>{title}</AvaText.Heading3>
 }
 
 function RpcApproveTransaction({
@@ -111,10 +139,7 @@ function RpcApproveTransaction({
   setSpendLimit,
   ...rest
 }: ApproveTransactionData): JSX.Element {
-  const styles = createStyles()
   const theme = useApplicationContext().theme
-
-  console.log('displaySpendLimit:', displaySpendLimit)
 
   useEffect(() => {
     if (!displaySpendLimit && rest.tokenAmount) {
@@ -197,34 +222,6 @@ function RpcApproveTransaction({
           selectedGasFeeModifier={selectedGasFee}
         />
       )}
-      {/*<TabViewAva renderCustomLabel={renderCustomLabel}>*/}
-      {/*  <TabViewAva.Item title={'Details'}>*/}
-      {/*    <View*/}
-      {/*      style={[{ backgroundColor: theme.colorBg2, marginVertical: 16 }]}>*/}
-      {/*      {gasPrice.value !== '' && gasPrice.value !== '0' && (*/}
-      {/*        <CustomFees*/}
-      {/*          gasPrice={rest.fees.gasPrice}*/}
-      {/*          limit={rest.gasLimit?.toString() ?? '0'}*/}
-      {/*          defaultGasPrice={gasPrice}*/}
-      {/*          onChange={setCustomFee}*/}
-      {/*          selectedGasFeeModifier={selectedGasFee}*/}
-      {/*        />*/}
-      {/*      )}*/}
-      {/*    </View>*/}
-      {/*  </TabViewAva.Item>*/}
-      {/*  <TabViewAva.Item title={'Data'}>*/}
-      {/*    <View style={{ flex: 1, paddingVertical: 16 }}>*/}
-      {/*      <AvaText.Body3*/}
-      {/*        textStyle={{*/}
-      {/*          padding: 16,*/}
-      {/*          backgroundColor: theme.colorBg3,*/}
-      {/*          borderRadius: 15*/}
-      {/*        }}>*/}
-      {/*        {displayData?.data}*/}
-      {/*      </AvaText.Body3>*/}
-      {/*    </View>*/}
-      {/*  </TabViewAva.Item>*/}
-      {/*</TabViewAva>*/}
     </>
   )
 }
@@ -243,7 +240,6 @@ function RpcTransaction({
   contractType,
   ...rest
 }: SwapExactTokensForTokenDisplayValues) {
-  const styles = createStyles()
   const theme = useApplicationContext().theme
 
   const sentTokens = balanceChange?.sendTokenList
@@ -314,7 +310,7 @@ function RpcTransaction({
         )}
 
         {!!sentTokens?.length &&
-          sentTokens.map((token, index) => {
+          sentTokens.map((token: RpcTokenSend, index: number) => {
             const priceBN: BN = new BN(token.price)
             const amountBN = stringToBN(token.amount, token.decimals)
             const amountUSD = bnToLocaleString(
@@ -325,7 +321,7 @@ function RpcTransaction({
               <View key={token.name}>
                 <Row style={{ justifyContent: 'space-between' }}>
                   <Row style={{ alignItems: 'center' }}>
-                    <Avatar.Token token={token} />
+                    <Avatar.Custom name={token.name} symbol={token.symbol} />
                     <Space x={16} />
                     <AvaText.Body1>{token.symbol}</AvaText.Body1>
                   </Row>
@@ -365,7 +361,7 @@ function RpcTransaction({
           </Row>
         )}
         {!!receivedTokens?.length &&
-          receivedTokens.map((token, index: number) => {
+          receivedTokens.map((token: RpcTokenReceive, index: number) => {
             const priceBN: BN = new BN(token.price)
             const amountBN = stringToBN(token.amount, token.decimals)
             const amountUSD = bnToLocaleString(
@@ -376,7 +372,7 @@ function RpcTransaction({
               <View key={token.name}>
                 <Row style={{ justifyContent: 'space-between' }}>
                   <Row style={{ alignItems: 'center' }}>
-                    <Avatar.Token token={token} />
+                    <Avatar.Custom name={token.name} logoUri={token.logoURI} />
                     <Space x={16} />
                     <AvaText.Body1>{token.symbol}</AvaText.Body1>
                   </Row>
@@ -415,26 +411,6 @@ function RpcTransaction({
           selectedGasFeeModifier={selectedGasFee}
         />
       )}
-      {/*<TabViewAva renderCustomLabel={renderCustomLabel}>*/}
-      {/*  <TabViewAva.Item title={'Details'}>*/}
-      {/*    <View*/}
-      {/*      style={[{ backgroundColor: theme.colorBg3, marginVertical: 16 }]}>*/}
-      {/*      <Space y={16} />*/}
-      {/*      <CustomFees*/}
-      {/*        gasPrice={gasPrice}*/}
-      {/*        limit={gasLimit?.toString() ?? '0'}*/}
-      {/*        onChange={onCustomFeeSet}*/}
-      {/*        selectedGasFeeModifier={selectedGasFee}*/}
-      {/*      />*/}
-      {/*    </View>*/}
-      {/*  </TabViewAva.Item>*/}
-      {/*  <TabViewAva.Item title={'Data'}>*/}
-      {/*    {abi && (*/}
-      {/*      <Row style={{ justifyContent: 'space-between' }}>*/}
-      {/*        <AvaText.Body1>Function</AvaText.Body1>*/}
-      {/*        <AvaText.Body1>{abi.func}</AvaText.Body1>*/}
-      {/*      </Row>*/}
-      {/*    )}*/}
       {/*    <Row style={{ justifyContent: 'space-between' }}>*/}
       {/*      <AvaText.Body1>Hex Data:</AvaText.Body1>*/}
       {/*      <AvaText.Body1>*/}
@@ -450,74 +426,8 @@ function RpcTransaction({
       {/*        }}>*/}
       {/*        {dataString}*/}
       {/*      </AvaText.Body3>*/}
-      {/*    </View>*/}
-      {/*  </TabViewAva.Item>*/}
-      {/*</TabViewAva>*/}
     </>
   )
 }
-
-const createStyles = () =>
-  StyleSheet.create({
-    root: {
-      paddingTop: 24,
-      borderTopLeftRadius: 20,
-      borderTopRightRadius: 20,
-      minHeight: 200,
-      paddingBottom: 20
-    },
-    accountCardWrapper: {
-      paddingHorizontal: 24,
-      paddingVertical: 8,
-      borderRadius: 6,
-      backgroundColor: '#C4C4C4'
-    },
-    intro: {
-      textAlign: 'center',
-      color: 'black',
-      fontSize: 16,
-      marginBottom: 8,
-      marginTop: 16
-    },
-    warning: {
-      color: 'red',
-      paddingHorizontal: 24,
-      marginVertical: 16,
-      fontSize: 14,
-      width: '100%',
-      textAlign: 'center'
-    },
-    actionContainer: {
-      flex: 0,
-      paddingVertical: 16,
-      paddingHorizontal: 24
-    },
-    button: {
-      flex: 1
-    },
-    cancel: {
-      marginRight: 8
-    },
-    confirm: {
-      marginLeft: 8
-    },
-    domainUrlContainer: {
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginTop: 10
-    },
-    domainUrl: {
-      fontWeight: '600',
-      textAlign: 'center',
-      fontSize: 14,
-      color: 'black'
-    },
-    copyAddressContainer: {
-      paddingHorizontal: 16,
-      paddingVertical: 8,
-      borderRadius: 8,
-      marginHorizontal: 16
-    }
-  })
 
 export default SignTransaction

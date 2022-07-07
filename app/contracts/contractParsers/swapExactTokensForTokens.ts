@@ -8,7 +8,7 @@ import {
   erc20PathToken,
   parseDisplayValues, RpcTxParams,
   SwapExactTokensForTokenDisplayValues,
-} from 'rpc/parseDisplayValues';
+} from 'screens/rpc/util/parseDisplayValues';
 import { hexToBN } from '@avalabs/utils-sdk'
 import { findToken } from './utils/findToken'
 

@@ -5,7 +5,7 @@ import {
 } from '@avalabs/wallet-react-components'
 import { ExplainTransactionResponse } from '@avalabs/blizzard-sdk'
 import * as ethers from 'ethers'
-import { BN } from 'avalanche'
+import BN from 'bn.js'
 
 export interface RpcTxParams {
   from: string
@@ -16,18 +16,25 @@ export interface RpcTxParams {
   gasPrice?: string
 }
 
+export enum RPC_EVENT {
+  SIGN = 'sign',
+  TRANSACTION = 'transaction',
+  SESSION = 'session'
+}
+
 export interface DisplayValueParserProps {
   gasPrice: GasPrice
   erc20Tokens: ERC20WithBalance[]
   avaxToken: AvaxWithBalance
   avaxPrice: number
-  site: DomainMetadata
+  site: PeerMetadata
 }
 
-export interface DomainMetadata {
-  domain: string
+export interface PeerMetadata {
+  url: string
   name?: string
   icon?: string
+  description?: string
 }
 
 interface ExtendedTransactionDisplayValues extends ExplainTransactionResponse {
@@ -49,7 +56,7 @@ export interface TransactionDisplayValues {
   gasLimit?: number
   fee?: string
   feeUSD?: number
-  site: DomainMetadata
+  site: PeerMetadata
   description?: ethers.utils.TransactionDescription
   [key: string]: any
 }
@@ -65,6 +72,31 @@ export interface Transaction {
   displayValues: ExtendedTransactionDisplayValues
   error?: string
   tabId?: number
+}
+
+export interface RpcTokenReceive {
+  chainId: number
+  address: string
+  decimals: number
+  name: string
+  symbol: string
+  logoURI: string
+  id: string
+  derivedAVAX: string
+  price: number
+  balance: string
+  balanceValue: string
+  amount: string
+}
+
+export interface RpcTokenSend {
+  name: string
+  symbol: string
+  decimals: number
+  price: number
+  balance: string
+  balanceValue: string
+  amount: string
 }
 
 export enum ContractCall {

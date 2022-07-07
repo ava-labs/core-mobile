@@ -2,7 +2,7 @@ import { GasPrice } from 'utils/GasPriceHook'
 import * as ethers from 'ethers'
 import { bigToLocaleString, bnToBig, hexToBN } from '@avalabs/utils-sdk'
 import { BN } from 'avalanche'
-import { DisplayValueParserProps, RpcTxParams } from 'rpc/models'
+import { DisplayValueParserProps, RpcTxParams } from 'screens/rpc/util/types'
 
 export function isTxParams(
   params: Partial<RpcTxParams>

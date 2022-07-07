@@ -1,20 +1,18 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { RpcTxParams, Transaction } from 'rpc/models'
+import { RpcTxParams, Transaction } from 'screens/rpc/util/types'
 import {
   useWalletContext,
   useWalletStateContext
 } from '@avalabs/wallet-react-components'
 import { GasPrice, useGasPrice } from 'utils/GasPriceHook'
 import { Limit, SpendLimit } from 'components/EditFees'
-import { hexToBN } from '@avalabs/utils-sdk'
 import { web3 } from '@avalabs/avalanche-wallet-sdk'
+// @ts-ignore javascript
 import ERC20_ABI from 'human-standard-token-abi'
-import { getTxInfo } from 'rpc/getTransactionInfo'
+import { getTxInfo } from 'screens/rpc/util/getTransactionInfo'
 import { useIsMainnet } from 'hooks/isMainnet'
 import { calculateGasAndFees, Fees } from 'utils/calculateGasAndFees'
 import { GasFeeModifier } from 'components/CustomFees'
-import BN from 'bn.js'
-import { firstValueFrom } from 'rxjs'
 
 const UNLIMITED_SPEND_LIMIT_LABEL = 'Unlimited'
 
@@ -30,7 +28,6 @@ export function useExplainTransaction(txParams: RpcTxParams) {
     gasLimit: string
     gasPrice: GasPrice
   } | null>(null)
-  const [hash, setHash] = useState<string>('')
   const [showCustomSpendLimit, setShowCustomSpendLimit] =
     useState<boolean>(false)
   const [displaySpendLimit, setDisplaySpendLimit] = useState<string>(
@@ -85,11 +82,26 @@ export function useExplainTransaction(txParams: RpcTxParams) {
   )
 
   useEffect(() => {
+    if (defaultGasPrice && transaction?.displayValues?.gasLimit && avaxPrice) {
+      setFeeDisplayValues(
+        calculateGasAndFees(
+          customGas?.gasPrice &&
+            customGas?.gasPrice?.value !== '' &&
+            customGas?.gasPrice?.value !== '0'
+            ? customGas?.gasPrice
+            : defaultGasPrice,
+          customGas?.gasLimit ?? transaction.displayValues.gasLimit.toString(),
+          avaxPrice
+        )
+      )
+    }
+  }, [transaction, defaultGasPrice, avaxGasPrice, customGas])
+
+  useEffect(() => {
     ;(async () => {
       if (txParams && avaxPrice && avaxGasPrice) {
         try {
           const txExplanation = await getTxInfo(txParams, isMainnet)
-          console.log('explanation', txExplanation)
           const displayTxData = {
             ...txExplanation.data,
             ...calculateGasAndFees(
@@ -101,11 +113,7 @@ export function useExplainTransaction(txParams: RpcTxParams) {
             toAddress: txParams.to,
             site: {}
           }
-          // const gasPriceBN = displayTxData?.gasPrice ?? new BN(0)
-          // const gasPrice: GasPrice = {
-          //   ...displayTxData?.gasPrice,
-          //   bn: hexToBN(gasPriceBN)
-          // }
+
           setDefaultGasPrice(displayTxData?.gasPrice)
 
           const gasLimit = await (txParams.gas
@@ -141,20 +149,6 @@ export function useExplainTransaction(txParams: RpcTxParams) {
   }, [transaction])
 
   return useMemo(() => {
-    const feeDisplayValues =
-      defaultGasPrice &&
-      transaction?.displayValues?.gasLimit &&
-      avaxPrice &&
-      calculateGasAndFees(
-        customGas?.gasPrice &&
-          customGas?.gasPrice?.value !== '' &&
-          customGas?.gasPrice?.value !== '0'
-          ? customGas?.gasPrice
-          : defaultGasPrice,
-        customGas?.gasLimit ?? transaction.displayValues.gasLimit.toString(),
-        avaxPrice
-      )
-
     return {
       ...transaction?.displayValues,
       ...(transaction?.txParams ? { txParams: transaction?.txParams } : {}),
@@ -177,6 +171,7 @@ export function useExplainTransaction(txParams: RpcTxParams) {
     setSpendLimit,
     displaySpendLimit,
     customSpendLimit,
-    selectedGasFee
+    selectedGasFee,
+    feeDisplayValues
   ])
 }

@@ -1,240 +1,51 @@
-import React, { FC, useEffect, useState } from 'react'
-import { InteractionManager, StyleSheet, View } from 'react-native'
-import WalletConnect from 'WalletConnect'
-import AccountApproval from 'screens/rpc/AccountApproval'
-import SignTransaction from 'screens/rpc/SignTransaction'
-import { Action, MessageType } from 'navigation/messages/models'
-import {
-  useAccountsContext,
-  useNetworkContext
-} from '@avalabs/wallet-react-components'
-import { useGasPrice } from 'utils/GasPriceHook'
-import { paramsToMessageParams } from 'rpc/paramsToMessageParams'
-import SignMessage from 'screens/rpc/SignMessage/SignMessage'
+import React, { FC } from 'react'
+import { StyleSheet, View } from 'react-native'
+import AccountApproval from 'screens/rpc/components/AccountApproval'
+import SignTransaction from 'screens/rpc/components/SignTransaction'
+import SignMessage from 'screens/rpc/components/SignMessage/SignMessage'
 import BottomSheet from 'components/BottomSheet'
-import { ShowSnackBar } from 'components/Snackbar'
 import Spinner from 'components/Spinner'
-import { txToCustomEvmTx } from 'rpc/txToCustomEvmTx'
-
-const mockPayload =
-  '{ "id": 1653340588465308, "jsonrpc": "2.0", "method": "eth_sendTransaction", "params": [ { "gas": "0xebcd", "value": "0x0", "from": "0x341b0073b66bfc19fcb54308861f604f5eb8f51b", "to": "0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7", "data": "0x095ea7b30000000000000000000000004f01aed16d97e3ab5ab2b501154dc9bb0f1a5a2cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" } ] }'
+import { useRpcTxHandler } from 'screens/rpc/useRpcTxHandler'
+import { RPC_EVENT } from 'screens/rpc/util/types'
 
 const RpcMethodsUI: FC = () => {
-  const [signingCallRequest, setSigningCallRequest] = useState(false)
-  const [transactionCallRequest, setTransactionCallRequest] = useState(false)
-  const [callRequestPayload, setCallRequestPayload] = useState<any>({})
-  const [signMessageParams, setSignMessageParams] = useState<Action>()
-  const [dappConnectionRequest, setDappConnectionRequest] = useState(false)
-  const [currentPageMeta, setCurrentPageMeta] = useState<any>({})
-  const { activeAccount } = useAccountsContext()
-  const wallet = activeAccount?.wallet
-  const network = useNetworkContext()?.network
-  const { gasPrice } = useGasPrice()
+  const {
+    loading,
+    hash,
+    eventType,
+    currentPeerMeta,
+    currentPayload,
+    signMessageParams,
+    onCallApproved,
+    onCallRejected,
+    onSessionApproved,
+    onSessionRejected
+  } = useRpcTxHandler()
 
-  const [loading, setLoading] = useState(false)
-
-  // useEffect(() => {
-  //   InteractionManager.runAfterInteractions(() => {
-  //     const payload = JSON.parse(mockPayload)
-  //     setCurrentPageMeta({
-  //       domain: 'https://app.aave.com',
-  //       name: 'Aave',
-  //       icon: ''
-  //     })
-  //     setCallRequestPayload(payload)
-  //     const { method } = payload
-  //     switch (method) {
-  //       case MessageType.ETH_SEND:
-  //         setTransactionCallRequest(true)
-  //         break
-  //       case MessageType.ETH_SIGN:
-  //       case MessageType.SIGN_TYPED_DATA:
-  //       case MessageType.SIGN_TYPED_DATA_V1:
-  //       case MessageType.SIGN_TYPED_DATA_V3:
-  //       case MessageType.SIGN_TYPED_DATA_V4:
-  //       case MessageType.PERSONAL_SIGN: {
-  //         const displayData = paramsToMessageParams(payload)
-  //         setSignMessageParams({ ...payload, displayData })
-  //         setSigningCallRequest(true)
-  //       }
-  //     }
-  //   })
-  // }, [])
-
-  const initializeWalletConnect = () => {
-    WalletConnect.hub.on('walletconnectSessionRequest', peerInfo => {
-      setCurrentPageMeta(peerInfo)
-      setDappConnectionRequest(true)
-    })
-    WalletConnect.hub.on('walletconnectCallRequest', data => {
-      const { payload, peerMeta } = data
-      InteractionManager.runAfterInteractions(() => {
-        setCurrentPageMeta(peerMeta)
-        setCallRequestPayload(payload)
-        const { method } = payload
-        switch (method) {
-          case MessageType.ETH_SEND:
-            setTransactionCallRequest(true)
-            break
-          case MessageType.ETH_SIGN:
-          case MessageType.SIGN_TYPED_DATA:
-          case MessageType.SIGN_TYPED_DATA_V1:
-          case MessageType.SIGN_TYPED_DATA_V3:
-          case MessageType.SIGN_TYPED_DATA_V4:
-          case MessageType.PERSONAL_SIGN: {
-            const displayData = paramsToMessageParams(payload)
-            setSignMessageParams({ ...payload, displayData })
-            setSigningCallRequest(true)
-          }
-        }
-      })
-    })
-    WalletConnect.init()
-  }
-
-  async function signMessage(messageType: MessageType, data: any) {
-    console.log('messageType', messageType)
-    if (!wallet || wallet.type === 'ledger') {
-      throw new Error(
-        wallet
-          ? `this function not supported on ${wallet.type} wallet`
-          : 'wallet undefined in sign tx'
-      )
-    }
-
-    const isV4 =
-      typeof data === 'object' && 'types' in data && 'primaryType' in data
-
-    if (data) {
-      switch (messageType) {
-        case MessageType.ETH_SIGN:
-        case MessageType.PERSONAL_SIGN:
-          return await wallet.personalSign(data)
-        case MessageType.SIGN_TYPED_DATA:
-        case MessageType.SIGN_TYPED_DATA_V1: {
-          if (isV4) {
-            return await wallet.signTypedData_V4(data)
-          }
-          return await wallet.signTypedData_V1(data)
-        }
-        case MessageType.SIGN_TYPED_DATA_V3:
-          return await wallet.signTypedData_V3(data)
-        case MessageType.SIGN_TYPED_DATA_V4:
-          return await wallet.signTypedData_V4(data)
-      }
-      throw new Error('unknown method')
-    } else {
-      throw new Error('no message to sign')
-    }
-  }
-
-  const onWalletConnectSessionApproval = () => {
-    const { peerId } = currentPageMeta
-    setDappConnectionRequest(false)
-    setCurrentPageMeta({})
-    WalletConnect.hub.emit('walletconnectSessionRequest::approved', peerId)
-    ShowSnackBar('You can now go back to the browser')
-  }
-
-  const onWalletConnectSessionRejected = () => {
-    const { peerId } = currentPageMeta
-    setDappConnectionRequest(false)
-    setCurrentPageMeta({})
-    WalletConnect.hub.emit('walletconnectSessionRequest::rejected', peerId)
-  }
-
-  const onWalletConnectCallApproval = async (customParams: any) => {
-    setLoading(true)
-    try {
-      const { id, method, params } = callRequestPayload
-      let hash
-      const { data } = params[0]
-      if (method === MessageType.ETH_SEND) {
-        const gas = parseInt(params[0].gas)
-        if (customParams) {
-          console.log(customParams)
-          const evmParam = txToCustomEvmTx(
-            customParams.fees.gasPrice,
-            customParams
-          )
-          console.log(evmParam)
-          if (WalletConnect) {
-            hash = await wallet?.sendCustomEvmTx(
-              evmParam.gasPrice,
-              evmParam.gasLimit,
-              evmParam.data,
-              evmParam.to,
-              evmParam.value
-            )
-            WalletConnect.hub.emit('walletconnectCallRequest::approved', {
-              id,
-              hash
-            })
-
-            onSignAction()
-            ShowSnackBar('You can now go back to the browser')
-          } else {
-            console.log('WalletConnect exploded')
-          }
-        } else {
-          hash = await wallet?.sendCustomEvmTx(
-            gasPrice.bn,
-            gas,
-            data,
-            params[0].to,
-            params[0].value
-          )
-        }
-        setCallRequestPayload({})
-      } else {
-        const pData = signMessageParams?.displayData.data
-        hash = await signMessage(method as MessageType, pData)
-      }
-      // onSignAction()
-      // WalletConnect.hub.emit('walletconnectCallRequest::approved', {
-      //   id,
-      //   hash
-      // })
-    } catch (e) {
-      ShowSnackBar('An error occurred. Go back to the browser')
-      console.log('error approving', e)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const onWalletConnectCallRejected = () => {
-    WalletConnect.hub.emit(
-      'walletconnectCallRequest::rejected',
-      callRequestPayload.peerId
-    )
-    onSignAction()
-  }
-
-  const onSignAction = () => {
-    setSigningCallRequest(false)
-    setSignMessageParams(undefined)
-    setCallRequestPayload({})
-    setTransactionCallRequest(false)
-  }
-
-  useEffect(() => {
-    initializeWalletConnect()
-  }, [])
+  // const onWalletConnectCallApproval = async (customParams: any) => {
+  //   await onCallApproved(customParams)
+  // }
+  //
+  // const onWalletConnectCallRejected = () => {
+  //   onCallRejected()
+  // }
 
   function renderTransactionApproval() {
+    const isEventTx = eventType === RPC_EVENT.TRANSACTION
     return (
       <BottomSheet
         snapPoints={['0%', '90%']}
-        snapTo={transactionCallRequest ? 1 : 0}
+        snapTo={isEventTx ? 1 : 0}
         disablePanningGesture
         children={
-          transactionCallRequest && (
+          isEventTx && (
             <SignTransaction
-              onCancel={onWalletConnectCallRejected}
-              onConfirm={onWalletConnectCallApproval}
-              payload={callRequestPayload}
-              peerMeta={currentPageMeta}
+              onReject={onCallRejected}
+              onApprove={onCallApproved}
+              txParams={currentPayload?.params[0]}
+              peerMeta={currentPeerMeta}
+              loading={loading}
+              hash={hash}
             />
           )
         }
@@ -242,24 +53,19 @@ const RpcMethodsUI: FC = () => {
     )
   }
 
-  function renderWalletConnectSessionRequestModal() {
+  function renderSessionRequest() {
+    const isEventSession = eventType === RPC_EVENT.SESSION
     return (
       <BottomSheet
         snapPoints={['0%', '90%']}
-        snapTo={dappConnectionRequest ? 1 : 0}
+        snapTo={isEventSession ? 1 : 0}
         disablePanningGesture
         children={
-          dappConnectionRequest && (
+          isEventSession && (
             <AccountApproval
-              onCancel={onWalletConnectSessionRejected}
-              onConfirm={onWalletConnectSessionApproval}
-              currentPageInformation={{
-                title: currentPageMeta && currentPageMeta?.peerMeta?.name,
-                url: currentPageMeta && currentPageMeta?.peerMeta?.url,
-                icon: currentPageMeta && currentPageMeta?.peerMeta?.icons?.[0],
-                description:
-                  currentPageMeta && currentPageMeta?.peerMeta?.description
-              }}
+              onReject={onSessionRejected}
+              onApprove={onSessionApproved}
+              peerMeta={currentPeerMeta}
             />
           )
         }
@@ -267,17 +73,19 @@ const RpcMethodsUI: FC = () => {
     )
   }
 
-  function renderPersonalSignModal() {
+  function renderPersonalSign() {
+    const isEventSign = eventType === RPC_EVENT.SESSION
     return (
       <BottomSheet
-        snapPoints={['0%', '85%']}
-        snapTo={signingCallRequest ? 1 : 0}
+        snapPoints={['0%', '75%']}
+        snapTo={isEventSign ? 1 : 0}
         disablePanningGesture
         children={
-          signMessageParams && (
+          signMessageParams &&
+          isEventSign && (
             <SignMessage
-              onCancel={onWalletConnectCallRejected}
-              onConfirm={onWalletConnectCallApproval}
+              onRejected={onCallRejected}
+              onApproved={onCallApproved}
               action={signMessageParams}
             />
           )
@@ -289,41 +97,10 @@ const RpcMethodsUI: FC = () => {
   return (
     <>
       {renderTransactionApproval()}
-      {renderWalletConnectSessionRequestModal()}
-      {renderPersonalSignModal()}
-      {loading && (
-        <View style={StyleSheet.absoluteFill}>
-          <Spinner size={40} />
-        </View>
-      )}
+      {renderSessionRequest()}
+      {renderPersonalSign()}
     </>
   )
 }
-
-// const styles = StyleSheet.create({
-//   contentContainer: {
-//     justifyContent: 'center',
-//     alignContent: 'center',
-//     margin: 16
-//   },
-//   sectionTitle: {
-//     fontSize: 24,
-//     fontWeight: '600'
-//   },
-//   text: { textAlign: 'center', fontSize: 18, marginBottom: 16 },
-//   highlight: {
-//     fontWeight: '700'
-//   },
-//   bottomModal: {
-//     justifyContent: 'flex-end',
-//     margin: 0
-//   },
-//   actionContainer: {
-//     flex: 0,
-//     flexDirection: 'row',
-//     paddingVertical: 16,
-//     paddingHorizontal: 24
-//   }
-// })
 
 export default RpcMethodsUI

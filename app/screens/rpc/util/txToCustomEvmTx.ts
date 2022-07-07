@@ -1,4 +1,4 @@
-import { Transaction } from 'rpc/models'
+import { Transaction } from 'screens/rpc/util/types'
 import { hexToBN } from '@avalabs/utils-sdk'
 import { GasPrice } from 'utils/GasPriceHook'
 

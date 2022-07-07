@@ -3,7 +3,7 @@ import { ScrollView, View } from 'react-native'
 import { ApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
-import { Action } from 'navigation/messages/models'
+import { Action } from 'screens/rpc/walletconnect/types'
 import { Row } from 'components/Row'
 
 interface Props {

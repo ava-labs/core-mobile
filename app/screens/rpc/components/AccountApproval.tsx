@@ -1,88 +1,30 @@
 import AvaText from 'components/AvaText'
-import React, { useEffect, useMemo, useState } from 'react'
-import { Button, Image, Text, View, StyleSheet } from 'react-native'
+import React, { FC, useEffect, useState } from 'react'
+import { StyleSheet, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Avatar from 'components/Avatar'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import OvalTagBg from 'components/OvalTagBg'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
-import {
-  useAccountsContext,
-  useWalletStateContext
-} from '@avalabs/wallet-react-components'
+import { useAccountsContext } from '@avalabs/wallet-react-components'
 import { NativeViewGestureHandler } from 'react-native-gesture-handler'
 import FlexSpacer from 'components/FlexSpacer'
-import AccountDropdown from 'screens/portfolio/account/AccountDropdown'
 import { Row } from 'components/Row'
 import { Account } from 'dto/Account'
-import AppNavigation from 'navigation/AppNavigation'
-import HeaderAccountSelector from 'components/HeaderAccountSelector'
 import CarrotSVG from 'components/svg/CarrotSVG'
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import AccountItem from 'screens/portfolio/account/AccountItem'
-import CheckmarkSVG from 'components/svg/CheckmarkSVG'
+import { PeerMetadata } from 'screens/rpc/util/types'
 
-const createStyles = () =>
-  StyleSheet.create({
-    root: {
-      paddingTop: 24,
-      borderTopLeftRadius: 20,
-      borderTopRightRadius: 20,
-      minHeight: 200,
-      paddingBottom: 20
-    },
-    accountCardWrapper: {
-      paddingHorizontal: 24,
-      paddingVertical: 8,
-      borderRadius: 6
-    },
-    intro: {
-      textAlign: 'center',
-      color: 'black',
-      fontSize: 16,
-      marginBottom: 8,
-      marginTop: 16
-    },
-    warning: {
-      color: 'red',
-      paddingHorizontal: 24,
-      marginVertical: 16,
-      fontSize: 14,
-      width: '100%',
-      textAlign: 'center'
-    },
-    actionContainer: {
-      flex: 0,
-      paddingVertical: 16,
-      paddingHorizontal: 24
-    },
-    button: {
-      flex: 1
-    },
-    cancel: {
-      marginRight: 8
-    },
-    confirm: {
-      marginLeft: 8
-    },
-    domainUrlContainer: {
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginTop: 10
-    },
-    domainUrl: {
-      fontWeight: '600',
-      textAlign: 'center',
-      fontSize: 14,
-      color: 'black'
-    }
-  })
+interface Props {
+  peerMeta: PeerMetadata
+  onApprove: () => void
+  onReject: () => void
+}
 
-const AccountApproval = props => {
-  const { description, icon, url, title } = props.currentPageInformation
+const AccountApproval: FC<Props> = ({ peerMeta, onApprove, onReject }) => {
   const theme = useApplicationContext().theme
-  const styles = createStyles()
   const { accounts, setActiveAccount } =
     useApplicationContext().repo.accountsRepo
   const accountsContext = useAccountsContext()
@@ -115,13 +57,13 @@ const AccountApproval = props => {
         <View style={{ justifyContent: 'center', alignItems: 'center' }}>
           <OvalTagBg
             style={{ height: 80, width: 80, backgroundColor: theme.colorBg3 }}>
-            <Avatar.Custom name={'dapp'} logoUri={icon} size={48} />
+            <Avatar.Custom name={'dapp'} logoUri={peerMeta.icon} size={48} />
           </OvalTagBg>
           <View style={styles.domainUrlContainer}>
             <AvaText.Heading2 textStyle={{ textAlign: 'center' }}>
-              {title}
+              {peerMeta.name}
             </AvaText.Heading2>
-            <AvaText.Body3>{url}</AvaText.Body3>
+            <AvaText.Body3>{peerMeta.url}</AvaText.Body3>
           </View>
           <Space y={16} />
           {/*<AvaText.Body2 color={theme.colorError}>*/}
@@ -168,11 +110,11 @@ const AccountApproval = props => {
           Only connect to sites that you trust
         </AvaText.Body2>
         <View style={styles.actionContainer}>
-          <AvaButton.PrimaryMedium onPress={() => props.onConfirm()}>
+          <AvaButton.PrimaryMedium onPress={onApprove}>
             Approve
           </AvaButton.PrimaryMedium>
           <Space y={21} />
-          <AvaButton.SecondaryMedium onPress={() => props.onCancel()}>
+          <AvaButton.SecondaryMedium onPress={onReject}>
             Reject
           </AvaButton.SecondaryMedium>
         </View>
@@ -195,5 +137,60 @@ const renderAccountItem = (
     />
   )
 }
+
+const styles = StyleSheet.create({
+  root: {
+    paddingTop: 24,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    minHeight: 200,
+    paddingBottom: 20
+  },
+  accountCardWrapper: {
+    paddingHorizontal: 24,
+    paddingVertical: 8,
+    borderRadius: 6
+  },
+  intro: {
+    textAlign: 'center',
+    color: 'black',
+    fontSize: 16,
+    marginBottom: 8,
+    marginTop: 16
+  },
+  warning: {
+    color: 'red',
+    paddingHorizontal: 24,
+    marginVertical: 16,
+    fontSize: 14,
+    width: '100%',
+    textAlign: 'center'
+  },
+  actionContainer: {
+    flex: 0,
+    paddingVertical: 16,
+    paddingHorizontal: 24
+  },
+  button: {
+    flex: 1
+  },
+  cancel: {
+    marginRight: 8
+  },
+  confirm: {
+    marginLeft: 8
+  },
+  domainUrlContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 10
+  },
+  domainUrl: {
+    fontWeight: '600',
+    textAlign: 'center',
+    fontSize: 14,
+    color: 'black'
+  }
+})
 
 export default AccountApproval

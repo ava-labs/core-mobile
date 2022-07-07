@@ -1,26 +1,26 @@
 import React, { FC } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { Action, MessageType } from 'navigation/messages/models'
+import { Action, MessageType } from 'screens/rpc/walletconnect/types'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
 import OvalTagBg from 'components/OvalTagBg'
 import Avatar from 'components/Avatar'
-import EthSign from 'screens/rpc/SignMessage/EthSign'
-import PersonalSign from 'screens/rpc/SignMessage/PersonalSign'
-import SignDataV4 from 'screens/rpc/SignMessage/SignDataV4'
+import EthSign from 'screens/rpc/components/SignMessage/EthSign'
+import PersonalSign from 'screens/rpc/components/SignMessage/PersonalSign'
+import SignDataV4 from 'screens/rpc/components/SignMessage/SignDataV4'
 import { NativeViewGestureHandler } from 'react-native-gesture-handler'
-import FlexSpacer from 'components/FlexSpacer';
+import FlexSpacer from 'components/FlexSpacer'
 
 interface Props {
   action: Action
-  onCancel: () => void
-  onConfirm: () => void
+  onRejected: () => void
+  onApproved: (customParams: any) => Promise<void>
 }
 
-const SignMessage: FC<Props> = ({ action, onCancel, onConfirm }) => {
+const SignMessage: FC<Props> = ({ action, onRejected, onApproved }) => {
   const theme = useApplicationContext().theme
   const styles = createStyles()
   return (
@@ -45,7 +45,7 @@ const SignMessage: FC<Props> = ({ action, onCancel, onConfirm }) => {
             {/*  {title}*/}
             {/*</AvaText.Heading2>*/}
             <AvaText.Body3>
-              {action?.site?.domain} requests you to sign the following message
+              {action?.site?.url} requests you to sign the following message
             </AvaText.Body3>
           </View>
           <Space y={16} />
@@ -59,11 +59,11 @@ const SignMessage: FC<Props> = ({ action, onCancel, onConfirm }) => {
         </View>
         <FlexSpacer />
         <View style={styles.actionContainer}>
-          <AvaButton.PrimaryMedium onPress={onConfirm}>
+          <AvaButton.PrimaryMedium onPress={onApproved}>
             Approve
           </AvaButton.PrimaryMedium>
           <Space y={21} />
-          <AvaButton.SecondaryMedium onPress={onCancel}>
+          <AvaButton.SecondaryMedium onPress={onRejected}>
             Reject
           </AvaButton.SecondaryMedium>
         </View>

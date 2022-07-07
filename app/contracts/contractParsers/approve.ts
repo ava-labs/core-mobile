@@ -5,7 +5,7 @@ import {
   parseDisplayValues,
   RpcTxParams,
   TransactionDisplayValues
-} from 'rpc/parseDisplayValues'
+} from 'screens/rpc/util/parseDisplayValues'
 import { findToken } from './utils/findToken'
 
 export async function approveTxHandler(

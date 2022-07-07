@@ -9,6 +9,8 @@ import {
   IWalletConnectOptions,
   IWalletConnectSession
 } from '@walletconnect/types'
+import { WalletConnectRequest } from 'screens/rpc/walletconnect/types'
+import { JsonRpcRequest } from '@walletconnect/jsonrpc-types'
 
 export const CLIENT_OPTIONS = {
   clientMeta: {
@@ -24,17 +26,10 @@ export const CLIENT_OPTIONS = {
 }
 let initialized = false
 let connectors: WalletConnect[] = []
-const tempCallIds: string[] = []
-const hub = new EventEmitter()
-type SessionOptions = {
-  session: {
-    redirectUrl: string
-    autoSign: boolean
-    requestOriginatedFrom: string
-  }
-}
+const tempCallIds: number[] = []
+const emitter = new EventEmitter()
 
-export const WALLETCONNECT_SESSIONS = `walletconnectSessions`
+const WALLETCONNECT_SESSIONS = `walletconnectSessions`
 
 const persistSessions = async () => {
   const sessions = connectors
@@ -70,68 +65,19 @@ class WalletConnect {
   requestOriginatedFrom?: string
   walletConnectClient: WalletConnectClient | null
 
-  constructor(options: SessionOptions, existing = false) {
-    if (options?.session?.autoSign) {
-      this.autoSign = options.session.autoSign
-    }
-
-    if (options?.session?.requestOriginatedFrom) {
-      this.requestOriginatedFrom = options.session.requestOriginatedFrom
-    }
-
-    // bridge?: string;
-    // uri?: string;
-    // storageId?: string;
-    // signingMethods?: string[];
-    // session?: IWalletConnectSession;
-    // storage?: ISessionStorage;
-    // clientMeta?: IClientMeta;
-    // qrcodeModal?: IQRCodeModal;
-    // qrcodeModalOptions?: IQRCodeModalOptions;
-
-    // export interface IWalletConnectSession {
-    //   connected: boolean;
-    //   accounts: string[];
-    //   chainId: number;
-    //   bridge: string;
-    //   key: string;
-    //   clientId: string;
-    //   clientMeta: IClientMeta | null;
-    //   peerId: string;
-    //   peerMeta: IClientMeta | null;
-    //   handshakeId: number;
-    //   handshakeTopic: string;
-    // }
-
-    if (existing) {
-      const connOptions = {
-        bridge: options.bridge,
-        session: options,
-        ...CLIENT_OPTIONS
-      } as unknown as IWalletConnectOptions
-      this.walletConnectClient = new WalletConnectClient({ ...connOptions })
-    } else {
-      const connOptions = {
-        ...options,
-        ...CLIENT_OPTIONS
-      } as unknown as IWalletConnectOptions
-      this.walletConnectClient = new WalletConnectClient({ ...connOptions })
-    }
-
-    //init wallet
-
-    this.walletConnectClient.on('connect', (error, payload) => {
+  constructor(options: IWalletConnectOptions, existing = false) {
+    /******************************************************************************
+     * === Listeners ===
+     * 1. Open request for app trying to connect
+     *****************************************************************************/
+    const onSessionRequest = async (
+      error: Error | null,
+      payload: JsonRpcRequest,
+      existing: boolean
+    ) => {
       if (error) {
         console.error(error)
       }
-      console.log('onConnect Payload', payload)
-    })
-    this.walletConnectClient.on('session_request', async (error, payload) => {
-      if (error) {
-        console.error(error)
-      }
-
-      console.log('SESSION_REQUEST', error, payload)
 
       try {
         const sessionData = {
@@ -149,12 +95,24 @@ class WalletConnect {
         // todo log error
         this.walletConnectClient?.rejectSession()
       }
-    })
+    }
+    /******************************************************************************
+     * 2. Receives update. Currently, not acting on it, just logging
+     *****************************************************************************/
+    const onSessionUpdate = (error: Error | null, payload: JsonRpcRequest) => {
+      console.log('WC: Session update', payload)
+      if (error) {
+        throw error
+      }
+    }
 
-    /**
-     * Interactions with dapp will be triggered here
-     */
-    this.walletConnectClient.on('call_request', async (error, payload) => {
+    /******************************************************************************
+     * 3. Receives call request and dispatches it so RpcMethodsUI
+     *****************************************************************************/
+    const onCallRequest = async (
+      error: Error | null,
+      payload: JsonRpcRequest
+    ) => {
       if (tempCallIds.includes(payload.id)) return
       tempCallIds.push(payload.id)
 
@@ -184,37 +142,34 @@ class WalletConnect {
           }
         })
       }
-    })
+    }
 
-    /**
-     * Transport error
-     */
-    this.walletConnectClient.on('transport_error', error => {
-      if (error) {
-        console.error(error)
-      }
-    })
-
-    /**
-     * Dapp disconnected. We kill the session and remove it from local storage
-     */
-    this.walletConnectClient.on('disconnect', error => {
+    /******************************************************************************
+     * 4. Disconnected remotely. We kill our session and remove it from storage
+     *****************************************************************************/
+    const onDisconnect = (error: Error | null) => {
       if (error) {
         throw error
       }
       this.killSession()
       persistSessions()
-    })
+    }
 
-    /**
-     * Session updated
-     */
-    this.walletConnectClient.on('session_update', (error, payload) => {
-      console.log('WC: Session update', payload)
-      if (error) {
-        throw error
-      }
-    })
+    /******************************************************************************
+     * create walletconnect instance, set listeners
+     *****************************************************************************/
+    const connOptions = {
+      ...options,
+      ...CLIENT_OPTIONS
+    } as IWalletConnectOptions
+
+    this.walletConnectClient = new WalletConnectClient({ ...connOptions })
+    this.walletConnectClient.on('session_update', onSessionUpdate)
+    this.walletConnectClient.on('call_request', onCallRequest)
+    this.walletConnectClient.on('disconnect', onDisconnect)
+    this.walletConnectClient.on('session_request', (error, payload) =>
+      onSessionRequest(error, payload, existing)
+    )
 
     // If the connection has been previously approved,
     // don't prompt the user to approve, simply start the session
@@ -223,40 +178,45 @@ class WalletConnect {
     }
   }
 
+  /******************************************************************************
+   * Supporting methods
+   *****************************************************************************/
   killSession = () => {
     this.walletConnectClient && this.walletConnectClient.killSession()
     this.walletConnectClient = null
   }
 
+  // Session request emitters
   sessionRequest = (peerInfo: any) =>
     new Promise((resolve, reject) => {
-      hub.emit('walletconnectSessionRequest', peerInfo)
+      emitter.emit(WalletConnectRequest.SESSION, peerInfo)
 
-      hub.on('walletconnectSessionRequest::approved', peerId => {
+      emitter.on(WalletConnectRequest.SESSION_APPROVED, peerId => {
         if (peerInfo.peerId === peerId) {
           resolve(true)
         }
       })
-      hub.on('walletconnectSessionRequest::rejected', peerId => {
+      emitter.on(WalletConnectRequest.SESSION_REJECTED, peerId => {
         if (peerInfo.peerId === peerId) {
-          reject(new Error('walletconnectSessionRequest::rejected'))
+          reject(new Error(WalletConnectRequest.SESSION_REJECTED))
         }
       })
     })
 
-  callRequests = (payload: any) =>
+  // Call request emitters
+  callRequests = (data: any) =>
     new Promise((resolve, reject) => {
-      hub.emit('walletconnectCallRequest', payload)
+      emitter.emit(WalletConnectRequest.CALL, data)
 
-      hub.on('walletconnectCallRequest::approved', args => {
+      emitter.on(WalletConnectRequest.CALL_APPROVED, args => {
         const { id, hash } = args
-        if (payload.payload.id === id) {
+        if (data.payload.id === id) {
           resolve(hash)
         }
       })
-      hub.on('walletconnectCallRequest::rejected', id => {
-        if (payload.id === id) {
-          reject(new Error('walletconnectCallRequest::rejected'))
+      emitter.on(WalletConnectRequest.CALL_REJECTED, id => {
+        if (data.payload.id === id) {
+          reject(new Error(WalletConnectRequest.CALL_REJECTED))
         }
       })
     })
@@ -280,41 +240,35 @@ class WalletConnect {
 }
 
 const instance = {
+  // restores approved connections
   async init() {
     const sessionData = await AsyncStorage.getItem(WALLETCONNECT_SESSIONS)
     if (sessionData) {
       const sessions = JSON.parse(sessionData)
-      sessions.forEach((session: SessionOptions) => {
-        connectors.push(new WalletConnect(session, true))
+      sessions.forEach((session: IWalletConnectSession) => {
+        const data = {
+          bridge: session.bridge,
+          uri: '', //initial url,
+          session
+        } as IWalletConnectOptions
+        connectors.push(new WalletConnect(data, true))
       })
     }
     initialized = true
   },
+  // creates new session. Checks to see if there's already a session created for that app
   newSession(uri: string, autoSign?: boolean, requestOriginatedFrom?: string) {
     const alreadyConnected = this.isSessionConnected(uri)
     if (alreadyConnected) {
       const errorMsg =
         'This session is already connected. Close the current session before starting a new one.'
       throw new Error(errorMsg)
+      return
     }
 
-    const data = {
-      uri,
-      session: {
-        redirectUrl: '',
-        autoSign: false,
-        requestOriginatedFrom: ''
-      }
-    }
-    if (autoSign) {
-      data.session.autoSign = autoSign
-    }
-    if (requestOriginatedFrom) {
-      data.session.requestOriginatedFrom = requestOriginatedFrom
-    }
-
-    connectors.push(new WalletConnect(data))
+    connectors.push(new WalletConnect({ uri }))
   },
+  // kills session given a peerId
   killSession: async (id: string) => {
     // 1) First kill the session
     const connectorToKill = connectors.find(
@@ -337,7 +291,9 @@ const instance = {
     // 3) Persist the list
     await persistSessions()
   },
-  hub,
+  // bus
+  emitter: emitter,
+  // checks if session is connected given an uri
   isSessionConnected(uri: string) {
     const wcUri = parseWalletConnectUri(uri)
     return connectors.some(({ walletConnectClient }) => {
@@ -348,6 +304,7 @@ const instance = {
       return handshakeTopic === wcUri.handshakeTopic && key === wcUri.key
     })
   },
+  // checks is WC url is valid
   isValidUri(uri: string) {
     const result = parseWalletConnectUri(uri)
     if (!result.handshakeTopic || !result.bridge || !result.key) {
@@ -355,6 +312,7 @@ const instance = {
     }
     return true
   },
+  // updates session if network or account changes
   updateSessions(addressC: string, chainId: string) {
     connectors.forEach(connector => {
       if (connector.walletConnectClient?.connected) {
@@ -365,15 +323,10 @@ const instance = {
       }
     })
   },
+  // returns session info list for 'Connected Sites' view
   async getConnections(): Promise<
     { session: IWalletConnectSession; killSession: () => Promise<void> }[]
   > {
-    // const sessionData = await AsyncStorage.getItem(WALLETCONNECT_SESSIONS)
-    // if (sessionData) {
-    //   return JSON.parse(sessionData) as IWalletConnectSession[]
-    // }
-
-    // return []
     return (
       connectors?.map(conn => {
         return {
@@ -381,31 +334,15 @@ const instance = {
           killSession: () =>
             this.killSession(conn.walletConnectClient?.peerId ?? '')
         }
-        // return {
-        //   title: conn.walletConnectClient?.peerMeta?.name,
-        //   icon: conn.walletConnectClient?.peerMeta?.icons?.[0],
-        //   url: conn.walletConnectClient?.peerMeta?.url,
-        //   connected: conn.walletConnectClient?.connected,
-        //   killSession: () => conn.killSession()
-        // }
       }) ?? []
     )
   },
+  // Kills all sessions
   async killAllSessions() {
     connectors?.map(conn => {
       if (conn.walletConnectClient?.session?.peerId)
         this.killSession(conn.walletConnectClient?.session?.peerId)
     })
-
-    persistSessions()
-    // const sessionData = await AsyncStorage.getItem(WALLETCONNECT_SESSIONS)
-    // if (sessionData) {
-    //   const sessions = JSON.parse(sessionData)
-    //   sessions.forEach((session: SessionOptions) => {
-    //     connectors.push(new WalletConnect(session, true))
-    //   })
-    // }
-    //
   }
 }
 

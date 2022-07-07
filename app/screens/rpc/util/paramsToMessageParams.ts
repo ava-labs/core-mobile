@@ -1,5 +1,5 @@
 import { JsonRpcRequest } from '@walletconnect/jsonrpc-types'
-import { MessageType } from 'navigation/messages/models'
+import { MessageType } from 'screens/rpc/walletconnect/types'
 
 export function paramsToMessageParams(data: JsonRpcRequest<any>) {
   const { params, method } = data

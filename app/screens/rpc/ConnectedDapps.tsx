@@ -1,16 +1,14 @@
 import React, { FC, useEffect, useState } from 'react'
 import { FlatList } from 'react-native'
-import { useApplicationContext } from 'contexts/ApplicationContext'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import WalletConnect from 'WalletConnect'
+import WalletConnect from 'screens/rpc/walletconnect/WalletConnect'
 import Avatar from 'components/Avatar'
 import AvaButton from 'components/AvaButton'
 import { IWalletConnectSession } from '@walletconnect/types'
 import TrashSVG from 'components/svg/TrashSVG'
 import AvaListItem from 'components/AvaListItem'
 
-const ConnectedDapps: FC = props => {
-  const theme = useApplicationContext().theme
+const ConnectedDapps: FC = () => {
   const [connectedDappsSessions, setConnectedDappSessions] = useState<
     { session: IWalletConnectSession; killSession: () => Promise<void> }[]
   >([])
