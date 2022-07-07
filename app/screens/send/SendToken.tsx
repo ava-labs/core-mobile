@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useMemo, useState } from 'react'
+import React, { FC, useEffect, useState } from 'react'
 import { Modal, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
@@ -22,13 +22,11 @@ import { TokenWithBalance } from 'store/balance'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
 import { NetworkVMType } from '@avalabs/chains-sdk'
-import AppNavigation from 'navigation/AppNavigation'
-import NetworkFeeSelector, { FeePreset } from 'components/NetworkFeeSelector'
+import NetworkFeeSelector from 'components/NetworkFeeSelector'
 import { useGasPrice } from 'utils/GasPriceHook'
-import { useNavigation } from '@react-navigation/native'
-import { SendTokensScreenProps } from 'navigation/types'
 import { Row } from 'components/Row'
 import { usePosthogContext } from 'contexts/PosthogContext'
+import { bnToEthersBigNumber, ethersBigNumberToBN } from '@avalabs/utils-sdk'
 
 type Props = {
   onNext: () => void
@@ -40,9 +38,9 @@ type Props = {
   contact?: Contact
 }
 
-type NavigationProp = SendTokensScreenProps<
-  typeof AppNavigation.Send.Review
->['navigation']
+// type NavigationProp = SendTokensScreenProps<
+//   typeof AppNavigation.Send.Review
+// >['navigation']
 
 const SendToken: FC<Props> = ({
   onNext,
@@ -53,7 +51,7 @@ const SendToken: FC<Props> = ({
 }) => {
   const { theme } = useApplicationContext()
   const { capture } = usePosthogContext()
-  const { navigate } = useNavigation<NavigationProp>()
+  // const { navigate } = useNavigation<NavigationProp>()
   const {
     setSendToken,
     sendToken,
@@ -76,11 +74,11 @@ const SendToken: FC<Props> = ({
   const { gasPrice } = useGasPrice()
   const balance = numeral(sendToken?.balanceDisplayValue ?? 0).value() || 0
 
-  const netFeeString = useMemo(() => {
-    return fees.sendFeeNative
-      ? Number.parseFloat(fees.sendFeeNative).toFixed(6).toString()
-      : '-'
-  }, [fees.sendFeeNative])
+  // const netFeeString = useMemo(() => {
+  //   return fees.sendFeeNative
+  //     ? Number.parseFloat(fees.sendFeeNative).toFixed(6).toString()
+  //     : '-'
+  // }, [fees.sendFeeNative])
 
   const {
     showAddressBook,
@@ -223,28 +221,33 @@ const SendToken: FC<Props> = ({
             <Space y={8} />
             <NetworkFeeSelector
               network={activeNetwork}
-              networkFeeAvax={netFeeString}
-              networkFeeInCurrency={fees.sendFeeInCurrency ?? 0}
-              gasPrice={gasPrice}
-              gasLimit={fees.gasLimit ?? 0}
-              onWeightedGas={price => {
-                fees.setCustomGasPrice(price.bn)
-                fees.setSelectedFeePreset(price.label as FeePreset)
+              // networkFeeAvax={netFeeString}
+              // networkFeeInCurrency={fees.sendFeeInCurrency ?? 0}
+              gasPrice={bnToEthersBigNumber(gasPrice.bn)}
+              limit={fees.gasLimit ?? 0}
+              onChange={(gasLimit, gasPrice1, feePreset) => {
+                fees.setGasLimit(gasLimit)
+                fees.setCustomGasPrice(ethersBigNumberToBN(gasPrice1))
+                fees.setSelectedFeePreset(feePreset)
               }}
-              weights={{ Normal: 1, Fast: 1.05, Instant: 1.15, Custom: 35 }}
-              onSettingsPressed={() => {
-                const initGasLimit = fees.gasLimit || 0
-
-                const onCustomGasLimit = (gasLimit: number) => {
-                  fees.setGasLimit(gasLimit)
-                }
-
-                navigate(AppNavigation.Modal.EditGasLimit, {
-                  gasLimit: initGasLimit.toString(),
-                  networkFee: netFeeString,
-                  onSave: onCustomGasLimit
-                })
-              }}
+              // onWeightedGas={price => {
+              //   fees.setCustomGasPrice(price.bn)
+              //   fees.setSelectedFeePreset(price.label as FeePreset)
+              // }}
+              // weights={{ Normal: 1, Fast: 1.05, Instant: 1.15, Custom: 35 }}
+              // onSettingsPressed={() => {
+              //   const initGasLimit = fees.gasLimit || 0
+              //
+              //   const onCustomGasLimit = (gasLimit: number) => {
+              //     fees.setGasLimit(gasLimit)
+              //   }
+              //
+              //   navigate(AppNavigation.Modal.EditGasLimit, {
+              //     gasLimit: initGasLimit.toString(),
+              //     networkFee: netFeeString,
+              //     onSave: onCustomGasLimit
+              //   })
+              // }}
             />
           </View>
           <FlexSpacer />

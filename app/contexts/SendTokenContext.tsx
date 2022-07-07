@@ -55,9 +55,9 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
   const activeAccount = useSelector(selectActiveAccount)
   const activeNetwork = useSelector(selectActiveNetwork)
   const selectedCurrency = useSelector(selectSelectedCurrency)
-  const { nativeTokenPrice } = useNativeTokenPrice({
-    currency: selectedCurrency.toLowerCase() as VsCurrencyType
-  })
+  const { nativeTokenPrice } = useNativeTokenPrice(
+    selectedCurrency.toLowerCase() as VsCurrencyType
+  )
 
   const [sendToken, setSendToken] = useState<TokenWithBalance | undefined>()
   const [maxAmount, setMaxAmount] = useState('')

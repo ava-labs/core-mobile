@@ -129,8 +129,6 @@ export default function InputText({
     )
   }
 
-  // @ts-expect-error Percent is not being used temporarily
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const Percent = () => {
     return (
       <View
