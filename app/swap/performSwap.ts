@@ -50,39 +50,39 @@ export async function performSwap(request: {
   } = request
 
   if (!optimalRate) {
-    return {
+    return Promise.reject({
       error: 'request requires the paraswap priceRoute'
-    }
+    })
   }
 
   if (!srcAmount) {
-    return {
+    return Promise.reject({
       error: 'no amount on request'
-    }
+    })
   }
 
   if (!destAmount) {
-    return {
+    return Promise.reject({
       error: 'no amount on request'
-    }
+    })
   }
 
   if (!gasLimit) {
-    return {
+    return Promise.reject({
       error: 'request requires gas limit from paraswap response'
-    }
+    })
   }
 
   if (!network || network.isTestnet) {
-    return {
+    return Promise.reject({
       error: `Network Init Error: Wrong network`
-    }
+    })
   }
 
   if (!account || !account.address) {
-    return {
+    return Promise.reject({
       error: `Wallet Error: address not defined`
-    }
+    })
   }
 
   const srcTokenAddress =
@@ -132,11 +132,11 @@ export async function performSwap(request: {
     )
 
     if (allowanceError) {
-      return {
+      return Promise.reject({
         error: `Allowance Error: ${
           allowanceError ?? (allowance as APIError).message
         }`
-      }
+      })
     }
 
     if ((allowance as BigNumber).lt(sourceAmount)) {
@@ -165,9 +165,9 @@ export async function performSwap(request: {
         )
 
         if (signError || isAPIError(signedTx)) {
-          return {
+          return Promise.reject({
             error: `Approve Error: ${signError}`
-          }
+          })
         }
 
         const [hash, approveError] = await resolve(
@@ -175,9 +175,9 @@ export async function performSwap(request: {
         )
 
         if (approveError) {
-          return {
+          return Promise.reject({
             error: `Approve error ${approveError}`
-          }
+          })
         }
 
         approveTxHash = hash
@@ -211,14 +211,14 @@ export async function performSwap(request: {
   )
 
   if ((txBuildData as APIError).message) {
-    return {
+    return Promise.reject({
       error: (txBuildData as APIError).message
-    }
+    })
   }
   if (txBuildDataError) {
-    return {
+    return Promise.reject({
       error: `Data Error: ${txBuildDataError}`
-    }
+    })
   }
 
   const [signedTx, signError] = await resolve(
@@ -241,9 +241,9 @@ export async function performSwap(request: {
   )
 
   if (signError) {
-    return {
+    return Promise.reject({
       error: `Tx Error: ${signError}`
-    }
+    })
   }
 
   const [swapTxHash, txError] = await resolve(
@@ -252,9 +252,9 @@ export async function performSwap(request: {
 
   if (txError) {
     const shortError = txError.message.split('\n')[0]
-    return {
+    return Promise.reject({
       error: shortError
-    }
+    })
   }
 
   return {

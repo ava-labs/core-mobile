@@ -6,35 +6,14 @@ import React, {
   useState
 } from 'react'
 import { getSwapRate } from 'swap/getSwapRate'
-import { APIError, SwapSide } from 'paraswap'
+import { SwapSide } from 'paraswap'
 import { performSwap } from 'swap/performSwap'
 import { OptimalRate } from 'paraswap-core'
-import moment from 'moment'
 import { TokenWithBalance } from 'store/balance'
 import { useActiveNetwork } from 'hooks/useActiveNetwork'
 import { useActiveAccount } from 'hooks/useActiveAccount'
 import { BigNumber } from 'ethers'
-
-export interface SwapEntry {
-  token: TokenWithBalance | undefined
-  setToken: Dispatch<TokenWithBalance>
-  amount?: number
-  setAmount: Dispatch<number>
-  usdValue: string
-}
-
-export interface TrxDetails {
-  rate: string
-  slippageTol: number
-  setSlippageTol: Dispatch<number>
-  networkFee: string
-  networkFeeUsd: string
-  avaxWalletFee: string
-  gasLimit: number
-  setGasLimit: Dispatch<number>
-  gasPrice: number
-  setGasPriceNanoAvax: Dispatch<number>
-}
+import Logger from 'utils/Logger'
 
 export interface SwapContextState {
   fromToken?: TokenWithBalance
@@ -55,16 +34,19 @@ export interface SwapContextState {
     gasLimit: number,
     gasPrice: BigNumber,
     slippage: number
-  ): Promise<string>
+  ): Promise<
+    | { error: any; result?: undefined }
+    | { result: { swapTxHash: any; approveTxHash: any }; error?: undefined }
+  >
   getRate: (
     srcToken?: TokenWithBalance,
     destToken?: TokenWithBalance,
     amount?: string,
     swapSide?: SwapSide
-  ) => Promise<{
-    optimalRate: OptimalRate | APIError
-    destAmount: string | undefined
-  }>
+  ) => Promise<
+    | { error: any; optimalRate?: undefined; destAmount?: undefined }
+    | { optimalRate: OptimalRate; destAmount: any; error?: undefined }
+  >
   gasPrice: BigNumber
   setGasPrice: Dispatch<BigNumber>
   gasLimit: number
@@ -75,7 +57,6 @@ export interface SwapContextState {
   setSlippage: Dispatch<number>
   destination: 'from' | 'to'
   setDestination: Dispatch<'from' | 'to'>
-  error: string | undefined
 }
 
 export const SwapContext = createContext<SwapContextState>({} as any)
@@ -92,10 +73,34 @@ export const SwapContextProvider = ({ children }: { children: any }) => {
   const [rate, setRate] = useState<number>(0)
   const [slippage, setSlippage] = useState<number>(1)
   const [destination, setDestination] = useState<'from' | 'to'>('from')
-  const [refreshCounter, setRefreshCounter] = useState(0)
 
   const refresh = () => {
-    setRefreshCounter(moment().second())
+    if (
+      !activeAccount ||
+      !fromToken ||
+      !toToken ||
+      !optimalRate ||
+      !destination
+    ) {
+      return
+    }
+
+    getSwapRate({
+      srcToken: fromToken,
+      destToken: toToken,
+      amount: optimalRate?.srcAmount,
+      swapSide: destination === 'to' ? SwapSide.SELL : SwapSide.BUY,
+      network: activeNetwork,
+      account: activeAccount
+    })
+      .then(({ optimalRate }) => {
+        if (optimalRate) {
+          setOptimalRate(optimalRate)
+        }
+      })
+      .catch(reason => {
+        Logger.warn('Error refreshing swap rate', reason)
+      })
   }
 
   const getRate = useCallback(
@@ -105,8 +110,12 @@ export const SwapContextProvider = ({ children }: { children: any }) => {
       amount?: string,
       swapSide?: SwapSide
     ) => {
-      if (!activeAccount || !srcToken || !destToken || !amount || !swapSide)
-        return
+      if (!activeAccount || !srcToken || !destToken || !amount || !swapSide) {
+        return Promise.reject({
+          error: 'no source token on request'
+        })
+      }
+
       return getSwapRate({
         srcToken,
         destToken,

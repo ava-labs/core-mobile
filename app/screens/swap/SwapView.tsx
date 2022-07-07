@@ -18,7 +18,7 @@ import {
 } from 'store/balance'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import { useSelector } from 'react-redux'
-import { OptimalRate, SwapSide } from 'paraswap-core'
+import { SwapSide } from 'paraswap-core'
 import { BigNumber } from 'ethers'
 import BN from 'bn.js'
 import { FeePreset } from 'components/NetworkFeeSelector'
@@ -30,6 +30,7 @@ import debounce from 'lodash.debounce'
 import { getTokenAddress } from 'swap/getSwapRate'
 import SwapTransactionDetail from 'screens/swap/components/SwapTransactionDetails'
 import { usePosthogContext } from 'contexts/PosthogContext'
+import { calculateRate } from 'swap/utils'
 
 type NavigationProp = SwapScreenProps<
   typeof AppNavigation.Swap.Swap
@@ -68,7 +69,6 @@ export default function SwapView() {
     slippage,
     setSlippage,
     setOptimalRate,
-    setRate,
     getRate
   } = useSwapContext()
   const [customGasPrice, setCustomGasPrice] = useState<BigNumber>(
@@ -109,15 +109,6 @@ export default function SwapView() {
     },
     [destination, toToken, fromToken]
   )
-
-  const calculateRate = (optimalRate: OptimalRate) => {
-    const { destAmount, destDecimals, srcAmount, srcDecimals } = optimalRate
-    const destAmountNumber =
-      parseInt(destAmount, 10) / Math.pow(10, destDecimals)
-    const sourceAmountNumber =
-      parseInt(srcAmount, 10) / Math.pow(10, srcDecimals)
-    return destAmountNumber / sourceAmountNumber
-  }
 
   const { capture } = usePosthogContext()
 
@@ -294,12 +285,11 @@ export default function SwapView() {
   const reviewOrder = () => {
     if (optimalRate) {
       setGasPrice(customGasPrice ?? networkFee.low)
-      setRate(calculateRate(optimalRate))
       navigate(AppNavigation.Swap.Review)
       capture('SwapReviewOrder', {
-        destinationInputField: swapSide === SwapSide.SELL ? 'to' : 'from',
-        slippageTolerance: trxDetails.slippageTol,
-        customGasPrice: trxDetails.gasPrice
+        destinationInputField: destination,
+        slippageTolerance: slippage,
+        customGasPrice: (customGasPrice ?? networkFee.low)?.toString()
       })
     }
   }

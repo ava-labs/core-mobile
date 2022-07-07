@@ -18,6 +18,7 @@ import { BNInput } from 'components/BNInput'
 import FlexSpacer from 'components/FlexSpacer'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
+import { WalletScreenProps } from 'navigation/types'
 
 interface Props {
   selectedToken?: TokenWithBalance
@@ -33,6 +34,10 @@ interface Props {
   skipHandleMaxAmount?: boolean
   onError?: (errorMessage: string) => void
 }
+
+type NavigationProp = WalletScreenProps<
+  typeof AppNavigation.Modal.SelectToken
+>['navigation']
 
 const UniversalTokenSelector: FC<Props> = ({
   selectedToken,
@@ -54,7 +59,7 @@ const UniversalTokenSelector: FC<Props> = ({
   const [amountInCurrency, setAmountInCurrency] = useState<string>()
   const { currencyFormatter } = useApplicationContext().appHook
   const [isMaxAmount, setIsMaxAmount] = useState(false)
-  const navigation = useNavigation()
+  const navigation = useNavigation<NavigationProp>()
   const maxAmountString = maxAmount ? bnToLocaleString(maxAmount, 18) : '0'
   const hasError = !!error || !!bnError
 
@@ -92,15 +97,15 @@ const UniversalTokenSelector: FC<Props> = ({
 
   // When setting to the max, pin the input value to the max value
   useEffect(() => {
-    if (!isMaxAmount || !maxAmountString || skipHandleMaxAmount) return;
+    if (!isMaxAmount || !maxAmountString || skipHandleMaxAmount) return
     handleAmountChange({
       amount: maxAmountString,
-      bn: numberToBN(maxAmountString, 18),
-    });
-  }, [maxAmountString, handleAmountChange, isMaxAmount, skipHandleMaxAmount]);
+      bn: numberToBN(maxAmountString, 18)
+    })
+  }, [maxAmountString, handleAmountChange, isMaxAmount, skipHandleMaxAmount])
 
   return (
-    <View>
+    <View style={{ marginHorizontal: 16 }}>
       <Row style={{ justifyContent: 'space-between' }}>
         <AvaText.Heading3>{label ?? 'Token'}</AvaText.Heading3>
         <AvaText.Body2>

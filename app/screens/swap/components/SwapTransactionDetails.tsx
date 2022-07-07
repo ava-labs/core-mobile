@@ -7,8 +7,6 @@ import InputText from 'components/InputText'
 import { Popable } from 'react-native-popable'
 import NetworkFeeSelector, { FeePreset } from 'components/NetworkFeeSelector'
 import { Row } from 'components/Row'
-import AppNavigation from 'navigation/AppNavigation'
-import { SwapScreenProps } from 'navigation/types'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
 import { BigNumber } from 'ethers'
@@ -53,10 +51,6 @@ export function popableContent(message: string, backgroundColor: string) {
     </View>
   )
 }
-
-type NavigationProp =
-  | SwapScreenProps<typeof AppNavigation.Swap.Review>['navigation']
-  | SwapScreenProps<typeof AppNavigation.Swap.Swap>['navigation']
 
 const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
   review = false,
@@ -173,7 +167,7 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
       )}
       <Space y={16} />
       <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-        <AvaText.Body2>Avalanche Wallet fee</AvaText.Body2>
+        <AvaText.Body2 color={theme.white}>Avalanche Wallet fee</AvaText.Body2>
         <AvaText.Heading3>{walletFee}</AvaText.Heading3>
       </Row>
     </View>

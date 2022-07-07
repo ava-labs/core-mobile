@@ -16,8 +16,6 @@ import { useNativeTokenPrice } from 'hooks/useNativeTokenPrice'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import { calculateGasAndFees } from 'utils/Utils'
 import { formatUnits } from 'ethers/lib/utils'
-import { useSelector } from 'react-redux'
-import { selectSelectedCurrency } from 'store/settings/currency'
 import Logger from 'utils/Logger'
 import isEmpty from 'lodash.isempty'
 import { useNavigation } from '@react-navigation/native'
@@ -63,12 +61,10 @@ const NetworkFeeSelector = ({
   disableGasPriceEditing
 }: Props) => {
   const { navigate } = useNavigation<NavigationProp>()
-  const { theme, appHook } = useApplicationContext()
-  const { currencyFormatter } = appHook
+  const { theme } = useApplicationContext()
   const network = useActiveNetwork()
   const networkFee = useNetworkFee().networkFees
   const tokenPrice = useNativeTokenPrice().nativeTokenPrice
-  const currency = useSelector(selectSelectedCurrency)
   const [customGasPrice, setCustomGasPrice] = useState(gasPrice)
   const [customGasLimit, setCustomGasLimit] = useState<number>()
   const [isGasPriceTooHigh, setIsGasPriceTooHigh] = useState(false)
@@ -306,11 +302,11 @@ const NetworkFeeSelector = ({
           {newFees?.fee} {network?.networkToken?.symbol}
         </AvaText.Heading3>
         <Space x={4} />
-        <AvaText.Body3 textStyle={{ paddingBottom: 2 }}>
-          {!isNaN(Number(newFees?.feeUSD))
-            ? `${currencyFormatter(Number(newFees?.feeUSD))} ${currency}`
-            : ''}
-        </AvaText.Body3>
+        {!isNaN(Number(newFees?.feeUSD)) && (
+          <AvaText.Body3 currency textStyle={{ paddingBottom: 2 }}>
+            {newFees?.feeUSD}
+          </AvaText.Body3>
+        )}
       </Row>
     </View>
   )

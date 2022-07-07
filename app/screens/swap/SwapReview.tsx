@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, { useCallback, useEffect, useState } from 'react'
 import {
   ActivityIndicator,
   Animated,
@@ -28,15 +28,16 @@ import {
   useBeforeRemoveListener
 } from 'hooks/useBeforeRemoveListener'
 import { usePosthogContext } from 'contexts/PosthogContext'
+import { calculateRate } from 'swap/utils'
 
 const SECOND = 1000
 
 type Props = {
   onCancel: () => void
-  onConfirm: () => void
+  onSuccess: () => void
 }
 
-const SwapReview = ({ onCancel, onConfirm }: Props) => {
+const SwapReview = ({ onCancel, onSuccess }: Props) => {
   const [swapInProgress, setSwapInProgress] = useState(false)
   const {
     fromToken,
@@ -45,7 +46,6 @@ const SwapReview = ({ onCancel, onConfirm }: Props) => {
     gasLimit,
     gasPrice,
     slippage,
-    rate,
     refresh,
     swap
   } = useSwapContext()
@@ -54,6 +54,10 @@ const SwapReview = ({ onCancel, onConfirm }: Props) => {
   const [colorAnim] = useState(new Animated.Value(1))
   const { capture } = usePosthogContext()
   const [hasConfirmed, setHasConfirmed] = useState(false)
+
+  useEffect(() => {
+    refresh()
+  }, [])
 
   const [swapError, setSwapError] = useState('')
 
@@ -83,31 +87,30 @@ const SwapReview = ({ onCancel, onConfirm }: Props) => {
       )
       setSwapInProgress(false)
       if (error || (result && 'error' in result)) {
-        setSwapError(error?.toString || result?.error?.message)
+        const message = error ? (error as Error).message : result?.error
+        setSwapError(message)
         ShowSnackBar('Swap Failed')
-        return
+      } else {
+        ShowSnackBar('Swap Successful')
+        onSuccess()
       }
-
-      ShowSnackBar('Swap Successful')
     }
   }
 
   //todo: fix color update anim
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const animatedColor = useMemo(() => {
-    return colorAnim.interpolate({
-      inputRange: [0, 1],
-      outputRange: [theme.colorText1, theme.colorPrimary1]
-    })
-  }, [colorAnim])
+  // const animatedColor = useMemo(() => {
+  //   return colorAnim.interpolate({
+  //     inputRange: [0, 1],
+  //     outputRange: [theme.colorText1, theme.colorPrimary1]
+  //   })
+  // }, [colorAnim])
 
   useEffect(() => {
     //this is so that useBeforeRemoveListener has a chance to update callback
     if (hasConfirmed) {
       capture('SwapConfirmed')
-      onHandleSwap()
     }
-  }, [capture, hasConfirmed, onConfirm])
+  }, [capture, hasConfirmed])
 
   useBeforeRemoveListener(
     useCallback(() => {
@@ -142,7 +145,6 @@ const SwapReview = ({ onCancel, onConfirm }: Props) => {
         }),
         tap(value => {
           if (value && value % RESET_INTERVAL === 0) {
-            console.log('reset')
             refresh()
             capture('SwapReviewTimerRestarted')
           }
@@ -184,7 +186,7 @@ const SwapReview = ({ onCancel, onConfirm }: Props) => {
           title={fromToken?.symbol}
           rightComponent={
             <View style={{ alignItems: 'flex-end' }}>
-              <AvaText.Body1>
+              <AvaText.Body1 ellipsizeMode={'middle'}>
                 {bnToLocaleString(
                   new BN(optimalRate?.srcAmount || '0'),
                   optimalRate?.srcDecimals
@@ -206,7 +208,7 @@ const SwapReview = ({ onCancel, onConfirm }: Props) => {
           title={toToken?.symbol}
           rightComponent={
             <View style={{ alignItems: 'flex-end' }}>
-              <AvaText.Body1>
+              <AvaText.Body1 ellipsizeMode={'middle'}>
                 {bnToLocaleString(
                   new BN(optimalRate?.destAmount || '0'),
                   optimalRate?.destDecimals
@@ -223,10 +225,13 @@ const SwapReview = ({ onCancel, onConfirm }: Props) => {
           review
           gasPrice={gasPrice}
           gasLimit={gasLimit}
-          rate={rate}
+          rate={optimalRate ? calculateRate(optimalRate) : 0}
           slippage={slippage}
           walletFee={optimalRate?.partnerFee}
         />
+        {!!swapError && (
+          <AvaText.Body3 color={theme.colorError}>{swapError}</AvaText.Body3>
+        )}
       </ScrollView>
       <View
         style={{
@@ -239,7 +244,12 @@ const SwapReview = ({ onCancel, onConfirm }: Props) => {
           </AvaButton.SecondaryLarge>
         </View>
         <View style={{ flex: 1, marginRight: 16 }}>
-          <AvaButton.PrimaryLarge onPress={() => setHasConfirmed(true)}>
+          <AvaButton.PrimaryLarge
+            disabled={swapInProgress}
+            onPress={() => {
+              onHandleSwap()
+              setHasConfirmed(true)
+            }}>
             Confirm
           </AvaButton.PrimaryLarge>
         </View>
