@@ -1,11 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import {
-  ActivityIndicator,
-  Animated,
-  ScrollView,
-  StyleSheet,
-  View
-} from 'react-native'
+import { Animated, ScrollView, StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
@@ -37,11 +31,10 @@ const SECOND = 1000
 
 type Props = {
   onCancel: () => void
-  onSuccess: () => void
+  onBackToParent: () => void
 }
 
-const SwapReview = ({ onCancel, onSuccess }: Props) => {
-  const [swapInProgress, setSwapInProgress] = useState(false)
+const SwapReview = ({ onCancel, onBackToParent }: Props) => {
   const {
     fromToken,
     toToken,
@@ -82,31 +75,7 @@ const SwapReview = ({ onCancel, onSuccess }: Props) => {
         'infinite'
       )
 
-      onSuccess()
-
-      // setTimeout(() => {
-      //   updateSnackBarCustom(
-      //     toastId,
-      //     <TransactionToast
-      //       message={'Swap failed'}
-      //       type={TransactionToastType.ERROR}
-      //       toastId={toastId}
-      //     />
-      //   )
-      // }, 2000)
-      //
-      // setTimeout(() => {
-      //   updateSnackBarCustom(
-      //     toastId,
-      //     <TransactionToast
-      //       message={'Swap success'}
-      //       type={TransactionToastType.SUCCESS}
-      //       txHash={'asdasd'}
-      //       toastId={toastId}
-      //     />,
-      //     false
-      //   )
-      // }, 5000)
+      onBackToParent()
 
       const [result, error] = await resolve(
         swap(
@@ -296,7 +265,6 @@ const SwapReview = ({ onCancel, onSuccess }: Props) => {
         </View>
         <View style={{ flex: 1, marginRight: 16 }}>
           <AvaButton.PrimaryLarge
-            disabled={swapInProgress}
             onPress={() => {
               onHandleSwap()
               setHasConfirmed(true)
@@ -306,19 +274,6 @@ const SwapReview = ({ onCancel, onSuccess }: Props) => {
         </View>
       </View>
       <Space y={8} />
-      {swapInProgress && (
-        <View
-          style={[
-            StyleSheet.absoluteFill,
-            {
-              backgroundColor: '#00000080',
-              justifyContent: 'center',
-              alignItems: 'center'
-            }
-          ]}>
-          <ActivityIndicator size={'large'} />
-        </View>
-      )}
     </View>
   )
 }

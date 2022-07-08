@@ -56,10 +56,10 @@ type SwapNav = SwapScreenProps<typeof AppNavigation.Swap.Swap>['navigation']
 
 function SwapReviewComp() {
   const navigation = useNavigation<SwapNav>()
-  const onSuccess = () => {
+  const onBackToParent = () => {
     navigation.getParent()?.goBack()
   }
-  return <SwapReview onCancel={navigation.goBack} onSuccess={onSuccess} />
+  return <SwapReview onCancel={navigation.goBack} onBackToParent={onBackToParent} />
 }
 
 export default React.memo(SwapScreenStack)
