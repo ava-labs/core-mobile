@@ -32,10 +32,14 @@ const ContextAppWithRedux = () => {
             <WalletStateContextProvider>
               <ApplicationContextProvider>
                 <ContextApp />
+                <Toast
+                  ref={ref => (global.toast = ref)}
+                  offsetTop={60}
+                  normalColor={'00FFFFFF'}
+                />
               </ApplicationContextProvider>
             </WalletStateContextProvider>
           </PosthogContextProvider>
-          <Toast ref={ref => (global.toast = ref)} />
         </PersistGate>
       </Provider>
     </>

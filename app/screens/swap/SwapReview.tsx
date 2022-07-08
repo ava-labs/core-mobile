@@ -21,14 +21,17 @@ import { interval, tap } from 'rxjs'
 import { Popable } from 'react-native-popable'
 import { bnToLocaleString, resolve } from '@avalabs/utils-sdk'
 import BN from 'bn.js'
-import { getTokenAddress } from 'swap/getSwapRate'
-import { ShowSnackBar } from 'components/Snackbar'
+import { showSnackBarCustom, updateSnackBarCustom } from 'components/Snackbar'
 import {
   RemoveEvents,
   useBeforeRemoveListener
 } from 'hooks/useBeforeRemoveListener'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import { calculateRate } from 'swap/utils'
+import TransactionToast, {
+  TransactionToastType
+} from 'components/toast/TransactionToast'
+import { getTokenAddress } from 'swap/getSwapRate'
 
 const SECOND = 1000
 
@@ -70,7 +73,41 @@ const SwapReview = ({ onCancel, onSuccess }: Props) => {
       gasPrice &&
       slippage
     ) {
-      setSwapInProgress(true)
+      // setSwapInProgress(true)
+      const toastId = showSnackBarCustom(
+        <TransactionToast
+          message={'Swap in progress...'}
+          type={TransactionToastType.PENDING}
+        />,
+        'infinite'
+      )
+
+      onSuccess()
+
+      // setTimeout(() => {
+      //   updateSnackBarCustom(
+      //     toastId,
+      //     <TransactionToast
+      //       message={'Swap failed'}
+      //       type={TransactionToastType.ERROR}
+      //       toastId={toastId}
+      //     />
+      //   )
+      // }, 2000)
+      //
+      // setTimeout(() => {
+      //   updateSnackBarCustom(
+      //     toastId,
+      //     <TransactionToast
+      //       message={'Swap success'}
+      //       type={TransactionToastType.SUCCESS}
+      //       txHash={'asdasd'}
+      //       toastId={toastId}
+      //     />,
+      //     false
+      //   )
+      // }, 5000)
+
       const [result, error] = await resolve(
         swap(
           getTokenAddress(fromToken),
@@ -85,14 +122,28 @@ const SwapReview = ({ onCancel, onSuccess }: Props) => {
           slippage
         )
       )
-      setSwapInProgress(false)
       if (error || (result && 'error' in result)) {
         const message = error ? (error as Error).message : result?.error
         setSwapError(message)
-        ShowSnackBar('Swap Failed')
+        updateSnackBarCustom(
+          toastId,
+          <TransactionToast
+            message={'Swap failed'}
+            type={TransactionToastType.ERROR}
+            toastId={toastId}
+          />
+        )
       } else {
-        ShowSnackBar('Swap Successful')
-        onSuccess()
+        updateSnackBarCustom(
+          toastId,
+          <TransactionToast
+            message={'Swap success'}
+            type={TransactionToastType.SUCCESS}
+            txHash={result?.result?.swapTxHash}
+            toastId={toastId}
+          />,
+          false
+        )
       }
     }
   }
