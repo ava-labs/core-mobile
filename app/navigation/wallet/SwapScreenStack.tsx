@@ -59,7 +59,9 @@ function SwapReviewComp() {
   const onBackToParent = () => {
     navigation.getParent()?.goBack()
   }
-  return <SwapReview onCancel={navigation.goBack} onBackToParent={onBackToParent} />
+  return (
+    <SwapReview onCancel={navigation.goBack} onBackToParent={onBackToParent} />
+  )
 }
 
 export default React.memo(SwapScreenStack)

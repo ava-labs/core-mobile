@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { ScrollView, StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
