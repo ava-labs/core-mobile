@@ -5,7 +5,7 @@ import React, {
   useContext,
   useState
 } from 'react'
-import { getSwapRate } from 'swap/getSwapRate'
+import { getSwapRate, getTokenAddress } from 'swap/getSwapRate'
 import { SwapSide } from 'paraswap'
 import { performSwap } from 'swap/performSwap'
 import { OptimalRate } from 'paraswap-core'
@@ -39,8 +39,10 @@ export interface SwapContextState {
     | { result: { swapTxHash: any; approveTxHash: any }; error?: undefined }
   >
   getRate: (
-    srcToken?: TokenWithBalance,
-    destToken?: TokenWithBalance,
+    fromTokenAddress?: string,
+    toTokenAddress?: string,
+    fromTokenDecimals?: number,
+    toTokenDecimals?: number,
     amount?: string,
     swapSide?: SwapSide
   ) => Promise<
@@ -86,8 +88,10 @@ export const SwapContextProvider = ({ children }: { children: any }) => {
     }
 
     getSwapRate({
-      srcToken: fromToken,
-      destToken: toToken,
+      fromTokenAddress: getTokenAddress(fromToken),
+      toTokenAddress: getTokenAddress(toToken),
+      fromTokenDecimals: fromToken?.decimals,
+      toTokenDecimals: toToken?.decimals,
       amount: optimalRate?.srcAmount,
       swapSide: destination === 'to' ? SwapSide.SELL : SwapSide.BUY,
       network: activeNetwork,
@@ -105,20 +109,30 @@ export const SwapContextProvider = ({ children }: { children: any }) => {
 
   const getRate = useCallback(
     (
-      srcToken?: TokenWithBalance,
-      destToken?: TokenWithBalance,
+      fromTokenAddress?: string,
+      toTokenAddress?: string,
+      fromTokenDecimals?: number,
+      toTokenDecimals?: number,
       amount?: string,
       swapSide?: SwapSide
     ) => {
-      if (!activeAccount || !srcToken || !destToken || !amount || !swapSide) {
+      if (
+        !activeAccount ||
+        !fromTokenAddress ||
+        !toTokenAddress ||
+        !amount ||
+        !swapSide
+      ) {
         return Promise.reject({
           error: 'no source token on request'
         })
       }
 
       return getSwapRate({
-        srcToken,
-        destToken,
+        fromTokenAddress,
+        toTokenAddress,
+        fromTokenDecimals,
+        toTokenDecimals,
         amount,
         swapSide,
         account: activeAccount,

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { ScrollView, StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
@@ -107,7 +107,7 @@ export default function SwapView() {
         destinationInput
       })
     },
-    [destination, toToken, fromToken]
+    []
   )
 
   const { capture } = usePosthogContext()
@@ -181,7 +181,14 @@ export default function SwapView() {
           setLoading(true)
           try {
             const [result, error] = await resolve(
-              getRate(fromToken, toToken, amountString, swapSide)
+              getRate(
+                fromTokenAddress,
+                toTokenAddress,
+                fromTokenDecimals,
+                toTokenDecimals,
+                amountString,
+                swapSide
+              )
             )
 
             if (error || (result && 'error' in result)) {
@@ -237,7 +244,7 @@ export default function SwapView() {
       bn: stringToBN(fromTokenValue?.amount ?? '0', toToken?.decimals ?? 18)
     }
 
-    calculateTokenValueToInput(amount, 'to', fromToken, toToken)
+    calculateTokenValueToInput(amount, 'to', selectedFromToken, selectedToToken)
   }
 
   const swapTokens = () => {
@@ -305,6 +312,7 @@ export default function SwapView() {
 
           <UniversalTokenSelector
             label={'From'}
+            hideZeroBalanceTokens
             onTokenChange={token => {
               const tkWithBalance = token as TokenWithBalance
               setFromToken(tkWithBalance)
@@ -341,6 +349,7 @@ export default function SwapView() {
                 : defaultFromValue || new BN(0)
             }
             hideErrorMessage
+            skipHandleMaxAmount
             error={swapWarning || swapError?.message}
             isValueLoading={destination === 'from' && loading}
             onError={errorMessage => {
@@ -365,6 +374,7 @@ export default function SwapView() {
           <Space y={20} />
           <UniversalTokenSelector
             label={'To'}
+            hideMax
             onTokenChange={token => {
               const tkWithBalance = token as TokenWithBalance
               setToToken(tkWithBalance)

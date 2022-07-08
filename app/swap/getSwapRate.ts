@@ -14,23 +14,33 @@ export const getTokenAddress = (token?: TokenWithBalance) => {
 }
 
 export async function getSwapRate(request: {
-  srcToken: TokenWithBalance
-  destToken: TokenWithBalance
+  fromTokenAddress?: string
+  toTokenAddress?: string
+  fromTokenDecimals?: number
+  toTokenDecimals?: number
   amount: string
   swapSide: SwapSide
   account: Account
   network: Network
 }) {
-  const { srcToken, destToken, amount, swapSide, account, network } =
-    request || []
+  const {
+    fromTokenAddress,
+    toTokenAddress,
+    fromTokenDecimals,
+    toTokenDecimals,
+    amount,
+    swapSide,
+    account,
+    network
+  } = request || []
 
-  if (!srcToken) {
+  if (!fromTokenAddress) {
     return {
       error: 'no source token on request'
     }
   }
 
-  if (!destToken) {
+  if (!toTokenAddress) {
     return {
       error: 'no destination token on request'
     }
@@ -44,10 +54,10 @@ export async function getSwapRate(request: {
 
   const [result, error] = await resolve(
     swapService.getSwapRate(
-      getTokenAddress(srcToken),
-      srcToken.decimals,
-      getTokenAddress(destToken),
-      destToken.decimals,
+      fromTokenAddress,
+      fromTokenDecimals ?? 0,
+      toTokenAddress,
+      toTokenDecimals ?? 0,
       amount,
       swapSide,
       network,
