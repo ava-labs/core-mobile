@@ -3,6 +3,7 @@ import { StackScreenProps } from '@react-navigation/stack'
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs'
 import { DrawerScreenProps as RNDrawerScreenProps } from '@react-navigation/drawer'
 import { BigNumber } from 'ethers'
+import { TokenWithBalance } from 'store/balance'
 import { RootScreenStackParamList } from './RootScreenStack'
 import { OnboardingScreenStackParamList } from './OnboardScreenStack'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
@@ -21,6 +22,11 @@ import { SecurityStackParamList } from './wallet/SecurityPrivacyStackScreen'
 import { BridgeStackParamList } from './wallet/BridgeScreenStack'
 import { PortfolioStackParamList } from './wallet/PortfolioScreenStack'
 export type { RootScreenStackParamList }
+
+export type TokenSelectParams = {
+  hideZeroBalance?: boolean
+  onTokenSelected: (token: TokenWithBalance) => void
+}
 
 export type BridgeTransactionStatusParams = {
   blockchain: string

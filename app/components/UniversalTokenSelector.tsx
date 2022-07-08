@@ -33,6 +33,8 @@ interface Props {
   hideErrorMessage?: boolean
   skipHandleMaxAmount?: boolean
   onError?: (errorMessage: string) => void
+  hideMax?: boolean
+  hideZeroBalanceTokens?: boolean
 }
 
 type NavigationProp = WalletScreenProps<
@@ -51,6 +53,8 @@ const UniversalTokenSelector: FC<Props> = ({
   isValueLoading,
   hideErrorMessage,
   skipHandleMaxAmount,
+  hideMax,
+  hideZeroBalanceTokens = false,
   onError
 }) => {
   const theme = useApplicationContext().theme
@@ -65,6 +69,7 @@ const UniversalTokenSelector: FC<Props> = ({
 
   const openTokenSelectorBottomSheet = () => {
     navigation.navigate(AppNavigation.Modal.SelectToken, {
+      hideZeroBalance: hideZeroBalanceTokens,
       onTokenSelected: onTokenChange
     })
   }
@@ -153,7 +158,7 @@ const UniversalTokenSelector: FC<Props> = ({
                   : inputAmount
               }
               max={
-                !isValueLoading && !skipHandleMaxAmount
+                !isValueLoading && !hideMax
                   ? maxAmount ?? selectedToken?.balance
                   : undefined
               }

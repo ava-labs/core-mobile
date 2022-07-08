@@ -63,9 +63,9 @@ import { TokenWithBalance } from 'store/balance'
 import { BridgeStackParamList } from './wallet/BridgeScreenStack'
 import {
   BridgeTransactionStatusParams,
-  EditGasLimitParams,
-  WalletScreenProps
-} from './types'
+  EditGasLimitParams, TokenSelectParams,
+  WalletScreenProps,
+} from './types';
 import AdvancedStackScreen from './wallet/AdvancedStackScreen'
 
 type Props = {
@@ -108,9 +108,7 @@ export type WalletScreenStackParams = {
   [AppNavigation.Modal.AccountDropDown]: undefined
   [AppNavigation.Modal.AccountBottomSheet]: undefined
   [AppNavigation.Modal.SignOut]: undefined
-  [AppNavigation.Modal.SelectToken]: {
-    onTokenSelected: (token: TokenWithBalance) => void
-  }
+  [AppNavigation.Modal.SelectToken]: TokenSelectParams
   [AppNavigation.Modal.EditGasLimit]: EditGasLimitParams
 }
 
