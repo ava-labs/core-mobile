@@ -68,6 +68,7 @@ const NetworkFeeSelector = ({
   const [customGasPrice, setCustomGasPrice] = useState(gasPrice)
   const [customGasLimit, setCustomGasLimit] = useState<number>()
   const [isGasPriceTooHigh, setIsGasPriceTooHigh] = useState(false)
+  const isBtcNetwork = network.vmName === NetworkVMType.BITCOIN
   const gasLimit = customGasLimit ?? limit
   const [newFees, setNewFees] =
     useState<ReturnType<typeof calculateGasAndFees>>()
@@ -228,7 +229,7 @@ const NetworkFeeSelector = ({
           alignItems: 'center'
         }}>
         <FeeSelector
-          label={FeePreset.Normal}
+          label={isBtcNetwork ? 'Slow' : FeePreset.Normal}
           selected={selectedFee === FeePreset.Normal}
           onSelect={() => updateGasFee(FeePreset.Normal)}
           value={getUpToTwoDecimals(networkFee.low, networkFee.displayDecimals)}
@@ -236,7 +237,7 @@ const NetworkFeeSelector = ({
         {!networkFee?.isFixedFee && (
           <>
             <FeeSelector
-              label={FeePreset.Fast}
+              label={isBtcNetwork ? 'Medium' : FeePreset.Fast}
               selected={selectedFee === FeePreset.Fast}
               onSelect={() => updateGasFee(FeePreset.Fast)}
               value={getUpToTwoDecimals(
@@ -245,7 +246,7 @@ const NetworkFeeSelector = ({
               )}
             />
             <FeeSelector
-              label={FeePreset.Instant}
+              label={isBtcNetwork ? 'Fast' : FeePreset.Instant}
               selected={selectedFee === FeePreset.Instant}
               onSelect={() => updateGasFee(FeePreset.Instant)}
               value={getUpToTwoDecimals(
