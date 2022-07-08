@@ -85,7 +85,9 @@ const EditFees = ({ gasPrice, gasLimit, onSave, onClose }: EditFeesProps) => {
         mode={'amount'}
         text={newGasLimit.toString()}
         popOverInfoText={gasLimitInfoInfoMessage}
-        onChangeText={text => checkCustomGasLimit(parseInt(text ?? '0'))}
+        onChangeText={text =>
+          checkCustomGasLimit(parseInt(isNaN(parseInt(text)) ? '0' : text))
+        }
         errorText={feeError}
       />
       <FlexSpacer />
