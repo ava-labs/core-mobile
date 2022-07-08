@@ -1,10 +1,10 @@
 import React, { memo, useMemo } from 'react'
 import { BackHandler, Modal } from 'react-native'
 import {
-NavigatorScreenParams,
-useFocusEffect,
-useNavigation,
-useRoute
+  NavigatorScreenParams,
+  useFocusEffect,
+  useNavigation,
+  useRoute
 } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
 import { useApplicationContext } from 'contexts/ApplicationContext'

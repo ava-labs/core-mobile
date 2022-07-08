@@ -2,7 +2,7 @@ import React, { FC, useEffect, useState } from 'react'
 import { InteractionManager, StyleSheet, View } from 'react-native'
 import WalletConnect from 'WalletConnect'
 import AccountApproval from 'screens/rpc/AccountApproval'
-import TransactionSummary from 'screens/rpc/TransactionSummary'
+import SignTransaction from 'screens/rpc/SignTransaction'
 import { Action, MessageType } from 'navigation/messages/models'
 import { useAccountsContext } from '@avalabs/wallet-react-components'
 import { useGasPrice } from 'utils/GasPriceHook'
@@ -11,50 +11,35 @@ import SignMessage from 'screens/rpc/SignMessage/SignMessage'
 import BottomSheet from 'components/BottomSheet'
 import { ShowSnackBar } from 'components/Snackbar'
 import Spinner from 'components/Spinner'
+import { txToCustomEvmTx } from 'rpc/txToCustomEvmTx'
 
 const RpcMethodsUI: FC = () => {
-  const [showPendingApproval, setShowPendingApproval] = useState(false)
-  const [walletConnectRequest, setWalletConnectRequest] = useState(false)
-  const [walletConnectRequestInfo, setWalletConnectRequestInfo] = useState<
-    any | null
-  >(false)
-  // const [showExpandedMessage, setShowExpandedMessage] = useState(false)
-  const [currentPageMeta, setCurrentPageMeta] = useState({})
+  const [signingCallRequest, setSigningCallRequest] = useState(false)
+  const [transactionCallRequest, setTransactionCallRequest] = useState(false)
+  const [callRequestPayload, setCallRequestPayload] = useState<any>({})
+  const [signMessageParams, setSignMessageParams] = useState<Action>()
+  const [dappConnectionRequest, setDappConnectionRequest] = useState(false)
+  const [currentPageMeta, setCurrentPageMeta] = useState<any>({})
   const { activeAccount } = useAccountsContext()
   const wallet = activeAccount?.wallet
   const { gasPrice } = useGasPrice()
-  const [signMessageParams, setSignMessageParams] = useState<Action>()
-  const [loading, setLoading] = useState(false)
-  // const [signType, setSignType] = useState<any | null>(false)
-  // const [customNetworkToAdd, setCustomNetworkToAdd] = useState(null)
-  // const [customNetworkToSwitch, setCustomNetworkToSwitch] = useState(null)
-  //
-  // const [hostToApprove, setHostToApprove] = useState(null)
-  //
-  // const [watchAsset, setWatchAsset] = useState(false)
-  // const [suggestedAssetMeta, setSuggestedAssetMeta] = useState(undefined)
 
-  // useEffect(() => {
-  //   if (showPendingApproval || signMessageParams || walletConnectRequest) {
-  //     setShowBottomSheet(1)
-  //   } else {
-  //     setShowBottomSheet(0)
-  //   }
-  // }, [showPendingApproval, signMessageParams, walletConnectRequest])
+  const [loading, setLoading] = useState(false)
 
   const initializeWalletConnect = () => {
     WalletConnect.hub.on('walletconnectSessionRequest', peerInfo => {
-      setWalletConnectRequest(true)
-      setWalletConnectRequestInfo(peerInfo)
+      setCurrentPageMeta(peerInfo)
+      setDappConnectionRequest(true)
     })
-    WalletConnect.hub.on('walletconnectCallRequest', payload => {
-      setWalletConnectRequestInfo(payload)
+    WalletConnect.hub.on('walletconnectCallRequest', data => {
+      const { payload, peerMeta } = data
       InteractionManager.runAfterInteractions(() => {
-        setCurrentPageMeta(payload)
+        setCurrentPageMeta(peerMeta)
+        setCallRequestPayload(payload)
         const { method } = payload
         switch (method) {
           case MessageType.ETH_SEND:
-            setShowPendingApproval(true)
+            setTransactionCallRequest(true)
             break
           case MessageType.ETH_SIGN:
           case MessageType.SIGN_TYPED_DATA:
@@ -64,6 +49,7 @@ const RpcMethodsUI: FC = () => {
           case MessageType.PERSONAL_SIGN: {
             const displayData = paramsToMessageParams(payload)
             setSignMessageParams({ ...payload, displayData })
+            setSigningCallRequest(true)
           }
         }
       })
@@ -136,48 +122,72 @@ const RpcMethodsUI: FC = () => {
   }
 
   const onWalletConnectSessionApproval = () => {
-    const { peerId } = walletConnectRequestInfo
-    setWalletConnectRequest(false)
-    setWalletConnectRequestInfo({})
+    const { peerId } = currentPageMeta
+    setDappConnectionRequest(false)
+    setCurrentPageMeta({})
     WalletConnect.hub.emit('walletconnectSessionRequest::approved', peerId)
     ShowSnackBar('You can now go back to the browser')
   }
 
   const onWalletConnectSessionRejected = () => {
-    const peerId = walletConnectRequestInfo.peerId
-    setWalletConnectRequest(false)
-    setWalletConnectRequestInfo({})
+    const { peerId } = currentPageMeta
+    setDappConnectionRequest(false)
+    setCurrentPageMeta({})
     WalletConnect.hub.emit('walletconnectSessionRequest::rejected', peerId)
-    ShowSnackBar('Rejected')
   }
 
-  const onWalletConnectCallApproval = async () => {
+  const onWalletConnectCallApproval = async (customParams: any) => {
     setLoading(true)
     try {
-      const { id } = walletConnectRequestInfo
-      const { method, params } = currentPageMeta
+      const { id, method, params } = callRequestPayload
       let hash
       const { data } = params[0]
       if (method === MessageType.ETH_SEND) {
         const gas = parseInt(params[0].gas)
-        hash = await wallet?.sendCustomEvmTx(
-          gasPrice.bn,
-          gas,
-          data,
-          params[0].to,
-          params[0].value
-        )
-        setWalletConnectRequestInfo({})
+        if (customParams) {
+          console.log(customParams)
+          const evmParam = txToCustomEvmTx(
+            customParams.fees.gasPrice,
+            customParams
+          )
+          console.log(evmParam)
+          if (WalletConnect) {
+            hash = await wallet?.sendCustomEvmTx(
+              evmParam.gasPrice,
+              evmParam.gasLimit,
+              evmParam.data,
+              evmParam.to,
+              evmParam.value
+            )
+            WalletConnect.hub.emit('walletconnectCallRequest::approved', {
+              id,
+              hash
+            })
+
+            onSignAction()
+            ShowSnackBar('You can now go back to the browser')
+          } else {
+            console.log('WalletConnect exploded')
+          }
+        } else {
+          hash = await wallet?.sendCustomEvmTx(
+            gasPrice.bn,
+            gas,
+            data,
+            params[0].to,
+            params[0].value
+          )
+        }
+        setCallRequestPayload({})
       } else {
         const pData = signMessageParams?.displayData.data
         hash = await signMessage(method as MessageType, pData)
       }
-      onSignAction()
-      WalletConnect.hub.emit('walletconnectCallRequest::approved', {
-        id,
-        hash
-      })
-      ShowSnackBar('You can now go back to the browser')
+      // onSignAction()
+      // WalletConnect.hub.emit('walletconnectCallRequest::approved', {
+      //   id,
+      //   hash
+      // })
     } catch (e) {
       ShowSnackBar('An error occurred. Go back to the browser')
       console.log('error approving', e)
@@ -187,15 +197,18 @@ const RpcMethodsUI: FC = () => {
   }
 
   const onWalletConnectCallRejected = () => {
-    const peerId = walletConnectRequestInfo.peerId
+    WalletConnect.hub.emit(
+      'walletconnectCallRequest::rejected',
+      callRequestPayload.peerId
+    )
     onSignAction()
-    WalletConnect.hub.emit('walletconnectCallRequest::rejected', peerId)
-    ShowSnackBar('Rejected')
   }
 
   const onSignAction = () => {
-    setShowPendingApproval(false)
+    setSigningCallRequest(false)
     setSignMessageParams(undefined)
+    setCallRequestPayload({})
+    setTransactionCallRequest(false)
   }
 
   useEffect(() => {
@@ -206,37 +219,42 @@ const RpcMethodsUI: FC = () => {
     return (
       <BottomSheet
         snapPoints={['0%', '90%']}
-        snapTo={showPendingApproval ? 1 : 0}
+        snapTo={transactionCallRequest ? 1 : 0}
         disablePanningGesture
         children={
-          <TransactionSummary
-            onCancel={onWalletConnectCallRejected}
-            onConfirm={onWalletConnectCallApproval}
-            payload={currentPageMeta}
-          />
+          transactionCallRequest && (
+            <SignTransaction
+              onCancel={onWalletConnectCallRejected}
+              onConfirm={onWalletConnectCallApproval}
+              payload={callRequestPayload}
+              peerMeta={currentPageMeta}
+            />
+          )
         }
       />
     )
   }
 
   function renderWalletConnectSessionRequestModal() {
-    const meta = walletConnectRequestInfo.peerMeta || null
     return (
       <BottomSheet
         snapPoints={['0%', '90%']}
-        snapTo={walletConnectRequest ? 1 : 0}
+        snapTo={dappConnectionRequest ? 1 : 0}
         disablePanningGesture
         children={
-          <AccountApproval
-            onCancel={onWalletConnectSessionRejected}
-            onConfirm={onWalletConnectSessionApproval}
-            currentPageInformation={{
-              title: meta && meta.name,
-              url: meta && meta.url,
-              icon: meta && meta.icons[0],
-              description: meta && meta.description
-            }}
-          />
+          dappConnectionRequest && (
+            <AccountApproval
+              onCancel={onWalletConnectSessionRejected}
+              onConfirm={onWalletConnectSessionApproval}
+              currentPageInformation={{
+                title: currentPageMeta && currentPageMeta?.peerMeta?.name,
+                url: currentPageMeta && currentPageMeta?.peerMeta?.url,
+                icon: currentPageMeta && currentPageMeta?.peerMeta?.icons?.[0],
+                description:
+                  currentPageMeta && currentPageMeta?.peerMeta?.description
+              }}
+            />
+          )
         }
       />
     )
@@ -246,7 +264,7 @@ const RpcMethodsUI: FC = () => {
     return (
       <BottomSheet
         snapPoints={['0%', '85%']}
-        snapTo={signMessageParams ? 1 : 0}
+        snapTo={signingCallRequest ? 1 : 0}
         disablePanningGesture
         children={
           signMessageParams && (
@@ -275,30 +293,30 @@ const RpcMethodsUI: FC = () => {
   )
 }
 
-const styles = StyleSheet.create({
-  contentContainer: {
-    justifyContent: 'center',
-    alignContent: 'center',
-    margin: 16
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600'
-  },
-  text: { textAlign: 'center', fontSize: 18, marginBottom: 16 },
-  highlight: {
-    fontWeight: '700'
-  },
-  bottomModal: {
-    justifyContent: 'flex-end',
-    margin: 0
-  },
-  actionContainer: {
-    flex: 0,
-    flexDirection: 'row',
-    paddingVertical: 16,
-    paddingHorizontal: 24
-  }
-})
+// const styles = StyleSheet.create({
+//   contentContainer: {
+//     justifyContent: 'center',
+//     alignContent: 'center',
+//     margin: 16
+//   },
+//   sectionTitle: {
+//     fontSize: 24,
+//     fontWeight: '600'
+//   },
+//   text: { textAlign: 'center', fontSize: 18, marginBottom: 16 },
+//   highlight: {
+//     fontWeight: '700'
+//   },
+//   bottomModal: {
+//     justifyContent: 'flex-end',
+//     margin: 0
+//   },
+//   actionContainer: {
+//     flex: 0,
+//     flexDirection: 'row',
+//     paddingVertical: 16,
+//     paddingHorizontal: 24
+//   }
+// })
 
 export default RpcMethodsUI
