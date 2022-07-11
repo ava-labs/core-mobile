@@ -14,7 +14,7 @@ export function isTransactionDescriptionError(
 }
 
 export async function getTxInfo(txParams: RpcTxParams, isMainnet: boolean) {
-  const testTx = new BlizzardTransaction({
+  const blizzardApi = new BlizzardTransaction({
     baseUrl: blizzardURL
   })
 
@@ -25,5 +25,5 @@ export async function getTxInfo(txParams: RpcTxParams, isMainnet: boolean) {
 
   console.log('explain params', data)
 
-  return await testTx.explainTx(data as ExplainTransactionDto)
+  return await blizzardApi.explainTx(data as ExplainTransactionDto)
 }

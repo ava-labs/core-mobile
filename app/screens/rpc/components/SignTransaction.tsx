@@ -18,17 +18,20 @@ import {
   SwapExactTokensForTokenDisplayValues,
   TransactionDisplayValues
 } from 'screens/rpc/util/types'
-import { useExplainTransaction } from 'screens/rpc/util/useExplainTransaction'
-import CustomFees from 'components/CustomFees'
+import {
+  Limit,
+  useExplainTransaction
+} from 'screens/rpc/util/useExplainTransaction'
 import Separator from 'components/Separator'
 import BN from 'bn.js'
 import { bnToLocaleString, stringToBN } from '@avalabs/utils-sdk'
 import AddSVG from 'components/svg/AddSVG'
 import ArrowSVG from 'components/svg/ArrowSVG'
-import { Limit } from 'components/EditFees'
 import Spinner from 'components/Spinner'
 import TabViewAva from 'components/TabViewAva'
 import { getHexStringToBytes } from 'utils/getHexStringToBytes'
+import NetworkFeeSelector from 'components/NetworkFeeSelector'
+import { useActiveNetwork } from 'hooks/useActiveNetwork'
 
 interface Props {
   txParams: RpcTxParams
@@ -49,8 +52,8 @@ const SignTransaction: FC<Props> = ({
 }) => {
   const {
     setCustomFee,
-    showCustomSpendLimit,
-    setShowCustomSpendLimit,
+    // showCustomSpendLimit,
+    // setShowCustomSpendLimit,
     setSpendLimit,
     displaySpendLimit,
     customSpendLimit,
@@ -79,7 +82,7 @@ const SignTransaction: FC<Props> = ({
         {isApprove && (
           <RpcApproveTransaction
             {...(displayData as ApproveTransactionData)}
-            setShowCustomSpendLimit={setShowCustomSpendLimit}
+            // setShowCustomSpendLimit={setShowCustomSpendLimit}
             displayStendLimit={displaySpendLimit}
             onCustomFeeSet={setCustomFee}
             selectedGasFee={selectedGasFee}
@@ -142,6 +145,7 @@ function RpcApproveTransaction({
   ...rest
 }: ApproveTransactionData): JSX.Element {
   const theme = useApplicationContext().theme
+  const activeNetwork = useActiveNetwork()
 
   useEffect(() => {
     if (!displaySpendLimit && rest.tokenAmount) {
@@ -216,12 +220,12 @@ function RpcApproveTransaction({
       </View>
       <Space y={30} />
       {gasPrice.value !== '' && gasPrice.value !== '0' && (
-        <CustomFees
+        <NetworkFeeSelector
           gasPrice={rest.fees.gasPrice}
-          limit={gasLimit?.toString() ?? '0'}
-          defaultGasPrice={gasPrice}
+          limit={gasLimit ?? 0}
           onChange={onCustomFeeSet}
-          selectedGasFeeModifier={selectedGasFee}
+          currentModifier={selectedGasFee}
+          network={activeNetwork}
         />
       )}
     </>
@@ -243,7 +247,7 @@ function RpcTransaction({
   ...rest
 }: SwapExactTokensForTokenDisplayValues) {
   const theme = useApplicationContext().theme
-
+  const activeNetwork = useActiveNetwork()
   const sentTokens = balanceChange?.sendTokenList
   const receivedTokens = balanceChange?.receiveTokenList
 
@@ -407,12 +411,12 @@ function RpcTransaction({
       <TabViewAva>
         <TabViewAva.Item title={'Feeds'}>
           {gasPrice.value !== '' && gasPrice.value !== '0' && (
-            <CustomFees
+            <NetworkFeeSelector
               gasPrice={rest.fees.gasPrice}
-              limit={gasLimit?.toString() ?? '0'}
-              defaultGasPrice={gasPrice}
+              limit={gasLimit ?? 0}
               onChange={onCustomFeeSet}
-              selectedGasFeeModifier={selectedGasFee}
+              currentModifier={selectedGasFee}
+              network={activeNetwork}
             />
           )}
         </TabViewAva.Item>

@@ -1,8 +1,7 @@
-import { GasPrice } from 'utils/GasPriceHook'
 import * as ethers from 'ethers'
 import { bigToLocaleString, bnToBig, hexToBN } from '@avalabs/utils-sdk'
-import { BN } from 'avalanche'
 import { DisplayValueParserProps, RpcTxParams } from 'screens/rpc/util/types'
+import { calculateGasAndFees } from 'utils/Utils'
 
 export function isTxParams(
   params: Partial<RpcTxParams>
@@ -25,30 +24,14 @@ export function parseDisplayValues(
   return {
     toAddress: request.to,
     fromAddress: request.from,
-    ...calculateGasAndFees(
-      props.gasPrice,
-      request.gas as string,
-      props.avaxPrice
-    ),
+    ...calculateGasAndFees({
+      gasPrice: props.gasPrice,
+      gasLimit: Number(request.gas),
+      tokenPrice: props.avaxPrice
+    }),
     site: props.site,
     description,
     name: name ? name[0].toUpperCase() + name.slice(1) : '',
     displayValue
-  }
-}
-
-function calculateGasAndFees(
-  gasPrice: GasPrice,
-  gasLimit: string,
-  avaxPrice: number
-) {
-  const bnFee = gasPrice.bn.mul(new BN(parseInt(gasLimit)))
-  const fee = bigToLocaleString(bnToBig(bnFee, 18), 4)
-  return {
-    gasPrice: gasPrice,
-    gasLimit: parseInt(gasLimit),
-    fee,
-    bnFee,
-    feeUSD: parseFloat((parseFloat(fee) * avaxPrice).toFixed(4))
   }
 }

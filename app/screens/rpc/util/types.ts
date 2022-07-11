@@ -6,6 +6,7 @@ import {
 import { ExplainTransactionResponse } from '@avalabs/blizzard-sdk'
 import * as ethers from 'ethers'
 import BN from 'bn.js'
+import {BigNumber} from 'ethers';
 
 export interface RpcTxParams {
   from: string
@@ -23,7 +24,7 @@ export enum RPC_EVENT {
 }
 
 export interface DisplayValueParserProps {
-  gasPrice: GasPrice
+  gasPrice: BigNumber
   erc20Tokens: ERC20WithBalance[]
   avaxToken: AvaxWithBalance
   avaxPrice: number
