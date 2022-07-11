@@ -69,7 +69,7 @@ function BaseListItem({
           )}
           <View style={styles.baseMainContent}>
             {typeof title === 'string' ? (
-              <AvaText.Heading3>{title}</AvaText.Heading3>
+              <AvaText.Heading3 ellipsizeMode="tail">{title}</AvaText.Heading3>
             ) : (
               <View
                 style={[
