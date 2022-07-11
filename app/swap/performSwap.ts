@@ -1,4 +1,4 @@
-import { APIError, ETHER_ADDRESS } from 'paraswap'
+import { APIError } from 'paraswap'
 import { incrementalPromiseResolve, resolve } from 'swap/utils'
 import { BN } from 'avalanche'
 import { ChainId, Network } from '@avalabs/chains-sdk'
@@ -12,7 +12,8 @@ import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 import { BigNumber, ethers } from 'ethers'
 import { OptimalRate } from 'paraswap-core'
 import { isAPIError } from 'utils/Utils'
-import ERC20 from '../contracts/erc20.abi.json'
+import Logger from 'utils/Logger'
+import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
 
 const SERVER_BUSY_ERROR = 'Server too busy'
 
@@ -85,10 +86,10 @@ export async function performSwap(request: {
     })
   }
 
-  const srcTokenAddress =
-    srcToken === network.networkToken.symbol ? ETHER_ADDRESS : srcToken
-  const destTokenAddress =
-    destToken === network.networkToken.symbol ? ETHER_ADDRESS : destToken
+  const srcTokenAddress = optimalRate.srcToken
+  // srcToken === network.networkToken.symbol ? ETHER_ADDRESS : srcToken
+  const destTokenAddress = optimalRate.destToken
+  // destToken === network.networkToken.symbol ? ETHER_ADDRESS : destToken
   const defaultGasPrice = await networkFeeService.getNetworkFee(network)
 
   const buildOptions = undefined,
@@ -123,7 +124,7 @@ export async function performSwap(request: {
   if (srcToken !== network.networkToken.symbol) {
     const contract = new ethers.Contract(
       srcTokenAddress,
-      ERC20,
+      ERC20.abi,
       avalancheProvider
     )
 
@@ -132,6 +133,7 @@ export async function performSwap(request: {
     )
 
     if (allowanceError) {
+      Logger.error('allowance error', allowanceError)
       return Promise.reject({
         error: `Allowance Error: ${
           allowanceError ?? (allowance as APIError).message
@@ -165,6 +167,7 @@ export async function performSwap(request: {
         )
 
         if (signError || isAPIError(signedTx)) {
+          Logger.error('approve sign error', signError)
           return Promise.reject({
             error: `Approve Error: ${signError}`
           })
@@ -175,6 +178,7 @@ export async function performSwap(request: {
         )
 
         if (approveError) {
+          Logger.error('approve send error', approveError)
           return Promise.reject({
             error: `Approve error ${approveError}`
           })
@@ -200,8 +204,12 @@ export async function performSwap(request: {
     partnerFeeBps,
     receiver,
     buildOptions,
-    network.networkToken.symbol === srcToken ? 18 : srcDecimals,
-    network.networkToken.symbol === srcToken ? 18 : destDecimals,
+    network.networkToken.symbol === srcToken
+      ? network.networkToken.decimals
+      : srcDecimals,
+    network.networkToken.symbol === destToken
+      ? network.networkToken.decimals
+      : destDecimals,
     permit,
     deadline
   )
@@ -211,20 +219,27 @@ export async function performSwap(request: {
   )
 
   if ((txBuildData as APIError).message) {
+    Logger.error('error building API', (txBuildData as APIError).message)
     return Promise.reject({
       error: (txBuildData as APIError).message
     })
   }
   if (txBuildDataError) {
+    Logger.error('error building', txBuildDataError)
     return Promise.reject({
       error: `Data Error: ${txBuildDataError}`
     })
   }
 
+  // this sometimes is returning 1 below the current count
+  // asked about manually increasing it, and it's fine, except
+  // user tries to do 2 simultaneous tx in different wallets
+  const nonce = await avalancheProvider.getTransactionCount(userAddress)
+
   const [signedTx, signError] = await resolve(
     walletService.sign(
       {
-        nonce: await avalancheProvider.getTransactionCount(userAddress),
+        nonce: nonce + 1,
         chainId: ChainId.AVALANCHE_MAINNET_ID,
         gasPrice: BigNumber.from(gasPrice ? gasPrice : defaultGasPrice?.low),
         gasLimit: Number(txBuildData.gas),
@@ -241,6 +256,7 @@ export async function performSwap(request: {
   )
 
   if (signError) {
+    Logger.error('error signing', signError)
     return Promise.reject({
       error: `Tx Error: ${signError}`
     })
@@ -252,6 +268,7 @@ export async function performSwap(request: {
 
   if (txError) {
     const shortError = txError.message.split('\n')[0]
+    Logger.error('error sending', txError)
     return Promise.reject({
       error: shortError
     })

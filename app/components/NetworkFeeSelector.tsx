@@ -303,9 +303,9 @@ const NetworkFeeSelector = ({
           {newFees?.fee} {network?.networkToken?.symbol}
         </AvaText.Heading3>
         <Space x={4} />
-        {!isNaN(Number(newFees?.feeUSD)) && (
+        {!isNaN(Number(newFees?.feeInCurrency)) && (
           <AvaText.Body3 currency textStyle={{ paddingBottom: 2 }}>
-            {newFees?.feeUSD}
+            {newFees?.feeInCurrency}
           </AvaText.Body3>
         )}
       </Row>

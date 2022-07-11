@@ -120,7 +120,7 @@ export function calculateGasAndFees({
     gasLimit: gasLimit || 0,
     fee,
     bnFee,
-    feeUSD: parseFloat((parseFloat(fee) * tokenPrice).toFixed(4))
+    feeInCurrency: parseFloat((parseFloat(fee) * tokenPrice).toFixed(4))
   }
 }
 

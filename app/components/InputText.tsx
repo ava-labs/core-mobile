@@ -66,7 +66,7 @@ export default function InputText({
   editable,
   label,
   popOverInfoText,
-  mode,
+  mode = 'default',
   onMax,
   width,
   minHeight,

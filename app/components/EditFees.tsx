@@ -78,7 +78,9 @@ const EditFees = ({ gasPrice, gasLimit, onSave, onClose }: EditFeesProps) => {
       <Row style={{ marginHorizontal: 12, alignItems: 'flex-end' }}>
         <AvaText.Heading1>{newFees.fee}</AvaText.Heading1>
         <Space x={4} />
-        <AvaText.Heading3>AVAX</AvaText.Heading3>
+        <AvaText.Heading3>
+          {network?.networkToken?.symbol?.toUpperCase()}
+        </AvaText.Heading3>
       </Row>
       <InputText
         label={'Gas Limit ⓘ'}

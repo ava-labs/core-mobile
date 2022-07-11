@@ -7,7 +7,7 @@ import EditFees from 'components/EditFees'
 import { BigNumber } from 'ethers'
 
 type Props = {
-  onClose?: () => void
+  onClose: () => void
   onSave: (newGasLimit: number) => void
   gasLimit: number
   gasPrice: BigNumber
@@ -33,7 +33,7 @@ const EditGasLimitBottomSheet: React.FC<Props> = ({
     bottomSheetModalRef?.current?.close()
 
     InteractionManager.runAfterInteractions(() => {
-      onClose?.()
+      onClose()
     })
   }, [])
 
