@@ -77,7 +77,7 @@ type ContactDetailsScreenProps = AddressBookScreenProps<
 
 const ContactDetailsComp = () => {
   const dispatch = useDispatch()
-  const { setParams, setOptions, navigate, goBack } =
+  const { setParams, setOptions, goBack } =
     useNavigation<ContactDetailsScreenProps['navigation']>()
 
   const { params } = useRoute<ContactDetailsScreenProps['route']>()
@@ -153,12 +153,6 @@ const ContactDetailsComp = () => {
       }
       onChange={onChange}
       onDelete={deleteContact}
-      onSend={contact => {
-        navigate(AppNavigation.Wallet.SendTokens, {
-          screen: AppNavigation.Send.Send,
-          params: { contact }
-        })
-      }}
     />
   )
 }
