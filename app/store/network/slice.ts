@@ -29,9 +29,6 @@ export const networkSlice = createSlice({
   reducers: {
     setNetworks: (state, action: PayloadAction<Record<number, Network>>) => {
       state.networks = action.payload
-      state.favorites = Object.keys(action.payload).map(key =>
-        parseInt(key, 10)
-      )
     },
     setActive: (state, action: PayloadAction<number>) => {
       state.active = action.payload
@@ -55,32 +52,38 @@ const selectActiveChainId = (state: RootState) => state.network.active
 
 const selectFavorites = (state: RootState) => state.network.favorites
 
-export const selectNetworks = (state: RootState) => state.network.networks
+const _selectNetworks = (state: RootState) => state.network.networks
 
+export const selectNetworks = createSelector(
+  [_selectNetworks, selectAllCustomTokens, selectIsDeveloperMode],
+  (networks, allCustomTokens, isDeveloperMode) =>
+    Object.keys(networks).reduce((reducedNetworks, key) => {
+      const chainId = parseInt(key)
+      const network = networks[chainId]
+      if (network.isTestnet === isDeveloperMode) {
+        reducedNetworks[chainId] = mergeWithCustomTokens(
+          networks[chainId],
+          allCustomTokens
+        )
+      }
+      return reducedNetworks
+    }, {} as Record<number, Network>)
+)
 export const selectActiveNetwork = createSelector(
-  [selectNetworks, selectActiveChainId, selectAllCustomTokens],
-  (networks, chainId, allCustomTokens) => {
+  [selectNetworks, selectActiveChainId],
+  (networks, chainId) => {
     const network = networks[chainId]
-
     if (!network) return defaultNetwork
-
-    return mergeWithCustomTokens(network, allCustomTokens)
+    return network
   }
 )
 
 export const selectFavoriteNetworks = createSelector(
-  [
-    selectFavorites,
-    selectNetworks,
-    selectIsDeveloperMode,
-    selectAllCustomTokens
-  ],
-  (favorites, networks, isDeveloperMode, allCustomTokens) => {
+  [selectFavorites, selectNetworks, selectIsDeveloperMode],
+  (favorites, networks, isDeveloperMode) => {
     return favorites
-      .map(id => {
-        const network = networks[id]
-        return mergeWithCustomTokens(network, allCustomTokens)
-      })
+      .filter(chainId => !!networks[chainId])
+      .map(id => networks[id])
       .filter(network => network.isTestnet === isDeveloperMode)
   }
 )

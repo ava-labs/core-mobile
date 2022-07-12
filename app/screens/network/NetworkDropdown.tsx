@@ -15,7 +15,8 @@ import { useNavigation } from '@react-navigation/native'
 import {
   selectFavoriteNetworks,
   selectActiveNetwork,
-  setActive
+  setActive,
+  selectNetworks
 } from 'store/network'
 import { arrayHash } from 'utils/Utils'
 
@@ -27,6 +28,11 @@ type NetworkDropdownNavigationProp = DrawerScreenProps<
 
 export default function NetworkDropdown() {
   const favoriteNetworks = useSelector(selectFavoriteNetworks)
+  const allNetworks = useSelector(selectNetworks)
+  const networksToShow =
+    favoriteNetworks.length !== 0
+      ? favoriteNetworks
+      : Object.values(allNetworks)
   const activeNetwork = useSelector(selectActiveNetwork)
   const dispatch = useDispatch()
   const { theme } = useApplicationContext()
@@ -34,14 +40,14 @@ export default function NetworkDropdown() {
 
   const data = useMemo(
     () => [
-      ...favoriteNetworks.map(item => ({
+      ...networksToShow.map(item => ({
         name: item.chainName,
         chainId: item.chainId,
         logoUri: item.logoUri
       })),
       { name: ManageNetworks, chainId: -1, logoUri: '' }
     ],
-    [favoriteNetworks]
+    [networksToShow]
   )
 
   const dropdownUniqueId = useMemo(() => {
