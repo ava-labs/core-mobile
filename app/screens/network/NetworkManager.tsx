@@ -15,12 +15,14 @@ import ZeroState from 'components/ZeroState'
 import { NetworkListItem } from 'screens/network/NetworkListItem'
 import { Network } from '@avalabs/chains-sdk'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { useNavigation } from '@react-navigation/native'
 
 type Props = {
   onShowInfo: (network: Network) => void
 }
 
 export default function NetworkManager({ onShowInfo }: Props) {
+  const { goBack } = useNavigation()
   const networks = useSelector(selectNetworks)
   const favoriteNetworks = useSelector(selectFavoriteNetworks)
   const dispatch = useDispatch()
@@ -78,6 +80,7 @@ export default function NetworkManager({ onShowInfo }: Props) {
 
   function connect(chainId: number) {
     dispatch(setActive(chainId))
+    goBack()
   }
 
   const renderNetwork = ({ item }: { item: Network }) => {
