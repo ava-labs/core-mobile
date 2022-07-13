@@ -27,7 +27,10 @@ import SecurityPrivacyStackScreen, {
 import { MainHeaderOptions, SubHeaderOptions } from 'navigation/NavUtils'
 import WebViewScreen from 'screens/webview/WebViewScreen'
 import SignOutBottomSheet from 'screens/mainView/SignOutBottomSheet'
-import { createStackNavigator } from '@react-navigation/stack'
+import {
+  createStackNavigator,
+  StackNavigationOptions
+} from '@react-navigation/stack'
 import ReceiveScreenStack, {
   ReceiveStackParamList
 } from 'navigation/wallet/ReceiveScreenStack'
@@ -59,6 +62,10 @@ import StarSVG from 'components/svg/StarSVG'
 import { selectFavoriteNetworks, toggleFavorite } from 'store/network'
 import { onAppUnlocked, selectIsLocked } from 'store/app'
 import { Network } from '@avalabs/chains-sdk'
+import AddSVG from 'components/svg/AddSVG'
+import AddEditNetwork, {
+  AddEditNetworkProps
+} from 'screens/network/AddEditNetwork'
 import { BridgeStackParamList } from './wallet/BridgeScreenStack'
 import {
   BridgeTransactionStatusParams,
@@ -98,6 +105,7 @@ export type WalletScreenStackParams = {
   [AppNavigation.Wallet.CurrencySelector]: undefined
   [AppNavigation.Wallet.NetworkSelector]: undefined
   [AppNavigation.Wallet.NetworkDetails]: { network: Network }
+  [AppNavigation.Wallet.NetworkAddEdit]: AddEditNetworkProps
   [AppNavigation.Wallet.Advanced]: undefined
   [AppNavigation.Wallet.SecurityPrivacy]:
     | NavigatorScreenParams<SecurityStackParamList>
@@ -276,9 +284,13 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
           component={CurrencySelector}
         />
         <WalletScreenS.Screen
-          options={{
-            ...MainHeaderOptions('')
-          }}
+          options={
+            MainHeaderOptions(
+              '',
+              false,
+              <AddNetworkAction />
+            ) as Partial<StackNavigationOptions>
+          }
           name={AppNavigation.Wallet.NetworkSelector}
           component={NetworkSelectorScreen}
         />
@@ -288,6 +300,11 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
           }}
           name={AppNavigation.Wallet.NetworkDetails}
           component={NetworkDetailsScreen}
+        />
+        <WalletScreenS.Screen
+          options={MainHeaderOptions('')}
+          name={AppNavigation.Wallet.NetworkAddEdit}
+          component={NetworkAddEditScreen}
         />
         <WalletScreenS.Screen
           name={AppNavigation.Wallet.Advanced}
@@ -405,6 +422,20 @@ function NetworkSelectorScreen() {
   return <NetworkManager onShowInfo={showNetworkDetails} />
 }
 
+const AddNetworkAction = () => {
+  const { navigate } = useNavigation<NetworkSelectorScreenProps['navigation']>()
+  return (
+    <AvaButton.Icon
+      onPress={() =>
+        navigate(AppNavigation.Wallet.NetworkAddEdit, {
+          mode: 'create'
+        })
+      }>
+      <AddSVG hideCircle />
+    </AvaButton.Icon>
+  )
+}
+
 type NetworkDetailsScreenProps = WalletScreenProps<
   typeof AppNavigation.Wallet.NetworkDetails
 >
@@ -413,6 +444,17 @@ function NetworkDetailsScreen() {
   const { params } = useRoute<NetworkDetailsScreenProps['route']>()
 
   return <NetworkDetails network={params.network} />
+}
+
+type NetworkAddEditScreenProps = WalletScreenProps<
+  typeof AppNavigation.Wallet.NetworkAddEdit
+>
+
+function NetworkAddEditScreen() {
+  const { params } = useRoute<NetworkAddEditScreenProps['route']>()
+  const { goBack } = useNavigation<NetworkAddEditScreenProps['navigation']>()
+
+  return <AddEditNetwork mode={params.mode} onClose={() => goBack()} />
 }
 
 function ToggleFavoriteNetwork() {

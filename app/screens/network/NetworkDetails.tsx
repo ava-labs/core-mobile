@@ -17,7 +17,7 @@ type Props = {
 }
 
 export default function NetworkDetails({ network }: Props) {
-  const { rpcUrl, chainId, networkToken } = network
+  const { rpcUrl, chainId, networkToken, explorerUrl } = network
   const activeNetwork = useSelector(selectActiveNetwork)
   const dispatch = useDispatch()
 
@@ -41,7 +41,7 @@ export default function NetworkDetails({ network }: Props) {
       <Space y={24} />
       <DetailItem title={'Native Token'} value={networkToken.name} />
       <Space y={24} />
-      <DetailItem title={'Explorer URL'} value={activeNetwork.explorerUrl} />
+      <DetailItem title={'Explorer URL'} value={explorerUrl} />
       <FlexSpacer />
       <AvaButton.PrimaryLarge disabled={isConnected} onPress={connect}>
         {isConnected ? 'Connected' : 'Connect'}

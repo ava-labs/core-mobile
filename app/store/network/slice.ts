@@ -9,7 +9,7 @@ import NetworkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectAllCustomTokens } from 'store/customToken'
 import { RootState } from '../index'
-import { NetworkState } from './types'
+import { ChainID, NetworkState } from './types'
 import { mergeWithCustomTokens } from './utils'
 
 const defaultNetwork = BITCOIN_NETWORK
@@ -19,6 +19,7 @@ const reducerName = 'network'
 
 const initialState: NetworkState = {
   networks: {},
+  customNetworks: {},
   favorites: [],
   active: noActiveNetwork
 }
@@ -43,6 +44,14 @@ export const networkSlice = createSlice({
         const newFavorites = state.favorites.filter(id => id !== chainId)
         state.favorites = newFavorites
       }
+    },
+    addCustomNetwork: (state, action: PayloadAction<Network>) => {
+      const network = action.payload
+      state.customNetworks[network.chainId] = network
+    },
+    removeCustomNetwork: (state, action: PayloadAction<ChainID>) => {
+      const chainId = action.payload
+      delete state.customNetworks[chainId]
     }
   }
 })
@@ -53,21 +62,46 @@ const selectActiveChainId = (state: RootState) => state.network.active
 const selectFavorites = (state: RootState) => state.network.favorites
 
 const _selectNetworks = (state: RootState) => state.network.networks
+const _selectCustomNetworks = (state: RootState) => state.network.customNetworks
 
 export const selectNetworks = createSelector(
-  [_selectNetworks, selectAllCustomTokens, selectIsDeveloperMode],
-  (networks, allCustomTokens, isDeveloperMode) =>
-    Object.keys(networks).reduce((reducedNetworks, key) => {
-      const chainId = parseInt(key)
-      const network = networks[chainId]
-      if (network.isTestnet === isDeveloperMode) {
-        reducedNetworks[chainId] = mergeWithCustomTokens(
-          networks[chainId],
-          allCustomTokens
-        )
-      }
-      return reducedNetworks
-    }, {} as Record<number, Network>)
+  [
+    _selectNetworks,
+    _selectCustomNetworks,
+    selectAllCustomTokens,
+    selectIsDeveloperMode
+  ],
+  (networks, customNetworks, allCustomTokens, isDeveloperMode) => {
+    const populatedNetworks = Object.keys(networks).reduce(
+      (reducedNetworks, key) => {
+        const chainId = parseInt(key)
+        const network = networks[chainId]
+        if (network.isTestnet === isDeveloperMode) {
+          reducedNetworks[chainId] = mergeWithCustomTokens(
+            networks[chainId],
+            allCustomTokens
+          )
+        }
+        return reducedNetworks
+      },
+      {} as Record<number, Network>
+    )
+    const populatedCustomNetworks = Object.keys(customNetworks).reduce(
+      (reducedNetworks, key) => {
+        const chainId = parseInt(key)
+        const network = customNetworks[chainId]
+        if (network.isTestnet === isDeveloperMode) {
+          reducedNetworks[chainId] = mergeWithCustomTokens(
+            customNetworks[chainId],
+            allCustomTokens
+          )
+        }
+        return reducedNetworks
+      },
+      {} as Record<number, Network>
+    )
+    return { ...populatedNetworks, ...populatedCustomNetworks }
+  }
 )
 export const selectActiveNetwork = createSelector(
   [selectNetworks, selectActiveChainId],
@@ -122,6 +156,12 @@ export const getNetworks = createAsyncThunk<void, void, { state: RootState }>(
   }
 )
 
-export const { setNetworks, setActive, toggleFavorite } = networkSlice.actions
+export const {
+  setNetworks,
+  setActive,
+  toggleFavorite,
+  addCustomNetwork,
+  removeCustomNetwork
+} = networkSlice.actions
 
 export const networkReducer = networkSlice.reducer
