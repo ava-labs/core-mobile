@@ -6,6 +6,7 @@ import networkFeeService from 'services/networkFee/NetworkFeeService'
 import { selectActiveNetwork } from 'store/network'
 import { NetworkFee } from 'services/networkFee/types'
 import { NetworkFeeState } from 'store/networkFee/types'
+import { onAppUnlocked } from 'store/app'
 
 const reducerName = 'networkFee'
 
@@ -38,8 +39,9 @@ export const { updateNetworkFee } = networkFeeSlice.actions
 
 // listeners
 export const addNetworkFeeListeners = (startListening: AppStartListening) => {
+  // todo: pool every 30 seconds
   startListening({
-    actionCreator: fetchNetworkFee,
+    actionCreator: onAppUnlocked,
     effect: async (action, listenerApi) => {
       const state = listenerApi.getState()
       const activeNetwork = selectActiveNetwork(state)

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useEffect } from 'react'
 import { StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import DotSVG from 'components/svg/DotSVG'
@@ -18,6 +18,7 @@ import { NFTDetailsSendScreenProps } from 'navigation/types'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
 import { ActivityIndicator } from 'components/ActivityIndicator'
+import { bnToEthersBigNumber, ethersBigNumberToBN } from '@avalabs/utils-sdk'
 
 type NavigationProp = NFTDetailsSendScreenProps<
   typeof AppNavigation.NftSend.Review
@@ -40,15 +41,15 @@ export default function NftReview({ onSuccess }: NftReviewScreenProps) {
     transactionId
   } = useSendNFTContext()
   const { theme } = useApplicationContext()
-  const { goBack, navigate } = useNavigation<NavigationProp>()
+  const { goBack } = useNavigation<NavigationProp>()
   const activeNetwork = useSelector(selectActiveNetwork)
   const { gasPrice } = useGasPrice()
 
-  const netFeeString = useMemo(() => {
-    return fees.sendFeeAvax
-      ? Number.parseFloat(fees.sendFeeAvax).toFixed(6)
-      : '-'
-  }, [fees.sendFeeAvax])
+  // const netFeeString = useMemo(() => {
+  //   return fees.sendFeeAvax
+  //     ? Number.parseFloat(fees.sendFeeAvax).toFixed(6)
+  //     : '-'
+  // }, [fees.sendFeeAvax])
 
   useEffect(() => {
     switch (sendStatus) {
@@ -115,26 +116,41 @@ export default function NftReview({ onSuccess }: NftReviewScreenProps) {
           address={toAccount.address}
         />
         <Space y={8} />
+        {/*<NetworkFeeSelector*/}
+        {/*  network={activeNetwork}*/}
+        {/*  // networkFeeAvax={netFeeString}*/}
+        {/*  // networkFeeInCurrency={fees.sendFeeInCurrency ?? 0}*/}
+        {/*  gasPrice={bnToEthersBigNumber(gasPrice.bn)}*/}
+        {/*  limit={fees.gasLimit ?? 0}*/}
+        {/*  onChange={(gasLimit, gasPrice1, feePreset) => {*/}
+        {/*    fees.setGasLimit(gasLimit)*/}
+        {/*    fees.setCustomGasPrice(ethersBigNumberToBN(gasPrice1))*/}
+        {/*    fees.setSelectedFeePreset(feePreset)*/}
+        {/*  }}*/}
         <NetworkFeeSelector
-          gasLimit={fees.gasLimit || 0}
+          limit={fees.gasLimit || 0}
           network={activeNetwork}
-          networkFeeAvax={netFeeString}
-          networkFeeInCurrency={fees.sendFeeUsd ?? 0}
-          gasPrice={gasPrice}
-          onWeightedGas={price => fees.setCustomGasPrice(price.bn)}
-          weights={{ Normal: 1, Fast: 1.05, Instant: 1.15, Custom: 35 }}
-          onSettingsPressed={() => {
-            const initGasLimit = fees.gasLimit || 0
-
-            const onCustomGasLimit = (gasLimit: number) =>
-              fees.setGasLimit(gasLimit)
-
-            navigate(AppNavigation.Modal.EditGasLimit, {
-              gasLimit: initGasLimit.toString(),
-              networkFee: netFeeString,
-              onSave: onCustomGasLimit
-            })
+          // networkFeeAvax={netFeeString}
+          // networkFeeInCurrency={fees.sendFeeUsd ?? 0}
+          gasPrice={bnToEthersBigNumber(gasPrice.bn)}
+          onChange={(gasLimit, gasPrice1) => {
+            fees.setGasLimit(gasLimit)
+            fees.setCustomGasPrice(ethersBigNumberToBN(gasPrice1))
           }}
+          // onWeightedGas={price => fees.setCustomGasPrice(price.bn)}
+          // weights={{ Normal: 1, Fast: 1.05, Instant: 1.15, Custom: 35 }}
+          // onSettingsPressed={() => {
+          //   const initGasLimit = fees.gasLimit || 0
+          //
+          //   const onCustomGasLimit = (gasLimit: number) =>
+          //     fees.setGasLimit(gasLimit)
+          //
+          //   navigate(AppNavigation.Modal.EditGasLimit, {
+          //     gasLimit: initGasLimit.toString(),
+          //     networkFee: netFeeString,
+          //     onSave: onCustomGasLimit
+          //   })
+          // }}
         />
         <Space y={18} />
         <Separator />

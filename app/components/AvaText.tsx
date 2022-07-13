@@ -8,6 +8,8 @@ import {
   TextStyle
 } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
+import { useSelector } from 'react-redux'
+import { selectSelectedCurrency } from 'store/settings/currency'
 
 type BaseAvaTextProps = {
   color?: string
@@ -31,8 +33,8 @@ const AvaxTextBase: FC<BaseAvaTextProps> = ({
   style,
   ...rest
 }) => {
-  const { selectedCurrency, currencyFormatter } =
-    useApplicationContext().appHook
+  const { currencyFormatter } = useApplicationContext().appHook
+  const selectedCurrency = useSelector(selectSelectedCurrency)
   const numOfLines = ellipsizeMode ? numberOfLines || 1 : undefined
 
   if (

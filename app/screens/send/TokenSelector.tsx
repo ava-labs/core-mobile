@@ -18,15 +18,17 @@ const DEFAULT_HORIZONTAL_MARGIN = 16
 
 interface TokenSelectorProps {
   onTokenSelected: (token: TokenWithBalance) => void
+  hideZeroBalance?: boolean
   horizontalMargin?: number
 }
 
 function TokenSelector({
   onTokenSelected,
+  hideZeroBalance = false,
   horizontalMargin = DEFAULT_HORIZONTAL_MARGIN
 }: TokenSelectorProps) {
   const { filteredTokenList, searchText, setSearchText } =
-    useSearchableTokenList(false)
+    useSearchableTokenList(hideZeroBalance)
   const textInputRef = useRef() as RefObject<TextInput>
 
   useEffect(() => {

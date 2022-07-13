@@ -20,6 +20,9 @@ import { selectIsReady } from 'store/app'
 import useDevDebugging from 'utils/debugging/DevDebugging'
 import { StatusBar } from 'react-native'
 
+function setToast(toast: Toast) {
+  global.toast = toast
+}
 // TODO: move these context providers inside context app when theme refactor is done
 // right now Splash and JailbrokenWarning depend on the theme object from ApplicationContextProvider
 const ContextAppWithRedux = () => {
@@ -32,10 +35,16 @@ const ContextAppWithRedux = () => {
             <WalletStateContextProvider>
               <ApplicationContextProvider>
                 <ContextApp />
+                <Toast
+                  ref={ref => {
+                    ref && setToast(ref)
+                  }}
+                  offsetTop={60}
+                  normalColor={'00FFFFFF'}
+                />
               </ApplicationContextProvider>
             </WalletStateContextProvider>
           </PosthogContextProvider>
-          <Toast ref={ref => (global.toast = ref)} />
         </PersistGate>
       </Provider>
     </>

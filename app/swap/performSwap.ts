@@ -1,185 +1,277 @@
-import { GasPrice } from 'utils/GasPriceHook'
-import Web3 from 'web3'
-import { Allowance } from 'paraswap/build/types'
-import { OptimalRate } from 'paraswap-core'
+import { APIError } from 'paraswap'
 import { incrementalPromiseResolve, resolve } from 'swap/utils'
 import { BN } from 'avalanche'
-import { APIError, NetworkID, ParaSwap } from 'paraswap'
-import { ChainId } from '@avalabs/chains-sdk'
+import { ChainId, Network } from '@avalabs/chains-sdk'
 import walletService from 'services/wallet/WalletService'
-import ERC20_ABI from '../contracts/erc20.abi.json'
+import { Account } from 'store/account'
+import networkFeeService from 'services/networkFee/NetworkFeeService'
+import swapService from 'services/swap/SwapService'
+import Big from 'big.js'
+import networkService from 'services/network/NetworkService'
+import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
+import { BigNumber, ethers } from 'ethers'
+import { OptimalRate } from 'paraswap-core'
+import { isAPIError } from 'utils/Utils'
+import Logger from 'utils/Logger'
+import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
 
 const SERVER_BUSY_ERROR = 'Server too busy'
 
-export async function performSwap(
-  request: {
-    srcAmount?: string
-    destAmount?: string
-    priceRoute?: OptimalRate
-    gasLimit?: any
-    gasPrice?: GasPrice
-  },
-  userAddress: string
-) {
-  log('~~~~~~~~~ perform swap')
-  const { srcAmount, destAmount, priceRoute, gasLimit, gasPrice } = request
-  log('~~~~~~~~~ srcAmount', srcAmount)
-  log('~~~~~~~~~ destAmount', destAmount)
-  log('~~~~~~~~~ priceRoute', priceRoute)
-  log('~~~~~~~~~ gasLimit', gasLimit)
-  log('~~~~~~~~~ gasPrice', gasPrice)
+function checkForErrorsInResult(result: OptimalRate | APIError) {
+  return (result as APIError).message === SERVER_BUSY_ERROR
+}
 
-  if (!priceRoute) {
-    return {
+export async function performSwap(request: {
+  srcToken: string
+  destToken: string
+  srcDecimals: number
+  destDecimals: number
+  srcAmount: string
+  optimalRate: OptimalRate
+  destAmount: any
+  gasLimit: number
+  gasPrice: BigNumber
+  slippage: number
+  network?: Network
+  account?: Account
+}) {
+  const {
+    srcToken,
+    destToken,
+    srcDecimals,
+    destDecimals,
+    srcAmount,
+    optimalRate,
+    destAmount,
+    gasLimit,
+    gasPrice,
+    slippage,
+    network,
+    account
+  } = request
+
+  if (!optimalRate) {
+    return Promise.reject({
       error: 'request requires the paraswap priceRoute'
-    }
-  }
-
-  if (!userAddress) {
-    return {
-      error: 'no userAddress on request'
-    }
+    })
   }
 
   if (!srcAmount) {
-    return {
+    return Promise.reject({
       error: 'no amount on request'
-    }
+    })
   }
 
   if (!destAmount) {
-    return {
+    return Promise.reject({
       error: 'no amount on request'
-    }
+    })
   }
 
   if (!gasLimit) {
-    return {
+    return Promise.reject({
       error: 'request requires gas limit from paraswap response'
-    }
+    })
   }
 
-  // only Mainnet has swap UI enabled and can perform swap
-  const chainId = Number(ChainId.AVALANCHE_MAINNET_ID)
-  const pSwap = new ParaSwap(chainId as NetworkID, undefined, new Web3())
+  if (!network || network.isTestnet) {
+    return Promise.reject({
+      error: `Network Init Error: Wrong network`
+    })
+  }
+
+  if (!account || !account.address) {
+    return Promise.reject({
+      error: `Wallet Error: address not defined`
+    })
+  }
+
+  const srcTokenAddress = optimalRate.srcToken
+  // srcToken === network.networkToken.symbol ? ETHER_ADDRESS : srcToken
+  const destTokenAddress = optimalRate.destToken
+  // destToken === network.networkToken.symbol ? ETHER_ADDRESS : destToken
+  const defaultGasPrice = await networkFeeService.getNetworkFee(network)
 
   const buildOptions = undefined,
     partnerAddress = undefined,
     partner = 'Avalanche',
+    userAddress = account.address,
     receiver = undefined,
     permit = undefined,
     deadline = undefined,
     partnerFeeBps = undefined
 
-  log('~~~~~~~~~ userAddress', userAddress)
-  log('~~~~~~~~~ partner', partner)
-  const spender = await pSwap.getTokenTransferProxy()
-  log('~~~~~~~~~ spender', spender)
+  const spender = await swapService.getParaswapSpender()
 
   let approveTxHash
 
+  const minAmount = new Big(optimalRate.destAmount)
+    .times(1 - slippage / 100)
+    .toFixed(0)
+
+  const maxAmount = new Big(srcAmount).times(1 + slippage / 100).toFixed(0)
+
+  const sourceAmount = optimalRate.side === 'SELL' ? srcAmount : maxAmount
+
+  const destinationAmount =
+    optimalRate.side === 'SELL' ? minAmount : optimalRate.destAmount
+
+  const avalancheProvider = (await networkService.getAvalancheProvider(
+    network.isTestnet
+  )) as JsonRpcBatchInternal
+
   // no need to approve AVAX
-  if (priceRoute.srcToken !== '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE') {
-    const contract = new (pSwap.web3Provider as Web3).eth.Contract(
-      ERC20_ABI as any,
-      priceRoute.srcToken
+  if (srcToken !== network.networkToken.symbol) {
+    const contract = new ethers.Contract(
+      srcTokenAddress,
+      ERC20.abi,
+      avalancheProvider
     )
-    log('~~~~~~~~~ contract', contract)
 
     const [allowance, allowanceError] = await resolve(
-      pSwap.getAllowance(userAddress, priceRoute.srcToken)
+      contract.allowance(userAddress, srcTokenAddress)
     )
-    log('~~~~~~~~~allowance', allowance)
-    log('~~~~~~~~~allowanceError', allowanceError)
-    if (
-      allowanceError ||
-      (!!(allowance as APIError).message &&
-        (allowance as APIError).message !== 'Not Found')
-    ) {
-      return {
+
+    if (allowanceError) {
+      Logger.error('allowance error', allowanceError)
+      return Promise.reject({
         error: `Allowance Error: ${
           allowanceError ?? (allowance as APIError).message
         }`
-      }
+      })
     }
 
-    const [approveHash, approveError] = await resolve(
-      /**
-       * We may need to check if the allowance is enough to cover what is trying to be sent?
-       */
-      (allowance as Allowance).tokenAddress
-        ? (Promise.resolve([]) as any)
-        : undefined //fixme
-    )
-    log('~~~~~~~~~approveTxHash', approveHash)
-    log('~~~~~~~~~approveError', approveError)
+    if ((allowance as BigNumber).lt(sourceAmount)) {
+      const [approveGasLimit] = await resolve(
+        contract.estimateGas.approve(spender, sourceAmount)
+      )
 
-    if (approveError) {
-      return {
-        error: `Approve Error: ${approveError}`
+      if (!(allowance as BigNumber).gt(sourceAmount)) {
+        const { data } = await contract.populateTransaction.approve!(
+          spender,
+          sourceAmount
+        )
+        const [signedTx, signError] = await resolve(
+          walletService.sign(
+            {
+              nonce: await avalancheProvider.getTransactionCount(userAddress),
+              chainId: ChainId.AVALANCHE_MAINNET_ID,
+              gasPrice: defaultGasPrice?.low,
+              gasLimit: approveGasLimit ? approveGasLimit.toNumber() : gasLimit,
+              data,
+              to: srcTokenAddress
+            },
+            account.index,
+            network
+          )
+        )
+
+        if (signError || isAPIError(signedTx)) {
+          Logger.error('approve sign error', signError)
+          return Promise.reject({
+            error: `Approve Error: ${signError}`
+          })
+        }
+
+        const [hash, approveError] = await resolve(
+          networkService.sendTransaction(signedTx, network)
+        )
+
+        if (approveError) {
+          Logger.error('approve send error', approveError)
+          return Promise.reject({
+            error: `Approve error ${approveError}`
+          })
+        }
+
+        approveTxHash = hash
+      } else {
+        approveTxHash = []
       }
     }
-
-    approveTxHash = approveHash
   }
 
-  const txData = pSwap.buildTx(
-    priceRoute.srcToken,
-    priceRoute.destToken,
-    srcAmount,
-    destAmount,
-    priceRoute,
+  const txData = swapService.buildTx(
+    ChainId.AVALANCHE_MAINNET_ID.toString(),
+    srcTokenAddress,
+    destTokenAddress,
+    sourceAmount,
+    destinationAmount,
+    optimalRate,
     userAddress,
     partner,
     partnerAddress,
     partnerFeeBps,
     receiver,
     buildOptions,
-    priceRoute.srcDecimals,
-    priceRoute.destDecimals,
+    network.networkToken.symbol === srcToken
+      ? network.networkToken.decimals
+      : srcDecimals,
+    network.networkToken.symbol === destToken
+      ? network.networkToken.decimals
+      : destDecimals,
     permit,
     deadline
   )
-  log('~~~~~~~~~txData', txData)
-
-  function checkForErrorsInResult(result: OptimalRate | APIError) {
-    return (result as APIError).message === SERVER_BUSY_ERROR
-  }
 
   const [txBuildData, txBuildDataError] = await resolve(
     incrementalPromiseResolve(() => txData, checkForErrorsInResult)
   )
-  log('~~~~~~~~~txBuildData', txBuildData)
-  log('~~~~~~~~~txBuildDataError', txBuildDataError)
 
   if ((txBuildData as APIError).message) {
-    return {
+    Logger.error('error building API', (txBuildData as APIError).message)
+    return Promise.reject({
       error: (txBuildData as APIError).message
-    }
+    })
   }
   if (txBuildDataError) {
-    return {
+    Logger.error('error building', txBuildDataError)
+    return Promise.reject({
       error: `Data Error: ${txBuildDataError}`
-    }
+    })
   }
 
-  const [swapTxHash, txError] = walletService.sendCustomTx(
-    (gasPrice as GasPrice).bn,
-    Number(txBuildData.gas),
-    txBuildData.data,
-    txBuildData.to,
-    priceRoute.srcToken === '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
-      ? `0x${new BN(srcAmount).toString('hex')}`
-      : undefined // AVAX value needs to be sent with the transaction
+  // this sometimes is returning 1 below the current count
+  // asked about manually increasing it, and it's fine, except
+  // user tries to do 2 simultaneous tx in different wallets
+  const nonce = await avalancheProvider.getTransactionCount(userAddress)
+
+  const [signedTx, signError] = await resolve(
+    walletService.sign(
+      {
+        nonce: nonce + 1,
+        chainId: ChainId.AVALANCHE_MAINNET_ID,
+        gasPrice: BigNumber.from(gasPrice ? gasPrice : defaultGasPrice?.low),
+        gasLimit: Number(txBuildData.gas),
+        data: txBuildData.data,
+        to: txBuildData.to,
+        value:
+          srcToken === network.networkToken.symbol
+            ? `0x${new BN(sourceAmount).toString('hex')}`
+            : undefined // AVAX value needs to be sent with the transaction
+      },
+      account.index,
+      network
+    )
   )
-  log('~~~~~~~~~swapTxHash', swapTxHash)
-  log('~~~~~~~~~txError', txError)
+
+  if (signError) {
+    Logger.error('error signing', signError)
+    return Promise.reject({
+      error: `Tx Error: ${signError}`
+    })
+  }
+
+  const [swapTxHash, txError] = await resolve(
+    networkService.sendTransaction(signedTx, network)
+  )
 
   if (txError) {
     const shortError = txError.message.split('\n')[0]
-    return {
+    Logger.error('error sending', txError)
+    return Promise.reject({
       error: shortError
-    }
+    })
   }
 
   return {
@@ -187,11 +279,5 @@ export async function performSwap(
       swapTxHash,
       approveTxHash
     }
-  }
-}
-
-function log(message?: any, ...optionalParams: any[]) {
-  if (__DEV__) {
-    console.log(message, ...optionalParams)
   }
 }

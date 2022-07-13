@@ -1,6 +1,13 @@
 import Big from 'big.js'
 import { BigNumber, BigNumberish } from 'ethers'
 import { BNLike } from 'ethereumjs-util'
+import {
+  bigToLocaleString,
+  ethersBigNumberToBig,
+  stringToBN
+} from '@avalabs/utils-sdk'
+import { TokenType, TokenWithBalance } from 'store/balance'
+import { APIError } from 'paraswap'
 
 export const truncateAddress = (address: string, size = 6): string => {
   const firstChunk = address.substring(0, size)
@@ -93,4 +100,41 @@ export function titleToInitials(title: string) {
         : previousValue
     }, '') ?? ''
   )
+}
+
+export function calculateGasAndFees({
+  gasPrice,
+  tokenPrice,
+  tokenDecimals = 18,
+  gasLimit
+}: {
+  gasPrice: BigNumber
+  tokenPrice: number
+  tokenDecimals?: number
+  gasLimit?: number
+}) {
+  const bnFee = gasLimit ? gasPrice.mul(gasLimit) : gasPrice
+  const fee = bigToLocaleString(ethersBigNumberToBig(bnFee, tokenDecimals), 8)
+  return {
+    gasPrice: gasPrice,
+    gasLimit: gasLimit || 0,
+    fee,
+    bnFee,
+    feeInCurrency: parseFloat((parseFloat(fee) * tokenPrice).toFixed(4))
+  }
+}
+
+export const getMaxValue = (token?: TokenWithBalance, fee?: string) => {
+  if (!token || !fee) {
+    return
+  }
+
+  if (token.type === TokenType.NATIVE) {
+    return token.balance.sub(stringToBN(fee, 18))
+  }
+  return token.balance
+}
+
+export function isAPIError(rate: any): rate is APIError {
+  return typeof rate?.message === 'string'
 }

@@ -2,6 +2,8 @@ import type { CompositeScreenProps } from '@react-navigation/native'
 import { StackScreenProps } from '@react-navigation/stack'
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs'
 import { DrawerScreenProps as RNDrawerScreenProps } from '@react-navigation/drawer'
+import { BigNumber } from 'ethers'
+import { TokenWithBalance } from 'store/balance'
 import { RootScreenStackParamList } from './RootScreenStack'
 import { OnboardingScreenStackParamList } from './OnboardScreenStack'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
@@ -21,6 +23,11 @@ import { BridgeStackParamList } from './wallet/BridgeScreenStack'
 import { PortfolioStackParamList } from './wallet/PortfolioScreenStack'
 export type { RootScreenStackParamList }
 
+export type TokenSelectParams = {
+  hideZeroBalance?: boolean
+  onTokenSelected: (token: TokenWithBalance) => void
+}
+
 export type BridgeTransactionStatusParams = {
   blockchain: string
   txHash: string
@@ -29,8 +36,8 @@ export type BridgeTransactionStatusParams = {
 
 export type EditGasLimitParams = {
   onSave: (newGasLimit: number) => void
-  gasLimit: string
-  networkFee: string
+  gasLimit: number
+  gasPrice: BigNumber
 }
 
 /** ROOT **/

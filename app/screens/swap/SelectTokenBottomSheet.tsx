@@ -53,7 +53,10 @@ function SelectTokenBottomSheet(): JSX.Element {
       <AvaText.LargeTitleBold textStyle={{ marginHorizontal: 16 }}>
         Select Token
       </AvaText.LargeTitleBold>
-      <TokenSelector onTokenSelected={onTokenSelected} />
+      <TokenSelector
+        onTokenSelected={onTokenSelected}
+        hideZeroBalance={params.hideZeroBalance}
+      />
     </BottomSheet>
   )
 }

@@ -1,29 +1,46 @@
-import Web3 from 'web3'
-import { APIError, NetworkID, ParaSwap, SwapSide } from 'paraswap'
+import { SwapSide } from 'paraswap'
 import { OptimalRate } from 'paraswap-core'
-import { getSrcToken, incrementalPromiseResolve } from 'swap/utils'
-import { ChainId } from '@avalabs/chains-sdk'
-import { TokenWithBalance } from 'store/balance'
+import { Network } from '@avalabs/chains-sdk'
+import { TokenType, TokenWithBalance } from 'store/balance'
 import { Account } from 'store/account'
+import { resolve } from '@avalabs/utils-sdk'
+import swapService from 'services/swap/SwapService'
 
-const SERVER_BUSY_ERROR = 'Server too busy'
+export const getTokenAddress = (token?: TokenWithBalance) => {
+  if (!token) {
+    return ''
+  }
+  return token.type === TokenType.NATIVE ? token.symbol : token.address
+}
 
 export async function getSwapRate(request: {
-  srcToken?: TokenWithBalance
-  destToken?: TokenWithBalance
-  amount?: string
+  fromTokenAddress?: string
+  toTokenAddress?: string
+  fromTokenDecimals?: number
+  toTokenDecimals?: number
+  amount: string
   swapSide: SwapSide
   account: Account
+  network: Network
 }) {
-  const { srcToken, destToken, amount, swapSide, account } = request || []
+  const {
+    fromTokenAddress,
+    toTokenAddress,
+    fromTokenDecimals,
+    toTokenDecimals,
+    amount,
+    swapSide,
+    account,
+    network
+  } = request || []
 
-  if (!srcToken) {
+  if (!fromTokenAddress) {
     return {
       error: 'no source token on request'
     }
   }
 
-  if (!destToken) {
+  if (!toTokenAddress) {
     return {
       error: 'no destination token on request'
     }
@@ -35,40 +52,29 @@ export async function getSwapRate(request: {
     }
   }
 
-  // only Mainnet has swap UI enabled and can perform swap
-  const chainId = Number(ChainId.AVALANCHE_MAINNET_ID)
-  const paraSwap = new ParaSwap(chainId as NetworkID, undefined, new Web3())
-
-  const optimalRates = paraSwap.getRate(
-    getSrcToken(srcToken),
-    getSrcToken(destToken),
-    amount,
-    account.address,
-    swapSide,
-    {
-      partner: 'Avalanche'
-    },
-    srcToken.decimals,
-    destToken.decimals
+  const [result, error] = await resolve(
+    swapService.getSwapRate(
+      fromTokenAddress,
+      fromTokenDecimals ?? 0,
+      toTokenAddress,
+      toTokenDecimals ?? 0,
+      amount,
+      swapSide,
+      network,
+      account
+    )
   )
 
-  function checkForErrorsInResult(result: OptimalRate | APIError) {
-    return (result as APIError).message === SERVER_BUSY_ERROR
-  }
-
-  const result: OptimalRate | APIError = await incrementalPromiseResolve(
-    () => optimalRates,
-    checkForErrorsInResult
-  )
-  console.log('----------result', result)
-
-  if ((result as APIError).message) {
+  if (error) {
     return {
-      error: (result as APIError).message
+      error: (error as any).toString()
     }
   }
 
+  const destAmount = result.destAmount
+
   return {
-    result: result as OptimalRate
+    optimalRate: result as OptimalRate,
+    destAmount
   }
 }

@@ -6,7 +6,7 @@ import {
   useNavigation,
   useRoute
 } from '@react-navigation/native'
-import { useSelector, useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AccountBottomSheet from 'screens/portfolio/account/AccountBottomSheet'
 import AppNavigation from 'navigation/AppNavigation'
@@ -56,14 +56,14 @@ import NetworkManager from 'screens/network/NetworkManager'
 import NetworkDetails from 'screens/network/NetworkDetails'
 import AvaButton from 'components/AvaButton'
 import StarSVG from 'components/svg/StarSVG'
-import { toggleFavorite, selectFavoriteNetworks } from 'store/network'
+import { selectFavoriteNetworks, toggleFavorite } from 'store/network'
 import { onAppUnlocked, selectIsLocked } from 'store/app'
 import { Network } from '@avalabs/chains-sdk'
-import { TokenWithBalance } from 'store/balance'
 import { BridgeStackParamList } from './wallet/BridgeScreenStack'
 import {
   BridgeTransactionStatusParams,
   EditGasLimitParams,
+  TokenSelectParams,
   WalletScreenProps
 } from './types'
 import AdvancedStackScreen from './wallet/AdvancedStackScreen'
@@ -108,9 +108,7 @@ export type WalletScreenStackParams = {
   [AppNavigation.Modal.AccountDropDown]: undefined
   [AppNavigation.Modal.AccountBottomSheet]: undefined
   [AppNavigation.Modal.SignOut]: undefined
-  [AppNavigation.Modal.SelectToken]: {
-    onTokenSelected: (token: TokenWithBalance) => void
-  }
+  [AppNavigation.Modal.SelectToken]: TokenSelectParams
   [AppNavigation.Modal.EditGasLimit]: EditGasLimitParams
 }
 
@@ -364,8 +362,8 @@ const EditGasLimit = () => {
     <EditGasLimitBottomSheet
       onClose={goBack}
       onSave={onSave}
-      networkFee={params.networkFee}
       gasLimit={params.gasLimit}
+      gasPrice={params.gasPrice}
     />
   )
 }
