@@ -1,18 +1,18 @@
 import {
-  simplePrice,
-  simpleTokenPrice,
-  getBasicCoingeckoHttp,
-  getProCoingeckoHttp,
-  VsCurrencyType,
   coinsContractInfo,
   CoinsContractInfoResponse,
-  CoinsInfoResponse,
   coinsContractMarketChart,
+  coinsInfo,
+  CoinsInfoResponse,
   coinsMarketChart,
   ContractMarketChartResponse,
-  coinsInfo,
+  getBasicCoingeckoHttp,
+  getProCoingeckoHttp,
+  simplePrice,
   SimplePriceResponse,
-  SimpleTokenPriceResponse
+  simpleTokenPrice,
+  SimpleTokenPriceResponse,
+  VsCurrencyType
 } from '@avalabs/coingecko-sdk'
 import { ethers } from 'ethers'
 import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
@@ -92,19 +92,20 @@ export class TokenService {
 
     data = getCache(cacheId)
 
-    if (data === undefined) {
+    if (
+      data?.[coinId]?.[currency] === undefined ||
+      data?.[coinId]?.[currency]?.price === undefined
+    ) {
       data = await this.fetchPriceWithMarketData(coinId, currency)
 
       setCache(cacheId, data)
     }
 
-    const coin = data?.[coinId]?.[currency]
-
     return {
-      price: coin?.price ?? 0,
-      change24: coin?.change24 ?? 0,
-      marketCap: coin?.marketCap ?? 0,
-      vol24: coin?.vol24 ?? 0
+      price: data?.[coinId]?.[currency]?.price ?? 0,
+      change24: data?.[coinId]?.[currency]?.change24 ?? 0,
+      marketCap: data?.[coinId]?.[currency]?.marketCap ?? 0,
+      vol24: data?.[coinId]?.[currency]?.vol24 ?? 0
     }
   }
 

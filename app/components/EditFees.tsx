@@ -8,19 +8,34 @@ import { popableContent } from 'screens/swap/components/SwapTransactionDetails'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import FlexSpacer from 'components/FlexSpacer'
 import { Row } from 'components/Row'
-import { mustNumber } from 'utils/JsTools'
+import { BigNumber } from 'ethers'
+import { useNativeTokenPrice } from 'hooks/useNativeTokenPrice'
+import { useActiveNetwork } from 'hooks/useActiveNetwork'
+import { calculateGasAndFees } from 'utils/Utils'
 
-const EditFees = ({
-  networkFee,
-  gasLimit,
-  onSave
-}: {
-  networkFee: string
-  gasLimit: string
+interface EditFeesProps {
+  gasPrice: BigNumber
+  gasLimit: number
   onSave: (newGasLimit: number) => void
-}) => {
+  onClose?: () => void
+}
+
+const EditFees = ({ gasPrice, gasLimit, onSave, onClose }: EditFeesProps) => {
   const { theme } = useApplicationContext()
   const [newGasLimit, setNewGasLimit] = useState(gasLimit)
+  const tokenPrice = useNativeTokenPrice().nativeTokenPrice
+  const network = useActiveNetwork()
+  const [feeError, setFeeError] = useState('')
+  const [newFees, setNewFees] = useState<
+    ReturnType<typeof calculateGasAndFees>
+  >(
+    calculateGasAndFees({
+      gasPrice,
+      tokenPrice,
+      tokenDecimals: network?.networkToken?.decimals,
+      gasLimit
+    })
+  )
 
   const gasLimitInfoInfoMessage = useMemo(
     () =>
@@ -31,6 +46,29 @@ const EditFees = ({
     [theme]
   )
 
+  const checkCustomGasLimit = (customGasLimit: number) => {
+    try {
+      const fees = calculateGasAndFees({
+        gasPrice,
+        tokenPrice,
+        tokenDecimals: network?.networkToken?.decimals,
+        gasLimit: customGasLimit
+      })
+      setNewFees(fees)
+      setNewGasLimit(customGasLimit)
+      feeError && setFeeError('')
+    } catch (e) {
+      setFeeError('Gas Limit is too much')
+    }
+  }
+
+  const handleOnSave = () => {
+    if (newGasLimit) {
+      onSave(newGasLimit)
+      onClose?.()
+    }
+  }
+
   return (
     <View style={{ flex: 1, paddingBottom: 16 }}>
       <AvaText.LargeTitleBold textStyle={{ marginHorizontal: 12 }}>
@@ -38,23 +76,26 @@ const EditFees = ({
       </AvaText.LargeTitleBold>
       <Space y={24} />
       <Row style={{ marginHorizontal: 12, alignItems: 'flex-end' }}>
-        <AvaText.Heading1>{networkFee}</AvaText.Heading1>
+        <AvaText.Heading1>{newFees.fee}</AvaText.Heading1>
         <Space x={4} />
-        <AvaText.Heading3>AVAX</AvaText.Heading3>
+        <AvaText.Heading3>
+          {network?.networkToken?.symbol?.toUpperCase()}
+        </AvaText.Heading3>
       </Row>
       <InputText
         label={'Gas Limit ⓘ'}
         mode={'amount'}
-        text={newGasLimit}
+        text={newGasLimit.toString()}
         popOverInfoText={gasLimitInfoInfoMessage}
-        onChangeText={text => setNewGasLimit(text)}
+        onChangeText={text =>
+          checkCustomGasLimit(parseInt(isNaN(parseInt(text)) ? '0' : text))
+        }
+        errorText={feeError}
       />
       <FlexSpacer />
       <AvaButton.PrimaryLarge
         style={{ marginHorizontal: 12 }}
-        onPress={() =>
-          onSave(mustNumber(() => Number.parseFloat(newGasLimit), 0))
-        }>
+        onPress={handleOnSave}>
         Save
       </AvaButton.PrimaryLarge>
     </View>

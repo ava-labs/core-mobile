@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { Animated, ScrollView, StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
@@ -13,41 +13,124 @@ import { Row } from 'components/Row'
 import InfoSVG from 'components/svg/InfoSVG'
 import { interval, tap } from 'rxjs'
 import { Popable } from 'react-native-popable'
+import { bnToLocaleString, resolve } from '@avalabs/utils-sdk'
+import BN from 'bn.js'
+import { showSnackBarCustom, updateSnackBarCustom } from 'components/Snackbar'
 import {
   RemoveEvents,
   useBeforeRemoveListener
 } from 'hooks/useBeforeRemoveListener'
 import { usePosthogContext } from 'contexts/PosthogContext'
+import { calculateRate } from 'swap/utils'
+import TransactionToast, {
+  TransactionToastType
+} from 'components/toast/TransactionToast'
+import { getTokenAddress } from 'swap/getSwapRate'
 
 const SECOND = 1000
 
 type Props = {
   onCancel: () => void
-  onConfirm: () => void
+  onBackToParent: () => void
 }
 
-const SwapReview = ({ onCancel, onConfirm }: Props) => {
-  const { swapTo, swapFrom, refresh } = useSwapContext()
+const SwapReview = ({ onCancel, onBackToParent }: Props) => {
+  const {
+    fromToken,
+    toToken,
+    optimalRate,
+    gasLimit,
+    gasPrice,
+    slippage,
+    refresh,
+    swap
+  } = useSwapContext()
   const theme = useApplicationContext().theme
   const [secondsLeft, setSecondsLeft] = useState('0s')
   const [colorAnim] = useState(new Animated.Value(1))
   const { capture } = usePosthogContext()
   const [hasConfirmed, setHasConfirmed] = useState(false)
 
-  const animatedColor = useMemo(() => {
-    return colorAnim.interpolate({
-      inputRange: [0, 1],
-      outputRange: [theme.white, theme.colorPrimary1]
-    })
-  }, [colorAnim])
+  useEffect(() => {
+    refresh()
+  }, [])
+
+  const [swapError, setSwapError] = useState('')
+
+  const onHandleSwap = async () => {
+    if (
+      fromToken &&
+      toToken &&
+      optimalRate &&
+      gasLimit &&
+      gasPrice &&
+      slippage
+    ) {
+      // setSwapInProgress(true)
+      const toastId = showSnackBarCustom(
+        <TransactionToast
+          message={'Swap in progress...'}
+          type={TransactionToastType.PENDING}
+        />,
+        'infinite'
+      )
+
+      onBackToParent()
+
+      const [result, error] = await resolve(
+        swap(
+          getTokenAddress(fromToken),
+          getTokenAddress(toToken),
+          toToken?.decimals ?? 0,
+          fromToken?.decimals ?? 0,
+          optimalRate.srcAmount,
+          optimalRate,
+          optimalRate.destAmount,
+          gasLimit,
+          gasPrice,
+          slippage
+        )
+      )
+      if (error || (result && 'error' in result)) {
+        const message = error ? (error as Error).message : result?.error
+        setSwapError(message)
+        updateSnackBarCustom(
+          toastId,
+          <TransactionToast
+            message={'Swap failed'}
+            type={TransactionToastType.ERROR}
+            toastId={toastId}
+          />
+        )
+      } else {
+        updateSnackBarCustom(
+          toastId,
+          <TransactionToast
+            message={'Swap success'}
+            type={TransactionToastType.SUCCESS}
+            txHash={result?.result?.swapTxHash}
+            toastId={toastId}
+          />,
+          false
+        )
+      }
+    }
+  }
+
+  //todo: fix color update anim
+  // const animatedColor = useMemo(() => {
+  //   return colorAnim.interpolate({
+  //     inputRange: [0, 1],
+  //     outputRange: [theme.colorText1, theme.colorPrimary1]
+  //   })
+  // }, [colorAnim])
 
   useEffect(() => {
     //this is so that useBeforeRemoveListener has a chance to update callback
     if (hasConfirmed) {
       capture('SwapConfirmed')
-      onConfirm()
     }
-  }, [capture, hasConfirmed, onConfirm])
+  }, [capture, hasConfirmed])
 
   useBeforeRemoveListener(
     useCallback(() => {
@@ -70,7 +153,7 @@ const SwapReview = ({ onCancel, onConfirm }: Props) => {
         useNativeDriver: false
       }).start()
     })
-  }, [swapTo.amount, swapTo.usdValue])
+  }, [optimalRate?.destAmount, optimalRate?.destUSD])
 
   useEffect(() => {
     const RESET_INTERVAL = 60 // seconds
@@ -82,7 +165,6 @@ const SwapReview = ({ onCancel, onConfirm }: Props) => {
         }),
         tap(value => {
           if (value && value % RESET_INTERVAL === 0) {
-            console.log('reset')
             refresh()
             capture('SwapReviewTimerRestarted')
           }
@@ -120,12 +202,19 @@ const SwapReview = ({ onCancel, onConfirm }: Props) => {
         </AvaText.Heading3>
         <AvaListItem.Base
           embedInCard
-          leftComponent={<Avatar.Token token={swapFrom.token!} />}
-          title={swapFrom.token?.symbol}
+          leftComponent={fromToken && <Avatar.Token token={fromToken} />}
+          title={fromToken?.symbol}
           rightComponent={
             <View style={{ alignItems: 'flex-end' }}>
-              <AvaText.Body1>{swapFrom.amount.toFixed(5)}</AvaText.Body1>
-              <AvaText.Body3 currency>{swapFrom.usdValue}</AvaText.Body3>
+              <AvaText.Body1 ellipsizeMode={'middle'}>
+                {bnToLocaleString(
+                  new BN(optimalRate?.srcAmount || '0'),
+                  optimalRate?.srcDecimals
+                )}
+              </AvaText.Body1>
+              <AvaText.Body3 color={theme.colorText2} currency>
+                {optimalRate?.srcUSD}
+              </AvaText.Body3>
             </View>
           }
         />
@@ -135,24 +224,34 @@ const SwapReview = ({ onCancel, onConfirm }: Props) => {
         </AvaText.Heading3>
         <AvaListItem.Base
           embedInCard
-          leftComponent={<Avatar.Token token={swapTo.token!} />}
-          title={swapTo.token?.symbol}
+          leftComponent={toToken && <Avatar.Token token={toToken} />}
+          title={toToken?.symbol}
           rightComponent={
             <View style={{ alignItems: 'flex-end' }}>
-              <AvaText.Body1 animated textStyle={{ color: animatedColor }}>
-                {swapTo.amount.toFixed(5)}
+              <AvaText.Body1 ellipsizeMode={'middle'}>
+                {bnToLocaleString(
+                  new BN(optimalRate?.destAmount || '0'),
+                  optimalRate?.destDecimals
+                )}
               </AvaText.Body1>
-              <AvaText.Body3
-                currency
-                animated
-                textStyle={{ color: animatedColor }}>
-                {swapTo.usdValue}
+              <AvaText.Body3 currency color={theme.colorText2}>
+                {optimalRate?.destUSD}
               </AvaText.Body3>
             </View>
           }
         />
         <Separator style={{ marginHorizontal: 16, marginVertical: 24 }} />
-        <SwapTransactionDetail review />
+        <SwapTransactionDetail
+          review
+          gasPrice={gasPrice}
+          gasLimit={gasLimit}
+          rate={optimalRate ? calculateRate(optimalRate) : 0}
+          slippage={slippage}
+          walletFee={optimalRate?.partnerFee}
+        />
+        {!!swapError && (
+          <AvaText.Body3 color={theme.colorError}>{swapError}</AvaText.Body3>
+        )}
       </ScrollView>
       <View
         style={{
@@ -165,7 +264,11 @@ const SwapReview = ({ onCancel, onConfirm }: Props) => {
           </AvaButton.SecondaryLarge>
         </View>
         <View style={{ flex: 1, marginRight: 16 }}>
-          <AvaButton.PrimaryLarge onPress={() => setHasConfirmed(true)}>
+          <AvaButton.PrimaryLarge
+            onPress={() => {
+              onHandleSwap()
+              setHasConfirmed(true)
+            }}>
             Confirm
           </AvaButton.PrimaryLarge>
         </View>

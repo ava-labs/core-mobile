@@ -1,4 +1,5 @@
 import { TokenType, TokenWithBalance } from 'store/balance'
+import { OptimalRate } from 'paraswap-core'
 
 // @ts-ignore generic - ts complains about returning `any`
 export async function incrementalPromiseResolve<T>(
@@ -38,4 +39,11 @@ export function resolve<T = any>(promise: Promise<T>) {
   } catch (err) {
     return Promise.resolve([null, err])
   }
+}
+
+export const calculateRate = (optimalRate: OptimalRate) => {
+  const { destAmount, destDecimals, srcAmount, srcDecimals } = optimalRate
+  const destAmountNumber = parseInt(destAmount, 10) / Math.pow(10, destDecimals)
+  const sourceAmountNumber = parseInt(srcAmount, 10) / Math.pow(10, srcDecimals)
+  return destAmountNumber / sourceAmountNumber
 }
