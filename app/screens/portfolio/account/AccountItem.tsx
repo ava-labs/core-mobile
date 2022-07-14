@@ -87,6 +87,8 @@ function AccountItem({
             ) : (
               <Title title={account.title} />
             )}
+            <Space y={6} />
+            <AvaText.Body3 currency>{accBalance}</AvaText.Body3>
             {editable && (
               // For smaller touch area
               <Row>
@@ -101,14 +103,10 @@ function AccountItem({
               </Row>
             )}
           </View>
-          <View
-            style={{
-              width: 116,
-              alignItems: 'flex-end'
-            }}>
-            <TokenAddress address={account.address} />
+          <View>
+            <TokenAddress address={account.address} showIcon />
             <Space y={6} />
-            <AvaText.Body3 currency>{accBalance}</AvaText.Body3>
+            <TokenAddress address={account.addressBtc} showIcon />
           </View>
         </Row>
       </AvaButton.Base>
@@ -172,13 +170,21 @@ const EditTitle = ({
 }) => {
   const { theme } = useApplicationContext()
   return (
-    <InputText
-      style={{ margin: 0, backgroundColor: theme.colorBg1, borderRadius: 8 }}
-      autoFocus
-      text={title}
-      onSubmit={onSubmit}
-      onChangeText={onChangeText}
-    />
+    <Row>
+      <InputText
+        style={{
+          margin: 0,
+          backgroundColor: theme.colorBg1,
+          borderRadius: 8,
+          flex: 1
+        }}
+        autoFocus
+        text={title}
+        onSubmit={onSubmit}
+        onChangeText={onChangeText}
+      />
+      <Space x={16} />
+    </Row>
   )
 }
 
