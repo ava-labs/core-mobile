@@ -12,7 +12,6 @@ import {
   QueryStatus,
   TokenWithBalance
 } from './types'
-import BN from 'bn.js';
 
 const BN_ZERO = new BN(0)
 
