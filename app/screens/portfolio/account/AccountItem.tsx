@@ -63,7 +63,7 @@ function AccountItem({
         })
       )
     },
-    [account.index]
+    [account.index, dispatch]
   )
 
   return (
@@ -80,7 +80,7 @@ function AccountItem({
           <View style={{ flex: 1, justifyContent: 'center' }}>
             {editAccount ? (
               <EditTitle
-                title={account.title}
+                title={editedAccountTitle}
                 onChangeText={setEditedAccountTitle}
                 onSubmit={() => saveAccountTitle(editedAccountTitle)}
               />
