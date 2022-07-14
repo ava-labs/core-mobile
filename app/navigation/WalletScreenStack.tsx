@@ -288,7 +288,7 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
             MainHeaderOptions(
               '',
               false,
-              <AddNetworkAction />
+              __DEV__ ? <AddNetworkAction /> : undefined //TODO: not in current project scope, enable later
             ) as Partial<StackNavigationOptions>
           }
           name={AppNavigation.Wallet.NetworkSelector}
