@@ -21,7 +21,6 @@ import { AddressBookStackParamList } from './wallet/AddressBookStack'
 import { SecurityStackParamList } from './wallet/SecurityPrivacyStackScreen'
 import { BridgeStackParamList } from './wallet/BridgeScreenStack'
 import { PortfolioStackParamList } from './wallet/PortfolioScreenStack'
-import {BigNumber} from 'ethers';
 export type { RootScreenStackParamList }
 
 export type TokenSelectParams = {
