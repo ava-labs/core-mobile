@@ -102,12 +102,12 @@ const UniversalTokenSelector: FC<Props> = ({
 
   // When setting to the max, pin the input value to the max value
   useEffect(() => {
-    if (!isMaxAmount || !maxAmountString || skipHandleMaxAmount) return;
+    if (!isMaxAmount || !maxAmountString || skipHandleMaxAmount) return
     handleAmountChange({
       amount: maxAmountString,
-      bn: numberToBN(maxAmountString, 18),
-    });
-  }, [maxAmountString, handleAmountChange, isMaxAmount, skipHandleMaxAmount]);
+      bn: numberToBN(maxAmountString, 18)
+    })
+  }, [maxAmountString, handleAmountChange, isMaxAmount, skipHandleMaxAmount])
 
   return (
     <View style={{ marginHorizontal: 16 }}>
