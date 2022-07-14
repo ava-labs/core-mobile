@@ -1,59 +1,67 @@
-import {
-  bnToLocaleString,
-  Erc20Token,
-  getErc20Token,
-  BN
-} from '@avalabs/avalanche-wallet-sdk'
-import {
-  ERC20WithBalance,
-  walletState$
-} from '@avalabs/wallet-react-components'
-import { firstValueFrom } from 'rxjs'
+import { TokenType, TokenWithBalanceERC20 } from 'store/balance'
+import BN from 'bn.js'
+import { store } from 'store'
+import { NetworkContractToken } from '@avalabs/chains-sdk'
+import tokenService from 'services/token/TokenService'
+import networkService from 'services/network/NetworkService'
+import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
+import { ethers } from 'ethers'
+import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
 
-const UNKNOWN_TOKEN = (address: string): ERC20WithBalance => ({
+const UNKNOWN_TOKEN = (address: string): TokenWithBalanceERC20 => ({
   address,
-  isErc20: true,
+  type: TokenType.ERC20,
+  contractType: 'ERC-20',
   name: 'UNKNOWN TOKEN',
   symbol: '-',
   balance: new BN(0),
-  denomination: 0,
   decimals: 0,
-  balanceParsed: '0'
+  description: ''
 })
 
-export async function findToken(address: string): Promise<ERC20WithBalance> {
-  const walletState = await firstValueFrom(walletState$)
-  if (!walletState) {
+export async function findToken(
+  address: string
+): Promise<TokenWithBalanceERC20> {
+  const state = store.getState()
+  const activeNetwork = state.network.networks[state.network.active]
+  const activeAccount = state.account.accounts[state.account.activeAccountIndex]
+  const balances =
+    state.balance.balances[`${activeNetwork.chainId}-${activeAccount.address}`]
+  if (!balances || !activeAccount || !activeNetwork) {
     return UNKNOWN_TOKEN(address)
   }
 
-  const token = walletState.erc20Tokens.find(
-    t => t.address.toLowerCase() === address.toLowerCase()
+  const token = balances?.tokens?.find(
+    t =>
+      t.type === TokenType.ERC20 &&
+      t.address.toLowerCase() === address.toLowerCase()
   )
 
-  if (token) {
+  if (token && token.type === TokenType.ERC20) {
     return token
   }
 
   // the token is unknown, fetch basic data
-  let tokenData: Erc20Token
+  let tokenData: NetworkContractToken | undefined
   try {
-    tokenData = await getErc20Token(address)
+    tokenData = await tokenService.getTokenData(address, activeNetwork)
   } catch (e) {
     return UNKNOWN_TOKEN(address)
   }
 
-  if (!tokenData) {
+  const provider = networkService.getProviderForNetwork(activeNetwork)
+  if (!tokenData || !(provider instanceof JsonRpcBatchInternal)) {
     return UNKNOWN_TOKEN(address)
   }
 
-  const balance = await tokenData.balanceOf(walletState.addresses.addrC)
+  const contract = new ethers.Contract(address, ERC20.abi, provider)
+  const balance = await contract.balanceOf(activeAccount.address)
 
   return {
     ...tokenData,
-    denomination: tokenData.decimals,
     balance: balance,
-    balanceParsed: bnToLocaleString(balance, tokenData.decimals),
-    isErc20: true
+    type: TokenType.ERC20,
+    contractType: 'ERC-20',
+    description: ''
   }
 }
