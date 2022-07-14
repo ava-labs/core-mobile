@@ -12,7 +12,7 @@ import Avatar from 'components/Avatar'
 import AvaButton from 'components/AvaButton'
 import CarrotSVG from 'components/svg/CarrotSVG'
 import { useSelector } from 'react-redux'
-import { selectTokenAddress } from 'store/balance'
+import { selectTokenByAddress } from 'store/balance'
 
 export function GenericTransaction({
   site,
@@ -23,7 +23,7 @@ export function GenericTransaction({
 }: TransactionDisplayValues) {
   const theme = useApplicationContext().theme
   const activeAccount = useActiveAccount()
-  const token = useSelector(selectTokenAddress(description?.args?.asset))
+  const token = useSelector(selectTokenByAddress(description?.args?.asset))
   return (
     <>
       <AvaText.Heading1>Transaction Summary</AvaText.Heading1>

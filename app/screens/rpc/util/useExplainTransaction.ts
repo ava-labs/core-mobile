@@ -1,40 +1,44 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { RpcTxParams, Transaction } from 'screens/rpc/util/types'
-// @ts-ignore javascript
-import { getTxInfo } from 'screens/rpc/util/getTransactionInfo'
+import {
+  DisplayValueParserProps,
+  PeerMetadata,
+  Transaction,
+  TransactionDisplayValues,
+  TransactionParams
+} from 'screens/rpc/util/types'
 import { useActiveNetwork } from 'hooks/useActiveNetwork'
-import { bnToLocaleString, hexToBN } from '@avalabs/utils-sdk'
-import { useNetworkFee } from 'hooks/useNetworkFee'
-import { useNativeTokenPrice } from 'hooks/useNativeTokenPrice'
 import { BigNumber, ethers } from 'ethers'
+import { useNetworkFee } from 'hooks/useNetworkFee'
 import { FeePreset } from 'components/NetworkFeeSelector'
 import { calculateGasAndFees } from 'utils/Utils'
-import Web3 from 'web3'
+import { useNativeTokenPrice } from 'hooks/useNativeTokenPrice'
+import { bnToLocaleString, hexToBN } from '@avalabs/utils-sdk'
+import {
+  getTxInfo,
+  isTxDescriptionError
+} from 'screens/rpc/util/getTransactionInfo'
+import { contractParserMap } from 'contracts/contractParsers/contractParserMap'
+import {
+  isTxParams,
+  parseDisplayValues
+} from 'screens/rpc/util/parseDisplayValues'
+import networkFeeService from 'services/networkFee/NetworkFeeService'
 import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
+import Web3 from 'web3'
+import { Limit, SpendLimit } from 'components/EditSpendLimit'
 
 const UNLIMITED_SPEND_LIMIT_LABEL = 'Unlimited'
 
-export enum Limit {
-  DEFAULT = 'DEFAULT',
-  UNLIMITED = 'UNLIMITED',
-  CUSTOM = 'CUSTOM'
-}
-
-export interface SpendLimit {
-  limitType: Limit
-  value?: {
-    bn: any
-    amount: string
-  }
-}
-
-export function useExplainTransaction(txParams: RpcTxParams) {
+export function useExplainTransaction(
+  params: TransactionParams,
+  peerMeta?: PeerMetadata
+) {
+  const { networkFees } = useNetworkFee()
   const tokenPrice = useNativeTokenPrice().nativeTokenPrice
-  const { networkFee } = useNetworkFee()
+  // const tokensWithBalance = useSelector(selectTokensWithBalance)
   const activeNetwork = useActiveNetwork()
   const [transaction, setTransaction] = useState<Transaction | null>(null)
-  const [feeDisplayValues, setFeeDisplayValues] =
-    useState<ReturnType<typeof calculateGasAndFees>>()
+  const [hash, setHash] = useState<string>('')
   const [customGas, setCustomGas] = useState<{
     gasLimit: number
     gasPrice: BigNumber
@@ -42,31 +46,36 @@ export function useExplainTransaction(txParams: RpcTxParams) {
   const [displaySpendLimit, setDisplaySpendLimit] = useState<string>(
     UNLIMITED_SPEND_LIMIT_LABEL
   )
+  const [showCustomSpendLimit, setShowCustomSpendLimit] = useState(false)
   const [customSpendLimit, setCustomSpendLimit] = useState<SpendLimit>({
-    limitType: Limit.DEFAULT
+    limitType: Limit.UNLIMITED
   })
   const [selectedGasFee, setSelectedGasFee] = useState<FeePreset>(
     FeePreset.Instant
   )
+  const [displayFees, setDisplayFees] =
+    useState<ReturnType<typeof calculateGasAndFees>>()
 
   const setCustomFee = useCallback(
     (gasLimit: number, gasPrice: BigNumber, modifier: FeePreset) => {
       setCustomGas({ gasLimit, gasPrice })
       setSelectedGasFee(modifier)
-      const displayFees = calculateGasAndFees({
-        gasPrice,
-        gasLimit,
-        tokenPrice: tokenPrice,
-        tokenDecimals: activeNetwork?.networkToken.decimals
-      })
-      setFeeDisplayValues(displayFees)
+      setDisplayFees(
+        calculateGasAndFees({
+          gasPrice,
+          gasLimit,
+          tokenPrice,
+          tokenDecimals: activeNetwork?.networkToken.decimals
+        })
+      )
     },
     [tokenPrice]
   )
 
   const setSpendLimit = useCallback(
     (customSpendData: SpendLimit) => {
-      const srcTokenAddress: string = transaction?.displayValues?.token.address
+      const srcTokenAddress: string =
+        transaction?.displayValues?.tokenToBeApproved?.address
       const spenderAddress: string =
         transaction?.displayValues?.approveData.spender || '0'
       let limitAmount = ''
@@ -74,7 +83,10 @@ export function useExplainTransaction(txParams: RpcTxParams) {
       if (customSpendData.limitType === Limit.UNLIMITED) {
         setCustomSpendLimit({
           ...customSpendData,
-          value: undefined
+          value: undefined,
+          default: bnToLocaleString(
+            hexToBN(transaction?.displayValues.approveData.limit)
+          )
         })
         limitAmount = ethers.constants.MaxUint256.toHexString()
         setDisplaySpendLimit(UNLIMITED_SPEND_LIMIT_LABEL)
@@ -88,112 +100,141 @@ export function useExplainTransaction(txParams: RpcTxParams) {
                 transaction?.displayValues.tokenToBeApproved.decimals
               )
         )
-        limitAmount =
-          customSpendData.limitType === Limit.CUSTOM
-            ? customSpendData.value?.bn.toString()
-            : transaction?.displayValues?.approveData?.limit
       }
-      // import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json';
       const web3 = new Web3()
       const contract = new web3.eth.Contract(ERC20.abi as any, srcTokenAddress)
 
       const hashedCustomSpend =
         limitAmount &&
         contract.methods.approve(spenderAddress, limitAmount).encodeABI()
-
+      // update transaction params data
       // data: hashedCustomSpend to networkService.signTransaction
     },
-    [txParams, tokenPrice]
+    [params, tokenPrice]
   )
 
-  // useEffect(() => {
-  //   if (defaultGasPrice && transaction?.displayValues?.gasLimit && avaxPrice) {
-  //     setFeeDisplayValues(
-  //       calculateGasAndFees(
-  //         customGas?.gasPrice &&
-  //           customGas?.gasPrice?.value !== '' &&
-  //           customGas?.gasPrice?.value !== '0'
-  //           ? customGas?.gasPrice
-  //           : defaultGasPrice,
-  //         customGas?.gasLimit ?? transaction.displayValues.gasLimit.toString(),
-  //         avaxPrice
-  //       )
-  //     )
-  //   }
-  // }, [transaction, defaultGasPrice, avaxGasPrice, customGas])
+  useEffect(() => {
+    if (networkFees && transaction?.displayValues?.gasLimit && tokenPrice) {
+      setDisplayFees(
+        calculateGasAndFees({
+          gasPrice:
+            customGas?.gasPrice && customGas?.gasPrice
+              ? customGas?.gasPrice
+              : networkFees.low,
+          gasLimit: customGas?.gasLimit ?? transaction.displayValues.gasLimit,
+          tokenPrice,
+          tokenDecimals: activeNetwork?.networkToken?.decimals
+        })
+      )
+    }
+  }, [transaction, networkFees, tokenPrice, customGas])
 
   useEffect(() => {
-    ;(async () => {
-      if (txParams && tokenPrice && customGas) {
-        try {
-          const txExplanation = await getTxInfo(
-            txParams,
-            !activeNetwork.isTestnet
-          )
-          const displayTxData = {
-            ...txExplanation.data,
-            ...calculateGasAndFees({
-              gasPrice: customGas.gasPrice,
-              gasLimit: Number(txParams.gas),
-              tokenPrice,
-              tokenDecimals: activeNetwork?.networkToken.decimals
-            }),
-            fromAddress: txParams.from,
-            toAddress: txParams.to,
-            site: {}
-          }
+    async function loadTx() {
+      const txDescription = await getTxInfo(
+        params.to.toLocaleLowerCase(),
+        params.data ?? '',
+        params.value ?? '',
+        activeNetwork
+      )
 
-          // setDefaultGasPrice(displayTxData?.gasPrice)
+      const decodedData = (txDescription as ethers.utils.TransactionDescription)
+        .args
+      const functionName =
+        (txDescription as ethers.utils.TransactionDescription)?.name ??
+        (txDescription as ethers.utils.TransactionDescription)?.functionFragment
+          ?.name
 
-          // todo: check network fee service
-          // const gasLimit = await (txParams.gas
-          //   ? Promise.resolve(false)
-          //   : networkFeeService?.estimateGasLimit(
-          //       txParams.from,
-          //       txParams.to,
-          //       txParams.data ?? '',
-          //       bnToEthersBigNumber(stringToBN(txParams.value ?? '0', 9)),
-          //       activeNetwork
-          //     ))
-          //
-          // const txParamsWithGasLimit = gasLimit
-          //   ? { gas: `${gasLimit}`, ...txParams }
-          //   : txParams
+      const parser = contractParserMap.get(functionName)
 
-          // setTransaction({
-          //   id: Date.now().toString(),
-          //   time: Date.now(),
-          //   metamaskNetworkId: '0',
-          //   chainId: '43113',
-          //   txParams: txParamsWithGasLimit,
-          //   type: 'standard',
-          //   transactionCategory: 'tranfer',
-          //   displayValues: displayTxData
-          // })
-        } catch (e) {
-          console.error(e)
+      if (params && isTxParams(params)) {
+        if (!activeNetwork) return
+
+        const displayValueProps: DisplayValueParserProps = {
+          gasPrice: networkFees?.low || BigNumber.from(0),
+          avaxPrice: tokenPrice || 0,
+          avaxToken: activeNetwork?.networkToken,
+          site: peerMeta
         }
+
+        let gasLimit: number | null
+        try {
+          gasLimit = await (params?.gas
+            ? BigNumber.from(params.gas).toNumber()
+            : networkFeeService.estimateGasLimit(
+                params.from,
+                params.to,
+                params.data ?? '',
+                params.value ?? '',
+                activeNetwork
+              ))
+        } catch (e) {
+          // handle gas estimation errors with the correct error message
+          if (e.error?.error) {
+            throw e.error.error
+          }
+          throw e
+        }
+
+        const txParamsWithGasLimit = gasLimit
+          ? { ...params, gas: gasLimit }
+          : params
+
+        const description = isTxDescriptionError(txDescription)
+          ? txDescription
+          : undefined
+
+        const displayValues: TransactionDisplayValues = parser
+          ? await parser(
+              txParamsWithGasLimit,
+              decodedData,
+              displayValueProps,
+              description
+            )
+          : parseDisplayValues(params, displayValueProps, description)
+
+        const networkMetaData = activeNetwork
+          ? {
+              metamaskNetworkId: activeNetwork?.platformChainId,
+              chainId: activeNetwork?.chainId
+            }
+          : {
+              metamaskNetworkId: '',
+              chainId: undefined
+            }
+
+        setTransaction({
+          ...networkMetaData,
+          txParams: txParamsWithGasLimit,
+          displayValues,
+          type: 'standard',
+          transactionCategory: 'transfer'
+        })
       }
-    })()
+    }
+    loadTx()
   }, [tokenPrice])
 
-  // useEffect(() => {
-  //   // Handle transaction Approval for REVOKING spend limit
-  //   if (transaction?.displayValues?.tokenAmount === '0') {
-  //     setDisplaySpendLimit('0')
-  //   }
-  // }, [transaction])
+  useEffect(() => {
+    // Handle transaction Approval for REVOKING spend limit
+    if (transaction?.displayValues?.tokenAmount === '0') {
+      setDisplaySpendLimit('0')
+    }
+  }, [transaction])
 
   return useMemo(() => {
     return {
       ...transaction?.displayValues,
       ...(transaction?.txParams ? { txParams: transaction?.txParams } : {}),
-      fees: feeDisplayValues,
+      fees: displayFees,
       setCustomFee,
       setSpendLimit,
       displaySpendLimit,
       customSpendLimit,
-      selectedGasFee
+      selectedGasFee,
+      hash,
+      showCustomSpendLimit,
+      setShowCustomSpendLimit
     }
   }, [
     transaction,
@@ -201,9 +242,7 @@ export function useExplainTransaction(txParams: RpcTxParams) {
     tokenPrice,
     setCustomFee,
     setSpendLimit,
-    displaySpendLimit,
     customSpendLimit,
-    selectedGasFee,
-    feeDisplayValues
+    selectedGasFee
   ])
 }

@@ -3,7 +3,11 @@ import { useGasPrice } from 'utils/GasPriceHook'
 import { InteractionManager } from 'react-native'
 import { txToCustomEvmTx } from 'screens/rpc/util/txToCustomEvmTx'
 import { ShowSnackBar } from 'components/Snackbar'
-import { PeerMetadata, RPC_EVENT } from 'screens/rpc/util/types'
+import {
+  PeerMetadata,
+  RPC_EVENT,
+  TransactionParams
+} from 'screens/rpc/util/types'
 import { paramsToMessageParams } from 'screens/rpc/util/paramsToMessageParams'
 import { useActiveAccount } from 'hooks/useActiveAccount'
 import walletService from 'services/wallet/WalletService'
@@ -11,20 +15,22 @@ import { useActiveNetwork } from 'hooks/useActiveNetwork'
 import walletConnectService from 'services/walletconnect/WalletConnectService'
 import { MessageType, WalletConnectRequest } from 'services/walletconnect/types'
 import { bnToEthersBigNumber, resolve } from '@avalabs/utils-sdk'
-import { messageParent } from 'jest-worker'
 import Logger from 'utils/Logger'
 import networkService from 'services/network/NetworkService'
+import { JsonRpcRequest } from '@walletconnect/jsonrpc-types'
+import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 
 export function useRpcTxHandler() {
   const activeAccount = useActiveAccount()
   const activeNetwork = useActiveNetwork()
-  const { gasPrice } = useGasPrice()
   const [loading, setLoading] = useState(false)
   const [currentPeerMeta, setCurrentPeerMeta] = useState<PeerMetadata>()
-  const [currentPayload, setCurrentPayload] = useState<any>({})
+  const [currentPayload, setCurrentPayload] =
+    useState<JsonRpcRequest<TransactionParams[]>>()
   const [signMessageParams, setSignMessageParams] = useState<any>()
   const [eventType, setEventType] = useState<RPC_EVENT>()
   const [hash, setHash] = useState<string>()
+  const [hasIncomingTx, setHasIncomingTx] = useState(false)
 
   const initializeWalletConnect = () => {
     if (!activeAccount || !activeNetwork) return
@@ -44,6 +50,7 @@ export function useRpcTxHandler() {
           }
           setCurrentPeerMeta(meta)
           setEventType(RPC_EVENT.SESSION)
+          setHasIncomingTx(true)
         })
       }
     )
@@ -54,9 +61,8 @@ export function useRpcTxHandler() {
       WalletConnectRequest.CALL,
       (data: { payload: any; peerMeta: any }) => {
         InteractionManager.runAfterInteractions(() => {
-          const payload = data.payload
+          const payload: JsonRpcRequest<TransactionParams[]> = data.payload
           const meta: PeerMetadata = {
-            peerId: payload?.peerId,
             name: data?.peerMeta?.name,
             description: data?.peerMeta?.description,
             url: data?.peerMeta?.url,
@@ -80,6 +86,7 @@ export function useRpcTxHandler() {
               setEventType(RPC_EVENT.SIGN)
             }
           }
+          setHasIncomingTx(true)
         })
       }
     )
@@ -90,22 +97,21 @@ export function useRpcTxHandler() {
     initializeWalletConnect()
   }, [])
 
-  async function signMessage(messageType: MessageType, data: any) {
-    if (!activeAccount || !activeNetwork) return
-    return walletService.signMessage(
-      messageType,
-      data,
-      activeAccount.index,
-      activeNetwork
-    )
-  }
+  // async function signMessage(messageType: MessageType, data: any) {
+  //   if (!activeAccount || !activeNetwork) return
+  //   return walletService.signMessage(
+  //     messageType,
+  //     data,
+  //     activeAccount.index,
+  //     activeNetwork
+  //   )
+  // }
 
   async function onCallApproved(customParams: any) {
     if (!activeAccount || !activeNetwork) return
     try {
-      const { id, method, params } = currentPayload
+      const { id, method } = currentPayload
       if (method === MessageType.ETH_SEND) {
-        const gas = parseInt(params[0].gas)
         if (customParams) {
           console.log(customParams)
           const evmParam = txToCustomEvmTx(
@@ -114,10 +120,19 @@ export function useRpcTxHandler() {
           )
           console.log(evmParam)
           if (walletConnectService) {
+            const avalancheProvider =
+              (await networkService.getAvalancheProvider(
+                activeNetwork.isTestnet
+              )) as JsonRpcBatchInternal
+            const nonce = await avalancheProvider.getTransactionCount(
+              activeAccount.address
+            )
             const [hash, error] = await resolve(
               walletService?.sign(
                 {
-                  gasPrice: bnToEthersBigNumber(evmParam.gasPrice),
+                  nonce: nonce + 1,
+                  chainId: activeNetwork.chainId,
+                  gasPrice: evmParam.gasPrice,
                   gasLimit: evmParam.gasLimit,
                   data: evmParam.data,
                   to: evmParam.to,
@@ -129,13 +144,22 @@ export function useRpcTxHandler() {
             )
 
             if (error) {
-              Logger.error('error signing ETH send')
+              Logger.error('error signing ETH send', error)
               return
             }
+
+            Logger.info('sign succeeded', hash)
 
             const [sendHash, sendError] = await resolve(
               networkService.sendTransaction(hash, activeNetwork)
             )
+
+            if (sendError) {
+              Logger.error('error sending ETH send', sendError)
+              return
+            }
+
+            Logger.info('send succeeded', sendHash)
 
             walletConnectService.emitter.emit(
               WalletConnectRequest.CALL_APPROVED,
@@ -144,20 +168,20 @@ export function useRpcTxHandler() {
                 hash: sendHash
               }
             )
-            setHash(sendHash)
+            sendHash && setHash(sendHash)
             ShowSnackBar('You can now go back to the browser')
           } else {
             console.log('WalletConnect exploded')
           }
         } else {
-          const { data } = params[0]
+          const { data } = customParams
           const [hash, error] = await walletService.sign(
             {
-              gasPrice: bnToEthersBigNumber(gasPrice.bn),
-              gasLimit: gas,
+              gasPrice: customParams.fees.gasPrice,
+              gasLimit: customParams.fees.gasLimit,
               data: data,
-              to: params[0].to,
-              value: params[0].value
+              to: customParams.txParams.to,
+              value: customParams.txParams.value
             },
             activeAccount.index,
             activeNetwork
@@ -185,7 +209,7 @@ export function useRpcTxHandler() {
             }
           )
         }
-        setCurrentPayload({})
+        setCurrentPayload(undefined)
       } else {
         const signData = signMessageParams?.displayData.data
         const [hash, error] = await resolve(
@@ -220,26 +244,24 @@ export function useRpcTxHandler() {
   function onCallRejected() {
     walletConnectService.emitter.emit(
       WalletConnectRequest.CALL_REJECTED,
-      currentPayload.peerId
+      currentPayload?.id
     )
     clearRequests()
   }
 
   function onSessionApproved() {
-    const { peerId } = currentPeerMeta
     walletConnectService.emitter.emit(
       WalletConnectRequest.SESSION_APPROVED,
-      peerId
+      currentPeerMeta?.peerId
     )
     ShowSnackBar('You can now go back to the browser')
   }
 
   function onSessionRejected() {
-    const { peerId } = currentPeerMeta
     setCurrentPeerMeta({})
     walletConnectService.emitter.emit(
       WalletConnectRequest.SESSION_REJECTED,
-      peerId
+      currentPeerMeta?.peerId
     )
     clearRequests()
   }
@@ -247,7 +269,7 @@ export function useRpcTxHandler() {
   function clearRequests() {
     setHash(undefined)
     setCurrentPeerMeta(undefined)
-    setCurrentPayload({})
+    setCurrentPayload(undefined)
     setEventType(undefined)
   }
 
@@ -261,6 +283,7 @@ export function useRpcTxHandler() {
     onCallApproved,
     onCallRejected,
     onSessionApproved,
-    onSessionRejected
+    onSessionRejected,
+    hasIncomingTx
   }
 }
