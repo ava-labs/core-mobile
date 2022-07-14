@@ -8,7 +8,8 @@ import InputText from 'components/InputText'
 import { Row } from 'components/Row'
 import TokenAddress from 'components/TokenAddress'
 import { Account, setAccountTitle as setAccountTitleStore } from 'store/account'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import { selectBalanceTotalInCurrencyForAccount } from 'store/balance'
 
 type Props = {
   account: Account
@@ -26,15 +27,12 @@ function AccountItem({
   blurred
 }: Props): JSX.Element {
   const context = useApplicationContext()
+  const accountBalance = useSelector(
+    selectBalanceTotalInCurrencyForAccount(account.index)
+  )
   const [editAccount, setEditAccount] = useState(false)
   const [editedAccountTitle, setEditedAccountTitle] = useState(account.title)
-  const [accBalance] = useState('')
   const dispatch = useDispatch()
-
-  // useEffect(() => {
-  //   const sub = account.balance$.subscribe(value => setAccBalance(value))
-  //   return () => sub.unsubscribe()
-  // }, [account])
 
   const bgColor = useMemo(() => {
     if (selected) {
@@ -63,7 +61,7 @@ function AccountItem({
         })
       )
     },
-    [account.index]
+    [account.index, dispatch]
   )
 
   return (
@@ -80,13 +78,15 @@ function AccountItem({
           <View style={{ flex: 1, justifyContent: 'center' }}>
             {editAccount ? (
               <EditTitle
-                title={account.title}
+                title={editedAccountTitle}
                 onChangeText={setEditedAccountTitle}
                 onSubmit={() => saveAccountTitle(editedAccountTitle)}
               />
             ) : (
               <Title title={account.title} />
             )}
+            <Space y={6} />
+            <AvaText.Body3 currency>{accountBalance}</AvaText.Body3>
             {editable && (
               // For smaller touch area
               <Row>
@@ -101,14 +101,10 @@ function AccountItem({
               </Row>
             )}
           </View>
-          <View
-            style={{
-              width: 116,
-              alignItems: 'flex-end'
-            }}>
-            <TokenAddress address={account.address} />
+          <View>
+            <TokenAddress address={account.address} showIcon />
             <Space y={6} />
-            <AvaText.Body3 currency>{accBalance}</AvaText.Body3>
+            <TokenAddress address={account.addressBtc} showIcon />
           </View>
         </Row>
       </AvaButton.Base>
@@ -172,13 +168,21 @@ const EditTitle = ({
 }) => {
   const { theme } = useApplicationContext()
   return (
-    <InputText
-      style={{ margin: 0, backgroundColor: theme.colorBg1, borderRadius: 8 }}
-      autoFocus
-      text={title}
-      onSubmit={onSubmit}
-      onChangeText={onChangeText}
-    />
+    <Row>
+      <InputText
+        style={{
+          margin: 0,
+          backgroundColor: theme.colorBg1,
+          borderRadius: 8,
+          flex: 1
+        }}
+        autoFocus
+        text={title}
+        onSubmit={onSubmit}
+        onChangeText={onChangeText}
+      />
+      <Space x={16} />
+    </Row>
   )
 }
 
