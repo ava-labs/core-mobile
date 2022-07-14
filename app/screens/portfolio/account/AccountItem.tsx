@@ -8,7 +8,8 @@ import InputText from 'components/InputText'
 import { Row } from 'components/Row'
 import TokenAddress from 'components/TokenAddress'
 import { Account, setAccountTitle as setAccountTitleStore } from 'store/account'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import { selectBalanceTotalInCurrencyForAccount } from 'store/balance'
 
 type Props = {
   account: Account
@@ -26,15 +27,12 @@ function AccountItem({
   blurred
 }: Props): JSX.Element {
   const context = useApplicationContext()
+  const accountBalance = useSelector(
+    selectBalanceTotalInCurrencyForAccount(account.index)
+  )
   const [editAccount, setEditAccount] = useState(false)
   const [editedAccountTitle, setEditedAccountTitle] = useState(account.title)
-  const [accBalance] = useState('')
   const dispatch = useDispatch()
-
-  // useEffect(() => {
-  //   const sub = account.balance$.subscribe(value => setAccBalance(value))
-  //   return () => sub.unsubscribe()
-  // }, [account])
 
   const bgColor = useMemo(() => {
     if (selected) {
@@ -88,7 +86,7 @@ function AccountItem({
               <Title title={account.title} />
             )}
             <Space y={6} />
-            <AvaText.Body3 currency>{accBalance}</AvaText.Body3>
+            <AvaText.Body3 currency>{accountBalance}</AvaText.Body3>
             {editable && (
               // For smaller touch area
               <Row>
