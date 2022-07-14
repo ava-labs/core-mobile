@@ -274,6 +274,19 @@ const SwapReview = ({ onCancel, onBackToParent }: Props) => {
         </View>
       </View>
       <Space y={8} />
+      {swapInProgress && (
+        <View
+          style={[
+            StyleSheet.absoluteFill,
+            {
+              backgroundColor: '#00000080',
+              justifyContent: 'center',
+              alignItems: 'center'
+            }
+          ]}>
+          <ActivityIndicator size={'large'} />
+        </View>
+      )}
     </View>
   )
 }
