@@ -4,32 +4,21 @@ import { TextInput, View } from 'react-native'
 import AvaButton from 'components/AvaButton'
 import SettingsCogSVG from 'components/svg/SettingsCogSVG'
 import { Space } from 'components/Space'
-import React, { FC, useCallback, useEffect, useState } from 'react'
+import React, { FC, useEffect, useMemo, useRef, useState } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
+import InputText from 'components/InputText'
 import { Opacity50 } from 'resources/Constants'
-import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import { Popable } from 'react-native-popable'
 import PoppableGasAndLimit from 'components/PoppableGasAndLimit'
+import { useDispatch, useSelector } from 'react-redux'
+import { fetchNetworkFee, selectNetworkFee } from 'store/networkFee'
 import { BigNumber } from 'ethers'
 import { useActiveNetwork } from 'hooks/useActiveNetwork'
-import { useNativeTokenPrice } from 'hooks/useNativeTokenPrice'
-import { useNetworkFee } from 'hooks/useNetworkFee'
-import { calculateGasAndFees } from 'utils/Utils'
-import { formatUnits } from 'ethers/lib/utils'
-import Logger from 'utils/Logger'
-import isEmpty from 'lodash.isempty'
-import { useNavigation } from '@react-navigation/native'
+import { NetworkVMType } from '@avalabs/chains-sdk'
+import { NavigationProp, useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
-import { WalletScreenProps } from 'navigation/types'
-
-function getUpToTwoDecimals(input: BigNumber, decimals: number) {
-  const result = input
-    .mul(100)
-    .div(10 ** decimals)
-    .toNumber()
-
-  return formatUnits(result, 2)
-}
+import { bigToEthersBigNumber, ethersBigNumberToBig } from '@avalabs/utils-sdk'
+import Big from 'big.js'
 
 export enum FeePreset {
   Normal = 'Normal',
@@ -38,298 +27,185 @@ export enum FeePreset {
   Custom = 'Custom'
 }
 
-interface Props {
-  gasPrice: BigNumber
-  limit: number
-  onChange?(gasLimit: number, gasPrice: BigNumber, feePreset: FeePreset): void
-  maxGasPrice?: string
-  currentModifier?: FeePreset
-  network: Network
-  disableGasPriceEditing?: boolean
+export enum FeePresetNetworkFeeMap {
+  Normal = 'low',
+  Fast = 'medium',
+  Instant = 'high'
 }
 
-type NavigationProp = WalletScreenProps<
-  typeof AppNavigation.Modal.EditGasLimit
->['navigation']
-
 const NetworkFeeSelector = ({
-  gasPrice,
-  limit,
-  onChange,
-  maxGasPrice,
-  currentModifier,
-  disableGasPriceEditing
-}: Props) => {
-  const { navigate } = useNavigation<NavigationProp>()
+  gasLimit,
+  onChange
+}: {
+  gasLimit: number
+  onChange?(gasLimit: number, gasPrice: BigNumber, feePreset: FeePreset): void
+}) => {
+  const { navigate } = useNavigation<NavigationProp<any>>()
   const { theme } = useApplicationContext()
+  const networkFee = useSelector(selectNetworkFee)
+  const dispatch = useDispatch()
   const network = useActiveNetwork()
-  const networkFee = useNetworkFee().networkFees
-  const tokenPrice = useNativeTokenPrice().nativeTokenPrice
-  const [customGasPrice, setCustomGasPrice] = useState(gasPrice)
-  const [customGasLimit, setCustomGasLimit] = useState<number>()
-  const [isGasPriceTooHigh, setIsGasPriceTooHigh] = useState(false)
   const isBtcNetwork = network.vmName === NetworkVMType.BITCOIN
-  const gasLimit = customGasLimit ?? limit
-  const [newFees, setNewFees] =
-    useState<ReturnType<typeof calculateGasAndFees>>()
-  const [customGasInput, setCustomGasInput] = useState(
-    currentModifier === FeePreset.Custom
-      ? getUpToTwoDecimals(
-          gasPrice,
-          networkFee?.displayDecimals ?? 9
-        ).toString()
-      : getUpToTwoDecimals(
-          networkFee?.low ?? BigNumber.from(0),
-          networkFee?.displayDecimals ?? 9
-        ).toString()
+  const [selectedPreset, setSelectedPreset] = useState(FeePreset.Normal)
+  const [customGasPrice, setCustomGasPrice] = useState(
+    BigNumber.from(networkFee.low)
   )
-  const [selectedFee, setSelectedFee] = useState<FeePreset>(
-    networkFee?.isFixedFee
-      ? FeePreset.Normal
-      : currentModifier || FeePreset.Normal
-  )
-
-  useEffect(() => {
-    const newFees = calculateGasAndFees({
-      gasPrice,
-      tokenPrice,
-      tokenDecimals: network?.networkToken?.decimals,
-      gasLimit
-    })
-    setNewFees(newFees)
-  }, [])
-
-  const handleGasChange = useCallback(
-    (gas: BigNumber, modifier: FeePreset) => {
-      setIsGasPriceTooHigh(false)
-      setCustomGasPrice(gas)
-      const newFees = calculateGasAndFees({
-        gasPrice: gas,
-        tokenPrice,
-        tokenDecimals: network?.networkToken?.decimals,
-        gasLimit
-      })
-
-      if (maxGasPrice && newFees.bnFee.gt(maxGasPrice)) {
-        setIsGasPriceTooHigh(true)
-        return
-      }
-
-      if (modifier === FeePreset.Custom) {
-        setCustomGasInput(
-          getUpToTwoDecimals(gas, networkFee?.displayDecimals || 0)
-        )
-      }
-
-      setNewFees(newFees)
-      onChange?.(gasLimit, gas, modifier)
-    },
-    [
-      tokenPrice,
-      network?.networkToken.decimals,
-      gasLimit,
-      maxGasPrice,
-      onChange,
-      networkFee?.displayDecimals
-    ]
-  )
-
-  const updateGasFee = useCallback(
-    (modifier?: FeePreset) => {
-      if (!modifier || !networkFee) {
-        return
-      }
-      setSelectedFee(modifier)
-      switch (modifier) {
-        case FeePreset.Fast: {
-          handleGasChange(networkFee.medium, modifier)
-          break
-        }
-        case FeePreset.Instant: {
-          handleGasChange(networkFee.high, modifier)
-          break
-        }
-        case FeePreset.Custom: {
-          handleGasChange(
-            BigNumber.from(parseInt(customGasInput)).mul(
-              BigNumber.from(10).pow(networkFee?.displayDecimals ?? 9)
-            ),
-            modifier
-          )
-          break
-        }
-        default:
-          handleGasChange(networkFee.low, FeePreset.Normal)
-      }
-    },
-    [customGasInput, handleGasChange, networkFee]
-  )
-
-  useEffect(() => {
-    if (networkFee) {
-      setCustomGasInput(
-        getUpToTwoDecimals(networkFee.low, networkFee.displayDecimals || 0)
-      )
-      // if the network fee is fixed, that means we only show Normal.
-      networkFee.isFixedFee
-        ? updateGasFee(FeePreset.Normal)
-        : updateGasFee(currentModifier)
+  const selectedGasPrice = useMemo(() => {
+    switch (selectedPreset) {
+      case FeePreset.Custom:
+        return customGasPrice
+      default:
+        return networkFee[FeePresetNetworkFeeMap[selectedPreset]]
     }
-  }, [networkFee, currentModifier, updateGasFee])
+  }, [customGasPrice, networkFee, selectedPreset])
+  const totalFeeString = useMemo(() => {
+    return ethersBigNumberToBig(
+      selectedGasPrice.mul(gasLimit),
+      networkFee.nativeTokenDecimals
+    ).toString()
+  }, [gasLimit, networkFee.nativeTokenDecimals, selectedGasPrice])
+
+  useEffect(() => {
+    onChange?.(gasLimit, selectedGasPrice, selectedPreset)
+  }, [gasLimit, selectedGasPrice, selectedPreset])
+
+  useEffect(fetchNetworkGasPrices, [])
+
+  function fetchNetworkGasPrices() {
+    dispatch(fetchNetworkFee)
+  }
+
+  function onGasLimitChange(newGasLimit: number) {
+    onChange?.(newGasLimit, selectedGasPrice, selectedPreset)
+  }
+
+  const convertFeeToUnit = (value: BigNumber) =>
+    ethersBigNumberToBig(value, networkFee.displayDecimals).toFixed(0)
+
+  const displayGasValues = useMemo(() => {
+    return {
+      [FeePreset.Normal]: convertFeeToUnit(networkFee.low),
+      [FeePreset.Fast]: convertFeeToUnit(networkFee.medium),
+      [FeePreset.Instant]: convertFeeToUnit(networkFee.high),
+      [FeePreset.Custom]: convertFeeToUnit(customGasPrice)
+    }
+  }, [customGasPrice, networkFee.high, networkFee.low, networkFee.medium])
 
   return (
-    // <BottomSheetModalProvider>
-    <View>
+    <>
       <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
         <Popable
           content={
             <PoppableGasAndLimit
               gasLimit={gasLimit}
-              gasPrice={gasPrice.toNumber().toFixed(2)}
+              gasPrice={`${convertFeeToUnit(selectedGasPrice)} ${
+                networkFee.unit
+              }`}
             />
           }
           position={'right'}
           style={{ minWidth: 200 }}
           backgroundColor={theme.colorBg3}>
-          <AvaText.Body2 color={theme.white}>Network Fee ⓘ</AvaText.Body2>
+          <AvaText.Body2>{`Network Fee ${
+            totalFeeString ? 'ⓘ' : ''
+          }`}</AvaText.Body2>
         </Popable>
-
         {network?.vmName === NetworkVMType.EVM && (
-          <AvaButton.Icon
-            onPress={() => {
-              navigate(AppNavigation.Modal.EditGasLimit, {
-                gasLimit,
-                gasPrice: customGasPrice,
-                onSave: (newLimit: number) => {
-                  setCustomGasLimit(newLimit)
-                  setNewFees(
-                    calculateGasAndFees({
-                      gasPrice: customGasPrice,
-                      tokenPrice,
-                      tokenDecimals: network?.networkToken?.decimals,
-                      gasLimit: newLimit
-                    })
-                  )
-                  onChange?.(
-                    newLimit,
-                    customGasPrice,
-                    currentModifier ?? FeePreset.Normal
-                  )
-                }
-              })
-            }}>
-            <SettingsCogSVG />
-          </AvaButton.Icon>
+          <View>
+            <AvaButton.Icon
+              onPress={() => {
+                navigate(AppNavigation.Modal.EditGasLimit, {
+                  gasLimit: gasLimit,
+                  gasPrice: customGasPrice,
+                  onSave: onGasLimitChange
+                })
+              }}>
+              <SettingsCogSVG />
+            </AvaButton.Icon>
+          </View>
         )}
       </Row>
-      <Space y={8} />
+      <Space y={4} />
+
       <Row
         style={{
-          justifyContent: 'space-evenly',
+          justifyContent: 'space-between',
           alignItems: 'center'
         }}>
         <FeeSelector
           label={isBtcNetwork ? 'Slow' : FeePreset.Normal}
-          selected={selectedFee === FeePreset.Normal}
-          onSelect={() => updateGasFee(FeePreset.Normal)}
-          value={getUpToTwoDecimals(networkFee.low, networkFee.displayDecimals)}
+          selected={selectedPreset === FeePreset.Normal}
+          onSelect={() => setSelectedPreset(FeePreset.Normal)}
+          value={displayGasValues[FeePreset.Normal]}
         />
-        {!networkFee?.isFixedFee && (
-          <>
-            <FeeSelector
-              label={isBtcNetwork ? 'Medium' : FeePreset.Fast}
-              selected={selectedFee === FeePreset.Fast}
-              onSelect={() => updateGasFee(FeePreset.Fast)}
-              value={getUpToTwoDecimals(
-                networkFee.medium,
+        <FeeSelector
+          label={isBtcNetwork ? 'Medium' : FeePreset.Fast}
+          selected={selectedPreset === FeePreset.Fast}
+          onSelect={() => setSelectedPreset(FeePreset.Fast)}
+          value={displayGasValues[FeePreset.Fast]}
+        />
+        <FeeSelector
+          label={isBtcNetwork ? 'Fast' : FeePreset.Instant}
+          selected={selectedPreset === FeePreset.Instant}
+          onSelect={() => setSelectedPreset(FeePreset.Instant)}
+          value={displayGasValues[FeePreset.Instant]}
+        />
+        <FeeSelector
+          editable
+          label={FeePreset.Custom}
+          selected={selectedPreset === FeePreset.Custom}
+          onSelect={() => setSelectedPreset(FeePreset.Custom)}
+          value={displayGasValues[FeePreset.Custom]}
+          onValueEntered={value =>
+            setCustomGasPrice(
+              bigToEthersBigNumber(
+                new Big(value || 0),
                 networkFee.displayDecimals
-              )}
-            />
-            <FeeSelector
-              label={isBtcNetwork ? 'Fast' : FeePreset.Instant}
-              selected={selectedFee === FeePreset.Instant}
-              onSelect={() => updateGasFee(FeePreset.Instant)}
-              value={getUpToTwoDecimals(
-                networkFee.high,
-                networkFee.displayDecimals
-              )}
-            />
-            <FeeSelector
-              label={FeePreset.Custom}
-              selected={selectedFee === FeePreset.Custom}
-              onSelect={() => updateGasFee(FeePreset.Custom)}
-              value={customGasInput}>
-              <TextInput
-                value={parseInt(customGasInput).toString()}
-                editable={!disableGasPriceEditing}
-                autoFocus
-                keyboardType={'numeric'}
-                maxLength={2}
-                onChangeText={value => {
-                  if (isEmpty(value)) {
-                    handleGasChange(BigNumber.from(0), FeePreset.Custom)
-                  } else {
-                    try {
-                      handleGasChange(
-                        BigNumber.from(value).mul(
-                          BigNumber.from(10).pow(
-                            networkFee?.displayDecimals ?? 9
-                          )
-                        ),
-                        FeePreset.Custom
-                      )
-                    } catch (e) {
-                      Logger.error('error', e)
-                    }
-                  }
-                }}
-              />
-            </FeeSelector>
-          </>
-        )}
+              )
+            )
+          }
+        />
       </Row>
-      {isGasPriceTooHigh && (
-        <>
-          <Space y={4} />
-          <AvaText.Body3 color={theme.colorError}>
-            Insufficient balance
-          </AvaText.Body3>
-        </>
-      )}
       <Space y={20} />
       <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-        <AvaText.Body2 color={theme.white}>Fee Amount</AvaText.Body2>
+        <AvaText.Body2>Fee Amount</AvaText.Body2>
         <AvaText.Heading3>
-          {newFees?.fee} {network?.networkToken?.symbol}
+          {totalFeeString} {network?.networkToken?.symbol}
         </AvaText.Heading3>
-        <Space x={4} />
-        {!isNaN(Number(newFees?.feeInCurrency)) && (
-          <AvaText.Body3 currency textStyle={{ paddingBottom: 2 }}>
-            {newFees?.feeInCurrency}
-          </AvaText.Body3>
-        )}
       </Row>
-    </View>
+    </>
   )
 }
 
-export type Weights = {
-  Normal: number
-  Fast: number
-  Instant: number
-  Custom: number
-}
-
-export const FeeSelector: FC<{
+const FeeSelector: FC<{
   label: string
   value?: string
   selected: boolean
-  onSelect: () => void
-}> = ({ label, selected, onSelect, value, children }) => {
+  onSelect: (value: string) => void
+  editable?: boolean
+  onValueEntered?: (value: string) => void
+}> = ({
+  label,
+  selected,
+  onSelect,
+  onValueEntered,
+  value,
+  editable = false
+}) => {
   const { theme } = useApplicationContext()
-  const hasChildrenAndSelected = selected && !!children
-  // BigNumber.from will throw an error if we have fractions here. Plus, this matches what extension is doing
-  const sanitizedValue = parseInt(value ?? '0').toString()
+  const [showInput, setShowInput] = useState(false)
+
+  let inputRef = useRef<TextInput>(null)
+
+  useEffect(() => {
+    if (selected && editable) {
+      setShowInput(true)
+    }
+    if (!selected) {
+      setShowInput(false)
+      inputRef.current?.blur()
+    }
+  }, [editable, selected])
 
   return (
     <View
@@ -338,39 +214,66 @@ export const FeeSelector: FC<{
         width: 75,
         height: 48
       }}>
-      <AvaButton.Base onPress={onSelect}>
-        <View
-          focusable
-          style={{
-            width: 75,
-            height: 48,
-            borderRadius: 8,
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: selected
-              ? theme.colorText1
-              : theme.colorBg3 + Opacity50
-          }}>
-          <AvaText.ButtonMedium
-            textStyle={{
-              color: selected ? theme.colorBg2 : theme.colorText2
+      {showInput && (
+        <InputText
+          text={value?.toString() ?? ''}
+          autoFocus
+          onChangeText={text => onValueEntered?.(text)}
+          keyboardType={'numeric'}
+          onInputRef={inputRef1 => {
+            inputRef = inputRef1
+            inputRef1.current?.setNativeProps({
+              style: {
+                backgroundColor: theme.colorText1,
+                width: 75,
+                height: 48,
+                marginTop: -12,
+                fontFamily: 'Inter-SemiBold',
+                textAlign: 'center',
+                textAlignVertical: 'center',
+                paddingTop: 0,
+                paddingBottom: 0,
+                paddingLeft: 0,
+                paddingRight: 0,
+                color: theme.colorBg2,
+                fontSize: 14,
+                lineHeight: 24
+              }
+            })
+          }}
+          mode={'amount'}
+        />
+      )}
+      {!showInput && (
+        <AvaButton.Base onPress={() => onSelect(label)}>
+          <View
+            focusable
+            style={{
+              width: 75,
+              height: 48,
+              borderRadius: 8,
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: selected
+                ? theme.colorText1
+                : theme.colorBg3 + Opacity50
             }}>
-            {label}
-          </AvaText.ButtonMedium>
-          {hasChildrenAndSelected ? (
-            <>{children}</>
-          ) : (
             <AvaText.ButtonMedium
               textStyle={{
                 color: selected ? theme.colorBg2 : theme.colorText2
               }}>
-              {sanitizedValue}
+              {label}
             </AvaText.ButtonMedium>
-          )}
-        </View>
-      </AvaButton.Base>
+            <AvaText.ButtonMedium
+              textStyle={{
+                color: selected ? theme.colorBg2 : theme.colorText2
+              }}>
+              {value}
+            </AvaText.ButtonMedium>
+          </View>
+        </AvaButton.Base>
+      )}
     </View>
   )
 }
-
 export default NetworkFeeSelector

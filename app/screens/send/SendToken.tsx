@@ -23,10 +23,9 @@ import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
 import { NetworkVMType } from '@avalabs/chains-sdk'
 import NetworkFeeSelector from 'components/NetworkFeeSelector'
-import { useGasPrice } from 'utils/GasPriceHook'
 import { Row } from 'components/Row'
 import { usePosthogContext } from 'contexts/PosthogContext'
-import { bnToEthersBigNumber, ethersBigNumberToBN } from '@avalabs/utils-sdk'
+import { ethersBigNumberToBN } from '@avalabs/utils-sdk'
 
 type Props = {
   onNext: () => void
@@ -71,7 +70,6 @@ const SendToken: FC<Props> = ({
       ? 'Enter 0x Address'
       : 'Enter Bitcoin Address'
 
-  const { gasPrice } = useGasPrice()
   const balance = numeral(sendToken?.balanceDisplayValue ?? 0).value() || 0
 
   // const netFeeString = useMemo(() => {
@@ -220,35 +218,18 @@ const SendToken: FC<Props> = ({
             </AvaText.Body3>
             <Space y={8} />
             <NetworkFeeSelector
-              network={activeNetwork}
-              // networkFeeAvax={netFeeString}
-              // networkFeeInCurrency={fees.sendFeeInCurrency ?? 0}
-              gasPrice={bnToEthersBigNumber(gasPrice.bn)}
-              limit={fees.gasLimit ?? 0}
+              gasLimit={fees.gasLimit ?? 0}
               onChange={(gasLimit, gasPrice1, feePreset) => {
                 fees.setGasLimit(gasLimit)
                 fees.setCustomGasPrice(ethersBigNumberToBN(gasPrice1))
                 fees.setSelectedFeePreset(feePreset)
               }}
-              // onWeightedGas={price => {
-              //   fees.setCustomGasPrice(price.bn)
-              //   fees.setSelectedFeePreset(price.label as FeePreset)
-              // }}
-              // weights={{ Normal: 1, Fast: 1.05, Instant: 1.15, Custom: 35 }}
-              // onSettingsPressed={() => {
-              //   const initGasLimit = fees.gasLimit || 0
-              //
-              //   const onCustomGasLimit = (gasLimit: number) => {
-              //     fees.setGasLimit(gasLimit)
-              //   }
-              //
-              //   navigate(AppNavigation.Modal.EditGasLimit, {
-              //     gasLimit: initGasLimit.toString(),
-              //     networkFee: netFeeString,
-              //     onSave: onCustomGasLimit
-              //   })
-              // }}
             />
+            <AvaText.Body3
+              currency
+              textStyle={{ marginTop: 4, alignSelf: 'flex-end' }}>
+              {fees.sendFeeInCurrency}
+            </AvaText.Body3>
           </View>
           <FlexSpacer />
         </>
