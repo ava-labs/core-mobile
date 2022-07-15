@@ -6,10 +6,8 @@ import {
   Blockchain,
   BridgeTransaction,
   getNativeSymbol,
-  useBridgeSDK,
   usePrice,
-  usePriceForChain,
-  useTokenInfoContext
+  usePriceForChain
 } from '@avalabs/bridge-sdk'
 import DotSVG from 'components/svg/DotSVG'
 import Avatar from 'components/Avatar'
@@ -22,11 +20,12 @@ import { useBridgeContext } from 'contexts/BridgeContext'
 import { StackNavigationOptions } from '@react-navigation/stack'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { useNavigation } from '@react-navigation/native'
+import Logger from 'utils/Logger'
+import { useSelector } from 'react-redux'
+import { selectTokenInfo } from 'store/network'
 
 type Props = {
-  blockchain: string
   txHash: string
-  txTimestamp: string
   setNavOptions: (options: StackNavigationOptions) => void
   HeaderRight?: ReactNode
 }
@@ -40,7 +39,11 @@ const BridgeTransactionStatus: FC<Props> = ({
   const bridgeTransaction = bridgeTransactions[txHash] as
     | BridgeTransaction
     | undefined
-  console.log(
+
+  const tokenInfo = useSelector(
+    selectTokenInfo(bridgeTransaction?.symbol ?? '')
+  )
+  Logger.info(
     `updated tx: ${bridgeTransaction?.sourceTxHash} count: ${
       bridgeTransaction?.confirmationCount
     } completed: ${bridgeTransaction?.complete} completedAt: ${
@@ -49,12 +52,10 @@ const BridgeTransactionStatus: FC<Props> = ({
   )
   const { theme, appHook } = useApplicationContext()
   const { selectedCurrency, currencyFormatter } = appHook
-  const tokenInfoData = useTokenInfoContext()
-  const { currentAsset, transactionDetails } = useBridgeSDK()
   const navigation = useNavigation()
 
   const assetPrice = usePrice(
-    bridgeTransaction?.symbol || currentAsset,
+    bridgeTransaction?.symbol,
     selectedCurrency.toLowerCase() as VsCurrencyType
   )
   const networkPrice = usePriceForChain(bridgeTransaction?.sourceChain)
@@ -92,11 +93,8 @@ const BridgeTransactionStatus: FC<Props> = ({
         <DotSVG fillColor={theme.colorBg1} size={72} />
       </View>
       <Avatar.Custom
-        name={transactionDetails?.tokenSymbol ?? ''}
-        logoUri={
-          transactionDetails?.tokenSymbol &&
-          tokenInfoData?.[transactionDetails?.tokenSymbol]?.logo
-        }
+        name={tokenInfo?.symbol ?? ''}
+        logoUri={tokenInfo?.logoUri}
         size={55}
       />
     </View>

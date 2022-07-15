@@ -1,36 +1,18 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { Animated, RefreshControl, View } from 'react-native'
+import React, { useMemo, useState } from 'react'
+import { View } from 'react-native'
 import AvaText from 'components/AvaText'
-import Loader from 'components/Loader'
-import {
-  TransactionERC20,
-  TransactionNormal
-} from '@avalabs/wallet-react-components'
-import { ScrollView } from 'react-native-gesture-handler'
-import ActivityListItem from 'screens/activity/ActivityListItem'
-import { endOfToday, endOfYesterday, format, isSameDay } from 'date-fns'
-import { useBridgeSDK } from '@avalabs/bridge-sdk'
-import BridgeTransactionItem from 'screens/bridge/components/BridgeTransactionItem'
 import { BridgeTransactionStatusParams } from 'navigation/types'
 import { Row } from 'components/Row'
 import DropDown from 'components/Dropdown'
-import useInAppBrowser from 'hooks/useInAppBrowser'
-import { isBridgeTransaction } from 'screens/bridge/utils/bridgeTransactionUtils'
-import {
-  isContractCallTransaction,
-  isIncomingTransaction,
-  isOutgoingTransaction
-} from 'utils/TransactionTools'
-import { selectActiveNetwork, TokenSymbol } from 'store/network'
-import { useSelector } from 'react-redux'
-import { selectBridgeTransactions } from 'store/bridge'
-
-const yesterday = endOfYesterday()
-const today = endOfToday()
+import { Space } from 'components/Space'
+import { useGetAllTransactions } from 'store/transaction'
+import { Transaction } from 'store/transaction'
+import { ActivityLoader } from './ActivityLoader'
+import Transactions from './Transactions'
 
 enum ActivityFilter {
   All = 'All',
-  ContractApprovals = 'Contract Approvals',
+  Contract = 'Contract Call',
   Incoming = 'Incoming',
   Outgoing = 'Outgoing',
   Bridge = 'Bridge'
@@ -38,7 +20,7 @@ enum ActivityFilter {
 
 const filterOptions = [
   ActivityFilter.All,
-  ActivityFilter.ContractApprovals,
+  ActivityFilter.Contract,
   ActivityFilter.Incoming,
   ActivityFilter.Outgoing,
   ActivityFilter.Bridge
@@ -47,212 +29,55 @@ const filterOptions = [
 interface Props {
   embedded?: boolean
   tokenSymbolFilter?: string
-  openTransactionDetails: (item: TransactionNormal | TransactionERC20) => void
+  openTransactionDetails: (item: Transaction) => void
   openTransactionStatus: (params: BridgeTransactionStatusParams) => void
 }
 
-function ActivityList({
+const ActivityList = ({
   embedded,
   tokenSymbolFilter,
   openTransactionDetails,
   openTransactionStatus
-}: Props) {
-  const [loading, setLoading] = useState(true)
-  const { openUrl } = useInAppBrowser()
-  const [allHistory, setAllHistory] = useState<
-    (TransactionNormal | TransactionERC20)[]
-  >([])
-  const { bitcoinAssets, ethereumWrappedAssets } = useBridgeSDK()
-  const bridgeTransactions = useSelector(selectBridgeTransactions)
+}: Props) => {
+  const { transactions, refresh, isLoading, isRefreshing } =
+    useGetAllTransactions()
   const [filter, setFilter] = useState(ActivityFilter.All)
-  const activeNetwork = useSelector(selectActiveNetwork)
 
-  //bow to lint gods
-  setLoading
-  setAllHistory
-
-  const isBridgeTx = useCallback(
-    (tx: typeof allHistory[0]): tx is TransactionERC20 => {
-      return isBridgeTransaction(tx, ethereumWrappedAssets, bitcoinAssets)
-    },
-    [bitcoinAssets, ethereumWrappedAssets]
-  )
-
-  const getDayString = (date: Date) => {
-    const isToday = isSameDay(today, date)
-    const isYesterday = isSameDay(yesterday, date)
-    return isToday
-      ? 'Today'
-      : isYesterday
-      ? 'Yesterday'
-      : format(date, 'MMMM do')
-  }
-
-  const filteredHistory = useMemo(
+  const filteredTransactions = useMemo(
     () =>
-      allHistory
+      transactions
         ?.filter(tx => {
           switch (filter) {
-            case ActivityFilter.ContractApprovals:
-              return isContractCallTransaction(tx)
+            case ActivityFilter.Contract:
+              return tx.isContractCall
             case ActivityFilter.Incoming:
-              return isIncomingTransaction(tx) && !isBridgeTx(tx)
+              return tx.isIncoming && !tx.isBridge
             case ActivityFilter.Outgoing:
-              return isOutgoingTransaction(tx)
+              return tx.isOutgoing
             case ActivityFilter.All:
               return true
             case ActivityFilter.Bridge:
-              return isBridgeTx(tx)
+              return tx.isBridge
             default:
               return false
           }
         })
         .filter(tx => {
-          return tokenSymbolFilter
-            ? tokenSymbolFilter ===
-                ('tokenSymbol' in tx ? tx.tokenSymbol : TokenSymbol.AVAX)
+          return tokenSymbolFilter && tx.token?.symbol
+            ? tokenSymbolFilter === tx.token.symbol
             : true
         }),
-    [allHistory, tokenSymbolFilter, isBridgeTx, filter]
+    [transactions, tokenSymbolFilter, filter]
   )
 
-  useEffect(() => {
-    loadHistory().then()
-  }, [activeNetwork])
+  const renderHeader = () => (
+    <AvaText.LargeTitleBold textStyle={{ marginHorizontal: 16 }}>
+      Activity
+    </AvaText.LargeTitleBold>
+  )
 
-  const loadHistory = async () => {
-    //todo - make and use ActivityService
-    // if (!wallet) {
-    //   return []
-    // }
-    // setLoading(true)
-    // setAllHistory((await getHistory(wallet, 50)) ?? []) //fixme: get history from glacier?
-    // setLoading(false)
-  }
-
-  const renderItems = () => {
+  const renderFilterDropdown = () => {
     return (
-      <View style={{ flex: 1 }}>
-        {bridgeTransactions && Object.values(bridgeTransactions).length > 0 && (
-          <>
-            <Animated.View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                padding: 16,
-                marginRight: 8
-              }}>
-              <AvaText.ActivityTotal>Pending</AvaText.ActivityTotal>
-            </Animated.View>
-            {Object.values(bridgeTransactions).map((tx, i) => {
-              return (
-                <BridgeTransactionItem
-                  key={tx.sourceTxHash + i}
-                  item={tx}
-                  onPress={() => {
-                    openTransactionStatus({
-                      blockchain: tx.sourceChain,
-                      txHash: tx.sourceTxHash || '',
-                      txTimestamp: tx.sourceStartedAt
-                        ? Date.parse(tx.sourceStartedAt.toString()).toString()
-                        : Date.now().toString()
-                    })
-                  }}
-                />
-              )
-            })}
-          </>
-        )}
-        {filteredHistory.map((tx, index) => {
-          const isNewDay =
-            index === 0 ||
-            !isSameDay(tx.timestamp, filteredHistory[index - 1].timestamp)
-
-          return (
-            <>
-              {isNewDay && (
-                <Animated.View
-                  style={{
-                    flex: 1,
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    padding: 16,
-                    marginRight: 8
-                  }}>
-                  <AvaText.ActivityTotal>
-                    {getDayString(tx.timestamp)}
-                  </AvaText.ActivityTotal>
-                </Animated.View>
-              )}
-              {isBridgeTx(tx) ? (
-                <BridgeTransactionItem
-                  item={tx}
-                  onPress={() => openUrl(tx.explorerLink)}
-                />
-              ) : (
-                <ActivityListItem
-                  tx={tx}
-                  onPress={() => openTransactionDetails(tx)}
-                />
-              )}
-            </>
-          )
-        })}
-      </View>
-    )
-  }
-
-  function onRefresh() {
-    loadHistory().then()
-  }
-
-  /**
-   * if view is embedded, meaning it's used in the bottom sheet (currently), then we wrap it
-   * with the appropriate scrollview.
-   *
-   * We also don't show the 'header'
-   * @param children
-   */
-  const ScrollableComponent = ({ children }: { children: React.ReactNode }) => {
-    const isEmpty = filteredHistory.length === 0
-
-    return embedded ? (
-      <ScrollView
-        style={{ flex: 1 }}
-        refreshControl={
-          <RefreshControl refreshing={loading} onRefresh={onRefresh} />
-        }>
-        {children}
-      </ScrollView>
-    ) : (
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={
-          isEmpty
-            ? { flex: 1, justifyContent: 'center', alignItems: 'center' }
-            : {
-                marginVertical: 4
-              }
-        }
-        refreshControl={
-          <RefreshControl refreshing={loading} onRefresh={onRefresh} />
-        }>
-        {children}
-      </ScrollView>
-    )
-  }
-
-  const selectedFilter = filterOptions.findIndex(option => option === filter)
-
-  return !allHistory ? (
-    <Loader />
-  ) : (
-    <View style={{ flex: 1 }}>
-      {embedded || (
-        <AvaText.LargeTitleBold textStyle={{ marginHorizontal: 16 }}>
-          Activity
-        </AvaText.LargeTitleBold>
-      )}
       <Row style={{ justifyContent: 'flex-end', paddingHorizontal: 16 }}>
         <DropDown
           alignment={'flex-end'}
@@ -268,16 +93,45 @@ function ActivityList({
           }}
         />
       </Row>
-      <ScrollableComponent children={renderItems()} />
+    )
+  }
+
+  const renderTransactions = () => {
+    return (
+      <Transactions
+        data={filteredTransactions}
+        isRefreshing={isRefreshing}
+        onRefresh={refresh}
+        openTransactionDetails={openTransactionDetails}
+        openTransactionStatus={openTransactionStatus}
+        hidePendingBridgeTransactions={Boolean(embedded)} // only show pending bridge transactions in the Activity Tab
+      />
+    )
+  }
+
+  const selectedFilter = filterOptions.findIndex(option => option === filter)
+
+  const renderContents = () => {
+    if (isLoading) return <ActivityLoader />
+
+    return renderTransactions()
+  }
+
+  return (
+    <View style={{ flex: 1 }}>
+      {!embedded && renderHeader()}
+      {renderFilterDropdown()}
+      <Space y={10} />
+      {renderContents()}
     </View>
   )
 }
 
-function SelectionRenderItem({ text }: { text: string }) {
+const SelectionRenderItem = ({ text }: { text: string }) => {
   return <AvaText.ButtonSmall>Display: {text}</AvaText.ButtonSmall>
 }
 
-function OptionsRenderItem({ text }: { text: string }) {
+const OptionsRenderItem = ({ text }: { text: string }) => {
   return (
     <View style={{ paddingHorizontal: 16, paddingVertical: 8 }}>
       <AvaText.Body1>{text}</AvaText.Body1>

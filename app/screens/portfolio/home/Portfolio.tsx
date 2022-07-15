@@ -18,6 +18,7 @@ import { selectActiveAccount } from 'store/account'
 import { Network } from '@avalabs/chains-sdk'
 import { Space } from 'components/Space'
 import { usePosthogContext } from 'contexts/PosthogContext'
+import { RefreshControl } from 'components/RefreshControl'
 import InactiveNetworkCard from './components/Cards/InactiveNetworkCard'
 import { PortfolioTokensLoader } from './components/Loaders/PortfolioTokensLoader'
 import PortfolioHeader from './components/PortfolioHeader'
@@ -78,6 +79,7 @@ const TokensTab = () => {
         justifyContent: 'space-between'
       }}
       contentContainerStyle={{
+        flex: 1,
         paddingHorizontal: 16,
         paddingBottom: 100
       }}
@@ -86,10 +88,11 @@ const TokensTab = () => {
       renderItem={renderInactiveNetwork}
       keyExtractor={item => item.chainId.toString()}
       ItemSeparatorComponent={Separator}
-      onRefresh={refetch}
-      refreshing={isRefetching}
       scrollEventThrottle={16}
       ListHeaderComponent={<TokensTabHeader />}
+      refreshControl={
+        <RefreshControl onRefresh={refetch} refreshing={isRefetching} />
+      }
     />
   )
 }

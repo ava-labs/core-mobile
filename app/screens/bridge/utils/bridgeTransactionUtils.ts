@@ -4,52 +4,49 @@ import {
   BridgeTransaction,
   EthereumConfigAssets
 } from '@avalabs/bridge-sdk'
-import {
-  getTransactionLink,
-  isTransactionERC20,
-  TransactionERC20,
-  WalletState
-} from '@avalabs/wallet-react-components'
+import { Erc20TransferDetailsDto } from '@avalabs/glacier-sdk'
+import { getTransactionLink } from '@avalabs/wallet-react-components'
+import { Transaction } from 'store/transaction'
 
-type HistoryTx = WalletState['recentTxHistory'][0]
+const ETHEREUM_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 export function isBridgeTransaction(
-  tx: HistoryTx,
+  transfer: Erc20TransferDetailsDto,
   ethereumWrappedAssets: EthereumConfigAssets,
   bitcoinAssets: BitcoinConfigAssets
-): tx is TransactionERC20 {
+) {
   return (
-    isTransactionERC20(tx) &&
-    (isBridgeTransactionEVM(tx, ethereumWrappedAssets) ||
-      isBridgeTransactionBTC(tx, bitcoinAssets))
+    isBridgeTransactionEVM(transfer, ethereumWrappedAssets) ||
+    isBridgeTransactionBTC(transfer, bitcoinAssets)
   )
 }
 
 export function isBridgeTransactionEVM(
-  tx: TransactionERC20,
+  transfer: Erc20TransferDetailsDto,
   ethereumWrappedAssets: EthereumConfigAssets
 ): boolean {
   return Object.values(ethereumWrappedAssets).some(
     ({ wrappedContractAddress }) =>
       wrappedContractAddress.toLowerCase() ===
-        tx.contractAddress.toLowerCase() &&
-      (tx.to === '0x0000000000000000000000000000000000000000' ||
-        tx.from === '0x0000000000000000000000000000000000000000')
+        transfer.erc20Token.contractAddress.toLowerCase() &&
+      (transfer.to.address === ETHEREUM_ADDRESS ||
+        transfer.from.address === ETHEREUM_ADDRESS)
   )
 }
 
 export function isBridgeTransactionBTC(
-  tx: TransactionERC20,
+  tx: Erc20TransferDetailsDto,
   bitcoinAssets: BitcoinConfigAssets
 ): boolean {
   return Object.values(bitcoinAssets).some(
     ({ wrappedContractAddress }) =>
-      wrappedContractAddress.toLowerCase() === tx.contractAddress.toLowerCase()
+      wrappedContractAddress.toLowerCase() ===
+      tx.erc20Token.contractAddress.toLowerCase()
   )
 }
 
 export function isPendingBridgeTransaction(
-  item: TransactionERC20 | BridgeTransaction
+  item: Transaction | BridgeTransaction
 ): item is BridgeTransaction {
   return 'addressBTC' in item
 }

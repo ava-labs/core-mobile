@@ -5,7 +5,6 @@ import AvaListItem from 'components/AvaListItem'
 import LinkSVG from 'components/svg/LinkSVG'
 import moment from 'moment'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { isTransactionERC20 } from '@avalabs/wallet-react-components'
 import { Space } from 'components/Space'
 import useInAppBrowser from 'hooks/useInAppBrowser'
 import Separator from 'components/Separator'
@@ -18,9 +17,9 @@ import { Contact } from 'Repo'
 import { bnToAvaxC, numberToBN } from '@avalabs/avalanche-wallet-sdk'
 import AppNavigation from 'navigation/AppNavigation'
 import { WalletScreenProps } from 'navigation/types'
-import { TokenSymbol } from 'store/network'
 import { useSelector } from 'react-redux'
 import { selectContacts } from 'store/addressBook'
+import { selectTokenInfo } from 'store/network'
 
 type RouteProp = WalletScreenProps<
   typeof AppNavigation.Wallet.ActivityDetail
@@ -30,6 +29,7 @@ function ActivityDetail() {
   const theme = useApplicationContext().theme
   const contacts = useSelector(selectContacts)
   const txItem = useRoute<RouteProp>().params.tx
+  const tokenInfo = useSelector(selectTokenInfo(txItem?.token?.symbol ?? ''))
   const date = moment(txItem?.timestamp).format('MMM DD, YYYY HH:mm')
   const { openUrl } = useInAppBrowser()
   const [contact, setContact] = useState<Contact>()
@@ -53,18 +53,17 @@ function ActivityDetail() {
   }
 
   const tokenLogo = () => {
-    if (txItem && isTransactionERC20(txItem)) {
+    if (txItem && txItem.token) {
+      const { name, symbol } = txItem.token
       return (
         <Avatar.Custom
           size={57}
-          name={txItem.tokenName}
-          symbol={txItem.tokenSymbol}
+          name={name}
+          symbol={symbol}
+          logoUri={tokenInfo?.logoUri}
         />
       )
     }
-    return (
-      <Avatar.Custom size={57} name={'Avalanche'} symbol={TokenSymbol.AVAX} />
-    )
   }
 
   return (
@@ -86,11 +85,9 @@ function ActivityDetail() {
           <View style={styles.headerContainer}>
             <AvaText.Heading1 textStyle={{ marginTop: 16 }}>
               {txItem.isSender ? '-' : '+'}
-              {txItem.amountDisplayValue}
+              {txItem.amount}
               <AvaText.Body1 color={theme.colorText2}>
-                {isTransactionERC20(txItem)
-                  ? ` ${txItem.tokenSymbol}`
-                  : ' AVAX'}
+                {` ${txItem.token?.symbol}`}
               </AvaText.Body1>
             </AvaText.Heading1>
             <Space y={4} />
@@ -120,7 +117,9 @@ function ActivityDetail() {
                   <AvaText.Heading3>{contact?.title}</AvaText.Heading3>
                 )}
                 <AvaText.Body1>
-                  {truncateAddress(txItem.isSender ? txItem.to : txItem.from)}
+                  {truncateAddress(
+                    txItem.isSender ? txItem.to : txItem.from
+                  ).toLowerCase()}
                 </AvaText.Body1>
               </View>
             }
