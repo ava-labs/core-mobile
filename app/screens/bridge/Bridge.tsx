@@ -3,7 +3,7 @@ import { Alert, Pressable, StyleSheet, View } from 'react-native'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
-import SwapNarrowSVG from 'components/svg/SwapNarrowSVG'
+import BridgeToggleSVG from 'components/svg/BridgeToggleSVG'
 import AvaListItem from 'components/AvaListItem'
 import DropDown from 'components/Dropdown'
 import { Row } from 'components/Row'
@@ -264,190 +264,196 @@ const Bridge: FC = () => {
           Bridge
         </AvaText.LargeTitleBold>
         <Space y={20} />
-        <View style={{ backgroundColor: theme.colorBg2, borderRadius: 10 }}>
-          <AvaListItem.Base
-            title={'From'}
-            rightComponent={
-              <DropDown
-                data={filterChains(sourceBlockchains)}
-                selectedIndex={sourceBlockchains.indexOf(currentBlockchain)}
-                onItemSelected={bc => setCurrentBlockchain(bc as Blockchain)}
-                optionsRenderItem={item =>
-                  dropdownItemFormat(item.item, currentBlockchain)
-                }
-                selectionRenderItem={item =>
-                  dropdownItemFormat(item, currentBlockchain, false)
-                }
-                width={180}
-              />
-            }
-          />
-          {currentBlockchain === Blockchain.BITCOIN && (
-            <Row style={{ justifyContent: 'flex-end' }}>
-              <AvaButton.Base
-                style={{ marginEnd: 16, marginBottom: 8 }}
-                onPress={navigateToAddBitcoinInstructions}>
-                <AvaText.TextLink>Add Bitcoin</AvaText.TextLink>
-              </AvaButton.Base>
-            </Row>
-          )}
-          <Separator inset={16} />
-          <View style={styles.fromContainer}>
-            <AvaText.Body3
-              color={theme.colorText2}
-              textStyle={{
-                alignSelf: 'flex-end',
-                paddingEnd: 16
-              }}>
-              Balance:
-              {sourceBalance?.balance
-                ? ` ${formatBalance(sourceBalance?.balance)}`
-                : !!currentAsset && <ActivityIndicator size={'small'} />}{' '}
-              {blockchainTokenSymbol}
-            </AvaText.Body3>
-            <Row style={styles.tokenSelectContainer}>
-              <Pressable
-                disabled={loading}
-                onPress={() => navigateToTokenSelector()}>
-                <Row style={styles.tokenRow}>
-                  {!!currentAsset && (
-                    <>
-                      <Avatar.Custom
-                        name={blockchainTokenSymbol}
-                        symbol={blockchainTokenSymbol}
-                        logoUri={tokenInfoData?.[blockchainTokenSymbol]?.logo}
-                      />
-                      <Space x={8} />
-                    </>
-                  )}
-                  <AvaText.Body1 textStyle={styles.tokenSelectorText}>
-                    {currentAsset ? blockchainTokenSymbol : 'Select'}
-                  </AvaText.Body1>
-                  <CarrotSVG direction={'down'} size={12} />
-                </Row>
-              </Pressable>
-              <View>
-                <>
-                  <InputText
-                    width={160}
-                    mode={'amount'}
-                    keyboardType="numeric"
-                    onMax={() => {
-                      if (maximum) {
-                        setAmount(maximum.round(6, 0))
-                      }
-                    }}
-                    onChangeText={handleAmountChanged}
-                    text={amount.toString()}
-                  />
-                  {loading && (
-                    <ActivityIndicator
-                      style={{
-                        position: 'absolute',
-                        top: 0,
-                        bottom: 0,
-                        left: -12
-                      }}
-                      size="small"
-                    />
-                  )}
-                </>
-                {!currentAsset && (
-                  <Pressable
-                    disabled={loading}
-                    style={StyleSheet.absoluteFill}
-                    onPress={() => navigateToTokenSelector()}
-                  />
-                )}
-              </View>
-            </Row>
-            {!amount.eq(BIG_ZERO) && (
+        <View style={{ backgroundColor: '#333333', borderRadius: 10 }}>
+          <View style={{ backgroundColor: theme.colorBg2, borderRadius: 10 }}>
+            <AvaListItem.Base
+              title={'From'}
+              rightComponent={
+                <DropDown
+                  data={filterChains(sourceBlockchains)}
+                  selectedIndex={sourceBlockchains.indexOf(currentBlockchain)}
+                  onItemSelected={bc => setCurrentBlockchain(bc as Blockchain)}
+                  optionsRenderItem={item =>
+                    dropdownItemFormat(item.item, currentBlockchain)
+                  }
+                  selectionRenderItem={item =>
+                    dropdownItemFormat(item, currentBlockchain, false)
+                  }
+                  width={180}
+                />
+              }
+            />
+            {currentBlockchain === Blockchain.BITCOIN && (
+              <Row style={{ justifyContent: 'flex-end' }}>
+                <AvaButton.Base
+                  style={{ marginEnd: 16, marginBottom: 8 }}
+                  onPress={navigateToAddBitcoinInstructions}>
+                  <AvaText.TextLink>Add Bitcoin</AvaText.TextLink>
+                </AvaButton.Base>
+              </Row>
+            )}
+            <Separator inset={16} />
+            <View style={styles.fromContainer}>
               <AvaText.Body3
-                currency
                 color={theme.colorText2}
                 textStyle={{
                   alignSelf: 'flex-end',
                   paddingEnd: 16
                 }}>
-                {`${price.mul(amount).toNumber()}`}
+                Balance:
+                {sourceBalance?.balance
+                  ? ` ${formatBalance(sourceBalance?.balance)}`
+                  : !!currentAsset && <ActivityIndicator size={'small'} />}{' '}
+                {blockchainTokenSymbol}
+              </AvaText.Body3>
+              <Row style={styles.tokenSelectContainer}>
+                <Pressable
+                  disabled={loading}
+                  onPress={() => navigateToTokenSelector()}>
+                  <Row style={styles.tokenRow}>
+                    {!!currentAsset && (
+                      <>
+                        <Avatar.Custom
+                          name={blockchainTokenSymbol}
+                          symbol={blockchainTokenSymbol}
+                          logoUri={tokenInfoData?.[blockchainTokenSymbol]?.logo}
+                        />
+                        <Space x={8} />
+                      </>
+                    )}
+                    <AvaText.Body1 textStyle={styles.tokenSelectorText}>
+                      {currentAsset ? blockchainTokenSymbol : 'Select'}
+                    </AvaText.Body1>
+                    <CarrotSVG direction={'down'} size={12} />
+                  </Row>
+                </Pressable>
+                <View>
+                  <>
+                    <InputText
+                      width={160}
+                      mode={'amount'}
+                      keyboardType="numeric"
+                      onMax={() => {
+                        if (maximum) {
+                          setAmount(maximum.round(6, 0))
+                        }
+                      }}
+                      onChangeText={handleAmountChanged}
+                      text={amount.toString()}
+                    />
+                    {loading && (
+                      <ActivityIndicator
+                        style={{
+                          position: 'absolute',
+                          top: 0,
+                          bottom: 0,
+                          left: -12
+                        }}
+                        size="small"
+                      />
+                    )}
+                  </>
+                  {!currentAsset && (
+                    <Pressable
+                      disabled={loading}
+                      style={StyleSheet.absoluteFill}
+                      onPress={() => navigateToTokenSelector()}
+                    />
+                  )}
+                </View>
+              </Row>
+              {!amount.eq(BIG_ZERO) && (
+                <AvaText.Body3
+                  currency
+                  color={theme.colorText2}
+                  textStyle={{
+                    alignSelf: 'flex-end',
+                    paddingEnd: 16
+                  }}>
+                  {`${price.mul(amount).toNumber()}`}
+                </AvaText.Body3>
+              )}
+            </View>
+
+            {(!!bridgeError || isAmountTooLow || !hasEnoughForNetworkFee) && (
+              <>
+                {!hasEnoughForNetworkFee && (
+                  <AvaText.Body3
+                    textStyle={{ marginVertical: 4 }}
+                    color={theme.colorError}>
+                    {`Insufficient balance to cover gas costs.\nPlease add ${
+                      currentBlockchain === Blockchain.AVALANCHE
+                        ? TokenSymbol.AVAX
+                        : TokenSymbol.ETH
+                    }.`}
+                  </AvaText.Body3>
+                )}
+                {isAmountTooLow && (
+                  <AvaText.Body3
+                    textStyle={{ marginVertical: 4 }}
+                    color={theme.colorError}>
+                    {`Amount too low -- minimum is ${minimum?.toFixed(9)}`}
+                  </AvaText.Body3>
+                )}
+                {!!bridgeError && (
+                  <AvaText.Body3
+                    textStyle={{ marginVertical: 4 }}
+                    color={theme.colorError}>
+                    {bridgeError}
+                  </AvaText.Body3>
+                )}
+              </>
+            )}
+
+            {wrapStatus === WrapStatus.WAITING_FOR_DEPOSIT && (
+              <AvaText.Body3
+                textStyle={{ marginVertical: 4 }}
+                color={theme.colorError}>
+                Waiting for deposit confirmation
               </AvaText.Body3>
             )}
           </View>
-        </View>
 
-        {(!!bridgeError || isAmountTooLow || !hasEnoughForNetworkFee) && (
-          <>
-            {!hasEnoughForNetworkFee && (
-              <AvaText.Body3
-                textStyle={{ marginVertical: 4 }}
-                color={theme.colorError}>
-                {`Insufficient balance to cover gas costs.\nPlease add ${
-                  currentBlockchain === Blockchain.AVALANCHE
-                    ? TokenSymbol.AVAX
-                    : TokenSymbol.ETH
-                }.`}
-              </AvaText.Body3>
-            )}
-            {isAmountTooLow && (
-              <AvaText.Body3
-                textStyle={{ marginVertical: 4 }}
-                color={theme.colorError}>
-                {`Amount too low -- minimum is ${minimum?.toFixed(9)}`}
-              </AvaText.Body3>
-            )}
-            {!!bridgeError && (
-              <AvaText.Body3
-                textStyle={{ marginVertical: 4 }}
-                color={theme.colorError}>
-                {bridgeError}
-              </AvaText.Body3>
-            )}
-          </>
-        )}
+          <AvaButton.Base
+            onPress={handleBlockchainToggle}
+            style={[
+              styles.toggleButton,
+              { backgroundColor: theme.alternateBackground }
+            ]}>
+            <BridgeToggleSVG />
+          </AvaButton.Base>
 
-        {wrapStatus === WrapStatus.WAITING_FOR_DEPOSIT && (
-          <AvaText.Body3
-            textStyle={{ marginVertical: 4 }}
-            color={theme.colorError}>
-            Waiting for deposit confirmation
-          </AvaText.Body3>
-        )}
-
-        <AvaButton.Base
-          onPress={handleBlockchainToggle}
-          style={[styles.swapButton, { backgroundColor: theme.colorBg2 }]}>
-          <SwapNarrowSVG />
-        </AvaButton.Base>
-        <View style={{ backgroundColor: theme.colorBg2, borderRadius: 10 }}>
-          <AvaListItem.Base
-            title={'To'}
-            rightComponent={dropdownItemFormat(
-              targetBlockchain,
-              undefined,
-              false
-            )}
-          />
-          <Separator inset={16} />
-          <Row style={styles.receiveRow}>
-            <View>
-              <AvaText.ButtonLarge>Receive</AvaText.ButtonLarge>
-              <AvaText.Body3
-                color={theme.colorText2}
-                textStyle={{ marginTop: 8 }}>
-                Estimated (minus transfer fees)
-              </AvaText.Body3>
-            </View>
-            <View style={{ alignItems: 'flex-end' }}>
-              {/* receive amount */}
-              <AvaText.Body1>{formattedReceiveAmount}</AvaText.Body1>
-              {/* estimate amount */}
-              <AvaText.Body3
-                textStyle={{ marginTop: 8 }}
-                color={theme.colorText2}>
-                {formattedReceiveAmountCurrency}
-              </AvaText.Body3>
-            </View>
-          </Row>
+          <View>
+            <AvaListItem.Base
+              title={'To'}
+              rightComponent={dropdownItemFormat(
+                targetBlockchain,
+                undefined,
+                false
+              )}
+            />
+            <Separator inset={16} color="#666666" />
+            <Row style={styles.receiveRow}>
+              <View>
+                <AvaText.ButtonLarge>Receive</AvaText.ButtonLarge>
+                <AvaText.Body3
+                  color={theme.colorText2}
+                  textStyle={{ marginTop: 8 }}>
+                  Estimated (minus transfer fees)
+                </AvaText.Body3>
+              </View>
+              <View style={{ alignItems: 'flex-end' }}>
+                {/* receive amount */}
+                <AvaText.Body1>{formattedReceiveAmount}</AvaText.Body1>
+                {/* estimate amount */}
+                <AvaText.Body3
+                  textStyle={{ marginTop: 8 }}
+                  color={theme.colorText2}>
+                  {formattedReceiveAmountCurrency}
+                </AvaText.Body3>
+              </View>
+            </Row>
+          </View>
         </View>
       </ScrollViewList>
       <AvaButton.Base
@@ -495,15 +501,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 8
   },
-  swapButton: {
-    alignSelf: 'flex-end',
+  toggleButton: {
+    alignSelf: 'center',
+    marginTop: -20,
     borderRadius: 50,
     width: 40,
     height: 40,
     justifyContent: 'center',
-    alignItems: 'center',
-    marginHorizontal: 16,
-    marginVertical: 16
+    alignItems: 'center'
   },
   receiveRow: {
     flex: 1,
