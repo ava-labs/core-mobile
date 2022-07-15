@@ -14,13 +14,14 @@ import { mergeWithCustomTokens } from './utils'
 
 const defaultNetwork = BITCOIN_NETWORK
 const noActiveNetwork = 0
+export const alwaysFavoriteNetworks = [43114, 43113] //Avalanche mainnet, testnet
 
 const reducerName = 'network'
 
 const initialState: NetworkState = {
   networks: {},
   customNetworks: {},
-  favorites: [],
+  favorites: [...alwaysFavoriteNetworks, -1, -2, 1], //BTC, BTC testnet, ETH
   active: noActiveNetwork
 }
 
@@ -40,6 +41,9 @@ export const networkSlice = createSlice({
         // set favorite
         state.favorites.push(chainId)
       } else {
+        if (alwaysFavoriteNetworks.includes(chainId)) {
+          return
+        }
         // unset favorite
         const newFavorites = state.favorites.filter(id => id !== chainId)
         state.favorites = newFavorites

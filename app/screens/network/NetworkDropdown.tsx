@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import Dropdown from 'components/Dropdown'
 import Avatar from 'components/Avatar'
@@ -13,10 +13,9 @@ import AppNavigation from 'navigation/AppNavigation'
 import { DrawerScreenProps } from 'navigation/types'
 import { useNavigation } from '@react-navigation/native'
 import {
-  selectFavoriteNetworks,
   selectActiveNetwork,
-  setActive,
-  selectNetworks
+  selectFavoriteNetworks,
+  setActive
 } from 'store/network'
 import { arrayHash } from 'utils/Utils'
 
@@ -28,11 +27,6 @@ type NetworkDropdownNavigationProp = DrawerScreenProps<
 
 export default function NetworkDropdown() {
   const favoriteNetworks = useSelector(selectFavoriteNetworks)
-  const allNetworks = useSelector(selectNetworks)
-  const networksToShow =
-    favoriteNetworks.length !== 0
-      ? favoriteNetworks
-      : Object.values(allNetworks)
   const activeNetwork = useSelector(selectActiveNetwork)
   const dispatch = useDispatch()
   const { theme } = useApplicationContext()
@@ -40,14 +34,14 @@ export default function NetworkDropdown() {
 
   const data = useMemo(
     () => [
-      ...networksToShow.map(item => ({
+      ...favoriteNetworks.map(item => ({
         name: item.chainName,
         chainId: item.chainId,
         logoUri: item.logoUri
       })),
       { name: ManageNetworks, chainId: -1, logoUri: '' }
     ],
-    [networksToShow]
+    [favoriteNetworks]
   )
 
   const dropdownUniqueId = useMemo(() => {
