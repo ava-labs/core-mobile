@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import Dropdown from 'components/Dropdown'
 import Avatar from 'components/Avatar'
@@ -13,8 +13,8 @@ import AppNavigation from 'navigation/AppNavigation'
 import { DrawerScreenProps } from 'navigation/types'
 import { useNavigation } from '@react-navigation/native'
 import {
-  selectFavoriteNetworks,
   selectActiveNetwork,
+  selectFavoriteNetworks,
   setActive
 } from 'store/network'
 import { arrayHash } from 'utils/Utils'
@@ -38,8 +38,8 @@ export default function NetworkDropdown() {
         name: item.chainName,
         chainId: item.chainId,
         logoUri: item.logoUri
-      }))
-      //{ name: ManageNetworks, chainId: '' } //TODO: currently we wont support this, but let's keep it because eventually we will
+      })),
+      { name: ManageNetworks, chainId: -1, logoUri: '' }
     ],
     [favoriteNetworks]
   )
@@ -121,8 +121,12 @@ function Option({
         alignItems: 'center',
         paddingHorizontal: 16
       }}>
-      <Selection icon={networkLogo} />
-      <Space x={8} />
+      {!!networkLogo && (
+        <>
+          <Selection icon={networkLogo} />
+          <Space x={8} />
+        </>
+      )}
       <AvaText.Body1
         textStyle={{ paddingVertical: 8, maxWidth: 220 }}
         ellipsizeMode="tail">

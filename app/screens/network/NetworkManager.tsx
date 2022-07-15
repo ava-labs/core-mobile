@@ -14,17 +14,22 @@ import TabViewAva from 'components/TabViewAva'
 import ZeroState from 'components/ZeroState'
 import { NetworkListItem } from 'screens/network/NetworkListItem'
 import { Network } from '@avalabs/chains-sdk'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { useNavigation } from '@react-navigation/native'
 
 type Props = {
   onShowInfo: (network: Network) => void
 }
 
 export default function NetworkManager({ onShowInfo }: Props) {
+  const { goBack } = useNavigation()
   const networks = useSelector(selectNetworks)
   const favoriteNetworks = useSelector(selectFavoriteNetworks)
   const dispatch = useDispatch()
   const { theme } = useApplicationContext()
   const [searchText, setSearchText] = useState('')
+  const isDevMode = useSelector(selectIsDeveloperMode)
+  const title = isDevMode ? 'Testnets' : 'Networks'
 
   const mainNets = useMemo(
     () =>
@@ -75,6 +80,7 @@ export default function NetworkManager({ onShowInfo }: Props) {
 
   function connect(chainId: number) {
     dispatch(setActive(chainId))
+    goBack()
   }
 
   const renderNetwork = ({ item }: { item: Network }) => {
@@ -101,7 +107,7 @@ export default function NetworkManager({ onShowInfo }: Props) {
         flex: 1
       }}>
       <AvaText.LargeTitleBold textStyle={{ marginHorizontal: 16 }}>
-        Networks
+        {title}
       </AvaText.LargeTitleBold>
       <SearchBar onTextChanged={setSearchText} searchText={searchText} />
       <TabViewAva renderCustomLabel={renderCustomLabel}>
@@ -118,9 +124,9 @@ export default function NetworkManager({ onShowInfo }: Props) {
             }
           />
         </TabViewAva.Item>
-        <TabViewAva.Item title={'Networks'}>
+        <TabViewAva.Item title={title}>
           <FlatList
-            data={mainNets}
+            data={isDevMode ? testNets : mainNets}
             renderItem={renderNetwork}
             keyExtractor={item => item.chainName}
             contentContainerStyle={{ paddingHorizontal: 16 }}
@@ -131,19 +137,19 @@ export default function NetworkManager({ onShowInfo }: Props) {
             }
           />
         </TabViewAva.Item>
-        <TabViewAva.Item title={'Testnets'}>
-          <FlatList
-            data={testNets}
-            renderItem={renderNetwork}
-            keyExtractor={item => item.chainId.toString()}
-            contentContainerStyle={{ paddingHorizontal: 16 }}
-            ListEmptyComponent={
-              <View style={{ marginVertical: 40 }}>
-                <ZeroState.NoFavoriteNetworks />
-              </View>
-            }
-          />
-        </TabViewAva.Item>
+        {/*<TabViewAva.Item title={'Custom'}>*/}
+        {/*  <FlatList*/}
+        {/*    data={testNets}*/}
+        {/*    renderItem={renderNetwork}*/}
+        {/*    keyExtractor={item => item.chainId.toString()}*/}
+        {/*    contentContainerStyle={{ paddingHorizontal: 16 }}*/}
+        {/*    ListEmptyComponent={*/}
+        {/*      <View style={{ marginVertical: 40 }}>*/}
+        {/*        <ZeroState.NoFavoriteNetworks />*/}
+        {/*      </View>*/}
+        {/*    }*/}
+        {/*  />*/}
+        {/*</TabViewAva.Item>*/}
       </TabViewAva>
     </View>
   )

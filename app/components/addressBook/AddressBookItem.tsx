@@ -9,7 +9,7 @@ import { Space } from 'components/Space'
 
 interface Props {
   title: string
-  address: string
+  address?: string
   addressBtc?: string
   onPress?: () => void
 }

@@ -9,6 +9,8 @@ import AddressBookItem from 'components/addressBook/AddressBookItem'
 import { useSelector } from 'react-redux'
 import { Account, selectAccounts } from 'store/account'
 import { selectContacts, selectRecentContacts } from 'store/addressBook'
+import { selectActiveNetwork } from 'store/network'
+import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 
 export type AddressBookSource = 'recents' | 'addressBook' | 'accounts'
 
@@ -30,6 +32,7 @@ export default function AddressBookLists({
   const contacts = useSelector(selectContacts)
   const recentContacts = useSelector(selectRecentContacts)
   const accounts = useSelector(selectAccounts)
+  const activeNetwork = useSelector(selectActiveNetwork)
 
   const addressBookContacts = useMemo(
     () =>
@@ -87,7 +90,7 @@ export default function AddressBookLists({
         <FlatList
           data={recentAddresses}
           renderItem={info =>
-            renderItem(info.item, (item, type) =>
+            renderItem(activeNetwork, info.item, (item, type) =>
               onContactSelected(item, type, 'recents')
             )
           }
@@ -104,8 +107,10 @@ export default function AddressBookLists({
         <FlatList
           data={addressBookContacts}
           renderItem={info =>
-            renderItem({ item: info.item, type: 'contact' }, (item, type) =>
-              onContactSelected(item, type, 'addressBook')
+            renderItem(
+              activeNetwork,
+              { item: info.item, type: 'contact' },
+              (item, type) => onContactSelected(item, type, 'addressBook')
             )
           }
           keyExtractor={item => item.id}
@@ -123,8 +128,10 @@ export default function AddressBookLists({
         <FlatList
           data={[...Object.values(accounts)]}
           renderItem={info =>
-            renderItem({ item: info.item, type: 'account' }, (item, type) =>
-              onContactSelected(item, type, 'accounts')
+            renderItem(
+              activeNetwork,
+              { item: info.item, type: 'account' },
+              (item, type) => onContactSelected(item, type, 'accounts')
             )
           }
           contentContainerStyle={{ paddingHorizontal: 16 }}
@@ -136,14 +143,23 @@ export default function AddressBookLists({
 }
 
 const renderItem = (
+  activeNetwork: Network,
   item: { item: Contact | Account; type: AddrBookItemType },
   onPress: (item: Contact | Account, type: AddrBookItemType) => void
 ) => {
   return (
     <AddressBookItem
       title={item.item.title}
-      address={item.item.address}
-      addressBtc={item.item.addressBtc}
+      address={
+        activeNetwork.vmName !== NetworkVMType.BITCOIN
+          ? item.item.address
+          : undefined
+      }
+      addressBtc={
+        activeNetwork.vmName === NetworkVMType.BITCOIN
+          ? item.item.addressBtc
+          : undefined
+      }
       onPress={() => {
         onPress(item.item, item.type)
       }}
