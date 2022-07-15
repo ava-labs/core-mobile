@@ -1,3 +1,4 @@
+import { CriticalConfig } from '@avalabs/bridge-sdk'
 import { Network } from '@avalabs/chains-sdk'
 import { Account } from 'store/account'
 
@@ -5,11 +6,13 @@ export type GetTransactionsArgs = {
   nextPageToken?: string
   network: Network
   account: Account | undefined
+  criticalConfig: CriticalConfig | undefined
 }
 
 export type GetAllTransactionsArgs = {
   network: Network
   account: Account | undefined
+  criticalConfig: CriticalConfig | undefined
 }
 
 export type Transaction = {
@@ -29,6 +32,5 @@ export type Transaction = {
     symbol: string
   }
   explorerLink: string
-  gasPrice: string
-  gasUsed: string
+  fee: string
 }

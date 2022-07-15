@@ -1,8 +1,8 @@
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
-import { ListTransactionDetailsDto } from '@avalabs/glacier-sdk'
+import AccountService from 'services/account/AccountsService'
 import BtcActivityService from './BtcActivityService'
 import EvmActivityService from './EvmActivityService'
-import { GetActivitiesParams } from './types'
+import { GetActivitiesForAccountParams, ActivityResponse } from './types'
 
 const serviceMap = {
   [NetworkVMType.BITCOIN]: BtcActivityService,
@@ -32,16 +32,20 @@ export class ActivityService {
 
   async getActivities({
     network,
-    address,
+    account,
     nextPageToken,
-    pageSize = 30
-  }: GetActivitiesParams): Promise<ListTransactionDetailsDto> {
+    pageSize = 30,
+    criticalConfig
+  }: GetActivitiesForAccountParams): Promise<ActivityResponse> {
     const activityService = this.getActivityServiceForNetwork(network)
+    const address = AccountService.getAddressForNetwork(account, network)
+
     return activityService.getActivities({
       network,
       address,
       nextPageToken,
-      pageSize
+      pageSize,
+      criticalConfig
     })
   }
 }

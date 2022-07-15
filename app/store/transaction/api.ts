@@ -1,28 +1,27 @@
 import { createApi, fakeBaseQuery } from '@reduxjs/toolkit/query/react'
-import {
-  ListTransactionDetailsDto,
-  TransactionDetailsDto
-} from '@avalabs/glacier-sdk'
 import ActivityService from 'services/activity/ActivityService'
 import Logger from 'utils/Logger'
-import { GetAllTransactionsArgs, GetTransactionsArgs } from './types'
+import { ActivityResponse } from 'services/activity/types'
+import {
+  GetAllTransactionsArgs,
+  GetTransactionsArgs,
+  Transaction
+} from './types'
 
 export const transactionApi = createApi({
   reducerPath: 'transactionApi',
   baseQuery: fakeBaseQuery(),
   endpoints: builder => ({
-    getTransactions: builder.query<
-      ListTransactionDetailsDto,
-      GetTransactionsArgs
-    >({
-      queryFn: async ({ network, account, nextPageToken }) => {
+    getTransactions: builder.query<ActivityResponse, GetTransactionsArgs>({
+      queryFn: async ({ network, account, nextPageToken, criticalConfig }) => {
         if (!account) return { error: 'unable to get transactions' }
 
         try {
           const transactions = await ActivityService.getActivities({
             network,
-            address: account.address,
-            nextPageToken
+            account,
+            nextPageToken,
+            criticalConfig
           })
 
           return { data: transactions }
@@ -35,24 +34,22 @@ export const transactionApi = createApi({
         }
       }
     }),
-    getAllTransactions: builder.query<
-      TransactionDetailsDto[],
-      GetAllTransactionsArgs
-    >({
-      queryFn: async ({ network, account }) => {
+    getAllTransactions: builder.query<Transaction[], GetAllTransactionsArgs>({
+      queryFn: async ({ network, account, criticalConfig }) => {
         if (!account) return { error: 'unable to get transactions' }
 
         let nextPageToken
-        let data: ListTransactionDetailsDto
-        const result: TransactionDetailsDto[] = []
+        let data: ActivityResponse
+        const result: Transaction[] = []
 
         try {
           do {
             data = await ActivityService.getActivities({
               network,
-              address: account.address,
+              account,
               nextPageToken,
-              pageSize: 100
+              pageSize: 100,
+              criticalConfig
             })
 
             result.push(...data.transactions)

@@ -2,19 +2,21 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useBridgeSDK } from '@avalabs/bridge-sdk'
 import { useIsFocused } from '@react-navigation/native'
 import { selectActiveNetwork } from 'store/network'
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback } from 'react'
 import { selectActiveAccount } from 'store/account'
 import { isAnyOf } from '@reduxjs/toolkit'
 import { addAppListener } from 'store/middleware/listener'
 import { useFocusEffect } from '@react-navigation/native'
 import { popBridgeTransaction } from 'store/bridge'
 import { selectIsLocked } from 'store/app'
-import { convertTransaction } from '../utils'
 import { useGetAllTransactionsQuery } from '../api'
+import { Transaction } from '../types'
 
 const REFETCH_EVENTS = isAnyOf(popBridgeTransaction)
 
 const POLLING_INTERVAL_IN_MS = 15000
+
+const emptyArr: Transaction[] = []
 
 /**
  * a hook to get all transactions for the current active network & account
@@ -35,7 +37,7 @@ export const useGetAllTransactions = () => {
   const account = useSelector(selectActiveAccount)
   const isAppLocked = useSelector(selectIsLocked)
   const isFocused = useIsFocused()
-
+  const { criticalConfig } = useBridgeSDK()
   const {
     currentData: data,
     isFetching,
@@ -43,7 +45,8 @@ export const useGetAllTransactions = () => {
   } = useGetAllTransactionsQuery(
     {
       network,
-      account
+      account,
+      criticalConfig
     },
     { skip: isAppLocked || !isFocused, pollingInterval: POLLING_INTERVAL_IN_MS }
   )
@@ -75,28 +78,10 @@ export const useGetAllTransactions = () => {
     setTimeout(() => setIsRefreshing(false), 1000)
   }, [refetch])
 
-  const { bitcoinAssets, ethereumWrappedAssets } = useBridgeSDK()
-
-  const transactions = useMemo(() => {
-    if (data && data.length > 0 && account) {
-      return data.map(item =>
-        convertTransaction({
-          item,
-          network,
-          account,
-          ethereumWrappedAssets,
-          bitcoinAssets
-        })
-      )
-    }
-
-    return []
-  }, [account, bitcoinAssets, data, ethereumWrappedAssets, network])
-
   const isLoading = isFetching && !data
 
   return {
-    transactions,
+    transactions: data ?? emptyArr,
     isLoading,
     isRefreshing,
     refresh
