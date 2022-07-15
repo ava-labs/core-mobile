@@ -9,9 +9,11 @@ import {
   NetworkVMType
 } from '@avalabs/chains-sdk'
 import { PollingConfig } from 'store/balance'
+import Config from 'react-native-config'
 
-const BLOCKCYPHER_PROXY_URL =
-  'https://glacier-api.avax-test.network/proxy/blockcypher'
+const glacierUrl = __DEV__ ? Config.GLACIER_DEV_URL : Config.GLACIER_PROD_URL
+
+const BLOCKCYPHER_PROXY_URL = `${glacierUrl}/proxy/blockcypher`
 
 const ethNetworks = [ChainId.ETHEREUM_HOMESTEAD, ChainId.ETHEREUM_TEST_RINKEBY]
 
@@ -61,7 +63,7 @@ class NetworkService {
     }
 
     if (ethNetworks.includes(network.chainId)) {
-      return this.getEthereumProvider(network.isTestnet)
+      return this.getEthereumProvider(network.isTestnet ?? false)
     }
 
     if (network.vmName === NetworkVMType.EVM) {
