@@ -26,6 +26,7 @@ import networkFee from './networkFee'
 import { addressBookReducer as addressBook } from './addressBook'
 import settings from './settings'
 import swap from './swap'
+import { transactionApi } from './transaction'
 
 const persistActions = [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER]
 
@@ -40,16 +41,20 @@ const rootReducer = combineReducers({
   customToken,
   posthog,
   swap,
+
   // user preferences
   settings,
   watchlist,
-  zeroBalance
+  zeroBalance,
+
+  // apis
+  [transactionApi.reducerPath]: transactionApi.reducer
 })
 
 const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
-  blacklist: ['app', 'balance', 'networkFee'],
+  blacklist: ['app', 'balance', 'networkFee', transactionApi.reducerPath],
   transforms: [DeserializeBridgeTransform]
 }
 
@@ -69,7 +74,9 @@ export const store = configureStore({
         ],
         ignoredPaths: ['balance', 'networkFee', 'bridge']
       }
-    }).prepend(listener.middleware)
+    })
+      .prepend(listener.middleware)
+      .concat(transactionApi.middleware)
 })
 
 export const persistor = persistStore(store, null, () => {

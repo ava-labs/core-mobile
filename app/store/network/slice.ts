@@ -139,6 +139,12 @@ export const selectNetworkContractTokens = (state: RootState) => {
   return network.tokens ?? []
 }
 
+// get token info for a contract token of the active network
+export const selectTokenInfo = (symbol: string) => (state: RootState) => {
+  const tokens = selectNetworkContractTokens(state)
+  return tokens.find(token => token.symbol === symbol)
+}
+
 export const selectIsTestnet = (chainId: number) => (state: RootState) => {
   const network = state.network.networks[chainId]
   return network.isTestnet
