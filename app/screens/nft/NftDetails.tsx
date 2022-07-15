@@ -6,6 +6,7 @@ import { Space } from 'components/Space'
 import { Row } from 'components/Row'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { NFTItemData, NFTItemExternalDataAttribute } from 'store/nft'
+import { SvgXml } from 'react-native-svg'
 
 export type NftDetailsProps = {
   nft: NFTItemData
@@ -30,7 +31,15 @@ export default function NftDetails({
       <Space y={24} />
       <AvaButton.Base
         onPress={() => onPicturePressed(item.image, item.image_256)}>
-        {imgLoadFailed ? (
+        {item.isSvg && <SvgXml xml={item.image} width={100} height={100} />}
+        {!item.isSvg && !imgLoadFailed && (
+          <Image
+            onError={_ => setImgLoadFailed(true)}
+            style={styles.imageStyle}
+            source={{ uri: item.image }}
+          />
+        )}
+        {imgLoadFailed && (
           <View
             style={{
               padding: 10,
@@ -41,12 +50,6 @@ export default function NftDetails({
               Could not load image
             </AvaText.Heading3>
           </View>
-        ) : (
-          <Image
-            onError={_ => setImgLoadFailed(true)}
-            style={styles.imageStyle}
-            source={{ uri: item.image }}
-          />
         )}
       </AvaButton.Base>
       <Space y={24} />

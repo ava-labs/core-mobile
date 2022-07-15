@@ -18,6 +18,7 @@ export type NFTItemData = Erc721TokenBalanceDto &
     aspect: number
     owner: string
     uid: string
+    isSvg: boolean
   }
 
 export type NFTItemExternalData = {
