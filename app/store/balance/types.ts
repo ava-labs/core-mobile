@@ -72,11 +72,13 @@ export enum QueryStatus {
 
   /**
    * Indicates the query is being run for the first time
+   * This status is usually used to show a skeleton loader
    */
   LOADING = 'loading',
 
   /**
    * Indicates the query is being re-run on demand (user clicks refetch for example)
+   * This status is usually used to show a refresh indicator (with ScrollView, Flatlist,...)
    */
   REFETCHING = 'refetching',
 

@@ -64,4 +64,6 @@ export const addBridgeListeners = (startListening: AppStartListening) => {
   })
 }
 
+export * from './types'
+
 export default bridgeSlice.reducer

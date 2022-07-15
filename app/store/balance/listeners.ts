@@ -6,6 +6,7 @@ import {
   Account,
   selectAccounts,
   selectActiveAccount,
+  setAccount,
   setAccounts
 } from 'store/account'
 import { onAppLocked, onAppUnlocked } from 'store/app'
@@ -163,13 +164,19 @@ export const addBalanceListeners = (startListening: AppStartListening) => {
   })
 
   startListening({
+    actionCreator: refetchBalance,
+    effect: async (action, listenerApi) =>
+      onBalanceUpdate(QueryStatus.REFETCHING, listenerApi, false)
+  })
+
+  startListening({
     matcher: isAnyOf(
-      refetchBalance,
       setSelectedCurrency,
       setAccounts,
+      setAccount,
       addCustomToken
     ),
     effect: async (action, listenerApi) =>
-      onBalanceUpdate(QueryStatus.REFETCHING, listenerApi, false)
+      onBalanceUpdate(QueryStatus.LOADING, listenerApi, false)
   })
 }
