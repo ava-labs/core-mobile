@@ -16,7 +16,7 @@ import { useTransferAsset } from 'screens/bridge/hooks/useTransferAsset'
 import { PartialBridgeTransaction } from 'screens/bridge/handlers/createBridgeTransaction'
 import { BridgeReducerState, BridgeState } from 'store/bridge/types'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectActiveNetwork, selectNetworks } from 'store/network'
+import { selectActiveNetwork } from 'store/network'
 import { selectActiveAccount } from 'store/account'
 import networkService from 'services/network/NetworkService'
 import { TrackerArgs } from '@avalabs/bridge-sdk/dist/src/lib/tracker/models'
@@ -26,7 +26,6 @@ import {
   selectBridgeTransactions
 } from 'store/bridge'
 import { selectIsReady } from 'store/app'
-import { ChainId } from '@avalabs/chains-sdk'
 import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 
 export enum TransferEventType {
@@ -72,20 +71,16 @@ function LocalBridgeProvider({ children }: { children: any }) {
   const dispatch = useDispatch()
   const config = useBridgeConfig().config
   const network = useSelector(selectActiveNetwork)
-  const allNetworks = useSelector(selectNetworks)
   const activeAccount = useSelector(selectActiveAccount)
   const bridgeTransactions = useSelector(selectBridgeTransactions)
   const hydrationComplete = useSelector(selectIsReady)
   const { currentBlockchain } = useBridgeSDK()
   const { transferHandler, events } = useTransferAsset()
-  const avalancheNetwork = network.isTestnet
-    ? allNetworks[ChainId.AVALANCHE_TESTNET_ID]
-    : allNetworks[ChainId.AVALANCHE_MAINNET_ID]
 
   const ethereumProvider = networkService.getEthereumProvider(network.isTestnet)
   const bitcoinProvider = networkService.getBitcoinProvider(network.isTestnet)
   const avalancheProvider = networkService.getProviderForNetwork(
-    avalancheNetwork
+    network
   ) as JsonRpcBatchInternal
 
   // load pending txs from storage

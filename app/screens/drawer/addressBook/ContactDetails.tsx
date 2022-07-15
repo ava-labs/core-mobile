@@ -15,13 +15,11 @@ import { titleToInitials } from 'utils/Utils'
 const ContactDetails = ({
   contact,
   onChange,
-  onSend,
   onDelete,
   editable = false
 }: {
   contact: Contact
   onChange: (contact: Contact) => void
-  onSend: (contact: Contact) => void
   onDelete: (contact: Contact) => void
   editable?: boolean
 }) => {
@@ -67,10 +65,6 @@ const ContactDetails = ({
           {!!addressBtc && (
             <AddressView title={'Address BTC'} address={addressBtc} />
           )}
-          <FlexSpacer />
-          <AvaButton.PrimaryLarge onPress={() => onSend(contact)}>
-            Send
-          </AvaButton.PrimaryLarge>
         </>
       )}
     </SafeAreaProvider>

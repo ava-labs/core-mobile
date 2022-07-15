@@ -6,6 +6,7 @@ import StarSVG from 'components/svg/StarSVG'
 import InfoSVG from 'components/svg/InfoSVG'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import Avatar from 'components/Avatar'
+import { alwaysFavoriteNetworks } from 'store/network'
 
 type Props = {
   networkChainId: number
@@ -31,9 +32,11 @@ export function NetworkListItem({
   function getButtons() {
     return (
       <Row style={{ alignItems: 'center' }}>
-        <AvaButton.Icon onPress={() => onFavorite(networkChainId)}>
-          <StarSVG selected={isFavorite} />
-        </AvaButton.Icon>
+        {!alwaysFavoriteNetworks.includes(networkChainId) && (
+          <AvaButton.Icon onPress={() => onFavorite(networkChainId)}>
+            <StarSVG selected={isFavorite} />
+          </AvaButton.Icon>
+        )}
         <AvaButton.Icon onPress={() => onInfo(networkChainId)}>
           <InfoSVG size={24} color={theme.colorIcon1} />
         </AvaButton.Icon>
