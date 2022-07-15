@@ -6,43 +6,58 @@ import {
 } from '@avalabs/bridge-sdk'
 import { Erc20TransferDetailsDto } from '@avalabs/glacier-sdk'
 import { getTransactionLink } from '@avalabs/wallet-react-components'
+import { BitcoinHistoryTx } from '@avalabs/wallets-sdk'
 import { Transaction } from 'store/transaction'
 
 const ETHEREUM_ADDRESS = '0x0000000000000000000000000000000000000000'
 
-export function isBridgeTransaction(
-  transfer: Erc20TransferDetailsDto,
-  ethereumWrappedAssets: EthereumConfigAssets,
-  bitcoinAssets: BitcoinConfigAssets
-) {
-  return (
-    isBridgeTransactionEVM(transfer, ethereumWrappedAssets) ||
-    isBridgeTransactionBTC(transfer, bitcoinAssets)
-  )
-}
-
+/**
+ * Checking if the transaction is a bridge transaction with Ethereum
+ */
 export function isBridgeTransactionEVM(
-  transfer: Erc20TransferDetailsDto,
-  ethereumWrappedAssets: EthereumConfigAssets
-): boolean {
-  return Object.values(ethereumWrappedAssets).some(
-    ({ wrappedContractAddress }) =>
-      wrappedContractAddress.toLowerCase() ===
-        transfer.erc20Token.contractAddress.toLowerCase() &&
-      (transfer.to.address === ETHEREUM_ADDRESS ||
-        transfer.from.address === ETHEREUM_ADDRESS)
+  transaction: Erc20TransferDetailsDto,
+  ethereumWrappedAssets: EthereumConfigAssets | undefined,
+  bitcoinAssets: BitcoinConfigAssets | undefined
+) {
+  if (!ethereumWrappedAssets || !bitcoinAssets) return false
+
+  return (
+    Object.values(ethereumWrappedAssets).some(
+      ({ wrappedContractAddress }) =>
+        wrappedContractAddress.toLowerCase() ===
+          transaction.erc20Token.contractAddress.toLowerCase() &&
+        (transaction.to.address === ETHEREUM_ADDRESS ||
+          transaction.from.address === ETHEREUM_ADDRESS)
+    ) ||
+    Object.values(bitcoinAssets).some(
+      ({ wrappedContractAddress }) =>
+        wrappedContractAddress.toLowerCase() ===
+        transaction.erc20Token.contractAddress.toLowerCase()
+    )
   )
 }
 
-export function isBridgeTransactionBTC(
-  tx: Erc20TransferDetailsDto,
-  bitcoinAssets: BitcoinConfigAssets
-): boolean {
-  return Object.values(bitcoinAssets).some(
-    ({ wrappedContractAddress }) =>
-      wrappedContractAddress.toLowerCase() ===
-      tx.erc20Token.contractAddress.toLowerCase()
-  )
+/**
+ * Checking if the transaction is a bridge transaction with Bitcoin
+ */
+export const isBridgeTransactionBTC = (
+  transaction: BitcoinHistoryTx,
+  bitcoinWalletAddresses:
+    | {
+        avalanche: string
+        btc: string
+      }
+    | undefined
+) => {
+  if (!bitcoinWalletAddresses) {
+    return false
+  }
+
+  return transaction.addresses.some(address => {
+    return [bitcoinWalletAddresses.btc, bitcoinWalletAddresses.avalanche].some(
+      walletAddress => address.toLowerCase() === walletAddress.toLowerCase()
+    )
+  })
 }
 
 export function isPendingBridgeTransaction(
