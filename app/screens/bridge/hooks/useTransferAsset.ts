@@ -71,7 +71,7 @@ export function useTransferAsset() {
       avalancheNetwork
     ) as JsonRpcBatchInternal
     const ethereumProvider = networkService.getEthereumProvider(
-      activeNetwork.isTestnet
+      activeNetwork.isTestnet ?? false
     )
 
     const handleStatusChange = (status: WrapStatus) => {

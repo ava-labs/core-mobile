@@ -3,10 +3,6 @@ import HomeSVG from 'components/svg/HomeSVG'
 import SwapSVG from 'components/svg/SwapSVG'
 import WatchlistSVG from 'components/svg/WatchlistSVG'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
-import {
-  TransactionNormal,
-  TransactionERC20
-} from '@avalabs/wallet-react-components'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import PortfolioStackScreen from 'navigation/wallet/PortfolioScreenStack'
 import React, { FC } from 'react'
@@ -30,6 +26,7 @@ import BuySVG from 'components/svg/BuySVG'
 import { BridgeTransactionStatusParams } from 'navigation/types'
 import TopNavigationHeader from 'navigation/TopNavigationHeader'
 import { usePosthogContext } from 'contexts/PosthogContext'
+import { Transaction } from 'store/transaction'
 
 export type TabNavigatorParamList = {
   [AppNavigation.Tabs.Portfolio]: { showBackButton?: boolean }
@@ -259,9 +256,7 @@ type ActivitiesNavigationProp = TabsScreenProps<
 const Activities = () => {
   const { navigate } = useNavigation<ActivitiesNavigationProp>()
 
-  const openTransactionDetails = (
-    item: TransactionNormal | TransactionERC20
-  ) => {
+  const openTransactionDetails = (item: Transaction) => {
     navigate(AppNavigation.Wallet.ActivityDetail, {
       tx: item
     })

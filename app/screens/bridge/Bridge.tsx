@@ -231,9 +231,7 @@ const Bridge: FC = () => {
 
       // Navigate to transaction status page
       navigation.navigate(AppNavigation.Bridge.BridgeTransactionStatus, {
-        blockchain: currentBlockchain as string,
-        txHash: hash ?? '',
-        txTimestamp: Date.now().toString()
+        txHash: hash ?? ''
       })
     } catch (e: any) {
       const errorMessage =
