@@ -46,7 +46,7 @@ const ActivityList = ({
   const filteredTransactions = useMemo(
     () =>
       transactions
-        ?.filter(tx => {
+        .filter(tx => {
           switch (filter) {
             case ActivityFilter.Contract:
               return tx.isContractCall

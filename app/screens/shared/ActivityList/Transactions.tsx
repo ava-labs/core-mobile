@@ -96,7 +96,12 @@ const Transactions = ({
     })
 
     return allSections
-  }, [bridgeDisabled, data, pendingBridgeTransactions])
+  }, [
+    bridgeDisabled,
+    data,
+    hidePendingBridgeTransactions,
+    pendingBridgeTransactions
+  ])
 
   const renderPendingBridgeTransaction = (tx: BridgeTransaction) => {
     return (

@@ -14,12 +14,13 @@ import DotSVG from 'components/svg/DotSVG'
 import FlexSpacer from 'components/FlexSpacer'
 import Avatar from 'components/Avatar'
 import { Contact } from 'Repo'
-import { bnToAvaxC, numberToBN } from '@avalabs/avalanche-wallet-sdk'
+import { numberToBN } from '@avalabs/avalanche-wallet-sdk'
 import AppNavigation from 'navigation/AppNavigation'
 import { WalletScreenProps } from 'navigation/types'
 import { useSelector } from 'react-redux'
 import { selectContacts } from 'store/addressBook'
-import { selectTokenInfo } from 'store/network'
+import { selectActiveNetwork, selectTokenInfo } from 'store/network'
+import { balanceToDisplayValue } from '@avalabs/utils-sdk'
 
 type RouteProp = WalletScreenProps<
   typeof AppNavigation.Wallet.ActivityDetail
@@ -27,6 +28,7 @@ type RouteProp = WalletScreenProps<
 
 function ActivityDetail() {
   const theme = useApplicationContext().theme
+  const network = useSelector(selectActiveNetwork)
   const contacts = useSelector(selectContacts)
   const txItem = useRoute<RouteProp>().params.tx
   const tokenInfo = useSelector(selectTokenInfo(txItem?.token?.symbol ?? ''))
@@ -34,11 +36,11 @@ function ActivityDetail() {
   const { openUrl } = useInAppBrowser()
   const [contact, setContact] = useState<Contact>()
 
-  const feeBN = numberToBN(
-    Number(txItem?.gasUsed ?? '0') * Number(txItem?.gasPrice ?? '0'),
-    0
+  const feeBN = numberToBN(txItem?.fee ?? '', 0)
+  const fees = balanceToDisplayValue(
+    feeBN,
+    Number(txItem?.token?.decimal) || 18
   )
-  const fees = bnToAvaxC(feeBN)
 
   useEffect(getContactMatchFx, [contacts, txItem])
 
@@ -91,7 +93,7 @@ function ActivityDetail() {
               </AvaText.Body1>
             </AvaText.Heading1>
             <Space y={4} />
-            <AvaText.Body2>{` Fee ${fees} AVAX`}</AvaText.Body2>
+            <AvaText.Body2>{` Fee ${fees} ${network.networkToken.symbol}`}</AvaText.Body2>
           </View>
           <Space y={16} />
           <AvaListItem.Base
