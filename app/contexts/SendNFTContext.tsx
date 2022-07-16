@@ -3,19 +3,22 @@ import React, {
   Dispatch,
   useContext,
   useEffect,
-  useRef,
+  useMemo,
   useState
 } from 'react'
-import { SendHookError } from '@avalabs/wallet-react-components'
-import { bnToAvaxC } from '@avalabs/avalanche-wallet-sdk'
 import { BN } from 'avalanche'
-import { BehaviorSubject } from 'rxjs'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
-import tokenService from 'services/token/TokenService'
 import { selectActiveNetwork } from 'store/network'
-import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { NFTItemData } from 'store/nft'
+import { bnToEthersBigNumber, bnToLocaleString } from '@avalabs/utils-sdk'
+import { FeePreset } from 'components/NetworkFeeSelector'
+import { selectSelectedCurrency } from 'store/settings/currency'
+import { usePosthogContext } from 'contexts/PosthogContext'
+import { SendState } from 'services/send/types'
+import sendService from 'services/send/SendService'
+import { useNativeTokenPrice } from 'hooks/useNativeTokenPrice'
+import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 
 export interface SendNFTContextState {
   sendToken: NFTItemData
@@ -27,7 +30,7 @@ export interface SendNFTContextState {
   sendStatusMsg: string
   onSendNow: () => void
   transactionId: string | undefined
-  sdkError: SendHookError | undefined
+  sdkError: string | undefined
 }
 
 export const SendNFTContext = createContext<SendNFTContextState>({} as any)
@@ -39,126 +42,112 @@ export const SendNFTContextProvider = ({
   nft: NFTItemData
   children: any
 }) => {
-  const network = useSelector(selectActiveNetwork)
-
+  const { capture } = usePosthogContext()
   const activeAccount = useSelector(selectActiveAccount)
+  const activeNetwork = useSelector(selectActiveNetwork)
+  const selectedCurrency = useSelector(selectSelectedCurrency)
+  const { nativeTokenPrice } = useNativeTokenPrice(
+    selectedCurrency.toLowerCase() as VsCurrencyType
+  )
+
   const [sendToken] = useState<NFTItemData>(nft)
-  const gasLimit$ = useRef(new BehaviorSubject<number>(0))
 
   const [sendToAddress, setSendToAddress] = useState('')
   const [sendToTitle, setSendToTitle] = useState('')
-  const [sendFromAddress, setSendFromAddress] = useState<string>('')
-  const [sendFromTitle, setSendFromTitle] = useState<string>('')
-  const [sendFee, setSendFee] = useState<BN | undefined>()
-  const [gasLimit, setGasLimit] = useState(0)
+  const sendFromAddress = activeAccount?.address ?? ''
+  const sendFromTitle = activeAccount?.title ?? '-'
 
-  const [sendFeeAvax, setSendFeeAvax] = useState<string | undefined>()
-  const [sendFeeUsd, setSendFeeUsd] = useState<number | undefined>()
+  const [gasLimit, setGasLimit] = useState(0)
+  const [sendFeeBN, setSendFeeBN] = useState(new BN(0))
+  const sendFeeNative = bnToLocaleString(
+    sendFeeBN,
+    activeNetwork.networkToken.decimals
+  )
+  const sendFeeInCurrency = Number.parseFloat(sendFeeNative) * nativeTokenPrice
+  const [selectedFeePreset, setSelectedFeePreset] = useState<FeePreset>(
+    FeePreset.Normal
+  )
   const [customGasPrice, setCustomGasPrice] = useState(new BN(0))
+  const customGasPriceBig = useMemo(
+    () => bnToEthersBigNumber(customGasPrice),
+    [customGasPrice]
+  )
   const [sendStatus, setSendStatus] = useState<
     'Idle' | 'Sending' | 'Success' | 'Fail'
   >('Idle')
   const [sendStatusMsg, setSendStatusMsg] = useState('')
   const [transactionId, setTransactionId] = useState<string>()
   const [canSubmit, setCanSubmit] = useState(false)
-  const [sdkError, setSdkError] = useState<SendHookError | undefined>(undefined)
+  const [error, setError] = useState<string | undefined>()
 
-  const [avaxPrice, setAvaxPrice] = useState(0)
-
-  //bow to the lint gods
-  setSendFee
-  setSendStatusMsg
-  setCanSubmit
-  setSdkError
-
-  useEffect(watchPriceFx, [])
-
-  function watchPriceFx() {
-    ;(async () => {
-      const avaxPrice = await tokenService.getPriceWithMarketDataByCoinId(
-        network.pricingProviders?.coingecko.nativeTokenId ?? '',
-        VsCurrencyType.USD
-      )
-      setAvaxPrice(avaxPrice.price)
-    })()
-  }
-
-  //fixme - validate without using wallet-react-components
-
-  // useEffect(() => {
-  //   if (!sendToken || !activeAccount || !walletService) {
-  //     return
-  //   }
-  //   const subscription = checkAndValidateSendNft(
-  //     sendToken.collection.contract_address,
-  //     Number.parseInt(sendToken.token_id, 10),
-  //     customGasPrice,
-  //     of(sendToAddress),
-  //     of(walletService.getEvmWallet(activeAccount.index)),
-  //     gasLimit$.current
-  //   ).subscribe(value => {
-  //     setCanSubmit(value.canSubmit ?? false)
-  //     setSdkError(value.error)
-  //     setSendFee(value.sendFee)
-  //     setGasLimit(value.gasLimit ?? 0)
-  //   })
-  //
-  //   return () => {
-  //     return subscription.unsubscribe()
-  //   }
-  // }, [sendToken, sendToAddress, activeAccount])
-
-  useEffect(() => {
-    if (!activeAccount) {
-      return
-    }
-    setSendFromAddress(activeAccount.address)
-    setSendFromTitle(activeAccount.title)
-  }, [activeAccount])
-
-  useEffect(() => {
-    setSendFeeAvax(sendFee ? bnToAvaxC(sendFee) : undefined)
-  }, [sendFee])
-
-  useEffect(() => {
-    setSendFeeUsd(
-      sendFeeAvax ? Number.parseFloat(sendFeeAvax) * avaxPrice : undefined
-    )
-  }, [sendFeeAvax, avaxPrice])
-
-  useEffect(() => {
-    gasLimit$.current.next(gasLimit)
-  }, [gasLimit])
+  useEffect(validateStateFx, [
+    activeAccount,
+    activeNetwork,
+    customGasPriceBig,
+    gasLimit,
+    selectedCurrency,
+    sendToAddress,
+    sendToken
+  ])
 
   function onSendNow() {
+    if (!activeAccount) {
+      setSendStatus('Fail')
+      setSendStatusMsg('No active account')
+      return
+    }
+
+    capture('SendApproved', { selectedGasFee: selectedFeePreset.toUpperCase() })
     setTransactionId(undefined)
     setSendStatus('Sending')
 
-    //fixme - send without using wallet-react-components
+    const sendState = {
+      address: sendToAddress,
+      gasPrice: customGasPriceBig,
+      gasLimit,
+      token: sendService.mapTokenFromNFT(sendToken)
+    } as SendState
+    sendService
+      .send(
+        sendState,
+        activeNetwork,
+        activeAccount,
+        selectedCurrency.toLowerCase()
+      )
+      .then(txId => {
+        setTransactionId(txId)
+        setSendStatus('Success')
+      })
+      .catch(reason => {
+        setSendStatus('Fail')
+        setSendStatusMsg(reason)
+      })
+  }
 
-    // sendNftSubmit(
-    //   nft.collection.contract_address,
-    //   Number.parseInt(sendToken.token_id, 10),
-    //   Promise.resolve(walletService.getEvmWallet(activeAccount!.index)), //fixme
-    //   sendToAddress,
-    //   customGasPrice,
-    //   gasLimit
-    // ).subscribe({
-    //   next: value => {
-    //     if (value === undefined) {
-    //       Alert.alert('Error', 'Undefined error')
-    //     } else {
-    //       if ('txId' in value && value.txId) {
-    //         setTransactionId(value.txId)
-    //         setSendStatus('Success')
-    //       }
-    //     }
-    //   },
-    //   error: err => {
-    //     setSendStatus('Fail')
-    //     setSendStatusMsg(err)
-    //   }
-    // })
+  function validateStateFx() {
+    if (!activeAccount) {
+      setError('Account not set')
+      setCanSubmit(false)
+      return
+    }
+    sendService
+      .validateStateAndCalculateFees(
+        {
+          token: sendService.mapTokenFromNFT(sendToken),
+          address: sendToAddress,
+          gasPrice: customGasPriceBig,
+          gasLimit
+        } as SendState,
+        activeNetwork,
+        activeAccount,
+        selectedCurrency
+      )
+      .then(state => {
+        setGasLimit(state.gasLimit ?? 0)
+        setSendFeeBN(state.sendFee ?? new BN(0))
+        setError(state.error ? state.error.message : undefined)
+        setCanSubmit(state.canSubmit ?? false)
+      })
   }
 
   const state: SendNFTContextState = {
@@ -174,19 +163,20 @@ export const SendNFTContextProvider = ({
       setAddress: setSendToAddress
     },
     fees: {
-      sendFeeAvax,
-      sendFeeUsd,
+      sendFeeNative,
+      sendFeeInCurrency: sendFeeInCurrency,
       customGasPrice,
       setCustomGasPrice,
       gasLimit,
-      setGasLimit
+      setGasLimit,
+      setSelectedFeePreset
     },
-    canSubmit: canSubmit ?? false,
+    canSubmit,
     sendStatus,
     sendStatusMsg,
     onSendNow,
     transactionId,
-    sdkError
+    sdkError: error
   }
   return (
     <SendNFTContext.Provider value={state}>{children}</SendNFTContext.Provider>
@@ -203,14 +193,15 @@ export interface Account {
   address: string
   setAddress?: Dispatch<string>
   balanceAfterTrx?: string
-  balanceAfterTrxUsd?: string
+  balanceAfterTrxInCurrency?: string
 }
 
 export interface Fees {
-  sendFeeAvax: string | undefined
-  sendFeeUsd: number | undefined
+  sendFeeNative: string | undefined
+  sendFeeInCurrency: number | undefined
   customGasPrice: BN
   setCustomGasPrice: Dispatch<BN>
   gasLimit: number | undefined
   setGasLimit: Dispatch<number>
+  setSelectedFeePreset: Dispatch<FeePreset>
 }
