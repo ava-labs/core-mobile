@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { isAnyOf } from '@reduxjs/toolkit'
 import { differenceInSeconds } from 'date-fns'
 import { AppState, AppStateStatus, Platform } from 'react-native'
@@ -9,7 +10,6 @@ import {
   setIsReady
 } from 'store/app'
 import { AppStartListening } from 'store/middleware/listener'
-import { getNetworks } from 'store/network'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger, { LogLevel } from 'utils/Logger'
 import {
@@ -17,6 +17,7 @@ import {
   onAppUnlocked,
   onBackground,
   onForeground,
+  onLogOut,
   selectAppState
 } from './slice'
 
@@ -28,8 +29,6 @@ const init = async (action: any, listenerApi: AppListenerEffectAPI) => {
   Logger.setLevel(__DEV__ ? LogLevel.TRACE : LogLevel.ERROR)
 
   listenToAppState(listenerApi)
-
-  dispatch(getNetworks())
 
   if (Platform.OS === 'android') BiometricsSDK.warmup()
 
@@ -100,6 +99,11 @@ const setStateToUnlocked = async (
   dispatch(setIsLocked(false))
 }
 
+const clearData = async () => {
+  await BiometricsSDK.clearWalletKey()
+  await AsyncStorage.clear()
+}
+
 export const addAppListeners = (startListening: AppStartListening) => {
   startListening({
     actionCreator: onRehydrationComplete,
@@ -114,5 +118,10 @@ export const addAppListeners = (startListening: AppStartListening) => {
   startListening({
     actionCreator: onAppUnlocked,
     effect: setStateToUnlocked
+  })
+
+  startListening({
+    actionCreator: onLogOut,
+    effect: clearData
   })
 }
