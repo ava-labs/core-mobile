@@ -34,14 +34,21 @@ export default function NetworkDropdown() {
 
   const data = useMemo(
     () => [
-      ...favoriteNetworks.map(item => ({
-        name: item.chainName,
-        chainId: item.chainId,
-        logoUri: item.logoUri
-      })),
-      { name: ManageNetworks, chainId: -1, logoUri: '' }
+      {
+        name: activeNetwork.chainName,
+        chainId: activeNetwork.chainId,
+        logoUri: activeNetwork.logoUri
+      },
+      ...favoriteNetworks
+        .filter(item => item.chainId !== activeNetwork.chainId)
+        .map(item => ({
+          name: item.chainName,
+          chainId: item.chainId,
+          logoUri: item.logoUri
+        })),
+      { name: ManageNetworks, chainId: 0, logoUri: '' }
     ],
-    [favoriteNetworks]
+    [activeNetwork, favoriteNetworks]
   )
 
   const dropdownUniqueId = useMemo(() => {
