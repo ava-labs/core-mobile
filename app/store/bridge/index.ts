@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store'
 import { BridgeTransaction } from '@avalabs/bridge-sdk'
 import { AppStartListening } from 'store/middleware/listener'
@@ -25,21 +25,28 @@ export const bridgeSlice = createSlice({
   }
 })
 
+const selectIsMainnet = (state: RootState) => state.bridge.bridge.isMainnet
+
+const selectTransactions = (state: RootState) =>
+  state.bridge.bridge.bridgeTransactions
+
 export const selectBridge = (state: RootState) => state.bridge.bridge
-export const selectBridgeTransactions = (state: RootState) => {
-  return Object.values(state.bridge.bridge.bridgeTransactions).reduce<
-    BridgeState['bridgeTransactions']
-  >((txs, btx) => {
-    // go figure
-    const bridgeTx = btx as BridgeTransaction
-    if (
-      bridgeTx.environment === (state.bridge.bridge.isMainnet ? 'main' : 'test')
-    ) {
-      txs[bridgeTx.sourceTxHash] = bridgeTx
-    }
-    return txs
-  }, {})
-}
+
+export const selectBridgeTransactions = createSelector(
+  [selectTransactions, selectIsMainnet],
+  (bridgeTransactions, isMainnet) => {
+    return Object.values(bridgeTransactions).reduce<
+      BridgeState['bridgeTransactions']
+    >((txs, btx) => {
+      // go figure
+      const bridgeTx = btx as BridgeTransaction
+      if (bridgeTx.environment === (isMainnet ? 'main' : 'test')) {
+        txs[bridgeTx.sourceTxHash] = bridgeTx
+      }
+      return txs
+    }, {})
+  }
+)
 
 export const { addBridgeTransaction, popBridgeTransaction, setBridgeFilter } =
   bridgeSlice.actions
@@ -56,5 +63,7 @@ export const addBridgeListeners = (startListening: AppStartListening) => {
     }
   })
 }
+
+export * from './types'
 
 export default bridgeSlice.reducer

@@ -11,10 +11,6 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import AccountBottomSheet from 'screens/portfolio/account/AccountBottomSheet'
 import AppNavigation from 'navigation/AppNavigation'
 import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin'
-import {
-  TransactionERC20,
-  TransactionNormal
-} from '@avalabs/wallet-react-components'
 import DrawerScreenStack, {
   DrawerParamList
 } from 'navigation/wallet/DrawerScreenStack'
@@ -66,6 +62,7 @@ import AddSVG from 'components/svg/AddSVG'
 import AddEditNetwork, {
   AddEditNetworkProps
 } from 'screens/network/AddEditNetwork'
+import { Transaction } from 'store/transaction'
 import { BridgeStackParamList } from './wallet/BridgeScreenStack'
 import {
   BridgeTransactionStatusParams,
@@ -92,7 +89,7 @@ export type WalletScreenStackParams = {
   [AppNavigation.Wallet.TokenDetail]: { tokenId: string }
   [AppNavigation.Wallet.OwnedTokenDetail]: { tokenId: string }
   [AppNavigation.Wallet.ActivityDetail]: {
-    tx?: TransactionNormal | TransactionERC20
+    tx?: Transaction
   }
   [AppNavigation.Wallet.Swap]:
     | NavigatorScreenParams<SwapStackParamList>
@@ -393,16 +390,11 @@ const BridgeTransactionStatus = () => {
   const { setOptions } =
     useNavigation<BridgeTransactionStatusScreenProps['navigation']>()
 
-  const { blockchain, txHash, txTimestamp } =
+  const { txHash } =
     useRoute<BridgeTransactionStatusScreenProps['route']>().params
 
   return (
-    <SharedBridgeTransactionStatus
-      setNavOptions={setOptions}
-      blockchain={blockchain}
-      txHash={txHash}
-      txTimestamp={txTimestamp}
-    />
+    <SharedBridgeTransactionStatus setNavOptions={setOptions} txHash={txHash} />
   )
 }
 

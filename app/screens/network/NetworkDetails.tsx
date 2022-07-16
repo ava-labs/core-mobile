@@ -41,7 +41,7 @@ export default function NetworkDetails({ network }: Props) {
       <Space y={24} />
       <DetailItem title={'Native Token'} value={networkToken.name} />
       <Space y={24} />
-      <DetailItem title={'Explorer URL'} value={explorerUrl} />
+      <DetailItem title={'Explorer URL'} value={explorerUrl ?? ''} />
       <FlexSpacer />
       <AvaButton.PrimaryLarge disabled={isConnected} onPress={connect}>
         {isConnected ? 'Connected' : 'Connect'}

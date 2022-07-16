@@ -127,7 +127,7 @@ const BridgeTransactionStatus = () => {
   const { navigate, setOptions } =
     useNavigation<BridgeTransactionStatusScreenProps['navigation']>()
 
-  const { blockchain, txHash, txTimestamp } =
+  const { txHash } =
     useRoute<BridgeTransactionStatusScreenProps['route']>().params
 
   const HeaderRight = (
@@ -143,9 +143,7 @@ const BridgeTransactionStatus = () => {
     <SharedBridgeTransactionStatus
       setNavOptions={setOptions}
       HeaderRight={HeaderRight}
-      blockchain={blockchain}
       txHash={txHash}
-      txTimestamp={txTimestamp}
     />
   )
 }

@@ -11,6 +11,7 @@ import RootScreenStack from 'navigation/RootScreenStack'
 import { NavigationContainer } from '@react-navigation/native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import useDevDebugging from 'utils/debugging/DevDebugging'
+import 'utils/debugging/wdyr'
 
 export default function App() {
   const { configure } = useDevDebugging()

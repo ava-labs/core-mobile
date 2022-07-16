@@ -29,9 +29,7 @@ export type TokenSelectParams = {
 }
 
 export type BridgeTransactionStatusParams = {
-  blockchain: string
   txHash: string
-  txTimestamp: string
 }
 
 export type EditGasLimitParams = {

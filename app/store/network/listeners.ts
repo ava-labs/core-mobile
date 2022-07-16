@@ -1,7 +1,9 @@
 import { ChainId } from '@avalabs/chains-sdk'
+import NetworkService from 'services/network/NetworkService'
 import { AppListenerEffectAPI } from 'store'
+import { onAppUnlocked } from 'store/app'
 import { AppStartListening } from 'store/middleware/listener'
-import { setActive } from 'store/network'
+import { noActiveNetwork, setActive, setNetworks } from 'store/network'
 import {
   selectIsDeveloperMode,
   toggleDeveloperMode
@@ -22,7 +24,25 @@ const adjustActiveNetwork = async (
   dispatch(setActive(chainId))
 }
 
+const getNetworks = async (action: any, listenerApi: AppListenerEffectAPI) => {
+  const { dispatch, getState } = listenerApi
+  const state = getState()
+
+  const networks = await NetworkService.getNetworks()
+
+  dispatch(setNetworks(networks))
+
+  if (state.network.active === noActiveNetwork) {
+    dispatch(setActive(ChainId.AVALANCHE_MAINNET_ID))
+  }
+}
+
 export const addNetworkListeners = (startListening: AppStartListening) => {
+  startListening({
+    actionCreator: onAppUnlocked,
+    effect: getNetworks
+  })
+
   startListening({
     actionCreator: toggleDeveloperMode,
     effect: adjustActiveNetwork

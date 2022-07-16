@@ -1,14 +1,15 @@
 import { Network } from '@avalabs/chains-sdk'
-import { isAnyOf } from '@reduxjs/toolkit'
+import { isAnyOf, TaskAbortError } from '@reduxjs/toolkit'
 import BalanceService from 'services/balance/BalanceService'
 import { AppListenerEffectAPI } from 'store'
 import {
   Account,
   selectAccounts,
   selectActiveAccount,
+  setAccount,
   setAccounts
 } from 'store/account'
-import { onAppLocked, onAppUnlocked } from 'store/app'
+import { onAppLocked, onAppUnlocked, onLogOut } from 'store/app'
 import { addCustomToken } from 'store/customToken'
 import { AppStartListening } from 'store/middleware/listener'
 import { selectActiveNetwork, selectFavoriteNetworks } from 'store/network'
@@ -131,29 +132,45 @@ const fetchBalancePeriodically = async (
   listenerApi: AppListenerEffectAPI
 ) => {
   const { condition } = listenerApi
+
   onBalanceUpdate(QueryStatus.LOADING, listenerApi, false)
 
-  Logger.info('start periodic polling of balance')
+  const pollingTask = listenerApi.fork(async forkApi => {
+    Logger.info('start periodic polling of balance')
 
-  let intervalCount = 1
+    let intervalCount = 1
 
-  const interval = setInterval(() => {
-    let fetchActiveOnly
-    if (intervalCount % allNetworksOperand === 0) {
-      fetchActiveOnly = false
-    } else {
-      fetchActiveOnly = true
+    try {
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        let fetchActiveOnly
+
+        if (intervalCount % allNetworksOperand === 0) {
+          fetchActiveOnly = false
+        } else {
+          fetchActiveOnly = true
+        }
+
+        // cancellation-aware wait for the balande update to be done
+        await forkApi.pause(
+          onBalanceUpdate(QueryStatus.POLLING, listenerApi, fetchActiveOnly)
+        )
+
+        intervalCount += 1
+
+        // cancellation-aware delay
+        await forkApi.delay(PollingConfig.activeNetwork)
+      }
+    } catch (err) {
+      if (err instanceof TaskAbortError) {
+        // task got cancelled or the listener got cancelled
+        Logger.info('stop periodic polling of balance')
+      }
     }
+  })
 
-    onBalanceUpdate(QueryStatus.POLLING, listenerApi, fetchActiveOnly)
-
-    intervalCount += 1
-  }, PollingConfig.activeNetwork)
-
-  await condition(isAnyOf(onAppLocked))
-
-  Logger.info('stop periodic polling of balance')
-  clearInterval(interval)
+  await condition(isAnyOf(onAppLocked, onLogOut))
+  pollingTask.cancel()
 }
 
 export const addBalanceListeners = (startListening: AppStartListening) => {
@@ -163,13 +180,19 @@ export const addBalanceListeners = (startListening: AppStartListening) => {
   })
 
   startListening({
+    actionCreator: refetchBalance,
+    effect: async (action, listenerApi) =>
+      onBalanceUpdate(QueryStatus.REFETCHING, listenerApi, false)
+  })
+
+  startListening({
     matcher: isAnyOf(
-      refetchBalance,
       setSelectedCurrency,
       setAccounts,
+      setAccount,
       addCustomToken
     ),
     effect: async (action, listenerApi) =>
-      onBalanceUpdate(QueryStatus.REFETCHING, listenerApi, false)
+      onBalanceUpdate(QueryStatus.LOADING, listenerApi, false)
   })
 }
