@@ -14,19 +14,25 @@ import ArrowSVG from 'components/svg/ArrowSVG'
 import { useNavigation } from '@react-navigation/native'
 import FloatingActionButton from 'components/FloatingActionButton'
 import useInAppBrowser from 'hooks/useInAppBrowser'
-import { useIsUIDisabled, UI } from 'hooks/useIsUIDisabled'
+import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
 import HistorySVG from 'components/svg/HistorySVG'
 import BridgeSVG from 'components/svg/BridgeSVG'
 import { Space } from 'components/Space'
 import ActionButtonItem from 'components/ActionButtonItem'
 import QRCodeSVG from 'components/svg/QRCodeSVG'
-import { TabsScreenProps } from 'navigation/types'
+import {
+  BridgeTransactionStatusParams,
+  TabsScreenProps
+} from 'navigation/types'
 import WatchlistTab from 'screens/watchlist/WatchlistTabView'
 import BuySVG from 'components/svg/BuySVG'
-import { BridgeTransactionStatusParams } from 'navigation/types'
 import TopNavigationHeader from 'navigation/TopNavigationHeader'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import { Transaction } from 'store/transaction'
+import { showSnackBarCustom } from 'components/Snackbar'
+import { useSelector } from 'react-redux'
+import { selectActiveNetwork } from 'store/network'
+import GeneralToast from 'components/toast/GeneralToast'
 
 export type TabNavigatorParamList = {
   [AppNavigation.Tabs.Portfolio]: { showBackButton?: boolean }
@@ -46,6 +52,8 @@ const DummyBridge = () => (
 const TabNavigator = () => {
   const theme = useApplicationContext().theme
   const { capture } = usePosthogContext()
+  const isBridgeDisabled = useIsUIDisabled(UI.Bridge)
+  const activeNetwork = useSelector(selectActiveNetwork)
 
   /**
    * extracts creation of "normal" tab items
@@ -163,7 +171,14 @@ const TabNavigator = () => {
         listeners={({ navigation }) => ({
           tabPress: e => {
             e.preventDefault()
-            navigation.navigate(AppNavigation.Wallet.Bridge)
+            isBridgeDisabled
+              ? showSnackBarCustom(
+                  <GeneralToast
+                    message={`Bridge not available on ${activeNetwork.chainName}`}
+                  />,
+                  'short'
+                )
+              : navigation.navigate(AppNavigation.Wallet.Bridge)
           }
         })}
       />
