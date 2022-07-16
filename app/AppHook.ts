@@ -1,7 +1,6 @@
 import { asyncScheduler, AsyncSubject, concat, Observable, of } from 'rxjs'
 import { map } from 'rxjs/operators'
 import { BackHandler } from 'react-native'
-import BiometricsSDK from 'utils/BiometricsSDK'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useCallback, useEffect, useState } from 'react'
 import { WalletSetupHook } from 'hooks/useWalletSetup'
@@ -83,9 +82,6 @@ export function useApp(
 
   async function signOut() {
     walletSetupHook.destroyWallet()
-    await AsyncStorage.clear()
-    console.log('cleared async storage')
-    await BiometricsSDK.clearWalletKey()
     repository.flush()
     appNavHook.resetNavToRoot()
     dispatch(onLogOut())

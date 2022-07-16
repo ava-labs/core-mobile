@@ -53,4 +53,7 @@ export const addNetworkFeeListeners = (startListening: AppStartListening) => {
   })
 }
 
+// types
+export * from './types'
+
 export default networkFeeSlice.reducer

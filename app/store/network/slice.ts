@@ -1,11 +1,5 @@
-import {
-  createAsyncThunk,
-  createSelector,
-  createSlice,
-  PayloadAction
-} from '@reduxjs/toolkit'
-import { BITCOIN_NETWORK, ChainId, Network } from '@avalabs/chains-sdk'
-import NetworkService from 'services/network/NetworkService'
+import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { BITCOIN_NETWORK, Network } from '@avalabs/chains-sdk'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectAllCustomTokens } from 'store/customToken'
 import { RootState } from '../index'
@@ -13,7 +7,9 @@ import { ChainID, NetworkState } from './types'
 import { mergeWithCustomTokens } from './utils'
 
 const defaultNetwork = BITCOIN_NETWORK
-const noActiveNetwork = 0
+
+export const noActiveNetwork = 0
+
 export const alwaysFavoriteNetworks = [43114, 43113] //Avalanche mainnet, testnet
 
 const reducerName = 'network'
@@ -139,26 +135,16 @@ export const selectNetworkContractTokens = (state: RootState) => {
   return network.tokens ?? []
 }
 
+// get token info for a contract token of the active network
+export const selectTokenInfo = (symbol: string) => (state: RootState) => {
+  const tokens = selectNetworkContractTokens(state)
+  return tokens.find(token => token.symbol === symbol)
+}
+
 export const selectIsTestnet = (chainId: number) => (state: RootState) => {
   const network = state.network.networks[chainId]
   return network.isTestnet
 }
-
-// actions
-export const getNetworks = createAsyncThunk<void, void, { state: RootState }>(
-  `${reducerName}/getNetworks`,
-  async (params, thunkAPI) => {
-    const dispatch = thunkAPI.dispatch
-    const state = thunkAPI.getState()
-
-    const networks = await NetworkService.getNetworks()
-    dispatch(setNetworks(networks))
-
-    if (state.network.active === noActiveNetwork) {
-      dispatch(setActive(ChainId.AVALANCHE_MAINNET_ID))
-    }
-  }
-)
 
 export const {
   setNetworks,

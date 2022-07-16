@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { combineReducers } from 'redux'
-import { configureStore, ListenerEffectAPI } from '@reduxjs/toolkit'
+import { AnyAction, configureStore, ListenerEffectAPI } from '@reduxjs/toolkit'
 import {
   FLUSH,
   PAUSE,
@@ -15,7 +15,7 @@ import { DeserializeBridgeTransform } from 'store/transforms'
 import bridge, { addBridgeTransaction } from 'store/bridge'
 import { networkReducer as network } from './network'
 import { balanceReducer as balance, setBalance, setBalances } from './balance'
-import { appReducer as app, onRehydrationComplete } from './app'
+import { appReducer as app, onLogOut, onRehydrationComplete } from './app'
 import { listener } from './middleware/listener'
 import { accountsReducer as account } from './account'
 import { watchlistReducer as watchlist } from './watchlist'
@@ -26,10 +26,11 @@ import networkFee from './networkFee'
 import { addressBookReducer as addressBook } from './addressBook'
 import settings from './settings'
 import swap from './swap'
+import { transactionApi } from './transaction'
 
 const persistActions = [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER]
 
-const rootReducer = combineReducers({
+const combinedReducer = combineReducers({
   app,
   network,
   balance,
@@ -40,16 +41,29 @@ const rootReducer = combineReducers({
   customToken,
   posthog,
   swap,
+
   // user preferences
   settings,
   watchlist,
-  zeroBalance
+  zeroBalance,
+
+  // apis
+  [transactionApi.reducerPath]: transactionApi.reducer
 })
+
+const rootReducer = (state: any, action: AnyAction) => {
+  if (action.type === onLogOut.type) {
+    // reset state
+    state = {}
+  }
+
+  return combinedReducer(state, action)
+}
 
 const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
-  blacklist: ['app', 'balance', 'networkFee'],
+  blacklist: ['app', 'balance', 'networkFee', transactionApi.reducerPath],
   transforms: [DeserializeBridgeTransform]
 }
 
@@ -69,7 +83,9 @@ export const store = configureStore({
         ],
         ignoredPaths: ['balance', 'networkFee', 'bridge']
       }
-    }).prepend(listener.middleware)
+    })
+      .prepend(listener.middleware)
+      .concat(transactionApi.middleware)
 })
 
 export const persistor = persistStore(store, null, () => {

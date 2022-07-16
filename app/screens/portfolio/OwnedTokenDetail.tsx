@@ -6,10 +6,6 @@ import AvaListItem from 'components/AvaListItem'
 import Avatar from 'components/Avatar'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
-import {
-  TransactionERC20,
-  TransactionNormal
-} from '@avalabs/wallet-react-components'
 import { Row } from 'components/Row'
 import AvaButton from 'components/AvaButton'
 import AppNavigation from 'navigation/AppNavigation'
@@ -17,8 +13,9 @@ import {
   BridgeTransactionStatusParams,
   WalletScreenProps
 } from 'navigation/types'
-import ActivityList from 'screens/shared/ActivityList'
+import ActivityList from 'screens/shared/ActivityList/ActivityList'
 import { TokenWithBalance } from 'store/balance'
+import { Transaction } from 'store/transaction'
 
 type ScreenProps = WalletScreenProps<
   typeof AppNavigation.Wallet.OwnedTokenDetail
@@ -32,9 +29,7 @@ const OwnedTokenDetail: FC = () => {
 
   useEffect(loadToken, [filteredTokenList, tokenId])
 
-  const openTransactionDetails = (
-    item: TransactionNormal | TransactionERC20
-  ) => {
+  const openTransactionDetails = (item: Transaction) => {
     return navigate(AppNavigation.Wallet.ActivityDetail, {
       tx: item
     })

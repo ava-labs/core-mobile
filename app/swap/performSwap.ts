@@ -117,7 +117,7 @@ export async function performSwap(request: {
     optimalRate.side === 'SELL' ? minAmount : optimalRate.destAmount
 
   const avalancheProvider = (await networkService.getAvalancheProvider(
-    network.isTestnet
+    network.isTestnet ?? false
   )) as JsonRpcBatchInternal
 
   // no need to approve AVAX

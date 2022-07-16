@@ -1,7 +1,6 @@
 import React, { FC, useEffect } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { BridgeTransaction } from '@avalabs/bridge-sdk'
-import { TransactionERC20 } from '@avalabs/wallet-react-components'
 import { ShowSnackBar } from 'components/Snackbar'
 import AvaText from 'components/AvaText'
 import AvaListItem from 'components/AvaListItem'
@@ -14,9 +13,10 @@ import { Space } from 'components/Space'
 import { useBridgeContext } from 'contexts/BridgeContext'
 import { isPendingBridgeTransaction } from 'screens/bridge/utils/bridgeTransactionUtils'
 import { useBlockchainNames } from 'screens/activity/hooks/useBlockchainNames'
+import { Transaction } from 'store/transaction'
 
 interface BridgeTransactionItemProps {
-  item: TransactionERC20 | BridgeTransaction
+  item: Transaction | BridgeTransaction
   onPress: () => void
 }
 
@@ -59,8 +59,8 @@ const BridgeTransactionItem: FC<BridgeTransactionItemProps> = ({
       rightComponent={
         <View style={{ justifyContent: 'center', alignItems: 'flex-end' }}>
           <AvaText.ActivityTotal ellipsizeMode={'tail'}>
-            {pending ? item.amount.toString() : item.amountDisplayValue}{' '}
-            {pending ? item.symbol : item.tokenSymbol}
+            {pending ? item.amount.toString() : item.amount}{' '}
+            {pending ? item.symbol : item.token?.symbol}
           </AvaText.ActivityTotal>
           {'explorerLink' in item && item?.explorerLink && (
             <>

@@ -181,6 +181,13 @@ function ZeroStateComingSoon() {
   return <ZeroStateBase title={'Coming soon!'} />
 }
 
+function ZeroStateNoTransactions() {
+  const title = 'No recent activity'
+  const message = 'New transactions will show here'
+
+  return <ZeroStateBase title={title} message={message} />
+}
+
 const ZeroState = {
   NetworkTokens: ZeroStateNetworkTokens,
   Collectibles: ZeroStateCollectibles,
@@ -189,7 +196,8 @@ const ZeroState = {
   NoFavoriteNetworks: ZeroStateNoFavoriteNetworks,
   EmptyAddressBook: ZeroStateEmptyAddressBook,
   ComingSoon: ZeroStateComingSoon,
-  SendError: ZeroStateSendError
+  SendError: ZeroStateSendError,
+  NoTransactions: ZeroStateNoTransactions
 }
 
 export default ZeroState

@@ -1,24 +1,24 @@
 import { BridgeTransaction, useBridgeSDK } from '@avalabs/bridge-sdk'
-import { TransactionERC20 } from '@avalabs/wallet-react-components'
 import { isPendingBridgeTransaction } from 'screens/bridge/utils/bridgeTransactionUtils'
+import { Transaction } from 'store/transaction'
 
-export function useBlockchainNames(item: TransactionERC20 | BridgeTransaction) {
+export function useBlockchainNames(item: Transaction | BridgeTransaction) {
   const pending = isPendingBridgeTransaction(item)
   const { avalancheAssets } = useBridgeSDK()
 
   const symbol = (
     !pending
-      ? item.tokenSymbol === 'TEST.t'
+      ? item.token?.symbol === 'TEST.t'
         ? // TEMP: use "BTC" when "TEST.t" until testnet changes
           'BTC'
-        : item.tokenSymbol
+        : item.token?.symbol ?? ''
       : ''
   ).split('.')[0]
 
   if (pending) {
     return {
-      sourceBlockchain: item.sourceChain,
-      targetBlockchain: item.targetChain
+      sourceBlockchain: titleCase(item.sourceChain),
+      targetBlockchain: titleCase(item.targetChain)
     }
   }
 

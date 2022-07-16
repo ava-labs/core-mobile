@@ -3,14 +3,10 @@ import HomeSVG from 'components/svg/HomeSVG'
 import SwapSVG from 'components/svg/SwapSVG'
 import WatchlistSVG from 'components/svg/WatchlistSVG'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
-import {
-  TransactionERC20,
-  TransactionNormal
-} from '@avalabs/wallet-react-components'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import PortfolioStackScreen from 'navigation/wallet/PortfolioScreenStack'
 import React, { FC } from 'react'
-import ActivityList from 'screens/shared/ActivityList'
+import ActivityList from 'screens/shared/ActivityList/ActivityList'
 import { View } from 'react-native'
 import AddSVG from 'components/svg/AddSVG'
 import AvaText from 'components/AvaText'
@@ -32,6 +28,7 @@ import WatchlistTab from 'screens/watchlist/WatchlistTabView'
 import BuySVG from 'components/svg/BuySVG'
 import TopNavigationHeader from 'navigation/TopNavigationHeader'
 import { usePosthogContext } from 'contexts/PosthogContext'
+import { Transaction } from 'store/transaction'
 import { showSnackBarCustom } from 'components/Snackbar'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
@@ -274,9 +271,7 @@ type ActivitiesNavigationProp = TabsScreenProps<
 const Activities = () => {
   const { navigate } = useNavigation<ActivitiesNavigationProp>()
 
-  const openTransactionDetails = (
-    item: TransactionNormal | TransactionERC20
-  ) => {
+  const openTransactionDetails = (item: Transaction) => {
     navigate(AppNavigation.Wallet.ActivityDetail, {
       tx: item
     })

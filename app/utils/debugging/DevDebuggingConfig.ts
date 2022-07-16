@@ -4,6 +4,7 @@
 
 const DevDebuggingConfig = {
   SPLASH_ENABLED: !__DEV__,
+  WDYR: false,
   STORYBOOK_ENABLED: false,
   LOGBOX_DISABLED: false,
   REDSCREEN_DISABLED: false,

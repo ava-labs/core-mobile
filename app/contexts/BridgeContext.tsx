@@ -77,8 +77,10 @@ function LocalBridgeProvider({ children }: { children: any }) {
   const { currentBlockchain } = useBridgeSDK()
   const { transferHandler, events } = useTransferAsset()
 
-  const ethereumProvider = networkService.getEthereumProvider(network.isTestnet)
-  const bitcoinProvider = networkService.getBitcoinProvider(network.isTestnet)
+  const ethereumProvider = networkService.getEthereumProvider(
+    network.isTestnet ?? false
+  )
+  const bitcoinProvider = networkService.getBitcoinProvider(!network.isTestnet)
   const avalancheProvider = networkService.getProviderForNetwork(
     network
   ) as JsonRpcBatchInternal

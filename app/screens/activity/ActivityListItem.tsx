@@ -1,66 +1,63 @@
 import React, { FC } from 'react'
+import { View, Dimensions } from 'react-native'
 import AvaListItem from 'components/AvaListItem'
 import AvaText from 'components/AvaText'
 import MovementIndicator from 'components/MovementIndicator'
-import {
-  isTransactionERC20,
-  isTransactionNormal,
-  TransactionNormal,
-  TransactionERC20
-} from '@avalabs/wallet-react-components'
 import { truncateAddress } from 'utils/Utils'
+import { Transaction } from 'store/transaction'
+import LinkSVG from 'components/svg/LinkSVG'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { Space } from 'components/Space'
+
+const windowWidth = Dimensions.get('window').width
 
 type Props = {
-  tx: TransactionNormal | TransactionERC20
+  tx: Transaction
   onPress?: () => void
 }
 
 const ActivityListItem: FC<Props> = ({ tx, onPress }) => {
-  if (isTransactionNormal(tx)) {
-    const isContractCall = tx?.input !== '0x'
-    return (
-      <AvaListItem.Base
-        title={isContractCall ? 'Contract Call' : 'Avalanche'}
-        subtitle={
-          tx?.isSender
-            ? `To: ${truncateAddress(tx.to ?? '')}`
-            : `From: ${truncateAddress(tx.from) ?? ''}`
-        }
-        leftComponent={<MovementIndicator metric={tx.isSender ? -1 : 0} />}
-        rightComponent={
-          isContractCall || (
-            <AvaText.ActivityTotal>
-              {tx.isSender ? '-' : '+'}
-              {tx.amountDisplayValue} AVAX
-            </AvaText.ActivityTotal>
-          )
-        }
-        embedInCard
-        onPress={onPress}
-      />
-    )
-  } else if (isTransactionERC20(tx)) {
-    const sign = tx.isSender ? '-' : '+'
-    return (
-      <AvaListItem.Base
-        title={tx.tokenName}
-        leftComponent={<MovementIndicator metric={tx.isSender ? -1 : 0} />}
-        subtitle={
-          tx?.isSender
-            ? `To: ${truncateAddress(tx.to ?? '')}`
-            : `From: ${truncateAddress(tx.from) ?? ''}`
-        }
-        rightComponent={
-          <AvaText.ActivityTotal ellipsizeMode={'tail'}>
-            {sign + tx.amountDisplayValue} {tx.tokenSymbol}
-          </AvaText.ActivityTotal>
-        }
-        embedInCard
-        onPress={onPress}
-      />
-    )
-  }
-  return null
+  const { theme } = useApplicationContext()
+  const title = tx.isContractCall ? 'Contract Call' : tx.token?.name ?? ''
+
+  const subtitle = (
+    tx.isSender
+      ? `To: ${truncateAddress(tx.to ?? '')}`
+      : `From: ${truncateAddress(tx.from ?? '')}`
+  ).toLowerCase()
+
+  const leftComponent = <MovementIndicator metric={tx.isSender ? -1 : 0} />
+
+  const rightComponent = tx.isContractCall ? (
+    <View>
+      <Space y={4} />
+      <LinkSVG color={theme.white} />
+    </View>
+  ) : (
+    <AvaText.ActivityTotal
+      ellipsizeMode={'tail'}
+      numberOfLines={2}
+      textStyle={{
+        marginTop: 2,
+        marginLeft: windowWidth * 0.1,
+        maxWidth: windowWidth * 0.3,
+        textAlign: 'right'
+      }}>
+      {tx.isSender ? '-' : '+'}
+      {tx.amount} {tx.token?.symbol}
+    </AvaText.ActivityTotal>
+  )
+
+  return (
+    <AvaListItem.Base
+      title={title}
+      subtitle={subtitle}
+      leftComponent={leftComponent}
+      rightComponent={rightComponent}
+      onPress={onPress}
+      embedInCard
+    />
+  )
 }
 
 export default ActivityListItem

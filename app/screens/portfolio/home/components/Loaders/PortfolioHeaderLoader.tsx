@@ -1,16 +1,13 @@
-import { useApplicationContext } from 'contexts/ApplicationContext'
 import React from 'react'
 import ContentLoader, { Rect } from 'react-content-loader/native'
 import { Dimensions, View } from 'react-native'
-import { Opacity70 } from 'resources/Constants'
+import { useSkeletonColors } from 'hooks/colors/useSkeletonColors'
 
 const deviceWidth = Dimensions.get('screen').width
 const aspectRatio = 278 / 52
 
 export const PortfolioHeaderLoader = () => {
-  const { theme } = useApplicationContext()
-  const backgroundColor = theme.colorBg2
-  const foregroundColor = theme.colorBg3 + Opacity70
+  const { backgroundColor, foregroundColor } = useSkeletonColors()
 
   return (
     <View
