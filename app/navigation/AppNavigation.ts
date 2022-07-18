@@ -105,7 +105,8 @@ enum ModalScreens {
   SignOut = 'ModalScreens.SignOut',
   SelectToken = 'ModalScreens.SelectToken',
   EditGasLimit = 'ModalScreens.EditGasLimit',
-  BridgeSelectToken = 'ModalScreens.BridgeSelectToken'
+  BridgeSelectToken = 'ModalScreens.BridgeSelectToken',
+  RpcMethodsUI = 'ModalScreens.RpcMethodsUI'
 }
 
 enum SendScreens {
@@ -124,7 +125,7 @@ enum BridgeScreens {
   Bridge = 'BridgeScreens.Swap',
   BridgeTransactionStatus = 'BridgeScreens.BridgeTransactionStatus',
   HideWarning = 'BridgeScreens.HideWarning',
-  AddInstructions = 'BridgeScreens.AddInstructions',
+  AddInstructions = 'BridgeScreens.AddInstructions'
 }
 
 enum PortfolioScreens {

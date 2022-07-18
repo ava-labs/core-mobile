@@ -1,10 +1,10 @@
 import React, { memo, useMemo } from 'react'
 import { BackHandler, Modal } from 'react-native'
 import {
-  NavigatorScreenParams,
-  useFocusEffect,
-  useNavigation,
-  useRoute
+NavigatorScreenParams,
+useFocusEffect,
+useNavigation,
+useRoute
 } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -63,6 +63,9 @@ import AddEditNetwork, {
   AddEditNetworkProps
 } from 'screens/network/AddEditNetwork'
 import { Transaction } from 'store/transaction'
+import { TokenWithBalance } from 'store/balance'
+import { DEEPLINKS } from 'navigation/messages/models'
+import RpcMethodsUI from 'screens/rpc/RpcMethodsUI'
 import { BridgeStackParamList } from './wallet/BridgeScreenStack'
 import {
   BridgeTransactionStatusParams,
@@ -115,6 +118,7 @@ export type WalletScreenStackParams = {
   [AppNavigation.Modal.SignOut]: undefined
   [AppNavigation.Modal.SelectToken]: TokenSelectParams
   [AppNavigation.Modal.EditGasLimit]: EditGasLimitParams
+  [AppNavigation.Modal.RpcMethodsUI]: undefined
 }
 
 const WalletScreenS = createStackNavigator<WalletScreenStackParams>()
@@ -134,6 +138,24 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
   const showSecurityModal = useSelector(selectIsLocked)
   const context = useApplicationContext()
   const { signOut } = context.appHook
+
+  // init DeepLinkManager
+  useEffect(() => {
+    SharedDeepLinkManager.init()
+    Linking.addEventListener('url', ({ url }) => {
+      if (url) {
+        SharedDeepLinkManager.expireDeepLink()
+        SharedDeepLinkManager.parse(url, { origin: DEEPLINKS.ORIGIN_DEEPLINK })
+      }
+    })
+    async function checkDeepLink() {
+      const url = await Linking.getInitialURL() // get from firebase in the future?
+      if (url) {
+        SharedDeepLinkManager.parse(url, { origin: DEEPLINKS.ORIGIN_DEEPLINK })
+      }
+    }
+    checkDeepLink()
+  }, [])
 
   useFocusEffect(
     React.useCallback(() => {
@@ -184,6 +206,10 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
         <WalletScreenS.Screen
           name={AppNavigation.Modal.EditGasLimit}
           component={EditGasLimit}
+        />
+        <WalletScreenS.Screen
+          name={AppNavigation.Modal.RpcMethodsUI}
+          component={RpcMethodsUI}
         />
       </WalletScreenS.Group>
     )
