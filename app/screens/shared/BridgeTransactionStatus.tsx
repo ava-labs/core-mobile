@@ -23,6 +23,7 @@ import { useNavigation } from '@react-navigation/native'
 import Logger from 'utils/Logger'
 import { useSelector } from 'react-redux'
 import { selectTokenInfo } from 'store/network'
+import { formatBlockchain } from 'screens/bridge/utils/bridgeTransactionUtils'
 
 type Props = {
   txHash: string
@@ -107,7 +108,7 @@ const BridgeTransactionStatus: FC<Props> = ({
         {bridgeTransaction && (
           <View>
             <AvaListItem.Base
-              title={'Sending amount'}
+              title={<AvaText.Body2>Sending amount</AvaText.Body2>}
               titleAlignment={'flex-start'}
               rightComponentHorizontalAlignment={'flex-end'}
               rightComponent={
@@ -132,16 +133,18 @@ const BridgeTransactionStatus: FC<Props> = ({
       <Space y={16} />
       <View style={[styles.fromContainer, { backgroundColor: theme.colorBg2 }]}>
         <AvaListItem.Base
-          title={'From'}
+          title={<AvaText.Body2>From</AvaText.Body2>}
+          titleAlignment="flex-start"
           rightComponent={
             <AvaText.Heading3>
-              {bridgeTransaction?.sourceChain?.toUpperCase()}
+              {formatBlockchain(bridgeTransaction?.sourceChain)}
             </AvaText.Heading3>
           }
         />
         <Separator color={theme.colorBg3} inset={16} />
         <AvaListItem.Base
-          title={'Network Fee'}
+          title={<AvaText.Body2>Network Fee</AvaText.Body2>}
+          titleAlignment="flex-start"
           rightComponent={
             <View style={{ alignItems: 'flex-end' }}>
               <Row>
@@ -175,10 +178,11 @@ const BridgeTransactionStatus: FC<Props> = ({
       <Space y={16} />
       <View style={[styles.toContainer, { backgroundColor: theme.colorBg2 }]}>
         <AvaListItem.Base
-          title={'To'}
+          title={<AvaText.Body2>To</AvaText.Body2>}
+          titleAlignment="flex-start"
           rightComponent={
             <AvaText.Heading3>
-              {bridgeTransaction?.targetChain?.toUpperCase()}
+              {formatBlockchain(bridgeTransaction?.targetChain)}
             </AvaText.Heading3>
           }
         />

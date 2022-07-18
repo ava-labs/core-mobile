@@ -34,6 +34,7 @@ import { bnToBig, numberToBN, resolve } from '@avalabs/utils-sdk'
 import Big from 'big.js'
 import ScrollViewList from 'components/ScrollViewList'
 import { ActivityIndicator } from 'components/ActivityIndicator'
+import { formatBlockchain } from './utils/bridgeTransactionUtils'
 
 const formatBalance = (balance: Big | undefined) => {
   return balance && formatTokenAmount(balance, 6)
@@ -129,6 +130,8 @@ const Bridge: FC = () => {
     showCheckmark = true
   ) {
     const isSelected = showCheckmark && blockchain === selectedBlockchain
+    const blockchainTitle = formatBlockchain(blockchain)
+
     return (
       <Row
         style={{
@@ -149,7 +152,7 @@ const Bridge: FC = () => {
           }
         />
         <Space x={8} />
-        <AvaText.Body1>{blockchain?.toUpperCase()}</AvaText.Body1>
+        <AvaText.Body1>{blockchainTitle}</AvaText.Body1>
         {isSelected && (
           <>
             <Space x={8} />
@@ -279,9 +282,10 @@ const Bridge: FC = () => {
                   selectionRenderItem={item =>
                     dropdownItemFormat(item, currentBlockchain, false)
                   }
-                  width={180}
+                  width="auto"
                 />
               }
+              rightComponentMaxWidth={220}
             />
             {currentBlockchain === Blockchain.BITCOIN && (
               <Row style={{ justifyContent: 'flex-end' }}>

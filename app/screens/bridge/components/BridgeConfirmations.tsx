@@ -96,7 +96,8 @@ const BridgeConfirmations: FC<Props> = ({
   return (
     <View>
       <AvaListItem.Base
-        title={'Confirmations'}
+        title={<AvaText.Body2>Confirmations</AvaText.Body2>}
+        titleAlignment="flex-start"
         rightComponent={
           <Row style={{ alignItems: 'center' }}>
             <AvaText.Heading3 textStyle={{ marginEnd: 8 }}>
