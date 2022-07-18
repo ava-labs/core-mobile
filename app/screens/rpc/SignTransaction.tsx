@@ -1,14 +1,11 @@
 import AvaText from 'components/AvaText'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
 import { Row } from 'components/Row'
-import TabViewAva from 'components/TabViewAva'
-import NetworkFeeSelector from 'components/NetworkFeeSelector'
-import OvalTagBg from 'components/OvalTagBg'
 import Avatar from 'components/Avatar'
 import TokenAddress from 'components/TokenAddress'
 // @ts-ignore @javascript
@@ -20,9 +17,13 @@ import {
   TransactionDisplayValues
 } from 'rpc/models'
 import { useExplainTransaction } from 'rpc/useExplainTransaction'
-import { getHexStringToBytes } from 'utils/getHexStringToBytes'
 import CustomFees from 'components/CustomFees'
-import {useAccountsContext} from '@avalabs/wallet-react-components';
+import Separator from 'components/Separator'
+import BN from 'bn.js'
+import { bnToLocaleString, stringToBN } from '@avalabs/utils-sdk'
+import AddSVG from 'components/svg/AddSVG'
+import ArrowSVG from 'components/svg/ArrowSVG'
+import { Limit } from 'components/EditFees'
 
 const SignTransaction = props => {
   const { params } = props.payload
@@ -46,7 +47,7 @@ const SignTransaction = props => {
 
   const displayData: TransactionDisplayValues = { ...rest } as any
 
-  const isApprove = contractType && contractType === ContractCall.APPROVE
+  const isApprove = !!(contractType && contractType === ContractCall.APPROVE)
   const isUnknown = !contractType || contractType === 'UNKNOWN'
   const isTransAction = !isApprove && !isUnknown
 
@@ -58,33 +59,24 @@ const SignTransaction = props => {
         paddingHorizontal: 14
       }}>
       <View>
-        {!!isUnknown && <View />}
-        {!!isApprove && (
+        {isUnknown && <View />}
+        {isApprove && (
           <RpcApproveTransaction
             {...(displayData as ApproveTransactionData)}
             setShowCustomSpendLimit={setShowCustomSpendLimit}
             displayStendLimit={displaySpendLimit}
             onCustomFeeSet={setCustomFee}
             selectedGasFee={selectedGasFee}
+            setSpendLimit={setSpendLimit}
           />
         )}
-        {!!isTransAction && (
+        {isTransAction && (
           <>
             <RpcTransaction
               {...(displayData as any)}
               onCustomFeeSet={setCustomFee}
               selectedGasFee={selectedGasFee}
             />
-            {displayData.gasPrice.value !== '' &&
-              displayData.gasPrice.value !== '0' && (
-                <CustomFees
-                  gasPrice={displayData.fees.gasPrice}
-                  limit={displayData.gasLimit?.toString() ?? '0'}
-                  defaultGasPrice={displayData.gasPrice}
-                  onChange={modifier => console.log(modifier)}
-                  selectedGasFeeModifier={selectedGasFee}
-                />
-              )}
           </>
         )}
       </View>
@@ -106,94 +98,133 @@ const renderCustomLabel = (title: string) => {
 }
 
 function RpcApproveTransaction({
-  displayData,
+  site,
+  token: tokenToBeApproved,
+  txParams,
   setShowCustomSpendLimit,
   displaySpendLimit,
+  gasPrice,
+  gasLimit,
   onCustomFeeSet,
-  selectedGasFee
+  isInfinity,
+  selectedGasFee,
+  setSpendLimit,
+  ...rest
 }: ApproveTransactionData): JSX.Element {
   const styles = createStyles()
   const theme = useApplicationContext().theme
 
+  console.log('displaySpendLimit:', displaySpendLimit)
+
+  useEffect(() => {
+    if (!displaySpendLimit && rest.tokenAmount) {
+      setSpendLimit({ limitType: Limit.CUSTOM, value: rest.tokenAmount })
+    }
+  }, [displaySpendLimit])
+
   return (
     <>
-      <AvaText.Heading1>Approve</AvaText.Heading1>
-      <Space y={16} />
-      <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-        <OvalTagBg
-          style={{ height: 80, width: 80, backgroundColor: theme.colorBg3 }}>
-          <Avatar.Custom name={'AVAX'} symbol={'AVAX'} size={48} />
-        </OvalTagBg>
-        <View style={styles.domainUrlContainer}>
-          {/*<AvaText.Heading2 textStyle={{ textAlign: 'center' }}>*/}
-          {/*  {title}*/}
-          {/*</AvaText.Heading2>*/}
-          <AvaText.Body3>
-            {displayData?.site?.domain} requests you to approve the following
-            transaction
-          </AvaText.Body3>
-        </View>
+      <AvaText.Heading1>Approval Summary</AvaText.Heading1>
+      <View
+        style={[
+          {
+            backgroundColor: theme.colorBg3,
+            marginTop: 8,
+            marginBottom: 16,
+            borderRadius: 10,
+            padding: 16
+          }
+        ]}>
+        <Row style={{ justifyContent: 'space-between' }}>
+          <AvaText.Body2>Account</AvaText.Body2>
+          <TokenAddress address={rest.fromAddress} />
+        </Row>
+        <Space y={8} />
+        {rest.contract && (
+          <Row style={{ justifyContent: 'space-between' }}>
+            <AvaText.Body1>Contract</AvaText.Body1>
+            <TokenAddress address={rest.contract} />
+          </Row>
+        )}
+        <Space y={8} />
+        <Row style={{ justifyContent: 'space-between' }}>
+          <AvaText.Body2>Website</AvaText.Body2>
+          <AvaText.ButtonMedium>https://app.avaee.com</AvaText.ButtonMedium>
+        </Row>
       </View>
-      <Row
+      <Row style={{ justifyContent: 'space-between' }}>
+        <AvaText.Body2>Spend Limit</AvaText.Body2>
+        <AvaButton.Base>
+          <AvaText.TextLink>Edit</AvaText.TextLink>
+        </AvaButton.Base>
+      </Row>
+      <View
         style={[
           {
-            marginTop: 14,
-            justifyContent: 'space-between'
+            backgroundColor: theme.colorBg3,
+            marginTop: 8,
+            marginBottom: 16,
+            borderRadius: 10,
+            padding: 16
           }
         ]}>
-        <AvaText.Body1>Approval amount</AvaText.Body1>
-        <AvaText.Body1>Unlimited</AvaText.Body1>
-      </Row>
-      <Row
-        style={[
-          {
-            marginTop: 16,
-            justifyContent: 'space-between'
-          }
-        ]}>
-        <AvaText.Body1>To</AvaText.Body1>
-        <TokenAddress address={displayData?.toAddress ?? ''} hideCopy />
-      </Row>
+        <Row style={{ justifyContent: 'space-between' }}>
+          <Row style={{ alignItems: 'center' }}>
+            {!!tokenToBeApproved?.logoURI && (
+              <Avatar.Custom
+                name={'avax'}
+                logoUri={tokenToBeApproved.logoURI}
+              />
+            )}
+            <Space x={8} />
+            <AvaText.Body3>AVAX</AvaText.Body3>
+          </Row>
+          <View style={{ alignItems: 'flex-end' }}>
+            <AvaText.Body1>
+              {displaySpendLimit} {tokenToBeApproved.symbol}
+            </AvaText.Body1>
+            <AvaText.Body3>usd amount</AvaText.Body3>
+          </View>
+        </Row>
+      </View>
       <Space y={30} />
-      <TabViewAva renderCustomLabel={renderCustomLabel}>
-        <TabViewAva.Item title={'Details'}>
-          <View
-            style={[{ backgroundColor: theme.colorBg2, marginVertical: 16 }]}>
-            <Space y={16} />
-            <NetworkFeeSelector
-              networkFeeAvax={displayData?.fee ?? '0'}
-              networkFeeUsd={displayData?.feeUSD?.toString(10) ?? '0'}
-              gasPrice={displayData?.gasPrice}
-              onWeightedGas={price => {
-                console.log(price)
-              }}
-              weights={{ normal: 1, fast: 1.05, instant: 1.15, custom: 35 }}
-              onSettingsPressed={() => {
-                // const initGasLimit = displayValues.gasLimit || 0
-                // const onCustomGasLimit = (gasLimit: number) =>
-                // fees.setGasLimit(gasLimit)
-                // navigate(AppNavigation.Modal.EditGasLimit, {
-                //   gasLimit: initGasLimit.toString(),
-                //   networkFee: netFeeString,
-                //   onSave: onCustomGasLimit
-                // })
-              }}
-            />
-          </View>
-        </TabViewAva.Item>
-        <TabViewAva.Item title={'Data'}>
-          <View style={{ flex: 1, paddingVertical: 16 }}>
-            <AvaText.Body3
-              textStyle={{
-                padding: 16,
-                backgroundColor: theme.colorBg3,
-                borderRadius: 15
-              }}>
-              {displayData?.data}
-            </AvaText.Body3>
-          </View>
-        </TabViewAva.Item>
-      </TabViewAva>
+      {gasPrice.value !== '' && gasPrice.value !== '0' && (
+        <CustomFees
+          gasPrice={rest.fees.gasPrice}
+          limit={gasLimit?.toString() ?? '0'}
+          defaultGasPrice={gasPrice}
+          onChange={onCustomFeeSet}
+          selectedGasFeeModifier={selectedGasFee}
+        />
+      )}
+      {/*<TabViewAva renderCustomLabel={renderCustomLabel}>*/}
+      {/*  <TabViewAva.Item title={'Details'}>*/}
+      {/*    <View*/}
+      {/*      style={[{ backgroundColor: theme.colorBg2, marginVertical: 16 }]}>*/}
+      {/*      {gasPrice.value !== '' && gasPrice.value !== '0' && (*/}
+      {/*        <CustomFees*/}
+      {/*          gasPrice={rest.fees.gasPrice}*/}
+      {/*          limit={rest.gasLimit?.toString() ?? '0'}*/}
+      {/*          defaultGasPrice={gasPrice}*/}
+      {/*          onChange={setCustomFee}*/}
+      {/*          selectedGasFeeModifier={selectedGasFee}*/}
+      {/*        />*/}
+      {/*      )}*/}
+      {/*    </View>*/}
+      {/*  </TabViewAva.Item>*/}
+      {/*  <TabViewAva.Item title={'Data'}>*/}
+      {/*    <View style={{ flex: 1, paddingVertical: 16 }}>*/}
+      {/*      <AvaText.Body3*/}
+      {/*        textStyle={{*/}
+      {/*          padding: 16,*/}
+      {/*          backgroundColor: theme.colorBg3,*/}
+      {/*          borderRadius: 15*/}
+      {/*        }}>*/}
+      {/*        {displayData?.data}*/}
+      {/*      </AvaText.Body3>*/}
+      {/*    </View>*/}
+      {/*  </TabViewAva.Item>*/}
+      {/*</TabViewAva>*/}
     </>
   )
 }
@@ -209,7 +240,8 @@ function RpcTransaction({
   abi,
   abiStr,
   selectedGasFee,
-  contractType
+  contractType,
+  ...rest
 }: SwapExactTokensForTokenDisplayValues) {
   const styles = createStyles()
   const theme = useApplicationContext().theme
@@ -221,139 +253,206 @@ function RpcTransaction({
 
   return (
     <>
-      <AvaText.Heading1>Transaction Approval</AvaText.Heading1>
-      <Space y={16} />
-      <View style={[{ backgroundColor: theme.colorBg2, marginVertical: 16 }]}>
+      <AvaText.Heading1>Transaction Summary</AvaText.Heading1>
+      <Space y={8} />
+      <AvaText.Body2>Approve Swimmer Network Transaction</AvaText.Body2>
+      <View
+        style={[
+          {
+            backgroundColor: theme.colorBg3,
+            marginTop: 8,
+            marginBottom: 16,
+            borderRadius: 10,
+            padding: 16
+          }
+        ]}>
         <Row style={{ justifyContent: 'space-between' }}>
-          <AvaText.Body1>Account</AvaText.Body1>
-          <AvaText.Body1>Account Name</AvaText.Body1>
+          <AvaText.Body3>Account</AvaText.Body3>
+          <AvaText.Body3>Account Name</AvaText.Body3>
         </Row>
-      </View>
-      <View style={[{ backgroundColor: theme.colorBg2, marginVertical: 16 }]}>
+        <Space y={8} />
         <Row style={{ justifyContent: 'space-between' }}>
-          <AvaText.Body1>Contract</AvaText.Body1>
+          <AvaText.Body3>Contract</AvaText.Body3>
           <TokenAddress address={contract} />
         </Row>
-      </View>
-      <AvaText.Body1>Balance Change</AvaText.Body1>
-      <View style={[{ backgroundColor: theme.colorBg2, marginVertical: 16 }]}>
+        <Space y={8} />
         <Row style={{ justifyContent: 'space-between' }}>
-          <AvaText.Body1>Transaction type</AvaText.Body1>
-          <AvaText.Body1>{abi?.func}</AvaText.Body1>
+          <AvaText.Body3>Website</AvaText.Body3>
+          <AvaText.Body2>https://app.avaae.com</AvaText.Body2>
         </Row>
       </View>
-
-      {/*{!!sentTokens.length &&*/}
-      {/*  sentTokens.map((token, index) => {*/}
-      {/*    const priceBN: BN = new BN(token.price)*/}
-      {/*    const amountBN = stringToBN(token.amount, token.decimals)*/}
-      {/*    const amountUSD = bnToLocaleString(*/}
-      {/*      priceBN.mul(amountBN),*/}
-      {/*      token.decimals*/}
-      {/*    )*/}
-      {/*    return (*/}
-      {/*      <View key={token.name}>*/}
-      {/*        <Row style={{ justifyContent: 'space-between' }}>*/}
-      {/*          <Avatar.Token token={token} />*/}
-      {/*          <AvaText.Body1>{token.symbol}</AvaText.Body1>*/}
-      {/*          <AvaText.Body1>{token.amount}</AvaText.Body1>*/}
-      {/*          {index < sentTokens.length - 1 && (*/}
-      {/*            <Row*/}
-      {/*              style={{*/}
-      {/*                width: '100%',*/}
-      {/*                justifyContent: 'center',*/}
-      {/*                marginStart: 8*/}
-      {/*              }}>*/}
-      {/*              <AddSVG color={theme.colorIcon1} size={16} />*/}
-      {/*            </Row>*/}
-      {/*          )}*/}
-      {/*        </Row>*/}
-      {/*        {isNaN(Number(amountUSD)) ? null : (*/}
-      {/*          <AvaText.Body3 currency>{amountUSD}</AvaText.Body3>*/}
-      {/*        )}*/}
-      {/*      </View>*/}
-      {/*    )*/}
-      {/*  })}*/}
-      {/*/!* arrow *!/*/}
-      {/*{!!(sentTokens.length && receivedTokens.length) && (*/}
-      {/*  <Row*/}
-      {/*    style={{*/}
-      {/*      width: '100%',*/}
-      {/*      justifyContent: 'center',*/}
-      {/*      marginStart: 8*/}
-      {/*    }}>*/}
-      {/*    <ArrowSVG size={16} color={theme.colorIcon1} rotate={180} />*/}
-      {/*  </Row>*/}
-      {/*)}*/}
-      {/*{!!receivedTokens.length &&*/}
-      {/*  receivedTokens.map((token, index) => {*/}
-      {/*    const priceBN: BN = new BN(token.price)*/}
-      {/*    const amountBN = stringToBN(token.amount, token.decimals)*/}
-      {/*    const amountUSD = bnToLocaleString(*/}
-      {/*      priceBN.mul(amountBN),*/}
-      {/*      token.decimals*/}
-      {/*    )*/}
-      {/*    return (*/}
-      {/*      <View key={token.name}>*/}
-      {/*        <Row style={{ justifyContent: 'space-between' }}>*/}
-      {/*          <Avatar.Token token={token} />*/}
-      {/*          <AvaText.Body1>{token.symbol}</AvaText.Body1>*/}
-      {/*          <AvaText.Body1>{token.amount}</AvaText.Body1>*/}
-      {/*          {index < sentTokens.length - 1 && (*/}
-      {/*            <Row*/}
-      {/*              style={{*/}
-      {/*                width: '100%',*/}
-      {/*                justifyContent: 'center',*/}
-      {/*                marginStart: 8*/}
-      {/*              }}>*/}
-      {/*              <AddSVG color={theme.colorIcon1} size={16} />*/}
-      {/*            </Row>*/}
-      {/*          )}*/}
-      {/*        </Row>*/}
-      {/*        {isNaN(Number(amountUSD)) ? null : (*/}
-      {/*          <AvaText.Body3 currency>{amountUSD}</AvaText.Body3>*/}
-      {/*        )}*/}
-      {/*      </View>*/}
-      {/*    )*/}
-      {/*  })}*/}
-      <TabViewAva renderCustomLabel={renderCustomLabel}>
-        <TabViewAva.Item title={'Details'}>
-          <View
-            style={[{ backgroundColor: theme.colorBg3, marginVertical: 16 }]}>
-            <Space y={16} />
-            {/*<CustomFees*/}
-            {/*  gasPrice={gasPrice}*/}
-            {/*  limit={gasLimit?.toString() ?? '0'}*/}
-            {/*  onChange={onCustomFeeSet}*/}
-            {/*  selectedGasFeeModifier={selectedGasFee}*/}
-            {/*/>*/}
-          </View>
-        </TabViewAva.Item>
-        <TabViewAva.Item title={'Data'}>
-          {abi && (
-            <Row style={{ justifyContent: 'space-between' }}>
-              <AvaText.Body1>Function</AvaText.Body1>
-              <AvaText.Body1>{abi.func}</AvaText.Body1>
-            </Row>
-          )}
+      <AvaText.Body2>Balance Change</AvaText.Body2>
+      <View
+        style={[
+          {
+            backgroundColor: theme.colorBg3,
+            marginTop: 8,
+            marginBottom: 16,
+            borderRadius: 10,
+            padding: 16
+          }
+        ]}>
+        <Row style={{ justifyContent: 'space-between' }}>
+          <AvaText.Body3>Transaction type</AvaText.Body3>
+          <AvaText.Body3>{abi?.func}</AvaText.Body3>
+        </Row>
+        <Space y={8} />
+        <Separator color={theme.colorDisabled} />
+        <Space y={12} />
+        {!!abi?.fun?.includes('approve') && (
           <Row style={{ justifyContent: 'space-between' }}>
-            <AvaText.Body1>Hex Data:</AvaText.Body1>
-            <AvaText.Body1>
-              {getHexStringToBytes(txParams?.data)} Bytes
-            </AvaText.Body1>
+            <Row style={{ alignItems: 'center' }}>
+              <Avatar.Custom name={'avax'} symbol={'AVAX'} />
+              <Space x={8} />
+              <AvaText.Body3>AVAX</AvaText.Body3>
+            </Row>
+            <View style={{ alignItems: 'flex-end' }}>
+              <AvaText.Body1>4,000.2334 AVAX</AvaText.Body1>
+              <AvaText.Body3>$0.32 USD</AvaText.Body3>
+            </View>
           </Row>
-          <View style={{ flex: 1, paddingVertical: 14 }}>
-            <AvaText.Body3
-              textStyle={{
-                padding: 16,
-                backgroundColor: theme.colorBg3,
-                borderRadius: 15
-              }}>
-              {dataString}
-            </AvaText.Body3>
-          </View>
-        </TabViewAva.Item>
-      </TabViewAva>
+        )}
+
+        {!!sentTokens?.length &&
+          sentTokens.map((token, index) => {
+            const priceBN: BN = new BN(token.price)
+            const amountBN = stringToBN(token.amount, token.decimals)
+            const amountUSD = bnToLocaleString(
+              priceBN.mul(amountBN),
+              token.decimals
+            )
+            return (
+              <View key={token.name}>
+                <Row style={{ justifyContent: 'space-between' }}>
+                  <Row style={{ alignItems: 'center' }}>
+                    <Avatar.Token token={token} />
+                    <Space x={16} />
+                    <AvaText.Body1>{token.symbol}</AvaText.Body1>
+                  </Row>
+                  <View style={{ alignItems: 'flex-end' }}>
+                    <AvaText.Body1>
+                      {token.amount} {token.symbol}
+                    </AvaText.Body1>
+                    {isNaN(Number(amountUSD)) ? null : (
+                      <AvaText.Body3 color={'white'} currency>
+                        {amountUSD}
+                      </AvaText.Body3>
+                    )}
+                  </View>
+                  {index < sentTokens.length - 1 && (
+                    <Row
+                      style={{
+                        width: '100%',
+                        justifyContent: 'center',
+                        marginStart: 8
+                      }}>
+                      <AddSVG color={theme.colorIcon1} size={16} />
+                    </Row>
+                  )}
+                </Row>
+              </View>
+            )
+          })}
+        {/* arrow */}
+        {!!(sentTokens.length && receivedTokens.length) && (
+          <Row
+            style={{
+              width: '100%',
+              marginStart: 8,
+              paddingVertical: 10
+            }}>
+            <ArrowSVG size={16} color={theme.colorIcon1} rotate={0} />
+          </Row>
+        )}
+        {!!receivedTokens?.length &&
+          receivedTokens.map((token, index: number) => {
+            const priceBN: BN = new BN(token.price)
+            const amountBN = stringToBN(token.amount, token.decimals)
+            const amountUSD = bnToLocaleString(
+              priceBN.mul(amountBN),
+              token.decimals
+            )
+            return (
+              <View key={token.name}>
+                <Row style={{ justifyContent: 'space-between' }}>
+                  <Row style={{ alignItems: 'center' }}>
+                    <Avatar.Token token={token} />
+                    <Space x={16} />
+                    <AvaText.Body1>{token.symbol}</AvaText.Body1>
+                  </Row>
+                  <View style={{ alignItems: 'flex-end' }}>
+                    <AvaText.Body1>
+                      {token.amount} {token.symbol}
+                    </AvaText.Body1>
+                    {isNaN(Number(amountUSD)) ? null : (
+                      <AvaText.Body3 color={'white'} currency>
+                        {amountUSD}
+                      </AvaText.Body3>
+                    )}
+                  </View>
+                  {index < sentTokens.length - 1 && (
+                    <Row
+                      style={{
+                        width: '100%',
+                        justifyContent: 'center',
+                        marginStart: 8
+                      }}>
+                      <AddSVG color={theme.colorIcon1} size={16} />
+                    </Row>
+                  )}
+                </Row>
+              </View>
+            )
+          })}
+      </View>
+      <Space y={16} />
+      {gasPrice.value !== '' && gasPrice.value !== '0' && (
+        <CustomFees
+          gasPrice={rest.fees.gasPrice}
+          limit={gasLimit?.toString() ?? '0'}
+          defaultGasPrice={gasPrice}
+          onChange={onCustomFeeSet}
+          selectedGasFeeModifier={selectedGasFee}
+        />
+      )}
+      {/*<TabViewAva renderCustomLabel={renderCustomLabel}>*/}
+      {/*  <TabViewAva.Item title={'Details'}>*/}
+      {/*    <View*/}
+      {/*      style={[{ backgroundColor: theme.colorBg3, marginVertical: 16 }]}>*/}
+      {/*      <Space y={16} />*/}
+      {/*      <CustomFees*/}
+      {/*        gasPrice={gasPrice}*/}
+      {/*        limit={gasLimit?.toString() ?? '0'}*/}
+      {/*        onChange={onCustomFeeSet}*/}
+      {/*        selectedGasFeeModifier={selectedGasFee}*/}
+      {/*      />*/}
+      {/*    </View>*/}
+      {/*  </TabViewAva.Item>*/}
+      {/*  <TabViewAva.Item title={'Data'}>*/}
+      {/*    {abi && (*/}
+      {/*      <Row style={{ justifyContent: 'space-between' }}>*/}
+      {/*        <AvaText.Body1>Function</AvaText.Body1>*/}
+      {/*        <AvaText.Body1>{abi.func}</AvaText.Body1>*/}
+      {/*      </Row>*/}
+      {/*    )}*/}
+      {/*    <Row style={{ justifyContent: 'space-between' }}>*/}
+      {/*      <AvaText.Body1>Hex Data:</AvaText.Body1>*/}
+      {/*      <AvaText.Body1>*/}
+      {/*        {getHexStringToBytes(txParams?.data)} Bytes*/}
+      {/*      </AvaText.Body1>*/}
+      {/*    </Row>*/}
+      {/*    <View style={{ flex: 1, paddingVertical: 14 }}>*/}
+      {/*      <AvaText.Body3*/}
+      {/*        textStyle={{*/}
+      {/*          padding: 16,*/}
+      {/*          backgroundColor: theme.colorBg3,*/}
+      {/*          borderRadius: 15*/}
+      {/*        }}>*/}
+      {/*        {dataString}*/}
+      {/*      </AvaText.Body3>*/}
+      {/*    </View>*/}
+      {/*  </TabViewAva.Item>*/}
+      {/*</TabViewAva>*/}
     </>
   )
 }

@@ -4,7 +4,10 @@ import WalletConnect from 'WalletConnect'
 import AccountApproval from 'screens/rpc/AccountApproval'
 import SignTransaction from 'screens/rpc/SignTransaction'
 import { Action, MessageType } from 'navigation/messages/models'
-import { useAccountsContext } from '@avalabs/wallet-react-components'
+import {
+  useAccountsContext,
+  useNetworkContext
+} from '@avalabs/wallet-react-components'
 import { useGasPrice } from 'utils/GasPriceHook'
 import { paramsToMessageParams } from 'rpc/paramsToMessageParams'
 import SignMessage from 'screens/rpc/SignMessage/SignMessage'
@@ -12,6 +15,9 @@ import BottomSheet from 'components/BottomSheet'
 import { ShowSnackBar } from 'components/Snackbar'
 import Spinner from 'components/Spinner'
 import { txToCustomEvmTx } from 'rpc/txToCustomEvmTx'
+
+const mockPayload =
+  '{ "id": 1653340588465308, "jsonrpc": "2.0", "method": "eth_sendTransaction", "params": [ { "gas": "0xebcd", "value": "0x0", "from": "0x341b0073b66bfc19fcb54308861f604f5eb8f51b", "to": "0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7", "data": "0x095ea7b30000000000000000000000004f01aed16d97e3ab5ab2b501154dc9bb0f1a5a2cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" } ] }'
 
 const RpcMethodsUI: FC = () => {
   const [signingCallRequest, setSigningCallRequest] = useState(false)
@@ -22,9 +28,38 @@ const RpcMethodsUI: FC = () => {
   const [currentPageMeta, setCurrentPageMeta] = useState<any>({})
   const { activeAccount } = useAccountsContext()
   const wallet = activeAccount?.wallet
+  const network = useNetworkContext()?.network
   const { gasPrice } = useGasPrice()
 
   const [loading, setLoading] = useState(false)
+
+  // useEffect(() => {
+  //   InteractionManager.runAfterInteractions(() => {
+  //     const payload = JSON.parse(mockPayload)
+  //     setCurrentPageMeta({
+  //       domain: 'https://app.aave.com',
+  //       name: 'Aave',
+  //       icon: ''
+  //     })
+  //     setCallRequestPayload(payload)
+  //     const { method } = payload
+  //     switch (method) {
+  //       case MessageType.ETH_SEND:
+  //         setTransactionCallRequest(true)
+  //         break
+  //       case MessageType.ETH_SIGN:
+  //       case MessageType.SIGN_TYPED_DATA:
+  //       case MessageType.SIGN_TYPED_DATA_V1:
+  //       case MessageType.SIGN_TYPED_DATA_V3:
+  //       case MessageType.SIGN_TYPED_DATA_V4:
+  //       case MessageType.PERSONAL_SIGN: {
+  //         const displayData = paramsToMessageParams(payload)
+  //         setSignMessageParams({ ...payload, displayData })
+  //         setSigningCallRequest(true)
+  //       }
+  //     }
+  //   })
+  // }, [])
 
   const initializeWalletConnect = () => {
     WalletConnect.hub.on('walletconnectSessionRequest', peerInfo => {
@@ -56,34 +91,6 @@ const RpcMethodsUI: FC = () => {
     })
     WalletConnect.init()
   }
-
-  // const showPendingApprovalModal = ({
-  //   type,
-  //   origin
-  // }: {
-  //   type: MessageType
-  //   origin: DEEPLINKS
-  // }) => {
-  //   InteractionManager.runAfterInteractions(() => {
-  //     setShowPendingApproval({ type, origin })
-  //   })
-  // }
-
-  // const onUnapprovedMessage = (
-  //   messageParams: any,
-  //   type: MessageType,
-  //   origin: DEEPLINKS
-  // ) => {
-  //   setCurrentPageMeta(messageParams.meta)
-  //   const signMessageParams = { ...messageParams }
-  //   delete signMessageParams.meta
-  //   // setSignMessageParams(signMessageParams)
-  //   // setSignType(type)
-  //   showPendingApprovalModal({
-  //     type: MessageType.SIGN_TYPED_DATA,
-  //     origin: origin
-  //   })
-  // }
 
   async function signMessage(messageType: MessageType, data: any) {
     console.log('messageType', messageType)

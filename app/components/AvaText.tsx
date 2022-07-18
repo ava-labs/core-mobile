@@ -218,9 +218,14 @@ const TextBody3: FC<AvaTextProps> = ({
   children,
   ...rest
 }) => {
+  const { theme } = useApplicationContext()
   return (
     <AvaxTextBase
-      style={[styles.body3, textStyle, !!color && { color: color }]}
+      style={[
+        styles.body3,
+        textStyle,
+        !!color && { color: color ?? theme.colorText1 }
+      ]}
       {...rest}>
       {children}
     </AvaxTextBase>

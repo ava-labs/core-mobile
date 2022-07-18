@@ -80,7 +80,8 @@ enum SecurityPrivacyScreens {
   CreatePin = 'SecurityPrivacyScreens.CreatePin',
   ShowRecoveryPhrase = 'SecurityPrivacyScreens.ShowRecoveryPhrase',
   TurnOnBiometrics = 'SecurityPrivacyScreens.TurnOnBiometrics',
-  RecoveryPhrase = 'SecurityPrivacyScreens.RecoveryPhrase'
+  RecoveryPhrase = 'SecurityPrivacyScreens.RecoveryPhrase',
+  DappList = 'SecurityPrivacyScreens.DappList'
 }
 
 enum AdvancedScreens {

@@ -4,7 +4,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { parseWalletConnectUri } from '@walletconnect/utils'
 import { firstValueFrom } from 'rxjs'
 import { activeAccount$, network$ } from '@avalabs/wallet-react-components'
-import { ISessionStatus, IWalletConnectOptions } from '@walletconnect/types'
+import {
+  ISessionStatus,
+  IWalletConnectOptions,
+  IWalletConnectSession
+} from '@walletconnect/types'
 
 export const CLIENT_OPTIONS = {
   clientMeta: {
@@ -59,9 +63,9 @@ const waitForInitialization = async () => {
 
 class WalletConnect {
   autoSign = false
-  url = { current: null }
-  title = { current: null }
-  icon = { current: null }
+  url = null
+  title = null
+  icon = null
   hostname = null
   requestOriginatedFrom?: string
   walletConnectClient: WalletConnectClient | null
@@ -75,13 +79,53 @@ class WalletConnect {
       this.requestOriginatedFrom = options.session.requestOriginatedFrom
     }
 
-    const connOptions = {
-      ...options,
-      ...CLIENT_OPTIONS
-    } as unknown as IWalletConnectOptions
+    // bridge?: string;
+    // uri?: string;
+    // storageId?: string;
+    // signingMethods?: string[];
+    // session?: IWalletConnectSession;
+    // storage?: ISessionStorage;
+    // clientMeta?: IClientMeta;
+    // qrcodeModal?: IQRCodeModal;
+    // qrcodeModalOptions?: IQRCodeModalOptions;
+
+    // export interface IWalletConnectSession {
+    //   connected: boolean;
+    //   accounts: string[];
+    //   chainId: number;
+    //   bridge: string;
+    //   key: string;
+    //   clientId: string;
+    //   clientMeta: IClientMeta | null;
+    //   peerId: string;
+    //   peerMeta: IClientMeta | null;
+    //   handshakeId: number;
+    //   handshakeTopic: string;
+    // }
+
+    if (existing) {
+      const connOptions = {
+        bridge: options.bridge,
+        session: options,
+        ...CLIENT_OPTIONS
+      } as unknown as IWalletConnectOptions
+      this.walletConnectClient = new WalletConnectClient({ ...connOptions })
+    } else {
+      const connOptions = {
+        ...options,
+        ...CLIENT_OPTIONS
+      } as unknown as IWalletConnectOptions
+      this.walletConnectClient = new WalletConnectClient({ ...connOptions })
+    }
 
     //init wallet
-    this.walletConnectClient = new WalletConnectClient({ ...connOptions })
+
+    this.walletConnectClient.on('connect', (error, payload) => {
+      if (error) {
+        console.error(error)
+      }
+      console.log('onConnect Payload', payload)
+    })
     this.walletConnectClient.on('session_request', async (error, payload) => {
       if (error) {
         console.error(error)
@@ -97,7 +141,9 @@ class WalletConnect {
         }
 
         await waitForInitialization()
-        await this.sessionRequest(sessionData)
+        if (!existing) {
+          await this.sessionRequest(sessionData)
+        }
         this.startSession(sessionData, existing)
       } catch (e) {
         // todo log error
@@ -157,7 +203,7 @@ class WalletConnect {
         throw error
       }
       this.killSession()
-      // persistSessions()
+      persistSessions()
     })
 
     /**
@@ -228,7 +274,7 @@ class WalletConnect {
       this.walletConnectClient?.updateSession(approveData)
     } else {
       await this.walletConnectClient?.approveSession(approveData)
-      // persistSessions()
+      persistSessions()
     }
   }
 }
@@ -289,7 +335,7 @@ const instance = {
         connector.walletConnectClient.session.peerId !== id
     )
     // 3) Persist the list
-    // await persistSessions()
+    await persistSessions()
   },
   hub,
   isSessionConnected(uri: string) {
@@ -308,6 +354,58 @@ const instance = {
       return false
     }
     return true
+  },
+  updateSessions(addressC: string, chainId: string) {
+    connectors.forEach(connector => {
+      if (connector.walletConnectClient?.connected) {
+        connector.walletConnectClient?.updateSession({
+          chainId: parseInt(chainId),
+          accounts: [addressC]
+        })
+      }
+    })
+  },
+  async getConnections(): Promise<
+    { session: IWalletConnectSession; killSession: () => Promise<void> }[]
+  > {
+    // const sessionData = await AsyncStorage.getItem(WALLETCONNECT_SESSIONS)
+    // if (sessionData) {
+    //   return JSON.parse(sessionData) as IWalletConnectSession[]
+    // }
+
+    // return []
+    return (
+      connectors?.map(conn => {
+        return {
+          session: conn.walletConnectClient?.session as IWalletConnectSession,
+          killSession: () =>
+            this.killSession(conn.walletConnectClient?.peerId ?? '')
+        }
+        // return {
+        //   title: conn.walletConnectClient?.peerMeta?.name,
+        //   icon: conn.walletConnectClient?.peerMeta?.icons?.[0],
+        //   url: conn.walletConnectClient?.peerMeta?.url,
+        //   connected: conn.walletConnectClient?.connected,
+        //   killSession: () => conn.killSession()
+        // }
+      }) ?? []
+    )
+  },
+  async killAllSessions() {
+    connectors?.map(conn => {
+      if (conn.walletConnectClient?.session?.peerId)
+        this.killSession(conn.walletConnectClient?.session?.peerId)
+    })
+
+    persistSessions()
+    // const sessionData = await AsyncStorage.getItem(WALLETCONNECT_SESSIONS)
+    // if (sessionData) {
+    //   const sessions = JSON.parse(sessionData)
+    //   sessions.forEach((session: SessionOptions) => {
+    //     connectors.push(new WalletConnect(session, true))
+    //   })
+    // }
+    //
   }
 }
 

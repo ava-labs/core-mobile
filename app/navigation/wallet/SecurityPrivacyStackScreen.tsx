@@ -10,6 +10,7 @@ import { createStackNavigator } from '@react-navigation/stack'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import RevealMnemonic from 'navigation/wallet/RevealMnemonic'
 import { SecurityPrivacyScreenProps } from 'navigation/types'
+import ConnectedDapps from 'screens/rpc/ConnectedDapps'
 
 export type SecurityStackParamList = {
   [AppNavigation.SecurityPrivacy.SecurityPrivacy]: undefined
@@ -18,6 +19,7 @@ export type SecurityStackParamList = {
   [AppNavigation.SecurityPrivacy.ShowRecoveryPhrase]: undefined
   [AppNavigation.SecurityPrivacy.TurnOnBiometrics]: undefined
   [AppNavigation.SecurityPrivacy.RecoveryPhrase]: { mnemonic: string }
+  [AppNavigation.SecurityPrivacy.DappList]: undefined
 }
 
 const SecurityStack = createStackNavigator<SecurityStackParamList>()
@@ -61,6 +63,11 @@ function SecurityPrivacyStackScreen(): JSX.Element {
           name={AppNavigation.SecurityPrivacy.RecoveryPhrase}
           component={RevealMnemonic}
         />
+        <SecurityStack.Screen
+          options={MainHeaderOptions('Connected Sites')}
+          name={AppNavigation.SecurityPrivacy.DappList}
+          component={ConnectedDapps}
+        />
       </SecurityStack.Group>
     </SecurityStack.Navigator>
   )
@@ -81,6 +88,9 @@ const SecurityPrivacyScreen = () => {
       onTurnOnBiometrics={() =>
         nav.navigate(AppNavigation.SecurityPrivacy.TurnOnBiometrics)
       }
+      onShowConnectedDapps={() => {
+        nav.navigate(AppNavigation.SecurityPrivacy.DappList)
+      }}
     />
   )
 }
