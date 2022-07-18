@@ -15,8 +15,7 @@ import { Space } from 'components/Space'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import { RefreshControl } from 'components/RefreshControl'
 import { fetchNfts, NFTItemData } from 'store/nft'
-import { StackNavigationProp } from '@react-navigation/stack'
-import { WalletScreenStackParams } from 'navigation/WalletScreenStack'
+import { PortfolioScreenProps } from 'navigation/types'
 import InactiveNetworkCard from './components/Cards/InactiveNetworkCard'
 import { PortfolioTokensLoader } from './components/Loaders/PortfolioTokensLoader'
 import PortfolioHeader from './components/PortfolioHeader'
@@ -91,9 +90,12 @@ const TokensTab = () => {
   )
 }
 
+type PortfolioNavigationProp = PortfolioScreenProps<
+  typeof AppNavigation.Portfolio.Portfolio
+>['navigation']
+
 const NftTab = () => {
-  const { navigate } =
-    useNavigation<StackNavigationProp<WalletScreenStackParams>>()
+  const { navigate } = useNavigation<PortfolioNavigationProp>()
   const activeAccount = useSelector(selectActiveAccount)
   const network = useSelector(selectActiveNetwork)
   const dispatch = useDispatch()
