@@ -12,8 +12,17 @@ export function getNftUID(nft: Erc721TokenBalanceDto): NftUID {
 export class NftService {
   providers: NftProvider[] = [glacierNftProvider, covalentNftProvider]
 
-  getProvider(chainId: number): NftProvider | undefined {
+  private getProvider(chainId: number): NftProvider | undefined {
     return this.providers.find(value => value.isProviderFor(chainId))
+  }
+
+  /**
+   * @throws {@link Error}
+   */
+  fetchNft(chainId: number, address: string, selectedCurrency: string) {
+    const provider = this.getProvider(chainId)
+    if (!provider) throw Error('no available providers')
+    return provider.fetchNfts(chainId, address, selectedCurrency)
   }
 }
 
