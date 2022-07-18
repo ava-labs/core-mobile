@@ -1,7 +1,7 @@
 import React, { FC } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { Action, MessageType } from 'screens/rpc/walletconnect/types'
+import { Action, MessageType } from 'services/walletconnect/types'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'

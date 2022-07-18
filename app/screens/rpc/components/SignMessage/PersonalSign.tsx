@@ -3,7 +3,7 @@ import { View } from 'react-native'
 import { ApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
-import { Action } from 'screens/rpc/walletconnect/types'
+import { Action } from 'services/walletconnect/types'
 import { toUtf8 } from 'ethereumjs-util'
 
 interface Props {

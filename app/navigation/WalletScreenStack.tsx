@@ -64,9 +64,7 @@ import AddEditNetwork, {
 } from 'screens/network/AddEditNetwork'
 import { Transaction } from 'store/transaction'
 import { TokenWithBalance } from 'store/balance'
-import { DEEPLINKS } from 'navigation/messages/models'
 import RpcMethodsUI from 'screens/rpc/RpcMethodsUI'
-import WalletConnect from 'screens/rpc/walletconnect/WalletConnect'
 import { useDeepLinking } from 'navigation/useDeepLinking'
 import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin'
 import { BridgeStackParamList } from './wallet/BridgeScreenStack'
@@ -182,7 +180,7 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
   )
 
   // init linking listeners
-  useDeepLinking(!timeoutPassed)
+  useDeepLinking(!showSecurityModal)
 
   const onExit = (): void => {
     props.onExit()

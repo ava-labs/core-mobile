@@ -1,7 +1,7 @@
 import React, { FC, useEffect, useState } from 'react'
 import { FlatList } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import WalletConnect from 'screens/rpc/walletconnect/WalletConnect'
+import WalletConnect from 'services/walletconnect/WalletConnect'
 import Avatar from 'components/Avatar'
 import AvaButton from 'components/AvaButton'
 import { IWalletConnectSession } from '@walletconnect/types'
