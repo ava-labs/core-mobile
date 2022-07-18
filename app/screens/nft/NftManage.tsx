@@ -10,11 +10,15 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import Switch from 'components/Switch'
 import { NFTItemData, saveNFT, selectNftCollection } from 'store/nft'
 import { useDispatch, useSelector } from 'react-redux'
+import { selectActiveNetwork } from 'store/network'
+import { selectActiveAccount } from 'store/account'
 
 const NftManage = () => {
   const { theme } = useApplicationContext()
   const [searchText, setSearchText] = useState('')
   const dispatch = useDispatch()
+  const network = useSelector(selectActiveNetwork)
+  const account = useSelector(selectActiveAccount)
   const nfts = useSelector(selectNftCollection)
 
   const filteredData = useMemo(() => {
@@ -31,13 +35,15 @@ const NftManage = () => {
     setSearchText(searchVal)
   }
 
-  const onItemToggled = (item: NFTItemData, isVisible: boolean) => {
-    item.isShowing = isVisible
+  const onItemToggled = (item: NFTItemData) => {
     dispatch(
       saveNFT({
         chainId: network.chainId,
         address: account!.address,
-        token: item
+        token: {
+          ...item,
+          isShowing: !item.isShowing
+        }
       })
     )
   }
@@ -60,7 +66,7 @@ const NftManage = () => {
 
 const renderItemList = (
   item: NFTItemData,
-  onItemToggled: (item: NFTItemData, isVisible: boolean) => void,
+  onItemToggled: (item: NFTItemData) => void,
   theme: typeof COLORS_DAY | typeof COLORS_NIGHT
 ) => {
   return (
@@ -77,7 +83,7 @@ const renderItemList = (
         rightComponent={
           <Switch
             value={item.isShowing}
-            onValueChange={value => onItemToggled(item, value)}
+            onValueChange={_ => onItemToggled(item)}
           />
         }
       />
