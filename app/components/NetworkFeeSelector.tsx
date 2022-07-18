@@ -138,33 +138,37 @@ const NetworkFeeSelector = ({
           onSelect={() => setSelectedPreset(FeePreset.Normal)}
           value={displayGasValues[FeePreset.Normal]}
         />
-        <FeeSelector
-          label={isBtcNetwork ? 'Medium' : FeePreset.Fast}
-          selected={selectedPreset === FeePreset.Fast}
-          onSelect={() => setSelectedPreset(FeePreset.Fast)}
-          value={displayGasValues[FeePreset.Fast]}
-        />
-        <FeeSelector
-          label={isBtcNetwork ? 'Fast' : FeePreset.Instant}
-          selected={selectedPreset === FeePreset.Instant}
-          onSelect={() => setSelectedPreset(FeePreset.Instant)}
-          value={displayGasValues[FeePreset.Instant]}
-        />
-        <FeeSelector
-          editable
-          label={FeePreset.Custom}
-          selected={selectedPreset === FeePreset.Custom}
-          onSelect={() => setSelectedPreset(FeePreset.Custom)}
-          value={displayGasValues[FeePreset.Custom]}
-          onValueEntered={value =>
-            setCustomGasPrice(
-              bigToEthersBigNumber(
-                new Big(value || 0),
-                networkFee.displayDecimals
-              )
-            )
-          }
-        />
+        {!networkFee?.isFixedFee && (
+          <>
+            <FeeSelector
+              label={isBtcNetwork ? 'Medium' : FeePreset.Fast}
+              selected={selectedPreset === FeePreset.Fast}
+              onSelect={() => setSelectedPreset(FeePreset.Fast)}
+              value={displayGasValues[FeePreset.Fast]}
+            />
+            <FeeSelector
+              label={isBtcNetwork ? 'Fast' : FeePreset.Instant}
+              selected={selectedPreset === FeePreset.Instant}
+              onSelect={() => setSelectedPreset(FeePreset.Instant)}
+              value={displayGasValues[FeePreset.Instant]}
+            />
+            <FeeSelector
+              editable
+              label={FeePreset.Custom}
+              selected={selectedPreset === FeePreset.Custom}
+              onSelect={() => setSelectedPreset(FeePreset.Custom)}
+              value={displayGasValues[FeePreset.Custom]}
+              onValueEntered={value =>
+                setCustomGasPrice(
+                  bigToEthersBigNumber(
+                    new Big(value || 0),
+                    networkFee.displayDecimals
+                  )
+                )
+              }
+            />
+          </>
+        )}
       </Row>
       <Space y={20} />
       <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
