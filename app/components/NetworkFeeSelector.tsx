@@ -177,7 +177,7 @@ const NetworkFeeSelector = ({
   )
 }
 
-const FeeSelector: FC<{
+export const FeeSelector: FC<{
   label: string
   value?: string
   selected: boolean
