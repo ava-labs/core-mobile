@@ -9,6 +9,7 @@ import { ethers } from 'ethers'
 import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
 
 const UNKNOWN_TOKEN = (address: string): TokenWithBalanceERC20 => ({
+  id: 'UNKNOWN TOKEN',
   address,
   type: TokenType.ERC20,
   contractType: 'ERC-20',
@@ -16,7 +17,11 @@ const UNKNOWN_TOKEN = (address: string): TokenWithBalanceERC20 => ({
   symbol: '-',
   balance: new BN(0),
   decimals: 0,
-  description: ''
+  description: '',
+  priceInCurrency: 0,
+  marketCap: 0,
+  change24: 0,
+  vol24: 0
 })
 
 export async function findToken(
@@ -58,10 +63,15 @@ export async function findToken(
   const balance = await contract.balanceOf(activeAccount.address)
 
   return {
+    id: `${activeNetwork?.chainId} - ${tokenData.address}`,
     ...tokenData,
     balance: balance,
     type: TokenType.ERC20,
     contractType: 'ERC-20',
-    description: ''
+    description: '',
+    priceInCurrency: 0,
+    marketCap: 0,
+    change24: 0,
+    vol24: 0
   }
 }
