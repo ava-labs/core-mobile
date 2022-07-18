@@ -1,5 +1,5 @@
 import AvaText from 'components/AvaText'
-import React, { FC, useEffect, useState } from 'react'
+import React, { FC, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Avatar from 'components/Avatar'
@@ -7,15 +7,16 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import OvalTagBg from 'components/OvalTagBg'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
-import { useAccountsContext } from '@avalabs/wallet-react-components'
 import { NativeViewGestureHandler } from 'react-native-gesture-handler'
 import FlexSpacer from 'components/FlexSpacer'
 import { Row } from 'components/Row'
-import { Account } from 'dto/Account'
 import CarrotSVG from 'components/svg/CarrotSVG'
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import AccountItem from 'screens/portfolio/account/AccountItem'
 import { PeerMetadata } from 'screens/rpc/util/types'
+import { useDispatch, useSelector } from 'react-redux'
+import { Account, selectAccounts, setActiveAccountIndex } from 'store/account'
+import { useActiveAccount } from 'hooks/useActiveAccount'
 
 interface Props {
   peerMeta: PeerMetadata
@@ -25,23 +26,13 @@ interface Props {
 
 const AccountApproval: FC<Props> = ({ peerMeta, onApprove, onReject }) => {
   const theme = useApplicationContext().theme
-  const { accounts, setActiveAccount } =
-    useApplicationContext().repo.accountsRepo
-  const accountsContext = useAccountsContext()
-  const [currentAccount, setCurrentAccount] = useState<Account | undefined>()
+  const accounts = useSelector(selectAccounts)
+  const activeAccount = useActiveAccount()
+  const dispatch = useDispatch()
   const [toggleAccountList, setToggleAccountList] = useState(false)
 
-  useEffect(() => {
-    const ac = [...accounts.values()].find(acc => acc.active)
-    setCurrentAccount(ac)
-  }, [accounts])
-
   const onSelectAccount = (accountIndex: number) => {
-    accountsContext.activateAccount(accountIndex)
-    setActiveAccount(accountIndex)
-    setCurrentAccount(
-      [...accounts.values()].find(acc => acc.index === accountIndex)
-    )
+    dispatch(setActiveAccountIndex(accountIndex))
   }
 
   return (
@@ -63,14 +54,8 @@ const AccountApproval: FC<Props> = ({ peerMeta, onApprove, onReject }) => {
             <AvaText.Heading2 textStyle={{ textAlign: 'center' }}>
               {peerMeta.name}
             </AvaText.Heading2>
-            <AvaText.Body3>{peerMeta.url}</AvaText.Body3>
+            <AvaText.Body3 color={theme.colorText1}>{peerMeta.url}</AvaText.Body3>
           </View>
-          <Space y={16} />
-          {/*<AvaText.Body2 color={theme.colorError}>*/}
-          {/*  By clicking connect, you allow this dapp to view your public*/}
-          {/*  address. This is an important security step to protect your data*/}
-          {/*  from potential phishing risks*/}
-          {/*</AvaText.Body2>*/}
           <Space y={16} />
         </View>
         <Row
@@ -86,7 +71,7 @@ const AccountApproval: FC<Props> = ({ peerMeta, onApprove, onReject }) => {
               <AvaText.Heading3
                 ellipsizeMode={'middle'}
                 textStyle={{ marginRight: 16 }}>
-                {currentAccount?.title}
+                {activeAccount?.title}
               </AvaText.Heading3>
               <CarrotSVG
                 color={theme.colorText1}
@@ -100,8 +85,10 @@ const AccountApproval: FC<Props> = ({ peerMeta, onApprove, onReject }) => {
             <Space y={4} />
             <BottomSheetFlatList
               style={{ minHeight: 200 }}
-              data={[...accounts.values()]}
-              renderItem={info => renderAccountItem(info.item, onSelectAccount)}
+              data={Object.values(accounts)}
+              renderItem={info =>
+                renderAccountItem(info.item, onSelectAccount, activeAccount)
+              }
             />
           </>
         )}
@@ -125,14 +112,15 @@ const AccountApproval: FC<Props> = ({ peerMeta, onApprove, onReject }) => {
 
 const renderAccountItem = (
   account: Account,
-  onSelectAccount: (accountIndex: number) => void
+  onSelectAccount: (accountIndex: number) => void,
+  activeAccount?: Account
 ) => {
   return (
     <AccountItem
       key={account.title}
       account={account}
       editable={false}
-      selected={account.active}
+      selected={account.index === activeAccount?.index}
       onSelectAccount={onSelectAccount}
     />
   )

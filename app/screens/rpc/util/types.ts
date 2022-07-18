@@ -31,6 +31,7 @@ export interface DisplayValueParserProps {
 }
 
 export interface PeerMetadata {
+  peerId: string,
   url: string
   name?: string
   icon?: string

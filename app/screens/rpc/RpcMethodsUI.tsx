@@ -24,7 +24,7 @@ const RpcMethodsUI = () => {
     const isEventTx = eventType === RPC_EVENT.TRANSACTION
     return (
       <BottomSheet
-        snapPoints={['0%', '90%']}
+        snapPoints={['0%', '95%']}
         snapTo={isEventTx ? 1 : 0}
         disablePanningGesture
         children={
@@ -64,10 +64,10 @@ const RpcMethodsUI = () => {
   }
 
   function renderSignMessage() {
-    const isEventSign = eventType === RPC_EVENT.SESSION
+    const isEventSign = eventType === RPC_EVENT.SIGN
     return (
       <BottomSheet
-        snapPoints={['0%', '75%']}
+        snapPoints={['0%', '95%']}
         snapTo={isEventSign ? 1 : 0}
         disablePanningGesture
         children={

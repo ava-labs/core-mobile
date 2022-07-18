@@ -66,7 +66,6 @@ import { Transaction } from 'store/transaction'
 import { TokenWithBalance } from 'store/balance'
 import RpcMethodsUI from 'screens/rpc/RpcMethodsUI'
 import { useDeepLinking } from 'navigation/useDeepLinking'
-import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin'
 import { BridgeStackParamList } from './wallet/BridgeScreenStack'
 import {
   BridgeTransactionStatusParams,
@@ -362,18 +361,18 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
         {BottomSheetGroup}
       </WalletScreenS.Navigator>
       <RpcMethodsUI />
-      <Modal visible={showSecurityModal} animationType={'slide'}>
-        <PinOrBiometryLogin
-          onSignInWithRecoveryPhrase={() => {
-            signOut().then(() => {
-              context.appNavHook.resetNavToEnterMnemonic()
-            })
-          }}
-          onLoginSuccess={() => {
-            dispatch(onAppUnlocked())
-          }}
-        />
-      </Modal>
+      {/*<Modal visible={showSecurityModal} animationType={'slide'}>*/}
+      {/*  <PinOrBiometryLogin*/}
+      {/*    onSignInWithRecoveryPhrase={() => {*/}
+      {/*      signOut().then(() => {*/}
+      {/*        context.appNavHook.resetNavToEnterMnemonic()*/}
+      {/*      })*/}
+      {/*    }}*/}
+      {/*    onLoginSuccess={() => {*/}
+      {/*      dispatch(onAppUnlocked())*/}
+      {/*    }}*/}
+      {/*  />*/}
+      {/*</Modal>*/}
     </>
   )
 }

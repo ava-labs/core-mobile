@@ -22,6 +22,7 @@ interface Props {
 
 const SignMessage: FC<Props> = ({ action, onRejected, onApproved }) => {
   const theme = useApplicationContext().theme
+  console.log('action', action)
   const styles = createStyles()
   return (
     <NativeViewGestureHandler>
@@ -38,14 +39,18 @@ const SignMessage: FC<Props> = ({ action, onRejected, onApproved }) => {
         <View style={{ justifyContent: 'center', alignItems: 'center' }}>
           <OvalTagBg
             style={{ height: 80, width: 80, backgroundColor: theme.colorBg3 }}>
-            <Avatar.Custom name={'AVAX'} size={48} />
+            <Avatar.Custom
+              name={action?.site?.name ?? ''}
+              size={48}
+              logoUri={action?.site?.icon}
+            />
           </OvalTagBg>
           <View style={styles.domainUrlContainer}>
             {/*<AvaText.Heading2 textStyle={{ textAlign: 'center' }}>*/}
             {/*  {title}*/}
             {/*</AvaText.Heading2>*/}
-            <AvaText.Body3>
-              {action?.site?.url} requests you to sign the following message
+            <AvaText.Body3 color={theme.colorText1}>
+              {action?.site?.name} requests you to sign the following message
             </AvaText.Body3>
           </View>
           <Space y={16} />
