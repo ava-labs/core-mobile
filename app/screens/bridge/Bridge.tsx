@@ -89,6 +89,9 @@ const Bridge: FC = () => {
     amount && !amount.eq(BIG_ZERO) && amount.lt(minimum || BIG_ZERO)
   const hasValidAmount = !isAmountTooLow && amount.gt(BIG_ZERO)
 
+  const formattedAmountCurrency = hasValidAmount
+    ? `${currencyFormatter(price.mul(amount).toNumber())}`
+    : '-'
   const formattedReceiveAmount =
     hasValidAmount && receiveAmount
       ? `~${receiveAmount.toFixed(9)} ${currentAsset}`
@@ -275,7 +278,7 @@ const Bridge: FC = () => {
                 <DropDown
                   data={filterChains(sourceBlockchains)}
                   selectedIndex={sourceBlockchains.indexOf(currentBlockchain)}
-                  onItemSelected={bc => setCurrentBlockchain(bc as Blockchain)}
+                  onItemSelected={bc => setCurrentBlockchain(bc)}
                   optionsRenderItem={item =>
                     dropdownItemFormat(item.item, currentBlockchain)
                   }
@@ -366,56 +369,50 @@ const Bridge: FC = () => {
                   )}
                 </View>
               </Row>
-              {!amount.eq(BIG_ZERO) && (
-                <AvaText.Body3
-                  currency
-                  color={theme.colorText2}
-                  textStyle={{
-                    alignSelf: 'flex-end',
-                    paddingEnd: 16
-                  }}>
-                  {`${price.mul(amount).toNumber()}`}
+
+              <Row style={styles.errorAndPriceRow}>
+                <View style={styles.errorContainer}>
+                  {(!!bridgeError ||
+                    isAmountTooLow ||
+                    !hasEnoughForNetworkFee) && (
+                    <>
+                      {!hasEnoughForNetworkFee && (
+                        <AvaText.Body3 color={theme.colorError}>
+                          {`Insufficient balance to cover gas costs.\nPlease add ${
+                            currentBlockchain === Blockchain.AVALANCHE
+                              ? TokenSymbol.AVAX
+                              : TokenSymbol.ETH
+                          }.`}
+                        </AvaText.Body3>
+                      )}
+                      {isAmountTooLow && (
+                        <AvaText.Body3 color={theme.colorError}>
+                          {`Amount too low -- minimum is ${minimum?.toFixed(
+                            9
+                          )}`}
+                        </AvaText.Body3>
+                      )}
+                      {!!bridgeError && (
+                        <AvaText.Body3 color={theme.colorError}>
+                          {bridgeError}
+                        </AvaText.Body3>
+                      )}
+                    </>
+                  )}
+
+                  {wrapStatus === WrapStatus.WAITING_FOR_DEPOSIT && (
+                    <AvaText.Body3 color={theme.colorError}>
+                      Waiting for deposit confirmation
+                    </AvaText.Body3>
+                  )}
+                </View>
+
+                {/* Amount in currency */}
+                <AvaText.Body3 color={theme.colorText2}>
+                  {formattedAmountCurrency}
                 </AvaText.Body3>
-              )}
+              </Row>
             </View>
-
-            {(!!bridgeError || isAmountTooLow || !hasEnoughForNetworkFee) && (
-              <>
-                {!hasEnoughForNetworkFee && (
-                  <AvaText.Body3
-                    textStyle={{ marginVertical: 4 }}
-                    color={theme.colorError}>
-                    {`Insufficient balance to cover gas costs.\nPlease add ${
-                      currentBlockchain === Blockchain.AVALANCHE
-                        ? TokenSymbol.AVAX
-                        : TokenSymbol.ETH
-                    }.`}
-                  </AvaText.Body3>
-                )}
-                {isAmountTooLow && (
-                  <AvaText.Body3
-                    textStyle={{ marginVertical: 4 }}
-                    color={theme.colorError}>
-                    {`Amount too low -- minimum is ${minimum?.toFixed(9)}`}
-                  </AvaText.Body3>
-                )}
-                {!!bridgeError && (
-                  <AvaText.Body3
-                    textStyle={{ marginVertical: 4 }}
-                    color={theme.colorError}>
-                    {bridgeError}
-                  </AvaText.Body3>
-                )}
-              </>
-            )}
-
-            {wrapStatus === WrapStatus.WAITING_FOR_DEPOSIT && (
-              <AvaText.Body3
-                textStyle={{ marginVertical: 4 }}
-                color={theme.colorError}>
-                Waiting for deposit confirmation
-              </AvaText.Body3>
-            )}
           </View>
 
           <AvaButton.Base
@@ -491,6 +488,15 @@ const styles = StyleSheet.create({
     paddingStart: 16,
     paddingTop: 16,
     paddingBottom: 16
+  },
+  errorAndPriceRow: {
+    justifyContent: 'space-between',
+    paddingEnd: 16,
+    marginBottom: 16,
+    minHeight: 16
+  },
+  errorContainer: {
+    flex: 1
   },
   tokenSelectContainer: {
     justifyContent: 'space-between',
