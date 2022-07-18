@@ -63,12 +63,11 @@ import AddEditNetwork, {
   AddEditNetworkProps
 } from 'screens/network/AddEditNetwork'
 import { Transaction } from 'store/transaction'
-import { TokenWithBalance } from 'store/balance'
+import { selectIsLoadingBalances } from 'store/balance'
 import RpcMethodsUI from 'screens/rpc/RpcMethodsUI'
 import { useDappConnectionContext } from 'contexts/DappConnectionContext'
 import { useDeepLinking } from 'navigation/useDeepLinking'
 import Logger from 'utils/Logger'
-import { selectIsLoadingBalances } from 'store/balance'
 import { BridgeStackParamList } from './wallet/BridgeScreenStack'
 import {
   BridgeTransactionStatusParams,
@@ -162,6 +161,13 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
     }, [])
   )
 
+  /**
+   * Only show dapps handler if conditions are met
+   * 1. there's an event
+   * 2. security modal isn't showing
+   * 3. the app is done loading balances
+   * 4. current navigation is avaialbe
+   */
   useEffect(() => {
     if (
       dappEvent &&
