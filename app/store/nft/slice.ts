@@ -1,5 +1,7 @@
 import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store'
+import { selectActiveNetwork } from 'store/network'
+import { selectActiveAccount } from 'store/account'
 import { initialState, NFTItemData } from './types'
 
 const reducerName = 'nft'
@@ -37,9 +39,13 @@ export const nftSlice = createSlice({
 })
 
 // selectors
-export const selectNftCollection =
-  (chainId: number, address: string) => (state: RootState) =>
-    Object.values(state.nft.collection[chainId]?.[address] ?? [])
+export const selectNftCollection = (state: RootState) => {
+  const chainId = selectActiveNetwork(state).chainId
+  const address = selectActiveAccount(state)?.address
+  return address
+    ? Object.values(state.nft.collection[chainId]?.[address] ?? [])
+    : []
+}
 
 // actions
 export const { saveNFT } = nftSlice.actions

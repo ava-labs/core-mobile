@@ -19,8 +19,6 @@ import MasonryList from '@react-native-seoul/masonry-list'
 import AvaText from 'components/AvaText'
 import { useSelector } from 'react-redux'
 import { NFTItemData, selectNftCollection } from 'store/nft'
-import { selectActiveNetwork } from 'store/network'
-import { selectActiveAccount } from 'store/account'
 
 type ListType = 'grid' | 'list'
 
@@ -39,11 +37,7 @@ export default function NftListView({
   onItemSelected,
   onManagePressed
 }: NftListViewProps) {
-  const activeAccount = useSelector(selectActiveAccount)
-  const network = useSelector(selectActiveNetwork)
-  const nfts = useSelector(
-    selectNftCollection(network.chainId, activeAccount!.address)
-  )
+  const nfts = useSelector(selectNftCollection)
   const [listType, setListType] = useState<ListType>()
   const { theme } = useApplicationContext()
 

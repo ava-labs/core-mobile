@@ -10,18 +10,12 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import Switch from 'components/Switch'
 import { NFTItemData, saveNFT, selectNftCollection } from 'store/nft'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectActiveNetwork } from 'store/network'
-import { selectActiveAccount } from 'store/account'
 
 const NftManage = () => {
   const { theme } = useApplicationContext()
   const [searchText, setSearchText] = useState('')
   const dispatch = useDispatch()
-  const network = useSelector(selectActiveNetwork)
-  const account = useSelector(selectActiveAccount)
-  const nfts = useSelector(
-    selectNftCollection(network.chainId, account!.address)
-  )
+  const nfts = useSelector(selectNftCollection)
 
   const filteredData = useMemo(() => {
     return nfts.filter(nft => {
