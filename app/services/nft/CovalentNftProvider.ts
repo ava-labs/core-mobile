@@ -15,12 +15,12 @@ import { Erc721TokenBalanceDto } from '@avalabs/glacier-sdk'
 import { NFTItemData, saveNFT } from 'store/nft'
 import { Image } from 'react-native'
 import { store } from 'store'
-import { getNftUID } from 'utils/TokenTools'
 import { Covalent } from '@avalabs/covalent-sdk'
 import Config from 'react-native-config'
 import { GetAddressBalanceV2Item } from '@avalabs/covalent-sdk/src/models'
 import Logger from 'utils/Logger'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
+import { getNftUID } from 'services/nft/NftService'
 
 const demoAddress = 'demo.eth'
 const demoChain = 1 //Ethereum

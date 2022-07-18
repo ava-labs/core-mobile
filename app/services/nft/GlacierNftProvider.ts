@@ -17,9 +17,9 @@ import { Erc721TokenBalanceDto, V1 as GlacierSdk } from '@avalabs/glacier-sdk'
 import { NFTItemData, NFTItemExternalData, saveNFT } from 'store/nft'
 import { Image } from 'react-native'
 import { store } from 'store'
-import { getNftUID } from 'utils/TokenTools'
 import Logger from 'utils/Logger'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
+import { getNftUID } from 'services/nft/NftService'
 
 // const base64 = require('base-64')
 const base64Prefix = 'data:image/svg+xml;base64,'
