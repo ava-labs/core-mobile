@@ -1,5 +1,5 @@
-import React from 'react'
-import { StyleSheet, View } from 'react-native'
+import React, { useEffect, useRef } from 'react'
+import { Animated, StyleSheet, View } from 'react-native'
 import AvaButton from 'components/AvaButton'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
@@ -7,59 +7,85 @@ import { Row } from 'components/Row'
 import Separator from 'components/Separator'
 import WalletSVG from 'components/svg/WalletSVG'
 import CreateNewWalletPlusSVG from 'components/svg/CreateNewWalletPlusSVG'
-import CoreLogo from 'components/CoreLogo'
 import { usePosthogContext } from 'contexts/PosthogContext'
+import CoreXLogoAnimated from 'components/CoreXLogoAnimated'
+import { useSelector } from 'react-redux'
+import { selectIsReady } from 'store/app'
 
 type Props = {
   onCreateWallet: () => void
   onAlreadyHaveWallet: () => void
-  onEnterWallet: (mnemonic: string) => void
 }
 
 const pkg = require('../../../package.json')
 
-export default function Welcome(props: Props | Readonly<Props>): JSX.Element {
+export default function Welcome({
+  onCreateWallet,
+  onAlreadyHaveWallet
+}: Props | Readonly<Props>): JSX.Element {
   const { capture } = usePosthogContext()
+  const isAppReady = useSelector(selectIsReady)
 
-  const onCreateWallet = (): void => {
+  const fadeAnim = useRef(new Animated.Value(0)).current
+
+  useEffect(() => {
+    if (isAppReady) {
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: true
+      }).start()
+    }
+  }, [fadeAnim, isAppReady])
+
+  const onCreateNewWallet = (): void => {
     capture('OnboardingCreateNewWalletSelected').catch(() => undefined)
-    props.onCreateWallet()
+    onCreateWallet()
   }
 
-  const onAlreadyHaveWallet = (): void => {
+  const onAccessWallet = (): void => {
     capture('OnboardingImportWalletSelected').catch(() => undefined)
     capture('OnboardingImportMnemonicSelected').catch(() => undefined)
-    props.onAlreadyHaveWallet()
+    onAlreadyHaveWallet()
   }
 
   return (
     <View style={styles.verticalLayout}>
-      <CoreLogo style={{ minHeight: 400 }} />
-      <Row>
-        <View style={{ flex: 1, alignItems: 'center' }}>
-          <AvaButton.Base
-            style={{ alignItems: 'center' }}
-            onPress={onCreateWallet}>
-            <CreateNewWalletPlusSVG size={64} />
-            <Space y={38} />
-            <AvaText.ActivityTotal textStyle={{ textAlign: 'center' }}>
-              {'Create a New\n Wallet'}
-            </AvaText.ActivityTotal>
-          </AvaButton.Base>
-        </View>
-        <Separator vertical thickness={3} />
-        <View style={{ flex: 1, alignItems: 'center' }}>
-          <AvaButton.Base
-            style={{ alignItems: 'center' }}
-            onPress={onAlreadyHaveWallet}>
-            <WalletSVG />
-            <Space y={38} />
-            <AvaText.ActivityTotal textStyle={{ textAlign: 'center' }}>
-              {'Access\n Existing Wallet'}
-            </AvaText.ActivityTotal>
-          </AvaButton.Base>
-        </View>
-      </Row>
+      <View style={{ height: 400, justifyContent: 'center' }}>
+        <CoreXLogoAnimated size={200} />
+      </View>
+      {isAppReady && (
+        <Animated.View
+          style={{
+            opacity: fadeAnim
+          }}>
+          <Row>
+            <View style={{ flex: 1, alignItems: 'center' }}>
+              <AvaButton.Base
+                style={{ alignItems: 'center' }}
+                onPress={onCreateNewWallet}>
+                <CreateNewWalletPlusSVG size={64} />
+                <Space y={38} />
+                <AvaText.ActivityTotal textStyle={{ textAlign: 'center' }}>
+                  {'Create a New\n Wallet'}
+                </AvaText.ActivityTotal>
+              </AvaButton.Base>
+            </View>
+            <Separator vertical thickness={3} />
+            <View style={{ flex: 1, alignItems: 'center' }}>
+              <AvaButton.Base
+                style={{ alignItems: 'center' }}
+                onPress={onAccessWallet}>
+                <WalletSVG />
+                <Space y={38} />
+                <AvaText.ActivityTotal textStyle={{ textAlign: 'center' }}>
+                  {'Access\n Existing Wallet'}
+                </AvaText.ActivityTotal>
+              </AvaButton.Base>
+            </View>
+          </Row>
+        </Animated.View>
+      )}
 
       <AvaText.Body2 textStyle={{ position: 'absolute', top: 0, left: 16 }}>
         v{pkg.version}

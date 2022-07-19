@@ -30,12 +30,12 @@ const init = async (action: any, listenerApi: AppListenerEffectAPI) => {
 
   listenToAppState(listenerApi)
 
-  if (Platform.OS === 'android') BiometricsSDK.warmup()
-
-  // artificially delay for 4.5s to allow splash screen's animation to finish
-  await delay(4500)
-
-  dispatch(setIsReady(true))
+  if (Platform.OS === 'android') {
+    await BiometricsSDK.warmup()
+    dispatch(setIsReady(true))
+  } else {
+    dispatch(setIsReady(true))
+  }
 }
 
 const listenToAppState = async (listenerApi: AppListenerEffectAPI) => {
