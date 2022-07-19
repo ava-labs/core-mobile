@@ -28,11 +28,12 @@ const RpcMethodsUI = () => {
         snapTo={isEventTx ? 1 : 0}
         disablePanningGesture
         children={
-          isEventTx && (
+          isEventTx &&
+          currentPayload && (
             <SignTransaction
               onReject={onCallRejected}
               onApprove={onCallApproved}
-              txParams={currentPayload?.params[0]}
+              rpcRequest={currentPayload}
               peerMeta={currentPeerMeta}
               loading={loading}
               hash={hash}

@@ -1,24 +1,30 @@
 import * as ethers from 'ethers'
 import { bigToLocaleString, bnToBig, hexToBN } from '@avalabs/utils-sdk'
-import { DisplayValueParserProps, RpcTxParams } from 'screens/rpc/util/types'
+import {
+  DisplayValueParserProps,
+  TransactionParams
+} from 'screens/rpc/util/types'
 import { calculateGasAndFees } from 'utils/Utils'
 
 export function isTxParams(
-  params: Partial<RpcTxParams>
-): params is RpcTxParams {
+  params: Partial<TransactionParams>
+): params is TransactionParams {
   return !!(params.to && params.from)
 }
 
 export function parseDisplayValues(
-  request: RpcTxParams,
+  request: TransactionParams,
   props: DisplayValueParserProps,
   description?: ethers.utils.TransactionDescription
 ) {
   const name = description?.name
   let displayValue = ''
-  if (description?.args?._amount) {
-    const big = bnToBig(hexToBN(description.args?._amount?.toHexString()), 18)
-    displayValue = `Depositing ${bigToLocaleString(big, 18)}`
+  if (description?.args?.amount) {
+    const big = bnToBig(hexToBN(description.args?.amount?.toHexString()), 18)
+    displayValue = `- ${bigToLocaleString(big, 18)}`
+  } else if (description?.value) {
+    const big = bnToBig(hexToBN(description.value?.toHexString()), 18)
+    displayValue = `- ${bigToLocaleString(big, 18)}`
   }
 
   return {
@@ -26,7 +32,7 @@ export function parseDisplayValues(
     fromAddress: request.from,
     ...calculateGasAndFees({
       gasPrice: props.gasPrice,
-      gasLimit: Number(request.gas),
+      gasLimit: request.gas,
       tokenPrice: props.avaxPrice
     }),
     site: props.site,

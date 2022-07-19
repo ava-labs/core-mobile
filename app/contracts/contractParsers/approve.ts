@@ -2,23 +2,25 @@ import {
   ContractCall,
   ContractParser,
   DisplayValueParserProps,
-  parseDisplayValues,
-  RpcTxParams,
-  TransactionDisplayValues
-} from 'screens/rpc/util/parseDisplayValues'
-import { findToken } from './utils/findToken'
+  TransactionDisplayValues,
+  TransactionParams
+} from 'screens/rpc/util/types'
+import { parseDisplayValues } from 'screens/rpc/util/parseDisplayValues'
+import { TransactionDescription } from '@ethersproject/abi'
+import { findToken } from 'contracts/contractParsers/utils/findToken'
 
 export async function approveTxHandler(
   /**
    * The from on request represents the wallet and the to represents the contract
    */
-  request: RpcTxParams,
+  request: TransactionParams,
   /**
    * Data is the values sent to the above contract and this is the instructions on how to
    * execute
    */
   _data: any,
-  props: DisplayValueParserProps
+  props: DisplayValueParserProps,
+  description?: TransactionDescription
 ): Promise<TransactionDisplayValues> {
   const tokenToBeApproved = await findToken(request.to.toLowerCase())
 
@@ -32,7 +34,7 @@ export async function approveTxHandler(
       limit: _data[1]?.toHexString(),
       spender: _data.spender
     },
-    ...parseDisplayValues(request, props)
+    ...parseDisplayValues(request, props, description)
   }
 
   return result

@@ -1,5 +1,5 @@
 import React, { memo, useMemo } from 'react'
-import { BackHandler, Modal } from 'react-native'
+import { BackHandler } from 'react-native'
 import {
   NavigatorScreenParams,
   useFocusEffect,
@@ -56,7 +56,7 @@ import NetworkDetails from 'screens/network/NetworkDetails'
 import AvaButton from 'components/AvaButton'
 import StarSVG from 'components/svg/StarSVG'
 import { selectFavoriteNetworks, toggleFavorite } from 'store/network'
-import { onAppUnlocked, selectIsLocked } from 'store/app'
+import { selectIsLocked } from 'store/app'
 import { Network } from '@avalabs/chains-sdk'
 import AddSVG from 'components/svg/AddSVG'
 import AddEditNetwork, {
@@ -179,7 +179,7 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
   )
 
   // init linking listeners
-  useDeepLinking(!showSecurityModal)
+  useDeepLinking(true)
 
   const onExit = (): void => {
     props.onExit()
@@ -188,6 +188,10 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
   const BottomSheetGroup = useMemo(() => {
     return (
       <WalletScreenS.Group screenOptions={{ presentation: 'transparentModal' }}>
+        <WalletScreenS.Screen
+          name={AppNavigation.Modal.RpcMethodsUI}
+          component={RpcMethodsUI}
+        />
         <WalletScreenS.Screen
           options={{
             transitionSpec: {

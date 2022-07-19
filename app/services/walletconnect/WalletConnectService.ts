@@ -13,7 +13,9 @@ import {
 } from 'services/walletconnect/types'
 import { JsonRpcRequest } from '@walletconnect/jsonrpc-types'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
-import { Account } from 'dto/Account'
+import { TransactionParams } from 'screens/rpc/util/types'
+import Logger from 'utils/Logger'
+import { Account } from 'store/account'
 
 let initialized = false
 let connectors: WalletConnectService[] = []
@@ -70,6 +72,7 @@ class WalletConnectService {
      * === Listeners ===
      * 1. Open request for app trying to connect
      *****************************************************************************/
+
     const onSessionRequest = async (
       error: Error | null,
       payload: JsonRpcRequest,
@@ -78,6 +81,7 @@ class WalletConnectService {
       // do not respond to session request if on BTC
       if (this.activeNetwork?.vmName === NetworkVMType.BITCOIN) return
 
+      Logger.info('WalletConnect - Session Request', error ?? payload)
       if (error) {
         console.error(error)
       }
@@ -95,7 +99,10 @@ class WalletConnectService {
         }
         this.startSession(sessionData, existing)
       } catch (e) {
-        // todo log error
+        Logger.error(
+          'WalletConnect - Session Request error or user canceled',
+          e
+        )
         this.walletConnectClient?.rejectSession()
       }
     }
@@ -105,7 +112,7 @@ class WalletConnectService {
     const onSessionUpdate = (error: Error | null, payload: JsonRpcRequest) => {
       // do not update session if on BTC
       if (this.activeNetwork?.vmName === NetworkVMType.BITCOIN) return
-      console.log('WC: Session update', payload)
+      Logger.info('WalletConnect - Session Updated', payload)
       if (error) {
         throw error
       }
@@ -116,7 +123,7 @@ class WalletConnectService {
      *****************************************************************************/
     const onCallRequest = async (
       error: Error | null,
-      payload: JsonRpcRequest
+      payload: JsonRpcRequest<TransactionParams[]>
     ) => {
       // do not respond to call request if on BTC
       if (this.activeNetwork?.vmName === NetworkVMType.BITCOIN) return
@@ -124,7 +131,7 @@ class WalletConnectService {
       if (tempCallIds.includes(payload.id)) return
       tempCallIds.push(payload.id)
 
-      console.log('CALL_REQUEST', error, payload)
+      Logger.info('WalletConnect - Call Request', error ?? payload)
       if (error) {
         throw error
       }
@@ -134,15 +141,14 @@ class WalletConnectService {
           payload,
           peerMeta: this.walletConnectClient?.session?.peerMeta
         })
-        console.log('signedResult', signedResult)
 
-        const approveResult = await this.walletConnectClient?.approveRequest({
+        this.walletConnectClient?.approveRequest({
           id: payload.id,
           result: signedResult
         })
-        console.log('approve result', approveResult)
+        Logger.info('WalletConnect - Call Request approved', signedResult)
       } catch (e) {
-        console.log('error or canceled call', e)
+        Logger.error('WalletConnect - Call Request error or user canceled', e)
         this.walletConnectClient?.rejectRequest({
           id: payload.id,
           error: {
@@ -159,6 +165,7 @@ class WalletConnectService {
       if (error) {
         throw error
       }
+      Logger.error('WalletConnect - Disconnected Remotely')
       this.killSession()
       persistSessions()
     }
@@ -178,6 +185,15 @@ class WalletConnectService {
     this.walletConnectClient.on('session_request', (error, payload) =>
       onSessionRequest(error, payload, existing)
     )
+
+    // setTimeout(() => {
+    //   if (this.walletConnectClient?.connected) {
+    //     const test: JsonRpcRequest = JSON.parse(
+    //       '{ "id": 1657664707397011, "jsonrpc": "2.0", "method": "eth_sendTransaction", "params": [ { "gas": "0x3bd0c", "value": "0x0", "from": "0x341b0073b66bfc19fcb54308861f604f5eb8f51b", "to": "0x794a61358d6845594f94dc1db02a252b5b4814ad", "data": "0x617ba037000000000000000000000000b31f66aa3c1e785363f0875a1b74e27b85fd66c7000000000000000000000000000000000000000000000000001c6bf526340000000000000000000000000000341b0073b66bfc19fcb54308861f604f5eb8f51b0000000000000000000000000000000000000000000000000000000000000000" } ] }'
+    //     )
+    //     onCallRequest(null, test)
+    //   }
+    // }, 5000)
 
     // If the connection has been previously approved,
     // don't prompt the user to approve, simply start the session

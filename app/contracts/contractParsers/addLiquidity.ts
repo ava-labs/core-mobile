@@ -6,11 +6,11 @@ import {
   ContractParser,
   DisplayValueParserProps,
   LiquidityPoolToken,
-  parseDisplayValues,
-  RpcTxParams
-} from 'screens/rpc/util/parseDisplayValues'
+  TransactionParams
+} from 'screens/rpc/util/types'
 import { hexToBN } from '@avalabs/utils-sdk'
 import { findToken } from 'contracts/contractParsers/utils/findToken'
+import { parseDisplayValues } from 'screens/rpc/util/parseDisplayValues'
 
 export interface AddLiquidityData {
   amountAMin: BigNumber
@@ -28,7 +28,7 @@ export async function addLiquidityHandler(
   /**
    * The from on request represents the wallet and the to represents the contract
    */
-  request: RpcTxParams,
+  request: TransactionParams,
   /**
    * Data is the values sent to the above contract and this is the instructions on how to
    * execute
@@ -40,12 +40,13 @@ export async function addLiquidityHandler(
   const tokenB = await findToken(data.tokenB.toLowerCase())
 
   const firstTokenAmountDepositedDisplayValue = bigToLocaleString(
-    bnToBig(hexToBN(data.amountADesired.toHexString()), tokenA.denomination),
+    bnToBig(hexToBN(data.amountADesired.toHexString()), tokenA.decimals),
     4
   )
   const tokenA_AmountUSDValue =
     (
-      Number(tokenA.priceUSD) * Number(firstTokenAmountDepositedDisplayValue)
+      Number(tokenA.priceInCurrency) *
+      Number(firstTokenAmountDepositedDisplayValue)
     ).toFixed(2) ?? ''
   const firstToken: LiquidityPoolToken = {
     ...tokenA,
@@ -54,12 +55,13 @@ export async function addLiquidityHandler(
   }
 
   const secondTokenAmountDepositedDisplayValue = bigToLocaleString(
-    bnToBig(hexToBN(data.amountBDesired.toString()), tokenB.denomination),
+    bnToBig(hexToBN(data.amountBDesired.toString()), tokenB.decimals),
     4
   )
   const tokenB_AmountUSDValue =
     (
-      Number(tokenB.priceUSD) * Number(secondTokenAmountDepositedDisplayValue)
+      Number(tokenB.priceInCurrency) *
+      Number(secondTokenAmountDepositedDisplayValue)
     ).toFixed(2) ?? ''
   const secondToken: LiquidityPoolToken = {
     ...tokenB,

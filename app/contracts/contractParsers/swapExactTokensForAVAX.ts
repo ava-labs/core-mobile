@@ -6,7 +6,7 @@ import {
   ContractCall,
   ContractParser,
   DisplayValueParserProps,
-  RpcTxParams,
+  TransactionParams,
   SwapExactTokensForTokenDisplayValues
 } from 'screens/rpc/util/types'
 import { findToken } from './utils/findToken'
@@ -24,7 +24,7 @@ export async function swapExactTokensForAvax(
   /**
    * The from on request represents the wallet and the to represents the contract
    */
-  request: RpcTxParams,
+  request: TransactionParams,
   /**
    * Data is the values sent to the above contract and this is the instructions on how to
    * execute

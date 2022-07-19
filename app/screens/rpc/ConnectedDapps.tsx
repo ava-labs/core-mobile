@@ -12,14 +12,17 @@ const ConnectedDapps: FC = () => {
   const [connectedDappsSessions, setConnectedDappSessions] = useState<
     { session: IWalletConnectSession; killSession: () => Promise<void> }[]
   >([])
+  const [refreshing, setRefreshing] = useState(false)
 
   async function refresh() {
+    setRefreshing(true)
     setConnectedDappSessions(await walletConnectService.getConnections())
+    setRefreshing(false)
   }
 
   useEffect(() => {
     refresh()
-  }, [refresh])
+  }, [])
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -30,6 +33,8 @@ const ConnectedDapps: FC = () => {
         Delete All Sessions
       </AvaButton.PrimaryMedium>
       <FlatList
+        refreshing={refreshing}
+        onRefresh={refresh}
         contentContainerStyle={{ flex: 1 }}
         data={connectedDappsSessions}
         renderItem={({ item, index }) => renderConnection(item, index, refresh)}
@@ -51,16 +56,16 @@ function renderConnection(
     refresh()
   }
 
-  return (
+  return item?.session ? (
     <AvaListItem.Base
       key={index}
       leftComponent={
         <Avatar.Custom
-          name={item.session.peerMeta?.name ?? 'Unknown'}
-          logoUri={item.session.peerMeta?.icons?.[0] ?? undefined}
+          name={item.session?.peerMeta?.name ?? 'Unknown'}
+          logoUri={item.session?.peerMeta?.icons?.[0] ?? undefined}
         />
       }
-      title={item?.session.peerMeta?.name ?? 'Unknown'}
+      title={item?.session?.peerMeta?.name ?? 'Unknown'}
       rightComponent={
         <AvaButton.Icon onPress={killSession}>
           <TrashSVG size={32} />
@@ -69,7 +74,7 @@ function renderConnection(
       rightComponentHorizontalAlignment={'flex-end'}
       rightComponentVerticalAlignment={'center'}
     />
-  )
+  ) : null
 }
 
 export default ConnectedDapps

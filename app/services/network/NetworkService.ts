@@ -45,8 +45,8 @@ class NetworkService {
     )
   }
 
-  getBitcoinProvider(isMainnet: boolean) {
-    return new BlockCypherProvider(isMainnet, undefined, BLOCKCYPHER_PROXY_URL)
+  getBitcoinProvider(isTest: boolean) {
+    return new BlockCypherProvider(!isTest, undefined, BLOCKCYPHER_PROXY_URL)
   }
 
   async getAvalancheProvider(isTest: boolean) {

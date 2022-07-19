@@ -1,7 +1,7 @@
 import { Transaction } from 'screens/rpc/util/types'
-import { GasPrice } from 'utils/GasPriceHook'
+import { BigNumber } from 'ethers'
 
-export function txToCustomEvmTx(gasPrice: GasPrice, tx?: Transaction) {
+export function txToCustomEvmTx(gasPrice: BigNumber, tx?: Transaction) {
   if (!tx) {
     throw new Error('transaction is malformed')
   }
@@ -18,10 +18,9 @@ export function txToCustomEvmTx(gasPrice: GasPrice, tx?: Transaction) {
   }
 
   const gasLimit = Number(gas)
-  const bnGasPrice = gasPrice.bn
 
   return {
-    gasPrice: bnGasPrice || gasPrice.bn,
+    gasPrice: gasPrice,
     gasLimit: gasLimit,
     to,
     from,

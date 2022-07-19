@@ -63,7 +63,7 @@ export function useDeepLinking(unlocked: boolean) {
         .replace(`${PROTOCOLS.DAPP}/${PROTOCOLS.HTTP}://`, `${PROTOCOLS.DAPP}/`)
     )
 
-    let params: ParsedQs | null = null
+    let params: ParsedQs | undefined = undefined
 
     if (urlObj.query.length) {
       try {
@@ -73,8 +73,8 @@ export function useDeepLinking(unlocked: boolean) {
       }
     }
 
-    if (urlObj && url && params) {
-      navigateWithProtocol(urlObj, params, url, origin)
+    if (urlObj && url) {
+      navigateWithProtocol(urlObj, url, params, origin)
       // once we used the url, we can expire it
       expireDeepLink()
     }
@@ -86,8 +86,8 @@ export function useDeepLinking(unlocked: boolean) {
    *****************************************************************************/
   function navigateWithProtocol(
     urlObj: URLParse<string>,
-    params: ParsedQs,
     originalUrl: string,
+    params?: ParsedQs,
     origin?: DeepLinkOrigin
   ) {
     const protocol = urlObj.protocol.replace(':', '')

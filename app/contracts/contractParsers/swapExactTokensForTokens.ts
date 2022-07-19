@@ -1,16 +1,16 @@
 import { bigToLocaleString, bnToBig } from '@avalabs/avalanche-wallet-sdk'
 import { ERC20WithBalance } from '@avalabs/wallet-react-components'
 import { BigNumber } from 'ethers'
+import { hexToBN } from '@avalabs/utils-sdk'
 import {
   ContractCall,
   ContractParser,
   DisplayValueParserProps,
   erc20PathToken,
-  parseDisplayValues,
-  RpcTxParams,
+  TransactionParams,
   SwapExactTokensForTokenDisplayValues
-} from 'screens/rpc/util/parseDisplayValues'
-import { hexToBN } from '@avalabs/utils-sdk'
+} from 'screens/rpc/util/types'
+import { parseDisplayValues } from 'screens/rpc/util/parseDisplayValues'
 import { findToken } from './utils/findToken'
 
 export interface SwapExactTokensForTokenData {
@@ -32,7 +32,7 @@ export async function swapExactTokensForTokenHandler(
   /**
    * The from on request represents the wallet and the to represents the contract
    */
-  request: RpcTxParams,
+  request: TransactionParams,
   /**
    * Data is the values sent to the above contract and this is the instructions on how to
    * execute

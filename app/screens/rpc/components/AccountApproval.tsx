@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
   domainUrlContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 10
+    marginTop: 12
   },
   domainUrl: {
     fontWeight: '600',

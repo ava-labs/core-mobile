@@ -1,7 +1,10 @@
 import { JsonRpcRequest } from '@walletconnect/jsonrpc-types'
 import { MessageType } from 'services/walletconnect/types'
+import { TransactionParams } from 'screens/rpc/util/types'
 
-export function paramsToMessageParams(data: JsonRpcRequest<any>) {
+export function paramsToMessageParams(
+  data: JsonRpcRequest<TransactionParams[]>
+) {
   const { params, method } = data
   switch (method) {
     case MessageType.PERSONAL_SIGN:

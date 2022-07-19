@@ -1,19 +1,15 @@
-import { GasPrice } from 'utils/GasPriceHook'
-import {
-  AvaxWithBalance,
-  ERC20WithBalance
-} from '@avalabs/wallet-react-components'
-import { ExplainTransactionResponse } from '@avalabs/blizzard-sdk'
 import * as ethers from 'ethers'
+import { BigNumber } from 'ethers'
 import BN from 'bn.js'
-import {BigNumber} from 'ethers';
+import { NetworkTokenWithBalance, TokenWithBalanceERC20 } from 'store/balance'
+import { NetworkToken } from '@avalabs/chains-sdk'
 
-export interface RpcTxParams {
+export interface TransactionParams {
   from: string
   to: string
   value?: string
   data?: string
-  gas?: string
+  gas?: number
   gasPrice?: string
 }
 
@@ -25,53 +21,40 @@ export enum RPC_EVENT {
 
 export interface DisplayValueParserProps {
   gasPrice: BigNumber
-  erc20Tokens: ERC20WithBalance[]
-  avaxToken: AvaxWithBalance
+  // erc20Tokens: TokenWithBalanceERC20[]
+  avaxToken: NetworkToken
   avaxPrice: number
-  site: PeerMetadata
+  site?: PeerMetadata
 }
 
 export interface PeerMetadata {
-  peerId: string,
-  url: string
+  peerId?: string
+  url?: string
   name?: string
   icon?: string
   description?: string
 }
 
-interface ExtendedTransactionDisplayValues extends ExplainTransactionResponse {
-  gasPrice: GasPrice
-  gasLimit: number
-  fee: string
-  bnFee: BN
-  feeUSD: number
-  tokenAmount?: string
-  spender?: string
-  [key: string]: any
-}
-
 export interface TransactionDisplayValues {
   fromAddress: string
   toAddress: string
-  gasPrice: GasPrice
+  gasPrice: BigNumber
   contractType: ContractCall
   gasLimit?: number
   fee?: string
-  feeUSD?: number
-  site: PeerMetadata
+  feeInCurrency?: number
+  site?: PeerMetadata
   description?: ethers.utils.TransactionDescription
   [key: string]: any
 }
 export interface Transaction {
-  id: number | string | void
-  time: number
   metamaskNetworkId: string
-  chainId: string
-  txParams: RpcTxParams
+  chainId?: number
+  txParams: TransactionParams
   type: string
   transactionCategory: string
   txHash?: string
-  displayValues: ExtendedTransactionDisplayValues
+  displayValues: TransactionDisplayValues
   error?: string
   tabId?: number
 }
@@ -109,11 +92,12 @@ export enum ContractCall {
   SWAP_EXACT_TOKENS_FOR_AVAX = 'swapExactTokensForAVAX',
   SWAP_EXACT_AVAX_FOR_TOKENS = 'swapExactAVAXForTokens',
   ADD_LIQUIDITY = 'addLiquidity',
-  ADD_LIQUIDITY_AVAX = 'addLiquidityAVAX'
+  ADD_LIQUIDITY_AVAX = 'addLiquidityAVAX',
+  UNKNOWN = 'UNKNOWN'
 }
 
 export type ContractParserHandler = (
-  request: RpcTxParams,
+  request: TransactionParams,
   data: any,
   props?: any,
   txDetails?: ethers.utils.TransactionDescription
@@ -121,7 +105,10 @@ export type ContractParserHandler = (
 export type ContractParser = [ContractCall, ContractParserHandler]
 
 export type BNWithDisplay = { bn: BN; value: string }
-export type erc20PathToken = (ERC20WithBalance | AvaxWithBalance) & {
+export type erc20PathToken = (
+  | TokenWithBalanceERC20
+  | NetworkTokenWithBalance
+) & {
   amountIn?: BNWithDisplay
   amountOut?: BNWithDisplay
   amountUSDValue?: string
@@ -131,7 +118,10 @@ export interface SwapExactTokensForTokenDisplayValues
   path: erc20PathToken[]
 }
 
-export type LiquidityPoolToken = (ERC20WithBalance | AvaxWithBalance) & {
+export type LiquidityPoolToken = (
+  | TokenWithBalanceERC20
+  | NetworkTokenWithBalance
+) & {
   amountDepositedDisplayValue: string
   amountUSDValue?: string
 }
@@ -140,5 +130,5 @@ export interface AddLiquidityDisplayData extends TransactionDisplayValues {
 }
 
 export interface ApproveTransactionData extends TransactionDisplayValues {
-  tokenToBeApproved: ERC20WithBalance | AvaxWithBalance
+  tokenToBeApproved: TokenWithBalanceERC20 | NetworkTokenWithBalance
 }

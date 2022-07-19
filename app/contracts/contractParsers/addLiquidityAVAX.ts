@@ -6,10 +6,10 @@ import {
   ContractParser,
   DisplayValueParserProps,
   LiquidityPoolToken,
-  parseDisplayValues,
-  RpcTxParams
-} from 'screens/rpc/util/parseDisplayValues'
+  TransactionParams
+} from 'screens/rpc/util/types'
 import { hexToBN } from '@avalabs/utils-sdk'
+import {parseDisplayValues} from 'screens/rpc/util/parseDisplayValues';
 
 export interface AddLiquidityAvaxData {
   amountAVAXMin: BigNumber
@@ -25,7 +25,7 @@ export async function addLiquidityAvaxHandler(
   /**
    * The from on request represents the wallet and the to represents the contract
    */
-  request: RpcTxParams,
+  request: TransactionParams,
   /**
    * Data is the values sent to the above contract and this is the instructions on how to
    * execute
