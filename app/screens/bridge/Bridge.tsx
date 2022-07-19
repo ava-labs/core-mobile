@@ -128,7 +128,7 @@ const Bridge: FC = () => {
    * @param showCheckmark
    */
   function dropdownItemFormat(
-    blockchain?: string,
+    blockchain?: Blockchain,
     selectedBlockchain?: Blockchain,
     showCheckmark = true
   ) {
