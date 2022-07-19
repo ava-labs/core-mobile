@@ -12,7 +12,11 @@ import {
 import { onAppLocked, onAppUnlocked, onLogOut } from 'store/app'
 import { addCustomToken } from 'store/customToken'
 import { AppStartListening } from 'store/middleware/listener'
-import { selectActiveNetwork, selectFavoriteNetworks } from 'store/network'
+import {
+  selectActiveNetwork,
+  selectFavoriteNetworks,
+  setNetworks
+} from 'store/network'
 import {
   selectSelectedCurrency,
   setSelectedCurrency
@@ -190,7 +194,8 @@ export const addBalanceListeners = (startListening: AppStartListening) => {
       setSelectedCurrency,
       setAccounts,
       setAccount,
-      addCustomToken
+      addCustomToken,
+      setNetworks
     ),
     effect: async (action, listenerApi) =>
       onBalanceUpdate(QueryStatus.LOADING, listenerApi, false)
