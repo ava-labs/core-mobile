@@ -27,6 +27,7 @@ type TabViewAvaFC = FC<{
   currentTabIndex?: number
   onTabIndexChange?: (tabIndex: number) => void
   shouldDisableTouch?: boolean
+  lazy?: boolean
 }> & { Item: FC<TabViewAvaItemProps> }
 
 const TabViewAva: TabViewAvaFC = ({
@@ -34,6 +35,7 @@ const TabViewAva: TabViewAvaFC = ({
   currentTabIndex = 0,
   onTabIndexChange,
   shouldDisableTouch = false,
+  lazy = true,
   children
 }) => {
   const [currentIndex, setCurrentIndex] = useState(currentTabIndex)
@@ -133,7 +135,7 @@ const TabViewAva: TabViewAvaFC = ({
       navigationState={{ index: currentIndex, routes }}
       renderScene={scenes}
       renderTabBar={tabbar}
-      lazy={shouldDisableTouch}
+      lazy={shouldDisableTouch || lazy}
     />
   )
 }
