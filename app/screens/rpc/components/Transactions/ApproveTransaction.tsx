@@ -7,7 +7,7 @@ import TokenAddress from 'components/TokenAddress'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
 import Avatar from 'components/Avatar'
-import React from 'react'
+import React, { Dispatch } from 'react'
 import { useActiveNetwork } from 'hooks/useActiveNetwork'
 import CarrotSVG from 'components/svg/CarrotSVG'
 import { useSelector } from 'react-redux'
@@ -25,14 +25,17 @@ export function ApproveTransaction({
   hash,
   error,
   selectedGasFee,
-  setShowCustomSpendLimit,
   setShowData,
+  setShowCustomSpendLimit,
   ...rest
-}: ApproveTransactionData) {
+}: ApproveTransactionData & {
+  setShowCustomSpendLimit: Dispatch<boolean>
+}) {
   const theme = useApplicationContext().theme
   const activeNetwork = useActiveNetwork()
   const account = useSelector(selectAccountByAddress(rest.fromAddress))
-  const hideEdit: boolean = displaySpendLimit === '0' && setShowCustomSpendLimit
+  const hideEdit: boolean =
+    displaySpendLimit === '0' && !!setShowCustomSpendLimit
 
   return (
     <>
@@ -83,7 +86,10 @@ export function ApproveTransaction({
       <Row style={{ justifyContent: 'space-between' }}>
         <AvaText.Body2>Spend Limit</AvaText.Body2>
         {hideEdit || (
-          <AvaButton.Base onPress={() => setShowCustomSpendLimit(true)}>
+          <AvaButton.Base
+            onPress={() => {
+              setShowCustomSpendLimit(true)
+            }}>
             <AvaText.TextLink>Edit</AvaText.TextLink>
           </AvaButton.Base>
         )}
@@ -116,7 +122,6 @@ export function ApproveTransaction({
           </AvaText.Body1>
         </Row>
       </View>
-      <Space y={30} />
     </>
   )
 }

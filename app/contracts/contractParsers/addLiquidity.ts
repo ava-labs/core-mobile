@@ -11,6 +11,7 @@ import {
 import { hexToBN } from '@avalabs/utils-sdk'
 import { findToken } from 'contracts/contractParsers/utils/findToken'
 import { parseDisplayValues } from 'screens/rpc/util/parseDisplayValues'
+import { Network } from '@avalabs/chains-sdk'
 
 export interface AddLiquidityData {
   amountAMin: BigNumber
@@ -25,6 +26,7 @@ export interface AddLiquidityData {
 }
 
 export async function addLiquidityHandler(
+  network: Network,
   /**
    * The from on request represents the wallet and the to represents the contract
    */
@@ -51,7 +53,7 @@ export async function addLiquidityHandler(
   const firstToken: LiquidityPoolToken = {
     ...tokenA,
     amountDepositedDisplayValue: firstTokenAmountDepositedDisplayValue,
-    amountUSDValue: tokenA_AmountUSDValue
+    amountCurrencyValue: tokenA_AmountUSDValue
   }
 
   const secondTokenAmountDepositedDisplayValue = bigToLocaleString(
@@ -66,13 +68,13 @@ export async function addLiquidityHandler(
   const secondToken: LiquidityPoolToken = {
     ...tokenB,
     amountDepositedDisplayValue: secondTokenAmountDepositedDisplayValue,
-    amountUSDValue: tokenB_AmountUSDValue
+    amountCurrencyValue: tokenB_AmountUSDValue
   }
 
   const result = {
     poolTokens: [firstToken, secondToken],
     contractType: ContractCall.ADD_LIQUIDITY,
-    ...parseDisplayValues(request, props)
+    ...parseDisplayValues(network, request, props)
   }
 
   return result

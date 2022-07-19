@@ -1,4 +1,3 @@
-import { JsonRpcRequest } from '@walletconnect/jsonrpc-types'
 import { PeerMetadata } from 'screens/rpc/util/types'
 
 export const CLIENT_OPTIONS = {
@@ -70,7 +69,8 @@ export const PREFIXES = {
   [ACTIONS.EMPTY]: ''
 }
 
-export interface MessageAction extends JsonRpcRequest {
+export interface MessageAction {
+  id?: string | number
   result?: any
   error?: string
   displayData: any

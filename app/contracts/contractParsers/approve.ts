@@ -8,8 +8,10 @@ import {
 import { parseDisplayValues } from 'screens/rpc/util/parseDisplayValues'
 import { TransactionDescription } from '@ethersproject/abi'
 import { findToken } from 'contracts/contractParsers/utils/findToken'
+import { Network } from '@avalabs/chains-sdk'
 
 export async function approveTxHandler(
+  network: Network,
   /**
    * The from on request represents the wallet and the to represents the contract
    */
@@ -24,7 +26,7 @@ export async function approveTxHandler(
 ): Promise<TransactionDisplayValues> {
   const tokenToBeApproved = await findToken(request.to.toLowerCase())
 
-  const result = {
+  return {
     tokenToBeApproved,
     contractType: ContractCall.APPROVE,
     approveData: {
@@ -34,10 +36,8 @@ export async function approveTxHandler(
       limit: _data[1]?.toHexString(),
       spender: _data.spender
     },
-    ...parseDisplayValues(request, props, description)
+    ...parseDisplayValues(network, request, props, description)
   }
-
-  return result
 }
 
 export const ApproveTxParser: ContractParser = [

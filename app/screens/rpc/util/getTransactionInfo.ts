@@ -13,23 +13,21 @@ export function isTxDescriptionError(
   desc: ethers.utils.TransactionDescription | { error: string }
 ): desc is ethers.utils.TransactionDescription {
   // eslint-disable-next-line no-prototype-builtins
-  return !!desc && !desc.hasOwnProperty('error')
+  return !!desc && desc.hasOwnProperty('error')
 }
 
 function parseDataWithABI(
   data: string,
   value: string,
   contractInterface: ethers.ethers.utils.Interface
-): TransactionDescription {
+) {
   try {
-    const finalResponse = contractInterface.parseTransaction({
+    return contractInterface.parseTransaction({
       data: data,
       value: value
     })
-
-    return finalResponse
   } catch (e) {
-    return { error: 'error decoding with abi' }
+    return Promise.reject({ error: 'error decoding with abi' })
   }
 }
 
@@ -63,14 +61,14 @@ export async function getTxInfo(
     isMainnet
   )
 
-  if (error) return { error }
+  if (error) return Promise.reject({ error })
 
   if (contractSource?.ABI === 'Contract source code not verified') {
-    return { error: 'Contract source code not verified' }
+    return Promise.reject({ error: 'Contract source code not verified' })
   }
 
   const abi = result || contractSource?.ABI
-  if (!abi) return { error: 'unable to get abi' }
+  if (!abi) return Promise.reject({ error: 'unable to get abi' })
   return parseDataWithABI(data, value, new Interface(abi))
 }
 

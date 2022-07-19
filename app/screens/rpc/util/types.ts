@@ -1,14 +1,14 @@
 import * as ethers from 'ethers'
 import { BigNumber } from 'ethers'
 import BN from 'bn.js'
-import { NetworkTokenWithBalance, TokenWithBalanceERC20 } from 'store/balance'
-import { NetworkToken } from '@avalabs/chains-sdk'
+import { NetworkTokenWithBalance, TokenWithBalance } from 'store/balance'
+import { Network } from '@avalabs/chains-sdk'
 
 export interface TransactionParams {
   from: string
   to: string
-  value?: string
-  data?: string
+  value: string
+  data: string
   gas?: number
   gasPrice?: string
 }
@@ -21,9 +21,9 @@ export enum RPC_EVENT {
 
 export interface DisplayValueParserProps {
   gasPrice: BigNumber
-  // erc20Tokens: TokenWithBalanceERC20[]
-  avaxToken: NetworkToken
+  avaxToken: NetworkTokenWithBalance
   avaxPrice: number
+  erc20Tokens: TokenWithBalance[]
   site?: PeerMetadata
 }
 
@@ -39,24 +39,25 @@ export interface TransactionDisplayValues {
   fromAddress: string
   toAddress: string
   gasPrice: BigNumber
-  contractType: ContractCall
+  contractType?: ContractCall
   gasLimit?: number
   fee?: string
   feeInCurrency?: number
   site?: PeerMetadata
   description?: ethers.utils.TransactionDescription
+  displayValue: string
+  bnFee: BigNumber
   [key: string]: any
 }
 export interface Transaction {
+  id?: number | string
   metamaskNetworkId: string
+  method: string
   chainId?: number
   txParams: TransactionParams
-  type: string
-  transactionCategory: string
-  txHash?: string
   displayValues: TransactionDisplayValues
+  txHash?: string
   error?: string
-  tabId?: number
 }
 
 export interface RpcTokenReceive {
@@ -97,6 +98,7 @@ export enum ContractCall {
 }
 
 export type ContractParserHandler = (
+  network: Network,
   request: TransactionParams,
   data: any,
   props?: any,
@@ -105,30 +107,24 @@ export type ContractParserHandler = (
 export type ContractParser = [ContractCall, ContractParserHandler]
 
 export type BNWithDisplay = { bn: BN; value: string }
-export type erc20PathToken = (
-  | TokenWithBalanceERC20
-  | NetworkTokenWithBalance
-) & {
+export type erc20PathToken = TokenWithBalance & {
   amountIn?: BNWithDisplay
   amountOut?: BNWithDisplay
-  amountUSDValue?: string
+  amountCurrencyValue?: string
 }
 export interface SwapExactTokensForTokenDisplayValues
   extends TransactionDisplayValues {
   path: erc20PathToken[]
 }
 
-export type LiquidityPoolToken = (
-  | TokenWithBalanceERC20
-  | NetworkTokenWithBalance
-) & {
+export type LiquidityPoolToken = TokenWithBalance & {
   amountDepositedDisplayValue: string
-  amountUSDValue?: string
+  amountCurrencyValue?: string
 }
 export interface AddLiquidityDisplayData extends TransactionDisplayValues {
   poolTokens: LiquidityPoolToken[]
 }
 
 export interface ApproveTransactionData extends TransactionDisplayValues {
-  tokenToBeApproved: TokenWithBalanceERC20 | NetworkTokenWithBalance
+  tokenToBeApproved: TokenWithBalance
 }

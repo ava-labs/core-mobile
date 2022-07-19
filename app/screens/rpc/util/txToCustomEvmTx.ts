@@ -1,12 +1,14 @@
-import { Transaction } from 'screens/rpc/util/types'
+import { TransactionParams } from 'screens/rpc/util/types'
 import { BigNumber } from 'ethers'
 
-export function txToCustomEvmTx(gasPrice: BigNumber, tx?: Transaction) {
-  if (!tx) {
-    throw new Error('transaction is malformed')
+export async function txToCustomEvmTx(
+  gasPrice: BigNumber,
+  txParams: TransactionParams
+) {
+  if (!txParams) {
+    throw new Error('params is malformed')
   }
 
-  const txParams = tx.txParams
   const { gas, to, from, data, value } = txParams
 
   if (!gas || !gasPrice) {

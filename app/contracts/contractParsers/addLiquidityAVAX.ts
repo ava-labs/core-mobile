@@ -1,4 +1,4 @@
-import { bigToLocaleString, bnToBig } from '@avalabs/avalanche-wallet-sdk'
+import { bigToLocaleString } from '@avalabs/avalanche-wallet-sdk'
 import { BigNumber } from 'ethers'
 import {
   AddLiquidityDisplayData,
@@ -8,20 +8,25 @@ import {
   LiquidityPoolToken,
   TransactionParams
 } from 'screens/rpc/util/types'
-import { hexToBN } from '@avalabs/utils-sdk'
-import {parseDisplayValues} from 'screens/rpc/util/parseDisplayValues';
+import { ethersBigNumberToBig } from '@avalabs/utils-sdk'
+import { parseDisplayValues } from 'screens/rpc/util/parseDisplayValues'
+import { Network } from '@avalabs/chains-sdk'
+import { findToken } from 'contracts/contractParsers/utils/findToken'
 
-export interface AddLiquidityAvaxData {
-  amountAVAXMin: BigNumber
-  amountTokenDesired: BigNumber
-  amountTokenMin: BigNumber
-  contractCall: ContractCall.ADD_LIQUIDITY_AVAX
+export interface AddLiquidityData {
+  amountAMin: BigNumber
+  amountADesired: BigNumber
+  amountBMin: BigNumber
+  amountBDesired: BigNumber
+  contractCall: ContractCall.ADD_LIQUIDITY
   deadline: string
-  token: string
+  tokenA: string
+  tokenB: string
   to: string
 }
 
 export async function addLiquidityAvaxHandler(
+  network: Network,
   /**
    * The from on request represents the wallet and the to represents the contract
    */
@@ -30,48 +35,47 @@ export async function addLiquidityAvaxHandler(
    * Data is the values sent to the above contract and this is the instructions on how to
    * execute
    */
-  data: AddLiquidityAvaxData,
+  data: AddLiquidityData,
   props: DisplayValueParserProps
 ): Promise<AddLiquidityDisplayData> {
-  const erc20sIndexedByAddress = props.erc20Tokens.reduce(
-    (acc, token) => ({ ...acc, [token.address.toLowerCase()]: token }),
-    {}
-  )
+  const tokenA = await findToken(data.tokenA.toLowerCase())
+  const tokenB = await findToken(data.tokenB.toLowerCase())
 
-  // @ts-ignore
-  const token = erc20sIndexedByAddress[data.token.toLowerCase()]
-  const firstTokenDeposited = bigToLocaleString(
-    bnToBig(hexToBN(data.amountAVAXMin.toString()), 18),
+  const firstTokenAmountDepositedDisplayValue = bigToLocaleString(
+    ethersBigNumberToBig(data.amountADesired, tokenA.decimals),
     4
   )
-  const firstToken_AmountUSDValue =
-    (Number(props.avaxPrice) * Number(firstTokenDeposited)).toFixed(2) ?? ''
-
+  const tokenA_AmountUSDValue =
+    (
+      Number(tokenA.priceInCurrency) *
+      Number(firstTokenAmountDepositedDisplayValue)
+    ).toFixed(2) ?? ''
   const firstToken: LiquidityPoolToken = {
-    ...props.avaxToken,
-    amountDepositedDisplayValue: firstTokenDeposited,
-    amountUSDValue: firstToken_AmountUSDValue
+    ...tokenA,
+    amountDepositedDisplayValue: firstTokenAmountDepositedDisplayValue,
+    amountCurrencyValue: tokenA_AmountUSDValue
   }
 
-  const secondTokenDeposited = bigToLocaleString(
-    bnToBig(hexToBN(data.amountTokenDesired.toHexString()), token.denomination),
+  const secondTokenAmountDepositedDisplayValue = bigToLocaleString(
+    ethersBigNumberToBig(data.amountBDesired, tokenB.decimals),
     4
   )
-  const secondToken_AmountUSDValue =
-    (Number(token.priceUSD) * Number(secondTokenDeposited)).toFixed(2) ?? ''
-
+  const tokenB_AmountUSDValue =
+    (
+      Number(tokenB.priceInCurrency) *
+      Number(secondTokenAmountDepositedDisplayValue)
+    ).toFixed(2) ?? ''
   const secondToken: LiquidityPoolToken = {
-    ...token,
-    amountDepositedDisplayValue: secondTokenDeposited,
-    amountUSDValue: secondToken_AmountUSDValue
-  }
-  const result = {
-    poolTokens: [firstToken, secondToken],
-    contractType: ContractCall.ADD_LIQUIDITY_AVAX,
-    ...parseDisplayValues(request, props)
+    ...tokenB,
+    amountDepositedDisplayValue: secondTokenAmountDepositedDisplayValue,
+    amountCurrencyValue: tokenB_AmountUSDValue
   }
 
-  return result
+  return {
+    poolTokens: [firstToken, secondToken],
+    contractType: ContractCall.ADD_LIQUIDITY,
+    ...parseDisplayValues(network, request, props)
+  }
 }
 
 export const AddLiquidityAvaxParser: ContractParser = [

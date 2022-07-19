@@ -1,4 +1,4 @@
-import { ContractParserHandler } from 'screens/rpc/util/parseDisplayValues'
+import { ContractParserHandler } from 'screens/rpc/util/types'
 import { AddLiquidityParser } from './addLiquidity'
 import { AddLiquidityAvaxParser } from './addLiquidityAVAX'
 import { ApproveTxParser } from './approve'

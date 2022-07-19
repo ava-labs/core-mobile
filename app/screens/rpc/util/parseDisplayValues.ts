@@ -5,6 +5,7 @@ import {
   TransactionParams
 } from 'screens/rpc/util/types'
 import { calculateGasAndFees } from 'utils/Utils'
+import { Network } from '@avalabs/chains-sdk'
 
 export function isTxParams(
   params: Partial<TransactionParams>
@@ -13,27 +14,40 @@ export function isTxParams(
 }
 
 export function parseDisplayValues(
-  request: TransactionParams,
+  network: Network,
+  txParams: TransactionParams,
   props: DisplayValueParserProps,
   description?: ethers.utils.TransactionDescription
 ) {
-  const name = description?.name
+  const tokenDecimals = network.networkToken.decimals
+  const name = description?.name ?? description?.functionFragment?.name
   let displayValue = ''
   if (description?.args?.amount) {
-    const big = bnToBig(hexToBN(description.args?.amount?.toHexString()), 18)
-    displayValue = `- ${bigToLocaleString(big, 18)}`
+    const big = bnToBig(
+      hexToBN(description.args?.amount?.toHexString()),
+      tokenDecimals
+    )
+    displayValue = `${bigToLocaleString(big, tokenDecimals)}`
   } else if (description?.value) {
-    const big = bnToBig(hexToBN(description.value?.toHexString()), 18)
-    displayValue = `- ${bigToLocaleString(big, 18)}`
+    const big = bnToBig(
+      hexToBN(description.value?.toHexString()),
+      tokenDecimals
+    )
+    displayValue = `${bigToLocaleString(big, tokenDecimals)}`
   }
 
+  /**
+   * to: contract this tx is being sent to
+   * from: wallet account being sent from
+   */
   return {
-    toAddress: request.to,
-    fromAddress: request.from,
+    toAddress: txParams.to,
+    fromAddress: txParams.from,
     ...calculateGasAndFees({
       gasPrice: props.gasPrice,
-      gasLimit: request.gas,
-      tokenPrice: props.avaxPrice
+      gasLimit: txParams.gas,
+      tokenPrice: props.avaxPrice,
+      tokenDecimals
     }),
     site: props.site,
     description,

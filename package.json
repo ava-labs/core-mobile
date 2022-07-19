@@ -18,7 +18,7 @@
     "prestorybook": "rnstl",
     "storybook": "start-storybook -p 7007",
     "build-storybook": "build-storybook",
-    "postinstall": "./scripts/patch && node_modules/.bin/rn-nodeify --install crypto,events,stream,vm,assert,https,http,os --hack"
+    "postinstall": "./scripts/patch; node_modules/.bin/rn-nodeify --install crypto,events,stream,vm,assert,https,http,os --hack"
   },
   "dependencies": {
     "@avalabs/avalanche-wallet-sdk": "0.17.1",

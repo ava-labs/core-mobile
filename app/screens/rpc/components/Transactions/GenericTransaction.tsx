@@ -13,6 +13,7 @@ import AvaButton from 'components/AvaButton'
 import CarrotSVG from 'components/svg/CarrotSVG'
 import { useSelector } from 'react-redux'
 import { selectTokenByAddress } from 'store/balance'
+import isEmpty from 'lodash.isempty'
 
 export function GenericTransaction({
   site,
@@ -33,10 +34,10 @@ export function GenericTransaction({
           Approve {site?.name} transaction
         </AvaText.Body2>
         <AvaButton.Base onPress={() => console.log('open data view')}>
-          <AvaText.Body1>
+          <Row>
             <CarrotSVG color={theme.colorText1} direction={'left'} size={12} />
             <CarrotSVG color={theme.colorText1} size={12} />
-          </AvaText.Body1>
+          </Row>
         </AvaButton.Base>
       </Row>
       <View
@@ -60,45 +61,47 @@ export function GenericTransaction({
           <TokenAddress address={description?.args?.asset ?? toAddress} />
         </Row>
       </View>
-      <AvaText.Body2>Balance Change</AvaText.Body2>
-      <View
-        style={[
-          {
-            backgroundColor: theme.colorBg3,
-            marginTop: 8,
-            marginBottom: 16,
-            borderRadius: 10,
-            padding: 16
-          }
-        ]}>
-        <Row style={{ justifyContent: 'space-between' }}>
-          <AvaText.Body3>Transaction type</AvaText.Body3>
-          <AvaText.Body3>{name}</AvaText.Body3>
-        </Row>
-        <Space y={8} />
-        <Separator color={theme.colorDisabled} />
-        <Space y={12} />
-        {!!displayValue && (
-          <Row
-            style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-            <Row style={{ alignItems: 'center' }}>
-              {token ? (
-                <Avatar.Token token={token} />
-              ) : (
-                <Avatar.Custom name={'avax'} symbol={'AVAX'} />
-              )}
-              <Space x={8} />
-              <AvaText.Body1>{token ? token?.symbol : 'AVAX'}</AvaText.Body1>
+      {!isEmpty(displayValue) && (
+        <>
+          <AvaText.Body2>Balance Change</AvaText.Body2>
+          <View
+            style={[
+              {
+                backgroundColor: theme.colorBg3,
+                marginTop: 8,
+                marginBottom: 16,
+                borderRadius: 10,
+                padding: 16
+              }
+            ]}>
+            <Row style={{ justifyContent: 'space-between' }}>
+              <AvaText.Body3>Transaction type</AvaText.Body3>
+              <AvaText.Body3>{name}</AvaText.Body3>
             </Row>
-            <View style={{ alignItems: 'flex-end' }}>
-              <AvaText.Body2 color={theme.colorText1}>
-                {displayValue} {token?.symbol}
-              </AvaText.Body2>
-              {/*<AvaText.Body3>$0.32 USD</AvaText.Body3>*/}
-            </View>
-          </Row>
-        )}
-      </View>
+            <Space y={8} />
+            <Separator color={theme.colorDisabled} />
+            <Space y={12} />
+            <Row
+              style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+              <Row style={{ alignItems: 'center' }}>
+                {token ? (
+                  <Avatar.Token token={token} />
+                ) : (
+                  <Avatar.Custom name={'avax'} symbol={'AVAX'} />
+                )}
+                <Space x={8} />
+                <AvaText.Body1>{token ? token?.symbol : 'AVAX'}</AvaText.Body1>
+              </Row>
+              <View style={{ alignItems: 'flex-end' }}>
+                <AvaText.Body2 color={theme.colorText1}>
+                  {displayValue} {token?.symbol}
+                </AvaText.Body2>
+                {/*<AvaText.Body3 currency>{token?.priceInCurrency}</AvaText.Body3>*/}
+              </View>
+            </Row>
+          </View>
+        </>
+      )}
     </>
   )
 }

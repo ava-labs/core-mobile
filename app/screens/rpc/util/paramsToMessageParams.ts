@@ -3,7 +3,7 @@ import { MessageType } from 'services/walletconnect/types'
 import { TransactionParams } from 'screens/rpc/util/types'
 
 export function paramsToMessageParams(
-  data: JsonRpcRequest<TransactionParams[]>
+  data: JsonRpcRequest<TransactionParams[] | any[]>
 ) {
   const { params, method } = data
   switch (method) {
@@ -16,7 +16,7 @@ export function paramsToMessageParams(
     case MessageType.SIGN_TYPED_DATA:
       try {
         return {
-          data: JSON.parse(params[1]),
+          data: JSON.parse(params[1].toString()),
           from: params[0]
         }
       } catch (e) {
@@ -33,7 +33,7 @@ export function paramsToMessageParams(
     case MessageType.SIGN_TYPED_DATA_V3:
     case MessageType.SIGN_TYPED_DATA_V4:
       return {
-        data: JSON.parse(params[1]),
+        data: JSON.parse(params[1].toString()),
         from: params[0]
       }
     default:

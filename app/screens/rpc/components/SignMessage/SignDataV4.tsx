@@ -12,7 +12,7 @@ interface Props {
 
 const SignDataV4: FC<Props> = ({ action }) => {
   const theme = useContext(ApplicationContext).theme
-  const data = action?.displayData.data
+  const data = action?.displayData
   const { types, primaryType, ...dataWithoutTypes } = data
 
   const renderRow = (rowData: any) => {
@@ -23,12 +23,10 @@ const SignDataV4: FC<Props> = ({ action }) => {
             style={{
               flex: 1,
               justifyContent: 'center',
-              backgroundColor: theme.colorBg3
+              borderRadius: 8
             }}>
             <AvaText.Body1 color={theme.colorPrimary1}>{key}</AvaText.Body1>
-            <View style={{ paddingStart: 16, paddingBottom: 16 }}>
-              {renderRow(rowData[key])}
-            </View>
+            {renderRow(rowData[key])}
           </View>
         )
       }
@@ -51,7 +49,13 @@ const SignDataV4: FC<Props> = ({ action }) => {
       <AvaText.Body2>Message:</AvaText.Body2>
       <Space y={8} />
       <View style={{ backgroundColor: theme.colorBg2, padding: 8 }}>
-        <ScrollView style={{ maxHeight: 250 }}>
+        <ScrollView
+          style={{
+            maxHeight: 250,
+            backgroundColor: theme.colorBg3,
+            borderRadius: 8,
+            padding: 8
+          }}>
           {renderRow(dataWithoutTypes)}
         </ScrollView>
       </View>

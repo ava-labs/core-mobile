@@ -164,7 +164,7 @@ class WalletService {
    * @param index
    * @param isMainnet
    */
-  getAddress(index: number, isMainnet: boolean): Record<NetworkVMType, string> {
+  getAddress(index: number, isTestnet: boolean): Record<NetworkVMType, string> {
     if (!this.xpub) {
       throw new Error('no xpub generated')
     }
@@ -174,7 +174,7 @@ class WalletService {
       [NetworkVMType.BITCOIN]: getBech32AddressFromXPub(
         this.xpub,
         index,
-        isMainnet ? networks.bitcoin : networks.testnet
+        isTestnet ? networks.testnet : networks.bitcoin
       )
     }
   }

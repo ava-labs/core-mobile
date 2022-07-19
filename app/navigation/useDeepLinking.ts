@@ -47,6 +47,8 @@ export function useDeepLinking(unlocked: boolean) {
   useEffect(() => {
     if (pendingDeepLink && unlocked) {
       parseUrl(pendingDeepLink?.url, pendingDeepLink?.origin)
+      // once we used the url, we can expire it
+      expireDeepLink()
     }
   }, [unlocked, pendingDeepLink])
 
@@ -75,8 +77,6 @@ export function useDeepLinking(unlocked: boolean) {
 
     if (urlObj && url) {
       navigateWithProtocol(urlObj, url, params, origin)
-      // once we used the url, we can expire it
-      expireDeepLink()
     }
   }
 

@@ -21,11 +21,11 @@ const EthSign: FC<Props> = ({ action }) => {
         site. Only sign this message if you know what you&apos;re doing or
         completely trust the requesting site
       </AvaText.Body2>
-      <Space y={16} />
+      <Space y={1} />
       <AvaText.Body2>Message:</AvaText.Body2>
       <Space y={8} />
       <View style={{ backgroundColor: theme.colorBg3, padding: 16 }}>
-        <AvaText.Body1>{action.displayData.data}</AvaText.Body1>
+        <AvaText.Body1>{action.displayData}</AvaText.Body1>
       </View>
     </View>
   )

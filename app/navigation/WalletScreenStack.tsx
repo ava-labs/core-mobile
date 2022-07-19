@@ -1,5 +1,5 @@
-import React, { memo, useMemo } from 'react'
-import { BackHandler } from 'react-native'
+import React, { memo, useEffect, useMemo } from 'react'
+import { BackHandler, InteractionManager, Modal } from 'react-native'
 import {
   NavigatorScreenParams,
   useFocusEffect,
@@ -56,7 +56,7 @@ import NetworkDetails from 'screens/network/NetworkDetails'
 import AvaButton from 'components/AvaButton'
 import StarSVG from 'components/svg/StarSVG'
 import { selectFavoriteNetworks, toggleFavorite } from 'store/network'
-import { selectIsLocked } from 'store/app'
+import { onAppUnlocked, selectIsLocked } from 'store/app'
 import { Network } from '@avalabs/chains-sdk'
 import AddSVG from 'components/svg/AddSVG'
 import AddEditNetwork, {
@@ -65,7 +65,10 @@ import AddEditNetwork, {
 import { Transaction } from 'store/transaction'
 import { TokenWithBalance } from 'store/balance'
 import RpcMethodsUI from 'screens/rpc/RpcMethodsUI'
+import { useDappConnectionContext } from 'contexts/DappConnectionContext'
 import { useDeepLinking } from 'navigation/useDeepLinking'
+import Logger from 'utils/Logger'
+import { selectIsLoadingBalances } from 'store/balance'
 import { BridgeStackParamList } from './wallet/BridgeScreenStack'
 import {
   BridgeTransactionStatusParams,
@@ -136,30 +139,11 @@ const SignOutBottomSheetScreen = () => {
 function WalletScreenStack(props: Props | Readonly<Props>) {
   const dispatch = useDispatch()
   const showSecurityModal = useSelector(selectIsLocked)
+  const isLoadingBalances = useSelector(selectIsLoadingBalances)
+  const { dappEvent } = useDappConnectionContext()
+  useDeepLinking(!showSecurityModal)
   const context = useApplicationContext()
   const { signOut } = context.appHook
-
-  // // init DeepLinkManager
-  // useEffect(() => {
-  //   SharedDeepLinkManager.init()
-  //   Linking.addEventListener('url', ({ url }) => {
-  //     if (url) {
-  //       // navigation.navigate('test')
-  //       SharedDeepLinkManager.expireDeepLink()
-  //       SharedDeepLinkManager.parse(url, { origin: DeepLinkOrigin.ORIGIN_DEEPLINK })
-  //       console.log('received linking event')
-  //     }
-  //   })
-  //   async function checkDeepLink() {
-  //     const url = await Linking.getInitialURL() // get from firebase in the future?
-  //     if (url) {
-  //       // navigation.navigate('test')
-  //       SharedDeepLinkManager.parse(url, { origin: DeepLinkOrigin.ORIGIN_DEEPLINK })
-  //       console.log('received linking event, initial url')
-  //     }
-  //   }
-  //   checkDeepLink()
-  // }, [])
 
   useFocusEffect(
     React.useCallback(() => {
@@ -178,8 +162,26 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
     }, [])
   )
 
-  // init linking listeners
-  useDeepLinking(true)
+  useEffect(() => {
+    if (
+      dappEvent &&
+      !showSecurityModal &&
+      !isLoadingBalances &&
+      context?.appNavHook?.navigation?.current
+    ) {
+      InteractionManager.runAfterInteractions(() => {
+        Logger.info('opening RcpMethods up to interact with dapps')
+        context.appNavHook.navigation.current?.navigate(
+          AppNavigation.Modal.RpcMethodsUI
+        )
+      })
+    }
+  }, [
+    dappEvent,
+    showSecurityModal,
+    isLoadingBalances,
+    context?.appNavHook?.navigation?.current
+  ])
 
   const onExit = (): void => {
     props.onExit()
@@ -364,19 +366,18 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
         />
         {BottomSheetGroup}
       </WalletScreenS.Navigator>
-      <RpcMethodsUI />
-      {/*<Modal visible={showSecurityModal} animationType={'slide'}>*/}
-      {/*  <PinOrBiometryLogin*/}
-      {/*    onSignInWithRecoveryPhrase={() => {*/}
-      {/*      signOut().then(() => {*/}
-      {/*        context.appNavHook.resetNavToEnterMnemonic()*/}
-      {/*      })*/}
-      {/*    }}*/}
-      {/*    onLoginSuccess={() => {*/}
-      {/*      dispatch(onAppUnlocked())*/}
-      {/*    }}*/}
-      {/*  />*/}
-      {/*</Modal>*/}
+      <Modal visible={showSecurityModal} animationType={'slide'} animated>
+        <PinOrBiometryLogin
+          onSignInWithRecoveryPhrase={() => {
+            signOut().then(() => {
+              context.appNavHook.resetNavToEnterMnemonic()
+            })
+          }}
+          onLoginSuccess={() => {
+            dispatch(onAppUnlocked())
+          }}
+        />
+      </Modal>
     </>
   )
 }

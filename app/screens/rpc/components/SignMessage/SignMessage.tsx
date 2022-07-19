@@ -13,17 +13,37 @@ import SignDataV4 from 'screens/rpc/components/SignMessage/SignDataV4'
 import { NativeViewGestureHandler } from 'react-native-gesture-handler'
 import FlexSpacer from 'components/FlexSpacer'
 import { MessageAction, MessageType } from 'services/walletconnect/types'
+import { DappEvent } from 'contexts/DappConnectionContext'
 
 interface Props {
-  action: MessageAction
+  dappEvent?: DappEvent
   onRejected: () => void
-  onApproved: (customParams: any) => Promise<void>
+  onApprove: (payload: DappEvent) => Promise<{ hash?: string; error?: any }>
+  onClose: () => void
 }
 
-const SignMessage: FC<Props> = ({ action, onRejected, onApproved }) => {
+const SignMessage: FC<Props> = ({
+  onRejected,
+  onApprove,
+  dappEvent,
+  onClose
+}) => {
   const theme = useApplicationContext().theme
-  console.log('action', action)
+  if (!dappEvent?.payload) {
+    onClose()
+    return null
+  }
+  const action: MessageAction = {
+    id: dappEvent.payload?.id,
+    site: dappEvent.peerMeta,
+    method: dappEvent.payload?.method,
+    displayData: dappEvent?.payload.data
+  }
   const styles = createStyles()
+  function onHandleApprove() {
+    dappEvent && onApprove(dappEvent)
+    onClose()
+  }
   return (
     <NativeViewGestureHandler>
       <SafeAreaView
@@ -46,14 +66,13 @@ const SignMessage: FC<Props> = ({ action, onRejected, onApproved }) => {
             />
           </OvalTagBg>
           <View style={styles.domainUrlContainer}>
-            {/*<AvaText.Heading2 textStyle={{ textAlign: 'center' }}>*/}
-            {/*  {title}*/}
-            {/*</AvaText.Heading2>*/}
-            <AvaText.Body3 color={theme.colorText1}>
+            <AvaText.Body3
+              color={theme.colorText1}
+              textStyle={{ textAlign: 'center' }}>
               {action?.site?.name} requests you to sign the following message
             </AvaText.Body3>
           </View>
-          <Space y={16} />
+          <Space y={18} />
           {
             {
               [MessageType.ETH_SIGN]: <EthSign action={action} />,
@@ -64,7 +83,7 @@ const SignMessage: FC<Props> = ({ action, onRejected, onApproved }) => {
         </View>
         <FlexSpacer />
         <View style={styles.actionContainer}>
-          <AvaButton.PrimaryMedium onPress={onApproved}>
+          <AvaButton.PrimaryMedium onPress={onHandleApprove}>
             Approve
           </AvaButton.PrimaryMedium>
           <Space y={21} />

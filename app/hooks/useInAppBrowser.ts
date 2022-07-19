@@ -1,14 +1,18 @@
 import { InAppBrowser } from 'react-native-inappbrowser-reborn'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Alert, Linking } from 'react-native'
-import { Moonpay } from '@avalabs/blizzard-sdk'
 import { resolve } from '@avalabs/utils-sdk'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 
+const moonpayURL = async (address: string): Promise<{ url: string }> => {
+  return await fetch(`${process.env.GLACIER_PROD_URL}/moonpay/${address}`).then(
+    response => response.json()
+  )
+}
+
 const useInAppBrowser = () => {
   const { theme } = useApplicationContext()
-  const moonAPI = new Moonpay({ baseUrl: 'https://blizzard.avax.network' })
   const addressC = useSelector(selectActiveAccount)?.address ?? ''
 
   function failSafe(url: string) {
@@ -16,11 +20,9 @@ const useInAppBrowser = () => {
   }
 
   async function openMoonPay() {
-    const [result, error] = await resolve(
-      moonAPI.getUrl(addressC, { color: theme.colorPrimary1 })
-    )
+    const [result, error] = await resolve(moonpayURL(addressC))
 
-    const moonpayUrl = result?.data?.url ?? ''
+    const moonpayUrl = result?.url ?? ''
 
     Alert.alert(
       !error ? 'Attention' : 'Oh-oh',

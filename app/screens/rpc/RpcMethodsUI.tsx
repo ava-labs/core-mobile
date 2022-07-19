@@ -1,96 +1,100 @@
-import React from 'react'
+import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import AccountApproval from 'screens/rpc/components/AccountApproval'
 import SignTransaction from 'screens/rpc/components/SignTransaction'
 import SignMessage from 'screens/rpc/components/SignMessage/SignMessage'
-import BottomSheet from 'components/BottomSheet'
-import { useRpcTxHandler } from 'screens/rpc/useRpcTxHandler'
 import { RPC_EVENT } from 'screens/rpc/util/types'
+import { useDappConnectionContext } from 'contexts/DappConnectionContext'
+import { useNavigation } from '@react-navigation/native'
+import { InteractionManager } from 'react-native'
+import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet'
+import AvaxSheetHandle from 'components/AvaxSheetHandle'
+import TabViewBackground from 'components/TabViewBackground'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 const RpcMethodsUI = () => {
+  const { goBack } = useNavigation()
+  const bottomSheetModalRef = useRef<BottomSheet>(null)
+  const snapPoints = useMemo(() => ['0%', '90%'], [])
   const {
-    loading,
-    hash,
-    eventType,
-    currentPeerMeta,
-    currentPayload,
-    signMessageParams,
-    onCallApproved,
-    onCallRejected,
+    dappEvent,
     onSessionApproved,
-    onSessionRejected
-  } = useRpcTxHandler()
+    onSessionRejected,
+    onMessageCallApproved,
+    onTransactionCallApproved,
+    onCallRejected
+  } = useDappConnectionContext()
+
+  useEffect(() => {
+    // intentionally setting delay so animation is visible.
+    setTimeout(() => {
+      bottomSheetModalRef?.current?.snapTo(1)
+    }, 100)
+  }, [])
+
+  useEffect(() => {
+    if (dappEvent === undefined) {
+      handleClose()
+    }
+  }, [dappEvent])
+
+  const handleClose = useCallback(() => {
+    bottomSheetModalRef?.current?.close()
+    InteractionManager.runAfterInteractions(() => goBack())
+  }, [])
+
+  const handleChange = useCallback(index => {
+    index === 0 && handleClose()
+  }, [])
 
   function renderSignTransaction() {
-    const isEventTx = eventType === RPC_EVENT.TRANSACTION
     return (
-      <BottomSheet
-        snapPoints={['0%', '95%']}
-        snapTo={isEventTx ? 1 : 0}
-        disablePanningGesture
-        children={
-          isEventTx &&
-          currentPayload && (
-            <SignTransaction
-              onReject={onCallRejected}
-              onApprove={onCallApproved}
-              rpcRequest={currentPayload}
-              peerMeta={currentPeerMeta}
-              loading={loading}
-              hash={hash}
-            />
-          )
-        }
+      <SignTransaction
+        onReject={onCallRejected}
+        onApprove={onTransactionCallApproved}
+        dappEvent={dappEvent}
+        onClose={handleClose}
       />
     )
   }
 
   function renderSessionRequest() {
-    const isEventSession = eventType === RPC_EVENT.SESSION
     return (
-      <BottomSheet
-        snapPoints={['0%', '90%']}
-        snapTo={isEventSession ? 1 : 0}
-        disablePanningGesture
-        children={
-          isEventSession && (
-            <AccountApproval
-              onReject={onSessionRejected}
-              onApprove={onSessionApproved}
-              peerMeta={currentPeerMeta}
-            />
-          )
-        }
+      <AccountApproval
+        onReject={onSessionRejected}
+        onApprove={onSessionApproved}
+        dappEvent={dappEvent}
       />
     )
   }
 
   function renderSignMessage() {
-    const isEventSign = eventType === RPC_EVENT.SIGN
     return (
-      <BottomSheet
-        snapPoints={['0%', '95%']}
-        snapTo={isEventSign ? 1 : 0}
-        disablePanningGesture
-        children={
-          signMessageParams &&
-          isEventSign && (
-            <SignMessage
-              onRejected={onCallRejected}
-              onApproved={onCallApproved}
-              action={signMessageParams}
-            />
-          )
-        }
+      <SignMessage
+        onRejected={onCallRejected}
+        onApprove={onMessageCallApproved}
+        dappEvent={dappEvent}
+        onClose={handleClose}
       />
     )
   }
 
   return (
-    <>
-      {renderSignTransaction()}
-      {renderSignMessage()}
-      {renderSessionRequest()}
-    </>
+    <BottomSheet
+      backdropComponent={BottomSheetBackdrop}
+      handleComponent={AvaxSheetHandle}
+      ref={bottomSheetModalRef}
+      index={0}
+      snapPoints={snapPoints}
+      backgroundComponent={TabViewBackground}
+      onChange={handleChange}>
+      <SafeAreaView style={{ flex: 1 }}>
+        {(dappEvent?.eventType === RPC_EVENT.SIGN && renderSignMessage()) ||
+          (dappEvent?.eventType === RPC_EVENT.SESSION &&
+            renderSessionRequest()) ||
+          (dappEvent?.eventType === RPC_EVENT.TRANSACTION &&
+            renderSignTransaction())}
+      </SafeAreaView>
+    </BottomSheet>
   )
 }
 

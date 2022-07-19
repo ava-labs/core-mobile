@@ -15,8 +15,6 @@ import {
 
 const BN_ZERO = new BN(0)
 
-const BN_ZERO = new BN(0)
-
 const reducerName = 'balance'
 
 const initialState: BalanceState = {
@@ -123,7 +121,7 @@ export const selectTokenByAddress = (address: string) => (state: RootState) => {
 
   for (const balance of balances) {
     for (const token of balance.tokens) {
-      if (token.address === address) return token
+      if (token?.address === address) return token
     }
   }
   return undefined

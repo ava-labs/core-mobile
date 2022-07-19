@@ -9,6 +9,7 @@ import {
   TransactionParams,
   SwapExactTokensForTokenDisplayValues
 } from 'screens/rpc/util/types'
+import { Network } from '@avalabs/chains-sdk'
 import { findToken } from './utils/findToken'
 
 export interface SwapExactTokensForAVAXData {
@@ -21,6 +22,7 @@ export interface SwapExactTokensForAVAXData {
 }
 
 export async function swapExactTokensForAvax(
+  network: Network,
   /**
    * The from on request represents the wallet and the to represents the contract
    */
@@ -37,11 +39,13 @@ export async function swapExactTokensForAvax(
     (data.amountIn || data.amountOutMin).toHexString()
   )
   const amountValue = bigToLocaleString(
-    bnToBig(lastTokenAmountBN, firstTokenInPath.denomination),
+    bnToBig(lastTokenAmountBN, firstTokenInPath.decimals),
     4
   )
   const amountUSDValue =
-    (Number(firstTokenInPath.priceUSD) * Number(amountValue)).toFixed(2) ?? ''
+    (Number(firstTokenInPath.priceInCurrency) * Number(amountValue)).toFixed(
+      2
+    ) ?? ''
 
   const tokenSwapped = {
     ...firstTokenInPath,
@@ -68,7 +72,7 @@ export async function swapExactTokensForAvax(
   const result = {
     path: [tokenSwapped, avaxToken],
     contractType: ContractCall.SWAP_EXACT_TOKENS_FOR_TOKENS,
-    ...parseDisplayValues(request, props)
+    ...parseDisplayValues(network, request, props)
   }
 
   return result

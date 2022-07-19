@@ -13,27 +13,28 @@ import { Row } from 'components/Row'
 import CarrotSVG from 'components/svg/CarrotSVG'
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import AccountItem from 'screens/portfolio/account/AccountItem'
-import { PeerMetadata } from 'screens/rpc/util/types'
 import { useDispatch, useSelector } from 'react-redux'
 import { Account, selectAccounts, setActiveAccountIndex } from 'store/account'
 import { useActiveAccount } from 'hooks/useActiveAccount'
+import { DappEvent } from 'contexts/DappConnectionContext'
 
 interface Props {
-  peerMeta: PeerMetadata
+  dappEvent?: DappEvent
   onApprove: () => void
   onReject: () => void
 }
 
-const AccountApproval: FC<Props> = ({ peerMeta, onApprove, onReject }) => {
+const AccountApproval: FC<Props> = ({ dappEvent, onApprove, onReject }) => {
   const theme = useApplicationContext().theme
   const accounts = useSelector(selectAccounts)
   const activeAccount = useActiveAccount()
   const dispatch = useDispatch()
   const [toggleAccountList, setToggleAccountList] = useState(false)
-
   const onSelectAccount = (accountIndex: number) => {
     dispatch(setActiveAccountIndex(accountIndex))
   }
+
+  const peerMeta = dappEvent?.peerMeta
 
   return (
     <NativeViewGestureHandler>
@@ -48,13 +49,15 @@ const AccountApproval: FC<Props> = ({ peerMeta, onApprove, onReject }) => {
         <View style={{ justifyContent: 'center', alignItems: 'center' }}>
           <OvalTagBg
             style={{ height: 80, width: 80, backgroundColor: theme.colorBg3 }}>
-            <Avatar.Custom name={'dapp'} logoUri={peerMeta.icon} size={48} />
+            <Avatar.Custom name={'dapp'} logoUri={peerMeta?.icon} size={48} />
           </OvalTagBg>
           <View style={styles.domainUrlContainer}>
             <AvaText.Heading2 textStyle={{ textAlign: 'center' }}>
-              {peerMeta.name}
+              {peerMeta?.name}
             </AvaText.Heading2>
-            <AvaText.Body3 color={theme.colorText1}>{peerMeta.url}</AvaText.Body3>
+            <AvaText.Body3 color={theme.colorText1}>
+              {peerMeta?.url}
+            </AvaText.Body3>
           </View>
           <Space y={16} />
         </View>

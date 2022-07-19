@@ -6,9 +6,11 @@ import {
   ContractCall,
   ContractParser,
   DisplayValueParserProps,
-  TransactionParams,
-  SwapExactTokensForTokenDisplayValues
+  erc20PathToken,
+  SwapExactTokensForTokenDisplayValues,
+  TransactionParams
 } from 'screens/rpc/util/types'
+import { Network } from '@avalabs/chains-sdk'
 import { findToken } from './utils/findToken'
 
 export interface SwapAVAXForExactTokensData {
@@ -24,6 +26,7 @@ export interface SwapAVAXForExactTokensData {
 }
 
 export async function swapAVAXForExactTokens(
+  network: Network,
   /**
    * The from on request represents the wallet and the to represents the contract
    */
@@ -37,15 +40,15 @@ export async function swapAVAXForExactTokens(
 ): Promise<SwapExactTokensForTokenDisplayValues> {
   const avaxAmountInBN = request.value ? hexToBN(request.value) : new BN(0)
   const amountAvaxValue = bigToLocaleString(bnToBig(avaxAmountInBN, 18), 4)
-  const amountAvaxUSDValue =
+  const amountAvaxCurrency =
     (Number(props.avaxPrice) * Number(amountAvaxValue)).toFixed(2) ?? ''
-  const avaxToken = {
+  const avaxToken: erc20PathToken = {
     ...props.avaxToken,
     amountIn: {
       bn: avaxAmountInBN,
       value: amountAvaxValue
     },
-    amountUSDValue: amountAvaxUSDValue
+    amountCurrencyValue: amountAvaxCurrency
   }
 
   const lastTokenInPath = await findToken(
@@ -55,11 +58,13 @@ export async function swapAVAXForExactTokens(
     (data.amountOut || data.amountOutMin).toHexString()
   )
   const amountValue = bigToLocaleString(
-    bnToBig(lastTokenAmountBN, lastTokenInPath?.denomination),
+    bnToBig(lastTokenAmountBN, lastTokenInPath?.decimals),
     4
   )
   const amountUSDValue =
-    (Number(lastTokenInPath?.priceUSD) * Number(amountValue)).toFixed(2) ?? ''
+    (Number(lastTokenInPath?.priceInCurrency) * Number(amountValue)).toFixed(
+      2
+    ) ?? ''
 
   const tokenReceived = {
     ...lastTokenInPath,
@@ -70,13 +75,11 @@ export async function swapAVAXForExactTokens(
     amountUSDValue
   }
 
-  const result = {
+  return {
     path: [avaxToken, tokenReceived],
     contractType: ContractCall.SWAP_EXACT_TOKENS_FOR_TOKENS,
-    ...parseDisplayValues(request, props)
+    ...parseDisplayValues(network, request, props)
   }
-
-  return result
 }
 
 export const SwapAvaxForExactTokensParser: ContractParser = [
