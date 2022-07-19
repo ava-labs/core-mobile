@@ -14,13 +14,12 @@ import { mustNumber } from 'utils/JsTools'
 import { BN } from 'avalanche'
 import { TokenWithBalance } from 'store/balance'
 import { selectActiveNetwork, TokenSymbol } from 'store/network'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import sendService from 'services/send/SendService'
 import { SendState } from 'services/send/types'
 import { bnToEthersBigNumber, bnToLocaleString } from '@avalabs/utils-sdk'
 import { useNativeTokenPrice } from 'hooks/useNativeTokenPrice'
-import { fetchNetworkFee } from 'store/networkFee'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
@@ -50,7 +49,6 @@ export const SendTokenContext = createContext<SendTokenContextState>({} as any)
 
 export const SendTokenContextProvider = ({ children }: { children: any }) => {
   const { theme } = useApplicationContext()
-  const dispatch = useDispatch()
   const { capture } = usePosthogContext()
   const activeAccount = useSelector(selectActiveAccount)
   const activeNetwork = useSelector(selectActiveNetwork)
@@ -80,7 +78,9 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
     sendFeeBN,
     activeNetwork.networkToken.decimals
   )
-  const sendFeeInCurrency = Number.parseFloat(sendFeeNative) * nativeTokenPrice
+  const sendFeeInCurrency = (
+    Number.parseFloat(sendFeeNative) * nativeTokenPrice
+  ).toFixed(2)
   const [selectedFeePreset, setSelectedFeePreset] = useState<FeePreset>(
     FeePreset.Normal
   )
@@ -114,10 +114,6 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
   const [canSubmit, setCanSubmit] = useState(false)
   const [error, setError] = useState<string | undefined>()
 
-  useEffect(() => {
-    dispatch(fetchNetworkFee)
-  }, [dispatch])
-
   useEffect(validateStateFx, [
     activeAccount,
     activeNetwork,
@@ -144,6 +140,7 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
       address: sendToAddress,
       amount: sendAmountBN,
       gasPrice: customGasPriceBig,
+      gasLimit,
       token: sendToken
     } as SendState
     sendService
@@ -244,7 +241,7 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
       setSelectedFeePreset
     },
     tokenLogo,
-    canSubmit: canSubmit ?? false,
+    canSubmit,
     sendStatus,
     sendStatusMsg,
     onSendNow,
@@ -274,7 +271,7 @@ export interface Account {
 
 export interface Fees {
   sendFeeNative: string | undefined
-  sendFeeInCurrency: number | undefined
+  sendFeeInCurrency: string | undefined
   customGasPrice: BN
   setCustomGasPrice: Dispatch<BN>
   gasLimit: number | undefined

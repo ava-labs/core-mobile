@@ -7,8 +7,6 @@ import InputText from 'components/InputText'
 import { Popable } from 'react-native-popable'
 import NetworkFeeSelector, { FeePreset } from 'components/NetworkFeeSelector'
 import { Row } from 'components/Row'
-import { useSelector } from 'react-redux'
-import { selectActiveNetwork } from 'store/network'
 import { BigNumber } from 'ethers'
 import Big from 'big.js'
 
@@ -62,15 +60,12 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
   gasLimit,
   gasPrice,
   slippage,
-  setSlippage,
-  maxGasPrice,
-  selectedGasFee
+  setSlippage
 }) => {
   // const { gasPrice } = useGasPrice()
   const { theme } = useApplicationContext()
   // const { trxDetails } = useSwapContext()
 
-  const activeNetwork = useSelector(selectActiveNetwork)
   // const { navigate } = useNavigation<NavigationProp>()
   const slippageInfoMessage = popableContent(
     'Suggested slippage – your transaction will fail if the price changes unfavorably more than this percentage',
@@ -155,14 +150,12 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
       {!review && (
         <>
           <Space y={16} />
-          <NetworkFeeSelector
-            gasPrice={gasPrice}
-            limit={gasLimit}
-            maxGasPrice={maxGasPrice}
-            network={activeNetwork}
-            currentModifier={selectedGasFee}
-            onChange={onGasChange}
-          />
+          <NetworkFeeSelector gasLimit={gasLimit} onChange={onGasChange} />
+          {/*<AvaText.Body3*/}
+          {/*  currency*/}
+          {/*  textStyle={{ marginTop: 4, alignSelf: 'flex-end' }}>*/}
+          {/*  {'test'}*/}
+          {/*</AvaText.Body3>*/}
         </>
       )}
       <Space y={16} />
