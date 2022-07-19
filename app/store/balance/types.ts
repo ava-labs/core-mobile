@@ -11,17 +11,17 @@ export enum TokenType {
 type TokenBalanceData = {
   type: TokenType
   balance: BN
-  balanceInCurrency: number
-  balanceDisplayValue: string
-  balanceCurrencyDisplayValue: string
-  priceInCurrency: number
+  balanceInCurrency?: number
+  balanceDisplayValue?: string
+  balanceCurrencyDisplayValue?: string
+  priceInCurrency?: number
   utxos?: BitcoinInputUTXO[]
 }
 
 type TokenMarketData = {
-  marketCap: number
-  change24: number
-  vol24: number
+  marketCap?: number
+  change24?: number
+  vol24?: number
 }
 
 export type NetworkTokenWithBalance = TokenBalanceData &
@@ -35,7 +35,7 @@ export type NetworkTokenWithBalance = TokenBalanceData &
 export type TokenWithBalanceERC20 = TokenBalanceData &
   TokenMarketData &
   NetworkContractToken & {
-    id: string // chainId + token contract address
+    id?: string // chainId + token contract address
     type: TokenType.ERC20
   }
 

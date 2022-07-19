@@ -118,6 +118,17 @@ export const selectTokenById = (tokenId: string) => (state: RootState) => {
   return undefined
 }
 
+export const selectTokenByAddress = (address: string) => (state: RootState) => {
+  const balances = Object.values(state.balance.balances)
+
+  for (const balance of balances) {
+    for (const token of balance.tokens) {
+      if (token.address === address) return token
+    }
+  }
+  return undefined
+}
+
 export const selectBalanceTotalInCurrencyForAccount =
   (accountIndex: number) => (state: RootState) => {
     const isDeveloperMode = selectIsDeveloperMode(state)
