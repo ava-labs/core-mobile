@@ -3,6 +3,9 @@ import networkService from 'services/network/NetworkService'
 import walletService from 'services/wallet/WalletService'
 import { Account } from 'store/account'
 import { SendServiceEVM } from 'services/send/SendServiceEVM'
+import { NFTItemData } from 'store/nft'
+import { TokenType, TokenWithBalanceERC721 } from 'store/balance'
+import { BN } from 'avalanche'
 import { isValidSendState, SendServiceHelper, SendState } from './types'
 import sendServiceBTC from './SendServiceBTC'
 
@@ -66,6 +69,28 @@ class SendService {
       fromAddress,
       currency
     )
+  }
+
+  mapTokenFromNFT(nft: NFTItemData): TokenWithBalanceERC721 {
+    return {
+      id: nft.tokenId,
+      type: TokenType.ERC721,
+      address: nft.contractAddress,
+      logoUri: nft.image,
+      name: nft.name,
+      symbol: nft.symbol,
+      //unused but included to conform to TokenWithBalanceERC721
+      balanceInCurrency: 0,
+      balanceDisplayValue: '',
+      balanceCurrencyDisplayValue: '',
+      priceInCurrency: 0,
+      decimals: 0,
+      description: '',
+      marketCap: 0,
+      change24: 0,
+      vol24: 0,
+      balance: new BN(0)
+    }
   }
 
   private getService(

@@ -3,7 +3,8 @@ import { BITCOIN_NETWORK, BITCOIN_TEST_NETWORK } from '@avalabs/chains-sdk'
 import {
   BitcoinInputUTXO,
   BitcoinOutputUTXO,
-  createTransferTx
+  createTransferTx,
+  getMaxTransferAmount
 } from '@avalabs/wallets-sdk'
 import BN from 'bn.js'
 import {
@@ -54,56 +55,63 @@ class SendServiceBTC implements SendServiceHelper {
     fromAddress: string,
     currency: string
   ): Promise<SendState | ValidSendState> {
-    const { amount, address } = sendState
+    const { amount, address: toAddress } = sendState
     const feeRate = sendState.gasPrice?.toNumber()
-    const toAddress = address || fromAddress // in case address from form is blank
     const amountInSatoshis = amount?.toNumber() || 0
-    const { balance, utxos } = await this.getBalance(
-      isMainnet,
-      fromAddress,
-      currency
-    )
+    const { utxos } = await this.getBalance(isMainnet, fromAddress, currency)
     const provider = await networkService.getBitcoinProvider(isMainnet)
 
-    const { fee: maxFee } = createTransferTx(
-      toAddress,
-      fromAddress,
-      balance,
-      feeRate || 0,
-      utxos,
-      provider.getNetwork()
+    if (!feeRate)
+      return this.getErrorState(
+        {
+          ...sendState
+        },
+        SendErrorMessage.INVALID_NETWORK_FEE
+      )
+
+    // Estimate max send amount based on UTXOs and fee rate
+    // Since we are only using bech32 addresses we can use this.address to estimate
+    const maxAmount = new BN(
+      Math.max(
+        getMaxTransferAmount(utxos, fromAddress, fromAddress, feeRate),
+        0
+      )
     )
-    let maxAmount = maxFee ? balance - maxFee : 0
-    if (maxAmount < 0) {
-      maxAmount = 0
-    }
+
+    if (!toAddress)
+      return this.getErrorState(
+        {
+          ...sendState,
+          maxAmount
+        },
+        SendErrorMessage.ADDRESS_REQUIRED
+      )
+
+    // Validate the destination address
+    const isAddressValid = isBech32AddressInNetwork(toAddress, isMainnet)
+
+    if (!isAddressValid)
+      return this.getErrorState(
+        { ...sendState, canSubmit: false, maxAmount },
+        SendErrorMessage.INVALID_ADDRESS
+      )
 
     const { fee, psbt } = createTransferTx(
       toAddress,
       fromAddress,
       amountInSatoshis,
-      feeRate || 0,
+      feeRate,
       utxos,
       provider.getNetwork()
     )
 
     const newState: SendState = {
       ...sendState,
-      canSubmit: true,
-      loading: !maxAmount || typeof feeRate === 'undefined',
+      canSubmit: !!psbt,
       error: undefined,
-      maxAmount: new BN(maxAmount),
+      maxAmount,
       sendFee: new BN(fee)
     }
-
-    if (!toAddress)
-      return this.getErrorState(newState, SendErrorMessage.ADDRESS_REQUIRED)
-
-    if (toAddress && !isBech32AddressInNetwork(toAddress, isMainnet))
-      return this.getErrorState(newState, SendErrorMessage.INVALID_ADDRESS)
-
-    if (!feeRate)
-      return this.getErrorState(newState, SendErrorMessage.INVALID_NETWORK_FEE)
 
     if (!amountInSatoshis)
       return this.getErrorState(newState, SendErrorMessage.AMOUNT_REQUIRED)

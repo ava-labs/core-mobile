@@ -5,23 +5,49 @@ import { Space } from 'components/Space'
 import InputText from 'components/InputText'
 import AvaButton from 'components/AvaButton'
 import AddressBookSVG from 'components/svg/AddressBookSVG'
-import AddressBookLists from 'components/addressBook/AddressBookLists'
+import AddressBookLists, {
+  AddressBookSource
+} from 'components/addressBook/AddressBookLists'
 import FlexSpacer from 'components/FlexSpacer'
 import { useAddressBookLists } from 'components/addressBook/useAddressBookLists'
 import { AddrBookItemType, Contact } from 'Repo'
-import { NFTItemData } from 'screens/nft/NftCollection'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Row } from 'components/Row'
 import { useSendNFTContext } from 'contexts/SendNFTContext'
 import { Opacity85 } from 'resources/Constants'
 import { Account } from 'store/account'
+import { NFTItemData } from 'store/nft'
+import NetworkFeeSelector from 'components/NetworkFeeSelector'
+import { useSelector } from 'react-redux'
+import { selectActiveNetwork } from 'store/network'
+import { NetworkVMType } from '@avalabs/chains-sdk'
+import { usePosthogContext } from 'contexts/PosthogContext'
+import { ethersBigNumberToBN } from '@avalabs/utils-sdk'
 
 export type NftSendScreenProps = {
   onNext: () => void
+  onOpenAddressBook: () => void
 }
 
-export default function NftSend({ onNext }: NftSendScreenProps) {
-  const { sendToken: nft, toAccount, canSubmit } = useSendNFTContext()
+export default function NftSend({
+  onNext,
+  onOpenAddressBook
+}: NftSendScreenProps) {
+  const { theme } = useApplicationContext()
+  const { capture } = usePosthogContext()
+  const {
+    sendToken: nft,
+    toAccount,
+    canSubmit,
+    sdkError,
+    fees
+  } = useSendNFTContext()
+  const activeNetwork = useSelector(selectActiveNetwork)
+  const placeholder =
+    activeNetwork.vmName === NetworkVMType.EVM
+      ? 'Enter 0x Address'
+      : 'Enter Bitcoin Address'
+
   const {
     saveRecentContact,
     onContactSelected: selectContact,
@@ -39,15 +65,31 @@ export default function NftSend({ onNext }: NftSendScreenProps) {
     if (toAccount.address) {
       setShowAddressBook(false)
     }
-  }, [toAccount.address])
+  }, [setShowAddressBook, toAccount.address])
+
+  function setAddress({ address, title }: { address: string; title: string }) {
+    toAccount.setAddress?.(address)
+    toAccount.setTitle?.(title)
+  }
 
   const onContactSelected = (
     item: Contact | Account,
-    type: AddrBookItemType
+    type: AddrBookItemType,
+    source: AddressBookSource
   ) => {
-    toAccount.setAddress?.(item.address)
-    toAccount.setTitle?.(item.title)
+    switch (activeNetwork.vmName) {
+      case NetworkVMType.EVM:
+        setAddress({ address: item.address, title: item.title })
+        break
+      case NetworkVMType.BITCOIN:
+        setAddress({
+          address: item.addressBtc,
+          title: item.title
+        })
+        break
+    }
     selectContact(item, type)
+    capture('SendContactSelected', { contactSource: source })
   }
 
   return (
@@ -57,7 +99,7 @@ export default function NftSend({ onNext }: NftSendScreenProps) {
       <AvaText.Heading3>Send to</AvaText.Heading3>
       <View style={{ marginHorizontal: -16 }}>
         <InputText
-          placeholder="Enter 0x Address"
+          placeholder={placeholder}
           multiline={true}
           onChangeText={text => {
             toAccount.setAddress?.(text)
@@ -84,20 +126,32 @@ export default function NftSend({ onNext }: NftSendScreenProps) {
         <View style={{ marginHorizontal: -16, flex: 1 }}>
           <AddressBookLists
             onContactSelected={onContactSelected}
-            navigateToAddressBook={() => {
-              // TODO: navigate to address book
-            }}
+            navigateToAddressBook={onOpenAddressBook}
           />
         </View>
       ) : (
         <>
           <AvaText.Heading3>Collectible</AvaText.Heading3>
           <CollectibleItem nft={nft} />
+          <Space y={8} />
+          <NetworkFeeSelector
+            gasLimit={fees.gasLimit ?? 0}
+            onChange={(gasLimit, gasPrice1, feePreset) => {
+              fees.setGasLimit(gasLimit)
+              fees.setCustomGasPrice(ethersBigNumberToBN(gasPrice1))
+              fees.setSelectedFeePreset(feePreset)
+            }}
+          />
+          <Space y={8} />
+          <AvaText.Body3 textStyle={{ color: theme.colorError }}>
+            {sdkError ?? ''}
+          </AvaText.Body3>
+          <Space y={8} />
           <FlexSpacer />
         </>
       )}
       <AvaButton.PrimaryLarge
-        disabled={!canSubmit}
+        disabled={!toAccount.address || !canSubmit}
         onPress={onNextPress}
         style={{ marginBottom: 16 }}>
         Next
@@ -119,14 +173,12 @@ const CollectibleItem = ({ nft }: { nft: NFTItemData }) => {
       <Row>
         <Image
           style={styles.nftImage}
-          source={{ uri: nft.external_data.image_256 }}
+          source={{ uri: nft.image }}
           width={80}
           height={80}
         />
         <Space x={16} />
-        <AvaText.Body2 textStyle={{ flex: 1 }}>
-          {nft.external_data.name}
-        </AvaText.Body2>
+        <AvaText.Body2 textStyle={{ flex: 1 }}>{nft.name}</AvaText.Body2>
       </Row>
     </View>
   )

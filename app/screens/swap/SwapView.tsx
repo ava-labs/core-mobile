@@ -16,7 +16,6 @@ import {
   TokenType,
   TokenWithBalance
 } from 'store/balance'
-import { useNetworkFee } from 'hooks/useNetworkFee'
 import { useSelector } from 'react-redux'
 import { SwapSide } from 'paraswap-core'
 import { BigNumber } from 'ethers'
@@ -31,6 +30,7 @@ import { getTokenAddress } from 'swap/getSwapRate'
 import SwapTransactionDetail from 'screens/swap/components/SwapTransactionDetails'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import { calculateRate } from 'swap/utils'
+import { selectNetworkFee } from 'store/networkFee'
 
 type NavigationProp = SwapScreenProps<
   typeof AppNavigation.Swap.Swap
@@ -45,7 +45,7 @@ export default function SwapView() {
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<NavigationProp>()
   const activeNetwork = useActiveNetwork()
-  const networkFee = useNetworkFee().networkFees
+  const networkFee = useSelector(selectNetworkFee)
   const tokensWithBalance = useSelector(selectTokensWithBalance)
   const tokensWithZeroBalance = useSelector(selectTokensWithZeroBalance)
   const avaxPrice = useSelector(selectAvaxPrice)

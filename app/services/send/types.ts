@@ -26,7 +26,6 @@ export interface SendState<T extends TokenWithBalance = TokenWithBalance> {
   gasPrice?: BigNumber
   gasLimit?: number
   canSubmit?: boolean
-  loading?: boolean
   token?: T
   txId?: string
 }

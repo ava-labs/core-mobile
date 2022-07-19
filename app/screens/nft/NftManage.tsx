@@ -2,38 +2,50 @@ import React, { useMemo, useState } from 'react'
 import { FlatList, StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import SearchBar from 'components/SearchBar'
-import { NFTItemData } from 'screens/nft/NftCollection'
 import ZeroState from 'components/ZeroState'
 import { COLORS_DAY, COLORS_NIGHT, Opacity85 } from 'resources/Constants'
 import AvaListItem from 'components/AvaListItem'
 import Avatar from 'components/Avatar'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import Switch from 'components/Switch'
+import { NFTItemData, saveNFT, selectNftCollection } from 'store/nft'
+import { useDispatch, useSelector } from 'react-redux'
+import { selectActiveNetwork } from 'store/network'
+import { selectActiveAccount } from 'store/account'
 
 const NftManage = () => {
   const { theme } = useApplicationContext()
-  const { nftRepo } = useApplicationContext().repo
   const [searchText, setSearchText] = useState('')
+  const dispatch = useDispatch()
+  const network = useSelector(selectActiveNetwork)
+  const account = useSelector(selectActiveAccount)
+  const nfts = useSelector(selectNftCollection)
 
   const filteredData = useMemo(() => {
-    return [...nftRepo.nfts.values()].filter(nft => {
+    return nfts.filter(nft => {
       return (
         searchText.length === 0 ||
-        nft.token_id.toLowerCase().includes(searchText.toLowerCase()) ||
-        nft.collection.contract_name
-          .toLowerCase()
-          .includes(searchText.toLowerCase())
+        nft.tokenId.toLowerCase().includes(searchText.toLowerCase()) ||
+        nft.name.toLowerCase().includes(searchText.toLowerCase())
       )
     })
-  }, [nftRepo.nfts, searchText])
+  }, [nfts, searchText])
 
   const updateSearch = (searchVal: string) => {
     setSearchText(searchVal)
   }
 
-  const onItemToggled = (item: NFTItemData, isVisible: boolean) => {
-    item.isShowing = isVisible
-    nftRepo.saveNfts(nftRepo.nfts)
+  const onItemToggled = (item: NFTItemData) => {
+    dispatch(
+      saveNFT({
+        chainId: network.chainId,
+        address: account!.address,
+        token: {
+          ...item,
+          isShowing: !item.isShowing
+        }
+      })
+    )
   }
 
   return (
@@ -54,7 +66,7 @@ const NftManage = () => {
 
 const renderItemList = (
   item: NFTItemData,
-  onItemToggled: (item: NFTItemData, isVisible: boolean) => void,
+  onItemToggled: (item: NFTItemData) => void,
   theme: typeof COLORS_DAY | typeof COLORS_NIGHT
 ) => {
   return (
@@ -65,18 +77,13 @@ const renderItemList = (
         backgroundColor: theme.colorBg2 + Opacity85
       }}>
       <AvaListItem.Base
-        title={item.token_id}
-        subtitle={item.collection.contract_name}
-        leftComponent={
-          <Avatar.Custom
-            name={item.collection.contract_name}
-            logoUri={item.external_data.image_256}
-          />
-        }
+        title={item.tokenId}
+        subtitle={item.name}
+        leftComponent={<Avatar.Custom name={item.name} logoUri={item.image} />}
         rightComponent={
           <Switch
             value={item.isShowing}
-            onValueChange={value => onItemToggled(item, value)}
+            onValueChange={_ => onItemToggled(item)}
           />
         }
       />

@@ -1,4 +1,3 @@
-import { AddressHelper } from '@avalabs/avalanche-wallet-sdk'
 import {
   bnToEthersBigNumber,
   ethersBigNumberToBN,
@@ -23,6 +22,7 @@ import {
   TokenWithBalanceERC721
 } from 'store/balance'
 import ERC721 from '@openzeppelin/contracts/build/contracts/ERC721.json'
+import { isAddress } from '@ethersproject/address'
 
 export class SendServiceEVM implements SendServiceHelper {
   private readonly networkProvider: JsonRpcBatchInternal
@@ -61,37 +61,31 @@ export class SendServiceEVM implements SendServiceHelper {
       sendFee
     }
 
-    if (!gasPrice || gasPrice.isZero())
-      return SendServiceEVM.getErrorState(
-        newState,
-        SendErrorMessage.INVALID_NETWORK_FEE
-      )
-
-    if (!amount || amount.isZero())
-      return SendServiceEVM.getErrorState(
-        newState,
-        SendErrorMessage.AMOUNT_REQUIRED
-      )
-
     if (!address)
       return SendServiceEVM.getErrorState(
         newState,
         SendErrorMessage.ADDRESS_REQUIRED
       )
 
-    if (!AddressHelper.validateAddress(address))
+    if (!isAddress(address))
       return SendServiceEVM.getErrorState(
         newState,
         SendErrorMessage.INVALID_ADDRESS
       )
 
-    if (AddressHelper.getAddressChain(address) !== 'C')
+    if (!gasPrice || gasPrice.isZero())
       return SendServiceEVM.getErrorState(
         newState,
-        SendErrorMessage.C_CHAIN_REQUIRED
+        SendErrorMessage.INVALID_NETWORK_FEE
       )
 
-    if (amount.gt(maxAmount))
+    if (token.type !== TokenType.ERC721 && (!amount || amount.isZero()))
+      return SendServiceEVM.getErrorState(
+        newState,
+        SendErrorMessage.AMOUNT_REQUIRED
+      )
+
+    if (amount?.gt(maxAmount))
       return SendServiceEVM.getErrorState(
         newState,
         SendErrorMessage.INSUFFICIENT_BALANCE

@@ -17,20 +17,26 @@ class NetworkFeeService {
       const bigPrice = new Big(price.toString())
 
       return {
-        displayDecimals: 9, // use gwei to display amount
+        displayDecimals: 9,
+        nativeTokenDecimals: 18,
+        unit: 'nAVAX',
         low: price,
         medium: BigNumber.from(bigPrice.mul(1.05).toFixed(0)),
         high: BigNumber.from(bigPrice.mul(1.15).toFixed(0)),
-        isFixedFee: isSwimmer(network)
+        isFixedFee: isSwimmer(network),
+        nativeTokenSymbol: network.networkToken.symbol
       }
     } else if (network.vmName === NetworkVMType.BITCOIN) {
       const rates = await (provider as BitcoinProviderAbstract).getFeeRates()
       return {
         displayDecimals: 0, // display btc fees in satoshi
+        nativeTokenDecimals: 8,
+        unit: 'satoshi',
         low: BigNumber.from(rates.low),
         medium: BigNumber.from(rates.medium),
         high: BigNumber.from(rates.high),
-        isFixedFee: isSwimmer(network)
+        isFixedFee: isSwimmer(network),
+        nativeTokenSymbol: network.networkToken.symbol
       }
     }
     return null

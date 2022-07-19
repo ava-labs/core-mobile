@@ -22,6 +22,7 @@ import { watchlistReducer as watchlist } from './watchlist'
 import { zeroBalanceReducer as zeroBalance } from './zeroBalance'
 import { customTokenReducer as customToken } from './customToken'
 import { posthogReducer as posthog } from './posthog'
+import { nftReducer as nft } from './nft'
 import networkFee from './networkFee'
 import { addressBookReducer as addressBook } from './addressBook'
 import settings from './settings'
@@ -41,6 +42,7 @@ const combinedReducer = combineReducers({
   customToken,
   posthog,
   swap,
+  nft,
 
   // user preferences
   settings,

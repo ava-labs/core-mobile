@@ -5,7 +5,6 @@ import GridSVG from 'components/svg/GridSVG'
 import { Row } from 'components/Row'
 import AvaButton from 'components/AvaButton'
 import ListSVG from 'components/svg/ListSVG'
-import { NFTItemData } from 'screens/nft/NftCollection'
 import ZeroState from 'components/ZeroState'
 import AvaListItem from 'components/AvaListItem'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -18,6 +17,8 @@ import {
 import Avatar from 'components/Avatar'
 import MasonryList from '@react-native-seoul/masonry-list'
 import AvaText from 'components/AvaText'
+import { useSelector } from 'react-redux'
+import { NFTItemData, selectNftCollection } from 'store/nft'
 
 type ListType = 'grid' | 'list'
 
@@ -36,16 +37,13 @@ export default function NftListView({
   onItemSelected,
   onManagePressed
 }: NftListViewProps) {
-  const { nftRepo } = useApplicationContext().repo
+  const nfts = useSelector(selectNftCollection)
   const [listType, setListType] = useState<ListType>()
   const { theme } = useApplicationContext()
 
   const filteredData = useMemo(
-    () =>
-      [...nftRepo.nfts.values()].filter(
-        value => value.isShowing && !!value.aspect
-      ),
-    [nftRepo.nfts]
+    () => nfts.filter(value => value.isShowing && !!value.aspect),
+    [nfts]
   )
 
   return (
@@ -73,7 +71,7 @@ export default function NftListView({
       ) : (
         <MasonryList
           data={filteredData}
-          keyExtractor={(item: NFTItemData) => item.uid}
+          keyExtractor={item => item.uid}
           numColumns={2}
           showsVerticalScrollIndicator={true}
           renderItem={info => (
@@ -102,20 +100,14 @@ const renderItemList = (
         titleAlignment={'flex-start'}
         title={
           <AvaText.Heading2 ellipsizeMode={'tail'}>
-            #{item.token_id}
+            #{item.tokenId}
           </AvaText.Heading2>
         }
         subtitle={
-          <AvaText.Body2 ellipsizeMode={'tail'}>
-            {item.collection.contract_name}
-          </AvaText.Body2>
+          <AvaText.Body2 ellipsizeMode={'tail'}>{item.name}</AvaText.Body2>
         }
         leftComponent={
-          <Avatar.Custom
-            size={40}
-            name={item.external_data.name}
-            logoUri={item.external_data.image_256}
-          />
+          <Avatar.Custom size={40} name={item.name} logoUri={item.image} />
         }
       />
     </View>
@@ -150,11 +142,9 @@ function GridItem({
             justifyContent: 'center'
           }}>
           <AvaText.Heading2 ellipsizeMode={'tail'}>
-            #{item.token_id}
+            #{item.tokenId}
           </AvaText.Heading2>
-          <AvaText.Body2 ellipsizeMode={'tail'}>
-            {item.collection.contract_name}
-          </AvaText.Body2>
+          <AvaText.Body2 ellipsizeMode={'tail'}>{item.name}</AvaText.Body2>
         </View>
       ) : (
         <Image
@@ -164,7 +154,7 @@ function GridItem({
             height: item.aspect * GRID_ITEM_WIDTH,
             borderRadius: 8
           }}
-          source={{ uri: item.external_data?.image_512 }}
+          source={{ uri: item.image }}
         />
       )}
     </AvaButton.Base>

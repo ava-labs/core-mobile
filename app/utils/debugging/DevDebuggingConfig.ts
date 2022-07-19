@@ -8,7 +8,8 @@ const DevDebuggingConfig = {
   STORYBOOK_ENABLED: false,
   LOGBOX_DISABLED: false,
   REDSCREEN_DISABLED: false,
-  LOGBOX_IGNORED_WARNINGS: []
+  LOGBOX_IGNORED_WARNINGS: [],
+  SHOW_DEMO_NFTS: false
 }
 
 export default DevDebuggingConfig

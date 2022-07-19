@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from 'react'
-import { NFTItemData } from 'screens/nft/NftCollection'
 import StorageTools from 'repository/StorageTools'
 
 /**
@@ -9,7 +8,6 @@ import StorageTools from 'repository/StorageTools'
  * Suffix "_<increasing number>" is for destructive migration of database. In the future, we want gracefully migrate data with no data loss.
  */
 const USER_SETTINGS = 'USER_SETTINGS'
-const NFTs = 'NFTs_2'
 const VIEW_ONCE_INFORMATION = 'VIEW_ONCE_INFORMATION'
 
 /**
@@ -53,10 +51,6 @@ export type Repo = {
     infoHasBeenShown: (info: ViewOnceInformation) => boolean
     saveViewOnceInformation: (info: ViewOnceInformation[]) => void
   }
-  nftRepo: {
-    nfts: Map<UID, NFTItemData>
-    saveNfts: (nfts: Map<UID, NFTItemData>) => void
-  }
   /**
    * Store any simple user settings here
    */
@@ -70,7 +64,6 @@ export type Repo = {
 
 export function useRepo(): Repo {
   const [initialized, setInitialized] = useState(false)
-  const [nfts, setNfts] = useState<Map<UID, NFTItemData>>(new Map())
   const [viewOnceInfo, setViewOnceInfo] = useState<ViewOnceInformation[]>([])
   const [userSettings, setUserSettings] = useState<Map<Setting, SettingValue>>(
     new Map()
@@ -99,13 +92,6 @@ export function useRepo(): Repo {
     [userSettings]
   )
 
-  const saveNfts = (nfts: Map<UID, NFTItemData>) => {
-    setNfts(new Map(nfts))
-    StorageTools.saveMapToStorage(NFTs, nfts).catch(reason =>
-      console.error(reason)
-    )
-  }
-
   const saveViewOnceInformation = (info: ViewOnceInformation[]) => {
     // we use set so we don't allow duplicates
     const infoSet = [...new Set(info)]
@@ -123,7 +109,6 @@ export function useRepo(): Repo {
    * Clear hook states
    */
   const flush = () => {
-    setNfts(new Map())
     setUserSettings(new Map())
     setInitialized(false)
   }
@@ -134,16 +119,9 @@ export function useRepo(): Repo {
         USER_SETTINGS
       )
     )
-    setNfts(await StorageTools.loadFromStorageAsMap<UID, NFTItemData>(NFTs))
-    setViewOnceInfo(
-      await StorageTools.loadFromStorageAsArray<ViewOnceInformation>(
-        VIEW_ONCE_INFORMATION
-      )
-    )
   }
 
   return {
-    nftRepo: { nfts, saveNfts },
     userSettingsRepo: {
       setSetting,
       getSetting

@@ -1,24 +1,28 @@
-import React, { useEffect } from 'react'
-import { StyleSheet, View } from 'react-native'
+import React, { useCallback, useEffect } from 'react'
+import { View } from 'react-native'
 import AvaText from 'components/AvaText'
 import DotSVG from 'components/svg/DotSVG'
 import { Space } from 'components/Space'
 import Separator from 'components/Separator'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import Avatar from 'components/Avatar'
-import NetworkFeeSelector from 'components/NetworkFeeSelector'
 import AppNavigation from 'navigation/AppNavigation'
 import FlexSpacer from 'components/FlexSpacer'
 import AvaButton from 'components/AvaButton'
 import SendRow from 'components/SendRow'
-import { useGasPrice } from 'utils/GasPriceHook'
 import { useSendNFTContext } from 'contexts/SendNFTContext'
 import { useNavigation } from '@react-navigation/native'
 import { NFTDetailsSendScreenProps } from 'navigation/types'
-import { useSelector } from 'react-redux'
-import { selectActiveNetwork } from 'store/network'
 import { ActivityIndicator } from 'components/ActivityIndicator'
-import { bnToEthersBigNumber, ethersBigNumberToBN } from '@avalabs/utils-sdk'
+import {
+  RemoveEvents,
+  useBeforeRemoveListener
+} from 'hooks/useBeforeRemoveListener'
+import { Row } from 'components/Row'
+import { Popable } from 'react-native-popable'
+import PoppableGasAndLimit from 'components/PoppableGasAndLimit'
+import { bnToLocaleString } from '@avalabs/utils-sdk'
+import { usePosthogContext } from 'contexts/PosthogContext'
 
 type NavigationProp = NFTDetailsSendScreenProps<
   typeof AppNavigation.NftSend.Review
@@ -29,6 +33,9 @@ export type NftReviewScreenProps = {
 }
 
 export default function NftReview({ onSuccess }: NftReviewScreenProps) {
+  const { theme } = useApplicationContext()
+  const { goBack } = useNavigation<NavigationProp>()
+  const { capture } = usePosthogContext()
   const {
     sendToken: nft,
     sendStatus,
@@ -37,19 +44,15 @@ export default function NftReview({ onSuccess }: NftReviewScreenProps) {
     toAccount,
     fromAccount,
     fees,
-    canSubmit,
     transactionId
   } = useSendNFTContext()
-  const { theme } = useApplicationContext()
-  const { goBack } = useNavigation<NavigationProp>()
-  const activeNetwork = useSelector(selectActiveNetwork)
-  const { gasPrice } = useGasPrice()
 
-  // const netFeeString = useMemo(() => {
-  //   return fees.sendFeeAvax
-  //     ? Number.parseFloat(fees.sendFeeAvax).toFixed(6)
-  //     : '-'
-  // }, [fees.sendFeeAvax])
+  useBeforeRemoveListener(
+    useCallback(() => {
+      capture('SendCancel')
+    }, [capture]),
+    [RemoveEvents.GO_BACK, RemoveEvents.POP]
+  )
 
   useEffect(() => {
     switch (sendStatus) {
@@ -58,10 +61,10 @@ export default function NftReview({ onSuccess }: NftReviewScreenProps) {
           onSuccess(transactionId)
         }
     }
-  }, [sendStatus, transactionId])
+  }, [onSuccess, sendStatus, transactionId])
 
   return (
-    <View style={styles.container}>
+    <View style={{ flex: 1 }}>
       <AvaText.LargeTitleBold textStyle={{ marginHorizontal: 16 }}>
         Send
       </AvaText.LargeTitleBold>
@@ -76,11 +79,7 @@ export default function NftReview({ onSuccess }: NftReviewScreenProps) {
         <View style={{ position: 'absolute' }}>
           <DotSVG fillColor={theme.colorBg1} size={72} />
         </View>
-        <Avatar.Custom
-          size={56}
-          name={nft.collection.contract_name}
-          logoUri={nft.external_data.image_256}
-        />
+        <Avatar.Custom size={56} name={nft.name} logoUri={nft.image} />
       </View>
       <View
         style={{
@@ -97,11 +96,11 @@ export default function NftReview({ onSuccess }: NftReviewScreenProps) {
         </AvaText.Body2>
         <Space y={4} />
         <AvaText.Heading1 textStyle={{ alignSelf: 'center' }}>
-          #{nft.token_id}
+          #{nft.tokenId}
         </AvaText.Heading1>
         <Space y={4} />
         <AvaText.Heading3 textStyle={{ alignSelf: 'center' }}>
-          {nft.collection.contract_name}
+          {nft.name}
         </AvaText.Heading3>
         <Space y={18} />
         <SendRow
@@ -115,49 +114,28 @@ export default function NftReview({ onSuccess }: NftReviewScreenProps) {
           title={toAccount.title}
           address={toAccount.address}
         />
-        <Space y={8} />
-        {/*<NetworkFeeSelector*/}
-        {/*  network={activeNetwork}*/}
-        {/*  // networkFeeAvax={netFeeString}*/}
-        {/*  // networkFeeInCurrency={fees.sendFeeInCurrency ?? 0}*/}
-        {/*  gasPrice={bnToEthersBigNumber(gasPrice.bn)}*/}
-        {/*  limit={fees.gasLimit ?? 0}*/}
-        {/*  onChange={(gasLimit, gasPrice1, feePreset) => {*/}
-        {/*    fees.setGasLimit(gasLimit)*/}
-        {/*    fees.setCustomGasPrice(ethersBigNumberToBN(gasPrice1))*/}
-        {/*    fees.setSelectedFeePreset(feePreset)*/}
-        {/*  }}*/}
-        <NetworkFeeSelector
-          limit={fees.gasLimit || 0}
-          network={activeNetwork}
-          // networkFeeAvax={netFeeString}
-          // networkFeeInCurrency={fees.sendFeeUsd ?? 0}
-          gasPrice={bnToEthersBigNumber(gasPrice.bn)}
-          onChange={(gasLimit, gasPrice1) => {
-            fees.setGasLimit(gasLimit)
-            fees.setCustomGasPrice(ethersBigNumberToBN(gasPrice1))
-          }}
-          // onWeightedGas={price => fees.setCustomGasPrice(price.bn)}
-          // weights={{ Normal: 1, Fast: 1.05, Instant: 1.15, Custom: 35 }}
-          // onSettingsPressed={() => {
-          //   const initGasLimit = fees.gasLimit || 0
-          //
-          //   const onCustomGasLimit = (gasLimit: number) =>
-          //     fees.setGasLimit(gasLimit)
-          //
-          //   navigate(AppNavigation.Modal.EditGasLimit, {
-          //     gasLimit: initGasLimit.toString(),
-          //     networkFee: netFeeString,
-          //     onSave: onCustomGasLimit
-          //   })
-          // }}
-        />
-        <Space y={18} />
+        <Space y={16} />
+        <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+          <Popable
+            content={
+              <PoppableGasAndLimit
+                gasLimit={fees.gasLimit ?? 0}
+                gasPrice={bnToLocaleString(fees.customGasPrice)}
+              />
+            }
+            position={'right'}
+            style={{ minWidth: 200 }}
+            backgroundColor={theme.colorBg3}>
+            <AvaText.Body2>Network Fee ⓘ</AvaText.Body2>
+          </Popable>
+          <AvaText.Heading2 currency>{fees.sendFeeInCurrency}</AvaText.Heading2>
+        </Row>
+        <Space y={16} />
         <Separator />
         <FlexSpacer />
         {sendStatus !== 'Sending' && (
           <>
-            <AvaButton.PrimaryLarge onPress={onSendNow} disabled={!canSubmit}>
+            <AvaButton.PrimaryLarge onPress={onSendNow}>
               Send Now
             </AvaButton.PrimaryLarge>
             <Space y={16} />
@@ -183,9 +161,3 @@ export default function NftReview({ onSuccess }: NftReviewScreenProps) {
     </View>
   )
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1
-  }
-})

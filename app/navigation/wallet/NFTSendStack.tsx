@@ -75,7 +75,13 @@ const NftSendScreen = () => {
   const showReviewScreen = () => {
     navigate(AppNavigation.NftSend.Review)
   }
-  return <NftSend onNext={showReviewScreen} />
+
+  return (
+    <NftSend
+      onNext={showReviewScreen}
+      onOpenAddressBook={() => navigate(AppNavigation.Wallet.AddressBook)}
+    />
+  )
 }
 
 type ReviewNavigationProp = NFTDetailsSendScreenProps<

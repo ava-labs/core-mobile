@@ -5,28 +5,21 @@ import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList
 import AppNavigation from 'navigation/AppNavigation'
 import AvaText from 'components/AvaText'
 import TabViewAva from 'components/TabViewAva'
-import { NftCollection, NFTItemData } from 'screens/nft/NftCollection'
 import NftListView from 'screens/nft/NftListView'
-import { useNftLoader } from 'screens/nft/useNftLoader'
-import { Covalent } from '@avalabs/covalent-sdk'
-import Config from 'react-native-config'
-import { PortfolioScreenProps } from 'navigation/types'
-import { useIsUIDisabled, UI } from 'hooks/useIsUIDisabled'
-import { useSelector } from 'react-redux'
+import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
+import { useDispatch, useSelector } from 'react-redux'
 import { selectActiveNetwork, selectInactiveNetworks } from 'store/network'
 import { selectActiveAccount } from 'store/account'
 import { Network } from '@avalabs/chains-sdk'
 import { Space } from 'components/Space'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import { RefreshControl } from 'components/RefreshControl'
+import { fetchNfts, NFTItemData } from 'store/nft'
+import { PortfolioScreenProps } from 'navigation/types'
 import InactiveNetworkCard from './components/Cards/InactiveNetworkCard'
 import { PortfolioTokensLoader } from './components/Loaders/PortfolioTokensLoader'
 import PortfolioHeader from './components/PortfolioHeader'
 import { TokensTabHeader } from './components/TokensTabHeader'
-
-type PortfolioNavigationProp = PortfolioScreenProps<
-  typeof AppNavigation.Portfolio.Portfolio
->['navigation']
 
 const Portfolio = () => {
   const collectiblesDisabled = useIsUIDisabled(UI.Collectibles)
@@ -97,28 +90,21 @@ const TokensTab = () => {
   )
 }
 
-const Ethereum = 1
+type PortfolioNavigationProp = PortfolioScreenProps<
+  typeof AppNavigation.Portfolio.Portfolio
+>['navigation']
 
 const NftTab = () => {
   const { navigate } = useNavigation<PortfolioNavigationProp>()
-  const { parseNftCollections } = useNftLoader()
   const activeAccount = useSelector(selectActiveAccount)
   const network = useSelector(selectActiveNetwork)
+  const dispatch = useDispatch()
 
   useEffect(() => {
-    const isDev = __DEV__
-    const chainID = isDev ? Ethereum : Number(network.chainId ?? 0)
-    const covalent = new Covalent(chainID, Config.COVALENT_API_KEY)
-    const addressC = isDev ? 'demo.eth' : activeAccount?.address
-    if (addressC) {
-      covalent
-        .getAddressBalancesV2(addressC, true)
-        .then(value => {
-          parseNftCollections(value.data.items as unknown as NftCollection[])
-        })
-        .catch(reason => console.error(reason))
-    }
-  }, [activeAccount?.address, network.chainId]) // adding parseNftCollections as dependency starts infinite loop
+    const chainId = Number(network.chainId ?? 0)
+    const address = activeAccount?.address ?? ''
+    dispatch(fetchNfts({ chainId, address }))
+  }, [activeAccount?.address, dispatch, network.chainId])
 
   const openNftDetails = (item: NFTItemData) => {
     navigate(AppNavigation.Wallet.NFTDetails, {

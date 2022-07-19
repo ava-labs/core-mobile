@@ -6,18 +6,20 @@ import networkFeeService from 'services/networkFee/NetworkFeeService'
 import { selectActiveNetwork } from 'store/network'
 import { NetworkFee } from 'services/networkFee/types'
 import { NetworkFeeState } from 'store/networkFee/types'
-import { onAppUnlocked } from 'store/app'
 
 const reducerName = 'networkFee'
 
 const initialState = {
-  networkFees: {
+  networkFee: {
     low: BigNumber.from(0),
     medium: BigNumber.from(0),
     high: BigNumber.from(0),
     displayDecimals: 0,
-    isFixedFee: false
-  }
+    nativeTokenDecimals: 0,
+    unit: '',
+    isFixedFee: false,
+    nativeTokenSymbol: ''
+  } as NetworkFee
 } as NetworkFeeState
 
 const networkFeeSlice = createSlice({
@@ -25,13 +27,14 @@ const networkFeeSlice = createSlice({
   initialState,
   reducers: {
     updateNetworkFee: (state, action: PayloadAction<NetworkFee>) => {
-      state.networkFees = action.payload
+      state.networkFee = action.payload
     }
   }
 })
 
 // selectors
-export const selectNetworkFee = (state: RootState) => state.networkFee
+export const selectNetworkFee = (state: RootState) =>
+  state.networkFee.networkFee
 
 // actions
 export const fetchNetworkFee = createAction(`${reducerName}/fetchNetworkFee`)
@@ -41,13 +44,13 @@ export const { updateNetworkFee } = networkFeeSlice.actions
 export const addNetworkFeeListeners = (startListening: AppStartListening) => {
   // todo: pool every 30 seconds
   startListening({
-    actionCreator: onAppUnlocked,
+    actionCreator: fetchNetworkFee,
     effect: async (action, listenerApi) => {
       const state = listenerApi.getState()
       const activeNetwork = selectActiveNetwork(state)
       const fees = await networkFeeService.getNetworkFee(activeNetwork)
       listenerApi.dispatch(
-        updateNetworkFee(fees ? fees : initialState.networkFees)
+        updateNetworkFee(fees ? fees : initialState.networkFee)
       )
     }
   })
