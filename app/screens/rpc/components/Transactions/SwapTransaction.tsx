@@ -7,7 +7,7 @@ import { Row } from 'components/Row'
 import TokenAddress from 'components/TokenAddress'
 import Separator from 'components/Separator'
 import Avatar from 'components/Avatar'
-import React from 'react'
+import React, { Dispatch } from 'react'
 import AvaButton from 'components/AvaButton'
 import CarrotSVG from 'components/svg/CarrotSVG'
 import ArrowSVG from 'components/svg/ArrowSVG'
@@ -18,8 +18,11 @@ export function SwapTransaction({
   path,
   fromAddress,
   toAddress,
-  site
-}: SwapExactTokensForTokenDisplayValues) {
+  site,
+  setShowTxData
+}: SwapExactTokensForTokenDisplayValues & {
+  setShowTxData?: Dispatch<boolean>
+}) {
   const theme = useApplicationContext().theme
   const account = useSelector(selectAccountByAddress(fromAddress))
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -35,7 +38,7 @@ export function SwapTransaction({
         <AvaText.Body2 color={theme.colorText1}>
           Approve {site?.name} transaction
         </AvaText.Body2>
-        <AvaButton.Base onPress={() => console.log('open data view')}>
+        <AvaButton.Base onPress={() => setShowTxData?.(true)}>
           <Row>
             <CarrotSVG color={theme.colorText1} direction={'left'} size={12} />
             <CarrotSVG color={theme.colorText1} size={12} />

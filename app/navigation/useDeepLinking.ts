@@ -65,7 +65,7 @@ export function useDeepLinking(unlocked: boolean) {
         .replace(`${PROTOCOLS.DAPP}/${PROTOCOLS.HTTP}://`, `${PROTOCOLS.DAPP}/`)
     )
 
-    let params: ParsedQs | undefined = undefined
+    let params: ParsedQs | undefined
 
     if (urlObj.query.length) {
       try {

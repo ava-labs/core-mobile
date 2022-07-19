@@ -26,7 +26,6 @@ import {
   selectBridgeTransactions
 } from 'store/bridge'
 import { selectIsReady } from 'store/app'
-import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 
 export enum TransferEventType {
   WRAP_STATUS = 'wrap_status',

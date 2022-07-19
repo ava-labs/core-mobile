@@ -156,7 +156,7 @@ const SignTransaction: FC<Props> = ({
                 onCustomFeeSet={setCustomFee}
                 selectedGasFee={selectedGasFee}
                 setShowCustomSpendLimit={setShowCustomSpendLimit}
-                setShowData={setShowData}
+                setShowTxData={setShowData}
               />
             )) ||
               ((contractType === ContractCall.ADD_LIQUIDITY ||
@@ -167,6 +167,7 @@ const SignTransaction: FC<Props> = ({
                   error={txFailedError}
                   onCustomFeeSet={setCustomFee}
                   selectedGasFee={selectedGasFee}
+                  setShowTxData={setShowData}
                 />
               )) ||
               (contractType === ContractCall.SWAP_EXACT_TOKENS_FOR_TOKENS && (
@@ -176,6 +177,7 @@ const SignTransaction: FC<Props> = ({
                   error={txFailedError}
                   onCustomFeeSet={setCustomFee}
                   selectedGasFee={selectedGasFee}
+                  setShowTxData={setShowData}
                 />
               )) ||
               ((contractType === ContractCall.UNKNOWN ||
@@ -186,6 +188,7 @@ const SignTransaction: FC<Props> = ({
                   error={txFailedError}
                   onCustomFeeSet={setCustomFee}
                   selectedGasFee={selectedGasFee}
+                  setShowTxData={setShowData}
                 />
               ))}
           </>
@@ -193,12 +196,8 @@ const SignTransaction: FC<Props> = ({
       </View>
       {!hash && displayData?.gasPrice && (
         <NetworkFeeSelector
-          gasPrice={displayData?.gasPrice}
-          limit={displayData?.gasLimit ?? 0}
+          gasLimit={displayData?.gasLimit ?? 0}
           onChange={setCustomFee}
-          currentModifier={selectedGasFee}
-          network={activeNetwork}
-          disableGasPriceEditing={!!hash}
         />
       )}
       {hash ? (

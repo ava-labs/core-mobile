@@ -6,7 +6,6 @@ import {
 } from 'screens/rpc/util/types'
 import { useActiveNetwork } from 'hooks/useActiveNetwork'
 import { BigNumber, ethers } from 'ethers'
-import { useNetworkFee } from 'hooks/useNetworkFee'
 import { FeePreset } from 'components/NetworkFeeSelector'
 import { calculateGasAndFees } from 'utils/Utils'
 import { useNativeTokenPrice } from 'hooks/useNativeTokenPrice'
@@ -32,11 +31,12 @@ import {
   selectTokenById,
   selectTokensWithBalance
 } from 'store/balance'
+import { selectNetworkFee } from 'store/networkFee'
 
 const UNLIMITED_SPEND_LIMIT_LABEL = 'Unlimited'
 
 export function useExplainTransaction(dappEvent?: DappEvent) {
-  const { networkFees } = useNetworkFee()
+  const networkFees = useSelector(selectNetworkFee)
   const { nativeTokenPrice: tokenPrice } = useNativeTokenPrice()
   const activeNetwork = useActiveNetwork()
   const tokensWithBalance = useSelector(selectTokensWithBalance)

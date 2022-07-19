@@ -14,10 +14,11 @@ import { useActiveAccount } from 'hooks/useActiveAccount'
 import { useActiveNetwork } from 'hooks/useActiveNetwork'
 import Logger from 'utils/Logger'
 import { txToCustomEvmTx } from 'screens/rpc/util/txToCustomEvmTx'
-import { useNetworkFee } from 'hooks/useNetworkFee'
 import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 import networkService from 'services/network/NetworkService'
 import walletService from 'services/wallet/WalletService'
+import { useSelector } from 'react-redux'
+import { selectNetworkFee } from 'store/networkFee'
 
 interface AdditionalMessageParams {
   data?: string
@@ -55,7 +56,7 @@ export const DappConnectionContextProvider = ({
 }) => {
   const activeAccount = useActiveAccount()
   const activeNetwork = useActiveNetwork()
-  const { networkFees } = useNetworkFee()
+  const networkFees = useSelector(selectNetworkFee)
   const [dappEvent, setDappEvent] = useState<DappEvent>()
 
   useEffect(() => {

@@ -51,7 +51,7 @@ export interface TransactionDisplayValues {
 }
 export interface Transaction {
   id?: number | string
-  metamaskNetworkId: string
+  metamaskNetworkId?: string
   method: string
   chainId?: number
   txParams: TransactionParams

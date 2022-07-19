@@ -1,7 +1,7 @@
 import { TransactionDisplayValues } from 'screens/rpc/util/types'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
-import React from 'react'
+import React, { Dispatch } from 'react'
 import { Row } from 'components/Row'
 import TokenAddress from 'components/TokenAddress'
 import { View } from 'react-native'
@@ -20,8 +20,11 @@ export function GenericTransaction({
   description,
   toAddress,
   displayValue,
+  setShowTxData,
   name
-}: TransactionDisplayValues) {
+}: TransactionDisplayValues & {
+  setShowTxData?: Dispatch<boolean>
+}) {
   const theme = useApplicationContext().theme
   const activeAccount = useActiveAccount()
   const token = useSelector(selectTokenByAddress(description?.args?.asset))
@@ -29,11 +32,11 @@ export function GenericTransaction({
     <>
       <AvaText.Heading1>Transaction Summary</AvaText.Heading1>
       <Space y={16} />
-      <Row style={{ justifyContent: 'space-between' }}>
+      <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
         <AvaText.Body2 color={theme.colorText1}>
           Approve {site?.name} transaction
         </AvaText.Body2>
-        <AvaButton.Base onPress={() => console.log('open data view')}>
+        <AvaButton.Base onPress={() => setShowTxData?.(true)}>
           <Row>
             <CarrotSVG color={theme.colorText1} direction={'left'} size={12} />
             <CarrotSVG color={theme.colorText1} size={12} />
@@ -50,8 +53,10 @@ export function GenericTransaction({
           marginBottom: 16
         }}>
         <Row style={{ justifyContent: 'space-between' }}>
-          <AvaText.Body3>Account</AvaText.Body3>
-          <AvaText.Body3>{activeAccount?.title}</AvaText.Body3>
+          <AvaText.Body3 color={theme.colorText1}>Account</AvaText.Body3>
+          <AvaText.Body3 color={theme.colorText1}>
+            {activeAccount?.title}
+          </AvaText.Body3>
         </Row>
         <Space y={8} />
         <Row style={{ justifyContent: 'space-between' }}>
@@ -75,8 +80,10 @@ export function GenericTransaction({
               }
             ]}>
             <Row style={{ justifyContent: 'space-between' }}>
-              <AvaText.Body3>Transaction type</AvaText.Body3>
-              <AvaText.Body3>{name}</AvaText.Body3>
+              <AvaText.Body3 color={theme.colorText1}>
+                Transaction type
+              </AvaText.Body3>
+              <AvaText.Body3 color={theme.colorText1}>{name}</AvaText.Body3>
             </Row>
             <Space y={8} />
             <Separator color={theme.colorDisabled} />

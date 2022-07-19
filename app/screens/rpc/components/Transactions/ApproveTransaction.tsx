@@ -25,11 +25,12 @@ export function ApproveTransaction({
   hash,
   error,
   selectedGasFee,
-  setShowData,
   setShowCustomSpendLimit,
+  setShowTxData,
   ...rest
 }: ApproveTransactionData & {
-  setShowCustomSpendLimit: Dispatch<boolean>
+  setShowCustomSpendLimit?: Dispatch<boolean>
+  setShowTxData?: Dispatch<boolean>
 }) {
   const theme = useApplicationContext().theme
   const activeNetwork = useActiveNetwork()
@@ -45,7 +46,7 @@ export function ApproveTransaction({
         <AvaText.Body2 color={theme.colorText1}>
           Approve {activeNetwork.chainName} transaction
         </AvaText.Body2>
-        <AvaButton.Base onPress={() => setShowData(true)}>
+        <AvaButton.Base onPress={() => setShowTxData?.(true)}>
           <AvaText.Body1>
             <CarrotSVG color={theme.colorText1} direction={'left'} size={12} />
             <CarrotSVG color={theme.colorText1} size={14} />
@@ -88,7 +89,7 @@ export function ApproveTransaction({
         {hideEdit || (
           <AvaButton.Base
             onPress={() => {
-              setShowCustomSpendLimit(true)
+              setShowCustomSpendLimit?.(true)
             }}>
             <AvaText.TextLink>Edit</AvaText.TextLink>
           </AvaButton.Base>

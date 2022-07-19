@@ -8,7 +8,7 @@ import TokenAddress from 'components/TokenAddress'
 import Separator from 'components/Separator'
 import Avatar from 'components/Avatar'
 import AddSVG from 'components/svg/AddSVG'
-import React from 'react'
+import React, { Dispatch } from 'react'
 import AvaButton from 'components/AvaButton'
 import CarrotSVG from 'components/svg/CarrotSVG'
 import { useSelector } from 'react-redux'
@@ -20,8 +20,11 @@ export function AddLiquidityTransaction({
   fromAddress,
   description,
   name,
-  site
-}: AddLiquidityDisplayData) {
+  site,
+  setShowTxData
+}: AddLiquidityDisplayData & {
+  setShowTxData?: Dispatch<boolean>
+}) {
   const theme = useApplicationContext().theme
   const activeAccount = useSelector(selectAccountByAddress(fromAddress))
 
@@ -33,7 +36,7 @@ export function AddLiquidityTransaction({
         <AvaText.Body2 color={theme.colorText1}>
           Approve {site?.name} transaction
         </AvaText.Body2>
-        <AvaButton.Base onPress={() => console.log('open data view')}>
+        <AvaButton.Base onPress={() => setShowTxData?.(true)}>
           <Row>
             <CarrotSVG color={theme.colorText1} direction={'left'} size={12} />
             <CarrotSVG color={theme.colorText1} size={12} />
