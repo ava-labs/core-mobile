@@ -1,6 +1,19 @@
 import { JsonRpcRequest } from '@walletconnect/jsonrpc-types'
 import { PeerMetadata } from 'screens/rpc/util/types'
 
+export const CLIENT_OPTIONS = {
+  clientMeta: {
+    // Required
+    description: 'Core Mobile',
+    url: 'https://www.avax.network',
+    icons: [
+      'https://assets.website-files.com/5fec984ac113c1d4eec8f1ef/62602f568fb4677b559827e5_core.jpg'
+    ],
+    name: 'Core',
+    ssl: !__DEV__
+  }
+}
+
 export interface DeepLink {
   url: string
   origin: DeepLinkOrigin

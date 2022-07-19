@@ -2,30 +2,21 @@ import { EventEmitter } from 'events'
 import WalletConnectClient from '@walletconnect/client'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { parseWalletConnectUri } from '@walletconnect/utils'
-import { firstValueFrom } from 'rxjs'
-import { activeAccount$, network$ } from '@avalabs/wallet-react-components'
 import {
   ISessionStatus,
   IWalletConnectOptions,
   IWalletConnectSession
 } from '@walletconnect/types'
-import { WalletConnectRequest } from 'screens/rpc/walletconnect/types'
+import {
+  CLIENT_OPTIONS,
+  WalletConnectRequest
+} from 'services/walletconnect/types'
 import { JsonRpcRequest } from '@walletconnect/jsonrpc-types'
+import { Network, NetworkVMType } from '@avalabs/chains-sdk'
+import { Account } from 'dto/Account'
 
-export const CLIENT_OPTIONS = {
-  clientMeta: {
-    // Required
-    description: 'Core Mobile',
-    url: 'https://www.avax.network',
-    icons: [
-      'https://assets.website-files.com/5fec984ac113c1d4eec8f1ef/62602f568fb4677b559827e5_core.jpg'
-    ],
-    name: 'Core',
-    ssl: !__DEV__
-  }
-}
 let initialized = false
-let connectors: WalletConnect[] = []
+let connectors: WalletConnectService[] = []
 const tempCallIds: number[] = []
 const emitter = new EventEmitter()
 
@@ -56,7 +47,7 @@ const waitForInitialization = async () => {
   }
 }
 
-class WalletConnect {
+class WalletConnectService {
   autoSign = false
   url = null
   title = null
@@ -64,8 +55,17 @@ class WalletConnect {
   hostname = null
   requestOriginatedFrom?: string
   walletConnectClient: WalletConnectClient | null
+  activeAccount: Account | undefined
+  activeNetwork: Network | undefined
 
-  constructor(options: IWalletConnectOptions, existing = false) {
+  constructor(
+    options: IWalletConnectOptions,
+    existing = false,
+    account?: Account,
+    network?: Network
+  ) {
+    this.activeAccount = account
+    this.activeNetwork = network
     /******************************************************************************
      * === Listeners ===
      * 1. Open request for app trying to connect
@@ -75,6 +75,9 @@ class WalletConnect {
       payload: JsonRpcRequest,
       existing: boolean
     ) => {
+      // do not respond to session request if on BTC
+      if (this.activeNetwork?.vmName === NetworkVMType.BITCOIN) return
+
       if (error) {
         console.error(error)
       }
@@ -100,6 +103,8 @@ class WalletConnect {
      * 2. Receives update. Currently, not acting on it, just logging
      *****************************************************************************/
     const onSessionUpdate = (error: Error | null, payload: JsonRpcRequest) => {
+      // do not update session if on BTC
+      if (this.activeNetwork?.vmName === NetworkVMType.BITCOIN) return
       console.log('WC: Session update', payload)
       if (error) {
         throw error
@@ -113,6 +118,9 @@ class WalletConnect {
       error: Error | null,
       payload: JsonRpcRequest
     ) => {
+      // do not respond to call request if on BTC
+      if (this.activeNetwork?.vmName === NetworkVMType.BITCOIN) return
+
       if (tempCallIds.includes(payload.id)) return
       tempCallIds.push(payload.id)
 
@@ -222,10 +230,10 @@ class WalletConnect {
     })
 
   startSession = async (sessionData: any, existing: boolean) => {
-    const network = await firstValueFrom(network$)
-    const chainId = parseInt(network?.chainId ?? '1')
-    const selectedAddress =
-      (await firstValueFrom(activeAccount$))?.wallet?.getAddressC() ?? ''
+    // do not start session if on BTC
+    if (this.activeNetwork?.vmName === NetworkVMType.BITCOIN) return
+    const chainId = this.activeNetwork?.chainId ?? 1
+    const selectedAddress = this.activeAccount?.address ?? ''
     const approveData: ISessionStatus = {
       chainId: chainId,
       accounts: [selectedAddress]
@@ -241,7 +249,10 @@ class WalletConnect {
 
 const instance = {
   // restores approved connections
-  async init() {
+  async init(activeAccount: Account, activeNetwork: Network) {
+    // do not init if on BTC
+    if (activeNetwork.vmName === NetworkVMType.BITCOIN) return
+
     const sessionData = await AsyncStorage.getItem(WALLETCONNECT_SESSIONS)
     if (sessionData) {
       const sessions = JSON.parse(sessionData)
@@ -251,13 +262,24 @@ const instance = {
           uri: '', //initial url,
           session
         } as IWalletConnectOptions
-        connectors.push(new WalletConnect(data, true))
+        connectors.push(
+          new WalletConnectService(data, true, activeAccount, activeNetwork)
+        )
       })
     }
     initialized = true
   },
   // creates new session. Checks to see if there's already a session created for that app
-  newSession(uri: string, autoSign?: boolean, requestOriginatedFrom?: string) {
+  newSession(
+    uri: string,
+    autoSign?: boolean,
+    requestOriginatedFrom?: string,
+    activeAccount?: Account,
+    activeNetwork?: Network
+  ) {
+    // do not start new session if on BTC
+    if (activeNetwork?.vmName === NetworkVMType.BITCOIN) return
+
     const alreadyConnected = this.isSessionConnected(uri)
     if (alreadyConnected) {
       const errorMsg =
@@ -266,7 +288,9 @@ const instance = {
       return
     }
 
-    connectors.push(new WalletConnect({ uri }))
+    connectors.push(
+      new WalletConnectService({ uri }, false, activeAccount, activeNetwork)
+    )
   },
   // kills session given a peerId
   killSession: async (id: string) => {
