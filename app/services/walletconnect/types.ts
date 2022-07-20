@@ -37,6 +37,7 @@ export enum WalletConnectRequest {
   SESSION = 'walletconnectSessionRequest',
   SESSION_APPROVED = 'walletconnectSessionRequest::approved',
   SESSION_REJECTED = 'walletconnectSessionRequest::rejected',
+  SESSION_DISCONNECTED = 'walletconnectSessionDisconnected',
   CALL = 'walletconnectCallRequest',
   CALL_APPROVED = 'walletconnectCallRequest::approved',
   CALL_REJECTED = 'walletconnectCallRequest::rejected'

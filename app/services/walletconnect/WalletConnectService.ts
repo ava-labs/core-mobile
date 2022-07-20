@@ -171,8 +171,10 @@ class WalletConnectService {
         throw error
       }
       Logger.warn('dapp disconnected remotely')
+      const peerMeta = this.walletConnectClient?.session?.peerMeta
       this.killSession()
       persistSessions()
+      emitter.emit(WalletConnectRequest.SESSION_DISCONNECTED, peerMeta)
     }
 
     /******************************************************************************
@@ -201,14 +203,6 @@ class WalletConnectService {
         })
       }
     })
-    // setTimeout(() => {
-    //   if (this.walletConnectClient?.connected) {
-    //     const test: JsonRpcRequest = JSON.parse(
-    //       '{ "id": 1657664707397011, "jsonrpc": "2.0", "method": "eth_sendTransaction", "params": [ { "gas": "0x3bd0c", "value": "0x0", "from": "0x341b0073b66bfc19fcb54308861f604f5eb8f51b", "to": "0x794a61358d6845594f94dc1db02a252b5b4814ad", "data": "0x617ba037000000000000000000000000b31f66aa3c1e785363f0875a1b74e27b85fd66c7000000000000000000000000000000000000000000000000001c6bf526340000000000000000000000000000341b0073b66bfc19fcb54308861f604f5eb8f51b0000000000000000000000000000000000000000000000000000000000000000" } ] }'
-    //     )
-    //     onCallRequest(null, test)
-    //   }
-    // }, 5000)
 
     // If the connection has been previously approved,
     // don't prompt the user to approve, simply start the session

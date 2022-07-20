@@ -21,7 +21,8 @@ const RpcMethodsUI = () => {
     onSessionRejected,
     onMessageCallApproved,
     onTransactionCallApproved,
-    onCallRejected
+    onCallRejected,
+    setEventHandled
   } = useDappConnectionContext()
 
   useEffect(() => {
@@ -34,6 +35,8 @@ const RpcMethodsUI = () => {
   useEffect(() => {
     if (dappEvent === undefined) {
       handleClose()
+    } else if (!dappEvent.handled) {
+      setEventHandled(true)
     }
   }, [dappEvent])
 

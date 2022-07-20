@@ -19,6 +19,8 @@ import networkService from 'services/network/NetworkService'
 import walletService from 'services/wallet/WalletService'
 import { useSelector } from 'react-redux'
 import { selectNetworkFee } from 'store/networkFee'
+import { showSnackBarCustom } from 'components/Snackbar'
+import GeneralToast from 'components/toast/GeneralToast'
 
 interface AdditionalMessageParams {
   data?: string
@@ -30,6 +32,7 @@ export type DappEvent = {
   payload?: JsonRpcRequest<TransactionParams[]> & AdditionalMessageParams
   peerMeta: PeerMetadata
   eventType: RPC_EVENT
+  handled?: boolean
 }
 
 interface DappConnectionContext {
@@ -43,6 +46,7 @@ interface DappConnectionContext {
     payload: DappEvent
   ) => Promise<{ hash?: string; error?: any }>
   onCallRejected: () => void
+  setEventHandled: (handled: boolean) => void
 }
 
 export const dappConnectionContext = createContext<DappConnectionContext>(
@@ -63,6 +67,10 @@ export const DappConnectionContextProvider = ({
     initializeWalletConnect()
   }, [])
 
+  function setEventHandled(handled: boolean) {
+    dappEvent && setDappEvent({ ...dappEvent, handled })
+  }
+
   const initializeWalletConnect = () => {
     if (!activeAccount || !activeNetwork) return
     /**
@@ -72,6 +80,7 @@ export const DappConnectionContextProvider = ({
       WalletConnectRequest.SESSION,
       sessionInfo => {
         InteractionManager.runAfterInteractions(() => {
+          clearRequests()
           const meta: PeerMetadata = {
             peerId: sessionInfo?.peerId,
             name: sessionInfo?.peerMeta?.name,
@@ -93,6 +102,7 @@ export const DappConnectionContextProvider = ({
       WalletConnectRequest.CALL,
       (data: { payload: any; peerMeta: any }) => {
         InteractionManager.runAfterInteractions(() => {
+          clearRequests()
           const payload: JsonRpcRequest<TransactionParams[]> = data.payload
           const meta: PeerMetadata = {
             name: data?.peerMeta?.name,
@@ -130,6 +140,25 @@ export const DappConnectionContextProvider = ({
         })
       }
     )
+    /**
+     * SESSION DISCONNECTED
+     */
+    walletConnectService.emitter.on(
+      WalletConnectRequest.SESSION_DISCONNECTED,
+      peerMeta => {
+        InteractionManager.runAfterInteractions(() => {
+          showSnackBarCustom(
+            <GeneralToast
+              message={`${
+                peerMeta?.name ?? 'Application'
+              } was disconnected remotely`}
+            />,
+            'long'
+          )
+        })
+      }
+    )
+
     walletConnectService.init(activeAccount, activeNetwork)
   }
 
@@ -239,7 +268,8 @@ export const DappConnectionContextProvider = ({
         onSessionRejected,
         onTransactionCallApproved,
         onMessageCallApproved,
-        onCallRejected
+        onCallRejected,
+        setEventHandled
       }}>
       {children}
     </dappConnectionContext.Provider>

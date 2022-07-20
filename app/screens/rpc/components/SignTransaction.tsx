@@ -253,7 +253,7 @@ const SignTransaction: FC<Props> = ({
             }}>
             <AvaButton.PrimaryLarge
               onPress={onHandleApprove}
-              disabled={!displayData || submitting}>
+              disabled={submitting || !displayData?.gasPrice}>
               Approve
             </AvaButton.PrimaryLarge>
             <Space y={20} />
