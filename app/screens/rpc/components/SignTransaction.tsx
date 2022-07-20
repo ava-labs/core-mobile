@@ -1,7 +1,6 @@
 import AvaText from 'components/AvaText'
 import React, { FC, useState } from 'react'
-import { ActivityIndicator, View } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { ActivityIndicator, StyleSheet, View } from 'react-native'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
 import { Row } from 'components/Row'
@@ -32,6 +31,7 @@ import FlexSpacer from 'components/FlexSpacer'
 import { Popable } from 'react-native-popable'
 import { popableContent } from 'screens/swap/components/SwapTransactionDetails'
 import { SwapTransaction } from 'screens/rpc/components/Transactions/SwapTransaction'
+import { BottomSheetScrollView } from '@gorhom/bottom-sheet'
 
 interface Props {
   onApprove: (tx: Transaction) => Promise<{ hash?: string; error?: any }>
@@ -53,14 +53,13 @@ const SignTransaction: FC<Props> = ({
   const [hash, setHash] = useState<string>()
   const [submitting, setSubmitting] = useState(false)
   const [showData, setShowData] = useState(false)
+  const [showCustomSpendLimit, setShowCustomSpendLimit] = useState(false)
   const {
     contractType,
     selectedGasFee,
     setCustomFee,
     setSpendLimit,
     customSpendLimit,
-    showCustomSpendLimit,
-    setShowCustomSpendLimit,
     transaction,
     ...rest
   } = useExplainTransaction(dappEvent)
@@ -134,14 +133,45 @@ const SignTransaction: FC<Props> = ({
         })
   }
 
+  function txTitle() {
+    switch (contractType) {
+      case ContractCall.APPROVE:
+        return 'Token Spend Approval'
+      case ContractCall.ADD_LIQUIDITY:
+      case ContractCall.ADD_LIQUIDITY_AVAX:
+        return 'Add Liquidity to pool'
+      case ContractCall.SWAP_EXACT_TOKENS_FOR_TOKENS:
+        return 'Approve Swap'
+      default:
+        return 'Approve Transaction'
+    }
+  }
+
   return (
-    <SafeAreaView
+    <BottomSheetScrollView
       style={{
         flex: 1,
-        paddingTop: 32,
+        paddingTop: 16,
         paddingHorizontal: 14
       }}>
       <View>
+        <AvaText.Heading1>{txTitle()}</AvaText.Heading1>
+        <Space y={16} />
+        <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+          <AvaText.Body2 color={theme.colorText1}>
+            Approve {dappEvent?.peerMeta?.name} transaction
+          </AvaText.Body2>
+          <AvaButton.Base onPress={() => setShowData(true)}>
+            <Row>
+              <CarrotSVG
+                color={theme.colorText1}
+                direction={'left'}
+                size={12}
+              />
+              <CarrotSVG color={theme.colorText1} size={12} />
+            </Row>
+          </AvaButton.Base>
+        </Row>
         {!displayData?.gasPrice ? (
           <View>
             <ActivityIndicator size={'large'} />
@@ -201,7 +231,7 @@ const SignTransaction: FC<Props> = ({
         />
       )}
       {hash ? (
-        <View style={{ flex: 1 }}>
+        <>
           <Space y={16} />
           <Row style={{ justifyContent: 'space-between' }}>
             <Popable
@@ -242,7 +272,7 @@ const SignTransaction: FC<Props> = ({
             onPress={onClose}>
             Close
           </AvaButton.SecondaryLarge>
-        </View>
+        </>
       ) : (
         <>
           <FlexSpacer />
@@ -254,7 +284,7 @@ const SignTransaction: FC<Props> = ({
             <AvaButton.PrimaryLarge
               onPress={onHandleApprove}
               disabled={submitting || !displayData?.gasPrice}>
-              Approve
+              {submitting && <ActivityIndicator />} Approve
             </AvaButton.PrimaryLarge>
             <Space y={20} />
             <AvaButton.SecondaryLarge onPress={onReject}>
@@ -263,8 +293,29 @@ const SignTransaction: FC<Props> = ({
           </View>
         </>
       )}
-    </SafeAreaView>
+    </BottomSheetScrollView>
   )
 }
+
+export const txStyles = StyleSheet.create({
+  info: {
+    justifyContent: 'space-between',
+    marginTop: 8,
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 16
+  },
+  balance: {
+    marginTop: 8,
+    marginBottom: 16,
+    borderRadius: 8,
+    padding: 16
+  },
+  arrow: {
+    width: '100%',
+    marginStart: 8,
+    paddingVertical: 10
+  }
+})
 
 export default SignTransaction

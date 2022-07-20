@@ -8,17 +8,17 @@ import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
 import Avatar from 'components/Avatar'
 import React, { Dispatch } from 'react'
-import { useActiveNetwork } from 'hooks/useActiveNetwork'
-import CarrotSVG from 'components/svg/CarrotSVG'
 import { useSelector } from 'react-redux'
 import { selectAccountByAddress } from 'store/account'
 import { truncateAddress } from 'utils/Utils'
+import { txStyles } from 'screens/rpc/components/SignTransaction'
 
 export function ApproveTransaction({
   site,
   tokenToBeApproved,
   txParams,
   displaySpendLimit,
+  defaultSpendAmount,
   gasPrice,
   gasLimit,
   onCustomFeeSet,
@@ -30,37 +30,19 @@ export function ApproveTransaction({
   ...rest
 }: ApproveTransactionData & {
   setShowCustomSpendLimit?: Dispatch<boolean>
-  setShowTxData?: Dispatch<boolean>
 }) {
   const theme = useApplicationContext().theme
-  const activeNetwork = useActiveNetwork()
   const account = useSelector(selectAccountByAddress(rest.fromAddress))
   const hideEdit: boolean =
     displaySpendLimit === '0' && !!setShowCustomSpendLimit
 
   return (
     <>
-      <AvaText.Heading1>Token Spend Approval</AvaText.Heading1>
-      <Space y={16} />
-      <Row style={{ justifyContent: 'space-between' }}>
-        <AvaText.Body2 color={theme.colorText1}>
-          Approve {activeNetwork.chainName} transaction
-        </AvaText.Body2>
-        <AvaButton.Base onPress={() => setShowTxData?.(true)}>
-          <AvaText.Body1>
-            <CarrotSVG color={theme.colorText1} direction={'left'} size={12} />
-            <CarrotSVG color={theme.colorText1} size={14} />
-          </AvaText.Body1>
-        </AvaButton.Base>
-      </Row>
       <View
         style={[
+          txStyles.info,
           {
-            backgroundColor: theme.colorBg3,
-            marginTop: 8,
-            marginBottom: 16,
-            borderRadius: 10,
-            padding: 16
+            backgroundColor: theme.colorBg3
           }
         ]}>
         <Row style={{ justifyContent: 'space-between' }}>

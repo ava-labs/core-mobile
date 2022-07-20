@@ -1,7 +1,7 @@
 import { TransactionDisplayValues } from 'screens/rpc/util/types'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
-import React, { Dispatch } from 'react'
+import React from 'react'
 import { Row } from 'components/Row'
 import TokenAddress from 'components/TokenAddress'
 import { View } from 'react-native'
@@ -9,49 +9,29 @@ import { Space } from 'components/Space'
 import { useActiveAccount } from 'hooks/useActiveAccount'
 import Separator from 'components/Separator'
 import Avatar from 'components/Avatar'
-import AvaButton from 'components/AvaButton'
-import CarrotSVG from 'components/svg/CarrotSVG'
 import { useSelector } from 'react-redux'
 import { selectTokenByAddress } from 'store/balance'
 import isEmpty from 'lodash.isempty'
+import { txStyles } from 'screens/rpc/components/SignTransaction'
 
 export function GenericTransaction({
-  site,
   description,
   toAddress,
   displayValue,
-  setShowTxData,
   name
-}: TransactionDisplayValues & {
-  setShowTxData?: Dispatch<boolean>
-}) {
+}: TransactionDisplayValues) {
   const theme = useApplicationContext().theme
   const activeAccount = useActiveAccount()
   const token = useSelector(selectTokenByAddress(description?.args?.asset))
   return (
     <>
-      <AvaText.Heading1>Transaction Summary</AvaText.Heading1>
-      <Space y={16} />
-      <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-        <AvaText.Body2 color={theme.colorText1}>
-          Approve {site?.name} transaction
-        </AvaText.Body2>
-        <AvaButton.Base onPress={() => setShowTxData?.(true)}>
-          <Row>
-            <CarrotSVG color={theme.colorText1} direction={'left'} size={12} />
-            <CarrotSVG color={theme.colorText1} size={12} />
-          </Row>
-        </AvaButton.Base>
-      </Row>
       <View
-        style={{
-          justifyContent: 'space-between',
-          marginTop: 8,
-          backgroundColor: theme.colorBg3,
-          borderRadius: 8,
-          padding: 16,
-          marginBottom: 16
-        }}>
+        style={[
+          txStyles.info,
+          {
+            backgroundColor: theme.colorBg3
+          }
+        ]}>
         <Row style={{ justifyContent: 'space-between' }}>
           <AvaText.Body3 color={theme.colorText1}>Account</AvaText.Body3>
           <AvaText.Body3 color={theme.colorText1}>

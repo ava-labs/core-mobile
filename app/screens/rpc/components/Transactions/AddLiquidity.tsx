@@ -2,56 +2,34 @@ import { AddLiquidityDisplayData } from 'screens/rpc/util/types'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
-import { View } from 'react-native'
 import { Row } from 'components/Row'
 import TokenAddress from 'components/TokenAddress'
 import Separator from 'components/Separator'
 import Avatar from 'components/Avatar'
 import AddSVG from 'components/svg/AddSVG'
-import React, { Dispatch } from 'react'
-import AvaButton from 'components/AvaButton'
-import CarrotSVG from 'components/svg/CarrotSVG'
+import React from 'react'
 import { useSelector } from 'react-redux'
 import { selectAccountByAddress } from 'store/account'
+import { View } from 'react-native'
+import { txStyles } from 'screens/rpc/components/SignTransaction'
 
 export function AddLiquidityTransaction({
   poolTokens,
   toAddress,
   fromAddress,
   description,
-  name,
-  site,
-  setShowTxData
-}: AddLiquidityDisplayData & {
-  setShowTxData?: Dispatch<boolean>
-}) {
+  name
+}: AddLiquidityDisplayData) {
   const theme = useApplicationContext().theme
   const activeAccount = useSelector(selectAccountByAddress(fromAddress))
 
   return (
     <>
-      <AvaText.Heading1>Add Liquidity to pool</AvaText.Heading1>
-      <Space y={16} />
-      <Row style={{ justifyContent: 'space-between' }}>
-        <AvaText.Body2 color={theme.colorText1}>
-          Approve {site?.name} transaction
-        </AvaText.Body2>
-        <AvaButton.Base onPress={() => setShowTxData?.(true)}>
-          <Row>
-            <CarrotSVG color={theme.colorText1} direction={'left'} size={12} />
-            <CarrotSVG color={theme.colorText1} size={12} />
-          </Row>
-        </AvaButton.Base>
-      </Row>
       <View
         style={[
+          txStyles.info,
           {
-            justifyContent: 'space-between',
-            marginTop: 8,
-            backgroundColor: theme.colorBg3,
-            borderRadius: 8,
-            padding: 16,
-            marginBottom: 16
+            backgroundColor: theme.colorBg3
           }
         ]}>
         <Row style={{ justifyContent: 'space-between' }}>
@@ -70,11 +48,7 @@ export function AddLiquidityTransaction({
       <View
         style={[
           {
-            backgroundColor: theme.colorBg3,
-            marginTop: 8,
-            marginBottom: 16,
-            borderRadius: 10,
-            padding: 16
+            backgroundColor: theme.colorBg3
           }
         ]}>
         <Row style={{ justifyContent: 'space-between' }}>
