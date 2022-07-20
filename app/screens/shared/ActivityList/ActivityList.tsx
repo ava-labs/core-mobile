@@ -5,7 +5,7 @@ import { BridgeTransactionStatusParams } from 'navigation/types'
 import { Row } from 'components/Row'
 import DropDown from 'components/Dropdown'
 import { Space } from 'components/Space'
-import { useGetAllTransactions } from 'store/transaction'
+import { useGetRecentTransactions } from 'store/transaction'
 import { Transaction } from 'store/transaction'
 import { ActivityLoader } from './ActivityLoader'
 import Transactions from './Transactions'
@@ -40,7 +40,7 @@ const ActivityList = ({
   openTransactionStatus
 }: Props) => {
   const { transactions, refresh, isLoading, isRefreshing } =
-    useGetAllTransactions()
+    useGetRecentTransactions()
   const [filter, setFilter] = useState(ActivityFilter.All)
 
   const filteredTransactions = useMemo(
