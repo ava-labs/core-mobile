@@ -72,6 +72,10 @@ const WatchList: React.FC<Props> = ({ tokens, filterBy, filterTimeDays }) => {
       keyExtractor={keyExtractor}
       indicatorStyle="white"
       estimatedItemSize={64}
+      extraData={{
+        filterTimeDays,
+        filterBy
+      }}
     />
   )
 }

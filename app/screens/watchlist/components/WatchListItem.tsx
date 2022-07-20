@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useMemo, useState } from 'react'
+import React, { FC, useEffect, useMemo, useRef, useState } from 'react'
 import { View, Dimensions } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaListItem from 'components/AvaListItem'
@@ -36,6 +36,7 @@ const WatchListItem: FC<Props> = ({
   rank,
   filterBy
 }) => {
+  const lastItemId = useRef(token.id)
   const { logoUri, symbol, name } = token
   const { theme, appHook } = useApplicationContext()
   const { selectedCurrency } = appHook
@@ -61,9 +62,27 @@ const WatchListItem: FC<Props> = ({
     network.pricingProviders?.coingecko.assetPlatformId ?? ''
   const currency = selectedCurrency.toLowerCase() as VsCurrencyType
 
-  // get coingecko chart data.
+  // need to reset chart data whenever token changes
+  // or else tokens will show wrong charts as the user scrolls up/down
+  // this is a limitation of flashlist
+  // more info here
+  // https://github.com/Shopify/flash-list/pull/529
+  if (token.id !== lastItemId.current) {
+    lastItemId.current = token.id
+    setRanges({
+      minDate: 0,
+      maxDate: 0,
+      minPrice: 0,
+      maxPrice: 0,
+      diffValue: 0,
+      percentChange: 0
+    })
+    setChartData([])
+    setIsLoadingChartData(false)
+  }
+
   useEffect(() => {
-    ;(async () => {
+    const fetchChartData = async () => {
       setIsLoadingChartData(true)
 
       let result
@@ -87,7 +106,9 @@ const WatchListItem: FC<Props> = ({
         setRanges(result.ranges)
       }
       setIsLoadingChartData(false)
-    })()
+    }
+
+    fetchChartData()
   }, [assetPlatformId, chartDays, currency, token])
 
   const usdBalance = useMemo(() => {
@@ -142,7 +163,6 @@ const WatchListItem: FC<Props> = ({
   }, [
     value,
     isLoadingChartData,
-    theme.colorPrimary1,
     theme.colorText2,
     chartData,
     ranges.minPrice,
