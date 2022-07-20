@@ -1,11 +1,11 @@
 import React, { FC, useEffect, useMemo, useState } from 'react'
-import { View } from 'react-native'
+import { View, Dimensions } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaListItem from 'components/AvaListItem'
 import AvaText from 'components/AvaText'
 import Avatar from 'components/Avatar'
 import { Space } from 'components/Space'
-import { WatchlistFilter } from 'screens/watchlist/WatchlistView'
+import { WatchlistFilter } from 'screens/watchlist/types'
 import SparklineChart from 'components/SparklineChart'
 import { Row } from 'components/Row'
 import MarketMovement from 'screens/watchlist/components/MarketMovement'
@@ -15,6 +15,8 @@ import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { selectActiveNetwork } from 'store/network'
 import { useSelector } from 'react-redux'
 import { ActivityIndicator } from 'components/ActivityIndicator'
+
+const deviceWidth = Dimensions.get('window').width
 
 interface Props {
   token: TokenWithBalance
@@ -92,10 +94,14 @@ const WatchListItem: FC<Props> = ({
     if (value) {
       return (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          {isLoadingChartData ? (
-            <ActivityIndicator style={{ alignSelf: 'center' }} />
-          ) : (
-            <View style={{ position: 'absolute', left: -40, flex: 1 }}>
+          <View
+            style={{
+              width: 90,
+              alignItems: 'flex-end'
+            }}>
+            {isLoadingChartData ? (
+              <ActivityIndicator style={{ alignSelf: 'center' }} />
+            ) : (
               <SparklineChart
                 width={90}
                 height={80}
@@ -105,16 +111,20 @@ const WatchListItem: FC<Props> = ({
                 xRange={[ranges.minDate, ranges.maxDate]}
                 negative={ranges.diffValue < 0}
               />
-            </View>
-          )}
-          <View style={{ alignItems: 'flex-end', flex: 1 }}>
+            )}
+          </View>
+          <View
+            style={{
+              alignItems: 'flex-end',
+              flex: 1
+            }}>
             <Row style={{ alignItems: 'flex-end' }}>
               <AvaText.Heading3 ellipsizeMode={'tail'}>
                 {value}
               </AvaText.Heading3>
               <Space x={4} />
               <AvaText.Body3
-                textStyle={{ color: theme.colorText2, lineHeight: 20 }}>
+                textStyle={{ color: theme.colorText2, lineHeight: 22 }}>
                 {selectedCurrency}
               </AvaText.Body3>
             </Row>
@@ -153,6 +163,7 @@ const WatchListItem: FC<Props> = ({
       titleAlignment={'flex-start'}
       subtitle={name}
       embedInCard={false}
+      rightComponentMaxWidth={deviceWidth * 0.55}
       leftComponent={
         <View
           style={{
