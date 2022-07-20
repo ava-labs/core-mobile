@@ -26,12 +26,10 @@ import { Limit, SpendLimit } from 'components/EditSpendLimit'
 import Logger from 'utils/Logger'
 import { DappEvent } from 'contexts/DappConnectionContext'
 import { useSelector } from 'react-redux'
-import {
-  NetworkTokenWithBalance,
-  selectTokenById,
-  selectTokensWithBalance
-} from 'store/balance'
+import { NetworkTokenWithBalance, selectTokensWithBalance } from 'store/balance'
 import { selectNetworkFee } from 'store/networkFee'
+import { selectNetworks } from 'store/network'
+import { ChainId } from '@avalabs/chains-sdk'
 
 const UNLIMITED_SPEND_LIMIT_LABEL = 'Unlimited'
 
@@ -39,8 +37,14 @@ export function useExplainTransaction(dappEvent?: DappEvent) {
   const networkFees = useSelector(selectNetworkFee)
   const { nativeTokenPrice: tokenPrice } = useNativeTokenPrice()
   const activeNetwork = useActiveNetwork()
+  const allNetworks = useSelector(selectNetworks)
+  const avaxToken = (
+    activeNetwork?.isTestnet
+      ? allNetworks[ChainId.AVALANCHE_TESTNET_ID]
+      : allNetworks[ChainId.AVALANCHE_MAINNET_ID]
+  )?.networkToken
   const tokensWithBalance = useSelector(selectTokensWithBalance)
-  const avaxToken = useSelector(selectTokenById('AVAX'))
+
   const [transaction, setTransaction] = useState<Transaction | null>(null)
   const txParams = (dappEvent?.payload?.params || [])[0]
   const peerMeta = dappEvent?.peerMeta
@@ -51,7 +55,6 @@ export function useExplainTransaction(dappEvent?: DappEvent) {
   const [displaySpendLimit, setDisplaySpendLimit] = useState<string>(
     UNLIMITED_SPEND_LIMIT_LABEL
   )
-  const [showCustomSpendLimit, setShowCustomSpendLimit] = useState(false)
   const [customSpendLimit, setCustomSpendLimit] = useState<SpendLimit>({
     limitType: Limit.UNLIMITED
   })
@@ -85,6 +88,18 @@ export function useExplainTransaction(dappEvent?: DappEvent) {
     },
     [tokenPrice]
   )
+
+  useEffect(() => {
+    if (customSpendLimit.limitType === Limit.UNLIMITED && transaction) {
+      setCustomSpendLimit({
+        ...customSpendLimit,
+        value: undefined,
+        default: bnToLocaleString(
+          hexToBN(transaction.displayValues.approveData.limit)
+        )
+      })
+    }
+  }, [transaction])
 
   const setSpendLimit = useCallback(
     (customSpendData: SpendLimit) => {
@@ -278,9 +293,7 @@ export function useExplainTransaction(dappEvent?: DappEvent) {
       setSpendLimit,
       displaySpendLimit,
       customSpendLimit,
-      selectedGasFee,
-      showCustomSpendLimit,
-      setShowCustomSpendLimit
+      selectedGasFee
     }
   }, [
     transaction,
