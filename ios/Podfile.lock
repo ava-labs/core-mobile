@@ -1,7 +1,7 @@
 PODS:
   - boost (1.76.0)
-  - BVLinearGradient (2.6.2):
-    - React-Core
+  - BVLinearGradient (2.5.6):
+    - React
   - CocoaAsyncSocket (7.6.5)
   - DoubleConversion (1.1.6)
   - FBLazyVector (0.66.4)
@@ -74,7 +74,7 @@ PODS:
     - FlipperKit/FlipperKitNetworkPlugin
   - fmt (6.2.1)
   - glog (0.3.5)
-  - jail-monkey (2.7.0):
+  - jail-monkey (2.6.0):
     - React-Core
   - libevent (2.1.12)
   - lottie-ios (3.2.3)
@@ -82,7 +82,7 @@ PODS:
     - lottie-ios (~> 3.2.3)
     - React-Core
   - OpenSSL-Universal (1.1.180)
-  - Permission-Camera (3.4.0):
+  - Permission-Camera (3.6.0):
     - RNPermissions
   - PostHog (1.4.4)
   - RCT-Folly (2021.06.28.00-v2):
@@ -295,19 +295,19 @@ PODS:
     - React-Core
   - react-native-camera/RN (4.2.1):
     - React-Core
-  - react-native-config (1.4.6):
-    - react-native-config/App (= 1.4.6)
-  - react-native-config/App (1.4.6):
+  - react-native-config (1.4.5):
+    - react-native-config/App (= 1.4.5)
+  - react-native-config/App (1.4.5):
     - React-Core
   - react-native-document-picker (5.3.0):
     - React-Core
-  - react-native-pager-view (5.4.25):
+  - react-native-pager-view (5.4.11):
     - React-Core
   - react-native-randombytes (3.6.1):
     - React-Core
   - react-native-safe-area-context (3.4.1):
     - React-Core
-  - react-native-webview (11.22.5):
+  - react-native-webview (11.17.2):
     - React-Core
   - React-perflogger (0.66.4)
   - React-RCTActionSheet (0.66.4):
@@ -374,9 +374,9 @@ PODS:
     - React-jsi (= 0.66.4)
     - React-logger (= 0.66.4)
     - React-perflogger (= 0.66.4)
-  - RNCAsyncStorage (1.17.7):
+  - RNCAsyncStorage (1.16.1):
     - React-Core
-  - RNCClipboard (1.10.0):
+  - RNCClipboard (1.8.5):
     - React-Core
   - RNCMaskedView (0.1.11):
     - React
@@ -384,7 +384,7 @@ PODS:
     - React-Core
   - RNDominantColor (1.7.2):
     - React
-  - RNFS (2.20.0):
+  - RNFS (2.19.0):
     - React-Core
   - RNGestureHandler (1.10.3):
     - React-Core
@@ -394,14 +394,14 @@ PODS:
     - React-Core
   - RNOS (1.2.6):
     - React
-  - RNPermissions (3.4.0):
+  - RNPermissions (3.6.0):
     - React-Core
   - RNPostHog (1.1.5):
     - PostHog (~> 1.4.4)
     - React
   - RNReanimated (1.13.4):
     - React-Core
-  - RNScreens (3.15.0):
+  - RNScreens (3.13.1):
     - React-Core
     - React-RCTImage
   - RNSensors (7.3.5):
@@ -642,7 +642,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   boost: a7c83b31436843459a1961bfd74b96033dc77234
-  BVLinearGradient: 34a999fda29036898a09c6a6b728b0b4189e1a44
+  BVLinearGradient: e3aad03778a456d77928f594a649e96995f1c872
   CocoaAsyncSocket: 065fd1e645c7abab64f7a6a2007a48038fdc6a99
   DoubleConversion: 831926d9b8bf8166fd87886c4abab286c2422662
   FBLazyVector: e5569e42a1c79ca00521846c223173a57aca1fe1
@@ -658,12 +658,12 @@ SPEC CHECKSUMS:
   FlipperKit: b2c08dc00bd104315cf3d0fe2f4939b0b20b407a
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
   glog: 5337263514dd6f09803962437687240c5dc39aa4
-  jail-monkey: de7eab0c9cbe4e7cdd2f80d04f812337ae94b2e0
+  jail-monkey: 07b83767601a373db876e939b8dbf3f5eb15f073
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
   lottie-ios: c058aeafa76daa4cf64d773554bccc8385d0150e
   lottie-react-native: a029a86e1689c86a07169c520ae770e84348cd20
   OpenSSL-Universal: 1aa4f6a6ee7256b83db99ec1ccdaa80d10f9af9b
-  Permission-Camera: 40f43388fa8a648dc6ced73f145ef329ab3ff3fe
+  Permission-Camera: 0a0fb4341f50ab242f496fb2f73380e0ec454fe7
   PostHog: 4b6321b521569092d4ef3a02238d9435dbaeb99f
   RCT-Folly: a21c126816d8025b547704b777a2ba552f3d9fa9
   RCTRequired: 4bf86c70714490bca4bf2696148638284622644b
@@ -680,12 +680,12 @@ SPEC CHECKSUMS:
   react-native-aes: c6e4e3ffcff410535e31e161fca95d50e608d4ee
   react-native-blur: 4568dd93d1d82748c180df8beb2d929c97b13b47
   react-native-camera: 3eae183c1d111103963f3dd913b65d01aef8110f
-  react-native-config: 7cd105e71d903104e8919261480858940a6b9c0e
+  react-native-config: 6502b1879f97ed5ac570a029961fc35ea606cd14
   react-native-document-picker: 226068006be4c52f8ef7f32d855ee025a12e9e64
-  react-native-pager-view: da490aa1f902c9a5aeecf0909cc975ad0e92e53e
+  react-native-pager-view: 7f00d63688f7df9fad86dfb0154814419cc5eb8d
   react-native-randombytes: 421f1c7d48c0af8dbcd471b0324393ebf8fe7846
   react-native-safe-area-context: 9e40fb181dac02619414ba1294d6c2a807056ab9
-  react-native-webview: 28557a39f4c1f3f8faa69dae22858335ba63e7f9
+  react-native-webview: 380c1a03ec94b7ed764dac8db1e7c9952d08c93a
   React-perflogger: 93075d8931c32cd1fce8a98c15d2d5ccc4d891bd
   React-RCTActionSheet: 7d3041e6761b4f3044a37079ddcb156575fb6d89
   React-RCTAnimation: 743e88b55ac62511ae5c2e22803d4f503f2a3a13
@@ -698,20 +698,20 @@ SPEC CHECKSUMS:
   React-RCTVibration: e3ffca672dd3772536cb844274094b0e2c31b187
   React-runtimeexecutor: dec32ee6f2e2a26e13e58152271535fadff5455a
   ReactCommon: 57b69f6383eafcbd7da625bfa6003810332313c4
-  RNCAsyncStorage: d81ee5c3db1060afd49ea7045ad460eff82d2b7d
-  RNCClipboard: f1736c75ab85b627a4d57587edb4b60999c4dd80
+  RNCAsyncStorage: b49b4e38a1548d03b74b30e558a1d18465b94be7
+  RNCClipboard: cc054ad1e8a33d2a74cd13e565588b4ca928d8fd
   RNCMaskedView: 0e1bc4bfa8365eba5fbbb71e07fbdc0555249489
   RNDateTimePicker: 7658208086d86d09e1627b5c34ba0cf237c60140
   RNDominantColor: 7c17c31201566a592ba4b2fbe2bb7e00df468753
-  RNFS: 4ac0f0ea233904cb798630b3c077808c06931688
+  RNFS: fc610f78fdf8bfc89a9e5cc2f898519f4dba1002
   RNGestureHandler: a479ebd5ed4221a810967000735517df0d2db211
   RNInAppBrowser: 3ff3a3b8f458aaf25aaee879d057352862edf357
-  RNKeychain: 4f63aada75ebafd26f4bc2c670199461eab85d94
+  RNKeychain: ff836453cba46938e0e9e4c22e43d43fa2c90333
   RNOS: 6f2f9a70895bbbfbdad7196abd952e7b01d45027
-  RNPermissions: 34d678157c800b25b22a488e4d8babb57456e796
+  RNPermissions: de7b7c3fe1680d974ac7a85e3e97aa539c0e68ea
   RNPostHog: 5ad77e4a4d52ca151da444f11095125681d0cf68
   RNReanimated: c1b56d030d1616239861534d9adb531f8cffab68
-  RNScreens: 4a1af06327774490d97342c00aee0c2bafb497b7
+  RNScreens: 40a2cb40a02a609938137a1e0acfbf8fc9eebf19
   RNSensors: e74c8bd9606400c1048ab67af7f41eb2091cb2fc
   RNSVG: 302bfc9905bd8122f08966dc2ce2d07b7b52b9f8
   RNVectorIcons: 31cebfcf94e8cf8686eb5303ae0357da64d7a5a4
@@ -720,4 +720,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 8328487b081284d4b78fa0fcdd88ba1af8ebbef9
 
-COCOAPODS: 1.11.2
+COCOAPODS: 1.11.3

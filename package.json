@@ -114,7 +114,7 @@
     "react-native-modal-datetime-picker": "^10.0.0",
     "react-native-os": "^1.2.6",
     "react-native-pager-view": "^5.2.1",
-    "react-native-permissions": "^3.0.4",
+    "react-native-permissions": "^3.6.0",
     "react-native-popable": "^0.4.3",
     "react-native-qrcode-scanner": "^1.5.4",
     "react-native-qrcode-svg": "^6.1.1",
