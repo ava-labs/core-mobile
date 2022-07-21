@@ -17,6 +17,7 @@ interface Props {
   titleAlignment?: 'center' | 'flex-start' | 'flex-end'
   rightComponentHorizontalAlignment?: 'center' | 'flex-start' | 'flex-end'
   rightComponentVerticalAlignment?: 'center' | 'flex-start' | 'flex-end'
+  rightComponentMaxWidth?: number
   embedInCard?: boolean
   roundedEdges?: boolean
   background?: string
@@ -32,6 +33,7 @@ function BaseListItem({
   titleAlignment = 'center',
   rightComponentHorizontalAlignment = 'flex-end',
   rightComponentVerticalAlignment = 'flex-start',
+  rightComponentMaxWidth = 160,
   showNavigationArrow = false,
   onPress,
   embedInCard,
@@ -101,7 +103,7 @@ function BaseListItem({
               style={{
                 marginRight: 16,
                 flexDirection: 'row',
-                maxWidth: 160,
+                maxWidth: rightComponentMaxWidth,
                 justifyContent: rightComponentHorizontalAlignment,
                 alignSelf: rightComponentVerticalAlignment
               }}>
