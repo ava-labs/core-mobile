@@ -12,7 +12,6 @@ import { NavigationContainer } from '@react-navigation/native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import useDevDebugging from 'utils/debugging/DevDebugging'
 import 'utils/debugging/wdyr'
-import { DappConnectionContextProvider } from 'contexts/DappConnectionContext'
 
 export default function App() {
   const { configure } = useDevDebugging()
@@ -32,9 +31,7 @@ export default function App() {
         <NavigationContainer
           theme={context.navContainerTheme}
           ref={context.appNavHook.navigation}>
-          <DappConnectionContextProvider>
-            <RootScreenStack />
-          </DappConnectionContextProvider>
+          <RootScreenStack />
         </NavigationContainer>
       </KeyboardAvoidingView>
     </SafeAreaView>

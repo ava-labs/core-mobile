@@ -39,7 +39,6 @@ const SignMessage: FC<Props> = ({
     method: dappEvent.payload?.method,
     displayData: dappEvent?.payload.data
   }
-  const styles = createStyles()
   function onHandleApprove() {
     dappEvent && onApprove(dappEvent)
     onClose()
@@ -96,61 +95,60 @@ const SignMessage: FC<Props> = ({
   )
 }
 
-const createStyles = () =>
-  StyleSheet.create({
-    root: {
-      paddingTop: 24,
-      borderTopLeftRadius: 20,
-      borderTopRightRadius: 20,
-      minHeight: 200,
-      paddingBottom: 20
-    },
-    accountCardWrapper: {
-      paddingHorizontal: 24,
-      paddingVertical: 8,
-      borderRadius: 6,
-      backgroundColor: '#C4C4C4'
-    },
-    intro: {
-      textAlign: 'center',
-      color: 'black',
-      fontSize: 16,
-      marginBottom: 8,
-      marginTop: 16
-    },
-    warning: {
-      color: 'red',
-      paddingHorizontal: 24,
-      marginVertical: 16,
-      fontSize: 14,
-      width: '100%',
-      textAlign: 'center'
-    },
-    actionContainer: {
-      flex: 0,
-      paddingVertical: 16,
-      paddingHorizontal: 24
-    },
-    button: {
-      flex: 1
-    },
-    cancel: {
-      marginRight: 8
-    },
-    confirm: {
-      marginLeft: 8
-    },
-    domainUrlContainer: {
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginTop: 10
-    },
-    domainUrl: {
-      fontWeight: '600',
-      textAlign: 'center',
-      fontSize: 14,
-      color: 'black'
-    }
-  })
+const styles = StyleSheet.create({
+  root: {
+    paddingTop: 24,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    minHeight: 200,
+    paddingBottom: 20
+  },
+  accountCardWrapper: {
+    paddingHorizontal: 24,
+    paddingVertical: 8,
+    borderRadius: 6,
+    backgroundColor: '#C4C4C4'
+  },
+  intro: {
+    textAlign: 'center',
+    color: 'black',
+    fontSize: 16,
+    marginBottom: 8,
+    marginTop: 16
+  },
+  warning: {
+    color: 'red',
+    paddingHorizontal: 24,
+    marginVertical: 16,
+    fontSize: 14,
+    width: '100%',
+    textAlign: 'center'
+  },
+  actionContainer: {
+    flex: 0,
+    paddingVertical: 16,
+    paddingHorizontal: 24
+  },
+  button: {
+    flex: 1
+  },
+  cancel: {
+    marginRight: 8
+  },
+  confirm: {
+    marginLeft: 8
+  },
+  domainUrlContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 10
+  },
+  domainUrl: {
+    fontWeight: '600',
+    textAlign: 'center',
+    fontSize: 14,
+    color: 'black'
+  }
+})
 
 export default SignMessage
