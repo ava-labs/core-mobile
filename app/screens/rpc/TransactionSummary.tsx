@@ -2,18 +2,20 @@ import AvaText from 'components/AvaText'
 import React from 'react'
 import { StyleSheet, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import Avatar from 'components/Avatar'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import OvalTagBg from 'components/OvalTagBg'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
 import { useWalletStateContext } from '@avalabs/wallet-react-components'
-import {DisplayValueParserProps, parseDisplayValues, RpcTxParams} from 'rpc/parseDisplayValues';
-import TokenAddress from 'components/TokenAddress';
-import {Row} from 'components/Row';
-import TabViewAva from 'components/TabViewAva';
-import NetworkFeeSelector from 'components/NetworkFeeSelector';
-import {useGasPrice} from 'utils/GasPriceHook';
+import {
+  DisplayValueParserProps,
+  parseDisplayValues,
+  RpcTxParams
+} from 'rpc/parseDisplayValues'
+import TokenAddress from 'components/TokenAddress'
+import { Row } from 'components/Row'
+import TabViewAva from 'components/TabViewAva'
+import NetworkFeeSelector from 'components/NetworkFeeSelector'
+import { useGasPrice } from 'utils/GasPriceHook'
 
 const createStyles = () =>
   StyleSheet.create({
@@ -79,27 +81,22 @@ const createStyles = () =>
   })
 
 const TransactionSummary = props => {
-  const { id, method, params } = props.payload
+  const { params } = props.payload
   const txParams = params[0] as RpcTxParams
   const theme = useApplicationContext().theme
   const styles = createStyles()
-  const { addresses } = useWalletStateContext()!
-  const { gasPrice,  } = useGasPrice()
-  // const walletState = useWalletStateContext()
+  const { gasPrice } = useGasPrice()
+  const walletState = useWalletStateContext()
 
-  // const displayValueProps = {
-  //   gasPrice,
-  //   erc20Tokens: walletState?.erc20Tokens,
-  //   avaxPrice: walletState?.avaxPrice,
-  //   avaxToken: walletState?.avaxToken,
-  //   site: {
-  //     domain: 'app.paraswap.com',
-  //     name: 'paraswap',
-  //     icon: ''
-  //   },
-  // } as DisplayValueParserProps;
+  const displayValueProps = {
+    gasPrice,
+    erc20Tokens: walletState?.erc20Tokens,
+    avaxPrice: walletState?.avaxPrice,
+    avaxToken: walletState?.avaxToken,
+    site: {}
+  } as DisplayValueParserProps
 
-  // const displayValues = parseDisplayValues(txParams, displayValueProps)
+  const displayValues = parseDisplayValues(txParams, displayValueProps)
 
   return (
     <SafeAreaView
@@ -111,7 +108,9 @@ const TransactionSummary = props => {
           styles.copyAddressContainer,
           { backgroundColor: theme.colorBg2, alignItems: 'center' }
         ]}>
-        <AvaText.Body1>Account 1 > <TokenAddress address={addresses.addrC} /></AvaText.Body1>
+        <AvaText.Body1>
+          Account 1 &gt; <TokenAddress address={displayValues.toAddress} />
+        </AvaText.Body1>
       </View>
       <Space y={16} />
       <View
@@ -119,9 +118,9 @@ const TransactionSummary = props => {
           styles.copyAddressContainer,
           { backgroundColor: theme.colorBg2 }
         ]}>
-        <Row style={{justifyContent: 'space-between'}}>
+        <Row style={{ justifyContent: 'space-between' }}>
           <AvaText.Body1>Transaction</AvaText.Body1>
-          <AvaText.Body1>SimpleSwap</AvaText.Body1>
+          <AvaText.Body1>{displayValues.name}</AvaText.Body1>
         </Row>
       </View>
       <Space y={30} />
@@ -132,17 +131,30 @@ const TransactionSummary = props => {
               styles.copyAddressContainer,
               { backgroundColor: theme.colorBg2, marginVertical: 16 }
             ]}>
-
             <Space y={16} />
-          <NetworkFeeSelector onSettingsPressed={() => {}} networkFeeAvax={'0.02'}
-                              networkFeeUsd={'1.03'} gasPrice={gasPrice}
-                              onWeightedGas={price => {console.log(price)}}
-                              weights={{ normal: 1, fast: 1.05, instant: 1.15, custom: 35 }} />
-
+            <NetworkFeeSelector
+              networkFeeAvax={displayValues.fee}
+              networkFeeUsd={displayValues.feeUSD.toString(10)}
+              gasPrice={displayValues.gasPrice}
+              onWeightedGas={price => {
+                console.log(price)
+              }}
+              weights={{ normal: 1, fast: 1.05, instant: 1.15, custom: 35 }}
+              onSettingsPressed={() => {
+                // const initGasLimit = displayValues.gasLimit || 0
+                // const onCustomGasLimit = (gasLimit: number) =>
+                // fees.setGasLimit(gasLimit)
+                // navigate(AppNavigation.Modal.EditGasLimit, {
+                //   gasLimit: initGasLimit.toString(),
+                //   networkFee: netFeeString,
+                //   onSave: onCustomGasLimit
+                // })
+              }}
+            />
           </View>
         </TabViewAva.Item>
-        <TabViewAva.Item title={'Data'} >
-          <View style={{flex: 1}}>
+        <TabViewAva.Item title={'Data'}>
+          <View style={{ flex: 1 }}>
             <AvaText.Body3>{txParams.data}</AvaText.Body3>
           </View>
         </TabViewAva.Item>

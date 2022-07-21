@@ -4,44 +4,54 @@ import { ApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import { Action } from 'navigation/messages/models'
+import { Row } from 'components/Row'
 
 interface Props {
   action: Action
 }
 
-const SignData: FC<Props> = ({ action }) => {
+const SignDataV4: FC<Props> = ({ action }) => {
   const theme = useContext(ApplicationContext).theme
   const data = action?.displayData.data
+  const { types, primaryType, ...dataWithoutTypes } = data
+
+  const renderRow = (rowData: any) => {
+    return Object.keys(rowData).map(key => {
+      if (typeof rowData[key] === 'object') {
+        return (
+          <View style={{ flex: 1, width: '100%', justifyContent: 'center' }}>
+            <AvaText.Body1 color={theme.colorPrimary1}>{key}</AvaText.Body1>
+            <View style={{ paddingStart: 16, paddingBottom: 16 }}>
+              {renderRow(rowData[key])}
+            </View>
+          </View>
+        )
+      }
+
+      return (
+        <Row
+          style={{ alignItems: 'center', flexWrap: 'wrap', paddingBottom: 8 }}>
+          <AvaText.Body1 color={theme.colorPrimary1}>{key}: </AvaText.Body1>
+          <AvaText.Body2 color={'white'} textStyle={{ flexWrap: 'wrap' }}>
+            {rowData[key]}
+          </AvaText.Body2>
+        </Row>
+      )
+    })
+  }
+
   return (
-    <>
-      <AvaText.Body2 color={theme.colorPrimary1}>
-        Signing this message can be dangerous. This signature could potentially
-        perform any operation on your account&apos;s behalf, including granting
-        complete control of your account and all of its assets to the requesting
-        site. Only sign this message if you know what you&apos;re doing or
-        completely trust the requesting site
-      </AvaText.Body2>
+    <View>
       <Space y={16} />
       <AvaText.Body2>Message:</AvaText.Body2>
-      <View style={{ backgroundColor: theme.colorBg2 }}>
-        <ScrollView>
-          {data?.map((x: any, i: number) => (
-            <View key={i}>
-              <AvaText.Body2>{x.name}: </AvaText.Body2>
-              <AvaText.Body3>{x.value}</AvaText.Body3>
-            </View>
-          ))}
+      <Space y={8} />
+      <View style={{ backgroundColor: theme.colorBg2, padding: 8 }}>
+        <ScrollView style={{ maxHeight: 350 }}>
+          {renderRow(dataWithoutTypes)}
         </ScrollView>
-        {/*<TextInput*/}
-        {/*  style={{ flexGrow: 0.2 }}*/}
-        {/*  disableFullscreenUI*/}
-        {/*  editable={false}*/}
-        {/*  value={action.displayData.data}*/}
-        {/*  scrollEnabled*/}
-        {/*/>*/}
       </View>
-    </>
+    </View>
   )
 }
 
-export default SignData
+export default SignDataV4

@@ -1,69 +1,126 @@
 import React, { FC, useEffect, useState } from 'react'
-import { DEEPLINKS, MessageType } from 'navigation/messages/models'
-import {
-  Button,
-  InteractionManager,
-  Modal,
-  StyleSheet,
-  Text,
-  View
-} from 'react-native'
+import { InteractionManager, Modal, StyleSheet } from 'react-native'
 import WalletConnect from 'WalletConnect'
 import AccountApproval from 'screens/rpc/AccountApproval'
+import TransactionSummary from 'screens/rpc/TransactionSummary'
+import { Action, MessageType } from 'navigation/messages/models'
+import { useWalletContext } from '@avalabs/wallet-react-components'
+import { useGasPrice } from 'utils/GasPriceHook'
+import { paramsToMessageParams } from 'rpc/paramsToMessageParams'
+import SignMessage from 'screens/rpc/SignMessage/SignMessage'
 
 const RpcMethodsUI: FC = () => {
   const [showPendingApproval, setShowPendingApproval] = useState(false)
-  const [signMessageParams, setSignMessageParams] = useState({ data: '' })
-  const [signType, setSignType] = useState<any | null>(false)
   const [walletConnectRequest, setWalletConnectRequest] = useState(false)
   const [walletConnectRequestInfo, setWalletConnectRequestInfo] = useState<
     any | null
   >(false)
-  const [showExpandedMessage, setShowExpandedMessage] = useState(false)
+  // const [showExpandedMessage, setShowExpandedMessage] = useState(false)
   const [currentPageMeta, setCurrentPageMeta] = useState({})
+  const wallet = useWalletContext().wallet
+  const { gasPrice } = useGasPrice()
 
-  const [customNetworkToAdd, setCustomNetworkToAdd] = useState(null)
-  const [customNetworkToSwitch, setCustomNetworkToSwitch] = useState(null)
-
-  const [hostToApprove, setHostToApprove] = useState(null)
-
-  const [watchAsset, setWatchAsset] = useState(false)
-  const [suggestedAssetMeta, setSuggestedAssetMeta] = useState(undefined)
+  const [signMessageParams, setSignMessageParams] = useState<Action>()
+  // const [signType, setSignType] = useState<any | null>(false)
+  // const [customNetworkToAdd, setCustomNetworkToAdd] = useState(null)
+  // const [customNetworkToSwitch, setCustomNetworkToSwitch] = useState(null)
+  //
+  // const [hostToApprove, setHostToApprove] = useState(null)
+  //
+  // const [watchAsset, setWatchAsset] = useState(false)
+  // const [suggestedAssetMeta, setSuggestedAssetMeta] = useState(undefined)
 
   const initializeWalletConnect = () => {
     WalletConnect.hub.on('walletconnectSessionRequest', peerInfo => {
       setWalletConnectRequest(true)
       setWalletConnectRequestInfo(peerInfo)
     })
+    WalletConnect.hub.on('walletconnectCallRequest', payload => {
+      setWalletConnectRequestInfo(payload)
+      InteractionManager.runAfterInteractions(() => {
+        setCurrentPageMeta(payload)
+        const { method } = payload
+        switch (method) {
+          case MessageType.ETH_SEND:
+            setShowPendingApproval(true)
+            break
+          case MessageType.ETH_SIGN:
+          case MessageType.SIGN_TYPED_DATA:
+          case MessageType.SIGN_TYPED_DATA_V1:
+          case MessageType.SIGN_TYPED_DATA_V3:
+          case MessageType.SIGN_TYPED_DATA_V4:
+          case MessageType.PERSONAL_SIGN: {
+            const displayData = paramsToMessageParams(payload)
+            setSignMessageParams({ ...payload, displayData })
+          }
+        }
+      })
+    })
     WalletConnect.init()
   }
 
-  const showPendingApprovalModal = ({
-    type,
-    origin
-  }: {
-    type: MessageType
-    origin: DEEPLINKS
-  }) => {
-    InteractionManager.runAfterInteractions(() => {
-      setShowPendingApproval({ type, origin })
-    })
-  }
+  // const showPendingApprovalModal = ({
+  //   type,
+  //   origin
+  // }: {
+  //   type: MessageType
+  //   origin: DEEPLINKS
+  // }) => {
+  //   InteractionManager.runAfterInteractions(() => {
+  //     setShowPendingApproval({ type, origin })
+  //   })
+  // }
 
-  const onUnapprovedMessage = (
-    messageParams: any,
-    type: MessageType,
-    origin: DEEPLINKS
-  ) => {
-    setCurrentPageMeta(messageParams.meta)
-    const signMessageParams = { ...messageParams }
-    delete signMessageParams.meta
-    setSignMessageParams(signMessageParams)
-    setSignType(type)
-    showPendingApprovalModal({
-      type: MessageType.SIGN_TYPED_DATA,
-      origin: origin
-    })
+  // const onUnapprovedMessage = (
+  //   messageParams: any,
+  //   type: MessageType,
+  //   origin: DEEPLINKS
+  // ) => {
+  //   setCurrentPageMeta(messageParams.meta)
+  //   const signMessageParams = { ...messageParams }
+  //   delete signMessageParams.meta
+  //   // setSignMessageParams(signMessageParams)
+  //   // setSignType(type)
+  //   showPendingApprovalModal({
+  //     type: MessageType.SIGN_TYPED_DATA,
+  //     origin: origin
+  //   })
+  // }
+
+  async function signMessage(messageType: MessageType, data: any) {
+    console.log('messageType', messageType)
+    if (!wallet || wallet.type === 'ledger') {
+      throw new Error(
+        wallet
+          ? `this function not supported on ${wallet.type} wallet`
+          : 'wallet undefined in sign tx'
+      )
+    }
+
+    const isV4 =
+      typeof data === 'object' && 'types' in data && 'primaryType' in data
+
+    if (data) {
+      switch (messageType) {
+        case MessageType.ETH_SIGN:
+        case MessageType.PERSONAL_SIGN:
+          return await wallet.personalSign(data)
+        case MessageType.SIGN_TYPED_DATA:
+        case MessageType.SIGN_TYPED_DATA_V1: {
+          if (isV4) {
+            return await wallet.signTypedData_V4(data)
+          }
+          return await wallet.signTypedData_V1(data)
+        }
+        case MessageType.SIGN_TYPED_DATA_V3:
+          return await wallet.signTypedData_V3(data)
+        case MessageType.SIGN_TYPED_DATA_V4:
+          return await wallet.signTypedData_V4(data)
+      }
+      throw new Error('unknown method')
+    } else {
+      throw new Error('no message to sign')
+    }
   }
 
   const onWalletConnectSessionApproval = () => {
@@ -80,10 +137,49 @@ const RpcMethodsUI: FC = () => {
     WalletConnect.hub.emit('walletconnectSessionRequest::rejected', peerId)
   }
 
-  const onSignAction = () => setShowPendingApproval(false)
+  const onWalletConnectCallApproval = async () => {
+    try {
+      const { id } = walletConnectRequestInfo
+      const { method, params } = currentPageMeta
+      let hash
+      const { data } = params[0]
+      if (method === MessageType.ETH_SEND) {
+        const gas = parseInt(params[0].gas)
+        hash = await wallet?.sendCustomEvmTx(
+          gasPrice.bn,
+          gas,
+          data,
+          params[0].to,
+          params[0].value
+        )
+        setWalletConnectRequestInfo({})
+      } else {
+        const pData = signMessageParams?.displayData.data
+        hash = await signMessage(method as MessageType, pData)
+      }
+      onSignAction()
+      WalletConnect.hub.emit('walletconnectCallRequest::approved', {
+        id,
+        hash
+      })
+    } catch (e) {
+      console.log('error approving', e)
+    }
+  }
 
-  const toggleExpandedMessage = () =>
-    setShowExpandedMessage(!showExpandedMessage)
+  const onWalletConnectCallRejected = () => {
+    const peerId = walletConnectRequestInfo.peerId
+    onSignAction()
+    WalletConnect.hub.emit('walletconnectCallRequest::rejected', peerId)
+  }
+
+  const onSignAction = () => {
+    setShowPendingApproval(false)
+    setSignMessageParams(undefined)
+  }
+
+  // const toggleExpandedMessage = () =>
+  //   setShowExpandedMessage(!showExpandedMessage)
 
   useEffect(() => {
     initializeWalletConnect()
@@ -96,27 +192,12 @@ const RpcMethodsUI: FC = () => {
         animationType="slide"
         style={styles.bottomModal}
         onDismiss={onSignAction}>
-        <View
-          style={{
-            justifyContent: 'center',
-            alignItems: 'center',
-            flex: 1,
-            padding: 32
-          }}>
-          <Text style={{ fontSize: 24, paddingVertical: 16, color: 'black' }}>
-            Sign
-          </Text>
-          <View style={styles.actionContainer}>
-            <Button
-              onPress={() => onWalletConnectSessionRejected()}
-              title={'Reject'}
-            />
-            <Button
-              onPress={() => onWalletConnectSessionApproval()}
-              title={'Approve'}
-            />
-          </View>
-        </View>
+        <TransactionSummary
+          onCancel={onWalletConnectCallRejected}
+          onConfirm={onWalletConnectCallApproval}
+          payload={currentPageMeta}
+          walletConnectRequest
+        />
       </Modal>
     )
   }
@@ -144,10 +225,29 @@ const RpcMethodsUI: FC = () => {
     )
   }
 
+  function renderPersonalSignModal() {
+    return (
+      <Modal
+        visible={!!signMessageParams}
+        animationType="slide"
+        style={styles.bottomModal}
+        onDismiss={onWalletConnectCallRejected}>
+        {signMessageParams && (
+          <SignMessage
+            onCancel={onWalletConnectCallRejected}
+            onConfirm={onWalletConnectCallApproval}
+            action={signMessageParams}
+          />
+        )}
+      </Modal>
+    )
+  }
+
   return (
     <>
       {renderSigningModal()}
       {renderWalletConnectSessionRequestModal()}
+      {renderPersonalSignModal()}
     </>
   )
 }

@@ -1,5 +1,5 @@
 import React, { FC, useContext } from 'react'
-import { TextInput, View } from 'react-native'
+import { ScrollView, View } from 'react-native'
 import { ApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
@@ -9,9 +9,9 @@ interface Props {
   action: Action
 }
 
-const EthSign: FC<Props> = ({ action }) => {
+const SignData: FC<Props> = ({ action }) => {
   const theme = useContext(ApplicationContext).theme
-
+  const data = action?.displayData.data
   return (
     <>
       <AvaText.Body2 color={theme.colorPrimary1}>
@@ -24,16 +24,24 @@ const EthSign: FC<Props> = ({ action }) => {
       <Space y={16} />
       <AvaText.Body2>Message:</AvaText.Body2>
       <View style={{ backgroundColor: theme.colorBg2 }}>
-        <TextInput
-          style={{ flexGrow: 0.2 }}
-          disableFullscreenUI
-          editable={false}
-          value={action.displayData.data}
-          scrollEnabled
-        />
+        <ScrollView>
+          {data?.map((x: any, i: number) => (
+            <View key={i}>
+              <AvaText.Body2>{x.name}: </AvaText.Body2>
+              <AvaText.Body3>{x.value}</AvaText.Body3>
+            </View>
+          ))}
+        </ScrollView>
+        {/*<TextInput*/}
+        {/*  style={{ flexGrow: 0.2 }}*/}
+        {/*  disableFullscreenUI*/}
+        {/*  editable={false}*/}
+        {/*  value={action.displayData.data}*/}
+        {/*  scrollEnabled*/}
+        {/*/>*/}
       </View>
     </>
   )
 }
 
-export default EthSign
+export default SignData
