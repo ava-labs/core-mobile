@@ -25,7 +25,7 @@ const BACKGROUND = '#252525'
 interface Props<ItemT> {
   data: ItemT[]
   selectionRenderItem: (selectedItem: ItemT) => string | React.ReactNode
-  width: number
+  width: number | 'auto'
   alignment?: 'flex-start' | 'flex-end' | 'center'
   selectedIndex?: number
   style?: StyleProp<ViewStyle>

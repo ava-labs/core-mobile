@@ -1,3 +1,4 @@
+import capitalize from 'lodash.capitalize'
 import {
   BitcoinConfigAssets,
   Blockchain,
@@ -91,4 +92,10 @@ export function getEtherscanLink(txHash: string, isMainnet: boolean) {
 export function getBTCBlockchainLink(txHash: string, isMainnet: boolean) {
   const env = isMainnet ? 'btc' : 'btc-testnet'
   return `https://www.blockchain.com/${env}/tx/${txHash}`
+}
+
+export function formatBlockchain(chain: Blockchain | undefined): string {
+  return chain === Blockchain.AVALANCHE
+    ? 'Avalanche C-Chain'
+    : capitalize(chain)
 }
