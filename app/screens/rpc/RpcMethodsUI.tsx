@@ -81,6 +81,24 @@ const RpcMethodsUI = () => {
     )
   }
 
+  function renderPersonalSignModal() {
+    return (
+      <Modal
+        visible={!!signMessageParams}
+        animationType="slide"
+        style={styles.bottomModal}
+        onDismiss={onWalletConnectCallRejected}>
+        {signMessageParams && (
+          <SignMessage
+            onCancel={onWalletConnectCallRejected}
+            onConfirm={onWalletConnectCallApproval}
+            action={signMessageParams}
+          />
+        )}
+      </Modal>
+    )
+  }
+
   return (
     <BottomSheet
       backdropComponent={BottomSheetBackdrop}
