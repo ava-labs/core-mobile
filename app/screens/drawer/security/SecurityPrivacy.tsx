@@ -10,11 +10,13 @@ import Switch from 'components/Switch'
 function SecurityPrivacy({
   onChangePin,
   onShowRecoveryPhrase,
-  onTurnOnBiometrics
+  onTurnOnBiometrics,
+  onShowConnectedDapps
 }: {
   onChangePin: () => void
   onShowRecoveryPhrase: () => void
   onTurnOnBiometrics: () => void
+  onShowConnectedDapps: () => void
 }) {
   const theme = useApplicationContext().theme
   const { setSetting, getSetting } =
@@ -80,6 +82,12 @@ function SecurityPrivacy({
             onValueChange={handleAnalyticsSwitchChange}
           />
         }
+      />
+      <AvaListItem.Base
+        title={'Connected Sites'}
+        background={theme.background}
+        showNavigationArrow
+        onPress={onShowConnectedDapps}
       />
     </View>
   )

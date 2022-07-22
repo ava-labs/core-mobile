@@ -19,6 +19,7 @@ import { persistor, store } from 'store'
 import { selectIsReady } from 'store/app'
 import useDevDebugging from 'utils/debugging/DevDebugging'
 import { StatusBar } from 'react-native'
+import { DappConnectionContextProvider } from 'contexts/DappConnectionContext'
 
 function setToast(toast: Toast) {
   global.toast = toast
@@ -34,14 +35,16 @@ const ContextAppWithRedux = () => {
           <PosthogContextProvider>
             <WalletStateContextProvider>
               <ApplicationContextProvider>
-                <ContextApp />
-                <Toast
-                  ref={ref => {
-                    ref && setToast(ref)
-                  }}
-                  offsetTop={60}
-                  normalColor={'00FFFFFF'}
-                />
+                <DappConnectionContextProvider>
+                  <ContextApp />
+                  <Toast
+                    ref={ref => {
+                      ref && setToast(ref)
+                    }}
+                    offsetTop={60}
+                    normalColor={'00FFFFFF'}
+                  />
+                </DappConnectionContextProvider>
               </ApplicationContextProvider>
             </WalletStateContextProvider>
           </PosthogContextProvider>

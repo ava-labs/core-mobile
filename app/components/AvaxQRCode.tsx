@@ -39,7 +39,6 @@ const AvaxQRCode: FC<Props> = ({
           <BitcoinSVG
             absolutePosition
             backgroundColor={logoBgColor}
-            logoColor={logoColor}
             size={qrTokenSize}
           />
         )
