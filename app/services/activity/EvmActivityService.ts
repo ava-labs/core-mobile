@@ -1,9 +1,12 @@
 import { V1 as GlacierSdkV1 } from '@avalabs/glacier-sdk'
 import Config from 'react-native-config'
+import Logger from 'utils/Logger'
 import { GetActivitiesForAddressParams } from './types'
 import { convertTransaction } from './utils/evmTransactionConverter'
 
 const glacierUrl = __DEV__ ? Config.GLACIER_DEV_URL : Config.GLACIER_PROD_URL
+
+if (!glacierUrl) Logger.error('GLACIER URL ENV is missing')
 
 const glacierSdk = new GlacierSdkV1({
   baseUrl: glacierUrl

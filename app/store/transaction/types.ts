@@ -9,7 +9,7 @@ export type GetTransactionsArgs = {
   criticalConfig: CriticalConfig | undefined
 }
 
-export type GetAllTransactionsArgs = {
+export type GetRecentTransactionsArgs = {
   network: Network
   account: Account | undefined
   criticalConfig: CriticalConfig | undefined

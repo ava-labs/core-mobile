@@ -1,2 +1,2 @@
-export { useGetAllTransactions } from './useGetAllTransactions'
+export { useGetRecentTransactions } from './useGetRecentTransactions'
 export { useGetTransactions } from './useGetTransactions'

@@ -2,7 +2,7 @@ import React, { FC, useMemo } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import MarketTriangleSVG from 'components/MarketTriangleSVG'
 import AvaText from 'components/AvaText'
-import { WatchlistFilter } from 'screens/watchlist/WatchlistView'
+import { WatchlistFilter } from 'screens/watchlist/types'
 
 interface Props {
   priceChange: number
