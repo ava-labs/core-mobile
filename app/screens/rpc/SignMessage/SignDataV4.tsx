@@ -19,7 +19,12 @@ const SignDataV4: FC<Props> = ({ action }) => {
     return Object.keys(rowData).map(key => {
       if (typeof rowData[key] === 'object') {
         return (
-          <View style={{ flex: 1, width: '100%', justifyContent: 'center' }}>
+          <View
+            style={{
+              flex: 1,
+              justifyContent: 'center',
+              backgroundColor: theme.colorBg3
+            }}>
             <AvaText.Body1 color={theme.colorPrimary1}>{key}</AvaText.Body1>
             <View style={{ paddingStart: 16, paddingBottom: 16 }}>
               {renderRow(rowData[key])}
@@ -46,7 +51,7 @@ const SignDataV4: FC<Props> = ({ action }) => {
       <AvaText.Body2>Message:</AvaText.Body2>
       <Space y={8} />
       <View style={{ backgroundColor: theme.colorBg2, padding: 8 }}>
-        <ScrollView style={{ maxHeight: 350 }}>
+        <ScrollView style={{ maxHeight: 250 }}>
           {renderRow(dataWithoutTypes)}
         </ScrollView>
       </View>

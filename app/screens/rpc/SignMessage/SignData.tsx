@@ -23,7 +23,7 @@ const SignData: FC<Props> = ({ action }) => {
       </AvaText.Body2>
       <Space y={16} />
       <AvaText.Body2>Message:</AvaText.Body2>
-      <View style={{ backgroundColor: theme.colorBg2 }}>
+      <View style={{ backgroundColor: theme.colorBg1 }}>
         <ScrollView>
           {data?.map((x: any, i: number) => (
             <View key={i}>
@@ -32,13 +32,6 @@ const SignData: FC<Props> = ({ action }) => {
             </View>
           ))}
         </ScrollView>
-        {/*<TextInput*/}
-        {/*  style={{ flexGrow: 0.2 }}*/}
-        {/*  disableFullscreenUI*/}
-        {/*  editable={false}*/}
-        {/*  value={action.displayData.data}*/}
-        {/*  scrollEnabled*/}
-        {/*/>*/}
       </View>
     </>
   )

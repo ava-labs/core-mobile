@@ -1,5 +1,5 @@
 import React, { FC, useContext } from 'react'
-import { TextInput, View } from 'react-native'
+import { View } from 'react-native'
 import { ApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
@@ -13,7 +13,7 @@ const EthSign: FC<Props> = ({ action }) => {
   const theme = useContext(ApplicationContext).theme
 
   return (
-    <>
+    <View>
       <AvaText.Body2 color={theme.colorPrimary1}>
         Signing this message can be dangerous. This signature could potentially
         perform any operation on your account&apos;s behalf, including granting
@@ -23,16 +23,11 @@ const EthSign: FC<Props> = ({ action }) => {
       </AvaText.Body2>
       <Space y={16} />
       <AvaText.Body2>Message:</AvaText.Body2>
-      <View style={{ backgroundColor: theme.colorBg2 }}>
-        <TextInput
-          style={{ flexGrow: 0.2 }}
-          disableFullscreenUI
-          editable={false}
-          value={action.displayData.data}
-          scrollEnabled
-        />
+      <Space y={8} />
+      <View style={{ backgroundColor: theme.colorBg3, padding: 16 }}>
+        <AvaText.Body1>{action.displayData.data}</AvaText.Body1>
       </View>
-    </>
+    </View>
   )
 }
 

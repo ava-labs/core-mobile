@@ -83,19 +83,20 @@ const RpcMethodsUI = () => {
 
   function renderPersonalSignModal() {
     return (
-      <Modal
-        visible={!!signMessageParams}
-        animationType="slide"
-        style={styles.bottomModal}
-        onDismiss={onWalletConnectCallRejected}>
-        {signMessageParams && (
-          <SignMessage
-            onCancel={onWalletConnectCallRejected}
-            onConfirm={onWalletConnectCallApproval}
-            action={signMessageParams}
-          />
-        )}
-      </Modal>
+      <BottomSheet
+        snapPoints={['0%', '85%']}
+        snapTo={signMessageParams ? 1 : 0}
+        disablePanningGesture
+        children={
+          signMessageParams && (
+            <SignMessage
+              onCancel={onWalletConnectCallRejected}
+              onConfirm={onWalletConnectCallApproval}
+              action={signMessageParams}
+            />
+          )
+        }
+      />
     )
   }
 
