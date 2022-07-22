@@ -9,7 +9,7 @@ import { addAppListener } from 'store/middleware/listener'
 import { useFocusEffect } from '@react-navigation/native'
 import { popBridgeTransaction } from 'store/bridge'
 import { selectIsLocked } from 'store/app'
-import { useGetAllTransactionsQuery } from '../api'
+import { useGetRecentsTransactionsQuery } from '../api'
 import { Transaction } from '../types'
 
 const REFETCH_EVENTS = isAnyOf(popBridgeTransaction)
@@ -19,7 +19,7 @@ const POLLING_INTERVAL_IN_MS = 15000
 const emptyArr: Transaction[] = []
 
 /**
- * a hook to get all transactions for the current active network & account
+ * a hook to get most recents transactions for the current active network & account
  *
  * fetch behaviors:
  *  - auto fetch transactions on component's first mount
@@ -30,7 +30,7 @@ const emptyArr: Transaction[] = []
  *  - while the component is in focus,
  *    trigger a refetch when certain events occur (for ex, a pending bridge transaction finishes)
  */
-export const useGetAllTransactions = () => {
+export const useGetRecentTransactions = () => {
   const dispatch = useDispatch()
   const [isRefreshing, setIsRefreshing] = useState(false)
   const network = useSelector(selectActiveNetwork)
@@ -42,7 +42,7 @@ export const useGetAllTransactions = () => {
     currentData: data,
     isFetching,
     refetch
-  } = useGetAllTransactionsQuery(
+  } = useGetRecentsTransactionsQuery(
     {
       network,
       account,

@@ -7,17 +7,25 @@ import WatchlistView from 'screens/watchlist/WatchlistView'
 import { Space } from 'components/Space'
 import SearchBar from 'components/SearchBar'
 
-export default function WatchlistTab() {
+const CustomLabel: React.FC<{ focused: boolean; title: string }> = ({
+  focused,
+  title
+}) => {
   const theme = useApplicationContext().theme
+
+  return (
+    <AvaText.Heading3
+      textStyle={{ color: focused ? theme.colorText1 : theme.colorText2 }}>
+      {title}
+    </AvaText.Heading3>
+  )
+}
+
+export default function WatchlistTab() {
   const [searchText, setSearchText] = useState('')
 
   const renderCustomLabel = (title: string, focused: boolean) => {
-    return (
-      <AvaText.Heading3
-        textStyle={{ color: focused ? theme.colorText1 : theme.colorText2 }}>
-        {title}
-      </AvaText.Heading3>
-    )
+    return <CustomLabel focused={focused} title={title} />
   }
 
   const allWatchList = useMemo(

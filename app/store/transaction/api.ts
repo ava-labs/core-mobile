@@ -3,7 +3,7 @@ import ActivityService from 'services/activity/ActivityService'
 import Logger from 'utils/Logger'
 import { ActivityResponse } from 'services/activity/types'
 import {
-  GetAllTransactionsArgs,
+  GetRecentTransactionsArgs,
   GetTransactionsArgs,
   Transaction
 } from './types'
@@ -34,29 +34,23 @@ export const transactionApi = createApi({
         }
       }
     }),
-    getAllTransactions: builder.query<Transaction[], GetAllTransactionsArgs>({
+    getRecentsTransactions: builder.query<
+      Transaction[],
+      GetRecentTransactionsArgs
+    >({
       queryFn: async ({ network, account, criticalConfig }) => {
         if (!account) return { error: 'unable to get transactions' }
 
-        let nextPageToken
-        let data: ActivityResponse
-        const result: Transaction[] = []
-
         try {
-          do {
-            data = await ActivityService.getActivities({
-              network,
-              account,
-              nextPageToken,
-              pageSize: 100,
-              criticalConfig
-            })
+          const data = await ActivityService.getActivities({
+            network,
+            account,
+            nextPageToken: undefined,
+            pageSize: 100,
+            criticalConfig
+          })
 
-            result.push(...data.transactions)
-            nextPageToken = data.nextPageToken
-          } while (nextPageToken !== '' && nextPageToken !== undefined)
-
-          return { data: result }
+          return { data: data.transactions }
         } catch (err) {
           Logger.error(
             `failed to get transactions for chain ${network.chainId}`,
@@ -69,5 +63,5 @@ export const transactionApi = createApi({
   })
 })
 
-export const { useGetTransactionsQuery, useGetAllTransactionsQuery } =
+export const { useGetTransactionsQuery, useGetRecentsTransactionsQuery } =
   transactionApi
