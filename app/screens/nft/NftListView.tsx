@@ -19,6 +19,7 @@ import MasonryList from '@react-native-seoul/masonry-list'
 import AvaText from 'components/AvaText'
 import { useSelector } from 'react-redux'
 import { NFTItemData, selectNftCollection } from 'store/nft'
+import { SvgXml } from 'react-native-svg'
 
 type ListType = 'grid' | 'list'
 
@@ -146,6 +147,12 @@ function GridItem({
           </AvaText.Heading2>
           <AvaText.Body2 ellipsizeMode={'tail'}>{item.name}</AvaText.Body2>
         </View>
+      ) : item.isSvg ? (
+        <SvgXml
+          xml={item.image}
+          width={GRID_ITEM_WIDTH * item.aspect}
+          height={GRID_ITEM_WIDTH}
+        />
       ) : (
         <Image
           onError={_ => setImgLoadFailed(true)}
