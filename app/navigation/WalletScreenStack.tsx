@@ -1,10 +1,10 @@
 import React, { memo, useMemo } from 'react'
 import { BackHandler, Modal } from 'react-native'
 import {
-  NavigatorScreenParams,
-  useFocusEffect,
-  useNavigation,
-  useRoute
+NavigatorScreenParams,
+useFocusEffect,
+useNavigation,
+useRoute
 } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -139,6 +139,24 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
   const context = useApplicationContext()
   const { signOut } = context.appHook
 
+  // init DeepLinkManager
+  useEffect(() => {
+    SharedDeepLinkManager.init()
+    Linking.addEventListener('url', ({ url }) => {
+      if (url) {
+        SharedDeepLinkManager.expireDeepLink()
+        SharedDeepLinkManager.parse(url, { origin: DEEPLINKS.ORIGIN_DEEPLINK })
+      }
+    })
+    async function checkDeepLink() {
+      const url = await Linking.getInitialURL() // get from firebase in the future?
+      if (url) {
+        SharedDeepLinkManager.parse(url, { origin: DEEPLINKS.ORIGIN_DEEPLINK })
+      }
+    }
+    checkDeepLink()
+  }, [])
+
   useFocusEffect(
     React.useCallback(() => {
       const onBackPress = () => {
@@ -192,6 +210,10 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
         <WalletScreenS.Screen
           name={AppNavigation.Modal.EditGasLimit}
           component={EditGasLimit}
+        />
+        <WalletScreenS.Screen
+          name={AppNavigation.Modal.RpcMethodsUI}
+          component={RpcMethodsUI}
         />
       </WalletScreenS.Group>
     )
