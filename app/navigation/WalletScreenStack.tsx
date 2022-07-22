@@ -63,6 +63,8 @@ import AddEditNetwork, {
   AddEditNetworkProps
 } from 'screens/network/AddEditNetwork'
 import { Transaction } from 'store/transaction'
+import RpcMethodsUI from 'screens/rpc/RpcMethodsUI'
+import { useDeepLinking } from 'navigation/useDeepLinking'
 import { BridgeStackParamList } from './wallet/BridgeScreenStack'
 import {
   BridgeTransactionStatusParams,
@@ -115,6 +117,7 @@ export type WalletScreenStackParams = {
   [AppNavigation.Modal.SignOut]: undefined
   [AppNavigation.Modal.SelectToken]: TokenSelectParams
   [AppNavigation.Modal.EditGasLimit]: EditGasLimitParams
+  [AppNavigation.Modal.RpcMethodsUI]: undefined
 }
 
 const WalletScreenS = createStackNavigator<WalletScreenStackParams>()
@@ -132,6 +135,7 @@ const SignOutBottomSheetScreen = () => {
 function WalletScreenStack(props: Props | Readonly<Props>) {
   const dispatch = useDispatch()
   const showSecurityModal = useSelector(selectIsLocked)
+  useDeepLinking(!showSecurityModal)
   const context = useApplicationContext()
   const { signOut } = context.appHook
 
@@ -159,6 +163,10 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
   const BottomSheetGroup = useMemo(() => {
     return (
       <WalletScreenS.Group screenOptions={{ presentation: 'transparentModal' }}>
+        <WalletScreenS.Screen
+          name={AppNavigation.Modal.RpcMethodsUI}
+          component={RpcMethodsUI}
+        />
         <WalletScreenS.Screen
           options={{
             transitionSpec: {

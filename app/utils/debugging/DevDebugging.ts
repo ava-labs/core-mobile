@@ -13,9 +13,6 @@ const useDevDebugging = () => {
   function configure() {
     LogBox.ignoreLogs(LOGBOX_IGNORED_WARNINGS)
     LogBox.ignoreAllLogs(LOGBOX_DISABLED)
-    if (DevDebuggingConfig.LOGBOX_DISABLED) {
-      console.warn('Logbox warnings are disabled')
-    }
     // @ts-ignore
     console.reportErrorsAsExceptions = REDSCREEN_DISABLED
   }

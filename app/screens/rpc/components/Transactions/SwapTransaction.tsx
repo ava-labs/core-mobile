@@ -1,0 +1,102 @@
+import { SwapExactTokensForTokenDisplayValues } from 'screens/rpc/util/types'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import AvaText from 'components/AvaText'
+import { Space } from 'components/Space'
+import { View } from 'react-native'
+import { Row } from 'components/Row'
+import TokenAddress from 'components/TokenAddress'
+import Separator from 'components/Separator'
+import Avatar from 'components/Avatar'
+import React from 'react'
+import ArrowSVG from 'components/svg/ArrowSVG'
+import { useSelector } from 'react-redux'
+import { selectAccountByAddress } from 'store/account'
+import { txStyles } from 'screens/rpc/components/SignTransaction'
+
+export function SwapTransaction({
+  path,
+  fromAddress,
+  toAddress
+}: SwapExactTokensForTokenDisplayValues) {
+  const theme = useApplicationContext().theme
+  const account = useSelector(selectAccountByAddress(fromAddress))
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const sentToken = path[0]!
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const receivingToken = path[path.length - 1]!
+
+  return (
+    <>
+      <View
+        style={[
+          txStyles.info,
+          {
+            backgroundColor: theme.colorBg3
+          }
+        ]}>
+        <Row style={{ justifyContent: 'space-between' }}>
+          <AvaText.Body3 color={theme.colorText1}>Account</AvaText.Body3>
+          <AvaText.Body3 color={theme.colorText1}>
+            {account?.title}
+          </AvaText.Body3>
+        </Row>
+        <Space y={8} />
+        <Row style={{ justifyContent: 'space-between' }}>
+          <AvaText.Body3 color={theme.colorText1}>Contract</AvaText.Body3>
+          <TokenAddress color={theme.colorText1} address={toAddress} />
+        </Row>
+      </View>
+      <AvaText.Body2>Balance Change</AvaText.Body2>
+      <View
+        style={[
+          txStyles.info,
+          {
+            backgroundColor: theme.colorBg3
+          }
+        ]}>
+        <Row style={{ justifyContent: 'space-between' }}>
+          <AvaText.Body3 color={theme.colorText1}>
+            Transaction type
+          </AvaText.Body3>
+          <AvaText.Body3 color={theme.colorText1}>Swap</AvaText.Body3>
+        </Row>
+        <Space y={8} />
+        <Separator color={theme.colorDisabled} />
+        <Space y={12} />
+        <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+          <Row style={{ alignItems: 'center' }}>
+            <Avatar.Token token={sentToken} />
+            <Space x={8} />
+            <AvaText.Body1>{sentToken?.symbol}</AvaText.Body1>
+          </Row>
+          <View style={{ alignItems: 'flex-end' }}>
+            <AvaText.Body2 color={theme.colorText1}>
+              {sentToken.amountIn?.value} {sentToken?.symbol}
+            </AvaText.Body2>
+            <AvaText.Body3 color={theme.colorText2} currency>
+              {sentToken?.amountCurrencyValue}
+            </AvaText.Body3>
+          </View>
+        </Row>
+        <Row style={txStyles.arrow}>
+          <ArrowSVG size={16} color={theme.colorIcon1} rotate={0} />
+        </Row>
+        <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+          <Row style={{ alignItems: 'center' }}>
+            <Avatar.Token token={receivingToken} />
+            <Space x={8} />
+            <AvaText.Body1>{receivingToken?.symbol}</AvaText.Body1>
+          </Row>
+          <View style={{ alignItems: 'flex-end' }}>
+            <AvaText.Body2 color={theme.colorText1}>
+              {receivingToken.amountOut?.value} {sentToken?.symbol}
+            </AvaText.Body2>
+            <AvaText.Body3 currency>
+              {receivingToken?.amountCurrencyValue}
+            </AvaText.Body3>
+          </View>
+        </Row>
+      </View>
+    </>
+  )
+}

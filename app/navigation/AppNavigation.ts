@@ -80,7 +80,8 @@ enum SecurityPrivacyScreens {
   CreatePin = 'SecurityPrivacyScreens.CreatePin',
   ShowRecoveryPhrase = 'SecurityPrivacyScreens.ShowRecoveryPhrase',
   TurnOnBiometrics = 'SecurityPrivacyScreens.TurnOnBiometrics',
-  RecoveryPhrase = 'SecurityPrivacyScreens.RecoveryPhrase'
+  RecoveryPhrase = 'SecurityPrivacyScreens.RecoveryPhrase',
+  DappList = 'SecurityPrivacyScreens.DappList'
 }
 
 enum AdvancedScreens {
@@ -105,7 +106,8 @@ enum ModalScreens {
   SignOut = 'ModalScreens.SignOut',
   SelectToken = 'ModalScreens.SelectToken',
   EditGasLimit = 'ModalScreens.EditGasLimit',
-  BridgeSelectToken = 'ModalScreens.BridgeSelectToken'
+  BridgeSelectToken = 'ModalScreens.BridgeSelectToken',
+  RpcMethodsUI = 'ModalScreens.RpcMethodsUI'
 }
 
 enum SendScreens {

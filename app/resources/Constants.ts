@@ -86,3 +86,5 @@ export enum COLORS_NIGHT {
 }
 
 export const SECURE_ACCESS_SET = 'secureAccessSet'
+
+export const CORE_UNIVERSAL_LINK_HOST = 'core.app.link'

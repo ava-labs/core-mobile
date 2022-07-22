@@ -26,7 +26,6 @@ import {
   selectBridgeTransactions
 } from 'store/bridge'
 import { selectIsReady } from 'store/app'
-import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 
 export enum TransferEventType {
   WRAP_STATUS = 'wrap_status',
@@ -77,13 +76,9 @@ function LocalBridgeProvider({ children }: { children: any }) {
   const { currentBlockchain } = useBridgeSDK()
   const { transferHandler, events } = useTransferAsset()
 
-  const ethereumProvider = networkService.getEthereumProvider(
-    network.isTestnet ?? false
-  )
-  const bitcoinProvider = networkService.getBitcoinProvider(!network.isTestnet)
-  const avalancheProvider = networkService.getProviderForNetwork(
-    network
-  ) as JsonRpcBatchInternal
+  const ethereumProvider = networkService.getEthereumProvider(network.isTestnet)
+  const bitcoinProvider = networkService.getBitcoinProvider(network.isTestnet)
+  const avaxProvider = networkService.getAvalancheProvider(network.isTestnet)
 
   // load pending txs from storage
   useEffect(() => {
@@ -116,7 +111,7 @@ function LocalBridgeProvider({ children }: { children: any }) {
           onBridgeTransactionUpdate: (tx: BridgeTransaction) =>
             dispatch(addBridgeTransaction(tx)),
           config,
-          avalancheProvider,
+          avaxProvider,
           ethereumProvider,
           bitcoinProvider
         } as unknown as TrackerArgs)
