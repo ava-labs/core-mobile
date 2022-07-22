@@ -394,7 +394,9 @@ PODS:
     - React-Core
   - RNKeychain (8.0.0):
     - React-Core
-  - RNPermissions (3.3.0):
+  - RNOS (1.2.6):
+    - React
+  - RNPermissions (3.4.0):
     - React-Core
   - RNPostHog (1.1.5):
     - PostHog (~> 1.4.4)
@@ -490,6 +492,7 @@ DEPENDENCIES:
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNInAppBrowser (from `../node_modules/react-native-inappbrowser-reborn`)
   - RNKeychain (from `../node_modules/react-native-keychain`)
+  - RNOS (from `../node_modules/react-native-os`)
   - RNPermissions (from `../node_modules/react-native-permissions`)
   - RNPostHog (from `../node_modules/posthog-react-native`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
@@ -623,6 +626,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-inappbrowser-reborn"
   RNKeychain:
     :path: "../node_modules/react-native-keychain"
+  RNOS:
+    :path: "../node_modules/react-native-os"
   RNPermissions:
     :path: "../node_modules/react-native-permissions"
   RNPostHog:
@@ -708,7 +713,8 @@ SPEC CHECKSUMS:
   RNGestureHandler: a479ebd5ed4221a810967000735517df0d2db211
   RNInAppBrowser: 3ff3a3b8f458aaf25aaee879d057352862edf357
   RNKeychain: 4f63aada75ebafd26f4bc2c670199461eab85d94
-  RNPermissions: bcd846e8f5a7f39e921cc7ca7172e2de0e698b6f
+  RNOS: 6f2f9a70895bbbfbdad7196abd952e7b01d45027
+  RNPermissions: 34d678157c800b25b22a488e4d8babb57456e796
   RNPostHog: 5ad77e4a4d52ca151da444f11095125681d0cf68
   RNReanimated: c1b56d030d1616239861534d9adb531f8cffab68
   RNScreens: 40a2cb40a02a609938137a1e0acfbf8fc9eebf19

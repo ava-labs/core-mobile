@@ -22,7 +22,7 @@ const Tokens = () => {
     const { balanceInCurrency } = token
     const lastItem = index === allTokens.length - 1
     const marginBottom = lastItem ? 0 : 8
-    const price = currencyFormatter(balanceInCurrency)
+    const price = currencyFormatter(balanceInCurrency ?? 0)
     const tokenTextColor = theme.colorText1
 
     return (

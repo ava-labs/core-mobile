@@ -273,7 +273,6 @@ const SwapReview = ({ onCancel, onBackToParent }: Props) => {
           </AvaButton.PrimaryLarge>
         </View>
       </View>
-      <Space y={8} />
     </View>
   )
 }

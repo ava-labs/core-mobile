@@ -117,7 +117,7 @@ export default function SwapView() {
       const newFees = calculateGasAndFees({
         gasPrice: customGasPrice,
         gasLimit,
-        tokenPrice: avaxPrice,
+        tokenPrice: avaxPrice ?? 0,
         tokenDecimals: activeNetwork?.networkToken?.decimals
       })
       setGasCost(newFees.fee)

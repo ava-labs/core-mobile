@@ -38,18 +38,18 @@ class NetworkService {
     return provider
   }
 
-  getEthereumProvider(isTest: boolean) {
+  getEthereumProvider(isTest?: boolean) {
     return new InfuraProvider(
       isTest ? 'rinkeby' : 'homestead',
       process.env.INFURA_API_KEY
     )
   }
 
-  getBitcoinProvider(isMainnet: boolean) {
-    return new BlockCypherProvider(isMainnet, undefined, BLOCKCYPHER_PROXY_URL)
+  getBitcoinProvider(isTest?: boolean) {
+    return new BlockCypherProvider(!isTest, undefined, BLOCKCYPHER_PROXY_URL)
   }
 
-  async getAvalancheProvider(isTest: boolean) {
+  async getAvalancheProvider(isTest?: boolean) {
     const allNetworks = await this.getNetworks()
     const avaxNetwork = isTest
       ? allNetworks[ChainId.AVALANCHE_TESTNET_ID]
