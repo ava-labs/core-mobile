@@ -49,12 +49,12 @@ class NetworkService {
     return new BlockCypherProvider(!isTest, undefined, BLOCKCYPHER_PROXY_URL)
   }
 
-  async getAvalancheProvider(isTest?: boolean) {
+  async getAvalancheProvider(isTest?: boolean): Promise<JsonRpcBatchInternal> {
     const allNetworks = await this.getNetworks()
     const avaxNetwork = isTest
       ? allNetworks[ChainId.AVALANCHE_TESTNET_ID]
       : allNetworks[ChainId.AVALANCHE_MAINNET_ID]
-    return this.getProviderForNetwork(avaxNetwork)
+    return this.getProviderForNetwork(avaxNetwork) as JsonRpcBatchInternal
   }
 
   getProviderForNetwork(network: Network) {
