@@ -86,7 +86,7 @@ const RpcMethodsUI = () => {
       backdropComponent={BottomSheetBackdrop}
       handleComponent={AvaxSheetHandle}
       ref={bottomSheetModalRef}
-      index={0}
+      index={1}
       snapPoints={snapPoints}
       backgroundComponent={TabViewBackground}
       onChange={handleChange}>

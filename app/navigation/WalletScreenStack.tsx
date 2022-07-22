@@ -170,7 +170,7 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
    */
   useEffect(() => {
     if (
-      dappEvent &&
+      !dappEvent?.handled &&
       !showSecurityModal &&
       !isLoadingBalances &&
       context?.appNavHook?.navigation?.current

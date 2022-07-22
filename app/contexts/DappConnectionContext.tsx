@@ -67,6 +67,10 @@ export const DappConnectionContextProvider = ({
     initializeWalletConnect()
   }, [])
 
+  function displayUserInstruction(instruction: string) {
+    showSnackBarCustom(<GeneralToast message={instruction} />, 'long')
+  }
+
   function setEventHandled(handled: boolean) {
     dappEvent && setDappEvent({ ...dappEvent, handled })
   }
@@ -147,13 +151,8 @@ export const DappConnectionContextProvider = ({
       WalletConnectRequest.SESSION_DISCONNECTED,
       peerMeta => {
         InteractionManager.runAfterInteractions(() => {
-          showSnackBarCustom(
-            <GeneralToast
-              message={`${
-                peerMeta?.name ?? 'Application'
-              } was disconnected remotely`}
-            />,
-            'long'
+          displayUserInstruction(
+            `${peerMeta?.name ?? 'Application'} was disconnected remotely`
           )
         })
       }
@@ -179,6 +178,7 @@ export const DappConnectionContextProvider = ({
       WalletConnectRequest.SESSION_APPROVED,
       dappEvent?.peerMeta?.peerId
     )
+    displayUserInstruction('Go back to the browser')
     clearRequests()
   }
 
@@ -206,6 +206,7 @@ export const DappConnectionContextProvider = ({
           id,
           hash: result
         })
+        displayUserInstruction('Go back to the browser')
         return { hash: result }
       })
       .catch(e => {
@@ -251,6 +252,7 @@ export const DappConnectionContextProvider = ({
               hash: resultHash
             }
           )
+          displayUserInstruction('Go back to the browser')
           return { hash: resultHash }
         })
         .catch(e => {
