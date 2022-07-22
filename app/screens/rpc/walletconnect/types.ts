@@ -1,5 +1,10 @@
 import { JsonRpcRequest } from '@walletconnect/jsonrpc-types'
-import { DomainMetadata } from 'rpc/parseDisplayValues'
+import { PeerMetadata } from 'screens/rpc/util/types'
+
+export interface DeepLink {
+  url: string
+  origin: DeepLinkOrigin
+}
 
 export enum MessageType {
   ETH_SEND = 'eth_sendTransaction',
@@ -11,14 +16,18 @@ export enum MessageType {
   ETH_SIGN = 'eth_sign'
 }
 
-export enum DEEPLINKS {
+export enum DeepLinkOrigin {
   ORIGIN_DEEPLINK = 'deeplink',
   ORIGIN_QR_CODE = 'qr-code'
 }
 
-export const ETH_ACTIONS = {
-  TRANSFER: 'transfer',
-  APPROVE: 'approve'
+export enum WalletConnectRequest {
+  SESSION = 'walletconnectSessionRequest',
+  SESSION_APPROVED = 'walletconnectSessionRequest::approved',
+  SESSION_REJECTED = 'walletconnectSessionRequest::rejected',
+  CALL = 'walletconnectCallRequest',
+  CALL_APPROVED = 'walletconnectCallRequest::approved',
+  CALL_REJECTED = 'walletconnectCallRequest::rejected'
 }
 
 export const PROTOCOLS = {
@@ -53,5 +62,5 @@ export interface Action extends JsonRpcRequest<any> {
   error?: string
   displayData: any
   method: string
-  site: DomainMetadata
+  site: PeerMetadata
 }
