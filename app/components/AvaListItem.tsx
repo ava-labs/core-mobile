@@ -17,7 +17,7 @@ interface Props {
   titleAlignment?: 'center' | 'flex-start' | 'flex-end'
   rightComponentHorizontalAlignment?: 'center' | 'flex-start' | 'flex-end'
   rightComponentVerticalAlignment?: 'center' | 'flex-start' | 'flex-end'
-  rightComponentMaxWidth?: number
+  rightComponentMaxWidth?: number | string
   embedInCard?: boolean
   roundedEdges?: boolean
   background?: string
