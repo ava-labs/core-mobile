@@ -30,12 +30,13 @@ export type NetworkTokenWithBalance = TokenBalanceData &
     id: string // chainId + coingeckoId
     coingeckoId: string
     type: TokenType.NATIVE
+    address?: string
   }
 
 export type TokenWithBalanceERC20 = TokenBalanceData &
   TokenMarketData &
   NetworkContractToken & {
-    id?: string // chainId + token contract address
+    id: string // chainId + token contract address
     type: TokenType.ERC20
   }
 
