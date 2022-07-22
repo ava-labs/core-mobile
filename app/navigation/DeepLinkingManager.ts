@@ -1,5 +1,6 @@
 import {
   ACTIONS,
+  DEEPLINKS,
   MessageType,
   PREFIXES,
   PROTOCOLS
@@ -10,7 +11,7 @@ import { Alert } from 'react-native'
 import qs from 'qs'
 import URL from 'url-parse'
 import { CORE_UNIVERSAL_LINK_HOST } from 'resources/Constants'
-import WalletConnect from 'WalletConnect';
+import WalletConnect from 'WalletConnect'
 
 class DeepLinkingManager {
   private pendingDeepLink: string | null
@@ -23,7 +24,7 @@ class DeepLinkingManager {
   getPendingDeepLink = () => this.pendingDeepLink
   expireDeepLink = () => (this.pendingDeepLink = null)
 
-  parse(deepLink: string, { browserCallBack, origin, onHandled }) {
+  parse(deepLink: string, origin: DEEPLINKS) {
     const urlObj = new URL(
       deepLink
         .replace(
@@ -43,27 +44,22 @@ class DeepLinkingManager {
       }
     }
 
-    const handled = () => (onHandled ? onHandled() : false)
-
     switch (urlObj.protocol.replace(':', '')) {
       case PROTOCOLS.HTTP:
       case PROTOCOLS.HTTPS:
-        // Universal links
-        handled()
-
         if (urlObj.hostname === CORE_UNIVERSAL_LINK_HOST) {
           // action is the first part of the pathname
           const action = urlObj.pathname.split('/')[1]
 
           if (action === ACTIONS.WC && params?.uri) {
             WalletConnect.newSession(
-              params.uri,
-              params.redirectUrl,
+              params.uri.toString(),
+              params.redirectUrl?.toString(),
               false,
               origin
             )
           } else if (action === ACTIONS.WC) {
-            // This is called from WC just to open the app and it's not supposed to do anything
+            // This is called from WC just to open the app, and it's not supposed to do anything
             return
           } else if (PREFIXES[action]) {
             const url = urlObj.href.replace(
@@ -71,7 +67,7 @@ class DeepLinkingManager {
               PREFIXES[action]
             )
             // loops back to open the link with the right protocol
-            // this.parse(url, { browserCallBack })
+            this.parse(url, origin)
           } else {
             // If it's our universal link don't open it in the browser
             if (
@@ -83,58 +79,25 @@ class DeepLinkingManager {
             // Normal links (same as dapp)
             // this._handleBrowserUrl(urlObj.href, browserCallBack)
           }
-        } else {
-          // Normal links (same as dapp)
-          // this._handleBrowserUrl(urlObj.href, browserCallBack)
         }
         break
 
       // walletconnect related deeplinks
       // address, transactions, etc
       case PROTOCOLS.WC:
-        handled()
-
         wcCleanUrl = deepLink.replace('wc://wc?uri=', '')
         if (!WalletConnect.isValidUri(wcCleanUrl)) return
 
-        WalletConnect.newSession(
-          wcCleanUrl,
-          params?.redirect,
-          params?.autosign,
-          origin
-        )
+        WalletConnect.newSession(wcCleanUrl, !!params?.autosign, origin)
         break
-
-      case PROTOCOLS.ETHEREUM:
-        handled()
-        // this._handleEthereumUrl(deepLink, origin)
-        break
-
-      // // Specific to the browser screen
-      // // For ex. navigate to a specific dapp
-      // case PROTOCOLS.DAPP:
-      //   // Enforce https
-      //   handled()
-      //   urlObj.set('protocol', 'https:')
-      //   this._handleBrowserUrl(urlObj.href, browserCallBack)
-      //   break
-
-      // Specific to the MetaMask app
-      // For ex. go to settings
       case PROTOCOLS.METAMASK:
-        handled()
         if (deepLink.startsWith('metamask://wc')) {
           const cleanUrlObj = new URL(urlObj.query.replace('?uri=', ''))
           const href = cleanUrlObj.href
 
           if (!WalletConnect.isValidUri(href)) return
 
-          WalletConnect.newSession(
-            href,
-            params?.redirect,
-            params?.autosign,
-            origin
-          )
+          WalletConnect.newSession(href, !!params?.autosign, origin)
         }
         break
       default:

@@ -1,33 +1,13 @@
 import { GasPrice } from 'utils/GasPriceHook'
-import {
-  AvaxWithBalance,
-  ERC20WithBalance
-} from '@avalabs/wallet-react-components'
 import * as ethers from 'ethers'
 import { bigToLocaleString, bnToBig, hexToBN } from '@avalabs/utils-sdk'
 import { BN } from 'avalanche'
+import { DisplayValueParserProps, RpcTxParams } from 'rpc/models'
 
-export interface RpcTxParams {
-  from: string
-  to: string
-  value?: string
-  data?: string
-  gas?: string
-  gasPrice?: string
-}
-
-export interface DisplayValueParserProps {
-  gasPrice: GasPrice
-  erc20Tokens: ERC20WithBalance[]
-  avaxToken: AvaxWithBalance
-  avaxPrice: number
-  site: DomainMetadata
-}
-
-export interface DomainMetadata {
-  domain: string
-  name?: string
-  icon?: string
+export function isTxParams(
+  params: Partial<RpcTxParams>
+): params is RpcTxParams {
+  return !!(params.to && params.from)
 }
 
 export function parseDisplayValues(

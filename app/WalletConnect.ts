@@ -3,12 +3,8 @@ import WalletConnectClient from '@walletconnect/client'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { parseWalletConnectUri } from '@walletconnect/utils'
 import { firstValueFrom } from 'rxjs'
-import {
-  activeAccount$,
-  network$,
-  wallet$
-} from '@avalabs/wallet-react-components'
-import { ISessionStatus } from '@walletconnect/types'
+import { activeAccount$, network$ } from '@avalabs/wallet-react-components'
+import { ISessionStatus, IWalletConnectOptions } from '@walletconnect/types'
 
 export const CLIENT_OPTIONS = {
   clientMeta: {
@@ -42,14 +38,12 @@ const persistSessions = async () => {
       connector =>
         connector &&
         connector.walletConnectClient &&
-        connector &&
         connector.walletConnectClient.connected
     )
     .map(connector => ({
       ...connector.walletConnectClient?.session,
-      autosign: connector.autoSign,
-      redirectUrl: connector.redirectUrl,
-      requestOriginatedFrom: connector.requestOriginatedFrom
+      autoSign: connector?.autoSign,
+      requestOriginatedFrom: connector?.requestOriginatedFrom
     }))
 
   await AsyncStorage.setItem(WALLETCONNECT_SESSIONS, JSON.stringify(sessions))
@@ -64,7 +58,6 @@ const waitForInitialization = async () => {
 }
 
 class WalletConnect {
-  redirectUrl?: string
   autoSign = false
   url = { current: null }
   title = { current: null }
@@ -74,23 +67,21 @@ class WalletConnect {
   walletConnectClient: WalletConnectClient | null
 
   constructor(options: SessionOptions, existing = false) {
-    // if (options.session.redirectUrl) {
-    //   this.redirectUrl = options.session.redirectUrl
-    // }
-    //
-    // if (options.session.autoSign) {
-    //   this.autoSign = options.session.autoSign
-    // }
-    //
-    // if (options.session.requestOriginatedFrom) {
-    //   this.requestOriginatedFrom = options.session.requestOriginatedFrom
-    // }
+    if (options?.session?.autoSign) {
+      this.autoSign = options.session.autoSign
+    }
 
-    const connOptions = { ...options, ...CLIENT_OPTIONS }
+    if (options?.session?.requestOriginatedFrom) {
+      this.requestOriginatedFrom = options.session.requestOriginatedFrom
+    }
+
+    const connOptions = {
+      ...options,
+      ...CLIENT_OPTIONS
+    } as unknown as IWalletConnectOptions
 
     //init wallet
     this.walletConnectClient = new WalletConnectClient({ ...connOptions })
-
     this.walletConnectClient.on('session_request', async (error, payload) => {
       if (error) {
         console.error(error)
@@ -102,21 +93,21 @@ class WalletConnect {
         const sessionData = {
           ...payload.params[0],
           autoSign: this.autoSign,
-          redirectUrl: this.redirectUrl,
           requestOriginatedFrom: this.requestOriginatedFrom
         }
 
         await waitForInitialization()
         await this.sessionRequest(sessionData)
         this.startSession(sessionData, existing)
-
-        console.log('WC:', sessionData)
       } catch (e) {
-        console.log('error', e)
+        // todo log error
         this.walletConnectClient?.rejectSession()
       }
     })
 
+    /**
+     * Interactions with dapp will be triggered here
+     */
     this.walletConnectClient.on('call_request', async (error, payload) => {
       if (tempCallIds.includes(payload.id)) return
       tempCallIds.push(payload.id)
@@ -127,12 +118,17 @@ class WalletConnect {
       }
 
       try {
-        const signedResult = await this.callRequests(payload)
+        const signedResult = await this.callRequests({
+          payload,
+          peerMeta: this.walletConnectClient?.session?.peerMeta
+        })
         console.log('signedResult', signedResult)
-        this.walletConnectClient?.approveRequest({
+
+        const approveResult = await this.walletConnectClient?.approveRequest({
           id: payload.id,
           result: signedResult
         })
+        console.log('approve result', approveResult)
       } catch (e) {
         console.log('error or canceled call', e)
         this.walletConnectClient?.rejectRequest({
@@ -144,12 +140,18 @@ class WalletConnect {
       }
     })
 
+    /**
+     * Transport error
+     */
     this.walletConnectClient.on('transport_error', error => {
       if (error) {
         console.error(error)
       }
     })
 
+    /**
+     * Dapp disconnected. We kill the session and remove it from local storage
+     */
     this.walletConnectClient.on('disconnect', error => {
       if (error) {
         throw error
@@ -158,6 +160,9 @@ class WalletConnect {
       // persistSessions()
     })
 
+    /**
+     * Session updated
+     */
     this.walletConnectClient.on('session_update', (error, payload) => {
       console.log('WC: Session update', payload)
       if (error) {
@@ -165,6 +170,8 @@ class WalletConnect {
       }
     })
 
+    // If the connection has been previously approved,
+    // don't prompt the user to approve, simply start the session
     if (existing) {
       this.startSession(options.session, existing)
     }
@@ -197,7 +204,7 @@ class WalletConnect {
 
       hub.on('walletconnectCallRequest::approved', args => {
         const { id, hash } = args
-        if (payload.id === id) {
+        if (payload.payload.id === id) {
           resolve(hash)
         }
       })
@@ -237,12 +244,7 @@ const instance = {
     }
     initialized = true
   },
-  newSession(
-    uri: string,
-    redirectUrl?: string,
-    autoSign?: boolean,
-    requestOriginatedFrom?: string
-  ) {
+  newSession(uri: string, autoSign?: boolean, requestOriginatedFrom?: string) {
     const alreadyConnected = this.isSessionConnected(uri)
     if (alreadyConnected) {
       const errorMsg =
@@ -257,9 +259,6 @@ const instance = {
         autoSign: false,
         requestOriginatedFrom: ''
       }
-    }
-    if (redirectUrl) {
-      data.session.redirectUrl = redirectUrl
     }
     if (autoSign) {
       data.session.autoSign = autoSign

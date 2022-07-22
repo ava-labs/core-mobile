@@ -85,7 +85,7 @@ const RpcMethodsUI = () => {
     return (
       <BottomSheet
         snapPoints={['0%', '85%']}
-        snapTo={signMessageParams ? 1 : 0}
+        snapTo={signingCallRequest ? 1 : 0}
         disablePanningGesture
         children={
           signMessageParams && (
