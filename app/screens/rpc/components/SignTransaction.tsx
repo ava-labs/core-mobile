@@ -224,76 +224,41 @@ const SignTransaction: FC<Props> = ({
           </>
         )}
       </View>
-      {!hash && displayData?.gasPrice && (
-        <NetworkFeeSelector
-          gasLimit={displayData?.gasLimit ?? 0}
-          onChange={setCustomFee}
-        />
-      )}
-      {hash ? (
-        <>
-          <Space y={16} />
-          <Row style={{ justifyContent: 'space-between' }}>
-            <Popable
-              content={netFeeInfoMessage}
-              position={'right'}
-              style={{ minWidth: 200 }}
-              backgroundColor={theme.colorBg3}>
-              <AvaText.Body2 color={theme.white} textStyle={{ lineHeight: 24 }}>
-                Network Fee ⓘ
-              </AvaText.Body2>
-            </Popable>
-            <View
-              style={{
-                alignItems: 'flex-end'
-              }}>
-              <AvaText.Heading3>{displayData.fee} AVAX</AvaText.Heading3>
-              <AvaText.Body3 currency>
-                {displayData.feeInCurrency}
+      <Space y={16} />
+      <TabViewAva>
+        <TabViewAva.Item title={'Feeds'}>
+          {gasPrice.value !== '' && gasPrice.value !== '0' && (
+            <CustomFees
+              gasPrice={rest.fees.gasPrice}
+              limit={gasLimit?.toString() ?? '0'}
+              defaultGasPrice={gasPrice}
+              onChange={onCustomFeeSet}
+              selectedGasFeeModifier={selectedGasFee}
+            />
+          )}
+        </TabViewAva.Item>
+        <TabViewAva.Item title={'Data'}>
+          <>
+            <Row style={{ justifyContent: 'space-between' }}>
+              <AvaText.Body1>Hex Data:</AvaText.Body1>
+              <AvaText.Body1>
+                {getHexStringToBytes(txParams?.data)} Bytes
+              </AvaText.Body1>
+            </Row>
+            <View style={{ flex: 1, paddingVertical: 14 }}>
+              <AvaText.Body3
+                textStyle={{
+                  padding: 16,
+                  backgroundColor: theme.colorBg3,
+                  borderRadius: 15
+                }}>
+                {dataString}
               </AvaText.Body3>
             </View>
-          </Row>
-          <Space y={16} />
-          <Row style={{ justifyContent: 'space-between' }}>
-            <AvaText.Body2 color={theme.colorText1}>
-              Transaction hash
-            </AvaText.Body2>
-            <TokenAddress address={hash} copyIconEnd />
-          </Row>
-          <FlexSpacer />
-          <AvaButton.SecondaryLarge
-            style={{ marginBottom: 32 }}
-            onPress={() => explorerUrl && openUrl(explorerUrl)}>
-            View on Explorer
-          </AvaButton.SecondaryLarge>
-          <Space y={20} />
-          <AvaButton.SecondaryLarge
-            style={{ marginBottom: 32 }}
-            onPress={onClose}>
-            Close
-          </AvaButton.SecondaryLarge>
-        </>
-      ) : (
-        <>
-          <FlexSpacer />
-          <View
-            style={{
-              paddingVertical: 16,
-              paddingHorizontal: 24
-            }}>
-            <AvaButton.PrimaryLarge
-              onPress={onHandleApprove}
-              disabled={submitting || !displayData?.gasPrice}>
-              {submitting && <ActivityIndicator />} Approve
-            </AvaButton.PrimaryLarge>
-            <Space y={20} />
-            <AvaButton.SecondaryLarge onPress={onReject}>
-              Reject
-            </AvaButton.SecondaryLarge>
-          </View>
-        </>
-      )}
-    </BottomSheetScrollView>
+          </>
+        </TabViewAva.Item>
+      </TabViewAva>
+    </>
   )
 }
 
