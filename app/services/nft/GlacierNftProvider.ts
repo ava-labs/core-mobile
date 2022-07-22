@@ -15,14 +15,12 @@ import {
 } from 'rxjs'
 import { Erc721TokenBalance, GlacierClient } from '@avalabs/glacier-sdk'
 import { NFTItemData, NFTItemExternalData, saveNFT } from 'store/nft'
-import { Image } from 'react-native'
 import { store } from 'store'
 import Logger from 'utils/Logger'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
 import { getNftUID } from 'services/nft/NftService'
+import nftProcessor from 'services/nft/NftProcessor'
 
-// const base64 = require('base-64')
-const base64Prefix = 'data:image/svg+xml;base64,'
 const demoAddress = '0x188c30e9a6527f5f0c3f7fe59b72ac7253c62f28'
 
 export class GlacierNftProvider implements NftProvider {
@@ -137,9 +135,10 @@ export class GlacierNftProvider implements NftProvider {
       }),
       mergeMap(nftData => {
         // get metadata
-        if (nftData.tokenUri.startsWith('data:application/json;base64,')) {
+        const base64MetaPrefix = 'data:application/json;base64,'
+        if (nftData.tokenUri.startsWith(base64MetaPrefix)) {
           const base64Metadata = nftData.tokenUri.substring(
-            'data:application/json;base64,'.length
+            base64MetaPrefix.length
           )
           const metadata = JSON.parse(
             Buffer.from(base64Metadata, 'base64').toString()
@@ -159,42 +158,20 @@ export class GlacierNftProvider implements NftProvider {
       mergeMap(nftData => {
         // for each item create observable which will complete when image is fetched and aspect written
         // Set aspect to 1 if image load fails
-        const promise = new Promise<NFTItemData>(resolve => {
-          if (isBase64Svg(nftData.image)) {
-            //TODO decode base64 and get viewBox data for aspect, store decoded data
-            nftData.aspect = 1
-            resolve(nftData)
-          } else {
-            Image.getSize(
-              nftData.image,
-              (width: number, height: number) => {
-                nftData.aspect = height / width
-                resolve(nftData)
-              },
-              _ => {
-                nftData.aspect = 1
-                resolve(nftData)
-              }
-            )
-          }
-        })
 
-        return from(promise)
+        return from(nftProcessor.fetchImageAndAspect(nftData.image)).pipe(
+          map(([image, aspect, isSvg]) => {
+            nftData.image = image
+            nftData.aspect = aspect
+            nftData.isSvg = isSvg
+            return nftData
+          })
+        )
       }),
       bufferTime(1000),
       filter(value => value.length !== 0)
     )
   }
 }
-
-function isBase64Svg(imageData: string) {
-  return imageData.startsWith(base64Prefix)
-}
-
-// function convertBase64Svg(svgData: string) {
-//   const base64Data = svgData.substring(base64Prefix.length)
-//   console.log(base64Data)
-//   return base64Prefix + base64.decode(base64Data).toString()
-// }
 
 export default new GlacierNftProvider()

@@ -29,9 +29,7 @@ export const nftSlice = createSlice({
       if (existing) {
         token.owner = existing.owner
         token.isShowing = existing.isShowing
-        token.aspect = existing.aspect
         token.uid = existing.uid
-        token.isSvg = existing.isSvg
       }
       state.collection[chainId][address][token.uid] = token
     }

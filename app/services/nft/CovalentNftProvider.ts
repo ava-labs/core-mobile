@@ -6,6 +6,7 @@ import {
   delay,
   filter,
   from,
+  map,
   mergeMap,
   of,
   Subject,
@@ -13,7 +14,6 @@ import {
 } from 'rxjs'
 import { Erc721TokenBalance } from '@avalabs/glacier-sdk'
 import { NFTItemData, saveNFT } from 'store/nft'
-import { Image } from 'react-native'
 import { store } from 'store'
 import { Covalent } from '@avalabs/covalent-sdk'
 import Config from 'react-native-config'
@@ -21,6 +21,7 @@ import { GetAddressBalanceV2Item } from '@avalabs/covalent-sdk/src/models'
 import Logger from 'utils/Logger'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
 import { getNftUID } from 'services/nft/NftService'
+import nftProcessor from 'services/nft/NftProcessor'
 
 const demoAddress = 'demo.eth'
 const demoChain = 1 //Ethereum
@@ -133,24 +134,18 @@ export class CovalentNftProvider implements NftProvider {
       mergeMap(nftData => {
         // for each item create observable which will complete when image is fetched and aspect written
         // Set aspect to 1 if image load fails
-        let resolver: (value: NFTItemData) => void
-        const p = from(
-          new Promise<NFTItemData>(resolve => (resolver = resolve))
-        )
-
-        Image.getSize(
-          nftData.image,
-          (width: number, height: number) => {
-            nftData.aspect = height / width
-            resolver(nftData)
-          },
-          _ => {
-            nftData.aspect = 1
-
-            resolver(nftData)
-          }
-        )
-        return p
+        if (!nftData.image) {
+          return of(nftData)
+        } else {
+          return from(nftProcessor.fetchImageAndAspect(nftData.image)).pipe(
+            map(([image, aspect, isSvg]) => {
+              nftData.image = image
+              nftData.aspect = aspect
+              nftData.isSvg = isSvg
+              return nftData
+            })
+          )
+        }
       }),
       bufferTime(1000),
       filter(value => value.length !== 0)
