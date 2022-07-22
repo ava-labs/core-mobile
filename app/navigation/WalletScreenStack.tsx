@@ -144,14 +144,18 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
     SharedDeepLinkManager.init()
     Linking.addEventListener('url', ({ url }) => {
       if (url) {
+        // navigation.navigate('test')
         SharedDeepLinkManager.expireDeepLink()
         SharedDeepLinkManager.parse(url, { origin: DEEPLINKS.ORIGIN_DEEPLINK })
+        console.log('received linking event')
       }
     })
     async function checkDeepLink() {
       const url = await Linking.getInitialURL() // get from firebase in the future?
       if (url) {
+        // navigation.navigate('test')
         SharedDeepLinkManager.parse(url, { origin: DEEPLINKS.ORIGIN_DEEPLINK })
+        console.log('received linking event, initial url')
       }
     }
     checkDeepLink()
@@ -181,6 +185,7 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
   const BottomSheetGroup = useMemo(() => {
     return (
       <WalletScreenS.Group screenOptions={{ presentation: 'transparentModal' }}>
+        <WalletScreenS.Screen name={'test'} component={RpcMethodsUI} />
         <WalletScreenS.Screen
           name={AppNavigation.Modal.RpcMethodsUI}
           component={RpcMethodsUI}

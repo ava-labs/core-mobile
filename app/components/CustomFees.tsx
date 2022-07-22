@@ -13,7 +13,9 @@ import { bnToLocaleString } from '@avalabs/avalanche-wallet-sdk'
 import { calculateGasAndFees, Fees } from 'utils/calculateGasAndFees'
 import { bigToBN, stringToBN } from '@avalabs/utils-sdk'
 import Big from 'big.js'
-import {useWalletContext, useWalletStateContext} from '@avalabs/wallet-react-components';
+import { useWalletStateContext } from '@avalabs/wallet-react-components'
+import { useNavigation } from '@react-navigation/native'
+import AppNavigation from 'navigation/AppNavigation'
 
 export enum GasFeeModifier {
   NORMAL = 'NORMAL',
@@ -42,12 +44,14 @@ function CustomFees({
   defaultGasPrice,
   onSettingsPressed
 }: Props) {
+  const theme = useApplicationContext().theme
   const [customGasPrice, setCustomGasPrice] = useState(gasPrice)
   const [customGasLimit, setCustomGasLimit] = useState<string>(limit)
   const { avaxPrice } = useWalletStateContext()
   const [newFees, setNewFees] = useState<Fees>(
     calculateGasAndFees(gasPrice, limit, avaxPrice)
   )
+  const navigation = useNavigation()
   const [originalGas] = useState<GasPrice>(defaultGasPrice || gasPrice)
   const [customGasInput, setCustomGasInput] = useState(
     selectedGasFeeModifier === GasFeeModifier.CUSTOM
@@ -129,92 +133,54 @@ function CustomFees({
     selectedGasFeeModifier && updateGasFee(selectedGasFeeModifier)
   }, [selectedGasFeeModifier, updateGasFee])
 
-  // const presetWeights = useMemo(() => {
-  //   if (weights) {
-  //     defaultPresetWeights[GasFeeModifier.Normal] = weights.normal
-  //     defaultPresetWeights[GasFeeModifier.Fast] = weights.fast
-  //     defaultPresetWeights[GasFeeModifier.Instant] = weights.instant
-  //     defaultPresetWeights[GasFeeModifier.Custom] = weights.custom
-  //   }
-  //   if (customGasPrice) {
-  //     defaultPresetWeights[GasFeeModifier.Custom] = mustNumber(
-  //       () => Number.parseFloat(customGasPrice),
-  //       0
-  //     )
-  //   }
-  //   return { ...defaultPresetWeights }
-  // }, [customGasPrice])
-
-  // useEffect(() => {
-  //   const weightedGas = weightedGasPrice(
-  //     gasPrice,
-  //     selectedPreset,
-  //     presetWeights[selectedPreset]
-  //   )
-  //   onWeightedGas(weightedGas)
-  // }, [selectedPreset, gasPrice, presetWeights])
-  //
-  // useEffect(() => {
-  //   //lazy initial setup of customGasPrice
-  //   if (customGasPrice === '0' && gasPrice.value) {
-  //     setCustomGasPrice(gasPrice.value)
-  //   }
-  // }, [gasPrice])
-
   return (
-    <>
-      <Row>
+    <View style={{ paddingVertical: 16 }}>
+      <Row style={{ justifyContent: 'space-between', marginBottom: -16 }}>
         <AvaText.Body2>Network Fee</AvaText.Body2>
-        <View style={{ position: 'absolute', right: 0, top: -8 }}>
-          <AvaButton.Icon onPress={onSettingsPressed}>
-            <SettingsCogSVG />
-          </AvaButton.Icon>
-        </View>
+        <AvaButton.Icon
+          onPress={() => {
+            navigation.navigate(AppNavigation.Modal.EditGasLimit, {
+              gasLimit: customGasLimit,
+              networkFee: newFees.fee,
+              onSave: (newLimit: number) => {
+                setCustomGasLimit(newLimit.toString())
+                setNewFees(
+                  calculateGasAndFees(customGasPrice, limit, avaxPrice)
+                )
+                onChange(
+                  limit,
+                  customGasPrice,
+                  selectedGasFeeModifier ?? GasFeeModifier.NORMAL
+                )
+              }
+            })
+          }}>
+          <SettingsCogSVG />
+        </AvaButton.Icon>
       </Row>
-      <Space y={4} />
-      <Row style={{ alignItems: 'baseline' }}>
-        <AvaText.Heading3>{newFees.fee} AVAX</AvaText.Heading3>
-        <Space x={4} />
-        <AvaText.Body3 textStyle={{ paddingBottom: 2 }}>
-          ${newFees.feeUSD}
-        </AvaText.Body3>
-      </Row>
-      <Space y={8} />
+      <Space y={16} />
       <Row
         style={{
-          justifyContent: 'space-evenly',
-          alignItems: 'center'
+          justifyContent: 'space-between'
         }}>
         <FeeSelector
           label={'Normal'}
+          value={gasModifier(ModifierDefaults[GasFeeModifier.NORMAL]).value}
           selected={selectedFee === GasFeeModifier.NORMAL}
-          onSelect={() => updateGasFee(GasFeeModifier.NORMAL)}>
-          <>
-            <AvaText.Body1>
-              {ModifierDefaults[GasFeeModifier.NORMAL]}
-            </AvaText.Body1>
-          </>
-        </FeeSelector>
+          onSelect={() => updateGasFee(GasFeeModifier.NORMAL)}
+        />
         <FeeSelector
           label={'Fast'}
+          value={gasModifier(ModifierDefaults[GasFeeModifier.FAST]).value}
           selected={selectedFee === GasFeeModifier.FAST}
-          onSelect={() => updateGasFee(GasFeeModifier.FAST)}>
-          <>
-            <AvaText.Body1>
-              {ModifierDefaults[GasFeeModifier.FAST]}
-            </AvaText.Body1>
-          </>
-        </FeeSelector>
+          onSelect={() => updateGasFee(GasFeeModifier.FAST)}
+        />
         <FeeSelector
           label={'Instant'}
+          value={gasModifier(ModifierDefaults[GasFeeModifier.INSTANT]).value}
           selected={selectedFee === GasFeeModifier.INSTANT}
-          onSelect={() => updateGasFee(GasFeeModifier.INSTANT)}>
-          <>
-            <AvaText.Body1>
-              {ModifierDefaults[GasFeeModifier.INSTANT]}
-            </AvaText.Body1>
-          </>
-        </FeeSelector>
+          onSelect={() => updateGasFee(GasFeeModifier.INSTANT)}
+        />
         <FeeSelector
           editable
           label={'Custom'}
@@ -233,7 +199,21 @@ function CustomFees({
           }}
         />
       </Row>
-    </>
+      <Space y={16} />
+      <Row style={{ justifyContent: 'space-between' }}>
+        <AvaText.Body2>Network Fee Amount</AvaText.Body2>
+        <View style={{ alignItems: 'flex-end' }}>
+          <AvaText.Heading3>{newFees.fee} AVAX</AvaText.Heading3>
+          <Space x={4} />
+          <AvaText.Body3 textStyle={{ paddingBottom: 2 }}>
+            ${newFees.feeUSD}
+          </AvaText.Body3>
+        </View>
+      </Row>
+      {isGasPriceTooHigh && (
+        <AvaText.Body1 color={'red'}>Gas is too high</AvaText.Body1>
+      )}
+    </View>
   )
 }
 
@@ -277,8 +257,7 @@ const FeeSelector: FC<{
   onSelect,
   onValueEntered,
   value,
-  editable = false,
-  children
+  editable = false
 }) => {
   const { theme } = useApplicationContext()
   const [showInput, setShowInput] = useState(false)
@@ -315,8 +294,8 @@ const FeeSelector: FC<{
             inputRef1.current?.setNativeProps({
               style: {
                 backgroundColor: theme.colorText1,
-                width: 66,
-                height: 40,
+                width: 75,
+                height: 48,
                 marginTop: -12,
                 fontFamily: 'Inter-SemiBold',
                 textAlign: 'center',
@@ -334,41 +313,45 @@ const FeeSelector: FC<{
           mode={'amount'}
         />
       )}
-      {/*{!showInput && (*/}
-      {/*  <AvaButton.Base onPress={() => onSelect(label)}>*/}
-      {/*    <View*/}
-      {/*      focusable*/}
-      {/*      style={{*/}
-      {/*        width: 66,*/}
-      {/*        height: 40,*/}
-      {/*        borderRadius: 8,*/}
-      {/*        alignItems: 'center',*/}
-      {/*        justifyContent: 'center',*/}
-      {/*        backgroundColor: selected*/}
-      {/*          ? theme.colorText1*/}
-      {/*          : theme.colorBg3 + Opacity50*/}
-      {/*      }}>*/}
-      {/*      <AvaText.ButtonMedium*/}
-      {/*        textStyle={{*/}
-      {/*          color: selected ? theme.colorBg2 : theme.colorText2*/}
-      {/*        }}>*/}
-      {/*        {editable && selectedAtLeastOnce && value ? value : label}*/}
-      {/*      </AvaText.ButtonMedium>*/}
-      {/*    </View>*/}
-      {/*    {children}*/}
-      {/*  </AvaButton.Base>*/}
-      {/*)}*/}
+      {!showInput && (
+        <AvaButton.Base
+          style={{ alignItems: 'center' }}
+          onPress={() => onSelect(label)}>
+          <View
+            focusable
+            style={{
+              width: 75,
+              height: 48,
+              borderRadius: 8,
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: selected
+                ? theme.colorText1
+                : theme.colorBg3 + Opacity50
+            }}>
+            <AvaText.ButtonMedium
+              textStyle={{
+                color: selected ? theme.colorBg2 : theme.colorText2
+              }}>
+              {editable && selectedAtLeastOnce && value ? value : label}
+            </AvaText.ButtonMedium>
+            <AvaText.Caption
+              textStyle={{
+                color: selected ? theme.colorBg2 : theme.colorText2
+              }}>
+              {value}
+            </AvaText.Caption>
+          </View>
+        </AvaButton.Base>
+      )}
     </View>
   )
 }
 
 const ModifierDefaults = {
-  [GasFeeModifier.NORMAL]: 1,
-  [GasFeeModifier.FAST]: 1.05,
-  [GasFeeModifier.INSTANT]: 1.15
+  [GasFeeModifier.NORMAL]: 0,
+  [GasFeeModifier.FAST]: 0.05,
+  [GasFeeModifier.INSTANT]: 0.15
 }
 
 export default CustomFees
-// function useWalletContext(): { avaxPrice: any } {
-//   throw new Error('Function not implemented.')
-// }
