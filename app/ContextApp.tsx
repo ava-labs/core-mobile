@@ -9,7 +9,6 @@ import { PersistGate } from 'redux-persist/integration/react'
 import App from 'App'
 import { ApplicationContextProvider } from 'contexts/ApplicationContext'
 import Toast from 'react-native-toast-notifications'
-import { WalletStateContextProvider } from '@avalabs/wallet-react-components'
 import Splash from 'screens/onboarding/Splash'
 import JailMonkey from 'jail-monkey'
 import JailbrokenWarning from 'screens/onboarding/JailbrokenWarning'
@@ -33,20 +32,18 @@ const ContextAppWithRedux = () => {
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
           <PosthogContextProvider>
-            <WalletStateContextProvider>
-              <ApplicationContextProvider>
-                <DappConnectionContextProvider>
-                  <ContextApp />
-                  <Toast
-                    ref={ref => {
-                      ref && setToast(ref)
-                    }}
-                    offsetTop={60}
-                    normalColor={'00FFFFFF'}
-                  />
-                </DappConnectionContextProvider>
-              </ApplicationContextProvider>
-            </WalletStateContextProvider>
+            <ApplicationContextProvider>
+              <DappConnectionContextProvider>
+                <ContextApp />
+                <Toast
+                  ref={ref => {
+                    ref && setToast(ref)
+                  }}
+                  offsetTop={60}
+                  normalColor={'00FFFFFF'}
+                />
+              </DappConnectionContextProvider>
+            </ApplicationContextProvider>
           </PosthogContextProvider>
         </PersistGate>
       </Provider>

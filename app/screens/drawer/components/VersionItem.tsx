@@ -3,7 +3,7 @@ import { Alert } from 'react-native'
 import AvaListItem from 'components/AvaListItem'
 import AvaText from 'components/AvaText'
 
-const pkg = require('../../../package.json')
+const pkg = require('../../../../package.json')
 
 export default function VersionItem() {
   return (

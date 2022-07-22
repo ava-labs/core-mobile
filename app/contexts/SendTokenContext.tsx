@@ -9,7 +9,6 @@ import React, {
 } from 'react'
 import AvaLogoSVG from 'components/svg/AvaLogoSVG'
 import { Image } from 'react-native'
-import { bnToBig, stringToBN } from '@avalabs/avalanche-wallet-sdk'
 import { mustNumber } from 'utils/JsTools'
 import { BN } from 'avalanche'
 import { TokenWithBalance } from 'store/balance'
@@ -18,7 +17,12 @@ import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import sendService from 'services/send/SendService'
 import { SendState } from 'services/send/types'
-import { bnToEthersBigNumber, bnToLocaleString } from '@avalabs/utils-sdk'
+import {
+  bnToBig,
+  bnToEthersBigNumber,
+  bnToLocaleString,
+  stringToBN
+} from '@avalabs/utils-sdk'
 import { useNativeTokenPrice } from 'hooks/useNativeTokenPrice'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useApplicationContext } from 'contexts/ApplicationContext'

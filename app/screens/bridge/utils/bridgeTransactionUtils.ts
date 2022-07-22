@@ -1,12 +1,10 @@
 import capitalize from 'lodash.capitalize'
 import {
   BitcoinConfigAssets,
-  Blockchain,
   BridgeTransaction,
   EthereumConfigAssets
 } from '@avalabs/bridge-sdk'
 import { Erc20TransferDetailsDto } from '@avalabs/glacier-sdk'
-import { getTransactionLink } from '@avalabs/wallet-react-components'
 import { BitcoinHistoryTx } from '@avalabs/wallets-sdk'
 import { Transaction } from 'store/transaction'
 

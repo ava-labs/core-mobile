@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react'
-import { Big, BN } from '@avalabs/avalanche-wallet-sdk'
 import { TextInputProps, View } from 'react-native'
 import InputText from 'components/InputText'
+import Big from 'big.js'
+import BN from 'bn.js'
 
 Big.PE = 99
 Big.NE = -18

@@ -1,4 +1,3 @@
-import { bigToLocaleString, bnToBig } from '@avalabs/avalanche-wallet-sdk'
 import { BigNumber } from 'ethers'
 import {
   AddLiquidityDisplayData,
@@ -8,7 +7,7 @@ import {
   LiquidityPoolToken,
   TransactionParams
 } from 'screens/rpc/util/types'
-import { hexToBN } from '@avalabs/utils-sdk'
+import { bigToLocaleString, bnToBig, hexToBN } from '@avalabs/utils-sdk'
 import { findToken } from 'contracts/contractParsers/utils/findToken'
 import { parseDisplayValues } from 'screens/rpc/util/parseDisplayValues'
 import { Network } from '@avalabs/chains-sdk'
