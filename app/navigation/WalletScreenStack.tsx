@@ -1,5 +1,5 @@
-import React, { memo, useEffect, useMemo } from 'react'
-import { BackHandler, InteractionManager, Modal } from 'react-native'
+import React, { memo, useMemo } from 'react'
+import { BackHandler, Modal } from 'react-native'
 import {
   NavigatorScreenParams,
   useFocusEffect,
@@ -63,11 +63,8 @@ import AddEditNetwork, {
   AddEditNetworkProps
 } from 'screens/network/AddEditNetwork'
 import { Transaction } from 'store/transaction'
-import { selectIsLoadingBalances } from 'store/balance'
 import RpcMethodsUI from 'screens/rpc/RpcMethodsUI'
-import { useDappConnectionContext } from 'contexts/DappConnectionContext'
 import { useDeepLinking } from 'navigation/useDeepLinking'
-import Logger from 'utils/Logger'
 import { BridgeStackParamList } from './wallet/BridgeScreenStack'
 import {
   BridgeTransactionStatusParams,
@@ -138,8 +135,6 @@ const SignOutBottomSheetScreen = () => {
 function WalletScreenStack(props: Props | Readonly<Props>) {
   const dispatch = useDispatch()
   const showSecurityModal = useSelector(selectIsLocked)
-  const isLoadingBalances = useSelector(selectIsLoadingBalances)
-  const { dappEvent } = useDappConnectionContext()
   useDeepLinking(!showSecurityModal)
   const context = useApplicationContext()
   const { signOut } = context.appHook
@@ -160,34 +155,6 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
         BackHandler.removeEventListener('hardwareBackPress', onBackPress)
     }, [])
   )
-
-  /**
-   * Only show dapps handler if conditions are met
-   * 1. there's an event
-   * 2. security modal isn't showing
-   * 3. the app is done loading balances
-   * 4. current navigation is avaialbe
-   */
-  useEffect(() => {
-    if (
-      !dappEvent?.handled &&
-      !showSecurityModal &&
-      !isLoadingBalances &&
-      context?.appNavHook?.navigation?.current
-    ) {
-      InteractionManager.runAfterInteractions(() => {
-        Logger.info('opening RcpMethods up to interact with dapps')
-        context.appNavHook.navigation.current?.navigate(
-          AppNavigation.Modal.RpcMethodsUI
-        )
-      })
-    }
-  }, [
-    dappEvent,
-    showSecurityModal,
-    isLoadingBalances,
-    context?.appNavHook?.navigation?.current
-  ])
 
   const onExit = (): void => {
     props.onExit()

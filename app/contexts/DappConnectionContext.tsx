@@ -21,6 +21,10 @@ import { useSelector } from 'react-redux'
 import { selectNetworkFee } from 'store/networkFee'
 import { showSnackBarCustom } from 'components/Snackbar'
 import GeneralToast from 'components/toast/GeneralToast'
+import { selectIsLocked } from 'store/app'
+import { selectIsLoadingBalances } from 'store/balance'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import AppNavigation from 'navigation/AppNavigation'
 
 interface AdditionalMessageParams {
   data?: string
@@ -61,11 +65,32 @@ export const DappConnectionContextProvider = ({
   const activeAccount = useActiveAccount()
   const activeNetwork = useActiveNetwork()
   const networkFees = useSelector(selectNetworkFee)
+  const isAppLocked = useSelector(selectIsLocked)
+  const isLoadingBalances = useSelector(selectIsLoadingBalances)
   const [dappEvent, setDappEvent] = useState<DappEvent>()
+  const contextNavigation =
+    useApplicationContext().appNavHook?.navigation?.current
 
   useEffect(() => {
     initializeWalletConnect()
   }, [])
+
+  /**
+   * We need to wait for app to become ready
+   */
+  useEffect(() => {
+    if (
+      !dappEvent?.handled &&
+      !isAppLocked &&
+      !isLoadingBalances &&
+      contextNavigation
+    ) {
+      InteractionManager.runAfterInteractions(() => {
+        Logger.info('opening RcpMethods up to interact with dapps')
+        contextNavigation.navigate(AppNavigation.Modal.RpcMethodsUI)
+      })
+    }
+  }, [dappEvent, isAppLocked, isLoadingBalances, contextNavigation])
 
   function displayUserInstruction(instruction: string) {
     showSnackBarCustom(<GeneralToast message={instruction} />, 'long')
@@ -151,9 +176,9 @@ export const DappConnectionContextProvider = ({
       WalletConnectRequest.SESSION_DISCONNECTED,
       peerMeta => {
         InteractionManager.runAfterInteractions(() => {
-          displayUserInstruction(
-            `${peerMeta?.name ?? 'Application'} was disconnected remotely`
-          )
+          if (peerMeta?.name) {
+            displayUserInstruction(`${peerMeta.name} was disconnected remotely`)
+          }
         })
       }
     )

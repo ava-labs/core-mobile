@@ -21,7 +21,10 @@ const UNKNOWN_TOKEN = (address: string): TokenWithBalanceERC20 => ({
   priceInCurrency: 0,
   marketCap: 0,
   change24: 0,
-  vol24: 0
+  vol24: 0,
+  balanceCurrencyDisplayValue: '0',
+  balanceDisplayValue: '0',
+  balanceInCurrency: 0
 })
 
 export async function findToken(
@@ -72,6 +75,9 @@ export async function findToken(
     priceInCurrency: 0,
     marketCap: 0,
     change24: 0,
-    vol24: 0
+    vol24: 0,
+    balanceCurrencyDisplayValue: '0',
+    balanceDisplayValue: '0',
+    balanceInCurrency: 0
   }
 }

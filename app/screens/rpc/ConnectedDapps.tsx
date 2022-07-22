@@ -7,6 +7,7 @@ import { IWalletConnectSession } from '@walletconnect/types'
 import TrashSVG from 'components/svg/TrashSVG'
 import AvaListItem from 'components/AvaListItem'
 import walletConnectService from 'services/walletconnect/WalletConnectService'
+import Logger from 'utils/Logger'
 
 const ConnectedDapps: FC = () => {
   const [connectedDappsSessions, setConnectedDappSessions] = useState<
@@ -16,7 +17,12 @@ const ConnectedDapps: FC = () => {
 
   async function refresh() {
     setRefreshing(true)
-    setConnectedDappSessions(await walletConnectService.getConnections())
+    try {
+      const sessions = walletConnectService.getConnections()
+      setConnectedDappSessions(sessions)
+    } catch (e) {
+      Logger.error('error loading sessions', e)
+    }
     setRefreshing(false)
   }
 

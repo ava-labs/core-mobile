@@ -89,6 +89,7 @@ const RpcMethodsUI = () => {
       index={1}
       snapPoints={snapPoints}
       backgroundComponent={TabViewBackground}
+      enableContentPanningGesture={false}
       onChange={handleChange}>
       <SafeAreaView style={{ flex: 1 }}>
         {(dappEvent?.eventType === RPC_EVENT.SIGN && renderSignMessage()) ||

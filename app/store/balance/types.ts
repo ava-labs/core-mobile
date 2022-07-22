@@ -11,9 +11,9 @@ export enum TokenType {
 type TokenBalanceData = {
   type: TokenType
   balance: BN
-  balanceInCurrency?: number
-  balanceDisplayValue?: string
-  balanceCurrencyDisplayValue?: string
+  balanceInCurrency: number
+  balanceDisplayValue: string
+  balanceCurrencyDisplayValue: string
   priceInCurrency: number
   utxos?: BitcoinInputUTXO[]
 }
@@ -30,7 +30,6 @@ export type NetworkTokenWithBalance = TokenBalanceData &
     id: string // chainId + coingeckoId
     coingeckoId: string
     type: TokenType.NATIVE
-    address?: string
   }
 
 export type TokenWithBalanceERC20 = TokenBalanceData &

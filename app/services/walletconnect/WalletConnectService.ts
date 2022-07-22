@@ -394,24 +394,29 @@ const instance = {
     })
   },
   // returns session info list for 'Connected Sites' view
-  async getConnections(): Promise<
-    { session: IWalletConnectSession; killSession: () => Promise<void> }[]
-  > {
-    return (
-      connectors?.map(conn => {
-        return {
-          session: conn.walletConnectClient?.session as IWalletConnectSession,
-          killSession: () =>
-            this.killSession(conn.walletConnectClient?.peerId ?? '')
-        }
-      }) ?? []
-    )
+  getConnections(): {
+    session: IWalletConnectSession
+    killSession: () => Promise<void>
+  }[] {
+    try {
+      return (
+        connectors?.map(conn => {
+          return {
+            session: conn.walletConnectClient?.session as IWalletConnectSession,
+            killSession: () =>
+              this.killSession(conn.walletConnectClient?.peerId ?? '')
+          }
+        }) ?? []
+      )
+    } catch (e) {
+      throw Error('error loading sessions')
+    }
   },
   // Kills all sessions
   async killAllSessions() {
-    connectors?.map(conn => {
+    return connectors?.map(conn => {
       if (conn.walletConnectClient?.session?.peerId)
-        this.killSession(conn.walletConnectClient?.session?.peerId)
+        return this.killSession(conn.walletConnectClient?.session?.peerId)
     })
   }
 }
