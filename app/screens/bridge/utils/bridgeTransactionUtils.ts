@@ -23,11 +23,6 @@ export function isBridgeTransactionEVM(
   network: Network,
   criticalConfig: CriticalConfig | undefined
 ) {
-  const ethereumAssets = criticalConfig?.critical.assets
-  const bitcoinAssets = criticalConfig?.criticalBitcoin?.bitcoinAssets
-
-  if (!ethereumAssets || !bitcoinAssets) return false
-
   if (isEthereumNetwork(network)) {
     const ethBridgeAddress = criticalConfig?.critical.walletAddresses.ethereum
     return (
@@ -35,6 +30,11 @@ export function isBridgeTransactionEVM(
       tx.from.toLowerCase() === ethBridgeAddress
     )
   } else {
+    const ethereumAssets = criticalConfig?.critical.assets
+    const bitcoinAssets = criticalConfig?.criticalBitcoin?.bitcoinAssets
+
+    if (!ethereumAssets || !bitcoinAssets) return false
+
     return (
       Object.values(ethereumAssets).some(
         ({ wrappedContractAddress }) =>
