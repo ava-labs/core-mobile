@@ -1,4 +1,4 @@
-import React, { FC, useState } from 'react'
+import React, { FC, useCallback, useMemo, useState } from 'react'
 import { Alert, Dimensions, Pressable, StyleSheet, View } from 'react-native'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
@@ -34,10 +34,17 @@ import { bnToBig, numberToBN, resolve } from '@avalabs/utils-sdk'
 import Big from 'big.js'
 import ScrollViewList from 'components/ScrollViewList'
 import { ActivityIndicator } from 'components/ActivityIndicator'
+import Logger from 'utils/Logger'
 import { formatBlockchain } from './utils/bridgeTransactionUtils'
 
 const blockchainTitleMaxWidth = Dimensions.get('window').width * 0.5
 const dropdownWith = Dimensions.get('window').width * 0.6
+
+const sourceBlockchains = [
+  Blockchain.AVALANCHE,
+  Blockchain.BITCOIN,
+  Blockchain.ETHEREUM
+]
 
 const formatBalance = (balance: Big | undefined) => {
   return balance && formatTokenAmount(balance, 6)
@@ -113,18 +120,29 @@ const Bridge: FC = () => {
     !hasEnoughForNetworkFee
 
   // Remove chains turned off by the feature flags
-  const filterChains = (chains: Blockchain[]) =>
-    chains.filter(chain => {
-      switch (chain) {
-        case Blockchain.BITCOIN:
-          // TODO remove !isMainnet check when mainnet is supported
-          return !isMainnet && !bridgeBtcBlocked
-        case Blockchain.ETHEREUM:
-          return !bridgeEthBlocked
-        default:
-          return true
-      }
-    })
+  const filterChains = useCallback(
+    (chains: Blockchain[]) =>
+      chains.filter(chain => {
+        switch (chain) {
+          case Blockchain.BITCOIN:
+            // TODO remove !isMainnet check when mainnet is supported
+            return !isMainnet && !bridgeBtcBlocked
+          case Blockchain.ETHEREUM:
+            return !bridgeEthBlocked
+          default:
+            return true
+        }
+      }),
+    [bridgeBtcBlocked, bridgeEthBlocked, isMainnet]
+  )
+
+  /**
+   * Blockchain array that's fed to dropdown
+   */
+  const availableBlockchains = useMemo(
+    () => filterChains(sourceBlockchains),
+    [filterChains]
+  )
 
   /**
    * Opens token selection modal
@@ -143,21 +161,12 @@ const Bridge: FC = () => {
     navigation.navigate(AppNavigation.Bridge.AddInstructions)
   }
 
-  /**
-   * Blockchain array that's fed to dropdown
-   */
-  const sourceBlockchains = [
-    Blockchain.AVALANCHE,
-    Blockchain.BITCOIN,
-    Blockchain.ETHEREUM
-  ]
-
   const handleAmountChanged = (value: string) => {
     const bn = numberToBN(Number(value), denomination)
     try {
       setAmount(bnToBig(bn, denomination))
     } catch (e) {
-      console.log(e)
+      Logger.error('failed to set amount', e)
     }
   }
 
@@ -224,20 +233,18 @@ const Bridge: FC = () => {
     const Text =
       textSize === 'large' ? AvaText.ButtonLarge : AvaText.ButtonMedium
 
+    const symbol =
+      blockchain === Blockchain.AVALANCHE
+        ? TokenSymbol.AVAX
+        : blockchain === Blockchain.ETHEREUM
+        ? TokenSymbol.ETH
+        : blockchain === Blockchain.BITCOIN
+        ? TokenSymbol.BTC
+        : undefined
+
     return (
       <>
-        <Avatar.Custom
-          name={blockchain ?? ''}
-          symbol={
-            blockchain === Blockchain.AVALANCHE
-              ? TokenSymbol.AVAX
-              : blockchain === Blockchain.ETHEREUM
-              ? TokenSymbol.ETH
-              : blockchain === Blockchain.BITCOIN
-              ? TokenSymbol.BTC
-              : undefined
-          }
-        />
+        <Avatar.Custom name={blockchain ?? ''} symbol={symbol} />
         <Space x={8} />
         <Text
           textStyle={{
@@ -328,9 +335,9 @@ const Bridge: FC = () => {
           rightComponent={
             <DropDown
               width={dropdownWith}
-              data={filterChains(sourceBlockchains)}
-              selectedIndex={sourceBlockchains.indexOf(currentBlockchain)}
-              onItemSelected={bc => setCurrentBlockchain(bc)}
+              data={availableBlockchains}
+              selectedIndex={availableBlockchains.indexOf(currentBlockchain)}
+              onItemSelected={setCurrentBlockchain}
               optionsRenderItem={item =>
                 renderDropdownItem(item.item, currentBlockchain)
               }
