@@ -82,6 +82,6 @@ function isContractCall(tx: NormalTx) {
   return tx.input !== '0x'
 }
 
-function getFeeString(tx: NormalTx|Erc20Tx): string {
+function getFeeString(tx: NormalTx | Erc20Tx): string {
   return (Number(tx.gasUsed ?? '0') * Number(tx.gasPrice ?? '0')).toString()
 }
