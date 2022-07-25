@@ -139,28 +139,6 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
   const context = useApplicationContext()
   const { signOut } = context.appHook
 
-  // // init DeepLinkManager
-  // useEffect(() => {
-  //   SharedDeepLinkManager.init()
-  //   Linking.addEventListener('url', ({ url }) => {
-  //     if (url) {
-  //       // navigation.navigate('test')
-  //       SharedDeepLinkManager.expireDeepLink()
-  //       SharedDeepLinkManager.parse(url, { origin: DeepLinkOrigin.ORIGIN_DEEPLINK })
-  //       console.log('received linking event')
-  //     }
-  //   })
-  //   async function checkDeepLink() {
-  //     const url = await Linking.getInitialURL() // get from firebase in the future?
-  //     if (url) {
-  //       // navigation.navigate('test')
-  //       SharedDeepLinkManager.parse(url, { origin: DeepLinkOrigin.ORIGIN_DEEPLINK })
-  //       console.log('received linking event, initial url')
-  //     }
-  //   }
-  //   checkDeepLink()
-  // }, [])
-
   useFocusEffect(
     React.useCallback(() => {
       const onBackPress = () => {
@@ -177,9 +155,6 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
         BackHandler.removeEventListener('hardwareBackPress', onBackPress)
     }, [])
   )
-
-  // init linking listeners
-  useDeepLinking(!timeoutPassed)
 
   const onExit = (): void => {
     props.onExit()
@@ -364,19 +339,18 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
         />
         {BottomSheetGroup}
       </WalletScreenS.Navigator>
-      <RpcMethodsUI />
-      {/*<Modal visible={showSecurityModal} animationType={'slide'}>*/}
-      {/*  <PinOrBiometryLogin*/}
-      {/*    onSignInWithRecoveryPhrase={() => {*/}
-      {/*      signOut().then(() => {*/}
-      {/*        context.appNavHook.resetNavToEnterMnemonic()*/}
-      {/*      })*/}
-      {/*    }}*/}
-      {/*    onLoginSuccess={() => {*/}
-      {/*      dispatch(onAppUnlocked())*/}
-      {/*    }}*/}
-      {/*  />*/}
-      {/*</Modal>*/}
+      <Modal visible={showSecurityModal} animationType={'slide'} animated>
+        <PinOrBiometryLogin
+          onSignInWithRecoveryPhrase={() => {
+            signOut().then(() => {
+              context.appNavHook.resetNavToEnterMnemonic()
+            })
+          }}
+          onLoginSuccess={() => {
+            dispatch(onAppUnlocked())
+          }}
+        />
+      </Modal>
     </>
   )
 }

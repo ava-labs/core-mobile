@@ -81,25 +81,6 @@ const RpcMethodsUI = () => {
     )
   }
 
-  function renderPersonalSignModal() {
-    return (
-      <BottomSheet
-        snapPoints={['0%', '85%']}
-        snapTo={signingCallRequest ? 1 : 0}
-        disablePanningGesture
-        children={
-          signMessageParams && (
-            <SignMessage
-              onCancel={onWalletConnectCallRejected}
-              onConfirm={onWalletConnectCallApproval}
-              action={signMessageParams}
-            />
-          )
-        }
-      />
-    )
-  }
-
   return (
     <BottomSheet
       backdropComponent={BottomSheetBackdrop}

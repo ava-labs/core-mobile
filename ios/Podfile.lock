@@ -394,7 +394,7 @@ PODS:
     - React-Core
   - RNInAppBrowser (3.6.3):
     - React-Core
-  - RNKeychain (8.0.0):
+  - RNKeychain (8.1.1):
     - React-Core
   - RNOS (1.2.6):
     - React

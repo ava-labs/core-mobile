@@ -15,8 +15,6 @@ import {
 
 const BN_ZERO = new BN(0)
 
-const BN_ZERO = new BN(0)
-
 const reducerName = 'balance'
 
 const initialState: BalanceState = {

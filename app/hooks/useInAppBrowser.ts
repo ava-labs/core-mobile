@@ -12,12 +12,6 @@ const moonpayURL = async (address: string): Promise<{ url: string }> => {
   )
 }
 
-const moonpayURL = async (address: string): Promise<{ url: string }> => {
-  return await fetch(`${process.env.GLACIER_PROD_URL}/moonpay/${address}`).then(
-    response => response.json()
-  )
-}
-
 const useInAppBrowser = () => {
   const { theme } = useApplicationContext()
   const addressC = useSelector(selectActiveAccount)?.address ?? ''
