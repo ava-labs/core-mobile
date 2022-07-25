@@ -24,6 +24,7 @@ import {
 } from '@avalabs/chains-sdk'
 import networkService from 'services/network/NetworkService'
 import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
+import { useCallback } from 'react'
 
 const events = new EventEmitter()
 
@@ -39,7 +40,7 @@ export function useTransferAsset() {
   const { currentBlockchain } = useBridgeSDK()
   const address = activeAccount?.address ?? ''
 
-  function getNetworkForBlockchain() {
+  const getNetworkForBlockchain = useCallback(() => {
     // We have to get the network for the current blockchain
     if (currentBlockchain === Blockchain.AVALANCHE) {
       return activeNetwork.isTestnet
@@ -52,56 +53,67 @@ export function useTransferAsset() {
         ? ETHEREUM_TEST_NETWORK_RINKEBY
         : ETHEREUM_NETWORK
     }
-  }
+  }, [activeNetwork.isTestnet, allNetworks, currentBlockchain])
 
-  async function transferHandler(
-    blockChain: Blockchain,
-    amount: Big,
-    asset: EthereumConfigAsset | NativeAsset
-  ) {
-    const blockchainNetwork = getNetworkForBlockchain()
+  const transferHandler = useCallback(
+    async (
+      blockChain: Blockchain,
+      amount: Big,
+      asset: EthereumConfigAsset | NativeAsset
+    ) => {
+      const blockchainNetwork = getNetworkForBlockchain()
 
-    if (!config || !blockchainNetwork) {
-      return Promise.reject('Wallet not ready')
-    }
-    const avalancheNetwork = activeNetwork.isTestnet
-      ? allNetworks[ChainId.AVALANCHE_TESTNET_ID]
-      : allNetworks[ChainId.AVALANCHE_MAINNET_ID]
-    const avalancheProvider = networkService.getProviderForNetwork(
-      avalancheNetwork
-    ) as JsonRpcBatchInternal
-    const ethereumProvider = networkService.getEthereumProvider(
-      activeNetwork.isTestnet ?? false
-    )
-
-    const handleStatusChange = (status: WrapStatus) => {
-      events.emit(TransferEventType.WRAP_STATUS, status)
-    }
-    const handleTxHashChange = (txHash: string) => {
-      events.emit(TransferEventType.TX_HASH, txHash)
-    }
-
-    const activeAccountIndex = activeAccount?.index ?? 0
-
-    return await transferAssetSDK(
-      currentBlockchain,
-      amount,
-      address,
-      asset,
-      avalancheProvider,
-      ethereumProvider,
-      config,
-      handleStatusChange,
-      handleTxHashChange,
-      async txData => {
-        return await walletService.sign(
-          txData,
-          activeAccountIndex,
-          blockchainNetwork
-        )
+      if (!config || !blockchainNetwork) {
+        return Promise.reject('Wallet not ready')
       }
-    )
-  }
+      const avalancheNetwork = activeNetwork.isTestnet
+        ? allNetworks[ChainId.AVALANCHE_TESTNET_ID]
+        : allNetworks[ChainId.AVALANCHE_MAINNET_ID]
+      const avalancheProvider = networkService.getProviderForNetwork(
+        avalancheNetwork
+      ) as JsonRpcBatchInternal
+      const ethereumProvider = networkService.getEthereumProvider(
+        activeNetwork.isTestnet ?? false
+      )
+
+      const handleStatusChange = (status: WrapStatus) => {
+        events.emit(TransferEventType.WRAP_STATUS, status)
+      }
+      const handleTxHashChange = (txHash: string) => {
+        events.emit(TransferEventType.TX_HASH, txHash)
+      }
+
+      const activeAccountIndex = activeAccount?.index ?? 0
+
+      return await transferAssetSDK(
+        currentBlockchain,
+        amount,
+        address,
+        asset,
+        avalancheProvider,
+        ethereumProvider,
+        config,
+        handleStatusChange,
+        handleTxHashChange,
+        async txData => {
+          return await walletService.sign(
+            txData,
+            activeAccountIndex,
+            blockchainNetwork
+          )
+        }
+      )
+    },
+    [
+      activeAccount?.index,
+      activeNetwork.isTestnet,
+      address,
+      allNetworks,
+      config,
+      currentBlockchain,
+      getNetworkForBlockchain
+    ]
+  )
 
   return {
     transferHandler,
