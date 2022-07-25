@@ -84,7 +84,7 @@ class NetworkService {
   }
 
   async getNetworks(): Promise<{ [chainId: number]: Network }> {
-    const erc20Networks = await getChainsAndTokens()
+    const erc20Networks = await getChainsAndTokens(!__DEV__)
 
     delete erc20Networks[ChainId.AVALANCHE_LOCAL_ID]
 

@@ -18,9 +18,7 @@ import { useActiveNetwork } from 'hooks/useActiveNetwork'
 import {
   BITCOIN_NETWORK,
   BITCOIN_TEST_NETWORK,
-  ChainId,
-  ETHEREUM_NETWORK,
-  ETHEREUM_TEST_NETWORK_RINKEBY
+  ChainId
 } from '@avalabs/chains-sdk'
 import networkService from 'services/network/NetworkService'
 import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
@@ -50,8 +48,8 @@ export function useTransferAsset() {
       return activeNetwork.isTestnet ? BITCOIN_TEST_NETWORK : BITCOIN_NETWORK
     } else if (currentBlockchain === Blockchain.ETHEREUM) {
       return activeNetwork.isTestnet
-        ? ETHEREUM_TEST_NETWORK_RINKEBY
-        : ETHEREUM_NETWORK
+        ? allNetworks[ChainId.ETHEREUM_TEST_RINKEBY]
+        : allNetworks[ChainId.ETHEREUM_HOMESTEAD]
     }
   }, [activeNetwork.isTestnet, allNetworks, currentBlockchain])
 
