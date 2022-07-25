@@ -1,12 +1,6 @@
 import React, { useMemo } from 'react'
-import {
-  Animated,
-  View,
-  SectionList,
-  SectionListRenderItem,
-  StyleSheet,
-  SectionListData
-} from 'react-native'
+import { Animated, View, StyleSheet } from 'react-native'
+import { FlashList, ListRenderItemInfo } from '@shopify/flash-list'
 import AvaText from 'components/AvaText'
 import ActivityListItem from 'screens/activity/ActivityListItem'
 import { endOfToday, endOfYesterday, format, isSameDay } from 'date-fns'
@@ -38,9 +32,7 @@ type Section = {
   data: Transaction[] | BridgeTransaction[]
 }
 
-type SectionHeader = (info: {
-  section: SectionListData<Transaction | BridgeTransaction, Section>
-}) => React.ReactElement
+type Item = string | Transaction | BridgeTransaction
 
 interface Props {
   isRefreshing: boolean
@@ -95,7 +87,15 @@ const Transactions = ({
       }
     })
 
-    return allSections
+    // convert back to flatlist data format
+    const flatListData: Array<Item> = []
+
+    for (const section of allSections) {
+      flatListData.push(section.title)
+      flatListData.push(...section.data)
+    }
+
+    return flatListData
   }, [
     bridgeDisabled,
     data,
@@ -117,69 +117,75 @@ const Transactions = ({
     )
   }
 
-  const renderTransaction: SectionListRenderItem<
-    Transaction | BridgeTransaction,
-    Section
-  > = ({ item: tx }) => {
-    if ('addressBTC' in tx) {
-      return renderPendingBridgeTransaction(tx)
+  const renderTransaction = ({ item }: ListRenderItemInfo<Item>) => {
+    // render section header
+    if (typeof item === 'string') {
+      return renderSectionHeader(item)
+    }
+
+    // render row
+    if ('addressBTC' in item) {
+      return renderPendingBridgeTransaction(item)
     } else {
       const onPress = () => {
-        if (tx.isContractCall || tx.isBridge) {
-          openUrl(tx.explorerLink)
+        if (item.isContractCall || item.isBridge) {
+          openUrl(item.explorerLink)
         } else {
-          openTransactionDetails(tx)
+          openTransactionDetails(item)
         }
       }
 
       return (
-        <View key={tx.hash}>
-          {tx.isBridge ? (
-            <BridgeTransactionItem item={tx} onPress={onPress} />
+        <View key={item.hash}>
+          {item.isBridge ? (
+            <BridgeTransactionItem item={item} onPress={onPress} />
           ) : (
-            <ActivityListItem tx={tx} onPress={onPress} />
+            <ActivityListItem tx={item} onPress={onPress} />
           )}
         </View>
       )
     }
   }
 
-  const renderZeroState = () => {
-    return (
-      <View style={styles.zeroState}>
-        <ZeroState.NoTransactions />
-      </View>
-    )
-  }
-
-  const renderSectionHeader: SectionHeader = ({ section: { title } }) => {
+  const renderSectionHeader = (title: string) => {
     return (
       <Animated.View style={styles.headerContainer}>
         <AvaText.ActivityTotal>{title}</AvaText.ActivityTotal>
       </Animated.View>
     )
   }
-  const renderTransactions = () => {
-    const keyExtractor = (item: Transaction | BridgeTransaction) => {
-      if ('addressBTC' in item) return item.sourceTxHash
-      return item.hash
+
+  const keyExtractor = (
+    item: string | Transaction | BridgeTransaction,
+    index: number
+  ) => {
+    if (typeof item === 'string') {
+      return index.toString()
     }
 
+    if ('addressBTC' in item) return item.sourceTxHash
+
+    return item.hash
+  }
+
+  const renderTransactions = () => {
     return (
-      <SectionList
+      <FlashList
         indicatorStyle="white"
-        sections={combinedData}
-        renderSectionHeader={renderSectionHeader}
+        data={combinedData}
         renderItem={renderTransaction}
         keyExtractor={keyExtractor}
         contentContainerStyle={styles.contentContainer}
         onEndReached={onEndReached}
         onEndReachedThreshold={0.5}
-        ListEmptyComponent={renderZeroState()}
-        stickySectionHeadersEnabled={false}
+        ListEmptyComponent={TransactionsZeroState}
         refreshControl={
           <RefreshControl onRefresh={onRefresh} refreshing={isRefreshing} />
         }
+        getItemType={item => {
+          return typeof item === 'string' ? 'sectionHeader' : 'row'
+        }}
+        estimatedItemSize={71}
       />
     )
   }
@@ -187,10 +193,18 @@ const Transactions = ({
   return <View style={styles.container}>{renderTransactions()}</View>
 }
 
+const TransactionsZeroState = () => {
+  return (
+    <View style={styles.zeroState}>
+      <ZeroState.NoTransactions />
+    </View>
+  )
+}
+
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  contentContainer: { marginVertical: 4, paddingBottom: '20%', flexGrow: 1 },
-  zeroState: { flex: 1, marginTop: '-30%' },
+  contentContainer: { paddingBottom: '20%' },
+  zeroState: { flex: 1, marginTop: '30%' },
   headerContainer: {
     flex: 1,
     flexDirection: 'row',

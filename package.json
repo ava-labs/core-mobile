@@ -52,6 +52,7 @@
     "@react-navigation/native-stack": "^6.1.0",
     "@react-navigation/stack": "^6.0.7",
     "@reduxjs/toolkit": "^1.8.1",
+    "@shopify/flash-list": "^1.2.0",
     "@tradle/react-native-http": "^2.0.1",
     "@types/bn.js": "^5.1.0",
     "@types/crypto-js": "^4.1.1",

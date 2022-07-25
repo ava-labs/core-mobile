@@ -1,31 +1,19 @@
-import React, { useEffect, useMemo, useState } from 'react'
-import { FlatList, ListRenderItemInfo, StyleSheet, View } from 'react-native'
+import React, { useMemo, useState } from 'react'
+import { StyleSheet, View } from 'react-native'
 import Loader from 'components/Loader'
-import WatchListItem from 'screens/watchlist/components/WatchListItem'
-import { useNavigation } from '@react-navigation/native'
-import AppNavigation from 'navigation/AppNavigation'
-import { TabsScreenProps } from 'navigation/types'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import Separator from 'components/Separator'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
-import ZeroState from 'components/ZeroState'
 import Dropdown from 'components/Dropdown'
 import AvaText from 'components/AvaText'
 import { selectTokensWithBalance, TokenWithBalance } from 'store/balance'
-import { useSelector } from 'react-redux'
 import { selectWatchlistFavorites } from 'store/watchlist'
+import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
+import { FilterTimeOptions, WatchlistFilter } from './types'
+import WatchList from './components/WatchList'
 
 interface Props {
   showFavorites?: boolean
   searchText?: string
-}
-
-export enum WatchlistFilter {
-  PRICE = 'Price',
-  MARKET_CAP = 'Market Cap',
-  VOLUME = 'Volume',
-  GAINERS = 'Gainers',
-  LOSERS = 'Losers'
 }
 
 const filterPriceOptions = [
@@ -36,30 +24,34 @@ const filterPriceOptions = [
   WatchlistFilter.LOSERS
 ]
 
-enum FilterTimeOptions {
-  Day = '1D',
-  Week = '1W',
-  Year = '1Y'
-}
-
 const filterTimeOptions = [
   FilterTimeOptions.Day,
   FilterTimeOptions.Week,
   FilterTimeOptions.Year
 ]
 
-type NavigationProp = TabsScreenProps<
-  typeof AppNavigation.Tabs.Watchlist
->['navigation']
+const SelectionItem = ({ title }: { title: string }) => {
+  const theme = useApplicationContext().theme
+
+  return (
+    <AvaText.ButtonSmall textStyle={{ color: theme.colorText1 }}>
+      {title}
+    </AvaText.ButtonSmall>
+  )
+}
+
+const renderPriceFilterSelection = (selectedItem: WatchlistFilter) => (
+  <SelectionItem title={`Sort by: ${selectedItem}`} />
+)
+
+const renderTimeFilterSelection = (selectedItem: FilterTimeOptions) => (
+  <SelectionItem title={selectedItem} />
+)
 
 const WatchlistView: React.FC<Props> = ({ showFavorites, searchText }) => {
-  const navigation = useNavigation<NavigationProp>()
-  const theme = useApplicationContext().theme
-  const { currencyFormatter } = useApplicationContext().appHook
-  const watchlistFavorites = useSelector(selectWatchlistFavorites)
-  const tokensWithBalance = useSelector(selectTokensWithBalance)
+  const watchlistFavorites = useFocusedSelector(selectWatchlistFavorites)
+  const tokensWithBalance = useFocusedSelector(selectTokensWithBalance)
   const [filterBy, setFilterBy] = useState(WatchlistFilter.PRICE)
-  // filter time needs implementation
   const [filterTime, setFilterTime] = useState(FilterTimeOptions.Day)
   const filterTimeDays = useMemo(() => {
     switch (filterTime) {
@@ -104,51 +96,6 @@ const WatchlistView: React.FC<Props> = ({ showFavorites, searchText }) => {
     filterBy
   ])
 
-  useEffect(() => {
-    if (!showFavorites) {
-      // setSearchText(searchText ?? '');
-    }
-  }, [searchText])
-
-  const renderItem = (item: ListRenderItemInfo<TokenWithBalance>) => {
-    const token = item.item
-
-    function getDisplayValue() {
-      if (filterBy === WatchlistFilter.PRICE) {
-        const priceInCurrency = token.priceInCurrency
-        return priceInCurrency === 0
-          ? ' -'
-          : priceInCurrency > 0 && priceInCurrency < 0.1
-          ? `${priceInCurrency.toFixed(6)}`
-          : currencyFormatter(priceInCurrency)
-      } else if (filterBy === WatchlistFilter.MARKET_CAP) {
-        return token.marketCap === 0
-          ? ' -'
-          : currencyFormatter(token.marketCap ?? 0, 3)
-      } else if (filterBy === WatchlistFilter.VOLUME) {
-        return token.vol24 === 0 ? ' -' : currencyFormatter(token.vol24 ?? 0, 1)
-      }
-    }
-
-    // rank is currently not displayed because an additional
-    // API call that returns a large data set would need to be made only
-    // to get that information
-    return (
-      <WatchListItem
-        token={token}
-        chartDays={filterTimeDays}
-        value={getDisplayValue()}
-        filterBy={filterBy}
-        // rank={!showFavorites ? item.index + 1 : undefined}
-        onPress={() => {
-          navigation.navigate(AppNavigation.Wallet.TokenDetail, {
-            tokenId: token.id
-          })
-        }}
-      />
-    )
-  }
-
   const selectedPriceFilter = filterPriceOptions.findIndex(
     item => item === filterBy
   )
@@ -169,38 +116,22 @@ const WatchlistView: React.FC<Props> = ({ showFavorites, searchText }) => {
               width={140}
               data={filterPriceOptions}
               selectedIndex={selectedPriceFilter}
-              onItemSelected={selectedItem => setFilterBy(selectedItem)}
-              selectionRenderItem={selectedItem => (
-                <AvaText.ButtonSmall textStyle={{ color: theme.colorText1 }}>
-                  Sort by: {selectedItem}
-                </AvaText.ButtonSmall>
-              )}
+              onItemSelected={setFilterBy}
+              selectionRenderItem={renderPriceFilterSelection}
             />
             <Dropdown
               alignment={'flex-end'}
               width={80}
               data={filterTimeOptions}
               selectedIndex={selectedTimeFilter}
-              onItemSelected={selectedItem => setFilterTime(selectedItem)}
-              selectionRenderItem={selectedItem => (
-                <AvaText.ButtonSmall textStyle={{ color: theme.colorText1 }}>
-                  {selectedItem}
-                </AvaText.ButtonSmall>
-              )}
+              onItemSelected={setFilterTime}
+              selectionRenderItem={renderTimeFilterSelection}
             />
           </View>
-          <FlatList
-            data={tokens}
-            renderItem={renderItem}
-            ItemSeparatorComponent={() => (
-              <Separator
-                style={{ backgroundColor: '#323232', height: 0.5 }}
-                inset={8}
-              />
-            )}
-            ListEmptyComponent={<ZeroState.NoResultsTextual />}
-            refreshing={false}
-            keyExtractor={(item: TokenWithBalance) => item.id}
+          <WatchList
+            tokens={tokens}
+            filterBy={filterBy}
+            filterTimeDays={filterTimeDays}
           />
         </>
       )}
