@@ -53,9 +53,9 @@ export default function useAppBackgroundTracker({
   )
 
   useEffect(() => {
-    AppState.addEventListener('change', handleAppStateChange)
+    const sub = AppState.addEventListener('change', handleAppStateChange)
     return () => {
-      AppState.removeEventListener('change', handleAppStateChange)
+      sub.remove()
     }
   }, [handleAppStateChange])
 
