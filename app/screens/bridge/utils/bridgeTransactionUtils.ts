@@ -1,12 +1,12 @@
 import capitalize from 'lodash.capitalize'
 import {
-  BitcoinConfigAssets,
   Blockchain,
   BridgeTransaction,
-  EthereumConfigAssets
+  CriticalConfig
 } from '@avalabs/bridge-sdk'
-import { Erc20TransferDetailsDto } from '@avalabs/glacier-sdk'
+import { Network } from '@avalabs/chains-sdk'
 import { BitcoinHistoryTx } from '@avalabs/wallets-sdk'
+import { isEthereumNetwork } from 'services/network/utils/isEthereumNetwork'
 import { Transaction } from 'store/transaction'
 
 const ETHEREUM_ADDRESS = '0x0000000000000000000000000000000000000000'
@@ -15,26 +15,41 @@ const ETHEREUM_ADDRESS = '0x0000000000000000000000000000000000000000'
  * Checking if the transaction is a bridge transaction with Ethereum
  */
 export function isBridgeTransactionEVM(
-  transaction: Erc20TransferDetailsDto,
-  ethereumWrappedAssets: EthereumConfigAssets | undefined,
-  bitcoinAssets: BitcoinConfigAssets | undefined
+  tx: {
+    contractAddress: string
+    to: string
+    from: string
+  },
+  network: Network,
+  criticalConfig: CriticalConfig | undefined
 ) {
-  if (!ethereumWrappedAssets || !bitcoinAssets) return false
-
-  return (
-    Object.values(ethereumWrappedAssets).some(
-      ({ wrappedContractAddress }) =>
-        wrappedContractAddress.toLowerCase() ===
-          transaction.erc20Token.contractAddress.toLowerCase() &&
-        (transaction.to.address === ETHEREUM_ADDRESS ||
-          transaction.from.address === ETHEREUM_ADDRESS)
-    ) ||
-    Object.values(bitcoinAssets).some(
-      ({ wrappedContractAddress }) =>
-        wrappedContractAddress.toLowerCase() ===
-        transaction.erc20Token.contractAddress.toLowerCase()
+  if (isEthereumNetwork(network)) {
+    const ethBridgeAddress = criticalConfig?.critical.walletAddresses.ethereum
+    return (
+      tx.to.toLowerCase() === ethBridgeAddress ||
+      tx.from.toLowerCase() === ethBridgeAddress
     )
-  )
+  } else {
+    const ethereumAssets = criticalConfig?.critical.assets
+    const bitcoinAssets = criticalConfig?.criticalBitcoin?.bitcoinAssets
+
+    if (!ethereumAssets || !bitcoinAssets) return false
+
+    return (
+      Object.values(ethereumAssets).some(
+        ({ wrappedContractAddress }) =>
+          wrappedContractAddress.toLowerCase() ===
+            tx.contractAddress.toLowerCase() &&
+          (tx.to.toLowerCase() === ETHEREUM_ADDRESS ||
+            tx.from.toLowerCase() === ETHEREUM_ADDRESS)
+      ) ||
+      Object.values(bitcoinAssets).some(
+        ({ wrappedContractAddress }) =>
+          wrappedContractAddress.toLowerCase() ===
+          tx.contractAddress.toLowerCase()
+      )
+    )
+  }
 }
 
 /**

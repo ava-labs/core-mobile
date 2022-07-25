@@ -1,5 +1,5 @@
 import BN from 'bn.js'
-import { BitcoinConfigAssets, EthereumConfigAssets } from '@avalabs/bridge-sdk'
+import { CriticalConfig } from '@avalabs/bridge-sdk'
 import { Network } from '@avalabs/chains-sdk'
 import {
   TransactionDetailsDto,
@@ -15,8 +15,7 @@ type ConvertTransactionParams = {
   item: TransactionDetailsDto
   network: Network
   address: string
-  ethereumWrappedAssets: EthereumConfigAssets | undefined
-  bitcoinAssets: BitcoinConfigAssets | undefined
+  criticalConfig: CriticalConfig | undefined
 }
 
 type ConvertTransactionWithERC20Params = {
@@ -24,8 +23,7 @@ type ConvertTransactionWithERC20Params = {
   erc20Transfer: Erc20TransferDetailsDto
   network: Network
   address: string
-  ethereumWrappedAssets: EthereumConfigAssets | undefined
-  bitcoinAssets: BitcoinConfigAssets | undefined
+  criticalConfig: CriticalConfig | undefined
 }
 
 type ConvertNativeTransactionParams = {
@@ -39,12 +37,11 @@ const convertTransactionWithERC20 = ({
   erc20Transfer,
   network,
   address,
-  ethereumWrappedAssets,
-  bitcoinAssets
+  criticalConfig
 }: ConvertTransactionWithERC20Params) => {
   const { txHash, blockTimestamp, gasPrice, gasUsed } = nativeTransaction
   const {
-    erc20Token: { tokenDecimals, tokenName, tokenSymbol },
+    erc20Token: { contractAddress, tokenDecimals, tokenName, tokenSymbol },
     from: { address: from },
     to: { address: to },
     value
@@ -57,9 +54,9 @@ const convertTransactionWithERC20 = ({
   const amountDisplayValue = balanceToDisplayValue(new BN(value), tokenDecimals)
 
   const isBridge = isBridgeTransactionEVM(
-    erc20Transfer,
-    ethereumWrappedAssets,
-    bitcoinAssets
+    { contractAddress, to, from },
+    network,
+    criticalConfig
   )
 
   const token = {
@@ -143,8 +140,7 @@ export const convertTransaction = ({
   item,
   network,
   address,
-  ethereumWrappedAssets,
-  bitcoinAssets
+  criticalConfig
 }: ConvertTransactionParams): Transaction => {
   const { nativeTransaction, erc20Transfers } = item
 
@@ -156,8 +152,7 @@ export const convertTransaction = ({
       erc20Transfer,
       network,
       address,
-      bitcoinAssets,
-      ethereumWrappedAssets
+      criticalConfig
     })
   }
 
