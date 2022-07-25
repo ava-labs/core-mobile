@@ -10,14 +10,12 @@ import {
 } from '@avalabs/chains-sdk'
 import { PollingConfig } from 'store/balance'
 import Config from 'react-native-config'
+import { isEthereumNetwork } from './utils/isEthereumNetwork'
 
 const glacierUrl = __DEV__ ? Config.GLACIER_DEV_URL : Config.GLACIER_PROD_URL
 
 const BLOCKCYPHER_PROXY_URL = `${glacierUrl}/proxy/blockcypher`
 
-const ethNetworks = [ChainId.ETHEREUM_HOMESTEAD, ChainId.ETHEREUM_TEST_RINKEBY]
-
-// TODO: add support for ETH NETWORKS
 class NetworkService {
   getEvmProvider(
     multiContractAddress: string | undefined,
@@ -59,11 +57,11 @@ class NetworkService {
 
   getProviderForNetwork(network: Network) {
     if (network.vmName === NetworkVMType.BITCOIN) {
-      return this.getBitcoinProvider(!network.isTestnet)
+      return this.getBitcoinProvider(network.isTestnet)
     }
 
-    if (ethNetworks.includes(network.chainId)) {
-      return this.getEthereumProvider(network.isTestnet ?? false)
+    if (isEthereumNetwork(network)) {
+      return this.getEthereumProvider(network.isTestnet)
     }
 
     if (network.vmName === NetworkVMType.EVM) {
