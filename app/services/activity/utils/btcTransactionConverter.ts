@@ -1,11 +1,9 @@
 import { Blockchain } from '@avalabs/bridge-sdk'
 import { BITCOIN_NETWORK, Network } from '@avalabs/chains-sdk'
 import { BitcoinHistoryTx } from '@avalabs/wallets-sdk'
-import {
-  getLinkForBridgeTransaction,
-  isBridgeTransactionBTC
-} from 'screens/bridge/utils/bridgeTransactionUtils'
+import { isBridgeTransactionBTC } from 'screens/bridge/utils/bridgeTransactionUtils'
 import { Transaction } from 'store/transaction'
+import { getExplorerAddress } from 'utils/ExplorerUtils'
 
 type ConvertTransactionParams = {
   item: BitcoinHistoryTx
@@ -51,7 +49,7 @@ export const convertTransaction = ({
       name: BITCOIN_NETWORK.networkToken.name,
       symbol: BITCOIN_NETWORK.networkToken.symbol
     },
-    explorerLink: getLinkForBridgeTransaction(
+    explorerLink: getExplorerAddress(
       Blockchain.BITCOIN,
       item.hash,
       network.chainId === BITCOIN_NETWORK.chainId

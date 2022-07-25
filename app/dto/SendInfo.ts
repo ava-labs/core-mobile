@@ -1,8 +1,9 @@
-import { BN, bnToAvaxC, numberToBN } from '@avalabs/avalanche-wallet-sdk'
-
 // I know, I'm disgusted by it too, but it's a simple,
 // quick, dirty hack that works. Will remove this when
 // there's an opportunity to refactor.
+
+import BN from 'bn.js'
+import { bnToAvaxC, numberToBN } from '@avalabs/utils-sdk'
 
 export function stringAmountToBN(amount: string, denomination = 9): BN {
   if (!amount) {

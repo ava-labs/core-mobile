@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react'
-import { BN } from '@avalabs/avalanche-wallet-sdk'
 import {
   refetchBalance,
   selectIsLoadingBalances,
@@ -10,6 +9,7 @@ import {
 } from 'store/balance'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectZeroBalanceWhiteList } from 'store/zeroBalance'
+import BN from 'bn.js'
 
 const bnZero = new BN(0)
 
