@@ -23,14 +23,17 @@ export function useBlockchainNames(item: Transaction | BridgeTransaction) {
         criticalConfig.criticalBitcoin.walletAddresses.btc.toLowerCase()
       ]
     : []
-  const isToAvalanche = bridgeAddresses.includes(item.to.toLowerCase())
+  // When bridging to Avalanche we send to the bridge address. The wardens then
+  // notice the transaction and take care of creating the associated transaction
+  // in Avalanche C-chain.
+  const isBridgeToAvalanche = bridgeAddresses.includes(item.to.toLowerCase())
   const txBlockchain = titleCase(
     avalancheAssets[symbol]?.nativeNetwork || 'N/A'
   )
 
   return {
-    sourceBlockchain: isToAvalanche ? txBlockchain : 'Avalanche',
-    targetBlockchain: isToAvalanche ? 'Avalanche' : txBlockchain
+    sourceBlockchain: isBridgeToAvalanche ? txBlockchain : 'Avalanche',
+    targetBlockchain: isBridgeToAvalanche ? 'Avalanche' : txBlockchain
   }
 }
 
