@@ -1,5 +1,5 @@
 import { Asset, BridgeTransaction } from '@avalabs/bridge-sdk'
-import { Big } from '@avalabs/avalanche-wallet-sdk'
+import Big from 'big.js'
 
 export type PartialBridgeTransaction = Pick<
   BridgeTransaction,

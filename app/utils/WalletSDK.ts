@@ -1,10 +1,12 @@
-import { MnemonicWallet } from '@avalabs/avalanche-wallet-sdk'
 import Config from 'react-native-config'
+import { entropyToMnemonic } from 'ethers/lib/utils'
 
 export default {
   async generateMnemonic(): Promise<string> {
     try {
-      return Promise.resolve(MnemonicWallet.generateMnemonicPhrase())
+      // @ts-ignore added shim by react-native-get-random-values
+      const randomBytes = global.crypto.getRandomValues(new Uint8Array(32))
+      return entropyToMnemonic(randomBytes)
     } catch (e) {
       return Promise.reject(e)
     }

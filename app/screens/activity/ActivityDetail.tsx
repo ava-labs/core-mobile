@@ -14,13 +14,12 @@ import DotSVG from 'components/svg/DotSVG'
 import FlexSpacer from 'components/FlexSpacer'
 import Avatar from 'components/Avatar'
 import { Contact } from 'Repo'
-import { numberToBN } from '@avalabs/avalanche-wallet-sdk'
 import AppNavigation from 'navigation/AppNavigation'
 import { WalletScreenProps } from 'navigation/types'
 import { useSelector } from 'react-redux'
 import { selectContacts } from 'store/addressBook'
 import { selectActiveNetwork, selectTokenInfo } from 'store/network'
-import { balanceToDisplayValue } from '@avalabs/utils-sdk'
+import { balanceToDisplayValue, numberToBN } from '@avalabs/utils-sdk'
 
 type RouteProp = WalletScreenProps<
   typeof AppNavigation.Wallet.ActivityDetail

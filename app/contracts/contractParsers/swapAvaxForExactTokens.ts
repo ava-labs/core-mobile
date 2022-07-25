@@ -1,7 +1,6 @@
-import { bigToLocaleString, BN, bnToBig } from '@avalabs/avalanche-wallet-sdk'
 import { BigNumber } from 'ethers'
 import { parseDisplayValues } from 'screens/rpc/util/parseDisplayValues'
-import { hexToBN } from '@avalabs/utils-sdk'
+import { bigToLocaleString, bnToBig, hexToBN } from '@avalabs/utils-sdk'
 import {
   ContractCall,
   ContractParser,
@@ -11,6 +10,7 @@ import {
   TransactionParams
 } from 'screens/rpc/util/types'
 import { Network } from '@avalabs/chains-sdk'
+import BN from 'bn.js'
 import { findToken } from './utils/findToken'
 
 export interface SwapAVAXForExactTokensData {

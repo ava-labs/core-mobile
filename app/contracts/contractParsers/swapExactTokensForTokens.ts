@@ -1,6 +1,5 @@
-import { bigToLocaleString, bnToBig } from '@avalabs/avalanche-wallet-sdk'
 import { BigNumber } from 'ethers'
-import { hexToBN } from '@avalabs/utils-sdk'
+import { bigToLocaleString, bnToBig, hexToBN } from '@avalabs/utils-sdk'
 import {
   ContractCall,
   ContractParser,

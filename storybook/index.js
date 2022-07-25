@@ -7,7 +7,6 @@ import {
   getStorybookUI
 } from '@storybook/react-native'
 import { withKnobs } from '@storybook/addon-knobs'
-import { NetworkContextProvider } from '@avalabs/wallet-react-components'
 import { Provider } from 'react-redux'
 import { ApplicationContextProvider } from '../app/contexts/ApplicationContext'
 import useDevDebugging from '../app/utils/debugging/DevDebugging'
@@ -26,9 +25,7 @@ configure(() => {
 addDecorator(getStory => (
   <Provider store={store}>
     <PosthogContextProvider>
-      <NetworkContextProvider>
-        <ApplicationContextProvider>{getStory()}</ApplicationContextProvider>
-      </NetworkContextProvider>
+      <ApplicationContextProvider>{getStory()}</ApplicationContextProvider>
     </PosthogContextProvider>
   </Provider>
 ))
