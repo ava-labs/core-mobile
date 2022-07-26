@@ -5,6 +5,7 @@ import { selectActiveNetwork, selectIsTestnet } from 'store/network'
 import AccountsService from 'services/account/AccountsService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import BN from 'bn.js'
+import { Network } from '@avalabs/chains-sdk'
 import {
   Balance,
   Balances,
@@ -88,6 +89,18 @@ export const selectTokensWithBalance = (state: RootState) => {
   const key = getKey(network.chainId, address)
   return state.balance.balances[key]?.tokens ?? []
 }
+
+export const selectTokensWithBalanceByNetwork =
+  (network: Network) => (state: RootState) => {
+    const activeAccount = selectActiveAccount(state)
+
+    if (!activeAccount) return []
+
+    const address = AccountsService.getAddressForNetwork(activeAccount, network)
+
+    const key = getKey(network.chainId, address)
+    return state.balance.balances[key]?.tokens ?? []
+  }
 
 export const selectTokensWithZeroBalance = (state: RootState) => {
   const allTokens = selectTokensWithBalance(state)

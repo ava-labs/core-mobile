@@ -16,7 +16,7 @@ export function useLoadBridgeConfig() {
 
   useEffect(() => {
     setBridgeEnvironment(
-      !network.isTestnet ? Environment.PROD : Environment.TEST
+      network.isTestnet ? Environment.TEST : Environment.PROD
     )
   }, [network])
 

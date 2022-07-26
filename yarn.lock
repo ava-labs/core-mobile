@@ -9,11 +9,6 @@
   dependencies:
     "@jridgewell/trace-mapping" "^0.3.0"
 
-"@avalabs/blizzard-sdk@2.5.0-alpha.1":
-  version "2.5.0-alpha.1"
-  resolved "https://registry.yarnpkg.com/@avalabs/blizzard-sdk/-/blizzard-sdk-2.5.0-alpha.1.tgz#c579134af654debd5ce8d29e2b750e5664675116"
-  integrity sha512-X4qOBKuIgTlst5/YS0XJXzJ9jK+XXIA+OqGZhj5cRBj8zEuqX2ZLb1emuHMtUvo/OgNbH2Nk3cDKoCFd7LktJQ==
-
 "@avalabs/blockcypher-sdk@2.5.0-alpha.1":
   version "2.5.0-alpha.1"
   resolved "https://registry.yarnpkg.com/@avalabs/blockcypher-sdk/-/blockcypher-sdk-2.5.0-alpha.1.tgz#edf52a69e58511c84aaadb71897357e948335993"
@@ -93,6 +88,11 @@
     "@avalabs/utils-sdk" "2.5.0-alpha.1"
     graphql "16.5.0"
     graphql-request "4.2.0"
+
+"@avalabs/types@2.5.0-alpha.1":
+  version "2.5.0-alpha.1"
+  resolved "https://registry.yarnpkg.com/@avalabs/types/-/types-2.5.0-alpha.1.tgz#9e42da9fc73b57cabc5fea279ae3c925fe4a4181"
+  integrity sha512-AXowB4w0+YFhYBjnuSfqbUFwY7aVvbksUgRYwxhmT5P5hV615JMNGg/2dsQvcLwgIrPYmUXeYqxhiC66ou6F6g==
 
 "@avalabs/utils-sdk@2.4.1-alpha.8":
   version "2.4.1-alpha.8"
@@ -6972,7 +6972,7 @@ buffer@^4.3.0, buffer@^4.9.1:
     ieee754 "^1.1.4"
     isarray "^1.0.0"
 
-buffer@^5.0.5, buffer@^5.5.0, buffer@^5.6.0:
+buffer@^5.0.5, buffer@^5.4.3, buffer@^5.5.0, buffer@^5.6.0:
   version "5.7.1"
   resolved "https://registry.yarnpkg.com/buffer/-/buffer-5.7.1.tgz#ba62e7c13133053582197160851a8f648e99eed0"
   integrity sha512-EHcyIPBQ4BSGlvjB16k5KgAJ27CIsHY/2JBmCRReo48y9rQ3MaUzWX3KVlBa4U7MyX02HdVj0K7C3WaB3ju7FQ==
@@ -17292,6 +17292,13 @@ react-native-toast-notifications@^3.3.0:
   resolved "https://registry.yarnpkg.com/react-native-toast-notifications/-/react-native-toast-notifications-3.3.0.tgz#e88b0b264812d86ff3a8c62eca4ea54b3ce3da35"
   integrity sha512-R94XMwHzovGc3CskniqM2EwS6GqVWgfynXi9ua/qvS+F7eD2dvlkhDhf+eUQNpTexQLoG5MYOJRQ+J8WQs3LbQ==
 
+react-native-url-polyfill@1.3.0:
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/react-native-url-polyfill/-/react-native-url-polyfill-1.3.0.tgz#c1763de0f2a8c22cc3e959b654c8790622b6ef6a"
+  integrity sha512-w9JfSkvpqqlix9UjDvJjm1EjSt652zVQ6iwCIj1cVVkwXf4jQhQgTNXY6EVTwuAmUjg6BC6k9RHCBynoLFo3IQ==
+  dependencies:
+    whatwg-url-without-unicode "8.0.0-3"
+
 "react-native-v8@>=0.66.3-patch.0 <0.66.3":
   version "0.66.3-patch.1"
   resolved "https://registry.yarnpkg.com/react-native-v8/-/react-native-v8-0.66.3-patch.1.tgz#baca62e1684dadbfe8b67409ba56915d2dbabce6"
@@ -21196,6 +21203,15 @@ whatwg-mimetype@^2.3.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/whatwg-mimetype/-/whatwg-mimetype-2.3.0.tgz#3d4b1e0312d2079879f826aff18dbeeca5960fbf"
   integrity sha512-M4yMwr6mAnQz76TbJm914+gPpB/nCwvZbJU28cUD6dR004SAxDLOOSUaB1JDRqLtaOV/vi0IC5lEAGFgrjGv/g==
+
+whatwg-url-without-unicode@8.0.0-3:
+  version "8.0.0-3"
+  resolved "https://registry.yarnpkg.com/whatwg-url-without-unicode/-/whatwg-url-without-unicode-8.0.0-3.tgz#ab6df4bf6caaa6c85a59f6e82c026151d4bb376b"
+  integrity sha512-HoKuzZrUlgpz35YO27XgD28uh/WJH4B0+3ttFqRo//lmq+9T/mIOJ6kqmINI9HpUpz1imRC/nR/lxKpJiv0uig==
+  dependencies:
+    buffer "^5.4.3"
+    punycode "^2.1.1"
+    webidl-conversions "^5.0.0"
 
 whatwg-url@^5.0.0:
   version "5.0.0"

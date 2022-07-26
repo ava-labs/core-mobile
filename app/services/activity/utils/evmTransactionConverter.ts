@@ -7,7 +7,7 @@ import {
   Erc20TransferDetailsDto
 } from '@avalabs/glacier-sdk'
 import { balanceToDisplayValue } from '@avalabs/utils-sdk'
-import { isBridgeTransactionEVM } from 'screens/bridge/utils/bridgeTransactionUtils'
+import { isBridgeTransactionEVM } from 'screens/bridge/utils/bridgeUtils'
 import { Transaction } from 'store/transaction'
 import { getExplorerAddressByNetwork } from 'utils/ExplorerUtils'
 
@@ -15,7 +15,7 @@ type ConvertTransactionParams = {
   item: TransactionDetailsDto
   network: Network
   address: string
-  criticalConfig: CriticalConfig | undefined
+  criticalConfig?: CriticalConfig
 }
 
 type ConvertTransactionWithERC20Params = {
