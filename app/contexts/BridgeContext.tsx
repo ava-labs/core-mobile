@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect } from 'react'
+import React, { createContext, useCallback, useContext, useEffect } from 'react'
 import {
   BridgeSDKProvider,
   BridgeTransaction,
@@ -19,7 +19,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
 import { selectActiveAccount } from 'store/account'
 import networkService from 'services/network/NetworkService'
-import { TrackerArgs } from '@avalabs/bridge-sdk/dist/src/lib/tracker/models'
 import {
   addBridgeTransaction,
   popBridgeTransaction,
@@ -76,9 +75,143 @@ function LocalBridgeProvider({ children }: { children: any }) {
   const { currentBlockchain } = useBridgeSDK()
   const { transferHandler, events } = useTransferAsset()
 
-  const ethereumProvider = networkService.getEthereumProvider(network.isTestnet)
-  const bitcoinProvider = networkService.getBitcoinProvider(network.isTestnet)
-  const avaxProvider = networkService.getAvalancheProvider(network.isTestnet)
+  // init tracking updates for txs
+  const subscribeToTransaction = useCallback(
+    async (trackedTransaction: BridgeTransaction) => {
+      if (
+        trackedTransaction &&
+        config &&
+        !TrackerSubscriptions.has(trackedTransaction.sourceTxHash)
+      ) {
+        const ethereumProvider = networkService.getEthereumProvider(
+          network.isTestnet
+        )
+        const bitcoinProvider = networkService.getBitcoinProvider(
+          network.isTestnet
+        )
+        const avalancheProvider = await networkService.getAvalancheProvider(
+          network.isTestnet
+        )
+
+        // Start transaction tracking process (no need to await)
+        try {
+          const subscription = trackBridgeTransaction({
+            bridgeTransaction: trackedTransaction,
+            onBridgeTransactionUpdate: (tx: BridgeTransaction) =>
+              dispatch(addBridgeTransaction(tx)),
+            config,
+            avalancheProvider,
+            ethereumProvider,
+            bitcoinProvider
+          })
+
+          TrackerSubscriptions.set(
+            trackedTransaction.sourceTxHash,
+            subscription
+          )
+        } catch (e) {
+          console.log(e)
+        }
+      }
+    },
+    [config, dispatch, network]
+  )
+
+  const transferAsset = useCallback(
+    async (
+      amount: Big,
+      asset: any,
+      onStatusChange: (status: WrapStatus) => void,
+      onTxHashChange: (txHash: string) => void
+    ) => {
+      events.on(TransferEventType.WRAP_STATUS, status => {
+        onStatusChange(status)
+      })
+      events.on(TransferEventType.TX_HASH, txHash => {
+        onTxHashChange(txHash)
+      })
+
+      return transferHandler(currentBlockchain, amount, asset)
+    },
+    [currentBlockchain, events, transferHandler]
+  )
+
+  /**
+   * Add a new pending bridge transaction to the background state and start the
+   * transaction tracking process.
+   */
+  const createBridgeTransaction = useCallback(
+    async (partialBridgeTransaction: PartialBridgeTransaction) => {
+      if (!config || !network || !activeAccount) {
+        return Promise.reject('Wallet not ready')
+      }
+
+      const {
+        sourceChain,
+        sourceTxHash,
+        sourceStartedAt,
+        targetChain,
+        amount,
+        symbol
+      } = partialBridgeTransaction
+
+      const addressC = activeAccount.address
+      const addressBTC = activeAccount.addressBtc
+
+      if (!addressBTC) return { error: 'missing addressBTC' }
+      if (!addressC) return { error: 'missing addressC' }
+      if (!sourceChain) return { error: 'missing sourceChain' }
+      if (!sourceTxHash) return { error: 'missing sourceTxHash' }
+      if (!sourceStartedAt) return { error: 'missing sourceStartedAt' }
+      if (!targetChain) return { error: 'missing targetChain' }
+      if (!amount) return { error: 'missing amount' }
+      if (!symbol) return { error: 'missing symbol' }
+      if (!config) return { error: 'missing bridge config' }
+      if (bridgeTransactions[sourceTxHash])
+        return { error: 'bridge tx already exists' }
+      const requiredConfirmationCount = getMinimumConfirmations(
+        sourceChain,
+        config
+      )
+
+      const environment = network.isTestnet ? 'test' : 'main'
+
+      const bridgeTransaction: BridgeTransaction = {
+        /* from params */
+        sourceChain,
+        sourceTxHash,
+        sourceStartedAt,
+        targetChain,
+        amount,
+        symbol,
+        /* new fields */
+        addressC,
+        addressBTC,
+        complete: false,
+        confirmationCount: 0,
+        environment,
+        requiredConfirmationCount
+      }
+
+      dispatch(addBridgeTransaction(bridgeTransaction))
+      subscribeToTransaction(bridgeTransaction)
+    },
+    [
+      activeAccount,
+      bridgeTransactions,
+      config,
+      dispatch,
+      network,
+      subscribeToTransaction
+    ]
+  )
+
+  const removeBridgeTransaction = useCallback(
+    async (sourceHash: string) => {
+      dispatch(popBridgeTransaction(sourceHash))
+    },
+    [dispatch]
+  )
 
   // load pending txs from storage
   useEffect(() => {
@@ -87,123 +220,7 @@ function LocalBridgeProvider({ children }: { children: any }) {
         subscribeToTransaction(tx as BridgeTransaction)
       })
     }
-  }, [hydrationComplete, config])
-
-  // init tracking updates for txs
-  function subscribeToTransaction(trackedTransaction: BridgeTransaction) {
-    if (
-      trackedTransaction &&
-      config &&
-      !TrackerSubscriptions.has(trackedTransaction.sourceTxHash)
-    ) {
-      /**
-       * bridgeTransaction: BridgeTransaction;
-       *   onBridgeTransactionUpdate: (bridgeTransaction: BridgeTransaction) => void;
-       *   config: AppConfig;
-       *   avalancheProvider: Provider;
-       *   ethereumProvider: Provider;
-       *   bitcoinProvider: BlockCypherProvider;
-       */
-      // Start transaction tracking process (no need to await)
-      try {
-        const subscription = trackBridgeTransaction({
-          bridgeTransaction: trackedTransaction,
-          onBridgeTransactionUpdate: (tx: BridgeTransaction) =>
-            dispatch(addBridgeTransaction(tx)),
-          config,
-          avaxProvider,
-          ethereumProvider,
-          bitcoinProvider
-        } as unknown as TrackerArgs)
-
-        TrackerSubscriptions.set(trackedTransaction.sourceTxHash, subscription)
-      } catch (e) {
-        console.log(e)
-      }
-    }
-  }
-
-  async function transferAsset(
-    amount: Big,
-    asset: any,
-    onStatusChange: (status: WrapStatus) => void,
-    onTxHashChange: (txHash: string) => void
-  ) {
-    events.on(TransferEventType.WRAP_STATUS, status => {
-      onStatusChange(status)
-    })
-    events.on(TransferEventType.TX_HASH, txHash => {
-      onTxHashChange(txHash)
-    })
-
-    return transferHandler(currentBlockchain, amount, asset)
-  }
-
-  /**
-   * Add a new pending bridge transaction to the background state and start the
-   * transaction tracking process.
-   */
-  async function createBridgeTransaction(
-    partialBridgeTransaction: PartialBridgeTransaction
-  ) {
-    if (!config || !network || !activeAccount) {
-      return Promise.reject('Wallet not ready')
-    }
-
-    const {
-      sourceChain,
-      sourceTxHash,
-      sourceStartedAt,
-      targetChain,
-      amount,
-      symbol
-    } = partialBridgeTransaction
-
-    const addressC = activeAccount.address
-    const addressBTC = activeAccount.addressBtc
-
-    if (!addressBTC) return { error: 'missing addressBTC' }
-    if (!addressC) return { error: 'missing addressC' }
-    if (!sourceChain) return { error: 'missing sourceChain' }
-    if (!sourceTxHash) return { error: 'missing sourceTxHash' }
-    if (!sourceStartedAt) return { error: 'missing sourceStartedAt' }
-    if (!targetChain) return { error: 'missing targetChain' }
-    if (!amount) return { error: 'missing amount' }
-    if (!symbol) return { error: 'missing symbol' }
-    if (!config) return { error: 'missing bridge config' }
-    if (bridgeTransactions[sourceTxHash])
-      return { error: 'bridge tx already exists' }
-    const requiredConfirmationCount = getMinimumConfirmations(
-      sourceChain,
-      config
-    )
-
-    const environment = network.isTestnet ? 'test' : 'main'
-
-    const bridgeTransaction: BridgeTransaction = {
-      /* from params */
-      sourceChain,
-      sourceTxHash,
-      sourceStartedAt,
-      targetChain,
-      amount,
-      symbol,
-      /* new fields */
-      addressC,
-      addressBTC,
-      complete: false,
-      confirmationCount: 0,
-      environment,
-      requiredConfirmationCount
-    }
-
-    dispatch(addBridgeTransaction(bridgeTransaction))
-    subscribeToTransaction(bridgeTransaction)
-  }
-
-  async function removeBridgeTransaction(sourceHash: string) {
-    dispatch(popBridgeTransaction(sourceHash))
-  }
+  }, [hydrationComplete, config, bridgeTransactions, subscribeToTransaction])
 
   return (
     <bridgeContext.Provider

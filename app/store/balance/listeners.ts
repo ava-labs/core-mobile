@@ -54,15 +54,20 @@ const onBalanceUpdate = async (
   fetchActiveOnly: boolean
 ) => {
   const state = listenerApi.getState()
+  const activeNetwork = selectActiveNetwork(state)
 
   let networksToFetch, accountsToFetch
 
   if (fetchActiveOnly) {
-    networksToFetch = [selectActiveNetwork(state)]
+    networksToFetch = [activeNetwork]
     const activeAccount = selectActiveAccount(state)
     accountsToFetch = activeAccount ? [activeAccount] : []
   } else {
     networksToFetch = selectFavoriteNetworks(state)
+    // Just in case the active network has not been favorited
+    if (!networksToFetch.map(n => n.chainId).includes(activeNetwork.chainId)) {
+      networksToFetch.push(activeNetwork)
+    }
     accountsToFetch = Object.values(selectAccounts(state))
   }
 

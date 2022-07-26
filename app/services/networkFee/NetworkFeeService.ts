@@ -7,7 +7,7 @@ import {
 } from '@avalabs/wallets-sdk'
 import Big from 'big.js'
 import { BigNumber, BigNumberish } from 'ethers'
-import { isSwimmer } from 'services/network/isSwimmerNetwork'
+import { isSwimmer } from 'services/network/utils/isSwimmerNetwork'
 
 class NetworkFeeService {
   async getNetworkFee(network: Network): Promise<NetworkFee | null> {

@@ -34,7 +34,7 @@ const BridgeTransactionItem: FC<BridgeTransactionItemProps> = ({
       ShowSnackBar(`You have received ${item.amount} ${item.symbol}`)
       removeBridgeTransaction(item.sourceTxHash).then()
     }
-  }, [pending && item.complete])
+  }, [item, pending, removeBridgeTransaction])
 
   return (
     <AvaListItem.Base

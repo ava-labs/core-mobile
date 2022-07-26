@@ -10,14 +10,11 @@ import {
 } from '@avalabs/chains-sdk'
 import { PollingConfig } from 'store/balance'
 import Config from 'react-native-config'
+import { addGlacierAPIKeyIfNeeded, GLACIER_URL } from 'utils/glacierUtils'
+import { isEthereumNetwork } from './utils/isEthereumNetwork'
 
-const glacierUrl = __DEV__ ? Config.GLACIER_DEV_URL : Config.GLACIER_PROD_URL
+const BLOCKCYPHER_PROXY_URL = `${GLACIER_URL}/proxy/blockcypher`
 
-const BLOCKCYPHER_PROXY_URL = `${glacierUrl}/proxy/blockcypher`
-
-const ethNetworks = [ChainId.ETHEREUM_HOMESTEAD, ChainId.ETHEREUM_TEST_RINKEBY]
-
-// TODO: add support for ETH NETWORKS
 class NetworkService {
   getEvmProvider(
     multiContractAddress: string | undefined,
@@ -29,7 +26,7 @@ class NetworkService {
         maxCalls: 40,
         multiContractAddress
       },
-      rpcUrl,
+      addGlacierAPIKeyIfNeeded(rpcUrl),
       chainId
     )
 
@@ -46,24 +43,28 @@ class NetworkService {
   }
 
   getBitcoinProvider(isTest?: boolean) {
-    return new BlockCypherProvider(!isTest, undefined, BLOCKCYPHER_PROXY_URL)
+    return new BlockCypherProvider(
+      !isTest,
+      Config.GLACIER_API_KEY,
+      BLOCKCYPHER_PROXY_URL
+    )
   }
 
-  async getAvalancheProvider(isTest?: boolean) {
+  async getAvalancheProvider(isTest?: boolean): Promise<JsonRpcBatchInternal> {
     const allNetworks = await this.getNetworks()
     const avaxNetwork = isTest
       ? allNetworks[ChainId.AVALANCHE_TESTNET_ID]
       : allNetworks[ChainId.AVALANCHE_MAINNET_ID]
-    return this.getProviderForNetwork(avaxNetwork)
+    return this.getProviderForNetwork(avaxNetwork) as JsonRpcBatchInternal
   }
 
   getProviderForNetwork(network: Network) {
     if (network.vmName === NetworkVMType.BITCOIN) {
-      return this.getBitcoinProvider(!network.isTestnet)
+      return this.getBitcoinProvider(network.isTestnet)
     }
 
-    if (ethNetworks.includes(network.chainId)) {
-      return this.getEthereumProvider(network.isTestnet ?? false)
+    if (isEthereumNetwork(network)) {
+      return this.getEthereumProvider(network.isTestnet)
     }
 
     if (network.vmName === NetworkVMType.EVM) {
@@ -84,7 +85,7 @@ class NetworkService {
   }
 
   async getNetworks(): Promise<{ [chainId: number]: Network }> {
-    const erc20Networks = await getChainsAndTokens()
+    const erc20Networks = await getChainsAndTokens(!__DEV__)
 
     delete erc20Networks[ChainId.AVALANCHE_LOCAL_ID]
 

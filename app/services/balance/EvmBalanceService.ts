@@ -63,9 +63,6 @@ export class EvmBalanceService {
       currency
     )
 
-    //const nftStates = []
-    //const nftStates = await this.getErc721Balances(userAddress)
-
     return [nativeToken, ...erc20Tokens]
   }
 
@@ -175,15 +172,6 @@ export class EvmBalanceService {
       }, [])
     })
   }
-
-  // TODO add support for nft
-  // private async getErc721Balances(
-  //   userAddress: string
-  // ): Promise<TokenWithBalanceERC721[]> {
-  //   const user = new User({ baseUrl: 'https://blizzard.avax.network' })
-  //   const result = await user.getNftState(userAddress)
-  //   return (result.data ?? []) as any[] // TODO fit to TokenWithBalance interface
-  // }
 }
 
 export default new EvmBalanceService()
