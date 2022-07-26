@@ -24,7 +24,7 @@ import {
 const TIME_TO_LOCK_IN_SECONDS = 5
 
 const init = async (action: any, listenerApi: AppListenerEffectAPI) => {
-  const { dispatch, delay } = listenerApi
+  const { dispatch } = listenerApi
 
   Logger.setLevel(__DEV__ ? LogLevel.TRACE : LogLevel.ERROR)
 
@@ -32,7 +32,7 @@ const init = async (action: any, listenerApi: AppListenerEffectAPI) => {
 
   if (Platform.OS === 'android') {
     await BiometricsSDK.warmup()
-  } 
+  }
   dispatch(setIsReady(true))
 }
 
