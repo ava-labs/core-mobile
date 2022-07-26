@@ -19,15 +19,20 @@ import { BitcoinInputUTXO, getMaxTransferAmount } from '@avalabs/wallets-sdk'
 import { useActiveNetwork } from 'hooks/useActiveNetwork'
 import { useActiveAccount } from 'hooks/useActiveAccount'
 import { NetworkFee } from 'services/networkFee/types'
-import { BITCOIN_NETWORK, BITCOIN_TEST_NETWORK } from '@avalabs/chains-sdk'
+import {
+  BITCOIN_NETWORK,
+  BITCOIN_TEST_NETWORK,
+  ChainId
+} from '@avalabs/chains-sdk'
 import networkFeeService from 'services/networkFee/NetworkFeeService'
 import walletService from 'services/wallet/WalletService'
 import { resolve } from '@avalabs/utils-sdk'
 import networkService from 'services/network/NetworkService'
 import { useSelector } from 'react-redux'
-import { selectTokensWithBalance } from 'store/balance'
+import { selectTokensWithBalanceByNetwork } from 'store/balance'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
+import { selectNetworks } from 'store/network'
 
 export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
   const activeNetwork = useActiveNetwork()
@@ -44,7 +49,14 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
   } = useBridgeSDK()
   const isDeveloperMode = activeNetwork.isTestnet
   const btcAddress = activeAccount?.addressBtc
-  const tokens = useSelector(selectTokensWithBalance)
+  const allNetworks = useSelector(selectNetworks)
+  const avalancheTokens = useSelector(
+    selectTokensWithBalanceByNetwork(
+      isDeveloperMode
+        ? allNetworks[ChainId.AVALANCHE_TESTNET_ID]
+        : allNetworks[ChainId.AVALANCHE_MAINNET_ID]
+    )
+  )
 
   const isBitcoinBridge =
     currentBlockchain === Blockchain.BITCOIN ||
@@ -119,7 +131,9 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
           })
         }
 
-        const btcAvalancheBalance = tokens.find(tk => tk.symbol === 'BTC.b')
+        const btcAvalancheBalance = avalancheTokens.find(
+          tk => tk.symbol === 'BTC.b'
+        )
 
         if (btcAvalancheBalance) {
           setBtcBalanceAvalanche({
@@ -139,7 +153,7 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
     btcAddress,
     isBitcoinBridge,
     activeNetwork,
-    tokens,
+    avalancheTokens,
     btcAsset,
     isDeveloperMode
   ])
