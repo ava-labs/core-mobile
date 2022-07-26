@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Dimensions, FlatList, Image, StyleSheet, View } from 'react-native'
 import RadioGroup from 'components/RadioGroup'
 import GridSVG from 'components/svg/GridSVG'
@@ -17,9 +17,10 @@ import {
 import Avatar from 'components/Avatar'
 import MasonryList from '@react-native-seoul/masonry-list'
 import AvaText from 'components/AvaText'
-import { useSelector } from 'react-redux'
-import { NFTItemData, selectNftCollection } from 'store/nft'
+import { NFTItemData } from 'store/nft'
 import { SvgXml } from 'react-native-svg'
+import { useGetNfts } from 'store/nft/hooks'
+import { ActivityIndicator } from 'components/ActivityIndicator'
 
 type ListType = 'grid' | 'list'
 
@@ -33,19 +34,38 @@ const GRID_ITEM_MARGIN = 8
 const PARENT_PADDING = 16
 const GRID_ITEM_WIDTH =
   (SCREEN_WIDTH - GRID_ITEM_MARGIN * 4 - PARENT_PADDING * 2) / 2
+const LOADER_UID = 'Loading'
 
 export default function NftListView({
   onItemSelected,
   onManagePressed
 }: NftListViewProps) {
-  const nfts = useSelector(selectNftCollection)
+  const { nfts, fetchNext, isFetching, hasMore } = useGetNfts()
   const [listType, setListType] = useState<ListType>()
   const { theme } = useApplicationContext()
+  const [listEndReached, setListEndReached] = useState(false)
 
-  const filteredData = useMemo(
-    () => nfts.filter(value => value.isShowing && !!value.aspect),
-    [nfts]
-  )
+  const filteredData = useMemo(() => {
+    const filtered = nfts.filter(value => value.isShowing && !!value.aspect)
+    if (hasMore) {
+      const loading = {
+        uid: LOADER_UID
+      } as NFTItemData
+      return [...filtered, loading]
+    } else {
+      return filtered
+    }
+  }, [hasMore, nfts])
+
+  useEffect(onListEndReachedFx, [fetchNext, isFetching, listEndReached])
+
+  function onListEndReachedFx() {
+    if (listEndReached && !isFetching) {
+      fetchNext()
+    } else if (listEndReached && isFetching) {
+      setListEndReached(false)
+    }
+  }
 
   return (
     <View style={styles.container}>
@@ -63,21 +83,42 @@ export default function NftListView({
       {listType === 'list' ? (
         <FlatList
           style={{ flex: 1 }}
+          onEndReached={() => setListEndReached(true)}
+          onEndReachedThreshold={0.01}
           data={filteredData}
           ListEmptyComponent={<ZeroState.Collectibles />}
           keyExtractor={item => item.uid}
           ItemSeparatorComponent={() => <View style={{ margin: 4 }} />}
-          renderItem={info => renderItemList(info.item, onItemSelected, theme)}
+          renderItem={info => {
+            if (info.item.uid === LOADER_UID) {
+              return <ActivityIndicator size={40} style={{ padding: 40 }} />
+            } else {
+              return renderItemList(info.item, onItemSelected, theme)
+            }
+          }}
         />
       ) : (
         <MasonryList
           data={filteredData}
+          onEndReached={() => setListEndReached(true)}
+          onEndReachedThreshold={0.01}
           keyExtractor={item => item.uid}
           numColumns={2}
           showsVerticalScrollIndicator={true}
-          renderItem={info => (
-            <GridItem item={info.item} onItemSelected={onItemSelected} />
-          )}
+          renderItem={info => {
+            if (info.item.uid === LOADER_UID) {
+              return (
+                <ActivityIndicator
+                  size={40}
+                  style={{ width: GRID_ITEM_WIDTH, height: GRID_ITEM_WIDTH }}
+                />
+              )
+            } else {
+              return (
+                <GridItem item={info.item} onItemSelected={onItemSelected} />
+              )
+            }
+          }}
         />
       )}
     </View>
