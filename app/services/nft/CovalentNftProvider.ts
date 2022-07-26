@@ -1,20 +1,5 @@
 import { NftProvider } from 'services/nft/types'
-import {
-  bufferTime,
-  concat,
-  concatMap,
-  delay,
-  filter,
-  from,
-  map,
-  mergeMap,
-  of,
-  Subject,
-  Subscription
-} from 'rxjs'
-import { Erc721TokenBalance } from '@avalabs/glacier-sdk'
-import { NFTItemData, saveNFT } from 'store/nft'
-import { store } from 'store'
+import { NFTItemData, NftPagedData } from 'store/nft'
 import { Covalent } from '@avalabs/covalent-sdk'
 import Config from 'react-native-config'
 import { GetAddressBalanceV2Item } from '@avalabs/covalent-sdk/src/models'
@@ -27,10 +12,6 @@ const demoAddress = 'demo.eth'
 const demoChain = 1 //Ethereum
 
 export class CovalentNftProvider implements NftProvider {
-  private loadQueue$ = new Subject<NFTItemData>()
-  private nftProcessor$ = this.setupNftProcessor()
-  private processorSubscription: Subscription | undefined = undefined
-
   async isProviderFor(chainId: number): Promise<boolean> {
     chainId
     return true
@@ -39,8 +20,9 @@ export class CovalentNftProvider implements NftProvider {
   async fetchNfts(
     chainId: number,
     address: string,
-    selectedCurrency?: string
-  ): Promise<void> {
+    pageToken = '0',
+    selectedCurrency = 'USD'
+  ): Promise<NftPagedData> {
     Logger.info('fetching nfts using Covalent')
     const chainID = DevDebuggingConfig.SHOW_DEMO_NFTS ? demoChain : chainId
     const covalent = new Covalent(chainID, Config.COVALENT_API_KEY)
@@ -51,13 +33,19 @@ export class CovalentNftProvider implements NftProvider {
     const covalentResponse = await covalent.getAddressBalancesV2(
       addressToGet,
       true,
-      selectedCurrency?.toUpperCase() ?? 'USD',
+      selectedCurrency.toUpperCase(),
       {
         pageSize: 100,
-        pageNumber: 0
+        pageNumber: Number.parseInt(pageToken) ?? 0
       }
     )
-    const covalentNfts = covalentResponse.data.items
+    const covalentData = covalentResponse.data
+    const covalentNfts = covalentData.items
+    const nextPageToken =
+      covalentData.pagination?.has_more === true
+        ? covalentData.pagination.page_number + 1
+        : undefined
+
     const nfts = covalentNfts.reduce(
       (agg: NFTItemData[], item: GetAddressBalanceV2Item) => {
         return item.type !== 'nft'
@@ -67,89 +55,38 @@ export class CovalentNftProvider implements NftProvider {
       []
     )
 
-    this.processNfts(nfts, address)
-  }
-
-  stop() {
-    if (this.processorSubscription) {
-      this.processorSubscription.unsubscribe()
-      this.processorSubscription = undefined
-    }
-  }
-
-  private processNfts(nfts: Erc721TokenBalance[], owner: string) {
-    if (!this.processorSubscription) {
-      this.startProcessor(owner)
-    }
-    nfts.forEach(value =>
-      this.loadQueue$.next({
-        uid: getNftUID(value),
-        isShowing: true,
-        owner,
-        ...value
-      } as NFTItemData)
-    )
-  }
-
-  private startProcessor(owner: string) {
-    this.processorSubscription = this.nftProcessor$.subscribe({
-      next: nftData => {
-        // update data and save to repo
-        nftData.forEach(item => {
-          store.dispatch(
-            saveNFT({
-              chainId: Number.parseInt(item.chainId),
-              address: owner,
-              token: item
-            })
-          )
-        })
-      },
-      error: err => console.error(err)
+    const fullNftPromises = nfts.map(nft => this.applyImageAndAspect(nft))
+    const fullNftResults = await Promise.allSettled(fullNftPromises)
+    const fullNftData = [] as NFTItemData[]
+    fullNftResults.forEach(result => {
+      if (result.status === 'fulfilled') {
+        fullNftData.push(result.value)
+      }
     })
+
+    const nftData = fullNftData.map(nft => {
+      return {
+        ...nft,
+        uid: getNftUID(nft),
+        isShowing: true,
+        owner: address
+      } as NFTItemData
+    })
+
+    return {
+      nftData,
+      nextPageToken
+    } as NftPagedData
   }
 
-  private setupNftProcessor() {
-    return this.loadQueue$.pipe(
-      filter(nftData => !!nftData),
-      bufferTime(1000),
-      filter(value => value.length !== 0),
-      concatMap(value => {
-        // make batches of 10 items, each delayed for 1 sec except first one
-        const newObservables = []
-        const batchCount = 10
-        for (let i = 0; i < value.length; i += batchCount) {
-          let observable = of(value.slice(i, i + batchCount))
-          if (i !== 0) {
-            observable = observable.pipe(delay(1000))
-          }
-          newObservables.push(observable)
-        }
-        return concat(...newObservables)
-      }),
-      concatMap(nfts => {
-        // expand batch
-        return from(nfts)
-      }),
-      mergeMap(nftData => {
-        // for each item create observable which will complete when image is fetched and aspect written
-        // Set aspect to 1 if image load fails
-        if (!nftData.image) {
-          return of(nftData)
-        } else {
-          return from(nftProcessor.fetchImageAndAspect(nftData.image)).pipe(
-            map(([image, aspect, isSvg]) => {
-              nftData.image = image
-              nftData.aspect = aspect
-              nftData.isSvg = isSvg
-              return nftData
-            })
-          )
-        }
-      }),
-      bufferTime(1000),
-      filter(value => value.length !== 0)
+  private async applyImageAndAspect(nftData: NFTItemData) {
+    const [image, aspect, isSvg] = await nftProcessor.fetchImageAndAspect(
+      nftData.image
     )
+    nftData.image = image
+    nftData.aspect = aspect
+    nftData.isSvg = isSvg
+    return nftData
   }
 
   mapCovalentData(
