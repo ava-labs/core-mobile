@@ -3,6 +3,7 @@
  */
 
 import 'react-native-get-random-values'
+import 'react-native-url-polyfill/auto'
 import { AppRegistry } from 'react-native'
 import ContextApp from './app/ContextApp'
 import { name as appName } from './app.json'
