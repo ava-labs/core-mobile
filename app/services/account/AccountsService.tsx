@@ -22,7 +22,7 @@ class AccountsService {
 
   async createNextAccount(isTestnet: boolean, accounts: AccountCollection) {
     const newIndex = Object.keys(accounts).length
-    const addresses = await walletService.getAddress(newIndex, !isTestnet)
+    const addresses = await walletService.getAddress(newIndex, isTestnet)
 
     return {
       index: newIndex,

@@ -44,9 +44,7 @@ export function useEthBridge(amount: Big, bridgeFee: Big): BridgeAdapter {
   const network = useSelector(selectActiveNetwork)
   const activeAccount = useSelector(selectActiveAccount)
   const config = useBridgeConfig().config
-  const ethereumProvider = networkService.getEthereumProvider(
-    network.isTestnet ?? false
-  )
+  const ethereumProvider = networkService.getEthereumProvider(network.isTestnet)
   const hasEnoughForNetworkFee = useHasEnoughForGas(
     isEthereumBridge ? activeAccount?.address : undefined,
     ethereumProvider

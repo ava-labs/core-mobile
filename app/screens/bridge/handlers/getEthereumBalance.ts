@@ -9,9 +9,7 @@ export async function getEthereumBalance(
   deprecated: boolean,
   network: Network
 ) {
-  const provider = await networkService.getEthereumProvider(
-    network.isTestnet ?? false
-  )
+  const provider = await networkService.getEthereumProvider(network.isTestnet)
   const ethereumBalancesBySymbol = await fetchTokenBalances(
     { [asset.symbol]: asset },
     Blockchain.ETHEREUM,

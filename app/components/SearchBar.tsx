@@ -131,7 +131,7 @@ const SearchBar: FC<Props> = ({
         <SearchSVG size={32} hideBorder />
         <TextInput
           autoCorrect={false}
-          autoCompleteType={'off'}
+          autoComplete="off"
           autoCapitalize="none"
           keyboardAppearance={'dark'}
           ref={textInputRef}
