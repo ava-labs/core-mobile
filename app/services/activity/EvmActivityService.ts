@@ -1,18 +1,16 @@
 import { getErc20Txs, getNormalTxs } from '@avalabs/etherscan-sdk'
 import { V1 as GlacierSdkV1 } from '@avalabs/glacier-sdk'
-import Config from 'react-native-config'
 import Logger from 'utils/Logger'
 import { isEthereumNetwork } from 'services/network/utils/isEthereumNetwork'
+import { GLACIER_URL } from 'utils/glacierUtils'
 import { ActivityResponse, GetActivitiesForAddressParams } from './types'
 import { convertTransaction } from './utils/evmTransactionConverter'
 import * as EtherscanConverter from './utils/etherscanTransactionConverter'
 
-const glacierUrl = __DEV__ ? Config.GLACIER_DEV_URL : Config.GLACIER_PROD_URL
-
-if (!glacierUrl) Logger.error('GLACIER URL ENV is missing')
+if (!GLACIER_URL) Logger.error('GLACIER URL ENV is missing')
 
 const glacierSdk = new GlacierSdkV1({
-  baseUrl: glacierUrl
+  baseUrl: GLACIER_URL
 })
 
 export class EvmActivityService {
