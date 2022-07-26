@@ -3,6 +3,7 @@ import NetworkService from 'services/network/NetworkService'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import { Account } from 'store/account'
 import AccountsService from 'services/account/AccountsService'
+import { BlockCypherProvider, JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 import BtcBalanceService from './BtcBalanceService'
 import EvmBalanceService from './EvmBalanceService'
 
@@ -44,7 +45,7 @@ export class BalanceService {
     const balanceService = this.getBalanceServiceForNetwork(network)
     const tokens = await balanceService.getBalances(
       network,
-      provider as any,
+      provider as JsonRpcBatchInternal & BlockCypherProvider,
       address,
       currency
     )
@@ -66,7 +67,7 @@ export class BalanceService {
 
     return balanceService.getBalances(
       network,
-      provider as any,
+      provider as JsonRpcBatchInternal & BlockCypherProvider,
       address,
       currency
     )
