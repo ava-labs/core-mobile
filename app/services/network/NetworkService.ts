@@ -10,8 +10,8 @@ import {
 } from '@avalabs/chains-sdk'
 import { PollingConfig } from 'store/balance'
 import Config from 'react-native-config'
-import { isEthereumNetwork } from './utils/isEthereumNetwork'
 import { addGlacierAPIKeyIfNeeded, GLACIER_URL } from 'utils/glacierUtils'
+import { isEthereumNetwork } from './utils/isEthereumNetwork'
 
 const BLOCKCYPHER_PROXY_URL = `${GLACIER_URL}/proxy/blockcypher`
 
