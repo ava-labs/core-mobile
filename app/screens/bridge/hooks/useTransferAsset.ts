@@ -17,7 +17,6 @@ import { selectActiveAccount } from 'store/account'
 import { useActiveNetwork } from 'hooks/useActiveNetwork'
 import { ChainId } from '@avalabs/chains-sdk'
 import networkService from 'services/network/NetworkService'
-import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 import { useCallback } from 'react'
 
 const events = new EventEmitter()
@@ -62,12 +61,9 @@ export function useTransferAsset() {
       if (!config || !blockchainNetwork) {
         return Promise.reject('Wallet not ready')
       }
-      const avalancheNetwork = activeNetwork.isTestnet
-        ? allNetworks[ChainId.AVALANCHE_TESTNET_ID]
-        : allNetworks[ChainId.AVALANCHE_MAINNET_ID]
-      const avalancheProvider = networkService.getProviderForNetwork(
-        avalancheNetwork
-      ) as JsonRpcBatchInternal
+      const avalancheProvider = networkService.getAvalancheProvider(
+        activeNetwork.isTestnet
+      )
       const ethereumProvider = networkService.getEthereumProvider(
         activeNetwork.isTestnet
       )
@@ -104,7 +100,6 @@ export function useTransferAsset() {
       activeAccount?.index,
       activeNetwork.isTestnet,
       address,
-      allNetworks,
       config,
       currentBlockchain,
       getNetworkForBlockchain
