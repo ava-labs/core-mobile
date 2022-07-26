@@ -16,7 +16,7 @@ const adjustActiveNetwork = async (
   const { dispatch, getState } = listenerApi
   const state = getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
-  const networks = await NetworkService.getNetworks(isDeveloperMode)
+  const networks = await NetworkService.getNetworks()
 
   dispatch(setNetworks(networks))
 
@@ -30,8 +30,7 @@ const adjustActiveNetwork = async (
 const getNetworks = async (action: any, listenerApi: AppListenerEffectAPI) => {
   const { dispatch, getState } = listenerApi
   const state = getState()
-  const isDeveloperMode = selectIsDeveloperMode(state)
-  const networks = await NetworkService.getNetworks(isDeveloperMode)
+  const networks = await NetworkService.getNetworks()
 
   dispatch(setNetworks(networks))
 

@@ -51,7 +51,7 @@ class NetworkService {
   }
 
   async getAvalancheProvider(isTest?: boolean): Promise<JsonRpcBatchInternal> {
-    const allNetworks = await this.getNetworks(isTest)
+    const allNetworks = await this.getNetworks()
     const avaxNetwork = isTest
       ? allNetworks[ChainId.AVALANCHE_TESTNET_ID]
       : allNetworks[ChainId.AVALANCHE_MAINNET_ID]

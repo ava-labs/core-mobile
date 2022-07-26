@@ -2,9 +2,9 @@ import BN from 'bn.js'
 import { CriticalConfig } from '@avalabs/bridge-sdk'
 import { Network } from '@avalabs/chains-sdk'
 import {
-  Erc20TransferDetailsDto,
+  TransactionDetailsDto,
   NativeTransactionDto,
-  TransactionDetailsDto
+  Erc20TransferDetailsDto
 } from '@avalabs/glacier-sdk'
 import { balanceToDisplayValue } from '@avalabs/utils-sdk'
 import { isBridgeTransactionEVM } from 'screens/bridge/utils/bridgeUtils'
@@ -54,9 +54,9 @@ const convertTransactionWithERC20 = ({
   const amountDisplayValue = balanceToDisplayValue(new BN(value), tokenDecimals)
 
   const isBridge = isBridgeTransactionEVM(
-    erc20Transfer,
-    criticalConfig,
-    network
+    { contractAddress, to, from },
+    network,
+    criticalConfig
   )
 
   const token = {
