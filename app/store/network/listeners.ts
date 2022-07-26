@@ -16,6 +16,9 @@ const adjustActiveNetwork = async (
   const { dispatch, getState } = listenerApi
   const state = getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
+  const networks = await NetworkService.getNetworks(isDeveloperMode)
+
+  dispatch(setNetworks(networks))
 
   const chainId = isDeveloperMode
     ? ChainId.AVALANCHE_TESTNET_ID
@@ -27,8 +30,8 @@ const adjustActiveNetwork = async (
 const getNetworks = async (action: any, listenerApi: AppListenerEffectAPI) => {
   const { dispatch, getState } = listenerApi
   const state = getState()
-
-  const networks = await NetworkService.getNetworks()
+  const isDeveloperMode = selectIsDeveloperMode(state)
+  const networks = await NetworkService.getNetworks(isDeveloperMode)
 
   dispatch(setNetworks(networks))
 
