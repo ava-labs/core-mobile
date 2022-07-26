@@ -35,7 +35,7 @@ import Big from 'big.js'
 import ScrollViewList from 'components/ScrollViewList'
 import { ActivityIndicator } from 'components/ActivityIndicator'
 import Logger from 'utils/Logger'
-import { formatBlockchain } from './utils/bridgeTransactionUtils'
+import { blockchainDisplayNameMap } from 'screens/bridge/utils/bridgeUtils'
 
 const blockchainTitleMaxWidth = Dimensions.get('window').width * 0.5
 const dropdownWith = Dimensions.get('window').width * 0.6
@@ -228,7 +228,7 @@ const Bridge: FC = () => {
     blockchain: Blockchain,
     textSize: 'large' | 'medium'
   ) => {
-    const blockchainTitle = formatBlockchain(blockchain)
+    const blockchainTitle = blockchainDisplayNameMap.get(blockchain)
 
     const Text =
       textSize === 'large' ? AvaText.ButtonLarge : AvaText.ButtonMedium

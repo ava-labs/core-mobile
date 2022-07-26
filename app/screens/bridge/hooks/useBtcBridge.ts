@@ -26,10 +26,13 @@ import { resolve } from '@avalabs/utils-sdk'
 import networkService from 'services/network/NetworkService'
 import { useSelector } from 'react-redux'
 import { selectTokensWithBalance } from 'store/balance'
+import { selectSelectedCurrency } from 'store/settings/currency'
+import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 
 export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
   const activeNetwork = useActiveNetwork()
   const activeAccount = useActiveAccount()
+  const currency = useSelector(selectSelectedCurrency)
   const bridgeConfig = useBridgeConfig()!.config!
   const { createBridgeTransaction } = useBridgeContext()
   const config = useBridgeConfig().config
@@ -102,7 +105,7 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
         const token = await getBtcBalance(
           !activeNetwork.isTestnet,
           btcAddress,
-          'USD'
+          currency as VsCurrencyType
         )
 
         if (token) {
@@ -110,7 +113,9 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
           setBtcBalance({
             symbol: btcAsset.symbol,
             asset: btcAsset,
-            balance: satoshiToBtc(token.balance)
+            balance: satoshiToBtc(token.balance.toNumber()),
+            logoUri: token.logoUri,
+            priceInCurrency: token.priceInCurrency
           })
         }
 
@@ -120,7 +125,11 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
           setBtcBalanceAvalanche({
             symbol: btcAsset.symbol,
             asset: btcAsset,
-            balance: satoshiToBtc(btcBalanceAvalanche?.balance?.toNumber() ?? 0)
+            balance: satoshiToBtc(
+              btcBalanceAvalanche?.balance?.toNumber() ?? 0
+            ),
+            logoUri: btcAvalancheBalance.logoUri,
+            priceInCurrency: btcAvalancheBalance.priceInCurrency
           })
         }
       }

@@ -1,5 +1,5 @@
 import { BridgeTransaction, useBridgeSDK } from '@avalabs/bridge-sdk'
-import { isPendingBridgeTransaction } from 'screens/bridge/utils/bridgeTransactionUtils'
+import { isPendingBridgeTransaction } from 'screens/bridge/utils/bridgeUtils'
 import { Transaction } from 'store/transaction'
 
 export function useBlockchainNames(item: Transaction | BridgeTransaction) {
