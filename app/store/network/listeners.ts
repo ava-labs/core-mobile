@@ -8,6 +8,7 @@ import {
   selectIsDeveloperMode,
   toggleDeveloperMode
 } from 'store/settings/advanced'
+import { isAnyOf } from '@reduxjs/toolkit'
 
 const adjustActiveNetwork = async (
   action: any,
@@ -16,9 +17,6 @@ const adjustActiveNetwork = async (
   const { dispatch, getState } = listenerApi
   const state = getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
-  const networks = await NetworkService.getNetworks()
-
-  dispatch(setNetworks(networks))
 
   const chainId = isDeveloperMode
     ? ChainId.AVALANCHE_TESTNET_ID
@@ -41,7 +39,7 @@ const getNetworks = async (action: any, listenerApi: AppListenerEffectAPI) => {
 
 export const addNetworkListeners = (startListening: AppStartListening) => {
   startListening({
-    actionCreator: onAppUnlocked,
+    matcher: isAnyOf(onAppUnlocked, toggleDeveloperMode),
     effect: getNetworks
   })
 

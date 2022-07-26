@@ -22,12 +22,6 @@ export async function getBtcBalance(
   )
 
   return token[0]
-
-  // return {
-  //   ...token,
-  //   balance: token?.[0]?.balance.toNumber() || 0,
-  //   utxos: token?.[0]?.utxos || []
-  // }
 }
 
 export async function getAvalancheBtcBalance(

@@ -23,7 +23,7 @@ type ConvertTransactionWithERC20Params = {
   erc20Transfer: Erc20TransferDetailsDto
   network: Network
   address: string
-  criticalConfig?: CriticalConfig
+  criticalConfig: CriticalConfig | undefined
 }
 
 type ConvertNativeTransactionParams = {

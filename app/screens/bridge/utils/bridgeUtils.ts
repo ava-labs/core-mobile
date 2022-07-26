@@ -6,7 +6,7 @@ import {
 import { BitcoinHistoryTx } from '@avalabs/wallets-sdk'
 import { Transaction } from 'store/transaction'
 import { Network } from '@avalabs/chains-sdk'
-import { isEthereumNetwork } from 'services/network/isEthereumNetwork'
+import { isEthereumNetwork } from 'services/network/utils/isEthereumNetwork'
 
 const ETHEREUM_ADDRESS = '0x0000000000000000000000000000000000000000'
 
@@ -80,9 +80,13 @@ export function isPendingBridgeTransaction(
   return 'addressBTC' in item
 }
 
-export const blockchainDisplayNameMap = new Map([
+const blockchainDisplayNameMap = new Map([
   [Blockchain.AVALANCHE, 'Avalanche C-Chain'],
   [Blockchain.ETHEREUM, 'Ethereum'],
   [Blockchain.BITCOIN, 'Bitcoin'],
   [Blockchain.UNKNOWN, '']
 ])
+
+export function getBlockchainDisplayName(chain: Blockchain | undefined) {
+  return blockchainDisplayNameMap.get(chain ?? Blockchain.UNKNOWN)
+}

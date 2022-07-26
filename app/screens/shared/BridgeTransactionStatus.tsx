@@ -23,7 +23,7 @@ import { useNavigation } from '@react-navigation/native'
 import Logger from 'utils/Logger'
 import { useSelector } from 'react-redux'
 import { selectTokenInfo } from 'store/network'
-import { blockchainDisplayNameMap } from 'screens/bridge/utils/bridgeUtils'
+import { getBlockchainDisplayName } from 'screens/bridge/utils/bridgeUtils'
 
 type Props = {
   txHash: string
@@ -137,9 +137,7 @@ const BridgeTransactionStatus: FC<Props> = ({
           titleAlignment="flex-start"
           rightComponent={
             <AvaText.Heading3>
-              {blockchainDisplayNameMap.get(
-                bridgeTransaction?.sourceChain ?? Blockchain.UNKNOWN
-              )}
+              {getBlockchainDisplayName(bridgeTransaction?.sourceChain)}
             </AvaText.Heading3>
           }
         />
@@ -184,9 +182,7 @@ const BridgeTransactionStatus: FC<Props> = ({
           titleAlignment="flex-start"
           rightComponent={
             <AvaText.Heading3>
-              {blockchainDisplayNameMap.get(
-                bridgeTransaction?.targetChain ?? Blockchain.UNKNOWN
-              )}
+              {getBlockchainDisplayName(bridgeTransaction?.targetChain)}
             </AvaText.Heading3>
           }
         />

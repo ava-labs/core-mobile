@@ -34,7 +34,7 @@ import Big from 'big.js'
 import ScrollViewList from 'components/ScrollViewList'
 import { ActivityIndicator } from 'components/ActivityIndicator'
 import Logger from 'utils/Logger'
-import { blockchainDisplayNameMap } from 'screens/bridge/utils/bridgeUtils'
+import { getBlockchainDisplayName } from 'screens/bridge/utils/bridgeUtils'
 import { BNInput } from 'components/BNInput'
 import BN from 'bn.js'
 
@@ -130,7 +130,6 @@ const Bridge: FC = () => {
       chains.filter(chain => {
         switch (chain) {
           case Blockchain.BITCOIN:
-            // TODO remove !isMainnet check when mainnet is supported
             return !bridgeBtcBlocked
           case Blockchain.ETHEREUM:
             return !bridgeEthBlocked
@@ -236,7 +235,7 @@ const Bridge: FC = () => {
     blockchain: Blockchain,
     textSize: 'large' | 'medium'
   ) => {
-    const blockchainTitle = blockchainDisplayNameMap.get(blockchain)
+    const blockchainTitle = getBlockchainDisplayName(blockchain)
 
     const Text =
       textSize === 'large' ? AvaText.ButtonLarge : AvaText.ButtonMedium
