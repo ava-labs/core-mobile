@@ -21,7 +21,6 @@ import {
 } from '@avalabs/bridge-sdk'
 import AppNavigation from 'navigation/AppNavigation'
 import CarrotSVG from 'components/svg/CarrotSVG'
-import InputText from 'components/InputText'
 import useBridge from 'screens/bridge/hooks/useBridge'
 import { useNavigation } from '@react-navigation/native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -30,12 +29,14 @@ import { BridgeScreenProps } from 'navigation/types'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import { TokenSymbol } from 'store/network'
 import { useActiveNetwork } from 'hooks/useActiveNetwork'
-import { bnToBig, numberToBN, resolve } from '@avalabs/utils-sdk'
+import { bigToBN, bnToBig, resolve } from '@avalabs/utils-sdk'
 import Big from 'big.js'
 import ScrollViewList from 'components/ScrollViewList'
 import { ActivityIndicator } from 'components/ActivityIndicator'
 import Logger from 'utils/Logger'
 import { blockchainDisplayNameMap } from 'screens/bridge/utils/bridgeUtils'
+import { BNInput } from 'components/BNInput'
+import BN from 'bn.js'
 
 const blockchainTitleMaxWidth = Dimensions.get('window').width * 0.5
 const dropdownWith = Dimensions.get('window').width * 0.6
@@ -94,6 +95,10 @@ const Bridge: FC = () => {
   )
   const { bridgeBtcBlocked, bridgeEthBlocked } = usePosthogContext()
   const { currencyFormatter } = useApplicationContext().appHook
+  const amountBN = useMemo(
+    () => bigToBN(amount, denomination),
+    [amount, denomination]
+  )
 
   const isAmountTooLow =
     amount && !amount.eq(BIG_ZERO) && amount.lt(minimum || BIG_ZERO)
@@ -126,7 +131,7 @@ const Bridge: FC = () => {
         switch (chain) {
           case Blockchain.BITCOIN:
             // TODO remove !isMainnet check when mainnet is supported
-            return !isMainnet && !bridgeBtcBlocked
+            return !bridgeBtcBlocked
           case Blockchain.ETHEREUM:
             return !bridgeEthBlocked
           default:
@@ -161,10 +166,13 @@ const Bridge: FC = () => {
     navigation.navigate(AppNavigation.Bridge.AddInstructions)
   }
 
-  const handleAmountChanged = (value: string) => {
-    const bn = numberToBN(Number(value), denomination)
+  const handleAmountChanged = (value: { bn: BN; amount: string }) => {
+    const bigValue = bnToBig(value.bn, denomination)
+    if (bridgeError) {
+      setBridgeError('')
+    }
     try {
-      setAmount(bnToBig(bn, denomination))
+      setAmount(bigValue)
     } catch (e) {
       Logger.error('failed to set amount', e)
     }
@@ -403,17 +411,15 @@ const Bridge: FC = () => {
   const renderAmountInput = () => (
     <View>
       <>
-        <InputText
-          width={160}
-          mode={'amount'}
-          keyboardType="numeric"
-          onMax={() => {
-            if (maximum) {
-              setAmount(maximum.round(6, 0))
-            }
+        <BNInput
+          value={!sourceBalance || amountBN.isZero() ? undefined : amountBN}
+          denomination={denomination}
+          max={maximum && bigToBN(maximum, denomination)}
+          placeholder={'0.0'}
+          onChange={handleAmountChanged}
+          style={{
+            minWidth: 160
           }}
-          onChangeText={handleAmountChanged}
-          text={amount.toString()}
         />
         {loading && (
           <ActivityIndicator
