@@ -1,10 +1,10 @@
 import React from 'react'
 import AppNavigation from 'navigation/AppNavigation'
 import WelcomeScreenStack from 'navigation/onboarding/WelcomeScreenStack'
-import Splash from 'screens/onboarding/Splash'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { createStackNavigator } from '@react-navigation/stack'
 import { NavigatorScreenParams } from '@react-navigation/native'
+import { View } from 'react-native'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
 
 export type OnboardingScreenStackParamList = {
@@ -26,7 +26,7 @@ export const OnboardScreenStack = () => {
       }}>
       <OnboardingScreenS.Screen
         name={AppNavigation.Onboard.Init}
-        component={SplashComp}
+        component={View}
       />
       <OnboardingScreenS.Screen
         name={AppNavigation.Root.Welcome}
@@ -34,8 +34,4 @@ export const OnboardScreenStack = () => {
       />
     </OnboardingScreenS.Navigator>
   )
-}
-
-const SplashComp = () => {
-  return <Splash noAnim />
 }

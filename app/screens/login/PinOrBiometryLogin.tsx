@@ -1,12 +1,11 @@
 import React, { useEffect } from 'react'
 import { Animated, StyleSheet, View } from 'react-native'
 import PinKey, { PinKeys } from 'screens/onboarding/PinKey'
-import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaButton from 'components/AvaButton'
 import DotSVG from 'components/svg/DotSVG'
-import CoreSVG from 'components/svg/CoreSVG'
+import CoreXLogoAnimated from 'components/CoreXLogoAnimated'
 import {
   MnemonicLoaded,
   NothingToLoad,
@@ -59,8 +58,6 @@ export default function PinOrBiometryLogin({
     promptForWalletLoadingIfExists,
     jiggleAnim
   } = usePinOrBiometryLogin()
-
-  const context = useApplicationContext()
 
   useEffect(() => {
     // check if if the login is biometric
@@ -120,19 +117,12 @@ export default function PinOrBiometryLogin({
       <View style={styles.growContainer}>
         {isResettingPin || (
           <View style={{ alignItems: 'center' }}>
-            <CoreSVG />
-            <Space y={8} />
-            <AvaText.Body1
-              textStyle={{
-                color: context.theme.colorText1
-              }}>
-              Enter your PIN
-            </AvaText.Body1>
+            <CoreXLogoAnimated size={100} />
           </View>
         )}
         <Animated.View
           style={[
-            { padding: 68 },
+            { padding: 60 },
             {
               transform: [
                 {

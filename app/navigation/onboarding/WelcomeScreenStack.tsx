@@ -1,11 +1,10 @@
 import AppNavigation from 'navigation/AppNavigation'
 import React from 'react'
 import Welcome from 'screens/onboarding/Welcome'
-import { noop } from 'rxjs'
 import {
+  NavigatorScreenParams,
   useNavigation,
-  useRoute,
-  NavigatorScreenParams
+  useRoute
 } from '@react-navigation/native'
 import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin'
 import { createStackNavigator } from '@react-navigation/stack'
@@ -84,7 +83,6 @@ const WelcomeScreen = () => {
           nextScreen: AppNavigation.Onboard.CreateWalletStack
         })
       }
-      onEnterWallet={() => noop}
     />
   )
 }

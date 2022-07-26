@@ -4,19 +4,16 @@
 
 import React, { useEffect, useState } from 'react'
 
-import { Provider, useSelector } from 'react-redux'
+import { Provider } from 'react-redux'
 import { PersistGate } from 'redux-persist/integration/react'
 import App from 'App'
 import { ApplicationContextProvider } from 'contexts/ApplicationContext'
 import Toast from 'react-native-toast-notifications'
-import Splash from 'screens/onboarding/Splash'
 import JailMonkey from 'jail-monkey'
 import JailbrokenWarning from 'screens/onboarding/JailbrokenWarning'
 import { BridgeProvider } from 'contexts/BridgeContext'
 import { PosthogContextProvider } from 'contexts/PosthogContext'
 import { persistor, store } from 'store'
-import { selectIsReady } from 'store/app'
-import useDevDebugging from 'utils/debugging/DevDebugging'
 import { StatusBar } from 'react-native'
 import { DappConnectionContextProvider } from 'contexts/DappConnectionContext'
 
@@ -52,9 +49,7 @@ const ContextAppWithRedux = () => {
 }
 
 const ContextApp = () => {
-  const appIsReady = useSelector(selectIsReady)
   const [showJailBroken, setShowJailBroken] = useState(false)
-  const { isSplashEnabled } = useDevDebugging()
 
   useEffect(() => {
     if (!__DEV__ && JailMonkey.isJailBroken()) {
@@ -64,10 +59,6 @@ const ContextApp = () => {
 
   if (showJailBroken) {
     return <JailbrokenWarning onOK={() => setShowJailBroken(false)} />
-  }
-
-  if (!appIsReady && isSplashEnabled) {
-    return <Splash />
   }
 
   return (
