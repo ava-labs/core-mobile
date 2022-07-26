@@ -32,10 +32,8 @@ const init = async (action: any, listenerApi: AppListenerEffectAPI) => {
 
   if (Platform.OS === 'android') {
     await BiometricsSDK.warmup()
-    dispatch(setIsReady(true))
-  } else {
-    dispatch(setIsReady(true))
-  }
+  } 
+  dispatch(setIsReady(true))
 }
 
 const listenToAppState = async (listenerApi: AppListenerEffectAPI) => {
