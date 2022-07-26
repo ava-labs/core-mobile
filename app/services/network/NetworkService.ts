@@ -1,4 +1,3 @@
-import { InfuraProvider } from '@ethersproject/providers'
 import { BlockCypherProvider, JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 import {
   BITCOIN_NETWORK,
@@ -11,7 +10,7 @@ import {
 import { PollingConfig } from 'store/balance'
 import Config from 'react-native-config'
 import { addGlacierAPIKeyIfNeeded, GLACIER_URL } from 'utils/glacierUtils'
-import { isEthereumNetwork } from './utils/isEthereumNetwork'
+import { store } from 'store'
 
 const BLOCKCYPHER_PROXY_URL = `${GLACIER_URL}/proxy/blockcypher`
 
@@ -35,11 +34,18 @@ class NetworkService {
     return provider
   }
 
-  getEthereumProvider(isTest?: boolean) {
-    return new InfuraProvider(
-      isTest ? 'rinkeby' : 'homestead',
-      process.env.INFURA_API_KEY
-    )
+  getEthereumNetwork(isTest?: boolean): Network {
+    const allNetworks = this.getCachedNetworks()
+    const network = isTest
+      ? allNetworks[ChainId.ETHEREUM_TEST_RINKEBY]
+      : allNetworks[ChainId.ETHEREUM_HOMESTEAD]
+    if (!network) throw new Error('Ethereum network not found')
+    return network
+  }
+
+  getEthereumProvider(isTest?: boolean): JsonRpcBatchInternal {
+    const network = this.getEthereumNetwork(isTest)
+    return this.getProviderForNetwork(network) as JsonRpcBatchInternal
   }
 
   getBitcoinProvider(isTest?: boolean) {
@@ -50,21 +56,25 @@ class NetworkService {
     )
   }
 
-  async getAvalancheProvider(isTest?: boolean): Promise<JsonRpcBatchInternal> {
-    const allNetworks = await this.getNetworks()
-    const avaxNetwork = isTest
+  getAvalancheNetwork(isTest?: boolean): Network {
+    const allNetworks = this.getCachedNetworks()
+    const network = isTest
       ? allNetworks[ChainId.AVALANCHE_TESTNET_ID]
       : allNetworks[ChainId.AVALANCHE_MAINNET_ID]
-    return this.getProviderForNetwork(avaxNetwork) as JsonRpcBatchInternal
+    if (!network) throw new Error('Avalanche network not found')
+    return network
   }
 
-  getProviderForNetwork(network: Network) {
+  getAvalancheProvider(isTest?: boolean): JsonRpcBatchInternal {
+    const network = this.getAvalancheNetwork(isTest)
+    return this.getProviderForNetwork(network) as JsonRpcBatchInternal
+  }
+
+  getProviderForNetwork(
+    network: Network
+  ): JsonRpcBatchInternal | BlockCypherProvider {
     if (network.vmName === NetworkVMType.BITCOIN) {
       return this.getBitcoinProvider(network.isTestnet)
-    }
-
-    if (isEthereumNetwork(network)) {
-      return this.getEthereumProvider(network.isTestnet)
     }
 
     if (network.vmName === NetworkVMType.EVM) {
@@ -96,6 +106,11 @@ class NetworkService {
     }
 
     return networks
+  }
+
+  getCachedNetworks(): { [chainId: number]: Network } {
+    const state = store.getState()
+    return state.network.networks
   }
 
   async sendTransaction(signedTx: string, network: Network) {
