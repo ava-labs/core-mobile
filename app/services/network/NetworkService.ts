@@ -10,10 +10,9 @@ import {
 } from '@avalabs/chains-sdk'
 import { PollingConfig } from 'store/balance'
 import Config from 'react-native-config'
+import { addGlacierAPIKeyIfNeeded, GLACIER_URL } from 'utils/glacierUtils'
 
-const glacierUrl = __DEV__ ? Config.GLACIER_DEV_URL : Config.GLACIER_PROD_URL
-
-const BLOCKCYPHER_PROXY_URL = `${glacierUrl}/proxy/blockcypher`
+const BLOCKCYPHER_PROXY_URL = `${GLACIER_URL}/proxy/blockcypher`
 
 const ethNetworks = [ChainId.ETHEREUM_HOMESTEAD, ChainId.ETHEREUM_TEST_RINKEBY]
 
@@ -29,7 +28,7 @@ class NetworkService {
         maxCalls: 40,
         multiContractAddress
       },
-      rpcUrl,
+      addGlacierAPIKeyIfNeeded(rpcUrl),
       chainId
     )
 
@@ -46,7 +45,11 @@ class NetworkService {
   }
 
   getBitcoinProvider(isTest?: boolean) {
-    return new BlockCypherProvider(!isTest, undefined, BLOCKCYPHER_PROXY_URL)
+    return new BlockCypherProvider(
+      !isTest,
+      Config.GLACIER_API_KEY,
+      BLOCKCYPHER_PROXY_URL
+    )
   }
 
   async getAvalancheProvider(isTest?: boolean): Promise<JsonRpcBatchInternal> {
