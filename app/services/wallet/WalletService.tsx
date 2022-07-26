@@ -162,7 +162,7 @@ class WalletService {
    * and to derive BTC, EVM addresses
    *
    * @param index
-   * @param isMainnet
+   * @param isTestnet
    */
   getAddress(index: number, isTestnet: boolean): Record<NetworkVMType, string> {
     if (!this.xpub) {
