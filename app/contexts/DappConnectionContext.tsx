@@ -80,6 +80,7 @@ export const DappConnectionContextProvider = ({
    */
   useEffect(() => {
     if (
+      dappEvent &&
       !dappEvent?.handled &&
       !isAppLocked &&
       !isLoadingBalances &&

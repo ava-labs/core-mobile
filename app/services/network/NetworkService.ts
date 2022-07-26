@@ -11,12 +11,10 @@ import {
 import { PollingConfig } from 'store/balance'
 import Config from 'react-native-config'
 import { addGlacierAPIKeyIfNeeded, GLACIER_URL } from 'utils/glacierUtils'
+import { isEthereumNetwork } from './utils/isEthereumNetwork'
 
 const BLOCKCYPHER_PROXY_URL = `${GLACIER_URL}/proxy/blockcypher`
 
-const ethNetworks = [ChainId.ETHEREUM_HOMESTEAD, ChainId.ETHEREUM_TEST_RINKEBY]
-
-// TODO: add support for ETH NETWORKS
 class NetworkService {
   getEvmProvider(
     multiContractAddress: string | undefined,
@@ -62,11 +60,11 @@ class NetworkService {
 
   getProviderForNetwork(network: Network) {
     if (network.vmName === NetworkVMType.BITCOIN) {
-      return this.getBitcoinProvider(!network.isTestnet)
+      return this.getBitcoinProvider(network.isTestnet)
     }
 
-    if (ethNetworks.includes(network.chainId)) {
-      return this.getEthereumProvider(network.isTestnet ?? false)
+    if (isEthereumNetwork(network)) {
+      return this.getEthereumProvider(network.isTestnet)
     }
 
     if (network.vmName === NetworkVMType.EVM) {
