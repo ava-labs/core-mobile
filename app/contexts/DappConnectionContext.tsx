@@ -81,7 +81,7 @@ export const DappConnectionContextProvider = ({
   useEffect(() => {
     if (
       dappEvent &&
-      !dappEvent?.handled &&
+      !dappEvent.handled &&
       !isAppLocked &&
       !isLoadingBalances &&
       contextNavigation

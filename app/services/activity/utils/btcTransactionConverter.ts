@@ -1,7 +1,7 @@
 import { Blockchain } from '@avalabs/bridge-sdk'
 import { BITCOIN_NETWORK, Network } from '@avalabs/chains-sdk'
 import { BitcoinHistoryTx } from '@avalabs/wallets-sdk'
-import { isBridgeTransactionBTC } from 'screens/bridge/utils/bridgeTransactionUtils'
+import { isBridgeTransactionBTC } from 'screens/bridge/utils/bridgeUtils'
 import { Transaction } from 'store/transaction'
 import { getExplorerAddress } from 'utils/ExplorerUtils'
 

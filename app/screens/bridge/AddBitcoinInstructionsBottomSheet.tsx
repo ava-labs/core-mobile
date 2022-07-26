@@ -20,7 +20,7 @@ function AddBitcoinInstructionsBottomSheet(): JSX.Element {
   const bottomSheetModalRef = useRef<BottomSheet>(null)
   const snapPoints = useMemo(() => ['0%', '80%'], [])
   const activeAccount = useSelector(selectActiveAccount)
-  const btcAddress = activeAccount?.addressBtc //todo: before -> wallet?.getAddressBTC(isMainnet ? 'bitcoin' : 'testnet'); why "bitcoin" and "testnet"
+  const btcAddress = activeAccount?.addressBtc
 
   useEffect(() => {
     // intentionally setting delay so animation is visible.

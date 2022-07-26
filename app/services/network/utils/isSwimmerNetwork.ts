@@ -5,5 +5,5 @@ export function isSwimmer(network: Network) {
 }
 
 export function isSwimmerByChainId(chainId: number) {
-  return !!(chainId === ChainId.SWIMMER || chainId === ChainId.SWIMMER_TESTNET)
+  return chainId === ChainId.SWIMMER || chainId === ChainId.SWIMMER_TESTNET
 }

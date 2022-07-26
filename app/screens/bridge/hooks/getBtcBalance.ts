@@ -6,28 +6,22 @@ import {
 } from '@avalabs/bridge-sdk'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import Big from 'big.js'
-import { BitcoinInputUTXO } from '@avalabs/wallets-sdk'
 import balanceService from 'services/balance/BalanceService'
 import { BITCOIN_NETWORK, BITCOIN_TEST_NETWORK } from '@avalabs/chains-sdk'
+import { TokenWithBalance } from 'store/balance'
 
 export async function getBtcBalance(
   isMainnet: boolean,
   address: string,
   currency: string
-): Promise<{
-  balance: number
-  utxos: BitcoinInputUTXO[]
-}> {
+): Promise<TokenWithBalance> {
   const token = await balanceService.getBalancesForAddress(
     isMainnet ? BITCOIN_NETWORK : BITCOIN_TEST_NETWORK,
     address,
     currency
   )
 
-  return {
-    balance: token?.[0]?.balance.toNumber() || 0,
-    utxos: token?.[0]?.utxos || []
-  }
+  return token[0]
 }
 
 export async function getAvalancheBtcBalance(

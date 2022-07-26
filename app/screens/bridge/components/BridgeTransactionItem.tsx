@@ -11,7 +11,7 @@ import Spinner from 'components/Spinner'
 import LinkSVG from 'components/svg/LinkSVG'
 import { Space } from 'components/Space'
 import { useBridgeContext } from 'contexts/BridgeContext'
-import { isPendingBridgeTransaction } from 'screens/bridge/utils/bridgeTransactionUtils'
+import { isPendingBridgeTransaction } from 'screens/bridge/utils/bridgeUtils'
 import { useBlockchainNames } from 'screens/activity/hooks/useBlockchainNames'
 import { Transaction } from 'store/transaction'
 

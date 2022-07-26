@@ -3,9 +3,9 @@ import { Network } from '@avalabs/chains-sdk'
 import { Erc20Tx, NormalTx } from '@avalabs/etherscan-sdk'
 import { balanceToDisplayValue } from '@avalabs/utils-sdk'
 import BN from 'bn.js'
-import { isBridgeTransactionEVM } from 'screens/bridge/utils/bridgeTransactionUtils'
 import { Transaction } from 'store/transaction'
 import { getExplorerAddressByNetwork } from 'utils/ExplorerUtils'
+import { isBridgeTransactionEVM } from 'screens/bridge/utils/bridgeUtils'
 
 export function convertTransactionERC20(
   tx: Erc20Tx,
