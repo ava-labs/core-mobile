@@ -56,7 +56,9 @@ const combinedReducer = combineReducers({
 const rootReducer = (state: any, action: AnyAction) => {
   if (action.type === onLogOut.type) {
     // reset state
-    state = {}
+    state = {
+      app: state.app
+    }
   }
 
   return combinedReducer(state, action)
