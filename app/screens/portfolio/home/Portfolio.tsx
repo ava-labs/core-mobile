@@ -72,7 +72,7 @@ const TokensTab = () => {
         justifyContent: 'space-between'
       }}
       contentContainerStyle={{
-        flex: 1,
+        flexGrow: 1,
         paddingHorizontal: 16,
         paddingBottom: 100
       }}
