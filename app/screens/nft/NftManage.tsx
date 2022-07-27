@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { FlatList, StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import SearchBar from 'components/SearchBar'
@@ -8,44 +8,58 @@ import AvaListItem from 'components/AvaListItem'
 import Avatar from 'components/Avatar'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import Switch from 'components/Switch'
-import { NFTItemData, saveNFT, selectNftCollection } from 'store/nft'
+import { NFTItemData, selectHiddenNftUIDs, setHidden } from 'store/nft'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectActiveNetwork } from 'store/network'
-import { selectActiveAccount } from 'store/account'
+import { useGetNfts } from 'store/nft/hooks'
+import { ActivityIndicator } from 'components/ActivityIndicator'
+import { appendLoader, LOADER_UID } from 'screens/nft/tools'
 
 const NftManage = () => {
   const { theme } = useApplicationContext()
   const [searchText, setSearchText] = useState('')
   const dispatch = useDispatch()
-  const network = useSelector(selectActiveNetwork)
-  const account = useSelector(selectActiveAccount)
-  const nfts = useSelector(selectNftCollection)
+  const hiddenNftUIDs = useSelector(selectHiddenNftUIDs)
+  const { nfts, fetchNext, isFetching, hasMore } = useGetNfts()
+  const [listEndReached, setListEndReached] = useState(false)
 
   const filteredData = useMemo(() => {
-    return nfts.filter(nft => {
+    const filtered = nfts.filter(nft => {
       return (
         searchText.length === 0 ||
         nft.tokenId.toLowerCase().includes(searchText.toLowerCase()) ||
         nft.name.toLowerCase().includes(searchText.toLowerCase())
       )
     })
-  }, [nfts, searchText])
+    if (searchText.length !== 0) {
+      if (filtered.length === 0 && hasMore) {
+        //load until we find the searched result or !hasMore
+        setListEndReached(true)
+        return appendLoader(filtered)
+      } else {
+        return filtered
+      }
+    } else {
+      return hasMore ? appendLoader(filtered) : filtered
+    }
+  }, [hasMore, nfts, searchText])
+
+  useEffect(onListEndReachedFx, [fetchNext, isFetching, listEndReached])
+
+  function onListEndReachedFx() {
+    if (listEndReached && !isFetching) {
+      fetchNext()
+    } else if (listEndReached && isFetching) {
+      setListEndReached(false)
+    }
+  }
 
   const updateSearch = (searchVal: string) => {
     setSearchText(searchVal)
   }
 
   const onItemToggled = (item: NFTItemData) => {
-    dispatch(
-      saveNFT({
-        chainId: network.chainId,
-        address: account!.address,
-        token: {
-          ...item,
-          isShowing: !item.isShowing
-        }
-      })
-    )
+    const isHidden = !hiddenNftUIDs[item.uid]
+    dispatch(setHidden({ isHidden, tokenUid: item.uid }))
   }
 
   return (
@@ -56,9 +70,18 @@ const NftManage = () => {
         style={{ flex: 1 }}
         data={filteredData}
         ListEmptyComponent={<ZeroState.Collectibles />}
+        onEndReached={() => setListEndReached(true)}
+        onEndReachedThreshold={0.01}
         keyExtractor={item => item.uid}
         ItemSeparatorComponent={() => <View style={{ margin: 4 }} />}
-        renderItem={info => renderItemList(info.item, onItemToggled, theme)}
+        renderItem={info =>
+          renderItemList(
+            info.item,
+            hiddenNftUIDs[info.item.uid],
+            onItemToggled,
+            theme
+          )
+        }
       />
     </View>
   )
@@ -66,10 +89,13 @@ const NftManage = () => {
 
 const renderItemList = (
   item: NFTItemData,
+  isHidden: boolean,
   onItemToggled: (item: NFTItemData) => void,
   theme: typeof COLORS_DAY | typeof COLORS_NIGHT
 ) => {
-  return (
+  return item.uid === LOADER_UID ? (
+    <ActivityIndicator size={40} style={{ padding: 40 }} />
+  ) : (
     <View
       style={{
         marginVertical: 4,
@@ -81,10 +107,7 @@ const renderItemList = (
         subtitle={item.name}
         leftComponent={<Avatar.Custom name={item.name} logoUri={item.image} />}
         rightComponent={
-          <Switch
-            value={item.isShowing}
-            onValueChange={_ => onItemToggled(item)}
-          />
+          <Switch value={!isHidden} onValueChange={_ => onItemToggled(item)} />
         }
       />
     </View>

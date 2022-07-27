@@ -90,13 +90,7 @@ export default function NftListView({
           ListEmptyComponent={<ZeroState.Collectibles />}
           keyExtractor={item => item.uid}
           ItemSeparatorComponent={() => <View style={{ margin: 4 }} />}
-          renderItem={info => {
-            if (info.item.uid === LOADER_UID) {
-              return <ActivityIndicator size={40} style={{ padding: 40 }} />
-            } else {
-              return renderItemList(info.item, onItemSelected, theme)
-            }
-          }}
+          renderItem={info => renderItemList(info.item, onItemSelected, theme)}
         />
       ) : (
         <MasonryList
@@ -106,23 +100,24 @@ export default function NftListView({
           keyExtractor={item => item.uid}
           numColumns={2}
           showsVerticalScrollIndicator={true}
-          renderItem={info => {
-            if (info.item.uid === LOADER_UID) {
-              return (
-                <ActivityIndicator
-                  size={40}
-                  style={{ width: GRID_ITEM_WIDTH, height: GRID_ITEM_WIDTH }}
-                />
-              )
-            } else {
-              return (
-                <GridItem item={info.item} onItemSelected={onItemSelected} />
-              )
-            }
-          }}
+          renderItem={info => renderItemGrid(info.item, onItemSelected)}
         />
       )}
     </View>
+  )
+}
+
+const renderItemGrid = (
+  item: NFTItemData,
+  onItemSelected: (item: NFTItemData) => void
+) => {
+  return item.uid === LOADER_UID ? (
+    <ActivityIndicator
+      size={40}
+      style={{ width: GRID_ITEM_WIDTH, height: GRID_ITEM_WIDTH }}
+    />
+  ) : (
+    <GridItem item={item} onItemSelected={onItemSelected} />
   )
 }
 
@@ -131,7 +126,9 @@ const renderItemList = (
   onItemSelected: (item: NFTItemData) => void,
   theme: typeof COLORS_DAY | typeof COLORS_NIGHT
 ) => {
-  return (
+  return item.uid === LOADER_UID ? (
+    <ActivityIndicator size={40} style={{ padding: 40 }} />
+  ) : (
     <View
       style={{
         marginVertical: 4,
