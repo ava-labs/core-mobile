@@ -14,11 +14,6 @@ export type NftState = {
   }
 }
 
-export type NftPagedData = {
-  nftData: NFTItemData[]
-  nextPageToken?: string
-}
-
 export type NFTItemData = Erc721TokenBalance &
   NFTItemExternalData & {
     isShowing: boolean

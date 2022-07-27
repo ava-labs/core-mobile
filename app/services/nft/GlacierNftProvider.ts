@@ -1,11 +1,12 @@
 import { HttpClient } from '@avalabs/utils-sdk'
 import { NftProvider } from 'services/nft/types'
 import { Erc721TokenBalance, GlacierClient } from '@avalabs/glacier-sdk'
-import { NFTItemData, NFTItemExternalData, NftPagedData } from 'store/nft'
+import { NFTItemData, NFTItemExternalData, NftResponse } from 'store/nft'
 import Logger from 'utils/Logger'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
 import nftProcessor from 'services/nft/NftProcessor'
 import { getNftUID } from 'services/nft/NftService'
+import Config from 'react-native-config'
 
 const demoAddress = '0x188c30e9a6527f5f0c3f7fe59b72ac7253c62f28'
 
@@ -13,7 +14,7 @@ export class GlacierNftProvider implements NftProvider {
   private metadataHttpClient = new HttpClient(``, {})
 
   private glacierSdk = new GlacierClient(
-    `https://glacier-api.avax-test.network`
+    __DEV__ ? Config.GLACIER_DEV_URL : Config.GLACIER_PROD_URL
   )
 
   async isProviderFor(chainId: number): Promise<boolean> {
@@ -32,7 +33,7 @@ export class GlacierNftProvider implements NftProvider {
     address: string,
     pageToken?: string,
     selectedCurrency?: string
-  ): Promise<NftPagedData> {
+  ): Promise<NftResponse> {
     Logger.info(' fetching nfts using Glacier')
     const nftBalancesResp = await this.glacierSdk.listErc721Balances(
       chainId.toString(),
@@ -91,9 +92,9 @@ export class GlacierNftProvider implements NftProvider {
     })
 
     return {
-      nftData,
+      nfts: nftData,
       nextPageToken
-    } as NftPagedData
+    } as NftResponse
   }
 
   private async applyMetadata(nft: Erc721TokenBalance) {

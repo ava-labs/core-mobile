@@ -9,7 +9,7 @@ export const nftsApi = createApi({
   endpoints: builder => ({
     getNfts: builder.query<NftResponse, GetNftArgs>({
       queryFn: async ({ network, account, nextPageToken, currency }) => {
-        if (!account) return { error: 'unable to get transactions' }
+        if (!account) return { error: 'unable to get NFTs' }
 
         try {
           const nftPagedData = await nftService.fetchNft(
@@ -21,7 +21,7 @@ export const nftsApi = createApi({
 
           return {
             data: {
-              nfts: nftPagedData.nftData,
+              nfts: nftPagedData.nfts,
               nextPageToken: nftPagedData.nextPageToken
             } as NftResponse
           }

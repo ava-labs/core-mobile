@@ -1,5 +1,5 @@
 import { NftProvider } from 'services/nft/types'
-import { NFTItemData, NftPagedData } from 'store/nft'
+import { NFTItemData, NftResponse } from 'store/nft'
 import { Covalent } from '@avalabs/covalent-sdk'
 import Config from 'react-native-config'
 import { GetAddressBalanceV2Item } from '@avalabs/covalent-sdk/src/models'
@@ -22,7 +22,7 @@ export class CovalentNftProvider implements NftProvider {
     address: string,
     pageToken = '0',
     selectedCurrency = 'USD'
-  ): Promise<NftPagedData> {
+  ): Promise<NftResponse> {
     Logger.info('fetching nfts using Covalent')
     const chainID = DevDebuggingConfig.SHOW_DEMO_NFTS ? demoChain : chainId
     const covalent = new Covalent(chainID, Config.COVALENT_API_KEY)
@@ -74,9 +74,9 @@ export class CovalentNftProvider implements NftProvider {
     })
 
     return {
-      nftData,
+      nfts: nftData,
       nextPageToken
-    } as NftPagedData
+    } as NftResponse
   }
 
   private async applyImageAndAspect(nftData: NFTItemData) {
