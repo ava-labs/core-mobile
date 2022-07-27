@@ -67,10 +67,13 @@ const TabViewAva: TabViewAvaFC = ({
     [childrenArray]
   )
 
-  const handleIndexChange = (index: number) => {
-    setCurrentIndex(index)
-    onTabIndexChange?.(index)
-  }
+  const handleIndexChange = useCallback(
+    (index: number) => {
+      setCurrentIndex(index)
+      onTabIndexChange?.(index)
+    },
+    [onTabIndexChange]
+  )
 
   const tabBarItem = useCallback(
     (
@@ -129,6 +132,14 @@ const TabViewAva: TabViewAvaFC = ({
     },
     [shouldDisableTouch]
   )
+
+  useEffect(() => {
+    // when touch is disabled, first tab will be the default active tab
+    if (shouldDisableTouch) {
+      handleIndexChange(0)
+    }
+  }, [handleIndexChange, shouldDisableTouch])
+
   return (
     <TabView
       onIndexChange={handleIndexChange}
