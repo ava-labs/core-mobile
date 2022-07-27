@@ -17,10 +17,12 @@ import {
 import Avatar from 'components/Avatar'
 import MasonryList from '@react-native-seoul/masonry-list'
 import AvaText from 'components/AvaText'
-import { NFTItemData } from 'store/nft'
+import { NFTItemData, selectHiddenNftUIDs } from 'store/nft'
 import { SvgXml } from 'react-native-svg'
 import { useGetNfts } from 'store/nft/hooks'
 import { ActivityIndicator } from 'components/ActivityIndicator'
+import { useSelector } from 'react-redux'
+import { appendLoader, LOADER_UID } from 'screens/nft/tools'
 
 type ListType = 'grid' | 'list'
 
@@ -34,7 +36,6 @@ const GRID_ITEM_MARGIN = 8
 const PARENT_PADDING = 16
 const GRID_ITEM_WIDTH =
   (SCREEN_WIDTH - GRID_ITEM_MARGIN * 4 - PARENT_PADDING * 2) / 2
-const LOADER_UID = 'Loading'
 
 export default function NftListView({
   onItemSelected,
@@ -44,18 +45,18 @@ export default function NftListView({
   const [listType, setListType] = useState<ListType>()
   const { theme } = useApplicationContext()
   const [listEndReached, setListEndReached] = useState(false)
+  const hiddenNfts = useSelector(selectHiddenNftUIDs)
 
   const filteredData = useMemo(() => {
-    const filtered = nfts.filter(value => value.isShowing && !!value.aspect)
+    const filtered = nfts.filter(
+      value => !hiddenNfts[value.uid] && !!value.aspect
+    )
     if (hasMore) {
-      const loading = {
-        uid: LOADER_UID
-      } as NFTItemData
-      return [...filtered, loading]
+      return appendLoader(filtered)
     } else {
       return filtered
     }
-  }, [hasMore, nfts])
+  }, [hasMore, hiddenNfts, nfts])
 
   useEffect(onListEndReachedFx, [fetchNext, isFetching, listEndReached])
 
