@@ -8,6 +8,7 @@ import {
 import Big from 'big.js'
 import { BigNumber, BigNumberish } from 'ethers'
 import { isSwimmer } from 'services/network/utils/isSwimmerNetwork'
+import { isEthereumNetwork } from 'services/network/utils/isEthereumNetwork'
 
 class NetworkFeeService {
   async getNetworkFee(network: Network): Promise<NetworkFee | null> {
@@ -15,11 +16,12 @@ class NetworkFeeService {
     if (network.vmName === NetworkVMType.EVM) {
       const price = await (provider as JsonRpcBatchInternal).getGasPrice()
       const bigPrice = new Big(price.toString())
+      const unit = isEthereumNetwork(network) ? 'gWEI' : 'nAVAX'
 
       return {
         displayDecimals: 9,
         nativeTokenDecimals: 18,
-        unit: 'nAVAX',
+        unit,
         low: price,
         medium: BigNumber.from(bigPrice.mul(1.05).toFixed(0)),
         high: BigNumber.from(bigPrice.mul(1.15).toFixed(0)),
