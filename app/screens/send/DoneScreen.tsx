@@ -9,6 +9,8 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
 import { ChainId } from '@avalabs/chains-sdk'
+import useInAppBrowser from 'hooks/useInAppBrowser'
+import { getExplorerAddressByNetwork } from 'utils/ExplorerUtils'
 
 interface DoneProps {
   transactionId: string
@@ -21,14 +23,7 @@ export default function DoneScreen({
 }: DoneProps): JSX.Element {
   const theme = useApplicationContext().theme
   const network = useSelector(selectActiveNetwork)
-  const [explorerUrl, setExplorerUrl] = useState<string>()
-
-  useEffect(() => {
-    const isFuji = network.chainId === ChainId.AVALANCHE_TESTNET_ID
-    setExplorerUrl(
-      `https://${isFuji ? 'testnet.' : ''}snowtrace.io/tx/${transactionId}`
-    )
-  }, [network.chainId, transactionId])
+  const { openUrl } = useInAppBrowser()
 
   return (
     <View style={{ flex: 1 }}>
@@ -49,14 +44,12 @@ export default function DoneScreen({
         <Space y={100} />
         <View style={styles.link}>
           <LinkSVG />
-          {!!explorerUrl && (
-            <AvaButton.TextLarge
-              onPress={() => {
-                Linking.openURL(explorerUrl)
-              }}>
-              View on Explorer
-            </AvaButton.TextLarge>
-          )}
+          <AvaButton.TextLarge
+            onPress={() => {
+              openUrl(getExplorerAddressByNetwork(network, transactionId))
+            }}>
+            View on Explorer
+          </AvaButton.TextLarge>
         </View>
         <AvaButton.PrimaryLarge style={{ margin: 18 }} onPress={onClose}>
           Done
