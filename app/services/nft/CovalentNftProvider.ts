@@ -11,7 +11,7 @@ import {
   Subject,
   Subscription
 } from 'rxjs'
-import { Erc721TokenBalanceDto } from '@avalabs/glacier-sdk'
+import { Erc721TokenBalance } from '@avalabs/glacier-sdk'
 import { NFTItemData, saveNFT } from 'store/nft'
 import { Image } from 'react-native'
 import { store } from 'store'
@@ -76,7 +76,7 @@ export class CovalentNftProvider implements NftProvider {
     }
   }
 
-  private processNfts(nfts: Erc721TokenBalanceDto[], owner: string) {
+  private processNfts(nfts: Erc721TokenBalance[], owner: string) {
     if (!this.processorSubscription) {
       this.startProcessor(owner)
     }

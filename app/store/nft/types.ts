@@ -1,4 +1,4 @@
-import { Erc721TokenBalanceDto } from '@avalabs/glacier-sdk'
+import { Erc721TokenBalance } from '@avalabs/glacier-sdk'
 
 export const initialState = {
   collection: {}
@@ -12,7 +12,7 @@ export type NftState = {
   }
 }
 
-export type NFTItemData = Erc721TokenBalanceDto &
+export type NFTItemData = Erc721TokenBalance &
   NFTItemExternalData & {
     isShowing: boolean
     aspect: number
