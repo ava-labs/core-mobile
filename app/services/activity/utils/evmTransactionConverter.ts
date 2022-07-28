@@ -2,9 +2,9 @@ import BN from 'bn.js'
 import { CriticalConfig } from '@avalabs/bridge-sdk'
 import { Network } from '@avalabs/chains-sdk'
 import {
-  TransactionDetailsDto,
-  NativeTransactionDto,
-  Erc20TransferDetailsDto
+  TransactionDetails,
+  NativeTransaction,
+  Erc20TransferDetails
 } from '@avalabs/glacier-sdk'
 import { balanceToDisplayValue } from '@avalabs/utils-sdk'
 import { isBridgeTransactionEVM } from 'screens/bridge/utils/bridgeUtils'
@@ -12,22 +12,22 @@ import { Transaction } from 'store/transaction'
 import { getExplorerAddressByNetwork } from 'utils/ExplorerUtils'
 
 type ConvertTransactionParams = {
-  item: TransactionDetailsDto
+  item: TransactionDetails
   network: Network
   address: string
   criticalConfig?: CriticalConfig
 }
 
 type ConvertTransactionWithERC20Params = {
-  nativeTransaction: NativeTransactionDto
-  erc20Transfer: Erc20TransferDetailsDto
+  nativeTransaction: NativeTransaction
+  erc20Transfer: Erc20TransferDetails
   network: Network
   address: string
   criticalConfig: CriticalConfig | undefined
 }
 
 type ConvertNativeTransactionParams = {
-  nativeTransaction: NativeTransactionDto
+  nativeTransaction: NativeTransaction
   network: Network
   address: string
 }

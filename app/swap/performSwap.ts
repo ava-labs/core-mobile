@@ -8,12 +8,12 @@ import networkFeeService from 'services/networkFee/NetworkFeeService'
 import swapService from 'services/swap/SwapService'
 import Big from 'big.js'
 import networkService from 'services/network/NetworkService'
-import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 import { BigNumber, ethers } from 'ethers'
 import { OptimalRate } from 'paraswap-core'
 import { isAPIError } from 'utils/Utils'
 import Logger from 'utils/Logger'
 import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
+import { getEvmProvider } from 'services/network/utils/providerUtils'
 
 const SERVER_BUSY_ERROR = 'Server too busy'
 
@@ -116,9 +116,7 @@ export async function performSwap(request: {
   const destinationAmount =
     optimalRate.side === 'SELL' ? minAmount : optimalRate.destAmount
 
-  const avalancheProvider = (await networkService.getAvalancheProvider(
-    network.isTestnet
-  )) as JsonRpcBatchInternal
+  const avalancheProvider = getEvmProvider(network)
 
   // no need to approve AVAX
   if (srcToken !== network.networkToken.symbol) {

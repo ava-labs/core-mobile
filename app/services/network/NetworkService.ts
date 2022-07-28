@@ -1,4 +1,3 @@
-import { InfuraProvider } from '@ethersproject/providers'
 import { BlockCypherProvider, JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 import {
   BITCOIN_NETWORK,
@@ -8,82 +7,9 @@ import {
   Network,
   NetworkVMType
 } from '@avalabs/chains-sdk'
-import { PollingConfig } from 'store/balance'
-import Config from 'react-native-config'
-import { addGlacierAPIKeyIfNeeded, GLACIER_URL } from 'utils/glacierUtils'
-import { isEthereumNetwork } from './utils/isEthereumNetwork'
-
-const BLOCKCYPHER_PROXY_URL = `${GLACIER_URL}/proxy/blockcypher`
+import { getBitcoinProvider, getEvmProvider } from './utils/providerUtils'
 
 class NetworkService {
-  getEvmProvider(
-    multiContractAddress: string | undefined,
-    rpcUrl: string,
-    chainId: number
-  ) {
-    const provider = new JsonRpcBatchInternal(
-      {
-        maxCalls: 40,
-        multiContractAddress
-      },
-      addGlacierAPIKeyIfNeeded(rpcUrl),
-      chainId
-    )
-
-    provider.pollingInterval = PollingConfig.activeNetwork
-
-    return provider
-  }
-
-  getEthereumProvider(isTest?: boolean) {
-    return new InfuraProvider(
-      isTest ? 'rinkeby' : 'homestead',
-      process.env.INFURA_API_KEY
-    )
-  }
-
-  getBitcoinProvider(isTest?: boolean) {
-    return new BlockCypherProvider(
-      !isTest,
-      Config.GLACIER_API_KEY,
-      BLOCKCYPHER_PROXY_URL
-    )
-  }
-
-  async getAvalancheProvider(isTest?: boolean): Promise<JsonRpcBatchInternal> {
-    const allNetworks = await this.getNetworks()
-    const avaxNetwork = isTest
-      ? allNetworks[ChainId.AVALANCHE_TESTNET_ID]
-      : allNetworks[ChainId.AVALANCHE_MAINNET_ID]
-    return this.getProviderForNetwork(avaxNetwork) as JsonRpcBatchInternal
-  }
-
-  getProviderForNetwork(network: Network) {
-    if (network.vmName === NetworkVMType.BITCOIN) {
-      return this.getBitcoinProvider(network.isTestnet)
-    }
-
-    if (isEthereumNetwork(network)) {
-      return this.getEthereumProvider(network.isTestnet)
-    }
-
-    if (network.vmName === NetworkVMType.EVM) {
-      const multiContractAddress = network.utilityAddresses?.multicall
-      const rpcUrl = network.rpcUrl
-      const chainId = network.chainId
-
-      const provider = this.getEvmProvider(
-        multiContractAddress,
-        rpcUrl,
-        chainId
-      )
-
-      return provider
-    }
-
-    throw new Error('unsupported network')
-  }
-
   async getNetworks(): Promise<{ [chainId: number]: Network }> {
     const erc20Networks = await getChainsAndTokens(!__DEV__)
 
@@ -96,6 +22,20 @@ class NetworkService {
     }
 
     return networks
+  }
+
+  getProviderForNetwork(
+    network: Network
+  ): JsonRpcBatchInternal | BlockCypherProvider {
+    if (network.vmName === NetworkVMType.BITCOIN) {
+      return getBitcoinProvider(network.isTestnet)
+    }
+
+    if (network.vmName === NetworkVMType.EVM) {
+      return getEvmProvider(network)
+    }
+
+    throw new Error(`Unsupported network type: ${network.vmName}`)
   }
 
   async sendTransaction(signedTx: string, network: Network) {

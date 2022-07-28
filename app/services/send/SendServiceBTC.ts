@@ -16,7 +16,7 @@ import {
 
 // singleton services
 import balanceService from 'services/balance/BalanceService'
-import networkService from 'services/network/NetworkService'
+import { getBitcoinProvider } from 'services/network/utils/providerUtils'
 
 class SendServiceBTC implements SendServiceHelper {
   async getTransactionRequest(
@@ -30,7 +30,7 @@ class SendServiceBTC implements SendServiceHelper {
   }> {
     const { address: toAddress, amount } = sendState
     const feeRate = sendState.gasPrice.toNumber()
-    const provider = await networkService.getBitcoinProvider(__DEV__)
+    const provider = getBitcoinProvider(!isMainnet)
     const { utxos } = await this.getBalance(isMainnet, fromAddress, currency)
 
     const { inputs, outputs } = createTransferTx(
@@ -59,7 +59,7 @@ class SendServiceBTC implements SendServiceHelper {
     const feeRate = sendState.gasPrice?.toNumber()
     const amountInSatoshis = amount?.toNumber() || 0
     const { utxos } = await this.getBalance(isMainnet, fromAddress, currency)
-    const provider = await networkService.getBitcoinProvider(isMainnet)
+    const provider = getBitcoinProvider(!isMainnet)
 
     if (!feeRate)
       return this.getErrorState(

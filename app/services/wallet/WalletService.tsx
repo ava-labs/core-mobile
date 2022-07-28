@@ -3,8 +3,7 @@ import {
   getAddressFromXPub,
   getBech32AddressFromXPub,
   getWalletFromMnemonic,
-  getXpubFromMnemonic,
-  JsonRpcBatchInternal
+  getXpubFromMnemonic
 } from '@avalabs/wallets-sdk'
 import { BitcoinProviderAbstract } from '@avalabs/wallets-sdk/src/BitcoinVM/providers/BitcoinProviderAbstract'
 import { now } from 'moment'
@@ -20,6 +19,7 @@ import {
   signTypedData,
   SignTypedDataVersion
 } from '@metamask/eth-sig-util'
+import { getEvmProvider } from 'services/network/utils/providerUtils'
 
 class WalletService {
   private mnemonic?: string
@@ -63,9 +63,7 @@ class WalletService {
       accountIndex
     )
     log('evmWallet getWalletFromMnemonic', now() - start)
-    const connectedWallet = walletFromMnemonic.connect(
-      networkService.getProviderForNetwork(network) as JsonRpcBatchInternal
-    )
+    const connectedWallet = walletFromMnemonic.connect(getEvmProvider(network))
     log('evmWallet end', now() - start)
     return connectedWallet
   }

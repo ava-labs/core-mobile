@@ -1,5 +1,5 @@
 import { getErc20Txs, getNormalTxs } from '@avalabs/etherscan-sdk'
-import { V1 as GlacierSdkV1 } from '@avalabs/glacier-sdk'
+import { GlacierClient } from '@avalabs/glacier-sdk'
 import Logger from 'utils/Logger'
 import { isEthereumNetwork } from 'services/network/utils/isEthereumNetwork'
 import { GLACIER_URL } from 'utils/glacierUtils'
@@ -9,9 +9,7 @@ import * as EtherscanConverter from './utils/etherscanTransactionConverter'
 
 if (!GLACIER_URL) Logger.error('GLACIER URL ENV is missing')
 
-const glacierSdk = new GlacierSdkV1({
-  baseUrl: GLACIER_URL
-})
+const glacierSdk = new GlacierClient(GLACIER_URL)
 
 export class EvmActivityService {
   async getActivities(params: GetActivitiesForAddressParams) {
@@ -34,7 +32,7 @@ async function getTransactionsFromGlacier({
     { pageToken: nextPageToken, pageSize }
   )
 
-  const transactions = response.data.transactions.map(item =>
+  const transactions = response.transactions.map(item =>
     convertTransaction({
       item,
       network,
@@ -45,7 +43,7 @@ async function getTransactionsFromGlacier({
 
   return {
     transactions,
-    nextPageToken: response.data.nextPageToken
+    nextPageToken: response.nextPageToken
   }
 }
 

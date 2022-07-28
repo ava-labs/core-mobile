@@ -47,7 +47,7 @@ export class TokenService {
       throw new Error('No network')
     }
 
-    const provider = await NetworkService.getProviderForNetwork(network)
+    const provider = NetworkService.getProviderForNetwork(network)
 
     if (!provider || !(provider instanceof JsonRpcBatchInternal)) {
       throw new Error('No provider')

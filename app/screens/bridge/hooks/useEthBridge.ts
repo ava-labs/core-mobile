@@ -17,7 +17,7 @@ import { useCallback, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
 import { selectActiveAccount } from 'store/account'
-import networkService from 'services/network/NetworkService'
+import { useEthereumProvider } from 'hooks/networkProviderHooks'
 
 /**
  * Hook for when the bridge source chain is Ethereum
@@ -44,7 +44,7 @@ export function useEthBridge(amount: Big, bridgeFee: Big): BridgeAdapter {
   const network = useSelector(selectActiveNetwork)
   const activeAccount = useSelector(selectActiveAccount)
   const config = useBridgeConfig().config
-  const ethereumProvider = networkService.getEthereumProvider(network.isTestnet)
+  const ethereumProvider = useEthereumProvider()
   const hasEnoughForNetworkFee = useHasEnoughForGas(
     isEthereumBridge ? activeAccount?.address : undefined,
     ethereumProvider
