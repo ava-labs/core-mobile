@@ -13,7 +13,7 @@ import {
   Subject,
   Subscription
 } from 'rxjs'
-import { Erc721TokenBalanceDto, V1 as GlacierSdk } from '@avalabs/glacier-sdk'
+import { Erc721TokenBalance, GlacierClient } from '@avalabs/glacier-sdk'
 import { NFTItemData, NFTItemExternalData, saveNFT } from 'store/nft'
 import { Image } from 'react-native'
 import { store } from 'store'
@@ -31,14 +31,14 @@ export class GlacierNftProvider implements NftProvider {
   private processorSubscription: Subscription | undefined = undefined
   private metadataHttpClient = new HttpClient(``, {})
 
-  private glacierSdk = new GlacierSdk({
-    baseUrl: `https://glacier-api.avax-test.network`
-  })
+  private glacierSdk = new GlacierClient(
+    `https://glacier-api.avax-test.network`
+  )
 
   async isProviderFor(chainId: number): Promise<boolean> {
     //TODO: check if glacier available
     const supportedChainsResp = await this.glacierSdk.supportedChains()
-    const chainInfos = supportedChainsResp.data?.chains
+    const chainInfos = supportedChainsResp.chains
     const chains = chainInfos.map(chain => chain.chainId)
     return chains.some(value => value === chainId.toString())
   }
@@ -70,7 +70,7 @@ export class GlacierNftProvider implements NftProvider {
         pageSize: 100
       }
     )
-    const nftBalances = nftBalancesResp.data.erc721TokenBalances
+    const nftBalances = nftBalancesResp.erc721TokenBalances
     this.processNfts(nftBalances, address)
   }
 
@@ -81,7 +81,7 @@ export class GlacierNftProvider implements NftProvider {
     }
   }
 
-  private processNfts(nfts: Erc721TokenBalanceDto[], owner: string) {
+  private processNfts(nfts: Erc721TokenBalance[], owner: string) {
     if (!this.processorSubscription) {
       this.startProcessor()
     }
@@ -102,7 +102,7 @@ export class GlacierNftProvider implements NftProvider {
         nftData.forEach(item => {
           store.dispatch(
             saveNFT({
-              chainId: Number.parseInt(item.chainId),
+              chainId: Number.parseInt(item.chainId, 10),
               address: item.owner,
               token: item
             })

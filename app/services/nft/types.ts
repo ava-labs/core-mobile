@@ -1,7 +1,7 @@
-import { Erc721TokenBalanceDto } from '@avalabs/glacier-sdk'
+import { Erc721TokenBalance } from '@avalabs/glacier-sdk'
 
 export type NftResponse = {
-  erc721TokenBalances: Erc721TokenBalanceDto[]
+  erc721TokenBalances: Erc721TokenBalance[]
 }
 
 export interface NftProvider {

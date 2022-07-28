@@ -18,13 +18,17 @@ import { BridgeReducerState, BridgeState } from 'store/bridge/types'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
 import { selectActiveAccount } from 'store/account'
-import networkService from 'services/network/NetworkService'
 import {
   addBridgeTransaction,
   popBridgeTransaction,
   selectBridgeTransactions
 } from 'store/bridge'
 import { selectIsReady } from 'store/app'
+import {
+  useAvalancheProvider,
+  useBitcoinProvider,
+  useEthereumProvider
+} from 'hooks/networkProviderHooks'
 
 export enum TransferEventType {
   WRAP_STATUS = 'wrap_status',
@@ -74,6 +78,9 @@ function LocalBridgeProvider({ children }: { children: any }) {
   const hydrationComplete = useSelector(selectIsReady)
   const { currentBlockchain } = useBridgeSDK()
   const { transferHandler, events } = useTransferAsset()
+  const ethereumProvider = useEthereumProvider()
+  const bitcoinProvider = useBitcoinProvider()
+  const avalancheProvider = useAvalancheProvider()
 
   // init tracking updates for txs
   const subscribeToTransaction = useCallback(
@@ -81,18 +88,10 @@ function LocalBridgeProvider({ children }: { children: any }) {
       if (
         trackedTransaction &&
         config &&
-        !TrackerSubscriptions.has(trackedTransaction.sourceTxHash)
+        !TrackerSubscriptions.has(trackedTransaction.sourceTxHash) &&
+        avalancheProvider &&
+        ethereumProvider
       ) {
-        const ethereumProvider = networkService.getEthereumProvider(
-          network.isTestnet
-        )
-        const bitcoinProvider = networkService.getBitcoinProvider(
-          network.isTestnet
-        )
-        const avalancheProvider = await networkService.getAvalancheProvider(
-          network.isTestnet
-        )
-
         // Start transaction tracking process (no need to await)
         try {
           const subscription = trackBridgeTransaction({
@@ -114,7 +113,7 @@ function LocalBridgeProvider({ children }: { children: any }) {
         }
       }
     },
-    [config, dispatch, network]
+    [avalancheProvider, bitcoinProvider, config, dispatch, ethereumProvider]
   )
 
   const transferAsset = useCallback(

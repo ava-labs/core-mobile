@@ -14,12 +14,7 @@ import { useSingularAssetBalanceEVM } from 'screens/bridge/hooks/useSingularAsse
 import { useAssetBalancesEVM } from 'screens/bridge/hooks/useAssetBalancesEVM'
 import Big from 'big.js'
 import { useActiveAccount } from 'hooks/useActiveAccount'
-import { useActiveNetwork } from 'hooks/useActiveNetwork'
-import networkService from 'services/network/NetworkService'
-import { useSelector } from 'react-redux'
-import { selectNetworks } from 'store/network'
-import { ChainId } from '@avalabs/chains-sdk'
-import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
+import { useAvalancheProvider } from 'hooks/networkProviderHooks'
 
 /**
  * Hook for when the source is Avalanche
@@ -48,14 +43,7 @@ export function useAvalancheBridge(amount: Big, bridgeFee: Big): BridgeAdapter {
   )
 
   const activeAccount = useActiveAccount()
-  const network = useActiveNetwork()
-  const allNetworks = useSelector(selectNetworks)
-  const avalancheNetwork = network.isTestnet
-    ? allNetworks[ChainId.AVALANCHE_TESTNET_ID]
-    : allNetworks[ChainId.AVALANCHE_MAINNET_ID]
-  const avalancheProvider = networkService.getProviderForNetwork(
-    avalancheNetwork
-  ) as JsonRpcBatchInternal
+  const avalancheProvider = useAvalancheProvider()
   const hasEnoughForNetworkFee = useHasEnoughForGas(
     isAvalancheBridge ? activeAccount?.address : undefined,
     avalancheProvider

@@ -16,15 +16,16 @@ import walletService from 'services/wallet/WalletService'
 import { selectActiveAccount } from 'store/account'
 import { useActiveNetwork } from 'hooks/useActiveNetwork'
 import { ChainId } from '@avalabs/chains-sdk'
-import networkService from 'services/network/NetworkService'
-import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 import { useCallback } from 'react'
+import {
+  useAvalancheProvider,
+  useEthereumProvider
+} from 'hooks/networkProviderHooks'
 
 const events = new EventEmitter()
 
 /**
  * prepares asset to be transferred by check creating a TransactionRequest, signing with wallet.signEvm;
- * @param asset
  */
 export function useTransferAsset() {
   const activeAccount = useSelector(selectActiveAccount)
@@ -32,6 +33,9 @@ export function useTransferAsset() {
   const allNetworks = useSelector(selectNetworks)
   const config = useBridgeConfig().config
   const { currentBlockchain } = useBridgeSDK()
+  const avalancheProvider = useAvalancheProvider()
+  const ethereumProvider = useEthereumProvider()
+
   const address = activeAccount?.address ?? ''
 
   const getNetworkForBlockchain = useCallback(() => {
@@ -59,18 +63,14 @@ export function useTransferAsset() {
     ) => {
       const blockchainNetwork = getNetworkForBlockchain()
 
-      if (!config || !blockchainNetwork) {
+      if (
+        !config ||
+        !blockchainNetwork ||
+        !avalancheProvider ||
+        !ethereumProvider
+      ) {
         return Promise.reject('Wallet not ready')
       }
-      const avalancheNetwork = activeNetwork.isTestnet
-        ? allNetworks[ChainId.AVALANCHE_TESTNET_ID]
-        : allNetworks[ChainId.AVALANCHE_MAINNET_ID]
-      const avalancheProvider = networkService.getProviderForNetwork(
-        avalancheNetwork
-      ) as JsonRpcBatchInternal
-      const ethereumProvider = networkService.getEthereumProvider(
-        activeNetwork.isTestnet
-      )
 
       const handleStatusChange = (status: WrapStatus) => {
         events.emit(TransferEventType.WRAP_STATUS, status)
@@ -102,11 +102,11 @@ export function useTransferAsset() {
     },
     [
       activeAccount?.index,
-      activeNetwork.isTestnet,
       address,
-      allNetworks,
+      avalancheProvider,
       config,
       currentBlockchain,
+      ethereumProvider,
       getNetworkForBlockchain
     ]
   )
