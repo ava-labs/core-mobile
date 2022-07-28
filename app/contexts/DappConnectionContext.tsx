@@ -14,7 +14,6 @@ import { useActiveAccount } from 'hooks/useActiveAccount'
 import { useActiveNetwork } from 'hooks/useActiveNetwork'
 import Logger from 'utils/Logger'
 import { txToCustomEvmTx } from 'screens/rpc/util/txToCustomEvmTx'
-import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 import networkService from 'services/network/NetworkService'
 import walletService from 'services/wallet/WalletService'
 import { useSelector } from 'react-redux'
@@ -25,6 +24,7 @@ import { selectIsLocked } from 'store/app'
 import { selectIsLoadingBalances } from 'store/balance'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AppNavigation from 'navigation/AppNavigation'
+import { getEvmProvider } from 'services/network/utils/providerUtils'
 
 interface AdditionalMessageParams {
   data?: string
@@ -247,11 +247,9 @@ export const DappConnectionContextProvider = ({
       return Promise.reject({ error: 'not ready' })
     }
 
-    const nonce = await (
-      networkService.getProviderForNetwork(
-        activeNetwork
-      ) as JsonRpcBatchInternal
-    ).getTransactionCount(params.from)
+    const nonce = await getEvmProvider(activeNetwork).getTransactionCount(
+      params.from
+    )
 
     return txToCustomEvmTx(networkFees.low, params).then(evmPrams => {
       return walletService

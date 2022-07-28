@@ -8,9 +8,9 @@ import { getEthereumBalances } from 'screens/bridge/handlers/getEthereumBalances
 import { getAvalancheBalances } from 'screens/bridge/handlers/getAvalancheBalances'
 import { AssetBalance } from 'screens/bridge/utils/types'
 import { useActiveAccount } from 'hooks/useActiveAccount'
-import { useActiveNetwork } from 'hooks/useActiveNetwork'
 import { useSelector } from 'react-redux'
 import { selectTokensWithBalance } from 'store/balance'
+import { useEthereumProvider } from 'hooks/networkProviderHooks'
 
 /**
  * Get for the current chain.
@@ -30,9 +30,9 @@ export function useAssetBalancesEVM(
 
   const tokens = useSelector(selectTokensWithBalance)
   const activeAccount = useActiveAccount()
-  const network = useActiveNetwork()
   const { avalancheAssets, ethereumAssets, currentBlockchain } = useBridgeSDK()
   const { getTokenSymbolOnNetwork } = useGetTokenSymbolOnNetwork()
+  const ethereumProvider = useEthereumProvider()
 
   // For balances on the Avalanche side, for all bridge assets on avalanche
   const avalancheBalances = useMemo(() => {
@@ -61,7 +61,8 @@ export function useAssetBalancesEVM(
   useEffect(() => {
     if (
       chain !== Blockchain.ETHEREUM ||
-      currentBlockchain !== Blockchain.ETHEREUM
+      currentBlockchain !== Blockchain.ETHEREUM ||
+      !ethereumProvider
     ) {
       return
     }
@@ -71,7 +72,7 @@ export function useAssetBalancesEVM(
         ethereumAssets,
         activeAccount?.address ?? '',
         showDeprecated,
-        network
+        ethereumProvider
       )
       setLoading(false)
       setEthBalances(balances)
@@ -79,6 +80,7 @@ export function useAssetBalancesEVM(
   }, [
     activeAccount?.address,
     ethereumAssets,
+    ethereumProvider,
     chain,
     showDeprecated,
     currentBlockchain

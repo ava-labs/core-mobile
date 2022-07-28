@@ -1,20 +1,19 @@
-import networkService from 'services/network/NetworkService'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import { NetworkFee } from 'services/networkFee/types'
-import {
-  BitcoinProviderAbstract,
-  JsonRpcBatchInternal
-} from '@avalabs/wallets-sdk'
 import Big from 'big.js'
 import { BigNumber, BigNumberish } from 'ethers'
 import { isSwimmer } from 'services/network/utils/isSwimmerNetwork'
 import { isEthereumNetwork } from 'services/network/utils/isEthereumNetwork'
+import {
+  getBitcoinProvider,
+  getEvmProvider
+} from 'services/network/utils/providerUtils'
 
 class NetworkFeeService {
   async getNetworkFee(network: Network): Promise<NetworkFee | null> {
-    const provider = networkService.getProviderForNetwork(network)
     if (network.vmName === NetworkVMType.EVM) {
-      const price = await (provider as JsonRpcBatchInternal).getGasPrice()
+      const provider = getEvmProvider(network)
+      const price = await provider.getGasPrice()
       const bigPrice = new Big(price.toString())
       const unit = isEthereumNetwork(network) ? 'gWEI' : 'nAVAX'
 
@@ -29,7 +28,8 @@ class NetworkFeeService {
         nativeTokenSymbol: network.networkToken.symbol
       }
     } else if (network.vmName === NetworkVMType.BITCOIN) {
-      const rates = await (provider as BitcoinProviderAbstract).getFeeRates()
+      const provider = getBitcoinProvider(network.isTestnet)
+      const rates = await provider.getFeeRates()
       return {
         displayDecimals: 0, // display btc fees in satoshi
         nativeTokenDecimals: 8,
@@ -53,13 +53,11 @@ class NetworkFeeService {
   ): Promise<number | null> {
     if (network.vmName !== NetworkVMType.EVM) return null
 
-    const provider = networkService.getProviderForNetwork(network)
-    const nonce = await (provider as JsonRpcBatchInternal).getTransactionCount(
-      from
-    )
+    const provider = getEvmProvider(network)
+    const nonce = await provider.getTransactionCount(from)
 
     return (
-      await (provider as JsonRpcBatchInternal).estimateGas({
+      await provider.estimateGas({
         from,
         to,
         nonce,
