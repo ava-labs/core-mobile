@@ -15,17 +15,8 @@ import TabViewAva from 'components/TabViewAva'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import StarSVG from 'components/svg/StarSVG'
 import { WalletScreenProps } from 'navigation/types'
-import ChartSelector, {
-  ChartType
-} from 'screens/watchlist/components/ChartSelector'
 import OvalTagBg from 'components/OvalTagBg'
 import AvaButton from 'components/AvaButton'
-import {
-  VictoryAxis,
-  VictoryCandlestick,
-  VictoryChart,
-  VictoryTheme
-} from 'victory-native'
 import { useTokenDetail } from 'screens/watchlist/useTokenDetail'
 import SparklineChart from 'components/SparklineChart'
 import { Row } from 'components/Row'
@@ -46,7 +37,6 @@ const TokenDetail = () => {
   const { theme, appHook } = useApplicationContext()
   const { saveViewOnceInformation, infoHasBeenShown, viewOnceInfo } =
     useApplicationContext().repo.informationViewOnceRepo
-  const [showLineChart, setShowLineChart] = useState(true)
   const { setOptions } = useNavigation<ScreenProps['navigation']>()
   const [showChartInstruction, setShowChartInstruction] = useState(false)
   const tokenId = useRoute<ScreenProps['route']>().params.tokenId
@@ -126,7 +116,7 @@ const TokenDetail = () => {
       )
     }
 
-    // if we have data and it's 1st time user seing it, show instruction
+    // if we have data, and it's 1st time user seeing it, show instruction
     if (chartData && showChartInstruction) {
       content = (
         <>
@@ -190,13 +180,6 @@ const TokenDetail = () => {
               />
             </Row>
           }
-          rightComponent={
-            <ChartSelector
-              onChartChange={chart => {
-                setShowLineChart(chart === ChartType.LINE)
-              }}
-            />
-          }
         />
         <Space y={8} />
         <View
@@ -205,95 +188,33 @@ const TokenDetail = () => {
             justifyContent: 'center',
             alignItems: 'center'
           }}>
-          {showLineChart ? (
-            <View>
-              <AvaText.Caption
-                textStyle={{
-                  alignSelf: 'flex-end',
-                  color: theme.colorText1,
-                  marginBottom: -10
-                }}
-                currency
-                hideTrailingCurrency>
-                {ranges.maxPrice}
-              </AvaText.Caption>
-              <SparklineChart
-                interactive
-                data={chartData ?? []}
-                yRange={[ranges.minPrice, ranges.maxPrice]}
-                xRange={[ranges.minDate, ranges.maxDate]}
-                negative={ranges.diffValue < 0}
-                width={WINDOW_WIDTH - 32} // padding
-                height={120}
-              />
-              <AvaText.Caption
-                textStyle={{ alignSelf: 'flex-end', color: theme.colorText1 }}
-                currency
-                hideTrailingCurrency>
-                {ranges.minPrice}
-              </AvaText.Caption>
-            </View>
-          ) : (
-            <VictoryChart theme={VictoryTheme.material} height={160}>
-              <VictoryAxis
-                scale={'time'}
-                tickFormat={t => `${t}`}
-                fixLabelOverlap
-                style={{
-                  grid: { stroke: 'transparent' },
-                  axis: { stroke: 'transparent' },
-                  ticks: { stroke: 'transparent' },
-                  tickLabels: { fill: 'transparent' }
-                }}
-              />
-              <VictoryCandlestick
-                standalone
-                candleColors={{
-                  positive: theme.colorSuccess,
-                  negative: theme.colorError
-                }}
-                candleRatio={0.2}
-                data={[
-                  //TODO implement real data
-                  {
-                    x: new Date(2016, 6, 1),
-                    open: 5,
-                    close: 10,
-                    high: 15,
-                    low: 0
-                  },
-                  {
-                    x: new Date(2016, 6, 2),
-                    open: 10,
-                    close: 15,
-                    high: 20,
-                    low: 5
-                  },
-                  {
-                    x: new Date(2016, 6, 3),
-                    open: 15,
-                    close: 20,
-                    high: 22,
-                    low: 10
-                  },
-                  {
-                    x: new Date(2016, 6, 4),
-                    open: 20,
-                    close: 10,
-                    high: 25,
-                    low: 7
-                  },
-                  {
-                    x: new Date(2016, 6, 5),
-                    open: 10,
-                    close: 8,
-                    high: 15,
-                    low: 5
-                  }
-                ]}
-              />
-            </VictoryChart>
-          )}
+          <View>
+            <AvaText.Caption
+              textStyle={{
+                alignSelf: 'flex-end',
+                color: theme.colorText1,
+                marginBottom: -10
+              }}
+              currency
+              hideTrailingCurrency>
+              {ranges.maxPrice}
+            </AvaText.Caption>
+            <SparklineChart
+              interactive
+              data={chartData ?? []}
+              yRange={[ranges.minPrice, ranges.maxPrice]}
+              xRange={[ranges.minDate, ranges.maxDate]}
+              negative={ranges.diffValue < 0}
+              width={WINDOW_WIDTH - 32} // padding
+              height={120}
+            />
+            <AvaText.Caption
+              textStyle={{ alignSelf: 'flex-end', color: theme.colorText1 }}
+              currency
+              hideTrailingCurrency>
+              {ranges.minPrice}
+            </AvaText.Caption>
+          </View>
           {getOverlayContent()}
         </View>
 

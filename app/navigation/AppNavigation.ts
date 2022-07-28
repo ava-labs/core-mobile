@@ -1,7 +1,8 @@
 enum Root {
   Wallet = 'Stacks.Wallet',
   Onboard = 'Stacks.Onboard',
-  Welcome = 'Stacks.Welcome'
+  Welcome = 'Stacks.Welcome',
+  NoWallet = 'Stacks.NoWallet',
 }
 
 enum OnboardScreens {
@@ -100,7 +101,9 @@ enum Tabs {
   Watchlist = 'Watchlist',
   Tabs = 'Tabs',
   Fab = 'Fab',
-  Bridge = 'Bridge'
+  Bridge = 'Bridge',
+  ExistingWallet = 'Existing Wallet',
+  NewWallet = 'New Wallet'
 }
 
 enum ModalScreens {

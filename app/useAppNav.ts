@@ -40,8 +40,7 @@ function resetNavToRoot(navigation: NavigationRef) {
     index: 0,
     routes: [
       {
-        name: AppNavigation.Root.Onboard,
-        params: { screen: AppNavigation.Root.Welcome }
+        name: AppNavigation.Root.NoWallet
       }
     ]
   })

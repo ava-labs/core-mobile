@@ -6,12 +6,13 @@ import {
   CoinsInfoResponse,
   VsCurrencyType
 } from '@avalabs/coingecko-sdk'
-import { selectTokenById, TokenType } from 'store/balance'
+import { TokenType } from 'store/balance'
 import { useDispatch, useSelector } from 'react-redux'
 import TokenService from 'services/token/TokenService'
 import { selectActiveNetwork } from 'store/network'
 import {
   selectIsWatchlistFavorite,
+  selectWatchlistTokenById,
   toggleWatchListFavorite
 } from 'store/watchlist'
 
@@ -42,7 +43,7 @@ export function useTokenDetail(tokenId: string) {
     CoinsContractInfoResponse | CoinsInfoResponse
   >()
   const [urlHostname, setUrlHostname] = useState<string>('')
-  const token = useSelector(selectTokenById(tokenId))
+  const token = useSelector(selectWatchlistTokenById(tokenId))
   const network = useSelector(selectActiveNetwork)
   const assetPlatformId =
     network.pricingProviders?.coingecko.assetPlatformId ?? ''

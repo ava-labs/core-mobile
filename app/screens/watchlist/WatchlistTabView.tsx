@@ -6,6 +6,7 @@ import TabViewAva from 'components/TabViewAva'
 import WatchlistView from 'screens/watchlist/WatchlistView'
 import { Space } from 'components/Space'
 import SearchBar from 'components/SearchBar'
+import { useActiveAccount } from 'hooks/useActiveAccount'
 
 const CustomLabel: React.FC<{ focused: boolean; title: string }> = ({
   focused,
@@ -23,6 +24,7 @@ const CustomLabel: React.FC<{ focused: boolean; title: string }> = ({
 
 export default function WatchlistTab() {
   const [searchText, setSearchText] = useState('')
+  const activeAccount = useActiveAccount()
 
   const renderCustomLabel = (title: string, focused: boolean) => {
     return <CustomLabel focused={focused} title={title} />
@@ -52,13 +54,15 @@ export default function WatchlistTab() {
           </AvaText.Heading3>
           {allWatchList}
         </>
-      ) : (
+      ) : activeAccount ? (
         <TabViewAva renderCustomLabel={renderCustomLabel}>
           <TabViewAva.Item title={'All'}>{allWatchList}</TabViewAva.Item>
           <TabViewAva.Item title={'Favorites'}>
             <WatchlistView showFavorites />
           </TabViewAva.Item>
         </TabViewAva>
+      ) : (
+        allWatchList
       )}
     </View>
   )

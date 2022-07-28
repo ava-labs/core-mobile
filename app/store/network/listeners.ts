@@ -1,7 +1,7 @@
 import { ChainId } from '@avalabs/chains-sdk'
 import NetworkService from 'services/network/NetworkService'
 import { AppListenerEffectAPI } from 'store'
-import { onAppUnlocked } from 'store/app'
+import {onAppUnlocked, onRehydrationComplete} from 'store/app';
 import { AppStartListening } from 'store/middleware/listener'
 import { noActiveNetwork, setActive, setNetworks } from 'store/network'
 import {
@@ -39,7 +39,7 @@ const getNetworks = async (action: any, listenerApi: AppListenerEffectAPI) => {
 
 export const addNetworkListeners = (startListening: AppStartListening) => {
   startListening({
-    matcher: isAnyOf(onAppUnlocked, toggleDeveloperMode),
+    matcher: isAnyOf(onAppUnlocked, toggleDeveloperMode, onRehydrationComplete),
     effect: getNetworks
   })
 

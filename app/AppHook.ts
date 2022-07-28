@@ -73,9 +73,7 @@ export function useApp(
           appNavHook.setLoginRoute()
         }
       } else {
-        appNavHook.navigation.current?.navigate(AppNavigation.Root.Onboard, {
-          screen: AppNavigation.Root.Welcome
-        })
+        appNavHook.navigation.current?.navigate(AppNavigation.Root.NoWallet)
       }
     })
   }
@@ -100,7 +98,7 @@ export function useApp(
       }),
       map((exitEvent: ExitEvents) => {
         if (exitEvent instanceof ExitFinished) {
-          appNavHook.setLoginRoute()
+          appNavHook.resetNavToRoot()
           setTimeout(() => BackHandler.exitApp(), 0)
         }
         return exitEvent

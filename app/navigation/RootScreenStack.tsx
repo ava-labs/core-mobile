@@ -1,7 +1,7 @@
 import React from 'react'
 import {
-  OnboardScreenStack,
-  OnboardingScreenStackParamList
+  OnboardingScreenStackParamList,
+  OnboardScreenStack
 } from 'navigation/OnboardScreenStack'
 import { createStackNavigator } from '@react-navigation/stack'
 import { Alert } from 'react-native'
@@ -12,6 +12,7 @@ import WalletScreenStack, {
 } from 'navigation/WalletScreenStack'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { ExitEvents, ExitPromptAnswers, ShowExitPrompt } from 'AppHook'
+import { NoWalletScreenStack } from 'navigation/NoWalletScreenStack'
 
 export type RootScreenStackParamList = {
   [AppNavigation.Root
@@ -72,6 +73,13 @@ const RootScreenStack = () => {
       <RootStack.Screen
         name={AppNavigation.Root.Onboard}
         component={OnboardScreenStack}
+        options={{
+          animationEnabled: false
+        }}
+      />
+      <RootStack.Screen
+        name={AppNavigation.Root.NoWallet}
+        component={NoWalletScreenStack}
         options={{
           animationEnabled: false
         }}

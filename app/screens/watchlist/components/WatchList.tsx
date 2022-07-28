@@ -9,7 +9,10 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import Separator from 'components/Separator'
 import ZeroState from 'components/ZeroState'
 import { TokenWithBalance } from 'store/balance'
+import { useDispatch } from 'react-redux'
+import { onRehydrationComplete } from 'store/app'
 import { WatchlistFilter } from '../types'
+import {onWatchlistRefresh} from 'store/watchlist';
 
 interface Props {
   tokens: TokenWithBalance[]
@@ -24,6 +27,7 @@ type NavigationProp = TabsScreenProps<
 const WatchList: React.FC<Props> = ({ tokens, filterBy, filterTimeDays }) => {
   const navigation = useNavigation<NavigationProp>()
   const { currencyFormatter } = useApplicationContext().appHook
+  const dispatch = useDispatch()
 
   const keyExtractor = (item: TokenWithBalance) => item.id
 
@@ -69,6 +73,7 @@ const WatchList: React.FC<Props> = ({ tokens, filterBy, filterTimeDays }) => {
       ItemSeparatorComponent={SeparatorComponent}
       ListEmptyComponent={EmptyComponent}
       refreshing={false}
+      onRefresh={() => dispatch(onWatchlistRefresh)}
       keyExtractor={keyExtractor}
       indicatorStyle="white"
       estimatedItemSize={64}

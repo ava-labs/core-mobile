@@ -1,19 +1,15 @@
-import React, { useMemo, useState } from 'react'
-import { StyleSheet, View } from 'react-native'
-import { useApplicationContext } from 'contexts/ApplicationContext'
-import { SafeAreaProvider } from 'react-native-safe-area-context'
-import Dropdown from 'components/Dropdown'
-import AvaText from 'components/AvaText'
-import {
-  selectIsLoadingBalances,
-  selectTokensWithBalance,
-  TokenWithBalance
-} from 'store/balance'
-import { selectWatchlistFavorites } from 'store/watchlist'
-import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
-import { FilterTimeOptions, WatchlistFilter } from './types'
-import WatchList from './components/WatchList'
-import { WatchListLoader } from './components/WatchListLoader'
+import React, {useMemo, useState} from 'react';
+import {StyleSheet, View} from 'react-native';
+import {useApplicationContext} from 'contexts/ApplicationContext';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
+import Dropdown from 'components/Dropdown';
+import AvaText from 'components/AvaText';
+import {TokenWithBalance} from 'store/balance';
+import {selectWatchlistFavorites, selectWatchlistTokens} from 'store/watchlist';
+import {useFocusedSelector} from 'utils/performance/useFocusedSelector';
+import {FilterTimeOptions, WatchlistFilter} from './types';
+import WatchList from './components/WatchList';
+import {WatchListLoader} from './components/WatchListLoader';
 
 interface Props {
   showFavorites?: boolean
@@ -54,7 +50,7 @@ const renderTimeFilterSelection = (selectedItem: FilterTimeOptions) => (
 
 const WatchlistView: React.FC<Props> = ({ showFavorites, searchText }) => {
   const watchlistFavorites = useFocusedSelector(selectWatchlistFavorites)
-  const tokensWithBalance = useFocusedSelector(selectTokensWithBalance)
+  const tokensWithBalance = useFocusedSelector(selectWatchlistTokens)
   const isLoadingBalances = useFocusedSelector(selectIsLoadingBalances)
   const [filterBy, setFilterBy] = useState(WatchlistFilter.PRICE)
   const [filterTime, setFilterTime] = useState(FilterTimeOptions.Day)
