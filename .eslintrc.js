@@ -50,16 +50,6 @@ module.exports = {
           'index'
         ]
       }
-    ],
-    'prettier/prettier': [
-      2,
-      {
-        singleQuote: true,
-        tabWidth: 2,
-        trailingComma: 'none',
-        semi: false,
-        bracketSpacing: true
-      }
     ]
   }
 }
