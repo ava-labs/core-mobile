@@ -19,7 +19,11 @@ export type NFTStackParamList = {
   [AppNavigation.Nft.Send]:
     | { nft: NFTItemData }
     | NavigatorScreenParams<NFTSendStackParamList>
-  [AppNavigation.Nft.FullScreen]: { url: string; urlSmall: string }
+  [AppNavigation.Nft.FullScreen]: {
+    url: string
+    urlSmall: string
+    isSvg: boolean
+  }
 }
 
 const NFTStack = createStackNavigator<NFTStackParamList>()
@@ -62,8 +66,8 @@ const NftDetailsScreen = () => {
   const { navigate } = useNavigation<NftDetailsScreenProps['navigation']>()
   const { params } = useRoute<NftDetailsScreenProps['route']>()
 
-  const openImageFull = (url: string, urlSmall: string) => {
-    navigate(AppNavigation.Nft.FullScreen, { url, urlSmall })
+  const openImageFull = (url: string, urlSmall: string, isSvg: boolean) => {
+    navigate(AppNavigation.Nft.FullScreen, { url, urlSmall, isSvg })
   }
 
   const openSendNftScreen = (item: NFTItemData) => {

@@ -1,6 +1,6 @@
 import { QueryDefinition } from '@reduxjs/toolkit/dist/query'
 import { UseQuery } from '@reduxjs/toolkit/dist/query/react/buildHooks'
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 // a hook to implement infinite scroll with RTK Query
 // it manages nextPageToken and the combined data from different pages
@@ -70,6 +70,10 @@ export const useInfiniteScroll = <
   }
 
   const isLoading = queryResponse?.isLoading
+  const isFetching = queryResponse?.isFetching
+  const isSuccess = queryResponse?.isSuccess
+  const isError = queryResponse?.isError
+  const hasMore = !!nextPageToken
 
   const isRefreshing = queryResponse
     ? !queryResponse.isLoading &&
@@ -82,6 +86,10 @@ export const useInfiniteScroll = <
     fetchNext,
     refresh,
     isLoading,
-    isRefreshing
+    isFetching,
+    isRefreshing,
+    isSuccess,
+    isError,
+    hasMore
   }
 }

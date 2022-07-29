@@ -13,6 +13,7 @@ import {
 } from 'redux-persist'
 import { DeserializeBridgeTransform } from 'store/transforms'
 import bridge, { addBridgeTransaction } from 'store/bridge'
+import { nftsApi } from 'store/nft/api'
 import { networkReducer as network } from './network'
 import { balanceReducer as balance, setBalance, setBalances } from './balance'
 import { appReducer as app, onLogOut, onRehydrationComplete } from './app'
@@ -50,7 +51,8 @@ const combinedReducer = combineReducers({
   zeroBalance,
 
   // apis
-  [transactionApi.reducerPath]: transactionApi.reducer
+  [transactionApi.reducerPath]: transactionApi.reducer,
+  [nftsApi.reducerPath]: nftsApi.reducer
 })
 
 const rootReducer = (state: any, action: AnyAction) => {
@@ -67,7 +69,13 @@ const rootReducer = (state: any, action: AnyAction) => {
 const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
-  blacklist: ['app', 'balance', 'networkFee', transactionApi.reducerPath],
+  blacklist: [
+    'app',
+    'balance',
+    'networkFee',
+    transactionApi.reducerPath,
+    nftsApi.reducerPath
+  ],
   transforms: [DeserializeBridgeTransform]
 }
 
@@ -90,6 +98,7 @@ export const store = configureStore({
     })
       .prepend(listener.middleware)
       .concat(transactionApi.middleware)
+      .concat(nftsApi.middleware)
 })
 
 export const persistor = persistStore(store, null, () => {

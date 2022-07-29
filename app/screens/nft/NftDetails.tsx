@@ -10,7 +10,7 @@ import { SvgXml } from 'react-native-svg'
 
 export type NftDetailsProps = {
   nft: NFTItemData
-  onPicturePressed: (url: string, urlSmall: string) => void
+  onPicturePressed: (url: string, urlSmall: string, isSvg: boolean) => void
   onSendPressed: (item: NFTItemData) => void
 }
 
@@ -23,6 +23,7 @@ export default function NftDetails({
   const { theme } = useApplicationContext()
   const item = useMemo(() => nft, [nft])
 
+  const width = 100
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <AvaText.Heading1>
@@ -30,8 +31,18 @@ export default function NftDetails({
       </AvaText.Heading1>
       <Space y={24} />
       <AvaButton.Base
-        onPress={() => onPicturePressed(item.image, item.image_256)}>
-        {item.isSvg && <SvgXml xml={item.image} width={100} height={100} />}
+        onPress={() =>
+          onPicturePressed(item.image, item.image_256, item.isSvg)
+        }>
+        {item.isSvg && (
+          <View style={{ alignItems: 'center' }}>
+            <SvgXml
+              xml={item.image}
+              width={width}
+              height={width * item.aspect}
+            />
+          </View>
+        )}
         {!item.isSvg && !imgLoadFailed && (
           <Image
             onError={_ => setImgLoadFailed(true)}
