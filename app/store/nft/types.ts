@@ -1,20 +1,18 @@
 import { Erc721TokenBalance } from '@avalabs/glacier-sdk'
+import { Network } from '@avalabs/chains-sdk'
+import { Account } from 'store/account'
+import { NftUID } from 'services/nft/NftService'
 
 export const initialState = {
-  collection: {}
+  hiddenNfts: {}
 } as NftState
 
 export type NftState = {
-  collection: {
-    [chainId: string]: {
-      [contractAddress: string]: { [tokenId: string]: NFTItemData }
-    }
-  }
+  hiddenNfts: Record<NftUID, boolean>
 }
 
 export type NFTItemData = Erc721TokenBalance &
   NFTItemExternalData & {
-    isShowing: boolean
     aspect: number
     owner: string
     uid: string
@@ -35,4 +33,16 @@ export type NFTItemExternalDataAttribute = {
   trait_type: string
   value: string
   percentOwned: number
+}
+
+export type GetNftArgs = {
+  network: Network
+  account: Account
+  currency: string
+  nextPageToken?: string
+}
+
+export type NftResponse = {
+  nfts: NFTItemData[]
+  nextPageToken?: string
 }

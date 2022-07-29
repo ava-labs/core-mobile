@@ -1,8 +1,4 @@
-import { Erc721TokenBalance } from '@avalabs/glacier-sdk'
-
-export type NftResponse = {
-  erc721TokenBalances: Erc721TokenBalance[]
-}
+import { NftResponse } from 'store/nft'
 
 export interface NftProvider {
   isProviderFor(chainId: number): Promise<boolean>
@@ -10,6 +6,7 @@ export interface NftProvider {
   fetchNfts(
     chainId: number,
     address: string,
+    pageToken?: string,
     selectedCurrency?: string
-  ): Promise<void>
+  ): Promise<NftResponse>
 }

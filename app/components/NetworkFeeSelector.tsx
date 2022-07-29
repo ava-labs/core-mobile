@@ -94,22 +94,24 @@ const NetworkFeeSelector = ({
   return (
     <>
       <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-        <Popable
-          content={
-            <PoppableGasAndLimit
-              gasLimit={gasLimit}
-              gasPrice={`${convertFeeToUnit(selectedGasPrice)} ${
-                networkFee.unit
-              }`}
-            />
-          }
-          position={'right'}
-          style={{ minWidth: 200 }}
-          backgroundColor={theme.colorBg3}>
-          <AvaText.Body2>{`Network Fee ${
-            totalFeeString ? 'ⓘ' : ''
-          }`}</AvaText.Body2>
-        </Popable>
+        {!isBtcNetwork && (
+          <Popable
+            content={
+              <PoppableGasAndLimit
+                gasLimit={gasLimit}
+                gasPrice={`${convertFeeToUnit(selectedGasPrice)} ${
+                  networkFee.unit
+                }`}
+              />
+            }
+            position={'right'}
+            style={{ minWidth: 200 }}
+            backgroundColor={theme.colorBg3}>
+            <AvaText.Body2>{`Network Fee ${
+              totalFeeString ? 'ⓘ' : ''
+            }`}</AvaText.Body2>
+          </Popable>
+        )}
         {network?.vmName === NetworkVMType.EVM && (
           <View>
             <AvaButton.Icon

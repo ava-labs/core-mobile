@@ -23,6 +23,7 @@ import { selectActiveNetwork } from 'store/network'
 import { NetworkVMType } from '@avalabs/chains-sdk'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import { ethersBigNumberToBN } from '@avalabs/utils-sdk'
+import { SvgXml } from 'react-native-svg'
 
 export type NftSendScreenProps = {
   onNext: () => void
@@ -171,12 +172,18 @@ const CollectibleItem = ({ nft }: { nft: NFTItemData }) => {
         }
       ]}>
       <Row>
-        <Image
-          style={styles.nftImage}
-          source={{ uri: nft.image }}
-          width={80}
-          height={80}
-        />
+        {nft.isSvg ? (
+          <View style={{ alignItems: 'center' }}>
+            <SvgXml xml={nft.image} width={80} height={80 * nft.aspect} />
+          </View>
+        ) : (
+          <Image
+            style={styles.nftImage}
+            source={{ uri: nft.image }}
+            width={80}
+            height={80}
+          />
+        )}
         <Space x={16} />
         <AvaText.Body2 textStyle={{ flex: 1 }}>{nft.name}</AvaText.Body2>
       </Row>

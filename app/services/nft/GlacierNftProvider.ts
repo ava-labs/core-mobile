@@ -1,42 +1,25 @@
 import { HttpClient } from '@avalabs/utils-sdk'
 import { NftProvider } from 'services/nft/types'
-import {
-  bufferTime,
-  concat,
-  concatMap,
-  delay,
-  filter,
-  from,
-  map,
-  mergeMap,
-  of,
-  Subject,
-  Subscription
-} from 'rxjs'
 import { Erc721TokenBalance, GlacierClient } from '@avalabs/glacier-sdk'
-import { NFTItemData, NFTItemExternalData, saveNFT } from 'store/nft'
-import { Image } from 'react-native'
-import { store } from 'store'
+import { NFTItemData, NFTItemExternalData, NftResponse } from 'store/nft'
 import Logger from 'utils/Logger'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
+import nftProcessor from 'services/nft/NftProcessor'
 import { getNftUID } from 'services/nft/NftService'
+import { GLACIER_URL } from 'utils/glacierUtils'
 
-// const base64 = require('base-64')
-const base64Prefix = 'data:image/svg+xml;base64,'
 const demoAddress = '0x188c30e9a6527f5f0c3f7fe59b72ac7253c62f28'
 
 export class GlacierNftProvider implements NftProvider {
-  private loadQueue$ = new Subject<NFTItemData>()
-  private nftProcessor$ = this.setupNftProcessor()
-  private processorSubscription: Subscription | undefined = undefined
   private metadataHttpClient = new HttpClient(``, {})
 
-  private glacierSdk = new GlacierClient(
-    `https://glacier-api.avax-test.network`
-  )
+  private glacierSdk = new GlacierClient(GLACIER_URL)
 
   async isProviderFor(chainId: number): Promise<boolean> {
-    //TODO: check if glacier available
+    const isHealthy = await this.isHealthy()
+    if (!isHealthy) {
+      return false
+    }
     const supportedChainsResp = await this.glacierSdk.supportedChains()
     const chainInfos = supportedChainsResp.chains
     const chains = chainInfos.map(chain => chain.chainId)
@@ -46,9 +29,10 @@ export class GlacierNftProvider implements NftProvider {
   async fetchNfts(
     chainId: number,
     address: string,
+    pageToken?: string,
     selectedCurrency?: string
-  ): Promise<void> {
-    Logger.info('fetching nfts using Glacier')
+  ): Promise<NftResponse> {
+    Logger.info(' fetching nfts using Glacier')
     const nftBalancesResp = await this.glacierSdk.listErc721Balances(
       chainId.toString(),
       DevDebuggingConfig.SHOW_DEMO_NFTS ? demoAddress : address,
@@ -67,134 +51,87 @@ export class GlacierNftProvider implements NftProvider {
           | 'huf'
           | undefined,
         // glacier has a cap on page size of 100
-        pageSize: 100
+        pageSize: 10,
+        pageToken: pageToken
       }
     )
-    const nftBalances = nftBalancesResp.erc721TokenBalances
-    this.processNfts(nftBalances, address)
-  }
+    const nftBalances =
+      nftBalancesResp.erc721TokenBalances as Erc721TokenBalance[]
+    const nextPageToken = nftBalancesResp.nextPageToken
 
-  stop() {
-    if (this.processorSubscription) {
-      this.processorSubscription.unsubscribe()
-      this.processorSubscription = undefined
-    }
-  }
-
-  private processNfts(nfts: Erc721TokenBalance[], owner: string) {
-    if (!this.processorSubscription) {
-      this.startProcessor()
-    }
-    nfts.forEach(value =>
-      this.loadQueue$.next({
-        uid: getNftUID(value),
-        isShowing: true,
-        owner,
-        ...value
-      } as NFTItemData)
+    const nftWithMetadataPromises = nftBalances.map(nft =>
+      this.applyMetadata(nft)
     )
-  }
-
-  private startProcessor() {
-    this.processorSubscription = this.nftProcessor$.subscribe({
-      next: nftData => {
-        // update data and save to repo
-        nftData.forEach(item => {
-          store.dispatch(
-            saveNFT({
-              chainId: Number.parseInt(item.chainId, 10),
-              address: item.owner,
-              token: item
-            })
-          )
-        })
-      },
-      error: err => console.error(err)
+    const metadataResults = await Promise.allSettled(nftWithMetadataPromises)
+    const nftWithMetadata = [] as NFTItemData[]
+    metadataResults.forEach(result => {
+      if (result.status === 'fulfilled') {
+        nftWithMetadata.push(result.value)
+      }
     })
-  }
 
-  private setupNftProcessor() {
-    return this.loadQueue$.pipe(
-      filter(nftData => !!nftData),
-      bufferTime(1000),
-      filter(value => value.length !== 0),
-      concatMap(value => {
-        // make batches of 10 items, each delayed for 1 sec except first one
-        const newObservables = []
-        const batchCount = 10
-        for (let i = 0; i < value.length; i += batchCount) {
-          let observable = of(value.slice(i, i + batchCount))
-          if (i !== 0) {
-            observable = observable.pipe(delay(1000))
-          }
-          newObservables.push(observable)
-        }
-        return concat(...newObservables)
-      }),
-      concatMap(nfts => {
-        // expand batch
-        return from(nfts)
-      }),
-      mergeMap(nftData => {
-        // get metadata
-        if (nftData.tokenUri.startsWith('data:application/json;base64,')) {
-          const base64Metadata = nftData.tokenUri.substring(
-            'data:application/json;base64,'.length
-          )
-          const metadata = JSON.parse(
-            Buffer.from(base64Metadata, 'base64').toString()
-          )
-          nftData = { ...metadata, ...nftData }
-          return of(nftData)
-        } else {
-          return from(this.metadataHttpClient.get(nftData.tokenUri)).pipe(
-            map(value => {
-              const metadata = value as NFTItemExternalData
-              nftData = { ...metadata, ...nftData }
-              return nftData
-            })
-          )
-        }
-      }),
-      mergeMap(nftData => {
-        // for each item create observable which will complete when image is fetched and aspect written
-        // Set aspect to 1 if image load fails
-        const promise = new Promise<NFTItemData>(resolve => {
-          if (isBase64Svg(nftData.image)) {
-            //TODO decode base64 and get viewBox data for aspect, store decoded data
-            nftData.aspect = 1
-            resolve(nftData)
-          } else {
-            Image.getSize(
-              nftData.image,
-              (width: number, height: number) => {
-                nftData.aspect = height / width
-                resolve(nftData)
-              },
-              _ => {
-                nftData.aspect = 1
-                resolve(nftData)
-              }
-            )
-          }
-        })
-
-        return from(promise)
-      }),
-      bufferTime(1000),
-      filter(value => value.length !== 0)
+    const fullNftPromises = nftWithMetadata.map(nft =>
+      this.applyImageAndAspect(nft)
     )
+    const fullNftResults = await Promise.allSettled(fullNftPromises)
+    const fullNftData = [] as NFTItemData[]
+    fullNftResults.forEach(result => {
+      if (result.status === 'fulfilled') {
+        fullNftData.push(result.value)
+      }
+    })
+
+    const nftData = fullNftData.map(nft => {
+      return {
+        ...nft,
+        uid: getNftUID(nft),
+        isShowing: true,
+        owner: address
+      } as NFTItemData
+    })
+
+    return {
+      nfts: nftData,
+      nextPageToken
+    } as NftResponse
+  }
+
+  private async applyMetadata(nft: Erc721TokenBalance) {
+    const metadata = await this.fetchMetadata(nft.tokenUri)
+    return { ...nft, ...metadata } as NFTItemData
+  }
+
+  private async fetchMetadata(tokenUri: string) {
+    const base64MetaPrefix = 'data:application/json;base64,'
+    if (tokenUri.startsWith(base64MetaPrefix)) {
+      const base64Metadata = tokenUri.substring(base64MetaPrefix.length)
+      const metadata = JSON.parse(
+        Buffer.from(base64Metadata, 'base64').toString()
+      )
+      return metadata as NFTItemExternalData
+    } else {
+      const metadata: NFTItemExternalData = await this.metadataHttpClient.get(
+        tokenUri
+      )
+      return metadata
+    }
+  }
+
+  private async applyImageAndAspect(nftData: NFTItemData) {
+    const [image, aspect, isSvg] = await nftProcessor.fetchImageAndAspect(
+      nftData.image
+    )
+    nftData.image = image
+    nftData.aspect = aspect
+    nftData.isSvg = isSvg
+    return nftData
+  }
+
+  private async isHealthy() {
+    const healthStatus = await this.glacierSdk.healthCheck()
+    const status = healthStatus?.status?.toString()
+    return status === 'ok'
   }
 }
-
-function isBase64Svg(imageData: string) {
-  return imageData.startsWith(base64Prefix)
-}
-
-// function convertBase64Svg(svgData: string) {
-//   const base64Data = svgData.substring(base64Prefix.length)
-//   console.log(base64Data)
-//   return base64Prefix + base64.decode(base64Data).toString()
-// }
 
 export default new GlacierNftProvider()

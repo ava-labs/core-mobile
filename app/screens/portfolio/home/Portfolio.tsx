@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { FlatList, ListRenderItemInfo } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
@@ -7,14 +7,13 @@ import AvaText from 'components/AvaText'
 import TabViewAva from 'components/TabViewAva'
 import NftListView from 'screens/nft/NftListView'
 import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
-import { useDispatch, useSelector } from 'react-redux'
-import { selectActiveNetwork, selectInactiveNetworks } from 'store/network'
-import { selectActiveAccount } from 'store/account'
+import { useSelector } from 'react-redux'
+import { selectInactiveNetworks } from 'store/network'
 import { Network } from '@avalabs/chains-sdk'
 import { Space } from 'components/Space'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import { RefreshControl } from 'components/RefreshControl'
-import { fetchNfts, NFTItemData } from 'store/nft'
+import { NFTItemData } from 'store/nft'
 import { PortfolioScreenProps } from 'navigation/types'
 import InactiveNetworkCard from './components/Cards/InactiveNetworkCard'
 import { PortfolioTokensLoader } from './components/Loaders/PortfolioTokensLoader'
@@ -96,15 +95,6 @@ type PortfolioNavigationProp = PortfolioScreenProps<
 
 const NftTab = () => {
   const { navigate } = useNavigation<PortfolioNavigationProp>()
-  const activeAccount = useSelector(selectActiveAccount)
-  const network = useSelector(selectActiveNetwork)
-  const dispatch = useDispatch()
-
-  useEffect(() => {
-    const chainId = Number(network.chainId ?? 0)
-    const address = activeAccount?.address ?? ''
-    dispatch(fetchNfts({ chainId, address }))
-  }, [activeAccount?.address, dispatch, network.chainId])
 
   const openNftDetails = (item: NFTItemData) => {
     navigate(AppNavigation.Wallet.NFTDetails, {

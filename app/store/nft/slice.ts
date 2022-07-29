@@ -1,8 +1,7 @@
-import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store'
-import { selectActiveNetwork } from 'store/network'
-import { selectActiveAccount } from 'store/account'
-import { initialState, NFTItemData } from './types'
+import { NftUID } from 'services/nft/NftService'
+import { initialState } from './types'
 
 const reducerName = 'nft'
 
@@ -10,47 +9,27 @@ export const nftSlice = createSlice({
   name: reducerName,
   initialState,
   reducers: {
-    saveNFT: (
+    setHidden: (
       state,
       action: PayloadAction<{
-        chainId: number
-        address: string
-        token: NFTItemData
+        isHidden: boolean
+        tokenUid: NftUID
       }>
     ) => {
-      const { chainId, address, token } = action.payload
-      if (!state.collection[chainId]) {
-        state.collection[chainId] = {}
+      const { isHidden, tokenUid } = action.payload
+      if (isHidden) {
+        state.hiddenNfts[tokenUid] = true
+      } else {
+        delete state.hiddenNfts[tokenUid]
       }
-      if (!state.collection[chainId][address]) {
-        state.collection[chainId][address] = {}
-      }
-      const existing = state.collection[chainId][address][token.uid]
-      if (existing) {
-        token.owner = existing.owner
-        token.isShowing = existing.isShowing
-        token.aspect = existing.aspect
-        token.uid = existing.uid
-        token.isSvg = existing.isSvg
-      }
-      state.collection[chainId][address][token.uid] = token
     }
   }
 })
 
 // selectors
-export const selectNftCollection = (state: RootState) => {
-  const chainId = selectActiveNetwork(state).chainId
-  const address = selectActiveAccount(state)?.address
-  return address
-    ? Object.values(state.nft.collection[chainId]?.[address] ?? [])
-    : []
-}
+export const selectHiddenNftUIDs = (state: RootState) => state.nft.hiddenNfts
 
 // actions
-export const { saveNFT } = nftSlice.actions
-export const fetchNfts = createAction<{ chainId: number; address: string }>(
-  `${reducerName}/fetchNfts`
-)
+export const { setHidden } = nftSlice.actions
 
 export const nftReducer = nftSlice.reducer

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Dimensions, FlatList, Image, StyleSheet, View } from 'react-native'
 import RadioGroup from 'components/RadioGroup'
 import GridSVG from 'components/svg/GridSVG'
@@ -17,8 +17,12 @@ import {
 import Avatar from 'components/Avatar'
 import MasonryList from '@react-native-seoul/masonry-list'
 import AvaText from 'components/AvaText'
+import { NFTItemData, selectHiddenNftUIDs } from 'store/nft'
+import { SvgXml } from 'react-native-svg'
+import { useGetNfts } from 'store/nft/hooks'
+import { ActivityIndicator } from 'components/ActivityIndicator'
 import { useSelector } from 'react-redux'
-import { NFTItemData, selectNftCollection } from 'store/nft'
+import { appendLoader, LOADER_UID } from 'screens/nft/tools'
 
 type ListType = 'grid' | 'list'
 
@@ -37,14 +41,28 @@ export default function NftListView({
   onItemSelected,
   onManagePressed
 }: NftListViewProps) {
-  const nfts = useSelector(selectNftCollection)
+  const { nfts, fetchNext, isFetching, hasMore } = useGetNfts()
   const [listType, setListType] = useState<ListType>()
   const { theme } = useApplicationContext()
+  const [listEndReached, setListEndReached] = useState(false)
+  const hiddenNfts = useSelector(selectHiddenNftUIDs)
 
-  const filteredData = useMemo(
-    () => nfts.filter(value => value.isShowing && !!value.aspect),
-    [nfts]
-  )
+  const filteredData = useMemo(() => {
+    const filtered = nfts.filter(
+      value => !hiddenNfts[value.uid] && !!value.aspect
+    )
+    return hasMore ? appendLoader(filtered) : filtered
+  }, [hasMore, hiddenNfts, nfts])
+
+  useEffect(onListEndReachedFx, [fetchNext, isFetching, listEndReached])
+
+  function onListEndReachedFx() {
+    if (listEndReached && !isFetching) {
+      fetchNext()
+    } else if (listEndReached && isFetching) {
+      setListEndReached(false)
+    }
+  }
 
   return (
     <View style={styles.container}>
@@ -62,6 +80,8 @@ export default function NftListView({
       {listType === 'list' ? (
         <FlatList
           style={{ flex: 1 }}
+          onEndReached={() => setListEndReached(true)}
+          onEndReachedThreshold={0.01}
           data={filteredData}
           ListEmptyComponent={<ZeroState.Collectibles />}
           keyExtractor={item => item.uid}
@@ -71,15 +91,30 @@ export default function NftListView({
       ) : (
         <MasonryList
           data={filteredData}
+          onEndReached={() => setListEndReached(true)}
+          onEndReachedThreshold={0.01}
           keyExtractor={item => item.uid}
+          ListEmptyComponent={<ZeroState.Collectibles />}
           numColumns={2}
           showsVerticalScrollIndicator={true}
-          renderItem={info => (
-            <GridItem item={info.item} onItemSelected={onItemSelected} />
-          )}
+          renderItem={info => renderItemGrid(info.item, onItemSelected)}
         />
       )}
     </View>
+  )
+}
+
+const renderItemGrid = (
+  item: NFTItemData,
+  onItemSelected: (item: NFTItemData) => void
+) => {
+  return item.uid === LOADER_UID ? (
+    <ActivityIndicator
+      size={40}
+      style={{ width: GRID_ITEM_WIDTH, height: GRID_ITEM_WIDTH }}
+    />
+  ) : (
+    <GridItem item={item} onItemSelected={onItemSelected} />
   )
 }
 
@@ -88,7 +123,9 @@ const renderItemList = (
   onItemSelected: (item: NFTItemData) => void,
   theme: typeof COLORS_DAY | typeof COLORS_NIGHT
 ) => {
-  return (
+  return item.uid === LOADER_UID ? (
+    <ActivityIndicator size={40} style={{ padding: 40 }} />
+  ) : (
     <View
       style={{
         marginVertical: 4,
@@ -146,6 +183,12 @@ function GridItem({
           </AvaText.Heading2>
           <AvaText.Body2 ellipsizeMode={'tail'}>{item.name}</AvaText.Body2>
         </View>
+      ) : item.isSvg ? (
+        <SvgXml
+          xml={item.image}
+          width={GRID_ITEM_WIDTH * item.aspect}
+          height={GRID_ITEM_WIDTH}
+        />
       ) : (
         <Image
           onError={_ => setImgLoadFailed(true)}
