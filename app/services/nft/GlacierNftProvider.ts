@@ -6,16 +6,14 @@ import Logger from 'utils/Logger'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
 import nftProcessor from 'services/nft/NftProcessor'
 import { getNftUID } from 'services/nft/NftService'
-import Config from 'react-native-config'
+import { GLACIER_URL } from 'utils/glacierUtils'
 
 const demoAddress = '0x188c30e9a6527f5f0c3f7fe59b72ac7253c62f28'
 
 export class GlacierNftProvider implements NftProvider {
   private metadataHttpClient = new HttpClient(``, {})
 
-  private glacierSdk = new GlacierClient(
-    __DEV__ ? Config.GLACIER_DEV_URL : Config.GLACIER_PROD_URL
-  )
+  private glacierSdk = new GlacierClient(GLACIER_URL)
 
   async isProviderFor(chainId: number): Promise<boolean> {
     const isHealthy = await this.isHealthy()
@@ -57,7 +55,8 @@ export class GlacierNftProvider implements NftProvider {
         pageToken: pageToken
       }
     )
-    const nftBalances = nftBalancesResp.erc721TokenBalances as Erc721TokenBalance[]
+    const nftBalances =
+      nftBalancesResp.erc721TokenBalances as Erc721TokenBalance[]
     const nextPageToken = nftBalancesResp.nextPageToken
 
     const nftWithMetadataPromises = nftBalances.map(nft =>

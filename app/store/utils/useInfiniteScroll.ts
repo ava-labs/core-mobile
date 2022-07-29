@@ -73,7 +73,7 @@ export const useInfiniteScroll = <
   const isFetching = queryResponse?.isFetching
   const isSuccess = queryResponse?.isSuccess
   const isError = queryResponse?.isError
-  const hasMore = nextPageToken !== ''
+  const hasMore = !!nextPageToken
 
   const isRefreshing = queryResponse
     ? !queryResponse.isLoading &&

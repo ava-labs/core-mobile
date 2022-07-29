@@ -51,11 +51,7 @@ export default function NftListView({
     const filtered = nfts.filter(
       value => !hiddenNfts[value.uid] && !!value.aspect
     )
-    if (hasMore) {
-      return appendLoader(filtered)
-    } else {
-      return filtered
-    }
+    return hasMore ? appendLoader(filtered) : filtered
   }, [hasMore, hiddenNfts, nfts])
 
   useEffect(onListEndReachedFx, [fetchNext, isFetching, listEndReached])
@@ -98,6 +94,7 @@ export default function NftListView({
           onEndReached={() => setListEndReached(true)}
           onEndReachedThreshold={0.01}
           keyExtractor={item => item.uid}
+          ListEmptyComponent={<ZeroState.Collectibles />}
           numColumns={2}
           showsVerticalScrollIndicator={true}
           renderItem={info => renderItemGrid(info.item, onItemSelected)}
