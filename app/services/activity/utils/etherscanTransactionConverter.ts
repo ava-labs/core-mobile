@@ -13,7 +13,7 @@ export function convertTransactionERC20(
   address: string,
   criticalConfig: CriticalConfig | undefined
 ): Transaction {
-  const isSender = tx.from.toLowerCase() === address
+  const isSender = tx.from.toLowerCase() === address.toLowerCase()
   const timestamp = parseInt(tx.timeStamp, 10) * 1000
   const decimals = parseInt(tx.tokenDecimal, 10)
   const amountBN = new BN(tx.value)
@@ -46,7 +46,7 @@ export function convertTransactionNormal(
   network: Network,
   address: string
 ): Transaction {
-  const isSender = tx.from.toLowerCase() === address
+  const isSender = tx.from.toLowerCase() === address.toLowerCase()
   const timestamp = parseInt(tx.timeStamp, 10) * 1000
   const amountBN = new BN(tx.value)
   const amountDisplayValue = balanceToDisplayValue(
