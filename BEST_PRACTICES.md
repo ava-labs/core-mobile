@@ -1,4 +1,4 @@
-This document contains the best practices and patterns for the Code Mobile codebase.
+This document contains the best practices and patterns for the Core Mobile codebase.
 
 There are a few reasons why this document should exist:
 
@@ -20,8 +20,8 @@ A best practice or pattern should have the following attributes:
 
 The process for adding to this document is similar to the RFC process. Document your idea in a clear and concise way. Use the mark down language to help convey your idea, eg. code snippets, bullet points, headers, etc... Explain why this pattern is better than alternatives. Once you feel your idea is ready you can submit a merge request. Merging this file will require approval from all members of the guild. This ensures everyone has a chance to submit feedback as well as stay informed of changes to this document. Once you have resolved any feedback and have the requisite approvals you can merge the changes.
 
-## Colocation
-Colocation entails the practice of locating the data and UI requirements of a component in the same file as that component.
+## Collocation
+Collocation entails the practice of locating the data and UI requirements of a component in the same file as that component.
 
 ```typescript jsx
 interface Props {
@@ -45,16 +45,14 @@ In the example above, the styles are defined in the same file as the component. 
 #### What about sharing styles?
 The way we organize our components means there aren't many opportunities to share styles between components. The component library (or design system) defines a base set of components that take care of most UI/styling needs. If you are creating a new component outside of the component library you are likely using styling simply to glue component library components together. These component library components are the basic building blocks of our UI and will become the substrate for the data components.
 
+Even when two components may have the same data or UI requirements those requirements may change over time. Collocation ensures that each data and UI requirement only support one component.
 
-Even when two components may have the same data or UI requirements those requirements may change over time. Colocation ensures the each data and UI requirement only support one component.
+#### When not to Collocate
+* Some components don't have any data or styling requirements. In these cases there won't be any need for collocation.
+* There are times when UI requirements can be shared. We share these UI requirements through a Theme. For the UI requirements that are not shared they should be collocated with the component they will be supporting.
 
-
-#### When not to Colocate
-* Some components don't have any data or styling requirements. In these cases there won't be any need for colocation.
-* There are times when UI requirements can be shared. We share these UI requirements through a Theme. For the UI requirements that are not shared they should be colocated with the component they will be supporting.
-
-#### Colocation Style
-It's convenient to have the code that is most likely to be edited near the top of the file. For this reason we prefer to place the component, with it's Props interface above it. The styling is next. This is depicted in the first colocation code example.
+#### Collocation Style
+It's convenient to have the code that is most likely to be edited near the top of the file. For this reason we prefer to place the component, with it's Props interface above it. The styling is next. This is depicted in the first collocation code example.
 
 ```typescript jsx
 interface Props {
@@ -99,18 +97,18 @@ interface Props {
 }
 
 const MyFunctionComponent: FC<Props> = props => {
-	const { name, age } = props;
-	...
+  const { name, age } = props;
+  ...
 };
 
 MyFunctionComponent.defaultProps = {
-	name: 'Default Name',
+  name: 'Default Name',
 };
 ```
 
 Here we are defining a default value for `name` using the `defaultProps` property on `MyFunctionComponent`. When we inspect what type `name` is we find, `string | undefined`. This should not be the case as `name` will always have a value of type `string` because whenever `name` is `undefined` the default value is used. Therefore the type should be `string`.
 
-If we set the default value in the destructing assignment of the props parameter TS is able to correctly identify the type of the default prop.
+If we set the default value in the destructured assignment of the props parameter TS is able to correctly identify the type of the default prop.
 
 ```typescript jsx
 interface Props {
@@ -126,7 +124,7 @@ const MyFunctionComponent: FC<Props> ({ age, name = 'Default Name' }) => {
 
 If we inspect the type of `name` we find it is `string` even when a name prop is not passed to MyFunctionComponent. This is what we want.
 
-Note that when we set a default value for a prop we need to mark that prop as optional in the interface.
+_Note that when we set a default value for a prop we need to mark that prop as optional in the interface._
 
 ### Precise props spread to children components
 
@@ -265,7 +263,7 @@ const Component: FC<Props> = props => {
 };
 ```
 
-We can do a final step to make this even better by destructiring the props parameter and omitting the return statement because no operations are happening in the function body except returning the JSX.
+We can do a final step to make this even better by destructuring the props parameter and omitting the return statement because no operations are happening in the function body except returning the JSX.
 
 ```typescript jsx
 const Component: FC<Props> = ({ color, text }) => (
