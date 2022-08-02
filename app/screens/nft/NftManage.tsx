@@ -58,8 +58,7 @@ const NftManage = () => {
   }
 
   const onItemToggled = (item: NFTItemData) => {
-    const isHidden = !hiddenNftUIDs[item.uid]
-    dispatch(setHidden({ isHidden, tokenUid: item.uid }))
+    dispatch(setHidden({ tokenUid: item.uid }))
   }
 
   return (
@@ -73,7 +72,7 @@ const NftManage = () => {
         onEndReached={() => setListEndReached(true)}
         onEndReachedThreshold={0.01}
         keyExtractor={item => item.uid}
-        ItemSeparatorComponent={() => <View style={{ margin: 4 }} />}
+        ItemSeparatorComponent={Separator}
         renderItem={info =>
           renderItemList(
             info.item,
@@ -86,6 +85,8 @@ const NftManage = () => {
     </View>
   )
 }
+
+const Separator = () => <View style={{ margin: 4 }} />
 
 const renderItemList = (
   item: NFTItemData,
