@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
-import Loader from 'components/Loader'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import Dropdown from 'components/Dropdown'
@@ -14,7 +13,7 @@ import { selectWatchlistFavorites } from 'store/watchlist'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
 import { FilterTimeOptions, WatchlistFilter } from './types'
 import WatchList from './components/WatchList'
-import { WatchlistLoader } from './components/WatchListLoader'
+import { WatchListLoader } from './components/WatchListLoader'
 
 interface Props {
   showFavorites?: boolean
@@ -132,7 +131,7 @@ const WatchlistView: React.FC<Props> = ({ showFavorites, searchText }) => {
           />
         </View>
         {isLoadingBalances ? (
-          <WatchlistLoader />
+          <WatchListLoader />
         ) : (
           <WatchList
             tokens={tokens}
