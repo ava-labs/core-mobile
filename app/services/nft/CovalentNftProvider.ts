@@ -36,7 +36,7 @@ export class CovalentNftProvider implements NftProvider {
       selectedCurrency.toUpperCase(),
       {
         pageSize: 100,
-        pageNumber: Number.parseInt(pageToken) ?? 0
+        pageNumber: Number.parseInt(pageToken, 10) ?? 0
       }
     )
     const covalentData = covalentResponse.data
@@ -44,7 +44,7 @@ export class CovalentNftProvider implements NftProvider {
     const nextPageToken =
       covalentData.pagination?.has_more === true
         ? covalentData.pagination.page_number + 1
-        : undefined
+        : '' // stop pagination
 
     const nfts = covalentNfts.reduce(
       (agg: NFTItemData[], item: GetAddressBalanceV2Item) => {
