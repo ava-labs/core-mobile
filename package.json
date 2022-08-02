@@ -17,6 +17,7 @@
     "clean": "./scripts/clean",
     "prestorybook": "rnstl",
     "build-storybook": "build-storybook",
+    "prepare": "husky install",
     "postinstall": "./scripts/patch; node_modules/.bin/rn-nodeify --install crypto,events,stream,vm,assert,https,http,os --hack"
   },
   "dependencies": {
@@ -113,8 +114,8 @@
     "react-native-linear-gradient": "^2.5.6",
     "react-native-modal-datetime-picker": "^10.0.0",
     "react-native-os": "^1.2.6",
-    "react-native-permissions": "^3.6.0",
     "react-native-pager-view": "5.4.25",
+    "react-native-permissions": "^3.6.0",
     "react-native-popable": "^0.4.3",
     "react-native-qrcode-scanner": "^1.5.4",
     "react-native-qrcode-svg": "^6.1.1",
@@ -194,7 +195,9 @@
     "eslint-plugin-import": "2.26.0",
     "eslint-plugin-prettier": "4.2.1",
     "eslint-plugin-react-hooks": "4.6.0",
+    "husky": "8.0.1",
     "jest": "26.6.3",
+    "lint-staged": "13.0.3",
     "metro-react-native-babel-preset": "0.66.2",
     "prettier": "2.6.2",
     "react-dom": "^18.1.0",
@@ -211,6 +214,9 @@
       "pattern": "**/__stories__/*.stories.tsx",
       "outputFile": "./storybook/storyLoader.js"
     }
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": "eslint --fix --max-warnings 0"
   },
   "jest": {
     "preset": "react-native"
