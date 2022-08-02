@@ -53,6 +53,8 @@ const Portfolio = () => {
   )
 }
 
+const Separator = () => <Space y={16} />
+
 const TokensTab = () => {
   const { isLoading, isRefetching, refetch } = useSearchableTokenList()
   const inactiveNetworks = useSelector(selectInactiveNetworks)
@@ -60,8 +62,6 @@ const TokensTab = () => {
   const renderInactiveNetwork = (item: ListRenderItemInfo<Network>) => {
     return <InactiveNetworkCard network={item.item} />
   }
-
-  const Separator = () => <Space y={16} />
 
   if (isLoading) return <PortfolioTokensLoader />
 
