@@ -1,8 +1,7 @@
 import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store'
-import { TokenWithBalance } from 'store/balance'
 import Logger from 'utils/Logger'
-import { initialState } from './types'
+import { initialState, MarketToken } from './types'
 
 const reducerName = 'watchlist'
 
@@ -21,8 +20,7 @@ export const watchlistSlice = createSlice({
         state.favorites = newFavorites
       }
     },
-    setWatchlistTokens: (state, action: PayloadAction<TokenWithBalance[]>) => {
-      Logger.warn('gotTokens', action.payload)
+    setWatchlistTokens: (state, action: PayloadAction<MarketToken[]>) => {
       state.tokens = action.payload
     }
   }

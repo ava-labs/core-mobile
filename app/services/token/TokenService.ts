@@ -1,12 +1,13 @@
 import {
+  CoinMarketsResponse,
   coinsContractInfo,
   CoinsContractInfoResponse,
   coinsContractMarketChart,
   coinsInfo,
-  coinsMarket,
-  coinsSearch,
   CoinsInfoResponse,
+  coinsMarket,
   coinsMarketChart,
+  coinsSearch,
   ContractMarketChartResponse,
   getBasicCoingeckoHttp,
   getProCoingeckoHttp,
@@ -14,22 +15,19 @@ import {
   SimplePriceResponse,
   simpleTokenPrice,
   SimpleTokenPriceResponse,
-  VsCurrencyType
-} from '@avalabs/coingecko-sdk'
-import { ethers } from 'ethers'
-import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
-import Config from 'react-native-config'
-import xss from 'xss'
-import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
-import { getCache, setCache } from 'utils/InMemoryCache'
-import { arrayHash } from 'utils/Utils'
-import {
-  Network,
-  NetworkContractToken,
-  NetworkVMType
-} from '@avalabs/chains-sdk'
-import NetworkService from 'services/network/NetworkService'
-import { ChartData, PriceWithMarketData } from './types'
+  VsCurrencyType,
+} from '@avalabs/coingecko-sdk';
+import {ethers} from 'ethers';
+import {JsonRpcBatchInternal} from '@avalabs/wallets-sdk';
+import Config from 'react-native-config';
+import xss from 'xss';
+import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json';
+import {getCache, setCache} from 'utils/InMemoryCache';
+import {arrayHash} from 'utils/Utils';
+import {Network, NetworkContractToken, NetworkVMType} from '@avalabs/chains-sdk';
+import NetworkService from 'services/network/NetworkService';
+import {ChartData, PriceWithMarketData} from './types';
+import Logger from 'utils/Logger';
 
 const coingeckoBasicClient = getBasicCoingeckoHttp()
 const coingeckoProClient = getProCoingeckoHttp()
@@ -79,12 +77,11 @@ export class TokenService {
 
   async getTopTokenMarket(
     currency: VsCurrencyType = VsCurrencyType.USD
-  ): Promise<any> {
-    const data = await coinsMarket(coingeckoProClient, {
+  ): Promise<CoinMarketsResponse[]> {
+    return await coinsMarket(coingeckoProClient, {
       currency,
       coinGeckoProApiKey: Config.COINGECKO_API_KEY
     })
-    return data
   }
 
   async getTokenSearch(query: string) {
@@ -155,8 +152,12 @@ export class TokenService {
         currency
       )
 
+      Logger.warn('stop here')
+
       setCache(cacheId, data)
     }
+
+    Logger.warn('stop here')
 
     return data
   }

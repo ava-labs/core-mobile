@@ -8,14 +8,12 @@ import { TabsScreenProps } from 'navigation/types'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import Separator from 'components/Separator'
 import ZeroState from 'components/ZeroState'
-import { TokenWithBalance } from 'store/balance'
 import { useDispatch } from 'react-redux'
-import { onRehydrationComplete } from 'store/app'
+import { MarketToken, onWatchlistRefresh } from 'store/watchlist'
 import { WatchlistFilter } from '../types'
-import {onWatchlistRefresh} from 'store/watchlist';
 
 interface Props {
-  tokens: TokenWithBalance[]
+  tokens: MarketToken[]
   filterBy: WatchlistFilter
   filterTimeDays: number
 }
@@ -29,9 +27,9 @@ const WatchList: React.FC<Props> = ({ tokens, filterBy, filterTimeDays }) => {
   const { currencyFormatter } = useApplicationContext().appHook
   const dispatch = useDispatch()
 
-  const keyExtractor = (item: TokenWithBalance) => item.id
+  const keyExtractor = (item: MarketToken) => item.id
 
-  const renderItem = (item: ListRenderItemInfo<TokenWithBalance>) => {
+  const renderItem = (item: ListRenderItemInfo<MarketToken>) => {
     const token = item.item
 
     function getDisplayValue() {
