@@ -17,7 +17,7 @@ export const addWatchlistListeners = (startListening: AppStartListening) => {
     const state = listenerApi.getState()
     const network = selectActiveNetwork(state)
     const currency = selectSelectedCurrency(state)
-    const watchlistTokens = await watchlistService.getBalances(
+    const watchlistTokens = await watchlistService.getMarketData(
       network,
       currency
     )

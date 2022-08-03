@@ -3,6 +3,8 @@ import {
   CoinsContractInfoResponse,
   coinsContractMarketChart,
   coinsInfo,
+  coinsMarket,
+  coinsSearch,
   CoinsInfoResponse,
   coinsMarketChart,
   ContractMarketChartResponse,
@@ -75,6 +77,24 @@ export class TokenService {
     }
   }
 
+  async getTopTokenMarket(
+    currency: VsCurrencyType = VsCurrencyType.USD
+  ): Promise<any> {
+    const data = await coinsMarket(coingeckoProClient, {
+      currency,
+      coinGeckoProApiKey: Config.COINGECKO_API_KEY
+    })
+    return data
+  }
+
+  async getTokenSearch(query: string) {
+    const data = await coinsSearch(coingeckoProClient, {
+      query,
+      coinGeckoProApiKey: Config.COINGECKO_API_KEY
+    })
+    return data
+  }
+
   /**
    * Get the native token price with market data for a coin
    * @param coinId the coin id ie avalanche-2 for avax
@@ -96,7 +116,7 @@ export class TokenService {
       data?.[coinId]?.[currency] === undefined ||
       data?.[coinId]?.[currency]?.price === undefined
     ) {
-      data = await this.fetchPriceWithMarketData(coinId, currency)
+      data = await this.fetchPriceWithMarketData([coinId], currency)
 
       setCache(cacheId, data)
     }
@@ -376,17 +396,18 @@ export class TokenService {
     }
   }
 
-  private async fetchPriceWithMarketData(
-    coingeckoId: string,
+  async fetchPriceWithMarketData(
+    coingeckoId: string[],
     currencyCode: VsCurrencyType = VsCurrencyType.USD
   ) {
     try {
-      return simplePrice(coingeckoBasicClient, {
-        coinIds: [coingeckoId],
+      return simplePrice(coingeckoProClient, {
+        coinIds: coingeckoId,
         currencies: [currencyCode],
         marketCap: true,
         vol24: true,
-        change24: true
+        change24: true,
+        coinGeckoProApiKey: Config.COINGECKO_API_KEY
       })
     } catch (e) {
       return Promise.resolve(undefined)

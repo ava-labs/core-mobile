@@ -51,15 +51,15 @@ const ContextAppWithRedux = () => {
 const ContextApp = () => {
   const [showJailBroken, setShowJailBroken] = useState(false)
 
-  useEffect(() => {
-    if (!__DEV__ && JailMonkey.isJailBroken()) {
-      setShowJailBroken(true)
-    }
-  }, [])
-
-  if (showJailBroken) {
-    return <JailbrokenWarning onOK={() => setShowJailBroken(false)} />
-  }
+  // useEffect(() => {
+  //   if (!__DEV__ && JailMonkey.isJailBroken()) {
+  //     setShowJailBroken(true)
+  //   }
+  // }, [])
+  //
+  // if (showJailBroken) {
+  //   return <JailbrokenWarning onOK={() => setShowJailBroken(false)} />
+  // }
 
   return (
     <BridgeProvider>

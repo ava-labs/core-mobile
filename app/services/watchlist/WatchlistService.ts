@@ -9,8 +9,50 @@ import {
   VsCurrencyType
 } from '@avalabs/coingecko-sdk'
 import tokenService from 'services/token/TokenService'
+import Logger from 'utils/Logger';
 
 class WatchlistService {
+  async getMarketData(
+    network: Network,
+    currency: string
+  ): Promise<TokenWithBalance[]> {
+    const topTokens = await tokenService.getTopTokenMarket(
+      currency as VsCurrencyType
+    )
+    const tokenIds = topTokens.map(token => token.id)
+
+    Logger.info('gotTokenIds', tokenIds)
+
+    const tokenPriceDict =
+      (await tokenService.fetchPriceWithMarketData(
+        tokenIds,
+        currency as VsCurrencyType
+      )) || {}
+
+    const rr = topTokens.map(token => {
+      const tokenPrice =
+        tokenPriceDict[token.id.toLowerCase()]?.[currency as VsCurrencyType]
+      const priceUSD = tokenPrice?.price ?? 0
+      const marketCap = tokenPrice?.marketCap ?? 0
+      const change24 = tokenPrice?.change24 ?? 0
+      const vol24 = tokenPrice?.vol24 ?? 0
+
+      return {
+        ...token,
+        id: token.id,
+        symbol: token.symbol.toUpperCase(),
+        type: TokenType.ERC20,
+        logoUri: token.image,
+        priceInCurrency: priceUSD,
+        marketCap,
+        change24,
+        vol24
+      } as TokenWithBalanceERC20
+    })
+
+    return rr
+  }
+
   async getBalances(
     network: Network,
     currency: string
