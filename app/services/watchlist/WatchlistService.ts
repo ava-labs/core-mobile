@@ -1,9 +1,5 @@
-import { Network, NetworkContractToken } from '@avalabs/chains-sdk'
-import {
-  TokenType,
-  TokenWithBalance,
-  TokenWithBalanceERC20
-} from 'store/balance'
+import { Network } from '@avalabs/chains-sdk'
+import { TokenType } from 'store/balance'
 import {
   SimplePriceResponse,
   SimpleTokenPriceResponse,
@@ -24,6 +20,7 @@ class WatchlistService {
         mt => {
           return {
             id: mt.id,
+            name: mt.name,
             symbol: mt.symbol.toUpperCase(),
             logoUri: mt.image,
             type: TokenType.NATIVE,
@@ -39,6 +36,7 @@ class WatchlistService {
             nt.tokens?.map(tk => {
               return {
                 id: tk.address,
+                name: tk.name,
                 symbol: tk.symbol.toUpperCase(),
                 logoUri: tk.logoUri,
                 type: TokenType.ERC20,
@@ -47,7 +45,16 @@ class WatchlistService {
             }) ?? []
         )
         ?.flat() ?? []
-    const allTokens = marketTokens.concat(networkTokens)
+
+    // Remove duplicates based on symbol (weak) because each
+    // subnet tokens have their own USDC (for instance).
+    // A robust data service is needed to properly serve this data.
+    const allTokens = networkTokens.reduce(
+      (acc, item) => {
+        return acc.find(tk => tk.symbol === item.symbol) ? acc : [...acc, item]
+      },
+      [...marketTokens]
+    )
 
     const promises = []
     promises.push(
@@ -114,70 +121,35 @@ class WatchlistService {
     return data
   }
 
-  async getBalances(
-    network: Network,
-    currency: string
-  ): Promise<TokenWithBalance[]> {
-    const activeTokenList = network.tokens ?? []
-    const tokenAddresses = activeTokenList.map(token => token.address)
+  async tokenSearch(query: string) {
+    const coins = await tokenService.getTokenSearch(query)
+    if (coins) {
+      const ids = coins.map((tk: MarketToken) => tk.id)
+      const prices = await tokenService.fetchPriceWithMarketData(
+        ids,
+        'usd' as VsCurrencyType
+      )
 
-    const assetPlatformId =
-      network.pricingProviders?.coingecko?.assetPlatformId ?? ''
-
-    const tokenPriceDict =
-      (assetPlatformId &&
-        (await tokenService.getPricesWithMarketDataByAddresses(
-          tokenAddresses,
-          assetPlatformId,
-          currency as VsCurrencyType
-        ))) ||
-      {}
-
-    const erc20Tokens = await this.getErc20Balances(
-      activeTokenList,
-      tokenPriceDict,
-      network,
-      currency
-    )
-
-    return erc20Tokens
-  }
-
-  private async getErc20Balances(
-    activeTokenList: NetworkContractToken[],
-    tokenPriceDict: SimpleTokenPriceResponse,
-    network: Network,
-    currency: string
-  ): Promise<TokenWithBalance[]> {
-    const { chainId } = network
-
-    return Promise.allSettled(
-      activeTokenList.map(async token => {
-        const id = `${chainId}-${token.address}`
+      return coins.map(coin => {
         const tokenPrice =
-          tokenPriceDict[token.address.toLowerCase()]?.[
-            currency as VsCurrencyType
-          ]
+          prices?.[coin.id.toLowerCase()]?.['usd' as VsCurrencyType]
         const priceUSD = tokenPrice?.price ?? 0
         const marketCap = tokenPrice?.marketCap ?? 0
         const change24 = tokenPrice?.change24 ?? 0
         const vol24 = tokenPrice?.vol24 ?? 0
 
         return {
-          ...token,
-          id,
-          type: TokenType.ERC20,
+          ...coin,
+          coingeckoId: coin.id,
+          type: TokenType.NATIVE,
           priceInCurrency: priceUSD,
           marketCap,
           change24,
           vol24
-        } as TokenWithBalanceERC20
+        } as MarketToken
       })
-    ).then(res => {
-      return res.reduce<TokenWithBalanceERC20[]>((acc, result) => {
-        return result.status === 'fulfilled' ? [...acc, result.value] : acc
-      }, [])
-    })
+    }
+    return []
   }
 }
 

@@ -7,27 +7,26 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { onWatchlistRefresh, setWatchlistTokens } from 'store/watchlist/slice'
 import { isAnyOf } from '@reduxjs/toolkit'
 
+async function fetchBalancePeriodically(
+  action: any,
+  listenerApi: AppListenerEffectAPI
+) {
+  const dispatch = listenerApi.dispatch
+  const state = listenerApi.getState()
+  const allNetworks = Object.values(selectNetworks(state) ?? [])
+  const network = selectActiveNetwork(state)
+  const currency = selectSelectedCurrency(state)
+
+  const watchlistTokens = await watchlistService.getMarketData(
+    network,
+    currency.toLowerCase(),
+    allNetworks
+  )
+
+  dispatch(setWatchlistTokens(watchlistTokens))
+}
+
 export const addWatchlistListeners = (startListening: AppStartListening) => {
-  async function fetchBalancePeriodically(
-    action: any,
-    listenerApi: AppListenerEffectAPI
-  ) {
-    // const { condition } = listenerApi
-    const dispatch = listenerApi.dispatch
-    const state = listenerApi.getState()
-    const allNetworks = Object.values(selectNetworks(state) ?? [])
-    const network = selectActiveNetwork(state)
-    const currency = selectSelectedCurrency(state)
-
-    const watchlistTokens = await watchlistService.getMarketData(
-      network,
-      currency.toLowerCase(),
-      allNetworks
-    )
-
-    dispatch(setWatchlistTokens(watchlistTokens))
-  }
-
   startListening({
     matcher: isAnyOf(onRehydrationComplete, setActive, onWatchlistRefresh),
     effect: fetchBalancePeriodically
