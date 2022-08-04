@@ -1,18 +1,21 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
+import Loader from 'components/Loader'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import Dropdown from 'components/Dropdown'
 import AvaText from 'components/AvaText'
-import { selectIsLoadingBalances, TokenWithBalance } from 'store/balance'
 import {
+  appendWatchlist,
+  MarketToken,
   selectWatchlistFavorites,
-  selectWatchlistTokens
-} from 'store/watchlist'
+  selectWatchlistTokens,
+} from 'store/watchlist';
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
+import watchlistService from 'services/watchlist/WatchlistService'
 import { FilterTimeOptions, WatchlistFilter } from './types'
 import WatchList from './components/WatchList'
-import { WatchListLoader } from './components/WatchListLoader'
+import {useDispatch} from 'react-redux';
 
 interface Props {
   showFavorites?: boolean
@@ -54,6 +57,9 @@ const renderTimeFilterSelection = (selectedItem: FilterTimeOptions) => (
 const WatchlistView: React.FC<Props> = ({ showFavorites, searchText }) => {
   const watchlistFavorites = useFocusedSelector(selectWatchlistFavorites)
   const tokensWithBalance = useFocusedSelector(selectWatchlistTokens)
+  const dispatch = useDispatch()
+  const [loadingSearch, setLoadingSearch] = useState(false)
+  const [filterBy, setFilterBy] = useState(WatchlistFilter.MARKET_CAP)
   const isLoadingBalances = useFocusedSelector(selectIsLoadingBalances)
   const [filterBy, setFilterBy] = useState(WatchlistFilter.PRICE)
   const [filterTime, setFilterTime] = useState(FilterTimeOptions.Day)
@@ -67,31 +73,47 @@ const WatchlistView: React.FC<Props> = ({ showFavorites, searchText }) => {
         return 365
     }
   }, [filterTime])
+  const [tokens, setTokens] = useState<MarketToken[]>([])
 
-  const tokens = useMemo(() => {
-    let items: TokenWithBalance[] = tokensWithBalance
+  useEffect(() => {
+    async function loadAsync() {
+      let items: MarketToken[] = tokensWithBalance
 
-    if (showFavorites) {
-      items = items.filter(tk => watchlistFavorites.includes(tk.id))
-    }
+      if (showFavorites) {
+        items = items.filter(tk => watchlistFavorites.includes(tk.id))
+      }
 
-    if (searchText && searchText.length > 0) {
-      items = items.filter(
-        i =>
-          i.name?.toLowerCase().includes(searchText.toLowerCase()) ||
-          i.symbol?.toLowerCase().includes(searchText.toLowerCase())
+      if (searchText && searchText.length > 0) {
+        items = items.filter(
+          i =>
+            i.name?.toLowerCase().includes(searchText.toLowerCase()) ||
+            i.symbol?.toLowerCase().includes(searchText.toLowerCase())
+        )
+
+        if (items.length === 0) {
+          setLoadingSearch(true)
+          const onlineItems = await watchlistService.tokenSearch(searchText)
+          if (onlineItems && onlineItems.length > 0) {
+            items = onlineItems
+            dispatch(appendWatchlist(onlineItems))
+          }
+          setLoadingSearch(false)
+        }
+      }
+
+      setTokens(
+        items.slice().sort((a, b) => {
+          if (filterBy === WatchlistFilter.PRICE) {
+            return b.priceInCurrency - a.priceInCurrency
+          } else if (filterBy === WatchlistFilter.MARKET_CAP) {
+            return b.marketCap - a.marketCap
+          } else {
+            return b.vol24 - a.vol24
+          }
+        })
       )
     }
-
-    return items.slice().sort((a, b) => {
-      if (filterBy === WatchlistFilter.PRICE) {
-        return b.priceInCurrency - a.priceInCurrency
-      } else if (filterBy === WatchlistFilter.MARKET_CAP) {
-        return b.marketCap - a.marketCap
-      } else {
-        return b.vol24 - a.vol24
-      }
-    })
+    loadAsync()
   }, [
     tokensWithBalance,
     showFavorites,
