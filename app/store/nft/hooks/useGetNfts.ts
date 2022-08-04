@@ -18,10 +18,9 @@ export const useGetNfts = () => {
     refresh,
     isLoading,
     isRefreshing,
-    isFetching,
     isError,
     isSuccess,
-    hasMore
+    isFetchingNext
   } = useInfiniteScroll<GetNftArgs, NftResponse, NFTItemData>({
     useQuery: useGetNftsQuery,
     queryParams: { network, account, currency },
@@ -32,11 +31,10 @@ export const useGetNfts = () => {
     nfts: data,
     isLoading,
     isRefreshing,
-    fetchNext,
     refresh,
-    isFetching,
+    isFetchingNext,
+    fetchNext,
     isError,
-    isSuccess,
-    hasMore
+    isSuccess
   }
 }

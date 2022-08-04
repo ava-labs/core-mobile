@@ -4,25 +4,30 @@ import { Dimensions, View } from 'react-native'
 import { useSkeletonColors } from 'hooks/colors/useSkeletonColors'
 
 const deviceWidth = Dimensions.get('screen').width
-const aspectRatio = 279 / 56
+const aspectRatio = 343 / 512
 
-export const PortfolioHeaderLoader = () => {
+export const NftGridLoader = () => {
   const { backgroundColor, foregroundColor } = useSkeletonColors()
 
   return (
     <View
       style={{
-        width: deviceWidth * 0.744,
-        aspectRatio: aspectRatio
+        alignItems: 'center',
+        width: deviceWidth - 32,
+        aspectRatio: aspectRatio,
+        marginTop: 6
       }}>
       <ContentLoader
         speed={1}
         width="100%"
         height="100%"
-        viewBox="0 0 279 56"
+        viewBox="0 0 343 512"
         backgroundColor={backgroundColor}
         foregroundColor={foregroundColor}>
-        <Rect x="0" y="0" rx="8" ry="8" width="279" height="56" />
+        <Rect x="0" y="0" rx="8" ry="8" width="163" height="248" />
+        <Rect x="0" y="264" rx="8" ry="8" width="163" height="248" />
+        <Rect x="183" y="0" rx="8" ry="8" width="160" height="248" />
+        <Rect x="183" y="264" rx="8" ry="8" width="160" height="248" />
       </ContentLoader>
     </View>
   )

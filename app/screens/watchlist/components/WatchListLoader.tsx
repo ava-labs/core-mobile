@@ -4,9 +4,9 @@ import { Dimensions, View } from 'react-native'
 import { useSkeletonColors } from 'hooks/colors/useSkeletonColors'
 
 const deviceWidth = Dimensions.get('screen').width
-const aspectRatio = 343 / 519
+const aspectRatio = 343 / 416
 
-export const ActivityLoader = () => {
+export const WatchListLoader = () => {
   const { backgroundColor, foregroundColor } = useSkeletonColors()
 
   return (
@@ -22,17 +22,15 @@ export const ActivityLoader = () => {
         speed={1}
         width="100%"
         height="100%"
-        viewBox="0 0 343 519"
+        viewBox="0 0 343 416"
         backgroundColor={backgroundColor}
         foregroundColor={foregroundColor}>
-        <Rect x="0" y="40" rx="8" ry="8" width="343" height="64" />
-        <Rect x="0" y="112" rx="8" ry="8" width="343" height="64" />
-        <Rect x="0" y="184" rx="8" ry="8" width="343" height="64" />
-        <Rect x="0" y="311" rx="8" ry="8" width="343" height="64" />
-        <Rect x="0" y="383" rx="8" ry="8" width="343" height="64" />
-        <Rect x="0" y="455" rx="8" ry="8" width="343" height="64" />
-        <Rect x="0" y="0" rx="8" ry="8" width="96" height="24" />
-        <Rect x="0" y="271" rx="8" ry="8" width="96" height="24" />
+        <Rect x="0" y="0" rx="8" ry="8" width="343" height="56" />
+        <Rect x="0" y="72" rx="8" ry="8" width="343" height="56" />
+        <Rect x="0" y="144" rx="8" ry="8" width="343" height="56" />
+        <Rect x="0" y="216" rx="8" ry="8" width="343" height="56" />
+        <Rect x="0" y="288" rx="8" ry="8" width="343" height="56" />
+        <Rect x="0" y="360" rx="8" ry="8" width="343" height="56" />
       </ContentLoader>
     </View>
   )
