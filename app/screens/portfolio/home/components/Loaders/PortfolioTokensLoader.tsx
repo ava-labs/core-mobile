@@ -13,7 +13,7 @@ export const PortfolioTokensLoader = () => {
     <View
       style={{
         alignItems: 'center',
-        width: deviceWidth,
+        width: deviceWidth - 16,
         aspectRatio: aspectRatio,
         marginTop: 14,
         marginLeft: 16
