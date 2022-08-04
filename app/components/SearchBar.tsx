@@ -10,10 +10,17 @@ import {
 } from 'react-native'
 import { Opacity50 } from 'resources/Constants'
 import SearchSVG from 'components/svg/SearchSVG'
-import React, { FC, useLayoutEffect, useRef, useState } from 'react'
+import React, {
+  FC,
+  useCallback,
+  useLayoutEffect,
+  useRef,
+  useState
+} from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import ClearSVG from 'components/svg/ClearSVG'
 import { useNavigation } from '@react-navigation/native'
+import debounce from 'lodash.debounce'
 import AvaText from './AvaText'
 import AvaButton from './AvaButton'
 
@@ -22,12 +29,15 @@ interface Props extends Omit<TextInputProps, 'value' | 'onChangeText'> {
   searchText: string
   placeholder?: string
   hideBottomNav?: boolean
+  useDebounce?: boolean
+  debounceMillis?: number
 }
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 const INPUT_SIZE = SCREEN_WIDTH - 82
 const INPUT_SIZE_FOCUSED = SCREEN_WIDTH - 160
 const INPUT_SIZE_FOCUSED_SHOWING_CLEAR = SCREEN_WIDTH - 188
+const DEFAULT_DEBOUNCE_MILLISECONDS = 150
 
 /**
  * SearchBar component. Text state is handled outside the
@@ -40,6 +50,7 @@ const INPUT_SIZE_FOCUSED_SHOWING_CLEAR = SCREEN_WIDTH - 188
  * @param searchText current search text
  * @param placeholder defaults to 'Search'
  * @param hideBottomNav attempts to hide bottom tabs, gives more space
+ * @param debounce if true, will delay calling 'onTextChanged' by default ms
  * @param rest all other props
  * @constructor
  */
@@ -48,12 +59,15 @@ const SearchBar: FC<Props> = ({
   searchText,
   placeholder = 'Search',
   hideBottomNav = false,
+  useDebounce = false,
+  debounceMillis = DEFAULT_DEBOUNCE_MILLISECONDS,
   ...rest
 }) => {
   const textInputRef = useRef<TextInput>(null)
   const navigation = useNavigation()
   const { theme } = useApplicationContext()
   const [isFocused, setIsFocused] = useState(false)
+  const [_searchText, _setSearchText] = useState(searchText)
 
   useLayoutEffect(keyboardListenerFx, [hideBottomNav, navigation])
 
@@ -100,6 +114,17 @@ const SearchBar: FC<Props> = ({
     textInputRef.current?.blur()
   }
 
+  const debounceFn = useCallback(debounce(onTextChanged, debounceMillis), [])
+
+  const handleTextChange = (value: string) => {
+    _setSearchText(value)
+    if (useDebounce) {
+      debounceFn(value)
+    } else {
+      onTextChanged(value)
+    }
+  }
+
   /**
    * Sets isEmpty.
    * Used to determine if we show the clear button or not
@@ -141,8 +166,8 @@ const SearchBar: FC<Props> = ({
           ]}
           placeholder={placeholder}
           placeholderTextColor={theme.colorText2}
-          value={searchText}
-          onChangeText={onTextChanged}
+          value={_searchText}
+          onChangeText={handleTextChange}
           onBlur={() => {
             LayoutAnimation.easeInEaseOut()
             setIsFocused(false)
