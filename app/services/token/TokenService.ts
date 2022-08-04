@@ -15,19 +15,24 @@ import {
   SimplePriceResponse,
   simpleTokenPrice,
   SimpleTokenPriceResponse,
-  VsCurrencyType,
-} from '@avalabs/coingecko-sdk';
-import {ethers} from 'ethers';
-import {JsonRpcBatchInternal} from '@avalabs/wallets-sdk';
-import Config from 'react-native-config';
-import xss from 'xss';
-import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json';
-import {getCache, setCache} from 'utils/InMemoryCache';
-import {arrayHash} from 'utils/Utils';
-import {Network, NetworkContractToken, NetworkVMType} from '@avalabs/chains-sdk';
-import NetworkService from 'services/network/NetworkService';
-import {ChartData, PriceWithMarketData} from './types';
-import Logger from 'utils/Logger';
+  VsCurrencyType
+} from '@avalabs/coingecko-sdk'
+import { ethers } from 'ethers'
+import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
+import Config from 'react-native-config'
+import xss from 'xss'
+import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
+import { getCache, setCache } from 'utils/InMemoryCache'
+import { arrayHash } from 'utils/Utils'
+import {
+  Network,
+  NetworkContractToken,
+  NetworkVMType
+} from '@avalabs/chains-sdk'
+import NetworkService from 'services/network/NetworkService'
+import Logger from 'utils/Logger'
+import { MarketToken } from 'store/watchlist'
+import { ChartData, PriceWithMarketData } from './types'
 
 const coingeckoBasicClient = getBasicCoingeckoHttp()
 const coingeckoProClient = getProCoingeckoHttp()
@@ -84,12 +89,19 @@ export class TokenService {
     })
   }
 
-  async getTokenSearch(query: string) {
+  async getTokenSearch(query: string): Promise<MarketToken[] | undefined> {
     const data = await coinsSearch(coingeckoProClient, {
       query,
       coinGeckoProApiKey: Config.COINGECKO_API_KEY
     })
-    return data
+    return data?.coins?.map((coin: any) => {
+      return {
+        ...coin,
+        logoUri: coin?.thumb,
+        priceInCurrency: 0,
+        marketCap: coin?.market_cap
+      } as MarketToken
+    })
   }
 
   /**
