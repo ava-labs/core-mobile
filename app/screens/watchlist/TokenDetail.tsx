@@ -267,9 +267,7 @@ const TokenDetail = () => {
           {token?.type === TokenType.ERC20 && (
             <DataItem
               title={'Contract Address'}
-              value={
-                <TokenAddress address={token.address} textType={'Heading'} />
-              }
+              value={<TokenAddress address={token.id} textType={'Heading'} />}
             />
           )}
         </Row>

@@ -80,7 +80,7 @@ const WatchlistView: React.FC<Props> = ({ showFavorites, searchText }) => {
       let items: MarketToken[] = tokensWithBalance
 
       if (showFavorites) {
-        items = items.filter(tk => watchlistFavorites.includes(tk.id))
+        items = watchlistFavorites // items.filter(tk => watchlistFavorites.includes(tk.id))
       }
 
       if (searchText && searchText.length > 0) {

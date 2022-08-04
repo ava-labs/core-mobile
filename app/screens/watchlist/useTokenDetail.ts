@@ -56,14 +56,14 @@ export function useTokenDetail(tokenId: string) {
 
       if (token?.type === TokenType.NATIVE) {
         data = await TokenService.getChartDataForCoinId({
-          coingeckoId: token?.coingeckoId,
+          coingeckoId: token?.id,
           days: chartDays,
           currency: currency
         })
       } else if (token?.type === TokenType.ERC20) {
         data = await TokenService.getChartDataForAddress({
           assetPlatformId,
-          address: token?.address,
+          address: token?.id,
           days: chartDays,
           currency: currency
         })
@@ -87,12 +87,12 @@ export function useTokenDetail(tokenId: string) {
 
       if (token?.type === TokenType.NATIVE) {
         data = await TokenService.getCoinInfo({
-          coingeckoId: token?.coingeckoId
+          coingeckoId: token?.id
         })
       } else if (token?.type === TokenType.ERC20) {
         data = await TokenService.getContractInfo({
           assetPlatformId,
-          address: token?.address
+          address: token?.id
         })
       }
 
@@ -110,7 +110,7 @@ export function useTokenDetail(tokenId: string) {
   }, [assetPlatformId, token])
 
   function handleFavorite() {
-    dispatch(toggleWatchListFavorite(tokenId))
+    token && dispatch(toggleWatchListFavorite(token))
   }
 
   async function changeChartDays(days: number) {

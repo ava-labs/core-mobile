@@ -3,7 +3,7 @@ import { PriceWithMarketData } from 'services/token/types'
 
 export type WatchListState = {
   tokens: MarketToken[]
-  favorites: string[]
+  favorites: MarketToken[]
 }
 export const initialState: WatchListState = {
   tokens: [],
