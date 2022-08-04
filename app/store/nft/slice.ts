@@ -12,15 +12,14 @@ export const nftSlice = createSlice({
     setHidden: (
       state,
       action: PayloadAction<{
-        isHidden: boolean
         tokenUid: NftUID
       }>
     ) => {
-      const { isHidden, tokenUid } = action.payload
-      if (isHidden) {
-        state.hiddenNfts[tokenUid] = true
-      } else {
+      const { tokenUid } = action.payload
+      if (state.hiddenNfts[tokenUid]) {
         delete state.hiddenNfts[tokenUid]
+      } else {
+        state.hiddenNfts[tokenUid] = true
       }
     }
   }

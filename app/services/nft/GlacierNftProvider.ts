@@ -32,7 +32,7 @@ export class GlacierNftProvider implements NftProvider {
     pageToken?: string,
     selectedCurrency?: string
   ): Promise<NftResponse> {
-    Logger.info(' fetching nfts using Glacier')
+    Logger.info('fetching nfts using Glacier')
     const nftBalancesResp = await this.glacierSdk.listErc721Balances(
       chainId.toString(),
       DevDebuggingConfig.SHOW_DEMO_NFTS ? demoAddress : address,

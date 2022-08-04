@@ -66,20 +66,24 @@ export const useInfiniteScroll = <
   }, [])
 
   const fetchNext = () => {
-    nextPageToken !== '' && setPageToken(nextPageToken)
+    if (hasMore && !isFetching) {
+      setPageToken(nextPageToken)
+    }
   }
 
   const isLoading = queryResponse?.isLoading
   const isFetching = queryResponse?.isFetching
   const isSuccess = queryResponse?.isSuccess
   const isError = queryResponse?.isError
-  const hasMore = !!nextPageToken
+  const hasMore = nextPageToken !== ''
 
   const isRefreshing = queryResponse
     ? !queryResponse.isLoading &&
       queryResponse.isFetching &&
       pageToken === undefined
     : false
+
+  const isFetchingNext = isFetching && pageToken !== undefined
 
   return {
     data: combinedData,
@@ -88,6 +92,7 @@ export const useInfiniteScroll = <
     isLoading,
     isFetching,
     isRefreshing,
+    isFetchingNext,
     isSuccess,
     isError,
     hasMore

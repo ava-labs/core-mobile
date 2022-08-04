@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { FlatList, StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import SearchBar from 'components/SearchBar'
@@ -11,55 +11,37 @@ import Switch from 'components/Switch'
 import { NFTItemData, selectHiddenNftUIDs, setHidden } from 'store/nft'
 import { useDispatch, useSelector } from 'react-redux'
 import { useGetNfts } from 'store/nft/hooks'
-import { ActivityIndicator } from 'components/ActivityIndicator'
-import { appendLoader, LOADER_UID } from 'screens/nft/tools'
+import { RefreshControl } from 'components/RefreshControl'
+import { FetchingNextIndicator } from './components/FetchingNextIndicator'
 
 const NftManage = () => {
   const { theme } = useApplicationContext()
   const [searchText, setSearchText] = useState('')
   const dispatch = useDispatch()
   const hiddenNftUIDs = useSelector(selectHiddenNftUIDs)
-  const { nfts, fetchNext, isFetching, hasMore } = useGetNfts()
-  const [listEndReached, setListEndReached] = useState(false)
+  const { nfts, fetchNext, isFetchingNext, refresh, isRefreshing } =
+    useGetNfts()
 
   const filteredData = useMemo(() => {
-    const filtered = nfts.filter(nft => {
+    return nfts.filter(nft => {
       return (
         searchText.length === 0 ||
         nft.tokenId.toLowerCase().includes(searchText.toLowerCase()) ||
         nft.name.toLowerCase().includes(searchText.toLowerCase())
       )
     })
-    if (searchText.length !== 0) {
-      if (filtered.length === 0 && hasMore) {
-        //load until we find the searched result or !hasMore
-        setListEndReached(true)
-        return appendLoader(filtered)
-      } else {
-        return filtered
-      }
-    } else {
-      return hasMore ? appendLoader(filtered) : filtered
-    }
-  }, [hasMore, nfts, searchText])
-
-  useEffect(onListEndReachedFx, [fetchNext, isFetching, listEndReached])
-
-  function onListEndReachedFx() {
-    if (listEndReached && !isFetching) {
-      fetchNext()
-    } else if (listEndReached && isFetching) {
-      setListEndReached(false)
-    }
-  }
+  }, [nfts, searchText])
 
   const updateSearch = (searchVal: string) => {
     setSearchText(searchVal)
   }
 
   const onItemToggled = (item: NFTItemData) => {
-    const isHidden = !hiddenNftUIDs[item.uid]
-    dispatch(setHidden({ isHidden, tokenUid: item.uid }))
+    dispatch(setHidden({ tokenUid: item.uid }))
+  }
+
+  const onEndReached = ({ distanceFromEnd }: { distanceFromEnd: number }) => {
+    if (distanceFromEnd > 0) fetchNext()
   }
 
   return (
@@ -67,13 +49,13 @@ const NftManage = () => {
       <AvaText.LargeTitleBold>Manage List</AvaText.LargeTitleBold>
       <SearchBar onTextChanged={updateSearch} searchText={searchText} />
       <FlatList
-        style={{ flex: 1 }}
+        style={styles.list}
         data={filteredData}
         ListEmptyComponent={<ZeroState.Collectibles />}
-        onEndReached={() => setListEndReached(true)}
-        onEndReachedThreshold={0.01}
+        onEndReached={onEndReached}
+        onEndReachedThreshold={0.8}
         keyExtractor={item => item.uid}
-        ItemSeparatorComponent={() => <View style={{ margin: 4 }} />}
+        ItemSeparatorComponent={Separator}
         renderItem={info =>
           renderItemList(
             info.item,
@@ -82,10 +64,19 @@ const NftManage = () => {
             theme
           )
         }
+        indicatorStyle="white"
+        refreshControl={
+          <RefreshControl onRefresh={refresh} refreshing={isRefreshing} />
+        }
+        ListFooterComponent={
+          <FetchingNextIndicator isVisible={isFetchingNext} />
+        }
       />
     </View>
   )
 }
+
+const Separator = () => <View style={{ margin: 4 }} />
 
 const renderItemList = (
   item: NFTItemData,
@@ -93,9 +84,7 @@ const renderItemList = (
   onItemToggled: (item: NFTItemData) => void,
   theme: typeof COLORS_DAY | typeof COLORS_NIGHT
 ) => {
-  return item.uid === LOADER_UID ? (
-    <ActivityIndicator size={40} style={{ padding: 40 }} />
-  ) : (
+  return (
     <View
       style={{
         marginVertical: 4,
@@ -117,6 +106,9 @@ const renderItemList = (
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 16,
+    flex: 1
+  },
+  list: {
     flex: 1
   }
 })

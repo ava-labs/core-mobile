@@ -1,15 +1,19 @@
 import React, { useMemo, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
-import Loader from 'components/Loader'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import Dropdown from 'components/Dropdown'
 import AvaText from 'components/AvaText'
-import { selectTokensWithBalance, TokenWithBalance } from 'store/balance'
+import {
+  selectIsLoadingBalances,
+  selectTokensWithBalance,
+  TokenWithBalance
+} from 'store/balance'
 import { selectWatchlistFavorites } from 'store/watchlist'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
 import { FilterTimeOptions, WatchlistFilter } from './types'
 import WatchList from './components/WatchList'
+import { WatchListLoader } from './components/WatchListLoader'
 
 interface Props {
   showFavorites?: boolean
@@ -51,6 +55,7 @@ const renderTimeFilterSelection = (selectedItem: FilterTimeOptions) => (
 const WatchlistView: React.FC<Props> = ({ showFavorites, searchText }) => {
   const watchlistFavorites = useFocusedSelector(selectWatchlistFavorites)
   const tokensWithBalance = useFocusedSelector(selectTokensWithBalance)
+  const isLoadingBalances = useFocusedSelector(selectIsLoadingBalances)
   const [filterBy, setFilterBy] = useState(WatchlistFilter.PRICE)
   const [filterTime, setFilterTime] = useState(FilterTimeOptions.Day)
   const filterTimeDays = useMemo(() => {
@@ -106,35 +111,35 @@ const WatchlistView: React.FC<Props> = ({ showFavorites, searchText }) => {
 
   return (
     <SafeAreaProvider style={styles.container}>
-      {!tokens ? (
-        <Loader />
-      ) : (
-        <>
-          <View style={styles.filterContainer}>
-            <Dropdown
-              alignment={'flex-start'}
-              width={140}
-              data={filterPriceOptions}
-              selectedIndex={selectedPriceFilter}
-              onItemSelected={setFilterBy}
-              selectionRenderItem={renderPriceFilterSelection}
-            />
-            <Dropdown
-              alignment={'flex-end'}
-              width={80}
-              data={filterTimeOptions}
-              selectedIndex={selectedTimeFilter}
-              onItemSelected={setFilterTime}
-              selectionRenderItem={renderTimeFilterSelection}
-            />
-          </View>
+      <>
+        <View style={styles.filterContainer}>
+          <Dropdown
+            alignment={'flex-start'}
+            width={140}
+            data={filterPriceOptions}
+            selectedIndex={selectedPriceFilter}
+            onItemSelected={setFilterBy}
+            selectionRenderItem={renderPriceFilterSelection}
+          />
+          <Dropdown
+            alignment={'flex-end'}
+            width={80}
+            data={filterTimeOptions}
+            selectedIndex={selectedTimeFilter}
+            onItemSelected={setFilterTime}
+            selectionRenderItem={renderTimeFilterSelection}
+          />
+        </View>
+        {isLoadingBalances ? (
+          <WatchListLoader />
+        ) : (
           <WatchList
             tokens={tokens}
             filterBy={filterBy}
             filterTimeDays={filterTimeDays}
           />
-        </>
-      )}
+        )}
+      </>
     </SafeAreaProvider>
   )
 }
