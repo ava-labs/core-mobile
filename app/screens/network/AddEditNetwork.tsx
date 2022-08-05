@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import AvaButton from 'components/AvaButton'
-import { ScrollView, View } from 'react-native'
+import { ScrollView } from 'react-native'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
 import FlexSpacer from 'components/FlexSpacer'
@@ -148,7 +148,7 @@ export default function AddEditNetwork({
         value={logoUri}
         onChange={value => setLogoUri(value)}
       />
-      <FlexSpacer />
+      <FlexSpacer minHeight={24} />
       <AvaButton.PrimaryLarge disabled={!dataValid} onPress={save}>
         Save
       </AvaButton.PrimaryLarge>
@@ -168,13 +168,12 @@ function DetailItem({
   error?: string
 }) {
   return (
-    <View style={{ marginHorizontal: -8 }}>
-      <InputText
-        label={title}
-        text={value}
-        errorText={error}
-        onChangeText={onChange}
-      />
-    </View>
+    <InputText
+      label={title}
+      text={value}
+      errorText={error}
+      onChangeText={onChange}
+      style={{ marginHorizontal: 0 }}
+    />
   )
 }
