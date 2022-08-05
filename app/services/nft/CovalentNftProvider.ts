@@ -10,6 +10,7 @@ import nftProcessor from 'services/nft/NftProcessor'
 
 const demoAddress = 'demo.eth'
 const demoChain = 1 //Ethereum
+const NFT_TIMEOUT = 120_000 // 2 minutes
 
 export class CovalentNftProvider implements NftProvider {
   async isProviderFor(chainId: number): Promise<boolean> {
@@ -37,6 +38,9 @@ export class CovalentNftProvider implements NftProvider {
       {
         pageSize: 100,
         pageNumber: Number.parseInt(pageToken, 10) ?? 0
+      },
+      {
+        customOptions: { timeout: NFT_TIMEOUT }
       }
     )
     const covalentData = covalentResponse.data

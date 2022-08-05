@@ -14,7 +14,9 @@ export enum UI {
 const enabledUIs: Partial<Record<UI, number[]>> = {
   [UI.Collectibles]: [
     ChainId.AVALANCHE_MAINNET_ID,
-    ChainId.AVALANCHE_TESTNET_ID
+    ChainId.AVALANCHE_TESTNET_ID,
+    ChainId.ETHEREUM_HOMESTEAD,
+    ChainId.ETHEREUM_TEST_RINKEBY
   ],
   [UI.Swap]: [ChainId.AVALANCHE_MAINNET_ID],
   [UI.Buy]: [ChainId.AVALANCHE_MAINNET_ID, ChainId.AVALANCHE_TESTNET_ID]
