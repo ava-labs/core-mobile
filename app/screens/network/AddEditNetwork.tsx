@@ -30,10 +30,14 @@ export default function AddEditNetwork({
   const [networkName, setNetworkName] = useState(network?.chainName ?? '')
   const [chainId, setChainId] = useState(network?.chainId?.toString() ?? '')
   const [chainIdError, setChainIdError] = useState('')
+  const [nativeTokenSymbol, setNativeTokenSymbol] = useState(
+    network?.networkToken?.symbol ?? ''
+  )
   const [nativeTokenName, setNativeTokenName] = useState(
     network?.networkToken?.name ?? ''
   )
   const [explorerUrl, setExplorerUrl] = useState(network?.explorerUrl ?? '')
+  const [logoUri, setLogoUri] = useState(network?.logoUri ?? '')
 
   useEffect(validateInputs, [
     allNetworks,
@@ -123,15 +127,26 @@ export default function AddEditNetwork({
       />
       <Space y={8} />
       <DetailItem
-        title={'Native Token'}
+        title={'Native Token Symbol'}
+        value={nativeTokenSymbol}
+        onChange={value => setNativeTokenSymbol(value)}
+      />
+      <DetailItem
+        title={'Native Token Name (Optional)'}
         value={nativeTokenName}
         onChange={value => setNativeTokenName(value)}
       />
       <Space y={8} />
       <DetailItem
-        title={'Explorer URL (Optional)'}
+        title={'Explorer URL'}
         value={explorerUrl}
         onChange={value => setExplorerUrl(value)}
+      />
+      <Space y={8} />
+      <DetailItem
+        title={'Logo URL (Optional)'}
+        value={logoUri}
+        onChange={value => setLogoUri(value)}
       />
       <FlexSpacer />
       <AvaButton.PrimaryLarge disabled={!dataValid} onPress={save}>

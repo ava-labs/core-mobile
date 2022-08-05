@@ -39,7 +39,9 @@ export default function NetworkDetails({ network }: Props) {
       <Space y={24} />
       <DetailItem title={'Chain ID'} value={chainId.toString()} />
       <Space y={24} />
-      <DetailItem title={'Native Token'} value={networkToken.name} />
+      <DetailItem title={'Network Token Symbol'} value={networkToken.symbol} />
+      <Space y={24} />
+      <DetailItem title={'Network Token Name'} value={networkToken.name} />
       <Space y={24} />
       <DetailItem title={'Explorer URL'} value={explorerUrl ?? ''} />
       <FlexSpacer />
