@@ -1,7 +1,7 @@
 import AppNavigation from 'navigation/AppNavigation'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { usePosthogContext } from 'contexts/PosthogContext'
@@ -12,6 +12,9 @@ import AvaButton from 'components/AvaButton'
 import { useNavigation } from '@react-navigation/native'
 import { DrawerScreenProps } from 'navigation/types'
 import WatchlistTabView from 'screens/watchlist/WatchlistTabView'
+import AddSVG from 'components/svg/AddSVG'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { SECURE_ACCESS_SET } from 'resources/Constants'
 
 const DummyComponent = () => (
   <View style={{ flex: 1, backgroundColor: 'transparent' }} />
@@ -32,6 +35,17 @@ const NoWalletTabNavigator = () => {
   const theme = useApplicationContext().theme
   const { capture } = usePosthogContext()
   const navigation = useNavigation<NavigationProp>()
+  const [hasSession, setHasSession] = useState(false)
+
+  useEffect(() => {
+    AsyncStorage.getItem(SECURE_ACCESS_SET).then(result => {
+      if (result) {
+        setHasSession(true)
+      } else {
+        setHasSession(false)
+      }
+    })
+  }, [])
 
   /**
    * extracts creation of "normal" tab items
@@ -81,43 +95,71 @@ const NoWalletTabNavigator = () => {
           </AvaButton.Icon>
         )
       })}>
-      <Tab.Screen
-        name={AppNavigation.Tabs.NewWallet}
-        component={WatchlistTabView}
-        options={{
-          tabBarIcon: ({ focused }) =>
-            normalTabButtons(
-              AppNavigation.Tabs.NewWallet,
-              focused,
-              <CreateNewWalletPlusSVG size={TAB_ICON_SIZE} bold />
-            )
-        }}
-        listeners={({ navigation }) => ({
-          tabPress: e => {
-            e.preventDefault()
-            navigation.navigate(AppNavigation.Onboard.CreateWalletStack)
-          }
-        })}
-      />
-      <Tab.Screen
-        name={AppNavigation.Tabs.ExistingWallet}
-        component={DummyComponent}
-        options={{
-          tabBarIcon: () =>
-            normalTabButtons(
-              AppNavigation.Tabs.ExistingWallet,
-              true,
-              <WalletSVG size={TAB_ICON_SIZE} />
-            )
-        }}
-        listeners={() => ({
-          tabPress: e => {
-            e.preventDefault()
-            navigation.navigate(AppNavigation.Onboard.EnterWithMnemonicStack)
-          }
-        })}
-      />
+      {hasSession ? (
+        <Tab.Screen
+          name={AppNavigation.Tabs.EnterWallet}
+          component={WatchlistTabView}
+          options={{
+            tabBarStyle: { justifyContent: 'center', alignItems: 'center' },
+            tabBarButton: () => <EnterWalletButton />
+          }}
+        />
+      ) : (
+        <>
+          <Tab.Screen
+            name={AppNavigation.Tabs.NewWallet}
+            component={WatchlistTabView}
+            options={{
+              tabBarIcon: ({ focused }) =>
+                normalTabButtons(
+                  AppNavigation.Tabs.NewWallet,
+                  focused,
+                  <CreateNewWalletPlusSVG size={TAB_ICON_SIZE} bold />
+                )
+            }}
+            listeners={({ navigation }) => ({
+              tabPress: e => {
+                e.preventDefault()
+                navigation.navigate(AppNavigation.Onboard.CreateWalletStack)
+              }
+            })}
+          />
+          <Tab.Screen
+            name={AppNavigation.Tabs.ExistingWallet}
+            component={DummyComponent}
+            options={{
+              tabBarIcon: () =>
+                normalTabButtons(
+                  AppNavigation.Tabs.ExistingWallet,
+                  true,
+                  <WalletSVG size={TAB_ICON_SIZE} />
+                )
+            }}
+            listeners={() => ({
+              tabPress: e => {
+                e.preventDefault()
+                navigation.navigate(
+                  AppNavigation.Onboard.EnterWithMnemonicStack
+                )
+              }
+            })}
+          />
+        </>
+      )}
     </Tab.Navigator>
+  )
+}
+
+const EnterWalletButton = () => {
+  const appNavHook = useApplicationContext().appNavHook
+  return (
+    <AvaButton.PrimaryLarge
+      style={{ flex: 1, marginHorizontal: 16 }}
+      onPress={() => {
+        appNavHook.setLoginRoute()
+      }}>
+      EnterWallet
+    </AvaButton.PrimaryLarge>
   )
 }
 

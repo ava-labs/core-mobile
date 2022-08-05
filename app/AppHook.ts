@@ -70,7 +70,7 @@ export function useApp(
           //return him to onboarding
           signOut().catch(() => undefined)
         } else {
-          appNavHook.setLoginRoute()
+          appNavHook.navigation.current?.navigate(AppNavigation.Root.NoWallet)
         }
       } else {
         appNavHook.navigation.current?.navigate(AppNavigation.Root.NoWallet)
