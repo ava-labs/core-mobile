@@ -138,3 +138,13 @@ export const getMaxValue = (token?: TokenWithBalance, fee?: string) => {
 export function isAPIError(rate: any): rate is APIError {
   return typeof rate?.message === 'string'
 }
+
+export async function findAsyncSequential<T>(
+  array: T[],
+  predicate: (t: T) => Promise<boolean>
+): Promise<T | undefined> {
+  for (const t of array) {
+    if (await predicate(t)) return t
+  }
+  return undefined
+}
