@@ -53,7 +53,7 @@ export default function AddEditNetwork({
       setDataValid(false)
       isValid = false
     }
-    if (!chainId || isNaN(Number.parseInt(chainId))) {
+    if (!chainId || isNaN(Number.parseInt(chainId, 10))) {
       setDataValid(false)
       isValid = false
     }
@@ -77,7 +77,7 @@ export default function AddEditNetwork({
   const save = () => {
     const customNetwork = {
       isTestnet,
-      chainId: Number.parseInt(chainId),
+      chainId: Number.parseInt(chainId, 10),
       networkToken: {
         symbol: nativeTokenName,
         name: nativeTokenName
