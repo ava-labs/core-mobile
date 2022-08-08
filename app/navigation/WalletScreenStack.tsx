@@ -21,7 +21,6 @@ import SecurityPrivacyStackScreen, {
   SecurityStackParamList
 } from 'navigation/wallet/SecurityPrivacyStackScreen'
 import { MainHeaderOptions, SubHeaderOptions } from 'navigation/NavUtils'
-import WebViewScreen from 'screens/webview/WebViewScreen'
 import SignOutBottomSheet from 'screens/mainView/SignOutBottomSheet'
 import {
   createStackNavigator,
@@ -65,6 +64,9 @@ import AddEditNetwork, {
 import { Transaction } from 'store/transaction'
 import RpcMethodsUI from 'screens/rpc/RpcMethodsUI'
 import { useDeepLinking } from 'navigation/useDeepLinking'
+import LegalStackScreen, {
+  LegalStackParamList
+} from 'navigation/wallet/LegalStackScreen'
 import { BridgeStackParamList } from './wallet/BridgeScreenStack'
 import {
   BridgeTransactionStatusParams,
@@ -72,7 +74,9 @@ import {
   TokenSelectParams,
   WalletScreenProps
 } from './types'
-import AdvancedStackScreen from './wallet/AdvancedStackScreen'
+import AdvancedStackScreen, {
+  AdvancedStackParamList
+} from './wallet/AdvancedStackScreen'
 
 type Props = {
   onExit: () => void
@@ -105,11 +109,11 @@ export type WalletScreenStackParams = {
   [AppNavigation.Wallet.NetworkSelector]: undefined
   [AppNavigation.Wallet.NetworkDetails]: { network: Network }
   [AppNavigation.Wallet.NetworkAddEdit]: AddEditNetworkProps
-  [AppNavigation.Wallet.Advanced]: undefined
+  [AppNavigation.Wallet.Advanced]: NavigatorScreenParams<AdvancedStackParamList>
   [AppNavigation.Wallet.SecurityPrivacy]:
     | NavigatorScreenParams<SecurityStackParamList>
     | undefined
-  [AppNavigation.Wallet.Legal]: undefined
+  [AppNavigation.Wallet.Legal]: NavigatorScreenParams<LegalStackParamList>
   [AppNavigation.Bridge.BridgeTransactionStatus]: BridgeTransactionStatusParams
   [AppNavigation.Wallet.Bridge]: NavigatorScreenParams<BridgeStackParamList>
   [AppNavigation.Modal.AccountDropDown]: undefined
@@ -320,11 +324,8 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
           component={SecurityPrivacyStackScreen}
         />
         <WalletScreenS.Screen
-          options={{
-            ...MainHeaderOptions('Legal')
-          }}
           name={AppNavigation.Wallet.Legal}
-          component={WebViewScreen}
+          component={LegalStackScreen}
         />
         <WalletScreenS.Screen
           options={{

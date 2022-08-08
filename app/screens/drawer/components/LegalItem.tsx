@@ -1,17 +1,24 @@
 import React from 'react'
 import AvaListItem from 'components/AvaListItem'
-import useInAppBrowser from 'hooks/useInAppBrowser'
+import AppNavigation from 'navigation/AppNavigation'
+import { useNavigation } from '@react-navigation/native'
+import { WalletScreenProps } from 'navigation/types'
 
-const LEGAL_URL = 'https://wallet.avax.network/legal'
+type NavigationProp = WalletScreenProps<
+  typeof AppNavigation.Wallet.Drawer
+>['navigation']
 
 const LegalItem = () => {
-  const { openUrl } = useInAppBrowser()
+  const navigation = useNavigation<NavigationProp>()
   return (
     <>
       <AvaListItem.Base
         title={'Legal'}
+        showNavigationArrow
         onPress={() => {
-          openUrl(LEGAL_URL)
+          navigation.navigate(AppNavigation.Wallet.Legal, {
+            screen: AppNavigation.Legal.Legal
+          })
         }}
       />
     </>
