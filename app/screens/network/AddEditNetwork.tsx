@@ -1,11 +1,17 @@
-import React, { useEffect, useState } from 'react'
+import React, {
+  Reducer,
+  useCallback,
+  useEffect,
+  useReducer,
+  useState
+} from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import AvaButton from 'components/AvaButton'
 import { ScrollView } from 'react-native'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
 import FlexSpacer from 'components/FlexSpacer'
-import { Network, NetworkToken, NetworkVMType } from '@avalabs/chains-sdk'
+import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import InputText from 'components/InputText'
 import { addCustomNetwork, selectNetworks } from 'store/network'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
@@ -16,6 +22,15 @@ export type AddEditNetworkProps = {
   onClose?: () => void
 }
 
+const errorsInitialState = {
+  rpcUrl: '',
+  networkName: '',
+  chainId: '',
+  nativeTokenSymbol: '',
+  explorerUrl: ''
+} as const
+type Errors = typeof errorsInitialState
+
 export default function AddEditNetwork({
   mode,
   network,
@@ -25,11 +40,9 @@ export default function AddEditNetwork({
   const isTestnet = useSelector(selectIsDeveloperMode)
   const allNetworks = useSelector(selectNetworks)
 
-  const [dataValid, setDataValid] = useState(false)
   const [rpcUrl, setRpcUrl] = useState(network?.rpcUrl ?? '')
   const [networkName, setNetworkName] = useState(network?.chainName ?? '')
   const [chainId, setChainId] = useState(network?.chainId?.toString() ?? '')
-  const [chainIdError, setChainIdError] = useState('')
   const [nativeTokenSymbol, setNativeTokenSymbol] = useState(
     network?.networkToken?.symbol ?? ''
   )
@@ -38,54 +51,90 @@ export default function AddEditNetwork({
   )
   const [explorerUrl, setExplorerUrl] = useState(network?.explorerUrl ?? '')
   const [logoUri, setLogoUri] = useState(network?.logoUri ?? '')
+  const [_errors, _dispatchErrors] = useReducer<
+    Reducer<Errors, Partial<Errors> | 'reset'>
+  >((curVal, newVal) => {
+    if (newVal === 'reset') return errorsInitialState
+    return { ...curVal, ...newVal }
+  }, errorsInitialState)
+  const [showErrors, setShowErrors] = useState(false)
+
+  function getError(error: keyof typeof _errors) {
+    if (!showErrors) return ''
+    return _errors[error]
+  }
+
+  const setError = useCallback(
+    <K extends keyof typeof _errors>(error: K, value: string) => {
+      _dispatchErrors({ [error]: value })
+    },
+    []
+  )
+
+  function hasErrors() {
+    return Object.values(_errors).some(e => e)
+  }
 
   useEffect(validateInputs, [
     allNetworks,
     chainId,
+    explorerUrl,
+    mode,
     nativeTokenName,
+    nativeTokenSymbol,
     networkName,
-    rpcUrl
+    rpcUrl,
+    setError
   ])
 
   function validateInputs() {
-    let isValid = true
+    _dispatchErrors('reset')
     if (!rpcUrl) {
-      setDataValid(false)
-      isValid = false
+      setError('rpcUrl', 'Required')
+    }
+    if (!isValidURL(rpcUrl)) {
+      setError('rpcUrl', 'URL is invalid')
     }
     if (!networkName) {
-      setDataValid(false)
-      isValid = false
+      setError('networkName', 'Required')
     }
     if (!chainId || isNaN(Number.parseInt(chainId, 10))) {
-      setDataValid(false)
-      isValid = false
+      setError('chainId', 'Must be a number')
     }
-    if (Object.keys(allNetworks).some(value => value === chainId)) {
-      setChainIdError('Already exists')
-      setDataValid(false)
-      isValid = false
-    } else {
-      setChainIdError('')
+    if (chainId === '0') {
+      setError('chainId', 'Cannot be 0')
     }
-    if (!nativeTokenName) {
-      setDataValid(false)
-      isValid = false
+    if (
+      mode === 'create' &&
+      Object.keys(allNetworks).some(value => value === chainId)
+    ) {
+      setError('chainId', 'Already exists')
     }
-
-    if (isValid) {
-      setDataValid(true)
+    if (!nativeTokenSymbol) {
+      setError('nativeTokenSymbol', 'Required')
+    }
+    if (!explorerUrl) {
+      setError('explorerUrl', 'Required')
+    }
+    if (!isValidURL(explorerUrl)) {
+      setError('explorerUrl', 'URL is invalid')
     }
   }
 
   const save = () => {
-    const customNetwork = {
+    setShowErrors(true)
+    if (hasErrors()) return
+
+    const customNetwork: Network = {
       isTestnet,
       chainId: Number.parseInt(chainId, 10),
       networkToken: {
         symbol: nativeTokenName,
-        name: nativeTokenName
-      } as NetworkToken,
+        name: nativeTokenName,
+        description: '',
+        decimals: 18,
+        logoUri: ''
+      },
       explorerUrl,
       chainName: networkName,
       rpcUrl,
@@ -96,7 +145,7 @@ export default function AddEditNetwork({
       subnetId: '',
       vmId: '',
       description: ''
-    } as Network
+    }
     dispatch(addCustomNetwork(customNetwork))
     onClose?.()
   }
@@ -110,25 +159,28 @@ export default function AddEditNetwork({
       <DetailItem
         title={'Network RPC URL'}
         value={rpcUrl}
+        error={getError('rpcUrl')}
         onChange={value => setRpcUrl(value)}
       />
       <Space y={8} />
       <DetailItem
         title={'Network Name'}
         value={networkName.toString()}
+        error={getError('networkName')}
         onChange={value => setNetworkName(value)}
       />
       <Space y={8} />
       <DetailItem
         title={'Chain ID'}
         value={chainId.toString()}
-        error={chainIdError}
+        error={getError('chainId')}
         onChange={value => setChainId(value)}
       />
       <Space y={8} />
       <DetailItem
         title={'Native Token Symbol'}
         value={nativeTokenSymbol}
+        error={getError('nativeTokenSymbol')}
         onChange={value => setNativeTokenSymbol(value)}
       />
       <DetailItem
@@ -140,6 +192,7 @@ export default function AddEditNetwork({
       <DetailItem
         title={'Explorer URL'}
         value={explorerUrl}
+        error={getError('explorerUrl')}
         onChange={value => setExplorerUrl(value)}
       />
       <Space y={8} />
@@ -149,9 +202,7 @@ export default function AddEditNetwork({
         onChange={value => setLogoUri(value)}
       />
       <FlexSpacer minHeight={24} />
-      <AvaButton.PrimaryLarge disabled={!dataValid} onPress={save}>
-        Save
-      </AvaButton.PrimaryLarge>
+      <AvaButton.PrimaryLarge onPress={save}>Save</AvaButton.PrimaryLarge>
     </ScrollView>
   )
 }
@@ -176,4 +227,14 @@ function DetailItem({
       style={{ marginHorizontal: 0 }}
     />
   )
+}
+
+function isValidURL(text: string): boolean {
+  let url
+  try {
+    url = new URL(text)
+  } catch (_) {
+    return false
+  }
+  return url.protocol === 'https:' || url.protocol === 'ipfs:'
 }
