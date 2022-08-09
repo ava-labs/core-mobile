@@ -5,13 +5,13 @@ import AvaButton from 'components/AvaButton'
 import StarSVG from 'components/svg/StarSVG'
 import InfoSVG from 'components/svg/InfoSVG'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import Avatar from 'components/Avatar'
 import { alwaysFavoriteNetworks } from 'store/network'
+import { NetworkLogo } from './NetworkLogo'
 
 type Props = {
   networkChainId: number
   networkName: string
-  icon: string | JSX.Element
+  logoUri: string
   isFavorite: boolean
   onPress: (chainId: number) => void
   onFavorite: (chainId: number) => void
@@ -21,7 +21,7 @@ type Props = {
 export function NetworkListItem({
   networkChainId,
   networkName,
-  icon,
+  logoUri,
   isFavorite,
   onPress,
   onFavorite,
@@ -47,13 +47,7 @@ export function NetworkListItem({
   return (
     <AvaListItem.Base
       onPress={() => onPress(networkChainId)}
-      leftComponent={
-        typeof icon === 'string' ? (
-          <Avatar.Custom size={40} name={networkName} logoUri={icon} />
-        ) : (
-          icon
-        )
-      }
+      leftComponent={<NetworkLogo logoUri={logoUri} size={40} />}
       title={networkName}
       rightComponent={getButtons()}
     />

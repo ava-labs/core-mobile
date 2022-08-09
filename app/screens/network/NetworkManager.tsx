@@ -57,18 +57,18 @@ export default function NetworkManager({ onShowInfo }: Props) {
     [favoriteNetworks, searchText]
   )
 
-  const renderCustomLabel = (title: string, selected: boolean) => {
+  const renderCustomLabel = (label: string, selected: boolean) => {
     return selected ? (
       <AvaText.ButtonMedium
         ellipsizeMode={'tail'}
         textStyle={{
           color: theme.alternateBackground
         }}>
-        {title}
+        {label}
       </AvaText.ButtonMedium>
     ) : (
       <AvaText.Body2 ellipsizeMode={'tail'} textStyle={{ lineHeight: 24 }}>
-        {title}
+        {label}
       </AvaText.Body2>
     )
   }
@@ -93,7 +93,7 @@ export default function NetworkManager({ onShowInfo }: Props) {
         onPress={connect}
         networkChainId={item.chainId}
         networkName={item.chainName}
-        icon={item.logoUri}
+        logoUri={item.logoUri}
         isFavorite={isFavorite}
         onFavorite={() => dispatch(toggleFavorite(item.chainId))}
         onInfo={showInfo}

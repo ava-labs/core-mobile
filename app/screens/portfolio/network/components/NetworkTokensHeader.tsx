@@ -1,5 +1,5 @@
 import React from 'react'
-import { Image, StyleSheet, View } from 'react-native'
+import { StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
@@ -11,6 +11,7 @@ import {
 } from 'store/balance'
 import { selectActiveNetwork } from 'store/network'
 import { ActivityIndicator } from 'components/ActivityIndicator'
+import { NetworkLogo } from 'screens/network/NetworkLogo'
 
 const NetworkTokensHeader = () => {
   const {
@@ -29,7 +30,7 @@ const NetworkTokensHeader = () => {
   return (
     <View style={styles.container}>
       <View style={styles.networkContainer}>
-        <Image source={{ uri: logoUri }} style={styles.logo} />
+        <NetworkLogo logoUri={logoUri} size={48} style={styles.logo} />
         <View style={styles.textContainer}>
           <AvaText.Heading1 ellipsizeMode="tail" numberOfLines={2}>
             {chainName}
@@ -68,10 +69,7 @@ const styles = StyleSheet.create({
   },
   logo: {
     alignSelf: 'flex-start',
-    marginTop: 3,
-    width: 48,
-    height: 48,
-    borderRadius: 48 / 2
+    marginTop: 3
   }
 })
 

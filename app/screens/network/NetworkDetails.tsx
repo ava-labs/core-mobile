@@ -1,6 +1,5 @@
 import React from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import AvaLogoSVG from 'components/svg/AvaLogoSVG'
 import AvaButton from 'components/AvaButton'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { selectActiveNetwork, setActive } from 'store/network'
@@ -11,13 +10,14 @@ import FlexSpacer from 'components/FlexSpacer'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import TextFieldBg from 'components/styling/TextFieldBg'
 import { Network } from '@avalabs/chains-sdk'
+import { NetworkLogo } from './NetworkLogo'
 
 type Props = {
   network: Network
 }
 
 export default function NetworkDetails({ network }: Props) {
-  const { rpcUrl, chainId, networkToken, explorerUrl } = network
+  const { rpcUrl, chainId, networkToken, explorerUrl, logoUri } = network
   const activeNetwork = useSelector(selectActiveNetwork)
   const dispatch = useDispatch()
 
@@ -30,7 +30,7 @@ export default function NetworkDetails({ network }: Props) {
   return (
     <SafeAreaProvider style={{ flex: 1, padding: 16 }}>
       <View style={{ alignItems: 'center' }}>
-        <AvaLogoSVG size={80} />
+        <NetworkLogo logoUri={logoUri} size={80} />
         <Space y={24} />
         <AvaText.Heading2>{network.chainName}</AvaText.Heading2>
       </View>

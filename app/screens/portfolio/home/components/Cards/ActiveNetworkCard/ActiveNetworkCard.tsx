@@ -1,6 +1,6 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
-import { View, TouchableHighlight, Text, Image, StyleSheet } from 'react-native'
+import { View, TouchableHighlight, Text, StyleSheet } from 'react-native'
 import { selectBalanceTotalInCurrencyForNetwork } from 'store/balance'
 import AvaText from 'components/AvaText'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -11,6 +11,7 @@ import AppNavigation from 'navigation/AppNavigation'
 import { PortfolioScreenProps } from 'navigation/types'
 import { useNavigation } from '@react-navigation/native'
 import { selectActiveNetwork } from 'store/network'
+import { NetworkLogo } from 'screens/network/NetworkLogo'
 import ZeroState from './ZeroState'
 import Tokens from './Tokens'
 
@@ -42,7 +43,11 @@ const ActiveNetworkCard = () => {
 
     return (
       <View style={styles.headerContainer}>
-        <Image source={{ uri: network.logoUri }} style={styles.bigIcon} />
+        <NetworkLogo
+          logoUri={network.logoUri}
+          size={40}
+          style={styles.bigIcon}
+        />
         <View style={styles.headerTextContainer}>
           <AvaText.Heading2 ellipsizeMode={'tail'} numberOfLines={2}>
             {network.chainName}
@@ -107,10 +112,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 16
   },
   bigIcon: {
-    alignSelf: 'flex-start',
-    width: 40,
-    height: 40,
-    borderRadius: 40 / 2
+    alignSelf: 'flex-start'
   },
   separator: {
     height: 0.5,

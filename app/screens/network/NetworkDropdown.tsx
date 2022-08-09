@@ -2,7 +2,6 @@ import React, { useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import Dropdown from 'components/Dropdown'
-import Avatar from 'components/Avatar'
 import { View } from 'react-native'
 import { Row } from 'components/Row'
 import AvaText from 'components/AvaText'
@@ -18,6 +17,7 @@ import {
   setActive
 } from 'store/network'
 import { arrayHash } from 'utils/Utils'
+import { NetworkLogo } from './NetworkLogo'
 
 const ManageNetworks = 'Manage networks'
 
@@ -60,6 +60,18 @@ export default function NetworkDropdown() {
     item => item.chainId === activeNetwork.chainId
   )
 
+  const renderSelection = (selectedItem: typeof data[0]) => (
+    <Selection logoUri={selectedItem.logoUri} />
+  )
+
+  const renderOption = ({ item }: { item: typeof data[0] }) => (
+    <Option
+      networkName={item.name}
+      networkLogo={item.logoUri}
+      isSelected={item.chainId === activeNetwork.chainId}
+    />
+  )
+
   return (
     <View
       style={[
@@ -90,27 +102,15 @@ export default function NetworkDropdown() {
           }
         }}
         alignment={'flex-end'}
-        selectionRenderItem={selectedItem => (
-          <Selection icon={selectedItem.logoUri} />
-        )}
-        optionsRenderItem={({ item }) => (
-          <Option
-            networkName={item.name}
-            networkLogo={item.logoUri}
-            isSelected={item.chainId === activeNetwork.chainId}
-          />
-        )}
+        selectionRenderItem={renderSelection}
+        optionsRenderItem={renderOption}
       />
     </View>
   )
 }
 
-function Selection({ icon }: { icon: string | JSX.Element }) {
-  return typeof icon === 'string' ? (
-    <Avatar.Custom size={16} name={''} logoUri={icon} />
-  ) : (
-    icon
-  )
+function Selection({ logoUri }: { logoUri: string }) {
+  return <NetworkLogo logoUri={logoUri} size={16} />
 }
 
 function Option({
@@ -128,9 +128,9 @@ function Option({
         alignItems: 'center',
         paddingHorizontal: 16
       }}>
-      {!!networkLogo && (
+      {networkName !== ManageNetworks && (
         <>
-          <Selection icon={networkLogo} />
+          <Selection logoUri={networkLogo} />
           <Space x={8} />
         </>
       )}
