@@ -53,8 +53,6 @@ import SharedBridgeTransactionStatus from 'screens/shared/BridgeTransactionStatu
 import NetworkManager from 'screens/network/NetworkManager'
 import NetworkDetails from 'screens/network/NetworkDetails'
 import AvaButton from 'components/AvaButton'
-import StarSVG from 'components/svg/StarSVG'
-import { selectFavoriteNetworks, toggleFavorite } from 'store/network'
 import { onAppUnlocked, selectIsLocked } from 'store/app'
 import { Network } from '@avalabs/chains-sdk'
 import AddSVG from 'components/svg/AddSVG'
@@ -67,6 +65,7 @@ import { useDeepLinking } from 'navigation/useDeepLinking'
 import LegalStackScreen, {
   LegalStackParamList
 } from 'navigation/wallet/LegalStackScreen'
+import { NetworkDetailsAction } from 'screens/network/NetworkDetailsAction'
 import { BridgeStackParamList } from './wallet/BridgeScreenStack'
 import {
   BridgeTransactionStatusParams,
@@ -157,6 +156,7 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
 
       return () =>
         BackHandler.removeEventListener('hardwareBackPress', onBackPress)
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
   )
 
@@ -305,7 +305,7 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
         />
         <WalletScreenS.Screen
           options={{
-            ...MainHeaderOptions('', false, <ToggleFavoriteNetwork />)
+            ...MainHeaderOptions('', false, <NetworkDetailsAction />)
           }}
           name={AppNavigation.Wallet.NetworkDetails}
           component={NetworkDetailsScreen}
@@ -455,23 +455,12 @@ function NetworkAddEditScreen() {
   const { params } = useRoute<NetworkAddEditScreenProps['route']>()
   const { goBack } = useNavigation<NetworkAddEditScreenProps['navigation']>()
 
-  return <AddEditNetwork mode={params.mode} onClose={() => goBack()} />
-}
-
-function ToggleFavoriteNetwork() {
-  const {
-    network: { chainId }
-  } = useRoute<NetworkDetailsScreenProps['route']>().params
-  const favoriteNetworks = useSelector(selectFavoriteNetworks)
-  const dispatch = useDispatch()
-  const isFavorite = favoriteNetworks.some(
-    network => network.chainId === chainId
-  )
-
   return (
-    <AvaButton.Icon onPress={() => dispatch(toggleFavorite(chainId))}>
-      <StarSVG selected={isFavorite} />
-    </AvaButton.Icon>
+    <AddEditNetwork
+      mode={params.mode}
+      network={params.network}
+      onClose={() => goBack()}
+    />
   )
 }
 
