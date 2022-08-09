@@ -22,7 +22,7 @@ export const watchlistSlice = createSlice({
     appendWatchlist: (state, action: PayloadAction<MarketToken[]>) => {
       const newTokens: MarketToken[] = []
       for (const newToken of action.payload) {
-        let token: MarketToken | undefined = undefined
+        let token: MarketToken | undefined
         for (const existingToken of state.tokens) {
           if (newToken.id === existingToken.id) {
             token = existingToken

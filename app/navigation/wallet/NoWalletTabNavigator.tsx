@@ -1,5 +1,8 @@
 import AppNavigation from 'navigation/AppNavigation'
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
+import {
+  BottomTabHeaderProps,
+  createBottomTabNavigator
+} from '@react-navigation/bottom-tabs'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import React, { useEffect, useState } from 'react'
 import { View } from 'react-native'
@@ -10,26 +13,37 @@ import WalletSVG from 'components/svg/WalletSVG'
 import MenuSVG from 'components/svg/MenuSVG'
 import AvaButton from 'components/AvaButton'
 import { useNavigation } from '@react-navigation/native'
-import { DrawerScreenProps } from 'navigation/types'
+import { NoWalletDrawerScreenProps } from 'navigation/types'
 import WatchlistTabView from 'screens/watchlist/WatchlistTabView'
-import AddSVG from 'components/svg/AddSVG'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { SECURE_ACCESS_SET } from 'resources/Constants'
+
+export type NoWalletTabNavigatorParamList = {
+  [AppNavigation.NoWalletTabs.NewWallet]: undefined
+  [AppNavigation.NoWalletTabs.ExistingWallet]: undefined
+  [AppNavigation.NoWalletTabs.EnterWallet]: undefined
+}
+
+type NavigationProp = NoWalletDrawerScreenProps<
+  typeof AppNavigation.NoWallet.Tabs
+>['navigation']
+const Tab = createBottomTabNavigator<NoWalletTabNavigatorParamList>()
+const TAB_ICON_SIZE = 28
 
 const DummyComponent = () => (
   <View style={{ flex: 1, backgroundColor: 'transparent' }} />
 )
 
-export type TabNavigatorParamList = {
-  [AppNavigation.Tabs.NewWallet]: undefined
-  [AppNavigation.Tabs.ExistingWallet]: undefined
+function header(props: BottomTabHeaderProps, navigation: NavigationProp) {
+  return (
+    <AvaButton.Icon
+      {...props}
+      onPress={navigation.openDrawer}
+      style={{ padding: 16 }}>
+      <MenuSVG />
+    </AvaButton.Icon>
+  )
 }
-
-type NavigationProp = DrawerScreenProps<
-  typeof AppNavigation.Wallet.Tabs
->['navigation']
-const Tab = createBottomTabNavigator<TabNavigatorParamList>()
-const TAB_ICON_SIZE = 28
 
 const NoWalletTabNavigator = () => {
   const theme = useApplicationContext().theme
@@ -87,50 +101,45 @@ const NoWalletTabNavigator = () => {
         tabBarStyle: {
           backgroundColor: theme.background
         },
-        header: () => (
-          <AvaButton.Icon
-            onPress={navigation.openDrawer}
-            style={{ padding: 16 }}>
-            <MenuSVG />
-          </AvaButton.Icon>
-        )
+        header: props => header(props, navigation)
       })}>
       {hasSession ? (
         <Tab.Screen
-          name={AppNavigation.Tabs.EnterWallet}
+          name={AppNavigation.NoWalletTabs.EnterWallet}
           component={WatchlistTabView}
           options={{
             tabBarStyle: { justifyContent: 'center', alignItems: 'center' },
-            tabBarButton: () => <EnterWalletButton />
+            tabBarButton: EnterWalletButton
           }}
         />
       ) : (
         <>
           <Tab.Screen
-            name={AppNavigation.Tabs.NewWallet}
+            name={AppNavigation.NoWalletTabs.NewWallet}
             component={WatchlistTabView}
             options={{
               tabBarIcon: ({ focused }) =>
                 normalTabButtons(
-                  AppNavigation.Tabs.NewWallet,
+                  AppNavigation.NoWalletTabs.NewWallet,
                   focused,
                   <CreateNewWalletPlusSVG size={TAB_ICON_SIZE} bold />
                 )
             }}
-            listeners={({ navigation }) => ({
+            listeners={() => ({
               tabPress: e => {
                 e.preventDefault()
-                navigation.navigate(AppNavigation.Onboard.CreateWalletStack)
+                capture('NewWalletTabClicked')
+                navigation.navigate(AppNavigation.NoWallet.CreateWalletStack)
               }
             })}
           />
           <Tab.Screen
-            name={AppNavigation.Tabs.ExistingWallet}
+            name={AppNavigation.NoWalletTabs.ExistingWallet}
             component={DummyComponent}
             options={{
               tabBarIcon: () =>
                 normalTabButtons(
-                  AppNavigation.Tabs.ExistingWallet,
+                  AppNavigation.NoWallet.EnterWithMnemonicStack,
                   true,
                   <WalletSVG size={TAB_ICON_SIZE} />
                 )
@@ -138,8 +147,9 @@ const NoWalletTabNavigator = () => {
             listeners={() => ({
               tabPress: e => {
                 e.preventDefault()
+                capture('ExistingWalletTabClicked')
                 navigation.navigate(
-                  AppNavigation.Onboard.EnterWithMnemonicStack
+                  AppNavigation.NoWallet.EnterWithMnemonicStack
                 )
               }
             })}
@@ -158,7 +168,7 @@ const EnterWalletButton = () => {
       onPress={() => {
         appNavHook.setLoginRoute()
       }}>
-      EnterWallet
+      Enter Wallet
     </AvaButton.PrimaryLarge>
   )
 }

@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
-import Loader from 'components/Loader'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import Dropdown from 'components/Dropdown'
@@ -9,13 +8,15 @@ import {
   appendWatchlist,
   MarketToken,
   selectWatchlistFavorites,
-  selectWatchlistTokens,
-} from 'store/watchlist';
+  selectWatchlistTokens
+} from 'store/watchlist'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
 import watchlistService from 'services/watchlist/WatchlistService'
+import { useDispatch } from 'react-redux'
+import { selectIsLoadingBalances } from 'store/balance'
+import { WatchListLoader } from 'screens/watchlist/components/WatchListLoader'
 import { FilterTimeOptions, WatchlistFilter } from './types'
 import WatchList from './components/WatchList'
-import {useDispatch} from 'react-redux';
 
 interface Props {
   showFavorites?: boolean
@@ -61,7 +62,6 @@ const WatchlistView: React.FC<Props> = ({ showFavorites, searchText }) => {
   const [loadingSearch, setLoadingSearch] = useState(false)
   const [filterBy, setFilterBy] = useState(WatchlistFilter.MARKET_CAP)
   const isLoadingBalances = useFocusedSelector(selectIsLoadingBalances)
-  const [filterBy, setFilterBy] = useState(WatchlistFilter.PRICE)
   const [filterTime, setFilterTime] = useState(FilterTimeOptions.Day)
   const filterTimeDays = useMemo(() => {
     switch (filterTime) {
@@ -119,7 +119,8 @@ const WatchlistView: React.FC<Props> = ({ showFavorites, searchText }) => {
     showFavorites,
     searchText,
     watchlistFavorites,
-    filterBy
+    filterBy,
+    dispatch
   ])
 
   const selectedPriceFilter = filterPriceOptions.findIndex(
@@ -151,7 +152,7 @@ const WatchlistView: React.FC<Props> = ({ showFavorites, searchText }) => {
             selectionRenderItem={renderTimeFilterSelection}
           />
         </View>
-        {isLoadingBalances ? (
+        {isLoadingBalances || loadingSearch ? (
           <WatchListLoader />
         ) : (
           <WatchList

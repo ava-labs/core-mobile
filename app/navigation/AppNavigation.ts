@@ -2,7 +2,7 @@ enum Root {
   Wallet = 'Stacks.Wallet',
   Onboard = 'Stacks.Onboard',
   Welcome = 'Stacks.Welcome',
-  NoWallet = 'Stacks.NoWallet',
+  NoWallet = 'Stacks.NoWallet'
 }
 
 enum OnboardScreens {
@@ -54,6 +54,21 @@ enum WalletScreens {
   Bridge = 'WalletScreens.Bridge'
 }
 
+enum NoWalletScreens {
+  CurrencySelector = 'NoWalletScreens.CurrencySelector',
+  Drawer = 'NoWalletScreens.Drawer',
+  Tabs = 'NoWalletScreens.Tabs',
+  TokenDetail = 'NoWalletScreens.TokenDetail',
+  EnterWithMnemonicStack = 'NoWalletScreens.EnterWithMnemonicStack',
+  CreateWalletStack = 'NoWalletScreens.CreateWalletStack'
+}
+
+enum NoWalletTabs {
+  NewWallet = 'NoWalletTabs.NewWallet',
+  ExistingWallet = 'NoWalletTabs.ExistingWallet',
+  EnterWallet = 'NoWalletTabs.EnterWallet'
+}
+
 enum ReceiveTokensScreens {
   ReceiveCChain = 'ReceiveTokensScreens.ReceiveCChain'
 }
@@ -103,7 +118,8 @@ enum Tabs {
   Fab = 'Fab',
   Bridge = 'Bridge',
   ExistingWallet = 'Existing Wallet',
-  NewWallet = 'New Wallet'
+  NewWallet = 'New Wallet',
+  EnterWallet = 'Enter Wallet'
 }
 
 enum ModalScreens {
@@ -147,10 +163,12 @@ const AppNavigation = {
   CreateWallet: CreateWalletNavigationScreens,
   LoginWithMnemonic: LoginWithMnemonicStackScreens,
   Wallet: WalletScreens,
+  NoWallet: NoWalletScreens,
   SecurityPrivacy: SecurityPrivacyScreens,
   Legal: LegalScreens,
   Advanced: AdvancedScreens,
   Tabs: Tabs,
+  NoWalletTabs: NoWalletTabs,
   Modal: ModalScreens,
   Swap: SwapScreens,
   Nft: NftScreens,

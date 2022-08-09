@@ -12,12 +12,17 @@ import WalletScreenStack, {
 } from 'navigation/WalletScreenStack'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { ExitEvents, ExitPromptAnswers, ShowExitPrompt } from 'AppHook'
-import { NoWalletScreenStack } from 'navigation/NoWalletScreenStack'
+import {
+  NoWalletScreenStack,
+  NoWalletScreenStackParams
+} from 'navigation/NoWalletScreenStack'
 
 export type RootScreenStackParamList = {
   [AppNavigation.Root
     .Onboard]: NavigatorScreenParams<OnboardingScreenStackParamList>
   [AppNavigation.Root.Wallet]: NavigatorScreenParams<WalletScreenStackParams>
+  [AppNavigation.Root
+    .NoWallet]: NavigatorScreenParams<NoWalletScreenStackParams>
 }
 
 const onOk = (value: ShowExitPrompt): void => {

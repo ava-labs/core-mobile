@@ -1,7 +1,7 @@
 import { ChainId } from '@avalabs/chains-sdk'
 import NetworkService from 'services/network/NetworkService'
 import { AppListenerEffectAPI } from 'store'
-import {onAppUnlocked, onRehydrationComplete} from 'store/app';
+import { onAppUnlocked, onRehydrationComplete } from 'store/app'
 import { AppStartListening } from 'store/middleware/listener'
 import { noActiveNetwork, setActive, setNetworks } from 'store/network'
 import {

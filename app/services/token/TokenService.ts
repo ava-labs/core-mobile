@@ -1,5 +1,5 @@
 import {
-  CoinMarketsResponse,
+  CoinMarket,
   coinsContractInfo,
   CoinsContractInfoResponse,
   coinsContractMarketChart,
@@ -82,7 +82,7 @@ export class TokenService {
 
   async getTopTokenMarket(
     currency: VsCurrencyType = VsCurrencyType.USD
-  ): Promise<CoinMarketsResponse[]> {
+  ): Promise<CoinMarket[]> {
     return await coinsMarket(coingeckoProClient, {
       currency,
       coinGeckoProApiKey: Config.COINGECKO_API_KEY

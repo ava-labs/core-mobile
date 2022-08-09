@@ -11,12 +11,12 @@ import { Row } from 'components/Row'
 import DrawerLogo from 'screens/drawer/components/DrawerLogo'
 import CreateNewWalletItem from 'screens/drawerNoWallet/components/CreateNewWalletItem'
 import AccessExistingWalletItem from 'screens/drawerNoWallet/components/AccessExistingWalletItem'
+import { DrawerContentComponentProps } from '@react-navigation/drawer'
 
-const NoWalletDrawerView = () => {
+const NoWalletDrawerView = (props: DrawerContentComponentProps) => {
   const context = useApplicationContext()
-
   const header = (
-    <Row style={styles.headerContainer}>
+    <Row {...props} style={styles.headerContainer}>
       <DrawerLogo />
     </Row>
   )
