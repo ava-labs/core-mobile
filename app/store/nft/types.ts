@@ -1,7 +1,7 @@
 import { Erc721TokenBalance } from '@avalabs/glacier-sdk'
 import { Network } from '@avalabs/chains-sdk'
 import { Account } from 'store/account'
-import { NftUID } from 'services/nft/NftService'
+import { NftUID } from 'services/nft/types'
 
 export const initialState = {
   hiddenNfts: {}

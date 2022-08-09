@@ -5,8 +5,12 @@ import Config from 'react-native-config'
 import { GetAddressBalanceV2Item } from '@avalabs/covalent-sdk/src/models'
 import Logger from 'utils/Logger'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
-import { getNftUID } from 'services/nft/NftService'
-import nftProcessor from 'services/nft/NftProcessor'
+import { pipeAsyncFunctions } from 'utils/js/pipeAsyncFunctions'
+import {
+  addMissingFields,
+  applyImageAndAspect,
+  convertIPFSResolver
+} from './utils'
 
 const demoAddress = 'demo.eth'
 const demoChain = 1 //Ethereum
@@ -21,8 +25,8 @@ export class CovalentNftProvider implements NftProvider {
   async fetchNfts(
     chainId: number,
     address: string,
-    pageToken = '0',
-    selectedCurrency = 'USD'
+    selectedCurrency = 'USD',
+    pageToken = '0'
   ): Promise<NftResponse> {
     Logger.info('fetching nfts using Covalent')
     const chainID = DevDebuggingConfig.SHOW_DEMO_NFTS ? demoChain : chainId
@@ -37,7 +41,7 @@ export class CovalentNftProvider implements NftProvider {
       selectedCurrency.toUpperCase(),
       {
         pageSize: 100,
-        pageNumber: Number.parseInt(pageToken, 10) ?? 0
+        pageNumber: Number.parseInt(pageToken, 10) ?? 0 // pagination is not working with Covalent
       },
       {
         customOptions: { timeout: NFT_TIMEOUT }
@@ -47,7 +51,7 @@ export class CovalentNftProvider implements NftProvider {
     const covalentNfts = covalentData.items
     const nextPageToken =
       covalentData.pagination?.has_more === true
-        ? covalentData.pagination.page_number + 1
+        ? (covalentData.pagination.page_number + 1).toString()
         : '' // stop pagination
 
     const nfts = covalentNfts.reduce(
@@ -59,38 +63,21 @@ export class CovalentNftProvider implements NftProvider {
       []
     )
 
-    const fullNftPromises = nfts.map(nft => this.applyImageAndAspect(nft))
-    const fullNftResults = await Promise.allSettled(fullNftPromises)
-    const fullNftData = [] as NFTItemData[]
-    fullNftResults.forEach(result => {
-      if (result.status === 'fulfilled') {
-        fullNftData.push(result.value)
-      }
-    })
+    const processData = pipeAsyncFunctions(
+      applyImageAndAspect,
+      addMissingFields(address)
+    )
 
-    const nftData = fullNftData.map(nft => {
-      return {
-        ...nft,
-        uid: getNftUID(nft),
-        isShowing: true,
-        owner: address
-      } as NFTItemData
-    })
+    const fullNftResults = await Promise.allSettled(nfts.map(processData))
+
+    const fullNftData = fullNftResults.reduce<NFTItemData[]>((acc, result) => {
+      return result.status === 'fulfilled' ? [...acc, result.value] : acc
+    }, [])
 
     return {
-      nfts: nftData,
+      nfts: fullNftData,
       nextPageToken
-    } as NftResponse
-  }
-
-  private async applyImageAndAspect(nftData: NFTItemData) {
-    const [image, aspect, isSvg] = await nftProcessor.fetchImageAndAspect(
-      nftData.image
-    )
-    nftData.image = image
-    nftData.aspect = aspect
-    nftData.isSvg = isSvg
-    return nftData
+    }
   }
 
   mapCovalentData(
@@ -110,7 +97,9 @@ export class CovalentNftProvider implements NftProvider {
         symbol: nftCollections.contract_ticker_symbol,
         tokenId: value.token_id,
         tokenUri: value.token_url,
-        image: value.external_data.image,
+        image: value.external_data.image
+          ? convertIPFSResolver(value.external_data.image)
+          : '',
         image_256: value.external_data.image_256,
         // attributes:
         //   value.external_data.attributes?.map(

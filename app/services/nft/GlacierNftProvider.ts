@@ -1,12 +1,20 @@
 import { HttpClient } from '@avalabs/utils-sdk'
 import { NftProvider } from 'services/nft/types'
-import { Erc721TokenBalance, GlacierClient } from '@avalabs/glacier-sdk'
+import {
+  CurrencyCode,
+  Erc721TokenBalance,
+  GlacierClient
+} from '@avalabs/glacier-sdk'
 import { NFTItemData, NFTItemExternalData, NftResponse } from 'store/nft'
 import Logger from 'utils/Logger'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
-import nftProcessor from 'services/nft/NftProcessor'
-import { getNftUID } from 'services/nft/NftService'
 import { GLACIER_URL } from 'utils/glacierUtils'
+import { pipeAsyncFunctions } from 'utils/js/pipeAsyncFunctions'
+import {
+  addMissingFields,
+  applyImageAndAspect,
+  convertIPFSResolver
+} from './utils'
 
 const demoAddress = '0x188c30e9a6527f5f0c3f7fe59b72ac7253c62f28'
 
@@ -29,27 +37,16 @@ export class GlacierNftProvider implements NftProvider {
   async fetchNfts(
     chainId: number,
     address: string,
-    pageToken?: string,
-    selectedCurrency?: string
+    selectedCurrency = 'usd',
+    pageToken?: string
   ): Promise<NftResponse> {
     Logger.info('fetching nfts using Glacier')
+
     const nftBalancesResp = await this.glacierSdk.listErc721Balances(
       chainId.toString(),
       DevDebuggingConfig.SHOW_DEMO_NFTS ? demoAddress : address,
       {
-        currency: selectedCurrency?.toLocaleLowerCase() as
-          | 'usd'
-          | 'eur'
-          | 'aud'
-          | 'cad'
-          | 'chf'
-          | 'clp'
-          | 'czk'
-          | 'dkk'
-          | 'gbp'
-          | 'hkd'
-          | 'huf'
-          | undefined,
+        currency: selectedCurrency.toLocaleLowerCase() as CurrencyCode,
         // glacier has a cap on page size of 100
         pageSize: 10,
         pageToken: pageToken
@@ -59,41 +56,27 @@ export class GlacierNftProvider implements NftProvider {
       nftBalancesResp.erc721TokenBalances as Erc721TokenBalance[]
     const nextPageToken = nftBalancesResp.nextPageToken
 
-    const nftWithMetadataPromises = nftBalances.map(nft =>
-      this.applyMetadata(nft)
+    const processData = pipeAsyncFunctions(
+      this.applyMetadata.bind(this),
+      applyImageAndAspect,
+      addMissingFields(address)
     )
-    const metadataResults = await Promise.allSettled(nftWithMetadataPromises)
-    const nftWithMetadata = [] as NFTItemData[]
-    metadataResults.forEach(result => {
-      if (result.status === 'fulfilled') {
-        nftWithMetadata.push(result.value)
-      }
-    })
 
-    const fullNftPromises = nftWithMetadata.map(nft =>
-      this.applyImageAndAspect(nft)
+    const nftBalancesWithMetaData = await Promise.allSettled(
+      nftBalances.map(processData)
     )
-    const fullNftResults = await Promise.allSettled(fullNftPromises)
-    const fullNftData = [] as NFTItemData[]
-    fullNftResults.forEach(result => {
-      if (result.status === 'fulfilled') {
-        fullNftData.push(result.value)
-      }
-    })
 
-    const nftData = fullNftData.map(nft => {
-      return {
-        ...nft,
-        uid: getNftUID(nft),
-        isShowing: true,
-        owner: address
-      } as NFTItemData
-    })
+    const nfts = nftBalancesWithMetaData.reduce<NFTItemData[]>(
+      (acc, result) => {
+        return result.status === 'fulfilled' ? [...acc, result.value] : acc
+      },
+      []
+    )
 
     return {
-      nfts: nftData,
+      nfts,
       nextPageToken
-    } as NftResponse
+    }
   }
 
   private async applyMetadata(nft: Erc721TokenBalance) {
@@ -111,20 +94,10 @@ export class GlacierNftProvider implements NftProvider {
       return metadata as NFTItemExternalData
     } else {
       const metadata: NFTItemExternalData = await this.metadataHttpClient.get(
-        tokenUri
+        convertIPFSResolver(tokenUri)
       )
       return metadata
     }
-  }
-
-  private async applyImageAndAspect(nftData: NFTItemData) {
-    const [image, aspect, isSvg] = await nftProcessor.fetchImageAndAspect(
-      nftData.image
-    )
-    nftData.image = image
-    nftData.aspect = aspect
-    nftData.isSvg = isSvg
-    return nftData
   }
 
   private async isHealthy() {
