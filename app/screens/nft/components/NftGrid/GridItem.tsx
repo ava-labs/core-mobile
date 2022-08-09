@@ -13,6 +13,27 @@ const PARENT_PADDING = 16
 const GRID_ITEM_WIDTH =
   (SCREEN_WIDTH - GRID_ITEM_MARGIN * 4 - PARENT_PADDING * 2) / 2
 
+const ErrorFallback = ({ item }: { item: NFTItemData }) => {
+  const { theme } = useApplicationContext()
+
+  return (
+    <View
+      style={{
+        backgroundColor: theme.colorPrimary1 + Opacity15,
+        padding: 10,
+        borderRadius: 8,
+        width: GRID_ITEM_WIDTH,
+        height: GRID_ITEM_WIDTH,
+        justifyContent: 'center'
+      }}>
+      <AvaText.Heading2 ellipsizeMode={'tail'}>
+        #{item.tokenId}
+      </AvaText.Heading2>
+      <AvaText.Body2 ellipsizeMode={'tail'}>{item.name}</AvaText.Body2>
+    </View>
+  )
+}
+
 export const GridItem = ({
   item,
   onItemSelected
@@ -20,7 +41,6 @@ export const GridItem = ({
   item: NFTItemData
   onItemSelected: (item: NFTItemData) => void
 }) => {
-  const { theme } = useApplicationContext()
   const [imgLoadFailed, setImgLoadFailed] = useState(false)
 
   return (
@@ -30,21 +50,8 @@ export const GridItem = ({
       style={{
         margin: GRID_ITEM_MARGIN
       }}>
-      {imgLoadFailed ? (
-        <View
-          style={{
-            backgroundColor: theme.colorPrimary1 + Opacity15,
-            padding: 10,
-            borderRadius: 8,
-            width: GRID_ITEM_WIDTH,
-            height: GRID_ITEM_WIDTH,
-            justifyContent: 'center'
-          }}>
-          <AvaText.Heading2 ellipsizeMode={'tail'}>
-            #{item.tokenId}
-          </AvaText.Heading2>
-          <AvaText.Body2 ellipsizeMode={'tail'}>{item.name}</AvaText.Body2>
-        </View>
+      {!item.image || imgLoadFailed ? (
+        <ErrorFallback item={item} />
       ) : item.isSvg ? (
         <SvgXml
           xml={item.image}
