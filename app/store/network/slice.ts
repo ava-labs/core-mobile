@@ -147,6 +147,12 @@ export const selectIsTestnet = (chainId: number) => (state: RootState) => {
   return network?.isTestnet
 }
 
+export const selectIsCustomNetwork =
+  (chainId: number) => (state: RootState) => {
+    const customNetworks = _selectCustomNetworks(state)
+    return !!customNetworks[chainId]
+  }
+
 export const {
   setNetworks,
   setActive,
