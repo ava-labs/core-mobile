@@ -58,15 +58,14 @@ enum NoWalletScreens {
   CurrencySelector = 'NoWalletScreens.CurrencySelector',
   Drawer = 'NoWalletScreens.Drawer',
   Tabs = 'NoWalletScreens.Tabs',
-  TokenDetail = 'NoWalletScreens.TokenDetail',
   EnterWithMnemonicStack = 'NoWalletScreens.EnterWithMnemonicStack',
   CreateWalletStack = 'NoWalletScreens.CreateWalletStack'
 }
 
 enum NoWalletTabs {
-  NewWallet = 'NoWalletTabs.NewWallet',
-  ExistingWallet = 'NoWalletTabs.ExistingWallet',
-  EnterWallet = 'NoWalletTabs.EnterWallet'
+  ExistingWallet = 'Existing Wallet',
+  NewWallet = 'New Wallet',
+  EnterWallet = 'Enter Wallet'
 }
 
 enum ReceiveTokensScreens {
@@ -116,10 +115,7 @@ enum Tabs {
   Watchlist = 'Watchlist',
   Tabs = 'Tabs',
   Fab = 'Fab',
-  Bridge = 'Bridge',
-  ExistingWallet = 'Existing Wallet',
-  NewWallet = 'New Wallet',
-  EnterWallet = 'Enter Wallet'
+  Bridge = 'Bridge'
 }
 
 enum ModalScreens {

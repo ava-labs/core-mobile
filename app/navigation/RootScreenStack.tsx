@@ -76,15 +76,15 @@ const RootScreenStack = () => {
         animationEnabled: false
       }}>
       <RootStack.Screen
-        name={AppNavigation.Root.Onboard}
-        component={OnboardScreenStack}
+        name={AppNavigation.Root.NoWallet}
+        component={NoWalletScreenStack}
         options={{
           animationEnabled: false
         }}
       />
       <RootStack.Screen
-        name={AppNavigation.Root.NoWallet}
-        component={NoWalletScreenStack}
+        name={AppNavigation.Root.Onboard}
+        component={OnboardScreenStack}
         options={{
           animationEnabled: false
         }}

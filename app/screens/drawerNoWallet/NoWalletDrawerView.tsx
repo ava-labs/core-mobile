@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { FC } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import CurrencyItem from 'screens/drawer/components/CurrencyItem'
@@ -13,10 +13,14 @@ import CreateNewWalletItem from 'screens/drawerNoWallet/components/CreateNewWall
 import AccessExistingWalletItem from 'screens/drawerNoWallet/components/AccessExistingWalletItem'
 import { DrawerContentComponentProps } from '@react-navigation/drawer'
 
-const NoWalletDrawerView = (props: DrawerContentComponentProps) => {
+interface Props {
+  drawerProps: DrawerContentComponentProps
+}
+
+const NoWalletDrawerView: FC<Props> = ({ drawerProps }) => {
   const context = useApplicationContext()
   const header = (
-    <Row {...props} style={styles.headerContainer}>
+    <Row {...drawerProps} style={styles.headerContainer}>
       <DrawerLogo />
     </Row>
   )

@@ -81,8 +81,8 @@ export function useApp(
   async function signOut() {
     walletSetupHook.destroyWallet()
     repository.flush()
-    appNavHook.resetNavToRoot()
     dispatch(onLogOut())
+    appNavHook.resetNavToRoot()
   }
 
   function onExit(): Observable<ExitEvents> {

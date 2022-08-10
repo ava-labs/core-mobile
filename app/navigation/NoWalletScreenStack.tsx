@@ -17,7 +17,7 @@ import { DrawerParamList } from 'navigation/wallet/DrawerScreenStack'
 export type NoWalletScreenStackParams = {
   [AppNavigation.NoWallet.Drawer]: NavigatorScreenParams<DrawerParamList>
   [AppNavigation.NoWallet.CurrencySelector]: undefined
-  [AppNavigation.NoWallet.TokenDetail]: undefined
+  [AppNavigation.Wallet.TokenDetail]: undefined
   [AppNavigation.NoWallet.EnterWithMnemonicStack]: undefined
   [AppNavigation.NoWallet.CreateWalletStack]: undefined
 }
@@ -54,7 +54,7 @@ export const NoWalletScreenStack = () => {
         options={{
           ...MainHeaderOptions('')
         }}
-        name={AppNavigation.NoWallet.TokenDetail}
+        name={AppNavigation.Wallet.TokenDetail}
         component={TokenDetail}
       />
     </NoWalletNavigator.Navigator>
@@ -73,7 +73,7 @@ const DrawerWatchlist = () => (
       drawerStyle: { width: '80%' }
     }}
     useLegacyImplementation
-    drawerContent={NoWalletDrawerView}>
+    drawerContent={props => <NoWalletDrawerView drawerProps={props} />}>
     <DrawerStack.Screen
       name={'NoWalletWatchlist'}
       component={NoWalletTabNavigator}
