@@ -25,7 +25,7 @@ export type NoWalletScreenStackParams = {
 }
 
 const NoWalletNavigator = createStackNavigator<NoWalletScreenStackParams>()
-const DrawerStack = createDrawerNavigator()
+const DrawerStack = createDrawerNavigator<NoWalletDrawerParamList>()
 
 export const NoWalletScreenStack = () => {
   return (
