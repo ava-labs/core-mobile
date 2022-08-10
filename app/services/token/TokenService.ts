@@ -30,7 +30,6 @@ import {
   NetworkVMType
 } from '@avalabs/chains-sdk'
 import NetworkService from 'services/network/NetworkService'
-import Logger from 'utils/Logger'
 import { MarketToken } from 'store/watchlist'
 import { ChartData, PriceWithMarketData } from './types'
 
@@ -164,12 +163,8 @@ export class TokenService {
         currency
       )
 
-      Logger.warn('stop here')
-
       setCache(cacheId, data)
     }
-
-    Logger.warn('stop here')
 
     return data
   }

@@ -7,7 +7,6 @@ import {
 } from '@avalabs/coingecko-sdk'
 import tokenService from 'services/token/TokenService'
 import { MarketToken } from 'store/watchlist'
-import Logger from 'utils/Logger'
 
 class WatchlistService {
   async getMarketData(
@@ -94,19 +93,12 @@ class WatchlistService {
 
     const data =
       allTokens.map((token: MarketToken) => {
-        if (token.symbol === 'SNOB') {
-          Logger.warn('stop here')
-        }
         const tokenPrice =
           tokenPriceDict[token.id.toLowerCase()]?.[currency as VsCurrencyType]
         const priceUSD = tokenPrice?.price ?? 0
         const marketCap = tokenPrice?.marketCap ?? 0
         const change24 = tokenPrice?.change24 ?? 0
         const vol24 = tokenPrice?.vol24 ?? 0
-
-        if (token.type === TokenType.ERC20) {
-          Logger.warn('got here')
-        }
 
         return {
           ...token,

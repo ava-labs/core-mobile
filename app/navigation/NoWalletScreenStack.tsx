@@ -1,5 +1,8 @@
 import { createStackNavigator } from '@react-navigation/stack'
-import { createDrawerNavigator } from '@react-navigation/drawer'
+import {
+  createDrawerNavigator,
+  DrawerContentComponentProps
+} from '@react-navigation/drawer'
 import AppNavigation from 'navigation/AppNavigation'
 import React from 'react'
 import NoWalletTabNavigator, {
@@ -75,6 +78,11 @@ export type NoWalletDrawerParamList = {
     .Tabs]: NavigatorScreenParams<NoWalletTabNavigatorParamList>
 }
 
+// this makes linter stop complaining about not creating components at re-render
+function ExtractDrawerView(props: DrawerContentComponentProps) {
+  return <NoWalletDrawerView drawerProps={props} />
+}
+
 const DrawerWatchlist = () => (
   <DrawerStack.Navigator
     screenOptions={{
@@ -82,9 +90,9 @@ const DrawerWatchlist = () => (
       drawerStyle: { width: '80%' }
     }}
     useLegacyImplementation
-    drawerContent={props => <NoWalletDrawerView drawerProps={props} />}>
+    drawerContent={ExtractDrawerView}>
     <DrawerStack.Screen
-      name={'NoWalletWatchlist'}
+      name={AppNavigation.NoWallet.Tabs}
       component={NoWalletTabNavigator}
     />
   </DrawerStack.Navigator>
