@@ -17,13 +17,12 @@ import {
   removeCustomNetwork,
   selectFavoriteNetworks,
   selectIsCustomNetwork,
+  selectNetworks,
   toggleFavorite
 } from 'store/network'
 
 export function NetworkDetailsAction() {
-  const {
-    network: { chainId }
-  } = useRoute<NetworkDetailsScreenProps['route']>().params
+  const { chainId } = useRoute<NetworkDetailsScreenProps['route']>().params
   const isCustomNetwork = useSelector(selectIsCustomNetwork(chainId))
 
   return (
@@ -59,8 +58,8 @@ function CustomNetworkDropdown() {
   const dispatch = useDispatch()
   const { params } = useRoute<NetworkDetailsScreenProps['route']>()
   const { navigate } = useNavigation<NetworkSelectorScreenProps['navigation']>()
-
-  const network = params.network
+  const networks = useSelector(selectNetworks)
+  const network = networks[params.chainId]
 
   function handleEdit() {
     navigate(AppNavigation.Wallet.NetworkAddEdit, {

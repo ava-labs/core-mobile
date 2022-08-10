@@ -51,7 +51,9 @@ import NFTScreenStack, {
 import NftManage from 'screens/nft/NftManage'
 import SharedBridgeTransactionStatus from 'screens/shared/BridgeTransactionStatus'
 import NetworkManager from 'screens/network/NetworkManager'
-import NetworkDetails from 'screens/network/NetworkDetails'
+import NetworkDetails, {
+  NetworkDetailsProps
+} from 'screens/network/NetworkDetails'
 import AvaButton from 'components/AvaButton'
 import { onAppUnlocked, selectIsLocked } from 'store/app'
 import { Network } from '@avalabs/chains-sdk'
@@ -106,7 +108,7 @@ export type WalletScreenStackParams = {
     | undefined
   [AppNavigation.Wallet.CurrencySelector]: undefined
   [AppNavigation.Wallet.NetworkSelector]: undefined
-  [AppNavigation.Wallet.NetworkDetails]: { network: Network }
+  [AppNavigation.Wallet.NetworkDetails]: NetworkDetailsProps
   [AppNavigation.Wallet.NetworkAddEdit]: AddEditNetworkProps
   [AppNavigation.Wallet.Advanced]: NavigatorScreenParams<AdvancedStackParamList>
   [AppNavigation.Wallet.SecurityPrivacy]:
@@ -414,10 +416,8 @@ type NetworkSelectorScreenProps = WalletScreenProps<
 function NetworkSelectorScreen() {
   const { navigate } = useNavigation<NetworkSelectorScreenProps['navigation']>()
 
-  function showNetworkDetails(network: Network) {
-    navigate(AppNavigation.Wallet.NetworkDetails, {
-      network: network
-    })
+  function showNetworkDetails({ chainId }: Network) {
+    navigate(AppNavigation.Wallet.NetworkDetails, { chainId })
   }
 
   return <NetworkManager onShowInfo={showNetworkDetails} />
@@ -444,7 +444,7 @@ type NetworkDetailsScreenProps = WalletScreenProps<
 function NetworkDetailsScreen() {
   const { params } = useRoute<NetworkDetailsScreenProps['route']>()
 
-  return <NetworkDetails network={params.network} />
+  return <NetworkDetails chainId={params.chainId} />
 }
 
 type NetworkAddEditScreenProps = WalletScreenProps<
