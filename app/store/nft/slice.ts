@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { NftUID } from 'services/nft/types'
 import { RootState } from 'store'
-import { NftUID } from 'services/nft/NftService'
+
 import { initialState } from './types'
 
 const reducerName = 'nft'
