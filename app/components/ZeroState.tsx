@@ -145,13 +145,6 @@ function ZeroStateNoRecentAccounts() {
   return <ZeroStateBase title={title} message={message} />
 }
 
-function ZeroStateNoFavoriteNetworks() {
-  const title = 'No favorites'
-  const message = 'Select one from other two lists'
-
-  return <ZeroStateBase title={title} message={message} />
-}
-
 function ZeroStateEmptyAddressBook({
   onGoToAddressBook
 }: {
@@ -206,11 +199,11 @@ function ZeroStateNoWatchlistFavorites() {
 }
 
 const ZeroState = {
+  Basic: ZeroStateBase,
   NetworkTokens: ZeroStateNetworkTokens,
   Collectibles: ZeroStateCollectibles,
   NoResultsTextual: ZeroStateNoResults,
   NoRecentAccounts: ZeroStateNoRecentAccounts,
-  NoFavoriteNetworks: ZeroStateNoFavoriteNetworks,
   EmptyAddressBook: ZeroStateEmptyAddressBook,
   ComingSoon: ZeroStateComingSoon,
   SendError: ZeroStateSendError,

@@ -121,7 +121,10 @@ export default function NetworkManager({ onShowInfo }: Props) {
             contentContainerStyle={{ paddingHorizontal: 16 }}
             ListEmptyComponent={
               <View style={{ marginVertical: 40 }}>
-                <ZeroState.NoFavoriteNetworks />
+                <ZeroState.Basic
+                  title="No favorites"
+                  message="Select one from other two lists"
+                />
               </View>
             }
           />
@@ -134,7 +137,7 @@ export default function NetworkManager({ onShowInfo }: Props) {
             contentContainerStyle={{ paddingHorizontal: 16 }}
             ListEmptyComponent={
               <View style={{ marginVertical: 40 }}>
-                <ZeroState.NoFavoriteNetworks />
+                <ZeroState.Basic title="Loading networks" />
               </View>
             }
           />
@@ -147,7 +150,10 @@ export default function NetworkManager({ onShowInfo }: Props) {
             contentContainerStyle={{ paddingHorizontal: 16 }}
             ListEmptyComponent={
               <View style={{ marginVertical: 40 }}>
-                <ZeroState.NoFavoriteNetworks />
+                <ZeroState.Basic
+                  title="No custom networks"
+                  message="Click the + button to add a network"
+                />
               </View>
             }
           />
