@@ -14,6 +14,7 @@ const SecurityItem = () => {
   return (
     <AvaListItem.Base
       title={'Security & Privacy'}
+      showNavigationArrow
       onPress={() => {
         navigation.navigate(AppNavigation.Wallet.SecurityPrivacy)
       }}
