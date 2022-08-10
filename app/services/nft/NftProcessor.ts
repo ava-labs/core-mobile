@@ -1,4 +1,5 @@
 import { Image } from 'react-native'
+import { convertIPFSResolver } from './utils'
 
 export class NftProcessor {
   private base64 = require('base-64')
@@ -9,16 +10,22 @@ export class NftProcessor {
       if (this.isBase64Svg(imageData)) {
         const svg = this.decodeBase64Svg(imageData)
         const aspect = this.extractSvgAspect(svg) ?? 1
-        resolve([svg, aspect, true])
+
+        // react-native-svg crashes on some complex svgs
+        // disable svg support for now by returning false for isSvg property
+        // TODO: figure out a solution to support complex svgs
+        resolve(['', aspect, false])
       } else {
+        const imageUrl = convertIPFSResolver(imageData)
+
         Image.getSize(
-          imageData,
+          imageUrl,
           (width: number, height: number) => {
             const aspect = height / width
-            resolve([imageData, aspect, false])
+            resolve([imageUrl, aspect, false])
           },
           _ => {
-            resolve([imageData, 1, false])
+            resolve([imageUrl, 1, false])
           }
         )
       }
