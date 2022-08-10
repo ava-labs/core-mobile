@@ -59,6 +59,9 @@ export const selectWatchlistTokens = (state: RootState) =>
 export const selectWatchlistFavorites = (state: RootState) =>
   state.watchlist.favorites
 
+export const selectWatchlistFavoritesIsEmpty = (state: RootState) =>
+  state.watchlist.favorites.length === 0
+
 // actions
 export const {
   toggleFavorite: toggleWatchListFavorite,

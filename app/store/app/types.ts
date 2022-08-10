@@ -1,5 +1,11 @@
 import { AppStateStatus } from 'react-native'
 
+export enum WalletState {
+  NONEXISTENT,
+  ACTIVE,
+  INACTIVE
+}
+
 export type AppState = {
   // this flag is used to show a splash screen
   // while the app is running some initial operations (fetching networks, warming up BiometricsSDK,...)
@@ -11,4 +17,7 @@ export type AppState = {
 
   // indicates whether app is in background, foreground,...
   appState: AppStateStatus
+
+  // indicates whether wallet
+  walletState: WalletState
 }

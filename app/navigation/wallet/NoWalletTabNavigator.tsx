@@ -4,7 +4,7 @@ import {
   createBottomTabNavigator
 } from '@react-navigation/bottom-tabs'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { usePosthogContext } from 'contexts/PosthogContext'
@@ -15,8 +15,8 @@ import AvaButton from 'components/AvaButton'
 import { useNavigation } from '@react-navigation/native'
 import { NoWalletDrawerScreenProps } from 'navigation/types'
 import WatchlistTabView from 'screens/watchlist/WatchlistTabView'
-import AsyncStorage from '@react-native-async-storage/async-storage'
-import { SECURE_ACCESS_SET } from 'resources/Constants'
+import { useSelector } from 'react-redux'
+import { selectWalletState, WalletState } from 'store/app'
 
 export type NoWalletTabNavigatorParamList = {
   [AppNavigation.NoWalletTabs.NewWallet]: undefined
@@ -49,17 +49,7 @@ const NoWalletTabNavigator = () => {
   const theme = useApplicationContext().theme
   const { capture } = usePosthogContext()
   const navigation = useNavigation<NavigationProp>()
-  const [hasSession, setHasSession] = useState(false)
-
-  useEffect(() => {
-    AsyncStorage.getItem(SECURE_ACCESS_SET).then(result => {
-      if (result) {
-        setHasSession(true)
-      } else {
-        setHasSession(false)
-      }
-    })
-  }, [])
+  const walletState = useSelector(selectWalletState)
 
   /**
    * extracts creation of "normal" tab items
@@ -103,7 +93,7 @@ const NoWalletTabNavigator = () => {
         },
         header: props => header(props, navigation)
       })}>
-      {hasSession ? (
+      {walletState !== WalletState.NONEXISTENT ? (
         <Tab.Screen
           name={AppNavigation.NoWalletTabs.EnterWallet}
           component={WatchlistTabView}
@@ -139,7 +129,7 @@ const NoWalletTabNavigator = () => {
             options={{
               tabBarIcon: () =>
                 normalTabButtons(
-                  AppNavigation.NoWallet.EnterWithMnemonicStack,
+                  AppNavigation.NoWalletTabs.ExistingWallet,
                   true,
                   <WalletSVG size={TAB_ICON_SIZE} />
                 )
