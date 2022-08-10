@@ -15,6 +15,7 @@ import { DrawerContentComponentProps } from '@react-navigation/drawer'
 import { useSelector } from 'react-redux'
 import { selectWalletState, WalletState } from 'store/app'
 import SignOutItem from 'screens/drawer/components/SignOutItem'
+import FlexSpacer from 'components/FlexSpacer'
 
 interface Props {
   drawerProps: DrawerContentComponentProps
@@ -44,12 +45,14 @@ const Main = () => {
       style={{
         flex: 1
       }}>
-      <ScrollView>
-        <CreateNewWalletItem {...(walletState !== WalletState.NONEXISTENT)} />
-        <AccessExistingWalletItem
-          {...(walletState !== WalletState.NONEXISTENT)}
-        />
-      </ScrollView>
+      {walletState === WalletState.NONEXISTENT ? (
+        <ScrollView>
+          <CreateNewWalletItem />
+          <AccessExistingWalletItem />
+        </ScrollView>
+      ) : (
+        <FlexSpacer />
+      )}
       <Separator style={{ marginHorizontal: 16 }} />
       <CurrencyItem />
       <Separator style={{ marginHorizontal: 16 }} />

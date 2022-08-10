@@ -12,12 +12,8 @@ import {
 } from 'store/watchlist/slice'
 import { Action, isAnyOf } from '@reduxjs/toolkit'
 
-type EmptyAction = {
-  empty: string
-}
-
 async function fetchWatchlist(
-  action: Action<EmptyAction>,
+  action: Action,
   listenerApi: AppListenerEffectAPI
 ) {
   const dispatch = listenerApi.dispatch

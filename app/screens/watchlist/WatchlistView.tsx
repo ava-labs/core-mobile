@@ -79,6 +79,7 @@ const WatchlistView: React.FC<Props> = ({
     }
   }, [filterTime])
   const [tokens, setTokens] = useState<MarketToken[]>([])
+  const isSearching = !isEmpty(searchText)
 
   useEffect(() => {
     async function loadAsync() {
@@ -136,6 +137,13 @@ const WatchlistView: React.FC<Props> = ({
     item => item === filterTime
   )
 
+  // favorites are loaded locally. We only show the if we query
+  // coingecko when searching OR if we're NOT on
+  // the favorites tab and tokens are empty
+  // todo: update API calls to use RTK Query
+  const showLoader =
+    loadingSearch || (!showFavorites && watchlistTokens.length === 0)
+
   return (
     <SafeAreaProvider style={styles.container}>
       <>
@@ -157,10 +165,7 @@ const WatchlistView: React.FC<Props> = ({
             selectionRenderItem={renderTimeFilterSelection}
           />
         </View>
-        {(!showFavorites &&
-          watchlistTokens.length === 0 &&
-          !isEmpty(searchText)) ||
-        loadingSearch ? (
+        {showLoader ? (
           <WatchListLoader />
         ) : (
           <>
@@ -169,7 +174,7 @@ const WatchlistView: React.FC<Props> = ({
               filterBy={filterBy}
               filterTimeDays={filterTimeDays}
               isShowingFavorites={showFavorites}
-              isSearching={!isEmpty(searchText)}
+              isSearching={isSearching}
             />
             {showFavorites && tokens.length === 0 && (
               <AvaButton.SecondaryLarge

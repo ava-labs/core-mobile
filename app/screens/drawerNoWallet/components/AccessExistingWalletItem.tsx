@@ -9,7 +9,7 @@ type NavigationProp = NoWalletScreenProps<
   typeof AppNavigation.NoWallet.Drawer
 >['navigation']
 
-const AccessExistingWalletItem = (disabled: boolean | undefined) => {
+const AccessExistingWalletItem = () => {
   const navigation = useNavigation<NavigationProp>()
 
   return (
@@ -18,7 +18,6 @@ const AccessExistingWalletItem = (disabled: boolean | undefined) => {
         title={'Access existing wallet'}
         titleAlignment={'flex-start'}
         showNavigationArrow
-        disabled={disabled}
         leftComponent={<WalletSVG size={18} />}
         rightComponentVerticalAlignment={'center'}
         onPress={() => {
