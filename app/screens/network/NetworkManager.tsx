@@ -47,15 +47,19 @@ export default function NetworkManager({ onShowInfo }: Props) {
     () =>
       Object.values(networks)
         .filter(network => !customNetworkChainIds.includes(network.chainId))
-        .filter(filterBySearchText),
+        .filter(filterBySearchText)
+        .sort(sortNetworks),
     [customNetworkChainIds, filterBySearchText, networks]
   )
   const filteredCustomNetworks = useMemo(
-    () => Object.values(customNetworks).filter(filterBySearchText),
+    () =>
+      Object.values(customNetworks)
+        .filter(filterBySearchText)
+        .sort(sortNetworks),
     [customNetworks, filterBySearchText]
   )
   const favorites = useMemo(
-    () => favoriteNetworks.filter(filterBySearchText),
+    () => favoriteNetworks.filter(filterBySearchText).sort(sortNetworks),
     [favoriteNetworks, filterBySearchText]
   )
 
@@ -161,4 +165,8 @@ export default function NetworkManager({ onShowInfo }: Props) {
       </TabViewAva>
     </View>
   )
+}
+
+function sortNetworks(a: Network, b: Network) {
+  return a.chainName.localeCompare(b.chainName)
 }
