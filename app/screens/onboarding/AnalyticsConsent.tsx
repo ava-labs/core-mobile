@@ -9,6 +9,7 @@ import { Row } from 'components/Row'
 import CheckmarkSVG from 'components/svg/CheckmarkSVG'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { usePosthogContext } from 'contexts/PosthogContext'
+import { PRIVACY_POLICY_URL } from 'resources/Constants'
 
 type Props = {
   nextScreen:
@@ -26,7 +27,7 @@ const AnalyticsConsent = ({ onNextScreen, nextScreen }: Props) => {
   const { capture } = usePosthogContext()
 
   function openPrivacyPolicy() {
-    Linking.openURL('https://wallet.avax.network/legal').catch(() => undefined)
+    Linking.openURL(PRIVACY_POLICY_URL).catch(() => undefined)
   }
 
   function acceptAnalytics() {

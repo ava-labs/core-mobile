@@ -84,6 +84,10 @@ enum SecurityPrivacyScreens {
   DappList = 'SecurityPrivacyScreens.DappList'
 }
 
+enum LegalScreens {
+  Legal = 'LegalScreens.Legal'
+}
+
 enum AdvancedScreens {
   Advanced = 'AdvancedScreens.Advanced'
 }
@@ -141,6 +145,7 @@ const AppNavigation = {
   LoginWithMnemonic: LoginWithMnemonicStackScreens,
   Wallet: WalletScreens,
   SecurityPrivacy: SecurityPrivacyScreens,
+  Legal: LegalScreens,
   Advanced: AdvancedScreens,
   Tabs: Tabs,
   Modal: ModalScreens,

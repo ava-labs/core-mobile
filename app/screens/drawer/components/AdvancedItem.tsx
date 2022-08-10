@@ -19,7 +19,9 @@ export default function AdvancedItem() {
         leftComponent={null}
         rightComponent={<CarrotSVG />}
         onPress={() => {
-          navigation.navigate(AppNavigation.Wallet.Advanced)
+          navigation.navigate(AppNavigation.Wallet.Advanced, {
+            screen: AppNavigation.Advanced.Advanced
+          })
         }}
       />
     </>

@@ -12,6 +12,7 @@ import {
   RemoveEvents,
   useBeforeRemoveListener
 } from 'hooks/useBeforeRemoveListener'
+import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from 'resources/Constants'
 
 interface Props {
   onNext: () => void
@@ -36,15 +37,11 @@ const TermsNConditionsModal = ({ onNext, onReject }: Props) => {
   }
 
   function openTermsOfUse() {
-    Linking.openURL('https://wallet.avax.network/legal?core').catch(
-      () => undefined
-    )
+    Linking.openURL(TERMS_OF_USE_URL).catch(() => undefined)
   }
 
   function openPrivacyPolicy() {
-    Linking.openURL('https://wallet.avax.network/legal?coreToS').catch(
-      () => undefined
-    )
+    Linking.openURL(PRIVACY_POLICY_URL).catch(() => undefined)
   }
 
   function toggleTou() {
