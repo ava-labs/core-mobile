@@ -103,6 +103,19 @@ export const selectNetworks = createSelector(
     return { ...populatedNetworks, ...populatedCustomNetworks }
   }
 )
+
+export const selectCustomNetworks = createSelector(
+  [selectNetworks, _selectCustomNetworks],
+  (networks, customNetworks) => {
+    const customNetworkChainIds = Object.values(customNetworks).map(
+      n => n.chainId
+    )
+    return Object.values(networks).filter(n =>
+      customNetworkChainIds.includes(n.chainId)
+    )
+  }
+)
+
 export const selectActiveNetwork = createSelector(
   [selectNetworks, selectActiveChainId],
   (networks, chainId) => {
