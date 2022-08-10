@@ -10,25 +10,19 @@ export const watchlistSlice = createSlice({
   reducers: {
     toggleFavorite: (state, action: PayloadAction<MarketToken>) => {
       const token = action.payload
-      if (!state.favorites.includes(token)) {
+      if (!state.favorites.some(tk => tk.id === token.id)) {
         // set favorite
         state.favorites.push(token)
       } else {
         // unset favorite
-        const newFavorites = state.favorites.filter(tk => tk.id !== token.id)
-        state.favorites = newFavorites
+        state.favorites = state.favorites.filter(tk => tk.id !== token.id)
       }
     },
     appendWatchlist: (state, action: PayloadAction<MarketToken[]>) => {
       const newTokens: MarketToken[] = []
       for (const newToken of action.payload) {
-        let token: MarketToken | undefined
-        for (const existingToken of state.tokens) {
-          if (newToken.id === existingToken.id) {
-            token = existingToken
-          }
-        }
-        if (!token) {
+        const exists = state.tokens.some(tk => tk.id === newToken.id)
+        if (!exists) {
           newTokens.push(newToken)
         }
       }
@@ -71,10 +65,6 @@ export const {
 
 export const onWatchlistRefresh = createAction(
   `${reducerName}/onWatchlistRefresh`
-)
-
-export const onAppendToWatchlist = createAction(
-  `${reducerName}/onAppendToWatchlist`
 )
 
 export const watchlistReducer = watchlistSlice.reducer

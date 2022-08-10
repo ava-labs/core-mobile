@@ -4,16 +4,29 @@ import { AppListenerEffectAPI } from 'store/index'
 import watchlistService from 'services/watchlist/WatchlistService'
 import { selectActiveNetwork, selectNetworks, setActive } from 'store/network'
 import { selectSelectedCurrency } from 'store/settings/currency'
-import { onWatchlistRefresh, setWatchlistTokens } from 'store/watchlist/slice'
-import { isAnyOf } from '@reduxjs/toolkit'
+import {
+  appendWatchlist,
+  onWatchlistRefresh,
+  selectWatchlistFavorites,
+  setWatchlistTokens
+} from 'store/watchlist/slice'
+import { Action, isAnyOf } from '@reduxjs/toolkit'
 
-async function fetchWatchlist(action: any, listenerApi: AppListenerEffectAPI) {
+type EmptyAction = {
+  empty: string
+}
+
+async function fetchWatchlist(
+  action: Action<EmptyAction>,
+  listenerApi: AppListenerEffectAPI
+) {
   const dispatch = listenerApi.dispatch
   const state = listenerApi.getState()
   const allNetworks = Object.values(selectNetworks(state) ?? [])
   const network = selectActiveNetwork(state)
   const currency = selectSelectedCurrency(state)
 
+  const favoriteTokens = selectWatchlistFavorites(state)
   const watchlistTokens = await watchlistService.getMarketData(
     network,
     currency.toLowerCase(),
@@ -21,6 +34,7 @@ async function fetchWatchlist(action: any, listenerApi: AppListenerEffectAPI) {
   )
 
   dispatch(setWatchlistTokens(watchlistTokens))
+  dispatch(appendWatchlist(favoriteTokens))
 }
 
 export const addWatchlistListeners = (startListening: AppStartListening) => {
