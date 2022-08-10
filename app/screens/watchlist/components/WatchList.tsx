@@ -16,13 +16,21 @@ interface Props {
   tokens: MarketToken[]
   filterBy: WatchlistFilter
   filterTimeDays: number
+  isShowingFavorites?: boolean
+  isSearching?: boolean
 }
 
 type NavigationProp = TabsScreenProps<
   typeof AppNavigation.Tabs.Watchlist
 >['navigation']
 
-const WatchList: React.FC<Props> = ({ tokens, filterBy, filterTimeDays }) => {
+const WatchList: React.FC<Props> = ({
+  tokens,
+  filterBy,
+  filterTimeDays,
+  isShowingFavorites,
+  isSearching
+}) => {
   const navigation = useNavigation<NavigationProp>()
   const { currencyFormatter } = useApplicationContext().appHook
   const dispatch = useDispatch()
@@ -69,7 +77,13 @@ const WatchList: React.FC<Props> = ({ tokens, filterBy, filterTimeDays }) => {
       data={tokens}
       renderItem={renderItem}
       ItemSeparatorComponent={SeparatorComponent}
-      ListEmptyComponent={EmptyComponent}
+      ListEmptyComponent={
+        isShowingFavorites && !isSearching ? (
+          <ZeroState.NoWatchlistFavorites />
+        ) : (
+          <ZeroState.NoResultsTextual />
+        )
+      }
       refreshing={false}
       onRefresh={() => dispatch(onWatchlistRefresh)}
       keyExtractor={keyExtractor}
@@ -82,8 +96,6 @@ const WatchList: React.FC<Props> = ({ tokens, filterBy, filterTimeDays }) => {
     />
   )
 }
-
-const EmptyComponent = <ZeroState.NoResultsTextual />
 
 const SeparatorComponent = () => (
   <Separator style={styles.separator} inset={8} />

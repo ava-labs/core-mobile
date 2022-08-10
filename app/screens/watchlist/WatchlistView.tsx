@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { Dispatch, useEffect, useMemo, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
@@ -15,12 +15,15 @@ import watchlistService from 'services/watchlist/WatchlistService'
 import { useDispatch } from 'react-redux'
 import { selectIsLoadingBalances } from 'store/balance'
 import { WatchListLoader } from 'screens/watchlist/components/WatchListLoader'
+import isEmpty from 'lodash.isempty'
+import AvaButton from 'components/AvaButton'
 import { FilterTimeOptions, WatchlistFilter } from './types'
 import WatchList from './components/WatchList'
 
 interface Props {
   showFavorites?: boolean
   searchText?: string
+  onTabIndexChanged?: Dispatch<number>
 }
 
 const filterPriceOptions = [
@@ -55,7 +58,11 @@ const renderTimeFilterSelection = (selectedItem: FilterTimeOptions) => (
   <SelectionItem title={selectedItem} />
 )
 
-const WatchlistView: React.FC<Props> = ({ showFavorites, searchText }) => {
+const WatchlistView: React.FC<Props> = ({
+  showFavorites,
+  searchText,
+  onTabIndexChanged
+}) => {
   const watchlistFavorites = useFocusedSelector(selectWatchlistFavorites)
   const tokensWithBalance = useFocusedSelector(selectWatchlistTokens)
   const dispatch = useDispatch()
@@ -155,11 +162,22 @@ const WatchlistView: React.FC<Props> = ({ showFavorites, searchText }) => {
         {isLoadingBalances || loadingSearch ? (
           <WatchListLoader />
         ) : (
-          <WatchList
-            tokens={tokens}
-            filterBy={filterBy}
-            filterTimeDays={filterTimeDays}
-          />
+          <>
+            <WatchList
+              tokens={tokens}
+              filterBy={filterBy}
+              filterTimeDays={filterTimeDays}
+              isShowingFavorites={showFavorites}
+              isSearching={!isEmpty(searchText)}
+            />
+            {showFavorites && tokens.length === 0 && (
+              <AvaButton.SecondaryLarge
+                onPress={() => onTabIndexChanged?.(1)}
+                style={{ marginBottom: 128, marginHorizontal: 16 }}>
+                Explore all tokens
+              </AvaButton.SecondaryLarge>
+            )}
+          </>
         )}
       </>
     </SafeAreaProvider>

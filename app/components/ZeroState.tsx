@@ -3,6 +3,7 @@ import { Image, View } from 'react-native'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
 import { useApplicationContext } from 'contexts/ApplicationContext'
+import StarSVG from 'components/svg/StarSVG'
 import AvaText from './AvaText'
 
 interface BaseProps {
@@ -44,7 +45,7 @@ const ZeroStateBase: FC<BaseProps> = ({
   function getMessage() {
     if (typeof message === 'string') {
       return (
-        <AvaText.Body2 textStyle={{ color: theme.colorText1 }}>
+        <AvaText.Body2 textStyle={{ color: theme.colorText1, textAlign: 'center' }}>
           {message}
         </AvaText.Body2>
       )
@@ -57,7 +58,8 @@ const ZeroStateBase: FC<BaseProps> = ({
       style={{
         justifyContent: 'center',
         alignItems: 'center',
-        flex: 1
+        flex: 1,
+        marginHorizontal: 16
       }}>
       {getImage() && (
         <>
@@ -188,6 +190,19 @@ function ZeroStateNoTransactions() {
   return <ZeroStateBase title={title} message={message} />
 }
 
+function ZeroStateNoWatchlistFavorites() {
+  const title = 'No Favorites'
+  const message = 'Click the star icon on any token to mark it as a favorite.'
+
+  return (
+    <ZeroStateBase
+      title={title}
+      message={message}
+      image={<StarSVG size={60} />}
+    />
+  )
+}
+
 const ZeroState = {
   NetworkTokens: ZeroStateNetworkTokens,
   Collectibles: ZeroStateCollectibles,
@@ -197,7 +212,8 @@ const ZeroState = {
   EmptyAddressBook: ZeroStateEmptyAddressBook,
   ComingSoon: ZeroStateComingSoon,
   SendError: ZeroStateSendError,
-  NoTransactions: ZeroStateNoTransactions
+  NoTransactions: ZeroStateNoTransactions,
+  NoWatchlistFavorites: ZeroStateNoWatchlistFavorites
 }
 
 export default ZeroState
