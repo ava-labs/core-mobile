@@ -1,7 +1,10 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { View, TouchableHighlight, Text, StyleSheet } from 'react-native'
-import { selectBalanceTotalInCurrencyForNetwork } from 'store/balance'
+import {
+  selectBalanceTotalForNetwork,
+  selectBalanceTotalInCurrencyForNetwork
+} from 'store/balance'
 import AvaText from 'components/AvaText'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Opacity20, Opacity70, Opacity85 } from 'resources/Constants'
@@ -21,8 +24,11 @@ type NavigationProp = PortfolioScreenProps<
 
 const ActiveNetworkCard = () => {
   const network = useSelector(selectActiveNetwork)
-  const totalBalance = useSelector(
+  const totalBalanceInCurrency = useSelector(
     selectBalanceTotalInCurrencyForNetwork(network.chainId)
+  )
+  const totalBalance = useSelector(
+    selectBalanceTotalForNetwork(network.chainId)
   )
   const { navigate } = useNavigation<NavigationProp>()
   const {
@@ -39,7 +45,7 @@ const ActiveNetworkCard = () => {
     const balanceTextColor = theme.colorText3
     const tagTextColor = theme.colorBg2
     const tagBgColor = theme.colorText3
-    const balance = currencyFormatter(totalBalance)
+    const balance = currencyFormatter(totalBalanceInCurrency)
 
     return (
       <View style={styles.headerContainer}>
@@ -76,9 +82,7 @@ const ActiveNetworkCard = () => {
   }
 
   const renderContent = () => {
-    if (totalBalance === 0) {
-      return <ZeroState />
-    }
+    if (totalBalance.isZero()) return <ZeroState />
 
     return <Tokens />
   }

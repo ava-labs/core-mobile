@@ -20,10 +20,12 @@ const Tokens = () => {
     index: number,
     allTokens: TokenWithBalance[]
   ) => {
-    const { balanceInCurrency } = token
+    const { balanceDisplayValue, balanceInCurrency, symbol } = token
     const lastItem = index === allTokens.length - 1
     const marginBottom = lastItem ? 0 : 8
-    const price = currencyFormatter(balanceInCurrency ?? 0)
+    const formattedBalance = balanceInCurrency
+      ? currencyFormatter(balanceInCurrency)
+      : `${balanceDisplayValue} ${symbol}`
     const tokenTextColor = theme.colorText1
 
     return (
@@ -35,7 +37,7 @@ const Tokens = () => {
           {token.name}
         </AvaText.ButtonSmall>
         <AvaText.Caption ellipsizeMode={'tail'} color={tokenTextColor}>
-          {price}
+          {formattedBalance}
         </AvaText.Caption>
       </View>
     )
