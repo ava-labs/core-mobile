@@ -126,25 +126,25 @@ export default function AddEditNetwork({
     if (hasErrors()) return
 
     const customNetwork: Network = {
-      isTestnet,
       chainId: Number.parseInt(chainId, 10),
+      chainName: networkName,
+      description: '',
+      explorerUrl,
+      isTestnet,
+      logoUri,
+      mainnetChainId: 0,
       networkToken: {
-        symbol: nativeTokenName,
+        symbol: nativeTokenSymbol,
         name: nativeTokenName,
         description: '',
         decimals: 18,
         logoUri: ''
       },
-      explorerUrl,
-      chainName: networkName,
-      rpcUrl,
-      vmName: NetworkVMType.EVM,
-      logoUri: '',
-      mainnetChainId: 0,
       platformChainId: '',
+      rpcUrl,
       subnetId: '',
       vmId: '',
-      description: ''
+      vmName: NetworkVMType.EVM
     }
     dispatch(addCustomNetwork(customNetwork))
     onClose?.()
