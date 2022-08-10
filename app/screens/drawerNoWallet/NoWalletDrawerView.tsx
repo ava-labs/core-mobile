@@ -12,6 +12,9 @@ import DrawerLogo from 'screens/drawer/components/DrawerLogo'
 import CreateNewWalletItem from 'screens/drawerNoWallet/components/CreateNewWalletItem'
 import AccessExistingWalletItem from 'screens/drawerNoWallet/components/AccessExistingWalletItem'
 import { DrawerContentComponentProps } from '@react-navigation/drawer'
+import { useSelector } from 'react-redux'
+import { selectWalletState, WalletState } from 'store/app'
+import SignOutItem from 'screens/drawer/components/SignOutItem'
 
 interface Props {
   drawerProps: DrawerContentComponentProps
@@ -35,14 +38,17 @@ const NoWalletDrawerView: FC<Props> = ({ drawerProps }) => {
 }
 
 const Main = () => {
+  const walletState = useSelector(selectWalletState)
   return (
     <View
       style={{
         flex: 1
       }}>
       <ScrollView>
-        <CreateNewWalletItem />
-        <AccessExistingWalletItem />
+        <CreateNewWalletItem {...(walletState !== WalletState.NONEXISTENT)} />
+        <AccessExistingWalletItem
+          {...(walletState !== WalletState.NONEXISTENT)}
+        />
       </ScrollView>
       <Separator style={{ marginHorizontal: 16 }} />
       <CurrencyItem />
@@ -51,6 +57,7 @@ const Main = () => {
       <HelpItem />
       <Separator style={{ marginHorizontal: 16 }} />
       <VersionItem />
+      {walletState !== WalletState.NONEXISTENT && <SignOutItem />}
     </View>
   )
 }

@@ -11,7 +11,7 @@ import AppNavigation from 'navigation/AppNavigation'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
-import { onLogOut } from 'store/app'
+import { onLogOut, setWalletState, WalletState } from 'store/app'
 
 export type AppHook = {
   onExit: () => Observable<ExitEvents>
@@ -70,6 +70,7 @@ export function useApp(
           //return him to onboarding
           signOut().catch(() => undefined)
         } else {
+          dispatch(setWalletState(WalletState.INACTIVE))
           appNavHook.navigation.current?.navigate(AppNavigation.Root.NoWallet)
         }
       } else {

@@ -13,6 +13,7 @@ import CreateWalletStack from 'navigation/onboarding/CreateWalletStack'
 import TokenDetail from 'screens/watchlist/TokenDetail'
 import { NavigatorScreenParams } from '@react-navigation/native'
 import { DrawerParamList } from 'navigation/wallet/DrawerScreenStack'
+import { SignOutBottomSheetScreen } from 'navigation/WalletScreenStack'
 
 export type NoWalletScreenStackParams = {
   [AppNavigation.NoWallet.Drawer]: NavigatorScreenParams<DrawerParamList>
@@ -20,6 +21,7 @@ export type NoWalletScreenStackParams = {
   [AppNavigation.Wallet.TokenDetail]: undefined
   [AppNavigation.NoWallet.EnterWithMnemonicStack]: undefined
   [AppNavigation.NoWallet.CreateWalletStack]: undefined
+  [AppNavigation.Modal.SignOut]: undefined
 }
 
 const NoWalletNavigator = createStackNavigator<NoWalletScreenStackParams>()
@@ -57,6 +59,13 @@ export const NoWalletScreenStack = () => {
         name={AppNavigation.Wallet.TokenDetail}
         component={TokenDetail}
       />
+      <NoWalletNavigator.Group
+        screenOptions={{ presentation: 'transparentModal' }}>
+        <NoWalletNavigator.Screen
+          name={AppNavigation.Modal.SignOut}
+          component={SignOutBottomSheetScreen}
+        />
+      </NoWalletNavigator.Group>
     </NoWalletNavigator.Navigator>
   )
 }

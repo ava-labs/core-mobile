@@ -13,7 +13,6 @@ import {
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
 import watchlistService from 'services/watchlist/WatchlistService'
 import { useDispatch } from 'react-redux'
-import { selectIsLoadingBalances } from 'store/balance'
 import { WatchListLoader } from 'screens/watchlist/components/WatchListLoader'
 import isEmpty from 'lodash.isempty'
 import AvaButton from 'components/AvaButton'
@@ -64,11 +63,10 @@ const WatchlistView: React.FC<Props> = ({
   onTabIndexChanged
 }) => {
   const watchlistFavorites = useFocusedSelector(selectWatchlistFavorites)
-  const tokensWithBalance = useFocusedSelector(selectWatchlistTokens)
+  const watchlistTokens = useFocusedSelector(selectWatchlistTokens)
   const dispatch = useDispatch()
   const [loadingSearch, setLoadingSearch] = useState(false)
   const [filterBy, setFilterBy] = useState(WatchlistFilter.MARKET_CAP)
-  const isLoadingBalances = useFocusedSelector(selectIsLoadingBalances)
   const [filterTime, setFilterTime] = useState(FilterTimeOptions.Day)
   const filterTimeDays = useMemo(() => {
     switch (filterTime) {
@@ -84,7 +82,7 @@ const WatchlistView: React.FC<Props> = ({
 
   useEffect(() => {
     async function loadAsync() {
-      let items: MarketToken[] = tokensWithBalance
+      let items: MarketToken[] = watchlistTokens
 
       if (showFavorites) {
         items = watchlistFavorites // items.filter(tk => watchlistFavorites.includes(tk.id))
@@ -122,7 +120,7 @@ const WatchlistView: React.FC<Props> = ({
     }
     loadAsync()
   }, [
-    tokensWithBalance,
+    watchlistTokens,
     showFavorites,
     searchText,
     watchlistFavorites,
@@ -159,7 +157,10 @@ const WatchlistView: React.FC<Props> = ({
             selectionRenderItem={renderTimeFilterSelection}
           />
         </View>
-        {isLoadingBalances || loadingSearch ? (
+        {(!showFavorites &&
+          watchlistTokens.length === 0 &&
+          !isEmpty(searchText)) ||
+        loadingSearch ? (
           <WatchListLoader />
         ) : (
           <>

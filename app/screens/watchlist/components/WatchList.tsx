@@ -81,7 +81,11 @@ const WatchList: React.FC<Props> = ({
         isShowingFavorites && !isSearching ? (
           <ZeroState.NoWatchlistFavorites />
         ) : (
-          <ZeroState.NoResultsTextual />
+          <ZeroState.NoResultsTextual
+            message={
+              'There are no tokens that match your search. Please try again.'
+            }
+          />
         )
       }
       refreshing={false}

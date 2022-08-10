@@ -45,7 +45,8 @@ const ZeroStateBase: FC<BaseProps> = ({
   function getMessage() {
     if (typeof message === 'string') {
       return (
-        <AvaText.Body2 textStyle={{ color: theme.colorText1, textAlign: 'center' }}>
+        <AvaText.Body2
+          textStyle={{ color: theme.colorText1, textAlign: 'center' }}>
           {message}
         </AvaText.Body2>
       )
@@ -176,7 +177,8 @@ type NoResultsProps = Pick<BaseProps, 'message'>
 
 // removed "man with lantern" as per ux request
 function ZeroStateNoResults({ message }: NoResultsProps) {
-  return <ZeroStateBase message={message ?? 'No results found'} />
+  const title = 'No results found'
+  return <ZeroStateBase title={title} message={message} />
 }
 
 function ZeroStateComingSoon() {
