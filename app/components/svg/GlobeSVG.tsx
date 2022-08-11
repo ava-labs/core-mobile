@@ -1,8 +1,9 @@
 import React from 'react'
-import Svg, { Color, NumberProp, Path } from 'react-native-svg'
+import { ColorValue } from 'react-native'
+import Svg, { NumberProp, Path } from 'react-native-svg'
 
 interface Props {
-  color?: Color
+  color?: ColorValue
   height?: NumberProp
 }
 
