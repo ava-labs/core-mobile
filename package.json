@@ -26,7 +26,7 @@
     "@avalabs/blockcypher-sdk": "2.5.0-alpha.9",
     "@avalabs/bridge-sdk": "2.5.0-alpha.9",
     "@avalabs/chains-sdk": "2.5.0-alpha.9",
-    "@avalabs/coingecko-sdk": "2.5.0-alpha.9",
+    "@avalabs/coingecko-sdk": "2.5.0-alpha.11",
     "@avalabs/covalent-sdk": "2.5.0-alpha.9",
     "@avalabs/etherscan-sdk": "2.5.0-alpha.9",
     "@avalabs/glacier-sdk": "2.5.0-alpha.9",

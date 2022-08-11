@@ -126,7 +126,7 @@ export type WalletScreenStackParams = {
 
 const WalletScreenS = createStackNavigator<WalletScreenStackParams>()
 
-const SignOutBottomSheetScreen = () => {
+export const SignOutBottomSheetScreen = () => {
   const { signOut } = useApplicationContext().appHook
 
   const doSwitchWallet = (): void => {

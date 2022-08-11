@@ -1,10 +1,13 @@
 import {
+  CoinMarket,
   coinsContractInfo,
   CoinsContractInfoResponse,
   coinsContractMarketChart,
   coinsInfo,
   CoinsInfoResponse,
+  coinsMarket,
   coinsMarketChart,
+  coinsSearch,
   ContractMarketChartResponse,
   getBasicCoingeckoHttp,
   getProCoingeckoHttp,
@@ -27,6 +30,7 @@ import {
   NetworkVMType
 } from '@avalabs/chains-sdk'
 import NetworkService from 'services/network/NetworkService'
+import { MarketToken } from 'store/watchlist'
 import { ChartData, PriceWithMarketData } from './types'
 
 const coingeckoBasicClient = getBasicCoingeckoHttp()
@@ -75,6 +79,30 @@ export class TokenService {
     }
   }
 
+  async getTopTokenMarket(
+    currency: VsCurrencyType = VsCurrencyType.USD
+  ): Promise<CoinMarket[]> {
+    return await coinsMarket(coingeckoProClient, {
+      currency,
+      coinGeckoProApiKey: Config.COINGECKO_API_KEY
+    })
+  }
+
+  async getTokenSearch(query: string): Promise<MarketToken[] | undefined> {
+    const data = await coinsSearch(coingeckoProClient, {
+      query,
+      coinGeckoProApiKey: Config.COINGECKO_API_KEY
+    })
+    return data?.coins?.map((coin: any) => {
+      return {
+        ...coin,
+        logoUri: coin?.thumb,
+        priceInCurrency: 0,
+        marketCap: coin?.market_cap
+      } as MarketToken
+    })
+  }
+
   /**
    * Get the native token price with market data for a coin
    * @param coinId the coin id ie avalanche-2 for avax
@@ -96,7 +124,7 @@ export class TokenService {
       data?.[coinId]?.[currency] === undefined ||
       data?.[coinId]?.[currency]?.price === undefined
     ) {
-      data = await this.fetchPriceWithMarketData(coinId, currency)
+      data = await this.fetchPriceWithMarketData([coinId], currency)
 
       setCache(cacheId, data)
     }
@@ -376,17 +404,18 @@ export class TokenService {
     }
   }
 
-  private async fetchPriceWithMarketData(
-    coingeckoId: string,
+  async fetchPriceWithMarketData(
+    coingeckoId: string[],
     currencyCode: VsCurrencyType = VsCurrencyType.USD
   ) {
     try {
-      return simplePrice(coingeckoBasicClient, {
-        coinIds: [coingeckoId],
+      return simplePrice(coingeckoProClient, {
+        coinIds: coingeckoId,
         currencies: [currencyCode],
         marketCap: true,
         vol24: true,
-        change24: true
+        change24: true,
+        coinGeckoProApiKey: Config.COINGECKO_API_KEY
       })
     } catch (e) {
       return Promise.resolve(undefined)

@@ -7,7 +7,9 @@ import {
   onRehydrationComplete,
   setAppState,
   setIsLocked,
-  setIsReady
+  setIsReady,
+  setWalletState,
+  WalletState
 } from 'store/app'
 import { AppStartListening } from 'store/middleware/listener'
 import BiometricsSDK from 'utils/BiometricsSDK'
@@ -86,6 +88,7 @@ const lockApp = async (action: any, listenerApi: AppListenerEffectAPI) => {
   if (secondsPassed >= TIME_TO_LOCK_IN_SECONDS) {
     dispatch(setIsLocked(true))
     dispatch(onAppLocked())
+    dispatch(setWalletState(WalletState.INACTIVE))
   }
 }
 
@@ -95,9 +98,12 @@ const setStateToUnlocked = async (
 ) => {
   const dispatch = listenerApi.dispatch
   dispatch(setIsLocked(false))
+  dispatch(setWalletState(WalletState.ACTIVE))
 }
 
-const clearData = async () => {
+const clearData = async (action: any, listenerApi: AppListenerEffectAPI) => {
+  const { dispatch } = listenerApi
+  dispatch(setWalletState(WalletState.NONEXISTENT))
   await BiometricsSDK.clearWalletKey()
   await AsyncStorage.clear()
 }
