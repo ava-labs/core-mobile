@@ -20,7 +20,7 @@
     "prestorybook": "rnstl",
     "build-storybook": "build-storybook",
     "prepare": "husky install",
-    "postinstall": "./scripts/patch; node_modules/.bin/rn-nodeify --install crypto,events,stream,vm,assert,https,http,os --hack"
+    "postinstall": "./scripts/patch; patch-package; node_modules/.bin/rn-nodeify --install crypto,events,stream,vm,assert,https,http,os --hack"
   },
   "dependencies": {
     "@avalabs/blockcypher-sdk": "2.5.0-alpha.9",
@@ -95,7 +95,9 @@
     "node-libs-react-native": "1.2.1",
     "numeral": "2.0.6",
     "paraswap": "5.1.0",
+    "patch-package": "6.4.7",
     "posthog-react-native": "1.1.5",
+    "postinstall-postinstall": "2.1.0",
     "promise.allsettled": "1.0.5",
     "qs": "6.7.0",
     "react": "17.0.2",
@@ -127,7 +129,7 @@
     "react-native-safe-area-context": "3.4.1",
     "react-native-screens": "3.13.1",
     "react-native-sensors": "7.3.5",
-    "react-native-svg": "12.3.0",
+    "react-native-svg": "12.4.4",
     "react-native-svg-charts": "5.4.0",
     "react-native-tab-view": "3.1.1",
     "react-native-toast-notifications": "3.3.0",
@@ -280,7 +282,8 @@
       "paraswap>web3>web3-shh": false,
       "web3": false,
       "web3>web3-bzz": false,
-      "web3>web3-shh": false
+      "web3>web3-shh": false,
+      "postinstall-postinstall": false
     }
   }
 }
