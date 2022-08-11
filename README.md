@@ -12,10 +12,10 @@ cd avalanche-wallet-apps/
 Next, install the dependencies.
 
 ```zsh
-yarn install
+yarn setup
 ```
 
-Notes: Before running yarn install, you will need to generate an npm token from your npmjs account and add that as an environment variable named `NPM_TOKEN` on your mac (for example, `.zshenv` if using zsh or `.bash_profile` if not). This is necessary for yarn to be able to download Ava Labs' private libraries/sdks
+Notes: Before running yarn setup, you will need to generate an npm token from your npmjs account and add that as an environment variable named `NPM_TOKEN` on your mac (for example, `.zshenv` if using zsh or `.bash_profile` if not). This is necessary for yarn to be able to download Ava Labs' private libraries/sdks
 
 
 ## Add config files
