@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useState } from 'react'
 import { Image, ScrollView, StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
@@ -15,14 +15,12 @@ export type NftDetailsProps = {
 }
 
 export default function NftDetails({
-  nft,
+  nft: item,
   onPicturePressed,
   onSendPressed
 }: NftDetailsProps) {
   const [imgLoadFailed, setImgLoadFailed] = useState(false)
   const { theme } = useApplicationContext()
-  const item = useMemo(() => nft, [nft])
-
   const width = 100
   return (
     <ScrollView contentContainerStyle={styles.container}>

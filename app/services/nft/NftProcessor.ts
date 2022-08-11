@@ -11,10 +11,7 @@ export class NftProcessor {
         const svg = this.decodeBase64Svg(imageData)
         const aspect = this.extractSvgAspect(svg) ?? 1
 
-        // react-native-svg crashes on some complex svgs
-        // disable svg support for now by returning false for isSvg property
-        // TODO: figure out a solution to support complex svgs
-        resolve(['', aspect, false])
+        resolve([svg, aspect, true])
       } else {
         const imageUrl = convertIPFSResolver(imageData)
 
@@ -49,7 +46,7 @@ export class NftProcessor {
       if (whMatch && whMatch.length === 4) {
         const height = whMatch[3]
         const width = whMatch[2]
-        return Number.parseInt(height) / Number.parseInt(width)
+        return Number.parseInt(height, 10) / Number.parseInt(width, 10)
       }
     }
     return undefined

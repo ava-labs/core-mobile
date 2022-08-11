@@ -1,0 +1,18 @@
+diff --git a/node_modules/react-native-svg/apple/Elements/RNSVGSvgView.m b/node_modules/react-native-svg/apple/Elements/RNSVGSvgView.m
+index c44a775..0e2e8c2 100644
+--- a/node_modules/react-native-svg/apple/Elements/RNSVGSvgView.m
++++ b/node_modules/react-native-svg/apple/Elements/RNSVGSvgView.m
+@@ -227,7 +227,12 @@ - (void)drawRect:(CGRect)rect
+         }
+     }
+     
+-    [self drawToContext:context withRect:rect];
++    @try {
++        [self drawToContext:context withRect:rect];
++    }
++    @catch (NSException *exception) {
++        RCTLogWarn(@"[RNSVGSvgView drawRect] %@", exception.reason);
++    }
+ }
+ 
+ - (RNSVGPlatformView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event
