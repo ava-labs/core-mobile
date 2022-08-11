@@ -1,11 +1,12 @@
-import React, { useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { FlatList, View } from 'react-native'
 import { useSelector, useDispatch } from 'react-redux'
 import {
   toggleFavorite,
   selectFavoriteNetworks,
   selectNetworks,
-  setActive
+  setActive,
+  selectCustomNetworks
 } from 'store/network'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import SearchBar from 'components/SearchBar'
@@ -24,6 +25,7 @@ type Props = {
 export default function NetworkManager({ onShowInfo }: Props) {
   const { goBack } = useNavigation()
   const networks = useSelector(selectNetworks)
+  const customNetworks = useSelector(selectCustomNetworks)
   const favoriteNetworks = useSelector(selectFavoriteNetworks)
   const dispatch = useDispatch()
   const { theme } = useApplicationContext()
@@ -31,44 +33,48 @@ export default function NetworkManager({ onShowInfo }: Props) {
   const isDevMode = useSelector(selectIsDeveloperMode)
   const title = isDevMode ? 'Testnets' : 'Networks'
 
-  const mainNets = useMemo(
-    () =>
-      Object.values(networks)
-        .filter(network => !network.isTestnet)
-        .filter(network =>
-          network.chainName.toLowerCase().includes(searchText.toLowerCase())
-        ),
-    [networks, searchText]
+  const customNetworkChainIds = useMemo(
+    () => Object.values(customNetworks).map(n => n.chainId),
+    [customNetworks]
   )
-  const testNets = useMemo(
-    () =>
-      Object.values(networks)
-        .filter(network => network.isTestnet)
-        .filter(network =>
-          network.chainName.toLowerCase().includes(searchText.toLowerCase())
-        ),
-    [networks, searchText]
-  )
-  const favorites = useMemo(
-    () =>
-      favoriteNetworks.filter(network =>
-        network.chainName.toLowerCase().includes(searchText.toLowerCase())
-      ),
-    [favoriteNetworks, searchText]
+  const filterBySearchText = useCallback(
+    (network: Network) =>
+      network.chainName.toLowerCase().includes(searchText.toLowerCase()),
+    [searchText]
   )
 
-  const renderCustomLabel = (title: string, selected: boolean) => {
+  const filteredNetworks = useMemo(
+    () =>
+      Object.values(networks)
+        .filter(network => !customNetworkChainIds.includes(network.chainId))
+        .filter(filterBySearchText)
+        .sort(sortNetworks),
+    [customNetworkChainIds, filterBySearchText, networks]
+  )
+  const filteredCustomNetworks = useMemo(
+    () =>
+      Object.values(customNetworks)
+        .filter(filterBySearchText)
+        .sort(sortNetworks),
+    [customNetworks, filterBySearchText]
+  )
+  const favorites = useMemo(
+    () => favoriteNetworks.filter(filterBySearchText).sort(sortNetworks),
+    [favoriteNetworks, filterBySearchText]
+  )
+
+  const renderCustomLabel = (label: string, selected: boolean) => {
     return selected ? (
       <AvaText.ButtonMedium
         ellipsizeMode={'tail'}
         textStyle={{
           color: theme.alternateBackground
         }}>
-        {title}
+        {label}
       </AvaText.ButtonMedium>
     ) : (
       <AvaText.Body2 ellipsizeMode={'tail'} textStyle={{ lineHeight: 24 }}>
-        {title}
+        {label}
       </AvaText.Body2>
     )
   }
@@ -93,7 +99,7 @@ export default function NetworkManager({ onShowInfo }: Props) {
         onPress={connect}
         networkChainId={item.chainId}
         networkName={item.chainName}
-        icon={item.logoUri}
+        logoUri={item.logoUri}
         isFavorite={isFavorite}
         onFavorite={() => dispatch(toggleFavorite(item.chainId))}
         onInfo={showInfo}
@@ -111,7 +117,7 @@ export default function NetworkManager({ onShowInfo }: Props) {
       </AvaText.LargeTitleBold>
       <SearchBar onTextChanged={setSearchText} searchText={searchText} />
       <TabViewAva renderCustomLabel={renderCustomLabel}>
-        <TabViewAva.Item title={'Favorites'}>
+        <TabViewAva.Item title="Favorites">
           <FlatList
             data={favorites}
             renderItem={renderNetwork}
@@ -119,38 +125,48 @@ export default function NetworkManager({ onShowInfo }: Props) {
             contentContainerStyle={{ paddingHorizontal: 16 }}
             ListEmptyComponent={
               <View style={{ marginVertical: 40 }}>
-                <ZeroState.NoFavoriteNetworks />
+                <ZeroState.Basic
+                  title="No favorites"
+                  message="Select one from other two lists"
+                />
               </View>
             }
           />
         </TabViewAva.Item>
         <TabViewAva.Item title={title}>
           <FlatList
-            data={isDevMode ? testNets : mainNets}
+            data={filteredNetworks}
             renderItem={renderNetwork}
             keyExtractor={item => item.chainName}
             contentContainerStyle={{ paddingHorizontal: 16 }}
             ListEmptyComponent={
               <View style={{ marginVertical: 40 }}>
-                <ZeroState.NoFavoriteNetworks />
+                <ZeroState.Basic title="Loading networks" />
               </View>
             }
           />
         </TabViewAva.Item>
-        {/*<TabViewAva.Item title={'Custom'}>*/}
-        {/*  <FlatList*/}
-        {/*    data={testNets}*/}
-        {/*    renderItem={renderNetwork}*/}
-        {/*    keyExtractor={item => item.chainId.toString()}*/}
-        {/*    contentContainerStyle={{ paddingHorizontal: 16 }}*/}
-        {/*    ListEmptyComponent={*/}
-        {/*      <View style={{ marginVertical: 40 }}>*/}
-        {/*        <ZeroState.NoFavoriteNetworks />*/}
-        {/*      </View>*/}
-        {/*    }*/}
-        {/*  />*/}
-        {/*</TabViewAva.Item>*/}
+        <TabViewAva.Item title="Custom">
+          <FlatList
+            data={filteredCustomNetworks}
+            renderItem={renderNetwork}
+            keyExtractor={item => item.chainId.toString()}
+            contentContainerStyle={{ paddingHorizontal: 16 }}
+            ListEmptyComponent={
+              <View style={{ marginVertical: 40 }}>
+                <ZeroState.Basic
+                  title="No custom networks"
+                  message="Click the + button to add a network"
+                />
+              </View>
+            }
+          />
+        </TabViewAva.Item>
       </TabViewAva>
     </View>
   )
+}
+
+function sortNetworks(a: Network, b: Network) {
+  return a.chainName.localeCompare(b.chainName)
 }

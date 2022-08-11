@@ -9,7 +9,7 @@ import AvaButton from 'components/AvaButton'
 import { PortfolioScreenProps } from 'navigation/types'
 import { useIsUIDisabled, UI } from 'hooks/useIsUIDisabled'
 import {
-  selectBalanceTotalInCurrencyForNetwork,
+  selectBalanceTotalForNetwork,
   TokenType,
   TokenWithBalance
 } from 'store/balance'
@@ -34,9 +34,7 @@ const NetworkTokens = () => {
     refetch
   } = useSearchableTokenList()
   const { chainId } = useSelector(selectActiveNetwork)
-  const balanceTotal = useSelector(
-    selectBalanceTotalInCurrencyForNetwork(chainId)
-  )
+  const balanceTotal = useSelector(selectBalanceTotalForNetwork(chainId))
   const manageDisabled = useIsUIDisabled(UI.ManageTokens)
   const manageBtnColor = theme.colorPrimary1
 
@@ -80,7 +78,7 @@ const NetworkTokens = () => {
     )
   }
 
-  const ManageButton = () => (
+  const renderManageButton = () => (
     <View
       style={{
         flexDirection: 'row',
@@ -109,7 +107,7 @@ const NetworkTokens = () => {
       onRefresh={refetch}
       refreshing={isRefetching}
       scrollEventThrottle={16}
-      ListHeaderComponent={<ManageButton />}
+      ListHeaderComponent={renderManageButton()}
     />
   )
 
@@ -122,7 +120,7 @@ const NetworkTokens = () => {
   }
 
   const renderContent = () => {
-    if (balanceTotal === 0) return renderZeroState()
+    if (balanceTotal.isZero()) return renderZeroState()
 
     return renderTokens()
   }

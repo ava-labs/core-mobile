@@ -68,7 +68,11 @@ const AvatarBase: FC<Props> = ({
             },
             showBorder && { borderWidth: 0.5, borderColor: theme.colorDisabled }
           ]}>
-          <AvaText.Body1>{initials}</AvaText.Body1>
+          <AvaText.Body1
+            // Scale text in relation to the size
+            textStyle={{ fontSize: size * 0.5, lineHeight: size * 0.75 }}>
+            {initials}
+          </AvaText.Body1>
         </View>
       )
       // if TokenWithBalance and valid URI get load it.
