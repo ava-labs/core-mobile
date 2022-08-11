@@ -1,23 +1,28 @@
-import React, { useMemo, useState } from 'react'
+import React, { Dispatch, useEffect, useMemo, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import Dropdown from 'components/Dropdown'
 import AvaText from 'components/AvaText'
 import {
-  selectIsLoadingBalances,
-  selectTokensWithBalance,
-  TokenWithBalance
-} from 'store/balance'
-import { selectWatchlistFavorites } from 'store/watchlist'
+  appendWatchlist,
+  MarketToken,
+  selectWatchlistFavorites,
+  selectWatchlistTokens
+} from 'store/watchlist'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
+import watchlistService from 'services/watchlist/WatchlistService'
+import { useDispatch } from 'react-redux'
+import { WatchListLoader } from 'screens/watchlist/components/WatchListLoader'
+import isEmpty from 'lodash.isempty'
+import AvaButton from 'components/AvaButton'
 import { FilterTimeOptions, WatchlistFilter } from './types'
 import WatchList from './components/WatchList'
-import { WatchListLoader } from './components/WatchListLoader'
 
 interface Props {
   showFavorites?: boolean
   searchText?: string
+  onTabIndexChanged?: Dispatch<number>
 }
 
 const filterPriceOptions = [
@@ -52,11 +57,16 @@ const renderTimeFilterSelection = (selectedItem: FilterTimeOptions) => (
   <SelectionItem title={selectedItem} />
 )
 
-const WatchlistView: React.FC<Props> = ({ showFavorites, searchText }) => {
+const WatchlistView: React.FC<Props> = ({
+  showFavorites,
+  searchText,
+  onTabIndexChanged
+}) => {
   const watchlistFavorites = useFocusedSelector(selectWatchlistFavorites)
-  const tokensWithBalance = useFocusedSelector(selectTokensWithBalance)
-  const isLoadingBalances = useFocusedSelector(selectIsLoadingBalances)
-  const [filterBy, setFilterBy] = useState(WatchlistFilter.PRICE)
+  const watchlistTokens = useFocusedSelector(selectWatchlistTokens)
+  const dispatch = useDispatch()
+  const [loadingSearch, setLoadingSearch] = useState(false)
+  const [filterBy, setFilterBy] = useState(WatchlistFilter.MARKET_CAP)
   const [filterTime, setFilterTime] = useState(FilterTimeOptions.Day)
   const filterTimeDays = useMemo(() => {
     switch (filterTime) {
@@ -68,37 +78,55 @@ const WatchlistView: React.FC<Props> = ({ showFavorites, searchText }) => {
         return 365
     }
   }, [filterTime])
+  const [tokens, setTokens] = useState<MarketToken[]>([])
+  const isSearching = !isEmpty(searchText)
 
-  const tokens = useMemo(() => {
-    let items: TokenWithBalance[] = tokensWithBalance
+  useEffect(() => {
+    async function loadAsync() {
+      let items: MarketToken[] = watchlistTokens
 
-    if (showFavorites) {
-      items = items.filter(tk => watchlistFavorites.includes(tk.id))
-    }
+      if (showFavorites) {
+        items = watchlistFavorites // items.filter(tk => watchlistFavorites.includes(tk.id))
+      }
 
-    if (searchText && searchText.length > 0) {
-      items = items.filter(
-        i =>
-          i.name?.toLowerCase().includes(searchText.toLowerCase()) ||
-          i.symbol?.toLowerCase().includes(searchText.toLowerCase())
+      if (searchText && searchText.length > 0) {
+        items = items.filter(
+          i =>
+            i.name?.toLowerCase().includes(searchText.toLowerCase()) ||
+            i.symbol?.toLowerCase().includes(searchText.toLowerCase())
+        )
+
+        if (items.length === 0) {
+          setLoadingSearch(true)
+          const onlineItems = await watchlistService.tokenSearch(searchText)
+          if (onlineItems && onlineItems.length > 0) {
+            items = onlineItems
+            dispatch(appendWatchlist(onlineItems))
+          }
+          setLoadingSearch(false)
+        }
+      }
+
+      setTokens(
+        items.slice().sort((a, b) => {
+          if (filterBy === WatchlistFilter.PRICE) {
+            return b.priceInCurrency - a.priceInCurrency
+          } else if (filterBy === WatchlistFilter.MARKET_CAP) {
+            return b.marketCap - a.marketCap
+          } else {
+            return b.vol24 - a.vol24
+          }
+        })
       )
     }
-
-    return items.slice().sort((a, b) => {
-      if (filterBy === WatchlistFilter.PRICE) {
-        return b.priceInCurrency - a.priceInCurrency
-      } else if (filterBy === WatchlistFilter.MARKET_CAP) {
-        return b.marketCap - a.marketCap
-      } else {
-        return b.vol24 - a.vol24
-      }
-    })
+    loadAsync()
   }, [
-    tokensWithBalance,
+    watchlistTokens,
     showFavorites,
     searchText,
     watchlistFavorites,
-    filterBy
+    filterBy,
+    dispatch
   ])
 
   const selectedPriceFilter = filterPriceOptions.findIndex(
@@ -108,6 +136,13 @@ const WatchlistView: React.FC<Props> = ({ showFavorites, searchText }) => {
   const selectedTimeFilter = filterTimeOptions.findIndex(
     item => item === filterTime
   )
+
+  // favorites are loaded locally. We only show the if we query
+  // coingecko when searching OR if we're NOT on
+  // the favorites tab and tokens are empty
+  // todo: update API calls to use RTK Query
+  const showLoader =
+    loadingSearch || (!showFavorites && watchlistTokens.length === 0)
 
   return (
     <SafeAreaProvider style={styles.container}>
@@ -130,14 +165,25 @@ const WatchlistView: React.FC<Props> = ({ showFavorites, searchText }) => {
             selectionRenderItem={renderTimeFilterSelection}
           />
         </View>
-        {isLoadingBalances ? (
+        {showLoader ? (
           <WatchListLoader />
         ) : (
-          <WatchList
-            tokens={tokens}
-            filterBy={filterBy}
-            filterTimeDays={filterTimeDays}
-          />
+          <>
+            <WatchList
+              tokens={tokens}
+              filterBy={filterBy}
+              filterTimeDays={filterTimeDays}
+              isShowingFavorites={showFavorites}
+              isSearching={isSearching}
+            />
+            {showFavorites && tokens.length === 0 && (
+              <AvaButton.SecondaryLarge
+                onPress={() => onTabIndexChanged?.(1)}
+                style={{ marginBottom: 128, marginHorizontal: 16 }}>
+                Explore all tokens
+              </AvaButton.SecondaryLarge>
+            )}
+          </>
         )}
       </>
     </SafeAreaProvider>

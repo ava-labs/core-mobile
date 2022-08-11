@@ -6,6 +6,8 @@ import TabViewAva from 'components/TabViewAva'
 import WatchlistView from 'screens/watchlist/WatchlistView'
 import { Space } from 'components/Space'
 import SearchBar from 'components/SearchBar'
+import { useSelector } from 'react-redux'
+import { selectWatchlistFavoritesIsEmpty } from 'store/watchlist'
 
 const CustomLabel: React.FC<{ focused: boolean; title: string }> = ({
   focused,
@@ -22,7 +24,9 @@ const CustomLabel: React.FC<{ focused: boolean; title: string }> = ({
 }
 
 export default function WatchlistTab() {
+  const isWatchlistFavoritesEmpty = useSelector(selectWatchlistFavoritesIsEmpty)
   const [searchText, setSearchText] = useState('')
+  const [tabIndex, setTabIndex] = useState(isWatchlistFavoritesEmpty ? 1 : 0)
 
   const renderCustomLabel = (title: string, focused: boolean) => {
     return <CustomLabel focused={focused} title={title} />
@@ -43,6 +47,7 @@ export default function WatchlistTab() {
         onTextChanged={setSearchText}
         searchText={searchText}
         hideBottomNav
+        useDebounce
       />
       {searchText && searchText?.length > 0 ? (
         <>
@@ -53,11 +58,14 @@ export default function WatchlistTab() {
           {allWatchList}
         </>
       ) : (
-        <TabViewAva renderCustomLabel={renderCustomLabel}>
-          <TabViewAva.Item title={'All'}>{allWatchList}</TabViewAva.Item>
+        <TabViewAva
+          renderCustomLabel={renderCustomLabel}
+          currentTabIndex={tabIndex}
+          onTabIndexChange={setTabIndex}>
           <TabViewAva.Item title={'Favorites'}>
-            <WatchlistView showFavorites />
+            <WatchlistView showFavorites onTabIndexChanged={setTabIndex} />
           </TabViewAva.Item>
+          <TabViewAva.Item title={'All'}>{allWatchList}</TabViewAva.Item>
         </TabViewAva>
       )}
     </View>

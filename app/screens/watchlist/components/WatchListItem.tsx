@@ -1,5 +1,5 @@
 import React, { FC, useEffect, useRef, useState } from 'react'
-import { View, Dimensions } from 'react-native'
+import { Dimensions, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaListItem from 'components/AvaListItem'
 import AvaText from 'components/AvaText'
@@ -10,16 +10,17 @@ import SparklineChart from 'components/SparklineChart'
 import { Row } from 'components/Row'
 import MarketMovement from 'screens/watchlist/components/MarketMovement'
 import TokenService from 'services/token/TokenService'
-import { TokenType, TokenWithBalance } from 'store/balance'
+import { TokenType } from 'store/balance'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { selectActiveNetwork } from 'store/network'
 import { useSelector } from 'react-redux'
 import { ActivityIndicator } from 'components/ActivityIndicator'
+import { MarketToken } from 'store/watchlist'
 
 const deviceWidth = Dimensions.get('window').width
 
 interface Props {
-  token: TokenWithBalance
+  token: MarketToken
   chartDays: number
   value?: string
   onPress?: () => void
@@ -61,7 +62,7 @@ const WatchListItem: FC<Props> = ({
 }
 
 type LeftComponentProps = {
-  token: TokenWithBalance
+  token: MarketToken
   rank?: number
 }
 
@@ -87,7 +88,7 @@ const LeftComponent = ({ token, rank }: LeftComponentProps) => {
 }
 
 type RightComponentProps = {
-  token: TokenWithBalance
+  token: MarketToken
   chartDays: number
   value?: string
   filterBy: WatchlistFilter
@@ -151,14 +152,14 @@ const RightComponent = ({
       let result
       if (token.type === TokenType.NATIVE) {
         result = await TokenService.getChartDataForCoinId({
-          coingeckoId: token.coingeckoId,
+          coingeckoId: token.id,
           days: chartDays,
           currency
         })
       } else if (token.type === TokenType.ERC20) {
         result = await TokenService.getChartDataForAddress({
-          assetPlatformId,
-          address: token.address,
+          assetPlatformId: token.assetPlatformId,
+          address: token.id,
           days: chartDays,
           currency
         })

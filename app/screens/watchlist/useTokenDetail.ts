@@ -6,12 +6,13 @@ import {
   CoinsInfoResponse,
   VsCurrencyType
 } from '@avalabs/coingecko-sdk'
-import { selectTokenById, TokenType } from 'store/balance'
+import { TokenType } from 'store/balance'
 import { useDispatch, useSelector } from 'react-redux'
 import TokenService from 'services/token/TokenService'
 import { selectActiveNetwork } from 'store/network'
 import {
   selectIsWatchlistFavorite,
+  selectWatchlistTokenById,
   toggleWatchListFavorite
 } from 'store/watchlist'
 
@@ -42,7 +43,7 @@ export function useTokenDetail(tokenId: string) {
     CoinsContractInfoResponse | CoinsInfoResponse
   >()
   const [urlHostname, setUrlHostname] = useState<string>('')
-  const token = useSelector(selectTokenById(tokenId))
+  const token = useSelector(selectWatchlistTokenById(tokenId))
   const network = useSelector(selectActiveNetwork)
   const assetPlatformId =
     network.pricingProviders?.coingecko.assetPlatformId ?? ''
@@ -55,14 +56,14 @@ export function useTokenDetail(tokenId: string) {
 
       if (token?.type === TokenType.NATIVE) {
         data = await TokenService.getChartDataForCoinId({
-          coingeckoId: token?.coingeckoId,
+          coingeckoId: token?.id,
           days: chartDays,
           currency: currency
         })
       } else if (token?.type === TokenType.ERC20) {
         data = await TokenService.getChartDataForAddress({
           assetPlatformId,
-          address: token?.address,
+          address: token?.id,
           days: chartDays,
           currency: currency
         })
@@ -86,12 +87,12 @@ export function useTokenDetail(tokenId: string) {
 
       if (token?.type === TokenType.NATIVE) {
         data = await TokenService.getCoinInfo({
-          coingeckoId: token?.coingeckoId
+          coingeckoId: token?.id
         })
       } else if (token?.type === TokenType.ERC20) {
         data = await TokenService.getContractInfo({
           assetPlatformId,
-          address: token?.address
+          address: token?.id
         })
       }
 
@@ -109,7 +110,7 @@ export function useTokenDetail(tokenId: string) {
   }, [assetPlatformId, token])
 
   function handleFavorite() {
-    dispatch(toggleWatchListFavorite(tokenId))
+    token && dispatch(toggleWatchListFavorite(token))
   }
 
   async function changeChartDays(days: number) {

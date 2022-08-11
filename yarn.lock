@@ -46,6 +46,13 @@
   dependencies:
     "@avalabs/utils-sdk" "2.5.0-alpha.9"
 
+"@avalabs/coingecko-sdk@2.5.0-alpha.11":
+  version "2.5.0-alpha.11"
+  resolved "https://registry.yarnpkg.com/@avalabs/coingecko-sdk/-/coingecko-sdk-2.5.0-alpha.11.tgz#f7d879112838b7510916f3d23db8ce3dc01e395b"
+  integrity sha512-3nEA5szhJXZsJOI6KWCmopRfzUYn0oM+qQJja0e596eCrb6iLoSkUzJIs4qkADIjkuSCx3hwl4RakWxPuOknng==
+  dependencies:
+    "@avalabs/utils-sdk" "2.5.0-alpha.11"
+
 "@avalabs/coingecko-sdk@2.5.0-alpha.9":
   version "2.5.0-alpha.9"
   resolved "https://registry.yarnpkg.com/@avalabs/coingecko-sdk/-/coingecko-sdk-2.5.0-alpha.9.tgz#d0ba9b8556745170fb4f8b22dc21b5cdf47a0083"
@@ -104,6 +111,11 @@
   version "2.5.0-alpha.9"
   resolved "https://registry.yarnpkg.com/@avalabs/types/-/types-2.5.0-alpha.9.tgz#4cbe39bc0c8f278f4cadc41bcd9c372da60fec01"
   integrity sha512-+OBeUCna4NuXCE+9mZTvCPQv1amxS/VOonne/ILpsOlEvG7ok6NG8GC1JJoept2kUAbFINoD8bRl9pUahQPwvg==
+
+"@avalabs/utils-sdk@2.5.0-alpha.11":
+  version "2.5.0-alpha.11"
+  resolved "https://registry.yarnpkg.com/@avalabs/utils-sdk/-/utils-sdk-2.5.0-alpha.11.tgz#6f37ac25e85c7dc83365b77af2f993015b172278"
+  integrity sha512-JQY/Q22Qo6NtCdVWyRNv8eimV8M1irJirz4+mXbz4Lj7jxfWBzh9E0K9xV+vhIZJ/ga0GJSrEhOh+Wx5gmoz7g==
 
 "@avalabs/utils-sdk@2.5.0-alpha.9":
   version "2.5.0-alpha.9"

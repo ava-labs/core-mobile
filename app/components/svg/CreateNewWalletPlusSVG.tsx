@@ -3,9 +3,11 @@ import Svg, { Line } from 'react-native-svg'
 
 interface Prop {
   size?: number
+  bold?: boolean
 }
 
-function CreateNewWalletPlusSVG({ size = 65 }: Prop) {
+function CreateNewWalletPlusSVG({ size = 65, bold = false }: Prop) {
+  const strokeWidth = bold ? '5.25' : '3.25'
   return (
     <Svg width={size} height={size} viewBox="0 0 65 65" fill="none">
       <Line
@@ -14,7 +16,7 @@ function CreateNewWalletPlusSVG({ size = 65 }: Prop) {
         x2="32.5956"
         y2="56.875"
         stroke="white"
-        strokeWidth="3.25"
+        strokeWidth={strokeWidth}
         strokeLinecap="round"
       />
       <Line
@@ -23,7 +25,7 @@ function CreateNewWalletPlusSVG({ size = 65 }: Prop) {
         x2="56.875"
         y2="32.4043"
         stroke="white"
-        strokeWidth="3.25"
+        strokeWidth={strokeWidth}
         strokeLinecap="round"
       />
     </Svg>

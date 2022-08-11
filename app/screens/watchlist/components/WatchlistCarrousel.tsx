@@ -17,18 +17,14 @@ import AppNavigation from 'navigation/AppNavigation'
 import MarketMovement from 'screens/watchlist/components/MarketMovement'
 import { Opacity85 } from 'resources/Constants'
 import { PortfolioScreenProps } from 'navigation/types'
-import {
-  selectTokensWithBalance,
-  TokenType,
-  TokenWithBalance
-} from 'store/balance'
+import { TokenType } from 'store/balance'
 import TokenService from 'services/token/TokenService'
 import { ChartData } from 'services/token/types'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { selectActiveNetwork } from 'store/network'
-import { selectWatchlistFavorites } from 'store/watchlist'
+import { MarketToken, selectWatchlistFavorites } from 'store/watchlist'
 
 interface Props {
   style?: StyleProp<View>
@@ -42,12 +38,6 @@ const WatchlistCarrousel: FC<Props> = () => {
   const { theme } = useApplicationContext()
   const watchlistFavorites = useSelector(selectWatchlistFavorites)
   const navigation = useNavigation<NavigationProp>()
-
-  const tokensWithBalance = useSelector(selectTokensWithBalance)
-
-  const favoriteTokens = tokensWithBalance.filter(tk =>
-    watchlistFavorites.includes(tk.id)
-  )
 
   function goToWatchlist() {
     navigation.navigate(AppNavigation.Tabs.Watchlist)
@@ -75,7 +65,7 @@ const WatchlistCarrousel: FC<Props> = () => {
     []
   )
 
-  const renderItem = (item: ListRenderItemInfo<TokenWithBalance>) => {
+  const renderItem = (item: ListRenderItemInfo<MarketToken>) => {
     const token = item.item
     return (
       <CarrouselItem
@@ -92,7 +82,7 @@ const WatchlistCarrousel: FC<Props> = () => {
   return (
     <View>
       <FlatList
-        data={favoriteTokens}
+        data={watchlistFavorites}
         renderItem={renderItem}
         horizontal
         bounces
@@ -105,7 +95,7 @@ const WatchlistCarrousel: FC<Props> = () => {
 }
 
 interface CarrouselItemProps {
-  token: TokenWithBalance
+  token: MarketToken
   onPress: () => void
 }
 
@@ -124,14 +114,14 @@ const CarrouselItem: FC<CarrouselItemProps> = ({ token, onPress }) => {
 
       if (token.type === TokenType.NATIVE) {
         data = await TokenService.getChartDataForCoinId({
-          coingeckoId: token.coingeckoId,
+          coingeckoId: token.id,
           days: 1,
           currency
         })
       } else if (token.type === TokenType.ERC20) {
         data = await TokenService.getChartDataForAddress({
           assetPlatformId,
-          address: token.address,
+          address: token.id,
           days: 1,
           currency
         })

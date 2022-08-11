@@ -7,6 +7,7 @@ import EthereumSvg from 'components/svg/Ethereum'
 import BitcoinSVG from 'components/svg/BitcoinSVG'
 import { TokenWithBalance } from 'store/balance'
 import { TokenSymbol } from 'store/network'
+import { MarketToken } from 'store/watchlist'
 import AvaText from './AvaText'
 
 interface Props {
@@ -97,7 +98,7 @@ const AvatarBase: FC<Props> = ({
 }
 
 interface TokenAvatarProps {
-  token: TokenWithBalance
+  token: TokenWithBalance | MarketToken
   size?: number
 }
 

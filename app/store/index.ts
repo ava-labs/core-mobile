@@ -59,7 +59,8 @@ const rootReducer = (state: any, action: AnyAction) => {
   if (action.type === onLogOut.type) {
     // reset state
     state = {
-      app: state.app
+      app: state.app,
+      watchlist: state.watchlist
     }
   }
 

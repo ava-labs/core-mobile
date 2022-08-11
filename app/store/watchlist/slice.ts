@@ -1,6 +1,6 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store'
-import { initialState } from './types'
+import { initialState, MarketToken } from './types'
 
 const reducerName = 'watchlist'
 
@@ -8,16 +8,28 @@ export const watchlistSlice = createSlice({
   name: reducerName,
   initialState,
   reducers: {
-    toggleFavorite: (state, action: PayloadAction<string>) => {
-      const tokenId = action.payload
-      if (!state.favorites.includes(tokenId)) {
+    toggleFavorite: (state, action: PayloadAction<MarketToken>) => {
+      const token = action.payload
+      if (!state.favorites.some(tk => tk.id === token.id)) {
         // set favorite
-        state.favorites.push(tokenId)
+        state.favorites.push(token)
       } else {
         // unset favorite
-        const newFavorites = state.favorites.filter(id => id !== tokenId)
-        state.favorites = newFavorites
+        state.favorites = state.favorites.filter(tk => tk.id !== token.id)
       }
+    },
+    appendWatchlist: (state, action: PayloadAction<MarketToken[]>) => {
+      const newTokens: MarketToken[] = []
+      for (const newToken of action.payload) {
+        const exists = state.tokens.some(tk => tk.id === newToken.id)
+        if (!exists) {
+          newTokens.push(newToken)
+        }
+      }
+      state.tokens = [...state.tokens, ...newTokens]
+    },
+    setWatchlistTokens: (state, action: PayloadAction<MarketToken[]>) => {
+      state.tokens = action.payload
     }
   }
 })
@@ -25,13 +37,34 @@ export const watchlistSlice = createSlice({
 // selectors
 export const selectIsWatchlistFavorite =
   (tokenId: string) => (state: RootState) =>
-    state.watchlist.favorites.includes(tokenId)
+    state.watchlist.favorites.find(tk => tk.id === tokenId) !== undefined
+
+export const selectWatchlistTokenById =
+  (tokenId: string) => (state: RootState) => {
+    for (const token of state.watchlist.tokens) {
+      if (token.id === tokenId) return token
+    }
+    return undefined
+  }
+
+export const selectWatchlistTokens = (state: RootState) =>
+  state.watchlist.tokens
 
 export const selectWatchlistFavorites = (state: RootState) =>
   state.watchlist.favorites
 
+export const selectWatchlistFavoritesIsEmpty = (state: RootState) =>
+  state.watchlist.favorites.length === 0
+
 // actions
-export const { toggleFavorite: toggleWatchListFavorite } =
-  watchlistSlice.actions
+export const {
+  toggleFavorite: toggleWatchListFavorite,
+  setWatchlistTokens,
+  appendWatchlist
+} = watchlistSlice.actions
+
+export const onWatchlistRefresh = createAction(
+  `${reducerName}/onWatchlistRefresh`
+)
 
 export const watchlistReducer = watchlistSlice.reducer
