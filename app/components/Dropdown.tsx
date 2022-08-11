@@ -32,6 +32,7 @@ interface Props<ItemT> {
   optionsRenderItem?: (item: OptionsItemInfo<ItemT>) => React.ReactNode
   onItemSelected: (selectedItem: ItemT) => void
   disabled?: boolean
+  caretIcon?: React.ReactNode
 }
 
 interface OptionsItemInfo<ItemT> {
@@ -62,7 +63,8 @@ function DropDown<ItemT>({
   width = 150,
   style,
   alignment = 'center',
-  disabled
+  disabled,
+  caretIcon
 }: Props<ItemT>) {
   const theme = useApplicationContext().theme
   const ref = useRef<PopableManager>(null)
@@ -216,10 +218,14 @@ function DropDown<ItemT>({
         {!disabled && (
           <>
             <Space x={8} />
-            <CarrotSVG
-              direction={isFilterOpen ? 'up' : 'down'}
-              color={theme.colorText1}
-            />
+            {caretIcon ? (
+              caretIcon
+            ) : (
+              <CarrotSVG
+                direction={isFilterOpen ? 'up' : 'down'}
+                color={theme.colorText1}
+              />
+            )}
           </>
         )}
       </Row>

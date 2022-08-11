@@ -1,12 +1,6 @@
 import React, { FC } from 'react'
 import { Network } from '@avalabs/chains-sdk'
-import {
-  View,
-  Image,
-  StyleSheet,
-  Dimensions,
-  TouchableHighlight
-} from 'react-native'
+import { View, StyleSheet, Dimensions, TouchableHighlight } from 'react-native'
 import AvaText from 'components/AvaText'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Opacity70, Opacity85 } from 'resources/Constants'
@@ -17,6 +11,7 @@ import { useNavigation } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
 import { setActive } from 'store/network'
 import { selectBalanceTotalInCurrencyForNetwork } from 'store/balance'
+import { NetworkLogo } from 'screens/network/NetworkLogo'
 
 const windowWidth = Dimensions.get('window').width
 
@@ -53,7 +48,7 @@ const InactiveNetworkCard: FC<Props> = ({ network }) => {
 
     return (
       <View style={styles.headerContainer}>
-        <Image source={{ uri: network.logoUri }} style={styles.icon} />
+        <NetworkLogo logoUri={network.logoUri} size={40} style={styles.icon} />
         <View style={styles.headerTextContainer}>
           <AvaText.TextLink
             ellipsizeMode={'tail'}
@@ -99,10 +94,7 @@ const styles = StyleSheet.create({
     marginLeft: 8
   },
   icon: {
-    alignSelf: 'flex-start',
-    width: 40,
-    height: 40,
-    borderRadius: 40 / 2
+    alignSelf: 'flex-start'
   }
 })
 export default InactiveNetworkCard

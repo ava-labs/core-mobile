@@ -1,6 +1,6 @@
 import React from 'react'
-import { View } from 'react-native'
+import { StyleProp, View, ViewStyle } from 'react-native'
 
-export default function FlexSpacer(): JSX.Element {
-  return <View style={{ flex: 1 }} />
+export default function FlexSpacer(style?: StyleProp<ViewStyle>): JSX.Element {
+  return <View style={[style, { flex: 1 }]} />
 }
