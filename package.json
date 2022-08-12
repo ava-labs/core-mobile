@@ -1,6 +1,6 @@
 {
   "name": "avalanche-wallet-apps",
-  "version": "0.11.2",
+  "version": "0.12.1",
   "private": true,
   "scripts": {
     "setup": "yarn install && yarn allow-scripts",
