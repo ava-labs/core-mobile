@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { combineReducers } from 'redux'
 import { AnyAction, configureStore, ListenerEffectAPI } from '@reduxjs/toolkit'
 import {
+  createMigrate,
   FLUSH,
   PAUSE,
   PERSIST,
@@ -14,6 +15,7 @@ import {
 import { DeserializeBridgeTransform } from 'store/transforms'
 import bridge, { addBridgeTransaction } from 'store/bridge'
 import { nftsApi } from 'store/nft/api'
+import { migrations } from 'store/migrations'
 import { networkReducer as network } from './network'
 import { balanceReducer as balance, setBalance, setBalances } from './balance'
 import { appReducer as app, onLogOut, onRehydrationComplete } from './app'
@@ -77,7 +79,9 @@ const persistConfig = {
     transactionApi.reducerPath,
     nftsApi.reducerPath
   ],
-  transforms: [DeserializeBridgeTransform]
+  transforms: [DeserializeBridgeTransform],
+  migrate: createMigrate(migrations, { debug: __DEV__ }),
+  version: 1
 }
 
 const persistedReducer = persistReducer(persistConfig, rootReducer)
