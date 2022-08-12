@@ -22,6 +22,11 @@ export const useInfiniteScroll = <
   // when pageToken is an empty string, it means no more pages to fetch
   const [pageToken, setPageToken] = useState<string | undefined>(undefined)
   const [combinedData, setCombinedData] = useState<Item[]>([])
+  const queryParamsString = JSON.stringify(queryParams)
+
+  useEffect(() => {
+    setCombinedData([]) //reset combined data every time queryParams change
+  }, [queryParamsString])
 
   const queryResponse = useQuery({
     nextPageToken: pageToken,
@@ -36,10 +41,10 @@ export const useInfiniteScroll = <
       dataKey in queryResponseData &&
       'nextPageToken' in queryResponseData
     ) {
-      const data = queryResponseData[dataKey]
-      const nextPageToken = queryResponseData.nextPageToken
+      const qData = queryResponseData[dataKey]
+      const qNextToken = queryResponseData.nextPageToken
 
-      return [data, nextPageToken]
+      return [qData, qNextToken]
     }
 
     return [[], undefined]
@@ -63,7 +68,7 @@ export const useInfiniteScroll = <
     // this refetch belongs to the very first query that has undefined pageToken
     // calling it means refetching from page 1
     queryResponse.refetch()
-  }, [])
+  }, [queryResponse])
 
   const fetchNext = () => {
     if (hasMore && !isFetching) {
