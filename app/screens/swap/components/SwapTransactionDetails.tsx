@@ -96,8 +96,9 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
       <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
         <Popable
           content={slippageInfoMessage}
-          position={'right'}
-          style={{ minWidth: 200 }}
+          position={'top'}
+          strictPosition={true}
+          style={{ minWidth: 300, marginBottom: review ? 0 : -32 }}
           backgroundColor={theme.colorBg3}>
           <AvaText.Body2 color={theme.white}>
             Slippage tolerance ⓘ
@@ -133,7 +134,8 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
             <Popable
               content={netFeeInfoMessage}
               position={'right'}
-              style={{ minWidth: 200 }}
+              strictPosition={true}
+              style={{ minWidth: 180 }}
               backgroundColor={theme.colorBg3}>
               <AvaText.Body2 color={theme.white}>Network Fee ⓘ</AvaText.Body2>
             </Popable>
