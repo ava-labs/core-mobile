@@ -1,0 +1,20 @@
+diff --git a/node_modules/@connectedcars/react-native-slide-charts/src/lib/utils/SVGPathYFromX.ts b/node_modules/@connectedcars/react-native-slide-charts/src/lib/utils/SVGPathYFromX.ts
+index d50d72f..89301ba 100644
+--- a/node_modules/@connectedcars/react-native-slide-charts/src/lib/utils/SVGPathYFromX.ts
++++ b/node_modules/@connectedcars/react-native-slide-charts/src/lib/utils/SVGPathYFromX.ts
+@@ -31,7 +31,7 @@ export default function SVGPathYFromX(path: any, x: number): number {
+    * Walk along the path using binary search
+    * to locate the point with the supplied x value
+    */
+-  while (target >= start && target <= pathLength) {
++  while (target-start > 0.1 && target <= pathLength) {
+     const pos = path.getPointAtLength(target)
+ 
+     /**
+@@ -47,5 +47,5 @@ export default function SVGPathYFromX(path: any, x: number): number {
+     }
+     target = (start + end) / 2
+   }
+-  return path.getPointAtLength(0)
++  return path.getPointAtLength(0).y
+ }

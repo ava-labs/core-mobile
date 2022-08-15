@@ -20,7 +20,7 @@
     "prestorybook": "rnstl",
     "build-storybook": "build-storybook",
     "prepare": "husky install",
-    "postinstall": "./scripts/patch; patch-package; node_modules/.bin/rn-nodeify --install crypto,events,stream,vm,assert,https,http,os --hack"
+    "postinstall": "patch-package; node_modules/.bin/rn-nodeify --install crypto,events,stream,vm,assert,https,http,os --hack"
   },
   "dependencies": {
     "@avalabs/blockcypher-sdk": "2.5.0-alpha.9",
