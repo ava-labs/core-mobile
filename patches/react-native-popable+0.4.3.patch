@@ -1,0 +1,33 @@
+diff --git a/node_modules/react-native-popable/src/Popable.tsx b/node_modules/react-native-popable/src/Popable.tsx
+index 75f214e..6c5b26c 100644
+--- a/node_modules/react-native-popable/src/Popable.tsx
++++ b/node_modules/react-native-popable/src/Popable.tsx
+@@ -7,6 +7,7 @@ import React, {
+   useState,
+ } from 'react';
+ import {
++  Dimensions,
+   Platform,
+   // @ts-ignore
+   Pressable,
+@@ -44,6 +45,7 @@ const DEFAULT_LAYOUT = {
+   y: 0,
+ };
+ 
++const { width: screenWidth } = Dimensions.get('window')
+ const Popable = forwardRef<PopableManager, PopableProps>(function Popable(
+   {
+     action = 'press',
+@@ -185,6 +187,12 @@ const Popable = forwardRef<PopableManager, PopableProps>(function Popable(
+       case 'top':
+       case 'bottom':
+         left = (popoverLayout.width - childrenLayout.width) / 2;
++        if (childrenLayout.x < left) {
++          left = 0
++        }
++        if (childrenLayout.x + childrenLayout.width + left > screenWidth) {
++          left = left*2
++        }
+         break;
+     }
+ 
