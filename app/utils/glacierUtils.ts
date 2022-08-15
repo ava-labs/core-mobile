@@ -15,7 +15,6 @@ if (!GLACIER_URL) Logger.error('GLACIER URL ENV is missing')
  */
 export function addGlacierAPIKeyIfNeeded(url: string): string {
   if (
-    __DEV__ &&
     Config.GLACIER_API_KEY &&
     (url.startsWith(Config.GLACIER_DEV_URL) ||
       url.startsWith(Config.GLACIER_PROD_URL))
