@@ -1,6 +1,6 @@
 import { QueryDefinition } from '@reduxjs/toolkit/dist/query'
 import { UseQuery } from '@reduxjs/toolkit/dist/query/react/buildHooks'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 // a hook to implement infinite scroll with RTK Query
 // it manages nextPageToken and the combined data from different pages
@@ -22,6 +22,13 @@ export const useInfiniteScroll = <
   // when pageToken is an empty string, it means no more pages to fetch
   const [pageToken, setPageToken] = useState<string | undefined>(undefined)
   const [combinedData, setCombinedData] = useState<Item[]>([])
+  const queryParamsString = JSON.stringify(queryParams)
+
+  useEffect(() => {
+    //reset combined data and pagetoken every time queryParams change
+    setPageToken(undefined)
+    setCombinedData([])
+  }, [queryParamsString])
 
   const queryResponse = useQuery({
     nextPageToken: pageToken,
@@ -36,10 +43,10 @@ export const useInfiniteScroll = <
       dataKey in queryResponseData &&
       'nextPageToken' in queryResponseData
     ) {
-      const data = queryResponseData[dataKey]
-      const nextPageToken = queryResponseData.nextPageToken
+      const qData = queryResponseData[dataKey]
+      const qNextToken = queryResponseData.nextPageToken
 
-      return [data, nextPageToken]
+      return [qData, qNextToken]
     }
 
     return [[], undefined]
@@ -58,12 +65,20 @@ export const useInfiniteScroll = <
     }
   }, [data, nextPageToken, pageToken])
 
-  const refresh = useCallback(() => {
-    setPageToken(undefined)
-    // this refetch belongs to the very first query that has undefined pageToken
-    // calling it means refetching from page 1
-    queryResponse.refetch()
-  }, [])
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  const refresh = useRef(() => {})
+
+  useEffect(() => {
+    if (pageToken === undefined) {
+      refresh.current = () => {
+        setPageToken(undefined)
+        setCombinedData([])
+        // this refetch belongs to the very first query that has undefined pageToken
+        // calling it means refetching from page 1
+        queryResponse.refetch()
+      }
+    }
+  }, [pageToken, queryResponse])
 
   const fetchNext = () => {
     if (hasMore && !isFetching) {
@@ -88,7 +103,7 @@ export const useInfiniteScroll = <
   return {
     data: combinedData,
     fetchNext,
-    refresh,
+    refresh: refresh.current,
     isLoading,
     isFetching,
     isRefreshing,
