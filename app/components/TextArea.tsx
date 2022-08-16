@@ -76,7 +76,7 @@ export default function TextArea(props: Props | Readonly<Props>): JSX.Element {
           }}
           style={[
             {
-              flexShrink: 1,
+              flexGrow: 1,
               textAlignVertical: 'top',
               color: theme.colorText1,
               fontSize: 16,
