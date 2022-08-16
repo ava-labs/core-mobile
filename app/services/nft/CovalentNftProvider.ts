@@ -91,8 +91,8 @@ export class CovalentNftProvider implements NftProvider {
 
     return nftCollections.nft_data.map(value => {
       return {
-        chainId: chainId,
-        contractAddress: address,
+        chainId,
+        address,
         name: value.external_data.name,
         symbol: nftCollections.contract_ticker_symbol,
         tokenId: value.token_id,

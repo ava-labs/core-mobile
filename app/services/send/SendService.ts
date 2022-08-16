@@ -75,7 +75,7 @@ class SendService {
     return {
       id: nft.tokenId,
       type: TokenType.ERC721,
-      address: nft.contractAddress,
+      address: nft.address,
       logoUri: nft.image,
       name: nft.name,
       symbol: nft.symbol,
