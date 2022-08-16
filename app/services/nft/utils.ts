@@ -43,5 +43,5 @@ export const addMissingFields = (address: string) => {
 }
 
 export const getNftUID = (nft: Erc721TokenBalance): NftUID => {
-  return nft.contractAddress + nft.tokenId
+  return nft.address + nft.tokenId
 }

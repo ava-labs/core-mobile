@@ -41,7 +41,12 @@ const convertTransactionWithERC20 = ({
 }: ConvertTransactionWithERC20Params) => {
   const { txHash, blockTimestamp, gasPrice, gasUsed } = nativeTransaction
   const {
-    erc20Token: { contractAddress, tokenDecimals, tokenName, tokenSymbol },
+    erc20Token: {
+      address: contractAddress,
+      decimals: tokenDecimals,
+      name: tokenName,
+      symbol: tokenSymbol
+    },
     from: { address: from },
     to: { address: to },
     value
