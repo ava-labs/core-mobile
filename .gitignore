@@ -66,3 +66,4 @@ package-lock.json
 
 # Eslint
 eslint_report.json
+/.env.development
