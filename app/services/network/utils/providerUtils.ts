@@ -8,6 +8,7 @@ import {
 import { BlockCypherProvider, JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 import Config from 'react-native-config'
 import { PollingConfig } from 'store/balance'
+import { Networks } from 'store/network'
 import { addGlacierAPIKeyIfNeeded, GLACIER_URL } from 'utils/glacierUtils'
 
 const BLOCKCYPHER_PROXY_URL = `${GLACIER_URL}/proxy/blockcypher`
@@ -41,7 +42,7 @@ export function getEvmProvider(network: Network) {
 }
 
 export function getAvalancheProvider(
-  networks: Network[],
+  networks: Networks,
   isTest: boolean | undefined
 ): JsonRpcBatchInternal | undefined {
   const network = getAvalancheNetwork(networks, isTest)
@@ -50,7 +51,7 @@ export function getAvalancheProvider(
 }
 
 export function getEthereumProvider(
-  networks: Network[],
+  networks: Networks,
   isTest: boolean | undefined
 ): JsonRpcBatchInternal | undefined {
   const network = getEthereumNetwork(networks, isTest)
@@ -59,7 +60,7 @@ export function getEthereumProvider(
 }
 
 export function getAvalancheNetwork(
-  networks: Network[],
+  networks: Networks,
   isTest: boolean | undefined
 ): Network | undefined {
   const network = isTest
@@ -75,7 +76,7 @@ export function getBitcoinNetwork(
 }
 
 export function getEthereumNetwork(
-  networks: Network[],
+  networks: Networks,
   isTest: boolean | undefined
 ): Network | undefined {
   const network = isTest

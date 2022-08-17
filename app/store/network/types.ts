@@ -2,9 +2,11 @@ import { Network } from '@avalabs/chains-sdk'
 
 export type ChainID = number
 
+export type Networks = { [chainId: ChainID]: Network }
+
 export type NetworkState = {
-  networks: Record<ChainID, Network>
-  customNetworks: Record<ChainID, Network>
+  networks: Networks
+  customNetworks: Networks
   favorites: ChainID[]
   active: ChainID
 }
