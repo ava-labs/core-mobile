@@ -21,9 +21,9 @@ Notes: Before running yarn setup, you will need to generate an npm token from yo
 ## Add config files
 
 ### Environment file
-Create a `.env` file in the root of the project. The contents of the .env file are in 1Password. Ask permission to access it (the vault name is Mobile team). Once access is given copy and paste the contents from the 1Password Secure Note into your local .env file. 
+Create a `.env.development` and `.env.production` files in the root of the project. The contents of the .env files are in 1Password. Ask permission to access it (the vault name is Mobile team). Once access is given copy and paste the contents from the 1Password Secure Note into your local .env files. 
 
-IMPORTANT: the `.env` is never to be committed to the repo, and is already added to .gitignore. 
+IMPORTANT: the `.env` files are never to be committed to the repo, and are already added to .gitignore. 
 
 ### Android configs
 Download `keystore.properties` from 1Password and place it in the `android` folder
