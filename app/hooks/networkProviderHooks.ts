@@ -12,7 +12,7 @@ export function useEthereumProvider() {
   const network = useSelector(selectActiveNetwork)
 
   return useMemo(
-    () => getEthereumProvider(Object.values(networks), network.isTestnet),
+    () => getEthereumProvider(networks, network.isTestnet),
     [networks, network]
   )
 }
@@ -28,7 +28,7 @@ export function useAvalancheProvider() {
   const network = useSelector(selectActiveNetwork)
 
   return useMemo(
-    () => getAvalancheProvider(Object.values(networks), network.isTestnet),
+    () => getAvalancheProvider(networks, network.isTestnet),
     [networks, network]
   )
 }
