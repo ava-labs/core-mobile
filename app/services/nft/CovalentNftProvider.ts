@@ -14,7 +14,7 @@ import {
 
 const demoAddress = 'demo.eth'
 const demoChain = 1 //Ethereum
-const NFT_TIMEOUT = 120_000 // 2 minutes
+const NFT_TIMEOUT = 120000 // 2 minutes
 
 export class CovalentNftProvider implements NftProvider {
   async isProviderFor(chainId: number): Promise<boolean> {
