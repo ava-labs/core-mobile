@@ -81,8 +81,8 @@ import com.android.build.OutputFile
 project.ext.react = [
     enableHermes: false,  // clean and rebuild if changing
     entryFile: "index.js",
-    bundleInNightly: true,
-    devDisabledInNightly: true,
+    bundleInInternal: true,
+    devDisabledInInternal: true,
 ]
 
 apply from: "../../node_modules/react-native/react.gradle"
@@ -130,8 +130,7 @@ def enableHermes = project.ext.react.get("enableHermes", false);
  */
 def nativeArchitectures = project.getProperties().get("reactNativeDebugArchitectures")
 
-Properties keystoreProperties = new Properties()
-keystoreProperties.load(project.rootProject.file('keystore.properties').newDataInputStream())
+def keystorePropertiesFile = rootProject.file("keystore.properties");
 
 def bitriseBuildNumber = System.getenv("BITRISE_BUILD_NUMBER")
 def buildNumber = bitriseBuildNumber != null ? bitriseBuildNumber.toInteger() : 1
@@ -168,10 +167,14 @@ android {
     }
     signingConfigs {
         release {
-            storeFile file(keystoreProperties['MYAPP_UPLOAD_STORE_FILE'])
-            storePassword keystoreProperties['MYAPP_UPLOAD_STORE_PASSWORD']
-            keyAlias keystoreProperties['MYAPP_UPLOAD_KEY_ALIAS']
-            keyPassword keystoreProperties['MYAPP_UPLOAD_KEY_PASSWORD']
+            if (keystorePropertiesFile.exists()){
+                def keystoreProperties = new Properties()
+                keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+                storeFile file(keystoreProperties['MYAPP_UPLOAD_STORE_FILE'])
+                storePassword keystoreProperties['MYAPP_UPLOAD_STORE_PASSWORD']
+                keyAlias keystoreProperties['MYAPP_UPLOAD_KEY_ALIAS']
+                keyPassword keystoreProperties['MYAPP_UPLOAD_KEY_PASSWORD']
+            }
         }
         debug {
             storeFile file('debug.keystore')
@@ -194,8 +197,8 @@ android {
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
-        nightly {
-            applicationIdSuffix ".nightly"
+        internal {
+            applicationIdSuffix ".internal"
             signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
@@ -257,7 +260,7 @@ dependencies {
         def hermesPath = "../../node_modules/hermes-engine/android/";
         debugImplementation files(hermesPath + "hermes-debug.aar")
         releaseImplementation files(hermesPath + "hermes-release.aar")
-        nightlyImplementation files(hermesPath + "hermes-release.aar")
+        internalImplementation files(hermesPath + "hermes-release.aar")
     } else {
         implementation jscFlavor
     }
