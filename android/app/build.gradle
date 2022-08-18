@@ -133,8 +133,8 @@ def nativeArchitectures = project.getProperties().get("reactNativeDebugArchitect
 Properties keystoreProperties = new Properties()
 keystoreProperties.load(project.rootProject.file('keystore.properties').newDataInputStream())
 
-def bitriseBuildTriggerTimestamp = System.getenv("BITRISE_BUILD_TRIGGER_TIMESTAMP")
-def buildNumber = bitriseBuildTriggerTimestamp != null ? bitriseBuildTriggerTimestamp.toInteger() : 1
+def bitriseBuildNumber = System.getenv("BITRISE_BUILD_NUMBER")
+def buildNumber = bitriseBuildNumber != null ? bitriseBuildNumber.toInteger() : 1
 
 android {
     ndkVersion rootProject.ext.ndkVersion
