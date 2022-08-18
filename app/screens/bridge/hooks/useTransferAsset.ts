@@ -1,5 +1,6 @@
 import { EventEmitter } from 'events'
 import {
+  Asset,
   Blockchain,
   EthereumConfigAsset,
   NativeAsset,
@@ -56,11 +57,7 @@ export function useTransferAsset() {
   }, [activeNetwork.isTestnet, allNetworks, currentBlockchain])
 
   const transferHandler = useCallback(
-    async (
-      blockChain: Blockchain,
-      amount: Big,
-      asset: EthereumConfigAsset | NativeAsset
-    ) => {
+    async (amount: Big, asset: Asset) => {
       const blockchainNetwork = getNetworkForBlockchain()
 
       if (
@@ -85,7 +82,7 @@ export function useTransferAsset() {
         currentBlockchain,
         amount,
         address,
-        asset,
+        asset as EthereumConfigAsset | NativeAsset, // TODO fix in sdk (should be Asset)
         avalancheProvider,
         ethereumProvider,
         config,
