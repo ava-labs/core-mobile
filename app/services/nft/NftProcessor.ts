@@ -9,22 +9,31 @@ export class NftProcessor {
     return new Promise<[string, number, boolean]>(resolve => {
       if (this.isBase64Svg(imageData)) {
         const svg = this.decodeBase64Svg(imageData)
-        const aspect = this.extractSvgAspect(svg) ?? 1
-
+        const trimmed = this.removeSvgNamespace(svg)
+        const aspect = this.extractSvgAspect(trimmed) ?? 1
         resolve([svg, aspect, true])
       } else {
         const imageUrl = convertIPFSResolver(imageData)
-
-        Image.getSize(
-          imageUrl,
-          (width: number, height: number) => {
-            const aspect = height / width
-            resolve([imageUrl, aspect, false])
-          },
-          _ => {
-            resolve([imageUrl, 1, false])
-          }
-        )
+        if (imageUrl.endsWith('.svg')) {
+          fetch(imageUrl).then(rsp => {
+            rsp.text().then(svg => {
+              const trimmed = this.removeSvgNamespace(svg)
+              const aspect = this.extractSvgAspect(trimmed) ?? 1
+              resolve([trimmed, aspect, true])
+            })
+          })
+        } else {
+          Image.getSize(
+            imageUrl,
+            (width: number, height: number) => {
+              const aspect = height / width
+              resolve([imageUrl, aspect, false])
+            },
+            _ => {
+              resolve([imageUrl, 1, false])
+            }
+          )
+        }
       }
     })
   }
@@ -36,6 +45,11 @@ export class NftProcessor {
   decodeBase64Svg(svgData: string): string {
     const base64Data = svgData.substring(this.base64Prefix.length)
     return this.base64Prefix + this.base64.decode(base64Data).toString()
+  }
+
+  removeSvgNamespace(svg: string): string {
+    const regex = new RegExp('(</*)(.+?:)', 'ig')
+    return svg.replace(regex, '$1')
   }
 
   extractSvgAspect(svg: string) {
