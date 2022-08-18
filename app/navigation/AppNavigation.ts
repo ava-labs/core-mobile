@@ -105,7 +105,8 @@ enum LegalScreens {
 }
 
 enum AdvancedScreens {
-  Advanced = 'AdvancedScreens.Advanced'
+  Advanced = 'AdvancedScreens.Advanced',
+  DappConnectModal = 'AdvancedScreens.DappConnectModal'
 }
 
 enum Tabs {

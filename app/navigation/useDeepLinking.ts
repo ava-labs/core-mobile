@@ -23,6 +23,10 @@ export function useDeepLinking(unlocked: boolean) {
     setPendingDeepLink(undefined)
   }
 
+  function setLinkManually(url: string) {
+    setPendingDeepLink({ url, origin: DeepLinkOrigin.ORIGIN_QR_CODE })
+  }
+
   /******************************************************************************
    * 1. Start listeners that will receive the deep link url
    *****************************************************************************/
@@ -159,4 +163,6 @@ export function useDeepLinking(unlocked: boolean) {
         return
     }
   }
+
+  return { setLinkManually }
 }

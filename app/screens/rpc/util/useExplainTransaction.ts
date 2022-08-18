@@ -95,7 +95,7 @@ export function useExplainTransaction(dappEvent?: DappEvent) {
         ...customSpendLimit,
         value: undefined,
         default: bnToLocaleString(
-          hexToBN(transaction.displayValues.approveData.limit)
+          hexToBN(transaction.displayValues.approveData?.limit ?? 0)
         )
       })
     }
@@ -115,7 +115,7 @@ export function useExplainTransaction(dappEvent?: DappEvent) {
             ...customSpendData,
             value: undefined,
             default: bnToLocaleString(
-              hexToBN(transaction.displayValues.approveData.limit)
+              hexToBN(transaction.displayValues.approveData?.limit ?? 0)
             )
           })
           limitAmount = ethers.constants.MaxUint256.toHexString()
@@ -126,7 +126,7 @@ export function useExplainTransaction(dappEvent?: DappEvent) {
             customSpendData.limitType === Limit.CUSTOM
               ? customSpendData.value?.amount || ''
               : bnToLocaleString(
-                  hexToBN(transaction.displayValues.approveData.limit),
+                  hexToBN(transaction.displayValues.approveData?.limit ?? 0),
                   transaction.displayValues.tokenToBeApproved.decimals
                 )
           )

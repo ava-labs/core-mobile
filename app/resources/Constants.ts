@@ -87,7 +87,7 @@ export enum COLORS_NIGHT {
 
 export const SECURE_ACCESS_SET = 'secureAccessSet'
 
-export const CORE_UNIVERSAL_LINK_HOST = 'core.app.link'
+export const CORE_UNIVERSAL_LINK_HOST = 'cm-universal-links.herokuapp.com'
 
 export const TERMS_OF_USE_URL = 'https://wallet.avax.network/legal?core'
 

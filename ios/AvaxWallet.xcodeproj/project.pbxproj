@@ -44,6 +44,7 @@
 		13BCCA2428C97A43E2BF2CCE /* Pods-AvaxWallet.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AvaxWallet.release.xcconfig"; path = "Target Support Files/Pods-AvaxWallet/Pods-AvaxWallet.release.xcconfig"; sourceTree = "<group>"; };
 		2732984427ED232B00A0E395 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		2793FCC827461B9C00B0719A /* AvaxWallet.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = AvaxWallet.entitlements; path = AvaxWallet/AvaxWallet.entitlements; sourceTree = "<group>"; };
+		27981BC628AECFB200672611 /* AvaxWalletRelease.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = AvaxWalletRelease.entitlements; path = AvaxWallet/AvaxWalletRelease.entitlements; sourceTree = "<group>"; };
 		49D759DDE6DA7811CD099B69 /* Pods-AvaxWallet-AvaxWalletTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AvaxWallet-AvaxWalletTests.debug.xcconfig"; path = "Target Support Files/Pods-AvaxWallet-AvaxWalletTests/Pods-AvaxWallet-AvaxWalletTests.debug.xcconfig"; sourceTree = "<group>"; };
 		4A7B4DD5DECD98687B909D70 /* libPods-AvaxWallet-AvaxWalletTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-AvaxWallet-AvaxWalletTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		768AB2F6A941B6D6A6F508D4 /* Pods-AvaxWallet-AvaxWalletTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AvaxWallet-AvaxWalletTests.release.xcconfig"; path = "Target Support Files/Pods-AvaxWallet-AvaxWalletTests/Pods-AvaxWallet-AvaxWalletTests.release.xcconfig"; sourceTree = "<group>"; };
@@ -93,6 +94,7 @@
 		13B07FAE1A68108700A75B9A /* AvaxWallet */ = {
 			isa = PBXGroup;
 			children = (
+				27981BC628AECFB200672611 /* AvaxWalletRelease.entitlements */,
 				2793FCC827461B9C00B0719A /* AvaxWallet.entitlements */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
@@ -555,7 +557,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = AvaxWallet/AvaxWallet.entitlements;
+				CODE_SIGN_ENTITLEMENTS = AvaxWallet/AvaxWalletRelease.entitlements;
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = U57DXD258P;
