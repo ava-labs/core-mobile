@@ -133,6 +133,9 @@ def nativeArchitectures = project.getProperties().get("reactNativeDebugArchitect
 Properties keystoreProperties = new Properties()
 keystoreProperties.load(project.rootProject.file('keystore.properties').newDataInputStream())
 
+def bitriseBuildTriggerTimestamp = System.getenv("BITRISE_BUILD_TRIGGER_TIMESTAMP")
+def buildNumber = bitriseBuildTriggerTimestamp != null ? bitriseBuildTriggerTimestamp.toInteger() : 1
+
 android {
     ndkVersion rootProject.ext.ndkVersion
 
@@ -147,8 +150,8 @@ android {
         applicationId "com.avaxwallet"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 70
-        versionName "0.13.0"
+        versionName rootProject.ext.appVersionName
+        versionCode buildNumber
 
         missingDimensionStrategy 'react-native-camera', 'general'
 
@@ -265,6 +268,13 @@ dependencies {
 task copyDownloadableDepsToLibs(type: Copy) {
     from configurations.implementation
     into 'libs'
+}
+
+// This task is used on bitrise
+task printFullVersion {
+    doLast {
+        println "${rootProject.ext.appVersionName}.${buildNumber}"
+    }
 }
 
 apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
