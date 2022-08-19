@@ -41,7 +41,8 @@ export const useIsUIDisabled = (ui: UI) => {
     return false
   }
 
-  if (!disabledUIs[ui]?.includes(chainId)) {
+  const disabled = disabledUIs[ui]
+  if (disabled && disabled.includes(chainId)) {
     return false
   }
 
