@@ -4,7 +4,14 @@ import { TextInput, View } from 'react-native'
 import AvaButton from 'components/AvaButton'
 import SettingsCogSVG from 'components/svg/SettingsCogSVG'
 import { Space } from 'components/Space'
-import React, { FC, useEffect, useMemo, useRef, useState } from 'react'
+import React, {
+  FC,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import InputText from 'components/InputText'
 import { Opacity50 } from 'resources/Constants'
@@ -47,9 +54,14 @@ const NetworkFeeSelector = ({
   const network = useActiveNetwork()
   const isBtcNetwork = network.vmName === NetworkVMType.BITCOIN
   const [selectedPreset, setSelectedPreset] = useState(FeePreset.Normal)
-  const [customGasPrice, setCustomGasPrice] = useState(
-    BigNumber.from(networkFee.low)
-  )
+  const [customGasPrice, setCustomGasPrice] = useState(BigNumber.from(0))
+
+  useEffect(() => {
+    if (customGasPrice.isZero()) {
+      setCustomGasPrice(BigNumber.from(networkFee.low))
+    }
+  }, [customGasPrice, networkFee.low])
+
   const selectedGasPrice = useMemo(() => {
     switch (selectedPreset) {
       case FeePreset.Custom:
@@ -69,7 +81,7 @@ const NetworkFeeSelector = ({
     onChange?.(gasLimit, selectedGasPrice, selectedPreset)
   }, [gasLimit, selectedGasPrice, selectedPreset])
 
-  useEffect(fetchNetworkGasPrices, [])
+  useEffect(fetchNetworkGasPrices, [dispatch])
 
   function fetchNetworkGasPrices() {
     dispatch(fetchNetworkFee)
@@ -79,8 +91,11 @@ const NetworkFeeSelector = ({
     onChange?.(newGasLimit, selectedGasPrice, selectedPreset)
   }
 
-  const convertFeeToUnit = (value: BigNumber) =>
-    ethersBigNumberToBig(value, networkFee.displayDecimals).toFixed(0)
+  const convertFeeToUnit = useCallback(
+    (value: BigNumber) =>
+      ethersBigNumberToBig(value, networkFee.displayDecimals).toFixed(0),
+    [networkFee.displayDecimals]
+  )
 
   const displayGasValues = useMemo(() => {
     return {
@@ -89,7 +104,13 @@ const NetworkFeeSelector = ({
       [FeePreset.Instant]: convertFeeToUnit(networkFee.high),
       [FeePreset.Custom]: convertFeeToUnit(customGasPrice)
     }
-  }, [customGasPrice, networkFee.high, networkFee.low, networkFee.medium])
+  }, [
+    convertFeeToUnit,
+    customGasPrice,
+    networkFee.high,
+    networkFee.low,
+    networkFee.medium
+  ])
 
   return (
     <>

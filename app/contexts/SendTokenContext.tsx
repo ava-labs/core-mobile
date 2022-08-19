@@ -229,12 +229,14 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
       balanceAfterTrx,
       balanceAfterTrxInCurrency
     },
-    toAccount: {
-      title: sendToTitle,
-      address: sendToAddress,
-      setTitle: setSendToTitle,
-      setAddress: setSendToAddress
-    },
+    toAccount: useMemo(() => {
+      return {
+        title: sendToTitle,
+        address: sendToAddress,
+        setTitle: setSendToTitle,
+        setAddress: setSendToAddress
+      }
+    }, [sendToAddress, sendToTitle]),
     fees: {
       sendFeeNative,
       sendFeeInCurrency: sendFeeInCurrency,
