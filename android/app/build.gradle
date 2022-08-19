@@ -81,8 +81,8 @@ import com.android.build.OutputFile
 project.ext.react = [
     enableHermes: false,  // clean and rebuild if changing
     entryFile: "index.js",
-    bundleInInternal: true,
-    devDisabledInInternal: true,
+    bundleInInternalRelease: true,
+    devDisabledInInternalRelease: true,
 ]
 
 apply from: "../../node_modules/react-native/react.gradle"
@@ -197,13 +197,15 @@ android {
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
+    }
+
+    flavorDimensions "version"
+
+    productFlavors {
         internal {
             applicationIdSuffix ".internal"
-            signingConfig signingConfigs.release
-            minifyEnabled enableProguardInReleaseBuilds
-            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
-            matchingFallbacks = ['release']
         }
+        external {}
     }
 
     // applicationVariants are e.g. debug, release
