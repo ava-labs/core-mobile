@@ -101,7 +101,7 @@ def enableSeparateBuildPerCPUArchitecture = false
 /**
  * Run Proguard to shrink the Java bytecode in release builds.
  */
-def enableProguardInReleaseBuilds = false
+def enableProguardInReleaseBuilds = true
 
 /**
  * The preferred build flavor of JavaScriptCore.
@@ -129,12 +129,6 @@ def enableHermes = project.ext.react.get("enableHermes", false);
  * Architectures to build native code for in debug.
  */
 def nativeArchitectures = project.getProperties().get("reactNativeDebugArchitectures")
-
-def keystorePropertiesFile = rootProject.file("keystore.properties");
-def keystoreProperties = new Properties()
-if (keystorePropertiesFile.exists()){
-    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
-}
 
 def bitriseBuildNumber = System.getenv("BITRISE_BUILD_NUMBER")
 def buildNumber = bitriseBuildNumber != null ? bitriseBuildNumber.toInteger() : 1
@@ -170,12 +164,6 @@ android {
         }
     }
     signingConfigs {
-        release {
-            storeFile file(keystoreProperties['MYAPP_UPLOAD_STORE_FILE'])
-            storePassword keystoreProperties['MYAPP_UPLOAD_STORE_PASSWORD']
-            keyAlias keystoreProperties['MYAPP_UPLOAD_KEY_ALIAS']
-            keyPassword keystoreProperties['MYAPP_UPLOAD_KEY_PASSWORD']
-        }
         debug {
             storeFile file('debug.keystore')
             storePassword 'android'
@@ -193,7 +181,6 @@ android {
             }
         }
         release {
-            signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
