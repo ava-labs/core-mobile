@@ -16,6 +16,7 @@ const enabledUIs: Partial<Record<UI, number[]>> = {
     ChainId.AVALANCHE_MAINNET_ID,
     ChainId.AVALANCHE_TESTNET_ID,
     ChainId.ETHEREUM_HOMESTEAD,
+    ChainId.ETHEREUM_TEST_GOERLY,
     ChainId.ETHEREUM_TEST_RINKEBY
   ],
   [UI.Swap]: [ChainId.AVALANCHE_MAINNET_ID],
@@ -36,11 +37,12 @@ const disabledUIs: Partial<Record<UI, number[]>> = {
 export const useIsUIDisabled = (ui: UI) => {
   const { chainId } = useSelector(selectActiveNetwork)
 
-  if (enabledUIs[ui] && enabledUIs[ui]!.includes(chainId)) {
+  if (enabledUIs[ui]?.includes(chainId)) {
     return false
   }
 
-  if (disabledUIs[ui] && !disabledUIs[ui]!.includes(chainId)) {
+  const disabled = disabledUIs[ui]
+  if (disabled && disabled.includes(chainId)) {
     return false
   }
 

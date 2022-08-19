@@ -5,8 +5,9 @@ import {
 } from '@avalabs/bridge-sdk'
 import { BitcoinHistoryTx } from '@avalabs/wallets-sdk'
 import { Transaction } from 'store/transaction'
-import { Network } from '@avalabs/chains-sdk'
+import { ChainId, Network } from '@avalabs/chains-sdk'
 import { isEthereumNetwork } from 'services/network/utils/isEthereumNetwork'
+import { Networks } from 'store/network'
 
 const ETHEREUM_ADDRESS = '0x0000000000000000000000000000000000000000'
 
@@ -89,4 +90,46 @@ const blockchainDisplayNameMap = new Map([
 
 export function getBlockchainDisplayName(chain: Blockchain | undefined) {
   return blockchainDisplayNameMap.get(chain ?? Blockchain.UNKNOWN)
+}
+
+export const blockchainToNetwork = (
+  blockChain: Blockchain,
+  networks: Networks,
+  criticalConfig: CriticalConfig | undefined
+) => {
+  switch (blockChain) {
+    case Blockchain.AVALANCHE:
+    case Blockchain.ETHEREUM: {
+      const chainId = criticalConfig?.critical.networks[blockChain]
+      return typeof chainId === 'number' ? networks[chainId] : undefined
+    }
+    case Blockchain.BITCOIN: {
+      const isTest =
+        criticalConfig?.critical.networks[Blockchain.AVALANCHE] !==
+        ChainId.AVALANCHE_MAINNET_ID
+      return isTest
+        ? networks[ChainId.BITCOIN_TESTNET]
+        : networks[ChainId.BITCOIN]
+    }
+    default:
+      throw new Error('Blockchain not supported')
+  }
+}
+
+export const networkToBlockchain = (network: Network | undefined) => {
+  switch (network?.chainId) {
+    case ChainId.AVALANCHE_MAINNET_ID:
+    case ChainId.AVALANCHE_LOCAL_ID:
+    case ChainId.AVALANCHE_TESTNET_ID:
+      return Blockchain.AVALANCHE
+    case ChainId.ETHEREUM_HOMESTEAD:
+    case ChainId.ETHEREUM_TEST_GOERLY:
+    case ChainId.ETHEREUM_TEST_RINKEBY:
+      return Blockchain.ETHEREUM
+    case ChainId.BITCOIN:
+    case ChainId.BITCOIN_TESTNET:
+      return Blockchain.BITCOIN
+    default:
+      return Blockchain.UNKNOWN
+  }
 }

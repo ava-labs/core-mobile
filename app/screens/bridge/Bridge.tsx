@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useMemo, useState } from 'react'
+import React, { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import { Alert, Dimensions, Pressable, StyleSheet, View } from 'react-native'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
@@ -27,16 +27,21 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { BridgeScreenProps } from 'navigation/types'
 import { usePosthogContext } from 'contexts/PosthogContext'
-import { TokenSymbol } from 'store/network'
+import { selectNetworks, setActive, TokenSymbol } from 'store/network'
 import { useActiveNetwork } from 'hooks/useActiveNetwork'
 import { bigToBN, bnToBig, resolve } from '@avalabs/utils-sdk'
 import Big from 'big.js'
 import ScrollViewList from 'components/ScrollViewList'
 import { ActivityIndicator } from 'components/ActivityIndicator'
 import Logger from 'utils/Logger'
-import { getBlockchainDisplayName } from 'screens/bridge/utils/bridgeUtils'
+import {
+  blockchainToNetwork,
+  getBlockchainDisplayName,
+  networkToBlockchain
+} from 'screens/bridge/utils/bridgeUtils'
 import { BNInput } from 'components/BNInput'
 import BN from 'bn.js'
+import { useDispatch, useSelector } from 'react-redux'
 
 const blockchainTitleMaxWidth = Dimensions.get('window').width * 0.5
 const dropdownWith = Dimensions.get('window').width * 0.6
@@ -59,6 +64,7 @@ const Bridge: FC = () => {
   const navigation = useNavigation<NavigationProp>()
   const theme = useApplicationContext().theme
   const { capture } = usePosthogContext()
+  const dispatch = useDispatch()
 
   const {
     sourceBalance,
@@ -79,12 +85,13 @@ const Bridge: FC = () => {
     currentAsset,
     setCurrentAsset,
     currentBlockchain,
-    setCurrentBlockchain,
-    targetBlockchain
+    setCurrentBlockchain: setCurrentBlockchainSDK,
+    targetBlockchain,
+    criticalConfig
   } = useBridgeSDK()
   const { getTokenSymbolOnNetwork } = useGetTokenSymbolOnNetwork()
+  const networks = useSelector(selectNetworks)
   const activeNetwork = useActiveNetwork()
-  const isMainnet = !activeNetwork.isTestnet
   const [bridgeError, setBridgeError] = useState<string>('')
   const [isPending, setIsPending] = useState<boolean>(false)
   const tokenInfoData = useTokenInfoContext()
@@ -124,6 +131,14 @@ const Bridge: FC = () => {
     BIG_ZERO.eq(amount) ||
     !hasEnoughForNetworkFee
 
+  // Derive bridge Blockchain from active network
+  useEffect(() => {
+    const networkBlockchain = networkToBlockchain(activeNetwork)
+    if (currentBlockchain !== networkBlockchain) {
+      setCurrentBlockchainSDK(networkBlockchain)
+    }
+  }, [activeNetwork, currentBlockchain, setCurrentBlockchainSDK])
+
   // Remove chains turned off by the feature flags
   const filterChains = useCallback(
     (chains: Blockchain[]) =>
@@ -137,7 +152,7 @@ const Bridge: FC = () => {
             return true
         }
       }),
-    [bridgeBtcBlocked, bridgeEthBlocked, isMainnet]
+    [bridgeBtcBlocked, bridgeEthBlocked]
   )
 
   /**
@@ -175,6 +190,18 @@ const Bridge: FC = () => {
     } catch (e) {
       Logger.error('failed to set amount', e)
     }
+  }
+
+  const setCurrentBlockchain = (blockchain: Blockchain) => {
+    // update network
+    const blockChainNetwork = blockchainToNetwork(
+      blockchain,
+      networks,
+      criticalConfig
+    )
+    blockChainNetwork && dispatch(setActive(blockChainNetwork.chainId))
+    // Reset because a denomination change will change its value
+    setAmount(BIG_ZERO)
   }
 
   const handleBlockchainToggle = () => {
@@ -215,6 +242,7 @@ const Bridge: FC = () => {
       navigation.navigate(AppNavigation.Bridge.BridgeTransactionStatus, {
         txHash: hash ?? ''
       })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       const errorMessage =
         'reason' in e
