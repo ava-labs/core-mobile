@@ -66,7 +66,7 @@ const WatchlistView: React.FC<Props> = ({
   const watchlistTokens = useFocusedSelector(selectWatchlistTokens)
   const dispatch = useDispatch()
   const [loadingSearch, setLoadingSearch] = useState(false)
-  const [filterBy, setFilterBy] = useState(WatchlistFilter.MARKET_CAP)
+  const [filterBy, setFilterBy] = useState(WatchlistFilter.PRICE)
   const [filterTime, setFilterTime] = useState(FilterTimeOptions.Day)
   const filterTimeDays = useMemo(() => {
     switch (filterTime) {
