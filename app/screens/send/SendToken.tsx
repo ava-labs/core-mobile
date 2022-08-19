@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useState } from 'react'
+import React, { FC, useCallback, useEffect, useState } from 'react'
 import { Modal, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
@@ -37,10 +37,6 @@ type Props = {
   contact?: Contact
 }
 
-// type NavigationProp = SendTokensScreenProps<
-//   typeof AppNavigation.Send.Review
-// >['navigation']
-
 const SendToken: FC<Props> = ({
   onNext,
   onOpenAddressBook,
@@ -50,7 +46,6 @@ const SendToken: FC<Props> = ({
 }) => {
   const { theme } = useApplicationContext()
   const { capture } = usePosthogContext()
-  // const { navigate } = useNavigation<NavigationProp>()
   const {
     setSendToken,
     sendToken,
@@ -71,12 +66,13 @@ const SendToken: FC<Props> = ({
       : 'Enter Bitcoin Address'
 
   const balance = numeral(sendToken?.balanceDisplayValue ?? 0).value() || 0
-
-  // const netFeeString = useMemo(() => {
-  //   return fees.sendFeeNative
-  //     ? Number.parseFloat(fees.sendFeeNative).toFixed(6).toString()
-  //     : '-'
-  // }, [fees.sendFeeNative])
+  const setAddress = useCallback(
+    ({ address, title }: { address: string; title: string }) => {
+      toAccount.setAddress?.(address)
+      toAccount.setTitle?.(title)
+    },
+    [toAccount]
+  )
 
   const {
     showAddressBook,
@@ -96,18 +92,13 @@ const SendToken: FC<Props> = ({
     if (contact) {
       setAddress(contact)
     }
-  }, [contact])
+  }, [contact, setAddress])
 
   useEffect(() => {
     if (toAccount.address) {
       setShowAddressBook(false)
     }
-  }, [toAccount.address])
-
-  function setAddress({ address, title }: { address: string; title: string }) {
-    toAccount.setAddress?.(address)
-    toAccount.setTitle?.(title)
-  }
+  }, [setShowAddressBook, toAccount.address])
 
   const onContactSelected = (
     item: Contact | Account,
