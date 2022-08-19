@@ -1,12 +1,18 @@
-import React, { createContext, useCallback, useContext, useEffect } from 'react'
+import React, {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect
+} from 'react'
 import {
+  Asset,
   BridgeSDKProvider,
   BridgeTransaction,
   getMinimumConfirmations,
   trackBridgeTransaction,
   TrackerSubscription,
   useBridgeConfig,
-  useBridgeSDK,
   WrapStatus
 } from '@avalabs/bridge-sdk'
 import { useLoadBridgeConfig } from 'screens/bridge/hooks/useLoadBridgeConfig'
@@ -46,15 +52,15 @@ interface BridgeContext {
   bridgeTransactions: BridgeState['bridgeTransactions']
   transferAsset: (
     amount: Big,
-    asset: any,
+    asset: Asset,
     onStatusChange: (status: WrapStatus) => void,
     onTxHashChange: (txHash: string) => void
   ) => Promise<TransactionResponse | undefined>
 }
 
-const bridgeContext = createContext<BridgeContext>({} as any)
+const bridgeContext = createContext<BridgeContext>({} as BridgeContext)
 
-export function BridgeProvider({ children }: { children: any }) {
+export function BridgeProvider({ children }: { children: ReactNode }) {
   return (
     <BridgeSDKProvider>
       <LocalBridgeProvider>{children}</LocalBridgeProvider>
@@ -68,7 +74,7 @@ export function useBridgeContext() {
 
 const TrackerSubscriptions = new Map<string, TrackerSubscription>()
 
-function LocalBridgeProvider({ children }: { children: any }) {
+function LocalBridgeProvider({ children }: { children: ReactNode }) {
   useLoadBridgeConfig()
   const dispatch = useDispatch()
   const config = useBridgeConfig().config
@@ -76,7 +82,6 @@ function LocalBridgeProvider({ children }: { children: any }) {
   const activeAccount = useSelector(selectActiveAccount)
   const bridgeTransactions = useSelector(selectBridgeTransactions)
   const hydrationComplete = useSelector(selectIsReady)
-  const { currentBlockchain } = useBridgeSDK()
   const { transferHandler, events } = useTransferAsset()
   const ethereumProvider = useEthereumProvider()
   const bitcoinProvider = useBitcoinProvider()
@@ -119,7 +124,7 @@ function LocalBridgeProvider({ children }: { children: any }) {
   const transferAsset = useCallback(
     async (
       amount: Big,
-      asset: any,
+      asset: Asset,
       onStatusChange: (status: WrapStatus) => void,
       onTxHashChange: (txHash: string) => void
     ) => {
@@ -130,9 +135,9 @@ function LocalBridgeProvider({ children }: { children: any }) {
         onTxHashChange(txHash)
       })
 
-      return transferHandler(currentBlockchain, amount, asset)
+      return transferHandler(amount, asset)
     },
-    [currentBlockchain, events, transferHandler]
+    [events, transferHandler]
   )
 
   /**

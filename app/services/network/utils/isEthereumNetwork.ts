@@ -7,6 +7,7 @@ export function isEthereumNetwork(network: Network) {
 export function isEthereumChainId(chainId: number) {
   return (
     ChainId.ETHEREUM_HOMESTEAD === chainId ||
+    ChainId.ETHEREUM_TEST_GOERLY === chainId ||
     ChainId.ETHEREUM_TEST_RINKEBY === chainId
   )
 }

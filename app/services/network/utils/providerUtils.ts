@@ -80,7 +80,7 @@ export function getEthereumNetwork(
   isTest: boolean | undefined
 ): Network | undefined {
   const network = isTest
-    ? networks[ChainId.ETHEREUM_TEST_RINKEBY]
+    ? networks[ChainId.ETHEREUM_TEST_GOERLY]
     : networks[ChainId.ETHEREUM_HOMESTEAD]
   return network
 }
