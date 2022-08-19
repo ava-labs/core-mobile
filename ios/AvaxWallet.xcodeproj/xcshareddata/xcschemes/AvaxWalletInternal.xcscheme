@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "8E858A5228AFD47300236EF2"
-               BuildableName = "AvaxWallet copy.app"
+               BuildableName = "AvaxWalletInternal.app"
                BlueprintName = "AvaxWalletInternal"
                ReferencedContainer = "container:AvaxWallet.xcodeproj">
             </BuildableReference>
@@ -45,7 +45,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "8E858A5228AFD47300236EF2"
-            BuildableName = "AvaxWallet copy.app"
+            BuildableName = "AvaxWalletInternal.app"
             BlueprintName = "AvaxWalletInternal"
             ReferencedContainer = "container:AvaxWallet.xcodeproj">
          </BuildableReference>
@@ -62,7 +62,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "8E858A5228AFD47300236EF2"
-            BuildableName = "AvaxWallet copy.app"
+            BuildableName = "AvaxWalletInternal.app"
             BlueprintName = "AvaxWalletInternal"
             ReferencedContainer = "container:AvaxWallet.xcodeproj">
          </BuildableReference>
