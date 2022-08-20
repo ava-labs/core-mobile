@@ -41,6 +41,7 @@ const WelcomeScreenS = createStackNavigator<WelcomeScreenStackParamList>()
 const WelcomeScreenStack: () => JSX.Element = () => (
   <WelcomeScreenS.Navigator screenOptions={{ headerShown: false }}>
     <WelcomeScreenS.Screen
+      options={MainHeaderOptions('')}
       name={AppNavigation.Onboard.Welcome}
       component={WelcomeScreen}
     />

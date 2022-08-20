@@ -1,7 +1,18 @@
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, {
+  createContext,
+  Dispatch,
+  useContext,
+  useEffect,
+  useState
+} from 'react'
 import walletConnectService from 'services/walletconnect/WalletConnectService'
-import { MessageType, WalletConnectRequest } from 'services/walletconnect/types'
-import { InteractionManager } from 'react-native'
+import {
+  DeepLink,
+  DeepLinkOrigin,
+  MessageType,
+  WalletConnectRequest
+} from 'services/walletconnect/types'
+import { InteractionManager, Linking } from 'react-native'
 import {
   PeerMetadata,
   RPC_EVENT,
@@ -20,11 +31,14 @@ import { useSelector } from 'react-redux'
 import { selectNetworkFee } from 'store/networkFee'
 import { showSnackBarCustom } from 'components/Snackbar'
 import GeneralToast from 'components/toast/GeneralToast'
-import { selectIsLocked } from 'store/app'
+import { selectWalletState, WalletState } from 'store/app'
 import { selectIsLoadingBalances } from 'store/balance'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AppNavigation from 'navigation/AppNavigation'
 import { getEvmProvider } from 'services/network/utils/providerUtils'
+import { parseUrl } from 'navigation/useDeepLinking'
+import WalletConnectService from 'services/walletconnect/WalletConnectService'
+import { NetworkVMType } from '@avalabs/chains-sdk'
 
 interface AdditionalMessageParams {
   data?: string
@@ -51,6 +65,8 @@ interface DappConnectionContext {
   ) => Promise<{ hash?: string; error?: any }>
   onCallRejected: () => void
   setEventHandled: (handled: boolean) => void
+  pendingDeepLink: DeepLink | undefined
+  setPendingDeepLink: Dispatch<DeepLink>
 }
 
 export const dappConnectionContext = createContext<DappConnectionContext>(
@@ -65,15 +81,66 @@ export const DappConnectionContextProvider = ({
   const activeAccount = useActiveAccount()
   const activeNetwork = useActiveNetwork()
   const networkFees = useSelector(selectNetworkFee)
-  const isAppLocked = useSelector(selectIsLocked)
   const isLoadingBalances = useSelector(selectIsLoadingBalances)
+  const [pendingDeepLink, setPendingDeepLink] = useState<DeepLink>()
   const [dappEvent, setDappEvent] = useState<DappEvent>()
-  const contextNavigation =
-    useApplicationContext().appNavHook?.navigation?.current
+  const walletState = useSelector(selectWalletState)
+  const isWalletActive = walletState === WalletState.ACTIVE
+  const appNavHook = useApplicationContext().appNavHook
+
+  function expireDeepLink() {
+    setPendingDeepLink(undefined)
+  }
 
   useEffect(() => {
     initializeWalletConnect()
   }, [])
+
+  useEffect(() => {
+    InteractionManager.runAfterInteractions(() => {
+      if (walletState === WalletState.INACTIVE && pendingDeepLink) {
+        appNavHook?.setLoginRoute()
+      } else if (walletState === WalletState.NONEXISTENT && pendingDeepLink) {
+        appNavHook?.navigation?.current?.navigate(
+          AppNavigation.NoWallet.Welcome
+        )
+      }
+    })
+  }, [walletState, pendingDeepLink])
+
+  /******************************************************************************
+   * 1. Start listeners that will receive the deep link url
+   *****************************************************************************/
+  useEffect(() => {
+    // triggered if app is running
+    Linking.addEventListener('url', ({ url }) => {
+      setPendingDeepLink({ url, origin: DeepLinkOrigin.ORIGIN_DEEPLINK })
+    })
+    async function checkInitialUrl() {
+      // initial URL (when app comes from cold start)
+      const url = await Linking.getInitialURL()
+      if (url) {
+        setPendingDeepLink({ url, origin: DeepLinkOrigin.ORIGIN_DEEPLINK })
+      }
+    }
+    checkInitialUrl()
+  }, [])
+
+  /******************************************************************************
+   * 2. Wait for the app to become unlocked before we handle it.
+   *****************************************************************************/
+  useEffect(() => {
+    if (pendingDeepLink && isWalletActive && activeAccount && activeNetwork) {
+      parseUrl(
+        pendingDeepLink?.url,
+        pendingDeepLink?.origin,
+        activeAccount,
+        activeNetwork
+      )
+      // once we used the url, we can expire it
+      expireDeepLink()
+    }
+  }, [isWalletActive, pendingDeepLink, activeAccount, activeNetwork])
 
   /**
    * We need to wait for app to become ready
@@ -82,16 +149,39 @@ export const DappConnectionContextProvider = ({
     if (
       dappEvent &&
       !dappEvent.handled &&
-      !isAppLocked &&
+      isWalletActive &&
       !isLoadingBalances &&
-      contextNavigation
+      appNavHook?.navigation?.current
     ) {
       InteractionManager.runAfterInteractions(() => {
         Logger.info('opening RcpMethods up to interact with dapps')
-        contextNavigation.navigate(AppNavigation.Modal.RpcMethodsUI)
+        appNavHook?.navigation?.current?.navigate(
+          AppNavigation.Modal.RpcMethodsUI
+        )
       })
     }
-  }, [dappEvent, isAppLocked, isLoadingBalances, contextNavigation])
+  }, [
+    dappEvent,
+    isWalletActive,
+    isLoadingBalances,
+    appNavHook?.navigation?.current
+  ])
+
+  /**
+   * If these changes we need to update the dapp sessions
+   */
+  useEffect(() => {
+    if (
+      activeAccount &&
+      activeNetwork &&
+      activeNetwork.vmName !== NetworkVMType.BITCOIN
+    ) {
+      WalletConnectService.updateSessions(
+        activeAccount.address,
+        activeNetwork.chainId.toString()
+      )
+    }
+  }, [activeNetwork, activeAccount])
 
   function displayUserInstruction(instruction: string) {
     showSnackBarCustom(<GeneralToast message={instruction} />, 'long')
@@ -295,7 +385,9 @@ export const DappConnectionContextProvider = ({
         onTransactionCallApproved,
         onMessageCallApproved,
         onCallRejected,
-        setEventHandled
+        setEventHandled,
+        pendingDeepLink,
+        setPendingDeepLink
       }}>
       {children}
     </dappConnectionContext.Provider>
