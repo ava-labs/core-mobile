@@ -27,7 +27,7 @@ export default function App() {
   if (Config.SENTRY_DSN) {
     Sentry.init({
       dsn: Config.SENTRY_DSN,
-      environment: process.env.RELEASE || 'dev',
+      environment: Config.ENVIRONMENT,
       release: `core-mobile@${pkg.version}`,
       debug: __DEV__,
       beforeSend: event => {
