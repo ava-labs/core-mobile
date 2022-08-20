@@ -57,10 +57,7 @@ function resetNavToEnterMnemonic(navigation: NavigationRef) {
       {
         name: AppNavigation.Root.Onboard,
         params: {
-          screen: AppNavigation.Root.Welcome,
-          params: {
-            screen: AppNavigation.Onboard.EnterWithMnemonicStack
-          }
+          screen: AppNavigation.Root.Welcome
         }
       }
     ]

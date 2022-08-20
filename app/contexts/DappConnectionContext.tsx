@@ -99,10 +99,14 @@ export const DappConnectionContextProvider = ({
   useEffect(() => {
     InteractionManager.runAfterInteractions(() => {
       if (walletState === WalletState.INACTIVE && pendingDeepLink) {
-        appNavHook?.setLoginRoute()
+        appNavHook?.navigation?.current?.navigate(
+          AppNavigation.NoWallet.Welcome,
+          { screen: AppNavigation.Onboard.Login }
+        )
       } else if (walletState === WalletState.NONEXISTENT && pendingDeepLink) {
         appNavHook?.navigation?.current?.navigate(
-          AppNavigation.NoWallet.Welcome
+          AppNavigation.NoWallet.Welcome,
+          { screen: AppNavigation.Onboard.Welcome }
         )
       }
     })

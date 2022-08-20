@@ -260,18 +260,24 @@ const SignTransaction: FC<Props> = ({
             </AvaText.Body2>
             <TokenAddress address={hash} copyIconEnd />
           </Row>
-          <FlexSpacer />
-          <AvaButton.SecondaryLarge
-            style={{ marginBottom: 32 }}
-            onPress={() => explorerUrl && openUrl(explorerUrl)}>
-            View on Explorer
-          </AvaButton.SecondaryLarge>
-          <Space y={20} />
-          <AvaButton.SecondaryLarge
-            style={{ marginBottom: 32 }}
-            onPress={onClose}>
-            Close
-          </AvaButton.SecondaryLarge>
+          <Space y={24} />
+          <View
+            style={{
+              paddingVertical: 16,
+              paddingHorizontal: 24
+            }}>
+            <AvaButton.SecondaryLarge
+              style={{ marginBottom: 32 }}
+              onPress={() => explorerUrl && openUrl(explorerUrl)}>
+              View on Explorer
+            </AvaButton.SecondaryLarge>
+            <Space y={20} />
+            <AvaButton.SecondaryLarge
+              style={{ marginBottom: 32 }}
+              onPress={onClose}>
+              Close
+            </AvaButton.SecondaryLarge>
+          </View>
         </>
       ) : (
         <>

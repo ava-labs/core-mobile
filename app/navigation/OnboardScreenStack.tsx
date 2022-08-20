@@ -1,12 +1,11 @@
-import React from 'react';
-import AppNavigation from 'navigation/AppNavigation';
-import WelcomeScreenStack from 'navigation/onboarding/WelcomeScreenStack';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import {createStackNavigator} from '@react-navigation/stack';
-import {NavigatorScreenParams} from '@react-navigation/native';
-import {View} from 'react-native';
-import {WelcomeScreenStackParamList} from './onboarding/WelcomeScreenStack';
-import {MainHeaderOptions} from 'navigation/NavUtils';
+import React from 'react'
+import AppNavigation from 'navigation/AppNavigation'
+import WelcomeScreenStack from 'navigation/onboarding/WelcomeScreenStack'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { createStackNavigator } from '@react-navigation/stack'
+import { NavigatorScreenParams } from '@react-navigation/native'
+import { View } from 'react-native'
+import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
 
 export type OnboardingScreenStackParamList = {
   [AppNavigation.Onboard.Init]: undefined
@@ -30,7 +29,6 @@ export const OnboardScreenStack = () => {
         component={View}
       />
       <OnboardingScreenS.Screen
-        options={{...MainHeaderOptions('Wallet access')}}
         name={AppNavigation.Root.Welcome}
         component={WelcomeScreenStack}
       />

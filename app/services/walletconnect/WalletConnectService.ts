@@ -192,17 +192,6 @@ class WalletConnectService {
     this.walletConnectClient.on('session_request', (error, payload) =>
       onSessionRequest(error, payload, existing)
     )
-    this.walletConnectClient.on('connect', () => {
-      if (network) {
-        Logger.warn('dapp connected, updating chain')
-        this.walletConnectClient?.updateChain({
-          chainId: network.chainId,
-          rpcUrl: network.rpcUrl,
-          networkId: network.chainId,
-          nativeCurrency: { name: 'US Dollar', symbol: 'USD' }
-        })
-      }
-    })
 
     // If the connection has been previously approved,
     // don't prompt the user to approve, simply start the session
@@ -312,7 +301,7 @@ const instance = {
     initialized = true
   },
   // creates new session. Checks to see if there's already a session created for that app
-  newSession(
+  async newSession(
     uri: string,
     autoSign?: boolean,
     requestOriginatedFrom?: string,
@@ -326,12 +315,10 @@ const instance = {
     const existingConnector = this.isSessionConnected(uri)
     if (existingConnector) {
       Logger.info('session already exists, replace')
-      // existingConnector.killSession()
-      return
-      // const errorMsg =
-      //   'This session is already connected. Close the current session before starting a new one.'
-      // throw new Error(errorMsg)
-      // return
+      const peerId = existingConnector?.walletConnectClient?.session?.peerId
+      if (peerId) {
+        await this.killSession(peerId)
+      }
     }
 
     connectors.push(
@@ -414,10 +401,21 @@ const instance = {
   },
   // Kills all sessions
   async killAllSessions() {
-    return connectors?.map(conn => {
-      if (conn.walletConnectClient?.session?.peerId)
-        return this.killSession(conn.walletConnectClient?.session?.peerId)
+    const promises: any[] = []
+    connectors?.forEach(conn => {
+      if (conn.walletConnectClient?.session?.peerId) {
+        promises.push(
+          this.killSession(conn.walletConnectClient?.session?.peerId)
+        )
+      } else if (!conn.walletConnectClient?.session) {
+        connectors = connectors.filter(
+          connector => connector && connector.url !== conn.url
+        )
+        persistSessions()
+        return Promise.resolve()
+      }
     })
+    return Promise.all(promises)
   }
 }
 
