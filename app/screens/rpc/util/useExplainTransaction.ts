@@ -86,7 +86,7 @@ export function useExplainTransaction(dappEvent?: DappEvent) {
         setTransaction(updatedTransaction)
       }
     },
-    [tokenPrice]
+    [tokenPrice, transaction, activeNetwork?.networkToken?.decimals]
   )
 
   useEffect(() => {
@@ -95,11 +95,11 @@ export function useExplainTransaction(dappEvent?: DappEvent) {
         ...customSpendLimit,
         value: undefined,
         default: bnToLocaleString(
-          hexToBN(transaction.displayValues.approveData?.limit ?? 0)
+          hexToBN(transaction.displayValues.approveData?.limit ?? '0')
         )
       })
     }
-  }, [transaction])
+  }, [transaction, customSpendLimit])
 
   const setSpendLimit = useCallback(
     (customSpendData: SpendLimit) => {
@@ -115,7 +115,7 @@ export function useExplainTransaction(dappEvent?: DappEvent) {
             ...customSpendData,
             value: undefined,
             default: bnToLocaleString(
-              hexToBN(transaction.displayValues.approveData?.limit ?? 0)
+              hexToBN(transaction.displayValues.approveData?.limit ?? '0')
             )
           })
           limitAmount = ethers.constants.MaxUint256.toHexString()
@@ -126,7 +126,7 @@ export function useExplainTransaction(dappEvent?: DappEvent) {
             customSpendData.limitType === Limit.CUSTOM
               ? customSpendData.value?.amount || ''
               : bnToLocaleString(
-                  hexToBN(transaction.displayValues.approveData?.limit ?? 0),
+                  hexToBN(transaction.displayValues.approveData?.limit ?? '0'),
                   transaction.displayValues.tokenToBeApproved.decimals
                 )
           )
@@ -265,7 +265,16 @@ export function useExplainTransaction(dappEvent?: DappEvent) {
       }
     }
     loadTx()
-  }, [tokenPrice])
+  }, [
+    tokenPrice,
+    activeNetwork,
+    avaxToken,
+    dappEvent,
+    networkFees,
+    peerMeta,
+    tokensWithBalance,
+    txParams
+  ])
 
   useEffect(() => {
     // Handle transaction Approval for REVOKING spend limit
@@ -302,6 +311,9 @@ export function useExplainTransaction(dappEvent?: DappEvent) {
     setCustomFee,
     setSpendLimit,
     customSpendLimit,
-    selectedGasFee
+    selectedGasFee,
+    displaySpendLimit,
+    networkFees,
+    activeNetwork.networkToken.decimals
   ])
 }
