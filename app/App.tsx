@@ -13,7 +13,7 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import useDevDebugging from 'utils/debugging/DevDebugging'
 import 'utils/debugging/wdyr'
 import Config from 'react-native-config'
-import * as Sentry from '@sentry/browser'
+import * as Sentry from '@sentry/react-native'
 const pkg = require('../package.json')
 
 export default function App() {
