@@ -1,39 +1,44 @@
-import { BridgeTransaction, useBridgeSDK } from '@avalabs/bridge-sdk'
-import { isPendingBridgeTransaction } from 'screens/bridge/utils/bridgeUtils'
+import {
+  Blockchain,
+  BridgeTransaction,
+  useBridgeSDK
+} from '@avalabs/bridge-sdk'
+import { useActiveNetwork } from 'hooks/useActiveNetwork'
+import {
+  getBlockchainDisplayName,
+  isPendingBridgeTransaction
+} from 'screens/bridge/utils/bridgeUtils'
+import { isAvalancheNetwork } from 'services/network/utils/isAvalancheNetwork'
 import { Transaction } from 'store/transaction'
 
-export function useBlockchainNames(item: Transaction | BridgeTransaction) {
-  const pending = isPendingBridgeTransaction(item)
-  const { avalancheAssets, criticalConfig } = useBridgeSDK()
+/**
+ * Get the source and target blockchain names to display a Bridge transaction.
+ * @param tx Assumed to be a Bridge transaction for the active network
+ */
+export function useBlockchainNames(tx: Transaction | BridgeTransaction) {
+  const pending = isPendingBridgeTransaction(tx)
+  const { avalancheAssets } = useBridgeSDK()
+  const activeNetwork = useActiveNetwork()
 
   if (pending) {
     return {
-      sourceBlockchain: titleCase(item.sourceChain),
-      targetBlockchain: titleCase(item.targetChain)
+      sourceBlockchain: titleCase(tx.sourceChain),
+      targetBlockchain: titleCase(tx.targetChain)
     }
   }
 
-  const symbol = (item.token?.symbol ?? '').split('.')[0]
+  const symbol = (tx.token?.symbol ?? '').split('.')[0]
 
-  const bridgeAddresses = criticalConfig
-    ? [
-        criticalConfig.critical.walletAddresses.avalanche?.toLowerCase(),
-        criticalConfig.critical.walletAddresses.ethereum?.toLowerCase(),
-        criticalConfig.criticalBitcoin.walletAddresses.avalanche.toLowerCase(),
-        criticalConfig.criticalBitcoin.walletAddresses.btc.toLowerCase()
-      ]
-    : []
-  // When bridging to Avalanche we send to the bridge address. The wardens then
-  // notice the transaction and take care of creating the associated transaction
-  // in Avalanche C-chain.
-  const isBridgeToAvalanche = bridgeAddresses.includes(item.to.toLowerCase())
-  const txBlockchain = titleCase(
-    avalancheAssets[symbol]?.nativeNetwork || 'N/A'
-  )
+  const txBlockchain = avalancheAssets[symbol]?.nativeNetwork
+  const isBridgeToAvalanche = isAvalancheNetwork(activeNetwork)
+    ? tx.isIncoming
+    : tx.isOutgoing
+  const chainDisplayName = getBlockchainDisplayName(txBlockchain) || 'N/A'
+  const avalancheDisplay = getBlockchainDisplayName(Blockchain.AVALANCHE)
 
   return {
-    sourceBlockchain: isBridgeToAvalanche ? txBlockchain : 'Avalanche',
-    targetBlockchain: isBridgeToAvalanche ? 'Avalanche' : txBlockchain
+    sourceBlockchain: isBridgeToAvalanche ? chainDisplayName : avalancheDisplay,
+    targetBlockchain: isBridgeToAvalanche ? avalancheDisplay : chainDisplayName
   }
 }
 
