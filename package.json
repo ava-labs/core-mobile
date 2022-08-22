@@ -6,7 +6,6 @@
     "setup": "yarn install && yarn allow-scripts",
     "setup:ci": "yarn install --frozen-lockfile && yarn allow-scripts",
     "android": "ENVFILE=.env.development react-native run-android",
-    "androidNightly": "ENVFILE=.env.production react-native run-android --variant=nightly",
     "ios": "cd $INIT_CWD/ios && pod install && cd $INIT_CWD && ENVFILE=.env.development react-native run-ios",
     "iosM1": "cd $INIT_CWD/ios && arch -x86_64 pod install && cd $INIT_CWD && ENVFILE=.env.development arch -x86_64 react-native run-ios",
     "start": "react-native start",
