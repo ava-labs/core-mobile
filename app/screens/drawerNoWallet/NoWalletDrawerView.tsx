@@ -1,11 +1,7 @@
 import React, { FC } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import CurrencyItem from 'screens/drawer/components/CurrencyItem'
-import LegalItem from 'screens/drawer/components/LegalItem'
-import HelpItem from 'screens/drawer/components/HelpItem'
 import Separator from 'components/Separator'
-import VersionItem from 'screens/drawer/components/VersionItem'
 import { ScrollView } from 'react-native-gesture-handler'
 import { Row } from 'components/Row'
 import DrawerLogo from 'screens/drawer/components/DrawerLogo'
@@ -16,6 +12,10 @@ import { useSelector } from 'react-redux'
 import { selectWalletState, WalletState } from 'store/app'
 import SignOutItem from 'screens/drawer/components/SignOutItem'
 import FlexSpacer from 'components/FlexSpacer'
+import CurrencyItem from 'screens/drawerNoWallet/components/CurrencyItem'
+import LegalItem from 'screens/drawerNoWallet/components/LegalItem'
+import HelpItem from 'screens/drawer/components/HelpItem'
+import VersionItem from 'screens/drawer/components/VersionItem'
 
 interface Props {
   drawerProps: DrawerContentComponentProps
