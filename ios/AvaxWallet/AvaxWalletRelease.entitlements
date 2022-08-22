@@ -4,7 +4,8 @@
 <dict>
 	<key>com.apple.developer.associated-domains</key>
 	<array>
-		<string>applink:https://wallet.avax.network/</string>
+		<string>applinks:cm-universal-links.herokuapp.com</string>
+		<string>applinks:cm-universal-links.herokuapp.com/wc</string>
 	</array>
 	<key>com.apple.security.cs.allow-jit</key>
 	<true/>

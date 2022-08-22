@@ -36,6 +36,11 @@ function SecurityPrivacyStackScreen(): JSX.Element {
           name={AppNavigation.SecurityPrivacy.SecurityPrivacy}
           component={SecurityPrivacyScreen}
         />
+        <SecurityStack.Screen
+          options={MainHeaderOptions('Connected Sites')}
+          name={AppNavigation.SecurityPrivacy.DappList}
+          component={DappConnectionsList}
+        />
       </SecurityStack.Group>
       <SecurityStack.Group screenOptions={{ presentation: 'modal' }}>
         <SecurityStack.Screen
@@ -63,11 +68,6 @@ function SecurityPrivacyStackScreen(): JSX.Element {
           name={AppNavigation.SecurityPrivacy.RecoveryPhrase}
           component={RevealMnemonic}
         />
-        <SecurityStack.Screen
-          options={MainHeaderOptions('Connected Sites')}
-          name={AppNavigation.SecurityPrivacy.DappList}
-          component={ConnectedDapps}
-        />
       </SecurityStack.Group>
     </SecurityStack.Navigator>
   )
@@ -94,6 +94,22 @@ const SecurityPrivacyScreen = () => {
     />
   )
 }
+
+type DappListNavigationProp = SecurityPrivacyScreenProps<
+  typeof AppNavigation.SecurityPrivacy.DappList
+>['navigation']
+
+const DappConnectionsList = memo(() => {
+  const nav = useNavigation<DappListNavigationProp>()
+
+  return (
+    <ConnectedDapps
+      goBack={() => {
+        nav.getParent()?.goBack()
+      }}
+    />
+  )
+})
 
 type PinChangeNavigationProp = SecurityPrivacyScreenProps<
   typeof AppNavigation.SecurityPrivacy.PinChange

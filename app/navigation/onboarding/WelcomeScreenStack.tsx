@@ -41,6 +41,12 @@ const WelcomeScreenS = createStackNavigator<WelcomeScreenStackParamList>()
 const WelcomeScreenStack: () => JSX.Element = () => (
   <WelcomeScreenS.Navigator screenOptions={{ headerShown: false }}>
     <WelcomeScreenS.Screen
+      options={{ presentation: 'modal' }}
+      name={AppNavigation.Onboard.Login}
+      component={LoginWithPinOrBiometryScreen}
+    />
+    <WelcomeScreenS.Screen
+      options={MainHeaderOptions('')}
       name={AppNavigation.Onboard.Welcome}
       component={WelcomeScreen}
     />
@@ -56,11 +62,6 @@ const WelcomeScreenStack: () => JSX.Element = () => (
     <WelcomeScreenS.Screen
       name={AppNavigation.Onboard.EnterWithMnemonicStack}
       component={EnterWithMnemonicStack}
-    />
-    <WelcomeScreenS.Screen
-      options={{ presentation: 'modal' }}
-      name={AppNavigation.Onboard.Login}
-      component={LoginWithPinOrBiometryScreen}
     />
   </WelcomeScreenS.Navigator>
 )

@@ -9,6 +9,7 @@ import {
   NoWalletScreenStackParams
 } from 'navigation/NoWalletScreenStack'
 import { NoWalletTabNavigatorParamList } from 'navigation/wallet/NoWalletTabNavigator'
+import { AdvancedStackParamList } from 'navigation/wallet/AdvancedStackScreen'
 import { RootScreenStackParamList } from './RootScreenStack'
 import { OnboardingScreenStackParamList } from './OnboardScreenStack'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
@@ -172,6 +173,13 @@ export type AddressBookScreenProps<T extends keyof AddressBookStackParamList> =
 export type SecurityPrivacyScreenProps<T extends keyof SecurityStackParamList> =
   CompositeScreenProps<
     StackScreenProps<SecurityStackParamList, T>,
+    WalletScreenProps<keyof WalletScreenStackParams>
+  >
+
+/** ROOT -> WALLET -> SECURITY PRIVACY **/
+export type AdvancedScreenProps<T extends keyof AdvancedStackParamList> =
+  CompositeScreenProps<
+    StackScreenProps<AdvancedStackParamList, T>,
     WalletScreenProps<keyof WalletScreenStackParams>
   >
 

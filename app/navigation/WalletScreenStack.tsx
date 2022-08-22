@@ -63,7 +63,6 @@ import AddEditNetwork, {
 } from 'screens/network/AddEditNetwork'
 import { Transaction } from 'store/transaction'
 import RpcMethodsUI from 'screens/rpc/RpcMethodsUI'
-import { useDeepLinking } from 'navigation/useDeepLinking'
 import LegalStackScreen, {
   LegalStackParamList
 } from 'navigation/wallet/LegalStackScreen'
@@ -140,7 +139,6 @@ export const SignOutBottomSheetScreen = () => {
 function WalletScreenStack(props: Props | Readonly<Props>) {
   const dispatch = useDispatch()
   const showSecurityModal = useSelector(selectIsLocked)
-  useDeepLinking(!showSecurityModal)
   const context = useApplicationContext()
   const { signOut } = context.appHook
 

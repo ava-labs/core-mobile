@@ -60,7 +60,8 @@ enum NoWalletScreens {
   Legal = 'NoWalletScreens.Legal',
   Tabs = 'NoWalletScreens.Tabs',
   EnterWithMnemonicStack = 'NoWalletScreens.EnterWithMnemonicStack',
-  CreateWalletStack = 'NoWalletScreens.CreateWalletStack'
+  CreateWalletStack = 'NoWalletScreens.CreateWalletStack',
+  Welcome = 'NoWalletScreens.Welcome'
 }
 
 enum NoWalletTabs {
@@ -97,7 +98,8 @@ enum SecurityPrivacyScreens {
   ShowRecoveryPhrase = 'SecurityPrivacyScreens.ShowRecoveryPhrase',
   TurnOnBiometrics = 'SecurityPrivacyScreens.TurnOnBiometrics',
   RecoveryPhrase = 'SecurityPrivacyScreens.RecoveryPhrase',
-  DappList = 'SecurityPrivacyScreens.DappList'
+  DappList = 'SecurityPrivacyScreens.DappList',
+  DappConnectModal = 'SecurityPrivacyScreens.DappConnectModal'
 }
 
 enum LegalScreens {
@@ -105,7 +107,8 @@ enum LegalScreens {
 }
 
 enum AdvancedScreens {
-  Advanced = 'AdvancedScreens.Advanced'
+  Advanced = 'AdvancedScreens.Advanced',
+  DappConnectModal = 'AdvancedScreens.DappConnectModal'
 }
 
 enum Tabs {

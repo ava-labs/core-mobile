@@ -19,13 +19,13 @@ export const MainHeaderOptions = (
             justifyContent: 'space-between'
           }}>
           <AvaText.Heading1>{title}</AvaText.Heading1>
-          {actionComponent}
         </Row>
       )
     },
     headerTitleAlign: 'left',
     headerLeft: hideHeaderLeft ? () => null : undefined,
     headerBackTitleVisible: false,
+    headerRight: actionComponent ? () => actionComponent : undefined,
     headerStyle: {
       shadowColor: 'transparent',
       elevation: 0,
