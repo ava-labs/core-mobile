@@ -24,12 +24,12 @@ export default function App() {
   }
 
   //init Sentry
-  if (Config.SENTRY_DSN) {
+  if (Config.SENTRY_DSN && !__DEV__) {
     Sentry.init({
       dsn: Config.SENTRY_DSN,
       environment: Config.ENVIRONMENT,
       release: `core-mobile@${pkg.version}`,
-      debug: __DEV__,
+      debug: false,
       beforeSend: event => {
         /**
          * eliminating breadcrumbs. This should eliminate
