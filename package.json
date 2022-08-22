@@ -56,6 +56,7 @@
     "@react-navigation/native-stack": "6.5.0",
     "@react-navigation/stack": "6.1.1",
     "@reduxjs/toolkit": "1.8.1",
+    "@sentry/react-native": "^4.2.4",
     "@shopify/flash-list": "1.2.0",
     "@tradle/react-native-http": "2.0.1",
     "@types/bn.js": "5.1.0",
@@ -283,7 +284,9 @@
       "web3": false,
       "web3>web3-bzz": false,
       "web3>web3-shh": false,
-      "postinstall-postinstall": false
+      "postinstall-postinstall": false,
+      "@sentry/react-native>@sentry/cli": true,
+      "@sentry/react-native>@sentry/wizard>@sentry/cli": false
     }
   }
 }
