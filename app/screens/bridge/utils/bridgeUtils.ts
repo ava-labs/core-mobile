@@ -9,7 +9,7 @@ import { ChainId, Network } from '@avalabs/chains-sdk'
 import { isEthereumNetwork } from 'services/network/utils/isEthereumNetwork'
 import { Networks } from 'store/network'
 
-const ETHEREUM_ADDRESS = '0x0000000000000000000000000000000000000000'
+export const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 /**
  * Checking if the transaction is a bridge transaction with Ethereum
@@ -40,8 +40,8 @@ export function isBridgeTransactionEVM(
         ({ wrappedContractAddress }) =>
           wrappedContractAddress.toLowerCase() ===
             tx.contractAddress.toLowerCase() &&
-          (tx.to.toLowerCase() === ETHEREUM_ADDRESS ||
-            tx.from.toLowerCase() === ETHEREUM_ADDRESS)
+          (tx.to.toLowerCase() === NULL_ADDRESS ||
+            tx.from.toLowerCase() === NULL_ADDRESS)
       ) ||
       Object.values(bitcoinAssets).some(
         ({ wrappedContractAddress }) =>
@@ -89,7 +89,7 @@ const blockchainDisplayNameMap = new Map([
 ])
 
 export function getBlockchainDisplayName(chain: Blockchain | undefined) {
-  return blockchainDisplayNameMap.get(chain ?? Blockchain.UNKNOWN)
+  return blockchainDisplayNameMap.get(chain ?? Blockchain.UNKNOWN) ?? ''
 }
 
 export const blockchainToNetwork = (
