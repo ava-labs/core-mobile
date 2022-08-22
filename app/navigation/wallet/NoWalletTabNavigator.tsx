@@ -156,7 +156,10 @@ const EnterWalletButton = () => {
     <AvaButton.PrimaryLarge
       style={{ flex: 1, marginHorizontal: 16 }}
       onPress={() => {
-        appNavHook.setLoginRoute()
+        appNavHook?.navigation?.current?.navigate(
+          AppNavigation.NoWallet.Welcome,
+          { screen: AppNavigation.Onboard.Login }
+        )
       }}>
       Enter Wallet
     </AvaButton.PrimaryLarge>

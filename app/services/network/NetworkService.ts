@@ -44,7 +44,8 @@ class NetworkService {
     }
     const provider = this.getProviderForNetwork(network)
     if (provider instanceof JsonRpcBatchInternal) {
-      return (await provider.sendTransaction(signedTx)).hash
+      const tx = await provider.sendTransaction(signedTx)
+      return (await tx.wait()).transactionHash
     }
 
     if (provider instanceof BlockCypherProvider) {

@@ -5,6 +5,7 @@ import { AppState, AppStateStatus, Platform } from 'react-native'
 import { AppListenerEffectAPI } from 'store'
 import {
   onRehydrationComplete,
+  selectWalletState,
   setAppState,
   setIsLocked,
   setIsReady,
@@ -72,6 +73,8 @@ const listenToAppState = async (listenerApi: AppListenerEffectAPI) => {
 
 const lockApp = async (action: any, listenerApi: AppListenerEffectAPI) => {
   const { dispatch, condition } = listenerApi
+  const state = listenerApi.getState()
+  const walletState = selectWalletState(state)
 
   const backgroundStarted = new Date()
 
@@ -88,7 +91,9 @@ const lockApp = async (action: any, listenerApi: AppListenerEffectAPI) => {
   if (secondsPassed >= TIME_TO_LOCK_IN_SECONDS) {
     dispatch(setIsLocked(true))
     dispatch(onAppLocked())
-    dispatch(setWalletState(WalletState.INACTIVE))
+    if (walletState === WalletState.ACTIVE) {
+      dispatch(setWalletState(WalletState.INACTIVE))
+    }
   }
 }
 

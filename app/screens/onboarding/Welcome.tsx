@@ -11,6 +11,9 @@ import { usePosthogContext } from 'contexts/PosthogContext'
 import CoreXLogoAnimated from 'components/CoreXLogoAnimated'
 import { useSelector } from 'react-redux'
 import { selectIsReady } from 'store/app'
+import { useDappConnectionContext } from 'contexts/DappConnectionContext'
+import { showSnackBarCustom } from 'components/Snackbar'
+import GeneralToast from 'components/toast/GeneralToast'
 
 type Props = {
   onCreateWallet: () => void
@@ -25,6 +28,7 @@ export default function Welcome({
 }: Props | Readonly<Props>): JSX.Element {
   const { capture } = usePosthogContext()
   const isAppReady = useSelector(selectIsReady)
+  const { pendingDeepLink } = useDappConnectionContext()
 
   const fadeAnim = useRef(new Animated.Value(0)).current
 
@@ -35,8 +39,16 @@ export default function Welcome({
         duration: 1000,
         useNativeDriver: true
       }).start()
+      if (pendingDeepLink) {
+        showSnackBarCustom(
+          <GeneralToast
+            message={`No wallet found. Create or add a wallet to Core to connect to applications.`}
+          />,
+          'long'
+        )
+      }
     }
-  }, [fadeAnim, isAppReady])
+  }, [fadeAnim, isAppReady, pendingDeepLink])
 
   const onCreateNewWallet = (): void => {
     capture('OnboardingCreateNewWalletSelected').catch(() => undefined)
@@ -87,7 +99,7 @@ export default function Welcome({
         </Animated.View>
       )}
 
-      <AvaText.Body2 textStyle={{ position: 'absolute', top: 0, left: 16 }}>
+      <AvaText.Body2 textStyle={{ position: 'absolute', bottom: 0, left: 16 }}>
         v{pkg.version}
       </AvaText.Body2>
     </View>

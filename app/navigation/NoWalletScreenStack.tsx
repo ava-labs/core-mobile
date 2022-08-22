@@ -20,6 +20,7 @@ import { SignOutBottomSheetScreen } from 'navigation/WalletScreenStack'
 import LegalStackScreen, {
   LegalStackParamList
 } from 'navigation/wallet/LegalStackScreen'
+import WelcomeScreenStack from 'navigation/onboarding/WelcomeScreenStack'
 
 export type NoWalletScreenStackParams = {
   [AppNavigation.NoWallet.Drawer]: NavigatorScreenParams<DrawerParamList>
@@ -28,6 +29,7 @@ export type NoWalletScreenStackParams = {
   [AppNavigation.Wallet.TokenDetail]: undefined
   [AppNavigation.NoWallet.EnterWithMnemonicStack]: undefined
   [AppNavigation.NoWallet.CreateWalletStack]: undefined
+  [AppNavigation.NoWallet.Welcome]: undefined
   [AppNavigation.Modal.SignOut]: undefined
 }
 
@@ -62,6 +64,10 @@ export const NoWalletScreenStack = () => {
       <NoWalletNavigator.Screen
         name={AppNavigation.NoWallet.CreateWalletStack}
         component={CreateWalletStack}
+      />
+      <NoWalletNavigator.Screen
+        name={AppNavigation.NoWallet.Welcome}
+        component={WelcomeScreenStack}
       />
       <NoWalletNavigator.Screen
         options={{
