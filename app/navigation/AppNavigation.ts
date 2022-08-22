@@ -57,6 +57,7 @@ enum WalletScreens {
 enum NoWalletScreens {
   CurrencySelector = 'NoWalletScreens.CurrencySelector',
   Drawer = 'NoWalletScreens.Drawer',
+  Legal = 'NoWalletScreens.Legal',
   Tabs = 'NoWalletScreens.Tabs',
   EnterWithMnemonicStack = 'NoWalletScreens.EnterWithMnemonicStack',
   CreateWalletStack = 'NoWalletScreens.CreateWalletStack'

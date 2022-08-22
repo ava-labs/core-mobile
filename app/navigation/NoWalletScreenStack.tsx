@@ -17,9 +17,13 @@ import TokenDetail from 'screens/watchlist/TokenDetail'
 import { NavigatorScreenParams } from '@react-navigation/native'
 import { DrawerParamList } from 'navigation/wallet/DrawerScreenStack'
 import { SignOutBottomSheetScreen } from 'navigation/WalletScreenStack'
+import LegalStackScreen, {
+  LegalStackParamList
+} from 'navigation/wallet/LegalStackScreen'
 
 export type NoWalletScreenStackParams = {
   [AppNavigation.NoWallet.Drawer]: NavigatorScreenParams<DrawerParamList>
+  [AppNavigation.NoWallet.Legal]: NavigatorScreenParams<LegalStackParamList>
   [AppNavigation.NoWallet.CurrencySelector]: undefined
   [AppNavigation.Wallet.TokenDetail]: undefined
   [AppNavigation.NoWallet.EnterWithMnemonicStack]: undefined
@@ -46,6 +50,10 @@ export const NoWalletScreenStack = () => {
         }}
         name={AppNavigation.NoWallet.CurrencySelector}
         component={CurrencySelector}
+      />
+      <NoWalletNavigator.Screen
+        name={AppNavigation.NoWallet.Legal}
+        component={LegalStackScreen}
       />
       <NoWalletNavigator.Screen
         name={AppNavigation.NoWallet.EnterWithMnemonicStack}
