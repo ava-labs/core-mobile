@@ -126,9 +126,9 @@ const SignTransaction: FC<Props> = ({
             setSubmitting(false)
           }
         })
-        .catch(reason => {
-          Logger.warn('Transaction call error', reason)
-          setTxFailedError(reason)
+        .catch(error => {
+          Logger.warn('Transaction call error', error)
+          setTxFailedError(`${error?.error?.reason}`)
           setSubmitting(false)
         })
   }
@@ -282,6 +282,11 @@ const SignTransaction: FC<Props> = ({
       ) : (
         <>
           <FlexSpacer />
+          {!!txFailedError && (
+            <AvaText.Body1 color={theme.colorError}>
+              {txFailedError}
+            </AvaText.Body1>
+          )}
           <View
             style={{
               paddingVertical: 16,
@@ -323,5 +328,4 @@ export const txStyles = StyleSheet.create({
     paddingVertical: 10
   }
 })
-
 export default SignTransaction
