@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { Image, StyleSheet, View } from 'react-native'
+import { Image, ScrollView, StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import InputText from 'components/InputText'
@@ -94,7 +94,7 @@ export default function NftSend({
   }
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={[styles.container, { flexGrow: 1 }]}>
       <AvaText.LargeTitleBold>Send</AvaText.LargeTitleBold>
       <Space y={20} />
       <AvaText.Heading3>Send to</AvaText.Heading3>
@@ -157,7 +157,7 @@ export default function NftSend({
         style={{ marginBottom: 16 }}>
         Next
       </AvaButton.PrimaryLarge>
-    </View>
+    </ScrollView>
   )
 }
 
