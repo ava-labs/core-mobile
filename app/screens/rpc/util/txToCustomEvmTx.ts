@@ -2,14 +2,14 @@ import { TransactionParams } from 'screens/rpc/util/types'
 import { BigNumber } from 'ethers'
 
 export async function txToCustomEvmTx(
-  gasPrice: BigNumber,
+  networkFee: BigNumber,
   txParams: TransactionParams
 ) {
   if (!txParams) {
     throw new Error('params is malformed')
   }
 
-  const { gas, to, from, data, value } = txParams
+  const { gas, to, from, data, value, gasPrice } = txParams
 
   if (!gas || !gasPrice) {
     throw new Error('Gas or gas estimate is malformed')
@@ -22,7 +22,7 @@ export async function txToCustomEvmTx(
   const gasLimit = Number(gas)
 
   return {
-    gasPrice: gasPrice,
+    gasPrice: BigNumber.from(gasPrice ?? networkFee),
     gasLimit: gasLimit,
     to,
     from,
