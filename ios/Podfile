@@ -7,7 +7,8 @@ require_relative '../node_modules/@react-native-community/cli-platform-ios/nativ
 
 platform :ios, '11.0'
 
-target 'AvaxWallet' do
+abstract_target 'common' do
+  # put common target configuration here
   config = use_native_modules!
 
   use_react_native!(
@@ -18,11 +19,6 @@ target 'AvaxWallet' do
 
   pod 'RNFS', :path => '../node_modules/react-native-fs'
 
-  target 'AvaxWalletTests' do
-    inherit! :complete
-    # Pods for testing
-  end
-
   # Enables Flipper.
   #
   # Note that if you have use_frameworks! enabled, Flipper will not work and
@@ -31,8 +27,14 @@ target 'AvaxWallet' do
 
   permissions_path = '../node_modules/react-native-permissions/ios'
   pod 'Permission-Camera', :path => "#{permissions_path}/Camera"
-
+  
+  target 'AvaxWallet' do
+  end
+  
+  target 'AvaxWalletInternal' do
+  end
 end
+
 
 post_install do |installer|
  flipper_post_install(installer)
