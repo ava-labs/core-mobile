@@ -130,9 +130,6 @@ def enableHermes = project.ext.react.get("enableHermes", false);
  */
 def nativeArchitectures = project.getProperties().get("reactNativeDebugArchitectures")
 
-def bitriseBuildNumber = System.getenv("BITRISE_BUILD_NUMBER")
-def buildNumber = bitriseBuildNumber != null ? bitriseBuildNumber.toInteger() : 1
-
 android {
     ndkVersion rootProject.ext.ndkVersion
 
@@ -148,7 +145,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionName rootProject.ext.appVersionName
-        versionCode buildNumber
+        versionCode rootProject.ext.appBuildNumber
 
         missingDimensionStrategy 'react-native-camera', 'general'
 
@@ -260,13 +257,6 @@ dependencies {
 task copyDownloadableDepsToLibs(type: Copy) {
     from configurations.implementation
     into 'libs'
-}
-
-// This task is used on bitrise
-task printFullVersion {
-    doLast {
-        println "${rootProject.ext.appVersionName}.${buildNumber}"
-    }
 }
 
 apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
