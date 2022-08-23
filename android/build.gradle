@@ -2,6 +2,13 @@
 
 buildscript {
     ext {
+        appVersion = [
+            major: 0,
+            minor: 0,
+            patch: 0
+        ]
+        appBuildNumber = 1
+        appVersionName = "${appVersion.major}.${appVersion.minor}.${appVersion.patch}"
         buildToolsVersion = "29.0.3"
         minSdkVersion = 21
         compileSdkVersion = 31

@@ -349,7 +349,7 @@ export const DappConnectionContextProvider = ({
       return walletService
         .sign(
           {
-            nonce: nonce + 1,
+            nonce: nonce,
             chainId: activeNetwork.chainId,
             gasPrice: evmPrams.gasPrice,
             gasLimit: evmPrams.gasLimit,

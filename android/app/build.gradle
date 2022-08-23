@@ -81,8 +81,8 @@ import com.android.build.OutputFile
 project.ext.react = [
     enableHermes: false,  // clean and rebuild if changing
     entryFile: "index.js",
-    bundleInNightly: true,
-    devDisabledInNightly: true,
+    bundleInInternalRelease: true,
+    devDisabledInInternalRelease: true,
 ]
 
 apply from: "../../node_modules/react-native/react.gradle"
@@ -101,7 +101,7 @@ def enableSeparateBuildPerCPUArchitecture = false
 /**
  * Run Proguard to shrink the Java bytecode in release builds.
  */
-def enableProguardInReleaseBuilds = false
+def enableProguardInReleaseBuilds = true
 
 /**
  * The preferred build flavor of JavaScriptCore.
@@ -130,9 +130,6 @@ def enableHermes = project.ext.react.get("enableHermes", false);
  */
 def nativeArchitectures = project.getProperties().get("reactNativeDebugArchitectures")
 
-Properties keystoreProperties = new Properties()
-keystoreProperties.load(project.rootProject.file('keystore.properties').newDataInputStream())
-
 android {
     ndkVersion rootProject.ext.ndkVersion
 
@@ -147,8 +144,8 @@ android {
         applicationId "com.avaxwallet"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 70
-        versionName "0.13.0"
+        versionName rootProject.ext.appVersionName
+        versionCode rootProject.ext.appBuildNumber
 
         missingDimensionStrategy 'react-native-camera', 'general'
 
@@ -164,12 +161,6 @@ android {
         }
     }
     signingConfigs {
-        release {
-            storeFile file(keystoreProperties['MYAPP_UPLOAD_STORE_FILE'])
-            storePassword keystoreProperties['MYAPP_UPLOAD_STORE_PASSWORD']
-            keyAlias keystoreProperties['MYAPP_UPLOAD_KEY_ALIAS']
-            keyPassword keystoreProperties['MYAPP_UPLOAD_KEY_PASSWORD']
-        }
         debug {
             storeFile file('debug.keystore')
             storePassword 'android'
@@ -187,17 +178,18 @@ android {
             }
         }
         release {
-            signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
-        nightly {
-            applicationIdSuffix ".nightly"
-            signingConfig signingConfigs.release
-            minifyEnabled enableProguardInReleaseBuilds
-            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
-            matchingFallbacks = ['release']
+    }
+
+    flavorDimensions "version"
+
+    productFlavors {
+        internal {
+            applicationIdSuffix ".internal"
         }
+        external {}
     }
 
     // applicationVariants are e.g. debug, release
@@ -254,7 +246,7 @@ dependencies {
         def hermesPath = "../../node_modules/hermes-engine/android/";
         debugImplementation files(hermesPath + "hermes-debug.aar")
         releaseImplementation files(hermesPath + "hermes-release.aar")
-        nightlyImplementation files(hermesPath + "hermes-release.aar")
+        internalImplementation files(hermesPath + "hermes-release.aar")
     } else {
         implementation jscFlavor
     }

@@ -444,6 +444,12 @@ const Bridge: FC = () => {
           max={maximum && bigToBN(maximum, denomination)}
           placeholder={'0.0'}
           onChange={handleAmountChanged}
+          onError={errorMessage => {
+            if (errorMessage) {
+              capture('BridgeTokenSelectError', { errorMessage })
+            }
+            setBridgeError(errorMessage)
+          }}
           style={{
             minWidth: 160
           }}

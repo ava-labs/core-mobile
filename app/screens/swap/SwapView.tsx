@@ -218,9 +218,8 @@ export default function SwapView() {
               hasTriedAgain: true
             })
           } finally {
-            if (!isCalculateAvaxMax) {
-              setLoading(false)
-            } else {
+            setLoading(false)
+            if (isCalculateAvaxMax) {
               setIsCalculateAvaxMax(false)
             }
           }
@@ -331,6 +330,8 @@ export default function SwapView() {
                 fromToken?.type === TokenType.NATIVE
               ) {
                 setIsCalculateAvaxMax(true)
+              } else {
+                setIsCalculateAvaxMax(false)
               }
               setSwapError({ message: '' })
               setSwapWarning('')
