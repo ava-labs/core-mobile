@@ -55,11 +55,13 @@ const Transactions = ({
 }: Props) => {
   const { openUrl } = useInAppBrowser()
   const bridgeDisabled = useIsUIDisabled(UI.Bridge)
-  const pendingBridgeTransactions = Object.values(
-    useSelector(selectBridgeTransactions)
-  )
+  const pendingBridgeByTxId = useSelector(selectBridgeTransactions)
   const combinedData = useMemo(() => {
     const allSections: Section[] = []
+
+    const pendingBridgeTransactions = Object.values(pendingBridgeByTxId).sort(
+      (a, b) => b.sourceStartedAt - a.sourceStartedAt // descending
+    )
 
     // add pending bridge transactions
     if (
@@ -90,18 +92,13 @@ const Transactions = ({
     // convert back to flatlist data format
     const flatListData: Array<Item> = []
 
-    for (const section of allSections) {
-      flatListData.push(section.title)
-      flatListData.push(...section.data)
+    for (const s of allSections) {
+      flatListData.push(s.title)
+      flatListData.push(...s.data)
     }
 
     return flatListData
-  }, [
-    bridgeDisabled,
-    data,
-    hidePendingBridgeTransactions,
-    pendingBridgeTransactions
-  ])
+  }, [bridgeDisabled, data, hidePendingBridgeTransactions, pendingBridgeByTxId])
 
   const renderPendingBridgeTransaction = (tx: BridgeTransaction) => {
     return (
