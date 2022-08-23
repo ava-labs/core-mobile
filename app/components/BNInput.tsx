@@ -98,6 +98,8 @@ export function BNInput({
     } else {
       setValStr('')
     }
+    // Only trigger when `value` changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value])
 
   useEffect(() => {
@@ -106,31 +108,33 @@ export function BNInput({
     } else {
       setErrorMessage('')
     }
-  }, [valStr, max])
+  }, [valStr, max, denomination])
 
   useEffect(() => {
     if (valStr && onError) {
       onError(errorMessage)
     }
+    // Ignore onError
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [valStr, errorMessage])
 
   const onValueChanged = (rawValue: string) => {
-    const value = rawValue.startsWith('.') ? '0.' : rawValue
+    const changedValue = rawValue.startsWith('.') ? '0.' : rawValue
     /**
      * Split the input and make sure the right side never exceeds
      * the denomination length
      */
-    const [, endValue] = splitBN(value)
+    const [, endValue] = splitBN(changedValue)
     if (!endValue || endValue.length <= denomination) {
-      const valueToBn = getAmountBN(value, denomination)
+      const valueToBn = getAmountBN(changedValue, denomination)
       if (!valueToBn.eq(getAmountBN(valStr, denomination))) {
         onChange?.({
           // used to removing leading & trailing zeros
-          amount: value ? new Big(value).toString() : '0',
+          amount: changedValue ? new Big(changedValue).toString() : '0',
           bn: valueToBn
         })
       }
-      setValStr(value)
+      setValStr(changedValue)
     }
   }
 
