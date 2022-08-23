@@ -152,15 +152,10 @@ const Transactions = ({
     )
   }
 
-  const keyExtractor = (
-    item: string | Transaction | BridgeTransaction,
-    index: number
-  ) => {
-    if (typeof item === 'string') {
-      return index.toString()
-    }
+  const keyExtractor = (item: string | Transaction | BridgeTransaction) => {
+    if (typeof item === 'string') return item
 
-    if ('addressBTC' in item) return item.sourceTxHash
+    if ('addressBTC' in item) return `pending-${item.sourceTxHash}`
 
     return item.hash
   }
