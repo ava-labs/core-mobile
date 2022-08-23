@@ -1,6 +1,5 @@
 require('node-libs-react-native/globals')
 require('react-native-crypto')
-require('promise.allsettled').shim()
 require('readable-stream')
 const base64 = require('base-64')
 //React native doesn't implement this, but it is needed by RPC communication.
