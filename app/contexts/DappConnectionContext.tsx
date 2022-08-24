@@ -349,11 +349,12 @@ export const DappConnectionContextProvider = ({
       return walletService
         .sign(
           {
-            nonce: nonce + 1,
+            nonce,
             chainId: activeNetwork.chainId,
             gasPrice: evmPrams.gasPrice,
             gasLimit: evmPrams.gasLimit,
             data: evmPrams.data,
+            to: params.to,
             value: evmPrams.value
           },
           activeAccount.index,

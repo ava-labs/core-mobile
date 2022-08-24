@@ -131,9 +131,9 @@ function ZeroStateCollectibles() {
     <ZeroStateBase
       title={title}
       message={message}
-      additionalComponent={
-        <AvaButton.PrimaryMedium>Explore NFTs</AvaButton.PrimaryMedium>
-      }
+      // additionalComponent={
+      //   <AvaButton.PrimaryMedium>Explore NFTs</AvaButton.PrimaryMedium>
+      // }
     />
   )
 }

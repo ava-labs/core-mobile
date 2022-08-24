@@ -10,3 +10,9 @@
 # Add any project specific keep options here:
 -keep class com.facebook.hermes.unicode.** { *; }
 -keep class com.facebook.jni.** { *; }
+
+# https://github.com/react-native-svg/react-native-svg/issues/1061
+-keep public class com.horcrux.svg.** { *; }
+
+# react-native-config
+-keep class com.avaxwallet.BuildConfig { *; }

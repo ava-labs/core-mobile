@@ -1,5 +1,5 @@
 import React, { FC, useCallback, useEffect, useState } from 'react'
-import { Modal, View } from 'react-native'
+import { Modal, ScrollView, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import InputText from 'components/InputText'
@@ -126,7 +126,7 @@ const SendToken: FC<Props> = ({
   }
 
   return (
-    <View style={{ flex: 1 }}>
+    <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
       <AvaText.LargeTitleBold textStyle={{ marginHorizontal: 16 }}>
         Send
       </AvaText.LargeTitleBold>
@@ -245,7 +245,7 @@ const SendToken: FC<Props> = ({
           onCancel={() => setShowQrCamera(false)}
         />
       </Modal>
-    </View>
+    </ScrollView>
   )
 }
 

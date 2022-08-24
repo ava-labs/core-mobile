@@ -89,18 +89,6 @@ export function useExplainTransaction(dappEvent?: DappEvent) {
     [tokenPrice, transaction, activeNetwork?.networkToken?.decimals]
   )
 
-  useEffect(() => {
-    if (customSpendLimit.limitType === Limit.UNLIMITED && transaction) {
-      setCustomSpendLimit({
-        ...customSpendLimit,
-        value: undefined,
-        default: bnToLocaleString(
-          hexToBN(transaction.displayValues.approveData?.limit ?? '0')
-        )
-      })
-    }
-  }, [transaction, customSpendLimit])
-
   const setSpendLimit = useCallback(
     (customSpendData: SpendLimit) => {
       if (transaction) {
