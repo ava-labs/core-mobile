@@ -173,13 +173,6 @@ const Bridge: FC = () => {
     })
   }
 
-  /**
-   * Opens Add bitcoin instructions modal
-   */
-  const navigateToAddBitcoinInstructions = () => {
-    navigation.navigate(AppNavigation.Bridge.AddInstructions)
-  }
-
   const handleAmountChanged = (value: { bn: BN; amount: string }) => {
     const bigValue = bnToBig(value.bn, denomination)
     if (bridgeError) {
@@ -385,15 +378,6 @@ const Bridge: FC = () => {
             />
           }
         />
-        {currentBlockchain === Blockchain.BITCOIN && (
-          <Row style={{ justifyContent: 'flex-end' }}>
-            <AvaButton.Base
-              style={{ marginEnd: 16, marginBottom: 8 }}
-              onPress={navigateToAddBitcoinInstructions}>
-              <AvaText.TextLink>Add Bitcoin</AvaText.TextLink>
-            </AvaButton.Base>
-          </Row>
-        )}
       </>
     )
   }
