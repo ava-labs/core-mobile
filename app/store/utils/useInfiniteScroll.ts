@@ -65,7 +65,7 @@ export const useInfiniteScroll = <
   }, [dataKey, queryResponseData, requestId]) //even if we call .refetch() we might get cached data so let's force it with requestId
 
   useEffect(() => {
-    if (Array.isArray(data) && data.length > 0) {
+    if (Array.isArray(data)) {
       if (pageToken === undefined) {
         setCombinedData(data)
       } else {
