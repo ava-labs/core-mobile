@@ -34,12 +34,12 @@ export const applyImageAndAspect = async (nftData: NFTItemData) => {
   return nftData
 }
 
-export const addMissingFields = (address: string) => {
-  return (nft: NFTItemData) => ({
+export const addMissingFields = (nft: Erc721TokenBalance, address: string) => {
+  return {
     ...nft,
     uid: getNftUID(nft),
     owner: address
-  })
+  } as NFTItemData
 }
 
 export const getNftUID = (nft: Erc721TokenBalance): NftUID => {

@@ -55,15 +55,15 @@ export const GridItem = ({
       ) : item.isSvg ? (
         <SvgXml
           xml={item.image}
-          width={GRID_ITEM_WIDTH * item.aspect}
-          height={GRID_ITEM_WIDTH}
+          width={GRID_ITEM_WIDTH}
+          height={GRID_ITEM_WIDTH * (item.aspect ?? 1)}
         />
       ) : (
         <Image
           onError={_ => setImgLoadFailed(true)}
           style={{
             width: GRID_ITEM_WIDTH,
-            height: item.aspect * GRID_ITEM_WIDTH,
+            height: GRID_ITEM_WIDTH * (item.aspect ?? 1),
             borderRadius: 8
           }}
           source={{ uri: item.image }}
