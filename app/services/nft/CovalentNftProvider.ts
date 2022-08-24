@@ -5,12 +5,7 @@ import Config from 'react-native-config'
 import { GetAddressBalanceV2Item } from '@avalabs/covalent-sdk/src/models'
 import Logger from 'utils/Logger'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
-import { pipeAsyncFunctions } from 'utils/js/pipeAsyncFunctions'
-import {
-  addMissingFields,
-  applyImageAndAspect,
-  convertIPFSResolver
-} from './utils'
+import { addMissingFields, convertIPFSResolver } from './utils'
 
 const demoAddress = 'demo.eth'
 const demoChain = 1 //Ethereum
@@ -62,17 +57,7 @@ export class CovalentNftProvider implements NftProvider {
       },
       []
     )
-
-    const processData = pipeAsyncFunctions(
-      applyImageAndAspect,
-      addMissingFields(address)
-    )
-
-    const fullNftResults = await Promise.allSettled(nfts.map(processData))
-
-    const fullNftData = fullNftResults.reduce<NFTItemData[]>((acc, result) => {
-      return result.status === 'fulfilled' ? [...acc, result.value] : acc
-    }, [])
+    const fullNftData = nfts.map(nft => addMissingFields(nft, address))
 
     return {
       nfts: fullNftData,
