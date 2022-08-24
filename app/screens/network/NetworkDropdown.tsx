@@ -76,8 +76,8 @@ export default function NetworkDropdown() {
     <View
       style={[
         {
-          height: 24,
-          width: 54,
+          height: 34,
+          width: 64,
           justifyContent: 'center',
           paddingHorizontal: 8,
           paddingVertical: 4,
@@ -104,13 +104,18 @@ export default function NetworkDropdown() {
         alignment={'flex-end'}
         selectionRenderItem={renderSelection}
         optionsRenderItem={renderOption}
+        caretStyle={{ marginRight: 6 }}
       />
     </View>
   )
 }
 
 function Selection({ logoUri }: { logoUri: string }) {
-  return <NetworkLogo logoUri={logoUri} size={16} />
+  return (
+    <View style={{ marginRight: 2 }}>
+      <NetworkLogo logoUri={logoUri} size={16} />
+    </View>
+  )
 }
 
 function Option({

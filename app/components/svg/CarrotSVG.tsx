@@ -9,8 +9,10 @@ interface Prop {
   direction?: 'up' | 'down' | 'left' //default is `right`
 }
 
-function CarrotSVG({ color, size = 16, direction }: Prop) {
+function CarrotSVG({ color, size = 14, direction }: Prop) {
   const { theme } = useApplicationContext()
+
+  const stroke = color || theme.colorIcon1
 
   function getDegrees() {
     let degrees = 0
@@ -29,30 +31,37 @@ function CarrotSVG({ color, size = 16, direction }: Prop) {
     return degrees
   }
 
-  const Carrot = ({ rotation = 0 }: { rotation?: number }) => (
-    <View style={{ transform: [{ rotate: `${rotation}deg` }] }}>
-      <Svg
-        width={size}
-        height={size}
-        viewBox="0 0 16 16"
-        fill="none"
-        origin={8}>
-        <Path
-          d="M5 3L10.25 8.25L5 13.5"
-          stroke={color || theme.colorIcon1}
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </Svg>
-    </View>
-  )
-
   /**
    * If user defines a direction, we wrap it in a view and apply the transfor in int since the
    * transform rotation/rotate in the SVG itself behaves differently and not the desired way we want.
    */
-  return direction ? <Carrot rotation={getDegrees()} /> : <Carrot />
+  return direction ? (
+    <Carrot size={size} stroke={stroke} rotation={getDegrees()} />
+  ) : (
+    <Carrot size={size} stroke={stroke} />
+  )
 }
+
+const Carrot = ({
+  size,
+  stroke,
+  rotation = 0
+}: {
+  size: number
+  stroke: string
+  rotation?: number
+}) => (
+  <View style={{ transform: [{ rotate: `${rotation}deg` }] }}>
+    <Svg width={size} height={size} viewBox="0 0 16 16" fill="none" origin={8}>
+      <Path
+        d="M5 3L10.25 8.25L5 13.5"
+        stroke={stroke}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  </View>
+)
 
 export default CarrotSVG

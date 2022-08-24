@@ -43,7 +43,7 @@ export function SwapTransaction({
         <Space y={8} />
         <Row style={{ justifyContent: 'space-between' }}>
           <AvaText.Body3 color={theme.colorText1}>Contract</AvaText.Body3>
-          <TokenAddress color={theme.colorText1} address={toAddress} />
+          <TokenAddress textColor={theme.colorText1} address={toAddress} />
         </Row>
       </View>
       <AvaText.Body2>Balance Change</AvaText.Body2>

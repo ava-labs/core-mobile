@@ -45,12 +45,9 @@ const TopNavigationHeader: FC<Props> = ({
       <View
         style={{
           flexDirection: 'row',
-          alignItems: 'center',
-          paddingHorizontal: 10,
-          width: 150,
           alignSelf: 'center'
         }}>
-        <TokenAddress address={address ?? ''} color={theme.colorText2} />
+        <TokenAddress address={address ?? ''} textColor={theme.colorText2} />
       </View>
     )
   }
@@ -73,13 +70,13 @@ const TopNavigationHeader: FC<Props> = ({
     return (
       <AvaButton.Icon
         onPress={navigation.openDrawer}
-        style={{ paddingRight: 11.5 }}>
+        style={{ marginRight: 32 }}>
         <MenuSVG />
       </AvaButton.Icon>
     )
   }
   return (
-    <>
+    <View>
       <Row
         style={{
           paddingLeft: 8,
@@ -88,7 +85,13 @@ const TopNavigationHeader: FC<Props> = ({
           justifyContent: 'space-between'
         }}>
         {renderLeftButton()}
-        <View style={{ zIndex: 1 }}>
+        <View
+          style={{
+            zIndex: 1,
+            flex: 1,
+            maxWidth: 200,
+            alignItems: 'center'
+          }}>
           <HeaderAccountSelector
             direction="down"
             onPressed={() =>
@@ -99,7 +102,7 @@ const TopNavigationHeader: FC<Props> = ({
         <NetworkDropdown />
       </Row>
       {renderAddress()}
-    </>
+    </View>
   )
 }
 

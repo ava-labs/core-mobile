@@ -15,7 +15,6 @@ import CheckmarkSVG from 'components/svg/CheckmarkSVG'
 import isString from 'lodash.isstring'
 import { BlurView } from '@react-native-community/blur'
 import { Row } from 'components/Row'
-import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
 import Separator from 'components/Separator'
 
@@ -33,6 +32,7 @@ interface Props<ItemT> {
   onItemSelected: (selectedItem: ItemT) => void
   disabled?: boolean
   caretIcon?: React.ReactNode
+  caretStyle?: StyleProp<ViewStyle>
 }
 
 interface OptionsItemInfo<ItemT> {
@@ -64,7 +64,8 @@ function DropDown<ItemT>({
   style,
   alignment = 'center',
   disabled,
-  caretIcon
+  caretIcon,
+  caretStyle
 }: Props<ItemT>) {
   const theme = useApplicationContext().theme
   const ref = useRef<PopableManager>(null)
@@ -216,8 +217,7 @@ function DropDown<ItemT>({
           <>{selectionItem}</>
         )}
         {!disabled && (
-          <>
-            <Space x={8} />
+          <View style={[{ marginLeft: 8 }, caretStyle]}>
             {caretIcon ? (
               caretIcon
             ) : (
@@ -226,7 +226,7 @@ function DropDown<ItemT>({
                 color={theme.colorText1}
               />
             )}
-          </>
+          </View>
         )}
       </Row>
     </Popable>
