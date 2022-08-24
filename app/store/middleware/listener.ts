@@ -13,6 +13,7 @@ import { addNetworkFeeListeners } from 'store/networkFee'
 import { addBridgeListeners } from 'store/bridge'
 import { addPosthogListeners } from 'store/posthog'
 import { addWatchlistListeners } from 'store/watchlist/listeners'
+import { addNftListeners } from 'store/nft/listeners'
 
 export type AppStartListening = TypedStartListening<RootState, AppDispatch>
 export type AppAddListener = TypedAddListener<RootState, AppDispatch>
@@ -30,6 +31,8 @@ addBalanceListeners(startListening)
 addAccountListeners(startListening)
 
 addNetworkListeners(startListening)
+
+addNftListeners(startListening)
 
 addBridgeListeners(startListening)
 

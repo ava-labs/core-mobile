@@ -15,6 +15,7 @@ export type NftState = {
 
 export type NFTItemData = Erc721TokenBalance &
   NFTItemExternalData & {
+    isFullLoading: boolean
     aspect: number
     owner: string
     uid: string
