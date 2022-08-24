@@ -13,7 +13,6 @@ import {
   BridgeTransactionStatusParams,
   WalletScreenProps
 } from 'navigation/types'
-import AddBitcoinInstructionsBottomSheet from 'screens/bridge/AddBitcoinInstructionsBottomSheet'
 import AvaButton from 'components/AvaButton'
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
 import { AssetBalance } from 'screens/bridge/utils/types'
@@ -25,7 +24,6 @@ export type BridgeStackParamList = {
     onTokenSelected: (token: string) => void
     bridgeTokenList: AssetBalance[] | undefined
   }
-  [AppNavigation.Bridge.AddInstructions]: undefined
   [AppNavigation.Bridge.HideWarning]: undefined
 }
 
@@ -62,12 +60,6 @@ function BridgeScreenStack() {
             name={AppNavigation.Modal.BridgeSelectToken}
             component={BridgeSelectTokenBottomSheet}
           />
-          <BridgeStack.Screen
-            options={{ headerShown: false }}
-            name={AppNavigation.Bridge.AddInstructions}
-            component={AddBitcoinInstructionsBottomSheet}
-          />
-
           <BridgeStack.Screen
             options={{ presentation: 'transparentModal', headerShown: false }}
             name={AppNavigation.Bridge.HideWarning}
