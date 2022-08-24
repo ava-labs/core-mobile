@@ -80,7 +80,7 @@ export default function InputText({
 }: Props | Readonly<Props>) {
   const context = useApplicationContext()
   const [showInput, setShowInput] = useState(false)
-  const [focused, setFocused] = useState(false)
+  // const [focused, setFocused] = useState(false)
   const [toggleShowText, setToggleShowText] = useState('Show')
   const textInputRef = useRef() as RefObject<TextInput>
 
@@ -118,8 +118,7 @@ export default function InputText({
         style={[
           {
             position: 'absolute',
-            end: 8,
-            top: 2
+            right: 8
           }
         ]}>
         <AvaButton.Icon onPress={onClear}>
@@ -272,19 +271,9 @@ export default function InputText({
               color: theme.colorText1,
               fontSize: 16,
               borderWidth: 1,
-              textAlignVertical: multiline ? 'top' : undefined,
-              borderColor: errorText
-                ? theme.colorError
-                : focused
-                ? theme.colorText2
-                : theme.colorBg3,
-              backgroundColor:
-                text.length > 0
-                  ? theme.transparent
-                  : focused
-                  ? theme.transparent
-                  : theme.colorBg3 + Opacity50,
               borderRadius: 8,
+              textAlignVertical: multiline ? 'top' : 'center',
+              backgroundColor: theme.colorBg3 + Opacity50,
               paddingStart: 16,
               paddingEnd:
                 mode === 'private'
@@ -294,13 +283,12 @@ export default function InputText({
                   : mode === 'currency'
                   ? 50
                   : 46,
-              paddingVertical: paddingVertical,
+              paddingTop: paddingVertical,
+              paddingBottom: paddingVertical,
               fontFamily: 'Inter-Regular',
               width: width
             }
           ]}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
           onChangeText={onTextChanged}
           value={text}
         />

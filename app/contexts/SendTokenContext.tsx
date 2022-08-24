@@ -29,7 +29,7 @@ import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import { FeePreset } from 'components/NetworkFeeSelector'
 import { Amount } from 'screens/swap/SwapView'
-import {showSnackBarCustom, updateSnackBarCustom} from 'components/Snackbar';
+import { showSnackBarCustom, updateSnackBarCustom } from 'components/Snackbar'
 import TransactionToast, {
   TransactionToastType
 } from 'components/toast/TransactionToast'

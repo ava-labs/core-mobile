@@ -24,7 +24,7 @@ const GeneralToast: FC<Props> = ({ message, toastId }) => {
         dismissToast()
       }}
       style={{
-        backgroundColor: theme.colorBg2 + 'FA',
+        backgroundColor: theme.neutral850,
         borderRadius: 8,
         justifyContent: 'center',
         alignItems: 'center',

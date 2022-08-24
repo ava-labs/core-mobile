@@ -194,7 +194,6 @@ const SendToken: FC<Props> = ({
             hideMax={!(!!toAccount.address && !!sendToken)}
           />
           <View style={{ paddingHorizontal: 16 }}>
-            <Space y={4} />
             <Space y={8} />
             <AvaText.Body3 textStyle={{ color: theme.colorError }}>
               {sdkError ?? sendError}
