@@ -20,8 +20,7 @@ import { SendState } from 'services/send/types'
 import {
   bnToBig,
   bnToEthersBigNumber,
-  bnToLocaleString,
-  stringToBN
+  bnToLocaleString
 } from '@avalabs/utils-sdk'
 import { useNativeTokenPrice } from 'hooks/useNativeTokenPrice'
 import { selectSelectedCurrency } from 'store/settings/currency'
@@ -29,12 +28,17 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import { FeePreset } from 'components/NetworkFeeSelector'
+import { Amount } from 'screens/swap/SwapView'
+import {showSnackBarCustom, updateSnackBarCustom} from 'components/Snackbar';
+import TransactionToast, {
+  TransactionToastType
+} from 'components/toast/TransactionToast'
 
 export interface SendTokenContextState {
   sendToken: TokenWithBalance | undefined
   setSendToken: Dispatch<TokenWithBalance | undefined>
-  sendAmount: string
-  setSendAmount: Dispatch<string>
+  sendAmount: Amount
+  setSendAmount: Dispatch<Amount>
   sendAmountInCurrency: number
   fromAccount: Account
   toAccount: Account
@@ -63,13 +67,14 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
 
   const [sendToken, setSendToken] = useState<TokenWithBalance | undefined>()
   const [maxAmount, setMaxAmount] = useState('')
-  const [sendAmount, setSendAmount] = useState('0')
-  const sendAmountBN = useMemo(
-    () => stringToBN(sendAmount || '0', sendToken?.decimals ?? 0),
-    [sendAmount, sendToken?.decimals]
-  )
+  const [sendAmount, setSendAmount] = useState<Amount>({
+    bn: new BN(0),
+    amount: '0'
+  })
+
   const tokenPriceInSelectedCurrency = sendToken?.priceInCurrency ?? 0
-  const sendAmountInCurrency = tokenPriceInSelectedCurrency * Number(sendAmount)
+  const sendAmountInCurrency =
+    tokenPriceInSelectedCurrency * Number(sendAmount.amount)
 
   const [sendToAddress, setSendToAddress] = useState('')
   const [sendToTitle, setSendToTitle] = useState('')
@@ -97,10 +102,10 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
   const balanceAfterTrx = useMemo(
     () =>
       bnToBig(
-        sendToken?.balance.sub(sendAmountBN).sub(sendFeeBN) ?? new BN(0),
+        sendToken?.balance.sub(sendAmount.bn).sub(sendFeeBN) ?? new BN(0),
         sendToken?.decimals
       ).toFixed(4),
-    [sendAmountBN, sendFeeBN, sendToken?.balance, sendToken?.decimals]
+    [sendAmount, sendFeeBN, sendToken?.balance, sendToken?.decimals]
   )
   const balanceAfterTrxInCurrency = useMemo(
     () =>
@@ -124,7 +129,6 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
     customGasPriceBig,
     gasLimit,
     selectedCurrency,
-    sendAmountBN,
     sendToAddress,
     sendToken
   ])
@@ -140,9 +144,17 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
     setTransactionId(undefined)
     setSendStatus('Sending')
 
+    const toastId = showSnackBarCustom(
+      <TransactionToast
+        message={'Send pending'}
+        type={TransactionToastType.PENDING}
+      />,
+      'infinite'
+    )
+
     const sendState = {
       address: sendToAddress,
-      amount: sendAmountBN,
+      amount: sendAmount.bn,
       gasPrice: customGasPriceBig,
       gasLimit,
       token: sendToken
@@ -157,10 +169,29 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
       .then(txId => {
         setTransactionId(txId)
         setSendStatus('Success')
+        updateSnackBarCustom(
+          toastId,
+          <TransactionToast
+            message={'Send successful'}
+            type={TransactionToastType.SUCCESS}
+            txHash={txId}
+            toastId={toastId}
+          />,
+          true
+        )
       })
       .catch(reason => {
         setSendStatus('Fail')
         setSendStatusMsg(reason)
+        updateSnackBarCustom(
+          toastId,
+          <TransactionToast
+            message={'Send failed'}
+            type={TransactionToastType.ERROR}
+            toastId={toastId}
+            txHash={'failed'}
+          />
+        )
       })
   }
 
@@ -195,7 +226,7 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
       .validateStateAndCalculateFees(
         {
           token: sendToken,
-          amount: sendAmountBN,
+          amount: sendAmount.bn,
           address: sendToAddress,
           gasPrice: customGasPriceBig,
           gasLimit

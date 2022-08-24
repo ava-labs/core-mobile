@@ -3,13 +3,11 @@ import { Modal, ScrollView, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import InputText from 'components/InputText'
-import TokenSelectAndAmount from 'components/TokenSelectAndAmount'
 import AvaButton from 'components/AvaButton'
 import AddressBookSVG from 'components/svg/AddressBookSVG'
 import FlexSpacer from 'components/FlexSpacer'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useSendTokenContext } from 'contexts/SendTokenContext'
-import numeral from 'numeral'
 import { AddrBookItemType, Contact } from 'Repo'
 import AddressBookLists, {
   AddressBookSource
@@ -23,9 +21,9 @@ import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
 import { NetworkVMType } from '@avalabs/chains-sdk'
 import NetworkFeeSelector from 'components/NetworkFeeSelector'
-import { Row } from 'components/Row'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import { ethersBigNumberToBN } from '@avalabs/utils-sdk'
+import UniversalTokenSelector from 'components/UniversalTokenSelector'
 
 type Props = {
   onNext: () => void
@@ -40,7 +38,6 @@ type Props = {
 const SendToken: FC<Props> = ({
   onNext,
   onOpenAddressBook,
-  onOpenSelectToken,
   token,
   contact
 }) => {
@@ -50,22 +47,20 @@ const SendToken: FC<Props> = ({
     setSendToken,
     sendToken,
     setSendAmount,
-    sendAmountInCurrency,
     sendAmount,
     toAccount,
     fees,
     canSubmit,
-    sdkError,
-    maxAmount
+    sdkError
   } = useSendTokenContext()
   const activeNetwork = useSelector(selectActiveNetwork)
   const [showQrCamera, setShowQrCamera] = useState(false)
+  const [sendError, setSendError] = useState<string>()
   const placeholder =
     activeNetwork.vmName === NetworkVMType.EVM
       ? 'Enter 0x Address'
       : 'Enter Bitcoin Address'
 
-  const balance = numeral(sendToken?.balanceDisplayValue ?? 0).value() || 0
   const setAddress = useCallback(
     ({ address, title }: { address: string; title: string }) => {
       toAccount.setAddress?.(address)
@@ -183,29 +178,26 @@ const SendToken: FC<Props> = ({
         />
       ) : (
         <>
+          <UniversalTokenSelector
+            onTokenChange={tkWithBalance =>
+              setSendToken(tkWithBalance as TokenWithBalance)
+            }
+            onAmountChange={value => {
+              if (value.bn.toString() === '0') {
+                setSendError('Please enter an amount')
+                return
+              }
+              setSendAmount(value)
+            }}
+            selectedToken={sendToken}
+            inputAmount={sendAmount.bn}
+            hideMax={!(!!toAccount.address && !!sendToken)}
+          />
           <View style={{ paddingHorizontal: 16 }}>
-            <Row
-              style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-              <AvaText.Heading3>{'Token'}</AvaText.Heading3>
-              <AvaText.Body3>{`Balance: ${balance} ${
-                sendToken?.symbol ?? ''
-              }`}</AvaText.Body3>
-            </Row>
-            <TokenSelectAndAmount
-              selectedToken={sendToken}
-              amount={sendAmount.toString()}
-              maxEnabled={!!toAccount.address && !!sendToken}
-              onAmountSet={amount => setSendAmount(amount)}
-              onOpenSelectToken={() => onOpenSelectToken(setSendToken)}
-              getMaxAmount={() => maxAmount}
-            />
             <Space y={4} />
-            <Row style={{ justifyContent: 'flex-end' }}>
-              <AvaText.Body3 currency>{sendAmountInCurrency}</AvaText.Body3>
-            </Row>
             <Space y={8} />
             <AvaText.Body3 textStyle={{ color: theme.colorError }}>
-              {sdkError ?? ''}
+              {sdkError ?? sendError}
             </AvaText.Body3>
             <Space y={8} />
             <NetworkFeeSelector
