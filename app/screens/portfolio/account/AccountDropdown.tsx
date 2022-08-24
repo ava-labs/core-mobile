@@ -65,9 +65,9 @@ function AccountDropdown({
         <View
           style={{
             alignSelf: 'center',
-            width: 180,
+            width: 200,
             marginTop: 2,
-            marginLeft: -18,
+            marginLeft: 0.5,
             backgroundColor: theme.colorBg1
           }}>
           <HeaderAccountSelector direction={'up'} onPressed={() => goBack()} />

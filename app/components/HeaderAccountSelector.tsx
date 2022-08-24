@@ -24,7 +24,11 @@ export default function HeaderAccountSelector({
       <View style={[styles.accountTitleContainer]}>
         <AvaText.Heading3
           ellipsizeMode={'middle'}
-          textStyle={{ marginRight: 8 }}>
+          textStyle={{
+            marginRight: 11,
+            lineHeight: 22,
+            fontSize: 17
+          }}>
           {activeAccount?.title}
         </AvaText.Heading3>
         <CarrotSVG color={theme.colorText1} direction={direction} />
@@ -36,7 +40,6 @@ export default function HeaderAccountSelector({
 const styles = StyleSheet.create({
   accountTitleContainer: {
     flexDirection: 'row',
-    paddingHorizontal: 16,
     justifyContent: 'center',
     alignItems: 'center',
     minHeight: 44

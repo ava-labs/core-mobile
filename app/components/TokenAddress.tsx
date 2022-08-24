@@ -18,7 +18,7 @@ interface Props {
   hideCopy?: boolean
   showIcon?: boolean
   showFullAddress?: boolean
-  color?: string
+  textColor?: string
   copyIconEnd?: boolean
 }
 
@@ -28,41 +28,14 @@ const TokenAddress: FC<Props> = ({
   showFullAddress,
   hideCopy,
   showIcon,
-  color,
+  textColor,
   copyIconEnd
 }) => {
   const theme = useContext(ApplicationContext).theme
   const tokenAddress = showFullAddress ? address : truncateAddress(address)
-  const textColor = color ? color : theme.colorText1
+  const txtColor = textColor ? textColor : theme.colorText1
 
-  const TokenAddressComposed = () => {
-    switch (textType) {
-      case 'ButtonSmall':
-        return (
-          <AvaText.ButtonSmall color={textColor}>
-            {tokenAddress}
-          </AvaText.ButtonSmall>
-        )
-      case 'ButtonMedium':
-        return (
-          <AvaText.ButtonMedium
-            ellipsizeMode={showFullAddress ? 'middle' : undefined}
-            color={textColor}>
-            {tokenAddress}
-          </AvaText.ButtonMedium>
-        )
-      case 'Heading':
-        return (
-          <AvaText.Heading3
-            ellipsizeMode={showFullAddress ? 'middle' : undefined}
-            color={textColor}>
-            {tokenAddress}
-          </AvaText.Heading3>
-        )
-      case 'Body':
-        return <AvaText.Body2 color={textColor}>{tokenAddress}</AvaText.Body2>
-    }
-  }
+  const copyIcon = <CopySVG />
 
   return (
     <AvaButton.Base
@@ -90,20 +63,68 @@ const TokenAddress: FC<Props> = ({
       )}
       {hideCopy || copyIconEnd || (
         <>
-          <CopySVG color={color ? color : theme.colorText1} size={16} />
-          <Space x={8} />
+          {copyIcon}
+          <Space x={4} />
         </>
       )}
-      <TokenAddressComposed />
+      <TokenAddressComposed
+        showFullAddress={showFullAddress}
+        textColor={txtColor}
+        textType={textType}
+        tokenAddress={tokenAddress}
+      />
       {hideCopy ||
         (copyIconEnd && (
           <>
             <Space x={8} />
-            <CopySVG color={color ? color : theme.colorText1} size={16} />
+            {copyIcon}
           </>
         ))}
     </AvaButton.Base>
   )
+}
+
+type TokenAddressComposedProps = {
+  showFullAddress: boolean | undefined
+  textType: 'Heading' | 'ButtonSmall' | 'ButtonMedium' | 'Body'
+  textColor: string
+  tokenAddress: string
+}
+
+const TokenAddressComposed = ({
+  showFullAddress,
+  textType,
+  textColor,
+  tokenAddress
+}: TokenAddressComposedProps) => {
+  switch (textType) {
+    case 'ButtonSmall':
+      return (
+        <AvaText.ButtonSmall color={textColor}>
+          {tokenAddress}
+        </AvaText.ButtonSmall>
+      )
+    case 'ButtonMedium':
+      return (
+        <AvaText.ButtonMedium
+          ellipsizeMode={showFullAddress ? 'middle' : undefined}
+          color={textColor}>
+          {tokenAddress}
+        </AvaText.ButtonMedium>
+      )
+    case 'Heading':
+      return (
+        <AvaText.Heading3
+          ellipsizeMode={showFullAddress ? 'middle' : undefined}
+          color={textColor}>
+          {tokenAddress}
+        </AvaText.Heading3>
+      )
+    case 'Body':
+      return <AvaText.Body2 color={textColor}>{tokenAddress}</AvaText.Body2>
+  }
+
+  return null
 }
 
 export default TokenAddress
