@@ -12,35 +12,38 @@ import { NavigationContainer } from '@react-navigation/native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import useDevDebugging from 'utils/debugging/DevDebugging'
 import 'utils/debugging/wdyr'
+import Config from 'react-native-config'
+import * as Sentry from '@sentry/react-native'
+import pkg from '../package.json'
 
 //init Sentry
-// if (Config.SENTRY_DS && !__DEV__) {
-//   Sentry.init({
-//     dsn: Config.SENTRY_DSN,
-//     environment: Config.ENVIRONMENT,
-//     release: `core-mobile@${pkg.version}`,
-//     debug: false,
-//     beforeSend: event => {
-//       /**
-//        * eliminating breadcrumbs. This should eliminate
-//        * a massive amount of the daa leaks into sentry. If we find that console
-//        * is leaking data, suspected that it might, than we can review the leak and
-//        * see if we can't modify the data before it is recorded. This can be
-//        * done in the sentry options beforeBreadcrumbs function.
-//        */
-//
-//       if (event.user) {
-//         delete event.user.email
-//         delete event.user.ip_address
-//       }
-//
-//       return event
-//     },
-//     integrations: function (integrations) {
-//       return integrations.filter(int => int.name !== 'Breadcrumbs')
-//     }
-//   })
-// }
+if (Config.SENTRY_DS && !__DEV__) {
+  Sentry.init({
+    dsn: Config.SENTRY_DSN,
+    environment: Config.ENVIRONMENT,
+    release: `core-mobile@${pkg.version}`,
+    debug: false,
+    beforeSend: event => {
+      /**
+       * eliminating breadcrumbs. This should eliminate
+       * a massive amount of the daa leaks into sentry. If we find that console
+       * is leaking data, suspected that it might, than we can review the leak and
+       * see if we can't modify the data before it is recorded. This can be
+       * done in the sentry options beforeBreadcrumbs function.
+       */
+
+      if (event.user) {
+        delete event.user.email
+        delete event.user.ip_address
+      }
+
+      return event
+    },
+    integrations: function (integrations) {
+      return integrations.filter(int => int.name !== 'Breadcrumbs')
+    }
+  })
+}
 
 // https://docs.sentry.io/platforms/react-native/troubleshooting/#using-with-other-polyfills
 require('promise.allsettled').shim()
