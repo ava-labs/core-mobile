@@ -2,7 +2,7 @@
  * Context wrapper for App
  **/
 
-import React, { useEffect, useState } from 'react'
+import React, { FC, useEffect, useState } from 'react'
 import * as Sentry from '@sentry/react-native'
 import { Provider } from 'react-redux'
 import { PersistGate } from 'redux-persist/integration/react'
@@ -20,30 +20,40 @@ import { DappConnectionContextProvider } from 'contexts/DappConnectionContext'
 function setToast(toast: Toast) {
   global.toast = toast
 }
+
+/**
+ * Aggregate all the top-level context providers for better readability.
+ */
+const ContextProviders: FC = ({ children }) => (
+  <Provider store={store}>
+    <PersistGate loading={null} persistor={persistor}>
+      <PosthogContextProvider>
+        <ApplicationContextProvider>
+          <DappConnectionContextProvider>
+            <BridgeProvider>{children}</BridgeProvider>
+          </DappConnectionContextProvider>
+        </ApplicationContextProvider>
+      </PosthogContextProvider>
+    </PersistGate>
+  </Provider>
+)
+
 // TODO: move these context providers inside context app when theme refactor is done
 // right now Splash and JailbrokenWarning depend on the theme object from ApplicationContextProvider
 const ContextAppWithRedux = () => {
   return (
     <>
       <StatusBar barStyle={'light-content'} />
-      <Provider store={store}>
-        <PersistGate loading={null} persistor={persistor}>
-          <PosthogContextProvider>
-            <ApplicationContextProvider>
-              <DappConnectionContextProvider>
-                <ContextApp />
-                <Toast
-                  ref={ref => {
-                    ref && setToast(ref)
-                  }}
-                  offsetTop={60}
-                  normalColor={'00FFFFFF'}
-                />
-              </DappConnectionContextProvider>
-            </ApplicationContextProvider>
-          </PosthogContextProvider>
-        </PersistGate>
-      </Provider>
+      <ContextProviders>
+        <ContextApp />
+        <Toast
+          ref={ref => {
+            ref && setToast(ref)
+          }}
+          offsetTop={60}
+          normalColor={'00FFFFFF'}
+        />
+      </ContextProviders>
     </>
   )
 }
@@ -61,11 +71,7 @@ const ContextApp = () => {
     return <JailbrokenWarning onOK={() => setShowJailBroken(false)} />
   }
 
-  return (
-    <BridgeProvider>
-      <App />
-    </BridgeProvider>
-  )
+  return <App />
 }
 
 export default Sentry.wrap(ContextAppWithRedux)
