@@ -4,11 +4,13 @@ import { Account } from 'store/account'
 import { NftUID } from 'services/nft/types'
 
 export const initialState = {
-  hiddenNfts: {}
+  hiddenNfts: {},
+  nfts: {}
 } as NftState
 
 export type NftState = {
   hiddenNfts: Record<NftUID, boolean>
+  nfts: Record<NftUID, NFTItemData>
 }
 
 export type NFTItemData = Erc721TokenBalance &

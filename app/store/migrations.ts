@@ -8,5 +8,15 @@ export const migrations = {
         favorites: []
       }
     }
+  },
+  2: (state: any) => {
+    // expand nft store with nfts
+    return {
+      ...state,
+      nft: {
+        ...state.nft,
+        nfts: {}
+      }
+    }
   }
 }
