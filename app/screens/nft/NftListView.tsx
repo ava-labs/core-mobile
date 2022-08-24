@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import RadioGroup from 'components/RadioGroup'
 import GridSVG from 'components/svg/GridSVG'
@@ -6,9 +6,15 @@ import { Row } from 'components/Row'
 import AvaButton from 'components/AvaButton'
 import ListSVG from 'components/svg/ListSVG'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { NFTItemData, selectHiddenNftUIDs } from 'store/nft'
+import {
+  clearNfts,
+  NFTItemData,
+  saveNfts,
+  selectHiddenNftUIDs,
+  selectNfts
+} from 'store/nft'
 import { useGetNfts } from 'store/nft/hooks'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { NftList } from './components/NftList/NftList'
 import { NftGrid } from './components/NftGrid/NftGrid'
 
@@ -23,15 +29,29 @@ export default function NftListView({
   onItemSelected,
   onManagePressed
 }: Props) {
+  const dispatch = useDispatch()
   const { nfts, fetchNext, refresh, isRefreshing, isLoading, isFetchingNext } =
     useGetNfts()
+
+  useEffect(() => {
+    if (isLoading || isRefreshing) {
+      dispatch(clearNfts())
+    }
+  }, [dispatch, isLoading, isRefreshing])
+
+  useEffect(() => {
+    dispatch(saveNfts({ nfts }))
+  }, [dispatch, nfts])
+
+  const fullNfts = useSelector(selectNfts)
+
   const [listType, setListType] = useState<ListType>()
   const { theme } = useApplicationContext()
   const hiddenNfts = useSelector(selectHiddenNftUIDs)
 
   const filteredData = useMemo(() => {
-    return nfts.filter(value => !hiddenNfts[value.uid] && !!value.aspect)
-  }, [hiddenNfts, nfts])
+    return fullNfts.filter(value => !hiddenNfts[value.uid])
+  }, [hiddenNfts, fullNfts])
 
   const renderListToggle = () => (
     <RadioGroup

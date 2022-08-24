@@ -48,6 +48,7 @@ export const nftSlice = createSlice({
 
 // selectors
 export const selectHiddenNftUIDs = (state: RootState) => state.nft.hiddenNfts
+export const selectNfts = (state: RootState) => Object.values(state.nft.nfts)
 
 // actions
 export const { setHidden, saveNfts, clearNfts } = nftSlice.actions
