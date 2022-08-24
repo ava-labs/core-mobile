@@ -1,9 +1,12 @@
 import { Image } from 'react-native'
+import { NFTItemData, NFTItemExternalData } from 'store/nft'
+import { HttpClient } from '@avalabs/utils-sdk'
 import { convertIPFSResolver } from './utils'
 
 export class NftProcessor {
   private base64 = require('base-64')
   private base64Prefix = 'data:image/svg+xml;base64,'
+  private metadataHttpClient = new HttpClient(``, {})
 
   fetchImageAndAspect(imageData: string) {
     return new Promise<[string, number, boolean]>(resolve => {
@@ -64,6 +67,33 @@ export class NftProcessor {
       }
     }
     return undefined
+  }
+
+  async applyMetadata(nft: NFTItemData) {
+    if (nft.external_url) {
+      //already has metadata
+      return nft
+    }
+    const metadata = await this.fetchMetadata(nft.tokenUri)
+    return { ...nft, ...metadata } as NFTItemData
+  }
+
+  async fetchMetadata(tokenUri: string) {
+    const base64MetaPrefix = 'data:application/json;base64,'
+    if (tokenUri.startsWith(base64MetaPrefix)) {
+      const base64Metadata = tokenUri.substring(base64MetaPrefix.length)
+      const metadata = JSON.parse(
+        Buffer.from(base64Metadata, 'base64').toString()
+      )
+      return metadata as NFTItemExternalData
+    } else {
+      const ipfsPath = convertIPFSResolver(tokenUri)
+      const metadata: NFTItemExternalData = await this.metadataHttpClient.get(
+        ipfsPath
+      )
+
+      return metadata
+    }
   }
 }
 

@@ -1,6 +1,6 @@
 import { QueryDefinition } from '@reduxjs/toolkit/dist/query'
 import { UseQuery } from '@reduxjs/toolkit/dist/query/react/buildHooks'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 // a hook to implement infinite scroll with RTK Query
 // it manages nextPageToken and the combined data from different pages
@@ -23,19 +23,31 @@ export const useInfiniteScroll = <
   const [pageToken, setPageToken] = useState<string | undefined>(undefined)
   const [combinedData, setCombinedData] = useState<Item[]>([])
   const queryParamsString = JSON.stringify(queryParams)
-
-  useEffect(() => {
-    //reset combined data and pagetoken every time queryParams change
-    setPageToken(undefined)
-    setCombinedData([])
-  }, [queryParamsString])
+  const [shouldRefresh, setShouldRefresh] = useState(false)
+  const refresh = useCallback(() => setShouldRefresh(true), [])
 
   const queryResponse = useQuery({
     nextPageToken: pageToken,
     ...(queryParams && queryParams)
   } as QueryArg)
-
   const queryResponseData = queryResponse.data
+  const requestId = queryResponse.requestId //changes with every fetch call to server
+
+  useEffect(() => {
+    //initiate refresh every time queryParams change
+    setShouldRefresh(true)
+  }, [queryParamsString])
+
+  useEffect(() => {
+    //we need to re-fetch fist call to server, which is one with no pageToken
+    //so here we reset pageToken if necessary and only then do re-fetch
+    if (shouldRefresh && !pageToken) {
+      setShouldRefresh(false)
+      queryResponse.refetch()
+    } else if (shouldRefresh) {
+      setPageToken(undefined)
+    }
+  }, [pageToken, queryResponse, shouldRefresh])
 
   const [data, nextPageToken] = useMemo(() => {
     if (
@@ -50,10 +62,10 @@ export const useInfiniteScroll = <
     }
 
     return [[], undefined]
-  }, [dataKey, queryResponseData])
+  }, [dataKey, queryResponseData, requestId]) //even if we call .refetch() we might get cached data so let's force it with requestId
 
   useEffect(() => {
-    if (Array.isArray(data) && data.length > 0) {
+    if (Array.isArray(data)) {
       if (pageToken === undefined) {
         setCombinedData(data)
       } else {
@@ -63,22 +75,7 @@ export const useInfiniteScroll = <
         })
       }
     }
-  }, [data, nextPageToken, pageToken])
-
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  const refresh = useRef(() => {})
-
-  useEffect(() => {
-    if (pageToken === undefined) {
-      refresh.current = () => {
-        setPageToken(undefined)
-        setCombinedData([])
-        // this refetch belongs to the very first query that has undefined pageToken
-        // calling it means refetching from page 1
-        queryResponse.refetch()
-      }
-    }
-  }, [pageToken, queryResponse])
+  }, [data, pageToken, requestId]) //even if we call .refetch() we might get cached data so let's force it with requestId
 
   const fetchNext = () => {
     if (hasMore && !isFetching) {
@@ -103,7 +100,7 @@ export const useInfiniteScroll = <
   return {
     data: combinedData,
     fetchNext,
-    refresh: refresh.current,
+    refresh,
     isLoading,
     isFetching,
     isRefreshing,

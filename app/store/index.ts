@@ -81,7 +81,7 @@ const persistConfig = {
   ],
   transforms: [DeserializeBridgeTransform],
   migrate: createMigrate(migrations, { debug: __DEV__ }),
-  version: 1
+  version: 2
 }
 
 const persistedReducer = persistReducer(persistConfig, rootReducer)
