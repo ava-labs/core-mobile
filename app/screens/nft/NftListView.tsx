@@ -40,8 +40,10 @@ export default function NftListView({
   }, [dispatch, isLoading, isRefreshing])
 
   useEffect(() => {
-    dispatch(saveNfts({ nfts }))
-  }, [dispatch, nfts])
+    if (!isLoading && !isRefreshing) {
+      dispatch(saveNfts({ nfts }))
+    }
+  }, [dispatch, isLoading, isRefreshing, nfts])
 
   const fullNfts = useSelector(selectNfts)
 
