@@ -1,7 +1,6 @@
 import React from 'react'
 import AppNavigation from 'navigation/AppNavigation'
 import { createStackNavigator } from '@react-navigation/stack'
-import DoneScreen from 'screens/send/DoneScreen'
 import SendToken from 'screens/send/SendToken'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import ReviewSend from 'screens/send/ReviewSend'
@@ -11,13 +10,13 @@ import { usePosthogContext } from 'contexts/PosthogContext'
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
 import { Contact } from 'Repo'
 import { TokenWithBalance } from 'store/balance'
+import { SubHeaderOptions } from 'navigation/NavUtils'
 
 export type SendStackParamList = {
   [AppNavigation.Send.Send]:
     | { token?: TokenWithBalance; contact?: Contact }
     | undefined
   [AppNavigation.Send.Review]: undefined
-  [AppNavigation.Send.Success]: { transactionId: string }
 }
 
 const SendStack = createStackNavigator<SendStackParamList>()
@@ -34,16 +33,14 @@ function SendScreenStack() {
           title: ''
         }}>
         <SendStack.Screen
+          options={SubHeaderOptions('')}
           name={AppNavigation.Send.Send}
           component={SendTokenComponent}
         />
         <SendStack.Screen
+          options={SubHeaderOptions('')}
           name={AppNavigation.Send.Review}
           component={ReviewSendComponent}
-        />
-        <SendStack.Screen
-          name={AppNavigation.Send.Success}
-          component={DoneScreenComponent}
         />
       </SendStack.Navigator>
       {sendBlocked && (
@@ -94,25 +91,11 @@ type ReviewNavigationProp = SendTokensScreenProps<
 const ReviewSendComponent = () => {
   const navigation = useNavigation<ReviewNavigationProp>()
 
-  const onSuccess = (transactionId: string) => {
-    navigation.popToTop()
-    navigation.replace(AppNavigation.Send.Success, { transactionId })
+  const onSuccess = () => {
+    navigation.getParent()?.goBack()
   }
 
   return <ReviewSend onSuccess={onSuccess} />
-}
-
-type SuccessScreenProps = SendTokensScreenProps<
-  typeof AppNavigation.Send.Success
->
-
-const DoneScreenComponent = () => {
-  const { goBack } = useNavigation<SuccessScreenProps['navigation']>()
-  const { transactionId } = useRoute<SuccessScreenProps['route']>().params
-
-  return (
-    <DoneScreen onClose={() => goBack()} transactionId={transactionId ?? ''} />
-  )
 }
 
 export default SendScreenStack

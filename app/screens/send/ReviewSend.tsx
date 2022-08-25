@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react'
+import React, { useCallback } from 'react'
 import { View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
@@ -28,11 +28,7 @@ type NavigationProp = SendTokensScreenProps<
   typeof AppNavigation.Send.Review
 >['navigation']
 
-export default function ReviewSend({
-  onSuccess
-}: {
-  onSuccess: (transactionId: string) => void
-}) {
+export default function ReviewSend({ onSuccess }: { onSuccess: () => void }) {
   const { theme } = useApplicationContext()
   const { goBack } = useNavigation<NavigationProp>()
   const { capture } = usePosthogContext()
@@ -46,9 +42,13 @@ export default function ReviewSend({
     toAccount,
     onSendNow,
     sendStatus,
-    sendStatusMsg,
-    transactionId
+    sendStatusMsg
   } = useSendTokenContext()
+
+  function handleSend() {
+    onSendNow()
+    onSuccess()
+  }
 
   useBeforeRemoveListener(
     useCallback(() => {
@@ -56,15 +56,6 @@ export default function ReviewSend({
     }, [capture]),
     [RemoveEvents.GO_BACK, RemoveEvents.POP]
   )
-
-  useEffect(() => {
-    switch (sendStatus) {
-      case 'Success':
-        if (transactionId) {
-          onSuccess(transactionId)
-        }
-    }
-  }, [onSuccess, sendStatus, transactionId])
 
   return (
     <View style={{ flex: 1 }}>
@@ -100,7 +91,7 @@ export default function ReviewSend({
           </AvaText.Body2>
           <Row style={{ alignItems: 'baseline' }}>
             <AvaText.Heading1>
-              {formatLargeNumber(sendAmount, 4)}
+              {formatLargeNumber(sendAmount.amount, 4)}
             </AvaText.Heading1>
             <Space x={4} />
             <AvaText.Heading3 textStyle={{ color: theme.colorText2 }}>
@@ -155,7 +146,7 @@ export default function ReviewSend({
         <FlexSpacer />
         {sendStatus !== 'Sending' && (
           <>
-            <AvaButton.PrimaryLarge onPress={onSendNow}>
+            <AvaButton.PrimaryLarge onPress={handleSend}>
               Send Now
             </AvaButton.PrimaryLarge>
             <Space y={16} />

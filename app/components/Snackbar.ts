@@ -6,9 +6,10 @@ const LENGTH_INFINITE = Number.MAX_SAFE_INTEGER
 export function ShowSnackBar(text: string, long = false) {
   return global?.toast?.show(text, {
     type: 'normal',
-    placement: 'bottom',
+    placement: 'top',
     duration: long ? LENGTH_LONG : LENGTH_SHORT,
-    animationType: 'slide-in'
+    animationType: 'slide-in',
+    style: { backgroundColor: '#2A2A2D' }
   })
 }
 
