@@ -135,8 +135,7 @@ enum ModalScreens {
 
 enum SendScreens {
   Send = 'SendScreens.Send',
-  Review = 'SendScreens.Review',
-  Success = 'SendScreens.Success'
+  Review = 'SendScreens.Review'
 }
 
 enum AddressBookScreens {
