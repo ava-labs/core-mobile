@@ -104,7 +104,7 @@ export function BNInput({
 
   useEffect(() => {
     if (max && valStr && getAmountBN(valStr, denomination).gt(max)) {
-      setErrorMessage('Invalid amount')
+      hideErrorMessage || setErrorMessage('Insufficient balance')
     } else {
       setErrorMessage('')
     }

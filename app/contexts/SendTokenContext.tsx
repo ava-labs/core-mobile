@@ -129,6 +129,7 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
     customGasPriceBig,
     gasLimit,
     selectedCurrency,
+    sendAmount,
     sendToAddress,
     sendToken
   ])

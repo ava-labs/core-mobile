@@ -61,6 +61,8 @@ const SendToken: FC<Props> = ({
       ? 'Enter 0x Address'
       : 'Enter Bitcoin Address'
 
+  const sendDisabled = !canSubmit || !!(sdkError || sendError)
+
   const setAddress = useCallback(
     ({ address, title }: { address: string; title: string }) => {
       toAccount.setAddress?.(address)
@@ -187,11 +189,13 @@ const SendToken: FC<Props> = ({
                 setSendError('Please enter an amount')
                 return
               }
+              setSendError('')
               setSendAmount(value)
             }}
             selectedToken={sendToken}
             inputAmount={sendAmount.bn}
             hideMax={!(!!toAccount.address && !!sendToken)}
+            hideErrorMessage
           />
           <View style={{ paddingHorizontal: 16 }}>
             <Space y={8} />
@@ -217,7 +221,7 @@ const SendToken: FC<Props> = ({
         </>
       )}
       <AvaButton.PrimaryLarge
-        disabled={!canSubmit}
+        disabled={sendDisabled}
         onPress={onNextPress}
         style={{ margin: 16 }}>
         Next
