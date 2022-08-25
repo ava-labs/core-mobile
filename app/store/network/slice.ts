@@ -155,7 +155,7 @@ export const selectTokenInfo = (symbol: string) => (state: RootState) => {
 }
 
 export const selectIsTestnet = (chainId: number) => (state: RootState) => {
-  const networks = selectNetworks(state)
+  const networks = _selectNetworks(state)
   const network = networks[chainId]
   return network?.isTestnet
 }
