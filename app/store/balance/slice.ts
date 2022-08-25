@@ -155,7 +155,10 @@ export const selectBalanceTotalInCurrencyForAccount =
 
       // when developer mode is on, only add testnet balances
       // when developer mode is off, only add mainnet balances
-      if ((isDeveloperMode && isTestnet) || (!isDeveloperMode && !isTestnet)) {
+      if (
+        (isDeveloperMode && isTestnet) ||
+        (!isDeveloperMode && isTestnet === false)
+      ) {
         for (const token of balance.tokens) {
           totalInCurrency += token.balanceInCurrency ?? 0
         }

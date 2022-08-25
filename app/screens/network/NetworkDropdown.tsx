@@ -17,6 +17,7 @@ import {
   setActive
 } from 'store/network'
 import { arrayHash } from 'utils/Utils'
+import SettingsCogSVG from 'components/svg/SettingsCogSVG'
 import { NetworkLogo } from './NetworkLogo'
 
 const ManageNetworks = 'Manage networks'
@@ -133,12 +134,9 @@ function Option({
         alignItems: 'center',
         paddingHorizontal: 16
       }}>
-      {networkName !== ManageNetworks && (
-        <>
-          <Selection logoUri={networkLogo} />
-          <Space x={8} />
-        </>
-      )}
+      {networkName !== ManageNetworks && <Selection logoUri={networkLogo} />}
+      {networkName === ManageNetworks && <SettingsCogSVG size={16} />}
+      <Space x={8} />
       <AvaText.Body1
         textStyle={{ paddingVertical: 8, maxWidth: 220 }}
         ellipsizeMode="tail">
