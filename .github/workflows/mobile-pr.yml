@@ -13,21 +13,29 @@ jobs:
       NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
     steps:
+      - name: Dependabot
+        if: ${{ github.actor == 'dependabot[bot]' }}
+        run: 'echo "No build required"'
+
       - name: Check out repo
+        if: ${{ github.actor != 'dependabot[bot]' }}
         uses: actions/checkout@v3
 
       - name: Install dependencies
+        if: ${{ github.actor != 'dependabot[bot]' }}
         run: yarn setup:ci
 
       - name: Eslint
+        if: ${{ github.actor != 'dependabot[bot]' }}
         run: yarn lint:ci
 
       - name: Annotate Eslint Results
         uses: ataylorme/eslint-annotate-action@1.2.0
-        if: always()
+        if: ${{ github.actor != 'dependabot[bot]' }}
         with:
           repo-token: '${{ secrets.GITHUB_TOKEN }}'
           report-json: 'eslint_report.json'
-          
+
       - name: Typescript
+        if: ${{ github.actor != 'dependabot[bot]' }}
         run: yarn tsc
