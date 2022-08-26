@@ -94,6 +94,7 @@ export const DappConnectionContextProvider = ({
 
   useEffect(() => {
     initializeWalletConnect()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
@@ -164,6 +165,7 @@ export const DappConnectionContextProvider = ({
         )
       })
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     dappEvent,
     isWalletActive,
@@ -188,7 +190,10 @@ export const DappConnectionContextProvider = ({
   }, [activeNetwork, activeAccount])
 
   function displayUserInstruction(instruction: string) {
-    showSnackBarCustom(<GeneralToast message={instruction} />, 'long')
+    showSnackBarCustom({
+      component: <GeneralToast message={instruction} />,
+      duration: 'long'
+    })
   }
 
   function setEventHandled(handled: boolean) {

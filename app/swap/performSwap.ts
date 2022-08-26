@@ -147,7 +147,7 @@ export async function performSwap(request: {
       )
 
       if (!(allowance as BigNumber).gt(sourceAmount)) {
-        const { data } = await contract.populateTransaction.approve!(
+        const { data } = await contract.populateTransaction.approve(
           spender,
           sourceAmount
         )

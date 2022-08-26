@@ -28,9 +28,11 @@ const TransactionToast: FC<Props> = ({ message, toastId, type, txHash }) => {
   const theme = useApplicationContext().theme
   const network = useActiveNetwork()
   const { openUrl } = useInAppBrowser()
+
   function dismissToast() {
     toastId ? global?.toast?.hide(toastId) : global?.toast.hideAll()
   }
+
   return (
     <AvaButton.Base
       onPress={() => {

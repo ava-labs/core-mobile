@@ -13,16 +13,24 @@ export function ShowSnackBar(text: string, long = false) {
   })
 }
 
-export function showSnackBarCustom(
-  component: JSX.Element,
-  duration: 'short' | 'long' | 'infinite',
-  placement: 'top' | 'bottom' = 'top'
-) {
+type showCustomProps = {
+  component: JSX.Element
+  duration: 'short' | 'long' | 'infinite'
+  placement?: 'top' | 'bottom'
+  id?: string
+}
+
+export function showSnackBarCustom({
+  component,
+  duration,
+  placement = 'top',
+  id
+}: showCustomProps) {
   return global?.toast?.show(component, {
     type: 'transaction',
     placement: placement,
     animationType: 'slide-in',
-
+    id,
     duration:
       duration === 'infinite'
         ? LENGTH_INFINITE
