@@ -120,6 +120,8 @@ export async function performSwap(request: {
 
   // no need to approve AVAX
   if (srcToken !== network.networkToken.symbol) {
+    Logger.info('swapping non-network token')
+
     const contract = new ethers.Contract(
       srcTokenAddress,
       ERC20.abi,
@@ -149,6 +151,9 @@ export async function performSwap(request: {
           spender,
           sourceAmount
         )
+
+        Logger.info('signing approval')
+
         const [signedTx, signError] = await resolve(
           walletService.sign(
             {
@@ -171,8 +176,11 @@ export async function performSwap(request: {
           })
         }
 
+        Logger.info('sending approval to network')
+
+        // we send true to wait for transaction to post due to issue with nonce.
         const [hash, approveError] = await resolve(
-          networkService.sendTransaction(signedTx, network)
+          networkService.sendTransaction(signedTx, network, true)
         )
 
         if (approveError) {
@@ -182,6 +190,8 @@ export async function performSwap(request: {
           })
         }
 
+        Logger.info('send approval done')
+
         approveTxHash = hash
       } else {
         approveTxHash = []
@@ -189,32 +199,36 @@ export async function performSwap(request: {
     }
   }
 
-  const txData = swapService.buildTx(
-    ChainId.AVALANCHE_MAINNET_ID.toString(),
-    srcTokenAddress,
-    destTokenAddress,
-    sourceAmount,
-    destinationAmount,
-    optimalRate,
-    userAddress,
-    partner,
-    partnerAddress,
-    partnerFeeBps,
-    receiver,
-    buildOptions,
-    network.networkToken.symbol === srcToken
-      ? network.networkToken.decimals
-      : srcDecimals,
-    network.networkToken.symbol === destToken
-      ? network.networkToken.decimals
-      : destDecimals,
-    permit,
-    deadline
+  const [txBuildData, txBuildDataError] = await resolve(
+    incrementalPromiseResolve(
+      () =>
+        swapService.buildTx(
+          ChainId.AVALANCHE_MAINNET_ID.toString(),
+          srcTokenAddress,
+          destTokenAddress,
+          sourceAmount,
+          destinationAmount,
+          optimalRate,
+          userAddress,
+          partner,
+          partnerAddress,
+          partnerFeeBps,
+          receiver,
+          buildOptions,
+          network.networkToken.symbol === srcToken
+            ? network.networkToken.decimals
+            : srcDecimals,
+          network.networkToken.symbol === destToken
+            ? network.networkToken.decimals
+            : destDecimals,
+          permit,
+          deadline
+        ),
+      checkForErrorsInResult
+    )
   )
 
-  const [txBuildData, txBuildDataError] = await resolve(
-    incrementalPromiseResolve(() => txData, checkForErrorsInResult)
-  )
+  Logger.info('starting swap')
 
   if ((txBuildData as APIError).message) {
     Logger.error('error building API', (txBuildData as APIError).message)
@@ -229,15 +243,12 @@ export async function performSwap(request: {
     })
   }
 
-  // this sometimes is returning 1 below the current count
-  // asked about manually increasing it, and it's fine, except
-  // user tries to do 2 simultaneous tx in different wallets
-  const nonce = await avalancheProvider.getTransactionCount(userAddress)
+  Logger.info('signing swap')
 
   const [signedTx, signError] = await resolve(
     walletService.sign(
       {
-        nonce: nonce,
+        nonce: await avalancheProvider.getTransactionCount(userAddress),
         chainId: ChainId.AVALANCHE_MAINNET_ID,
         gasPrice: BigNumber.from(gasPrice ? gasPrice : defaultGasPrice?.low),
         gasLimit: Number(txBuildData.gas),
@@ -260,17 +271,23 @@ export async function performSwap(request: {
     })
   }
 
+  Logger.info('sending swap to network')
+
   const [swapTxHash, txError] = await resolve(
     networkService.sendTransaction(signedTx, network)
   )
 
   if (txError) {
     const shortError = txError.message.split('\n')[0]
-    Logger.error('error sending', txError)
+    Logger.error('error sending swap', txError)
     return Promise.reject({
       error: shortError
     })
   }
+
+  Logger.info('sending swap done')
+  Logger.info(`swapTxHash: ${swapTxHash}`)
+  Logger.info(`approveTxHash: ${approveTxHash}`)
 
   return {
     result: {
