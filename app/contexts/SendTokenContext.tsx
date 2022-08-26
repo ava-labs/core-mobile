@@ -182,15 +182,15 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
         )
       })
       .catch(reason => {
-        setSendStatus('Fail')
-        setSendStatusMsg(reason)
+        const transactionHash =
+          reason?.transactionHash ?? reason?.error?.transactionHash
         updateSnackBarCustom(
           toastId,
           <TransactionToast
             message={'Send failed'}
             type={TransactionToastType.ERROR}
             toastId={toastId}
-            txHash={'failed'}
+            txHash={transactionHash ?? 'failed'}
           />
         )
       })

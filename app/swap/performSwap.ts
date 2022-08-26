@@ -237,7 +237,7 @@ export async function performSwap(request: {
   const [signedTx, signError] = await resolve(
     walletService.sign(
       {
-        nonce: nonce + 1,
+        nonce: nonce,
         chainId: ChainId.AVALANCHE_MAINNET_ID,
         gasPrice: BigNumber.from(gasPrice ? gasPrice : defaultGasPrice?.low),
         gasLimit: Number(txBuildData.gas),
