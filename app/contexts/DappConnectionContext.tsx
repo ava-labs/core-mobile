@@ -354,7 +354,6 @@ export const DappConnectionContextProvider = ({
             gasPrice: evmPrams.gasPrice,
             gasLimit: evmPrams.gasLimit,
             data: evmPrams.data,
-            to: params.to,
             value: evmPrams.value
           },
           activeAccount.index,
@@ -375,7 +374,17 @@ export const DappConnectionContextProvider = ({
           return { hash: resultHash }
         })
         .catch(e => {
-          Logger.error('Error approving dapp tx', e)
+          const transactionHash =
+            e?.transactionHash ?? e?.error?.transasctionHash
+          if (transactionHash) {
+            walletConnectService.emitter.emit(
+              WalletConnectRequest.CALL_REJECTED,
+              {
+                id: tx.id,
+                message: 'transaction failed'
+              }
+            )
+          }
           return Promise.reject({ error: e })
         })
     })
