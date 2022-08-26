@@ -11,7 +11,9 @@ export async function txToCustomEvmTx(
 
   const { gas, to, from, data, value, gasPrice } = txParams
 
-  if (!gas || !gasPrice) {
+  const sureGasPrice = BigNumber.from(gasPrice ?? networkFee)
+
+  if (!gas || !sureGasPrice) {
     throw new Error('Gas or gas estimate is malformed')
   }
 
@@ -22,7 +24,7 @@ export async function txToCustomEvmTx(
   const gasLimit = Number(gas)
 
   return {
-    gasPrice: BigNumber.from(gasPrice ?? networkFee),
+    gasPrice: sureGasPrice,
     gasLimit: gasLimit,
     to,
     from,

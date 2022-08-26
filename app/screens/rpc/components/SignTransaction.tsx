@@ -24,7 +24,6 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import EditSpendLimit from 'components/EditSpendLimit'
 import CarrotSVG from 'components/svg/CarrotSVG'
 import { DappEvent } from 'contexts/DappConnectionContext'
-import Logger from 'utils/Logger'
 import { getExplorerAddressByNetwork } from 'utils/ExplorerUtils'
 import useInAppBrowser from 'hooks/useInAppBrowser'
 import FlexSpacer from 'components/FlexSpacer'
@@ -32,6 +31,9 @@ import { Popable } from 'react-native-popable'
 import { popableContent } from 'screens/swap/components/SwapTransactionDetails'
 import { SwapTransaction } from 'screens/rpc/components/Transactions/SwapTransaction'
 import { BottomSheetScrollView } from '@gorhom/bottom-sheet'
+import { showSnackBarCustom } from 'components/Snackbar'
+import TransactionToast from 'components/toast/TransactionToast'
+import * as Sentry from '@sentry/react-native'
 
 interface Props {
   onApprove: (tx: Transaction) => Promise<{ hash?: string; error?: any }>
@@ -116,21 +118,35 @@ const SignTransaction: FC<Props> = ({
   }
 
   async function onHandleApprove() {
-    setSubmitting(true)
-    transaction &&
+    if (transaction) {
+      setSubmitting(true)
+      setTxFailedError(undefined)
       onApprove(transaction)
         .then(result => {
           if (result?.hash) {
-            Logger.warn('Transaction call approved with hash')
             setHash(result.hash)
             setSubmitting(false)
           }
         })
-        .catch(error => {
-          Logger.warn('Transaction call error', error)
-          setTxFailedError(`${error?.error?.reason}`)
+        .catch(reason => {
           setSubmitting(false)
+          if (reason?.error?.transactionHash) {
+            showSnackBarCustom(
+              <TransactionToast
+                message={'Transaction failed'}
+                txHash={reason?.error?.transactionHash}
+              />,
+              'long'
+            )
+            onClose()
+          } else {
+            setTxFailedError(`there was an error processing the transaction`)
+          }
+          Sentry?.captureException(reason, {
+            tags: { dapps: 'signTransaction' }
+          })
         })
+    }
   }
 
   function txTitle() {
