@@ -354,13 +354,14 @@ export const DappConnectionContextProvider = ({
             gasPrice: evmPrams.gasPrice,
             gasLimit: evmPrams.gasLimit,
             data: evmPrams.data,
+            to: params.to,
             value: evmPrams.value
           },
           activeAccount.index,
           activeNetwork
         )
         .then(signedTx => {
-          return networkService.sendTransaction(signedTx, activeNetwork)
+          return networkService.sendTransaction(signedTx, activeNetwork, true)
         })
         .then(resultHash => {
           walletConnectService.emitter.emit(
