@@ -38,12 +38,20 @@ class NetworkService {
     throw new Error(`Unsupported network type: ${network.vmName}`)
   }
 
-  async sendTransaction(signedTx: string, network: Network) {
+  async sendTransaction(
+    signedTx: string,
+    network: Network,
+    waitToPost = false
+  ) {
     if (!network) {
       throw new Error('No active network')
     }
     const provider = this.getProviderForNetwork(network)
     if (provider instanceof JsonRpcBatchInternal) {
+      if (waitToPost) {
+        const tx = await provider.sendTransaction(signedTx)
+        return (await tx.wait()).transactionHash
+      }
       return (await provider.sendTransaction(signedTx)).hash
     }
 

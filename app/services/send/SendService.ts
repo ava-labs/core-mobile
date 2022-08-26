@@ -48,7 +48,7 @@ class SendService {
       account.index,
       activeNetwork
     )
-    return await networkService.sendTransaction(signedTx, activeNetwork)
+    return await networkService.sendTransaction(signedTx, activeNetwork, true)
   }
 
   async validateStateAndCalculateFees(

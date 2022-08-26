@@ -1,5 +1,5 @@
 import React, { FC, useContext } from 'react'
-import { View } from 'react-native'
+import { ScrollView, View } from 'react-native'
 import { ApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
@@ -24,9 +24,15 @@ const EthSign: FC<Props> = ({ action }) => {
       <Space y={1} />
       <AvaText.Body2>Message:</AvaText.Body2>
       <Space y={8} />
-      <View style={{ backgroundColor: theme.colorBg3, padding: 16 }}>
+      <ScrollView
+        style={{
+          maxHeight: 250,
+          backgroundColor: theme.colorBg3,
+          borderRadius: 8,
+          padding: 8
+        }}>
         <AvaText.Body1>{action.displayData}</AvaText.Body1>
-      </View>
+      </ScrollView>
     </View>
   )
 }

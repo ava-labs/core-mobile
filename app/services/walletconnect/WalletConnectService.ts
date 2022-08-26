@@ -152,12 +152,12 @@ class WalletConnectService {
           'sending call approval to dapp via walletconnect',
           signedResult
         )
-      } catch (e) {
+      } catch (e: any) {
         Logger.error('dapp call error or user canceled', e)
         this.walletConnectClient?.rejectRequest({
           id: payload.id,
           error: {
-            message: 'USER HAS REJECTED'
+            message: e?.message ? e.message : 'USER HAS REJECTED'
           }
         })
       }
@@ -243,10 +243,12 @@ class WalletConnectService {
           resolve(hash)
         }
       })
-      emitter.on(WalletConnectRequest.CALL_REJECTED, id => {
+      emitter.on(WalletConnectRequest.CALL_REJECTED, args => {
+        const id = args?.id
+        const message = args?.message
         if (data.payload.id === id) {
           Logger.info('dapp received emission rejection for CALL')
-          reject(new Error(WalletConnectRequest.CALL_REJECTED))
+          reject(new Error(message))
         }
       })
     })
