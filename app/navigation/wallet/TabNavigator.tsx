@@ -172,12 +172,14 @@ const TabNavigator = () => {
           tabPress: e => {
             e.preventDefault()
             isBridgeDisabled
-              ? showSnackBarCustom(
-                  <GeneralToast
-                    message={`Bridge not available on ${activeNetwork.chainName}`}
-                  />,
-                  'short'
-                )
+              ? showSnackBarCustom({
+                  component: (
+                    <GeneralToast
+                      message={`Bridge not available on ${activeNetwork.chainName}`}
+                    />
+                  ),
+                  duration: 'short'
+                })
               : navigation.navigate(AppNavigation.Wallet.Bridge)
           }
         })}
