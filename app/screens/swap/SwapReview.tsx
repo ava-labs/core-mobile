@@ -50,12 +50,12 @@ const SwapReview = ({ onCancel, onBackToParent }: Props) => {
   const [colorAnim] = useState(new Animated.Value(1))
   const { capture } = usePosthogContext()
   const [hasConfirmed, setHasConfirmed] = useState(false)
+  const [toastId, setToastId] = useState('')
 
   useEffect(() => {
     refresh()
-  }, [])
-
-  const [swapError, setSwapError] = useState('')
+    setToastId(Math.random().toString())
+  }, [refresh])
 
   const onHandleSwap = async () => {
     if (
@@ -67,13 +67,17 @@ const SwapReview = ({ onCancel, onBackToParent }: Props) => {
       slippage
     ) {
       // setSwapInProgress(true)
-      const toastId = showSnackBarCustom(
-        <TransactionToast
-          message={'Swap in progress...'}
-          type={TransactionToastType.PENDING}
-        />,
-        'infinite'
-      )
+      showSnackBarCustom({
+        component: (
+          <TransactionToast
+            message={'Swap in progress...'}
+            type={TransactionToastType.PENDING}
+            toastId={toastId}
+          />
+        ),
+        duration: 'infinite',
+        id: toastId
+      })
 
       onBackToParent()
 
@@ -91,9 +95,8 @@ const SwapReview = ({ onCancel, onBackToParent }: Props) => {
           slippage
         )
       )
+
       if (error || (result && 'error' in result)) {
-        const message = error ? (error as Error).message : result?.error
-        setSwapError(message)
         updateSnackBarCustom(
           toastId,
           <TransactionToast
@@ -153,6 +156,7 @@ const SwapReview = ({ onCancel, onBackToParent }: Props) => {
         useNativeDriver: false
       }).start()
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [optimalRate?.destAmount, optimalRate?.destUSD])
 
   useEffect(() => {
@@ -172,6 +176,7 @@ const SwapReview = ({ onCancel, onBackToParent }: Props) => {
       )
       .subscribe()
     return () => sub.unsubscribe()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
@@ -249,9 +254,6 @@ const SwapReview = ({ onCancel, onBackToParent }: Props) => {
           slippage={slippage}
           walletFee={optimalRate?.partnerFee}
         />
-        {!!swapError && (
-          <AvaText.Body3 color={theme.colorError}>{swapError}</AvaText.Body3>
-        )}
       </ScrollView>
       <View
         style={{

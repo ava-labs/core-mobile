@@ -40,12 +40,14 @@ export default function Welcome({
         useNativeDriver: true
       }).start()
       if (pendingDeepLink) {
-        showSnackBarCustom(
-          <GeneralToast
-            message={`No wallet found. Create or add a wallet to Core to connect to applications.`}
-          />,
-          'long'
-        )
+        showSnackBarCustom({
+          component: (
+            <GeneralToast
+              message={`No wallet found. Create or add a wallet to Core to connect to applications.`}
+            />
+          ),
+          duration: 'long'
+        })
       }
     }
   }, [fadeAnim, isAppReady, pendingDeepLink])

@@ -1,13 +1,6 @@
 import React from 'react'
-import {
-  FlatList,
-  ListRenderItemInfo,
-  Platform,
-  Text,
-  View
-} from 'react-native'
+import { FlatList, ListRenderItemInfo, Platform, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import AvaLogoSVG from 'components/svg/AvaLogoSVG'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 import TokenManagementItem from 'screens/tokenManagement/TokenManagementItem'
 import AvaText from 'components/AvaText'
@@ -21,6 +14,7 @@ import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { WalletScreenProps } from 'navigation/types'
 import { TokenType, TokenWithBalance } from 'store/balance'
+import ZeroState from 'components/ZeroState'
 
 type NavigationProp = WalletScreenProps<
   typeof AppNavigation.Wallet.TokenManagement
@@ -56,20 +50,7 @@ function TokenManagement(): JSX.Element {
     )
   }
 
-  const emptyView = (
-    <View
-      style={{
-        justifyContent: 'center',
-        alignItems: 'center',
-        flex: 1,
-        marginTop: 32
-      }}>
-      <AvaLogoSVG />
-      <Text style={{ fontSize: 24, paddingTop: 32, textAlign: 'center' }}>
-        There are no results. Please try another search
-      </Text>
-    </View>
-  )
+  const emptyView = <ZeroState.Basic title="No results found" />
 
   const handleSearch = (text: string) => {
     setSearchText(text)

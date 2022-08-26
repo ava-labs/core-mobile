@@ -145,13 +145,15 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
     setTransactionId(undefined)
     setSendStatus('Sending')
 
-    const toastId = showSnackBarCustom(
-      <TransactionToast
-        message={'Send pending'}
-        type={TransactionToastType.PENDING}
-      />,
-      'infinite'
-    )
+    const toastId = showSnackBarCustom({
+      component: (
+        <TransactionToast
+          message={'Send pending'}
+          type={TransactionToastType.PENDING}
+        />
+      ),
+      duration: 'infinite'
+    })
 
     const sendState = {
       address: sendToAddress,
