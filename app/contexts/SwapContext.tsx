@@ -14,6 +14,13 @@ import { useActiveNetwork } from 'hooks/useActiveNetwork'
 import { useActiveAccount } from 'hooks/useActiveAccount'
 import { BigNumber } from 'ethers'
 import Logger from 'utils/Logger'
+import { showSnackBarCustom, updateSnackBarCustom } from 'components/Snackbar'
+import TransactionToast, {
+  TransactionToastType
+} from 'components/toast/TransactionToast'
+import { resolve } from '@avalabs/utils-sdk'
+
+export type SwapStatus = 'Idle' | 'Preparing' | 'Swapping' | 'Success' | 'Fail'
 
 export interface SwapContextState {
   fromToken?: TokenWithBalance
@@ -30,14 +37,10 @@ export interface SwapContextState {
     srcDecimals: number,
     amount: string,
     priceRoute: OptimalRate,
-    destAmount: any,
     gasLimit: number,
     gasPrice: BigNumber,
     slippage: number
-  ): Promise<
-    | { error: any; result?: undefined }
-    | { result: { swapTxHash: any; approveTxHash: any }; error?: undefined }
-  >
+  ): void
   getRate: (
     fromTokenAddress?: string,
     toTokenAddress?: string,
@@ -59,6 +62,7 @@ export interface SwapContextState {
   setSlippage: Dispatch<number>
   destination: 'from' | 'to'
   setDestination: Dispatch<'from' | 'to'>
+  swapStatus: SwapStatus
 }
 
 export const SwapContext = createContext<SwapContextState>({} as any)
@@ -75,6 +79,7 @@ export const SwapContextProvider = ({ children }: { children: any }) => {
   const [rate, setRate] = useState<number>(0)
   const [slippage, setSlippage] = useState<number>(1)
   const [destination, setDestination] = useState<'from' | 'to'>('from')
+  const [swapStatus, setSwapStatus] = useState<SwapStatus>('Idle')
 
   const refresh = () => {
     if (
@@ -142,36 +147,73 @@ export const SwapContextProvider = ({ children }: { children: any }) => {
     [activeNetwork, activeAccount]
   )
 
-  const swap = useCallback(
-    (
-      srcTokenAddress: string,
-      destTokenAddress: string,
-      destDecimals: number,
-      srcDecimals: number,
-      amount: string,
-      priceRoute: OptimalRate,
-      destAmount,
-      gasLimit: number,
-      gasPrice: BigNumber,
-      slippage: number
-    ) => {
-      return performSwap({
+  function onSwap(
+    srcTokenAddress: string,
+    destTokenAddress: string,
+    destDecimals: number,
+    srcDecimals: number,
+    amount: string,
+    priceRoute: OptimalRate,
+    gasLimit: number,
+    gasPrice: BigNumber,
+    slippage: number
+  ) {
+    setSwapStatus('Preparing')
+
+    const toastId = Math.random().toString()
+    setSwapStatus('Swapping')
+
+    showSnackBarCustom({
+      component: (
+        <TransactionToast
+          message={'Swap in progress...'}
+          type={TransactionToastType.PENDING}
+          toastId={toastId}
+        />
+      ),
+      duration: 'infinite',
+      id: toastId
+    })
+
+    resolve(
+      performSwap({
         srcToken: srcTokenAddress,
         destToken: destTokenAddress,
         srcDecimals,
         destDecimals,
         srcAmount: amount,
         optimalRate: priceRoute,
-        destAmount,
         gasLimit,
         gasPrice,
         slippage,
         network: activeNetwork,
         account: activeAccount
       })
-    },
-    [activeAccount, activeNetwork]
-  )
+    ).then(([result, error]) => {
+      if (error || (result && 'error' in result)) {
+        setSwapStatus('Fail')
+        updateSnackBarCustom(
+          toastId,
+          <TransactionToast
+            message={'Swap failed'}
+            type={TransactionToastType.ERROR}
+            toastId={toastId}
+          />
+        )
+      } else {
+        setSwapStatus('Success')
+        updateSnackBarCustom(
+          toastId,
+          <TransactionToast
+            message={'Swap success'}
+            type={TransactionToastType.SUCCESS}
+            txHash={result?.result?.swapTxHash}
+            toastId={toastId}
+          />
+        )
+      }
+    })
+  }
 
   const state: SwapContextState = {
     fromToken,
@@ -191,8 +233,9 @@ export const SwapContextProvider = ({ children }: { children: any }) => {
     setSlippage,
     destination,
     setDestination,
-    swap,
-    getRate
+    swap: onSwap,
+    getRate,
+    swapStatus
   }
 
   return <SwapContext.Provider value={state}>{children}</SwapContext.Provider>

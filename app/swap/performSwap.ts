@@ -28,7 +28,6 @@ export async function performSwap(request: {
   destDecimals: number
   srcAmount: string
   optimalRate: OptimalRate
-  destAmount: any
   gasLimit: number
   gasPrice: BigNumber
   slippage: number
@@ -42,7 +41,6 @@ export async function performSwap(request: {
     destDecimals,
     srcAmount,
     optimalRate,
-    destAmount,
     gasLimit,
     gasPrice,
     slippage,
@@ -57,12 +55,6 @@ export async function performSwap(request: {
   }
 
   if (!srcAmount) {
-    return Promise.reject({
-      error: 'no amount on request'
-    })
-  }
-
-  if (!destAmount) {
     return Promise.reject({
       error: 'no amount on request'
     })
