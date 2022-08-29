@@ -100,7 +100,6 @@ export const SendNFTContextProvider = ({
     }
 
     capture('SendApproved', { selectedGasFee: selectedFeePreset.toUpperCase() })
-
     const toastId = Math.random().toString()
 
     const sendState = {

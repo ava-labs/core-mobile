@@ -59,7 +59,7 @@ export default function ReviewSend({ onSuccess }: { onSuccess: () => void }) {
     useCallback(() => {
       capture('SendCancel')
     }, [capture]),
-    [RemoveEvents.GO_BACK, RemoveEvents.POP]
+    [RemoveEvents.GO_BACK]
   )
 
   return (
