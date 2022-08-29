@@ -166,6 +166,7 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
           showSnackBarCustom({
             component: (
               <TransactionToast
+                toastId={toastId}
                 message={'Send pending'}
                 type={TransactionToastType.PENDING}
               />
