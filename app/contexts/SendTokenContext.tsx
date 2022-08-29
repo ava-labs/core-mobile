@@ -45,13 +45,15 @@ export interface SendTokenContextState {
   tokenLogo: () => JSX.Element
   fees: Fees
   canSubmit: boolean
-  sendStatus: 'Idle' | 'Sending' | 'Success' | 'Fail'
+  sendStatus: SendStatus
   sendStatusMsg: string
   onSendNow: () => void
   transactionId: string | undefined
   sdkError: string | undefined
   maxAmount: string
 }
+
+export type SendStatus = 'Idle' | 'Preparing' | 'Sending' | 'Success' | 'Fail'
 
 export const SendTokenContext = createContext<SendTokenContextState>({} as any)
 
@@ -115,9 +117,7 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
     [balanceAfterTrx, nativeTokenPrice]
   )
 
-  const [sendStatus, setSendStatus] = useState<
-    'Idle' | 'Sending' | 'Success' | 'Fail'
-  >('Idle')
+  const [sendStatus, setSendStatus] = useState<SendStatus>('Idle')
   const [sendStatusMsg, setSendStatusMsg] = useState('')
   const [transactionId, setTransactionId] = useState<string>()
   const [canSubmit, setCanSubmit] = useState(false)
@@ -143,17 +143,8 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
 
     capture('SendApproved', { selectedGasFee: selectedFeePreset.toUpperCase() })
     setTransactionId(undefined)
-    setSendStatus('Sending')
 
-    const toastId = showSnackBarCustom({
-      component: (
-        <TransactionToast
-          message={'Send pending'}
-          type={TransactionToastType.PENDING}
-        />
-      ),
-      duration: 'infinite'
-    })
+    const toastId = Math.random().toString()
 
     const sendState = {
       address: sendToAddress,
@@ -162,12 +153,27 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
       gasLimit,
       token: sendToken
     } as SendState
+
+    setSendStatus('Preparing')
     sendService
       .send(
         sendState,
         activeNetwork,
         activeAccount,
-        selectedCurrency.toLowerCase()
+        selectedCurrency.toLowerCase(),
+        () => {
+          setSendStatus('Sending')
+          showSnackBarCustom({
+            component: (
+              <TransactionToast
+                message={'Send pending'}
+                type={TransactionToastType.PENDING}
+              />
+            ),
+            id: toastId,
+            duration: 'infinite'
+          })
+        }
       )
       .then(txId => {
         setTransactionId(txId)

@@ -26,7 +26,7 @@ export interface SendNFTContextState {
   toAccount: Account
   fees: Fees
   canSubmit: boolean
-  sendStatus: 'Idle' | 'Sending' | 'Success' | 'Fail'
+  sendStatus: SendStatus
   sendStatusMsg: string
   onSendNow: () => void
   transactionId: string | undefined
@@ -34,6 +34,8 @@ export interface SendNFTContextState {
 }
 
 export const SendNFTContext = createContext<SendNFTContextState>({} as any)
+
+export type SendStatus = 'Idle' | 'Preparing' | 'Sending' | 'Success' | 'Fail'
 
 export const SendNFTContextProvider = ({
   nft,
@@ -72,9 +74,7 @@ export const SendNFTContextProvider = ({
     () => bnToEthersBigNumber(customGasPrice),
     [customGasPrice]
   )
-  const [sendStatus, setSendStatus] = useState<
-    'Idle' | 'Sending' | 'Success' | 'Fail'
-  >('Idle')
+  const [sendStatus, setSendStatus] = useState<SendStatus>('Idle')
   const [sendStatusMsg, setSendStatusMsg] = useState('')
   const [transactionId, setTransactionId] = useState<string>()
   const [canSubmit, setCanSubmit] = useState(false)
@@ -99,7 +99,6 @@ export const SendNFTContextProvider = ({
 
     capture('SendApproved', { selectedGasFee: selectedFeePreset.toUpperCase() })
     setTransactionId(undefined)
-    setSendStatus('Sending')
 
     const sendState = {
       address: sendToAddress,
@@ -107,12 +106,17 @@ export const SendNFTContextProvider = ({
       gasLimit,
       token: sendService.mapTokenFromNFT(sendToken)
     } as SendState
+
+    setSendStatus('Preparing')
     sendService
       .send(
         sendState,
         activeNetwork,
         activeAccount,
-        selectedCurrency.toLowerCase()
+        selectedCurrency.toLowerCase(),
+        () => {
+          setSendStatus('Sending')
+        }
       )
       .then(txId => {
         setTransactionId(txId)
