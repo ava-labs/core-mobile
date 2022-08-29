@@ -7,10 +7,12 @@ import {
 } from 'screens/rpc/util/types'
 import { parseDisplayValues } from 'screens/rpc/util/parseDisplayValues'
 import { TransactionDescription } from '@ethersproject/abi'
-import { findToken } from 'contracts/contractParsers/utils/findToken'
+import { FindToken } from 'contracts/contractParsers/utils/useFindToken'
 import { Network } from '@avalabs/chains-sdk'
+import { ethers } from 'ethers'
 
 export async function approveTxHandler(
+  findToken: FindToken,
   network: Network,
   /**
    * The from on request represents the wallet and the to represents the contract
@@ -20,7 +22,7 @@ export async function approveTxHandler(
    * Data is the values sent to the above contract and this is the instructions on how to
    * execute
    */
-  _data: any,
+  data: ethers.utils.Result,
   props: DisplayValueParserProps,
   description?: TransactionDescription
 ): Promise<TransactionDisplayValues> {
@@ -33,8 +35,8 @@ export async function approveTxHandler(
       // in erc20 contracts the approve is has the limit as second parameter however it's not always named the same
       // eg JOE uses the standard namig: `approve(spender, amount)`
       // while PNG uses something else: `approve(spender, rawAmount)`
-      limit: _data[1]?.toHexString(),
-      spender: _data.spender
+      limit: data[1]?.toHexString(),
+      spender: data.spender
     },
     ...parseDisplayValues(network, request, props, description)
   }

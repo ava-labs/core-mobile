@@ -11,7 +11,7 @@ import {
 import { parseDisplayValues } from 'screens/rpc/util/parseDisplayValues'
 import { Network } from '@avalabs/chains-sdk'
 import { TokenWithBalanceERC20 } from 'store/balance'
-import { findToken } from './utils/findToken'
+import { FindToken } from './utils/useFindToken'
 
 export interface SwapExactTokensForTokenData {
   amountInMin: BigNumber
@@ -29,6 +29,7 @@ export interface SwapExactTokensForTokenData {
 }
 
 export async function swapExactTokensForTokenHandler(
+  findToken: FindToken,
   network: Network,
   /**
    * The from on request represents the wallet and the to represents the contract

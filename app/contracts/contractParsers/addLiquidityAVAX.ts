@@ -10,7 +10,7 @@ import {
 import { bigToLocaleString, ethersBigNumberToBig } from '@avalabs/utils-sdk'
 import { parseDisplayValues } from 'screens/rpc/util/parseDisplayValues'
 import { Network } from '@avalabs/chains-sdk'
-import { findToken } from 'contracts/contractParsers/utils/findToken'
+import { FindToken } from './utils/useFindToken'
 
 export interface AddLiquidityData {
   amountAMin: BigNumber
@@ -25,6 +25,7 @@ export interface AddLiquidityData {
 }
 
 export async function addLiquidityAvaxHandler(
+  findToken: FindToken,
   network: Network,
   /**
    * The from on request represents the wallet and the to represents the contract

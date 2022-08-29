@@ -8,7 +8,7 @@ import {
   TransactionParams
 } from 'screens/rpc/util/types'
 import { bigToLocaleString, bnToBig, hexToBN } from '@avalabs/utils-sdk'
-import { findToken } from 'contracts/contractParsers/utils/findToken'
+import { FindToken } from 'contracts/contractParsers/utils/useFindToken'
 import { parseDisplayValues } from 'screens/rpc/util/parseDisplayValues'
 import { Network } from '@avalabs/chains-sdk'
 
@@ -25,6 +25,7 @@ export interface AddLiquidityData {
 }
 
 export async function addLiquidityHandler(
+  findToken: FindToken,
   network: Network,
   /**
    * The from on request represents the wallet and the to represents the contract
