@@ -1,3 +1,5 @@
+import { ToastOptions } from 'react-native-toast-notifications/lib/typescript/toast'
+
 const LENGTH_SHORT = 2000
 const LENGTH_LONG = 5000
 const LENGTH_INFINITE = Number.MAX_SAFE_INTEGER
@@ -26,18 +28,22 @@ export function showSnackBarCustom({
   placement = 'top',
   id
 }: showCustomProps) {
-  return global?.toast?.show(component, {
+  const toastOptions = {
     type: 'transaction',
     placement: placement,
     animationType: 'slide-in',
-    id,
     duration:
       duration === 'infinite'
         ? LENGTH_INFINITE
         : duration === 'long'
         ? LENGTH_LONG
         : LENGTH_SHORT
-  })
+  } as ToastOptions
+  if (id) {
+    // there's bug in react-native-toast-notifications which overwrites id if you pass id: undefined
+    toastOptions.id = id
+  }
+  return global?.toast?.show(component, toastOptions)
 }
 
 export function updateSnackBarCustom(

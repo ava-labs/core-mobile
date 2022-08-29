@@ -19,6 +19,10 @@ import { SendState } from 'services/send/types'
 import sendService from 'services/send/SendService'
 import { useNativeTokenPrice } from 'hooks/useNativeTokenPrice'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
+import { showSnackBarCustom, updateSnackBarCustom } from 'components/Snackbar'
+import TransactionToast, {
+  TransactionToastType
+} from 'components/toast/TransactionToast'
 
 export interface SendNFTContextState {
   sendToken: NFTItemData
@@ -26,14 +30,15 @@ export interface SendNFTContextState {
   toAccount: Account
   fees: Fees
   canSubmit: boolean
-  sendStatus: 'Idle' | 'Sending' | 'Success' | 'Fail'
+  sendStatus: SendStatus
   sendStatusMsg: string
   onSendNow: () => void
-  transactionId: string | undefined
   sdkError: string | undefined
 }
 
 export const SendNFTContext = createContext<SendNFTContextState>({} as any)
+
+export type SendStatus = 'Idle' | 'Preparing' | 'Sending' | 'Success' | 'Fail'
 
 export const SendNFTContextProvider = ({
   nft,
@@ -72,11 +77,8 @@ export const SendNFTContextProvider = ({
     () => bnToEthersBigNumber(customGasPrice),
     [customGasPrice]
   )
-  const [sendStatus, setSendStatus] = useState<
-    'Idle' | 'Sending' | 'Success' | 'Fail'
-  >('Idle')
+  const [sendStatus, setSendStatus] = useState<SendStatus>('Idle')
   const [sendStatusMsg, setSendStatusMsg] = useState('')
-  const [transactionId, setTransactionId] = useState<string>()
   const [canSubmit, setCanSubmit] = useState(false)
   const [error, setError] = useState<string | undefined>()
 
@@ -98,8 +100,8 @@ export const SendNFTContextProvider = ({
     }
 
     capture('SendApproved', { selectedGasFee: selectedFeePreset.toUpperCase() })
-    setTransactionId(undefined)
-    setSendStatus('Sending')
+
+    const toastId = Math.random().toString()
 
     const sendState = {
       address: sendToAddress,
@@ -107,16 +109,41 @@ export const SendNFTContextProvider = ({
       gasLimit,
       token: sendService.mapTokenFromNFT(sendToken)
     } as SendState
+
+    setSendStatus('Preparing')
     sendService
       .send(
         sendState,
         activeNetwork,
         activeAccount,
-        selectedCurrency.toLowerCase()
+        selectedCurrency.toLowerCase(),
+        () => {
+          setSendStatus('Sending')
+          showSnackBarCustom({
+            component: (
+              <TransactionToast
+                toastId={toastId}
+                message={'Send pending'}
+                type={TransactionToastType.PENDING}
+              />
+            ),
+            id: toastId,
+            duration: 'infinite'
+          })
+        }
       )
       .then(txId => {
-        setTransactionId(txId)
         setSendStatus('Success')
+        updateSnackBarCustom(
+          toastId,
+          <TransactionToast
+            message={'Send successful'}
+            type={TransactionToastType.SUCCESS}
+            txHash={txId}
+            toastId={toastId}
+          />,
+          true
+        )
       })
       .catch(reason => {
         setSendStatus('Fail')
@@ -175,7 +202,6 @@ export const SendNFTContextProvider = ({
     sendStatus,
     sendStatusMsg,
     onSendNow,
-    transactionId,
     sdkError: error
   }
   return (

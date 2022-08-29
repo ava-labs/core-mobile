@@ -89,12 +89,12 @@ type ReviewNavigationProp = NFTDetailsSendScreenProps<
 >['navigation']
 
 const NftReviewScreen = () => {
-  const { popToTop, replace } = useNavigation<ReviewNavigationProp>()
-  const showSuccessScreen = (transactionId: string) => {
-    popToTop()
-    replace(AppNavigation.NftSend.Success, { transactionId })
+  const navigation = useNavigation<ReviewNavigationProp>()
+
+  const onSuccess = () => {
+    navigation.getParent()?.getParent()?.goBack()
   }
-  return <NftReview onSuccess={showSuccessScreen} />
+  return <NftReview onSuccess={onSuccess} />
 }
 
 type SuccessScreenProp = NFTDetailsSendScreenProps<
