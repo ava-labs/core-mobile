@@ -29,7 +29,7 @@ type NavigationProp = NFTDetailsSendScreenProps<
 >['navigation']
 
 export type NftReviewScreenProps = {
-  onSuccess: (transactionId: string) => void
+  onSuccess: () => void
 }
 
 export default function NftReview({ onSuccess }: NftReviewScreenProps) {
@@ -43,9 +43,14 @@ export default function NftReview({ onSuccess }: NftReviewScreenProps) {
     sendStatusMsg,
     toAccount,
     fromAccount,
-    fees,
-    transactionId
+    fees
   } = useSendNFTContext()
+
+  useEffect(() => {
+    if (sendStatus === 'Sending') {
+      onSuccess()
+    }
+  }, [onSuccess, sendStatus])
 
   useBeforeRemoveListener(
     useCallback(() => {
@@ -53,15 +58,6 @@ export default function NftReview({ onSuccess }: NftReviewScreenProps) {
     }, [capture]),
     [RemoveEvents.GO_BACK, RemoveEvents.POP]
   )
-
-  useEffect(() => {
-    switch (sendStatus) {
-      case 'Success':
-        if (transactionId) {
-          onSuccess(transactionId)
-        }
-    }
-  }, [onSuccess, sendStatus, transactionId])
 
   return (
     <View style={{ flex: 1 }}>
@@ -133,7 +129,7 @@ export default function NftReview({ onSuccess }: NftReviewScreenProps) {
         <Space y={16} />
         <Separator />
         <FlexSpacer />
-        {sendStatus !== 'Sending' && (
+        {sendStatus === 'Idle' && (
           <>
             <AvaButton.PrimaryLarge onPress={onSendNow}>
               Send Now
@@ -144,7 +140,7 @@ export default function NftReview({ onSuccess }: NftReviewScreenProps) {
             </AvaButton.SecondaryLarge>
           </>
         )}
-        {sendStatus === 'Sending' && (
+        {sendStatus === 'Preparing' && (
           <>
             <ActivityIndicator size="large" />
             <Space y={32} />

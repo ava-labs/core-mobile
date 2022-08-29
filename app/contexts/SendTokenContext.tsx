@@ -48,7 +48,6 @@ export interface SendTokenContextState {
   sendStatus: SendStatus
   sendStatusMsg: string
   onSendNow: () => void
-  transactionId: string | undefined
   sdkError: string | undefined
   maxAmount: string
 }
@@ -119,7 +118,6 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
 
   const [sendStatus, setSendStatus] = useState<SendStatus>('Idle')
   const [sendStatusMsg, setSendStatusMsg] = useState('')
-  const [transactionId, setTransactionId] = useState<string>()
   const [canSubmit, setCanSubmit] = useState(false)
   const [error, setError] = useState<string | undefined>()
 
@@ -142,7 +140,6 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
     }
 
     capture('SendApproved', { selectedGasFee: selectedFeePreset.toUpperCase() })
-    setTransactionId(undefined)
 
     const toastId = Math.random().toString()
 
@@ -177,7 +174,6 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
         }
       )
       .then(txId => {
-        setTransactionId(txId)
         setSendStatus('Success')
         updateSnackBarCustom(
           toastId,
@@ -292,7 +288,6 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
     sendStatus,
     sendStatusMsg,
     onSendNow,
-    transactionId,
     sdkError: error,
     maxAmount
   }
