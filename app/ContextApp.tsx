@@ -4,8 +4,6 @@
 
 import React, { FC, useEffect, useState } from 'react'
 import * as Sentry from '@sentry/react-native'
-import { Provider } from 'react-redux'
-import { PersistGate } from 'redux-persist/integration/react'
 import App from 'App'
 import { ApplicationContextProvider } from 'contexts/ApplicationContext'
 import Toast from 'react-native-toast-notifications'
@@ -13,9 +11,9 @@ import JailMonkey from 'jail-monkey'
 import JailbrokenWarning from 'screens/onboarding/JailbrokenWarning'
 import { BridgeProvider } from 'contexts/BridgeContext'
 import { PosthogContextProvider } from 'contexts/PosthogContext'
-import { persistor, store } from 'store'
 import { StatusBar } from 'react-native'
 import { DappConnectionContextProvider } from 'contexts/DappConnectionContext'
+import { EncryptedStoreProvider } from 'contexts/EncryptedStoreProvider'
 
 function setToast(toast: Toast) {
   global.toast = toast
@@ -25,17 +23,15 @@ function setToast(toast: Toast) {
  * Aggregate all the top-level context providers for better readability.
  */
 const ContextProviders: FC = ({ children }) => (
-  <Provider store={store}>
-    <PersistGate loading={null} persistor={persistor}>
-      <PosthogContextProvider>
-        <ApplicationContextProvider>
-          <DappConnectionContextProvider>
-            <BridgeProvider>{children}</BridgeProvider>
-          </DappConnectionContextProvider>
-        </ApplicationContextProvider>
-      </PosthogContextProvider>
-    </PersistGate>
-  </Provider>
+  <EncryptedStoreProvider>
+    <PosthogContextProvider>
+      <ApplicationContextProvider>
+        <DappConnectionContextProvider>
+          <BridgeProvider>{children}</BridgeProvider>
+        </DappConnectionContextProvider>
+      </ApplicationContextProvider>
+    </PosthogContextProvider>
+  </EncryptedStoreProvider>
 )
 
 // TODO: move these context providers inside context app when theme refactor is done
