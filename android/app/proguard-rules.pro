@@ -16,3 +16,6 @@
 
 # react-native-config
 -keep class com.avaxwallet.BuildConfig { *; }
+
+# https://github.com/oblador/react-native-keychain#proguard-rules
+-keep class com.facebook.crypto.** { *; }
