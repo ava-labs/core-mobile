@@ -30,6 +30,7 @@ import { NetworkTokenWithBalance, selectTokensWithBalance } from 'store/balance'
 import { selectNetworkFee } from 'store/networkFee'
 import { selectNetworks } from 'store/network'
 import { ChainId } from '@avalabs/chains-sdk'
+import { useFindToken } from 'contracts/contractParsers/utils/useFindToken'
 
 const UNLIMITED_SPEND_LIMIT_LABEL = 'Unlimited'
 
@@ -44,6 +45,7 @@ export function useExplainTransaction(dappEvent?: DappEvent) {
       : allNetworks[ChainId.AVALANCHE_MAINNET_ID]
   )?.networkToken
   const tokensWithBalance = useSelector(selectTokensWithBalance)
+  const findToken = useFindToken()
 
   const [transaction, setTransaction] = useState<Transaction | null>(null)
   const txParams = (dappEvent?.payload?.params || [])[0]
@@ -121,7 +123,7 @@ export function useExplainTransaction(dappEvent?: DappEvent) {
         }
         const web3 = new Web3()
         const contract = new web3.eth.Contract(
-          ERC20.abi as any,
+          ERC20.abi as any, // eslint-disable-line @typescript-eslint/no-explicit-any
           srcTokenAddress
         )
 
@@ -157,14 +159,11 @@ export function useExplainTransaction(dappEvent?: DappEvent) {
       )
 
       // Get decoded transaction data
-      const decodedData = (txDescription as ethers.utils.TransactionDescription)
-        .args
+      const decodedData = txDescription.args
 
       // Get function name. Try normalized name otherwise look into functionFragment
       const functionName =
-        (txDescription as ethers.utils.TransactionDescription)?.name ??
-        (txDescription as ethers.utils.TransactionDescription)?.functionFragment
-          ?.name
+        txDescription?.name ?? txDescription?.functionFragment?.name
 
       // Get parser based on function name
       const parser = contractParserMap.get(functionName)
@@ -219,6 +218,7 @@ export function useExplainTransaction(dappEvent?: DappEvent) {
         // uses `parseDisplayValues` as a generic parser.
         const displayValues: TransactionDisplayValues = parser
           ? await parser(
+              findToken,
               activeNetwork,
               txParamsWithGasLimit,
               decodedData,
@@ -254,12 +254,13 @@ export function useExplainTransaction(dappEvent?: DappEvent) {
     }
     loadTx()
   }, [
-    tokenPrice,
     activeNetwork,
     avaxToken,
     dappEvent,
+    findToken,
     networkFees,
     peerMeta,
+    tokenPrice,
     tokensWithBalance,
     txParams
   ])
