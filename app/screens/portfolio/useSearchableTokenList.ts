@@ -71,11 +71,11 @@ export function useSearchableTokenList(hideZeroBalance = true): {
   }
 
   function filterTokensBySearchText(tokens: TokenWithBalance[], text: string) {
-    const regExp = new RegExp(text, 'i')
+    const substring = text.toLowerCase()
     return tokens.filter(
       token =>
-        (token.name && token.name.search(regExp) !== -1) ||
-        (token.symbol && token.symbol.search(regExp) !== -1)
+        (token.name && token.name.toLowerCase().includes(substring)) ||
+        (token.symbol && token.symbol.toLowerCase().includes(substring))
     )
   }
 

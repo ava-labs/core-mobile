@@ -13,18 +13,14 @@ import { Row } from 'components/Row'
 import InfoSVG from 'components/svg/InfoSVG'
 import { interval, tap } from 'rxjs'
 import { Popable } from 'react-native-popable'
-import { bnToLocaleString, resolve } from '@avalabs/utils-sdk'
+import { bnToLocaleString } from '@avalabs/utils-sdk'
 import BN from 'bn.js'
-import { showSnackBarCustom, updateSnackBarCustom } from 'components/Snackbar'
 import {
   RemoveEvents,
   useBeforeRemoveListener
 } from 'hooks/useBeforeRemoveListener'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import { calculateRate } from 'swap/utils'
-import TransactionToast, {
-  TransactionToastType
-} from 'components/toast/TransactionToast'
 import { getTokenAddress } from 'swap/getSwapRate'
 
 const SECOND = 1000
@@ -43,21 +39,33 @@ const SwapReview = ({ onCancel, onBackToParent }: Props) => {
     gasPrice,
     slippage,
     refresh,
-    swap
+    swap,
+    swapStatus
   } = useSwapContext()
   const theme = useApplicationContext().theme
   const [secondsLeft, setSecondsLeft] = useState('0s')
   const [colorAnim] = useState(new Animated.Value(1))
   const { capture } = usePosthogContext()
-  const [hasConfirmed, setHasConfirmed] = useState(false)
+
+  useEffect(() => {
+    if (swapStatus === 'Swapping') {
+      onBackToParent()
+    }
+  }, [swapStatus])
+
+  useBeforeRemoveListener(
+    useCallback(() => {
+      capture('SwapCancelled')
+    }, [capture]),
+    [RemoveEvents.GO_BACK]
+  )
 
   useEffect(() => {
     refresh()
-  }, [])
+  }, [refresh])
 
-  const [swapError, setSwapError] = useState('')
-
-  const onHandleSwap = async () => {
+  const onHandleSwap = () => {
+    capture('SwapConfirmed')
     if (
       fromToken &&
       toToken &&
@@ -66,54 +74,17 @@ const SwapReview = ({ onCancel, onBackToParent }: Props) => {
       gasPrice &&
       slippage
     ) {
-      // setSwapInProgress(true)
-      const toastId = showSnackBarCustom(
-        <TransactionToast
-          message={'Swap in progress...'}
-          type={TransactionToastType.PENDING}
-        />,
-        'infinite'
+      swap(
+        getTokenAddress(fromToken),
+        getTokenAddress(toToken),
+        toToken?.decimals ?? 0,
+        fromToken?.decimals ?? 0,
+        optimalRate.srcAmount,
+        optimalRate,
+        gasLimit,
+        gasPrice,
+        slippage
       )
-
-      onBackToParent()
-
-      const [result, error] = await resolve(
-        swap(
-          getTokenAddress(fromToken),
-          getTokenAddress(toToken),
-          toToken?.decimals ?? 0,
-          fromToken?.decimals ?? 0,
-          optimalRate.srcAmount,
-          optimalRate,
-          optimalRate.destAmount,
-          gasLimit,
-          gasPrice,
-          slippage
-        )
-      )
-      if (error || (result && 'error' in result)) {
-        const message = error ? (error as Error).message : result?.error
-        setSwapError(message)
-        updateSnackBarCustom(
-          toastId,
-          <TransactionToast
-            message={'Swap failed'}
-            type={TransactionToastType.ERROR}
-            toastId={toastId}
-          />
-        )
-      } else {
-        updateSnackBarCustom(
-          toastId,
-          <TransactionToast
-            message={'Swap success'}
-            type={TransactionToastType.SUCCESS}
-            txHash={result?.result?.swapTxHash}
-            toastId={toastId}
-          />,
-          false
-        )
-      }
     }
   }
 
@@ -124,22 +95,6 @@ const SwapReview = ({ onCancel, onBackToParent }: Props) => {
   //     outputRange: [theme.colorText1, theme.colorPrimary1]
   //   })
   // }, [colorAnim])
-
-  useEffect(() => {
-    //this is so that useBeforeRemoveListener has a chance to update callback
-    if (hasConfirmed) {
-      capture('SwapConfirmed')
-    }
-  }, [capture, hasConfirmed])
-
-  useBeforeRemoveListener(
-    useCallback(() => {
-      if (!hasConfirmed) {
-        capture('SwapCancelled')
-      }
-    }, [capture, hasConfirmed]),
-    [RemoveEvents.GO_BACK, RemoveEvents.POP]
-  )
 
   useEffect(() => {
     Animated.timing(colorAnim, {
@@ -249,9 +204,6 @@ const SwapReview = ({ onCancel, onBackToParent }: Props) => {
           slippage={slippage}
           walletFee={optimalRate?.partnerFee}
         />
-        {!!swapError && (
-          <AvaText.Body3 color={theme.colorError}>{swapError}</AvaText.Body3>
-        )}
       </ScrollView>
       <View
         style={{
@@ -267,7 +219,6 @@ const SwapReview = ({ onCancel, onBackToParent }: Props) => {
           <AvaButton.PrimaryLarge
             onPress={() => {
               onHandleSwap()
-              setHasConfirmed(true)
             }}>
             Confirm
           </AvaButton.PrimaryLarge>

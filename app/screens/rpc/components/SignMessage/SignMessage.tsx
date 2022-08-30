@@ -56,13 +56,15 @@ const SignMessage: FC<Props> = ({
         .catch(reason => {
           setSubmitting(false)
           if (reason?.error?.transactionHash) {
-            showSnackBarCustom(
-              <TransactionToast
-                message={'Transaction failed'}
-                txHash={reason?.error?.transactionHash}
-              />,
-              'long'
-            )
+            showSnackBarCustom({
+              component: (
+                <TransactionToast
+                  message={'Transaction failed'}
+                  txHash={reason?.error?.transactionHash}
+                />
+              ),
+              duration: 'long'
+            })
             onClose()
           } else {
             setSignFailedError('there was an error signing')
