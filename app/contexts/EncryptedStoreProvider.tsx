@@ -1,4 +1,3 @@
-import AsyncStorage from '@react-native-async-storage/async-storage'
 import React, { FC, useEffect, useState } from 'react'
 import Keychain from 'react-native-keychain'
 import { Provider } from 'react-redux'
@@ -37,11 +36,7 @@ const useEncryptedStore = () => {
   useEffect(() => {
     ;(async () => {
       const encryptionKey = await getEncryptionKey()
-
-      // If the encryption key is new, we need to clear any previous store data
-      if (encryptionKey.isNew) await AsyncStorage.removeItem('persist:root')
       if (!encryptionKey.key) return
-
       setEncryptedStore(configureEncryptedStore(encryptionKey.key))
     })()
   }, []) // only once!

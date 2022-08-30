@@ -82,6 +82,8 @@ const rootReducer = (state: any, action: AnyAction) => {
 }
 
 export function configureEncryptedStore(secretKey: string) {
+  // If this transform fails to decrypt or parse then it will log a warning and
+  // return `undefined`, which will cause the redux state to be reset.
   const encryptionTransform = encryptTransform<
     RawRootState,
     RawRootState,
