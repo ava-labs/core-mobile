@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useEffect } from 'react'
 import { View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
@@ -47,14 +47,19 @@ export default function ReviewSend({ onSuccess }: { onSuccess: () => void }) {
 
   function handleSend() {
     onSendNow()
-    onSuccess()
   }
+
+  useEffect(() => {
+    if (sendStatus === 'Sending') {
+      onSuccess()
+    }
+  }, [sendStatus])
 
   useBeforeRemoveListener(
     useCallback(() => {
       capture('SendCancel')
     }, [capture]),
-    [RemoveEvents.GO_BACK, RemoveEvents.POP]
+    [RemoveEvents.GO_BACK]
   )
 
   return (
@@ -144,7 +149,7 @@ export default function ReviewSend({ onSuccess }: { onSuccess: () => void }) {
           {fromAccount.balanceAfterTrxInCurrency}
         </AvaText.Body3>
         <FlexSpacer />
-        {sendStatus !== 'Sending' && (
+        {sendStatus === 'Idle' && (
           <>
             <AvaButton.PrimaryLarge onPress={handleSend}>
               Send Now
@@ -155,7 +160,7 @@ export default function ReviewSend({ onSuccess }: { onSuccess: () => void }) {
             </AvaButton.SecondaryLarge>
           </>
         )}
-        {sendStatus === 'Sending' && (
+        {sendStatus === 'Preparing' && (
           <>
             <ActivityIndicator size="large" />
             <Space y={32} />

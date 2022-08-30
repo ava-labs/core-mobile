@@ -14,7 +14,8 @@ class SendService {
     sendState: SendState,
     activeNetwork: Network,
     account: Account,
-    currency: string
+    currency: string,
+    onTxSigned?: () => void
   ): Promise<string> {
     const fromAddress =
       activeNetwork.vmName === NetworkVMType.BITCOIN
@@ -48,6 +49,7 @@ class SendService {
       account.index,
       activeNetwork
     )
+    onTxSigned?.()
     return await networkService.sendTransaction(signedTx, activeNetwork, true)
   }
 

@@ -59,7 +59,7 @@ const TopNavigationHeader: FC<Props> = ({
           onPress={navigation.goBack}
           style={{
             paddingLeft: -5,
-            paddingRight: 20,
+            paddingRight: 48,
             paddingVertical: 1.5
           }}>
           <CarrotSVG direction="left" size={24} />

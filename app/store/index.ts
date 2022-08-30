@@ -34,6 +34,16 @@ import { transactionApi } from './transaction'
 
 const persistActions = [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER]
 
+// list of reducers that don't need to be persisted
+const blacklist = [
+  'app',
+  'balance',
+  'networkFee',
+  'swap',
+  transactionApi.reducerPath,
+  nftsApi.reducerPath
+]
+
 const combinedReducer = combineReducers({
   app,
   network,
@@ -57,6 +67,7 @@ const combinedReducer = combineReducers({
   [nftsApi.reducerPath]: nftsApi.reducer
 })
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const rootReducer = (state: any, action: AnyAction) => {
   if (action.type === onLogOut.type) {
     // reset state
@@ -72,13 +83,7 @@ const rootReducer = (state: any, action: AnyAction) => {
 const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
-  blacklist: [
-    'app',
-    'balance',
-    'networkFee',
-    transactionApi.reducerPath,
-    nftsApi.reducerPath
-  ],
+  blacklist,
   transforms: [DeserializeBridgeTransform],
   migrate: createMigrate(migrations, { debug: __DEV__ }),
   version: 2
