@@ -49,12 +49,12 @@ export default function AddressBookLists({
           switch (contact.type) {
             case 'account':
               return {
-                item: accounts[contact.id as AccountId]!,
+                item: accounts[contact.id as AccountId],
                 type: contact.type
               }
             case 'contact':
               return {
-                item: contacts[contact.id]!,
+                item: contacts[contact.id],
                 type: contact.type
               }
           }
@@ -124,7 +124,7 @@ export default function AddressBookLists({
           }
         />
       </TabViewAva.Item>
-      <TabViewAva.Item title={'My accounts'}>
+      <TabViewAva.Item title={'My Accounts'}>
         <FlatList
           data={[...Object.values(accounts)]}
           renderItem={info =>
