@@ -16,6 +16,7 @@ import { DeserializeBridgeTransform } from 'store/transforms'
 import bridge, { addBridgeTransaction } from 'store/bridge'
 import { nftsApi } from 'store/nft/api'
 import { migrations } from 'store/migrations'
+import { encryptTransform } from 'redux-persist-transform-encrypt'
 import { networkReducer as network } from './network'
 import { balanceReducer as balance, setBalance, setBalances } from './balance'
 import { appReducer as app, onLogOut, onRehydrationComplete } from './app'
@@ -80,43 +81,59 @@ const rootReducer = (state: any, action: AnyAction) => {
   return combinedReducer(state, action)
 }
 
-const persistConfig = {
-  key: 'root',
-  storage: AsyncStorage,
-  blacklist,
-  transforms: [DeserializeBridgeTransform],
-  migrate: createMigrate(migrations, { debug: __DEV__ }),
-  version: 2
+export function configureEncryptedStore(secretKey: string) {
+  // If this transform fails to decrypt or parse then it will log a warning and
+  // return `undefined`, which will cause the redux state to be reset.
+  const encryptionTransform = encryptTransform<
+    RawRootState,
+    RawRootState,
+    RawRootState
+  >({ secretKey })
+
+  const persistConfig = {
+    key: 'root',
+    storage: AsyncStorage,
+    blacklist,
+    transforms: [
+      DeserializeBridgeTransform,
+      encryptionTransform // last!
+    ],
+    migrate: createMigrate(migrations, { debug: __DEV__ }),
+    version: 2
+  }
+
+  const persistedReducer = persistReducer(persistConfig, rootReducer)
+
+  const store = configureStore({
+    reducer: persistedReducer,
+    devTools: __DEV__,
+    middleware: getDefaultMiddleware =>
+      getDefaultMiddleware({
+        serializableCheck: {
+          ignoredActions: [
+            ...persistActions,
+            setBalance.type,
+            setBalances.type,
+            addBridgeTransaction.type
+          ],
+          ignoredPaths: ['balance', 'networkFee', 'bridge']
+        }
+      })
+        .prepend(listener.middleware)
+        .concat(transactionApi.middleware)
+        .concat(nftsApi.middleware)
+  })
+
+  const persistor = persistStore(store, null, () => {
+    // this block runs after rehydration is complete
+    store.dispatch(onRehydrationComplete())
+  })
+
+  return { store, persistor }
 }
 
-const persistedReducer = persistReducer(persistConfig, rootReducer)
-
-export const store = configureStore({
-  reducer: persistedReducer,
-  devTools: __DEV__,
-  middleware: getDefaultMiddleware =>
-    getDefaultMiddleware({
-      serializableCheck: {
-        ignoredActions: [
-          ...persistActions,
-          setBalance.type,
-          setBalances.type,
-          addBridgeTransaction.type
-        ],
-        ignoredPaths: ['balance', 'networkFee', 'bridge']
-      }
-    })
-      .prepend(listener.middleware)
-      .concat(transactionApi.middleware)
-      .concat(nftsApi.middleware)
-})
-
-export const persistor = persistStore(store, null, () => {
-  // this block runs after rehydration is complete
-  store.dispatch(onRehydrationComplete())
-})
-
+type ConfiguredStore = ReturnType<typeof configureEncryptedStore>['store']
 export type RawRootState = ReturnType<typeof rootReducer>
-export type RootState = ReturnType<typeof store.getState>
-export type AppDispatch = typeof store.dispatch
+export type RootState = ReturnType<ConfiguredStore['getState']>
+export type AppDispatch = ConfiguredStore['dispatch']
 export type AppListenerEffectAPI = ListenerEffectAPI<RootState, AppDispatch>

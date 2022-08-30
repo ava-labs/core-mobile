@@ -9,7 +9,7 @@ import {
   SwapExactTokensForTokenDisplayValues
 } from 'screens/rpc/util/types'
 import { Network } from '@avalabs/chains-sdk'
-import { findToken } from './utils/findToken'
+import { FindToken } from './utils/useFindToken'
 
 export interface SwapExactTokensForAVAXData {
   amountOutMin: BigNumber
@@ -21,6 +21,7 @@ export interface SwapExactTokensForAVAXData {
 }
 
 export async function swapExactTokensForAvax(
+  findToken: FindToken,
   network: Network,
   /**
    * The from on request represents the wallet and the to represents the contract

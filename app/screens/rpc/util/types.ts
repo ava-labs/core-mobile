@@ -3,6 +3,7 @@ import { BigNumber } from 'ethers'
 import BN from 'bn.js'
 import { NetworkTokenWithBalance, TokenWithBalance } from 'store/balance'
 import { Network } from '@avalabs/chains-sdk'
+import { FindToken } from 'contracts/contractParsers/utils/useFindToken'
 
 export interface TransactionParams {
   from: string
@@ -47,7 +48,7 @@ export interface TransactionDisplayValues {
   description?: ethers.utils.TransactionDescription
   displayValue: string
   bnFee: BigNumber
-  [key: string]: any
+  [key: string]: any // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 export interface Transaction {
   id?: number | string
@@ -98,10 +99,11 @@ export enum ContractCall {
 }
 
 export type ContractParserHandler = (
+  findToken: FindToken,
   network: Network,
   request: TransactionParams,
-  data: any,
-  props?: any,
+  data: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+  props: DisplayValueParserProps,
   txDetails?: ethers.utils.TransactionDescription
 ) => Promise<TransactionDisplayValues>
 export type ContractParser = [ContractCall, ContractParserHandler]
