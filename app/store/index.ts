@@ -82,11 +82,20 @@ const rootReducer = (state: any, action: AnyAction) => {
 }
 
 export function configureEncryptedStore(secretKey: string) {
+  const encryptionTransform = encryptTransform<
+    RawRootState,
+    RawRootState,
+    RawRootState
+  >({ secretKey })
+
   const persistConfig = {
     key: 'root',
     storage: AsyncStorage,
     blacklist,
-    transforms: [DeserializeBridgeTransform, encryptTransform({ secretKey })],
+    transforms: [
+      DeserializeBridgeTransform,
+      encryptionTransform // last!
+    ],
     migrate: createMigrate(migrations, { debug: __DEV__ }),
     version: 2
   }
