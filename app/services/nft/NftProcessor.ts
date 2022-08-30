@@ -63,7 +63,7 @@ export class NftProcessor {
       if (whMatch && whMatch.length === 4) {
         const height = whMatch[3]
         const width = whMatch[2]
-        return Number.parseInt(height, 10) / Number.parseInt(width, 10)
+        return Number.parseInt(height) / Number.parseInt(width)
       }
     }
     return undefined

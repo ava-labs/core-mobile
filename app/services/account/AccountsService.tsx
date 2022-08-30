@@ -7,7 +7,7 @@ class AccountsService {
     const reloadedAccounts: AccountCollection = {}
 
     for (const index of Object.keys(accounts)) {
-      const key = parseInt(index, 10)
+      const key = parseInt(index)
       const addresses = await walletService.getAddress(key, isTestnet)
 
       reloadedAccounts[key] = {
