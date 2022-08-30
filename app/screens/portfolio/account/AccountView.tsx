@@ -41,7 +41,7 @@ function AccountView({ onDone }: { onDone: () => void }): JSX.Element {
           justifyContent: 'space-between',
           alignItems: 'center'
         }}>
-        <AvaText.Heading1>My accounts</AvaText.Heading1>
+        <AvaText.Heading1>My Accounts</AvaText.Heading1>
         <AvaButton.Base rippleBorderless onPress={onDone}>
           <AvaText.ButtonLarge textStyle={{ color: theme.colorPrimary1 }}>
             Done
