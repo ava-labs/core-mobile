@@ -5,11 +5,7 @@ import { PinKeys } from 'screens/onboarding/PinKey'
 import { asyncScheduler, Observable, of, timer } from 'rxjs'
 import { catchError, concatMap, map } from 'rxjs/operators'
 import { Animated } from 'react-native'
-import {
-  decrypt,
-  EncryptedData,
-  getEncryptionKey
-} from 'screens/login/utils/EncryptionHelper'
+import { decrypt } from 'utils/EncryptionHelper'
 import { useJigglyPinIndicator } from 'utils/JigglyPinIndicatorHook'
 
 export type DotView = {
@@ -60,9 +56,7 @@ export function usePinOrBiometryLogin(): {
         try {
           const credentials =
             (await BiometricsSDK.loadWalletWithPin()) as UserCredentials
-          const key = await getEncryptionKey(enteredPin)
-          const encryptedData: EncryptedData = JSON.parse(credentials.password)
-          const data = await decrypt(encryptedData, key)
+          const data = await decrypt(credentials.password, enteredPin)
           setMnemonic(data)
         } catch (err) {
           if (
@@ -78,6 +72,7 @@ export function usePinOrBiometryLogin(): {
     }
 
     checkPinEntered()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pinEntered])
 
   const getPinDots = (pin: string): DotView[] => {
@@ -99,7 +94,7 @@ export function usePinOrBiometryLogin(): {
       if (enteredPin.length === 6) {
         return
       }
-      const newPin = enteredPin + keymap.get(pinKey)!
+      const newPin = enteredPin + keymap.get(pinKey)
       setEnteredPin(newPin)
       if (newPin.length === 6) {
         setPinEntered(true)
