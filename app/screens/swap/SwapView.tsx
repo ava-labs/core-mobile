@@ -21,16 +21,13 @@ import { SwapSide } from 'paraswap-core'
 import { BigNumber } from 'ethers'
 import BN from 'bn.js'
 import { FeePreset } from 'components/NetworkFeeSelector'
-import { calculateGasAndFees, getMaxValue, isAPIError } from 'utils/Utils'
-import { useActiveNetwork } from 'hooks/useActiveNetwork'
-import { resolve, stringToBN } from '@avalabs/utils-sdk'
 import UniversalTokenSelector from 'components/UniversalTokenSelector'
-import debounce from 'lodash.debounce'
-import { getTokenAddress } from 'swap/getSwapRate'
 import SwapTransactionDetail from 'screens/swap/components/SwapTransactionDetails'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import { calculateRate } from 'swap/utils'
 import { selectNetworkFee } from 'store/networkFee'
+import { useActiveNetwork } from 'hooks/useActiveNetwork'
+import { calculateGasAndFees, getMaxValue } from 'utils/Utils'
 
 type NavigationProp = SwapScreenProps<
   typeof AppNavigation.Swap.Swap
@@ -42,6 +39,7 @@ export type Amount = {
 }
 
 export default function SwapView() {
+  const { capture } = usePosthogContext()
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<NavigationProp>()
   const activeNetwork = useActiveNetwork()
@@ -49,12 +47,6 @@ export default function SwapView() {
   const tokensWithBalance = useSelector(selectTokensWithBalance)
   const tokensWithZeroBalance = useSelector(selectTokensWithZeroBalance)
   const avaxPrice = useSelector(selectAvaxPrice)
-  const [swapError, setSwapError] = useState<{
-    message: string
-    hasTriedAgain?: boolean
-  }>({ message: '' })
-  const [swapWarning, setSwapWarning] = useState<string>()
-  const [loading, setLoading] = useState(false)
   const {
     fromToken,
     setFromToken,
@@ -63,56 +55,59 @@ export default function SwapView() {
     gasLimit,
     destination,
     optimalRate,
-    setGasLimit,
+    setCustomGasLimit,
     setGasPrice,
     setDestination,
     slippage,
     setSlippage,
-    setOptimalRate,
-    getRate
+    setAmount,
+    error,
+    isFetchingOptimalRate
   } = useSwapContext()
+  const [maxFromValue, setMaxFromValue] = useState<BN | undefined>()
+  const [fromTokenValue, setFromTokenValue] = useState<Amount>()
+  const [toTokenValue, setToTokenValue] = useState<Amount>()
+
+  const [swapError, setSwapError] = useState<{
+    message: string
+  }>({ message: '' })
+  const [swapWarning, setSwapWarning] = useState<string>()
   const [customGasPrice, setCustomGasPrice] = useState<BigNumber>(
     networkFee.low
   )
-  const [gasCost, setGasCost] = useState<string>()
-  const [destAmount, setDestAmount] = useState<string>('')
-
-  const [fromTokenValue, setFromTokenValue] = useState<Amount>()
-  const [toTokenValue, setToTokenValue] = useState<Amount>()
-  const [maxFromValue, setMaxFromValue] = useState<BN | undefined>()
-  const [defaultFromValue, setFromDefaultValue] = useState<BN>()
-  const [isCalculateAvaxMax, setIsCalculateAvaxMax] = useState(false)
   const [selectedGasFee, setSelectedGasFee] = useState<FeePreset>(
     FeePreset.Instant
   )
 
-  const calculateTokenValueToInput = useCallback(
-    (
-      amount: Amount,
-      destinationInput: 'from' | 'to',
-      sourceToken?: TokenWithBalance,
-      destinationToken?: TokenWithBalance
-    ) => {
-      if (!sourceToken || !destinationToken) {
-        return
-      }
-      setDestination(destinationInput)
-      setLoading(true)
-      debouncedHandleInputValueChanged({
-        fromTokenAddress: getTokenAddress(sourceToken),
-        toTokenAddress: getTokenAddress(destinationToken),
-        fromTokenDecimals: sourceToken.decimals,
-        toTokenDecimals: destinationToken.decimals,
-        amount,
-        destinationInput
-      })
-    },
-    []
-  )
-
-  const { capture } = usePosthogContext()
+  useEffect(() => {
+    setSwapError({ message: error ?? swapError.message })
+  }, [error, swapError.message])
 
   useEffect(() => {
+    if (optimalRate) {
+      if (optimalRate.side === SwapSide.SELL) {
+        setToTokenValue({
+          bn: new BN(optimalRate.destAmount),
+          amount: optimalRate.destAmount
+        })
+      } else {
+        setFromTokenValue({
+          bn: new BN(optimalRate.srcAmount),
+          amount: optimalRate.srcAmount
+        })
+      }
+    }
+  }, [optimalRate])
+
+  useEffect(calculateGasAndMaxFx, [
+    activeNetwork?.networkToken?.decimals,
+    avaxPrice,
+    customGasPrice,
+    fromToken,
+    gasLimit
+  ])
+
+  function calculateGasAndMaxFx() {
     if (customGasPrice && gasLimit && fromToken?.type === TokenType.NATIVE) {
       const newFees = calculateGasAndFees({
         gasPrice: customGasPrice,
@@ -120,130 +115,12 @@ export default function SwapView() {
         tokenPrice: avaxPrice ?? 0,
         tokenDecimals: activeNetwork?.networkToken?.decimals
       })
-      setGasCost(newFees.fee)
 
       const max = getMaxValue(fromToken, newFees.fee)
       setMaxFromValue(max)
-      if (!max) return
-
-      if (isCalculateAvaxMax) {
-        setFromDefaultValue(max)
-        calculateTokenValueToInput(
-          { bn: max, amount: max.toString() },
-          'to',
-          fromToken,
-          toToken
-        )
-      }
       return
     }
     setMaxFromValue(fromToken?.balance)
-  }, [
-    avaxPrice,
-    calculateTokenValueToInput,
-    isCalculateAvaxMax,
-    gasCost,
-    gasLimit,
-    fromToken,
-    toToken,
-    customGasPrice,
-    destination,
-    activeNetwork
-  ])
-
-  const debouncedHandleInputValueChanged = useCallback(
-    debounce(
-      async ({
-        amount,
-        toTokenAddress,
-        fromTokenAddress,
-        toTokenDecimals,
-        fromTokenDecimals,
-        destinationInput
-      }) => {
-        if (
-          amount &&
-          toTokenAddress &&
-          fromTokenAddress &&
-          fromTokenDecimals &&
-          toTokenDecimals
-        ) {
-          const amountString = amount.bn.toString()
-          if (amountString === '0') {
-            setSwapError({ message: 'Please enter an amount' })
-            setLoading(false)
-            return
-          }
-          const swapSide =
-            (destinationInput ?? destination) === 'to'
-              ? SwapSide.SELL
-              : SwapSide.BUY
-          setLoading(true)
-          try {
-            const [result, error] = await resolve(
-              getRate(
-                fromTokenAddress,
-                toTokenAddress,
-                fromTokenDecimals,
-                toTokenDecimals,
-                amountString,
-                swapSide
-              )
-            )
-
-            if (error || (result && 'error' in result)) {
-              throw new Error(`paraswap error message while get rate: ${error}`)
-            }
-
-            if (result) {
-              if (isAPIError(result.optimalRate)) {
-                throw new Error(
-                  `paraswap error message while get rate: ${result.optimalRate.message}`
-                )
-              } else {
-                // Never modify the properties of the optimalRate since the swap API needs it unchanged
-                setOptimalRate(result.optimalRate)
-                setGasLimit(Number(result.optimalRate.gasCost ?? 0))
-                const resultAmount =
-                  (destinationInput ?? destination) === 'to'
-                    ? result.optimalRate.destAmount
-                    : result.optimalRate.srcAmount
-                setDestAmount(resultAmount)
-              }
-            }
-          } catch (e) {
-            setOptimalRate(undefined)
-            setSwapError({
-              message: 'Something went wrong',
-              hasTriedAgain: true
-            })
-          } finally {
-            setLoading(false)
-            if (isCalculateAvaxMax) {
-              setIsCalculateAvaxMax(false)
-            }
-          }
-        } else {
-          setOptimalRate(undefined)
-        }
-      },
-      500
-    ),
-    [destination, toToken, fromToken, isCalculateAvaxMax]
-  )
-
-  function calculateSwapValue(
-    selectedFromToken?: TokenWithBalance,
-    selectedToToken?: TokenWithBalance
-  ) {
-    if (!selectedFromToken || !selectedToToken) return
-
-    const amount = {
-      amount: fromTokenValue?.amount ?? '0',
-      bn: stringToBN(fromTokenValue?.amount ?? '0', toToken?.decimals ?? 18)
-    }
-
-    calculateTokenValueToInput(amount, 'to', selectedFromToken, selectedToToken)
   }
 
   const swapTokens = () => {
@@ -257,20 +134,25 @@ export default function SwapView() {
       return
     }
 
-    // here we swap
     const [to, from] = [fromToken, toToken]
     setFromToken(from)
     setToToken(to)
-    calculateSwapValue(from, to)
+    setDestination(SwapSide.SELL)
+    setFromTokenValue(toTokenValue ? { ...toTokenValue } : undefined)
+    setToTokenValue(undefined)
+    toTokenValue && setAmount(toTokenValue)
   }
 
   const onGasChange = useCallback(
     (limit: number, price: BigNumber, feeType: FeePreset) => {
-      setGasLimit(limit)
+      if (gasLimit !== limit) {
+        //set custom gas limit only if differs from default
+        setCustomGasLimit(limit)
+      }
       setCustomGasPrice(price)
       setSelectedGasFee(feeType)
     },
-    []
+    [gasLimit, setCustomGasLimit]
   )
 
   const maxGasPrice =
@@ -316,7 +198,6 @@ export default function SwapView() {
               const tkWithBalance = token as TokenWithBalance
               setFromToken(tkWithBalance)
               setSwapWarning('')
-              calculateSwapValue(tkWithBalance, toToken)
               capture('Swap_TokenSelected')
             }}
             onAmountChange={value => {
@@ -324,35 +205,25 @@ export default function SwapView() {
                 setSwapError({ message: 'Please enter an amount' })
                 return
               }
-              if (
-                maxFromValue &&
-                value.bn.eq(maxFromValue) &&
-                fromToken?.type === TokenType.NATIVE
-              ) {
-                setIsCalculateAvaxMax(true)
-              } else {
-                setIsCalculateAvaxMax(false)
-              }
               setSwapError({ message: '' })
               setSwapWarning('')
               setFromTokenValue(value)
-              calculateTokenValueToInput(value, 'to', fromToken, toToken)
+              setDestination(SwapSide.SELL)
+              setAmount(value)
             }}
             selectedToken={fromToken}
             maxAmount={
-              destination === 'from' && loading
+              destination === SwapSide.BUY && isFetchingOptimalRate
                 ? undefined
                 : maxFromValue ?? new BN(0)
             }
-            inputAmount={
-              destination === 'from'
-                ? new BN(destAmount)
-                : defaultFromValue || new BN(0)
-            }
+            inputAmount={fromTokenValue?.bn}
             hideErrorMessage
             skipHandleMaxAmount
             error={swapWarning || swapError?.message}
-            isValueLoading={destination === 'from' && loading}
+            isValueLoading={
+              destination === SwapSide.BUY && isFetchingOptimalRate
+            }
             onError={errorMessage => {
               setSwapError({ message: errorMessage })
             }}
@@ -380,22 +251,20 @@ export default function SwapView() {
               const tkWithBalance = token as TokenWithBalance
               setToToken(tkWithBalance)
               setSwapWarning('')
-              calculateSwapValue(fromToken, tkWithBalance)
               capture('Swap_TokenSelected')
             }}
             onAmountChange={value => {
               setToTokenValue(value)
-              calculateTokenValueToInput(value, 'from', fromToken, toToken)
+              setDestination(SwapSide.BUY)
+              setAmount(value)
             }}
             selectedToken={toToken}
-            inputAmount={
-              destination === 'to' && destAmount
-                ? new BN(destAmount)
-                : toTokenValue?.bn || new BN(0)
-            }
+            inputAmount={toTokenValue?.bn}
             skipHandleMaxAmount
             hideErrorMessage
-            isValueLoading={destination === 'to' && loading}
+            isValueLoading={
+              destination === SwapSide.SELL && isFetchingOptimalRate
+            }
             onError={errorMessage => {
               setSwapError({ message: errorMessage })
             }}
