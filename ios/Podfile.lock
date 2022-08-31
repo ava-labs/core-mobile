@@ -306,8 +306,6 @@ PODS:
     - React-Core
   - react-native-pager-view (5.4.25):
     - React-Core
-  - react-native-randombytes (3.6.1):
-    - React-Core
   - react-native-safe-area-context (3.4.1):
     - React-Core
   - react-native-webview (11.17.2):
@@ -480,7 +478,6 @@ DEPENDENCIES:
   - react-native-document-picker (from `../node_modules/react-native-document-picker`)
   - react-native-get-random-values (from `../node_modules/react-native-get-random-values`)
   - react-native-pager-view (from `../node_modules/react-native-pager-view`)
-  - react-native-randombytes (from `../node_modules/react-native-randombytes`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - react-native-webview (from `../node_modules/react-native-webview`)
   - React-perflogger (from `../node_modules/react-native/ReactCommon/reactperflogger`)
@@ -595,8 +592,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-get-random-values"
   react-native-pager-view:
     :path: "../node_modules/react-native-pager-view"
-  react-native-randombytes:
-    :path: "../node_modules/react-native-randombytes"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
   react-native-webview:
@@ -713,7 +708,6 @@ SPEC CHECKSUMS:
   react-native-document-picker: 226068006be4c52f8ef7f32d855ee025a12e9e64
   react-native-get-random-values: a6ea6a8a65dc93e96e24a11105b1a9c8cfe1d72a
   react-native-pager-view: da490aa1f902c9a5aeecf0909cc975ad0e92e53e
-  react-native-randombytes: 421f1c7d48c0af8dbcd471b0324393ebf8fe7846
   react-native-safe-area-context: 9e40fb181dac02619414ba1294d6c2a807056ab9
   react-native-webview: 380c1a03ec94b7ed764dac8db1e7c9952d08c93a
   React-perflogger: 93075d8931c32cd1fce8a98c15d2d5ccc4d891bd
