@@ -17,6 +17,11 @@ const NETWORK_UNSUPPORTED_ERROR = new Error(
   'Fuji network is not supported by Paraswap'
 )
 
+export type SwapPricesResponse = {
+  priceRoute: OptimalRate
+  error: string
+}
+
 class SwapService {
   private paraSwap = new ParaSwap(
     ChainId.AVALANCHE_MAINNET_ID,
@@ -49,7 +54,7 @@ class SwapService {
       srcToken,
       destToken,
       amount: srcAmount,
-      side: swapSide || SwapSide.SELL,
+      side: swapSide,
       network: ChainId.AVALANCHE_MAINNET_ID.toString(),
       srcDecimals: `${
         network?.networkToken.symbol === srcToken ? 18 : srcDecimals
@@ -65,20 +70,19 @@ class SwapService {
 
     const optimalRates = async () => {
       const response = await fetch(url)
-      const data = await response.json()
-      return data.priceRoute
+      return await response.json()
     }
 
-    function checkForErrorsInResult(result: OptimalRate | APIError) {
-      return (result as APIError).message === 'Server too busy'
+    function checkForErrorsInResult(result: SwapPricesResponse) {
+      return result.error === 'Server too busy'
     }
 
-    const result = await incrementalPromiseResolve<OptimalRate | APIError>(
+    const result = await incrementalPromiseResolve<SwapPricesResponse>(
       () => optimalRates(),
       checkForErrorsInResult
     )
 
-    return result
+    return result as SwapPricesResponse
   }
 
   async getParaswapSpender(): Promise<string | APIError> {

@@ -3,6 +3,7 @@ import React, {
   Dispatch,
   useCallback,
   useContext,
+  useEffect,
   useState
 } from 'react'
 import { getSwapRate, getTokenAddress } from 'swap/getSwapRate'
@@ -19,6 +20,7 @@ import TransactionToast, {
   TransactionToastType
 } from 'components/toast/TransactionToast'
 import { resolve } from '@avalabs/utils-sdk'
+import { Amount } from 'screens/swap/SwapView'
 
 export type SwapStatus = 'Idle' | 'Preparing' | 'Swapping' | 'Success' | 'Fail'
 
@@ -28,8 +30,8 @@ export interface SwapContextState {
   setFromToken: Dispatch<TokenWithBalance | undefined>
   setToToken: Dispatch<TokenWithBalance | undefined>
   optimalRate?: OptimalRate
-  setOptimalRate: Dispatch<OptimalRate | undefined>
   refresh: () => void
+
   swap(
     srcTokenAddr: string,
     destTokenAddress: string,
@@ -41,28 +43,19 @@ export interface SwapContextState {
     gasPrice: BigNumber,
     slippage: number
   ): void
-  getRate: (
-    fromTokenAddress?: string,
-    toTokenAddress?: string,
-    fromTokenDecimals?: number,
-    toTokenDecimals?: number,
-    amount?: string,
-    swapSide?: SwapSide
-  ) => Promise<
-    | { error: any; optimalRate?: undefined; destAmount?: undefined }
-    | { optimalRate: OptimalRate; destAmount: any; error?: undefined }
-  >
+
   gasPrice: BigNumber
   setGasPrice: Dispatch<BigNumber>
   gasLimit: number
-  setGasLimit: Dispatch<number>
-  rate: number
-  setRate: Dispatch<number>
+  setCustomGasLimit: (limit: number) => void
   slippage: number
   setSlippage: Dispatch<number>
-  destination: 'from' | 'to'
-  setDestination: Dispatch<'from' | 'to'>
+  destination: SwapSide
+  setDestination: Dispatch<SwapSide>
   swapStatus: SwapStatus
+  setAmount: Dispatch<Amount>
+  error: any
+  isFetchingOptimalRate: boolean
 }
 
 export const SwapContext = createContext<SwapContextState>({} as any)
@@ -73,79 +66,63 @@ export const SwapContextProvider = ({ children }: { children: any }) => {
   const [fromToken, setFromToken] = useState<TokenWithBalance>()
   const [toToken, setToToken] = useState<TokenWithBalance>()
   const [optimalRate, setOptimalRate] = useState<OptimalRate>()
+  const [error, setError] = useState('')
   const [gasLimit, setGasLimit] = useState<number>(0)
+  const [isCustomGasLimitSet, setIsCustomGasLimitSet] = useState(false)
   // gas price is in nAvax
   const [gasPrice, setGasPrice] = useState<BigNumber>(BigNumber.from(0))
-  const [rate, setRate] = useState<number>(0)
   const [slippage, setSlippage] = useState<number>(1)
-  const [destination, setDestination] = useState<'from' | 'to'>('from')
+  const [destination, setDestination] = useState<SwapSide>(SwapSide.SELL)
   const [swapStatus, setSwapStatus] = useState<SwapStatus>('Idle')
+  const [amount, setAmount] = useState<Amount | undefined>(undefined) //the amount that's gonna be passed to paraswap
+  const [isFetchingOptimalRate, setIsFetchingOptimalRate] = useState(false)
 
-  const refresh = () => {
-    if (
-      !activeAccount ||
-      !fromToken ||
-      !toToken ||
-      !optimalRate ||
-      !destination
-    ) {
-      return
-    }
-
-    getSwapRate({
-      fromTokenAddress: getTokenAddress(fromToken),
-      toTokenAddress: getTokenAddress(toToken),
-      fromTokenDecimals: fromToken?.decimals,
-      toTokenDecimals: toToken?.decimals,
-      amount: optimalRate?.srcAmount,
-      swapSide: destination === 'to' ? SwapSide.SELL : SwapSide.BUY,
-      network: activeNetwork,
-      account: activeAccount
-    })
-      .then(({ optimalRate }) => {
-        if (optimalRate) {
+  const getOptimalRate = useCallback(() => {
+    if (activeAccount && amount) {
+      setIsFetchingOptimalRate(true)
+      getSwapRate({
+        fromTokenAddress: getTokenAddress(fromToken),
+        toTokenAddress: getTokenAddress(toToken),
+        fromTokenDecimals: fromToken?.decimals,
+        toTokenDecimals: toToken?.decimals,
+        amount: amount.bn.toString(),
+        swapSide: destination,
+        network: activeNetwork,
+        account: activeAccount
+      })
+        .then(({ optimalRate, error }) => {
+          setError(error)
           setOptimalRate(optimalRate)
-        }
-      })
-      .catch(reason => {
-        Logger.warn('Error refreshing swap rate', reason)
-      })
-  }
-
-  const getRate = useCallback(
-    (
-      fromTokenAddress?: string,
-      toTokenAddress?: string,
-      fromTokenDecimals?: number,
-      toTokenDecimals?: number,
-      amount?: string,
-      swapSide?: SwapSide
-    ) => {
-      if (
-        !activeAccount ||
-        !fromTokenAddress ||
-        !toTokenAddress ||
-        !amount ||
-        !swapSide
-      ) {
-        return Promise.reject({
-          error: 'no source token on request'
+          if (!isCustomGasLimitSet) {
+            setGasLimit(Number(optimalRate?.gasCost ?? 0))
+          }
         })
-      }
+        .catch(reason => {
+          setOptimalRate(undefined)
+          Logger.warn('Error getSwapRate', reason)
+        })
+        .finally(() => {
+          setIsFetchingOptimalRate(false)
+        })
+    }
+  }, [
+    activeAccount,
+    activeNetwork,
+    amount,
+    destination,
+    fromToken,
+    isCustomGasLimitSet,
+    toToken
+  ])
 
-      return getSwapRate({
-        fromTokenAddress,
-        toTokenAddress,
-        fromTokenDecimals,
-        toTokenDecimals,
-        amount,
-        swapSide,
-        account: activeAccount,
-        network: activeNetwork
-      })
-    },
-    [activeNetwork, activeAccount]
-  )
+  useEffect(() => {
+    //call getOptimalRate every time its params change to get fresh rates
+    getOptimalRate()
+  }, [getOptimalRate])
+
+  const refresh = useCallback(() => {
+    getOptimalRate()
+  }, [getOptimalRate])
 
   function onSwap(
     srcTokenAddress: string,
@@ -215,27 +192,31 @@ export const SwapContextProvider = ({ children }: { children: any }) => {
     })
   }
 
+  const setCustomGasLimit = useCallback((limit: number) => {
+    setGasLimit(limit)
+    setIsCustomGasLimitSet(true)
+  }, [])
+
   const state: SwapContextState = {
     fromToken,
     setFromToken,
     toToken,
     setToToken,
     optimalRate,
-    setOptimalRate,
     refresh,
-    rate,
-    setRate,
     gasPrice,
     setGasPrice,
     gasLimit,
-    setGasLimit,
+    setCustomGasLimit,
     slippage,
     setSlippage,
     destination,
     setDestination,
     swap: onSwap,
-    getRate,
-    swapStatus
+    swapStatus,
+    setAmount,
+    error,
+    isFetchingOptimalRate
   }
 
   return <SwapContext.Provider value={state}>{children}</SwapContext.Provider>
