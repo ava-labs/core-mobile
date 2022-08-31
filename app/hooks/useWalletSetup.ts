@@ -1,4 +1,4 @@
-import { encrypt, getEncryptionKey } from 'screens/login/utils/EncryptionHelper'
+import { encrypt } from 'utils/EncryptionHelper'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import { AppNavHook } from 'useAppNav'
 import walletService from 'services/wallet/WalletService'
@@ -63,8 +63,7 @@ async function onPinCreated(
   pin: string,
   isResetting = false
 ): Promise<'useBiometry' | 'enterWallet'> {
-  const key = await getEncryptionKey(pin)
-  const encryptedData = await encrypt(mnemonic, key)
+  const encryptedData = await encrypt(mnemonic, pin)
   const pinSaved = await BiometricsSDK.storeWalletWithPin(
     encryptedData,
     isResetting
