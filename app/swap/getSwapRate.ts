@@ -52,7 +52,7 @@ export async function getSwapRate(request: {
     }
   }
 
-  const [result, error] = await resolve(
+  const [priceResponse, error] = await resolve(
     swapService.getSwapRate(
       fromTokenAddress,
       fromTokenDecimals ?? 0,
@@ -65,16 +65,16 @@ export async function getSwapRate(request: {
     )
   )
 
-  if (error) {
+  if (error || priceResponse?.error) {
     return {
-      error: (error as any).toString()
+      error: (error ?? (priceResponse?.error as any)).toString()
     }
   }
 
-  const destAmount = result.destAmount
+  const destAmount = priceResponse?.priceRoute.destAmount
 
   return {
-    optimalRate: result as OptimalRate,
+    optimalRate: priceResponse?.priceRoute as OptimalRate,
     destAmount
   }
 }
