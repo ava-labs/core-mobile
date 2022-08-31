@@ -80,8 +80,12 @@ export default function SwapView() {
   )
 
   useEffect(() => {
-    setSwapError({ message: error ?? swapError.message })
-  }, [error, swapError.message])
+    if (maxFromValue && fromTokenValue && fromTokenValue.bn.gt(maxFromValue)) {
+      setSwapError({ message: 'Insufficient balance.' })
+    } else {
+      setSwapError({ message: error ?? swapError.message })
+    }
+  }, [error, swapError.message, fromTokenValue, maxFromValue])
 
   useEffect(() => {
     if (optimalRate) {
