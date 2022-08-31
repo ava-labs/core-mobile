@@ -2,6 +2,7 @@ PODS:
   - boost (1.76.0)
   - BVLinearGradient (2.5.6):
     - React
+  - CatCrypto (0.3.2)
   - CocoaAsyncSocket (7.6.5)
   - DoubleConversion (1.1.6)
   - FBLazyVector (0.66.4)
@@ -376,6 +377,9 @@ PODS:
     - React-jsi (= 0.66.4)
     - React-logger (= 0.66.4)
     - React-perflogger (= 0.66.4)
+  - RNArgon2 (2.0.1):
+    - CatCrypto
+    - React-Core
   - RNCAsyncStorage (1.16.1):
     - React-Core
   - RNCClipboard (1.8.5):
@@ -392,7 +396,7 @@ PODS:
     - React-Core
   - RNGestureHandler (1.10.3):
     - React-Core
-  - RNInAppBrowser (3.6.3):
+  - RNInAppBrowser (3.7.0):
     - React-Core
   - RNKeychain (8.1.1):
     - React-Core
@@ -491,6 +495,7 @@ DEPENDENCIES:
   - React-RCTVibration (from `../node_modules/react-native/Libraries/Vibration`)
   - React-runtimeexecutor (from `../node_modules/react-native/ReactCommon/runtimeexecutor`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
+  - RNArgon2 (from `../node_modules/react-native-argon2`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - "RNCClipboard (from `../node_modules/@react-native-clipboard/clipboard`)"
   - "RNCMaskedView (from `../node_modules/@react-native-community/masked-view`)"
@@ -514,6 +519,7 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
+    - CatCrypto
     - CocoaAsyncSocket
     - Flipper
     - Flipper-Boost-iOSX
@@ -619,6 +625,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/runtimeexecutor"
   ReactCommon:
     :path: "../node_modules/react-native/ReactCommon"
+  RNArgon2:
+    :path: "../node_modules/react-native-argon2"
   RNCAsyncStorage:
     :path: "../node_modules/@react-native-async-storage/async-storage"
   RNCClipboard:
@@ -663,6 +671,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   boost: a7c83b31436843459a1961bfd74b96033dc77234
   BVLinearGradient: e3aad03778a456d77928f594a649e96995f1c872
+  CatCrypto: a477899b6be4954e75be4897e732da098cc0a5a8
   CocoaAsyncSocket: 065fd1e645c7abab64f7a6a2007a48038fdc6a99
   DoubleConversion: 831926d9b8bf8166fd87886c4abab286c2422662
   FBLazyVector: e5569e42a1c79ca00521846c223173a57aca1fe1
@@ -719,6 +728,7 @@ SPEC CHECKSUMS:
   React-RCTVibration: e3ffca672dd3772536cb844274094b0e2c31b187
   React-runtimeexecutor: dec32ee6f2e2a26e13e58152271535fadff5455a
   ReactCommon: 57b69f6383eafcbd7da625bfa6003810332313c4
+  RNArgon2: 1481820722fd4af1575c09f7fc9ad67c00ee8a42
   RNCAsyncStorage: b49b4e38a1548d03b74b30e558a1d18465b94be7
   RNCClipboard: cc054ad1e8a33d2a74cd13e565588b4ca928d8fd
   RNCMaskedView: 0e1bc4bfa8365eba5fbbb71e07fbdc0555249489
@@ -727,7 +737,7 @@ SPEC CHECKSUMS:
   RNFlashList: adcc3a39aa72012852681bc439ccb4108c8c4448
   RNFS: fc610f78fdf8bfc89a9e5cc2f898519f4dba1002
   RNGestureHandler: a479ebd5ed4221a810967000735517df0d2db211
-  RNInAppBrowser: 3ff3a3b8f458aaf25aaee879d057352862edf357
+  RNInAppBrowser: e36d6935517101ccba0e875bac8ad7b0cb655364
   RNKeychain: ff836453cba46938e0e9e4c22e43d43fa2c90333
   RNOS: 6f2f9a70895bbbfbdad7196abd952e7b01d45027
   RNPermissions: de7b7c3fe1680d974ac7a85e3e97aa539c0e68ea

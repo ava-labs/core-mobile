@@ -35,6 +35,7 @@
     "@avalabs/types": "2.5.1-alpha.0",
     "@avalabs/utils-sdk": "2.5.1-alpha.0",
     "@avalabs/wallets-sdk": "2.5.1-alpha.0",
+    "react-native-argon2": "2.0.1",
     "@babel/plugin-syntax-object-rest-spread": "7.8.3",
     "@connectedcars/react-native-slide-charts": "1.0.5",
     "@eliav2/react-native-collapsible-view": "1.4.0",

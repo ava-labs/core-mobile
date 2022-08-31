@@ -1,16 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import BiometricsSDK, { KeystoreConfig } from 'utils/BiometricsSDK'
 import { UserCredentials } from 'react-native-keychain'
 import { PinKeys } from 'screens/onboarding/PinKey'
 import { asyncScheduler, Observable, of, timer } from 'rxjs'
 import { catchError, concatMap, map } from 'rxjs/operators'
-import { Animated } from 'react-native'
-import {
-  decrypt,
-  EncryptedData,
-  getEncryptionKey
-} from 'screens/login/utils/EncryptionHelper'
+import { Alert, Animated } from 'react-native'
+import { decrypt, NoSaltError } from 'utils/EncryptionHelper'
 import { useJigglyPinIndicator } from 'utils/JigglyPinIndicatorHook'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 export type DotView = {
   filled: boolean
@@ -43,10 +40,28 @@ export function usePinOrBiometryLogin(): {
   const [pinEntered, setPinEntered] = useState(false)
   const [mnemonic, setMnemonic] = useState<string | undefined>(undefined)
   const { jiggleAnim, fireJiggleAnimation } = useJigglyPinIndicator()
+  const { signOut } = useApplicationContext().appHook
 
   useEffect(() => {
     setPinDots(getPinDots(enteredPin))
   }, [enteredPin])
+
+  const alertBadDta = useCallback(
+    () =>
+      Alert.alert(
+        'Data is not encrypted correctly',
+        'Please set up the wallet again!',
+        [
+          {
+            text: 'Okay',
+            onPress: signOut
+          }
+        ],
+        { cancelable: false }
+      ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  )
 
   function resetConfirmPinProcess() {
     setEnteredPin('')
@@ -60,9 +75,7 @@ export function usePinOrBiometryLogin(): {
         try {
           const credentials =
             (await BiometricsSDK.loadWalletWithPin()) as UserCredentials
-          const key = await getEncryptionKey(enteredPin)
-          const encryptedData: EncryptedData = JSON.parse(credentials.password)
-          const data = await decrypt(encryptedData, key)
+          const data = await decrypt(credentials.password, enteredPin)
           setMnemonic(data)
         } catch (err) {
           if (
@@ -73,11 +86,16 @@ export function usePinOrBiometryLogin(): {
             resetConfirmPinProcess()
             fireJiggleAnimation()
           }
+
+          if (err instanceof NoSaltError) {
+            alertBadDta()
+          }
         }
       }
     }
 
     checkPinEntered()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pinEntered])
 
   const getPinDots = (pin: string): DotView[] => {
@@ -99,7 +117,7 @@ export function usePinOrBiometryLogin(): {
       if (enteredPin.length === 6) {
         return
       }
-      const newPin = enteredPin + keymap.get(pinKey)!
+      const newPin = enteredPin + keymap.get(pinKey)
       setEnteredPin(newPin)
       if (newPin.length === 6) {
         setPinEntered(true)
