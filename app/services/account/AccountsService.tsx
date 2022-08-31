@@ -7,8 +7,8 @@ class AccountsService {
     const reloadedAccounts: AccountCollection = {}
 
     for (const index of Object.keys(accounts)) {
-      const key = parseInt(index, 10)
-      const addresses = await walletService.getAddress(key, isTestnet)
+      const key = parseInt(index)
+      const addresses = walletService.getAddress(key, isTestnet)
 
       reloadedAccounts[key] = {
         ...accounts[key],
@@ -22,7 +22,7 @@ class AccountsService {
 
   async createNextAccount(isTestnet: boolean, accounts: AccountCollection) {
     const newIndex = Object.keys(accounts).length
-    const addresses = await walletService.getAddress(newIndex, isTestnet)
+    const addresses = walletService.getAddress(newIndex, isTestnet)
 
     return {
       index: newIndex,

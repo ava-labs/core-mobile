@@ -98,7 +98,7 @@ export default function AddEditNetwork({
     if (!networkName) {
       setError('networkName', 'Required')
     }
-    if (!chainId || isNaN(Number.parseInt(chainId, 10))) {
+    if (!chainId || isNaN(Number.parseInt(chainId))) {
       setError('chainId', 'Must be a number')
     }
     if (chainId === '0') {
@@ -126,7 +126,7 @@ export default function AddEditNetwork({
     if (hasErrors()) return
 
     const customNetwork: Network = {
-      chainId: Number.parseInt(chainId, 10),
+      chainId: Number.parseInt(chainId),
       chainName: networkName,
       description: '',
       explorerUrl,
