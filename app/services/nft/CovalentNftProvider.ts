@@ -36,7 +36,7 @@ export class CovalentNftProvider implements NftProvider {
       selectedCurrency.toUpperCase(),
       {
         pageSize: 100,
-        pageNumber: Number.parseInt(pageToken, 10) ?? 0 // pagination is not working with Covalent
+        pageNumber: Number.parseInt(pageToken) ?? 0 // pagination is not working with Covalent
       },
       {
         customOptions: { timeout: NFT_TIMEOUT }
