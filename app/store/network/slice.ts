@@ -74,7 +74,7 @@ export const selectNetworks = createSelector(
   (networks, customNetworks, allCustomTokens, isDeveloperMode) => {
     const populatedNetworks = Object.keys(networks).reduce(
       (reducedNetworks, key) => {
-        const chainId = parseInt(key, 10)
+        const chainId = parseInt(key)
         const network = networks[chainId]
         if (network.isTestnet === isDeveloperMode) {
           reducedNetworks[chainId] = mergeWithCustomTokens(
@@ -88,7 +88,7 @@ export const selectNetworks = createSelector(
     )
     const populatedCustomNetworks = Object.keys(customNetworks).reduce(
       (reducedNetworks, key) => {
-        const chainId = parseInt(key, 10)
+        const chainId = parseInt(key)
         const network = customNetworks[chainId]
         if (network.isTestnet === isDeveloperMode) {
           reducedNetworks[chainId] = mergeWithCustomTokens(

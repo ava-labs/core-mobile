@@ -67,7 +67,7 @@ export class TokenService {
     // Purify the values for XSS protection
     const name = xss(contractCalls[0])
     const symbol = xss(contractCalls[1])
-    const decimals = parseInt(contractCalls[2], 10)
+    const decimals = parseInt(contractCalls[2])
 
     return {
       name,
