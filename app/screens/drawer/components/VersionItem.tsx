@@ -1,17 +1,17 @@
 import React from 'react'
 import AvaListItem from 'components/AvaListItem'
 import AvaText from 'components/AvaText'
-
-const pkg = require('../../../../package.json')
+import DeviceInfo from 'react-native-device-info'
 
 export default function VersionItem() {
+  const version = DeviceInfo.getReadableVersion()
   return (
     <AvaListItem.Base
       disabled
       title={'Version'}
       titleAlignment={'flex-start'}
       leftComponent={null}
-      rightComponent={<AvaText.Body2>{pkg.version}</AvaText.Body2>}
+      rightComponent={<AvaText.Body2>{version}</AvaText.Body2>}
       rightComponentVerticalAlignment={'center'}
     />
   )
