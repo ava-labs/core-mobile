@@ -1,12 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import BiometricsSDK, { KeystoreConfig } from 'utils/BiometricsSDK'
 import { UserCredentials } from 'react-native-keychain'
 import { PinKeys } from 'screens/onboarding/PinKey'
 import { asyncScheduler, Observable, of, timer } from 'rxjs'
 import { catchError, concatMap, map } from 'rxjs/operators'
-import { Animated } from 'react-native'
-import { decrypt } from 'utils/EncryptionHelper'
+import { Alert, Animated } from 'react-native'
+import { decrypt, NoSaltError } from 'utils/EncryptionHelper'
 import { useJigglyPinIndicator } from 'utils/JigglyPinIndicatorHook'
+import { useApplicationContext } from 'contexts/ApplicationContext'
 
 export type DotView = {
   filled: boolean
@@ -39,10 +40,28 @@ export function usePinOrBiometryLogin(): {
   const [pinEntered, setPinEntered] = useState(false)
   const [mnemonic, setMnemonic] = useState<string | undefined>(undefined)
   const { jiggleAnim, fireJiggleAnimation } = useJigglyPinIndicator()
+  const { signOut } = useApplicationContext().appHook
 
   useEffect(() => {
     setPinDots(getPinDots(enteredPin))
   }, [enteredPin])
+
+  const alertBadDta = useCallback(
+    () =>
+      Alert.alert(
+        'Data is not encrypted correctly',
+        'Please set up the wallet again!',
+        [
+          {
+            text: 'Okay',
+            onPress: signOut
+          }
+        ],
+        { cancelable: false }
+      ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  )
 
   function resetConfirmPinProcess() {
     setEnteredPin('')
@@ -66,6 +85,10 @@ export function usePinOrBiometryLogin(): {
           ) {
             resetConfirmPinProcess()
             fireJiggleAnimation()
+          }
+
+          if (err instanceof NoSaltError) {
+            alertBadDta()
           }
         }
       }

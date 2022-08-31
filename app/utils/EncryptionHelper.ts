@@ -9,6 +9,13 @@ export interface EncryptedData {
   salt: string
 }
 
+export class NoSaltError extends Error {
+  constructor() {
+    super('data has no salt')
+    this.name = 'NoSaltError'
+  }
+}
+
 async function getDerivedKey(password: string, salt: string): Promise<string> {
   const { rawHash } = await argon2(password, salt, {
     iterations: 2,
@@ -38,6 +45,10 @@ export async function decrypt(
   password: string
 ): Promise<string> {
   const { cipher, iv, salt } = JSON.parse(encryptedData) as EncryptedData
+
+  if (salt === undefined) throw new NoSaltError()
+
   const key = await getDerivedKey(password, salt)
+
   return Aes.decrypt(cipher, key, iv)
 }
