@@ -10,7 +10,7 @@ module.exports = {
     'plugin:react-hooks/recommended',
     'plugin:prettier/recommended'
   ],
-  ignorePatterns: ['node_modules', 'dist'],
+  ignorePatterns: ['node_modules', 'dist', 'shim.js'],
   plugins: [
     'react',
     'react-native',

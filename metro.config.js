@@ -7,7 +7,9 @@
 
 module.exports = {
   resolver: {
-    extraNodeModules: require('node-libs-react-native')
+    extraNodeModules: {
+      crypto: require.resolve('crypto-browserify')
+    }
   },
   transformer: {
     getTransformOptions: async () => ({
