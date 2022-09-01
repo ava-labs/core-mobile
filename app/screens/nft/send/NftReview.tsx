@@ -23,6 +23,7 @@ import { Popable } from 'react-native-popable'
 import PoppableGasAndLimit from 'components/PoppableGasAndLimit'
 import { bnToLocaleString } from '@avalabs/utils-sdk'
 import { usePosthogContext } from 'contexts/PosthogContext'
+import { PopableLabel } from 'components/PopableLabel'
 
 type NavigationProp = NFTDetailsSendScreenProps<
   typeof AppNavigation.NftSend.Review
@@ -122,7 +123,7 @@ export default function NftReview({ onSuccess }: NftReviewScreenProps) {
             position={'right'}
             style={{ minWidth: 200 }}
             backgroundColor={theme.colorBg3}>
-            <AvaText.Body2>Network Fee ⓘ</AvaText.Body2>
+            <PopableLabel label="Network Fee" />
           </Popable>
           <AvaText.Heading2 currency>{fees.sendFeeInCurrency}</AvaText.Heading2>
         </Row>
@@ -140,7 +141,7 @@ export default function NftReview({ onSuccess }: NftReviewScreenProps) {
             </AvaButton.SecondaryLarge>
           </>
         )}
-        {sendStatus === 'Preparing' && (
+        {sendStatus === 'Sending' && (
           <>
             <ActivityIndicator size="large" />
             <Space y={32} />
