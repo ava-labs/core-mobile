@@ -5,7 +5,7 @@ import WatchlistSVG from 'components/svg/WatchlistSVG'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import PortfolioStackScreen from 'navigation/wallet/PortfolioScreenStack'
-import React, { FC } from 'react'
+import React, { FC, useMemo, useRef } from 'react'
 import ActivityList from 'screens/shared/ActivityList/ActivityList'
 import { View } from 'react-native'
 import AddSVG from 'components/svg/AddSVG'
@@ -33,6 +33,10 @@ import { showSnackBarCustom } from 'components/Snackbar'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
 import GeneralToast from 'components/toast/GeneralToast'
+import { useActiveNetwork } from 'hooks/useActiveNetwork'
+import WalletConnectSVG from 'components/svg/WalletConnectSVG'
+import AvaButton from 'components/AvaButton'
+import { Row } from 'components/Row'
 
 export type TabNavigatorParamList = {
   [AppNavigation.Tabs.Portfolio]: { showBackButton?: boolean }
@@ -192,6 +196,11 @@ type FabNavigationProp = TabsScreenProps<
   typeof AppNavigation.Tabs.Fab
 >['navigation']
 
+export type ActionProp = {
+  image: React.ReactNode
+  onPress: () => void
+}
+
 /**
  * extracts creation of "custom" tab item
  * @param children
@@ -200,52 +209,106 @@ type FabNavigationProp = TabsScreenProps<
 const CustomTabBarFab: FC = ({ children }) => {
   const swapDisabled = useIsUIDisabled(UI.Swap)
   const buyDisabled = useIsUIDisabled(UI.Buy)
+  const wcDisabled = useIsUIDisabled(UI.WalletConnect)
   const { theme } = useApplicationContext()
   const { openMoonPay } = useInAppBrowser()
   const navigation = useNavigation<FabNavigationProp>()
+  const activeNetwork = useActiveNetwork()
+  const fabRef = useRef<typeof FloatingActionButton>()
 
-  const renderBuyBtn = () => (
-    <ActionButtonItem
-      buttonColor={theme.alternateBackground}
-      title="Buy"
-      onPress={openMoonPay}>
-      <BuySVG color={theme.background} />
-    </ActionButtonItem>
-  )
+  const actionItems = useMemo(() => {
+    const actions: Record<string, ActionProp> = {}
+    // @ts-ignore
+    actions.Send = {
+      image: <ArrowSVG rotate={225} color={theme.background} size={24} />,
+      onPress: () => navigation.navigate(AppNavigation.Wallet.SendTokens)
+    } as ActionProp
 
-  const renderSendBtn = () => (
-    <ActionButtonItem
-      buttonColor={theme.alternateBackground}
-      title="Send"
-      onPress={() => navigation.navigate(AppNavigation.Wallet.SendTokens)}>
-      <ArrowSVG rotate={225} color={theme.background} size={20} />
-    </ActionButtonItem>
-  )
+    // @ts-ignore
+    actions.Receive = {
+      image: <QRCodeSVG color={theme.background} size={24} />,
+      onPress: () => navigation.navigate(AppNavigation.Wallet.ReceiveTokens)
+    } as ActionProp
 
-  const renderReceiveBtn = () => (
-    <ActionButtonItem
-      buttonColor={theme.alternateBackground}
-      title="Receive"
-      onPress={() => {
-        navigation.navigate(AppNavigation.Wallet.ReceiveTokens)
-      }}>
-      <QRCodeSVG color={theme.background} size={24} />
-    </ActionButtonItem>
-  )
+    if (!buyDisabled) {
+      // @ts-ignore
+      actions.Buy = {
+        image: <BuySVG color={theme.background} size={24} />,
+        onPress: () => openMoonPay()
+      } as ActionProp
+    }
 
-  const renderSwapBtn = () => (
-    <ActionButtonItem
-      buttonColor={theme.alternateBackground}
-      title="Swap"
-      onPress={() => navigation.navigate(AppNavigation.Wallet.Swap)}>
-      <SwapSVG color={theme.background} size={24} />
-    </ActionButtonItem>
-  )
+    if (!swapDisabled) {
+      // @ts-ignore
+      actions.Swap = {
+        image: <SwapSVG color={theme.background} size={24} />,
+        onPress: () => navigation.navigate(AppNavigation.Wallet.Swap)
+      } as ActionProp
+    }
+
+    if (!wcDisabled) {
+      // @ts-ignore
+      actions.WalletConnect = {
+        image: <WalletConnectSVG color={theme.background} size={24} />,
+        onPress: () => navigation.navigate(AppNavigation.Wallet.Swap)
+      } as ActionProp
+    }
+
+    return actions
+  }, [
+    activeNetwork,
+    wcDisabled,
+    buyDisabled,
+    swapDisabled,
+    navigation,
+    openMoonPay,
+    theme.background
+  ])
+
+  const renderItems = () => {
+    return Object.entries(actionItems).map(([key, value], index) => {
+      return (
+        <ActionButtonItem
+          key={`item-${index}`}
+          buttonColor={theme.alternateBackground}
+          title={key}
+          onPress={value.onPress}>
+          {value.image}
+        </ActionButtonItem>
+      )
+    })
+  }
+
+  const renderList = () => {
+    return Object.entries(actionItems).map(([key, value], index) => {
+      return (
+        <AvaButton.Base
+          key={`item-${index}`}
+          onPress={() => {
+            // @ts-ignore type error todo:tech debt
+            fabRef?.current?.collapse()
+            value.onPress()
+          }}>
+          <Row>
+            {value.image}
+            <Space x={20} />
+            <AvaText.ButtonLarge color={theme.background}>
+              {key}
+            </AvaText.ButtonLarge>
+          </Row>
+        </AvaButton.Base>
+      )
+    })
+  }
+
+  const showFanItems = Object.values(actionItems).length < 4
+
   return (
     <>
       {/* necessary for spacing between the fab and bottom bar buttons */}
       <Space x={48} />
       <FloatingActionButton
+        ref={fabRef}
         backgroundColor={theme.colorIcon1}
         changeBackgroundColor={theme.colorIcon1}
         radius={110}
@@ -253,14 +316,23 @@ const CustomTabBarFab: FC = ({ children }) => {
         changeIconTextColor={theme.colorBg2}
         icon={children}
         iconTextColor={theme.colorBg2}>
-        {/* invisible button item to make our buttons match the design */}
-        <ActionButtonItem />
-        {!buyDisabled && renderBuyBtn()}
-        {renderSendBtn()}
-        {renderReceiveBtn()}
-        {!swapDisabled && renderSwapBtn()}
-        {/* invisible button item to make our buttons match the design */}
-        <ActionButtonItem />
+        {showFanItems ? (
+          <>
+            {/* invisible button item to make our buttons match the design */}
+            <ActionButtonItem />
+            {renderItems()}
+            {/* invisible button item to make our buttons match the design */}
+            <ActionButtonItem />
+          </>
+        ) : (
+          <ActionButtonItem
+            vertical
+            selfContained
+            endDegree={0}
+            startDegree={0}>
+            <>{renderList()}</>
+          </ActionButtonItem>
+        )}
       </FloatingActionButton>
     </>
   )
