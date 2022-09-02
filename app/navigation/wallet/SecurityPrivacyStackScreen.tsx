@@ -9,8 +9,13 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import { createStackNavigator } from '@react-navigation/stack'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import RevealMnemonic from 'navigation/wallet/RevealMnemonic'
-import { SecurityPrivacyScreenProps } from 'navigation/types'
+import {
+  QRCodeParams,
+  SecurityPrivacyScreenProps,
+  WalletScreenProps
+} from 'navigation/types'
 import ConnectedDapps from 'screens/rpc/ConnectedDapps'
+import DappQrReader from 'screens/rpc/DappQrReader'
 
 export type SecurityStackParamList = {
   [AppNavigation.SecurityPrivacy.SecurityPrivacy]: undefined
@@ -20,6 +25,7 @@ export type SecurityStackParamList = {
   [AppNavigation.SecurityPrivacy.TurnOnBiometrics]: undefined
   [AppNavigation.SecurityPrivacy.RecoveryPhrase]: { mnemonic: string }
   [AppNavigation.SecurityPrivacy.DappList]: undefined
+  [AppNavigation.SecurityPrivacy.QRCode]: QRCodeParams
 }
 
 const SecurityStack = createStackNavigator<SecurityStackParamList>()
@@ -37,9 +43,14 @@ function SecurityPrivacyStackScreen(): JSX.Element {
           component={SecurityPrivacyScreen}
         />
         <SecurityStack.Screen
-          options={MainHeaderOptions('Connected Sites')}
+          options={MainHeaderOptions('')}
           name={AppNavigation.SecurityPrivacy.DappList}
           component={DappConnectionsList}
+        />
+        <SecurityStack.Screen
+          options={MainHeaderOptions('')}
+          name={AppNavigation.SecurityPrivacy.QRCode}
+          component={CaptureQRCode}
         />
       </SecurityStack.Group>
       <SecurityStack.Group screenOptions={{ presentation: 'modal' }}>
@@ -185,5 +196,15 @@ const CreatePinScreen = memo(() => {
     />
   )
 })
+
+type QRCodeScreenProps = WalletScreenProps<typeof AppNavigation.Wallet.QRCode>
+
+const CaptureQRCode = () => {
+  const { params } = useRoute<QRCodeScreenProps['route']>()
+
+  const onScanned = (qrText: string) => params.onScanned(qrText)
+
+  return <DappQrReader onScanned={onScanned} />
+}
 
 export default SecurityPrivacyStackScreen

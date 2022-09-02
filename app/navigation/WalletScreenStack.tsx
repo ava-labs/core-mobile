@@ -67,10 +67,12 @@ import LegalStackScreen, {
   LegalStackParamList
 } from 'navigation/wallet/LegalStackScreen'
 import { NetworkDetailsAction } from 'screens/network/NetworkDetailsAction'
+import DappQrReader from 'screens/rpc/DappQrReader'
 import { BridgeStackParamList } from './wallet/BridgeScreenStack'
 import {
   BridgeTransactionStatusParams,
   EditGasLimitParams,
+  QRCodeParams,
   TokenSelectParams,
   WalletScreenProps
 } from './types'
@@ -116,6 +118,7 @@ export type WalletScreenStackParams = {
   [AppNavigation.Wallet.Legal]: NavigatorScreenParams<LegalStackParamList>
   [AppNavigation.Bridge.BridgeTransactionStatus]: BridgeTransactionStatusParams
   [AppNavigation.Wallet.Bridge]: NavigatorScreenParams<BridgeStackParamList>
+  [AppNavigation.Wallet.QRCode]: QRCodeParams
   [AppNavigation.Modal.AccountDropDown]: undefined
   [AppNavigation.Modal.AccountBottomSheet]: undefined
   [AppNavigation.Modal.SignOut]: undefined
@@ -338,6 +341,13 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
           name={AppNavigation.Wallet.Bridge}
           component={BridgeScreenStack}
         />
+        <WalletScreenS.Screen
+          options={{
+            ...SubHeaderOptions('')
+          }}
+          name={AppNavigation.Wallet.QRCode}
+          component={CaptureQRCode}
+        />
         {BottomSheetGroup}
       </WalletScreenS.Navigator>
       <Modal visible={showSecurityModal} animationType={'slide'} animated>
@@ -389,6 +399,16 @@ const EditGasLimit = () => {
       gasPrice={params.gasPrice}
     />
   )
+}
+
+type QRCodeScreenProps = WalletScreenProps<typeof AppNavigation.Wallet.QRCode>
+
+const CaptureQRCode = () => {
+  const { params } = useRoute<QRCodeScreenProps['route']>()
+
+  const onScanned = (qrText: string) => params.onScanned(qrText)
+
+  return <DappQrReader onScanned={onScanned} />
 }
 
 type BridgeTransactionStatusScreenProps = WalletScreenProps<

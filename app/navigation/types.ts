@@ -44,6 +44,11 @@ export type EditGasLimitParams = {
   gasPrice: BigNumber
 }
 
+export type QRCodeParams = {
+  onAction: (qrText: string) => void
+  onScanned: (qrText: string) => void
+}
+
 /** ROOT **/
 export type RootStackScreenProps<T extends keyof RootScreenStackParamList> =
   StackScreenProps<RootScreenStackParamList, T>

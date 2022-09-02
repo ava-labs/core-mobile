@@ -4,6 +4,7 @@ import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import StarSVG from 'components/svg/StarSVG'
+import QRScanSVG from 'components/svg/QRScanSVG'
 import AvaText from './AvaText'
 import PersonSVG from './svg/PersonSVG'
 
@@ -194,6 +195,32 @@ function ZeroStateNoContacts({ addContact }: { addContact: () => void }) {
   )
 }
 
+function ZeroStateSites({
+  onAddNewConnection
+}: {
+  onAddNewConnection: () => void
+}) {
+  const title = 'No Connected Sites'
+  const message = 'Tap the button below to scan QR code and connect.'
+
+  return (
+    <ZeroStateBase
+      title={title}
+      message={message}
+      image={<QRScanSVG size={54} />}
+      additionalComponent={
+        <>
+          <AvaButton.SecondaryLarge
+            style={{ bottom: 32, position: 'absolute' }}
+            onPress={onAddNewConnection}>
+            Add New Connection
+          </AvaButton.SecondaryLarge>
+        </>
+      }
+    />
+  )
+}
+
 const ZeroState = {
   Basic: ZeroStateBase,
   NetworkTokens: ZeroStateNetworkTokens,
@@ -205,6 +232,7 @@ const ZeroState = {
   NoWatchlistFavorites: ZeroStateNoWatchlistFavorites,
   EmptyAddressBook: ZeroStateEmptyAddressBook, // used in Send screens
   NoContacts: ZeroStateNoContacts // used in Contacts screen
+  Sites: ZeroStateSites
 }
 
 export default ZeroState

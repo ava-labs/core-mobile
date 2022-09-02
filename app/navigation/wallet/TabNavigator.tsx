@@ -247,10 +247,10 @@ const CustomTabBarFab: FC = ({ children }) => {
     }
 
     if (!wcDisabled) {
-      // @ts-ignore
       actions.WalletConnect = {
         image: <WalletConnectSVG color={theme.background} size={24} />,
-        onPress: () => navigation.navigate(AppNavigation.Wallet.Swap)
+        // @ts-ignore todo: fix types
+        onPress: () => navigation.navigate(AppNavigation.Wallet.QRCode)
       } as ActionProp
     }
 
