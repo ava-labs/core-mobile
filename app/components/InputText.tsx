@@ -278,10 +278,7 @@ const Label = ({
           </Row>
         </Popable>
       ) : (
-        <>
-          <AvaText.Body2>{label ?? ''}</AvaText.Body2>
-          <InfoSVG />
-        </>
+        <AvaText.Body2>{label ?? ''}</AvaText.Body2>
       )}
       <View style={{ height: 8 }} />
     </View>
