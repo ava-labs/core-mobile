@@ -162,7 +162,7 @@ export default function ReviewSend({ onSuccess }: { onSuccess: () => void }) {
             </AvaButton.SecondaryLarge>
           </>
         )}
-        {sendStatus === 'Sending' && (
+        {sendStatus === 'Preparing' && (
           <>
             <ActivityIndicator size="large" />
             <Space y={32} />

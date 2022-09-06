@@ -141,7 +141,7 @@ export default function NftReview({ onSuccess }: NftReviewScreenProps) {
             </AvaButton.SecondaryLarge>
           </>
         )}
-        {sendStatus === 'Sending' && (
+        {sendStatus === 'Preparing' && (
           <>
             <ActivityIndicator size="large" />
             <Space y={32} />
