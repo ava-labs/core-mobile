@@ -60,6 +60,10 @@ const UniversalTokenSelector: FC<Props> = ({
   const navigation = useNavigation<NavigationProp>()
   const hasError = !!error || !!bnError
 
+  const handleError = useCallback(errorMessage => {
+    setBnError(errorMessage)
+  }, [])
+
   const openTokenSelectorBottomSheet = () => {
     navigation.navigate(AppNavigation.Modal.SelectToken, {
       hideZeroBalance: hideZeroBalanceTokens,
@@ -139,9 +143,7 @@ const UniversalTokenSelector: FC<Props> = ({
               denomination={selectedToken?.decimals || 9}
               placeholder={'0.0'}
               onChange={handleAmountChange}
-              onError={errorMessage => {
-                onError ? onError(errorMessage) : setBnError(errorMessage)
-              }}
+              onError={handleError}
               hideErrorMessage={hideErrorMessage}
               isValueLoading={isValueLoading}
               style={{
