@@ -1,11 +1,11 @@
-import React, { FC, useCallback, useEffect, useState } from 'react'
+import React, { FC, useCallback, useMemo, useState } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { TokenWithBalance } from 'store/balance'
 import { AssetBalance } from 'screens/bridge/utils/types'
 import BN from 'bn.js'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
-import { bnToLocaleString, numberToBN } from '@avalabs/utils-sdk'
+import { bnToBig } from '@avalabs/utils-sdk'
 import { Amount } from 'screens/swap/SwapView'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Row } from 'components/Row'
@@ -26,13 +26,11 @@ interface Props {
   hideInput?: boolean
   maxAmount?: BN
   inputAmount?: BN
-  onAmountChange: ({ amount, bn }: { amount: string; bn: BN }) => void
+  onAmountChange: (amount: { amount: string; bn: BN }) => void
   error?: string
   label?: string
   isValueLoading?: boolean
   hideErrorMessage?: boolean
-  skipHandleMaxAmount?: boolean
-  onError?: (errorMessage: string) => void
   hideMax?: boolean
   hideZeroBalanceTokens?: boolean
 }
@@ -52,19 +50,14 @@ const UniversalTokenSelector: FC<Props> = ({
   label,
   isValueLoading,
   hideErrorMessage,
-  skipHandleMaxAmount,
   hideMax,
-  hideZeroBalanceTokens = false,
-  onError
+  hideZeroBalanceTokens = false
 }) => {
   const theme = useApplicationContext().theme
   const currency = useSelector(selectSelectedCurrency)
   const [bnError, setBnError] = useState('')
-  const [amountInCurrency, setAmountInCurrency] = useState<string>()
   const { currencyFormatter } = useApplicationContext().appHook
-  const [isMaxAmount, setIsMaxAmount] = useState(false)
   const navigation = useNavigation<NavigationProp>()
-  const maxAmountString = maxAmount ? bnToLocaleString(maxAmount, 18) : '0'
   const hasError = !!error || !!bnError
 
   const openTokenSelectorBottomSheet = () => {
@@ -74,40 +67,25 @@ const UniversalTokenSelector: FC<Props> = ({
     })
   }
 
+  const amountInCurrency = useMemo(() => {
+    if (!inputAmount || !selectedToken?.decimals) {
+      return ''
+    }
+    const bnNumber = bnToBig(inputAmount, selectedToken?.decimals).toNumber()
+    return currencyFormatter(bnNumber * selectedToken.priceInCurrency, 4)
+  }, [
+    currencyFormatter,
+    inputAmount,
+    selectedToken?.decimals,
+    selectedToken?.priceInCurrency
+  ])
+
   const handleAmountChange = useCallback(
     (value: Amount) => {
-      if (!maxAmountString) {
-        onAmountChange && onAmountChange(value)
-        return
-      }
-      setAmountInCurrency(
-        !value.bn.isZero() && selectedToken?.priceInCurrency
-          ? currencyFormatter(
-              Number(value?.amount ?? 0) *
-                (selectedToken?.priceInCurrency ?? 0),
-              4
-            )
-          : ''
-      )
-      setIsMaxAmount(maxAmountString === value.amount)
       onAmountChange && onAmountChange(value)
     },
-    [
-      onAmountChange,
-      selectedToken?.priceInCurrency,
-      maxAmountString,
-      inputAmount
-    ]
+    [onAmountChange]
   )
-
-  // When setting to the max, pin the input value to the max value
-  useEffect(() => {
-    if (!isMaxAmount || !maxAmountString || skipHandleMaxAmount) return
-    handleAmountChange({
-      amount: maxAmountString,
-      bn: numberToBN(maxAmountString, 18)
-    })
-  }, [maxAmountString, handleAmountChange, isMaxAmount, skipHandleMaxAmount])
 
   return (
     <View style={{ marginHorizontal: 16 }}>
@@ -152,11 +130,7 @@ const UniversalTokenSelector: FC<Props> = ({
         {hideInput || (
           <View>
             <BNInput
-              value={
-                isMaxAmount && !skipHandleMaxAmount
-                  ? maxAmount ?? inputAmount
-                  : inputAmount
-              }
+              value={inputAmount}
               max={
                 !isValueLoading && !hideMax
                   ? maxAmount ?? selectedToken?.balance
