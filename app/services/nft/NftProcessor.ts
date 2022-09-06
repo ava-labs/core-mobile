@@ -25,7 +25,11 @@ export class NftProcessor {
               resolve([trimmed, aspect, true])
             })
           })
+        } else if (imageUrl.endsWith('.mp4')) {
+          // we don't support mp4 yet
+          resolve(['', 1, false])
         } else {
+          // assume this is just a normal image
           Image.getSize(
             imageUrl,
             (width: number, height: number) => {
