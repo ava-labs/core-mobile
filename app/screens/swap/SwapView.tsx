@@ -223,7 +223,6 @@ export default function SwapView() {
             }
             inputAmount={fromTokenValue?.bn}
             hideErrorMessage
-            skipHandleMaxAmount
             error={localError || swapError}
             isValueLoading={
               destination === SwapSide.BUY && isFetchingOptimalRate
@@ -260,7 +259,6 @@ export default function SwapView() {
             }}
             selectedToken={toToken}
             inputAmount={toTokenValue?.bn}
-            skipHandleMaxAmount
             hideErrorMessage
             isValueLoading={
               destination === SwapSide.SELL && isFetchingOptimalRate
