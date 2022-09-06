@@ -249,51 +249,41 @@ export const FeeSelector: FC<{
     onSelect(label)
   }
 
-  return (
-    <View
-      style={{
-        alignItems: 'center',
-        width: 75,
-        height: 48
-      }}>
-      {showInput && (
-        <ButtonWrapper selected={selected}>
-          <ButtonText selected={selected}>{label}</ButtonText>
-          <InputText
-            text={value?.toString() ?? ''}
-            autoFocus
-            selectTextOnFocus
-            onBlur={() => setShowInput(false)}
-            onChangeText={text => onValueEntered?.(text)}
-            keyboardType={'numeric'}
-            textStyle={{
-              backgroundColor: theme.colorText1,
-              borderWidth: 0,
-              fontFamily: 'Inter-SemiBold',
-              textAlign: 'center',
-              textAlignVertical: 'center',
-              paddingTop: 0,
-              paddingBottom: 0,
-              paddingLeft: 0,
-              paddingRight: 0,
-              color: theme.colorBg2,
-              fontSize: 14,
-              lineHeight: 18
-            }}
-            style={{ margin: 0 }}
-            mode={'amount'}
-          />
-        </ButtonWrapper>
-      )}
-      {!showInput && (
-        <AvaButton.Base onPress={handleSelect}>
-          <ButtonWrapper selected={selected}>
-            <ButtonText selected={selected}>{label}</ButtonText>
-            <ButtonText selected={selected}>{value}</ButtonText>
-          </ButtonWrapper>
-        </AvaButton.Base>
-      )}
-    </View>
+  return showInput ? (
+    <ButtonWrapper selected={selected}>
+      <ButtonText selected={selected}>{label}</ButtonText>
+      <InputText
+        text={value?.toString() ?? ''}
+        autoFocus
+        selectTextOnFocus
+        onBlur={() => setShowInput(false)}
+        onChangeText={text => onValueEntered?.(text)}
+        keyboardType={'numeric'}
+        textStyle={{
+          backgroundColor: theme.colorText1,
+          borderWidth: 0,
+          fontFamily: 'Inter-SemiBold',
+          textAlign: 'center',
+          textAlignVertical: 'center',
+          paddingTop: 0,
+          paddingBottom: 0,
+          paddingLeft: 0,
+          paddingRight: 0,
+          color: theme.colorBg2,
+          fontSize: 14,
+          lineHeight: 18
+        }}
+        style={{ margin: 0 }}
+        mode={'amount'}
+      />
+    </ButtonWrapper>
+  ) : (
+    <AvaButton.Base onPress={handleSelect}>
+      <ButtonWrapper selected={selected}>
+        <ButtonText selected={selected}>{label}</ButtonText>
+        <ButtonText selected={selected}>{value}</ButtonText>
+      </ButtonWrapper>
+    </AvaButton.Base>
   )
 }
 
