@@ -244,6 +244,11 @@ export const FeeSelector: FC<{
     }
   }, [editable, selected])
 
+  const handleSelect = () => {
+    if (editable) setShowInput(true)
+    onSelect(label)
+  }
+
   return (
     <View
       style={{
@@ -252,65 +257,78 @@ export const FeeSelector: FC<{
         height: 48
       }}>
       {showInput && (
-        <InputText
-          text={value?.toString() ?? ''}
-          autoFocus
-          onChangeText={text => onValueEntered?.(text)}
-          keyboardType={'numeric'}
-          onInputRef={inputRef1 => {
-            inputRef = inputRef1
-            inputRef1.current?.setNativeProps({
-              style: {
-                backgroundColor: theme.colorText1,
-                width: 75,
-                height: 48,
-                marginTop: -12,
-                fontFamily: 'Inter-SemiBold',
-                textAlign: 'center',
-                textAlignVertical: 'center',
-                paddingTop: 0,
-                paddingBottom: 0,
-                paddingLeft: 0,
-                paddingRight: 0,
-                color: theme.colorBg2,
-                fontSize: 14,
-                lineHeight: 24
-              }
-            })
-          }}
-          mode={'amount'}
-        />
+        <ButtonWrapper selected={selected}>
+          <ButtonText selected={selected}>{label}</ButtonText>
+          <InputText
+            text={value?.toString() ?? ''}
+            autoFocus
+            selectTextOnFocus
+            onBlur={() => setShowInput(false)}
+            onChangeText={text => onValueEntered?.(text)}
+            keyboardType={'numeric'}
+            textStyle={{
+              backgroundColor: theme.colorText1,
+              borderWidth: 0,
+              fontFamily: 'Inter-SemiBold',
+              textAlign: 'center',
+              textAlignVertical: 'center',
+              paddingTop: 0,
+              paddingBottom: 0,
+              paddingLeft: 0,
+              paddingRight: 0,
+              color: theme.colorBg2,
+              fontSize: 14,
+              lineHeight: 18
+            }}
+            style={{ margin: 0 }}
+            mode={'amount'}
+          />
+        </ButtonWrapper>
       )}
       {!showInput && (
-        <AvaButton.Base onPress={() => onSelect(label)}>
-          <View
-            focusable
-            style={{
-              width: 75,
-              height: 48,
-              borderRadius: 8,
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: selected
-                ? theme.colorText1
-                : theme.colorBg3 + Opacity50
-            }}>
-            <AvaText.ButtonMedium
-              textStyle={{
-                color: selected ? theme.colorBg2 : theme.colorText2
-              }}>
-              {label}
-            </AvaText.ButtonMedium>
-            <AvaText.ButtonMedium
-              textStyle={{
-                color: selected ? theme.colorBg2 : theme.colorText2
-              }}>
-              {value}
-            </AvaText.ButtonMedium>
-          </View>
+        <AvaButton.Base onPress={handleSelect}>
+          <ButtonWrapper selected={selected}>
+            <ButtonText selected={selected}>{label}</ButtonText>
+            <ButtonText selected={selected}>{value}</ButtonText>
+          </ButtonWrapper>
         </AvaButton.Base>
       )}
     </View>
   )
 }
+
+const ButtonWrapper: FC<{ selected: boolean }> = ({ children, selected }) => {
+  const { theme } = useApplicationContext()
+  return (
+    <View
+      focusable
+      style={{
+        width: 75,
+        height: 48,
+        borderRadius: 8,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: selected
+          ? theme.colorText1
+          : theme.colorBg3 + Opacity50
+      }}>
+      {children}
+    </View>
+  )
+}
+
+const ButtonText: FC<{ selected: boolean }> = ({ children, selected }) => {
+  const { theme } = useApplicationContext()
+  return (
+    <AvaText.ButtonMedium
+      textStyle={{
+        color: selected ? theme.colorBg2 : theme.colorText2,
+        fontSize: selected ? 14 : 12,
+        lineHeight: 18
+      }}>
+      {children}
+    </AvaText.ButtonMedium>
+  )
+}
+
 export default NetworkFeeSelector
