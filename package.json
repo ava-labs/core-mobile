@@ -19,7 +19,7 @@
     "prestorybook": "rnstl",
     "build-storybook": "build-storybook",
     "prepare": "husky install",
-    "postinstall": "patch-package; node_modules/.bin/rn-nodeify --install crypto,events,stream,vm,assert,https,http,os --hack"
+    "postinstall": "patch-package; node_modules/.bin/rn-nodeify --install buffer,events,stream,vm,assert,https,http,os --hack"
   },
   "dependencies": {
     "@avalabs/blockcypher-sdk": "2.5.1-alpha.0",
@@ -35,7 +35,6 @@
     "@avalabs/types": "2.5.1-alpha.0",
     "@avalabs/utils-sdk": "2.5.1-alpha.0",
     "@avalabs/wallets-sdk": "2.5.1-alpha.0",
-    "react-native-argon2": "2.0.1",
     "@babel/plugin-syntax-object-rest-spread": "7.8.3",
     "@connectedcars/react-native-slide-charts": "1.0.5",
     "@eliav2/react-native-collapsible-view": "1.4.0",
@@ -60,7 +59,6 @@
     "@shopify/flash-list": "1.2.0",
     "@tradle/react-native-http": "2.0.1",
     "@types/bn.js": "5.1.0",
-    "@types/crypto-js": "4.1.1",
     "@types/lodash.capitalize": "4.2.6",
     "@types/lodash.debounce": "4.0.6",
     "@types/lodash.isempty": "4.4.7",
@@ -71,6 +69,7 @@
     "@walletconnect/types": "1.7.8",
     "@walletconnect/utils": "1.7.8",
     "add": "2.0.6",
+    "assert": "1.5.0",
     "babel-plugin-module-resolver": "4.1.0",
     "babel-plugin-react-require": "3.1.3",
     "base-64": "1.0.0",
@@ -79,7 +78,8 @@
     "bip32": "2.0.6",
     "bip39": "3.0.4",
     "bn.js": "5.2.0",
-    "crypto-js": "4.1.1",
+    "buffer": "4.9.2",
+    "crypto-browserify": "3.12.0",
     "date-fns": "2.28.0",
     "es6-promise": "4.2.8",
     "ethers": "5.6.8",
@@ -94,7 +94,6 @@
     "lottie-react-native": "5.0.1",
     "moment": "2.29.4",
     "node-cache": "5.1.2",
-    "node-libs-react-native": "1.2.1",
     "numeral": "2.0.6",
     "paraswap": "5.2.0",
     "patch-package": "6.4.7",
@@ -106,11 +105,12 @@
     "react-content-loader": "6.2.0",
     "react-native": "0.66.4",
     "react-native-aes-crypto": "1.3.10",
+    "react-native-argon2": "2.0.1",
     "react-native-camera": "4.2.1",
     "react-native-chart-kit": "6.12.0",
     "react-native-collapsible": "1.6.0",
     "react-native-config": "1.4.5",
-    "react-native-crypto": "2.2.0",
+    "react-native-device-info": "10.0.2",
     "react-native-dialog": "8.2.0",
     "react-native-document-picker": "5.3.0",
     "react-native-fs": "2.19.0",
@@ -126,7 +126,6 @@
     "react-native-popable": "0.4.3",
     "react-native-qrcode-scanner": "1.5.5",
     "react-native-qrcode-svg": "6.1.2",
-    "react-native-randombytes": "3.6.1",
     "react-native-reanimated": "1.13.4",
     "react-native-safe-area-context": "3.4.1",
     "react-native-screens": "3.13.1",
@@ -235,32 +234,6 @@
     "node": ">=14.17.0",
     "yarn": ">=1.22.10"
   },
-  "react-native": {
-    "crypto": "react-native-crypto",
-    "_stream_transform": "readable-stream/transform",
-    "_stream_readable": "readable-stream/readable",
-    "_stream_writable": "readable-stream/writable",
-    "_stream_duplex": "readable-stream/duplex",
-    "_stream_passthrough": "readable-stream/passthrough",
-    "stream": "stream-browserify",
-    "vm": "vm-browserify",
-    "https": "https-browserify",
-    "http": "@tradle/react-native-http",
-    "os": "react-native-os"
-  },
-  "browser": {
-    "crypto": "react-native-crypto",
-    "_stream_transform": "readable-stream/transform",
-    "_stream_readable": "readable-stream/readable",
-    "_stream_writable": "readable-stream/writable",
-    "_stream_duplex": "readable-stream/duplex",
-    "_stream_passthrough": "readable-stream/passthrough",
-    "stream": "stream-browserify",
-    "vm": "vm-browserify",
-    "https": "https-browserify",
-    "http": "@tradle/react-native-http",
-    "os": "react-native-os"
-  },
   "lavamoat": {
     "allowScripts": {
       "$root$": true,
@@ -291,5 +264,29 @@
       "@sentry/react-native>@sentry/cli": true,
       "@sentry/react-native>@sentry/wizard>@sentry/cli": false
     }
+  },
+  "react-native": {
+    "http": "@tradle/react-native-http",
+    "https": "https-browserify",
+    "os": "react-native-os",
+    "_stream_transform": "readable-stream/transform",
+    "_stream_readable": "readable-stream/readable",
+    "_stream_writable": "readable-stream/writable",
+    "_stream_duplex": "readable-stream/duplex",
+    "_stream_passthrough": "readable-stream/passthrough",
+    "stream": "stream-browserify",
+    "vm": "vm-browserify"
+  },
+  "browser": {
+    "http": "@tradle/react-native-http",
+    "https": "https-browserify",
+    "os": "react-native-os",
+    "_stream_transform": "readable-stream/transform",
+    "_stream_readable": "readable-stream/readable",
+    "_stream_writable": "readable-stream/writable",
+    "_stream_duplex": "readable-stream/duplex",
+    "_stream_passthrough": "readable-stream/passthrough",
+    "stream": "stream-browserify",
+    "vm": "vm-browserify"
   }
 }

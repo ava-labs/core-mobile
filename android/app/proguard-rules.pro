@@ -19,3 +19,10 @@
 
 # https://github.com/oblador/react-native-keychain#proguard-rules
 -keep class com.facebook.crypto.** { *; }
+
+# https://github.com/proyecto26/react-native-inappbrowser#android
+-keepattributes *Annotation*
+-keepclassmembers class ** {
+  @org.greenrobot.eventbus.Subscribe <methods>;
+}
+-keep enum org.greenrobot.eventbus.ThreadMode { *; }
