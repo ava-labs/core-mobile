@@ -97,7 +97,7 @@ export default function NftSend({
     <ScrollView contentContainerStyle={[styles.container, { flexGrow: 1 }]}>
       <AvaText.LargeTitleBold>Send</AvaText.LargeTitleBold>
       <Space y={20} />
-      <AvaText.Heading3>Send to</AvaText.Heading3>
+      <AvaText.Heading3>Send To</AvaText.Heading3>
       <View style={{ marginHorizontal: -16 }}>
         <InputText
           placeholder={placeholder}

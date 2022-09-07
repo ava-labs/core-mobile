@@ -93,8 +93,10 @@ const UniversalTokenSelector: FC<Props> = ({
 
   return (
     <View style={{ marginHorizontal: 16 }}>
-      <Row style={{ justifyContent: 'space-between' }}>
-        <AvaText.Heading3>{label ?? 'Token'}</AvaText.Heading3>
+      <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+        <AvaText.Heading3 textStyle={{ marginBottom: 4 }}>
+          {label ?? 'Token'}
+        </AvaText.Heading3>
         <AvaText.Body2>
           {selectedToken &&
             selectedToken?.balanceDisplayValue &&
