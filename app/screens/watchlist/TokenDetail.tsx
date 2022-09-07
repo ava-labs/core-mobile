@@ -254,9 +254,12 @@ const TokenDetail = () => {
           titleAlignment={'flex-start'}
           rightComponent={
             <OvalTagBg
-              color={theme.colorBg3}
+              color={theme.neutral850}
               style={{ height: 21, paddingVertical: 0 }}>
-              <AvaText.Body2>{`Rank: ${marketCapRank}`}</AvaText.Body2>
+              <AvaText.Body2
+                textStyle={{
+                  color: theme.colorText3
+                }}>{`Rank: ${marketCapRank}`}</AvaText.Body2>
             </OvalTagBg>
           }
         />
@@ -334,9 +337,12 @@ const DataItem = ({
   title: string
   value: string | React.ReactNode
 }) => {
+  const { theme } = useApplicationContext()
   return (
     <View style={{ flex: 1 }}>
-      <AvaText.Body2>{title}</AvaText.Body2>
+      <AvaText.Body2 textStyle={{ color: theme.colorText3 }}>
+        {title}
+      </AvaText.Body2>
       {typeof value === 'string' ? (
         <AvaText.Heading3>{value}</AvaText.Heading3>
       ) : (
