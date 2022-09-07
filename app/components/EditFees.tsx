@@ -3,15 +3,14 @@ import { Space } from 'components/Space'
 import { View } from 'react-native'
 import InputText from 'components/InputText'
 import AvaButton from 'components/AvaButton'
-import React, { useMemo, useState } from 'react'
-import { popableContent } from 'screens/swap/components/SwapTransactionDetails'
-import { useApplicationContext } from 'contexts/ApplicationContext'
+import React, { useState } from 'react'
 import FlexSpacer from 'components/FlexSpacer'
 import { Row } from 'components/Row'
 import { BigNumber } from 'ethers'
 import { useNativeTokenPrice } from 'hooks/useNativeTokenPrice'
 import { useActiveNetwork } from 'hooks/useActiveNetwork'
 import { calculateGasAndFees } from 'utils/Utils'
+import { PopableContent } from './PopableContent'
 
 interface EditFeesProps {
   gasPrice: BigNumber
@@ -20,8 +19,11 @@ interface EditFeesProps {
   onClose?: () => void
 }
 
+const gasLimitInfoInfoMessage = (
+  <PopableContent message="Gas limit is the maximum units of gas you are willing to use." />
+)
+
 const EditFees = ({ gasPrice, gasLimit, onSave, onClose }: EditFeesProps) => {
-  const { theme } = useApplicationContext()
   const [newGasLimit, setNewGasLimit] = useState(gasLimit)
   const tokenPrice = useNativeTokenPrice().nativeTokenPrice
   const network = useActiveNetwork()
@@ -35,15 +37,6 @@ const EditFees = ({ gasPrice, gasLimit, onSave, onClose }: EditFeesProps) => {
       tokenDecimals: network?.networkToken?.decimals,
       gasLimit
     })
-  )
-
-  const gasLimitInfoInfoMessage = useMemo(
-    () =>
-      popableContent(
-        'Gas limit is the maximum units of gas you are willing to use.',
-        theme.colorBg3
-      ),
-    [theme]
   )
 
   const checkCustomGasLimit = (customGasLimit: number) => {
@@ -83,7 +76,7 @@ const EditFees = ({ gasPrice, gasLimit, onSave, onClose }: EditFeesProps) => {
         </AvaText.Heading3>
       </Row>
       <InputText
-        label={'Gas Limit ⓘ'}
+        label={'Gas Limit'}
         mode={'amount'}
         text={newGasLimit.toString()}
         popOverInfoText={gasLimitInfoInfoMessage}

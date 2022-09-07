@@ -26,6 +26,7 @@ import { NavigationProp, useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { bigToEthersBigNumber, ethersBigNumberToBig } from '@avalabs/utils-sdk'
 import Big from 'big.js'
+import InfoSVG from 'components/svg/InfoSVG'
 
 export enum FeePreset {
   Normal = 'Normal',
@@ -47,6 +48,7 @@ const NetworkFeeSelector = ({
   gasLimit: number
   onChange?(gasLimit: number, gasPrice: BigNumber, feePreset: FeePreset): void
 }) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { navigate } = useNavigation<NavigationProp<any>>()
   const { theme } = useApplicationContext()
   const networkFee = useSelector(selectNetworkFee)
@@ -79,6 +81,7 @@ const NetworkFeeSelector = ({
 
   useEffect(() => {
     onChange?.(gasLimit, selectedGasPrice, selectedPreset)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gasLimit, selectedGasPrice, selectedPreset])
 
   useEffect(fetchNetworkGasPrices, [dispatch])
@@ -128,9 +131,11 @@ const NetworkFeeSelector = ({
             position={'right'}
             style={{ minWidth: 200 }}
             backgroundColor={theme.colorBg3}>
-            <AvaText.Body2>{`Network Fee ${
-              totalFeeString ? 'ⓘ' : ''
-            }`}</AvaText.Body2>
+            <Row style={{ alignItems: 'center' }}>
+              <AvaText.Body2>Network Fee</AvaText.Body2>
+              <Space x={4} />
+              <InfoSVG />
+            </Row>
           </Popable>
         )}
         {network?.vmName === NetworkVMType.EVM && (
