@@ -39,17 +39,21 @@ const EditFees = ({ gasPrice, gasLimit, onSave, onClose }: EditFeesProps) => {
     })
   )
 
-  const checkCustomGasLimit = (customGasLimit: number) => {
+  const checkCustomGasLimit = (customGasLimit: string) => {
     try {
       const fees = calculateGasAndFees({
         gasPrice,
         tokenPrice,
         tokenDecimals: network?.networkToken?.decimals,
-        gasLimit: customGasLimit
+        gasLimit: isNaN(parseInt(customGasLimit)) ? 0 : parseInt(customGasLimit)
       })
       setNewFees(fees)
-      setNewGasLimit(customGasLimit)
-      feeError && setFeeError('')
+      setNewGasLimit(fees.gasLimit)
+      if (fees.gasLimit === 0) {
+        setFeeError('Please enter a valid gas limit')
+      } else {
+        feeError && setFeeError('')
+      }
     } catch (e) {
       setFeeError('Gas Limit is too much')
     }
@@ -61,6 +65,8 @@ const EditFees = ({ gasPrice, gasLimit, onSave, onClose }: EditFeesProps) => {
       onClose?.()
     }
   }
+
+  const saveDisabled = !!feeError || newGasLimit === 0
 
   return (
     <View style={{ flex: 1, paddingBottom: 16 }}>
@@ -78,15 +84,14 @@ const EditFees = ({ gasPrice, gasLimit, onSave, onClose }: EditFeesProps) => {
       <InputText
         label={'Gas Limit'}
         mode={'amount'}
-        text={newGasLimit.toString()}
+        text={newGasLimit === 0 ? '' : newGasLimit.toString()}
         popOverInfoText={gasLimitInfoInfoMessage}
-        onChangeText={text =>
-          checkCustomGasLimit(parseInt(isNaN(parseInt(text)) ? '0' : text))
-        }
+        onChangeText={checkCustomGasLimit}
         errorText={feeError}
       />
       <FlexSpacer />
       <AvaButton.PrimaryLarge
+        disabled={saveDisabled}
         style={{ marginHorizontal: 12 }}
         onPress={handleOnSave}>
         Save
