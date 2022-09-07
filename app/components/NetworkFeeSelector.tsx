@@ -60,34 +60,47 @@ const NetworkFeeSelector = ({
   const network = useActiveNetwork()
   const isBtcNetwork = network.vmName === NetworkVMType.BITCOIN
   const [selectedPreset, setSelectedPreset] = useState(FeePreset.Normal)
-  const [customGasPrice, setCustomGasPrice] = useState(BigNumber.from(0))
+  const [customGasPrice, setCustomGasPrice] = useState<BigNumber>()
 
+  // customGasPrice init value.
+  // NetworkFee is not immediately available hence the useEffect
   useEffect(() => {
-    if (customGasPrice.isZero()) {
-      setCustomGasPrice(BigNumber.from(networkFee.low))
+    if (!customGasPrice) {
+      setCustomGasPrice(networkFee.low)
     }
-  }, [customGasPrice, networkFee.low])
+  }, [networkFee.low, customGasPrice])
 
   const selectedGasPrice = useMemo(() => {
     switch (selectedPreset) {
       case FeePreset.Custom:
-        return customGasPrice
+        return customGasPrice ?? networkFee.low
       default:
         return networkFee[FeePresetNetworkFeeMap[selectedPreset]]
     }
   }, [customGasPrice, networkFee, selectedPreset])
   const totalFeeString = useMemo(() => {
+    const gasPrice = selectedGasPrice?.isZero()
+      ? networkFee.low
+      : selectedGasPrice
     return ethersBigNumberToBig(
-      selectedGasPrice.mul(gasLimit),
+      gasPrice?.mul(gasLimit),
       networkFee.nativeTokenDecimals
     ).toString()
-  }, [gasLimit, networkFee.nativeTokenDecimals, selectedGasPrice])
+  }, [
+    gasLimit,
+    networkFee.nativeTokenDecimals,
+    networkFee.low,
+    selectedGasPrice
+  ])
 
   useEffect(() => {
-    onChange?.(gasLimit, selectedGasPrice, selectedPreset)
+    const gasPrice = selectedGasPrice?.isZero()
+      ? networkFee.low
+      : selectedGasPrice
+    onChange?.(gasLimit, gasPrice, selectedPreset)
     // ignore onChange
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gasLimit, selectedGasPrice, selectedPreset])
+  }, [gasLimit, selectedGasPrice, selectedPreset, networkFee.low])
 
   useEffect(fetchNetworkGasPrices, [dispatch])
 
@@ -96,7 +109,10 @@ const NetworkFeeSelector = ({
   }
 
   function onGasLimitChange(newGasLimit: number) {
-    onChange?.(newGasLimit, selectedGasPrice, selectedPreset)
+    const gasPrice = selectedGasPrice?.isZero()
+      ? networkFee.low
+      : selectedGasPrice
+    onChange?.(newGasLimit, gasPrice, selectedPreset)
   }
 
   const convertFeeToUnit = useCallback(
@@ -110,7 +126,7 @@ const NetworkFeeSelector = ({
       [FeePreset.Normal]: convertFeeToUnit(networkFee.low),
       [FeePreset.Fast]: convertFeeToUnit(networkFee.medium),
       [FeePreset.Instant]: convertFeeToUnit(networkFee.high),
-      [FeePreset.Custom]: convertFeeToUnit(customGasPrice)
+      [FeePreset.Custom]: convertFeeToUnit(customGasPrice ?? networkFee.low)
     }
   }, [
     convertFeeToUnit,
@@ -119,6 +135,12 @@ const NetworkFeeSelector = ({
     networkFee.low,
     networkFee.medium
   ])
+
+  console.log(
+    `normal: ${displayGasValues[FeePreset.Normal]}, custom: ${
+      displayGasValues[FeePreset.Custom]
+    }`
+  )
 
   return (
     <>
@@ -149,7 +171,7 @@ const NetworkFeeSelector = ({
               onPress={() => {
                 navigate(AppNavigation.Modal.EditGasLimit, {
                   gasLimit: gasLimit,
-                  gasPrice: customGasPrice,
+                  gasPrice: customGasPrice ?? networkFee.low,
                   onSave: onGasLimitChange
                 })
               }}>
@@ -190,7 +212,13 @@ const NetworkFeeSelector = ({
               label={FeePreset.Custom}
               selected={selectedPreset === FeePreset.Custom}
               onSelect={() => setSelectedPreset(FeePreset.Custom)}
-              value={displayGasValues[FeePreset.Custom]}
+              defaultValue={displayGasValues[FeePreset.Normal]}
+              value={
+                selectedPreset !== FeePreset.Custom &&
+                (!customGasPrice || customGasPrice.isZero())
+                  ? displayGasValues[FeePreset.Normal]
+                  : displayGasValues[FeePreset.Custom]
+              }
               onValueEntered={value =>
                 setCustomGasPrice(
                   bigToEthersBigNumber(
@@ -219,6 +247,7 @@ export const FeeSelector: FC<{
   value?: string
   selected: boolean
   onSelect: (value: string) => void
+  defaultValue?: string
   editable?: boolean
   onValueEntered?: (value: string) => void
 }> = ({
@@ -227,6 +256,7 @@ export const FeeSelector: FC<{
   onSelect,
   onValueEntered,
   value,
+  defaultValue,
   editable = false
 }) => {
   const { theme } = useApplicationContext()
@@ -253,7 +283,8 @@ export const FeeSelector: FC<{
     <ButtonWrapper selected={selected}>
       <ButtonText selected={selected}>{label}</ButtonText>
       <InputText
-        text={value?.toString() ?? ''}
+        text={!value || value === '0' ? '' : value}
+        placeholder={defaultValue}
         autoFocus
         selectTextOnFocus
         onBlur={() => setShowInput(false)}
