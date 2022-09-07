@@ -9,6 +9,8 @@ import NetworkFeeSelector, { FeePreset } from 'components/NetworkFeeSelector'
 import { Row } from 'components/Row'
 import { BigNumber } from 'ethers'
 import Big from 'big.js'
+import { PopableContent } from 'components/PopableContent'
+import { PopableLabel } from 'components/PopableLabel'
 
 const isSlippageValid = (value: string) => {
   if (
@@ -41,14 +43,9 @@ interface SwapTransactionDetailProps {
   maxGasPrice?: string
 }
 
-export function popableContent(message: string, backgroundColor: string) {
-  return (
-    <View
-      style={{ padding: 8, backgroundColor: backgroundColor, borderRadius: 8 }}>
-      <AvaText.Body3>{message}</AvaText.Body3>
-    </View>
-  )
-}
+const slippageInfoMessage = (
+  <PopableContent message="Suggested slippage – your transaction will fail if the price changes unfavorably more than this percentage" />
+)
 
 const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
   review = false,
@@ -67,14 +64,11 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
   // const { trxDetails } = useSwapContext()
 
   // const { navigate } = useNavigation<NavigationProp>()
-  const slippageInfoMessage = popableContent(
-    'Suggested slippage – your transaction will fail if the price changes unfavorably more than this percentage',
-    theme.colorBg3
-  )
 
-  const netFeeInfoMessage = popableContent(
-    `Gas limit: ${gasLimit} \nGas price: ${gasPrice.toString()} nAVAX`,
-    theme.colorBg3
+  const netFeeInfoMessage = (
+    <PopableContent
+      message={`Gas limit: ${gasLimit} \nGas price: ${gasPrice.toString()} nAVAX`}
+    />
   )
 
   return (
@@ -99,10 +93,12 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
           position={'top'}
           strictPosition={true}
           style={{ minWidth: 300, marginBottom: review ? 0 : -32 }}
+          wrapperStyle={{ minWidth: 300 }}
           backgroundColor={theme.colorBg3}>
-          <AvaText.Body2 color={theme.white}>
-            Slippage tolerance ⓘ
-          </AvaText.Body2>
+          <PopableLabel
+            label="Slippage tolerance"
+            textStyle={{ color: theme.white }}
+          />
         </Popable>
         {review ? (
           <AvaText.Heading3>{slippage}%</AvaText.Heading3>
@@ -137,7 +133,10 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
               strictPosition={true}
               style={{ minWidth: 180 }}
               backgroundColor={theme.colorBg3}>
-              <AvaText.Body2 color={theme.white}>Network Fee ⓘ</AvaText.Body2>
+              <PopableLabel
+                label="Network Fee"
+                textStyle={{ color: theme.white }}
+              />
             </Popable>
             <AvaText.Heading3>
               {new Big(gasPrice.toString())
