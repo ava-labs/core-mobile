@@ -3,8 +3,11 @@ import {
   ActivityIndicator,
   Appearance,
   InteractionManager,
+  NativeSyntheticEvent,
   StyleProp,
   TextInput,
+  TextInputFocusEventData,
+  TextStyle,
   View,
   ViewStyle
 } from 'react-native'
@@ -20,6 +23,7 @@ import AvaText from './AvaText'
 import AvaButton from './AvaButton'
 
 type Props = {
+  onBlur?: (e: NativeSyntheticEvent<TextInputFocusEventData>) => void
   onChangeText?: (text: string) => void
   editable?: boolean
   multiline?: boolean
@@ -47,11 +51,13 @@ type Props = {
   // shows popover info if provided
   popOverInfoText?: string | React.ReactElement
   autoFocus?: boolean
+  selectTextOnFocus?: boolean | undefined
   text: string
   currency?: string
   onInputRef?: (inputRef: RefObject<TextInput>) => void
   width?: number
   style?: StyleProp<ViewStyle>
+  textStyle?: StyleProp<TextStyle>
   loading?: boolean
   paddingVertical?: number
 }
@@ -60,10 +66,12 @@ export default function InputText({
   text,
   helperText,
   errorText,
+  onBlur,
   onChangeText,
   onInputRef,
   currency,
   style,
+  textStyle,
   keyboardType,
   editable,
   label,
@@ -78,6 +86,7 @@ export default function InputText({
   onSubmit,
   onConfirm,
   autoFocus,
+  selectTextOnFocus,
   paddingVertical = 12
 }: Props | Readonly<Props>) {
   const context = useApplicationContext()
@@ -163,6 +172,7 @@ export default function InputText({
           enablesReturnKeyAutomatically={true}
           editable={editable !== false}
           keyboardType={keyboardType}
+          selectTextOnFocus={selectTextOnFocus}
           multiline={multiline && mode === 'default' ? multiline : false}
           style={[
             {
@@ -187,8 +197,10 @@ export default function InputText({
               paddingBottom: paddingVertical,
               fontFamily: 'Inter-Regular',
               width: width
-            }
+            },
+            textStyle
           ]}
+          onBlur={onBlur}
           onChangeText={onTextChanged}
           value={text}
         />
