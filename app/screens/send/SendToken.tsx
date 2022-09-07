@@ -126,10 +126,9 @@ const SendToken: FC<Props> = ({
         Send
       </AvaText.LargeTitleBold>
       <Space y={20} />
-      <AvaText.Heading3 textStyle={{ marginHorizontal: 16 }}>
-        Send to
+      <AvaText.Heading3 textStyle={{ marginHorizontal: 16, marginBottom: -8 }}>
+        Send To
       </AvaText.Heading3>
-      <Space y={4} />
       <View style={[{ flex: 0, paddingStart: 4, paddingEnd: 4 }]}>
         <InputText
           placeholder={placeholder}
