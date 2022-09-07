@@ -73,25 +73,20 @@ const NetworkFeeSelector = ({
   const selectedGasPrice = useMemo(() => {
     switch (selectedPreset) {
       case FeePreset.Custom:
-        return customGasPrice ?? networkFee.low
+        return !customGasPrice || customGasPrice.isZero()
+          ? networkFee.low
+          : customGasPrice
       default:
         return networkFee[FeePresetNetworkFeeMap[selectedPreset]]
     }
   }, [customGasPrice, networkFee, selectedPreset])
+
   const totalFeeString = useMemo(() => {
-    const gasPrice = selectedGasPrice?.isZero()
-      ? networkFee.low
-      : selectedGasPrice
     return ethersBigNumberToBig(
-      gasPrice?.mul(gasLimit),
+      selectedGasPrice?.mul(gasLimit),
       networkFee.nativeTokenDecimals
     ).toString()
-  }, [
-    gasLimit,
-    networkFee.nativeTokenDecimals,
-    networkFee.low,
-    selectedGasPrice
-  ])
+  }, [gasLimit, networkFee.nativeTokenDecimals, selectedGasPrice])
 
   useEffect(() => {
     const gasPrice = selectedGasPrice?.isZero()
@@ -135,12 +130,6 @@ const NetworkFeeSelector = ({
     networkFee.low,
     networkFee.medium
   ])
-
-  console.log(
-    `normal: ${displayGasValues[FeePreset.Normal]}, custom: ${
-      displayGasValues[FeePreset.Custom]
-    }`
-  )
 
   return (
     <>
@@ -212,7 +201,7 @@ const NetworkFeeSelector = ({
               label={FeePreset.Custom}
               selected={selectedPreset === FeePreset.Custom}
               onSelect={() => setSelectedPreset(FeePreset.Custom)}
-              defaultValue={displayGasValues[FeePreset.Normal]}
+              placeholder={displayGasValues[FeePreset.Normal]}
               value={
                 selectedPreset !== FeePreset.Custom &&
                 (!customGasPrice || customGasPrice.isZero())
@@ -247,7 +236,7 @@ export const FeeSelector: FC<{
   value?: string
   selected: boolean
   onSelect: (value: string) => void
-  defaultValue?: string
+  placeholder?: string
   editable?: boolean
   onValueEntered?: (value: string) => void
 }> = ({
@@ -256,7 +245,7 @@ export const FeeSelector: FC<{
   onSelect,
   onValueEntered,
   value,
-  defaultValue,
+  placeholder,
   editable = false
 }) => {
   const { theme } = useApplicationContext()
@@ -284,7 +273,7 @@ export const FeeSelector: FC<{
       <ButtonText selected={selected}>{label}</ButtonText>
       <InputText
         text={!value || value === '0' ? '' : value}
-        placeholder={defaultValue}
+        placeholder={placeholder}
         autoFocus
         selectTextOnFocus
         onBlur={() => setShowInput(false)}
