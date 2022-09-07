@@ -28,15 +28,16 @@ import { getExplorerAddressByNetwork } from 'utils/ExplorerUtils'
 import useInAppBrowser from 'hooks/useInAppBrowser'
 import FlexSpacer from 'components/FlexSpacer'
 import { Popable } from 'react-native-popable'
-import { popableContent } from 'screens/swap/components/SwapTransactionDetails'
 import { SwapTransaction } from 'screens/rpc/components/Transactions/SwapTransaction'
 import { BottomSheetScrollView } from '@gorhom/bottom-sheet'
 import { showSnackBarCustom } from 'components/Snackbar'
 import TransactionToast from 'components/toast/TransactionToast'
 import * as Sentry from '@sentry/react-native'
+import { PopableContent } from 'components/PopableContent'
+import { PopableLabel } from 'components/PopableLabel'
 
 interface Props {
-  onApprove: (tx: Transaction) => Promise<{ hash?: string; error?: any }>
+  onApprove: (tx: Transaction) => Promise<{ hash?: string; error?: unknown }>
   onReject: () => void
   dappEvent?: DappEvent
   onClose: () => void
@@ -67,11 +68,14 @@ const SignTransaction: FC<Props> = ({
   } = useExplainTransaction(dappEvent)
   const explorerUrl =
     activeNetwork && hash && getExplorerAddressByNetwork(activeNetwork, hash)
-  const displayData: TransactionDisplayValues = { ...rest } as any
+  const displayData = {
+    ...rest
+  } as TransactionDisplayValues
 
-  const netFeeInfoMessage = popableContent(
-    `Gas limit: ${displayData?.gasLimit} \nGas price: ${displayData?.fee} nAVAX`,
-    theme.colorBg3
+  const netFeeInfoMessage = (
+    <PopableContent
+      message={`Gas limit: ${displayData?.gasLimit} \nGas price: ${displayData?.fee} nAVAX`}
+    />
   )
 
   if (showData) {
@@ -257,9 +261,10 @@ const SignTransaction: FC<Props> = ({
               position={'right'}
               style={{ minWidth: 200 }}
               backgroundColor={theme.colorBg3}>
-              <AvaText.Body2 color={theme.white} textStyle={{ lineHeight: 24 }}>
-                Network Fee ⓘ
-              </AvaText.Body2>
+              <PopableLabel
+                label="Network Fee"
+                textStyle={{ lineHeight: 24, color: theme.white }}
+              />
             </Popable>
             <View
               style={{
