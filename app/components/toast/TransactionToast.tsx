@@ -42,9 +42,9 @@ const TransactionToast: FC<Props> = ({ message, toastId, type, txHash }) => {
         backgroundColor: theme.neutral850,
         borderRadius: 8,
         justifyContent: 'center',
-        width: WINDOW_WIDTH * 0.8,
+        width: WINDOW_WIDTH * 0.89,
         paddingHorizontal: 8,
-        height: 72
+        height: type === TransactionToastType.PENDING ? 60 : 76
       }}>
       {txHash ? (
         <AvaText.Caption
