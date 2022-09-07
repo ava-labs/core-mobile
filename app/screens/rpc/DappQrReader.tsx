@@ -5,9 +5,10 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import walletConnectService from 'services/walletconnect/WalletConnectService'
 import AvaText from 'components/AvaText'
 import QrScannerAva from 'components/QrScannerAva'
-import { popableContent } from 'screens/swap/components/SwapTransactionDetails'
 import { Popable } from 'react-native-popable'
 import { Space } from 'components/Space'
+import { PopableContent } from 'components/PopableContent'
+import { PopableLabel } from 'components/PopableLabel'
 
 type Props = {
   onScanned: (qrText: string) => void
@@ -28,10 +29,10 @@ function DappQrReader({ onScanned }: Props) {
     [onScanned]
   )
 
-  const uriMessage = popableContent(
-    `Use this to mannualy connect`,
-    theme.colorBg3
-  )
+  const popUriMessage = PopableContent({
+    message: `Use this to manually connect`,
+    backgroundColor: theme.colorBg3
+  })
 
   return (
     <View style={styles.modalContainer}>
@@ -49,13 +50,11 @@ function DappQrReader({ onScanned }: Props) {
         />
       )}
       <Popable
-        content={uriMessage}
+        content={popUriMessage}
         position={'right'}
         style={{ minWidth: 200 }}
         backgroundColor={theme.colorBg3}>
-        <AvaText.Heading3 textStyle={{ paddingHorizontal: 16 }}>
-          Connection URI ⓘ
-        </AvaText.Heading3>
+        <PopableLabel label={'Connection URI'} />
       </Popable>
       <Space y={8} />
       <InputText
