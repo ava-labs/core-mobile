@@ -28,7 +28,7 @@ const GeneralToast: FC<Props> = ({ message, toastId }) => {
         borderRadius: 8,
         justifyContent: 'center',
         alignItems: 'center',
-        width: WINDOW_WIDTH * 0.8,
+        width: WINDOW_WIDTH * 0.9,
         paddingHorizontal: 8,
         height: 72
       }}>
