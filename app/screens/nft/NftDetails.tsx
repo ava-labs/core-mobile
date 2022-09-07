@@ -92,7 +92,7 @@ const renderProps = (attributes?: NFTItemExternalDataAttribute[]) => {
   const props = []
   for (let i = 0; i < attributes.length; i += 2) {
     props.push(
-      <>
+      <View key={i}>
         <Space key={i + 1} y={4} />
         <Row key={i}>
           {attributes[i] && (
@@ -110,7 +110,7 @@ const renderProps = (attributes?: NFTItemExternalDataAttribute[]) => {
             </View>
           )}
         </Row>
-      </>
+      </View>
     )
   }
   return props
