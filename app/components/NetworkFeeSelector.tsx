@@ -22,11 +22,12 @@ import { fetchNetworkFee, selectNetworkFee } from 'store/networkFee'
 import { BigNumber } from 'ethers'
 import { useActiveNetwork } from 'hooks/useActiveNetwork'
 import { NetworkVMType } from '@avalabs/chains-sdk'
-import { NavigationProp, useNavigation } from '@react-navigation/native'
+import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { bigToEthersBigNumber, ethersBigNumberToBig } from '@avalabs/utils-sdk'
 import Big from 'big.js'
 import InfoSVG from 'components/svg/InfoSVG'
+import { WalletScreenProps } from 'navigation/types'
 
 export enum FeePreset {
   Normal = 'Normal',
@@ -41,6 +42,10 @@ export enum FeePresetNetworkFeeMap {
   Instant = 'high'
 }
 
+type NavigationProp = WalletScreenProps<
+  typeof AppNavigation.Modal.EditGasLimit
+>['navigation']
+
 const NetworkFeeSelector = ({
   gasLimit,
   onChange
@@ -48,8 +53,7 @@ const NetworkFeeSelector = ({
   gasLimit: number
   onChange?(gasLimit: number, gasPrice: BigNumber, feePreset: FeePreset): void
 }) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { navigate } = useNavigation<NavigationProp<any>>()
+  const { navigate } = useNavigation<NavigationProp>()
   const { theme } = useApplicationContext()
   const networkFee = useSelector(selectNetworkFee)
   const dispatch = useDispatch()
@@ -81,6 +85,7 @@ const NetworkFeeSelector = ({
 
   useEffect(() => {
     onChange?.(gasLimit, selectedGasPrice, selectedPreset)
+    // ignore onChange
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gasLimit, selectedGasPrice, selectedPreset])
 
@@ -227,7 +232,7 @@ export const FeeSelector: FC<{
   const { theme } = useApplicationContext()
   const [showInput, setShowInput] = useState(false)
 
-  let inputRef = useRef<TextInput>(null)
+  const inputRef = useRef<TextInput>(null)
 
   useEffect(() => {
     if (selected && editable) {
