@@ -37,7 +37,7 @@ const PortfolioListItem: FC<Props> = ({
       value={
         <AvaText.Body2 ellipsizeMode={'tail'}>{`${tokenPrice} `}</AvaText.Body2>
       }
-      currency={<AvaText.Body2>{`${symbol?.toUpperCase()}`}</AvaText.Body2>}
+      currency={<AvaText.Body2>{`${symbol}`}</AvaText.Body2>}
     />
   )
 
