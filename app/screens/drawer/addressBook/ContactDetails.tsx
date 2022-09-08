@@ -1,7 +1,7 @@
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import React, { useCallback } from 'react'
 import AvaText from 'components/AvaText'
-import { StyleSheet, View } from 'react-native'
+import { ScrollView, StyleSheet, View } from 'react-native'
 import AvaButton from 'components/AvaButton'
 import BlockchainCircle from 'components/BlockchainCircle'
 import ContactInput from 'screens/drawer/addressBook/components/ContactInput'
@@ -54,43 +54,45 @@ const ContactDetails = ({
   )
 
   return (
-    <SafeAreaProvider style={{ flex: 1, padding: 16 }}>
-      <View style={{ alignItems: 'center' }}>
-        <BlockchainCircle
-          size={80}
-          textSize={32}
-          chain={titleToInitials(contact.title)}
-        />
-        <Space y={24} />
-        <AvaText.Heading2>{contact.title}</AvaText.Heading2>
-      </View>
-      <Space y={40} />
-      {editable ? (
-        <>
-          <ContactInput
-            name={contact.title}
-            address={contact.address}
-            addressBtc={contact.addressBtc}
-            onNameChange={handleNameChange}
-            onAddressChange={handleAddressChange}
-            onAddressBtcChange={handleBtcAddressChange}
+    <SafeAreaProvider style={{ flex: 1 }}>
+      <ScrollView contentContainerStyle={{ flexGrow: 1, padding: 16 }}>
+        <View style={{ alignItems: 'center' }}>
+          <BlockchainCircle
+            size={80}
+            textSize={32}
+            chain={titleToInitials(contact.title)}
           />
-          <FlexSpacer />
-          <AvaButton.TextLarge onPress={() => onDelete(contact)}>
-            Delete Contact
-          </AvaButton.TextLarge>
-        </>
-      ) : (
-        <>
-          {!!contact.address && (
-            <AddressView title={'Address'} address={contact.address} />
-          )}
-          {!!contact.address && !!contact.addressBtc && <Space y={40} />}
-          {!!contact.addressBtc && (
-            <AddressView title={'Address BTC'} address={contact.addressBtc} />
-          )}
-        </>
-      )}
+          <Space y={24} />
+          <AvaText.Heading2>{contact.title}</AvaText.Heading2>
+        </View>
+        <Space y={40} />
+        {editable ? (
+          <>
+            <ContactInput
+              name={contact.title}
+              address={contact.address}
+              addressBtc={contact.addressBtc}
+              onNameChange={handleNameChange}
+              onAddressChange={handleAddressChange}
+              onAddressBtcChange={handleBtcAddressChange}
+            />
+            <FlexSpacer />
+            <AvaButton.TextLarge onPress={() => onDelete(contact)}>
+              Delete Contact
+            </AvaButton.TextLarge>
+          </>
+        ) : (
+          <>
+            {!!contact.address && (
+              <AddressView title={'Address'} address={contact.address} />
+            )}
+            {!!contact.address && !!contact.addressBtc && <Space y={40} />}
+            {!!contact.addressBtc && (
+              <AddressView title={'Address BTC'} address={contact.addressBtc} />
+            )}
+          </>
+        )}
+      </ScrollView>
     </SafeAreaProvider>
   )
 }

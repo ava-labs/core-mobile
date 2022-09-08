@@ -1,9 +1,11 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import AvaText from 'components/AvaText'
 import InputText from 'components/InputText'
 import { Space } from 'components/Space'
 import { View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
+import { isAddress } from '@ethersproject/address'
+import { isBech32Address } from '@avalabs/bridge-sdk'
 
 const ContactInput = ({
   name,
@@ -21,6 +23,19 @@ const ContactInput = ({
   onAddressBtcChange: (address: string) => void
 }) => {
   const { theme } = useApplicationContext()
+  const [addressError, setAddressError] = useState('')
+  const [btcAddressError, setBtcAddressError] = useState('')
+
+  useEffect(validateInputs, [address, addressBtc])
+
+  function validateInputs() {
+    setAddressError(
+      address && !isAddress(address) ? 'Not valid EVM address' : ''
+    )
+    setBtcAddressError(
+      addressBtc && !isBech32Address(addressBtc) ? 'Not valid BTC address' : ''
+    )
+  }
 
   return (
     <>
@@ -41,6 +56,7 @@ const ContactInput = ({
       <View style={{ marginHorizontal: -16 }}>
         <InputText
           multiline
+          errorText={addressError}
           placeholder={'Enter the address'}
           text={address}
           onChangeText={onAddressChange}
@@ -53,6 +69,7 @@ const ContactInput = ({
       <View style={{ marginHorizontal: -16 }}>
         <InputText
           multiline
+          errorText={btcAddressError}
           placeholder={'Enter the Bitcoin address'}
           text={addressBtc}
           onChangeText={onAddressBtcChange}
