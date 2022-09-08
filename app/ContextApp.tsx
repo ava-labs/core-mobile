@@ -46,7 +46,7 @@ const ContextAppWithRedux = () => {
           ref={ref => {
             ref && setToast(ref)
           }}
-          offsetTop={60}
+          offsetTop={30}
           normalColor={'00FFFFFF'}
         />
       </ContextProviders>

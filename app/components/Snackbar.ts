@@ -32,6 +32,9 @@ export function showSnackBarCustom({
     type: 'transaction',
     placement: placement,
     animationType: 'slide-in',
+    style: {
+      paddingHorizontal: 0
+    },
     duration:
       duration === 'infinite'
         ? LENGTH_INFINITE
