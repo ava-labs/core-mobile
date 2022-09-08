@@ -30,6 +30,8 @@ import { TokenType } from 'store/balance'
 import { ActivityIndicator } from 'components/ActivityIndicator'
 
 const WINDOW_WIDTH = Dimensions.get('window').width
+const WINDOW_HEIGHT = Dimensions.get('window').height
+const CHART_HEIGHT = WINDOW_HEIGHT * 0.18
 
 type ScreenProps = WalletScreenProps<typeof AppNavigation.Wallet.TokenDetail>
 
@@ -60,9 +62,7 @@ const TokenDetail = () => {
   } = useTokenDetail(tokenId)
 
   function openTwitter() {
-    // data will come from somewhere, something like
-    // token.twitterHandle
-    openUrl(`https://twitter.com/${twitterHandle}`)
+    twitterHandle && openUrl(`https://twitter.com/${twitterHandle}`)
   }
 
   function openWebsite() {
@@ -83,16 +83,19 @@ const TokenDetail = () => {
         ViewOnceInformation.CHART_INTERACTION
       ])
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useLayoutEffect(() => {
     setOptions({
+      // eslint-disable-next-line react/no-unstable-nested-components
       headerRight: () => (
         <Pressable style={{ paddingEnd: 8 }} onPress={handleFavorite}>
           <StarSVG selected={isFavorite} />
         </Pressable>
       )
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isFavorite])
 
   const getOverlayContent = () => {
@@ -184,7 +187,7 @@ const TokenDetail = () => {
         <Space y={8} />
         <View
           style={{
-            height: 120,
+            height: CHART_HEIGHT,
             justifyContent: 'center',
             alignItems: 'center'
           }}>
@@ -206,7 +209,7 @@ const TokenDetail = () => {
               xRange={[ranges.minDate, ranges.maxDate]}
               negative={ranges.diffValue < 0}
               width={WINDOW_WIDTH - 32} // padding
-              height={120}
+              height={CHART_HEIGHT}
             />
             <AvaText.Caption
               textStyle={{ alignSelf: 'flex-end', color: theme.colorText1 }}
@@ -248,18 +251,23 @@ const TokenDetail = () => {
         {/* Market Data & Rank */}
         <AvaListItem.Base
           title={<AvaText.Heading2>Market Data</AvaText.Heading2>}
-          paddingVertical={4}
           titleAlignment={'flex-start'}
           rightComponent={
             <OvalTagBg
-              color={theme.colorBg3}
+              color={theme.neutral850}
               style={{ height: 21, paddingVertical: 0 }}>
-              <AvaText.Body2>{`Rank: ${marketCapRank}`}</AvaText.Body2>
+              <AvaText.Body2
+                textStyle={{
+                  color: theme.colorText3
+                }}>{`Rank: ${marketCapRank}`}</AvaText.Body2>
             </OvalTagBg>
           }
         />
-
-        <Row style={styles.row}>
+        <Row
+          style={[
+            styles.row,
+            { marginTop: -4, paddingTop: 0, paddingBottom: 8 }
+          ]}>
           <DataItem
             title={'MarketCap'}
             value={formatMarketNumbers(marketCap)}
@@ -298,12 +306,12 @@ const TokenDetail = () => {
               <AvaText.Heading3
                 textStyle={{ color: '#0A84FF' }}
                 onPress={openTwitter}>
-                @{twitterHandle}
+                {twitterHandle ? `@${twitterHandle}` : ''}
               </AvaText.Heading3>
             }
           />
         </Row>
-        <Row style={styles.row}>
+        <Row style={[styles.row, { paddingBottom: 16 }]}>
           <DataItem
             title={'Total Supply'}
             value={formatLargeNumber(marketTotalSupply)}
@@ -311,11 +319,11 @@ const TokenDetail = () => {
         </Row>
 
         {token?.symbol === TokenSymbol.AVAX && (
-          <AvaButton.Base onPress={openMoonPay}>
-            <OvalTagBg color={theme.colorBg2} style={{ height: 48 }}>
-              <AvaText.ButtonLarge>Buy {token?.symbol}</AvaText.ButtonLarge>
-            </OvalTagBg>
-          </AvaButton.Base>
+          <AvaButton.SecondaryLarge
+            onPress={openMoonPay}
+            style={{ marginHorizontal: 16 }}>
+            Buy {token?.symbol}
+          </AvaButton.SecondaryLarge>
         )}
       </View>
     </ScrollView>
@@ -329,9 +337,12 @@ const DataItem = ({
   title: string
   value: string | React.ReactNode
 }) => {
+  const { theme } = useApplicationContext()
   return (
     <View style={{ flex: 1 }}>
-      <AvaText.Body2>{title}</AvaText.Body2>
+      <AvaText.Body2 textStyle={{ color: theme.colorText3 }}>
+        {title}
+      </AvaText.Body2>
       {typeof value === 'string' ? (
         <AvaText.Heading3>{value}</AvaText.Heading3>
       ) : (
