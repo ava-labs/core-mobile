@@ -1,5 +1,5 @@
 import { SafeAreaProvider } from 'react-native-safe-area-context'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback } from 'react'
 import AvaText from 'components/AvaText'
 import { StyleSheet, View } from 'react-native'
 import AvaButton from 'components/AvaButton'
@@ -23,13 +23,35 @@ const ContactDetails = ({
   onDelete: (contact: Contact) => void
   editable?: boolean
 }) => {
-  const [title, setTitle] = useState(contact.title)
-  const [address, setAddress] = useState(contact.address)
-  const [addressBtc, setAddressBtc] = useState(contact.addressBtc)
+  const handleNameChange = useCallback(
+    (name: string) => {
+      onChange({
+        ...contact,
+        title: name
+      })
+    },
+    [contact, onChange]
+  )
 
-  useEffect(() => {
-    onChange({ id: contact.id, address, addressBtc, title })
-  }, [address, addressBtc, contact.id, onChange, title])
+  const handleAddressChange = useCallback(
+    (address: string) => {
+      onChange({
+        ...contact,
+        address
+      })
+    },
+    [contact, onChange]
+  )
+
+  const handleBtcAddressChange = useCallback(
+    (addressBtc: string) => {
+      onChange({
+        ...contact,
+        addressBtc
+      })
+    },
+    [contact, onChange]
+  )
 
   return (
     <SafeAreaProvider style={{ flex: 1, padding: 16 }}>
@@ -37,21 +59,21 @@ const ContactDetails = ({
         <BlockchainCircle
           size={80}
           textSize={32}
-          chain={titleToInitials(title)}
+          chain={titleToInitials(contact.title)}
         />
         <Space y={24} />
-        <AvaText.Heading2>{title}</AvaText.Heading2>
+        <AvaText.Heading2>{contact.title}</AvaText.Heading2>
       </View>
       <Space y={40} />
       {editable ? (
         <>
           <ContactInput
-            name={title}
-            address={address}
-            addressBtc={addressBtc}
-            onNameChange={setTitle}
-            onAddressChange={setAddress}
-            onAddressBtcChange={setAddressBtc}
+            name={contact.title}
+            address={contact.address}
+            addressBtc={contact.addressBtc}
+            onNameChange={handleNameChange}
+            onAddressChange={handleAddressChange}
+            onAddressBtcChange={handleBtcAddressChange}
           />
           <FlexSpacer />
           <AvaButton.TextLarge onPress={() => onDelete(contact)}>
@@ -60,10 +82,12 @@ const ContactDetails = ({
         </>
       ) : (
         <>
-          {!!address && <AddressView title={'Address'} address={address} />}
-          {!!address && !!addressBtc && <Space y={40} />}
-          {!!addressBtc && (
-            <AddressView title={'Address BTC'} address={addressBtc} />
+          {!!contact.address && (
+            <AddressView title={'Address'} address={contact.address} />
+          )}
+          {!!contact.address && !!contact.addressBtc && <Space y={40} />}
+          {!!contact.addressBtc && (
+            <AddressView title={'Address BTC'} address={contact.addressBtc} />
           )}
         </>
       )}

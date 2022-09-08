@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import AvaText from 'components/AvaText'
 import InputText from 'components/InputText'
 import { Space } from 'components/Space'
@@ -21,14 +21,6 @@ const ContactInput = ({
   onAddressBtcChange: (address: string) => void
 }) => {
   const { theme } = useApplicationContext()
-
-  useEffect(() => {
-    onNameChange(name)
-  }, [name, onNameChange])
-
-  useEffect(() => {
-    onAddressChange(address)
-  }, [address, onAddressChange])
 
   return (
     <>
