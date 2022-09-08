@@ -1,4 +1,10 @@
-import React, { FC, ReactNode, useLayoutEffect } from 'react'
+import React, {
+  FC,
+  ReactNode,
+  useEffect,
+  useLayoutEffect,
+  useState
+} from 'react'
 import { StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
@@ -19,11 +25,14 @@ import BridgeConfirmations from 'screens/bridge/components/BridgeConfirmations'
 import { useBridgeContext } from 'contexts/BridgeContext'
 import { StackNavigationOptions } from '@react-navigation/stack'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
-import { useNavigation } from '@react-navigation/native'
 import Logger from 'utils/Logger'
 import { useSelector } from 'react-redux'
 import { selectTokenInfo } from 'store/network'
 import { getBlockchainDisplayName } from 'screens/bridge/utils/bridgeUtils'
+import { showSnackBarCustom } from 'components/Snackbar'
+import TransactionToast, {
+  TransactionToastType
+} from 'components/toast/TransactionToast'
 
 type Props = {
   txHash: string
@@ -36,6 +45,7 @@ const BridgeTransactionStatus: FC<Props> = ({
   setNavOptions,
   HeaderRight = null
 }) => {
+  const [toastShown, setToastShown] = useState<boolean>()
   const { bridgeTransactions, removeBridgeTransaction } = useBridgeContext()
   const bridgeTransaction = bridgeTransactions[txHash] as
     | BridgeTransaction
@@ -53,7 +63,6 @@ const BridgeTransactionStatus: FC<Props> = ({
   )
   const { theme, appHook } = useApplicationContext()
   const { selectedCurrency, currencyFormatter } = appHook
-  const navigation = useNavigation()
 
   const assetPrice = usePrice(
     bridgeTransaction?.symbol,
@@ -76,17 +85,28 @@ const BridgeTransactionStatus: FC<Props> = ({
         }`,
         headerRight: () => HeaderRight
       })
-
-      if (bridgeTransaction.complete) {
-        removeBridgeTransaction(bridgeTransaction.sourceTxHash)
-        if (HeaderRight) {
-          navigation.getParent()?.goBack()
-        } else {
-          navigation.goBack()
-        }
-      }
     }
-  }, [bridgeTransaction?.complete])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [HeaderRight, bridgeTransaction])
+
+  useEffect(() => {
+    if (bridgeTransaction?.complete && !toastShown) {
+      const toastId = Math.random().toString()
+      removeBridgeTransaction(bridgeTransaction.sourceTxHash)
+      setToastShown(true)
+      showSnackBarCustom({
+        component: (
+          <TransactionToast
+            message={'Bridge successful!'}
+            type={TransactionToastType.SUCCESS}
+            toastId={toastId}
+          />
+        ),
+        id: toastId,
+        duration: 'infinite'
+      })
+    }
+  }, [bridgeTransaction, removeBridgeTransaction, toastShown])
 
   const tokenLogo = (
     <View style={styles.logoContainer}>
