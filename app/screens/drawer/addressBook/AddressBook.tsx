@@ -9,6 +9,7 @@ import { AddressBookScreenProps } from 'navigation/types'
 import { Contact } from 'Repo'
 import { useSelector } from 'react-redux'
 import { selectContacts } from 'store/addressBook'
+import ZeroState from 'components/ZeroState'
 
 type NavigationProp = AddressBookScreenProps<
   typeof AppNavigation.AddressBook.List
@@ -42,10 +43,20 @@ const AddressBook = () => {
     )
   }
 
+  const addContact = () => navigate(AppNavigation.AddressBook.Add)
+
+  const contentContainerStyle =
+    filteredContacts.length === 0 ? { flex: 0.7 } : { flex: 0 }
+
   return (
     <SafeAreaProvider style={{ flex: 1, paddingHorizontal: 16 }}>
       <SearchBar searchText={searchFilter} onTextChanged={setSearchFilter} />
-      <FlatList data={filteredContacts} renderItem={renderContactItem} />
+      <FlatList
+        contentContainerStyle={contentContainerStyle}
+        data={filteredContacts}
+        renderItem={renderContactItem}
+        ListEmptyComponent={<ZeroState.NoContacts addContact={addContact} />}
+      />
     </SafeAreaProvider>
   )
 }
