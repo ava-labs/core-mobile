@@ -29,11 +29,6 @@ function DappQrReader({ onScanned }: Props) {
     [onScanned]
   )
 
-  const popUriMessage = PopableContent({
-    message: `Use this to manually connect`,
-    backgroundColor: theme.colorBg3
-  })
-
   return (
     <View style={styles.modalContainer}>
       <AvaText.LargeTitleBold textStyle={{ marginHorizontal: 16 }}>
@@ -49,13 +44,17 @@ function DappQrReader({ onScanned }: Props) {
           vibrate
         />
       )}
-      <Popable
-        content={popUriMessage}
-        position={'right'}
-        style={{ minWidth: 200 }}
-        backgroundColor={theme.colorBg3}>
-        <PopableLabel label={'Connection URI'} />
-      </Popable>
+      <View style={{ alignSelf: 'baseline' }}>
+        <Popable
+          content={PopableContent({
+            message: `Use this to manually connect`
+          })}
+          position={'right'}
+          style={{ minWidth: 200 }}
+          backgroundColor={theme.colorBg3}>
+          <PopableLabel label={'Connection URI'} />
+        </Popable>
+      </View>
       <Space y={8} />
       <InputText
         text={qrText}
