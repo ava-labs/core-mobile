@@ -208,7 +208,7 @@ function ZeroStateSites({
       title={title}
       message={message}
       image={<QRScanSVG size={54} />}
-      additionalComponent={
+      button={
         <>
           <AvaButton.SecondaryLarge
             style={{ bottom: 32, position: 'absolute' }}
@@ -231,7 +231,7 @@ const ZeroState = {
   NoTransactions: ZeroStateNoTransactions,
   NoWatchlistFavorites: ZeroStateNoWatchlistFavorites,
   EmptyAddressBook: ZeroStateEmptyAddressBook, // used in Send screens
-  NoContacts: ZeroStateNoContacts // used in Contacts screen
+  NoContacts: ZeroStateNoContacts, // used in Contacts screen
   Sites: ZeroStateSites
 }
 

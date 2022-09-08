@@ -1,17 +1,17 @@
-import React, {memo} from 'react';
-import AppNavigation from 'navigation/AppNavigation';
-import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin';
-import CreatePIN from 'screens/onboarding/CreatePIN';
-import SecurityPrivacy from 'screens/drawer/security/SecurityPrivacy';
-import {useNavigation, useRoute} from '@react-navigation/native';
-import {MainHeaderOptions} from 'navigation/NavUtils';
-import {useApplicationContext} from 'contexts/ApplicationContext';
-import {createStackNavigator} from '@react-navigation/stack';
-import BiometricsSDK from 'utils/BiometricsSDK';
-import RevealMnemonic from 'navigation/wallet/RevealMnemonic';
-import {QRCodeParams, SecurityPrivacyScreenProps} from 'navigation/types';
-import ConnectedDapps from 'screens/rpc/ConnectedDapps';
-import CaptureDappQR from 'screens/shared/CaptureDappQR';
+import React, { memo } from 'react'
+import AppNavigation from 'navigation/AppNavigation'
+import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin'
+import CreatePIN from 'screens/onboarding/CreatePIN'
+import SecurityPrivacy from 'screens/drawer/security/SecurityPrivacy'
+import { useNavigation, useRoute } from '@react-navigation/native'
+import { MainHeaderOptions } from 'navigation/NavUtils'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { createStackNavigator } from '@react-navigation/stack'
+import BiometricsSDK from 'utils/BiometricsSDK'
+import RevealMnemonic from 'navigation/wallet/RevealMnemonic'
+import { QRCodeParams, SecurityPrivacyScreenProps } from 'navigation/types'
+import ConnectedDapps from 'screens/rpc/ConnectedDapps'
+import CaptureDappQR from 'screens/shared/CaptureDappQR'
 
 export type SecurityStackParamList = {
   [AppNavigation.SecurityPrivacy.SecurityPrivacy]: undefined

@@ -1,4 +1,4 @@
-import React, { FC, useCallback } from 'react'
+import React, { FC, useCallback, useState } from 'react'
 import { Image, StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaLogoSVG from 'components/svg/AvaLogoSVG'
@@ -8,6 +8,7 @@ import BitcoinSVG from 'components/svg/BitcoinSVG'
 import { TokenWithBalance } from 'store/balance'
 import { TokenSymbol } from 'store/network'
 import { MarketToken } from 'store/watchlist'
+import { SvgUri } from 'react-native-svg'
 import AvaText from './AvaText'
 
 interface Props {
@@ -28,8 +29,11 @@ const AvatarBase: FC<Props> = ({
   circleColor
 }) => {
   const { theme } = useApplicationContext()
+  const [failedToLoad, setFailedToLoad] = useState(false)
   const hasValidLogoUri =
-    !!logoUri && (logoUri.startsWith('http') || logoUri.startsWith('https'))
+    !!logoUri &&
+    (logoUri.startsWith('http') || logoUri.startsWith('https')) &&
+    !failedToLoad
 
   const tokenLogo = useCallback(() => {
     // if AVAX, return our own logo
@@ -82,7 +86,20 @@ const AvatarBase: FC<Props> = ({
         width: size,
         height: size
       }
-      return <Image style={style} source={{ uri: logoUri }} />
+
+      if (logoUri?.endsWith('svg')) {
+        return <SvgUri uri={logoUri} style={style} />
+      }
+
+      return (
+        <Image
+          style={style}
+          source={{ uri: logoUri }}
+          onError={() => {
+            setFailedToLoad(true)
+          }}
+        />
+      )
     }
   }, [
     circleColor,
