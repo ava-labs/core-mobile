@@ -1,21 +1,17 @@
-import React, { memo } from 'react'
-import AppNavigation from 'navigation/AppNavigation'
-import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin'
-import CreatePIN from 'screens/onboarding/CreatePIN'
-import SecurityPrivacy from 'screens/drawer/security/SecurityPrivacy'
-import { useNavigation, useRoute } from '@react-navigation/native'
-import { MainHeaderOptions } from 'navigation/NavUtils'
-import { useApplicationContext } from 'contexts/ApplicationContext'
-import { createStackNavigator } from '@react-navigation/stack'
-import BiometricsSDK from 'utils/BiometricsSDK'
-import RevealMnemonic from 'navigation/wallet/RevealMnemonic'
-import {
-  QRCodeParams,
-  SecurityPrivacyScreenProps,
-  WalletScreenProps
-} from 'navigation/types'
-import ConnectedDapps from 'screens/rpc/ConnectedDapps'
-import DappQrReader from 'screens/rpc/DappQrReader'
+import React, {memo} from 'react';
+import AppNavigation from 'navigation/AppNavigation';
+import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin';
+import CreatePIN from 'screens/onboarding/CreatePIN';
+import SecurityPrivacy from 'screens/drawer/security/SecurityPrivacy';
+import {useNavigation, useRoute} from '@react-navigation/native';
+import {MainHeaderOptions} from 'navigation/NavUtils';
+import {useApplicationContext} from 'contexts/ApplicationContext';
+import {createStackNavigator} from '@react-navigation/stack';
+import BiometricsSDK from 'utils/BiometricsSDK';
+import RevealMnemonic from 'navigation/wallet/RevealMnemonic';
+import {QRCodeParams, SecurityPrivacyScreenProps} from 'navigation/types';
+import ConnectedDapps from 'screens/rpc/ConnectedDapps';
+import CaptureDappQR from 'screens/shared/CaptureDappQR';
 
 export type SecurityStackParamList = {
   [AppNavigation.SecurityPrivacy.SecurityPrivacy]: undefined
@@ -50,7 +46,7 @@ function SecurityPrivacyStackScreen(): JSX.Element {
         <SecurityStack.Screen
           options={MainHeaderOptions('')}
           name={AppNavigation.SecurityPrivacy.QRCode}
-          component={CaptureQRCode}
+          component={CaptureDappQR}
         />
       </SecurityStack.Group>
       <SecurityStack.Group screenOptions={{ presentation: 'modal' }}>
@@ -196,15 +192,5 @@ const CreatePinScreen = memo(() => {
     />
   )
 })
-
-type QRCodeScreenProps = WalletScreenProps<typeof AppNavigation.Wallet.QRCode>
-
-const CaptureQRCode = () => {
-  const { params } = useRoute<QRCodeScreenProps['route']>()
-
-  const onScanned = (qrText: string) => params.onScanned(qrText)
-
-  return <DappQrReader onScanned={onScanned} />
-}
 
 export default SecurityPrivacyStackScreen

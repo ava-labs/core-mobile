@@ -45,7 +45,6 @@ export type EditGasLimitParams = {
 }
 
 export type QRCodeParams = {
-  onAction: (qrText: string) => void
   onScanned: (qrText: string) => void
 }
 

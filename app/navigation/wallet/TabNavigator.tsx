@@ -37,6 +37,8 @@ import { useActiveNetwork } from 'hooks/useActiveNetwork'
 import WalletConnectSVG from 'components/svg/WalletConnectSVG'
 import AvaButton from 'components/AvaButton'
 import { Row } from 'components/Row'
+import { DeepLinkOrigin } from 'services/walletconnect/types'
+import { useDappConnectionContext } from 'contexts/DappConnectionContext'
 
 export type TabNavigatorParamList = {
   [AppNavigation.Tabs.Portfolio]: { showBackButton?: boolean }
@@ -215,6 +217,7 @@ const CustomTabBarFab: FC = ({ children }) => {
   const navigation = useNavigation<FabNavigationProp>()
   const activeNetwork = useActiveNetwork()
   const fabRef = useRef<typeof FloatingActionButton>()
+  const { setPendingDeepLink } = useDappConnectionContext()
 
   const actionItems = useMemo(() => {
     const actions: Record<string, ActionProp> = {}
@@ -249,8 +252,16 @@ const CustomTabBarFab: FC = ({ children }) => {
     if (!wcDisabled) {
       actions.WalletConnect = {
         image: <WalletConnectSVG color={theme.background} size={24} />,
-        // @ts-ignore todo: fix types
-        onPress: () => navigation.navigate(AppNavigation.Wallet.QRCode)
+        onPress: () =>
+          navigation.navigate(AppNavigation.Wallet.QRCode, {
+            onScanned: uri => {
+              setPendingDeepLink({
+                url: uri,
+                origin: DeepLinkOrigin.ORIGIN_QR_CODE
+              })
+              navigation.goBack()
+            }
+          })
       } as ActionProp
     }
 
