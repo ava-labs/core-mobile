@@ -62,6 +62,7 @@ const WatchlistCarrousel: FC<Props> = () => {
         <Space y={16} />
       </AvaButton.Base>
     ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   )
 
@@ -88,11 +89,13 @@ const WatchlistCarrousel: FC<Props> = () => {
         bounces
         ListEmptyComponent={EmptyItem}
         showsHorizontalScrollIndicator={false}
-        ItemSeparatorComponent={() => <View style={{ margin: 4 }} />}
+        ItemSeparatorComponent={Separator}
       />
     </View>
   )
 }
+
+const Separator = () => <View style={{ margin: 4 }} />
 
 interface CarrouselItemProps {
   token: MarketToken
@@ -135,7 +138,7 @@ const CarrouselItem: FC<CarrouselItemProps> = ({ token, onPress }) => {
     <AvaButton.Base
       key={token.id}
       onPress={onPress}
-      style={[style.item, { backgroundColor: theme.colorBg3 }]}>
+      style={[style.item, { backgroundColor: theme.colorBg2 }]}>
       <Avatar.Custom
         name={token.name}
         symbol={token.symbol}
