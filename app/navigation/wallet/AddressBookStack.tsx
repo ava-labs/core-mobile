@@ -85,14 +85,7 @@ const ContactDetailsComp = () => {
   const contact = useSelector(selectContact(params.contactId))
   const editingContact = useSelector(selectEditingContact)
 
-  useEffect(init, [])
-
-  function init() {
-    dispatch(
-      setEditingContact(
-        params?.contactId ? Object.assign({}, contact) : undefined
-      )
-    )
+  useEffect(() => {
     setParams({ editable: false })
     setOptions({
       ...(MainHeaderOptions(
@@ -101,11 +94,18 @@ const ContactDetailsComp = () => {
         <EditAddressBookContact onEdit={onEdit} />
       ) as Partial<StackNavigationOptions>)
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    dispatch(
+      setEditingContact(contact ? Object.assign({}, contact) : undefined)
+    )
 
     return () => {
-      setEditingContact(undefined)
+      dispatch(setEditingContact(undefined))
     }
-  }
+  }, [contact, dispatch])
 
   function saveContact() {
     dispatch(saveEditingContact())
@@ -149,7 +149,8 @@ const ContactDetailsComp = () => {
     <ContactDetails
       editable={editable}
       contact={
-        editingContact ?? ({ id: '', title: '', address: '' } as Contact)
+        editingContact ??
+        ({ id: '', title: '', address: '', addressBtc: '' } as Contact)
       }
       onChange={onChange}
       onDelete={deleteContact}
