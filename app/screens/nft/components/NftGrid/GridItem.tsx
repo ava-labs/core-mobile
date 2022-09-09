@@ -34,41 +34,43 @@ const ErrorFallback = ({ item }: { item: NFTItemData }) => {
   )
 }
 
-export const GridItem = ({
-  item,
-  onItemSelected
-}: {
-  item: NFTItemData
-  onItemSelected: (item: NFTItemData) => void
-}) => {
-  const [imgLoadFailed, setImgLoadFailed] = useState(false)
+export const GridItem = React.memo(
+  ({
+    item,
+    onItemSelected
+  }: {
+    item: NFTItemData
+    onItemSelected: (item: NFTItemData) => void
+  }) => {
+    const [imgLoadFailed, setImgLoadFailed] = useState(false)
 
-  return (
-    <AvaButton.Base
-      key={item.uid}
-      onPress={() => onItemSelected(item)}
-      style={{
-        margin: GRID_ITEM_MARGIN
-      }}>
-      {!item.image || imgLoadFailed ? (
-        <ErrorFallback item={item} />
-      ) : item.isSvg ? (
-        <SvgXml
-          xml={item.image}
-          width={GRID_ITEM_WIDTH}
-          height={GRID_ITEM_WIDTH * (item.aspect ?? 1)}
-        />
-      ) : (
-        <Image
-          onError={_ => setImgLoadFailed(true)}
-          style={{
-            width: GRID_ITEM_WIDTH,
-            height: GRID_ITEM_WIDTH * (item.aspect ?? 1),
-            borderRadius: 8
-          }}
-          source={{ uri: item.image }}
-        />
-      )}
-    </AvaButton.Base>
-  )
-}
+    return (
+      <AvaButton.Base
+        key={item.uid}
+        onPress={() => onItemSelected(item)}
+        style={{
+          margin: GRID_ITEM_MARGIN
+        }}>
+        {!item.image || imgLoadFailed ? (
+          <ErrorFallback item={item} />
+        ) : item.isSvg ? (
+          <SvgXml
+            xml={item.image}
+            width={GRID_ITEM_WIDTH}
+            height={GRID_ITEM_WIDTH * (item.aspect ?? 1)}
+          />
+        ) : (
+          <Image
+            onError={_ => setImgLoadFailed(true)}
+            style={{
+              width: GRID_ITEM_WIDTH,
+              height: GRID_ITEM_WIDTH * (item.aspect ?? 1),
+              borderRadius: 8
+            }}
+            source={{ uri: item.image }}
+          />
+        )}
+      </AvaButton.Base>
+    )
+  }
+)

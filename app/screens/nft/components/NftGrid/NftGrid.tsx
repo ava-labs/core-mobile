@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
-import { StyleSheet } from 'react-native'
+import { FlatList, StyleSheet } from 'react-native'
 import ZeroState from 'components/ZeroState'
-import MasonryList from '@react-native-seoul/masonry-list'
 import { NFTItemData } from 'store/nft'
 import { FetchingNextIndicator } from '../FetchingNextIndicator'
 import { GridItem } from './GridItem'
@@ -41,11 +40,11 @@ export const NftGrid = ({
   if (isLoading) return <NftGridLoader />
 
   return (
-    <MasonryList
+    <FlatList
       data={nfts}
       contentContainerStyle={styles.contentContainer}
       onEndReached={onEndReached}
-      onEndReachedThreshold={0.8}
+      onEndReachedThreshold={0.4}
       onMomentumScrollBegin={() => setEndReachedDuringMomentum(false)}
       keyExtractor={item => item.uid}
       ListEmptyComponent={<ZeroState.Collectibles />}
