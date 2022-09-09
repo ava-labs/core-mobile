@@ -23,6 +23,7 @@ import {
   RemoveEvents,
   useBeforeRemoveListener
 } from 'hooks/useBeforeRemoveListener'
+import { PopableLabel } from 'components/PopableLabel'
 
 type NavigationProp = SendTokensScreenProps<
   typeof AppNavigation.Send.Review
@@ -53,6 +54,7 @@ export default function ReviewSend({ onSuccess }: { onSuccess: () => void }) {
     if (sendStatus === 'Sending') {
       onSuccess()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sendStatus])
 
   useBeforeRemoveListener(
@@ -132,7 +134,7 @@ export default function ReviewSend({ onSuccess }: { onSuccess: () => void }) {
             position={'right'}
             style={{ minWidth: 200 }}
             backgroundColor={theme.colorBg3}>
-            <AvaText.Body2>Network Fee ⓘ</AvaText.Body2>
+            <PopableLabel label="Network Fee" />
           </Popable>
           <AvaText.Heading2 currency>{fees.sendFeeInCurrency}</AvaText.Heading2>
         </Row>

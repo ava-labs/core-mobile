@@ -185,6 +185,16 @@ const Bridge: FC = () => {
     }
   }
 
+  const handleError = useCallback(
+    errorMessage => {
+      if (errorMessage) {
+        capture('BridgeTokenSelectError', { errorMessage })
+      }
+      setBridgeError(errorMessage)
+    },
+    [capture]
+  )
+
   const setCurrentBlockchain = (blockchain: Blockchain) => {
     // update network
     const blockChainNetwork = blockchainToNetwork(
@@ -235,7 +245,6 @@ const Bridge: FC = () => {
       navigation.navigate(AppNavigation.Bridge.BridgeTransactionStatus, {
         txHash: hash ?? ''
       })
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       const errorMessage =
         'reason' in e
@@ -423,17 +432,12 @@ const Bridge: FC = () => {
     <View>
       <>
         <BNInput
-          value={!sourceBalance || amountBN.isZero() ? undefined : amountBN}
+          value={!sourceBalance ? undefined : amountBN}
           denomination={denomination}
           max={maximum && bigToBN(maximum, denomination)}
           placeholder={'0.0'}
           onChange={handleAmountChanged}
-          onError={errorMessage => {
-            if (errorMessage) {
-              capture('BridgeTokenSelectError', { errorMessage })
-            }
-            setBridgeError(errorMessage)
-          }}
+          onError={handleError}
           style={{
             minWidth: 160
           }}

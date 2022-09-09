@@ -3,8 +3,12 @@ import {
   ActivityIndicator,
   Appearance,
   InteractionManager,
+  NativeSyntheticEvent,
+  Keyboard,
   StyleProp,
   TextInput,
+  TextInputFocusEventData,
+  TextStyle,
   View,
   ViewStyle
 } from 'react-native'
@@ -14,10 +18,13 @@ import ClearInputSVG from 'components/svg/ClearInputSVG'
 import { Space } from 'components/Space'
 import CheckmarkSVG from 'components/svg/CheckmarkSVG'
 import { Popable } from 'react-native-popable'
+import InfoSVG from 'components/svg/InfoSVG'
+import { Row } from 'components/Row'
 import AvaText from './AvaText'
 import AvaButton from './AvaButton'
 
 type Props = {
+  onBlur?: (e: NativeSyntheticEvent<TextInputFocusEventData>) => void
   onChangeText?: (text: string) => void
   editable?: boolean
   multiline?: boolean
@@ -45,23 +52,29 @@ type Props = {
   // shows popover info if provided
   popOverInfoText?: string | React.ReactElement
   autoFocus?: boolean
+  selectTextOnFocus?: boolean | undefined
   text: string
   currency?: string
   onInputRef?: (inputRef: RefObject<TextInput>) => void
   width?: number
   style?: StyleProp<ViewStyle>
+  textStyle?: StyleProp<TextStyle>
   loading?: boolean
   paddingVertical?: number
+  keyboardWillShow?: () => void
+  keyboardDidHide?: () => void
 }
 
 export default function InputText({
   text,
   helperText,
   errorText,
+  onBlur,
   onChangeText,
   onInputRef,
   currency,
   style,
+  textStyle,
   keyboardType,
   editable,
   label,
@@ -76,7 +89,10 @@ export default function InputText({
   onSubmit,
   onConfirm,
   autoFocus,
-  paddingVertical = 12
+  selectTextOnFocus,
+  paddingVertical = 12,
+  keyboardWillShow,
+  keyboardDidHide
 }: Props | Readonly<Props>) {
   const context = useApplicationContext()
   const [showInput, setShowInput] = useState(false)
@@ -85,7 +101,21 @@ export default function InputText({
   const textInputRef = useRef() as RefObject<TextInput>
 
   useEffect(() => {
+    Keyboard.addListener('keyboardWillShow', () => {
+      keyboardWillShow?.()
+    })
+    Keyboard.addListener('keyboardDidHide', () => {
+      keyboardDidHide?.()
+    })
+    return () => {
+      Keyboard.removeAllListeners('keyboardWillShow')
+      Keyboard.removeAllListeners('keyboardDidHide')
+    }
+  }, [keyboardDidHide, keyboardWillShow])
+
+  useEffect(() => {
     onInputRef?.(textInputRef)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [textInputRef])
 
   useEffect(() => {
@@ -112,123 +142,14 @@ export default function InputText({
 
   const theme = context.theme
 
-  const ClearBtn = () => {
-    return (
-      <View
-        style={[
-          {
-            position: 'absolute',
-            right: 8
-          }
-        ]}>
-        <AvaButton.Icon onPress={onClear}>
-          <ClearInputSVG color={theme.colorText2} size={14} />
-        </AvaButton.Icon>
-      </View>
-    )
-  }
-
-  const Percent = () => {
-    return (
-      <View
-        style={[
-          {
-            position: 'absolute',
-            justifyContent: 'center',
-            end: 16
-          }
-        ]}>
-        <AvaText.Heading3>%</AvaText.Heading3>
-      </View>
-    )
-  }
-
-  const Currency = ({ currency }: { currency?: string }) => {
-    return (
-      <View
-        style={[
-          {
-            position: 'absolute',
-            justifyContent: 'center',
-            end: 16
-          }
-        ]}>
-        <AvaText.Heading3>{currency}</AvaText.Heading3>
-      </View>
-    )
-  }
-
-  const ShowPassBtn = () => {
-    return (
-      <View
-        style={[
-          {
-            position: 'absolute',
-            end: 0
-          }
-        ]}>
-        <AvaButton.TextMedium onPress={onToggleShowInput}>
-          {toggleShowText}
-        </AvaButton.TextMedium>
-      </View>
-    )
-  }
-
-  const Label = () => {
-    return (
-      <View style={{ alignSelf: 'baseline' }}>
-        {popOverInfoText ? (
-          <Popable
-            content={popOverInfoText}
-            position={'right'}
-            style={{ minWidth: 200 }}
-            backgroundColor={context.theme.colorBg3}>
-            <AvaText.Body2>{label ?? ''}</AvaText.Body2>
-          </Popable>
-        ) : (
-          <AvaText.Body2>{label ?? ''}</AvaText.Body2>
-        )}
-        <View style={[{ height: 8 }]} />
-      </View>
-    )
-  }
-
-  const HelperText = () => {
-    return (
-      <>
-        <Space y={5} />
-        {!!helperText && typeof helperText === 'string' ? (
-          <AvaText.Body2 textStyle={{ textAlign: 'left' }}>
-            {helperText}
-          </AvaText.Body2>
-        ) : (
-          <View>{helperText}</View>
-        )}
-      </>
-    )
-  }
-
-  const ErrorText = () => {
-    return (
-      <>
-        <View style={[{ height: 4 }]} />
-        <AvaText.Body3
-          textStyle={{ textAlign: 'left' }}
-          color={theme.colorError}>
-          {errorText || ''}
-        </AvaText.Body3>
-      </>
-    )
-  }
-
-  const onTextChanged = (text: string): void => {
+  const onTextChanged = (txt: string): void => {
     if (keyboardType === 'numeric') {
-      text = text.replace(',', '.')
-      text = text.replace(/[^.\d]/g, '') //remove non-digits
-      text = text.replace(/^0+/g, '0') //remove starting double 0
-      text = text.replace(/^0(?=\d)/g, '') //remove starting 0 if next one is digit
+      txt = txt.replace(',', '.')
+      txt = txt.replace(/[^.\d]/g, '') //remove non-digits
+      txt = txt.replace(/^0+/g, '0') //remove starting double 0
+      txt = txt.replace(/^0(?=\d)/g, '') //remove starting 0 if next one is digit
       let numOfDots = 0
-      text = text.replace(/\./g, substring => {
+      txt = txt.replace(/\./g, substring => {
         //remove extra decimal points
         if (numOfDots === 0) {
           numOfDots++
@@ -238,12 +159,18 @@ export default function InputText({
         }
       })
     }
-    onChangeText?.(text)
+    onChangeText?.(txt)
   }
 
   return (
     <View style={[{ margin: 12 }, style]}>
-      {label && <Label />}
+      {label && (
+        <Label
+          popOverInfoText={popOverInfoText}
+          label={label}
+          backgroundColor={context.theme.colorBg3}
+        />
+      )}
       <View
         style={[
           {
@@ -263,6 +190,7 @@ export default function InputText({
           enablesReturnKeyAutomatically={true}
           editable={editable !== false}
           keyboardType={keyboardType}
+          selectTextOnFocus={selectTextOnFocus}
           multiline={multiline && mode === 'default' ? multiline : false}
           style={[
             {
@@ -287,13 +215,22 @@ export default function InputText({
               paddingBottom: paddingVertical,
               fontFamily: 'Inter-Regular',
               width: width
-            }
+            },
+            textStyle
           ]}
+          onBlur={onBlur}
           onChangeText={onTextChanged}
           value={text}
         />
-        {mode === 'default' && text.length > 0 && <ClearBtn />}
-        {mode === 'private' && text.length > 0 && <ShowPassBtn />}
+        {mode === 'default' && text.length > 0 && (
+          <ClearBtn color={theme.colorText2} onClear={onClear} />
+        )}
+        {mode === 'private' && text.length > 0 && (
+          <ShowPassBtn
+            onToggleShowInput={onToggleShowInput}
+            toggleShowText={toggleShowText}
+          />
+        )}
         {mode === 'amount' && onMax && <MaxBtn onPress={onMax} />}
         {mode === 'confirmEntry' && (
           <ConfirmBtn onPress={() => onConfirm?.(text)} />
@@ -308,9 +245,11 @@ export default function InputText({
         )}
       </View>
 
-      {helperText && <HelperText />}
+      {helperText && <HelperText helperText={helperText} />}
 
-      {(errorText || false) && <ErrorText />}
+      {(errorText || false) && (
+        <ErrorText color={theme.colorError} errorText={errorText} />
+      )}
     </View>
   )
 }
@@ -342,5 +281,146 @@ function ConfirmBtn({ onPress }: { onPress?: () => void }) {
         <CheckmarkSVG />
       </AvaButton.Icon>
     </View>
+  )
+}
+
+const Label = ({
+  popOverInfoText,
+  label,
+  backgroundColor
+}: {
+  popOverInfoText?: string | React.ReactElement
+  label?: string
+  backgroundColor: string
+}) => {
+  return (
+    <View style={{ alignSelf: 'baseline' }}>
+      {popOverInfoText ? (
+        <Popable
+          content={popOverInfoText}
+          position={'right'}
+          style={{ minWidth: 200 }}
+          backgroundColor={backgroundColor}>
+          <Row style={{ alignItems: 'center' }}>
+            <AvaText.Body2>{label ?? ''}</AvaText.Body2>
+            <Space x={6} />
+            <InfoSVG size={14} />
+          </Row>
+        </Popable>
+      ) : (
+        <AvaText.Body2>{label ?? ''}</AvaText.Body2>
+      )}
+      <View style={{ height: 8 }} />
+    </View>
+  )
+}
+
+const ClearBtn = ({
+  onClear,
+  color
+}: {
+  onClear: () => void
+  color: string
+}) => {
+  return (
+    <View
+      style={[
+        {
+          position: 'absolute',
+          right: 8
+        }
+      ]}>
+      <AvaButton.Icon onPress={onClear}>
+        <ClearInputSVG color={color} size={14} />
+      </AvaButton.Icon>
+    </View>
+  )
+}
+
+const Percent = () => {
+  return (
+    <View
+      style={[
+        {
+          position: 'absolute',
+          justifyContent: 'center',
+          end: 16
+        }
+      ]}>
+      <AvaText.Heading3>%</AvaText.Heading3>
+    </View>
+  )
+}
+
+const Currency = ({ currency }: { currency?: string }) => {
+  return (
+    <View
+      style={[
+        {
+          position: 'absolute',
+          justifyContent: 'center',
+          end: 16
+        }
+      ]}>
+      <AvaText.Heading3>{currency}</AvaText.Heading3>
+    </View>
+  )
+}
+
+const ShowPassBtn = ({
+  onToggleShowInput,
+  toggleShowText
+}: {
+  onToggleShowInput: () => void
+  toggleShowText: string
+}) => {
+  return (
+    <View
+      style={[
+        {
+          position: 'absolute',
+          end: 0
+        }
+      ]}>
+      <AvaButton.TextMedium onPress={onToggleShowInput}>
+        {toggleShowText}
+      </AvaButton.TextMedium>
+    </View>
+  )
+}
+
+const HelperText = ({
+  helperText
+}: {
+  helperText?: string | React.ReactNode
+}) => {
+  return (
+    <>
+      <Space y={5} />
+      {!!helperText && typeof helperText === 'string' ? (
+        <AvaText.Body2 textStyle={{ textAlign: 'left' }}>
+          {helperText}
+        </AvaText.Body2>
+      ) : (
+        <View>{helperText}</View>
+      )}
+    </>
+  )
+}
+
+const ErrorText = ({
+  errorText,
+  color
+}: {
+  errorText: string | undefined
+  color: string
+}) => {
+  return (
+    <>
+      <View style={{ height: 4 }} />
+      <AvaText.Body3 textStyle={{ textAlign: 'left' }} color={color}>
+        {errorText || ''}
+      </AvaText.Body3>
+    </>
   )
 }

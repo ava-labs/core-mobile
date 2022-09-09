@@ -4,34 +4,43 @@ import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import StarSVG from 'components/svg/StarSVG'
+import QRScanSVG from 'components/svg/QRScanSVG'
 import AvaText from './AvaText'
+import PersonSVG from './svg/PersonSVG'
 
 interface BaseProps {
   image?: string | ReactNode
   title?: string | ReactNode
   message?: string | ReactNode
-  additionalComponent?: ReactNode
+  button?: ReactNode
 }
 
-const ZeroStateBase: FC<BaseProps> = ({
-  image,
-  title,
-  message,
-  additionalComponent
-}) => {
+const ZeroStateBase: FC<BaseProps> = ({ image, title, message, button }) => {
   const { theme } = useApplicationContext()
-  function getImage() {
+
+  function renderImage() {
     if (!image) {
       return null
     }
 
+    let img
+
     if (typeof image === 'string') {
-      return <Image source={{ uri: image }} />
+      img = <Image source={{ uri: image }} />
+    } else {
+      img = <View>{image}</View>
     }
-    return <View>{image}</View>
+
+    return (
+      <>
+        <Space y={52} />
+        {img}
+        <Space y={52} />
+      </>
+    )
   }
 
-  function getTitle() {
+  function renderTitle() {
     if (typeof title === 'string') {
       return (
         <AvaText.Heading2 textStyle={{ marginTop: 16 }}>
@@ -42,7 +51,7 @@ const ZeroStateBase: FC<BaseProps> = ({
     return <View style={{ marginTop: 16 }}>{title}</View>
   }
 
-  function getMessage() {
+  function renderMessage() {
     if (typeof message === 'string') {
       return (
         <AvaText.Body2
@@ -54,6 +63,17 @@ const ZeroStateBase: FC<BaseProps> = ({
     return <View>{message}</View>
   }
 
+  function renderButton() {
+    if (!button) return null
+
+    return (
+      <>
+        <Space y={48} />
+        {button}
+      </>
+    )
+  }
+
   return (
     <View
       style={{
@@ -62,42 +82,12 @@ const ZeroStateBase: FC<BaseProps> = ({
         flex: 1,
         marginHorizontal: 16
       }}>
-      {getImage() && (
-        <>
-          <Space y={52} />
-          {getImage()}
-          <Space y={52} />
-        </>
-      )}
-      {getTitle()}
+      {renderImage()}
+      {renderTitle()}
       <Space y={16} />
-      {getMessage()}
-      {additionalComponent && (
-        <>
-          <Space y={48} />
-          {additionalComponent}
-        </>
-      )}
+      {renderMessage()}
+      {renderButton()}
     </View>
-  )
-}
-
-type ZeroStateSendErrorProps = Pick<
-  BaseProps,
-  'additionalComponent' | 'message'
->
-
-function ZeroStateSendError({
-  additionalComponent,
-  message
-}: ZeroStateSendErrorProps) {
-  const title = 'Oops, something went wrong'
-  return (
-    <ZeroStateBase
-      title={title}
-      message={message ?? 'An unknown error as occurred.'}
-      additionalComponent={additionalComponent}
-    />
   )
 }
 
@@ -105,7 +95,7 @@ function ZeroStateNetworkTokens({ goToReceive }: { goToReceive: () => void }) {
   const title = 'No assets'
   const message = 'Add assets by clicking the button below.'
 
-  const renderButton = () => (
+  const button = (
     <AvaButton.PrimaryMedium
       style={{ width: '100%' }}
       textStyle={{ fontSize: 16 }}
@@ -114,28 +104,14 @@ function ZeroStateNetworkTokens({ goToReceive }: { goToReceive: () => void }) {
     </AvaButton.PrimaryMedium>
   )
 
-  return (
-    <ZeroStateBase
-      title={title}
-      message={message}
-      additionalComponent={renderButton()}
-    />
-  )
+  return <ZeroStateBase title={title} message={message} button={button} />
 }
 
 function ZeroStateCollectibles() {
   const title = 'No Collectibles'
   const message = 'You don’t have any collectibles yet.'
 
-  return (
-    <ZeroStateBase
-      title={title}
-      message={message}
-      // additionalComponent={
-      //   <AvaButton.PrimaryMedium>Explore NFTs</AvaButton.PrimaryMedium>
-      // }
-    />
-  )
+  return <ZeroStateBase title={title} message={message} />
 }
 
 function ZeroStateNoRecentAccounts() {
@@ -157,7 +133,7 @@ function ZeroStateEmptyAddressBook({
     <ZeroStateBase
       title={title}
       message={message}
-      additionalComponent={
+      button={
         <AvaButton.PrimaryMedium onPress={onGoToAddressBook}>
           Go to Address Book
         </AvaButton.PrimaryMedium>
@@ -198,17 +174,65 @@ function ZeroStateNoWatchlistFavorites() {
   )
 }
 
+function ZeroStateNoContacts({ addContact }: { addContact: () => void }) {
+  const title = 'No Addresses Saved'
+  const message = 'Tap the button below to add an address.'
+  const button = (
+    <AvaButton.SecondaryMedium
+      style={{ width: '100%' }}
+      textStyle={{ fontSize: 16 }}
+      onPress={addContact}>
+      Add Address
+    </AvaButton.SecondaryMedium>
+  )
+  return (
+    <ZeroStateBase
+      title={title}
+      message={message}
+      image={<PersonSVG />}
+      button={button}
+    />
+  )
+}
+
+function ZeroStateSites({
+  onAddNewConnection
+}: {
+  onAddNewConnection: () => void
+}) {
+  const title = 'No Connected Sites'
+  const message = 'Tap the button below to scan QR code and connect.'
+
+  return (
+    <ZeroStateBase
+      title={title}
+      message={message}
+      image={<QRScanSVG size={54} />}
+      button={
+        <>
+          <AvaButton.SecondaryLarge
+            style={{ bottom: 32, position: 'absolute' }}
+            onPress={onAddNewConnection}>
+            Add New Connection
+          </AvaButton.SecondaryLarge>
+        </>
+      }
+    />
+  )
+}
+
 const ZeroState = {
   Basic: ZeroStateBase,
   NetworkTokens: ZeroStateNetworkTokens,
   Collectibles: ZeroStateCollectibles,
   NoResultsTextual: ZeroStateNoResults,
   NoRecentAccounts: ZeroStateNoRecentAccounts,
-  EmptyAddressBook: ZeroStateEmptyAddressBook,
   ComingSoon: ZeroStateComingSoon,
-  SendError: ZeroStateSendError,
   NoTransactions: ZeroStateNoTransactions,
-  NoWatchlistFavorites: ZeroStateNoWatchlistFavorites
+  NoWatchlistFavorites: ZeroStateNoWatchlistFavorites,
+  EmptyAddressBook: ZeroStateEmptyAddressBook, // used in Send screens
+  NoContacts: ZeroStateNoContacts, // used in Contacts screen
+  Sites: ZeroStateSites
 }
 
 export default ZeroState

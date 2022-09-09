@@ -51,7 +51,8 @@ enum WalletScreens {
   TokenDetail = 'WalletScreens.TokenDetail',
   OwnedTokenDetail = 'WalletScreens.OwnedTokenDetail',
   ActivityDetail = 'WalletScreens.ActivityDetail',
-  Bridge = 'WalletScreens.Bridge'
+  Bridge = 'WalletScreens.Bridge',
+  QRCode = 'WalletScreens.QRCode'
 }
 
 enum NoWalletScreens {
@@ -99,7 +100,8 @@ enum SecurityPrivacyScreens {
   TurnOnBiometrics = 'SecurityPrivacyScreens.TurnOnBiometrics',
   RecoveryPhrase = 'SecurityPrivacyScreens.RecoveryPhrase',
   DappList = 'SecurityPrivacyScreens.DappList',
-  DappConnectModal = 'SecurityPrivacyScreens.DappConnectModal'
+  DappConnectModal = 'SecurityPrivacyScreens.DappConnectModal',
+  QRCode = 'SecurityPrivacyScreens.QRCode'
 }
 
 enum LegalScreens {

@@ -22,10 +22,12 @@ import { fetchNetworkFee, selectNetworkFee } from 'store/networkFee'
 import { BigNumber } from 'ethers'
 import { useActiveNetwork } from 'hooks/useActiveNetwork'
 import { NetworkVMType } from '@avalabs/chains-sdk'
-import { NavigationProp, useNavigation } from '@react-navigation/native'
+import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { bigToEthersBigNumber, ethersBigNumberToBig } from '@avalabs/utils-sdk'
 import Big from 'big.js'
+import InfoSVG from 'components/svg/InfoSVG'
+import { WalletScreenProps } from 'navigation/types'
 
 export enum FeePreset {
   Normal = 'Normal',
@@ -40,6 +42,10 @@ export enum FeePresetNetworkFeeMap {
   Instant = 'high'
 }
 
+type NavigationProp = WalletScreenProps<
+  typeof AppNavigation.Modal.EditGasLimit
+>['navigation']
+
 const NetworkFeeSelector = ({
   gasLimit,
   onChange
@@ -47,39 +53,49 @@ const NetworkFeeSelector = ({
   gasLimit: number
   onChange?(gasLimit: number, gasPrice: BigNumber, feePreset: FeePreset): void
 }) => {
-  const { navigate } = useNavigation<NavigationProp<any>>()
+  const { navigate } = useNavigation<NavigationProp>()
   const { theme } = useApplicationContext()
   const networkFee = useSelector(selectNetworkFee)
   const dispatch = useDispatch()
   const network = useActiveNetwork()
   const isBtcNetwork = network.vmName === NetworkVMType.BITCOIN
   const [selectedPreset, setSelectedPreset] = useState(FeePreset.Normal)
-  const [customGasPrice, setCustomGasPrice] = useState(BigNumber.from(0))
+  const [customGasPrice, setCustomGasPrice] = useState<BigNumber>()
 
+  // customGasPrice init value.
+  // NetworkFee is not immediately available hence the useEffect
   useEffect(() => {
-    if (customGasPrice.isZero()) {
-      setCustomGasPrice(BigNumber.from(networkFee.low))
+    if (!customGasPrice) {
+      setCustomGasPrice(networkFee.low)
     }
-  }, [customGasPrice, networkFee.low])
+  }, [networkFee.low, customGasPrice])
 
   const selectedGasPrice = useMemo(() => {
     switch (selectedPreset) {
       case FeePreset.Custom:
-        return customGasPrice
+        return !customGasPrice || customGasPrice.isZero()
+          ? networkFee.low
+          : customGasPrice
       default:
         return networkFee[FeePresetNetworkFeeMap[selectedPreset]]
     }
   }, [customGasPrice, networkFee, selectedPreset])
+
   const totalFeeString = useMemo(() => {
     return ethersBigNumberToBig(
-      selectedGasPrice.mul(gasLimit),
+      selectedGasPrice?.mul(gasLimit),
       networkFee.nativeTokenDecimals
     ).toString()
   }, [gasLimit, networkFee.nativeTokenDecimals, selectedGasPrice])
 
   useEffect(() => {
-    onChange?.(gasLimit, selectedGasPrice, selectedPreset)
-  }, [gasLimit, selectedGasPrice, selectedPreset])
+    const gasPrice = selectedGasPrice?.isZero()
+      ? networkFee.low
+      : selectedGasPrice
+    onChange?.(gasLimit, gasPrice, selectedPreset)
+    // ignore onChange
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gasLimit, selectedGasPrice, selectedPreset, networkFee.low])
 
   useEffect(fetchNetworkGasPrices, [dispatch])
 
@@ -88,7 +104,10 @@ const NetworkFeeSelector = ({
   }
 
   function onGasLimitChange(newGasLimit: number) {
-    onChange?.(newGasLimit, selectedGasPrice, selectedPreset)
+    const gasPrice = selectedGasPrice?.isZero()
+      ? networkFee.low
+      : selectedGasPrice
+    onChange?.(newGasLimit, gasPrice, selectedPreset)
   }
 
   const convertFeeToUnit = useCallback(
@@ -102,7 +121,7 @@ const NetworkFeeSelector = ({
       [FeePreset.Normal]: convertFeeToUnit(networkFee.low),
       [FeePreset.Fast]: convertFeeToUnit(networkFee.medium),
       [FeePreset.Instant]: convertFeeToUnit(networkFee.high),
-      [FeePreset.Custom]: convertFeeToUnit(customGasPrice)
+      [FeePreset.Custom]: convertFeeToUnit(customGasPrice ?? networkFee.low)
     }
   }, [
     convertFeeToUnit,
@@ -128,9 +147,11 @@ const NetworkFeeSelector = ({
             position={'right'}
             style={{ minWidth: 200 }}
             backgroundColor={theme.colorBg3}>
-            <AvaText.Body2>{`Network Fee ${
-              totalFeeString ? 'ⓘ' : ''
-            }`}</AvaText.Body2>
+            <Row style={{ alignItems: 'center' }}>
+              <AvaText.Body2>Network Fee</AvaText.Body2>
+              <Space x={4} />
+              <InfoSVG />
+            </Row>
           </Popable>
         )}
         {network?.vmName === NetworkVMType.EVM && (
@@ -139,7 +160,7 @@ const NetworkFeeSelector = ({
               onPress={() => {
                 navigate(AppNavigation.Modal.EditGasLimit, {
                   gasLimit: gasLimit,
-                  gasPrice: customGasPrice,
+                  gasPrice: customGasPrice ?? networkFee.low,
                   onSave: onGasLimitChange
                 })
               }}>
@@ -180,7 +201,13 @@ const NetworkFeeSelector = ({
               label={FeePreset.Custom}
               selected={selectedPreset === FeePreset.Custom}
               onSelect={() => setSelectedPreset(FeePreset.Custom)}
-              value={displayGasValues[FeePreset.Custom]}
+              placeholder={displayGasValues[FeePreset.Normal]}
+              value={
+                selectedPreset !== FeePreset.Custom &&
+                (!customGasPrice || customGasPrice.isZero())
+                  ? displayGasValues[FeePreset.Normal]
+                  : displayGasValues[FeePreset.Custom]
+              }
               onValueEntered={value =>
                 setCustomGasPrice(
                   bigToEthersBigNumber(
@@ -209,6 +236,7 @@ export const FeeSelector: FC<{
   value?: string
   selected: boolean
   onSelect: (value: string) => void
+  placeholder?: string
   editable?: boolean
   onValueEntered?: (value: string) => void
 }> = ({
@@ -217,12 +245,13 @@ export const FeeSelector: FC<{
   onSelect,
   onValueEntered,
   value,
+  placeholder,
   editable = false
 }) => {
   const { theme } = useApplicationContext()
   const [showInput, setShowInput] = useState(false)
 
-  let inputRef = useRef<TextInput>(null)
+  const inputRef = useRef<TextInput>(null)
 
   useEffect(() => {
     if (selected && editable) {
@@ -234,73 +263,82 @@ export const FeeSelector: FC<{
     }
   }, [editable, selected])
 
+  const handleSelect = () => {
+    if (editable) setShowInput(true)
+    onSelect(label)
+  }
+
+  return showInput ? (
+    <ButtonWrapper selected={selected}>
+      <ButtonText selected={selected}>{label}</ButtonText>
+      <InputText
+        text={!value || value === '0' ? '' : value}
+        placeholder={placeholder}
+        autoFocus
+        selectTextOnFocus
+        onBlur={() => setShowInput(false)}
+        onChangeText={text => onValueEntered?.(text)}
+        keyboardType={'numeric'}
+        textStyle={{
+          backgroundColor: theme.colorText1,
+          borderWidth: 0,
+          fontFamily: 'Inter-SemiBold',
+          textAlign: 'center',
+          textAlignVertical: 'center',
+          paddingTop: 0,
+          paddingBottom: 0,
+          paddingLeft: 0,
+          paddingRight: 0,
+          color: theme.colorBg2,
+          fontSize: 14,
+          lineHeight: 18
+        }}
+        style={{ margin: 0 }}
+        mode={'amount'}
+      />
+    </ButtonWrapper>
+  ) : (
+    <AvaButton.Base onPress={handleSelect}>
+      <ButtonWrapper selected={selected}>
+        <ButtonText selected={selected}>{label}</ButtonText>
+        <ButtonText selected={selected}>{value}</ButtonText>
+      </ButtonWrapper>
+    </AvaButton.Base>
+  )
+}
+
+const ButtonWrapper: FC<{ selected: boolean }> = ({ children, selected }) => {
+  const { theme } = useApplicationContext()
   return (
     <View
+      focusable
       style={{
-        alignItems: 'center',
         width: 75,
-        height: 48
+        height: 48,
+        borderRadius: 8,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: selected
+          ? theme.colorText1
+          : theme.colorBg3 + Opacity50
       }}>
-      {showInput && (
-        <InputText
-          text={value?.toString() ?? ''}
-          autoFocus
-          onChangeText={text => onValueEntered?.(text)}
-          keyboardType={'numeric'}
-          onInputRef={inputRef1 => {
-            inputRef = inputRef1
-            inputRef1.current?.setNativeProps({
-              style: {
-                backgroundColor: theme.colorText1,
-                width: 75,
-                height: 48,
-                marginTop: -12,
-                fontFamily: 'Inter-SemiBold',
-                textAlign: 'center',
-                textAlignVertical: 'center',
-                paddingTop: 0,
-                paddingBottom: 0,
-                paddingLeft: 0,
-                paddingRight: 0,
-                color: theme.colorBg2,
-                fontSize: 14,
-                lineHeight: 24
-              }
-            })
-          }}
-          mode={'amount'}
-        />
-      )}
-      {!showInput && (
-        <AvaButton.Base onPress={() => onSelect(label)}>
-          <View
-            focusable
-            style={{
-              width: 75,
-              height: 48,
-              borderRadius: 8,
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: selected
-                ? theme.colorText1
-                : theme.colorBg3 + Opacity50
-            }}>
-            <AvaText.ButtonMedium
-              textStyle={{
-                color: selected ? theme.colorBg2 : theme.colorText2
-              }}>
-              {label}
-            </AvaText.ButtonMedium>
-            <AvaText.ButtonMedium
-              textStyle={{
-                color: selected ? theme.colorBg2 : theme.colorText2
-              }}>
-              {value}
-            </AvaText.ButtonMedium>
-          </View>
-        </AvaButton.Base>
-      )}
+      {children}
     </View>
   )
 }
+
+const ButtonText: FC<{ selected: boolean }> = ({ children, selected }) => {
+  const { theme } = useApplicationContext()
+  return (
+    <AvaText.ButtonMedium
+      textStyle={{
+        color: selected ? theme.colorBg2 : theme.colorText2,
+        fontSize: selected ? 14 : 12,
+        lineHeight: 18
+      }}>
+      {children}
+    </AvaText.ButtonMedium>
+  )
+}
+
 export default NetworkFeeSelector

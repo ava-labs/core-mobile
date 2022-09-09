@@ -6,7 +6,6 @@ import InputText from 'components/InputText'
 import AvaButton from 'components/AvaButton'
 import AddressBookSVG from 'components/svg/AddressBookSVG'
 import FlexSpacer from 'components/FlexSpacer'
-import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useSendTokenContext } from 'contexts/SendTokenContext'
 import { AddrBookItemType, Contact } from 'Repo'
 import AddressBookLists, {
@@ -41,7 +40,6 @@ const SendToken: FC<Props> = ({
   token,
   contact
 }) => {
-  const { theme } = useApplicationContext()
   const { capture } = usePosthogContext()
   const {
     setSendToken,
@@ -128,10 +126,9 @@ const SendToken: FC<Props> = ({
         Send
       </AvaText.LargeTitleBold>
       <Space y={20} />
-      <AvaText.Heading3 textStyle={{ marginHorizontal: 16 }}>
-        Send to
+      <AvaText.Heading3 textStyle={{ marginHorizontal: 16, marginBottom: -8 }}>
+        Send To
       </AvaText.Heading3>
-      <Space y={4} />
       <View style={[{ flex: 0, paddingStart: 4, paddingEnd: 4 }]}>
         <InputText
           placeholder={placeholder}
@@ -185,23 +182,20 @@ const SendToken: FC<Props> = ({
               setSendToken(tkWithBalance as TokenWithBalance)
             }
             onAmountChange={value => {
-              if (value.bn.toString() === '0') {
-                setSendError('Please enter an amount')
-                return
-              }
-              setSendError('')
               setSendAmount(value)
+              if (!value || value.bn.toString() === '0') {
+                setSendError('Please enter an amount')
+              } else {
+                setSendError(undefined)
+              }
             }}
             selectedToken={sendToken}
             inputAmount={sendAmount.bn}
-            hideMax={!(!!toAccount.address && !!sendToken)}
+            hideMax={!toAccount.address || !sendToken}
             hideErrorMessage
+            error={sendError ?? sdkError}
           />
           <View style={{ paddingHorizontal: 16 }}>
-            <Space y={8} />
-            <AvaText.Body3 textStyle={{ color: theme.colorError }}>
-              {sdkError ?? sendError}
-            </AvaText.Body3>
             <Space y={8} />
             <NetworkFeeSelector
               gasLimit={fees.gasLimit ?? 0}

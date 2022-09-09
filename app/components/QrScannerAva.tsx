@@ -7,14 +7,19 @@ import AvaButton from './AvaButton'
 
 type Props = {
   onSuccess: (data: string) => void
-  onCancel: () => void
+  onCancel?: () => void
+  vibrate?: boolean
 }
 
-export default function QrScannerAva(props: Props | Readonly<Props>) {
+export default function QrScannerAva({
+  onSuccess,
+  onCancel,
+  vibrate = false
+}: Props) {
   const context = useApplicationContext()
 
-  const onSuccess = (e: BarCodeReadEvent): void => {
-    props.onSuccess(e.data)
+  const handleSuccess = (e: BarCodeReadEvent): void => {
+    onSuccess(e.data)
   }
 
   const theme = context.theme
@@ -32,12 +37,15 @@ export default function QrScannerAva(props: Props | Readonly<Props>) {
           }
         ]}
         fadeIn={false}
-        onRead={e => onSuccess(e)}
+        onRead={handleSuccess}
         cameraType={'back'}
+        vibrate={vibrate}
       />
-      <AvaButton.PrimaryLarge onPress={props.onCancel} style={{ margin: 16 }}>
-        Cancel
-      </AvaButton.PrimaryLarge>
+      {onCancel && (
+        <AvaButton.PrimaryLarge onPress={onCancel} style={{ margin: 16 }}>
+          Cancel
+        </AvaButton.PrimaryLarge>
+      )}
     </SafeAreaView>
   )
 }

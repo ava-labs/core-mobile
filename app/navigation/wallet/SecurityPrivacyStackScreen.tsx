@@ -9,8 +9,9 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import { createStackNavigator } from '@react-navigation/stack'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import RevealMnemonic from 'navigation/wallet/RevealMnemonic'
-import { SecurityPrivacyScreenProps } from 'navigation/types'
+import { QRCodeParams, SecurityPrivacyScreenProps } from 'navigation/types'
 import ConnectedDapps from 'screens/rpc/ConnectedDapps'
+import CaptureDappQR from 'screens/shared/CaptureDappQR'
 
 export type SecurityStackParamList = {
   [AppNavigation.SecurityPrivacy.SecurityPrivacy]: undefined
@@ -20,6 +21,7 @@ export type SecurityStackParamList = {
   [AppNavigation.SecurityPrivacy.TurnOnBiometrics]: undefined
   [AppNavigation.SecurityPrivacy.RecoveryPhrase]: { mnemonic: string }
   [AppNavigation.SecurityPrivacy.DappList]: undefined
+  [AppNavigation.SecurityPrivacy.QRCode]: QRCodeParams
 }
 
 const SecurityStack = createStackNavigator<SecurityStackParamList>()
@@ -37,9 +39,14 @@ function SecurityPrivacyStackScreen(): JSX.Element {
           component={SecurityPrivacyScreen}
         />
         <SecurityStack.Screen
-          options={MainHeaderOptions('Connected Sites')}
+          options={MainHeaderOptions('')}
           name={AppNavigation.SecurityPrivacy.DappList}
           component={DappConnectionsList}
+        />
+        <SecurityStack.Screen
+          options={MainHeaderOptions('')}
+          name={AppNavigation.SecurityPrivacy.QRCode}
+          component={CaptureDappQR}
         />
       </SecurityStack.Group>
       <SecurityStack.Group screenOptions={{ presentation: 'modal' }}>
