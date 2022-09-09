@@ -3,7 +3,13 @@ import { Animated, View, StyleSheet } from 'react-native'
 import { FlashList, ListRenderItemInfo } from '@shopify/flash-list'
 import AvaText from 'components/AvaText'
 import ActivityListItem from 'screens/activity/ActivityListItem'
-import { endOfToday, endOfYesterday, format, isSameDay } from 'date-fns'
+import {
+  endOfToday,
+  endOfYesterday,
+  format,
+  isSameDay,
+  isSameYear
+} from 'date-fns'
 import BridgeTransactionItem from 'screens/bridge/components/BridgeTransactionItem'
 import { BridgeTransactionStatusParams } from 'navigation/types'
 import useInAppBrowser from 'hooks/useInAppBrowser'
@@ -19,14 +25,19 @@ const yesterday = endOfYesterday()
 const today = endOfToday()
 
 const getDayString = (timestamp: number) => {
-  const isToday = isSameDay(today, timestamp)
-  const isYesterday = isSameDay(yesterday, timestamp)
-  return isToday
-    ? 'Today'
-    : isYesterday
-    ? 'Yesterday'
-    : format(timestamp, 'MMMM do')
+  // today
+  if (isSameDay(today, timestamp)) return 'Today'
+
+  // yesterday
+  if (isSameDay(yesterday, timestamp)) return 'Yesterday'
+
+  // if date is within this year, we show month + day
+  if (isSameYear(today, timestamp)) return format(timestamp, 'MMMM do')
+
+  // else we show month + day + year
+  return format(timestamp, 'MMMM d, yyyy')
 }
+
 type Section = {
   title: string
   data: Transaction[] | BridgeTransaction[]
