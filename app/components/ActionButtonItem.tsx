@@ -25,6 +25,8 @@ interface Props {
   active?: boolean
   title?: string
   size?: number
+  vertical?: boolean
+  selfContained?: boolean
 }
 
 const ActionButtonItem: FC<Props> = ({
@@ -40,12 +42,14 @@ const ActionButtonItem: FC<Props> = ({
   style,
   activeStyle,
   title,
+  vertical,
+  selfContained,
   children,
   ...rest
 }) => {
   const { theme } = useApplicationContext()
-  const offsetX = radius * Math.cos(angle)
-  const offsetY = radius * Math.sin(angle)
+  const offsetX = vertical ? 0 : radius * Math.cos(angle)
+  const offsetY = vertical ? -160 : radius * Math.sin(angle)
   return (
     <Animated.View
       style={[
@@ -81,32 +85,48 @@ const ActionButtonItem: FC<Props> = ({
           ]
         }
       ]}>
-      <TouchableOpacity
-        {...rest}
-        style={{ flex: 1, alignItems: 'center' }}
-        activeOpacity={0.85}
-        onPress={onPress}>
+      {!selfContained ? (
+        <TouchableOpacity
+          {...rest}
+          style={{ flex: 1, alignItems: 'center' }}
+          activeOpacity={0.85}
+          onPress={onPress}>
+          <View
+            style={[
+              styles.actionButton,
+              {
+                width: size,
+                height: size,
+                borderRadius: size / 2,
+                backgroundColor: buttonColor
+              },
+              style,
+              active ? activeStyle : undefined
+            ]}>
+            {children}
+          </View>
+          {title && (
+            <>
+              <Space y={50} />
+              <AvaText.Caption color={theme.white}>{title}</AvaText.Caption>
+            </>
+          )}
+        </TouchableOpacity>
+      ) : (
         <View
-          style={[
-            styles.actionButton,
-            {
-              width: size,
-              height: size,
-              borderRadius: size / 2,
-              backgroundColor: buttonColor
-            },
-            style,
-            active ? activeStyle : undefined
-          ]}>
+          style={{
+            width: 204,
+            height: 200,
+            backgroundColor: theme.alternateBackground,
+            borderRadius: 8,
+            padding: 16,
+            justifyContent: 'space-between',
+            alignSelf: 'center',
+            top: -80
+          }}>
           {children}
         </View>
-        {title && (
-          <>
-            <Space y={50} />
-            <AvaText.Caption color={theme.white}>{title}</AvaText.Caption>
-          </>
-        )}
-      </TouchableOpacity>
+      )}
     </Animated.View>
   )
 }

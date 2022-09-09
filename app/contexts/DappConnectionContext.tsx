@@ -189,10 +189,11 @@ export const DappConnectionContextProvider = ({
     }
   }, [activeNetwork, activeAccount])
 
-  function displayUserInstruction(instruction: string) {
+  function displayUserInstruction(instruction: string, id?: string) {
     showSnackBarCustom({
       component: <GeneralToast message={instruction} />,
-      duration: 'long'
+      duration: 'short',
+      id
     })
   }
 
@@ -277,7 +278,10 @@ export const DappConnectionContextProvider = ({
       peerMeta => {
         InteractionManager.runAfterInteractions(() => {
           if (peerMeta?.name) {
-            displayUserInstruction(`${peerMeta.name} was disconnected remotely`)
+            displayUserInstruction(
+              `${peerMeta.name} was disconnected remotely`,
+              peerMeta.url
+            )
           }
         })
       }

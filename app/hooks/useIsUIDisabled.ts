@@ -7,7 +7,8 @@ export enum UI {
   Swap = 'Swap',
   Buy = 'Buy',
   ManageTokens = 'ManageTokens',
-  Bridge = 'Bridge'
+  Bridge = 'Bridge',
+  WalletConnect = 'WalletConnect'
 }
 
 // The list of features we want to enable on certain networks (whitelist)
@@ -20,7 +21,11 @@ const enabledUIs: Partial<Record<UI, number[]>> = {
     ChainId.ETHEREUM_TEST_RINKEBY
   ],
   [UI.Swap]: [ChainId.AVALANCHE_MAINNET_ID],
-  [UI.Buy]: [ChainId.AVALANCHE_MAINNET_ID, ChainId.AVALANCHE_TESTNET_ID]
+  [UI.Buy]: [ChainId.AVALANCHE_MAINNET_ID, ChainId.AVALANCHE_TESTNET_ID],
+  [UI.WalletConnect]: [
+    ChainId.AVALANCHE_MAINNET_ID,
+    ChainId.AVALANCHE_TESTNET_ID
+  ]
 }
 
 // The list of features we want to disable on certain networks (blacklist)

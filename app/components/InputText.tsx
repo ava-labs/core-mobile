@@ -4,6 +4,7 @@ import {
   Appearance,
   InteractionManager,
   NativeSyntheticEvent,
+  Keyboard,
   StyleProp,
   TextInput,
   TextInputFocusEventData,
@@ -60,6 +61,8 @@ type Props = {
   textStyle?: StyleProp<TextStyle>
   loading?: boolean
   paddingVertical?: number
+  keyboardWillShow?: () => void
+  keyboardDidHide?: () => void
 }
 
 export default function InputText({
@@ -87,13 +90,28 @@ export default function InputText({
   onConfirm,
   autoFocus,
   selectTextOnFocus,
-  paddingVertical = 12
+  paddingVertical = 12,
+  keyboardWillShow,
+  keyboardDidHide
 }: Props | Readonly<Props>) {
   const context = useApplicationContext()
   const [showInput, setShowInput] = useState(false)
   // const [focused, setFocused] = useState(false)
   const [toggleShowText, setToggleShowText] = useState('Show')
   const textInputRef = useRef() as RefObject<TextInput>
+
+  useEffect(() => {
+    Keyboard.addListener('keyboardWillShow', () => {
+      keyboardWillShow?.()
+    })
+    Keyboard.addListener('keyboardDidHide', () => {
+      keyboardDidHide?.()
+    })
+    return () => {
+      Keyboard.removeAllListeners('keyboardWillShow')
+      Keyboard.removeAllListeners('keyboardDidHide')
+    }
+  }, [keyboardDidHide, keyboardWillShow])
 
   useEffect(() => {
     onInputRef?.(textInputRef)
