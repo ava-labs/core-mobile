@@ -67,10 +67,12 @@ import LegalStackScreen, {
   LegalStackParamList
 } from 'navigation/wallet/LegalStackScreen'
 import { NetworkDetailsAction } from 'screens/network/NetworkDetailsAction'
+import CaptureDappQR from 'screens/shared/CaptureDappQR'
 import { BridgeStackParamList } from './wallet/BridgeScreenStack'
 import {
   BridgeTransactionStatusParams,
   EditGasLimitParams,
+  QRCodeParams,
   TokenSelectParams,
   WalletScreenProps
 } from './types'
@@ -116,6 +118,7 @@ export type WalletScreenStackParams = {
   [AppNavigation.Wallet.Legal]: NavigatorScreenParams<LegalStackParamList>
   [AppNavigation.Bridge.BridgeTransactionStatus]: BridgeTransactionStatusParams
   [AppNavigation.Wallet.Bridge]: NavigatorScreenParams<BridgeStackParamList>
+  [AppNavigation.Wallet.QRCode]: QRCodeParams
   [AppNavigation.Modal.AccountDropDown]: undefined
   [AppNavigation.Modal.AccountBottomSheet]: undefined
   [AppNavigation.Modal.SignOut]: undefined
@@ -337,6 +340,13 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
         <WalletScreenS.Screen
           name={AppNavigation.Wallet.Bridge}
           component={BridgeScreenStack}
+        />
+        <WalletScreenS.Screen
+          options={{
+            ...SubHeaderOptions('')
+          }}
+          name={AppNavigation.Wallet.QRCode}
+          component={CaptureDappQR}
         />
         {BottomSheetGroup}
       </WalletScreenS.Navigator>

@@ -50,6 +50,12 @@ function SecurityPrivacy({
   return (
     <View style={{ backgroundColor: theme.colorBg2 }}>
       <AvaListItem.Base
+        title={'Connected Sites'}
+        background={theme.background}
+        showNavigationArrow
+        onPress={onShowConnectedDapps}
+      />
+      <AvaListItem.Base
         title={'Change PIN'}
         background={theme.background}
         showNavigationArrow
@@ -82,12 +88,6 @@ function SecurityPrivacy({
             onValueChange={handleAnalyticsSwitchChange}
           />
         }
-      />
-      <AvaListItem.Base
-        title={'Connected Sites'}
-        background={theme.background}
-        showNavigationArrow
-        onPress={onShowConnectedDapps}
       />
     </View>
   )
