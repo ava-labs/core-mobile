@@ -68,6 +68,7 @@ export default function NftFullScreen() {
             Math.abs(diff.current.pitch - value.pitch) > 0.001 ||
             Math.abs(diff.current.roll - value.roll) > 0.001
         ),
+        // eslint-disable-next-line @typescript-eslint/no-shadow
         tap(sensorData => {
           diff.current.pitch = sensorData.pitch
           diff.current.roll = sensorData.roll
