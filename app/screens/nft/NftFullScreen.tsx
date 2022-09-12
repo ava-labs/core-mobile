@@ -62,7 +62,6 @@ export default function NftFullScreen() {
   useEffect(() => {
     const subscription = orientation
       .pipe(
-        // @ts-expect-error: looks like this ts error is due to react native sensor using deprecated rxjs methods
         sampleTime(SAMPLE_TIME),
         filter(
           value =>
