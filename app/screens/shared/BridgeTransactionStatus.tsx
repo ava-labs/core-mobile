@@ -80,7 +80,7 @@ const BridgeTransactionStatus: FC<Props> = ({
   useLayoutEffect(() => {
     if (bridgeTransaction) {
       setNavOptions({
-        title: `Transaction ${
+        headerTitle: `Transaction ${
           bridgeTransaction.complete ? 'Details' : 'Status'
         }`,
         headerRight: () => HeaderRight
