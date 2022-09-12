@@ -54,13 +54,6 @@ const BridgeTransactionStatus: FC<Props> = ({
   const tokenInfo = useSelector(
     selectTokenInfo(bridgeTransaction?.symbol ?? '')
   )
-  Logger.info(
-    `updated tx: ${bridgeTransaction?.sourceTxHash} count: ${
-      bridgeTransaction?.confirmationCount
-    } completed: ${bridgeTransaction?.complete} completedAt: ${
-      bridgeTransaction?.completedAt
-    } logStamp: ${Date.now()}`
-  )
   const { theme, appHook } = useApplicationContext()
   const { selectedCurrency, currencyFormatter } = appHook
 
@@ -107,6 +100,16 @@ const BridgeTransactionStatus: FC<Props> = ({
       })
     }
   }, [bridgeTransaction, removeBridgeTransaction, toastShown])
+
+  useEffect(() => {
+    Logger.info(
+      `updated tx: ${bridgeTransaction?.sourceTxHash} count: ${
+        bridgeTransaction?.confirmationCount
+      } completed: ${bridgeTransaction?.complete} completedAt: ${
+        bridgeTransaction?.completedAt
+      } logStamp: ${Date.now()}`
+    )
+  }, [bridgeTransaction])
 
   const tokenLogo = (
     <View style={styles.logoContainer}>
