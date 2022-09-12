@@ -36,7 +36,7 @@ function CircularText({
       <SvgText fill={textColor} fontSize="14">
         <TextPath href="#circle">
           <TSpan dx="0" dy={5}>
-            {`${text.trim()} `.repeat(10)}
+            {` ${text.trim()} `.repeat(10)}
           </TSpan>
         </TextPath>
       </SvgText>
