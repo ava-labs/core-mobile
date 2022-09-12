@@ -4,7 +4,8 @@ import {
   StyleProp,
   StyleSheet,
   TouchableOpacity,
-  View
+  View,
+  ViewStyle
 } from 'react-native'
 import { noop } from 'rxjs'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -18,10 +19,8 @@ interface Props {
   buttonColor?: string
   onPress?: () => void
   children?: React.ReactNode
-  startDegree?: number
-  endDegree?: number
-  style?: StyleProp<any>
-  activeStyle?: StyleProp<any>
+  style?: StyleProp<ViewStyle>
+  activeStyle?: StyleProp<ViewStyle>
   active?: boolean
   title?: string
   size?: number
@@ -34,8 +33,6 @@ const ActionButtonItem: FC<Props> = ({
   angle = 0,
   anim = new Animated.Value(0),
   size = 48,
-  startDegree = 0,
-  endDegree = 720,
   active = false,
   onPress = noop,
   buttonColor,
@@ -68,12 +65,6 @@ const ActionButtonItem: FC<Props> = ({
               translateX: anim.interpolate({
                 inputRange: [0, 1],
                 outputRange: [0, offsetX]
-              })
-            },
-            {
-              rotate: anim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [`${startDegree}deg`, `${endDegree}deg`]
               })
             },
             {

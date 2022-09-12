@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unstable-nested-components */
 import AppNavigation from 'navigation/AppNavigation'
 import HomeSVG from 'components/svg/HomeSVG'
 import SwapSVG from 'components/svg/SwapSVG'
@@ -33,7 +34,6 @@ import { showSnackBarCustom } from 'components/Snackbar'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
 import GeneralToast from 'components/toast/GeneralToast'
-import { useActiveNetwork } from 'hooks/useActiveNetwork'
 import WalletConnectSVG from 'components/svg/WalletConnectSVG'
 import AvaButton from 'components/AvaButton'
 import { Row } from 'components/Row'
@@ -215,7 +215,6 @@ const CustomTabBarFab: FC = ({ children }) => {
   const { theme } = useApplicationContext()
   const { openMoonPay } = useInAppBrowser()
   const navigation = useNavigation<FabNavigationProp>()
-  const activeNetwork = useActiveNetwork()
   const fabRef = useRef<typeof FloatingActionButton>()
   const { setPendingDeepLink } = useDappConnectionContext()
 
@@ -267,7 +266,7 @@ const CustomTabBarFab: FC = ({ children }) => {
 
     return actions
   }, [
-    activeNetwork,
+    setPendingDeepLink,
     wcDisabled,
     buyDisabled,
     swapDisabled,
@@ -336,11 +335,7 @@ const CustomTabBarFab: FC = ({ children }) => {
             <ActionButtonItem />
           </>
         ) : (
-          <ActionButtonItem
-            vertical
-            selfContained
-            endDegree={0}
-            startDegree={0}>
+          <ActionButtonItem vertical selfContained>
             <>{renderList()}</>
           </ActionButtonItem>
         )}
