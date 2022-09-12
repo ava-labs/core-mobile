@@ -47,9 +47,8 @@ const BridgeTransactionStatus: FC<Props> = ({
 }) => {
   const [toastShown, setToastShown] = useState<boolean>()
   const { bridgeTransactions, removeBridgeTransaction } = useBridgeContext()
-  const bridgeTransaction = bridgeTransactions[txHash] as
-    | BridgeTransaction
-    | undefined
+  const [bridgeTransaction, setBridgeTransaction] =
+    useState<BridgeTransaction>()
 
   const tokenInfo = useSelector(
     selectTokenInfo(bridgeTransaction?.symbol ?? '')
@@ -81,6 +80,13 @@ const BridgeTransactionStatus: FC<Props> = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [HeaderRight, bridgeTransaction])
+
+  useEffect(() => {
+    if (bridgeTransactions[txHash])
+      // Cache locally because it's removed from the context on complete but
+      // the tx should still be shown after completion.
+      setBridgeTransaction(bridgeTransactions[txHash])
+  }, [bridgeTransactions, txHash])
 
   useEffect(() => {
     if (bridgeTransaction?.complete && !toastShown) {
