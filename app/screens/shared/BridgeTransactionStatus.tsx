@@ -90,41 +90,50 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
     [bridgeTransaction, dispatch, navigate, setOptions, showHideButton]
   )
 
-  useEffect(() => {
-    if (bridgeTransactions[txHash])
-      // Cache locally because it's removed from the context on complete but
-      // the tx should still be shown after completion.
-      setBridgeTransaction(bridgeTransactions[txHash])
-  }, [bridgeTransactions, txHash])
+  useEffect(
+    function cacheBridgeTransaction() {
+      if (bridgeTransactions[txHash])
+        // Cache locally because it's removed from the context on complete but
+        // the tx should still be shown after completion.
+        setBridgeTransaction(bridgeTransactions[txHash])
+    },
+    [bridgeTransactions, txHash]
+  )
 
-  useEffect(() => {
-    if (bridgeTransaction?.complete && !toastShown) {
-      const toastId = Math.random().toString()
-      removeBridgeTransaction(bridgeTransaction.sourceTxHash)
-      setToastShown(true)
-      showSnackBarCustom({
-        component: (
-          <TransactionToast
-            message={'Bridge successful!'}
-            type={TransactionToastType.SUCCESS}
-            toastId={toastId}
-          />
-        ),
-        id: toastId,
-        duration: 'infinite'
-      })
-    }
-  }, [bridgeTransaction, removeBridgeTransaction, toastShown])
+  useEffect(
+    function showToastOnComplete() {
+      if (bridgeTransaction?.complete && !toastShown) {
+        const toastId = Math.random().toString()
+        removeBridgeTransaction(bridgeTransaction.sourceTxHash)
+        setToastShown(true)
+        showSnackBarCustom({
+          component: (
+            <TransactionToast
+              message={'Bridge successful!'}
+              type={TransactionToastType.SUCCESS}
+              toastId={toastId}
+            />
+          ),
+          id: toastId,
+          duration: 'infinite'
+        })
+      }
+    },
+    [bridgeTransaction, removeBridgeTransaction, toastShown]
+  )
 
-  useEffect(() => {
-    Logger.info(
-      `updated tx: ${bridgeTransaction?.sourceTxHash} count: ${
-        bridgeTransaction?.confirmationCount
-      } completed: ${bridgeTransaction?.complete} completedAt: ${
-        bridgeTransaction?.completedAt
-      } logStamp: ${Date.now()}`
-    )
-  }, [bridgeTransaction])
+  useEffect(
+    function logTxStatus() {
+      Logger.info(
+        `updated tx: ${bridgeTransaction?.sourceTxHash} count: ${
+          bridgeTransaction?.confirmationCount
+        } completed: ${bridgeTransaction?.complete} completedAt: ${
+          bridgeTransaction?.completedAt
+        } logStamp: ${Date.now()}`
+      )
+    },
+    [bridgeTransaction]
+  )
 
   const tokenLogo = (
     <View style={styles.logoContainer}>
