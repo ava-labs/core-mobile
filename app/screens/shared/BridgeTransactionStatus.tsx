@@ -1,10 +1,4 @@
-import React, {
-  FC,
-  ReactNode,
-  useEffect,
-  useLayoutEffect,
-  useState
-} from 'react'
+import React, { FC, useEffect, useLayoutEffect, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
@@ -23,8 +17,8 @@ import { Space } from 'components/Space'
 import Separator from 'components/Separator'
 import BridgeConfirmations from 'screens/bridge/components/BridgeConfirmations'
 import { useBridgeContext } from 'contexts/BridgeContext'
-import { StackNavigationOptions } from '@react-navigation/stack'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
+import { CompositeScreenProps, useNavigation } from '@react-navigation/native'
 import Logger from 'utils/Logger'
 import { useSelector } from 'react-redux'
 import { selectTokenInfo } from 'store/network'
@@ -33,18 +27,21 @@ import { showSnackBarCustom } from 'components/Snackbar'
 import TransactionToast, {
   TransactionToastType
 } from 'components/toast/TransactionToast'
+import AvaButton from 'components/AvaButton'
+import { BridgeScreenProps, PortfolioScreenProps } from 'navigation/types'
+import AppNavigation from 'navigation/AppNavigation'
+
+type NavigationProp = CompositeScreenProps<
+  BridgeScreenProps<typeof AppNavigation.Bridge.BridgeTransactionStatus>,
+  PortfolioScreenProps<typeof AppNavigation.Portfolio.Portfolio>
+>['navigation']
 
 type Props = {
   txHash: string
-  setNavOptions: (options: StackNavigationOptions) => void
-  HeaderRight?: ReactNode
+  showHideButton?: boolean
 }
 
-const BridgeTransactionStatus: FC<Props> = ({
-  txHash,
-  setNavOptions,
-  HeaderRight = null
-}) => {
+const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
   const [toastShown, setToastShown] = useState<boolean>()
   const { bridgeTransactions, removeBridgeTransaction } = useBridgeContext()
   const [bridgeTransaction, setBridgeTransaction] =
@@ -55,6 +52,7 @@ const BridgeTransactionStatus: FC<Props> = ({
   )
   const { theme, appHook } = useApplicationContext()
   const { selectedCurrency, currencyFormatter } = appHook
+  const { navigate, dispatch, setOptions } = useNavigation<NavigationProp>()
 
   const assetPrice = usePrice(
     bridgeTransaction?.symbol,
@@ -69,17 +67,28 @@ const BridgeTransactionStatus: FC<Props> = ({
         )
       : '-'
 
-  useLayoutEffect(() => {
-    if (bridgeTransaction) {
-      setNavOptions({
+  useLayoutEffect(
+    function updateHeader() {
+      const renderHeaderRight = () =>
+        showHideButton ? (
+          <AvaButton.TextLarge
+            onPress={() => {
+              bridgeTransaction?.complete
+                ? navigate(AppNavigation.Tabs.Portfolio)
+                : navigate(AppNavigation.Bridge.HideWarning)
+            }}>
+            {bridgeTransaction?.complete ? 'Close' : 'Hide'}
+          </AvaButton.TextLarge>
+        ) : undefined
+      setOptions({
         headerTitle: `Transaction ${
-          bridgeTransaction.complete ? 'Details' : 'Status'
+          bridgeTransaction?.complete ? 'Details' : 'Status'
         }`,
-        headerRight: () => HeaderRight
+        headerRight: renderHeaderRight
       })
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [HeaderRight, bridgeTransaction])
+    },
+    [bridgeTransaction, dispatch, navigate, setOptions, showHideButton]
+  )
 
   useEffect(() => {
     if (bridgeTransactions[txHash])

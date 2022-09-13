@@ -13,7 +13,6 @@ import {
   BridgeTransactionStatusParams,
   WalletScreenProps
 } from 'navigation/types'
-import AvaButton from 'components/AvaButton'
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
 import { AssetBalance } from 'screens/bridge/utils/types'
 
@@ -116,28 +115,10 @@ type BridgeTransactionStatusScreenProps = BridgeScreenProps<
 >
 
 const BridgeTransactionStatus = () => {
-  const { navigate, setOptions } =
-    useNavigation<BridgeTransactionStatusScreenProps['navigation']>()
-
   const { txHash } =
     useRoute<BridgeTransactionStatusScreenProps['route']>().params
 
-  const HeaderRight = (
-    <AvaButton.TextLarge
-      onPress={() => {
-        navigate(AppNavigation.Bridge.HideWarning)
-      }}>
-      Hide
-    </AvaButton.TextLarge>
-  )
-
-  return (
-    <SharedBridgeTransactionStatus
-      setNavOptions={setOptions}
-      HeaderRight={HeaderRight}
-      txHash={txHash}
-    />
-  )
+  return <SharedBridgeTransactionStatus showHideButton txHash={txHash} />
 }
 
 export default React.memo(BridgeScreenStack)
