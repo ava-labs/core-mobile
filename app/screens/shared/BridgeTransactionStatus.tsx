@@ -18,7 +18,7 @@ import Separator from 'components/Separator'
 import BridgeConfirmations from 'screens/bridge/components/BridgeConfirmations'
 import { useBridgeContext } from 'contexts/BridgeContext'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
-import { CompositeScreenProps, useNavigation } from '@react-navigation/native'
+import { useNavigation } from '@react-navigation/native'
 import Logger from 'utils/Logger'
 import { useSelector } from 'react-redux'
 import { selectTokenInfo } from 'store/network'
@@ -28,13 +28,7 @@ import TransactionToast, {
   TransactionToastType
 } from 'components/toast/TransactionToast'
 import AvaButton from 'components/AvaButton'
-import { BridgeScreenProps, PortfolioScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
-
-type NavigationProp = CompositeScreenProps<
-  BridgeScreenProps<typeof AppNavigation.Bridge.BridgeTransactionStatus>,
-  PortfolioScreenProps<typeof AppNavigation.Portfolio.Portfolio>
->['navigation']
 
 type Props = {
   txHash: string
@@ -52,7 +46,7 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
   )
   const { theme, appHook } = useApplicationContext()
   const { selectedCurrency, currencyFormatter } = appHook
-  const { navigate, dispatch, setOptions } = useNavigation<NavigationProp>()
+  const { navigate, getParent, dispatch, setOptions } = useNavigation()
 
   const assetPrice = usePrice(
     bridgeTransaction?.symbol,
@@ -74,8 +68,11 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
           <AvaButton.TextLarge
             onPress={() => {
               bridgeTransaction?.complete
-                ? navigate(AppNavigation.Tabs.Portfolio)
-                : navigate(AppNavigation.Bridge.HideWarning)
+                ? getParent()?.goBack()
+                : navigate(AppNavigation.Root.Wallet, {
+                    screen: AppNavigation.Wallet.Bridge,
+                    params: { screen: AppNavigation.Bridge.HideWarning }
+                  })
             }}>
             {bridgeTransaction?.complete ? 'Close' : 'Hide'}
           </AvaButton.TextLarge>
@@ -87,7 +84,14 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
         headerRight: renderHeaderRight
       })
     },
-    [bridgeTransaction, dispatch, navigate, setOptions, showHideButton]
+    [
+      bridgeTransaction,
+      dispatch,
+      getParent,
+      navigate,
+      setOptions,
+      showHideButton
+    ]
   )
 
   useEffect(
