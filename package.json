@@ -270,7 +270,8 @@
       "web3>web3-shh": false,
       "postinstall-postinstall": false,
       "@sentry/react-native>@sentry/cli": true,
-      "@sentry/react-native>@sentry/wizard>@sentry/cli": false
+      "@sentry/react-native>@sentry/wizard>@sentry/cli": false,
+      "web3>web3-core>web3-core-requestmanager>web3-providers-ws>websocket>es5-ext": false
     }
   },
   "react-native": {
