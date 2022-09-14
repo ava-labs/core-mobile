@@ -22,6 +22,7 @@ import {
   selectEditingContact,
   setEditingContact
 } from 'store/addressBook'
+import { getContactValidationError } from 'screens/drawer/addressBook/utils'
 import { AddressBookScreenProps } from '../types'
 
 export type AddressBookStackParamList = {
@@ -30,6 +31,7 @@ export type AddressBookStackParamList = {
   [AppNavigation.AddressBook.Details]: {
     contactId: string
     editable: boolean
+    isContactValid: boolean
   }
 }
 const Stack = createStackNavigator<AddressBookStackParamList>()
@@ -82,11 +84,27 @@ const ContactDetailsComp = () => {
 
   const { params } = useRoute<ContactDetailsScreenProps['route']>()
   const editable = params?.editable ?? false
+  const isContactValid = params?.isContactValid ?? false
   const contact = useSelector(selectContact(params.contactId))
   const editingContact = useSelector(selectEditingContact)
 
   useEffect(() => {
-    setParams({ editable: false })
+    const err = getContactValidationError(
+      editingContact?.title,
+      editingContact?.address,
+      editingContact?.addressBtc
+    )
+    setParams({ editable, isContactValid: err === undefined })
+  }, [
+    editable,
+    editingContact?.address,
+    editingContact?.addressBtc,
+    editingContact?.title,
+    setParams
+  ])
+
+  useEffect(() => {
+    setParams({ editable: false, isContactValid })
     setOptions({
       ...(MainHeaderOptions(
         '',
@@ -109,7 +127,7 @@ const ContactDetailsComp = () => {
 
   function saveContact() {
     dispatch(saveEditingContact())
-    setParams({ editable: false })
+    setParams({ editable: false, isContactValid })
     setOptions({
       ...(MainHeaderOptions(
         '',
@@ -120,7 +138,7 @@ const ContactDetailsComp = () => {
   }
 
   function onEdit() {
-    setParams({ editable: true })
+    setParams({ editable: true, isContactValid })
     setOptions({
       ...(MainHeaderOptions(
         '',
@@ -131,16 +149,16 @@ const ContactDetailsComp = () => {
   }
 
   const deleteContact = useCallback(
-    (contact: Contact) => {
-      dispatch(removeContact(contact.id))
+    (c: Contact) => {
+      dispatch(removeContact(c.id))
       goBack()
     },
     [dispatch, goBack]
   )
 
   const onChange = useCallback(
-    (contact: Contact) => {
-      dispatch(setEditingContact(contact))
+    (c: Contact) => {
+      dispatch(setEditingContact(c))
     },
     [dispatch]
   )
@@ -185,10 +203,15 @@ const EditAddressBookContact = ({ onEdit }: { onEdit: () => void }) => {
 
 const SaveAddressBookContact = ({ onSave }: { onSave: () => void }) => {
   const { theme } = useApplicationContext()
+  const { params } = useRoute<ContactDetailsScreenProps['route']>()
+  const isContactValid = params?.isContactValid
 
   return (
-    <AvaButton.Icon onPress={() => onSave()}>
-      <AvaText.ButtonLarge textStyle={{ color: theme.colorPrimary1 }}>
+    <AvaButton.Icon disabled={!isContactValid} onPress={() => onSave()}>
+      <AvaText.ButtonLarge
+        textStyle={{
+          color: isContactValid ? theme.colorPrimary1 : theme.colorDisabled
+        }}>
         Save
       </AvaText.ButtonLarge>
     </AvaButton.Icon>
