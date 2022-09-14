@@ -31,7 +31,7 @@ export type AddressBookStackParamList = {
   [AppNavigation.AddressBook.Details]: {
     contactId: string
     editable: boolean
-    isContactValid: boolean
+    isContactValid?: boolean
   }
 }
 const Stack = createStackNavigator<AddressBookStackParamList>()
