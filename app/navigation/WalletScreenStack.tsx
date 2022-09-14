@@ -406,15 +406,10 @@ type BridgeTransactionStatusScreenProps = WalletScreenProps<
 >
 
 const BridgeTransactionStatus = () => {
-  const { setOptions } =
-    useNavigation<BridgeTransactionStatusScreenProps['navigation']>()
-
   const { txHash } =
     useRoute<BridgeTransactionStatusScreenProps['route']>().params
 
-  return (
-    <SharedBridgeTransactionStatus setNavOptions={setOptions} txHash={txHash} />
-  )
+  return <SharedBridgeTransactionStatus txHash={txHash} />
 }
 
 type NetworkSelectorScreenProps = WalletScreenProps<
