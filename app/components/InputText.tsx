@@ -101,15 +101,15 @@ export default function InputText({
   const textInputRef = useRef() as RefObject<TextInput>
 
   useEffect(() => {
-    Keyboard.addListener('keyboardWillShow', () => {
+    const sub1 = Keyboard.addListener('keyboardWillShow', _ => {
       keyboardWillShow?.()
     })
-    Keyboard.addListener('keyboardDidHide', () => {
+    const sub2 = Keyboard.addListener('keyboardDidHide', _ => {
       keyboardDidHide?.()
     })
     return () => {
-      Keyboard.removeAllListeners('keyboardWillShow')
-      Keyboard.removeAllListeners('keyboardDidHide')
+      sub1.remove()
+      sub2.remove()
     }
   }, [keyboardDidHide, keyboardWillShow])
 
