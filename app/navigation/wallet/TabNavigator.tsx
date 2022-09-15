@@ -222,7 +222,17 @@ const CustomTabBarFab: FC = ({ children }) => {
     const actions: Record<string, ActionProp> = {}
     // @ts-ignore
     actions.Send = {
-      image: <ArrowSVG rotate={225} color={theme.background} size={24} />,
+      image: (
+        <View
+          style={{
+            width: 24,
+            height: 24,
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}>
+          <ArrowSVG rotate={180} color={theme.background} size={17} />
+        </View>
+      ),
       onPress: () => navigation.navigate(AppNavigation.Wallet.SendTokens)
     } as ActionProp
 
