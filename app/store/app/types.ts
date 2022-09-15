@@ -18,6 +18,6 @@ export type AppState = {
   // indicates whether app is in background, foreground,...
   appState: AppStateStatus
 
-  // indicates whether wallet
+  // indicates whether wallet does not exist, or if exists if it's active or inactive
   walletState: WalletState
 }
