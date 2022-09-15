@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Image, ScrollView, StyleSheet, View } from 'react-native'
+import { Image, ScrollView, StyleSheet, View, Dimensions } from 'react-native'
 import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
 import { Space } from 'components/Space'
@@ -7,6 +7,10 @@ import { Row } from 'components/Row'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { NFTItemData, NFTItemExternalDataAttribute } from 'store/nft'
 import { SvgXml } from 'react-native-svg'
+import { truncateAddress } from '@avalabs/utils-sdk'
+import { isAddress } from '@ethersproject/address'
+
+const imageWidth = Dimensions.get('window').width - 32
 
 export type NftDetailsProps = {
   nft: NFTItemData
@@ -21,14 +25,18 @@ export default function NftDetails({
 }: NftDetailsProps) {
   const [imgLoadFailed, setImgLoadFailed] = useState(false)
   const { theme } = useApplicationContext()
-  const width = 100
+
+  const createdByTxt = isAddress(item.owner)
+    ? truncateAddress(item.owner)
+    : item.owner
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <AvaText.Heading1>
         {item.name} #{item.tokenId}
       </AvaText.Heading1>
-      <Space y={24} />
       <AvaButton.Base
+        style={{ marginTop: 16, marginBottom: 24 }}
         onPress={() =>
           onPicturePressed(item.image, item.image_256, item.isSvg)
         }>
@@ -36,8 +44,8 @@ export default function NftDetails({
           <View style={{ alignItems: 'center' }}>
             <SvgXml
               xml={item.image}
-              width={width}
-              height={width * item.aspect}
+              width={imageWidth}
+              height={imageWidth * item.aspect}
             />
           </View>
         )}
@@ -45,6 +53,8 @@ export default function NftDetails({
           <Image
             onError={_ => setImgLoadFailed(true)}
             style={styles.imageStyle}
+            width={imageWidth}
+            height={imageWidth * item.aspect}
             source={{ uri: item.image }}
           />
         )}
@@ -61,25 +71,27 @@ export default function NftDetails({
           </View>
         )}
       </AvaButton.Base>
-      <Space y={24} />
-      <AvaButton.PrimaryLarge onPress={() => onSendPressed(item)}>
+      <AvaButton.SecondaryLarge onPress={() => onSendPressed(item)}>
         Send
-      </AvaButton.PrimaryLarge>
+      </AvaButton.SecondaryLarge>
       <Space y={24} />
       <AvaText.Heading2>Description</AvaText.Heading2>
+      <Space y={16} />
       <Row>
         <View style={{ flex: 1 }}>
           <AvaText.Body2>Created by</AvaText.Body2>
-          <AvaText.Body2>{item.owner}</AvaText.Body2>
+          <Space y={4} />
+          <AvaText.Heading3>{createdByTxt}</AvaText.Heading3>
         </View>
         <View style={{ flex: 1 }}>
           <AvaText.Body2>Floor price</AvaText.Body2>
-          <AvaText.Body2>Token price not available</AvaText.Body2>
+          <Space y={4} />
+          <AvaText.Heading3>Token price not available</AvaText.Heading3>
         </View>
       </Row>
       <Space y={24} />
       <AvaText.Heading2>Properties</AvaText.Heading2>
-      <Space y={16} />
+      <Space y={8} />
       {renderProps(item.attributes)}
     </ScrollView>
   )
@@ -92,14 +104,16 @@ const renderProps = (attributes?: NFTItemExternalDataAttribute[]) => {
   const props = []
   for (let i = 0; i < attributes.length; i += 2) {
     props.push(
-      <View key={i}>
+      <View key={i} style={{ marginVertical: 8 }}>
         <Space key={i + 1} y={4} />
         <Row key={i}>
           {attributes[i] && (
             <View style={{ flex: 1 }}>
               <AvaText.Body2>{attributes[i].trait_type}</AvaText.Body2>
               <Space y={4} />
-              <AvaText.Heading3>{attributes[i].value}</AvaText.Heading3>
+              <AvaText.Heading3 textStyle={{ marginRight: 16 }}>
+                {attributes[i].value}
+              </AvaText.Heading3>
             </View>
           )}
           {attributes[i + 1] && (
@@ -121,8 +135,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16
   },
   imageStyle: {
-    width: '100%',
-    height: 200,
     borderRadius: 8,
     resizeMode: 'contain'
   }
