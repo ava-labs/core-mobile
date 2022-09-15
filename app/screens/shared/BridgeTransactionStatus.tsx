@@ -1,4 +1,4 @@
-import React, { FC, ReactNode, useLayoutEffect } from 'react'
+import React, { FC, useEffect, useLayoutEffect, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
@@ -17,43 +17,36 @@ import { Space } from 'components/Space'
 import Separator from 'components/Separator'
 import BridgeConfirmations from 'screens/bridge/components/BridgeConfirmations'
 import { useBridgeContext } from 'contexts/BridgeContext'
-import { StackNavigationOptions } from '@react-navigation/stack'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { useNavigation } from '@react-navigation/native'
 import Logger from 'utils/Logger'
 import { useSelector } from 'react-redux'
 import { selectTokenInfo } from 'store/network'
 import { getBlockchainDisplayName } from 'screens/bridge/utils/bridgeUtils'
+import { showSnackBarCustom } from 'components/Snackbar'
+import TransactionToast, {
+  TransactionToastType
+} from 'components/toast/TransactionToast'
+import AvaButton from 'components/AvaButton'
+import AppNavigation from 'navigation/AppNavigation'
 
 type Props = {
   txHash: string
-  setNavOptions: (options: StackNavigationOptions) => void
-  HeaderRight?: ReactNode
+  showHideButton?: boolean
 }
 
-const BridgeTransactionStatus: FC<Props> = ({
-  txHash,
-  setNavOptions,
-  HeaderRight = null
-}) => {
+const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
+  const [toastShown, setToastShown] = useState<boolean>()
   const { bridgeTransactions, removeBridgeTransaction } = useBridgeContext()
-  const bridgeTransaction = bridgeTransactions[txHash] as
-    | BridgeTransaction
-    | undefined
+  const [bridgeTransaction, setBridgeTransaction] =
+    useState<BridgeTransaction>()
 
   const tokenInfo = useSelector(
     selectTokenInfo(bridgeTransaction?.symbol ?? '')
   )
-  Logger.info(
-    `updated tx: ${bridgeTransaction?.sourceTxHash} count: ${
-      bridgeTransaction?.confirmationCount
-    } completed: ${bridgeTransaction?.complete} completedAt: ${
-      bridgeTransaction?.completedAt
-    } logStamp: ${Date.now()}`
-  )
   const { theme, appHook } = useApplicationContext()
   const { selectedCurrency, currencyFormatter } = appHook
-  const navigation = useNavigation()
+  const { navigate, getParent, dispatch, setOptions } = useNavigation()
 
   const assetPrice = usePrice(
     bridgeTransaction?.symbol,
@@ -68,25 +61,83 @@ const BridgeTransactionStatus: FC<Props> = ({
         )
       : '-'
 
-  useLayoutEffect(() => {
-    if (bridgeTransaction) {
-      setNavOptions({
-        title: `Transaction ${
-          bridgeTransaction.complete ? 'Details' : 'Status'
+  useLayoutEffect(
+    function updateHeader() {
+      const renderHeaderRight = () =>
+        showHideButton ? (
+          <AvaButton.TextLarge
+            onPress={() => {
+              bridgeTransaction?.complete
+                ? getParent()?.goBack()
+                : navigate(AppNavigation.Root.Wallet, {
+                    screen: AppNavigation.Wallet.Bridge,
+                    params: { screen: AppNavigation.Bridge.HideWarning }
+                  })
+            }}>
+            {bridgeTransaction?.complete ? 'Close' : 'Hide'}
+          </AvaButton.TextLarge>
+        ) : undefined
+      setOptions({
+        headerTitle: `Transaction ${
+          bridgeTransaction?.complete ? 'Details' : 'Status'
         }`,
-        headerRight: () => HeaderRight
+        headerRight: renderHeaderRight
       })
+    },
+    [
+      bridgeTransaction,
+      dispatch,
+      getParent,
+      navigate,
+      setOptions,
+      showHideButton
+    ]
+  )
 
-      if (bridgeTransaction.complete) {
+  useEffect(
+    function cacheBridgeTransaction() {
+      if (bridgeTransactions[txHash])
+        // Cache locally because it's removed from the context on complete but
+        // the tx should still be shown after completion.
+        setBridgeTransaction(bridgeTransactions[txHash])
+    },
+    [bridgeTransactions, txHash]
+  )
+
+  useEffect(
+    function showToastOnComplete() {
+      if (bridgeTransaction?.complete && !toastShown) {
+        const toastId = Math.random().toString()
         removeBridgeTransaction(bridgeTransaction.sourceTxHash)
-        if (HeaderRight) {
-          navigation.getParent()?.goBack()
-        } else {
-          navigation.goBack()
-        }
+        setToastShown(true)
+        showSnackBarCustom({
+          component: (
+            <TransactionToast
+              message={'Bridge successful!'}
+              type={TransactionToastType.SUCCESS}
+              toastId={toastId}
+            />
+          ),
+          id: toastId,
+          duration: 'infinite'
+        })
       }
-    }
-  }, [bridgeTransaction?.complete])
+    },
+    [bridgeTransaction, removeBridgeTransaction, toastShown]
+  )
+
+  useEffect(
+    function logTxStatus() {
+      Logger.info(
+        `updated tx: ${bridgeTransaction?.sourceTxHash} count: ${
+          bridgeTransaction?.confirmationCount
+        } completed: ${bridgeTransaction?.complete} completedAt: ${
+          bridgeTransaction?.completedAt
+        } logStamp: ${Date.now()}`
+      )
+    },
+    [bridgeTransaction]
+  )
 
   const tokenLogo = (
     <View style={styles.logoContainer}>

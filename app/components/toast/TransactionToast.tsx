@@ -43,7 +43,7 @@ const TransactionToast: FC<Props> = ({ message, toastId, type, txHash }) => {
         borderRadius: 8,
         justifyContent: 'center',
         width: WINDOW_WIDTH * 0.89,
-        paddingHorizontal: 8,
+        paddingHorizontal: 16,
         height: type === TransactionToastType.PENDING ? 60 : 76
       }}>
       {txHash ? (
