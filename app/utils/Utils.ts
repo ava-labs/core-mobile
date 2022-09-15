@@ -1,6 +1,5 @@
 import Big from 'big.js'
-import { BigNumber, BigNumberish } from 'ethers'
-import { BNLike } from 'ethereumjs-util'
+import { BigNumber } from 'ethers'
 import {
   bigToLocaleString,
   ethersBigNumberToBig,
@@ -23,19 +22,6 @@ export function formatTokenAmount(amount: Big, denomination = 2): string {
   })
 
   return formatter.format(amount.toNumber())
-}
-
-export function makeBNLike(n: BigNumberish | undefined): BNLike | undefined {
-  if (n == null) {
-    return undefined
-  }
-  return BigNumber.from(n).toHexString()
-}
-
-export const displaySeconds = (timeInSeconds: number): string => {
-  return timeInSeconds >= 3600
-    ? new Date(timeInSeconds * 1000).toISOString().substr(11, 8) // HH:MM:SS
-    : new Date(timeInSeconds * 1000).toISOString().substr(14, 5) // MM:SS
 }
 
 /**
@@ -62,15 +48,10 @@ export function formatLargeNumber(num: number | string, digits = 2) {
   return (number / item.value).toFixed(digits).replace(rx, '$1') + item.symbol
 }
 
-export async function catchAndLog(f: () => Promise<void>, devOnly = true) {
-  try {
-    await f()
-  } catch (e) {
-    if (!devOnly || __DEV__) {
-      console.error(e)
-    }
-  }
-}
+export const formatTimer = (time: number) =>
+  `${String(Math.floor(time / 60)).padStart(2, '0')}:${String(
+    time % 60
+  ).padStart(2, '0')}`
 
 // from https://stackoverflow.com/a/25105589
 export function arrayHash(array: string[]) {

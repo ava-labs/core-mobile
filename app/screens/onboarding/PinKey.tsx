@@ -20,6 +20,7 @@ export enum PinKeys {
 type Props = {
   keyboardKey: PinKeys
   onPress: (key: PinKeys) => void
+  disabled?: boolean
 }
 
 const keymap: Map<PinKeys, string> = new Map([
@@ -36,21 +37,26 @@ const keymap: Map<PinKeys, string> = new Map([
   [PinKeys.Backspace, '<']
 ])
 
-export default function PinKey(props: Props | Readonly<Props>) {
+export default function PinKey({
+  keyboardKey,
+  onPress,
+  disabled
+}: Props | Readonly<Props>) {
   const context = useApplicationContext()
   const theme = context.theme
-  const isBackspace = props.keyboardKey === PinKeys.Backspace
-  if (props.keyboardKey === undefined) {
+  const isBackspace = keyboardKey === PinKeys.Backspace
+  if (keyboardKey === undefined) {
     return <View />
   }
   return (
     <TouchableNativeFeedback
       useForeground={true}
-      onPress={() => props.onPress(props.keyboardKey)}
+      disabled={disabled}
+      onPress={() => onPress(keyboardKey)}
       background={TouchableNativeFeedback.Ripple(theme.buttonRipple, true)}>
-      <View style={[styles.button]}>
+      <View style={[styles.button, disabled && { opacity: 0.5 }]}>
         {isBackspace && Backspace(context.isDarkMode)}
-        {!isBackspace && Digit(props.keyboardKey)}
+        {!isBackspace && Digit(keyboardKey)}
       </View>
     </TouchableNativeFeedback>
   )
