@@ -9,11 +9,10 @@ import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import { AddressBookScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
-import { isAddress } from '@ethersproject/address'
-import { isBech32Address } from '@avalabs/bridge-sdk'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { addContact } from 'store/addressBook'
 import { useDispatch } from 'react-redux'
+import { getContactValidationError } from 'screens/drawer/addressBook/utils'
 
 type NavigationProp = AddressBookScreenProps<
   typeof AppNavigation.AddressBook.Add
@@ -30,16 +29,9 @@ const AddContact = () => {
   const [error, setError] = useState('')
 
   const save = useCallback(() => {
-    if (!address && !addressBtc) {
-      setError('Address required')
-      return
-    }
-    if (address && !isAddress(address)) {
-      setError('Not valid EVM address')
-      return
-    }
-    if (addressBtc && !isBech32Address(addressBtc)) {
-      setError('invalid BTC address')
+    const err = getContactValidationError(title, address, addressBtc)
+    if (err) {
+      setError(err)
       return
     }
     const id = uuidv4()
