@@ -14,6 +14,7 @@ import { PosthogContextProvider } from 'contexts/PosthogContext'
 import { StatusBar } from 'react-native'
 import { DappConnectionContextProvider } from 'contexts/DappConnectionContext'
 import { EncryptedStoreProvider } from 'contexts/EncryptedStoreProvider'
+import { TopLevelErrorFallback } from 'components/TopLevelErrorFallback'
 
 function setToast(toast: Toast) {
   global.toast = toast
@@ -36,7 +37,7 @@ const ContextProviders: FC = ({ children }) => (
 
 const ContextApp = () => {
   return (
-    <>
+    <Sentry.ErrorBoundary fallback={<TopLevelErrorFallback />}>
       <StatusBar barStyle={'light-content'} />
       <ContextProviders>
         <JailBrokenCheck>
@@ -50,7 +51,7 @@ const ContextApp = () => {
           normalColor={'00FFFFFF'}
         />
       </ContextProviders>
-    </>
+    </Sentry.ErrorBoundary>
   )
 }
 
