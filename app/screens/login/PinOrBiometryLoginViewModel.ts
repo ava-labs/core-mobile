@@ -8,6 +8,15 @@ import { Alert, Animated } from 'react-native'
 import { decrypt, NoSaltError } from 'utils/EncryptionHelper'
 import { useJigglyPinIndicator } from 'utils/JigglyPinIndicatorHook'
 import { useApplicationContext } from 'contexts/ApplicationContext'
+import { useDispatch, useSelector } from 'react-redux'
+import { differenceInSeconds } from 'date-fns'
+import Logger from 'utils/Logger'
+import { formatTimer } from 'utils/Utils'
+import {
+  resetLoginAttempt,
+  selectLoginAttempt,
+  setLoginAttempt
+} from 'store/security'
 
 export type DotView = {
   filled: boolean
@@ -26,6 +35,20 @@ const keymap: Map<PinKeys, string> = new Map([
   [PinKeys.Key0, '0']
 ])
 
+function getTimoutForAttempt(attempt: number) {
+  if (attempt === 6) {
+    return 60 // 1 minute
+  } else if (attempt === 7) {
+    return 300 // 5 minutes
+  } else if (attempt === 8) {
+    return 900 // 15 min
+  } else if (attempt >= 9) {
+    return 3600 // 60 minutes
+  } else {
+    return 0
+  }
+}
+
 export function usePinOrBiometryLogin(): {
   title: string
   pinDots: DotView[]
@@ -33,18 +56,100 @@ export function usePinOrBiometryLogin(): {
   mnemonic: string | undefined
   promptForWalletLoadingIfExists: () => Observable<WalletLoadingResults>
   jiggleAnim: Animated.Value
+  disableKeypad: boolean
+  timeRemaining: string
 } {
   const [title] = useState('Wallet')
   const [enteredPin, setEnteredPin] = useState('')
   const [pinDots, setPinDots] = useState<DotView[]>([])
   const [pinEntered, setPinEntered] = useState(false)
   const [mnemonic, setMnemonic] = useState<string | undefined>(undefined)
+  const [disableKeypad, setDisableKeypad] = useState(false)
   const { jiggleAnim, fireJiggleAnimation } = useJigglyPinIndicator()
   const { signOut } = useApplicationContext().appHook
+  const loginAttempt = useSelector(selectLoginAttempt)
+  const dispatch = useDispatch()
+  const [time, setTime] = useState(0)
+  const [resetInterval, setResetInterval] = useState(0)
+  const [timeRemaining, setTimeRemaining] = useState('00:00')
+  let timerId: NodeJS.Timer | undefined
 
   useEffect(() => {
     setPinDots(getPinDots(enteredPin))
   }, [enteredPin])
+
+  // get formatted time based on time ticker and rest interval
+  useEffect(() => {
+    setTimeRemaining(formatTimer(resetInterval - (time % resetInterval)))
+    Logger.info(`time: ${time}`)
+  }, [time, resetInterval])
+
+  // we start the timer when the keyboard is disabled
+  // and stop when it's enabled & we have a timerId
+  useEffect(() => {
+    if (disableKeypad) {
+      timerId = setInterval(() => {
+        setTime(t => t + 1)
+        checkLoginAttempt()
+      }, 1000)
+    }
+    return () => {
+      // setTime(0)
+      timerId && clearInterval(timerId)
+    }
+  }, [disableKeypad])
+
+  const checkLoginAttempt = useCallback(
+    (manualInterval?: number) => {
+      const currentTimestamp = new Date()
+
+      const secondsPassed = differenceInSeconds(
+        currentTimestamp,
+        loginAttempt.timestamp
+      )
+
+      const interval = manualInterval ?? resetInterval
+
+      Logger.info(`seconds condition ${interval}`)
+      Logger.info(`seconds passed ${secondsPassed}`)
+
+      if (secondsPassed < interval) {
+        setDisableKeypad(true)
+      } else {
+        setDisableKeypad(false)
+        setTime(0)
+      }
+    },
+    [loginAttempt, resetInterval]
+  )
+
+  // triggered everytime there's login attempt,
+  // but we only care if it's over the 5th try
+  useEffect(() => {
+    if (loginAttempt.count > 5) {
+      const interval = getTimoutForAttempt(loginAttempt.count)
+      setResetInterval(interval)
+      checkLoginAttempt(interval)
+    }
+  }, [loginAttempt, setResetInterval, getTimoutForAttempt])
+
+  // 1 time check to set things up
+  // used for when the app gets killed, and
+  // we need to restore the timer
+  useEffect(() => {
+    if (loginAttempt.count > 5) {
+      const interval = getTimoutForAttempt(loginAttempt.count)
+      setResetInterval(interval)
+      const currentTimestamp = new Date()
+      const secondsPassed = differenceInSeconds(
+        currentTimestamp,
+        loginAttempt.timestamp
+      )
+      if (secondsPassed !== 0 && time === 0) {
+        setTime(secondsPassed)
+      }
+    }
+  }, [setTime, setResetInterval])
 
   const alertBadDta = useCallback(
     () =>
@@ -77,12 +182,19 @@ export function usePinOrBiometryLogin(): {
             (await BiometricsSDK.loadWalletWithPin()) as UserCredentials
           const data = await decrypt(credentials.password, enteredPin)
           setMnemonic(data)
+          dispatch(resetLoginAttempt())
         } catch (err) {
           if (
             err instanceof Error &&
             (err?.message?.includes('BAD_DECRYPT') || // Android
               err?.message?.includes('Decrypt failed')) // iOS
           ) {
+            dispatch(
+              setLoginAttempt({
+                count: loginAttempt.count + 1,
+                timestamp: Date.now()
+              })
+            )
             resetConfirmPinProcess()
             fireJiggleAnimation()
           }
@@ -169,7 +281,9 @@ export function usePinOrBiometryLogin(): {
     onEnterPin,
     mnemonic,
     promptForWalletLoadingIfExists,
-    jiggleAnim
+    jiggleAnim,
+    disableKeypad,
+    timeRemaining
   }
 }
 

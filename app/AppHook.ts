@@ -12,7 +12,7 @@ import { usePosthogContext } from 'contexts/PosthogContext'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { onLogOut, setWalletState, WalletState } from 'store/app'
-import {resetLoginAttempt} from 'store/security';
+import { resetLoginAttempt } from 'store/security'
 
 export type AppHook = {
   onExit: () => Observable<ExitEvents>
