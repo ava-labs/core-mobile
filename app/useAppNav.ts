@@ -51,13 +51,13 @@ function resetNavToEnterMnemonic(navigation: NavigationRef) {
     index: 0,
     routes: [
       {
-        name: AppNavigation.Root.Onboard,
-        params: { screen: AppNavigation.Root.Welcome }
+        name: AppNavigation.Root.NoWallet,
+        params: { screen: AppNavigation.Root.NoWallet }
       },
       {
-        name: AppNavigation.Root.Onboard,
+        name: AppNavigation.Root.NoWallet,
         params: {
-          screen: AppNavigation.Root.Welcome
+          screen: AppNavigation.NoWallet.EnterWithMnemonicStack
         }
       }
     ]

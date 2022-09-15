@@ -6,6 +6,7 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaButton from 'components/AvaButton'
 import DotSVG from 'components/svg/DotSVG'
 import CoreXLogoAnimated from 'components/CoreXLogoAnimated'
+import AvaText from 'components/AvaText'
 import {
   MnemonicLoaded,
   NothingToLoad,
@@ -56,7 +57,9 @@ export default function PinOrBiometryLogin({
     onEnterPin,
     mnemonic,
     promptForWalletLoadingIfExists,
-    jiggleAnim
+    jiggleAnim,
+    disableKeypad,
+    timeRemaining
   } = usePinOrBiometryLogin()
 
   useEffect(() => {
@@ -103,7 +106,11 @@ export default function PinOrBiometryLogin({
     '123456789 0<'.split('').forEach((value, key) => {
       keys.push(
         <View key={key} style={styles.pinKey}>
-          <PinKey keyboardKey={keymap.get(value)!} onPress={onEnterPin} />
+          <PinKey
+            keyboardKey={keymap.get(value)!}
+            onPress={onEnterPin}
+            disabled={disableKeypad}
+          />
         </View>
       )
     })
@@ -133,6 +140,13 @@ export default function PinOrBiometryLogin({
           ]}>
           <View style={styles.dots}>{generatePinDots()}</View>
         </Animated.View>
+        {disableKeypad && (
+          <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+            <AvaText.Heading3>Login Disabled</AvaText.Heading3>
+            <Space y={8} />
+            <AvaText.Body2>Try again in {timeRemaining}</AvaText.Body2>
+          </View>
+        )}
       </View>
       <View style={styles.keyboard}>{keyboard()}</View>
       {isResettingPin || hideLoginWithMnemonic || (
