@@ -4,6 +4,7 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
+import { humanize } from 'utils/string/humanize'
 import { useBiometricLogin } from './BiometricLoginViewModel'
 
 type Props = {
@@ -20,10 +21,13 @@ export default function BiometricLogin(
   const { biometryType, storeMnemonicWithBiometric, fingerprintIcon } =
     useBiometricLogin(props.mnemonic, context.isDarkMode)
 
+  const formattedBiometryType = humanize(biometryType)
+
   async function handleUseBiometry() {
     try {
       await storeMnemonicWithBiometric()
       props.onBiometrySet()
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       Alert.alert(e?.message || 'error')
     }
@@ -42,7 +46,7 @@ export default function BiometricLogin(
           ]}
         />
         <Space y={90} />
-        <AvaText.Heading1>Biometric Login</AvaText.Heading1>
+        <AvaText.Heading1>{formattedBiometryType}</AvaText.Heading1>
         <Space y={8} />
 
         <AvaText.Body4
@@ -52,15 +56,15 @@ export default function BiometricLogin(
             paddingRight: 8,
             paddingLeft: 8
           }}>
-          Sign in quickly using your {biometryType?.toLowerCase()}. Change this
-          anytime in settings
+          Sign in quickly using your {formattedBiometryType}.{'\n'}Change this
+          anytime in settings.
         </AvaText.Body4>
       </View>
 
       <AvaButton.TextMedium onPress={props.onSkip}>Skip</AvaButton.TextMedium>
       <Space y={16} />
       <AvaButton.PrimaryLarge onPress={handleUseBiometry}>
-        {'Use ' + biometryType?.toLowerCase()}
+        {'Use ' + formattedBiometryType}
       </AvaButton.PrimaryLarge>
     </View>
   )
