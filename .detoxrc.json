@@ -1,0 +1,51 @@
+{
+  "testRunner": "jest",
+  "runnerConfig": "e2e/config.json",
+  "skipLegacyWorkersInjection": true,
+  
+    "devices": {
+      "emulator": {
+        "type": "android.emulator",
+        "device": {
+          "avdName": "Pixel_4_api_31"
+        }
+      },
+      "simulator": {
+        "type":"ios.simulator",
+        "device": "iPhone 13"
+      }
+    },
+    "apps": {
+      "ios.internal.debug": {
+        "type": "ios.app",
+        "binaryPath": "/Users/tyler.hackett/Desktop/avalanche-wallet-apps/ios/DerivedData/Build/Products/Debug-iphonesimulator/AvaxWallet.app",
+        "build": "ENVFILE=.env.development arch -x86_64 xcodebuild -workspace ios/AvaxWallet.xcworkspace -configuration Debug -scheme AvaxWallet -sdk iphonesimulator -derivedDataPath /Users/tyler.hackett/Desktop/avalanche-wallet-apps/ios/DerivedData"
+      },
+
+      "android.internal.debug": {
+        "type": "android.apk",
+        "binaryPath": "android/app/build/outputs/apk/internal/debug/app-internal-debug.apk",
+        "build": "cd android && ENVFILE=.env.development ./gradlew app:assembleInternalDebug app:assembleAndroidTest -DtestBuildType=debug && cd .."
+      }
+     
+    },
+    "configurations": {
+      "android.internal.debug": {
+        "device": "emulator",
+        "app": "android.internal.debug",
+        "binaryPath": "android/app/build/outputs/apk/debug/app-internal-debug.apk",
+        "build":"cd android && ENVFILE=.env.development ./gradlew app:assembleInternalDebug app:assembleAndroidTest -DtestBuildType=debug && cd ..",
+        "name": "Pixel_4_api_31"
+      },
+
+      "ios.internal.debug": {
+        "device": "simulator",
+        "app": "ios.internal.debug",
+        "binaryPath": "/Users/tyler.hackett/Desktop/avalanche-wallet-apps/ios/DerivedData/Build/Products/Debug-iphonesimulator/AvaxWallet.app",
+        "build": "ENVFILE=.env.development xcodebuild -project ios/AvaxWallet.xcodeproj -scheme AvaxWallet -sdk iphonesimulator -derivedDataPath ios/build",
+        "name": "iPhone 13 simulator"
+      }
+   
+    }
+
+  }

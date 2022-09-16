@@ -85,6 +85,7 @@ export default function TextArea(props: Props | Readonly<Props>): JSX.Element {
               fontFamily: 'Inter-Regular'
             }
           ]}
+          testID="recoveryPhraseTextInput"
         />
         {errorMessage && (
           <AvaText.Body3 textStyle={{ color: theme.colorError, marginTop: 4 }}>

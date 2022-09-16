@@ -14,7 +14,13 @@ function WatchListSVG({ selected, size = 32 }: Prop) {
     ? context.theme.alternateBackground
     : context.theme.colorIcon4
   return (
-    <Svg width={size} height={size} viewBox="0 0 32 32" fill="none">
+    <Svg
+      width={size}
+      height={size}
+      viewBox="0 0 32 32"
+      fill="none"
+      accessible={false}
+      testID={'watchlistSVG'}>
       <Rect
         x="9"
         y="8"

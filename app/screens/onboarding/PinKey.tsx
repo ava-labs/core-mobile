@@ -58,7 +58,9 @@ export default function PinKey(props: Props | Readonly<Props>) {
 
 const Digit = (key: PinKeys) => {
   return (
-    <AvaText.LargeTitleRegular>{keymap.get(key)}</AvaText.LargeTitleRegular>
+    <AvaText.LargeTitleRegular testID={keymap.get(key)}>
+      {keymap.get(key)}
+    </AvaText.LargeTitleRegular>
   )
 }
 

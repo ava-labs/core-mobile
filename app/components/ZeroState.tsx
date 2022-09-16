@@ -26,9 +26,9 @@ const ZeroStateBase: FC<BaseProps> = ({ image, title, message, button }) => {
     let img
 
     if (typeof image === 'string') {
-      img = <Image source={{ uri: image }} />
+      img = <Image source={{ uri: image }} testID="zeroStateBase" />
     } else {
-      img = <View>{image}</View>
+      img = <View testID="zeroStateBase">{image}</View>
     }
 
     return (
@@ -81,7 +81,8 @@ const ZeroStateBase: FC<BaseProps> = ({ image, title, message, button }) => {
         alignItems: 'center',
         flex: 1,
         marginHorizontal: 16
-      }}>
+      }}
+      testID="zeroStateBaseView">
       {renderImage()}
       {renderTitle()}
       <Space y={16} />
@@ -170,6 +171,7 @@ function ZeroStateNoWatchlistFavorites() {
       title={title}
       message={message}
       image={<StarSVG size={60} />}
+      testID={`${title}`}
     />
   )
 }

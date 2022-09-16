@@ -19,7 +19,8 @@
     "prestorybook": "rnstl",
     "build-storybook": "build-storybook",
     "prepare": "husky install",
-    "postinstall": "patch-package; node_modules/.bin/rn-nodeify --install buffer,events,stream,vm,assert,https,http,os --hack"
+    "postinstall": "patch-package; node_modules/.bin/rn-nodeify --install buffer,events,stream,vm,assert,https,http,os --hack",
+    "type": "module"
   },
   "dependencies": {
     "@avalabs/blockcypher-sdk": "2.5.1-alpha.0",
@@ -200,13 +201,14 @@
     "babel-jest": "26.6.3",
     "babel-loader": "8.2.3",
     "babel-plugin-inline-dotenv": "1.7.0",
+    "detox": "^19.12.1",
     "eslint": "8.20.0",
     "eslint-config-prettier": "8.5.0",
     "eslint-plugin-import": "2.26.0",
     "eslint-plugin-prettier": "4.2.1",
     "eslint-plugin-react-hooks": "4.6.0",
     "husky": "8.0.1",
-    "jest": "26.6.3",
+    "jest": ">=27.2.5",
     "lint-staged": "13.0.3",
     "metro-react-native-babel-preset": "0.66.2",
     "prettier": "2.6.2",
@@ -263,7 +265,12 @@
       "web3>web3-shh": false,
       "postinstall-postinstall": false,
       "@sentry/react-native>@sentry/cli": true,
-      "@sentry/react-native>@sentry/wizard>@sentry/cli": false
+      "@sentry/react-native>@sentry/wizard>@sentry/cli": false,
+      "detox": false,
+      "detox>bunyan>dtrace-provider": false,
+      "detox>ws>bufferutil": false,
+      "detox>ws>utf-8-validate": false,
+      "detox-recorder": false
     }
   },
   "react-native": {
