@@ -93,7 +93,8 @@ class WalletService {
 
   async signMessage(
     messageType: MessageType,
-    data: never,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    data: any,
     accountIndex: number,
     network: Network
   ) {
