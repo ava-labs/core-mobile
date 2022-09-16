@@ -14,6 +14,7 @@ import { PosthogContextProvider } from 'contexts/PosthogContext'
 import { StatusBar } from 'react-native'
 import { DappConnectionContextProvider } from 'contexts/DappConnectionContext'
 import { EncryptedStoreProvider } from 'contexts/EncryptedStoreProvider'
+import { TopLevelErrorFallback } from 'components/TopLevelErrorFallback'
 
 function setToast(toast: Toast) {
   global.toast = toast
@@ -34,14 +35,14 @@ const ContextProviders: FC = ({ children }) => (
   </EncryptedStoreProvider>
 )
 
-// TODO: move these context providers inside context app when theme refactor is done
-// right now Splash and JailbrokenWarning depend on the theme object from ApplicationContextProvider
-const ContextAppWithRedux = () => {
+const ContextApp = () => {
   return (
-    <>
+    <Sentry.ErrorBoundary fallback={<TopLevelErrorFallback />}>
       <StatusBar barStyle={'light-content'} />
       <ContextProviders>
-        <ContextApp />
+        <JailBrokenCheck>
+          <App />
+        </JailBrokenCheck>
         <Toast
           ref={ref => {
             ref && setToast(ref)
@@ -50,11 +51,11 @@ const ContextAppWithRedux = () => {
           normalColor={'00FFFFFF'}
         />
       </ContextProviders>
-    </>
+    </Sentry.ErrorBoundary>
   )
 }
 
-const ContextApp = () => {
+const JailBrokenCheck: FC = ({ children }) => {
   const [showJailBroken, setShowJailBroken] = useState(false)
 
   useEffect(() => {
@@ -67,7 +68,7 @@ const ContextApp = () => {
     return <JailbrokenWarning onOK={() => setShowJailBroken(false)} />
   }
 
-  return <App />
+  return <>{children}</>
 }
 
-export default Sentry.wrap(ContextAppWithRedux)
+export default Sentry.wrap(ContextApp)
