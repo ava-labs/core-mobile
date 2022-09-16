@@ -18,8 +18,8 @@
     "apps": {
       "ios.internal.debug": {
         "type": "ios.app",
-        "binaryPath": "/Users/tyler.hackett/Desktop/avalanche-wallet-apps/ios/DerivedData/Build/Products/Debug-iphonesimulator/AvaxWallet.app",
-        "build": "ENVFILE=.env.development arch -x86_64 xcodebuild -workspace ios/AvaxWallet.xcworkspace -configuration Debug -scheme AvaxWallet -sdk iphonesimulator -derivedDataPath /Users/tyler.hackett/Desktop/avalanche-wallet-apps/ios/DerivedData"
+        "binaryPath": "ios/DerivedData/Build/Products/Debug-iphonesimulator/AvaxWallet.app",
+        "build": "ENVFILE=.env.development arch -x86_64 xcodebuild -workspace ios/AvaxWallet.xcworkspace -configuration Debug -scheme AvaxWallet -sdk iphonesimulator -derivedDataPath avalanche-wallet-apps/ios/DerivedData"
       },
 
       "android.internal.debug": {
@@ -41,7 +41,7 @@
       "ios.internal.debug": {
         "device": "simulator",
         "app": "ios.internal.debug",
-        "binaryPath": "/Users/tyler.hackett/Desktop/avalanche-wallet-apps/ios/DerivedData/Build/Products/Debug-iphonesimulator/AvaxWallet.app",
+        "binaryPath": "ios/DerivedData/Build/Products/Debug-iphonesimulator/AvaxWallet.app",
         "build": "ENVFILE=.env.development xcodebuild -project ios/AvaxWallet.xcodeproj -scheme AvaxWallet -sdk iphonesimulator -derivedDataPath ios/build",
         "name": "iPhone 13 simulator"
       }
