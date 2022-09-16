@@ -1,6 +1,7 @@
 import React, {
   createContext,
   Dispatch,
+  ReactNode,
   useCallback,
   useContext,
   useEffect,
@@ -54,9 +55,15 @@ export interface SendTokenContextState {
 
 export type SendStatus = 'Idle' | 'Preparing' | 'Sending' | 'Success' | 'Fail'
 
-export const SendTokenContext = createContext<SendTokenContextState>({} as any)
+export const SendTokenContext = createContext<SendTokenContextState>(
+  {} as SendTokenContextState
+)
 
-export const SendTokenContextProvider = ({ children }: { children: any }) => {
+export const SendTokenContextProvider = ({
+  children
+}: {
+  children: ReactNode
+}) => {
   const { theme } = useApplicationContext()
   const { capture } = usePosthogContext()
   const activeAccount = useSelector(selectActiveAccount)
@@ -100,14 +107,29 @@ export const SendTokenContextProvider = ({ children }: { children: any }) => {
     [customGasPrice]
   )
 
-  const balanceAfterTrx = useMemo(
-    () =>
-      bnToBig(
-        sendToken?.balance.sub(sendAmount.bn).sub(sendFeeBN) ?? new BN(0),
-        sendToken?.decimals
-      ).toFixed(4),
-    [sendAmount, sendFeeBN, sendToken?.balance, sendToken?.decimals]
-  )
+  const balanceAfterTrx = useMemo(() => {
+    //since fee is paid in native token only, for non-native tokens we should not subtract
+    //fee
+
+    const balanceAfterTxnBn = sendToken?.balance.sub(sendAmount.bn)
+    if (
+      sendToken?.symbol?.toLowerCase() ===
+      activeNetwork.networkToken.symbol.toLowerCase()
+    ) {
+      balanceAfterTxnBn?.sub(sendFeeBN)
+    }
+
+    return bnToBig(balanceAfterTxnBn ?? new BN(0), sendToken?.decimals).toFixed(
+      4
+    )
+  }, [
+    activeNetwork.networkToken.symbol,
+    sendAmount.bn,
+    sendFeeBN,
+    sendToken?.balance,
+    sendToken?.decimals,
+    sendToken?.symbol
+  ])
   const balanceAfterTrxInCurrency = useMemo(
     () =>
       (
