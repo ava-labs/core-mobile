@@ -11,7 +11,6 @@ import { SignTransactionRequest } from 'services/wallet/types'
 import { Wallet } from 'ethers'
 import networkService from 'services/network/NetworkService'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
-import { BN } from 'avalanche'
 import { networks } from 'bitcoinjs-lib'
 import { MessageType } from 'services/walletconnect/types'
 import {
@@ -20,6 +19,7 @@ import {
   SignTypedDataVersion
 } from '@metamask/eth-sig-util'
 import { getEvmProvider } from 'services/network/utils/providerUtils'
+import BN from 'bn.js'
 
 class WalletService {
   private mnemonic?: string
@@ -93,7 +93,7 @@ class WalletService {
 
   async signMessage(
     messageType: MessageType,
-    data: any,
+    data: never,
     accountIndex: number,
     network: Network
   ) {
@@ -209,7 +209,7 @@ class WalletService {
 
 export default new WalletService()
 
-function log(message?: any, ...optionalParams: any[]) {
+function log(message?: unknown, ...optionalParams: unknown[]) {
   if (__DEV__) {
     console.log(message, ...optionalParams)
   }
