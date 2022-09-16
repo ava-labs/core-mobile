@@ -2,7 +2,6 @@ import React, { FC } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import ArrowSVG from 'components/svg/ArrowSVG'
-import { Opacity10 } from 'resources/Constants'
 
 interface Props {
   isNegative?: boolean
@@ -10,7 +9,7 @@ interface Props {
 }
 
 /***
- * Returns "green", "positve" element by default.
+ * Returns "blue", "positve" element by default.
  * Get "red", "negative" element by setting `isNegative`
  * If `metric` is present, it will look at the value
  * passed and ignore `isNegative` if defined.
@@ -28,14 +27,12 @@ const MovementIndicator: FC<Props> = ({ isNegative = false, metric }) => {
       style={[
         styles.indicator,
         {
-          backgroundColor: isDarkMode
-            ? theme.colorStroke2 + Opacity10
-            : theme.white
+          backgroundColor: isDarkMode ? theme.colorStroke : theme.white
         }
       ]}>
       <ArrowSVG
-        color={negative ? theme.colorError : theme.colorSuccess}
-        rotate={negative ? 225 : 45}
+        color={negative ? theme.colorError : theme.colorPrimary1}
+        rotate={negative ? 180 : 0}
       />
     </View>
   )
