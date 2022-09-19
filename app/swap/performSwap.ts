@@ -1,6 +1,5 @@
 import { APIError } from 'paraswap'
 import { incrementalPromiseResolve, resolve } from 'swap/utils'
-import { BN } from 'avalanche'
 import { ChainId, Network } from '@avalabs/chains-sdk'
 import walletService from 'services/wallet/WalletService'
 import { Account } from 'store/account'
@@ -14,6 +13,7 @@ import { isAPIError } from 'utils/Utils'
 import Logger from 'utils/Logger'
 import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
 import { getEvmProvider } from 'services/network/utils/providerUtils'
+import { BN } from 'bn.js'
 
 const SERVER_BUSY_ERROR = 'Server too busy'
 

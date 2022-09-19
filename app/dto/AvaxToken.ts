@@ -1,4 +1,4 @@
-import { BN } from 'avalanche'
+import BN from 'bn.js'
 
 export type AvaxToken = {
   balance: BN
