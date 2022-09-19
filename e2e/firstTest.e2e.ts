@@ -1,17 +1,13 @@
-describe('Example', () => {
+describe('Add existing wallet', () => {
   beforeAll(async () => {
     await device.launchApp()
   })
-
-  // beforeEach(async () => {
-  //   await device.reloadReactNative()
-  // })
 
   it('should have create new wallet button', async () => {
     await expect(element(by.text('Existing Wallet')).atIndex(1)).toBeVisible()
   })
 
-  it('should show recovery phrase after tap', async () => {
+  it('should successfully add an existing wallet', async () => {
     await element(by.id('walletSVG')).atIndex(1).tap()
     await element(by.id('recoveryPhraseTextInput')).typeText(
       process.env.RECOVERY_PHRASE
