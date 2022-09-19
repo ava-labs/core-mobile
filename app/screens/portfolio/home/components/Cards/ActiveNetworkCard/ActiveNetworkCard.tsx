@@ -1,10 +1,7 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { View, TouchableHighlight, Text, StyleSheet } from 'react-native'
-import {
-  selectBalanceTotalForNetwork,
-  selectBalanceTotalInCurrencyForNetwork
-} from 'store/balance'
+import { selectBalanceTotalInCurrencyForNetworkAndAccount } from 'store/balance'
 import AvaText from 'components/AvaText'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Opacity20, Opacity70, Opacity85 } from 'resources/Constants'
@@ -13,8 +10,9 @@ import { Space } from 'components/Space'
 import AppNavigation from 'navigation/AppNavigation'
 import { PortfolioScreenProps } from 'navigation/types'
 import { useNavigation } from '@react-navigation/native'
-import { selectActiveNetwork } from 'store/network'
 import { NetworkLogo } from 'screens/network/NetworkLogo'
+import { useActiveNetwork } from 'hooks/useActiveNetwork'
+import { useActiveAccount } from 'hooks/useActiveAccount'
 import ZeroState from './ZeroState'
 import Tokens from './Tokens'
 
@@ -23,12 +21,13 @@ type NavigationProp = PortfolioScreenProps<
 >['navigation']
 
 const ActiveNetworkCard = () => {
-  const network = useSelector(selectActiveNetwork)
+  const network = useActiveNetwork()
+  const account = useActiveAccount()
   const totalBalanceInCurrency = useSelector(
-    selectBalanceTotalInCurrencyForNetwork(network.chainId)
-  )
-  const totalBalance = useSelector(
-    selectBalanceTotalForNetwork(network.chainId)
+    selectBalanceTotalInCurrencyForNetworkAndAccount(
+      network.chainId,
+      account?.index
+    )
   )
   const { navigate } = useNavigation<NavigationProp>()
   const {
@@ -82,7 +81,7 @@ const ActiveNetworkCard = () => {
   }
 
   const renderContent = () => {
-    if (totalBalance.isZero()) return <ZeroState />
+    if (totalBalanceInCurrency === 0) return <ZeroState />
 
     return <Tokens />
   }
