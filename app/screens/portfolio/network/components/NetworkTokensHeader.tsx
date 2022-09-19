@@ -5,23 +5,25 @@ import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import { useSelector } from 'react-redux'
 import {
-  selectBalanceTotalInCurrencyForNetwork,
+  selectBalanceTotalInCurrencyForNetworkAndAccount,
   selectIsLoadingBalances,
   selectIsRefetchingBalances
 } from 'store/balance'
-import { selectActiveNetwork } from 'store/network'
 import { ActivityIndicator } from 'components/ActivityIndicator'
 import { NetworkLogo } from 'screens/network/NetworkLogo'
+import { useActiveNetwork } from 'hooks/useActiveNetwork'
+import { useActiveAccount } from 'hooks/useActiveAccount'
 
 const NetworkTokensHeader = () => {
   const {
     appHook: { currencyFormatter }
   } = useApplicationContext()
-  const { chainName, logoUri, chainId } = useSelector(selectActiveNetwork)
   const isLoadingBalance = useSelector(selectIsLoadingBalances)
   const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
+  const { chainName, logoUri, chainId } = useActiveNetwork()
+  const account = useActiveAccount()
   const balanceTotal = useSelector(
-    selectBalanceTotalInCurrencyForNetwork(chainId)
+    selectBalanceTotalInCurrencyForNetworkAndAccount(chainId, account?.index)
   )
   const formattedTotalBalance = currencyFormatter(balanceTotal)
 
