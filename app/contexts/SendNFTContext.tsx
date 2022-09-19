@@ -1,12 +1,12 @@
 import React, {
   createContext,
   Dispatch,
+  ReactNode,
   useContext,
   useEffect,
   useMemo,
   useState
 } from 'react'
-import { BN } from 'avalanche'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { selectActiveNetwork } from 'store/network'
@@ -23,6 +23,7 @@ import { showSnackBarCustom, updateSnackBarCustom } from 'components/Snackbar'
 import TransactionToast, {
   TransactionToastType
 } from 'components/toast/TransactionToast'
+import BN from 'bn.js'
 
 export interface SendNFTContextState {
   sendToken: NFTItemData
@@ -36,7 +37,9 @@ export interface SendNFTContextState {
   sdkError: string | undefined
 }
 
-export const SendNFTContext = createContext<SendNFTContextState>({} as any)
+export const SendNFTContext = createContext<SendNFTContextState>(
+  {} as SendNFTContextState
+)
 
 export type SendStatus = 'Idle' | 'Preparing' | 'Sending' | 'Success' | 'Fail'
 
@@ -45,7 +48,7 @@ export const SendNFTContextProvider = ({
   children
 }: {
   nft: NFTItemData
-  children: any
+  children: ReactNode
 }) => {
   const { capture } = usePosthogContext()
   const activeAccount = useSelector(selectActiveAccount)

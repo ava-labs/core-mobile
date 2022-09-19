@@ -11,7 +11,6 @@ import React, {
 import AvaLogoSVG from 'components/svg/AvaLogoSVG'
 import { Image } from 'react-native'
 import { mustNumber } from 'utils/JsTools'
-import { BN } from 'avalanche'
 import { TokenWithBalance } from 'store/balance'
 import { selectActiveNetwork, TokenSymbol } from 'store/network'
 import { useSelector } from 'react-redux'
@@ -34,6 +33,7 @@ import { showSnackBarCustom, updateSnackBarCustom } from 'components/Snackbar'
 import TransactionToast, {
   TransactionToastType
 } from 'components/toast/TransactionToast'
+import BN from 'bn.js'
 
 export interface SendTokenContextState {
   sendToken: TokenWithBalance | undefined

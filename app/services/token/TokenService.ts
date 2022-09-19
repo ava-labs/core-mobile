@@ -20,7 +20,6 @@ import {
 import { ethers } from 'ethers'
 import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 import Config from 'react-native-config'
-import xss from 'xss'
 import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
 import { getCache, setCache } from 'utils/InMemoryCache'
 import { arrayHash } from 'utils/Utils'
@@ -31,6 +30,7 @@ import {
 } from '@avalabs/chains-sdk'
 import NetworkService from 'services/network/NetworkService'
 import { MarketToken } from 'store/watchlist'
+import xss from 'xss'
 import { ChartData, PriceWithMarketData } from './types'
 
 const coingeckoBasicClient = getBasicCoingeckoHttp()
@@ -93,6 +93,7 @@ export class TokenService {
       query,
       coinGeckoProApiKey: Config.COINGECKO_API_KEY
     })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return data?.coins?.map((coin: any) => {
       return {
         ...coin,

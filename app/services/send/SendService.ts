@@ -5,7 +5,7 @@ import { Account } from 'store/account'
 import { SendServiceEVM } from 'services/send/SendServiceEVM'
 import { NFTItemData } from 'store/nft'
 import { TokenType, TokenWithBalanceERC721 } from 'store/balance'
-import { BN } from 'avalanche'
+import BN from 'bn.js'
 import { isValidSendState, SendServiceHelper, SendState } from './types'
 import sendServiceBTC from './SendServiceBTC'
 
