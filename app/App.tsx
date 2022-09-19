@@ -17,7 +17,7 @@ import * as Sentry from '@sentry/react-native'
 import pkg from '../package.json'
 
 //init Sentry
-if (Config.SENTRY_DS && !__DEV__) {
+if (Config.SENTRY_DSN && !__DEV__) {
   Sentry.init({
     dsn: Config.SENTRY_DSN,
     environment: Config.ENVIRONMENT,
