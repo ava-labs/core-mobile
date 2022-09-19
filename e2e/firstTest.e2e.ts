@@ -1,4 +1,3 @@
-
 describe('Example', () => {
   beforeAll(async () => {
     await device.launchApp()
@@ -12,7 +11,6 @@ describe('Example', () => {
     await expect(element(by.text('Existing Wallet')).atIndex(1)).toBeVisible()
   })
 
-  // eslint-disable-next-line jest/expect-expect
   it('should show recovery phrase after tap', async () => {
     await element(by.id('walletSVG')).atIndex(1).tap()
     await element(by.id('recoveryPhraseTextInput')).typeText(
@@ -22,5 +20,9 @@ describe('Example', () => {
     for (let i = 0; i < 12; i++) {
       await element(by.id('0')).tap()
     }
+    await element(by.id('checkBoxEmpty')).atIndex(1).tap()
+    await element(by.id('checkBoxEmpty')).tap()
+    await element(by.text('Next')).tap()
+    await expect(await element(by.text('Collectibles'))).toBeVisible()
   })
 })
