@@ -10,8 +10,9 @@ import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
 import { setActive } from 'store/network'
-import { selectBalanceTotalInCurrencyForNetwork } from 'store/balance'
+import { selectBalanceTotalInCurrencyForNetworkAndAccount } from 'store/balance'
 import { NetworkLogo } from 'screens/network/NetworkLogo'
+import { useActiveAccount } from 'hooks/useActiveAccount'
 
 const windowWidth = Dimensions.get('window').width
 
@@ -30,8 +31,12 @@ const InactiveNetworkCard: FC<Props> = ({ network }) => {
     theme
   } = useApplicationContext()
   const { navigate } = useNavigation<NavigationProp>()
+  const account = useActiveAccount()
   const totalBalance = useSelector(
-    selectBalanceTotalInCurrencyForNetwork(network.chainId)
+    selectBalanceTotalInCurrencyForNetworkAndAccount(
+      network.chainId,
+      account?.index
+    )
   )
 
   const cardBgColor = theme.colorBg2 + Opacity85
