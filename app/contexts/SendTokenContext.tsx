@@ -107,14 +107,29 @@ export const SendTokenContextProvider = ({
     [customGasPrice]
   )
 
-  const balanceAfterTrx = useMemo(
-    () =>
-      bnToBig(
-        sendToken?.balance.sub(sendAmount.bn).sub(sendFeeBN) ?? new BN(0),
-        sendToken?.decimals
-      ).toFixed(4),
-    [sendAmount, sendFeeBN, sendToken?.balance, sendToken?.decimals]
-  )
+  const balanceAfterTrx = useMemo(() => {
+    //since fee is paid in native token only, for non-native tokens we should not subtract
+    //fee
+
+    const balanceAfterTxnBn = sendToken?.balance.sub(sendAmount.bn)
+    if (
+      sendToken?.symbol?.toLowerCase() ===
+      activeNetwork.networkToken.symbol.toLowerCase()
+    ) {
+      balanceAfterTxnBn?.sub(sendFeeBN)
+    }
+
+    return bnToBig(balanceAfterTxnBn ?? new BN(0), sendToken?.decimals).toFixed(
+      4
+    )
+  }, [
+    activeNetwork.networkToken.symbol,
+    sendAmount.bn,
+    sendFeeBN,
+    sendToken?.balance,
+    sendToken?.decimals,
+    sendToken?.symbol
+  ])
   const balanceAfterTrxInCurrency = useMemo(
     () =>
       (
