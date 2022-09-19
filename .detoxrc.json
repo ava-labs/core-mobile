@@ -7,7 +7,7 @@
       "emulator": {
         "type": "android.emulator",
         "device": {
-          "avdName": "Pixel_4_api_31"
+          "avdName": "Pixel_4_API_31"
         }
       },
       "simulator": {
@@ -35,7 +35,7 @@
         "app": "android.internal.debug",
         "binaryPath": "android/app/build/outputs/apk/debug/app-internal-debug.apk",
         "build":"cd android && ENVFILE=.env.development ./gradlew app:assembleInternalDebug app:assembleAndroidTest -DtestBuildType=debug && cd ..",
-        "name": "Pixel_4_api_31"
+        "name": "Pixel_4_API_31"
       },
 
       "ios.internal.debug": {
