@@ -1,6 +1,6 @@
 import { ToastOptions } from 'react-native-toast-notifications/lib/typescript/toast'
 
-const LENGTH_SHORT = 2000
+const LENGTH_SHORT = 3000
 const LENGTH_LONG = 5000
 const LENGTH_INFINITE = Number.MAX_SAFE_INTEGER
 

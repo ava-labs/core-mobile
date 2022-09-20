@@ -1,5 +1,4 @@
 import { SwapSide } from 'paraswap'
-import { OptimalRate } from 'paraswap-core'
 import { Network } from '@avalabs/chains-sdk'
 import { TokenType, TokenWithBalance } from 'store/balance'
 import { Account } from 'store/account'
@@ -65,16 +64,23 @@ export async function getSwapRate(request: {
     )
   )
 
-  if (error || priceResponse?.error) {
+  if (error) {
     return {
-      error: (error ?? (priceResponse?.error as any)).toString()
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      error: (error as any).toString()
     }
   }
 
-  const destAmount = priceResponse?.priceRoute.destAmount
+  if (priceResponse === null || priceResponse === undefined) {
+    return {
+      error: 'no price response'
+    }
+  }
+
+  const destAmount = priceResponse.destAmount
 
   return {
-    optimalRate: priceResponse?.priceRoute as OptimalRate,
+    optimalRate: priceResponse,
     destAmount
   }
 }

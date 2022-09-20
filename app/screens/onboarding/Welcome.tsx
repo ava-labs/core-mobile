@@ -46,7 +46,7 @@ export default function Welcome({
               message={`No wallet found. Create or add a wallet to Core to connect to applications.`}
             />
           ),
-          duration: 'long'
+          duration: 'short'
         })
       }
     }
