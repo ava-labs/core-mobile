@@ -2,7 +2,7 @@ import { asyncScheduler, AsyncSubject, concat, Observable, of } from 'rxjs'
 import { map } from 'rxjs/operators'
 import { BackHandler } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { WalletSetupHook } from 'hooks/useWalletSetup'
 import { AppNavHook } from 'useAppNav'
 import { Repo } from 'Repo'
@@ -18,7 +18,7 @@ export type AppHook = {
   onExit: () => Observable<ExitEvents>
   selectedCurrency: string
   signOut: () => Promise<void>
-  currencyFormatter(num: number | string, digits?: number): string
+  currencyFormatter(num: number | string): string
 }
 
 export function useApp(
@@ -113,72 +113,35 @@ export function useApp(
   /**
    * Localized currency formatter
    */
-  const localizedFormatter = useCallback(
-    (digits: number) => {
-      const formatter = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: selectedCurrency,
-        maximumFractionDigits: digits,
-        minimumFractionDigits: 0
-      })
+  const currencyFormatter = useMemo(() => {
+    /**
+     * For performance reasons we want to instantiate this as little as possible
+     */
+    const formatter = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: selectedCurrency ?? 'USD',
+      currencyDisplay: 'symbol' // the extension uses 'narrowSymbol'
+    })
 
-      return formatter
-    },
-    [selectedCurrency]
-  )
-
-  /**
-   * Used to display format currencies as such
-   * values over 1 Million:  $32.2M, $1.6B - USD only
-   * values > 0.1 and < 1M: 9,023.03 - 2 or more fraction digits
-   * values > -0.1 and < 0.1 : 0.002678 - 6 fraction digits fixed
-   * @param num
-   * @param digits - default: 2 - fraction digits to be used by large and normal amounts.
-   */
-  // adapted from: https://stackoverflow.com/a/9462382
-  const currencyFormatter = useCallback(
-    (num: number | string, digits = 2) => {
-      let number = typeof num === 'number' ? num : Number(num)
-
-      if (isNaN(number)) {
-        number = 0
+    return (amount: number) => {
+      const parts = formatter.formatToParts(amount)
+      /**
+       * This formats the currency to return:
+       *   <symbol><amount>
+       *   e.g. $10.00, €10.00
+       * If <symbol> (e.g. CHF) matches the currency code then it returns:
+       *   <amount><symbol>
+       *   ex. 10 CHF
+       */
+      if (parts[0]?.value === selectedCurrency) {
+        const flatArray = parts.map(x => x.value)
+        flatArray.push(` ${flatArray.shift() || ''}`)
+        return flatArray.join('').trim()
       }
 
-      const lookup = [
-        { value: 1, symbol: '' },
-        { value: 1e3, symbol: 'k' },
-        { value: 1e6, symbol: 'M' },
-        { value: 1e9, symbol: 'B' }
-      ]
-      const rx = /\.0+$|(\.[0-9]*[1-9])0+$/
-      const item = lookup
-        .slice()
-        .reverse()
-        .find(function (item) {
-          return number >= item.value
-        })
-
-      // only formatting large numbers. example: $1.32B or $2.1M
-      // this may change with UX requirements. Currently anything above
-      // Millions will return USD only
-      if (item && (item.value === 1e6 || item.value === 1e9)) {
-        return (
-          '$' +
-          (number / item.value).toFixed(digits).replace(rx, '$1') +
-          item.symbol
-        )
-      }
-
-      // everything else gets the localized number format, with 2 digits. or 6 if number is too small
-      // example: 2,023.03 (usd) or 0.000321
-      const formatter = localizedFormatter(
-        number > -0.1 && number < 0.1 ? 6 : digits
-      )
-
-      return formatter.format(number)
-    },
-    [localizedFormatter]
-  )
+      return formatter.format(amount)
+    }
+  }, [selectedCurrency])
 
   return {
     signOut,

@@ -24,7 +24,7 @@ import MarketMovement from 'screens/watchlist/components/MarketMovement'
 import { ViewOnceInformation } from 'Repo'
 import TokenAddress from 'components/TokenAddress'
 import AppNavigation from 'navigation/AppNavigation'
-import { formatLargeNumber } from 'utils/Utils'
+import { formatLargeCurrency, formatLargeNumber } from 'utils/Utils'
 import { TokenSymbol } from 'store/network'
 import { TokenType } from 'store/balance'
 import { ActivityIndicator } from 'components/ActivityIndicator'
@@ -72,7 +72,9 @@ const TokenDetail = () => {
   }
 
   function formatMarketNumbers(value: number) {
-    return value === 0 ? ' -' : appHook.currencyFormatter(value, 1)
+    return value === 0
+      ? ' -'
+      : formatLargeCurrency(appHook.currencyFormatter(value), 1)
   }
 
   useEffect(() => {
