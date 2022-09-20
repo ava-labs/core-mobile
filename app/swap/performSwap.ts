@@ -1,4 +1,4 @@
-import { APIError } from 'paraswap'
+import { APIError, Transaction } from 'paraswap'
 import { incrementalPromiseResolve, resolve } from 'swap/utils'
 import { ChainId, Network } from '@avalabs/chains-sdk'
 import walletService from 'services/wallet/WalletService'
@@ -17,8 +17,14 @@ import { BN } from 'bn.js'
 
 const SERVER_BUSY_ERROR = 'Server too busy'
 
-function checkForErrorsInResult(result: OptimalRate | APIError) {
-  return (result as APIError).message === SERVER_BUSY_ERROR
+function checkForErrorsInResult(result: Transaction | APIError) {
+  return (
+    (result as APIError).message === SERVER_BUSY_ERROR ||
+    // paraswap returns responses like this: {error: 'Not enough 0x4f60a160d8c2dddaafe16fcc57566db84d674…}
+    // when they are too slow to detect the approval
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (result as any).error
+  )
 }
 
 export async function performSwap(request: {

@@ -19,11 +19,12 @@ import { SendState } from 'services/send/types'
 import sendService from 'services/send/SendService'
 import { useNativeTokenPrice } from 'hooks/useNativeTokenPrice'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
-import { showSnackBarCustom, updateSnackBarCustom } from 'components/Snackbar'
+import { showSnackBarCustom } from 'components/Snackbar'
 import TransactionToast, {
   TransactionToastType
 } from 'components/toast/TransactionToast'
 import BN from 'bn.js'
+import { InteractionManager } from 'react-native'
 
 export interface SendNFTContextState {
   sendToken: NFTItemData
@@ -103,7 +104,6 @@ export const SendNFTContextProvider = ({
     }
 
     capture('SendApproved', { selectedGasFee: selectedFeePreset.toUpperCase() })
-    const toastId = Math.random().toString()
 
     const sendState = {
       address: sendToAddress,
@@ -113,44 +113,54 @@ export const SendNFTContextProvider = ({
     } as SendState
 
     setSendStatus('Preparing')
-    sendService
-      .send(
-        sendState,
-        activeNetwork,
-        activeAccount,
-        selectedCurrency.toLowerCase(),
-        () => {
-          setSendStatus('Sending')
+
+    InteractionManager.runAfterInteractions(() => {
+      sendService
+        .send(
+          sendState,
+          activeNetwork,
+          activeAccount,
+          selectedCurrency.toLowerCase(),
+          () => {
+            setSendStatus('Sending')
+            showSnackBarCustom({
+              component: (
+                <TransactionToast
+                  message={'Send Pending...'}
+                  type={TransactionToastType.PENDING}
+                />
+              ),
+              duration: 'short'
+            })
+          }
+        )
+        .then(txId => {
+          setSendStatus('Success')
           showSnackBarCustom({
             component: (
               <TransactionToast
-                toastId={toastId}
-                message={'Send pending'}
-                type={TransactionToastType.PENDING}
+                message={'Send Successful'}
+                type={TransactionToastType.SUCCESS}
+                txHash={txId}
               />
             ),
-            id: toastId,
-            duration: 'infinite'
+            duration: 'short'
           })
-        }
-      )
-      .then(txId => {
-        setSendStatus('Success')
-        updateSnackBarCustom(
-          toastId,
-          <TransactionToast
-            message={'Send successful'}
-            type={TransactionToastType.SUCCESS}
-            txHash={txId}
-            toastId={toastId}
-          />,
-          true
-        )
-      })
-      .catch(reason => {
-        setSendStatus('Fail')
-        setSendStatusMsg(reason)
-      })
+        })
+        .catch(reason => {
+          setSendStatus('Fail')
+          showSnackBarCustom({
+            component: (
+              <TransactionToast
+                message={'Send Failed'}
+                type={TransactionToastType.ERROR}
+              />
+            ),
+            duration: 'short'
+          })
+          setSendStatusMsg(reason)
+        })
+    })
   }
 
   function validateStateFx() {

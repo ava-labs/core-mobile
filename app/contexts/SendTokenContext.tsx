@@ -9,7 +9,7 @@ import React, {
   useState
 } from 'react'
 import AvaLogoSVG from 'components/svg/AvaLogoSVG'
-import { Image } from 'react-native'
+import { Image, InteractionManager } from 'react-native'
 import { mustNumber } from 'utils/JsTools'
 import { TokenWithBalance } from 'store/balance'
 import { selectActiveNetwork, TokenSymbol } from 'store/network'
@@ -29,7 +29,7 @@ import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import { FeePreset } from 'components/NetworkFeeSelector'
 import { Amount } from 'screens/swap/SwapView'
-import { showSnackBarCustom, updateSnackBarCustom } from 'components/Snackbar'
+import { showSnackBarCustom } from 'components/Snackbar'
 import TransactionToast, {
   TransactionToastType
 } from 'components/toast/TransactionToast'
@@ -163,8 +163,6 @@ export const SendTokenContextProvider = ({
 
     capture('SendApproved', { selectedGasFee: selectedFeePreset.toUpperCase() })
 
-    const toastId = Math.random().toString()
-
     const sendState = {
       address: sendToAddress,
       amount: sendAmount.bn,
@@ -174,53 +172,55 @@ export const SendTokenContextProvider = ({
     } as SendState
 
     setSendStatus('Preparing')
-    sendService
-      .send(
-        sendState,
-        activeNetwork,
-        activeAccount,
-        selectedCurrency.toLowerCase(),
-        () => {
-          setSendStatus('Sending')
+
+    InteractionManager.runAfterInteractions(() => {
+      sendService
+        .send(
+          sendState,
+          activeNetwork,
+          activeAccount,
+          selectedCurrency.toLowerCase(),
+          () => {
+            setSendStatus('Sending')
+            showSnackBarCustom({
+              component: (
+                <TransactionToast
+                  message={'Send Pending...'}
+                  type={TransactionToastType.PENDING}
+                />
+              ),
+              duration: 'short'
+            })
+          }
+        )
+        .then(txId => {
+          setSendStatus('Success')
           showSnackBarCustom({
             component: (
               <TransactionToast
-                toastId={toastId}
-                message={'Send pending'}
-                type={TransactionToastType.PENDING}
+                message={'Send Successful'}
+                type={TransactionToastType.SUCCESS}
+                txHash={txId}
               />
             ),
-            id: toastId,
-            duration: 'infinite'
+            duration: 'short'
           })
-        }
-      )
-      .then(txId => {
-        setSendStatus('Success')
-        updateSnackBarCustom(
-          toastId,
-          <TransactionToast
-            message={'Send successful'}
-            type={TransactionToastType.SUCCESS}
-            txHash={txId}
-            toastId={toastId}
-          />,
-          true
-        )
-      })
-      .catch(reason => {
-        const transactionHash =
-          reason?.transactionHash ?? reason?.error?.transactionHash
-        updateSnackBarCustom(
-          toastId,
-          <TransactionToast
-            message={'Send failed'}
-            type={TransactionToastType.ERROR}
-            toastId={toastId}
-            txHash={transactionHash ?? 'failed'}
-          />
-        )
-      })
+        })
+        .catch(reason => {
+          const transactionHash =
+            reason?.transactionHash ?? reason?.error?.transactionHash
+          showSnackBarCustom({
+            component: (
+              <TransactionToast
+                message={'Send Failed'}
+                type={TransactionToastType.ERROR}
+                txHash={transactionHash}
+              />
+            ),
+            duration: 'short'
+          })
+        })
+    })
   }
 
   const tokenLogo = useCallback(() => {
