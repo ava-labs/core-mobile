@@ -202,6 +202,7 @@ const RightComponent = ({
           </AvaText.Body3>
         </Row>
         <MarketMovement
+          hideCurrencyCode
           priceChange={ranges.diffValue}
           percentChange={ranges.percentChange}
           filterBy={filterBy}

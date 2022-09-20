@@ -4,12 +4,15 @@ import MarketTriangleSVG from 'components/MarketTriangleSVG'
 import AvaText from 'components/AvaText'
 import { WatchlistFilter } from 'screens/watchlist/types'
 import { formatLargeCurrency } from 'utils/Utils'
+import { selectSelectedCurrency } from 'store/settings/currency'
+import { useSelector } from 'react-redux'
 
 interface Props {
   priceChange: number
   percentChange: number
   hideDifference?: boolean
   hidePercentage?: boolean
+  hideCurrencyCode?: boolean
   filterBy?: WatchlistFilter
 }
 
@@ -18,10 +21,12 @@ const MarketMovement: FC<Props> = ({
   percentChange,
   hideDifference,
   hidePercentage,
+  hideCurrencyCode,
   filterBy = WatchlistFilter.PRICE
 }) => {
   const theme = useApplicationContext().theme
   const { currencyFormatter } = useApplicationContext().appHook
+  const selectedCurrency = useSelector(selectSelectedCurrency)
 
   const getDisplayChangeNumbers = useMemo(() => {
     if (priceChange === 0 && percentChange === 0) {
@@ -31,6 +36,8 @@ const MarketMovement: FC<Props> = ({
     let formattedPrice = currencyFormatter(priceChange).replace('-', '')
     if (filterBy !== WatchlistFilter.PRICE)
       formattedPrice = formatLargeCurrency(formattedPrice, 3)
+    if (hideCurrencyCode)
+      formattedPrice = formattedPrice.replace(selectedCurrency, '')
 
     const formattedPercent = hideDifference
       ? `${percentChange.toFixed(2).replace('-', '')}%`
@@ -44,6 +51,8 @@ const MarketMovement: FC<Props> = ({
     percentChange,
     currencyFormatter,
     filterBy,
+    hideCurrencyCode,
+    selectedCurrency,
     hideDifference,
     hidePercentage
   ])

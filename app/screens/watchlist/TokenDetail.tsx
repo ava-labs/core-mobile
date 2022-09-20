@@ -180,6 +180,7 @@ const TokenDetail = () => {
                 {token?.priceInCurrency?.toFixed(6)}
               </AvaText.Heading3>
               <MarketMovement
+                hideCurrencyCode
                 priceChange={ranges.diffValue}
                 percentChange={ranges.percentChange}
               />
