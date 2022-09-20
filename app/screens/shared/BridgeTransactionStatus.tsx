@@ -107,19 +107,16 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
   useEffect(
     function showToastOnComplete() {
       if (bridgeTransaction?.complete && !toastShown) {
-        const toastId = Math.random().toString()
         removeBridgeTransaction(bridgeTransaction.sourceTxHash)
         setToastShown(true)
         showSnackBarCustom({
           component: (
             <TransactionToast
-              message={'Bridge successful!'}
+              message={'Bridge Successful'}
               type={TransactionToastType.SUCCESS}
-              toastId={toastId}
             />
           ),
-          id: toastId,
-          duration: 'infinite'
+          duration: 'short'
         })
       }
     },
