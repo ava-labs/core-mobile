@@ -173,10 +173,7 @@ const TokenDetail = () => {
           titleAlignment={'flex-start'}
           subtitle={
             <Row style={{ alignItems: 'center' }}>
-              <AvaText.Heading3
-                currency
-                hideTrailingCurrency
-                textStyle={{ marginEnd: 8 }}>
+              <AvaText.Heading3 currency textStyle={{ marginEnd: 8 }}>
                 {token?.priceInCurrency?.toFixed(6)}
               </AvaText.Heading3>
               <MarketMovement
@@ -196,13 +193,12 @@ const TokenDetail = () => {
           }}>
           <View>
             <AvaText.Caption
+              currency
               textStyle={{
                 alignSelf: 'flex-end',
                 color: theme.colorText1,
                 marginBottom: -10
-              }}
-              currency
-              hideTrailingCurrency>
+              }}>
               {ranges.maxPrice}
             </AvaText.Caption>
             <SparklineChart
@@ -215,9 +211,8 @@ const TokenDetail = () => {
               height={CHART_HEIGHT}
             />
             <AvaText.Caption
-              textStyle={{ alignSelf: 'flex-end', color: theme.colorText1 }}
               currency
-              hideTrailingCurrency>
+              textStyle={{ alignSelf: 'flex-end', color: theme.colorText1 }}>
               {ranges.minPrice}
             </AvaText.Caption>
           </View>
