@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-shadow */
 import React, {
   createContext,
   Dispatch,
@@ -15,12 +16,13 @@ import { useActiveNetwork } from 'hooks/useActiveNetwork'
 import { useActiveAccount } from 'hooks/useActiveAccount'
 import { BigNumber } from 'ethers'
 import Logger from 'utils/Logger'
-import { showSnackBarCustom, updateSnackBarCustom } from 'components/Snackbar'
+import { showSnackBarCustom } from 'components/Snackbar'
 import TransactionToast, {
   TransactionToastType
 } from 'components/toast/TransactionToast'
 import { resolve } from '@avalabs/utils-sdk'
 import { Amount } from 'screens/swap/SwapView'
+import { InteractionManager } from 'react-native'
 
 export type SwapStatus = 'Idle' | 'Preparing' | 'Swapping' | 'Success' | 'Fail'
 
@@ -54,13 +56,20 @@ export interface SwapContextState {
   setDestination: Dispatch<SwapSide>
   swapStatus: SwapStatus
   setAmount: Dispatch<Amount>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   error: any
   isFetchingOptimalRate: boolean
 }
 
-export const SwapContext = createContext<SwapContextState>({} as any)
+export const SwapContext = createContext<
+  SwapContextState | Record<string, never>
+>({})
 
-export const SwapContextProvider = ({ children }: { children: any }) => {
+export const SwapContextProvider = ({
+  children
+}: {
+  children: React.ReactNode
+}) => {
   const activeAccount = useActiveAccount()
   const activeNetwork = useActiveNetwork()
   const [fromToken, setFromToken] = useState<TokenWithBalance>()
@@ -136,59 +145,59 @@ export const SwapContextProvider = ({ children }: { children: any }) => {
     slippage: number
   ) {
     setSwapStatus('Preparing')
-
-    const toastId = Math.random().toString()
     setSwapStatus('Swapping')
 
     showSnackBarCustom({
       component: (
         <TransactionToast
-          message={'Swap in progress...'}
+          message={'Swap Pending...'}
           type={TransactionToastType.PENDING}
-          toastId={toastId}
         />
       ),
-      duration: 'infinite',
-      id: toastId
+      duration: 'short'
     })
 
-    resolve(
-      performSwap({
-        srcToken: srcTokenAddress,
-        destToken: destTokenAddress,
-        srcDecimals,
-        destDecimals,
-        srcAmount: amount,
-        optimalRate: priceRoute,
-        gasLimit,
-        gasPrice,
-        slippage,
-        network: activeNetwork,
-        account: activeAccount
+    InteractionManager.runAfterInteractions(() => {
+      resolve(
+        performSwap({
+          srcToken: srcTokenAddress,
+          destToken: destTokenAddress,
+          srcDecimals,
+          destDecimals,
+          srcAmount: amount,
+          optimalRate: priceRoute,
+          gasLimit,
+          gasPrice,
+          slippage,
+          network: activeNetwork,
+          account: activeAccount
+        })
+      ).then(([result, error]) => {
+        if (error || (result && 'error' in result)) {
+          setSwapStatus('Fail')
+          showSnackBarCustom({
+            component: (
+              <TransactionToast
+                message={'Swap Failed'}
+                type={TransactionToastType.ERROR}
+              />
+            ),
+            duration: 'short'
+          })
+        } else {
+          setSwapStatus('Success')
+          showSnackBarCustom({
+            component: (
+              <TransactionToast
+                message={'Swap Successfull'}
+                type={TransactionToastType.SUCCESS}
+                txHash={result?.result?.swapTxHash}
+              />
+            ),
+            duration: 'short'
+          })
+        }
       })
-    ).then(([result, error]) => {
-      if (error || (result && 'error' in result)) {
-        setSwapStatus('Fail')
-        updateSnackBarCustom(
-          toastId,
-          <TransactionToast
-            message={'Swap failed'}
-            type={TransactionToastType.ERROR}
-            toastId={toastId}
-          />
-        )
-      } else {
-        setSwapStatus('Success')
-        updateSnackBarCustom(
-          toastId,
-          <TransactionToast
-            message={'Swap success'}
-            type={TransactionToastType.SUCCESS}
-            txHash={result?.result?.swapTxHash}
-            toastId={toastId}
-          />
-        )
-      }
     })
   }
 

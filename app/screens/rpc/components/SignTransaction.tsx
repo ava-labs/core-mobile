@@ -31,7 +31,9 @@ import { Popable } from 'react-native-popable'
 import { SwapTransaction } from 'screens/rpc/components/Transactions/SwapTransaction'
 import { BottomSheetScrollView } from '@gorhom/bottom-sheet'
 import { showSnackBarCustom } from 'components/Snackbar'
-import TransactionToast from 'components/toast/TransactionToast'
+import TransactionToast, {
+  TransactionToastType
+} from 'components/toast/TransactionToast'
 import * as Sentry from '@sentry/react-native'
 import { PopableContent } from 'components/PopableContent'
 import { PopableLabel } from 'components/PopableLabel'
@@ -138,11 +140,12 @@ const SignTransaction: FC<Props> = ({
             showSnackBarCustom({
               component: (
                 <TransactionToast
-                  message={'Transaction failed'}
+                  type={TransactionToastType.ERROR}
+                  message={'Transaction Failed'}
                   txHash={reason?.error?.transactionHash}
                 />
               ),
-              duration: 'long'
+              duration: 'short'
             })
             onClose()
           } else {

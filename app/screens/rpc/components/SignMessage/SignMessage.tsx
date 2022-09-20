@@ -15,13 +15,15 @@ import FlexSpacer from 'components/FlexSpacer'
 import { MessageAction, MessageType } from 'services/walletconnect/types'
 import { DappEvent } from 'contexts/DappConnectionContext'
 import { showSnackBarCustom } from 'components/Snackbar'
-import TransactionToast from 'components/toast/TransactionToast'
+import TransactionToast, {
+  TransactionToastType
+} from 'components/toast/TransactionToast'
 import * as Sentry from '@sentry/react-native'
 
 interface Props {
   dappEvent?: DappEvent
   onRejected: () => void
-  onApprove: (payload: DappEvent) => Promise<{ hash?: string; error?: any }>
+  onApprove: (payload: DappEvent) => Promise<{ hash?: string; error?: unknown }>
   onClose: () => void
 }
 
@@ -59,11 +61,12 @@ const SignMessage: FC<Props> = ({
             showSnackBarCustom({
               component: (
                 <TransactionToast
-                  message={'Transaction failed'}
+                  type={TransactionToastType.ERROR}
+                  message={'Transaction Failed'}
                   txHash={reason?.error?.transactionHash}
                 />
               ),
-              duration: 'long'
+              duration: 'short'
             })
             onClose()
           } else {
