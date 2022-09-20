@@ -143,7 +143,8 @@ enum SendScreens {
 enum AddressBookScreens {
   List = 'AddressBookScreens.List',
   Add = 'AddressBookScreens.Add',
-  Details = 'AddressBookScreens.Details'
+  Details = 'AddressBookScreens.Details',
+  DeleteConfirm = 'AddressBookScreens.DeleteConfirm'
 }
 
 enum BridgeScreens {

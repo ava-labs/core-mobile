@@ -22,6 +22,7 @@ import {
   selectEditingContact,
   setEditingContact
 } from 'store/addressBook'
+import WarningModal from 'components/WarningModal'
 import { getContactValidationError } from 'screens/drawer/addressBook/utils'
 import { AddressBookScreenProps } from '../types'
 
@@ -33,6 +34,7 @@ export type AddressBookStackParamList = {
     editable: boolean
     isContactValid?: boolean
   }
+  [AppNavigation.AddressBook.DeleteConfirm]: { contactId: string }
 }
 const Stack = createStackNavigator<AddressBookStackParamList>()
 
@@ -69,6 +71,11 @@ const AddressBookStack = () => {
         name={AppNavigation.AddressBook.Details}
         component={ContactDetailsComp}
       />
+      <Stack.Screen
+        options={{ presentation: 'transparentModal', headerShown: false }}
+        name={AppNavigation.AddressBook.DeleteConfirm}
+        component={DeleteConfirmModal}
+      />
     </Stack.Navigator>
   )
 }
@@ -79,7 +86,7 @@ type ContactDetailsScreenProps = AddressBookScreenProps<
 
 const ContactDetailsComp = () => {
   const dispatch = useDispatch()
-  const { setParams, setOptions, goBack } =
+  const { setParams, setOptions, navigate } =
     useNavigation<ContactDetailsScreenProps['navigation']>()
 
   const { params } = useRoute<ContactDetailsScreenProps['route']>()
@@ -149,11 +156,10 @@ const ContactDetailsComp = () => {
   }
 
   const deleteContact = useCallback(
-    (c: Contact) => {
-      dispatch(removeContact(c.id))
-      goBack()
+    ({ id }: Contact) => {
+      navigate(AppNavigation.AddressBook.DeleteConfirm, { contactId: id })
     },
-    [dispatch, goBack]
+    [navigate]
   )
 
   const onChange = useCallback(
@@ -215,6 +221,37 @@ const SaveAddressBookContact = ({ onSave }: { onSave: () => void }) => {
         Save
       </AvaText.ButtonLarge>
     </AvaButton.Icon>
+  )
+}
+
+type DeleteConfirmModalProps = AddressBookScreenProps<
+  typeof AppNavigation.AddressBook.DeleteConfirm
+>
+
+const DeleteConfirmModal = () => {
+  const dispatch = useDispatch()
+  const { goBack } = useNavigation<DeleteConfirmModalProps['navigation']>()
+  const { params } = useRoute<DeleteConfirmModalProps['route']>()
+
+  const onDelete = () => {
+    dispatch(removeContact(params.contactId))
+    goBack() // back to Contact screen
+    goBack() // back to Contacts
+  }
+
+  const onCancel = () => {
+    goBack() // back to Contact screen
+  }
+
+  return (
+    <WarningModal
+      title="Delete Contact"
+      message="Are you sure you want to delete this contact?"
+      actionText="Delete"
+      dismissText="Cancel"
+      onAction={onDelete}
+      onDismiss={onCancel}
+    />
   )
 }
 
