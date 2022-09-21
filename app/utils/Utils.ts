@@ -83,6 +83,14 @@ export function titleToInitials(title: string) {
   )
 }
 
+export type GasAndFees = {
+  gasPrice: BigNumber
+  gasLimit: number
+  fee: string
+  bnFee: BigNumber
+  feeInCurrency: number
+}
+
 export function calculateGasAndFees({
   gasPrice,
   tokenPrice,
@@ -93,7 +101,7 @@ export function calculateGasAndFees({
   tokenPrice: number
   tokenDecimals?: number
   gasLimit?: number
-}) {
+}): GasAndFees {
   const bnFee = gasLimit ? gasPrice.mul(gasLimit) : gasPrice
   const fee = bigToLocaleString(ethersBigNumberToBig(bnFee, tokenDecimals), 8)
   return {
@@ -111,11 +119,12 @@ export const getMaxValue = (token?: TokenWithBalance, fee?: string) => {
   }
 
   if (token.type === TokenType.NATIVE) {
-    return token.balance.sub(stringToBN(fee, 18))
+    return token.balance.sub(stringToBN(fee, token.decimals))
   }
   return token.balance
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isAPIError(rate: any): rate is APIError {
   return typeof rate?.message === 'string'
 }
