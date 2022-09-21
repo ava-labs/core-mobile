@@ -165,16 +165,16 @@ export const SwapContextProvider = ({ children }: { children: ReactNode }) => {
           destToken: destTokenAddress,
           srcDecimals,
           destDecimals,
-        srcAmount: swapAmount,
+          srcAmount: swapAmount,
           optimalRate: priceRoute,
-        gasLimit: swapGasLimit,
-        gasPrice: swapGasPrice,
-        slippage: swapSlippage,
+          gasLimit: swapGasLimit,
+          gasPrice: swapGasPrice,
+          slippage: swapSlippage,
           network: activeNetwork,
           account: activeAccount
         })
-    ).then(([result, err]) => {
-      if (err || (result && 'error' in result)) {
+      ).then(([result, err]) => {
+        if (err || (result && 'error' in result)) {
           setSwapStatus('Fail')
           showSnackBarCustom({
             component: (
@@ -193,7 +193,6 @@ export const SwapContextProvider = ({ children }: { children: ReactNode }) => {
                 message={'Swap Successfull'}
                 type={TransactionToastType.SUCCESS}
                 txHash={result?.result?.swapTxHash}
-            txHash={result?.result?.swapTxHash}
               />
             ),
             duration: 'short'
