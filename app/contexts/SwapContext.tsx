@@ -1,7 +1,7 @@
-/* eslint-disable @typescript-eslint/no-shadow */
 import React, {
   createContext,
   Dispatch,
+  ReactNode,
   useCallback,
   useContext,
   useEffect,
@@ -59,17 +59,16 @@ export interface SwapContextState {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   error: any
   isFetchingOptimalRate: boolean
+  getOptimalRateForAmount: (
+    amnt: Amount | undefined
+  ) => Promise<{ optimalRate?: OptimalRate }>
 }
 
-export const SwapContext = createContext<
-  SwapContextState | Record<string, never>
->({})
+export const SwapContext = createContext<SwapContextState>(
+  {} as SwapContextState
+)
 
-export const SwapContextProvider = ({
-  children
-}: {
-  children: React.ReactNode
-}) => {
+export const SwapContextProvider = ({ children }: { children: ReactNode }) => {
   const activeAccount = useActiveAccount()
   const activeNetwork = useActiveNetwork()
   const [fromToken, setFromToken] = useState<TokenWithBalance>()
@@ -86,24 +85,34 @@ export const SwapContextProvider = ({
   const [amount, setAmount] = useState<Amount | undefined>(undefined) //the amount that's gonna be passed to paraswap
   const [isFetchingOptimalRate, setIsFetchingOptimalRate] = useState(false)
 
+  const getOptimalRateForAmount = useCallback(
+    (amnt: Amount | undefined) => {
+      if (activeAccount && amnt) {
+        return getSwapRate({
+          fromTokenAddress: getTokenAddress(fromToken),
+          toTokenAddress: getTokenAddress(toToken),
+          fromTokenDecimals: fromToken?.decimals,
+          toTokenDecimals: toToken?.decimals,
+          amount: amnt.bn.toString(),
+          swapSide: destination,
+          network: activeNetwork,
+          account: activeAccount
+        })
+      } else {
+        return Promise.reject('invalid data')
+      }
+    },
+    [activeAccount, activeNetwork, destination, fromToken, toToken]
+  )
+
   const getOptimalRate = useCallback(() => {
     if (activeAccount && amount) {
-      setIsFetchingOptimalRate(true)
-      getSwapRate({
-        fromTokenAddress: getTokenAddress(fromToken),
-        toTokenAddress: getTokenAddress(toToken),
-        fromTokenDecimals: fromToken?.decimals,
-        toTokenDecimals: toToken?.decimals,
-        amount: amount.bn.toString(),
-        swapSide: destination,
-        network: activeNetwork,
-        account: activeAccount
-      })
-        .then(({ optimalRate, error }) => {
-          setError(error)
-          setOptimalRate(optimalRate)
+      getOptimalRateForAmount(amount)
+        .then(({ optimalRate: opRate, error: err }) => {
+          setError(err)
+          setOptimalRate(opRate)
           if (!isCustomGasLimitSet) {
-            setGasLimit(Number(optimalRate?.gasCost ?? 0))
+            setGasLimit(Number(opRate?.gasCost ?? 0))
           }
         })
         .catch(reason => {
@@ -114,15 +123,7 @@ export const SwapContextProvider = ({
           setIsFetchingOptimalRate(false)
         })
     }
-  }, [
-    activeAccount,
-    activeNetwork,
-    amount,
-    destination,
-    fromToken,
-    isCustomGasLimitSet,
-    toToken
-  ])
+  }, [activeAccount, amount, getOptimalRateForAmount, isCustomGasLimitSet])
 
   useEffect(() => {
     //call getOptimalRate every time its params change to get fresh rates
@@ -138,11 +139,11 @@ export const SwapContextProvider = ({
     destTokenAddress: string,
     destDecimals: number,
     srcDecimals: number,
-    amount: string,
+    swapAmount: string,
     priceRoute: OptimalRate,
-    gasLimit: number,
-    gasPrice: BigNumber,
-    slippage: number
+    swapGasLimit: number,
+    swapGasPrice: BigNumber,
+    swapSlippage: number
   ) {
     setSwapStatus('Preparing')
     setSwapStatus('Swapping')
@@ -164,16 +165,16 @@ export const SwapContextProvider = ({
           destToken: destTokenAddress,
           srcDecimals,
           destDecimals,
-          srcAmount: amount,
+        srcAmount: swapAmount,
           optimalRate: priceRoute,
-          gasLimit,
-          gasPrice,
-          slippage,
+        gasLimit: swapGasLimit,
+        gasPrice: swapGasPrice,
+        slippage: swapSlippage,
           network: activeNetwork,
           account: activeAccount
         })
-      ).then(([result, error]) => {
-        if (error || (result && 'error' in result)) {
+    ).then(([result, err]) => {
+      if (err || (result && 'error' in result)) {
           setSwapStatus('Fail')
           showSnackBarCustom({
             component: (
@@ -192,6 +193,7 @@ export const SwapContextProvider = ({
                 message={'Swap Successfull'}
                 type={TransactionToastType.SUCCESS}
                 txHash={result?.result?.swapTxHash}
+            txHash={result?.result?.swapTxHash}
               />
             ),
             duration: 'short'
@@ -225,7 +227,8 @@ export const SwapContextProvider = ({
     swapStatus,
     setAmount,
     error,
-    isFetchingOptimalRate
+    isFetchingOptimalRate,
+    getOptimalRateForAmount
   }
 
   return <SwapContext.Provider value={state}>{children}</SwapContext.Provider>
