@@ -57,12 +57,12 @@ export function formatLargeNumber(num: number | string, digits = 2) {
  * @param digits - default: 2 - fraction digits to be used by large and normal amounts.
  */
 export function formatLargeCurrency(currencyNum: string, digits = 2) {
-  const match = currencyNum.match(/^([^0-9]+)?([0-9,.]+) ?([A-Z]+)?$/)
+  const match = currencyNum.match(/^(-)?([^0-9]+)?([0-9,.]+) ?([A-Z]+)?$/)
   if (!match) return currencyNum
-  const [_, symbol, amount, code] = match
+  const [_, negative, symbol, amount, code] = match
 
   const newAmount = formatLargeNumber(amount.replace(/,/g, ''), digits)
-  return `${symbol || ''}${newAmount}${code ? ` ${code}` : ''}`
+  return `${negative || ''}${symbol || ''}${newAmount}${code ? ` ${code}` : ''}`
 }
 
 export const formatTimer = (time: number) =>
