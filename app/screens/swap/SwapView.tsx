@@ -28,6 +28,12 @@ import { calculateRate } from 'swap/utils'
 import { selectNetworkFee } from 'store/networkFee'
 import { useActiveNetwork } from 'hooks/useActiveNetwork'
 import { calculateGasAndFees, getMaxValue } from 'utils/Utils'
+import {
+  bigToBN,
+  bnToBig,
+  bnToLocaleString,
+  ethersBigNumberToBN
+} from '@avalabs/utils-sdk'
 
 type NavigationProp = SwapScreenProps<
   typeof AppNavigation.Swap.Swap
@@ -62,11 +68,13 @@ export default function SwapView() {
     setSlippage,
     setAmount,
     error: swapError,
-    isFetchingOptimalRate
+    isFetchingOptimalRate,
+    getOptimalRateForAmount
   } = useSwapContext()
   const [maxFromValue, setMaxFromValue] = useState<BN | undefined>()
   const [fromTokenValue, setFromTokenValue] = useState<Amount>()
   const [toTokenValue, setToTokenValue] = useState<Amount>()
+  const [isCalculatingMax, setIsCalculatingMax] = useState(false)
 
   const [localError, setLocalError] = useState<string>('')
   const [customGasPrice, setCustomGasPrice] = useState<BigNumber>(
@@ -193,6 +201,51 @@ export default function SwapView() {
     }
   }
 
+  const handleOnMax = useCallback(() => {
+    if (!fromToken) {
+      return
+    }
+    const maxAmount = {
+      bn: fromToken.balance,
+      amount: bnToLocaleString(fromToken.balance, fromToken?.decimals)
+    } as Amount
+    setIsCalculatingMax(true)
+    // first let's fetch swap rates and fees for total balance amount and then we can
+    // calculate max available amount for swap
+    getOptimalRateForAmount(maxAmount)
+      .then(({ optimalRate: optRate }) => {
+        if (optRate) {
+          const optimalGasLimit = parseInt(optRate.gasCost)
+          const feeBig = customGasPrice.mul(optimalGasLimit)
+          const feeString = bnToLocaleString(
+            ethersBigNumberToBN(feeBig),
+            fromToken?.decimals
+          )
+          let maxBn = getMaxValue(fromToken, feeString)
+          if (maxBn) {
+            const sub1percent = bnToBig(maxBn, fromToken.decimals).mul(0.99)
+            maxBn = bigToBN(sub1percent, fromToken.decimals)
+            const amount = {
+              bn: maxBn,
+              amount: bnToLocaleString(maxBn, fromToken?.decimals)
+            } as Amount
+            setFromTokenValue(amount)
+            setDestination(SwapSide.SELL)
+            setAmount(amount)
+          }
+        }
+      })
+      .finally(() => {
+        setIsCalculatingMax(false)
+      })
+  }, [
+    fromToken,
+    customGasPrice,
+    getOptimalRateForAmount,
+    setAmount,
+    setDestination
+  ])
+
   return (
     <View style={styles.container}>
       <ScrollView style={styles.container}>
@@ -210,22 +263,19 @@ export default function SwapView() {
               setFromToken(tkWithBalance)
               capture('Swap_TokenSelected')
             }}
+            onMax={isCalculatingMax ? undefined : handleOnMax}
             onAmountChange={value => {
               setFromTokenValue(value)
               setDestination(SwapSide.SELL)
               setAmount(value)
             }}
             selectedToken={fromToken}
-            maxAmount={
-              destination === SwapSide.BUY && isFetchingOptimalRate
-                ? undefined
-                : maxFromValue ?? new BN(0)
-            }
             inputAmount={fromTokenValue?.bn}
             hideErrorMessage
             error={localError || swapError}
             isValueLoading={
-              destination === SwapSide.BUY && isFetchingOptimalRate
+              isCalculatingMax ||
+              (destination === SwapSide.BUY && isFetchingOptimalRate)
             }
           />
           <Space y={20} />
@@ -246,7 +296,6 @@ export default function SwapView() {
           <Space y={20} />
           <UniversalTokenSelector
             label={'To'}
-            hideMax
             onTokenChange={token => {
               const tkWithBalance = token as TokenWithBalance
               setToToken(tkWithBalance)
