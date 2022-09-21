@@ -205,14 +205,14 @@ export default function SwapView() {
     if (!fromToken) {
       return
     }
-    const maxAmount = {
+    const totalBalance = {
       bn: fromToken.balance,
       amount: bnToLocaleString(fromToken.balance, fromToken?.decimals)
     } as Amount
     setIsCalculatingMax(true)
-    // first let's fetch swap rates and fees for total balance amount and then we can
+    // first let's fetch swap rates and fees for total balance amount, then we can
     // calculate max available amount for swap
-    getOptimalRateForAmount(maxAmount)
+    getOptimalRateForAmount(totalBalance)
       .then(({ optimalRate: optRate }) => {
         if (optRate) {
           const optimalGasLimit = parseInt(optRate.gasCost)
@@ -223,6 +223,8 @@ export default function SwapView() {
           )
           let maxBn = getMaxValue(fromToken, feeString)
           if (maxBn) {
+            // there's high probability that on next call swap fees will change so let's lower
+            // max amount just a tiny bit (1%) for safety margin
             const sub1percent = bnToBig(maxBn, fromToken.decimals).mul(0.99)
             maxBn = bigToBN(sub1percent, fromToken.decimals)
             const amount = {
