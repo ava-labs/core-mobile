@@ -1,13 +1,12 @@
-import { TokenType, TokenWithBalance } from 'store/balance'
 import { OptimalRate } from 'paraswap-core'
 
-// @ts-ignore generic - ts complains about returning `any`
 export async function incrementalPromiseResolve<T>(
   prom: () => Promise<T>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   errorParser: (res: any) => boolean,
   increment = 0,
   maxTries = 10
-) {
+): Promise<T> {
   const res = await incrementAndCall(prom(), Math.pow(2, increment))
   if (maxTries === increment) {
     return res
@@ -19,21 +18,15 @@ export async function incrementalPromiseResolve<T>(
 }
 
 function incrementAndCall<T>(prom: Promise<T>, interval = 0) {
-  return new Promise(resolve => {
+  // eslint-disable-next-line @typescript-eslint/no-shadow
+  return new Promise<T>(resolve => {
     setTimeout(() => {
       prom.then(res => resolve(res))
     }, 500 * interval)
   })
 }
 
-export function getSrcToken(token: TokenWithBalance) {
-  if (token.type === TokenType.ERC20) {
-    return token.address
-  }
-  return token.symbol
-}
-
-export function resolve<T = any>(promise: Promise<T>) {
+export function resolve<T>(promise: Promise<T>) {
   try {
     return promise.then(res => [res, null]).catch(err => [null, err])
   } catch (err) {
