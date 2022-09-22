@@ -91,33 +91,23 @@ class SwapService {
     permit?: string,
     deadline?: string
   ): Promise<APIError | Transaction> {
-    const query = new URLSearchParams(options as Record<string, string>)
-    const txURL = `${this.apiUrl}/transactions/${network}/?${query.toString()}`
-    const txConfig = {
-      priceRoute,
+    return await this.paraSwap.buildTx(
       srcToken,
       destToken,
       srcAmount,
       destAmount,
+      priceRoute,
       userAddress,
       partner,
       partnerAddress,
       partnerFeeBps,
       receiver,
+      options,
       srcDecimals,
       destDecimals,
       permit,
       deadline
-    }
-
-    const response = await fetch(txURL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(txConfig)
-    })
-    return await response.json()
+    )
   }
 }
 
