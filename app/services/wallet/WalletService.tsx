@@ -62,9 +62,11 @@ class WalletService {
       this.mnemonic,
       accountIndex
     )
+
     log('evmWallet getWalletFromMnemonic', now() - start)
     const connectedWallet = walletFromMnemonic.connect(getEvmProvider(network))
     log('evmWallet end', now() - start)
+
     return connectedWallet
   }
 

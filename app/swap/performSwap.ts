@@ -178,7 +178,7 @@ export async function performSwap(request: {
 
         // we send true to wait for transaction to post due to issue with nonce.
         const [hash, approveError] = await resolve(
-          networkService.sendTransaction(signedTx, network, true)
+          networkService.sendTransaction(signedTx, network, false)
         )
 
         if (approveError) {
