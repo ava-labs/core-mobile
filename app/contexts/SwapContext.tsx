@@ -108,6 +108,7 @@ export const SwapContextProvider = ({ children }: { children: ReactNode }) => {
 
   const getOptimalRate = useCallback(() => {
     if (activeAccount && amount) {
+      setIsFetchingOptimalRate(true)
       getOptimalRateForAmount(amount)
         .then(({ optimalRate: opRate, error: err }) => {
           setError(err)

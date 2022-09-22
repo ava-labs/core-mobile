@@ -205,10 +205,20 @@ export default function SwapView() {
     if (!fromToken) {
       return
     }
+
     const totalBalance = {
       bn: fromToken.balance,
       amount: bnToLocaleString(fromToken.balance, fromToken?.decimals)
     } as Amount
+
+    if (fromToken.type !== TokenType.NATIVE) {
+      // no calculations needed for non-native tokens
+      setFromTokenValue(totalBalance)
+      setDestination(SwapSide.SELL)
+      setAmount(totalBalance)
+      return
+    }
+
     setIsCalculatingMax(true)
     // first let's fetch swap rates and fees for total balance amount, then we can
     // calculate max available amount for swap
