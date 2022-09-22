@@ -41,14 +41,15 @@ const AvaxTextBase: FC<BaseAvaTextProps> = ({
     (typeof children === 'string' || typeof children === 'number') &&
     currency
   ) {
+    let amountInCurrency = currencyFormatter(Number(children))
+    if (hideTrailingCurrency)
+      amountInCurrency = amountInCurrency.replace(selectedCurrency, '').trim()
     return animated ? (
       <Animated.Text
         {...rest}
         numberOfLines={numOfLines}
         ellipsizeMode={ellipsizeMode}>
-        {`${currencyFormatter(Number(children))} ${
-          hideTrailingCurrency ? '' : selectedCurrency
-        }`.trim()}
+        {amountInCurrency}
       </Animated.Text>
     ) : (
       <Text
@@ -56,9 +57,7 @@ const AvaxTextBase: FC<BaseAvaTextProps> = ({
         style={style as StyleProp<TextStyle>}
         numberOfLines={numOfLines}
         ellipsizeMode={ellipsizeMode}>
-        {`${currencyFormatter(Number(children))} ${
-          hideTrailingCurrency ? '' : selectedCurrency
-        }`.trim()}
+        {amountInCurrency}
       </Text>
     )
   }
