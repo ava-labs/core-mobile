@@ -8,22 +8,15 @@ import { bigToBN, bnToBig } from '@avalabs/utils-sdk'
 Big.PE = 99
 Big.NE = -18
 
-interface BNInputProps
-  extends Omit<
-    TextInputProps,
-    'max' | 'min' | 'value' | 'onChange' | 'onError'
-  > {
+interface BNInputProps extends Omit<TextInputProps, 'value' | 'onChange'> {
   value?: BN
   denomination: number
 
   onChange?(val: { bn: BN; amount: string }): void
+  onMax?(): void
 
-  placeholder?: string
-  min?: BN
-  max?: BN
   isValueLoading?: boolean
   hideErrorMessage?: boolean
-  onError?: (errorMessage: string) => void
 }
 
 export function splitBN(val: string) {
@@ -39,28 +32,18 @@ export function BNInput({
   value,
   denomination,
   onChange,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  min = new BN(0),
-  max,
+  onMax,
   isValueLoading,
   hideErrorMessage,
-  onError,
   ..._props
 }: BNInputProps) {
   const sanitizedValue = value?.isZero() ? undefined : value
-  const [errorMessage, setErrorMessage] = useState('')
   const [valueAsString, setValueAsString] = useState('')
   const valueBig = sanitizedValue
     ? bnToBig(sanitizedValue, denomination)
     : undefined
 
   useEffect(updateValueStrFx, [valueBig, valueAsString])
-  useEffect(checkBalanceFx, [hideErrorMessage, max, sanitizedValue])
-  useEffect(() => {
-    if (sanitizedValue && onError) {
-      onError(errorMessage)
-    }
-  }, [sanitizedValue, errorMessage, onError])
 
   const onValueChanged = (rawValue: string) => {
     if (!rawValue) {
@@ -84,15 +67,6 @@ export function BNInput({
     }
   }
 
-  const setMax = () => {
-    if (!max) {
-      return
-    }
-
-    const big = new Big(max.toString()).div(Math.pow(10, denomination))
-    onValueChanged(big.toString())
-  }
-
   function updateValueStrFx() {
     // When deleting zeros after decimal, all zeros delete without this check.
     // This also preserves zeros in the input ui.
@@ -104,22 +78,13 @@ export function BNInput({
     }
   }
 
-  function checkBalanceFx() {
-    return () => {
-      if (max && sanitizedValue && sanitizedValue.gt(max)) {
-        hideErrorMessage || setErrorMessage('Insufficient balance')
-      } else {
-        setErrorMessage('')
-      }
-    }
-  }
   return (
     <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
       <InputText
         {..._props}
         mode={'amount'}
         keyboardType="numeric"
-        onMax={max && setMax}
+        onMax={onMax}
         onChangeText={onValueChanged}
         text={valueAsString}
         loading={isValueLoading}
