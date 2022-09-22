@@ -1,4 +1,10 @@
-import React, { RefObject, useEffect, useRef, useState } from 'react'
+import React, {
+  RefObject,
+  useCallback,
+  useEffect,
+  useRef,
+  useState
+} from 'react'
 import {
   ActivityIndicator,
   Appearance,
@@ -96,9 +102,11 @@ export default function InputText({
 }: Props | Readonly<Props>) {
   const context = useApplicationContext()
   const [showInput, setShowInput] = useState(false)
-  // const [focused, setFocused] = useState(false)
   const [toggleShowText, setToggleShowText] = useState('Show')
   const textInputRef = useRef() as RefObject<TextInput>
+  const [selection, setSelection] = useState<{ start: number } | undefined>({
+    start: 0
+  })
 
   useEffect(() => {
     const sub1 = Keyboard.addListener('keyboardWillShow', _ => {
@@ -138,6 +146,21 @@ export default function InputText({
   }
   const onToggleShowInput = (): void => {
     setShowInput(!showInput)
+  }
+
+  const handleBlur = useCallback(
+    args => {
+      setSelection({ start: 0 })
+      onBlur?.(args)
+    },
+    [onBlur]
+  )
+
+  const handleFocus = () => {
+    // set cursor at end of text
+    setSelection({ start: text.length })
+    // disable selection so that user can position cursor on its own
+    setTimeout(() => setSelection(undefined), 100)
   }
 
   const theme = context.theme
@@ -219,7 +242,9 @@ export default function InputText({
             },
             textStyle
           ]}
-          onBlur={onBlur}
+          onBlur={handleBlur}
+          onFocus={handleFocus}
+          selection={selection}
           onChangeText={onTextChanged}
           value={text}
         />
