@@ -61,7 +61,8 @@ export interface SwapContextState {
   isFetchingOptimalRate: boolean
   getOptimalRateForAmount: (
     amnt: Amount | undefined
-  ) => Promise<{ optimalRate?: OptimalRate }>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ) => Promise<{ optimalRate?: OptimalRate; error?: any }>
 }
 
 export const SwapContext = createContext<SwapContextState>(

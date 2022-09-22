@@ -213,8 +213,10 @@ export default function SwapView() {
     // first let's fetch swap rates and fees for total balance amount, then we can
     // calculate max available amount for swap
     getOptimalRateForAmount(totalBalance)
-      .then(({ optimalRate: optRate }) => {
-        if (optRate) {
+      .then(({ optimalRate: optRate, error }) => {
+        if (error) {
+          setLocalError(error)
+        } else if (optRate) {
           const optimalGasLimit = parseInt(optRate.gasCost)
           const feeBig = customGasPrice.mul(optimalGasLimit)
           const feeString = bnToLocaleString(
