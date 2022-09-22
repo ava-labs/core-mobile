@@ -17,11 +17,6 @@ const NETWORK_UNSUPPORTED_ERROR = new Error(
   'Fuji network is not supported by Paraswap'
 )
 
-export type SwapPricesResponse = {
-  priceRoute: OptimalRate
-  error: string
-}
-
 class SwapService {
   private paraSwap = new ParaSwap(
     ChainId.AVALANCHE_MAINNET_ID,
@@ -43,7 +38,7 @@ class SwapService {
     swapSide: SwapSide,
     network: Network,
     account: Account
-  ) {
+  ): Promise<OptimalRate | APIError> {
     if (network.isTestnet) {
       throw NETWORK_UNSUPPORTED_ERROR
     }
@@ -51,39 +46,27 @@ class SwapService {
       throw new Error('Account address missing')
     }
 
-    const query = new URLSearchParams({
-      srcToken,
-      destToken,
-      amount: srcAmount,
-      side: swapSide,
-      network: ChainId.AVALANCHE_MAINNET_ID.toString(),
-      srcDecimals: `${
-        network?.networkToken.symbol === srcToken ? 18 : srcDecimals
-      }`,
-      destDecimals: `${
-        network?.networkToken.symbol === destToken ? 18 : destDecimals
-      }`,
-      userAddress: account.address
-    })
-
-    // apiURL is a private property
-    const url = `${this.apiUrl}/prices/?${query.toString()}`
-
     const optimalRates = async () => {
-      const response = await fetch(url)
-      return await response.json()
+      return await this.paraSwap.getRate(
+        srcToken,
+        destToken,
+        srcAmount,
+        account.address,
+        swapSide,
+        {},
+        srcDecimals,
+        destDecimals
+      )
     }
 
-    function checkForErrorsInResult(result: SwapPricesResponse) {
-      return result.error === 'Server too busy'
+    function checkForErrorsInResult(result: OptimalRate | APIError) {
+      return (result as APIError).message === 'Server too busy'
     }
 
-    const result = await incrementalPromiseResolve<SwapPricesResponse>(
+    return await incrementalPromiseResolve<OptimalRate | APIError>(
       () => optimalRates(),
       checkForErrorsInResult
     )
-
-    return result as SwapPricesResponse
   }
 
   async getParaswapSpender(): Promise<string | APIError> {
