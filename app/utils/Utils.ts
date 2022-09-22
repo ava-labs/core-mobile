@@ -1,12 +1,15 @@
 import Big from 'big.js'
 import { BigNumber } from 'ethers'
 import {
+  bigToBN,
   bigToLocaleString,
+  bnToBig,
   ethersBigNumberToBig,
   stringToBN
 } from '@avalabs/utils-sdk'
 import { TokenType, TokenWithBalance } from 'store/balance'
 import { APIError } from 'paraswap'
+import BN from 'bn.js'
 
 export const truncateAddress = (address: string, size = 6): string => {
   const firstChunk = address.substring(0, size)
@@ -100,6 +103,14 @@ export function titleToInitials(title: string) {
   )
 }
 
+export type GasAndFees = {
+  gasPrice: BigNumber
+  gasLimit: number
+  fee: string
+  bnFee: BigNumber
+  feeInCurrency: number
+}
+
 export function calculateGasAndFees({
   gasPrice,
   tokenPrice,
@@ -110,7 +121,7 @@ export function calculateGasAndFees({
   tokenPrice: number
   tokenDecimals?: number
   gasLimit?: number
-}) {
+}): GasAndFees {
   const bnFee = gasLimit ? gasPrice.mul(gasLimit) : gasPrice
   const fee = bigToLocaleString(ethersBigNumberToBig(bnFee, tokenDecimals), 8)
   return {
@@ -128,11 +139,12 @@ export const getMaxValue = (token?: TokenWithBalance, fee?: string) => {
   }
 
   if (token.type === TokenType.NATIVE) {
-    return token.balance.sub(stringToBN(fee, 18))
+    return token.balance.sub(stringToBN(fee, token.decimals))
   }
   return token.balance
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isAPIError(rate: any): rate is APIError {
   return typeof rate?.message === 'string'
 }
@@ -145,4 +157,14 @@ export async function findAsyncSequential<T>(
     if (await predicate(t)) return t
   }
   return undefined
+}
+
+export function truncateBN(
+  value: BN,
+  denomination: number,
+  roundDecimals: number
+): BN {
+  const big = bnToBig(value, denomination)
+  const truncated = big.round(roundDecimals, Big.roundDown)
+  return bigToBN(truncated, denomination)
 }

@@ -1,9 +1,10 @@
-import { SwapSide } from 'paraswap'
+import { APIError, SwapSide } from 'paraswap'
 import { Network } from '@avalabs/chains-sdk'
 import { TokenType, TokenWithBalance } from 'store/balance'
 import { Account } from 'store/account'
 import { resolve } from '@avalabs/utils-sdk'
 import swapService from 'services/swap/SwapService'
+import { OptimalRate } from 'paraswap-core'
 
 export const getTokenAddress = (token?: TokenWithBalance) => {
   if (!token) {
@@ -12,7 +13,16 @@ export const getTokenAddress = (token?: TokenWithBalance) => {
   return token.type === TokenType.NATIVE ? token.symbol : token.address
 }
 
-export async function getSwapRate(request: {
+export async function getSwapRate({
+  fromTokenAddress,
+  toTokenAddress,
+  fromTokenDecimals,
+  toTokenDecimals,
+  amount,
+  swapSide,
+  account,
+  network
+}: {
   fromTokenAddress?: string
   toTokenAddress?: string
   fromTokenDecimals?: number
@@ -22,24 +32,13 @@ export async function getSwapRate(request: {
   account: Account
   network: Network
 }) {
-  const {
-    fromTokenAddress,
-    toTokenAddress,
-    fromTokenDecimals,
-    toTokenDecimals,
-    amount,
-    swapSide,
-    account,
-    network
-  } = request || []
-
-  if (!fromTokenAddress) {
+  if (!fromTokenAddress || !fromTokenDecimals) {
     return {
       error: 'no source token on request'
     }
   }
 
-  if (!toTokenAddress) {
+  if (!toTokenAddress || !toTokenDecimals) {
     return {
       error: 'no destination token on request'
     }
@@ -54,9 +53,9 @@ export async function getSwapRate(request: {
   const [priceResponse, error] = await resolve(
     swapService.getSwapRate(
       fromTokenAddress,
-      fromTokenDecimals ?? 0,
+      fromTokenDecimals,
       toTokenAddress,
-      toTokenDecimals ?? 0,
+      toTokenDecimals,
       amount,
       swapSide,
       network,
@@ -71,16 +70,18 @@ export async function getSwapRate(request: {
     }
   }
 
-  if (priceResponse === null || priceResponse === undefined) {
+  if (!priceResponse) {
     return {
       error: 'no price response'
     }
   }
 
-  const destAmount = priceResponse.destAmount
+  if ((priceResponse as APIError).message) {
+    return { error: (priceResponse as APIError).message }
+  }
 
   return {
-    optimalRate: priceResponse,
-    destAmount
+    optimalRate: priceResponse as OptimalRate,
+    destAmount: (priceResponse as OptimalRate).destAmount
   }
 }
