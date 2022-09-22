@@ -36,6 +36,7 @@ export function formatLargeNumber(num: number | string, digits = 2) {
   const number = typeof num === 'number' ? num : Number(num)
 
   const lookup = [
+    { value: 1e12, symbol: 'T' },
     { value: 1e9, symbol: 'B' },
     { value: 1e6, symbol: 'M' },
     { value: 1e3, symbol: 'k' }
@@ -46,6 +47,22 @@ export function formatLargeNumber(num: number | string, digits = 2) {
 
   const rx = /\.0+$|(\.[0-9]*[1-9])0+$/
   return (number / item.value).toFixed(digits).replace(rx, '$1') + item.symbol
+}
+
+/**
+ * Used to format large numbers that are already formatted with currency =>
+ * values over 1 Million:  $32.2M, 1.6B CHF
+ * values under 1 Million: as is
+ * @param currencyNum
+ * @param digits - default: 2 - fraction digits to be used by large and normal amounts.
+ */
+export function formatLargeCurrency(currencyNum: string, digits = 2) {
+  const match = currencyNum.match(/^(-)?([^0-9]+)?([0-9,.]+) ?([A-Z]+)?$/)
+  if (!match) return currencyNum
+  const [_, negative, symbol, amount, code] = match
+
+  const newAmount = formatLargeNumber(amount.replace(/,/g, ''), digits)
+  return `${negative || ''}${symbol || ''}${newAmount}${code ? ` ${code}` : ''}`
 }
 
 export const formatTimer = (time: number) =>
