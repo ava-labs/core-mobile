@@ -10,6 +10,7 @@ import Separator from 'components/Separator'
 import ZeroState from 'components/ZeroState'
 import { useDispatch } from 'react-redux'
 import { MarketToken, onWatchlistRefresh } from 'store/watchlist'
+import { formatLargeCurrency } from 'utils/Utils'
 import { WatchlistFilter } from '../types'
 
 interface Props {
@@ -51,9 +52,11 @@ const WatchList: React.FC<Props> = ({
       } else if (filterBy === WatchlistFilter.MARKET_CAP) {
         return token.marketCap === 0
           ? ' -'
-          : currencyFormatter(token.marketCap ?? 0, 3)
+          : formatLargeCurrency(currencyFormatter(token.marketCap ?? 0), 3)
       } else if (filterBy === WatchlistFilter.VOLUME) {
-        return token.vol24 === 0 ? ' -' : currencyFormatter(token.vol24 ?? 0, 1)
+        return token.vol24 === 0
+          ? ' -'
+          : formatLargeCurrency(currencyFormatter(token.vol24 ?? 0), 1)
       }
     }
 

@@ -24,7 +24,7 @@ import MarketMovement from 'screens/watchlist/components/MarketMovement'
 import { ViewOnceInformation } from 'Repo'
 import TokenAddress from 'components/TokenAddress'
 import AppNavigation from 'navigation/AppNavigation'
-import { formatLargeNumber } from 'utils/Utils'
+import { formatLargeCurrency, formatLargeNumber } from 'utils/Utils'
 import { TokenSymbol } from 'store/network'
 import { TokenType } from 'store/balance'
 import { ActivityIndicator } from 'components/ActivityIndicator'
@@ -72,7 +72,9 @@ const TokenDetail = () => {
   }
 
   function formatMarketNumbers(value: number) {
-    return value === 0 ? ' -' : appHook.currencyFormatter(value, 1)
+    return value === 0
+      ? ' -'
+      : formatLargeCurrency(appHook.currencyFormatter(value), 1)
   }
 
   useEffect(() => {
@@ -171,13 +173,11 @@ const TokenDetail = () => {
           titleAlignment={'flex-start'}
           subtitle={
             <Row style={{ alignItems: 'center' }}>
-              <AvaText.Heading3
-                currency
-                hideTrailingCurrency
-                textStyle={{ marginEnd: 8 }}>
+              <AvaText.Heading3 currency textStyle={{ marginEnd: 8 }}>
                 {token?.priceInCurrency?.toFixed(6)}
               </AvaText.Heading3>
               <MarketMovement
+                hideCurrencyCode
                 priceChange={ranges.diffValue}
                 percentChange={ranges.percentChange}
               />
@@ -193,13 +193,12 @@ const TokenDetail = () => {
           }}>
           <View>
             <AvaText.Caption
+              currency
               textStyle={{
                 alignSelf: 'flex-end',
                 color: theme.colorText1,
                 marginBottom: -10
-              }}
-              currency
-              hideTrailingCurrency>
+              }}>
               {ranges.maxPrice}
             </AvaText.Caption>
             <SparklineChart
@@ -212,9 +211,8 @@ const TokenDetail = () => {
               height={CHART_HEIGHT}
             />
             <AvaText.Caption
-              textStyle={{ alignSelf: 'flex-end', color: theme.colorText1 }}
               currency
-              hideTrailingCurrency>
+              textStyle={{ alignSelf: 'flex-end', color: theme.colorText1 }}>
               {ranges.minPrice}
             </AvaText.Caption>
           </View>

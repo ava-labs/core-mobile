@@ -192,7 +192,9 @@ const RightComponent = ({
           flex: 1
         }}>
         <Row style={{ alignItems: 'flex-end' }}>
-          <AvaText.Heading3 ellipsizeMode={'tail'}>{value}</AvaText.Heading3>
+          <AvaText.Heading3 ellipsizeMode={'tail'}>
+            {value.replace(selectedCurrency, '')}
+          </AvaText.Heading3>
           <Space x={4} />
           <AvaText.Body3
             textStyle={{ color: theme.colorText2, lineHeight: 22 }}>
@@ -200,6 +202,7 @@ const RightComponent = ({
           </AvaText.Body3>
         </Row>
         <MarketMovement
+          hideCurrencyCode
           priceChange={ranges.diffValue}
           percentChange={ranges.percentChange}
           filterBy={filterBy}
