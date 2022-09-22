@@ -3,8 +3,6 @@ import { Pressable, StyleSheet, View } from 'react-native'
 import { TokenWithBalance } from 'store/balance'
 import { AssetBalance } from 'screens/bridge/utils/types'
 import BN from 'bn.js'
-import { useSelector } from 'react-redux'
-import { selectSelectedCurrency } from 'store/settings/currency'
 import { bnToBig } from '@avalabs/utils-sdk'
 import { Amount } from 'screens/swap/SwapView'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -19,6 +17,7 @@ import FlexSpacer from 'components/FlexSpacer'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { WalletScreenProps } from 'navigation/types'
+import { formatLargeCurrency } from 'utils/Utils'
 
 interface Props {
   selectedToken?: TokenWithBalance
@@ -54,7 +53,6 @@ const UniversalTokenSelector: FC<Props> = ({
   hideZeroBalanceTokens = false
 }) => {
   const theme = useApplicationContext().theme
-  const currency = useSelector(selectSelectedCurrency)
   const [bnError, setBnError] = useState('')
   const { currencyFormatter } = useApplicationContext().appHook
   const navigation = useNavigation<NavigationProp>()
@@ -76,7 +74,10 @@ const UniversalTokenSelector: FC<Props> = ({
       return ''
     }
     const bnNumber = bnToBig(inputAmount, selectedToken?.decimals).toNumber()
-    return currencyFormatter(bnNumber * selectedToken.priceInCurrency, 4)
+    return formatLargeCurrency(
+      currencyFormatter(bnNumber * selectedToken.priceInCurrency),
+      4
+    )
   }, [
     currencyFormatter,
     inputAmount,
@@ -172,9 +173,7 @@ const UniversalTokenSelector: FC<Props> = ({
         )}
         <FlexSpacer />
         <AvaText.Body2>
-          {selectedToken && amountInCurrency
-            ? `${amountInCurrency} ${currency}`
-            : '$0.00 USD'}
+          {selectedToken && amountInCurrency ? amountInCurrency : '$0.00 USD'}
         </AvaText.Body2>
       </Row>
     </View>

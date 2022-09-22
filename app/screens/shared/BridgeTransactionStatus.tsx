@@ -204,7 +204,7 @@ const BridgeTransactionStatus: FC<Props> = ({ txHash, showHideButton }) => {
                 </AvaText.Heading3>
               </Row>
               <AvaText.Body3 currency color={theme.colorText1}>
-                ~{formattedNetworkPrice} {selectedCurrency}
+                ~{formattedNetworkPrice}
               </AvaText.Body3>
             </View>
           }

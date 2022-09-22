@@ -43,7 +43,7 @@ interface PortfolioHeaderProps {
 
 const PortfolioHeader: FC<PortfolioHeaderProps> = memo(
   ({
-    balanceTotalInCurrency = 0,
+    balanceTotalInCurrency = '0',
     isBalanceLoading = false,
     isBalanceRefreshing = false,
     currencyCode
@@ -61,7 +61,7 @@ const PortfolioHeader: FC<PortfolioHeaderProps> = memo(
       return (
         <>
           <AvaText.LargeTitleBold>
-            {balanceTotalInCurrency}
+            {balanceTotalInCurrency.replace(currencyCode, '')}
           </AvaText.LargeTitleBold>
           <AvaText.Heading3
             textStyle={{
