@@ -203,14 +203,15 @@ export default function InputText({
               textAlignVertical: multiline ? 'top' : 'center',
               backgroundColor: theme.colorBg3 + Opacity50,
               paddingStart: 16,
-              paddingEnd:
-                mode === 'private'
-                  ? 80
-                  : mode === 'amount' && !onMax
-                  ? 16
-                  : mode === 'currency'
-                  ? 50
-                  : 46,
+              paddingEnd: loading
+                ? 46
+                : mode === 'private'
+                ? 80
+                : mode === 'amount' && !onMax
+                ? 16
+                : mode === 'currency'
+                ? 50
+                : 46,
               paddingTop: paddingVertical,
               paddingBottom: paddingVertical,
               fontFamily: 'Inter-Regular',
