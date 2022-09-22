@@ -3,7 +3,10 @@ import { onRehydrationComplete } from 'store/app'
 import { AppListenerEffectAPI } from 'store/index'
 import watchlistService from 'services/watchlist/WatchlistService'
 import { selectActiveNetwork, selectNetworks, setActive } from 'store/network'
-import { selectSelectedCurrency } from 'store/settings/currency'
+import {
+  selectSelectedCurrency,
+  setSelectedCurrency
+} from 'store/settings/currency'
 import {
   appendWatchlist,
   onWatchlistRefresh,
@@ -35,7 +38,12 @@ async function fetchWatchlist(
 
 export const addWatchlistListeners = (startListening: AppStartListening) => {
   startListening({
-    matcher: isAnyOf(onRehydrationComplete, setActive, onWatchlistRefresh),
+    matcher: isAnyOf(
+      onRehydrationComplete,
+      setActive,
+      onWatchlistRefresh,
+      setSelectedCurrency
+    ),
     effect: fetchWatchlist
   })
 }
