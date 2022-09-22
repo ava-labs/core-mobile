@@ -1,6 +1,6 @@
 import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store'
-import { initialState, MarketToken } from './types'
+import { initialState, MarketToken, WatchListState } from './types'
 
 const reducerName = 'watchlist'
 
@@ -26,13 +26,24 @@ export const watchlistSlice = createSlice({
           newTokens.push(newToken)
         }
       }
-      state.tokens = [...state.tokens, ...newTokens]
+      setTokens(state, [...state.tokens, ...newTokens])
     },
     setWatchlistTokens: (state, action: PayloadAction<MarketToken[]>) => {
-      state.tokens = action.payload
+      setTokens(state, action.payload)
     }
   }
 })
+
+/**
+ * Set tokens and update favorites.
+ * @private
+ */
+function setTokens(state: WatchListState, tokens: MarketToken[]): void {
+  state.tokens = tokens
+  state.favorites = state.favorites.map(
+    favorite => tokens.find(t => t.id === favorite.id) || favorite
+  )
+}
 
 // selectors
 export const selectIsWatchlistFavorite =
