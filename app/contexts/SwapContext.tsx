@@ -191,7 +191,7 @@ export const SwapContextProvider = ({ children }: { children: ReactNode }) => {
           showSnackBarCustom({
             component: (
               <TransactionToast
-                message={'Swap Successfull'}
+                message={'Swap Successful'}
                 type={TransactionToastType.SUCCESS}
                 txHash={result?.result?.swapTxHash}
               />
