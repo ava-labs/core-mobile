@@ -38,7 +38,7 @@ class SwapService {
     swapSide: SwapSide,
     network: Network,
     account: Account
-  ) {
+  ): Promise<OptimalRate | APIError> {
     if (network.isTestnet) {
       throw NETWORK_UNSUPPORTED_ERROR
     }
@@ -46,40 +46,27 @@ class SwapService {
       throw new Error('Account address missing')
     }
 
-    const query = new URLSearchParams({
-      srcToken,
-      destToken,
-      amount: srcAmount,
-      side: swapSide,
-      network: ChainId.AVALANCHE_MAINNET_ID.toString(),
-      srcDecimals: `${
-        network?.networkToken.symbol === srcToken ? 18 : srcDecimals
-      }`,
-      destDecimals: `${
-        network?.networkToken.symbol === destToken ? 18 : destDecimals
-      }`,
-      userAddress: account.address
-    })
-
-    // apiURL is a private property
-    const url = `${this.apiUrl}/prices/?${query.toString()}`
-
     const optimalRates = async () => {
-      const response = await fetch(url)
-      const data = await response.json()
-      return data.priceRoute
+      return await this.paraSwap.getRate(
+        srcToken,
+        destToken,
+        srcAmount,
+        account.address,
+        swapSide,
+        {},
+        srcDecimals,
+        destDecimals
+      )
     }
 
     function checkForErrorsInResult(result: OptimalRate | APIError) {
       return (result as APIError).message === 'Server too busy'
     }
 
-    const result = await incrementalPromiseResolve<OptimalRate | APIError>(
+    return await incrementalPromiseResolve<OptimalRate | APIError>(
       () => optimalRates(),
       checkForErrorsInResult
     )
-
-    return result as OptimalRate
   }
 
   async getParaswapSpender(): Promise<string | APIError> {
@@ -104,33 +91,23 @@ class SwapService {
     permit?: string,
     deadline?: string
   ): Promise<APIError | Transaction> {
-    const query = new URLSearchParams(options as Record<string, string>)
-    const txURL = `${this.apiUrl}/transactions/${network}/?${query.toString()}`
-    const txConfig = {
-      priceRoute,
+    return await this.paraSwap.buildTx(
       srcToken,
       destToken,
       srcAmount,
       destAmount,
+      priceRoute,
       userAddress,
       partner,
       partnerAddress,
       partnerFeeBps,
       receiver,
+      options,
       srcDecimals,
       destDecimals,
       permit,
       deadline
-    }
-
-    const response = await fetch(txURL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(txConfig)
-    })
-    return await response.json()
+    )
   }
 }
 

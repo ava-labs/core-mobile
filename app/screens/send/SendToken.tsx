@@ -21,8 +21,10 @@ import { selectActiveNetwork } from 'store/network'
 import { NetworkVMType } from '@avalabs/chains-sdk'
 import NetworkFeeSelector from 'components/NetworkFeeSelector'
 import { usePosthogContext } from 'contexts/PosthogContext'
-import { ethersBigNumberToBN } from '@avalabs/utils-sdk'
+import { bnToLocaleString, ethersBigNumberToBN } from '@avalabs/utils-sdk'
 import UniversalTokenSelector from 'components/UniversalTokenSelector'
+import { getMaxValue } from 'utils/Utils'
+import { Amount } from 'screens/swap/SwapView'
 
 type Props = {
   onNext: () => void
@@ -120,6 +122,16 @@ const SendToken: FC<Props> = ({
     onNext()
   }
 
+  const handleMax = useCallback(() => {
+    const maxBn = getMaxValue(sendToken, fees.sendFeeNative)
+    if (maxBn) {
+      setSendAmount({
+        bn: maxBn,
+        amount: bnToLocaleString(maxBn, sendToken?.decimals)
+      } as Amount)
+    }
+  }, [fees.sendFeeNative, sendToken, setSendAmount])
+
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
       <AvaText.LargeTitleBold textStyle={{ marginHorizontal: 16 }}>
@@ -189,9 +201,9 @@ const SendToken: FC<Props> = ({
                 setSendError(undefined)
               }
             }}
+            onMax={toAccount.address && sendToken ? handleMax : undefined}
             selectedToken={sendToken}
             inputAmount={sendAmount.bn}
-            hideMax={!toAccount.address || !sendToken}
             hideErrorMessage
             error={sendError ?? sdkError}
           />

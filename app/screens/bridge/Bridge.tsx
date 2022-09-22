@@ -29,7 +29,12 @@ import { BridgeScreenProps } from 'navigation/types'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import { selectNetworks, setActive, TokenSymbol } from 'store/network'
 import { useActiveNetwork } from 'hooks/useActiveNetwork'
-import { bigToBN, bnToBig, resolve } from '@avalabs/utils-sdk'
+import {
+  bigToBN,
+  bigToLocaleString,
+  bnToBig,
+  resolve
+} from '@avalabs/utils-sdk'
 import Big from 'big.js'
 import ScrollViewList from 'components/ScrollViewList'
 import { ActivityIndicator } from 'components/ActivityIndicator'
@@ -173,26 +178,19 @@ const Bridge: FC = () => {
     })
   }
 
-  const handleAmountChanged = (value: { bn: BN; amount: string }) => {
-    const bigValue = bnToBig(value.bn, denomination)
-    if (bridgeError) {
-      setBridgeError('')
-    }
-    try {
-      setAmount(bigValue)
-    } catch (e) {
-      Logger.error('failed to set amount', e)
-    }
-  }
-
-  const handleError = useCallback(
-    errorMessage => {
-      if (errorMessage) {
-        capture('BridgeTokenSelectError', { errorMessage })
+  const handleAmountChanged = useCallback(
+    (value: { bn: BN; amount: string }) => {
+      const bigValue = bnToBig(value.bn, denomination)
+      if (bridgeError) {
+        setBridgeError('')
       }
-      setBridgeError(errorMessage)
+      try {
+        setAmount(bigValue)
+      } catch (e) {
+        Logger.error('failed to set amount', e)
+      }
     },
-    [capture]
+    [bridgeError, denomination, setAmount]
   )
 
   const setCurrentBlockchain = (blockchain: Blockchain) => {
@@ -245,6 +243,7 @@ const Bridge: FC = () => {
       navigation.navigate(AppNavigation.Bridge.BridgeTransactionStatus, {
         txHash: hash ?? ''
       })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       const errorMessage =
         'reason' in e
@@ -428,16 +427,25 @@ const Bridge: FC = () => {
     </Pressable>
   )
 
+  const handleMax = useCallback(() => {
+    if (!maximum) {
+      return
+    }
+    handleAmountChanged({
+      bn: bigToBN(maximum, denomination),
+      amount: bigToLocaleString(maximum, 4)
+    })
+  }, [denomination, handleAmountChanged, maximum])
+
   const renderAmountInput = () => (
     <View>
       <>
         <BNInput
           value={!sourceBalance ? undefined : amountBN}
           denomination={denomination}
-          max={maximum && bigToBN(maximum, denomination)}
+          onMax={handleMax}
           placeholder={'0.0'}
           onChange={handleAmountChanged}
-          onError={handleError}
           style={{
             minWidth: 160
           }}
