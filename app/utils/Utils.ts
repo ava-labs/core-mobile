@@ -1,12 +1,15 @@
 import Big from 'big.js'
 import { BigNumber } from 'ethers'
 import {
+  bigToBN,
   bigToLocaleString,
+  bnToBig,
   ethersBigNumberToBig,
   stringToBN
 } from '@avalabs/utils-sdk'
 import { TokenType, TokenWithBalance } from 'store/balance'
 import { APIError } from 'paraswap'
+import BN from 'bn.js'
 
 export const truncateAddress = (address: string, size = 6): string => {
   const firstChunk = address.substring(0, size)
@@ -137,4 +140,14 @@ export async function findAsyncSequential<T>(
     if (await predicate(t)) return t
   }
   return undefined
+}
+
+export function truncateBN(
+  value: BN,
+  denomination: number,
+  roundDecimals: number
+): BN {
+  const big = bnToBig(value, denomination)
+  const truncated = big.round(roundDecimals, Big.roundDown)
+  return bigToBN(truncated, denomination)
 }

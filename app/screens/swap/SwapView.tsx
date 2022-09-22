@@ -27,13 +27,8 @@ import { usePosthogContext } from 'contexts/PosthogContext'
 import { calculateRate } from 'swap/utils'
 import { selectNetworkFee } from 'store/networkFee'
 import { useActiveNetwork } from 'hooks/useActiveNetwork'
-import { calculateGasAndFees, getMaxValue } from 'utils/Utils'
-import {
-  bigToBN,
-  bnToBig,
-  bnToLocaleString,
-  ethersBigNumberToBN
-} from '@avalabs/utils-sdk'
+import { calculateGasAndFees, getMaxValue, truncateBN } from 'utils/Utils'
+import { bnToLocaleString, ethersBigNumberToBN } from '@avalabs/utils-sdk'
 
 type NavigationProp = SwapScreenProps<
   typeof AppNavigation.Swap.Swap
@@ -236,9 +231,8 @@ export default function SwapView() {
           let maxBn = getMaxValue(fromToken, feeString)
           if (maxBn) {
             // there's high probability that on next call swap fees will change so let's lower
-            // max amount just a tiny bit (1%) for safety margin
-            const sub1percent = bnToBig(maxBn, fromToken.decimals).mul(0.99)
-            maxBn = bigToBN(sub1percent, fromToken.decimals)
+            // max amount just a bit more for safety margin by chopping off some decimals
+            maxBn = truncateBN(maxBn, fromToken.decimals, 9)
             const amount = {
               bn: maxBn,
               amount: bnToLocaleString(maxBn, fromToken?.decimals)
