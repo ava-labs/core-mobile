@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useMemo, useState } from 'react'
+import React, { FC, useCallback, useMemo } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
 import { TokenWithBalance } from 'store/balance'
 import { AssetBalance } from 'screens/bridge/utils/types'
@@ -22,15 +22,14 @@ import { formatLargeCurrency } from 'utils/Utils'
 interface Props {
   selectedToken?: TokenWithBalance
   onTokenChange: (token: TokenWithBalance | AssetBalance) => void
+  onMax?: () => void
   hideInput?: boolean
-  maxAmount?: BN
   inputAmount?: BN
   onAmountChange: (amount: { amount: string; bn: BN }) => void
   error?: string
   label?: string
   isValueLoading?: boolean
   hideErrorMessage?: boolean
-  hideMax?: boolean
   hideZeroBalanceTokens?: boolean
 }
 
@@ -41,26 +40,20 @@ type NavigationProp = WalletScreenProps<
 const UniversalTokenSelector: FC<Props> = ({
   selectedToken,
   onTokenChange,
+  onMax,
   hideInput,
-  maxAmount,
   inputAmount,
   onAmountChange,
   error,
   label,
   isValueLoading,
   hideErrorMessage,
-  hideMax,
   hideZeroBalanceTokens = false
 }) => {
   const theme = useApplicationContext().theme
-  const [bnError, setBnError] = useState('')
   const { currencyFormatter } = useApplicationContext().appHook
   const navigation = useNavigation<NavigationProp>()
-  const hasError = !!error || !!bnError
-
-  const handleError = useCallback(errorMessage => {
-    setBnError(errorMessage)
-  }, [])
+  const hasError = !!error
 
   const openTokenSelectorBottomSheet = () => {
     navigation.navigate(AppNavigation.Modal.SelectToken, {
@@ -138,15 +131,10 @@ const UniversalTokenSelector: FC<Props> = ({
           <View>
             <BNInput
               value={inputAmount}
-              max={
-                !isValueLoading && !hideMax
-                  ? maxAmount ?? selectedToken?.balance
-                  : undefined
-              }
+              onMax={onMax}
               denomination={selectedToken?.decimals || 9}
               placeholder={'0.0'}
               onChange={handleAmountChange}
-              onError={handleError}
               hideErrorMessage={hideErrorMessage}
               isValueLoading={isValueLoading}
               style={{
@@ -167,9 +155,7 @@ const UniversalTokenSelector: FC<Props> = ({
       <Space y={8} />
       <Row>
         {hasError && (
-          <AvaText.Body3 color={theme.colorError}>
-            {error || bnError}
-          </AvaText.Body3>
+          <AvaText.Body3 color={theme.colorError}>{error}</AvaText.Body3>
         )}
         <FlexSpacer />
         <AvaText.Body2>

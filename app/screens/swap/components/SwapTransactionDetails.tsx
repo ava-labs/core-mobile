@@ -93,7 +93,6 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
           position={'top'}
           strictPosition={true}
           style={{ minWidth: 300, marginBottom: review ? 0 : -32 }}
-          wrapperStyle={{ minWidth: 300 }}
           backgroundColor={theme.colorBg3}>
           <PopableLabel
             label="Slippage tolerance"
