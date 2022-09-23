@@ -20,6 +20,7 @@ interface BaseProps {
   rippleBorderless?: boolean
   textColor?: string
   icon?: React.ReactNode
+  testID?: string
 }
 
 const AvaButtonBase: FC<BaseProps> = ({
