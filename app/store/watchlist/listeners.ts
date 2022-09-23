@@ -7,12 +7,7 @@ import {
   selectSelectedCurrency,
   setSelectedCurrency
 } from 'store/settings/currency'
-import {
-  appendWatchlist,
-  onWatchlistRefresh,
-  selectWatchlistFavorites,
-  setWatchlistTokens
-} from 'store/watchlist/slice'
+import { onWatchlistRefresh, setWatchlistTokens } from 'store/watchlist/slice'
 import { Action, isAnyOf } from '@reduxjs/toolkit'
 
 async function fetchWatchlist(
@@ -25,7 +20,6 @@ async function fetchWatchlist(
   const network = selectActiveNetwork(state)
   const currency = selectSelectedCurrency(state)
 
-  const favoriteTokens = selectWatchlistFavorites(state)
   const watchlistTokens = await watchlistService.getMarketData(
     network,
     currency.toLowerCase(),
@@ -33,7 +27,6 @@ async function fetchWatchlist(
   )
 
   dispatch(setWatchlistTokens(watchlistTokens))
-  dispatch(appendWatchlist(favoriteTokens))
 }
 
 export const addWatchlistListeners = (startListening: AppStartListening) => {
