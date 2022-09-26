@@ -67,6 +67,11 @@ export const SendNFTContextProvider = ({
   const sendFromTitle = activeAccount?.title ?? '-'
 
   const [gasLimit, setGasLimit] = useState(0)
+  const [customGasLimit, setCustomGasLimit] = useState<number | undefined>(
+    undefined
+  )
+  const trueGasLimit = customGasLimit || gasLimit
+
   const [sendFeeBN, setSendFeeBN] = useState(new BN(0))
   const sendFeeNative = useMemo(
     () => bnToLocaleString(sendFeeBN, activeNetwork.networkToken.decimals),
@@ -95,7 +100,7 @@ export const SendNFTContextProvider = ({
     activeAccount,
     activeNetwork,
     customGasPriceBig,
-    gasLimit,
+    trueGasLimit,
     selectedCurrency,
     sendToAddress,
     sendToken
@@ -113,7 +118,7 @@ export const SendNFTContextProvider = ({
     const sendState = {
       address: sendToAddress,
       gasPrice: customGasPriceBig,
-      gasLimit,
+      gasLimit: trueGasLimit,
       token: sendService.mapTokenFromNFT(sendToken)
     } as SendState
 
@@ -180,7 +185,7 @@ export const SendNFTContextProvider = ({
           token: sendService.mapTokenFromNFT(sendToken),
           address: sendToAddress,
           gasPrice: customGasPriceBig,
-          gasLimit
+          gasLimit: trueGasLimit
         } as SendState,
         activeNetwork,
         activeAccount,
@@ -211,8 +216,8 @@ export const SendNFTContextProvider = ({
       sendFeeInCurrency: sendFeeInCurrency,
       customGasPrice,
       setCustomGasPrice,
-      gasLimit,
-      setGasLimit,
+      gasLimit: trueGasLimit,
+      setCustomGasLimit,
       setSelectedFeePreset
     },
     canSubmit,
@@ -245,6 +250,6 @@ export interface Fees {
   customGasPrice: BN
   setCustomGasPrice: Dispatch<BN>
   gasLimit: number | undefined
-  setGasLimit: Dispatch<number>
+  setCustomGasLimit: Dispatch<number>
   setSelectedFeePreset: Dispatch<FeePreset>
 }
