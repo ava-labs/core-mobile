@@ -48,10 +48,12 @@ type NavigationProp = WalletScreenProps<
 
 const NetworkFeeSelector = ({
   gasLimit,
-  onChange
+  onGasPriceChange,
+  onGasLimitChange
 }: {
   gasLimit: number
-  onChange?(gasLimit: number, gasPrice: BigNumber, feePreset: FeePreset): void
+  onGasPriceChange?(gasPrice: BigNumber, feePreset: FeePreset): void
+  onGasLimitChange?(customGasLimit: number): void
 }) => {
   const { navigate } = useNavigation<NavigationProp>()
   const { theme } = useApplicationContext()
@@ -92,10 +94,8 @@ const NetworkFeeSelector = ({
     const gasPrice = selectedGasPrice?.isZero()
       ? networkFee.low
       : selectedGasPrice
-    onChange?.(gasLimit, gasPrice, selectedPreset)
-    // ignore onChange
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gasLimit, selectedGasPrice, selectedPreset, networkFee.low])
+    onGasPriceChange?.(gasPrice, selectedPreset)
+  }, [selectedGasPrice, selectedPreset, networkFee.low, onGasPriceChange])
 
   useEffect(fetchNetworkGasPrices, [dispatch])
 
@@ -103,11 +103,8 @@ const NetworkFeeSelector = ({
     dispatch(fetchNetworkFee)
   }
 
-  function onGasLimitChange(newGasLimit: number) {
-    const gasPrice = selectedGasPrice?.isZero()
-      ? networkFee.low
-      : selectedGasPrice
-    onChange?.(newGasLimit, gasPrice, selectedPreset)
+  function handleGasLimitChange(newGasLimit: number) {
+    onGasLimitChange?.(newGasLimit)
   }
 
   const convertFeeToUnit = useCallback(
@@ -161,7 +158,7 @@ const NetworkFeeSelector = ({
                 navigate(AppNavigation.Modal.EditGasLimit, {
                   gasLimit: gasLimit,
                   gasPrice: customGasPrice ?? networkFee.low,
-                  onSave: onGasLimitChange
+                  onSave: handleGasLimitChange
                 })
               }}>
               <SettingsCogSVG />
