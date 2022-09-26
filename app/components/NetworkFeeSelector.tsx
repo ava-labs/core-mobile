@@ -61,7 +61,7 @@ const NetworkFeeSelector = ({
   const dispatch = useDispatch()
   const network = useActiveNetwork()
   const isBtcNetwork = network.vmName === NetworkVMType.BITCOIN
-  const [selectedPreset, setSelectedPreset] = useState(FeePreset.Normal)
+  const [selectedPreset, setSelectedPreset] = useState(FeePreset.Instant)
   const [customGasPrice, setCustomGasPrice] = useState<BigNumber>()
 
   // customGasPrice init value.
@@ -75,9 +75,7 @@ const NetworkFeeSelector = ({
   const selectedGasPrice = useMemo(() => {
     switch (selectedPreset) {
       case FeePreset.Custom:
-        return !customGasPrice || customGasPrice.isZero()
-          ? networkFee.low
-          : customGasPrice
+        return customGasPrice || BigNumber.from(0)
       default:
         return networkFee[FeePresetNetworkFeeMap[selectedPreset]]
     }
@@ -91,10 +89,7 @@ const NetworkFeeSelector = ({
   }, [gasLimit, networkFee.nativeTokenDecimals, selectedGasPrice])
 
   useEffect(() => {
-    const gasPrice = selectedGasPrice?.isZero()
-      ? networkFee.low
-      : selectedGasPrice
-    onGasPriceChange?.(gasPrice, selectedPreset)
+    onGasPriceChange?.(selectedGasPrice, selectedPreset)
   }, [selectedGasPrice, selectedPreset, networkFee.low, onGasPriceChange])
 
   useEffect(fetchNetworkGasPrices, [dispatch])
