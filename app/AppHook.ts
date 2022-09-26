@@ -121,7 +121,8 @@ export function useApp(
       style: 'currency',
       currency: selectedCurrency ?? 'USD',
       currencyDisplay: 'symbol', // the extension uses 'narrowSymbol'
-      maximumFractionDigits: 2 // must be set for the `formatToParts` call below
+      maximumFractionDigits: 2, // must be set for the `formatToParts` call below
+      minimumFractionDigits: 2
     })
 
     return (amount: number) => {

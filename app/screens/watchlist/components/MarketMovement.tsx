@@ -33,9 +33,10 @@ const MarketMovement: FC<Props> = ({
       return '$ -'
     }
 
-    let formattedPrice = currencyFormatter(priceChange).replace('-', '')
-    if (filterBy !== WatchlistFilter.PRICE)
-      formattedPrice = formatLargeCurrency(formattedPrice, 3)
+    let formattedPrice = formatLargeCurrency(
+      currencyFormatter(Math.abs(priceChange)),
+      filterBy === WatchlistFilter.PRICE ? 2 : 3
+    )
     if (hideCurrencyCode)
       formattedPrice = formattedPrice.replace(selectedCurrency, '')
 
