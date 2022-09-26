@@ -26,9 +26,14 @@ export function NetworkDetailsAction() {
   const isCustomNetwork = useSelector(selectIsCustomNetwork(chainId))
 
   return (
-    <Row style={{ alignItems: 'center' }}>
+    <Row style={{ alignItems: 'center', marginRight: 8 }}>
       <ToggleFavoriteNetwork chainId={chainId} />
-      {isCustomNetwork && <CustomNetworkDropdown />}
+      {isCustomNetwork && (
+        <>
+          <CustomNetworkDropdown />
+          <Space x={4} />
+        </>
+      )}
     </Row>
   )
 }
