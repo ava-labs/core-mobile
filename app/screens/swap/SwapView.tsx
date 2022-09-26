@@ -54,6 +54,7 @@ export default function SwapView() {
     toToken,
     setToToken,
     gasLimit,
+    gasPrice,
     destination,
     optimalRate,
     setCustomGasLimit,
@@ -72,9 +73,6 @@ export default function SwapView() {
   const [isCalculatingMax, setIsCalculatingMax] = useState(false)
 
   const [localError, setLocalError] = useState<string>('')
-  const [customGasPrice, setCustomGasPrice] = useState<BigNumber>(
-    networkFee.low
-  )
   const [selectedGasFee, setSelectedGasFee] = useState<FeePreset>(
     FeePreset.Instant
   )
@@ -93,9 +91,9 @@ export default function SwapView() {
   useEffect(calculateGasAndMaxFx, [
     activeNetwork?.networkToken?.decimals,
     avaxPrice,
-    customGasPrice,
     fromToken,
-    gasLimit
+    gasLimit,
+    gasPrice
   ])
 
   function validateInputsFx() {
@@ -129,9 +127,9 @@ export default function SwapView() {
   }
 
   function calculateGasAndMaxFx() {
-    if (customGasPrice && gasLimit && fromToken?.type === TokenType.NATIVE) {
+    if (gasPrice && gasLimit && fromToken?.type === TokenType.NATIVE) {
       const newFees = calculateGasAndFees({
-        gasPrice: customGasPrice,
+        gasPrice,
         gasLimit,
         tokenPrice: avaxPrice ?? 0,
         tokenDecimals: activeNetwork?.networkToken?.decimals
@@ -166,15 +164,18 @@ export default function SwapView() {
   }
 
   const onGasChange = useCallback(
-    (limit: number, price: BigNumber, feeType: FeePreset) => {
-      if (gasLimit !== limit) {
-        //set custom gas limit only if differs from default
-        setCustomGasLimit(limit)
-      }
-      setCustomGasPrice(price)
+    (price: BigNumber, feeType: FeePreset) => {
+      setGasPrice(price)
       setSelectedGasFee(feeType)
     },
-    [gasLimit, setCustomGasLimit]
+    [setGasPrice]
+  )
+
+  const onGasLimitChange = useCallback(
+    (customGasLimit: number) => {
+      setCustomGasLimit(customGasLimit)
+    },
+    [setCustomGasLimit]
   )
 
   const maxGasPrice =
@@ -186,12 +187,12 @@ export default function SwapView() {
 
   const reviewOrder = () => {
     if (optimalRate) {
-      setGasPrice(customGasPrice ?? networkFee.low)
+      setGasPrice(gasPrice)
       navigate(AppNavigation.Swap.Review)
       capture('SwapReviewOrder', {
         destinationInputField: destination,
         slippageTolerance: slippage,
-        customGasPrice: (customGasPrice ?? networkFee.low)?.toString()
+        customGasPrice: gasPrice?.toString()
       })
     }
   }
@@ -218,12 +219,12 @@ export default function SwapView() {
     // first let's fetch swap rates and fees for total balance amount, then we can
     // calculate max available amount for swap
     getOptimalRateForAmount(totalBalance)
-      .then(({ optimalRate: optRate, error }) => {
+      .then(([{ optimalRate: optRate, error }, { customGasLimit }]) => {
         if (error) {
           setLocalError(error)
         } else if (optRate) {
-          const optimalGasLimit = parseInt(optRate.gasCost)
-          const feeBig = customGasPrice.mul(optimalGasLimit)
+          const limit = customGasLimit || parseInt(optRate.gasCost)
+          const feeBig = gasPrice.mul(limit)
           const feeString = bnToLocaleString(
             ethersBigNumberToBN(feeBig),
             fromToken?.decimals
@@ -232,7 +233,7 @@ export default function SwapView() {
           if (maxBn) {
             // there's high probability that on next call swap fees will change so let's lower
             // max amount just a bit more for safety margin by chopping off some decimals
-            maxBn = truncateBN(maxBn, fromToken.decimals, 9)
+            maxBn = truncateBN(maxBn, fromToken.decimals, 6)
             const amount = {
               bn: maxBn,
               amount: bnToLocaleString(maxBn, fromToken?.decimals)
@@ -246,13 +247,7 @@ export default function SwapView() {
       .finally(() => {
         setIsCalculatingMax(false)
       })
-  }, [
-    fromToken,
-    customGasPrice,
-    getOptimalRateForAmount,
-    setAmount,
-    setDestination
-  ])
+  }, [fromToken, getOptimalRateForAmount, setDestination, setAmount, gasPrice])
 
   return (
     <View style={styles.container}>
@@ -321,21 +316,20 @@ export default function SwapView() {
               destination === SwapSide.SELL && isFetchingOptimalRate
             }
           />
-          {canSwap && (
-            <SwapTransactionDetail
-              fromTokenSymbol={fromToken?.symbol}
-              toTokenSymbol={toToken?.symbol}
-              rate={optimalRate ? calculateRate(optimalRate) : 0}
-              walletFee={optimalRate?.partnerFee}
-              onGasChange={onGasChange}
-              gasLimit={gasLimit ?? 0}
-              gasPrice={customGasPrice ?? networkFee.low}
-              maxGasPrice={maxGasPrice}
-              slippage={slippage}
-              setSlippage={value => setSlippage(value)}
-              selectedGasFee={selectedGasFee}
-            />
-          )}
+          <SwapTransactionDetail
+            fromTokenSymbol={fromToken?.symbol}
+            toTokenSymbol={toToken?.symbol}
+            rate={optimalRate ? calculateRate(optimalRate) : 0}
+            walletFee={optimalRate?.partnerFee}
+            onGasChange={onGasChange}
+            onGasLimitChange={onGasLimitChange}
+            gasLimit={gasLimit}
+            gasPrice={gasPrice}
+            maxGasPrice={maxGasPrice}
+            slippage={slippage}
+            setSlippage={value => setSlippage(value)}
+            selectedGasFee={selectedGasFee}
+          />
         </>
       </ScrollView>
       <AvaButton.PrimaryLarge
