@@ -68,11 +68,16 @@ export const SendNFTContextProvider = ({
 
   const [gasLimit, setGasLimit] = useState(0)
   const [sendFeeBN, setSendFeeBN] = useState(new BN(0))
-  const sendFeeNative = bnToLocaleString(
-    sendFeeBN,
-    activeNetwork.networkToken.decimals
+  const sendFeeNative = useMemo(
+    () => bnToLocaleString(sendFeeBN, activeNetwork.networkToken.decimals),
+    [activeNetwork.networkToken.decimals, sendFeeBN]
   )
-  const sendFeeInCurrency = Number.parseFloat(sendFeeNative) * nativeTokenPrice
+
+  const sendFeeInCurrency = useMemo(
+    () => Number.parseFloat(sendFeeNative) * nativeTokenPrice,
+    [nativeTokenPrice, sendFeeNative]
+  )
+
   const [selectedFeePreset, setSelectedFeePreset] = useState<FeePreset>(
     FeePreset.Normal
   )
