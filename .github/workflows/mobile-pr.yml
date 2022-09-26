@@ -21,13 +21,12 @@ jobs:
 
       - name: Eslint
         run: yarn lint:ci
-
-      - name: Annotate Eslint Results
-        uses: ataylorme/eslint-annotate-action@1.2.0
-        if: always()
+        continue-on-error: true
+      - name: "Eslint: Annotate Results"
+        uses: ataylorme/eslint-annotate-action@v2
         with:
           repo-token: '${{ secrets.GITHUB_TOKEN }}'
           report-json: 'eslint_report.json'
-          
+
       - name: Typescript
         run: yarn tsc
