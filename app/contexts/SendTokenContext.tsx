@@ -90,6 +90,11 @@ export const SendTokenContextProvider = ({
   const sendFromTitle = activeAccount?.title ?? '-'
 
   const [gasLimit, setGasLimit] = useState(0)
+  const [customGasLimit, setCustomGasLimit] = useState<number | undefined>(
+    undefined
+  )
+  const trueGasLimit = customGasLimit || gasLimit
+
   const [sendFeeBN, setSendFeeBN] = useState(new BN(0))
   const sendFeeNative = useMemo(
     () => bnToLocaleString(sendFeeBN, activeNetwork.networkToken.decimals),
@@ -152,7 +157,8 @@ export const SendTokenContextProvider = ({
     selectedCurrency,
     sendAmount,
     sendToAddress,
-    sendToken
+    sendToken,
+    trueGasLimit
   ])
 
   function onSendNow() {
@@ -168,7 +174,7 @@ export const SendTokenContextProvider = ({
       address: sendToAddress,
       amount: sendAmount.bn,
       gasPrice: customGasPriceBig,
-      gasLimit,
+      gasLimit: trueGasLimit,
       token: sendToken
     } as SendState
 
@@ -258,7 +264,7 @@ export const SendTokenContextProvider = ({
           amount: sendAmount.bn,
           address: sendToAddress,
           gasPrice: customGasPriceBig,
-          gasLimit
+          gasLimit: trueGasLimit
         } as SendState,
         activeNetwork,
         activeAccount,
@@ -299,11 +305,11 @@ export const SendTokenContextProvider = ({
     }, [sendToAddress, sendToTitle]),
     fees: {
       sendFeeNative,
-      sendFeeInCurrency: sendFeeInCurrency,
+      sendFeeInCurrency,
       customGasPrice,
       setCustomGasPrice,
-      gasLimit,
-      setGasLimit,
+      gasLimit: trueGasLimit,
+      setCustomGasLimit,
       setSelectedFeePreset
     },
     tokenLogo,
@@ -340,6 +346,6 @@ export interface Fees {
   customGasPrice: BN
   setCustomGasPrice: Dispatch<BN>
   gasLimit: number | undefined
-  setGasLimit: Dispatch<number>
+  setCustomGasLimit: Dispatch<number>
   setSelectedFeePreset: Dispatch<FeePreset>
 }
