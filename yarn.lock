@@ -4553,10 +4553,10 @@
     core-js "^3.0.1"
     fast-deep-equal "^2.0.1"
 
-"@storybook/addon-ondevice-knobs@5.3.25":
-  version "5.3.25"
-  resolved "https://registry.yarnpkg.com/@storybook/addon-ondevice-knobs/-/addon-ondevice-knobs-5.3.25.tgz#bebdc3160aafa095e4f178e422628d0493d5890c"
-  integrity sha512-jbPNcbtLv3I7iGUYN7ZCXBPCg2Qr8s06Nz8S+GEYTKr/KqySPi7in2vNeZi7DqYcKe9ZtcbjdCe5emZuIAVu5A==
+"@storybook/addon-ondevice-knobs@5.3.26":
+  version "5.3.26"
+  resolved "https://registry.yarnpkg.com/@storybook/addon-ondevice-knobs/-/addon-ondevice-knobs-5.3.26.tgz#1e9e0b4541087d91646c392d64df6de56ff9787d"
+  integrity sha512-sEsamAbZlc9JNMi1y7HaIANFaUxXAvMsII8Xd6eGdxS2Uh1mIRsZGPhSq+8hU4wHqNELSTi4GT7qWi2McQsg2Q==
   dependencies:
     "@emotion/native" "^10.0.14"
     "@storybook/addons" "5.3.21"
@@ -4565,7 +4565,7 @@
     deep-equal "^1.0.1"
     prop-types "^15.7.2"
     react-native-modal-datetime-picker "^7.4.2"
-    react-native-modal-selector "^2.0.2"
+    react-native-modal-selector "^2.1.1"
     tinycolor2 "^1.4.1"
 
 "@storybook/addons@5.3.21":
@@ -16845,10 +16845,10 @@ react-native-modal-datetime-picker@^7.4.2:
     prop-types "^15.7.2"
     react-native-modal "^11.0.2"
 
-react-native-modal-selector@^2.0.2:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/react-native-modal-selector/-/react-native-modal-selector-2.1.0.tgz#eb4e38254af8a54d6ab5244533e15ee91f132e26"
-  integrity sha512-aXOF8tC69XXfI6kbIskRRLe8xcexiYc21GD0s8gNz/Pl1FT8921PuLz647uY2le+fsJsztX6Taaf3mij/Noc+A==
+react-native-modal-selector@^2.1.1:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/react-native-modal-selector/-/react-native-modal-selector-2.1.1.tgz#9c3a544f82f805c739866894edadc0915979c4d8"
+  integrity sha512-ol5WRL3jrYsH8vPbZiu9xID5SLlv56Pp9b1LBx5DNL+rGq23vInk6uuhxOU8hd1a1C0aAkBmweJFaO55Kwh8iA==
   dependencies:
     prop-types "^15.5.10"
 
