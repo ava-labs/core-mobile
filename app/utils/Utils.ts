@@ -48,6 +48,10 @@ export function formatLargeNumber(num: number | string, digits = 2) {
     return number >= it.value
   }) ?? { value: 1, symbol: '' }
 
+  // Return if not a large number
+  // and don't trim trailing 0s.
+  if (item.value === 1) return number.toFixed(digits)
+
   const rx = /\.0+$|(\.[0-9]*[1-9])0+$/
   return (number / item.value).toFixed(digits).replace(rx, '$1') + item.symbol
 }

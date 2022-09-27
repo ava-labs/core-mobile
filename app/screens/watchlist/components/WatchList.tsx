@@ -48,7 +48,7 @@ const WatchList: React.FC<Props> = ({
           ? ' -'
           : priceInCurrency > 0 && priceInCurrency < 0.1
           ? `${priceInCurrency.toFixed(6)}`
-          : currencyFormatter(priceInCurrency)
+          : formatLargeCurrency(currencyFormatter(priceInCurrency))
       } else if (filterBy === WatchlistFilter.MARKET_CAP) {
         return token.marketCap === 0
           ? ' -'

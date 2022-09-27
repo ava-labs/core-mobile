@@ -1,13 +1,12 @@
 import React from 'react'
-import { useSelector, useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import AvaButton from 'components/AvaButton'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { selectActiveNetwork, selectNetworks, setActive } from 'store/network'
-import { View } from 'react-native'
+import { ScrollView, View } from 'react-native'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
 import FlexSpacer from 'components/FlexSpacer'
-import { SafeAreaProvider } from 'react-native-safe-area-context'
 import TextFieldBg from 'components/styling/TextFieldBg'
 import { Network } from '@avalabs/chains-sdk'
 import { NetworkLogo } from './NetworkLogo'
@@ -30,7 +29,7 @@ export default function NetworkDetails({ chainId }: NetworkDetailsProps) {
   }
 
   return (
-    <SafeAreaProvider style={{ flex: 1, padding: 16 }}>
+    <ScrollView contentContainerStyle={{ flexGrow: 1, padding: 16 }}>
       <View style={{ alignItems: 'center' }}>
         <NetworkLogo logoUri={logoUri} size={80} />
         <Space y={24} />
@@ -46,11 +45,11 @@ export default function NetworkDetails({ chainId }: NetworkDetailsProps) {
       <DetailItem title={'Network Token Name'} value={networkToken.name} />
       <Space y={24} />
       <DetailItem title={'Explorer URL'} value={explorerUrl ?? ''} />
-      <FlexSpacer />
+      <FlexSpacer minHeight={24} />
       <AvaButton.PrimaryLarge disabled={isConnected} onPress={connect}>
         {isConnected ? 'Connected' : 'Connect'}
       </AvaButton.PrimaryLarge>
-    </SafeAreaProvider>
+    </ScrollView>
   )
 }
 
