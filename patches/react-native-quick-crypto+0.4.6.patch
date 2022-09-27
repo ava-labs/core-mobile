@@ -1,0 +1,28 @@
+diff --git a/node_modules/react-native-quick-crypto/lib/commonjs/index.js b/node_modules/react-native-quick-crypto/lib/commonjs/index.js
+index 9aa5931..5a148df 100644
+--- a/node_modules/react-native-quick-crypto/lib/commonjs/index.js
++++ b/node_modules/react-native-quick-crypto/lib/commonjs/index.js
+@@ -15,7 +15,9 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
+ 
+ // @ts-expect-error Buffer does not match exact same type definition.
+ global.Buffer = _reactNativeBuffer.Buffer;
+-const crypto = { ..._cryptoBrowserify.default,
++const crypto = { 
++  ...global.crypto,
++  ..._cryptoBrowserify.default,
+   ..._QuickCrypto.QuickCrypto
+ }; // for randombytes https://github.com/crypto-browserify/randombytes/blob/master/browser.js#L16
+ // @ts-expect-error QuickCrypto is missing `subtle` and `randomUUID`
+diff --git a/node_modules/react-native-quick-crypto/lib/commonjs/random.js b/node_modules/react-native-quick-crypto/lib/commonjs/random.js
+index 198df94..9829036 100644
+--- a/node_modules/react-native-quick-crypto/lib/commonjs/random.js
++++ b/node_modules/react-native-quick-crypto/lib/commonjs/random.js
+@@ -3,7 +3,7 @@
+ Object.defineProperty(exports, "__esModule", {
+   value: true
+ });
+-exports.getRandomValues = getRandomValues;
++// exports.getRandomValues = getRandomValues;
+ exports.pseudoRandomBytes = exports.prng = void 0;
+ exports.randomBytes = randomBytes;
+ exports.randomFill = randomFill;
