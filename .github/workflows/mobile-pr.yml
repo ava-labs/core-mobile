@@ -5,6 +5,12 @@ on:
     branches:
       - 'development'
 
+permissions:
+  contents: read
+  # The following give Dependabot permission to write Eslint annotation results
+  checks: write
+  pull-requests: write
+
 jobs:
   test:
     name: Test
@@ -21,6 +27,7 @@ jobs:
 
       - name: Eslint
         run: yarn lint:ci
+        # Continue to Annotate step which will fail if there are errors
         continue-on-error: true
       - name: "Eslint: Annotate Results"
         uses: ataylorme/eslint-annotate-action@v2

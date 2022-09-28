@@ -180,25 +180,25 @@ export const SendTokenContextProvider = ({
 
     setSendStatus('Preparing')
 
+    setSendStatus('Sending')
+
+    showSnackBarCustom({
+      component: (
+        <TransactionToast
+          message={'Send Pending...'}
+          type={TransactionToastType.PENDING}
+        />
+      ),
+      duration: 'short'
+    })
+
     InteractionManager.runAfterInteractions(() => {
       sendService
         .send(
           sendState,
           activeNetwork,
           activeAccount,
-          selectedCurrency.toLowerCase(),
-          () => {
-            setSendStatus('Sending')
-            showSnackBarCustom({
-              component: (
-                <TransactionToast
-                  message={'Send Pending...'}
-                  type={TransactionToastType.PENDING}
-                />
-              ),
-              duration: 'short'
-            })
-          }
+          selectedCurrency.toLowerCase()
         )
         .then(txId => {
           setSendStatus('Success')
