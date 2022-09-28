@@ -1,16 +1,14 @@
 import React, { memo, useMemo } from 'react'
-import { BackHandler, Modal } from 'react-native'
+import { BackHandler } from 'react-native'
 import {
   NavigatorScreenParams,
   useFocusEffect,
   useNavigation,
   useRoute
 } from '@react-navigation/native'
-import { useDispatch, useSelector } from 'react-redux'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AccountBottomSheet from 'screens/portfolio/account/AccountBottomSheet'
 import AppNavigation from 'navigation/AppNavigation'
-import PinOrBiometryLogin from 'screens/login/PinOrBiometryLogin'
 import DrawerScreenStack, {
   DrawerParamList
 } from 'navigation/wallet/DrawerScreenStack'
@@ -55,7 +53,6 @@ import NetworkDetails, {
   NetworkDetailsProps
 } from 'screens/network/NetworkDetails'
 import AvaButton from 'components/AvaButton'
-import { onAppUnlocked, selectIsLocked } from 'store/app'
 import { Network } from '@avalabs/chains-sdk'
 import AddSVG from 'components/svg/AddSVG'
 import AddEditNetwork, {
@@ -140,10 +137,7 @@ export const SignOutBottomSheetScreen = () => {
 }
 
 function WalletScreenStack(props: Props | Readonly<Props>) {
-  const dispatch = useDispatch()
-  const showSecurityModal = useSelector(selectIsLocked)
   const context = useApplicationContext()
-  const { signOut } = context.appHook
 
   useFocusEffect(
     React.useCallback(() => {
@@ -350,18 +344,6 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
         />
         {BottomSheetGroup}
       </WalletScreenS.Navigator>
-      <Modal visible={showSecurityModal} animationType={'slide'} animated>
-        <PinOrBiometryLogin
-          onSignInWithRecoveryPhrase={() => {
-            signOut().then(() => {
-              context.appNavHook.resetNavToEnterMnemonic()
-            })
-          }}
-          onLoginSuccess={() => {
-            dispatch(onAppUnlocked())
-          }}
-        />
-      </Modal>
     </>
   )
 }
