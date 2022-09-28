@@ -49,7 +49,7 @@ export interface SwapContextState {
   gasPrice: BigNumber
   setGasPrice: Dispatch<BigNumber>
   gasLimit: number
-  setCustomGasLimit: (limit: number) => void
+  setCustomGasLimit: Dispatch<number>
   slippage: number
   setSlippage: Dispatch<number>
   destination: SwapSide
@@ -59,10 +59,16 @@ export interface SwapContextState {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   error: any
   isFetchingOptimalRate: boolean
-  getOptimalRateForAmount: (
-    amnt: Amount | undefined
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ) => Promise<{ optimalRate?: OptimalRate; error?: any }>
+  getOptimalRateForAmount: (amnt: Amount | undefined) => Promise<
+    [
+      {
+        optimalRate?: OptimalRate
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        error?: any
+      },
+      { customGasLimit?: number } //needed for calculating maxAmount to swap
+    ]
+  >
 }
 
 export const SwapContext = createContext<SwapContextState>(
@@ -77,8 +83,10 @@ export const SwapContextProvider = ({ children }: { children: ReactNode }) => {
   const [optimalRate, setOptimalRate] = useState<OptimalRate>()
   const [error, setError] = useState('')
   const [gasLimit, setGasLimit] = useState<number>(0)
-  const [isCustomGasLimitSet, setIsCustomGasLimitSet] = useState(false)
-  // gas price is in nAvax
+  const [customGasLimit, setCustomGasLimit] = useState<number | undefined>(
+    undefined
+  )
+  const trueGasLimit = customGasLimit || gasLimit
   const [gasPrice, setGasPrice] = useState<BigNumber>(BigNumber.from(0))
   const [slippage, setSlippage] = useState<number>(1)
   const [destination, setDestination] = useState<SwapSide>(SwapSide.SELL)
@@ -89,7 +97,7 @@ export const SwapContextProvider = ({ children }: { children: ReactNode }) => {
   const getOptimalRateForAmount = useCallback(
     (amnt: Amount | undefined) => {
       if (activeAccount && amnt) {
-        return getSwapRate({
+        const swapRatePromise = getSwapRate({
           fromTokenAddress: getTokenAddress(fromToken),
           toTokenAddress: getTokenAddress(toToken),
           fromTokenDecimals: fromToken?.decimals,
@@ -99,23 +107,32 @@ export const SwapContextProvider = ({ children }: { children: ReactNode }) => {
           network: activeNetwork,
           account: activeAccount
         })
+        return Promise.all([
+          swapRatePromise,
+          Promise.resolve({ customGasLimit })
+        ])
       } else {
         return Promise.reject('invalid data')
       }
     },
-    [activeAccount, activeNetwork, destination, fromToken, toToken]
+    [
+      activeAccount,
+      activeNetwork,
+      customGasLimit,
+      destination,
+      fromToken,
+      toToken
+    ]
   )
 
   const getOptimalRate = useCallback(() => {
     if (activeAccount && amount) {
       setIsFetchingOptimalRate(true)
       getOptimalRateForAmount(amount)
-        .then(({ optimalRate: opRate, error: err }) => {
+        .then(([{ optimalRate: opRate, error: err }]) => {
           setError(err)
           setOptimalRate(opRate)
-          if (!isCustomGasLimitSet) {
-            setGasLimit(Number(opRate?.gasCost ?? 0))
-          }
+          setGasLimit(Number(opRate?.gasCost ?? 0))
         })
         .catch(reason => {
           setOptimalRate(undefined)
@@ -125,7 +142,7 @@ export const SwapContextProvider = ({ children }: { children: ReactNode }) => {
           setIsFetchingOptimalRate(false)
         })
     }
-  }, [activeAccount, amount, getOptimalRateForAmount, isCustomGasLimitSet])
+  }, [activeAccount, amount, getOptimalRateForAmount])
 
   useEffect(() => {
     //call getOptimalRate every time its params change to get fresh rates
@@ -204,11 +221,6 @@ export const SwapContextProvider = ({ children }: { children: ReactNode }) => {
     })
   }
 
-  const setCustomGasLimit = useCallback((limit: number) => {
-    setGasLimit(limit)
-    setIsCustomGasLimitSet(true)
-  }, [])
-
   const state: SwapContextState = {
     fromToken,
     setFromToken,
@@ -218,7 +230,7 @@ export const SwapContextProvider = ({ children }: { children: ReactNode }) => {
     refresh,
     gasPrice,
     setGasPrice,
-    gasLimit,
+    gasLimit: trueGasLimit,
     setCustomGasLimit,
     slippage,
     setSlippage,

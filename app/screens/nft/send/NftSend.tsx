@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useCallback, useEffect } from 'react'
 import { Image, ScrollView, StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
@@ -41,7 +41,12 @@ export default function NftSend({
     toAccount,
     canSubmit,
     sdkError,
-    fees
+    fees: {
+      setCustomGasPrice,
+      setSelectedFeePreset,
+      setCustomGasLimit,
+      gasLimit
+    }
   } = useSendNFTContext()
   const activeNetwork = useSelector(selectActiveNetwork)
   const placeholder =
@@ -93,6 +98,21 @@ export default function NftSend({
     capture('SendContactSelected', { contactSource: source })
   }
 
+  const handleGasPriceChange = useCallback(
+    (gasPrice1, feePreset) => {
+      setCustomGasPrice(ethersBigNumberToBN(gasPrice1))
+      setSelectedFeePreset(feePreset)
+    },
+    [setCustomGasPrice, setSelectedFeePreset]
+  )
+
+  const handleGasLimitChange = useCallback(
+    customGasLimit => {
+      setCustomGasLimit(customGasLimit)
+    },
+    [setCustomGasLimit]
+  )
+
   return (
     <ScrollView contentContainerStyle={[styles.container, { flexGrow: 1 }]}>
       <AvaText.LargeTitleBold>Send</AvaText.LargeTitleBold>
@@ -136,12 +156,9 @@ export default function NftSend({
           <CollectibleItem nft={nft} />
           <Space y={8} />
           <NetworkFeeSelector
-            gasLimit={fees.gasLimit ?? 0}
-            onChange={(gasLimit, gasPrice1, feePreset) => {
-              fees.setGasLimit(gasLimit)
-              fees.setCustomGasPrice(ethersBigNumberToBN(gasPrice1))
-              fees.setSelectedFeePreset(feePreset)
-            }}
+            gasLimit={gasLimit ?? 0}
+            onGasPriceChange={handleGasPriceChange}
+            onGasLimitChange={handleGasLimitChange}
           />
           <Space y={8} />
           <AvaText.Body3 textStyle={{ color: theme.colorError }}>
