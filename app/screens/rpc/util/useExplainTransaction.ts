@@ -65,7 +65,7 @@ export function useExplainTransaction(dappEvent?: DappEvent) {
   )
 
   const setCustomFee = useCallback(
-    (gasLimit: number, gasPrice: BigNumber, modifier: FeePreset) => {
+    (gasPrice: BigNumber, modifier: FeePreset, gasLimit: number) => {
       setCustomGas({ gasLimit, gasPrice })
       setSelectedGasFee(modifier)
       const feeDisplayValues = calculateGasAndFees({

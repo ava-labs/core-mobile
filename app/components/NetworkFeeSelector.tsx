@@ -48,10 +48,12 @@ type NavigationProp = WalletScreenProps<
 
 const NetworkFeeSelector = ({
   gasLimit,
-  onChange
+  onGasPriceChange,
+  onGasLimitChange
 }: {
   gasLimit: number
-  onChange?(gasLimit: number, gasPrice: BigNumber, feePreset: FeePreset): void
+  onGasPriceChange?(gasPrice: BigNumber, feePreset: FeePreset): void
+  onGasLimitChange?(customGasLimit: number): void
 }) => {
   const { navigate } = useNavigation<NavigationProp>()
   const { theme } = useApplicationContext()
@@ -59,7 +61,7 @@ const NetworkFeeSelector = ({
   const dispatch = useDispatch()
   const network = useActiveNetwork()
   const isBtcNetwork = network.vmName === NetworkVMType.BITCOIN
-  const [selectedPreset, setSelectedPreset] = useState(FeePreset.Normal)
+  const [selectedPreset, setSelectedPreset] = useState(FeePreset.Instant)
   const [customGasPrice, setCustomGasPrice] = useState<BigNumber>()
 
   // customGasPrice init value.
@@ -73,9 +75,7 @@ const NetworkFeeSelector = ({
   const selectedGasPrice = useMemo(() => {
     switch (selectedPreset) {
       case FeePreset.Custom:
-        return !customGasPrice || customGasPrice.isZero()
-          ? networkFee.low
-          : customGasPrice
+        return customGasPrice || BigNumber.from(0)
       default:
         return networkFee[FeePresetNetworkFeeMap[selectedPreset]]
     }
@@ -89,13 +89,8 @@ const NetworkFeeSelector = ({
   }, [gasLimit, networkFee.nativeTokenDecimals, selectedGasPrice])
 
   useEffect(() => {
-    const gasPrice = selectedGasPrice?.isZero()
-      ? networkFee.low
-      : selectedGasPrice
-    onChange?.(gasLimit, gasPrice, selectedPreset)
-    // ignore onChange
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gasLimit, selectedGasPrice, selectedPreset, networkFee.low])
+    onGasPriceChange?.(selectedGasPrice, selectedPreset)
+  }, [selectedGasPrice, selectedPreset, networkFee.low, onGasPriceChange])
 
   useEffect(fetchNetworkGasPrices, [dispatch])
 
@@ -103,11 +98,8 @@ const NetworkFeeSelector = ({
     dispatch(fetchNetworkFee)
   }
 
-  function onGasLimitChange(newGasLimit: number) {
-    const gasPrice = selectedGasPrice?.isZero()
-      ? networkFee.low
-      : selectedGasPrice
-    onChange?.(newGasLimit, gasPrice, selectedPreset)
+  function handleGasLimitChange(newGasLimit: number) {
+    onGasLimitChange?.(newGasLimit)
   }
 
   const convertFeeToUnit = useCallback(
@@ -161,7 +153,7 @@ const NetworkFeeSelector = ({
                 navigate(AppNavigation.Modal.EditGasLimit, {
                   gasLimit: gasLimit,
                   gasPrice: customGasPrice ?? networkFee.low,
-                  onSave: onGasLimitChange
+                  onSave: handleGasLimitChange
                 })
               }}>
               <SettingsCogSVG />
