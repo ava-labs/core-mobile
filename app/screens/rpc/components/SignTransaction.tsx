@@ -1,5 +1,5 @@
 import AvaText from 'components/AvaText'
-import React, { FC, useState } from 'react'
+import React, { FC, useCallback, useState } from 'react'
 import { ActivityIndicator, StyleSheet, View } from 'react-native'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
@@ -17,7 +17,7 @@ import { useExplainTransaction } from 'screens/rpc/util/useExplainTransaction'
 import { ApproveTransaction } from 'screens/rpc/components/Transactions/ApproveTransaction'
 import { AddLiquidityTransaction } from 'screens/rpc/components/Transactions/AddLiquidity'
 import { GenericTransaction } from 'screens/rpc/components/Transactions/GenericTransaction'
-import NetworkFeeSelector from 'components/NetworkFeeSelector'
+import NetworkFeeSelector, { FeePreset } from 'components/NetworkFeeSelector'
 import { getHexStringToBytes } from 'utils/getHexStringToBytes'
 import { useActiveNetwork } from 'hooks/useActiveNetwork'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -37,6 +37,7 @@ import TransactionToast, {
 import * as Sentry from '@sentry/react-native'
 import { PopableContent } from 'components/PopableContent'
 import { PopableLabel } from 'components/PopableLabel'
+import { BigNumber } from 'ethers'
 
 interface Props {
   onApprove: (tx: Transaction) => Promise<{ hash?: string; error?: unknown }>
@@ -73,6 +74,19 @@ const SignTransaction: FC<Props> = ({
   const displayData = {
     ...rest
   } as TransactionDisplayValues
+
+  const handleGasPriceChange = useCallback(
+    (gasPrice: BigNumber, feePreset: FeePreset) => {
+      setCustomFee(gasPrice, feePreset, displayData?.gasLimit ?? 0)
+    },
+    [displayData?.gasLimit, setCustomFee]
+  )
+  const handleGasLimitChange = useCallback(
+    (customGasLimit: number) => {
+      setCustomFee(displayData?.gasPrice, selectedGasFee, customGasLimit)
+    },
+    [displayData?.gasPrice, selectedGasFee, setCustomFee]
+  )
 
   const netFeeInfoMessage = (
     <PopableContent
@@ -252,7 +266,8 @@ const SignTransaction: FC<Props> = ({
       {!hash && displayData?.gasPrice && (
         <NetworkFeeSelector
           gasLimit={displayData?.gasLimit ?? 0}
-          onChange={setCustomFee}
+          onGasPriceChange={handleGasPriceChange}
+          onGasLimitChange={handleGasLimitChange}
         />
       )}
       {hash ? (

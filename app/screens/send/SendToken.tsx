@@ -49,7 +49,14 @@ const SendToken: FC<Props> = ({
     setSendAmount,
     sendAmount,
     toAccount,
-    fees,
+    fees: {
+      sendFeeNative,
+      sendFeeInCurrency,
+      gasLimit,
+      setCustomGasLimit,
+      setSelectedFeePreset,
+      setCustomGasPrice
+    },
     canSubmit,
     sdkError
   } = useSendTokenContext()
@@ -123,14 +130,22 @@ const SendToken: FC<Props> = ({
   }
 
   const handleMax = useCallback(() => {
-    const maxBn = getMaxValue(sendToken, fees.sendFeeNative)
+    const maxBn = getMaxValue(sendToken, sendFeeNative)
     if (maxBn) {
       setSendAmount({
         bn: maxBn,
         amount: bnToLocaleString(maxBn, sendToken?.decimals)
       } as Amount)
     }
-  }, [fees.sendFeeNative, sendToken, setSendAmount])
+  }, [sendFeeNative, sendToken, setSendAmount])
+
+  const handleGasPriceChange = useCallback(
+    (gasPrice1, feePreset) => {
+      setCustomGasPrice(ethersBigNumberToBN(gasPrice1))
+      setSelectedFeePreset(feePreset)
+    },
+    [setCustomGasPrice, setSelectedFeePreset]
+  )
 
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
@@ -210,17 +225,14 @@ const SendToken: FC<Props> = ({
           <View style={{ paddingHorizontal: 16 }}>
             <Space y={8} />
             <NetworkFeeSelector
-              gasLimit={fees.gasLimit ?? 0}
-              onChange={(gasLimit, gasPrice1, feePreset) => {
-                fees.setGasLimit(gasLimit)
-                fees.setCustomGasPrice(ethersBigNumberToBN(gasPrice1))
-                fees.setSelectedFeePreset(feePreset)
-              }}
+              gasLimit={gasLimit ?? 0}
+              onGasPriceChange={handleGasPriceChange}
+              onGasLimitChange={setCustomGasLimit}
             />
             <AvaText.Body3
               currency
               textStyle={{ marginTop: 4, alignSelf: 'flex-end' }}>
-              {fees.sendFeeInCurrency}
+              {sendFeeInCurrency}
             </AvaText.Body3>
           </View>
           <FlexSpacer />

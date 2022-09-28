@@ -115,9 +115,6 @@ export class SendServiceEVM implements SendServiceHelper {
 
   //todo: would be nice to have this logic in sdk
   private async getGasLimit(sendState: SendState): Promise<number> {
-    const { gasLimit: customGasLimit } = sendState
-    if (customGasLimit) return customGasLimit
-
     if (!sendState.address) return 0
 
     const unsignedTx = await this.getUnsignedTx(sendState)

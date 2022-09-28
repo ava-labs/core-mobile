@@ -11,6 +11,9 @@ import { BigNumber } from 'ethers'
 import Big from 'big.js'
 import { PopableContent } from 'components/PopableContent'
 import { PopableLabel } from 'components/PopableLabel'
+import { ethersBigNumberToBig } from '@avalabs/utils-sdk'
+import { useSelector } from 'react-redux'
+import { selectNetworkFee } from 'store/networkFee'
 
 const isSlippageValid = (value: string) => {
   if (
@@ -30,11 +33,8 @@ interface SwapTransactionDetailProps {
   toTokenSymbol?: string
   rate: number
   walletFee?: number
-  onGasChange?: (
-    gasLimit: number,
-    gasPrice: BigNumber,
-    feeType: FeePreset
-  ) => void
+  onGasChange?: (gasPrice: BigNumber, feeType: FeePreset) => void
+  onGasLimitChange?: (gasLimit: number) => void
   gasLimit: number
   gasPrice: BigNumber
   slippage: number
@@ -54,20 +54,21 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
   rate,
   walletFee,
   onGasChange,
+  onGasLimitChange,
   gasLimit,
   gasPrice,
   slippage,
   setSlippage
 }) => {
-  // const { gasPrice } = useGasPrice()
   const { theme } = useApplicationContext()
-  // const { trxDetails } = useSwapContext()
-
-  // const { navigate } = useNavigation<NavigationProp>()
+  const networkFee = useSelector(selectNetworkFee)
 
   const netFeeInfoMessage = (
     <PopableContent
-      message={`Gas limit: ${gasLimit} \nGas price: ${gasPrice.toString()} nAVAX`}
+      message={`Gas limit: ${gasLimit} \nGas price: ${ethersBigNumberToBig(
+        gasPrice,
+        networkFee.displayDecimals
+      ).toFixed(0)} nAVAX`}
     />
   )
 
@@ -150,12 +151,11 @@ const SwapTransactionDetail: FC<SwapTransactionDetailProps> = ({
       {!review && (
         <>
           <Space y={16} />
-          <NetworkFeeSelector gasLimit={gasLimit} onChange={onGasChange} />
-          {/*<AvaText.Body3*/}
-          {/*  currency*/}
-          {/*  textStyle={{ marginTop: 4, alignSelf: 'flex-end' }}>*/}
-          {/*  {'test'}*/}
-          {/*</AvaText.Body3>*/}
+          <NetworkFeeSelector
+            gasLimit={gasLimit}
+            onGasPriceChange={onGasChange}
+            onGasLimitChange={onGasLimitChange}
+          />
         </>
       )}
       <Space y={16} />
