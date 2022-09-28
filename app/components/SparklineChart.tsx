@@ -15,6 +15,7 @@ interface Props {
   xRange: [number, number]
   negative?: boolean
   interactive?: boolean
+  onPress?: () => void
 }
 
 const SparklineChart: FC<Props> = ({
@@ -25,7 +26,8 @@ const SparklineChart: FC<Props> = ({
   yRange,
   xRange,
   negative = false,
-  interactive = false
+  interactive = false,
+  onPress
 }) => {
   const theme = useApplicationContext().theme
   const { currencyFormatter } = useApplicationContext().appHook
@@ -66,6 +68,7 @@ const SparklineChart: FC<Props> = ({
         cursorColor: theme.alternateBackground,
         cursorBorderColor: theme.alternateBackground
       }}
+      onPress={onPress}
       toolTipProps={{
         displayToolTip: interactive,
         borderRadius: 20,
