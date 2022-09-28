@@ -9,7 +9,7 @@ describe('Add existing wallet', () => {
 
   it('should successfully add an existing wallet', async () => {
     await element(by.id('walletSVG')).atIndex(1).tap()
-    await element(by.id('recoveryPhraseTextInput')).typeText(
+    await element(by.id('recoveryPhraseTextInput')).replaceText(
       process.env.RECOVERY_PHRASE
     )
     await element(by.text('Sign in')).tap()

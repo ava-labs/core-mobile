@@ -9182,10 +9182,10 @@ detective@^5.2.1:
     defined "^1.0.0"
     minimist "^1.2.6"
 
-detox@^19.12.1:
-  version "19.12.1"
-  resolved "https://registry.yarnpkg.com/detox/-/detox-19.12.1.tgz#6ad924f93c60dd9188ac62866222233435b53bd2"
-  integrity sha512-sh8xxWLSykJ8zH1zxP2nXV9iIcuwQ4Umn8LKCtkilrLen9K/EJqNN2miMfu7Mue63aTVt6KFLJ6y11yFuZ2LXQ==
+detox@^19.12.2:
+  version "19.12.2"
+  resolved "https://registry.yarnpkg.com/detox/-/detox-19.12.2.tgz#62f6b699306ccac8f2494148016dc7d46fc5557d"
+  integrity sha512-TFs367hg40kucYWlcfAOer+R5Oba8iBXxSXj239ngCuDrGTkQ9WYBdR0roresvSdbBX+J6raLmQNHQ00iDyKPg==
   dependencies:
     ajv "^8.6.3"
     bunyan "^1.8.12"
@@ -9820,6 +9820,13 @@ eslint-module-utils@^2.7.3:
   dependencies:
     debug "^3.2.7"
     find-up "^2.1.0"
+
+eslint-plugin-detox@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-detox/-/eslint-plugin-detox-1.0.0.tgz#2d9c0130e8ebc4ced56efb6eeaf0d0f5c163398d"
+  integrity sha512-Dd+Cwyap5IO9DBKXOKrQTE1RQk9hvSSi+qsS1cMVPZY37mojz2PvriEOfGhKj5XN1G14lJ8TArf+6Y+Np2ZsoQ==
+  dependencies:
+    requireindex "~1.1.0"
 
 eslint-plugin-eslint-comments@^3.2.0:
   version "3.2.0"
@@ -17588,6 +17595,11 @@ require-main-filename@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/require-main-filename/-/require-main-filename-2.0.0.tgz#d0b329ecc7cc0f61649f62215be69af54aa8989b"
   integrity sha512-NKN5kMDylKuldxYLSUfrbo5Tuzh4hd+2E8NPPX02mZtn1VuREQToYe/ZdlJy+J3uCpfaiGF05e7B8W0iXbQHmg==
+
+requireindex@~1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/requireindex/-/requireindex-1.1.0.tgz#e5404b81557ef75db6e49c5a72004893fe03e162"
+  integrity sha512-LBnkqsDE7BZKvqylbmn7lTIVdpx4K/QCduRATpO5R+wtPmky/a8pN1bO2D6wXppn1497AJF9mNjqAXr6bdl9jg==
 
 requires-port@^1.0.0:
   version "1.0.0"
