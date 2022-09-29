@@ -54,6 +54,7 @@ const WatchListItem: FC<Props> = ({
           chartDays={chartDays}
           value={value}
           filterBy={filterBy}
+          onPress={onPress}
         />
       }
       onPress={onPress}
@@ -92,6 +93,7 @@ type RightComponentProps = {
   chartDays: number
   value?: string
   filterBy: WatchlistFilter
+  onPress?: () => void
 }
 
 type ChartData = { x: number; y: number }[]
@@ -120,7 +122,8 @@ const RightComponent = ({
   token,
   chartDays,
   value,
-  filterBy
+  filterBy,
+  onPress
 }: RightComponentProps) => {
   const lastItemId = useRef(token.id)
   const { theme, appHook } = useApplicationContext()
@@ -185,6 +188,7 @@ const RightComponent = ({
         chartData={chartData}
         ranges={ranges}
         isLoadingChartData={isLoadingChartData}
+        onPress={onPress}
       />
       <View
         style={{
@@ -216,12 +220,14 @@ type MiddleComponentProps = {
   chartData: ChartData
   ranges: Ranges
   isLoadingChartData: boolean
+  onPress?: () => void
 }
 
 const MiddleComponent = ({
   chartData,
   ranges,
-  isLoadingChartData
+  isLoadingChartData,
+  onPress
 }: MiddleComponentProps) => {
   return (
     <View
@@ -237,6 +243,7 @@ const MiddleComponent = ({
           height={80}
           animated={false}
           data={chartData}
+          onPress={onPress}
           yRange={[ranges.minPrice, ranges.maxPrice]}
           xRange={[ranges.minDate, ranges.maxDate]}
           negative={ranges.diffValue < 0}
