@@ -34,7 +34,6 @@
         "device": "emulator",
         "app": "android.internal.debug",
         "binaryPath": "android/app/build/outputs/apk/debug/app-internal-debug.apk",
-        "build":"cd android && ENVFILE=.env.development ./gradlew app:assembleInternalDebug app:assembleAndroidTest -DtestBuildType=debug && cd ..",
         "name": "Pixel_4_API_31"
       },
 
@@ -42,7 +41,6 @@
         "device": "simulator",
         "app": "ios.internal.debug",
         "binaryPath": "ios/DerivedData/Build/Products/Debug-iphonesimulator/AvaxWallet.app",
-        "build": "ENVFILE=.env.development xcodebuild -project ios/AvaxWallet.xcodeproj -scheme AvaxWallet -sdk iphonesimulator -derivedDataPath ios/build",
         "name": "iPhone 13 simulator"
       }
    
