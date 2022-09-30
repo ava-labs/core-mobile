@@ -43,9 +43,7 @@ const onNo = (value: ShowExitPrompt): void => {
 const RootStack = createStackNavigator<RootScreenStackParamList>()
 
 const WalletScreenStackWithContext = () => {
-  const dispatch = useDispatch()
-  const { onExit, signOut } = useApplicationContext().appHook
-  const { theme, appNavHook } = useApplicationContext()
+  const { onExit } = useApplicationContext().appHook
   const { inBackground } = useBgDetect()
   const isLocked = useSelector(selectIsLocked)
 
@@ -77,42 +75,12 @@ const WalletScreenStackWithContext = () => {
   return (
     <>
       <WalletScreenStack onExit={doExit} />
-      {isLocked && (
-        <View
-          style={{
-            width: '100%',
-            height: '100%',
-            position: 'absolute'
-          }}>
-          <PinOrBiometryLogin
-            onSignInWithRecoveryPhrase={() => {
-              signOut().then(() => {
-                appNavHook.resetNavToEnterMnemonic()
-              })
-            }}
-            onLoginSuccess={() => {
-              dispatch(onAppUnlocked())
-            }}
-          />
-        </View>
-      )}
+      {isLocked && <PinScreen />}
 
       {/* This protects from leaking last screen in "recent apps" list.                                 */}
       {/* For Android it is additionally implemented natively in MainActivity.java because react-native */}
       {/* isn't fast enough to change layout before system makes screenshot of app for recent apps list */}
-      {inBackground && (
-        <View
-          style={{
-            width: '100%',
-            height: '100%',
-            backgroundColor: theme.colorBg1,
-            alignItems: 'center',
-            justifyContent: 'center',
-            position: 'absolute'
-          }}>
-          <OwlSVG />
-        </View>
-      )}
+      {inBackground && <PrivacyScreen />}
     </>
   )
 }
@@ -151,3 +119,46 @@ const RootScreenStack = () => {
 }
 
 export default RootScreenStack
+
+function PinScreen() {
+  const dispatch = useDispatch()
+  const { signOut } = useApplicationContext().appHook
+  const { appNavHook } = useApplicationContext()
+
+  return (
+    <View
+      style={{
+        width: '100%',
+        height: '100%',
+        position: 'absolute'
+      }}>
+      <PinOrBiometryLogin
+        onSignInWithRecoveryPhrase={() => {
+          signOut().then(() => {
+            appNavHook.resetNavToEnterMnemonic()
+          })
+        }}
+        onLoginSuccess={() => {
+          dispatch(onAppUnlocked())
+        }}
+      />
+    </View>
+  )
+}
+
+function PrivacyScreen() {
+  const { theme } = useApplicationContext()
+  return (
+    <View
+      style={{
+        width: '100%',
+        height: '100%',
+        backgroundColor: theme.colorBg1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'absolute'
+      }}>
+      <OwlSVG />
+    </View>
+  )
+}
