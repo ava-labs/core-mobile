@@ -36,18 +36,15 @@ export function isBridgeTransactionEVM(
     if (!ethereumAssets || !bitcoinAssets) return false
 
     return (
-      Object.values(ethereumAssets).some(
-        ({ wrappedContractAddress }) =>
-          wrappedContractAddress.toLowerCase() ===
-            tx.contractAddress.toLowerCase() &&
-          (tx.to.toLowerCase() === NULL_ADDRESS ||
-            tx.from.toLowerCase() === NULL_ADDRESS)
-      ) ||
-      Object.values(bitcoinAssets).some(
-        ({ wrappedContractAddress }) =>
-          wrappedContractAddress.toLowerCase() ===
-          tx.contractAddress.toLowerCase()
-      )
+      Object.values<{ wrappedContractAddress: string }>(ethereumAssets)
+        .concat(Object.values(bitcoinAssets))
+        .some(
+          ({ wrappedContractAddress }) =>
+            wrappedContractAddress.toLowerCase() ===
+            tx.contractAddress.toLowerCase()
+        ) &&
+      (tx.to.toLowerCase() === NULL_ADDRESS ||
+        tx.from.toLowerCase() === NULL_ADDRESS)
     )
   }
 }
