@@ -5,6 +5,7 @@ import { AppState, AppStateStatus, Platform } from 'react-native'
 import { AppListenerEffectAPI } from 'store'
 import {
   onRehydrationComplete,
+  selectIsLocked,
   selectWalletState,
   setAppState,
   setIsLocked,
@@ -26,6 +27,7 @@ import {
 
 const TIME_TO_LOCK_IN_SECONDS = 5
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const init = async (action: any, listenerApi: AppListenerEffectAPI) => {
   const { dispatch } = listenerApi
 
@@ -71,10 +73,17 @@ const listenToAppState = async (listenerApi: AppListenerEffectAPI) => {
   })
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const lockApp = async (action: any, listenerApi: AppListenerEffectAPI) => {
   const { dispatch, condition } = listenerApi
   const state = listenerApi.getState()
   const walletState = selectWalletState(state)
+  const isLocked = selectIsLocked(state)
+  if (isLocked) {
+    //bail out if already locked
+    return
+  }
+  dispatch(setIsLocked(true)) //lock immediately then unlock if eligible
 
   const backgroundStarted = new Date()
 
@@ -87,17 +96,19 @@ const lockApp = async (action: any, listenerApi: AppListenerEffectAPI) => {
     backgroundStarted
   )
 
-  // when app goes to background, lock the app after 5 seconds
+  // if more than [TIME_TO_LOCK_IN_SECONDS] seconds in background leave locked
   if (secondsPassed >= TIME_TO_LOCK_IN_SECONDS) {
-    dispatch(setIsLocked(true))
     dispatch(onAppLocked())
     if (walletState === WalletState.ACTIVE) {
       dispatch(setWalletState(WalletState.INACTIVE))
     }
+  } else {
+    dispatch(setIsLocked(false))
   }
 }
 
 const setStateToUnlocked = async (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   action: any,
   listenerApi: AppListenerEffectAPI
 ) => {
@@ -106,6 +117,7 @@ const setStateToUnlocked = async (
   dispatch(setWalletState(WalletState.ACTIVE))
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const clearData = async (action: any, listenerApi: AppListenerEffectAPI) => {
   const { dispatch } = listenerApi
   dispatch(setWalletState(WalletState.NONEXISTENT))
