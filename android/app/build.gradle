@@ -213,6 +213,14 @@ android {
         external {}
     }
 
+    packagingOptions {
+        pickFirst "lib/**/libfbjni.so"
+        pickFirst "lib/**/libjsi.so"
+        pickFirst "lib/**/libreact_nativemodule_core.so"
+        pickFirst "lib/**/libturbomodulejsijni.so"
+        pickFirst "lib/**/libfolly_runtime.so"
+    }
+
     // applicationVariants are e.g. debug, release
     applicationVariants.all { variant ->
         variant.outputs.each { output ->
