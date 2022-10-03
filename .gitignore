@@ -20,6 +20,7 @@ DerivedData
 *.hmap
 *.ipa
 *.xcuserstate
+ios/.xcode.env.local
 
 # Android/IntelliJ
 #
@@ -29,6 +30,7 @@ build/
 local.properties
 *.iml
 *.hprof
+.cxx/
 keystore.properties
 
 # node.js
@@ -59,11 +61,13 @@ buck-out/
 
 # CocoaPods
 /ios/Pods/
+/vendor/bundle/
+
+# Eslint
+eslint_report.json
+
 package-lock.json
 .markdownlint.json
 /.env
 /.env.production
-
-# Eslint
-eslint_report.json
 /.env.development
