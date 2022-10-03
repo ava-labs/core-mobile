@@ -18,6 +18,7 @@ module.exports = {
       }
     ],
     'react-require',
-    'inline-dotenv'
+    'inline-dotenv',
+    'react-native-reanimated/plugin'
   ]
 }
