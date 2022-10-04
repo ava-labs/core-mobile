@@ -8,59 +8,66 @@ import {
 import tokenService from 'services/token/TokenService'
 import { MarketToken } from 'store/watchlist'
 
+// .B for Bitcoin, .E for Ethereum
+const bridgedTokenRegexp = /\.[BE]$/
+
 class WatchlistService {
   async getMarketData(
-    network: Network,
-    currency: string,
+    currencyStr: string,
     networks: Network[]
   ): Promise<MarketToken[]> {
-    const marketTokens =
-      (await tokenService.getTopTokenMarket(currency as VsCurrencyType)).map(
-        mt => {
-          return {
-            id: mt.id,
-            name: mt.name,
-            symbol: mt.symbol.toUpperCase(),
-            logoUri: mt.image,
-            type: TokenType.NATIVE,
-            priceInCurrency: mt.price
-          } as MarketToken
+    const currency = currencyStr.toLowerCase() as VsCurrencyType
+    const allTokens: { [symbol: string]: MarketToken } = {}
+
+    const marketTokens = await tokenService.getTopTokenMarket(currency)
+    const marketTokenIds: string[] = []
+
+    marketTokens.forEach(mt => {
+      const symbol = mt.symbol.toUpperCase()
+      allTokens[symbol] = {
+        id: mt.id,
+        name: mt.name,
+        symbol,
+        logoUri: mt.image,
+        type: TokenType.NATIVE,
+        priceInCurrency: mt.price,
+        assetPlatformId: '',
+        change24: 0,
+        marketCap: 0,
+        vol24: 0
+      }
+      marketTokenIds.push(mt.id)
+    })
+
+    networks.forEach(({ tokens, pricingProviders }) => {
+      tokens?.forEach(tk => {
+        const symbol = tk.symbol.toUpperCase()
+        if (
+          // Ignore if already added by marketTokens
+          allTokens[symbol] ||
+          // Ignore Avalanche bridged tokens
+          allTokens[symbol.replace(bridgedTokenRegexp, '')]
+        ) {
+          return
         }
-      ) ?? []
+        allTokens[symbol] = {
+          id: tk.address,
+          name: tk.name,
+          symbol,
+          logoUri: tk.logoUri || '',
+          type: TokenType.ERC20,
+          assetPlatformId: pricingProviders?.coingecko.assetPlatformId || '',
+          priceInCurrency: 0,
+          change24: 0,
+          marketCap: 0,
+          vol24: 0
+        }
+      })
+    })
 
-    const networkTokens =
-      networks
-        .map(
-          nt =>
-            nt.tokens?.map(tk => {
-              return {
-                id: tk.address,
-                name: tk.name,
-                symbol: tk.symbol.toUpperCase(),
-                logoUri: tk.logoUri,
-                type: TokenType.ERC20,
-                assetPlatformId: nt.pricingProviders?.coingecko.assetPlatformId
-              } as MarketToken
-            }) ?? []
-        )
-        ?.flat() ?? []
-
-    // Remove duplicates based on symbol (weak) because each
-    // subnet tokens have their own USDC (for instance).
-    // A robust data service is needed to properly serve this data.
-    const allTokens = networkTokens.reduce(
-      (acc, item) => {
-        return acc.find(tk => tk.symbol === item.symbol) ? acc : [...acc, item]
-      },
-      [...marketTokens]
-    )
-
-    const promises = []
+    const promises: Promise<SimplePriceResponse | undefined>[] = []
     promises.push(
-      tokenService.fetchPriceWithMarketData(
-        marketTokens.map((tk: any) => tk.id),
-        currency.toLowerCase() as VsCurrencyType
-      )
+      tokenService.fetchPriceWithMarketData(marketTokenIds, currency)
     )
 
     for (const nt of networks) {
@@ -92,7 +99,7 @@ class WatchlistService {
     )
 
     const data =
-      allTokens.map((token: MarketToken) => {
+      Object.values(allTokens).map((token: MarketToken) => {
         const tokenPrice =
           tokenPriceDict[token.id.toLowerCase()]?.[currency as VsCurrencyType]
         const priceUSD = tokenPrice?.price ?? 0
