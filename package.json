@@ -7,7 +7,7 @@
     "setup:ci": "yarn install --frozen-lockfile && yarn allow-scripts",
     "android": "ENVFILE=.env.development react-native run-android --variant=internalDebug",
     "ios": "cd $INIT_CWD/ios && pod install && cd $INIT_CWD && ENVFILE=.env.development react-native run-ios",
-    "iosM1": "cd $INIT_CWD/ios && arch -x86_64 pod install && cd $INIT_CWD && ENVFILE=.env.development arch -x86_64 react-native run-ios",
+    "iosM1": "cd $INIT_CWD/ios && arch -x86_64 pod install && cd $INIT_CWD && ENVFILE=.env.development arch -x86_64 react-native run-ios --udid 8b9ebf84a0f66dc61d54be6eb5415ce0beeefba1",
     "start": "react-native start",
     "link": "react-native link",
     "test": "jest",
@@ -210,10 +210,10 @@
     "babel-jest": "29.0.3",
     "babel-loader": "8.2.3",
     "babel-plugin-inline-dotenv": "1.7.0",
-    "detox": "^19.12.2",
+    "detox": "19.12.2",
     "eslint": "8.20.0",
     "eslint-config-prettier": "8.5.0",
-    "eslint-plugin-detox": "^1.0.0",
+    "eslint-plugin-detox": "1.0.0",
     "eslint-plugin-import": "2.26.0",
     "eslint-plugin-prettier": "4.2.1",
     "eslint-plugin-react-hooks": "4.6.0",
@@ -280,7 +280,8 @@
       "detox>bunyan>dtrace-provider": false,
       "detox>ws>bufferutil": false,
       "detox>ws>utf-8-validate": false,
-      "detox-recorder": false
+      "detox-recorder": false,
+      "web3>web3-core>web3-core-requestmanager>web3-providers-ws>websocket>es5-ext": false
     }
   },
   "react-native": {
