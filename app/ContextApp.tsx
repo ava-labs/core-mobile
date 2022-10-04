@@ -15,6 +15,7 @@ import { StatusBar } from 'react-native'
 import { DappConnectionContextProvider } from 'contexts/DappConnectionContext'
 import { EncryptedStoreProvider } from 'contexts/EncryptedStoreProvider'
 import { TopLevelErrorFallback } from 'components/TopLevelErrorFallback'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
 
 function setToast(toast: Toast) {
   global.toast = toast
@@ -41,7 +42,9 @@ const ContextApp = () => {
       <StatusBar barStyle={'light-content'} />
       <ContextProviders>
         <JailBrokenCheck>
-          <App />
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <App />
+          </GestureHandlerRootView>
         </JailBrokenCheck>
         <Toast
           ref={ref => {
