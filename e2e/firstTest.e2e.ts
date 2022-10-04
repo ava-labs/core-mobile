@@ -1,3 +1,6 @@
+/* eslint-env detox/detox, jest */
+import { by, expect, element } from 'detox'
+
 describe('Add existing wallet', () => {
   beforeAll(async () => {
     await device.launchApp()
