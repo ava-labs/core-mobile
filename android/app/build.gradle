@@ -173,10 +173,7 @@ android {
             keyPassword 'android'
         }
         release {
-            storeFile file('avax-wallet.keystore')
-            storePassword '%*diBFNHw,bK}g5uP!-S'
-            keyPassword '%*diBFNHw,bK}g5uP!-S'
-            keyAlias 'avax-wallet'
+
         }
     }
     buildTypes {
