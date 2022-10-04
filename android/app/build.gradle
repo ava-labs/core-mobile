@@ -79,7 +79,7 @@ import com.android.build.OutputFile
  */
 
 project.ext.react = [
-    enableHermes: true,  // clean and rebuild if changing
+    enableHermes: false,  // clean and rebuild if changing
     entryFile: "index.js",
     bundleInRelease: true,
     devDisabledInRelease: true,
@@ -212,6 +212,8 @@ android {
 
     packagingOptions {
         pickFirst '**/*.so'
+        // Make sure libjsc.so does not get packed in APK
+        exclude "**/libjsc.so"
     }
     
     // applicationVariants are e.g. debug, release

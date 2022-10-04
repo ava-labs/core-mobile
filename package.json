@@ -151,6 +151,8 @@
     "rn-dominant-color": "1.7.2",
     "rn-nodeify": "10.3.0",
     "rollup": "1.12.0",
+    "react-native-v8": "1.5.2",
+    "v8-android-jit": "10.100.1",
     "storybook-addon-state": "1.0.3",
     "stream-browserify": "1.0.0",
     "url": "0.11.0",
