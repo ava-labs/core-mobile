@@ -16,7 +16,6 @@ const CreateNewWalletItem = () => {
     <>
       <AvaListItem.Base
         title={'Create new wallet'}
-        testID="createNewWalletBtn"
         titleAlignment={'flex-start'}
         showNavigationArrow
         leftComponent={<CreateNewWalletPlusSVG bold size={18} />}

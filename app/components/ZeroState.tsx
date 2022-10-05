@@ -171,7 +171,6 @@ function ZeroStateNoWatchlistFavorites() {
       title={title}
       message={message}
       image={<StarSVG size={60} />}
-      testID={`${title}`}
     />
   )
 }
