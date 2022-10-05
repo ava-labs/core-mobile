@@ -1,3 +1,6 @@
+// eslint-disable-next-line prettier/prettier
+export { }
+
 const {
   DetoxCircusEnvironment,
   SpecReporter,
@@ -5,7 +8,7 @@ const {
 } = require('detox/runners/jest-circus')
 
 class CustomDetoxEnvironment extends DetoxCircusEnvironment {
-  constructor(config, context) {
+  constructor(config: unknown, context: unknown) {
     super(config, context)
 
     // Can be safely removed, if you are content with the default value (=300000ms)
