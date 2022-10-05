@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef } from 'react'
+import React, { useCallback, useEffect, useRef } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet'
 import { Space } from 'components/Space'
@@ -44,36 +44,36 @@ const LogoutScreen = ({
   )
 }
 
+const MyHandle = () => {
+  return <Space y={24} />
+}
+const snapPoints = ['40%']
+
 const SignOutBottomSheet = ({ onConfirm }: { onConfirm: () => void }) => {
-  const bottomSheetRef = useRef<BottomSheet>(null)
   const { goBack, canGoBack } = useNavigation()
-  const snapPoints = useMemo(() => ['0%', '40%'], [])
+  const bottomSheetRef = useRef<BottomSheet>(null)
+
+  const onClose = useCallback(() => {
+    if (canGoBack()) {
+      goBack()
+    }
+  }, [canGoBack, goBack])
 
   useEffect(() => {
     // intentionally setting delay so animation is visible.
     setTimeout(() => {
-      bottomSheetRef?.current?.snapTo(1)
-    }, 50)
+      bottomSheetRef?.current?.expand()
+    }, 100)
   }, [])
 
-  const handleChange = useCallback(index => {
-    if (index === 0 && canGoBack()) {
-      goBack()
-    }
-  }, [])
-
-  const MyHandle = () => {
-    return <Space y={24} />
-  }
-
-  // renders
   return (
     <BottomSheet
       ref={bottomSheetRef}
       index={-1}
+      onClose={onClose}
+      enablePanDownToClose
       snapPoints={snapPoints}
       handleComponent={MyHandle}
-      onChange={handleChange}
       backgroundComponent={TabViewBackground}
       backdropComponent={BottomSheetBackdrop}>
       <LogoutScreen onConfirm={onConfirm} onCancel={() => goBack()} />
