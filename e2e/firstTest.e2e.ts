@@ -11,10 +11,9 @@ describe('Add existing wallet', () => {
   })
 
   it('should successfully add an existing wallet', async () => {
+    const recoveryPhrase: string = process.env.RECOVERY_PHRASE as string
     await element(by.id('walletSVG')).atIndex(1).tap()
-    await element(by.id('recoveryPhraseTextInput')).replaceText(
-      process.env.RECOVERY_PHRASE
-    )
+    await element(by.id('recoveryPhraseTextInput')).replaceText(recoveryPhrase)
     await element(by.text('Sign in')).tap()
     for (let i = 0; i < 12; i++) {
       await element(by.id('0')).tap()
