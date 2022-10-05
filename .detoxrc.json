@@ -24,7 +24,7 @@
 
       "android.internal.debug": {
         "type": "android.apk",
-        "binaryPath": "/Users/tyler.hackett/Desktop/avalanche-wallet-apps/android/app/build/outputs/apk/internal/debug/app-internal-debug.apk",
+        "binaryPath": "android/app/build/outputs/apk/internal/debug/app-internal-debug.apk",
         "build": "ENVFILE=.env.development react-native run-android --variant=internalDebug"
       }
      
