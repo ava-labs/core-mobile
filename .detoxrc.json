@@ -24,8 +24,8 @@
 
       "android.internal.debug": {
         "type": "android.apk",
-        "binaryPath": "android/app/build/outputs/apk/internal/debug/app-internal-debug.apk",
-        "build": "cd android && ENVFILE=.env.development ./gradlew app:assembleInternalDebug app:assembleAndroidTest -DtestBuildType=debug && cd .."
+        "binaryPath": "/Users/tyler.hackett/Desktop/avalanche-wallet-apps/android/app/build/outputs/apk/internal/debug/app-internal-debug.apk",
+        "build": "ENVFILE=.env.development react-native run-android --variant=internalDebug"
       }
      
     },
@@ -33,14 +33,12 @@
       "android.internal.debug": {
         "device": "emulator",
         "app": "android.internal.debug",
-        "binaryPath": "android/app/build/outputs/apk/debug/app-internal-debug.apk",
         "name": "Pixel_4_API_31"
       },
 
       "ios.internal.debug": {
         "device": "simulator",
         "app": "ios.internal.debug",
-        "binaryPath": "ios/DerivedData/Build/Products/Debug-iphonesimulator/AvaxWallet.app",
         "name": "iPhone 13 simulator"
       }
    
