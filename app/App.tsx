@@ -14,7 +14,10 @@ import useDevDebugging from 'utils/debugging/DevDebugging'
 import 'utils/debugging/wdyr'
 import Config from 'react-native-config'
 import * as Sentry from '@sentry/react-native'
+import { LogBox } from 'react-native'
 import pkg from '../package.json'
+
+LogBox.ignoreLogs(['Require cycle:', "Can't perform", 'new'])
 
 //init Sentry
 if (Config.SENTRY_DSN && !__DEV__) {
