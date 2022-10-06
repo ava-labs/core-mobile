@@ -118,15 +118,11 @@ const onBalanceUpdateCore = async (
         return acc
       }
 
-      const { accountIndex, chainId, address, tokens } = result.value
+      const { balance, address } = result.value
 
       return {
         ...acc,
-        [getKey(chainId, address)]: {
-          accountIndex,
-          chainId,
-          tokens
-        }
+        [getKey(balance.chainId, address)]: balance
       }
     },
     {}

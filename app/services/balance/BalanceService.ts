@@ -1,4 +1,4 @@
-import { TokenWithBalance } from 'store/balance'
+import { Balance, TokenWithBalance } from 'store/balance'
 import NetworkService from 'services/network/NetworkService'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import { Account } from 'store/account'
@@ -35,10 +35,8 @@ export class BalanceService {
     account: Account,
     currency: string
   ): Promise<{
-    accountIndex: number
-    chainId: number
+    balance: Balance
     address: string
-    tokens: TokenWithBalance[]
   }> {
     const address = AccountsService.getAddressForNetwork(account, network)
     const provider = NetworkService.getProviderForNetwork(network)
@@ -50,10 +48,12 @@ export class BalanceService {
       currency
     )
     return {
-      accountIndex: account.index,
-      chainId: network.chainId,
-      address,
-      tokens
+      balance: {
+        accountIndex: account.index,
+        chainId: network.chainId,
+        tokens
+      },
+      address
     }
   }
 
