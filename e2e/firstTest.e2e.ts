@@ -1,7 +1,7 @@
 /* eslint-env detox/detox, jest */
 import { by, expect, element } from 'detox'
 
-// This is our first test, more will be added soon to the repo
+// This is our first test, more will be added soon
 
 describe('Add existing wallet', () => {
   beforeAll(async () => {
