@@ -8,7 +8,7 @@
 module.exports = {
   resolver: {
     extraNodeModules: {
-      crypto: require.resolve('crypto-browserify')
+      crypto: require.resolve('react-native-quick-crypto')
     }
   },
   transformer: {

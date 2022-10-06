@@ -50,7 +50,7 @@ class SendService {
       activeNetwork
     )
     onTxSigned?.()
-    return await networkService.sendTransaction(signedTx, activeNetwork, true)
+    return await networkService.sendTransaction(signedTx, activeNetwork, false)
   }
 
   async validateStateAndCalculateFees(
