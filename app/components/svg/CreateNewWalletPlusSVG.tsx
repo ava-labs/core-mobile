@@ -9,7 +9,12 @@ interface Prop {
 function CreateNewWalletPlusSVG({ size = 65, bold = false }: Prop) {
   const strokeWidth = bold ? '5.25' : '3.25'
   return (
-    <Svg width={size} height={size} viewBox="0 0 65 65" fill="none">
+    <Svg
+      width={size}
+      height={size}
+      viewBox="0 0 65 65"
+      fill="none"
+      testID="creatNewWalletIcon">
       <Line
         x1="32.5956"
         y1="8.125"

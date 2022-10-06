@@ -20,6 +20,7 @@ interface BaseProps {
   rippleBorderless?: boolean
   textColor?: string
   icon?: React.ReactNode
+  testID?: string
 }
 
 const AvaButtonBase: FC<BaseProps> = ({
@@ -32,13 +33,15 @@ const AvaButtonBase: FC<BaseProps> = ({
   const theme = useApplicationContext().theme
   return (
     <Pressable
+      accessible={false}
       android_ripple={{
         color: theme.buttonRipple,
         borderless: rippleBorderless ?? false
       }}
       style={style}
       onPress={onPress}
-      disabled={disabled}>
+      disabled={disabled}
+      testID="buttonBase">
       {children}
     </Pressable>
   )
@@ -66,7 +69,9 @@ const TextWithIcon: FC<
 > = ({ style, disabled, onPress, icon, text, gap = 8 }) => {
   return (
     <AvaButton.Base disabled={disabled} onPress={onPress} style={[style]}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', margin: 8 }}>
+      <View
+        style={{ flexDirection: 'row', alignItems: 'center', margin: 8 }}
+        testID="textWithIcon">
         {icon}
         <Space x={gap} />
         {text}
@@ -90,7 +95,8 @@ const BtnPrimary: FC<BaseProps> = ({ onPress, disabled, children, style }) => {
             : theme.alternateBackground
         },
         style
-      ]}>
+      ]}
+      testID="btnPrimary">
       {children}
     </AvaButtonBase>
   )
@@ -115,7 +121,8 @@ const BtnSecondary: FC<BaseProps> = ({
           borderRadius: 25
         },
         style
-      ]}>
+      ]}
+      testID="btnSecondary">
       {children}
     </AvaButtonBase>
   )
@@ -134,7 +141,8 @@ const BtnText: FC<BaseProps> = ({ onPress, disabled, children, style }) => {
           backgroundColor: theme.transparent
         },
         style
-      ]}>
+      ]}
+      testID="btnText">
       {children}
     </AvaButtonBase>
   )
@@ -156,7 +164,8 @@ const BtnPrimaryLarge: FC<BaseProps> = ({
       <AvaText.ButtonLarge
         textStyle={{
           color: disabled ? theme.colorDisabled : textColor ?? theme.colorBg2
-        }}>
+        }}
+        testID="btnPrimaryLarge">
         {children}
       </AvaText.ButtonLarge>
     </BtnPrimary>
@@ -180,7 +189,8 @@ const BtnPrimaryMedium: FC<BaseProps> = ({
         textStyle={[
           { color: disabled ? theme.colorDisabled : theme.colorBg2 },
           textStyle
-        ]}>
+        ]}
+        testID="btnPrimaryMedium">
         {children}
       </AvaText.ButtonMedium>
     </BtnPrimary>
@@ -202,7 +212,8 @@ const BtnSecondaryLarge: FC<BaseProps> = ({
       <AvaText.ButtonLarge
         textStyle={{
           color: disabled ? theme.colorDisabled : theme.colorText1
-        }}>
+        }}
+        testID="btnSecondaryLarge">
         {children}
       </AvaText.ButtonLarge>
     </BtnSecondary>
@@ -235,7 +246,9 @@ const BtnSecondaryMedium: FC<BaseProps> = ({
       style={[styles.btnSecondaryMedium, style]}>
       <View style={{ flexDirection: 'row' }}>
         {icon && renderIcon()}
-        <AvaText.ButtonMedium textStyle={textStyles}>
+        <AvaText.ButtonMedium
+          textStyle={textStyles}
+          testID="btnSecondaryMedium">
           {children}
         </AvaText.ButtonMedium>
       </View>
@@ -258,7 +271,8 @@ const BtnTextLarge: FC<BaseProps> = ({
       <AvaText.ButtonLarge
         textStyle={{
           color: disabled ? theme.colorDisabled : theme.colorPrimary1
-        }}>
+        }}
+        testID="btnTextLarge">
         {children}
       </AvaText.ButtonLarge>
     </BtnText>
@@ -281,7 +295,8 @@ const BtnTextMedium: FC<BaseProps> = ({
             : textColor
             ? textColor
             : theme.colorPrimary1
-        }}>
+        }}
+        testID="btnTextMedium">
         {children}
       </AvaText.ButtonSmall>
     </BtnText>
@@ -305,7 +320,8 @@ const BtnTextLink: FC<BaseProps> = ({
       <AvaText.TextLink
         textStyle={{
           color: disabled ? theme.colorDisabled : textColor ?? theme.colorBg2
-        }}>
+        }}
+        testID="btnTextLink">
         {children}
       </AvaText.TextLink>
     </BtnText>

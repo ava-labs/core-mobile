@@ -19,7 +19,8 @@ module.exports = {
     'eslint-comments',
     '@typescript-eslint',
     'jest',
-    'import'
+    'import',
+    'detox'
   ],
   rules: {
     radix: 'off', // parseInt should not have radix when parsing a value that can be number or hex
@@ -52,5 +53,15 @@ module.exports = {
         ]
       }
     ]
-  }
+  },
+  overrides: [
+    {
+      files: ['*.e2e.ts'],
+      env: {
+        'detox/detox': true,
+        jest: true,
+        'jest/globals': true
+      }
+    }
+  ]
 }

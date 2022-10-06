@@ -12,7 +12,12 @@ function WalletSVG({ size = 65, backgroundColor }: Prop) {
   const bgColor = backgroundColor ?? theme.colorBg1
 
   return (
-    <Svg width={size} height={size} viewBox="0 0 65 65" fill="none">
+    <Svg
+      width={size}
+      height={size}
+      viewBox="0 0 65 65"
+      fill="none"
+      testID="walletSVG">
       <Rect
         x="4.87589"
         y="8.125"

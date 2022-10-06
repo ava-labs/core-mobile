@@ -31,8 +31,9 @@ export const TokensTabHeader = () => {
           alignItems: 'center',
           justifyContent: 'space-between'
         }}>
-        <AvaText.Heading3>Favorites</AvaText.Heading3>
+        <AvaText.Heading3 testID="favorites">Favorites</AvaText.Heading3>
         <AvaButton.TextLink
+          testID="viewAll"
           style={{ paddingRight: -16 }}
           textColor={viewAllBtnColor}
           onPress={goToWatchList}>
@@ -40,7 +41,7 @@ export const TokensTabHeader = () => {
         </AvaButton.TextLink>
       </View>
       <WatchlistCarrousel />
-      <AvaText.Heading3 textStyle={{ marginVertical: 16 }}>
+      <AvaText.Heading3 textStyle={{ marginVertical: 16 }} testID="networks">
         Networks
       </AvaText.Heading3>
       <ActiveNetworkCard />
