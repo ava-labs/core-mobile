@@ -61,7 +61,8 @@ function BaseListItem({
         !!background && {
           backgroundColor: background
         }
-      ]}>
+      ]}
+      testID="baseListItem">
       <View style={styles.baseRowContainer}>
         <View style={[styles.baseRow, disabled && { opacity: 0.5 }]}>
           {leftComponent && (
@@ -164,7 +165,8 @@ const styles = StyleSheet.create({
   baseRowContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center'
+    alignItems: 'center',
+    testID: 'baseRowContainer'
   },
   baseRow: {
     justifyContent: 'center',
