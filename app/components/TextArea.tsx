@@ -64,6 +64,7 @@ export default function TextArea(props: Props | Readonly<Props>): JSX.Element {
           </AvaText.Heading2>
         )}
         <TextInput
+          autoCapitalize={'none'}
           ref={textInputRef}
           autoCorrect={props?.autoCorrect}
           placeholder={'Enter your recovery phrase'}
