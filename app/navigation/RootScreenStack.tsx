@@ -122,7 +122,6 @@ export default RootScreenStack
 
 function PinScreen() {
   const dispatch = useDispatch()
-  const { signOut } = useApplicationContext().appHook
   const { appNavHook } = useApplicationContext()
 
   return (
@@ -133,11 +132,7 @@ function PinScreen() {
         position: 'absolute'
       }}>
       <PinOrBiometryLogin
-        onSignInWithRecoveryPhrase={() => {
-          signOut().then(() => {
-            appNavHook.resetNavToEnterMnemonic()
-          })
-        }}
+        onSignInWithRecoveryPhrase={() => appNavHook.resetNavToEnterMnemonic()}
         onLoginSuccess={() => {
           dispatch(onAppUnlocked())
         }}

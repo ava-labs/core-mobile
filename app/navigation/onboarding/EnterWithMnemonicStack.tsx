@@ -33,10 +33,14 @@ export type EnterWithMnemonicStackParamList = {
 const EnterWithMnemonicS =
   createStackNavigator<EnterWithMnemonicStackParamList>()
 
-const EnterWithMnemonicContext = createContext<{
+type EnterWithMnemonicContextState = {
   mnemonic: string
   setMnemonic: Dispatch<string>
-}>({} as any)
+}
+
+const EnterWithMnemonicContext = createContext(
+  {} as EnterWithMnemonicContextState
+)
 
 const EnterWithMnemonicStack = () => {
   const [mnemonic, setMnemonic] = useState('')
@@ -86,12 +90,15 @@ const LoginWithMnemonicScreen = () => {
     [RemoveEvents.GO_BACK]
   )
 
-  const onEnterWallet = useCallback(m => {
-    BiometricsSDK.clearWalletKey().then(() => {
-      enterWithMnemonicContext.setMnemonic(m)
-      navigate(AppNavigation.LoginWithMnemonic.CreatePin)
-    })
-  }, [])
+  const onEnterWallet = useCallback(
+    m => {
+      BiometricsSDK.clearWalletKey().then(() => {
+        enterWithMnemonicContext.setMnemonic(m)
+        navigate(AppNavigation.LoginWithMnemonic.CreatePin)
+      })
+    },
+    [enterWithMnemonicContext, navigate]
+  )
 
   return <HdWalletLogin onEnterWallet={onEnterWallet} onBack={() => goBack()} />
 }
@@ -148,7 +155,7 @@ const BiometricLoginScreen = () => {
 const TermsNConditionsModalScreen = () => {
   const enterWithMnemonicContext = useContext(EnterWithMnemonicContext)
   const walletSetupHook = useApplicationContext().walletSetupHook
-  const { resetNavToRoot } = useApplicationContext().appNavHook
+  const { signOut } = useApplicationContext().appHook
   const dispatch = useDispatch()
 
   return (
@@ -158,7 +165,7 @@ const TermsNConditionsModalScreen = () => {
         dispatch(onLogIn())
         dispatch(onAppUnlocked())
       }}
-      onReject={() => resetNavToRoot()}
+      onReject={() => signOut()}
     />
   )
 }
