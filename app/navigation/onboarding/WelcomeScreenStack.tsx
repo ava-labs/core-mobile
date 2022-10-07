@@ -91,16 +91,13 @@ const WelcomeScreen = () => {
 const LoginWithPinOrBiometryScreen = () => {
   const context = useApplicationContext()
   const { enterWallet } = context.walletSetupHook
-  const { signOut } = context.appHook
   const dispatch = useDispatch()
 
   return (
     <PinOrBiometryLogin
-      onSignInWithRecoveryPhrase={() => {
-        signOut().then(() => {
-          context.appNavHook.resetNavToEnterMnemonic()
-        })
-      }}
+      onSignInWithRecoveryPhrase={() =>
+        context.appNavHook.resetNavToEnterMnemonic()
+      }
       onLoginSuccess={mnemonic => {
         enterWallet(mnemonic)
         dispatch(onAppUnlocked())
