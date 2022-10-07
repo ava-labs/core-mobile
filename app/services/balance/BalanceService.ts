@@ -22,10 +22,13 @@ export class BalanceService {
   ): Promise<{
     accountIndex: number
     chainId: number
-    address: string
+    accountAddress: string
     tokens: (NetworkTokenWithBalance | TokenWithBalanceERC20)[]
   }> {
-    const address = AccountsService.getAddressForNetwork(account, network)
+    const accountAddress = AccountsService.getAddressForNetwork(
+      account,
+      network
+    )
     const balanceProvider = await findAsyncSequential(balanceProviders, value =>
       value.isProviderFor(network)
     )
@@ -34,12 +37,16 @@ export class BalanceService {
         `no balance provider found for network ${network.chainId}`
       )
     }
-    const tokens = await balanceProvider.getBalances(network, address, currency)
+    const tokens = await balanceProvider.getBalances(
+      network,
+      accountAddress,
+      currency
+    )
     return {
       accountIndex: account.index,
       chainId: network.chainId,
       tokens,
-      address
+      accountAddress
     }
   }
 
