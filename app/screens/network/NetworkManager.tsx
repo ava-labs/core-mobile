@@ -1,12 +1,12 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import { FlatList, View } from 'react-native'
-import { useSelector, useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import {
-  toggleFavorite,
+  selectCustomNetworks,
   selectFavoriteNetworks,
   selectNetworks,
   setActive,
-  selectCustomNetworks
+  toggleFavorite
 } from 'store/network'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import SearchBar from 'components/SearchBar'
@@ -15,7 +15,6 @@ import TabViewAva from 'components/TabViewAva'
 import ZeroState from 'components/ZeroState'
 import { NetworkListItem } from 'screens/network/NetworkListItem'
 import { Network } from '@avalabs/chains-sdk'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useNavigation } from '@react-navigation/native'
 
 type Props = {
@@ -30,8 +29,7 @@ export default function NetworkManager({ onShowInfo }: Props) {
   const dispatch = useDispatch()
   const { theme } = useApplicationContext()
   const [searchText, setSearchText] = useState('')
-  const isDevMode = useSelector(selectIsDeveloperMode)
-  const title = isDevMode ? 'Testnets' : 'Networks'
+  const title = 'Networks'
 
   const customNetworkChainIds = useMemo(
     () => Object.values(customNetworks).map(n => n.chainId),
