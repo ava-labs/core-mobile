@@ -1,5 +1,5 @@
 import { Network } from '@avalabs/chains-sdk'
-import { TokenWithBalance } from 'store/balance'
+import { NetworkTokenWithBalance, TokenWithBalanceERC20 } from 'store/balance'
 
 export type TokenListDict = {
   [contract: string]: TokenListERC20
@@ -24,5 +24,5 @@ export interface BalanceServiceProvider {
     network: Network,
     userAddress: string,
     currency: string
-  ): Promise<TokenWithBalance[]>
+  ): Promise<(NetworkTokenWithBalance | TokenWithBalanceERC20)[]>
 }

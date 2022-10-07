@@ -1,4 +1,4 @@
-import { Balance, TokenWithBalance } from 'store/balance'
+import { NetworkTokenWithBalance, TokenWithBalanceERC20 } from 'store/balance'
 import { Network } from '@avalabs/chains-sdk'
 import { Account } from 'store/account'
 import AccountsService from 'services/account/AccountsService'
@@ -20,8 +20,10 @@ export class BalanceService {
     account: Account,
     currency: string
   ): Promise<{
-    balance: Balance
+    accountIndex: number
+    chainId: number
     address: string
+    tokens: (NetworkTokenWithBalance | TokenWithBalanceERC20)[]
   }> {
     const address = AccountsService.getAddressForNetwork(account, network)
     const balanceProvider = await findAsyncSequential(balanceProviders, value =>
@@ -34,11 +36,9 @@ export class BalanceService {
     }
     const tokens = await balanceProvider.getBalances(network, address, currency)
     return {
-      balance: {
-        accountIndex: account.index,
-        chainId: network.chainId,
-        tokens
-      },
+      accountIndex: account.index,
+      chainId: network.chainId,
+      tokens,
       address
     }
   }
@@ -47,7 +47,7 @@ export class BalanceService {
     network: Network,
     address: string,
     currency: string
-  ): Promise<TokenWithBalance[]> {
+  ): Promise<(NetworkTokenWithBalance | TokenWithBalanceERC20)[]> {
     const balanceProvider = await findAsyncSequential(balanceProviders, value =>
       value.isProviderFor(network)
     )

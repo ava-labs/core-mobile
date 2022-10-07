@@ -9,7 +9,6 @@ import {
 import {
   NetworkTokenWithBalance,
   TokenType,
-  TokenWithBalance,
   TokenWithBalanceERC20
 } from 'store/balance'
 import {
@@ -40,7 +39,7 @@ export class EvmBalanceService implements BalanceServiceProvider {
     network: Network,
     userAddress: string,
     currency: string
-  ): Promise<TokenWithBalance[]> {
+  ): Promise<(NetworkTokenWithBalance | TokenWithBalanceERC20)[]> {
     const activeTokenList = network.tokens ?? []
     const tokenAddresses = activeTokenList.map(token => token.address)
     const provider = NetworkService.getProviderForNetwork(
@@ -71,7 +70,6 @@ export class EvmBalanceService implements BalanceServiceProvider {
       activeTokenList,
       tokenPriceDict,
       userAddress,
-      network,
       currency
     )
 
@@ -84,12 +82,11 @@ export class EvmBalanceService implements BalanceServiceProvider {
     network: Network,
     currency: string
   ): Promise<NetworkTokenWithBalance> {
-    const { networkToken, chainId } = network
+    const { networkToken } = network
     const tokenDecimals = networkToken.decimals ?? DEFAULT_DECIMALS
     const nativeTokenId =
       network.pricingProviders?.coingecko?.nativeTokenId ?? ''
 
-    const id = `${chainId}-${nativeTokenId}`
     const balanceEthersBig = await provider.getBalance(userAddress)
 
     const {
@@ -114,7 +111,6 @@ export class EvmBalanceService implements BalanceServiceProvider {
 
     return {
       ...networkToken,
-      id,
       coingeckoId: nativeTokenId,
       type: TokenType.NATIVE,
       balance,
@@ -133,14 +129,10 @@ export class EvmBalanceService implements BalanceServiceProvider {
     activeTokenList: NetworkContractToken[],
     tokenPriceDict: SimpleTokenPriceResponse,
     userAddress: string,
-    network: Network,
     currency: string
   ): Promise<TokenWithBalanceERC20[]> {
-    const { chainId } = network
-
     return Promise.allSettled(
       activeTokenList.map(async token => {
-        const id = `${chainId}-${token.address}`
         const tokenDecimals = token.decimals ?? DEFAULT_DECIMALS
         const tokenPrice =
           tokenPriceDict[token.address.toLowerCase()]?.[
@@ -166,7 +158,6 @@ export class EvmBalanceService implements BalanceServiceProvider {
 
         return {
           ...token,
-          id,
           type: TokenType.ERC20,
           balance,
           balanceDisplayValue,

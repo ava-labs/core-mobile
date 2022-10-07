@@ -1,8 +1,4 @@
-import {
-  NetworkTokenWithBalance,
-  TokenWithBalance,
-  TokenWithBalanceERC20
-} from 'store/balance'
+import { NetworkTokenWithBalance, TokenWithBalanceERC20 } from 'store/balance'
 import { Network } from '@avalabs/chains-sdk'
 import { CurrencyCode, GlacierClient } from '@avalabs/glacier-sdk'
 import { GLACIER_URL } from 'utils/glacierUtils'
@@ -28,13 +24,13 @@ export class GlacierBalanceService implements BalanceServiceProvider {
     network: Network,
     userAddress: string,
     currency: string
-  ): Promise<TokenWithBalance[]> {
+  ): Promise<(NetworkTokenWithBalance | TokenWithBalanceERC20)[]> {
     return await Promise.allSettled([
       this.getNativeTokenBalanceForNetwork(network, userAddress, currency),
       this.getErc20BalanceForNetwork(network, userAddress, currency)
     ])
       .then(([nativeBalance, erc20Balances]) => {
-        let results: TokenWithBalance[] =
+        let results: (NetworkTokenWithBalance | TokenWithBalanceERC20)[] =
           nativeBalance.status === 'fulfilled' ? [nativeBalance.value] : []
 
         if (erc20Balances.status === 'fulfilled') {

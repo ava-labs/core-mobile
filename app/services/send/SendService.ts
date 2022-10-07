@@ -75,7 +75,7 @@ class SendService {
 
   mapTokenFromNFT(nft: NFTItemData): TokenWithBalanceERC721 {
     return {
-      id: nft.tokenId,
+      tokenId: nft.tokenId,
       type: TokenType.ERC721,
       address: nft.address,
       logoUri: nft.image,

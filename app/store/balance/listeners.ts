@@ -22,14 +22,15 @@ import {
   setSelectedCurrency
 } from 'store/settings/currency'
 import Logger from 'utils/Logger'
+import { uuid4 } from '@sentry/utils'
 import {
-  refetchBalance,
   getKey,
+  refetchBalance,
+  selectBalanceStatus,
   setBalances,
-  setStatus,
-  selectBalanceStatus
+  setStatus
 } from './slice'
-import { Balances, QueryStatus } from './types'
+import { Balances, LocalTokenWithBalance, QueryStatus } from './types'
 
 /**
  * In production:
@@ -118,11 +119,18 @@ const onBalanceUpdateCore = async (
         return acc
       }
 
-      const { balance, address } = result.value
+      const { accountIndex, chainId, address, tokens } = result.value
 
+      const tokensWithBalance = tokens.map(token => {
+        return { ...token, localId: uuid4() } as LocalTokenWithBalance
+      })
       return {
         ...acc,
-        [getKey(balance.chainId, address)]: balance
+        [getKey(chainId, address)]: {
+          accountIndex,
+          chainId,
+          tokens: tokensWithBalance
+        }
       }
     },
     {}
@@ -133,6 +141,7 @@ const onBalanceUpdateCore = async (
 }
 
 const fetchBalancePeriodically = async (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   action: any,
   listenerApi: AppListenerEffectAPI
 ) => {

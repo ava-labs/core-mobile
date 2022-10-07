@@ -6,7 +6,6 @@ import { balanceToDisplayValue, bnToBig } from '@avalabs/utils-sdk'
 export function convertNativeToTokenWithBalance(
   native: NativeTokenBalance
 ): NetworkTokenWithBalance {
-  const id = getTokenId(native)
   const balance = new BN(native.balance)
   const balanceDisplayValue = balanceToDisplayValue(balance, native.decimals)
   const priceInCurrency = native.price?.value ?? 0
@@ -22,7 +21,6 @@ export function convertNativeToTokenWithBalance(
     description: '',
     decimals: native.decimals,
     logoUri: native.logoUri ?? '',
-    id,
     type: TokenType.NATIVE,
     balance,
     balanceDisplayValue,
@@ -34,8 +32,4 @@ export function convertNativeToTokenWithBalance(
     change24: 0,
     coingeckoId: ''
   }
-}
-
-function getTokenId(native: NativeTokenBalance): string {
-  return `${native.chainId}-${native.name}-${native.symbol}`
 }

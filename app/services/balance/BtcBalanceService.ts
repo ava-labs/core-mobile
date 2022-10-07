@@ -1,6 +1,10 @@
 import { satoshiToBtc } from '@avalabs/bridge-sdk'
 import { balanceToDisplayValue, bigToBN } from '@avalabs/utils-sdk'
-import { TokenType, TokenWithBalance } from 'store/balance'
+import {
+  NetworkTokenWithBalance,
+  TokenType,
+  TokenWithBalanceERC20
+} from 'store/balance'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import TokenService from 'services/token/TokenService'
@@ -17,8 +21,8 @@ export class BtcBalanceService implements BalanceServiceProvider {
     network: Network,
     userAddress: string,
     currency: string
-  ): Promise<TokenWithBalance[]> {
-    const { networkToken, chainId } = network
+  ): Promise<(NetworkTokenWithBalance | TokenWithBalanceERC20)[]> {
+    const { networkToken } = network
     const provider = NetworkService.getProviderForNetwork(
       network
     ) as JsonRpcBatchInternal & BlockCypherProvider
@@ -26,7 +30,6 @@ export class BtcBalanceService implements BalanceServiceProvider {
     const nativeTokenId =
       network.pricingProviders?.coingecko?.nativeTokenId ?? ''
 
-    const id = `${chainId}-${nativeTokenId}`
     const {
       price: priceInCurrency,
       marketCap,
@@ -54,7 +57,6 @@ export class BtcBalanceService implements BalanceServiceProvider {
       {
         ...networkToken,
         type: TokenType.NATIVE,
-        id,
         coingeckoId: nativeTokenId,
         balance,
         balanceDisplayValue,

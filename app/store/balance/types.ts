@@ -27,7 +27,6 @@ type TokenMarketData = {
 export type NetworkTokenWithBalance = TokenBalanceData &
   TokenMarketData &
   NetworkToken & {
-    id: string // chainId + coingeckoId
     coingeckoId: string
     type: TokenType.NATIVE
   }
@@ -35,13 +34,12 @@ export type NetworkTokenWithBalance = TokenBalanceData &
 export type TokenWithBalanceERC20 = TokenBalanceData &
   TokenMarketData &
   NetworkContractToken & {
-    id: string // chainId + token contract address
     type: TokenType.ERC20
   }
 
 export type TokenWithBalanceERC721 = TokenBalanceData &
   TokenMarketData & {
-    id: string
+    tokenId: string
     type: TokenType.ERC721
     address: string
     decimals: number
@@ -51,6 +49,10 @@ export type TokenWithBalanceERC721 = TokenBalanceData &
     symbol: string
   }
 
+export type LocalTokenWithBalance = TokenWithBalance & {
+  localId: string
+}
+
 export type TokenWithBalance =
   | NetworkTokenWithBalance
   | TokenWithBalanceERC20
@@ -59,7 +61,7 @@ export type TokenWithBalance =
 export type Balance = {
   accountIndex: number
   chainId: number
-  tokens: TokenWithBalance[]
+  tokens: LocalTokenWithBalance[]
 }
 
 export type Balances = { [chainId_address: string]: Balance }

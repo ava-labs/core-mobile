@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react'
 import {
+  LocalTokenWithBalance,
   refetchBalance,
   selectIsLoadingBalances,
   selectIsRefetchingBalances,
   selectTokensWithBalance,
-  TokenType,
-  TokenWithBalance
+  TokenType
 } from 'store/balance'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectZeroBalanceWhiteList } from 'store/zeroBalance'
@@ -15,7 +15,7 @@ const bnZero = new BN(0)
 
 export function useSearchableTokenList(hideZeroBalance = true): {
   searchText: string
-  filteredTokenList: TokenWithBalance[]
+  filteredTokenList: LocalTokenWithBalance[]
   setSearchText: (value: ((prevState: string) => string) | string) => void
   isLoading: boolean
   refetch: () => void
@@ -48,7 +48,7 @@ export function useSearchableTokenList(hideZeroBalance = true): {
 
   const filteredTokenList = useMemo(
     () => filterTokensBySearchText(tokensSortedByAmount, searchText),
-    [tokensFilteredByZeroBal, searchText]
+    [tokensSortedByAmount, searchText]
   )
 
   function refetch() {
@@ -56,21 +56,24 @@ export function useSearchableTokenList(hideZeroBalance = true): {
   }
 
   function filterByZeroBalance(
-    tokens: TokenWithBalance[],
-    hideZeroBalance: boolean,
-    zeroBalanceWhitelist: string[]
+    tokens: LocalTokenWithBalance[],
+    hideZeroBal: boolean,
+    zeroBalWhitelist: string[]
   ) {
-    if (!hideZeroBalance) return tokens
+    if (!hideZeroBal) return tokens
 
     return tokens.filter(
       token =>
         token.type === TokenType.NATIVE || // always show native tokens
         token.balance?.gt(bnZero) ||
-        zeroBalanceWhitelist.includes(token.id)
+        zeroBalWhitelist.includes(token.localId)
     )
   }
 
-  function filterTokensBySearchText(tokens: TokenWithBalance[], text: string) {
+  function filterTokensBySearchText(
+    tokens: LocalTokenWithBalance[],
+    text: string
+  ) {
     const substring = text.toLowerCase()
     return tokens.filter(
       token =>

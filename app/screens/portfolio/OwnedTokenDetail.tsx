@@ -41,7 +41,7 @@ const OwnedTokenDetail: FC = () => {
 
   function loadToken() {
     if (filteredTokenList) {
-      const result = filteredTokenList.filter(tk => tk.id === tokenId)
+      const result = filteredTokenList.filter(tk => tk.localId === tokenId)
       if (result.length > 0) {
         setToken(result[0])
       }

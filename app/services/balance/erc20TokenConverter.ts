@@ -8,7 +8,6 @@ export function convertErc20ToTokenWithBalance(
 ): TokenWithBalanceERC20[] {
   return tokenBalances.map(
     (token: Erc20TokenBalance): TokenWithBalanceERC20 => {
-      const id = getTokenId(token)
       const balance = new BN(token.balance)
       const balanceDisplayValue = balanceToDisplayValue(balance, token.decimals)
       const balanceCurrencyDisplayValue =
@@ -19,7 +18,6 @@ export function convertErc20ToTokenWithBalance(
         .toNumber()
 
       return {
-        id,
         address: token.address,
         name: token.name,
         symbol: token.symbol,
@@ -39,8 +37,4 @@ export function convertErc20ToTokenWithBalance(
       }
     }
   )
-}
-
-function getTokenId(native: Erc20TokenBalance): string {
-  return `${native.chainId}-${native.address}`
 }
