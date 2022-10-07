@@ -1,5 +1,5 @@
 import { ethers } from 'ethers'
-import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
+import { BlockCypherProvider, JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 import { InfuraProvider } from '@ethersproject/providers'
 import {
   balanceToDisplayValue,
@@ -12,12 +12,18 @@ import {
   TokenWithBalance,
   TokenWithBalanceERC20
 } from 'store/balance'
-import { Network, NetworkContractToken } from '@avalabs/chains-sdk'
+import {
+  Network,
+  NetworkContractToken,
+  NetworkVMType
+} from '@avalabs/chains-sdk'
 import {
   SimpleTokenPriceResponse,
   VsCurrencyType
 } from '@avalabs/coingecko-sdk'
 import TokenService from 'services/token/TokenService'
+import { BalanceServiceProvider } from 'services/balance/types'
+import NetworkService from 'services/network/NetworkService'
 
 const hstABI = require('human-standard-token-abi')
 
@@ -25,15 +31,21 @@ type Provider = JsonRpcBatchInternal | InfuraProvider
 
 const DEFAULT_DECIMALS = 18
 
-export class EvmBalanceService {
+export class EvmBalanceService implements BalanceServiceProvider {
+  async isProviderFor(network: Network): Promise<boolean> {
+    return network.vmName === NetworkVMType.EVM
+  }
+
   async getBalances(
     network: Network,
-    provider: Provider,
     userAddress: string,
     currency: string
   ): Promise<TokenWithBalance[]> {
     const activeTokenList = network.tokens ?? []
     const tokenAddresses = activeTokenList.map(token => token.address)
+    const provider = NetworkService.getProviderForNetwork(
+      network
+    ) as JsonRpcBatchInternal & BlockCypherProvider
 
     const assetPlatformId =
       network.pricingProviders?.coingecko?.assetPlatformId ?? ''
