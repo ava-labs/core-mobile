@@ -27,7 +27,7 @@ const OwnedTokenDetail: FC = () => {
   const { filteredTokenList } = useSearchableTokenList(false)
   const [token, setToken] = useState<TokenWithBalance>()
 
-  useEffect(loadToken, [filteredTokenList, tokenId])
+  useEffect(loadToken, [filteredTokenList, token, tokenId])
 
   const openTransactionDetails = (item: Transaction) => {
     return navigate(AppNavigation.Wallet.ActivityDetail, {
@@ -40,7 +40,7 @@ const OwnedTokenDetail: FC = () => {
   }
 
   function loadToken() {
-    if (filteredTokenList) {
+    if (filteredTokenList && !token) {
       const result = filteredTokenList.filter(tk => tk.localId === tokenId)
       if (result.length > 0) {
         setToken(result[0])
