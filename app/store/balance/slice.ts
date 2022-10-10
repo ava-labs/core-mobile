@@ -1,12 +1,11 @@
 import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store'
 import { selectActiveAccount } from 'store/account'
-import { ChainID, selectActiveNetwork, selectIsTestnet } from 'store/network'
+import { selectActiveNetwork, selectIsTestnet } from 'store/network'
 import AccountsService from 'services/account/AccountsService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import BN from 'bn.js'
-import { Network, NetworkContractToken } from '@avalabs/chains-sdk'
-import { getLocalTokenId } from 'store/balance/utils'
+import { Network } from '@avalabs/chains-sdk'
 import {
   Balance,
   Balances,
@@ -22,8 +21,7 @@ const reducerName = 'balance'
 
 const initialState: BalanceState = {
   status: QueryStatus.IDLE,
-  balances: {},
-  allTokens: {}
+  balances: {}
 }
 
 const updateBalanceForKey = (
@@ -66,20 +64,6 @@ export const balanceSlice = createSlice({
         tokens
       }
       updateBalanceForKey(state, key, balance)
-    },
-    setAllTokens: (
-      state,
-      action: PayloadAction<{
-        allNetworksWithTokens: Record<ChainID, Network>
-      }>
-    ) => {
-      const { allNetworksWithTokens } = action.payload
-
-      const allTokens: Record<ChainID, NetworkContractToken[]> = {}
-      Object.entries(allNetworksWithTokens).forEach(([chainId, network]) => {
-        allTokens[Number(chainId)] = network.tokens ?? []
-      })
-      state.allTokens = allTokens
     }
   }
 })
@@ -117,27 +101,6 @@ export const selectTokensWithBalanceByNetwork =
 
     const key = getKey(network.chainId, address)
     return state.balance.balances[key]?.tokens ?? []
-  }
-
-export const selectAllNetworkTokensAsLocal =
-  (chainId: ChainID) =>
-  (state: RootState): LocalTokenWithBalance[] => {
-    return (
-      state.balance.allTokens[chainId]?.map(token => {
-        return {
-          ...token,
-          localId: getLocalTokenId(token),
-          balance: new BN(0),
-          balanceInCurrency: 0,
-          balanceDisplayValue: '0',
-          balanceCurrencyDisplayValue: '0',
-          priceInCurrency: 0,
-          marketCap: 0,
-          change24: 0,
-          vol24: 0
-        } as LocalTokenWithBalance
-      }) ?? []
-    )
   }
 
 export const selectTokensWithZeroBalance = (state: RootState) => {
@@ -257,8 +220,7 @@ export const selectBalanceTotalForNetwork =
   }
 
 // actions
-export const { setStatus, setBalances, setBalance, setAllTokens } =
-  balanceSlice.actions
+export const { setStatus, setBalances, setBalance } = balanceSlice.actions
 
 export const refetchBalance = createAction(`${reducerName}/refetchBalance`)
 

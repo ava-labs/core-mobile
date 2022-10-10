@@ -19,15 +19,5 @@ export const migrations = {
         nfts: {}
       }
     }
-  },
-  3: (state: any) => {
-    // expand nft store with nfts
-    return {
-      ...state,
-      balance: {
-        ...state.balance,
-        allTokens: {}
-      }
-    }
   }
 }

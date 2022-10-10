@@ -3,7 +3,6 @@ import {
   LocalTokenId,
   LocalTokenWithBalance,
   refetchBalance,
-  selectAllNetworkTokensAsLocal,
   selectIsLoadingBalances,
   selectIsRefetchingBalances,
   selectTokensWithBalance,
@@ -12,7 +11,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 import { selectZeroBalanceWhiteList } from 'store/zeroBalance'
 import BN from 'bn.js'
-import { selectActiveNetwork } from 'store/network'
+import { selectAllNetworkTokensAsLocal } from 'store/network'
 
 const bnZero = new BN(0)
 
@@ -30,13 +29,8 @@ export function useSearchableTokenList(hideZeroBalance = true): {
   const isLoadingBalances = useSelector(selectIsLoadingBalances)
   const isRefetchingBalances = useSelector(selectIsRefetchingBalances)
   const tokensWithBalance = useSelector(selectTokensWithBalance)
-  const activeNetwork = useSelector(selectActiveNetwork)
-  const allNetworkTokens = useSelector(
-    selectAllNetworkTokensAsLocal(activeNetwork.chainId)
-  )
+  const allNetworkTokens = useSelector(selectAllNetworkTokensAsLocal)
   const mergedTokens = useMemo(() => {
-    if (hideZeroBalance) return tokensWithBalance
-
     //append missing zero balance tokens from allNetworkTokens
     const tokensWithBalanceIDs: Record<LocalTokenId, boolean> = {}
     tokensWithBalance.forEach(token => {
@@ -46,7 +40,7 @@ export function useSearchableTokenList(hideZeroBalance = true): {
       token => !tokensWithBalanceIDs[token.localId]
     )
     return [...tokensWithBalance, ...remainingNetworkTokens]
-  }, [allNetworkTokens, hideZeroBalance, tokensWithBalance])
+  }, [allNetworkTokens, tokensWithBalance])
 
   const tokensFilteredByZeroBal = useMemo(
     () =>

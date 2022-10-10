@@ -101,7 +101,7 @@ export function configureEncryptedStore(secretKey: string) {
       encryptionTransform // last!
     ],
     migrate: createMigrate(migrations, { debug: __DEV__ }),
-    version: 3
+    version: 2
   }
 
   const persistedReducer = persistReducer(persistConfig, rootReducer)
