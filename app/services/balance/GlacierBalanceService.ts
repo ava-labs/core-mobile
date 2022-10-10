@@ -5,6 +5,7 @@ import { GLACIER_URL } from 'utils/glacierUtils'
 import { BalanceServiceProvider } from 'services/balance/types'
 import { convertNativeToTokenWithBalance } from 'services/balance/nativeTokenConverter'
 import { convertErc20ToTokenWithBalance } from 'services/balance/erc20TokenConverter'
+import Logger from 'utils/Logger'
 
 export class GlacierBalanceService implements BalanceServiceProvider {
   private glacierSdk = new GlacierClient(GLACIER_URL)
@@ -49,7 +50,7 @@ export class GlacierBalanceService implements BalanceServiceProvider {
       const status = healthStatus?.status?.toString()
       return status === 'ok'
     } catch (e) {
-      console.error(e)
+      Logger.error('Failed to check glacier health', e)
       return false
     }
   }
