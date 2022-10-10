@@ -35,10 +35,11 @@ export type CreateWalletStackParamList = {
 }
 const CreateWalletS = createStackNavigator<CreateWalletStackParamList>()
 
-const CreateWalletContext = createContext<{
+type CreateWalletContextState = {
   mnemonic: string
   setMnemonic: Dispatch<string>
-}>({} as any)
+}
+const CreateWalletContext = createContext({} as CreateWalletContextState)
 
 const CreateWalletStack: () => JSX.Element = () => {
   const [mnemonic, setMnemonic] = useState('')
@@ -208,7 +209,7 @@ const BiometricLoginScreen = () => {
 const TermsNConditionsModalScreen = () => {
   const createWalletContext = useContext(CreateWalletContext)
   const walletSetupHook = useApplicationContext().walletSetupHook
-  const { resetNavToRoot } = useApplicationContext().appNavHook
+  const { signOut } = useApplicationContext().appHook
   const dispatch = useDispatch()
 
   return (
@@ -218,7 +219,7 @@ const TermsNConditionsModalScreen = () => {
         dispatch(onLogIn())
         dispatch(onAppUnlocked())
       }}
-      onReject={() => resetNavToRoot()}
+      onReject={() => signOut()}
     />
   )
 }
