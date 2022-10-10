@@ -1,6 +1,9 @@
 import { NetworkContractToken, NetworkToken } from '@avalabs/chains-sdk'
 import { BitcoinInputUTXO } from '@avalabs/wallets-sdk'
 import BN from 'bn.js'
+import { ChainID } from 'store/network'
+
+export type LocalTokenId = string
 
 export enum TokenType {
   NATIVE = 'NATIVE',
@@ -96,4 +99,5 @@ export enum QueryStatus {
 export type BalanceState = {
   status: QueryStatus
   balances: Balances
+  allTokens: Record<ChainID, NetworkContractToken[]>
 }

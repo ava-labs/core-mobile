@@ -9,10 +9,16 @@ import {
   setAccount,
   setAccounts
 } from 'store/account'
-import { onAppLocked, onAppUnlocked, onLogOut } from 'store/app'
+import {
+  onAppLocked,
+  onAppUnlocked,
+  onLogOut,
+  onRehydrationComplete
+} from 'store/app'
 import { addCustomToken } from 'store/customToken'
 import { AppStartListening } from 'store/middleware/listener'
 import {
+  ChainID,
   selectActiveNetwork,
   selectFavoriteNetworks,
   setNetworks
@@ -22,11 +28,13 @@ import {
   setSelectedCurrency
 } from 'store/settings/currency'
 import Logger from 'utils/Logger'
-import { uuid4 } from '@sentry/utils'
+import { GLACIER_URL } from 'utils/glacierUtils'
+import { getLocalTokenId } from 'store/balance/utils'
 import {
   getKey,
   refetchBalance,
   selectBalanceStatus,
+  setAllTokens,
   setBalances,
   setStatus
 } from './slice'
@@ -122,7 +130,10 @@ const onBalanceUpdateCore = async (
       const { accountIndex, chainId, accountAddress, tokens } = result.value
 
       const tokensWithBalance = tokens.map(token => {
-        return { ...token, localId: uuid4() } as LocalTokenWithBalance
+        return {
+          ...token,
+          localId: getLocalTokenId(token)
+        } as LocalTokenWithBalance
       })
       return {
         ...acc,
@@ -138,6 +149,24 @@ const onBalanceUpdateCore = async (
 
   dispatch(setBalances(balances))
   dispatch(setStatus(QueryStatus.IDLE))
+}
+
+async function fetchAllTokens(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  action: any,
+  listenerApi: AppListenerEffectAPI
+) {
+  const { dispatch } = listenerApi
+  const rsp = await fetch(`${GLACIER_URL}/tokenlist`)
+  if (rsp.ok) {
+    const record: Record<ChainID, Network> = await rsp.json()
+    dispatch(setAllTokens({ allNetworksWithTokens: record }))
+  } else {
+    Logger.warn(
+      `Could not fetch from  ${GLACIER_URL}/tokenlist`,
+      rsp.statusText
+    )
+  }
 }
 
 const fetchBalancePeriodically = async (
@@ -188,6 +217,11 @@ const fetchBalancePeriodically = async (
 }
 
 export const addBalanceListeners = (startListening: AppStartListening) => {
+  startListening({
+    actionCreator: onRehydrationComplete,
+    effect: fetchAllTokens
+  })
+
   startListening({
     actionCreator: onAppUnlocked,
     effect: fetchBalancePeriodically

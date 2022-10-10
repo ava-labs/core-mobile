@@ -1,7 +1,9 @@
 import { useMemo, useState } from 'react'
 import {
+  LocalTokenId,
   LocalTokenWithBalance,
   refetchBalance,
+  selectAllNetworkTokensAsLocal,
   selectIsLoadingBalances,
   selectIsRefetchingBalances,
   selectTokensWithBalance,
@@ -10,6 +12,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 import { selectZeroBalanceWhiteList } from 'store/zeroBalance'
 import BN from 'bn.js'
+import { selectActiveNetwork } from 'store/network'
 
 const bnZero = new BN(0)
 
@@ -27,15 +30,28 @@ export function useSearchableTokenList(hideZeroBalance = true): {
   const isLoadingBalances = useSelector(selectIsLoadingBalances)
   const isRefetchingBalances = useSelector(selectIsRefetchingBalances)
   const tokensWithBalance = useSelector(selectTokensWithBalance)
+  const activeNetwork = useSelector(selectActiveNetwork)
+  const allNetworkTokens = useSelector(
+    selectAllNetworkTokensAsLocal(activeNetwork.chainId)
+  )
+  const mergedTokens = useMemo(() => {
+    if (hideZeroBalance) return tokensWithBalance
+
+    //append missing zero balance tokens from allNetworkTokens
+    const tokensWithBalanceIDs: Record<LocalTokenId, boolean> = {}
+    tokensWithBalance.forEach(token => {
+      tokensWithBalanceIDs[token.localId] = true
+    })
+    const remainingNetworkTokens = allNetworkTokens.filter(
+      token => !tokensWithBalanceIDs[token.localId]
+    )
+    return [...tokensWithBalance, ...remainingNetworkTokens]
+  }, [allNetworkTokens, hideZeroBalance, tokensWithBalance])
 
   const tokensFilteredByZeroBal = useMemo(
     () =>
-      filterByZeroBalance(
-        tokensWithBalance,
-        hideZeroBalance,
-        zeroBalanceWhitelist
-      ),
-    [tokensWithBalance, hideZeroBalance, zeroBalanceWhitelist]
+      filterByZeroBalance(mergedTokens, hideZeroBalance, zeroBalanceWhitelist),
+    [mergedTokens, hideZeroBalance, zeroBalanceWhitelist]
   )
 
   const tokensSortedByAmount = useMemo(
@@ -74,6 +90,9 @@ export function useSearchableTokenList(hideZeroBalance = true): {
     tokens: LocalTokenWithBalance[],
     text: string
   ) {
+    if (!text) {
+      return tokens
+    }
     const substring = text.toLowerCase()
     return tokens.filter(
       token =>
