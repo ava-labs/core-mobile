@@ -1,6 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useRef } from 'react'
+import React from 'react'
 import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet'
-import { InteractionManager } from 'react-native'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import TabViewBackground from 'components/TabViewBackground'
 import AvaxSheetHandle from 'components/AvaxSheetHandle'
@@ -14,42 +13,26 @@ type RouteProp = WalletScreenProps<
   typeof AppNavigation.Modal.SelectToken
 >['route']
 
+const snapPoints = ['90%']
+
 function SelectTokenBottomSheet(): JSX.Element {
   const { goBack } = useNavigation()
-  const bottomSheetModalRef = useRef<BottomSheet>(null)
-  const snapPoints = useMemo(() => ['0%', '90%'], [])
   const { params } = useRoute<RouteProp>()
 
-  useEffect(() => {
-    // intentionally setting delay so animation is visible.
-    setTimeout(() => {
-      bottomSheetModalRef?.current?.snapTo(1)
-    }, 100)
-  }, [])
-
   function onTokenSelected(token: TokenWithBalance) {
-    handleClose()
+    goBack()
     params.onTokenSelected(token)
   }
-
-  const handleClose = useCallback(() => {
-    bottomSheetModalRef?.current?.close()
-    InteractionManager.runAfterInteractions(() => goBack())
-  }, [])
-
-  const handleChange = useCallback(index => {
-    index === 0 && handleClose()
-  }, [])
 
   return (
     <BottomSheet
       backdropComponent={BottomSheetBackdrop}
       handleComponent={AvaxSheetHandle}
-      ref={bottomSheetModalRef}
-      index={0}
+      animateOnMount
       snapPoints={snapPoints}
+      enablePanDownToClose
       backgroundComponent={TabViewBackground}
-      onChange={handleChange}>
+      onClose={goBack}>
       <AvaText.LargeTitleBold textStyle={{ marginHorizontal: 16 }}>
         Select Token
       </AvaText.LargeTitleBold>

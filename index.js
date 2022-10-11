@@ -1,7 +1,7 @@
 /**
  * @format
  */
-
+import 'react-native-gesture-handler'
 import './shim'
 import './read_as_array_buffer_shim'
 import 'react-native-get-random-values'

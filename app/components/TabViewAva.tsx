@@ -61,6 +61,7 @@ const TabViewAva: TabViewAvaFC = ({
   })
 
   const scenes = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (sceneProps: any) => {
       return childrenArray[sceneProps.route.index]
     },
@@ -85,7 +86,7 @@ const TabViewAva: TabViewAvaFC = ({
         <AvaButton.Base
           key={props.key}
           style={{
-            flex: 1,
+            width: props.defaultTabWidth,
             paddingVertical: 6,
             justifyContent: 'center',
             alignItems: 'center'
@@ -130,6 +131,7 @@ const TabViewAva: TabViewAvaFC = ({
         </View>
       )
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [shouldDisableTouch]
   )
 
