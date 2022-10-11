@@ -1,3 +1,6 @@
+import { Network } from '@avalabs/chains-sdk'
+import { NetworkTokenWithBalance, TokenWithBalanceERC20 } from 'store/balance'
+
 export type TokenListDict = {
   [contract: string]: TokenListERC20
 }
@@ -13,3 +16,13 @@ export type TokenListERC20 = {
 
 export type TokenAddress = string
 export type ChartDays = number
+
+export interface BalanceServiceProvider {
+  isProviderFor(network: Network): Promise<boolean>
+
+  getBalances(
+    network: Network,
+    userAddress: string,
+    currency: string
+  ): Promise<(NetworkTokenWithBalance | TokenWithBalanceERC20)[]>
+}

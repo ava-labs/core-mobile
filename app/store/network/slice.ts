@@ -2,6 +2,9 @@ import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { BITCOIN_NETWORK, Network } from '@avalabs/chains-sdk'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectAllCustomTokens } from 'store/customToken'
+import { LocalTokenWithBalance } from 'store/balance'
+import { getLocalTokenId } from 'store/balance/utils'
+import { BN } from 'bn.js'
 import { RootState } from '../index'
 import { ChainID, NetworkState } from './types'
 import { mergeWithCustomTokens } from './utils'
@@ -165,6 +168,27 @@ export const selectIsCustomNetwork =
     const customNetworks = _selectCustomNetworks(state)
     return !!customNetworks[chainId]
   }
+
+export const selectAllNetworkTokensAsLocal = (
+  state: RootState
+): LocalTokenWithBalance[] => {
+  return (
+    state.network.networks[state.network.active]?.tokens?.map(token => {
+      return {
+        ...token,
+        localId: getLocalTokenId(token),
+        balance: new BN(0),
+        balanceInCurrency: 0,
+        balanceDisplayValue: '0',
+        balanceCurrencyDisplayValue: '0',
+        priceInCurrency: 0,
+        marketCap: 0,
+        change24: 0,
+        vol24: 0
+      } as LocalTokenWithBalance
+    }) ?? []
+  )
+}
 
 export const {
   setNetworks,

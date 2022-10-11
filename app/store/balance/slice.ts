@@ -10,8 +10,9 @@ import {
   Balance,
   Balances,
   BalanceState,
+  LocalTokenWithBalance,
   QueryStatus,
-  TokenWithBalance
+  TokenType
 } from './types'
 
 const BN_ZERO = new BN(0)
@@ -52,7 +53,7 @@ export const balanceSlice = createSlice({
         address: string
         accountIndex: number
         chainId: number
-        tokens: TokenWithBalance[]
+        tokens: LocalTokenWithBalance[]
       }>
     ) => {
       const { address, accountIndex, chainId, tokens } = action.payload
@@ -112,21 +113,17 @@ export const selectAvaxPrice = (state: RootState) => {
 
   for (const balance of balances) {
     for (const token of balance.tokens) {
-      if (token.id === 'avax') return token.priceInCurrency
+      if (
+        'type' in token &&
+        'symbol' in token &&
+        token.type === TokenType.NATIVE &&
+        token.symbol.toLowerCase() === 'avax'
+      ) {
+        return token.priceInCurrency
+      }
     }
   }
   return 0
-}
-
-export const selectTokenById = (tokenId: string) => (state: RootState) => {
-  const balances = Object.values(state.balance.balances)
-
-  for (const balance of balances) {
-    for (const token of balance.tokens) {
-      if (token.id === tokenId) return token
-    }
-  }
-  return undefined
 }
 
 export const selectTokenByAddress = (address: string) => (state: RootState) => {

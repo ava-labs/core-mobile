@@ -12,7 +12,7 @@ import PortfolioListItem from 'components/PortfolioListItem'
 import { Space } from 'components/Space'
 import SearchBar from 'components/SearchBar'
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
-import { TokenWithBalance } from 'store/balance'
+import { LocalTokenWithBalance, TokenWithBalance } from 'store/balance'
 
 const DEFAULT_HORIZONTAL_MARGIN = 16
 
@@ -83,7 +83,7 @@ function TokenSelector({
           data={filteredTokenList}
           renderItem={renderItem}
           refreshing={false}
-          keyExtractor={(item: TokenWithBalance) => item.id}
+          keyExtractor={(item: LocalTokenWithBalance) => item.localId}
           ListEmptyComponent={
             <ZeroState.NoResultsTextual message={getNoResultsText()} />
           }

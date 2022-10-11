@@ -13,7 +13,7 @@ import SearchBar from 'components/SearchBar'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { WalletScreenProps } from 'navigation/types'
-import { TokenType, TokenWithBalance } from 'store/balance'
+import { LocalTokenWithBalance, TokenType } from 'store/balance'
 import ZeroState from 'components/ZeroState'
 
 type NavigationProp = WalletScreenProps<
@@ -31,7 +31,7 @@ function TokenManagement(): JSX.Element {
 
   const navigation = useNavigation<NavigationProp>()
 
-  const renderItem = (item: ListRenderItemInfo<TokenWithBalance>) => {
+  const renderItem = (item: ListRenderItemInfo<LocalTokenWithBalance>) => {
     const token = item.item
     const logoUri = token.logoUri
     const balance = !token.balance.isZero()
@@ -40,7 +40,7 @@ function TokenManagement(): JSX.Element {
 
     return (
       <TokenManagementItem
-        id={token.id}
+        id={token.localId}
         balance={balance}
         name={token.name}
         symbol={token.symbol}
@@ -85,7 +85,7 @@ function TokenManagement(): JSX.Element {
             </View>
           }
           refreshing={false}
-          keyExtractor={(item: TokenWithBalance) => item.id}
+          keyExtractor={(item: LocalTokenWithBalance) => item.localId}
           ListEmptyComponent={emptyView}
         />
       )}

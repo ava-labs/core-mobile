@@ -1,35 +1,20 @@
-import { TokenWithBalance } from 'store/balance'
-import NetworkService from 'services/network/NetworkService'
-import { Network, NetworkVMType } from '@avalabs/chains-sdk'
+import { NetworkTokenWithBalance, TokenWithBalanceERC20 } from 'store/balance'
+import { Network } from '@avalabs/chains-sdk'
 import { Account } from 'store/account'
 import AccountsService from 'services/account/AccountsService'
-import { BlockCypherProvider, JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
+import GlacierBalanceProvider from 'services/balance/GlacierBalanceService'
+import { BalanceServiceProvider } from 'services/balance/types'
+import { findAsyncSequential } from 'utils/Utils'
 import BtcBalanceService from './BtcBalanceService'
 import EvmBalanceService from './EvmBalanceService'
 
-const serviceMap = {
-  [NetworkVMType.BITCOIN]: BtcBalanceService,
-  [NetworkVMType.EVM]: EvmBalanceService
-}
+const balanceProviders: BalanceServiceProvider[] = [
+  GlacierBalanceProvider,
+  BtcBalanceService,
+  EvmBalanceService
+]
 
-type ServiceMap = typeof serviceMap
-type Keys = keyof ServiceMap
-
-class BalanceServiceFactory {
-  static getService(k: Keys) {
-    return serviceMap[k]
-  }
-}
 export class BalanceService {
-  private getBalanceServiceForNetwork(network: Network) {
-    const balanceService = BalanceServiceFactory.getService(network.vmName)
-
-    if (!balanceService)
-      throw new Error(`no balance service found for network ${network.chainId}`)
-
-    return balanceService
-  }
-
   async getBalancesForAccount(
     network: Network,
     account: Account,
@@ -37,23 +22,31 @@ export class BalanceService {
   ): Promise<{
     accountIndex: number
     chainId: number
-    address: string
-    tokens: TokenWithBalance[]
+    accountAddress: string
+    tokens: (NetworkTokenWithBalance | TokenWithBalanceERC20)[]
   }> {
-    const address = AccountsService.getAddressForNetwork(account, network)
-    const provider = NetworkService.getProviderForNetwork(network)
-    const balanceService = this.getBalanceServiceForNetwork(network)
-    const tokens = await balanceService.getBalances(
+    const accountAddress = AccountsService.getAddressForNetwork(
+      account,
+      network
+    )
+    const balanceProvider = await findAsyncSequential(balanceProviders, value =>
+      value.isProviderFor(network)
+    )
+    if (!balanceProvider) {
+      throw new Error(
+        `no balance provider found for network ${network.chainId}`
+      )
+    }
+    const tokens = await balanceProvider.getBalances(
       network,
-      provider as JsonRpcBatchInternal & BlockCypherProvider,
-      address,
+      accountAddress,
       currency
     )
     return {
       accountIndex: account.index,
       chainId: network.chainId,
-      address,
-      tokens
+      tokens,
+      accountAddress
     }
   }
 
@@ -61,16 +54,17 @@ export class BalanceService {
     network: Network,
     address: string,
     currency: string
-  ): Promise<TokenWithBalance[]> {
-    const provider = NetworkService.getProviderForNetwork(network)
-    const balanceService = this.getBalanceServiceForNetwork(network)
-
-    return balanceService.getBalances(
-      network,
-      provider as JsonRpcBatchInternal & BlockCypherProvider,
-      address,
-      currency
+  ): Promise<(NetworkTokenWithBalance | TokenWithBalanceERC20)[]> {
+    const balanceProvider = await findAsyncSequential(balanceProviders, value =>
+      value.isProviderFor(network)
     )
+    if (!balanceProvider) {
+      throw new Error(
+        `no balance provider found for network ${network.chainId}`
+      )
+    }
+
+    return balanceProvider.getBalances(network, address, currency)
   }
 }
 
