@@ -205,7 +205,7 @@ export class SendServiceEVM implements SendServiceHelper {
     )
     const populatedTransaction = await contract.populateTransaction[
       'safeTransferFrom(address,address,uint256)'
-    ](this.fromAddress, sendState.address, sendState.token?.id)
+    ](this.fromAddress, sendState.address, sendState.token?.tokenId)
     return {
       ...populatedTransaction, // only includes `to` and `data`
       from: this.fromAddress

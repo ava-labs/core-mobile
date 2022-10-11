@@ -9,9 +9,9 @@ import AvaButton from 'components/AvaButton'
 import { PortfolioScreenProps } from 'navigation/types'
 import { useIsUIDisabled, UI } from 'hooks/useIsUIDisabled'
 import {
+  LocalTokenWithBalance,
   selectBalanceTotalInCurrencyForNetworkAndAccount,
-  TokenType,
-  TokenWithBalance
+  TokenType
 } from 'store/balance'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useSelector } from 'react-redux'
@@ -56,9 +56,9 @@ const NetworkTokens = () => {
 
   const goToReceive = () => navigate(AppNavigation.Wallet.ReceiveTokens)
 
-  const selectToken = (token: TokenWithBalance) => {
+  const selectToken = (token: LocalTokenWithBalance) => {
     navigate(AppNavigation.Wallet.OwnedTokenDetail, {
-      tokenId: token.id
+      tokenId: token.localId
     })
 
     capture('TokenListTokenSelected', {
@@ -71,7 +71,7 @@ const NetworkTokens = () => {
     navigate(AppNavigation.Wallet.TokenManagement)
   }
 
-  const renderItem = (item: ListRenderItemInfo<TokenWithBalance>) => {
+  const renderItem = (item: ListRenderItemInfo<LocalTokenWithBalance>) => {
     const token = item.item
     return (
       <PortfolioListItem
@@ -111,7 +111,7 @@ const NetworkTokens = () => {
       }}
       data={tokenList}
       renderItem={renderItem}
-      keyExtractor={(item: TokenWithBalance) => item.id}
+      keyExtractor={(item: LocalTokenWithBalance) => item.localId}
       onRefresh={refetch}
       refreshing={isRefetching}
       scrollEventThrottle={16}
