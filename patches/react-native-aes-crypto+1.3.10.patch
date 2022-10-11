@@ -9,3 +9,5 @@ index a68c5b7..19ad67c 100644
 -apply plugin: 'maven'
 +apply plugin: 'maven-publish'
  
+ // Matches values in recent template from React Native 0.59 / 0.60
+ // https://github.com/facebook/react-native/blob/0.59-stable/template/android/build.gradle#L5-L9
