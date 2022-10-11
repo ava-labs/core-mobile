@@ -1,33 +1,36 @@
-#source 'https://github.com/CocoaPods/Specs.git'
-
 require_relative '../node_modules/react-native/scripts/react_native_pods'
 require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
 
-#install! 'cocoapods', :deterministic_uuids => false
+platform :ios, '12.4'
+install! 'cocoapods', :deterministic_uuids => false
 
-platform :ios, '11.0'
+use_flipper = ENV['CI'] != 'true'
 
 abstract_target 'common' do
   # put common target configuration here
   config = use_native_modules!
 
+  # Flags change depending on the env values.
+  flags = get_default_flags()
+
   use_react_native!(
     :path => config[:reactNativePath],
-    # to enable hermes on iOS, change `false` to `true` and then install pods
-    :hermes_enabled => false
+    # Enables or disables Hermes; if flag is omitted Hermes will be enabled by default.
+    :hermes_enabled => false,
+    :fabric_enabled => flags[:fabric_enabled],
+    # Enables Flipper.
+    # Note that if you have use_frameworks! enabled, Flipper will not work and
+    # you should disable the next line.
+    :flipper_configuration => use_flipper ? FlipperConfiguration.enabled(["Debug"], { 'Flipper' => '0.159.0' }) : FlipperConfiguration.disabled,
+    # An absolute path to your application root.
+    :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
 
   pod 'RNFS', :path => '../node_modules/react-native-fs'
 
-  # Enables Flipper.
-  #
-  # Note that if you have use_frameworks! enabled, Flipper will not work and
-  # you should disable the next line.
-  use_flipper!({'Flipper' => '0.92.0', 'Flipper-Folly' => '2.6.7', 'Flipper-RSocket' => '1.4.3'})
-
   permissions_path = '../node_modules/react-native-permissions/ios'
   pod 'Permission-Camera', :path => "#{permissions_path}/Camera"
-  
+
   target 'AvaxWallet' do
   end
   
@@ -37,7 +40,11 @@ end
 
 
 post_install do |installer|
- flipper_post_install(installer)
- react_native_post_install(installer)
- __apply_Xcode_12_5_M1_post_install_workaround(installer)
+  react_native_post_install(
+    installer,
+    # Set `mac_catalyst_enabled` to `true` in order to apply patches
+    # necessary for Mac Catalyst builds
+    :mac_catalyst_enabled => false
+  )
+  __apply_Xcode_12_5_M1_post_install_workaround(installer)
 end

@@ -1,20 +1,19 @@
-import React, { useCallback, useEffect, useMemo, useRef } from 'react'
+import React, { useEffect } from 'react'
 import AccountApproval from 'screens/rpc/components/AccountApproval'
 import SignTransaction from 'screens/rpc/components/SignTransaction'
 import SignMessage from 'screens/rpc/components/SignMessage/SignMessage'
 import { RPC_EVENT } from 'screens/rpc/util/types'
 import { useDappConnectionContext } from 'contexts/DappConnectionContext'
 import { useNavigation } from '@react-navigation/native'
-import { InteractionManager } from 'react-native'
 import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet'
 import AvaxSheetHandle from 'components/AvaxSheetHandle'
 import TabViewBackground from 'components/TabViewBackground'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
+const snapPoints = ['90%']
+
 const RpcMethodsUI = () => {
   const { goBack } = useNavigation()
-  const bottomSheetModalRef = useRef<BottomSheet>(null)
-  const snapPoints = useMemo(() => ['0%', '90%'], [])
   const {
     dappEvent,
     onSessionApproved,
@@ -26,28 +25,13 @@ const RpcMethodsUI = () => {
   } = useDappConnectionContext()
 
   useEffect(() => {
-    // intentionally setting delay so animation is visible.
-    setTimeout(() => {
-      bottomSheetModalRef?.current?.snapTo(1)
-    }, 100)
-  }, [])
-
-  useEffect(() => {
     if (dappEvent === undefined) {
-      handleClose()
+      goBack()
     } else if (!dappEvent.handled) {
       setEventHandled(true)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dappEvent])
-
-  const handleClose = useCallback(() => {
-    bottomSheetModalRef?.current?.close()
-    InteractionManager.runAfterInteractions(() => goBack())
-  }, [])
-
-  const handleChange = useCallback(index => {
-    index === 0 && handleClose()
-  }, [])
 
   function renderSignTransaction() {
     return (
@@ -55,7 +39,7 @@ const RpcMethodsUI = () => {
         onReject={onCallRejected}
         onApprove={onTransactionCallApproved}
         dappEvent={dappEvent}
-        onClose={handleClose}
+        onClose={goBack}
       />
     )
   }
@@ -76,7 +60,7 @@ const RpcMethodsUI = () => {
         onRejected={onCallRejected}
         onApprove={onMessageCallApproved}
         dappEvent={dappEvent}
-        onClose={handleClose}
+        onClose={goBack}
       />
     )
   }
@@ -85,12 +69,12 @@ const RpcMethodsUI = () => {
     <BottomSheet
       backdropComponent={BottomSheetBackdrop}
       handleComponent={AvaxSheetHandle}
-      ref={bottomSheetModalRef}
-      index={1}
+      animateOnMount
       snapPoints={snapPoints}
+      enablePanDownToClose
       backgroundComponent={TabViewBackground}
       enableContentPanningGesture={false}
-      onChange={handleChange}>
+      onClose={goBack}>
       <SafeAreaView style={{ flex: 1 }}>
         {(dappEvent?.eventType === RPC_EVENT.SIGN && renderSignMessage()) ||
           (dappEvent?.eventType === RPC_EVENT.SESSION &&

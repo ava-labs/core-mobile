@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { Animated, StyleSheet, View } from 'react-native'
+import { Animated, InteractionManager, StyleSheet, View } from 'react-native'
 import PinKey, { PinKeys } from 'screens/onboarding/PinKey'
 import { Space } from 'components/Space'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -7,6 +7,7 @@ import AvaButton from 'components/AvaButton'
 import DotSVG from 'components/svg/DotSVG'
 import CoreXLogoAnimated from 'components/CoreXLogoAnimated'
 import AvaText from 'components/AvaText'
+import { Subscription } from 'rxjs'
 import {
   MnemonicLoaded,
   NothingToLoad,
@@ -63,28 +64,34 @@ export default function PinOrBiometryLogin({
   } = usePinOrBiometryLogin()
 
   useEffect(() => {
+    let sub: Subscription
+
     // check if if the login is biometric
-    const sub = promptForWalletLoadingIfExists().subscribe({
-      next: (value: WalletLoadingResults) => {
-        if (value instanceof MnemonicLoaded) {
-          // do nothing. We only rely on `setMnemonic` being called
-          // and the useEffect being triggered.
-        } else if (value instanceof PrivateKeyLoaded) {
-          // props.onEnterSingletonWallet(value.privateKey)
-        } else if (value instanceof NothingToLoad) {
-          //do nothing
-        }
-      },
-      error: err => console.log(err.message)
+    InteractionManager.runAfterInteractions(() => {
+      sub = promptForWalletLoadingIfExists().subscribe({
+        next: (value: WalletLoadingResults) => {
+          if (value instanceof MnemonicLoaded) {
+            // do nothing. We only rely on `setMnemonic` being called
+            // and the useEffect being triggered.
+          } else if (value instanceof PrivateKeyLoaded) {
+            // props.onEnterSingletonWallet(value.privateKey)
+          } else if (value instanceof NothingToLoad) {
+            //do nothing
+          }
+        },
+        error: err => console.log(err.message)
+      })
     })
 
-    return () => sub.unsubscribe()
+    return () => sub?.unsubscribe()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
     if (mnemonic) {
       onLoginSuccess(mnemonic)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mnemonic])
 
   const generatePinDots = (): Element[] => {
@@ -107,7 +114,7 @@ export default function PinOrBiometryLogin({
       keys.push(
         <View key={key} style={styles.pinKey}>
           <PinKey
-            keyboardKey={keymap.get(value)!}
+            keyboardKey={keymap.get(value) as PinKeys}
             onPress={onEnterPin}
             disabled={disableKeypad}
           />
