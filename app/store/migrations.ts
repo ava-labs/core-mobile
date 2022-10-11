@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export const migrations = {
   1: (state: any) => {
     // replace watchlist store

@@ -1,5 +1,5 @@
 import { ethers } from 'ethers'
-import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
+import { BlockCypherProvider, JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 import { InfuraProvider } from '@ethersproject/providers'
 import {
   balanceToDisplayValue,
@@ -9,15 +9,20 @@ import {
 import {
   NetworkTokenWithBalance,
   TokenType,
-  TokenWithBalance,
   TokenWithBalanceERC20
 } from 'store/balance'
-import { Network, NetworkContractToken } from '@avalabs/chains-sdk'
+import {
+  Network,
+  NetworkContractToken,
+  NetworkVMType
+} from '@avalabs/chains-sdk'
 import {
   SimpleTokenPriceResponse,
   VsCurrencyType
 } from '@avalabs/coingecko-sdk'
 import TokenService from 'services/token/TokenService'
+import { BalanceServiceProvider } from 'services/balance/types'
+import NetworkService from 'services/network/NetworkService'
 
 const hstABI = require('human-standard-token-abi')
 
@@ -25,15 +30,21 @@ type Provider = JsonRpcBatchInternal | InfuraProvider
 
 const DEFAULT_DECIMALS = 18
 
-export class EvmBalanceService {
+export class EvmBalanceService implements BalanceServiceProvider {
+  async isProviderFor(network: Network): Promise<boolean> {
+    return network.vmName === NetworkVMType.EVM
+  }
+
   async getBalances(
     network: Network,
-    provider: Provider,
     userAddress: string,
     currency: string
-  ): Promise<TokenWithBalance[]> {
+  ): Promise<(NetworkTokenWithBalance | TokenWithBalanceERC20)[]> {
     const activeTokenList = network.tokens ?? []
     const tokenAddresses = activeTokenList.map(token => token.address)
+    const provider = NetworkService.getProviderForNetwork(
+      network
+    ) as JsonRpcBatchInternal & BlockCypherProvider
 
     const assetPlatformId =
       network.pricingProviders?.coingecko?.assetPlatformId ?? ''
@@ -59,7 +70,6 @@ export class EvmBalanceService {
       activeTokenList,
       tokenPriceDict,
       userAddress,
-      network,
       currency
     )
 
@@ -72,12 +82,11 @@ export class EvmBalanceService {
     network: Network,
     currency: string
   ): Promise<NetworkTokenWithBalance> {
-    const { networkToken, chainId } = network
+    const { networkToken } = network
     const tokenDecimals = networkToken.decimals ?? DEFAULT_DECIMALS
     const nativeTokenId =
       network.pricingProviders?.coingecko?.nativeTokenId ?? ''
 
-    const id = `${chainId}-${nativeTokenId}`
     const balanceEthersBig = await provider.getBalance(userAddress)
 
     const {
@@ -102,7 +111,6 @@ export class EvmBalanceService {
 
     return {
       ...networkToken,
-      id,
       coingeckoId: nativeTokenId,
       type: TokenType.NATIVE,
       balance,
@@ -121,14 +129,10 @@ export class EvmBalanceService {
     activeTokenList: NetworkContractToken[],
     tokenPriceDict: SimpleTokenPriceResponse,
     userAddress: string,
-    network: Network,
     currency: string
   ): Promise<TokenWithBalanceERC20[]> {
-    const { chainId } = network
-
     return Promise.allSettled(
       activeTokenList.map(async token => {
-        const id = `${chainId}-${token.address}`
         const tokenDecimals = token.decimals ?? DEFAULT_DECIMALS
         const tokenPrice =
           tokenPriceDict[token.address.toLowerCase()]?.[
@@ -154,7 +158,6 @@ export class EvmBalanceService {
 
         return {
           ...token,
-          id,
           type: TokenType.ERC20,
           balance,
           balanceDisplayValue,

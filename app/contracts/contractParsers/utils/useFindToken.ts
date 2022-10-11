@@ -15,7 +15,6 @@ import { useSelector } from 'react-redux'
 import { useActiveAccount } from 'hooks/useActiveAccount'
 
 const UNKNOWN_TOKEN = (address: string): TokenWithBalanceERC20 => ({
-  id: 'UNKNOWN TOKEN',
   address,
   type: TokenType.ERC20,
   contractType: 'ERC-20',
