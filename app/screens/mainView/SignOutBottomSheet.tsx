@@ -32,10 +32,12 @@ const LogoutScreen = ({
         }
       ]}>
       <AvaText.Heading2 textStyle={{ textAlign: 'center' }}>
-        Have you recorded your recovery phrase?
+        Are you sure you want to erase your wallet?
       </AvaText.Heading2>
       <AvaText.Body2 textStyle={{ textAlign: 'center', marginVertical: 16 }}>
-        Without this you will not be able to sign back in to your account.
+        {
+          'Your current wallet will be removed from this app permanently. This cannot be undone. \n\nYou can ONLY recover this wallet with your recovery phrase. Core wallet does not store your recovery phrase.'
+        }
       </AvaText.Body2>
       <AvaButton.PrimaryLarge onPress={onConfirm}>Yes</AvaButton.PrimaryLarge>
       <Space y={8} />
