@@ -1,8 +1,11 @@
-import React, { useCallback, useEffect, useRef } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useNavigation } from '@react-navigation/native'
-import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet'
+import BottomSheet, {
+  BottomSheetBackdrop,
+  BottomSheetView,
+  useBottomSheetDynamicSnapPoints
+} from '@gorhom/bottom-sheet'
 import { Space } from 'components/Space'
-import { useApplicationContext } from 'contexts/ApplicationContext'
 import { View } from 'react-native'
 import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
@@ -15,20 +18,12 @@ const LogoutScreen = ({
   onConfirm: () => void
   onCancel: () => void
 }) => {
-  const { theme } = useApplicationContext()
   return (
     <View
       style={[
         {
-          borderRadius: 8,
-          backgroundColor: theme.colorBg2,
-          paddingVertical: 24,
-          paddingHorizontal: 16,
           marginHorizontal: 16,
-          marginVertical: 16,
-          justifyContent: 'flex-end',
-          position: 'absolute',
-          bottom: 0
+          marginVertical: 16
         }
       ]}>
       <AvaText.Heading2 textStyle={{ textAlign: 'center' }}>
@@ -49,11 +44,19 @@ const LogoutScreen = ({
 const MyHandle = () => {
   return <Space y={24} />
 }
-const snapPoints = ['40%']
 
 const SignOutBottomSheet = ({ onConfirm }: { onConfirm: () => void }) => {
   const { goBack, canGoBack } = useNavigation()
   const bottomSheetRef = useRef<BottomSheet>(null)
+
+  const initialSnapPoints = useMemo(() => ['25%', 'CONTENT_HEIGHT'], [])
+
+  const {
+    animatedHandleHeight,
+    animatedSnapPoints,
+    animatedContentHeight,
+    handleContentLayout
+  } = useBottomSheetDynamicSnapPoints(initialSnapPoints)
 
   const onClose = useCallback(() => {
     if (canGoBack()) {
@@ -71,14 +74,17 @@ const SignOutBottomSheet = ({ onConfirm }: { onConfirm: () => void }) => {
   return (
     <BottomSheet
       ref={bottomSheetRef}
-      index={-1}
       onClose={onClose}
       enablePanDownToClose
-      snapPoints={snapPoints}
+      snapPoints={animatedSnapPoints}
+      handleHeight={animatedHandleHeight}
+      contentHeight={animatedContentHeight}
       handleComponent={MyHandle}
       backgroundComponent={TabViewBackground}
       backdropComponent={BottomSheetBackdrop}>
-      <LogoutScreen onConfirm={onConfirm} onCancel={() => goBack()} />
+      <BottomSheetView onLayout={handleContentLayout}>
+        <LogoutScreen onConfirm={onConfirm} onCancel={() => goBack()} />
+      </BottomSheetView>
     </BottomSheet>
   )
 }
