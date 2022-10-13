@@ -1,3 +1,10 @@
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  interpolate,
+  interpolateColor,
+  withSpring
+} from 'react-native-reanimated'
 import React, {
   useCallback,
   useEffect,
@@ -6,7 +13,7 @@ import React, {
   useRef,
   useState
 } from 'react'
-import { Animated, Pressable, StyleSheet, View } from 'react-native'
+import { Pressable, StyleSheet, View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 import ActionButtonItem from 'components/ActionButtonItem'
 
@@ -24,6 +31,8 @@ interface FABProps {
   radius?: number
   resetOnItemPress?: boolean
 }
+
+const springConfig = { damping: 11.5, stiffness: 95 }
 
 const FloatingActionButton = React.forwardRef(
   (
@@ -43,9 +52,41 @@ const FloatingActionButton = React.forwardRef(
     }: FABProps,
     ref
   ) => {
-    const anim = useRef(new Animated.Value(0)).current
+    const progress = useSharedValue(0)
     const [isActive, setIsActive] = useState(false)
     const timeout = useRef<NodeJS.Timeout | null>(null)
+
+    const viewAnimatedStyles = useAnimatedStyle(() => {
+      return {
+        opacity: progress.value
+      }
+    })
+    const iconAnimatedStyles = useAnimatedStyle(() => {
+      return {
+        color: interpolateColor(
+          progress.value,
+          [0, 1],
+          [iconTextColor ?? '', changeIconTextColor ?? '']
+        )
+      }
+    })
+    const buttonAnimatedStyles = useAnimatedStyle(() => {
+      return {
+        backgroundColor: interpolateColor(
+          progress.value,
+          [0, 1],
+          [backgroundColor, changeBackgroundColor]
+        ),
+        transform: [
+          {
+            scale: interpolate(progress.value, [0, 1], [1, scale])
+          },
+          {
+            rotate: interpolate(progress.value, [0, 1], [0, degrees]) + 'deg'
+          }
+        ]
+      }
+    })
 
     useImperativeHandle(ref, () => ({
       collapse: () => {
@@ -68,15 +109,9 @@ const FloatingActionButton = React.forwardRef(
      * Resets Fab with animations
      */
     const reset = useCallback(() => {
-      Animated.spring(anim, {
-        toValue: 0,
-        speed: 3,
-        bounciness: 2,
-        useNativeDriver: false
-      }).start(() => {
-        setIsActive(false)
-      })
-    }, [anim])
+      progress.value = 0
+      setIsActive(false)
+    }, [progress])
 
     /**
      * Animates elements of the component.
@@ -89,16 +124,9 @@ const FloatingActionButton = React.forwardRef(
         reset()
         return
       }
-
-      Animated.spring(anim, {
-        toValue: 1,
-        speed: 3,
-        bounciness: 2,
-        useNativeDriver: false
-      }).start()
-
+      progress.value = withSpring(1, springConfig)
       setIsActive(true)
-    }, [isActive, anim, reset])
+    }, [isActive, reset, progress])
 
     /**
      * Render methods and start/end values for fab item animations and positions
@@ -148,7 +176,7 @@ const FloatingActionButton = React.forwardRef(
             ]}>
             <ActionButtonItem
               position={'center'}
-              anim={anim}
+              progress={progress}
               size={48}
               radius={radius}
               angle={startRadian + index * offset}
@@ -168,12 +196,12 @@ const FloatingActionButton = React.forwardRef(
       })
     }, [
       isActive,
-      anim,
-      backgroundColor,
       children,
+      progress,
       radius,
-      reset,
-      resetOnItemPress
+      backgroundColor,
+      resetOnItemPress,
+      reset
     ])
 
     /**
@@ -185,20 +213,11 @@ const FloatingActionButton = React.forwardRef(
       }
 
       return (
-        <Animated.Text
-          style={[
-            styles.btnText,
-            {
-              color: anim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [iconTextColor ?? '', changeIconTextColor ?? '']
-              })
-            }
-          ]}>
+        <Animated.Text style={[styles.btnText, iconAnimatedStyles]}>
           {iconText}
         </Animated.Text>
       )
-    }, [anim, changeIconTextColor, icon, iconText, iconTextColor])
+    }, [icon, iconAnimatedStyles, iconText])
 
     return (
       <View
@@ -206,9 +225,7 @@ const FloatingActionButton = React.forwardRef(
         style={[styles.overlay, { height: 400, top: -100 }]}>
         <Animated.View
           pointerEvents={isActive ? 'auto' : 'none'}
-          style={{
-            opacity: anim
-          }}>
+          style={viewAnimatedStyles}>
           <LinearGradient
             nativeID={'linearGradient'}
             pointerEvents={'none'}
@@ -233,28 +250,11 @@ const FloatingActionButton = React.forwardRef(
           <Animated.View
             style={[
               styles.btn,
+              buttonAnimatedStyles,
               {
                 width: size,
                 height: size,
-                borderRadius: size / 2,
-                backgroundColor: anim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [backgroundColor, changeBackgroundColor]
-                }),
-                transform: [
-                  {
-                    scale: anim.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [1, scale]
-                    })
-                  },
-                  {
-                    rotate: anim.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: ['0deg', degrees + 'deg']
-                    })
-                  }
-                ]
+                borderRadius: size / 2
               }
             ]}>
             {renderButtonIcon}
