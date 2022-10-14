@@ -19,7 +19,7 @@ import SecurityPrivacyStackScreen, {
   SecurityStackParamList
 } from 'navigation/wallet/SecurityPrivacyStackScreen'
 import { MainHeaderOptions, SubHeaderOptions } from 'navigation/NavUtils'
-import SignOutBottomSheet from 'screens/mainView/SignOutBottomSheet'
+import SignOutModal from 'screens/mainView/SignOutModal'
 import {
   createStackNavigator,
   StackNavigationOptions
@@ -126,14 +126,14 @@ export type WalletScreenStackParams = {
 
 const WalletScreenS = createStackNavigator<WalletScreenStackParams>()
 
-export const SignOutBottomSheetScreen = () => {
+export const SignOutModalScreen = () => {
   const { signOut } = useApplicationContext().appHook
 
   const doSwitchWallet = (): void => {
     signOut().then()
   }
 
-  return <SignOutBottomSheet onConfirm={doSwitchWallet} />
+  return <SignOutModal onConfirm={doSwitchWallet} />
 }
 
 function WalletScreenStack(props: Props | Readonly<Props>) {
@@ -184,7 +184,7 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
         />
         <WalletScreenS.Screen
           name={AppNavigation.Modal.SignOut}
-          component={SignOutBottomSheetScreen}
+          component={SignOutModalScreen}
         />
         <WalletScreenS.Screen
           name={AppNavigation.Modal.SelectToken}
