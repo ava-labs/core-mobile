@@ -18,7 +18,7 @@ import AvaText from './AvaText'
 
 interface Props {
   angle?: number
-  progress: SharedValue<number>
+  progress?: SharedValue<number>
   radius?: number
   buttonColor?: string
   onPress?: () => void
@@ -52,17 +52,19 @@ const ActionButtonItem: FC<Props> = ({
   const offsetX = vertical ? 0 : radius * Math.cos(angle)
   const offsetY = vertical ? -160 : radius * Math.sin(angle)
   const animatedStyles = useAnimatedStyle(() => {
+    const progressValue = progress?.value ?? 1
+
     return {
-      opacity: progress.value,
+      opacity: progressValue,
       transform: [
         {
-          translateY: interpolate(progress.value, [0, 1], [0, offsetY])
+          translateY: interpolate(progressValue, [0, 1], [0, offsetY])
         },
         {
-          translateX: interpolate(progress.value, [0, 1], [0, offsetX])
+          translateX: interpolate(progressValue, [0, 1], [0, offsetX])
         },
         {
-          scale: interpolate(progress.value, [0, 1], [0, 1])
+          scale: interpolate(progressValue, [0, 1], [0, 1])
         }
       ]
     }
