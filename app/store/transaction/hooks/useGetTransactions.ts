@@ -13,12 +13,19 @@ export const useGetTransactions = () => {
   const account = useSelector(selectActiveAccount)
   const { criticalConfig } = useBridgeSDK()
 
-  const { data, fetchNext, refresh, isLoading, isRefreshing } =
+  const { data, fetchNext, refresh, isLoading, isRefreshing, isFirstPage } =
     useInfiniteScroll<GetTransactionsArgs, ActivityResponse, Transaction>({
       useQuery: useGetTransactionsQuery,
       queryParams: { network, account, criticalConfig },
       dataKey: 'transactions'
     })
 
-  return { transactions: data, isLoading, isRefreshing, fetchNext, refresh }
+  return {
+    transactions: data,
+    isLoading,
+    isRefreshing,
+    isFirstPage,
+    fetchNext,
+    refresh
+  }
 }

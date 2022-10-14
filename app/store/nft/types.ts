@@ -40,7 +40,7 @@ export type NFTItemExternalDataAttribute = {
 
 export type GetNftArgs = {
   network: Network
-  account: Account
+  account?: Account
   currency: string
   nextPageToken?: string
 }
