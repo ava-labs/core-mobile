@@ -558,7 +558,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = org.avalabs.avaxwallet;
+				PRODUCT_BUNDLE_IDENTIFIER = org.avalabs.corewallet;
 				PRODUCT_NAME = AvaxWallet;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "AvaxWallet-Bridging-Header.h";
@@ -609,7 +609,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = org.avalabs.avaxwallet;
+				PRODUCT_BUNDLE_IDENTIFIER = org.avalabs.corewallet;
 				PRODUCT_NAME = AvaxWallet;
 				PROVISIONING_PROFILE_SPECIFIER = "App distribution provisioning profile";
 				SWIFT_OBJC_BRIDGING_HEADER = "AvaxWallet-Bridging-Header.h";
