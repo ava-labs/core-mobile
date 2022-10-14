@@ -9,7 +9,7 @@ import { useGetNftsQuery } from '../api'
 // a hook to get NFTs with pagination support for the current active network & account & currency
 export const useGetNfts = () => {
   const network = useSelector(selectActiveNetwork)
-  const account = useSelector(selectActiveAccount)!
+  const account = useSelector(selectActiveAccount)
   const currency = useSelector(selectSelectedCurrency)
 
   const {
@@ -18,6 +18,7 @@ export const useGetNfts = () => {
     refresh,
     isLoading,
     isRefreshing,
+    isFirstPage,
     isError,
     isSuccess,
     isFetchingNext
@@ -31,6 +32,7 @@ export const useGetNfts = () => {
     nfts: data,
     isLoading,
     isRefreshing,
+    isFirstPage,
     refresh,
     isFetchingNext,
     fetchNext,
