@@ -17,8 +17,8 @@ const SignOutModal = ({ onConfirm }: { onConfirm: () => void }) => {
       message={
         'Your current wallet will be removed from this app permanently. This cannot be undone. \n\nYou can ONLY recover this wallet with your recovery phrase. Core wallet does not store your recovery phrase.'
       }
-      actionText={'Yes'}
-      dismissText={'No'}
+      actionText={'I understand, continue'}
+      dismissText={'Cancel'}
       onAction={onConfirm}
       onDismiss={onClose}
     />
