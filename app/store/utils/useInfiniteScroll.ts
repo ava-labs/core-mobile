@@ -14,6 +14,7 @@ export const useInfiniteScroll = <
   queryParams,
   dataKey
 }: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   useQuery: UseQuery<QueryDefinition<QueryArg, any, any, QueryResult>>
   queryParams?: QueryArg & { nextPageToken?: never }
   dataKey: keyof QueryResult
@@ -31,7 +32,6 @@ export const useInfiniteScroll = <
     ...(queryParams && queryParams)
   } as QueryArg)
   const queryResponseData = queryResponse.data
-  const requestId = queryResponse.requestId //changes with every fetch call to server
 
   useEffect(() => {
     //initiate refresh every time queryParams change
@@ -62,7 +62,7 @@ export const useInfiniteScroll = <
     }
 
     return [[], undefined]
-  }, [dataKey, queryResponseData, requestId]) //even if we call .refetch() we might get cached data so let's force it with requestId
+  }, [dataKey, queryResponseData])
 
   useEffect(() => {
     if (Array.isArray(data)) {
@@ -75,7 +75,7 @@ export const useInfiniteScroll = <
         })
       }
     }
-  }, [data, pageToken, requestId]) //even if we call .refetch() we might get cached data so let's force it with requestId
+  }, [data, pageToken])
 
   const fetchNext = () => {
     if (hasMore && !isFetching) {
@@ -88,14 +88,14 @@ export const useInfiniteScroll = <
   const isSuccess = queryResponse?.isSuccess
   const isError = queryResponse?.isError
   const hasMore = nextPageToken !== ''
+  const isFirstPage = pageToken === undefined
+  const isFetchingNext = isFetching && pageToken !== undefined
 
   const isRefreshing = queryResponse
     ? !queryResponse.isLoading &&
       queryResponse.isFetching &&
       pageToken === undefined
     : false
-
-  const isFetchingNext = isFetching && pageToken !== undefined
 
   return {
     data: combinedData,
@@ -104,6 +104,7 @@ export const useInfiniteScroll = <
     isLoading,
     isFetching,
     isRefreshing,
+    isFirstPage,
     isFetchingNext,
     isSuccess,
     isError,

@@ -30,20 +30,24 @@ export default function NftListView({
   onManagePressed
 }: Props) {
   const dispatch = useDispatch()
-  const { nfts, fetchNext, refresh, isRefreshing, isLoading, isFetchingNext } =
-    useGetNfts()
+  const {
+    nfts,
+    fetchNext,
+    refresh,
+    isFirstPage,
+    isRefreshing,
+    isLoading,
+    isFetchingNext
+  } = useGetNfts()
 
   useEffect(() => {
-    if (isLoading || isRefreshing) {
-      dispatch(clearNfts())
-    }
-  }, [dispatch, isLoading, isRefreshing])
-
-  useEffect(() => {
-    if (!isLoading && !isRefreshing) {
+    if (!isLoading) {
+      if (isFirstPage) {
+        dispatch(clearNfts())
+      }
       dispatch(saveNfts({ nfts }))
     }
-  }, [dispatch, isLoading, isRefreshing, nfts])
+  }, [dispatch, isLoading, isFirstPage, nfts])
 
   const fullNfts = useSelector(selectNfts)
 

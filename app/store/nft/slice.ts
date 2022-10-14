@@ -25,8 +25,26 @@ export const nftSlice = createSlice({
         const nftUID = getNftUID(nft)
         const existing = state.nfts[nftUID]
         state.nfts[nftUID] = {
-          ...nft,
-          ...existing
+          ...existing,
+          ...nft
+        }
+      })
+    },
+    updateExistingNfts: (
+      state,
+      action: PayloadAction<{
+        nfts: NFTItemData[]
+      }>
+    ) => {
+      const { nfts } = action.payload
+      nfts.forEach(nft => {
+        const nftUID = getNftUID(nft)
+        const existing = state.nfts[nftUID]
+        if (existing) {
+          state.nfts[nftUID] = {
+            ...existing,
+            ...nft
+          }
         }
       })
     },
@@ -51,6 +69,7 @@ export const selectHiddenNftUIDs = (state: RootState) => state.nft.hiddenNfts
 export const selectNfts = (state: RootState) => Object.values(state.nft.nfts)
 
 // actions
-export const { setHidden, saveNfts, clearNfts } = nftSlice.actions
+export const { setHidden, saveNfts, clearNfts, updateExistingNfts } =
+  nftSlice.actions
 
 export const nftReducer = nftSlice.reducer
