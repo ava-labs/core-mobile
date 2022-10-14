@@ -1,11 +1,12 @@
 import { AppListenerEffectAPI } from 'store/index'
-import { saveNfts, selectNfts } from 'store/nft/slice'
+import { saveNfts, selectNfts, updateExistingNfts } from 'store/nft/slice'
 import { AppStartListening } from 'store/middleware/listener'
 import { pipeAsyncFunctions } from 'utils/js/pipeAsyncFunctions'
 import { applyImageAndAspect, getNftUID } from 'services/nft/utils'
 import { NFTItemData } from 'store/nft/types'
 import nftProcessor from 'services/nft/NftProcessor'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const onSaveNfts = async (action: any, listenerApi: AppListenerEffectAPI) => {
   const { dispatch, getState } = listenerApi
   const state = getState()
@@ -21,7 +22,7 @@ const onSaveNfts = async (action: any, listenerApi: AppListenerEffectAPI) => {
   nfts.forEach(nft => {
     nftsToProcessMap[getNftUID(nft)] = { ...nft, isFullLoading: true }
   })
-  dispatch(saveNfts({ nfts: Object.values(nftsToProcessMap) }))
+  dispatch(updateExistingNfts({ nfts: Object.values(nftsToProcessMap) }))
 
   //start loading
   const processData = pipeAsyncFunctions(
@@ -51,7 +52,7 @@ const onSaveNfts = async (action: any, listenerApi: AppListenerEffectAPI) => {
     }
   })
 
-  dispatch(saveNfts({ nfts: Object.values(nftsToProcessMap) }))
+  dispatch(updateExistingNfts({ nfts: Object.values(nftsToProcessMap) }))
 }
 
 export const addNftListeners = (startListening: AppStartListening) => {
