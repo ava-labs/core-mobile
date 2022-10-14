@@ -1,12 +1,16 @@
 import React, { FC } from 'react'
 import {
-  Animated,
   StyleProp,
   StyleSheet,
   TouchableOpacity,
   View,
   ViewStyle
 } from 'react-native'
+import Animated, {
+  useAnimatedStyle,
+  interpolate,
+  SharedValue
+} from 'react-native-reanimated'
 import { noop } from 'rxjs'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
@@ -14,7 +18,7 @@ import AvaText from './AvaText'
 
 interface Props {
   angle?: number
-  anim?: Animated.Value
+  progress?: SharedValue<number>
   radius?: number
   buttonColor?: string
   onPress?: () => void
@@ -31,7 +35,7 @@ interface Props {
 const ActionButtonItem: FC<Props> = ({
   radius = 100,
   angle = 0,
-  anim = new Animated.Value(0),
+  progress,
   size = 48,
   active = false,
   onPress = noop,
@@ -47,34 +51,33 @@ const ActionButtonItem: FC<Props> = ({
   const { theme } = useApplicationContext()
   const offsetX = vertical ? 0 : radius * Math.cos(angle)
   const offsetY = vertical ? -160 : radius * Math.sin(angle)
+  const animatedStyles = useAnimatedStyle(() => {
+    const progressValue = progress?.value ?? 1
+
+    return {
+      opacity: progressValue,
+      transform: [
+        {
+          translateY: interpolate(progressValue, [0, 1], [0, offsetY])
+        },
+        {
+          translateX: interpolate(progressValue, [0, 1], [0, offsetX])
+        },
+        {
+          scale: interpolate(progressValue, [0, 1], [0, 1])
+        }
+      ]
+    }
+  })
+
   return (
     <Animated.View
       style={[
         {
-          opacity: anim,
           width: size,
-          height: size,
-          transform: [
-            {
-              translateY: anim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [0, offsetY]
-              })
-            },
-            {
-              translateX: anim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [0, offsetX]
-              })
-            },
-            {
-              scale: anim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [0, 1]
-              })
-            }
-          ]
-        }
+          height: size
+        },
+        animatedStyles
       ]}>
       {!selfContained ? (
         <TouchableOpacity
