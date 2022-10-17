@@ -1,21 +1,33 @@
-import { TokenType } from 'store/balance'
-import { PriceWithMarketData } from 'services/token/types'
+import { ChartData } from 'services/token/types'
 
-export type WatchListState = {
-  tokens: MarketToken[]
-  favorites: MarketToken[]
-}
 export const initialState: WatchListState = {
-  tokens: [],
-  favorites: []
+  tokens: {},
+  favorites: [],
+  prices: {},
+  charts: {}
 }
 
-export type MarketToken = Omit<PriceWithMarketData, 'price'> & {
-  id: string
+export type MarketToken = {
+  id: string // coingeckoId
   symbol: string
   name: string
-  priceInCurrency: number
-  type: TokenType
   logoUri: string
-  assetPlatformId: string
+}
+
+export type PriceData = {
+  priceInCurrency: number
+  change24: number
+  marketCap: number
+  vol24: number
+}
+
+export type Charts = { [coingeckoID: string]: ChartData }
+
+export type Prices = { [coingeckoID: string]: PriceData }
+
+export type WatchListState = {
+  tokens: { [coingeckoID: string]: MarketToken }
+  favorites: string[]
+  prices: Prices
+  charts: Charts
 }
