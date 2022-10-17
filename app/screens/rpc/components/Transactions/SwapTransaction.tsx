@@ -65,7 +65,11 @@ export function SwapTransaction({
         <Space y={12} />
         <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
           <Row style={{ alignItems: 'center' }}>
-            <Avatar.Token token={sentToken} />
+            <Avatar.Token
+              name={sentToken.name}
+              symbol={sentToken.symbol}
+              logoUri={sentToken.logoUri}
+            />
             <Space x={8} />
             <AvaText.Body1>{sentToken?.symbol}</AvaText.Body1>
           </Row>
@@ -83,7 +87,11 @@ export function SwapTransaction({
         </Row>
         <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
           <Row style={{ alignItems: 'center' }}>
-            <Avatar.Token token={receivingToken} />
+            <Avatar.Token
+              name={receivingToken.name}
+              symbol={receivingToken.symbol}
+              logoUri={receivingToken.logoUri}
+            />
             <Space x={8} />
             <AvaText.Body1>{receivingToken?.symbol}</AvaText.Body1>
           </Row>
