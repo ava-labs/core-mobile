@@ -9,14 +9,21 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import Separator from 'components/Separator'
 import ZeroState from 'components/ZeroState'
 import { useDispatch } from 'react-redux'
-import { MarketToken, onWatchlistRefresh } from 'store/watchlist'
+import {
+  Charts,
+  defaultChartData,
+  MarketToken,
+  onWatchlistRefresh,
+  Prices
+} from 'store/watchlist'
 import { formatLargeCurrency } from 'utils/Utils'
 import { WatchlistFilter } from '../types'
 
 interface Props {
   tokens: MarketToken[]
+  prices: Prices
+  charts: Charts
   filterBy: WatchlistFilter
-  filterTimeDays: number
   isShowingFavorites?: boolean
   isSearching?: boolean
 }
@@ -27,8 +34,9 @@ type NavigationProp = TabsScreenProps<
 
 const WatchList: React.FC<Props> = ({
   tokens,
+  prices,
+  charts,
   filterBy,
-  filterTimeDays,
   isShowingFavorites,
   isSearching
 }) => {
@@ -42,28 +50,32 @@ const WatchList: React.FC<Props> = ({
     const token = item.item
 
     function getDisplayValue() {
+      const price = prices[token.id]
+
       if (filterBy === WatchlistFilter.PRICE) {
-        const priceInCurrency = token.priceInCurrency
+        const priceInCurrency = price?.priceInCurrency ?? 0
         return priceInCurrency === 0
           ? ' -'
           : priceInCurrency > 0 && priceInCurrency < 0.1
           ? `${priceInCurrency.toFixed(6)}`
           : formatLargeCurrency(currencyFormatter(priceInCurrency))
       } else if (filterBy === WatchlistFilter.MARKET_CAP) {
-        return token.marketCap === 0
+        const marketCap = price?.marketCap ?? 0
+        return marketCap === 0
           ? ' -'
-          : formatLargeCurrency(currencyFormatter(token.marketCap ?? 0), 3)
+          : formatLargeCurrency(currencyFormatter(marketCap), 3)
       } else if (filterBy === WatchlistFilter.VOLUME) {
-        return token.vol24 === 0
+        const vol24 = price?.vol24 ?? 0
+        return vol24 === 0
           ? ' -'
-          : formatLargeCurrency(currencyFormatter(token.vol24 ?? 0), 1)
+          : formatLargeCurrency(currencyFormatter(vol24), 1)
       }
     }
 
     return (
       <WatchListItem
         token={token}
-        chartDays={filterTimeDays}
+        chartData={charts[token.id] ?? defaultChartData}
         value={getDisplayValue()}
         filterBy={filterBy}
         onPress={() => {
@@ -97,7 +109,6 @@ const WatchList: React.FC<Props> = ({
       indicatorStyle="white"
       estimatedItemSize={64}
       extraData={{
-        filterTimeDays,
         filterBy
       }}
     />

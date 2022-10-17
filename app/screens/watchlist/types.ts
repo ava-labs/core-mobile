@@ -5,9 +5,3 @@ export enum WatchlistFilter {
   GAINERS = 'Gainers',
   LOSERS = 'Losers'
 }
-
-export enum FilterTimeOptions {
-  Day = '1D',
-  Week = '1W',
-  Year = '1Y'
-}

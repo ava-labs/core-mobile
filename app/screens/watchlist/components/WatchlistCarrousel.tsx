@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useMemo, useState } from 'react'
+import React, { FC, useMemo } from 'react'
 import {
   FlatList,
   ListRenderItemInfo,
@@ -17,14 +17,12 @@ import AppNavigation from 'navigation/AppNavigation'
 import MarketMovement from 'screens/watchlist/components/MarketMovement'
 import { Opacity85 } from 'resources/Constants'
 import { PortfolioScreenProps } from 'navigation/types'
-import { TokenType } from 'store/balance'
-import TokenService from 'services/token/TokenService'
-import { ChartData } from 'services/token/types'
 import { useSelector } from 'react-redux'
-import { selectSelectedCurrency } from 'store/settings/currency'
-import { VsCurrencyType } from '@avalabs/coingecko-sdk'
-import { selectActiveNetwork } from 'store/network'
-import { MarketToken, selectWatchlistFavorites } from 'store/watchlist'
+import {
+  MarketToken,
+  selectWatchlistChart,
+  selectWatchlistFavorites
+} from 'store/watchlist'
 
 interface Props {
   style?: StyleProp<View>
@@ -104,35 +102,7 @@ interface CarrouselItemProps {
 
 const CarrouselItem: FC<CarrouselItemProps> = ({ token, onPress }) => {
   const { theme } = useApplicationContext()
-  const [chartData, setChartData] = useState<ChartData>()
-  const selectedCurrency = useSelector(selectSelectedCurrency)
-  const network = useSelector(selectActiveNetwork)
-  const assetPlatformId =
-    network.pricingProviders?.coingecko.assetPlatformId ?? ''
-  const currency = selectedCurrency.toLowerCase() as VsCurrencyType
-
-  useEffect(() => {
-    ;(async () => {
-      let data
-
-      if (token.type === TokenType.NATIVE) {
-        data = await TokenService.getChartDataForCoinId({
-          coingeckoId: token.id,
-          days: 1,
-          currency
-        })
-      } else if (token.type === TokenType.ERC20) {
-        data = await TokenService.getChartDataForAddress({
-          assetPlatformId,
-          address: token.id,
-          days: 1,
-          currency
-        })
-      }
-
-      data && setChartData(data)
-    })()
-  }, [assetPlatformId, currency, token])
+  const chartData = useSelector(selectWatchlistChart(token.id))
 
   return (
     <AvaButton.Base

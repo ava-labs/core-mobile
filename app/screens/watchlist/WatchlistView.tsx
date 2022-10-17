@@ -5,10 +5,14 @@ import { SafeAreaProvider } from 'react-native-safe-area-context'
 import Dropdown from 'components/Dropdown'
 import AvaText from 'components/AvaText'
 import {
-  appendWatchlist,
   MarketToken,
   selectWatchlistFavorites,
-  selectWatchlistTokens
+  selectWatchlistTokens,
+  selectWatchlistCharts,
+  selectWatchlistPrices,
+  setPrices,
+  setCharts,
+  appendTokens
 } from 'store/watchlist'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
 import watchlistService from 'services/watchlist/WatchlistService'
@@ -16,7 +20,8 @@ import { useDispatch } from 'react-redux'
 import { WatchListLoader } from 'screens/watchlist/components/WatchListLoader'
 import isEmpty from 'lodash.isempty'
 import AvaButton from 'components/AvaButton'
-import { FilterTimeOptions, WatchlistFilter } from './types'
+import { selectSelectedCurrency } from 'store/settings/currency'
+import { WatchlistFilter } from './types'
 import WatchList from './components/WatchList'
 
 interface Props {
@@ -33,12 +38,6 @@ const filterPriceOptions = [
   WatchlistFilter.LOSERS
 ]
 
-const filterTimeOptions = [
-  FilterTimeOptions.Day,
-  FilterTimeOptions.Week,
-  FilterTimeOptions.Year
-]
-
 const SelectionItem = ({ title }: { title: string }) => {
   const theme = useApplicationContext().theme
 
@@ -53,40 +52,36 @@ const renderPriceFilterSelection = (selectedItem: WatchlistFilter) => (
   <SelectionItem title={`Sort by: ${selectedItem}`} />
 )
 
-const renderTimeFilterSelection = (selectedItem: FilterTimeOptions) => (
-  <SelectionItem title={selectedItem} />
-)
-
 const WatchlistView: React.FC<Props> = ({
   showFavorites,
   searchText,
   onTabIndexChanged
 }) => {
-  const watchlistFavorites = useFocusedSelector(selectWatchlistFavorites)
-  const watchlistTokens = useFocusedSelector(selectWatchlistTokens)
+  const favorites = useFocusedSelector(selectWatchlistFavorites)
+  const tokens = useFocusedSelector(selectWatchlistTokens)
+  const prices = useFocusedSelector(selectWatchlistPrices)
+  const charts = useFocusedSelector(selectWatchlistCharts)
+  const currency = useFocusedSelector(selectSelectedCurrency).toLowerCase()
   const dispatch = useDispatch()
-  const [loadingSearch, setLoadingSearch] = useState(false)
+  const [isSearchingTokens, setIsSearchingTokens] = useState(false)
   const [filterBy, setFilterBy] = useState(WatchlistFilter.PRICE)
-  const [filterTime, setFilterTime] = useState(FilterTimeOptions.Day)
-  const filterTimeDays = useMemo(() => {
-    switch (filterTime) {
-      case FilterTimeOptions.Day:
-        return 1
-      case FilterTimeOptions.Week:
-        return 7
-      case FilterTimeOptions.Year:
-        return 365
-    }
-  }, [filterTime])
-  const [tokens, setTokens] = useState<MarketToken[]>([])
+  const [tokensToDisplay, setTokensToDisplay] = useState<MarketToken[]>([])
   const isSearching = !isEmpty(searchText)
+
+  // favorites are loaded locally. e only show loader if we query
+  // coingecko when searching OR if we're NOT on
+  // the favorites tab and tokens are empty
+  const isFetchingTokens = tokens.length === 0
+  const showLoader = isSearchingTokens || (!showFavorites && isFetchingTokens)
 
   useEffect(() => {
     async function loadAsync() {
-      let items: MarketToken[] = watchlistTokens
+      if (isFetchingTokens) return
+
+      let items: MarketToken[] = tokens
 
       if (showFavorites) {
-        items = watchlistFavorites // items.filter(tk => watchlistFavorites.includes(tk.id))
+        items = favorites
       }
 
       if (searchText && searchText.length > 0) {
@@ -97,52 +92,69 @@ const WatchlistView: React.FC<Props> = ({
         )
 
         if (items.length === 0) {
-          setLoadingSearch(true)
-          const onlineItems = await watchlistService.tokenSearch(searchText)
-          if (onlineItems && onlineItems.length > 0) {
-            items = onlineItems
-            dispatch(appendWatchlist(onlineItems))
+          setIsSearchingTokens(true)
+
+          const searchResult = await watchlistService.tokenSearch(
+            searchText,
+            currency
+          )
+
+          if (searchResult) {
+            items = searchResult.tokens
+
+            // save results to the list
+            dispatch(appendTokens(searchResult.tokens))
+
+            // also save prices and charts data so we can reuse them in the Favorites tab
+            dispatch(setPrices(searchResult.prices))
+            dispatch(setCharts(searchResult.charts))
           }
-          setLoadingSearch(false)
+
+          setIsSearchingTokens(false)
         }
       }
-
-      setTokens(
-        items.slice().sort((a, b) => {
-          if (filterBy === WatchlistFilter.PRICE) {
-            return b.priceInCurrency - a.priceInCurrency
-          } else if (filterBy === WatchlistFilter.MARKET_CAP) {
-            return b.marketCap - a.marketCap
-          } else {
-            return b.vol24 - a.vol24
-          }
-        })
-      )
+      setTokensToDisplay(items)
     }
     loadAsync()
   }, [
-    watchlistTokens,
     showFavorites,
     searchText,
-    watchlistFavorites,
+    currency,
     filterBy,
-    dispatch
+    dispatch,
+    tokens,
+    isFetchingTokens,
+    favorites
   ])
+
+  const sortedTokens = useMemo(() => {
+    if (Object.keys(prices).length === 0) return tokensToDisplay
+
+    return tokensToDisplay.slice().sort((a, b) => {
+      const priceB = prices[b.id] ?? {
+        priceInCurrency: 0,
+        marketCap: 0,
+        vol24: 0
+      }
+      const priceA = prices[a.id] ?? {
+        priceInCurrency: 0,
+        marketCap: 0,
+        vol24: 0
+      }
+
+      if (filterBy === WatchlistFilter.PRICE) {
+        return priceB.priceInCurrency - priceA.priceInCurrency
+      } else if (filterBy === WatchlistFilter.MARKET_CAP) {
+        return priceB.marketCap - priceA.marketCap
+      } else {
+        return priceB.vol24 - priceA.vol24
+      }
+    })
+  }, [filterBy, prices, tokensToDisplay])
 
   const selectedPriceFilter = filterPriceOptions.findIndex(
     item => item === filterBy
   )
-
-  const selectedTimeFilter = filterTimeOptions.findIndex(
-    item => item === filterTime
-  )
-
-  // favorites are loaded locally. We only show the if we query
-  // coingecko when searching OR if we're NOT on
-  // the favorites tab and tokens are empty
-  // todo: update API calls to use RTK Query
-  const showLoader =
-    loadingSearch || (!showFavorites && watchlistTokens.length === 0)
 
   return (
     <SafeAreaProvider style={styles.container}>
@@ -156,27 +168,20 @@ const WatchlistView: React.FC<Props> = ({
             onItemSelected={setFilterBy}
             selectionRenderItem={renderPriceFilterSelection}
           />
-          <Dropdown
-            alignment={'flex-end'}
-            width={80}
-            data={filterTimeOptions}
-            selectedIndex={selectedTimeFilter}
-            onItemSelected={setFilterTime}
-            selectionRenderItem={renderTimeFilterSelection}
-          />
         </View>
         {showLoader ? (
           <WatchListLoader />
         ) : (
           <>
             <WatchList
-              tokens={tokens}
+              tokens={sortedTokens}
+              charts={charts}
+              prices={prices}
               filterBy={filterBy}
-              filterTimeDays={filterTimeDays}
               isShowingFavorites={showFavorites}
               isSearching={isSearching}
             />
-            {showFavorites && tokens.length === 0 && (
+            {showFavorites && sortedTokens.length === 0 && (
               <AvaButton.SecondaryLarge
                 onPress={() => onTabIndexChanged?.(1)}
                 style={{ marginBottom: 128, marginHorizontal: 16 }}>
