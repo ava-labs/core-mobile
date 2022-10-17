@@ -8,7 +8,6 @@ import {
   coinsMarket,
   coinsMarketChart,
   coinsSearch,
-  ContractMarketChartResponse,
   getBasicCoingeckoHttp,
   getProCoingeckoHttp,
   simplePrice,
@@ -32,6 +31,7 @@ import NetworkService from 'services/network/NetworkService'
 import { MarketToken } from 'store/watchlist'
 import xss from 'xss'
 import { ChartData, PriceWithMarketData } from './types'
+import { transformContractMarketChartResponse } from './utils'
 
 const coingeckoBasicClient = getBasicCoingeckoHttp()
 const coingeckoProClient = getProCoingeckoHttp()
@@ -79,13 +79,33 @@ export class TokenService {
     }
   }
 
-  async getTopTokenMarket(
-    currency: VsCurrencyType = VsCurrencyType.USD
+  // if coinIds are undefined, the top 100 tokens will be returned
+  async getMarkets(
+    currency: VsCurrencyType = VsCurrencyType.USD,
+    sparkline: boolean,
+    coinIds?: string[]
   ): Promise<CoinMarket[]> {
-    return await coinsMarket(coingeckoProClient, {
-      currency,
-      coinGeckoProApiKey: Config.COINGECKO_API_KEY
-    })
+    let data: CoinMarket[] | undefined
+
+    const key = coinIds
+      ? `${arrayHash(coinIds)}-${currency}-${sparkline}`
+      : `${currency}-${sparkline}`
+
+    const cacheId = `getMarkets-${key}`
+
+    data = getCache(cacheId)
+
+    if (data === undefined) {
+      data = await coinsMarket(coingeckoProClient, {
+        currency,
+        sparkline,
+        coinIds,
+        coinGeckoProApiKey: Config.COINGECKO_API_KEY
+      })
+      setCache(cacheId, data)
+    }
+
+    return data
   }
 
   async getTokenSearch(query: string): Promise<MarketToken[] | undefined> {
@@ -93,22 +113,21 @@ export class TokenService {
       query,
       coinGeckoProApiKey: Config.COINGECKO_API_KEY
     })
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return data?.coins?.map((coin: any) => {
+    return data?.coins?.map(coin => {
       return {
-        ...coin,
-        logoUri: coin?.thumb,
-        priceInCurrency: 0,
-        marketCap: coin?.market_cap
+        id: coin?.id,
+        name: coin?.name,
+        symbol: coin?.symbol,
+        logoUri: coin?.thumb
       } as MarketToken
     })
   }
 
   /**
-   * Get the native token price with market data for a coin
+   * Get token price with market data for a coin
    * @param coinId the coin id ie avalanche-2 for avax
    * @param currency the currency to be used
-   * @returns the native token price with market data
+   * @returns the token price with market data
    */
   async getPriceWithMarketDataByCoinId(
     coinId: string,
@@ -136,6 +155,32 @@ export class TokenService {
       marketCap: data?.[coinId]?.[currency]?.marketCap ?? 0,
       vol24: data?.[coinId]?.[currency]?.vol24 ?? 0
     }
+  }
+
+  /**
+   * Get token price with market data for a list of coins
+   * @param coinIds the coin ids
+   * @param currency the currency to be used
+   * @returns a list of token price with market data
+   */
+  async getPriceWithMarketDataByCoinIds(
+    coinIds: string[],
+    currency: VsCurrencyType = VsCurrencyType.USD
+  ): Promise<SimplePriceResponse | undefined> {
+    let data: SimplePriceResponse | undefined
+
+    const key = `${arrayHash(coinIds)}-${currency}`
+
+    const cacheId = `getPriceWithMarketDataByCoinIds-${key}`
+
+    data = getCache(cacheId)
+
+    if (data === undefined) {
+      data = await this.fetchPriceWithMarketData(coinIds, currency)
+      setCache(cacheId, data)
+    }
+
+    return data
   }
 
   /**
@@ -315,33 +360,6 @@ export class TokenService {
     return data
   }
 
-  private transformMarketChartResponse(rawData: ContractMarketChartResponse) {
-    const dates = rawData.prices.map(value => value[0])
-    const prices = rawData.prices.map(value => value[1])
-
-    const minDate = Math.min(...dates)
-    const maxDate = Math.max(...dates)
-    const minPrice = Math.min(...prices)
-    const maxPrice = Math.max(...prices)
-    const diffValue = prices[prices.length - 1] - prices[0]
-    const average = (prices[prices.length - 1] + prices[0]) / 2
-    const percentChange = (diffValue / average) * 100
-
-    return {
-      ranges: {
-        minDate,
-        maxDate,
-        minPrice,
-        maxPrice,
-        diffValue,
-        percentChange
-      },
-      dataPoints: rawData.prices.map(tu => {
-        return { x: tu[0], y: tu[1] }
-      })
-    } as ChartData
-  }
-
   private async fetchChartDataForAddress(
     assetPlatformId: string,
     address: string,
@@ -357,7 +375,7 @@ export class TokenService {
         coinGeckoProApiKey: Config.COINGECKO_API_KEY
       })
 
-      return this.transformMarketChartResponse(rawData)
+      return transformContractMarketChartResponse(rawData)
     } catch (e) {
       return Promise.resolve(undefined)
     }
@@ -376,7 +394,7 @@ export class TokenService {
         coinGeckoProApiKey: Config.COINGECKO_API_KEY
       })
 
-      return this.transformMarketChartResponse(rawData)
+      return transformContractMarketChartResponse(rawData)
     } catch (e) {
       return Promise.resolve(undefined)
     }
@@ -405,7 +423,7 @@ export class TokenService {
     }
   }
 
-  async fetchPriceWithMarketData(
+  private async fetchPriceWithMarketData(
     coingeckoId: string[],
     currencyCode: VsCurrencyType = VsCurrencyType.USD
   ) {
