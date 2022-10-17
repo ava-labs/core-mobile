@@ -1,24 +1,17 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { combineReducers } from 'redux'
 import { AnyAction, configureStore, ListenerEffectAPI } from '@reduxjs/toolkit'
+import { createMigrate, persistReducer, persistStore } from 'redux-persist'
 import {
-  createMigrate,
-  FLUSH,
-  PAUSE,
-  PERSIST,
-  persistReducer,
-  persistStore,
-  PURGE,
-  REGISTER,
-  REHYDRATE
-} from 'redux-persist'
-import { DeserializeBridgeTransform } from 'store/transforms'
-import bridge, { addBridgeTransaction } from 'store/bridge'
+  DeserializeBridgeTransform,
+  WatchlistBlacklistTransform
+} from 'store/transforms'
+import bridge from 'store/bridge'
 import { nftsApi } from 'store/nft/api'
 import { migrations } from 'store/migrations'
 import { encryptTransform } from 'redux-persist-transform-encrypt'
 import { networkReducer as network } from './network'
-import { balanceReducer as balance, setBalance, setBalances } from './balance'
+import { balanceReducer as balance } from './balance'
 import { appReducer as app, onLogOut, onRehydrationComplete } from './app'
 import { listener } from './middleware/listener'
 import { accountsReducer as account } from './account'
@@ -34,9 +27,8 @@ import settings from './settings'
 import swap from './swap'
 import { transactionApi } from './transaction'
 
-const persistActions = [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER]
-
 // list of reducers that don't need to be persisted
+// for nested blacklist, please use transform
 const blacklist = [
   'app',
   'balance',
@@ -74,8 +66,12 @@ const combinedReducer = combineReducers({
 const rootReducer = (state: any, action: AnyAction) => {
   if (action.type === onLogOut.type) {
     // reset state
+    // except the following keys
+    // notes: keeping settings and network because watchlist depends on them
     state = {
       app: state.app,
+      settings: state.settings,
+      network: state.network,
       watchlist: state.watchlist
     }
   }
@@ -96,12 +92,14 @@ export function configureEncryptedStore(secretKey: string) {
     key: 'root',
     storage: AsyncStorage,
     blacklist,
+    rootReducer,
     transforms: [
       DeserializeBridgeTransform,
+      WatchlistBlacklistTransform,
       encryptionTransform // last!
     ],
     migrate: createMigrate(migrations, { debug: __DEV__ }),
-    version: 2
+    version: 3
   }
 
   const persistedReducer = persistReducer(persistConfig, rootReducer)
@@ -109,21 +107,26 @@ export function configureEncryptedStore(secretKey: string) {
   const store = configureStore({
     reducer: persistedReducer,
     devTools: __DEV__,
-    middleware: getDefaultMiddleware =>
-      getDefaultMiddleware({
-        serializableCheck: {
-          ignoredActions: [
-            ...persistActions,
-            setBalance.type,
-            setBalances.type,
-            addBridgeTransaction.type
-          ],
-          ignoredPaths: ['balance', 'networkFee', 'bridge']
-        }
+    middleware: getDefaultMiddleware => {
+      const defaultMiddleWare = getDefaultMiddleware({
+        serializableCheck: false,
+        immutableCheck: false
       })
-        .prepend(listener.middleware)
-        .concat(transactionApi.middleware)
-        .concat(nftsApi.middleware)
+
+      const middlewares = [
+        listener.middleware,
+        ...defaultMiddleWare,
+        transactionApi.middleware,
+        nftsApi.middleware
+      ]
+
+      if (__DEV__) {
+        const createDebugger = require('redux-flipper').default
+        middlewares.push(createDebugger())
+      }
+
+      return middlewares
+    }
   })
 
   const persistor = persistStore(store, null, () => {
