@@ -26,7 +26,6 @@ import TokenAddress from 'components/TokenAddress'
 import AppNavigation from 'navigation/AppNavigation'
 import { formatLargeCurrency, formatLargeNumber } from 'utils/Utils'
 import { TokenSymbol } from 'store/network'
-import { TokenType } from 'store/balance'
 import { ActivityIndicator } from 'components/ActivityIndicator'
 
 const WINDOW_WIDTH = Dimensions.get('window').width
@@ -56,8 +55,12 @@ const TokenDetail = () => {
     marketCapRank,
     marketCap,
     chartData,
-    token,
     ranges,
+    symbol,
+    name,
+    logoUri,
+    priceInCurrency,
+    contractAddress,
     changeChartDays
   } = useTokenDetail(tokenId)
 
@@ -97,8 +100,7 @@ const TokenDetail = () => {
         </Pressable>
       )
     })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isFavorite])
+  }, [handleFavorite, isFavorite, setOptions])
 
   const getOverlayContent = () => {
     // loading chart data
@@ -163,10 +165,20 @@ const TokenDetail = () => {
     <ScrollView style={{ paddingHorizontal: 8, flex: 1 }}>
       <View>
         <AvaListItem.Base
-          title={<AvaText.Heading1>{token?.name}</AvaText.Heading1>}
+          title={<AvaText.Heading1>{name}</AvaText.Heading1>}
           titleAlignment={'flex-start'}
-          subtitle={token?.symbol}
-          leftComponent={token && <Avatar.Token token={token} size={48} />}
+          subtitle={symbol}
+          leftComponent={
+            name &&
+            symbol && (
+              <Avatar.Token
+                name={name}
+                symbol={symbol}
+                logoUri={logoUri}
+                size={48}
+              />
+            )
+          }
         />
         <AvaListItem.Base
           title={<AvaText.Body2>Price</AvaText.Body2>}
@@ -174,7 +186,7 @@ const TokenDetail = () => {
           subtitle={
             <Row style={{ alignItems: 'center' }}>
               <AvaText.Heading3 currency textStyle={{ marginEnd: 8 }}>
-                {token?.priceInCurrency?.toFixed(6)}
+                {priceInCurrency?.toFixed(6)}
               </AvaText.Heading3>
               <MarketMovement
                 hideCurrencyCode
@@ -270,10 +282,12 @@ const TokenDetail = () => {
             title={'MarketCap'}
             value={formatMarketNumbers(marketCap)}
           />
-          {token?.type === TokenType.ERC20 && (
+          {contractAddress && (
             <DataItem
               title={'Contract Address'}
-              value={<TokenAddress address={token.id} textType={'Heading'} />}
+              value={
+                <TokenAddress address={contractAddress} textType={'Heading'} />
+              }
             />
           )}
         </Row>
@@ -316,11 +330,11 @@ const TokenDetail = () => {
           />
         </Row>
 
-        {token?.symbol === TokenSymbol.AVAX && (
+        {symbol === TokenSymbol.AVAX && (
           <AvaButton.SecondaryLarge
             onPress={openMoonPay}
             style={{ marginHorizontal: 16 }}>
-            Buy {token?.symbol}
+            Buy {symbol}
           </AvaButton.SecondaryLarge>
         )}
       </View>
