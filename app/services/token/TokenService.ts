@@ -9,7 +9,6 @@ import {
   coinsMarketChart,
   coinsSearch,
   getBasicCoingeckoHttp,
-  getProCoingeckoHttp,
   simplePrice,
   SimplePriceResponse,
   simpleTokenPrice,
@@ -18,7 +17,6 @@ import {
 } from '@avalabs/coingecko-sdk'
 import { ethers } from 'ethers'
 import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
-import Config from 'react-native-config'
 import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
 import { getCache, setCache } from 'utils/InMemoryCache'
 import { arrayHash } from 'utils/Utils'
@@ -34,7 +32,6 @@ import { ChartData, PriceWithMarketData } from './types'
 import { transformContractMarketChartResponse } from './utils'
 
 const coingeckoBasicClient = getBasicCoingeckoHttp()
-const coingeckoProClient = getProCoingeckoHttp()
 
 export class TokenService {
   /**
@@ -96,11 +93,10 @@ export class TokenService {
     data = getCache(cacheId)
 
     if (data === undefined) {
-      data = await coinsMarket(coingeckoProClient, {
+      data = await coinsMarket(coingeckoBasicClient, {
         currency,
         sparkline,
-        coinIds,
-        coinGeckoProApiKey: Config.COINGECKO_API_KEY
+        coinIds
       })
       setCache(cacheId, data)
     }
@@ -109,9 +105,8 @@ export class TokenService {
   }
 
   async getTokenSearch(query: string): Promise<MarketToken[] | undefined> {
-    const data = await coinsSearch(coingeckoProClient, {
-      query,
-      coinGeckoProApiKey: Config.COINGECKO_API_KEY
+    const data = await coinsSearch(coingeckoBasicClient, {
+      query
     })
     return data?.coins?.map(coin => {
       return {
@@ -367,12 +362,11 @@ export class TokenService {
     currency: VsCurrencyType = VsCurrencyType.USD
   ) {
     try {
-      const rawData = await coinsContractMarketChart(coingeckoProClient, {
+      const rawData = await coinsContractMarketChart(coingeckoBasicClient, {
         assetPlatformId,
         address: address,
         currency,
-        days,
-        coinGeckoProApiKey: Config.COINGECKO_API_KEY
+        days
       })
 
       return transformContractMarketChartResponse(rawData)
@@ -387,11 +381,10 @@ export class TokenService {
     currency: VsCurrencyType = VsCurrencyType.USD
   ) {
     try {
-      const rawData = await coinsMarketChart(coingeckoProClient, {
+      const rawData = await coinsMarketChart(coingeckoBasicClient, {
         assetPlatformId: coingeckoId,
         currency,
-        days,
-        coinGeckoProApiKey: Config.COINGECKO_API_KEY
+        days
       })
 
       return transformContractMarketChartResponse(rawData)
@@ -402,10 +395,9 @@ export class TokenService {
 
   private async fetchContractInfo(assetPlatformId: string, address: string) {
     try {
-      return coinsContractInfo(coingeckoProClient, {
+      return coinsContractInfo(coingeckoBasicClient, {
         address: address,
-        assetPlatformId,
-        coinGeckoProApiKey: Config.COINGECKO_API_KEY
+        assetPlatformId
       })
     } catch (e) {
       return Promise.resolve(undefined)
@@ -414,9 +406,8 @@ export class TokenService {
 
   private async fetchCoinInfo(coingeckoId: string) {
     try {
-      return coinsInfo(coingeckoProClient, {
-        assetPlatformId: coingeckoId,
-        coinGeckoProApiKey: Config.COINGECKO_API_KEY
+      return coinsInfo(coingeckoBasicClient, {
+        assetPlatformId: coingeckoId
       })
     } catch (e) {
       return Promise.resolve(undefined)
@@ -428,13 +419,12 @@ export class TokenService {
     currencyCode: VsCurrencyType = VsCurrencyType.USD
   ) {
     try {
-      return simplePrice(coingeckoProClient, {
+      return simplePrice(coingeckoBasicClient, {
         coinIds: coingeckoId,
         currencies: [currencyCode],
         marketCap: true,
         vol24: true,
-        change24: true,
-        coinGeckoProApiKey: Config.COINGECKO_API_KEY
+        change24: true
       })
     } catch (e) {
       return Promise.resolve(undefined)
