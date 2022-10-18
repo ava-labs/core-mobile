@@ -15,7 +15,7 @@ const AccessExistingWalletItem = () => {
   return (
     <>
       <AvaListItem.Base
-        title={'Access existing wallet'}
+        title={'Recover Wallet'}
         titleAlignment={'flex-start'}
         showNavigationArrow
         leftComponent={<WalletSVG size={18} />}

@@ -15,7 +15,7 @@ const SignOutItem = () => {
     <AvaButton.SecondaryLarge
       style={{ margin: 16 }}
       onPress={() => navigation.navigate(AppNavigation.Modal.SignOut)}>
-      Reset Wallet
+      Delete Wallet
     </AvaButton.SecondaryLarge>
   )
 }
