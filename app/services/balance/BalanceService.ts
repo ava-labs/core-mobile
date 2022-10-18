@@ -5,6 +5,8 @@ import AccountsService from 'services/account/AccountsService'
 import GlacierBalanceProvider from 'services/balance/GlacierBalanceService'
 import { BalanceServiceProvider } from 'services/balance/types'
 import { findAsyncSequential } from 'utils/Utils'
+import SentryWrapper from 'services/sentry/SentryWrapper'
+import { Transaction } from '@sentry/types'
 import BtcBalanceService from './BtcBalanceService'
 import EvmBalanceService from './EvmBalanceService'
 
@@ -18,36 +20,44 @@ export class BalanceService {
   async getBalancesForAccount(
     network: Network,
     account: Account,
-    currency: string
+    currency: string,
+    sentryTrx?: Transaction
   ): Promise<{
     accountIndex: number
     chainId: number
     accountAddress: string
     tokens: (NetworkTokenWithBalance | TokenWithBalanceERC20)[]
   }> {
-    const accountAddress = AccountsService.getAddressForNetwork(
-      account,
-      network
-    )
-    const balanceProvider = await findAsyncSequential(balanceProviders, value =>
-      value.isProviderFor(network)
-    )
-    if (!balanceProvider) {
-      throw new Error(
-        `no balance provider found for network ${network.chainId}`
-      )
-    }
-    const tokens = await balanceProvider.getBalances(
-      network,
-      accountAddress,
-      currency
-    )
-    return {
-      accountIndex: account.index,
-      chainId: network.chainId,
-      tokens,
-      accountAddress
-    }
+    return SentryWrapper.createSpanFor(sentryTrx)
+      .setContext({ op: 'getBalancesForAccount' })
+      .executeAsync(async () => {
+        const accountAddress = AccountsService.getAddressForNetwork(
+          account,
+          network
+        )
+        const balanceProvider = await findAsyncSequential(
+          balanceProviders,
+          value => value.isProviderFor(network)
+        )
+        if (!balanceProvider) {
+          throw new Error(
+            `no balance provider found for network ${network.chainId}`
+          )
+        }
+
+        const tokens = await balanceProvider.getBalances(
+          network,
+          accountAddress,
+          currency
+        )
+
+        return {
+          accountIndex: account.index,
+          chainId: network.chainId,
+          tokens,
+          accountAddress
+        }
+      })
   }
 
   async getBalancesForAddress(

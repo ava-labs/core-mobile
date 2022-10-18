@@ -18,6 +18,7 @@ import { LogBox } from 'react-native'
 import pkg from '../package.json'
 
 LogBox.ignoreLogs(['Require cycle:', "Can't perform", 'new'])
+// const routingInstrumentation = new Sentry.ReactNavigationInstrumentation()
 
 //init Sentry
 if (Config.SENTRY_DSN && !__DEV__) {
@@ -25,16 +26,17 @@ if (Config.SENTRY_DSN && !__DEV__) {
     dsn: Config.SENTRY_DSN,
     environment: Config.ENVIRONMENT,
     release: `core-mobile@${pkg.version}`,
-    debug: false,
+    debug: true,
     beforeSend: event => {
       /**
        * eliminating breadcrumbs. This should eliminate
        * a massive amount of the daa leaks into sentry. If we find that console
        * is leaking data, suspected that it might, than we can review the leak and
-       * see if we can't modify the data before it is recorded. This can be
+       * see if we can modify the data before it is recorded. This can be
        * done in the sentry options beforeBreadcrumbs function.
        */
 
+      console.log('------>', 'event', event)
       if (event.user) {
         delete event.user.email
         delete event.user.ip_address
@@ -42,9 +44,11 @@ if (Config.SENTRY_DSN && !__DEV__) {
 
       return event
     },
-    integrations: function (integrations) {
-      return integrations.filter(int => int.name !== 'Breadcrumbs')
-    }
+    beforeBreadcrumb: () => {
+      return null
+    },
+    integrations: [],
+    tracesSampleRate: 1
   })
 }
 
