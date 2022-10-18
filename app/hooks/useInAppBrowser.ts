@@ -4,11 +4,11 @@ import { Alert, Linking } from 'react-native'
 import { resolve } from '@avalabs/utils-sdk'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
-import Config from 'react-native-config'
+import { GLACIER_URL } from 'utils/glacierUtils'
 
 const moonpayURL = async (address: string): Promise<{ url: string }> => {
-  return await fetch(`${Config.GLACIER_PROD_URL}/moonpay/${address}`).then(
-    response => response.json()
+  return await fetch(`${GLACIER_URL}/moonpay/${address}`).then(response =>
+    response.json()
   )
 }
 
