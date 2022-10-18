@@ -13,9 +13,9 @@ const SignOutModal = ({ onConfirm }: { onConfirm: () => void }) => {
 
   return (
     <WarningModal
-      title={'Are you sure you want to erase your wallet?'}
+      title={'Are you sure you want to delete your wallet?'}
       message={
-        'Your current wallet will be removed from this app permanently. This cannot be undone. \n\nYou can ONLY recover this wallet with your recovery phrase. Core wallet does not store your recovery phrase.'
+        'This will remove all wallet related data from your device. This cannot be undone. \n\nYou can always recover this wallet with your recovery phrase. Core wallet does not store your recovery phrase.'
       }
       actionText={'I understand, continue'}
       dismissText={'Cancel'}

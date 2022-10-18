@@ -66,7 +66,7 @@ enum NoWalletScreens {
 }
 
 enum NoWalletTabs {
-  ExistingWallet = 'Existing Wallet',
+  ExistingWallet = 'Recover Wallet',
   NewWallet = 'New Wallet',
   EnterWallet = 'Enter Wallet'
 }
