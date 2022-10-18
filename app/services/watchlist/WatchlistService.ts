@@ -6,23 +6,12 @@ import { Charts, MarketToken, Prices } from 'store/watchlist'
 import Logger from 'utils/Logger'
 
 const coinByAddress = require('assets/coinByAddress.json')
-const coinBySymbol = require('assets/coinBySymbol.json')
 
 const notFoundId = -1
 
 const getCoingeckoId = (address: string, symbol: string) => {
-  // first try looking up by address
-  // if that fails, try looking up by symbol
-
-  // notes:
-  // looking up by symbol is not 100% accurate as there are tokens
-  // with the same symbol but they have different data (different coingecko ids, prices,...)
   if (coinByAddress[address] && coinByAddress[address].symbol === symbol) {
     return coinByAddress[address].id
-  }
-
-  if (coinBySymbol[symbol]) {
-    return coinBySymbol[symbol].id
   }
 
   return notFoundId

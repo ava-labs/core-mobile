@@ -32,17 +32,6 @@ fs.readFile('../coinlistRaw.json', 'utf8', (err, dataRaw) => {
       }
     })
 
-    const coinBySymbol = {}
-    data.forEach(item => {
-      if (!coinBySymbol[item.symbol]) {
-        coinBySymbol[item.symbol] = {
-          id: item.id,
-          symbol: item.symbol,
-          name: item.name
-        }
-      }
-    })
-
     fs.writeFile(
       assetsPath + 'coinByAddress.json',
       JSON.stringify(coinByAddress),
@@ -56,17 +45,28 @@ fs.readFile('../coinlistRaw.json', 'utf8', (err, dataRaw) => {
       }
     )
 
-    fs.writeFile(
-      assetsPath + 'coinBySymbol.json',
-      JSON.stringify(coinBySymbol),
-      'utf8',
-      err => {
-        if (err) {
-          console.log(`Error writing file: ${err}`)
-        } else {
-          console.log(`File is written successfully!`)
-        }
-      }
-    )
+    // const coinBySymbol = {}
+    // data.forEach(item => {
+    //   if (!coinBySymbol[item.symbol]) {
+    //     coinBySymbol[item.symbol] = {
+    //       id: item.id,
+    //       symbol: item.symbol,
+    //       name: item.name
+    //     }
+    //   }
+    // })
+
+    // fs.writeFile(
+    //   assetsPath + 'coinBySymbol.json',
+    //   JSON.stringify(coinBySymbol),
+    //   'utf8',
+    //   err => {
+    //     if (err) {
+    //       console.log(`Error writing file: ${err}`)
+    //     } else {
+    //       console.log(`File is written successfully!`)
+    //     }
+    //   }
+    // )
   }
 })
