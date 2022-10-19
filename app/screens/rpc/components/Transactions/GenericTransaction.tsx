@@ -72,7 +72,11 @@ export function GenericTransaction({
               style={{ justifyContent: 'space-between', alignItems: 'center' }}>
               <Row style={{ alignItems: 'center' }}>
                 {token ? (
-                  <Avatar.Token token={token} />
+                  <Avatar.Token
+                    name={token.name}
+                    symbol={token.symbol}
+                    logoUri={token.logoUri}
+                  />
                 ) : (
                   <Avatar.Custom name={'avax'} symbol={'AVAX'} />
                 )}

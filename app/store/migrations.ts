@@ -1,3 +1,5 @@
+import { initialState as watchlistInitialState } from './watchlist'
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export const migrations = {
   1: (state: any) => {
@@ -18,6 +20,12 @@ export const migrations = {
         ...state.nft,
         nfts: {}
       }
+    }
+  },
+  3: (state: any) => {
+    return {
+      ...state,
+      watchlist: watchlistInitialState
     }
   }
 }

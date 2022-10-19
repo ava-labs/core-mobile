@@ -5,9 +5,7 @@ import AvaLogoSVG from 'components/svg/AvaLogoSVG'
 import { Opacity10 } from 'resources/Constants'
 import EthereumSvg from 'components/svg/Ethereum'
 import BitcoinSVG from 'components/svg/BitcoinSVG'
-import { TokenWithBalance } from 'store/balance'
 import { TokenSymbol } from 'store/network'
-import { MarketToken } from 'store/watchlist'
 import { SvgUri } from 'react-native-svg'
 import AvaText from './AvaText'
 
@@ -91,9 +89,12 @@ const AvatarBase: FC<Props> = ({
         return <SvgUri uri={logoUri} style={style} />
       }
 
+      // adding a white background by default
+      // as a temporary workaround to show logos with transparency and black strokes
+      // for example https://assets.coingecko.com/coins/images/13423/large/frax_share.png?1608478989
       return (
         <Image
-          style={style}
+          style={[{ backgroundColor: 'white' }, style]}
           source={{ uri: logoUri }}
           onError={() => {
             setFailedToLoad(true)
@@ -119,15 +120,13 @@ const AvatarBase: FC<Props> = ({
 }
 
 interface TokenAvatarProps {
-  token: TokenWithBalance | MarketToken
+  name: string
+  symbol: string
+  logoUri: string | undefined
   size?: number
 }
 
-const TokenAvatar: FC<TokenAvatarProps> = ({ token, size }) => {
-  const name = token.name
-  const symbol = token.symbol
-  const logoUri = token.logoUri
-
+const TokenAvatar: FC<TokenAvatarProps> = ({ name, symbol, logoUri, size }) => {
   return (
     <AvatarBase name={name} symbol={symbol} logoUri={logoUri} size={size} />
   )

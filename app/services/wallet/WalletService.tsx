@@ -1,5 +1,6 @@
 import {
   BitcoinWallet,
+  DerivationPath,
   getAddressFromXPub,
   getBech32AddressFromXPub,
   getWalletFromMnemonic,
@@ -60,7 +61,8 @@ class WalletService {
     log('evmWallet', now() - start)
     const walletFromMnemonic = getWalletFromMnemonic(
       this.mnemonic,
-      accountIndex
+      accountIndex,
+      DerivationPath.BIP44
     )
 
     log('evmWallet getWalletFromMnemonic', now() - start)

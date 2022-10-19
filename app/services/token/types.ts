@@ -1,3 +1,5 @@
+export type SparklineData = number[]
+
 export interface ChartData {
   ranges: {
     minDate: number

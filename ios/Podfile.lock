@@ -313,6 +313,8 @@ PODS:
     - React-Core
   - react-native-document-picker (5.3.0):
     - React-Core
+  - react-native-flipper (0.164.0):
+    - React-Core
   - react-native-get-random-values (1.8.0):
     - React-Core
   - react-native-pager-view (5.4.25):
@@ -532,6 +534,7 @@ DEPENDENCIES:
   - react-native-camera (from `../node_modules/react-native-camera`)
   - react-native-config (from `../node_modules/react-native-config`)
   - react-native-document-picker (from `../node_modules/react-native-document-picker`)
+  - react-native-flipper (from `../node_modules/react-native-flipper`)
   - react-native-get-random-values (from `../node_modules/react-native-get-random-values`)
   - react-native-pager-view (from `../node_modules/react-native-pager-view`)
   - react-native-quick-base64 (from `../node_modules/react-native-quick-base64`)
@@ -653,6 +656,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-config"
   react-native-document-picker:
     :path: "../node_modules/react-native-document-picker"
+  react-native-flipper:
+    :path: "../node_modules/react-native-flipper"
   react-native-get-random-values:
     :path: "../node_modules/react-native-get-random-values"
   react-native-pager-view:
@@ -781,6 +786,7 @@ SPEC CHECKSUMS:
   react-native-camera: 3eae183c1d111103963f3dd913b65d01aef8110f
   react-native-config: 6502b1879f97ed5ac570a029961fc35ea606cd14
   react-native-document-picker: 226068006be4c52f8ef7f32d855ee025a12e9e64
+  react-native-flipper: c33a4995958ef12a2b2f8290d63bed7adeed7634
   react-native-get-random-values: a6ea6a8a65dc93e96e24a11105b1a9c8cfe1d72a
   react-native-pager-view: da490aa1f902c9a5aeecf0909cc975ad0e92e53e
   react-native-quick-base64: e657e9197e61b60a9dec49807843052b830da254

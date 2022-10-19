@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useRef, useState } from 'react'
+import React, { FC } from 'react'
 import { Dimensions, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaListItem from 'components/AvaListItem'
@@ -9,19 +9,15 @@ import { WatchlistFilter } from 'screens/watchlist/types'
 import SparklineChart from 'components/SparklineChart'
 import { Row } from 'components/Row'
 import MarketMovement from 'screens/watchlist/components/MarketMovement'
-import TokenService from 'services/token/TokenService'
-import { TokenType } from 'store/balance'
-import { VsCurrencyType } from '@avalabs/coingecko-sdk'
-import { selectActiveNetwork } from 'store/network'
-import { useSelector } from 'react-redux'
-import { ActivityIndicator } from 'components/ActivityIndicator'
+
 import { MarketToken } from 'store/watchlist'
+import { ChartData } from 'services/token/types'
 
 const deviceWidth = Dimensions.get('window').width
 
 interface Props {
   token: MarketToken
-  chartDays: number
+  chartData: ChartData
   value?: string
   onPress?: () => void
   rank?: number
@@ -30,7 +26,7 @@ interface Props {
 
 const WatchListItem: FC<Props> = ({
   token,
-  chartDays,
+  chartData,
   value = '0',
   onPress,
   rank,
@@ -41,7 +37,9 @@ const WatchListItem: FC<Props> = ({
   return (
     <AvaListItem.Base
       title={
-        <AvaText.Heading2 ellipsizeMode={'tail'}>{symbol}</AvaText.Heading2>
+        <AvaText.Heading2 ellipsizeMode={'tail'}>
+          {symbol.toUpperCase()}
+        </AvaText.Heading2>
       }
       titleAlignment={'flex-start'}
       subtitle={name}
@@ -51,7 +49,7 @@ const WatchListItem: FC<Props> = ({
       rightComponent={
         <RightComponent
           token={token}
-          chartDays={chartDays}
+          chartData={chartData}
           value={value}
           filterBy={filterBy}
           onPress={onPress}
@@ -69,7 +67,6 @@ type LeftComponentProps = {
 
 const LeftComponent = ({ token, rank }: LeftComponentProps) => {
   const { logoUri, symbol, name } = token
-
   return (
     <View
       style={{
@@ -90,106 +87,39 @@ const LeftComponent = ({ token, rank }: LeftComponentProps) => {
 
 type RightComponentProps = {
   token: MarketToken
-  chartDays: number
+  chartData: ChartData
   value?: string
   filterBy: WatchlistFilter
   onPress?: () => void
 }
 
-type ChartData = { x: number; y: number }[]
-
-type Ranges = {
-  minDate: number
-  maxDate: number
-  minPrice: number
-  maxPrice: number
-  diffValue: number
-  percentChange: number
-}
-
-const initialRanges = {
-  minDate: 0,
-  maxDate: 0,
-  minPrice: 0,
-  maxPrice: 0,
-  diffValue: 0,
-  percentChange: 0
-}
-
-const emptyArr: ChartData = []
-
 const RightComponent = ({
-  token,
-  chartDays,
+  chartData,
   value,
   filterBy,
   onPress
 }: RightComponentProps) => {
-  const lastItemId = useRef(token.id)
   const { theme, appHook } = useApplicationContext()
   const { selectedCurrency } = appHook
-  const network = useSelector(selectActiveNetwork)
-  const [ranges, setRanges] = useState<Ranges>(initialRanges)
-  const [chartData, setChartData] = useState<ChartData>(emptyArr)
-  const [isLoadingChartData, setIsLoadingChartData] = useState(false)
-  const assetPlatformId =
-    network.pricingProviders?.coingecko.assetPlatformId ?? ''
-  const currency = selectedCurrency.toLowerCase() as VsCurrencyType
+  const { dataPoints, ranges } = chartData
 
-  // need to reset chart data whenever token changes
-  // or else tokens will show wrong charts as the user scrolls up/down
-  // this is a limitation of flashlist
-  // more info here
-  // https://github.com/Shopify/flash-list/pull/529
-  if (token.id !== lastItemId.current) {
-    lastItemId.current = token.id
-    setRanges(initialRanges)
-    setChartData(emptyArr)
-    setIsLoadingChartData(false)
+  const renderMiddleComponent = () => {
+    if (dataPoints.length === 0) return null
+
+    return (
+      <MiddleComponent
+        dataPoints={dataPoints}
+        ranges={ranges}
+        onPress={onPress}
+      />
+    )
   }
-
-  useEffect(() => {
-    const fetchChartData = async () => {
-      setIsLoadingChartData(true)
-
-      let result
-      if (token.type === TokenType.NATIVE) {
-        result = await TokenService.getChartDataForCoinId({
-          coingeckoId: token.id,
-          days: chartDays,
-          currency
-        })
-      } else if (token.type === TokenType.ERC20) {
-        result = await TokenService.getChartDataForAddress({
-          assetPlatformId: token.assetPlatformId,
-          address: token.id,
-          days: chartDays,
-          currency
-        })
-      }
-
-      // only set data if token has not changed
-      if (result && token.id === lastItemId.current) {
-        setChartData(result.dataPoints)
-        setRanges(result.ranges)
-      }
-
-      setIsLoadingChartData(false)
-    }
-
-    fetchChartData()
-  }, [assetPlatformId, chartDays, currency, token])
 
   if (!value) return null
 
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-      <MiddleComponent
-        chartData={chartData}
-        ranges={ranges}
-        isLoadingChartData={isLoadingChartData}
-        onPress={onPress}
-      />
+      {renderMiddleComponent()}
       <View
         style={{
           alignItems: 'flex-end',
@@ -217,16 +147,14 @@ const RightComponent = ({
 }
 
 type MiddleComponentProps = {
-  chartData: ChartData
-  ranges: Ranges
-  isLoadingChartData: boolean
+  dataPoints: ChartData['dataPoints']
+  ranges: ChartData['ranges']
   onPress?: () => void
 }
 
 const MiddleComponent = ({
-  chartData,
+  dataPoints,
   ranges,
-  isLoadingChartData,
   onPress
 }: MiddleComponentProps) => {
   return (
@@ -235,20 +163,16 @@ const MiddleComponent = ({
         width: 90,
         alignItems: 'flex-end'
       }}>
-      {isLoadingChartData ? (
-        <ActivityIndicator style={{ alignSelf: 'center' }} />
-      ) : (
-        <SparklineChart
-          width={90}
-          height={80}
-          animated={false}
-          data={chartData}
-          onPress={onPress}
-          yRange={[ranges.minPrice, ranges.maxPrice]}
-          xRange={[ranges.minDate, ranges.maxDate]}
-          negative={ranges.diffValue < 0}
-        />
-      )}
+      <SparklineChart
+        width={90}
+        height={80}
+        animated={false}
+        data={dataPoints}
+        onPress={onPress}
+        yRange={[ranges.minPrice, ranges.maxPrice]}
+        xRange={[ranges.minDate, ranges.maxDate]}
+        negative={ranges.diffValue < 0}
+      />
     </View>
   )
 }

@@ -1,77 +1,109 @@
 import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { ChartData } from 'services/token/types'
 import { RootState } from 'store'
-import { initialState, MarketToken, WatchListState } from './types'
+import { initialState, Charts, MarketToken, Prices, PriceData } from './types'
 
 const reducerName = 'watchlist'
+
+export const defaultChartData = {
+  ranges: {
+    minDate: 0,
+    maxDate: 0,
+    minPrice: 0,
+    maxPrice: 0,
+    diffValue: 0,
+    percentChange: 0
+  },
+  dataPoints: []
+}
 
 export const watchlistSlice = createSlice({
   name: reducerName,
   initialState,
   reducers: {
-    toggleFavorite: (state, action: PayloadAction<MarketToken>) => {
-      const token = action.payload
-      if (!state.favorites.some(tk => tk.id === token.id)) {
+    toggleFavorite: (state, action: PayloadAction<string>) => {
+      const tokenId = action.payload
+
+      if (!state.favorites.includes(tokenId)) {
         // set favorite
-        state.favorites.push(token)
+        state.favorites.push(tokenId)
       } else {
         // unset favorite
-        state.favorites = state.favorites.filter(tk => tk.id !== token.id)
+        state.favorites = state.favorites.filter(id => id !== tokenId)
       }
     },
-    appendWatchlist: (state, action: PayloadAction<MarketToken[]>) => {
-      const newTokens: MarketToken[] = []
-      for (const newToken of action.payload) {
-        const exists = state.tokens.some(tk => tk.id === newToken.id)
-        if (!exists) {
-          newTokens.push(newToken)
+    setTokens: (
+      state,
+      action: PayloadAction<{ [coingeckoID: string]: MarketToken }>
+    ) => {
+      state.tokens = action.payload
+    },
+    appendTokens: (state, action: PayloadAction<MarketToken[]>) => {
+      for (const token of action.payload) {
+        if (!state.tokens[token.id]) {
+          state.tokens[token.id] = token
         }
       }
-      setTokens(state, [...state.tokens, ...newTokens])
     },
-    setWatchlistTokens: (state, action: PayloadAction<MarketToken[]>) => {
-      setTokens(state, action.payload)
+    setCharts: (state, action: PayloadAction<Charts>) => {
+      state.charts = {
+        ...state.charts,
+        ...action.payload
+      }
+    },
+    setPrices: (state, action: PayloadAction<Prices>) => {
+      state.prices = {
+        ...state.prices,
+        ...action.payload
+      }
     }
   }
 })
 
-/**
- * Set tokens and update favorites.
- * @private
- */
-function setTokens(state: WatchListState, tokens: MarketToken[]): void {
-  state.tokens = tokens
-  state.favorites = state.favorites.map(
-    favorite => tokens.find(t => t.id === favorite.id) || favorite
-  )
-}
-
 // selectors
 export const selectIsWatchlistFavorite =
-  (tokenId: string) => (state: RootState) =>
-    state.watchlist.favorites.find(tk => tk.id === tokenId) !== undefined
+  (coingeckoId: string) => (state: RootState) =>
+    state.watchlist.favorites.includes(coingeckoId)
 
-export const selectWatchlistTokenById =
-  (tokenId: string) => (state: RootState) => {
-    for (const token of state.watchlist.tokens) {
-      if (token.id === tokenId) return token
-    }
-    return undefined
-  }
+export const selectWatchlistFavoriteIds = (state: RootState) => {
+  return state.watchlist.favorites
+}
 
-export const selectWatchlistTokens = (state: RootState) =>
-  state.watchlist.tokens
-
-export const selectWatchlistFavorites = (state: RootState) =>
-  state.watchlist.favorites
+export const selectWatchlistFavorites = (state: RootState) => {
+  return state.watchlist.favorites.map(id => state.watchlist.tokens[id])
+}
 
 export const selectWatchlistFavoritesIsEmpty = (state: RootState) =>
   state.watchlist.favorites.length === 0
 
+export const selectWatchlistTokens = (state: RootState): MarketToken[] =>
+  Object.values(state.watchlist.tokens)
+
+export const selectWatchlistPrices = (state: RootState) =>
+  state.watchlist.prices
+
+export const selectWatchlistPrice: (
+  coingeckoId: string
+) => (state: RootState) => PriceData | undefined =
+  (coingeckoId: string) => (state: RootState) =>
+    state.watchlist.prices[coingeckoId]
+
+export const selectWatchlistCharts = (state: RootState) =>
+  state.watchlist.charts
+
+export const selectWatchlistChart: (
+  coingeckoId: string
+) => (state: RootState) => ChartData | undefined =
+  (coingeckoId: string) => (state: RootState) =>
+    state.watchlist.charts[coingeckoId] ?? defaultChartData
+
 // actions
 export const {
   toggleFavorite: toggleWatchListFavorite,
-  setWatchlistTokens,
-  appendWatchlist
+  setTokens,
+  appendTokens,
+  setCharts,
+  setPrices
 } = watchlistSlice.actions
 
 export const onWatchlistRefresh = createAction(
