@@ -1,24 +1,19 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import useInAppBrowser from 'hooks/useInAppBrowser'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import {
-  CoinsContractInfoResponse,
-  CoinsInfoResponse,
-  VsCurrencyType
-} from '@avalabs/coingecko-sdk'
-import { TokenType } from 'store/balance'
+import { CoinsInfoResponse, VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { useDispatch, useSelector } from 'react-redux'
 import TokenService from 'services/token/TokenService'
-import { selectActiveNetwork } from 'store/network'
 import {
   selectIsWatchlistFavorite,
-  selectWatchlistTokenById,
+  selectWatchlistPrice,
   toggleWatchListFavorite
 } from 'store/watchlist'
 
-export function useTokenDetail(tokenId: string) {
+export function useTokenDetail(coingeckoId: string) {
   const dispatch = useDispatch()
-  const isFavorite = useSelector(selectIsWatchlistFavorite(tokenId))
+  const isFavorite = useSelector(selectIsWatchlistFavorite(coingeckoId))
+  const price = useSelector(selectWatchlistPrice(coingeckoId))
   const { openMoonPay, openUrl } = useInAppBrowser()
   const { selectedCurrency, currencyFormatter } =
     useApplicationContext().appHook
@@ -39,35 +34,18 @@ export function useTokenDetail(tokenId: string) {
     diffValue: 0,
     percentChange: 0
   })
-  const [contractInfo, setContractInfo] = useState<
-    CoinsContractInfoResponse | CoinsInfoResponse
-  >()
+  const [coinInfo, setCoinInfo] = useState<CoinsInfoResponse>()
   const [urlHostname, setUrlHostname] = useState<string>('')
-  const token = useSelector(selectWatchlistTokenById(tokenId))
-  const network = useSelector(selectActiveNetwork)
-  const assetPlatformId =
-    network.pricingProviders?.coingecko.assetPlatformId ?? ''
   const currency = selectedCurrency.toLowerCase() as VsCurrencyType
 
   // get coingecko chart data.
   useEffect(() => {
     ;(async () => {
-      let data
-
-      if (token?.type === TokenType.NATIVE) {
-        data = await TokenService.getChartDataForCoinId({
-          coingeckoId: token?.id,
-          days: chartDays,
-          currency: currency
-        })
-      } else if (token?.type === TokenType.ERC20) {
-        data = await TokenService.getChartDataForAddress({
-          assetPlatformId,
-          address: token?.id,
-          days: chartDays,
-          currency: currency
-        })
-      }
+      const data = await TokenService.getChartDataForCoinId({
+        coingeckoId,
+        days: chartDays,
+        currency: currency
+      })
 
       if (data) {
         setChartData(data.dataPoints)
@@ -78,27 +56,18 @@ export function useTokenDetail(tokenId: string) {
         setChartData([])
       }
     })()
-  }, [assetPlatformId, chartDays, currency, token])
+  }, [chartDays, coingeckoId, currency])
 
   // get market cap, volume, etc
   useEffect(() => {
     ;(async () => {
-      let data
-
-      if (token?.type === TokenType.NATIVE) {
-        data = await TokenService.getCoinInfo({
-          coingeckoId: token?.id
-        })
-      } else if (token?.type === TokenType.ERC20) {
-        data = await TokenService.getContractInfo({
-          assetPlatformId,
-          address: token?.id
-        })
-      }
+      const data = await TokenService.getCoinInfo({
+        coingeckoId
+      })
 
       if (!data) return
 
-      setContractInfo(data)
+      setCoinInfo(data)
 
       if (data?.links?.homepage?.[0]) {
         const url = data?.links?.homepage?.[0]
@@ -107,39 +76,44 @@ export function useTokenDetail(tokenId: string) {
         setUrlHostname(url)
       }
     })()
-  }, [assetPlatformId, token])
+  }, [coingeckoId])
 
-  function handleFavorite() {
-    token && dispatch(toggleWatchListFavorite(token))
-  }
+  const handleFavorite = useCallback(() => {
+    dispatch(toggleWatchListFavorite(coingeckoId))
+  }, [coingeckoId, dispatch])
 
-  async function changeChartDays(days: number) {
+  const changeChartDays = useCallback((days: number) => {
     setChartData(undefined)
     setChartDays(days)
-  }
+  }, [])
 
   return {
     isFavorite,
     openMoonPay,
     openUrl,
     currencyFormatter,
-    contractInfo,
     urlHostname,
     handleFavorite,
-    // @ts-ignore market_data exists in CoinsContractInfoResponse
-    marketTotalSupply: contractInfo?.market_data.total_supply ?? 0,
-    twitterHandle: contractInfo?.links?.twitter_screen_name,
-    // @ts-ignore market_data exists in CoinsContractInfoResponse
-    marketCirculatingSupply: contractInfo?.market_data?.circulating_supply ?? 0,
+    // @ts-ignore market_data exists in CoinsInfoResponse
+    marketTotalSupply: coinInfo?.market_data.total_supply ?? 0,
+    twitterHandle: coinInfo?.links?.twitter_screen_name,
+    // @ts-ignore market_data exists in CoinsInfoResponse
+    marketCirculatingSupply: coinInfo?.market_data?.circulating_supply ?? 0,
     marketVolume:
-      // @ts-ignore market_data exists in CoinsContractInfoResponse
-      contractInfo?.market_data?.total_volume[currency] ?? 0,
-    // @ts-ignore market_data exists in CoinsContractInfoResponse
-    marketCap: contractInfo?.market_data?.market_cap[currency] ?? 0,
-    marketCapRank: contractInfo?.market_cap_rank ?? 0,
+      // @ts-ignore market_data exists in CoinsInfoResponse
+      coinInfo?.market_data?.total_volume[currency] ?? 0,
+    // @ts-ignore market_data exists in CoinsInfoResponse
+    marketCap: coinInfo?.market_data?.market_cap[currency] ?? 0,
+    marketCapRank: coinInfo?.market_cap_rank ?? 0,
     chartData,
-    token,
     ranges,
-    changeChartDays
+    changeChartDays,
+    priceInCurrency: price?.priceInCurrency,
+    id: coingeckoId,
+    symbol: coinInfo?.symbol.toUpperCase(),
+    name: coinInfo?.name,
+    logoUri: coinInfo?.image.large,
+    // @ts-ignore contract_address exists in CoinsInfoResponse
+    contractAddress: coinInfo?.contract_address as string
   }
 }

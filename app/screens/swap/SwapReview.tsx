@@ -51,6 +51,7 @@ const SwapReview = ({ onCancel, onBackToParent }: Props) => {
     if (swapStatus === 'Swapping') {
       onBackToParent()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [swapStatus])
 
   useBeforeRemoveListener(
@@ -108,6 +109,7 @@ const SwapReview = ({ onCancel, onBackToParent }: Props) => {
         useNativeDriver: false
       }).start()
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [optimalRate?.destAmount, optimalRate?.destUSD])
 
   useEffect(() => {
@@ -127,6 +129,7 @@ const SwapReview = ({ onCancel, onBackToParent }: Props) => {
       )
       .subscribe()
     return () => sub.unsubscribe()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
@@ -157,7 +160,15 @@ const SwapReview = ({ onCancel, onBackToParent }: Props) => {
         </AvaText.Heading3>
         <AvaListItem.Base
           embedInCard
-          leftComponent={fromToken && <Avatar.Token token={fromToken} />}
+          leftComponent={
+            fromToken && (
+              <Avatar.Token
+                name={fromToken.name}
+                symbol={fromToken.symbol}
+                logoUri={fromToken.logoUri}
+              />
+            )
+          }
           title={fromToken?.symbol}
           rightComponent={
             <View style={{ alignItems: 'flex-end' }}>
@@ -179,7 +190,15 @@ const SwapReview = ({ onCancel, onBackToParent }: Props) => {
         </AvaText.Heading3>
         <AvaListItem.Base
           embedInCard
-          leftComponent={toToken && <Avatar.Token token={toToken} />}
+          leftComponent={
+            toToken && (
+              <Avatar.Token
+                name={toToken.name}
+                symbol={toToken.symbol}
+                logoUri={toToken.logoUri}
+              />
+            )
+          }
           title={toToken?.symbol}
           rightComponent={
             <View style={{ alignItems: 'flex-end' }}>

@@ -1,154 +1,189 @@
 import { Network } from '@avalabs/chains-sdk'
-import { TokenType } from 'store/balance'
-import {
-  SimplePriceResponse,
-  SimpleTokenPriceResponse,
-  VsCurrencyType
-} from '@avalabs/coingecko-sdk'
-import tokenService from 'services/token/TokenService'
-import { MarketToken } from 'store/watchlist'
+import { CoinMarket, VsCurrencyType } from '@avalabs/coingecko-sdk'
+import TokenService from 'services/token/TokenService'
+import { transformSparklineData } from 'services/token/utils'
+import { Charts, MarketToken, Prices } from 'store/watchlist'
+import Logger from 'utils/Logger'
 
-// .B for Bitcoin, .E for Ethereum
-const bridgedTokenRegexp = /\.[BE]$/
+const coinByAddress = require('assets/coinByAddress.json')
+
+const notFoundId = -1
+
+const getCoingeckoId = (address: string, symbol: string) => {
+  if (coinByAddress[address] && coinByAddress[address].symbol === symbol) {
+    return coinByAddress[address].id
+  }
+
+  return notFoundId
+}
 
 class WatchlistService {
-  async getMarketData(
-    currencyStr: string,
-    networks: Network[]
-  ): Promise<MarketToken[]> {
-    const currency = currencyStr.toLowerCase() as VsCurrencyType
-    const allTokens: { [symbol: string]: MarketToken } = {}
+  async getTokens(
+    currency: string,
+    allNetworks: Network[],
+    cachedFavoriteTokenIds: string[]
+  ): Promise<{
+    tokens: Record<string, MarketToken>
+    charts: Charts
+  }> {
+    // 1. get top 100 tokens with sparkline data
+    const top100Tokens = await TokenService.getMarkets(
+      currency.toLowerCase() as VsCurrencyType,
+      true
+    )
 
-    const marketTokens = await tokenService.getTopTokenMarket(currency)
-    const marketTokenIds: string[] = []
+    // 2. get all network contract tokens + favorite tokens with sparkline data
+    const top100TokenIds = top100Tokens.map(token => token.id)
 
-    marketTokens.forEach(mt => {
-      const symbol = mt.symbol.toUpperCase()
-      allTokens[symbol] = {
-        id: mt.id,
-        name: mt.name,
-        symbol,
-        logoUri: mt.image,
-        type: TokenType.NATIVE,
-        priceInCurrency: mt.price,
-        assetPlatformId: '',
-        change24: 0,
-        marketCap: 0,
-        vol24: 0
-      }
-      marketTokenIds.push(mt.id)
-    })
+    const tokenIdsToFetch: string[] = []
 
-    networks.forEach(({ tokens, pricingProviders }) => {
+    allNetworks.forEach(({ tokens }) => {
       tokens?.forEach(tk => {
         const symbol = tk.symbol.toUpperCase()
+
         if (
-          // Ignore if already added by marketTokens
-          allTokens[symbol] ||
           // Ignore Avalanche bridged tokens
-          allTokens[symbol.replace(bridgedTokenRegexp, '')]
+          // .B for Bitcoin, .E for Ethereum
+          symbol.includes('.B') ||
+          symbol.includes('.E')
         ) {
           return
         }
-        allTokens[symbol] = {
-          id: tk.address,
-          name: tk.name,
-          symbol,
-          logoUri: tk.logoUri || '',
-          type: TokenType.ERC20,
-          assetPlatformId: pricingProviders?.coingecko.assetPlatformId || '',
-          priceInCurrency: 0,
-          change24: 0,
-          marketCap: 0,
-          vol24: 0
+
+        const coingeckoId = getCoingeckoId(
+          tk.address.toLowerCase(),
+          tk.symbol.toLowerCase()
+        )
+
+        if (
+          coingeckoId === notFoundId ||
+          top100TokenIds.includes(coingeckoId) ||
+          tokenIdsToFetch.includes(coingeckoId)
+        ) {
+          coingeckoId === notFoundId &&
+            Logger.info(
+              'could not find a coingecko id for token',
+              `address: ${tk.address} - symbol: ${tk.symbol}`
+            )
+          // ignore if we can't find a coingecko id
+          // or if already included in the top 100
+          // of if already included (due to duplicate tokens)
+          return
         }
+
+        tokenIdsToFetch.push(coingeckoId)
       })
     })
 
-    const promises: Promise<SimplePriceResponse | undefined>[] = []
-    promises.push(
-      tokenService.fetchPriceWithMarketData(marketTokenIds, currency)
+    tokenIdsToFetch.push(...cachedFavoriteTokenIds)
+
+    let otherTokens: CoinMarket[] = []
+
+    if (tokenIdsToFetch.length !== 0) {
+      // network contract tokens and favorite tokens
+      otherTokens = await TokenService.getMarkets(
+        currency as VsCurrencyType,
+        true,
+        tokenIdsToFetch
+      )
+    }
+
+    const tokens: Record<string, MarketToken> = {}
+    const charts: Charts = {}
+
+    // 3. combine 1 and 2 and extract tokens and charts data
+    top100Tokens.concat(otherTokens).forEach(token => {
+      const tokenToAdd = {
+        id: token.id,
+        symbol: token.symbol,
+        name: token.name,
+        logoUri: token.image
+      }
+
+      tokens[token.id] = tokenToAdd
+
+      charts[token.id] = transformSparklineData(token.sparkline_in_7d.price)
+    })
+
+    return { tokens, charts }
+  }
+
+  async getPrices(coingeckoIds: string[], currency: string): Promise<Prices> {
+    const pricesRaw = await TokenService.getPriceWithMarketDataByCoinIds(
+      coingeckoIds,
+      currency as VsCurrencyType
     )
 
-    for (const nt of networks) {
-      const assetPlatformId =
-        nt.pricingProviders?.coingecko?.assetPlatformId ?? ''
-      const tokenAddresses =
-        nt?.tokens?.map(token => token.address.toLowerCase()) ?? []
-      if (tokenAddresses.length > 0) {
-        promises.push(
-          tokenService.getPricesWithMarketDataByAddresses(
-            tokenAddresses,
-            assetPlatformId,
-            currency.toLowerCase() as VsCurrencyType
-          )
-        )
+    const prices: Prices = {}
+
+    for (const price in pricesRaw) {
+      const entry = pricesRaw[price][currency as VsCurrencyType]
+      prices[price] = {
+        priceInCurrency: entry?.price ?? 0,
+        change24: entry?.change24 ?? 0,
+        marketCap: entry?.marketCap ?? 0,
+        vol24: entry?.vol24 ?? 0
       }
     }
 
-    const tokenPriceDict:
-      | SimpleTokenPriceResponse
-      | SimplePriceResponse
-      | undefined = (await Promise.allSettled(promises)).reduce(
-      (prev, result) => {
-        return result.status === 'fulfilled'
-          ? { ...prev, ...result.value }
-          : prev
-      },
-      {}
-    )
-
-    const data =
-      Object.values(allTokens).map((token: MarketToken) => {
-        const tokenPrice =
-          tokenPriceDict[token.id.toLowerCase()]?.[currency as VsCurrencyType]
-        const priceUSD = tokenPrice?.price ?? 0
-        const marketCap = tokenPrice?.marketCap ?? 0
-        const change24 = tokenPrice?.change24 ?? 0
-        const vol24 = tokenPrice?.vol24 ?? 0
-
-        return {
-          ...token,
-          coingeckoId: token.type === TokenType.NATIVE && token.id,
-          priceInCurrency: priceUSD,
-          marketCap,
-          change24,
-          vol24
-        } as MarketToken
-      }) ?? []
-
-    return data
+    return prices
   }
 
-  async tokenSearch(query: string) {
-    const coins = await tokenService.getTokenSearch(query)
-    if (coins) {
-      const ids = coins.map((tk: MarketToken) => tk.id)
-      const prices = await tokenService.fetchPriceWithMarketData(
-        ids,
-        'usd' as VsCurrencyType
+  async tokenSearch(
+    query: string,
+    currency: string
+  ): Promise<
+    { tokens: MarketToken[]; charts: Charts; prices: Prices } | undefined
+  > {
+    const coins = await TokenService.getTokenSearch(query)
+    const coinIds = coins?.map(tk => tk.id)
+
+    if (coinIds && coinIds.length > 0) {
+      const pricePromise = TokenService.getPriceWithMarketDataByCoinIds(
+        coinIds,
+        currency as VsCurrencyType
       )
 
-      return coins.map(coin => {
-        const tokenPrice =
-          prices?.[coin.id.toLowerCase()]?.['usd' as VsCurrencyType]
-        const priceUSD = tokenPrice?.price ?? 0
-        const marketCap = tokenPrice?.marketCap ?? 0
-        const change24 = tokenPrice?.change24 ?? 0
-        const vol24 = tokenPrice?.vol24 ?? 0
+      const marketPromise = await TokenService.getMarkets(
+        currency as VsCurrencyType,
+        true,
+        coinIds
+      )
+      const [pricesRaw, marketsRaw] = await Promise.all([
+        pricePromise,
+        marketPromise
+      ])
 
-        return {
-          ...coin,
-          coingeckoId: coin.id,
-          type: TokenType.NATIVE,
-          priceInCurrency: priceUSD,
-          marketCap,
-          change24,
-          vol24
-        } as MarketToken
+      const tokens: MarketToken[] = []
+      const charts: Charts = {}
+
+      marketsRaw.forEach(market => {
+        tokens.push({
+          id: market.id,
+          symbol: market.symbol,
+          name: market.name,
+          logoUri: market.image
+        })
+
+        charts[market.id] = transformSparklineData(market.sparkline_in_7d.price)
       })
+
+      const prices: Prices = {}
+
+      for (const price in pricesRaw) {
+        const entry = pricesRaw[price][currency as VsCurrencyType]
+        prices[price] = {
+          priceInCurrency: entry?.price ?? 0,
+          change24: entry?.change24 ?? 0,
+          marketCap: entry?.marketCap ?? 0,
+          vol24: entry?.vol24 ?? 0
+        }
+      }
+
+      return { tokens, charts, prices }
     }
-    return []
+
+    return undefined
   }
 }
 
