@@ -1,7 +1,11 @@
 import { StackNavigationOptions } from '@react-navigation/stack'
 import AvaText from 'components/AvaText'
 import React from 'react'
+import { View } from 'react-native'
 import { Row } from 'components/Row'
+import { AppTheme } from 'contexts/ApplicationContext'
+
+export const BOTTOM_BAR_HEIGHT = 60
 
 export const MainHeaderOptions = (
   title: string,
@@ -52,4 +56,49 @@ export const SubHeaderOptions = (
   }
 
   return options
+}
+
+export const getCommonBottomTabOptions = (theme: AppTheme) => ({
+  tabBarShowLabel: false,
+  headerShown: true,
+  tabBarAllowFontScaling: false,
+  tabBarActiveTintColor: theme.colorPrimary1,
+  tabBarInactiveTintColor: theme.colorText2,
+  tabBarStyle: {
+    backgroundColor: theme.background,
+    height: BOTTOM_BAR_HEIGHT
+  }
+})
+
+type NormalTabButtonParams = {
+  theme: AppTheme
+  routeName: string
+  focused: boolean
+  image: React.ReactNode
+}
+
+/**
+ * extracts creation of "normal" tab items
+ * @param theme
+ * @param routeName
+ * @param focused
+ * @param image
+ */
+export const normalTabButton = ({
+  theme,
+  routeName,
+  focused,
+  image
+}: NormalTabButtonParams) => {
+  return (
+    <View style={{ justifyContent: 'center', alignItems: 'center', top: 2 }}>
+      {image}
+      <AvaText.Caption
+        textStyle={{
+          color: focused ? theme.alternateBackground : theme.colorIcon4
+        }}>
+        {routeName}
+      </AvaText.Caption>
+    </View>
+  )
 }

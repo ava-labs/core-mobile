@@ -39,6 +39,7 @@ import AvaButton from 'components/AvaButton'
 import { Row } from 'components/Row'
 import { DeepLinkOrigin } from 'services/walletconnect/types'
 import { useDappConnectionContext } from 'contexts/DappConnectionContext'
+import { getCommonBottomTabOptions, normalTabButton } from 'navigation/NavUtils'
 
 export type TabNavigatorParamList = {
   [AppNavigation.Tabs.Portfolio]: { showBackButton?: boolean }
@@ -62,47 +63,16 @@ const TabNavigator = () => {
   const activeNetwork = useSelector(selectActiveNetwork)
 
   /**
-   * extracts creation of "normal" tab items
-   * @param routeName
-   * @param focused
-   * @param image
-   */
-  function normalTabButtons(
-    routeName: string,
-    focused: boolean,
-    image: React.ReactNode
-  ) {
-    return (
-      <View style={{ justifyContent: 'center', alignItems: 'center', top: 2 }}>
-        {image}
-        <AvaText.Caption
-          textStyle={{
-            color: focused ? theme.alternateBackground : theme.colorIcon4
-          }}>
-          {routeName}
-        </AvaText.Caption>
-      </View>
-    )
-  }
-
-  /**
    * Due to the use of a custom FAB as a tab icon, spacing needed to be manually manipulated
    * which required the "normal" items to be manually rendered on `options.tabBarIcon` instead of automatically handled
    * by Tab.Navigator.
    */
   return (
     <Tab.Navigator
-      screenOptions={() => ({
-        tabBarShowLabel: false,
-        headerShown: true,
-        tabBarAllowFontScaling: false,
-        tabBarActiveTintColor: theme.colorPrimary1,
-        tabBarInactiveTintColor: theme.colorText2,
-        tabBarStyle: {
-          backgroundColor: theme.background
-        },
+      screenOptions={{
+        ...getCommonBottomTabOptions(theme),
         header: () => <TopNavigationHeader />
-      })}>
+      }}>
       <Tab.Screen
         name={AppNavigation.Tabs.Portfolio}
         component={PortfolioStackScreen}
@@ -117,11 +87,12 @@ const TabNavigator = () => {
             )
           },
           tabBarIcon: ({ focused }) =>
-            normalTabButtons(
-              AppNavigation.Tabs.Portfolio,
+            normalTabButton({
+              theme,
+              routeName: AppNavigation.Tabs.Portfolio,
               focused,
-              <HomeSVG selected={focused} size={TAB_ICON_SIZE} />
-            )
+              image: <HomeSVG selected={focused} size={TAB_ICON_SIZE} />
+            })
         })}
       />
       <Tab.Screen
@@ -129,11 +100,12 @@ const TabNavigator = () => {
         component={Activities}
         options={{
           tabBarIcon: ({ focused }) =>
-            normalTabButtons(
-              AppNavigation.Tabs.Activity,
+            normalTabButton({
+              theme,
+              routeName: AppNavigation.Tabs.Activity,
               focused,
-              <HistorySVG selected={focused} size={TAB_ICON_SIZE} />
-            )
+              image: <HistorySVG selected={focused} size={TAB_ICON_SIZE} />
+            })
         }}
         listeners={() => ({
           tabPress: () => {
@@ -155,11 +127,12 @@ const TabNavigator = () => {
         name={AppNavigation.Tabs.Watchlist}
         options={{
           tabBarIcon: ({ focused }) =>
-            normalTabButtons(
-              AppNavigation.Tabs.Watchlist,
+            normalTabButton({
+              theme,
+              routeName: AppNavigation.Tabs.Watchlist,
               focused,
-              <WatchlistSVG selected={focused} size={TAB_ICON_SIZE} />
-            )
+              image: <WatchlistSVG selected={focused} size={TAB_ICON_SIZE} />
+            })
         }}
         component={WatchlistTab}
       />
@@ -168,11 +141,12 @@ const TabNavigator = () => {
         component={DummyBridge}
         options={{
           tabBarIcon: ({ focused }) =>
-            normalTabButtons(
-              AppNavigation.Tabs.Bridge,
+            normalTabButton({
+              theme,
+              routeName: AppNavigation.Tabs.Bridge,
               focused,
-              <BridgeSVG selected={focused} />
-            )
+              image: <BridgeSVG selected={focused} />
+            })
         }}
         listeners={({ navigation }) => ({
           tabPress: e => {

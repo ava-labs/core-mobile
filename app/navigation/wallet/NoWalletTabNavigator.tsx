@@ -6,7 +6,6 @@ import {
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import React from 'react'
 import { View } from 'react-native'
-import AvaText from 'components/AvaText'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import CreateNewWalletPlusSVG from 'components/svg/CreateNewWalletPlusSVG'
 import WalletSVG from 'components/svg/WalletSVG'
@@ -17,6 +16,11 @@ import { NoWalletDrawerScreenProps } from 'navigation/types'
 import WatchlistTabView from 'screens/watchlist/WatchlistTabView'
 import { useSelector } from 'react-redux'
 import { selectWalletState, WalletState } from 'store/app'
+import {
+  BOTTOM_BAR_HEIGHT,
+  getCommonBottomTabOptions,
+  normalTabButton
+} from 'navigation/NavUtils'
 
 export type NoWalletTabNavigatorParamList = {
   [AppNavigation.NoWalletTabs.NewWallet]: undefined
@@ -52,30 +56,6 @@ const NoWalletTabNavigator = () => {
   const walletState = useSelector(selectWalletState)
 
   /**
-   * extracts creation of "normal" tab items
-   * @param routeName
-   * @param focused
-   * @param image
-   */
-  function normalTabButtons(
-    routeName: string,
-    focused: boolean,
-    image: React.ReactNode
-  ) {
-    return (
-      <View style={{ justifyContent: 'center', alignItems: 'center', top: 2 }}>
-        {image}
-        <AvaText.Caption
-          textStyle={{
-            color: focused ? theme.alternateBackground : theme.colorIcon4
-          }}>
-          {routeName}
-        </AvaText.Caption>
-      </View>
-    )
-  }
-
-  /**
    * Due to the use of a custom FAB as a tab icon, spacing needed to be manually manipulated
    * which required the "normal" items to be manually rendered on `options.tabBarIcon` instead of automatically handled
    * by Tab.Navigator.
@@ -83,14 +63,7 @@ const NoWalletTabNavigator = () => {
   return (
     <Tab.Navigator
       screenOptions={() => ({
-        tabBarShowLabel: false,
-        headerShown: true,
-        tabBarAllowFontScaling: false,
-        tabBarActiveTintColor: theme.colorPrimary1,
-        tabBarInactiveTintColor: theme.colorText2,
-        tabBarStyle: {
-          backgroundColor: theme.background
-        },
+        ...getCommonBottomTabOptions(theme),
         header: props => header(props, navigation)
       })}>
       {walletState !== WalletState.NONEXISTENT ? (
@@ -98,7 +71,9 @@ const NoWalletTabNavigator = () => {
           name={AppNavigation.NoWalletTabs.EnterWallet}
           component={WatchlistTabView}
           options={{
-            tabBarStyle: { justifyContent: 'center', alignItems: 'center' },
+            tabBarStyle: {
+              height: BOTTOM_BAR_HEIGHT + 10 // add a bit more space since this is for a big button
+            },
             tabBarButton: EnterWalletButton
           }}
         />
@@ -109,11 +84,12 @@ const NoWalletTabNavigator = () => {
             component={WatchlistTabView}
             options={{
               tabBarIcon: ({ focused }) =>
-                normalTabButtons(
-                  AppNavigation.NoWalletTabs.NewWallet,
+                normalTabButton({
+                  theme,
+                  routeName: AppNavigation.NoWalletTabs.NewWallet,
                   focused,
-                  <CreateNewWalletPlusSVG size={TAB_ICON_SIZE} bold />
-                )
+                  image: <CreateNewWalletPlusSVG size={TAB_ICON_SIZE} bold />
+                })
             }}
             listeners={() => ({
               tabPress: e => {
@@ -128,11 +104,12 @@ const NoWalletTabNavigator = () => {
             component={DummyComponent}
             options={{
               tabBarIcon: () =>
-                normalTabButtons(
-                  AppNavigation.NoWalletTabs.ExistingWallet,
-                  true,
-                  <WalletSVG size={TAB_ICON_SIZE} />
-                )
+                normalTabButton({
+                  theme,
+                  routeName: AppNavigation.NoWalletTabs.ExistingWallet,
+                  focused: true,
+                  image: <WalletSVG size={TAB_ICON_SIZE} />
+                })
             }}
             listeners={() => ({
               tabPress: e => {
@@ -154,7 +131,7 @@ const EnterWalletButton = () => {
   const appNavHook = useApplicationContext().appNavHook
   return (
     <AvaButton.PrimaryLarge
-      style={{ flex: 1, marginHorizontal: 16 }}
+      style={{ flex: 1, marginHorizontal: 16, alignSelf: 'center' }}
       onPress={() => {
         appNavHook?.navigation?.current?.navigate(
           AppNavigation.NoWallet.Welcome,
