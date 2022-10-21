@@ -25,30 +25,40 @@ class SendServiceBTC implements SendServiceHelper {
     sendState: ValidSendState,
     isMainnet: boolean,
     fromAddress: string,
-    currency: string
+    currency: string,
+    sentryTrx?: Transaction
   ): Promise<{
     inputs: BitcoinInputUTXO[]
     outputs: BitcoinOutputUTXO[]
   }> {
-    const { address: toAddress, amount } = sendState
-    const feeRate = sendState.gasPrice.toNumber()
-    const provider = getBitcoinProvider(!isMainnet)
-    const { utxos } = await this.getBalance(isMainnet, fromAddress, currency)
+    return SentryWrapper.createSpanFor(sentryTrx)
+      .setContext({ op: 'SendServiceBTC.getTransactionRequest' })
+      .executeAsync(async () => {
+        const { address: toAddress, amount } = sendState
+        const feeRate = sendState.gasPrice.toNumber()
+        const provider = getBitcoinProvider(!isMainnet)
+        const { utxos } = await this.getBalance(
+          isMainnet,
+          fromAddress,
+          currency,
+          sentryTrx
+        )
 
-    const { inputs, outputs } = createTransferTx(
-      toAddress,
-      fromAddress,
-      amount.toNumber(),
-      feeRate,
-      utxos,
-      provider.getNetwork()
-    )
+        const { inputs, outputs } = createTransferTx(
+          toAddress,
+          fromAddress,
+          amount.toNumber(),
+          feeRate,
+          utxos,
+          provider.getNetwork()
+        )
 
-    if (!inputs || !outputs) {
-      throw new Error('Unable to create transaction')
-    }
+        if (!inputs || !outputs) {
+          throw new Error('Unable to create transaction')
+        }
 
-    return { inputs, outputs }
+        return { inputs, outputs }
+      })
   }
 
   async validateStateAndCalculateFees(
@@ -67,7 +77,8 @@ class SendServiceBTC implements SendServiceHelper {
         const { utxos } = await this.getBalance(
           isMainnet,
           fromAddress,
-          currency
+          currency,
+          sentryTrx
         )
         const provider = getBitcoinProvider(!isMainnet)
 
@@ -139,7 +150,8 @@ class SendServiceBTC implements SendServiceHelper {
   private async getBalance(
     isMainnet: boolean,
     address: string,
-    currency: string
+    currency: string,
+    sentryTrx?: Transaction
   ): Promise<{
     balance: number
     utxos: BitcoinInputUTXO[]
@@ -147,7 +159,8 @@ class SendServiceBTC implements SendServiceHelper {
     const token = await balanceService.getBalancesForAddress(
       isMainnet ? BITCOIN_NETWORK : BITCOIN_TEST_NETWORK,
       address,
-      currency
+      currency,
+      sentryTrx
     )
 
     return {

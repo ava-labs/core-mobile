@@ -33,7 +33,8 @@ class SendService {
           sendState,
           !activeNetwork.isTestnet,
           fromAddress,
-          currency
+          currency,
+          sentryTrx
         )
 
         if (sendState.error?.error) {
@@ -48,7 +49,8 @@ class SendService {
           sendState,
           !activeNetwork.isTestnet,
           fromAddress,
-          currency
+          currency,
+          sentryTrx
         )
         const signedTx = await walletService.sign(
           txRequest,
@@ -60,7 +62,8 @@ class SendService {
         return await networkService.sendTransaction(
           signedTx,
           activeNetwork,
-          false
+          false,
+          sentryTrx
         )
       })
   }

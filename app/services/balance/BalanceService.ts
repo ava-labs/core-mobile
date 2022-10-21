@@ -48,7 +48,8 @@ export class BalanceService {
         const tokens = await balanceProvider.getBalances(
           network,
           accountAddress,
-          currency
+          currency,
+          sentryTrx
         )
 
         return {
@@ -63,18 +64,24 @@ export class BalanceService {
   async getBalancesForAddress(
     network: Network,
     address: string,
-    currency: string
+    currency: string,
+    sentryTrx?: Transaction
   ): Promise<(NetworkTokenWithBalance | TokenWithBalanceERC20)[]> {
-    const balanceProvider = await findAsyncSequential(balanceProviders, value =>
-      value.isProviderFor(network)
-    )
-    if (!balanceProvider) {
-      throw new Error(
-        `no balance provider found for network ${network.chainId}`
-      )
-    }
+    return SentryWrapper.createSpanFor(sentryTrx)
+      .setContext({ op: 'getBalancesForAddress' })
+      .executeAsync(async () => {
+        const balanceProvider = await findAsyncSequential(
+          balanceProviders,
+          value => value.isProviderFor(network)
+        )
+        if (!balanceProvider) {
+          throw new Error(
+            `no balance provider found for network ${network.chainId}`
+          )
+        }
 
-    return balanceProvider.getBalances(network, address, currency)
+        return balanceProvider.getBalances(network, address, currency)
+      })
   }
 }
 
