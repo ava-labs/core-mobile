@@ -6,3 +6,4 @@ export type TransactionName =
   | 'get-nfts'
   | 'send-erc20'
   | 'send-erc721'
+  | 'swap'
