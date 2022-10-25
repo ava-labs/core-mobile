@@ -39,7 +39,7 @@ const ContextProviders: FC = ({ children }) => (
 const ContextApp = () => {
   return (
     <Sentry.ErrorBoundary fallback={<TopLevelErrorFallback />}>
-      <StatusBar barStyle={'light-content'} />
+      <StatusBar barStyle={'light-content'} backgroundColor="black" />
       <ContextProviders>
         <JailBrokenCheck>
           <GestureHandlerRootView style={{ flex: 1 }}>

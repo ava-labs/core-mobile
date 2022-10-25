@@ -6,8 +6,10 @@ import { Repo, useRepo } from 'Repo'
 import { AppNavHook, useAppNav } from 'useAppNav'
 import { useWalletSetup, WalletSetupHook } from 'hooks/useWalletSetup'
 
+export type AppTheme = typeof COLORS_DAY | typeof COLORS_NIGHT
+
 export interface ApplicationContextState {
-  theme: typeof COLORS_DAY | typeof COLORS_NIGHT
+  theme: AppTheme
   isDarkMode: boolean
   backgroundStyle: BackgroundStyle
   appBackgroundStyle: AppBackgroundStyle
@@ -43,10 +45,15 @@ export declare type AppBackgroundStyle = {
 }
 
 export const ApplicationContext = createContext<ApplicationContextState>(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   {} as any
 )
 
-export const ApplicationContextProvider = ({ children }: { children: any }) => {
+export const ApplicationContextProvider = ({
+  children
+}: {
+  children: React.ReactNode
+}) => {
   const appNavHook = useAppNav()
   const repository = useRepo()
   const walletSetupHook = useWalletSetup(appNavHook)
