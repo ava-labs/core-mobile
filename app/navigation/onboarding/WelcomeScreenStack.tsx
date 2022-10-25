@@ -1,6 +1,5 @@
 import AppNavigation from 'navigation/AppNavigation'
 import React from 'react'
-import Welcome from 'screens/onboarding/Welcome'
 import {
   NavigatorScreenParams,
   useNavigation,
@@ -22,7 +21,6 @@ import EnterWithMnemonicStack, {
 } from './EnterWithMnemonicStack'
 
 export type WelcomeScreenStackParamList = {
-  [AppNavigation.Onboard.Welcome]: undefined
   [AppNavigation.Onboard.AnalyticsConsent]: {
     nextScreen:
       | typeof AppNavigation.Onboard.CreateWalletStack
@@ -47,11 +45,6 @@ const WelcomeScreenStack: () => JSX.Element = () => (
     />
     <WelcomeScreenS.Screen
       options={MainHeaderOptions('')}
-      name={AppNavigation.Onboard.Welcome}
-      component={WelcomeScreen}
-    />
-    <WelcomeScreenS.Screen
-      options={MainHeaderOptions('')}
       name={AppNavigation.Onboard.AnalyticsConsent}
       component={AnalyticsConsentScreen}
     />
@@ -65,28 +58,6 @@ const WelcomeScreenStack: () => JSX.Element = () => (
     />
   </WelcomeScreenS.Navigator>
 )
-
-type WelcomeScreenNavigationProp = WelcomeScreenProps<
-  typeof AppNavigation.Onboard.Welcome
->['navigation']
-
-const WelcomeScreen = () => {
-  const { navigate } = useNavigation<WelcomeScreenNavigationProp>()
-  return (
-    <Welcome
-      onAlreadyHaveWallet={() =>
-        navigate(AppNavigation.Onboard.AnalyticsConsent, {
-          nextScreen: AppNavigation.Onboard.EnterWithMnemonicStack
-        })
-      }
-      onCreateWallet={() =>
-        navigate(AppNavigation.Onboard.AnalyticsConsent, {
-          nextScreen: AppNavigation.Onboard.CreateWalletStack
-        })
-      }
-    />
-  )
-}
 
 const LoginWithPinOrBiometryScreen = () => {
   const context = useApplicationContext()
@@ -111,19 +82,14 @@ type AnalyticsConsentScreenProps = WelcomeScreenProps<
 >
 
 const AnalyticsConsentScreen = () => {
-  const { goBack, navigate } =
+  const { navigate } =
     useNavigation<AnalyticsConsentScreenProps['navigation']>()
   const { params } = useRoute<AnalyticsConsentScreenProps['route']>()
 
   return (
     <AnalyticsConsent
       nextScreen={params.nextScreen}
-      onNextScreen={(
-        screen:
-          | typeof AppNavigation.Onboard.CreateWalletStack
-          | typeof AppNavigation.Onboard.EnterWithMnemonicStack
-      ) => {
-        goBack() //remove this screen from stack so we cant go back to it with back btns
+      onNextScreen={screen => {
         navigate(screen)
       }}
     />

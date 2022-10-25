@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, {
   createContext,
   Dispatch,
@@ -6,6 +7,7 @@ import React, {
   useState
 } from 'react'
 import walletConnectService from 'services/walletconnect/WalletConnectService'
+import WalletConnectService from 'services/walletconnect/WalletConnectService'
 import {
   DeepLink,
   DeepLinkOrigin,
@@ -37,7 +39,6 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import AppNavigation from 'navigation/AppNavigation'
 import { getEvmProvider } from 'services/network/utils/providerUtils'
 import { parseUrl } from 'navigation/useDeepLinking'
-import WalletConnectService from 'services/walletconnect/WalletConnectService'
 import { NetworkVMType } from '@avalabs/chains-sdk'
 
 interface AdditionalMessageParams {
@@ -99,19 +100,14 @@ export const DappConnectionContextProvider = ({
 
   useEffect(() => {
     InteractionManager.runAfterInteractions(() => {
-      if (walletState === WalletState.INACTIVE && pendingDeepLink) {
-        appNavHook?.navigation?.current?.navigate(
-          AppNavigation.NoWallet.Welcome,
-          { screen: AppNavigation.Onboard.Login }
-        )
-      } else if (walletState === WalletState.NONEXISTENT && pendingDeepLink) {
-        appNavHook?.navigation?.current?.navigate(
-          AppNavigation.NoWallet.Welcome,
-          { screen: AppNavigation.Onboard.Welcome }
-        )
+      if (
+        [WalletState.INACTIVE, WalletState.NONEXISTENT].includes(walletState) &&
+        pendingDeepLink
+      ) {
+        appNavHook?.resetNavToRoot()
       }
     })
-  }, [walletState, pendingDeepLink])
+  }, [appNavHook, pendingDeepLink, walletState])
 
   /******************************************************************************
    * 1. Start listeners that will receive the deep link url
@@ -121,6 +117,7 @@ export const DappConnectionContextProvider = ({
     Linking.addEventListener('url', ({ url }) => {
       setPendingDeepLink({ url, origin: DeepLinkOrigin.ORIGIN_DEEPLINK })
     })
+
     async function checkInitialUrl() {
       // initial URL (when app comes from cold start)
       const url = await Linking.getInitialURL()
@@ -128,6 +125,7 @@ export const DappConnectionContextProvider = ({
         setPendingDeepLink({ url, origin: DeepLinkOrigin.ORIGIN_DEEPLINK })
       }
     }
+
     checkInitialUrl()
   }, [])
 
