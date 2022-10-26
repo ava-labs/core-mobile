@@ -20,6 +20,7 @@ const AccessExistingWalletItem = () => {
         showNavigationArrow
         leftComponent={<WalletSVG size={18} />}
         rightComponentVerticalAlignment={'center'}
+        testId="recoverWalletBtn"
         onPress={() => {
           navigation.navigate(AppNavigation.NoWallet.EnterWithMnemonicStack)
         }}
