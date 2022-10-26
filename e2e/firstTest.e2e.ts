@@ -9,7 +9,7 @@ describe('Add existing wallet', () => {
   })
 
   it('should have create new wallet button', async () => {
-    await expect(element(by.text('Existing Wallet')).atIndex(1)).toBeVisible()
+    await expect(element(by.text('Recover Wallet')).atIndex(1)).toBeVisible()
   })
 
   it('should successfully add an existing wallet', async () => {
