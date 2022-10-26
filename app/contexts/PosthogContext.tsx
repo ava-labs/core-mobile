@@ -13,9 +13,9 @@ import { JsonMap } from 'posthog-react-native/src/bridge'
 import Config from 'react-native-config'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import useAppBackgroundTracker from 'hooks/useAppBackgroundTracker'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { selectUserID } from 'store/posthog'
-import { setSentrySampleRate } from 'store/settings/remote'
+import Logger from 'utils/Logger'
 
 export const PosthogContext = createContext<PosthogContextState>(
   {} as PosthogContextState
@@ -43,6 +43,7 @@ export interface PosthogContextState {
   bridgeBtcBlocked: boolean
   bridgeEthBlocked: boolean
   sendBlocked: boolean
+  sentrySampleRate: number
 }
 
 const DefaultFeatureFlagConfig = {
@@ -52,7 +53,8 @@ const DefaultFeatureFlagConfig = {
   [FeatureGates.BRIDGE]: true,
   [FeatureGates.BRIDGE_BTC]: true,
   [FeatureGates.BRIDGE_ETH]: true,
-  [FeatureGates.SEND]: true
+  [FeatureGates.SEND]: true,
+  [FeatureVars.SENTRY_SAMPLE_RATE]: '0.1'
 }
 
 const ONE_MINUTE = 60 * 1000
@@ -62,7 +64,6 @@ export const PosthogContextProvider = ({
 }: {
   children: ReactNode
 }) => {
-  const dispatch = useDispatch()
   const [isPosthogReady, setIsPosthogReady] = useState(false)
   const [isAnalyticsEnabled, setIsAnalyticsEnabled] = useState(false)
   const posthogUserId = useSelector(selectUserID)
@@ -73,9 +74,9 @@ export const PosthogContextProvider = ({
     setTime: async time => AsyncStorage.setItem('POSTHOG_SUSPENDED', time)
   })
 
-  const [flags, setFlags] = useState<Record<FeatureGates, boolean>>(
-    DefaultFeatureFlagConfig
-  )
+  const [flags, setFlags] = useState<
+    Record<FeatureGates | FeatureVars, boolean | string>
+  >(DefaultFeatureFlagConfig)
   const [analyticsConsent, setAnalyticsConsent] = useState<
     boolean | undefined
   >()
@@ -85,12 +86,12 @@ export const PosthogContextProvider = ({
   const bridgeEthBlocked = !flags['bridge-feature-eth'] || !flags.everything
   const sendBlocked = !flags['send-feature'] || !flags.everything
   const eventsBlocked = !flags.events || !flags.everything
+  const sentrySampleRate =
+    parseInt((flags['sentry-sample-rate'] as string) ?? '0') / 100
 
   const capture = useCallback(
     async (event: string, properties?: JsonMap) => {
-      if (__DEV__) {
-        console.log(event, properties)
-      }
+      Logger.info(event, properties)
       return PostHog.capture(event, {
         ...properties,
         $ip: '',
@@ -111,20 +112,15 @@ export const PosthogContextProvider = ({
         distinct_id: ''
       })
     })
-      .catch(reason => (__DEV__ ? console.error(reason) : undefined))
+      .catch(reason => Logger.error(reason))
       .then(value => value?.json())
       .then(value => {
         const result = value as {
           featureFlags: Record<FeatureGates | FeatureVars, boolean | string>
         }
-        setFlags(result.featureFlags as Record<FeatureGates, boolean>)
-        if (typeof result.featureFlags['sentry-sample-rate'] === 'string') {
-          dispatch(
-            setSentrySampleRate(result.featureFlags['sentry-sample-rate'])
-          )
-        }
+        setFlags(result.featureFlags)
       })
-  }, [dispatch])
+  }, [])
 
   useEffect(initPosthog, [])
   useEffect(reloadFlagsPeriodically, [isPosthogReady, reloadFeatureFlags])
@@ -225,7 +221,8 @@ export const PosthogContextProvider = ({
         bridgeBlocked,
         bridgeBtcBlocked,
         bridgeEthBlocked,
-        sendBlocked
+        sendBlocked,
+        sentrySampleRate
       }}>
       {children}
     </PosthogContext.Provider>
