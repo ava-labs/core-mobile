@@ -4,7 +4,7 @@ import {
   createBottomTabNavigator
 } from '@react-navigation/bottom-tabs'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { View } from 'react-native'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import CreateNewWalletPlusSVG from 'components/svg/CreateNewWalletPlusSVG'
@@ -12,7 +12,10 @@ import WalletSVG from 'components/svg/WalletSVG'
 import MenuSVG from 'components/svg/MenuSVG'
 import AvaButton from 'components/AvaButton'
 import { useNavigation } from '@react-navigation/native'
-import { NoWalletDrawerScreenProps } from 'navigation/types'
+import {
+  NoWalletDrawerScreenProps,
+  NoWalletScreenProps
+} from 'navigation/types'
 import WatchlistTabView from 'screens/watchlist/WatchlistTabView'
 import { useSelector } from 'react-redux'
 import { selectWalletState, WalletState } from 'store/app'
@@ -21,6 +24,9 @@ import {
   getCommonBottomTabOptions,
   normalTabButton
 } from 'navigation/NavUtils'
+import { showSnackBarCustom } from 'components/Snackbar'
+import GeneralToast from 'components/toast/GeneralToast'
+import { useDappConnectionContext } from 'contexts/DappConnectionContext'
 
 export type NoWalletTabNavigatorParamList = {
   [AppNavigation.NoWalletTabs.NewWallet]: undefined
@@ -49,12 +55,29 @@ function header(props: BottomTabHeaderProps, navigation: NavigationProp) {
   )
 }
 
+type DrawerNavigationProp = NoWalletScreenProps<
+  typeof AppNavigation.NoWallet.Drawer
+>['navigation']
 const NoWalletTabNavigator = () => {
   const theme = useApplicationContext().theme
   const { capture } = usePosthogContext()
-  const navigation = useNavigation<NavigationProp>()
+  const drawerNavigation = useNavigation<DrawerNavigationProp>()
+  const tabsNavigation = useNavigation<NavigationProp>()
   const walletState = useSelector(selectWalletState)
+  const { pendingDeepLink } = useDappConnectionContext()
 
+  useEffect(() => {
+    if (pendingDeepLink) {
+      showSnackBarCustom({
+        component: (
+          <GeneralToast
+            message={`No wallet found. Create or add a wallet to Core to connect to applications.`}
+          />
+        ),
+        duration: 'short'
+      })
+    }
+  }, [pendingDeepLink])
   /**
    * Due to the use of a custom FAB as a tab icon, spacing needed to be manually manipulated
    * which required the "normal" items to be manually rendered on `options.tabBarIcon` instead of automatically handled
@@ -64,7 +87,7 @@ const NoWalletTabNavigator = () => {
     <Tab.Navigator
       screenOptions={() => ({
         ...getCommonBottomTabOptions(theme),
-        header: props => header(props, navigation)
+        header: props => header(props, tabsNavigation)
       })}>
       {walletState !== WalletState.NONEXISTENT ? (
         <Tab.Screen
@@ -95,7 +118,12 @@ const NoWalletTabNavigator = () => {
               tabPress: e => {
                 e.preventDefault()
                 capture('NewWalletTabClicked')
-                navigation.navigate(AppNavigation.NoWallet.CreateWalletStack)
+                drawerNavigation.navigate(AppNavigation.NoWallet.Welcome, {
+                  screen: AppNavigation.Onboard.AnalyticsConsent,
+                  params: {
+                    nextScreen: AppNavigation.Onboard.CreateWalletStack
+                  }
+                })
               }
             })}
           />
@@ -115,9 +143,12 @@ const NoWalletTabNavigator = () => {
               tabPress: e => {
                 e.preventDefault()
                 capture('ExistingWalletTabClicked')
-                navigation.navigate(
-                  AppNavigation.NoWallet.EnterWithMnemonicStack
-                )
+                drawerNavigation.navigate(AppNavigation.NoWallet.Welcome, {
+                  screen: AppNavigation.Onboard.AnalyticsConsent,
+                  params: {
+                    nextScreen: AppNavigation.Onboard.EnterWithMnemonicStack
+                  }
+                })
               }
             })}
           />
