@@ -7,7 +7,6 @@ enum Root {
 
 enum OnboardScreens {
   Init = 'OnboardScreens.Init',
-  Welcome = 'OnboardScreens.Welcome',
   AnalyticsConsent = 'OnboardScreens.AnalyticsConsent',
   CreateWalletStack = 'OnboardScreens.CreateWalletStack',
   EnterWithMnemonicStack = 'OnboardScreens.EnterWithMnemonicStack',
@@ -60,8 +59,6 @@ enum NoWalletScreens {
   Drawer = 'NoWalletScreens.Drawer',
   Legal = 'NoWalletScreens.Legal',
   Tabs = 'NoWalletScreens.Tabs',
-  EnterWithMnemonicStack = 'NoWalletScreens.EnterWithMnemonicStack',
-  CreateWalletStack = 'NoWalletScreens.CreateWalletStack',
   Welcome = 'NoWalletScreens.Welcome'
 }
 
