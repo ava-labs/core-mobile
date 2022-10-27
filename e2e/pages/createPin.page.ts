@@ -23,8 +23,8 @@ class CreatePinPage {
   }
 
   async tapEmptyCheckbox() {
-    await Action.tap(this.emptyCheckBox)
-    await Action.tap(this.emptyCheckBox)
+    await Action.tapElementAtIndex(this.emptyCheckBox, 0)
+    await Action.tapElementAtIndex(this.emptyCheckBox, 0)
   }
 }
 

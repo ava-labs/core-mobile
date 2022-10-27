@@ -27,6 +27,7 @@
       },
       "android.internal.debug": {
         "type": "android.apk",
+        "testBinaryPath": "android/app/build/outputs/apk/internal/debug/app-internal-debug.apk",
         "binaryPath": "android/app/build/outputs/apk/internal/debug/app-internal-debug.apk",
         "build": "ENVFILE=.env.development react-native run-android --variant=internalDebug"
       },

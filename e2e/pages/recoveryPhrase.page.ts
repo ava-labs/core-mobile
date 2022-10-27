@@ -11,11 +11,11 @@ class RecoveryPhrasePage {
   }
 
   async enterRecoveryPhrase(recoveryPhrase: string) {
-    Action.setInputText(this.recoveryPhraseTextInput, recoveryPhrase)
+    await Action.setInputText(this.recoveryPhraseTextInput, recoveryPhrase)
   }
 
   async tapSignInBtn() {
-    Action.tap(this.signInBtn)
+    await Action.tap(this.signInBtn)
   }
 }
 

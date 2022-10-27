@@ -1,7 +1,7 @@
 import { expect, element } from 'detox'
 
-const isVisible = async item => {
-  await expect(element(item)).toBeVisible()
+const isVisible = async (item, num = 0) => {
+  await expect(element(item).atIndex(num)).toBeVisible()
 }
 
 const isNotVisible = async item => {

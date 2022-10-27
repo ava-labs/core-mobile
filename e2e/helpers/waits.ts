@@ -1,3 +1,3 @@
-export default function delay(sec: number) {
-  return new Promise(resolve => setTimeout(resolve, sec))
+export default function delay(ms: number) {
+  return new Promise(r => setTimeout(r, ms))
 }

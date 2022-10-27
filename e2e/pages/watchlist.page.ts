@@ -15,7 +15,7 @@ class WatchListPage {
   }
 
   async tapWalletSVG() {
-    await Action.tap(this.walletSVG)
+    await Action.tapElementAtIndex(this.walletSVG, 1)
   }
 
   async tapExistingWalletBtn() {
