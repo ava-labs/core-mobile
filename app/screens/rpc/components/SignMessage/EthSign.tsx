@@ -13,7 +13,7 @@ const EthSign: FC<Props> = ({ action }) => {
   const theme = useContext(ApplicationContext).theme
 
   return (
-    <View>
+    <View style={{ flex: 1 }}>
       <AvaText.Body2 color={theme.colorPrimary1}>
         Signing this message can be dangerous. This signature could potentially
         perform any operation on your account&apos;s behalf, including granting
@@ -21,7 +21,7 @@ const EthSign: FC<Props> = ({ action }) => {
         site. Only sign this message if you know what you&apos;re doing or
         completely trust the requesting site
       </AvaText.Body2>
-      <Space y={1} />
+      <Space y={8} />
       <AvaText.Body2>Message:</AvaText.Body2>
       <Space y={8} />
       <ScrollView
