@@ -15,7 +15,7 @@ class SentryWrapper {
    * @param name - Name of transaction
    */
   public startTransaction(name: TransactionName): Transaction {
-    return Sentry.startTransaction({ name })
+    return Sentry.startTransaction({ name, op: name })
   }
 
   public finish(transaction: Transaction) {
