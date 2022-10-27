@@ -59,6 +59,13 @@ class WatchlistService {
           top100TokenIds.includes(coingeckoId) ||
           tokenIdsToFetch.includes(coingeckoId)
         ) {
+          // uncomment to log tokens that are not available on coingecko
+          // coingeckoId === notFoundId &&
+          //   Logger.info(
+          //     'could not find a coingecko id for token',
+          //     `address: ${tk.address} - symbol: ${tk.symbol}`
+          //   )
+
           // ignore if we can't find a coingecko id
           // or if already included in the top 100
           // of if already included (due to duplicate tokens)
