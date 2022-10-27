@@ -32,7 +32,7 @@ class SendServiceBTC implements SendServiceHelper {
     outputs: BitcoinOutputUTXO[]
   }> {
     return SentryWrapper.createSpanFor(sentryTrx)
-      .setContext({ op: 'SendServiceBTC.getTransactionRequest' })
+      .setContext({ op: 'svc.send.btc.get_trx_request' })
       .executeAsync(async () => {
         const { address: toAddress, amount } = sendState
         const feeRate = sendState.gasPrice.toNumber()
@@ -69,7 +69,7 @@ class SendServiceBTC implements SendServiceHelper {
     sentryTrx?: Transaction
   ): Promise<SendState | ValidSendState> {
     return SentryWrapper.createSpanFor(sentryTrx)
-      .setContext({ op: 'validateStateAndCalculateFees' })
+      .setContext({ op: 'svc.send.btc.validate_and_calc_fees' })
       .executeAsync(async () => {
         const { amount, address: toAddress } = sendState
         const feeRate = sendState.gasPrice?.toNumber()

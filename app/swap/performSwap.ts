@@ -133,7 +133,7 @@ export async function performSwap(request: {
     const [allowance, allowanceError] = await SentryWrapper.createSpanFor(
       sentryTrx
     )
-      .setContext({ op: 'contract_allowance' })
+      .setContext({ op: 'svc.swap.contract_allowance' })
       .executeAsync(async () => {
         return await resolve(contract.allowance(userAddress, srcTokenAddress))
       })
@@ -149,7 +149,7 @@ export async function performSwap(request: {
 
     if ((allowance as BigNumber).lt(sourceAmount)) {
       const [approveGasLimit] = await SentryWrapper.createSpanFor(sentryTrx)
-        .setContext({ op: 'contract_estimate_gas' })
+        .setContext({ op: 'svc.swap.contract_estimate_gas' })
         .executeAsync(async () => {
           return await resolve(
             contract.estimateGas.approve(spender, sourceAmount)

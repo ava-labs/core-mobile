@@ -30,7 +30,7 @@ export class GlacierBalanceService implements BalanceServiceProvider {
     sentryTrx?: Transaction
   ): Promise<(NetworkTokenWithBalance | TokenWithBalanceERC20)[]> {
     return SentryWrapper.createSpanFor(sentryTrx)
-      .setContext({ op: 'GlacierBalanceService.getBalances' })
+      .setContext({ op: 'svc.balance.glacier.get' })
       .executeAsync(async () => {
         return await Promise.allSettled([
           this.getNativeTokenBalanceForNetwork(network, userAddress, currency),

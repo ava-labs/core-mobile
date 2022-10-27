@@ -13,7 +13,7 @@ export class NftService {
     sentryTrx?: Transaction
   ): Promise<NftProvider | undefined> {
     return SentryWrapper.createSpanFor(sentryTrx)
-      .setContext({ op: 'NftService.getProvider' })
+      .setContext({ op: 'svc.nft.get_provider' })
       .executeAsync(async () => {
         return findAsyncSequential(this.providers, value =>
           value.isProviderFor(chainId)
@@ -32,7 +32,7 @@ export class NftService {
     sentryTrx?: Transaction
   ) {
     return SentryWrapper.createSpanFor(sentryTrx)
-      .setContext({ op: 'NftService.fetchNft' })
+      .setContext({ op: 'svc.nft.fetch' })
       .executeAsync(async () => {
         //TODO: providers cant mix, so if suddenly one becomes unavailable we need to reset pageToken to undefined
         const provider = await this.getProvider(chainId)

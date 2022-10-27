@@ -29,7 +29,7 @@ export class BalanceService {
     tokens: (NetworkTokenWithBalance | TokenWithBalanceERC20)[]
   }> {
     return SentryWrapper.createSpanFor(sentryTrx)
-      .setContext({ op: 'getBalancesForAccount' })
+      .setContext({ op: 'svc.balances.get_for_account' })
       .executeAsync(async () => {
         const accountAddress = AccountsService.getAddressForNetwork(
           account,
@@ -68,7 +68,7 @@ export class BalanceService {
     sentryTrx?: Transaction
   ): Promise<(NetworkTokenWithBalance | TokenWithBalanceERC20)[]> {
     return SentryWrapper.createSpanFor(sentryTrx)
-      .setContext({ op: 'getBalancesForAddress' })
+      .setContext({ op: 'svc.balances.get_for_address' })
       .executeAsync(async () => {
         const balanceProvider = await findAsyncSequential(
           balanceProviders,

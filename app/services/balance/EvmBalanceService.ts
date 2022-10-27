@@ -44,7 +44,7 @@ export class EvmBalanceService implements BalanceServiceProvider {
     sentryTrx?: Transaction
   ): Promise<(NetworkTokenWithBalance | TokenWithBalanceERC20)[]> {
     return SentryWrapper.createSpanFor(sentryTrx)
-      .setContext({ op: 'EvmBalanceService.getBalances' })
+      .setContext({ op: 'svc.balance.evm.get' })
       .executeAsync(async () => {
         const activeTokenList = network.tokens ?? []
         const tokenAddresses = activeTokenList.map(token => token.address)

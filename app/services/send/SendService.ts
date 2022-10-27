@@ -21,7 +21,7 @@ class SendService {
     sentryTrx?: Transaction
   ): Promise<string> {
     return SentryWrapper.createSpanFor(sentryTrx)
-      .setContext({ op: 'SendService.send' })
+      .setContext({ op: 'svc.send.send' })
       .executeAsync(async () => {
         const fromAddress =
           activeNetwork.vmName === NetworkVMType.BITCOIN

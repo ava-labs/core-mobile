@@ -26,7 +26,7 @@ export class BtcBalanceService implements BalanceServiceProvider {
     sentryTrx?: Transaction
   ): Promise<(NetworkTokenWithBalance | TokenWithBalanceERC20)[]> {
     return SentryWrapper.createSpanFor(sentryTrx)
-      .setContext({ op: 'BtcBalanceService.getBalances' })
+      .setContext({ op: 'svc.balance.btc.get' })
       .executeAsync(async () => {
         const { networkToken } = network
         const provider = NetworkService.getProviderForNetwork(
