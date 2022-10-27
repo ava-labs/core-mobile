@@ -64,7 +64,7 @@ const WatchlistView: React.FC<Props> = ({
   const currency = useFocusedSelector(selectSelectedCurrency).toLowerCase()
   const dispatch = useDispatch()
   const [isSearchingTokens, setIsSearchingTokens] = useState(false)
-  const [filterBy, setFilterBy] = useState(WatchlistFilter.PRICE)
+  const [filterBy, setFilterBy] = useState(WatchlistFilter.MARKET_CAP)
   const [tokensToDisplay, setTokensToDisplay] = useState<MarketToken[]>([])
   const isSearching = !isEmpty(searchText)
 
