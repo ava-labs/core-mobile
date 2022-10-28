@@ -7,3 +7,5 @@ export type TransactionName =
   | 'send-erc20'
   | 'send-erc721'
   | 'swap'
+
+export const SentryStorage = 'sentry_sample_rate'

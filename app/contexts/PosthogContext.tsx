@@ -16,6 +16,8 @@ import useAppBackgroundTracker from 'hooks/useAppBackgroundTracker'
 import { useSelector } from 'react-redux'
 import { selectUserID } from 'store/posthog'
 import Logger from 'utils/Logger'
+import StorageTools from 'repository/StorageTools'
+import { SentryStorage } from 'services/sentry/types'
 
 export const PosthogContext = createContext<PosthogContextState>(
   {} as PosthogContextState
@@ -119,6 +121,13 @@ export const PosthogContextProvider = ({
           featureFlags: Record<FeatureGates | FeatureVars, boolean | string>
         }
         setFlags(result.featureFlags)
+
+        return StorageTools.saveToStorage(
+          SentryStorage,
+          parseInt(
+            (result.featureFlags['sentry-sample-rate'] as string) ?? '0'
+          ) / 100
+        )
       })
   }, [])
 

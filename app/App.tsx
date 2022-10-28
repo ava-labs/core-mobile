@@ -6,7 +6,12 @@
  */
 
 import React, { useState } from 'react'
-import { KeyboardAvoidingView, Platform, SafeAreaView } from 'react-native'
+import {
+  KeyboardAvoidingView,
+  LogBox,
+  Platform,
+  SafeAreaView
+} from 'react-native'
 import RootScreenStack from 'navigation/RootScreenStack'
 import { NavigationContainer } from '@react-navigation/native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -14,7 +19,7 @@ import useDevDebugging from 'utils/debugging/DevDebugging'
 import 'utils/debugging/wdyr'
 import Config from 'react-native-config'
 import * as Sentry from '@sentry/react-native'
-import { LogBox } from 'react-native'
+import { DefaultSampleRate } from 'services/sentry/SentryWrapper'
 import pkg from '../package.json'
 
 LogBox.ignoreLogs(['Require cycle:', "Can't perform", 'new'])
@@ -26,7 +31,7 @@ if (Config.SENTRY_DSN && !__DEV__) {
     dsn: Config.SENTRY_DSN,
     environment: Config.ENVIRONMENT,
     release: `core-mobile@${pkg.version}`,
-    debug: true,
+    debug: false,
     beforeSend: event => {
       /**
        * eliminating breadcrumbs. This should eliminate
@@ -36,7 +41,6 @@ if (Config.SENTRY_DSN && !__DEV__) {
        * done in the sentry options beforeBreadcrumbs function.
        */
 
-      console.log('------>', 'event', event)
       if (event.user) {
         delete event.user.email
         delete event.user.ip_address
@@ -47,8 +51,10 @@ if (Config.SENTRY_DSN && !__DEV__) {
     beforeBreadcrumb: () => {
       return null
     },
-    integrations: [],
-    tracesSampleRate: 1
+    tracesSampler: samplingContext => {
+      return samplingContext.sampleRate ?? DefaultSampleRate
+    },
+    integrations: []
   })
 }
 

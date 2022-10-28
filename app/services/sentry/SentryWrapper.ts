@@ -1,13 +1,24 @@
 import * as Sentry from '@sentry/react-native'
-import { Transaction } from '@sentry/types'
+import { CustomSamplingContext, Transaction } from '@sentry/types'
 import { Span } from 'services/sentry/Span'
-import { TransactionName } from 'services/sentry/types'
+import { SentryStorage, TransactionName } from 'services/sentry/types'
+import StorageTools from 'repository/StorageTools'
 
 /**
  * Enables keeping track of pending transactions, so we can attach new spans
  * to correct transaction.
  */
 class SentryWrapper {
+  private sampleRate = DefaultSampleRate
+
+  constructor() {
+    StorageTools.loadFromStorageAsObj<number | undefined>(SentryStorage).then(
+      value => {
+        this.sampleRate = value ?? this.sampleRate
+      }
+    )
+  }
+
   /**
    * Always use this function to crate transaction. Otherwise, retrieving
    * transaction with Sentry.getCurrentHub().getScope().getTransaction() will
@@ -15,7 +26,10 @@ class SentryWrapper {
    * @param name - Name of transaction
    */
   public startTransaction(name: TransactionName): Transaction {
-    return Sentry.startTransaction({ name, op: name })
+    const transaction = Sentry.startTransaction({ name, op: name }, {
+      sampleRate: this.sampleRate
+    } as CustomSamplingContext)
+    return transaction
   }
 
   public finish(transaction: Transaction) {
@@ -28,3 +42,5 @@ class SentryWrapper {
 }
 
 export default new SentryWrapper()
+
+export const DefaultSampleRate = 0.1
