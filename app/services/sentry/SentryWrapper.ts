@@ -4,10 +4,6 @@ import { Span } from 'services/sentry/Span'
 import { SentryStorage, TransactionName } from 'services/sentry/types'
 import StorageTools from 'repository/StorageTools'
 
-/**
- * Enables keeping track of pending transactions, so we can attach new spans
- * to correct transaction.
- */
 class SentryWrapper {
   private sampleRate = DefaultSampleRate
 
@@ -19,12 +15,6 @@ class SentryWrapper {
     )
   }
 
-  /**
-   * Always use this function to crate transaction. Otherwise, retrieving
-   * transaction with Sentry.getCurrentHub().getScope().getTransaction() will
-   * be problematic in concurrent code.
-   * @param name - Name of transaction
-   */
   public startTransaction(name: TransactionName): Transaction {
     const transaction = Sentry.startTransaction({ name, op: name }, {
       sampleRate: this.sampleRate

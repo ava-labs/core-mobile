@@ -27,21 +27,6 @@ export class Span {
     return this
   }
 
-  public execute<T>(f: () => T): T {
-    const span = this.transaction?.startChild(this.spanContext)
-    try {
-      const result = f()
-      // Do something
-      span?.setStatus(SpanStatus.Ok)
-      return result
-    } catch (err) {
-      span?.setStatus(SpanStatus.UnknownError)
-      throw err
-    } finally {
-      span?.finish()
-    }
-  }
-
   public async executeAsync<T>(f: () => Promise<T>): Promise<T> {
     const span = this.transaction?.startChild(this.spanContext)
     try {
