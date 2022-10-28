@@ -22,6 +22,7 @@ interface Props {
   roundedEdges?: boolean
   background?: string
   paddingVertical?: number
+  testId?: string
 }
 
 function BaseListItem({
