@@ -3,12 +3,12 @@
  * @jest-environment ./jestCustomEnv
  */
 import { by, expect, element, device } from 'detox'
-import WatchListPage from './pages/watchlist.page'
-import Assert from './helpers/assertions'
-import RecoveryPhrasePage from './pages/recoveryPhrase.page'
-import CreatePinPage from './pages/createPin.page'
-import AnalyticsConsentPage from './pages/analyticsConsent.page'
-import delay from './helpers/waits'
+import Assert from '../helpers/assertions'
+import RecoveryPhrasePage from '../pages/recoveryPhrase.page'
+import CreatePinPage from '../pages/createPin.page'
+import AnalyticsConsentPage from '../pages/analyticsConsent.page'
+import delay from '../helpers/waits'
+import WatchListPage from '../pages/watchlist.page'
 
 // This is our first test, more will be added soon
 
