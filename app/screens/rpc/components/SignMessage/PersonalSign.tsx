@@ -14,7 +14,7 @@ const PersonalSign: FC<Props> = ({ action }) => {
   const theme = useContext(ApplicationContext).theme
 
   return (
-    <View>
+    <View style={{ flex: 1 }}>
       <Space y={16} />
       <AvaText.Body2>Message:</AvaText.Body2>
       <Space y={8} />

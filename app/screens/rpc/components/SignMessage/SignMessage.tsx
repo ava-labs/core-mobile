@@ -81,7 +81,8 @@ const SignMessage: FC<Props> = ({
       contentContainerStyle={{
         paddingTop: 42,
         paddingHorizontal: 16,
-        paddingBottom: 70
+        paddingBottom: 70,
+        flexGrow: 1
       }}>
       <AvaText.LargeTitleBold>
         {action?.error ? 'Signing Failed' : 'Sign Message'}
