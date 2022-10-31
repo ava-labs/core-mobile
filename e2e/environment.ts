@@ -10,6 +10,8 @@ const {
 class CustomDetoxEnvironment extends DetoxCircusEnvironment {
   constructor(config: unknown, context: unknown) {
     super(config, context)
+    this.testPath = context.testPath
+    this.docblockPragmas = context.docblockPragmas
 
     // Can be safely removed, if you are content with the default value (=300000ms)
     this.initTimeout = 300000
@@ -20,6 +22,27 @@ class CustomDetoxEnvironment extends DetoxCircusEnvironment {
       SpecReporter,
       WorkerAssignReporter
     })
+  }
+
+  getNames(parent) {
+    if (!parent) {
+      return []
+    }
+
+    if (parent.name === 'ROOT_DESCRIBE_BLOCK') {
+      return []
+    }
+
+    const parentName = this.getNames(parent.parent)
+    return [...parentName, parent.name]
+  }
+
+  async handleTestEvent(event) {
+    const { name } = event
+
+    if (['test_start', 'test_fn_start'].includes(name)) {
+      this.global.testNames = this.getNames(event.test)
+    }
   }
 }
 

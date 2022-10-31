@@ -1,4 +1,7 @@
 /* eslint-env detox/detox, jest */
+/**
+ * @jest-environment ./jestCustomEnv
+ */
 import { by, expect, element, device } from 'detox'
 import WatchListPage from './pages/watchlist.page'
 import Assert from './helpers/assertions'
