@@ -1,3 +1,4 @@
+import { useCallback } from 'react'
 import {
   selectTokensWithBalance,
   TokenType,
@@ -39,51 +40,56 @@ export function useFindToken(): FindToken {
   const activeAccount = useActiveAccount()
   const tokens = useSelector(selectTokensWithBalance)
 
-  return async (address: string) => {
-    if (!activeAccount) {
-      return UNKNOWN_TOKEN(address)
-    }
+  const findToken: FindToken = useCallback(
+    async (address: string) => {
+      if (!activeAccount) {
+        return UNKNOWN_TOKEN(address)
+      }
 
-    const token = tokens.find(
-      t =>
-        t.type === TokenType.ERC20 &&
-        t.address.toLowerCase() === address.toLowerCase()
-    )
+      const token = tokens.find(
+        t =>
+          t.type === TokenType.ERC20 &&
+          t.address.toLowerCase() === address.toLowerCase()
+      )
 
-    if (token && token.type === TokenType.ERC20) {
-      return token
-    }
+      if (token && token.type === TokenType.ERC20) {
+        return token
+      }
 
-    // the token is unknown, fetch basic data
-    let tokenData: NetworkContractToken | undefined
-    try {
-      tokenData = await tokenService.getTokenData(address, activeNetwork)
-    } catch (e) {
-      return UNKNOWN_TOKEN(address)
-    }
+      // the token is unknown, fetch basic data
+      let tokenData: NetworkContractToken | undefined
+      try {
+        tokenData = await tokenService.getTokenData(address, activeNetwork)
+      } catch (e) {
+        return UNKNOWN_TOKEN(address)
+      }
 
-    const provider = networkService.getProviderForNetwork(activeNetwork)
-    if (!tokenData || !(provider instanceof JsonRpcBatchInternal)) {
-      return UNKNOWN_TOKEN(address)
-    }
+      const provider = networkService.getProviderForNetwork(activeNetwork)
+      if (!tokenData || !(provider instanceof JsonRpcBatchInternal)) {
+        return UNKNOWN_TOKEN(address)
+      }
 
-    const contract = new ethers.Contract(address, ERC20.abi, provider)
-    const balance = await contract.balanceOf(activeAccount.address)
+      const contract = new ethers.Contract(address, ERC20.abi, provider)
+      const balance = await contract.balanceOf(activeAccount.address)
 
-    return {
-      id: `${activeNetwork?.chainId} - ${tokenData.address}`,
-      ...tokenData,
-      balance: balance,
-      type: TokenType.ERC20,
-      contractType: 'ERC-20',
-      description: '',
-      priceInCurrency: 0,
-      marketCap: 0,
-      change24: 0,
-      vol24: 0,
-      balanceCurrencyDisplayValue: '0',
-      balanceDisplayValue: '0',
-      balanceInCurrency: 0
-    }
-  }
+      return {
+        id: `${activeNetwork?.chainId} - ${tokenData.address}`,
+        ...tokenData,
+        balance: balance,
+        type: TokenType.ERC20,
+        contractType: 'ERC-20',
+        description: '',
+        priceInCurrency: 0,
+        marketCap: 0,
+        change24: 0,
+        vol24: 0,
+        balanceCurrencyDisplayValue: '0',
+        balanceDisplayValue: '0',
+        balanceInCurrency: 0
+      }
+    },
+    [activeAccount, activeNetwork, tokens]
+  )
+
+  return findToken
 }

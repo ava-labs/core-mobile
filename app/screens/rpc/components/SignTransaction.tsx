@@ -60,6 +60,7 @@ const SignTransaction: FC<Props> = ({
   const [submitting, setSubmitting] = useState(false)
   const [showData, setShowData] = useState(false)
   const [showCustomSpendLimit, setShowCustomSpendLimit] = useState(false)
+
   const {
     contractType,
     selectedGasFee,
@@ -67,13 +68,11 @@ const SignTransaction: FC<Props> = ({
     setSpendLimit,
     customSpendLimit,
     transaction,
-    ...rest
+    displayData
   } = useExplainTransaction(dappEvent)
+
   const explorerUrl =
     activeNetwork && hash && getExplorerAddressByNetwork(activeNetwork, hash)
-  const displayData = {
-    ...rest
-  } as TransactionDisplayValues
 
   const handleGasPriceChange = useCallback(
     (gasPrice: BigNumber, feePreset: FeePreset) => {
@@ -81,9 +80,14 @@ const SignTransaction: FC<Props> = ({
     },
     [displayData?.gasLimit, setCustomFee]
   )
+
   const handleGasLimitChange = useCallback(
     (customGasLimit: number) => {
-      setCustomFee(displayData?.gasPrice, selectedGasFee, customGasLimit)
+      setCustomFee(
+        displayData?.gasPrice ?? BigNumber.from(0),
+        selectedGasFee,
+        customGasLimit
+      )
     },
     [displayData?.gasPrice, selectedGasFee, setCustomFee]
   )

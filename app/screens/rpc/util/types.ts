@@ -37,17 +37,17 @@ export interface PeerMetadata {
 }
 
 export interface TransactionDisplayValues {
-  fromAddress: string
-  toAddress: string
-  gasPrice: BigNumber
+  fromAddress?: string
+  toAddress?: string
+  gasPrice?: BigNumber
   contractType?: ContractCall
   gasLimit?: number
   fee?: string
   feeInCurrency?: number
   site?: PeerMetadata
   description?: ethers.utils.TransactionDescription
-  displayValue: string
-  bnFee: BigNumber
+  displayValue?: string
+  bnFee?: BigNumber
   [key: string]: any // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 export interface Transaction {
