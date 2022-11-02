@@ -12,15 +12,21 @@ import { Network } from '@avalabs/chains-sdk'
 import { FindToken } from './utils/useFindToken'
 
 export interface SwapExactTokensForAVAXData {
-  amountOutMin: BigNumber
+  amountInMin: BigNumber
   amountIn: BigNumber
+  amountInMax: BigNumber
+
+  amountOutMin: BigNumber
+  amountOut: BigNumber
+  amountOutMax: BigNumber
+
   contractCall: ContractCall.SWAP_EXACT_TOKENS_FOR_TOKENS
   deadline: string
   path: string[]
   to: string
 }
 
-export async function swapExactTokensForAvax(
+export async function swapTokensForAvax(
   findToken: FindToken,
   network: Network,
   /**
@@ -35,9 +41,11 @@ export async function swapExactTokensForAvax(
   props: DisplayValueParserProps
 ): Promise<SwapExactTokensForTokenDisplayValues> {
   const firstTokenInPath = await findToken(data.path[0].toLowerCase())
+
   const lastTokenAmountBN = hexToBN(
-    (data.amountIn || data.amountOutMin).toHexString()
+    (data.amountInMin || data.amountIn || data.amountInMax).toHexString()
   )
+
   const amountValue = bigToLocaleString(
     bnToBig(lastTokenAmountBN, firstTokenInPath.decimals),
     4
@@ -56,7 +64,9 @@ export async function swapExactTokensForAvax(
     amountUSDValue
   }
 
-  const avaxAmountInBN = hexToBN(data.amountOutMin.toHexString())
+  const avaxAmountInBN = hexToBN(
+    (data.amountOutMin || data.amountOut || data.amountOutMax).toHexString()
+  )
   const amountAvaxValue = bigToLocaleString(bnToBig(avaxAmountInBN, 18), 4)
 
   const avaxToken = {
@@ -80,5 +90,10 @@ export async function swapExactTokensForAvax(
 
 export const SwapExactTokensForAvaxParser: ContractParser = [
   ContractCall.SWAP_EXACT_TOKENS_FOR_AVAX,
-  swapExactTokensForAvax
+  swapTokensForAvax
+]
+
+export const SwapTokensForExactAvaxParser: ContractParser = [
+  ContractCall.SWAP_TOKENS_FOR_EXACT_AVAX,
+  swapTokensForAvax
 ]

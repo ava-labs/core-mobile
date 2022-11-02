@@ -6,7 +6,10 @@ import {
   SwapAvaxForExactTokensParser,
   SwapExactAvaxForTokensParser
 } from './swapAvaxForExactTokens'
-import { SwapExactTokensForAvaxParser } from './swapExactTokensForAVAX'
+import {
+  SwapExactTokensForAvaxParser,
+  SwapTokensForExactAvaxParser
+} from './swapExactTokensForAVAX'
 import {
   SwapExactTokensForTokenParser,
   SwapTokensForExactTokensParser
@@ -18,6 +21,7 @@ export const contractParserMap = new Map<string, ContractParserHandler>([
   SwapAvaxForExactTokensParser,
   SwapExactAvaxForTokensParser,
   SwapExactTokensForAvaxParser,
+  SwapTokensForExactAvaxParser,
   ApproveTxParser,
   AddLiquidityAvaxParser,
   AddLiquidityParser
