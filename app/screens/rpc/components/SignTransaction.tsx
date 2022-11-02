@@ -29,7 +29,6 @@ import useInAppBrowser from 'hooks/useInAppBrowser'
 import FlexSpacer from 'components/FlexSpacer'
 import { Popable } from 'react-native-popable'
 import { SwapTransaction } from 'screens/rpc/components/Transactions/SwapTransaction'
-import { BottomSheetScrollView } from '@gorhom/bottom-sheet'
 import { showSnackBarCustom } from 'components/Snackbar'
 import TransactionToast, {
   TransactionToastType
@@ -38,6 +37,7 @@ import * as Sentry from '@sentry/react-native'
 import { PopableContent } from 'components/PopableContent'
 import { PopableLabel } from 'components/PopableLabel'
 import { BigNumber } from 'ethers'
+import { ScrollView } from 'react-native-gesture-handler'
 
 interface Props {
   onApprove: (tx: Transaction) => Promise<{ hash?: string; error?: unknown }>
@@ -177,6 +177,7 @@ const SignTransaction: FC<Props> = ({
   }
 
   function txTitle() {
+    console.log('contractType', contractType)
     switch (contractType) {
       case ContractCall.APPROVE:
         return 'Token Spend Approval'
@@ -191,12 +192,7 @@ const SignTransaction: FC<Props> = ({
   }
 
   return (
-    <BottomSheetScrollView
-      style={{
-        flex: 1,
-        paddingTop: 16,
-        paddingHorizontal: 14
-      }}>
+    <ScrollView contentContainerStyle={txStyles.scrollView}>
       <View>
         <AvaText.Heading1>{txTitle()}</AvaText.Heading1>
         <Space y={16} />
@@ -312,7 +308,6 @@ const SignTransaction: FC<Props> = ({
               paddingHorizontal: 24
             }}>
             <AvaButton.SecondaryLarge
-              style={{ marginBottom: 32 }}
               onPress={() => explorerUrl && openUrl(explorerUrl)}>
               View on Explorer
             </AvaButton.SecondaryLarge>
@@ -349,11 +344,17 @@ const SignTransaction: FC<Props> = ({
           </View>
         </>
       )}
-    </BottomSheetScrollView>
+    </ScrollView>
   )
 }
 
 export const txStyles = StyleSheet.create({
+  scrollView: {
+    paddingTop: 16,
+    paddingHorizontal: 14,
+    paddingBottom: 70,
+    flexGrow: 1
+  },
   info: {
     justifyContent: 'space-between',
     marginTop: 8,

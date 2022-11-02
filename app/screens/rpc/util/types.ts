@@ -93,6 +93,7 @@ export enum ContractCall {
   SWAP_AVAX_FOR_EXACT_TOKENS = 'swapAVAXForExactTokens',
   SWAP_EXACT_TOKENS_FOR_AVAX = 'swapExactTokensForAVAX',
   SWAP_EXACT_AVAX_FOR_TOKENS = 'swapExactAVAXForTokens',
+  SWAP_TOKENS_FOR_EXACT_AVAX = 'swapTokensForExactAVAX',
   ADD_LIQUIDITY = 'addLiquidity',
   ADD_LIQUIDITY_AVAX = 'addLiquidityAVAX',
   UNKNOWN = 'UNKNOWN'

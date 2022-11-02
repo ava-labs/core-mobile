@@ -77,13 +77,7 @@ const SignMessage: FC<Props> = ({
   }
 
   return (
-    <ScrollView
-      contentContainerStyle={{
-        paddingTop: 42,
-        paddingHorizontal: 16,
-        paddingBottom: 70,
-        flexGrow: 1
-      }}>
+    <ScrollView contentContainerStyle={styles.scrollView}>
       <AvaText.LargeTitleBold>
         {action?.error ? 'Signing Failed' : 'Sign Message'}
       </AvaText.LargeTitleBold>
@@ -139,6 +133,12 @@ const SignMessage: FC<Props> = ({
 }
 
 const styles = StyleSheet.create({
+  scrollView: {
+    paddingTop: 42,
+    paddingHorizontal: 16,
+    paddingBottom: 70,
+    flexGrow: 1
+  },
   root: {
     paddingTop: 24,
     borderTopLeftRadius: 20,
