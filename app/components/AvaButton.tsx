@@ -212,8 +212,7 @@ const BtnSecondaryLarge: FC<BaseProps> = ({
       <AvaText.ButtonLarge
         textStyle={{
           color: disabled ? theme.colorDisabled : theme.colorText1
-        }}
-        testID="btnSecondaryLarge">
+        }}>
         {children}
       </AvaText.ButtonLarge>
     </BtnSecondary>

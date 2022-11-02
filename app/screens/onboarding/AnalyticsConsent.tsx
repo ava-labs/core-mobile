@@ -100,11 +100,11 @@ const AnalyticsConsent = ({ onNextScreen, nextScreen }: Props) => {
         </AvaText.Body1>
       </Row>
       <FlexSpacer />
-      <AvaButton.SecondaryLarge onPress={acceptAnalytics}>
+      <AvaButton.SecondaryLarge onPress={acceptAnalytics} testID="iAgreeBtn">
         I Agree
       </AvaButton.SecondaryLarge>
       <Space y={16} />
-      <AvaButton.SecondaryLarge onPress={rejectAnalytics}>
+      <AvaButton.SecondaryLarge onPress={rejectAnalytics} testID="noThanksBtn">
         No Thanks
       </AvaButton.SecondaryLarge>
     </View>

@@ -97,7 +97,8 @@ export default function TextArea(props: Props | Readonly<Props>): JSX.Element {
 
       <AvaButton.PrimaryLarge
         disabled={primaryDisabled}
-        onPress={() => props.onBtnPrimary(enteredText)}>
+        onPress={() => props.onBtnPrimary(enteredText)}
+        testID="signInBtn">
         {props.btnPrimaryText}
       </AvaButton.PrimaryLarge>
       <Space y={8} />
