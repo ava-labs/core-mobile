@@ -23,6 +23,8 @@ import {
 } from 'store/balance'
 import ERC721 from '@openzeppelin/contracts/build/contracts/ERC721.json'
 import { isAddress } from '@ethersproject/address'
+import { Transaction } from '@sentry/types'
+import SentryWrapper from 'services/sentry/SentryWrapper'
 
 export class SendServiceEVM implements SendServiceHelper {
   private readonly networkProvider: JsonRpcBatchInternal
@@ -35,82 +37,99 @@ export class SendServiceEVM implements SendServiceHelper {
   }
 
   async validateStateAndCalculateFees(
-    sendState: SendState
+    sendState: SendState,
+    isMainnet: boolean,
+    fromAddress: string,
+    currency?: string,
+    sentryTrx?: Transaction
   ): Promise<SendState> {
-    const { amount, address, gasPrice, token } = sendState
+    return SentryWrapper.createSpanFor(sentryTrx)
+      .setContext('svc.send.evm.validate_and_calc_fees')
+      .executeAsync(async () => {
+        const { amount, address, gasPrice, token } = sendState
 
-    // This *should* always be defined and set by the UI
-    if (!token) return SendServiceEVM.getErrorState(sendState, 'Invalid token')
+        // This *should* always be defined and set by the UI
+        if (!token)
+          return SendServiceEVM.getErrorState(sendState, 'Invalid token')
 
-    const gasLimit = await this.getGasLimit(sendState)
-    const sendFee = gasPrice
-      ? new BN(gasLimit).mul(ethersBigNumberToBN(gasPrice))
-      : undefined
-    const maxAmount =
-      token.type === TokenType.NATIVE
-        ? token.balance.sub(sendFee || new BN(0))
-        : token.balance
+        const gasLimit = await this.getGasLimit(sendState)
+        const sendFee = gasPrice
+          ? new BN(gasLimit).mul(ethersBigNumberToBN(gasPrice))
+          : undefined
+        const maxAmount =
+          token.type === TokenType.NATIVE
+            ? token.balance.sub(sendFee || new BN(0))
+            : token.balance
 
-    const newState: SendState = {
-      ...sendState,
-      canSubmit: true,
-      error: undefined,
-      gasLimit,
-      gasPrice,
-      maxAmount,
-      sendFee
-    }
+        const newState: SendState = {
+          ...sendState,
+          canSubmit: true,
+          error: undefined,
+          gasLimit,
+          gasPrice,
+          maxAmount,
+          sendFee
+        }
 
-    if (!address)
-      return SendServiceEVM.getErrorState(
-        newState,
-        SendErrorMessage.ADDRESS_REQUIRED
-      )
+        if (!address)
+          return SendServiceEVM.getErrorState(
+            newState,
+            SendErrorMessage.ADDRESS_REQUIRED
+          )
 
-    if (!isAddress(address))
-      return SendServiceEVM.getErrorState(
-        newState,
-        SendErrorMessage.INVALID_ADDRESS
-      )
+        if (!isAddress(address))
+          return SendServiceEVM.getErrorState(
+            newState,
+            SendErrorMessage.INVALID_ADDRESS
+          )
 
-    if (!gasPrice || gasPrice.isZero())
-      return SendServiceEVM.getErrorState(
-        newState,
-        SendErrorMessage.INVALID_NETWORK_FEE
-      )
+        if (!gasPrice || gasPrice.isZero())
+          return SendServiceEVM.getErrorState(
+            newState,
+            SendErrorMessage.INVALID_NETWORK_FEE
+          )
 
-    if (token.type !== TokenType.ERC721 && (!amount || amount.isZero()))
-      return SendServiceEVM.getErrorState(
-        newState,
-        SendErrorMessage.AMOUNT_REQUIRED
-      )
+        if (token.type !== TokenType.ERC721 && (!amount || amount.isZero()))
+          return SendServiceEVM.getErrorState(
+            newState,
+            SendErrorMessage.AMOUNT_REQUIRED
+          )
 
-    if (amount?.gt(maxAmount))
-      return SendServiceEVM.getErrorState(
-        newState,
-        SendErrorMessage.INSUFFICIENT_BALANCE
-      )
+        if (amount?.gt(maxAmount))
+          return SendServiceEVM.getErrorState(
+            newState,
+            SendErrorMessage.INSUFFICIENT_BALANCE
+          )
 
-    return newState
+        return newState
+      })
   }
 
   async getTransactionRequest(
-    sendState: ValidSendState
+    sendState: ValidSendState,
+    isMainnet: boolean,
+    fromAddress: string,
+    currency?: string,
+    sentryTrx?: Transaction
   ): Promise<TransactionRequest> {
-    const unsignedTx = await this.getUnsignedTx(sendState)
-    const chainId = this.activeNetwork.chainId
-    const nonce = await this.networkProvider.getTransactionCount(
-      this.fromAddress
-    )
-    const gasLimit = await this.getGasLimit(sendState)
+    return SentryWrapper.createSpanFor(sentryTrx)
+      .setContext('svc.send.evm.get_trx_request')
+      .executeAsync(async () => {
+        const unsignedTx = await this.getUnsignedTx(sendState)
+        const chainId = this.activeNetwork.chainId
+        const nonce = await this.networkProvider.getTransactionCount(
+          this.fromAddress
+        )
+        const gasLimit = await this.getGasLimit(sendState)
 
-    return {
-      ...unsignedTx,
-      chainId,
-      gasLimit,
-      gasPrice: sendState.gasPrice,
-      nonce
-    }
+        return {
+          ...unsignedTx,
+          chainId,
+          gasLimit,
+          gasPrice: sendState.gasPrice,
+          nonce
+        }
+      })
   }
 
   //todo: would be nice to have this logic in sdk

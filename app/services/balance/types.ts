@@ -1,5 +1,6 @@
 import { Network } from '@avalabs/chains-sdk'
 import { NetworkTokenWithBalance, TokenWithBalanceERC20 } from 'store/balance'
+import { Transaction } from '@sentry/types'
 
 export type TokenListDict = {
   [contract: string]: TokenListERC20
@@ -23,6 +24,7 @@ export interface BalanceServiceProvider {
   getBalances(
     network: Network,
     userAddress: string,
-    currency: string
+    currency: string,
+    sentryTrx?: Transaction
   ): Promise<(NetworkTokenWithBalance | TokenWithBalanceERC20)[]>
 }

@@ -1,6 +1,7 @@
 import { createApi, fakeBaseQuery } from '@reduxjs/toolkit/query/react'
 import Logger from 'utils/Logger'
 import nftService from 'services/nft/NftService'
+import SentryWrapper from 'services/sentry/SentryWrapper'
 import { GetNftArgs, NftResponse } from './types'
 
 export const nftsApi = createApi({
@@ -11,6 +12,7 @@ export const nftsApi = createApi({
       queryFn: async ({ network, account, nextPageToken, currency }) => {
         if (!account) return { error: 'unable to get NFTs' }
 
+        const t = SentryWrapper.startTransaction('get-nfts')
         try {
           const nftPagedData = await nftService.fetchNft(
             network.chainId,
@@ -28,6 +30,8 @@ export const nftsApi = createApi({
         } catch (err) {
           Logger.error(`failed to get nfts for chain ${network.chainId}`, err)
           return { data: { nfts: [] } }
+        } finally {
+          SentryWrapper.finish(t)
         }
       }
     })

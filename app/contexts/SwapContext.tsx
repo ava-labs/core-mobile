@@ -23,6 +23,7 @@ import TransactionToast, {
 import { resolve } from '@avalabs/utils-sdk'
 import { Amount } from 'screens/swap/SwapView'
 import { InteractionManager } from 'react-native'
+import SentryWrapper from 'services/sentry/SentryWrapper'
 
 export type SwapStatus = 'Idle' | 'Preparing' | 'Swapping' | 'Success' | 'Fail'
 
@@ -178,6 +179,7 @@ export const SwapContextProvider = ({ children }: { children: ReactNode }) => {
     })
 
     InteractionManager.runAfterInteractions(() => {
+      const sentryTrx = SentryWrapper.startTransaction('swap')
       resolve(
         performSwap({
           srcToken: srcTokenAddress,
@@ -190,34 +192,39 @@ export const SwapContextProvider = ({ children }: { children: ReactNode }) => {
           gasPrice: swapGasPrice,
           slippage: swapSlippage,
           network: activeNetwork,
-          account: activeAccount
+          account: activeAccount,
+          sentryTrx
         })
-      ).then(([result, err]) => {
-        if (err || (result && 'error' in result)) {
-          setSwapStatus('Fail')
-          showSnackBarCustom({
-            component: (
-              <TransactionToast
-                message={'Swap Failed'}
-                type={TransactionToastType.ERROR}
-              />
-            ),
-            duration: 'short'
-          })
-        } else {
-          setSwapStatus('Success')
-          showSnackBarCustom({
-            component: (
-              <TransactionToast
-                message={'Swap Successful'}
-                type={TransactionToastType.SUCCESS}
-                txHash={result?.result?.swapTxHash}
-              />
-            ),
-            duration: 'short'
-          })
-        }
-      })
+      )
+        .then(([result, err]) => {
+          if (err || (result && 'error' in result)) {
+            setSwapStatus('Fail')
+            showSnackBarCustom({
+              component: (
+                <TransactionToast
+                  message={'Swap Failed'}
+                  type={TransactionToastType.ERROR}
+                />
+              ),
+              duration: 'short'
+            })
+          } else {
+            setSwapStatus('Success')
+            showSnackBarCustom({
+              component: (
+                <TransactionToast
+                  message={'Swap Successful'}
+                  type={TransactionToastType.SUCCESS}
+                  txHash={result?.result?.swapTxHash}
+                />
+              ),
+              duration: 'short'
+            })
+          }
+        })
+        .finally(() => {
+          SentryWrapper.finish(sentryTrx)
+        })
     })
   }
 

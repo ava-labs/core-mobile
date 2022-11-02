@@ -23,6 +23,7 @@ import {
 } from 'store/settings/currency'
 import Logger from 'utils/Logger'
 import { getLocalTokenId } from 'store/balance/utils'
+import SentryWrapper from 'services/sentry/SentryWrapper'
 import {
   getKey,
   refetchBalance,
@@ -98,6 +99,8 @@ const onBalanceUpdateCore = async (
     return
   }
 
+  const sentryTrx = SentryWrapper.startTransaction('get-balances')
+
   dispatch(setStatus(queryStatus))
 
   const currency = selectSelectedCurrency(state).toLowerCase()
@@ -107,7 +110,12 @@ const onBalanceUpdateCore = async (
   for (const network of networks) {
     promises.push(
       ...accounts.map(account => {
-        return BalanceService.getBalancesForAccount(network, account, currency)
+        return BalanceService.getBalancesForAccount(
+          network,
+          account,
+          currency,
+          sentryTrx
+        )
       })
     )
   }
@@ -141,6 +149,8 @@ const onBalanceUpdateCore = async (
 
   dispatch(setBalances(balances))
   dispatch(setStatus(QueryStatus.IDLE))
+
+  SentryWrapper.finish(sentryTrx)
 }
 
 const fetchBalancePeriodically = async (

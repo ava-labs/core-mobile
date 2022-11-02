@@ -25,6 +25,7 @@ import TransactionToast, {
 } from 'components/toast/TransactionToast'
 import BN from 'bn.js'
 import { InteractionManager } from 'react-native'
+import SentryWrapper from 'services/sentry/SentryWrapper'
 
 export interface SendNFTContextState {
   sendToken: NFTItemData
@@ -125,6 +126,7 @@ export const SendNFTContextProvider = ({
     setSendStatus('Preparing')
 
     InteractionManager.runAfterInteractions(() => {
+      const sentryTrx = SentryWrapper.startTransaction('send-erc721')
       sendService
         .send(
           sendState,
@@ -142,7 +144,8 @@ export const SendNFTContextProvider = ({
               ),
               duration: 'short'
             })
-          }
+          },
+          sentryTrx
         )
         .then(txId => {
           setSendStatus('Success')
@@ -169,6 +172,9 @@ export const SendNFTContextProvider = ({
             duration: 'short'
           })
           setSendStatusMsg(reason)
+        })
+        .finally(() => {
+          SentryWrapper.finish(sentryTrx)
         })
     })
   }
