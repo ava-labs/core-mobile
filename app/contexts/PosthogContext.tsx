@@ -16,6 +16,7 @@ import useAppBackgroundTracker from 'hooks/useAppBackgroundTracker'
 import { useSelector } from 'react-redux'
 import { selectUserID } from 'store/posthog'
 import Logger from 'utils/Logger'
+import SentryWrapper from 'services/sentry/SentryWrapper'
 
 export const PosthogContext = createContext<PosthogContextState>(
   {} as PosthogContextState
@@ -88,6 +89,7 @@ export const PosthogContextProvider = ({
   const eventsBlocked = !flags.events || !flags.everything
   const sentrySampleRate =
     parseInt((flags['sentry-sample-rate'] as string) ?? '0') / 100
+  SentryWrapper.setSampleRate(sentrySampleRate)
 
   const capture = useCallback(
     async (event: string, properties?: JsonMap) => {

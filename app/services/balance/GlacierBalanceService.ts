@@ -6,6 +6,8 @@ import { BalanceServiceProvider } from 'services/balance/types'
 import { convertNativeToTokenWithBalance } from 'services/balance/nativeTokenConverter'
 import { convertErc20ToTokenWithBalance } from 'services/balance/erc20TokenConverter'
 import Logger from 'utils/Logger'
+import { Transaction } from '@sentry/types'
+import SentryWrapper from 'services/sentry/SentryWrapper'
 
 export class GlacierBalanceService implements BalanceServiceProvider {
   private glacierSdk = new GlacierClient(GLACIER_URL)
@@ -24,23 +26,28 @@ export class GlacierBalanceService implements BalanceServiceProvider {
   async getBalances(
     network: Network,
     userAddress: string,
-    currency: string
+    currency: string,
+    sentryTrx?: Transaction
   ): Promise<(NetworkTokenWithBalance | TokenWithBalanceERC20)[]> {
-    return await Promise.allSettled([
-      this.getNativeTokenBalanceForNetwork(network, userAddress, currency),
-      this.getErc20BalanceForNetwork(network, userAddress, currency)
-    ])
-      .then(([nativeBalance, erc20Balances]) => {
-        let results: (NetworkTokenWithBalance | TokenWithBalanceERC20)[] =
-          nativeBalance.status === 'fulfilled' ? [nativeBalance.value] : []
+    return SentryWrapper.createSpanFor(sentryTrx)
+      .setContext('svc.balance.glacier.get')
+      .executeAsync(async () => {
+        return await Promise.allSettled([
+          this.getNativeTokenBalanceForNetwork(network, userAddress, currency),
+          this.getErc20BalanceForNetwork(network, userAddress, currency)
+        ])
+          .then(([nativeBalance, erc20Balances]) => {
+            let results: (NetworkTokenWithBalance | TokenWithBalanceERC20)[] =
+              nativeBalance.status === 'fulfilled' ? [nativeBalance.value] : []
 
-        if (erc20Balances.status === 'fulfilled') {
-          results = [...results, ...erc20Balances.value]
-        }
-        return results
-      })
-      .catch(() => {
-        return []
+            if (erc20Balances.status === 'fulfilled') {
+              results = [...results, ...erc20Balances.value]
+            }
+            return results
+          })
+          .catch(() => {
+            return []
+          })
       })
   }
 

@@ -21,6 +21,8 @@ import {
 } from '@metamask/eth-sig-util'
 import { getEvmProvider } from 'services/network/utils/providerUtils'
 import BN from 'bn.js'
+import SentryWrapper from 'services/sentry/SentryWrapper'
+import { Transaction } from '@sentry/types'
 
 class WalletService {
   private mnemonic?: string
@@ -75,24 +77,29 @@ class WalletService {
   async sign(
     tx: SignTransactionRequest,
     accountIndex: number,
-    network: Network
+    network: Network,
+    sentryTrx?: Transaction
   ) {
-    const wallet = await this.getWallet(accountIndex, network)
+    return SentryWrapper.createSpanFor(sentryTrx)
+      .setContext('svc.wallet.sign')
+      .executeAsync(async () => {
+        const wallet = await this.getWallet(accountIndex, network, sentryTrx)
 
-    // handle BTC signing
-    if ('inputs' in tx) {
-      if (!(wallet instanceof BitcoinWallet)) {
-        throw new Error('Signing error, wrong network')
-      }
-      const signedTx = await wallet.signTx(tx.inputs, tx.outputs)
-      return signedTx.toHex()
-    } else {
-      // if (!(wallet instanceof Wallet)) {
-      //   throw new Error('Signing error, wrong network')
-      // }
+        // handle BTC signing
+        if ('inputs' in tx) {
+          if (!(wallet instanceof BitcoinWallet)) {
+            throw new Error('Signing error, wrong network')
+          }
+          const signedTx = await wallet.signTx(tx.inputs, tx.outputs)
+          return signedTx.toHex()
+        } else {
+          // if (!(wallet instanceof Wallet)) {
+          //   throw new Error('Signing error, wrong network')
+          // }
 
-      return await (wallet as Wallet).signTransaction(tx)
-    }
+          return await (wallet as Wallet).signTransaction(tx)
+        }
+      })
   }
 
   async signMessage(
@@ -182,15 +189,23 @@ class WalletService {
     }
   }
 
-  private async getWallet(accountIndex: number, network: Network) {
-    switch (network.vmName) {
-      case NetworkVMType.EVM:
-        return this.getEvmWallet(accountIndex, network)
-      case NetworkVMType.BITCOIN:
-        return await this.getBtcWallet(accountIndex, network)
-      default:
-        return undefined
-    }
+  private async getWallet(
+    accountIndex: number,
+    network: Network,
+    sentryTrx?: Transaction
+  ) {
+    return SentryWrapper.createSpanFor(sentryTrx)
+      .setContext('svc.wallet.get_wallet')
+      .executeAsync(async () => {
+        switch (network.vmName) {
+          case NetworkVMType.EVM:
+            return this.getEvmWallet(accountIndex, network)
+          case NetworkVMType.BITCOIN:
+            return await this.getBtcWallet(accountIndex, network)
+          default:
+            return undefined
+        }
+      })
   }
 
   //fixme - remove and use network.send

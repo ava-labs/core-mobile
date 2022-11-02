@@ -34,6 +34,7 @@ import TransactionToast, {
   TransactionToastType
 } from 'components/toast/TransactionToast'
 import BN from 'bn.js'
+import SentryWrapper from 'services/sentry/SentryWrapper'
 
 export interface SendTokenContextState {
   sendToken: TokenWithBalance | undefined
@@ -193,12 +194,15 @@ export const SendTokenContextProvider = ({
     })
 
     InteractionManager.runAfterInteractions(() => {
+      const sentryTrx = SentryWrapper.startTransaction('send-erc20')
       sendService
         .send(
           sendState,
           activeNetwork,
           activeAccount,
-          selectedCurrency.toLowerCase()
+          selectedCurrency.toLowerCase(),
+          undefined,
+          sentryTrx
         )
         .then(txId => {
           setSendStatus('Success')
@@ -226,6 +230,9 @@ export const SendTokenContextProvider = ({
             ),
             duration: 'short'
           })
+        })
+        .finally(() => {
+          SentryWrapper.finish(sentryTrx)
         })
     })
   }

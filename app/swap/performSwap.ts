@@ -14,6 +14,8 @@ import Logger from 'utils/Logger'
 import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
 import { getEvmProvider } from 'services/network/utils/providerUtils'
 import { BN } from 'bn.js'
+import { Transaction as SentryTransaction } from '@sentry/types'
+import SentryWrapper from 'services/sentry/SentryWrapper'
 
 const SERVER_BUSY_ERROR = 'Server too busy'
 
@@ -39,6 +41,7 @@ export async function performSwap(request: {
   slippage: number
   network?: Network
   account?: Account
+  sentryTrx?: SentryTransaction
 }) {
   const {
     srcToken,
@@ -51,7 +54,8 @@ export async function performSwap(request: {
     gasPrice,
     slippage,
     network,
-    account
+    account,
+    sentryTrx
   } = request
 
   if (!optimalRate) {
@@ -99,7 +103,7 @@ export async function performSwap(request: {
     deadline = undefined,
     partnerFeeBps = undefined
 
-  const spender = await swapService.getParaswapSpender()
+  const spender = await swapService.getParaswapSpender(sentryTrx)
 
   let approveTxHash
 
@@ -126,9 +130,13 @@ export async function performSwap(request: {
       avalancheProvider
     )
 
-    const [allowance, allowanceError] = await resolve(
-      contract.allowance(userAddress, srcTokenAddress)
+    const [allowance, allowanceError] = await SentryWrapper.createSpanFor(
+      sentryTrx
     )
+      .setContext('svc.swap.contract_allowance')
+      .executeAsync(async () => {
+        return await resolve(contract.allowance(userAddress, srcTokenAddress))
+      })
 
     if (allowanceError) {
       Logger.error('allowance error', allowanceError)
@@ -140,9 +148,13 @@ export async function performSwap(request: {
     }
 
     if ((allowance as BigNumber).lt(sourceAmount)) {
-      const [approveGasLimit] = await resolve(
-        contract.estimateGas.approve(spender, sourceAmount)
-      )
+      const [approveGasLimit] = await SentryWrapper.createSpanFor(sentryTrx)
+        .setContext('svc.swap.contract_estimate_gas')
+        .executeAsync(async () => {
+          return await resolve(
+            contract.estimateGas.approve(spender, sourceAmount)
+          )
+        })
 
       if (!(allowance as BigNumber).gt(sourceAmount)) {
         const { data } = await contract.populateTransaction.approve(
@@ -163,7 +175,8 @@ export async function performSwap(request: {
               to: srcTokenAddress
             },
             account.index,
-            network
+            network,
+            sentryTrx
           )
         )
 
@@ -178,7 +191,7 @@ export async function performSwap(request: {
 
         // we send true to wait for transaction to post due to issue with nonce.
         const [hash, approveError] = await resolve(
-          networkService.sendTransaction(signedTx, network, false)
+          networkService.sendTransaction(signedTx, network, false, sentryTrx)
         )
 
         if (approveError) {
@@ -220,7 +233,8 @@ export async function performSwap(request: {
             ? network.networkToken.decimals
             : destDecimals,
           permit,
-          deadline
+          deadline,
+          sentryTrx
         ),
       checkForErrorsInResult
     )

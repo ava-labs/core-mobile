@@ -1,58 +1,55 @@
 {
-  "testRunner": "jest",
-  "runnerConfig": "e2e/config.json",
-  "skipLegacyWorkersInjection": true,
-  
-    "devices": {
-      "emulator": {
-        "type": "android.emulator",
-        "device": {
-          "avdName": "Pixel_4_API_31"
+  "testRunner":"jest",
+  "runnerConfig":"e2e/config.json",
+  "skipLegacyWorkersInjection":true,
+  "devices":{
+     "emulator":{
+        "type":"android.emulator",
+        "device":{
+           "avdName":"Pixel_4_API_31"
         }
-      },
-      "simulator": {
+     },
+     "simulator":{
         "type":"ios.simulator",
-        "device": "iPhone 13"
-      }
-    },
-    "apps": {
-      "ios.internal.debug": {
-        "type": "ios.app",
-        "binaryPath": "ios/DerivedData/Build/Products/Debug-iphonesimulator/AvaxWallet.app",
-        "build": "ENVFILE=.env.development arch -x86_64 xcodebuild -workspace ios/AvaxWallet.xcworkspace -configuration Debug -scheme AvaxWalletInternal -sdk iphonesimulator -derivedDataPath avalanche-wallet-apps/ios/DerivedData"
-      },
-      "ios.internal.release": {
-        "type": "ios.app",
-        "binaryPath": "binaries/AvaxWalletInternal.app"
-      },
-      "android.internal.debug": {
-        "type": "android.apk",
-        "testBinaryPath": "android/app/build/outputs/apk/internal/debug/app-internal-debug.apk",
-        "binaryPath": "android/app/build/outputs/apk/internal/debug/app-internal-debug.apk",
-        "build": "ENVFILE=.env.development react-native run-android --variant=internalDebug"
-      },
-      "android.internal.e2e": {
-        "type": "android.apk",
-        "binaryPath": "binaries/app-internal-universal-release-bitrise-signed.apk"
-      }
-    },
-    "configurations": {
-      "ios.internal.debug": {
-        "device": "simulator",
-        "app": "ios.internal.debug"
-      },
-      "ios.internal.release": {
-        "device": "simulator",
-        "app": "ios.internal.release"
-      },
-      "android.internal.debug": {
-        "device": "emulator",
-        "app": "android.internal.debug"
-      },
-      "android.internal.e2e": {
-        "device": "emulator",
-        "app": "android.internal.e2e"
-      }
-    }
-
+        "device":"iPhone 13"
+     }
+  },
+  "apps":{
+     "ios.internal.debug":{
+        "type":"ios.app",
+        "binaryPath":"ios/DerivedData/Build/Products/Debug-iphonesimulator/AvaxWallet.app",
+        "build":"ENVFILE=.env.development arch -x86_64 xcodebuild -workspace ios/AvaxWallet.xcworkspace -configuration Debug -scheme AvaxWalletInternal -sdk iphonesimulator -derivedDataPath avalanche-wallet-apps/ios/DerivedData"
+     },
+     "ios.internal.release":{
+        "type":"ios.app",
+        "binaryPath":"binaries/AvaxWalletInternal.app"
+     },
+     "android.internal.debug":{
+        "type":"android.apk",
+        "binaryPath":"android/app/build/outputs/apk/internal/debug/app-internal-debug.apk",
+        "build":"cd android && ENVFILE=.env.development ./gradlew assembleInternalDebug assembleInternalDebugAndroidTest -DtestBuildType=debug && cd .."
+     },
+     "android.internal.e2e":{
+        "type":"android.apk",
+        "binaryPath":"android/app/build/outputs/apk/internal/e2e/app-internal-e2e.apk"
+     }
+  },
+  "configurations":{
+     "ios.internal.debug":{
+        "device":"simulator",
+        "app":"ios.internal.debug"
+     },
+     "ios.internal.release":{
+        "device":"simulator",
+        "app":"ios.internal.release"
+     },
+     "android.internal.debug":{
+        "device":"emulator",
+        "app":"android.internal.debug"
+     },
+     "android.internal.e2e":{
+        "device":"emulator",
+        "app":"android.internal.e2e"
+     }
   }
+}

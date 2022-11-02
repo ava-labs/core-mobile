@@ -23,6 +23,8 @@ import {
 import TokenService from 'services/token/TokenService'
 import { BalanceServiceProvider } from 'services/balance/types'
 import NetworkService from 'services/network/NetworkService'
+import { Transaction } from '@sentry/types'
+import SentryWrapper from 'services/sentry/SentryWrapper'
 
 const hstABI = require('human-standard-token-abi')
 
@@ -38,42 +40,47 @@ export class EvmBalanceService implements BalanceServiceProvider {
   async getBalances(
     network: Network,
     userAddress: string,
-    currency: string
+    currency: string,
+    sentryTrx?: Transaction
   ): Promise<(NetworkTokenWithBalance | TokenWithBalanceERC20)[]> {
-    const activeTokenList = network.tokens ?? []
-    const tokenAddresses = activeTokenList.map(token => token.address)
-    const provider = NetworkService.getProviderForNetwork(
-      network
-    ) as JsonRpcBatchInternal & BlockCypherProvider
+    return SentryWrapper.createSpanFor(sentryTrx)
+      .setContext('svc.balance.evm.get')
+      .executeAsync(async () => {
+        const activeTokenList = network.tokens ?? []
+        const tokenAddresses = activeTokenList.map(token => token.address)
+        const provider = NetworkService.getProviderForNetwork(
+          network
+        ) as JsonRpcBatchInternal & BlockCypherProvider
 
-    const assetPlatformId =
-      network.pricingProviders?.coingecko?.assetPlatformId ?? ''
+        const assetPlatformId =
+          network.pricingProviders?.coingecko?.assetPlatformId ?? ''
 
-    const tokenPriceDict =
-      (assetPlatformId &&
-        (await TokenService.getPricesWithMarketDataByAddresses(
-          tokenAddresses,
-          assetPlatformId,
-          currency as VsCurrencyType
-        ))) ||
-      {}
+        const tokenPriceDict =
+          (assetPlatformId &&
+            (await TokenService.getPricesWithMarketDataByAddresses(
+              tokenAddresses,
+              assetPlatformId,
+              currency as VsCurrencyType
+            ))) ||
+          {}
 
-    const nativeToken = await this.getNativeTokenBalance(
-      provider,
-      userAddress,
-      network,
-      currency
-    )
+        const nativeToken = await this.getNativeTokenBalance(
+          provider,
+          userAddress,
+          network,
+          currency
+        )
 
-    const erc20Tokens = await this.getErc20Balances(
-      provider,
-      activeTokenList,
-      tokenPriceDict,
-      userAddress,
-      currency
-    )
+        const erc20Tokens = await this.getErc20Balances(
+          provider,
+          activeTokenList,
+          tokenPriceDict,
+          userAddress,
+          currency
+        )
 
-    return [nativeToken, ...erc20Tokens]
+        return [nativeToken, ...erc20Tokens]
+      })
   }
 
   private async getNativeTokenBalance(

@@ -1,8 +1,5 @@
 import {
   CoinMarket,
-  coinsContractInfo,
-  CoinsContractInfoResponse,
-  coinsContractMarketChart,
   coinsInfo,
   CoinsInfoResponse,
   coinsMarket,
@@ -248,51 +245,6 @@ export class TokenService {
   }
 
   /**
-   * Get chart data for a contract address
-   * @param assetPlatformId the asset platform where the provided address lives
-   * @param address the contract address
-   * @param days data up to number of days ago
-   * @param currency the currency to be used
-   * @param fresh whether to ignore cache
-   * @returns chart data
-   */
-  async getChartDataForAddress({
-    assetPlatformId,
-    address,
-    days = 1,
-    currency = VsCurrencyType.USD,
-    fresh = false
-  }: {
-    assetPlatformId: string
-    address: string
-    days?: number
-    currency?: VsCurrencyType
-    fresh?: boolean
-  }) {
-    let data: ChartData | undefined
-
-    const key = `${address}-${days.toString()}-${currency}`
-    const cacheId = `getChartDataForAddress-${key}`
-
-    data = fresh ? undefined : getCache(cacheId)
-
-    if (data === undefined) {
-      if (address) {
-        data = await this.fetchChartDataForAddress(
-          assetPlatformId,
-          address,
-          days,
-          currency
-        )
-      }
-
-      setCache(cacheId, data)
-    }
-
-    return data
-  }
-
-  /**
    * Get info for a coin
    * @param coingeckoId the coin id
    * @param fresh whether to ignore cache
@@ -322,59 +274,6 @@ export class TokenService {
     return data
   }
 
-  /**
-   * Get info for a contract address
-   * @param assetPlatformId the asset platform where the provided address lives
-   * @param address the contract addresses
-   * @param fresh whether to ignore cache
-   * @returns token info
-   */
-  async getContractInfo({
-    assetPlatformId,
-    address,
-    fresh = false
-  }: {
-    assetPlatformId: string
-    address: string
-    fresh?: boolean
-  }): Promise<CoinsContractInfoResponse | undefined> {
-    let data: CoinsContractInfoResponse | undefined
-
-    const key = address
-    const cacheId = `getContractInfo-${key}`
-
-    data = fresh ? undefined : getCache(cacheId)
-
-    if (data === undefined) {
-      if (address) {
-        data = await this.fetchContractInfo(assetPlatformId, address)
-      }
-      setCache(cacheId, data)
-    }
-
-    return data
-  }
-
-  private async fetchChartDataForAddress(
-    assetPlatformId: string,
-    address: string,
-    days: number,
-    currency: VsCurrencyType = VsCurrencyType.USD
-  ) {
-    try {
-      const rawData = await coinsContractMarketChart(coingeckoBasicClient, {
-        assetPlatformId,
-        address: address,
-        currency,
-        days
-      })
-
-      return transformContractMarketChartResponse(rawData)
-    } catch (e) {
-      return Promise.resolve(undefined)
-    }
-  }
-
   private async fetchChartDataForCoin(
     coingeckoId: string,
     days: number,
@@ -388,17 +287,6 @@ export class TokenService {
       })
 
       return transformContractMarketChartResponse(rawData)
-    } catch (e) {
-      return Promise.resolve(undefined)
-    }
-  }
-
-  private async fetchContractInfo(assetPlatformId: string, address: string) {
-    try {
-      return coinsContractInfo(coingeckoBasicClient, {
-        address: address,
-        assetPlatformId
-      })
     } catch (e) {
       return Promise.resolve(undefined)
     }
