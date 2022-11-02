@@ -1,5 +1,5 @@
-import React from 'react'
-import { StyleSheet, View } from 'react-native'
+import React, { useEffect } from 'react'
+import { NativeModules, Platform, StyleSheet, View } from 'react-native'
 import AvaButton from 'components/AvaButton'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import MnemonicScreen from 'components/MnemonicScreen'
@@ -17,6 +17,16 @@ export default function RevealMnemonic(): JSX.Element {
   const handleSaveMyPhrase = (): void => {
     goBack()
   }
+
+  useEffect(() => {
+    if (Platform.OS === 'android') {
+      const { SecureActivity } = NativeModules
+      SecureActivity.onCreate()
+      return () => {
+        SecureActivity.onDestroy()
+      }
+    }
+  }, [])
 
   return (
     <View style={styles.verticalLayout}>
