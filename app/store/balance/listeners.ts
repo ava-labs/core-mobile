@@ -4,7 +4,6 @@ import BalanceService from 'services/balance/BalanceService'
 import { AppListenerEffectAPI } from 'store'
 import {
   Account,
-  selectAccounts,
   selectActiveAccount,
   setAccount,
   setAccounts
@@ -58,19 +57,18 @@ const onBalanceUpdate = async (
   const state = listenerApi.getState()
   const activeNetwork = selectActiveNetwork(state)
 
-  let networksToFetch, accountsToFetch
+  let networksToFetch
+  const activeAccount = selectActiveAccount(state)
+  const accountsToFetch = activeAccount ? [activeAccount] : []
 
   if (fetchActiveOnly) {
     networksToFetch = [activeNetwork]
-    const activeAccount = selectActiveAccount(state)
-    accountsToFetch = activeAccount ? [activeAccount] : []
   } else {
     networksToFetch = selectFavoriteNetworks(state)
     // Just in case the active network has not been favorited
     if (!networksToFetch.map(n => n.chainId).includes(activeNetwork.chainId)) {
       networksToFetch.push(activeNetwork)
     }
-    accountsToFetch = Object.values(selectAccounts(state))
   }
 
   onBalanceUpdateCore(
@@ -108,8 +106,10 @@ const onBalanceUpdateCore = async (
   const promises = []
 
   for (const network of networks) {
+    console.log('------>', 'network.chainName', network.chainName)
     promises.push(
       ...accounts.map(account => {
+        console.log('------>', 'account.index', account.index)
         return BalanceService.getBalancesForAccount(
           network,
           account,
