@@ -83,8 +83,10 @@ project.ext.react = [
     entryFile: "index.js",
     bundleInRelease: true,
     devDisabledInRelease: true,
-    bundleInE2e: true,
-    devDisabledInE2e: true,
+    bundleInInternalE2e: true,
+    devDisabledInInternalE2e: true,
+    bundleInExternalE2e: true,
+    devDisabledInExternalE2e: true,
 ]
 
 apply from: "../../node_modules/react-native/react.gradle"
@@ -190,12 +192,11 @@ android {
         release {
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
-            // Detox-specific additions to pro-guard
-            proguardFile "${rootProject.projectDir}/../node_modules/detox/android/detox/proguard-rules-app.pro"
         }
         e2e {
-            minifyEnabled enableProguardInReleaseBuilds
-            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+            initWith release
+            matchingFallbacks = ['release'] // this is for libraries without an e2e build to know to fall back to release
+
             // Detox-specific additions to pro-guard
             proguardFile "${rootProject.projectDir}/../node_modules/detox/android/detox/proguard-rules-app.pro"
         }
