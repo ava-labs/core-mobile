@@ -42,7 +42,7 @@
     "@ethereumjs/tx": "3.4.0",
     "@gorhom/bottom-sheet": "4.4.5",
     "@lavamoat/preinstall-always-fail": "1.0.0",
-    "@react-native-async-storage/async-storage": "1.16.1",
+    "@react-native-async-storage/async-storage": "1.17.10",
     "@react-native-clipboard/clipboard": "1.8.5",
     "@react-native-community/blur": "maxhungry/react-native-blur#a7d77a415a8693d1d49588a04a09970ef26113c1",
     "@react-native-community/datetimepicker": "3.5.2",
