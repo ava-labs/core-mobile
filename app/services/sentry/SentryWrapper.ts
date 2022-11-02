@@ -1,18 +1,15 @@
 import * as Sentry from '@sentry/react-native'
 import { CustomSamplingContext, Transaction } from '@sentry/types'
 import { Span } from 'services/sentry/Span'
-import { SentryStorage, TransactionName } from 'services/sentry/types'
-import StorageTools from 'repository/StorageTools'
+import { TransactionName } from 'services/sentry/types'
 
 class SentryWrapper {
   private sampleRate = DefaultSampleRate
 
-  constructor() {
-    StorageTools.loadFromStorageAsObj<number | undefined>(SentryStorage).then(
-      value => {
-        this.sampleRate = value ?? this.sampleRate
-      }
-    )
+  public setSampleRate(rate: number) {
+    if (!isNaN(rate)) {
+      this.sampleRate = rate
+    }
   }
 
   public startTransaction(name: TransactionName): Transaction {

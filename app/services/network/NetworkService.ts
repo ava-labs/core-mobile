@@ -47,7 +47,7 @@ class NetworkService {
     sentryTrx?: Transaction
   ) {
     return SentryWrapper.createSpanFor(sentryTrx)
-      .setContext({ op: 'svc.network.send_transaction' })
+      .setContext('svc.network.send_transaction')
       .executeAsync(async () => {
         if (!network) {
           throw new Error('No active network')

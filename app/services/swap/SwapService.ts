@@ -43,7 +43,7 @@ class SwapService {
     sentryTrx?: SentryTransaction
   ): Promise<OptimalRate | APIError> {
     return SentryWrapper.createSpanFor(sentryTrx)
-      .setContext({ op: 'svc.swap.get_rate' })
+      .setContext('svc.swap.get_rate')
       .executeAsync(async () => {
         if (network.isTestnet) {
           throw NETWORK_UNSUPPORTED_ERROR
@@ -80,7 +80,7 @@ class SwapService {
     sentryTrx?: SentryTransaction
   ): Promise<string | APIError> {
     return SentryWrapper.createSpanFor(sentryTrx)
-      .setContext({ op: 'svc.swap.get_paraswap_spender' })
+      .setContext('svc.swap.get_paraswap_spender')
       .executeAsync(async () => {
         return this.paraSwap.getTokenTransferProxy()
       })
@@ -106,7 +106,7 @@ class SwapService {
     sentryTrx?: SentryTransaction
   ): Promise<APIError | Transaction> {
     return SentryWrapper.createSpanFor(sentryTrx)
-      .setContext({ op: 'svc.swap.build_trx' })
+      .setContext('svc.swap.build_trx')
       .executeAsync(async () => {
         return await this.paraSwap.buildTx(
           srcToken,

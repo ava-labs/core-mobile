@@ -23,7 +23,6 @@ import { DefaultSampleRate } from 'services/sentry/SentryWrapper'
 import pkg from '../package.json'
 
 LogBox.ignoreLogs(['Require cycle:', "Can't perform", 'new'])
-// const routingInstrumentation = new Sentry.ReactNavigationInstrumentation()
 
 //init Sentry
 if (Config.SENTRY_DSN && !__DEV__) {

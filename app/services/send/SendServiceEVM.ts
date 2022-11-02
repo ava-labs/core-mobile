@@ -44,7 +44,7 @@ export class SendServiceEVM implements SendServiceHelper {
     sentryTrx?: Transaction
   ): Promise<SendState> {
     return SentryWrapper.createSpanFor(sentryTrx)
-      .setContext({ op: 'svc.send.evm.validate_and_calc_fees' })
+      .setContext('svc.send.evm.validate_and_calc_fees')
       .executeAsync(async () => {
         const { amount, address, gasPrice, token } = sendState
 
@@ -113,7 +113,7 @@ export class SendServiceEVM implements SendServiceHelper {
     sentryTrx?: Transaction
   ): Promise<TransactionRequest> {
     return SentryWrapper.createSpanFor(sentryTrx)
-      .setContext({ op: 'svc.send.evm.get_trx_request' })
+      .setContext('svc.send.evm.get_trx_request')
       .executeAsync(async () => {
         const unsignedTx = await this.getUnsignedTx(sendState)
         const chainId = this.activeNetwork.chainId

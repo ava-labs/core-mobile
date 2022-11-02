@@ -1,6 +1,7 @@
 import { SpanContext } from '@sentry/types/types/span'
 import { SpanStatus } from '@sentry/tracing'
 import { Transaction } from '@sentry/types'
+import { OpName } from 'services/sentry/types'
 
 export class Span {
   constructor(
@@ -15,6 +16,7 @@ export class Span {
   ) {}
 
   public setContext(
+    op: OpName,
     spanContext?: Pick<
       SpanContext,
       Exclude<
@@ -23,7 +25,7 @@ export class Span {
       >
     >
   ): Span {
-    this.spanContext = spanContext
+    this.spanContext = { ...spanContext, op }
     return this
   }
 

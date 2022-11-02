@@ -81,7 +81,7 @@ class WalletService {
     sentryTrx?: Transaction
   ) {
     return SentryWrapper.createSpanFor(sentryTrx)
-      .setContext({ op: 'svc.wallet.sign' })
+      .setContext('svc.wallet.sign')
       .executeAsync(async () => {
         const wallet = await this.getWallet(accountIndex, network, sentryTrx)
 
@@ -195,7 +195,7 @@ class WalletService {
     sentryTrx?: Transaction
   ) {
     return SentryWrapper.createSpanFor(sentryTrx)
-      .setContext({ op: 'svc.wallet.get_wallet' })
+      .setContext('svc.wallet.get_wallet')
       .executeAsync(async () => {
         switch (network.vmName) {
           case NetworkVMType.EVM:
