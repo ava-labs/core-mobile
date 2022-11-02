@@ -2,6 +2,7 @@ import BN from 'bn.js'
 import { BigNumber } from 'ethers'
 import { TokenWithBalance } from 'store/balance'
 import { SignTransactionRequest } from 'services/wallet/types'
+import { Transaction } from '@sentry/types'
 
 export enum SendEvent {
   TX_DETAILS = 'SendEvent: TX_DETAILS'
@@ -61,12 +62,14 @@ export interface SendServiceHelper {
     sendState: SendState,
     isMainnet: boolean,
     fromAddress: string,
-    currency?: string
+    currency?: string,
+    sentryTrx?: Transaction
   ): Promise<SignTransactionRequest>
   validateStateAndCalculateFees(
     sendState: SendState,
     isMainnet: boolean,
     fromAddress: string,
-    currency?: string
+    currency?: string,
+    sentryTrx?: Transaction
   ): Promise<SendState>
 }

@@ -12,6 +12,8 @@ import { OptimalRate } from 'paraswap-core'
 import Web3 from 'web3'
 import { Account } from 'store/account'
 import { incrementalPromiseResolve } from 'swap/utils'
+import SentryWrapper from 'services/sentry/SentryWrapper'
+import { Transaction as SentryTransaction } from '@sentry/types'
 
 const NETWORK_UNSUPPORTED_ERROR = new Error(
   'Fuji network is not supported by Paraswap'
@@ -37,40 +39,51 @@ class SwapService {
     srcAmount: string,
     swapSide: SwapSide,
     network: Network,
-    account: Account
+    account: Account,
+    sentryTrx?: SentryTransaction
   ): Promise<OptimalRate | APIError> {
-    if (network.isTestnet) {
-      throw NETWORK_UNSUPPORTED_ERROR
-    }
-    if (!account) {
-      throw new Error('Account address missing')
-    }
+    return SentryWrapper.createSpanFor(sentryTrx)
+      .setContext('svc.swap.get_rate')
+      .executeAsync(async () => {
+        if (network.isTestnet) {
+          throw NETWORK_UNSUPPORTED_ERROR
+        }
+        if (!account) {
+          throw new Error('Account address missing')
+        }
 
-    const optimalRates = async () => {
-      return await this.paraSwap.getRate(
-        srcToken,
-        destToken,
-        srcAmount,
-        account.address,
-        swapSide,
-        {},
-        srcDecimals,
-        destDecimals
-      )
-    }
+        const optimalRates = async () => {
+          return await this.paraSwap.getRate(
+            srcToken,
+            destToken,
+            srcAmount,
+            account.address,
+            swapSide,
+            {},
+            srcDecimals,
+            destDecimals
+          )
+        }
 
-    function checkForErrorsInResult(result: OptimalRate | APIError) {
-      return (result as APIError).message === 'Server too busy'
-    }
+        function checkForErrorsInResult(result: OptimalRate | APIError) {
+          return (result as APIError).message === 'Server too busy'
+        }
 
-    return await incrementalPromiseResolve<OptimalRate | APIError>(
-      () => optimalRates(),
-      checkForErrorsInResult
-    )
+        return await incrementalPromiseResolve<OptimalRate | APIError>(
+          () => optimalRates(),
+          checkForErrorsInResult
+        )
+      })
   }
 
-  async getParaswapSpender(): Promise<string | APIError> {
-    return this.paraSwap.getTokenTransferProxy()
+  async getParaswapSpender(
+    sentryTrx?: SentryTransaction
+  ): Promise<string | APIError> {
+    return SentryWrapper.createSpanFor(sentryTrx)
+      .setContext('svc.swap.get_paraswap_spender')
+      .executeAsync(async () => {
+        return this.paraSwap.getTokenTransferProxy()
+      })
   }
 
   async buildTx(
@@ -89,25 +102,30 @@ class SwapService {
     srcDecimals?: number,
     destDecimals?: number,
     permit?: string,
-    deadline?: string
+    deadline?: string,
+    sentryTrx?: SentryTransaction
   ): Promise<APIError | Transaction> {
-    return await this.paraSwap.buildTx(
-      srcToken,
-      destToken,
-      srcAmount,
-      destAmount,
-      priceRoute,
-      userAddress,
-      partner,
-      partnerAddress,
-      partnerFeeBps,
-      receiver,
-      options,
-      srcDecimals,
-      destDecimals,
-      permit,
-      deadline
-    )
+    return SentryWrapper.createSpanFor(sentryTrx)
+      .setContext('svc.swap.build_trx')
+      .executeAsync(async () => {
+        return await this.paraSwap.buildTx(
+          srcToken,
+          destToken,
+          srcAmount,
+          destAmount,
+          priceRoute,
+          userAddress,
+          partner,
+          partnerAddress,
+          partnerFeeBps,
+          receiver,
+          options,
+          srcDecimals,
+          destDecimals,
+          permit,
+          deadline
+        )
+      })
   }
 }
 
