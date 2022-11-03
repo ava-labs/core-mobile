@@ -168,7 +168,7 @@ function getSectionsAndSubsFromTestRun(casesAndSections: any[]) {
   output.forEach(function (outputObject) {
     testRunSections.indexOf(outputObject.testRunSection) === -1
       ? testRunSections.push(outputObject.testRunSection)
-      : void 0
+      : undefined
   })
 
   // Creates an object for each of the sections and the corresponding subsections
@@ -179,7 +179,7 @@ function getSectionsAndSubsFromTestRun(casesAndSections: any[]) {
       if (subsectionItem.testRunSection === section) {
         subsections.indexOf(subsectionItem.testSubsection) === -1
           ? subsections.push(subsectionItem.testSubsection)
-          : void 0
+          : undefined
       }
     })
     sectionsAndSubsections.push({ section, subsections })
@@ -281,7 +281,7 @@ async function newTCTitles() {
   const allTestCasesFromTestRun = await testCasesFromTestRun()
 
   const allTestCaseTitlesFromRun: { testTitle: any; testSection: any }[] = []
-  const newTCTitles = []
+  const theNewTCTitles = []
 
   allTestCasesFromTestRun.forEach(function (title) {
     const testTitle = title.testCase
@@ -293,8 +293,8 @@ async function newTCTitles() {
 
   allTestCaseTitlesFromRun.filter(function (item) {
     testCasesFromTestrail.indexOf(item.testTitle) === -1
-      ? newTCTitles.push(item)
-      : void 0
+      ? theNewTCTitles.push(item)
+      : undefined
   })
 
   // console.log(allTestCaseTitlesFromRun)
@@ -388,8 +388,9 @@ async function createTestCases(
     const index = testCasesInSection.findIndex(
       x => x.testCaseTitle === myTestCaseTitle && x.sectionID === sectionID
     )
-    index === -1 ? myNewTestCases.push({ myTestCaseTitle, sectionID }) : void 0
-    // index === -1 ? console.log({ myTestCaseTitle, sectionID }) : void (0)
+    index === -1
+      ? myNewTestCases.push({ myTestCaseTitle, sectionID })
+      : undefined
     myNewTestCases.forEach(function (newTestCase) {
       const testCaseName = newTestCase.myTestCaseTitle
       const testCaseSection = newTestCase.sectionID
