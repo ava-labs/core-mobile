@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
@@ -11,10 +11,13 @@ import { Account, setAccountTitle as setAccountTitleStore } from 'store/account'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   fetchBalanceForAccount,
+  QueryStatus,
+  selectBalanceStatus,
   selectBalanceTotalInCurrencyForAccount,
   selectIsBalanceLoadedForAddress
 } from 'store/balance'
 import ReloadSVG from 'components/svg/ReloadSVG'
+import { ActivityIndicator } from 'components/ActivityIndicator'
 
 type Props = {
   account: Account
@@ -38,8 +41,13 @@ function AccountItem({
   const isBalanceLoaded = useSelector(
     selectIsBalanceLoadedForAddress(account.index)
   )
+  const balanceStatus = useSelector(selectBalanceStatus)
+  const isBalanceLoading = balanceStatus !== QueryStatus.IDLE
+
   const [editAccount, setEditAccount] = useState(false)
   const [editedAccountTitle, setEditedAccountTitle] = useState(account.title)
+  const [showLoader, setShowLoader] = useState(false)
+
   const dispatch = useDispatch()
 
   const bgColor = useMemo(() => {
@@ -74,7 +82,14 @@ function AccountItem({
 
   const handleLoadBalance = useCallback(() => {
     dispatch(fetchBalanceForAccount(account.index))
+    setShowLoader(true)
   }, [account.index, dispatch])
+
+  useEffect(() => {
+    if (!isBalanceLoading && showLoader) {
+      setShowLoader(false)
+    }
+  }, [isBalanceLoading, showLoader])
 
   return (
     <>
@@ -98,7 +113,10 @@ function AccountItem({
               <Title title={account.title} />
             )}
             <Space y={4} />
-            {!isBalanceLoaded ? (
+            {showLoader && (
+              <ActivityIndicator style={{ height: 15, width: 15 }} />
+            )}
+            {!showLoader && !isBalanceLoaded && (
               <AvaButton.TextMedium
                 onPress={handleLoadBalance}
                 style={{
@@ -111,7 +129,8 @@ function AccountItem({
                 }}>
                 View balance
               </AvaButton.TextMedium>
-            ) : (
+            )}
+            {!showLoader && isBalanceLoaded && (
               <Row style={{ alignItems: 'center' }}>
                 <AvaText.Body3 currency>{accountBalance}</AvaText.Body3>
                 <Space x={8} />
