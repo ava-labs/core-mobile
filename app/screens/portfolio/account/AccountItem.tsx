@@ -9,7 +9,12 @@ import { Row } from 'components/Row'
 import TokenAddress from 'components/TokenAddress'
 import { Account, setAccountTitle as setAccountTitleStore } from 'store/account'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectBalanceTotalInCurrencyForAccount } from 'store/balance'
+import {
+  fetchBalanceForAccount,
+  selectBalanceTotalInCurrencyForAccount,
+  selectIsBalanceLoadedForAddress
+} from 'store/balance'
+import ReloadSVG from 'components/svg/ReloadSVG'
 
 type Props = {
   account: Account
@@ -29,6 +34,9 @@ function AccountItem({
   const context = useApplicationContext()
   const accountBalance = useSelector(
     selectBalanceTotalInCurrencyForAccount(account.index)
+  )
+  const isBalanceLoaded = useSelector(
+    selectIsBalanceLoadedForAddress(account.index)
   )
   const [editAccount, setEditAccount] = useState(false)
   const [editedAccountTitle, setEditedAccountTitle] = useState(account.title)
@@ -64,6 +72,10 @@ function AccountItem({
     [account.index, dispatch]
   )
 
+  const handleLoadBalance = useCallback(() => {
+    dispatch(fetchBalanceForAccount(account.index))
+  }, [account.index, dispatch])
+
   return (
     <>
       <AvaButton.Base
@@ -85,8 +97,29 @@ function AccountItem({
             ) : (
               <Title title={account.title} />
             )}
-            <Space y={6} />
-            <AvaText.Body3 currency>{accountBalance}</AvaText.Body3>
+            <Space y={4} />
+            {!isBalanceLoaded ? (
+              <AvaButton.TextMedium
+                onPress={handleLoadBalance}
+                style={{
+                  width: 100,
+                  height: 30,
+                  marginTop: -6, //to keep bigger hit area
+                  alignItems: 'flex-start',
+                  paddingHorizontal: 0,
+                  paddingVertical: 0
+                }}>
+                View balance
+              </AvaButton.TextMedium>
+            ) : (
+              <Row style={{ alignItems: 'center' }}>
+                <AvaText.Body3 currency>{accountBalance}</AvaText.Body3>
+                <Space x={8} />
+                <AvaButton.Base onPress={handleLoadBalance}>
+                  <ReloadSVG />
+                </AvaButton.Base>
+              </Row>
+            )}
             {editable && (
               // For smaller touch area
               <Row>

@@ -51,6 +51,12 @@ export const balanceSlice = createSlice({
 // selectors
 export const selectBalanceStatus = (state: RootState) => state.balance.status
 
+export const selectIsBalanceLoadedForAddress =
+  (accountIndex: number) => (state: RootState) => {
+    const network = selectActiveNetwork(state)
+    return !!state.balance.balances[getKey(network.chainId, accountIndex)]
+  }
+
 export const selectIsLoadingBalances = (state: RootState) =>
   state.balance.status === QueryStatus.LOADING
 
@@ -199,5 +205,12 @@ export const selectBalanceTotalForNetwork =
 export const { setStatus, setBalances } = balanceSlice.actions
 
 export const refetchBalance = createAction(`${reducerName}/refetchBalance`)
+
+export const fetchBalanceForAccount = createAction(
+  `${reducerName}/fetchBalanceForAccount`,
+  (accountIndex: number) => {
+    return { payload: accountIndex }
+  }
+)
 
 export const balanceReducer = balanceSlice.reducer

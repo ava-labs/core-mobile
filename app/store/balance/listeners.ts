@@ -4,6 +4,7 @@ import BalanceService from 'services/balance/BalanceService'
 import { AppListenerEffectAPI } from 'store'
 import {
   Account,
+  selectAccounts,
   selectActiveAccount,
   setAccount,
   setAccounts
@@ -24,6 +25,7 @@ import Logger from 'utils/Logger'
 import { getLocalTokenId } from 'store/balance/utils'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import {
+  fetchBalanceForAccount,
   getKey,
   refetchBalance,
   selectBalanceStatus,
@@ -106,10 +108,8 @@ const onBalanceUpdateCore = async (
   const promises = []
 
   for (const network of networks) {
-    console.log('------>', 'network.chainName', network.chainName)
     promises.push(
       ...accounts.map(account => {
-        console.log('------>', 'account.index', account.index)
         return BalanceService.getBalancesForAccount(
           network,
           account,
@@ -200,6 +200,30 @@ const fetchBalancePeriodically = async (
   pollingTask.cancel()
 }
 
+const handleFetchBalanceForAccount = async (
+  listenerApi: AppListenerEffectAPI,
+  accountIndex: number
+) => {
+  const state = listenerApi.getState()
+  const activeNetwork = selectActiveNetwork(state)
+
+  const accounts = selectAccounts(state)
+  const accountToFetchFor = accounts[accountIndex]
+  const accountsToFetch = accountToFetchFor ? [accountToFetchFor] : []
+  const networksToFetch = selectFavoriteNetworks(state)
+  // Just in case the active network has not been favorited
+  if (!networksToFetch.map(n => n.chainId).includes(activeNetwork.chainId)) {
+    networksToFetch.push(activeNetwork)
+  }
+
+  onBalanceUpdateCore(
+    QueryStatus.LOADING,
+    listenerApi,
+    networksToFetch,
+    accountsToFetch
+  )
+}
+
 export const addBalanceListeners = (startListening: AppStartListening) => {
   startListening({
     actionCreator: onAppUnlocked,
@@ -222,5 +246,12 @@ export const addBalanceListeners = (startListening: AppStartListening) => {
     ),
     effect: async (action, listenerApi) =>
       onBalanceUpdate(QueryStatus.LOADING, listenerApi, false)
+  })
+
+  startListening({
+    actionCreator: fetchBalanceForAccount,
+    effect: async (action, listenerApi) => {
+      handleFetchBalanceForAccount(listenerApi, action.payload)
+    }
   })
 }
