@@ -127,7 +127,7 @@ const onBalanceUpdateCore = async (
         return acc
       }
 
-      const { accountIndex, chainId, accountAddress, tokens } = result.value
+      const { accountIndex, chainId, tokens } = result.value
 
       const tokensWithBalance = tokens.map(token => {
         return {
@@ -137,7 +137,7 @@ const onBalanceUpdateCore = async (
       })
       return {
         ...acc,
-        [getKey(chainId, accountAddress)]: {
+        [getKey(chainId, accountIndex)]: {
           accountIndex,
           chainId,
           tokens: tokensWithBalance
