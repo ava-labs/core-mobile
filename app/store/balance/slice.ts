@@ -2,7 +2,6 @@ import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store'
 import { selectActiveAccount } from 'store/account'
 import { selectActiveNetwork, selectIsTestnet } from 'store/network'
-import AccountsService from 'services/account/AccountsService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import BN from 'bn.js'
 import { Network } from '@avalabs/chains-sdk'
@@ -10,7 +9,6 @@ import {
   Balance,
   Balances,
   BalanceState,
-  LocalTokenWithBalance,
   QueryStatus,
   TokenType
 } from './types'
@@ -32,8 +30,8 @@ const updateBalanceForKey = (
   state.balances[key] = balance
 }
 
-export const getKey = (chainId: number, address: string) =>
-  `${chainId}-${address}`
+export const getKey = (chainId: number, accountIndex: number) =>
+  `${chainId}-${accountIndex}`
 
 export const balanceSlice = createSlice({
   name: reducerName,
@@ -46,30 +44,18 @@ export const balanceSlice = createSlice({
       for (const [key, balance] of Object.entries(action.payload)) {
         updateBalanceForKey(state, key, balance)
       }
-    },
-    setBalance: (
-      state,
-      action: PayloadAction<{
-        address: string
-        accountIndex: number
-        chainId: number
-        tokens: LocalTokenWithBalance[]
-      }>
-    ) => {
-      const { address, accountIndex, chainId, tokens } = action.payload
-      const key = getKey(chainId, address)
-      const balance = {
-        accountIndex,
-        chainId,
-        tokens
-      }
-      updateBalanceForKey(state, key, balance)
     }
   }
 })
 
 // selectors
 export const selectBalanceStatus = (state: RootState) => state.balance.status
+
+export const selectIsBalanceLoadedForAddress =
+  (accountIndex: number) => (state: RootState) => {
+    const network = selectActiveNetwork(state)
+    return !!state.balance.balances[getKey(network.chainId, accountIndex)]
+  }
 
 export const selectIsLoadingBalances = (state: RootState) =>
   state.balance.status === QueryStatus.LOADING
@@ -85,9 +71,7 @@ export const selectTokensWithBalance = (state: RootState) => {
 
   if (!activeAccount) return []
 
-  const address = AccountsService.getAddressForNetwork(activeAccount, network)
-
-  const key = getKey(network.chainId, address)
+  const key = getKey(network.chainId, activeAccount.index)
   return state.balance.balances[key]?.tokens ?? []
 }
 
@@ -97,9 +81,7 @@ export const selectTokensWithBalanceByNetwork =
 
     if (!activeAccount) return []
 
-    const address = AccountsService.getAddressForNetwork(activeAccount, network)
-
-    const key = getKey(network.chainId, address)
+    const key = getKey(network.chainId, activeAccount.index)
     return state.balance.balances[key]?.tokens ?? []
   }
 
@@ -220,8 +202,11 @@ export const selectBalanceTotalForNetwork =
   }
 
 // actions
-export const { setStatus, setBalances, setBalance } = balanceSlice.actions
+export const { setStatus, setBalances } = balanceSlice.actions
 
 export const refetchBalance = createAction(`${reducerName}/refetchBalance`)
 
+export const fetchBalanceForAccount = createAction<{ accountIndex: number }>(
+  `${reducerName}/fetchBalanceForAccount`
+)
 export const balanceReducer = balanceSlice.reducer

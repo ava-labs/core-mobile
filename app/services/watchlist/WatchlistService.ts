@@ -3,7 +3,6 @@ import { CoinMarket, VsCurrencyType } from '@avalabs/coingecko-sdk'
 import TokenService from 'services/token/TokenService'
 import { transformSparklineData } from 'services/token/utils'
 import { Charts, MarketToken, Prices } from 'store/watchlist'
-import Logger from 'utils/Logger'
 
 const coinByAddress = require('assets/coinByAddress.json')
 
@@ -60,11 +59,6 @@ class WatchlistService {
           top100TokenIds.includes(coingeckoId) ||
           tokenIdsToFetch.includes(coingeckoId)
         ) {
-          coingeckoId === notFoundId &&
-            Logger.info(
-              'could not find a coingecko id for token',
-              `address: ${tk.address} - symbol: ${tk.symbol}`
-            )
           // ignore if we can't find a coingecko id
           // or if already included in the top 100
           // of if already included (due to duplicate tokens)
