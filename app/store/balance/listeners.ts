@@ -25,6 +25,7 @@ import Logger from 'utils/Logger'
 import { getLocalTokenId } from 'store/balance/utils'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import {
+  fetchBalanceForAccount,
   getKey,
   refetchBalance,
   selectBalanceStatus,
@@ -58,19 +59,18 @@ const onBalanceUpdate = async (
   const state = listenerApi.getState()
   const activeNetwork = selectActiveNetwork(state)
 
-  let networksToFetch, accountsToFetch
+  let networksToFetch
+  const activeAccount = selectActiveAccount(state)
+  const accountsToFetch = activeAccount ? [activeAccount] : []
 
   if (fetchActiveOnly) {
     networksToFetch = [activeNetwork]
-    const activeAccount = selectActiveAccount(state)
-    accountsToFetch = activeAccount ? [activeAccount] : []
   } else {
     networksToFetch = selectFavoriteNetworks(state)
     // Just in case the active network has not been favorited
     if (!networksToFetch.map(n => n.chainId).includes(activeNetwork.chainId)) {
       networksToFetch.push(activeNetwork)
     }
-    accountsToFetch = Object.values(selectAccounts(state))
   }
 
   onBalanceUpdateCore(
@@ -127,7 +127,7 @@ const onBalanceUpdateCore = async (
         return acc
       }
 
-      const { accountIndex, chainId, accountAddress, tokens } = result.value
+      const { accountIndex, chainId, tokens } = result.value
 
       const tokensWithBalance = tokens.map(token => {
         return {
@@ -137,7 +137,7 @@ const onBalanceUpdateCore = async (
       })
       return {
         ...acc,
-        [getKey(chainId, accountAddress)]: {
+        [getKey(chainId, accountIndex)]: {
           accountIndex,
           chainId,
           tokens: tokensWithBalance
@@ -200,6 +200,30 @@ const fetchBalancePeriodically = async (
   pollingTask.cancel()
 }
 
+const handleFetchBalanceForAccount = async (
+  listenerApi: AppListenerEffectAPI,
+  accountIndex: number
+) => {
+  const state = listenerApi.getState()
+  const activeNetwork = selectActiveNetwork(state)
+
+  const accounts = selectAccounts(state)
+  const accountToFetchFor = accounts[accountIndex]
+  const accountsToFetch = accountToFetchFor ? [accountToFetchFor] : []
+  const networksToFetch = selectFavoriteNetworks(state)
+  // Just in case the active network has not been favorited
+  if (!networksToFetch.map(n => n.chainId).includes(activeNetwork.chainId)) {
+    networksToFetch.push(activeNetwork)
+  }
+
+  onBalanceUpdateCore(
+    QueryStatus.LOADING,
+    listenerApi,
+    networksToFetch,
+    accountsToFetch
+  )
+}
+
 export const addBalanceListeners = (startListening: AppStartListening) => {
   startListening({
     actionCreator: onAppUnlocked,
@@ -222,5 +246,12 @@ export const addBalanceListeners = (startListening: AppStartListening) => {
     ),
     effect: async (action, listenerApi) =>
       onBalanceUpdate(QueryStatus.LOADING, listenerApi, false)
+  })
+
+  startListening({
+    actionCreator: fetchBalanceForAccount,
+    effect: async (action, listenerApi) => {
+      handleFetchBalanceForAccount(listenerApi, action.payload.accountIndex)
+    }
   })
 }

@@ -282,11 +282,15 @@ const BtnTextMedium: FC<BaseProps> = ({
   onPress,
   disabled,
   textColor,
-  children
+  children,
+  style
 }) => {
   const theme = useApplicationContext().theme
   return (
-    <BtnText onPress={onPress} style={styles.btnTextMedium} disabled={disabled}>
+    <BtnText
+      onPress={onPress}
+      style={[styles.btnTextMedium, style]}
+      disabled={disabled}>
       <AvaText.ButtonSmall
         textStyle={{
           color: disabled
