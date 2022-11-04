@@ -3,6 +3,10 @@ import verifyPhraseLoc from '../locators/verifyPhrase.loc'
 import delay from '../helpers/waits'
 
 class VerifyPhrasePage {
+  /*
+   This object is used to convert the index of the recover phrase object to the actual number of the word in the recovery phrase so the test can tap the correct words on the confirmation page. 
+   This is done because Detox grabs the words in a different order than the recovery phrase.  
+  */
   numberIDs = {
     1: 0,
     2: 3,
@@ -37,6 +41,7 @@ class VerifyPhrasePage {
     return by.id(verifyPhraseLoc.verifyPhraseBtn)
   }
 
+  // Converts the index of the word to the actual word number in the recovery phrase and returns an array of 3 words to tap on the confirmation page
   async selectWordNumbers(recoveryPhraseObject: object) {
     const attributes = await Action.getAttributes(this.selectWord)
     const elementArray = attributes.elements
@@ -52,11 +57,11 @@ class VerifyPhrasePage {
     const wordsToConfirm: string[] = []
 
     wordNumberArray.forEach(myWordNumber => {
-      console.log(recoveryPhraseObject)
-      const convertedWorderNumber = this.numberIDs[myWordNumber]
-      const confirmationWord = recoveryPhraseObject[`${convertedWorderNumber}`]
+      const confirmationWord = recoveryPhraseObject[`${myWordNumber}`]
       wordsToConfirm.push(confirmationWord)
     })
+
+    console.log(wordsToConfirm)
 
     return wordsToConfirm
   }
@@ -68,8 +73,16 @@ class VerifyPhrasePage {
         await delay(500)
       } catch (error) {
         console.log('More than one element found trying another index...')
-        await element(by.text(wordsToConfirm[i])).atIndex(1).tap()
-        await delay(500)
+        if (i === 0) {
+          await element(by.text(wordsToConfirm[i])).atIndex(0).tap()
+          await delay(500)
+        } else if (i === 1) {
+          await element(by.text(wordsToConfirm[i])).atIndex(1).tap()
+          await delay(500)
+        } else if (i === 2) {
+          await element(by.text(wordsToConfirm[i])).atIndex(1).tap()
+          await delay(500)
+        }
       }
     }
   }

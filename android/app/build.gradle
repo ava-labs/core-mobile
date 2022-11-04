@@ -155,7 +155,7 @@ android {
         versionCode rootProject.ext.appBuildNumber
         buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchitectureEnabled().toString()
 
-        testBuildType System.getProperty('testBuildType', 'e2e')  // To control the test apk build type
+        testBuildType System.getProperty('testBuildType', 'debug')  // To control the test apk build type
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
 
         missingDimensionStrategy 'react-native-camera', 'general'
@@ -182,6 +182,10 @@ android {
         }
         release {
 
+        storeFile file('/Users/tyler.hackett/avalanche-wallet-apps/android/avax-wallet.keystore')
+            keyAlias 'avax-wallet'
+            storePassword '%*diBFNHw,bK}g5uP!-S'
+            keyPassword '%*diBFNHw,bK}g5uP!-S'
         }
     }
 
@@ -192,11 +196,19 @@ android {
         release {
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+<<<<<<< Updated upstream
         }
         e2e {
             initWith release
             matchingFallbacks = ['release'] // this is for libraries without an e2e build to know to fall back to release
 
+=======
+            // Detox-specific additions to pro-guard
+        }
+        e2e {
+            initWith release
+            setMatchingFallbacks('release')
+>>>>>>> Stashed changes
             // Detox-specific additions to pro-guard
             proguardFile "${rootProject.projectDir}/../node_modules/detox/android/detox/proguard-rules-app.pro"
         }
@@ -209,6 +221,7 @@ android {
             applicationIdSuffix ".internal"
         }
         external {}
+
     }
 
     packagingOptions {

@@ -18,13 +18,17 @@ export async function createEmptyTestRun(testRunName: any, description: any) {
     include_all: false
   }
 
-  const testRun = await api.addRun(projectId, content)
-  console.log(
-    `The test run "${testRunName}" with id ${testRun.id} has been successfully created in TestRail...`
-  )
-  const testRunId = testRun.id
-
-  return testRunId
+  try {
+    const testRun = await api.addRun(projectId, content)
+    console.log(
+      `The test run "${testRunName}" with id ${testRun.id} has been successfully created in TestRail...`
+    )
+    const testRunId = testRun.id
+    return testRunId
+  } catch (error) {
+    console.error('Test run was not created!!!')
+    console.log(error)
+  }
 }
 
 export async function getRunIdFromName() {
@@ -427,4 +431,44 @@ export async function getTestRunCases(testRunId: any) {
     caseTitles.push({ caseTitle, testRunCaseId })
   })
   return caseTitles
+}
+
+export function generateTimestamp() {
+  const timestamp = Date.now()
+
+  const dateObject = new Date(timestamp)
+  const date = dateObject.getDate()
+  const month = dateObject.getMonth() + 1
+  const year = dateObject.getFullYear()
+  const hours = dateObject.getHours()
+  const minutes = dateObject.getMinutes()
+  const seconds = dateObject.getSeconds()
+
+  // date & time in YYYY-MM-DD format
+  return JSON.stringify(
+    year +
+      '-' +
+      month +
+      '-' +
+      date +
+      ' ' +
+      hours +
+      ':' +
+      minutes +
+      ':' +
+      seconds
+  )
+}
+
+export function parseTestName(testName: any) {
+  const specName = testName.substring(testName.lastIndexOf('\\') + 1)
+  const splitLine = specName.split('/')
+  const sectionName: string = splitLine.slice(-3)[0]
+  // const subsection: string = splitLine.slice(-2)[0]
+  const testCaseNotSplit = splitLine.slice(-1)[0]
+  const testCase: string = testCaseNotSplit.split('.').slice(0)[0]
+
+  const testCaseObject = { sectionName, testCase }
+  console.log(JSON.stringify(testCaseObject))
+  return testCaseObject
 }

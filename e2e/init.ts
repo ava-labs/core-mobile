@@ -1,5 +1,9 @@
-export { }
 import * as fs from 'fs'
+import {
+  createEmptyTestRun,
+  generateTimestamp,
+  parseTestName
+} from './testrail_generate_tcs'
 
 const detox = require('detox')
 const config = require('../package.json').detox
@@ -13,10 +17,16 @@ beforeAll(async () => {
 })
 
 afterAll(async () => {
-  const testName = testNames[0].split(',')
+  const testName: string = testNames[0].split(',')[0]
   const testResult = testResults[0]
-  fs.writeFileSync('./tests_to_report.txt', `${testName}, ${testResult}\n`, {
-    flag: 'a+'
-  })
+  const nameAndResultsObject = { testName, testPaths, testResult }
+
+  fs.writeFileSync(
+    './tests_to_report.txt',
+    `${JSON.stringify(nameAndResultsObject)}\n`,
+    {
+      flag: 'a+'
+    }
+  )
   await detox.cleanup()
 })

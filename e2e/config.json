@@ -6,5 +6,7 @@
     "testRegex": "\\.e2e\\.ts$",
     "reporters": ["detox/runners/jest/streamlineReporter"],
     "verbose": true,
-    "setupFilesAfterEnv": ["./init.ts"]
+    "setupFilesAfterEnv": ["./init.ts"],
+    "globalTeardown": "./sendResults.ts",
+    "globalSetup": "./setup.ts"
 }

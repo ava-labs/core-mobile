@@ -59,7 +59,9 @@ export default function TextArea(props: Props | Readonly<Props>): JSX.Element {
           }
         ]}>
         {props.heading && (
-          <AvaText.Heading2 textStyle={{ marginBottom: 16 }}>
+          <AvaText.Heading2
+            textStyle={{ marginBottom: 16 }}
+            testID="recoveryPhraseTitle">
             Recovery phrase
           </AvaText.Heading2>
         )}

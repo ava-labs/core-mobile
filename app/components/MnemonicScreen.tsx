@@ -11,6 +11,7 @@ import { Opacity30 } from 'resources/Constants'
 
 type Props = {
   mnemonic: string
+  testID?: string
 }
 
 export default function MnemonicScreen({ mnemonic }: Props) {

@@ -26,15 +26,24 @@ class NewRecoveryPhrasePage {
     return Action.tap(this.iUnderstandBtn)
   }
 
+  // Creates an object of all of the recovery phrase words with an index
   async mnemonicWordsObject() {
-    const attributes = await Action.getAttributes(this.mnemonicWord)
-    const attributesArray = attributes.elements
-    const mnemonicWordArray: string | unknown[] = []
-    attributesArray.forEach(function (item: object) {
-      const textAttribute = item.text
-      mnemonicWordArray.push(textAttribute)
+    const wordNumberAttributes = await element(
+      by.id('mnemonicWordsView')
+    ).getAttributes()
+    const viewAttributesArray = wordNumberAttributes.elements
+    const mnemonicWordIndexArray = []
+    viewAttributesArray.forEach(function (item) {
+      const elementLabel = item.label
+      const mnemonicWord = elementLabel.split('.')[1].replace(' ', '')
+      const mnemonicNum = elementLabel.split('.')[0].replace('.', '')
+      mnemonicWordIndexArray.push({ mnemonicNum, mnemonicWord })
     })
-    const mnemonicObject = Object.assign({}, mnemonicWordArray)
+    const mnemonicMapped = mnemonicWordIndexArray.map(item => ({
+      [item.mnemonicNum]: item.mnemonicWord
+    }))
+    const mnemonicObject = Object.assign({}, ...mnemonicMapped)
+
     return mnemonicObject
   }
 }

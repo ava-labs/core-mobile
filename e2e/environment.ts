@@ -1,5 +1,4 @@
-// eslint-disable-next-line prettier/prettier
-export { }
+export {}
 
 const {
   DetoxCircusEnvironment,
@@ -8,7 +7,7 @@ const {
 } = require('detox/runners/jest-circus')
 
 class CustomDetoxEnvironment extends DetoxCircusEnvironment {
-  constructor(config: unknown, context: unknown) {
+  constructor(config: never, context: any) {
     super(config, context)
     this.testPath = context.testPath
     this.docblockPragmas = context.docblockPragmas
@@ -37,7 +36,12 @@ class CustomDetoxEnvironment extends DetoxCircusEnvironment {
     return [...parentName, parent.name]
   }
 
-  async handleTestEvent(event) {
+  async setup() {
+    await super.setup()
+    this.global.testPaths = this.testPath
+  }
+
+  async handleTestEvent(event: { test?: unknown; name?: any }) {
     const { name } = event
     if ('test_fn_failure'.includes(name)) {
       this.global.testResults = ['fail']
@@ -48,7 +52,9 @@ class CustomDetoxEnvironment extends DetoxCircusEnvironment {
       this.global.testNames = this.getNames(event.test)
     }
     if ('run_finish'.includes(name)) {
+      //this.global.testPaths = this.testPath
       console.log(this.global.testResults + ' this is the test result!')
+      console.log(this.global.testPaths + ' this is the test path!')
     }
   }
 }

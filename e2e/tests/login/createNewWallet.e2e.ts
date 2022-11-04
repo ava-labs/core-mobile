@@ -3,12 +3,12 @@
  * @jest-environment ./jestCustomEnv
  */
 import { by, expect, element, device } from 'detox'
-import Assert from '../helpers/assertions'
-import NewRecoveryPhrasePage from '../pages/newRecoveryPhrase.page'
-import AnalyticsConsentPage from '../pages/analyticsConsent.page'
-import WatchListPage from '../pages/watchlist.page'
-import VerifyPhrasePage from '../pages/verifyPhrase.page'
-import CreatePinPage from '../pages/createPin.page'
+import Assert from '../../helpers/assertions'
+import NewRecoveryPhrasePage from '../../pages/newRecoveryPhrase.page'
+import AnalyticsConsentPage from '../../pages/analyticsConsent.page'
+import WatchListPage from '../../pages/watchlist.page'
+import VerifyPhrasePage from '../../pages/verifyPhrase.page'
+import CreatePinPage from '../../pages/createPin.page'
 
 describe('Create new wallet', () => {
   beforeAll(async () => {
