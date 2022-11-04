@@ -14,9 +14,9 @@ import { Account } from 'store/account'
 import Logger from 'utils/Logger'
 
 /******************************************************************************
- * 3. Parsing of the url string happens here.
+ * Process deep link and start wallet connect session accordingly
  *****************************************************************************/
-export function parseUrl(
+export function processDeeplink(
   url: string,
   origin?: DeepLinkOrigin,
   activeAccount?: Account,
@@ -35,14 +35,7 @@ export function parseUrl(
   }
   if (urlObj && url) {
     try {
-      navigateWithProtocol(
-        urlObj,
-        url,
-        params,
-        origin,
-        activeAccount,
-        activeNetwork
-      )
+      handleLink(urlObj, url, params, origin, activeAccount, activeNetwork)
     } catch (e) {
       Logger.error('failed to process dapp link', e)
       Alert.alert((e as Error)?.message)
@@ -51,10 +44,10 @@ export function parseUrl(
 }
 
 /******************************************************************************
- * 4. Using protocol type to navigate. Additional navigation methods/protocol
+ * Handle link by protocol type. Additional protocol
  * handling can be added here as the app matures
  *****************************************************************************/
-export function navigateWithProtocol(
+function handleLink(
   urlObj: URLParse<string>,
   originalUrl: string,
   params?: ParsedQs,
@@ -85,8 +78,14 @@ export function navigateWithProtocol(
       if (urlObj.hostname === CORE_UNIVERSAL_LINK_HOST) {
         const action = urlObj.pathname.split('/')[1]
         if (action === ACTIONS.WC && params?.uri) {
+          const uri = params.uri.toString()
+
+          if (!walletConnectService.isValidUri(uri)) {
+            return
+          }
+
           walletConnectService.newSession(
-            params.uri.toString(),
+            uri,
             false,
             origin,
             activeAccount,
