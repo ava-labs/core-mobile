@@ -81,7 +81,7 @@ function AccountItem({
   )
 
   const handleLoadBalance = useCallback(() => {
-    dispatch(fetchBalanceForAccount(account.index))
+    dispatch(fetchBalanceForAccount({ accountIndex: account.index }))
     setShowLoader(true)
   }, [account.index, dispatch])
 

@@ -251,7 +251,7 @@ export const addBalanceListeners = (startListening: AppStartListening) => {
   startListening({
     actionCreator: fetchBalanceForAccount,
     effect: async (action, listenerApi) => {
-      handleFetchBalanceForAccount(listenerApi, action.payload)
+      handleFetchBalanceForAccount(listenerApi, action.payload.accountIndex)
     }
   })
 }
