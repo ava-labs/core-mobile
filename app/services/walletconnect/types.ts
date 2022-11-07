@@ -46,34 +46,19 @@ export enum WalletConnectRequest {
 export const PROTOCOLS = {
   HTTP: 'http',
   HTTPS: 'https',
-  WC: 'wc',
-  ETHEREUM: 'ethereum',
-  DAPP: 'dapp',
-  METAMASK: 'metamask'
-}
-
-export const ACTIONS = {
-  DAPP: 'dapp',
-  SEND: 'send',
-  APPROVE: 'approve',
-  PAYMENT: 'payment',
-  FOCUS: 'focus',
-  EMPTY: '',
   WC: 'wc'
 }
 
-export const PREFIXES = {
-  [ACTIONS.DAPP]: 'https://',
-  [ACTIONS.SEND]: 'ethereum:',
-  [ACTIONS.APPROVE]: 'ethereum:',
-  [ACTIONS.FOCUS]: '',
-  [ACTIONS.EMPTY]: ''
+export const ACTIONS = {
+  WC: 'wc'
 }
 
 export interface MessageAction {
   id?: string | number
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   result?: any
   error?: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   displayData: any
   method: string
   site: PeerMetadata

@@ -38,8 +38,8 @@ import { selectIsLoadingBalances } from 'store/balance'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AppNavigation from 'navigation/AppNavigation'
 import { getEvmProvider } from 'services/network/utils/providerUtils'
-import { parseUrl } from 'navigation/useDeepLinking'
 import { NetworkVMType } from '@avalabs/chains-sdk'
+import { processDeeplink } from './processDeepLinking'
 
 interface AdditionalMessageParams {
   data?: string
@@ -98,23 +98,12 @@ export const DappConnectionContextProvider = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  useEffect(() => {
-    InteractionManager.runAfterInteractions(() => {
-      if (
-        [WalletState.INACTIVE, WalletState.NONEXISTENT].includes(walletState) &&
-        pendingDeepLink
-      ) {
-        appNavHook?.resetNavToRoot()
-      }
-    })
-  }, [appNavHook, pendingDeepLink, walletState])
-
   /******************************************************************************
-   * 1. Start listeners that will receive the deep link url
+   * Start listeners that will receive the deep link url
    *****************************************************************************/
   useEffect(() => {
     // triggered if app is running
-    Linking.addEventListener('url', ({ url }) => {
+    const listener = Linking.addEventListener('url', ({ url }) => {
       setPendingDeepLink({ url, origin: DeepLinkOrigin.ORIGIN_DEEPLINK })
     })
 
@@ -127,14 +116,18 @@ export const DappConnectionContextProvider = ({
     }
 
     checkInitialUrl()
+
+    return () => {
+      listener.remove()
+    }
   }, [])
 
   /******************************************************************************
-   * 2. Wait for the app to become unlocked before we handle it.
+   * Process deep link if there is one pending and app is unlocked
    *****************************************************************************/
   useEffect(() => {
     if (pendingDeepLink && isWalletActive && activeAccount && activeNetwork) {
-      parseUrl(
+      processDeeplink(
         pendingDeepLink?.url,
         pendingDeepLink?.origin,
         activeAccount,
@@ -145,9 +138,9 @@ export const DappConnectionContextProvider = ({
     }
   }, [isWalletActive, pendingDeepLink, activeAccount, activeNetwork])
 
-  /**
-   * We need to wait for app to become ready
-   */
+  /******************************************************************************
+   * Process dapp event if there is one pending and app is unlocked
+   *****************************************************************************/
   useEffect(() => {
     if (
       dappEvent &&
@@ -171,9 +164,9 @@ export const DappConnectionContextProvider = ({
     appNavHook?.navigation?.current
   ])
 
-  /**
-   * If these changes we need to update the dapp sessions
-   */
+  /******************************************************************************
+   * Update dapp sessions if active address or chain id changes
+   *****************************************************************************/
   useEffect(() => {
     if (
       activeAccount &&
@@ -382,6 +375,7 @@ export const DappConnectionContextProvider = ({
           return { hash: resultHash }
         })
         .catch(e => {
+          Logger.error('failed to approve transaction call', JSON.stringify(e))
           const transactionHash =
             e?.transactionHash ?? e?.error?.transasctionHash
           if (transactionHash) {

@@ -1,5 +1,6 @@
 import React, { FC, useContext } from 'react'
-import { ScrollView, View } from 'react-native'
+import { View } from 'react-native'
+import { ScrollView } from 'react-native-gesture-handler'
 import { ApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
@@ -15,11 +16,13 @@ const SignDataV4: FC<Props> = ({ action }) => {
   const data = action?.displayData
   const { types, primaryType, ...dataWithoutTypes } = data
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const renderRow = (rowData: any) => {
-    return Object.keys(rowData).map(key => {
+    return Object.keys(rowData).map((key, index) => {
       if (typeof rowData[key] === 'object') {
         return (
           <View
+            key={index}
             style={{
               flex: 1,
               justifyContent: 'center',
@@ -44,21 +47,19 @@ const SignDataV4: FC<Props> = ({ action }) => {
   }
 
   return (
-    <View>
+    <View style={{ flex: 1 }}>
       <Space y={16} />
       <AvaText.Body2>Message:</AvaText.Body2>
       <Space y={8} />
-      <View style={{ backgroundColor: theme.colorBg2, padding: 8 }}>
-        <ScrollView
-          style={{
-            maxHeight: 250,
-            backgroundColor: theme.colorBg3,
-            borderRadius: 8,
-            padding: 8
-          }}>
-          {renderRow(dataWithoutTypes)}
-        </ScrollView>
-      </View>
+      <ScrollView
+        style={{
+          maxHeight: 250,
+          backgroundColor: theme.colorBg3,
+          borderRadius: 8,
+          padding: 8
+        }}>
+        {renderRow(dataWithoutTypes)}
+      </ScrollView>
     </View>
   )
 }

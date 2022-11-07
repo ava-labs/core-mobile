@@ -28,7 +28,7 @@ export interface SwapExactTokensForTokenData {
   to: string
 }
 
-export async function swapExactTokensForTokenHandler(
+export async function swapTokensForTokens(
   findToken: FindToken,
   network: Network,
   /**
@@ -44,6 +44,7 @@ export async function swapExactTokensForTokenHandler(
 ): Promise<SwapExactTokensForTokenDisplayValues> {
   const firstTokenInPath = data.path[0]
   const lastTokenInPath = data.path[data.path.length - 1]
+
   const path: erc20PathToken[] = await Promise.all(
     data.path.map(async address => {
       const pathToken: TokenWithBalanceERC20 = await findToken(
@@ -55,7 +56,7 @@ export async function swapExactTokensForTokenHandler(
         pathToken.decimals
       ) {
         const amount: BigNumber =
-          data.amountIn || data.amountInMax || data.amountInMax
+          data.amountInMin || data.amountIn || data.amountInMax
         const bn = hexToBN(amount.toHexString())
         const amountValue = bigToLocaleString(
           bnToBig(bn, pathToken.decimals),
@@ -115,7 +116,7 @@ export async function swapExactTokensForTokenHandler(
 
 export const SwapExactTokensForTokenParser: ContractParser = [
   ContractCall.SWAP_EXACT_TOKENS_FOR_TOKENS,
-  swapExactTokensForTokenHandler
+  swapTokensForTokens
 ]
 
 /**
@@ -125,5 +126,5 @@ export const SwapExactTokensForTokenParser: ContractParser = [
  */
 export const SwapTokensForExactTokensParser: ContractParser = [
   ContractCall.SWAP_TOKENS_FOR_EXACT_TOKENS,
-  swapExactTokensForTokenHandler
+  swapTokensForTokens
 ]

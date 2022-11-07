@@ -44,7 +44,7 @@ function DappQrReader({ onScanned }: Props) {
           vibrate
         />
       )}
-      <View style={{ alignSelf: 'baseline' }}>
+      <View style={{ alignSelf: 'baseline', marginLeft: 14 }}>
         <Popable
           content={PopableContent({
             message: `Use this to manually connect`

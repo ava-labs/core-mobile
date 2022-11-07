@@ -86,6 +86,10 @@ yarn link
 
 https://whimsical.com/mobile-navigation-system-4WaXLt2DgAutCmbfFF6wpS
 
+## Wallet Connect Flows
+
+https://whimsical.com/wallet-connect-flows-9QqTTDNdktBePx6vDR9oeX
+
 ## Releasing apps
 
 ### Android

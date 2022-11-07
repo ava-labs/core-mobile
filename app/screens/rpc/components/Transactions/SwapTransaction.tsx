@@ -43,7 +43,10 @@ export function SwapTransaction({
         <Space y={8} />
         <Row style={{ justifyContent: 'space-between' }}>
           <AvaText.Body3 color={theme.colorText1}>Contract</AvaText.Body3>
-          <TokenAddress textColor={theme.colorText1} address={toAddress} />
+          <TokenAddress
+            textColor={theme.colorText1}
+            address={toAddress ?? ''}
+          />
         </Row>
       </View>
       <AvaText.Body2>Balance Change</AvaText.Body2>
@@ -83,7 +86,7 @@ export function SwapTransaction({
           </View>
         </Row>
         <Row style={txStyles.arrow}>
-          <ArrowSVG size={16} color={theme.colorIcon1} rotate={0} />
+          <ArrowSVG size={11} color={theme.colorIcon1} rotate={-45} />
         </Row>
         <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
           <Row style={{ alignItems: 'center' }}>
@@ -97,7 +100,7 @@ export function SwapTransaction({
           </Row>
           <View style={{ alignItems: 'flex-end' }}>
             <AvaText.Body2 color={theme.colorText1}>
-              {receivingToken.amountOut?.value} {sentToken?.symbol}
+              {receivingToken.amountOut?.value} {receivingToken?.symbol}
             </AvaText.Body2>
             <AvaText.Body3 currency>
               {receivingToken?.amountCurrencyValue}
