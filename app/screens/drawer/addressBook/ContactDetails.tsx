@@ -11,18 +11,25 @@ import { Contact } from 'Repo'
 import TokenAddress from 'components/TokenAddress'
 import TextFieldBg from 'components/styling/TextFieldBg'
 import { titleToInitials } from 'utils/Utils'
+import { Row } from 'components/Row'
+import ShareSVG from 'components/svg/ShareSVG'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import { shareContact } from 'screens/drawer/addressBook/utils'
 
 const ContactDetails = ({
   contact,
   onChange,
   onDelete,
+  onShareDialog,
   editable = false
 }: {
   contact: Contact
   onChange: (contact: Contact) => void
   onDelete: (contact: Contact) => void
+  onShareDialog: (contact: Contact) => void
   editable?: boolean
 }) => {
+  const theme = useApplicationContext().theme
   const handleNameChange = useCallback(
     (name: string) => {
       onChange({
@@ -52,6 +59,14 @@ const ContactDetails = ({
     },
     [contact, onChange]
   )
+
+  const handleShare = useCallback(() => {
+    if (contact.address && contact.addressBtc) {
+      onShareDialog(contact)
+    } else {
+      shareContact(contact.title, contact.address, contact.addressBtc)
+    }
+  }, [contact, onShareDialog])
 
   return (
     <SafeAreaProvider style={{ flex: 1 }}>
@@ -90,6 +105,15 @@ const ContactDetails = ({
             {!!contact.addressBtc && (
               <AddressView title={'Address BTC'} address={contact.addressBtc} />
             )}
+            <Space y={34} />
+            <Row style={{ alignItems: 'center' }}>
+              <AvaButton.TextLarge
+                style={{ alignSelf: 'flex-start' }}
+                onPress={handleShare}>
+                Share this Contact
+              </AvaButton.TextLarge>
+              <ShareSVG color={theme.colorPrimary1} />
+            </Row>
           </>
         )}
       </ScrollView>
