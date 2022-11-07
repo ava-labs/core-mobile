@@ -68,4 +68,9 @@ allprojects {
             }
         }
     }
+    configurations.all {
+        resolutionStrategy {
+            force 'com.facebook.react:react-native:0.70.1'
+        }
+    }
 }
