@@ -29,7 +29,6 @@ import useInAppBrowser from 'hooks/useInAppBrowser'
 import FlexSpacer from 'components/FlexSpacer'
 import { Popable } from 'react-native-popable'
 import { SwapTransaction } from 'screens/rpc/components/Transactions/SwapTransaction'
-import { BottomSheetScrollView } from '@gorhom/bottom-sheet'
 import { showSnackBarCustom } from 'components/Snackbar'
 import TransactionToast, {
   TransactionToastType
@@ -38,6 +37,7 @@ import * as Sentry from '@sentry/react-native'
 import { PopableContent } from 'components/PopableContent'
 import { PopableLabel } from 'components/PopableLabel'
 import { BigNumber } from 'ethers'
+import { ScrollView } from 'react-native-gesture-handler'
 
 interface Props {
   onApprove: (tx: Transaction) => Promise<{ hash?: string; error?: unknown }>
@@ -60,6 +60,7 @@ const SignTransaction: FC<Props> = ({
   const [submitting, setSubmitting] = useState(false)
   const [showData, setShowData] = useState(false)
   const [showCustomSpendLimit, setShowCustomSpendLimit] = useState(false)
+
   const {
     contractType,
     selectedGasFee,
@@ -67,13 +68,11 @@ const SignTransaction: FC<Props> = ({
     setSpendLimit,
     customSpendLimit,
     transaction,
-    ...rest
+    displayData
   } = useExplainTransaction(dappEvent)
+
   const explorerUrl =
     activeNetwork && hash && getExplorerAddressByNetwork(activeNetwork, hash)
-  const displayData = {
-    ...rest
-  } as TransactionDisplayValues
 
   const handleGasPriceChange = useCallback(
     (gasPrice: BigNumber, feePreset: FeePreset) => {
@@ -81,9 +80,14 @@ const SignTransaction: FC<Props> = ({
     },
     [displayData?.gasLimit, setCustomFee]
   )
+
   const handleGasLimitChange = useCallback(
     (customGasLimit: number) => {
-      setCustomFee(displayData?.gasPrice, selectedGasFee, customGasLimit)
+      setCustomFee(
+        displayData?.gasPrice ?? BigNumber.from(0),
+        selectedGasFee,
+        customGasLimit
+      )
     },
     [displayData?.gasPrice, selectedGasFee, setCustomFee]
   )
@@ -187,12 +191,7 @@ const SignTransaction: FC<Props> = ({
   }
 
   return (
-    <BottomSheetScrollView
-      style={{
-        flex: 1,
-        paddingTop: 16,
-        paddingHorizontal: 14
-      }}>
+    <ScrollView contentContainerStyle={txStyles.scrollView}>
       <View>
         <AvaText.Heading1>{txTitle()}</AvaText.Heading1>
         <Space y={16} />
@@ -308,7 +307,6 @@ const SignTransaction: FC<Props> = ({
               paddingHorizontal: 24
             }}>
             <AvaButton.SecondaryLarge
-              style={{ marginBottom: 32 }}
               onPress={() => explorerUrl && openUrl(explorerUrl)}>
               View on Explorer
             </AvaButton.SecondaryLarge>
@@ -345,11 +343,17 @@ const SignTransaction: FC<Props> = ({
           </View>
         </>
       )}
-    </BottomSheetScrollView>
+    </ScrollView>
   )
 }
 
 export const txStyles = StyleSheet.create({
+  scrollView: {
+    paddingTop: 16,
+    paddingHorizontal: 14,
+    paddingBottom: 70,
+    flexGrow: 1
+  },
   info: {
     justifyContent: 'space-between',
     marginTop: 8,

@@ -8,7 +8,6 @@ import { useNavigation } from '@react-navigation/native'
 import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet'
 import AvaxSheetHandle from 'components/AvaxSheetHandle'
 import TabViewBackground from 'components/TabViewBackground'
-import { SafeAreaView } from 'react-native-safe-area-context'
 
 const snapPoints = ['90%']
 
@@ -75,13 +74,11 @@ const RpcMethodsUI = () => {
       backgroundComponent={TabViewBackground}
       enableContentPanningGesture={false}
       onClose={goBack}>
-      <SafeAreaView style={{ flex: 1 }}>
-        {(dappEvent?.eventType === RPC_EVENT.SIGN && renderSignMessage()) ||
-          (dappEvent?.eventType === RPC_EVENT.SESSION &&
-            renderSessionRequest()) ||
-          (dappEvent?.eventType === RPC_EVENT.TRANSACTION &&
-            renderSignTransaction())}
-      </SafeAreaView>
+      {(dappEvent?.eventType === RPC_EVENT.SIGN && renderSignMessage()) ||
+        (dappEvent?.eventType === RPC_EVENT.SESSION &&
+          renderSessionRequest()) ||
+        (dappEvent?.eventType === RPC_EVENT.TRANSACTION &&
+          renderSignTransaction())}
     </BottomSheet>
   )
 }

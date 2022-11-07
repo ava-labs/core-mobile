@@ -25,7 +25,7 @@ export interface SwapAVAXForExactTokensData {
   to: string
 }
 
-export async function swapAVAXForExactTokens(
+export async function swapAVAXForTokens(
   findToken: FindToken,
   network: Network,
   /**
@@ -85,10 +85,10 @@ export async function swapAVAXForExactTokens(
 
 export const SwapAvaxForExactTokensParser: ContractParser = [
   ContractCall.SWAP_AVAX_FOR_EXACT_TOKENS,
-  swapAVAXForExactTokens
+  swapAVAXForTokens
 ]
 
 export const SwapExactAvaxForTokensParser: ContractParser = [
   ContractCall.SWAP_EXACT_AVAX_FOR_TOKENS,
-  swapAVAXForExactTokens
+  swapAVAXForTokens
 ]
