@@ -23,7 +23,11 @@ import {
   setEditingContact
 } from 'store/addressBook'
 import WarningModal from 'components/WarningModal'
-import { getContactValidationError } from 'screens/drawer/addressBook/utils'
+import {
+  getContactValidationError,
+  shareContact
+} from 'screens/drawer/addressBook/utils'
+import ContactShareModal from 'screens/drawer/addressBook/components/ContactShareModal'
 import { AddressBookScreenProps } from '../types'
 
 export type AddressBookStackParamList = {
@@ -35,6 +39,7 @@ export type AddressBookStackParamList = {
     isContactValid?: boolean
   }
   [AppNavigation.AddressBook.DeleteConfirm]: { contactId: string }
+  [AppNavigation.AddressBook.Share]: { contactId: string }
 }
 const Stack = createStackNavigator<AddressBookStackParamList>()
 
@@ -76,6 +81,11 @@ const AddressBookStack = () => {
         name={AppNavigation.AddressBook.DeleteConfirm}
         component={DeleteConfirmModal}
       />
+      <Stack.Screen
+        options={{ presentation: 'transparentModal', headerShown: false }}
+        name={AppNavigation.AddressBook.Share}
+        component={ShareContactModal}
+      />
     </Stack.Navigator>
   )
 }
@@ -86,7 +96,7 @@ type ContactDetailsScreenProps = AddressBookScreenProps<
 
 const ContactDetailsComp = () => {
   const dispatch = useDispatch()
-  const { setParams, setOptions, navigate } =
+  const { setParams, setOptions, navigate, push } =
     useNavigation<ContactDetailsScreenProps['navigation']>()
 
   const { params } = useRoute<ContactDetailsScreenProps['route']>()
@@ -162,6 +172,13 @@ const ContactDetailsComp = () => {
     [navigate]
   )
 
+  const showShareDialog = useCallback(
+    ({ id }: Contact) => {
+      push(AppNavigation.AddressBook.Share, { contactId: id })
+    },
+    [push]
+  )
+
   const onChange = useCallback(
     (c: Contact) => {
       dispatch(setEditingContact(c))
@@ -178,6 +195,7 @@ const ContactDetailsComp = () => {
       }
       onChange={onChange}
       onDelete={deleteContact}
+      onShareDialog={showShareDialog}
     />
   )
 }
@@ -251,6 +269,36 @@ const DeleteConfirmModal = () => {
       dismissText="Cancel"
       onAction={onDelete}
       onDismiss={onCancel}
+    />
+  )
+}
+
+type ShareModalProps = AddressBookScreenProps<
+  typeof AppNavigation.AddressBook.Share
+>
+
+const ShareContactModal = () => {
+  const { pop } = useNavigation<ShareModalProps['navigation']>()
+  const { params } = useRoute<ShareModalProps['route']>()
+  const contact = useSelector(selectContact(params.contactId))
+
+  const onShare = (
+    contactName: string,
+    cChainAddress?: string,
+    btcAddress?: string
+  ) => {
+    shareContact(contactName, cChainAddress, btcAddress)
+  }
+
+  const onCancel = () => {
+    pop() // back to Contact screen
+  }
+
+  return (
+    <ContactShareModal
+      contact={contact}
+      onCancel={onCancel}
+      onContinue={onShare}
     />
   )
 }
