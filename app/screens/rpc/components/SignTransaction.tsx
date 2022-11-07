@@ -177,7 +177,6 @@ const SignTransaction: FC<Props> = ({
   }
 
   function txTitle() {
-    console.log('contractType', contractType)
     switch (contractType) {
       case ContractCall.APPROVE:
         return 'Token Spend Approval'
