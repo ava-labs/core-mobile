@@ -37,17 +37,17 @@ export interface PeerMetadata {
 }
 
 export interface TransactionDisplayValues {
-  fromAddress: string
-  toAddress: string
-  gasPrice: BigNumber
+  fromAddress?: string
+  toAddress?: string
+  gasPrice?: BigNumber
   contractType?: ContractCall
   gasLimit?: number
   fee?: string
   feeInCurrency?: number
   site?: PeerMetadata
   description?: ethers.utils.TransactionDescription
-  displayValue: string
-  bnFee: BigNumber
+  displayValue?: string
+  bnFee?: BigNumber
   [key: string]: any // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 export interface Transaction {
@@ -93,6 +93,7 @@ export enum ContractCall {
   SWAP_AVAX_FOR_EXACT_TOKENS = 'swapAVAXForExactTokens',
   SWAP_EXACT_TOKENS_FOR_AVAX = 'swapExactTokensForAVAX',
   SWAP_EXACT_AVAX_FOR_TOKENS = 'swapExactAVAXForTokens',
+  SWAP_TOKENS_FOR_EXACT_AVAX = 'swapTokensForExactAVAX',
   ADD_LIQUIDITY = 'addLiquidity',
   ADD_LIQUIDITY_AVAX = 'addLiquidityAVAX',
   UNKNOWN = 'UNKNOWN'

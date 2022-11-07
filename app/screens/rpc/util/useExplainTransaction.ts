@@ -48,6 +48,7 @@ export function useExplainTransaction(dappEvent?: DappEvent) {
   const findToken = useFindToken()
 
   const [transaction, setTransaction] = useState<Transaction | null>(null)
+
   const txParams = (dappEvent?.payload?.params || [])[0]
   const peerMeta = dappEvent?.peerMeta
   const [customGas, setCustomGas] = useState<{
@@ -75,20 +76,23 @@ export function useExplainTransaction(dappEvent?: DappEvent) {
         tokenDecimals: activeNetwork?.networkToken.decimals
       })
 
-      if (transaction) {
+      // update transaction
+      setTransaction(currentTransaction => {
+        if (currentTransaction === null) return null
+
         const updatedTransaction = {
-          ...transaction,
+          ...currentTransaction,
           txParams: {
-            ...transaction.txParams,
+            ...currentTransaction.txParams,
             gasLimit: feeDisplayValues.gasLimit,
             gasPrice: feeDisplayValues.gasPrice.toHexString() // test this
           }
         }
-        // update transaction
-        setTransaction(updatedTransaction)
-      }
+
+        return updatedTransaction
+      })
     },
-    [tokenPrice, transaction, activeNetwork?.networkToken?.decimals]
+    [tokenPrice, activeNetwork?.networkToken?.decimals]
   )
 
   const setSpendLimit = useCallback(
@@ -168,7 +172,7 @@ export function useExplainTransaction(dappEvent?: DappEvent) {
       // Get parser based on function name
       const parser = contractParserMap.get(functionName)
 
-      if (dappEvent && dappEvent.payload && txParams && isTxParams(txParams)) {
+      if (dappEvent?.payload && txParams && isTxParams(txParams)) {
         // We need active network to continue
         if (!activeNetwork) {
           throw Error('no network')
@@ -256,7 +260,7 @@ export function useExplainTransaction(dappEvent?: DappEvent) {
   }, [
     activeNetwork,
     avaxToken,
-    dappEvent,
+    dappEvent?.payload,
     findToken,
     networkFees,
     peerMeta,
@@ -272,8 +276,8 @@ export function useExplainTransaction(dappEvent?: DappEvent) {
     }
   }, [transaction])
 
-  return useMemo(() => {
-    const feeDisplayValues =
+  const feeDisplayValues = useMemo(() => {
+    return (
       networkFees &&
       transaction?.displayValues.gasLimit &&
       calculateGasAndFees({
@@ -282,27 +286,36 @@ export function useExplainTransaction(dappEvent?: DappEvent) {
         tokenPrice,
         tokenDecimals: activeNetwork.networkToken.decimals
       })
-    return {
+    )
+  }, [
+    activeNetwork.networkToken.decimals,
+    customGas?.gasLimit,
+    customGas?.gasPrice,
+    networkFees,
+    tokenPrice,
+    transaction?.displayValues.gasLimit
+  ])
+
+  const displayData: TransactionDisplayValues = useMemo(() => {
+    const data = {
       ...transaction?.displayValues,
       ...(transaction?.txParams ? { txParams: transaction?.txParams } : {}),
-      ...feeDisplayValues,
-      transaction,
-      setCustomFee,
-      setSpendLimit,
-      displaySpendLimit,
-      customSpendLimit,
-      selectedGasFee
+      ...feeDisplayValues
     }
-  }, [
+
+    delete data.contractType
+
+    return data
+  }, [feeDisplayValues, transaction?.displayValues, transaction?.txParams])
+
+  return {
+    displayData,
+    contractType: transaction?.displayValues?.contractType,
     transaction,
-    customGas,
-    tokenPrice,
     setCustomFee,
     setSpendLimit,
-    customSpendLimit,
-    selectedGasFee,
     displaySpendLimit,
-    networkFees,
-    activeNetwork.networkToken.decimals
-  ])
+    customSpendLimit,
+    selectedGasFee
+  }
 }

@@ -1,5 +1,6 @@
 import React, { FC, useContext } from 'react'
-import { ScrollView, View } from 'react-native'
+import { View } from 'react-native'
+import { ScrollView } from 'react-native-gesture-handler'
 import { ApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
@@ -25,12 +26,15 @@ const SignData: FC<Props> = ({ action }) => {
       <AvaText.Body2>Message:</AvaText.Body2>
       <View style={{ backgroundColor: theme.colorBg1 }}>
         <ScrollView>
-          {data?.map((x: any, i: number) => (
-            <View key={i}>
-              <AvaText.Body2>{x.name}: </AvaText.Body2>
-              <AvaText.Body3>{x.value}</AvaText.Body3>
-            </View>
-          ))}
+          {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            data?.map((x: any, i: number) => (
+              <View key={i}>
+                <AvaText.Body2>{x.name}: </AvaText.Body2>
+                <AvaText.Body3>{x.value}</AvaText.Body3>
+              </View>
+            ))
+          }
         </ScrollView>
       </View>
     </>
