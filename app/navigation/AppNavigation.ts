@@ -141,7 +141,8 @@ enum AddressBookScreens {
   List = 'AddressBookScreens.List',
   Add = 'AddressBookScreens.Add',
   Details = 'AddressBookScreens.Details',
-  DeleteConfirm = 'AddressBookScreens.DeleteConfirm'
+  DeleteConfirm = 'AddressBookScreens.DeleteConfirm',
+  Share = 'AddressBookScreens.Share'
 }
 
 enum BridgeScreens {
