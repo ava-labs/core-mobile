@@ -52,7 +52,7 @@ class CustomDetoxEnvironment extends DetoxCircusEnvironment {
       this.global.testNames = this.getNames(event.test)
     }
     if ('run_finish'.includes(name)) {
-      //this.global.testPaths = this.testPath
+      this.global.testPaths = this.testPath
       console.log(this.global.testResults + ' this is the test result!')
       console.log(this.global.testPaths + ' this is the test path!')
     }

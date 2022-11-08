@@ -4,11 +4,12 @@ import readline from 'readline'
 import TestRail from '@dlenroc/testrail'
 
 const projectId = Number(process.env.TESTRAIL_PROJECT_ID)
+const password = String(process.env.TESTRAIL_API_KEY)
 
 export const api = new TestRail({
   host: 'https://avalabs.testrail.net',
   username: 'mobiledevs@avalabs.org',
-  password: process.env.TESTRAIL_API_KEY
+  password: password
 })
 
 export async function createEmptyTestRun(testRunName: any, description: any) {
@@ -95,7 +96,9 @@ async function createNewTestSection(sectionName: any) {
 
 // Todo grab the test case names using the method
 export async function sectionsAndCases() {
-  const fileStream = fs.createReadStream('./test_results.txt')
+  const fileStream = fs.createReadStream(
+    '/Users/tyler.hackett/avalanche-wallet-apps/tests_to_report.txt'
+  )
   const rl = readline.createInterface({
     input: fileStream,
     crlfDelay: Infinity
@@ -103,17 +106,20 @@ export async function sectionsAndCases() {
   const testCaseSectionsAndCases = []
 
   for await (const line of rl) {
-    const splitLine = line.split('/')
-    const sectionName: any = splitLine.slice(-4)[0]
-    const subsection: any = splitLine.slice(-2)[0]
-    const testCaseNotSplit = splitLine.slice(-1)[0]
-    const testCase: any = testCaseNotSplit.split('.').slice(0)[0]
+    const splitLineObject = JSON.parse(line)
+    const sectionName: any = splitLineObject.sectionName
+    const subsection: any = splitLineObject.subsection
+    const testCase = splitLineObject.testCase
 
     const testCaseObject = { sectionName, subsection, testCase }
 
     testCaseSectionsAndCases.push(testCaseObject)
   }
-  // console.log(testCaseSectionsAndCases)
+  // console.log(
+  //   JSON.stringify(testCaseSectionsAndCases) +
+  //     ' this is testCaseSectionsAndCases'
+  // )
+
   return testCaseSectionsAndCases
 }
 
@@ -158,6 +164,7 @@ export async function createNewTestSectionsAndCases(casesArray: any) {
 
 function getSectionsAndSubsFromTestRun(casesAndSections: any[]) {
   const output: { testRunSection: any; testSubsection: any }[] = []
+
   casesAndSections.forEach(function (caseAndSection: {
     sectionName: any
     subsection: any
@@ -188,6 +195,7 @@ function getSectionsAndSubsFromTestRun(casesAndSections: any[]) {
     })
     sectionsAndSubsections.push({ section, subsections })
   })
+
   return sectionsAndSubsections
 }
 
@@ -247,12 +255,16 @@ function createNewSubsections(
   })
 
   subsectionsToAddSet.forEach(async function (subsection) {
-    const subsectionName = subsection.newSubsection
-    const sectionID = subsection.testrailSectionID
-    await createSubsection(sectionID, subsectionName)
-    console.log(
-      `${subsectionName} is a new subsection and was added to the test suite`
-    )
+    if (subsection.newSubsection !== undefined) {
+      const subsectionName = subsection.newSubsection
+      const sectionID = subsection.testrailSectionID
+      await createSubsection(sectionID, subsectionName)
+      console.log(
+        `${subsectionName} is a new subsection and was added to the test suite`
+      )
+    } else {
+      console.log('Theres probably no subsection to add...')
+    }
   })
 }
 
@@ -289,11 +301,9 @@ async function newTCTitles() {
 
   allTestCasesFromTestRun.forEach(function (title) {
     const testTitle = title.testCase
-    const testSection = title.subsection
+    const testSection = title.sectionName
     allTestCaseTitlesFromRun.push({ testTitle, testSection })
   })
-
-  // console.log(allTestCasesFromTestRun)
 
   allTestCaseTitlesFromRun.filter(function (item) {
     testCasesFromTestrail.indexOf(item.testTitle) === -1
@@ -301,14 +311,13 @@ async function newTCTitles() {
       : undefined
   })
 
-  // console.log(allTestCaseTitlesFromRun)
   return allTestCaseTitlesFromRun
 }
 
-async function createSubsection(parentID: number, subSectionName: string) {
+async function createSubsection(parentID: number, sectionName: string) {
   const content = {
     parent_id: parentID,
-    name: subSectionName
+    name: sectionName
   }
   await api.addSection(projectId, content)
 }
@@ -355,14 +364,20 @@ async function getAllTestCasesFromTestrail() {
 }
 
 async function testCasesFromTestRun() {
-  const casesArray: { testCase: string; subsection: string }[] = []
+  const casesArray: {
+    testCase: string
+    subsection: string
+    sectionName: string
+  }[] = []
   const casesAndSections = await sectionsAndCases()
   casesAndSections.forEach(function (caseAndSection) {
+    // console.log(JSON.stringify(caseAndSection) + ' this is caseAndSection')
     const testCase = caseAndSection.testCase
     const subsection = caseAndSection.subsection
-    casesArray.push({ testCase, subsection })
+    const sectionName = caseAndSection.sectionName
+    casesArray.push({ testCase, sectionName, subsection })
   })
-  // console.log(casesArray)
+  // console.log(JSON.stringify(casesArray) + ' cases from test run are here!')
   return casesArray
 }
 
@@ -370,24 +385,23 @@ async function createTestCases(
   testRunNames: Array<any>,
   testrailSections: Array<any>
 ) {
-  const noDupsTCs: { sectionID: any; testCaseTitle: any }[] = []
+  const noDupsTCs: { sectionID: any; testTitle: any }[] = []
   testRunNames.forEach(function (testCase) {
     testrailSections.forEach(function (testrailCase) {
       if (testCase.testSection === testrailCase.sectionName) {
         const sectionID = testrailCase.sectionID
-        const testCaseTitle = testCase.testTitle
-        noDupsTCs.push({ sectionID, testCaseTitle })
+        const testTitle = testCase.testTitle
+        noDupsTCs.push({ sectionID, testTitle })
       }
     })
   })
-  // console.log(noDupsTCs)
+  // console.log(noDupsTCs + ' test run names')
   // Removes the duplicates from the array of objects due to an edge case where two subsections from different sections could have the same title
   noDupsTCs.forEach(async function (testCase) {
     const myNewTestCases = []
     const sectionID = testCase.sectionID
-    const myTestCaseTitle = testCase.testCaseTitle
+    const myTestCaseTitle = testCase.testTitle
     const testCasesInSection = await getTestCasesBySection(sectionID)
-    // console.log(testCasesInSection)
     // console.log(myTestCaseTitle)
     const index = testCasesInSection.findIndex(
       x => x.testCaseTitle === myTestCaseTitle && x.sectionID === sectionID
@@ -463,12 +477,11 @@ export function generateTimestamp() {
 export function parseTestName(testName: any) {
   const specName = testName.substring(testName.lastIndexOf('\\') + 1)
   const splitLine = specName.split('/')
-  const sectionName: string = splitLine.slice(-3)[0]
-  // const subsection: string = splitLine.slice(-2)[0]
+  const sectionName: string = splitLine.slice(-4)[0]
+  const subsection: string = splitLine.slice(-2)[0]
   const testCaseNotSplit = splitLine.slice(-1)[0]
   const testCase: string = testCaseNotSplit.split('.').slice(0)[0]
 
-  const testCaseObject = { sectionName, testCase }
-  console.log(JSON.stringify(testCaseObject))
+  const testCaseObject = { sectionName, subsection, testCase }
   return testCaseObject
 }

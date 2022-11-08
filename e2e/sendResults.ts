@@ -1,18 +1,20 @@
 /* eslint-disable no-var */
 import * as fs from 'fs'
-import { getTestCaseId } from './testrail_generate_tcs'
+import {
+  getTestCaseId,
+  api,
+  createNewTestSectionsAndCases
+} from './testrail_generate_tcs'
 
 const teardown = async () => {
   // Clears the text file for the next run
-  fs.writeFile('./test_results.txt', '', { flag: 'w' }, err => {
-    console.log(err)
-  })
+  // fs.writeFile('./test_results.txt', '', { flag: 'w' }, err => {
+  //   console.log(err)
+  // })
   console.log('called after all test suites')
 }
 
 async function parseResultsFile() {
-  const runId = Number(process.env.RUN_ID)
-
   // Reads the text file to get the results from
   const resultsArray = fs
     .readFileSync('./test_results.txt')
@@ -25,6 +27,8 @@ async function parseResultsFile() {
     jsonResultsArray.push(testResultObject)
   }
 
+  await createNewTestSectionsAndCases(jsonResultsArray)
+
   const testIdArrayForTestrail = []
   const casesToAddToRun = []
   for (const result of jsonResultsArray) {
@@ -32,7 +36,7 @@ async function parseResultsFile() {
       // Todo add more status ids for different results such as skipped tests or untested
       const theResult = JSON.parse(result)
       const testResult = theResult.testResult
-      if (testResult === 'true') {
+      if (testResult === 'pass') {
         var statusId = 1
       } else {
         var statusId = 5
@@ -57,6 +61,7 @@ async function parseResultsFile() {
 }
 
 async function sendResults() {
+  const runId = Number(process.env.RUN_ID)
   const resultsToSendObject = parseResultsFile()
 
   const testIdArrayForTestrail = (await resultsToSendObject)
@@ -100,12 +105,12 @@ A 'case id' is the permanent test case in our suite, a 'test case id' is a part 
       })
     } else {
       // If the test failed then it adds the error stack as a comment to the test case in testrail
-      var failedTest = await this.getLogFilesForFailedTests(testCaseName)
-      var errorMessage = fs.readFileSync(`./output_logs/${failedTest}`, 'utf8')
+      // var failedTest = await this.getLogFilesForFailedTests(testCaseName)
+      // var errorMessage = fs.readFileSync(`./output_logs/${failedTest}`, 'utf8')
       resultsToSendToTestrail.push({
         case_id: testId,
-        status_id: testRunCaseStatusId,
-        comment: `${errorMessage}`
+        status_id: testRunCaseStatusId
+        //comment: `${errorMessage}`
       })
     }
   }
