@@ -196,19 +196,11 @@ android {
         release {
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
-<<<<<<< Updated upstream
         }
         e2e {
             initWith release
             matchingFallbacks = ['release'] // this is for libraries without an e2e build to know to fall back to release
 
-=======
-            // Detox-specific additions to pro-guard
-        }
-        e2e {
-            initWith release
-            setMatchingFallbacks('release')
->>>>>>> Stashed changes
             // Detox-specific additions to pro-guard
             proguardFile "${rootProject.projectDir}/../node_modules/detox/android/detox/proguard-rules-app.pro"
         }
