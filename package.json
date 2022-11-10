@@ -38,7 +38,7 @@
     "@avalabs/wallets-sdk": "2.8.0-alpha.29",
     "@babel/plugin-syntax-object-rest-spread": "7.8.3",
     "@connectedcars/react-native-slide-charts": "1.0.5",
-    "@dlenroc/testrail": "1.7.1",
+    "@dlenroc/testrail": "1.7.2",
     "@eliav2/react-native-collapsible-view": "1.4.0",
     "@ethereumjs/common": "2.6.2",
     "@ethereumjs/tx": "3.4.0",
