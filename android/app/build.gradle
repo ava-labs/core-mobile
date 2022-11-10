@@ -180,14 +180,6 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
-        release {
-
-        storeFile file('/Users/tyler.hackett/avalanche-wallet-apps/android/avax-wallet.keystore')
-            keyAlias 'avax-wallet'
-            storePassword '%*diBFNHw,bK}g5uP!-S'
-            keyPassword '%*diBFNHw,bK}g5uP!-S'
-        }
-    }
 
     buildTypes {
         debug {
