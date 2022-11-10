@@ -32,8 +32,11 @@ class NewRecoveryPhrasePage {
       by.id('mnemonicWordsView')
     ).getAttributes()
     const viewAttributesArray = wordNumberAttributes.elements
-    const mnemonicWordIndexArray = []
-    viewAttributesArray.forEach(function (item) {
+    const mnemonicWordIndexArray: {
+      mnemonicNum: string
+      mnemonicWord: string
+    }[] = []
+    viewAttributesArray.forEach(function (item: { label: string }) {
       const elementLabel = item.label
       const mnemonicWord = elementLabel.split('.')[1].replace(' ', '')
       const mnemonicNum = elementLabel.split('.')[0].replace('.', '')

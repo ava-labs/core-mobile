@@ -146,7 +146,8 @@ function CurrencyAmountHelper({
         justifyContent: justifyContent || 'flex-start',
         flexShrink: 1,
         alignItems: 'flex-end'
-      }}>
+      }}
+      testID="currencyAmountHelper">
       {value}
       {currency}
     </View>

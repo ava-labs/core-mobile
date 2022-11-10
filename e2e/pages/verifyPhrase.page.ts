@@ -27,7 +27,8 @@ class VerifyPhrasePage {
     const wordsToConfirm: string[] = []
 
     wordNumberArray.forEach(myWordNumber => {
-      const confirmationWord = recoveryPhraseObject[`${myWordNumber}`]
+      const confirmationWord =
+        recoveryPhraseObject[myWordNumber as keyof typeof recoveryPhraseObject]
       wordsToConfirm.push(confirmationWord)
     })
     return wordsToConfirm
