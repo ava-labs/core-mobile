@@ -7,7 +7,10 @@ const {
 } = require('detox/runners/jest-circus')
 
 class CustomDetoxEnvironment extends DetoxCircusEnvironment {
-  constructor(config: never, context: any) {
+  constructor(
+    config: never,
+    context: { testPath: string; docblockPragmas: string }
+  ) {
     super(config, context)
     this.testPath = context.testPath
     this.docblockPragmas = context.docblockPragmas
@@ -23,7 +26,7 @@ class CustomDetoxEnvironment extends DetoxCircusEnvironment {
     })
   }
 
-  getNames(parent) {
+  getNames(parent: { name: string; myParent: never }) {
     if (!parent) {
       return []
     }
@@ -32,7 +35,7 @@ class CustomDetoxEnvironment extends DetoxCircusEnvironment {
       return []
     }
 
-    const parentName = this.getNames(parent.parent)
+    const parentName: unknown[] = this.getNames(parent.myParent)
     return [...parentName, parent.name]
   }
 
@@ -41,7 +44,7 @@ class CustomDetoxEnvironment extends DetoxCircusEnvironment {
     this.global.testPaths = this.testPath
   }
 
-  async handleTestEvent(event: { test?: unknown; name?: any }) {
+  async handleTestEvent(event: { test: never; name: string }) {
     const { name } = event
     if ('test_fn_failure'.includes(name)) {
       this.global.testResults = ['fail']
@@ -53,8 +56,8 @@ class CustomDetoxEnvironment extends DetoxCircusEnvironment {
     }
     if ('run_finish'.includes(name)) {
       this.global.testPaths = this.testPath
-      console.log(this.global.testResults + ' this is the test result!')
-      console.log(this.global.testPaths + ' this is the test path!')
+      // console.log(this.global.testResults + ' this is the test result!')
+      // console.log(this.global.testPaths + ' this is the test path!')
     }
   }
 }
