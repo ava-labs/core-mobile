@@ -15,12 +15,10 @@ beforeAll(async () => {
 
 afterAll(async () => {
   const testCase: string = testNames[0].split(',')[0]
-  // const testResult = testResults[0]
+  const testResult = testResults[0]
   const testPathArray = testPaths.split('/')
   const sectionName = testPathArray[6]
-  console.log(sectionName + ' this is the section name!')
-  const subsection = undefined
-  const nameAndResultsObject = { testCase, sectionName }
+  const nameAndResultsObject = { testCase, sectionName, testResult }
 
   fs.writeFileSync(
     './tests_to_report.txt',
@@ -39,5 +37,22 @@ afterAll(async () => {
   } else {
     console.log('Not updating testrail cases...')
   }
+
+  console.log(
+    JSON.stringify(nameAndResultsObject) +
+      ' this is the test results object from teardown!'
+  )
+
+  writeResults({ testCase, testResult })
+
   await detox.cleanup()
 })
+
+async function writeResults(resultObject: {
+  testCase: string
+  testResult: string
+}) {
+  fs.writeFileSync('./test_results.txt', `${JSON.stringify(resultObject)}\n`, {
+    flag: 'a+'
+  })
+}

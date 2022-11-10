@@ -1,16 +1,16 @@
 /* eslint-disable no-var */
 import * as fs from 'fs'
-import {
-  getTestCaseId,
-  api,
-  createNewTestSectionsAndCases
-} from './testrail_generate_tcs'
+import { getTestCaseId, api } from './testrail_generate_tcs'
 
 const teardown = async () => {
+  sendResults()
   // Clears the text file for the next run
-  // fs.writeFile('./test_results.txt', '', { flag: 'w' }, err => {
-  //   console.log(err)
-  // })
+  fs.writeFile('./test_results.txt', '', { flag: 'w' }, err => {
+    console.log(err)
+  })
+  fs.writeFile('./tests_to_report.txt', '', { flag: 'w' }, err => {
+    console.log(err)
+  })
   console.log('called after all test suites')
 }
 
@@ -27,8 +27,6 @@ async function parseResultsFile() {
     jsonResultsArray.push(testResultObject)
   }
 
-  await createNewTestSectionsAndCases(jsonResultsArray)
-
   const testIdArrayForTestrail = []
   const casesToAddToRun = []
   for (const result of jsonResultsArray) {
@@ -42,7 +40,7 @@ async function parseResultsFile() {
         var statusId = 5
       }
       const testName = theResult.testName
-      const testCaseId = await getTestCaseId(theResult.testName)
+      const testCaseId = await getTestCaseId(theResult.testCase)
 
       if (testCaseId !== null) {
         testIdArrayForTestrail.push(testCaseId)
@@ -61,7 +59,7 @@ async function parseResultsFile() {
 }
 
 async function sendResults() {
-  const runId = Number(process.env.RUN_ID)
+  const runId = Number(process.env.TEST_RUN_ID)
   const resultsToSendObject = parseResultsFile()
 
   const testIdArrayForTestrail = (await resultsToSendObject)
@@ -96,7 +94,6 @@ A 'case id' is the permanent test case in our suite, a 'test case id' is a part 
   for (var testCaseResultObject of casesToAddToRun) {
     var testRunCaseStatusId = testCaseResultObject.status_id
     var testId = testCaseResultObject.test_id
-    var testCaseName = testCaseResultObject.test_name
     if (testRunCaseStatusId === 1) {
       // Sends a passed test to testrail with no comment
       resultsToSendToTestrail.push({
@@ -118,7 +115,6 @@ A 'case id' is the permanent test case in our suite, a 'test case id' is a part 
   var resultsContent = {
     results: resultsToSendToTestrail
   }
-
   // Sends the results to testrail using the resultsToSendToTestrail array if POST_TO_TESTRAIL env variable set to true
   if (process.env.POST_TO_TESTRAIL) {
     try {

@@ -35,10 +35,40 @@
         "binaryPath":"android/app/build/outputs/apk/internal/e2e/app-internal-e2e.apk"
      }
   },
+  "artifacts": {
+   "rootDir": ".artifacts",
+   "plugins": {
+     "instruments": {"enabled": false},
+     "log": {"enabled": true},
+     "uiHierarchy": "enabled",
+     "screenshot": {
+       "shouldTakeAutomaticSnapshots": true,
+       "keepOnlyFailedTestsArtifacts": true,
+       "takeWhen": {
+         "testStart": false,
+         "testDone": true
+       }
+     },
+     "video": {
+       "android": {
+         "bitRate": 4000000
+       },
+       "simulator": {
+         "codec": "hevc"
+       }
+     }
+   }
+ },
   "configurations":{
      "ios.internal.debug":{
         "device":"simulator",
-        "app":"ios.internal.debug"
+        "app":"ios.internal.debug",
+        "artifacts": {
+         "rootDir": ".artifacts/ios",
+         "plugins": {
+            "instruments": "all"
+         }
+        }
      },
      "ios.internal.release":{
         "device":"simulator",

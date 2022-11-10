@@ -55,6 +55,7 @@ export async function getTestCaseId(testCaseName: any) {
   const content = {
     filter: testCaseName
   }
+
   const my_case = await api.getCases(projectId, content)
   if (my_case[0] !== undefined) {
     return my_case[0].id
@@ -484,4 +485,20 @@ export function parseTestName(testName: any) {
 
   const testCaseObject = { sectionName, subsection, testCase }
   return testCaseObject
+}
+
+export async function createNewTestRunBool() {
+  const yesterday = new Date()
+  yesterday.setDate(yesterday.getDate() - 1)
+  yesterday.setUTCHours(0, 0, 0, 0)
+  const yesterdayUTC = Number(yesterday) / 1000
+  const content = {
+    created_after: yesterdayUTC
+  }
+  const runDetails = await api.getRuns(projectId, content)
+  if (runDetails.length === 0 || runDetails[0].created_on < yesterdayUTC) {
+    return false
+  } else {
+    return runDetails[0].id
+  }
 }
