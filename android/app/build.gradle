@@ -155,7 +155,7 @@ android {
         versionCode rootProject.ext.appBuildNumber
         buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchitectureEnabled().toString()
 
-        testBuildType System.getProperty('testBuildType', 'debug')  // To control the test apk build type
+        testBuildType System.getProperty('testBuildType', 'e2e')  // To control the test apk build type
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
 
         missingDimensionStrategy 'react-native-camera', 'general'
