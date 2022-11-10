@@ -14,6 +14,7 @@ class VerifyPhrasePage {
   // Converts the index of the word to the actual word number in the recovery phrase and returns an array of 3 words to tap on the confirmation page
   async selectWordNumbers(recoveryPhraseObject: object) {
     const attributes = await Action.getAttributes(this.selectWord)
+    // @ts-ignore
     const elementArray = attributes.elements
 
     const wordNumberArray: string | string[] = []
