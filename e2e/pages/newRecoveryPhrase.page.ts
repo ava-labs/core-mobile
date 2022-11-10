@@ -31,6 +31,8 @@ class NewRecoveryPhrasePage {
     const wordNumberAttributes = await element(
       by.id('mnemonicWordsView')
     ).getAttributes()
+    // Must ignore this TS error because the elements type hasn't been implemented by detox
+    // @ts-ignore
     const viewAttributesArray = wordNumberAttributes.elements
     const mnemonicWordIndexArray: {
       mnemonicNum: string
