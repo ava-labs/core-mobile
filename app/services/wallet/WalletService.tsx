@@ -185,7 +185,11 @@ class WalletService {
         this.xpub,
         index,
         isTestnet ? networks.testnet : networks.bitcoin
-      )
+      ),
+      //TODO: Add support once X and P chain support is ready
+      [NetworkVMType.AVM]: '',
+      [NetworkVMType.PVM]: '',
+      [NetworkVMType.CoreEth]: ''
     }
   }
 
