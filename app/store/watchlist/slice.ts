@@ -70,7 +70,13 @@ export const selectWatchlistFavoriteIds = (state: RootState) => {
 }
 
 export const selectWatchlistFavorites = (state: RootState) => {
-  return state.watchlist.favorites.map(id => state.watchlist.tokens[id])
+  return state.watchlist.favorites.reduce((acc, id) => {
+    const token = state.watchlist.tokens[id]
+    if (token) {
+      acc.push(token)
+    }
+    return acc
+  }, [] as MarketToken[])
 }
 
 export const selectWatchlistFavoritesIsEmpty = (state: RootState) =>
