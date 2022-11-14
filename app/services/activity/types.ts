@@ -23,3 +23,13 @@ export type ActivityResponse = {
   transactions: Transaction[]
   nextPageToken?: string
 }
+
+export interface NetworkActivityService {
+  getActivities({
+    network,
+    address,
+    criticalConfig
+  }: GetActivitiesForAddressParams): Promise<{
+    transactions: Transaction[]
+  }>
+}

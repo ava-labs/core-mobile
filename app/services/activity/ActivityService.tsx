@@ -2,18 +2,19 @@ import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import AccountService from 'services/account/AccountsService'
 import BtcActivityService from './BtcActivityService'
 import EvmActivityService from './EvmActivityService'
-import { GetActivitiesForAccountParams, ActivityResponse } from './types'
+import {
+  GetActivitiesForAccountParams,
+  ActivityResponse,
+  NetworkActivityService
+} from './types'
 
-const serviceMap = {
+const serviceMap: { [K in NetworkVMType]?: NetworkActivityService } = {
   [NetworkVMType.BITCOIN]: BtcActivityService,
   [NetworkVMType.EVM]: EvmActivityService
 }
 
-type ServiceMap = typeof serviceMap
-type Keys = keyof ServiceMap
-
 class ActivityServiceFactory {
-  static getService(k: Keys) {
+  static getService(k: NetworkVMType) {
     return serviceMap[k]
   }
 }
