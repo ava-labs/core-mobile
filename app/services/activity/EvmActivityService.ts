@@ -2,13 +2,17 @@ import { getErc20Txs, getNormalTxs } from '@avalabs/etherscan-sdk'
 import { GlacierClient } from '@avalabs/glacier-sdk'
 import { isEthereumNetwork } from 'services/network/utils/isEthereumNetwork'
 import { GLACIER_URL } from 'utils/glacierUtils'
-import { ActivityResponse, GetActivitiesForAddressParams } from './types'
+import {
+  ActivityResponse,
+  GetActivitiesForAddressParams,
+  NetworkActivityService
+} from './types'
 import { convertTransaction } from './utils/evmTransactionConverter'
 import * as EtherscanConverter from './utils/etherscanTransactionConverter'
 
 const glacierSdk = new GlacierClient(GLACIER_URL)
 
-export class EvmActivityService {
+export class EvmActivityService implements NetworkActivityService {
   async getActivities(params: GetActivitiesForAddressParams) {
     return isEthereumNetwork(params.network)
       ? getTransactionsFromEtherscan(params)

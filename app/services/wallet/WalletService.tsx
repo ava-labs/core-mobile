@@ -4,9 +4,9 @@ import {
   getAddressFromXPub,
   getBech32AddressFromXPub,
   getWalletFromMnemonic,
-  getXpubFromMnemonic
+  getXpubFromMnemonic,
+  BitcoinProviderAbstract
 } from '@avalabs/wallets-sdk'
-import { BitcoinProviderAbstract } from '@avalabs/wallets-sdk/src/BitcoinVM/providers/BitcoinProviderAbstract'
 import { now } from 'moment'
 import { SignTransactionRequest } from 'services/wallet/types'
 import { Wallet } from 'ethers'
@@ -185,7 +185,11 @@ class WalletService {
         this.xpub,
         index,
         isTestnet ? networks.testnet : networks.bitcoin
-      )
+      ),
+      //TODO: Add support once X and P chain support is ready
+      [NetworkVMType.AVM]: '',
+      [NetworkVMType.PVM]: '',
+      [NetworkVMType.CoreEth]: ''
     }
   }
 
