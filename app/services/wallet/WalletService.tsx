@@ -4,9 +4,9 @@ import {
   getAddressFromXPub,
   getBech32AddressFromXPub,
   getWalletFromMnemonic,
-  getXpubFromMnemonic
+  getXpubFromMnemonic,
+  BitcoinProviderAbstract
 } from '@avalabs/wallets-sdk'
-import { BitcoinProviderAbstract } from '@avalabs/wallets-sdk/src/BitcoinVM/providers/BitcoinProviderAbstract'
 import { now } from 'moment'
 import { SignTransactionRequest } from 'services/wallet/types'
 import { Wallet } from 'ethers'
