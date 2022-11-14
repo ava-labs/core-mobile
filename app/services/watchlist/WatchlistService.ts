@@ -117,13 +117,15 @@ class WatchlistService {
 
     const prices: Prices = {}
 
-    for (const price in pricesRaw) {
-      const entry = pricesRaw[price][currency as VsCurrencyType]
-      prices[price] = {
-        priceInCurrency: entry?.price ?? 0,
-        change24: entry?.change24 ?? 0,
-        marketCap: entry?.marketCap ?? 0,
-        vol24: entry?.vol24 ?? 0
+    for (const tokenId in pricesRaw) {
+      const pricesInCurrency = pricesRaw[tokenId]
+      if (!pricesInCurrency) continue
+      const price = pricesInCurrency[currency as VsCurrencyType]
+      prices[tokenId] = {
+        priceInCurrency: price?.price ?? 0,
+        change24: price?.change24 ?? 0,
+        marketCap: price?.marketCap ?? 0,
+        vol24: price?.vol24 ?? 0
       }
     }
 
@@ -171,13 +173,15 @@ class WatchlistService {
 
       const prices: Prices = {}
 
-      for (const price in pricesRaw) {
-        const entry = pricesRaw[price][currency as VsCurrencyType]
-        prices[price] = {
-          priceInCurrency: entry?.price ?? 0,
-          change24: entry?.change24 ?? 0,
-          marketCap: entry?.marketCap ?? 0,
-          vol24: entry?.vol24 ?? 0
+      for (const tokenId in pricesRaw) {
+        const pricesInCurrency = pricesRaw[tokenId]
+        if (!pricesInCurrency) continue
+        const price = pricesInCurrency[currency as VsCurrencyType]
+        prices[tokenId] = {
+          priceInCurrency: price?.price ?? 0,
+          change24: price?.change24 ?? 0,
+          marketCap: price?.marketCap ?? 0,
+          vol24: price?.vol24 ?? 0
         }
       }
 

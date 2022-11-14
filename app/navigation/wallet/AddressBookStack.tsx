@@ -280,7 +280,7 @@ type ShareModalProps = AddressBookScreenProps<
 const ShareContactModal = () => {
   const { pop } = useNavigation<ShareModalProps['navigation']>()
   const { params } = useRoute<ShareModalProps['route']>()
-  const contact = useSelector(selectContact(params.contactId))
+  const contact = useSelector(selectContact(params.contactId)) as Contact
 
   const onShare = (
     contactName: string,

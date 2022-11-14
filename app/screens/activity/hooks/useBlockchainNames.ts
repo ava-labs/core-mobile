@@ -27,7 +27,7 @@ export function useBlockchainNames(tx: Transaction | BridgeTransaction) {
     }
   }
 
-  const symbol = (tx.token?.symbol ?? '').split('.')[0]
+  const symbol = (tx.token?.symbol ?? '').split('.')[0] ?? ''
 
   const txBlockchain = avalancheAssets[symbol]?.nativeNetwork
   const isBridgeToAvalanche = isAvalancheNetwork(activeNetwork)
@@ -43,5 +43,6 @@ export function useBlockchainNames(tx: Transaction | BridgeTransaction) {
 }
 
 function titleCase(name: string) {
-  return name[0].toUpperCase() + name.slice(1)
+  if (name.length === 0) return ''
+  return name[0]?.toUpperCase() + name.slice(1)
 }

@@ -13,6 +13,6 @@ export default {
   },
 
   testMnemonic(): string {
-    return Config.TEST_MNEMONIC
+    return Config.TEST_MNEMONIC ?? ''
   }
 }

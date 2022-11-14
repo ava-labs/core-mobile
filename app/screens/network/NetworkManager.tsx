@@ -78,7 +78,7 @@ export default function NetworkManager({ onShowInfo }: Props) {
   }
 
   function showInfo(chainId: number) {
-    const network = networks[chainId]
+    const network = networks[chainId] as Network
     onShowInfo(network)
   }
 

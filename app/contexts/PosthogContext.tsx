@@ -160,7 +160,7 @@ export const PosthogContextProvider = ({
               collectDeviceId: false
             }
           }
-      await PostHog.setup(Config.POSTHOG_ANALYTICS_KEY, config)
+      await PostHog.setup(Config.POSTHOG_ANALYTICS_KEY ?? '', config)
 
       await disableAnalytics()
       setIsPosthogReady(true)

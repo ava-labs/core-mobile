@@ -7,7 +7,7 @@ export async function getEthereumBalance(
   account: string,
   deprecated: boolean,
   ethereumProvider: JsonRpcBatchInternal
-) {
+): Promise<Big> {
   const ethereumBalancesBySymbol = await fetchTokenBalances(
     { [asset.symbol]: asset },
     Blockchain.ETHEREUM,
@@ -15,8 +15,8 @@ export async function getEthereumBalance(
     account,
     deprecated
   )
-
-  const balance: Big = ethereumBalancesBySymbol?.[asset.symbol]
-
-  return balance
+  return (
+    ethereumBalancesBySymbol[asset.symbol] ??
+    Promise.reject('No Eth balance for symbol')
+  )
 }

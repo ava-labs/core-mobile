@@ -13,8 +13,13 @@ export const transformSparklineData = (data: SparklineData | []): ChartData => {
   const maxDate = oneDayDataPoints - 1
   const minPrice = Math.min(...oneDayData)
   const maxPrice = Math.max(...oneDayData)
-  const diffValue = oneDayData[oneDayData.length - 1] - oneDayData[0]
-  const percentChange = (Math.abs(diffValue) / oneDayData[0]) * 100
+  const lastDataPoint = oneDayData[oneDayData.length - 1]
+  const firstDataPoint = oneDayData[0]
+  if (lastDataPoint === undefined || firstDataPoint === undefined) {
+    return defaultChartData
+  }
+  const diffValue = lastDataPoint - firstDataPoint
+  const percentChange = (Math.abs(diffValue) / firstDataPoint) * 100
 
   return {
     ranges: {
@@ -41,8 +46,10 @@ export const transformContractMarketChartResponse = (
   const maxDate = Math.max(...dates)
   const minPrice = Math.min(...prices)
   const maxPrice = Math.max(...prices)
-  const diffValue = prices[prices.length - 1] - prices[0]
-  const average = (prices[prices.length - 1] + prices[0]) / 2
+  const latestPricePoint = prices[prices.length - 1] ?? 0
+  const oldestPricePoint = prices[0] ?? 0
+  const diffValue = latestPricePoint - oldestPricePoint
+  const average = (latestPricePoint + oldestPricePoint) / 2
   const percentChange = (diffValue / average) * 100
 
   return {

@@ -16,12 +16,6 @@ export async function getEthereumBalances(
     deprecated
   )
 
-  const balances: Record<string, Big> = {}
-
-  for (const symbol in assets) {
-    balances[symbol] = ethereumBalancesBySymbol?.[symbol]
-  }
-
   return Object.entries(assets).map(([symbol, asset]) => {
     const balanceStr = ethereumBalancesBySymbol?.[symbol]
     const balance = balanceStr ? new Big(balanceStr) : undefined

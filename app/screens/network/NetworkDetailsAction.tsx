@@ -20,6 +20,7 @@ import {
   selectNetworks,
   toggleFavorite
 } from 'store/network'
+import { Network } from '@avalabs/chains-sdk'
 
 export function NetworkDetailsAction() {
   const { chainId } = useRoute<NetworkDetailsScreenProps['route']>().params
@@ -64,7 +65,7 @@ function CustomNetworkDropdown() {
   const { params } = useRoute<NetworkDetailsScreenProps['route']>()
   const { navigate } = useNavigation<NetworkSelectorScreenProps['navigation']>()
   const networks = useSelector(selectNetworks)
-  const network = networks[params.chainId]
+  const network = networks[params.chainId] as Network
 
   function handleEdit() {
     navigate(AppNavigation.Wallet.NetworkAddEdit, {

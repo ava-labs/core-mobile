@@ -109,18 +109,24 @@ const renderProps = (attributes?: NFTItemExternalDataAttribute[]) => {
         <Row key={i}>
           {attributes[i] && (
             <View style={{ flex: 1 }}>
-              <AvaText.Body2>{attributes[i].trait_type}</AvaText.Body2>
+              <AvaText.Body2>
+                {(attributes[i] as NFTItemExternalDataAttribute).trait_type}
+              </AvaText.Body2>
               <Space y={4} />
               <AvaText.Heading3 textStyle={{ marginRight: 16 }}>
-                {attributes[i].value}
+                {(attributes[i] as NFTItemExternalDataAttribute).value}
               </AvaText.Heading3>
             </View>
           )}
           {attributes[i + 1] && (
             <View style={{ flex: 1 }}>
-              <AvaText.Body2>{attributes[i + 1].trait_type}</AvaText.Body2>
+              <AvaText.Body2>
+                {(attributes[i + 1] as NFTItemExternalDataAttribute).trait_type}
+              </AvaText.Body2>
               <Space y={4} />
-              <AvaText.Heading3>{attributes[i + 1].value}</AvaText.Heading3>
+              <AvaText.Heading3>
+                {(attributes[i + 1] as NFTItemExternalDataAttribute).value}
+              </AvaText.Heading3>
             </View>
           )}
         </Row>

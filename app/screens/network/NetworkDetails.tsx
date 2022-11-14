@@ -17,7 +17,7 @@ export type NetworkDetailsProps = {
 
 export default function NetworkDetails({ chainId }: NetworkDetailsProps) {
   const networks = useSelector(selectNetworks)
-  const network = networks[chainId]
+  const network = networks[chainId] as Network
   const { rpcUrl, networkToken, explorerUrl, logoUri } = network
   const activeNetwork = useSelector(selectActiveNetwork)
   const dispatch = useDispatch()

@@ -64,10 +64,11 @@ export class NftProcessor {
     const viewBoxRegex = new RegExp('viewBox="(.*?)"', 'i')
     const viewBoxMatch = svg.match(viewBoxRegex)
     if (viewBoxMatch && viewBoxMatch.length > 1) {
-      const whMatch = viewBoxMatch[1].split(' ')
+      const whMatch = viewBoxMatch[1]?.split(' ')
       if (whMatch && whMatch.length === 4) {
         const height = whMatch[3]
         const width = whMatch[2]
+        if (!height || !width) return undefined
         return Number.parseInt(height) / Number.parseInt(width)
       }
     }

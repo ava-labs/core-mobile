@@ -51,7 +51,7 @@ export function parseDisplayValues(
     }),
     site: props.site,
     description,
-    name: name ? name[0].toUpperCase() + name.slice(1) : '',
+    name: name && name.length > 0 ? name[0]?.toUpperCase() + name.slice(1) : '',
     displayValue
   }
 }
