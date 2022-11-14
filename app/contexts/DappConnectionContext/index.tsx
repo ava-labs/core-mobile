@@ -11,7 +11,7 @@ import WalletConnectService from 'services/walletconnect/WalletConnectService'
 import {
   DeepLink,
   DeepLinkOrigin,
-  MessageType,
+  RpcMethod,
   WalletConnectRequest
 } from 'services/walletconnect/types'
 import { InteractionManager, Linking } from 'react-native'
@@ -233,7 +233,7 @@ export const DappConnectionContextProvider = ({
           }
           const { method } = payload
           switch (method) {
-            case MessageType.ETH_SEND:
+            case RpcMethod.ETH_SEND:
               setDappEvent({
                 payload: payload,
                 peerMeta: meta,
@@ -241,12 +241,12 @@ export const DappConnectionContextProvider = ({
               })
               Logger.info('received CALL request, created transaction event')
               break
-            case MessageType.ETH_SIGN:
-            case MessageType.SIGN_TYPED_DATA:
-            case MessageType.SIGN_TYPED_DATA_V1:
-            case MessageType.SIGN_TYPED_DATA_V3:
-            case MessageType.SIGN_TYPED_DATA_V4:
-            case MessageType.PERSONAL_SIGN: {
+            case RpcMethod.ETH_SIGN:
+            case RpcMethod.SIGN_TYPED_DATA:
+            case RpcMethod.SIGN_TYPED_DATA_V1:
+            case RpcMethod.SIGN_TYPED_DATA_V3:
+            case RpcMethod.SIGN_TYPED_DATA_V4:
+            case RpcMethod.PERSONAL_SIGN: {
               const messageParams = paramsToMessageParams(payload)
               setDappEvent({
                 payload: { ...payload, ...messageParams },
@@ -316,7 +316,7 @@ export const DappConnectionContextProvider = ({
     }
 
     const id = event.payload.id
-    const method = event.payload.method as MessageType
+    const method = event.payload.method as RpcMethod
     const dataToSign = event.payload.data
 
     return walletService

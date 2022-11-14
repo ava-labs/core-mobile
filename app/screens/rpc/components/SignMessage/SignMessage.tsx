@@ -11,7 +11,7 @@ import PersonalSign from 'screens/rpc/components/SignMessage/PersonalSign'
 import SignDataV4 from 'screens/rpc/components/SignMessage/SignDataV4'
 import { ScrollView } from 'react-native-gesture-handler'
 import FlexSpacer from 'components/FlexSpacer'
-import { MessageAction, MessageType } from 'services/walletconnect/types'
+import { MessageAction, RpcMethod } from 'services/walletconnect/types'
 import { DappEvent } from 'contexts/DappConnectionContext'
 import { showSnackBarCustom } from 'components/Snackbar'
 import TransactionToast, {
@@ -105,9 +105,9 @@ const SignMessage: FC<Props> = ({
         <Space y={18} />
         {
           {
-            [MessageType.ETH_SIGN]: <EthSign action={action} />,
-            [MessageType.PERSONAL_SIGN]: <PersonalSign action={action} />,
-            [MessageType.SIGN_TYPED_DATA]: <SignDataV4 action={action} />
+            [RpcMethod.ETH_SIGN]: <EthSign action={action} />,
+            [RpcMethod.PERSONAL_SIGN]: <PersonalSign action={action} />,
+            [RpcMethod.SIGN_TYPED_DATA]: <SignDataV4 action={action} />
           }[action?.method ?? 'unknown']
         }
       </View>
