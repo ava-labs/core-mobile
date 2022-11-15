@@ -123,8 +123,9 @@ const clearData = async (action: any, listenerApi: AppListenerEffectAPI) => {
   const { dispatch } = listenerApi
   dispatch(setWalletState(WalletState.NONEXISTENT))
   await BiometricsSDK.clearWalletKey()
-  await AsyncStorage.clear()
+  // do before clearing AsyncStorage since it writes it
   await WalletConnectService.killAllSessions()
+  await AsyncStorage.clear()
 }
 
 export const addAppListeners = (startListening: AppStartListening) => {
