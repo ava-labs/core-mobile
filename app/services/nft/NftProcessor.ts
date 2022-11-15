@@ -1,6 +1,7 @@
 import { Image } from 'react-native'
 import { NFTItemData, NFTItemExternalData } from 'store/nft'
 import { HttpClient } from '@avalabs/utils-sdk'
+import { Erc721MetadataStatus } from '@avalabs/glacier-sdk'
 import { convertIPFSResolver } from './utils'
 
 export class NftProcessor {
@@ -73,13 +74,37 @@ export class NftProcessor {
     return undefined
   }
 
-  async applyMetadata(nft: NFTItemData) {
+  async applyMetadata(nft: NFTItemData): Promise<NFTItemData> {
     if (nft.external_url) {
       //already has metadata
       return nft
     }
-    const metadata = await this.fetchMetadata(nft.tokenUri)
-    return { ...nft, ...metadata } as NFTItemData
+
+    if (nft.metadata.indexStatus === Erc721MetadataStatus.INDEXED) {
+      return {
+        ...nft,
+        name: nft.metadata.name ?? '',
+        image: nft.metadata.imageUri ?? '',
+        image_256: nft.metadata.imageUri ?? '',
+        attributes: JSON.parse(nft.metadata.attributes || '') ?? [],
+        description: nft.metadata.description ?? '',
+        external_url: nft.metadata.externalUrl ?? '',
+        animation_url: nft.metadata.animationUri ?? ''
+      }
+    } else {
+      const metadata = await this.fetchMetadata(nft.tokenUri)
+      // do not use spread operator on metadata to prevent overwriting core NFT properties
+      return {
+        ...nft,
+        name: metadata.name ?? '',
+        image: metadata.image ?? '',
+        image_256: metadata.image_256 ?? '',
+        attributes: metadata.attributes ?? [],
+        description: metadata.description ?? '',
+        external_url: metadata.external_url ?? '',
+        animation_url: metadata.animation_url ?? ''
+      }
+    }
   }
 
   async fetchMetadata(tokenUri: string) {
