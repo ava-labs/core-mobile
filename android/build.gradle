@@ -10,7 +10,7 @@ buildscript {
         appBuildNumber = 1
         appVersionName = "${appVersion.major}.${appVersion.minor}.${appVersion.patch}"
         buildToolsVersion = "31.0.0"
-        minSdkVersion = 21
+        minSdkVersion = 28
         compileSdkVersion = 31
         targetSdkVersion = 31
         androidXAnnotation = "1.2.0"
