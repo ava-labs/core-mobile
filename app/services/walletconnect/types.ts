@@ -1,3 +1,6 @@
+import { JsonRpcRequest } from '@walletconnect/jsonrpc-types'
+import { IClientMeta } from '@walletconnect/types'
+import { TransactionParams } from 'screens/rpc/util/types'
 import { PeerMetadata } from 'screens/rpc/util/types'
 
 const CORE_MOBILE_WALLET_ID = 'c3de833a-9cb0-4274-bb52-86e402ecfcd3'
@@ -76,6 +79,13 @@ export enum RpcMethod {
   AVALANCHE_SELECT_ACCOUNT = 'avalanche_selectAccount',
   AVALANCHE_SET_DEVELOPER_MODE = 'avalanche_setDeveloperMode',
   AVALANCHE_UPDATE_CONTACT = 'avalanche_updateContact'
+}
+
+export type PeerMeta = IClientMeta | null | undefined
+
+export type CallRequestData = {
+  payload: JsonRpcRequest<TransactionParams[]>
+  peerMeta: PeerMeta
 }
 
 export const CORE_ONLY_METHODS = [

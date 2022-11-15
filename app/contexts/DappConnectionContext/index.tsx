@@ -7,15 +7,15 @@ import React, {
   useEffect,
   useState
 } from 'react'
-import walletConnectService from 'services/walletconnect/WalletConnectService'
 import WalletConnectService from 'services/walletconnect/WalletConnectService'
 import {
+  CallRequestData,
   DeepLink,
-  DeepLinkOrigin,
+  PeerMeta,
   RpcMethod,
   WalletConnectRequest
 } from 'services/walletconnect/types'
-import { InteractionManager, Linking } from 'react-native'
+import { InteractionManager } from 'react-native'
 import {
   PeerMetadata,
   RPC_EVENT,
@@ -39,10 +39,11 @@ import { selectIsLoadingBalances } from 'store/balance'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AppNavigation from 'navigation/AppNavigation'
 import { getEvmProvider } from 'services/network/utils/providerUtils'
-import { NetworkVMType } from '@avalabs/chains-sdk'
 import { selectAccounts } from 'store/account'
 import { selectContacts } from 'store/addressBook'
 import { processDeeplink } from './processDeepLinking'
+import { useWalletConnect } from './useWalletConnect'
+import { useDeepLink } from './useDeepLink'
 
 interface AdditionalMessageParams {
   data?: string
@@ -73,7 +74,7 @@ interface DappConnectionContext {
   setPendingDeepLink: Dispatch<DeepLink>
 }
 
-export const dappConnectionContext = createContext<DappConnectionContext>(
+export const DappConnectionContext = createContext<DappConnectionContext>(
   {} as any
 )
 
@@ -88,44 +89,11 @@ export const DappConnectionContextProvider = ({
   const activeNetwork = useActiveNetwork()
   const networkFees = useSelector(selectNetworkFee)
   const isLoadingBalances = useSelector(selectIsLoadingBalances)
-  const [pendingDeepLink, setPendingDeepLink] = useState<DeepLink>()
   const [dappEvent, setDappEvent] = useState<DappEvent>()
   const walletState = useSelector(selectWalletState)
   const isWalletActive = walletState === WalletState.ACTIVE
   const appNavHook = useApplicationContext().appNavHook
-
-  const expireDeepLink = useCallback(() => {
-    setPendingDeepLink(undefined)
-  }, [])
-
-  useEffect(() => {
-    initializeWalletConnect()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  /******************************************************************************
-   * Start listeners that will receive the deep link url
-   *****************************************************************************/
-  useEffect(() => {
-    // triggered if app is running
-    const listener = Linking.addEventListener('url', ({ url }) => {
-      setPendingDeepLink({ url, origin: DeepLinkOrigin.ORIGIN_DEEPLINK })
-    })
-
-    async function checkInitialUrl() {
-      // initial URL (when app comes from cold start)
-      const url = await Linking.getInitialURL()
-      if (url) {
-        setPendingDeepLink({ url, origin: DeepLinkOrigin.ORIGIN_DEEPLINK })
-      }
-    }
-
-    checkInitialUrl()
-
-    return () => {
-      listener.remove()
-    }
-  }, [])
+  const { pendingDeepLink, setPendingDeepLink, expireDeepLink } = useDeepLink()
 
   /******************************************************************************
    * Process deep link if there is one pending and app is unlocked
@@ -175,22 +143,6 @@ export const DappConnectionContextProvider = ({
     appNavHook?.navigation?.current
   ])
 
-  /******************************************************************************
-   * Update dapp sessions if active address or chain id changes
-   *****************************************************************************/
-  useEffect(() => {
-    if (
-      activeAccount &&
-      activeNetwork &&
-      activeNetwork.vmName !== NetworkVMType.BITCOIN
-    ) {
-      WalletConnectService.updateSessions(
-        activeAccount.address,
-        activeNetwork.chainId.toString()
-      )
-    }
-  }, [activeNetwork, activeAccount])
-
   const displayUserInstruction = useCallback(
     (instruction: string, id?: string) => {
       showSnackBarCustom({
@@ -233,112 +185,119 @@ export const DappConnectionContextProvider = ({
     [contacts]
   )
 
-  const initializeWalletConnect = () => {
-    if (!activeAccount || !activeNetwork) return
-    /**
-     * SESSION
-     */
-    walletConnectService.emitter.on(
-      WalletConnectRequest.SESSION,
-      sessionInfo => {
-        InteractionManager.runAfterInteractions(() => {
-          clearRequests()
-          const meta: PeerMetadata = {
-            peerId: sessionInfo?.peerId,
-            name: sessionInfo?.peerMeta?.name,
-            description: sessionInfo?.peerMeta?.description,
-            url: sessionInfo?.peerMeta?.url,
-            icon: sessionInfo?.peerMeta?.icons?.[0]
-          }
-          setDappEvent({
-            peerMeta: meta,
-            eventType: RPC_EVENT.SESSION
-          })
-        })
-      }
-    )
-    /**
-     * CALL
-     */
-    walletConnectService.emitter.on(
-      WalletConnectRequest.CALL,
-      (data: { payload: any; peerMeta: any }) => {
-        InteractionManager.runAfterInteractions(() => {
-          const payload: JsonRpcRequest<TransactionParams[]> = data.payload
-          const meta: PeerMetadata = {
-            name: data?.peerMeta?.name,
-            description: data?.peerMeta?.description,
-            url: data?.peerMeta?.url,
-            icon: data?.peerMeta?.icons?.[0]
-          }
-          const { method } = payload
-          switch (method) {
-            case RpcMethod.ETH_SEND:
-              setDappEvent({
-                payload: payload,
-                peerMeta: meta,
-                eventType: RPC_EVENT.TRANSACTION
-              })
-              Logger.info('received CALL request, created transaction event')
-              break
-            case RpcMethod.ETH_SIGN:
-            case RpcMethod.SIGN_TYPED_DATA:
-            case RpcMethod.SIGN_TYPED_DATA_V1:
-            case RpcMethod.SIGN_TYPED_DATA_V3:
-            case RpcMethod.SIGN_TYPED_DATA_V4:
-            case RpcMethod.PERSONAL_SIGN: {
-              const messageParams = paramsToMessageParams(payload)
-              setDappEvent({
-                payload: { ...payload, ...messageParams },
-                peerMeta: meta,
-                eventType: RPC_EVENT.SIGN
-              })
-              Logger.info(
-                'received CALL request, created message signing event'
-              )
-              break
-            }
-            case RpcMethod.AVALANCHE_GET_ACCOUNTS: {
-              const result = getAccounts()
-              approveCustomCall(payload.id, result)
-              break
-            }
-            case RpcMethod.AVALANCHE_GET_CONTACTS: {
-              const result = getContacts()
-              console.log('result', result)
-              approveCustomCall(payload.id, result)
-              break
-            }
-          }
-        })
-      }
-    )
-    /**
-     * SESSION DISCONNECTED
-     */
-    walletConnectService.emitter.on(
-      WalletConnectRequest.SESSION_DISCONNECTED,
-      peerMeta => {
-        InteractionManager.runAfterInteractions(() => {
-          if (peerMeta?.name) {
-            displayUserInstruction(
-              `${peerMeta.name} was disconnected remotely`,
-              peerMeta.url
-            )
-          }
-        })
-      }
-    )
-
-    walletConnectService.init(activeAccount, activeNetwork)
-  }
-
   const clearRequests = useCallback(() => {
     setDappEvent(undefined)
   }, [])
 
+  const handleSessionRequest = useCallback(
+    (sessionInfo: any) => {
+      InteractionManager.runAfterInteractions(() => {
+        clearRequests()
+        const meta: PeerMetadata = {
+          peerId: sessionInfo?.peerId,
+          name: sessionInfo?.peerMeta?.name,
+          description: sessionInfo?.peerMeta?.description,
+          url: sessionInfo?.peerMeta?.url,
+          icon: sessionInfo?.peerMeta?.icons?.[0]
+        }
+        setDappEvent({
+          peerMeta: meta,
+          eventType: RPC_EVENT.SESSION
+        })
+      })
+    },
+    [clearRequests]
+  )
+
+  const approveCustomCall = useCallback(
+    (id: number, result: any) => {
+      if (!activeAccount || !activeNetwork || !id) {
+        return Promise.reject({ error: 'not ready' })
+      }
+
+      WalletConnectService.emitter.emit(WalletConnectRequest.CALL_APPROVED, {
+        id,
+        result
+      })
+    },
+    [activeAccount, activeNetwork]
+  )
+
+  const handleCallRequest = useCallback(
+    (data: CallRequestData) => {
+      InteractionManager.runAfterInteractions(() => {
+        const payload: JsonRpcRequest<TransactionParams[]> = data.payload
+        const meta: PeerMetadata = {
+          name: data?.peerMeta?.name,
+          description: data?.peerMeta?.description,
+          url: data?.peerMeta?.url,
+          icon: data?.peerMeta?.icons?.[0]
+        }
+        const { method } = payload
+        switch (method) {
+          case RpcMethod.ETH_SEND:
+            setDappEvent({
+              payload: payload,
+              peerMeta: meta,
+              eventType: RPC_EVENT.TRANSACTION
+            })
+            Logger.info('received CALL request, created transaction event')
+            break
+          case RpcMethod.ETH_SIGN:
+          case RpcMethod.SIGN_TYPED_DATA:
+          case RpcMethod.SIGN_TYPED_DATA_V1:
+          case RpcMethod.SIGN_TYPED_DATA_V3:
+          case RpcMethod.SIGN_TYPED_DATA_V4:
+          case RpcMethod.PERSONAL_SIGN: {
+            const messageParams = paramsToMessageParams(payload)
+            setDappEvent({
+              payload: { ...payload, ...messageParams },
+              peerMeta: meta,
+              eventType: RPC_EVENT.SIGN
+            })
+            Logger.info('received CALL request, created message signing event')
+            break
+          }
+          case RpcMethod.AVALANCHE_GET_ACCOUNTS: {
+            const result = getAccounts()
+            approveCustomCall(payload.id, result)
+            break
+          }
+          case RpcMethod.AVALANCHE_GET_CONTACTS: {
+            const result = getContacts()
+            approveCustomCall(payload.id, result)
+            break
+          }
+        }
+      })
+    },
+    [approveCustomCall, getAccounts, getContacts]
+  )
+
+  const handleSessionDisconnected = useCallback(
+    (peerMeta: PeerMeta) => {
+      InteractionManager.runAfterInteractions(() => {
+        if (peerMeta?.name) {
+          displayUserInstruction(
+            `${peerMeta.name} was disconnected remotely`,
+            peerMeta.url
+          )
+        }
+      })
+    },
+    [displayUserInstruction]
+  )
+
+  useWalletConnect({
+    activeAccount,
+    activeNetwork,
+    handleSessionRequest,
+    handleCallRequest,
+    handleSessionDisconnected
+  })
+
   const onCallRejected = useCallback(() => {
-    walletConnectService.emitter.emit(
+    WalletConnectService.emitter.emit(
       WalletConnectRequest.CALL_REJECTED,
       dappEvent?.payload?.id
     )
@@ -346,7 +305,7 @@ export const DappConnectionContextProvider = ({
   }, [clearRequests, dappEvent?.payload?.id])
 
   const onSessionApproved = useCallback(() => {
-    walletConnectService.emitter.emit(
+    WalletConnectService.emitter.emit(
       WalletConnectRequest.SESSION_APPROVED,
       dappEvent?.peerMeta?.peerId
     )
@@ -355,26 +314,12 @@ export const DappConnectionContextProvider = ({
   }, [clearRequests, dappEvent?.peerMeta?.peerId, displayUserInstruction])
 
   const onSessionRejected = useCallback(() => {
-    walletConnectService.emitter.emit(
+    WalletConnectService.emitter.emit(
       WalletConnectRequest.SESSION_REJECTED,
       dappEvent?.peerMeta?.peerId
     )
     clearRequests()
   }, [clearRequests, dappEvent?.peerMeta?.peerId])
-
-  const approveCustomCall = useCallback(
-    (id: number, result: any) => {
-      if (!activeAccount || !activeNetwork || !id) {
-        return Promise.reject({ error: 'not ready' })
-      }
-
-      walletConnectService.emitter.emit(WalletConnectRequest.CALL_APPROVED, {
-        id,
-        result
-      })
-    },
-    [activeAccount, activeNetwork]
-  )
 
   const onMessageCallApproved = useCallback(
     async (event: DappEvent) => {
@@ -389,7 +334,7 @@ export const DappConnectionContextProvider = ({
       return walletService
         .signMessage(method, dataToSign, activeAccount.index, activeNetwork)
         .then(result => {
-          walletConnectService.emitter.emit(
+          WalletConnectService.emitter.emit(
             WalletConnectRequest.CALL_APPROVED,
             {
               id,
@@ -437,7 +382,7 @@ export const DappConnectionContextProvider = ({
             return networkService.sendTransaction(signedTx, activeNetwork, true)
           })
           .then(resultHash => {
-            walletConnectService.emitter.emit(
+            WalletConnectService.emitter.emit(
               WalletConnectRequest.CALL_APPROVED,
               {
                 id: tx.id,
@@ -455,7 +400,7 @@ export const DappConnectionContextProvider = ({
             const transactionHash =
               e?.transactionHash ?? e?.error?.transasctionHash
             if (transactionHash) {
-              walletConnectService.emitter.emit(
+              WalletConnectService.emitter.emit(
                 WalletConnectRequest.CALL_REJECTED,
                 {
                   id: tx.id,
@@ -471,7 +416,7 @@ export const DappConnectionContextProvider = ({
   )
 
   return (
-    <dappConnectionContext.Provider
+    <DappConnectionContext.Provider
       value={{
         dappEvent,
         onSessionApproved,
@@ -484,8 +429,8 @@ export const DappConnectionContextProvider = ({
         setPendingDeepLink
       }}>
       {children}
-    </dappConnectionContext.Provider>
+    </DappConnectionContext.Provider>
   )
 }
 
-export const useDappConnectionContext = () => useContext(dappConnectionContext)
+export const useDappConnectionContext = () => useContext(DappConnectionContext)

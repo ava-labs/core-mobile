@@ -3,12 +3,12 @@ import WalletConnectClient from '@walletconnect/client'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { parseWalletConnectUri } from '@walletconnect/utils'
 import {
-  IClientMeta,
   ISessionStatus,
   IWalletConnectOptions,
   IWalletConnectSession
 } from '@walletconnect/types'
 import {
+  CallRequestData,
   CLIENT_OPTIONS,
   CORE_ONLY_METHODS,
   CORE_WEB_URLS,
@@ -250,10 +250,7 @@ class WalletConnectService {
     })
 
   // Call request emitters
-  callRequests = (data: {
-    payload: JsonRpcRequest<TransactionParams[]>
-    peerMeta: IClientMeta | null | undefined
-  }) =>
+  callRequests = (data: CallRequestData) =>
     new Promise((resolve, reject) => {
       Logger.info('dapp emitting CALL request')
       emitter.emit(WalletConnectRequest.CALL, data)
@@ -298,6 +295,11 @@ const instance = {
   async init(activeAccount: Account, activeNetwork: Network) {
     // do not init if on BTC
     if (activeNetwork.vmName === NetworkVMType.BITCOIN) return
+
+    if (initialized) {
+      Logger.info('wallet connect already initialized')
+      return
+    }
 
     Logger.info('loading persisted dapps')
     const sessionData = await AsyncStorage.getItem(WALLETCONNECT_SESSIONS)
