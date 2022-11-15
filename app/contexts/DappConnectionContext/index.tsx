@@ -2,6 +2,7 @@
 import React, {
   createContext,
   Dispatch,
+  useCallback,
   useContext,
   useEffect,
   useState
@@ -39,6 +40,8 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import AppNavigation from 'navigation/AppNavigation'
 import { getEvmProvider } from 'services/network/utils/providerUtils'
 import { NetworkVMType } from '@avalabs/chains-sdk'
+import { selectAccounts } from 'store/account'
+import { selectContacts } from 'store/addressBook'
 import { processDeeplink } from './processDeepLinking'
 
 interface AdditionalMessageParams {
@@ -79,6 +82,8 @@ export const DappConnectionContextProvider = ({
 }: {
   children: any
 }) => {
+  const accounts = useSelector(selectAccounts)
+  const contacts = useSelector(selectContacts)
   const activeAccount = useActiveAccount()
   const activeNetwork = useActiveNetwork()
   const networkFees = useSelector(selectNetworkFee)
@@ -89,9 +94,9 @@ export const DappConnectionContextProvider = ({
   const isWalletActive = walletState === WalletState.ACTIVE
   const appNavHook = useApplicationContext().appNavHook
 
-  function expireDeepLink() {
+  const expireDeepLink = useCallback(() => {
     setPendingDeepLink(undefined)
-  }
+  }, [])
 
   useEffect(() => {
     initializeWalletConnect()
@@ -136,7 +141,13 @@ export const DappConnectionContextProvider = ({
       // once we used the url, we can expire it
       expireDeepLink()
     }
-  }, [isWalletActive, pendingDeepLink, activeAccount, activeNetwork])
+  }, [
+    isWalletActive,
+    pendingDeepLink,
+    activeAccount,
+    activeNetwork,
+    expireDeepLink
+  ])
 
   /******************************************************************************
    * Process dapp event if there is one pending and app is unlocked
@@ -180,17 +191,47 @@ export const DappConnectionContextProvider = ({
     }
   }, [activeNetwork, activeAccount])
 
-  function displayUserInstruction(instruction: string, id?: string) {
-    showSnackBarCustom({
-      component: <GeneralToast message={instruction} />,
-      duration: 'short',
-      id
-    })
-  }
+  const displayUserInstruction = useCallback(
+    (instruction: string, id?: string) => {
+      showSnackBarCustom({
+        component: <GeneralToast message={instruction} />,
+        duration: 'short',
+        id
+      })
+    },
+    []
+  )
 
-  function setEventHandled(handled: boolean) {
-    dappEvent && setDappEvent({ ...dappEvent, handled })
-  }
+  const setEventHandled = useCallback((handled: boolean) => {
+    setDappEvent(event => {
+      if (event === undefined) return event
+
+      return { ...event, handled }
+    })
+  }, [])
+
+  const getAccounts = useCallback(
+    () =>
+      Object.values(accounts).map(account => ({
+        index: account.index,
+        name: account.title,
+        addressC: account.address,
+        addressBTC: account.addressBtc,
+        active: account.index === activeAccount?.index
+      })),
+    [accounts, activeAccount?.index]
+  )
+
+  const getContacts = useCallback(
+    () =>
+      Object.values(contacts).map(contact => ({
+        id: contact.id,
+        name: contact.title,
+        address: contact.address,
+        addressBTC: contact.addressBtc
+      })),
+    [contacts]
+  )
 
   const initializeWalletConnect = () => {
     if (!activeAccount || !activeNetwork) return
@@ -223,7 +264,6 @@ export const DappConnectionContextProvider = ({
       WalletConnectRequest.CALL,
       (data: { payload: any; peerMeta: any }) => {
         InteractionManager.runAfterInteractions(() => {
-          clearRequests()
           const payload: JsonRpcRequest<TransactionParams[]> = data.payload
           const meta: PeerMetadata = {
             name: data?.peerMeta?.name,
@@ -256,6 +296,18 @@ export const DappConnectionContextProvider = ({
               Logger.info(
                 'received CALL request, created message signing event'
               )
+              break
+            }
+            case RpcMethod.AVALANCHE_GET_ACCOUNTS: {
+              const result = getAccounts()
+              approveCustomCall(payload.id, result)
+              break
+            }
+            case RpcMethod.AVALANCHE_GET_CONTACTS: {
+              const result = getContacts()
+              console.log('result', result)
+              approveCustomCall(payload.id, result)
+              break
             }
           }
         })
@@ -281,116 +333,142 @@ export const DappConnectionContextProvider = ({
     walletConnectService.init(activeAccount, activeNetwork)
   }
 
-  function clearRequests() {
+  const clearRequests = useCallback(() => {
     setDappEvent(undefined)
-  }
+  }, [])
 
-  function onCallRejected() {
+  const onCallRejected = useCallback(() => {
     walletConnectService.emitter.emit(
       WalletConnectRequest.CALL_REJECTED,
       dappEvent?.payload?.id
     )
     clearRequests()
-  }
+  }, [clearRequests, dappEvent?.payload?.id])
 
-  function onSessionApproved() {
+  const onSessionApproved = useCallback(() => {
     walletConnectService.emitter.emit(
       WalletConnectRequest.SESSION_APPROVED,
       dappEvent?.peerMeta?.peerId
     )
     displayUserInstruction('Go back to the browser')
     clearRequests()
-  }
+  }, [clearRequests, dappEvent?.peerMeta?.peerId, displayUserInstruction])
 
-  function onSessionRejected() {
+  const onSessionRejected = useCallback(() => {
     walletConnectService.emitter.emit(
       WalletConnectRequest.SESSION_REJECTED,
       dappEvent?.peerMeta?.peerId
     )
     clearRequests()
-  }
+  }, [clearRequests, dappEvent?.peerMeta?.peerId])
 
-  async function onMessageCallApproved(event: DappEvent) {
-    if (!activeAccount || !activeNetwork || !event?.payload) {
-      return Promise.reject({ error: 'not ready' })
-    }
+  const approveCustomCall = useCallback(
+    (id: number, result: any) => {
+      if (!activeAccount || !activeNetwork || !id) {
+        return Promise.reject({ error: 'not ready' })
+      }
 
-    const id = event.payload.id
-    const method = event.payload.method as RpcMethod
-    const dataToSign = event.payload.data
-
-    return walletService
-      .signMessage(method, dataToSign, activeAccount.index, activeNetwork)
-      .then(result => {
-        walletConnectService.emitter.emit(WalletConnectRequest.CALL_APPROVED, {
-          id,
-          hash: result
-        })
-        displayUserInstruction('Go back to the browser')
-        return { hash: result }
+      walletConnectService.emitter.emit(WalletConnectRequest.CALL_APPROVED, {
+        id,
+        result
       })
-      .catch(e => {
-        Logger.error('Error approving dapp tx', e)
-        return Promise.reject({ error: e })
-      })
-  }
+    },
+    [activeAccount, activeNetwork]
+  )
 
-  async function onTransactionCallApproved(tx: Transaction) {
-    const params = tx.txParams
-    if (!activeAccount || !activeNetwork || !params) {
-      return Promise.reject({ error: 'not ready' })
-    }
+  const onMessageCallApproved = useCallback(
+    async (event: DappEvent) => {
+      if (!activeAccount || !activeNetwork || !event?.payload) {
+        return Promise.reject({ error: 'not ready' })
+      }
 
-    const nonce = await getEvmProvider(activeNetwork).getTransactionCount(
-      params.from
-    )
+      const id = event.payload.id
+      const method = event.payload.method as RpcMethod
+      const dataToSign = event.payload.data
 
-    return txToCustomEvmTx(networkFees.low, params).then(evmPrams => {
       return walletService
-        .sign(
-          {
-            nonce,
-            chainId: activeNetwork.chainId,
-            gasPrice: evmPrams.gasPrice,
-            gasLimit: evmPrams.gasLimit,
-            data: evmPrams.data,
-            to: params.to,
-            value: evmPrams.value
-          },
-          activeAccount.index,
-          activeNetwork
-        )
-        .then(signedTx => {
-          return networkService.sendTransaction(signedTx, activeNetwork, true)
-        })
-        .then(resultHash => {
+        .signMessage(method, dataToSign, activeAccount.index, activeNetwork)
+        .then(result => {
           walletConnectService.emitter.emit(
             WalletConnectRequest.CALL_APPROVED,
             {
-              id: tx.id,
-              hash: resultHash
+              id,
+              result
             }
           )
           displayUserInstruction('Go back to the browser')
-          return { hash: resultHash }
+          return { hash: result }
         })
         .catch(e => {
-          Logger.error('failed to approve transaction call', JSON.stringify(e))
-          const transactionHash =
-            e?.transactionHash ?? e?.error?.transasctionHash
-          if (transactionHash) {
-            walletConnectService.emitter.emit(
-              WalletConnectRequest.CALL_REJECTED,
-              {
-                id: tx.id,
-                message: 'transaction failed'
-              }
-            )
-          }
+          Logger.error('Error approving dapp tx', e)
           return Promise.reject({ error: e })
         })
-    })
-  }
+    },
+    [activeAccount, activeNetwork, displayUserInstruction]
+  )
+
+  const onTransactionCallApproved = useCallback(
+    async (tx: Transaction) => {
+      const params = tx.txParams
+      if (!activeAccount || !activeNetwork || !params) {
+        return Promise.reject({ error: 'not ready' })
+      }
+
+      const nonce = await getEvmProvider(activeNetwork).getTransactionCount(
+        params.from
+      )
+
+      return txToCustomEvmTx(networkFees.low, params).then(evmPrams => {
+        return walletService
+          .sign(
+            {
+              nonce,
+              chainId: activeNetwork.chainId,
+              gasPrice: evmPrams.gasPrice,
+              gasLimit: evmPrams.gasLimit,
+              data: evmPrams.data,
+              to: params.to,
+              value: evmPrams.value
+            },
+            activeAccount.index,
+            activeNetwork
+          )
+          .then(signedTx => {
+            return networkService.sendTransaction(signedTx, activeNetwork, true)
+          })
+          .then(resultHash => {
+            walletConnectService.emitter.emit(
+              WalletConnectRequest.CALL_APPROVED,
+              {
+                id: tx.id,
+                result: resultHash
+              }
+            )
+            displayUserInstruction('Go back to the browser')
+            return { hash: resultHash }
+          })
+          .catch(e => {
+            Logger.error(
+              'failed to approve transaction call',
+              JSON.stringify(e)
+            )
+            const transactionHash =
+              e?.transactionHash ?? e?.error?.transasctionHash
+            if (transactionHash) {
+              walletConnectService.emitter.emit(
+                WalletConnectRequest.CALL_REJECTED,
+                {
+                  id: tx.id,
+                  message: 'transaction failed'
+                }
+              )
+            }
+            return Promise.reject({ error: e })
+          })
+      })
+    },
+    [activeAccount, activeNetwork, displayUserInstruction, networkFees.low]
+  )
 
   return (
     <dappConnectionContext.Provider
@@ -410,6 +488,4 @@ export const DappConnectionContextProvider = ({
   )
 }
 
-export function useDappConnectionContext() {
-  return useContext(dappConnectionContext)
-}
+export const useDappConnectionContext = () => useContext(dappConnectionContext)
