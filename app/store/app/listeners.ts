@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { isAnyOf } from '@reduxjs/toolkit'
 import { differenceInSeconds } from 'date-fns'
 import { AppState, AppStateStatus, Platform } from 'react-native'
+import { default as WalletConnectService } from 'services/walletconnect/WalletConnectService'
 import { AppListenerEffectAPI } from 'store'
 import {
   onRehydrationComplete,
@@ -123,6 +124,7 @@ const clearData = async (action: any, listenerApi: AppListenerEffectAPI) => {
   dispatch(setWalletState(WalletState.NONEXISTENT))
   await BiometricsSDK.clearWalletKey()
   await AsyncStorage.clear()
+  await WalletConnectService.killAllSessions()
 }
 
 export const addAppListeners = (startListening: AppStartListening) => {
