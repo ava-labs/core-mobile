@@ -61,7 +61,7 @@ export default function TextArea(props: Props | Readonly<Props>): JSX.Element {
         {props.heading && (
           <AvaText.Heading2
             textStyle={{ marginBottom: 16 }}
-            testID="recoveryPhraseTitle">
+            testID="text_area__recovery_phrase_title">
             Recovery phrase
           </AvaText.Heading2>
         )}
@@ -88,7 +88,7 @@ export default function TextArea(props: Props | Readonly<Props>): JSX.Element {
               fontFamily: 'Inter-Regular'
             }
           ]}
-          testID="recoveryPhraseTextInput"
+          testID="text_area__recovery_phrase"
         />
         {errorMessage && (
           <AvaText.Body3

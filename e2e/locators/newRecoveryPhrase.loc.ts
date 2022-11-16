@@ -1,9 +1,9 @@
 export default {
-  mnemonicWord: 'mnemonicWord',
-  copyPhraseBtn: 'copyPhraseBtn',
+  mnemonicWord: 'mnemonic_ava__word',
+  copyPhraseBtn: 'mnemonic_screen__copy_phrase_button',
   iWroteItDownBtn: 'I wrote it down',
-  warningModalTitle: 'warningModalTitle',
-  warningModalMessage: 'warningModalMessage',
+  warningModalTitle: 'warning_modal__title',
+  warningModalMessage: 'warning_modal__message',
   warningModalIUnderstandBtn: 'I understand',
-  warningModalBackBtn: 'warningModalBackBtn'
+  warningModalBackBtn: 'warning_mocal__back_button'
 }

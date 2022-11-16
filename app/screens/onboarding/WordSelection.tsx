@@ -26,7 +26,7 @@ export default function WordSelection({
 
   return (
     <>
-      <AvaText.Heading3 testID="selectWordNumber">
+      <AvaText.Heading3 testID="word_selection__word_number">
         Select word #{wordIndex + 1}
       </AvaText.Heading3>
       <Space y={16} />

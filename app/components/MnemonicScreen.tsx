@@ -48,11 +48,11 @@ export default function MnemonicScreen({ mnemonic }: Props) {
           disabled={!mnemonic}
           onPress={() => copyToClipboard(mnemonic)}
           icon={<CopySVG />}
-          testID="copyPhraseBtn"
+          testID="mnemonic_screen__copy_phrase_button"
           text={
             <AvaText.ButtonMedium
               textStyle={{ color: theme.alternateBackground }}
-              testID="copyPhraseBtn">
+              testID="mnemonic_screen__copy_phrase_button">
               Copy Phrase
             </AvaText.ButtonMedium>
           }

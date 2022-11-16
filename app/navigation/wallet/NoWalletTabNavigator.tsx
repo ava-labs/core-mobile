@@ -134,7 +134,7 @@ const NoWalletTabNavigator = () => {
             options={{
               tabBarIcon: () =>
                 normalTabButton({
-                  testID: 'recoverWalletBtn',
+                  testID: 'no_wallet_tab_navigator__recover_wallet_btn',
                   theme,
                   routeName: AppNavigation.NoWalletTabs.ExistingWallet,
                   focused: true,

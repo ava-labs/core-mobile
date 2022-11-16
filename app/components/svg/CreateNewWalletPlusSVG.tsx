@@ -15,7 +15,7 @@ function CreateNewWalletPlusSVG({ size = 65, bold = false }: Prop) {
       height={size}
       viewBox="0 0 65 65"
       fill="none"
-      testID="creatNewWalletSvg">
+      testID="create_new_wallet_plus_svg">
       <Line
         x1="32.5956"
         y1="8.125"

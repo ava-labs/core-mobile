@@ -49,7 +49,7 @@ class VerifyPhrasePage {
           await element(by.text(wordsToConfirm[i])).atIndex(1).tap()
           await delay(500)
         } else if (i === 2) {
-          await element(by.text(wordsToConfirm[i])).atIndex(2).tap()
+          await element(by.text(wordsToConfirm[i])).atIndex(1).tap()
           await delay(500)
         }
       }

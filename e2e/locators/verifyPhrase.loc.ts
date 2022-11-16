@@ -1,4 +1,4 @@
 export default {
-  selectWord: 'selectWordNumber',
-  verifyPhraseBtn: 'verifyPhraseBtn'
+  selectWord: 'word_selection__word_number',
+  verifyPhraseBtn: 'check_mnemonic__verify_phrase_btn'
 }

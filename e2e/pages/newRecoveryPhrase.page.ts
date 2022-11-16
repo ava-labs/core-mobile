@@ -29,7 +29,7 @@ class NewRecoveryPhrasePage {
   // Creates an object of all of the recovery phrase words with an index
   async mnemonicWordsObject() {
     const wordNumberAttributes = await element(
-      by.id('mnemonicWordsView')
+      by.id('mnemonic_ava__words_view')
     ).getAttributes()
     // Must ignore this TS error because the elements type hasn't been implemented by detox
     // @ts-ignore

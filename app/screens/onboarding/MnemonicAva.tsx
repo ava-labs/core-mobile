@@ -51,7 +51,7 @@ function MnemonicText(props: TextProps | Readonly<TextProps>) {
   const theme = useApplicationContext().theme
   const orderNum = (props.keyNum + 1).toString()
   return (
-    <View style={[styles.horizontalLayout]} testID="mnemonicWordsView">
+    <View style={[styles.horizontalLayout]} testID="mnemonic_ava__words_view">
       <AvaText.Body2
         textStyle={{ marginEnd: 6, color: theme.colorText1 }}
         testID={orderNum}>
@@ -59,7 +59,7 @@ function MnemonicText(props: TextProps | Readonly<TextProps>) {
       </AvaText.Body2>
       <AvaText.Body2
         textStyle={{ color: theme.colorText1 }}
-        testID={`mnemonicWord`}>
+        testID={`mnemonic_ava__word`}>
         {props.text}
       </AvaText.Body2>
     </View>

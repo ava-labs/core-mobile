@@ -27,7 +27,7 @@ describe('Add existing wallet', () => {
       await delay(500)
     }
     await CreatePinPage.tapEmptyCheckbox()
-    // await CreatePinPage.tapNextBtn()
+    await CreatePinPage.tapNextBtn()
     await expect(element(by.text('Collectibles'))).toBeVisible()
   })
 })

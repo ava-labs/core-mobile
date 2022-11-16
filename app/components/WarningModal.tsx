@@ -25,19 +25,19 @@ const WarningModal: FC<Props> = ({
     <ModalContainer>
       <AvaText.Heading2
         textStyle={{ marginTop: 8, textAlign: 'center' }}
-        testID="warningModalTitle">
+        testID="warning_modal__title">
         {title}
       </AvaText.Heading2>
       <AvaText.Body2
         textStyle={{ textAlign: 'center', marginTop: 16 }}
-        testID="warningModalMessage">
+        testID="warning_modal__message">
         {message}
       </AvaText.Body2>
       {onAction && (
         <AvaButton.PrimaryLarge
           style={{ marginTop: 28 }}
           onPress={onAction}
-          testID="modalIUnderstandBtn">
+          testID="warning_modal__i_understand_button">
           {actionText}
         </AvaButton.PrimaryLarge>
       )}
@@ -45,7 +45,7 @@ const WarningModal: FC<Props> = ({
         <AvaButton.TextLarge
           style={{ marginTop: 16 }}
           onPress={onDismiss}
-          testID="modalBackBtn">
+          testID="warning_modal__back_button">
           {dismissText}
         </AvaButton.TextLarge>
       )}
