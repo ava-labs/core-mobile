@@ -17,6 +17,34 @@ type Params = {
   handleSessionDisconnected: (peerMeta: PeerMeta) => void
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const approveCall = (id: number, result: any) =>
+  WalletConnectService.emitter.emit(WalletConnectRequest.CALL_APPROVED, {
+    id,
+    result
+  })
+
+export const rejectCall = (id: number, message?: string) => {
+  WalletConnectService.emitter.emit(WalletConnectRequest.CALL_REJECTED, {
+    id,
+    message
+  })
+}
+
+export const approveSession = (peerId: string | undefined) =>
+  peerId &&
+  WalletConnectService.emitter.emit(
+    WalletConnectRequest.SESSION_APPROVED,
+    peerId
+  )
+
+export const rejectSession = (peerId: string | undefined) =>
+  peerId &&
+  WalletConnectService.emitter.emit(
+    WalletConnectRequest.SESSION_REJECTED,
+    peerId
+  )
+
 export const useWalletConnect = ({
   activeAccount,
   activeNetwork,

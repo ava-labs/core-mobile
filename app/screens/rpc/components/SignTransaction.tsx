@@ -23,7 +23,7 @@ import { useActiveNetwork } from 'hooks/useActiveNetwork'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import EditSpendLimit from 'components/EditSpendLimit'
 import CarrotSVG from 'components/svg/CarrotSVG'
-import { DappEvent } from 'contexts/DappConnectionContext/types'
+import { DappSignTransactionEvent } from 'contexts/DappConnectionContext/types'
 import { getExplorerAddressByNetwork } from 'utils/ExplorerUtils'
 import useInAppBrowser from 'hooks/useInAppBrowser'
 import FlexSpacer from 'components/FlexSpacer'
@@ -40,9 +40,9 @@ import { BigNumber } from 'ethers'
 import { ScrollView } from 'react-native-gesture-handler'
 
 interface Props {
-  onApprove: (tx: Transaction) => Promise<{ hash?: string; error?: unknown }>
-  onReject: (message?: string) => void
-  dappEvent?: DappEvent
+  onApprove: (tx: Transaction) => Promise<{ hash?: string }>
+  onReject: () => void
+  dappEvent: DappSignTransactionEvent
   onClose: () => void
 }
 
@@ -197,7 +197,7 @@ const SignTransaction: FC<Props> = ({
         <Space y={16} />
         <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
           <AvaText.Body2 color={theme.colorText1}>
-            Approve {dappEvent?.peerMeta?.name} transaction
+            Approve {dappEvent.peerMeta.name} transaction
           </AvaText.Body2>
           <AvaButton.Base onPress={() => setShowData(true)}>
             <Row>
@@ -337,7 +337,7 @@ const SignTransaction: FC<Props> = ({
               {submitting && <ActivityIndicator />} Approve
             </AvaButton.PrimaryLarge>
             <Space y={20} />
-            <AvaButton.SecondaryLarge onPress={onReject}>
+            <AvaButton.SecondaryLarge onPress={() => onReject()}>
               Reject
             </AvaButton.SecondaryLarge>
           </View>

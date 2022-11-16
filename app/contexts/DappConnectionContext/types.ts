@@ -1,48 +1,63 @@
 import { Dispatch } from 'react'
 import { JsonRpcRequest } from '@walletconnect/jsonrpc-types'
-import { PeerMetadata, RPC_EVENT, Transaction } from 'screens/rpc/util/types'
+import {
+  PeerMetadata,
+  RPC_EVENT,
+  Transaction,
+  TransactionParams
+} from 'screens/rpc/util/types'
 import { DeepLink } from 'services/walletconnect/types'
 
-export interface AdditionalMessageParams {
+export type DappSessionEvent = {
+  peerMeta: PeerMetadata
+  eventType: RPC_EVENT.SESSION_REQUEST
+  handled?: boolean
+}
+
+export type DappSignMessageEvent = {
+  payload: JsonRpcRequest<TransactionParams[]>
+  peerMeta: PeerMetadata
+  eventType: RPC_EVENT.SIGN_MESSAGE
+  handled?: boolean
+
+  // additional message params
   data?: string
   from?: string
   password?: string
 }
 
-export type DappEvent = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  payload?: JsonRpcRequest<any[]> & AdditionalMessageParams
+export type DappSignTransactionEvent = {
+  payload: JsonRpcRequest<TransactionParams[]>
   peerMeta: PeerMetadata
-  eventType: RPC_EVENT
+  eventType: RPC_EVENT.SIGN_TRANSACTION
   handled?: boolean
 }
+
+export type DappUpdateContactEvent = {
+  payload: JsonRpcRequest<CoreWebContact[] | undefined>
+  peerMeta: PeerMetadata
+  eventType: RPC_EVENT.UPDATE_CONTACT
+  handled?: boolean
+  contact: CoreWebContact
+}
+
+export type DappEvent =
+  | DappSessionEvent
+  | DappSignMessageEvent
+  | DappSignTransactionEvent
+  | DappUpdateContactEvent
 
 export interface DappConnectionState {
   dappEvent?: DappEvent
   onSessionApproved: () => void
   onSessionRejected: () => void
   onContactUpdated: (contact: CoreWebContact) => void
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onCustomCallApproved: (id: number, result: any) => void
-  onTransactionCallApproved: (
-    tx: Transaction
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ) => Promise<{ hash?: string; error?: any }>
-  onMessageCallApproved: (
-    payload: DappEvent
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ) => Promise<{ hash?: string; error?: any }>
-  onCallRejected: (id?: number, message?: string) => void
+  onTransactionCallApproved: (tx: Transaction) => Promise<{ hash?: string }>
+  onMessageCallApproved: () => Promise<{ hash?: string }>
   setEventHandled: (handled: boolean) => void
   pendingDeepLink: DeepLink | undefined
   setPendingDeepLink: Dispatch<DeepLink>
-
-  // similar to onCustomCallApproved except this is triggered by the user
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onCustomCallPromptApproved: (result: any) => void
-
-  // similar to onCallRejected except this is triggered by the user
-  onCallPromptRejected: (message?: string) => void
+  onCallRejected: (message?: string) => void
 }
 
 export type CoreWebAccount = {

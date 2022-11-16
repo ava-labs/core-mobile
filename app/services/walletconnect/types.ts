@@ -83,9 +83,16 @@ export enum RpcMethod {
 export type PeerMeta = IClientMeta | null | undefined
 
 export type CallRequestData = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  payload: JsonRpcRequest<any[]>
+  payload: JsonRpcRequest
   peerMeta: PeerMeta
+}
+
+export type SessionRequestData = {
+  peerId: string
+  peerMeta: PeerMeta
+  chainId: string | null | undefined
+  autoSign: boolean
+  requestOriginatedFrom: string | undefined
 }
 
 export const CORE_ONLY_METHODS = [

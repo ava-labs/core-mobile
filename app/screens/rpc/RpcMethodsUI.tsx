@@ -21,7 +21,7 @@ const RpcMethodsUI = () => {
     onContactUpdated,
     onMessageCallApproved,
     onTransactionCallApproved,
-    onCallPromptRejected,
+    onCallRejected,
     setEventHandled
   } = useDappConnectionContext()
 
@@ -38,16 +38,16 @@ const RpcMethodsUI = () => {
     if (!dappEvent) return null
 
     switch (dappEvent.eventType) {
-      case RPC_EVENT.SIGN:
+      case RPC_EVENT.SIGN_MESSAGE:
         return (
           <SignMessage
-            onRejected={onCallPromptRejected}
+            onRejected={onCallRejected}
             onApprove={onMessageCallApproved}
             dappEvent={dappEvent}
             onClose={goBack}
           />
         )
-      case RPC_EVENT.SESSION:
+      case RPC_EVENT.SESSION_REQUEST:
         return (
           <AccountApproval
             onReject={onSessionRejected}
@@ -55,10 +55,10 @@ const RpcMethodsUI = () => {
             dappEvent={dappEvent}
           />
         )
-      case RPC_EVENT.TRANSACTION:
+      case RPC_EVENT.SIGN_TRANSACTION:
         return (
           <SignTransaction
-            onReject={onCallPromptRejected}
+            onReject={onCallRejected}
             onApprove={onTransactionCallApproved}
             dappEvent={dappEvent}
             onClose={goBack}
@@ -67,7 +67,7 @@ const RpcMethodsUI = () => {
       case RPC_EVENT.UPDATE_CONTACT:
         return (
           <UpdateContact
-            onReject={onCallPromptRejected}
+            onReject={onCallRejected}
             onApprove={onContactUpdated}
             dappEvent={dappEvent}
           />

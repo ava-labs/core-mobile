@@ -16,10 +16,10 @@ import AccountItem from 'screens/portfolio/account/AccountItem'
 import { useDispatch, useSelector } from 'react-redux'
 import { Account, selectAccounts, setActiveAccountIndex } from 'store/account'
 import { useActiveAccount } from 'hooks/useActiveAccount'
-import { DappEvent } from 'contexts/DappConnectionContext/types'
+import { DappSessionEvent } from 'contexts/DappConnectionContext/types'
 
 interface Props {
-  dappEvent?: DappEvent
+  dappEvent: DappSessionEvent
   onApprove: () => void
   onReject: (message?: string) => void
 }
@@ -34,7 +34,7 @@ const AccountApproval: FC<Props> = ({ dappEvent, onApprove, onReject }) => {
     dispatch(setActiveAccountIndex(accountIndex))
   }
 
-  const peerMeta = dappEvent?.peerMeta
+  const peerMeta = dappEvent.peerMeta
 
   return (
     <NativeViewGestureHandler>

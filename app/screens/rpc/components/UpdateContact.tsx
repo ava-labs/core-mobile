@@ -9,22 +9,24 @@ import AvaButton from 'components/AvaButton'
 import { NativeViewGestureHandler } from 'react-native-gesture-handler'
 import FlexSpacer from 'components/FlexSpacer'
 import { useSelector } from 'react-redux'
-import { CoreWebContact, DappEvent } from 'contexts/DappConnectionContext/types'
+import {
+  CoreWebContact,
+  DappUpdateContactEvent
+} from 'contexts/DappConnectionContext/types'
 import AddressBookSVG from 'components/svg/AddressBookSVG'
 import AddressBookItem from 'components/addressBook/AddressBookItem'
 import { selectContact } from 'store/addressBook'
 
 interface Props {
-  dappEvent?: DappEvent
+  dappEvent: DappUpdateContactEvent
   onApprove: (contact: CoreWebContact) => void
-  onReject: (message?: string) => void
+  onReject: () => void
 }
 
 const UpdateContact: FC<Props> = ({ dappEvent, onApprove, onReject }) => {
   const theme = useApplicationContext().theme
-  // contact here is always valid as we already check in DappConnectionContext
-  const contact = dappEvent?.payload?.params?.[0] as CoreWebContact
-  const peerMeta = dappEvent?.peerMeta
+  const contact = dappEvent.contact
+  const peerMeta = dappEvent.peerMeta
 
   const existingContact = useSelector(selectContact(contact.id))
 
@@ -57,7 +59,7 @@ const UpdateContact: FC<Props> = ({ dappEvent, onApprove, onReject }) => {
           </OvalTagBg>
           <Space y={15} />
           <AvaText.Body1 textStyle={styles.subTileText}>
-            {new URL(peerMeta?.url ?? '').hostname} is requesting to update a
+            {new URL(peerMeta.url ?? '').hostname} is requesting to update a
             contact:
           </AvaText.Body1>
           <Space y={16} />
@@ -70,7 +72,7 @@ const UpdateContact: FC<Props> = ({ dappEvent, onApprove, onReject }) => {
             Approve
           </AvaButton.PrimaryMedium>
           <Space y={21} />
-          <AvaButton.SecondaryMedium onPress={onReject}>
+          <AvaButton.SecondaryMedium onPress={() => onReject()}>
             Reject
           </AvaButton.SecondaryMedium>
         </View>

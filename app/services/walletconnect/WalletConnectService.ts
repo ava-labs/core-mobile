@@ -13,6 +13,7 @@ import {
   CORE_ONLY_METHODS,
   CORE_WEB_URLS,
   RpcMethod,
+  SessionRequestData,
   WalletConnectRequest
 } from 'services/walletconnect/types'
 import { JsonRpcRequest } from '@walletconnect/jsonrpc-types'
@@ -96,7 +97,7 @@ class WalletConnectService {
       }
 
       try {
-        const sessionData = {
+        const sessionData: SessionRequestData = {
           ...payload.params[0],
           autoSign: this.autoSign,
           requestOriginatedFrom: this.requestOriginatedFrom
@@ -125,12 +126,11 @@ class WalletConnectService {
     }
 
     /******************************************************************************
-     * 3. Receives call request and dispatches it so RpcMethodsUI
+     * 3. Receives call request and dispatches it to RpcMethodsUI
      *****************************************************************************/
     const onCallRequest = async (
       error: Error | null,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      payload: JsonRpcRequest<any[]>
+      payload: JsonRpcRequest
     ) => {
       // do not respond to call request if on BTC
       if (this.activeNetwork?.vmName === NetworkVMType.BITCOIN) return
@@ -229,19 +229,18 @@ class WalletConnectService {
   }
 
   // Session request emitters
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  sessionRequest = (peerInfo: any) =>
+  sessionRequest = (peerInfo: SessionRequestData) =>
     new Promise((resolve, reject) => {
       Logger.info('dapp emitting session request')
       emitter.emit(WalletConnectRequest.SESSION, peerInfo)
 
-      emitter.on(WalletConnectRequest.SESSION_APPROVED, peerId => {
+      emitter.on(WalletConnectRequest.SESSION_APPROVED, (peerId: string) => {
         if (peerInfo.peerId === peerId) {
           Logger.info('dapp received emission approval for session')
           resolve(true)
         }
       })
-      emitter.on(WalletConnectRequest.SESSION_REJECTED, peerId => {
+      emitter.on(WalletConnectRequest.SESSION_REJECTED, (peerId: string) => {
         if (peerInfo.peerId === peerId) {
           Logger.info('dapp received emission rejection for session')
           reject(new Error(WalletConnectRequest.SESSION_REJECTED))
