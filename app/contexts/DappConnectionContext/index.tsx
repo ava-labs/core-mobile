@@ -32,7 +32,6 @@ import AppNavigation from 'navigation/AppNavigation'
 import { getEvmProvider } from 'services/network/utils/providerUtils'
 import { selectAccounts } from 'store/account'
 import { addContact, selectContacts } from 'store/addressBook'
-import { getContactValidationError } from 'screens/drawer/addressBook/utils'
 import { processDeeplink } from './processDeepLinking'
 import {
   approveCall,
@@ -46,20 +45,9 @@ import {
   DappEvent,
   DappConnectionState,
   CoreWebAccount,
-  CoreWebContact,
-  DappSessionEvent
+  CoreWebContact
 } from './types'
-
-const hasValidPayload = (
-  event: DappEvent | undefined
-): event is Exclude<DappEvent, DappSessionEvent> => {
-  if (event && 'payload' in event) {
-    return true
-  }
-
-  Logger.error('dapp event without payload')
-  return false
-}
+import { hasValidPayload, parseContact } from './utils'
 
 const displayUserInstruction = (instruction: string, id?: string) => {
   showSnackBarCustom({
@@ -290,16 +278,9 @@ export const DappConnectionContextProvider = ({
           }
           case RpcMethod.AVALANCHE_UPDATE_CONTACT: {
             const { params } = payload
-            const contact = params?.[0] as CoreWebContact | undefined
-            const isContactValid =
-              contact &&
-              getContactValidationError(
-                contact?.name,
-                contact?.address,
-                contact?.addressBTC
-              ) === undefined
+            const contact = parseContact(params)
 
-            if (isContactValid) {
+            if (contact) {
               setDappEvent({
                 payload: payload,
                 peerMeta: meta,

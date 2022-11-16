@@ -109,8 +109,8 @@ export const CORE_ONLY_METHODS = [
 
 export const CORE_WEB_URLS = [
   'https://core.app',
-  'https://test.core.app',
+  'https://test.core.app'
 
   // uncomment to test with local core web
-  'http://localhost:3000'
+  // 'http://localhost:3000'
 ]
