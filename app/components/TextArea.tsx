@@ -93,7 +93,7 @@ export default function TextArea(props: Props | Readonly<Props>): JSX.Element {
         {errorMessage && (
           <AvaText.Body3
             textStyle={{ color: theme.colorError, marginTop: 4 }}
-            testID="errorMsg">
+            testID="text_area__error_message">
             {errorMessage}
           </AvaText.Body3>
         )}
@@ -102,7 +102,7 @@ export default function TextArea(props: Props | Readonly<Props>): JSX.Element {
       <AvaButton.PrimaryLarge
         disabled={primaryDisabled}
         onPress={() => props.onBtnPrimary(enteredText)}
-        testID="signInBtn">
+        testID="text_area__signin_button">
         {props.btnPrimaryText}
       </AvaButton.PrimaryLarge>
       <Space y={8} />

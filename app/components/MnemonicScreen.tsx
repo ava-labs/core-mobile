@@ -27,7 +27,7 @@ export default function MnemonicScreen({ mnemonic }: Props) {
 
   return (
     <View style={{ flex: 1 }}>
-      <AvaText.Body1 testID="newRecoverPhraseInstructions">
+      <AvaText.Body1 testID="menemonic_screen__new_recovery_phrase_instructions">
         Write down the recovery phrase and store it in a secure location.
       </AvaText.Body1>
       <Space y={24} />

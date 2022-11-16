@@ -147,7 +147,7 @@ function CurrencyAmountHelper({
         flexShrink: 1,
         alignItems: 'flex-end'
       }}
-      testID="currencyAmountHelper">
+      testID="ava_list_item__currency_amount_helper">
       {value}
       {currency}
     </View>

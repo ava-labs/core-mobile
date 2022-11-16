@@ -18,7 +18,7 @@ function MnemonicInput(props: InputProps | Readonly<InputProps>) {
         {(props.keyNum + 1).toString()}
       </AvaText.Body1>
       <TextInput
-        testID="mnemonicInput"
+        testID="mnemonic_ava__input"
         autoCapitalize="none"
         enablesReturnKeyAutomatically={true}
         style={[

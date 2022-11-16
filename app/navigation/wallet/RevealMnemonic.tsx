@@ -38,7 +38,7 @@ export default function RevealMnemonic(): JSX.Element {
         <AvaButton.PrimaryLarge
           disabled={!mnemonic}
           onPress={handleSaveMyPhrase}
-          testID="iWroteItDownBtn">
+          testID="reveal_mnemonic__i_wrote_it_down_button">
           I wrote it down
         </AvaButton.PrimaryLarge>
       </View>

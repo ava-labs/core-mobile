@@ -98,7 +98,7 @@ export const normalTabButton = ({
         textStyle={{
           color: focused ? theme.alternateBackground : theme.colorIcon4
         }}
-        testID="normalTabButton">
+        testID="nav_utils__normal_tab_button">
         {routeName}
       </AvaText.Caption>
     </View>

@@ -71,7 +71,7 @@ function Word({
   return (
     <View style={{ flexGrow: 1 }}>
       <AvaButton.Base
-        testID="selectWordBtn"
+        testID="word_selection__select_word_button"
         onPress={() => onSelected(word)}
         style={{
           backgroundColor: selected ? colorSelected : bgColor,
@@ -80,7 +80,7 @@ function Word({
           padding: 12
         }}>
         <AvaText.ButtonMedium
-          testID="selectWordText"
+          testID="word_selection__select_word_text"
           textStyle={{ color: selected ? textColorSelected : textColor }}>
           {word}
         </AvaText.ButtonMedium>
