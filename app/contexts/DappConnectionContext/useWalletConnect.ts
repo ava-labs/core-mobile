@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import {
   CallRequestData,
   PeerMeta,
+  SessionRequestData,
   WalletConnectRequest
 } from 'services/walletconnect/types'
 import WalletConnectService from 'services/walletconnect/WalletConnectService'
@@ -11,8 +12,7 @@ import { Account } from 'store/account'
 type Params = {
   activeAccount: Account | undefined
   activeNetwork: Network
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  handleSessionRequest: (sessionInfo: any) => void
+  handleSessionRequest: (sessionInfo: SessionRequestData) => void
   handleCallRequest: (data: CallRequestData) => void
   handleSessionDisconnected: (peerMeta: PeerMeta) => void
 }

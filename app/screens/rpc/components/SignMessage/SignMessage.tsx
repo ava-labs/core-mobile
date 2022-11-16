@@ -36,7 +36,7 @@ const SignMessage: FC<Props> = ({
   const [submitting, setSubmitting] = useState(false)
   const [signFailedError, setSignFailedError] = useState<string>()
 
-  // TODO move validation inside DappConnectionContext
+  // TODO CP-4029 move validation inside DappConnectionContext
   if (!dappEvent?.payload) {
     onClose()
     return null
