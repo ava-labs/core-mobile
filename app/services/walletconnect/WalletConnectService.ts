@@ -17,7 +17,6 @@ import {
 } from 'services/walletconnect/types'
 import { JsonRpcRequest } from '@walletconnect/jsonrpc-types'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
-import { TransactionParams } from 'screens/rpc/util/types'
 import Logger from 'utils/Logger'
 import { Account } from 'store/account'
 
@@ -130,7 +129,8 @@ class WalletConnectService {
      *****************************************************************************/
     const onCallRequest = async (
       error: Error | null,
-      payload: JsonRpcRequest<TransactionParams[]>
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      payload: JsonRpcRequest<any[]>
     ) => {
       // do not respond to call request if on BTC
       if (this.activeNetwork?.vmName === NetworkVMType.BITCOIN) return

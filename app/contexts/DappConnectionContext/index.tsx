@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, {
   createContext,
-  Dispatch,
   useCallback,
   useContext,
   useEffect,
@@ -10,19 +9,12 @@ import React, {
 import WalletConnectService from 'services/walletconnect/WalletConnectService'
 import {
   CallRequestData,
-  DeepLink,
   PeerMeta,
   RpcMethod,
   WalletConnectRequest
 } from 'services/walletconnect/types'
 import { InteractionManager } from 'react-native'
-import {
-  PeerMetadata,
-  RPC_EVENT,
-  Transaction,
-  TransactionParams
-} from 'screens/rpc/util/types'
-import { JsonRpcRequest } from '@walletconnect/jsonrpc-types'
+import { PeerMetadata, RPC_EVENT, Transaction } from 'screens/rpc/util/types'
 import { paramsToMessageParams } from 'screens/rpc/util/paramsToMessageParams'
 import { useActiveAccount } from 'hooks/useActiveAccount'
 import { useActiveNetwork } from 'hooks/useActiveNetwork'
@@ -30,7 +22,7 @@ import Logger from 'utils/Logger'
 import { txToCustomEvmTx } from 'screens/rpc/util/txToCustomEvmTx'
 import networkService from 'services/network/NetworkService'
 import walletService from 'services/wallet/WalletService'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { selectNetworkFee } from 'store/networkFee'
 import { showSnackBarCustom } from 'components/Snackbar'
 import GeneralToast from 'components/toast/GeneralToast'
@@ -40,41 +32,38 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import AppNavigation from 'navigation/AppNavigation'
 import { getEvmProvider } from 'services/network/utils/providerUtils'
 import { selectAccounts } from 'store/account'
-import { selectContacts } from 'store/addressBook'
+import { addContact, selectContacts } from 'store/addressBook'
+import { getContactValidationError } from 'screens/drawer/addressBook/utils'
 import { processDeeplink } from './processDeepLinking'
 import { useWalletConnect } from './useWalletConnect'
 import { useDeepLink } from './useDeepLink'
+import {
+  DappEvent,
+  DappConnectionState,
+  CoreWebAccount,
+  CoreWebContact
+} from './types'
 
-interface AdditionalMessageParams {
-  data?: string
-  from?: string
-  password?: string
+const displayUserInstruction = (instruction: string, id?: string) => {
+  showSnackBarCustom({
+    component: <GeneralToast message={instruction} />,
+    duration: 'short',
+    id
+  })
 }
 
-export type DappEvent = {
-  payload?: JsonRpcRequest<TransactionParams[]> & AdditionalMessageParams
-  peerMeta: PeerMetadata
-  eventType: RPC_EVENT
-  handled?: boolean
+const handleSessionDisconnected = (peerMeta: PeerMeta) => {
+  InteractionManager.runAfterInteractions(() => {
+    if (peerMeta?.name) {
+      displayUserInstruction(
+        `${peerMeta.name} was disconnected remotely`,
+        peerMeta.url
+      )
+    }
+  })
 }
 
-interface DappConnectionContext {
-  dappEvent?: DappEvent
-  onSessionApproved: () => void
-  onSessionRejected: () => void
-  onTransactionCallApproved: (
-    tx: Transaction
-  ) => Promise<{ hash?: string; error?: any }>
-  onMessageCallApproved: (
-    payload: DappEvent
-  ) => Promise<{ hash?: string; error?: any }>
-  onCallRejected: () => void
-  setEventHandled: (handled: boolean) => void
-  pendingDeepLink: DeepLink | undefined
-  setPendingDeepLink: Dispatch<DeepLink>
-}
-
-export const DappConnectionContext = createContext<DappConnectionContext>(
+export const DappConnectionContext = createContext<DappConnectionState>(
   {} as any
 )
 
@@ -83,6 +72,7 @@ export const DappConnectionContextProvider = ({
 }: {
   children: any
 }) => {
+  const dispatch = useDispatch()
   const accounts = useSelector(selectAccounts)
   const contacts = useSelector(selectContacts)
   const activeAccount = useActiveAccount()
@@ -143,17 +133,6 @@ export const DappConnectionContextProvider = ({
     appNavHook?.navigation?.current
   ])
 
-  const displayUserInstruction = useCallback(
-    (instruction: string, id?: string) => {
-      showSnackBarCustom({
-        component: <GeneralToast message={instruction} />,
-        duration: 'short',
-        id
-      })
-    },
-    []
-  )
-
   const setEventHandled = useCallback((handled: boolean) => {
     setDappEvent(event => {
       if (event === undefined) return event
@@ -162,7 +141,7 @@ export const DappConnectionContextProvider = ({
     })
   }, [])
 
-  const getAccounts = useCallback(
+  const getAccounts: () => CoreWebAccount[] = useCallback(
     () =>
       Object.values(accounts).map(account => ({
         index: account.index,
@@ -174,7 +153,7 @@ export const DappConnectionContextProvider = ({
     [accounts, activeAccount?.index]
   )
 
-  const getContacts = useCallback(
+  const getContacts: () => CoreWebContact[] = useCallback(
     () =>
       Object.values(contacts).map(contact => ({
         id: contact.id,
@@ -209,24 +188,50 @@ export const DappConnectionContextProvider = ({
     [clearRequests]
   )
 
-  const approveCustomCall = useCallback(
-    (id: number, result: any) => {
-      if (!activeAccount || !activeNetwork || !id) {
-        return Promise.reject({ error: 'not ready' })
-      }
+  const onCustomCallApproved = useCallback((id: number, result: any) => {
+    WalletConnectService.emitter.emit(WalletConnectRequest.CALL_APPROVED, {
+      id,
+      result
+    })
+  }, [])
 
+  const onCustomCallPromptApproved = useCallback(
+    (result: any) => {
       WalletConnectService.emitter.emit(WalletConnectRequest.CALL_APPROVED, {
-        id,
+        id: dappEvent?.payload?.id,
         result
       })
+      displayUserInstruction('Go back to the browser')
+      clearRequests()
     },
-    [activeAccount, activeNetwork]
+    [clearRequests, dappEvent?.payload?.id]
+  )
+
+  const onCallRejected = useCallback((id?: number, message?: string) => {
+    if (id) {
+      WalletConnectService.emitter.emit(WalletConnectRequest.CALL_REJECTED, {
+        id,
+        message
+      })
+    }
+  }, [])
+
+  const onCallPromptRejected = useCallback(
+    (message?: string) => {
+      WalletConnectService.emitter.emit(WalletConnectRequest.CALL_REJECTED, {
+        id: dappEvent?.payload?.id,
+        message: message ?? 'user rejected'
+      })
+
+      clearRequests()
+    },
+    [clearRequests, dappEvent?.payload?.id]
   )
 
   const handleCallRequest = useCallback(
     (data: CallRequestData) => {
       InteractionManager.runAfterInteractions(() => {
-        const payload: JsonRpcRequest<TransactionParams[]> = data.payload
+        const payload = data.payload
         const meta: PeerMetadata = {
           name: data?.peerMeta?.name,
           description: data?.peerMeta?.description,
@@ -260,32 +265,43 @@ export const DappConnectionContextProvider = ({
           }
           case RpcMethod.AVALANCHE_GET_ACCOUNTS: {
             const result = getAccounts()
-            approveCustomCall(payload.id, result)
+            onCustomCallApproved(payload.id, result)
             break
           }
           case RpcMethod.AVALANCHE_GET_CONTACTS: {
             const result = getContacts()
-            approveCustomCall(payload.id, result)
+            onCustomCallApproved(payload.id, result)
+            break
+          }
+          case RpcMethod.AVALANCHE_UPDATE_CONTACT: {
+            const { params } = payload
+            const contact = params?.[0] as CoreWebContact | undefined
+            const isContactValid =
+              contact &&
+              getContactValidationError(
+                contact?.name,
+                contact?.address,
+                contact?.addressBTC
+              ) === undefined
+            console.log(isContactValid)
+            if (isContactValid) {
+              setDappEvent({
+                payload: payload,
+                peerMeta: meta,
+                eventType: RPC_EVENT.UPDATE_CONTACT
+              })
+              Logger.info(
+                `received CALL request, created ${RPC_EVENT.UPDATE_CONTACT} event`
+              )
+            } else {
+              onCallRejected(payload.id, 'contact to update is invalid')
+            }
             break
           }
         }
       })
     },
-    [approveCustomCall, getAccounts, getContacts]
-  )
-
-  const handleSessionDisconnected = useCallback(
-    (peerMeta: PeerMeta) => {
-      InteractionManager.runAfterInteractions(() => {
-        if (peerMeta?.name) {
-          displayUserInstruction(
-            `${peerMeta.name} was disconnected remotely`,
-            peerMeta.url
-          )
-        }
-      })
-    },
-    [displayUserInstruction]
+    [getAccounts, getContacts, onCallRejected, onCustomCallApproved]
   )
 
   useWalletConnect({
@@ -296,14 +312,6 @@ export const DappConnectionContextProvider = ({
     handleSessionDisconnected
   })
 
-  const onCallRejected = useCallback(() => {
-    WalletConnectService.emitter.emit(
-      WalletConnectRequest.CALL_REJECTED,
-      dappEvent?.payload?.id
-    )
-    clearRequests()
-  }, [clearRequests, dappEvent?.payload?.id])
-
   const onSessionApproved = useCallback(() => {
     WalletConnectService.emitter.emit(
       WalletConnectRequest.SESSION_APPROVED,
@@ -311,7 +319,7 @@ export const DappConnectionContextProvider = ({
     )
     displayUserInstruction('Go back to the browser')
     clearRequests()
-  }, [clearRequests, dappEvent?.peerMeta?.peerId, displayUserInstruction])
+  }, [clearRequests, dappEvent?.peerMeta?.peerId])
 
   const onSessionRejected = useCallback(() => {
     WalletConnectService.emitter.emit(
@@ -349,7 +357,7 @@ export const DappConnectionContextProvider = ({
           return Promise.reject({ error: e })
         })
     },
-    [activeAccount, activeNetwork, displayUserInstruction]
+    [activeAccount, activeNetwork]
   )
 
   const onTransactionCallApproved = useCallback(
@@ -412,7 +420,23 @@ export const DappConnectionContextProvider = ({
           })
       })
     },
-    [activeAccount, activeNetwork, displayUserInstruction, networkFees.low]
+    [activeAccount, activeNetwork, networkFees.low]
+  )
+
+  const onContactUpdated = useCallback(
+    (contact: CoreWebContact) => {
+      dispatch(
+        addContact({
+          address: contact.address,
+          addressBtc: contact.addressBTC,
+          title: contact.name,
+          id: contact.id
+        })
+      )
+
+      onCustomCallPromptApproved('')
+    },
+    [dispatch, onCustomCallPromptApproved]
   )
 
   return (
@@ -423,7 +447,11 @@ export const DappConnectionContextProvider = ({
         onSessionRejected,
         onTransactionCallApproved,
         onMessageCallApproved,
+        onCustomCallApproved,
+        onCustomCallPromptApproved,
         onCallRejected,
+        onCallPromptRejected,
+        onContactUpdated,
         setEventHandled,
         pendingDeepLink,
         setPendingDeepLink

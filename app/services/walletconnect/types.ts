@@ -1,6 +1,5 @@
 import { JsonRpcRequest } from '@walletconnect/jsonrpc-types'
 import { IClientMeta } from '@walletconnect/types'
-import { TransactionParams } from 'screens/rpc/util/types'
 import { PeerMetadata } from 'screens/rpc/util/types'
 
 const CORE_MOBILE_WALLET_ID = 'c3de833a-9cb0-4274-bb52-86e402ecfcd3'
@@ -84,7 +83,8 @@ export enum RpcMethod {
 export type PeerMeta = IClientMeta | null | undefined
 
 export type CallRequestData = {
-  payload: JsonRpcRequest<TransactionParams[]>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  payload: JsonRpcRequest<any[]>
   peerMeta: PeerMeta
 }
 

@@ -16,12 +16,12 @@ import AccountItem from 'screens/portfolio/account/AccountItem'
 import { useDispatch, useSelector } from 'react-redux'
 import { Account, selectAccounts, setActiveAccountIndex } from 'store/account'
 import { useActiveAccount } from 'hooks/useActiveAccount'
-import { DappEvent } from 'contexts/DappConnectionContext'
+import { DappEvent } from 'contexts/DappConnectionContext/types'
 
 interface Props {
   dappEvent?: DappEvent
   onApprove: () => void
-  onReject: () => void
+  onReject: (message?: string) => void
 }
 
 const AccountApproval: FC<Props> = ({ dappEvent, onApprove, onReject }) => {

@@ -23,7 +23,7 @@ import { useActiveNetwork } from 'hooks/useActiveNetwork'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import EditSpendLimit from 'components/EditSpendLimit'
 import CarrotSVG from 'components/svg/CarrotSVG'
-import { DappEvent } from 'contexts/DappConnectionContext'
+import { DappEvent } from 'contexts/DappConnectionContext/types'
 import { getExplorerAddressByNetwork } from 'utils/ExplorerUtils'
 import useInAppBrowser from 'hooks/useInAppBrowser'
 import FlexSpacer from 'components/FlexSpacer'
@@ -41,7 +41,7 @@ import { ScrollView } from 'react-native-gesture-handler'
 
 interface Props {
   onApprove: (tx: Transaction) => Promise<{ hash?: string; error?: unknown }>
-  onReject: () => void
+  onReject: (message?: string) => void
   dappEvent?: DappEvent
   onClose: () => void
 }

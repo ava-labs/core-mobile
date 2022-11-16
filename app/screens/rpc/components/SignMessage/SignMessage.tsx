@@ -12,7 +12,7 @@ import SignDataV4 from 'screens/rpc/components/SignMessage/SignDataV4'
 import { ScrollView } from 'react-native-gesture-handler'
 import FlexSpacer from 'components/FlexSpacer'
 import { MessageAction, RpcMethod } from 'services/walletconnect/types'
-import { DappEvent } from 'contexts/DappConnectionContext'
+import { DappEvent } from 'contexts/DappConnectionContext/types'
 import { showSnackBarCustom } from 'components/Snackbar'
 import TransactionToast, {
   TransactionToastType
@@ -21,7 +21,7 @@ import * as Sentry from '@sentry/react-native'
 
 interface Props {
   dappEvent?: DappEvent
-  onRejected: () => void
+  onRejected: (message?: string) => void
   onApprove: (payload: DappEvent) => Promise<{ hash?: string; error?: unknown }>
   onClose: () => void
 }
