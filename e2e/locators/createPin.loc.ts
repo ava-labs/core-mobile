@@ -1,5 +1,5 @@
 export default {
   numPadZero: `0`,
-  emptyCheckBox: `checkBoxEmpty`,
+  emptyCheckBox: `checkbox_empty_svg`,
   nextBtn: `Next`
 }

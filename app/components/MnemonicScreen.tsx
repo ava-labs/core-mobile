@@ -11,6 +11,7 @@ import { Opacity30 } from 'resources/Constants'
 
 type Props = {
   mnemonic: string
+  testID?: string
 }
 
 export default function MnemonicScreen({ mnemonic }: Props) {
@@ -26,7 +27,7 @@ export default function MnemonicScreen({ mnemonic }: Props) {
 
   return (
     <View style={{ flex: 1 }}>
-      <AvaText.Body1>
+      <AvaText.Body1 testID="menemonic_screen__new_recovery_phrase_instructions">
         Write down the recovery phrase and store it in a secure location.
       </AvaText.Body1>
       <Space y={24} />
@@ -47,9 +48,11 @@ export default function MnemonicScreen({ mnemonic }: Props) {
           disabled={!mnemonic}
           onPress={() => copyToClipboard(mnemonic)}
           icon={<CopySVG />}
+          testID="mnemonic_screen__copy_phrase_button"
           text={
             <AvaText.ButtonMedium
-              textStyle={{ color: theme.alternateBackground }}>
+              textStyle={{ color: theme.alternateBackground }}
+              testID="mnemonic_screen__copy_phrase_button">
               Copy Phrase
             </AvaText.ButtonMedium>
           }

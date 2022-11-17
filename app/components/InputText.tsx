@@ -289,7 +289,9 @@ function MaxBtn({ onPress }: { onPress?: () => void }) {
           end: 0
         }
       ]}>
-      <AvaButton.TextMedium onPress={onPress}>Max</AvaButton.TextMedium>
+      <AvaButton.TextMedium onPress={onPress} testID="input_text__max_button">
+        Max
+      </AvaButton.TextMedium>
     </View>
   )
 }
@@ -303,7 +305,7 @@ function ConfirmBtn({ onPress }: { onPress?: () => void }) {
           end: 16
         }
       ]}>
-      <AvaButton.Icon onPress={onPress}>
+      <AvaButton.Icon onPress={onPress} testID="input_text__confirm_button">
         <CheckmarkSVG />
       </AvaButton.Icon>
     </View>
@@ -356,7 +358,7 @@ const ClearBtn = ({
           right: 8
         }
       ]}>
-      <AvaButton.Icon onPress={onClear}>
+      <AvaButton.Icon onPress={onClear} testID="input_text__clear_button">
         <ClearInputSVG color={color} size={14} />
       </AvaButton.Icon>
     </View>
@@ -424,7 +426,9 @@ const HelperText = ({
     <>
       <Space y={5} />
       {!!helperText && typeof helperText === 'string' ? (
-        <AvaText.Body2 textStyle={{ textAlign: 'left' }}>
+        <AvaText.Body2
+          textStyle={{ textAlign: 'left' }}
+          testID="input_text__helper_text">
           {helperText}
         </AvaText.Body2>
       ) : (
@@ -444,7 +448,10 @@ const ErrorText = ({
   return (
     <>
       <View style={{ height: 4 }} />
-      <AvaText.Body3 textStyle={{ textAlign: 'left' }} color={color}>
+      <AvaText.Body3
+        textStyle={{ textAlign: 'left' }}
+        color={color}
+        testID="input_text__error_text">
         {errorText || ''}
       </AvaText.Body3>
     </>

@@ -18,6 +18,7 @@ function MnemonicInput(props: InputProps | Readonly<InputProps>) {
         {(props.keyNum + 1).toString()}
       </AvaText.Body1>
       <TextInput
+        testID="mnemonic_ava__input"
         autoCapitalize="none"
         enablesReturnKeyAutomatically={true}
         style={[
@@ -48,12 +49,17 @@ type TextProps = {
 
 function MnemonicText(props: TextProps | Readonly<TextProps>) {
   const theme = useApplicationContext().theme
+  const orderNum = (props.keyNum + 1).toString()
   return (
-    <View style={[styles.horizontalLayout]}>
-      <AvaText.Body2 textStyle={{ marginEnd: 6, color: theme.colorText1 }}>
-        {(props.keyNum + 1).toString()}.
+    <View style={[styles.horizontalLayout]} testID="mnemonic_ava__words_view">
+      <AvaText.Body2
+        textStyle={{ marginEnd: 6, color: theme.colorText1 }}
+        testID={orderNum}>
+        {orderNum}.
       </AvaText.Body2>
-      <AvaText.Body2 textStyle={{ color: theme.colorText1 }}>
+      <AvaText.Body2
+        textStyle={{ color: theme.colorText1 }}
+        testID={`mnemonic_ava__word`}>
         {props.text}
       </AvaText.Body2>
     </View>

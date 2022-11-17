@@ -14,6 +14,14 @@ class WatchListPage {
     return by.id(watchlist.walletSVG)
   }
 
+  get newWalletBtn() {
+    return by.text(watchlist.newWalletBtn)
+  }
+
+  get newWalletIcon() {
+    return by.id(watchlist.newWalletIcon)
+  }
+
   async tapWalletSVG() {
     await Action.tapElementAtIndex(this.walletSVG, 1)
   }
@@ -24,6 +32,14 @@ class WatchListPage {
 
   async tapRecoverWalletBtn() {
     await Action.tap(this.recoverWalletBtn)
+  }
+
+  async tapNewWalletBtn() {
+    await Action.tapElementAtIndex(this.newWalletBtn, 1)
+  }
+
+  async tapNewWalletIcon() {
+    await Action.tap(this.newWalletIcon)
   }
 }
 

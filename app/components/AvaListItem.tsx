@@ -22,7 +22,7 @@ interface Props {
   roundedEdges?: boolean
   background?: string
   paddingVertical?: number
-  testId?: string
+  testID?: string
 }
 
 function BaseListItem({
@@ -146,7 +146,8 @@ function CurrencyAmountHelper({
         justifyContent: justifyContent || 'flex-start',
         flexShrink: 1,
         alignItems: 'flex-end'
-      }}>
+      }}
+      testID="ava_list_item__currency_amount_helper">
       {value}
       {currency}
     </View>

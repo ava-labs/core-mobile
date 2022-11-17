@@ -108,6 +108,7 @@ const NoWalletTabNavigator = () => {
             options={{
               tabBarIcon: ({ focused }) =>
                 normalTabButton({
+                  testID: 'no_wallet_tab_navigator__create_new_wallet_button',
                   theme,
                   routeName: AppNavigation.NoWalletTabs.NewWallet,
                   focused,
@@ -133,6 +134,7 @@ const NoWalletTabNavigator = () => {
             options={{
               tabBarIcon: () =>
                 normalTabButton({
+                  testID: 'no_wallet_tab_navigator__recover_wallet_button',
                   theme,
                   routeName: AppNavigation.NoWalletTabs.ExistingWallet,
                   focused: true,

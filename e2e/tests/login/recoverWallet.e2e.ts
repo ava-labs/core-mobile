@@ -1,13 +1,14 @@
 /* eslint-env detox/detox, jest */
+/**
+ * @jest-environment ./jestCustomEnv
+ */
 import { by, expect, element, device } from 'detox'
-import WatchListPage from './pages/watchlist.page'
-import Assert from './helpers/assertions'
-import RecoveryPhrasePage from './pages/recoveryPhrase.page'
-import CreatePinPage from './pages/createPin.page'
-import AnalyticsConsentPage from './pages/analyticsConsent.page'
-import delay from './helpers/waits'
-
-// This is our first test, more will be added soon
+import Assert from '../../helpers/assertions'
+import ExistingRecoveryPhrasePage from '../../pages/existingRecoveryPhrase.page'
+import CreatePinPage from '../../pages/createPin.page'
+import AnalyticsConsentPage from '../../pages/analyticsConsent.page'
+import delay from '../../helpers/waits'
+import WatchListPage from '../../pages/watchlist.page'
 
 describe('Add existing wallet', () => {
   beforeAll(async () => {
@@ -19,8 +20,8 @@ describe('Add existing wallet', () => {
     const recoveryPhrase: string = process.env.RECOVERY_PHRASE as string
     await WatchListPage.tapWalletSVG()
     await AnalyticsConsentPage.tapNoThanksBtn()
-    await RecoveryPhrasePage.enterRecoveryPhrase(recoveryPhrase)
-    await RecoveryPhrasePage.tapSignInBtn()
+    await ExistingRecoveryPhrasePage.enterRecoveryPhrase(recoveryPhrase)
+    await ExistingRecoveryPhrasePage.tapSignInBtn()
     for (let i = 0; i < 12; i++) {
       await CreatePinPage.tapNumpadZero()
       await delay(500)

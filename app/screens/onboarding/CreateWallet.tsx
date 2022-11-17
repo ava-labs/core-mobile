@@ -44,7 +44,8 @@ export default function CreateWallet({ onSavedMyPhrase }: Props): JSX.Element {
 
       <AvaButton.PrimaryLarge
         disabled={!localMnemonic}
-        onPress={handleSaveMyPhrase}>
+        onPress={handleSaveMyPhrase}
+        testID="create_wallet__i_wrote_it_down_button">
         I wrote it down
       </AvaButton.PrimaryLarge>
     </View>
