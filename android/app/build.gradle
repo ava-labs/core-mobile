@@ -169,9 +169,10 @@ android {
             reset()
             enable enableSeparateBuildPerCPUArchitecture
             universalApk false  // If true, also generate a universal APK
-            include (*reactNativeArchitectures())
+            include(*reactNativeArchitectures())
         }
     }
+
 
     signingConfigs {
         debug {
@@ -181,20 +182,22 @@ android {
             keyPassword 'android'
         }
 
-    buildTypes {
-        debug {
-            signingConfig signingConfigs.debug
-        }
-        release {
-            minifyEnabled enableProguardInReleaseBuilds
-            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
-        }
-        e2e {
-            initWith release
-            matchingFallbacks = ['release'] // this is for libraries without an e2e build to know to fall back to release
+        buildTypes {
+            debug {
+                signingConfig signingConfigs.debug
+            }
+            release {
+                minifyEnabled enableProguardInReleaseBuilds
+                proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+            }
+            e2e {
+                initWith release
+                matchingFallbacks = ['release']
+                // this is for libraries without an e2e build to know to fall back to release
 
-            // Detox-specific additions to pro-guard
-            proguardFile "${rootProject.projectDir}/../node_modules/detox/android/detox/proguard-rules-app.pro"
+                // Detox-specific additions to pro-guard
+                proguardFile "${rootProject.projectDir}/../node_modules/detox/android/detox/proguard-rules-app.pro"
+            }
         }
     }
 
@@ -213,7 +216,7 @@ android {
         // Make sure libjsc.so does not get packed in APK
         exclude "**/libjsc.so"
     }
-    
+
     // applicationVariants are e.g. debug, release
     applicationVariants.all { variant ->
         variant.outputs.each { output ->
@@ -226,7 +229,6 @@ android {
                 output.versionCodeOverride =
                         defaultConfig.versionCode * 1000 + versionCodes.get(abi)
             }
-
         }
     }
 }
