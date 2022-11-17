@@ -10,9 +10,6 @@ import {
 import {
   CallRequestData,
   CLIENT_OPTIONS,
-  CORE_ONLY_METHODS,
-  CORE_WEB_URLS,
-  RpcMethod,
   SessionRequestData,
   WalletConnectRequest
 } from 'services/walletconnect/types'
@@ -20,6 +17,7 @@ import { JsonRpcRequest } from '@walletconnect/jsonrpc-types'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import Logger from 'utils/Logger'
 import { Account } from 'store/account'
+import { isCoreMethod, isFromCoreWeb } from './utils'
 
 let initialized = false
 let connectors: WalletConnectService[] = []
@@ -85,8 +83,7 @@ class WalletConnectService {
     const onSessionRequest = async (
       error: Error | null,
       payload: JsonRpcRequest,
-      // eslint-disable-next-line @typescript-eslint/no-shadow
-      existing: boolean
+      isExisting: boolean
     ) => {
       // do not respond to session request if on BTC
       if (this.activeNetwork?.vmName === NetworkVMType.BITCOIN) return
@@ -104,10 +101,10 @@ class WalletConnectService {
         }
 
         await waitForInitialization()
-        if (!existing) {
+        if (!isExisting) {
           await this.sessionRequest(sessionData)
         }
-        this.startSession(existing)
+        this.startSession(isExisting)
       } catch (e) {
         Logger.error('dapp session session error or user canceled', e)
         this.walletConnectClient?.rejectSession()
@@ -147,8 +144,8 @@ class WalletConnectService {
       const peerMeta = this.walletConnectClient?.session?.peerMeta
 
       // only process core methods if they come from core web
-      if (CORE_ONLY_METHODS.includes(payload.method as RpcMethod)) {
-        if (!CORE_WEB_URLS.includes(peerMeta?.url || '')) {
+      if (isCoreMethod(payload.method)) {
+        if (!isFromCoreWeb(peerMeta?.url || '')) {
           Logger.warn(
             `ignoring custom core method ${payload.method}. requested by ${peerMeta?.url}`
           )

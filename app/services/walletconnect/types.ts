@@ -106,11 +106,3 @@ export const CORE_ONLY_METHODS = [
   RpcMethod.AVALANCHE_SET_DEVELOPER_MODE,
   RpcMethod.AVALANCHE_UPDATE_CONTACT
 ]
-
-export const CORE_WEB_URLS = [
-  'https://core.app',
-  'https://test.core.app'
-
-  // uncomment to test with local core web
-  // 'http://localhost:3000'
-]
