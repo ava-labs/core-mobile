@@ -9,17 +9,15 @@ import AvaButton from 'components/AvaButton'
 import { NativeViewGestureHandler } from 'react-native-gesture-handler'
 import FlexSpacer from 'components/FlexSpacer'
 import { useSelector } from 'react-redux'
-import {
-  CoreWebContact,
-  DappUpdateContactEvent
-} from 'contexts/DappConnectionContext/types'
+import { DappUpdateContactEvent } from 'contexts/DappConnectionContext/types'
 import AddressBookSVG from 'components/svg/AddressBookSVG'
 import AddressBookItem from 'components/addressBook/AddressBookItem'
 import { selectContact } from 'store/addressBook'
+import { Contact as SharedContact } from '@avalabs/types'
 
 interface Props {
   dappEvent: DappUpdateContactEvent
-  onApprove: (contact: CoreWebContact) => void
+  onApprove: (contact: SharedContact) => void
   onReject: () => void
 }
 

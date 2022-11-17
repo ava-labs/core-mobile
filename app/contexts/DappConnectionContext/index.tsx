@@ -6,6 +6,7 @@ import React, {
   useEffect,
   useState
 } from 'react'
+import { Contact as SharedContact } from '@avalabs/types'
 import {
   CallRequestData,
   PeerMeta,
@@ -40,12 +41,7 @@ import {
   useWalletConnect
 } from './useWalletConnect'
 import { useDeepLink } from './useDeepLink'
-import {
-  DappEvent,
-  DappConnectionState,
-  CoreWebAccount,
-  CoreWebContact
-} from './types'
+import { DappEvent, DappConnectionState, CoreWebAccount } from './types'
 import { hasValidPayload, parseContact } from './utils'
 
 const displayUserInstruction = (instruction: string, id?: string) => {
@@ -149,7 +145,7 @@ export const DappConnectionContextProvider = ({
     [accounts, activeAccount?.index]
   )
 
-  const getContacts: () => CoreWebContact[] = useCallback(
+  const getContacts: () => SharedContact[] = useCallback(
     () =>
       Object.values(contacts).map(contact => ({
         id: contact.id,
@@ -391,11 +387,11 @@ export const DappConnectionContextProvider = ({
   )
 
   const onContactUpdated = useCallback(
-    (contact: CoreWebContact) => {
+    (contact: SharedContact) => {
       dispatch(
         addContact({
           address: contact.address,
-          addressBtc: contact.addressBTC,
+          addressBtc: contact.addressBTC || '',
           title: contact.name,
           id: contact.id
         })

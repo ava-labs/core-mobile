@@ -1,9 +1,10 @@
+import { Contact as SharedContact } from '@avalabs/types'
 import { getContactValidationError } from 'screens/drawer/addressBook/utils'
 import Logger from 'utils/Logger'
-import { CoreWebContact, DappEvent, DappSessionEvent } from './types'
+import { DappEvent, DappSessionEvent } from './types'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const isValidContact = (contact: any): contact is CoreWebContact => {
+const isValidContact = (contact: any): contact is SharedContact => {
   return (
     getContactValidationError(
       contact?.name,

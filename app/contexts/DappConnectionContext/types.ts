@@ -1,5 +1,6 @@
 import { Dispatch } from 'react'
 import { JsonRpcRequest } from '@walletconnect/jsonrpc-types'
+import { Contact as SharedContact } from '@avalabs/types'
 import {
   PeerMetadata,
   RPC_EVENT,
@@ -34,11 +35,11 @@ export type DappSignTransactionEvent = {
 }
 
 export type DappUpdateContactEvent = {
-  payload: JsonRpcRequest<CoreWebContact[] | undefined>
+  payload: JsonRpcRequest<SharedContact[] | undefined>
   peerMeta: PeerMetadata
   eventType: RPC_EVENT.UPDATE_CONTACT
   handled?: boolean
-  contact: CoreWebContact
+  contact: SharedContact
 }
 
 export type DappEvent =
@@ -51,7 +52,7 @@ export interface DappConnectionState {
   dappEvent?: DappEvent
   onSessionApproved: () => void
   onSessionRejected: () => void
-  onContactUpdated: (contact: CoreWebContact) => void
+  onContactUpdated: (contact: SharedContact) => void
   onTransactionCallApproved: (tx: Transaction) => Promise<{ hash?: string }>
   onMessageCallApproved: () => Promise<{ hash?: string }>
   setEventHandled: (handled: boolean) => void
@@ -65,12 +66,5 @@ export type CoreWebAccount = {
   active: boolean
   addressC: string
   addressBTC?: string
-  name: string
-}
-
-export type CoreWebContact = {
-  id: string
-  address: string
-  addressBTC: string
   name: string
 }
