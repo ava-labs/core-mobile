@@ -26,7 +26,6 @@ import { selectNetworkFee } from 'store/networkFee'
 import { showSnackBarCustom } from 'components/Snackbar'
 import GeneralToast from 'components/toast/GeneralToast'
 import { selectWalletState, WalletState } from 'store/app'
-import { selectIsLoadingBalances } from 'store/balance'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AppNavigation from 'navigation/AppNavigation'
 import { getEvmProvider } from 'services/network/utils/providerUtils'
@@ -83,7 +82,6 @@ export const DappConnectionContextProvider = ({
   const activeAccount = useActiveAccount()
   const activeNetwork = useActiveNetwork()
   const networkFees = useSelector(selectNetworkFee)
-  const isLoadingBalances = useSelector(selectIsLoadingBalances)
   const [dappEvent, setDappEvent] = useState<DappEvent>()
   const walletState = useSelector(selectWalletState)
   const isWalletActive = walletState === WalletState.ACTIVE
@@ -120,7 +118,6 @@ export const DappConnectionContextProvider = ({
       dappEvent &&
       !dappEvent.handled &&
       isWalletActive &&
-      !isLoadingBalances &&
       appNavHook?.navigation?.current
     ) {
       InteractionManager.runAfterInteractions(() => {
@@ -130,13 +127,7 @@ export const DappConnectionContextProvider = ({
         )
       })
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    dappEvent,
-    isWalletActive,
-    isLoadingBalances,
-    appNavHook?.navigation?.current
-  ])
+  }, [dappEvent, isWalletActive, appNavHook?.navigation])
 
   const setEventHandled = useCallback((handled: boolean) => {
     setDappEvent(event => {
