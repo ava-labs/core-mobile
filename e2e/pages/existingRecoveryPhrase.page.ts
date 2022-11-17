@@ -1,7 +1,7 @@
-import recoveryPhraseLoc from '../locators/recoveryPhrase.loc'
+import recoveryPhraseLoc from '../locators/existingRecoveryPhrase.loc'
 import Action from '../helpers/actions'
 
-class RecoveryPhrasePage {
+class ExistingRecoveryPhrasePage {
   get recoveryPhraseTextInput() {
     return by.id(recoveryPhraseLoc.recoveryPhraseInput)
   }
@@ -19,4 +19,4 @@ class RecoveryPhrasePage {
   }
 }
 
-export default new RecoveryPhrasePage()
+export default new ExistingRecoveryPhrasePage()

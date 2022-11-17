@@ -75,6 +75,7 @@ type NormalTabButtonParams = {
   routeName: string
   focused: boolean
   image: React.ReactNode
+  testID?: string
 }
 
 /**
@@ -96,7 +97,8 @@ export const normalTabButton = ({
       <AvaText.Caption
         textStyle={{
           color: focused ? theme.alternateBackground : theme.colorIcon4
-        }}>
+        }}
+        testID="nav_utils__normal_tab_button">
         {routeName}
       </AvaText.Caption>
     </View>

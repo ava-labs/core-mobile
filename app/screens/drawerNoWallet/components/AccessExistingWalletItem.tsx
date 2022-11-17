@@ -22,7 +22,6 @@ const AccessExistingWalletItem = () => {
         showNavigationArrow
         leftComponent={<WalletSVG size={18} />}
         rightComponentVerticalAlignment={'center'}
-        testId="recoverWalletBtn"
         onPress={() => {
           capture('OnboardingImportWalletSelected').catch(() => undefined)
           capture('OnboardingImportMnemonicSelected').catch(() => undefined)

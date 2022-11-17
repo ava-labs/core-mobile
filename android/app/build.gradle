@@ -180,10 +180,6 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
-        release {
-
-        }
-    }
 
     buildTypes {
         debug {
@@ -209,6 +205,7 @@ android {
             applicationIdSuffix ".internal"
         }
         external {}
+
     }
 
     packagingOptions {

@@ -137,6 +137,7 @@ const CreateWalletWarningModal = () => {
       dismissText={'Back'}
       onAction={onUnderstand}
       onDismiss={onBack}
+      testID="create_wallet_stack__warning_modal"
     />
   )
 }

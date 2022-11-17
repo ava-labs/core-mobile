@@ -17,7 +17,7 @@ function WalletSVG({ size = 65, backgroundColor }: Prop) {
       height={size}
       viewBox="0 0 65 65"
       fill="none"
-      testID="walletSVG">
+      testID="wallet_svg">
       <Rect
         x="4.87589"
         y="8.125"

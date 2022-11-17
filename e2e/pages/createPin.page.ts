@@ -1,5 +1,6 @@
 import createPinLoc from '../locators/createPin.loc'
 import Action from '../helpers/actions'
+import delay from '../helpers/waits'
 
 class CreatePinPage {
   get numPadZero() {
@@ -25,6 +26,13 @@ class CreatePinPage {
   async tapEmptyCheckbox() {
     await Action.tapElementAtIndex(this.emptyCheckBox, 0)
     await Action.tapElementAtIndex(this.emptyCheckBox, 0)
+  }
+
+  async createPin() {
+    for (let i = 0; i < 12; i++) {
+      await this.tapNumpadZero()
+      await delay(500)
+    }
   }
 }
 
