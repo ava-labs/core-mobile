@@ -7,6 +7,8 @@ import CreatePinPage from './pages/createPin.page'
 import AnalyticsConsentPage from './pages/analyticsConsent.page'
 import delay from './helpers/waits'
 
+// This is our first test, more will be added soon
+
 describe('Add existing wallet', () => {
   beforeAll(async () => {
     await device.launchApp()
@@ -17,7 +19,6 @@ describe('Add existing wallet', () => {
     const recoveryPhrase: string = process.env.RECOVERY_PHRASE as string
     await WatchListPage.tapWalletSVG()
     await AnalyticsConsentPage.tapNoThanksBtn()
-
     await RecoveryPhrasePage.enterRecoveryPhrase(recoveryPhrase)
     await RecoveryPhrasePage.tapSignInBtn()
     for (let i = 0; i < 12; i++) {
