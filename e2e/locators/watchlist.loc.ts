@@ -1,5 +1,7 @@
 export default {
   recoverWalletBtn: `recoverWalletBtn`,
   existingWalletbtn: 'Existing Wallet',
-  walletSVG: 'walletSVG'
+  walletSVG: 'walletSVG',
+  newWalletIcon: 'createNewWalletSvg',
+  newWalletBtn: 'New Wallet'
 }

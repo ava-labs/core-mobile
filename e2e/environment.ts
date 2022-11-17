@@ -39,9 +39,16 @@ class CustomDetoxEnvironment extends DetoxCircusEnvironment {
 
   async handleTestEvent(event) {
     const { name } = event
-
-    if (['test_start', 'test_fn_start'].includes(name)) {
+    if ('test_fn_failure'.includes(name)) {
+      this.global.testResults = ['fail']
+    } else if ('test_fn_success'.includes(name)) {
+      this.global.testResults = ['pass']
+    }
+    if (['run_start', 'test_fn_start'].includes(name)) {
       this.global.testNames = this.getNames(event.test)
+    }
+    if ('run_finish'.includes(name)) {
+      console.log(this.global.testResults + ' this is the test result!')
     }
   }
 }

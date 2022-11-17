@@ -89,7 +89,9 @@ export default function TextArea(props: Props | Readonly<Props>): JSX.Element {
           testID="recoveryPhraseTextInput"
         />
         {errorMessage && (
-          <AvaText.Body3 textStyle={{ color: theme.colorError, marginTop: 4 }}>
+          <AvaText.Body3
+            textStyle={{ color: theme.colorError, marginTop: 4 }}
+            testID="errorMsg">
             {errorMessage}
           </AvaText.Body3>
         )}

@@ -1,4 +1,5 @@
-export {}
+export { }
+import * as fs from 'fs'
 
 const detox = require('detox')
 const config = require('../package.json').detox
@@ -11,11 +12,11 @@ beforeAll(async () => {
   await detox.init(config, { launchApp: false })
 })
 
-beforeEach(async () => {
-  console.log(testNames[0].split(',') + ' This is the test name!')
-})
-
 afterAll(async () => {
-  // custom teardown
+  const testName = testNames[0].split(',')
+  const testResult = testResults[0]
+  fs.writeFileSync('./tests_to_report.txt', `${testName}, ${testResult}\n`, {
+    flag: 'a+'
+  })
   await detox.cleanup()
 })

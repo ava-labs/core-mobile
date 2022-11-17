@@ -4,6 +4,7 @@ import Svg, { Line } from 'react-native-svg'
 interface Prop {
   size?: number
   bold?: boolean
+  testID?: string
 }
 
 function CreateNewWalletPlusSVG({ size = 65, bold = false }: Prop) {
@@ -14,7 +15,7 @@ function CreateNewWalletPlusSVG({ size = 65, bold = false }: Prop) {
       height={size}
       viewBox="0 0 65 65"
       fill="none"
-      testID="creatNewWalletIcon">
+      testID="creatNewWalletSvg">
       <Line
         x1="32.5956"
         y1="8.125"

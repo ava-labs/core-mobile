@@ -26,7 +26,9 @@ export default function WordSelection({
 
   return (
     <>
-      <AvaText.Heading3>Select word #{wordIndex + 1}</AvaText.Heading3>
+      <AvaText.Heading3 testID="selectWordNumber">
+        Select word #{wordIndex + 1}
+      </AvaText.Heading3>
       <Space y={16} />
       <View style={styles.horizontalLayout}>
         <Word
@@ -69,6 +71,7 @@ function Word({
   return (
     <View style={{ flexGrow: 1 }}>
       <AvaButton.Base
+        testID="selectWordBtn"
         onPress={() => onSelected(word)}
         style={{
           backgroundColor: selected ? colorSelected : bgColor,
@@ -77,6 +80,7 @@ function Word({
           padding: 12
         }}>
         <AvaText.ButtonMedium
+          testID="selectWordText"
           textStyle={{ color: selected ? textColorSelected : textColor }}>
           {word}
         </AvaText.ButtonMedium>

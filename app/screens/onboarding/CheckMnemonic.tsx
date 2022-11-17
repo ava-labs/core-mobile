@@ -74,8 +74,8 @@ export default function CheckMnemonic(
         setSelectedWord={setSelectedWord3}
       />
       <View style={{ flex: 1 }} />
-      <View>
-        <AvaButton.PrimaryLarge onPress={onVerify}>
+      <View testID="verifyPhraseBtn">
+        <AvaButton.PrimaryLarge onPress={onVerify} testID="verifyPhraseBtn">
           Verify phrase
         </AvaButton.PrimaryLarge>
       </View>
