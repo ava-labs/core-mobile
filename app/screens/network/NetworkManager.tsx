@@ -2,6 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { FlatList, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import {
+  ChainID,
   selectCustomNetworks,
   selectFavoriteNetworks,
   selectNetworks,
@@ -18,7 +19,7 @@ import { Network } from '@avalabs/chains-sdk'
 import { useNavigation } from '@react-navigation/native'
 
 type Props = {
-  onShowInfo: (network: Network) => void
+  onShowInfo: (chainId: ChainID) => void
 }
 
 export default function NetworkManager({ onShowInfo }: Props) {
@@ -78,8 +79,7 @@ export default function NetworkManager({ onShowInfo }: Props) {
   }
 
   function showInfo(chainId: number) {
-    const network = networks[chainId] as Network
-    onShowInfo(network)
+    onShowInfo(chainId)
   }
 
   function connect(chainId: number) {

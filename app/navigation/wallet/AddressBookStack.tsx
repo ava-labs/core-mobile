@@ -28,6 +28,8 @@ import {
   shareContact
 } from 'screens/drawer/addressBook/utils'
 import ContactShareModal from 'screens/drawer/addressBook/components/ContactShareModal'
+import { showSnackBarCustom } from 'components/Snackbar'
+import GeneralToast from 'components/toast/GeneralToast'
 import { AddressBookScreenProps } from '../types'
 
 export type AddressBookStackParamList = {
@@ -280,7 +282,19 @@ type ShareModalProps = AddressBookScreenProps<
 const ShareContactModal = () => {
   const { pop } = useNavigation<ShareModalProps['navigation']>()
   const { params } = useRoute<ShareModalProps['route']>()
-  const contact = useSelector(selectContact(params.contactId)) as Contact
+  const contact = useSelector(selectContact(params.contactId))
+
+  if (!contact) {
+    showSnackBarCustom({
+      component: (
+        <GeneralToast
+          message={`Ooops, seems this contact is not available. Please try adding it again.`}
+        />
+      ),
+      duration: 'short'
+    })
+    pop()
+  }
 
   const onShare = (
     contactName: string,
@@ -295,11 +309,15 @@ const ShareContactModal = () => {
   }
 
   return (
-    <ContactShareModal
-      contact={contact}
-      onCancel={onCancel}
-      onContinue={onShare}
-    />
+    <>
+      {contact && (
+        <ContactShareModal
+          contact={contact}
+          onCancel={onCancel}
+          onContinue={onShare}
+        />
+      )}
+    </>
   )
 }
 

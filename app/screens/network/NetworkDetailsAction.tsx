@@ -20,7 +20,8 @@ import {
   selectNetworks,
   toggleFavorite
 } from 'store/network'
-import { Network } from '@avalabs/chains-sdk'
+import { showSnackBarCustom } from 'components/Snackbar'
+import GeneralToast from 'components/toast/GeneralToast'
 
 export function NetworkDetailsAction() {
   const { chainId } = useRoute<NetworkDetailsScreenProps['route']>().params
@@ -65,7 +66,7 @@ function CustomNetworkDropdown() {
   const { params } = useRoute<NetworkDetailsScreenProps['route']>()
   const { navigate } = useNavigation<NetworkSelectorScreenProps['navigation']>()
   const networks = useSelector(selectNetworks)
-  const network = networks[params.chainId] as Network
+  const network = networks[params.chainId]
 
   function handleEdit() {
     navigate(AppNavigation.Wallet.NetworkAddEdit, {
@@ -75,6 +76,18 @@ function CustomNetworkDropdown() {
   }
 
   function handleDelete() {
+    if (!network) {
+      showSnackBarCustom({
+        component: (
+          <GeneralToast
+            message={`Ooops, seems this network is not available. Please try adding it again.`}
+          />
+        ),
+        duration: 'short'
+      })
+      return
+    }
+
     Alert.alert(
       'Delete Network',
       'Are you sure you want to delete this network?',
