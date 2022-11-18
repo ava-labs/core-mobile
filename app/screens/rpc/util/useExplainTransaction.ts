@@ -49,7 +49,10 @@ export function useExplainTransaction(dappEvent: DappSignTransactionEvent) {
 
   const [transaction, setTransaction] = useState<Transaction | null>(null)
 
-  const txParams = dappEvent.payload?.params && dappEvent.payload?.params.length > 0 ? dappEvent.payload?.params[0] : undefined
+  const txParams =
+    dappEvent.payload?.params && dappEvent.payload?.params.length > 0
+      ? dappEvent.payload?.params[0]
+      : undefined
   const peerMeta = dappEvent.peerMeta
   const [customGas, setCustomGas] = useState<{
     gasLimit: number
