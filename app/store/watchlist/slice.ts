@@ -1,21 +1,16 @@
 import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { ChartData } from 'services/token/types'
 import { RootState } from 'store'
-import { Charts, initialState, MarketToken, PriceData, Prices } from './types'
+import {
+  initialState,
+  Charts,
+  MarketToken,
+  Prices,
+  PriceData,
+  defaultChartData
+} from './types'
 
 const reducerName = 'watchlist'
-
-export const defaultChartData = {
-  ranges: {
-    minDate: 0,
-    maxDate: 0,
-    minPrice: 0,
-    maxPrice: 0,
-    diffValue: 0,
-    percentChange: 0
-  },
-  dataPoints: []
-}
 
 export const watchlistSlice = createSlice({
   name: reducerName,

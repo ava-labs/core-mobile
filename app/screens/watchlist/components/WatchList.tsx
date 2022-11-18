@@ -12,12 +12,27 @@ import { useDispatch } from 'react-redux'
 import {
   Charts,
   defaultChartData,
+  defaultPrice,
   MarketToken,
   onWatchlistRefresh,
+  PriceData,
   Prices
 } from 'store/watchlist'
 import { formatLargeCurrency } from 'utils/Utils'
 import { WatchlistFilter } from '../types'
+
+const getDisplayValue = (
+  price: PriceData,
+  currencyFormatter: (num: number | string) => string
+) => {
+  const priceInCurrency = price.priceInCurrency
+
+  return priceInCurrency === 0
+    ? ' -'
+    : priceInCurrency > 0 && priceInCurrency < 0.1
+    ? `${priceInCurrency.toFixed(6)}`
+    : formatLargeCurrency(currencyFormatter(priceInCurrency))
+}
 
 interface Props {
   tokens: MarketToken[]
@@ -48,35 +63,15 @@ const WatchList: React.FC<Props> = ({
 
   const renderItem = (item: ListRenderItemInfo<MarketToken>) => {
     const token = item.item
-
-    function getDisplayValue() {
-      const price = prices[token.id]
-
-      if (filterBy === WatchlistFilter.PRICE) {
-        const priceInCurrency = price?.priceInCurrency ?? 0
-        return priceInCurrency === 0
-          ? ' -'
-          : priceInCurrency > 0 && priceInCurrency < 0.1
-          ? `${priceInCurrency.toFixed(6)}`
-          : formatLargeCurrency(currencyFormatter(priceInCurrency))
-      } else if (filterBy === WatchlistFilter.MARKET_CAP) {
-        const marketCap = price?.marketCap ?? 0
-        return marketCap === 0
-          ? ' -'
-          : formatLargeCurrency(currencyFormatter(marketCap), 3)
-      } else if (filterBy === WatchlistFilter.VOLUME) {
-        const vol24 = price?.vol24 ?? 0
-        return vol24 === 0
-          ? ' -'
-          : formatLargeCurrency(currencyFormatter(vol24), 1)
-      }
-    }
+    const chartData = charts[token.id] ?? defaultChartData
+    const price = prices[token.id] ?? defaultPrice
+    const displayValue = getDisplayValue(price, currencyFormatter)
 
     return (
       <WatchListItem
         token={token}
-        chartData={charts[token.id] ?? defaultChartData}
-        value={getDisplayValue()}
+        chartData={chartData}
+        value={displayValue}
         filterBy={filterBy}
         onPress={() => {
           navigation.navigate(AppNavigation.Wallet.TokenDetail, {
