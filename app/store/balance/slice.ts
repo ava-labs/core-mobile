@@ -76,9 +76,10 @@ export const selectTokensWithBalance = (state: RootState) => {
 }
 
 export const selectTokensWithBalanceByNetwork =
-  (network: Network) => (state: RootState) => {
+  (network?: Network) => (state: RootState) => {
     const activeAccount = selectActiveAccount(state)
 
+    if (!network) return []
     if (!activeAccount) return []
 
     const key = getKey(network.chainId, activeAccount.index)

@@ -59,7 +59,9 @@ export const addBridgeListeners = (startListening: AppStartListening) => {
       const state = listenerApi.getState()
       const networks = selectNetworks(state)
       // updates bridge isMainnet filter based on selected network
-      listenerApi.dispatch(setBridgeFilter(!networks[action.payload].isTestnet))
+      listenerApi.dispatch(
+        setBridgeFilter(!networks[action.payload]?.isTestnet)
+      )
     }
   })
 }

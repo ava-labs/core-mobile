@@ -17,7 +17,7 @@ export const customTokenSlice = createSlice({
 
       if (!state.tokens[chainId]) state.tokens[chainId] = []
 
-      state.tokens[chainId].push(token)
+      state.tokens[chainId]?.push(token)
     }
   }
 })

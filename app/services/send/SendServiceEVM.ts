@@ -202,7 +202,7 @@ export class SendServiceEVM implements SendServiceHelper {
       ERC20.abi,
       this.networkProvider
     )
-    const populatedTransaction = await contract.populateTransaction.transfer(
+    const populatedTransaction = await contract.populateTransaction?.transfer?.(
       sendState.address,
       sendState.amount
         ? bnToEthersBigNumber(sendState.amount)
@@ -222,9 +222,9 @@ export class SendServiceEVM implements SendServiceHelper {
       ERC721.abi,
       this.networkProvider
     )
-    const populatedTransaction = await contract.populateTransaction[
+    const populatedTransaction = await contract.populateTransaction?.[
       'safeTransferFrom(address,address,uint256)'
-    ](this.fromAddress, sendState.address, sendState.token?.tokenId)
+    ]?.(this.fromAddress, sendState.address, sendState.token?.tokenId)
     return {
       ...populatedTransaction, // only includes `to` and `data`
       from: this.fromAddress

@@ -1,7 +1,7 @@
 import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { ChartData } from 'services/token/types'
 import { RootState } from 'store'
-import { initialState, Charts, MarketToken, Prices, PriceData } from './types'
+import { Charts, initialState, MarketToken, PriceData, Prices } from './types'
 
 const reducerName = 'watchlist'
 

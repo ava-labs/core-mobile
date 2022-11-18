@@ -47,8 +47,8 @@ export async function getRunIdFromName() {
       console.log(testRun.name)
     }
   })
-  console.log(myRun[0].id)
-  return myRun[0].id
+  console.log(myRun[0]?.id)
+  return myRun[0]?.id
 }
 
 export async function getTestCaseId(testCaseName: any) {
@@ -496,9 +496,12 @@ export async function createNewTestRunBool() {
     created_after: yesterdayUTC
   }
   const runDetails = await api.getRuns(projectId, content)
-  if (runDetails.length === 0 || runDetails[0].created_on < yesterdayUTC) {
+  if (
+    runDetails.length === 0 ||
+    (runDetails[0] as TestRail.Run).created_on < yesterdayUTC
+  ) {
     return false
   } else {
-    return runDetails[0].id
+    return (runDetails[0] as TestRail.Run).id
   }
 }

@@ -14,7 +14,7 @@ beforeAll(async () => {
 })
 
 afterAll(async () => {
-  const testCase: string = testNames[0].split(',')[0]
+  const testCase: string | undefined = testNames[0]?.split(',')[0]
   const testResult = testResults[0]
   const testPathArray = testPaths.split('/')
   const sectionName = testPathArray[6]
@@ -49,8 +49,8 @@ afterAll(async () => {
 })
 
 async function writeResults(resultObject: {
-  testCase: string
-  testResult: string
+  testCase?: string
+  testResult?: string
 }) {
   fs.writeFileSync('./test_results.txt', `${JSON.stringify(resultObject)}\n`, {
     flag: 'a+'

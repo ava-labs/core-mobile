@@ -24,6 +24,12 @@ export default function WordSelection({
     setSelectedWordIndex(index)
   }
 
+  const [word0, word1, word2] = [
+    wordOptions[0] ?? '',
+    wordOptions[1] ?? '',
+    wordOptions[2] ?? ''
+  ]
+
   return (
     <>
       <AvaText.Heading3 testID="word_selection__word_number">
@@ -33,19 +39,19 @@ export default function WordSelection({
       <View style={styles.horizontalLayout}>
         <Word
           selected={selectedWordIndex === 0}
-          word={wordOptions[0]}
+          word={word0}
           onSelected={word => onSelection(word, 0)}
         />
         <Space x={16} />
         <Word
           selected={selectedWordIndex === 1}
-          word={wordOptions[1]}
+          word={word1}
           onSelected={word => onSelection(word, 1)}
         />
         <Space x={16} />
         <Word
           selected={selectedWordIndex === 2}
-          word={wordOptions[2]}
+          word={word2}
           onSelected={word => onSelection(word, 2)}
         />
       </View>
@@ -89,8 +95,7 @@ function Word({
   )
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const styles: any = StyleSheet.create({
+const styles = StyleSheet.create({
   horizontalLayout: {
     flexDirection: 'row',
     justifyContent: 'space-between'

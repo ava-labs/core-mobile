@@ -40,8 +40,8 @@ class NewRecoveryPhrasePage {
     }[] = []
     viewAttributesArray.forEach(function (item: { label: string }) {
       const elementLabel = item.label
-      const mnemonicWord = elementLabel.split('.')[1].replace(' ', '')
-      const mnemonicNum = elementLabel.split('.')[0].replace('.', '')
+      const mnemonicWord = elementLabel.split('.')[1]?.replace(' ', '') ?? ''
+      const mnemonicNum = elementLabel.split('.')[0]?.replace('.', '') ?? ''
       mnemonicWordIndexArray.push({ mnemonicNum, mnemonicWord })
     })
     const mnemonicMapped = mnemonicWordIndexArray.map(item => ({

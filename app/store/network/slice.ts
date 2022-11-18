@@ -79,9 +79,9 @@ export const selectNetworks = createSelector(
       (reducedNetworks, key) => {
         const chainId = parseInt(key)
         const network = networks[chainId]
-        if (network.isTestnet === isDeveloperMode) {
+        if (network && network.isTestnet === isDeveloperMode) {
           reducedNetworks[chainId] = mergeWithCustomTokens(
-            networks[chainId],
+            network,
             allCustomTokens
           )
         }
@@ -93,9 +93,9 @@ export const selectNetworks = createSelector(
       (reducedNetworks, key) => {
         const chainId = parseInt(key)
         const network = customNetworks[chainId]
-        if (network.isTestnet === isDeveloperMode) {
+        if (network && network.isTestnet === isDeveloperMode) {
           reducedNetworks[chainId] = mergeWithCustomTokens(
-            customNetworks[chainId],
+            network,
             allCustomTokens
           )
         }
@@ -131,10 +131,13 @@ export const selectActiveNetwork = createSelector(
 export const selectFavoriteNetworks = createSelector(
   [selectFavorites, selectNetworks, selectIsDeveloperMode],
   (favorites, networks, isDeveloperMode) => {
-    return favorites
-      .filter(chainId => !!networks[chainId])
-      .map(id => networks[id])
-      .filter(network => network.isTestnet === isDeveloperMode)
+    return favorites.reduce((acc, chainId) => {
+      const network = networks[chainId]
+      if (network && network.isTestnet === isDeveloperMode) {
+        acc.push(network)
+      }
+      return acc
+    }, [] as Network[])
   }
 )
 

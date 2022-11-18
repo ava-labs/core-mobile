@@ -37,33 +37,39 @@ export function useCheckMnemonic(mnemonic: string): UseCheckMnemonicData {
     const indices = selectXRandNumbers(3, pool)
 
     const firstWordOptions = selectXRandWordsIncluding(
-      indices[0],
+      indices[0] as number,
       3,
       pool,
       mnemonics
     )
 
     const secondWordOptions = selectXRandWordsIncluding(
-      indices[1],
+      indices[1] as number,
       3,
       pool,
       mnemonics
     )
 
     const thirdWordOptions = selectXRandWordsIncluding(
-      indices[2],
+      indices[2] as number,
       3,
       pool,
       mnemonics
     )
 
-    setFirstWordSelection({ index: indices[0], wordOptions: firstWordOptions })
+    setFirstWordSelection({
+      index: indices[0] as number,
+      wordOptions: firstWordOptions
+    })
     setSecondWordSelection({
-      index: indices[1],
+      index: indices[1] as number,
       wordOptions: secondWordOptions
     })
-    setThirdWordSelection({ index: indices[2], wordOptions: thirdWordOptions })
-  }, [])
+    setThirdWordSelection({
+      index: indices[2] as number,
+      wordOptions: thirdWordOptions
+    })
+  }, [mnemonics])
 
   const verify = (first: string, second: string, third: string) => {
     return (
@@ -84,7 +90,8 @@ export function useCheckMnemonic(mnemonic: string): UseCheckMnemonicData {
 function selectXRandNumbers(numOfNumbers: number, pool: number[]) {
   for (let i = 0; i < numOfNumbers; i++) {
     const randomIndex = Math.floor(Math.random() * (pool.length - i)) + i //pick random from pool
-    ;[pool[i], pool[randomIndex]] = [pool[randomIndex], pool[i]] //put it on front of pool
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    ;[pool[i], pool[randomIndex]] = [pool[randomIndex]!, pool[i]!] //put it on front of pool
   }
   return pool.slice(0, numOfNumbers) //first [numOfNumbers] nums are now non-repeating random from pool
 }
@@ -94,9 +101,9 @@ function selectXRandWordsIncluding(
   numOfNumbers: number,
   pool: number[],
   mnemonics: string[]
-) {
+): string[] {
   const randoms = selectXRandNumbers(numOfNumbers, pool)
   const indexToRandomInject = Math.floor(Math.random() * numOfNumbers)
   randoms[indexToRandomInject] = included
-  return randoms.map(wordIndex => mnemonics[wordIndex])
+  return randoms.map(wordIndex => mnemonics[wordIndex] as string)
 }

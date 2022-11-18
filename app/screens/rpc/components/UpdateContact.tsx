@@ -14,6 +14,9 @@ import AddressBookSVG from 'components/svg/AddressBookSVG'
 import AddressBookItem from 'components/addressBook/AddressBookItem'
 import { selectContact } from 'store/addressBook'
 import { Contact as SharedContact } from '@avalabs/types'
+import { showSnackBarCustom } from 'components/Snackbar'
+import GeneralToast from 'components/toast/GeneralToast'
+import { Contact } from 'Repo'
 
 interface Props {
   dappEvent: DappUpdateContactEvent
@@ -28,54 +31,74 @@ const UpdateContact: FC<Props> = ({ dappEvent, onApprove, onReject }) => {
 
   const existingContact = useSelector(selectContact(contact.id))
 
-  const renderContacts = () => {
+  if (!existingContact) {
+    showSnackBarCustom({
+      component: (
+        <GeneralToast
+          message={`Ooops, seems the contact you're updating is not in address book.`}
+        />
+      ),
+      duration: 'short'
+    })
+    onReject()
+  }
+
+  const renderContacts = (contactToUpdate: Contact, update: SharedContact) => {
     return (
       <>
         <AddressBookItem
-          title={existingContact.title}
-          address={existingContact.address}
-          addressBtc={existingContact.addressBtc}
+          title={contactToUpdate.title}
+          address={contactToUpdate.address}
+          addressBtc={contactToUpdate.addressBtc}
         />
         <AddressBookItem
-          title={contact.name}
-          address={contact.address}
-          addressBtc={contact.addressBTC}
+          title={update.name}
+          address={update.address}
+          addressBtc={update.addressBTC}
         />
       </>
     )
   }
 
   return (
-    <NativeViewGestureHandler>
-      <SafeAreaView style={styles.safeView}>
-        <AvaText.LargeTitleBold>Update Contact?</AvaText.LargeTitleBold>
-        <Space y={35} />
-        <View style={styles.subTitleView}>
-          <OvalTagBg
-            style={{ height: 80, width: 80, backgroundColor: theme.colorBg3 }}>
-            <AddressBookSVG size={48} />
-          </OvalTagBg>
-          <Space y={15} />
-          <AvaText.Body1 textStyle={styles.subTileText}>
-            {new URL(peerMeta.url ?? '').hostname} is requesting to update a
-            contact:
-          </AvaText.Body1>
-          <Space y={16} />
-        </View>
-        <Space y={30} />
-        {renderContacts()}
-        <FlexSpacer />
-        <View style={styles.actionContainer}>
-          <AvaButton.PrimaryMedium onPress={() => onApprove(contact)}>
-            Approve
-          </AvaButton.PrimaryMedium>
-          <Space y={21} />
-          <AvaButton.SecondaryMedium onPress={() => onReject()}>
-            Reject
-          </AvaButton.SecondaryMedium>
-        </View>
-      </SafeAreaView>
-    </NativeViewGestureHandler>
+    <>
+      {existingContact && (
+        <NativeViewGestureHandler>
+          <SafeAreaView style={styles.safeView}>
+            <AvaText.LargeTitleBold>Update Contact?</AvaText.LargeTitleBold>
+            <Space y={35} />
+            <View style={styles.subTitleView}>
+              <OvalTagBg
+                style={{
+                  height: 80,
+                  width: 80,
+                  backgroundColor: theme.colorBg3
+                }}>
+                <AddressBookSVG size={48} />
+              </OvalTagBg>
+              <Space y={15} />
+              <AvaText.Body1 textStyle={styles.subTileText}>
+                {new URL(peerMeta.url ?? '').hostname} is requesting to update a
+                contact:
+              </AvaText.Body1>
+              <Space y={16} />
+            </View>
+            <Space y={30} />
+            {renderContacts(existingContact, contact)}
+            <FlexSpacer />
+            <View style={styles.actionContainer}>
+              <AvaButton.PrimaryMedium onPress={() => onApprove(contact)}>
+                Approve
+              </AvaButton.PrimaryMedium>
+              <Space y={21} />
+              <AvaButton.SecondaryMedium onPress={() => onReject()}>
+                Reject
+              </AvaButton.SecondaryMedium>
+            </View>
+          </SafeAreaView>
+        </NativeViewGestureHandler>
+      )}
+    </>
   )
 }
 
