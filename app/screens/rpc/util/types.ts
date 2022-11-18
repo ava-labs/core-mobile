@@ -15,9 +15,10 @@ export interface TransactionParams {
 }
 
 export enum RPC_EVENT {
-  SIGN = 'sign',
-  TRANSACTION = 'transaction',
-  SESSION = 'session'
+  SIGN_MESSAGE = 'sign_message',
+  SIGN_TRANSACTION = 'sign_transaction',
+  SESSION_REQUEST = 'session_request',
+  UPDATE_CONTACT = 'update_contact'
 }
 
 export interface DisplayValueParserProps {

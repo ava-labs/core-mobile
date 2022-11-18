@@ -1,4 +1,8 @@
+import { JsonRpcRequest } from '@walletconnect/jsonrpc-types'
+import { IClientMeta } from '@walletconnect/types'
 import { PeerMetadata } from 'screens/rpc/util/types'
+
+const CORE_MOBILE_WALLET_ID = 'c3de833a-9cb0-4274-bb52-86e402ecfcd3'
 
 export const CLIENT_OPTIONS = {
   clientMeta: {
@@ -9,23 +13,14 @@ export const CLIENT_OPTIONS = {
       'https://assets.website-files.com/5fec984ac113c1d4eec8f1ef/62602f568fb4677b559827e5_core.jpg'
     ],
     name: 'Core',
-    ssl: !__DEV__
+    ssl: !__DEV__,
+    walletId: CORE_MOBILE_WALLET_ID // core web depends on this id to distinguish core mobile from other wallets
   }
 }
 
 export interface DeepLink {
   url: string
   origin: DeepLinkOrigin
-}
-
-export enum MessageType {
-  ETH_SEND = 'eth_sendTransaction',
-  SIGN_TYPED_DATA_V3 = 'eth_signTypedData_v3',
-  SIGN_TYPED_DATA_V4 = 'eth_signTypedData_v4',
-  SIGN_TYPED_DATA_V1 = 'eth_signTypedData_v1',
-  SIGN_TYPED_DATA = 'eth_signTypedData',
-  PERSONAL_SIGN = 'personal_sign',
-  ETH_SIGN = 'eth_sign'
 }
 
 export enum DeepLinkOrigin {
@@ -63,3 +58,51 @@ export interface MessageAction {
   method: string
   site: PeerMetadata
 }
+
+export enum RpcMethod {
+  ETH_SEND = 'eth_sendTransaction',
+  SIGN_TYPED_DATA_V3 = 'eth_signTypedData_v3',
+  SIGN_TYPED_DATA_V4 = 'eth_signTypedData_v4',
+  SIGN_TYPED_DATA_V1 = 'eth_signTypedData_v1',
+  SIGN_TYPED_DATA = 'eth_signTypedData',
+  PERSONAL_SIGN = 'personal_sign',
+  ETH_SIGN = 'eth_sign',
+
+  /* custom methods that are proprietary to Core */
+  AVALANCHE_BRIDGE_ASSET = 'avalanche_bridgeAsset',
+  AVALANCHE_CREATE_CONTACT = 'avalanche_createContact',
+  AVALANCHE_GET_ACCOUNTS = 'avalanche_getAccounts',
+  AVALANCHE_GET_BRIDGE_STATE = 'avalanche_getBridgeState',
+  AVALANCHE_GET_CONTACTS = 'avalanche_getContacts',
+  AVALANCHE_REMOVE_CONTACT = 'avalanche_removeContact',
+  AVALANCHE_SELECT_ACCOUNT = 'avalanche_selectAccount',
+  AVALANCHE_SET_DEVELOPER_MODE = 'avalanche_setDeveloperMode',
+  AVALANCHE_UPDATE_CONTACT = 'avalanche_updateContact'
+}
+
+export type PeerMeta = IClientMeta | null | undefined
+
+export type CallRequestData = {
+  payload: JsonRpcRequest
+  peerMeta: PeerMeta
+}
+
+export type SessionRequestData = {
+  peerId: string
+  peerMeta: PeerMeta
+  chainId: string | null | undefined
+  autoSign: boolean
+  requestOriginatedFrom: string | undefined
+}
+
+export const CORE_ONLY_METHODS = [
+  RpcMethod.AVALANCHE_BRIDGE_ASSET,
+  RpcMethod.AVALANCHE_CREATE_CONTACT,
+  RpcMethod.AVALANCHE_GET_ACCOUNTS,
+  RpcMethod.AVALANCHE_GET_BRIDGE_STATE,
+  RpcMethod.AVALANCHE_GET_CONTACTS,
+  RpcMethod.AVALANCHE_REMOVE_CONTACT,
+  RpcMethod.AVALANCHE_SELECT_ACCOUNT,
+  RpcMethod.AVALANCHE_SET_DEVELOPER_MODE,
+  RpcMethod.AVALANCHE_UPDATE_CONTACT
+]

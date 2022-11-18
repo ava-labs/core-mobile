@@ -8,6 +8,7 @@ import { useNavigation } from '@react-navigation/native'
 import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet'
 import AvaxSheetHandle from 'components/AvaxSheetHandle'
 import TabViewBackground from 'components/TabViewBackground'
+import UpdateContact from './components/UpdateContact'
 
 const snapPoints = ['90%']
 
@@ -17,6 +18,7 @@ const RpcMethodsUI = () => {
     dappEvent,
     onSessionApproved,
     onSessionRejected,
+    onContactUpdated,
     onMessageCallApproved,
     onTransactionCallApproved,
     onCallRejected,
@@ -32,36 +34,47 @@ const RpcMethodsUI = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dappEvent])
 
-  function renderSignTransaction() {
-    return (
-      <SignTransaction
-        onReject={onCallRejected}
-        onApprove={onTransactionCallApproved}
-        dappEvent={dappEvent}
-        onClose={goBack}
-      />
-    )
-  }
+  const renderContent = () => {
+    if (!dappEvent) return null
 
-  function renderSessionRequest() {
-    return (
-      <AccountApproval
-        onReject={onSessionRejected}
-        onApprove={onSessionApproved}
-        dappEvent={dappEvent}
-      />
-    )
-  }
-
-  function renderSignMessage() {
-    return (
-      <SignMessage
-        onRejected={onCallRejected}
-        onApprove={onMessageCallApproved}
-        dappEvent={dappEvent}
-        onClose={goBack}
-      />
-    )
+    switch (dappEvent.eventType) {
+      case RPC_EVENT.SIGN_MESSAGE:
+        return (
+          <SignMessage
+            onRejected={onCallRejected}
+            onApprove={onMessageCallApproved}
+            dappEvent={dappEvent}
+            onClose={goBack}
+          />
+        )
+      case RPC_EVENT.SESSION_REQUEST:
+        return (
+          <AccountApproval
+            onReject={onSessionRejected}
+            onApprove={onSessionApproved}
+            dappEvent={dappEvent}
+          />
+        )
+      case RPC_EVENT.SIGN_TRANSACTION:
+        return (
+          <SignTransaction
+            onReject={onCallRejected}
+            onApprove={onTransactionCallApproved}
+            dappEvent={dappEvent}
+            onClose={goBack}
+          />
+        )
+      case RPC_EVENT.UPDATE_CONTACT:
+        return (
+          <UpdateContact
+            onReject={onCallRejected}
+            onApprove={onContactUpdated}
+            dappEvent={dappEvent}
+          />
+        )
+      default:
+        return null
+    }
   }
 
   return (
@@ -74,11 +87,7 @@ const RpcMethodsUI = () => {
       backgroundComponent={TabViewBackground}
       enableContentPanningGesture={false}
       onClose={goBack}>
-      {(dappEvent?.eventType === RPC_EVENT.SIGN && renderSignMessage()) ||
-        (dappEvent?.eventType === RPC_EVENT.SESSION &&
-          renderSessionRequest()) ||
-        (dappEvent?.eventType === RPC_EVENT.TRANSACTION &&
-          renderSignTransaction())}
+      {renderContent()}
     </BottomSheet>
   )
 }

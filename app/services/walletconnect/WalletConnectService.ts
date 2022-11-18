@@ -8,14 +8,16 @@ import {
   IWalletConnectSession
 } from '@walletconnect/types'
 import {
+  CallRequestData,
   CLIENT_OPTIONS,
+  SessionRequestData,
   WalletConnectRequest
 } from 'services/walletconnect/types'
 import { JsonRpcRequest } from '@walletconnect/jsonrpc-types'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
-import { TransactionParams } from 'screens/rpc/util/types'
 import Logger from 'utils/Logger'
 import { Account } from 'store/account'
+import { isCoreMethod, isFromCoreWeb } from './utils'
 
 let initialized = false
 let connectors: WalletConnectService[] = []
@@ -81,7 +83,7 @@ class WalletConnectService {
     const onSessionRequest = async (
       error: Error | null,
       payload: JsonRpcRequest,
-      existing: boolean
+      isExisting: boolean
     ) => {
       // do not respond to session request if on BTC
       if (this.activeNetwork?.vmName === NetworkVMType.BITCOIN) return
@@ -92,17 +94,17 @@ class WalletConnectService {
       }
 
       try {
-        const sessionData = {
+        const sessionData: SessionRequestData = {
           ...payload.params[0],
           autoSign: this.autoSign,
           requestOriginatedFrom: this.requestOriginatedFrom
         }
 
         await waitForInitialization()
-        if (!existing) {
+        if (!isExisting) {
           await this.sessionRequest(sessionData)
         }
-        this.startSession(sessionData, existing)
+        this.startSession(isExisting)
       } catch (e) {
         Logger.error('dapp session session error or user canceled', e)
         this.walletConnectClient?.rejectSession()
@@ -121,11 +123,11 @@ class WalletConnectService {
     }
 
     /******************************************************************************
-     * 3. Receives call request and dispatches it so RpcMethodsUI
+     * 3. Receives call request and dispatches it to RpcMethodsUI
      *****************************************************************************/
     const onCallRequest = async (
       error: Error | null,
-      payload: JsonRpcRequest<TransactionParams[]>
+      payload: JsonRpcRequest
     ) => {
       // do not respond to call request if on BTC
       if (this.activeNetwork?.vmName === NetworkVMType.BITCOIN) return
@@ -134,24 +136,37 @@ class WalletConnectService {
       tempCallIds.push(payload.id)
 
       Logger.info('received dapp call request', error ?? payload)
+
       if (error) {
         throw error
       }
 
+      const peerMeta = this.walletConnectClient?.session?.peerMeta
+
+      // only process core methods if they come from core web
+      if (isCoreMethod(payload.method)) {
+        if (!isFromCoreWeb(peerMeta?.url || '')) {
+          Logger.warn(
+            `ignoring custom core method ${payload.method}. requested by ${peerMeta?.url}`
+          )
+          return
+        }
+      }
+
       try {
-        const signedResult = await this.callRequests({
+        const result = await this.callRequests({
           payload,
           peerMeta: this.walletConnectClient?.session?.peerMeta
         })
+
         this.walletConnectClient?.approveRequest({
           id: payload.id,
-          result: signedResult,
+          result: result,
           jsonrpc: '2.0'
         })
-        Logger.info(
-          'sending call approval to dapp via walletconnect',
-          signedResult
-        )
+
+        Logger.info('sending call approval to dapp via walletconnect', result)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (e: any) {
         Logger.error('dapp call error or user canceled', e)
         this.walletConnectClient?.rejectRequest({
@@ -198,7 +213,7 @@ class WalletConnectService {
     Logger.info('done creating wallet connect instance - waiting for trigger')
     if (existing) {
       Logger.info('existing dapp session, starting...')
-      this.startSession(options.session, existing)
+      this.startSession(existing)
     }
   }
 
@@ -211,18 +226,18 @@ class WalletConnectService {
   }
 
   // Session request emitters
-  sessionRequest = (peerInfo: any) =>
+  sessionRequest = (peerInfo: SessionRequestData) =>
     new Promise((resolve, reject) => {
       Logger.info('dapp emitting session request')
       emitter.emit(WalletConnectRequest.SESSION, peerInfo)
 
-      emitter.on(WalletConnectRequest.SESSION_APPROVED, peerId => {
+      emitter.on(WalletConnectRequest.SESSION_APPROVED, (peerId: string) => {
         if (peerInfo.peerId === peerId) {
           Logger.info('dapp received emission approval for session')
           resolve(true)
         }
       })
-      emitter.on(WalletConnectRequest.SESSION_REJECTED, peerId => {
+      emitter.on(WalletConnectRequest.SESSION_REJECTED, (peerId: string) => {
         if (peerInfo.peerId === peerId) {
           Logger.info('dapp received emission rejection for session')
           reject(new Error(WalletConnectRequest.SESSION_REJECTED))
@@ -231,16 +246,16 @@ class WalletConnectService {
     })
 
   // Call request emitters
-  callRequests = (data: any) =>
+  callRequests = (data: CallRequestData) =>
     new Promise((resolve, reject) => {
       Logger.info('dapp emitting CALL request')
       emitter.emit(WalletConnectRequest.CALL, data)
 
       emitter.on(WalletConnectRequest.CALL_APPROVED, args => {
-        const { id, hash } = args
+        const { id, result } = args
         if (data.payload.id === id) {
           Logger.info('dapp received emission approval for CALL')
-          resolve(hash)
+          resolve(result)
         }
       })
       emitter.on(WalletConnectRequest.CALL_REJECTED, args => {
@@ -253,7 +268,7 @@ class WalletConnectService {
       })
     })
 
-  startSession = async (sessionData: any, existing: boolean) => {
+  startSession = async (existing: boolean) => {
     // do not start session if on BTC
     if (this.activeNetwork?.vmName === NetworkVMType.BITCOIN) return
     const chainId = this.activeNetwork?.chainId ?? 1
@@ -276,6 +291,11 @@ const instance = {
   async init(activeAccount: Account, activeNetwork: Network) {
     // do not init if on BTC
     if (activeNetwork.vmName === NetworkVMType.BITCOIN) return
+
+    if (initialized) {
+      Logger.info('wallet connect already initialized')
+      return
+    }
 
     Logger.info('loading persisted dapps')
     const sessionData = await AsyncStorage.getItem(WALLETCONNECT_SESSIONS)
@@ -403,7 +423,7 @@ const instance = {
   },
   // Kills all sessions
   async killAllSessions() {
-    const promises: any[] = []
+    const promises: Promise<void>[] = []
     connectors?.forEach(conn => {
       if (conn.walletConnectClient?.session?.peerId) {
         promises.push(

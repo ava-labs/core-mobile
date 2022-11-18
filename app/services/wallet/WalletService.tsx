@@ -13,7 +13,7 @@ import { Wallet } from 'ethers'
 import networkService from 'services/network/NetworkService'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import { networks } from 'bitcoinjs-lib'
-import { MessageType } from 'services/walletconnect/types'
+import { RpcMethod } from 'services/walletconnect/types'
 import {
   personalSign,
   signTypedData,
@@ -103,7 +103,7 @@ class WalletService {
   }
 
   async signMessage(
-    messageType: MessageType,
+    rpcMethod: RpcMethod,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data: any,
     accountIndex: number,
@@ -130,25 +130,25 @@ class WalletService {
       typeof data === 'object' && 'types' in data && 'primaryType' in data
 
     if (data) {
-      switch (messageType) {
-        case MessageType.ETH_SIGN:
-        case MessageType.PERSONAL_SIGN:
+      switch (rpcMethod) {
+        case RpcMethod.ETH_SIGN:
+        case RpcMethod.PERSONAL_SIGN:
           return personalSign({ privateKey: key, data })
-        case MessageType.SIGN_TYPED_DATA:
-        case MessageType.SIGN_TYPED_DATA_V1: {
+        case RpcMethod.SIGN_TYPED_DATA:
+        case RpcMethod.SIGN_TYPED_DATA_V1: {
           return signTypedData({
             privateKey: key,
             data,
             version: isV4 ? SignTypedDataVersion.V4 : SignTypedDataVersion.V1
           })
         }
-        case MessageType.SIGN_TYPED_DATA_V3:
+        case RpcMethod.SIGN_TYPED_DATA_V3:
           return signTypedData({
             privateKey: key,
             data,
             version: SignTypedDataVersion.V3
           })
-        case MessageType.SIGN_TYPED_DATA_V4:
+        case RpcMethod.SIGN_TYPED_DATA_V4:
           return signTypedData({
             privateKey: key,
             data,
