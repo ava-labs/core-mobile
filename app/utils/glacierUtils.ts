@@ -14,7 +14,7 @@ const knownHosts = ['glacier-api.avax.network', 'proxy-api.avax.network']
  * Glacier needs an API key for development, this adds the key if needed.
  */
 export function addGlacierAPIKeyIfNeeded(url: string): string {
-  if (Config.GLACIER_API_KEY && knownHosts.includes(url)) {
+  if (Config.GLACIER_API_KEY && knownHosts.some(host => url.startsWith(host))) {
     const urlObj = new URL(url)
     const search_params = urlObj.searchParams // copy, does not update the URL
     search_params.set('token', Config.GLACIER_API_KEY)
