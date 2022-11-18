@@ -7,8 +7,8 @@ import { selectActiveAccount } from 'store/account'
 import Config from 'react-native-config'
 
 const moonpayURL = async (address: string): Promise<{ url: string }> => {
-  return await fetch(`${Config.GLACIER_PROD_URL}/moonpay/${address}`).then(
-    response => response.json()
+  return await fetch(`${Config.PROXY_URL}/moonpay/${address}`).then(response =>
+    response.json()
   )
 }
 
