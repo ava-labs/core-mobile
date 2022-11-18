@@ -21,7 +21,11 @@ export async function getBtcBalance(
     currency
   )
 
-  return token[0]
+  if (token.length === 0) {
+    return Promise.reject('No balances for address')
+  }
+
+  return token[0] as NetworkTokenWithBalance | TokenWithBalanceERC20
 }
 
 export async function getAvalancheBtcBalance(

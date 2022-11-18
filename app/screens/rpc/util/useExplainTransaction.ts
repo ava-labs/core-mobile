@@ -49,7 +49,10 @@ export function useExplainTransaction(dappEvent: DappSignTransactionEvent) {
 
   const [transaction, setTransaction] = useState<Transaction | null>(null)
 
-  const txParams = (dappEvent.payload?.params || [])[0]
+  const txParams =
+    dappEvent.payload?.params && dappEvent.payload?.params.length > 0
+      ? dappEvent.payload?.params[0]
+      : undefined
   const peerMeta = dappEvent.peerMeta
   const [customGas, setCustomGas] = useState<{
     gasLimit: number
@@ -156,9 +159,9 @@ export function useExplainTransaction(dappEvent: DappSignTransactionEvent) {
     async function loadTx() {
       // Get transaction description from ABIs
       const txDescription = await getTxInfo(
-        txParams.to.toLocaleLowerCase(),
-        txParams.data,
-        txParams.value,
+        txParams?.to.toLocaleLowerCase() ?? '',
+        txParams?.data ?? '',
+        txParams?.value ?? '',
         activeNetwork
       )
 

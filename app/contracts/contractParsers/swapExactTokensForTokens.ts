@@ -10,7 +10,6 @@ import {
 } from 'screens/rpc/util/types'
 import { parseDisplayValues } from 'screens/rpc/util/parseDisplayValues'
 import { Network } from '@avalabs/chains-sdk'
-import { TokenWithBalanceERC20 } from 'store/balance'
 import { FindToken } from './utils/useFindToken'
 
 export interface SwapExactTokensForTokenData {
@@ -47,9 +46,7 @@ export async function swapTokensForTokens(
 
   const path: erc20PathToken[] = await Promise.all(
     data.path.map(async address => {
-      const pathToken: TokenWithBalanceERC20 = await findToken(
-        address.toLowerCase()
-      )
+      const pathToken = await findToken(address.toLowerCase())
 
       if (
         pathToken.address.toLowerCase() === firstTokenInPath?.toLowerCase() &&

@@ -53,7 +53,6 @@ import NetworkDetails, {
   NetworkDetailsProps
 } from 'screens/network/NetworkDetails'
 import AvaButton from 'components/AvaButton'
-import { Network } from '@avalabs/chains-sdk'
 import AddSVG from 'components/svg/AddSVG'
 import AddEditNetwork, {
   AddEditNetworkProps
@@ -65,6 +64,7 @@ import LegalStackScreen, {
 } from 'navigation/wallet/LegalStackScreen'
 import { NetworkDetailsAction } from 'screens/network/NetworkDetailsAction'
 import CaptureDappQR from 'screens/shared/CaptureDappQR'
+import { ChainID } from 'store/network'
 import { BridgeStackParamList } from './wallet/BridgeScreenStack'
 import {
   BridgeTransactionStatusParams,
@@ -399,10 +399,11 @@ type NetworkSelectorScreenProps = WalletScreenProps<
 >
 
 function NetworkSelectorScreen() {
-  const { navigate } = useNavigation<NetworkSelectorScreenProps['navigation']>()
+  const { navigate, goBack } =
+    useNavigation<NetworkSelectorScreenProps['navigation']>()
 
-  function showNetworkDetails({ chainId }: Network) {
-    navigate(AppNavigation.Wallet.NetworkDetails, { chainId })
+  function showNetworkDetails(chainId: ChainID) {
+    navigate(AppNavigation.Wallet.NetworkDetails, { chainId, goBack })
   }
 
   return <NetworkManager onShowInfo={showNetworkDetails} />
@@ -427,9 +428,10 @@ type NetworkDetailsScreenProps = WalletScreenProps<
 >
 
 function NetworkDetailsScreen() {
+  const { goBack } = useNavigation<NetworkDetailsScreenProps['navigation']>()
   const { params } = useRoute<NetworkDetailsScreenProps['route']>()
 
-  return <NetworkDetails chainId={params.chainId} />
+  return <NetworkDetails chainId={params.chainId} goBack={goBack} />
 }
 
 type NetworkAddEditScreenProps = WalletScreenProps<

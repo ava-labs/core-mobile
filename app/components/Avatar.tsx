@@ -54,8 +54,10 @@ const AvatarBase: FC<Props> = ({
       const names = (name ?? '').split(' ')
       const initials =
         names.length > 1
-          ? names[0].substring(0, 1) + names[names.length - 1].substring(0, 1)
-          : names[0].substring(0, 1)
+          ? names[0]?.substring(0, 1) ??
+            '' + names[names.length - 1]?.substring(0, 1) ??
+            ''
+          : names[0]?.substring(0, 1) ?? ''
 
       return (
         <View

@@ -152,15 +152,15 @@ export async function performSwap(request: {
         .setContext('svc.swap.contract_estimate_gas')
         .executeAsync(async () => {
           return await resolve(
-            contract.estimateGas.approve(spender, sourceAmount)
+            contract.estimateGas?.approve?.(spender, sourceAmount) ??
+              Promise.reject('Invalid function call')
           )
         })
 
       if (!(allowance as BigNumber).gt(sourceAmount)) {
-        const { data } = await contract.populateTransaction.approve(
-          spender,
-          sourceAmount
-        )
+        const data = (
+          await contract.populateTransaction?.approve?.(spender, sourceAmount)
+        )?.data
 
         Logger.info('signing approval')
 

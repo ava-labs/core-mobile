@@ -93,7 +93,7 @@ export function useSingularAssetBalanceEVM(
 function getAvalancheBalance(
   asset: EthereumConfigAsset | BitcoinConfigAsset,
   erc20Tokens: TokenWithBalance[]
-): Big {
+): Big | undefined {
   const erc20TokensByAddress = erc20Tokens.reduce<{
     [address: string]: TokenWithBalanceERC20
   }>((tokens, token) => {

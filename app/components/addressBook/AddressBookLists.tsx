@@ -45,20 +45,38 @@ export default function AddressBookLists({
   const recentAddresses = useMemo(
     () =>
       recentContacts
-        .map(contact => {
-          switch (contact.type) {
-            case 'account':
-              return {
-                item: accounts[contact.id as AccountId],
-                type: contact.type
+        .reduce(
+          (acc, recentContact) => {
+            switch (recentContact.type) {
+              case 'account': {
+                const account = accounts[recentContact.id as AccountId]
+                if (account) {
+                  acc.push({
+                    item: account,
+                    type: recentContact.type
+                  })
+                }
+                break
               }
-            case 'contact':
-              return {
-                item: contacts[contact.id],
-                type: contact.type
+              case 'contact': {
+                const contact = contacts[recentContact.id]
+                if (contact) {
+                  acc.push({
+                    item: contact,
+                    type: recentContact.type
+                  })
+                }
+                break
               }
-          }
-        })
+            }
+
+            return acc
+          },
+          [] as {
+            item: Account | Contact
+            type: AddrBookItemType
+          }[]
+        )
         .filter(
           value =>
             (onlyBtc && value.type === 'contact' && value.item.addressBtc) ||

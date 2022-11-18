@@ -68,6 +68,10 @@ export function formatLargeCurrency(currencyNum: string, digits = 2) {
   if (!match) return currencyNum
   const [_, negative, symbol, amount, code] = match
 
+  if (amount === undefined) {
+    throw Error(`Invalid input ${currencyNum}`)
+  }
+
   const newAmount = formatLargeNumber(amount.replace(/,/g, ''), digits)
   return `${negative || ''}${symbol || ''}${newAmount}${code ? ` ${code}` : ''}`
 }
@@ -82,7 +86,7 @@ export function arrayHash(array: string[]) {
   let i,
     sum = 0
   for (i = 0; i < array.length; i++) {
-    const cs = charsum(array[i])
+    const cs = charsum(array[i] as string)
     sum = sum + 65027 / cs
   }
   return ('' + sum).slice(0, 16)

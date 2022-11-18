@@ -10,10 +10,13 @@ class AccountsService {
       const key = parseInt(index)
       const addresses = walletService.getAddress(key, isTestnet)
 
-      reloadedAccounts[key] = {
-        ...accounts[key],
-        addressBtc: addresses[NetworkVMType.BITCOIN],
-        address: addresses[NetworkVMType.EVM]
+      const account = accounts[key]
+      if (account) {
+        reloadedAccounts[key] = {
+          ...account,
+          addressBtc: addresses[NetworkVMType.BITCOIN],
+          address: addresses[NetworkVMType.EVM]
+        }
       }
     }
 

@@ -59,7 +59,7 @@ const NftManage = () => {
         renderItem={info =>
           renderItemList(
             info.item,
-            hiddenNftUIDs[info.item.uid],
+            hiddenNftUIDs[info.item.uid] ?? false,
             onItemToggled,
             theme
           )
