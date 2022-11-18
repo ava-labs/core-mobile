@@ -12,7 +12,9 @@ import {
   selectWatchlistPrices,
   setPrices,
   setCharts,
-  appendTokens
+  appendTokens,
+  defaultPrice,
+  defaultChartData
 } from 'store/watchlist'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
 import watchlistService from 'services/watchlist/WatchlistService'
@@ -21,8 +23,18 @@ import { WatchListLoader } from 'screens/watchlist/components/WatchListLoader'
 import isEmpty from 'lodash.isempty'
 import AvaButton from 'components/AvaButton'
 import { selectSelectedCurrency } from 'store/settings/currency'
+import { ChartData } from 'services/token/types'
 import { WatchlistFilter } from './types'
 import WatchList from './components/WatchList'
+
+const comparePercentChange = (chartData1: ChartData, chartData2: ChartData) => {
+  const percentChange1 =
+    Math.sign(chartData1.ranges.diffValue) * chartData1.ranges.percentChange
+  const percentChange2 =
+    Math.sign(chartData2.ranges.diffValue) * chartData2.ranges.percentChange
+
+  return percentChange1 - percentChange2
+}
 
 interface Props {
   showFavorites?: boolean
@@ -131,26 +143,26 @@ const WatchlistView: React.FC<Props> = ({
     if (Object.keys(prices).length === 0) return tokensToDisplay
 
     return tokensToDisplay.slice().sort((a, b) => {
-      const priceB = prices[b.id] ?? {
-        priceInCurrency: 0,
-        marketCap: 0,
-        vol24: 0
-      }
-      const priceA = prices[a.id] ?? {
-        priceInCurrency: 0,
-        marketCap: 0,
-        vol24: 0
-      }
+      const priceB = prices[b.id] ?? defaultPrice
+      const chartB = charts[b.id] ?? defaultChartData
+      const priceA = prices[a.id] ?? defaultPrice
+      const chartA = charts[a.id] ?? defaultChartData
 
-      if (filterBy === WatchlistFilter.PRICE) {
-        return priceB.priceInCurrency - priceA.priceInCurrency
-      } else if (filterBy === WatchlistFilter.MARKET_CAP) {
-        return priceB.marketCap - priceA.marketCap
-      } else {
-        return priceB.vol24 - priceA.vol24
+      switch (filterBy) {
+        case WatchlistFilter.MARKET_CAP:
+          return priceB.marketCap - priceA.marketCap
+        case WatchlistFilter.VOLUME:
+          return priceB.vol24 - priceA.vol24
+        case WatchlistFilter.GAINERS:
+          return comparePercentChange(chartB, chartA)
+        case WatchlistFilter.LOSERS:
+          return comparePercentChange(chartA, chartB)
+        case WatchlistFilter.PRICE:
+        default:
+          return priceB.priceInCurrency - priceA.priceInCurrency
       }
     })
-  }, [filterBy, prices, tokensToDisplay])
+  }, [charts, filterBy, prices, tokensToDisplay])
 
   const selectedPriceFilter = filterPriceOptions.findIndex(
     item => item === filterBy
