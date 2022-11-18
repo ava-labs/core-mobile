@@ -24,7 +24,7 @@ import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
 import Web3 from 'web3'
 import { Limit, SpendLimit } from 'components/EditSpendLimit'
 import Logger from 'utils/Logger'
-import { DappEvent } from 'contexts/DappConnectionContext'
+import { DappSignTransactionEvent } from 'contexts/DappConnectionContext/types'
 import { useSelector } from 'react-redux'
 import { NetworkTokenWithBalance, selectTokensWithBalance } from 'store/balance'
 import { selectNetworkFee } from 'store/networkFee'
@@ -34,7 +34,7 @@ import { useFindToken } from 'contracts/contractParsers/utils/useFindToken'
 
 const UNLIMITED_SPEND_LIMIT_LABEL = 'Unlimited'
 
-export function useExplainTransaction(dappEvent?: DappEvent) {
+export function useExplainTransaction(dappEvent: DappSignTransactionEvent) {
   const networkFees = useSelector(selectNetworkFee)
   const { nativeTokenPrice: tokenPrice } = useNativeTokenPrice()
   const activeNetwork = useActiveNetwork()
@@ -49,8 +49,8 @@ export function useExplainTransaction(dappEvent?: DappEvent) {
 
   const [transaction, setTransaction] = useState<Transaction | null>(null)
 
-  const txParams = (dappEvent?.payload?.params || [])[0]
-  const peerMeta = dappEvent?.peerMeta
+  const txParams = (dappEvent.payload?.params || [])[0]
+  const peerMeta = dappEvent.peerMeta
   const [customGas, setCustomGas] = useState<{
     gasLimit: number
     gasPrice: BigNumber
@@ -172,7 +172,7 @@ export function useExplainTransaction(dappEvent?: DappEvent) {
       // Get parser based on function name
       const parser = contractParserMap.get(functionName)
 
-      if (dappEvent?.payload && txParams && isTxParams(txParams)) {
+      if (dappEvent.payload && txParams && isTxParams(txParams)) {
         // We need active network to continue
         if (!activeNetwork) {
           throw Error('no network')
@@ -260,7 +260,7 @@ export function useExplainTransaction(dappEvent?: DappEvent) {
   }, [
     activeNetwork,
     avaxToken,
-    dappEvent?.payload,
+    dappEvent.payload,
     findToken,
     networkFees,
     peerMeta,

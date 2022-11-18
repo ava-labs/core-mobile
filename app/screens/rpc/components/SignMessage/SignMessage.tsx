@@ -11,8 +11,8 @@ import PersonalSign from 'screens/rpc/components/SignMessage/PersonalSign'
 import SignDataV4 from 'screens/rpc/components/SignMessage/SignDataV4'
 import { ScrollView } from 'react-native-gesture-handler'
 import FlexSpacer from 'components/FlexSpacer'
-import { MessageAction, MessageType } from 'services/walletconnect/types'
-import { DappEvent } from 'contexts/DappConnectionContext'
+import { MessageAction, RpcMethod } from 'services/walletconnect/types'
+import { DappSignMessageEvent } from 'contexts/DappConnectionContext/types'
 import { showSnackBarCustom } from 'components/Snackbar'
 import TransactionToast, {
   TransactionToastType
@@ -20,9 +20,9 @@ import TransactionToast, {
 import * as Sentry from '@sentry/react-native'
 
 interface Props {
-  dappEvent?: DappEvent
-  onRejected: () => void
-  onApprove: (payload: DappEvent) => Promise<{ hash?: string; error?: unknown }>
+  dappEvent: DappSignMessageEvent
+  onRejected: (message?: string) => void
+  onApprove: () => Promise<{ hash?: string }>
   onClose: () => void
 }
 
@@ -35,6 +35,8 @@ const SignMessage: FC<Props> = ({
   const theme = useApplicationContext().theme
   const [submitting, setSubmitting] = useState(false)
   const [signFailedError, setSignFailedError] = useState<string>()
+
+  // TODO CP-4029 move validation inside DappConnectionContext
   if (!dappEvent?.payload) {
     onClose()
     return null
@@ -43,37 +45,35 @@ const SignMessage: FC<Props> = ({
     id: dappEvent.payload?.id,
     site: dappEvent.peerMeta,
     method: dappEvent.payload?.method,
-    displayData: dappEvent?.payload.data
+    displayData: dappEvent.data
   }
   function onHandleApprove() {
-    if (dappEvent) {
-      setSubmitting(true)
-      setSignFailedError(undefined)
-      onApprove(dappEvent)
-        .then(() => {
-          setSubmitting(false)
+    setSubmitting(true)
+    setSignFailedError(undefined)
+    onApprove()
+      .then(() => {
+        setSubmitting(false)
+        onClose()
+      })
+      .catch(reason => {
+        setSubmitting(false)
+        if (reason?.error?.transactionHash) {
+          showSnackBarCustom({
+            component: (
+              <TransactionToast
+                type={TransactionToastType.ERROR}
+                message={'Transaction Failed'}
+                txHash={reason?.error?.transactionHash}
+              />
+            ),
+            duration: 'short'
+          })
           onClose()
-        })
-        .catch(reason => {
-          setSubmitting(false)
-          if (reason?.error?.transactionHash) {
-            showSnackBarCustom({
-              component: (
-                <TransactionToast
-                  type={TransactionToastType.ERROR}
-                  message={'Transaction Failed'}
-                  txHash={reason?.error?.transactionHash}
-                />
-              ),
-              duration: 'short'
-            })
-            onClose()
-          } else {
-            setSignFailedError('there was an error signing')
-          }
-          Sentry?.captureException(reason, { tags: { dapps: 'signMessage' } })
-        })
-    }
+        } else {
+          setSignFailedError('there was an error signing')
+        }
+        Sentry?.captureException(reason, { tags: { dapps: 'signMessage' } })
+      })
   }
 
   return (
@@ -105,9 +105,9 @@ const SignMessage: FC<Props> = ({
         <Space y={18} />
         {
           {
-            [MessageType.ETH_SIGN]: <EthSign action={action} />,
-            [MessageType.PERSONAL_SIGN]: <PersonalSign action={action} />,
-            [MessageType.SIGN_TYPED_DATA]: <SignDataV4 action={action} />
+            [RpcMethod.ETH_SIGN]: <EthSign action={action} />,
+            [RpcMethod.PERSONAL_SIGN]: <PersonalSign action={action} />,
+            [RpcMethod.SIGN_TYPED_DATA]: <SignDataV4 action={action} />
           }[action?.method ?? 'unknown']
         }
       </View>
@@ -124,7 +124,7 @@ const SignMessage: FC<Props> = ({
           {submitting && <ActivityIndicator />} Approve
         </AvaButton.PrimaryMedium>
         <Space y={21} />
-        <AvaButton.SecondaryMedium onPress={onRejected}>
+        <AvaButton.SecondaryMedium onPress={() => onRejected()}>
           Reject
         </AvaButton.SecondaryMedium>
       </View>
