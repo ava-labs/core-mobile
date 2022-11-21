@@ -23,11 +23,16 @@ import {
   isFromCoreWeb,
   isRequestSupportedOnNetwork
 } from './utils'
+import { JsonMap } from 'posthog-react-native/src/bridge'
 
 let initialized = false
 let connectors: WalletConnectService[] = []
 const tempCallIds: number[] = []
 const emitter = new EventEmitter()
+let posthogCapture: (
+  event: string,
+  properties?: JsonMap
+) => Promise<void> | undefined
 
 const WALLETCONNECT_SESSIONS = `walletconnectSessions`
 
@@ -252,6 +257,10 @@ class WalletConnectService {
       emitter.on(WalletConnectRequest.SESSION_APPROVED, (peerId: string) => {
         if (peerInfo.peerId === peerId) {
           Logger.info('dapp received emission approval for session')
+          posthogCapture('WalletConnectSessionApproved', {
+            dappId: peerId,
+            dappUrl: peerInfo.peerMeta?.url ?? null
+          })
           resolve(true)
         }
       })
@@ -304,6 +313,9 @@ class WalletConnectService {
 }
 
 const instance = {
+  setPosthogCapture(f: (event: string, properties?: JsonMap) => Promise<void>) {
+    posthogCapture = f
+  },
   // restores approved connections
   async init(activeAccount: Account, activeNetwork: Network) {
     // do not init if on BTC
