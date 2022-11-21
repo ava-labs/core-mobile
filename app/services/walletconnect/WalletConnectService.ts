@@ -18,6 +18,7 @@ import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import Logger from 'utils/Logger'
 import { Account } from 'store/account'
 import { ethErrors } from 'eth-rpc-errors'
+import { PosthogCapture } from 'contexts/PosthogContext'
 import {
   isCoreMethod,
   isFromCoreWeb,
@@ -28,6 +29,7 @@ let initialized = false
 let connectors: WalletConnectService[] = []
 const tempCallIds: number[] = []
 const emitter = new EventEmitter()
+let posthogCapture: PosthogCapture | undefined
 
 const WALLETCONNECT_SESSIONS = `walletconnectSessions`
 
@@ -252,6 +254,10 @@ class WalletConnectService {
       emitter.on(WalletConnectRequest.SESSION_APPROVED, (peerId: string) => {
         if (peerInfo.peerId === peerId) {
           Logger.info('dapp received emission approval for session')
+          posthogCapture?.('WalletConnectSessionApproved', {
+            dappId: peerId,
+            dappUrl: peerInfo.peerMeta?.url ?? null
+          })
           resolve(true)
         }
       })
@@ -304,6 +310,9 @@ class WalletConnectService {
 }
 
 const instance = {
+  setPosthogCapture(f: PosthogCapture) {
+    posthogCapture = f
+  },
   // restores approved connections
   async init(activeAccount: Account, activeNetwork: Network) {
     // do not init if on BTC

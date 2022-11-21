@@ -8,6 +8,7 @@ import {
 } from 'services/walletconnect/types'
 import WalletConnectService from 'services/walletconnect/WalletConnectService'
 import { Account } from 'store/account'
+import { usePosthogContext } from 'contexts/PosthogContext'
 
 type Params = {
   activeAccount: Account | undefined
@@ -52,6 +53,11 @@ export const useWalletConnect = ({
   handleCallRequest,
   handleSessionDisconnected
 }: Params) => {
+  const { capture } = usePosthogContext()
+  useEffect(() => {
+    WalletConnectService.setPosthogCapture(capture)
+  }, [capture])
+
   /******************************************************************************
    * Initialize Wallet Connect
    *****************************************************************************/
