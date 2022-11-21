@@ -235,8 +235,8 @@ const TokenDetail = () => {
 
         {/* this will change once data component purpose and interaction is defined */}
         <TabViewAva
-          renderCustomLabel={title => (
-            <AvaText.Heading3>{title}</AvaText.Heading3>
+          renderCustomLabel={(title, selected, color) => (
+            <AvaText.Heading3 textStyle={{ color }}>{title}</AvaText.Heading3>
           )}
           onTabIndexChange={index => {
             changeChartDays(

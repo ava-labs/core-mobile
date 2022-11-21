@@ -9,7 +9,6 @@ import {
   setActive,
   toggleFavorite
 } from 'store/network'
-import { useApplicationContext } from 'contexts/ApplicationContext'
 import SearchBar from 'components/SearchBar'
 import AvaText from 'components/AvaText'
 import TabViewAva from 'components/TabViewAva'
@@ -28,7 +27,6 @@ export default function NetworkManager({ onShowInfo }: Props) {
   const customNetworks = useSelector(selectCustomNetworks)
   const favoriteNetworks = useSelector(selectFavoriteNetworks)
   const dispatch = useDispatch()
-  const { theme } = useApplicationContext()
   const [searchText, setSearchText] = useState('')
   const title = 'Networks'
 
@@ -62,12 +60,16 @@ export default function NetworkManager({ onShowInfo }: Props) {
     [favoriteNetworks, filterBySearchText]
   )
 
-  const renderCustomLabel = (label: string, selected: boolean) => {
+  const renderCustomLabel = (
+    label: string,
+    selected: boolean,
+    color: string
+  ) => {
     return selected ? (
       <AvaText.ButtonMedium
         ellipsizeMode={'tail'}
         textStyle={{
-          color: theme.alternateBackground
+          color
         }}>
         {label}
       </AvaText.ButtonMedium>
