@@ -36,8 +36,13 @@ enum FeatureVars {
   SENTRY_SAMPLE_RATE = 'sentry-sample-rate'
 }
 
+export type PosthogCapture = (
+  event: string,
+  properties?: JsonMap
+) => Promise<void>
+
 export interface PosthogContextState {
-  capture: (event: string, properties?: JsonMap) => Promise<void>
+  capture: PosthogCapture
   setAnalyticsConsent: Dispatch<boolean | undefined>
   swapBlocked: boolean
   bridgeBlocked: boolean
