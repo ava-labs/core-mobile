@@ -269,9 +269,7 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
           component={NFTScreenStack}
         />
         <WalletScreenS.Screen
-          options={{
-            headerShown: false
-          }}
+          options={MainHeaderOptions('')}
           name={AppNavigation.Wallet.NFTManage}
           component={NftManage}
         />
