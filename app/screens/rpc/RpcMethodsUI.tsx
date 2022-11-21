@@ -19,6 +19,7 @@ import { WalletAddEthereumChainRpcRequest } from 'store/rpc/handlers/wallet_addE
 import UpdateContact from './components/UpdateContact'
 import SwitchEthereumChain from './components/SwitchEthereumChain'
 import AddEthereumChain from './components/AddEthereumChain'
+import ContactPrompt from './components/ContactPrompt'
 
 const snapPoints = ['90%']
 
@@ -103,6 +104,23 @@ const RpcMethodsUI = () => {
             onApprove={onUserApproved}
             dappEvent={oldestRpcRequest as WalletAddEthereumChainRpcRequest}
             onClose={onClose}
+            />
+      case RPC_EVENT.CREATE_CONTACT:
+        return (
+          <ContactPrompt
+            dappEvent={dappEvent}
+            onApprove={onContactUpdated}
+            onReject={onCallRejected}
+            action="create"
+          />
+        )
+      case RPC_EVENT.REMOVE_CONTACT:
+        return (
+          <ContactPrompt
+            dappEvent={dappEvent}
+            onApprove={onContactRemoved}
+            onReject={onCallRejected}
+            action="remove"
           />
         )
       default:
