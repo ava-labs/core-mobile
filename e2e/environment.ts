@@ -31,7 +31,7 @@ class CustomDetoxEnvironment extends DetoxCircusEnvironment {
     this.global.testPaths = this.testPath
   }
 
-  async handleTestEvent(event: { test: never; name: string }) {
+  async handleTestEvent(event: { test: unknown; name: string }) {
     const { name } = event
     const test = event.test
     if ('test_fn_failure'.includes(name)) {
