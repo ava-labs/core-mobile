@@ -6,6 +6,11 @@ const {
   WorkerAssignReporter
 } = require('detox/runners/jest-circus')
 
+type Event = {
+  test: { parent: { name: string } }
+  name: string
+}
+
 class CustomDetoxEnvironment extends DetoxCircusEnvironment {
   constructor(
     config: never,
@@ -31,7 +36,7 @@ class CustomDetoxEnvironment extends DetoxCircusEnvironment {
     this.global.testPaths = this.testPath
   }
 
-  async handleTestEvent(event: { test: unknown; name: string }) {
+  async handleTestEvent(event: Event) {
     const { name } = event
     const test = event.test
     if ('test_fn_failure'.includes(name)) {
@@ -41,6 +46,7 @@ class CustomDetoxEnvironment extends DetoxCircusEnvironment {
     }
     if ('test_done'.includes(name)) {
       this.global.testNames = test.parent.name
+      console.log(typeof test + 'this is the test type!')
 
       // console.log(inspect(test.parent.name) + ' this is the test!')
     }
