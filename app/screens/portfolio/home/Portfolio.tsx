@@ -41,7 +41,7 @@ const Portfolio = () => {
       <TabViewAva
         onTabIndexChange={tabIndex => capturePosthogEvents(tabIndex)}
         renderCustomLabel={renderCustomLabel}
-        shouldDisableTouch={collectiblesDisabled}>
+        enableFirstTabOnly={collectiblesDisabled}>
         <TabViewAva.Item title={'Tokens'}>
           <TokensTab />
         </TabViewAva.Item>
@@ -113,8 +113,8 @@ const NftTab = () => {
   )
 }
 
-const renderCustomLabel = (title: string) => {
-  return <AvaText.Heading3>{title}</AvaText.Heading3>
+const renderCustomLabel = (title: string, selected: boolean, color: string) => {
+  return <AvaText.Heading3 textStyle={{ color }}>{title}</AvaText.Heading3>
 }
 
 export default Portfolio

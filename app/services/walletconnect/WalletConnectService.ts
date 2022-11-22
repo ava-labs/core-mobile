@@ -17,12 +17,19 @@ import { JsonRpcRequest } from '@walletconnect/jsonrpc-types'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import Logger from 'utils/Logger'
 import { Account } from 'store/account'
-import { isCoreMethod, isFromCoreWeb } from './utils'
+import { ethErrors } from 'eth-rpc-errors'
+import { PosthogCapture } from 'contexts/PosthogContext'
+import {
+  isCoreMethod,
+  isFromCoreWeb,
+  isRequestSupportedOnNetwork
+} from './utils'
 
 let initialized = false
 let connectors: WalletConnectService[] = []
 const tempCallIds: number[] = []
 const emitter = new EventEmitter()
+let posthogCapture: PosthogCapture | undefined
 
 const WALLETCONNECT_SESSIONS = `walletconnectSessions`
 
@@ -129,9 +136,6 @@ class WalletConnectService {
       error: Error | null,
       payload: JsonRpcRequest
     ) => {
-      // do not respond to call request if on BTC
-      if (this.activeNetwork?.vmName === NetworkVMType.BITCOIN) return
-
       if (tempCallIds.includes(payload.id)) return
       tempCallIds.push(payload.id)
 
@@ -149,8 +153,22 @@ class WalletConnectService {
           Logger.warn(
             `ignoring custom core method ${payload.method}. requested by ${peerMeta?.url}`
           )
+          this.walletConnectClient?.rejectRequest({
+            id: payload.id,
+            error: ethErrors.provider.unauthorized()
+          })
           return
         }
+      }
+
+      if (!isRequestSupportedOnNetwork(payload, this.activeNetwork)) {
+        this.walletConnectClient?.rejectRequest({
+          id: payload.id,
+          error: ethErrors.rpc.methodNotSupported({
+            message: 'Method not supported on the current network'
+          })
+        })
+        return
       }
 
       try {
@@ -171,9 +189,11 @@ class WalletConnectService {
         Logger.error('dapp call error or user canceled', e)
         this.walletConnectClient?.rejectRequest({
           id: payload.id,
-          error: {
-            message: e?.message ? e.message : 'USER HAS REJECTED'
-          }
+          error: e.message
+            ? ethErrors.rpc.internal({
+                message: e.message
+              })
+            : ethErrors.provider.userRejectedRequest()
         })
       }
     }
@@ -234,6 +254,10 @@ class WalletConnectService {
       emitter.on(WalletConnectRequest.SESSION_APPROVED, (peerId: string) => {
         if (peerInfo.peerId === peerId) {
           Logger.info('dapp received emission approval for session')
+          posthogCapture?.('WalletConnectSessionApproved', {
+            dappId: peerId,
+            dappUrl: peerInfo.peerMeta?.url ?? null
+          })
           resolve(true)
         }
       })
@@ -270,7 +294,6 @@ class WalletConnectService {
 
   startSession = async (existing: boolean) => {
     // do not start session if on BTC
-    if (this.activeNetwork?.vmName === NetworkVMType.BITCOIN) return
     const chainId = this.activeNetwork?.chainId ?? 1
     const selectedAddress = this.activeAccount?.address ?? ''
     const approveData: ISessionStatus = {
@@ -287,6 +310,9 @@ class WalletConnectService {
 }
 
 const instance = {
+  setPosthogCapture(f: PosthogCapture) {
+    posthogCapture = f
+  },
   // restores approved connections
   async init(activeAccount: Account, activeNetwork: Network) {
     // do not init if on BTC

@@ -1,9 +1,9 @@
 import React, { FC, useCallback, useEffect, useState } from 'react'
 import {
-  TabBar,
-  SceneRendererProps,
-  TabBarItemProps,
   NavigationState,
+  SceneRendererProps,
+  TabBar,
+  TabBarItemProps,
   TabView
 } from 'react-native-tab-view'
 import { View } from 'react-native'
@@ -23,10 +23,14 @@ type TabViewAvaItemProps = {
 }
 
 type TabViewAvaFC = FC<{
-  renderCustomLabel?: (title: string, selected: boolean) => React.ReactNode
+  renderCustomLabel?: (
+    title: string,
+    selected: boolean,
+    color: string
+  ) => React.ReactNode
   currentTabIndex?: number
   onTabIndexChange?: (tabIndex: number) => void
-  shouldDisableTouch?: boolean
+  enableFirstTabOnly?: boolean
   lazy?: boolean
 }> & { Item: FC<TabViewAvaItemProps> }
 
@@ -34,7 +38,7 @@ const TabViewAva: TabViewAvaFC = ({
   renderCustomLabel,
   currentTabIndex = 0,
   onTabIndexChange,
-  shouldDisableTouch = false,
+  enableFirstTabOnly = false,
   lazy = true,
   children
 }) => {
@@ -95,12 +99,15 @@ const TabViewAva: TabViewAvaFC = ({
           {props.renderLabel?.({
             route: props.route,
             focused: props.navigationState.index === props.route.index,
-            color: 'white'
+            color:
+              enableFirstTabOnly && props.route.index !== 0
+                ? theme.colorDisabled
+                : theme.alternateBackground
           })}
         </AvaButton.Base>
       )
     },
-    []
+    [enableFirstTabOnly, theme.alternateBackground, theme.colorDisabled]
   )
 
   const tabbar = useCallback(
@@ -110,45 +117,45 @@ const TabViewAva: TabViewAvaFC = ({
           <TabBar
             {...tabBarProps}
             style={{
-              opacity: shouldDisableTouch ? 0.4 : 1,
               elevation: 0,
               shadowOpacity: 0,
               backgroundColor: theme.transparent,
               marginHorizontal: 16
             }}
-            renderLabel={({ route, focused }) =>
-              renderCustomLabel?.(route?.title ?? '', focused)
-            }
+            renderLabel={({ route, focused, color }) => {
+              return renderCustomLabel?.(route?.title ?? '', focused, color)
+            }}
             indicatorStyle={{
               backgroundColor: theme.alternateBackground,
               height: 2
             }}
             renderTabBarItem={tabBarItem}
             onTabPress={({ preventDefault }) => {
-              shouldDisableTouch && preventDefault()
+              enableFirstTabOnly && preventDefault()
             }}
           />
         </View>
       )
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [shouldDisableTouch]
+    [enableFirstTabOnly]
   )
 
   useEffect(() => {
     // when touch is disabled, first tab will be the default active tab
-    if (shouldDisableTouch) {
+    if (enableFirstTabOnly) {
       handleIndexChange(0)
     }
-  }, [handleIndexChange, shouldDisableTouch])
+  }, [handleIndexChange, enableFirstTabOnly])
 
   return (
     <TabView
+      swipeEnabled={!enableFirstTabOnly}
       onIndexChange={handleIndexChange}
       navigationState={{ index: currentIndex, routes }}
       renderScene={scenes}
       renderTabBar={tabbar}
-      lazy={shouldDisableTouch || lazy}
+      lazy={enableFirstTabOnly || lazy}
     />
   )
 }

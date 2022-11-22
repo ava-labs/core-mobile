@@ -4,7 +4,6 @@ import ZeroState from 'components/ZeroState'
 import TabViewAva from 'components/TabViewAva'
 import AvaText from 'components/AvaText'
 import { AccountId, AddrBookItemType, Contact } from 'Repo'
-import { useApplicationContext } from 'contexts/ApplicationContext'
 import AddressBookItem from 'components/addressBook/AddressBookItem'
 import { useSelector } from 'react-redux'
 import { Account, selectAccounts } from 'store/account'
@@ -28,7 +27,6 @@ export default function AddressBookLists({
   navigateToAddressBook,
   onlyBtc = false
 }: AddressBookListsProps) {
-  const { theme } = useApplicationContext()
   const contacts = useSelector(selectContacts)
   const recentContacts = useSelector(selectRecentContacts)
   const accounts = useSelector(selectAccounts)
@@ -86,12 +84,16 @@ export default function AddressBookLists({
     [recentContacts, accounts, contacts, onlyBtc]
   )
 
-  const renderCustomLabel = (title: string, selected: boolean) => {
+  const renderCustomLabel = (
+    title: string,
+    selected: boolean,
+    color: string
+  ) => {
     return selected ? (
       <AvaText.ButtonMedium
         ellipsizeMode={'tail'}
         textStyle={{
-          color: theme.alternateBackground
+          color
         }}>
         {title}
       </AvaText.ButtonMedium>
