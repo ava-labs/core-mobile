@@ -88,7 +88,7 @@ const AvatarBase: FC<Props> = ({
       }
 
       if (logoUri?.endsWith('svg')) {
-        return <SvgUri uri={logoUri} style={style} />
+        return <SvgUri uri={logoUri} style={style} width={size} height={size} />
       }
 
       // adding a white background by default
