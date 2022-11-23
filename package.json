@@ -192,7 +192,7 @@
     "@lavamoat/allow-scripts": "2.0.3",
     "@react-native-community/eslint-config": "3.0.3",
     "@storybook/addon-actions": "5.3.21",
-    "@storybook/addon-knobs": "5.3.21",
+    "@storybook/addon-knobs": "6.4.0",
     "@storybook/addon-links": "6.5.12",
     "@storybook/addon-ondevice-actions": "5.3.23",
     "@storybook/addon-ondevice-knobs": "5.3.26",
