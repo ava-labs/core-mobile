@@ -7,7 +7,7 @@ import {
 import URL from 'url-parse'
 import URLParse from 'url-parse'
 import qs, { ParsedQs } from 'qs'
-import { CORE_UNIVERSAL_LINK_HOST } from 'resources/Constants'
+import { CORE_UNIVERSAL_LINK_HOSTS } from 'resources/Constants'
 import walletConnectService from 'services/walletconnect/WalletConnectService'
 import { Network } from '@avalabs/chains-sdk'
 import { Account } from 'store/account'
@@ -75,7 +75,7 @@ function handleLink(
       Logger.error('http protocol is not not supported for dapps', originalUrl)
       break
     case PROTOCOLS.HTTPS:
-      if (urlObj.hostname === CORE_UNIVERSAL_LINK_HOST) {
+      if (CORE_UNIVERSAL_LINK_HOSTS.includes(urlObj.hostname)) {
         const action = urlObj.pathname.split('/')[1]
         if (action === ACTIONS.WC && params?.uri) {
           const uri = params.uri.toString()
