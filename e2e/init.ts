@@ -30,18 +30,9 @@ afterAll(async () => {
   // If this env variable is set to true it will update the test cases in testrail
   if (process.env.UPDATE_TESTRAIL_CASES) {
     await createNewTestSectionsAndCases([nameAndResultsObject])
-    console.log(
-      JSON.stringify(nameAndResultsObject) +
-        ' this is the name and results object!'
-    )
   } else {
     console.log('Not updating testrail cases...')
   }
-
-  console.log(
-    JSON.stringify(nameAndResultsObject) +
-      ' this is the test results object from teardown!'
-  )
 
   writeResults({ testCase, testResult })
 
