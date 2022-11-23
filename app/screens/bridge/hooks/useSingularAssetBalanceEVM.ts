@@ -1,6 +1,7 @@
 import {
   Asset,
   AssetType,
+  BIG_ZERO,
   BitcoinConfigAsset,
   Blockchain,
   EthereumConfigAsset
@@ -106,5 +107,5 @@ function getAvalancheBalance(
   }, {})
 
   const token = erc20TokensByAddress[asset.wrappedContractAddress]
-  return token && bnToBig(token.balance, token.decimals)
+  return (token && bnToBig(token.balance, token.decimals)) || BIG_ZERO
 }
