@@ -6,6 +6,11 @@ const {
   WorkerAssignReporter
 } = require('detox/runners/jest-circus')
 
+type Event = {
+  test: { parent: { name: string } }
+  name: string
+}
+
 class CustomDetoxEnvironment extends DetoxCircusEnvironment {
   constructor(
     config: never,
@@ -26,33 +31,24 @@ class CustomDetoxEnvironment extends DetoxCircusEnvironment {
     })
   }
 
-  getNames(parent: { name: string; myParent: never }) {
-    if (!parent) {
-      return []
-    }
-
-    if (parent.name === 'ROOT_DESCRIBE_BLOCK') {
-      return []
-    }
-
-    const parentName: unknown[] = this.getNames(parent.myParent)
-    return [...parentName, parent.name]
-  }
-
   async setup() {
     await super.setup()
     this.global.testPaths = this.testPath
   }
 
-  async handleTestEvent(event: { test: never; name: string }) {
+  async handleTestEvent(event: Event) {
     const { name } = event
+    const test = event.test
     if ('test_fn_failure'.includes(name)) {
       this.global.testResults = ['fail']
     } else if ('test_fn_success'.includes(name)) {
       this.global.testResults = ['pass']
     }
-    if (['run_start', 'test_fn_start'].includes(name)) {
-      this.global.testNames = this.getNames(event.test)
+    if ('test_done'.includes(name)) {
+      this.global.testNames = test.parent.name
+      console.log(typeof test + 'this is the test type!')
+
+      // console.log(inspect(test.parent.name) + ' this is the test!')
     }
     if ('run_finish'.includes(name)) {
       this.global.testPaths = this.testPath
