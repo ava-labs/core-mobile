@@ -11,7 +11,6 @@ const teardown = async () => {
   fs.writeFile('./tests_to_report.txt', '', { flag: 'w' }, err => {
     console.log(err)
   })
-  console.log('called after all test suites')
 }
 
 async function parseResultsFile() {

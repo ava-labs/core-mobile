@@ -30,15 +30,16 @@ type TabViewAvaFC = FC<{
   ) => React.ReactNode
   currentTabIndex?: number
   onTabIndexChange?: (tabIndex: number) => void
-  enableFirstTabOnly?: boolean
   lazy?: boolean
 }> & { Item: FC<TabViewAvaItemProps> }
 
+/**
+ * If there's only one route available TabBar won't be displayed
+ */
 const TabViewAva: TabViewAvaFC = ({
   renderCustomLabel,
   currentTabIndex = 0,
   onTabIndexChange,
-  enableFirstTabOnly = false,
   lazy = true,
   children
 }) => {
@@ -99,21 +100,19 @@ const TabViewAva: TabViewAvaFC = ({
           {props.renderLabel?.({
             route: props.route,
             focused: props.navigationState.index === props.route.index,
-            color:
-              enableFirstTabOnly && props.route.index !== 0
-                ? theme.colorDisabled
-                : theme.alternateBackground
+            color: theme.alternateBackground
           })}
         </AvaButton.Base>
       )
     },
-    [enableFirstTabOnly, theme.alternateBackground, theme.colorDisabled]
+    [theme.alternateBackground]
   )
 
-  const tabbar = useCallback(
+  //tabBar is hidden if there's only one route
+  const tabBar = useCallback(
     (tabBarProps: SceneRendererProps & { navigationState: State }) => {
       return (
-        <View>
+        <View style={{ display: routes.length === 1 ? 'none' : 'flex' }}>
           <TabBar
             {...tabBarProps}
             style={{
@@ -130,32 +129,26 @@ const TabViewAva: TabViewAvaFC = ({
               height: 2
             }}
             renderTabBarItem={tabBarItem}
-            onTabPress={({ preventDefault }) => {
-              enableFirstTabOnly && preventDefault()
-            }}
           />
         </View>
       )
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [enableFirstTabOnly]
+    [
+      renderCustomLabel,
+      routes.length,
+      tabBarItem,
+      theme.alternateBackground,
+      theme.transparent
+    ]
   )
-
-  useEffect(() => {
-    // when touch is disabled, first tab will be the default active tab
-    if (enableFirstTabOnly) {
-      handleIndexChange(0)
-    }
-  }, [handleIndexChange, enableFirstTabOnly])
 
   return (
     <TabView
-      swipeEnabled={!enableFirstTabOnly}
       onIndexChange={handleIndexChange}
       navigationState={{ index: currentIndex, routes }}
       renderScene={scenes}
-      renderTabBar={tabbar}
-      lazy={enableFirstTabOnly || lazy}
+      renderTabBar={tabBar}
+      lazy={lazy}
     />
   )
 }
