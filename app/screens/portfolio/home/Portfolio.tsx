@@ -40,14 +40,15 @@ const Portfolio = () => {
       <PortfolioHeader />
       <TabViewAva
         onTabIndexChange={tabIndex => capturePosthogEvents(tabIndex)}
-        renderCustomLabel={renderCustomLabel}
-        enableFirstTabOnly={collectiblesDisabled}>
+        renderCustomLabel={renderCustomLabel}>
         <TabViewAva.Item title={'Tokens'}>
           <TokensTab />
         </TabViewAva.Item>
-        <TabViewAva.Item title={'Collectibles'}>
-          <NftTab />
-        </TabViewAva.Item>
+        {!collectiblesDisabled && (
+          <TabViewAva.Item title={'Collectibles'}>
+            <NftTab />
+          </TabViewAva.Item>
+        )}
       </TabViewAva>
     </>
   )
