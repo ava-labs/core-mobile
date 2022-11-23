@@ -4,8 +4,8 @@
 <dict>
 	<key>com.apple.developer.associated-domains</key>
 	<array>
-		<string>applinks:universal-link-ios-dev.herokuapp.com</string>
-		<string>applinks:universal-link-ios-dev.herokuapp.com/wc</string>
+		<string>applinks:core.app</string>
+		<string>applinks:test.core.app</string>
 	</array>
 	<key>com.apple.security.cs.allow-jit</key>
 	<true/>
