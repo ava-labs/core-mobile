@@ -23,26 +23,29 @@ import { useActiveNetwork } from 'hooks/useActiveNetwork'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import EditSpendLimit from 'components/EditSpendLimit'
 import CarrotSVG from 'components/svg/CarrotSVG'
-import { DappSignTransactionEvent } from 'contexts/DappConnectionContext/types'
 import { getExplorerAddressByNetwork } from 'utils/ExplorerUtils'
 import useInAppBrowser from 'hooks/useInAppBrowser'
 import FlexSpacer from 'components/FlexSpacer'
 import { Popable } from 'react-native-popable'
 import { SwapTransaction } from 'screens/rpc/components/Transactions/SwapTransaction'
-import { showSnackBarCustom } from 'components/Snackbar'
-import TransactionToast, {
-  TransactionToastType
-} from 'components/toast/TransactionToast'
-import * as Sentry from '@sentry/react-native'
+// import { showSnackBarCustom } from 'components/Snackbar'
+// import TransactionToast, {
+//   TransactionToastType
+// } from 'components/toast/TransactionToast'
+// import * as Sentry from '@sentry/react-native'
 import { PopableContent } from 'components/PopableContent'
 import { PopableLabel } from 'components/PopableLabel'
 import { BigNumber } from 'ethers'
 import { ScrollView } from 'react-native-gesture-handler'
+import { EthSendTransactionRpcRequest } from 'store/rpc/handlers/eth_sendTransaction'
 
 interface Props {
-  onApprove: (tx: Transaction) => Promise<{ hash?: string }>
-  onReject: () => void
-  dappEvent: DappSignTransactionEvent
+  onReject: (request: EthSendTransactionRpcRequest, message?: string) => void
+  onApprove: (
+    request: EthSendTransactionRpcRequest,
+    result?: Transaction
+  ) => void
+  dappEvent: EthSendTransactionRpcRequest
   onClose: () => void
 }
 
@@ -56,7 +59,7 @@ const SignTransaction: FC<Props> = ({
   const theme = useApplicationContext().theme
   const activeNetwork = useActiveNetwork()
   const [txFailedError, setTxFailedError] = useState<string>()
-  const [hash, setHash] = useState<string>()
+  const [hash] = useState<string>()
   const [submitting, setSubmitting] = useState(false)
   const [showData, setShowData] = useState(false)
   const [showCustomSpendLimit, setShowCustomSpendLimit] = useState(false)
@@ -145,34 +148,34 @@ const SignTransaction: FC<Props> = ({
     if (transaction) {
       setSubmitting(true)
       setTxFailedError(undefined)
-      onApprove(transaction)
-        .then(result => {
-          if (result?.hash) {
-            setHash(result.hash)
-            setSubmitting(false)
-          }
-        })
-        .catch(reason => {
-          setSubmitting(false)
-          if (reason?.error?.transactionHash) {
-            showSnackBarCustom({
-              component: (
-                <TransactionToast
-                  type={TransactionToastType.ERROR}
-                  message={'Transaction Failed'}
-                  txHash={reason?.error?.transactionHash}
-                />
-              ),
-              duration: 'short'
-            })
-            onClose()
-          } else {
-            setTxFailedError(`there was an error processing the transaction`)
-          }
-          Sentry?.captureException(reason, {
-            tags: { dapps: 'signTransaction' }
-          })
-        })
+      onApprove(dappEvent, transaction)
+      // .then(result => {
+      //   if (result?.hash) {
+      //     setHash(result.hash)
+      //     setSubmitting(false)
+      //   }
+      // })
+      // .catch(reason => {
+      //   setSubmitting(false)
+      //   if (reason?.error?.transactionHash) {
+      //     showSnackBarCustom({
+      //       component: (
+      //         <TransactionToast
+      //           type={TransactionToastType.ERROR}
+      //           message={'Transaction Failed'}
+      //           txHash={reason?.error?.transactionHash}
+      //         />
+      //       ),
+      //       duration: 'short'
+      //     })
+      //     onClose()
+      //   } else {
+      //     setTxFailedError(`there was an error processing the transaction`)
+      //   }
+      //   Sentry?.captureException(reason, {
+      //     tags: { dapps: 'signTransaction' }
+      //   })
+      // })
     }
   }
 
@@ -197,7 +200,7 @@ const SignTransaction: FC<Props> = ({
         <Space y={16} />
         <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
           <AvaText.Body2 color={theme.colorText1}>
-            Approve {dappEvent.peerMeta.name} transaction
+            Approve {dappEvent.payload.peerMeta.name} transaction
           </AvaText.Body2>
           <AvaButton.Base onPress={() => setShowData(true)}>
             <Row>
@@ -337,7 +340,7 @@ const SignTransaction: FC<Props> = ({
               {submitting && <ActivityIndicator />} Approve
             </AvaButton.PrimaryLarge>
             <Space y={20} />
-            <AvaButton.SecondaryLarge onPress={() => onReject()}>
+            <AvaButton.SecondaryLarge onPress={() => onReject(dappEvent)}>
               Reject
             </AvaButton.SecondaryLarge>
           </View>

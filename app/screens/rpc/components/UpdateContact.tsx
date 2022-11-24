@@ -9,7 +9,6 @@ import AvaButton from 'components/AvaButton'
 import { NativeViewGestureHandler } from 'react-native-gesture-handler'
 import FlexSpacer from 'components/FlexSpacer'
 import { useSelector } from 'react-redux'
-import { DappUpdateContactEvent } from 'contexts/DappConnectionContext/types'
 import AddressBookSVG from 'components/svg/AddressBookSVG'
 import AddressBookItem from 'components/addressBook/AddressBookItem'
 import { selectContact } from 'store/addressBook'
@@ -17,17 +16,21 @@ import { Contact as SharedContact } from '@avalabs/types'
 import { showSnackBarCustom } from 'components/Snackbar'
 import GeneralToast from 'components/toast/GeneralToast'
 import { Contact } from 'Repo'
+import { AvalancheUpdateContactRequest } from 'store/rpc/handlers/avalanche_updateContact'
 
 interface Props {
-  dappEvent: DappUpdateContactEvent
-  onApprove: (contact: SharedContact) => void
-  onReject: () => void
+  dappEvent: AvalancheUpdateContactRequest
+  onReject: (request: AvalancheUpdateContactRequest, message?: string) => void
+  onApprove: (
+    request: AvalancheUpdateContactRequest,
+    result?: SharedContact
+  ) => void
 }
 
 const UpdateContact: FC<Props> = ({ dappEvent, onApprove, onReject }) => {
   const theme = useApplicationContext().theme
   const contact = dappEvent.contact
-  const peerMeta = dappEvent.peerMeta
+  const peerMeta = dappEvent.payload.peerMeta
 
   const existingContact = useSelector(selectContact(contact.id))
 
@@ -40,7 +43,7 @@ const UpdateContact: FC<Props> = ({ dappEvent, onApprove, onReject }) => {
       ),
       duration: 'short'
     })
-    onReject()
+    onReject(dappEvent)
   }
 
   const renderContacts = (contactToUpdate: Contact, update: SharedContact) => {
@@ -87,11 +90,12 @@ const UpdateContact: FC<Props> = ({ dappEvent, onApprove, onReject }) => {
             {renderContacts(existingContact, contact)}
             <FlexSpacer />
             <View style={styles.actionContainer}>
-              <AvaButton.PrimaryMedium onPress={() => onApprove(contact)}>
+              <AvaButton.PrimaryMedium
+                onPress={() => onApprove(dappEvent, contact)}>
                 Approve
               </AvaButton.PrimaryMedium>
               <Space y={21} />
-              <AvaButton.SecondaryMedium onPress={() => onReject()}>
+              <AvaButton.SecondaryMedium onPress={() => onReject(dappEvent)}>
                 Reject
               </AvaButton.SecondaryMedium>
             </View>

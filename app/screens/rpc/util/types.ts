@@ -4,22 +4,8 @@ import BN from 'bn.js'
 import { NetworkTokenWithBalance, TokenWithBalance } from 'store/balance'
 import { Network } from '@avalabs/chains-sdk'
 import { FindToken } from 'contracts/contractParsers/utils/useFindToken'
-
-export interface TransactionParams {
-  from: string
-  to: string
-  value: string
-  data: string
-  gas?: number
-  gasPrice?: string
-}
-
-export enum RPC_EVENT {
-  SIGN_MESSAGE = 'sign_message',
-  SIGN_TRANSACTION = 'sign_transaction',
-  SESSION_REQUEST = 'session_request',
-  UPDATE_CONTACT = 'update_contact'
-}
+import { PeerMetadata } from 'store/rpc/types'
+import { TransactionParams } from 'store/rpc/handlers/eth_sendTransaction'
 
 export interface DisplayValueParserProps {
   gasPrice: BigNumber
@@ -28,15 +14,6 @@ export interface DisplayValueParserProps {
   erc20Tokens: TokenWithBalance[]
   site?: PeerMetadata
 }
-
-export interface PeerMetadata {
-  peerId?: string
-  url?: string
-  name?: string
-  icon?: string
-  description?: string
-}
-
 export interface TransactionDisplayValues {
   fromAddress?: string
   toAddress?: string
@@ -60,31 +37,6 @@ export interface Transaction {
   displayValues: TransactionDisplayValues
   txHash?: string
   error?: string
-}
-
-export interface RpcTokenReceive {
-  chainId: number
-  address: string
-  decimals: number
-  name: string
-  symbol: string
-  logoURI: string
-  id: string
-  derivedAVAX: string
-  price: number
-  balance: string
-  balanceValue: string
-  amount: string
-}
-
-export interface RpcTokenSend {
-  name: string
-  symbol: string
-  decimals: number
-  price: number
-  balance: string
-  balanceValue: string
-  amount: string
 }
 
 export enum ContractCall {

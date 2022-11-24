@@ -26,6 +26,7 @@ import { addressBookReducer as addressBook } from './addressBook'
 import settings from './settings'
 import swap from './swap'
 import { transactionApi } from './transaction'
+import { rpcReducer as rpc } from './rpc'
 
 // list of reducers that don't need to be persisted
 // for nested blacklist, please use transform
@@ -51,6 +52,7 @@ const combinedReducer = combineReducers({
   swap,
   nft,
   security,
+  rpc,
 
   // user preferences
   settings,

@@ -60,13 +60,17 @@ export interface MessageAction {
 }
 
 export enum RpcMethod {
-  ETH_SEND = 'eth_sendTransaction',
+  SESSION_REQUEST = 'session_request',
+  ETH_SEND_TRANSACTION = 'eth_sendTransaction',
   SIGN_TYPED_DATA_V3 = 'eth_signTypedData_v3',
   SIGN_TYPED_DATA_V4 = 'eth_signTypedData_v4',
   SIGN_TYPED_DATA_V1 = 'eth_signTypedData_v1',
   SIGN_TYPED_DATA = 'eth_signTypedData',
   PERSONAL_SIGN = 'personal_sign',
   ETH_SIGN = 'eth_sign',
+  WALLET_ADD_ETHEREUM_CHAIN = 'wallet_addEthereumChain',
+  WALLET_SWITCH_ETHEREUM_CHAIN = 'wallet_switchEthereumChain',
+  WALLET_WATCH_ASSET = 'wallet_watchAsset',
 
   /* custom methods that are proprietary to Core */
   AVALANCHE_BRIDGE_ASSET = 'avalanche_bridgeAsset',
@@ -106,3 +110,10 @@ export const CORE_ONLY_METHODS = [
   RpcMethod.AVALANCHE_SET_DEVELOPER_MODE,
   RpcMethod.AVALANCHE_UPDATE_CONTACT
 ]
+export interface PeerMetadata {
+  peerId?: string
+  url?: string
+  name?: string
+  icon?: string
+  description?: string
+}

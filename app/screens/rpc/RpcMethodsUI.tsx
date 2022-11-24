@@ -2,74 +2,77 @@ import React, { useEffect } from 'react'
 import AccountApproval from 'screens/rpc/components/AccountApproval'
 import SignTransaction from 'screens/rpc/components/SignTransaction'
 import SignMessage from 'screens/rpc/components/SignMessage/SignMessage'
-import { RPC_EVENT } from 'screens/rpc/util/types'
 import { useDappConnectionContext } from 'contexts/DappConnectionContext'
 import { useNavigation } from '@react-navigation/native'
 import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet'
 import AvaxSheetHandle from 'components/AvaxSheetHandle'
 import TabViewBackground from 'components/TabViewBackground'
+import { RpcMethod } from 'services/walletconnect/types'
+import { useSelector } from 'react-redux'
+import { selectRpcRequests } from 'store/rpc'
+import { EthSendTransactionRpcRequest } from 'store/rpc/handlers/eth_sendTransaction'
+import { EthSignRpcRequest } from 'store/rpc/handlers/eth_sign'
+import { SessionRequestRpcRequest } from 'store/rpc/handlers/session_request'
+import { AvalancheUpdateContactRequest } from 'store/rpc/handlers/avalanche_updateContact'
 import UpdateContact from './components/UpdateContact'
 
 const snapPoints = ['90%']
 
 const RpcMethodsUI = () => {
   const { goBack } = useNavigation()
-  const {
-    dappEvent,
-    onSessionApproved,
-    onSessionRejected,
-    onContactUpdated,
-    onMessageCallApproved,
-    onTransactionCallApproved,
-    onCallRejected,
-    setEventHandled
-  } = useDappConnectionContext()
+  const { onUserApproved, onUserRejected } = useDappConnectionContext()
+  const rpcRequests = useSelector(selectRpcRequests)
 
   useEffect(() => {
-    if (dappEvent === undefined) {
+    if (rpcRequests === undefined || !rpcRequests.length) {
       goBack()
-    } else if (!dappEvent.handled) {
-      setEventHandled(true)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dappEvent])
+  }, [goBack, rpcRequests])
 
   const renderContent = () => {
-    if (!dappEvent) return null
+    if (!rpcRequests?.length) return null
+    const oldestRpcRequest = rpcRequests[0]
 
-    switch (dappEvent.eventType) {
-      case RPC_EVENT.SIGN_MESSAGE:
+    if (!oldestRpcRequest) return null
+
+    switch (oldestRpcRequest.payload.method) {
+      case RpcMethod.ETH_SIGN:
+      case RpcMethod.SIGN_TYPED_DATA:
+      case RpcMethod.SIGN_TYPED_DATA_V1:
+      case RpcMethod.SIGN_TYPED_DATA_V3:
+      case RpcMethod.SIGN_TYPED_DATA_V4:
+      case RpcMethod.PERSONAL_SIGN:
         return (
           <SignMessage
-            onRejected={onCallRejected}
-            onApprove={onMessageCallApproved}
-            dappEvent={dappEvent}
+            onReject={onUserRejected}
+            onApprove={onUserApproved}
+            dappEvent={oldestRpcRequest as EthSignRpcRequest}
             onClose={goBack}
           />
         )
-      case RPC_EVENT.SESSION_REQUEST:
+      case RpcMethod.SESSION_REQUEST:
         return (
           <AccountApproval
-            onReject={onSessionRejected}
-            onApprove={onSessionApproved}
-            dappEvent={dappEvent}
+            onReject={onUserRejected}
+            onApprove={onUserApproved}
+            dappEvent={oldestRpcRequest as SessionRequestRpcRequest}
           />
         )
-      case RPC_EVENT.SIGN_TRANSACTION:
+      case RpcMethod.ETH_SEND_TRANSACTION:
         return (
           <SignTransaction
-            onReject={onCallRejected}
-            onApprove={onTransactionCallApproved}
-            dappEvent={dappEvent}
+            onReject={onUserRejected}
+            onApprove={onUserApproved}
+            dappEvent={oldestRpcRequest as EthSendTransactionRpcRequest}
             onClose={goBack}
           />
         )
-      case RPC_EVENT.UPDATE_CONTACT:
+      case RpcMethod.AVALANCHE_UPDATE_CONTACT:
         return (
           <UpdateContact
-            onReject={onCallRejected}
-            onApprove={onContactUpdated}
-            dappEvent={dappEvent}
+            onReject={onUserRejected}
+            onApprove={onUserApproved}
+            dappEvent={oldestRpcRequest as AvalancheUpdateContactRequest}
           />
         )
       default:
