@@ -9,7 +9,6 @@ import AvaButton from 'components/AvaButton'
 import { NativeViewGestureHandler } from 'react-native-gesture-handler'
 import FlexSpacer from 'components/FlexSpacer'
 import { useSelector } from 'react-redux'
-import { DappUpdateContactEvent } from 'contexts/DappConnectionContext/types'
 import AddressBookSVG from 'components/svg/AddressBookSVG'
 import AddressBookItem from 'components/addressBook/AddressBookItem'
 import { selectContact } from 'store/addressBook'
@@ -17,17 +16,27 @@ import { Contact as SharedContact } from '@avalabs/types'
 import { showSnackBarCustom } from 'components/Snackbar'
 import GeneralToast from 'components/toast/GeneralToast'
 import { Contact } from 'Repo'
+import { AvalancheUpdateContactRequest } from 'store/rpc/handlers/avalanche_updateContact'
 
 interface Props {
-  dappEvent: DappUpdateContactEvent
-  onApprove: (contact: SharedContact) => void
-  onReject: () => void
+  dappEvent: AvalancheUpdateContactRequest
+  onReject: (request: AvalancheUpdateContactRequest, message?: string) => void
+  onApprove: (
+    request: AvalancheUpdateContactRequest,
+    result?: SharedContact
+  ) => void
+  onClose: () => void
 }
 
-const UpdateContact: FC<Props> = ({ dappEvent, onApprove, onReject }) => {
+const UpdateContact: FC<Props> = ({
+  dappEvent,
+  onApprove,
+  onReject,
+  onClose
+}) => {
   const theme = useApplicationContext().theme
   const contact = dappEvent.contact
-  const peerMeta = dappEvent.peerMeta
+  const peerMeta = dappEvent.payload.peerMeta
 
   const existingContact = useSelector(selectContact(contact.id))
 
@@ -40,7 +49,8 @@ const UpdateContact: FC<Props> = ({ dappEvent, onApprove, onReject }) => {
       ),
       duration: 'short'
     })
-    onReject()
+    onReject(dappEvent)
+    onClose()
   }
 
   const renderContacts = (contactToUpdate: Contact, update: SharedContact) => {
@@ -78,8 +88,8 @@ const UpdateContact: FC<Props> = ({ dappEvent, onApprove, onReject }) => {
               </OvalTagBg>
               <Space y={15} />
               <AvaText.Body1 textStyle={styles.subTileText}>
-                {new URL(peerMeta.url ?? '').hostname} is requesting to update a
-                contact:
+                {new URL(peerMeta?.url ?? '').hostname} is requesting to update
+                a contact:
               </AvaText.Body1>
               <Space y={16} />
             </View>
@@ -87,11 +97,16 @@ const UpdateContact: FC<Props> = ({ dappEvent, onApprove, onReject }) => {
             {renderContacts(existingContact, contact)}
             <FlexSpacer />
             <View style={styles.actionContainer}>
-              <AvaButton.PrimaryMedium onPress={() => onApprove(contact)}>
+              <AvaButton.PrimaryMedium
+                onPress={() => onApprove(dappEvent, contact)}>
                 Approve
               </AvaButton.PrimaryMedium>
               <Space y={21} />
-              <AvaButton.SecondaryMedium onPress={() => onReject()}>
+              <AvaButton.SecondaryMedium
+                onPress={() => {
+                  onReject(dappEvent)
+                  onClose()
+                }}>
                 Reject
               </AvaButton.SecondaryMedium>
             </View>

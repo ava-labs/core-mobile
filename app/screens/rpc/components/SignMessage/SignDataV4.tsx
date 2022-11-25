@@ -53,7 +53,7 @@ const SignDataV4: FC<Props> = ({ action }) => {
       <Space y={8} />
       <ScrollView
         style={{
-          maxHeight: 250,
+          maxHeight: 230,
           backgroundColor: theme.colorBg3,
           borderRadius: 8,
           padding: 8

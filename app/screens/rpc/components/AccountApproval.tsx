@@ -16,15 +16,21 @@ import AccountItem from 'screens/portfolio/account/AccountItem'
 import { useDispatch, useSelector } from 'react-redux'
 import { Account, selectAccounts, setActiveAccountIndex } from 'store/account'
 import { useActiveAccount } from 'hooks/useActiveAccount'
-import { DappSessionEvent } from 'contexts/DappConnectionContext/types'
+import { SessionRequestRpcRequest } from 'store/rpc/handlers/session_request'
 
 interface Props {
-  dappEvent: DappSessionEvent
-  onApprove: () => void
-  onReject: (message?: string) => void
+  dappEvent: SessionRequestRpcRequest
+  onReject: (request: SessionRequestRpcRequest, message?: string) => void
+  onApprove: (request: SessionRequestRpcRequest, result?: unknown) => void
+  onClose: () => void
 }
 
-const AccountApproval: FC<Props> = ({ dappEvent, onApprove, onReject }) => {
+const AccountApproval: FC<Props> = ({
+  dappEvent,
+  onApprove,
+  onReject,
+  onClose
+}) => {
   const theme = useApplicationContext().theme
   const accounts = useSelector(selectAccounts)
   const activeAccount = useActiveAccount()
@@ -34,7 +40,7 @@ const AccountApproval: FC<Props> = ({ dappEvent, onApprove, onReject }) => {
     dispatch(setActiveAccountIndex(accountIndex))
   }
 
-  const peerMeta = dappEvent.peerMeta
+  const peerMeta = dappEvent.payload.peerMeta
 
   return (
     <NativeViewGestureHandler>
@@ -49,7 +55,11 @@ const AccountApproval: FC<Props> = ({ dappEvent, onApprove, onReject }) => {
         <View style={{ justifyContent: 'center', alignItems: 'center' }}>
           <OvalTagBg
             style={{ height: 80, width: 80, backgroundColor: theme.colorBg3 }}>
-            <Avatar.Custom name={'dapp'} logoUri={peerMeta?.icon} size={48} />
+            <Avatar.Custom
+              name={'dapp'}
+              logoUri={peerMeta?.icons[0]}
+              size={48}
+            />
           </OvalTagBg>
           <View style={styles.domainUrlContainer}>
             <AvaText.Heading2 textStyle={{ textAlign: 'center' }}>
@@ -100,11 +110,15 @@ const AccountApproval: FC<Props> = ({ dappEvent, onApprove, onReject }) => {
           Only connect to sites that you trust
         </AvaText.Body2>
         <View style={styles.actionContainer}>
-          <AvaButton.PrimaryMedium onPress={onApprove}>
+          <AvaButton.PrimaryMedium onPress={() => onApprove(dappEvent)}>
             Approve
           </AvaButton.PrimaryMedium>
           <Space y={21} />
-          <AvaButton.SecondaryMedium onPress={onReject}>
+          <AvaButton.SecondaryMedium
+            onPress={() => {
+              onReject(dappEvent)
+              onClose()
+            }}>
             Reject
           </AvaButton.SecondaryMedium>
         </View>

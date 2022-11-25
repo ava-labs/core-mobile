@@ -8,9 +8,8 @@ import {
   IWalletConnectSession
 } from '@walletconnect/types'
 import {
-  CallRequestData,
   CLIENT_OPTIONS,
-  SessionRequestData,
+  RpcMethod,
   WalletConnectRequest
 } from 'services/walletconnect/types'
 import { JsonRpcRequest } from '@walletconnect/jsonrpc-types'
@@ -19,6 +18,8 @@ import Logger from 'utils/Logger'
 import { Account } from 'store/account'
 import { ethErrors } from 'eth-rpc-errors'
 import { PosthogCapture } from 'contexts/PosthogContext'
+import { SessionRequestRpcRequest } from 'store/rpc/handlers/session_request'
+import { TypedJsonRpcRequest } from 'store/rpc/handlers/types'
 import {
   isCoreMethod,
   isFromCoreWeb,
@@ -92,24 +93,25 @@ class WalletConnectService {
       payload: JsonRpcRequest,
       isExisting: boolean
     ) => {
-      // do not respond to session request if on BTC
-      if (this.activeNetwork?.vmName === NetworkVMType.BITCOIN) return
-
       Logger.info('received dapp session request', error ?? payload)
       if (error) {
         console.error(error)
       }
 
       try {
-        const sessionData: SessionRequestData = {
-          ...payload.params[0],
-          autoSign: this.autoSign,
-          requestOriginatedFrom: this.requestOriginatedFrom
-        }
-
         await waitForInitialization()
         if (!isExisting) {
-          await this.sessionRequest(sessionData)
+          const peerInfo = payload.params[0]
+          await this.sessionRequest({
+            ...payload,
+            method: RpcMethod.SESSION_REQUEST,
+            peerMeta: {
+              name: peerInfo.peerMeta.name,
+              url: peerInfo.peerMeta.url,
+              icons: peerInfo.peerMeta.icons,
+              description: peerInfo.peerMeta.description
+            }
+          })
         }
         this.startSession(isExisting)
       } catch (e) {
@@ -173,7 +175,7 @@ class WalletConnectService {
 
       try {
         const result = await this.callRequests({
-          payload,
+          ...payload,
           peerMeta: this.walletConnectClient?.session?.peerMeta
         })
 
@@ -189,11 +191,7 @@ class WalletConnectService {
         Logger.error('dapp call error or user canceled', e)
         this.walletConnectClient?.rejectRequest({
           id: payload.id,
-          error: e.message
-            ? ethErrors.rpc.internal({
-                message: e.message
-              })
-            : ethErrors.provider.userRejectedRequest()
+          error: e.message ? e : ethErrors.provider.userRejectedRequest()
         })
       }
     }
@@ -246,23 +244,23 @@ class WalletConnectService {
   }
 
   // Session request emitters
-  sessionRequest = (peerInfo: SessionRequestData) =>
+  sessionRequest = (request: SessionRequestRpcRequest['payload']) =>
     new Promise((resolve, reject) => {
       Logger.info('dapp emitting session request')
-      emitter.emit(WalletConnectRequest.SESSION, peerInfo)
+      emitter.emit(WalletConnectRequest.SESSION, request)
 
       emitter.on(WalletConnectRequest.SESSION_APPROVED, (peerId: string) => {
-        if (peerInfo.peerId === peerId) {
+        if (request.params[0]?.peerId === peerId) {
           Logger.info('dapp received emission approval for session')
           posthogCapture?.('WalletConnectSessionApproved', {
             dappId: peerId,
-            dappUrl: peerInfo.peerMeta?.url ?? null
+            dappUrl: request.params[0].peerMeta?.url ?? null
           })
           resolve(true)
         }
       })
       emitter.on(WalletConnectRequest.SESSION_REJECTED, (peerId: string) => {
-        if (peerInfo.peerId === peerId) {
+        if (request.params[0]?.peerId === peerId) {
           Logger.info('dapp received emission rejection for session')
           reject(new Error(WalletConnectRequest.SESSION_REJECTED))
         }
@@ -270,24 +268,24 @@ class WalletConnectService {
     })
 
   // Call request emitters
-  callRequests = (data: CallRequestData) =>
+  callRequests = (data: TypedJsonRpcRequest<string, unknown>) =>
     new Promise((resolve, reject) => {
       Logger.info('dapp emitting CALL request')
       emitter.emit(WalletConnectRequest.CALL, data)
 
       emitter.on(WalletConnectRequest.CALL_APPROVED, args => {
         const { id, result } = args
-        if (data.payload.id === id) {
+        if (data.id === id) {
           Logger.info('dapp received emission approval for CALL')
           resolve(result)
         }
       })
       emitter.on(WalletConnectRequest.CALL_REJECTED, args => {
         const id = args?.id
-        const message = args?.message
-        if (data.payload.id === id) {
+        const error = args?.error
+        if (data.id === id) {
           Logger.info('dapp received emission rejection for CALL')
-          reject(new Error(message))
+          reject(error)
         }
       })
     })
