@@ -223,21 +223,31 @@ export function useExplainTransaction(dappEvent: EthSendTransactionRpcRequest) {
         // will be used to on the views.
         // uses a custom parser if there is one, otherwise
         // uses `parseDisplayValues` as a generic parser.
-        const displayValues: TransactionDisplayValues = parser
-          ? await parser(
-              findToken,
-              activeNetwork,
-              txParamsWithGasLimit,
-              decodedData,
-              displayValueProps,
-              description
-            )
-          : parseDisplayValues(
-              activeNetwork,
-              txParamsWithGasLimit,
-              displayValueProps,
-              description
-            )
+        let displayValues: TransactionDisplayValues
+        try {
+          displayValues = parser
+            ? await parser(
+                findToken,
+                activeNetwork,
+                txParamsWithGasLimit,
+                decodedData,
+                displayValueProps,
+                description
+              )
+            : parseDisplayValues(
+                activeNetwork,
+                txParamsWithGasLimit,
+                displayValueProps,
+                description
+              )
+        } catch (err) {
+          displayValues = parseDisplayValues(
+            activeNetwork,
+            txParamsWithGasLimit,
+            displayValueProps,
+            description
+          )
+        }
 
         // add metamask and chain id to transaction
         const networkMetaData = activeNetwork

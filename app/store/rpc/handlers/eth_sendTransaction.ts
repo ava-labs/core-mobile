@@ -8,7 +8,7 @@ import { RpcMethod } from 'services/walletconnect/types'
 import { AppListenerEffectAPI } from 'store'
 import { selectActiveAccount } from 'store/account'
 import { selectActiveNetwork } from 'store/network'
-import { selectNetworkFee } from 'store/networkFee'
+import { selectNetworkFee, fetchNetworkFee } from 'store/networkFee'
 import Logger from 'utils/Logger'
 import { ethErrors } from 'eth-rpc-errors'
 import * as Sentry from '@sentry/react-native'
@@ -45,6 +45,9 @@ class EthSendTransactionHandler
     listenerApi: AppListenerEffectAPI
   ) => {
     // TODO: do TX parsing and parameter verification here instead of in SignTransaction.tsx
+
+    // fetch network fees for tx parsing and approval screen
+    listenerApi.dispatch(fetchNetworkFee())
     listenerApi.dispatch(
       addRequest({
         payload: action.payload

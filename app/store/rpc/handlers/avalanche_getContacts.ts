@@ -33,7 +33,7 @@ class AvalancheGetContactsHandler
 
     listenerApi.dispatch(
       sendRpcResult({
-        request: action,
+        request: { payload: action.payload },
         result: sharedContacts
       })
     )

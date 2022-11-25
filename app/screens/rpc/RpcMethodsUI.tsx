@@ -97,7 +97,9 @@ const RpcMethodsUI = () => {
       enablePanDownToClose
       backgroundComponent={TabViewBackground}
       enableContentPanningGesture={false}
-      onClose={goBack}>
+      onClose={() => {
+        onClose()
+      }}>
       {renderContent()}
     </BottomSheet>
   )

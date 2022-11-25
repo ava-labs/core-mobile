@@ -74,6 +74,10 @@ const SignTransaction: FC<Props> = ({
   } = useExplainTransaction(dappEvent)
 
   useEffect(() => {
+    if (dappEvent.error || dappEvent.result) {
+      setSubmitting(false)
+    }
+
     if (!dappEvent.error) {
       return
     }
@@ -173,7 +177,6 @@ const SignTransaction: FC<Props> = ({
       setSubmitting(true)
       setTxFailedError(undefined)
       onApprove(dappEvent, transaction)
-      setSubmitting(false)
     }
   }
 
@@ -338,7 +341,11 @@ const SignTransaction: FC<Props> = ({
               {submitting && <ActivityIndicator />} Approve
             </AvaButton.PrimaryLarge>
             <Space y={20} />
-            <AvaButton.SecondaryLarge onPress={() => onReject(dappEvent)}>
+            <AvaButton.SecondaryLarge
+              onPress={() => {
+                onReject(dappEvent)
+                onClose()
+              }}>
               Reject
             </AvaButton.SecondaryLarge>
           </View>
