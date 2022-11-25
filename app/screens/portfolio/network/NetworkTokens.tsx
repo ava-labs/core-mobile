@@ -8,16 +8,9 @@ import ZeroState from 'components/ZeroState'
 import AvaButton from 'components/AvaButton'
 import { PortfolioScreenProps } from 'navigation/types'
 import { useIsUIDisabled, UI } from 'hooks/useIsUIDisabled'
-import {
-  LocalTokenWithBalance,
-  selectBalanceTotalInCurrencyForNetworkAndAccount,
-  TokenType
-} from 'store/balance'
+import { LocalTokenWithBalance, TokenType } from 'store/balance'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { useSelector } from 'react-redux'
 import { usePosthogContext } from 'contexts/PosthogContext'
-import { useActiveNetwork } from 'hooks/useActiveNetwork'
-import { useActiveAccount } from 'hooks/useActiveAccount'
 import NetworkTokensHeader from './components/NetworkTokensHeader'
 
 type NavigationProp = PortfolioScreenProps<
@@ -34,14 +27,6 @@ const NetworkTokens = () => {
     filteredTokenList: tokenList,
     refetch
   } = useSearchableTokenList()
-  const network = useActiveNetwork()
-  const account = useActiveAccount()
-  const balanceTotal = useSelector(
-    selectBalanceTotalInCurrencyForNetworkAndAccount(
-      network.chainId,
-      account?.index
-    )
-  )
 
   const manageDisabled = useIsUIDisabled(UI.ManageTokens)
   const manageBtnColor = theme.colorPrimary1
@@ -128,7 +113,7 @@ const NetworkTokens = () => {
   }
 
   const renderContent = () => {
-    if (balanceTotal === 0) return renderZeroState()
+    if (tokenList.length === 0) return renderZeroState()
 
     return renderTokens()
   }

@@ -1,6 +1,7 @@
 import {
   AssetType,
   AvalancheAssets,
+  BIG_ZERO,
   BitcoinConfigAsset,
   EthereumConfigAsset
 } from '@avalabs/bridge-sdk'
@@ -24,13 +25,13 @@ export function getAvalancheBalances(
 ): AssetBalance[] {
   const erc20TokensByAddress = tokens.reduce<{
     [address: string]: TokenWithBalanceERC20
-  }>((tokens, token) => {
+  }>((tokensWithBalance, token) => {
     if (token.type !== TokenType.ERC20) {
-      return tokens
+      return tokensWithBalance
     }
     // Need to convert the keys to lowercase because they are mixed case, and this messes up or comparison function
-    tokens[token.address.toLowerCase()] = token
-    return tokens
+    tokensWithBalance[token.address.toLowerCase()] = token
+    return tokensWithBalance
   }, {})
 
   return Object.values(assets)
@@ -42,8 +43,8 @@ export function getAvalancheBalances(
     .map(asset => {
       const symbol = asset.symbol
       const token = erc20TokensByAddress[asset.wrappedContractAddress]
-      const balance = token && bnToBig(token.balance, token.decimals)
-
+      const balance =
+        (token && bnToBig(token.balance, token.decimals)) || BIG_ZERO
       return { symbol, asset, balance }
     })
 }

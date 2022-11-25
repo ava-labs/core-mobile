@@ -33,14 +33,14 @@ import { selectTokensWithBalanceByNetwork } from 'store/balance'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { selectNetworks } from 'store/network'
+import Logger from 'utils/Logger'
 
 export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
   const activeNetwork = useActiveNetwork()
   const activeAccount = useActiveAccount()
   const currency = useSelector(selectSelectedCurrency)
-  const bridgeConfig = useBridgeConfig()!.config!
+  const bridgeConfig = useBridgeConfig().config
   const { createBridgeTransaction } = useBridgeContext()
-  const config = useBridgeConfig().config
   const {
     currentAsset,
     setTransactionDetails,
@@ -77,15 +77,15 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
   }, [feeRates])
 
   const maximum = useMemo(() => {
-    if (!config || !activeAccount) return Big(0)
+    if (!bridgeConfig || !activeAccount) return Big(0)
     const maxAmt = getMaxTransferAmount(
       utxos ?? [],
-      config.criticalBitcoin.walletAddresses.btc,
+      bridgeConfig.criticalBitcoin.walletAddresses.btc,
       activeAccount.addressBtc,
       feeRate
     )
     return satoshiToBtc(maxAmt)
-  }, [utxos, config, feeRate, activeAccount])
+  }, [utxos, bridgeConfig, feeRate, activeAccount])
 
   const amountInSatoshis = btcToSatoshi(amountInBtc)
   const btcAsset = bridgeConfig && getBtcAsset(bridgeConfig)
@@ -109,7 +109,7 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
       }
     }
     loadRateFees()
-  }, [isBitcoinBridge])
+  }, [activeNetwork.isTestnet, isBitcoinBridge])
 
   useEffect(() => {
     async function loadBalances() {
@@ -135,17 +135,13 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
           tk => tk.symbol === 'BTC.b'
         )
 
-        if (btcAvalancheBalance) {
-          setBtcBalanceAvalanche({
-            symbol: btcAsset.symbol,
-            asset: btcAsset,
-            balance: satoshiToBtc(
-              btcBalanceAvalanche?.balance?.toNumber() ?? 0
-            ),
-            logoUri: btcAvalancheBalance.logoUri,
-            priceInCurrency: btcAvalancheBalance.priceInCurrency
-          })
-        }
+        setBtcBalanceAvalanche({
+          symbol: btcAsset.symbol,
+          asset: btcAsset,
+          balance: satoshiToBtc(btcAvalancheBalance?.balance?.toNumber() ?? 0),
+          logoUri: btcAvalancheBalance?.logoUri,
+          priceInCurrency: btcAvalancheBalance?.priceInCurrency
+        })
       }
     }
     loadBalances()
@@ -155,7 +151,8 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
     activeNetwork,
     avalancheTokens,
     btcAsset,
-    isDeveloperMode
+    isDeveloperMode,
+    currency
   ])
 
   useEffect(() => {
@@ -164,7 +161,7 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
     }
 
     try {
-      const { fee, receiveAmount } = getBtcTransaction(
+      const transaction = getBtcTransaction(
         bridgeConfig,
         btcAddress,
         utxos,
@@ -172,13 +169,13 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
         feeRate
       )
 
-      setNetworkFee(satoshiToBtc(fee))
-      setReceiveAmount(satoshiToBtc(receiveAmount))
+      setNetworkFee(satoshiToBtc(transaction.fee))
+      setReceiveAmount(satoshiToBtc(transaction.receiveAmount))
     } catch (e) {
       // getBtcTransaction throws an error when the amount is too low
       // so set these to 0
-      const errMessage = (e as any)?.toString()
-      if (!errMessage.includes('Amount must be at least')) console.error(e)
+      Logger.error('failed to get btc transaction', e)
+
       setNetworkFee(BIG_ZERO)
       setReceiveAmount(BIG_ZERO)
     }
@@ -206,7 +203,7 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
       !btcAddress ||
       !utxos ||
       !activeAccount ||
-      !config ||
+      !bridgeConfig ||
       !activeNetwork ||
       !amountInSatoshis ||
       !feeRate
@@ -236,7 +233,12 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
     )
 
     if (error || !signedTx) {
-      return Promise.reject((error as any)?.toString())
+      const errMsg =
+        typeof error === 'object' && error !== null
+          ? error.toString()
+          : 'Unexpected error'
+      Logger.error('failed to transfer', errMsg)
+      return Promise.reject(errMsg)
     }
 
     const hash = await networkService.sendTransaction(signedTx, bitcoinNetwork)
@@ -257,16 +259,19 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
 
     return hash
   }, [
-    amountInBtc,
-    amountInSatoshis,
-    btcAddress,
-    btcAsset,
-    bridgeConfig,
-    createBridgeTransaction,
-    currentAsset,
     isBitcoinBridge,
+    bridgeConfig,
+    btcAddress,
+    utxos,
+    activeAccount,
+    activeNetwork,
+    amountInSatoshis,
+    feeRate,
+    isDeveloperMode,
+    currentAsset,
     setTransactionDetails,
-    utxos
+    amountInBtc,
+    createBridgeTransaction
   ])
 
   return {

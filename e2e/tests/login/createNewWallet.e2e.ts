@@ -1,6 +1,6 @@
 /* eslint-env detox/detox, jest */
 /**
- * @jest-environment ./jestCustomEnv
+ * @jest-environment ./environment.ts
  */
 import { by, expect, element, device } from 'detox'
 import Assert from '../../helpers/assertions'
