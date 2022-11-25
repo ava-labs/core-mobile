@@ -13,6 +13,7 @@ import { useNavigation } from '@react-navigation/native'
 import { NetworkLogo } from 'screens/network/NetworkLogo'
 import { useActiveNetwork } from 'hooks/useActiveNetwork'
 import { useActiveAccount } from 'hooks/useActiveAccount'
+import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 import ZeroState from './ZeroState'
 import Tokens from './Tokens'
 
@@ -21,6 +22,8 @@ type NavigationProp = PortfolioScreenProps<
 >['navigation']
 
 const ActiveNetworkCard = () => {
+  const { filteredTokenList: tokens } = useSearchableTokenList()
+
   const network = useActiveNetwork()
   const account = useActiveAccount()
   const totalBalanceInCurrency = useSelector(
@@ -81,7 +84,7 @@ const ActiveNetworkCard = () => {
   }
 
   const renderContent = () => {
-    if (totalBalanceInCurrency === 0) return <ZeroState />
+    if (tokens.length === 0) return <ZeroState />
 
     return <Tokens />
   }
