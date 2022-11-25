@@ -22,9 +22,15 @@ interface Props {
   dappEvent: SessionRequestRpcRequest
   onReject: (request: SessionRequestRpcRequest, message?: string) => void
   onApprove: (request: SessionRequestRpcRequest, result?: unknown) => void
+  onClose: () => void
 }
 
-const AccountApproval: FC<Props> = ({ dappEvent, onApprove, onReject }) => {
+const AccountApproval: FC<Props> = ({
+  dappEvent,
+  onApprove,
+  onReject,
+  onClose
+}) => {
   const theme = useApplicationContext().theme
   const accounts = useSelector(selectAccounts)
   const activeAccount = useActiveAccount()
@@ -49,7 +55,11 @@ const AccountApproval: FC<Props> = ({ dappEvent, onApprove, onReject }) => {
         <View style={{ justifyContent: 'center', alignItems: 'center' }}>
           <OvalTagBg
             style={{ height: 80, width: 80, backgroundColor: theme.colorBg3 }}>
-            <Avatar.Custom name={'dapp'} logoUri={peerMeta?.icon} size={48} />
+            <Avatar.Custom
+              name={'dapp'}
+              logoUri={peerMeta?.icons[0]}
+              size={48}
+            />
           </OvalTagBg>
           <View style={styles.domainUrlContainer}>
             <AvaText.Heading2 textStyle={{ textAlign: 'center' }}>
@@ -104,7 +114,11 @@ const AccountApproval: FC<Props> = ({ dappEvent, onApprove, onReject }) => {
             Approve
           </AvaButton.PrimaryMedium>
           <Space y={21} />
-          <AvaButton.SecondaryMedium onPress={() => onReject(dappEvent)}>
+          <AvaButton.SecondaryMedium
+            onPress={() => {
+              onReject(dappEvent)
+              onClose()
+            }}>
             Reject
           </AvaButton.SecondaryMedium>
         </View>

@@ -25,9 +25,15 @@ interface Props {
     request: AvalancheUpdateContactRequest,
     result?: SharedContact
   ) => void
+  onClose: () => void
 }
 
-const UpdateContact: FC<Props> = ({ dappEvent, onApprove, onReject }) => {
+const UpdateContact: FC<Props> = ({
+  dappEvent,
+  onApprove,
+  onReject,
+  onClose
+}) => {
   const theme = useApplicationContext().theme
   const contact = dappEvent.contact
   const peerMeta = dappEvent.payload.peerMeta
@@ -44,6 +50,7 @@ const UpdateContact: FC<Props> = ({ dappEvent, onApprove, onReject }) => {
       duration: 'short'
     })
     onReject(dappEvent)
+    onClose()
   }
 
   const renderContacts = (contactToUpdate: Contact, update: SharedContact) => {
@@ -81,8 +88,8 @@ const UpdateContact: FC<Props> = ({ dappEvent, onApprove, onReject }) => {
               </OvalTagBg>
               <Space y={15} />
               <AvaText.Body1 textStyle={styles.subTileText}>
-                {new URL(peerMeta.url ?? '').hostname} is requesting to update a
-                contact:
+                {new URL(peerMeta?.url ?? '').hostname} is requesting to update
+                a contact:
               </AvaText.Body1>
               <Space y={16} />
             </View>
@@ -95,7 +102,11 @@ const UpdateContact: FC<Props> = ({ dappEvent, onApprove, onReject }) => {
                 Approve
               </AvaButton.PrimaryMedium>
               <Space y={21} />
-              <AvaButton.SecondaryMedium onPress={() => onReject(dappEvent)}>
+              <AvaButton.SecondaryMedium
+                onPress={() => {
+                  onReject(dappEvent)
+                  onClose()
+                }}>
                 Reject
               </AvaButton.SecondaryMedium>
             </View>

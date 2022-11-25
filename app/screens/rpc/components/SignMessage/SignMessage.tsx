@@ -1,4 +1,4 @@
-import React, { FC, useState } from 'react'
+import React, { FC, useEffect, useState } from 'react'
 import { ActivityIndicator, StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
@@ -12,11 +12,10 @@ import SignDataV4 from 'screens/rpc/components/SignMessage/SignDataV4'
 import { ScrollView } from 'react-native-gesture-handler'
 import FlexSpacer from 'components/FlexSpacer'
 import { MessageAction, RpcMethod } from 'services/walletconnect/types'
-// import { showSnackBarCustom } from 'components/Snackbar'
-// import TransactionToast, {
-//   TransactionToastType
-// } from 'components/toast/TransactionToast'
-// import * as Sentry from '@sentry/react-native'
+import { showSnackBarCustom } from 'components/Snackbar'
+import TransactionToast, {
+  TransactionToastType
+} from 'components/toast/TransactionToast'
 import { EthSignRpcRequest } from 'store/rpc/handlers/eth_sign'
 
 interface Props {
@@ -36,11 +35,21 @@ const SignMessage: FC<Props> = ({
   const [submitting, setSubmitting] = useState(false)
   const [signFailedError, setSignFailedError] = useState<string>()
 
-  // TODO CP-4029 move validation inside DappConnectionContext
-  if (!dappEvent?.payload) {
-    onClose()
-    return null
-  }
+  useEffect(() => {
+    if (dappEvent.error) {
+      showSnackBarCustom({
+        component: (
+          <TransactionToast
+            type={TransactionToastType.ERROR}
+            message={'Signing Message Failed'}
+          />
+        ),
+        duration: 'short'
+      })
+      onClose()
+    }
+  }, [dappEvent, onClose])
+
   const action: MessageAction = {
     id: dappEvent.payload?.id,
     site: dappEvent.payload?.peerMeta,
@@ -52,27 +61,6 @@ const SignMessage: FC<Props> = ({
     setSignFailedError(undefined)
     onApprove(dappEvent)
     setSubmitting(false)
-    onClose()
-    // TODO: add error handling
-    // .catch(reason => {
-    //   setSubmitting(false)
-    //   if (reason?.error?.transactionHash) {
-    //     showSnackBarCustom({
-    //       component: (
-    //         <TransactionToast
-    //           type={TransactionToastType.ERROR}
-    //           message={'Transaction Failed'}
-    //           txHash={reason?.error?.transactionHash}
-    //         />
-    //       ),
-    //       duration: 'short'
-    //     })
-    //     onClose()
-    //   } else {
-    //     setSignFailedError('there was an error signing')
-    //   }
-    //   Sentry?.captureException(reason, { tags: { dapps: 'signMessage' } })
-    // })
   }
 
   return (
@@ -91,7 +79,7 @@ const SignMessage: FC<Props> = ({
           <Avatar.Custom
             name={action?.site?.name ?? ''}
             size={48}
-            logoUri={action?.site?.icon}
+            logoUri={action?.site?.icons[0]}
           />
         </OvalTagBg>
         <View style={styles.domainUrlContainer}>
@@ -123,7 +111,11 @@ const SignMessage: FC<Props> = ({
           {submitting && <ActivityIndicator />} Approve
         </AvaButton.PrimaryMedium>
         <Space y={21} />
-        <AvaButton.SecondaryMedium onPress={() => onReject(dappEvent)}>
+        <AvaButton.SecondaryMedium
+          onPress={() => {
+            onReject(dappEvent)
+            onClose()
+          }}>
           Reject
         </AvaButton.SecondaryMedium>
       </View>

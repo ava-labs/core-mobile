@@ -1,15 +1,22 @@
-import { AppListenerEffectAPI } from 'store/index'
 import { PayloadAction } from '@reduxjs/toolkit'
-import { approveCall } from 'contexts/DappConnectionContext/useWalletConnect'
-import { removeRequest } from '../slice'
+import {
+  approveCall,
+  approveSession
+} from 'contexts/DappConnectionContext/useWalletConnect'
+import { DappRpcRequest } from '../handlers/types'
+import { isSessionRequestRpcRequest } from '../utils'
 
 export const onSendRpcResult = async (
-  action: PayloadAction<{ id: number; result: unknown }, string>,
-  listenerApi: AppListenerEffectAPI
+  action: PayloadAction<
+    { request: DappRpcRequest<string, unknown>; result?: unknown },
+    string
+  >
 ) => {
-  const { dispatch } = listenerApi
-  const { id, result } = action.payload
-  dispatch(removeRequest(id))
+  const { request, result } = action.payload
 
-  approveCall(id, result)
+  if (isSessionRequestRpcRequest(request)) {
+    approveSession(request.payload.params[0]?.peerId)
+  } else {
+    approveCall(request.payload.id, result)
+  }
 }

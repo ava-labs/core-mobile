@@ -8,7 +8,6 @@ import {
   IWalletConnectSession
 } from '@walletconnect/types'
 import {
-  CallRequestData,
   CLIENT_OPTIONS,
   RpcMethod,
   WalletConnectRequest
@@ -20,6 +19,7 @@ import { Account } from 'store/account'
 import { ethErrors } from 'eth-rpc-errors'
 import { PosthogCapture } from 'contexts/PosthogContext'
 import { SessionRequestRpcRequest } from 'store/rpc/handlers/session_request'
+import { TypedJsonRpcRequest } from 'store/rpc/handlers/types'
 import {
   isCoreMethod,
   isFromCoreWeb,
@@ -106,10 +106,9 @@ class WalletConnectService {
             ...payload,
             method: RpcMethod.SESSION_REQUEST,
             peerMeta: {
-              peerId: peerInfo.peerId,
               name: peerInfo.peerMeta.name,
               url: peerInfo.peerMeta.url,
-              icon: peerInfo.peerMeta.icons[0],
+              icons: peerInfo.peerMeta.icons,
               description: peerInfo.peerMeta.description
             }
           })
@@ -176,7 +175,7 @@ class WalletConnectService {
 
       try {
         const result = await this.callRequests({
-          payload,
+          ...payload,
           peerMeta: this.walletConnectClient?.session?.peerMeta
         })
 
@@ -269,14 +268,14 @@ class WalletConnectService {
     })
 
   // Call request emitters
-  callRequests = (data: CallRequestData) =>
+  callRequests = (data: TypedJsonRpcRequest<string, unknown>) =>
     new Promise((resolve, reject) => {
       Logger.info('dapp emitting CALL request')
       emitter.emit(WalletConnectRequest.CALL, data)
 
       emitter.on(WalletConnectRequest.CALL_APPROVED, args => {
         const { id, result } = args
-        if (data.payload.id === id) {
+        if (data.id === id) {
           Logger.info('dapp received emission approval for CALL')
           resolve(result)
         }
@@ -284,7 +283,7 @@ class WalletConnectService {
       emitter.on(WalletConnectRequest.CALL_REJECTED, args => {
         const id = args?.id
         const error = args?.error
-        if (data.payload.id === id) {
+        if (data.id === id) {
           Logger.info('dapp received emission rejection for CALL')
           reject(error)
         }

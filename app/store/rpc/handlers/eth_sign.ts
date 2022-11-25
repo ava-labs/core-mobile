@@ -7,7 +7,14 @@ import { AppListenerEffectAPI } from 'store'
 import { selectActiveAccount } from 'store/account'
 import { selectActiveNetwork } from 'store/network'
 import Logger from 'utils/Logger'
-import { addRequest, sendRpcResult, sendRpcError } from '../slice'
+import * as Sentry from '@sentry/react-native'
+import {
+  addRequest,
+  sendRpcResult,
+  sendRpcError,
+  updateRequest,
+  removeRequest
+} from '../slice'
 import { DappRpcRequest, RpcRequestHandler } from './types'
 
 export interface EthSignRpcRequest
@@ -24,6 +31,7 @@ export interface EthSignRpcRequest
   data?: string
   from?: string
   password?: string
+  error?: Error
 }
 
 class EthSignHandler implements RpcRequestHandler<EthSignRpcRequest> {
@@ -41,6 +49,17 @@ class EthSignHandler implements RpcRequestHandler<EthSignRpcRequest> {
     listenerApi: AppListenerEffectAPI
   ) => {
     const { payload } = action
+    console.log('callsed', action)
+
+    if (!payload) {
+      listenerApi.dispatch(
+        sendRpcError({
+          request: action,
+          error: ethErrors.rpc.invalidParams()
+        })
+      )
+      return
+    }
 
     const { data, from, password } = paramsToMessageParams(payload)
 
@@ -50,7 +69,7 @@ class EthSignHandler implements RpcRequestHandler<EthSignRpcRequest> {
       from,
       password
     }
-
+    console.log(requestWithData)
     listenerApi.dispatch(addRequest(requestWithData))
   }
 
@@ -62,6 +81,7 @@ class EthSignHandler implements RpcRequestHandler<EthSignRpcRequest> {
     listenerApi: AppListenerEffectAPI
   ) => {
     const state = listenerApi.getState()
+    const { dispatch } = listenerApi
     const activeNetwork = selectActiveNetwork(state)
     const activeAccount = selectActiveAccount(state)
     const request = action.payload.request
@@ -69,33 +89,46 @@ class EthSignHandler implements RpcRequestHandler<EthSignRpcRequest> {
     if (!activeAccount || !activeNetwork) {
       listenerApi.dispatch(
         sendRpcError({
-          id: request.payload.id,
+          request,
           error: ethErrors.rpc.internal('app not ready')
         })
       )
       return
     }
-    const method = request.payload.method as RpcMethod
-    const dataToSign = request.data
+
+    console.log(request)
 
     await walletService
-      .signMessage(method, dataToSign, activeAccount.index, activeNetwork)
+      .signMessage(
+        request.payload.method,
+        request.data,
+        activeAccount.index,
+        activeNetwork
+      )
       .then(result => {
-        listenerApi.dispatch(
+        dispatch(
           sendRpcResult({
-            id: request.payload.id,
+            request,
             result: [result]
           })
         )
+        dispatch(removeRequest(request.payload.id))
       })
       .catch(e => {
         Logger.error('Error approving dapp tx', e)
-        listenerApi.dispatch(
+        dispatch(
+          updateRequest({
+            ...action.payload.request,
+            error: e
+          })
+        )
+        dispatch(
           sendRpcError({
-            id: request.payload.id,
+            request,
             error: ethErrors.rpc.internal('failed to sign message')
           })
         )
+        Sentry?.captureException(e, { tags: { dapps: 'signMessage' } })
       })
   }
 }

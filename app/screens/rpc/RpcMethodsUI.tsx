@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useCallback, useEffect } from 'react'
 import AccountApproval from 'screens/rpc/components/AccountApproval'
 import SignTransaction from 'screens/rpc/components/SignTransaction'
 import SignMessage from 'screens/rpc/components/SignMessage/SignMessage'
@@ -8,8 +8,8 @@ import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet'
 import AvaxSheetHandle from 'components/AvaxSheetHandle'
 import TabViewBackground from 'components/TabViewBackground'
 import { RpcMethod } from 'services/walletconnect/types'
-import { useSelector } from 'react-redux'
-import { selectRpcRequests } from 'store/rpc'
+import { useDispatch, useSelector } from 'react-redux'
+import { removeRequest, selectRpcRequests } from 'store/rpc'
 import { EthSendTransactionRpcRequest } from 'store/rpc/handlers/eth_sendTransaction'
 import { EthSignRpcRequest } from 'store/rpc/handlers/eth_sign'
 import { SessionRequestRpcRequest } from 'store/rpc/handlers/session_request'
@@ -19,9 +19,11 @@ import UpdateContact from './components/UpdateContact'
 const snapPoints = ['90%']
 
 const RpcMethodsUI = () => {
+  const dispatch = useDispatch()
   const { goBack } = useNavigation()
   const { onUserApproved, onUserRejected } = useDappConnectionContext()
   const rpcRequests = useSelector(selectRpcRequests)
+  const oldestRpcRequest = rpcRequests[0]
 
   useEffect(() => {
     if (rpcRequests === undefined || !rpcRequests.length) {
@@ -29,10 +31,14 @@ const RpcMethodsUI = () => {
     }
   }, [goBack, rpcRequests])
 
-  const renderContent = () => {
-    if (!rpcRequests?.length) return null
-    const oldestRpcRequest = rpcRequests[0]
+  const onClose = useCallback(() => {
+    if (oldestRpcRequest) {
+      dispatch(removeRequest(oldestRpcRequest.payload.id))
+    }
+    goBack()
+  }, [dispatch, goBack, oldestRpcRequest])
 
+  const renderContent = () => {
     if (!oldestRpcRequest) return null
 
     switch (oldestRpcRequest.payload.method) {
@@ -47,7 +53,7 @@ const RpcMethodsUI = () => {
             onReject={onUserRejected}
             onApprove={onUserApproved}
             dappEvent={oldestRpcRequest as EthSignRpcRequest}
-            onClose={goBack}
+            onClose={onClose}
           />
         )
       case RpcMethod.SESSION_REQUEST:
@@ -56,6 +62,7 @@ const RpcMethodsUI = () => {
             onReject={onUserRejected}
             onApprove={onUserApproved}
             dappEvent={oldestRpcRequest as SessionRequestRpcRequest}
+            onClose={onClose}
           />
         )
       case RpcMethod.ETH_SEND_TRANSACTION:
@@ -64,7 +71,7 @@ const RpcMethodsUI = () => {
             onReject={onUserRejected}
             onApprove={onUserApproved}
             dappEvent={oldestRpcRequest as EthSendTransactionRpcRequest}
-            onClose={goBack}
+            onClose={onClose}
           />
         )
       case RpcMethod.AVALANCHE_UPDATE_CONTACT:
@@ -73,6 +80,7 @@ const RpcMethodsUI = () => {
             onReject={onUserRejected}
             onApprove={onUserApproved}
             dappEvent={oldestRpcRequest as AvalancheUpdateContactRequest}
+            onClose={onClose}
           />
         )
       default:

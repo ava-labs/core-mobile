@@ -4,15 +4,15 @@ import BN from 'bn.js'
 import { NetworkTokenWithBalance, TokenWithBalance } from 'store/balance'
 import { Network } from '@avalabs/chains-sdk'
 import { FindToken } from 'contracts/contractParsers/utils/useFindToken'
-import { PeerMetadata } from 'store/rpc/types'
 import { TransactionParams } from 'store/rpc/handlers/eth_sendTransaction'
+import { PeerMeta } from 'services/walletconnect/types'
 
 export interface DisplayValueParserProps {
   gasPrice: BigNumber
   avaxToken: NetworkTokenWithBalance
   avaxPrice: number
   erc20Tokens: TokenWithBalance[]
-  site?: PeerMetadata
+  site?: PeerMeta
 }
 export interface TransactionDisplayValues {
   fromAddress?: string
@@ -22,7 +22,7 @@ export interface TransactionDisplayValues {
   gasLimit?: number
   fee?: string
   feeInCurrency?: number
-  site?: PeerMetadata
+  site?: PeerMeta
   description?: ethers.utils.TransactionDescription
   displayValue?: string
   bnFee?: BigNumber

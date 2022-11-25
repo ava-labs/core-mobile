@@ -1,6 +1,5 @@
 import { JsonRpcRequest } from '@walletconnect/jsonrpc-types'
 import { IClientMeta } from '@walletconnect/types'
-import { PeerMetadata } from 'screens/rpc/util/types'
 
 const CORE_MOBILE_WALLET_ID = 'c3de833a-9cb0-4274-bb52-86e402ecfcd3'
 
@@ -56,7 +55,7 @@ export interface MessageAction {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   displayData: any
   method: string
-  site: PeerMetadata
+  site: PeerMeta
 }
 
 export enum RpcMethod {
@@ -110,10 +109,3 @@ export const CORE_ONLY_METHODS = [
   RpcMethod.AVALANCHE_SET_DEVELOPER_MODE,
   RpcMethod.AVALANCHE_UPDATE_CONTACT
 ]
-export interface PeerMetadata {
-  peerId?: string
-  url?: string
-  name?: string
-  icon?: string
-  description?: string
-}

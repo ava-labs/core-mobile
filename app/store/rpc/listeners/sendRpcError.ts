@@ -1,4 +1,3 @@
-import { AppListenerEffectAPI } from 'store/index'
 import { PayloadAction } from '@reduxjs/toolkit'
 import {
   rejectCall,
@@ -9,25 +8,20 @@ import {
   EthereumRpcError,
   ethErrors
 } from 'eth-rpc-errors'
-import { RpcMethod } from 'services/walletconnect/types'
-import { removeRequest, selectRpcRequests } from '../slice'
+import { DappRpcRequest } from '../handlers/types'
+import { isSessionRequestRpcRequest } from '../utils'
 
 export const onSendRpcError = async (
   action: PayloadAction<{
-    id: number
+    request: DappRpcRequest<string, unknown>
     error?: EthereumRpcError<unknown> | EthereumProviderError<unknown>
-  }>,
-  listenerApi: AppListenerEffectAPI
+  }>
 ) => {
-  const { id, error } = action.payload
-  const requests = selectRpcRequests(listenerApi.getState())
-  const request = requests.find(r => r.payload.id === id)
+  const { request, error } = action.payload
 
-  listenerApi.dispatch(removeRequest(id))
-
-  if (request?.payload.method === RpcMethod.SESSION_REQUEST) {
-    rejectSession(request?.payload.peerMeta.peerId)
+  if (isSessionRequestRpcRequest(request)) {
+    rejectSession(request.payload.params[0]?.peerId)
   } else {
-    rejectCall(id, error ?? ethErrors.rpc.internal())
+    rejectCall(request.payload.id, error ?? ethErrors.rpc.internal())
   }
 }

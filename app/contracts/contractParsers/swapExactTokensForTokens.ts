@@ -5,11 +5,11 @@ import {
   ContractParser,
   DisplayValueParserProps,
   erc20PathToken,
-  SwapExactTokensForTokenDisplayValues,
-  TransactionParams
+  SwapExactTokensForTokenDisplayValues
 } from 'screens/rpc/util/types'
 import { parseDisplayValues } from 'screens/rpc/util/parseDisplayValues'
 import { Network } from '@avalabs/chains-sdk'
+import { TransactionParams } from 'store/rpc/handlers/eth_sendTransaction'
 import { FindToken } from './utils/useFindToken'
 
 export interface SwapExactTokensForTokenData {

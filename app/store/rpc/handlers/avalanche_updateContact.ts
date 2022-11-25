@@ -5,7 +5,12 @@ import { Contact as SharedContact } from '@avalabs/types'
 import { getContactValidationError } from 'screens/drawer/addressBook/utils'
 import { ethErrors } from 'eth-rpc-errors'
 import { addContact } from 'store/addressBook'
-import { addRequest, sendRpcResult, sendRpcError } from '../slice'
+import {
+  addRequest,
+  sendRpcResult,
+  sendRpcError,
+  removeRequest
+} from '../slice'
 import { DappRpcRequest, RpcRequestHandler } from './types'
 
 export interface AvalancheUpdateContactRequest
@@ -46,7 +51,7 @@ class AvalancheUpdateContactHandler
 
     if (!contact) {
       sendRpcError({
-        id: action.payload.id,
+        request: action,
         error: ethErrors.rpc.invalidParams()
       })
       return
@@ -67,9 +72,10 @@ class AvalancheUpdateContactHandler
     >,
     listenerApi: AppListenerEffectAPI
   ) => {
+    const { dispatch } = listenerApi
     const contact = action.payload.request.contact
 
-    listenerApi.dispatch(
+    dispatch(
       addContact({
         address: contact.address,
         addressBtc: contact.addressBTC || '',
@@ -78,12 +84,14 @@ class AvalancheUpdateContactHandler
       })
     )
 
-    listenerApi.dispatch(
+    dispatch(
       sendRpcResult({
-        id: action.payload.request.payload.id,
+        request: action.payload.request,
         result: []
       })
     )
+
+    dispatch(removeRequest(action.payload.request.payload.id))
   }
 }
 export const avalancheUpdateContactHandler = new AvalancheUpdateContactHandler()

@@ -119,7 +119,7 @@ export const DappConnectionContextProvider = ({
     (request: DappRpcRequest<string, unknown>, message?: string) => {
       dispatch(
         sendRpcError({
-          id: request.payload.id,
+          request,
           error: message
             ? ethErrors.rpc.internal(message)
             : ethErrors.provider.userRejectedRequest()

@@ -24,7 +24,7 @@ class AvalancheGetAccountsHandler
 
     listenerApi.dispatch(
       sendRpcResult({
-        id: action.payload.id,
+        request: action,
         result: Object.values(accounts).map((account: Account) => ({
           index: account.index,
           name: account.title,

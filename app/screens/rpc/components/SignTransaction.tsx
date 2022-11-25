@@ -1,5 +1,5 @@
 import AvaText from 'components/AvaText'
-import React, { FC, useCallback, useState } from 'react'
+import React, { FC, useCallback, useEffect, useState } from 'react'
 import { ActivityIndicator, StyleSheet, View } from 'react-native'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
@@ -28,16 +28,16 @@ import useInAppBrowser from 'hooks/useInAppBrowser'
 import FlexSpacer from 'components/FlexSpacer'
 import { Popable } from 'react-native-popable'
 import { SwapTransaction } from 'screens/rpc/components/Transactions/SwapTransaction'
-// import { showSnackBarCustom } from 'components/Snackbar'
-// import TransactionToast, {
-//   TransactionToastType
-// } from 'components/toast/TransactionToast'
-// import * as Sentry from '@sentry/react-native'
+import { showSnackBarCustom } from 'components/Snackbar'
+import TransactionToast, {
+  TransactionToastType
+} from 'components/toast/TransactionToast'
 import { PopableContent } from 'components/PopableContent'
 import { PopableLabel } from 'components/PopableLabel'
 import { BigNumber } from 'ethers'
 import { ScrollView } from 'react-native-gesture-handler'
 import { EthSendTransactionRpcRequest } from 'store/rpc/handlers/eth_sendTransaction'
+import { TransactionError } from 'services/network/types'
 
 interface Props {
   onReject: (request: EthSendTransactionRpcRequest, message?: string) => void
@@ -59,7 +59,6 @@ const SignTransaction: FC<Props> = ({
   const theme = useApplicationContext().theme
   const activeNetwork = useActiveNetwork()
   const [txFailedError, setTxFailedError] = useState<string>()
-  const [hash] = useState<string>()
   const [submitting, setSubmitting] = useState(false)
   const [showData, setShowData] = useState(false)
   const [showCustomSpendLimit, setShowCustomSpendLimit] = useState(false)
@@ -74,8 +73,33 @@ const SignTransaction: FC<Props> = ({
     displayData
   } = useExplainTransaction(dappEvent)
 
+  useEffect(() => {
+    if (!dappEvent.error) {
+      return
+    }
+
+    // in case the TX was sent to the blockchain but was rejected
+    if ((dappEvent?.error as TransactionError).transactionHash) {
+      showSnackBarCustom({
+        component: (
+          <TransactionToast
+            type={TransactionToastType.ERROR}
+            message={'Transaction Failed'}
+          />
+        ),
+        duration: 'short'
+      })
+      onClose()
+    } else {
+      // in case we have some error
+      setTxFailedError(`there was an error processing the transaction`)
+    }
+  }, [dappEvent, onClose])
+
   const explorerUrl =
-    activeNetwork && hash && getExplorerAddressByNetwork(activeNetwork, hash)
+    activeNetwork &&
+    dappEvent.result &&
+    getExplorerAddressByNetwork(activeNetwork, dappEvent.result)
 
   const handleGasPriceChange = useCallback(
     (gasPrice: BigNumber, feePreset: FeePreset) => {
@@ -149,33 +173,7 @@ const SignTransaction: FC<Props> = ({
       setSubmitting(true)
       setTxFailedError(undefined)
       onApprove(dappEvent, transaction)
-      // .then(result => {
-      //   if (result?.hash) {
-      //     setHash(result.hash)
-      //     setSubmitting(false)
-      //   }
-      // })
-      // .catch(reason => {
-      //   setSubmitting(false)
-      //   if (reason?.error?.transactionHash) {
-      //     showSnackBarCustom({
-      //       component: (
-      //         <TransactionToast
-      //           type={TransactionToastType.ERROR}
-      //           message={'Transaction Failed'}
-      //           txHash={reason?.error?.transactionHash}
-      //         />
-      //       ),
-      //       duration: 'short'
-      //     })
-      //     onClose()
-      //   } else {
-      //     setTxFailedError(`there was an error processing the transaction`)
-      //   }
-      //   Sentry?.captureException(reason, {
-      //     tags: { dapps: 'signTransaction' }
-      //   })
-      // })
+      setSubmitting(false)
     }
   }
 
@@ -200,7 +198,7 @@ const SignTransaction: FC<Props> = ({
         <Space y={16} />
         <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
           <AvaText.Body2 color={theme.colorText1}>
-            Approve {dappEvent.payload.peerMeta.name} transaction
+            Approve {dappEvent.payload.peerMeta?.name} transaction
           </AvaText.Body2>
           <AvaButton.Base onPress={() => setShowData(true)}>
             <Row>
@@ -222,7 +220,7 @@ const SignTransaction: FC<Props> = ({
             {(contractType === ContractCall.APPROVE && (
               <ApproveTransaction
                 {...(displayData as ApproveTransactionData)}
-                hash={hash}
+                hash={dappEvent.result}
                 error={txFailedError}
                 onCustomFeeSet={setCustomFee}
                 selectedGasFee={selectedGasFee}
@@ -234,7 +232,7 @@ const SignTransaction: FC<Props> = ({
                 contractType === ContractCall.ADD_LIQUIDITY_AVAX) && (
                 <AddLiquidityTransaction
                   {...(displayData as AddLiquidityDisplayData)}
-                  hash={hash}
+                  hash={dappEvent.result}
                   error={txFailedError}
                   onCustomFeeSet={setCustomFee}
                   selectedGasFee={selectedGasFee}
@@ -244,7 +242,7 @@ const SignTransaction: FC<Props> = ({
               (contractType === ContractCall.SWAP_EXACT_TOKENS_FOR_TOKENS && (
                 <SwapTransaction
                   {...(displayData as SwapExactTokensForTokenDisplayValues)}
-                  hash={hash}
+                  hash={dappEvent.result}
                   error={txFailedError}
                   onCustomFeeSet={setCustomFee}
                   selectedGasFee={selectedGasFee}
@@ -255,7 +253,7 @@ const SignTransaction: FC<Props> = ({
                 contractType === undefined) && (
                 <GenericTransaction
                   {...(displayData as TransactionDisplayValues)}
-                  hash={hash}
+                  hash={dappEvent.result}
                   error={txFailedError}
                   onCustomFeeSet={setCustomFee}
                   selectedGasFee={selectedGasFee}
@@ -265,14 +263,14 @@ const SignTransaction: FC<Props> = ({
           </>
         )}
       </View>
-      {!hash && displayData?.gasPrice && (
+      {!dappEvent.result && displayData?.gasPrice && (
         <NetworkFeeSelector
           gasLimit={displayData?.gasLimit ?? 0}
           onGasPriceChange={handleGasPriceChange}
           onGasLimitChange={handleGasLimitChange}
         />
       )}
-      {hash ? (
+      {dappEvent.result ? (
         <>
           <Space y={16} />
           <Row style={{ justifyContent: 'space-between' }}>
@@ -301,7 +299,7 @@ const SignTransaction: FC<Props> = ({
             <AvaText.Body2 color={theme.colorText1}>
               Transaction hash
             </AvaText.Body2>
-            <TokenAddress address={hash} copyIconEnd />
+            <TokenAddress address={dappEvent.result} copyIconEnd />
           </Row>
           <Space y={24} />
           <View

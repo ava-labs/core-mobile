@@ -7,7 +7,7 @@ import { sendRpcResult } from '../slice'
 import { DappRpcRequest, RpcRequestHandler } from './types'
 
 export type AvalancheGetContactsRpcRequest = DappRpcRequest<
-  RpcMethod.AVALANCHE_GET_ACCOUNTS,
+  RpcMethod.AVALANCHE_GET_CONTACTS,
   []
 >
 
@@ -33,7 +33,7 @@ class AvalancheGetContactsHandler
 
     listenerApi.dispatch(
       sendRpcResult({
-        id: action.payload.id,
+        request: action,
         result: sharedContacts
       })
     )

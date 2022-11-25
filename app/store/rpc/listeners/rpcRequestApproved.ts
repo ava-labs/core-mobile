@@ -14,21 +14,19 @@ export const onRpcRequestApproved = async (
   >,
   listenerApi: AppListenerEffectAPI
 ) => {
-  console.log(action)
   // call onApproved callback if the handler implements it
   if (handlerMap.has(action.payload.request.payload.method)) {
     const handler = handlerMap.get(action.payload.request.payload.method)
     if (handler.onApprove) {
       handler.onApprove(action, listenerApi)
     }
-    return
+  } else {
+    // otherwise we are good to send the result
+    listenerApi.dispatch(
+      sendRpcResult({
+        request: action.payload.request,
+        result: action.payload.result
+      })
+    )
   }
-
-  // otherwise we are good to send the result
-  listenerApi.dispatch(
-    sendRpcResult({
-      id: action.payload.request.payload.id,
-      result: action.payload.result
-    })
-  )
 }
