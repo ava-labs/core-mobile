@@ -49,7 +49,6 @@ class EthSignHandler implements RpcRequestHandler<EthSignRpcRequest> {
     listenerApi: AppListenerEffectAPI
   ) => {
     const { payload } = action
-    console.log('callsed', action)
 
     if (!payload) {
       listenerApi.dispatch(
@@ -69,7 +68,6 @@ class EthSignHandler implements RpcRequestHandler<EthSignRpcRequest> {
       from,
       password
     }
-    console.log(requestWithData)
     listenerApi.dispatch(addRequest(requestWithData))
   }
 

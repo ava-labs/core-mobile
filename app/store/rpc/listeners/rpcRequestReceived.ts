@@ -9,11 +9,6 @@ export const onRpcRequestReceived = async (
   action: PayloadAction<TypedJsonRpcRequest<string, unknown>>,
   listenerApi: AppListenerEffectAPI
 ) => {
-  console.log(
-    'onRpcRequestReceived',
-    handlerMap.has(action),
-    action.payload.method
-  )
   if (handlerMap.has(action.payload.method)) {
     handlerMap.get(action.payload.method).handle(action, listenerApi)
     return
