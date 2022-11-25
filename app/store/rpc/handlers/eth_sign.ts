@@ -96,8 +96,6 @@ class EthSignHandler implements RpcRequestHandler<EthSignRpcRequest> {
       return
     }
 
-    console.log(request)
-
     await walletService
       .signMessage(
         request.payload.method,
@@ -109,7 +107,7 @@ class EthSignHandler implements RpcRequestHandler<EthSignRpcRequest> {
         dispatch(
           sendRpcResult({
             request,
-            result: [result]
+            result
           })
         )
         dispatch(removeRequest(request.payload.id))
