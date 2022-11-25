@@ -1,20 +1,20 @@
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import { useEffect } from 'react'
-import {
-  CallRequestData,
-  PeerMeta,
-  SessionRequestData,
-  WalletConnectRequest
-} from 'services/walletconnect/types'
+import { PeerMeta, WalletConnectRequest } from 'services/walletconnect/types'
 import WalletConnectService from 'services/walletconnect/WalletConnectService'
 import { Account } from 'store/account'
 import { usePosthogContext } from 'contexts/PosthogContext'
+import { EthereumRpcError, EthereumProviderError } from 'eth-rpc-errors'
+import { SessionRequestRpcRequest } from 'store/rpc/handlers/session_request'
+import { TypedJsonRpcRequest } from 'store/rpc/handlers/types'
 
 type Params = {
   activeAccount: Account | undefined
   activeNetwork: Network
-  handleSessionRequest: (sessionInfo: SessionRequestData) => void
-  handleCallRequest: (data: CallRequestData) => void
+  handleSessionRequest: (
+    sessionInfo: SessionRequestRpcRequest['payload']
+  ) => void
+  handleCallRequest: (data: TypedJsonRpcRequest<string, unknown>) => void
   handleSessionDisconnected: (peerMeta: PeerMeta) => void
 }
 
@@ -25,10 +25,13 @@ export const approveCall = (id: number, result: any) =>
     result
   })
 
-export const rejectCall = (id: number, message?: string) => {
+export const rejectCall = (
+  id: number,
+  error: EthereumRpcError<unknown> | EthereumProviderError<unknown>
+) => {
   WalletConnectService.emitter.emit(WalletConnectRequest.CALL_REJECTED, {
     id,
-    message
+    error
   })
 }
 

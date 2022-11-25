@@ -24,17 +24,17 @@ import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
 import Web3 from 'web3'
 import { Limit, SpendLimit } from 'components/EditSpendLimit'
 import Logger from 'utils/Logger'
-import { DappSignTransactionEvent } from 'contexts/DappConnectionContext/types'
 import { useSelector } from 'react-redux'
 import { NetworkTokenWithBalance, selectTokensWithBalance } from 'store/balance'
 import { selectNetworkFee } from 'store/networkFee'
 import { selectNetworks } from 'store/network'
 import { ChainId } from '@avalabs/chains-sdk'
 import { useFindToken } from 'contracts/contractParsers/utils/useFindToken'
+import { EthSendTransactionRpcRequest } from 'store/rpc/handlers/eth_sendTransaction'
 
 const UNLIMITED_SPEND_LIMIT_LABEL = 'Unlimited'
 
-export function useExplainTransaction(dappEvent: DappSignTransactionEvent) {
+export function useExplainTransaction(dappEvent: EthSendTransactionRpcRequest) {
   const networkFees = useSelector(selectNetworkFee)
   const { nativeTokenPrice: tokenPrice } = useNativeTokenPrice()
   const activeNetwork = useActiveNetwork()
@@ -53,7 +53,7 @@ export function useExplainTransaction(dappEvent: DappSignTransactionEvent) {
     dappEvent.payload?.params && dappEvent.payload?.params.length > 0
       ? dappEvent.payload?.params[0]
       : undefined
-  const peerMeta = dappEvent.peerMeta
+  const peerMeta = dappEvent.payload.peerMeta
   const [customGas, setCustomGas] = useState<{
     gasLimit: number
     gasPrice: BigNumber
@@ -223,21 +223,31 @@ export function useExplainTransaction(dappEvent: DappSignTransactionEvent) {
         // will be used to on the views.
         // uses a custom parser if there is one, otherwise
         // uses `parseDisplayValues` as a generic parser.
-        const displayValues: TransactionDisplayValues = parser
-          ? await parser(
-              findToken,
-              activeNetwork,
-              txParamsWithGasLimit,
-              decodedData,
-              displayValueProps,
-              description
-            )
-          : parseDisplayValues(
-              activeNetwork,
-              txParamsWithGasLimit,
-              displayValueProps,
-              description
-            )
+        let displayValues: TransactionDisplayValues
+        try {
+          displayValues = parser
+            ? await parser(
+                findToken,
+                activeNetwork,
+                txParamsWithGasLimit,
+                decodedData,
+                displayValueProps,
+                description
+              )
+            : parseDisplayValues(
+                activeNetwork,
+                txParamsWithGasLimit,
+                displayValueProps,
+                description
+              )
+        } catch (err) {
+          displayValues = parseDisplayValues(
+            activeNetwork,
+            txParamsWithGasLimit,
+            displayValueProps,
+            description
+          )
+        }
 
         // add metamask and chain id to transaction
         const networkMetaData = activeNetwork

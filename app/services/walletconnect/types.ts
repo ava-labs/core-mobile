@@ -1,6 +1,5 @@
 import { JsonRpcRequest } from '@walletconnect/jsonrpc-types'
 import { IClientMeta } from '@walletconnect/types'
-import { PeerMetadata } from 'screens/rpc/util/types'
 
 const CORE_MOBILE_WALLET_ID = 'c3de833a-9cb0-4274-bb52-86e402ecfcd3'
 
@@ -56,17 +55,21 @@ export interface MessageAction {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   displayData: any
   method: string
-  site: PeerMetadata
+  site: PeerMeta
 }
 
 export enum RpcMethod {
-  ETH_SEND = 'eth_sendTransaction',
+  SESSION_REQUEST = 'session_request',
+  ETH_SEND_TRANSACTION = 'eth_sendTransaction',
   SIGN_TYPED_DATA_V3 = 'eth_signTypedData_v3',
   SIGN_TYPED_DATA_V4 = 'eth_signTypedData_v4',
   SIGN_TYPED_DATA_V1 = 'eth_signTypedData_v1',
   SIGN_TYPED_DATA = 'eth_signTypedData',
   PERSONAL_SIGN = 'personal_sign',
   ETH_SIGN = 'eth_sign',
+  WALLET_ADD_ETHEREUM_CHAIN = 'wallet_addEthereumChain',
+  WALLET_SWITCH_ETHEREUM_CHAIN = 'wallet_switchEthereumChain',
+  WALLET_WATCH_ASSET = 'wallet_watchAsset',
 
   /* custom methods that are proprietary to Core */
   AVALANCHE_BRIDGE_ASSET = 'avalanche_bridgeAsset',

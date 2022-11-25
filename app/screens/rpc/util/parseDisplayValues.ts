@@ -1,11 +1,9 @@
 import * as ethers from 'ethers'
 import { bigToLocaleString, bnToBig, hexToBN } from '@avalabs/utils-sdk'
-import {
-  DisplayValueParserProps,
-  TransactionParams
-} from 'screens/rpc/util/types'
+import { DisplayValueParserProps } from 'screens/rpc/util/types'
 import { calculateGasAndFees } from 'utils/Utils'
 import { Network } from '@avalabs/chains-sdk'
+import { TransactionParams } from 'store/rpc/handlers/eth_sendTransaction'
 
 export function isTxParams(
   params: Partial<TransactionParams>

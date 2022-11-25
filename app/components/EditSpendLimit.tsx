@@ -7,9 +7,10 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import FlexSpacer from 'components/FlexSpacer'
 import { Row } from 'components/Row'
 import { TokenWithBalanceERC20 } from 'store/balance'
-import { PeerMetadata } from 'screens/rpc/util/types'
 import { Checkbox } from 'components/Checkbox'
 import { BNInput } from 'components/BNInput'
+import { PeerMeta } from 'services/walletconnect/types'
+import BN from 'bn.js'
 
 export enum Limit {
   DEFAULT = 'DEFAULT',
@@ -20,10 +21,10 @@ export enum Limit {
 export interface SpendLimit {
   limitType: Limit
   value?: {
-    bn: any
+    bn: BN
     amount: string
   }
-  default?: any
+  default?: string
 }
 
 interface Props {
@@ -31,7 +32,7 @@ interface Props {
   setSpendLimit(limitData: SpendLimit): void
   onClose(): void
   spendLimit: SpendLimit
-  site?: PeerMetadata
+  site?: PeerMeta
 }
 
 const EditSpendLimit = ({

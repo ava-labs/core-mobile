@@ -227,7 +227,7 @@
     "jest": "27.2.5",
     "lint-staged": "13.0.3",
     "metro-minify-esbuild": "0.2.0",
-    "metro-react-native-babel-preset": "0.72.1",
+    "metro-react-native-babel-preset": "0.72.3",
     "prettier": "2.6.2",
     "react-dom": "18.2.0",
     "react-native-storybook-loader": "2.0.5",

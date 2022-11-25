@@ -2,14 +2,14 @@ import {
   ContractCall,
   ContractParser,
   DisplayValueParserProps,
-  TransactionDisplayValues,
-  TransactionParams
+  TransactionDisplayValues
 } from 'screens/rpc/util/types'
 import { parseDisplayValues } from 'screens/rpc/util/parseDisplayValues'
 import { TransactionDescription } from '@ethersproject/abi'
 import { FindToken } from 'contracts/contractParsers/utils/useFindToken'
 import { Network } from '@avalabs/chains-sdk'
 import { ethers } from 'ethers'
+import { TransactionParams } from 'store/rpc/handlers/eth_sendTransaction'
 
 export async function approveTxHandler(
   findToken: FindToken,
