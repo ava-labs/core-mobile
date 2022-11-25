@@ -164,7 +164,7 @@
     "victory-native": "36.3.0",
     "vm-browserify": "0.0.4",
     "web3": "1.7.1",
-    "xss": "1.0.13"
+    "xss": "1.0.14"
   },
   "resolutions": {
     "es6-promise": "4.2.8",
