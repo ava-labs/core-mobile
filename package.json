@@ -247,9 +247,6 @@
   "lint-staged": {
     "*.{ts,tsx}": "eslint --fix --max-warnings 0"
   },
-  "jest": {
-    "preset": "react-native"
-  },
   "engines": {
     "node": ">=14.17.0",
     "yarn": ">=1.22.10"
