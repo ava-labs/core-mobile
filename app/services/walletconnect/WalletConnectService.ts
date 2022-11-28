@@ -94,8 +94,9 @@ class WalletConnectService {
       isExisting: boolean
     ) => {
       Logger.info('received dapp session request', error ?? payload)
+
       if (error) {
-        console.error(error)
+        throw error
       }
 
       try {
@@ -270,9 +271,6 @@ class WalletConnectService {
   // Call request emitters
   callRequests = (data: TypedJsonRpcRequest<string, unknown>) =>
     new Promise((resolve, reject) => {
-      Logger.info('dapp emitting CALL request')
-      emitter.emit(WalletConnectRequest.CALL, data)
-
       emitter.on(WalletConnectRequest.CALL_APPROVED, args => {
         const { id, result } = args
         if (data.id === id) {
@@ -288,6 +286,9 @@ class WalletConnectService {
           reject(error)
         }
       })
+
+      Logger.info('dapp emitting CALL request')
+      emitter.emit(WalletConnectRequest.CALL, data)
     })
 
   startSession = async (existing: boolean) => {
