@@ -17,29 +17,12 @@ import { useSelector } from 'react-redux'
 import { selectUserID } from 'store/posthog'
 import Logger from 'utils/Logger'
 import SentryWrapper from 'services/sentry/SentryWrapper'
+import { sanitizeFeatureFlags } from 'contexts/posthogUtils'
+import { FeatureGates, FeatureVars, PosthogCapture } from 'contexts/types'
 
 export const PosthogContext = createContext<PosthogContextState>(
   {} as PosthogContextState
 )
-
-enum FeatureGates {
-  EVERYTHING = 'everything',
-  EVENTS = 'events',
-  SWAP = 'swap-feature',
-  BRIDGE = 'bridge-feature',
-  BRIDGE_BTC = 'bridge-feature-btc',
-  BRIDGE_ETH = 'bridge-feature-eth',
-  SEND = 'send-feature'
-}
-
-enum FeatureVars {
-  SENTRY_SAMPLE_RATE = 'sentry-sample-rate'
-}
-
-export type PosthogCapture = (
-  event: string,
-  properties?: JsonMap
-) => Promise<void>
 
 export interface PosthogContextState {
   capture: PosthogCapture
@@ -122,10 +105,8 @@ export const PosthogContextProvider = ({
       .catch(reason => Logger.error(reason))
       .then(value => value?.json())
       .then(value => {
-        const result = value as {
-          featureFlags: Record<FeatureGates | FeatureVars, boolean | string>
-        }
-        setFlags(result.featureFlags)
+        const sanitized = sanitizeFeatureFlags(value)
+        setFlags(prevState => ({ ...prevState, ...sanitized }))
       })
   }, [])
 

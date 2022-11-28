@@ -17,9 +17,9 @@ import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import Logger from 'utils/Logger'
 import { Account } from 'store/account'
 import { ethErrors } from 'eth-rpc-errors'
-import { PosthogCapture } from 'contexts/PosthogContext'
 import { SessionRequestRpcRequest } from 'store/rpc/handlers/session_request'
 import { TypedJsonRpcRequest } from 'store/rpc/handlers/types'
+import { PosthogCapture } from 'contexts/types'
 import {
   isCoreMethod,
   isFromCoreWeb,
