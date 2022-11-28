@@ -4,11 +4,11 @@ import { ScrollView } from 'react-native-gesture-handler'
 import { ApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
-import { MessageAction } from 'services/walletconnect/types'
+import { GenericAction } from 'services/walletconnect/types'
 import { Row } from 'components/Row'
 
 interface Props {
-  action: MessageAction
+  action: GenericAction
 }
 
 const SignDataV4: FC<Props> = ({ action }) => {

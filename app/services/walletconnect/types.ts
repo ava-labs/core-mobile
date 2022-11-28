@@ -47,11 +47,8 @@ export const ACTIONS = {
   WC: 'wc'
 }
 
-export interface MessageAction {
+export interface GenericAction {
   id?: string | number
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  result?: any
-  error?: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   displayData: any
   method: string
