@@ -1,5 +1,5 @@
 import { Dispatch } from 'react'
-import { DeepLink, RpcMethod } from 'services/walletconnect/types'
+import { DeepLink } from 'services/walletconnect/types'
 import { DappRpcRequest } from 'store/rpc/handlers/types'
 
 export interface DappConnectionState {
@@ -14,13 +14,3 @@ export interface DappConnectionState {
     message?: string
   ) => void
 }
-
-export type CoreWebAccount = {
-  index: number
-  active: boolean
-  addressC: string
-  addressBTC?: string
-  name: string
-}
-
-export type RpcMethodRequestHandler = [RpcMethod, () => void]

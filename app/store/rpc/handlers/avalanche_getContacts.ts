@@ -5,6 +5,7 @@ import { selectContacts } from 'store/addressBook'
 import { Contact as SharedContact } from '@avalabs/types'
 import { sendRpcResult } from '../slice'
 import { DappRpcRequest, RpcRequestHandler } from './types'
+import { mapContactToSharedContact } from './utils'
 
 export type AvalancheGetContactsRpcRequest = DappRpcRequest<
   RpcMethod.AVALANCHE_GET_CONTACTS,
@@ -23,12 +24,7 @@ class AvalancheGetContactsHandler
     const contacts = selectContacts(listenerApi.getState())
 
     const sharedContacts: SharedContact[] = Object.values(contacts).map(
-      contact => ({
-        id: contact.id,
-        name: contact.title,
-        address: contact.address,
-        addressBTC: contact.addressBtc
-      })
+      mapContactToSharedContact
     )
 
     listenerApi.dispatch(

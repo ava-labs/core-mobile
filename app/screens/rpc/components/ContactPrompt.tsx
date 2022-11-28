@@ -8,17 +8,21 @@ import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
 import { NativeViewGestureHandler } from 'react-native-gesture-handler'
 import FlexSpacer from 'components/FlexSpacer'
-import { DappContactEvent } from 'contexts/DappConnectionContext/types'
 import AddressBookSVG from 'components/svg/AddressBookSVG'
 import AddressBookItem from 'components/addressBook/AddressBookItem'
 
 import { Contact as SharedContact } from '@avalabs/types'
 import { capitalizeFirstLetter } from 'utils/string/capitalize'
+import { AvalancheCreateContactRequest } from 'store/rpc/handlers/avalanche_createContact'
+import { AvalancheRemoveContactRequest } from 'store/rpc/handlers/avalanche_removeContact'
+
+type Request = AvalancheCreateContactRequest | AvalancheRemoveContactRequest
 
 interface Props {
-  dappEvent: DappContactEvent
-  onApprove: (contact: SharedContact) => void
-  onReject: () => void
+  dappEvent: Request
+  onApprove: (request: Request, result?: SharedContact) => void
+  onReject: (request: Request, message?: string) => void
+  onClose: () => void
   action: 'create' | 'remove'
 }
 
@@ -26,11 +30,14 @@ const ContactPrompt: FC<Props> = ({
   dappEvent,
   onApprove,
   onReject,
+  onClose,
   action
 }) => {
   const theme = useApplicationContext().theme
-  const contact = dappEvent.contact
-  const peerMeta = dappEvent.peerMeta
+  const {
+    contact,
+    payload: { peerMeta }
+  } = dappEvent
 
   const renderContact = () => {
     return (
@@ -60,7 +67,7 @@ const ContactPrompt: FC<Props> = ({
           </OvalTagBg>
           <Space y={15} />
           <AvaText.Body1 textStyle={styles.subTileText}>
-            {new URL(peerMeta.url ?? '').hostname} is requesting to {action} a
+            {new URL(peerMeta?.url ?? '').hostname} is requesting to {action} a
             contact:
           </AvaText.Body1>
           <Space y={16} />
@@ -69,11 +76,16 @@ const ContactPrompt: FC<Props> = ({
         {renderContact()}
         <FlexSpacer />
         <View style={styles.actionContainer}>
-          <AvaButton.PrimaryMedium onPress={() => onApprove(contact)}>
+          <AvaButton.PrimaryMedium
+            onPress={() => onApprove(dappEvent, contact)}>
             Approve
           </AvaButton.PrimaryMedium>
           <Space y={21} />
-          <AvaButton.SecondaryMedium onPress={() => onReject()}>
+          <AvaButton.SecondaryMedium
+            onPress={() => {
+              onReject(dappEvent)
+              onClose()
+            }}>
             Reject
           </AvaButton.SecondaryMedium>
         </View>

@@ -16,10 +16,13 @@ import { SessionRequestRpcRequest } from 'store/rpc/handlers/session_request'
 import { AvalancheUpdateContactRequest } from 'store/rpc/handlers/avalanche_updateContact'
 import { WalletSwitchEthereumChainRpcRequest } from 'store/rpc/handlers/wallet_switchEthereumChain'
 import { WalletAddEthereumChainRpcRequest } from 'store/rpc/handlers/wallet_addEthereumChain'
+import { AvalancheCreateContactRequest } from 'store/rpc/handlers/avalanche_createContact'
+import { AvalancheRemoveContactRequest } from 'store/rpc/handlers/avalanche_removeContact'
 import UpdateContact from './components/UpdateContact'
 import SwitchEthereumChain from './components/SwitchEthereumChain'
 import AddEthereumChain from './components/AddEthereumChain'
 import ContactPrompt from './components/ContactPrompt'
+import ApproveAction from './components/ApproveAction/ApproveAction'
 
 const snapPoints = ['90%']
 
@@ -105,22 +108,33 @@ const RpcMethodsUI = () => {
             dappEvent={oldestRpcRequest as WalletAddEthereumChainRpcRequest}
             onClose={onClose}
             />
-      case RPC_EVENT.CREATE_CONTACT:
+      case RpcMethod.AVALANCHE_CREATE_CONTACT:
         return (
           <ContactPrompt
-            dappEvent={dappEvent}
-            onApprove={onContactUpdated}
-            onReject={onCallRejected}
+            dappEvent={oldestRpcRequest as AvalancheCreateContactRequest}
+            onApprove={onUserApproved}
+            onReject={onUserRejected}
+            onClose={onClose}
             action="create"
           />
         )
-      case RPC_EVENT.REMOVE_CONTACT:
+      case RpcMethod.AVALANCHE_REMOVE_CONTACT:
         return (
           <ContactPrompt
-            dappEvent={dappEvent}
-            onApprove={onContactRemoved}
-            onReject={onCallRejected}
+            dappEvent={oldestRpcRequest as AvalancheRemoveContactRequest}
+            onApprove={onUserApproved}
+            onReject={onUserRejected}
+            onClose={onClose}
             action="remove"
+          />
+        )
+      case RpcMethod.AVALANCHE_BRIDGE_ASSET:
+        return (
+          <ApproveAction
+            onRejected={onCallRejected}
+            onApprove={onMessageCallApproved}
+            dappEvent={dappEvent}
+            onClose={goBack}
           />
         )
       default:
