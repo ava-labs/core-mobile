@@ -28,5 +28,11 @@ describe('app/contexts/posthogUtils.ts', () => {
         })
       ).toStrictEqual({})
     })
+    it('returns empty object if server returns undefined result', () => {
+      expect(sanitizeFeatureFlags(undefined)).toStrictEqual({})
+    })
+    it('returns empty object if server returns null result', () => {
+      expect(sanitizeFeatureFlags(null)).toStrictEqual({})
+    })
   })
 })
