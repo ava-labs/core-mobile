@@ -162,16 +162,27 @@ function ZeroStateNoTransactions() {
   return <ZeroStateBase title={title} message={message} />
 }
 
-function ZeroStateNoWatchlistFavorites() {
+function ZeroStateNoWatchlistFavorites({
+  exploreAllTokens
+}: {
+  exploreAllTokens?: () => void
+}) {
   const title = 'No Favorites'
   const message = 'Click the star icon on any token to mark it as a favorite.'
 
   return (
-    <ZeroStateBase
-      title={title}
-      message={message}
-      image={<StarSVG size={60} />}
-    />
+    <View>
+      <ZeroStateBase
+        title={title}
+        message={message}
+        image={<StarSVG size={60} />}
+        button={
+          <AvaButton.SecondaryLarge onPress={exploreAllTokens}>
+            Explore all tokens
+          </AvaButton.SecondaryLarge>
+        }
+      />
+    </View>
   )
 }
 

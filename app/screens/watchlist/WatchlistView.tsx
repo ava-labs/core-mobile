@@ -21,7 +21,6 @@ import watchlistService from 'services/watchlist/WatchlistService'
 import { useDispatch } from 'react-redux'
 import { WatchListLoader } from 'screens/watchlist/components/WatchListLoader'
 import isEmpty from 'lodash.isempty'
-import AvaButton from 'components/AvaButton'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { ChartData } from 'services/token/types'
 import { WatchlistFilter } from './types'
@@ -192,14 +191,8 @@ const WatchlistView: React.FC<Props> = ({
               filterBy={filterBy}
               isShowingFavorites={showFavorites}
               isSearching={isSearching}
+              onExploreAllTokens={() => onTabIndexChanged?.(1)}
             />
-            {showFavorites && sortedTokens.length === 0 && (
-              <AvaButton.SecondaryLarge
-                onPress={() => onTabIndexChanged?.(1)}
-                style={{ marginBottom: 128, marginHorizontal: 16 }}>
-                Explore all tokens
-              </AvaButton.SecondaryLarge>
-            )}
           </>
         )}
       </>

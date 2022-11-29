@@ -41,6 +41,7 @@ interface Props {
   filterBy: WatchlistFilter
   isShowingFavorites?: boolean
   isSearching?: boolean
+  onExploreAllTokens?: () => void
 }
 
 type NavigationProp = TabsScreenProps<
@@ -53,7 +54,8 @@ const WatchList: React.FC<Props> = ({
   charts,
   filterBy,
   isShowingFavorites,
-  isSearching
+  isSearching,
+  onExploreAllTokens
 }) => {
   const navigation = useNavigation<NavigationProp>()
   const { currencyFormatter } = useApplicationContext().appHook
@@ -89,7 +91,9 @@ const WatchList: React.FC<Props> = ({
       ItemSeparatorComponent={SeparatorComponent}
       ListEmptyComponent={
         isShowingFavorites && !isSearching ? (
-          <ZeroState.NoWatchlistFavorites />
+          <ZeroState.NoWatchlistFavorites
+            exploreAllTokens={onExploreAllTokens}
+          />
         ) : (
           <ZeroState.NoResultsTextual
             message={
