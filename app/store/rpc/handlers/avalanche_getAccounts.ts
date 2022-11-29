@@ -4,7 +4,7 @@ import { AppListenerEffectAPI } from 'store'
 import { selectAccounts, selectActiveAccount } from 'store/account'
 import { sendRpcResult } from '../slice'
 import { DappRpcRequest, RpcRequestHandler } from './types'
-import { mapAccountToCoreWebAccount } from './utils'
+import { mapAccountToCoreWebAccount } from './utils/account'
 
 export type AvalancheGetAccountsRpcRequest = DappRpcRequest<
   RpcMethod.AVALANCHE_GET_ACCOUNTS,

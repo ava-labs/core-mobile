@@ -12,7 +12,7 @@ import {
   removeRequest
 } from '../slice'
 import { DappRpcRequest, RpcRequestHandler } from './types'
-import { mapContactToSharedContact } from './utils'
+import { mapContactToSharedContact } from './utils/contact'
 
 export interface AvalancheRemoveContactRequest
   extends DappRpcRequest<

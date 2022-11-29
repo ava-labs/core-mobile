@@ -5,7 +5,7 @@ import { selectContacts } from 'store/addressBook'
 import { Contact as SharedContact } from '@avalabs/types'
 import { sendRpcResult } from '../slice'
 import { DappRpcRequest, RpcRequestHandler } from './types'
-import { mapContactToSharedContact } from './utils'
+import { mapContactToSharedContact } from './utils/contact'
 
 export type AvalancheGetContactsRpcRequest = DappRpcRequest<
   RpcMethod.AVALANCHE_GET_CONTACTS,

@@ -11,7 +11,7 @@ import {
   removeRequest
 } from '../slice'
 import { DappRpcRequest, RpcRequestHandler } from './types'
-import { parseContact } from './utils'
+import { parseContact } from './utils/contact'
 
 export interface AvalancheUpdateContactRequest
   extends DappRpcRequest<
