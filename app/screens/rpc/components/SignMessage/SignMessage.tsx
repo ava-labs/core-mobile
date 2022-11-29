@@ -21,8 +21,8 @@ import { EthSignRpcRequest } from 'store/rpc/handlers/eth_sign'
 interface Props {
   dappEvent: EthSignRpcRequest
   onReject: (request: EthSignRpcRequest, message?: string) => void
-  onApprove: (request: EthSignRpcRequest, result?: unknown) => void
-  onClose: () => void
+  onApprove: (request: EthSignRpcRequest) => void
+  onClose: (request: EthSignRpcRequest) => void
 }
 
 const SignMessage: FC<Props> = ({
@@ -46,7 +46,7 @@ const SignMessage: FC<Props> = ({
         ),
         duration: 'short'
       })
-      onClose()
+      onClose(dappEvent)
     }
   }, [dappEvent, onClose])
 
@@ -114,7 +114,7 @@ const SignMessage: FC<Props> = ({
         <AvaButton.SecondaryMedium
           onPress={() => {
             onReject(dappEvent)
-            onClose()
+            onClose(dappEvent)
           }}>
           Reject
         </AvaButton.SecondaryMedium>

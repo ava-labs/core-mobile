@@ -9,7 +9,7 @@ import AvaxSheetHandle from 'components/AvaxSheetHandle'
 import TabViewBackground from 'components/TabViewBackground'
 import { RpcMethod } from 'services/walletconnect/types'
 import { useDispatch, useSelector } from 'react-redux'
-import { removeRequest, selectRpcRequests } from 'store/rpc'
+import { DappRpcRequests, removeRequest, selectRpcRequests } from 'store/rpc'
 import { EthSendTransactionRpcRequest } from 'store/rpc/handlers/eth_sendTransaction'
 import { EthSignRpcRequest } from 'store/rpc/handlers/eth_sign'
 import { SessionRequestRpcRequest } from 'store/rpc/handlers/session_request'
@@ -18,6 +18,7 @@ import { WalletSwitchEthereumChainRpcRequest } from 'store/rpc/handlers/wallet_s
 import { WalletAddEthereumChainRpcRequest } from 'store/rpc/handlers/wallet_addEthereumChain'
 import { AvalancheCreateContactRequest } from 'store/rpc/handlers/avalanche_createContact'
 import { AvalancheRemoveContactRequest } from 'store/rpc/handlers/avalanche_removeContact'
+import { AvalancheBridgeAssetRequest } from 'store/rpc/handlers/avalanche_bridgeAsset'
 import UpdateContact from './components/UpdateContact'
 import SwitchEthereumChain from './components/SwitchEthereumChain'
 import AddEthereumChain from './components/AddEthereumChain'
@@ -39,12 +40,15 @@ const RpcMethodsUI = () => {
     }
   }, [goBack, rpcRequests])
 
-  const onClose = useCallback(() => {
-    if (oldestRpcRequest) {
-      dispatch(removeRequest(oldestRpcRequest.payload.id))
-    }
-    goBack()
-  }, [dispatch, goBack, oldestRpcRequest])
+  const onClose = useCallback(
+    (request: DappRpcRequests) => {
+      if (request) {
+        dispatch(removeRequest(request.payload.id))
+      }
+      goBack()
+    },
+    [dispatch, goBack]
+  )
 
   const renderContent = () => {
     if (!oldestRpcRequest) return null
@@ -131,10 +135,10 @@ const RpcMethodsUI = () => {
       case RpcMethod.AVALANCHE_BRIDGE_ASSET:
         return (
           <ApproveAction
-            onRejected={onCallRejected}
-            onApprove={onMessageCallApproved}
-            dappEvent={dappEvent}
-            onClose={goBack}
+            dappEvent={oldestRpcRequest as AvalancheBridgeAssetRequest}
+            onApprove={onUserApproved}
+            onReject={onUserRejected}
+            onClose={onClose}
           />
         )
       default:
@@ -152,7 +156,10 @@ const RpcMethodsUI = () => {
       backgroundComponent={TabViewBackground}
       enableContentPanningGesture={false}
       onClose={() => {
-        onClose()
+        if (oldestRpcRequest) {
+          onUserRejected(oldestRpcRequest)
+          onClose(oldestRpcRequest)
+        }
       }}>
       {renderContent()}
     </BottomSheet>

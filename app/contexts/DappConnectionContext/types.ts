@@ -7,7 +7,7 @@ export interface DappConnectionState {
   setPendingDeepLink: Dispatch<DeepLink>
   onUserApproved: (
     request: DappRpcRequest<string, unknown>,
-    result?: unknown
+    data?: unknown // any extra data that you want to send to the store
   ) => void
   onUserRejected: (
     request: DappRpcRequest<string, unknown>,

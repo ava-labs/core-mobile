@@ -8,8 +8,10 @@ import { ethSignHandler } from './eth_sign'
 import { sessionRequestHandler } from './session_request'
 import { walletAddEthereumChainHandler } from './wallet_addEthereumChain'
 import { walletSwitchEthereumChainHandler } from './wallet_switchEthereumChain'
+import { avalancheBridgeAssetHandler } from './avalanche_bridgeAsset'
 
 const handlerMap = [
+  avalancheBridgeAssetHandler,
   avalancheCreateContactHandler,
   avalancheRemoveContactHandler,
   avalancheUpdateContactHandler,

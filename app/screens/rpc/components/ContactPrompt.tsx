@@ -10,8 +10,6 @@ import { NativeViewGestureHandler } from 'react-native-gesture-handler'
 import FlexSpacer from 'components/FlexSpacer'
 import AddressBookSVG from 'components/svg/AddressBookSVG'
 import AddressBookItem from 'components/addressBook/AddressBookItem'
-
-import { Contact as SharedContact } from '@avalabs/types'
 import { capitalizeFirstLetter } from 'utils/string/capitalize'
 import { AvalancheCreateContactRequest } from 'store/rpc/handlers/avalanche_createContact'
 import { AvalancheRemoveContactRequest } from 'store/rpc/handlers/avalanche_removeContact'
@@ -20,9 +18,9 @@ type Request = AvalancheCreateContactRequest | AvalancheRemoveContactRequest
 
 interface Props {
   dappEvent: Request
-  onApprove: (request: Request, result?: SharedContact) => void
+  onApprove: (request: Request) => void
   onReject: (request: Request, message?: string) => void
-  onClose: () => void
+  onClose: (request: Request) => void
   action: 'create' | 'remove'
 }
 
@@ -76,15 +74,14 @@ const ContactPrompt: FC<Props> = ({
         {renderContact()}
         <FlexSpacer />
         <View style={styles.actionContainer}>
-          <AvaButton.PrimaryMedium
-            onPress={() => onApprove(dappEvent, contact)}>
+          <AvaButton.PrimaryMedium onPress={() => onApprove(dappEvent)}>
             Approve
           </AvaButton.PrimaryMedium>
           <Space y={21} />
           <AvaButton.SecondaryMedium
             onPress={() => {
               onReject(dappEvent)
-              onClose()
+              onClose(dappEvent)
             }}>
             Reject
           </AvaButton.SecondaryMedium>

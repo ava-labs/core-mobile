@@ -109,7 +109,6 @@ export const DappConnectionContextProvider = ({
           result
         })
       )
-      // approveCall(dappEvent.payload.id, result)
       // displayUserInstruction('Go back to the browser')
     },
     [dispatch]

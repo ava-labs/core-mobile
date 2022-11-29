@@ -1,3 +1,4 @@
+import { AvalancheBridgeAssetRequest } from './handlers/avalanche_bridgeAsset'
 import { AvalancheCreateContactRequest } from './handlers/avalanche_createContact'
 import { AvalancheGetAccountsRpcRequest } from './handlers/avalanche_getAccounts'
 import { AvalancheGetContactsRpcRequest } from './handlers/avalanche_getContacts'
@@ -20,6 +21,7 @@ export type DappRpcRequests =
   | WalletSwitchEthereumChainRpcRequest
   | AvalancheCreateContactRequest
   | AvalancheRemoveContactRequest
+  | AvalancheBridgeAssetRequest
 
 export type RpcState = {
   requests: DappRpcRequests[]

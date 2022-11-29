@@ -21,11 +21,8 @@ import { AvalancheUpdateContactRequest } from 'store/rpc/handlers/avalanche_upda
 interface Props {
   dappEvent: AvalancheUpdateContactRequest
   onReject: (request: AvalancheUpdateContactRequest, message?: string) => void
-  onApprove: (
-    request: AvalancheUpdateContactRequest,
-    result?: SharedContact
-  ) => void
-  onClose: () => void
+  onApprove: (request: AvalancheUpdateContactRequest) => void
+  onClose: (request: AvalancheUpdateContactRequest) => void
 }
 
 const UpdateContact: FC<Props> = ({
@@ -50,7 +47,7 @@ const UpdateContact: FC<Props> = ({
       duration: 'short'
     })
     onReject(dappEvent)
-    onClose()
+    onClose(dappEvent)
   }
 
   const renderContacts = (contactToUpdate: Contact, update: SharedContact) => {
@@ -97,15 +94,14 @@ const UpdateContact: FC<Props> = ({
             {renderContacts(existingContact, contact)}
             <FlexSpacer />
             <View style={styles.actionContainer}>
-              <AvaButton.PrimaryMedium
-                onPress={() => onApprove(dappEvent, contact)}>
+              <AvaButton.PrimaryMedium onPress={() => onApprove(dappEvent)}>
                 Approve
               </AvaButton.PrimaryMedium>
               <Space y={21} />
               <AvaButton.SecondaryMedium
                 onPress={() => {
                   onReject(dappEvent)
-                  onClose()
+                  onClose(dappEvent)
                 }}>
                 Reject
               </AvaButton.SecondaryMedium>
