@@ -1,6 +1,6 @@
 import AvaText from 'components/AvaText'
 import React, { FC } from 'react'
-import { StyleSheet, View } from 'react-native'
+import { ActivityIndicator, StyleSheet, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import OvalTagBg from 'components/OvalTagBg'
@@ -16,6 +16,7 @@ interface Props {
   description: string
   renderIcon: () => React.ReactNode
   renderContent: () => React.ReactNode
+  isApproving?: boolean
 }
 
 const SimplePrompt: FC<Props> = ({
@@ -24,7 +25,8 @@ const SimplePrompt: FC<Props> = ({
   header,
   description,
   renderIcon,
-  renderContent
+  renderContent,
+  isApproving
 }) => {
   const theme = useApplicationContext().theme
 
@@ -51,8 +53,8 @@ const SimplePrompt: FC<Props> = ({
         {renderContent()}
         <FlexSpacer />
         <View style={styles.actionContainer}>
-          <AvaButton.PrimaryMedium onPress={onApprove}>
-            Approve
+          <AvaButton.PrimaryMedium disabled={isApproving} onPress={onApprove}>
+            {isApproving && <ActivityIndicator />} Approve
           </AvaButton.PrimaryMedium>
           <Space y={21} />
           <AvaButton.SecondaryMedium onPress={onReject}>

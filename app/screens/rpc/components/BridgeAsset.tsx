@@ -1,4 +1,4 @@
-import React, { FC, useContext } from 'react'
+import React, { FC, useContext, useEffect, useState } from 'react'
 import { View } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
 import { ApplicationContext } from 'contexts/ApplicationContext'
@@ -7,6 +7,10 @@ import { Space } from 'components/Space'
 import { humanize } from 'utils/string/humanize'
 import { AvalancheBridgeAssetRequest } from 'store/rpc/handlers/avalanche_bridgeAsset'
 import Avatar from 'components/Avatar'
+import { showSnackBarCustom } from 'components/Snackbar'
+import TransactionToast, {
+  TransactionToastType
+} from 'components/toast/TransactionToast'
 import SimplePrompt from './SimplePrompt'
 
 interface Props {
@@ -22,6 +26,7 @@ const BridgeAsset: FC<Props> = ({
   onReject,
   onClose
 }) => {
+  const [submitting, setSubmitting] = useState(false)
   const theme = useContext(ApplicationContext).theme
   const {
     payload: { peerMeta },
@@ -35,6 +40,29 @@ const BridgeAsset: FC<Props> = ({
   const description =
     new URL(peerMeta?.url ?? '').hostname +
     ' wants to perform the following action'
+
+  useEffect(() => {
+    if (dappEvent.error || dappEvent.result) {
+      setSubmitting(false)
+    }
+    if (dappEvent.error) {
+      showSnackBarCustom({
+        component: (
+          <TransactionToast
+            type={TransactionToastType.ERROR}
+            message={'Failed to approve transaction'}
+          />
+        ),
+        duration: 'short'
+      })
+      onClose(dappEvent)
+    }
+  }, [dappEvent, onClose])
+
+  const onHandleApprove = () => {
+    setSubmitting(true)
+    onApprove(dappEvent)
+  }
 
   const renderIcon = () => (
     <Avatar.Custom
@@ -72,7 +100,7 @@ const BridgeAsset: FC<Props> = ({
 
   return (
     <SimplePrompt
-      onApprove={() => onApprove(dappEvent)}
+      onApprove={onHandleApprove}
       onReject={() => {
         onReject(dappEvent)
         onClose(dappEvent)
@@ -81,6 +109,7 @@ const BridgeAsset: FC<Props> = ({
       description={description}
       renderIcon={renderIcon}
       renderContent={renderContent}
+      isApproving={submitting}
     />
   )
 }
