@@ -20,11 +20,13 @@ import { AvalancheCreateContactRequest } from 'store/rpc/handlers/avalanche_crea
 import { AvalancheRemoveContactRequest } from 'store/rpc/handlers/avalanche_removeContact'
 import { AvalancheBridgeAssetRequest } from 'store/rpc/handlers/avalanche_bridgeAsset'
 import { useBridgeConfig } from '@avalabs/bridge-sdk'
+import { AvalancheSelectAccountRequest } from 'store/rpc/handlers/avalanche_selectAccount'
 import UpdateContact from './components/UpdateContact'
 import SwitchEthereumChain from './components/SwitchEthereumChain'
 import AddEthereumChain from './components/AddEthereumChain'
 import ContactPrompt from './components/ContactPrompt'
 import ApproveAction from './components/ApproveAction/ApproveAction'
+import SelectAccount from './components/SelectAccount'
 
 const snapPoints = ['90%']
 
@@ -146,6 +148,15 @@ const RpcMethodsUI = () => {
           <ApproveAction
             dappEvent={oldestRpcRequest as AvalancheBridgeAssetRequest}
             onApprove={onUserApprovedBridgeAsset}
+            onReject={onUserRejected}
+            onClose={onClose}
+          />
+        )
+      case RpcMethod.AVALANCHE_SELECT_ACCOUNT:
+        return (
+          <SelectAccount
+            dappEvent={oldestRpcRequest as AvalancheSelectAccountRequest}
+            onApprove={onUserApproved}
             onReject={onUserRejected}
             onClose={onClose}
           />

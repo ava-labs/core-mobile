@@ -1,18 +1,10 @@
-import AvaText from 'components/AvaText'
 import React, { FC } from 'react'
-import { StyleSheet, View } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
-import { useApplicationContext } from 'contexts/ApplicationContext'
-import OvalTagBg from 'components/OvalTagBg'
-import { Space } from 'components/Space'
-import AvaButton from 'components/AvaButton'
-import { NativeViewGestureHandler } from 'react-native-gesture-handler'
-import FlexSpacer from 'components/FlexSpacer'
 import AddressBookSVG from 'components/svg/AddressBookSVG'
 import AddressBookItem from 'components/addressBook/AddressBookItem'
 import { capitalizeFirstLetter } from 'utils/string/capitalize'
 import { AvalancheCreateContactRequest } from 'store/rpc/handlers/avalanche_createContact'
 import { AvalancheRemoveContactRequest } from 'store/rpc/handlers/avalanche_removeContact'
+import SimplePrompt from './SimplePrompt'
 
 type Request = AvalancheCreateContactRequest | AvalancheRemoveContactRequest
 
@@ -31,11 +23,19 @@ const ContactPrompt: FC<Props> = ({
   onClose,
   action
 }) => {
-  const theme = useApplicationContext().theme
   const {
     contact,
     payload: { peerMeta }
   } = dappEvent
+
+  const header = `${capitalizeFirstLetter(action)} Contact?`
+
+  const description = `${
+    new URL(peerMeta?.url ?? '').hostname
+  } is requesting to ${action} a
+  contact:`
+
+  const renderWalletIcon = () => <AddressBookSVG size={48} />
 
   const renderContact = () => {
     return (
@@ -48,67 +48,18 @@ const ContactPrompt: FC<Props> = ({
   }
 
   return (
-    <NativeViewGestureHandler>
-      <SafeAreaView style={styles.safeView}>
-        <AvaText.LargeTitleBold>
-          {capitalizeFirstLetter(action)} Contact?
-        </AvaText.LargeTitleBold>
-        <Space y={35} />
-        <View style={styles.subTitleView}>
-          <OvalTagBg
-            style={{
-              height: 80,
-              width: 80,
-              backgroundColor: theme.colorBg3
-            }}>
-            <AddressBookSVG size={48} />
-          </OvalTagBg>
-          <Space y={15} />
-          <AvaText.Body1 textStyle={styles.subTileText}>
-            {new URL(peerMeta?.url ?? '').hostname} is requesting to {action} a
-            contact:
-          </AvaText.Body1>
-          <Space y={16} />
-        </View>
-        <Space y={30} />
-        {renderContact()}
-        <FlexSpacer />
-        <View style={styles.actionContainer}>
-          <AvaButton.PrimaryMedium onPress={() => onApprove(dappEvent)}>
-            Approve
-          </AvaButton.PrimaryMedium>
-          <Space y={21} />
-          <AvaButton.SecondaryMedium
-            onPress={() => {
-              onReject(dappEvent)
-              onClose(dappEvent)
-            }}>
-            Reject
-          </AvaButton.SecondaryMedium>
-        </View>
-      </SafeAreaView>
-    </NativeViewGestureHandler>
+    <SimplePrompt
+      onApprove={() => onApprove(dappEvent)}
+      onReject={() => {
+        onReject(dappEvent)
+        onClose(dappEvent)
+      }}
+      header={header}
+      description={description}
+      renderIcon={renderWalletIcon}
+      renderContent={renderContact}
+    />
   )
 }
-
-const styles = StyleSheet.create({
-  safeView: {
-    paddingTop: 32,
-    flex: 1,
-    paddingHorizontal: 16
-  },
-  subTitleView: {
-    justifyContent: 'center',
-    alignItems: 'center'
-  },
-  subTileText: {
-    textAlign: 'center'
-  },
-  actionContainer: {
-    flex: 0,
-    paddingVertical: 16,
-    paddingHorizontal: 24
-  }
-})
 
 export default ContactPrompt
