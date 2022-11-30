@@ -50,13 +50,14 @@ class AvalancheSelectAccountHandler
     const activeAccount = selectActiveAccount(getState())
     const accounts = selectAccounts(getState())
 
-    if (activeAccount && activeAccount.index === accountIndex) {
+    const accountAlreadyActive =
+      activeAccount && activeAccount.index === accountIndex
+
+    if (accountAlreadyActive) {
       dispatch(
-        sendRpcError({
+        sendRpcResult({
           request: action,
-          error: ethErrors.rpc.invalidRequest({
-            message: 'requested account is already active'
-          })
+          result: null
         })
       )
       return
@@ -68,7 +69,7 @@ class AvalancheSelectAccountHandler
       dispatch(
         sendRpcError({
           request: action,
-          error: ethErrors.rpc.invalidRequest({
+          error: ethErrors.rpc.resourceNotFound({
             message: 'requested account does not exist'
           })
         })

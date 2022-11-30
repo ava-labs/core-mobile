@@ -55,7 +55,7 @@ class AvalancheRemoveContactHandler
       dispatch(
         sendRpcError({
           request: action,
-          error: ethErrors.rpc.invalidParams({
+          error: ethErrors.rpc.resourceNotFound({
             message: 'Contact does not exist'
           })
         })
