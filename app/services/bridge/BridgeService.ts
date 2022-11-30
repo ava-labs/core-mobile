@@ -29,6 +29,7 @@ type TransferAssetParams = {
   activeNetwork: Network
 }
 
+// TODO: CP-4150 refactor the remaining bridge logic into this service and redux
 export class BridgeService {
   async transferAsset({
     currentBlockchain,
