@@ -11,12 +11,13 @@ import PersonalSign from 'screens/rpc/components/SignMessage/PersonalSign'
 import SignDataV4 from 'screens/rpc/components/SignMessage/SignDataV4'
 import { ScrollView } from 'react-native-gesture-handler'
 import FlexSpacer from 'components/FlexSpacer'
-import { GenericAction, RpcMethod } from 'services/walletconnect/types'
+import { RpcMethod } from 'services/walletconnect/types'
 import { showSnackBarCustom } from 'components/Snackbar'
 import TransactionToast, {
   TransactionToastType
 } from 'components/toast/TransactionToast'
 import { EthSignRpcRequest } from 'store/rpc/handlers/eth_sign'
+import { MessageAction } from './types'
 
 interface Props {
   dappEvent: EthSignRpcRequest
@@ -50,7 +51,7 @@ const SignMessage: FC<Props> = ({
     }
   }, [dappEvent, onClose])
 
-  const action: GenericAction = {
+  const action: MessageAction = {
     id: dappEvent.payload?.id,
     site: dappEvent.payload?.peerMeta,
     method: dappEvent.payload?.method,

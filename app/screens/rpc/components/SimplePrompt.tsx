@@ -48,7 +48,6 @@ const SimplePrompt: FC<Props> = ({
           </AvaText.Body1>
           <Space y={16} />
         </View>
-        <Space y={30} />
         {renderContent()}
         <FlexSpacer />
         <View style={styles.actionContainer}>

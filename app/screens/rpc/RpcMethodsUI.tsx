@@ -25,8 +25,8 @@ import UpdateContact from './components/UpdateContact'
 import SwitchEthereumChain from './components/SwitchEthereumChain'
 import AddEthereumChain from './components/AddEthereumChain'
 import ContactPrompt from './components/ContactPrompt'
-import ApproveAction from './components/ApproveAction/ApproveAction'
 import SelectAccount from './components/SelectAccount'
+import BridgeAsset from './components/BridgeAsset'
 
 const snapPoints = ['90%']
 
@@ -145,7 +145,7 @@ const RpcMethodsUI = () => {
         )
       case RpcMethod.AVALANCHE_BRIDGE_ASSET:
         return (
-          <ApproveAction
+          <BridgeAsset
             dappEvent={oldestRpcRequest as AvalancheBridgeAssetRequest}
             onApprove={onUserApprovedBridgeAsset}
             onReject={onUserRejected}

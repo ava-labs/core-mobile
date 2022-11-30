@@ -47,14 +47,6 @@ export const ACTIONS = {
   WC: 'wc'
 }
 
-export interface GenericAction {
-  id?: string | number
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  displayData: any
-  method: string
-  site: PeerMeta
-}
-
 export enum RpcMethod {
   SESSION_REQUEST = 'session_request',
   ETH_SEND_TRANSACTION = 'eth_sendTransaction',
