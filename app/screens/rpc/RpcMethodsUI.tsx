@@ -14,7 +14,11 @@ import { EthSendTransactionRpcRequest } from 'store/rpc/handlers/eth_sendTransac
 import { EthSignRpcRequest } from 'store/rpc/handlers/eth_sign'
 import { SessionRequestRpcRequest } from 'store/rpc/handlers/session_request'
 import { AvalancheUpdateContactRequest } from 'store/rpc/handlers/avalanche_updateContact'
+import { WalletSwitchEthereumChainRpcRequest } from 'store/rpc/handlers/wallet_switchEthereumChain'
+import { WalletAddEthereumChainRpcRequest } from 'store/rpc/handlers/wallet_addEthereumChain'
 import UpdateContact from './components/UpdateContact'
+import SwitchEthereumChain from './components/SwitchEthereumChain'
+import AddEthereumChain from './components/AddEthereumChain'
 
 const snapPoints = ['90%']
 
@@ -80,6 +84,24 @@ const RpcMethodsUI = () => {
             onReject={onUserRejected}
             onApprove={onUserApproved}
             dappEvent={oldestRpcRequest as AvalancheUpdateContactRequest}
+            onClose={onClose}
+          />
+        )
+      case RpcMethod.WALLET_SWITCH_ETHEREUM_CHAIN:
+        return (
+          <SwitchEthereumChain
+            onReject={onUserRejected}
+            onApprove={onUserApproved}
+            dappEvent={oldestRpcRequest as WalletSwitchEthereumChainRpcRequest}
+            onClose={onClose}
+          />
+        )
+      case RpcMethod.WALLET_ADD_ETHEREUM_CHAIN:
+        return (
+          <AddEthereumChain
+            onReject={onUserRejected}
+            onApprove={onUserApproved}
+            dappEvent={oldestRpcRequest as WalletAddEthereumChainRpcRequest}
             onClose={onClose}
           />
         )
