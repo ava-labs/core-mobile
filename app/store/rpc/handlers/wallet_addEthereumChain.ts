@@ -177,7 +177,10 @@ class WalletAddEthereumChainHandler
     const { dispatch } = listenerApi
     const request = action.payload.request
 
-    dispatch(addCustomNetwork(request.network))
+    if (!action.payload.request.isExisting) {
+      dispatch(addCustomNetwork(request.network))
+    }
+
     dispatch(setActive(request.network.chainId))
     dispatch(removeRequest(request.payload.id))
     dispatch(sendRpcResult({ request }))

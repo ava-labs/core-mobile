@@ -33,51 +33,49 @@ const SwitchEthereumChain: FC<Props> = ({
   const peerMeta = dappEvent.payload.peerMeta
 
   return (
-    <>
-      <NativeViewGestureHandler>
-        <SafeAreaView style={styles.safeView}>
-          <AvaText.LargeTitleBold>
-            Switch to {network.chainName} Network?
-          </AvaText.LargeTitleBold>
-          <Space y={35} />
-          <View style={styles.subTitleView}>
-            <OvalTagBg
-              style={{
-                height: 80,
-                width: 80,
-                backgroundColor: theme.colorBg3
-              }}>
-              <Avatar.Custom
-                name={peerMeta?.name ?? ''}
-                size={48}
-                logoUri={peerMeta?.icons[0]}
-              />
-            </OvalTagBg>
-            <Space y={15} />
-            <AvaText.Body1 textStyle={styles.subTitleText}>
-              {new URL(peerMeta?.url ?? '').hostname} is requesting to switch
-              your active network to {network.chainName}
-            </AvaText.Body1>
-            <Space y={16} />
-          </View>
-          <Space y={30} />
-          <FlexSpacer />
-          <View style={styles.actionContainer}>
-            <AvaButton.PrimaryMedium onPress={() => onApprove(dappEvent)}>
-              Approve
-            </AvaButton.PrimaryMedium>
-            <Space y={21} />
-            <AvaButton.SecondaryMedium
-              onPress={() => {
-                onReject(dappEvent)
-                onClose()
-              }}>
-              Reject
-            </AvaButton.SecondaryMedium>
-          </View>
-        </SafeAreaView>
-      </NativeViewGestureHandler>
-    </>
+    <NativeViewGestureHandler>
+      <SafeAreaView style={styles.safeView}>
+        <AvaText.LargeTitleBold>
+          Switch to {network.chainName} Network?
+        </AvaText.LargeTitleBold>
+        <Space y={35} />
+        <View style={styles.subTitleView}>
+          <OvalTagBg
+            style={{
+              height: 80,
+              width: 80,
+              backgroundColor: theme.colorBg3
+            }}>
+            <Avatar.Custom
+              name={peerMeta?.name ?? ''}
+              size={48}
+              logoUri={peerMeta?.icons[0]}
+            />
+          </OvalTagBg>
+          <Space y={15} />
+          <AvaText.Body1 textStyle={styles.subTitleText}>
+            {new URL(peerMeta?.url ?? '').hostname} is requesting to switch your
+            active network to {network.chainName}
+          </AvaText.Body1>
+          <Space y={16} />
+        </View>
+        <Space y={30} />
+        <FlexSpacer />
+        <View style={styles.actionContainer}>
+          <AvaButton.PrimaryMedium onPress={() => onApprove(dappEvent)}>
+            Approve
+          </AvaButton.PrimaryMedium>
+          <Space y={21} />
+          <AvaButton.SecondaryMedium
+            onPress={() => {
+              onReject(dappEvent)
+              onClose()
+            }}>
+            Reject
+          </AvaButton.SecondaryMedium>
+        </View>
+      </SafeAreaView>
+    </NativeViewGestureHandler>
   )
 }
 
