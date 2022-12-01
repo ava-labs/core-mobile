@@ -14,7 +14,7 @@ beforeAll(async () => {
 })
 
 afterAll(async () => {
-  const testCase: string | undefined = testNames[0]?.split(',')[0]
+  const testCase: string | undefined = testNames
   const testResult = testResults[0]
   const testPathArray = testPaths.split('/')
   const sectionName = testPathArray[6]

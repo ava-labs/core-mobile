@@ -12,6 +12,7 @@ import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 
 type BaseAvaTextProps = {
+  testID?: string
   color?: string
   ellipsizeMode?: 'head' | 'middle' | 'tail' | 'clip' | undefined
   currency?: boolean
@@ -184,8 +185,7 @@ const TextBody1: FC<AvaTextProps> = ({
   return (
     <AvaxTextBase
       {...rest}
-      style={[styles.body1, { color: color ?? theme.colorText1 }, textStyle]}
-      testID="ava_text__base">
+      style={[styles.body1, { color: color ?? theme.colorText1 }, textStyle]}>
       {children}
     </AvaxTextBase>
   )

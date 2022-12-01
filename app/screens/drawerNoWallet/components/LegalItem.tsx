@@ -13,6 +13,7 @@ const LegalItem = () => {
   return (
     <>
       <AvaListItem.Base
+        testID="legal_item__settings_button"
         title={'Legal'}
         showNavigationArrow
         onPress={() => {

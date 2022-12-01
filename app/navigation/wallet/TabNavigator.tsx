@@ -69,6 +69,7 @@ const TabNavigator = () => {
    */
   return (
     <Tab.Navigator
+      testID="tab_navigator"
       screenOptions={{
         ...getCommonBottomTabOptions(theme),
         header: () => <TopNavigationHeader />
@@ -96,6 +97,7 @@ const TabNavigator = () => {
         })}
       />
       <Tab.Screen
+        testID="tab_navigator__activity"
         name={AppNavigation.Tabs.Activity}
         component={Activities}
         options={{

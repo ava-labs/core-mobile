@@ -9,6 +9,7 @@ import { Opacity10 } from 'resources/Constants'
 type Props = {
   wordIndex: number
   wordOptions: string[]
+  testID?: string
   setSelectedWord: Dispatch<string>
 }
 
@@ -38,18 +39,21 @@ export default function WordSelection({
       <Space y={16} />
       <View style={styles.horizontalLayout}>
         <Word
+          testID="word_selection__word_one"
           selected={selectedWordIndex === 0}
           word={word0}
           onSelected={word => onSelection(word, 0)}
         />
         <Space x={16} />
         <Word
+          testID="word_selection__word_two"
           selected={selectedWordIndex === 1}
           word={word1}
           onSelected={word => onSelection(word, 1)}
         />
         <Space x={16} />
         <Word
+          testID="word_selection__word_three"
           selected={selectedWordIndex === 2}
           word={word2}
           onSelected={word => onSelection(word, 2)}
@@ -67,6 +71,7 @@ function Word({
   word: string
   onSelected: (word: string) => void
   selected: boolean
+  testID?: string
 }) {
   const { theme, isDarkMode } = useApplicationContext()
   //until designers fix the design system we'll bear with this

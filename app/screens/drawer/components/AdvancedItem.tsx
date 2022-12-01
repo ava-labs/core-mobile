@@ -15,6 +15,7 @@ export default function AdvancedItem() {
   return (
     <>
       <AvaListItem.Base
+        testID="advanced_item__settings_button"
         title={'Advanced'}
         leftComponent={null}
         rightComponent={<CarrotSVG />}
