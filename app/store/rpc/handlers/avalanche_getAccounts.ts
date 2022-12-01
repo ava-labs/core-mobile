@@ -1,9 +1,10 @@
 import { PayloadAction } from '@reduxjs/toolkit'
 import { RpcMethod } from 'services/walletconnect/types'
 import { AppListenerEffectAPI } from 'store'
-import { Account, selectAccounts, selectActiveAccount } from 'store/account'
+import { selectAccounts, selectActiveAccount } from 'store/account'
 import { sendRpcResult } from '../slice'
 import { DappRpcRequest, RpcRequestHandler } from './types'
+import { mapAccountToCoreWebAccount } from './utils/account'
 
 export type AvalancheGetAccountsRpcRequest = DappRpcRequest<
   RpcMethod.AVALANCHE_GET_ACCOUNTS,
@@ -25,13 +26,9 @@ class AvalancheGetAccountsHandler
     listenerApi.dispatch(
       sendRpcResult({
         request: { payload: action.payload },
-        result: Object.values(accounts).map((account: Account) => ({
-          index: account.index,
-          name: account.title,
-          addressC: account.address,
-          addressBTC: account.addressBtc,
-          active: account.index === activeAccount?.index
-        }))
+        result: Object.values(accounts).map(account =>
+          mapAccountToCoreWebAccount(account, activeAccount?.index ?? 0)
+        )
       })
     )
   }

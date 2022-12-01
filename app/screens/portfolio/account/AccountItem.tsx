@@ -21,7 +21,7 @@ import { ActivityIndicator } from 'components/ActivityIndicator'
 
 type Props = {
   account: Account
-  onSelectAccount: (accountIndex: number) => void
+  onSelectAccount?: (accountIndex: number) => void
   editable?: boolean
   selected?: boolean
   blurred?: boolean
@@ -94,7 +94,7 @@ function AccountItem({
   return (
     <>
       <AvaButton.Base
-        onPress={() => onSelectAccount(account.index)}
+        onPress={() => onSelectAccount?.(account.index)}
         style={[
           {
             backgroundColor: bgColor,

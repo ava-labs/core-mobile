@@ -21,8 +21,8 @@ import { SessionRequestRpcRequest } from 'store/rpc/handlers/session_request'
 interface Props {
   dappEvent: SessionRequestRpcRequest
   onReject: (request: SessionRequestRpcRequest, message?: string) => void
-  onApprove: (request: SessionRequestRpcRequest, result?: unknown) => void
-  onClose: () => void
+  onApprove: (request: SessionRequestRpcRequest) => void
+  onClose: (request: SessionRequestRpcRequest) => void
 }
 
 const AccountApproval: FC<Props> = ({
@@ -117,7 +117,7 @@ const AccountApproval: FC<Props> = ({
           <AvaButton.SecondaryMedium
             onPress={() => {
               onReject(dappEvent)
-              onClose()
+              onClose(dappEvent)
             }}>
             Reject
           </AvaButton.SecondaryMedium>
