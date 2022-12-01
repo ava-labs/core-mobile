@@ -15,7 +15,7 @@ interface Props {
   header: string
   description: string
   renderIcon: () => React.ReactNode
-  renderContent: () => React.ReactNode
+  renderContent?: () => React.ReactNode
   isApproving?: boolean
 }
 
@@ -50,7 +50,7 @@ const SimplePrompt: FC<Props> = ({
           </AvaText.Body1>
           <Space y={16} />
         </View>
-        {renderContent()}
+        {renderContent?.()}
         <FlexSpacer />
         <View style={styles.actionContainer}>
           <AvaButton.PrimaryMedium disabled={isApproving} onPress={onApprove}>

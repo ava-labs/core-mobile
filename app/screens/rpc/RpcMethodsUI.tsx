@@ -122,7 +122,8 @@ const RpcMethodsUI = () => {
             onApprove={onUserApproved}
             dappEvent={oldestRpcRequest as WalletAddEthereumChainRpcRequest}
             onClose={onClose}
-            />
+          />
+        )
       case RpcMethod.AVALANCHE_CREATE_CONTACT:
         return (
           <ContactPrompt

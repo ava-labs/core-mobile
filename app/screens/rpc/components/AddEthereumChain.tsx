@@ -20,7 +20,7 @@ interface Props {
   dappEvent: WalletAddEthereumChainRpcRequest
   onReject: (request: DappRpcRequests) => void
   onApprove: (request: DappRpcRequests) => void
-  onClose: () => void
+  onClose: (request: DappRpcRequests) => void
 }
 
 const AddEthereumChain: FC<Props> = ({
@@ -92,7 +92,7 @@ const AddEthereumChain: FC<Props> = ({
             <AvaButton.SecondaryMedium
               onPress={() => {
                 onReject(dappEvent)
-                onClose()
+                onClose(dappEvent)
               }}>
               Reject
             </AvaButton.SecondaryMedium>
