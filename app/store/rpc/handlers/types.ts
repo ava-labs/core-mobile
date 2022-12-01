@@ -25,11 +25,3 @@ export interface RpcRequestHandler<T extends DappRpcRequest<string, unknown>> {
     listenerApi: AppListenerEffectAPI
   ) => Promise<void>
 }
-
-export type CoreWebAccount = {
-  index: number
-  active: boolean
-  addressC: string
-  addressBTC?: string
-  name: string
-}

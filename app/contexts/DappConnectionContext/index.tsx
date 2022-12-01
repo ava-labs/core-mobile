@@ -109,7 +109,6 @@ export const DappConnectionContextProvider = ({
           result
         })
       )
-      // displayUserInstruction('Go back to the browser')
     },
     [dispatch]
   )
