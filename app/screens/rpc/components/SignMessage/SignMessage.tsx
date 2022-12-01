@@ -34,7 +34,6 @@ const SignMessage: FC<Props> = ({
 }) => {
   const theme = useApplicationContext().theme
   const [submitting, setSubmitting] = useState(false)
-  const [signFailedError, setSignFailedError] = useState<string>()
 
   useEffect(() => {
     if (dappEvent.error) {
@@ -59,16 +58,13 @@ const SignMessage: FC<Props> = ({
   }
   function onHandleApprove() {
     setSubmitting(true)
-    setSignFailedError(undefined)
     onApprove(dappEvent)
     setSubmitting(false)
   }
 
   return (
     <ScrollView contentContainerStyle={styles.scrollView}>
-      <AvaText.LargeTitleBold>
-        {signFailedError ? 'Signing Failed' : 'Sign Message'}
-      </AvaText.LargeTitleBold>
+      <AvaText.LargeTitleBold>Sign Message</AvaText.LargeTitleBold>
       <Space y={30} />
       <View style={{ justifyContent: 'center', alignItems: 'center' }}>
         <OvalTagBg
@@ -100,11 +96,6 @@ const SignMessage: FC<Props> = ({
         }
       </View>
       <FlexSpacer />
-      {!!signFailedError && (
-        <AvaText.Body1 color={theme.colorError}>
-          {signFailedError}
-        </AvaText.Body1>
-      )}
       <View style={styles.actionContainer}>
         <AvaButton.PrimaryMedium
           disabled={submitting}
