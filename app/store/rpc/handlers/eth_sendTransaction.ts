@@ -106,7 +106,7 @@ class EthSendTransactionHandler
           dispatch(
             sendRpcResult({
               request: action.payload.request,
-              result: [resultHash]
+              result: resultHash
             })
           )
         })

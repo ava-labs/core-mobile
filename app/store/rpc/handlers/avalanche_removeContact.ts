@@ -3,7 +3,8 @@ import { RpcMethod } from 'services/walletconnect/types'
 import { AppListenerEffectAPI } from 'store'
 import { Contact as SharedContact } from '@avalabs/types'
 import { ethErrors } from 'eth-rpc-errors'
-import { addContact, selectContacts } from 'store/addressBook'
+import { removeContact, selectContacts } from 'store/addressBook'
+import { isString } from 'utils/string/isString'
 import {
   addRequest,
   sendRpcResult,
@@ -11,35 +12,36 @@ import {
   removeRequest
 } from '../slice'
 import { DappRpcRequest, RpcRequestHandler } from './types'
-import { parseContact } from './utils/contact'
+import { mapContactToSharedContact } from './utils/contact'
 
-export interface AvalancheUpdateContactRequest
+export interface AvalancheRemoveContactRequest
   extends DappRpcRequest<
-    RpcMethod.AVALANCHE_UPDATE_CONTACT,
-    SharedContact[] | undefined
+    RpcMethod.AVALANCHE_REMOVE_CONTACT,
+    { id: string }[] | undefined
   > {
   contact: SharedContact
 }
 
-class AvalancheUpdateContactHandler
-  implements RpcRequestHandler<AvalancheUpdateContactRequest>
+class AvalancheRemoveContactHandler
+  implements RpcRequestHandler<AvalancheRemoveContactRequest>
 {
-  methods = [RpcMethod.AVALANCHE_UPDATE_CONTACT]
+  methods = [RpcMethod.AVALANCHE_REMOVE_CONTACT]
 
   handle = async (
-    action: PayloadAction<AvalancheUpdateContactRequest['payload'], string>,
+    action: PayloadAction<AvalancheRemoveContactRequest['payload'], string>,
     listenerApi: AppListenerEffectAPI
   ) => {
     const { dispatch, getState } = listenerApi
     const { params } = action.payload
-    const contact = parseContact(params)
 
-    if (!contact) {
+    const contactId = params?.[0]?.id
+
+    if (!isString(contactId)) {
       dispatch(
         sendRpcError({
           request: action,
           error: ethErrors.rpc.invalidParams({
-            message: 'Contact is invalid'
+            message: 'Contact ID is invalid'
           })
         })
       )
@@ -47,7 +49,7 @@ class AvalancheUpdateContactHandler
     }
 
     const existingContacts = selectContacts(getState())
-    const existingContact = existingContacts[contact.id]
+    const existingContact = existingContacts[contactId]
 
     if (!existingContact) {
       dispatch(
@@ -61,7 +63,9 @@ class AvalancheUpdateContactHandler
       return
     }
 
-    const dAppRequest: AvalancheUpdateContactRequest = {
+    const contact = mapContactToSharedContact(existingContact)
+
+    const dAppRequest: AvalancheRemoveContactRequest = {
       payload: action.payload,
       contact
     }
@@ -71,7 +75,7 @@ class AvalancheUpdateContactHandler
 
   onApprove = async (
     action: PayloadAction<
-      { request: AvalancheUpdateContactRequest; result?: unknown },
+      { request: AvalancheRemoveContactRequest; result?: unknown },
       string
     >,
     listenerApi: AppListenerEffectAPI
@@ -79,14 +83,7 @@ class AvalancheUpdateContactHandler
     const { dispatch } = listenerApi
     const contact = action.payload.request.contact
 
-    dispatch(
-      addContact({
-        address: contact.address,
-        addressBtc: contact.addressBTC || '',
-        title: contact.name,
-        id: contact.id
-      })
-    )
+    dispatch(removeContact(contact.id))
 
     dispatch(
       sendRpcResult({
@@ -98,4 +95,4 @@ class AvalancheUpdateContactHandler
     dispatch(removeRequest(action.payload.request.payload.id))
   }
 }
-export const avalancheUpdateContactHandler = new AvalancheUpdateContactHandler()
+export const avalancheRemoveContactHandler = new AvalancheRemoveContactHandler()

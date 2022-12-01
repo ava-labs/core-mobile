@@ -1,5 +1,5 @@
 import { Dispatch } from 'react'
-import { DeepLink, RpcMethod } from 'services/walletconnect/types'
+import { DeepLink } from 'services/walletconnect/types'
 import { DappRpcRequest } from 'store/rpc/handlers/types'
 
 export interface DappConnectionState {
@@ -7,20 +7,10 @@ export interface DappConnectionState {
   setPendingDeepLink: Dispatch<DeepLink>
   onUserApproved: (
     request: DappRpcRequest<string, unknown>,
-    result?: unknown
+    data?: unknown // any extra data that you want to send to the store
   ) => void
   onUserRejected: (
     request: DappRpcRequest<string, unknown>,
     message?: string
   ) => void
 }
-
-export type CoreWebAccount = {
-  index: number
-  active: boolean
-  addressC: string
-  addressBTC?: string
-  name: string
-}
-
-export type RpcMethodRequestHandler = [RpcMethod, () => void]

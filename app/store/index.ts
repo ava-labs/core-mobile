@@ -35,6 +35,7 @@ const blacklist = [
   'balance',
   'networkFee',
   'swap',
+  'rpc',
   transactionApi.reducerPath,
   nftsApi.reducerPath
 ]
