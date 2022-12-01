@@ -4,6 +4,8 @@ import { AvalancheUpdateContactRequest } from './handlers/avalanche_updateContac
 import { EthSendTransactionRpcRequest } from './handlers/eth_sendTransaction'
 import { EthSignRpcRequest } from './handlers/eth_sign'
 import { SessionRequestRpcRequest } from './handlers/session_request'
+import { WalletAddEthereumChainRpcRequest } from './handlers/wallet_addEthereumChain'
+import { WalletSwitchEthereumChainRpcRequest } from './handlers/wallet_switchEthereumChain'
 
 export type DappRpcRequests =
   | AvalancheGetAccountsRpcRequest
@@ -12,6 +14,8 @@ export type DappRpcRequests =
   | AvalancheUpdateContactRequest
   | EthSendTransactionRpcRequest
   | EthSignRpcRequest
+  | WalletAddEthereumChainRpcRequest
+  | WalletSwitchEthereumChainRpcRequest
 
 export type RpcState = {
   requests: DappRpcRequests[]
