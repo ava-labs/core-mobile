@@ -19,7 +19,6 @@ import { WalletAddEthereumChainRpcRequest } from 'store/rpc/handlers/wallet_addE
 import { AvalancheCreateContactRequest } from 'store/rpc/handlers/avalanche_createContact'
 import { AvalancheRemoveContactRequest } from 'store/rpc/handlers/avalanche_removeContact'
 import { AvalancheBridgeAssetRequest } from 'store/rpc/handlers/avalanche_bridgeAsset'
-import { useBridgeConfig } from '@avalabs/bridge-sdk'
 import { AvalancheSelectAccountRequest } from 'store/rpc/handlers/avalanche_selectAccount'
 import UpdateContact from './components/UpdateContact'
 import SwitchEthereumChain from './components/SwitchEthereumChain'
@@ -34,7 +33,6 @@ const RpcMethodsUI = () => {
   const dispatch = useDispatch()
   const { goBack } = useNavigation()
   const { onUserApproved, onUserRejected } = useDappConnectionContext()
-  const config = useBridgeConfig().config
   const rpcRequests = useSelector(selectRpcRequests)
   const oldestRpcRequest = rpcRequests[0]
 
@@ -52,13 +50,6 @@ const RpcMethodsUI = () => {
       goBack()
     },
     [dispatch, goBack]
-  )
-
-  const onUserApprovedBridgeAsset = useCallback(
-    (request: AvalancheBridgeAssetRequest) => {
-      onUserApproved(request, config)
-    },
-    [config, onUserApproved]
   )
 
   const renderContent = () => {
@@ -148,7 +139,7 @@ const RpcMethodsUI = () => {
         return (
           <BridgeAsset
             dappEvent={oldestRpcRequest as AvalancheBridgeAssetRequest}
-            onApprove={onUserApprovedBridgeAsset}
+            onApprove={onUserApproved}
             onReject={onUserRejected}
             onClose={onClose}
           />
