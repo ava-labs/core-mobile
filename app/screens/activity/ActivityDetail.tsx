@@ -38,7 +38,7 @@ function ActivityDetail() {
   const feeBN = numberToBN(txItem?.fee ?? '', 0)
   const fees = balanceToDisplayValue(
     feeBN,
-    Number(txItem?.token?.decimal) || 18
+    Number(network.networkToken.decimals)
   )
 
   useEffect(getContactMatchFx, [contacts, txItem])
