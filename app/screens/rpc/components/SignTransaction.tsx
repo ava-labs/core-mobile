@@ -41,12 +41,9 @@ import { TransactionError } from 'services/network/types'
 
 interface Props {
   onReject: (request: EthSendTransactionRpcRequest, message?: string) => void
-  onApprove: (
-    request: EthSendTransactionRpcRequest,
-    result?: Transaction
-  ) => void
+  onApprove: (request: EthSendTransactionRpcRequest, data: Transaction) => void
   dappEvent: EthSendTransactionRpcRequest
-  onClose: () => void
+  onClose: (request: EthSendTransactionRpcRequest) => void
 }
 
 const SignTransaction: FC<Props> = ({
@@ -93,7 +90,7 @@ const SignTransaction: FC<Props> = ({
         ),
         duration: 'short'
       })
-      onClose()
+      onClose(dappEvent)
     } else {
       // in case we have some error
       setTxFailedError(`there was an error processing the transaction`)
@@ -317,7 +314,7 @@ const SignTransaction: FC<Props> = ({
             <Space y={20} />
             <AvaButton.SecondaryLarge
               style={{ marginBottom: 32 }}
-              onPress={onClose}>
+              onPress={() => onClose(dappEvent)}>
               Close
             </AvaButton.SecondaryLarge>
           </View>
@@ -344,7 +341,7 @@ const SignTransaction: FC<Props> = ({
             <AvaButton.SecondaryLarge
               onPress={() => {
                 onReject(dappEvent)
-                onClose()
+                onClose(dappEvent)
               }}>
               Reject
             </AvaButton.SecondaryLarge>

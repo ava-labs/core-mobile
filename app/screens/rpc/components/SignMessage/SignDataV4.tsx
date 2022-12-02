@@ -4,8 +4,8 @@ import { ScrollView } from 'react-native-gesture-handler'
 import { ApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
-import { MessageAction } from 'services/walletconnect/types'
 import { Row } from 'components/Row'
+import { MessageAction } from './types'
 
 interface Props {
   action: MessageAction

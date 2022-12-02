@@ -1,9 +1,10 @@
 import { PayloadAction } from '@reduxjs/toolkit'
+import { v4 as uuidv4 } from 'uuid'
 import { RpcMethod } from 'services/walletconnect/types'
 import { AppListenerEffectAPI } from 'store'
 import { Contact as SharedContact } from '@avalabs/types'
 import { ethErrors } from 'eth-rpc-errors'
-import { addContact, selectContacts } from 'store/addressBook'
+import { addContact } from 'store/addressBook'
 import {
   addRequest,
   sendRpcResult,
@@ -13,24 +14,24 @@ import {
 import { DappRpcRequest, RpcRequestHandler } from './types'
 import { parseContact } from './utils/contact'
 
-export interface AvalancheUpdateContactRequest
+export interface AvalancheCreateContactRequest
   extends DappRpcRequest<
-    RpcMethod.AVALANCHE_UPDATE_CONTACT,
+    RpcMethod.AVALANCHE_CREATE_CONTACT,
     SharedContact[] | undefined
   > {
   contact: SharedContact
 }
 
-class AvalancheUpdateContactHandler
-  implements RpcRequestHandler<AvalancheUpdateContactRequest>
+class AvalancheCreateContactHandler
+  implements RpcRequestHandler<AvalancheCreateContactRequest>
 {
-  methods = [RpcMethod.AVALANCHE_UPDATE_CONTACT]
+  methods = [RpcMethod.AVALANCHE_CREATE_CONTACT]
 
   handle = async (
-    action: PayloadAction<AvalancheUpdateContactRequest['payload'], string>,
+    action: PayloadAction<AvalancheCreateContactRequest['payload'], string>,
     listenerApi: AppListenerEffectAPI
   ) => {
-    const { dispatch, getState } = listenerApi
+    const { dispatch } = listenerApi
     const { params } = action.payload
     const contact = parseContact(params)
 
@@ -46,22 +47,9 @@ class AvalancheUpdateContactHandler
       return
     }
 
-    const existingContacts = selectContacts(getState())
-    const existingContact = existingContacts[contact.id]
+    contact.id = uuidv4()
 
-    if (!existingContact) {
-      dispatch(
-        sendRpcError({
-          request: action,
-          error: ethErrors.rpc.resourceNotFound({
-            message: 'Contact does not exist'
-          })
-        })
-      )
-      return
-    }
-
-    const dAppRequest: AvalancheUpdateContactRequest = {
+    const dAppRequest: AvalancheCreateContactRequest = {
       payload: action.payload,
       contact
     }
@@ -71,7 +59,7 @@ class AvalancheUpdateContactHandler
 
   onApprove = async (
     action: PayloadAction<
-      { request: AvalancheUpdateContactRequest; result?: unknown },
+      { request: AvalancheCreateContactRequest; result?: unknown },
       string
     >,
     listenerApi: AppListenerEffectAPI
@@ -98,4 +86,4 @@ class AvalancheUpdateContactHandler
     dispatch(removeRequest(action.payload.request.payload.id))
   }
 }
-export const avalancheUpdateContactHandler = new AvalancheUpdateContactHandler()
+export const avalancheCreateContactHandler = new AvalancheCreateContactHandler()

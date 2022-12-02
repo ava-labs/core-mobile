@@ -1,6 +1,5 @@
 import { PayloadAction } from '@reduxjs/toolkit'
 import { ethErrors } from 'eth-rpc-errors'
-import { paramsToMessageParams } from 'screens/rpc/util/paramsToMessageParams'
 import walletService from 'services/wallet/WalletService'
 import { RpcMethod } from 'services/walletconnect/types'
 import { AppListenerEffectAPI } from 'store'
@@ -15,6 +14,7 @@ import {
   updateRequest,
   removeRequest
 } from '../slice'
+import { parseMessage } from './utils/message'
 import { DappRpcRequest, RpcRequestHandler } from './types'
 
 export interface EthSignRpcRequest
@@ -60,7 +60,7 @@ class EthSignHandler implements RpcRequestHandler<EthSignRpcRequest> {
       return
     }
 
-    const { data, from, password } = paramsToMessageParams(payload)
+    const { data, from, password } = parseMessage(payload)
 
     const requestWithData: EthSignRpcRequest = {
       payload,
