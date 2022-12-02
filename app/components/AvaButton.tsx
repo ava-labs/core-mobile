@@ -320,8 +320,7 @@ const BtnTextLink: FC<BaseProps> = ({
       <AvaText.TextLink
         textStyle={{
           color: disabled ? theme.colorDisabled : textColor ?? theme.colorBg2
-        }}
-        testID="btnTextLink">
+        }}>
         {children}
       </AvaText.TextLink>
     </BtnText>

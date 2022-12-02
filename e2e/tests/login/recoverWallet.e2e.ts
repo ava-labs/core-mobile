@@ -1,14 +1,16 @@
+/* eslint-disable jest/expect-expect */
 /* eslint-env detox/detox, jest */
 /**
  * @jest-environment ./jestCustomEnv
  */
-import { by, expect, element, device } from 'detox'
+import { device } from 'detox'
 import Assert from '../../helpers/assertions'
 import ExistingRecoveryPhrasePage from '../../pages/existingRecoveryPhrase.page'
 import CreatePinPage from '../../pages/createPin.page'
 import AnalyticsConsentPage from '../../pages/analyticsConsent.page'
 import delay from '../../helpers/waits'
 import WatchListPage from '../../pages/watchlist.page'
+import PortfolioPage from '../../pages/portfolio.page'
 
 describe('Add existing wallet', () => {
   beforeAll(async () => {
@@ -28,6 +30,6 @@ describe('Add existing wallet', () => {
     }
     await CreatePinPage.tapEmptyCheckbox()
     await CreatePinPage.tapNextBtn()
-    await expect(element(by.text('Collectibles'))).toBeVisible()
+    await PortfolioPage.verifyPorfolioScreen()
   })
 })

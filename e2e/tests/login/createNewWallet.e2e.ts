@@ -4,6 +4,7 @@
  * @jest-environment ./environment.ts
  */
 import { by, expect, element, device } from 'detox'
+import PortfolioPage from '../../pages/portfolio.page'
 import Assert from '../../helpers/assertions'
 import NewRecoveryPhrasePage from '../../pages/newRecoveryPhrase.page'
 import AnalyticsConsentPage from '../../pages/analyticsConsent.page'
@@ -29,7 +30,7 @@ describe('Create new wallet', () => {
     await Assert.isVisible(NewRecoveryPhrasePage.mnemonicWord)
   })
 
-  it('should successfully add an existing wallet', async () => {
+  it('should verify recovery phrase flow', async () => {
     const wordsObject: object =
       await NewRecoveryPhrasePage.mnemonicWordsObject()
     await NewRecoveryPhrasePage.tapIWroteItDownBtn()
@@ -41,15 +42,14 @@ describe('Create new wallet', () => {
       wordsObject
     )
     await VerifyPhrasePage.tapWordsToConfirm(confirmWordsArray)
-  })
-
-  it('shoud successfully add an existing wallet', async () => {
     await Assert.isVisible(VerifyPhrasePage.selectWord)
     await VerifyPhrasePage.tapVerifyPhraseBtn()
+  })
+
+  it('shoud successfully create a new wallet', async () => {
     await CreatePinPage.createPin()
     await CreatePinPage.tapEmptyCheckbox()
     await CreatePinPage.tapNextBtn()
-
-    await expect(element(by.text('Collectiblasdfasdf'))).toBeVisible()
+    await PortfolioPage.verifyPorfolioScreen()
   })
 })
