@@ -57,9 +57,6 @@ if (Config.SENTRY_DSN && !__DEV__) {
   })
 }
 
-// https://docs.sentry.io/platforms/react-native/troubleshooting/#using-with-other-polyfills
-require('promise.allsettled').shim()
-
 export default function App() {
   const { configure } = useDevDebugging()
   const isProduction = process.env.NODE_ENV === 'production'
