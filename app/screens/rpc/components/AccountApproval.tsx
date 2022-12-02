@@ -1,5 +1,5 @@
 import AvaText from 'components/AvaText'
-import React, { FC, useState } from 'react'
+import React, { FC, useEffect } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Avatar from 'components/Avatar'
@@ -9,20 +9,31 @@ import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
 import { NativeViewGestureHandler } from 'react-native-gesture-handler'
 import FlexSpacer from 'components/FlexSpacer'
-import { Row } from 'components/Row'
-import CarrotSVG from 'components/svg/CarrotSVG'
-import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import AccountItem from 'screens/portfolio/account/AccountItem'
-import { useDispatch, useSelector } from 'react-redux'
-import { Account, selectAccounts, setActiveAccountIndex } from 'store/account'
 import { useActiveAccount } from 'hooks/useActiveAccount'
 import { SessionRequestRpcRequest } from 'store/rpc/handlers/session_request'
+import { showSnackBarCustom } from 'components/Snackbar'
+import GeneralToast from 'components/toast/GeneralToast'
 
 interface Props {
   dappEvent: SessionRequestRpcRequest
   onReject: (request: SessionRequestRpcRequest, message?: string) => void
   onApprove: (request: SessionRequestRpcRequest) => void
   onClose: (request: SessionRequestRpcRequest) => void
+}
+
+const showSuccessMessage = (siteName: string) => {
+  showSnackBarCustom({
+    component: <GeneralToast message={`Connected to ${siteName}`} />,
+    duration: 'short'
+  })
+}
+
+const showNoActiveAccountMessage = () => {
+  showSnackBarCustom({
+    component: <GeneralToast message={`There is no active account.`} />,
+    duration: 'short'
+  })
 }
 
 const AccountApproval: FC<Props> = ({
@@ -32,27 +43,24 @@ const AccountApproval: FC<Props> = ({
   onClose
 }) => {
   const theme = useApplicationContext().theme
-  const accounts = useSelector(selectAccounts)
   const activeAccount = useActiveAccount()
-  const dispatch = useDispatch()
-  const [toggleAccountList, setToggleAccountList] = useState(false)
-  const onSelectAccount = (accountIndex: number) => {
-    dispatch(setActiveAccountIndex(accountIndex))
-  }
-
   const peerMeta = dappEvent.payload.peerMeta
+  const siteName = peerMeta?.name ?? ''
+
+  useEffect(() => {
+    if (!activeAccount) {
+      showNoActiveAccountMessage()
+      onReject(dappEvent)
+      onClose(dappEvent)
+    }
+  }, [activeAccount, dappEvent, onClose, onReject])
 
   return (
     <NativeViewGestureHandler>
-      <SafeAreaView
-        style={{
-          paddingTop: 32,
-          flex: 1,
-          paddingHorizontal: 16
-        }}>
+      <SafeAreaView style={styles.container}>
         <AvaText.LargeTitleBold>Connect to site?</AvaText.LargeTitleBold>
         <Space y={30} />
-        <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+        <View style={styles.iconContainer}>
           <OvalTagBg
             style={{ height: 80, width: 80, backgroundColor: theme.colorBg3 }}>
             <Avatar.Custom
@@ -63,54 +71,31 @@ const AccountApproval: FC<Props> = ({
           </OvalTagBg>
           <View style={styles.domainUrlContainer}>
             <AvaText.Heading2 textStyle={{ textAlign: 'center' }}>
-              {peerMeta?.name}
+              {siteName}
             </AvaText.Heading2>
+            <Space y={6} />
             <AvaText.Body3 color={theme.colorText1}>
               {peerMeta?.url}
             </AvaText.Body3>
           </View>
           <Space y={16} />
         </View>
-        <Row
-          style={[
-            styles.accountCardWrapper,
-            { backgroundColor: theme.colorBg3 }
-          ]}>
-          <AvaButton.Base
-            style={{ flex: 1 }}
-            onPress={() => setToggleAccountList(!toggleAccountList)}>
-            <Row
-              style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-              <AvaText.Heading3
-                ellipsizeMode={'middle'}
-                textStyle={{ marginRight: 16 }}>
-                {activeAccount?.title}
-              </AvaText.Heading3>
-              <CarrotSVG
-                color={theme.colorText1}
-                direction={toggleAccountList ? 'up' : 'down'}
-              />
-            </Row>
-          </AvaButton.Base>
-        </Row>
-        {toggleAccountList && (
-          <>
-            <Space y={4} />
-            <BottomSheetFlatList
-              style={{ minHeight: 200 }}
-              data={Object.values(accounts)}
-              renderItem={info =>
-                renderAccountItem(info.item, onSelectAccount, activeAccount)
-              }
-            />
-          </>
+        <Space y={16} />
+        {activeAccount && (
+          <View style={styles.accountWrapper}>
+            <AccountItem account={activeAccount} selected />
+          </View>
         )}
         <FlexSpacer />
         <AvaText.Body2 textStyle={{ textAlign: 'center' }}>
           Only connect to sites that you trust
         </AvaText.Body2>
         <View style={styles.actionContainer}>
-          <AvaButton.PrimaryMedium onPress={() => onApprove(dappEvent)}>
+          <AvaButton.PrimaryMedium
+            onPress={() => {
+              showSuccessMessage(siteName)
+              onApprove(dappEvent)
+            }}>
             Approve
           </AvaButton.PrimaryMedium>
           <Space y={21} />
@@ -127,74 +112,29 @@ const AccountApproval: FC<Props> = ({
   )
 }
 
-const renderAccountItem = (
-  account: Account,
-  onSelectAccount: (accountIndex: number) => void,
-  activeAccount?: Account
-) => {
-  return (
-    <AccountItem
-      key={account.title}
-      account={account}
-      editable={false}
-      selected={account.index === activeAccount?.index}
-      onSelectAccount={onSelectAccount}
-    />
-  )
-}
-
 const styles = StyleSheet.create({
-  root: {
-    paddingTop: 24,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    minHeight: 200,
-    paddingBottom: 20
+  container: {
+    paddingTop: 32,
+    flex: 1,
+    paddingHorizontal: 16
   },
-  accountCardWrapper: {
-    paddingHorizontal: 24,
-    paddingVertical: 8,
-    borderRadius: 6
+  iconContainer: {
+    justifyContent: 'center',
+    alignItems: 'center'
   },
-  intro: {
-    textAlign: 'center',
-    color: 'black',
-    fontSize: 16,
-    marginBottom: 8,
-    marginTop: 16
-  },
-  warning: {
-    color: 'red',
-    paddingHorizontal: 24,
-    marginVertical: 16,
-    fontSize: 14,
-    width: '100%',
-    textAlign: 'center'
+  accountWrapper: {
+    borderRadius: 6,
+    overflow: 'hidden'
   },
   actionContainer: {
     flex: 0,
     paddingVertical: 16,
     paddingHorizontal: 24
   },
-  button: {
-    flex: 1
-  },
-  cancel: {
-    marginRight: 8
-  },
-  confirm: {
-    marginLeft: 8
-  },
   domainUrlContainer: {
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 12
-  },
-  domainUrl: {
-    fontWeight: '600',
-    textAlign: 'center',
-    fontSize: 14,
-    color: 'black'
   }
 })
 
