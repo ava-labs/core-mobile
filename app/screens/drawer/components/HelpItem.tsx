@@ -8,6 +8,7 @@ const HelpItem = () => {
   const { openUrl } = useInAppBrowser()
   return (
     <AvaListItem.Base
+      testID="help_item__help_center_button"
       title={'Help Center'}
       onPress={() => {
         openUrl(HELP_URL)

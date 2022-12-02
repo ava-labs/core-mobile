@@ -18,6 +18,26 @@ class NewRecoveryPhrasePage {
     return by.text(newRecoveryPhraseLoc.warningModalIUnderstandBtn)
   }
 
+  get copyPhraseBtn() {
+    return by.id(newRecoveryPhraseLoc.copyPhraseBtn)
+  }
+
+  get mnemonicPhraseInstructions() {
+    return by.id(newRecoveryPhraseLoc.mnemonicPhraseInstructions)
+  }
+
+  get protectFundsModalTitle() {
+    return by.id(newRecoveryPhraseLoc.warningModalTitle)
+  }
+
+  get protectFundsModalBackBtn() {
+    return by.text(newRecoveryPhraseLoc.warningModalBackBtn)
+  }
+
+  get protectFundsModalMsg() {
+    return by.id(newRecoveryPhraseLoc.warningModalMessage)
+  }
+
   async tapIWroteItDownBtn() {
     return Action.tap(this.iWroteItDownBtn)
   }

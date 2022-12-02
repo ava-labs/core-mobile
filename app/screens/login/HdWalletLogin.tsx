@@ -43,7 +43,9 @@ export default function HdWalletLogin(props: Props) {
 
   const EnterTestWalletButton = () => {
     return __DEV__ ? (
-      <AvaButton.TextLarge onPress={onEnterTestWallet}>
+      <AvaButton.TextLarge
+        onPress={onEnterTestWallet}
+        testID="hd_wallet_login__test_wallet">
         Enter test HD wallet
       </AvaButton.TextLarge>
     ) : null
@@ -58,7 +60,9 @@ export default function HdWalletLogin(props: Props) {
           marginHorizontal: 16,
           justifyContent: 'center'
         }}>
-        <AvaText.LargeTitleBold>Recovery Phrase</AvaText.LargeTitleBold>
+        <AvaText.LargeTitleBold testID="recovery_phrase__header">
+          Recovery Phrase
+        </AvaText.LargeTitleBold>
       </View>
       <View style={[{ flexGrow: 1, justifyContent: 'flex-end' }]}>
         <EnterTestWalletButton />

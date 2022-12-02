@@ -22,6 +22,7 @@ const CurrencyItem = () => {
   return (
     <>
       <AvaListItem.Base
+        testID="currency_item__settings_button"
         title={'Currency'}
         titleAlignment={'flex-start'}
         rightComponent={currency()}

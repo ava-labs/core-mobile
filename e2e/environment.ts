@@ -1,4 +1,6 @@
 export {}
+// This is needed in case you need to debug the test name
+// import { inspect } from 'util'
 
 const {
   DetoxCircusEnvironment,
@@ -46,8 +48,6 @@ class CustomDetoxEnvironment extends DetoxCircusEnvironment {
     }
     if ('test_done'.includes(name)) {
       this.global.testNames = test.parent.name
-      console.log(typeof test + 'this is the test type!')
-
       // console.log(inspect(test.parent.name) + ' this is the test!')
     }
     if ('run_finish'.includes(name)) {

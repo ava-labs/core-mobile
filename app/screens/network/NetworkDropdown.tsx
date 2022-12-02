@@ -114,7 +114,11 @@ export default function NetworkDropdown() {
 function Selection({ logoUri }: { logoUri: string }) {
   return (
     <View style={{ marginRight: 2 }}>
-      <NetworkLogo logoUri={logoUri} size={16} />
+      <NetworkLogo
+        logoUri={logoUri}
+        size={16}
+        testID="network_dropdown__logo"
+      />
     </View>
   )
 }
@@ -139,7 +143,8 @@ function Option({
       <Space x={8} />
       <AvaText.Body1
         textStyle={{ paddingVertical: 8, maxWidth: 220 }}
-        ellipsizeMode="tail">
+        ellipsizeMode="tail"
+        testID={`network_dropdown__${networkName}`}>
         {networkName}
       </AvaText.Body1>
       <FlexSpacer />

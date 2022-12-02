@@ -5,6 +5,7 @@ import Svg, { NumberProp, Path } from 'react-native-svg'
 interface Props {
   color?: ColorValue
   height?: NumberProp
+  testID?: string
 }
 
 export default function GlobeSVG({ height = 40, color = '#fff' }: Props) {

@@ -14,13 +14,14 @@ export function NetworkLogo({
   logoUri: string | undefined
   size: number
   style?: StyleProp<ImageStyle>
+  testID?: string
 }) {
   style = [{ borderRadius: size / 2, width: size, height: size }, style]
   return logoUri ? (
     <Image source={{ uri: logoUri }} style={style} />
   ) : (
     <View style={style}>
-      <GlobeSVG height={size} />
+      <GlobeSVG height={size} testID="network_logo__globe_svg" />
     </View>
   )
 }
