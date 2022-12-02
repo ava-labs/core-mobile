@@ -1,8 +1,5 @@
-import Action from '../helpers/actions'
 import Assert from '../helpers/assertions'
 import portfolio from '../locators/portfolio.loc'
-import delay from '../helpers/waits'
-
 class PortfolioPage {
   get colectiblesTab() {
     return by.text(portfolio.collectiblesTab)

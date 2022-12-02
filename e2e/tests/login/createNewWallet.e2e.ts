@@ -3,7 +3,7 @@
 /**
  * @jest-environment ./environment.ts
  */
-import { by, expect, element, device } from 'detox'
+import { device } from 'detox'
 import PortfolioPage from '../../pages/portfolio.page'
 import Assert from '../../helpers/assertions'
 import NewRecoveryPhrasePage from '../../pages/newRecoveryPhrase.page'
