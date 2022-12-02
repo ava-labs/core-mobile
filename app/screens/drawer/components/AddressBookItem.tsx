@@ -14,6 +14,7 @@ const AddressBookItem = () => {
   return (
     <>
       <AvaListItem.Base
+        testID="address_book_item__settings_button"
         title={'Address Book'}
         titleAlignment={'flex-start'}
         showNavigationArrow

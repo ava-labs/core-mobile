@@ -11,6 +11,26 @@ class VerifyPhrasePage {
     return by.id(verifyPhraseLoc.verifyPhraseBtn)
   }
 
+  get firstMnemonicWord() {
+    return by.id(verifyPhraseLoc.firstWord)
+  }
+
+  get secondMnemonicWord() {
+    return by.id(verifyPhraseLoc.secondWord)
+  }
+
+  get thirdMnemonicWord() {
+    return by.id(verifyPhraseLoc.thirdWord)
+  }
+
+  get instructions() {
+    return by.id(verifyPhraseLoc.instructions)
+  }
+
+  get title() {
+    return by.id(verifyPhraseLoc.title)
+  }
+
   // Converts the index of the word to the actual word number in the recovery phrase and returns an array of 3 words to tap on the confirmation page
   async selectWordNumbers(recoveryPhraseObject: object) {
     const attributes = await Action.getAttributes(this.selectWord)

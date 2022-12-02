@@ -11,8 +11,13 @@ export default function VersionItem() {
       title={'Version'}
       titleAlignment={'flex-start'}
       leftComponent={null}
-      rightComponent={<AvaText.Body2>{version}</AvaText.Body2>}
+      rightComponent={
+        <AvaText.Body2 testID="version_item__app_version">
+          {version}
+        </AvaText.Body2>
+      }
       rightComponentVerticalAlignment={'center'}
+      testID="version_item__version"
     />
   )
 }
