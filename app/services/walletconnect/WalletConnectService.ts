@@ -44,9 +44,7 @@ const persistSessions = async () => {
     )
     .map(connector => ({
       ...connector.walletConnectClient?.session,
-      uri: connector.url,
-      autoSign: connector?.autoSign,
-      requestOriginatedFrom: connector?.requestOriginatedFrom
+      uri: connector.url
     }))
 
   await AsyncStorage.setItem(WALLETCONNECT_SESSIONS, JSON.stringify(sessions))
@@ -61,12 +59,10 @@ const waitForInitialization = async () => {
 }
 
 class WalletConnectService {
-  autoSign = false
   url?: string
   title = null
   icon = null
   hostname = null
-  requestOriginatedFrom?: string
   walletConnectClient: WalletConnectClient | null
   activeAccount: Account | undefined
   activeNetwork: Network | undefined
@@ -350,8 +346,6 @@ const instance = {
   // creates new session. Checks to see if there's already a session created for that app
   async newSession(
     uri: string,
-    autoSign?: boolean,
-    requestOriginatedFrom?: string,
     activeAccount?: Account,
     activeNetwork?: Network
   ) {

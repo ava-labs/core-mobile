@@ -83,8 +83,6 @@ export type SessionRequestData = {
   peerId: string
   peerMeta: PeerMeta
   chainId: string | null | undefined
-  autoSign: boolean
-  requestOriginatedFrom: string | undefined
 }
 
 export const CORE_ONLY_METHODS = [

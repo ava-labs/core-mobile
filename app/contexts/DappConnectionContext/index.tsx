@@ -66,12 +66,7 @@ export const DappConnectionContextProvider = ({
    *****************************************************************************/
   useEffect(() => {
     if (pendingDeepLink && isWalletActive && activeAccount && activeNetwork) {
-      processDeeplink(
-        pendingDeepLink?.url,
-        pendingDeepLink?.origin,
-        activeAccount,
-        activeNetwork
-      )
+      processDeeplink(pendingDeepLink?.url, activeAccount, activeNetwork)
       // once we used the url, we can expire it
       expireDeepLink()
     }
