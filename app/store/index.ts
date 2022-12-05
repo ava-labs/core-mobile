@@ -15,6 +15,7 @@ import { balanceReducer as balance } from './balance'
 import { appReducer as app, onLogOut, onRehydrationComplete } from './app'
 import { listener } from './middleware/listener'
 import { accountsReducer as account } from './account'
+import { dAppReducer as dApp } from './dApp'
 import { watchlistReducer as watchlist } from './watchlist'
 import { zeroBalanceReducer as zeroBalance } from './zeroBalance'
 import { customTokenReducer as customToken } from './customToken'
@@ -49,6 +50,7 @@ const combinedReducer = combineReducers({
   addressBook,
   bridge,
   customToken,
+  dApp,
   posthog,
   swap,
   nft,

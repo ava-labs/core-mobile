@@ -1,6 +1,5 @@
 import { EventEmitter } from 'events'
 import WalletConnectClient from '@walletconnect/client'
-import AsyncStorage from '@react-native-async-storage/async-storage'
 import { parseWalletConnectUri } from '@walletconnect/utils'
 import {
   ISessionStatus,
@@ -9,6 +8,7 @@ import {
 } from '@walletconnect/types'
 import {
   CLIENT_OPTIONS,
+  PeerId,
   RpcMethod,
   WalletConnectRequest
 } from 'services/walletconnect/types'
@@ -20,6 +20,7 @@ import { ethErrors } from 'eth-rpc-errors'
 import { SessionRequestRpcRequest } from 'store/rpc/handlers/session_request'
 import { TypedJsonRpcRequest } from 'store/rpc/handlers/types'
 import { PosthogCapture } from 'contexts/types'
+import { ApprovedAppMeta } from 'store/dApp'
 import {
   isCoreMethod,
   isFromCoreWeb,
@@ -31,8 +32,6 @@ let connectors: WalletConnectService[] = []
 const tempCallIds: number[] = []
 const emitter = new EventEmitter()
 let posthogCapture: PosthogCapture | undefined
-
-const WALLETCONNECT_SESSIONS = `walletconnectSessions`
 
 const persistSessions = async () => {
   const sessions = connectors
@@ -46,8 +45,7 @@ const persistSessions = async () => {
       ...connector.walletConnectClient?.session,
       uri: connector.url
     }))
-
-  await AsyncStorage.setItem(WALLETCONNECT_SESSIONS, JSON.stringify(sessions))
+  emitter.emit(WalletConnectRequest.PERSIST_SESSIONS, sessions)
 }
 
 const waitForInitialization = async () => {
@@ -110,7 +108,7 @@ class WalletConnectService {
             }
           })
         }
-        this.startSession(isExisting)
+        await this.startSession(isExisting)
       } catch (e) {
         Logger.error('dapp session session error or user canceled', e)
         this.walletConnectClient?.rejectSession()
@@ -246,7 +244,7 @@ class WalletConnectService {
       Logger.info('dapp emitting session request')
       emitter.emit(WalletConnectRequest.SESSION, request)
 
-      emitter.on(WalletConnectRequest.SESSION_APPROVED, (peerId: string) => {
+      emitter.once(WalletConnectRequest.SESSION_APPROVED, (peerId: string) => {
         if (request.params[0]?.peerId === peerId) {
           Logger.info('dapp received emission approval for session')
           posthogCapture?.('WalletConnectSessionApproved', {
@@ -255,12 +253,14 @@ class WalletConnectService {
           })
           resolve(true)
         }
+        emitter.removeAllListeners(WalletConnectRequest.SESSION_REJECTED)
       })
-      emitter.on(WalletConnectRequest.SESSION_REJECTED, (peerId: string) => {
+      emitter.once(WalletConnectRequest.SESSION_REJECTED, (peerId: string) => {
         if (request.params[0]?.peerId === peerId) {
           Logger.info('dapp received emission rejection for session')
           reject(new Error(WalletConnectRequest.SESSION_REJECTED))
         }
+        emitter.removeAllListeners(WalletConnectRequest.SESSION_APPROVED)
       })
     })
 
@@ -308,8 +308,11 @@ const instance = {
   setPosthogCapture(f: PosthogCapture) {
     posthogCapture = f
   },
-  // restores approved connections
-  async init(activeAccount: Account, activeNetwork: Network) {
+  async restoreConnections(
+    approvedDApps: ApprovedAppMeta[],
+    activeAccount: Account,
+    activeNetwork: Network
+  ) {
     // do not init if on BTC
     if (activeNetwork.vmName === NetworkVMType.BITCOIN) return
 
@@ -319,10 +322,8 @@ const instance = {
     }
 
     Logger.info('loading persisted dapps')
-    const sessionData = await AsyncStorage.getItem(WALLETCONNECT_SESSIONS)
-    if (sessionData) {
-      const sessions = JSON.parse(sessionData)
-      sessions.forEach((session: IWalletConnectSession & { uri: string }) => {
+    approvedDApps.forEach(
+      (session: IWalletConnectSession & { uri: string }) => {
         const data = {
           bridge: session.bridge,
           uri: session.uri,
@@ -339,8 +340,8 @@ const instance = {
           Logger.info('dapp connection from storage exists, connecting')
           existingConnector.walletConnectClient?.connect()
         }
-      })
-    }
+      }
+    )
     initialized = true
   },
   // creates new session. Checks to see if there's already a session created for that app
@@ -367,7 +368,7 @@ const instance = {
     )
   },
   // kills session given a peerId
-  killSession: async (id: string) => {
+  killSession: async (id: PeerId) => {
     // 1) First kill the session
     const connectorToKill = connectors.find(
       connector =>

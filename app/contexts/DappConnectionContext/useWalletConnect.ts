@@ -4,9 +4,11 @@ import { PeerMeta, WalletConnectRequest } from 'services/walletconnect/types'
 import WalletConnectService from 'services/walletconnect/WalletConnectService'
 import { Account } from 'store/account'
 import { usePosthogContext } from 'contexts/PosthogContext'
-import { EthereumRpcError, EthereumProviderError } from 'eth-rpc-errors'
+import { EthereumProviderError, EthereumRpcError } from 'eth-rpc-errors'
 import { SessionRequestRpcRequest } from 'store/rpc/handlers/session_request'
 import { TypedJsonRpcRequest } from 'store/rpc/handlers/types'
+import { useSelector } from 'react-redux'
+import { ApprovedAppMeta, selectApprovedDApps } from 'store/dApp'
 
 type Params = {
   activeAccount: Account | undefined
@@ -16,6 +18,7 @@ type Params = {
   ) => void
   handleCallRequest: (data: TypedJsonRpcRequest<string, unknown>) => void
   handleSessionDisconnected: (peerMeta: PeerMeta) => void
+  handlePersistSessions: (approvedAppMeta: ApprovedAppMeta[]) => void
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -54,9 +57,12 @@ export const useWalletConnect = ({
   activeNetwork,
   handleSessionRequest,
   handleCallRequest,
-  handleSessionDisconnected
+  handleSessionDisconnected,
+  handlePersistSessions
 }: Params) => {
   const { capture } = usePosthogContext()
+  const approvedDApps = useSelector(selectApprovedDApps)
+
   useEffect(() => {
     WalletConnectService.setPosthogCapture(capture)
   }, [capture])
@@ -65,10 +71,14 @@ export const useWalletConnect = ({
    * Initialize Wallet Connect
    *****************************************************************************/
   useEffect(() => {
-    if (!activeAccount || !activeNetwork) return
+    if (!activeAccount || !activeNetwork || approvedDApps.length === 0) return
 
-    WalletConnectService.init(activeAccount, activeNetwork)
-  }, [activeAccount, activeNetwork])
+    WalletConnectService.restoreConnections(
+      approvedDApps,
+      activeAccount,
+      activeNetwork
+    )
+  }, [activeAccount, activeNetwork, approvedDApps])
 
   /******************************************************************************
    * Update dapp sessions if active address or chain id changes
@@ -129,4 +139,18 @@ export const useWalletConnect = ({
       )
     }
   }, [handleCallRequest])
+
+  useEffect(() => {
+    WalletConnectService.emitter.on(
+      WalletConnectRequest.PERSIST_SESSIONS,
+      handlePersistSessions
+    )
+
+    return () => {
+      WalletConnectService.emitter.removeListener(
+        WalletConnectRequest.PERSIST_SESSIONS,
+        handlePersistSessions
+      )
+    }
+  }, [handlePersistSessions])
 }
