@@ -17,6 +17,7 @@ const AccessExistingWalletItem = () => {
   return (
     <>
       <AvaListItem.Base
+        testID="access_existing_wallet_item__recover_wallet"
         title={'Recover Wallet'}
         titleAlignment={'flex-start'}
         showNavigationArrow

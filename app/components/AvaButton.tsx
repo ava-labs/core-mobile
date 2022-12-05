@@ -40,8 +40,7 @@ const AvaButtonBase: FC<BaseProps> = ({
       }}
       style={style}
       onPress={onPress}
-      disabled={disabled}
-      testID="buttonBase">
+      disabled={disabled}>
       {children}
     </Pressable>
   )
@@ -164,8 +163,7 @@ const BtnPrimaryLarge: FC<BaseProps> = ({
       <AvaText.ButtonLarge
         textStyle={{
           color: disabled ? theme.colorDisabled : textColor ?? theme.colorBg2
-        }}
-        testID="btnPrimaryLarge">
+        }}>
         {children}
       </AvaText.ButtonLarge>
     </BtnPrimary>
@@ -189,8 +187,7 @@ const BtnPrimaryMedium: FC<BaseProps> = ({
         textStyle={[
           { color: disabled ? theme.colorDisabled : theme.colorBg2 },
           textStyle
-        ]}
-        testID="btnPrimaryMedium">
+        ]}>
         {children}
       </AvaText.ButtonMedium>
     </BtnPrimary>
@@ -323,8 +320,7 @@ const BtnTextLink: FC<BaseProps> = ({
       <AvaText.TextLink
         textStyle={{
           color: disabled ? theme.colorDisabled : textColor ?? theme.colorBg2
-        }}
-        testID="btnTextLink">
+        }}>
         {children}
       </AvaText.TextLink>
     </BtnText>

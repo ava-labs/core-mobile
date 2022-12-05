@@ -36,18 +36,12 @@ export async function getRunIdFromName() {
   const todaysDate = new Date()
 
   const midnight = todaysDate.setHours(0, 0, 0, 0) / 1000
-  console.log(midnight)
 
   const content = {
     created_after: midnight
   }
   const myRun = await api.getRuns(projectId, content)
-  myRun.forEach(function (testRun: { name: any | undefined }) {
-    if (testRun.name === process.env.TEST_RUN_ID) {
-      console.log(testRun.name)
-    }
-  })
-  console.log(myRun[0]?.id)
+
   return myRun[0]?.id
 }
 
@@ -97,9 +91,7 @@ async function createNewTestSection(sectionName: any) {
 
 // Todo grab the test case names using the method
 export async function sectionsAndCases() {
-  const fileStream = fs.createReadStream(
-    '/Users/tyler.hackett/avalanche-wallet-apps/tests_to_report.txt'
-  )
+  const fileStream = fs.createReadStream('./tests_to_report.txt')
   const rl = readline.createInterface({
     input: fileStream,
     crlfDelay: Infinity

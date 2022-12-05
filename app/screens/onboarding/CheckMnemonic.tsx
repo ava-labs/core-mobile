@@ -12,6 +12,7 @@ type Props = {
   onSuccess: () => void
   onBack: () => void
   mnemonic: string
+  testID?: string
 }
 
 export default function CheckMnemonic(
@@ -50,25 +51,30 @@ export default function CheckMnemonic(
 
   return (
     <View style={styles.container}>
-      <AvaText.LargeTitleBold>Verify Phrase</AvaText.LargeTitleBold>
+      <AvaText.LargeTitleBold testID="check_mnemonic__title">
+        Verify Phrase
+      </AvaText.LargeTitleBold>
       <Space y={20} />
-      <AvaText.Body1>
+      <AvaText.Body1 testID="check_mnemonic__instructions">
         Select the words below to verify your Recovery Phrase.
       </AvaText.Body1>
       <Space y={24} />
       <WordSelection
+        testID="check_mnemonic__first_word"
         wordIndex={firstWordSelection.index}
         wordOptions={firstWordSelection.wordOptions}
         setSelectedWord={setSelectedWord1}
       />
       <Space y={24} />
       <WordSelection
+        testID="check_mnemonic__second_word"
         wordIndex={secondWordSelection.index}
         wordOptions={secondWordSelection.wordOptions}
         setSelectedWord={setSelectedWord2}
       />
       <Space y={24} />
       <WordSelection
+        testID="check_menemonic__third_word"
         wordIndex={thirdWordSelection.index}
         wordOptions={thirdWordSelection.wordOptions}
         setSelectedWord={setSelectedWord3}

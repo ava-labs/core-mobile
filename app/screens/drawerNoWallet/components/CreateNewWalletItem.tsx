@@ -17,6 +17,7 @@ const CreateNewWalletItem = () => {
   return (
     <>
       <AvaListItem.Base
+        testID="create_new_wallet_item__create_new_wallet"
         title={'Create New Wallet'}
         titleAlignment={'flex-start'}
         showNavigationArrow
