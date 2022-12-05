@@ -1,3 +1,4 @@
+import { IWalletConnectSession } from '@walletconnect/types'
 import { AvalancheBridgeAssetRequest } from './handlers/avalanche_bridgeAsset'
 import { AvalancheCreateContactRequest } from './handlers/avalanche_createContact'
 import { AvalancheGetAccountsRpcRequest } from './handlers/avalanche_getAccounts'
@@ -10,6 +11,8 @@ import { EthSignRpcRequest } from './handlers/eth_sign'
 import { SessionRequestRpcRequest } from './handlers/session_request'
 import { WalletAddEthereumChainRpcRequest } from './handlers/wallet_addEthereumChain'
 import { WalletSwitchEthereumChainRpcRequest } from './handlers/wallet_switchEthereumChain'
+
+export type ApprovedAppMeta = IWalletConnectSession & { uri: string }
 
 export type DappRpcRequests =
   | AvalancheGetAccountsRpcRequest
@@ -25,6 +28,7 @@ export type DappRpcRequests =
   | AvalancheBridgeAssetRequest
   | AvalancheSelectAccountRequest
 
-export type RpcState = {
+export type WalletConnectState = {
   requests: DappRpcRequests[]
+  approvedDApps: ApprovedAppMeta[]
 }

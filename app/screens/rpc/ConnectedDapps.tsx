@@ -1,10 +1,14 @@
-import React, { FC, useEffect, useLayoutEffect, useState } from 'react'
+import React, {
+  FC,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useState
+} from 'react'
 import { FlatList } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import AvaButton from 'components/AvaButton'
-import { IWalletConnectSession } from '@walletconnect/types'
 import AvaListItem from 'components/AvaListItem'
-import walletConnectService from 'services/walletconnect/WalletConnectService'
 import Logger from 'utils/Logger'
 import { Space } from 'components/Space'
 import { DeepLinkOrigin } from 'services/walletconnect/types'
@@ -22,6 +26,8 @@ import { Checkbox } from 'components/Checkbox'
 import { Row } from 'components/Row'
 import FlexSpacer from 'components/FlexSpacer'
 import { useApplicationContext } from 'contexts/ApplicationContext'
+import { useSelector } from 'react-redux'
+import { ApprovedAppMeta, selectApprovedDApps } from 'store/walletConnect'
 
 interface Props {
   goBack: () => void
@@ -31,20 +37,14 @@ type NavigationProp = SecurityPrivacyScreenProps<
   typeof AppNavigation.SecurityPrivacy.QRCode
 >['navigation']
 
-type SessionItem = {
-  session: IWalletConnectSession
-  killSession: () => Promise<void>
-}
-
 const ConnectedDapps: FC<Props> = ({ goBack }) => {
-  const { setPendingDeepLink } = useDappConnectionContext()
+  const { setPendingDeepLink, killSessions } = useDappConnectionContext()
   const [isEditing, setIsEditing] = useState(false)
   const [allSelected, setAllSelected] = useState(false)
-  const [sessionsToRemove, setSessionsToRemove] = useState<SessionItem[]>([])
-  const [connectedDappsSessions, setConnectedDappSessions] = useState<
-    SessionItem[]
-  >([])
-  const [refreshing, setRefreshing] = useState(false)
+  const [sessionsToRemove, setSessionsToRemove] = useState<ApprovedAppMeta[]>(
+    []
+  )
+  const connectedDAppsSessions = useSelector(selectApprovedDApps)
   const navigation = useNavigation<NavigationProp>()
   const theme = useApplicationContext().theme
 
@@ -66,56 +66,39 @@ const ConnectedDapps: FC<Props> = ({ goBack }) => {
     return () => {
       navigation.removeListener('beforeRemove', beforeBackListener)
     }
-  }, [isEditing, sessionsToRemove, setSessionsToRemove])
+  }, [isEditing, navigation, sessionsToRemove, setSessionsToRemove])
+
+  const getHeaderTitle = useCallback(() => {
+    return (
+      <AvaText.Heading1>
+        {isEditing ? `${sessionsToRemove.length} Selected` : ''}
+      </AvaText.Heading1>
+    )
+  }, [isEditing, sessionsToRemove.length])
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      headerTitle: () => (
-        <AvaText.Heading1>
-          {isEditing ? `${sessionsToRemove.length} Selected` : ''}
-        </AvaText.Heading1>
-      )
+      headerTitle: getHeaderTitle
     })
-  }, [isEditing, sessionsToRemove])
-
-  function refresh() {
-    setRefreshing(true)
-    try {
-      const sessions = walletConnectService.getConnections()
-      setConnectedDappSessions(sessions)
-    } catch (e) {
-      Logger.error('error loading sessions', e)
-    }
-    setRefreshing(false)
-  }
+  }, [getHeaderTitle, navigation])
 
   async function handleDelete() {
-    for (const session of sessionsToRemove) {
-      await session.killSession()
-    }
+    killSessions(sessionsToRemove)
     setIsEditing(false)
     setSessionsToRemove([])
-    refresh()
   }
 
   useEffect(() => {
     if (isEditing && allSelected) {
-      setSessionsToRemove(connectedDappsSessions)
+      setSessionsToRemove(connectedDAppsSessions)
     } else if (isEditing) {
       setSessionsToRemove([])
     }
-  }, [allSelected, isEditing])
+  }, [allSelected, connectedDAppsSessions, isEditing])
 
-  function handleSelect(item: {
-    session: IWalletConnectSession
-    killSession: () => Promise<void>
-  }) {
-    if (
-      sessionsToRemove?.some(it => it.session.peerId === item.session.peerId)
-    ) {
-      const removed = sessionsToRemove?.filter(
-        it => it.session.peerId !== item.session.peerId
-      )
+  function handleSelect(item: ApprovedAppMeta) {
+    if (sessionsToRemove?.some(it => it.peerId === item.peerId)) {
+      const removed = sessionsToRemove?.filter(it => it.peerId !== item.peerId)
       setSessionsToRemove(removed)
     } else {
       setSessionsToRemove([...sessionsToRemove, item])
@@ -136,10 +119,6 @@ const ConnectedDapps: FC<Props> = ({ goBack }) => {
     goBack()
   }
 
-  useEffect(() => {
-    refresh()
-  }, [])
-
   return (
     <SafeAreaView style={{ flex: 1 }}>
       {isEditing || (
@@ -150,7 +129,7 @@ const ConnectedDapps: FC<Props> = ({ goBack }) => {
       <Space y={32} />
       <FlatList
         ListHeaderComponent={
-          connectedDappsSessions.length > 0 ? (
+          connectedDAppsSessions.length > 0 ? (
             <>
               {isEditing ? (
                 <AvaListItem.Base
@@ -184,20 +163,15 @@ const ConnectedDapps: FC<Props> = ({ goBack }) => {
           ) : null
         }
         ListEmptyComponent={<ZeroState.Sites onAddNewConnection={handleAdd} />}
-        refreshing={refreshing}
-        onRefresh={refresh}
         contentContainerStyle={{ flex: 1 }}
-        data={connectedDappsSessions}
+        data={connectedDAppsSessions}
         renderItem={({ item, index }) => (
           <ConnectionListItem
             item={item}
             index={index}
             isEditing={isEditing}
-            refresh={refresh}
             onSelect={handleSelect}
-            selected={sessionsToRemove?.some(
-              it => it.session.peerId === item.session.peerId
-            )}
+            selected={sessionsToRemove?.some(it => it.peerId === item.peerId)}
           />
         )}
       />
@@ -219,11 +193,10 @@ const ConnectedDapps: FC<Props> = ({ goBack }) => {
 }
 
 interface ListItemProps {
-  item: SessionItem
+  item: ApprovedAppMeta
   index: number
   isEditing: boolean
-  refresh: () => void
-  onSelect: (item: SessionItem) => void
+  onSelect: (item: ApprovedAppMeta) => void
   selected: boolean
 }
 
@@ -231,18 +204,17 @@ export function ConnectionListItem({
   item,
   index,
   isEditing,
-  refresh,
   onSelect,
   selected
 }: ListItemProps) {
   const theme = useApplicationContext().theme
+  const { killSessions } = useDappConnectionContext()
 
   async function killSession() {
-    await item.killSession()
-    refresh()
+    killSessions([item])
   }
 
-  const peerMeta = item?.session?.peerMeta
+  const peerMeta = item.peerMeta
   const iconCount = peerMeta?.icons?.length ?? 0
 
   // try to get the icon with the highest resolution
@@ -255,13 +227,13 @@ export function ConnectionListItem({
       ? peerMeta?.icons[0]
       : undefined
 
-  const url = item?.session?.peerMeta?.url
+  const url = item.peerMeta?.url
     ?.replace(/^https?:\/\//, '')
     ?.replace('www.', '')
 
   Logger.warn(`iconUrl: ${iconUrl}`)
 
-  return item?.session ? (
+  return (
     <AvaListItem.Base
       key={index}
       leftComponent={
@@ -273,7 +245,7 @@ export function ConnectionListItem({
             </>
           )}
           <Avatar.Custom
-            name={item.session?.peerMeta?.name ?? 'Unknown'}
+            name={item.peerMeta?.name ?? 'Unknown'}
             logoUri={iconUrl}
           />
         </Row>
@@ -288,7 +260,7 @@ export function ConnectionListItem({
       }
       rightComponentVerticalAlignment={'center'}
     />
-  ) : null
+  )
 }
 
 export default ConnectedDapps

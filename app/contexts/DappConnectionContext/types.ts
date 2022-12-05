@@ -1,6 +1,7 @@
 import { Dispatch } from 'react'
 import { DeepLink } from 'services/walletconnect/types'
-import { DappRpcRequest } from 'store/rpc/handlers/types'
+import { DappRpcRequest } from 'store/walletConnect/handlers/types'
+import { ApprovedAppMeta } from 'store/walletConnect'
 
 export interface DappConnectionState {
   pendingDeepLink: DeepLink | undefined
@@ -13,4 +14,5 @@ export interface DappConnectionState {
     request: DappRpcRequest<string, unknown>,
     message?: string
   ) => void
+  killSessions: (sessions: ApprovedAppMeta[]) => void
 }

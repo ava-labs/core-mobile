@@ -2,8 +2,8 @@ import React, { FC } from 'react'
 import AddressBookSVG from 'components/svg/AddressBookSVG'
 import AddressBookItem from 'components/addressBook/AddressBookItem'
 import { capitalizeFirstLetter } from 'utils/string/capitalize'
-import { AvalancheCreateContactRequest } from 'store/rpc/handlers/avalanche_createContact'
-import { AvalancheRemoveContactRequest } from 'store/rpc/handlers/avalanche_removeContact'
+import { AvalancheCreateContactRequest } from 'store/walletConnect/handlers/avalanche_createContact'
+import { AvalancheRemoveContactRequest } from 'store/walletConnect/handlers/avalanche_removeContact'
 import SimplePrompt from './SimplePrompt'
 
 type Request = AvalancheCreateContactRequest | AvalancheRemoveContactRequest

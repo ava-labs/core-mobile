@@ -11,7 +11,7 @@ import { NativeViewGestureHandler } from 'react-native-gesture-handler'
 import FlexSpacer from 'components/FlexSpacer'
 import AccountItem from 'screens/portfolio/account/AccountItem'
 import { useActiveAccount } from 'hooks/useActiveAccount'
-import { SessionRequestRpcRequest } from 'store/rpc/handlers/session_request'
+import { SessionRequestRpcRequest } from 'store/walletConnect/handlers/session_request'
 import { showSnackBarCustom } from 'components/Snackbar'
 import GeneralToast from 'components/toast/GeneralToast'
 

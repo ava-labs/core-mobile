@@ -30,7 +30,7 @@ import { selectNetworkFee } from 'store/networkFee'
 import { selectNetworks } from 'store/network'
 import { ChainId } from '@avalabs/chains-sdk'
 import { useFindToken } from 'contracts/contractParsers/utils/useFindToken'
-import { EthSendTransactionRpcRequest } from 'store/rpc/handlers/eth_sendTransaction'
+import { EthSendTransactionRpcRequest } from 'store/walletConnect/handlers/eth_sendTransaction'
 
 const UNLIMITED_SPEND_LIMIT_LABEL = 'Unlimited'
 
