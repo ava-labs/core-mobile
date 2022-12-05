@@ -1,7 +1,7 @@
 import { Dispatch } from 'react'
 import { DeepLink } from 'services/walletconnect/types'
 import { DappRpcRequest } from 'store/rpc/handlers/types'
-import { ApprovedAppMeta } from 'store/dApp'
+import { ApprovedAppMeta } from 'store/rpc'
 
 export interface DappConnectionState {
   pendingDeepLink: DeepLink | undefined

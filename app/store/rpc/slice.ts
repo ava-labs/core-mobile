@@ -1,5 +1,5 @@
 import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { DappRpcRequests, RpcState } from 'store/rpc/types'
+import { ApprovedAppMeta, DappRpcRequests, RpcState } from 'store/rpc/types'
 import { RootState } from 'store/index'
 import { EthereumProviderError, EthereumRpcError } from 'eth-rpc-errors'
 import { DappRpcRequest, TypedJsonRpcRequest } from './handlers/types'
@@ -7,7 +7,8 @@ import { DappRpcRequest, TypedJsonRpcRequest } from './handlers/types'
 const reducerName = 'rpc'
 
 const initialState = {
-  requests: []
+  requests: [],
+  approvedDApps: []
 } as RpcState
 
 const rpcSlice = createSlice({
@@ -37,12 +38,28 @@ const rpcSlice = createSlice({
       }
 
       state.requests[index] = action.payload
+    },
+    setDApps: (state, action: PayloadAction<ApprovedAppMeta[]>) => {
+      state.approvedDApps = action.payload
+    },
+    removeDApp: (
+      state,
+      action: PayloadAction<{
+        peerId: string
+      }>
+    ) => {
+      state.approvedDApps = state.approvedDApps.filter(
+        value => value.peerId !== action.payload.peerId
+      )
     }
   }
 })
 
 // selectors
 export const selectRpcRequests = (state: RootState) => state.rpc.requests
+export const selectApprovedDApps = (state: RootState) => {
+  return Object.values(state.rpc.approvedDApps)
+}
 
 // actions
 export const rpcRequestReceived = createAction<
@@ -61,6 +78,12 @@ export const sendRpcError = createAction<{
   request: DappRpcRequest<string, unknown>
   error?: EthereumRpcError<unknown> | EthereumProviderError<unknown>
 }>(`${reducerName}/sendRpcError`)
-export const { addRequest, removeRequest, updateRequest } = rpcSlice.actions
+export const {
+  addRequest,
+  removeRequest,
+  updateRequest,
+  removeDApp,
+  setDApps
+} = rpcSlice.actions
 
 export const rpcReducer = rpcSlice.reducer

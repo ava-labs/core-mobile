@@ -8,7 +8,7 @@ import { EthereumProviderError, EthereumRpcError } from 'eth-rpc-errors'
 import { SessionRequestRpcRequest } from 'store/rpc/handlers/session_request'
 import { TypedJsonRpcRequest } from 'store/rpc/handlers/types'
 import { useSelector } from 'react-redux'
-import { ApprovedAppMeta, selectApprovedDApps } from 'store/dApp'
+import { ApprovedAppMeta, selectApprovedDApps } from 'store/rpc'
 
 type Params = {
   activeAccount: Account | undefined

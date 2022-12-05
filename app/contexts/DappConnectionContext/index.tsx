@@ -11,15 +11,16 @@ import { selectWalletState, WalletState } from 'store/app'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AppNavigation from 'navigation/AppNavigation'
 import {
+  ApprovedAppMeta,
   rpcRequestApproved,
   rpcRequestReceived,
   selectRpcRequests,
-  sendRpcError
+  sendRpcError,
+  setDApps
 } from 'store/rpc'
 import { DappRpcRequest, TypedJsonRpcRequest } from 'store/rpc/handlers/types'
 import { ethErrors } from 'eth-rpc-errors'
 import { SessionRequestRpcRequest } from 'store/rpc/handlers/session_request'
-import { ApprovedAppMeta, setDApps } from 'store/dApp'
 import WalletConnectService from 'services/walletconnect/WalletConnectService'
 import { processDeeplink } from './processDeepLinking'
 import { useWalletConnect } from './useWalletConnect'

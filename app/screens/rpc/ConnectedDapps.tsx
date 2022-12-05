@@ -27,7 +27,7 @@ import { Row } from 'components/Row'
 import FlexSpacer from 'components/FlexSpacer'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useSelector } from 'react-redux'
-import { ApprovedAppMeta, selectApprovedDApps } from 'store/dApp'
+import { ApprovedAppMeta, selectApprovedDApps } from 'store/rpc'
 
 interface Props {
   goBack: () => void

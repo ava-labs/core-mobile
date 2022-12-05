@@ -20,7 +20,7 @@ import { ethErrors } from 'eth-rpc-errors'
 import { SessionRequestRpcRequest } from 'store/rpc/handlers/session_request'
 import { TypedJsonRpcRequest } from 'store/rpc/handlers/types'
 import { PosthogCapture } from 'contexts/types'
-import { ApprovedAppMeta } from 'store/dApp'
+import { ApprovedAppMeta } from 'store/rpc'
 import {
   isCoreMethod,
   isFromCoreWeb,
