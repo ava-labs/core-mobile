@@ -244,7 +244,7 @@ class WalletConnectService {
       Logger.info('dapp emitting session request')
       emitter.emit(WalletConnectRequest.SESSION, request)
 
-      emitter.once(WalletConnectRequest.SESSION_APPROVED, (peerId: string) => {
+      function handleSessionApproved(peerId: string) {
         if (request.params[0]?.peerId === peerId) {
           Logger.info('dapp received emission approval for session')
           posthogCapture?.('WalletConnectSessionApproved', {
@@ -253,15 +253,25 @@ class WalletConnectService {
           })
           resolve(true)
         }
-        emitter.removeAllListeners(WalletConnectRequest.SESSION_REJECTED)
-      })
-      emitter.once(WalletConnectRequest.SESSION_REJECTED, (peerId: string) => {
+        emitter.removeListener(
+          WalletConnectRequest.SESSION_REJECTED,
+          handleSessionReject
+        )
+      }
+
+      function handleSessionReject(peerId: string) {
         if (request.params[0]?.peerId === peerId) {
           Logger.info('dapp received emission rejection for session')
           reject(new Error(WalletConnectRequest.SESSION_REJECTED))
         }
-        emitter.removeAllListeners(WalletConnectRequest.SESSION_APPROVED)
-      })
+        emitter.removeListener(
+          WalletConnectRequest.SESSION_APPROVED,
+          handleSessionApproved
+        )
+      }
+
+      emitter.once(WalletConnectRequest.SESSION_APPROVED, handleSessionApproved)
+      emitter.once(WalletConnectRequest.SESSION_REJECTED, handleSessionReject)
     })
 
   // Call request emitters
