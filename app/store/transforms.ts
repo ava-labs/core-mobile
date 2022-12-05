@@ -42,7 +42,7 @@ export const WatchlistBlacklistTransform = createTransform<
   }
 )
 
-// a transform for walletConnect to blacklist prices and charts
+// a transform for walletConnect to blacklist requests
 export const WalletConnectBlacklistTransform = createTransform<
   WalletConnectState,
   WalletConnectState,
