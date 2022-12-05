@@ -9,7 +9,7 @@ import { TransactionDescription } from '@ethersproject/abi'
 import { FindToken } from 'contracts/contractParsers/utils/useFindToken'
 import { Network } from '@avalabs/chains-sdk'
 import { ethers } from 'ethers'
-import { TransactionParams } from 'store/rpc/handlers/eth_sendTransaction'
+import { TransactionParams } from 'store/walletConnect/handlers/eth_sendTransaction'
 
 export async function approveTxHandler(
   findToken: FindToken,

@@ -1,9 +1,5 @@
 import { Alert } from 'react-native'
-import {
-  ACTIONS,
-  DeepLinkOrigin,
-  PROTOCOLS
-} from 'services/walletconnect/types'
+import { ACTIONS, PROTOCOLS } from 'services/walletconnect/types'
 import URL from 'url-parse'
 import URLParse from 'url-parse'
 import qs, { ParsedQs } from 'qs'
@@ -18,7 +14,6 @@ import Logger from 'utils/Logger'
  *****************************************************************************/
 export function processDeeplink(
   url: string,
-  origin?: DeepLinkOrigin,
   activeAccount?: Account,
   activeNetwork?: Network
 ) {
@@ -35,7 +30,7 @@ export function processDeeplink(
   }
   if (urlObj && url) {
     try {
-      handleLink(urlObj, url, params, origin, activeAccount, activeNetwork)
+      handleLink(urlObj, url, params, activeAccount, activeNetwork)
     } catch (e) {
       Logger.error('failed to process dapp link', e)
       Alert.alert((e as Error)?.message)
@@ -51,7 +46,6 @@ function handleLink(
   urlObj: URLParse<string>,
   originalUrl: string,
   params?: ParsedQs,
-  origin?: DeepLinkOrigin,
   activeAccount?: Account,
   activeNetwork?: Network
 ) {
@@ -62,13 +56,7 @@ function handleLink(
       if (!walletConnectService.isValidUri(originalUrl)) {
         return
       }
-      walletConnectService.newSession(
-        originalUrl,
-        !!params?.autosign,
-        origin,
-        activeAccount,
-        activeNetwork
-      )
+      walletConnectService.newSession(originalUrl, activeAccount, activeNetwork)
       break
     // handles Universal Link (iOS) url protocol
     case PROTOCOLS.HTTP:
@@ -84,13 +72,7 @@ function handleLink(
             return
           }
 
-          walletConnectService.newSession(
-            uri,
-            false,
-            origin,
-            activeAccount,
-            activeNetwork
-          )
+          walletConnectService.newSession(uri, activeAccount, activeNetwork)
         } else if (action === ACTIONS.WC) {
           // This is called from WC just to open the app, and it's not supposed to do anything
           return

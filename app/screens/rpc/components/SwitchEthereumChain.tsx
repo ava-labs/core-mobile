@@ -1,8 +1,8 @@
 import React, { FC } from 'react'
-import { WalletSwitchEthereumChainRpcRequest } from 'store/rpc/handlers/wallet_switchEthereumChain'
+import { WalletSwitchEthereumChainRpcRequest } from 'store/walletConnect/handlers/wallet_switchEthereumChain'
 import Avatar from 'components/Avatar'
-import { WalletAddEthereumChainRpcRequest } from 'store/rpc/handlers/wallet_addEthereumChain'
-import { DappRpcRequests } from 'store/rpc'
+import { WalletAddEthereumChainRpcRequest } from 'store/walletConnect/handlers/wallet_addEthereumChain'
+import { DappRpcRequests } from 'store/walletConnect'
 import SimplePrompt from './SimplePrompt'
 
 interface Props {

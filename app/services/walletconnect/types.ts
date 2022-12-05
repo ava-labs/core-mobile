@@ -3,6 +3,8 @@ import { IClientMeta } from '@walletconnect/types'
 
 const CORE_MOBILE_WALLET_ID = 'c3de833a-9cb0-4274-bb52-86e402ecfcd3'
 
+export type PeerId = string
+
 export const CLIENT_OPTIONS = {
   clientMeta: {
     // Required
@@ -12,7 +14,7 @@ export const CLIENT_OPTIONS = {
       'https://assets.website-files.com/5fec984ac113c1d4eec8f1ef/62602f568fb4677b559827e5_core.jpg'
     ],
     name: 'Core',
-    ssl: !__DEV__,
+    ssl: true,
     walletId: CORE_MOBILE_WALLET_ID // core web depends on this id to distinguish core mobile from other wallets
   }
 }
@@ -32,6 +34,7 @@ export enum WalletConnectRequest {
   SESSION_APPROVED = 'walletconnectSessionRequest::approved',
   SESSION_REJECTED = 'walletconnectSessionRequest::rejected',
   SESSION_DISCONNECTED = 'walletconnectSessionDisconnected',
+  PERSIST_SESSIONS = 'walletconnectPersistSessions',
   CALL = 'walletconnectCallRequest',
   CALL_APPROVED = 'walletconnectCallRequest::approved',
   CALL_REJECTED = 'walletconnectCallRequest::rejected'
@@ -83,8 +86,6 @@ export type SessionRequestData = {
   peerId: string
   peerMeta: PeerMeta
   chainId: string | null | undefined
-  autoSign: boolean
-  requestOriginatedFrom: string | undefined
 }
 
 export const CORE_ONLY_METHODS = [

@@ -12,8 +12,8 @@ import {
 } from 'react-native-gesture-handler'
 import FlexSpacer from 'components/FlexSpacer'
 import Avatar from 'components/Avatar'
-import { WalletAddEthereumChainRpcRequest } from 'store/rpc/handlers/wallet_addEthereumChain'
-import { DappRpcRequests } from 'store/rpc'
+import { WalletAddEthereumChainRpcRequest } from 'store/walletConnect/handlers/wallet_addEthereumChain'
+import { DappRpcRequests } from 'store/walletConnect'
 import SwitchEthereumChain from './SwitchEthereumChain'
 
 interface Props {

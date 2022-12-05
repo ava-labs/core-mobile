@@ -16,7 +16,7 @@ import { showSnackBarCustom } from 'components/Snackbar'
 import TransactionToast, {
   TransactionToastType
 } from 'components/toast/TransactionToast'
-import { EthSignRpcRequest } from 'store/rpc/handlers/eth_sign'
+import { EthSignRpcRequest } from 'store/walletConnect/handlers/eth_sign'
 import { MessageAction } from './types'
 
 interface Props {

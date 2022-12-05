@@ -11,14 +11,20 @@ import { selectWalletState, WalletState } from 'store/app'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AppNavigation from 'navigation/AppNavigation'
 import {
+  ApprovedAppMeta,
   rpcRequestApproved,
   rpcRequestReceived,
   selectRpcRequests,
-  sendRpcError
-} from 'store/rpc'
-import { DappRpcRequest, TypedJsonRpcRequest } from 'store/rpc/handlers/types'
+  sendRpcError,
+  setDApps
+} from 'store/walletConnect'
+import {
+  DappRpcRequest,
+  TypedJsonRpcRequest
+} from 'store/walletConnect/handlers/types'
 import { ethErrors } from 'eth-rpc-errors'
-import { SessionRequestRpcRequest } from 'store/rpc/handlers/session_request'
+import { SessionRequestRpcRequest } from 'store/walletConnect/handlers/session_request'
+import WalletConnectService from 'services/walletconnect/WalletConnectService'
 import { processDeeplink } from './processDeepLinking'
 import { useWalletConnect } from './useWalletConnect'
 import { useDeepLink } from './useDeepLink'
@@ -61,17 +67,16 @@ export const DappConnectionContextProvider = ({
   const appNavHook = useApplicationContext().appNavHook
   const { pendingDeepLink, setPendingDeepLink, expireDeepLink } = useDeepLink()
 
+  const handlePersistSessions = (approvedAppsMeta: ApprovedAppMeta[]) => {
+    dispatch(setDApps(approvedAppsMeta))
+  }
+
   /******************************************************************************
    * Process deep link if there is one pending and app is unlocked
    *****************************************************************************/
   useEffect(() => {
     if (pendingDeepLink && isWalletActive && activeAccount && activeNetwork) {
-      processDeeplink(
-        pendingDeepLink?.url,
-        pendingDeepLink?.origin,
-        activeAccount,
-        activeNetwork
-      )
+      processDeeplink(pendingDeepLink?.url, activeAccount, activeNetwork)
       // once we used the url, we can expire it
       expireDeepLink()
     }
@@ -141,12 +146,22 @@ export const DappConnectionContextProvider = ({
     [dispatch]
   )
 
+  const killSessions = useCallback(
+    async (sessionsToKill: ApprovedAppMeta[]) => {
+      for (const session of sessionsToKill) {
+        await WalletConnectService.killSession(session.peerId)
+      }
+    },
+    []
+  )
+
   useWalletConnect({
     activeAccount,
     activeNetwork,
     handleSessionRequest,
     handleCallRequest,
-    handleSessionDisconnected
+    handleSessionDisconnected,
+    handlePersistSessions
   })
 
   return (
@@ -155,7 +170,8 @@ export const DappConnectionContextProvider = ({
         onUserApproved,
         onUserRejected,
         pendingDeepLink,
-        setPendingDeepLink
+        setPendingDeepLink,
+        killSessions
       }}>
       {children}
     </DappConnectionContext.Provider>

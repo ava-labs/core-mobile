@@ -1,16 +1,21 @@
 import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { DappRpcRequests, RpcState } from 'store/rpc/types'
+import {
+  ApprovedAppMeta,
+  DappRpcRequests,
+  WalletConnectState
+} from 'store/walletConnect/types'
 import { RootState } from 'store/index'
 import { EthereumProviderError, EthereumRpcError } from 'eth-rpc-errors'
 import { DappRpcRequest, TypedJsonRpcRequest } from './handlers/types'
 
-const reducerName = 'rpc'
+const reducerName = 'walletConnect'
 
 const initialState = {
-  requests: []
-} as RpcState
+  requests: [],
+  approvedDApps: []
+} as WalletConnectState
 
-const rpcSlice = createSlice({
+const walletConnectSlice = createSlice({
   name: reducerName,
   initialState,
   reducers: {
@@ -37,12 +42,29 @@ const rpcSlice = createSlice({
       }
 
       state.requests[index] = action.payload
+    },
+    setDApps: (state, action: PayloadAction<ApprovedAppMeta[]>) => {
+      state.approvedDApps = action.payload
+    },
+    removeDApp: (
+      state,
+      action: PayloadAction<{
+        peerId: string
+      }>
+    ) => {
+      state.approvedDApps = state.approvedDApps.filter(
+        value => value.peerId !== action.payload.peerId
+      )
     }
   }
 })
 
 // selectors
-export const selectRpcRequests = (state: RootState) => state.rpc.requests
+export const selectRpcRequests = (state: RootState) =>
+  state.walletConnect.requests
+export const selectApprovedDApps = (state: RootState) => {
+  return Object.values(state.walletConnect.approvedDApps)
+}
 
 // actions
 export const rpcRequestReceived = createAction<
@@ -61,6 +83,12 @@ export const sendRpcError = createAction<{
   request: DappRpcRequest<string, unknown>
   error?: EthereumRpcError<unknown> | EthereumProviderError<unknown>
 }>(`${reducerName}/sendRpcError`)
-export const { addRequest, removeRequest, updateRequest } = rpcSlice.actions
+export const {
+  addRequest,
+  removeRequest,
+  updateRequest,
+  removeDApp,
+  setDApps
+} = walletConnectSlice.actions
 
-export const rpcReducer = rpcSlice.reducer
+export const walletConnectReducer = walletConnectSlice.reducer
