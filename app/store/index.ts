@@ -4,6 +4,7 @@ import { AnyAction, configureStore, ListenerEffectAPI } from '@reduxjs/toolkit'
 import { createMigrate, persistReducer, persistStore } from 'redux-persist'
 import {
   DeserializeBridgeTransform,
+  WalletConnectBlacklistTransform,
   WatchlistBlacklistTransform
 } from 'store/transforms'
 import bridge from 'store/bridge'
@@ -26,7 +27,7 @@ import { addressBookReducer as addressBook } from './addressBook'
 import settings from './settings'
 import swap from './swap'
 import { transactionApi } from './transaction'
-import { rpcReducer as rpc } from './rpc'
+import { rpcReducer as walletConnect } from './walletConnect'
 
 // list of reducers that don't need to be persisted
 // for nested blacklist, please use transform
@@ -35,7 +36,6 @@ const blacklist = [
   'balance',
   'networkFee',
   'swap',
-  'rpc',
   transactionApi.reducerPath,
   nftsApi.reducerPath
 ]
@@ -53,7 +53,7 @@ const combinedReducer = combineReducers({
   swap,
   nft,
   security,
-  rpc,
+  walletConnect,
 
   // user preferences
   settings,
@@ -99,6 +99,7 @@ export function configureEncryptedStore(secretKey: string) {
     transforms: [
       DeserializeBridgeTransform,
       WatchlistBlacklistTransform,
+      WalletConnectBlacklistTransform,
       encryptionTransform // last!
     ],
     migrate: createMigrate(migrations, { debug: __DEV__ }),

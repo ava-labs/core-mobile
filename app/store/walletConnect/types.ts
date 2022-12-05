@@ -28,7 +28,7 @@ export type DappRpcRequests =
   | AvalancheBridgeAssetRequest
   | AvalancheSelectAccountRequest
 
-export type RpcState = {
+export type WalletConnectState = {
   requests: DappRpcRequests[]
   approvedDApps: ApprovedAppMeta[]
 }

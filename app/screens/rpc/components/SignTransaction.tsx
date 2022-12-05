@@ -36,7 +36,7 @@ import { PopableContent } from 'components/PopableContent'
 import { PopableLabel } from 'components/PopableLabel'
 import { BigNumber } from 'ethers'
 import { ScrollView } from 'react-native-gesture-handler'
-import { EthSendTransactionRpcRequest } from 'store/rpc/handlers/eth_sendTransaction'
+import { EthSendTransactionRpcRequest } from 'store/walletConnect/handlers/eth_sendTransaction'
 import { TransactionError } from 'services/network/types'
 
 interface Props {

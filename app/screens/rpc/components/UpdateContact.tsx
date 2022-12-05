@@ -16,7 +16,7 @@ import { Contact as SharedContact } from '@avalabs/types'
 import { showSnackBarCustom } from 'components/Snackbar'
 import GeneralToast from 'components/toast/GeneralToast'
 import { Contact } from 'Repo'
-import { AvalancheUpdateContactRequest } from 'store/rpc/handlers/avalanche_updateContact'
+import { AvalancheUpdateContactRequest } from 'store/walletConnect/handlers/avalanche_updateContact'
 
 interface Props {
   dappEvent: AvalancheUpdateContactRequest

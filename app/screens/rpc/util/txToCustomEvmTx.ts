@@ -1,5 +1,5 @@
 import { BigNumber } from 'ethers'
-import { TransactionParams } from 'store/rpc/handlers/eth_sendTransaction'
+import { TransactionParams } from 'store/walletConnect/handlers/eth_sendTransaction'
 
 export async function txToCustomEvmTx(
   networkFee: BigNumber,

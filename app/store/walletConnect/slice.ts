@@ -1,15 +1,19 @@
 import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { ApprovedAppMeta, DappRpcRequests, RpcState } from 'store/rpc/types'
+import {
+  ApprovedAppMeta,
+  DappRpcRequests,
+  WalletConnectState
+} from 'store/walletConnect/types'
 import { RootState } from 'store/index'
 import { EthereumProviderError, EthereumRpcError } from 'eth-rpc-errors'
 import { DappRpcRequest, TypedJsonRpcRequest } from './handlers/types'
 
-const reducerName = 'rpc'
+const reducerName = 'walletConnect'
 
 const initialState = {
   requests: [],
   approvedDApps: []
-} as RpcState
+} as WalletConnectState
 
 const rpcSlice = createSlice({
   name: reducerName,
@@ -56,9 +60,10 @@ const rpcSlice = createSlice({
 })
 
 // selectors
-export const selectRpcRequests = (state: RootState) => state.rpc.requests
+export const selectRpcRequests = (state: RootState) =>
+  state.walletConnect.requests
 export const selectApprovedDApps = (state: RootState) => {
-  return Object.values(state.rpc.approvedDApps)
+  return Object.values(state.walletConnect.approvedDApps)
 }
 
 // actions

@@ -1,6 +1,6 @@
 import React, { FC } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { AvalancheSelectAccountRequest } from 'store/rpc/handlers/avalanche_selectAccount'
+import { AvalancheSelectAccountRequest } from 'store/walletConnect/handlers/avalanche_selectAccount'
 import AccountItem from 'screens/portfolio/account/AccountItem'
 import WalletSVG from 'components/svg/WalletSVG'
 import SimplePrompt from './SimplePrompt'

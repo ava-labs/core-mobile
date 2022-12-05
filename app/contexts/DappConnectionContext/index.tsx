@@ -17,10 +17,13 @@ import {
   selectRpcRequests,
   sendRpcError,
   setDApps
-} from 'store/rpc'
-import { DappRpcRequest, TypedJsonRpcRequest } from 'store/rpc/handlers/types'
+} from 'store/walletConnect'
+import {
+  DappRpcRequest,
+  TypedJsonRpcRequest
+} from 'store/walletConnect/handlers/types'
 import { ethErrors } from 'eth-rpc-errors'
-import { SessionRequestRpcRequest } from 'store/rpc/handlers/session_request'
+import { SessionRequestRpcRequest } from 'store/walletConnect/handlers/session_request'
 import WalletConnectService from 'services/walletconnect/WalletConnectService'
 import { processDeeplink } from './processDeepLinking'
 import { useWalletConnect } from './useWalletConnect'

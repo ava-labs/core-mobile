@@ -5,10 +5,10 @@ import WalletConnectService from 'services/walletconnect/WalletConnectService'
 import { Account } from 'store/account'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import { EthereumProviderError, EthereumRpcError } from 'eth-rpc-errors'
-import { SessionRequestRpcRequest } from 'store/rpc/handlers/session_request'
-import { TypedJsonRpcRequest } from 'store/rpc/handlers/types'
+import { SessionRequestRpcRequest } from 'store/walletConnect/handlers/session_request'
+import { TypedJsonRpcRequest } from 'store/walletConnect/handlers/types'
 import { useSelector } from 'react-redux'
-import { ApprovedAppMeta, selectApprovedDApps } from 'store/rpc'
+import { ApprovedAppMeta, selectApprovedDApps } from 'store/walletConnect'
 
 type Params = {
   activeAccount: Account | undefined

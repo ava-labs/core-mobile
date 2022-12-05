@@ -3,7 +3,7 @@ import { bigToLocaleString, bnToBig, hexToBN } from '@avalabs/utils-sdk'
 import { DisplayValueParserProps } from 'screens/rpc/util/types'
 import { calculateGasAndFees } from 'utils/Utils'
 import { Network } from '@avalabs/chains-sdk'
-import { TransactionParams } from 'store/rpc/handlers/eth_sendTransaction'
+import { TransactionParams } from 'store/walletConnect/handlers/eth_sendTransaction'
 
 export function isTxParams(
   params: Partial<TransactionParams>

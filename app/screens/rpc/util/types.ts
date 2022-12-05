@@ -4,7 +4,7 @@ import BN from 'bn.js'
 import { NetworkTokenWithBalance, TokenWithBalance } from 'store/balance'
 import { Network } from '@avalabs/chains-sdk'
 import { FindToken } from 'contracts/contractParsers/utils/useFindToken'
-import { TransactionParams } from 'store/rpc/handlers/eth_sendTransaction'
+import { TransactionParams } from 'store/walletConnect/handlers/eth_sendTransaction'
 import { PeerMeta } from 'services/walletconnect/types'
 
 export interface DisplayValueParserProps {

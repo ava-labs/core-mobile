@@ -5,7 +5,7 @@ import { ApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import { humanize } from 'utils/string/humanize'
-import { AvalancheBridgeAssetRequest } from 'store/rpc/handlers/avalanche_bridgeAsset'
+import { AvalancheBridgeAssetRequest } from 'store/walletConnect/handlers/avalanche_bridgeAsset'
 import Avatar from 'components/Avatar'
 import { showSnackBarCustom } from 'components/Snackbar'
 import TransactionToast, {

@@ -27,7 +27,7 @@ import { Row } from 'components/Row'
 import FlexSpacer from 'components/FlexSpacer'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useSelector } from 'react-redux'
-import { ApprovedAppMeta, selectApprovedDApps } from 'store/rpc'
+import { ApprovedAppMeta, selectApprovedDApps } from 'store/walletConnect'
 
 interface Props {
   goBack: () => void
