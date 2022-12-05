@@ -91,4 +91,4 @@ export const {
   setDApps
 } = rpcSlice.actions
 
-export const rpcReducer = rpcSlice.reducer
+export const walletConnectReducer = walletConnectSlice.reducer
