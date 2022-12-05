@@ -27,7 +27,7 @@ import { addressBookReducer as addressBook } from './addressBook'
 import settings from './settings'
 import swap from './swap'
 import { transactionApi } from './transaction'
-import { rpcReducer as walletConnect } from './walletConnect'
+import { walletConnectReducer as walletConnect } from './walletConnect'
 
 // list of reducers that don't need to be persisted
 // for nested blacklist, please use transform

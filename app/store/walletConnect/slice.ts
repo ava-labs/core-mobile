@@ -15,7 +15,7 @@ const initialState = {
   approvedDApps: []
 } as WalletConnectState
 
-const rpcSlice = createSlice({
+const walletConnectSlice = createSlice({
   name: reducerName,
   initialState,
   reducers: {
@@ -89,6 +89,6 @@ export const {
   updateRequest,
   removeDApp,
   setDApps
-} = rpcSlice.actions
+} = walletConnectSlice.actions
 
 export const walletConnectReducer = walletConnectSlice.reducer
