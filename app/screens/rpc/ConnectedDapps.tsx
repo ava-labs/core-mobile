@@ -88,14 +88,6 @@ const ConnectedDapps: FC<Props> = ({ goBack }) => {
     setSessionsToRemove([])
   }
 
-  useEffect(() => {
-    if (isEditing && allSelected) {
-      setSessionsToRemove(connectedDAppsSessions)
-    } else if (isEditing) {
-      setSessionsToRemove([])
-    }
-  }, [allSelected, connectedDAppsSessions, isEditing])
-
   function handleSelect(item: ApprovedAppMeta) {
     if (sessionsToRemove?.some(it => it.peerId === item.peerId)) {
       const removed = sessionsToRemove?.filter(it => it.peerId !== item.peerId)
@@ -119,6 +111,18 @@ const ConnectedDapps: FC<Props> = ({ goBack }) => {
     goBack()
   }
 
+  function handleSelectAll() {
+    setAllSelected(currentState => {
+      const newState = !currentState
+      if (newState) {
+        setSessionsToRemove(connectedDAppsSessions)
+      } else {
+        setSessionsToRemove([])
+      }
+      return newState
+    })
+  }
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       {isEditing || (
@@ -136,7 +140,7 @@ const ConnectedDapps: FC<Props> = ({ goBack }) => {
                   leftComponent={
                     <Checkbox
                       selected={allSelected}
-                      onPress={() => setAllSelected(!allSelected)}
+                      onPress={handleSelectAll}
                     />
                   }
                   title={'Select all'}
