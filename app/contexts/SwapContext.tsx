@@ -24,6 +24,7 @@ import { resolve } from '@avalabs/utils-sdk'
 import { Amount } from 'screens/swap/SwapView'
 import { InteractionManager } from 'react-native'
 import SentryWrapper from 'services/sentry/SentryWrapper'
+import { humanizeSwapErrors } from 'localization/errors'
 
 export type SwapStatus = 'Idle' | 'Preparing' | 'Swapping' | 'Success' | 'Fail'
 
@@ -202,7 +203,7 @@ export const SwapContextProvider = ({ children }: { children: ReactNode }) => {
             showSnackBarCustom({
               component: (
                 <TransactionToast
-                  message={'Swap Failed'}
+                  message={humanizeSwapErrors(err)}
                   type={TransactionToastType.ERROR}
                 />
               ),
