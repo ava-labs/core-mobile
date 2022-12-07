@@ -5,35 +5,23 @@ import AvaText from 'components/AvaText'
 import Switch from 'components/Switch'
 import Avatar from 'components/Avatar'
 import { useDispatch, useSelector } from 'react-redux'
-import {
-  selectIsZeroBalanceWhiteListed,
-  toggleWhitelist
-} from 'store/zeroBalance'
+import { selectIsTokenBlacklisted, toggleBlacklist } from 'store/portfolio'
 
 type Props = {
   id: string
-  balance?: string
   name: string
   image?: string
   symbol?: string
-  position: number
   onPress?: () => void
 }
 
-const TokenManagementItem: FC<Props> = ({
-  id,
-  balance,
-  name,
-  image,
-  symbol
-}) => {
+const TokenManagementItem: FC<Props> = ({ id, name, image, symbol }) => {
   const dispatch = useDispatch()
-  const isZeroBalanceWhiteListed = useSelector(
-    selectIsZeroBalanceWhiteListed(id)
-  )
+
+  const isBlacklisted = useSelector(selectIsTokenBlacklisted(id))
 
   function handleChange() {
-    dispatch(toggleWhitelist(id))
+    dispatch(toggleBlacklist(id))
   }
 
   const tokenLogo = (
@@ -47,21 +35,36 @@ const TokenManagementItem: FC<Props> = ({
     </View>
   )
 
-  const rightComponent = () => {
-    if (balance === undefined) {
-      return (
-        <Switch value={isZeroBalanceWhiteListed} onValueChange={handleChange} />
-      )
-    } else {
-      return <AvaText.Body2>{balance}</AvaText.Body2>
-    }
-  }
+  const rightComponent = (
+    <View
+      style={{
+        justifyContent: 'center',
+        alignItems: 'center'
+      }}>
+      <Switch value={!isBlacklisted} onValueChange={handleChange} />
+    </View>
+  )
+
+  const title = (
+    <View
+      style={{
+        flexGrow: 1,
+        marginRight: 15
+      }}>
+      <AvaText.Heading3 ellipsizeMode="tail">{name}</AvaText.Heading3>
+      <AvaText.Body2 numberOfLines={1} ellipsizeMode="tail">
+        {symbol}
+      </AvaText.Body2>
+    </View>
+  )
 
   return (
     <AvaListItem.Base
-      title={name}
+      title={title}
       leftComponent={tokenLogo}
-      rightComponent={rightComponent()}
+      rightComponent={rightComponent}
+      titleAlignment="flex-start"
+      rightComponentVerticalAlignment="center"
     />
   )
 }
