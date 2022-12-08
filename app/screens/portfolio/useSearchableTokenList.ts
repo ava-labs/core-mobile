@@ -5,17 +5,35 @@ import {
   refetchBalance,
   selectIsLoadingBalances,
   selectIsRefetchingBalances,
-  selectTokensWithBalance,
-  TokenType
+  selectTokensWithBalance
 } from 'store/balance'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectZeroBalanceWhiteList } from 'store/zeroBalance'
+import { selectTokenBlacklist } from 'store/portfolio'
 import BN from 'bn.js'
 import { selectAllNetworkTokensAsLocal } from 'store/network'
 
 const bnZero = new BN(0)
 
-export function useSearchableTokenList(hideZeroBalance = true): {
+const isGreaterThanZero = (token: LocalTokenWithBalance) =>
+  token.balance?.gt(bnZero)
+
+const isNotBlacklisted =
+  (tokenBlacklist: string[]) => (token: LocalTokenWithBalance) =>
+    !tokenBlacklist.includes(token.localId)
+
+const containSearchText = (text: string) => (token: LocalTokenWithBalance) => {
+  const substring = text.toLowerCase()
+
+  return (
+    token.name.toLowerCase().includes(substring) ||
+    token.symbol.toLowerCase().includes(substring)
+  )
+}
+
+export function useSearchableTokenList(
+  hideZeroBalance = true,
+  hideBlacklist = true
+): {
   searchText: string
   filteredTokenList: LocalTokenWithBalance[]
   setSearchText: (value: ((prevState: string) => string) | string) => void
@@ -25,13 +43,15 @@ export function useSearchableTokenList(hideZeroBalance = true): {
 } {
   const dispatch = useDispatch()
   const [searchText, setSearchText] = useState('')
-  const zeroBalanceWhitelist = useSelector(selectZeroBalanceWhiteList)
+  const tokenBlacklist = useSelector(selectTokenBlacklist)
   const isLoadingBalances = useSelector(selectIsLoadingBalances)
   const isRefetchingBalances = useSelector(selectIsRefetchingBalances)
   const tokensWithBalance = useSelector(selectTokensWithBalance)
   const allNetworkTokens = useSelector(selectAllNetworkTokensAsLocal)
+
+  // 1. merge tokens with balance with the remaining
+  // zero balance tokens from the active network
   const mergedTokens = useMemo(() => {
-    //append missing zero balance tokens from allNetworkTokens
     const tokensWithBalanceIDs: Record<LocalTokenId, boolean> = {}
     tokensWithBalance.forEach(token => {
       tokensWithBalanceIDs[token.localId] = true
@@ -42,61 +62,45 @@ export function useSearchableTokenList(hideZeroBalance = true): {
     return [...tokensWithBalance, ...remainingNetworkTokens]
   }, [allNetworkTokens, tokensWithBalance])
 
-  const tokensFilteredByZeroBal = useMemo(
-    () =>
-      filterByZeroBalance(mergedTokens, hideZeroBalance, zeroBalanceWhitelist),
-    [mergedTokens, hideZeroBalance, zeroBalanceWhitelist]
-  )
+  // 2. filter tokens by balance, blacklist and search text
+  const tokensFiltered = useMemo(() => {
+    const filters: Array<(token: LocalTokenWithBalance) => boolean> = []
 
+    if (hideZeroBalance) {
+      filters.push(isGreaterThanZero)
+    }
+
+    if (hideBlacklist) {
+      filters.push(isNotBlacklisted(tokenBlacklist))
+    }
+
+    if (searchText.length > 0) {
+      filters.push(containSearchText(searchText))
+    }
+
+    const filteredTokens = filters.reduce(
+      (tokens, filter) => tokens.filter(filter),
+      mergedTokens
+    )
+
+    return filteredTokens
+  }, [hideZeroBalance, hideBlacklist, searchText, mergedTokens, tokenBlacklist])
+
+  // 3. sort tokens by amount
   const tokensSortedByAmount = useMemo(
     () =>
-      tokensFilteredByZeroBal.slice().sort((a, b) => {
-        return (b?.balanceInCurrency ?? 0) - (a?.balanceInCurrency ?? 0)
-      }),
-    [tokensFilteredByZeroBal]
+      tokensFiltered
+        .slice()
+        .sort((a, b) => b.balanceInCurrency - a.balanceInCurrency),
+    [tokensFiltered]
   )
 
-  const filteredTokenList = useMemo(
-    () => filterTokensBySearchText(tokensSortedByAmount, searchText),
-    [tokensSortedByAmount, searchText]
-  )
-
-  function refetch() {
+  const refetch = () => {
     dispatch(refetchBalance())
   }
 
-  function filterByZeroBalance(
-    tokens: LocalTokenWithBalance[],
-    hideZeroBal: boolean,
-    zeroBalWhitelist: string[]
-  ) {
-    if (!hideZeroBal) return tokens
-
-    return tokens.filter(
-      token =>
-        token.type === TokenType.NATIVE || // always show native tokens
-        token.balance?.gt(bnZero) ||
-        zeroBalWhitelist.includes(token.localId)
-    )
-  }
-
-  function filterTokensBySearchText(
-    tokens: LocalTokenWithBalance[],
-    text: string
-  ) {
-    if (!text) {
-      return tokens
-    }
-    const substring = text.toLowerCase()
-    return tokens.filter(
-      token =>
-        (token.name && token.name.toLowerCase().includes(substring)) ||
-        (token.symbol && token.symbol.toLowerCase().includes(substring))
-    )
-  }
-
   return {
-    filteredTokenList,
+    filteredTokenList: tokensSortedByAmount,
     searchText,
     setSearchText,
     isLoading: isLoadingBalances,

@@ -17,7 +17,7 @@ import { appReducer as app, onLogOut, onRehydrationComplete } from './app'
 import { listener } from './middleware/listener'
 import { accountsReducer as account } from './account'
 import { watchlistReducer as watchlist } from './watchlist'
-import { zeroBalanceReducer as zeroBalance } from './zeroBalance'
+import { portfolioReducer as portfolio } from './portfolio'
 import { customTokenReducer as customToken } from './customToken'
 import { securityReducer as security } from './security'
 import { posthogReducer as posthog } from './posthog'
@@ -58,7 +58,7 @@ const combinedReducer = combineReducers({
   // user preferences
   settings,
   watchlist,
-  zeroBalance,
+  portfolio,
 
   // apis
   [transactionApi.reducerPath]: transactionApi.reducer,
