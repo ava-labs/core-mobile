@@ -5,6 +5,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState
 } from 'react'
 import PostHog from 'posthog-react-native'
@@ -17,8 +18,39 @@ import { useSelector } from 'react-redux'
 import { selectUserID } from 'store/posthog'
 import Logger from 'utils/Logger'
 import SentryWrapper from 'services/sentry/SentryWrapper'
-import { sanitizeFeatureFlags } from 'contexts/posthogUtils'
 import { FeatureGates, FeatureVars, PosthogCapture } from 'contexts/types'
+import { sanitizeFeatureFlags } from './utils'
+import { FeatureFlags } from './types'
+
+const PostHogDecideUrl = `${Config.POSTHOG_URL}/decide?v=2`
+const PostHogDecideFetchOptions = {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    api_key: Config.POSTHOG_FEATURE_FLAGS_KEY,
+    distinct_id: ''
+  })
+}
+
+const PostHogAnalyticsConfig = __DEV__
+  ? {
+      debug: true,
+      host: Config.POSTHOG_URL,
+      android: {
+        collectDeviceId: false
+      },
+      flushAt: 1,
+      flushInterval: 10
+    }
+  : {
+      debug: false,
+      host: Config.POSTHOG_URL,
+      android: {
+        collectDeviceId: false
+      }
+    }
 
 export const PosthogContext = createContext<PosthogContextState>(
   {} as PosthogContextState
@@ -32,6 +64,7 @@ export interface PosthogContextState {
   bridgeBtcBlocked: boolean
   bridgeEthBlocked: boolean
   sendBlocked: boolean
+  sendNftBlocked: boolean
   sentrySampleRate: number
 }
 
@@ -43,10 +76,48 @@ const DefaultFeatureFlagConfig = {
   [FeatureGates.BRIDGE_BTC]: true,
   [FeatureGates.BRIDGE_ETH]: true,
   [FeatureGates.SEND]: true,
-  [FeatureVars.SENTRY_SAMPLE_RATE]: '0.1'
+  [FeatureGates.SEND_NFT]: true,
+  [FeatureVars.SENTRY_SAMPLE_RATE]: '10' // 10% of events/errors
 }
 
 const ONE_MINUTE = 60 * 1000
+
+const processFlags = (flags: FeatureFlags) => {
+  const swapBlocked =
+    !flags[FeatureGates.SWAP] || !flags[FeatureGates.EVERYTHING]
+
+  const bridgeBlocked =
+    !flags[FeatureGates.BRIDGE] || !flags[FeatureGates.EVERYTHING]
+
+  const bridgeBtcBlocked =
+    !flags[FeatureGates.BRIDGE_BTC] || !flags[FeatureGates.EVERYTHING]
+
+  const bridgeEthBlocked =
+    !flags[FeatureGates.BRIDGE_ETH] || !flags[FeatureGates.EVERYTHING]
+
+  const sendBlocked =
+    !flags[FeatureGates.SEND] || !flags[FeatureGates.EVERYTHING]
+
+  const sendNftBlocked =
+    !flags[FeatureGates.SEND_NFT] || !flags[FeatureGates.EVERYTHING]
+
+  const eventsBlocked =
+    !flags[FeatureGates.EVENTS] || !flags[FeatureGates.EVERYTHING]
+
+  const sentrySampleRate =
+    parseInt((flags[FeatureVars.SENTRY_SAMPLE_RATE] as string) ?? '0') / 100
+
+  return {
+    swapBlocked,
+    bridgeBlocked,
+    bridgeBtcBlocked,
+    bridgeEthBlocked,
+    sendBlocked,
+    sendNftBlocked,
+    eventsBlocked,
+    sentrySampleRate
+  }
+}
 
 export const PosthogContextProvider = ({
   children
@@ -63,21 +134,27 @@ export const PosthogContextProvider = ({
     setTime: async time => AsyncStorage.setItem('POSTHOG_SUSPENDED', time)
   })
 
-  const [flags, setFlags] = useState<
-    Record<FeatureGates | FeatureVars, boolean | string>
-  >(DefaultFeatureFlagConfig)
+  const [flags, setFlags] = useState<FeatureFlags>(DefaultFeatureFlagConfig)
+
   const [analyticsConsent, setAnalyticsConsent] = useState<
     boolean | undefined
   >()
-  const swapBlocked = !flags['swap-feature'] || !flags.everything
-  const bridgeBlocked = !flags['bridge-feature'] || !flags.everything
-  const bridgeBtcBlocked = !flags['bridge-feature-btc'] || !flags.everything
-  const bridgeEthBlocked = !flags['bridge-feature-eth'] || !flags.everything
-  const sendBlocked = !flags['send-feature'] || !flags.everything
-  const eventsBlocked = !flags.events || !flags.everything
-  const sentrySampleRate =
-    parseInt((flags['sentry-sample-rate'] as string) ?? '0') / 100
-  SentryWrapper.setSampleRate(sentrySampleRate)
+
+  const {
+    swapBlocked,
+    bridgeBlocked,
+    bridgeBtcBlocked,
+    bridgeEthBlocked,
+    sendBlocked,
+    sendNftBlocked,
+    eventsBlocked,
+    sentrySampleRate
+  } = useMemo(() => processFlags(flags), [flags])
+
+  useEffect(
+    () => SentryWrapper.setSampleRate(sentrySampleRate),
+    [sentrySampleRate]
+  )
 
   const capture = useCallback(
     async (event: string, properties?: JsonMap) => {
@@ -92,21 +169,19 @@ export const PosthogContextProvider = ({
   )
 
   const reloadFeatureFlags = useCallback(() => {
-    fetch(`${Config.POSTHOG_URL}/decide?v=2`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        api_key: Config.POSTHOG_FEATURE_FLAGS_KEY,
-        distinct_id: ''
+    fetch(PostHogDecideUrl, PostHogDecideFetchOptions)
+      .then(response => {
+        if (response.ok) {
+          return response.json()
+        }
+        throw new Error('Something went wrong')
       })
-    })
-      .catch(reason => Logger.error(reason))
-      .then(value => value?.json())
-      .then(value => {
-        const sanitized = sanitizeFeatureFlags(value)
-        setFlags(prevState => ({ ...prevState, ...sanitized }))
+      .then(responseJson => {
+        const sanitized = sanitizeFeatureFlags(responseJson)
+        setFlags(sanitized)
+      })
+      .catch(error => {
+        Logger.error('failed to fetch feature flags', error)
       })
   }, [])
 
@@ -129,24 +204,10 @@ export const PosthogContextProvider = ({
 
   function initPosthog() {
     ;(async function () {
-      const config = __DEV__
-        ? {
-            debug: true,
-            host: Config.POSTHOG_URL,
-            android: {
-              collectDeviceId: false
-            },
-            flushAt: 1,
-            flushInterval: 10
-          }
-        : {
-            debug: false,
-            host: Config.POSTHOG_URL,
-            android: {
-              collectDeviceId: false
-            }
-          }
-      await PostHog.setup(Config.POSTHOG_ANALYTICS_KEY ?? '', config)
+      await PostHog.setup(
+        Config.POSTHOG_ANALYTICS_KEY ?? '',
+        PostHogAnalyticsConfig
+      )
 
       await disableAnalytics()
       setIsPosthogReady(true)
@@ -210,6 +271,7 @@ export const PosthogContextProvider = ({
         bridgeBtcBlocked,
         bridgeEthBlocked,
         sendBlocked,
+        sendNftBlocked,
         sentrySampleRate
       }}>
       {children}
