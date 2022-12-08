@@ -135,7 +135,7 @@ export async function performSwap(request: {
     )
       .setContext('svc.swap.contract_allowance')
       .executeAsync(async () => {
-        return await resolve(contract.allowance(userAddress, srcTokenAddress))
+        return await resolve(contract.allowance(userAddress, spender))
       })
 
     if (allowanceError) {
@@ -157,7 +157,7 @@ export async function performSwap(request: {
           )
         })
 
-      if (!(allowance as BigNumber).gt(sourceAmount)) {
+      if (!(allowance as BigNumber).gte(sourceAmount)) {
         const data = (
           await contract.populateTransaction?.approve?.(spender, sourceAmount)
         )?.data
