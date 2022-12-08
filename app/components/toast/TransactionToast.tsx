@@ -115,7 +115,7 @@ const getToastHeight = (type: TransactionToastType, txHash?: string) => {
       return 76
   }
 
-  return 60
+  return undefined
 }
 
 const TransactionToast: FC<Props> = ({ message, toastId, type, txHash }) => {
@@ -140,7 +140,9 @@ const TransactionToast: FC<Props> = ({ message, toastId, type, txHash }) => {
     justifyContent: 'center',
     width: WINDOW_WIDTH * 0.89,
     paddingHorizontal: 16,
-    height: getToastHeight(type, txHash)
+    paddingVertical: 16,
+    height: getToastHeight(type, txHash),
+    minHeight: 60
   } as StyleProp<ViewStyle>
 
   return (

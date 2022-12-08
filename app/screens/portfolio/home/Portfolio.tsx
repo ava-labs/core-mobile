@@ -41,7 +41,7 @@ const Portfolio = () => {
       <TabViewAva
         onTabIndexChange={tabIndex => capturePosthogEvents(tabIndex)}
         renderCustomLabel={renderCustomLabel}>
-        <TabViewAva.Item title={'Tokens'}>
+        <TabViewAva.Item title={'Assets'}>
           <TokensTab />
         </TabViewAva.Item>
         {!collectiblesDisabled && (
