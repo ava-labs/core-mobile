@@ -207,7 +207,7 @@ export const SwapContextProvider = ({ children }: { children: ReactNode }) => {
                   type={TransactionToastType.ERROR}
                 />
               ),
-              duration: 'short'
+              duration: 'long'
             })
           } else {
             setSwapStatus('Success')
