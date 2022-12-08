@@ -34,19 +34,19 @@ export async function getSwapRate({
 }) {
   if (!fromTokenAddress || !fromTokenDecimals) {
     return {
-      error: 'no source token on request'
+      error: 'no source token selected'
     }
   }
 
   if (!toTokenAddress || !toTokenDecimals) {
     return {
-      error: 'no destination token on request'
+      error: 'no destination token selected'
     }
   }
 
   if (!amount) {
     return {
-      error: 'no amount on request'
+      error: 'no amount'
     }
   }
 
