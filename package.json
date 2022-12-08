@@ -11,6 +11,7 @@
     "start": "react-native start",
     "link": "react-native link",
     "test": "jest",
+    "test:ci": "yarn run test --ci --silent",
     "tsc": "tsc",
     "lint": "eslint .",
     "lint:ci": "yarn run lint --quiet --format json --output-file eslint_report.json",

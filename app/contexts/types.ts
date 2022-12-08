@@ -7,7 +7,8 @@ export enum FeatureGates {
   BRIDGE = 'bridge-feature',
   BRIDGE_BTC = 'bridge-feature-btc',
   BRIDGE_ETH = 'bridge-feature-eth',
-  SEND = 'send-feature'
+  SEND = 'send-feature',
+  SEND_NFT = 'send-nft-feature'
 }
 
 export enum FeatureVars {
