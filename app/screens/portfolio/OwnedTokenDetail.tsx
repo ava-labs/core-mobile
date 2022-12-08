@@ -24,7 +24,7 @@ type ScreenProps = WalletScreenProps<
 const OwnedTokenDetail: FC = () => {
   const { tokenId } = useRoute<ScreenProps['route']>().params
   const { navigate } = useNavigation<ScreenProps['navigation']>()
-  const { filteredTokenList } = useSearchableTokenList(false)
+  const { filteredTokenList } = useSearchableTokenList()
   const [token, setToken] = useState<TokenWithBalance>()
 
   useEffect(loadToken, [filteredTokenList, token, tokenId])

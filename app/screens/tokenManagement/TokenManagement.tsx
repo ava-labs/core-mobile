@@ -1,5 +1,5 @@
 import React from 'react'
-import { FlatList, ListRenderItemInfo, Platform, View } from 'react-native'
+import { FlatList, ListRenderItemInfo, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 import TokenManagementItem from 'screens/tokenManagement/TokenManagementItem'
@@ -22,7 +22,7 @@ type NavigationProp = WalletScreenProps<
 
 function TokenManagement(): JSX.Element {
   const { filteredTokenList, searchText, setSearchText, refetch } =
-    useSearchableTokenList(false)
+    useSearchableTokenList(true, false)
 
   // only show erc20 tokens here
   const tokenList = filteredTokenList.filter(
@@ -34,17 +34,12 @@ function TokenManagement(): JSX.Element {
   const renderItem = (item: ListRenderItemInfo<LocalTokenWithBalance>) => {
     const token = item.item
     const logoUri = token.logoUri
-    const balance = !token.balance.isZero()
-      ? `${token.balanceDisplayValue} ${token.symbol}`
-      : undefined
 
     return (
       <TokenManagementItem
         id={token.localId}
-        balance={balance}
         name={token.name}
         symbol={token.symbol}
-        position={item.index + 1}
         image={logoUri}
       />
     )
@@ -56,14 +51,8 @@ function TokenManagement(): JSX.Element {
     setSearchText(text)
   }
 
-  const descriptionPadding = Platform.OS === 'ios' ? 24 : 32
-
   return (
     <View style={{ flex: 1 }}>
-      <AvaText.Body1
-        textStyle={{ alignSelf: 'center', paddingStart: descriptionPadding }}>
-        Add or remove tokens without balance
-      </AvaText.Body1>
       <View style={{ marginHorizontal: 16 }}>
         <SearchBar onTextChanged={handleSearch} searchText={searchText} />
       </View>
@@ -93,7 +82,6 @@ function TokenManagement(): JSX.Element {
   )
 }
 
-// not currently in use due to lack of SKD support
 const AddCustomTokenButton = ({ onPress }: { onPress: () => void }) => {
   const { theme } = useApplicationContext()
   return (
