@@ -1,7 +1,12 @@
+type ObjWithError = { error: string }
+
+const isObjWithError = (error: unknown): error is ObjWithError =>
+  Boolean(typeof error === 'object' && error && 'error' in error)
+
 export function humanizeSwapErrors(err: unknown): string {
   let errorString = ''
-  if (typeof err === 'object' && err && 'error' in err) {
-    errorString = (err as { error: string }).error
+  if (isObjWithError(err)) {
+    errorString = err.error
   } else if (typeof err === 'string') {
     errorString = err
   }
@@ -10,10 +15,10 @@ export function humanizeSwapErrors(err: unknown): string {
     errorString.startsWith('Not enough') &&
     errorString.includes('allowance')
   ) {
-    return 'Swap failed: not enough allowance.'
+    return 'Swap failed! Not enough allowance.'
   }
   if (errorString.includes('-32000')) {
-    return 'Swap failed: transaction nonce is out of sync. Are you using same wallet on different apps?'
+    return 'Swap failed! Another transaction is pending. Rise gas price to overwrite it.'
   }
-  return 'Swap failed: unknown reason'
+  return 'Swap failed! Please try again.'
 }
