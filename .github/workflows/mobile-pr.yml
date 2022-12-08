@@ -37,3 +37,6 @@ jobs:
 
       - name: Typescript
         run: yarn tsc
+
+      - name: Test
+        run: yarn test:ci
