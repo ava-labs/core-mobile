@@ -9,6 +9,7 @@ import { NFTItemData, NFTItemExternalDataAttribute } from 'store/nft'
 import { SvgXml } from 'react-native-svg'
 import { truncateAddress } from '@avalabs/utils-sdk'
 import { isAddress } from '@ethersproject/address'
+import { usePosthogContext } from 'contexts/PosthogContext'
 
 const imageWidth = Dimensions.get('window').width - 32
 
@@ -25,7 +26,7 @@ export default function NftDetails({
 }: NftDetailsProps) {
   const [imgLoadFailed, setImgLoadFailed] = useState(false)
   const { theme } = useApplicationContext()
-
+  const { sendNftBlocked } = usePosthogContext()
   const createdByTxt = isAddress(item.owner)
     ? truncateAddress(item.owner)
     : item.owner
@@ -71,9 +72,11 @@ export default function NftDetails({
           </View>
         )}
       </AvaButton.Base>
-      <AvaButton.SecondaryLarge onPress={() => onSendPressed(item)}>
-        Send
-      </AvaButton.SecondaryLarge>
+      {!sendNftBlocked && (
+        <AvaButton.SecondaryLarge onPress={() => onSendPressed(item)}>
+          Send
+        </AvaButton.SecondaryLarge>
+      )}
       <Space y={24} />
       <AvaText.Heading2>Description</AvaText.Heading2>
       <Space y={16} />
