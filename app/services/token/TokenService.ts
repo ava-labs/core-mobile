@@ -25,7 +25,7 @@ import {
 import NetworkService from 'services/network/NetworkService'
 import { MarketToken } from 'store/watchlist'
 import xss from 'xss'
-import { ChartData, PriceWithMarketData } from './types'
+import { ChartData, GetMarketsParams, PriceWithMarketData } from './types'
 import { transformContractMarketChartResponse } from './utils'
 
 const coingeckoBasicClient = getBasicCoingeckoHttp()
@@ -74,11 +74,13 @@ export class TokenService {
   }
 
   // if coinIds are undefined, the top 100 tokens will be returned
-  async getMarkets(
-    currency: VsCurrencyType = VsCurrencyType.USD,
-    sparkline: boolean,
-    coinIds?: string[]
-  ): Promise<CoinMarket[]> {
+  async getMarkets({
+    currency = VsCurrencyType.USD,
+    sparkline = false,
+    coinIds,
+    perPage,
+    page
+  }: GetMarketsParams): Promise<CoinMarket[]> {
     let data: CoinMarket[] | undefined
 
     const key = coinIds
@@ -93,7 +95,9 @@ export class TokenService {
       data = await coinsMarket(coingeckoBasicClient, {
         currency,
         sparkline,
-        coinIds
+        coinIds,
+        perPage,
+        page
       })
       setCache(cacheId, data)
     }
