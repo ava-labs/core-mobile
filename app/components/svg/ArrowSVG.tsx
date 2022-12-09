@@ -29,7 +29,8 @@ function ArrowSVG({ color = '#FFF', size = 15, rotate = 0 }: Prop) {
         justifyContent: 'center',
         alignItems: 'center',
         transform: [{ rotate: `${rotate}deg` }]
-      }}>
+      }}
+      testID="arrow_svg">
       <Arrow size={size} color={iconColor} />
     </View>
   )
