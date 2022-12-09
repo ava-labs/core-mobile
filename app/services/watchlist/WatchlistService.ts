@@ -1,4 +1,4 @@
-import { Network } from '@avalabs/chains-sdk'
+import { ChainId, Network } from '@avalabs/chains-sdk'
 import { CoinMarket, VsCurrencyType } from '@avalabs/coingecko-sdk'
 import TokenService from 'services/token/TokenService'
 import { transformSparklineData } from 'services/token/utils'
@@ -7,6 +7,12 @@ import { Charts, MarketToken, Prices } from 'store/watchlist'
 const coinByAddress = require('assets/coinByAddress.json')
 
 const notFoundId = -1
+
+const getMarketsCommonParams = {
+  sparkline: true,
+  perPage: 250,
+  page: 1
+}
 
 const getCoingeckoId = (address: string, symbol: string) => {
   if (coinByAddress[address] && coinByAddress[address].symbol === symbol) {
@@ -25,18 +31,23 @@ class WatchlistService {
     tokens: Record<string, MarketToken>
     charts: Charts
   }> {
-    // 1. get top 100 tokens with sparkline data
-    const top100Tokens = await TokenService.getMarkets(
-      currency.toLowerCase() as VsCurrencyType,
-      true
-    )
+    // 1. get top 250 tokens with sparkline data
+    const top250Tokens = await TokenService.getMarkets({
+      currency: currency.toLowerCase() as VsCurrencyType,
+      ...getMarketsCommonParams
+    })
 
     // 2. get all network contract tokens + favorite tokens with sparkline data
-    const top100TokenIds = top100Tokens.map(token => token.id)
+    const top250TokenIds = top250Tokens.map(token => token.id)
 
     const tokenIdsToFetch: string[] = []
 
-    allNetworks.forEach(({ tokens }) => {
+    allNetworks.forEach(({ chainId, tokens }) => {
+      if (chainId === ChainId.ETHEREUM_HOMESTEAD) {
+        // skipping ethereum network's tokens since it has over 4k tokens
+        return
+      }
+
       tokens?.forEach(tk => {
         const symbol = tk.symbol.toUpperCase()
 
@@ -56,7 +67,7 @@ class WatchlistService {
 
         if (
           coingeckoId === notFoundId ||
-          top100TokenIds.includes(coingeckoId) ||
+          top250TokenIds.includes(coingeckoId) ||
           tokenIdsToFetch.includes(coingeckoId)
         ) {
           // uncomment to log tokens that are not available on coingecko
@@ -82,18 +93,18 @@ class WatchlistService {
 
     if (tokenIdsToFetch.length !== 0) {
       // network contract tokens and favorite tokens
-      otherTokens = await TokenService.getMarkets(
-        currency as VsCurrencyType,
-        true,
-        tokenIdsToFetch
-      )
+      otherTokens = await TokenService.getMarkets({
+        currency: currency as VsCurrencyType,
+        coinIds: tokenIdsToFetch,
+        ...getMarketsCommonParams
+      })
     }
 
     const tokens: Record<string, MarketToken> = {}
     const charts: Charts = {}
 
     // 3. combine 1 and 2 and extract tokens and charts data
-    top100Tokens.concat(otherTokens).forEach(token => {
+    top250Tokens.concat(otherTokens).forEach(token => {
       const tokenToAdd = {
         id: token.id,
         symbol: token.symbol,
@@ -147,11 +158,12 @@ class WatchlistService {
         currency as VsCurrencyType
       )
 
-      const marketPromise = await TokenService.getMarkets(
-        currency as VsCurrencyType,
-        true,
-        coinIds
-      )
+      const marketPromise = await TokenService.getMarkets({
+        currency: currency as VsCurrencyType,
+        coinIds,
+        ...getMarketsCommonParams
+      })
+
       const [pricesRaw, marketsRaw] = await Promise.all([
         pricePromise,
         marketPromise
