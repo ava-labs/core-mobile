@@ -9,7 +9,8 @@ export enum FeatureGates {
   BRIDGE_ETH = 'bridge-feature-eth',
   SEND = 'send-feature',
   SEND_NFT_IOS = 'send-nft-ios-feature',
-  SEND_NFT_ANDROID = 'send-nft-android-feature'
+  SEND_NFT_ANDROID = 'send-nft-android-feature',
+  USE_FLATLIST_ANDROID = 'use-flatlist-android'
 }
 
 export enum FeatureVars {

@@ -1,6 +1,9 @@
 import React from 'react'
-import { StyleSheet } from 'react-native'
-import { FlashList, ListRenderItemInfo } from '@shopify/flash-list'
+import {
+  StyleSheet,
+  ListRenderItemInfo as FlatListRenderItemInfo
+} from 'react-native'
+import { ListRenderItemInfo as FlashListRenderItemInfo } from '@shopify/flash-list'
 import WatchListItem from 'screens/watchlist/components/WatchListItem'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
@@ -19,6 +22,7 @@ import {
   Prices
 } from 'store/watchlist'
 import { formatLargeCurrency } from 'utils/Utils'
+import AvaFlashList from 'components/AvaFlashList'
 import { WatchlistFilter } from '../types'
 
 const getDisplayValue = (
@@ -41,6 +45,7 @@ interface Props {
   filterBy: WatchlistFilter
   isShowingFavorites?: boolean
   isSearching?: boolean
+  onExploreAllTokens?: () => void
 }
 
 type NavigationProp = TabsScreenProps<
@@ -53,7 +58,8 @@ const WatchList: React.FC<Props> = ({
   charts,
   filterBy,
   isShowingFavorites,
-  isSearching
+  isSearching,
+  onExploreAllTokens
 }) => {
   const navigation = useNavigation<NavigationProp>()
   const { currencyFormatter } = useApplicationContext().appHook
@@ -61,8 +67,15 @@ const WatchList: React.FC<Props> = ({
 
   const keyExtractor = (item: MarketToken) => item.id
 
-  const renderItem = (item: ListRenderItemInfo<MarketToken>) => {
-    const token = item.item
+  const flatListRenderItem = (item: FlatListRenderItemInfo<MarketToken>) => {
+    return renderItem(item.item)
+  }
+
+  const flashListRenderItem = (item: FlashListRenderItemInfo<MarketToken>) => {
+    return renderItem(item.item)
+  }
+
+  function renderItem(token: MarketToken) {
     const chartData = charts[token.id] ?? defaultChartData
     const price = prices[token.id] ?? defaultPrice
     const displayValue = getDisplayValue(price, currencyFormatter)
@@ -83,13 +96,16 @@ const WatchList: React.FC<Props> = ({
   }
 
   return (
-    <FlashList
+    <AvaFlashList
       data={tokens}
-      renderItem={renderItem}
+      flashRenderItem={flashListRenderItem}
+      flatRenderItem={flatListRenderItem}
       ItemSeparatorComponent={SeparatorComponent}
       ListEmptyComponent={
         isShowingFavorites && !isSearching ? (
-          <ZeroState.NoWatchlistFavorites />
+          <ZeroState.NoWatchlistFavorites
+            exploreAllTokens={onExploreAllTokens}
+          />
         ) : (
           <ZeroState.NoResultsTextual
             message={
@@ -101,7 +117,6 @@ const WatchList: React.FC<Props> = ({
       refreshing={false}
       onRefresh={() => dispatch(onWatchlistRefresh)}
       keyExtractor={keyExtractor}
-      indicatorStyle="white"
       estimatedItemSize={64}
       extraData={{
         filterBy
