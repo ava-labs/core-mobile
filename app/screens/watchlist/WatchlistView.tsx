@@ -1,7 +1,6 @@
 import React, { Dispatch, useEffect, useMemo, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { SafeAreaProvider } from 'react-native-safe-area-context'
 import Dropdown from 'components/Dropdown'
 import AvaText from 'components/AvaText'
 import {
@@ -168,35 +167,33 @@ const WatchlistView: React.FC<Props> = ({
   )
 
   return (
-    <SafeAreaProvider style={styles.container}>
-      <>
-        <View style={styles.filterContainer}>
-          <Dropdown
-            alignment={'flex-start'}
-            width={140}
-            data={filterPriceOptions}
-            selectedIndex={selectedPriceFilter}
-            onItemSelected={setFilterBy}
-            selectionRenderItem={renderPriceFilterSelection}
+    <>
+      <View style={styles.filterContainer}>
+        <Dropdown
+          alignment={'flex-start'}
+          width={140}
+          data={filterPriceOptions}
+          selectedIndex={selectedPriceFilter}
+          onItemSelected={setFilterBy}
+          selectionRenderItem={renderPriceFilterSelection}
+        />
+      </View>
+      {showLoader ? (
+        <WatchListLoader />
+      ) : (
+        <>
+          <WatchList
+            tokens={sortedTokens}
+            charts={charts}
+            prices={prices}
+            filterBy={filterBy}
+            isShowingFavorites={showFavorites}
+            isSearching={isSearching}
+            onExploreAllTokens={() => onTabIndexChanged?.(1)}
           />
-        </View>
-        {showLoader ? (
-          <WatchListLoader />
-        ) : (
-          <>
-            <WatchList
-              tokens={sortedTokens}
-              charts={charts}
-              prices={prices}
-              filterBy={filterBy}
-              isShowingFavorites={showFavorites}
-              isSearching={isSearching}
-              onExploreAllTokens={() => onTabIndexChanged?.(1)}
-            />
-          </>
-        )}
-      </>
-    </SafeAreaProvider>
+        </>
+      )}
+    </>
   )
 }
 
