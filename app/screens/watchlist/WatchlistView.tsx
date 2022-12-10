@@ -198,9 +198,6 @@ const WatchlistView: React.FC<Props> = ({
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1
-  },
   filterContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
