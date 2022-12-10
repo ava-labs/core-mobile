@@ -1,5 +1,12 @@
 import React, { useState } from 'react'
-import { Image, ScrollView, StyleSheet, View, Dimensions } from 'react-native'
+import {
+  Image,
+  ScrollView,
+  StyleSheet,
+  View,
+  Dimensions,
+  Platform
+} from 'react-native'
 import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
 import { Space } from 'components/Space'
@@ -26,10 +33,24 @@ export default function NftDetails({
 }: NftDetailsProps) {
   const [imgLoadFailed, setImgLoadFailed] = useState(false)
   const { theme } = useApplicationContext()
-  const { sendNftBlocked } = usePosthogContext()
+  const { sendNftBlockediOS, sendNftBlockedAndroid } = usePosthogContext()
   const createdByTxt = isAddress(item.owner)
     ? truncateAddress(item.owner)
     : item.owner
+
+  const renderSendBtn = () => {
+    const shouldHide =
+      (Platform.OS === 'ios' && sendNftBlockediOS) ||
+      (Platform.OS === 'android' && sendNftBlockedAndroid)
+
+    if (shouldHide) return null
+
+    return (
+      <AvaButton.SecondaryLarge onPress={() => onSendPressed(item)}>
+        Send
+      </AvaButton.SecondaryLarge>
+    )
+  }
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -72,11 +93,7 @@ export default function NftDetails({
           </View>
         )}
       </AvaButton.Base>
-      {!sendNftBlocked && (
-        <AvaButton.SecondaryLarge onPress={() => onSendPressed(item)}>
-          Send
-        </AvaButton.SecondaryLarge>
-      )}
+      {renderSendBtn()}
       <Space y={24} />
       <AvaText.Heading2>Description</AvaText.Heading2>
       <Space y={16} />

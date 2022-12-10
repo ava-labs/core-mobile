@@ -18,9 +18,13 @@ import { useSelector } from 'react-redux'
 import { selectUserID } from 'store/posthog'
 import Logger from 'utils/Logger'
 import SentryWrapper from 'services/sentry/SentryWrapper'
-import { FeatureGates, FeatureVars, PosthogCapture } from 'contexts/types'
 import { sanitizeFeatureFlags } from './utils'
-import { FeatureFlags } from './types'
+import {
+  FeatureFlags,
+  FeatureGates,
+  FeatureVars,
+  PosthogCapture
+} from './types'
 
 const PostHogDecideUrl = `${Config.POSTHOG_URL}/decide?v=2`
 const PostHogDecideFetchOptions = {
@@ -64,7 +68,8 @@ export interface PosthogContextState {
   bridgeBtcBlocked: boolean
   bridgeEthBlocked: boolean
   sendBlocked: boolean
-  sendNftBlocked: boolean
+  sendNftBlockediOS: boolean
+  sendNftBlockedAndroid: boolean
   sentrySampleRate: number
 }
 
@@ -76,7 +81,8 @@ const DefaultFeatureFlagConfig = {
   [FeatureGates.BRIDGE_BTC]: true,
   [FeatureGates.BRIDGE_ETH]: true,
   [FeatureGates.SEND]: true,
-  [FeatureGates.SEND_NFT]: true,
+  [FeatureGates.SEND_NFT_IOS]: true,
+  [FeatureGates.SEND_NFT_ANDROID]: true,
   [FeatureVars.SENTRY_SAMPLE_RATE]: '10' // 10% of events/errors
 }
 
@@ -98,8 +104,11 @@ const processFlags = (flags: FeatureFlags) => {
   const sendBlocked =
     !flags[FeatureGates.SEND] || !flags[FeatureGates.EVERYTHING]
 
-  const sendNftBlocked =
-    !flags[FeatureGates.SEND_NFT] || !flags[FeatureGates.EVERYTHING]
+  const sendNftBlockediOS =
+    !flags[FeatureGates.SEND_NFT_IOS] || !flags[FeatureGates.EVERYTHING]
+
+  const sendNftBlockedAndroid =
+    !flags[FeatureGates.SEND_NFT_ANDROID] || !flags[FeatureGates.EVERYTHING]
 
   const eventsBlocked =
     !flags[FeatureGates.EVENTS] || !flags[FeatureGates.EVERYTHING]
@@ -113,7 +122,8 @@ const processFlags = (flags: FeatureFlags) => {
     bridgeBtcBlocked,
     bridgeEthBlocked,
     sendBlocked,
-    sendNftBlocked,
+    sendNftBlockediOS,
+    sendNftBlockedAndroid,
     eventsBlocked,
     sentrySampleRate
   }
@@ -146,7 +156,8 @@ export const PosthogContextProvider = ({
     bridgeBtcBlocked,
     bridgeEthBlocked,
     sendBlocked,
-    sendNftBlocked,
+    sendNftBlockediOS,
+    sendNftBlockedAndroid,
     eventsBlocked,
     sentrySampleRate
   } = useMemo(() => processFlags(flags), [flags])
@@ -271,7 +282,8 @@ export const PosthogContextProvider = ({
         bridgeBtcBlocked,
         bridgeEthBlocked,
         sendBlocked,
-        sendNftBlocked,
+        sendNftBlockediOS,
+        sendNftBlockedAndroid,
         sentrySampleRate
       }}>
       {children}
