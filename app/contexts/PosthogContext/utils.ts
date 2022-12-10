@@ -1,5 +1,9 @@
-import { FeatureGates, FeatureVars } from 'contexts/types'
-import { PostHogDecideResponse, FeatureFlags } from './types'
+import {
+  FeatureGates,
+  FeatureVars,
+  PostHogDecideResponse,
+  FeatureFlags
+} from './types'
 
 const allowedKeys: (FeatureGates | FeatureVars)[] = [
   ...Object.values(FeatureGates),

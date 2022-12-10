@@ -19,7 +19,7 @@ import { Account } from 'store/account'
 import { ethErrors } from 'eth-rpc-errors'
 import { SessionRequestRpcRequest } from 'store/walletConnect/handlers/session_request'
 import { TypedJsonRpcRequest } from 'store/walletConnect/handlers/types'
-import { PosthogCapture } from 'contexts/types'
+import { PosthogCapture } from 'contexts/PosthogContext/types'
 import { ApprovedAppMeta } from 'store/walletConnect'
 import {
   isCoreMethod,
