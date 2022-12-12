@@ -417,7 +417,7 @@ PODS:
     - React-Core
   - RNDominantColor (1.7.2):
     - React
-  - RNFlashList (1.2.0):
+  - RNFlashList (1.4.0):
     - React-Core
   - RNFS (2.19.0):
     - React-Core
@@ -813,7 +813,7 @@ SPEC CHECKSUMS:
   RNDateTimePicker: 7658208086d86d09e1627b5c34ba0cf237c60140
   RNDeviceInfo: 0a7c1d2532aa7691f9b9925a27e43af006db4dae
   RNDominantColor: 7c17c31201566a592ba4b2fbe2bb7e00df468753
-  RNFlashList: adcc3a39aa72012852681bc439ccb4108c8c4448
+  RNFlashList: 399bf6a0db68f594ad2c86aaff3ea39564f39f8a
   RNFS: fc610f78fdf8bfc89a9e5cc2f898519f4dba1002
   RNGestureHandler: 7673697e7c0e9391adefae4faa087442bc04af33
   RNInAppBrowser: e36d6935517101ccba0e875bac8ad7b0cb655364

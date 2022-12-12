@@ -3,7 +3,8 @@ import {
   Animated,
   View,
   StyleSheet,
-  ListRenderItemInfo as FlatListRenderItemInfo
+  ListRenderItemInfo as FlatListRenderItemInfo,
+  Dimensions
 } from 'react-native'
 import { ListRenderItemInfo as FlashListRenderItemInfo } from '@shopify/flash-list'
 import AvaText from 'components/AvaText'
@@ -26,6 +27,9 @@ import { BridgeTransaction } from '@avalabs/bridge-sdk'
 import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
 import { RefreshControl } from 'components/RefreshControl'
 import AvaFlashList from 'components/AvaFlashList'
+
+const SCREEN_WIDTH = Dimensions.get('window').width
+const BOTTOM_PADDING = SCREEN_WIDTH * 0.3
 
 const yesterday = endOfYesterday()
 const today = endOfToday()
@@ -220,7 +224,7 @@ const TransactionsZeroState = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  contentContainer: { paddingBottom: '20%' },
+  contentContainer: { paddingBottom: BOTTOM_PADDING },
   zeroState: { flex: 1, marginTop: '30%' },
   headerContainer: {
     flex: 1,
