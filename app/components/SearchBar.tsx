@@ -2,6 +2,7 @@ import {
   Dimensions,
   Keyboard,
   LayoutAnimation,
+  Platform,
   StyleSheet,
   TextInput,
   TextInputProps,
@@ -114,6 +115,7 @@ const SearchBar: FC<Props> = ({
     textInputRef.current?.blur()
   }
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const debounceFn = useCallback(debounce(onTextChanged, debounceMillis), [])
 
   const handleTextChange = (value: string) => {
@@ -169,11 +171,11 @@ const SearchBar: FC<Props> = ({
           value={_searchText}
           onChangeText={handleTextChange}
           onBlur={() => {
-            LayoutAnimation.easeInEaseOut()
+            Platform.OS === 'ios' && LayoutAnimation.easeInEaseOut()
             setIsFocused(false)
           }}
           onFocus={() => {
-            LayoutAnimation.easeInEaseOut()
+            Platform.OS === 'ios' && LayoutAnimation.easeInEaseOut()
             setIsFocused(true)
           }}
           underlineColorAndroid="transparent"
