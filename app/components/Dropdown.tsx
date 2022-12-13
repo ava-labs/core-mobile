@@ -33,10 +33,12 @@ interface Props<ItemT> {
   disabled?: boolean
   caretIcon?: React.ReactNode
   caretStyle?: StyleProp<ViewStyle>
+  testID?: string
 }
 
 interface OptionsItemInfo<ItemT> {
   item: ItemT
+  testID?: string
 }
 
 /**
