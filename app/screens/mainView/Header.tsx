@@ -10,6 +10,7 @@ type Props = {
   onBack?: () => void
   onExit?: () => void
   onSwitchWallet?: () => void
+  testID?: string
 }
 
 export default function Header(props: Props | Readonly<Props>) {
@@ -34,7 +35,7 @@ export default function Header(props: Props | Readonly<Props>) {
     ? require('assets/icons/logout_dark.png')
     : require('assets/icons/logout_light.png')
   const backBtn = props.showBack ? (
-    <ImgButtonAva src={icon} onPress={onBackPress} />
+    <ImgButtonAva src={icon} onPress={onBackPress} testID="back_button" />
   ) : undefined
   const exitBtn = props.showExit ? (
     <ImgButtonAva src={iconExit} onPress={onExitPress} />
@@ -49,9 +50,16 @@ export default function Header(props: Props | Readonly<Props>) {
   return (
     <View style={styles.horizontalLayout}>
       <View style={styles.padded}>
-        <Image accessibilityRole="image" source={logo} style={styles.logo} />
+        <Image
+          accessibilityRole="image"
+          source={logo}
+          style={styles.logo}
+          testID="back_button"
+        />
       </View>
-      <View style={styles.atEnd}>{exitBtn}</View>
+      <View style={styles.atEnd} testID="back_button">
+        {exitBtn}
+      </View>
       {switchWalletBtn}
       {backBtn}
     </View>

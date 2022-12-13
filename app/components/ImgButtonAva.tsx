@@ -13,6 +13,7 @@ type Props = {
   onPress: () => void
   width?: number
   height?: number
+  testID?: string
 }
 export default function ImgButtonAva(props: Props | Readonly<Props>) {
   const context = useApplicationContext()

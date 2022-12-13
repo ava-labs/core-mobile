@@ -5,8 +5,8 @@ class PortfolioPage {
     return by.text(portfolio.collectiblesTab)
   }
 
-  get tokensTab() {
-    return by.text(portfolio.tokensTab)
+  get assetsTab() {
+    return by.text(portfolio.assetsTab)
   }
 
   get viewAllBtn() {
@@ -59,7 +59,7 @@ class PortfolioPage {
 
   async verifyPorfolioScreen() {
     await Assert.isVisible(this.colectiblesTab)
-    await Assert.isVisible(this.tokensTab)
+    await Assert.isVisible(this.assetsTab)
     await Assert.isVisible(this.viewAllBtn)
     await Assert.isVisible(this.favoritesHeader)
     await Assert.isVisible(this.networksHeader)

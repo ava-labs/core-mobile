@@ -6,6 +6,7 @@ interface Prop {
   borderColor?: string
   fillColor?: string
   size?: number
+  testID?: string
 }
 
 export default function DotSVG({ borderColor, fillColor, size }: Prop) {

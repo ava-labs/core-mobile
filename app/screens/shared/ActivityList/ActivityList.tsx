@@ -71,7 +71,9 @@ const ActivityList = ({
   )
 
   const renderHeader = () => (
-    <AvaText.LargeTitleBold textStyle={{ marginHorizontal: 16 }}>
+    <AvaText.LargeTitleBold
+      textStyle={{ marginHorizontal: 16 }}
+      testID="activity_list__header">
       Activity
     </AvaText.LargeTitleBold>
   )
@@ -80,6 +82,7 @@ const ActivityList = ({
     return (
       <Row style={{ justifyContent: 'flex-end', paddingHorizontal: 16 }}>
         <DropDown
+          testID="activity_list__filter_dropdown"
           alignment={'flex-end'}
           width={200}
           data={filterOptions}
@@ -99,6 +102,7 @@ const ActivityList = ({
   const renderTransactions = () => {
     return (
       <Transactions
+        testID="transaction"
         data={filteredTransactions}
         isRefreshing={isRefreshing}
         onRefresh={refresh}
@@ -128,13 +132,19 @@ const ActivityList = ({
 }
 
 const SelectionRenderItem = ({ text }: { text: string }) => {
-  return <AvaText.ButtonSmall>Display: {text}</AvaText.ButtonSmall>
+  return (
+    <AvaText.ButtonSmall testID={`activity_list__current_filter`}>
+      Display: {text}
+    </AvaText.ButtonSmall>
+  )
 }
 
 const OptionsRenderItem = ({ text }: { text: string }) => {
   return (
     <View style={{ paddingHorizontal: 16, paddingVertical: 8 }}>
-      <AvaText.Body1>{text}</AvaText.Body1>
+      <AvaText.Body1 testID={`activity_list__filter_${text}`}>
+        {text}
+      </AvaText.Body1>
     </View>
   )
 }
