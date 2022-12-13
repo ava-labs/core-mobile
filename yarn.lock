@@ -28,57 +28,57 @@
     "@scure/base" "1.1.1"
     micro-eth-signer "0.5.0"
 
-"@avalabs/blockcypher-sdk@2.8.0-alpha.42":
-  version "2.8.0-alpha.42"
-  resolved "https://registry.yarnpkg.com/@avalabs/blockcypher-sdk/-/blockcypher-sdk-2.8.0-alpha.42.tgz#7712c51f3e2a0131bf53465c0cf4e1e1f70b2c4c"
-  integrity sha512-mu6j2st0eMycHb/hQsvIV4xHwGbj1ItbT4r6NlvsV6oe1anfWYguHq9DA6oi80nbtDbP/JCJrYeWXSnL8VzYpw==
+"@avalabs/blockcypher-sdk@2.8.0-alpha.46":
+  version "2.8.0-alpha.46"
+  resolved "https://registry.yarnpkg.com/@avalabs/blockcypher-sdk/-/blockcypher-sdk-2.8.0-alpha.46.tgz#1e6e677a6dfe398e8c2d19faccbb3a70ba8c5804"
+  integrity sha512-OzgHCUV9psFVaEG3vVAH88b0ZufhU1Tqoa8Ba/vJMqWVoHBssc8GtOQYqx0SfsSa/2NViGiVPmzQqRPqJdkcqQ==
   dependencies:
-    "@avalabs/utils-sdk" "2.8.0-alpha.42"
+    "@avalabs/utils-sdk" "2.8.0-alpha.46"
 
-"@avalabs/bridge-sdk@2.8.0-alpha.42":
-  version "2.8.0-alpha.42"
-  resolved "https://registry.yarnpkg.com/@avalabs/bridge-sdk/-/bridge-sdk-2.8.0-alpha.42.tgz#23308549aae16921400a830ac0401a46d4c21882"
-  integrity sha512-DeXDw/jqk7f75nwZxIkTpRM75yIi6VxMB9/JiJq8mihHnuFCkjOe97v+Ttw9VrFXXYz4eAXeeQPDCeE7xqT57Q==
+"@avalabs/bridge-sdk@2.8.0-alpha.46":
+  version "2.8.0-alpha.46"
+  resolved "https://registry.yarnpkg.com/@avalabs/bridge-sdk/-/bridge-sdk-2.8.0-alpha.46.tgz#fe12e67de5cf4f8bdfbcaa0137eb573a7f7e6ab1"
+  integrity sha512-hs5XHnoa3BseNgAXVS2wmWs6AjvOfUhDpH17XD4tsl2weEGseq2KQViSIajw4fEkbpU4JphuZDf7AQC+G5Q5aA==
   dependencies:
-    "@avalabs/blockcypher-sdk" "2.8.0-alpha.42"
-    "@avalabs/coingecko-sdk" "2.8.0-alpha.42"
-    "@avalabs/utils-sdk" "2.8.0-alpha.42"
-    "@avalabs/wallets-sdk" "2.8.0-alpha.42"
+    "@avalabs/blockcypher-sdk" "2.8.0-alpha.46"
+    "@avalabs/coingecko-sdk" "2.8.0-alpha.46"
+    "@avalabs/utils-sdk" "2.8.0-alpha.46"
+    "@avalabs/wallets-sdk" "2.8.0-alpha.46"
 
-"@avalabs/chains-sdk@2.8.0-alpha.42":
-  version "2.8.0-alpha.42"
-  resolved "https://registry.yarnpkg.com/@avalabs/chains-sdk/-/chains-sdk-2.8.0-alpha.42.tgz#c0665d5c721e89454e0fadfa0f90af32f59d7985"
-  integrity sha512-qbNYjYXJTvbUPZcFzAk+cYc8H04UxKsBzDyxxPRYOHIm1jFfkkeCAY3UmQQALOnqjDuIDO23ta/9Ntcg9wRsfw==
+"@avalabs/chains-sdk@2.8.0-alpha.46":
+  version "2.8.0-alpha.46"
+  resolved "https://registry.yarnpkg.com/@avalabs/chains-sdk/-/chains-sdk-2.8.0-alpha.46.tgz#7a992db418a890361344fb3b21dda7a4466a1627"
+  integrity sha512-01cGHHumvBmQjX5eX0HcmaRaERw5BRPKr5+tyK6dFpPnUVPnuKnhIMmn2TBvjugk78j0cvB6g0yIyxKxUsacdQ==
   dependencies:
-    "@avalabs/utils-sdk" "2.8.0-alpha.42"
+    "@avalabs/utils-sdk" "2.8.0-alpha.46"
 
-"@avalabs/coingecko-sdk@2.8.0-alpha.42":
-  version "2.8.0-alpha.42"
-  resolved "https://registry.yarnpkg.com/@avalabs/coingecko-sdk/-/coingecko-sdk-2.8.0-alpha.42.tgz#36845d35a1ea777f8b5a10a4797f95731c637105"
-  integrity sha512-WuY7b0DM6GaAu6PZq90YG2hqBbxT0vxskDcvrUIviCoQFCNTxV2j3BmJaCDCg7t+SU+uUZgY2ayIoy8FTBQNJw==
+"@avalabs/coingecko-sdk@2.8.0-alpha.46":
+  version "2.8.0-alpha.46"
+  resolved "https://registry.yarnpkg.com/@avalabs/coingecko-sdk/-/coingecko-sdk-2.8.0-alpha.46.tgz#2c828bdbb2a33b1e446de12f00c6a86e2e78d0fa"
+  integrity sha512-gRHUiq6Yng2U+HRYyjGe/Pxzc6jGOZocZyWlNxUOIHmu1lu3z3dR+Hb6XvYQPZWOcxXQ8eW+mbQ+Zpr9z93bAA==
   dependencies:
-    "@avalabs/utils-sdk" "2.8.0-alpha.42"
+    "@avalabs/utils-sdk" "2.8.0-alpha.46"
 
-"@avalabs/covalent-sdk@2.8.0-alpha.42":
-  version "2.8.0-alpha.42"
-  resolved "https://registry.yarnpkg.com/@avalabs/covalent-sdk/-/covalent-sdk-2.8.0-alpha.42.tgz#27cee455eead6b4e1d80d29bbcb0c8e0082d5db2"
-  integrity sha512-52o0PrIeeRN3Sl1iEBt8lCUiwCsQCUAOQoS3FgNjm1elOMhYnhPXNZwJnLR80fhS6pq4POEE9bkeCRisPYpoGQ==
+"@avalabs/covalent-sdk@2.8.0-alpha.46":
+  version "2.8.0-alpha.46"
+  resolved "https://registry.yarnpkg.com/@avalabs/covalent-sdk/-/covalent-sdk-2.8.0-alpha.46.tgz#fe2bc99d1b8d35d230ae778084b3e9287ca57cff"
+  integrity sha512-MXDFvmx+iVuVv+8L+hlcWPqySRM35HnwY5HPgk/sIwUhJFQNE0Kin/dldThHApj1fmzSrApvqkEK3DOf6LE/rA==
   dependencies:
-    "@avalabs/utils-sdk" "2.8.0-alpha.42"
+    "@avalabs/utils-sdk" "2.8.0-alpha.46"
 
-"@avalabs/etherscan-sdk@2.8.0-alpha.42":
-  version "2.8.0-alpha.42"
-  resolved "https://registry.yarnpkg.com/@avalabs/etherscan-sdk/-/etherscan-sdk-2.8.0-alpha.42.tgz#8badf1e6ab1feec6e69647f2ac16f1acce3b5469"
-  integrity sha512-R0T/70sg97gcbXTWWz7KhrmIiqOKZNVdJakle+wg0N2LLDlFEmDR4gTBDPE5O1vhVGECdt9bJ9vhjUSfPymmZQ==
+"@avalabs/etherscan-sdk@2.8.0-alpha.46":
+  version "2.8.0-alpha.46"
+  resolved "https://registry.yarnpkg.com/@avalabs/etherscan-sdk/-/etherscan-sdk-2.8.0-alpha.46.tgz#52e4152d6f6bfdb735fb90ceb91a8c561061d283"
+  integrity sha512-SIyapaJ5bTB2UjySmaMG3d49nwDBkWYVVb5p0sVNQIyGbsH9CKnqCtS6xGP0uu/RkSulyQJtYWWgOmA6Jabs8w==
   dependencies:
-    "@avalabs/utils-sdk" "2.8.0-alpha.42"
+    "@avalabs/utils-sdk" "2.8.0-alpha.46"
 
-"@avalabs/glacier-sdk@2.8.0-alpha.42":
-  version "2.8.0-alpha.42"
-  resolved "https://registry.yarnpkg.com/@avalabs/glacier-sdk/-/glacier-sdk-2.8.0-alpha.42.tgz#0f25ca0f00a69aeb1d948ebc77695e4942cc4160"
-  integrity sha512-2ItrWCOnF6ZOc7VEXO2tKYdpYC0HOT75ZfZTh0Zp9A+xARpwmqdBK8Xeb7v7xt6/apeam3s5pyZ2lwcskGZQ9w==
+"@avalabs/glacier-sdk@2.8.0-alpha.46":
+  version "2.8.0-alpha.46"
+  resolved "https://registry.yarnpkg.com/@avalabs/glacier-sdk/-/glacier-sdk-2.8.0-alpha.46.tgz#15b78564220670d41b8dc434a245b467facb4136"
+  integrity sha512-D5ZAT66l5S3dPkgAYgT3UNf5+MTJ3h8FPxq5mBetfR8JRidHPHqjM7iY+GdbGz57upc1RPnA8i3vGnLqR6Fxbg==
   dependencies:
-    "@avalabs/utils-sdk" "2.8.0-alpha.42"
+    "@avalabs/utils-sdk" "2.8.0-alpha.46"
 
 "@avalabs/hw-app-avalanche@0.1.0":
   version "0.1.0"
@@ -90,55 +90,55 @@
     bs58 "^5.0.0"
     sha3 "^2.1.4"
 
-"@avalabs/posthog-sdk@2.8.0-alpha.42":
-  version "2.8.0-alpha.42"
-  resolved "https://registry.yarnpkg.com/@avalabs/posthog-sdk/-/posthog-sdk-2.8.0-alpha.42.tgz#b4b3a5f171f0375c5fdadbf453521ef9b35e2cda"
-  integrity sha512-SNSq7Rp+z8ZA+qJTD5LxeWC8UZVzmhqcYjSzkuBAilzlHa45aoTe3cmqEW84Wp7tL5BO49j4mhnZkToiuQKnjw==
+"@avalabs/posthog-sdk@2.8.0-alpha.46":
+  version "2.8.0-alpha.46"
+  resolved "https://registry.yarnpkg.com/@avalabs/posthog-sdk/-/posthog-sdk-2.8.0-alpha.46.tgz#a08deb5edb05bc23522354ebe044a167dc98d9c7"
+  integrity sha512-I9CR+q1kXukEIbtdE4nC99o2CDA47i+7ZBSbU5xRhI4o+HtjqoHZ+1VnR0P0MZWYEPplIKg1houazwCOZl7H+w==
   dependencies:
-    "@avalabs/utils-sdk" "2.8.0-alpha.42"
+    "@avalabs/utils-sdk" "2.8.0-alpha.46"
     micro-signals "2.4.0"
     posthog-js "1.21.1"
 
-"@avalabs/snowtrace-sdk@2.8.0-alpha.42":
-  version "2.8.0-alpha.42"
-  resolved "https://registry.yarnpkg.com/@avalabs/snowtrace-sdk/-/snowtrace-sdk-2.8.0-alpha.42.tgz#972f260ad8bddd2481a6225f8157b7582ea8ec1f"
-  integrity sha512-54EJfl6I90GaQtfLoOiLnSK8F9xKZM1FBHpM5ldbUPJNKkvx3v2uKrw01ih7C+KD/8iugvaPRnrYqqWWFXaNiA==
+"@avalabs/snowtrace-sdk@2.8.0-alpha.46":
+  version "2.8.0-alpha.46"
+  resolved "https://registry.yarnpkg.com/@avalabs/snowtrace-sdk/-/snowtrace-sdk-2.8.0-alpha.46.tgz#b60ead9762e5eec6ed9ad9a0a6663394e289263e"
+  integrity sha512-OG9SEEVU5pr3s5399QpnQuZL/0s4SL/QjKdUDUXsyypGb3I3Rl+KALu6Cn6gIEaWBCAb5yLEicZtVv9UBAnToQ==
   dependencies:
-    "@avalabs/utils-sdk" "2.8.0-alpha.42"
+    "@avalabs/utils-sdk" "2.8.0-alpha.46"
 
-"@avalabs/token-prices-sdk@2.8.0-alpha.42":
-  version "2.8.0-alpha.42"
-  resolved "https://registry.yarnpkg.com/@avalabs/token-prices-sdk/-/token-prices-sdk-2.8.0-alpha.42.tgz#365f3f851906d7a6d514f5dd42bbd8c16f9eff70"
-  integrity sha512-gQ+qHvaqvcB/imCWexOlZ/RRpc1nNL1FklALMF1Z1DeYgpgc+z/ZZd+xMx1gnGPxpf4NDu3oOysBDcWx9VtnKA==
+"@avalabs/token-prices-sdk@2.8.0-alpha.46":
+  version "2.8.0-alpha.46"
+  resolved "https://registry.yarnpkg.com/@avalabs/token-prices-sdk/-/token-prices-sdk-2.8.0-alpha.46.tgz#3d845bb7f4f3e9d6252ccf843acfe5571a3842e1"
+  integrity sha512-gh7/KqbJ+1iO8ePvwpMABe4NdR0d7XE31Yn+2FfzB3xRONJRm04vR5j9G0w/nmHXJ8xwS1oXarKHuwH3B7QM0A==
   dependencies:
-    "@avalabs/coingecko-sdk" "2.8.0-alpha.42"
-    "@avalabs/utils-sdk" "2.8.0-alpha.42"
+    "@avalabs/coingecko-sdk" "2.8.0-alpha.46"
+    "@avalabs/utils-sdk" "2.8.0-alpha.46"
 
-"@avalabs/types@2.8.0-alpha.42":
-  version "2.8.0-alpha.42"
-  resolved "https://registry.yarnpkg.com/@avalabs/types/-/types-2.8.0-alpha.42.tgz#d21edf9ae68d6a03ef57cc652b33331cc587ac9f"
-  integrity sha512-0OhnsYaUsk1hyJUN1wQP90ZbYeJmd9Ij/0QG0PVVdOrQxmiGXy4tE9jnZntb4MmlFHhWSZKirH7/DdsCmT0twg==
+"@avalabs/types@2.8.0-alpha.46":
+  version "2.8.0-alpha.46"
+  resolved "https://registry.yarnpkg.com/@avalabs/types/-/types-2.8.0-alpha.46.tgz#834e8405669438e94717d09645b6de1568117c3a"
+  integrity sha512-7Pqjrdnj0bOkaSeeKuQkSQ8pPU9w09F6Ba5WlF2sYwZaMjfByOhcusDpQeAwzWC6dWIsT2RjmFwl5nueFdQZMw==
 
-"@avalabs/utils-sdk@2.8.0-alpha.42":
-  version "2.8.0-alpha.42"
-  resolved "https://registry.yarnpkg.com/@avalabs/utils-sdk/-/utils-sdk-2.8.0-alpha.42.tgz#fe32bb6fb3654b01510d1eb51fc19e81c4735d9c"
-  integrity sha512-5OsaUmIVdkk5VLhDCpn7+KA5FVA+4v6CIILu3aFX5vdIoQkOnDbhG92g1lyG/4HZJyZlIh4SsJSIXvMx0zyJ9g==
+"@avalabs/utils-sdk@2.8.0-alpha.46":
+  version "2.8.0-alpha.46"
+  resolved "https://registry.yarnpkg.com/@avalabs/utils-sdk/-/utils-sdk-2.8.0-alpha.46.tgz#5dec5d34d0011d4c0c110d5a4e175f0986782f6f"
+  integrity sha512-P6l6tngSRC9gZn2EvrOABy0q8/yTFgrJzZf5Y77HdMqGM4Bu9i+0aYf68ZQI+enb8T66mB0K3LGWe3/FtMJvYQ==
   dependencies:
     "@avalabs/avalanchejs-v2" "1.1.3"
     is-ipfs "6.0.2"
 
-"@avalabs/wallets-sdk@2.8.0-alpha.42":
-  version "2.8.0-alpha.42"
-  resolved "https://registry.yarnpkg.com/@avalabs/wallets-sdk/-/wallets-sdk-2.8.0-alpha.42.tgz#a1ad1366e81da1e4a127e8573c4ab8df5f6a3b33"
-  integrity sha512-Kx/KKLGbQLQPE3+3E1gHLBL5AOnacBHNpywtvqjQ0VFgcic8qmnPrAyc0D3aYQQYKAiDAKoIaLWmMYkEo7RvoA==
+"@avalabs/wallets-sdk@2.8.0-alpha.46":
+  version "2.8.0-alpha.46"
+  resolved "https://registry.yarnpkg.com/@avalabs/wallets-sdk/-/wallets-sdk-2.8.0-alpha.46.tgz#79ace9f1ba5afe55d2257dcd3ef71ddc11326419"
+  integrity sha512-3QEJN5roYYecIcTuoKuEU+3RJHihzhkmMy/1h8Vu+e4HeohloLkQbz5J9xcAKV3KCa00gkYOIP+Z3AfWBN4edA==
   dependencies:
     "@avalabs/avalanchejs-v2" "1.1.3"
-    "@avalabs/blockcypher-sdk" "2.8.0-alpha.42"
-    "@avalabs/chains-sdk" "2.8.0-alpha.42"
+    "@avalabs/blockcypher-sdk" "2.8.0-alpha.46"
+    "@avalabs/chains-sdk" "2.8.0-alpha.46"
     "@avalabs/hw-app-avalanche" "0.1.0"
     "@ledgerhq/hw-app-btc" "6.27.1"
     "@ledgerhq/hw-app-eth" "6.27.1"
-    "@ledgerhq/hw-transport" "6.27.6"
+    "@ledgerhq/hw-transport" "6.27.8"
     "@obsidiansystems/hw-app-avalanche" "0.2.2"
     "@openzeppelin/contracts" "4.8.0"
     bip32 "2.0.6"
@@ -4125,6 +4125,16 @@
     rxjs "6"
     semver "^7.3.5"
 
+"@ledgerhq/devices@^7.0.5":
+  version "7.0.5"
+  resolved "https://registry.yarnpkg.com/@ledgerhq/devices/-/devices-7.0.5.tgz#2b3f69b84d4bccb2c4b1d34e534444da862f4880"
+  integrity sha512-2o2zD2Yv1Hgd3+R2aLCvlyT7NxBz2nltawTCPSXaf3+8MDIyZbiJlXi43hLEISRFBG3u3bYwAQuiOisimN9C6Q==
+  dependencies:
+    "@ledgerhq/errors" "^6.12.1"
+    "@ledgerhq/logs" "^6.10.1"
+    rxjs "6"
+    semver "^7.3.5"
+
 "@ledgerhq/errors@^5.50.0":
   version "5.50.0"
   resolved "https://registry.yarnpkg.com/@ledgerhq/errors/-/errors-5.50.0.tgz#e3a6834cb8c19346efca214c1af84ed28e69dad9"
@@ -4139,6 +4149,11 @@
   version "6.11.1"
   resolved "https://registry.yarnpkg.com/@ledgerhq/errors/-/errors-6.11.1.tgz#a8a81bda6d28ac43c757e109b1ff079ddeec54a6"
   integrity sha512-HT1PFvNrejcN5z3ba6xikacIdHWMkjBeE9U5FFoGHhaKBKGjC74mnCeEo0/oJunyuVId+9mhGnv6lrBl6Mkqdg==
+
+"@ledgerhq/errors@^6.12.1":
+  version "6.12.1"
+  resolved "https://registry.yarnpkg.com/@ledgerhq/errors/-/errors-6.12.1.tgz#99ad10bd528942bdfde0ef3d4d0dce658f6f4405"
+  integrity sha512-2qeUSUCpQbMhV9eLJDLI8wycFwTcWszP8g3cJycBt9Jf1VczC5MRERwAQv5AYhPa4rcy+jLKBOVZYxc35r5l7g==
 
 "@ledgerhq/hw-app-btc@6.27.1":
   version "6.27.1"
@@ -4194,13 +4209,13 @@
     "@ledgerhq/hw-transport" "^6.27.6"
     "@ledgerhq/logs" "^6.10.1"
 
-"@ledgerhq/hw-transport@6.27.6", "@ledgerhq/hw-transport@^6.27.5", "@ledgerhq/hw-transport@^6.27.6":
-  version "6.27.6"
-  resolved "https://registry.yarnpkg.com/@ledgerhq/hw-transport/-/hw-transport-6.27.6.tgz#87f886591bad047c18e76920519aceb9d844667b"
-  integrity sha512-DRGUsB8WfbeEPuU42nAtwYpA5D6Bq3q1CvC2VjDinkukLcf6XMc22YUJl9mxt+h+/cLTU1Ff/pz+fqYqeELLEA==
+"@ledgerhq/hw-transport@6.27.8":
+  version "6.27.8"
+  resolved "https://registry.yarnpkg.com/@ledgerhq/hw-transport/-/hw-transport-6.27.8.tgz#57ece7e2b726216df698767de6828478fbe461e1"
+  integrity sha512-WSUgF1W3tAikSnAfeNAT2e2dgTdEQd5Vi/095C2mR5Fr0/POCSl9X4T9rlBhK5NSVD+nGXI0rN2ISj08zai8HQ==
   dependencies:
-    "@ledgerhq/devices" "^7.0.3"
-    "@ledgerhq/errors" "^6.11.1"
+    "@ledgerhq/devices" "^7.0.5"
+    "@ledgerhq/errors" "^6.12.1"
     events "^3.3.0"
 
 "@ledgerhq/hw-transport@^5.9.0":
@@ -4219,6 +4234,15 @@
   dependencies:
     "@ledgerhq/devices" "^6.27.1"
     "@ledgerhq/errors" "^6.10.0"
+    events "^3.3.0"
+
+"@ledgerhq/hw-transport@^6.27.5", "@ledgerhq/hw-transport@^6.27.6":
+  version "6.27.6"
+  resolved "https://registry.yarnpkg.com/@ledgerhq/hw-transport/-/hw-transport-6.27.6.tgz#87f886591bad047c18e76920519aceb9d844667b"
+  integrity sha512-DRGUsB8WfbeEPuU42nAtwYpA5D6Bq3q1CvC2VjDinkukLcf6XMc22YUJl9mxt+h+/cLTU1Ff/pz+fqYqeELLEA==
+  dependencies:
+    "@ledgerhq/devices" "^7.0.3"
+    "@ledgerhq/errors" "^6.11.1"
     events "^3.3.0"
 
 "@ledgerhq/logs@^5.50.0":
@@ -4866,12 +4890,12 @@
     xcode "3.0.1"
     yargs "^16.2.0"
 
-"@shopify/flash-list@1.2.0":
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/@shopify/flash-list/-/flash-list-1.2.0.tgz#981b1a9fc92b16aeb835fc17423c9e3d5cb36565"
-  integrity sha512-P5YzT91InI3t+Cw651bFXl1au2FxPuuPPDs1ijaUDUCOCJVliZOLdVD58CXElsNVcLppEqWDah4TB1JyC54Pqg==
+"@shopify/flash-list@1.4.0":
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/@shopify/flash-list/-/flash-list-1.4.0.tgz#cf299486ec9a7c97b7a8b1e8b6bf144a78141ed6"
+  integrity sha512-PvPOyk353LuETFnNA038+QaJsAFlCQ2TYC7DHP3YnYqTX72g2BM6qLoLsPaptXKuoXX+dinOo0MbEm7HDjTy1g==
   dependencies:
-    recyclerlistview "4.1.1"
+    recyclerlistview "4.2.0"
     tslib "2.4.0"
 
 "@sideway/address@^4.1.3":
@@ -18216,10 +18240,10 @@ recursive-readdir@^2.2.2:
   dependencies:
     minimatch "3.0.4"
 
-recyclerlistview@4.1.1:
-  version "4.1.1"
-  resolved "https://registry.yarnpkg.com/recyclerlistview/-/recyclerlistview-4.1.1.tgz#b8f5f99a0be4dde7ceb4984f1949105f384d53b8"
-  integrity sha512-5BaAFSaSXDF9/mjv5WplX9mbZsKgYgn7N10uYjpqjW33UGVPZcz2omUOkXv0Bs6syP4qWVg3vz+NvBTjHwAOyg==
+recyclerlistview@4.2.0:
+  version "4.2.0"
+  resolved "https://registry.yarnpkg.com/recyclerlistview/-/recyclerlistview-4.2.0.tgz#a140149aaa470c9787a1426452651934240d69ef"
+  integrity sha512-uuBCi0c+ggqHKwrzPX4Z/mJOzsBbjZEAwGGmlwpD/sD7raXixdAbdJ6BTcAmuWG50Cg4ru9p12M94Njwhr/27A==
   dependencies:
     lodash.debounce "4.0.8"
     prop-types "15.8.1"

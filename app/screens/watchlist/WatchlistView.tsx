@@ -1,7 +1,6 @@
 import React, { Dispatch, useEffect, useMemo, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { SafeAreaProvider } from 'react-native-safe-area-context'
 import Dropdown from 'components/Dropdown'
 import AvaText from 'components/AvaText'
 import {
@@ -21,7 +20,6 @@ import watchlistService from 'services/watchlist/WatchlistService'
 import { useDispatch } from 'react-redux'
 import { WatchListLoader } from 'screens/watchlist/components/WatchListLoader'
 import isEmpty from 'lodash.isempty'
-import AvaButton from 'components/AvaButton'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { ChartData } from 'services/token/types'
 import { WatchlistFilter } from './types'
@@ -169,48 +167,37 @@ const WatchlistView: React.FC<Props> = ({
   )
 
   return (
-    <SafeAreaProvider style={styles.container}>
-      <>
-        <View style={styles.filterContainer}>
-          <Dropdown
-            alignment={'flex-start'}
-            width={140}
-            data={filterPriceOptions}
-            selectedIndex={selectedPriceFilter}
-            onItemSelected={setFilterBy}
-            selectionRenderItem={renderPriceFilterSelection}
+    <>
+      <View style={styles.filterContainer}>
+        <Dropdown
+          alignment={'flex-start'}
+          width={140}
+          data={filterPriceOptions}
+          selectedIndex={selectedPriceFilter}
+          onItemSelected={setFilterBy}
+          selectionRenderItem={renderPriceFilterSelection}
+        />
+      </View>
+      {showLoader ? (
+        <WatchListLoader />
+      ) : (
+        <>
+          <WatchList
+            tokens={sortedTokens}
+            charts={charts}
+            prices={prices}
+            filterBy={filterBy}
+            isShowingFavorites={showFavorites}
+            isSearching={isSearching}
+            onExploreAllTokens={() => onTabIndexChanged?.(1)}
           />
-        </View>
-        {showLoader ? (
-          <WatchListLoader />
-        ) : (
-          <>
-            <WatchList
-              tokens={sortedTokens}
-              charts={charts}
-              prices={prices}
-              filterBy={filterBy}
-              isShowingFavorites={showFavorites}
-              isSearching={isSearching}
-            />
-            {showFavorites && sortedTokens.length === 0 && (
-              <AvaButton.SecondaryLarge
-                onPress={() => onTabIndexChanged?.(1)}
-                style={{ marginBottom: 128, marginHorizontal: 16 }}>
-                Explore all tokens
-              </AvaButton.SecondaryLarge>
-            )}
-          </>
-        )}
-      </>
-    </SafeAreaProvider>
+        </>
+      )}
+    </>
   )
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1
-  },
   filterContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',

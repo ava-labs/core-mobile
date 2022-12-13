@@ -1,3 +1,5 @@
+import { VsCurrencyType } from '@avalabs/coingecko-sdk'
+
 export type SparklineData = number[]
 
 export interface ChartData {
@@ -17,4 +19,12 @@ export type PriceWithMarketData = {
   change24: number
   marketCap: number
   vol24: number
+}
+
+export type GetMarketsParams = {
+  currency?: VsCurrencyType
+  sparkline?: boolean
+  coinIds?: string[]
+  page?: number
+  perPage?: number
 }

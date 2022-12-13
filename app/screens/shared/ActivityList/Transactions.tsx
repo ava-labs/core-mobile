@@ -1,6 +1,12 @@
 import React, { useMemo } from 'react'
-import { Animated, View, StyleSheet } from 'react-native'
-import { FlashList, ListRenderItemInfo } from '@shopify/flash-list'
+import {
+  Animated,
+  View,
+  StyleSheet,
+  ListRenderItemInfo as FlatListRenderItemInfo,
+  Dimensions
+} from 'react-native'
+import { ListRenderItemInfo as FlashListRenderItemInfo } from '@shopify/flash-list'
 import AvaText from 'components/AvaText'
 import ActivityListItem from 'screens/activity/ActivityListItem'
 import {
@@ -20,6 +26,10 @@ import ZeroState from 'components/ZeroState'
 import { BridgeTransaction } from '@avalabs/bridge-sdk'
 import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
 import { RefreshControl } from 'components/RefreshControl'
+import AvaFlashList from 'components/AvaFlashList'
+
+const SCREEN_WIDTH = Dimensions.get('window').width
+const BOTTOM_PADDING = SCREEN_WIDTH * 0.3
 
 const yesterday = endOfYesterday()
 const today = endOfToday()
@@ -126,7 +136,15 @@ const Transactions = ({
     )
   }
 
-  const renderTransaction = ({ item }: ListRenderItemInfo<Item>) => {
+  const flatRenderItem = ({ item }: FlatListRenderItemInfo<Item>) => {
+    return renderListItem(item)
+  }
+
+  const flashRenderItem = ({ item }: FlashListRenderItemInfo<Item>) => {
+    return renderListItem(item)
+  }
+
+  function renderListItem(item: Item) {
     // render section header
     if (typeof item === 'string') {
       return renderSectionHeader(item)
@@ -174,10 +192,10 @@ const Transactions = ({
 
   const renderTransactions = () => {
     return (
-      <FlashList
-        indicatorStyle="white"
+      <AvaFlashList
         data={combinedData}
-        renderItem={renderTransaction}
+        flashRenderItem={flashRenderItem}
+        flatRenderItem={flatRenderItem}
         keyExtractor={keyExtractor}
         contentContainerStyle={styles.contentContainer}
         onEndReached={onEndReached}
@@ -207,7 +225,7 @@ const TransactionsZeroState = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  contentContainer: { paddingBottom: '20%' },
+  contentContainer: { paddingBottom: BOTTOM_PADDING },
   zeroState: { flex: 1, marginTop: '30%' },
   headerContainer: {
     flex: 1,
