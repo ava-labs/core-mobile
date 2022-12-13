@@ -20,7 +20,6 @@ import 'utils/debugging/wdyr'
 import Config from 'react-native-config'
 import * as Sentry from '@sentry/react-native'
 import { DefaultSampleRate } from 'services/sentry/SentryWrapper'
-import pkg from '../package.json'
 
 LogBox.ignoreLogs(['Require cycle:', "Can't perform", 'new'])
 
@@ -29,22 +28,18 @@ if (Config.SENTRY_DSN && !__DEV__) {
   Sentry.init({
     dsn: Config.SENTRY_DSN,
     environment: Config.ENVIRONMENT,
-    release: `core-mobile@${pkg.version}`,
     debug: false,
     beforeSend: event => {
       /**
        * eliminating breadcrumbs. This should eliminate
-       * a massive amount of the daa leaks into sentry. If we find that console
+       * a massive amount of the data leaks into sentry. If we find that console
        * is leaking data, suspected that it might, than we can review the leak and
        * see if we can modify the data before it is recorded. This can be
        * done in the sentry options beforeBreadcrumbs function.
        */
-
-      if (event.user) {
-        delete event.contexts?.device?.name
-        delete event.user.email
-        delete event.user.ip_address
-      }
+      delete event?.user?.email
+      delete event?.user?.ip_address
+      delete event.contexts?.device?.name
 
       return event
     },
