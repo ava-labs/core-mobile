@@ -20,6 +20,10 @@ class BottomsTabsPage {
   get bridgeTab() {
     return by.id(bottomTabsLoc.bridgeTab)
   }
+
+  get plusIcon() {
+    return by.id(bottomTabsLoc.plusButton)
+  }
 }
 
 export default new BottomsTabsPage()

@@ -1,6 +1,6 @@
 export default {
   collectiblesTab: 'Collectibles',
-  tokensTab: 'Tokens',
+  assetsTab: 'Assets',
   viewAll: 'View All',
   favoritesHeader: 'Favorites',
   networksHeader: 'Networks',

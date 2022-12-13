@@ -63,6 +63,7 @@ interface Props {
   openTransactionDetails: (item: Transaction) => void
   openTransactionStatus: (params: BridgeTransactionStatusParams) => void
   hidePendingBridgeTransactions: boolean
+  testID?: string
 }
 
 const Transactions = ({

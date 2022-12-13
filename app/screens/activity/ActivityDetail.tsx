@@ -78,13 +78,21 @@ function ActivityDetail() {
             flex: 1
           }}>
           <View style={styles.logoContainer}>
-            <View style={{ position: 'absolute' }}>
-              <DotSVG fillColor={theme.colorBg1} size={72} />
+            <View
+              style={{ position: 'absolute' }}
+              testID="activity_detail__logo">
+              <DotSVG
+                fillColor={theme.colorBg1}
+                size={72}
+                testID="activity_detail__logo"
+              />
             </View>
             {tokenLogo()}
           </View>
           <View style={styles.headerContainer}>
-            <AvaText.Heading1 textStyle={{ marginTop: 16 }}>
+            <AvaText.Heading1
+              textStyle={{ marginTop: 16 }}
+              testID="activity_detail__amount">
               {txItem.isSender ? '-' : '+'}
               {txItem.amount}
               <AvaText.Body1 color={theme.colorText2}>
@@ -92,22 +100,25 @@ function ActivityDetail() {
               </AvaText.Body1>
             </AvaText.Heading1>
             <Space y={4} />
-            <AvaText.Body2>{` Fee ${fees} ${network.networkToken.symbol}`}</AvaText.Body2>
+            <AvaText.Body2 testID="activity_detail__fee_amount">{` Fee ${fees} ${network.networkToken.symbol}`}</AvaText.Body2>
           </View>
           <Space y={16} />
           <AvaListItem.Base
+            testID={'activity_detail__status'}
             title={<AvaText.Body2>Status</AvaText.Body2>}
             titleAlignment={'flex-start'}
             rightComponent={<AvaText.Heading3>Complete</AvaText.Heading3>}
           />
           <Separator inset={16} />
           <AvaListItem.Base
+            testID="activity_detail__date"
             title={<AvaText.Body2>Date</AvaText.Body2>}
             titleAlignment={'flex-start'}
             rightComponent={<AvaText.Heading3>{date}</AvaText.Heading3>}
           />
           <Separator inset={16} />
           <AvaListItem.Base
+            testID="activity_detail__to_from"
             title={
               <AvaText.Body2>{txItem.isSender ? 'To' : 'From'}</AvaText.Body2>
             }
@@ -130,7 +141,7 @@ function ActivityDetail() {
             title={<AvaText.Body2>Transaction Type</AvaText.Body2>}
             titleAlignment={'flex-start'}
             rightComponent={
-              <AvaText.Body1>
+              <AvaText.Body1 testID="activity_detail__transaction_type">
                 {txItem.isSender ? 'Outgoing Transfer' : 'Incoming Transfer'}
               </AvaText.Body1>
             }
@@ -145,6 +156,7 @@ function ActivityDetail() {
                 }}>
                 <LinkSVG color={theme.white} />
                 <AvaText.ButtonLarge
+                  testID="activity_detail__explorer_button"
                   textStyle={{ marginLeft: 8 }}
                   color={theme.white}>
                   View on Explorer
