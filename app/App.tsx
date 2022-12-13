@@ -41,6 +41,7 @@ if (Config.SENTRY_DSN && !__DEV__) {
        */
 
       if (event.user) {
+        delete event.contexts?.device?.name
         delete event.user.email
         delete event.user.ip_address
       }
