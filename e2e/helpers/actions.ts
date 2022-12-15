@@ -20,8 +20,16 @@ const setColumnToValue = async (
   await element(item).setColumnToValue(index, value)
 }
 
-const setInputText = async (item: Detox.NativeMatcher, value: string) => {
-  await element(item).replaceText(value)
+const setInputText = async (
+  item: Detox.NativeMatcher,
+  value: string,
+  index?: number
+) => {
+  if (index === undefined) {
+    await element(item).replaceText(value)
+  } else {
+    await element(item).atIndex(index).replaceText(value)
+  }
 }
 
 const waitForElement = async (item: Detox.NativeMatcher, timeout = 2000) => {

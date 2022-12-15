@@ -34,6 +34,7 @@ type Props = {
   ) => void
   token?: TokenWithBalance
   contact?: Contact
+  testID?: string
 }
 
 const SendToken: FC<Props> = ({
@@ -158,6 +159,7 @@ const SendToken: FC<Props> = ({
       </AvaText.Heading3>
       <View style={[{ flex: 0, paddingStart: 4, paddingEnd: 4 }]}>
         <InputText
+          testID="send_token__send_field"
           placeholder={placeholder}
           multiline={true}
           onChangeText={text => {

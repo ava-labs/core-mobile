@@ -198,6 +198,7 @@ const CustomTabBarFab: FC = ({ children }) => {
     actions.Send = {
       image: (
         <View
+          testID="tab_navigator__send_button"
           style={{
             width: 24,
             height: 24,
