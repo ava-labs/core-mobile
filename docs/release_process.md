@@ -1,6 +1,6 @@
 # Release Process
 
-![Diagram](docs/images/release_process_diagram.png)
+![Diagram](images/release_process_diagram.png)
 
 ### 1. Calculate next version
 - We follow [calver](https://calver.org/). 
@@ -42,23 +42,24 @@ Post a message in the `team-core-browext-mobile` slack channel announcing the ne
 - Then, click the plus button and select all the applicable groups.
 - If it asks for release notes, feel free to either provide a simplified one based on the github release notes or ask for help from products 
 
-![Screenshot](docs/images/testflight_external.png)
+<img src="images/testflight_external.png" width="700"/>
 
 ### 6. Submit for review
+
+Notes: This step should only be done after products and QA give the greenlight
+
 On Appstore:
 - select the correct build in the **Build** section
 - click "Add for Review"
 
-![Submit for review](docs/images/appstore_submit_for_review.png)
+<img src="images/appstore_submit_for_review.png" width="700"/>
 
 On Playstore:
 - Go to internal testing track
 - Find the latest release
 - Click "Promote release" -> "Production"
 
-![Promote to production](docs/images/playstore_promote_to_production.png)
-
-Notes: This step should only be done after products and QA give the greenlight
+<img src="images/playstore_promote_to_production.png" width="700"/>
 
 ### 7. Publish app 
 - Once Apple/Google has finished the review process, we can now publish the app
