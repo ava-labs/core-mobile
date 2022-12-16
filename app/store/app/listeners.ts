@@ -6,7 +6,6 @@ import { default as WalletConnectService } from 'services/walletconnect/WalletCo
 import { AppListenerEffectAPI } from 'store'
 import {
   onRehydrationComplete,
-  selectIsLocked,
   selectWalletState,
   setAppState,
   setIsLocked,
@@ -23,7 +22,8 @@ import {
   onBackground,
   onForeground,
   onLogOut,
-  selectAppState
+  selectAppState,
+  selectIsLocked
 } from './slice'
 
 const TIME_TO_LOCK_IN_SECONDS = 5
@@ -79,12 +79,13 @@ const lockApp = async (action: any, listenerApi: AppListenerEffectAPI) => {
   const { dispatch, condition } = listenerApi
   const state = listenerApi.getState()
   const walletState = selectWalletState(state)
+
   const isLocked = selectIsLocked(state)
+
   if (isLocked) {
     //bail out if already locked
     return
   }
-  dispatch(setIsLocked(true)) //lock immediately then unlock if eligible
 
   const backgroundStarted = new Date()
 
@@ -97,14 +98,13 @@ const lockApp = async (action: any, listenerApi: AppListenerEffectAPI) => {
     backgroundStarted
   )
 
-  // if more than [TIME_TO_LOCK_IN_SECONDS] seconds in background leave locked
+  // when app goes to background, lock the app after [TIME_TO_LOCK_IN_SECONDS] seconds
   if (secondsPassed >= TIME_TO_LOCK_IN_SECONDS) {
+    dispatch(setIsLocked(true))
     dispatch(onAppLocked())
     if (walletState === WalletState.ACTIVE) {
       dispatch(setWalletState(WalletState.INACTIVE))
     }
-  } else {
-    dispatch(setIsLocked(false))
   }
 }
 
