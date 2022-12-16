@@ -128,10 +128,9 @@ const CreateWalletWarningModal = () => {
 
   return (
     <WarningModal
-      title={'Protect your funds'}
+      title={'Protect Your Funds'}
       message={
-        ' Losing this phrase will result in lost funds. Please be sure to store it\n' +
-        '        in a secure location.'
+        ' Losing this phrase will result in lost funds. Please be sure to store it in a secure location.'
       }
       actionText={'I understand'}
       dismissText={'Back'}
