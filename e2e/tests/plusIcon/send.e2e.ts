@@ -10,6 +10,8 @@ import PlusMenuPage from '../../pages/plusMenu.page'
 import ExistingRecoveryPhrasePage from '../../pages/existingRecoveryPhrase.page'
 import BottomTabsPage from '../../pages/bottomTabs.page'
 import SendPage from '../../pages/send.page'
+import ReviewAndSend from '../../pages/reviewAndSend.page'
+import PortfolioPage from '../../pages/portfolio.page'
 
 describe('Create new wallet', () => {
   beforeAll(async () => {
@@ -23,12 +25,31 @@ describe('Create new wallet', () => {
     await Assert.isVisible(WatchListPage.walletSVG, 1)
   })
 
-  it('should navigat to send screen', async () => {
+  it('should navigate to send screen', async () => {
     const recoveryPhrase: string = process.env.RECOVERY_PHRASE as string
     await ExistingRecoveryPhrasePage.recoverWallet(recoveryPhrase)
     await BottomTabsPage.tapPlusIcon()
     await PlusMenuPage.tapSendButton()
+  })
+
+  it('should successfully navigate to send and review screen', async () => {
     const walletAddress: string = process.env.TEST_ADDRESS as string
     await SendPage.enterWalletAddress(walletAddress)
+    await SendPage.tapCarrotSVG()
+    await SendPage.selectToken('AVAX')
+    await SendPage.enterAmount('0.01')
+    await SendPage.tapSendTitle()
+    await SendPage.tapNextButton()
+    await Assert.isVisible(ReviewAndSend.amount)
+    await Assert.isVisible(ReviewAndSend.balanceAfterTransaction)
+    await Assert.isVisible(ReviewAndSend.networkFee)
+    await Assert.isVisible(ReviewAndSend.reviewAndSendNow)
+  })
+
+  it('shoud successfully send the token and take user to portfolio page', async () => {
+    await ReviewAndSend.tapSendNow()
+    await Assert.isVisible(ReviewAndSend.sendPendingToastMsg)
+    await Assert.isVisible(ReviewAndSend.sendSuccessfulToastMsg)
+    await PortfolioPage.verifyPorfolioScreen()
   })
 })

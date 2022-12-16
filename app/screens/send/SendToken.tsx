@@ -207,6 +207,7 @@ const SendToken: FC<Props> = ({
       ) : (
         <>
           <UniversalTokenSelector
+            testID="send_token__token_dropdown"
             onTokenChange={tkWithBalance =>
               setSendToken(tkWithBalance as TokenWithBalance)
             }

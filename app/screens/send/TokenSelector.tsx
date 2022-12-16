@@ -20,6 +20,7 @@ interface TokenSelectorProps {
   onTokenSelected: (token: TokenWithBalance) => void
   hideZeroBalance?: boolean
   horizontalMargin?: number
+  testID?: string
 }
 
 function TokenSelector({
@@ -43,6 +44,7 @@ function TokenSelector({
     const token = item.item
     return (
       <PortfolioListItem
+        testID={`token_selector__${token.name}`}
         tokenName={token.name}
         tokenPrice={token.balanceDisplayValue ?? '0'}
         tokenPriceInCurrency={token.balanceInCurrency}

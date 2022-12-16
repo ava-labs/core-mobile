@@ -38,11 +38,11 @@ class PortfolioPage {
   }
 
   async verifyPorfolioScreen() {
-    await Assert.isVisible(this.colectiblesTab)
-    await Assert.isVisible(this.assetsTab)
     await Assert.isVisible(this.viewAllBtn)
     await Assert.isVisible(this.favoritesHeader)
     await Assert.isVisible(this.networksHeader)
+    await Assert.isVisible(this.assetsTab)
+    await Assert.isVisible(this.colectiblesTab)
   }
 }
 
