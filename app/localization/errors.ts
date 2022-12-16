@@ -12,13 +12,16 @@ export function humanizeSwapErrors(err: unknown): string {
   }
 
   if (
-    errorString.startsWith('Not enough') &&
+    errorString.toLowerCase().startsWith('not enough') &&
     errorString.includes('allowance')
   ) {
     return 'Swap failed! Not enough allowance.'
   }
   if (errorString.includes('-32000')) {
     return 'Swap failed! Another transaction is pending. Rise gas price to overwrite it.'
+  }
+  if (errorString.toLowerCase().includes('network error')) {
+    return 'Swap failed! Network error, please try again.'
   }
   return 'Swap failed! Please try again.'
 }
