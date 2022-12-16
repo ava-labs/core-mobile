@@ -7,8 +7,9 @@
 - The minor version is bumped when the patch version reaches 99 (same for the major/minor pair).
 - The patch version is bumped whenever Apple approves a submitted version.
 - If Apple hasn't approved, the version will stay the same.
+- For GooglePlay we are not concerned about this because submitted versions are almost never rejected.
 
-Example 1: 
+- Example 1: 
 We submit build #1 with version `0.13.1` to Apple for review on Monday. On Tuesday, we generate and resubmit build #2 (with some bug fixes). The version will still be `0.13.1` since Apple hasn't approved build #1. On Wednesday, Apple approves build #2. The next build to submit to Apple will be `0.13.2`.
 
 Example 2:
@@ -34,7 +35,7 @@ Android: **0.13.2.732**
 ```
 
 ### 4. Announce new release candidates
-Post a message in the `team-core-browext-mobile` slack channel announcing the new builds as well as the release notes
+Post a message in the [`#team-core-browext-mobile`](https://avalancheavax.slack.com/archives/C028N8UEWEN) slack channel announcing the new builds as well as the release notes
 
 ### 5. Make build available on Testflight (iOS only)
 - Builds will be sent to internal groups on Testflight automatically. However, for external groups, we have to manually do it. 
@@ -57,7 +58,9 @@ On Appstore:
 On Playstore:
 - Go to internal testing track
 - Find the latest release
-- Click "Promote release" -> "Production"
+- Click "Promote release" -> "Production" 
+
+Note: ["Managed publishing"](https://support.google.com/googleplay/android-developer/answer/9859654) is turned on so it **won't** be published upon successful review.
 
 <img src="images/playstore_promote_to_production.png" width="700"/>
 
