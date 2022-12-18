@@ -117,12 +117,8 @@ jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore xample.jks
 4. Set build target to `Any iOS device`
 5. Go to `Product → Archive` and follow wizard steps
 
-### Nightly builds - Android
-```zsh
-cd android
-./gradlew assembleNightly
-```
-
+### Release Process
+[Documentation](docs/release_process.md)
 
 ## Known issues
 ### Apple M1 chips
