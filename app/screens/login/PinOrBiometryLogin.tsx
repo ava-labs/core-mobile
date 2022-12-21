@@ -1,5 +1,11 @@
 import React, { useEffect } from 'react'
-import { Animated, InteractionManager, StyleSheet, View } from 'react-native'
+import {
+  Animated,
+  InteractionManager,
+  Keyboard,
+  StyleSheet,
+  View
+} from 'react-native'
 import PinKey, { PinKeys } from 'screens/onboarding/PinKey'
 import { Space } from 'components/Space'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -62,6 +68,10 @@ export default function PinOrBiometryLogin({
     disableKeypad,
     timeRemaining
   } = usePinOrBiometryLogin()
+
+  useEffect(() => {
+    Keyboard.dismiss()
+  }, [])
 
   useEffect(() => {
     let sub: Subscription
