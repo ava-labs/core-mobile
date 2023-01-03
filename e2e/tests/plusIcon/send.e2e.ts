@@ -11,7 +11,10 @@ import ExistingRecoveryPhrasePage from '../../pages/existingRecoveryPhrase.page'
 import BottomTabsPage from '../../pages/bottomTabs.page'
 import SendPage from '../../pages/send.page'
 import ReviewAndSend from '../../pages/reviewAndSend.page'
-import PortfolioPage from '../../pages/portfolio.page'
+import ActivityTabPage from '../../pages/activityTab.page'
+import delay from '../../helpers/waits'
+import actions from '../../helpers/actions'
+import transactionDetailsPage from '../../pages/transactionDetails.page'
 
 describe('Create new wallet', () => {
   beforeAll(async () => {
@@ -50,6 +53,13 @@ describe('Create new wallet', () => {
     await ReviewAndSend.tapSendNow()
     await Assert.isVisible(ReviewAndSend.sendPendingToastMsg)
     await Assert.isVisible(ReviewAndSend.sendSuccessfulToastMsg)
-    await PortfolioPage.verifyPorfolioScreen()
+    await BottomTabsPage.tapActivityTab()
+    await actions.waitForElementNotVisible(ReviewAndSend.sendSuccessfulToastMsg)
+    await delay(40000)
+    await ActivityTabPage.refreshActivityPage()
+    await ActivityTabPage.tapArrowIcon(0)
+    const isTransactionSuccessful = await transactionDetailsPage.dateText()
+    console.log(isTransactionSuccessful)
+    expect(isTransactionSuccessful).toBe(true)
   })
 })

@@ -36,6 +36,13 @@ const waitForElement = async (item: Detox.NativeMatcher, timeout = 2000) => {
   await waitFor(element(item)).toBeVisible().withTimeout(timeout)
 }
 
+const waitForElementNotVisible = async (
+  item: Detox.NativeMatcher,
+  timeout = 20000
+) => {
+  await waitFor(element(item)).not.toBeVisible().withTimeout(timeout)
+}
+
 const getAttributes = async (item: Detox.NativeMatcher) => {
   return await element(item).getAttributes()
 }
@@ -51,15 +58,19 @@ const swipeUp = async (
 const swipeDown = async (
   item: Detox.NativeMatcher,
   speed: undefined,
-  normalizedOffset: number
+  normalizedOffset: number,
+  index: 0
 ) => {
-  return await element(item).swipe('down', speed, normalizedOffset)
+  return await element(item)
+    .atIndex(index)
+    .swipe('down', speed, normalizedOffset)
 }
 
 export default {
   tap,
   longPress,
   waitForElement,
+  waitForElementNotVisible,
   tapElementAtIndex,
   getAttributes,
   swipeUp,

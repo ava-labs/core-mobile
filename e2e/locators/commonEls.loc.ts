@@ -1,3 +1,3 @@
 export default {
-  backButton: 'back_button'
+  backButton: 'header_back'
 }

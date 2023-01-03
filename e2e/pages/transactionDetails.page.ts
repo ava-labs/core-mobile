@@ -26,6 +26,20 @@ class VerifyPhrasePage {
     return by.id(transactionDetails.transactionType)
   }
 
+  async dateText() {
+    const atts = await Action.getAttributes(this.date)
+    const dateObject = Date.parse(atts.text)
+    const diff = Date.now() - dateObject
+    console.log(diff)
+
+    if (diff > 300000) {
+      console.log('the date of the transaction is older than 5 minutes!!!')
+      return false
+    } else {
+      return true
+    }
+  }
+
   async tapViewOnExplorerButton() {
     await Action.tap(this.viewOnExplorerButton)
   }
