@@ -111,6 +111,7 @@ function ActivityDetail() {
           />
           <Separator inset={16} />
           <AvaListItem.Base
+            testID="activity_detail__date"
             title={<AvaText.Body2>Date</AvaText.Body2>}
             titleAlignment={'flex-start'}
             rightComponent={
