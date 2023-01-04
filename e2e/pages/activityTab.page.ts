@@ -42,14 +42,6 @@ class ActivityTabPage {
     return by.id(activityTab.linkIcon)
   }
 
-  get backButton() {
-    return by.label(activityTab.backButton)
-  }
-
-  async tapBackButton() {
-    await Action.tap(this.backButton)
-  }
-
   async tapArrowIcon(index: number) {
     await Action.tapElementAtIndex(this.arrowSVG, index)
   }
