@@ -26,13 +26,16 @@ class VerifyPhrasePage {
     return by.id(transactionDetails.transactionType)
   }
 
-  async dateText() {
-    const atts = await Action.getAttributes(this.date)
+  async isDateTextOlderThan(time: number) {
+    // Types need to be updated in detox library and thats why we have to ignore this error for now
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const atts: any = await Action.getAttributes(this.date)
     const dateObject = Date.parse(atts.text)
     const diff = Date.now() - dateObject
     console.log(diff)
 
-    if (diff > 300000) {
+    // Time is calculated in milliseconds, now argument can be entered in seconds
+    if (diff > time * 10000) {
       console.log('the date of the transaction is older than 5 minutes!!!')
       return false
     } else {

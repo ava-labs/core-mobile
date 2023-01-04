@@ -16,6 +16,8 @@ import delay from '../../helpers/waits'
 import actions from '../../helpers/actions'
 import transactionDetailsPage from '../../pages/transactionDetails.page'
 
+const jestExpect = require('expect')
+
 describe('Create new wallet', () => {
   beforeAll(async () => {
     await device.launchApp()
@@ -58,8 +60,9 @@ describe('Create new wallet', () => {
     await delay(40000)
     await ActivityTabPage.refreshActivityPage()
     await ActivityTabPage.tapArrowIcon(0)
-    const isTransactionSuccessful = await transactionDetailsPage.dateText()
+    const isTransactionSuccessful =
+      await transactionDetailsPage.isDateTextOlderThan(300)
     console.log(isTransactionSuccessful)
-    expect(isTransactionSuccessful).toBe(true)
+    jestExpect(isTransactionSuccessful).toBe(true)
   })
 })
