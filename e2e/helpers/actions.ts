@@ -49,7 +49,7 @@ const getAttributes = async (item: Detox.NativeMatcher) => {
 
 const swipeUp = async (
   item: Detox.NativeMatcher,
-  speed: undefined,
+  speed: Detox.Speed,
   normalizedOffset: number
 ) => {
   return await element(item).swipe('up', speed, normalizedOffset)
@@ -57,7 +57,7 @@ const swipeUp = async (
 
 const swipeDown = async (
   item: Detox.NativeMatcher,
-  speed: undefined,
+  speed: Detox.Speed,
   normalizedOffset: number,
   index: 0
 ) => {
