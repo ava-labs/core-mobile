@@ -34,7 +34,7 @@ class VerifyPhrasePage {
     const diff = Date.now() - dateObject
     console.log(diff)
 
-    // Time is calculated in milliseconds, now argument can be entered in seconds
+    // Time is calculated in milliseconds now argument can be entered in seconds
     if (diff > time * 10000) {
       console.log('the date of the transaction is older than 5 minutes!!!')
       return false
