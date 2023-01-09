@@ -27,6 +27,7 @@ import AppNavigation from 'navigation/AppNavigation'
 import { formatLargeCurrency, formatLargeNumber } from 'utils/Utils'
 import { TokenSymbol } from 'store/network'
 import { ActivityIndicator } from 'components/ActivityIndicator'
+import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
 
 const WINDOW_WIDTH = Dimensions.get('window').width
 const WINDOW_HEIGHT = Dimensions.get('window').height
@@ -41,6 +42,7 @@ const TokenDetail = () => {
   const { setOptions } = useNavigation<ScreenProps['navigation']>()
   const [showChartInstruction, setShowChartInstruction] = useState(false)
   const tokenId = useRoute<ScreenProps['route']>().params.tokenId
+  const buyDisabled = useIsUIDisabled(UI.Buy)
 
   const {
     isFavorite,
@@ -330,7 +332,7 @@ const TokenDetail = () => {
           />
         </Row>
 
-        {symbol === TokenSymbol.AVAX && (
+        {symbol === TokenSymbol.AVAX && !buyDisabled && (
           <AvaButton.SecondaryLarge
             onPress={openMoonPay}
             style={{ marginHorizontal: 16 }}>
