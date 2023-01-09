@@ -1,0 +1,26 @@
+diff --git a/node_modules/react-native-reanimated/android/src/reactNativeVersionPatch/nativeHierarchyManager/62/com/swmansion/reanimated/layoutReanimation/ReanimatedNativeHierarchyManager.java b/node_modules/react-native-reanimated/android/src/reactNativeVersionPatch/nativeHierarchyManager/62/com/swmansion/reanimated/layoutReanimation/ReanimatedNativeHierarchyManager.java
+index c781f68..8eeae7b 100644
+--- a/node_modules/react-native-reanimated/android/src/reactNativeVersionPatch/nativeHierarchyManager/62/com/swmansion/reanimated/layoutReanimation/ReanimatedNativeHierarchyManager.java
++++ b/node_modules/react-native-reanimated/android/src/reactNativeVersionPatch/nativeHierarchyManager/62/com/swmansion/reanimated/layoutReanimation/ReanimatedNativeHierarchyManager.java
+@@ -256,7 +256,7 @@ public class ReanimatedNativeHierarchyManager extends NativeViewHierarchyManager
+     }
+ 
+     if (initOk) {
+-      setLayoutAnimationEnabled(true);
++      // setLayoutAnimationEnabled(true);
+     }
+   }
+ 
+diff --git a/node_modules/react-native-reanimated/android/src/reactNativeVersionPatch/nativeHierarchyManager/latest/com/swmansion/reanimated/layoutReanimation/ReanimatedNativeHierarchyManager.java b/node_modules/react-native-reanimated/android/src/reactNativeVersionPatch/nativeHierarchyManager/latest/com/swmansion/reanimated/layoutReanimation/ReanimatedNativeHierarchyManager.java
+index b0e33b0..6f0c277 100644
+--- a/node_modules/react-native-reanimated/android/src/reactNativeVersionPatch/nativeHierarchyManager/latest/com/swmansion/reanimated/layoutReanimation/ReanimatedNativeHierarchyManager.java
++++ b/node_modules/react-native-reanimated/android/src/reactNativeVersionPatch/nativeHierarchyManager/latest/com/swmansion/reanimated/layoutReanimation/ReanimatedNativeHierarchyManager.java
+@@ -256,7 +256,7 @@ public class ReanimatedNativeHierarchyManager extends NativeViewHierarchyManager
+     }
+ 
+     if (initOk) {
+-      setLayoutAnimationEnabled(true);
++      // setLayoutAnimationEnabled(true);
+     }
+   }
+ 

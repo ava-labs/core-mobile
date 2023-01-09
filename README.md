@@ -66,15 +66,6 @@ You can run the test suite with
 yarn test
 ```
 
-## iOS & Android versioning
-
-To update version of apps set new version in package.json and run
-```zsh
-yarn postversion
-```
-This will set versionName (bundle version string) to one set in package.json and increment versionCode (bundle version)
-by one. 
-
 ## Custom fonts
 
 To add custom font, add it to src/assets folder and then run: 
@@ -90,34 +81,10 @@ https://whimsical.com/mobile-navigation-system-4WaXLt2DgAutCmbfFF6wpS
 
 https://whimsical.com/wallet-connect-flows-9QqTTDNdktBePx6vDR9oeX
 
-## Releasing apps
+## App Signing
+[Documentation](docs/app_signing.md)
 
-### Android
-
-Make release AAB
-```zsh
-cd android
-./gradlew bundleRelease
-```
-and then upload generated aab file to [play console](https://play.google.com/console)
-
-#### Manual signing
-Build unsigned aab (remove `buildTypes.release.signingConfig` entry from `build.gradle` file)
-
-Sign with:
-```zsh
-jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore xample.jks bundle.aab keystoreAlias
-```
-
-### iOS
-
-1. In **Info.plist** set flags `NSAllowsArbitraryLoads` & `NSExceptionAllowsInsecureHTTPLoads` to `false`
-2. Open Xcode
-3. Configure app to be built using the Release scheme, go to `Product → Scheme → Edit Scheme`. Select the `Run` tab in the sidebar, then set the `Build Configuration` dropdown to `Release`
-4. Set build target to `Any iOS device`
-5. Go to `Product → Archive` and follow wizard steps
-
-### Release Process
+## Release Process
 [Documentation](docs/release_process.md)
 
 ## Known issues
