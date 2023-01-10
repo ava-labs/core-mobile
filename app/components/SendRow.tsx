@@ -13,6 +13,7 @@ export default function SendRow({
   label: string
   title: string
   address: string
+  testID?: string
 }) {
   return (
     <>

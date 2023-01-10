@@ -28,6 +28,7 @@
      "android.internal.debug":{
         "type":"android.apk",
         "binaryPath":"android/app/build/outputs/apk/internal/debug/app-internal-debug.apk",
+        "testBinaryPath": "android/app/build/outputs/apk/androidTest/internal/debug/app-internal-debug-androidTest.apk",
         "build":"cd android && ENVFILE=.env.development ./gradlew assembleInternalDebug assembleInternalDebugAndroidTest -DtestBuildType=debug && cd .."
      },
      "android.internal.e2e":{

@@ -42,8 +42,12 @@ class ActivityTabPage {
     return by.id(activityTab.linkIcon)
   }
 
-  async tapArrowIcon() {
-    await Action.tapElementAtIndex(this.arrowSVG, 1)
+  async tapArrowIcon(index: number) {
+    await Action.tapElementAtIndex(this.arrowSVG, index)
+  }
+
+  async refreshActivityPage() {
+    await Action.swipeDown(by.id('arrow_svg'), 'slow', 0.75, 0)
   }
 
   async tapTransaction() {
