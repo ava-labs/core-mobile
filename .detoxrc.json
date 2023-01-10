@@ -1,17 +1,20 @@
 {
-  "testRunner":"jest",
-  "runnerConfig":"e2e/config.json",
-  "skipLegacyWorkersInjection":true,
+  "testRunner": {
+   "$0": "jest",
+   "args": {
+  "config": "e2e/config.json"
+   }
+  },
   "devices":{
      "emulator":{
         "type":"android.emulator",
         "device":{
-           "avdName":"Pixel_4_API_31"
+           "type": {"avdName": "Pixel_4_API_31"}
         }
      },
      "simulator":{
         "type":"ios.simulator",
-        "device":"iPhone 13"
+        "device": {"type": "iPhone 13"}
      }
   },
   

@@ -2,15 +2,19 @@ import * as fs from 'fs'
 import { createNewTestSectionsAndCases } from './testrail_generate_tcs'
 
 const detox = require('detox')
-const config = require('../package.json').detox
+//const config = require('../package.json').detox
 
 jest.setTimeout(120000)
+
+afterEach(async () => {
+  console.log(expect.getState().currentTestName + ' this is the test name!!!')
+})
 
 beforeAll(async () => {
   // custom setup
 
   console.log('Initializing Detox')
-  await detox.init(config, { launchApp: false })
+  // await detox.init(config, { launchApp: false })
 })
 
 afterAll(async () => {

@@ -4,9 +4,12 @@
     "testRunner": "jest-circus/runner",
     "testTimeout": 120000,
     "testRegex": "\\.e2e\\.ts$",
-    "reporters": ["detox/runners/jest/streamlineReporter"],
+    "reporters": ["detox/runners/jest/reporter"],
     "verbose": true,
     "setupFilesAfterEnv": ["./init.ts"],
-    "globalTeardown": "./sendResults.ts",
-    "globalSetup": "./setup.ts"
+    "globalTeardown": "detox/runners/jest/globalSetup",
+    "globalSetup": "./setup.ts",
+    "transformIgnorePatterns": ["node_modules/(?!((jest-)?react-native|react-native-elements|@react-native(-community)?)/)"],
+    "preset": "ts-jest"
+
 }

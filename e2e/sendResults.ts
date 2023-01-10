@@ -124,4 +124,10 @@ A 'case id' is the permanent test case in our suite, a 'test case id' is a part 
   }
 }
 
-module.exports = teardown
+module.exports = async () => {
+  try {
+    await teardown
+  } finally {
+    await require('detox/runners/jest/index').globalTeardown()
+  }
+}
