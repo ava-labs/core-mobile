@@ -21,7 +21,12 @@ import Config from 'react-native-config'
 import * as Sentry from '@sentry/react-native'
 import { DefaultSampleRate } from 'services/sentry/SentryWrapper'
 
-LogBox.ignoreLogs(['Require cycle:', "Can't perform", 'new'])
+LogBox.ignoreLogs([
+  'Require cycle:',
+  "Can't perform",
+  'new',
+  'Non-serializable'
+])
 
 //init Sentry
 if (Config.SENTRY_DSN && !__DEV__) {

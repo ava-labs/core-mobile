@@ -15,6 +15,7 @@ interface Props {
   symbol?: string
   onPress?: () => void
   showLoading?: boolean
+  testID?: string
 }
 
 const PortfolioListItem: FC<Props> = ({

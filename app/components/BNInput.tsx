@@ -17,6 +17,8 @@ interface BNInputProps extends Omit<TextInputProps, 'value' | 'onChange'> {
 
   isValueLoading?: boolean
   hideErrorMessage?: boolean
+
+  testID?: string
 }
 
 export function splitBN(val: string) {
