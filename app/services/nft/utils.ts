@@ -1,27 +1,17 @@
 import { Erc721TokenBalance } from '@avalabs/glacier-sdk'
 import { NFTItemData } from 'store/nft'
+import { ipfsResolver } from '@avalabs/utils-sdk'
 import NftProcessor from './NftProcessor'
 import { NftUID } from './types'
 
-const CLOUDFLARE_IPFS_URL = 'https://cloudflare-ipfs.com/ipfs'
+const CLOUDFLARE_IPFS_URL = 'https://cloudflare-ipfs.com'
 
 export const convertIPFSResolver = (url: string) => {
-  if (url.startsWith('ipfs://')) {
-    // handle direct ipfs links
-    return url.replace('ipfs://', `${CLOUDFLARE_IPFS_URL}/`)
-  } else if (url.includes('ipfs')) {
-    // handle ipfs links that use some resolver
-    const ipfsHash = url.split('/').pop()
-    /**
-     * Converting everything to cloudflare because some ipfs resolver try and rate limit
-     *
-     * Sometimes cloudflare was slow to resolve so if this becomes an issue we can sart using infura. Which seemed to
-     * be faster but clooudflare seems like the more stable solution.
-     */
-    return `${CLOUDFLARE_IPFS_URL}/${ipfsHash}`
+  try {
+    return ipfsResolver(url, CLOUDFLARE_IPFS_URL)
+  } catch {
+    return url
   }
-
-  return url
 }
 
 export const applyImageAndAspect = async (nftData: NFTItemData) => {
