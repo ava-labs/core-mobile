@@ -2,12 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { combineReducers } from 'redux'
 import { AnyAction, configureStore, ListenerEffectAPI } from '@reduxjs/toolkit'
 import { createMigrate, persistReducer, persistStore } from 'redux-persist'
-import {
-  DeserializeBridgeTransform,
-  WalletConnectBlacklistTransform,
-  WatchlistBlacklistTransform
-} from 'store/transforms'
-import bridge from 'store/bridge'
+import { bridgeReducer as bridge } from 'store/bridge'
 import { nftsApi } from 'store/nft/api'
 import { migrations } from 'store/migrations'
 import { encryptTransform } from 'redux-persist-transform-encrypt'
@@ -28,6 +23,9 @@ import settings from './settings'
 import swap from './swap'
 import { transactionApi } from './transaction'
 import { walletConnectReducer as walletConnect } from './walletConnect'
+import { DeserializeBridgeTransform } from './transforms/DeserializeBridgeTransform'
+import { WatchlistBlacklistTransform } from './transforms/WatchlistBlacklistTransform'
+import { WalletConnectBlacklistTransform } from './transforms/WalletConnectBlacklistTransform'
 
 // list of reducers that don't need to be persisted
 // for nested blacklist, please use transform
@@ -85,7 +83,7 @@ const rootReducer = (state: any, action: AnyAction) => {
 export function configureEncryptedStore(secretKey: string) {
   // If this transform fails to decrypt or parse then it will log a warning and
   // return `undefined`, which will cause the redux state to be reset.
-  const encryptionTransform = encryptTransform<
+  const EncryptionTransform = encryptTransform<
     RawRootState,
     RawRootState,
     RawRootState
@@ -100,7 +98,7 @@ export function configureEncryptedStore(secretKey: string) {
       DeserializeBridgeTransform,
       WatchlistBlacklistTransform,
       WalletConnectBlacklistTransform,
-      encryptionTransform // last!
+      EncryptionTransform // last!
     ],
     migrate: createMigrate(migrations, { debug: __DEV__ }),
     version: 3
