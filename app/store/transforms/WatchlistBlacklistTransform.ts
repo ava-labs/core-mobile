@@ -1,6 +1,6 @@
 import { createTransform } from 'redux-persist'
 import { RawRootState } from 'store'
-import { WatchListState } from 'store/watchlist'
+import { WatchListState, reducerName } from 'store/watchlist'
 
 // a transform for watchlist to blacklist prices and charts
 export const WatchlistBlacklistTransform = createTransform<
@@ -28,6 +28,6 @@ export const WatchlistBlacklistTransform = createTransform<
     }
   },
   {
-    whitelist: ['watchlist']
+    whitelist: [reducerName]
   }
 )

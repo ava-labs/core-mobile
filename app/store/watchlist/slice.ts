@@ -10,7 +10,7 @@ import {
   defaultChartData
 } from './types'
 
-const reducerName = 'watchlist'
+export const reducerName = 'watchlist'
 
 export const watchlistSlice = createSlice({
   name: reducerName,

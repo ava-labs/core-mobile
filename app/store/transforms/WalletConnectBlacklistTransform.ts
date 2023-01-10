@@ -1,6 +1,6 @@
 import { createTransform } from 'redux-persist'
 import { RawRootState } from 'store'
-import { WalletConnectState } from 'store/walletConnect'
+import { WalletConnectState, reducerName } from 'store/walletConnect'
 
 // a transform for walletConnect to blacklist requests
 export const WalletConnectBlacklistTransform = createTransform<
@@ -24,6 +24,6 @@ export const WalletConnectBlacklistTransform = createTransform<
     }
   },
   {
-    whitelist: ['walletConnect']
+    whitelist: [reducerName]
   }
 )

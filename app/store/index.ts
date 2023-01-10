@@ -23,7 +23,7 @@ import settings from './settings'
 import swap from './swap'
 import { transactionApi } from './transaction'
 import { walletConnectReducer as walletConnect } from './walletConnect'
-import { DeserializeBridgeTransform } from './transforms/DeserializeBridgeTransform'
+import { BridgeBlacklistTransform } from './transforms/BridgeBlacklistTransform'
 import { WatchlistBlacklistTransform } from './transforms/WatchlistBlacklistTransform'
 import { WalletConnectBlacklistTransform } from './transforms/WalletConnectBlacklistTransform'
 
@@ -95,7 +95,7 @@ export function configureEncryptedStore(secretKey: string) {
     blacklist,
     rootReducer,
     transforms: [
-      DeserializeBridgeTransform,
+      BridgeBlacklistTransform,
       WatchlistBlacklistTransform,
       WalletConnectBlacklistTransform,
       EncryptionTransform // last!

@@ -8,7 +8,7 @@ import { RootState } from 'store/index'
 import { EthereumProviderError, EthereumRpcError } from 'eth-rpc-errors'
 import { DappRpcRequest, TypedJsonRpcRequest } from './handlers/types'
 
-const reducerName = 'walletConnect'
+export const reducerName = 'walletConnect'
 
 const initialState = {
   requests: [],
