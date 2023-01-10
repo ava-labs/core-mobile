@@ -1,10 +1,10 @@
 import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store'
-import { BridgeTransaction } from '@avalabs/bridge-sdk'
+import { BridgeConfig, BridgeTransaction } from '@avalabs/bridge-sdk'
 import { selectActiveNetwork } from 'store/network'
 import { BridgeState, initialState } from 'store/bridge/types'
 
-const reducerName = 'bridge'
+export const reducerName = 'bridge'
 
 export const bridgeSlice = createSlice({
   name: reducerName,
@@ -17,6 +17,9 @@ export const bridgeSlice = createSlice({
     popBridgeTransaction: (state, action: PayloadAction<string>) => {
       const sourceTxHash = action.payload
       delete state.bridgeTransactions[sourceTxHash]
+    },
+    setConfig: (state, action: PayloadAction<BridgeConfig>) => {
+      state.config = action.payload
     }
   }
 })
@@ -40,7 +43,7 @@ export const selectBridgeTransactions = createSelector(
   }
 )
 
-export const { addBridgeTransaction, popBridgeTransaction } =
+export const { addBridgeTransaction, popBridgeTransaction, setConfig } =
   bridgeSlice.actions
 
 export const bridgeReducer = bridgeSlice.reducer
