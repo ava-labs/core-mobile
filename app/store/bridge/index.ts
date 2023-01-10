@@ -1,8 +1,7 @@
 import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store'
 import { BridgeTransaction } from '@avalabs/bridge-sdk'
-import { AppStartListening } from 'store/middleware/listener'
-import { selectNetworks, setActive } from 'store/network'
+import { selectActiveNetwork } from 'store/network'
 import { BridgeState, initialState } from 'store/bridge/types'
 
 const reducerName = 'bridge'
@@ -18,14 +17,9 @@ export const bridgeSlice = createSlice({
     popBridgeTransaction: (state, action: PayloadAction<string>) => {
       const sourceTxHash = action.payload
       delete state.bridge.bridgeTransactions[sourceTxHash]
-    },
-    setBridgeFilter(state, action: PayloadAction<boolean>) {
-      state.bridge.isMainnet = action.payload
     }
   }
 })
-
-const selectIsMainnet = (state: RootState) => state.bridge.bridge.isMainnet
 
 const selectTransactions = (state: RootState) =>
   state.bridge.bridge.bridgeTransactions
@@ -33,11 +27,12 @@ const selectTransactions = (state: RootState) =>
 export const selectBridge = (state: RootState) => state.bridge.bridge
 
 export const selectBridgeTransactions = createSelector(
-  [selectTransactions, selectIsMainnet],
-  (bridgeTransactions, isMainnet) => {
+  [selectTransactions, selectActiveNetwork],
+  (bridgeTransactions, activeNetwork) => {
     return Object.values(bridgeTransactions).reduce<
       BridgeState['bridgeTransactions']
     >((txs, btx) => {
+      const isMainnet = !activeNetwork.isTestnet
       // go figure
       const bridgeTx = btx as BridgeTransaction
       if (bridgeTx.environment === (isMainnet ? 'main' : 'test')) {
@@ -48,23 +43,8 @@ export const selectBridgeTransactions = createSelector(
   }
 )
 
-export const { addBridgeTransaction, popBridgeTransaction, setBridgeFilter } =
+export const { addBridgeTransaction, popBridgeTransaction } =
   bridgeSlice.actions
-
-export const addBridgeListeners = (startListening: AppStartListening) => {
-  // listen to network changes here to update filter
-  startListening({
-    actionCreator: setActive,
-    effect: (action, listenerApi) => {
-      const state = listenerApi.getState()
-      const networks = selectNetworks(state)
-      // updates bridge isMainnet filter based on selected network
-      listenerApi.dispatch(
-        setBridgeFilter(!networks[action.payload]?.isTestnet)
-      )
-    }
-  })
-}
 
 export * from './types'
 

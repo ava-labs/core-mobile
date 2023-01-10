@@ -4,7 +4,6 @@ export interface BridgeState {
   bridgeTransactions: {
     [key: string]: BridgeTransaction
   }
-  isMainnet: boolean
 }
 
 export interface BridgeReducerState {
@@ -12,8 +11,7 @@ export interface BridgeReducerState {
 }
 
 export const defaultBridgeState: BridgeState = {
-  bridgeTransactions: {},
-  isMainnet: false
+  bridgeTransactions: {}
 }
 
 export const initialState: BridgeReducerState = {
