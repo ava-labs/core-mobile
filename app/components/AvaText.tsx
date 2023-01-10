@@ -200,7 +200,6 @@ const TextBody2: FC<AvaTextProps> = ({
   const theme = useApplicationContext().theme
   return (
     <AvaxTextBase
-      testID="ava_text__body_2"
       {...rest}
       style={[styles.body2, { color: color ?? theme.colorText2 }, textStyle]}>
       {children}

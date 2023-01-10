@@ -31,6 +31,7 @@ interface Props {
   isValueLoading?: boolean
   hideErrorMessage?: boolean
   hideZeroBalanceTokens?: boolean
+  testID?: string
 }
 
 type NavigationProp = WalletScreenProps<
@@ -130,6 +131,7 @@ const UniversalTokenSelector: FC<Props> = ({
         {hideInput || (
           <View>
             <BNInput
+              testID="universal_token_selector__amount_field"
               value={inputAmount}
               onMax={onMax}
               denomination={selectedToken?.decimals || 9}

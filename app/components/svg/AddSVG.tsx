@@ -7,15 +7,21 @@ interface Prop {
   circleColor?: string
   hideCircle?: boolean
   size?: number
+  testID?: string
 }
 
-function AddSVG({ color, circleColor, hideCircle = false, size = 44 }: Prop) {
+function AddSVG({ color, circleColor, hideCircle = false, size = 100 }: Prop) {
   const context = useApplicationContext()
 
   const iconColor = color ?? context.theme.colorIcon1
   const borderColor = circleColor ?? context.theme.colorStroke
   return (
-    <Svg width={size} height={size} viewBox="0 0 44 44" fill="none">
+    <Svg
+      width={size}
+      height={size}
+      viewBox="0 0 44 44"
+      fill="none"
+      testID="add_svg">
       {hideCircle || <Circle cx="22" cy="22" r="21.5" stroke={borderColor} />}
       <G clip-path="url(#clip0)">
         <Path

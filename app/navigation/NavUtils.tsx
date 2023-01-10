@@ -40,9 +40,11 @@ export const MainHeaderOptions = (
 
 export const SubHeaderOptions = (
   title: string,
-  hideHeaderLeft = false
+  hideHeaderLeft = false,
+  headerBackTestID?: string
 ): Partial<StackNavigationOptions> => {
   const options: Partial<StackNavigationOptions> = {
+    headerBackTestID,
     headerShown: true,
     headerTitle: () => <AvaText.Heading2>{title}</AvaText.Heading2>,
     headerTitleAlign: 'center',

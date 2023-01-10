@@ -22,6 +22,7 @@ interface Props {
   type: TransactionToastType
   txHash?: string
   toastId?: string
+  testID?: string
 }
 
 const SimpleToast = ({

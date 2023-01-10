@@ -11,6 +11,7 @@ import AnalyticsConsentPage from '../../pages/analyticsConsent.page'
 import WatchListPage from '../../pages/watchlist.page'
 import VerifyPhrasePage from '../../pages/verifyPhrase.page'
 import CreatePinPage from '../../pages/createPin.page'
+import BottomTabsPage from '../../pages/bottomTabs.page'
 
 describe('Create new wallet', () => {
   beforeAll(async () => {
@@ -51,5 +52,6 @@ describe('Create new wallet', () => {
     await CreatePinPage.tapEmptyCheckbox()
     await CreatePinPage.tapNextBtn()
     await PortfolioPage.verifyPorfolioScreen()
+    await BottomTabsPage.verifyBottomTabs()
   })
 })

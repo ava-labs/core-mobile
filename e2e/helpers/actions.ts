@@ -20,12 +20,27 @@ const setColumnToValue = async (
   await element(item).setColumnToValue(index, value)
 }
 
-const setInputText = async (item: Detox.NativeMatcher, value: string) => {
-  await element(item).replaceText(value)
+const setInputText = async (
+  item: Detox.NativeMatcher,
+  value: string,
+  index?: number
+) => {
+  if (index === undefined) {
+    await element(item).replaceText(value)
+  } else {
+    await element(item).atIndex(index).replaceText(value)
+  }
 }
 
 const waitForElement = async (item: Detox.NativeMatcher, timeout = 2000) => {
   await waitFor(element(item)).toBeVisible().withTimeout(timeout)
+}
+
+const waitForElementNotVisible = async (
+  item: Detox.NativeMatcher,
+  timeout = 20000
+) => {
+  await waitFor(element(item)).not.toBeVisible().withTimeout(timeout)
 }
 
 const getAttributes = async (item: Detox.NativeMatcher) => {
@@ -34,7 +49,7 @@ const getAttributes = async (item: Detox.NativeMatcher) => {
 
 const swipeUp = async (
   item: Detox.NativeMatcher,
-  speed: undefined,
+  speed: Detox.Speed,
   normalizedOffset: number
 ) => {
   return await element(item).swipe('up', speed, normalizedOffset)
@@ -42,16 +57,20 @@ const swipeUp = async (
 
 const swipeDown = async (
   item: Detox.NativeMatcher,
-  speed: undefined,
-  normalizedOffset: number
+  speed: Detox.Speed,
+  normalizedOffset: number,
+  index: 0
 ) => {
-  return await element(item).swipe('down', speed, normalizedOffset)
+  return await element(item)
+    .atIndex(index)
+    .swipe('down', speed, normalizedOffset)
 }
 
 export default {
   tap,
   longPress,
   waitForElement,
+  waitForElementNotVisible,
   tapElementAtIndex,
   getAttributes,
   swipeUp,
