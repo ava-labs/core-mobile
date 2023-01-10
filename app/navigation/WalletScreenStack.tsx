@@ -249,7 +249,7 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
         />
         <WalletScreenS.Screen
           options={{
-            ...SubHeaderOptions('Transaction Details')
+            ...SubHeaderOptions('Transaction Details', undefined, 'header_back')
           }}
           name={AppNavigation.Wallet.ActivityDetail}
           component={ActivityDetail}

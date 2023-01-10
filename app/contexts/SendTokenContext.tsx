@@ -186,6 +186,7 @@ export const SendTokenContextProvider = ({
     showSnackBarCustom({
       component: (
         <TransactionToast
+          testID="send_token_context__send_pending_toast"
           message={'Send Pending...'}
           type={TransactionToastType.PENDING}
         />
@@ -209,6 +210,7 @@ export const SendTokenContextProvider = ({
           showSnackBarCustom({
             component: (
               <TransactionToast
+                testID="send_token_context__send_successful_toast"
                 message={'Send Successful'}
                 type={TransactionToastType.SUCCESS}
                 txHash={txId}
@@ -223,6 +225,7 @@ export const SendTokenContextProvider = ({
           showSnackBarCustom({
             component: (
               <TransactionToast
+                testID="send_token_context__send_failed_toast"
                 message={'Send Failed'}
                 type={TransactionToastType.ERROR}
                 txHash={transactionHash}

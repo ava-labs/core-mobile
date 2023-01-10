@@ -69,6 +69,7 @@ type Props = {
   paddingVertical?: number
   keyboardWillShow?: () => void
   keyboardDidHide?: () => void
+  testID?: string
 }
 
 export default function InputText({
@@ -201,6 +202,7 @@ export default function InputText({
           }
         ]}>
         <TextInput
+          testID="input_text"
           keyboardAppearance={Appearance.getColorScheme() || 'default'}
           ref={textInputRef}
           autoCapitalize="none"

@@ -52,7 +52,13 @@ const Carrot = ({
   rotation?: number
 }) => (
   <View style={{ transform: [{ rotate: `${rotation}deg` }] }}>
-    <Svg width={size} height={size} viewBox="0 0 16 16" fill="none" origin={8}>
+    <Svg
+      width={size}
+      height={size}
+      viewBox="0 0 16 16"
+      fill="none"
+      origin={8}
+      testID="carrot_svg">
       <Path
         d="M5 3L10.25 8.25L5 13.5"
         stroke={stroke}

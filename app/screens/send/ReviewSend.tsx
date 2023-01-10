@@ -97,7 +97,7 @@ export default function ReviewSend({ onSuccess }: { onSuccess: () => void }) {
             Amount
           </AvaText.Body2>
           <Row style={{ alignItems: 'baseline' }}>
-            <AvaText.Heading1>
+            <AvaText.Heading1 testID="review_and_send__amount">
               {formatLargeNumber(sendAmount.amount, 4)}
             </AvaText.Heading1>
             <Space x={4} />
@@ -113,11 +113,13 @@ export default function ReviewSend({ onSuccess }: { onSuccess: () => void }) {
         </Row>
         <Space y={8} />
         <SendRow
+          testID="review_and_send__from"
           label={'From'}
           title={fromAccount.title}
           address={fromAccount.address}
         />
         <SendRow
+          testID="review_and_send__to"
           label={'To'}
           title={toAccount.title}
           address={toAccount.address}
@@ -136,14 +138,16 @@ export default function ReviewSend({ onSuccess }: { onSuccess: () => void }) {
             backgroundColor={theme.colorBg3}>
             <PopableLabel label="Network Fee" />
           </Popable>
-          <AvaText.Heading2 currency>{fees.sendFeeInCurrency}</AvaText.Heading2>
+          <AvaText.Heading2 testID="review_and_send__network_fee" currency>
+            {fees.sendFeeInCurrency}
+          </AvaText.Heading2>
         </Row>
         <Space y={16} />
         <Separator />
         <Space y={16} />
         <Row style={{ justifyContent: 'space-between' }}>
           <AvaText.Body2>Balance After Transaction</AvaText.Body2>
-          <AvaText.Heading2>
+          <AvaText.Heading2 testID="review_and_send__bal_after_transaction">
             {fromAccount.balanceAfterTrx} {sendToken?.symbol ?? ''}
           </AvaText.Heading2>
         </Row>
@@ -153,11 +157,15 @@ export default function ReviewSend({ onSuccess }: { onSuccess: () => void }) {
         <FlexSpacer />
         {sendStatus === 'Idle' && (
           <>
-            <AvaButton.PrimaryLarge onPress={handleSend}>
+            <AvaButton.PrimaryLarge
+              onPress={handleSend}
+              testID="review_and_send__send_now_button">
               Send Now
             </AvaButton.PrimaryLarge>
             <Space y={16} />
-            <AvaButton.SecondaryLarge onPress={() => goBack()}>
+            <AvaButton.SecondaryLarge
+              onPress={() => goBack()}
+              testID="review_and_send__cancel_button">
               Cancel
             </AvaButton.SecondaryLarge>
           </>
