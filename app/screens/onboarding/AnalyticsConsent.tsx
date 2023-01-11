@@ -44,8 +44,8 @@ const AnalyticsConsent = ({ onNextScreen, nextScreen }: Props) => {
 
   return (
     <ScrollView
-      style={{
-        flex: 1,
+      contentContainerStyle={{
+        minHeight: '100%',
         paddingHorizontal: 16,
         paddingBottom: 32
       }}>
@@ -67,6 +67,7 @@ const AnalyticsConsent = ({ onNextScreen, nextScreen }: Props) => {
         </AvaText.Body1>
         . You can always opt out by visiting the settings page.
       </AvaText.Body1>
+      <Space y={24} />
       <FlexSpacer />
       <AvaText.Heading2 textStyle={{ alignSelf: 'center' }}>
         Core will...
@@ -105,6 +106,7 @@ const AnalyticsConsent = ({ onNextScreen, nextScreen }: Props) => {
         </AvaText.Body1>
       </Row>
       <FlexSpacer />
+      <Space y={24} />
       <AvaButton.SecondaryLarge onPress={acceptAnalytics} testID="iAgreeBtn">
         I Agree
       </AvaButton.SecondaryLarge>
