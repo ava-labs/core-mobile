@@ -1,7 +1,6 @@
 import AvaText from 'components/AvaText'
 import React, { FC, useEffect } from 'react'
-import { StyleSheet, View } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { ScrollView, StyleSheet, View } from 'react-native'
 import Avatar from 'components/Avatar'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import OvalTagBg from 'components/OvalTagBg'
@@ -57,7 +56,7 @@ const AccountApproval: FC<Props> = ({
 
   return (
     <NativeViewGestureHandler>
-      <SafeAreaView style={styles.container}>
+      <ScrollView contentContainerStyle={styles.container}>
         <AvaText.LargeTitleBold>Connect to site?</AvaText.LargeTitleBold>
         <Space y={30} />
         <View style={styles.iconContainer}>
@@ -107,7 +106,7 @@ const AccountApproval: FC<Props> = ({
             Reject
           </AvaButton.SecondaryMedium>
         </View>
-      </SafeAreaView>
+      </ScrollView>
     </NativeViewGestureHandler>
   )
 }
@@ -115,7 +114,7 @@ const AccountApproval: FC<Props> = ({
 const styles = StyleSheet.create({
   container: {
     paddingTop: 32,
-    flex: 1,
+    minHeight: '100%',
     paddingHorizontal: 16
   },
   iconContainer: {
