@@ -3,12 +3,13 @@ import * as Sentry from '@sentry/react-native'
 import { RpcMethod } from 'services/walletconnect/types'
 import { AppListenerEffectAPI } from 'store'
 import { ethErrors } from 'eth-rpc-errors'
-import { AppConfig, Asset, Blockchain } from '@avalabs/bridge-sdk'
+import { Asset, Blockchain } from '@avalabs/bridge-sdk'
 import BridgeService from 'services/bridge/BridgeService'
 import { bnToBig, stringToBN } from '@avalabs/utils-sdk'
 import { selectActiveAccount } from 'store/account'
 import { selectActiveNetwork, selectNetworks } from 'store/network'
 import Logger from 'utils/Logger'
+import { selectBridgeAppConfig } from 'store/bridge'
 import {
   addRequest,
   sendRpcResult,
@@ -63,30 +64,27 @@ class AvalancheBridgeAssetHandler
   }
 
   onApprove = async (
-    action: PayloadAction<
-      { request: AvalancheBridgeAssetRequest; result?: unknown },
-      string
-    >,
+    action: PayloadAction<{ request: AvalancheBridgeAssetRequest }, string>,
     listenerApi: AppListenerEffectAPI
   ) => {
     const { getState, dispatch } = listenerApi
     const activeAccount = selectActiveAccount(getState())
     const allNetworks = selectNetworks(getState())
     const activeNetwork = selectActiveNetwork(getState())
+    const bridgeAppConfig = selectBridgeAppConfig(getState())
     const request = action.payload.request
     const {
       data: { currentBlockchain, amountStr, asset }
     } = request
     const denomination = asset.denomination
     const amount = bnToBig(stringToBN(amountStr, denomination), denomination)
-    const config = action.payload.result as AppConfig
 
     try {
       const result = await BridgeService.transferAsset({
         currentBlockchain,
         amount,
         asset,
-        config,
+        config: bridgeAppConfig,
         activeAccount,
         allNetworks,
         activeNetwork

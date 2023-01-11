@@ -70,15 +70,20 @@ export const selectApprovedDApps = (state: RootState) => {
 export const rpcRequestReceived = createAction<
   TypedJsonRpcRequest<string, unknown>
 >(`${reducerName}/rpcRequestReceived`)
-export const rpcRequestApproved = createAction<{
+
+export type RpcRequestApprovedPayload = {
   request: DappRpcRequest<string, unknown>
-  result: unknown
-}>(`${reducerName}/rpcRequestApproved`)
+  data?: unknown
+}
+export const rpcRequestApproved = createAction<RpcRequestApprovedPayload>(
+  `${reducerName}/rpcRequestApproved`
+)
 
 export const sendRpcResult = createAction<{
   request: DappRpcRequest<string, unknown>
   result?: unknown
 }>(`${reducerName}/sendRpcResult`)
+
 export const sendRpcError = createAction<{
   request: DappRpcRequest<string, unknown>
   error?: EthereumRpcError<unknown> | EthereumProviderError<unknown>

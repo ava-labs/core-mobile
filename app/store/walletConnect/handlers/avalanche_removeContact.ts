@@ -74,10 +74,7 @@ class AvalancheRemoveContactHandler
   }
 
   onApprove = async (
-    action: PayloadAction<
-      { request: AvalancheRemoveContactRequest; result?: unknown },
-      string
-    >,
+    action: PayloadAction<{ request: AvalancheRemoveContactRequest }, string>,
     listenerApi: AppListenerEffectAPI
   ) => {
     const { dispatch } = listenerApi

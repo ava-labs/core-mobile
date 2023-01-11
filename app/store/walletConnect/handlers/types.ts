@@ -21,7 +21,7 @@ export interface RpcRequestHandler<T extends DappRpcRequest<string, unknown>> {
   ) => Promise<void>
 
   onApprove?: (
-    action: PayloadAction<{ request: T; result?: unknown }, string>,
+    action: PayloadAction<{ request: T; data?: unknown }, string>,
     listenerApi: AppListenerEffectAPI
   ) => Promise<void>
 }

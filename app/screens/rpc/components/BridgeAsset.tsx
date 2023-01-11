@@ -11,17 +11,11 @@ import { showSnackBarCustom } from 'components/Snackbar'
 import TransactionToast, {
   TransactionToastType
 } from 'components/toast/TransactionToast'
-import { AppConfig } from '@avalabs/bridge-sdk'
-import { useSelector } from 'react-redux'
-import { selectBridgeAppConfig } from 'store/bridge'
 import SimplePrompt from './SimplePrompt'
 
 interface Props {
   dappEvent: AvalancheBridgeAssetRequest
-  onApprove: (
-    request: AvalancheBridgeAssetRequest,
-    config: AppConfig | undefined
-  ) => void
+  onApprove: (request: AvalancheBridgeAssetRequest) => void
   onReject: (request: AvalancheBridgeAssetRequest, message?: string) => void
   onClose: (request: AvalancheBridgeAssetRequest) => void
 }
@@ -34,7 +28,6 @@ const BridgeAsset: FC<Props> = ({
 }) => {
   const [submitting, setSubmitting] = useState(false)
   const theme = useContext(ApplicationContext).theme
-  const config = useSelector(selectBridgeAppConfig)
   const {
     payload: { peerMeta },
     data: { amountStr, asset, currentBlockchain }
@@ -68,7 +61,7 @@ const BridgeAsset: FC<Props> = ({
 
   const onHandleApprove = () => {
     setSubmitting(true)
-    onApprove(dappEvent, config)
+    onApprove(dappEvent)
   }
 
   const renderIcon = () => (

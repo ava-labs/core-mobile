@@ -70,10 +70,7 @@ class AvalancheUpdateContactHandler
   }
 
   onApprove = async (
-    action: PayloadAction<
-      { request: AvalancheUpdateContactRequest; result?: unknown },
-      string
-    >,
+    action: PayloadAction<{ request: AvalancheUpdateContactRequest }, string>,
     listenerApi: AppListenerEffectAPI
   ) => {
     const { dispatch } = listenerApi
