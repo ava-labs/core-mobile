@@ -34,7 +34,10 @@ import { EthSendTransactionRpcRequest } from 'store/walletConnect/handlers/eth_s
 
 const UNLIMITED_SPEND_LIMIT_LABEL = 'Unlimited'
 
-export function useExplainTransaction(dappEvent: EthSendTransactionRpcRequest) {
+export function useExplainTransaction(
+  dappEvent: EthSendTransactionRpcRequest,
+  onError: (error?: string) => void
+) {
   const networkFees = useSelector(selectNetworkFee)
   const { nativeTokenPrice: tokenPrice } = useNativeTokenPrice()
   const activeNetwork = useActiveNetwork()
@@ -129,6 +132,7 @@ export function useExplainTransaction(dappEvent: EthSendTransactionRpcRequest) {
           )
         }
         const web3 = new Web3()
+
         const contract = new web3.eth.Contract(
           ERC20.abi as any, // eslint-disable-line @typescript-eslint/no-explicit-any
           srcTokenAddress
@@ -165,22 +169,7 @@ export function useExplainTransaction(dappEvent: EthSendTransactionRpcRequest) {
         activeNetwork
       )
 
-      // Get decoded transaction data
-      const decodedData = txDescription.args
-
-      // Get function name. Try normalized name otherwise look into functionFragment
-      const functionName =
-        txDescription?.name ?? txDescription?.functionFragment?.name
-
-      // Get parser based on function name
-      const parser = contractParserMap.get(functionName)
-
       if (dappEvent.payload && txParams && isTxParams(txParams)) {
-        // We need active network to continue
-        if (!activeNetwork) {
-          throw Error('no network')
-        }
-
         // These are the default props we'll feed into the display parser later on
         // @ts-ignore
         const displayValueProps: DisplayValueParserProps = {
@@ -214,10 +203,24 @@ export function useExplainTransaction(dappEvent: EthSendTransactionRpcRequest) {
           ? { ...txParams, gas: gasLimit }
           : txParams
 
-        // only include the description if it's free of errors
-        const description = isTxDescriptionError(txDescription)
-          ? undefined
-          : txDescription
+        let functionName = ''
+        let decodedData: ethers.utils.Result | undefined
+        let description: ethers.utils.TransactionDescription | undefined
+
+        if (!isTxDescriptionError(txDescription)) {
+          // only include the description if it's free of errors
+          description = txDescription
+
+          // Get decoded transaction data
+          decodedData = txDescription.args
+
+          // Get function name. Try normalized name otherwise look into functionFragment
+          functionName =
+            txDescription?.name ?? txDescription?.functionFragment?.name
+        }
+
+        // Get parser based on function name
+        const parser = contractParserMap.get(functionName)
 
         // this is the simplified display values which
         // will be used to on the views.
@@ -241,6 +244,7 @@ export function useExplainTransaction(dappEvent: EthSendTransactionRpcRequest) {
                 description
               )
         } catch (err) {
+          Logger.error('failed to parse transaction', err)
           displayValues = parseDisplayValues(
             activeNetwork,
             txParamsWithGasLimit,
@@ -250,15 +254,10 @@ export function useExplainTransaction(dappEvent: EthSendTransactionRpcRequest) {
         }
 
         // add metamask and chain id to transaction
-        const networkMetaData = activeNetwork
-          ? {
-              metamaskNetworkId: activeNetwork?.platformChainId,
-              chainId: activeNetwork?.chainId
-            }
-          : {
-              metamaskNetworkId: '',
-              chainId: undefined
-            }
+        const networkMetaData = {
+          metamaskNetworkId: activeNetwork.platformChainId,
+          chainId: activeNetwork.chainId
+        }
 
         setTransaction({
           id: dappEvent.payload.id,
@@ -269,7 +268,8 @@ export function useExplainTransaction(dappEvent: EthSendTransactionRpcRequest) {
         })
       }
     }
-    loadTx()
+
+    loadTx().catch(err => onError(err?.error))
   }, [
     activeNetwork,
     avaxToken,
@@ -279,7 +279,8 @@ export function useExplainTransaction(dappEvent: EthSendTransactionRpcRequest) {
     peerMeta,
     tokenPrice,
     tokensWithBalance,
-    txParams
+    txParams,
+    onError
   ])
 
   useEffect(() => {

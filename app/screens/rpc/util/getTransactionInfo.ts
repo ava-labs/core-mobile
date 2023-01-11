@@ -8,10 +8,11 @@ import {
   getSourceForContract
 } from '@avalabs/snowtrace-sdk'
 import { TransactionDescription } from '@ethersproject/abi'
+import Logger from 'utils/Logger'
 
 export function isTxDescriptionError(
   desc: ethers.utils.TransactionDescription | { error: string }
-): desc is ethers.utils.TransactionDescription {
+): desc is { error: string } {
   // eslint-disable-next-line no-prototype-builtins
   return !!desc && desc.hasOwnProperty('error')
 }
@@ -27,7 +28,7 @@ function parseDataWithABI(
       value: value
     })
   } catch (e) {
-    return Promise.reject({ error: 'error decoding with abi' })
+    return { error: 'error decoding with abi' }
   }
 }
 
@@ -42,7 +43,12 @@ export async function getTxInfo(
   data: string,
   value: string,
   activeNetwork: Network
-): Promise<TransactionDescription> {
+): Promise<
+  | TransactionDescription
+  | {
+      error: string
+    }
+> {
   const isMainnet = !activeNetwork?.isTestnet
 
   /**
@@ -61,14 +67,14 @@ export async function getTxInfo(
     isMainnet
   )
 
-  if (error) return Promise.reject({ error })
+  if (error) return { error }
 
   if (contractSource?.ABI === 'Contract source code not verified') {
-    return Promise.reject({ error: 'Contract source code not verified' })
+    return { error: 'Contract source code not verified' }
   }
 
   const abi = result || contractSource?.ABI
-  if (!abi) return Promise.reject({ error: 'unable to get abi' })
+  if (!abi) return { error: 'unable to get abi' }
   return parseDataWithABI(data, value, new Interface(abi))
 }
 
@@ -76,11 +82,13 @@ async function getAvalancheABIFromSource(address: string, isMainnet: boolean) {
   let contractSource: ContractSourceCodeResponse
   try {
     const response = await getSourceForContract(address, isMainnet)
+
     if (!response.result[0])
       throw new Error('Missing ContractSourceCodeResponse')
+
     contractSource = response.result[0]
   } catch (e) {
-    console.error(e)
+    Logger.error('error decoding with abi', e)
     return { error: 'error decoding with abi' }
   }
   const response = await (contractSource.Proxy === '1' &&
