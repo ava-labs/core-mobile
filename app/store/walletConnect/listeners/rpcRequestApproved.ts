@@ -1,10 +1,9 @@
 import { AppListenerEffectAPI } from 'store/index'
-import { PayloadAction } from '@reduxjs/toolkit'
 import handlerMap from '../handlers'
-import { RpcRequestApprovedPayload, sendRpcResult } from '../slice'
+import { rpcRequestApproved, sendRpcResult } from '../slice'
 
 export const onRpcRequestApproved = async (
-  action: PayloadAction<RpcRequestApprovedPayload, string>,
+  action: ReturnType<typeof rpcRequestApproved>,
   listenerApi: AppListenerEffectAPI
 ) => {
   // call onApproved callback if the handler implements it

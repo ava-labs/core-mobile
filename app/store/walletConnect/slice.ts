@@ -71,13 +71,10 @@ export const rpcRequestReceived = createAction<
   TypedJsonRpcRequest<string, unknown>
 >(`${reducerName}/rpcRequestReceived`)
 
-export type RpcRequestApprovedPayload = {
+export const rpcRequestApproved = createAction<{
   request: DappRpcRequest<string, unknown>
   data?: unknown
-}
-export const rpcRequestApproved = createAction<RpcRequestApprovedPayload>(
-  `${reducerName}/rpcRequestApproved`
-)
+}>(`${reducerName}/rpcRequestApproved`)
 
 export const sendRpcResult = createAction<{
   request: DappRpcRequest<string, unknown>

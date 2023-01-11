@@ -1,16 +1,12 @@
-import { PayloadAction } from '@reduxjs/toolkit'
 import {
   approveCall,
   approveSession
 } from 'contexts/DappConnectionContext/useWalletConnect'
-import { DappRpcRequest } from '../handlers/types'
+import { sendRpcResult } from '../slice'
 import { isSessionRequestRpcRequest } from '../utils'
 
 export const onSendRpcResult = async (
-  action: PayloadAction<
-    { request: DappRpcRequest<string, unknown>; result?: unknown },
-    string
-  >
+  action: ReturnType<typeof sendRpcResult>
 ) => {
   const { request, result } = action.payload
 

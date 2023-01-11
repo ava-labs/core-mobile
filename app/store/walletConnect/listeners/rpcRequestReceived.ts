@@ -1,12 +1,11 @@
 import { AppListenerEffectAPI } from 'store/index'
-import { PayloadAction } from '@reduxjs/toolkit'
 import { rejectCall } from 'contexts/DappConnectionContext/useWalletConnect'
 import { ethErrors } from 'eth-rpc-errors'
-import { TypedJsonRpcRequest } from '../handlers/types'
 import handlerMap from '../handlers'
+import { rpcRequestReceived } from '../slice'
 
 export const onRpcRequestReceived = async (
-  action: PayloadAction<TypedJsonRpcRequest<string, unknown>>,
+  action: ReturnType<typeof rpcRequestReceived>,
   listenerApi: AppListenerEffectAPI
 ) => {
   if (handlerMap.has(action.payload.method)) {
