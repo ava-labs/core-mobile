@@ -39,6 +39,8 @@ import { ScrollView } from 'react-native-gesture-handler'
 import { EthSendTransactionRpcRequest } from 'store/walletConnect/handlers/eth_sendTransaction'
 import { TransactionError } from 'services/network/types'
 
+const defaultErrMessage = 'Transaction Failed'
+
 interface Props {
   onReject: (request: EthSendTransactionRpcRequest, message?: string) => void
   onApprove: (request: EthSendTransactionRpcRequest, data: Transaction) => void
@@ -60,6 +62,11 @@ const SignTransaction: FC<Props> = ({
   const [showData, setShowData] = useState(false)
   const [showCustomSpendLimit, setShowCustomSpendLimit] = useState(false)
 
+  const onFailedToLoadTransaction = useCallback((error?: string) => {
+    const message = defaultErrMessage + (error ? `: ${error}` : '')
+    setTxFailedError(message)
+  }, [])
+
   const {
     contractType,
     selectedGasFee,
@@ -68,7 +75,7 @@ const SignTransaction: FC<Props> = ({
     customSpendLimit,
     transaction,
     displayData
-  } = useExplainTransaction(dappEvent)
+  } = useExplainTransaction(dappEvent, onFailedToLoadTransaction)
 
   useEffect(() => {
     if (dappEvent.error || dappEvent.result) {
@@ -81,21 +88,28 @@ const SignTransaction: FC<Props> = ({
 
     // in case the TX was sent to the blockchain but was rejected
     if ((dappEvent?.error as TransactionError).transactionHash) {
+      setTxFailedError('Transaction Rejected')
+    } else {
+      // in case we have some error
+      setTxFailedError(defaultErrMessage)
+    }
+  }, [dappEvent])
+
+  useEffect(() => {
+    if (txFailedError) {
       showSnackBarCustom({
         component: (
           <TransactionToast
             type={TransactionToastType.ERROR}
-            message={'Transaction Failed'}
+            message={txFailedError}
           />
         ),
-        duration: 'short'
+        duration: 'long'
       })
+      onReject(dappEvent)
       onClose(dappEvent)
-    } else {
-      // in case we have some error
-      setTxFailedError(`there was an error processing the transaction`)
     }
-  }, [dappEvent, onClose])
+  }, [dappEvent, onClose, onReject, txFailedError])
 
   const explorerUrl =
     activeNetwork &&
@@ -221,7 +235,6 @@ const SignTransaction: FC<Props> = ({
               <ApproveTransaction
                 {...(displayData as ApproveTransactionData)}
                 hash={dappEvent.result}
-                error={txFailedError}
                 onCustomFeeSet={setCustomFee}
                 selectedGasFee={selectedGasFee}
                 setShowCustomSpendLimit={setShowCustomSpendLimit}
@@ -233,7 +246,6 @@ const SignTransaction: FC<Props> = ({
                 <AddLiquidityTransaction
                   {...(displayData as AddLiquidityDisplayData)}
                   hash={dappEvent.result}
-                  error={txFailedError}
                   onCustomFeeSet={setCustomFee}
                   selectedGasFee={selectedGasFee}
                   setShowTxData={setShowData}
@@ -243,7 +255,6 @@ const SignTransaction: FC<Props> = ({
                 <SwapTransaction
                   {...(displayData as SwapExactTokensForTokenDisplayValues)}
                   hash={dappEvent.result}
-                  error={txFailedError}
                   onCustomFeeSet={setCustomFee}
                   selectedGasFee={selectedGasFee}
                   setShowTxData={setShowData}
@@ -254,7 +265,6 @@ const SignTransaction: FC<Props> = ({
                 <GenericTransaction
                   {...(displayData as TransactionDisplayValues)}
                   hash={dappEvent.result}
-                  error={txFailedError}
                   onCustomFeeSet={setCustomFee}
                   selectedGasFee={selectedGasFee}
                   setShowTxData={setShowData}
@@ -322,11 +332,6 @@ const SignTransaction: FC<Props> = ({
       ) : (
         <>
           <FlexSpacer />
-          {!!txFailedError && (
-            <AvaText.Body1 color={theme.colorError}>
-              {txFailedError}
-            </AvaText.Body1>
-          )}
           <View
             style={{
               paddingVertical: 16,
