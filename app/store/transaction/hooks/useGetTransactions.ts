@@ -1,9 +1,9 @@
 import { useSelector } from 'react-redux'
-import { useBridgeSDK } from '@avalabs/bridge-sdk'
 import { selectActiveNetwork } from 'store/network'
 import { selectActiveAccount } from 'store/account'
 import { useInfiniteScroll } from 'store/utils/useInfiniteScroll'
 import { ActivityResponse } from 'services/activity/types'
+import { selectBridgeCriticalConfig } from 'store/bridge'
 import { GetTransactionsArgs, Transaction } from '../types'
 import { useGetTransactionsQuery } from '../api'
 
@@ -11,7 +11,7 @@ import { useGetTransactionsQuery } from '../api'
 export const useGetTransactions = () => {
   const network = useSelector(selectActiveNetwork)
   const account = useSelector(selectActiveAccount)
-  const { criticalConfig } = useBridgeSDK()
+  const criticalConfig = useSelector(selectBridgeCriticalConfig)
 
   const { data, fetchNext, refresh, isLoading, isRefreshing, isFirstPage } =
     useInfiniteScroll<GetTransactionsArgs, ActivityResponse, Transaction>({

@@ -11,7 +11,9 @@ import { showSnackBarCustom } from 'components/Snackbar'
 import TransactionToast, {
   TransactionToastType
 } from 'components/toast/TransactionToast'
-import { AppConfig, useBridgeConfig } from '@avalabs/bridge-sdk'
+import { AppConfig } from '@avalabs/bridge-sdk'
+import { useSelector } from 'react-redux'
+import { selectBridgeAppConfig } from 'store/bridge'
 import SimplePrompt from './SimplePrompt'
 
 interface Props {
@@ -32,7 +34,7 @@ const BridgeAsset: FC<Props> = ({
 }) => {
   const [submitting, setSubmitting] = useState(false)
   const theme = useContext(ApplicationContext).theme
-  const config = useBridgeConfig().config
+  const config = useSelector(selectBridgeAppConfig)
   const {
     payload: { peerMeta },
     data: { amountStr, asset, currentBlockchain }

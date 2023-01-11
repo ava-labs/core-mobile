@@ -12,10 +12,9 @@ import {
   getMinimumConfirmations,
   trackBridgeTransaction,
   TrackerSubscription,
-  useBridgeConfig,
+  useBridgeSDK,
   WrapStatus
 } from '@avalabs/bridge-sdk'
-import { useLoadBridgeConfig } from 'screens/bridge/hooks/useLoadBridgeConfig'
 import Big from 'big.js'
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { useTransferAsset } from 'screens/bridge/hooks/useTransferAsset'
@@ -27,6 +26,7 @@ import { selectActiveAccount } from 'store/account'
 import {
   addBridgeTransaction,
   popBridgeTransaction,
+  selectBridgeConfig,
   selectBridgeTransactions
 } from 'store/bridge'
 import { selectIsReady } from 'store/app'
@@ -35,6 +35,7 @@ import {
   useBitcoinProvider,
   useEthereumProvider
 } from 'hooks/networkProviderHooks'
+import { isEqual } from 'lodash'
 
 export enum TransferEventType {
   WRAP_STATUS = 'wrap_status',
@@ -75,9 +76,9 @@ export function useBridgeContext() {
 const TrackerSubscriptions = new Map<string, TrackerSubscription>()
 
 function LocalBridgeProvider({ children }: { children: ReactNode }) {
-  useLoadBridgeConfig()
   const dispatch = useDispatch()
-  const config = useBridgeConfig().config
+  const bridgeConfig = useSelector(selectBridgeConfig)
+  const config = bridgeConfig?.config
   const network = useSelector(selectActiveNetwork)
   const activeAccount = useSelector(selectActiveAccount)
   const bridgeTransactions = useSelector(selectBridgeTransactions)
@@ -86,6 +87,18 @@ function LocalBridgeProvider({ children }: { children: ReactNode }) {
   const ethereumProvider = useEthereumProvider()
   const bitcoinProvider = useBitcoinProvider()
   const avalancheProvider = useAvalancheProvider()
+  const { bridgeConfig: bridgeConfigSDK, setBridgeConfig } = useBridgeSDK()
+
+  useEffect(() => {
+    // sync bridge config in bridge sdk with ours
+    // this is necessary because:
+    // 1/ we don't use useBridgeConfigUpdater() any more.
+    //    instead, we have a redux listener that fetches the config periodically
+    // 2/ we still depend on a lot of things in the bridge sdk (avalancheAssets, ethereumAssets,...)
+    if (bridgeConfig && !isEqual(bridgeConfig, bridgeConfigSDK)) {
+      setBridgeConfig(bridgeConfig)
+    }
+  }, [bridgeConfig, bridgeConfigSDK, setBridgeConfig])
 
   // init tracking updates for txs
   const subscribeToTransaction = useCallback(
