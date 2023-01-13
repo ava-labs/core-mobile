@@ -18,7 +18,7 @@ import transactionDetailsPage from '../../pages/transactionDetails.page'
 
 const jestExpect = require('expect')
 
-describe('Create new wallet', () => {
+describe('Send AVAX', () => {
   beforeAll(async () => {
     await device.launchApp()
     await Assert.isVisible(WatchListPage.walletSVG, 1)

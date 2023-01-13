@@ -40,7 +40,7 @@
      }
   },
   "artifacts": {
-   "rootDir": ".artifacts",
+   "rootDir": "./artifacts",
    "plugins": {
      "instruments": {"enabled": false},
      "log": {"enabled": true},

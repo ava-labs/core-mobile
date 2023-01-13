@@ -4,7 +4,9 @@ import {
   createNewTestRunBool
 } from './testrail_generate_tcs'
 
-async function setupTestRun() {
+import sendResults from './sendResults'
+
+beforeAll(async () => {
   if (process.env.TEST_RUN_NAME) {
     const testRunName = process.env.TEST_RUN_NAME
     const testRunBool = await createNewTestRunBool()
@@ -29,9 +31,8 @@ async function setupTestRun() {
       'TEST_RUN_NAME variable is set to false or does not exist so not creating a test run...'
     )
   }
-}
+})
 
-module.exports = async () => {
-  await require('detox/runners/jest/index').globalSetup
-  await setupTestRun()
-}
+afterAll(async () => {
+  sendResults()
+})

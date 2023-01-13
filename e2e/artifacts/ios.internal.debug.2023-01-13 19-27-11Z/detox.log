@@ -1,0 +1,121 @@
+11:27:11.373 detox[52506] [90mB[39m node_modules/.bin/detox test -c ios.internal.debug -a ./e2e/artifacts
+  data: {
+    "id": "95a68fd2-7fa5-9228-bd51-a66c03f52374",
+    "detoxConfig": {
+      "configurationName": "ios.internal.debug",
+      "apps": {
+        "default": {
+          "type": "ios.app",
+          "binaryPath": "ios/DerivedData/Build/Products/Debug-iphonesimulator/AvaxWallet.app",
+          "build": "ENVFILE=.env.development arch -x86_64 xcodebuild -workspace ios/AvaxWallet.xcworkspace -configuration Debug -scheme AvaxWalletInternal -sdk iphonesimulator -derivedDataPath avalanche-wallet-apps/ios/DerivedData"
+        }
+      },
+      "artifacts": {
+        "rootDir": "e2e/artifacts/ios.internal.debug.2023-01-13 19-27-11Z",
+        "plugins": {
+          "log": {
+            "enabled": true,
+            "keepOnlyFailedTestsArtifacts": false
+          },
+          "screenshot": {
+            "shouldTakeAutomaticSnapshots": true,
+            "keepOnlyFailedTestsArtifacts": true,
+            "takeWhen": {
+              "testStart": false,
+              "testDone": true
+            },
+            "enabled": true
+          },
+          "video": {
+            "android": {
+              "bitRate": 4000000
+            },
+            "simulator": {
+              "codec": "hevc"
+            },
+            "enabled": false,
+            "keepOnlyFailedTestsArtifacts": false
+          },
+          "instruments": {
+            "enabled": true,
+            "keepOnlyFailedTestsArtifacts": false
+          },
+          "uiHierarchy": {
+            "enabled": true,
+            "keepOnlyFailedTestsArtifacts": false
+          }
+        }
+      },
+      "behavior": {
+        "init": {
+          "keepLockFile": false,
+          "reinstallApp": true,
+          "exposeGlobals": true
+        },
+        "cleanup": {
+          "shutdownDevice": false
+        },
+        "launchApp": "auto"
+      },
+      "cli": {
+        "artifactsLocation": "./e2e/artifacts",
+        "configuration": "ios.internal.debug"
+      },
+      "device": {
+        "type": "ios.simulator",
+        "device": {
+          "type": "iPhone 13"
+        }
+      },
+      "logger": {
+        "level": "info",
+        "overrideConsole": true,
+        "options": {
+          "showLoggerName": true,
+          "showPid": true,
+          "showLevel": false,
+          "showMetadata": false,
+          "basepath": "/Users/tyler.hackett/avalanche-wallet-apps/node_modules/detox/src",
+          "prefixers": {},
+          "stringifiers": {}
+        }
+      },
+      "testRunner": {
+        "retries": 0,
+        "forwardEnv": false,
+        "bail": false,
+        "jest": {
+          "setupTimeout": 300000,
+          "teardownTimeout": 30000,
+          "retryAfterCircusRetries": false,
+          "reportWorkerAssign": true
+        },
+        "args": {
+          "$0": "jest",
+          "_": [],
+          "config": "e2e/config.json",
+          "--": []
+        },
+        "$0": "jest"
+      },
+      "session": {
+        "autoStart": true,
+        "debugSynchronization": 10000
+      }
+    },
+    "detoxIPCServer": "primary-52506",
+    "testResults": [],
+    "testSessionIndex": 0,
+    "workersCount": 0
+  }
+11:27:11.382 detox[52506] [90mi[39m Server path not specified, so defaulting to ipc.config.socketRoot + ipc.config.appspace + ipc.config.id /tmp/detox.primary-52506
+11:27:11.386 detox[52506] [90mi[39m starting server on  /tmp/detox.primary-52506 
+11:27:11.386 detox[52506] [90mi[39m starting TLS server false
+11:27:11.386 detox[52506] [90mi[39m starting server as Unix || Windows Socket
+11:27:11.391 detox[52506] [90mi[39m Detox server listening on localhost:56477...
+11:27:11.392 detox[52506] [90mi[39m Serialized the session state at: /private/var/folders/1g/l3_h_m594337d9nfq8q1ws4w0000gn/T/95a68fd2-7fa5-9228-bd51-a66c03f52374.detox.json
+11:27:11.394 detox[52506] [90mB[39m jest --config e2e/config.json
+11:27:11.894 detox[52506] [90mE[39m Command failed with exit code = 1:
+jest --config e2e/config.json
+11:27:11.895 detox[52506] [90mi[39m Detox server has been closed gracefully
+11:27:11.897 detox[52506] [90mE[39m node_modules/.bin/detox test -c ios.internal.debug -a ./e2e/artifacts

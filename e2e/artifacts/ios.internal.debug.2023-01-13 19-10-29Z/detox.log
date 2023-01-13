@@ -1,0 +1,2589 @@
+11:10:29.762 detox[50676] [90mB[39m node_modules/.bin/detox test recoverWallet -c ios.internal.debug -a ./e2e/artifacts
+  data: {
+    "id": "1cbe0491-1bd8-b3af-ae5f-c5d4d818ee8b",
+    "detoxConfig": {
+      "configurationName": "ios.internal.debug",
+      "apps": {
+        "default": {
+          "type": "ios.app",
+          "binaryPath": "ios/DerivedData/Build/Products/Debug-iphonesimulator/AvaxWallet.app",
+          "build": "ENVFILE=.env.development arch -x86_64 xcodebuild -workspace ios/AvaxWallet.xcworkspace -configuration Debug -scheme AvaxWalletInternal -sdk iphonesimulator -derivedDataPath avalanche-wallet-apps/ios/DerivedData"
+        }
+      },
+      "artifacts": {
+        "rootDir": "e2e/artifacts/ios.internal.debug.2023-01-13 19-10-29Z",
+        "plugins": {
+          "log": {
+            "enabled": true,
+            "keepOnlyFailedTestsArtifacts": false
+          },
+          "screenshot": {
+            "shouldTakeAutomaticSnapshots": true,
+            "keepOnlyFailedTestsArtifacts": true,
+            "takeWhen": {
+              "testStart": false,
+              "testDone": true
+            },
+            "enabled": true
+          },
+          "video": {
+            "android": {
+              "bitRate": 4000000
+            },
+            "simulator": {
+              "codec": "hevc"
+            },
+            "enabled": false,
+            "keepOnlyFailedTestsArtifacts": false
+          },
+          "instruments": {
+            "enabled": true,
+            "keepOnlyFailedTestsArtifacts": false
+          },
+          "uiHierarchy": {
+            "enabled": true,
+            "keepOnlyFailedTestsArtifacts": false
+          }
+        }
+      },
+      "behavior": {
+        "init": {
+          "keepLockFile": false,
+          "reinstallApp": true,
+          "exposeGlobals": true
+        },
+        "cleanup": {
+          "shutdownDevice": false
+        },
+        "launchApp": "auto"
+      },
+      "cli": {
+        "artifactsLocation": "./e2e/artifacts",
+        "configuration": "ios.internal.debug"
+      },
+      "device": {
+        "type": "ios.simulator",
+        "device": {
+          "type": "iPhone 13"
+        }
+      },
+      "logger": {
+        "level": "info",
+        "overrideConsole": true,
+        "options": {
+          "showLoggerName": true,
+          "showPid": true,
+          "showLevel": false,
+          "showMetadata": false,
+          "basepath": "/Users/tyler.hackett/avalanche-wallet-apps/node_modules/detox/src",
+          "prefixers": {},
+          "stringifiers": {}
+        }
+      },
+      "testRunner": {
+        "retries": 0,
+        "forwardEnv": false,
+        "bail": false,
+        "jest": {
+          "setupTimeout": 300000,
+          "teardownTimeout": 30000,
+          "retryAfterCircusRetries": false,
+          "reportWorkerAssign": true
+        },
+        "args": {
+          "$0": "jest",
+          "_": [
+            "recoverWallet"
+          ],
+          "config": "e2e/config.json",
+          "--": []
+        },
+        "$0": "jest"
+      },
+      "session": {
+        "autoStart": true,
+        "debugSynchronization": 10000
+      }
+    },
+    "detoxIPCServer": "primary-50676",
+    "testResults": [],
+    "testSessionIndex": 0,
+    "workersCount": 0
+  }
+11:10:29.770 detox[50676] [90mi[39m Server path not specified, so defaulting to ipc.config.socketRoot + ipc.config.appspace + ipc.config.id /tmp/detox.primary-50676
+11:10:29.774 detox[50676] [90mi[39m starting server on  /tmp/detox.primary-50676 
+11:10:29.774 detox[50676] [90mi[39m starting TLS server false
+11:10:29.774 detox[50676] [90mi[39m starting server as Unix || Windows Socket
+11:10:29.780 detox[50676] [90mi[39m Detox server listening on localhost:62804...
+11:10:29.781 detox[50676] [90mi[39m Serialized the session state at: /private/var/folders/1g/l3_h_m594337d9nfq8q1ws4w0000gn/T/1cbe0491-1bd8-b3af-ae5f-c5d4d818ee8b.detox.json
+11:10:29.783 detox[50676] [90mB[39m jest --config e2e/config.json recoverWallet
+11:10:30.909 detox[50678] [90mi[39m Service path not specified, so defaulting to ipc.config.socketRoot + ipc.config.appspace + id 
+11:10:30.909 detox[50678] [90mi[39m requested connection to  primary-50676 /tmp/detox.primary-50676
+11:10:30.909 detox[50678] [90mi[39m Connecting client on Unix Socket : /tmp/detox.primary-50676
+11:10:30.910 detox[50678] [90mi[39m retrying reset
+11:10:30.911 detox[50676] [90mi[39m ## socket connection to server detected ##
+11:10:30.912 detox[50678] [90mi[39m dispatching event to  primary-50676 /tmp/detox.primary-50676  :  registerContext , { id: 'secondary-50678' }
+11:10:30.914 detox[50676] [90mi[39m received event of :  registerContext { id: 'secondary-50678' }
+11:10:30.914 detox[50676] [90mi[39m dispatching event to socket  :  registerContextDone { testResults: [], testSessionIndex: 0 }
+11:10:30.914 detox[50678] [90mi[39m ## received events ##
+11:10:30.915 detox[50678] [90mi[39m detected event registerContextDone { testResults: [], testSessionIndex: 0 }
+11:10:31.017 detox[50678] [90mB[39m e2e/tests/login/recoverWallet.e2e.ts
+11:10:31.032 detox[50678] [90mB[39m set up environment
+11:10:31.033 detox[50676] [90mi[39m received event of :  registerWorker { workerId: 'w1' }
+11:10:31.033 detox[50678] [90mi[39m dispatching event to  primary-50676 /tmp/detox.primary-50676  :  registerWorker , { workerId: 'w1' }
+11:10:31.034 detox[50676] [90mi[39m dispatching event to socket  :  registerWorkerDone { workersCount: 1 }
+11:10:31.034 detox[50676] [90mi[39m broadcasting event to all known sockets listening to  /tmp/detox.primary-50676  :   sessionStateUpdate { workersCount: 1 }
+11:10:31.038 detox[50678] [90mi[39m ## received events ##
+11:10:31.039 detox[50678] [90mi[39m detected event registerWorkerDone { workersCount: 1 }
+11:10:31.039 detox[50678] [90mi[39m detected event sessionStateUpdate { workersCount: 1 }
+11:10:31.205 detox[50676] [90mB[39m connection :62804<->:62819
+11:10:31.206 detox[50678] [90mi[39m opened web socket to: ws://localhost:62804
+11:10:31.209 detox[50678] [90mi[39m send message
+  data: {"type":"login","params":{"sessionId":"42d08604-a0a3-db99-773e-a406bb9e5041","role":"tester"},"messageId":0}
+11:10:31.210 detox[50676] [90mi[39m get
+  data: {"type":"login","params":{"sessionId":"42d08604-a0a3-db99-773e-a406bb9e5041","role":"tester"},"messageId":0}
+11:10:31.211 detox[50676] [90mi[39m created session 42d08604-a0a3-db99-773e-a406bb9e5041
+11:10:31.211 detox[50676] [90mi[39m send
+  data: {
+    "type": "loginSuccess",
+    "params": {
+      "testerConnected": true,
+      "appConnected": false
+    },
+    "messageId": 0
+  }
+11:10:31.211 detox[50676] [90mi[39m tester joined session 42d08604-a0a3-db99-773e-a406bb9e5041
+11:10:31.212 detox[50678] [90mi[39m get message
+  data: {"type":"loginSuccess","params":{"testerConnected":true,"appConnected":false},"messageId":0}
+   
+11:10:31.907 detox[50678] [90mB[39m allocate
+  args: ({"type":"ios.simulator","device":{"type":"iPhone 13"}})
+11:10:31.909 detox[50678] [90mi[39m applesimutils --list --byType "iPhone 13"
+11:10:32.243 detox[50678] [90mi[39m [
+  {
+    "isAvailable" : true,
+    "logPath" : "\/Users\/tyler.hackett\/Library\/Logs\/CoreSimulator\/F875505B-B6AE-445A-83C5-DDA0B4489670",
+    "logPathSize" : 761856,
+    "state" : "Booted",
+    "name" : "iPhone 13",
+    "dataPathSize" : 33796231168,
+    "deviceType" : {
+      "maxRuntimeVersion" : 4294967295,
+      "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone 13.simdevicetype",
+      "maxRuntimeVersionString" : "65535.255.255",
+      "name" : "iPhone 13",
+      "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-13",
+      "productFamily" : "iPhone",
+      "modelIdentifier" : "iPhone14,5",
+      "minRuntimeVersionString" : "15.0.0",
+      "minRuntimeVersion" : 983040
+    },
+    "os" : {
+      "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/Runtimes\/iOS.simruntime",
+      "buildversion" : "20C52",
+      "platform" : "iOS",
+      "runtimeRoot" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/Runtimes\/iOS.simruntime\/Contents\/Resources\/RuntimeRoot",
+      "identifier" : "com.apple.CoreSimulator.SimRuntime.iOS-16-2",
+      "version" : "16.2",
+      "isInternal" : false,
+      "isAvailable" : true,
+      "name" : "iOS 16.2",
+      "supportedDeviceTypes" : [
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone 8.simdevicetype",
+          "name" : "iPhone 8",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-8",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone 8 Plus.simdevicetype",
+          "name" : "iPhone 8 Plus",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-8-Plus",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone X.simdevicetype",
+          "name" : "iPhone X",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-X",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone Xs.simdevicetype",
+          "name" : "iPhone Xs",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-XS",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone Xs Max.simdevicetype",
+          "name" : "iPhone Xs Max",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-XS-Max",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone Xʀ.simdevicetype",
+          "name" : "iPhone Xʀ",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-XR",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone 11.simdevicetype",
+          "name" : "iPhone 11",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-11",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone 11 Pro.simdevicetype",
+          "name" : "iPhone 11 Pro",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone 11 Pro Max.simdevicetype",
+          "name" : "iPhone 11 Pro Max",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro-Max",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone SE (2nd generation).simdevicetype",
+          "name" : "iPhone SE (2nd generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-SE--2nd-generation-",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone 12 mini.simdevicetype",
+          "name" : "iPhone 12 mini",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-12-mini",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone 12.simdevicetype",
+          "name" : "iPhone 12",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-12",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone 12 Pro.simdevicetype",
+          "name" : "iPhone 12 Pro",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-12-Pro",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone 12 Pro Max.simdevicetype",
+          "name" : "iPhone 12 Pro Max",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-12-Pro-Max",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone 13 Pro.simdevicetype",
+          "name" : "iPhone 13 Pro",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-13-Pro",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone 13 Pro Max.simdevicetype",
+          "name" : "iPhone 13 Pro Max",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-13-Pro-Max",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone 13 mini.simdevicetype",
+          "name" : "iPhone 13 mini",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-13-mini",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone 13.simdevicetype",
+          "name" : "iPhone 13",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-13",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone SE (3rd generation).simdevicetype",
+          "name" : "iPhone SE (3rd generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-SE-3rd-generation",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone 14.simdevicetype",
+          "name" : "iPhone 14",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-14",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone 14 Plus.simdevicetype",
+          "name" : "iPhone 14 Plus",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-14-Plus",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone 14 Pro.simdevicetype",
+          "name" : "iPhone 14 Pro",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-14-Pro",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone 14 Pro Max.simdevicetype",
+          "name" : "iPhone 14 Pro Max",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-14-Pro-Max",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad Pro (9.7-inch).simdevicetype",
+          "name" : "iPad Pro (9.7-inch)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-Pro--9-7-inch-",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad Pro (12.9-inch) (1st generation).simdevicetype",
+          "name" : "iPad Pro (12.9-inch) (1st generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-Pro",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad (5th generation).simdevicetype",
+          "name" : "iPad (5th generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad--5th-generation-",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad Pro (12.9-inch) (2nd generation).simdevicetype",
+          "name" : "iPad Pro (12.9-inch) (2nd generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-Pro--12-9-inch---2nd-generation-",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad Pro (10.5-inch).simdevicetype",
+          "name" : "iPad Pro (10.5-inch)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-Pro--10-5-inch-",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad (6th generation).simdevicetype",
+          "name" : "iPad (6th generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad--6th-generation-",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad (7th generation).simdevicetype",
+          "name" : "iPad (7th generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad--7th-generation-",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad Pro (11-inch) (1st generation).simdevicetype",
+          "name" : "iPad Pro (11-inch) (1st generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-Pro--11-inch-",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad Pro (12.9-inch) (3rd generation).simdevicetype",
+          "name" : "iPad Pro (12.9-inch) (3rd generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-Pro--12-9-inch---3rd-generation-",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad Pro (11-inch) (2nd generation).simdevicetype",
+          "name" : "iPad Pro (11-inch) (2nd generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-Pro--11-inch---2nd-generation-",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad Pro (12.9-inch) (4th generation).simdevicetype",
+          "name" : "iPad Pro (12.9-inch) (4th generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-Pro--12-9-inch---4th-generation-",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad mini (5th generation).simdevicetype",
+          "name" : "iPad mini (5th generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-mini--5th-generation-",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad Air (3rd generation).simdevicetype",
+          "name" : "iPad Air (3rd generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-Air--3rd-generation-",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad (8th generation).simdevicetype",
+          "name" : "iPad (8th generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad--8th-generation-",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad (9th generation).simdevicetype",
+          "name" : "iPad (9th generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-9th-generation",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad Air (4th generation).simdevicetype",
+          "name" : "iPad Air (4th generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-Air--4th-generation-",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad Pro (11-inch) (3rd generation).simdevicetype",
+          "name" : "iPad Pro (11-inch) (3rd generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-11-inch-3rd-generation",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad Pro (12.9-inch) (5th generation).simdevicetype",
+          "name" : "iPad Pro (12.9-inch) (5th generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-12-9-inch-5th-generation",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad Air (5th generation).simdevicetype",
+          "name" : "iPad Air (5th generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-Air-5th-generation",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad (10th generation).simdevicetype",
+          "name" : "iPad (10th generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-10th-generation",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad mini (6th generation).simdevicetype",
+          "name" : "iPad mini (6th generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-mini-6th-generation",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad Pro (11-inch) (4th generation).simdevicetype",
+          "name" : "iPad Pro (11-inch) (4th generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-11-inch-4th-generation-8GB",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad Pro (11-inch) (4th generation) (16GB).simdevicetype",
+          "name" : "iPad Pro (11-inch) (4th generation) (16GB)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-11-inch-4th-generation-16GB",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad Pro (12.9-inch) (6th generation).simdevicetype",
+          "name" : "iPad Pro (12.9-inch) (6th generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-12-9-inch-6th-generation-8GB",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad Pro (12.9-inch) (6th generation) (16GB).simdevicetype",
+          "name" : "iPad Pro (12.9-inch) (6th generation) (16GB)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-12-9-inch-6th-generation-16GB",
+          "productFamily" : "iPad"
+        }
+      ]
+    },
+    "dataPath" : "\/Users\/tyler.hackett\/Library\/Developer\/CoreSimulator\/Devices\/F875505B-B6AE-445A-83C5-DDA0B4489670\/data",
+    "lastBootedAt" : "2023-01-04T18:15:54Z",
+    "deviceTypeIdentifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-13",
+    "udid" : "F875505B-B6AE-445A-83C5-DDA0B4489670"
+  }
+]
+
+11:10:32.245 detox[50678] [90mi[39m applesimutils --list --byId F875505B-B6AE-445A-83C5-DDA0B4489670 --maxResults 1
+11:10:32.516 detox[50678] [90mi[39m [
+  {
+    "isAvailable" : true,
+    "logPath" : "\/Users\/tyler.hackett\/Library\/Logs\/CoreSimulator\/F875505B-B6AE-445A-83C5-DDA0B4489670",
+    "logPathSize" : 761856,
+    "state" : "Booted",
+    "name" : "iPhone 13",
+    "dataPathSize" : 33796231168,
+    "deviceType" : {
+      "maxRuntimeVersion" : 4294967295,
+      "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone 13.simdevicetype",
+      "maxRuntimeVersionString" : "65535.255.255",
+      "name" : "iPhone 13",
+      "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-13",
+      "productFamily" : "iPhone",
+      "modelIdentifier" : "iPhone14,5",
+      "minRuntimeVersionString" : "15.0.0",
+      "minRuntimeVersion" : 983040
+    },
+    "os" : {
+      "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/Runtimes\/iOS.simruntime",
+      "buildversion" : "20C52",
+      "platform" : "iOS",
+      "runtimeRoot" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/Runtimes\/iOS.simruntime\/Contents\/Resources\/RuntimeRoot",
+      "identifier" : "com.apple.CoreSimulator.SimRuntime.iOS-16-2",
+      "version" : "16.2",
+      "isInternal" : false,
+      "isAvailable" : true,
+      "name" : "iOS 16.2",
+      "supportedDeviceTypes" : [
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone 8.simdevicetype",
+          "name" : "iPhone 8",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-8",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone 8 Plus.simdevicetype",
+          "name" : "iPhone 8 Plus",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-8-Plus",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone X.simdevicetype",
+          "name" : "iPhone X",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-X",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone Xs.simdevicetype",
+          "name" : "iPhone Xs",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-XS",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone Xs Max.simdevicetype",
+          "name" : "iPhone Xs Max",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-XS-Max",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone Xʀ.simdevicetype",
+          "name" : "iPhone Xʀ",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-XR",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone 11.simdevicetype",
+          "name" : "iPhone 11",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-11",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone 11 Pro.simdevicetype",
+          "name" : "iPhone 11 Pro",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone 11 Pro Max.simdevicetype",
+          "name" : "iPhone 11 Pro Max",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro-Max",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone SE (2nd generation).simdevicetype",
+          "name" : "iPhone SE (2nd generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-SE--2nd-generation-",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone 12 mini.simdevicetype",
+          "name" : "iPhone 12 mini",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-12-mini",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone 12.simdevicetype",
+          "name" : "iPhone 12",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-12",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone 12 Pro.simdevicetype",
+          "name" : "iPhone 12 Pro",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-12-Pro",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone 12 Pro Max.simdevicetype",
+          "name" : "iPhone 12 Pro Max",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-12-Pro-Max",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone 13 Pro.simdevicetype",
+          "name" : "iPhone 13 Pro",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-13-Pro",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone 13 Pro Max.simdevicetype",
+          "name" : "iPhone 13 Pro Max",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-13-Pro-Max",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone 13 mini.simdevicetype",
+          "name" : "iPhone 13 mini",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-13-mini",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone 13.simdevicetype",
+          "name" : "iPhone 13",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-13",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone SE (3rd generation).simdevicetype",
+          "name" : "iPhone SE (3rd generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-SE-3rd-generation",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone 14.simdevicetype",
+          "name" : "iPhone 14",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-14",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone 14 Plus.simdevicetype",
+          "name" : "iPhone 14 Plus",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-14-Plus",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone 14 Pro.simdevicetype",
+          "name" : "iPhone 14 Pro",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-14-Pro",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPhone 14 Pro Max.simdevicetype",
+          "name" : "iPhone 14 Pro Max",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-14-Pro-Max",
+          "productFamily" : "iPhone"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad Pro (9.7-inch).simdevicetype",
+          "name" : "iPad Pro (9.7-inch)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-Pro--9-7-inch-",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad Pro (12.9-inch) (1st generation).simdevicetype",
+          "name" : "iPad Pro (12.9-inch) (1st generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-Pro",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad (5th generation).simdevicetype",
+          "name" : "iPad (5th generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad--5th-generation-",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad Pro (12.9-inch) (2nd generation).simdevicetype",
+          "name" : "iPad Pro (12.9-inch) (2nd generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-Pro--12-9-inch---2nd-generation-",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad Pro (10.5-inch).simdevicetype",
+          "name" : "iPad Pro (10.5-inch)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-Pro--10-5-inch-",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad (6th generation).simdevicetype",
+          "name" : "iPad (6th generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad--6th-generation-",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad (7th generation).simdevicetype",
+          "name" : "iPad (7th generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad--7th-generation-",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad Pro (11-inch) (1st generation).simdevicetype",
+          "name" : "iPad Pro (11-inch) (1st generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-Pro--11-inch-",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad Pro (12.9-inch) (3rd generation).simdevicetype",
+          "name" : "iPad Pro (12.9-inch) (3rd generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-Pro--12-9-inch---3rd-generation-",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad Pro (11-inch) (2nd generation).simdevicetype",
+          "name" : "iPad Pro (11-inch) (2nd generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-Pro--11-inch---2nd-generation-",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad Pro (12.9-inch) (4th generation).simdevicetype",
+          "name" : "iPad Pro (12.9-inch) (4th generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-Pro--12-9-inch---4th-generation-",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad mini (5th generation).simdevicetype",
+          "name" : "iPad mini (5th generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-mini--5th-generation-",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad Air (3rd generation).simdevicetype",
+          "name" : "iPad Air (3rd generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-Air--3rd-generation-",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad (8th generation).simdevicetype",
+          "name" : "iPad (8th generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad--8th-generation-",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad (9th generation).simdevicetype",
+          "name" : "iPad (9th generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-9th-generation",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad Air (4th generation).simdevicetype",
+          "name" : "iPad Air (4th generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-Air--4th-generation-",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad Pro (11-inch) (3rd generation).simdevicetype",
+          "name" : "iPad Pro (11-inch) (3rd generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-11-inch-3rd-generation",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad Pro (12.9-inch) (5th generation).simdevicetype",
+          "name" : "iPad Pro (12.9-inch) (5th generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-12-9-inch-5th-generation",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad Air (5th generation).simdevicetype",
+          "name" : "iPad Air (5th generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-Air-5th-generation",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad (10th generation).simdevicetype",
+          "name" : "iPad (10th generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-10th-generation",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad mini (6th generation).simdevicetype",
+          "name" : "iPad mini (6th generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-mini-6th-generation",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad Pro (11-inch) (4th generation).simdevicetype",
+          "name" : "iPad Pro (11-inch) (4th generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-11-inch-4th-generation-8GB",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad Pro (11-inch) (4th generation) (16GB).simdevicetype",
+          "name" : "iPad Pro (11-inch) (4th generation) (16GB)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-11-inch-4th-generation-16GB",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad Pro (12.9-inch) (6th generation).simdevicetype",
+          "name" : "iPad Pro (12.9-inch) (6th generation)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-12-9-inch-6th-generation-8GB",
+          "productFamily" : "iPad"
+        },
+        {
+          "bundlePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/iPhoneOS.platform\/Library\/Developer\/CoreSimulator\/Profiles\/DeviceTypes\/iPad Pro (12.9-inch) (6th generation) (16GB).simdevicetype",
+          "name" : "iPad Pro (12.9-inch) (6th generation) (16GB)",
+          "identifier" : "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-12-9-inch-6th-generation-16GB",
+          "productFamily" : "iPad"
+        }
+      ]
+    },
+    "dataPath" : "\/Users\/tyler.hackett\/Library\/Developer\/CoreSimulator\/Devices\/F875505B-B6AE-445A-83C5-DDA0B4489670\/data",
+    "lastBootedAt" : "2023-01-04T18:15:54Z",
+    "deviceTypeIdentifier" : "com.apple.CoreSimulator.SimDeviceType.iPhone-13",
+    "udid" : "F875505B-B6AE-445A-83C5-DDA0B4489670"
+  }
+]
+
+11:10:32.517 detox[50678] [90mB[39m onBootDevice
+  args: ({"deviceId":"F875505B-B6AE-445A-83C5-DDA0B4489670","type":"ios.simulator","coldBoot":false})
+11:10:32.518 detox[50678] [90mE[39m onBootDevice
+11:10:32.518 detox[50678] [90mE[39m allocate
+11:10:32.534 detox[50678] [90mB[39m installUtilBinaries
+  args: ()
+11:10:32.534 detox[50678] [90mE[39m installUtilBinaries
+11:10:32.534 detox[50678] [90mB[39m selectApp
+  args: ("default")
+11:10:32.562 detox[50678] [90mE[39m selectApp
+11:10:32.562 detox[50678] [90mB[39m uninstallApp
+  args: ()
+11:10:32.563 detox[50678] [90mB[39m onBeforeUninstallApp
+  args: ({"deviceId":"F875505B-B6AE-445A-83C5-DDA0B4489670","bundleId":"org.avalabs.corewallet"})
+11:10:32.563 detox[50678] [90mE[39m onBeforeUninstallApp
+11:10:32.563 detox[50678] [90mi[39m /usr/bin/xcrun simctl uninstall F875505B-B6AE-445A-83C5-DDA0B4489670 org.avalabs.corewallet
+11:10:32.563 detox[50678] [90mi[39m Uninstalling org.avalabs.corewallet...
+11:10:32.856 detox[50678] [90mi[39m org.avalabs.corewallet uninstalled
+11:10:32.856 detox[50678] [90mE[39m uninstallApp
+11:10:32.856 detox[50678] [90mB[39m selectApp
+  args: ("default")
+11:10:32.857 detox[50678] [90mB[39m terminateApp
+  args: ()
+11:10:32.857 detox[50678] [90mB[39m onBeforeTerminateApp
+  args: ({"deviceId":"F875505B-B6AE-445A-83C5-DDA0B4489670","bundleId":"org.avalabs.corewallet"})
+11:10:32.858 detox[50678] [90mE[39m onBeforeTerminateApp
+11:10:32.858 detox[50678] [90mi[39m /usr/bin/xcrun simctl terminate F875505B-B6AE-445A-83C5-DDA0B4489670 org.avalabs.corewallet
+11:10:32.858 detox[50678] [90mi[39m Terminating org.avalabs.corewallet...
+11:10:34.107 detox[50678] [90mi[39m An error was encountered processing the command (domain=NSPOSIXErrorDomain, code=3):
+The operation couldn’t be completed. found nothing to terminate
+found nothing to terminate
+
+11:10:34.107 detox[50678] [90mi[39m Terminating org.avalabs.corewallet...
+11:10:34.309 detox[50678] [90mi[39m "/usr/bin/xcrun simctl terminate F875505B-B6AE-445A-83C5-DDA0B4489670 org.avalabs.corewallet" failed with error = ChildProcessError: Command failed: /usr/bin/xcrun simctl terminate F875505B-B6AE-445A-83C5-DDA0B4489670 org.avalabs.corewallet
+An error was encountered processing the command (domain=NSPOSIXErrorDomain, code=3):
+The operation couldn’t be completed. found nothing to terminate
+found nothing to terminate
+ `/usr/bin/xcrun simctl terminate F875505B-B6AE-445A-83C5-DDA0B4489670 org.avalabs.corewallet` (exited with error code 3) (code=3), stdout and stderr:
+
+11:10:34.309 detox[50678] [90mi[39m 
+11:10:34.309 detox[50678] [90mi[39m An error was encountered processing the command (domain=NSPOSIXErrorDomain, code=3):
+The operation couldn’t be completed. found nothing to terminate
+found nothing to terminate
+
+11:10:34.309 detox[50678] [90mB[39m onTerminateApp
+  args: ({"deviceId":"F875505B-B6AE-445A-83C5-DDA0B4489670","bundleId":"org.avalabs.corewallet"})
+11:10:34.309 detox[50678] [90mE[39m onTerminateApp
+11:10:34.309 detox[50678] [90mE[39m terminateApp
+11:10:34.309 detox[50678] [90mE[39m selectApp
+11:10:34.309 detox[50678] [90mB[39m installApp
+  args: ()
+11:10:34.310 detox[50678] [90mi[39m /usr/bin/xcrun simctl install F875505B-B6AE-445A-83C5-DDA0B4489670 "/Users/tyler.hackett/avalanche-wallet-apps/ios/DerivedData/Build/Products/Debug-iphonesimulator/AvaxWallet.app"
+11:10:34.310 detox[50678] [90mi[39m Installing /Users/tyler.hackett/avalanche-wallet-apps/ios/DerivedData/Build/Products/Debug-iphonesimulator/AvaxWallet.app...
+11:10:34.659 detox[50678] [90mi[39m /Users/tyler.hackett/avalanche-wallet-apps/ios/DerivedData/Build/Products/Debug-iphonesimulator/AvaxWallet.app installed
+11:10:34.659 detox[50678] [90mE[39m installApp
+11:10:34.659 detox[50678] [90mB[39m selectApp
+  args: ("default")
+11:10:34.660 detox[50678] [90mB[39m terminateApp
+  args: ()
+11:10:34.660 detox[50678] [90mB[39m onBeforeTerminateApp
+  args: ({"deviceId":"F875505B-B6AE-445A-83C5-DDA0B4489670","bundleId":"org.avalabs.corewallet"})
+11:10:34.660 detox[50678] [90mE[39m onBeforeTerminateApp
+11:10:34.660 detox[50678] [90mi[39m /usr/bin/xcrun simctl terminate F875505B-B6AE-445A-83C5-DDA0B4489670 org.avalabs.corewallet
+11:10:34.660 detox[50678] [90mi[39m Terminating org.avalabs.corewallet...
+11:10:35.943 detox[50678] [90mi[39m An error was encountered processing the command (domain=NSPOSIXErrorDomain, code=3):
+The operation couldn’t be completed. found nothing to terminate
+found nothing to terminate
+
+11:10:35.943 detox[50678] [90mi[39m Terminating org.avalabs.corewallet...
+11:10:36.138 detox[50678] [90mi[39m "/usr/bin/xcrun simctl terminate F875505B-B6AE-445A-83C5-DDA0B4489670 org.avalabs.corewallet" failed with error = ChildProcessError: Command failed: /usr/bin/xcrun simctl terminate F875505B-B6AE-445A-83C5-DDA0B4489670 org.avalabs.corewallet
+An error was encountered processing the command (domain=NSPOSIXErrorDomain, code=3):
+The operation couldn’t be completed. found nothing to terminate
+found nothing to terminate
+ `/usr/bin/xcrun simctl terminate F875505B-B6AE-445A-83C5-DDA0B4489670 org.avalabs.corewallet` (exited with error code 3) (code=3), stdout and stderr:
+
+11:10:36.138 detox[50678] [90mi[39m 
+11:10:36.138 detox[50678] [90mi[39m An error was encountered processing the command (domain=NSPOSIXErrorDomain, code=3):
+The operation couldn’t be completed. found nothing to terminate
+found nothing to terminate
+
+11:10:36.138 detox[50678] [90mB[39m onTerminateApp
+  args: ({"deviceId":"F875505B-B6AE-445A-83C5-DDA0B4489670","bundleId":"org.avalabs.corewallet"})
+11:10:36.138 detox[50678] [90mE[39m onTerminateApp
+11:10:36.138 detox[50678] [90mE[39m terminateApp
+11:10:36.139 detox[50678] [90mE[39m selectApp
+11:10:36.139 detox[50678] [90mE[39m set up environment
+11:10:43.995 detox[50678] [90mi[39m recoverWallet.e2e.ts is assigned to F875505B-B6AE-445A-83C5-DDA0B4489670 (iPhone 13)
+11:10:43.997 detox[50678] [90mB[39m run the tests
+11:10:43.997 detox[50678] [90mB[39m onRunDescribeStart
+  args: ({"name":"ROOT_DESCRIBE_BLOCK"})
+11:10:43.997 detox[50678] [90mE[39m onRunDescribeStart
+11:10:43.998 detox[50678] [90mB[39m beforeAll
+11:10:44.822 detox[50678] [90mi[39m Creating empty test run...
+11:10:45.187 detox[50678] [90mi[39m The test run "smoke test"2023-1-13 11:10:44"" with id 488 has been successfully created in TestRail...
+11:10:45.187 detox[50678] [90mE[39m beforeAll
+11:10:45.188 detox[50678] [90mB[39m Add existing wallet
+11:10:45.188 detox[50678] [90mB[39m onRunDescribeStart
+  args: ({"name":"Add existing wallet"})
+11:10:45.188 detox[50678] [90mE[39m onRunDescribeStart
+11:10:45.188 detox[50678] [90mB[39m beforeAll
+11:10:45.193 detox[50678] [90mB[39m launchApp
+  args: ()
+11:10:45.194 detox[50678] [90mB[39m terminateApp
+  args: ("org.avalabs.corewallet")
+11:10:45.195 detox[50678] [90mB[39m onBeforeTerminateApp
+  args: ({"deviceId":"F875505B-B6AE-445A-83C5-DDA0B4489670","bundleId":"org.avalabs.corewallet"})
+11:10:45.195 detox[50678] [90mE[39m onBeforeTerminateApp
+11:10:45.195 detox[50678] [90mi[39m /usr/bin/xcrun simctl terminate F875505B-B6AE-445A-83C5-DDA0B4489670 org.avalabs.corewallet
+11:10:45.195 detox[50678] [90mi[39m Terminating org.avalabs.corewallet...
+11:10:46.478 detox[50678] [90mi[39m An error was encountered processing the command (domain=NSPOSIXErrorDomain, code=3):
+The operation couldn’t be completed. found nothing to terminate
+found nothing to terminate
+
+11:10:46.478 detox[50678] [90mi[39m Terminating org.avalabs.corewallet...
+11:10:46.691 detox[50678] [90mi[39m "/usr/bin/xcrun simctl terminate F875505B-B6AE-445A-83C5-DDA0B4489670 org.avalabs.corewallet" failed with error = ChildProcessError: Command failed: /usr/bin/xcrun simctl terminate F875505B-B6AE-445A-83C5-DDA0B4489670 org.avalabs.corewallet
+An error was encountered processing the command (domain=NSPOSIXErrorDomain, code=3):
+The operation couldn’t be completed. found nothing to terminate
+found nothing to terminate
+ `/usr/bin/xcrun simctl terminate F875505B-B6AE-445A-83C5-DDA0B4489670 org.avalabs.corewallet` (exited with error code 3) (code=3), stdout and stderr:
+
+11:10:46.691 detox[50678] [90mi[39m 
+11:10:46.691 detox[50678] [90mi[39m An error was encountered processing the command (domain=NSPOSIXErrorDomain, code=3):
+The operation couldn’t be completed. found nothing to terminate
+found nothing to terminate
+
+11:10:46.692 detox[50678] [90mB[39m onTerminateApp
+  args: ({"deviceId":"F875505B-B6AE-445A-83C5-DDA0B4489670","bundleId":"org.avalabs.corewallet"})
+11:10:46.692 detox[50678] [90mE[39m onTerminateApp
+11:10:46.692 detox[50678] [90mE[39m terminateApp
+11:10:46.692 detox[50678] [90mB[39m onBeforeLaunchApp
+  args: ({"bundleId":"org.avalabs.corewallet","deviceId":"F875505B-B6AE-445A-83C5-DDA0B4489670","launchArgs":{"detoxServer":"ws://localhost:62804","detoxSessionId":"42d08604-a0a3-db99-773e-a406bb9e5041"}})
+11:10:46.694 detox[50678] [90mi[39m starting SimulatorLogRecording {
+  udid: 'F875505B-B6AE-445A-83C5-DDA0B4489670',
+  bundleId: 'org.avalabs.corewallet'
+}
+11:10:46.696 detox[50678] [90mi[39m /usr/bin/xcrun simctl get_app_container F875505B-B6AE-445A-83C5-DDA0B4489670 org.avalabs.corewallet
+11:10:46.925 detox[50678] [90mi[39m /Users/tyler.hackett/Library/Developer/CoreSimulator/Devices/F875505B-B6AE-445A-83C5-DDA0B4489670/data/Containers/Bundle/Application/F70A50C0-A17C-4335-961B-F7E6E92DD320/AvaxWallet.app
+
+11:10:46.951 detox[50678] [90mi[39m /usr/bin/xcrun simctl spawn F875505B-B6AE-445A-83C5-DDA0B4489670 log stream --level debug --style compact --predicate "processImagePath beginsWith \"/Users/tyler.hackett/Library/Developer/CoreSimulator/Devices/F875505B-B6AE-445A-83C5-DDA0B4489670/data/Containers/Bundle/Application/F70A50C0-A17C-4335-961B-F7E6E92DD320/AvaxWallet.app\""
+11:10:47.003 detox[50678] [90mE[39m onBeforeLaunchApp
+11:10:47.004 detox[50678] [90mi[39m SIMCTL_CHILD_GULGeneratedClassDisposeDisabled=YES SIMCTL_CHILD_DYLD_INSERT_LIBRARIES="/Users/tyler.hackett/Library/Detox/ios/59fd964862f8a08e7045a1ad90910dda9e9fe2bc/Detox.framework/Detox" /usr/bin/xcrun simctl launch F875505B-B6AE-445A-83C5-DDA0B4489670 org.avalabs.corewallet --args -detoxServer ws://localhost:62804 -detoxSessionId 42d08604-a0a3-db99-773e-a406bb9e5041 -detoxDebugVisibility YES
+11:10:47.004 detox[50678] [90mi[39m Launching org.avalabs.corewallet...
+11:10:47.239 detox[50678] [90mi[39m org.avalabs.corewallet: 50752
+
+11:10:47.239 detox[50678] [90mi[39m /usr/bin/xcrun simctl get_app_container F875505B-B6AE-445A-83C5-DDA0B4489670 org.avalabs.corewallet
+11:10:47.565 detox[50678] [90mi[39m /Users/tyler.hackett/Library/Developer/CoreSimulator/Devices/F875505B-B6AE-445A-83C5-DDA0B4489670/data/Containers/Bundle/Application/F70A50C0-A17C-4335-961B-F7E6E92DD320/AvaxWallet.app
+
+11:10:47.664 detox[50678] [90mi[39m org.avalabs.corewallet launched. To watch simulator logs, run:
+        /usr/bin/xcrun simctl spawn F875505B-B6AE-445A-83C5-DDA0B4489670 log stream --level debug --style compact --predicate 'process == "AvaxWallet"'
+11:10:47.665 detox[50678] [90mB[39m onLaunchApp
+  args: ({"bundleId":"org.avalabs.corewallet","deviceId":"F875505B-B6AE-445A-83C5-DDA0B4489670","launchArgs":{"detoxServer":"ws://localhost:62804","detoxSessionId":"42d08604-a0a3-db99-773e-a406bb9e5041","detoxDebugVisibility":"YES"},"pid":50752})
+11:10:47.665 detox[50678] [90mE[39m onLaunchApp
+11:10:47.869 detox[50676] [90mB[39m connection :62804<->:62963
+11:10:48.028 detox[50676] [90mi[39m get
+  data: {"params":{"role":"app","sessionId":"42d08604-a0a3-db99-773e-a406bb9e5041"},"type":"login","messageId":0}
+11:10:48.029 detox[50676] [90mi[39m send
+  data: {
+    "params": {
+      "testerConnected": true,
+      "appConnected": true
+    },
+    "type": "loginSuccess",
+    "messageId": 0
+  }
+11:10:48.029 detox[50676] [90mi[39m app joined session 42d08604-a0a3-db99-773e-a406bb9e5041
+11:10:48.029 detox[50676] [90mi[39m send
+  data: {
+    "type": "appConnected"
+  }
+11:10:48.030 detox[50678] [90mi[39m get message
+  data: {"type":"appConnected"}
+   
+11:10:48.031 detox[50676] [90mi[39m get
+  data: {"type":"isReady","params":{},"messageId":-1000}
+11:10:48.031 detox[50676] [90mi[39m send
+  data: {
+    "type": "isReady",
+    "params": {},
+    "messageId": -1000
+  }
+11:10:48.031 detox[50678] [90mi[39m send message
+  data: {"type":"isReady","params":{},"messageId":-1000}
+11:10:51.118 detox[50676] [90mi[39m get
+  data: {"messageId":-1000,"type":"ready","params":{}}
+11:10:51.118 detox[50676] [90mi[39m send
+  data: {
+    "messageId": -1000,
+    "type": "ready",
+    "params": {}
+  }
+11:10:51.119 detox[50678] [90mi[39m get message
+  data: {"messageId":-1000,"type":"ready","params":{}}
+   
+11:10:51.120 detox[50676] [90mi[39m get
+  data: {"type":"waitForActive","params":{},"messageId":1}
+11:10:51.120 detox[50676] [90mi[39m send
+  data: {
+    "type": "waitForActive",
+    "params": {},
+    "messageId": 1
+  }
+11:10:51.120 detox[50678] [90mi[39m send message
+  data: {"type":"waitForActive","params":{},"messageId":1}
+11:10:51.123 detox[50676] [90mi[39m get
+  data: {"messageId":-1000,"type":"ready","params":{}}
+11:10:51.123 detox[50676] [90mi[39m send
+  data: {
+    "messageId": -1000,
+    "type": "ready",
+    "params": {}
+  }
+11:10:51.123 detox[50678] [90mi[39m get message
+  data: {"messageId":-1000,"type":"ready","params":{}}
+   
+11:10:51.124 detox[50676] [90mi[39m get
+  data: {"messageId":-1000,"type":"ready","params":{}}
+11:10:51.124 detox[50676] [90mi[39m send
+  data: {
+    "messageId": -1000,
+    "type": "ready",
+    "params": {}
+  }
+11:10:51.125 detox[50676] [90mi[39m get
+  data: {"messageId":1,"type":"waitForActiveDone","params":{}}
+11:10:51.125 detox[50676] [90mi[39m send
+  data: {
+    "messageId": 1,
+    "type": "waitForActiveDone",
+    "params": {}
+  }
+11:10:51.125 detox[50678] [90mi[39m get message
+  data: {"messageId":-1000,"type":"ready","params":{}}
+   
+11:10:51.125 detox[50678] [90mi[39m get message
+  data: {"messageId":1,"type":"waitForActiveDone","params":{}}
+   
+11:10:51.125 detox[50678] [90mB[39m onAppReady
+  args: ({"deviceId":"F875505B-B6AE-445A-83C5-DDA0B4489670","bundleId":"org.avalabs.corewallet","pid":50752})
+11:10:51.126 detox[50678] [90mE[39m onAppReady
+11:10:51.126 detox[50678] [90mE[39m launchApp
+11:10:51.129 detox[50678] [90mi[39m send message
+  data: {"type":"invoke","params":{"type":"expectation","predicate":{"type":"id","value":"wallet_svg"},"atIndex":1,"expectation":"toBeVisible"},"messageId":2}
+11:10:51.130 detox[50676] [90mi[39m get
+  data: {"type":"invoke","params":{"type":"expectation","predicate":{"type":"id","value":"wallet_svg"},"atIndex":1,"expectation":"toBeVisible"},"messageId":2}
+11:10:51.130 detox[50676] [90mi[39m send
+  data: {
+    "type": "invoke",
+    "params": {
+      "type": "expectation",
+      "predicate": {
+        "type": "id",
+        "value": "wallet_svg"
+      },
+      "atIndex": 1,
+      "expectation": "toBeVisible"
+    },
+    "messageId": 2
+  }
+11:10:51.131 detox[50678] [90mB[39m expect element to be visible
+  data: {
+    "type": "expectation",
+    "predicate": {
+      "type": "id",
+      "value": "wallet_svg"
+    },
+    "atIndex": 1,
+    "expectation": "toBeVisible"
+  }
+11:10:51.343 detox[50676] [90mi[39m get
+  data: {"params":{},"type":"invokeResult","messageId":2}
+11:10:51.344 detox[50676] [90mi[39m send
+  data: {
+    "params": {},
+    "type": "invokeResult",
+    "messageId": 2
+  }
+11:10:51.344 detox[50678] [90mi[39m get message
+  data: {"params":{},"type":"invokeResult","messageId":2}
+   
+11:10:51.344 detox[50678] [90mE[39m expect element to be visible
+11:10:51.345 detox[50678] [90mE[39m beforeAll
+11:10:51.345 detox[50678] [90mB[39m should successfully add an existing wallet
+11:10:51.345 detox[50678] [90mi[39m Add existing wallet: should successfully add an existing wallet
+11:10:51.346 detox[50678] [90mB[39m onTestStart
+  args: ({"title":"should successfully add an existing wallet","fullName":"Add existing wallet should successfully add an existing wallet","status":"running","invocations":1})
+11:10:51.346 detox[50678] [90mi[39m stopping SimulatorLogRecording
+11:10:51.399 detox[50678] [90mi[39m sending SIGINT to: /usr/bin/xcrun simctl spawn F875505B-B6AE-445A-83C5-DDA0B4489670 log stream --level debug --style compact --predicate processImagePath beginsWith "/Users/tyler.hackett/Library/Developer/CoreSimulator/Devices/F875505B-B6AE-445A-83C5-DDA0B4489670/data/Containers/Bundle/Application/F70A50C0-A17C-4335-961B-F7E6E92DD320/AvaxWallet.app"
+11:10:51.405 detox[50678] [90mi[39m /usr/bin/xcrun simctl spawn F875505B-B6AE-445A-83C5-DDA0B4489670 log stream --level debug --style compact --predicate "processImagePath beginsWith \"/Users/tyler.hackett/Library/Developer/CoreSimulator/Devices/F875505B-B6AE-445A-83C5-DDA0B4489670/data/Containers/Bundle/Application/F70A50C0-A17C-4335-961B-F7E6E92DD320/AvaxWallet.app\"" exited with code #0
+11:10:51.406 detox[50678] [90mi[39m starting SimulatorLogRecording
+11:10:51.406 detox[50678] [90mi[39m /usr/bin/xcrun simctl get_app_container F875505B-B6AE-445A-83C5-DDA0B4489670 org.avalabs.corewallet
+11:10:51.691 detox[50678] [90mi[39m /Users/tyler.hackett/Library/Developer/CoreSimulator/Devices/F875505B-B6AE-445A-83C5-DDA0B4489670/data/Containers/Bundle/Application/F70A50C0-A17C-4335-961B-F7E6E92DD320/AvaxWallet.app
+
+11:10:51.715 detox[50678] [90mi[39m /usr/bin/xcrun simctl spawn F875505B-B6AE-445A-83C5-DDA0B4489670 log stream --level debug --style compact --predicate "processImagePath beginsWith \"/Users/tyler.hackett/Library/Developer/CoreSimulator/Devices/F875505B-B6AE-445A-83C5-DDA0B4489670/data/Containers/Bundle/Application/F70A50C0-A17C-4335-961B-F7E6E92DD320/AvaxWallet.app\""
+11:10:51.767 detox[50678] [90mi[39m starting SimulatorInstrumentsRecording
+11:10:51.769 detox[50676] [90mi[39m get
+  data: {"type":"setRecordingState","params":{"recordingPath":"/private/var/folders/1g/l3_h_m594337d9nfq8q1ws4w0000gn/T/41a9048d-71e1-48c6-80ca-a070a18f8e7c.detox.dtxrec","samplingInterval":0.25},"messageId":3}
+11:10:51.769 detox[50678] [90mi[39m send message
+  data: {"type":"setRecordingState","params":{"recordingPath":"/private/var/folders/1g/l3_h_m594337d9nfq8q1ws4w0000gn/T/41a9048d-71e1-48c6-80ca-a070a18f8e7c.detox.dtxrec","samplingInterval":0.25},"messageId":3}
+11:10:51.770 detox[50676] [90mi[39m send
+  data: {
+    "type": "setRecordingState",
+    "params": {
+      "recordingPath": "/private/var/folders/1g/l3_h_m594337d9nfq8q1ws4w0000gn/T/41a9048d-71e1-48c6-80ca-a070a18f8e7c.detox.dtxrec",
+      "samplingInterval": 0.25
+    },
+    "messageId": 3
+  }
+11:10:51.773 detox[50676] [90mi[39m get
+  data: {"type":"setRecordingStateDone","messageId":3,"params":{}}
+11:10:51.773 detox[50676] [90mi[39m send
+  data: {
+    "type": "setRecordingStateDone",
+    "messageId": 3,
+    "params": {}
+  }
+11:10:51.773 detox[50678] [90mi[39m get message
+  data: {"type":"setRecordingStateDone","messageId":3,"params":{}}
+   
+11:10:51.773 detox[50678] [90mE[39m onTestStart
+11:10:51.773 detox[50678] [90mB[39m beforeEach
+11:10:51.774 detox[50678] [90mE[39m beforeEach
+11:10:51.774 detox[50678] [90mB[39m test_fn
+11:10:51.781 detox[50678] [90mi[39m send message
+  data: {"type":"invoke","params":{"type":"action","action":"tap","atIndex":1,"predicate":{"type":"id","value":"wallet_svg"}},"messageId":4}
+11:10:51.782 detox[50676] [90mi[39m get
+  data: {"type":"invoke","params":{"type":"action","action":"tap","atIndex":1,"predicate":{"type":"id","value":"wallet_svg"}},"messageId":4}
+11:10:51.782 detox[50676] [90mi[39m send
+  data: {
+    "type": "invoke",
+    "params": {
+      "type": "action",
+      "action": "tap",
+      "atIndex": 1,
+      "predicate": {
+        "type": "id",
+        "value": "wallet_svg"
+      }
+    },
+    "messageId": 4
+  }
+11:10:51.782 detox[50678] [90mB[39m tap
+  data: {
+    "type": "action",
+    "action": "tap",
+    "atIndex": 1,
+    "predicate": {
+      "type": "id",
+      "value": "wallet_svg"
+    }
+  }
+11:10:53.025 detox[50676] [90mi[39m get
+  data: {"messageId":4,"type":"invokeResult","params":{}}
+11:10:53.025 detox[50676] [90mi[39m send
+  data: {
+    "messageId": 4,
+    "type": "invokeResult",
+    "params": {}
+  }
+11:10:53.026 detox[50678] [90mi[39m get message
+  data: {"messageId":4,"type":"invokeResult","params":{}}
+   
+11:10:53.026 detox[50678] [90mE[39m tap
+11:10:53.029 detox[50676] [90mi[39m get
+  data: {"type":"invoke","params":{"type":"action","action":"tap","predicate":{"type":"text","value":"No Thanks"}},"messageId":5}
+11:10:53.029 detox[50676] [90mi[39m send
+  data: {
+    "type": "invoke",
+    "params": {
+      "type": "action",
+      "action": "tap",
+      "predicate": {
+        "type": "text",
+        "value": "No Thanks"
+      }
+    },
+    "messageId": 5
+  }
+11:10:53.029 detox[50678] [90mi[39m send message
+  data: {"type":"invoke","params":{"type":"action","action":"tap","predicate":{"type":"text","value":"No Thanks"}},"messageId":5}
+11:10:53.029 detox[50678] [90mB[39m tap
+  data: {
+    "type": "action",
+    "action": "tap",
+    "predicate": {
+      "type": "text",
+      "value": "No Thanks"
+    }
+  }
+11:10:55.026 detox[50676] [90mi[39m get
+  data: {"messageId":5,"type":"invokeResult","params":{}}
+11:10:55.026 detox[50676] [90mi[39m send
+  data: {
+    "messageId": 5,
+    "type": "invokeResult",
+    "params": {}
+  }
+11:10:55.026 detox[50678] [90mi[39m get message
+  data: {"messageId":5,"type":"invokeResult","params":{}}
+   
+11:10:55.027 detox[50678] [90mE[39m tap
+11:10:55.027 detox[50678] [90mi[39m send message
+  data: {"type":"invoke","params":{"type":"expectation","predicate":{"type":"id","value":"text_area__recovery_phrase"},"atIndex":0,"expectation":"toBeVisible"},"messageId":6}
+11:10:55.028 detox[50676] [90mi[39m get
+  data: {"type":"invoke","params":{"type":"expectation","predicate":{"type":"id","value":"text_area__recovery_phrase"},"atIndex":0,"expectation":"toBeVisible"},"messageId":6}
+11:10:55.028 detox[50676] [90mi[39m send
+  data: {
+    "type": "invoke",
+    "params": {
+      "type": "expectation",
+      "predicate": {
+        "type": "id",
+        "value": "text_area__recovery_phrase"
+      },
+      "atIndex": 0,
+      "expectation": "toBeVisible"
+    },
+    "messageId": 6
+  }
+11:10:55.028 detox[50678] [90mB[39m expect element to be visible
+  data: {
+    "type": "expectation",
+    "predicate": {
+      "type": "id",
+      "value": "text_area__recovery_phrase"
+    },
+    "atIndex": 0,
+    "expectation": "toBeVisible"
+  }
+11:10:55.103 detox[50676] [90mi[39m get
+  data: {"params":{},"type":"invokeResult","messageId":6}
+11:10:55.103 detox[50676] [90mi[39m send
+  data: {
+    "params": {},
+    "type": "invokeResult",
+    "messageId": 6
+  }
+11:10:55.103 detox[50678] [90mi[39m get message
+  data: {"params":{},"type":"invokeResult","messageId":6}
+   
+11:10:55.103 detox[50678] [90mE[39m expect element to be visible
+11:10:55.104 detox[50676] [90mi[39m get
+  data: {"type":"invoke","params":{"type":"expectation","predicate":{"type":"text","value":"Sign in"},"atIndex":0,"expectation":"toBeVisible"},"messageId":7}
+11:10:55.104 detox[50676] [90mi[39m send
+  data: {
+    "type": "invoke",
+    "params": {
+      "type": "expectation",
+      "predicate": {
+        "type": "text",
+        "value": "Sign in"
+      },
+      "atIndex": 0,
+      "expectation": "toBeVisible"
+    },
+    "messageId": 7
+  }
+11:10:55.104 detox[50678] [90mi[39m send message
+  data: {"type":"invoke","params":{"type":"expectation","predicate":{"type":"text","value":"Sign in"},"atIndex":0,"expectation":"toBeVisible"},"messageId":7}
+11:10:55.104 detox[50678] [90mB[39m expect element to be visible
+  data: {
+    "type": "expectation",
+    "predicate": {
+      "type": "text",
+      "value": "Sign in"
+    },
+    "atIndex": 0,
+    "expectation": "toBeVisible"
+  }
+11:10:55.159 detox[50676] [90mi[39m get
+  data: {"params":{},"type":"invokeResult","messageId":7}
+11:10:55.160 detox[50676] [90mi[39m send
+  data: {
+    "params": {},
+    "type": "invokeResult",
+    "messageId": 7
+  }
+11:10:55.160 detox[50678] [90mi[39m get message
+  data: {"params":{},"type":"invokeResult","messageId":7}
+   
+11:10:55.160 detox[50678] [90mE[39m expect element to be visible
+11:10:55.160 detox[50678] [90mi[39m send message
+  data: {"type":"invoke","params":{"type":"expectation","predicate":{"type":"id","value":"recovery_phrase__header"},"atIndex":0,"expectation":"toBeVisible"},"messageId":8}
+11:10:55.161 detox[50676] [90mi[39m get
+  data: {"type":"invoke","params":{"type":"expectation","predicate":{"type":"id","value":"recovery_phrase__header"},"atIndex":0,"expectation":"toBeVisible"},"messageId":8}
+11:10:55.161 detox[50676] [90mi[39m send
+  data: {
+    "type": "invoke",
+    "params": {
+      "type": "expectation",
+      "predicate": {
+        "type": "id",
+        "value": "recovery_phrase__header"
+      },
+      "atIndex": 0,
+      "expectation": "toBeVisible"
+    },
+    "messageId": 8
+  }
+11:10:55.161 detox[50678] [90mB[39m expect element to be visible
+  data: {
+    "type": "expectation",
+    "predicate": {
+      "type": "id",
+      "value": "recovery_phrase__header"
+    },
+    "atIndex": 0,
+    "expectation": "toBeVisible"
+  }
+11:10:55.221 detox[50676] [90mi[39m get
+  data: {"type":"invokeResult","params":{},"messageId":8}
+11:10:55.222 detox[50676] [90mi[39m send
+  data: {
+    "type": "invokeResult",
+    "params": {},
+    "messageId": 8
+  }
+11:10:55.222 detox[50678] [90mi[39m get message
+  data: {"type":"invokeResult","params":{},"messageId":8}
+   
+11:10:55.222 detox[50678] [90mE[39m expect element to be visible
+11:10:55.223 detox[50676] [90mi[39m get
+  data: {"type":"invoke","params":{"type":"expectation","predicate":{"type":"text","value":"Cancel"},"atIndex":0,"expectation":"toBeVisible"},"messageId":9}
+11:10:55.223 detox[50676] [90mi[39m send
+  data: {
+    "type": "invoke",
+    "params": {
+      "type": "expectation",
+      "predicate": {
+        "type": "text",
+        "value": "Cancel"
+      },
+      "atIndex": 0,
+      "expectation": "toBeVisible"
+    },
+    "messageId": 9
+  }
+11:10:55.223 detox[50678] [90mi[39m send message
+  data: {"type":"invoke","params":{"type":"expectation","predicate":{"type":"text","value":"Cancel"},"atIndex":0,"expectation":"toBeVisible"},"messageId":9}
+11:10:55.223 detox[50678] [90mB[39m expect element to be visible
+  data: {
+    "type": "expectation",
+    "predicate": {
+      "type": "text",
+      "value": "Cancel"
+    },
+    "atIndex": 0,
+    "expectation": "toBeVisible"
+  }
+11:10:55.276 detox[50676] [90mi[39m get
+  data: {"messageId":9,"params":{},"type":"invokeResult"}
+11:10:55.277 detox[50676] [90mi[39m send
+  data: {
+    "messageId": 9,
+    "params": {},
+    "type": "invokeResult"
+  }
+11:10:55.277 detox[50678] [90mi[39m get message
+  data: {"messageId":9,"params":{},"type":"invokeResult"}
+   
+11:10:55.277 detox[50678] [90mE[39m expect element to be visible
+11:10:55.278 detox[50676] [90mi[39m get
+  data: {"type":"invoke","params":{"type":"action","action":"replaceText","params":["capable maze trophy install grunt close left visa cheap tilt elder end mosquito culture south stool baby animal donate creek outer learn kitten tonight"],"predicate":{"type":"id","value":"text_area__recovery_phrase"}},"messageId":10}
+11:10:55.278 detox[50676] [90mi[39m send
+  data: {
+    "type": "invoke",
+    "params": {
+      "type": "action",
+      "action": "replaceText",
+      "params": [
+        "capable maze trophy install grunt close left visa cheap tilt elder end mosquito culture south stool baby animal donate creek outer learn kitten tonight"
+      ],
+      "predicate": {
+        "type": "id",
+        "value": "text_area__recovery_phrase"
+      }
+    },
+    "messageId": 10
+  }
+11:10:55.278 detox[50678] [90mi[39m send message
+  data: {"type":"invoke","params":{"type":"action","action":"replaceText","params":["capable maze trophy install grunt close left visa cheap tilt elder end mosquito culture south stool baby animal donate creek outer learn kitten tonight"],"predicate":{"type":"id","value":"text_area__recovery_phrase"}},"messageId":10}
+11:10:55.278 detox[50678] [90mB[39m replace input text: "capable maze trophy install grunt close left visa cheap tilt elder end mosquito culture south stool baby animal donate creek outer learn kitten tonight"
+  data: {
+    "type": "action",
+    "action": "replaceText",
+    "params": [
+      "capable maze trophy install grunt close left visa cheap tilt elder end mosquito culture south stool baby animal donate creek outer learn kitten tonight"
+    ],
+    "predicate": {
+      "type": "id",
+      "value": "text_area__recovery_phrase"
+    }
+  }
+11:10:55.294 detox[50676] [90mi[39m get
+  data: {"type":"invokeResult","params":{},"messageId":10}
+11:10:55.294 detox[50676] [90mi[39m send
+  data: {
+    "type": "invokeResult",
+    "params": {},
+    "messageId": 10
+  }
+11:10:55.294 detox[50678] [90mi[39m get message
+  data: {"type":"invokeResult","params":{},"messageId":10}
+   
+11:10:55.295 detox[50676] [90mi[39m get
+  data: {"type":"invoke","params":{"type":"action","action":"tap","predicate":{"type":"text","value":"Sign in"}},"messageId":11}
+11:10:55.295 detox[50676] [90mi[39m send
+  data: {
+    "type": "invoke",
+    "params": {
+      "type": "action",
+      "action": "tap",
+      "predicate": {
+        "type": "text",
+        "value": "Sign in"
+      }
+    },
+    "messageId": 11
+  }
+11:10:55.295 detox[50678] [90mE[39m replace input text: "capable maze trophy install grunt close left visa cheap tilt elder end mosquito culture south stool baby animal donate creek outer learn kitten tonight"
+11:10:55.295 detox[50678] [90mi[39m send message
+  data: {"type":"invoke","params":{"type":"action","action":"tap","predicate":{"type":"text","value":"Sign in"}},"messageId":11}
+11:10:55.295 detox[50678] [90mB[39m tap
+  data: {
+    "type": "action",
+    "action": "tap",
+    "predicate": {
+      "type": "text",
+      "value": "Sign in"
+    }
+  }
+11:10:56.108 detox[50676] [90mi[39m get
+  data: {"messageId":11,"params":{},"type":"invokeResult"}
+11:10:56.108 detox[50676] [90mi[39m send
+  data: {
+    "messageId": 11,
+    "params": {},
+    "type": "invokeResult"
+  }
+11:10:56.108 detox[50678] [90mi[39m get message
+  data: {"messageId":11,"params":{},"type":"invokeResult"}
+   
+11:10:56.109 detox[50678] [90mE[39m tap
+11:10:56.110 detox[50678] [90mi[39m send message
+  data: {"type":"invoke","params":{"type":"action","action":"tap","predicate":{"type":"id","value":"0"}},"messageId":12}
+11:10:56.111 detox[50676] [90mi[39m get
+  data: {"type":"invoke","params":{"type":"action","action":"tap","predicate":{"type":"id","value":"0"}},"messageId":12}
+11:10:56.111 detox[50676] [90mi[39m send
+  data: {
+    "type": "invoke",
+    "params": {
+      "type": "action",
+      "action": "tap",
+      "predicate": {
+        "type": "id",
+        "value": "0"
+      }
+    },
+    "messageId": 12
+  }
+11:10:56.111 detox[50678] [90mB[39m tap
+  data: {
+    "type": "action",
+    "action": "tap",
+    "predicate": {
+      "type": "id",
+      "value": "0"
+    }
+  }
+11:10:56.646 detox[50676] [90mi[39m get
+  data: {"messageId":12,"params":{},"type":"invokeResult"}
+11:10:56.646 detox[50676] [90mi[39m send
+  data: {
+    "messageId": 12,
+    "params": {},
+    "type": "invokeResult"
+  }
+11:10:56.647 detox[50678] [90mi[39m get message
+  data: {"messageId":12,"params":{},"type":"invokeResult"}
+   
+11:10:56.647 detox[50678] [90mE[39m tap
+11:10:57.149 detox[50676] [90mi[39m get
+  data: {"type":"invoke","params":{"type":"action","action":"tap","predicate":{"type":"id","value":"0"}},"messageId":13}
+11:10:57.149 detox[50678] [90mi[39m send message
+  data: {"type":"invoke","params":{"type":"action","action":"tap","predicate":{"type":"id","value":"0"}},"messageId":13}
+11:10:57.150 detox[50676] [90mi[39m send
+  data: {
+    "type": "invoke",
+    "params": {
+      "type": "action",
+      "action": "tap",
+      "predicate": {
+        "type": "id",
+        "value": "0"
+      }
+    },
+    "messageId": 13
+  }
+11:10:57.150 detox[50678] [90mB[39m tap
+  data: {
+    "type": "action",
+    "action": "tap",
+    "predicate": {
+      "type": "id",
+      "value": "0"
+    }
+  }
+11:10:57.702 detox[50676] [90mi[39m get
+  data: {"messageId":13,"params":{},"type":"invokeResult"}
+11:10:57.702 detox[50676] [90mi[39m send
+  data: {
+    "messageId": 13,
+    "params": {},
+    "type": "invokeResult"
+  }
+11:10:57.703 detox[50678] [90mi[39m get message
+  data: {"messageId":13,"params":{},"type":"invokeResult"}
+   
+11:10:57.703 detox[50678] [90mE[39m tap
+11:10:58.205 detox[50676] [90mi[39m get
+  data: {"type":"invoke","params":{"type":"action","action":"tap","predicate":{"type":"id","value":"0"}},"messageId":14}
+11:10:58.205 detox[50678] [90mi[39m send message
+  data: {"type":"invoke","params":{"type":"action","action":"tap","predicate":{"type":"id","value":"0"}},"messageId":14}
+11:10:58.205 detox[50678] [90mB[39m tap
+  data: {
+    "type": "action",
+    "action": "tap",
+    "predicate": {
+      "type": "id",
+      "value": "0"
+    }
+  }
+11:10:58.206 detox[50676] [90mi[39m send
+  data: {
+    "type": "invoke",
+    "params": {
+      "type": "action",
+      "action": "tap",
+      "predicate": {
+        "type": "id",
+        "value": "0"
+      }
+    },
+    "messageId": 14
+  }
+11:10:58.751 detox[50676] [90mi[39m get
+  data: {"messageId":14,"params":{},"type":"invokeResult"}
+11:10:58.752 detox[50676] [90mi[39m send
+  data: {
+    "messageId": 14,
+    "params": {},
+    "type": "invokeResult"
+  }
+11:10:58.752 detox[50678] [90mi[39m get message
+  data: {"messageId":14,"params":{},"type":"invokeResult"}
+   
+11:10:58.752 detox[50678] [90mE[39m tap
+11:10:59.254 detox[50676] [90mi[39m get
+  data: {"type":"invoke","params":{"type":"action","action":"tap","predicate":{"type":"id","value":"0"}},"messageId":15}
+11:10:59.254 detox[50678] [90mi[39m send message
+  data: {"type":"invoke","params":{"type":"action","action":"tap","predicate":{"type":"id","value":"0"}},"messageId":15}
+11:10:59.254 detox[50678] [90mB[39m tap
+  data: {
+    "type": "action",
+    "action": "tap",
+    "predicate": {
+      "type": "id",
+      "value": "0"
+    }
+  }
+11:10:59.255 detox[50676] [90mi[39m send
+  data: {
+    "type": "invoke",
+    "params": {
+      "type": "action",
+      "action": "tap",
+      "predicate": {
+        "type": "id",
+        "value": "0"
+      }
+    },
+    "messageId": 15
+  }
+11:11:00.417 detox[50676] [90mi[39m get
+  data: {"messageId":15,"params":{},"type":"invokeResult"}
+11:11:00.417 detox[50676] [90mi[39m send
+  data: {
+    "messageId": 15,
+    "params": {},
+    "type": "invokeResult"
+  }
+11:11:00.418 detox[50678] [90mi[39m get message
+  data: {"messageId":15,"params":{},"type":"invokeResult"}
+   
+11:11:00.418 detox[50678] [90mE[39m tap
+11:11:00.921 detox[50676] [90mi[39m get
+  data: {"type":"invoke","params":{"type":"action","action":"tap","predicate":{"type":"id","value":"0"}},"messageId":16}
+11:11:00.921 detox[50676] [90mi[39m send
+  data: {
+    "type": "invoke",
+    "params": {
+      "type": "action",
+      "action": "tap",
+      "predicate": {
+        "type": "id",
+        "value": "0"
+      }
+    },
+    "messageId": 16
+  }
+11:11:00.921 detox[50678] [90mi[39m send message
+  data: {"type":"invoke","params":{"type":"action","action":"tap","predicate":{"type":"id","value":"0"}},"messageId":16}
+11:11:00.921 detox[50678] [90mB[39m tap
+  data: {
+    "type": "action",
+    "action": "tap",
+    "predicate": {
+      "type": "id",
+      "value": "0"
+    }
+  }
+11:11:01.470 detox[50676] [90mi[39m get
+  data: {"messageId":16,"params":{},"type":"invokeResult"}
+11:11:01.470 detox[50676] [90mi[39m send
+  data: {
+    "messageId": 16,
+    "params": {},
+    "type": "invokeResult"
+  }
+11:11:01.471 detox[50678] [90mi[39m get message
+  data: {"messageId":16,"params":{},"type":"invokeResult"}
+   
+11:11:01.471 detox[50678] [90mE[39m tap
+11:11:01.974 detox[50678] [90mi[39m send message
+  data: {"type":"invoke","params":{"type":"action","action":"tap","predicate":{"type":"id","value":"0"}},"messageId":17}
+11:11:01.975 detox[50676] [90mi[39m get
+  data: {"type":"invoke","params":{"type":"action","action":"tap","predicate":{"type":"id","value":"0"}},"messageId":17}
+11:11:01.975 detox[50676] [90mi[39m send
+  data: {
+    "type": "invoke",
+    "params": {
+      "type": "action",
+      "action": "tap",
+      "predicate": {
+        "type": "id",
+        "value": "0"
+      }
+    },
+    "messageId": 17
+  }
+11:11:01.975 detox[50678] [90mB[39m tap
+  data: {
+    "type": "action",
+    "action": "tap",
+    "predicate": {
+      "type": "id",
+      "value": "0"
+    }
+  }
+11:11:02.520 detox[50676] [90mi[39m get
+  data: {"messageId":17,"params":{},"type":"invokeResult"}
+11:11:02.520 detox[50676] [90mi[39m send
+  data: {
+    "messageId": 17,
+    "params": {},
+    "type": "invokeResult"
+  }
+11:11:02.520 detox[50678] [90mi[39m get message
+  data: {"messageId":17,"params":{},"type":"invokeResult"}
+   
+11:11:02.521 detox[50678] [90mE[39m tap
+11:11:03.021 detox[50678] [90mi[39m send message
+  data: {"type":"invoke","params":{"type":"action","action":"tap","predicate":{"type":"id","value":"0"}},"messageId":18}
+11:11:03.022 detox[50676] [90mi[39m get
+  data: {"type":"invoke","params":{"type":"action","action":"tap","predicate":{"type":"id","value":"0"}},"messageId":18}
+11:11:03.022 detox[50676] [90mi[39m send
+  data: {
+    "type": "invoke",
+    "params": {
+      "type": "action",
+      "action": "tap",
+      "predicate": {
+        "type": "id",
+        "value": "0"
+      }
+    },
+    "messageId": 18
+  }
+11:11:03.022 detox[50678] [90mB[39m tap
+  data: {
+    "type": "action",
+    "action": "tap",
+    "predicate": {
+      "type": "id",
+      "value": "0"
+    }
+  }
+11:11:03.569 detox[50676] [90mi[39m get
+  data: {"messageId":18,"params":{},"type":"invokeResult"}
+11:11:03.569 detox[50676] [90mi[39m send
+  data: {
+    "messageId": 18,
+    "params": {},
+    "type": "invokeResult"
+  }
+11:11:03.570 detox[50678] [90mi[39m get message
+  data: {"messageId":18,"params":{},"type":"invokeResult"}
+   
+11:11:03.570 detox[50678] [90mE[39m tap
+11:11:04.072 detox[50676] [90mi[39m get
+  data: {"type":"invoke","params":{"type":"action","action":"tap","predicate":{"type":"id","value":"0"}},"messageId":19}
+11:11:04.072 detox[50676] [90mi[39m send
+  data: {
+    "type": "invoke",
+    "params": {
+      "type": "action",
+      "action": "tap",
+      "predicate": {
+        "type": "id",
+        "value": "0"
+      }
+    },
+    "messageId": 19
+  }
+11:11:04.072 detox[50678] [90mi[39m send message
+  data: {"type":"invoke","params":{"type":"action","action":"tap","predicate":{"type":"id","value":"0"}},"messageId":19}
+11:11:04.072 detox[50678] [90mB[39m tap
+  data: {
+    "type": "action",
+    "action": "tap",
+    "predicate": {
+      "type": "id",
+      "value": "0"
+    }
+  }
+11:11:05.534 detox[50676] [90mi[39m get
+  data: {"messageId":19,"params":{},"type":"invokeResult"}
+11:11:05.534 detox[50676] [90mi[39m send
+  data: {
+    "messageId": 19,
+    "params": {},
+    "type": "invokeResult"
+  }
+11:11:05.535 detox[50678] [90mi[39m get message
+  data: {"messageId":19,"params":{},"type":"invokeResult"}
+   
+11:11:05.535 detox[50678] [90mE[39m tap
+11:11:06.036 detox[50678] [90mi[39m send message
+  data: {"type":"invoke","params":{"type":"action","action":"tap","predicate":{"type":"id","value":"0"}},"messageId":20}
+11:11:06.037 detox[50676] [90mi[39m get
+  data: {"type":"invoke","params":{"type":"action","action":"tap","predicate":{"type":"id","value":"0"}},"messageId":20}
+11:11:06.037 detox[50676] [90mi[39m send
+  data: {
+    "type": "invoke",
+    "params": {
+      "type": "action",
+      "action": "tap",
+      "predicate": {
+        "type": "id",
+        "value": "0"
+      }
+    },
+    "messageId": 20
+  }
+11:11:06.038 detox[50678] [90mB[39m tap
+  data: {
+    "type": "action",
+    "action": "tap",
+    "predicate": {
+      "type": "id",
+      "value": "0"
+    }
+  }
+11:11:07.503 detox[50676] [90mi[39m get
+  data: {"messageId":20,"params":{},"type":"invokeResult"}
+11:11:07.503 detox[50676] [90mi[39m send
+  data: {
+    "messageId": 20,
+    "params": {},
+    "type": "invokeResult"
+  }
+11:11:07.504 detox[50678] [90mi[39m get message
+  data: {"messageId":20,"params":{},"type":"invokeResult"}
+   
+11:11:07.504 detox[50678] [90mE[39m tap
+11:11:08.005 detox[50678] [90mi[39m send message
+  data: {"type":"invoke","params":{"type":"action","action":"tap","predicate":{"type":"id","value":"0"}},"messageId":21}
+11:11:08.006 detox[50676] [90mi[39m get
+  data: {"type":"invoke","params":{"type":"action","action":"tap","predicate":{"type":"id","value":"0"}},"messageId":21}
+11:11:08.006 detox[50676] [90mi[39m send
+  data: {
+    "type": "invoke",
+    "params": {
+      "type": "action",
+      "action": "tap",
+      "predicate": {
+        "type": "id",
+        "value": "0"
+      }
+    },
+    "messageId": 21
+  }
+11:11:08.006 detox[50678] [90mB[39m tap
+  data: {
+    "type": "action",
+    "action": "tap",
+    "predicate": {
+      "type": "id",
+      "value": "0"
+    }
+  }
+11:11:08.534 detox[50676] [90mi[39m get
+  data: {"messageId":21,"params":{},"type":"invokeResult"}
+11:11:08.534 detox[50676] [90mi[39m send
+  data: {
+    "messageId": 21,
+    "params": {},
+    "type": "invokeResult"
+  }
+11:11:08.535 detox[50678] [90mi[39m get message
+  data: {"messageId":21,"params":{},"type":"invokeResult"}
+   
+11:11:08.535 detox[50678] [90mE[39m tap
+11:11:09.036 detox[50678] [90mi[39m send message
+  data: {"type":"invoke","params":{"type":"action","action":"tap","predicate":{"type":"id","value":"0"}},"messageId":22}
+11:11:09.037 detox[50676] [90mi[39m get
+  data: {"type":"invoke","params":{"type":"action","action":"tap","predicate":{"type":"id","value":"0"}},"messageId":22}
+11:11:09.037 detox[50676] [90mi[39m send
+  data: {
+    "type": "invoke",
+    "params": {
+      "type": "action",
+      "action": "tap",
+      "predicate": {
+        "type": "id",
+        "value": "0"
+      }
+    },
+    "messageId": 22
+  }
+11:11:09.037 detox[50678] [90mB[39m tap
+  data: {
+    "type": "action",
+    "action": "tap",
+    "predicate": {
+      "type": "id",
+      "value": "0"
+    }
+  }
+11:11:09.569 detox[50676] [90mi[39m get
+  data: {"messageId":22,"params":{},"type":"invokeResult"}
+11:11:09.570 detox[50676] [90mi[39m send
+  data: {
+    "messageId": 22,
+    "params": {},
+    "type": "invokeResult"
+  }
+11:11:09.570 detox[50678] [90mi[39m get message
+  data: {"messageId":22,"params":{},"type":"invokeResult"}
+   
+11:11:09.570 detox[50678] [90mE[39m tap
+11:11:10.073 detox[50676] [90mi[39m get
+  data: {"type":"invoke","params":{"type":"action","action":"tap","predicate":{"type":"id","value":"0"}},"messageId":23}
+11:11:10.073 detox[50676] [90mi[39m send
+  data: {
+    "type": "invoke",
+    "params": {
+      "type": "action",
+      "action": "tap",
+      "predicate": {
+        "type": "id",
+        "value": "0"
+      }
+    },
+    "messageId": 23
+  }
+11:11:10.073 detox[50678] [90mi[39m send message
+  data: {"type":"invoke","params":{"type":"action","action":"tap","predicate":{"type":"id","value":"0"}},"messageId":23}
+11:11:10.073 detox[50678] [90mB[39m tap
+  data: {
+    "type": "action",
+    "action": "tap",
+    "predicate": {
+      "type": "id",
+      "value": "0"
+    }
+  }
+11:11:11.008 detox[50676] [90mi[39m get
+  data: {"params":{},"type":"invokeResult","messageId":23}
+11:11:11.008 detox[50676] [90mi[39m send
+  data: {
+    "params": {},
+    "type": "invokeResult",
+    "messageId": 23
+  }
+11:11:11.009 detox[50678] [90mi[39m get message
+  data: {"params":{},"type":"invokeResult","messageId":23}
+   
+11:11:11.009 detox[50678] [90mE[39m tap
+11:11:11.511 detox[50676] [90mi[39m get
+  data: {"type":"invoke","params":{"type":"action","action":"tap","atIndex":0,"predicate":{"type":"id","value":"checkbox_empty_svg"}},"messageId":24}
+11:11:11.511 detox[50678] [90mi[39m send message
+  data: {"type":"invoke","params":{"type":"action","action":"tap","atIndex":0,"predicate":{"type":"id","value":"checkbox_empty_svg"}},"messageId":24}
+11:11:11.511 detox[50678] [90mB[39m tap
+  data: {
+    "type": "action",
+    "action": "tap",
+    "atIndex": 0,
+    "predicate": {
+      "type": "id",
+      "value": "checkbox_empty_svg"
+    }
+  }
+11:11:11.512 detox[50676] [90mi[39m send
+  data: {
+    "type": "invoke",
+    "params": {
+      "type": "action",
+      "action": "tap",
+      "atIndex": 0,
+      "predicate": {
+        "type": "id",
+        "value": "checkbox_empty_svg"
+      }
+    },
+    "messageId": 24
+  }
+11:11:12.052 detox[50676] [90mi[39m get
+  data: {"messageId":24,"type":"invokeResult","params":{}}
+11:11:12.052 detox[50676] [90mi[39m send
+  data: {
+    "messageId": 24,
+    "type": "invokeResult",
+    "params": {}
+  }
+11:11:12.052 detox[50678] [90mi[39m get message
+  data: {"messageId":24,"type":"invokeResult","params":{}}
+   
+11:11:12.052 detox[50678] [90mE[39m tap
+11:11:12.053 detox[50676] [90mi[39m get
+  data: {"type":"invoke","params":{"type":"action","action":"tap","atIndex":0,"predicate":{"type":"id","value":"checkbox_empty_svg"}},"messageId":25}
+11:11:12.053 detox[50676] [90mi[39m send
+  data: {
+    "type": "invoke",
+    "params": {
+      "type": "action",
+      "action": "tap",
+      "atIndex": 0,
+      "predicate": {
+        "type": "id",
+        "value": "checkbox_empty_svg"
+      }
+    },
+    "messageId": 25
+  }
+11:11:12.053 detox[50678] [90mi[39m send message
+  data: {"type":"invoke","params":{"type":"action","action":"tap","atIndex":0,"predicate":{"type":"id","value":"checkbox_empty_svg"}},"messageId":25}
+11:11:12.053 detox[50678] [90mB[39m tap
+  data: {
+    "type": "action",
+    "action": "tap",
+    "atIndex": 0,
+    "predicate": {
+      "type": "id",
+      "value": "checkbox_empty_svg"
+    }
+  }
+11:11:12.586 detox[50676] [90mi[39m get
+  data: {"messageId":25,"params":{},"type":"invokeResult"}
+11:11:12.586 detox[50676] [90mi[39m send
+  data: {
+    "messageId": 25,
+    "params": {},
+    "type": "invokeResult"
+  }
+11:11:12.586 detox[50678] [90mi[39m get message
+  data: {"messageId":25,"params":{},"type":"invokeResult"}
+   
+11:11:12.586 detox[50678] [90mE[39m tap
+11:11:12.588 detox[50678] [90mi[39m send message
+  data: {"type":"invoke","params":{"type":"action","action":"tap","predicate":{"type":"text","value":"Next"}},"messageId":26}
+11:11:12.589 detox[50676] [90mi[39m get
+  data: {"type":"invoke","params":{"type":"action","action":"tap","predicate":{"type":"text","value":"Next"}},"messageId":26}
+11:11:12.589 detox[50676] [90mi[39m send
+  data: {
+    "type": "invoke",
+    "params": {
+      "type": "action",
+      "action": "tap",
+      "predicate": {
+        "type": "text",
+        "value": "Next"
+      }
+    },
+    "messageId": 26
+  }
+11:11:12.589 detox[50678] [90mB[39m tap
+  data: {
+    "type": "action",
+    "action": "tap",
+    "predicate": {
+      "type": "text",
+      "value": "Next"
+    }
+  }
+11:11:14.831 detox[50676] [90mi[39m get
+  data: {"messageId":26,"params":{},"type":"invokeResult"}
+11:11:14.831 detox[50676] [90mi[39m send
+  data: {
+    "messageId": 26,
+    "params": {},
+    "type": "invokeResult"
+  }
+11:11:14.832 detox[50678] [90mi[39m get message
+  data: {"messageId":26,"params":{},"type":"invokeResult"}
+   
+11:11:14.832 detox[50678] [90mE[39m tap
+11:11:14.835 detox[50676] [90mi[39m get
+  data: {"type":"invoke","params":{"type":"expectation","predicate":{"type":"text","value":"View All"},"atIndex":0,"expectation":"toBeVisible"},"messageId":27}
+11:11:14.835 detox[50678] [90mi[39m send message
+  data: {"type":"invoke","params":{"type":"expectation","predicate":{"type":"text","value":"View All"},"atIndex":0,"expectation":"toBeVisible"},"messageId":27}
+11:11:14.835 detox[50678] [90mB[39m expect element to be visible
+  data: {
+    "type": "expectation",
+    "predicate": {
+      "type": "text",
+      "value": "View All"
+    },
+    "atIndex": 0,
+    "expectation": "toBeVisible"
+  }
+11:11:14.836 detox[50676] [90mi[39m send
+  data: {
+    "type": "invoke",
+    "params": {
+      "type": "expectation",
+      "predicate": {
+        "type": "text",
+        "value": "View All"
+      },
+      "atIndex": 0,
+      "expectation": "toBeVisible"
+    },
+    "messageId": 27
+  }
+11:11:15.006 detox[50676] [90mi[39m get
+  data: {"params":{},"type":"invokeResult","messageId":27}
+11:11:15.007 detox[50676] [90mi[39m send
+  data: {
+    "params": {},
+    "type": "invokeResult",
+    "messageId": 27
+  }
+11:11:15.007 detox[50678] [90mi[39m get message
+  data: {"params":{},"type":"invokeResult","messageId":27}
+   
+11:11:15.007 detox[50678] [90mE[39m expect element to be visible
+11:11:15.009 detox[50676] [90mi[39m get
+  data: {"type":"invoke","params":{"type":"expectation","predicate":{"type":"text","value":"Favorites"},"atIndex":0,"expectation":"toBeVisible"},"messageId":28}
+11:11:15.009 detox[50676] [90mi[39m send
+  data: {
+    "type": "invoke",
+    "params": {
+      "type": "expectation",
+      "predicate": {
+        "type": "text",
+        "value": "Favorites"
+      },
+      "atIndex": 0,
+      "expectation": "toBeVisible"
+    },
+    "messageId": 28
+  }
+11:11:15.009 detox[50678] [90mi[39m send message
+  data: {"type":"invoke","params":{"type":"expectation","predicate":{"type":"text","value":"Favorites"},"atIndex":0,"expectation":"toBeVisible"},"messageId":28}
+11:11:15.009 detox[50678] [90mB[39m expect element to be visible
+  data: {
+    "type": "expectation",
+    "predicate": {
+      "type": "text",
+      "value": "Favorites"
+    },
+    "atIndex": 0,
+    "expectation": "toBeVisible"
+  }
+11:11:15.071 detox[50676] [90mi[39m get
+  data: {"params":{},"type":"invokeResult","messageId":28}
+11:11:15.071 detox[50676] [90mi[39m send
+  data: {
+    "params": {},
+    "type": "invokeResult",
+    "messageId": 28
+  }
+11:11:15.071 detox[50678] [90mi[39m get message
+  data: {"params":{},"type":"invokeResult","messageId":28}
+   
+11:11:15.071 detox[50678] [90mE[39m expect element to be visible
+11:11:15.072 detox[50676] [90mi[39m get
+  data: {"type":"invoke","params":{"type":"expectation","predicate":{"type":"text","value":"Networks"},"atIndex":0,"expectation":"toBeVisible"},"messageId":29}
+11:11:15.072 detox[50676] [90mi[39m send
+  data: {
+    "type": "invoke",
+    "params": {
+      "type": "expectation",
+      "predicate": {
+        "type": "text",
+        "value": "Networks"
+      },
+      "atIndex": 0,
+      "expectation": "toBeVisible"
+    },
+    "messageId": 29
+  }
+11:11:15.072 detox[50678] [90mi[39m send message
+  data: {"type":"invoke","params":{"type":"expectation","predicate":{"type":"text","value":"Networks"},"atIndex":0,"expectation":"toBeVisible"},"messageId":29}
+11:11:15.072 detox[50678] [90mB[39m expect element to be visible
+  data: {
+    "type": "expectation",
+    "predicate": {
+      "type": "text",
+      "value": "Networks"
+    },
+    "atIndex": 0,
+    "expectation": "toBeVisible"
+  }
+11:11:15.135 detox[50676] [90mi[39m get
+  data: {"params":{},"type":"invokeResult","messageId":29}
+11:11:15.135 detox[50676] [90mi[39m send
+  data: {
+    "params": {},
+    "type": "invokeResult",
+    "messageId": 29
+  }
+11:11:15.135 detox[50678] [90mi[39m get message
+  data: {"params":{},"type":"invokeResult","messageId":29}
+   
+11:11:15.135 detox[50678] [90mE[39m expect element to be visible
+11:11:15.136 detox[50676] [90mi[39m get
+  data: {"type":"invoke","params":{"type":"expectation","predicate":{"type":"text","value":"Assets"},"atIndex":0,"expectation":"toBeVisible"},"messageId":30}
+11:11:15.136 detox[50676] [90mi[39m send
+  data: {
+    "type": "invoke",
+    "params": {
+      "type": "expectation",
+      "predicate": {
+        "type": "text",
+        "value": "Assets"
+      },
+      "atIndex": 0,
+      "expectation": "toBeVisible"
+    },
+    "messageId": 30
+  }
+11:11:15.136 detox[50678] [90mi[39m send message
+  data: {"type":"invoke","params":{"type":"expectation","predicate":{"type":"text","value":"Assets"},"atIndex":0,"expectation":"toBeVisible"},"messageId":30}
+11:11:15.136 detox[50678] [90mB[39m expect element to be visible
+  data: {
+    "type": "expectation",
+    "predicate": {
+      "type": "text",
+      "value": "Assets"
+    },
+    "atIndex": 0,
+    "expectation": "toBeVisible"
+  }
+11:11:15.214 detox[50676] [90mi[39m get
+  data: {"params":{},"type":"invokeResult","messageId":30}
+11:11:15.214 detox[50676] [90mi[39m send
+  data: {
+    "params": {},
+    "type": "invokeResult",
+    "messageId": 30
+  }
+11:11:15.214 detox[50678] [90mi[39m get message
+  data: {"params":{},"type":"invokeResult","messageId":30}
+   
+11:11:15.214 detox[50678] [90mE[39m expect element to be visible
+11:11:15.216 detox[50676] [90mi[39m get
+  data: {"type":"invoke","params":{"type":"expectation","predicate":{"type":"text","value":"Collectibles"},"atIndex":0,"expectation":"toBeVisible"},"messageId":31}
+11:11:15.216 detox[50676] [90mi[39m send
+  data: {
+    "type": "invoke",
+    "params": {
+      "type": "expectation",
+      "predicate": {
+        "type": "text",
+        "value": "Collectibles"
+      },
+      "atIndex": 0,
+      "expectation": "toBeVisible"
+    },
+    "messageId": 31
+  }
+11:11:15.216 detox[50678] [90mi[39m send message
+  data: {"type":"invoke","params":{"type":"expectation","predicate":{"type":"text","value":"Collectibles"},"atIndex":0,"expectation":"toBeVisible"},"messageId":31}
+11:11:15.216 detox[50678] [90mB[39m expect element to be visible
+  data: {
+    "type": "expectation",
+    "predicate": {
+      "type": "text",
+      "value": "Collectibles"
+    },
+    "atIndex": 0,
+    "expectation": "toBeVisible"
+  }
+11:11:15.286 detox[50676] [90mi[39m get
+  data: {"params":{},"type":"invokeResult","messageId":31}
+11:11:15.286 detox[50676] [90mi[39m send
+  data: {
+    "params": {},
+    "type": "invokeResult",
+    "messageId": 31
+  }
+11:11:15.287 detox[50678] [90mi[39m get message
+  data: {"params":{},"type":"invokeResult","messageId":31}
+   
+11:11:15.287 detox[50678] [90mE[39m expect element to be visible
+11:11:15.289 detox[50676] [90mi[39m get
+  data: {"type":"invoke","params":{"type":"expectation","predicate":{"type":"id","value":"navutils_normal_tab_button__portfolio"},"atIndex":0,"expectation":"toBeVisible"},"messageId":32}
+11:11:15.289 detox[50676] [90mi[39m send
+  data: {
+    "type": "invoke",
+    "params": {
+      "type": "expectation",
+      "predicate": {
+        "type": "id",
+        "value": "navutils_normal_tab_button__portfolio"
+      },
+      "atIndex": 0,
+      "expectation": "toBeVisible"
+    },
+    "messageId": 32
+  }
+11:11:15.289 detox[50678] [90mi[39m send message
+  data: {"type":"invoke","params":{"type":"expectation","predicate":{"type":"id","value":"navutils_normal_tab_button__portfolio"},"atIndex":0,"expectation":"toBeVisible"},"messageId":32}
+11:11:15.289 detox[50678] [90mB[39m expect element to be visible
+  data: {
+    "type": "expectation",
+    "predicate": {
+      "type": "id",
+      "value": "navutils_normal_tab_button__portfolio"
+    },
+    "atIndex": 0,
+    "expectation": "toBeVisible"
+  }
+11:11:15.333 detox[50676] [90mi[39m get
+  data: {"type":"invokeResult","messageId":32,"params":{}}
+11:11:15.334 detox[50676] [90mi[39m send
+  data: {
+    "type": "invokeResult",
+    "messageId": 32,
+    "params": {}
+  }
+11:11:15.334 detox[50678] [90mi[39m get message
+  data: {"type":"invokeResult","messageId":32,"params":{}}
+   
+11:11:15.334 detox[50678] [90mE[39m expect element to be visible
+11:11:15.334 detox[50678] [90mi[39m send message
+  data: {"type":"invoke","params":{"type":"expectation","predicate":{"type":"id","value":"navutils_normal_tab_button__activity"},"atIndex":0,"expectation":"toBeVisible"},"messageId":33}
+11:11:15.335 detox[50676] [90mi[39m get
+  data: {"type":"invoke","params":{"type":"expectation","predicate":{"type":"id","value":"navutils_normal_tab_button__activity"},"atIndex":0,"expectation":"toBeVisible"},"messageId":33}
+11:11:15.335 detox[50676] [90mi[39m send
+  data: {
+    "type": "invoke",
+    "params": {
+      "type": "expectation",
+      "predicate": {
+        "type": "id",
+        "value": "navutils_normal_tab_button__activity"
+      },
+      "atIndex": 0,
+      "expectation": "toBeVisible"
+    },
+    "messageId": 33
+  }
+11:11:15.336 detox[50678] [90mB[39m expect element to be visible
+  data: {
+    "type": "expectation",
+    "predicate": {
+      "type": "id",
+      "value": "navutils_normal_tab_button__activity"
+    },
+    "atIndex": 0,
+    "expectation": "toBeVisible"
+  }
+11:11:15.392 detox[50676] [90mi[39m get
+  data: {"type":"invokeResult","messageId":33,"params":{}}
+11:11:15.392 detox[50676] [90mi[39m send
+  data: {
+    "type": "invokeResult",
+    "messageId": 33,
+    "params": {}
+  }
+11:11:15.393 detox[50678] [90mi[39m get message
+  data: {"type":"invokeResult","messageId":33,"params":{}}
+   
+11:11:15.393 detox[50678] [90mE[39m expect element to be visible
+11:11:15.393 detox[50678] [90mi[39m send message
+  data: {"type":"invoke","params":{"type":"expectation","predicate":{"type":"id","value":"navutils_normal_tab_button__watchlist"},"atIndex":0,"expectation":"toBeVisible"},"messageId":34}
+11:11:15.394 detox[50676] [90mi[39m get
+  data: {"type":"invoke","params":{"type":"expectation","predicate":{"type":"id","value":"navutils_normal_tab_button__watchlist"},"atIndex":0,"expectation":"toBeVisible"},"messageId":34}
+11:11:15.394 detox[50676] [90mi[39m send
+  data: {
+    "type": "invoke",
+    "params": {
+      "type": "expectation",
+      "predicate": {
+        "type": "id",
+        "value": "navutils_normal_tab_button__watchlist"
+      },
+      "atIndex": 0,
+      "expectation": "toBeVisible"
+    },
+    "messageId": 34
+  }
+11:11:15.394 detox[50678] [90mB[39m expect element to be visible
+  data: {
+    "type": "expectation",
+    "predicate": {
+      "type": "id",
+      "value": "navutils_normal_tab_button__watchlist"
+    },
+    "atIndex": 0,
+    "expectation": "toBeVisible"
+  }
+11:11:15.447 detox[50676] [90mi[39m get
+  data: {"params":{},"type":"invokeResult","messageId":34}
+11:11:15.447 detox[50676] [90mi[39m send
+  data: {
+    "params": {},
+    "type": "invokeResult",
+    "messageId": 34
+  }
+11:11:15.447 detox[50678] [90mi[39m get message
+  data: {"params":{},"type":"invokeResult","messageId":34}
+   
+11:11:15.447 detox[50678] [90mE[39m expect element to be visible
+11:11:15.448 detox[50676] [90mi[39m get
+  data: {"type":"invoke","params":{"type":"expectation","predicate":{"type":"id","value":"navutils_normal_tab_button__bridge"},"atIndex":0,"expectation":"toBeVisible"},"messageId":35}
+11:11:15.448 detox[50676] [90mi[39m send
+  data: {
+    "type": "invoke",
+    "params": {
+      "type": "expectation",
+      "predicate": {
+        "type": "id",
+        "value": "navutils_normal_tab_button__bridge"
+      },
+      "atIndex": 0,
+      "expectation": "toBeVisible"
+    },
+    "messageId": 35
+  }
+11:11:15.448 detox[50678] [90mi[39m send message
+  data: {"type":"invoke","params":{"type":"expectation","predicate":{"type":"id","value":"navutils_normal_tab_button__bridge"},"atIndex":0,"expectation":"toBeVisible"},"messageId":35}
+11:11:15.448 detox[50678] [90mB[39m expect element to be visible
+  data: {
+    "type": "expectation",
+    "predicate": {
+      "type": "id",
+      "value": "navutils_normal_tab_button__bridge"
+    },
+    "atIndex": 0,
+    "expectation": "toBeVisible"
+  }
+11:11:15.496 detox[50676] [90mi[39m get
+  data: {"messageId":35,"type":"invokeResult","params":{}}
+11:11:15.496 detox[50676] [90mi[39m send
+  data: {
+    "messageId": 35,
+    "type": "invokeResult",
+    "params": {}
+  }
+11:11:15.496 detox[50678] [90mi[39m get message
+  data: {"messageId":35,"type":"invokeResult","params":{}}
+   
+11:11:15.496 detox[50678] [90mE[39m expect element to be visible
+11:11:15.497 detox[50676] [90mi[39m get
+  data: {"type":"invoke","params":{"type":"expectation","predicate":{"type":"id","value":"watchlistSVG"},"atIndex":0,"expectation":"toBeVisible"},"messageId":36}
+11:11:15.497 detox[50676] [90mi[39m send
+  data: {
+    "type": "invoke",
+    "params": {
+      "type": "expectation",
+      "predicate": {
+        "type": "id",
+        "value": "watchlistSVG"
+      },
+      "atIndex": 0,
+      "expectation": "toBeVisible"
+    },
+    "messageId": 36
+  }
+11:11:15.497 detox[50678] [90mi[39m send message
+  data: {"type":"invoke","params":{"type":"expectation","predicate":{"type":"id","value":"watchlistSVG"},"atIndex":0,"expectation":"toBeVisible"},"messageId":36}
+11:11:15.497 detox[50678] [90mB[39m expect element to be visible
+  data: {
+    "type": "expectation",
+    "predicate": {
+      "type": "id",
+      "value": "watchlistSVG"
+    },
+    "atIndex": 0,
+    "expectation": "toBeVisible"
+  }
+11:11:15.545 detox[50676] [90mi[39m get
+  data: {"params":{},"type":"invokeResult","messageId":36}
+11:11:15.545 detox[50676] [90mi[39m send
+  data: {
+    "params": {},
+    "type": "invokeResult",
+    "messageId": 36
+  }
+11:11:15.546 detox[50678] [90mi[39m get message
+  data: {"params":{},"type":"invokeResult","messageId":36}
+   
+11:11:15.546 detox[50678] [90mE[39m expect element to be visible
+11:11:15.546 detox[50678] [90mE[39m test_fn
+11:11:15.547 detox[50678] [90mB[39m onTestDone
+  args: ({"title":"should successfully add an existing wallet","fullName":"Add existing wallet should successfully add an existing wallet","status":"passed","invocations":1})
+11:11:15.548 detox[50676] [90mi[39m get
+  data: {"type":"setRecordingState","params":{},"messageId":37}
+11:11:15.548 detox[50676] [90mi[39m send
+  data: {
+    "type": "setRecordingState",
+    "params": {},
+    "messageId": 37
+  }
+11:11:15.548 detox[50678] [90mi[39m stopping SimulatorInstrumentsRecording
+11:11:15.548 detox[50678] [90mi[39m send message
+  data: {"type":"setRecordingState","params":{},"messageId":37}
+11:11:15.549 detox[50676] [90mi[39m get
+  data: {"params":{},"type":"setRecordingStateDone","messageId":37}
+11:11:15.549 detox[50676] [90mi[39m send
+  data: {
+    "params": {},
+    "type": "setRecordingStateDone",
+    "messageId": 37
+  }
+11:11:15.549 detox[50678] [90mi[39m get message
+  data: {"params":{},"type":"setRecordingStateDone","messageId":37}
+   
+11:11:15.553 detox[50678] [90mi[39m stopping SimulatorLogRecording
+11:11:15.554 detox[50678] [90mi[39m saving SimulatorInstrumentsRecording to: e2e/artifacts/ios.internal.debug.2023-01-13 19-10-29Z/✓ Add existing wallet should successfully add an existing wallet/test.dtxrec
+11:11:15.554 detox[50678] [90mi[39m did not find temporary file: /private/var/folders/1g/l3_h_m594337d9nfq8q1ws4w0000gn/T/41a9048d-71e1-48c6-80ca-a070a18f8e7c.detox.dtxrec
+11:11:15.555 detox[50678] [90mi[39m Make sure either:
+1. You have installed Detox Instruments:
+   https://github.com/wix/DetoxInstruments#installation
+2. You have integrated Detox Instruments in your app:
+   https://github.com/wix/DetoxInstruments/blob/master/Documentation/XcodeIntegrationGuide.md
+3. You have set the environment variable with your custom Detox Instruments location:
+   export DETOX_INSTRUMENTS_PATH="/path/to/Detox Instruments.app"
+11:11:15.606 detox[50678] [90mi[39m sending SIGINT to: /usr/bin/xcrun simctl spawn F875505B-B6AE-445A-83C5-DDA0B4489670 log stream --level debug --style compact --predicate processImagePath beginsWith "/Users/tyler.hackett/Library/Developer/CoreSimulator/Devices/F875505B-B6AE-445A-83C5-DDA0B4489670/data/Containers/Bundle/Application/F70A50C0-A17C-4335-961B-F7E6E92DD320/AvaxWallet.app"
+11:11:15.621 detox[50678] [90mi[39m /usr/bin/xcrun simctl spawn F875505B-B6AE-445A-83C5-DDA0B4489670 log stream --level debug --style compact --predicate "processImagePath beginsWith \"/Users/tyler.hackett/Library/Developer/CoreSimulator/Devices/F875505B-B6AE-445A-83C5-DDA0B4489670/data/Containers/Bundle/Application/F70A50C0-A17C-4335-961B-F7E6E92DD320/AvaxWallet.app\"" exited with code #0
+11:11:15.621 detox[50678] [90mE[39m onTestDone
+11:11:15.622 detox[50678] [90mE[39m should successfully add an existing wallet
+11:11:15.622 detox[50678] [90mi[39m Add existing wallet: should successfully add an existing wallet [OK]
+11:11:15.627 detox[50678] [90mB[39m onRunDescribeFinish
+  args: ({"name":"Add existing wallet"})
+11:11:15.627 detox[50678] [90mE[39m onRunDescribeFinish
+11:11:15.627 detox[50678] [90mE[39m Add existing wallet
+11:11:15.628 detox[50678] [90mB[39m afterAll
+11:11:15.629 detox[50678] [90mE[39m afterAll
+11:11:15.629 detox[50678] [90mB[39m onRunDescribeFinish
+  args: ({"name":"ROOT_DESCRIBE_BLOCK"})
+11:11:15.629 detox[50678] [90mE[39m onRunDescribeFinish
+11:11:15.629 detox[50678] [90mE[39m run the tests
+11:11:15.633 detox[50678] [90mB[39m tear down environment
+11:11:15.633 detox[50678] [90mB[39m onBeforeCleanup
+  args: ()
+11:11:15.636 detox[50678] [90mi[39m saving SimulatorLogRecording to: e2e/artifacts/ios.internal.debug.2023-01-13 19-10-29Z/✓ Add existing wallet should successfully add an existing wallet/device.log
+11:11:15.640 detox[50678] [90mi[39m moving "/private/var/folders/1g/l3_h_m594337d9nfq8q1ws4w0000gn/T/3df25035-f554-45f9-b454-91ab14939a49.detox.log" to e2e/artifacts/ios.internal.debug.2023-01-13 19-10-29Z/✓ Add existing wallet should successfully add an existing wallet/device.log
+11:11:15.641 detox[50678] [90mi[39m saving SimulatorLogRecording to: e2e/artifacts/ios.internal.debug.2023-01-13 19-10-29Z/F875505B-B6AE-445A-83C5-DDA0B4489670 2023-01-13 19-11-15Z.startup.log
+11:11:15.641 detox[50678] [90mi[39m moving "/private/var/folders/1g/l3_h_m594337d9nfq8q1ws4w0000gn/T/dcdc5a54-49fe-43c0-a46b-7b3b7686f5c6.detox.log" to e2e/artifacts/ios.internal.debug.2023-01-13 19-10-29Z/F875505B-B6AE-445A-83C5-DDA0B4489670 2023-01-13 19-11-15Z.startup.log
+11:11:15.642 detox[50678] [90mi[39m saving FileArtifact to: e2e/artifacts/ios.internal.debug.2023-01-13 19-10-29Z/detox_pid_50678.json.log { append: true }
+11:11:15.642 detox[50678] [90mi[39m saving FileArtifact to: e2e/artifacts/ios.internal.debug.2023-01-13 19-10-29Z/detox_pid_50678.log { append: true }
+11:11:15.643 detox[50678] [90mE[39m onBeforeCleanup
+11:11:15.644 detox[50678] [90mi[39m send message
+  data: {"type":"cleanup","params":{"stopRunner":true},"messageId":-49642}
+11:11:15.645 detox[50676] [90mi[39m get
+  data: {"type":"cleanup","params":{"stopRunner":true},"messageId":-49642}
+11:11:15.645 detox[50676] [90mi[39m send
+  data: {
+    "type": "cleanup",
+    "params": {
+      "stopRunner": true
+    },
+    "messageId": -49642
+  }
+11:11:15.646 detox[50676] [90mi[39m get
+  data: {"type":"cleanupDone","messageId":-49642,"params":{}}
+11:11:15.646 detox[50676] [90mi[39m send
+  data: {
+    "type": "cleanupDone",
+    "messageId": -49642,
+    "params": {}
+  }
+11:11:15.646 detox[50678] [90mi[39m get message
+  data: {"type":"cleanupDone","messageId":-49642,"params":{}}
+   
+11:11:15.650 detox[50676] [90mi[39m tester exited session 42d08604-a0a3-db99-773e-a406bb9e5041
+11:11:15.651 detox[50676] [90mi[39m send
+  data: {
+    "type": "testerDisconnected",
+    "messageId": -1
+  }
+11:11:15.651 detox[50676] [90mE[39m connection :62804<->:62819
+11:11:15.651 detox[50678] [90mB[39m free
+  args: ({"udid":"F875505B-B6AE-445A-83C5-DDA0B4489670"}, {"shutdown":false})
+11:11:15.654 detox[50678] [90mE[39m free
+11:11:15.655 detox[50678] [90mE[39m tear down environment
+11:11:15.655 detox[50678] [90mE[39m e2e/tests/login/recoverWallet.e2e.ts
+11:11:15.667 detox[50678] [90mi[39m dispatching event to  primary-50676 /tmp/detox.primary-50676  :  reportTestResults , {
+  testResults: [
+    {
+      success: true,
+      testFilePath: '/Users/tyler.hackett/avalanche-wallet-apps/e2e/tests/login/recoverWallet.e2e.ts',
+      testExecError: undefined,
+      isPermanentFailure: false
+    }
+  ]
+}
+11:11:15.668 detox[50676] [90mi[39m received event of :  reportTestResults {
+  testResults: [
+    {
+      success: true,
+      testFilePath: '/Users/tyler.hackett/avalanche-wallet-apps/e2e/tests/login/recoverWallet.e2e.ts',
+      isPermanentFailure: false
+    }
+  ]
+}
+11:11:15.669 detox[50676] [90mi[39m dispatching event to socket  :  reportTestResultsDone {
+  testResults: [
+    {
+      success: true,
+      testFilePath: '/Users/tyler.hackett/avalanche-wallet-apps/e2e/tests/login/recoverWallet.e2e.ts',
+      isPermanentFailure: false
+    }
+  ]
+}
+11:11:15.669 detox[50676] [90mi[39m broadcasting event to all known sockets listening to  /tmp/detox.primary-50676  :   sessionStateUpdate {
+  testResults: [
+    {
+      success: true,
+      testFilePath: '/Users/tyler.hackett/avalanche-wallet-apps/e2e/tests/login/recoverWallet.e2e.ts',
+      isPermanentFailure: false
+    }
+  ]
+}
+11:11:15.669 detox[50678] [90mi[39m ## received events ##
+11:11:15.669 detox[50678] [90mi[39m detected event reportTestResultsDone {
+  testResults: [
+    {
+      success: true,
+      testFilePath: '/Users/tyler.hackett/avalanche-wallet-apps/e2e/tests/login/recoverWallet.e2e.ts',
+      isPermanentFailure: false
+    }
+  ]
+}
+11:11:15.672 detox[50676] [90mi[39m socket disconnected secondary-50678
+11:11:15.672 detox[50678] [90mi[39m connection closed primary-50676 /tmp/detox.primary-50676 0 tries remaining of 0
+11:11:15.672 detox[50678] [90mi[39m secondary-50678 exceeded connection rety amount of  or stopRetrying flag set.
+11:11:16.675 detox[50678] [90mi[39m Jest did not exit one second after the test run has completed.
+
+This usually means that there are asynchronous operations that weren't stopped in your tests. Consider running Jest with `--detectOpenHandles` to troubleshoot this issue.
+11:11:17.025 detox[50678] [90mi[39m ["test section name","login","networks","activity","plusIcon","watchlist","bridge","portfolio","settings","activityTab","Add existing wallet"] test rail section names!!!
+11:11:17.026 detox[50678] [90mi[39m [] these are the new sections!!!
+11:11:17.402 detox[50678] [90mi[39m Theres probably no subsection to add...
+11:11:19.089 detox[50678] [90mi[39m Test cases have been sent to the test run...
+11:11:19.529 detox[50676] [90mE[39m jest --config e2e/config.json recoverWallet
+11:11:19.530 detox[50676] [90mi[39m Detox server has been closed gracefully
+11:11:19.531 detox[50676] [90mi[39m app exited session 42d08604-a0a3-db99-773e-a406bb9e5041
+11:11:19.531 detox[50676] [90mE[39m connection :62804<->:62963
+11:11:19.532 detox[50676] [90mE[39m node_modules/.bin/detox test recoverWallet -c ios.internal.debug -a ./e2e/artifacts
