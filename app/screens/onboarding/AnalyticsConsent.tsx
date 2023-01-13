@@ -3,7 +3,7 @@ import FlexSpacer from 'components/FlexSpacer'
 import AvaButton from 'components/AvaButton'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
-import { Linking, View } from 'react-native'
+import { Linking, ScrollView } from 'react-native'
 import AppNavigation from 'navigation/AppNavigation'
 import { Row } from 'components/Row'
 import CheckmarkSVG from 'components/svg/CheckmarkSVG'
@@ -43,7 +43,12 @@ const AnalyticsConsent = ({ onNextScreen, nextScreen }: Props) => {
   }
 
   return (
-    <View style={{ flex: 1, paddingHorizontal: 16, paddingBottom: 32 }}>
+    <ScrollView
+      contentContainerStyle={{
+        minHeight: '100%',
+        paddingHorizontal: 16,
+        paddingBottom: 32
+      }}>
       <AvaText.LargeTitleBold>Help Us Improve</AvaText.LargeTitleBold>
       <Space y={23} />
       <AvaText.Body1>
@@ -62,6 +67,7 @@ const AnalyticsConsent = ({ onNextScreen, nextScreen }: Props) => {
         </AvaText.Body1>
         . You can always opt out by visiting the settings page.
       </AvaText.Body1>
+      <Space y={24} />
       <FlexSpacer />
       <AvaText.Heading2 textStyle={{ alignSelf: 'center' }}>
         Core will...
@@ -100,6 +106,7 @@ const AnalyticsConsent = ({ onNextScreen, nextScreen }: Props) => {
         </AvaText.Body1>
       </Row>
       <FlexSpacer />
+      <Space y={24} />
       <AvaButton.SecondaryLarge onPress={acceptAnalytics} testID="iAgreeBtn">
         I Agree
       </AvaButton.SecondaryLarge>
@@ -107,7 +114,7 @@ const AnalyticsConsent = ({ onNextScreen, nextScreen }: Props) => {
       <AvaButton.SecondaryLarge onPress={rejectAnalytics} testID="noThanksBtn">
         No Thanks
       </AvaButton.SecondaryLarge>
-    </View>
+    </ScrollView>
   )
 }
 

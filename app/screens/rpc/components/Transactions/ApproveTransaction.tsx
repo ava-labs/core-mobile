@@ -23,7 +23,6 @@ export function ApproveTransaction({
   gasLimit,
   onCustomFeeSet,
   hash,
-  error,
   selectedGasFee,
   setShowCustomSpendLimit,
   setShowTxData,
