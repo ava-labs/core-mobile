@@ -1,6 +1,0 @@
-Filtering the log data using "processImagePath BEGINSWITH "/Users/tyler.hackett/Library/Developer/CoreSimulator/Devices/F875505B-B6AE-445A-83C5-DDA0B4489670/data/Containers/Bundle/Application/89E6ED1B-7B47-474E-B4BD-E852463621A8/AvaxWallet.app""
-Timestamp               Ty Process[PID:TID]
-2023-01-13 11:23:52.900 Db AvaxWallet[52267:1d2c630] [com.apple.network.libinfo:si_destination_compare] no preference, equal min rtt 1.000000
-2023-01-13 11:23:52.900 Db AvaxWallet[52267:1d2c630] [com.apple.network.libinfo:si_destination_compare] Rule 6, prefer d2, d2 precedence 50 > d1 precedence 35
-2023-01-13 11:23:52.900 Db AvaxWallet[52267:1d2c630] [com.apple.network.libinfo:si_destination_compare] 127.0.0.1:9089@0 < ::1.9089@0
-
