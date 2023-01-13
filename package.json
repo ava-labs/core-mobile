@@ -156,7 +156,7 @@
     "rollup": "1.12.0",
     "storybook-addon-state": "1.0.3",
     "stream-browserify": "1.0.0",
-    "ts-jest": "^29.0.3",
+    "ts-jest": "29.0.3",
     "url": "0.11.0",
     "url-parse": "1.5.9",
     "uuid": "8.3.2",

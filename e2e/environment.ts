@@ -1,11 +1,6 @@
-import setupTestRun from '../e2e/setup'
+export {}
 
 const { DetoxCircusEnvironment } = require('detox/runners/jest')
-
-// type Event = {
-//   test: { parent: { name: string } }
-//   name: string
-// }
 
 class CustomDetoxEnvironment extends DetoxCircusEnvironment {
   constructor(
@@ -21,7 +16,6 @@ class CustomDetoxEnvironment extends DetoxCircusEnvironment {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async setup(config: any, context: any) {
     await super.setup(config, context)
-    setupTestRun()
   }
 }
 
