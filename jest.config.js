@@ -13,5 +13,3 @@ module.exports = async () => {
     await require('detox/runners/jest/index').globalTeardown()
   }
 }
-
-
