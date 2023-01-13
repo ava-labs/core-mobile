@@ -51,7 +51,6 @@ describe('Activity Tab', () => {
       ActivityTabPage.selectFilterDropdown,
       'Display: Incoming'
     )
-    await ActivityTabPage.tapArrowIcon(1)
     await Assert.isVisible(TransactionDetailsPage.viewOnExplorerButton)
     await Assert.isVisible(TransactionDetailsPage.status)
     await Assert.isVisible(TransactionDetailsPage.transactionType)

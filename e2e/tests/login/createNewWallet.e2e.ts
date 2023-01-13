@@ -48,7 +48,7 @@ describe('Create new wallet', () => {
   })
 
   it('should successfully create a new wallet', async () => {
-    //await CreatePinPage.createPin()
+    await CreatePinPage.createPin()
     await CreatePinPage.tapEmptyCheckbox()
     await CreatePinPage.tapNextBtn()
     await PortfolioPage.verifyPorfolioScreen()
