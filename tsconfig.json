@@ -25,7 +25,7 @@
   ],
   "include": [
     "**/*.ts",
-    "**/*.tsx", "*.d.ts",
+    "**/*.tsx", "*.d.ts", "jest.config.js",
   ],
   "typeAcquisition": {"include": ["jest", "detox"]}
 }
