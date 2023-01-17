@@ -14,7 +14,10 @@ module.exports = {
           '.ios.js',
           '.ios.tsx'
         ],
-        root: ['./app']
+        root: ['./app'],
+        alias: {
+          tests: './tests'
+        }
       }
     ],
     'react-require',
