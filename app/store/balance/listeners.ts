@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid'
 import { Network } from '@avalabs/chains-sdk'
 import { isAnyOf, TaskAbortError } from '@reduxjs/toolkit'
 import BalanceService from 'services/balance/BalanceService'
@@ -163,7 +164,8 @@ const fetchBalancePeriodically = async (
   onBalanceUpdate(QueryStatus.LOADING, listenerApi, false)
 
   const pollingTask = listenerApi.fork(async forkApi => {
-    Logger.info('start periodic polling of balance')
+    const taskId = uuidv4().slice(0, 8)
+    Logger.info(`started task ${taskId}`, 'fetch balance periodically')
 
     let intervalCount = 1
 
@@ -191,7 +193,7 @@ const fetchBalancePeriodically = async (
     } catch (err) {
       if (err instanceof TaskAbortError) {
         // task got cancelled or the listener got cancelled
-        Logger.info('stop periodic polling of balance')
+        Logger.info(`stopped task ${taskId}`)
       }
     }
   })

@@ -14,6 +14,9 @@
     "strict": true,
     "target": "ES2020",
     "baseUrl": "./app",
+    "paths": {
+      "tests/*": ["../tests/*"],
+    },
     "noUnusedLocals": true,
     "noFallthroughCasesInSwitch": true,
     "pretty": true,

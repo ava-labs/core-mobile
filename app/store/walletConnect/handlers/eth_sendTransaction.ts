@@ -31,7 +31,6 @@ export type TransactionParams = {
 
 export interface EthSendTransactionRpcRequest
   extends DappRpcRequest<RpcMethod.ETH_SEND_TRANSACTION, TransactionParams[]> {
-  transaction?: Transaction | null
   result?: string
   error?: Error
 }
@@ -57,7 +56,10 @@ class EthSendTransactionHandler
 
   onApprove = async (
     action: PayloadAction<
-      { request: EthSendTransactionRpcRequest; result?: unknown },
+      {
+        request: EthSendTransactionRpcRequest
+        data?: unknown
+      },
       string
     >,
     listenerApi: AppListenerEffectAPI
@@ -68,8 +70,10 @@ class EthSendTransactionHandler
     const activeAccount = selectActiveAccount(state)
     const networkFees = selectNetworkFee(state)
 
-    const params = (action.payload.result as Transaction)?.txParams
-    if (!activeAccount || !activeNetwork || !params) {
+    const transaction = action.payload.data as Transaction | undefined
+    const params = transaction?.txParams
+
+    if (!activeAccount || !activeNetwork || !transaction || !params) {
       return Promise.reject({ error: 'not ready' })
     }
 
@@ -99,7 +103,6 @@ class EthSendTransactionHandler
           dispatch(
             updateRequest({
               ...action.payload.request,
-              transaction: action.payload.result as Transaction,
               result: resultHash
             })
           )
@@ -115,7 +118,6 @@ class EthSendTransactionHandler
           dispatch(
             updateRequest({
               ...action.payload.request,
-              transaction: action.payload.result as Transaction,
               error: e
             })
           )
@@ -134,4 +136,5 @@ class EthSendTransactionHandler
     })
   }
 }
+
 export const ethSendTransactionHandler = new EthSendTransactionHandler()

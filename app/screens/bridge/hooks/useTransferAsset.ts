@@ -4,7 +4,6 @@ import {
   EthereumConfigAsset,
   NativeAsset,
   transferAsset as transferAssetSDK,
-  useBridgeConfig,
   useBridgeSDK,
   WrapStatus
 } from '@avalabs/bridge-sdk'
@@ -19,6 +18,7 @@ import {
   useAvalancheProvider,
   useEthereumProvider
 } from 'hooks/networkProviderHooks'
+import { selectBridgeAppConfig, selectBridgeCriticalConfig } from 'store/bridge'
 import { blockchainToNetwork } from '../utils/bridgeUtils'
 
 const events = new EventEmitter()
@@ -29,8 +29,9 @@ const events = new EventEmitter()
 export function useTransferAsset() {
   const activeAccount = useSelector(selectActiveAccount)
   const allNetworks = useSelector(selectNetworks)
-  const config = useBridgeConfig().config
-  const { currentBlockchain, criticalConfig } = useBridgeSDK()
+  const config = useSelector(selectBridgeAppConfig)
+  const criticalConfig = useSelector(selectBridgeCriticalConfig)
+  const { currentBlockchain } = useBridgeSDK()
   const avalancheProvider = useAvalancheProvider()
   const ethereumProvider = useEthereumProvider()
 

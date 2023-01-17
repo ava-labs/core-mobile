@@ -72,10 +72,7 @@ class EthSignHandler implements RpcRequestHandler<EthSignRpcRequest> {
   }
 
   onApprove = async (
-    action: PayloadAction<
-      { request: EthSignRpcRequest; result?: unknown },
-      string
-    >,
+    action: PayloadAction<{ request: EthSignRpcRequest }, string>,
     listenerApi: AppListenerEffectAPI
   ) => {
     const state = listenerApi.getState()

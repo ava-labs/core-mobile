@@ -107,11 +107,11 @@ export const DappConnectionContextProvider = ({
   }, [rpcRequests, isWalletActive, appNavHook?.navigation])
 
   const onUserApproved = useCallback(
-    (request: DappRpcRequest<string, unknown>, result: unknown) => {
+    (request: DappRpcRequest<string, unknown>, data?: unknown) => {
       dispatch(
         rpcRequestApproved({
           request,
-          result
+          data
         })
       )
     },

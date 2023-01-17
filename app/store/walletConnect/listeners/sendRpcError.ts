@@ -1,21 +1,13 @@
-import { PayloadAction } from '@reduxjs/toolkit'
 import {
   rejectCall,
   rejectSession
 } from 'contexts/DappConnectionContext/useWalletConnect'
-import {
-  EthereumProviderError,
-  EthereumRpcError,
-  ethErrors
-} from 'eth-rpc-errors'
-import { DappRpcRequest } from '../handlers/types'
+import { ethErrors } from 'eth-rpc-errors'
+import { sendRpcError } from '../slice'
 import { isSessionRequestRpcRequest } from '../utils'
 
 export const onSendRpcError = async (
-  action: PayloadAction<{
-    request: DappRpcRequest<string, unknown>
-    error?: EthereumRpcError<unknown> | EthereumProviderError<unknown>
-  }>
+  action: ReturnType<typeof sendRpcError>
 ) => {
   const { request, error } = action.payload
 

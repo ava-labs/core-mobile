@@ -3,7 +3,6 @@ import {
   AssetType,
   BIG_ZERO,
   Blockchain,
-  useBridgeConfig,
   useBridgeSDK,
   useHasEnoughForGas,
   useMaxTransferAmount,
@@ -18,6 +17,7 @@ import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
 import { selectActiveAccount } from 'store/account'
 import { useEthereumProvider } from 'hooks/networkProviderHooks'
+import { selectBridgeAppConfig } from 'store/bridge'
 
 /**
  * Hook for when the bridge source chain is Ethereum
@@ -43,7 +43,7 @@ export function useEthBridge(amount: Big, bridgeFee: Big): BridgeAdapter {
 
   const network = useSelector(selectActiveNetwork)
   const activeAccount = useSelector(selectActiveAccount)
-  const config = useBridgeConfig().config
+  const config = useSelector(selectBridgeAppConfig)
   const ethereumProvider = useEthereumProvider()
   const hasEnoughForNetworkFee = useHasEnoughForGas(
     isEthereumBridge ? activeAccount?.address : undefined,
@@ -96,12 +96,14 @@ export function useEthBridge(amount: Big, bridgeFee: Big): BridgeAdapter {
 
     return result?.hash
   }, [
-    amount,
     currentAssetData,
-    createBridgeTransaction,
+    network,
+    config,
     currentAsset,
+    transferAsset,
+    amount,
     setTransactionDetails,
-    transferAsset
+    createBridgeTransaction
   ])
 
   return {

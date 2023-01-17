@@ -31,10 +31,7 @@ class SessionRequestHandler
   }
 
   onApprove = async (
-    action: PayloadAction<
-      { request: SessionRequestRpcRequest; result?: unknown },
-      string
-    >,
+    action: PayloadAction<{ request: SessionRequestRpcRequest }, string>,
     listenerApi: AppListenerEffectAPI
   ) => {
     const request = action.payload.request
