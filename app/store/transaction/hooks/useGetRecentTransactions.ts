@@ -1,5 +1,4 @@
 import { useDispatch, useSelector } from 'react-redux'
-import { useBridgeSDK } from '@avalabs/bridge-sdk'
 import { useIsFocused } from '@react-navigation/native'
 import { selectActiveNetwork } from 'store/network'
 import { useState, useCallback } from 'react'
@@ -7,7 +6,7 @@ import { selectActiveAccount } from 'store/account'
 import { isAnyOf } from '@reduxjs/toolkit'
 import { addAppListener } from 'store/middleware/listener'
 import { useFocusEffect } from '@react-navigation/native'
-import { popBridgeTransaction } from 'store/bridge'
+import { popBridgeTransaction, selectBridgeCriticalConfig } from 'store/bridge'
 import { selectIsLocked } from 'store/app'
 import { useGetRecentsTransactionsQuery } from '../api'
 import { Transaction } from '../types'
@@ -37,7 +36,8 @@ export const useGetRecentTransactions = () => {
   const account = useSelector(selectActiveAccount)
   const isAppLocked = useSelector(selectIsLocked)
   const isFocused = useIsFocused()
-  const { criticalConfig } = useBridgeSDK()
+  const criticalConfig = useSelector(selectBridgeCriticalConfig)
+
   const {
     currentData: data,
     isFetching,

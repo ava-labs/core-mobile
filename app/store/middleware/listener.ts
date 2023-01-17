@@ -12,9 +12,9 @@ import { addNetworkListeners } from 'store/network'
 import { addNetworkFeeListeners } from 'store/networkFee'
 import { addBridgeListeners } from 'store/bridge'
 import { addPosthogListeners } from 'store/posthog'
-import { addWatchlistListeners } from 'store/watchlist/listeners'
+import { addWatchlistListeners } from 'store/watchlist'
 import { addNftListeners } from 'store/nft/listeners'
-import { addRpcListeners } from 'store/walletConnect/listeners'
+import { addRpcListeners } from 'store/walletConnect'
 
 export type AppStartListening = TypedStartListening<RootState, AppDispatch>
 export type AppAddListener = TypedAddListener<RootState, AppDispatch>

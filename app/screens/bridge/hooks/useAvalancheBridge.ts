@@ -15,14 +15,17 @@ import { useAssetBalancesEVM } from 'screens/bridge/hooks/useAssetBalancesEVM'
 import Big from 'big.js'
 import { useActiveAccount } from 'hooks/useActiveAccount'
 import { useAvalancheProvider } from 'hooks/networkProviderHooks'
+import { useSelector } from 'react-redux'
+import { selectBridgeConfig } from 'store/bridge'
 
 /**
  * Hook for when the source is Avalanche
  */
 export function useAvalancheBridge(amount: Big, bridgeFee: Big): BridgeAdapter {
+  const bridgeConfig = useSelector(selectBridgeConfig)
+
   const {
     targetBlockchain,
-    bridgeConfig,
     currentBlockchain,
     setTransactionDetails,
     currentAssetData
@@ -51,7 +54,7 @@ export function useAvalancheBridge(amount: Big, bridgeFee: Big): BridgeAdapter {
 
   const maximum = sourceBalance?.balance || BIG_ZERO
   const minimum = useMemo(() => {
-    if (!bridgeConfig.config) {
+    if (!bridgeConfig?.config) {
       return BIG_ZERO
     }
     if (currentAssetData?.assetType === AssetType.ERC20) {
@@ -65,7 +68,7 @@ export function useAvalancheBridge(amount: Big, bridgeFee: Big): BridgeAdapter {
         )
       )
     }
-  }, [amount, bridgeConfig.config, bridgeFee, currentAssetData?.assetType])
+  }, [amount, bridgeConfig?.config, bridgeFee, currentAssetData?.assetType])
   const receiveAmount = amount.gt(minimum) ? amount.minus(bridgeFee) : BIG_ZERO
 
   const transfer = useCallback(async () => {

@@ -86,10 +86,7 @@ class AvalancheSelectAccountHandler
   }
 
   onApprove = async (
-    action: PayloadAction<
-      { request: AvalancheSelectAccountRequest; result?: unknown },
-      string
-    >,
+    action: PayloadAction<{ request: AvalancheSelectAccountRequest }, string>,
     listenerApi: AppListenerEffectAPI
   ) => {
     const { dispatch } = listenerApi

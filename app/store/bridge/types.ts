@@ -1,21 +1,13 @@
-import { BridgeTransaction } from '@avalabs/bridge-sdk'
+import { BridgeConfig, BridgeTransaction } from '@avalabs/bridge-sdk'
 
 export interface BridgeState {
   bridgeTransactions: {
     [key: string]: BridgeTransaction
   }
-  isMainnet: boolean
+  config: BridgeConfig | undefined
 }
 
-export interface BridgeReducerState {
-  bridge: BridgeState
-}
-
-export const defaultBridgeState: BridgeState = {
+export const initialState: BridgeState = {
   bridgeTransactions: {},
-  isMainnet: false
-}
-
-export const initialState: BridgeReducerState = {
-  bridge: defaultBridgeState
+  config: undefined
 }
