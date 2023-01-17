@@ -8,7 +8,7 @@ import { RootState } from 'store/index'
 import { EthereumProviderError, EthereumRpcError } from 'eth-rpc-errors'
 import { DappRpcRequest, TypedJsonRpcRequest } from './handlers/types'
 
-const reducerName = 'walletConnect'
+export const reducerName = 'walletConnect'
 
 const initialState = {
   requests: [],
@@ -70,15 +70,17 @@ export const selectApprovedDApps = (state: RootState) => {
 export const rpcRequestReceived = createAction<
   TypedJsonRpcRequest<string, unknown>
 >(`${reducerName}/rpcRequestReceived`)
+
 export const rpcRequestApproved = createAction<{
   request: DappRpcRequest<string, unknown>
-  result: unknown
+  data?: unknown
 }>(`${reducerName}/rpcRequestApproved`)
 
 export const sendRpcResult = createAction<{
   request: DappRpcRequest<string, unknown>
   result?: unknown
 }>(`${reducerName}/sendRpcResult`)
+
 export const sendRpcError = createAction<{
   request: DappRpcRequest<string, unknown>
   error?: EthereumRpcError<unknown> | EthereumProviderError<unknown>

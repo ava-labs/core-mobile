@@ -9,7 +9,7 @@ import { RootState } from '../index'
 import { ChainID, NetworkState } from './types'
 import { mergeWithCustomTokens } from './utils'
 
-const defaultNetwork = BITCOIN_NETWORK
+export const defaultNetwork = BITCOIN_NETWORK
 
 export const noActiveNetwork = 0
 

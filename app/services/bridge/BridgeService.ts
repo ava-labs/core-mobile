@@ -2,8 +2,11 @@ import {
   AppConfig,
   Asset,
   Blockchain,
+  Environment,
   EthereumConfigAsset,
+  fetchConfig,
   NativeAsset,
+  setBridgeEnvironment,
   transferAsset as transferAssetSDK
 } from '@avalabs/bridge-sdk'
 import Big from 'big.js'
@@ -29,8 +32,14 @@ type TransferAssetParams = {
   activeNetwork: Network
 }
 
-// TODO: CP-4150 refactor the remaining bridge logic into this service and redux
 export class BridgeService {
+  async getConfig(activeNetwork: Network) {
+    setBridgeEnvironment(
+      activeNetwork.isTestnet ? Environment.TEST : Environment.PROD
+    )
+    return fetchConfig()
+  }
+
   async transferAsset({
     currentBlockchain,
     amount,

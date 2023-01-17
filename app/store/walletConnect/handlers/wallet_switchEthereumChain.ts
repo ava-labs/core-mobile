@@ -79,7 +79,7 @@ class WalletSwitchEthereumChainHandler
 
   onApprove = async (
     action: PayloadAction<
-      { request: WalletSwitchEthereumChainRpcRequest; result?: unknown },
+      { request: WalletSwitchEthereumChainRpcRequest },
       string
     >,
     listenerApi: AppListenerEffectAPI

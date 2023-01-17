@@ -8,7 +8,6 @@ import {
   getBtcTransaction,
   getMinimumTransferAmount,
   satoshiToBtc,
-  useBridgeConfig,
   useBridgeSDK
 } from '@avalabs/bridge-sdk'
 import { useBridgeContext } from 'contexts/BridgeContext'
@@ -34,12 +33,13 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { selectNetworks } from 'store/network'
 import Logger from 'utils/Logger'
+import { selectBridgeAppConfig } from 'store/bridge'
 
 export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
   const activeNetwork = useActiveNetwork()
   const activeAccount = useActiveAccount()
   const currency = useSelector(selectSelectedCurrency)
-  const bridgeConfig = useBridgeConfig().config
+  const bridgeConfig = useSelector(selectBridgeAppConfig)
   const { createBridgeTransaction } = useBridgeContext()
   const {
     currentAsset,

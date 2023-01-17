@@ -47,6 +47,7 @@ import {
 import { BNInput } from 'components/BNInput'
 import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
+import { selectBridgeCriticalConfig } from 'store/bridge'
 
 const blockchainTitleMaxWidth = Dimensions.get('window').width * 0.5
 const dropdownWith = Dimensions.get('window').width * 0.6
@@ -70,6 +71,7 @@ const Bridge: FC = () => {
   const theme = useApplicationContext().theme
   const { capture } = usePosthogContext()
   const dispatch = useDispatch()
+  const criticalConfig = useSelector(selectBridgeCriticalConfig)
 
   const {
     sourceBalance,
@@ -91,8 +93,7 @@ const Bridge: FC = () => {
     setCurrentAsset,
     currentBlockchain,
     setCurrentBlockchain: setCurrentBlockchainSDK,
-    targetBlockchain,
-    criticalConfig
+    targetBlockchain
   } = useBridgeSDK()
   const { getTokenSymbolOnNetwork } = useGetTokenSymbolOnNetwork()
   const networks = useSelector(selectNetworks)
