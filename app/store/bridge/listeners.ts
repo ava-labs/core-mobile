@@ -31,6 +31,7 @@ const fetchConfigPeriodically = async (
       // eslint-disable-next-line no-constant-condition
       while (true) {
         const state = getState()
+
         const activeNetwork = selectActiveNetwork(state)
 
         // cancellation-aware wait for the fetch to be done
@@ -44,6 +45,8 @@ const fetchConfigPeriodically = async (
         await forkApi.delay(CONFIG_FETCH_INTERVAL)
       }
     } catch (err) {
+      Logger.error('failed to fetch bridge config', err)
+
       if (err instanceof TaskAbortError) {
         // task got cancelled or the listener got cancelled
         Logger.info(`stopped task ${taskId}`)
