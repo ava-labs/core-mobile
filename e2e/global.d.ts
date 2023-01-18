@@ -1,3 +1,4 @@
-declare const testNames: string
-declare const testResults: string[]
-declare const testPaths: string
+/* eslint-disable no-var */
+declare var testNames: string
+declare var testResults: string[]
+declare var testPaths: string

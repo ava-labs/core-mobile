@@ -1,12 +1,15 @@
 {
     "maxWorkers": 1,
-    "testEnvironment": "./environment.ts",
+    "testEnvironment": "detox/runners/jest/testEnvironment",
     "testRunner": "jest-circus/runner",
     "testTimeout": 120000,
     "testRegex": "\\.e2e\\.ts$",
-    "reporters": ["detox/runners/jest/streamlineReporter"],
+    "reporters": ["detox/runners/jest/reporter"],
     "verbose": true,
-    "setupFilesAfterEnv": ["./init.ts"],
-    "globalTeardown": "./sendResults.ts",
-    "globalSetup": "./setup.ts"
+    "setupFilesAfterEnv": ["./setup.ts"],
+    "globalTeardown": "detox/runners/jest/globalTeardown",
+    "globalSetup": "detox/runners/jest/globalSetup",
+    "transformIgnorePatterns": ["node_modules/(?!((jest-)?react-native|react-native-elements|@react-native(-community)?)/)"],
+    "preset": "ts-jest"
+
 }
