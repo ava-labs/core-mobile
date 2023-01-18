@@ -1,17 +1,6 @@
 export {}
-// This is needed in case you need to debug the test name
-// import { inspect } from 'util'
 
-const {
-  DetoxCircusEnvironment,
-  SpecReporter,
-  WorkerAssignReporter
-} = require('detox/runners/jest-circus')
-
-type Event = {
-  test: { parent: { name: string } }
-  name: string
-}
+const { DetoxCircusEnvironment } = require('detox/runners/jest')
 
 class CustomDetoxEnvironment extends DetoxCircusEnvironment {
   constructor(
@@ -19,42 +8,14 @@ class CustomDetoxEnvironment extends DetoxCircusEnvironment {
     context: { testPath: string; docblockPragmas: string }
   ) {
     super(config, context)
-    this.testPath = context.testPath
-    this.docblockPragmas = context.docblockPragmas
 
     // Can be safely removed, if you are content with the default value (=300000ms)
-    this.initTimeout = 300000
-
-    // This takes care of generating status logs on a per-spec basis. By default, Jest only reports at file-level.
-    // This is strictly optional.
-    this.registerListeners({
-      SpecReporter,
-      WorkerAssignReporter
-    })
+    this.setupTimeout = 120000
   }
 
-  async setup() {
-    await super.setup()
-    this.global.testPaths = this.testPath
-  }
-
-  async handleTestEvent(event: Event) {
-    const { name } = event
-    const test = event.test
-    if ('test_fn_failure'.includes(name)) {
-      this.global.testResults = ['fail']
-    } else if ('test_fn_success'.includes(name)) {
-      this.global.testResults = ['pass']
-    }
-    if ('test_done'.includes(name)) {
-      this.global.testNames = test.parent.name
-      // console.log(inspect(test.parent.name) + ' this is the test!')
-    }
-    if ('run_finish'.includes(name)) {
-      this.global.testPaths = this.testPath
-      // console.log(this.global.testResults + ' this is the test result!')
-      // console.log(this.global.testPaths + ' this is the test path!')
-    }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async setup(config: any, context: any) {
+    await super.setup(config, context)
   }
 }
 
