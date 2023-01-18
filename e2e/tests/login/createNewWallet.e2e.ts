@@ -47,7 +47,7 @@ describe('Create new wallet', () => {
     await VerifyPhrasePage.tapVerifyPhraseBtn()
   })
 
-  it('shoud successfully create a new wallet', async () => {
+  it('should successfully create a new wallet', async () => {
     await CreatePinPage.createPin()
     await CreatePinPage.tapEmptyCheckbox()
     await CreatePinPage.tapNextBtn()
