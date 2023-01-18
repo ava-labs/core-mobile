@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect } from 'react'
-import { View } from 'react-native'
+import { ScrollView, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
@@ -65,7 +65,7 @@ export default function ReviewSend({ onSuccess }: { onSuccess: () => void }) {
   )
 
   return (
-    <View style={{ flex: 1 }}>
+    <ScrollView contentContainerStyle={{ minHeight: '100%' }}>
       <AvaText.LargeTitleBold textStyle={{ marginHorizontal: 16 }}>
         Send
       </AvaText.LargeTitleBold>
@@ -184,6 +184,6 @@ export default function ReviewSend({ onSuccess }: { onSuccess: () => void }) {
           </>
         )}
       </View>
-    </View>
+    </ScrollView>
   )
 }
