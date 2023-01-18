@@ -189,7 +189,7 @@
     "@dlenroc/testrail": "1.7.2",
     "@lavamoat/allow-scripts": "2.0.3",
     "@react-native-community/eslint-config": "3.0.3",
-    "@storybook/addon-actions": "5.3.21",
+    "@storybook/addon-actions": "6.5.15",
     "@storybook/addon-knobs": "5.3.21",
     "@storybook/addon-links": "6.5.12",
     "@storybook/addon-ondevice-actions": "5.3.23",
