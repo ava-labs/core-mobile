@@ -1,5 +1,5 @@
 import React from 'react'
-import { StyleSheet, View } from 'react-native'
+import { ScrollView, StyleSheet, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -18,11 +18,24 @@ export default function MnemonicScreen({ mnemonic }: Props) {
   const { theme, isDarkMode } = useApplicationContext()
 
   const mnemonics = () => {
-    const mnemonics: Element[] = []
+    const mnemonicColumns: Element[][] = [[], [], []]
     mnemonic?.split(' ').forEach((value, key) => {
-      mnemonics.push(<MnemonicAva.Text key={key} keyNum={key} text={value} />)
+      const column = Math.floor(key / 8)
+      const columnToPush = mnemonicColumns[column]
+      if (columnToPush) {
+        columnToPush.push(
+          <MnemonicAva.Text key={key} keyNum={key} text={value} />
+        )
+      }
     })
-    return mnemonics
+
+    return (
+      <>
+        <View style={styles.mnemonicColumn}>{mnemonicColumns[0]}</View>
+        <View style={styles.mnemonicColumn}>{mnemonicColumns[1]}</View>
+        <View style={styles.mnemonicColumn}>{mnemonicColumns[2]}</View>
+      </>
+    )
   }
 
   return (
@@ -31,17 +44,24 @@ export default function MnemonicScreen({ mnemonic }: Props) {
         Write down the recovery phrase and store it in a secure location.
       </AvaText.Body1>
       <Space y={24} />
-      <View
-        style={[
-          styles.mnemonics,
-          {
-            backgroundColor: isDarkMode
-              ? theme.colorBg3 + Opacity30
-              : theme.colorBg1
-          }
-        ]}>
-        {mnemonics()}
-      </View>
+      <ScrollView
+        style={{
+          flexGrow: 0
+        }}
+        contentContainerStyle={{ minWidth: '100%' }}
+        horizontal>
+        <View
+          style={[
+            styles.mnemonics,
+            {
+              backgroundColor: isDarkMode
+                ? theme.colorBg3 + Opacity30
+                : theme.colorBg1
+            }
+          ]}>
+          {mnemonics()}
+        </View>
+      </ScrollView>
 
       <View style={{ alignSelf: 'flex-end', marginTop: 16 }}>
         <AvaButton.TextWithIcon
@@ -67,12 +87,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 20,
     borderRadius: 8,
-    flexDirection: 'column',
+    flexDirection: 'row',
     flex: 1,
     justifyContent: 'space-between',
-    flexWrap: 'wrap',
     marginTop: 8,
-    maxHeight: 310,
+    maxHeight: 343,
     alignContent: 'space-between'
+  },
+
+  mnemonicColumn: {
+    margin: 10,
+    justifyContent: 'space-between',
+    flexDirection: 'column',
+    flex: 1
   }
 })
