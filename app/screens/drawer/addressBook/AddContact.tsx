@@ -1,4 +1,3 @@
-import { SafeAreaProvider } from 'react-native-safe-area-context'
 import React, { useCallback, useState } from 'react'
 import FlexSpacer from 'components/FlexSpacer'
 import AvaButton from 'components/AvaButton'
@@ -13,6 +12,7 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import { addContact } from 'store/addressBook'
 import { useDispatch } from 'react-redux'
 import { getContactValidationError } from 'screens/drawer/addressBook/utils'
+import { ScrollView } from 'react-native'
 
 type NavigationProp = AddressBookScreenProps<
   typeof AppNavigation.AddressBook.Add
@@ -40,8 +40,12 @@ const AddContact = () => {
   }, [address, addressBtc, dispatch, goBack, title])
 
   return (
-    <SafeAreaProvider
-      style={{ flex: 1, paddingHorizontal: 16, paddingBottom: 16 }}>
+    <ScrollView
+      contentContainerStyle={{
+        minHeight: '100%',
+        paddingHorizontal: 16,
+        paddingBottom: 16
+      }}>
       <AvaText.LargeTitleBold>New Contact</AvaText.LargeTitleBold>
       <Space y={30} />
       <ContactInput
@@ -62,7 +66,7 @@ const AddContact = () => {
         onPress={save}>
         Save
       </AvaButton.PrimaryLarge>
-    </SafeAreaProvider>
+    </ScrollView>
   )
 }
 
