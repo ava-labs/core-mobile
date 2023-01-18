@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import * as fs from 'fs'
-import readline from 'readline'
+
 import TestRail from '@dlenroc/testrail'
+import getTestLogs from './getResultsFromLogs'
 
 const projectId = Number(process.env.TESTRAIL_PROJECT_ID)
 const password = String(process.env.TESTRAIL_API_KEY)
@@ -91,20 +91,16 @@ async function createNewTestSection(sectionName: any) {
 
 // Todo grab the test case names using the method
 export async function sectionsAndCases() {
-  const fileStream = fs.createReadStream('./tests_to_report.txt')
-  const rl = readline.createInterface({
-    input: fileStream,
-    crlfDelay: Infinity
-  })
+  const rawSectionsAndCases = getTestLogs()
   const testCaseSectionsAndCases = []
 
-  for await (const line of rl) {
-    const splitLineObject = JSON.parse(line)
-    const sectionName: any = splitLineObject.sectionName
-    const subsection: any = splitLineObject.subsection
-    const testCase = splitLineObject.testCase
+  for await (const test of await rawSectionsAndCases) {
+    const sectionName: any = test.sectionName
+    const subsection: any = test.subsection
+    const testCase = test.testCase
+    const platform = test.platform
 
-    const testCaseObject = { sectionName, subsection, testCase }
+    const testCaseObject = { sectionName, subsection, testCase, platform }
 
     testCaseSectionsAndCases.push(testCaseObject)
   }
@@ -125,7 +121,7 @@ export async function createNewTestSectionsAndCases(casesArray: any) {
   const sectionsAndSubsections = getSectionsAndSubsFromTestRun(casesAndSections)
 
   const sectionNames: any[] = []
-  sectionsAndSubsections.forEach(function (section) {
+  sectionsAndSubsections.forEach(async function (section) {
     sectionNames.push(section.section)
   })
 
@@ -137,8 +133,8 @@ export async function createNewTestSectionsAndCases(casesArray: any) {
   createNewSections(testrailSectionsAndSubsections, sectionNames)
 
   const subsectionsToAddSet: any[] = []
-  // eslint-disable-next-line no-var
-  var sections = await getSectionsFromTestRail()
+
+  const sections = await getSectionsFromTestRail()
   // eslint-disable-next-line no-var
   var testrailSectionsAndSubsections = sectionsAndSubsectionsTestrail(sections)
   // If a section already exists in testrail this checks to see if there are any new subsections that need to be added
@@ -201,18 +197,11 @@ function createNewSections(
     testrailSectionNames.push(testrailSection.testrailSection)
   })
 
-  const newSections: any[] = []
-  sectionNames.forEach(function (section) {
-    testrailSectionNames.forEach(function () {
-      if (testrailSectionNames.indexOf(section) === -1) {
-        if (section !== 'undefined') {
-          newSections.push(section)
-        } else {
-          console.log('why is there an undefined section name??')
-        }
-      }
-    })
+  // const newSections: any[] = []
+  const newSections = sectionNames.filter(function (section) {
+    return testrailSectionNames.indexOf(section) === -1
   })
+
   // Adds any new sections found to testrail
   const uniqueSectionsSet = new Set(newSections)
   const uniqueSections = [...uniqueSectionsSet]
@@ -220,7 +209,7 @@ function createNewSections(
     try {
       await createNewTestSection(newSectionName)
     } catch (error) {
-      console.log(newSectionName + 'newSectionName error found!!!')
+      console.log(newSectionName + ' newSectionName error found!!!')
     }
   })
 }
@@ -303,7 +292,6 @@ async function newTCTitles() {
       ? theNewTCTitles.push(item)
       : undefined
   })
-
   return allTestCaseTitlesFromRun
 }
 
@@ -358,7 +346,7 @@ async function getAllTestCasesFromTestrail() {
 
 async function testCasesFromTestRun() {
   const casesArray: {
-    testCase: string
+    testCase?: string
     subsection: string
     sectionName: string
   }[] = []

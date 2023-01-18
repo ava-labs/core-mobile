@@ -1,63 +1,49 @@
 /* eslint-disable no-var */
-import * as fs from 'fs'
-import { getTestCaseId, api } from './testrail_generate_tcs'
-
-const teardown = async () => {
-  sendResults()
-  // Clears the text file for the next run
-  fs.writeFile('./test_results.txt', '', { flag: 'w' }, err => {
-    console.log(err)
-  })
-  fs.writeFile('./tests_to_report.txt', '', { flag: 'w' }, err => {
-    console.log(err)
-  })
-}
+import {
+  getTestCaseId,
+  api,
+  createNewTestSectionsAndCases
+} from './testrail_generate_tcs'
+import getTestLogs from './getResultsFromLogs'
 
 async function parseResultsFile() {
-  // Reads the text file to get the results from
-  const resultsArray = fs
-    .readFileSync('./test_results.txt')
-    .toString()
-    .split('\n')
-  const jsonResultsArray = []
-  for (let i = 0; i < resultsArray.length; i++) {
-    const line = JSON.stringify(resultsArray[i])
-    const testResultObject = JSON.parse(line)
-    jsonResultsArray.push(testResultObject)
+  const nameAndResultsObject = await getTestLogs()
+
+  // If this env variable is set to true it will update the test cases in testrail
+  if (process.env.UPDATE_TESTRAIL_CASES) {
+    await createNewTestSectionsAndCases(nameAndResultsObject)
+  } else {
+    console.log('Not updating testrail cases...')
   }
+
+  const jsonResultsArray = await getTestLogs()
 
   const testIdArrayForTestrail = []
   const casesToAddToRun = []
   for (const result of jsonResultsArray) {
-    try {
-      // Todo add more status ids for different results such as skipped tests or untested
-      const theResult = JSON.parse(result)
-      const testResult = theResult.testResult
-      if (testResult === 'pass') {
-        var statusId = 1
-      } else {
-        var statusId = 5
-      }
-      const testName = theResult.testName
-      const testCaseId = await getTestCaseId(theResult.testCase)
+    // Todo add more status ids for different results such as skipped tests or untested
+    const testResult = result.testResult
+    if (testResult === 'passed') {
+      var statusId = 1
+    } else {
+      var statusId = 5
+    }
+    const testName = result.testCase
+    const testCaseId = await getTestCaseId(result.testCase)
 
-      if (testCaseId !== null) {
-        testIdArrayForTestrail.push(testCaseId)
-        casesToAddToRun.push({
-          test_id: testCaseId,
-          status_id: statusId,
-          test_name: testName
-        })
-      }
-    } catch (error) {
-      // This throws an error at the end of the txt file since it's a blank line. This is the end.
-      console.log('This is the end. My only friend, the end!')
+    if (testCaseId !== null) {
+      testIdArrayForTestrail.push(testCaseId)
+      casesToAddToRun.push({
+        test_id: testCaseId,
+        status_id: statusId,
+        test_name: testName
+      })
     }
   }
   return { casesToAddToRun, testIdArrayForTestrail }
 }
 
-async function sendResults() {
+export default async function sendResults() {
   const runId = Number(process.env.TEST_RUN_ID)
   const resultsToSendObject = parseResultsFile()
 
@@ -123,5 +109,3 @@ A 'case id' is the permanent test case in our suite, a 'test case id' is a part 
     }
   }
 }
-
-module.exports = teardown
