@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect } from 'react'
-import { View } from 'react-native'
+import { ScrollView, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import DotSVG from 'components/svg/DotSVG'
 import { Space } from 'components/Space'
@@ -61,7 +61,7 @@ export default function NftReview({ onSuccess }: NftReviewScreenProps) {
   )
 
   return (
-    <View style={{ flex: 1 }}>
+    <ScrollView contentContainerStyle={{ minHeight: '100%' }}>
       <AvaText.LargeTitleBold textStyle={{ marginHorizontal: 16 }}>
         Send
       </AvaText.LargeTitleBold>
@@ -155,6 +155,6 @@ export default function NftReview({ onSuccess }: NftReviewScreenProps) {
           </>
         )}
       </View>
-    </View>
+    </ScrollView>
   )
 }
