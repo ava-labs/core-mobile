@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { InteractionManager, StyleSheet, View } from 'react-native'
+import { InteractionManager, ScrollView, StyleSheet } from 'react-native'
 import AvaButton from 'components/AvaButton'
 import WalletSDK from 'utils/WalletSDK'
 import MnemonicScreen from 'components/MnemonicScreen'
@@ -30,7 +30,7 @@ export default function CreateWallet({ onSavedMyPhrase }: Props): JSX.Element {
   }
 
   return (
-    <View style={styles.verticalLayout}>
+    <ScrollView contentContainerStyle={styles.verticalLayout}>
       <AvaText.LargeTitleBold>Recovery Phrase</AvaText.LargeTitleBold>
       <Space y={20} />
       {isLoading ? (
@@ -48,13 +48,13 @@ export default function CreateWallet({ onSavedMyPhrase }: Props): JSX.Element {
         testID="create_wallet__i_wrote_it_down_button">
         I wrote it down
       </AvaButton.PrimaryLarge>
-    </View>
+    </ScrollView>
   )
 }
 
 const styles = StyleSheet.create({
   verticalLayout: {
-    flex: 1,
+    minHeight: '100%',
     marginHorizontal: 16,
     paddingBottom: 40
   }
