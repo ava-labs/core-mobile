@@ -4,7 +4,6 @@ import { Transaction } from 'screens/rpc/util/types'
 import { getEvmProvider } from 'services/network/utils/providerUtils'
 import walletService from 'services/wallet/WalletService'
 import networkService from 'services/network/NetworkService'
-import { RpcMethod } from 'services/walletconnect/types'
 import { AppListenerEffectAPI } from 'store'
 import { selectActiveAccount } from 'store/account'
 import { selectActiveNetwork } from 'store/network'
@@ -14,10 +13,11 @@ import { ethErrors } from 'eth-rpc-errors'
 import * as Sentry from '@sentry/react-native'
 import {
   addRequest,
-  sendRpcResult,
-  sendRpcError,
+  onSendRpcResult,
+  onSendRpcError,
   updateRequest
 } from '../slice'
+import { RpcMethod } from '../types'
 import { DappRpcRequest, RpcRequestHandler } from './types'
 
 export type TransactionParams = {
@@ -54,7 +54,7 @@ class EthSendTransactionHandler
     )
   }
 
-  onApprove = async (
+  approve = async (
     action: PayloadAction<
       {
         request: EthSendTransactionRpcRequest
@@ -107,7 +107,7 @@ class EthSendTransactionHandler
             })
           )
           dispatch(
-            sendRpcResult({
+            onSendRpcResult({
               request: action.payload.request,
               result: resultHash
             })
@@ -122,7 +122,7 @@ class EthSendTransactionHandler
             })
           )
           dispatch(
-            sendRpcError({
+            onSendRpcError({
               request: action.payload.request,
               error: ethErrors.rpc.internal(
                 'failed to approve transaction request'

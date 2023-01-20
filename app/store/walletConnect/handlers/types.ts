@@ -1,12 +1,14 @@
 import { PayloadAction } from '@reduxjs/toolkit'
-import { PeerMeta, RpcMethod } from 'services/walletconnect/types'
+import { PeerMeta } from 'services/walletconnect/types'
 import { AppListenerEffectAPI } from 'store'
 import { JsonRpcRequest } from '@walletconnect/jsonrpc-types'
+import { RpcMethod } from '../types'
 
 export interface TypedJsonRpcRequest<Method extends string, Params = unknown>
   extends JsonRpcRequest<Params> {
   method: Method
   peerMeta: PeerMeta
+  peerId: string
 }
 
 export interface DappRpcRequest<Method extends string, Params = unknown> {
@@ -20,7 +22,7 @@ export interface RpcRequestHandler<T extends DappRpcRequest<string, unknown>> {
     listenerApi: AppListenerEffectAPI
   ) => Promise<void>
 
-  onApprove?: (
+  approve?: (
     action: PayloadAction<{ request: T; data?: unknown }, string>,
     listenerApi: AppListenerEffectAPI
   ) => Promise<void>

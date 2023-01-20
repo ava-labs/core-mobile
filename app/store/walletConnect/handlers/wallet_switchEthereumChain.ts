@@ -1,14 +1,14 @@
 import { Network } from '@avalabs/chains-sdk'
 import { PayloadAction } from '@reduxjs/toolkit'
 import { ethErrors } from 'eth-rpc-errors'
-import { RpcMethod } from 'services/walletconnect/types'
 import { AppListenerEffectAPI } from 'store'
 import { selectActiveNetwork, selectNetworks, setActive } from 'store/network'
+import { RpcMethod } from '../types'
 import {
   addRequest,
   removeRequest,
-  sendRpcError,
-  sendRpcResult
+  onSendRpcError,
+  onSendRpcResult
 } from '../slice'
 import { DappRpcRequest, RpcRequestHandler } from './types'
 
@@ -45,7 +45,7 @@ class WalletSwitchEthereumChainHandler
     // If it is, we just need to return early to prevent an unnecessary UX
     if (Number(targetChainID) === currentActiveNetwork?.chainId) {
       dispatch(
-        sendRpcResult({
+        onSendRpcResult({
           request: { payload: action.payload },
           result: null
         })
@@ -65,7 +65,7 @@ class WalletSwitchEthereumChainHandler
       return
     } else {
       dispatch(
-        sendRpcError({
+        onSendRpcError({
           request: { payload: action.payload },
           error: ethErrors.provider.custom({
             code: 4902, // To-be-standardized "unrecognized chain ID" error
@@ -77,7 +77,7 @@ class WalletSwitchEthereumChainHandler
     }
   }
 
-  onApprove = async (
+  approve = async (
     action: PayloadAction<
       { request: WalletSwitchEthereumChainRpcRequest },
       string
@@ -89,7 +89,7 @@ class WalletSwitchEthereumChainHandler
 
     dispatch(setActive(request.network.chainId))
     dispatch(removeRequest(request.payload.id))
-    dispatch(sendRpcResult({ request }))
+    dispatch(onSendRpcResult({ request }))
   }
 }
 export const walletSwitchEthereumChainHandler =

@@ -1,5 +1,4 @@
 import { PayloadAction } from '@reduxjs/toolkit'
-import { RpcMethod } from 'services/walletconnect/types'
 import { AppListenerEffectAPI } from 'store'
 import { ethErrors } from 'eth-rpc-errors'
 import {
@@ -10,10 +9,11 @@ import {
 } from 'store/account'
 import {
   addRequest,
-  sendRpcResult,
-  sendRpcError,
+  onSendRpcResult,
+  onSendRpcError,
   removeRequest
 } from '../slice'
+import { RpcMethod } from '../types'
 import { DappRpcRequest, RpcRequestHandler } from './types'
 
 export interface AvalancheSelectAccountRequest
@@ -37,7 +37,7 @@ class AvalancheSelectAccountHandler
 
     if (accountIndex === undefined) {
       dispatch(
-        sendRpcError({
+        onSendRpcError({
           request: action,
           error: ethErrors.rpc.invalidParams({
             message: 'missing param: accountIndex'
@@ -55,7 +55,7 @@ class AvalancheSelectAccountHandler
 
     if (accountAlreadyActive) {
       dispatch(
-        sendRpcResult({
+        onSendRpcResult({
           request: action,
           result: null
         })
@@ -67,7 +67,7 @@ class AvalancheSelectAccountHandler
 
     if (requestedAccount === undefined) {
       dispatch(
-        sendRpcError({
+        onSendRpcError({
           request: action,
           error: ethErrors.rpc.resourceNotFound({
             message: 'requested account does not exist'
@@ -85,7 +85,7 @@ class AvalancheSelectAccountHandler
     dispatch(addRequest(dAppRequest))
   }
 
-  onApprove = async (
+  approve = async (
     action: PayloadAction<{ request: AvalancheSelectAccountRequest }, string>,
     listenerApi: AppListenerEffectAPI
   ) => {
@@ -96,7 +96,7 @@ class AvalancheSelectAccountHandler
     dispatch(setActiveAccountIndex(accountIndex))
 
     dispatch(
-      sendRpcResult({
+      onSendRpcResult({
         request,
         result: []
       })

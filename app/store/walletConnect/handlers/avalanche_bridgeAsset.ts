@@ -1,6 +1,5 @@
 import { PayloadAction } from '@reduxjs/toolkit'
 import * as Sentry from '@sentry/react-native'
-import { RpcMethod } from 'services/walletconnect/types'
 import { AppListenerEffectAPI } from 'store'
 import { ethErrors } from 'eth-rpc-errors'
 import { Asset, Blockchain } from '@avalabs/bridge-sdk'
@@ -12,11 +11,12 @@ import Logger from 'utils/Logger'
 import { selectBridgeAppConfig } from 'store/bridge'
 import {
   addRequest,
-  sendRpcResult,
-  sendRpcError,
+  onSendRpcResult,
+  onSendRpcError,
   removeRequest,
   updateRequest
 } from '../slice'
+import { RpcMethod } from '../types'
 import { DappRpcRequest, RpcRequestHandler } from './types'
 
 export interface AvalancheBridgeAssetRequest
@@ -45,7 +45,7 @@ class AvalancheBridgeAssetHandler
 
     if (!currentBlockchain || !amountStr || !asset) {
       dispatch(
-        sendRpcError({
+        onSendRpcError({
           request: action,
           error: ethErrors.rpc.invalidParams({
             message: 'Params are missing'
@@ -63,7 +63,7 @@ class AvalancheBridgeAssetHandler
     dispatch(addRequest(dAppRequest))
   }
 
-  onApprove = async (
+  approve = async (
     action: PayloadAction<{ request: AvalancheBridgeAssetRequest }, string>,
     listenerApi: AppListenerEffectAPI
   ) => {
@@ -100,7 +100,7 @@ class AvalancheBridgeAssetHandler
       )
 
       dispatch(
-        sendRpcResult({
+        onSendRpcResult({
           request,
           result
         })
@@ -119,7 +119,7 @@ class AvalancheBridgeAssetHandler
         )
 
         dispatch(
-          sendRpcError({
+          onSendRpcError({
             request,
             error: ethErrors.rpc.internal(
               'failed to approve transaction request'

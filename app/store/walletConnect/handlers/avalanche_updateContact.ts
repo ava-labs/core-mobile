@@ -1,15 +1,15 @@
 import { PayloadAction } from '@reduxjs/toolkit'
-import { RpcMethod } from 'services/walletconnect/types'
 import { AppListenerEffectAPI } from 'store'
 import { Contact as SharedContact } from '@avalabs/types'
 import { ethErrors } from 'eth-rpc-errors'
 import { addContact, selectContacts } from 'store/addressBook'
 import {
   addRequest,
-  sendRpcResult,
-  sendRpcError,
+  onSendRpcResult,
+  onSendRpcError,
   removeRequest
 } from '../slice'
+import { RpcMethod } from '../types'
 import { DappRpcRequest, RpcRequestHandler } from './types'
 import { parseContact } from './utils/contact'
 
@@ -36,7 +36,7 @@ class AvalancheUpdateContactHandler
 
     if (!contact) {
       dispatch(
-        sendRpcError({
+        onSendRpcError({
           request: action,
           error: ethErrors.rpc.invalidParams({
             message: 'Contact is invalid'
@@ -51,7 +51,7 @@ class AvalancheUpdateContactHandler
 
     if (!existingContact) {
       dispatch(
-        sendRpcError({
+        onSendRpcError({
           request: action,
           error: ethErrors.rpc.resourceNotFound({
             message: 'Contact does not exist'
@@ -69,7 +69,7 @@ class AvalancheUpdateContactHandler
     dispatch(addRequest(dAppRequest))
   }
 
-  onApprove = async (
+  approve = async (
     action: PayloadAction<{ request: AvalancheUpdateContactRequest }, string>,
     listenerApi: AppListenerEffectAPI
   ) => {
@@ -86,7 +86,7 @@ class AvalancheUpdateContactHandler
     )
 
     dispatch(
-      sendRpcResult({
+      onSendRpcResult({
         request: action.payload.request,
         result: []
       })

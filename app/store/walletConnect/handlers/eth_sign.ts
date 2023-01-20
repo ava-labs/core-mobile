@@ -1,7 +1,6 @@
 import { PayloadAction } from '@reduxjs/toolkit'
 import { ethErrors } from 'eth-rpc-errors'
 import walletService from 'services/wallet/WalletService'
-import { RpcMethod } from 'services/walletconnect/types'
 import { AppListenerEffectAPI } from 'store'
 import { selectActiveAccount } from 'store/account'
 import { selectActiveNetwork } from 'store/network'
@@ -9,11 +8,12 @@ import Logger from 'utils/Logger'
 import * as Sentry from '@sentry/react-native'
 import {
   addRequest,
-  sendRpcResult,
-  sendRpcError,
+  onSendRpcResult,
+  onSendRpcError,
   updateRequest,
   removeRequest
 } from '../slice'
+import { RpcMethod } from '../types'
 import { parseMessage } from './utils/message'
 import { DappRpcRequest, RpcRequestHandler } from './types'
 
@@ -52,7 +52,7 @@ class EthSignHandler implements RpcRequestHandler<EthSignRpcRequest> {
 
     if (!payload) {
       listenerApi.dispatch(
-        sendRpcError({
+        onSendRpcError({
           request: action,
           error: ethErrors.rpc.invalidParams()
         })
@@ -71,7 +71,7 @@ class EthSignHandler implements RpcRequestHandler<EthSignRpcRequest> {
     listenerApi.dispatch(addRequest(requestWithData))
   }
 
-  onApprove = async (
+  approve = async (
     action: PayloadAction<{ request: EthSignRpcRequest }, string>,
     listenerApi: AppListenerEffectAPI
   ) => {
@@ -83,7 +83,7 @@ class EthSignHandler implements RpcRequestHandler<EthSignRpcRequest> {
 
     if (!activeAccount || !activeNetwork) {
       listenerApi.dispatch(
-        sendRpcError({
+        onSendRpcError({
           request,
           error: ethErrors.rpc.internal('app not ready')
         })
@@ -100,7 +100,7 @@ class EthSignHandler implements RpcRequestHandler<EthSignRpcRequest> {
       )
       .then(result => {
         dispatch(
-          sendRpcResult({
+          onSendRpcResult({
             request,
             result
           })
@@ -116,7 +116,7 @@ class EthSignHandler implements RpcRequestHandler<EthSignRpcRequest> {
           })
         )
         dispatch(
-          sendRpcError({
+          onSendRpcError({
             request,
             error: ethErrors.rpc.internal('failed to sign message')
           })

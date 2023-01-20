@@ -1,5 +1,4 @@
 import { PayloadAction } from '@reduxjs/toolkit'
-import { RpcMethod } from 'services/walletconnect/types'
 import { AppListenerEffectAPI } from 'store'
 import { Contact as SharedContact } from '@avalabs/types'
 import { ethErrors } from 'eth-rpc-errors'
@@ -7,10 +6,11 @@ import { removeContact, selectContacts } from 'store/addressBook'
 import { isString } from 'utils/string/isString'
 import {
   addRequest,
-  sendRpcResult,
-  sendRpcError,
+  onSendRpcResult,
+  onSendRpcError,
   removeRequest
 } from '../slice'
+import { RpcMethod } from '../types'
 import { DappRpcRequest, RpcRequestHandler } from './types'
 import { mapContactToSharedContact } from './utils/contact'
 
@@ -38,7 +38,7 @@ class AvalancheRemoveContactHandler
 
     if (!isString(contactId)) {
       dispatch(
-        sendRpcError({
+        onSendRpcError({
           request: action,
           error: ethErrors.rpc.invalidParams({
             message: 'Contact ID is invalid'
@@ -53,7 +53,7 @@ class AvalancheRemoveContactHandler
 
     if (!existingContact) {
       dispatch(
-        sendRpcError({
+        onSendRpcError({
           request: action,
           error: ethErrors.rpc.resourceNotFound({
             message: 'Contact does not exist'
@@ -73,7 +73,7 @@ class AvalancheRemoveContactHandler
     dispatch(addRequest(dAppRequest))
   }
 
-  onApprove = async (
+  approve = async (
     action: PayloadAction<{ request: AvalancheRemoveContactRequest }, string>,
     listenerApi: AppListenerEffectAPI
   ) => {
@@ -83,7 +83,7 @@ class AvalancheRemoveContactHandler
     dispatch(removeContact(contact.id))
 
     dispatch(
-      sendRpcResult({
+      onSendRpcResult({
         request: action.payload.request,
         result: []
       })

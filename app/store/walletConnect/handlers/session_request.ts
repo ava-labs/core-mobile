@@ -1,8 +1,8 @@
 import { IClientMeta } from '@walletconnect/types'
 import { PayloadAction } from '@reduxjs/toolkit'
-import { RpcMethod } from 'services/walletconnect/types'
 import { AppListenerEffectAPI } from 'store'
-import { addRequest, removeRequest, sendRpcResult } from '../slice'
+import { addRequest, removeRequest, onSendRpcResult } from '../slice'
+import { RpcMethod } from '../types'
 import { DappRpcRequest, RpcRequestHandler } from './types'
 
 export type SessionRequestRpcRequest = DappRpcRequest<
@@ -30,13 +30,13 @@ class SessionRequestHandler
     )
   }
 
-  onApprove = async (
+  approve = async (
     action: PayloadAction<{ request: SessionRequestRpcRequest }, string>,
     listenerApi: AppListenerEffectAPI
   ) => {
     const request = action.payload.request
     listenerApi.dispatch(removeRequest(request.payload.id))
-    listenerApi.dispatch(sendRpcResult({ request }))
+    listenerApi.dispatch(onSendRpcResult({ request }))
   }
 }
 export const sessionRequestHandler = new SessionRequestHandler()

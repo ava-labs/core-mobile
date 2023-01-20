@@ -2,7 +2,6 @@ import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import { PayloadAction } from '@reduxjs/toolkit'
 import { ethErrors } from 'eth-rpc-errors'
 import { isValidRPCUrl } from 'services/network/utils/isValidRpcUrl'
-import { RpcMethod } from 'services/walletconnect/types'
 import { AppListenerEffectAPI } from 'store'
 import {
   addCustomNetwork,
@@ -10,11 +9,12 @@ import {
   selectNetworks,
   setActive
 } from 'store/network'
+import { RpcMethod } from '../types'
 import {
   addRequest,
   removeRequest,
-  sendRpcError,
-  sendRpcResult
+  onSendRpcError,
+  onSendRpcResult
 } from '../slice'
 import { DappRpcRequest, RpcRequestHandler } from './types'
 
@@ -57,7 +57,7 @@ class WalletAddEthereumChainHandler
 
     if (!requestedChain) {
       dispatch(
-        sendRpcError({
+        onSendRpcError({
           request: { payload: action.payload },
           error: ethErrors.rpc.invalidParams({
             message: 'missing chain params'
@@ -77,7 +77,7 @@ class WalletAddEthereumChainHandler
 
     if (isSameNetwork) {
       dispatch(
-        sendRpcResult({
+        onSendRpcResult({
           request: { payload: action.payload },
           result: null
         })
@@ -88,7 +88,7 @@ class WalletAddEthereumChainHandler
     const rpcUrl = requestedChain?.rpcUrls?.[0]
     if (!rpcUrl) {
       dispatch(
-        sendRpcError({
+        onSendRpcError({
           request: { payload: action.payload },
           error: ethErrors.rpc.invalidParams({
             message: 'RPC url missing'
@@ -100,7 +100,7 @@ class WalletAddEthereumChainHandler
 
     if (!requestedChain.nativeCurrency) {
       dispatch(
-        sendRpcError({
+        onSendRpcError({
           request: { payload: action.payload },
           error: ethErrors.rpc.invalidParams({
             message: 'Expected nativeCurrency param to be defined'
@@ -149,7 +149,7 @@ class WalletAddEthereumChainHandler
     )
     if (!isValid) {
       dispatch(
-        sendRpcError({
+        onSendRpcError({
           request: { payload: action.payload },
           error: ethErrors.rpc.invalidParams({
             message: 'ChainID does not match the rpc url'
@@ -167,7 +167,7 @@ class WalletAddEthereumChainHandler
     )
   }
 
-  onApprove = async (
+  approve = async (
     action: PayloadAction<
       { request: WalletAddEthereumChainRpcRequest },
       string
@@ -183,7 +183,7 @@ class WalletAddEthereumChainHandler
 
     dispatch(setActive(request.network.chainId))
     dispatch(removeRequest(request.payload.id))
-    dispatch(sendRpcResult({ request }))
+    dispatch(onSendRpcResult({ request }))
   }
 }
 export const walletAddEthereumChainHandler = new WalletAddEthereumChainHandler()
