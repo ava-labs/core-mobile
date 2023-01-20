@@ -11,7 +11,6 @@ import AvaButton from 'components/AvaButton'
 import AvaListItem from 'components/AvaListItem'
 import Logger from 'utils/Logger'
 import { Space } from 'components/Space'
-import { DeepLinkOrigin } from 'services/walletconnect/types'
 import { useDappConnectionContext } from 'contexts/DappConnectionContext'
 import ZeroState from 'components/ZeroState'
 import AddSVG from 'components/svg/AddSVG'
@@ -28,6 +27,7 @@ import FlexSpacer from 'components/FlexSpacer'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useSelector } from 'react-redux'
 import { ApprovedAppMeta, selectApprovedDApps } from 'store/walletConnect'
+import { DeepLinkOrigin } from 'contexts/DappConnectionContext/types'
 
 interface Props {
   goBack: () => void

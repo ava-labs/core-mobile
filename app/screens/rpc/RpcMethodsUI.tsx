@@ -7,11 +7,11 @@ import { useNavigation } from '@react-navigation/native'
 import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet'
 import AvaxSheetHandle from 'components/AvaxSheetHandle'
 import TabViewBackground from 'components/TabViewBackground'
-import { RpcMethod } from 'services/walletconnect/types'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   DappRpcRequests,
   removeRequest,
+  RpcMethod,
   selectRpcRequests
 } from 'store/walletConnect'
 import { EthSendTransactionRpcRequest } from 'store/walletConnect/handlers/eth_sendTransaction'

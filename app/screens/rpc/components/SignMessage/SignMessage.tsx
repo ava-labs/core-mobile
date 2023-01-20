@@ -11,12 +11,12 @@ import PersonalSign from 'screens/rpc/components/SignMessage/PersonalSign'
 import SignDataV4 from 'screens/rpc/components/SignMessage/SignDataV4'
 import { ScrollView } from 'react-native-gesture-handler'
 import FlexSpacer from 'components/FlexSpacer'
-import { RpcMethod } from 'services/walletconnect/types'
 import { showSnackBarCustom } from 'components/Snackbar'
 import TransactionToast, {
   TransactionToastType
 } from 'components/toast/TransactionToast'
 import { EthSignRpcRequest } from 'store/walletConnect/handlers/eth_sign'
+import { RpcMethod } from 'store/walletConnect'
 import { MessageAction } from './types'
 
 interface Props {
