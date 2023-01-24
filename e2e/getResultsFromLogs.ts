@@ -16,7 +16,7 @@ export const getDirectories = async (source: string) =>
 
 export default async function getTestLogs() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const folders: any = await getDirectories('./e2e/artifacts/ios')
+  const folders: any = await getDirectories('./e2e/artifacts')
   const testResults: Array<TestResult> = []
 
   for (let i = 0; i < folders.length; i++) {

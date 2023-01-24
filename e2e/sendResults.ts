@@ -103,7 +103,7 @@ A 'case id' is the permanent test case in our suite, a 'test case id' is a part 
 
   // Sends the results to testrail using the resultsToSendToTestrail array if POST_TO_TESTRAIL env variable set to true
   if (process.env.POST_TO_TESTRAIL) {
-    const failedTestFolders = await getDirectories('./e2e/artifacts/ios')
+    const failedTestFolders = await getDirectories('./e2e/artifacts/')
     console.log(
       JSON.stringify(failedTestFolders[0]) + ' failed test folders!!!'
     )

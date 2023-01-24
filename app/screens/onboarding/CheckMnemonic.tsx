@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { StyleSheet, View } from 'react-native'
+import { ScrollView, StyleSheet, View } from 'react-native'
 import AvaButton from 'components/AvaButton'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
@@ -7,6 +7,7 @@ import WordSelection from 'screens/onboarding/WordSelection'
 import { ShowSnackBar } from 'components/Snackbar'
 import { useCheckMnemonic } from 'screens/onboarding/useCheckMnemonic'
 import { usePosthogContext } from 'contexts/PosthogContext'
+import FlexSpacer from 'components/FlexSpacer'
 
 type Props = {
   onSuccess: () => void
@@ -50,7 +51,7 @@ export default function CheckMnemonic(
   // useEffect(() => {}, [selectedWord1, selectedWord2, selectedWord3])
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <AvaText.LargeTitleBold testID="check_mnemonic__title">
         Verify Phrase
       </AvaText.LargeTitleBold>
@@ -79,6 +80,7 @@ export default function CheckMnemonic(
         wordOptions={thirdWordSelection.wordOptions}
         setSelectedWord={setSelectedWord3}
       />
+      <FlexSpacer minHeight={20} />
       <View style={{ flex: 1 }} />
       <View testID="check_mnemonic__verify_phrase_btn">
         <AvaButton.PrimaryLarge
@@ -87,13 +89,13 @@ export default function CheckMnemonic(
           Verify phrase
         </AvaButton.PrimaryLarge>
       </View>
-    </View>
+    </ScrollView>
   )
 }
 
-const styles: any = StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    minHeight: '100%',
     paddingHorizontal: 16,
     paddingBottom: 40
   }

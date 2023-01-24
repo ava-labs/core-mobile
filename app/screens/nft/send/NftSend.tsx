@@ -114,7 +114,7 @@ export default function NftSend({
   )
 
   return (
-    <ScrollView contentContainerStyle={[styles.container, { flexGrow: 1 }]}>
+    <ScrollView contentContainerStyle={[styles.container]}>
       <AvaText.LargeTitleBold>Send</AvaText.LargeTitleBold>
       <Space y={20} />
       <AvaText.Heading3>Send To</AvaText.Heading3>
@@ -211,7 +211,7 @@ const CollectibleItem = ({ nft }: { nft: NFTItemData }) => {
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 16,
-    flex: 1
+    minHeight: '100%'
   },
   collectibleItem: {
     marginVertical: 4,
