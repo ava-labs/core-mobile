@@ -1,4 +1,6 @@
 /* eslint-disable no-var */
-declare var testNames: string
-declare var testResults: string[]
-declare var testPaths: string
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface global {}
+declare global {
+  var platform: string
+}

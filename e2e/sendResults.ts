@@ -1,22 +1,23 @@
 /* eslint-disable no-var */
+import * as fs from 'fs'
+import { device } from 'detox'
 import {
   getTestCaseId,
   api,
-  createNewTestSectionsAndCases
+  createNewTestSectionsAndCases,
+  getUniqueListBy
 } from './testrail_generate_tcs'
-import getTestLogs from './getResultsFromLogs'
+import getTestLogs, { getDirectories } from './getResultsFromLogs'
 
 async function parseResultsFile() {
-  const nameAndResultsObject = await getTestLogs()
+  const jsonResultsArray = await getTestLogs()
 
   // If this env variable is set to true it will update the test cases in testrail
   if (process.env.UPDATE_TESTRAIL_CASES) {
-    await createNewTestSectionsAndCases(nameAndResultsObject)
+    await createNewTestSectionsAndCases(jsonResultsArray)
   } else {
     console.log('Not updating testrail cases...')
   }
-
-  const jsonResultsArray = await getTestLogs()
 
   const testIdArrayForTestrail = []
   const casesToAddToRun = []
@@ -27,6 +28,7 @@ async function parseResultsFile() {
       var statusId = 1
     } else {
       var statusId = 5
+      var failedScreenshot = result.failedScreenshot
     }
     const testName = result.testCase
     const testCaseId = await getTestCaseId(result.testCase)
@@ -36,7 +38,8 @@ async function parseResultsFile() {
       casesToAddToRun.push({
         test_id: testCaseId,
         status_id: statusId,
-        test_name: testName
+        test_name: testName,
+        failed_screenshot: failedScreenshot
       })
     }
   }
@@ -45,11 +48,10 @@ async function parseResultsFile() {
 
 export default async function sendResults() {
   const runId = Number(process.env.TEST_RUN_ID)
-  const resultsToSendObject = parseResultsFile()
+  const resultsToSendObject = await parseResultsFile()
 
-  const testIdArrayForTestrail = (await resultsToSendObject)
-    .testIdArrayForTestrail
-  const casesToAddToRun = (await resultsToSendObject).casesToAddToRun
+  const testIdArrayForTestrail = resultsToSendObject.testIdArrayForTestrail
+  const casesToAddToRun = resultsToSendObject.casesToAddToRun
 
   // Payload for testrail to add the casses to the test run before the results are sent
   var testCasesToSend = {
@@ -79,6 +81,7 @@ A 'case id' is the permanent test case in our suite, a 'test case id' is a part 
   for (var testCaseResultObject of casesToAddToRun) {
     var testRunCaseStatusId = testCaseResultObject.status_id
     var testId = testCaseResultObject.test_id
+    var screenshot = testCaseResultObject.failed_screenshot
     if (testRunCaseStatusId === 1) {
       // Sends a passed test to testrail with no comment
       resultsToSendToTestrail.push({
@@ -91,19 +94,60 @@ A 'case id' is the permanent test case in our suite, a 'test case id' is a part 
       // var errorMessage = fs.readFileSync(`./output_logs/${failedTest}`, 'utf8')
       resultsToSendToTestrail.push({
         case_id: testId,
-        status_id: testRunCaseStatusId
+        status_id: testRunCaseStatusId,
+        screenshot: screenshot
         //comment: `${errorMessage}`
       })
     }
   }
 
-  var resultsContent = {
-    results: resultsToSendToTestrail
-  }
   // Sends the results to testrail using the resultsToSendToTestrail array if POST_TO_TESTRAIL env variable set to true
   if (process.env.POST_TO_TESTRAIL) {
+    const failedTestFolders = await getDirectories('./e2e/artifacts/ios')
+    console.log(
+      JSON.stringify(failedTestFolders[0]) + ' failed test folders!!!'
+    )
     try {
-      await api.addResultsForCases(runId, resultsContent)
+      // const resultsObject = await api.addResultsForCases(runId, resultsContent)
+      const resultsToSendUnique = getUniqueListBy(
+        resultsToSendToTestrail,
+        'case_id'
+      )
+      for (let i = 0; i < resultsToSendUnique.length; i++) {
+        const resultObject = resultsToSendToTestrail[i]
+        const payload = {
+          status_id: resultObject?.status_id
+        }
+        if (resultObject) {
+          const testResult = await api.addResultForCase(
+            runId,
+            resultObject?.case_id,
+            payload
+          )
+          if (testResult.status_id === 5) {
+            const failScreenshot = `./e2e/artifacts/${device.getPlatform()}/${
+              failedTestFolders[0]
+            }/${resultObject.screenshot}`
+            console.log(failScreenshot + ' failed screenshot path!!!')
+            if (failScreenshot) {
+              const failedPayload = {
+                name: 'failed.png',
+                value: fs.createReadStream(failScreenshot)
+              }
+              console.log('attachment to be sent!!!')
+              const attachmentID = await api.addAttachmentToResult(
+                testResult.id,
+                failedPayload
+              )
+              console.log(`${attachmentID} is the attachment ID...`)
+            }
+          }
+        } else {
+          console.log(
+            'result object is null so no results were sent to testrail!!!'
+          )
+        }
+      }
     } catch (error) {
       console.log(error)
     }

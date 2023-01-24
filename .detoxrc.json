@@ -68,7 +68,7 @@
         "device":"simulator",
         "app":"ios.internal.debug",
         "artifacts": {
-         "rootDir": ".artifacts/ios",
+         "rootDir": "./e2e/artifacts/ios",
          "plugins": {
             "instruments": "all"
          }

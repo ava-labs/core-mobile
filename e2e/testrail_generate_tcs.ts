@@ -485,3 +485,11 @@ export async function createNewTestRunBool() {
     return (runDetails[0] as TestRail.Run).id
   }
 }
+
+export function getUniqueListBy(arr: any, key: string) {
+  return [
+    ...new Map(
+      arr.map((item: { [x: string]: any }) => [item[key], item])
+    ).values()
+  ]
+}
