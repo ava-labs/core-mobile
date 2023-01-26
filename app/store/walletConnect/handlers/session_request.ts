@@ -1,9 +1,15 @@
 import { IClientMeta } from '@walletconnect/types'
-import { PayloadAction } from '@reduxjs/toolkit'
-import { AppListenerEffectAPI } from 'store'
-import { addRequest, removeRequest, onSendRpcResult } from '../slice'
+import * as Navigation from 'utils/Navigation'
+import AppNavigation from 'navigation/AppNavigation'
+import { showSimpleToast } from 'components/Snackbar'
 import { RpcMethod } from '../types'
-import { DappRpcRequest, RpcRequestHandler } from './types'
+import {
+  DappRpcRequest,
+  RpcRequestHandler,
+  DEFERRED_RESULT,
+  HandleResponse,
+  ApproveResponse
+} from './types'
 
 export type SessionRequestRpcRequest = DappRpcRequest<
   RpcMethod.SESSION_REQUEST,
@@ -15,28 +21,31 @@ export type SessionRequestRpcRequest = DappRpcRequest<
 >
 
 class SessionRequestHandler
-  implements RpcRequestHandler<SessionRequestRpcRequest>
+  implements RpcRequestHandler<SessionRequestRpcRequest, never>
 {
   methods = [RpcMethod.SESSION_REQUEST]
 
-  handle = async (
-    action: PayloadAction<SessionRequestRpcRequest['payload'], string>,
-    listenerApi: AppListenerEffectAPI
-  ) => {
-    listenerApi.dispatch(
-      addRequest({
-        payload: action.payload
-      })
-    )
+  handle = async (request: SessionRequestRpcRequest): HandleResponse => {
+    Navigation.navigate({
+      name: AppNavigation.Root.Wallet,
+      params: {
+        screen: AppNavigation.Modal.SessionProposal,
+        params: { request }
+      }
+    })
+
+    return { success: true, value: DEFERRED_RESULT }
   }
 
-  approve = async (
-    action: PayloadAction<{ request: SessionRequestRpcRequest }, string>,
-    listenerApi: AppListenerEffectAPI
-  ) => {
-    const request = action.payload.request
-    listenerApi.dispatch(removeRequest(request.payload.id))
-    listenerApi.dispatch(onSendRpcResult({ request }))
+  approve = async (payload: {
+    request: SessionRequestRpcRequest
+  }): ApproveResponse => {
+    const siteName = payload.request.payload.peerMeta?.name ?? ''
+    const message = `Connected to ${siteName}`
+
+    showSimpleToast(message)
+
+    return { success: true }
   }
 }
 export const sessionRequestHandler = new SessionRequestHandler()

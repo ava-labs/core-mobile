@@ -1,4 +1,3 @@
-import { PayloadAction } from '@reduxjs/toolkit'
 import { AppListenerEffectAPI } from 'store'
 import { ethErrors } from 'eth-rpc-errors'
 import {
@@ -7,44 +6,47 @@ import {
   selectActiveAccount,
   setActiveAccountIndex
 } from 'store/account'
-import {
-  addRequest,
-  onSendRpcResult,
-  onSendRpcError,
-  removeRequest
-} from '../slice'
+import * as Navigation from 'utils/Navigation'
+import AppNavigation from 'navigation/AppNavigation'
 import { RpcMethod } from '../types'
-import { DappRpcRequest, RpcRequestHandler } from './types'
+import {
+  ApproveResponse,
+  DappRpcRequest,
+  DEFERRED_RESULT,
+  HandleResponse,
+  RpcRequestHandler
+} from './types'
 
-export interface AvalancheSelectAccountRequest
-  extends DappRpcRequest<RpcMethod.AVALANCHE_SELECT_ACCOUNT, [number]> {
-  data: { account: Account }
+type ApproveData = {
+  account: Account
 }
 
+export type AvalancheSelectAccountRequest = DappRpcRequest<
+  RpcMethod.AVALANCHE_SELECT_ACCOUNT,
+  [number]
+>
+
 class AvalancheSelectAccountHandler
-  implements RpcRequestHandler<AvalancheSelectAccountRequest>
+  implements RpcRequestHandler<AvalancheSelectAccountRequest, ApproveData>
 {
   methods = [RpcMethod.AVALANCHE_SELECT_ACCOUNT]
 
   handle = async (
-    action: PayloadAction<AvalancheSelectAccountRequest['payload'], string>,
+    request: AvalancheSelectAccountRequest,
     listenerApi: AppListenerEffectAPI
-  ) => {
-    const { dispatch, getState } = listenerApi
-    const { params } = action.payload
+  ): HandleResponse => {
+    const { getState } = listenerApi
+    const { params } = request.payload
 
     const accountIndex = params?.[0]
 
     if (accountIndex === undefined) {
-      dispatch(
-        onSendRpcError({
-          request: action,
-          error: ethErrors.rpc.invalidParams({
-            message: 'missing param: accountIndex'
-          })
+      return {
+        success: false,
+        error: ethErrors.rpc.invalidParams({
+          message: 'missing param: accountIndex'
         })
-      )
-      return
+      }
     }
 
     const activeAccount = selectActiveAccount(getState())
@@ -54,55 +56,44 @@ class AvalancheSelectAccountHandler
       activeAccount && activeAccount.index === accountIndex
 
     if (accountAlreadyActive) {
-      dispatch(
-        onSendRpcResult({
-          request: action,
-          result: null
-        })
-      )
-      return
+      return { success: true, value: null }
     }
 
     const requestedAccount = accounts[accountIndex]
 
     if (requestedAccount === undefined) {
-      dispatch(
-        onSendRpcError({
-          request: action,
-          error: ethErrors.rpc.resourceNotFound({
-            message: 'requested account does not exist'
-          })
+      return {
+        success: false,
+        error: ethErrors.rpc.resourceNotFound({
+          message: 'requested account does not exist'
         })
-      )
-      return
+      }
     }
 
-    const dAppRequest: AvalancheSelectAccountRequest = {
-      payload: action.payload,
-      data: { account: requestedAccount }
-    }
+    Navigation.navigate({
+      name: AppNavigation.Root.Wallet,
+      params: {
+        screen: AppNavigation.Modal.SelectAccount,
+        params: {
+          request,
+          account: requestedAccount
+        }
+      }
+    })
 
-    dispatch(addRequest(dAppRequest))
+    return { success: true, value: DEFERRED_RESULT }
   }
 
   approve = async (
-    action: PayloadAction<{ request: AvalancheSelectAccountRequest }, string>,
+    payload: { request: AvalancheSelectAccountRequest; data: ApproveData },
     listenerApi: AppListenerEffectAPI
-  ) => {
+  ): ApproveResponse => {
     const { dispatch } = listenerApi
-    const request = action.payload.request
-    const accountIndex = request.data.account.index
+    const accountIndex = payload.data.account.index
 
     dispatch(setActiveAccountIndex(accountIndex))
 
-    dispatch(
-      onSendRpcResult({
-        request,
-        result: []
-      })
-    )
-
-    dispatch(removeRequest(request.payload.id))
+    return { success: true, value: [] }
   }
 }
 
