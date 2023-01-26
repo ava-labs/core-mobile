@@ -1,17 +1,12 @@
 import React, { createContext, useCallback, useContext, useEffect } from 'react'
-import { InteractionManager } from 'react-native'
 import { useActiveNetwork } from 'hooks/useActiveNetwork'
-import Logger from 'utils/Logger'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectWalletState, WalletState } from 'store/app'
-import { useApplicationContext } from 'contexts/ApplicationContext'
-import AppNavigation from 'navigation/AppNavigation'
 import {
   ApprovedAppMeta,
   onRequestApproved,
-  selectRpcRequests,
-  onSendRpcError,
-  killSessions as killSessionsAction
+  killSessions as killSessionsAction,
+  onRequestRejected
 } from 'store/walletConnect'
 import { DappRpcRequest } from 'store/walletConnect/handlers/types'
 import { ethErrors } from 'eth-rpc-errors'
@@ -30,11 +25,9 @@ export const DappConnectionContextProvider = ({
   children: React.ReactNode
 }) => {
   const dispatch = useDispatch()
-  const rpcRequests = useSelector(selectRpcRequests)
   const activeNetwork = useActiveNetwork()
   const walletState = useSelector(selectWalletState)
   const isWalletActive = walletState === WalletState.ACTIVE
-  const appNavHook = useApplicationContext().appNavHook
   const { pendingDeepLink, setPendingDeepLink, expireDeepLink } = useDeepLink()
 
   /******************************************************************************
@@ -51,26 +44,8 @@ export const DappConnectionContextProvider = ({
     }
   }, [isWalletActive, pendingDeepLink, activeNetwork, expireDeepLink, dispatch])
 
-  /******************************************************************************
-   * Process dapp event if there is one pending and app is unlocked
-   *****************************************************************************/
-  useEffect(() => {
-    if (
-      rpcRequests?.length &&
-      isWalletActive &&
-      appNavHook?.navigation?.current
-    ) {
-      InteractionManager.runAfterInteractions(() => {
-        Logger.info('opening RcpMethods up to interact with dapps')
-        appNavHook?.navigation?.current?.navigate(
-          AppNavigation.Modal.RpcMethodsUI
-        )
-      })
-    }
-  }, [rpcRequests, isWalletActive, appNavHook?.navigation])
-
   const onUserApproved = useCallback(
-    (request: DappRpcRequest<string, unknown>, data?: unknown) => {
+    (request: DappRpcRequest<string, unknown>, data: unknown) => {
       dispatch(
         onRequestApproved({
           request,
@@ -84,7 +59,7 @@ export const DappConnectionContextProvider = ({
   const onUserRejected = useCallback(
     (request: DappRpcRequest<string, unknown>, message?: string) => {
       dispatch(
-        onSendRpcError({
+        onRequestRejected({
           request,
           error: message
             ? ethErrors.rpc.internal(message)
