@@ -1,4 +1,5 @@
 import { IWalletConnectSession } from '@walletconnect/types'
+import { EthereumProviderError, EthereumRpcError } from 'eth-rpc-errors'
 import { AvalancheBridgeAssetRequest } from './handlers/avalanche_bridgeAsset'
 import { AvalancheCreateContactRequest } from './handlers/avalanche_createContact'
 import { AvalancheGetAccountsRpcRequest } from './handlers/avalanche_getAccounts'
@@ -9,6 +10,7 @@ import { AvalancheUpdateContactRequest } from './handlers/avalanche_updateContac
 import { EthSendTransactionRpcRequest } from './handlers/eth_sendTransaction'
 import { EthSignRpcRequest } from './handlers/eth_sign'
 import { SessionRequestRpcRequest } from './handlers/session_request'
+import { DappRpcRequest } from './handlers/types'
 import { WalletAddEthereumChainRpcRequest } from './handlers/wallet_addEthereumChain'
 import { WalletSwitchEthereumChainRpcRequest } from './handlers/wallet_switchEthereumChain'
 
@@ -29,7 +31,8 @@ export type DappRpcRequests =
   | AvalancheSelectAccountRequest
 
 export type WalletConnectState = {
-  requests: DappRpcRequests[]
+  requests: DappRpcRequest<string, unknown>[]
+  requestStatuses: Record<string, { result?: unknown; error?: Error }>
   approvedDApps: ApprovedAppMeta[]
 }
 
@@ -69,3 +72,5 @@ export const CORE_ONLY_METHODS = [
   RpcMethod.AVALANCHE_SET_DEVELOPER_MODE,
   RpcMethod.AVALANCHE_UPDATE_CONTACT
 ]
+
+export type RpcError = EthereumRpcError<string> | EthereumProviderError<string>
