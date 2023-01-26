@@ -129,7 +129,16 @@ enum ModalScreens {
   SelectToken = 'ModalScreens.SelectToken',
   EditGasLimit = 'ModalScreens.EditGasLimit',
   BridgeSelectToken = 'ModalScreens.BridgeSelectToken',
-  RpcMethodsUI = 'ModalScreens.RpcMethodsUI'
+  // RPC PROMPTS
+  SessionProposal = 'ModalScreens.SessionProposal',
+  CreateRemoveContact = 'ModalScreens.CreateRemoveContact',
+  UpdateContact = 'ModalScreens.UpdateContact',
+  SelectAccount = 'ModalScreens.SelectAccount',
+  SignTransaction = 'ModalScreens.SignTransaction',
+  SignMessage = 'ModalScreens.SignMessage',
+  BridgeAsset = 'ModalScreens.BridgeAsset',
+  AddEthereumChain = 'ModalScreens.AddEthereumChain',
+  SwitchEthereumChain = 'ModalScreens.SwitchEthereumChain'
 }
 
 enum SendScreens {

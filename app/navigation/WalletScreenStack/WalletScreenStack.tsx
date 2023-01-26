@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from 'react'
+import React, { memo } from 'react'
 import { BackHandler } from 'react-native'
 import {
   NavigatorScreenParams,
@@ -7,7 +7,6 @@ import {
   useRoute
 } from '@react-navigation/native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import AccountBottomSheet from 'screens/portfolio/account/AccountBottomSheet'
 import AppNavigation from 'navigation/AppNavigation'
 import DrawerScreenStack, {
   DrawerParamList
@@ -27,11 +26,9 @@ import {
 import ReceiveScreenStack, {
   ReceiveStackParamList
 } from 'navigation/wallet/ReceiveScreenStack'
-import SelectTokenBottomSheet from 'screens/swap/SelectTokenBottomSheet'
 import SendScreenStack, {
   SendStackParamList
 } from 'navigation/wallet/SendScreenStack'
-import AccountDropdown from 'screens/portfolio/account/AccountDropdown'
 import SwapScreenStack, {
   SwapStackParamList
 } from 'navigation/wallet/SwapScreenStack'
@@ -40,7 +37,6 @@ import AddressBookStack, {
 } from 'navigation/wallet/AddressBookStack'
 import TokenDetail from 'screens/watchlist/TokenDetail'
 import ActivityDetail from 'screens/activity/ActivityDetail'
-import EditGasLimitBottomSheet from 'screens/shared/EditGasLimitBottomSheet'
 import OwnedTokenDetail from 'screens/portfolio/OwnedTokenDetail'
 import BridgeScreenStack from 'navigation/wallet/BridgeScreenStack'
 import NFTScreenStack, {
@@ -58,24 +54,33 @@ import AddEditNetwork, {
   AddEditNetworkProps
 } from 'screens/network/AddEditNetwork'
 import { Transaction } from 'store/transaction'
-import RpcMethodsUI from 'screens/rpc/RpcMethodsUI'
 import LegalStackScreen, {
   LegalStackParamList
 } from 'navigation/wallet/LegalStackScreen'
 import { NetworkDetailsAction } from 'screens/network/NetworkDetailsAction'
 import CaptureDappQR from 'screens/shared/CaptureDappQR'
 import { ChainID } from 'store/network'
-import { BridgeStackParamList } from './wallet/BridgeScreenStack'
+import { BridgeStackParamList } from '../wallet/BridgeScreenStack'
 import {
+  AddEthereumChainParams,
+  BridgeAssetParams,
   BridgeTransactionStatusParams,
+  CreateRemoveContactParams,
   EditGasLimitParams,
   QRCodeParams,
+  SelectAccountParams,
+  SessionProposalParams,
+  SignMessageParams,
+  SignTransactionParams,
+  SwitchEthereumChainParams,
   TokenSelectParams,
+  UpdateContactParams,
   WalletScreenProps
-} from './types'
+} from '../types'
 import AdvancedStackScreen, {
   AdvancedStackParamList
-} from './wallet/AdvancedStackScreen'
+} from '../wallet/AdvancedStackScreen'
+import { createModals } from './createModals'
 
 type Props = {
   onExit: () => void
@@ -121,10 +126,20 @@ export type WalletScreenStackParams = {
   [AppNavigation.Modal.SignOut]: undefined
   [AppNavigation.Modal.SelectToken]: TokenSelectParams
   [AppNavigation.Modal.EditGasLimit]: EditGasLimitParams
-  [AppNavigation.Modal.RpcMethodsUI]: undefined
+  [AppNavigation.Modal.SessionProposal]: SessionProposalParams
+  [AppNavigation.Modal.CreateRemoveContact]: CreateRemoveContactParams
+  [AppNavigation.Modal.UpdateContact]: UpdateContactParams
+  [AppNavigation.Modal.SelectAccount]: SelectAccountParams
+  [AppNavigation.Modal.SignTransaction]: SignTransactionParams
+  [AppNavigation.Modal.SignMessage]: SignMessageParams
+  [AppNavigation.Modal.BridgeAsset]: BridgeAssetParams
+  [AppNavigation.Modal.AddEthereumChain]: AddEthereumChainParams
+  [AppNavigation.Modal.SwitchEthereumChain]: SwitchEthereumChainParams
 }
 
 const WalletScreenS = createStackNavigator<WalletScreenStackParams>()
+
+export type WalletScreenSType = typeof WalletScreenS
 
 export const SignOutModalScreen = () => {
   const { signOut } = useApplicationContext().appHook
@@ -160,43 +175,6 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
   const onExit = (): void => {
     props.onExit()
   }
-
-  const BottomSheetGroup = useMemo(() => {
-    return (
-      <WalletScreenS.Group screenOptions={{ presentation: 'transparentModal' }}>
-        <WalletScreenS.Screen
-          name={AppNavigation.Modal.RpcMethodsUI}
-          component={RpcMethodsUI}
-        />
-        <WalletScreenS.Screen
-          options={{
-            transitionSpec: {
-              open: { animation: 'timing', config: { duration: 0 } },
-              close: { animation: 'timing', config: { duration: 300 } }
-            }
-          }}
-          name={AppNavigation.Modal.AccountDropDown}
-          component={AccountDropdownComp}
-        />
-        <WalletScreenS.Screen
-          name={AppNavigation.Modal.AccountBottomSheet}
-          component={AccountBottomSheet}
-        />
-        <WalletScreenS.Screen
-          name={AppNavigation.Modal.SignOut}
-          component={SignOutModalScreen}
-        />
-        <WalletScreenS.Screen
-          name={AppNavigation.Modal.SelectToken}
-          component={SelectTokenBottomSheet}
-        />
-        <WalletScreenS.Screen
-          name={AppNavigation.Modal.EditGasLimit}
-          component={EditGasLimit}
-        />
-      </WalletScreenS.Group>
-    )
-  }, [])
 
   return (
     <>
@@ -340,44 +318,9 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
           name={AppNavigation.Wallet.QRCode}
           component={CaptureDappQR}
         />
-        {BottomSheetGroup}
+        {createModals(WalletScreenS)}
       </WalletScreenS.Navigator>
     </>
-  )
-}
-
-type AccountDropDownNavigationProp = WalletScreenProps<
-  typeof AppNavigation.Modal.AccountDropDown
->['navigation']
-
-const AccountDropdownComp = () => {
-  const navigation = useNavigation<AccountDropDownNavigationProp>()
-  return (
-    <AccountDropdown
-      onAddEditAccounts={() => {
-        navigation.goBack()
-        navigation.navigate(AppNavigation.Modal.AccountBottomSheet)
-      }}
-    />
-  )
-}
-type EditGasLimitScreenProps = WalletScreenProps<
-  typeof AppNavigation.Modal.EditGasLimit
->
-
-const EditGasLimit = () => {
-  const { goBack } = useNavigation<EditGasLimitScreenProps['navigation']>()
-  const { params } = useRoute<EditGasLimitScreenProps['route']>()
-
-  const onSave = (newGasLimit: number) => params.onSave(newGasLimit)
-
-  return (
-    <EditGasLimitBottomSheet
-      onClose={goBack}
-      onSave={onSave}
-      gasLimit={params.gasLimit}
-      gasPrice={params.gasPrice}
-    />
   )
 }
 
