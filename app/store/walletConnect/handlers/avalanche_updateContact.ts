@@ -79,7 +79,6 @@ class AvalancheUpdateContactHandler
     listenerApi: AppListenerEffectAPI
   ): ApproveResponse => {
     const { dispatch } = listenerApi
-    console.log('payload', payload)
     const contact = payload.data.contact
 
     dispatch(

@@ -35,7 +35,6 @@ class AvalancheRemoveContactHandler
   ): HandleResponse => {
     const { getState } = listenerApi
     const { params } = request.payload
-    console.log(JSON.stringify(params))
     const contactId = params?.[0]?.id
 
     if (!isString(contactId)) {
