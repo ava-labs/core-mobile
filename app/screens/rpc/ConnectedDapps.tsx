@@ -167,7 +167,7 @@ const ConnectedDapps: FC<Props> = ({ goBack }) => {
           ) : null
         }
         ListEmptyComponent={<ZeroState.Sites onAddNewConnection={handleAdd} />}
-        contentContainerStyle={{ flex: 1 }}
+        contentContainerStyle={{ flexGrow: 1 }}
         data={connectedDAppsSessions}
         renderItem={({ item, index }) => (
           <ConnectionListItem
