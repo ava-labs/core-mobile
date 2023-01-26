@@ -1,5 +1,5 @@
 import { AppListenerEffectAPI } from 'store'
-import WalletConnectServiceV11 from 'services/walletconnect/WalletConnectService'
+import WalletConnectService from 'services/walletconnect/WalletConnectService'
 import { selectActiveNetwork } from 'store/network'
 import { selectActiveAccount } from 'store/account'
 import { ethErrors } from 'eth-rpc-errors'
@@ -25,7 +25,7 @@ export const sendRpcResult = async (
       accounts: [address]
     }
 
-    const session = WalletConnectServiceV11.approveSession(peerId, approveData)
+    const session = WalletConnectService.approveSession(peerId, approveData)
     session && dispatch(addDapp(session))
 
     dispatch(
@@ -38,7 +38,7 @@ export const sendRpcResult = async (
       })
     )
   } else {
-    WalletConnectServiceV11.approveCall(peerId, id, result)
+    WalletConnectService.approveCall(peerId, id, result)
   }
 }
 
@@ -48,9 +48,9 @@ export const sendRpcError = async (
   const { request, error } = action.payload
   const peerId = request.payload.peerId
   if (isSessionRequestRpcRequest(request)) {
-    WalletConnectServiceV11.rejectSession(peerId)
+    WalletConnectService.rejectSession(peerId)
   } else {
-    WalletConnectServiceV11.rejectCall(
+    WalletConnectService.rejectCall(
       peerId,
       request.payload.id,
       error ?? ethErrors.rpc.internal()

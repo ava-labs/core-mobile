@@ -1,5 +1,5 @@
 import { AppListenerEffectAPI } from 'store/index'
-import { onRehydrationComplete } from 'store/app'
+import { onLogIn } from 'store/app'
 import WalletConnectService, {
   WalletConnectCallbacks
 } from 'services/walletconnect/WalletConnectService'
@@ -14,10 +14,9 @@ import { JsonRpcRequest } from '@walletconnect/jsonrpc-types'
 import {
   removeDApps,
   killSessions,
-  onSessionRequest,
-  onCallRequest,
   onDisconnect,
-  newSession
+  newSession,
+  addRequest
 } from '../slice'
 import { selectApprovedDApps } from '../slice'
 import { RpcMethod } from '../types'
@@ -43,7 +42,7 @@ const callbacks = (
         peerId
       }
 
-      dispatch(onSessionRequest(request))
+      dispatch(addRequest({ payload: request }))
     },
     onCallRequest: (
       peerId: string,
@@ -56,7 +55,7 @@ const callbacks = (
         peerId: peerId
       }
 
-      dispatch(onCallRequest(request))
+      dispatch(addRequest({ payload: request }))
     },
     onDisconnect: (peerMeta: PeerMeta) => dispatch(onDisconnect(peerMeta))
   }
@@ -71,18 +70,13 @@ export const startSession = async (
 }
 
 export const restoreSessions = async (
-  action: ReturnType<typeof onRehydrationComplete>,
+  action: ReturnType<typeof onLogIn>,
   listenerApi: AppListenerEffectAPI
 ) => {
   const state = listenerApi.getState()
-  const activeNetwork = selectActiveNetwork(state)
   const approvedDApps = selectApprovedDApps(state)
 
-  if (
-    approvedDApps.length === 0 ||
-    activeNetwork.vmName === NetworkVMType.BITCOIN
-  )
-    return
+  if (approvedDApps.length === 0) return
 
   WalletConnectService.restoreSessions(approvedDApps, callbacks(listenerApi))
 }

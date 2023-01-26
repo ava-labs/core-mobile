@@ -31,6 +31,6 @@ const handlerMap = [
   })
   return acc
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-}, new Map<string, RpcRequestHandler<any>>())
+}, new Map<string, RpcRequestHandler<any, any>>())
 
 export default handlerMap
