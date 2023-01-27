@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-var */
 import * as fs from 'fs'
 import {
@@ -7,7 +8,7 @@ import {
   androidRunID,
   iosRunID
 } from './testrail_generate_tcs'
-import getTestLogs, { getDirectories } from './getResultsFromLogs'
+import getTestLogs from './getResultsFromLogs'
 
 async function getAndroidTestRunId() {
   const androidTestRunID = await androidRunID()
@@ -58,13 +59,11 @@ async function parseResultsFile() {
   return { casesToAddToRun, testIdArrayForTestrail }
 }
 
-export default async function sendResults() {
+export async function prepareResults() {
   const androidTestRunID = await getAndroidTestRunId()
   const iosTestRunId = await getIosTestRunId()
 
   const resultsToSendObject = await parseResultsFile()
-
-  console.log(resultsToSendObject.testIdArrayForTestrail)
 
   const testIdArrayForTestrail = resultsToSendObject.testIdArrayForTestrail
   const casesToAddToRun = resultsToSendObject.casesToAddToRun
@@ -94,7 +93,11 @@ export default async function sendResults() {
       }
     }
   }
+  return casesToAddToRun
+}
 
+export default async function sendResults() {
+  const casesToAddToRun = await prepareResults()
   /*/ 
 Creates an array of test case objects from the current test run in testrail. This is done because a 'test case id' in a test run is different than a 'case id'.
 A 'case id' is the permanent test case in our suite, a 'test case id' is a part of the test run only. It can get confusing so please be sure to ask questions if you need help.
@@ -130,58 +133,99 @@ A 'case id' is the permanent test case in our suite, a 'test case id' is a part 
   }
 
   // Sends the results to testrail using the resultsToSendToTestrail array if POST_TO_TESTRAIL env variable set to true
-  if (process.env.POST_TO_TESTRAIL && iosTestRunId && androidTestRunID) {
-    const failedTestFolders = await getDirectories('./e2e/artifacts/')
+  if (process.env.POST_TO_TESTRAIL) {
+    await generateAndroidsResults(resultsToSendToTestrail)
+    await generateIosResults(resultsToSendToTestrail)
+  }
+}
 
-    try {
-      // const resultsObject = await api.addResultsForCases(runId, resultsContent)
-      const iosResultArray = resultsToSendToTestrail.filter(
-        result => result.platform === 'ios'
-      )
+async function generateAndroidsResults(resultsToSendToTestrail: any[]) {
+  const androidRunId = await getAndroidTestRunId()
 
-      const androidResultArray = resultsToSendToTestrail.filter(
-        result => result.platform === 'android'
-      )
+  try {
+    // const resultsObject = await api.addResultsForCases(runId, resultsContent)
+    const androidResultArray = resultsToSendToTestrail.filter(
+      result => result.platform === 'android'
+    )
 
-      console.log(iosResultArray && androidResultArray)
-
-      for (let i = 0; i < iosResultArray.length; i++) {
-        const resultObject = resultsToSendToTestrail[i]
-        const payload = {
-          status_id: resultObject?.status_id
-        }
-        if (resultObject) {
-          const runId = iosTestRunId
-
-          const testResult = await api.addResultForCase(
-            runId,
-            resultObject?.case_id,
-            payload
-          )
-          if (testResult.status_id === 5) {
-            const failScreenshot = `./e2e/artifacts/${resultObject.platform}}/${failedTestFolders[0]}/${resultObject.screenshot}`
-            console.log(failScreenshot + ' failed screenshot path!!!')
-            if (failScreenshot) {
-              const failedPayload = {
-                name: 'failed.png',
-                value: fs.createReadStream(failScreenshot)
-              }
-              console.log('attachment to be sent!!!')
-              const attachmentID = await api.addAttachmentToResult(
-                testResult.id,
-                failedPayload
-              )
-              console.log(`${attachmentID} is the attachment ID...`)
-            }
-          }
-        } else {
-          console.log(
-            'result object is null so no results were sent to testrail!!!'
-          )
-        }
+    for (let i = 0; i < androidResultArray.length; i++) {
+      const resultObject = androidResultArray[i]
+      const payload = {
+        status_id: resultObject?.status_id
       }
-    } catch (error) {
-      console.log(error)
+      if (resultObject) {
+        const testResult = await api.addResultForCase(
+          Number(androidRunId),
+          resultObject?.case_id,
+          payload
+        )
+        if (testResult.status_id === 5) {
+          const failScreenshot = `./e2e/artifacts/android/${resultObject.screenshot}`
+          if (failScreenshot) {
+            const failedPayload = {
+              name: 'failed.png',
+              value: fs.createReadStream(failScreenshot)
+            }
+            console.log('attachment to be sent!!!')
+            const attachmentID = await api.addAttachmentToResult(
+              testResult.id,
+              failedPayload
+            )
+            console.log(`${attachmentID} is the attachment ID...`)
+          }
+        }
+      } else {
+        console.log(
+          'result object is null so no results were sent to testrail!!!'
+        )
+      }
     }
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+async function generateIosResults(resultsToSendToTestrail: any[]) {
+  const iosTestRunId = await getIosTestRunId()
+
+  try {
+    // const resultsObject = await api.addResultsForCases(runId, resultsContent)
+    const iosResultArray = resultsToSendToTestrail.filter(
+      result => result.platform === 'ios'
+    )
+
+    for (let i = 0; i < iosResultArray.length; i++) {
+      const resultObject = iosResultArray[i]
+      const payload = {
+        status_id: resultObject?.status_id
+      }
+      if (resultObject) {
+        const testResult = await api.addResultForCase(
+          Number(iosTestRunId),
+          resultObject?.case_id,
+          payload
+        )
+        if (testResult.status_id === 5) {
+          const failScreenshot = `./e2e/artifacts/ios/${resultObject.screenshot}`
+          if (failScreenshot) {
+            const failedPayload = {
+              name: 'failed.png',
+              value: fs.createReadStream(failScreenshot)
+            }
+            const attachmentID = await api.addAttachmentToResult(
+              testResult.id,
+              failedPayload
+            )
+            console.log(`${attachmentID} is the attachment ID...`)
+          }
+        }
+      } else {
+        console.log(
+          'result object is null so no results were sent to testrail!!!'
+        )
+      }
+    }
+  } catch (error) {
+    console.log(error)
   }
 }

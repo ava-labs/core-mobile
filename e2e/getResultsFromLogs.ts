@@ -55,7 +55,7 @@ export default async function getTestLogs() {
             Object.assign(splitTestFolder, {
               testResult: testResult,
               platform: platform,
-              failedScreenshot: `${parsedResultFolder}/testDone.png`
+              failedScreenshot: `${parsedResultFolder}/${result}/testDone.png`
             })
             testResults.push(splitTestFolder)
           }
