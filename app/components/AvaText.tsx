@@ -16,6 +16,7 @@ type BaseAvaTextProps = {
   color?: string
   ellipsizeMode?: 'head' | 'middle' | 'tail' | 'clip' | undefined
   currency?: boolean
+  tokenInCurrency?: boolean
   hideTrailingCurrency?: boolean
   animated?: boolean
   textStyle?: Animated.WithAnimatedValue<StyleProp<TextStyle>>
@@ -27,6 +28,7 @@ type AvaTextProps = Omit<BaseAvaTextProps, 'style'>
 const AvaxTextBase: FC<BaseAvaTextProps> = ({
   animated,
   currency,
+  tokenInCurrency,
   hideTrailingCurrency,
   children,
   ellipsizeMode,
@@ -34,15 +36,19 @@ const AvaxTextBase: FC<BaseAvaTextProps> = ({
   style,
   ...rest
 }) => {
-  const { currencyFormatter } = useApplicationContext().appHook
+  const { currencyFormatter, tokenInCurrencyFormatter } =
+    useApplicationContext().appHook
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const numOfLines = ellipsizeMode ? numberOfLines || 1 : undefined
 
   if (
     (typeof children === 'string' || typeof children === 'number') &&
-    currency
+    (currency || tokenInCurrency)
   ) {
-    let amountInCurrency = currencyFormatter(Number(children))
+    const formatter = tokenInCurrency
+      ? tokenInCurrencyFormatter
+      : currencyFormatter
+    let amountInCurrency = formatter(Number(children))
     if (hideTrailingCurrency)
       amountInCurrency = amountInCurrency.replace(selectedCurrency, '').trim()
     return animated ? (
