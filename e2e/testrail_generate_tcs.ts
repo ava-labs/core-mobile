@@ -1,3 +1,4 @@
+/* eslint-disable no-var */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import TestRail from '@dlenroc/testrail'
@@ -12,9 +13,12 @@ export const api = new TestRail({
   password: password
 })
 
-export async function createEmptyTestRun(testRunName: any, description: any) {
+export async function createEmptyTestRun(
+  testRunName: string,
+  description: string
+) {
   const content = {
-    name: testRunName,
+    name: testRunName + generateTimestamp(),
     description: description,
     include_all: false
   }
@@ -91,10 +95,10 @@ async function createNewTestSection(sectionName: any) {
 
 // Todo grab the test case names using the method
 export async function sectionsAndCases() {
-  const rawSectionsAndCases = getTestLogs()
+  const rawSectionsAndCases = await getTestLogs()
   const testCaseSectionsAndCases = []
 
-  for await (const test of await rawSectionsAndCases) {
+  for await (const test of rawSectionsAndCases) {
     const sectionName: any = test.sectionName
     const subsection: any = test.subsection
     const testCase = test.testCase
@@ -126,7 +130,7 @@ export async function createNewTestSectionsAndCases(casesArray: any) {
   })
 
   // Creates an object of the existing sections and subsections from testrail
-  // eslint-disable-next-line no-var
+
   var testrailSectionsAndSubsections =
     sectionsAndSubsectionsTestrail(theTestrailSections)
 
@@ -135,7 +139,7 @@ export async function createNewTestSectionsAndCases(casesArray: any) {
   const subsectionsToAddSet: any[] = []
 
   const sections = await getSectionsFromTestRail()
-  // eslint-disable-next-line no-var
+
   var testrailSectionsAndSubsections = sectionsAndSubsectionsTestrail(sections)
   // If a section already exists in testrail this checks to see if there are any new subsections that need to be added
   createNewSubsections(
@@ -467,7 +471,7 @@ export function parseTestName(testName: any) {
   return testCaseObject
 }
 
-export async function createNewTestRunBool() {
+export async function createNewTestRunBool(platform: string) {
   const yesterday = new Date()
   yesterday.setDate(yesterday.getDate() - 1)
   yesterday.setUTCHours(0, 0, 0, 0)
@@ -482,7 +486,39 @@ export async function createNewTestRunBool() {
   ) {
     return false
   } else {
-    return (runDetails[0] as TestRail.Run).id
+    for (let i = 0; i < runDetails.length; i++) {
+      const testRunName = runDetails[i]?.name
+      const testRunID = runDetails[i]?.id
+      if (testRunName?.includes(platform)) {
+        return testRunID
+      }
+    }
+  }
+}
+
+export const androidRunID = async () => {
+  var runID = await createNewTestRunBool('android')
+  if (runID) {
+    return runID
+  } else {
+    const currentAndroidRunID = await createEmptyTestRun(
+      `android smoke test run ${generateTimestamp()}`,
+      'This is a smoke test run for android!'
+    )
+    return currentAndroidRunID
+  }
+}
+
+export const iosRunID = async () => {
+  var runID = await createNewTestRunBool('ios')
+  if (runID) {
+    return runID
+  } else {
+    var currentiOSRunID = await createEmptyTestRun(
+      `ios smoke test run ${generateTimestamp()}`,
+      'This is a smoke test run for ios!'
+    )
+    return currentiOSRunID
   }
 }
 

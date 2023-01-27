@@ -9,7 +9,7 @@
      "emulator":{
         "type":"android.emulator",
         "device":{
-           "type": {"avdName": "Pixel_4_API_31"}
+           "avdName": "Pixel_4_API_30"
         }
      },
      "simulator":{
@@ -80,7 +80,10 @@
      },
      "android.internal.debug":{
         "device":"emulator",
-        "app":"android.internal.debug"
+        "app":"android.internal.debug",
+        "artifacts": {
+         "rootDir": "./e2e/artifacts/android"
+        }
      },
      "android.internal.e2e":{
         "device":"emulator",

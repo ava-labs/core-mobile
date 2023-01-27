@@ -1,13 +1,23 @@
 /* eslint-disable no-var */
 import * as fs from 'fs'
-import { device } from 'detox'
 import {
   getTestCaseId,
   api,
   createNewTestSectionsAndCases,
-  getUniqueListBy
+  androidRunID,
+  iosRunID
 } from './testrail_generate_tcs'
 import getTestLogs, { getDirectories } from './getResultsFromLogs'
+
+async function getAndroidTestRunId() {
+  const androidTestRunID = await androidRunID()
+  return androidTestRunID
+}
+
+async function getIosTestRunId() {
+  const iosTestRunID = await iosRunID()
+  return iosTestRunID
+}
 
 async function parseResultsFile() {
   const jsonResultsArray = await getTestLogs()
@@ -32,6 +42,7 @@ async function parseResultsFile() {
     }
     const testName = result.testCase
     const testCaseId = await getTestCaseId(result.testCase)
+    const platform = result.platform
 
     if (testCaseId !== null) {
       testIdArrayForTestrail.push(testCaseId)
@@ -39,7 +50,8 @@ async function parseResultsFile() {
         test_id: testCaseId,
         status_id: statusId,
         test_name: testName,
-        failed_screenshot: failedScreenshot
+        failed_screenshot: failedScreenshot,
+        platform: platform
       })
     }
   }
@@ -47,8 +59,12 @@ async function parseResultsFile() {
 }
 
 export default async function sendResults() {
-  const runId = Number(process.env.TEST_RUN_ID)
+  const androidTestRunID = await getAndroidTestRunId()
+  const iosTestRunId = await getIosTestRunId()
+
   const resultsToSendObject = await parseResultsFile()
+
+  console.log(resultsToSendObject.testIdArrayForTestrail)
 
   const testIdArrayForTestrail = resultsToSendObject.testIdArrayForTestrail
   const casesToAddToRun = resultsToSendObject.casesToAddToRun
@@ -60,16 +76,25 @@ export default async function sendResults() {
   }
   // If POST_TO_TESTRAIL environment variable set to true the results will be posted to testrail in a test run
   if (process.env.POST_TO_TESTRAIL) {
-    try {
-      // Takes the array of test cases and adds them to the test run
-      await api.updateRun(runId, testCasesToSend)
-      console.log('Test cases have been sent to the test run...')
-    } catch (TestRailException) {
-      console.log(
-        'Invalid test case ids found in ' + testCasesToSend + 'test cases sent'
-      )
+    if (iosTestRunId && androidTestRunID) {
+      try {
+        // Takes the array of test cases and adds them to the test run
+        await api.updateRun(androidTestRunID, testCasesToSend)
+        await api.updateRun(iosTestRunId, testCasesToSend)
+        console.log(
+          'Test cases have been sent to the test run...' +
+            JSON.stringify(testCasesToSend)
+        )
+      } catch (TestRailException) {
+        console.log(
+          'Invalid test case ids found in ' +
+            testCasesToSend +
+            'test cases sent'
+        )
+      }
     }
   }
+
   /*/ 
 Creates an array of test case objects from the current test run in testrail. This is done because a 'test case id' in a test run is different than a 'case id'.
 A 'case id' is the permanent test case in our suite, a 'test case id' is a part of the test run only. It can get confusing so please be sure to ask questions if you need help.
@@ -82,11 +107,13 @@ A 'case id' is the permanent test case in our suite, a 'test case id' is a part 
     var testRunCaseStatusId = testCaseResultObject.status_id
     var testId = testCaseResultObject.test_id
     var screenshot = testCaseResultObject.failed_screenshot
+    var platform = testCaseResultObject.platform
     if (testRunCaseStatusId === 1) {
       // Sends a passed test to testrail with no comment
       resultsToSendToTestrail.push({
         case_id: testId,
-        status_id: testRunCaseStatusId
+        status_id: testRunCaseStatusId,
+        platform: platform
       })
     } else {
       // If the test failed then it adds the error stack as a comment to the test case in testrail
@@ -95,39 +122,44 @@ A 'case id' is the permanent test case in our suite, a 'test case id' is a part 
       resultsToSendToTestrail.push({
         case_id: testId,
         status_id: testRunCaseStatusId,
-        screenshot: screenshot
+        screenshot: screenshot,
+        platform: platform
         //comment: `${errorMessage}`
       })
     }
   }
 
   // Sends the results to testrail using the resultsToSendToTestrail array if POST_TO_TESTRAIL env variable set to true
-  if (process.env.POST_TO_TESTRAIL) {
+  if (process.env.POST_TO_TESTRAIL && iosTestRunId && androidTestRunID) {
     const failedTestFolders = await getDirectories('./e2e/artifacts/')
-    console.log(
-      JSON.stringify(failedTestFolders[0]) + ' failed test folders!!!'
-    )
+
     try {
       // const resultsObject = await api.addResultsForCases(runId, resultsContent)
-      const resultsToSendUnique = getUniqueListBy(
-        resultsToSendToTestrail,
-        'case_id'
+      const iosResultArray = resultsToSendToTestrail.filter(
+        result => result.platform === 'ios'
       )
-      for (let i = 0; i < resultsToSendUnique.length; i++) {
+
+      const androidResultArray = resultsToSendToTestrail.filter(
+        result => result.platform === 'android'
+      )
+
+      console.log(iosResultArray && androidResultArray)
+
+      for (let i = 0; i < iosResultArray.length; i++) {
         const resultObject = resultsToSendToTestrail[i]
         const payload = {
           status_id: resultObject?.status_id
         }
         if (resultObject) {
+          const runId = iosTestRunId
+
           const testResult = await api.addResultForCase(
             runId,
             resultObject?.case_id,
             payload
           )
           if (testResult.status_id === 5) {
-            const failScreenshot = `./e2e/artifacts/${device.getPlatform()}/${
-              failedTestFolders[0]
-            }/${resultObject.screenshot}`
+            const failScreenshot = `./e2e/artifacts/${resultObject.platform}}/${failedTestFolders[0]}/${resultObject.screenshot}`
             console.log(failScreenshot + ' failed screenshot path!!!')
             if (failScreenshot) {
               const failedPayload = {
