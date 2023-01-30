@@ -8,6 +8,7 @@ import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
 import { NativeViewGestureHandler } from 'react-native-gesture-handler'
 import FlexSpacer from 'components/FlexSpacer'
+import RpcRequestBottomSheet from './RpcRequestBottomSheet'
 
 interface Props {
   onApprove: () => void
@@ -31,38 +32,40 @@ const SimplePrompt: FC<Props> = ({
   const theme = useApplicationContext().theme
 
   return (
-    <NativeViewGestureHandler>
-      <SafeAreaView style={styles.safeView}>
-        <AvaText.LargeTitleBold>{header}</AvaText.LargeTitleBold>
-        <Space y={35} />
-        <View style={styles.subTitleView}>
-          <OvalTagBg
-            style={{
-              height: 80,
-              width: 80,
-              backgroundColor: theme.colorBg3
-            }}>
-            {renderIcon()}
-          </OvalTagBg>
-          <Space y={15} />
-          <AvaText.Body1 textStyle={styles.subTileText}>
-            {description}
-          </AvaText.Body1>
-          <Space y={16} />
-        </View>
-        {renderContent?.()}
-        <FlexSpacer />
-        <View style={styles.actionContainer}>
-          <AvaButton.PrimaryMedium disabled={isApproving} onPress={onApprove}>
-            {isApproving && <ActivityIndicator />} Approve
-          </AvaButton.PrimaryMedium>
-          <Space y={21} />
-          <AvaButton.SecondaryMedium onPress={onReject}>
-            Reject
-          </AvaButton.SecondaryMedium>
-        </View>
-      </SafeAreaView>
-    </NativeViewGestureHandler>
+    <RpcRequestBottomSheet onClose={onReject}>
+      <NativeViewGestureHandler>
+        <SafeAreaView style={styles.safeView}>
+          <AvaText.LargeTitleBold>{header}</AvaText.LargeTitleBold>
+          <Space y={35} />
+          <View style={styles.subTitleView}>
+            <OvalTagBg
+              style={{
+                height: 80,
+                width: 80,
+                backgroundColor: theme.colorBg3
+              }}>
+              {renderIcon()}
+            </OvalTagBg>
+            <Space y={15} />
+            <AvaText.Body1 textStyle={styles.subTileText}>
+              {description}
+            </AvaText.Body1>
+            <Space y={16} />
+          </View>
+          {renderContent?.()}
+          <FlexSpacer />
+          <View style={styles.actionContainer}>
+            <AvaButton.PrimaryMedium disabled={isApproving} onPress={onApprove}>
+              {isApproving && <ActivityIndicator />} Approve
+            </AvaButton.PrimaryMedium>
+            <Space y={21} />
+            <AvaButton.SecondaryMedium onPress={onReject}>
+              Reject
+            </AvaButton.SecondaryMedium>
+          </View>
+        </SafeAreaView>
+      </NativeViewGestureHandler>
+    </RpcRequestBottomSheet>
   )
 }
 

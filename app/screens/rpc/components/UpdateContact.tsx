@@ -1,5 +1,5 @@
 import AvaText from 'components/AvaText'
-import React, { FC } from 'react'
+import React, { useCallback, useEffect } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -13,42 +13,50 @@ import AddressBookSVG from 'components/svg/AddressBookSVG'
 import AddressBookItem from 'components/addressBook/AddressBookItem'
 import { selectContact } from 'store/addressBook'
 import { Contact as SharedContact } from '@avalabs/types'
-import { showSnackBarCustom } from 'components/Snackbar'
-import GeneralToast from 'components/toast/GeneralToast'
+import { showSimpleToast } from 'components/Snackbar'
 import { Contact } from 'Repo'
-import { AvalancheUpdateContactRequest } from 'store/walletConnect/handlers/avalanche_updateContact'
+import { useDappConnectionContext } from 'contexts/DappConnectionContext'
+import { WalletScreenProps } from 'navigation/types'
+import AppNavigation from 'navigation/AppNavigation'
+import { useNavigation, useRoute } from '@react-navigation/native'
+import RpcRequestBottomSheet from './RpcRequestBottomSheet'
 
-interface Props {
-  dappEvent: AvalancheUpdateContactRequest
-  onReject: (request: AvalancheUpdateContactRequest, message?: string) => void
-  onApprove: (request: AvalancheUpdateContactRequest) => void
-  onClose: (request: AvalancheUpdateContactRequest) => void
-}
+type UpdateContactScreenProps = WalletScreenProps<
+  typeof AppNavigation.Modal.UpdateContact
+>
 
-const UpdateContact: FC<Props> = ({
-  dappEvent,
-  onApprove,
-  onReject,
-  onClose
-}) => {
+const UpdateContact = () => {
+  const { goBack } = useNavigation<UpdateContactScreenProps['navigation']>()
+
+  const { request, contact } =
+    useRoute<UpdateContactScreenProps['route']>().params
+
+  const { onUserApproved: onApprove, onUserRejected: onReject } =
+    useDappConnectionContext()
+
   const theme = useApplicationContext().theme
-  const contact = dappEvent.contact
-  const peerMeta = dappEvent.payload.peerMeta
+  const peerMeta = request.payload.peerMeta
 
   const existingContact = useSelector(selectContact(contact.id))
 
-  if (!existingContact) {
-    showSnackBarCustom({
-      component: (
-        <GeneralToast
-          message={`Ooops, seems the contact you're updating is not in address book.`}
-        />
-      ),
-      duration: 'short'
-    })
-    onReject(dappEvent)
-    onClose(dappEvent)
-  }
+  useEffect(() => {
+    if (!existingContact) {
+      showSimpleToast(
+        `Ooops, seems the contact you're updating is not in address book.`
+      )
+      onReject(request)
+    }
+  }, [existingContact, onReject, request])
+
+  const rejectAndClose = useCallback(() => {
+    onReject(request)
+    goBack()
+  }, [goBack, onReject, request])
+
+  const approveAndClose = useCallback(() => {
+    onApprove(request, { contact })
+    goBack()
+  }, [contact, goBack, onApprove, request])
 
   const renderContacts = (contactToUpdate: Contact, update: SharedContact) => {
     return (
@@ -68,7 +76,7 @@ const UpdateContact: FC<Props> = ({
   }
 
   return (
-    <>
+    <RpcRequestBottomSheet onClose={rejectAndClose}>
       {existingContact && (
         <NativeViewGestureHandler>
           <SafeAreaView style={styles.safeView}>
@@ -94,22 +102,18 @@ const UpdateContact: FC<Props> = ({
             {renderContacts(existingContact, contact)}
             <FlexSpacer />
             <View style={styles.actionContainer}>
-              <AvaButton.PrimaryMedium onPress={() => onApprove(dappEvent)}>
+              <AvaButton.PrimaryMedium onPress={approveAndClose}>
                 Approve
               </AvaButton.PrimaryMedium>
               <Space y={21} />
-              <AvaButton.SecondaryMedium
-                onPress={() => {
-                  onReject(dappEvent)
-                  onClose(dappEvent)
-                }}>
+              <AvaButton.SecondaryMedium onPress={rejectAndClose}>
                 Reject
               </AvaButton.SecondaryMedium>
             </View>
           </SafeAreaView>
         </NativeViewGestureHandler>
       )}
-    </>
+    </RpcRequestBottomSheet>
   )
 }
 

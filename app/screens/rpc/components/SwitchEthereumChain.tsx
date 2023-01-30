@@ -1,27 +1,62 @@
-import React, { FC } from 'react'
+import React, { FC, useCallback } from 'react'
 import { WalletSwitchEthereumChainRpcRequest } from 'store/walletConnect/handlers/wallet_switchEthereumChain'
 import Avatar from 'components/Avatar'
 import { WalletAddEthereumChainRpcRequest } from 'store/walletConnect/handlers/wallet_addEthereumChain'
-import { DappRpcRequests } from 'store/walletConnect'
+import { WalletScreenProps } from 'navigation/types'
+import AppNavigation from 'navigation/AppNavigation'
+import { useDappConnectionContext } from 'contexts/DappConnectionContext'
+import { useNavigation, useRoute } from '@react-navigation/native'
+import { Network } from '@avalabs/chains-sdk'
 import SimplePrompt from './SimplePrompt'
 
 interface Props {
-  dappEvent:
+  request:
     | WalletSwitchEthereumChainRpcRequest
     | WalletAddEthereumChainRpcRequest
-  onReject: (request: DappRpcRequests) => void
-  onApprove: (request: DappRpcRequests) => void
-  onClose: (request: DappRpcRequests) => void
+  network: Network
+  onReject: () => void
+  onApprove: () => void
 }
 
-const SwitchEthereumChain: FC<Props> = ({
-  dappEvent,
+type SwitchEthereumChainScreenProps = WalletScreenProps<
+  typeof AppNavigation.Modal.SwitchEthereumChain
+>
+
+export const SwitchEthereumChain = () => {
+  const { goBack } =
+    useNavigation<SwitchEthereumChainScreenProps['navigation']>()
+  const { request, network } =
+    useRoute<SwitchEthereumChainScreenProps['route']>().params
+  const { onUserApproved: onApprove, onUserRejected: onReject } =
+    useDappConnectionContext()
+
+  const rejectAndClose = useCallback(() => {
+    onReject(request)
+    goBack()
+  }, [goBack, onReject, request])
+
+  const approveAndClose = useCallback(() => {
+    onApprove(request, { network })
+    goBack()
+  }, [goBack, network, onApprove, request])
+
+  return (
+    <SwitchEthereumChainView
+      request={request}
+      network={network}
+      onApprove={approveAndClose}
+      onReject={rejectAndClose}
+    />
+  )
+}
+
+export const SwitchEthereumChainView: FC<Props> = ({
+  request,
+  network,
   onApprove,
-  onReject,
-  onClose
+  onReject
 }) => {
-  const network = dappEvent.network
-  const peerMeta = dappEvent.payload.peerMeta
+  const peerMeta = request.payload.peerMeta
 
   const header = `Switch to ${network.chainName} Network?`
 
@@ -39,11 +74,8 @@ const SwitchEthereumChain: FC<Props> = ({
 
   return (
     <SimplePrompt
-      onApprove={() => onApprove(dappEvent)}
-      onReject={() => {
-        onReject(dappEvent)
-        onClose(dappEvent)
-      }}
+      onApprove={onApprove}
+      onReject={onReject}
       header={header}
       description={description}
       renderIcon={renderIcon}

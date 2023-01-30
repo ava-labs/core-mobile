@@ -35,7 +35,7 @@ import { EthSendTransactionRpcRequest } from 'store/walletConnect/handlers/eth_s
 const UNLIMITED_SPEND_LIMIT_LABEL = 'Unlimited'
 
 export function useExplainTransaction(
-  dappEvent: EthSendTransactionRpcRequest,
+  request: EthSendTransactionRpcRequest,
   onError: (error?: string) => void
 ) {
   const networkFees = useSelector(selectNetworkFee)
@@ -53,10 +53,10 @@ export function useExplainTransaction(
   const [transaction, setTransaction] = useState<Transaction | null>(null)
 
   const txParams =
-    dappEvent.payload?.params && dappEvent.payload?.params.length > 0
-      ? dappEvent.payload?.params[0]
+    request.payload?.params && request.payload?.params.length > 0
+      ? request.payload?.params[0]
       : undefined
-  const peerMeta = dappEvent.payload.peerMeta
+  const peerMeta = request.payload.peerMeta
   const [customGas, setCustomGas] = useState<{
     gasLimit: number
     gasPrice: BigNumber
@@ -169,7 +169,7 @@ export function useExplainTransaction(
         activeNetwork
       )
 
-      if (dappEvent.payload && txParams && isTxParams(txParams)) {
+      if (request.payload && txParams && isTxParams(txParams)) {
         // These are the default props we'll feed into the display parser later on
         // @ts-ignore
         const displayValueProps: DisplayValueParserProps = {
@@ -260,8 +260,8 @@ export function useExplainTransaction(
         }
 
         setTransaction({
-          id: dappEvent.payload.id,
-          method: dappEvent.payload.method,
+          id: request.payload.id,
+          method: request.payload.method,
           txParams: txParamsWithGasLimit,
           displayValues,
           ...networkMetaData
@@ -273,7 +273,7 @@ export function useExplainTransaction(
   }, [
     activeNetwork,
     avaxToken,
-    dappEvent.payload,
+    request.payload,
     findToken,
     networkFees,
     peerMeta,

@@ -1,24 +1,26 @@
-import { PayloadAction } from '@reduxjs/toolkit'
 import { txToCustomEvmTx } from 'screens/rpc/util/txToCustomEvmTx'
 import { Transaction } from 'screens/rpc/util/types'
 import { getEvmProvider } from 'services/network/utils/providerUtils'
 import walletService from 'services/wallet/WalletService'
 import networkService from 'services/network/NetworkService'
-import { RpcMethod } from 'services/walletconnect/types'
 import { AppListenerEffectAPI } from 'store'
 import { selectActiveAccount } from 'store/account'
 import { selectActiveNetwork } from 'store/network'
 import { selectNetworkFee, fetchNetworkFee } from 'store/networkFee'
+import * as Navigation from 'utils/Navigation'
+import AppNavigation from 'navigation/AppNavigation'
 import Logger from 'utils/Logger'
 import { ethErrors } from 'eth-rpc-errors'
 import * as Sentry from '@sentry/react-native'
+import { updateRequestStatus } from '../slice'
+import { RpcMethod } from '../types'
 import {
-  addRequest,
-  sendRpcResult,
-  sendRpcError,
-  updateRequest
-} from '../slice'
-import { DappRpcRequest, RpcRequestHandler } from './types'
+  ApproveResponse,
+  DappRpcRequest,
+  DEFERRED_RESULT,
+  HandleResponse,
+  RpcRequestHandler
+} from './types'
 
 export type TransactionParams = {
   from: string
@@ -29,111 +31,126 @@ export type TransactionParams = {
   gasPrice?: string
 }
 
-export interface EthSendTransactionRpcRequest
-  extends DappRpcRequest<RpcMethod.ETH_SEND_TRANSACTION, TransactionParams[]> {
-  result?: string
-  error?: Error
+type ApproveData = {
+  transaction: Transaction | undefined
 }
+
+export type EthSendTransactionRpcRequest = DappRpcRequest<
+  RpcMethod.ETH_SEND_TRANSACTION,
+  TransactionParams[]
+>
+
 class EthSendTransactionHandler
-  implements RpcRequestHandler<EthSendTransactionRpcRequest>
+  implements RpcRequestHandler<EthSendTransactionRpcRequest, ApproveData>
 {
   methods = [RpcMethod.ETH_SEND_TRANSACTION]
 
+  hasPostApprove = true
+
   handle = async (
-    action: PayloadAction<EthSendTransactionRpcRequest['payload'], string>,
+    request: EthSendTransactionRpcRequest,
     listenerApi: AppListenerEffectAPI
-  ) => {
+  ): HandleResponse => {
+    const { dispatch } = listenerApi
     // TODO: do TX parsing and parameter verification here instead of in SignTransaction.tsx
 
     // fetch network fees for tx parsing and approval screen
-    listenerApi.dispatch(fetchNetworkFee())
-    listenerApi.dispatch(
-      addRequest({
-        payload: action.payload
-      })
-    )
+    dispatch(fetchNetworkFee())
+
+    Navigation.navigate({
+      name: AppNavigation.Root.Wallet,
+      params: {
+        screen: AppNavigation.Modal.SignTransaction,
+        params: {
+          request
+        }
+      }
+    })
+
+    return { success: true, value: DEFERRED_RESULT }
   }
 
-  onApprove = async (
-    action: PayloadAction<
-      {
-        request: EthSendTransactionRpcRequest
-        data?: unknown
-      },
-      string
-    >,
+  approve = async (
+    payload: {
+      request: EthSendTransactionRpcRequest
+      data: ApproveData
+    },
     listenerApi: AppListenerEffectAPI
-  ) => {
-    const state = listenerApi.getState()
-    const { dispatch } = listenerApi
+  ): ApproveResponse => {
+    const { dispatch, getState } = listenerApi
+    const state = getState()
     const activeNetwork = selectActiveNetwork(state)
     const activeAccount = selectActiveAccount(state)
     const networkFees = selectNetworkFee(state)
 
-    const transaction = action.payload.data as Transaction | undefined
+    const request = payload.request
+    const transaction = payload.data.transaction
     const params = transaction?.txParams
 
-    if (!activeAccount || !activeNetwork || !transaction || !params) {
-      return Promise.reject({ error: 'not ready' })
+    if (!activeAccount || !transaction || !params) {
+      return { success: false, error: ethErrors.rpc.internal('app not ready') }
     }
 
     const nonce = await getEvmProvider(activeNetwork).getTransactionCount(
       params.from
     )
 
-    await txToCustomEvmTx(networkFees.low, params).then(evmParams => {
-      walletService
-        .sign(
-          {
-            nonce,
-            chainId: activeNetwork.chainId,
-            gasPrice: evmParams.gasPrice,
-            gasLimit: evmParams.gasLimit,
-            data: evmParams.data,
-            to: params.to,
-            value: evmParams.value
-          },
-          activeAccount.index,
-          activeNetwork
-        )
-        .then(signedTx => {
-          return networkService.sendTransaction(signedTx, activeNetwork, true)
+    try {
+      const evmParams = await txToCustomEvmTx(networkFees.low, params)
+
+      const signedTx = await walletService.sign(
+        {
+          nonce,
+          chainId: activeNetwork.chainId,
+          gasPrice: evmParams.gasPrice,
+          gasLimit: evmParams.gasLimit,
+          data: evmParams.data,
+          to: params.to,
+          value: evmParams.value
+        },
+        activeAccount.index,
+        activeNetwork
+      )
+
+      const transactionHash = await networkService.sendTransaction(
+        signedTx,
+        activeNetwork,
+        true
+      )
+
+      dispatch(
+        updateRequestStatus({
+          id: request.payload.id,
+          status: { result: transactionHash }
         })
-        .then(resultHash => {
-          dispatch(
-            updateRequest({
-              ...action.payload.request,
-              result: resultHash
-            })
-          )
-          dispatch(
-            sendRpcResult({
-              request: action.payload.request,
-              result: resultHash
-            })
-          )
+      )
+
+      return { success: true, value: transactionHash }
+    } catch (e) {
+      Logger.error('failed to approve transaction call', JSON.stringify(e))
+
+      const error = ethErrors.rpc.internal<string>(
+        'failed to approve transaction request'
+      )
+
+      dispatch(
+        updateRequestStatus({
+          id: request.payload.id,
+          status: {
+            error
+          }
         })
-        .catch(e => {
-          Logger.error('failed to approve transaction call', JSON.stringify(e))
-          dispatch(
-            updateRequest({
-              ...action.payload.request,
-              error: e
-            })
-          )
-          dispatch(
-            sendRpcError({
-              request: action.payload.request,
-              error: ethErrors.rpc.internal(
-                'failed to approve transaction request'
-              )
-            })
-          )
-          Sentry?.captureException(e, {
-            tags: { dapps: 'signTransaction' }
-          })
-        })
-    })
+      )
+
+      Sentry.captureException(e, {
+        tags: { dapps: 'signTransaction' }
+      })
+
+      return {
+        success: false,
+        error
+      }
+    }
   }
 }
 

@@ -37,9 +37,9 @@ import GeneralToast from 'components/toast/GeneralToast'
 import WalletConnectSVG from 'components/svg/WalletConnectSVG'
 import AvaButton from 'components/AvaButton'
 import { Row } from 'components/Row'
-import { DeepLinkOrigin } from 'services/walletconnect/types'
 import { useDappConnectionContext } from 'contexts/DappConnectionContext'
 import { getCommonBottomTabOptions, normalTabButton } from 'navigation/NavUtils'
+import { DeepLinkOrigin } from 'contexts/DappConnectionContext/types'
 
 export type TabNavigatorParamList = {
   [AppNavigation.Tabs.Portfolio]: { showBackButton?: boolean }
