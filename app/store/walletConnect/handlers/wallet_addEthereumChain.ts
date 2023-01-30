@@ -121,6 +121,7 @@ class WalletAddEthereumChainHandler
     }
 
     if (chainRequestedIsSupported) {
+      // navigate with isExisting flag "true" so that the UI can display a "switch to network" prompt
       Navigation.navigate({
         name: AppNavigation.Root.Wallet,
         params: {
@@ -145,6 +146,7 @@ class WalletAddEthereumChainHandler
       }
     }
 
+    // navigate with isExisting flag "false" so that the UI can display a "add new network" prompt
     Navigation.navigate({
       name: AppNavigation.Root.Wallet,
       params: {
