@@ -11,7 +11,7 @@ import React from 'react'
 import ArrowSVG from 'components/svg/ArrowSVG'
 import { useSelector } from 'react-redux'
 import { selectAccountByAddress } from 'store/account'
-import { txStyles } from 'screens/rpc/components/SignTransaction'
+import { txStyles } from 'screens/rpc/components/SignTransaction/SignTransaction'
 
 export function SwapTransaction({
   path,

@@ -1,40 +1,41 @@
-import { PayloadAction } from '@reduxjs/toolkit'
 import { ethErrors } from 'eth-rpc-errors'
 import walletService from 'services/wallet/WalletService'
-import { RpcMethod } from 'services/walletconnect/types'
 import { AppListenerEffectAPI } from 'store'
 import { selectActiveAccount } from 'store/account'
 import { selectActiveNetwork } from 'store/network'
+import * as Navigation from 'utils/Navigation'
+import AppNavigation from 'navigation/AppNavigation'
 import Logger from 'utils/Logger'
 import * as Sentry from '@sentry/react-native'
-import {
-  addRequest,
-  sendRpcResult,
-  sendRpcError,
-  updateRequest,
-  removeRequest
-} from '../slice'
+import { updateRequestStatus } from '../slice'
+import { RpcMethod } from '../types'
 import { parseMessage } from './utils/message'
-import { DappRpcRequest, RpcRequestHandler } from './types'
+import {
+  ApproveResponse,
+  DappRpcRequest,
+  DEFERRED_RESULT,
+  HandleResponse,
+  RpcRequestHandler
+} from './types'
 
-export interface EthSignRpcRequest
-  extends DappRpcRequest<
-    | RpcMethod.ETH_SIGN
-    | RpcMethod.ETH_SIGN
-    | RpcMethod.SIGN_TYPED_DATA
-    | RpcMethod.SIGN_TYPED_DATA_V1
-    | RpcMethod.SIGN_TYPED_DATA_V3
-    | RpcMethod.SIGN_TYPED_DATA_V4
-    | RpcMethod.PERSONAL_SIGN,
-    string[]
-  > {
-  data?: string
-  from?: string
-  password?: string
-  error?: Error
+export type EthSignRpcRequest = DappRpcRequest<
+  | RpcMethod.ETH_SIGN
+  | RpcMethod.ETH_SIGN
+  | RpcMethod.SIGN_TYPED_DATA
+  | RpcMethod.SIGN_TYPED_DATA_V1
+  | RpcMethod.SIGN_TYPED_DATA_V3
+  | RpcMethod.SIGN_TYPED_DATA_V4
+  | RpcMethod.PERSONAL_SIGN,
+  string[]
+>
+
+type ApproveData = {
+  data: string | undefined
 }
 
-class EthSignHandler implements RpcRequestHandler<EthSignRpcRequest> {
+class EthSignHandler
+  implements RpcRequestHandler<EthSignRpcRequest, ApproveData>
+{
   methods = [
     RpcMethod.ETH_SIGN,
     RpcMethod.SIGN_TYPED_DATA,
@@ -44,85 +45,75 @@ class EthSignHandler implements RpcRequestHandler<EthSignRpcRequest> {
     RpcMethod.PERSONAL_SIGN
   ]
 
-  handle = async (
-    action: PayloadAction<EthSignRpcRequest['payload'], string>,
-    listenerApi: AppListenerEffectAPI
-  ) => {
-    const { payload } = action
+  handle = async (request: EthSignRpcRequest): HandleResponse => {
+    const { payload } = request
 
     if (!payload) {
-      listenerApi.dispatch(
-        sendRpcError({
-          request: action,
-          error: ethErrors.rpc.invalidParams()
-        })
-      )
-      return
+      return { success: false, error: ethErrors.rpc.invalidParams() }
     }
 
-    const { data, from, password } = parseMessage(payload)
+    const { data } = parseMessage(payload)
 
-    const requestWithData: EthSignRpcRequest = {
-      payload,
-      data,
-      from,
-      password
-    }
-    listenerApi.dispatch(addRequest(requestWithData))
+    Navigation.navigate({
+      name: AppNavigation.Root.Wallet,
+      params: {
+        screen: AppNavigation.Modal.SignMessage,
+        params: {
+          request,
+          data
+        }
+      }
+    })
+
+    return { success: true, value: DEFERRED_RESULT }
   }
 
-  onApprove = async (
-    action: PayloadAction<{ request: EthSignRpcRequest }, string>,
+  approve = async (
+    payload: { request: EthSignRpcRequest; data: ApproveData },
     listenerApi: AppListenerEffectAPI
-  ) => {
+  ): ApproveResponse => {
     const state = listenerApi.getState()
     const { dispatch } = listenerApi
     const activeNetwork = selectActiveNetwork(state)
     const activeAccount = selectActiveAccount(state)
-    const request = action.payload.request
+    const request = payload.request
+    const data = payload.data.data
 
-    if (!activeAccount || !activeNetwork) {
-      listenerApi.dispatch(
-        sendRpcError({
-          request,
-          error: ethErrors.rpc.internal('app not ready')
-        })
-      )
-      return
+    if (!activeAccount) {
+      return { success: false, error: ethErrors.rpc.internal('app not ready') }
     }
 
-    await walletService
-      .signMessage(
+    try {
+      const encodedMessage = await walletService.signMessage(
         request.payload.method,
-        request.data,
+        data,
         activeAccount.index,
         activeNetwork
       )
-      .then(result => {
-        dispatch(
-          sendRpcResult({
-            request,
-            result
-          })
-        )
-        dispatch(removeRequest(request.payload.id))
-      })
-      .catch(e => {
-        Logger.error('Error approving dapp tx', e)
-        dispatch(
-          updateRequest({
-            ...action.payload.request,
-            error: e
-          })
-        )
-        dispatch(
-          sendRpcError({
-            request,
-            error: ethErrors.rpc.internal('failed to sign message')
-          })
-        )
-        Sentry?.captureException(e, { tags: { dapps: 'signMessage' } })
-      })
+
+      return { success: true, value: encodedMessage }
+    } catch (e) {
+      Logger.error('failed to sign message', e)
+
+      const error = ethErrors.rpc.internal<string>('failed to sign message')
+
+      dispatch(
+        updateRequestStatus({
+          id: request.payload.id,
+          status: {
+            error
+          }
+        })
+      )
+
+      Sentry.captureException(e, { tags: { dapps: 'signMessage' } })
+
+      return {
+        success: false,
+        error
+      }
+    }
   }
 }
+
 export const ethSignHandler = new EthSignHandler()

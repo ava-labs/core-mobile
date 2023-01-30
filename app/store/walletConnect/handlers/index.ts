@@ -10,6 +10,7 @@ import { walletAddEthereumChainHandler } from './wallet_addEthereumChain'
 import { walletSwitchEthereumChainHandler } from './wallet_switchEthereumChain'
 import { avalancheBridgeAssetHandler } from './avalanche_bridgeAsset'
 import { avalancheSelectAccountHandler } from './avalanche_selectAccount'
+import { RpcRequestHandler } from './types'
 
 const handlerMap = [
   avalancheSelectAccountHandler,
@@ -29,6 +30,7 @@ const handlerMap = [
     acc.set(method, current)
   })
   return acc
-}, new Map())
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+}, new Map<string, RpcRequestHandler<any, any>>())
 
 export default handlerMap

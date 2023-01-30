@@ -1,17 +1,15 @@
 import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
-import {
-  ApprovedAppMeta,
-  DappRpcRequests,
-  WalletConnectState
-} from 'store/walletConnect/types'
+import { ApprovedAppMeta, WalletConnectState } from 'store/walletConnect'
 import { RootState } from 'store/index'
 import { EthereumProviderError, EthereumRpcError } from 'eth-rpc-errors'
-import { DappRpcRequest, TypedJsonRpcRequest } from './handlers/types'
+import { PeerMeta } from 'services/walletconnect/types'
+import { DappRpcRequest } from './handlers/types'
 
 export const reducerName = 'walletConnect'
 
 const initialState = {
   requests: [],
+  requestStatuses: {},
   approvedDApps: []
 } as WalletConnectState
 
@@ -19,7 +17,10 @@ const walletConnectSlice = createSlice({
   name: reducerName,
   initialState,
   reducers: {
-    addRequest: (state, action: PayloadAction<DappRpcRequests>) => {
+    addRequest: (
+      state,
+      action: PayloadAction<DappRpcRequest<string, unknown>>
+    ) => {
       if (
         state.requests.some(r => r.payload.id === action.payload.payload.id)
       ) {
@@ -32,65 +33,86 @@ const walletConnectSlice = createSlice({
       state.requests = state.requests.filter(
         request => request.payload.id !== action.payload
       )
-    },
-    updateRequest: (state, action: PayloadAction<DappRpcRequests>) => {
-      const index = state.requests.findIndex(
-        r => r.payload.id === action.payload.payload.id
-      )
-      if (index < 0) {
-        return
-      }
 
-      state.requests[index] = action.payload
+      if (state.requestStatuses[action.payload])
+        delete state.requestStatuses[action.payload]
     },
-    setDApps: (state, action: PayloadAction<ApprovedAppMeta[]>) => {
-      state.approvedDApps = action.payload
-    },
-    removeDApp: (
+    updateRequestStatus: (
       state,
       action: PayloadAction<{
-        peerId: string
+        id: number
+        status: { result?: unknown; error?: Error }
       }>
     ) => {
+      const {
+        id,
+        status: { result, error }
+      } = action.payload
+
+      state.requestStatuses[id] = { result, error }
+    },
+    addDapp: (state, action: PayloadAction<ApprovedAppMeta>) => {
+      state.approvedDApps.push(action.payload)
+    },
+    removeDApps: (state, action: PayloadAction<string[]>) => {
       state.approvedDApps = state.approvedDApps.filter(
-        value => value.peerId !== action.payload.peerId
+        value => !action.payload.includes(value.peerId)
       )
     }
   }
 })
 
 // selectors
-export const selectRpcRequests = (state: RootState) =>
-  state.walletConnect.requests
 export const selectApprovedDApps = (state: RootState) => {
   return Object.values(state.walletConnect.approvedDApps)
 }
 
+export const selectRequestStatus =
+  (requestId: number) => (state: RootState) => {
+    return state.walletConnect.requestStatuses[requestId]
+  }
+
 // actions
-export const rpcRequestReceived = createAction<
-  TypedJsonRpcRequest<string, unknown>
->(`${reducerName}/rpcRequestReceived`)
+export const onDisconnect = createAction<PeerMeta>(
+  `${reducerName}/onDisconnect`
+)
 
-export const rpcRequestApproved = createAction<{
+export const onRequestApproved = createAction<{
   request: DappRpcRequest<string, unknown>
-  data?: unknown
-}>(`${reducerName}/rpcRequestApproved`)
+  data: unknown
+}>(`${reducerName}/onRequestApproved`)
 
-export const sendRpcResult = createAction<{
+export const onRequestRejected = createAction<{
+  request: DappRpcRequest<string, unknown>
+  error?: EthereumRpcError<string> | EthereumProviderError<string>
+}>(`${reducerName}/onRequestRejected`)
+
+export const onSendRpcResult = createAction<{
   request: DappRpcRequest<string, unknown>
   result?: unknown
-}>(`${reducerName}/sendRpcResult`)
+}>(`${reducerName}/onSendRpcResult`)
 
-export const sendRpcError = createAction<{
+export const onSendRpcError = createAction<{
   request: DappRpcRequest<string, unknown>
-  error?: EthereumRpcError<unknown> | EthereumProviderError<unknown>
-}>(`${reducerName}/sendRpcError`)
+  error?: EthereumRpcError<string> | EthereumProviderError<string>
+}>(`${reducerName}/onSendRpcError`)
+
+export const onRequestPostApproved = createAction<
+  DappRpcRequest<string, unknown>
+>(`${reducerName}/onRequestPostApproved`)
+
+export const newSession = createAction<string>(`${reducerName}/newSession`)
+
+export const killSessions = createAction<ApprovedAppMeta[]>(
+  `${reducerName}/killSessions`
+)
+
 export const {
   addRequest,
   removeRequest,
-  updateRequest,
-  removeDApp,
-  setDApps
+  updateRequestStatus,
+  addDapp,
+  removeDApps
 } = walletConnectSlice.actions
 
 export const walletConnectReducer = walletConnectSlice.reducer

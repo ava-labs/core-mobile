@@ -13,7 +13,6 @@ import { Wallet } from 'ethers'
 import networkService from 'services/network/NetworkService'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import { networks } from 'bitcoinjs-lib'
-import { RpcMethod } from 'services/walletconnect/types'
 import {
   personalSign,
   signTypedData,
@@ -23,6 +22,7 @@ import { getEvmProvider } from 'services/network/utils/providerUtils'
 import BN from 'bn.js'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction } from '@sentry/types'
+import { RpcMethod } from 'store/walletConnect'
 
 class WalletService {
   private mnemonic?: string

@@ -1,5 +1,4 @@
 import { Dispatch } from 'react'
-import { DeepLink } from 'services/walletconnect/types'
 import { DappRpcRequest } from 'store/walletConnect/handlers/types'
 import { ApprovedAppMeta } from 'store/walletConnect'
 
@@ -15,4 +14,24 @@ export interface DappConnectionState {
     message?: string
   ) => void
   killSessions: (sessions: ApprovedAppMeta[]) => void
+}
+
+export interface DeepLink {
+  url: string
+  origin: DeepLinkOrigin
+}
+
+export enum DeepLinkOrigin {
+  ORIGIN_DEEPLINK = 'deeplink',
+  ORIGIN_QR_CODE = 'qr-code'
+}
+
+export const PROTOCOLS = {
+  HTTP: 'http',
+  HTTPS: 'https',
+  WC: 'wc'
+}
+
+export const ACTIONS = {
+  WC: 'wc'
 }

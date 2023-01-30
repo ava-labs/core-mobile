@@ -1,10 +1,8 @@
-import { PayloadAction } from '@reduxjs/toolkit'
-import { RpcMethod } from 'services/walletconnect/types'
 import { AppListenerEffectAPI } from 'store'
 import { selectContacts } from 'store/addressBook'
 import { Contact as SharedContact } from '@avalabs/types'
-import { sendRpcResult } from '../slice'
-import { DappRpcRequest, RpcRequestHandler } from './types'
+import { RpcMethod } from '../types'
+import { DappRpcRequest, HandleResponse, RpcRequestHandler } from './types'
 import { mapContactToSharedContact } from './utils/contact'
 
 export type AvalancheGetContactsRpcRequest = DappRpcRequest<
@@ -13,26 +11,21 @@ export type AvalancheGetContactsRpcRequest = DappRpcRequest<
 >
 
 class AvalancheGetContactsHandler
-  implements RpcRequestHandler<AvalancheGetContactsRpcRequest>
+  implements RpcRequestHandler<AvalancheGetContactsRpcRequest, never>
 {
   methods = [RpcMethod.AVALANCHE_GET_CONTACTS]
 
   handle = async (
-    action: PayloadAction<AvalancheGetContactsRpcRequest['payload'], string>,
+    request: AvalancheGetContactsRpcRequest,
     listenerApi: AppListenerEffectAPI
-  ) => {
+  ): HandleResponse => {
     const contacts = selectContacts(listenerApi.getState())
 
     const sharedContacts: SharedContact[] = Object.values(contacts).map(
       mapContactToSharedContact
     )
 
-    listenerApi.dispatch(
-      sendRpcResult({
-        request: { payload: action.payload },
-        result: sharedContacts
-      })
-    )
+    return { success: true, value: sharedContacts }
   }
 }
 export const avalancheGetContactsHandler = new AvalancheGetContactsHandler()

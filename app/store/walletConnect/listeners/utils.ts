@@ -1,6 +1,5 @@
-import { JsonRpcRequest } from '@walletconnect/jsonrpc-types'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
-import { CORE_ONLY_METHODS, RpcMethod } from './types'
+import { CORE_ONLY_METHODS, RpcMethod } from '../types'
 
 const CORE_WEB_URLS = [
   'https://core.app',
@@ -23,14 +22,14 @@ export const isFromCoreWeb = (url: string) => {
 }
 
 export const isRequestSupportedOnNetwork = (
-  payload: JsonRpcRequest,
+  method: string,
   activeNetwork: Network | undefined
 ): boolean => {
   const declineMethodsPattern = /(^eth_|_watchAsset$)/
   if (
     activeNetwork &&
     activeNetwork.vmName !== NetworkVMType.EVM &&
-    declineMethodsPattern.test(payload.method)
+    declineMethodsPattern.test(method)
   ) {
     return false
   }

@@ -1,9 +1,7 @@
-import { PayloadAction } from '@reduxjs/toolkit'
-import { RpcMethod } from 'services/walletconnect/types'
 import { AppListenerEffectAPI } from 'store'
 import { selectAccounts, selectActiveAccount } from 'store/account'
-import { sendRpcResult } from '../slice'
-import { DappRpcRequest, RpcRequestHandler } from './types'
+import { RpcMethod } from '../types'
+import { DappRpcRequest, HandleResponse, RpcRequestHandler } from './types'
 import { mapAccountToCoreWebAccount } from './utils/account'
 
 export type AvalancheGetAccountsRpcRequest = DappRpcRequest<
@@ -12,25 +10,22 @@ export type AvalancheGetAccountsRpcRequest = DappRpcRequest<
 >
 
 class AvalancheGetAccountsHandler
-  implements RpcRequestHandler<AvalancheGetAccountsRpcRequest>
+  implements RpcRequestHandler<AvalancheGetAccountsRpcRequest, never>
 {
   methods = [RpcMethod.AVALANCHE_GET_ACCOUNTS]
 
   handle = async (
-    action: PayloadAction<AvalancheGetAccountsRpcRequest['payload'], string>,
+    request: AvalancheGetAccountsRpcRequest,
     listenerApi: AppListenerEffectAPI
-  ) => {
+  ): HandleResponse => {
     const accounts = selectAccounts(listenerApi.getState())
     const activeAccount = selectActiveAccount(listenerApi.getState())
 
-    listenerApi.dispatch(
-      sendRpcResult({
-        request: { payload: action.payload },
-        result: Object.values(accounts).map(account =>
-          mapAccountToCoreWebAccount(account, activeAccount?.index ?? 0)
-        )
-      })
+    const coreWebAccounts = Object.values(accounts).map(account =>
+      mapAccountToCoreWebAccount(account, activeAccount?.index ?? 0)
     )
+
+    return { success: true, value: coreWebAccounts }
   }
 }
 

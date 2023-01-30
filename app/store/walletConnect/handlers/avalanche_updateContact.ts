@@ -1,16 +1,17 @@
-import { PayloadAction } from '@reduxjs/toolkit'
-import { RpcMethod } from 'services/walletconnect/types'
 import { AppListenerEffectAPI } from 'store'
 import { Contact as SharedContact } from '@avalabs/types'
 import { ethErrors } from 'eth-rpc-errors'
 import { addContact, selectContacts } from 'store/addressBook'
+import * as Navigation from 'utils/Navigation'
+import AppNavigation from 'navigation/AppNavigation'
+import { RpcMethod } from '../types'
 import {
-  addRequest,
-  sendRpcResult,
-  sendRpcError,
-  removeRequest
-} from '../slice'
-import { DappRpcRequest, RpcRequestHandler } from './types'
+  ApproveResponse,
+  DappRpcRequest,
+  DEFERRED_RESULT,
+  HandleResponse,
+  RpcRequestHandler
+} from './types'
 import { parseContact } from './utils/contact'
 
 export interface AvalancheUpdateContactRequest
@@ -21,60 +22,64 @@ export interface AvalancheUpdateContactRequest
   contact: SharedContact
 }
 
+type ApproveData = {
+  contact: SharedContact
+}
+
 class AvalancheUpdateContactHandler
-  implements RpcRequestHandler<AvalancheUpdateContactRequest>
+  implements RpcRequestHandler<AvalancheUpdateContactRequest, ApproveData>
 {
   methods = [RpcMethod.AVALANCHE_UPDATE_CONTACT]
 
   handle = async (
-    action: PayloadAction<AvalancheUpdateContactRequest['payload'], string>,
+    request: AvalancheUpdateContactRequest,
     listenerApi: AppListenerEffectAPI
-  ) => {
-    const { dispatch, getState } = listenerApi
-    const { params } = action.payload
+  ): HandleResponse => {
+    const { getState } = listenerApi
+    const { params } = request.payload
     const contact = parseContact(params)
 
     if (!contact) {
-      dispatch(
-        sendRpcError({
-          request: action,
-          error: ethErrors.rpc.invalidParams({
-            message: 'Contact is invalid'
-          })
+      return {
+        success: false,
+        error: ethErrors.rpc.invalidParams({
+          message: 'Contact is invalid'
         })
-      )
-      return
+      }
     }
 
     const existingContacts = selectContacts(getState())
     const existingContact = existingContacts[contact.id]
 
     if (!existingContact) {
-      dispatch(
-        sendRpcError({
-          request: action,
-          error: ethErrors.rpc.resourceNotFound({
-            message: 'Contact does not exist'
-          })
+      return {
+        success: false,
+        error: ethErrors.rpc.resourceNotFound({
+          message: 'Contact does not exist'
         })
-      )
-      return
+      }
     }
 
-    const dAppRequest: AvalancheUpdateContactRequest = {
-      payload: action.payload,
-      contact
-    }
+    Navigation.navigate({
+      name: AppNavigation.Root.Wallet,
+      params: {
+        screen: AppNavigation.Modal.UpdateContact,
+        params: {
+          request,
+          contact
+        }
+      }
+    })
 
-    dispatch(addRequest(dAppRequest))
+    return { success: true, value: DEFERRED_RESULT }
   }
 
-  onApprove = async (
-    action: PayloadAction<{ request: AvalancheUpdateContactRequest }, string>,
+  approve = async (
+    payload: { request: AvalancheUpdateContactRequest; data: ApproveData },
     listenerApi: AppListenerEffectAPI
-  ) => {
+  ): ApproveResponse => {
     const { dispatch } = listenerApi
-    const contact = action.payload.request.contact
+    const contact = payload.data.contact
 
     dispatch(
       addContact({
@@ -85,14 +90,8 @@ class AvalancheUpdateContactHandler
       })
     )
 
-    dispatch(
-      sendRpcResult({
-        request: action.payload.request,
-        result: []
-      })
-    )
-
-    dispatch(removeRequest(action.payload.request.payload.id))
+    return { success: true, value: [] }
   }
 }
+
 export const avalancheUpdateContactHandler = new AvalancheUpdateContactHandler()

@@ -15,7 +15,7 @@ import Config from 'react-native-config'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import useAppBackgroundTracker from 'hooks/useAppBackgroundTracker'
 import { useSelector } from 'react-redux'
-import { selectUserID } from 'store/posthog'
+import { posthogCapture, selectUserID } from 'store/posthog'
 import Logger from 'utils/Logger'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { sanitizeFeatureFlags } from './utils'
@@ -174,14 +174,8 @@ export const PosthogContextProvider = ({
   )
 
   const capture = useCallback(
-    async (event: string, properties?: JsonMap) => {
-      Logger.info(event, properties)
-      return PostHog.capture(event, {
-        ...properties,
-        $ip: '',
-        $user_id: posthogUserId
-      })
-    },
+    (event: string, properties?: JsonMap) =>
+      posthogCapture({ posthogUserId, event, properties }),
     [posthogUserId]
   )
 
