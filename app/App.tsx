@@ -20,6 +20,7 @@ import 'utils/debugging/wdyr'
 import Config from 'react-native-config'
 import * as Sentry from '@sentry/react-native'
 import { DefaultSampleRate } from 'services/sentry/SentryWrapper'
+import { navigationRef } from 'utils/Navigation'
 
 LogBox.ignoreLogs([
   'Require cycle:',
@@ -76,7 +77,10 @@ export default function App() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <NavigationContainer
           theme={context.navContainerTheme}
-          ref={context.appNavHook.navigation}>
+          ref={ref => {
+            context.appNavHook.navigation.current = ref
+            navigationRef.current = ref
+          }}>
           <RootScreenStack />
         </NavigationContainer>
       </KeyboardAvoidingView>

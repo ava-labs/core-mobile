@@ -10,12 +10,26 @@ import {
 } from 'navigation/NoWalletScreenStack'
 import { NoWalletTabNavigatorParamList } from 'navigation/wallet/NoWalletTabNavigator'
 import { AdvancedStackParamList } from 'navigation/wallet/AdvancedStackScreen'
+import { SessionRequestRpcRequest } from 'store/walletConnect/handlers/session_request'
+import { AvalancheCreateContactRequest } from 'store/walletConnect/handlers/avalanche_createContact'
+import { AvalancheRemoveContactRequest } from 'store/walletConnect/handlers/avalanche_removeContact'
+import { Contact as SharedContact } from '@avalabs/types'
+import { AvalancheUpdateContactRequest } from 'store/walletConnect/handlers/avalanche_updateContact'
+import { AvalancheSelectAccountRequest } from 'store/walletConnect/handlers/avalanche_selectAccount'
+import { Account } from 'store/account'
+import { EthSendTransactionRpcRequest } from 'store/walletConnect/handlers/eth_sendTransaction'
+import { AvalancheBridgeAssetRequest } from 'store/walletConnect/handlers/avalanche_bridgeAsset'
+import { Asset, Blockchain } from '@avalabs/bridge-sdk'
+import { EthSignRpcRequest } from 'store/walletConnect/handlers/eth_sign'
+import { WalletAddEthereumChainRpcRequest } from 'store/walletConnect/handlers/wallet_addEthereumChain'
+import { Network } from '@avalabs/chains-sdk'
+import { WalletSwitchEthereumChainRpcRequest } from 'store/walletConnect/handlers/wallet_switchEthereumChain'
 import { RootScreenStackParamList } from './RootScreenStack'
 import { OnboardingScreenStackParamList } from './OnboardScreenStack'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
 import { CreateWalletStackParamList } from './onboarding/CreateWalletStack'
 import { EnterWithMnemonicStackParamList } from './onboarding/EnterWithMnemonicStack'
-import { WalletScreenStackParams } from './WalletScreenStack'
+import { WalletScreenStackParams } from './WalletScreenStack/WalletScreenStack'
 import { DrawerParamList } from './wallet/DrawerScreenStack'
 import { TabNavigatorParamList } from './wallet/TabNavigator'
 import { SendStackParamList } from './wallet/SendScreenStack'
@@ -27,6 +41,7 @@ import { AddressBookStackParamList } from './wallet/AddressBookStack'
 import { SecurityStackParamList } from './wallet/SecurityPrivacyStackScreen'
 import { BridgeStackParamList } from './wallet/BridgeScreenStack'
 import { PortfolioStackParamList } from './wallet/PortfolioScreenStack'
+
 export type { RootScreenStackParamList }
 
 export type TokenSelectParams = {
@@ -42,6 +57,53 @@ export type EditGasLimitParams = {
   onSave: (newGasLimit: number) => void
   gasLimit: number
   gasPrice: BigNumber
+}
+
+export type SessionProposalParams = {
+  request: SessionRequestRpcRequest
+}
+
+export type CreateRemoveContactParams = {
+  request: AvalancheCreateContactRequest | AvalancheRemoveContactRequest
+  contact: SharedContact
+  action: 'create' | 'remove'
+}
+
+export type UpdateContactParams = {
+  request: AvalancheUpdateContactRequest
+  contact: SharedContact
+}
+
+export type SelectAccountParams = {
+  request: AvalancheSelectAccountRequest
+  account: Account
+}
+
+export type SignTransactionParams = {
+  request: EthSendTransactionRpcRequest
+}
+
+export type SignMessageParams = {
+  request: EthSignRpcRequest
+  data: string | undefined
+}
+
+export type BridgeAssetParams = {
+  request: AvalancheBridgeAssetRequest
+  amountStr: string
+  asset: Asset
+  currentBlockchain: Blockchain
+}
+
+export type AddEthereumChainParams = {
+  request: WalletAddEthereumChainRpcRequest
+  network: Network
+  isExisting: boolean
+}
+
+export type SwitchEthereumChainParams = {
+  request: WalletSwitchEthereumChainRpcRequest
+  network: Network
 }
 
 export type QRCodeParams = {

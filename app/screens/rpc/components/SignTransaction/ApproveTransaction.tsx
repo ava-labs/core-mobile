@@ -11,7 +11,7 @@ import React, { Dispatch } from 'react'
 import { useSelector } from 'react-redux'
 import { selectAccountByAddress } from 'store/account'
 import { truncateAddress } from 'utils/Utils'
-import { txStyles } from 'screens/rpc/components/SignTransaction'
+import { txStyles } from 'screens/rpc/components/SignTransaction/SignTransaction'
 
 export function ApproveTransaction({
   site,
@@ -22,7 +22,6 @@ export function ApproveTransaction({
   gasPrice,
   gasLimit,
   onCustomFeeSet,
-  hash,
   selectedGasFee,
   setShowCustomSpendLimit,
   setShowTxData,

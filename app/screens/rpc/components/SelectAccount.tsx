@@ -1,34 +1,46 @@
-import React, { FC } from 'react'
+import React, { useCallback } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { AvalancheSelectAccountRequest } from 'store/walletConnect/handlers/avalanche_selectAccount'
 import AccountItem from 'screens/portfolio/account/AccountItem'
 import WalletSVG from 'components/svg/WalletSVG'
+import { useDappConnectionContext } from 'contexts/DappConnectionContext'
+import { WalletScreenProps } from 'navigation/types'
+import AppNavigation from 'navigation/AppNavigation'
+import { useNavigation, useRoute } from '@react-navigation/native'
 import SimplePrompt from './SimplePrompt'
 
-interface Props {
-  dappEvent: AvalancheSelectAccountRequest
-  onApprove: (request: AvalancheSelectAccountRequest) => void
-  onReject: (request: AvalancheSelectAccountRequest, message?: string) => void
-  onClose: (request: AvalancheSelectAccountRequest) => void
-}
+type SelectAccountScreenProps = WalletScreenProps<
+  typeof AppNavigation.Modal.SelectAccount
+>
 
-const SelectAccount: FC<Props> = ({
-  dappEvent,
-  onApprove,
-  onReject,
-  onClose
-}) => {
+const SelectAccount = () => {
+  const { goBack } = useNavigation<SelectAccountScreenProps['navigation']>()
+
+  const { request, account } =
+    useRoute<SelectAccountScreenProps['route']>().params
+
+  const { onUserApproved: onApprove, onUserRejected: onReject } =
+    useDappConnectionContext()
+
   const theme = useApplicationContext().theme
   const {
-    data: { account },
     payload: { peerMeta }
-  } = dappEvent
+  } = request
 
   const header = `Switch to ${account.title}?`
 
   const description =
     new URL(peerMeta?.url ?? '').hostname +
     ' is requesting to switch your active account.'
+
+  const rejectAndClose = useCallback(() => {
+    onReject(request)
+    goBack()
+  }, [goBack, onReject, request])
+
+  const approveAndClose = useCallback(() => {
+    onApprove(request, { account })
+    goBack()
+  }, [account, goBack, onApprove, request])
 
   const renderWalletIcon = () => (
     <WalletSVG size={48} backgroundColor={theme.colorBg3} />
@@ -38,11 +50,8 @@ const SelectAccount: FC<Props> = ({
 
   return (
     <SimplePrompt
-      onApprove={() => onApprove(dappEvent)}
-      onReject={() => {
-        onReject(dappEvent)
-        onClose(dappEvent)
-      }}
+      onApprove={approveAndClose}
+      onReject={rejectAndClose}
       header={header}
       description={description}
       renderIcon={renderWalletIcon}

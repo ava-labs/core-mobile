@@ -1,6 +1,6 @@
 import { useEffect, useCallback, useState } from 'react'
 import { Linking } from 'react-native'
-import { DeepLink, DeepLinkOrigin } from 'services/walletconnect/types'
+import { DeepLink, DeepLinkOrigin } from './types'
 
 export const useDeepLink = () => {
   const [pendingDeepLink, setPendingDeepLink] = useState<DeepLink>()

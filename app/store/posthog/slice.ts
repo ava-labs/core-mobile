@@ -1,4 +1,5 @@
-import { createSlice } from '@reduxjs/toolkit'
+import { createAction, createSlice } from '@reduxjs/toolkit'
+import { JsonMap } from 'posthog-react-native/src/bridge'
 import { RootState } from 'store'
 import { v4 as uuidv4 } from 'uuid'
 import { initialState } from './types'
@@ -20,5 +21,8 @@ export const selectUserID = (state: RootState) => state.posthog.userID
 
 // actions
 export const { regenerateUserId } = posthogSlice.actions
+export const capture = createAction<{ event: string; properties?: JsonMap }>(
+  `${reducerName}/capture`
+)
 
 export const posthogReducer = posthogSlice.reducer
