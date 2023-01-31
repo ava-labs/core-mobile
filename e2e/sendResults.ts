@@ -137,84 +137,54 @@ A 'case id' is the permanent test case in our suite, a 'test case id' is a part 
 
   // Sends the results to testrail using the resultsToSendToTestrail array if POST_TO_TESTRAIL env variable set to true
   if (process.env.POST_TO_TESTRAIL) {
-    await generateAndroidsResults(resultsToSendToTestrail)
-    await generateIosResults(resultsToSendToTestrail)
+    await generatePlatformResults(
+      resultsToSendToTestrail,
+      'android',
+      (
+        await getAndroidTestRunId()
+      ).runID
+    )
+    await generatePlatformResults(
+      resultsToSendToTestrail,
+      'ios',
+      (
+        await getIosTestRunId()
+      ).runID
+    )
   }
 }
 
-async function generateAndroidsResults(resultsToSendToTestrail: any[]) {
-  const androidRunId = await getAndroidTestRunId()
-
+// Updates the results for an existing test run or and empty test run
+async function generatePlatformResults(
+  resultsToSendToTestrail: any[],
+  platform: string,
+  runId?: number
+) {
   try {
-    // const resultsObject = await api.addResultsForCases(runId, resultsContent)
-    const androidResultArray = resultsToSendToTestrail.filter(
-      result => result.platform === 'android'
+    const resultArray = resultsToSendToTestrail.filter(
+      result => result.platform === platform
     )
 
-    for (let i = 0; i < androidResultArray.length; i++) {
-      const resultObject = androidResultArray[i]
+    for (let i = 0; i < resultArray.length; i++) {
+      const resultObject = resultArray[i]
       const payload = {
         status_id: resultObject?.status_id
       }
       if (resultObject) {
         const testResult = await api.addResultForCase(
-          Number(androidRunId.runID),
+          Number(runId),
           resultObject?.case_id,
           payload
         )
         if (testResult.status_id === 5) {
-          const failScreenshot = `./e2e/artifacts/android/${resultObject.screenshot}`
+          // This is the path to the screenshot for when the test fails
+          const failScreenshot = `./e2e/artifacts/${platform}/${resultObject.screenshot}`
           if (failScreenshot) {
             const failedPayload = {
               name: 'failed.png',
               value: fs.createReadStream(failScreenshot)
             }
-            console.log('attachment to be sent!!!')
-            const attachmentID = await api.addAttachmentToResult(
-              testResult.id,
-              failedPayload
-            )
-            console.log(`${attachmentID} is the attachment ID...`)
-          }
-        }
-      } else {
-        console.log(
-          'result object is null so no results were sent to testrail!!!'
-        )
-      }
-    }
-  } catch (error) {
-    console.log(error)
-  }
-}
-
-async function generateIosResults(resultsToSendToTestrail: any[]) {
-  const iosTestRunId = await getIosTestRunId()
-
-  try {
-    // const resultsObject = await api.addResultsForCases(runId, resultsContent)
-    const iosResultArray = resultsToSendToTestrail.filter(
-      result => result.platform === 'ios'
-    )
-
-    for (let i = 0; i < iosResultArray.length; i++) {
-      const resultObject = iosResultArray[i]
-      const payload = {
-        status_id: resultObject?.status_id
-      }
-      if (resultObject) {
-        const testResult = await api.addResultForCase(
-          Number(iosTestRunId.runID),
-          resultObject?.case_id,
-          payload
-        )
-        if (testResult.status_id === 5) {
-          const failScreenshot = `./e2e/artifacts/ios/${resultObject.screenshot}`
-          if (failScreenshot) {
-            const failedPayload = {
-              name: 'failed.png',
-              value: fs.createReadStream(failScreenshot)
-            }
+            // Attaches the screenshot to the corressponding case in the test run
             const attachmentID = await api.addAttachmentToResult(
               testResult.id,
               failedPayload
