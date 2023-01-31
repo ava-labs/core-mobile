@@ -7,7 +7,7 @@ import {
   createNewTestSectionsAndCases,
   androidRunID,
   iosRunID
-} from './testrail_generate_tcs'
+} from './generateTestrailObjects'
 import getTestLogs from './getResultsFromLogs'
 
 const getAndroidTestRunId = async () => {

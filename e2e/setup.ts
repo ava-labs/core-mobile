@@ -1,4 +1,4 @@
-import { androidRunID, iosRunID } from './testrail_generate_tcs'
+import { androidRunID, iosRunID } from './generateTestrailObjects'
 
 import sendResultsToTestrail from './sendResults'
 
