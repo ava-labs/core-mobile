@@ -34,7 +34,7 @@ export default async function getTestLogs() {
       const resultFolders: string[] = await getDirectories(
         `./e2e/artifacts/${folders[i]}`
       )
-      const parsedResultFolder = resultFolders[0]
+      const parsedResultFolder = resultFolders[resultFolders.length - 1]
       const attachmentFolders = await getDirectories(
         `./e2e/artifacts/${folders[i]}/${parsedResultFolder}`
       )

@@ -499,26 +499,26 @@ export async function createNewTestRunBool(platform: string) {
 export const androidRunID = async () => {
   var runID = await createNewTestRunBool('android')
   if (runID) {
-    return runID
+    return { runID: runID, emptyTestRun: true }
   } else {
     const currentAndroidRunID = await createEmptyTestRun(
       `android smoke test run ${generateTimestamp()}`,
       'This is a smoke test run for android!'
     )
-    return currentAndroidRunID
+    return { runID: currentAndroidRunID, emptyTestRun: false }
   }
 }
 
 export const iosRunID = async () => {
   var runID = await createNewTestRunBool('ios')
   if (runID) {
-    return runID
+    return { runID: runID, emptyTestRun: true }
   } else {
     var currentiOSRunID = await createEmptyTestRun(
       `ios smoke test run ${generateTimestamp()}`,
       'This is a smoke test run for ios!'
     )
-    return currentiOSRunID
+    return { runID: currentiOSRunID, emptyTestRun: false }
   }
 }
 
@@ -528,4 +528,26 @@ export function getUniqueListBy(arr: any, key: string) {
       arr.map((item: { [x: string]: any }) => [item[key], item])
     ).values()
   ]
+}
+
+export async function getTestCasesFromRun(runId: number) {
+  const casesObject = await api.getTests(runId)
+  const titleArray = []
+  for (const testCase of casesObject) {
+    const testCaseName = testCase.title
+    const testResult = testCase.status_id
+    titleArray.push({ title: testCaseName, statusId: testResult })
+  }
+  return titleArray
+}
+
+export async function compareTestCaseArrays(
+  casesToBeAdded: any,
+  casesInRun: any
+) {
+  const difference = casesToBeAdded
+    .filter((x: any) => !casesInRun.includes(x))
+    .concat(casesInRun.filter((x: any) => !casesToBeAdded.includes(x)))
+
+  return difference
 }

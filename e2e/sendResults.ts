@@ -10,12 +10,12 @@ import {
 } from './testrail_generate_tcs'
 import getTestLogs from './getResultsFromLogs'
 
-async function getAndroidTestRunId() {
+const getAndroidTestRunId = async () => {
   const androidTestRunID = await androidRunID()
   return androidTestRunID
 }
 
-async function getIosTestRunId() {
+const getIosTestRunId = async () => {
   const iosTestRunID = await iosRunID()
   return iosTestRunID
 }
@@ -73,13 +73,14 @@ export async function prepareResults() {
     include_all: false,
     case_ids: testIdArrayForTestrail
   }
+
   // If POST_TO_TESTRAIL environment variable set to true the results will be posted to testrail in a test run
   if (process.env.POST_TO_TESTRAIL) {
-    if (iosTestRunId && androidTestRunID) {
+    if (iosTestRunId.emptyTestRun && androidTestRunID.emptyTestRun) {
       try {
         // Takes the array of test cases and adds them to the test run
-        await api.updateRun(androidTestRunID, testCasesToSend)
-        await api.updateRun(iosTestRunId, testCasesToSend)
+        await api.updateRun(Number(androidTestRunID.runID), testCasesToSend)
+        await api.updateRun(Number(iosTestRunId.runID), testCasesToSend)
         console.log(
           'Test cases have been sent to the test run...' +
             JSON.stringify(testCasesToSend)
@@ -91,6 +92,8 @@ export async function prepareResults() {
             'test cases sent'
         )
       }
+    } else {
+      console.log('Updating the existing test case results...')
     }
   }
   return casesToAddToRun
@@ -155,7 +158,7 @@ async function generateAndroidsResults(resultsToSendToTestrail: any[]) {
       }
       if (resultObject) {
         const testResult = await api.addResultForCase(
-          Number(androidRunId),
+          Number(androidRunId.runID),
           resultObject?.case_id,
           payload
         )
@@ -201,7 +204,7 @@ async function generateIosResults(resultsToSendToTestrail: any[]) {
       }
       if (resultObject) {
         const testResult = await api.addResultForCase(
-          Number(iosTestRunId),
+          Number(iosTestRunId.runID),
           resultObject?.case_id,
           payload
         )
