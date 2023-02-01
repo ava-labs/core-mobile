@@ -1,6 +1,6 @@
-import { RpcMethod } from 'services/walletconnect/types'
 import { SessionRequestRpcRequest } from './handlers/session_request'
 import { DappRpcRequest } from './handlers/types'
+import { RpcMethod } from './types'
 
 export const isSessionRequestRpcRequest = (
   request: DappRpcRequest<string, unknown>

@@ -12,7 +12,7 @@ import Avatar from 'components/Avatar'
 import { useSelector } from 'react-redux'
 import { selectTokenByAddress } from 'store/balance'
 import isEmpty from 'lodash.isempty'
-import { txStyles } from 'screens/rpc/components/SignTransaction'
+import { txStyles } from 'screens/rpc/components/SignTransaction/SignTransaction'
 
 export function GenericTransaction({
   description,

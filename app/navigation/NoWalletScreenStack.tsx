@@ -14,7 +14,7 @@ import CurrencySelector from 'screens/drawer/currency-selector/CurrencySelector'
 import TokenDetail from 'screens/watchlist/TokenDetail'
 import { NavigatorScreenParams } from '@react-navigation/native'
 import { DrawerParamList } from 'navigation/wallet/DrawerScreenStack'
-import { SignOutModalScreen } from 'navigation/WalletScreenStack'
+import { SignOutModalScreen } from 'navigation/WalletScreenStack/WalletScreenStack'
 import LegalStackScreen, {
   LegalStackParamList
 } from 'navigation/wallet/LegalStackScreen'

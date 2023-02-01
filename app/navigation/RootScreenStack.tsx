@@ -9,7 +9,7 @@ import { NavigatorScreenParams } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import WalletScreenStack, {
   WalletScreenStackParams
-} from 'navigation/WalletScreenStack'
+} from 'navigation/WalletScreenStack/WalletScreenStack'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { ExitEvents, ExitPromptAnswers, ShowExitPrompt } from 'AppHook'
 import {

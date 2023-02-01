@@ -11,7 +11,7 @@ import React from 'react'
 import { useSelector } from 'react-redux'
 import { selectAccountByAddress } from 'store/account'
 import { View } from 'react-native'
-import { txStyles } from 'screens/rpc/components/SignTransaction'
+import { txStyles } from 'screens/rpc/components/SignTransaction/SignTransaction'
 
 export function AddLiquidityTransaction({
   poolTokens,

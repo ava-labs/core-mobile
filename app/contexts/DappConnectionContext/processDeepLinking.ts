@@ -1,22 +1,18 @@
 import { Alert } from 'react-native'
-import { ACTIONS, PROTOCOLS } from 'services/walletconnect/types'
 import URL from 'url-parse'
 import URLParse from 'url-parse'
 import qs, { ParsedQs } from 'qs'
 import { CORE_UNIVERSAL_LINK_HOSTS } from 'resources/Constants'
-import walletConnectService from 'services/walletconnect/WalletConnectService'
-import { Network } from '@avalabs/chains-sdk'
-import { Account } from 'store/account'
+import { isValidUri } from 'services/walletconnect/WalletConnectService'
 import Logger from 'utils/Logger'
+import { AnyAction, Dispatch } from '@reduxjs/toolkit'
+import { newSession } from 'store/walletConnect'
+import { ACTIONS, PROTOCOLS } from './types'
 
 /******************************************************************************
  * Process deep link and start wallet connect session accordingly
  *****************************************************************************/
-export function processDeeplink(
-  url: string,
-  activeAccount?: Account,
-  activeNetwork?: Network
-) {
+export const processDeeplink = (url: string, dispatch: Dispatch<AnyAction>) => {
   const urlObj = new URL(url)
 
   let params: ParsedQs | undefined
@@ -30,7 +26,7 @@ export function processDeeplink(
   }
   if (urlObj && url) {
     try {
-      handleLink(urlObj, url, params, activeAccount, activeNetwork)
+      handleLink(urlObj, url, dispatch, params)
     } catch (e) {
       Logger.error('failed to process dapp link', e)
       Alert.alert((e as Error)?.message)
@@ -42,21 +38,20 @@ export function processDeeplink(
  * Handle link by protocol type. Additional protocol
  * handling can be added here as the app matures
  *****************************************************************************/
-function handleLink(
+const handleLink = (
   urlObj: URLParse<string>,
   originalUrl: string,
-  params?: ParsedQs,
-  activeAccount?: Account,
-  activeNetwork?: Network
-) {
+  dispatch: Dispatch<AnyAction>,
+  params?: ParsedQs
+) => {
   const protocol = urlObj.protocol.replace(':', '')
   switch (protocol) {
     // handles general WalletConnect custom url protocol
     case PROTOCOLS.WC:
-      if (!walletConnectService.isValidUri(originalUrl)) {
+      if (!isValidUri(originalUrl)) {
         return
       }
-      walletConnectService.newSession(originalUrl, activeAccount, activeNetwork)
+      dispatch(newSession(originalUrl))
       break
     // handles Universal Link (iOS) url protocol
     case PROTOCOLS.HTTP:
@@ -68,11 +63,11 @@ function handleLink(
         if (action === ACTIONS.WC && params?.uri) {
           const uri = params.uri.toString()
 
-          if (!walletConnectService.isValidUri(uri)) {
+          if (!isValidUri(uri)) {
             return
           }
 
-          walletConnectService.newSession(uri, activeAccount, activeNetwork)
+          dispatch(newSession(uri))
         } else if (action === ACTIONS.WC) {
           // This is called from WC just to open the app, and it's not supposed to do anything
           return

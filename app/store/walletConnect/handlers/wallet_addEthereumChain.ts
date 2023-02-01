@@ -1,8 +1,6 @@
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
-import { PayloadAction } from '@reduxjs/toolkit'
 import { ethErrors } from 'eth-rpc-errors'
 import { isValidRPCUrl } from 'services/network/utils/isValidRpcUrl'
-import { RpcMethod } from 'services/walletconnect/types'
 import { AppListenerEffectAPI } from 'store'
 import {
   addCustomNetwork,
@@ -10,13 +8,16 @@ import {
   selectNetworks,
   setActive
 } from 'store/network'
+import * as Navigation from 'utils/Navigation'
+import AppNavigation from 'navigation/AppNavigation'
+import { RpcMethod } from '../types'
 import {
-  addRequest,
-  removeRequest,
-  sendRpcError,
-  sendRpcResult
-} from '../slice'
-import { DappRpcRequest, RpcRequestHandler } from './types'
+  ApproveResponse,
+  DappRpcRequest,
+  DEFERRED_RESULT,
+  HandleResponse,
+  RpcRequestHandler
+} from './types'
 
 interface AddEthereumChainParameter {
   chainId: string
@@ -31,40 +32,36 @@ interface AddEthereumChainParameter {
   rpcUrls?: string[]
 }
 
-export interface WalletAddEthereumChainRpcRequest
-  extends DappRpcRequest<
-    RpcMethod.WALLET_ADD_ETHEREUM_CHAIN,
-    AddEthereumChainParameter[]
-  > {
+export type WalletAddEthereumChainRpcRequest = DappRpcRequest<
+  RpcMethod.WALLET_ADD_ETHEREUM_CHAIN,
+  AddEthereumChainParameter[]
+>
+
+type ApproveData = {
   network: Network
   isExisting: boolean
 }
 
 class WalletAddEthereumChainHandler
-  implements RpcRequestHandler<WalletAddEthereumChainRpcRequest>
+  implements RpcRequestHandler<WalletAddEthereumChainRpcRequest, ApproveData>
 {
   methods = [RpcMethod.WALLET_ADD_ETHEREUM_CHAIN]
 
   handle = async (
-    action: PayloadAction<WalletAddEthereumChainRpcRequest['payload'], string>,
+    request: WalletAddEthereumChainRpcRequest,
     listenerApi: AppListenerEffectAPI
-  ) => {
-    const { dispatch } = listenerApi
+  ): HandleResponse => {
     const store = listenerApi.getState()
 
-    const requestedChain: AddEthereumChainParameter | undefined =
-      action.payload.params?.[0]
+    const requestedChain = request.payload.params?.[0]
 
     if (!requestedChain) {
-      dispatch(
-        sendRpcError({
-          request: { payload: action.payload },
-          error: ethErrors.rpc.invalidParams({
-            message: 'missing chain params'
-          })
+      return {
+        success: false,
+        error: ethErrors.rpc.invalidParams({
+          message: 'missing chain params'
         })
-      )
-      return
+      }
     }
 
     const chains = selectNetworks(store)
@@ -76,38 +73,29 @@ class WalletAddEthereumChainHandler
     const isSameNetwork = requestedChainId === currentActiveNetwork?.chainId
 
     if (isSameNetwork) {
-      dispatch(
-        sendRpcResult({
-          request: { payload: action.payload },
-          result: null
-        })
-      )
-      return
+      return {
+        success: true,
+        value: null
+      }
     }
 
     const rpcUrl = requestedChain?.rpcUrls?.[0]
     if (!rpcUrl) {
-      dispatch(
-        sendRpcError({
-          request: { payload: action.payload },
-          error: ethErrors.rpc.invalidParams({
-            message: 'RPC url missing'
-          })
+      return {
+        success: false,
+        error: ethErrors.rpc.invalidParams({
+          message: 'RPC url missing'
         })
-      )
-      return
+      }
     }
 
     if (!requestedChain.nativeCurrency) {
-      dispatch(
-        sendRpcError({
-          request: { payload: action.payload },
-          error: ethErrors.rpc.invalidParams({
-            message: 'Expected nativeCurrency param to be defined'
-          })
+      return {
+        success: false,
+        error: ethErrors.rpc.invalidParams({
+          message: 'Expected nativeCurrency param to be defined'
         })
-      )
-      return
+      }
     }
 
     const customNetwork: Network = {
@@ -133,14 +121,16 @@ class WalletAddEthereumChainHandler
     }
 
     if (chainRequestedIsSupported) {
-      dispatch(
-        addRequest({
-          payload: action.payload,
-          network: customNetwork,
-          isExisting: true
-        })
-      )
-      return
+      // navigate with isExisting flag "true" so that the UI can display a "switch to network" prompt
+      Navigation.navigate({
+        name: AppNavigation.Root.Wallet,
+        params: {
+          screen: AppNavigation.Modal.AddEthereumChain,
+          params: { request, network: customNetwork, isExisting: true }
+        }
+      })
+
+      return { success: true, value: DEFERRED_RESULT }
     }
 
     const isValid = await isValidRPCUrl(
@@ -148,42 +138,41 @@ class WalletAddEthereumChainHandler
       customNetwork.rpcUrl
     )
     if (!isValid) {
-      dispatch(
-        sendRpcError({
-          request: { payload: action.payload },
-          error: ethErrors.rpc.invalidParams({
-            message: 'ChainID does not match the rpc url'
-          })
+      return {
+        success: false,
+        error: ethErrors.rpc.invalidParams({
+          message: 'ChainID does not match the rpc url'
         })
-      )
-      return
+      }
     }
-    dispatch(
-      addRequest({
-        payload: action.payload,
-        network: customNetwork,
-        isExisting: false
-      })
-    )
+
+    // navigate with isExisting flag "false" so that the UI can display a "add new network" prompt
+    Navigation.navigate({
+      name: AppNavigation.Root.Wallet,
+      params: {
+        screen: AppNavigation.Modal.AddEthereumChain,
+        params: { request, network: customNetwork, isExisting: false }
+      }
+    })
+
+    return { success: true, value: DEFERRED_RESULT }
   }
 
-  onApprove = async (
-    action: PayloadAction<
-      { request: WalletAddEthereumChainRpcRequest },
-      string
-    >,
+  approve = async (
+    payload: { request: WalletAddEthereumChainRpcRequest; data: ApproveData },
     listenerApi: AppListenerEffectAPI
-  ) => {
+  ): ApproveResponse => {
     const { dispatch } = listenerApi
-    const request = action.payload.request
+    const data = payload.data
 
-    if (!action.payload.request.isExisting) {
-      dispatch(addCustomNetwork(request.network))
+    if (!data.isExisting) {
+      dispatch(addCustomNetwork(data.network))
     }
 
-    dispatch(setActive(request.network.chainId))
-    dispatch(removeRequest(request.payload.id))
-    dispatch(sendRpcResult({ request }))
+    dispatch(setActive(data.network.chainId))
+
+    return { success: true, value: null }
   }
 }
+
 export const walletAddEthereumChainHandler = new WalletAddEthereumChainHandler()

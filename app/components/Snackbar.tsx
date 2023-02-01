@@ -1,4 +1,6 @@
+import React from 'react'
 import { ToastOptions } from 'react-native-toast-notifications/lib/typescript/toast'
+import GeneralToast from './toast/GeneralToast'
 
 const LENGTH_SHORT = 3000
 const LENGTH_LONG = 5000
@@ -20,6 +22,14 @@ type showCustomProps = {
   duration: 'short' | 'long' | 'infinite'
   placement?: 'top' | 'bottom'
   id?: string
+}
+
+export const showSimpleToast = (message: string, id?: string) => {
+  showSnackBarCustom({
+    component: <GeneralToast message={message} />,
+    duration: 'short',
+    id
+  })
 }
 
 export function showSnackBarCustom({

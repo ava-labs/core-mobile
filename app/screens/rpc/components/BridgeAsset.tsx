@@ -1,37 +1,42 @@
-import React, { FC, useContext, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useEffect } from 'react'
 import { View } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
 import { ApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import { humanize } from 'utils/string/humanize'
-import { AvalancheBridgeAssetRequest } from 'store/walletConnect/handlers/avalanche_bridgeAsset'
+import { useSelector } from 'react-redux'
 import Avatar from 'components/Avatar'
 import { showSnackBarCustom } from 'components/Snackbar'
 import TransactionToast, {
   TransactionToastType
 } from 'components/toast/TransactionToast'
+import { WalletScreenProps } from 'navigation/types'
+import AppNavigation from 'navigation/AppNavigation'
+import { useNavigation, useRoute } from '@react-navigation/native'
+import { useDappConnectionContext } from 'contexts/DappConnectionContext'
+import { selectRequestStatus } from 'store/walletConnect'
 import SimplePrompt from './SimplePrompt'
 
-interface Props {
-  dappEvent: AvalancheBridgeAssetRequest
-  onApprove: (request: AvalancheBridgeAssetRequest) => void
-  onReject: (request: AvalancheBridgeAssetRequest, message?: string) => void
-  onClose: (request: AvalancheBridgeAssetRequest) => void
-}
+type BridgeAssetScreenProps = WalletScreenProps<
+  typeof AppNavigation.Modal.BridgeAsset
+>
 
-const BridgeAsset: FC<Props> = ({
-  dappEvent,
-  onApprove,
-  onReject,
-  onClose
-}) => {
-  const [submitting, setSubmitting] = useState(false)
+const BridgeAsset = () => {
+  const { goBack } = useNavigation<BridgeAssetScreenProps['navigation']>()
+
+  const { request, asset, amountStr, currentBlockchain } =
+    useRoute<BridgeAssetScreenProps['route']>().params
+
+  const { onUserApproved: onApprove, onUserRejected: onReject } =
+    useDappConnectionContext()
+
+  const requestStatus = useSelector(selectRequestStatus(request.payload.id))
+
   const theme = useContext(ApplicationContext).theme
   const {
-    payload: { peerMeta },
-    data: { amountStr, asset, currentBlockchain }
-  } = dappEvent
+    payload: { peerMeta }
+  } = request
 
   const symbol = asset.symbol
 
@@ -41,11 +46,20 @@ const BridgeAsset: FC<Props> = ({
     new URL(peerMeta?.url ?? '').hostname +
     ' wants to perform the following action'
 
+  const rejectAndClose = useCallback(() => {
+    onReject(request)
+    goBack()
+  }, [goBack, onReject, request])
+
+  const approveAndClose = useCallback(() => {
+    onApprove(request, { currentBlockchain, amountStr, asset })
+    goBack()
+  }, [amountStr, asset, currentBlockchain, goBack, onApprove, request])
+
   useEffect(() => {
-    if (dappEvent.error || dappEvent.result) {
-      setSubmitting(false)
-    }
-    if (dappEvent.error) {
+    if (!requestStatus) return
+
+    if (requestStatus.error) {
       showSnackBarCustom({
         component: (
           <TransactionToast
@@ -53,16 +67,11 @@ const BridgeAsset: FC<Props> = ({
             message={'Failed to approve transaction'}
           />
         ),
-        duration: 'short'
+        duration: 'long'
       })
-      onClose(dappEvent)
+      goBack()
     }
-  }, [dappEvent, onClose])
-
-  const onHandleApprove = () => {
-    setSubmitting(true)
-    onApprove(dappEvent)
-  }
+  }, [requestStatus, goBack])
 
   const renderIcon = () => (
     <Avatar.Custom
@@ -100,16 +109,12 @@ const BridgeAsset: FC<Props> = ({
 
   return (
     <SimplePrompt
-      onApprove={onHandleApprove}
-      onReject={() => {
-        onReject(dappEvent)
-        onClose(dappEvent)
-      }}
+      onApprove={approveAndClose}
+      onReject={rejectAndClose}
       header={header}
       description={description}
       renderIcon={renderIcon}
       renderContent={renderContent}
-      isApproving={submitting}
     />
   )
 }
