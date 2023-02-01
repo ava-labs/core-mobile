@@ -30,7 +30,7 @@ const SparklineChart: FC<Props> = ({
   onPress
 }) => {
   const theme = useApplicationContext().theme
-  const { currencyFormatter } = useApplicationContext().appHook
+  const { tokenInCurrencyFormatter } = useApplicationContext().appHook
 
   const defaultAreaChartFillGradient = (
     props: GradientProps,
@@ -74,7 +74,7 @@ const SparklineChart: FC<Props> = ({
         borderRadius: 20,
         toolTipTextRenderers: [
           ({ scaleY, y }) => ({
-            text: currencyFormatter(scaleY.invert(y).toFixed(6).toString())
+            text: tokenInCurrencyFormatter(scaleY.invert(y).toString())
           })
         ]
       }}

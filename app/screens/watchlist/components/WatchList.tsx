@@ -21,7 +21,6 @@ import {
   PriceData,
   Prices
 } from 'store/watchlist'
-import { formatLargeCurrency } from 'utils/Utils'
 import AvaFlashList from 'components/AvaFlashList'
 import { WatchlistFilter } from '../types'
 
@@ -30,12 +29,7 @@ const getDisplayValue = (
   currencyFormatter: (num: number | string) => string
 ) => {
   const priceInCurrency = price.priceInCurrency
-
-  return priceInCurrency === 0
-    ? ' -'
-    : priceInCurrency > 0 && priceInCurrency < 0.1
-    ? `${priceInCurrency.toFixed(6)}`
-    : formatLargeCurrency(currencyFormatter(priceInCurrency))
+  return currencyFormatter(priceInCurrency)
 }
 
 interface Props {
@@ -62,7 +56,7 @@ const WatchList: React.FC<Props> = ({
   onExploreAllTokens
 }) => {
   const navigation = useNavigation<NavigationProp>()
-  const { currencyFormatter } = useApplicationContext().appHook
+  const { tokenInCurrencyFormatter } = useApplicationContext().appHook
   const dispatch = useDispatch()
 
   const keyExtractor = (item: MarketToken) => item.id
@@ -78,7 +72,7 @@ const WatchList: React.FC<Props> = ({
   function renderItem(token: MarketToken) {
     const chartData = charts[token.id] ?? defaultChartData
     const price = prices[token.id] ?? defaultPrice
-    const displayValue = getDisplayValue(price, currencyFormatter)
+    const displayValue = getDisplayValue(price, tokenInCurrencyFormatter)
 
     return (
       <WatchListItem
