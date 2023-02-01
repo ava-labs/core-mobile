@@ -2,7 +2,7 @@ import { asyncScheduler, AsyncSubject, concat, Observable, of } from 'rxjs'
 import { map } from 'rxjs/operators'
 import { BackHandler } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { WalletSetupHook } from 'hooks/useWalletSetup'
 import { AppNavHook } from 'useAppNav'
 import { Repo } from 'Repo'
@@ -13,12 +13,14 @@ import { useDispatch, useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { onLogOut, setWalletState, WalletState } from 'store/app'
 import { resetLoginAttempt } from 'store/security'
+import { formatCurrency } from 'utils/FormatCurrency'
 
 export type AppHook = {
   onExit: () => Observable<ExitEvents>
   selectedCurrency: string
   signOut: () => Promise<void>
   currencyFormatter(num: number | string): string
+  tokenInCurrencyFormatter(num: number | string): string
 }
 
 export function useApp(
@@ -33,13 +35,23 @@ export function useApp(
   const { getSetting } = repository.userSettingsRepo
   const { setAnalyticsConsent } = usePosthogContext()
 
-  useEffect(waitForNavigationContainer, [])
+  const signOut = useCallback(async () => {
+    walletSetupHook.destroyWallet()
+    repository.flush()
+    dispatch(onLogOut())
+    dispatch(resetLoginAttempt())
+    appNavHook.resetNavToRoot()
+  }, [appNavHook, dispatch, repository, walletSetupHook])
+
+  useEffect(waitForNavigationContainer, [appNavHook.navigation])
   useEffect(watchCoreAnalyticsFlagFx, [getSetting, setAnalyticsConsent])
   useEffect(decideInitialRoute, [
     appNavHook,
+    dispatch,
     initRouteSet,
     navigationContainerSet,
-    repository
+    repository,
+    signOut
   ])
 
   function watchCoreAnalyticsFlagFx() {
@@ -80,14 +92,6 @@ export function useApp(
     })
   }
 
-  async function signOut() {
-    walletSetupHook.destroyWallet()
-    repository.flush()
-    dispatch(onLogOut())
-    dispatch(resetLoginAttempt())
-    appNavHook.resetNavToRoot()
-  }
-
   function onExit(): Observable<ExitEvents> {
     const exitPrompt = new AsyncSubject<ExitPromptAnswers>()
     const dialogOp: Observable<ExitFinished> = exitPrompt.pipe(
@@ -114,52 +118,22 @@ export function useApp(
    * Localized currency formatter
    */
   const currencyFormatter = useMemo(() => {
-    /**
-     * For performance reasons we want to instantiate this as little as possible
-     */
-    const formatter = new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: selectedCurrency ?? 'USD',
-      currencyDisplay: 'symbol', // the extension uses 'narrowSymbol'
-      maximumFractionDigits: 2, // must be set for the `formatToParts` call below
-      minimumFractionDigits: 2
-    })
+    return (amount: number) => formatCurrency(amount, selectedCurrency, false)
+  }, [selectedCurrency])
 
-    return (amount: number) => {
-      /**
-       * This formats the currency to return:
-       *   <symbol><amount>
-       *   e.g. $10.00, €10.00
-       * If <symbol> matches the currency code (e.g. "CHF 10") then it returns:
-       *   <amount> <symbol>
-       *   e.g. 10 CHF
-       */
-
-      const parts = formatter.formatToParts(amount)
-      // match "CHF 10"
-      if (parts[0]?.value === selectedCurrency) {
-        const flatArray = parts.map(x => x.value)
-        flatArray.push(` ${flatArray.shift() || ''}`)
-        return flatArray.join('').trim()
-      }
-      // match "-CHF 10"
-      if (parts[1]?.value === selectedCurrency) {
-        const flatArray = parts.map(x => x.value)
-        // remove the currency code after the sign
-        flatArray.splice(1, 1)
-        flatArray.push(` ${selectedCurrency}`)
-        return flatArray.join('').trim()
-      }
-
-      return formatter.format(amount)
-    }
+  /**
+   * When displaying token value in currency we keep max 8 fraction digits
+   */
+  const tokenInCurrencyFormatter = useMemo(() => {
+    return (amount: number) => formatCurrency(amount, selectedCurrency, true)
   }, [selectedCurrency])
 
   return {
     signOut,
     onExit,
     selectedCurrency,
-    currencyFormatter
+    currencyFormatter,
+    tokenInCurrencyFormatter
   }
 }
 
