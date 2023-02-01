@@ -13,11 +13,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { onLogOut, setWalletState, WalletState } from 'store/app'
 import { resetLoginAttempt } from 'store/security'
-import {
-  formatCurrency,
-  getCurrencyNumberFormat,
-  getSmallNumberCurrencyNumberFormat
-} from 'utils/FormatCurrency'
+import { formatCurrency } from 'utils/FormatCurrency'
 
 export type AppHook = {
   onExit: () => Observable<ExitEvents>
@@ -122,20 +118,14 @@ export function useApp(
    * Localized currency formatter
    */
   const currencyFormatter = useMemo(() => {
-    const formatter = getCurrencyNumberFormat(selectedCurrency)
-    return (amount: number) =>
-      formatCurrency(amount, formatter, formatter, selectedCurrency)
+    return (amount: number) => formatCurrency(amount, selectedCurrency, false)
   }, [selectedCurrency])
 
   /**
    * When displaying token value in currency we keep max 8 fraction digits
    */
   const tokenInCurrencyFormatter = useMemo(() => {
-    const formatter = getCurrencyNumberFormat(selectedCurrency)
-    const smallNumberFormatter =
-      getSmallNumberCurrencyNumberFormat(selectedCurrency)
-    return (amount: number) =>
-      formatCurrency(amount, formatter, smallNumberFormatter, selectedCurrency)
+    return (amount: number) => formatCurrency(amount, selectedCurrency, true)
   }, [selectedCurrency])
 
   return {

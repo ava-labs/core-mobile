@@ -6,13 +6,17 @@
  *   <amount> <symbol>
  *   e.g. 10 CHF
  */
+import memoize from 'lodash/memoize'
+
 export function formatCurrency(
   amount: number,
-  bigNumberFormatter: Intl.NumberFormat,
-  smallNumberFormatter: Intl.NumberFormat,
-  currency: string
+  currency: string,
+  boostSmallNumberPrecision: boolean
 ) {
-  const formatter = amount < 1 ? smallNumberFormatter : bigNumberFormatter
+  const formatter =
+    boostSmallNumberPrecision && amount < 1
+      ? getSmallNumberCurrencyNumberFormat(currency)
+      : getCurrencyNumberFormat(currency)
   const parts = formatter.formatToParts(amount)
   // match "CHF 10"
   if (parts[0]?.value === currency) {
@@ -32,22 +36,24 @@ export function formatCurrency(
   return formatter.format(amount)
 }
 
-export function getCurrencyNumberFormat(currency = 'USD') {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: currency,
-    currencyDisplay: 'symbol', // the extension uses 'narrowSymbol'
-    maximumFractionDigits: 2, // must be set for the `formatToParts` call below
-    minimumFractionDigits: 2
-  })
-}
+const getCurrencyNumberFormat = memoize(
+  (currency: string) =>
+    new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currency,
+      currencyDisplay: 'symbol', // the extension uses 'narrowSymbol'
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })
+)
 
-export function getSmallNumberCurrencyNumberFormat(currency = 'USD') {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: currency,
-    currencyDisplay: 'symbol', // the extension uses 'narrowSymbol'
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 8 // must be set for the `formatToParts` call below
-  })
-}
+const getSmallNumberCurrencyNumberFormat = memoize(
+  (currency: string) =>
+    new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currency,
+      currencyDisplay: 'symbol', // the extension uses 'narrowSymbol'
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 8
+    })
+)
