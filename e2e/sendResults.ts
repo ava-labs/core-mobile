@@ -76,7 +76,7 @@ export async function prepareResults() {
 
   // If POST_TO_TESTRAIL environment variable set to true the results will be posted to testrail in a test run
   if (process.env.POST_TO_TESTRAIL) {
-    if (iosTestRunId.emptyTestRun && androidTestRunID.emptyTestRun) {
+    if (iosTestRunId.emptyTestRun || androidTestRunID.emptyTestRun) {
       try {
         // Takes the array of test cases and adds them to the test run
         await api.updateRun(Number(androidTestRunID.runID), testCasesToSend)
