@@ -1,38 +1,29 @@
-import {
-  createEmptyTestRun,
-  generateTimestamp,
-  createNewTestRunBool
-} from './testrail_generate_tcs'
+import { androidRunID, iosRunID } from './generateTestrailObjects'
 
-import sendResults from './sendResults'
+import sendResultsToTestrail from './sendResults'
 
 beforeAll(async () => {
   if (process.env.TEST_RUN_NAME) {
-    const testRunName = process.env.TEST_RUN_NAME
-    const testRunBool = await createNewTestRunBool()
-    if (!testRunBool) {
-      console.log('Creating empty test run...')
-      const timestamp = generateTimestamp()
-
-      const testRunId = await createEmptyTestRun(
-        testRunName + timestamp,
-        'This is a smoke test run'
-      )
-      process.env.TEST_RUN_ID = testRunId?.toString()
+    if (!androidRunID) {
+      console.log('Creating empty test run for android...')
     } else {
-      const testRunId = testRunBool
-      process.env.TEST_RUN_ID = testRunId?.toString()
+      const myAndroidRunID = await androidRunID()
       console.log(
-        `Updating results for latest test run with id ${testRunId}...`
+        `Android test run already exists for today. updating test run id ${myAndroidRunID?.toString()}`
       )
     }
-  } else {
-    console.log(
-      'TEST_RUN_NAME variable is set to false or does not exist so not creating a test run...'
-    )
+    if (!iosRunID) {
+      console.log('Creating empty test run for ios...')
+    } else {
+      const myIosRunID = await iosRunID()
+      console.log(
+        `ios test run already exists for today. updating test run id ${myIosRunID?.toString()}`
+      )
+    }
   }
 })
 
 afterAll(async () => {
-  sendResults()
+  console.log('Sending results to testrail...')
+  await sendResultsToTestrail()
 })

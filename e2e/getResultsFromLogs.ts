@@ -1,36 +1,46 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { readdir } from 'fs/promises'
+require('ts-node').register()
+// import * as fs from 'fs'
+// import path from 'path'
 
-interface TestResult {
-  sectionName?: string
-  subsection?: string
-  testCase?: string
-  platform?: string
-  testResult?: string
-}
-
-const getDirectories = async (source: string) =>
+export const getDirectories = async (source: any) =>
   (await readdir(source, { withFileTypes: true }))
-    .filter(dirent => dirent.isDirectory())
-    .map(dirent => dirent.name)
+    .filter((dirent: { isDirectory: () => any }) => dirent.isDirectory())
+    .map((dirent: { name: any }) => dirent.name)
 
 export default async function getTestLogs() {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const folders: any = await getDirectories('./e2e/artifacts')
+  type TestResult = {
+    sectionName?: string
+    subsection?: string
+    testCase?: string
+    platform?: string
+    testResult?: string
+    failedScreenshot?: string
+  }
+  const folders: any = await getDirectories('./e2e/artifacts/')
   const testResults: Array<TestResult> = []
 
   for (let i = 0; i < folders.length; i++) {
-    if (folders) {
-      const splitFolder = folders[i].split('.')
-      const platform = splitFolder[0]
+    const nonSplitFolders = await getDirectories(
+      `./e2e/artifacts/${folders[i]}`
+    )
+    const splitFolder: string[] | undefined = nonSplitFolders[0]?.split('.')
+    const platform = splitFolder
+      ? splitFolder[0]
+      : console.log('Why is there not splitfolder? ' + nonSplitFolders)
 
+    if (splitFolder) {
       const resultFolders: string[] = await getDirectories(
         `./e2e/artifacts/${folders[i]}`
       )
-
-      for (let a = 0; a < resultFolders.length; a++) {
-        const parsedResultFolder = resultFolders[a]
-        const splitTestFolder = splitTestResult(parsedResultFolder)
-        if (parsedResultFolder?.includes('✓')) {
+      const parsedResultFolder = resultFolders[resultFolders.length - 1]
+      const attachmentFolders = await getDirectories(
+        `./e2e/artifacts/${folders[i]}/${parsedResultFolder}`
+      )
+      for (const result of attachmentFolders) {
+        const splitTestFolder = await splitTestResult(result)
+        if (result?.includes('✓')) {
           const testResult = 'passed'
           if (splitTestFolder) {
             Object.assign(splitTestFolder, {
@@ -39,23 +49,42 @@ export default async function getTestLogs() {
             })
             testResults.push(splitTestFolder)
           }
-        } else if (resultFolders[a]?.includes('✗')) {
+        } else if (result?.includes('✗')) {
           const testResult = 'failed'
           if (splitTestFolder) {
             Object.assign(splitTestFolder, {
               testResult: testResult,
-              platform: platform
+              platform: platform,
+              failedScreenshot: `${parsedResultFolder}/${result}/testDone.png`
             })
             testResults.push(splitTestFolder)
           }
         }
       }
+    } else {
+      console.log(
+        'There may not be a folder for android or ios yet. Dont worry about this!'
+      )
     }
   }
   return testResults
 }
 
-function splitTestResult(testItem: string | undefined) {
+export const getScreenshotOnFailure = async (imagePath: string) => {
+  const failedTestFolders = await getDirectories(imagePath)
+  const testFolder = failedTestFolders[0]
+  const firstFailedTestFolder = await getDirectories(
+    `${imagePath}/${testFolder}`
+  )
+  for (let i = 0; i < firstFailedTestFolder.length; i++) {
+    if (firstFailedTestFolder[i]?.includes('✗')) {
+      const filePath = `./e2e/artifacts/${testFolder}/${firstFailedTestFolder[i]}`
+      return `${filePath}/testDone.png`
+    }
+  }
+}
+
+async function splitTestResult(testItem: string | undefined) {
   const splitTestArrayItem = testItem?.split('should')
   if (splitTestArrayItem) {
     const rawSectionName = splitTestArrayItem[0]
@@ -74,4 +103,9 @@ function removeTestSectionExtraChars(testSection: string | undefined) {
   } else {
     console.log('Test section is undefined, something went wrong!!!')
   }
+}
+
+export const testDirectory = async () => {
+  const directory = await getDirectories('./e2e/artifacts/ios')
+  return directory[0]
 }
