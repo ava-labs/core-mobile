@@ -187,8 +187,8 @@ const TokenDetail = () => {
           titleAlignment={'flex-start'}
           subtitle={
             <Row style={{ alignItems: 'center' }}>
-              <AvaText.Heading3 currency textStyle={{ marginEnd: 8 }}>
-                {priceInCurrency?.toFixed(6)}
+              <AvaText.Heading3 tokenInCurrency textStyle={{ marginEnd: 8 }}>
+                {priceInCurrency}
               </AvaText.Heading3>
               <MarketMovement
                 hideCurrencyCode
@@ -207,7 +207,7 @@ const TokenDetail = () => {
           }}>
           <View>
             <AvaText.Caption
-              currency
+              tokenInCurrency
               textStyle={{
                 alignSelf: 'flex-end',
                 color: theme.colorText1,
@@ -225,7 +225,7 @@ const TokenDetail = () => {
               height={CHART_HEIGHT}
             />
             <AvaText.Caption
-              currency
+              tokenInCurrency
               textStyle={{ alignSelf: 'flex-end', color: theme.colorText1 }}>
               {ranges.minPrice}
             </AvaText.Caption>
