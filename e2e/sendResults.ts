@@ -83,12 +83,12 @@ export async function prepareResults() {
         await api.updateRun(Number(iosTestRunId.runID), testCasesToSend)
         console.log(
           'Test cases have been sent to the test run...' +
-            JSON.stringify(testCasesToSend)
+            testCasesToSend.case_ids
         )
       } catch (TestRailException) {
         console.log(
           'Invalid test case ids found in ' +
-            testCasesToSend +
+            testCasesToSend.case_ids +
             'test cases sent'
         )
       }
@@ -189,7 +189,7 @@ async function generatePlatformResults(
               testResult.id,
               failedPayload
             )
-            console.log(`${attachmentID} is the attachment ID...`)
+            console.log(`${attachmentID.attachment_id} is the attachment ID...`)
           }
         }
       } else {

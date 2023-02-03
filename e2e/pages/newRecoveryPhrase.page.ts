@@ -46,8 +46,22 @@ class NewRecoveryPhrasePage {
     return Action.tap(this.iUnderstandBtn)
   }
 
-  // Creates an object of all of the recovery phrase words with an index
-  async mnemonicWordsObject() {
+  async getAndroidWordsObject() {
+    const androidWordObjects = []
+    for (let i = 0; i < 24; i++) {
+      const wordNumberAttributes = element(this.mnemonicWord).atIndex(i)
+      const wordAtts = await wordNumberAttributes.getAttributes()
+      // @ts-ignore
+      const mnemonicWord = wordAtts.text
+      const indexNumber = i + 1
+      const mnemonicNum = indexNumber.toString()
+      androidWordObjects.push({ mnemonicWord, mnemonicNum })
+    }
+
+    return androidWordObjects
+  }
+
+  async getIosWordsObject() {
     const wordNumberAttributes = await element(
       by.id('mnemonic_ava__words_view')
     ).getAttributes()
@@ -64,11 +78,22 @@ class NewRecoveryPhrasePage {
       const mnemonicNum = elementLabel.split('.')[0]?.replace('.', '') ?? ''
       mnemonicWordIndexArray.push({ mnemonicNum, mnemonicWord })
     })
+    return mnemonicWordIndexArray
+  }
+
+  // Creates an object of all of the recovery phrase words with an index
+  async mnemonicWordsObject() {
+    let mnemonicWordIndexArray = []
+    if (device.getPlatform() === 'android') {
+      mnemonicWordIndexArray = await this.getAndroidWordsObject()
+    } else {
+      mnemonicWordIndexArray = await this.getIosWordsObject()
+    }
+
     const mnemonicMapped = mnemonicWordIndexArray.map(item => ({
       [item.mnemonicNum]: item.mnemonicWord
     }))
     const mnemonicObject = Object.assign({}, ...mnemonicMapped)
-
     return mnemonicObject
   }
 }
