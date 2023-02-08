@@ -20,6 +20,7 @@ type State = NavigationState<Route>
 
 type TabViewAvaItemProps = {
   title: string
+  testID?: string
 }
 
 type TabViewAvaFC = FC<{
@@ -29,6 +30,7 @@ type TabViewAvaFC = FC<{
     color: string
   ) => React.ReactNode
   currentTabIndex?: number
+  testID?: string
   onTabIndexChange?: (tabIndex: number) => void
   lazy?: boolean
 }> & { Item: FC<TabViewAvaItemProps> }
@@ -41,7 +43,8 @@ const TabViewAva: TabViewAvaFC = ({
   currentTabIndex = 0,
   onTabIndexChange,
   lazy = true,
-  children
+  children,
+  testID
 }) => {
   const [currentIndex, setCurrentIndex] = useState(currentTabIndex)
   const theme = useApplicationContext().theme
@@ -144,6 +147,7 @@ const TabViewAva: TabViewAvaFC = ({
 
   return (
     <TabView
+      testID={testID}
       onIndexChange={handleIndexChange}
       navigationState={{ index: currentIndex, routes }}
       renderScene={scenes}

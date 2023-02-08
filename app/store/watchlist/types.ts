@@ -31,6 +31,7 @@ export type MarketToken = {
   symbol: string
   name: string
   logoUri: string
+  testID?: string
 }
 
 export type PriceData = {

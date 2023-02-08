@@ -40,6 +40,7 @@ interface Props {
   isShowingFavorites?: boolean
   isSearching?: boolean
   onExploreAllTokens?: () => void
+  testID?: string
 }
 
 type NavigationProp = TabsScreenProps<
@@ -80,6 +81,7 @@ const WatchList: React.FC<Props> = ({
         chartData={chartData}
         value={displayValue}
         filterBy={filterBy}
+        testID={`watchlist_item__${token.symbol}`}
         onPress={() => {
           navigation.navigate(AppNavigation.Wallet.TokenDetail, {
             tokenId: token.id

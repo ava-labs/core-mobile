@@ -1,5 +1,6 @@
 import watchlist from '../locators/watchlist.loc'
 import Action from '../helpers/actions'
+import Assert from '../helpers/assertions'
 
 class WatchListPage {
   get recoverWalletBtn() {
@@ -40,6 +41,15 @@ class WatchListPage {
 
   async tapNewWalletIcon() {
     await Action.tap(this.newWalletIcon)
+  }
+
+  async tapWatchListToken(tokenSymbol: string) {
+    await element(by.id(`watchlist_item__${tokenSymbol}`)).tap()
+  }
+
+  async verifyWatchlistElements() {
+    await device.captureViewHierarchy()
+    await Assert.isVisible(this.recoverWalletBtn)
   }
 }
 
