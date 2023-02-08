@@ -1,45 +1,47 @@
 # Core X Mobile
 
+## Setup dev environment
+
+Follow [these](https://reactnative.dev/docs/environment-setup) steps to setup dev environment; make sure to select
+**React Native CLI Quickstart** tab and select appropriate Development & Target OS.
+
 ## Getting Started
 
-First, clone the repo.
+### 1. Clone the repo.
 
 ```zsh
 git clone git@github.com:ava-labs/avalanche-wallet-apps.git
 cd avalanche-wallet-apps/
 ```
 
-Next, install the dependencies.
+**NOTE:** If you're using IDE to initiate this action you will need `github access token` registered with Jumpcloud SSO.
+To do that, go to  https://github.com/settings/tokens, generate access token and authorize it with Jumpcloud. Finally, import that token to your favorite IDE.
+
+### 2. Setup environment.
+1. To access all project's dependencies you will need to generate an `NPM token` from your npmjs account and add that as an environment variable named `NPM_TOKEN` on your mac (for example, `.zshenv` if using zsh or `.bash_profile` if not).
+2. Create a `.env.development` file in the root of the project. The contents of the .env file is in 1Password. Ask permission to access it (the vault name is Mobile team). Once access is given copy and paste the contents from the 1Password Secure Note into your local .env file.
+3. Download `keystore.properties` from 1Password and place it in the `android` folder
+
+**IMPORTANT:** the `.env` files are never to be committed to the repo, and are already added to .gitignore.
+
+
+### 3. Install the dependencies.
 
 ```zsh
 yarn setup
 ```
 
-Notes: Before running yarn setup, you will need to generate an npm token from your npmjs account and add that as an environment variable named `NPM_TOKEN` on your mac (for example, `.zshenv` if using zsh or `.bash_profile` if not). This is necessary for yarn to be able to download Ava Labs' private libraries/sdks
+### 4. Launch the app
 
+#### For iOS
 
-## Add config files
-
-### Environment file
-Create a `.env.development` and `.env.production` files in the root of the project. The contents of the .env files are in 1Password. Ask permission to access it (the vault name is Mobile team). Once access is given copy and paste the contents from the 1Password Secure Note into your local .env files. 
-
-IMPORTANT: the `.env` files are never to be committed to the repo, and are already added to .gitignore. 
-
-### Android configs
-Download `keystore.properties` from 1Password and place it in the `android` folder
-
-## Setup dev environment
-
-Follow [these](https://reactnative.dev/docs/environment-setup) steps to setup dev environment; make sure to select 
-**React Native CLI Quickstart** tab and select appropriate Development & Target OS.
-
-## Launch iOS App
-
-First install iOS dependencies.
-
+First install iOS dependencies:
 ```zsh
-# install cocoapods
-sudo gem install cocoapods
+yarn podInstall
+```
+or if you're having trouble on M1 chips:
+```zsh
+yarn podInstallM1
 ```
 
 Now you can run the app
@@ -49,10 +51,9 @@ Now you can run the app
 yarn ios
 ```
 
-## Launch Android App
+**Note:** if you run into `"Your session has expired. Please log in."` issue, go to `XCode > Preferences > Accounts` and sign in with your account.
 
-Follow the steps in the React Native docs for [configuring your Android dev environment](https://reactnative.dev/docs/environment-setup).
-
+#### For Android
 ```zsh
 # launch android emulator and start the app
 yarn android
