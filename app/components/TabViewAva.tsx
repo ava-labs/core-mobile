@@ -43,8 +43,7 @@ const TabViewAva: TabViewAvaFC = ({
   currentTabIndex = 0,
   onTabIndexChange,
   lazy = true,
-  children,
-  testID
+  children
 }) => {
   const [currentIndex, setCurrentIndex] = useState(currentTabIndex)
   const theme = useApplicationContext().theme
@@ -147,7 +146,6 @@ const TabViewAva: TabViewAvaFC = ({
 
   return (
     <TabView
-      testID={testID}
       onIndexChange={handleIndexChange}
       navigationState={{ index: currentIndex, routes }}
       renderScene={scenes}
