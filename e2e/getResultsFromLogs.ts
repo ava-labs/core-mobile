@@ -34,6 +34,7 @@ export default async function getTestLogs() {
       const resultFolders: string[] = await getDirectories(
         `./e2e/artifacts/${folders[i]}`
       )
+      // We want to grab the last folder in the directory and that's what parsed folder is
       const parsedResultFolder = resultFolders[resultFolders.length - 1]
       const attachmentFolders = await getDirectories(
         `./e2e/artifacts/${folders[i]}/${parsedResultFolder}`

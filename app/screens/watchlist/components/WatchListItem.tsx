@@ -22,6 +22,7 @@ interface Props {
   onPress?: () => void
   rank?: number
   filterBy: WatchlistFilter
+  testID?: string
 }
 
 const WatchListItem: FC<Props> = ({
@@ -30,7 +31,8 @@ const WatchListItem: FC<Props> = ({
   value = '0',
   onPress,
   rank,
-  filterBy
+  filterBy,
+  testID
 }) => {
   const { symbol, name } = token
 
@@ -41,11 +43,14 @@ const WatchListItem: FC<Props> = ({
           {symbol.toUpperCase()}
         </AvaText.Heading2>
       }
+      testID={testID}
       titleAlignment={'flex-start'}
       subtitle={name}
       embedInCard={false}
       rightComponentMaxWidth={deviceWidth * 0.55}
-      leftComponent={<LeftComponent token={token} rank={rank} />}
+      leftComponent={
+        <LeftComponent token={token} rank={rank} testID={testID} />
+      }
       rightComponent={
         <RightComponent
           token={token}
@@ -53,6 +58,7 @@ const WatchListItem: FC<Props> = ({
           value={value}
           filterBy={filterBy}
           onPress={onPress}
+          testID={testID}
         />
       }
       onPress={onPress}
@@ -63,12 +69,14 @@ const WatchListItem: FC<Props> = ({
 type LeftComponentProps = {
   token: MarketToken
   rank?: number
+  testID?: string
 }
 
-const LeftComponent = ({ token, rank }: LeftComponentProps) => {
+const LeftComponent = ({ token, rank, testID }: LeftComponentProps) => {
   const { logoUri, symbol, name } = token
   return (
     <View
+      testID={testID}
       style={{
         flexDirection: 'row',
         justifyContent: 'center',
@@ -76,11 +84,17 @@ const LeftComponent = ({ token, rank }: LeftComponentProps) => {
       }}>
       {rank && (
         <>
-          <AvaText.Heading3>{rank}</AvaText.Heading3>
+          <AvaText.Heading3 testID={testID}>{rank}</AvaText.Heading3>
           <Space x={9} />
         </>
       )}
-      <Avatar.Custom name={name} symbol={symbol} logoUri={logoUri} size={32} />
+      <Avatar.Custom
+        name={name}
+        symbol={symbol}
+        logoUri={logoUri}
+        size={32}
+        testID={`${name}`}
+      />
     </View>
   )
 }
@@ -90,6 +104,7 @@ type RightComponentProps = {
   chartData: ChartData
   value?: string
   filterBy: WatchlistFilter
+  testID?: string
   onPress?: () => void
 }
 
@@ -149,13 +164,15 @@ const RightComponent = ({
 type MiddleComponentProps = {
   dataPoints: ChartData['dataPoints']
   ranges: ChartData['ranges']
+  testID?: string
   onPress?: () => void
 }
 
 const MiddleComponent = ({
   dataPoints,
   ranges,
-  onPress
+  onPress,
+  testID
 }: MiddleComponentProps) => {
   return (
     <View
@@ -172,6 +189,7 @@ const MiddleComponent = ({
         yRange={[ranges.minPrice, ranges.maxPrice]}
         xRange={[ranges.minDate, ranges.maxDate]}
         negative={ranges.diffValue < 0}
+        testID={testID}
       />
     </View>
   )

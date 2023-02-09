@@ -14,6 +14,7 @@ interface Props {
   hidePercentage?: boolean
   hideCurrencyCode?: boolean
   filterBy?: WatchlistFilter
+  testID?: string
 }
 
 const MarketMovement: FC<Props> = ({

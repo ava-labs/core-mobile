@@ -16,6 +16,7 @@ interface Props {
   showBorder?: boolean
   size?: number
   circleColor?: string
+  testID?: string
 }
 
 const AvatarBase: FC<Props> = ({
@@ -74,7 +75,8 @@ const AvatarBase: FC<Props> = ({
           ]}>
           <AvaText.Body1
             // Scale text in relation to the size
-            textStyle={{ fontSize: size * 0.5, lineHeight: size * 0.75 }}>
+            textStyle={{ fontSize: size * 0.5, lineHeight: size * 0.75 }}
+            testID={initials}>
             {initials}
           </AvaText.Body1>
         </View>
@@ -126,11 +128,18 @@ interface TokenAvatarProps {
   symbol: string
   logoUri: string | undefined
   size?: number
+  testID?: string
 }
 
 const TokenAvatar: FC<TokenAvatarProps> = ({ name, symbol, logoUri, size }) => {
   return (
-    <AvatarBase name={name} symbol={symbol} logoUri={logoUri} size={size} />
+    <AvatarBase
+      name={name}
+      symbol={symbol}
+      logoUri={logoUri}
+      size={size}
+      testID={symbol}
+    />
   )
 }
 
