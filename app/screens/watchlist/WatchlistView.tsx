@@ -38,6 +38,7 @@ interface Props {
   showFavorites?: boolean
   searchText?: string
   onTabIndexChanged?: Dispatch<number>
+  testID?: string
 }
 
 const filterPriceOptions = [
@@ -190,6 +191,7 @@ const WatchlistView: React.FC<Props> = ({
             isShowingFavorites={showFavorites}
             isSearching={isSearching}
             onExploreAllTokens={() => onTabIndexChanged?.(1)}
+            testID="watchlist_item"
           />
         </>
       )}

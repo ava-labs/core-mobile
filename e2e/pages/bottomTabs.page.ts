@@ -35,6 +35,10 @@ class BottomsTabsPage {
     await Actions.tapElementAtIndex(this.plusIcon, 1)
   }
 
+  async tapWatchlistTab() {
+    await Actions.tapElementAtIndex(this.watchlistTtab, 1)
+  }
+
   async verifyBottomTabs() {
     await Assert.isVisible(this.portfolioTab)
     await Assert.isVisible(this.activityTab)

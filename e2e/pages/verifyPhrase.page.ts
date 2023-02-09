@@ -88,6 +88,7 @@ class VerifyPhrasePage {
       }
       try {
         await element(by.text(word)).tap()
+        console.log(word + ' this is the word thats tapped!!!')
         await delay(500)
       } catch (error) {
         console.log('More than one element found trying another index...')
