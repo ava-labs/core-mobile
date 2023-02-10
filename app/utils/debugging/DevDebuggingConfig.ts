@@ -9,7 +9,8 @@ const DevDebuggingConfig = {
   LOGBOX_DISABLED: false,
   REDSCREEN_DISABLED: false,
   LOGBOX_IGNORED_WARNINGS: [],
-  SHOW_DEMO_NFTS: false
+  SHOW_DEMO_NFTS: false,
+  API_MOCKING: false
 }
 
 export default DevDebuggingConfig
