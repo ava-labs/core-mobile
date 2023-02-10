@@ -8,7 +8,7 @@ beforeAll(async () => {
     } else {
       const myAndroidRunID = await androidRunID()
       console.log(
-        `Android test run already exists for today. updating test run id ${myAndroidRunID?.toString()}`
+        `Android test run already exists for today. updating test run id ${myAndroidRunID.runID?.toString()}`
       )
     }
     if (!iosRunID) {
@@ -16,7 +16,7 @@ beforeAll(async () => {
     } else {
       const myIosRunID = await iosRunID()
       console.log(
-        `ios test run already exists for today. updating test run id ${myIosRunID?.toString()}`
+        `ios test run already exists for today. updating test run id ${myIosRunID.runID?.toString()}`
       )
     }
   }

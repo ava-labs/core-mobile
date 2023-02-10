@@ -22,7 +22,7 @@
     "pretty": true,
     "resolveJsonModule": true,
     "noUncheckedIndexedAccess": true,
-    "sourceMap": true,
+    "sourceMap": true
   },
   "exclude": [
     "node_modules"
