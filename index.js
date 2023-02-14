@@ -12,9 +12,14 @@ import { name as appName } from './app.json'
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import DevDebuggingConfig from './app/utils/debugging/DevDebuggingConfig'
+import { server } from './tests/msw/server'
 
 // if (!DevDebuggingConfig.STORYBOOK_ENABLED) {
 AppRegistry.registerComponent(appName, () => ContextApp)
 // } else {
 //   import('./storybook');
 // }
+
+if (DevDebuggingConfig.API_MOCKING) {
+  server.listen()
+}
