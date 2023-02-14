@@ -11,12 +11,9 @@ export const handlers = [
     return res(ctx.status(200), ctx.json(coingeckoResponse))
   }),
 
-  rest.get(
-    `${process.env.GLACIER_URL}/tokenlist`,
-    async (req, res, ctx) => {
-      return res(ctx.status(200), ctx.json(glacierTokenList))
-    }
-  ),
+  rest.get(`${process.env.GLACIER_URL}/tokenlist`, async (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(glacierTokenList))
+  }),
 
   rest.get(`${coingeckoApi}/simple/price`, async (req, res, ctx) => {
     return res(ctx.status(200), ctx.json(coingeckoSimplePrice))
