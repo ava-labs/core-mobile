@@ -1,5 +1,4 @@
 import { androidRunID, iosRunID } from './generateTestrailObjects'
-
 import sendResultsToTestrail from './sendResults'
 
 beforeAll(async () => {
