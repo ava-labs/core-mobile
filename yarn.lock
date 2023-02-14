@@ -13589,7 +13589,7 @@ inquirer@^8.2.0:
     through "^2.3.6"
     wrap-ansi "^7.0.0"
 
-install@^0.13.0:
+install@0.13.0:
   version "0.13.0"
   resolved "https://registry.yarnpkg.com/install/-/install-0.13.0.tgz#6af6e9da9dd0987de2ab420f78e60d9c17260776"
   integrity sha512-zDml/jzr2PKU9I8J/xyZBQn8rPCAY//UOYNmR01XwNwyfhEWObo2SWfSl1+0tm1u6PhxLwDnfsT/6jB7OUxqFA==
@@ -17551,7 +17551,7 @@ npm-user-validate@^2.0.0:
   resolved "https://registry.yarnpkg.com/npm-user-validate/-/npm-user-validate-2.0.0.tgz#7b69bbbff6f7992a1d9a8968d52fd6b6db5431b6"
   integrity sha512-sSWeqAYJ2dUPStJB+AEj0DyLRltr/f6YNcvCA7phkB8/RMLMnVsQ41GMwHo/ERZLYNDsyB2wPm7pZo1mqPOl7Q==
 
-npm@^9.4.2:
+npm@9.4.2:
   version "9.4.2"
   resolved "https://registry.yarnpkg.com/npm/-/npm-9.4.2.tgz#7afe401ba7e9a091018259fabc5f85d6f747abcc"
   integrity sha512-dIkwrPCq4+oeNU9I4B+tO4t+5lUL04XIgizpcwDbPM9vMeoVW54g3f5725FRLp10TH/5/KQWiTziGgILoCxP7w==
@@ -19615,7 +19615,7 @@ react-native-document-picker@5.3.0:
   dependencies:
     invariant "^2.2.4"
 
-react-native-fast-image@^8.6.3:
+react-native-fast-image@8.6.3:
   version "8.6.3"
   resolved "https://registry.yarnpkg.com/react-native-fast-image/-/react-native-fast-image-8.6.3.tgz#6edc3f9190092a909d636d93eecbcc54a8822255"
   integrity sha512-Sdw4ESidXCXOmQ9EcYguNY2swyoWmx53kym2zRsvi+VeFCHEdkO+WG1DK+6W81juot40bbfLNhkc63QnWtesNg==
@@ -19821,7 +19821,7 @@ react-native-storybook-loader@2.0.5:
     prettier "^2.0.5"
     yargs "^15.4.1"
 
-react-native-svg-cache@^1.3.0:
+react-native-svg-cache@1.3.0:
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/react-native-svg-cache/-/react-native-svg-cache-1.3.0.tgz#061e2e27c2d25fd52a6af4a240ebfe960868b1d4"
   integrity sha512-a0oFGUjuktI7Om47Us6DM6Z7I/GvDrdHy/J8U2qEK8wru2u8Vt5G8LutKtPHy0X4Emjn7LmFh1bYA8aOty8hVg==
