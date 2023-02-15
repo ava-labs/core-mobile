@@ -74,3 +74,6 @@ allprojects {
         }
     }
 }
+project.ext {
+    excludeAppGlideModule = true
+}

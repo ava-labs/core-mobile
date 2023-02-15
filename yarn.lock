@@ -18577,6 +18577,11 @@ react-native-document-picker@5.3.0:
   dependencies:
     invariant "^2.2.4"
 
+react-native-fast-image@8.6.3:
+  version "8.6.3"
+  resolved "https://registry.yarnpkg.com/react-native-fast-image/-/react-native-fast-image-8.6.3.tgz#6edc3f9190092a909d636d93eecbcc54a8822255"
+  integrity sha512-Sdw4ESidXCXOmQ9EcYguNY2swyoWmx53kym2zRsvi+VeFCHEdkO+WG1DK+6W81juot40bbfLNhkc63QnWtesNg==
+
 react-native-flipper@0.164.0:
   version "0.164.0"
   resolved "https://registry.yarnpkg.com/react-native-flipper/-/react-native-flipper-0.164.0.tgz#64f6269a86a13a72e30f53ba9f5281d2073a7697"
@@ -18789,10 +18794,10 @@ react-native-svg-charts@5.4.0:
     d3-shape "^1.0.6"
     prop-types "^15.6.0"
 
-react-native-svg@12.4.4:
-  version "12.4.4"
-  resolved "https://registry.yarnpkg.com/react-native-svg/-/react-native-svg-12.4.4.tgz#2ba684eaea9a7402fbbe0ed9737e77284631d00e"
-  integrity sha512-LpcNlEVCURexqPAvQ9ne8KrPVfYz0wIDygwud8VMRmXLezysXzyQN/DTsjm1BO9lIfYp55WQsr3u3yW/vk6iiA==
+react-native-svg@13.8.0:
+  version "13.8.0"
+  resolved "https://registry.yarnpkg.com/react-native-svg/-/react-native-svg-13.8.0.tgz#b6a22cf77f8098f910490a13aeb160a37e182f97"
+  integrity sha512-G8Mx6W86da+vFimZBJvA93POw8yz0fgDS5biy6oIjMWVJVQSDzCyzwO/zY0yuZmCDhKSZzogl5m0wXXvW2OcTA==
   dependencies:
     css-select "^5.1.0"
     css-tree "^1.1.3"
