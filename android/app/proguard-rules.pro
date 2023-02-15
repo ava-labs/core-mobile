@@ -29,6 +29,8 @@
 -keepclassmembers class ** {
   @org.greenrobot.eventbus.Subscribe <methods>;
 }
+
+# The following is the react-native-fast-image caching to work on android
 -keep enum org.greenrobot.eventbus.ThreadMode { *; }
 -keep public class com.dylanvann.fastimage.* {*;}
 -keep public class com.dylanvann.fastimage.** {*;}
