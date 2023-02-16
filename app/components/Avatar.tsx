@@ -1,5 +1,5 @@
 import React, { FC, useCallback, useState } from 'react'
-import { Image, StyleSheet, View } from 'react-native'
+import { StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaLogoSVG from 'components/svg/AvaLogoSVG'
 import { Opacity10 } from 'resources/Constants'
@@ -7,6 +7,7 @@ import EthereumSvg from 'components/svg/Ethereum'
 import BitcoinSVG from 'components/svg/BitcoinSVG'
 import { TokenSymbol } from 'store/network'
 import { SvgUri } from 'react-native-svg'
+import FastImage from 'react-native-fast-image'
 import AvaText from './AvaText'
 
 interface Props {
@@ -97,7 +98,7 @@ const AvatarBase: FC<Props> = ({
       // as a temporary workaround to show logos with transparency and black strokes
       // for example https://assets.coingecko.com/coins/images/13423/large/frax_share.png?1608478989
       return (
-        <Image
+        <FastImage
           style={[{ backgroundColor: 'white' }, style]}
           source={{ uri: logoUri }}
           onError={() => {
