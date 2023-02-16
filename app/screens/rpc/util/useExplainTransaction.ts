@@ -9,7 +9,12 @@ import { BigNumber, ethers } from 'ethers'
 import { FeePreset } from 'components/NetworkFeeSelector'
 import { calculateGasAndFees } from 'utils/Utils'
 import { useNativeTokenPrice } from 'hooks/useNativeTokenPrice'
-import { bnToLocaleString, hexToBN } from '@avalabs/utils-sdk'
+import {
+  bigToLocaleString,
+  bnToBig,
+  bnToLocaleString,
+  hexToBN
+} from '@avalabs/utils-sdk'
 import {
   getTxInfo,
   isTxDescriptionError
@@ -31,8 +36,9 @@ import { selectNetworks } from 'store/network'
 import { ChainId } from '@avalabs/chains-sdk'
 import { useFindToken } from 'contracts/contractParsers/utils/useFindToken'
 import { EthSendTransactionRpcRequest } from 'store/walletConnect/handlers/eth_sendTransaction'
+import BN from 'bn.js'
 
-const UNLIMITED_SPEND_LIMIT_LABEL = 'Unlimited'
+export const UNLIMITED_SPEND_LIMIT_LABEL = 'Unlimited'
 
 export function useExplainTransaction(
   request: EthSendTransactionRpcRequest,
@@ -64,8 +70,11 @@ export function useExplainTransaction(
   const [displaySpendLimit, setDisplaySpendLimit] = useState<string>(
     UNLIMITED_SPEND_LIMIT_LABEL
   )
+  const [limitFiatValue, setLimitFiatValue] = useState<string | null>(
+    UNLIMITED_SPEND_LIMIT_LABEL
+  )
   const [customSpendLimit, setCustomSpendLimit] = useState<SpendLimit>({
-    limitType: Limit.UNLIMITED
+    limitType: Limit.DEFAULT
   })
   const [selectedGasFee, setSelectedGasFee] = useState<FeePreset>(
     FeePreset.Instant
@@ -101,13 +110,40 @@ export function useExplainTransaction(
     [tokenPrice, activeNetwork?.networkToken?.decimals]
   )
 
+  const updateLimitFiatValue = useCallback(
+    (spendLimit: SpendLimit) => {
+      if (spendLimit.limitType === Limit.UNLIMITED) {
+        setLimitFiatValue(UNLIMITED_SPEND_LIMIT_LABEL)
+      } else {
+        const price =
+          transaction?.displayValues?.tokenToBeApproved?.priceInCurrency
+        const amount =
+          spendLimit.limitType === Limit.CUSTOM
+            ? spendLimit.value?.bn ?? new BN(0)
+            : hexToBN(transaction?.displayValues?.approveData?.limit)
+
+        // If we don't know the price, let's not show anything.
+        if (!price) {
+          setLimitFiatValue(null)
+        } else {
+          const fiatValue = bnToBig(
+            amount,
+            transaction.displayValues.tokenToBeApproved.decimals
+          ).mul(price)
+          setLimitFiatValue(bigToLocaleString(fiatValue, 4))
+        }
+      }
+    },
+    [setLimitFiatValue, transaction]
+  )
+
   const setSpendLimit = useCallback(
     (customSpendData: SpendLimit) => {
       if (transaction) {
         const srcTokenAddress: string =
           transaction.displayValues?.tokenToBeApproved?.address
         const spenderAddress: string =
-          transaction.displayValues?.approveData.spender || '0'
+          transaction.displayValues?.approveData.spender
         let limitAmount = ''
 
         if (customSpendData.limitType === Limit.UNLIMITED) {
@@ -130,7 +166,15 @@ export function useExplainTransaction(
                   transaction.displayValues.tokenToBeApproved.decimals
                 )
           )
+
+          limitAmount =
+            customSpendData.limitType === Limit.CUSTOM
+              ? customSpendData.value?.bn.toString()
+              : transaction?.displayValues?.approveData?.limit
         }
+
+        updateLimitFiatValue(customSpendData)
+
         const web3 = new Web3()
 
         const contract = new web3.eth.Contract(
@@ -153,7 +197,7 @@ export function useExplainTransaction(
         setTransaction(updatedTransaction)
       }
     },
-    [transaction]
+    [transaction, setTransaction, updateLimitFiatValue]
   )
 
   /******************************************************************************
@@ -283,10 +327,46 @@ export function useExplainTransaction(
     onError
   ])
 
+  // useEffect(() => {
+  //   // Handle transaction Approval for REVOKING spend limit
+  //   if (transaction?.displayValues?.tokenAmount === '0') {
+  //     setDisplaySpendLimit('0')
+  //   }
+  // }, [transaction])
+
   useEffect(() => {
-    // Handle transaction Approval for REVOKING spend limit
-    if (transaction?.displayValues?.tokenAmount === '0') {
-      setDisplaySpendLimit('0')
+    if (transaction?.displayValues?.approveData?.limit) {
+      if (
+        ethers.constants.MaxUint256.eq(
+          transaction.displayValues.approveData.limit
+        )
+      ) {
+        setDisplaySpendLimit(UNLIMITED_SPEND_LIMIT_LABEL)
+        setLimitFiatValue(UNLIMITED_SPEND_LIMIT_LABEL)
+      } else {
+        const limit = hexToBN(transaction.displayValues.approveData.limit)
+
+        setDisplaySpendLimit(
+          bnToLocaleString(
+            limit,
+            transaction.displayValues.tokenToBeApproved.decimals
+          )
+        )
+
+        const price =
+          transaction?.displayValues?.tokenToBeApproved?.priceInCurrency
+
+        if (typeof price !== 'number') {
+          setLimitFiatValue(null)
+        } else {
+          // If we know the token price, let's show the spend limit's USD value as well
+          const fiatValue = bnToBig(
+            limit,
+            transaction.displayValues.tokenToBeApproved.decimals
+          ).mul(price)
+          setLimitFiatValue(bigToLocaleString(fiatValue, 4))
+        }
+      }
     }
   }, [transaction])
 
@@ -330,6 +410,7 @@ export function useExplainTransaction(
     setSpendLimit,
     displaySpendLimit,
     customSpendLimit,
-    selectedGasFee
+    selectedGasFee,
+    limitFiatValue
   }
 }

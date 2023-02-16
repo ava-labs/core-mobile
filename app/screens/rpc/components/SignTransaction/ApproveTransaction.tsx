@@ -11,7 +11,10 @@ import React, { Dispatch } from 'react'
 import { useSelector } from 'react-redux'
 import { selectAccountByAddress } from 'store/account'
 import { txStyles } from 'screens/rpc/components/SignTransaction/SignTransaction'
-import { Limit, SpendLimit } from 'components/EditSpendLimit'
+import { SpendLimit } from 'components/EditSpendLimit'
+import { UNLIMITED_SPEND_LIMIT_LABEL } from 'screens/rpc/util/useExplainTransaction'
+import { selectSelectedCurrency } from 'store/settings/currency'
+import { formatCurrency } from 'utils/FormatCurrency'
 
 export function ApproveTransaction({
   site,
@@ -26,6 +29,7 @@ export function ApproveTransaction({
   setShowCustomSpendLimit,
   setShowTxData,
   customSpendLimit,
+  limitFiatValue,
   ...rest
 }: ApproveTransactionData & {
   setShowCustomSpendLimit?: Dispatch<boolean>
@@ -33,8 +37,16 @@ export function ApproveTransaction({
 }) {
   const theme = useApplicationContext().theme
   const account = useSelector(selectAccountByAddress(rest.fromAddress))
+  const selectedCurrency = useSelector(selectSelectedCurrency)
+
   const hideEdit: boolean =
     displaySpendLimit === '0' && !!setShowCustomSpendLimit
+
+  const isUnlimited = limitFiatValue === UNLIMITED_SPEND_LIMIT_LABEL
+
+  const fiatValue = isUnlimited
+    ? `${limitFiatValue} ${selectedCurrency}`
+    : formatCurrency(Number(limitFiatValue), selectedCurrency, true)
 
   return (
     <>
@@ -98,7 +110,7 @@ export function ApproveTransaction({
             <Space x={10} />
             <AvaText.Body1>{tokenToBeApproved?.symbol}</AvaText.Body1>
           </Row>
-          {customSpendLimit?.limitType !== Limit.DEFAULT && (
+          {customSpendLimit && (
             <View
               style={{
                 display: 'flex',
@@ -106,11 +118,9 @@ export function ApproveTransaction({
                 alignItems: 'flex-end'
               }}>
               <AvaText.Body1>
-                {customSpendLimit.limitType === Limit.UNLIMITED
-                  ? 'Unlimited'
-                  : customSpendLimit.value?.amount}
+                {`${displaySpendLimit} ${tokenToBeApproved.symbol}`}
               </AvaText.Body1>
-              <AvaText.Body2>$350.11 USD</AvaText.Body2>
+              <AvaText.Body2>{fiatValue}</AvaText.Body2>
             </View>
           )}
         </Row>
