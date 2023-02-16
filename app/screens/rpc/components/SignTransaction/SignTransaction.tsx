@@ -235,6 +235,7 @@ const SignTransaction = () => {
             selectedGasFee={selectedGasFee}
             setShowCustomSpendLimit={setShowCustomSpendLimit}
             setShowTxData={setShowData}
+            customSpendLimit={customSpendLimit}
           />
         )) ||
           ((contractType === ContractCall.ADD_LIQUIDITY ||

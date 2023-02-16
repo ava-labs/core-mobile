@@ -10,8 +10,8 @@ import Avatar from 'components/Avatar'
 import React, { Dispatch } from 'react'
 import { useSelector } from 'react-redux'
 import { selectAccountByAddress } from 'store/account'
-import { truncateAddress } from 'utils/Utils'
 import { txStyles } from 'screens/rpc/components/SignTransaction/SignTransaction'
+import { Limit, SpendLimit } from 'components/EditSpendLimit'
 
 export function ApproveTransaction({
   site,
@@ -25,9 +25,11 @@ export function ApproveTransaction({
   selectedGasFee,
   setShowCustomSpendLimit,
   setShowTxData,
+  customSpendLimit,
   ...rest
 }: ApproveTransactionData & {
   setShowCustomSpendLimit?: Dispatch<boolean>
+  customSpendLimit: SpendLimit
 }) {
   const theme = useApplicationContext().theme
   const account = useSelector(selectAccountByAddress(rest.fromAddress))
@@ -96,11 +98,21 @@ export function ApproveTransaction({
             <Space x={10} />
             <AvaText.Body1>{tokenToBeApproved?.symbol}</AvaText.Body1>
           </Row>
-          <AvaText.Body1>
-            {displaySpendLimit?.length > 18
-              ? truncateAddress(displaySpendLimit, 12)
-              : displaySpendLimit}
-          </AvaText.Body1>
+          {customSpendLimit?.limitType !== Limit.DEFAULT && (
+            <View
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-end'
+              }}>
+              <AvaText.Body1>
+                {customSpendLimit.limitType === Limit.UNLIMITED
+                  ? 'Unlimited'
+                  : customSpendLimit.value?.amount}
+              </AvaText.Body1>
+              <AvaText.Body2>$350.11 USD</AvaText.Body2>
+            </View>
+          )}
         </Row>
       </View>
     </>
