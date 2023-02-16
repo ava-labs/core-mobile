@@ -102,7 +102,7 @@
     "patch-package": "6.4.7",
     "posthog-react-native": "1.1.5",
     "postinstall-postinstall": "2.1.0",
-    "qs": "6.7.3",
+    "qs": "6.11.0",
     "react": "18.1.0",
     "react-content-loader": "6.2.0",
     "react-native": "0.70.6",
