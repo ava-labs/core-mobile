@@ -51,6 +51,7 @@ describe('Activity Tab', () => {
       ActivityTabPage.selectFilterDropdown,
       'Display: Incoming'
     )
+    await ActivityTabPage.tapUsdCoinTransaction()
     await Assert.isVisible(TransactionDetailsPage.status)
     await Assert.isVisible(TransactionDetailsPage.transactionType)
   })

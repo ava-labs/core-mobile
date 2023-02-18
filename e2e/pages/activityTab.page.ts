@@ -42,6 +42,10 @@ class ActivityTabPage {
     return by.id(activityTab.linkIcon)
   }
 
+  get usdCoinTransaction() {
+    return by.text(activityTab.usdCoin)
+  }
+
   async tapArrowIcon(index: number) {
     await Action.tapElementAtIndex(this.arrowSVG, index)
   }
@@ -59,23 +63,39 @@ class ActivityTabPage {
   }
 
   async tapBridgeFilterOption() {
-    await Action.tapElementAtIndex(this.bridgeFilterOption, 1)
+    await Action.tapElementAtIndex(
+      this.bridgeFilterOption,
+      await Action.platform()
+    )
   }
 
   async tapContractCallFilterOption() {
-    await Action.tapElementAtIndex(this.contractCallFilterOption, 1)
+    await Action.tapElementAtIndex(
+      this.contractCallFilterOption,
+      await Action.platform()
+    )
   }
 
   async tapIncomingFilterOption() {
-    await Action.tapElementAtIndex(this.incomingFilterOption, 1)
+    await Action.tapElementAtIndex(
+      this.incomingFilterOption,
+      await Action.platform()
+    )
   }
 
   async tapOutgoingFilterOption() {
-    await Action.tapElementAtIndex(this.incomingFilterOption, 1)
+    await Action.tapElementAtIndex(
+      this.incomingFilterOption,
+      await Action.platform()
+    )
   }
 
   async tapBridgeIcon() {
     await Action.tapElementAtIndex(this.bridgeSVG, 1)
+  }
+
+  async tapUsdCoinTransaction() {
+    await Action.tapElementAtIndex(this.usdCoinTransaction, 1)
   }
 }
 

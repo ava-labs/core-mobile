@@ -82,6 +82,16 @@ const swipeDown = async (
     .swipe('down', speed, normalizedOffset)
 }
 
+const platform = async () => {
+  let i: number
+  if (device.getPlatform() === 'ios') {
+    i = 1
+  } else {
+    i = 0
+  }
+  return i
+}
+
 export default {
   tap,
   longPress,
@@ -93,5 +103,6 @@ export default {
   swipeDown,
   setColumnToValue,
   setInputText,
-  getAndroidAttributesArray
+  getAndroidAttributesArray,
+  platform
 }
