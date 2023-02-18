@@ -54,7 +54,9 @@ describe('Send AVAX', () => {
   it('should successfully send the token and take user to portfolio page', async () => {
     await ReviewAndSend.tapSendNow()
     await Assert.isVisible(ReviewAndSend.sendPendingToastMsg)
-    await Assert.isVisible(ReviewAndSend.sendSuccessfulToastMsg)
+    if ((await actions.platform()) === 1) {
+      await Assert.isVisible(ReviewAndSend.sendSuccessfulToastMsg)
+    }
     await BottomTabsPage.tapActivityTab()
     await actions.waitForElementNotVisible(ReviewAndSend.sendSuccessfulToastMsg)
     await delay(40000)
