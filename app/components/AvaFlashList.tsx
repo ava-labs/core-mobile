@@ -11,11 +11,17 @@ import {
   Platform,
   RefreshControlProps
 } from 'react-native'
+import DraggableFlatList from 'react-native-draggable-flatlist/src/components/DraggableFlatList'
+import {
+  DragEndParams,
+  RenderItem
+} from 'react-native-draggable-flatlist/src/types'
 
 interface AvaFlashListProps<TItem> {
   data: ReadonlyArray<TItem> | null | undefined
   flashRenderItem: FlashListRenderItem<TItem> | null | undefined
   flatRenderItem: FlatListRenderItem<TItem> | null | undefined
+  draggableListItem?: RenderItem<TItem> | null | undefined
   ItemSeparatorComponent?: React.ComponentType<unknown> | null | undefined
   ListEmptyComponent?:
     | React.ComponentType<unknown>
@@ -24,7 +30,7 @@ interface AvaFlashListProps<TItem> {
     | undefined
   refreshing?: boolean | null | undefined
   onRefresh?: (() => void) | null | undefined
-  keyExtractor?: ((item: TItem, index: number) => string) | undefined
+  keyExtractor: (item: TItem, index: number) => string
   extraData?: unknown
   contentContainerStyle?: ContentStyle
   onEndReached?: (() => void) | null | undefined
@@ -36,6 +42,8 @@ interface AvaFlashListProps<TItem> {
     extraData?: unknown
   ) => string | number | undefined
   estimatedItemSize?: number | undefined
+  isShowingFavorites?: boolean
+  onDragEnd?: (params: DragEndParams<TItem>) => void
 }
 
 /**
@@ -45,6 +53,7 @@ const AvaFlashList = <T,>({
   data,
   flashRenderItem,
   flatRenderItem,
+  draggableListItem,
   ItemSeparatorComponent,
   ListEmptyComponent,
   refreshing,
@@ -56,11 +65,29 @@ const AvaFlashList = <T,>({
   onEndReachedThreshold,
   refreshControl,
   getItemType,
-  estimatedItemSize
+  estimatedItemSize,
+  isShowingFavorites,
+  onDragEnd
 }: AvaFlashListProps<T>) => {
   const { useFlatListAndroid } = usePosthogContext()
 
-  return useFlatListAndroid && Platform.OS === 'android' ? (
+  return isShowingFavorites && draggableListItem ? (
+    <DraggableFlatList
+      data={data ? [...data] : []}
+      onDragEnd={onDragEnd}
+      renderItem={draggableListItem}
+      ItemSeparatorComponent={ItemSeparatorComponent}
+      ListEmptyComponent={ListEmptyComponent}
+      refreshing={refreshing}
+      onRefresh={onRefresh}
+      refreshControl={refreshControl}
+      contentContainerStyle={contentContainerStyle}
+      keyExtractor={keyExtractor}
+      indicatorStyle="white"
+      onEndReached={onEndReached}
+      extraData={extraData}
+    />
+  ) : useFlatListAndroid && Platform.OS === 'android' ? (
     <FlatList
       data={data}
       renderItem={flatRenderItem}
