@@ -11,8 +11,8 @@ import {
   RenderItem
 } from 'react-native-draggable-flatlist/src/types'
 
-interface AvaFlashListProps<TItem> {
-  data: ReadonlyArray<TItem> | null | undefined
+interface AvaListProps<TItem> {
+  data: TItem[] | null | undefined
   flashRenderItem: FlashListRenderItem<TItem> | null | undefined
   draggableListItem?: RenderItem<TItem> | null | undefined
   ItemSeparatorComponent?: React.ComponentType<unknown> | null | undefined
@@ -60,10 +60,10 @@ const AvaList = <T,>({
   estimatedItemSize,
   isShowingFavorites,
   onDragEnd
-}: AvaFlashListProps<T>) => {
+}: AvaListProps<T>) => {
   return isShowingFavorites && draggableListItem ? (
     <DraggableFlatList
-      data={data ? [...data] : []}
+      data={data || []}
       onDragEnd={onDragEnd}
       renderItem={draggableListItem}
       ItemSeparatorComponent={ItemSeparatorComponent}
