@@ -184,7 +184,7 @@ const WatchlistView: React.FC<Props> = ({
       ) : (
         <>
           <WatchList
-            tokens={sortedTokens}
+            tokens={showFavorites ? tokensToDisplay : sortedTokens}
             charts={charts}
             prices={prices}
             filterBy={filterBy}
