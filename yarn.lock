@@ -10251,6 +10251,13 @@ detective@^5.2.1:
     defined "^1.0.0"
     minimist "^1.2.6"
 
+detox-cli@20.0.0:
+  version "20.0.0"
+  resolved "https://registry.yarnpkg.com/detox-cli/-/detox-cli-20.0.0.tgz#ea70b45db7ff10cb8ca9e304b02e6593cc27a645"
+  integrity sha512-0xfPs6q8vxYlai0bjqmw34/iTmQle4PLAI9W/u5DldOq94/nMP2sZn4ZF3ieQ39oWrPeGHco/pXG845p5TSe3Q==
+  dependencies:
+    chalk "^4.0.0"
+
 detox@20.1.1:
   version "20.1.1"
   resolved "https://registry.yarnpkg.com/detox/-/detox-20.1.1.tgz#4134d7af428cf3cdec299b3282a763297120760c"
