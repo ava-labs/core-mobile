@@ -1,8 +1,5 @@
 import React from 'react'
-import {
-  ListRenderItemInfo as FlatListRenderItemInfo,
-  StyleSheet
-} from 'react-native'
+import { StyleSheet } from 'react-native'
 import { ListRenderItemInfo as FlashListRenderItemInfo } from '@shopify/flash-list'
 import WatchListItem from 'screens/watchlist/components/WatchListItem'
 import { useNavigation } from '@react-navigation/native'
@@ -22,7 +19,7 @@ import {
   Prices,
   reorderFavorites
 } from 'store/watchlist'
-import AvaFlashList from 'components/AvaFlashList'
+import AvaList from 'components/AvaList'
 import { RenderItemParams } from 'react-native-draggable-flatlist/src/types'
 import { WatchlistFilter } from '../types'
 
@@ -64,10 +61,6 @@ const WatchList: React.FC<Props> = ({
 
   const keyExtractor = (item: MarketToken) => item.id
 
-  const flatListRenderItem = (item: FlatListRenderItemInfo<MarketToken>) => {
-    return renderItem(item.item)
-  }
-
   const draggableListItem = (item: RenderItemParams<MarketToken>) => {
     return renderItem(item.item, item.drag)
   }
@@ -99,11 +92,10 @@ const WatchList: React.FC<Props> = ({
   }
 
   return (
-    <AvaFlashList
+    <AvaList
       isShowingFavorites={isShowingFavorites}
       data={tokens}
       flashRenderItem={flashListRenderItem}
-      flatRenderItem={flatListRenderItem}
       draggableListItem={draggableListItem}
       onDragEnd={reOrderedFavorites => {
         const favIds = reOrderedFavorites.data.map(item => item.id)

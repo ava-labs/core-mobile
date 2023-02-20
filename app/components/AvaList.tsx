@@ -4,13 +4,7 @@ import {
   ContentStyle,
   ListRenderItem as FlashListRenderItem
 } from '@shopify/flash-list/dist/FlashListProps'
-import { usePosthogContext } from 'contexts/PosthogContext'
-import {
-  FlatList,
-  ListRenderItem as FlatListRenderItem,
-  Platform,
-  RefreshControlProps
-} from 'react-native'
+import { RefreshControlProps } from 'react-native'
 import DraggableFlatList from 'react-native-draggable-flatlist/src/components/DraggableFlatList'
 import {
   DragEndParams,
@@ -20,7 +14,6 @@ import {
 interface AvaFlashListProps<TItem> {
   data: ReadonlyArray<TItem> | null | undefined
   flashRenderItem: FlashListRenderItem<TItem> | null | undefined
-  flatRenderItem: FlatListRenderItem<TItem> | null | undefined
   draggableListItem?: RenderItem<TItem> | null | undefined
   ItemSeparatorComponent?: React.ComponentType<unknown> | null | undefined
   ListEmptyComponent?:
@@ -47,12 +40,11 @@ interface AvaFlashListProps<TItem> {
 }
 
 /**
- * This component just selects between Flash and Flat list depending on feature flag
+ * This component selects between Flash and Draggable list depending on isShowingFavorites flag
  */
-const AvaFlashList = <T,>({
+const AvaList = <T,>({
   data,
   flashRenderItem,
-  flatRenderItem,
   draggableListItem,
   ItemSeparatorComponent,
   ListEmptyComponent,
@@ -69,28 +61,11 @@ const AvaFlashList = <T,>({
   isShowingFavorites,
   onDragEnd
 }: AvaFlashListProps<T>) => {
-  const { useFlatListAndroid } = usePosthogContext()
-
   return isShowingFavorites && draggableListItem ? (
     <DraggableFlatList
       data={data ? [...data] : []}
       onDragEnd={onDragEnd}
       renderItem={draggableListItem}
-      ItemSeparatorComponent={ItemSeparatorComponent}
-      ListEmptyComponent={ListEmptyComponent}
-      refreshing={refreshing}
-      onRefresh={onRefresh}
-      refreshControl={refreshControl}
-      contentContainerStyle={contentContainerStyle}
-      keyExtractor={keyExtractor}
-      indicatorStyle="white"
-      onEndReached={onEndReached}
-      extraData={extraData}
-    />
-  ) : useFlatListAndroid && Platform.OS === 'android' ? (
-    <FlatList
-      data={data}
-      renderItem={flatRenderItem}
       ItemSeparatorComponent={ItemSeparatorComponent}
       ListEmptyComponent={ListEmptyComponent}
       refreshing={refreshing}
@@ -123,4 +98,4 @@ const AvaFlashList = <T,>({
   )
 }
 
-export default AvaFlashList
+export default AvaList
