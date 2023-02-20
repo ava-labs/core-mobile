@@ -19,8 +19,11 @@ import {
   Prices,
   reorderFavorites
 } from 'store/watchlist'
+import {
+  DragEndParams,
+  RenderItemParams
+} from 'react-native-draggable-flatlist/src/types'
 import AvaList from 'components/AvaList'
-import { RenderItemParams } from 'react-native-draggable-flatlist/src/types'
 import { WatchlistFilter } from '../types'
 
 const getDisplayValue = (
@@ -93,11 +96,11 @@ const WatchList: React.FC<Props> = ({
 
   return (
     <AvaList
-      isShowingFavorites={isShowingFavorites}
+      isDraggable={isShowingFavorites}
       data={tokens}
       flashRenderItem={flashListRenderItem}
       draggableListItem={draggableListItem}
-      onDragEnd={reOrderedFavorites => {
+      onDragEnd={(reOrderedFavorites: DragEndParams<MarketToken>) => {
         const favIds = reOrderedFavorites.data.map(item => item.id)
         dispatch(reorderFavorites(favIds))
       }}

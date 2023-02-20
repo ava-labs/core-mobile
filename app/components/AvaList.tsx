@@ -35,12 +35,12 @@ interface AvaListProps<TItem> {
     extraData?: unknown
   ) => string | number | undefined
   estimatedItemSize?: number | undefined
-  isShowingFavorites?: boolean
+  isDraggable?: boolean
   onDragEnd?: (params: DragEndParams<TItem>) => void
 }
 
 /**
- * This component selects between Flash and Draggable list depending on isShowingFavorites flag
+ * This component selects between Flash and Draggable list depending on isDraggable flag
  */
 const AvaList = <T,>({
   data,
@@ -58,10 +58,10 @@ const AvaList = <T,>({
   refreshControl,
   getItemType,
   estimatedItemSize,
-  isShowingFavorites,
+  isDraggable,
   onDragEnd
 }: AvaListProps<T>) => {
-  return isShowingFavorites && draggableListItem ? (
+  return isDraggable && draggableListItem ? (
     <DraggableFlatList
       data={data || []}
       onDragEnd={onDragEnd}

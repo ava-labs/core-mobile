@@ -193,7 +193,7 @@ const Transactions = ({
         refreshControl={
           <RefreshControl onRefresh={onRefresh} refreshing={isRefreshing} />
         }
-        getItemType={item => {
+        getItemType={(item: Item) => {
           return typeof item === 'string' ? 'sectionHeader' : 'row'
         }}
         estimatedItemSize={71}
