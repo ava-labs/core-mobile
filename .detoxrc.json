@@ -106,7 +106,7 @@
      },
      "android.internal.release.ci":{
       "device":"emulator",
-      "app":"android.internal.release",
+      "app":"android.internal.release.ci",
       "artifacts": {
        "rootDir": "./e2e/artifacts/android"
       }
