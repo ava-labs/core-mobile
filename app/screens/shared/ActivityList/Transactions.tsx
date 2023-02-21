@@ -1,11 +1,5 @@
 import React, { useMemo } from 'react'
-import {
-  Animated,
-  View,
-  StyleSheet,
-  ListRenderItemInfo as FlatListRenderItemInfo,
-  Dimensions
-} from 'react-native'
+import { Animated, Dimensions, StyleSheet, View } from 'react-native'
 import { ListRenderItemInfo as FlashListRenderItemInfo } from '@shopify/flash-list'
 import AvaText from 'components/AvaText'
 import ActivityListItem from 'screens/activity/ActivityListItem'
@@ -26,7 +20,7 @@ import ZeroState from 'components/ZeroState'
 import { BridgeTransaction } from '@avalabs/bridge-sdk'
 import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
 import { RefreshControl } from 'components/RefreshControl'
-import AvaFlashList from 'components/AvaFlashList'
+import AvaList from 'components/AvaList'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 const BOTTOM_PADDING = SCREEN_WIDTH * 0.3
@@ -136,10 +130,6 @@ const Transactions = ({
     )
   }
 
-  const flatRenderItem = ({ item }: FlatListRenderItemInfo<Item>) => {
-    return renderListItem(item)
-  }
-
   const flashRenderItem = ({ item }: FlashListRenderItemInfo<Item>) => {
     return renderListItem(item)
   }
@@ -192,10 +182,9 @@ const Transactions = ({
 
   const renderTransactions = () => {
     return (
-      <AvaFlashList
+      <AvaList
         data={combinedData}
         flashRenderItem={flashRenderItem}
-        flatRenderItem={flatRenderItem}
         keyExtractor={keyExtractor}
         contentContainerStyle={styles.contentContainer}
         onEndReached={onEndReached}
@@ -204,7 +193,7 @@ const Transactions = ({
         refreshControl={
           <RefreshControl onRefresh={onRefresh} refreshing={isRefreshing} />
         }
-        getItemType={item => {
+        getItemType={(item: Item) => {
           return typeof item === 'string' ? 'sectionHeader' : 'row'
         }}
         estimatedItemSize={71}
