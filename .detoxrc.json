@@ -31,7 +31,7 @@
      },
      "ios.internal.release.ci":{
       "type":"ios.app",
-      "binaryPath":"Users/vagrant/deploy/AvaxWallet.app",
+      "binaryPath":"./deploy/AvaxWallet.app",
       "build": "ENVFILE=.env.development arch -x86_64 xcodebuild -workspace ios/AvaxWallet.xcworkspace -configuration Release -scheme AvaxWallet -sdk iphonesimulator -derivedDataPath avalanche-wallet-apps/ios/DerivedData"
    },
      "android.internal.debug":{
@@ -40,6 +40,12 @@
         "testBinaryPath": "android/app/build/outputs/apk/androidTest/internal/debug/app-internal-debug-androidTest.apk",
         "build":"cd android && ENVFILE=.env.development ./gradlew assembleInternalDebug assembleInternalDebugAndroidTest -DtestBuildType=debug && cd .."
      },
+     "android.internal.release.ci":{
+      "type":"android.apk",
+      "binaryPath":"Users/vagrant/deploy/app-internal-release.apk",
+      "testBinaryPath": "android/app/build/outputs/apk/androidTest/internal/debug/app-internal-debug-androidTest.apk",
+      "build":"cd android && ENVFILE=.env.development ./gradlew assembleInternalDebug assembleInternalDebugAndroidTest -DtestBuildType=debug && cd .."
+   },
      "android.internal.e2e":{
         "type":"android.apk",
         "binaryPath":"android/app/build/outputs/apk/internal/e2e/app-internal-e2e.apk",
@@ -92,6 +98,13 @@
          "rootDir": "./e2e/artifacts/android"
         }
      },
+     "android.internal.release.ci":{
+      "device":"emulator",
+      "app":"android.internal.release",
+      "artifacts": {
+       "rootDir": "./e2e/artifacts/android"
+      }
+   },
      "android.internal.e2e":{
         "device":"emulator",
         "app":"android.internal.e2e"
