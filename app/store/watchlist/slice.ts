@@ -27,6 +27,9 @@ export const watchlistSlice = createSlice({
         state.favorites = state.favorites.filter(id => id !== tokenId)
       }
     },
+    reorderFavorites: (state, action: PayloadAction<string[]>) => {
+      state.favorites = action.payload
+    },
     setTokens: (
       state,
       action: PayloadAction<{ [coingeckoID: string]: MarketToken }>
@@ -101,6 +104,7 @@ export const selectWatchlistChart: (
 // actions
 export const {
   toggleFavorite: toggleWatchListFavorite,
+  reorderFavorites,
   setTokens,
   appendTokens,
   setCharts,
