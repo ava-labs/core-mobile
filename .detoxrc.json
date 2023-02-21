@@ -42,7 +42,7 @@
      },
      "android.internal.release.ci":{
       "type":"android.apk",
-      "binaryPath":"Users/vagrant/deploy/app-internal-release.apk",
+      "binaryPath":"./deploy/app-internal-release.apk",
       "testBinaryPath": "android/app/build/outputs/apk/androidTest/internal/debug/app-internal-debug-androidTest.apk",
       "build":"cd android && ENVFILE=.env.development ./gradlew assembleInternalDebug assembleInternalDebugAndroidTest -DtestBuildType=debug && cd .."
    },
