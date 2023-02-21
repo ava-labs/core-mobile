@@ -1,5 +1,5 @@
 import React, { FC } from 'react'
-import { Dimensions, View } from 'react-native'
+import { Dimensions, Pressable, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaListItem from 'components/AvaListItem'
 import AvaText from 'components/AvaText'
@@ -12,6 +12,7 @@ import MarketMovement from 'screens/watchlist/components/MarketMovement'
 
 import { MarketToken } from 'store/watchlist'
 import { ChartData } from 'services/token/types'
+import DragHandleSVG from 'components/svg/DragHandleSVG'
 
 const deviceWidth = Dimensions.get('window').width
 
@@ -20,6 +21,7 @@ interface Props {
   chartData: ChartData
   value?: string
   onPress?: () => void
+  onDragPress?: () => void
   rank?: number
   filterBy: WatchlistFilter
   testID?: string
@@ -30,6 +32,7 @@ const WatchListItem: FC<Props> = ({
   chartData,
   value = '0',
   onPress,
+  onDragPress,
   rank,
   filterBy,
   testID
@@ -47,7 +50,7 @@ const WatchListItem: FC<Props> = ({
       titleAlignment={'flex-start'}
       subtitle={name}
       embedInCard={false}
-      rightComponentMaxWidth={deviceWidth * 0.55}
+      rightComponentMaxWidth={deviceWidth * 0.6}
       leftComponent={
         <LeftComponent token={token} rank={rank} testID={testID} />
       }
@@ -59,6 +62,7 @@ const WatchListItem: FC<Props> = ({
           filterBy={filterBy}
           onPress={onPress}
           testID={testID}
+          onDragPress={onDragPress}
         />
       }
       onPress={onPress}
@@ -106,13 +110,15 @@ type RightComponentProps = {
   filterBy: WatchlistFilter
   testID?: string
   onPress?: () => void
+  onDragPress?: () => void
 }
 
 const RightComponent = ({
   chartData,
   value,
   filterBy,
-  onPress
+  onPress,
+  onDragPress
 }: RightComponentProps) => {
   const { theme, appHook } = useApplicationContext()
   const { selectedCurrency } = appHook
@@ -133,7 +139,7 @@ const RightComponent = ({
   if (!value) return null
 
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+    <Row style={{ alignItems: 'center' }}>
       {renderMiddleComponent()}
       <View
         style={{
@@ -157,7 +163,15 @@ const RightComponent = ({
           filterBy={filterBy}
         />
       </View>
-    </View>
+      {onDragPress && (
+        <>
+          <Space x={16} />
+          <Pressable onTouchStart={onDragPress}>
+            <DragHandleSVG />
+          </Pressable>
+        </>
+      )}
+    </Row>
   )
 }
 
