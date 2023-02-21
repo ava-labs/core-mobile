@@ -90,9 +90,7 @@ const SignTransaction = () => {
     setSpendLimit,
     customSpendLimit,
     transaction,
-    displayData,
-    limitFiatValue,
-    displaySpendLimit
+    displayData
   } = useExplainTransaction(request, onFailedToLoadTransaction)
 
   const requestedApprovalLimit = displayData.approveData
@@ -244,8 +242,6 @@ const SignTransaction = () => {
             setShowCustomSpendLimit={setShowCustomSpendLimit}
             setShowTxData={setShowData}
             customSpendLimit={customSpendLimit}
-            limitFiatValue={limitFiatValue}
-            displaySpendLimit={displaySpendLimit}
           />
         )) ||
           ((contractType === ContractCall.ADD_LIQUIDITY ||

@@ -11,7 +11,7 @@ import React, { Dispatch } from 'react'
 import { useSelector } from 'react-redux'
 import { selectAccountByAddress } from 'store/account'
 import { txStyles } from 'screens/rpc/components/SignTransaction/SignTransaction'
-import { SpendLimit } from 'components/EditSpendLimit'
+import { Limit, SpendLimit } from 'components/EditSpendLimit'
 import { UNLIMITED_SPEND_LIMIT_LABEL } from 'screens/rpc/util/useExplainTransaction'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { formatCurrency } from 'utils/FormatCurrency'
@@ -20,7 +20,6 @@ export function ApproveTransaction({
   site,
   tokenToBeApproved,
   txParams,
-  displaySpendLimit,
   defaultSpendAmount,
   gasPrice,
   gasLimit,
@@ -29,7 +28,6 @@ export function ApproveTransaction({
   setShowCustomSpendLimit,
   setShowTxData,
   customSpendLimit,
-  limitFiatValue,
   ...rest
 }: ApproveTransactionData & {
   setShowCustomSpendLimit?: Dispatch<boolean>
@@ -39,14 +37,20 @@ export function ApproveTransaction({
   const account = useSelector(selectAccountByAddress(rest.fromAddress))
   const selectedCurrency = useSelector(selectSelectedCurrency)
 
-  const hideEdit: boolean =
-    displaySpendLimit === '0' && !!setShowCustomSpendLimit
+  const limitValueAmount = customSpendLimit.value?.amount
 
-  const isUnlimited = limitFiatValue === UNLIMITED_SPEND_LIMIT_LABEL
+  const hideEdit: boolean =
+    limitValueAmount === '0' && !!setShowCustomSpendLimit
+
+  const isUnlimited = customSpendLimit.limitType === Limit.UNLIMITED
+
+  const tokenValue = isUnlimited
+    ? `${UNLIMITED_SPEND_LIMIT_LABEL} ${tokenToBeApproved.symbol}`
+    : `${limitValueAmount} ${tokenToBeApproved.symbol}`
 
   const fiatValue = isUnlimited
-    ? `${limitFiatValue} ${selectedCurrency}`
-    : formatCurrency(Number(limitFiatValue), selectedCurrency, true)
+    ? `${UNLIMITED_SPEND_LIMIT_LABEL} ${selectedCurrency}`
+    : formatCurrency(Number(limitValueAmount), selectedCurrency, true)
 
   return (
     <>
@@ -117,9 +121,7 @@ export function ApproveTransaction({
                 flexDirection: 'column',
                 alignItems: 'flex-end'
               }}>
-              <AvaText.Body1>
-                {`${displaySpendLimit} ${tokenToBeApproved.symbol}`}
-              </AvaText.Body1>
+              <AvaText.Body1>{tokenValue}</AvaText.Body1>
               <AvaText.Body2>{fiatValue}</AvaText.Body2>
             </View>
           )}

@@ -24,7 +24,6 @@ export interface SpendLimit {
     bn: BN
     amount: string
   }
-  default?: string
 }
 
 interface Props {
