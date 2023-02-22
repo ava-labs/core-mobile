@@ -1,4 +1,5 @@
 import { element, waitFor } from 'detox'
+import { Platform } from '../helpers/constants'
 
 const tap = async (item: Detox.NativeMatcher) => {
   await element(item).tap()
@@ -82,15 +83,11 @@ const swipeDown = async (
     .swipe('down', speed, normalizedOffset)
 }
 
-const platform = async () => {
-  let i: number
-  if (device.getPlatform() === 'ios') {
-    i = 1
-  } else {
-    i = 0
-  }
-  return i
+const platform = () => {
+  return device.getPlatform() === 'ios' ? Platform.iOS : Platform.Android
 }
+
+const platformIndex = platform() === Platform.iOS ? 1 : 0
 
 export default {
   tap,
@@ -104,5 +101,6 @@ export default {
   setColumnToValue,
   setInputText,
   getAndroidAttributesArray,
-  platform
+  platform,
+  platformIndex
 }

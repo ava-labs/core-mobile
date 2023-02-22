@@ -65,28 +65,28 @@ class ActivityTabPage {
   async tapBridgeFilterOption() {
     await Action.tapElementAtIndex(
       this.bridgeFilterOption,
-      await Action.platform()
+      Action.platformIndex
     )
   }
 
   async tapContractCallFilterOption() {
     await Action.tapElementAtIndex(
       this.contractCallFilterOption,
-      await Action.platform()
+      Action.platformIndex
     )
   }
 
   async tapIncomingFilterOption() {
     await Action.tapElementAtIndex(
       this.incomingFilterOption,
-      await Action.platform()
+      Action.platformIndex
     )
   }
 
   async tapOutgoingFilterOption() {
     await Action.tapElementAtIndex(
       this.incomingFilterOption,
-      await Action.platform()
+      Action.platformIndex
     )
   }
 
