@@ -15,6 +15,12 @@
      "simulator":{
         "type":"ios.simulator",
         "device": {"type": "iPhone 13"}
+     },
+     "emulator_ci":{
+      "type": "android.emulator",
+      "device":{
+         "avdName": "emulator-5554"
+      }
      }
   },
   
@@ -105,7 +111,7 @@
         }
      },
      "android.internal.release.ci":{
-      "device":"emulator",
+      "device":"emulator_ci",
       "app":"android.internal.release.ci",
       "artifacts": {
        "rootDir": "./e2e/artifacts/android"
