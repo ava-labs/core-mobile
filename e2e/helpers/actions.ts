@@ -82,14 +82,8 @@ const swipeDown = async (
     .swipe('down', speed, normalizedOffset)
 }
 
-const platform = async () => {
-  let i: number
-  if (device.getPlatform() === 'ios') {
-    i = 1
-  } else {
-    i = 0
-  }
-  return i
+const platform = () => {
+  return device.getPlatform()
 }
 
 export default {

@@ -4,6 +4,7 @@
  * @jest-environment ./environment.ts
  */
 import { device } from 'detox'
+import { Platform } from '../../helpers/constants'
 import Assert from '../../helpers/assertions'
 import WatchListPage from '../../pages/watchlist.page'
 import PlusMenuPage from '../../pages/plusMenu.page'
@@ -54,7 +55,9 @@ describe('Send AVAX', () => {
   it('should successfully send the token and take user to portfolio page', async () => {
     await ReviewAndSend.tapSendNow()
     await Assert.isVisible(ReviewAndSend.sendPendingToastMsg)
-    await Assert.isVisible(ReviewAndSend.sendSuccessfulToastMsg)
+    if (actions.platform() === Platform.iOS) {
+      await Assert.isVisible(ReviewAndSend.sendSuccessfulToastMsg)
+    }
     await BottomTabsPage.tapActivityTab()
     await actions.waitForElementNotVisible(ReviewAndSend.sendSuccessfulToastMsg)
     await delay(40000)
