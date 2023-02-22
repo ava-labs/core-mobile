@@ -116,13 +116,14 @@ export function useExplainTransaction(
             value: undefined
           })
           limitAmount = ethers.constants.MaxUint256.toHexString()
-        } else if (customSpendLimit?.limitType === Limit.DEFAULT) {
+        } else if (customSpendLimit.limitType === Limit.DEFAULT) {
+          const bn = defaultSpendLimit || new BN(0)
           setCustomSpendLimit({
             limitType: Limit.DEFAULT,
             value: {
-              bn: defaultSpendLimit || new BN(0),
+              bn,
               amount: bnToLocaleString(
-                defaultSpendLimit || new BN(0),
+                bn,
                 transaction.displayValues?.tokenToBeApproved?.decimals
               )
             }
@@ -160,25 +161,6 @@ export function useExplainTransaction(
     },
     [transaction, setTransaction, customSpendLimit, defaultSpendLimit]
   )
-
-  useEffect(() => {
-    if (
-      // defaultSpendLimit &&
-      defaultSpendLimit !== customSpendLimit.value?.bn &&
-      customSpendLimit.limitType === Limit.DEFAULT
-    ) {
-      setSpendLimit({
-        limitType: Limit.DEFAULT,
-        value: {
-          bn: defaultSpendLimit,
-          amount: bnToLocaleString(
-            defaultSpendLimit,
-            transaction?.displayValues.tokenToBeApproved?.decimals
-          )
-        }
-      })
-    }
-  }, [defaultSpendLimit, setSpendLimit, customSpendLimit, transaction])
 
   /******************************************************************************
    * Load transaction information
@@ -283,9 +265,19 @@ export function useExplainTransaction(
           chainId: activeNetwork.chainId
         }
 
-        // if (!defaultSpendLimit) {
         if (!defaultSpendLimit) {
           setDefaultSpendLimit(hexToBN(displayValues.approveData?.limit ?? '0'))
+
+          setCustomSpendLimit({
+            limitType: Limit.DEFAULT,
+            value: {
+              bn: hexToBN(displayValues.approveData?.limit ?? '0'),
+              amount: bnToLocaleString(
+                hexToBN(displayValues.approveData?.limit ?? '0'),
+                displayValues.tokenToBeApproved?.decimals
+              )
+            }
+          })
         }
 
         setTransaction({
