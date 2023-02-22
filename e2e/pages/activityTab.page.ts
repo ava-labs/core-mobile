@@ -1,5 +1,8 @@
 import Action from '../helpers/actions'
 import activityTab from '../locators/activityTab.loc'
+import { Platform } from '../helpers/constants'
+
+const platformIndex = Action.platform() === Platform.iOS ? 1 : 0
 
 class ActivityTabPage {
   get transaction() {
@@ -63,31 +66,19 @@ class ActivityTabPage {
   }
 
   async tapBridgeFilterOption() {
-    await Action.tapElementAtIndex(
-      this.bridgeFilterOption,
-      Action.platformIndex
-    )
+    await Action.tapElementAtIndex(this.bridgeFilterOption, platformIndex)
   }
 
   async tapContractCallFilterOption() {
-    await Action.tapElementAtIndex(
-      this.contractCallFilterOption,
-      Action.platformIndex
-    )
+    await Action.tapElementAtIndex(this.contractCallFilterOption, platformIndex)
   }
 
   async tapIncomingFilterOption() {
-    await Action.tapElementAtIndex(
-      this.incomingFilterOption,
-      Action.platformIndex
-    )
+    await Action.tapElementAtIndex(this.incomingFilterOption, platformIndex)
   }
 
   async tapOutgoingFilterOption() {
-    await Action.tapElementAtIndex(
-      this.incomingFilterOption,
-      Action.platformIndex
-    )
+    await Action.tapElementAtIndex(this.incomingFilterOption, platformIndex)
   }
 
   async tapBridgeIcon() {
