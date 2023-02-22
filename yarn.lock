@@ -10261,7 +10261,7 @@ detective@^5.2.1:
     defined "^1.0.0"
     minimist "^1.2.6"
 
-detox@^20.2.0:
+detox@20.2.0:
   version "20.2.0"
   resolved "https://registry.yarnpkg.com/detox/-/detox-20.2.0.tgz#b0662ace6a1bc1f61cbf6c08ce9f748a68831add"
   integrity sha512-br2af9iFkHqpgPe1+ChwQu+/rc/3VPMK31LlQNbdK+x/yeRfR0Rww3BFsmehJF6hD9oFpojtm4siJsX32X3Esw==
