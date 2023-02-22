@@ -9,7 +9,6 @@ import React, {
 } from 'react'
 import { getSwapRate, getTokenAddress } from 'swap/getSwapRate'
 import { SwapSide } from 'paraswap'
-import { performSwap } from 'swap/performSwap'
 import { OptimalRate } from 'paraswap-core'
 import { TokenWithBalance } from 'store/balance'
 import { useActiveNetwork } from 'hooks/useActiveNetwork'
@@ -25,8 +24,27 @@ import { Amount } from 'screens/swap/SwapView'
 import { InteractionManager } from 'react-native'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { humanizeSwapErrors } from 'localization/errors'
+// import { performSwap } from '@avalabs/paraswap-sdk'
+import { useAvalancheProvider } from 'hooks/networkProviderHooks'
+import { useSelector } from 'react-redux'
+import { selectNetworkFee } from 'store/networkFee'
+import NetworkService from 'services/network/NetworkService'
+import WalletService from 'services/wallet/WalletService'
+import { TransactionRequest } from '@ethersproject/providers'
+import { performSwap } from '@avalabs/paraswap-sdk'
 
 export type SwapStatus = 'Idle' | 'Preparing' | 'Swapping' | 'Success' | 'Fail'
+
+export type SwapParams = {
+  srcTokenAddress: string
+  isSrcTokenNative: boolean
+  destTokenAddress: string
+  isDestTokenNative: boolean
+  priceRoute: OptimalRate
+  swapGasLimit: number
+  swapGasPrice: BigNumber
+  swapSlippage: number
+}
 
 export interface SwapContextState {
   fromToken?: TokenWithBalance
@@ -35,19 +53,7 @@ export interface SwapContextState {
   setToToken: Dispatch<TokenWithBalance | undefined>
   optimalRate?: OptimalRate
   refresh: () => void
-
-  swap(
-    srcTokenAddr: string,
-    destTokenAddress: string,
-    destDecimals: number,
-    srcDecimals: number,
-    amount: string,
-    priceRoute: OptimalRate,
-    gasLimit: number,
-    gasPrice: BigNumber,
-    slippage: number
-  ): void
-
+  swap(params: SwapParams): void
   gasPrice: BigNumber
   setGasPrice: Dispatch<BigNumber>
   gasLimit: number
@@ -80,6 +86,8 @@ export const SwapContext = createContext<SwapContextState>(
 export const SwapContextProvider = ({ children }: { children: ReactNode }) => {
   const activeAccount = useActiveAccount()
   const activeNetwork = useActiveNetwork()
+  const avalancheProvider = useAvalancheProvider()
+  const networkFee = useSelector(selectNetworkFee)
   const [fromToken, setFromToken] = useState<TokenWithBalance>()
   const [toToken, setToToken] = useState<TokenWithBalance>()
   const [optimalRate, setOptimalRate] = useState<OptimalRate>()
@@ -155,17 +163,16 @@ export const SwapContextProvider = ({ children }: { children: ReactNode }) => {
     getOptimalRate()
   }, [getOptimalRate])
 
-  function onSwap(
-    srcTokenAddress: string,
-    destTokenAddress: string,
-    destDecimals: number,
-    srcDecimals: number,
-    swapAmount: string,
-    priceRoute: OptimalRate,
-    swapGasLimit: number,
-    swapGasPrice: BigNumber,
-    swapSlippage: number
-  ) {
+  function onSwap({
+    srcTokenAddress,
+    isSrcTokenNative,
+    destTokenAddress,
+    isDestTokenNative,
+    priceRoute,
+    swapGasLimit,
+    swapGasPrice,
+    swapSlippage
+  }: SwapParams) {
     setSwapStatus('Preparing')
     setSwapStatus('Swapping')
 
@@ -179,22 +186,37 @@ export const SwapContextProvider = ({ children }: { children: ReactNode }) => {
       duration: 'short'
     })
 
-    InteractionManager.runAfterInteractions(() => {
+    InteractionManager.runAfterInteractions(async () => {
       const sentryTrx = SentryWrapper.startTransaction('swap')
+      if (!avalancheProvider) {
+        return
+      }
+      if (!activeAccount) {
+        return
+      }
+
       resolve(
         performSwap({
-          srcToken: srcTokenAddress,
-          destToken: destTokenAddress,
-          srcDecimals,
-          destDecimals,
-          srcAmount: swapAmount,
-          optimalRate: priceRoute,
+          srcTokenAddress,
+          isSrcTokenNative,
+          destTokenAddress,
+          isDestTokenNative,
+          priceRoute,
           gasLimit: swapGasLimit,
           gasPrice: swapGasPrice,
           slippage: swapSlippage,
-          network: activeNetwork,
-          account: activeAccount,
-          sentryTrx
+          activeNetwork,
+          provider: avalancheProvider,
+          transactionSend: signedTx =>
+            NetworkService.sendTransaction(signedTx, activeNetwork),
+          transactionSign: tx =>
+            WalletService.sign(
+              tx as TransactionRequest,
+              activeAccount.index,
+              activeNetwork
+            ),
+          userAddress: activeAccount.address,
+          networkGasPrice: networkFee.low
         })
       )
         .then(([result, err]) => {
@@ -216,7 +238,9 @@ export const SwapContextProvider = ({ children }: { children: ReactNode }) => {
                 <TransactionToast
                   message={'Swap Successful'}
                   type={TransactionToastType.SUCCESS}
-                  txHash={result?.result?.swapTxHash}
+                  txHash={
+                    result?.swapTxHash === null ? undefined : result?.swapTxHash
+                  }
                 />
               ),
               duration: 'short'
