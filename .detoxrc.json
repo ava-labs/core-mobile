@@ -34,8 +34,8 @@
         "binaryPath":"binaries/AvaxWalletInternal.app"
      },
      "ios.internal.release.ci":{
-      "type":"ios.app",
-      "binaryPath":"$BITRISE_APP_DIR_PATH"
+         "type":"ios.app",
+         "binaryPath":"$BITRISE_APP_DIR_PATH"
    },
      "android.internal.debug":{
         "type":"android.apk",
@@ -43,14 +43,14 @@
         "testBinaryPath": "android/app/build/outputs/apk/androidTest/internal/debug/app-internal-debug-androidTest.apk"
      },
      "android.internal.release.ci":{
-      "type":"android.apk",
-      "binaryPath":"$BITRISE_APK_PATH",
-      "testBinaryPath": "android/app/build/outputs/apk/androidTest/internal/debug/app-internal-debug-androidTest.apk"
+         "type":"android.apk",
+         "binaryPath":"$BITRISE_APK_PATH",
+         "testBinaryPath": "$BITRISE_APK_PATH"
    },
      "android.internal.e2e":{
         "type":"android.apk",
         "binaryPath":"android/app/build/outputs/apk/internal/e2e/app-internal-e2e.apk",
-        "testBinaryPath": "android/app/build/outputs/apk/androidTest/internal/debug/app-internal-debug-androidTest.apk"
+        "testBinaryPath": "android/app/build/outputs/apk/androidTest/internal/debug/app-internal-e2e-androidTest.apk"
      }
   },
   "artifacts": {
