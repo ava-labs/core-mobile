@@ -116,7 +116,7 @@ export function useExplainTransaction(
             value: undefined
           })
           limitAmount = ethers.constants.MaxUint256.toHexString()
-        } else if (customSpendLimit.limitType === Limit.DEFAULT) {
+        } else if (customSpendData.limitType === Limit.DEFAULT) {
           const bn = defaultSpendLimit || new BN(0)
           setCustomSpendLimit({
             limitType: Limit.DEFAULT,
@@ -128,6 +128,7 @@ export function useExplainTransaction(
               )
             }
           })
+          limitAmount = transaction?.displayValues?.approveData?.limit
         } else {
           setCustomSpendLimit(customSpendData)
 
@@ -159,7 +160,7 @@ export function useExplainTransaction(
         setTransaction(updatedTransaction)
       }
     },
-    [transaction, setTransaction, customSpendLimit, defaultSpendLimit]
+    [transaction, setTransaction, defaultSpendLimit]
   )
 
   /******************************************************************************
@@ -265,15 +266,16 @@ export function useExplainTransaction(
           chainId: activeNetwork.chainId
         }
 
+        const defaultLimitBN = hexToBN(displayValues.approveData?.limit ?? '0')
         if (!defaultSpendLimit) {
-          setDefaultSpendLimit(hexToBN(displayValues.approveData?.limit ?? '0'))
+          setDefaultSpendLimit(defaultLimitBN)
 
           setCustomSpendLimit({
             limitType: Limit.DEFAULT,
             value: {
-              bn: hexToBN(displayValues.approveData?.limit ?? '0'),
+              bn: defaultLimitBN,
               amount: bnToLocaleString(
-                hexToBN(displayValues.approveData?.limit ?? '0'),
+                defaultLimitBN,
                 displayValues.tokenToBeApproved?.decimals
               )
             }
