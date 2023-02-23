@@ -165,8 +165,12 @@ const RightComponent = ({
       </View>
       {onDragPress && (
         <>
-          <Space x={16} />
-          <Pressable onTouchStart={onDragPress}>
+          <Pressable
+            onTouchStart={onDragPress}
+            style={{
+              padding: 16,
+              marginRight: -16
+            }}>
             <DragHandleSVG />
           </Pressable>
         </>
