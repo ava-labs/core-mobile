@@ -24,7 +24,7 @@ describe('Verify Watchlist', () => {
   })
 
   it('should navigate to watchlist', async () => {
-    const recoveryPhrase: string = process.env.RECOVERY_PHRASE as string
+    const recoveryPhrase: string = process.env.E2E_MNEMONIC as string
     await ExistingRecoveryPhrasePage.recoverWallet(recoveryPhrase)
     await BottomTabsPage.tapWatchlistTab()
     await BottomTabsPage.verifyBottomTabs()
