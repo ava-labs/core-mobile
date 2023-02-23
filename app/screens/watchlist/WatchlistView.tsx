@@ -169,16 +169,18 @@ const WatchlistView: React.FC<Props> = ({
 
   return (
     <>
-      <View style={styles.filterContainer}>
-        <Dropdown
-          alignment={'flex-start'}
-          width={140}
-          data={filterPriceOptions}
-          selectedIndex={selectedPriceFilter}
-          onItemSelected={setFilterBy}
-          selectionRenderItem={renderPriceFilterSelection}
-        />
-      </View>
+      {!showFavorites && (
+        <View style={styles.filterContainer}>
+          <Dropdown
+            alignment={'flex-start'}
+            width={140}
+            data={filterPriceOptions}
+            selectedIndex={selectedPriceFilter}
+            onItemSelected={setFilterBy}
+            selectionRenderItem={renderPriceFilterSelection}
+          />
+        </View>
+      )}
       {showLoader ? (
         <WatchListLoader />
       ) : (

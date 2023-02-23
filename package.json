@@ -116,7 +116,7 @@
     "react-native-device-info": "10.0.2",
     "react-native-dialog": "8.2.0",
     "react-native-document-picker": "5.3.0",
-    "react-native-draggable-flatlist": "3.1.2",
+    "react-native-draggable-flatlist": "4.0.1",
     "react-native-fast-image": "8.6.3",
     "react-native-flipper": "0.164.0",
     "react-native-fs": "2.19.0",
