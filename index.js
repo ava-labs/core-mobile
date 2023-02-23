@@ -20,6 +20,6 @@ AppRegistry.registerComponent(appName, () => ContextApp)
 //   import('./storybook');
 // }
 
-if (DevDebuggingConfig.API_MOCKING) {
+if (DevDebuggingConfig.API_MOCKING || process.env.API_MOCKING) {
   server.listen()
 }
