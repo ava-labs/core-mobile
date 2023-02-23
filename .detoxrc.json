@@ -49,7 +49,8 @@
    },
      "android.internal.e2e":{
         "type":"android.apk",
-        "binaryPath":"android/app/build/outputs/apk/internal/e2e/app-internal-e2e.apk"
+        "binaryPath":"android/app/build/outputs/apk/internal/e2e/app-internal-e2e.apk",
+        "testBinaryPath": "android/app/build/outputs/apk/androidTest/internal/debug/app-internal-debug-androidTest.apk"
      }
   },
   "artifacts": {
