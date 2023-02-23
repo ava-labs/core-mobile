@@ -10,7 +10,6 @@ import { AppRegistry } from 'react-native'
 import ContextApp from './app/ContextApp'
 import { name as appName } from './app.json'
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import DevDebuggingConfig from './app/utils/debugging/DevDebuggingConfig'
 import { server } from './tests/msw/server'
 
@@ -20,6 +19,6 @@ AppRegistry.registerComponent(appName, () => ContextApp)
 //   import('./storybook');
 // }
 
-if (DevDebuggingConfig.API_MOCKING) {
+if (DevDebuggingConfig.API_MOCKING || process.env.API_MOCKING) {
   server.listen()
 }
