@@ -4,7 +4,7 @@ module.exports = {
   testRunner: {
    "$0": "jest",
    "args": {
-  "config": "e2e/config.json"
+   "config": "e2e/config.json"
    }
   },
   devices:{
@@ -37,7 +37,7 @@ module.exports = {
      },
      "ios.internal.release.ci":{
          type:"ios.app",
-         binaryPath:{$BITRISE_APP_DIR_PATH}
+         binaryPath: process.env.BITRISE_APP_DIR_PATH
    },
      "android.internal.debug":{
         type:"android.apk",
@@ -46,8 +46,8 @@ module.exports = {
      },
      "android.internal.release.ci":{
          type:"android.apk",
-         binaryPath:{$BITRISE_APK_PATH},
-         testBinaryPath: {$BITRISE_APK_PATH}
+         binaryPath: process.env.BITRISE_APK_PATH,
+         testBinaryPath: process.env.BITRISE_APK_PATH
    },
      "android.internal.e2e":{
         type:"android.apk",
