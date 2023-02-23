@@ -32,7 +32,7 @@ describe('Send AVAX', () => {
   })
 
   it('should navigate to send screen', async () => {
-    const recoveryPhrase: string = process.env.RECOVERY_PHRASE as string
+    const recoveryPhrase: string = process.env.E2E_MNEMONIC as string
     await ExistingRecoveryPhrasePage.recoverWallet(recoveryPhrase)
     await BottomTabsPage.tapPlusIcon()
     await PlusMenuPage.tapSendButton()

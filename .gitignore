@@ -71,3 +71,7 @@ package-lock.json
 /.env
 /.env.production
 /.env.development
+/.env.production.e2e
+
+# detox
+e2e/artifacts/
