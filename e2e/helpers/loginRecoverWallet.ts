@@ -7,7 +7,7 @@ import PortfolioPage from '../pages/portfolio.page'
 
 class LoginRecoverWallet {
   async recoverWalletLogin() {
-    const recoveryPhrase: string = process.env.RECOVERY_PHRASE as string
+    const recoveryPhrase: string = process.env.E2E_MNEMONIC as string
     await WatchListPage.tapWalletSVG()
     await AnalyticsConsentPage.tapNoThanksBtn()
     await ExistingRecoveryPhrasePage.enterRecoveryPhrase(recoveryPhrase)
