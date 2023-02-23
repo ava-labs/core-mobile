@@ -132,10 +132,7 @@ export function useExplainTransaction(
         } else {
           setCustomSpendLimit(customSpendData)
 
-          limitAmount =
-            customSpendData.limitType === Limit.CUSTOM
-              ? customSpendData.value?.bn.toString()
-              : transaction?.displayValues?.approveData?.limit
+          limitAmount = customSpendData.value?.bn.toString()
         }
 
         const web3 = new Web3()
