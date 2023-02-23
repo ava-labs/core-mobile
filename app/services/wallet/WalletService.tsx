@@ -5,10 +5,12 @@ import {
   getBech32AddressFromXPub,
   getWalletFromMnemonic,
   getXpubFromMnemonic,
-  BitcoinProviderAbstract
+  BitcoinProviderAbstract,
+  Avalanche,
+  getAddressPublicKeyFromXPub
 } from '@avalabs/wallets-sdk'
 import { now } from 'moment'
-import { SignTransactionRequest } from 'services/wallet/types'
+import { PubKeyType, SignTransactionRequest } from 'services/wallet/types'
 import { Wallet } from 'ethers'
 import networkService from 'services/network/NetworkService'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
@@ -23,14 +25,25 @@ import BN from 'bn.js'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction } from '@sentry/types'
 import { RpcMethod } from 'store/walletConnectV2'
+import { Account } from 'store/account'
 
 class WalletService {
   private mnemonic?: string
+  /**
+   * Derivation path: m/44'/60'/0'
+   * @private
+   */
   private xpub?: string
+  /**
+   * Derivation path: m/44'/9000'/0'
+   * @private
+   */
+  private xpubXP?: string
 
   async setMnemonic(mnemonic: string) {
     this.mnemonic = mnemonic
     this.xpub = await getXpubFromMnemonic(mnemonic)
+    this.xpubXP = Avalanche.getXpubFromMnemonic(mnemonic)
   }
 
   async getBtcWallet(accountIndex: number, network: Network) {
@@ -228,6 +241,27 @@ class WalletService {
     value
     nonce
     return ['', undefined]
+  }
+
+  /**
+   * Get the public key of an account
+   * @throws Will throw error for LedgerLive accounts that have not been added yet.
+   * @param account Account to get public key of.
+   */
+  async getPublicKey(account: Account): Promise<PubKeyType> {
+    if (this.xpub && this.xpubXP) {
+      const evmPub = getAddressPublicKeyFromXPub(this.xpub, account.index)
+      const xpPub = Avalanche.getAddressPublicKeyFromXpub(
+        this.xpubXP,
+        account.index
+      )
+      return {
+        evm: evmPub.toString('hex'),
+        xp: xpPub.toString('hex')
+      }
+    } else {
+      throw new Error('Can not find public key for the given index')
+    }
   }
 }
 
