@@ -27,35 +27,30 @@
   "apps":{
      "ios.internal.debug":{
         "type":"ios.app",
-        "binaryPath":"ios/DerivedData/Build/Products/Debug-iphonesimulator/AvaxWallet.app",
-        "build":"ENVFILE=.env.development arch -x86_64 xcodebuild -workspace ios/AvaxWallet.xcworkspace -configuration Debug -scheme AvaxWalletInternal -sdk iphonesimulator -derivedDataPath avalanche-wallet-apps/ios/DerivedData"
+        "binaryPath":"ios/DerivedData/Build/Products/Debug-iphonesimulator/AvaxWallet.app"
      },
      "ios.internal.release":{
         "type":"ios.app",
-        "binaryPath":"binaries/AvaxWalletInternal.app",
-        "build": "ENVFILE=.env.development arch -x86_64 xcodebuild -workspace ios/AvaxWallet.xcworkspace -configuration Release -scheme AvaxWallet -sdk iphonesimulator -derivedDataPath avalanche-wallet-apps/ios/DerivedData"
+        "binaryPath":"binaries/AvaxWalletInternal.app"
      },
      "ios.internal.release.ci":{
-      "type":"ios.app",
-      "binaryPath":"./deploy/AvaxWallet.app",
-      "build": "ENVFILE=.env.development arch -x86_64 xcodebuild -workspace ios/AvaxWallet.xcworkspace -configuration Release -scheme AvaxWallet -sdk iphonesimulator -derivedDataPath avalanche-wallet-apps/ios/DerivedData"
+         "type":"ios.app",
+         "binaryPath":"$BITRISE_APP_DIR_PATH"
    },
      "android.internal.debug":{
         "type":"android.apk",
         "binaryPath":"android/app/build/outputs/apk/internal/debug/app-internal-debug.apk",
-        "testBinaryPath": "android/app/build/outputs/apk/androidTest/internal/debug/app-internal-debug-androidTest.apk",
-        "build":"cd android && ENVFILE=.env.development ./gradlew assembleInternalDebug assembleInternalDebugAndroidTest -DtestBuildType=debug && cd .."
+        "testBinaryPath": "android/app/build/outputs/apk/androidTest/internal/debug/app-internal-debug-androidTest.apk"
      },
      "android.internal.release.ci":{
-      "type":"android.apk",
-      "binaryPath":"./deploy/app-internal-release.apk",
-      "testBinaryPath": "android/app/build/outputs/apk/androidTest/internal/debug/app-internal-debug-androidTest.apk",
-      "build":"cd android && ENVFILE=.env.development ./gradlew assembleInternalDebug assembleInternalDebugAndroidTest -DtestBuildType=debug && cd .."
+         "type":"android.apk",
+         "binaryPath":"$BITRISE_APK_PATH",
+         "testBinaryPath": "$BITRISE_APK_PATH"
    },
      "android.internal.e2e":{
         "type":"android.apk",
         "binaryPath":"android/app/build/outputs/apk/internal/e2e/app-internal-e2e.apk",
-        "build": "cd android && ENVFILE=.env.development ./gradlew assembleE2e assembleE2eAndroidTest -DtestBuildType=debug && cd .."
+        "testBinaryPath": "android/app/build/outputs/apk/androidTest/internal/debug/app-internal-e2e-androidTest.apk"
      }
   },
   "artifacts": {
