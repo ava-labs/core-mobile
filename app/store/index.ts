@@ -23,17 +23,19 @@ import settings from './settings'
 import swap from './swap'
 import { transactionApi } from './transaction'
 import { walletConnectReducer as walletConnect } from './walletConnect'
+import { walletConnectReducer as walletConnectV2 } from './walletConnectV2'
 import { BridgeBlacklistTransform } from './transforms/BridgeBlacklistTransform'
 import { WatchlistBlacklistTransform } from './transforms/WatchlistBlacklistTransform'
 import { WalletConnectBlacklistTransform } from './transforms/WalletConnectBlacklistTransform'
+import { AppBlacklistTransform } from './transforms/AppBlacklistTransform'
 
 // list of reducers that don't need to be persisted
-// for nested blacklist, please use transform
+// for nested/partial blacklist, please use transform
 const blacklist = [
-  'app',
   'balance',
   'networkFee',
   'swap',
+  'walletConnectV2',
   transactionApi.reducerPath,
   nftsApi.reducerPath
 ]
@@ -52,6 +54,7 @@ const combinedReducer = combineReducers({
   nft,
   security,
   walletConnect,
+  walletConnectV2,
 
   // user preferences
   settings,
@@ -95,6 +98,7 @@ export function configureEncryptedStore(secretKey: string) {
     blacklist,
     rootReducer,
     transforms: [
+      AppBlacklistTransform,
       BridgeBlacklistTransform,
       WatchlistBlacklistTransform,
       WalletConnectBlacklistTransform,
