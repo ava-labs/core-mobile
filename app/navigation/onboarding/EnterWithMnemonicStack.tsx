@@ -161,6 +161,7 @@ const TermsNConditionsModalScreen = () => {
   return (
     <TermsNConditionsModal
       onNext={() => {
+        // signing in with recovery phrase
         walletSetupHook.enterWallet(enterWithMnemonicContext.mnemonic)
         dispatch(onLogIn())
         dispatch(onAppUnlocked())
