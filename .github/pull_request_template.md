@@ -9,6 +9,6 @@ Please include a summary of the changes and the related issue. Please also inclu
 
 
 ### Checklist for the author
-- [] I have performed a self-review of my code
-- [] I have verified the code works
-- [] I have added necessary unit tests 
+- [ ] I have performed a self-review of my code
+- [ ] I have verified the code works
+- [ ] I have added necessary unit tests 
