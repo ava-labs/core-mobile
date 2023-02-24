@@ -1,15 +1,14 @@
 import WalletConnectClient from '@walletconnect/client'
-import { parseWalletConnectUri } from '@walletconnect/utils'
-import { ISessionStatus, IWalletConnectOptions } from '@walletconnect/types'
+import {
+  ISessionStatus,
+  IWalletConnectOptions
+} from '@walletconnect/legacy-types'
 import { CLIENT_OPTIONS, PeerMeta } from 'services/walletconnect/types'
 import Logger from 'utils/Logger'
 import { JsonRpcRequest } from '@walletconnect/jsonrpc-types'
-import {
-  EthereumProviderError,
-  EthereumRpcError,
-  ethErrors
-} from 'eth-rpc-errors'
+import { ethErrors } from 'eth-rpc-errors'
 import { ApprovedAppMeta } from 'store/walletConnect'
+import { RpcError } from 'store/walletConnectV2'
 
 export type WalletConnectCallbacks = {
   onSessionRequest: (peerId: string, payload: JsonRpcRequest) => void
@@ -18,15 +17,7 @@ export type WalletConnectCallbacks = {
     peerMeta: PeerMeta,
     payload: JsonRpcRequest
   ) => void
-  onDisconnect: (peerMeta: PeerMeta) => void
-}
-
-export const isValidUri = (uri: string) => {
-  const result = parseWalletConnectUri(uri)
-  if (!result.handshakeTopic || !result.bridge || !result.key) {
-    return false
-  }
-  return true
+  onDisconnect: (clientId: string, peerMeta: PeerMeta) => void
 }
 
 class WalletConnectService {
@@ -68,7 +59,7 @@ class WalletConnectService {
       }
 
       Logger.info(`wc session ${client.peerMeta?.name} disconnected`)
-      callbacks.onDisconnect(client.peerMeta)
+      callbacks.onDisconnect(client.clientId, client.peerMeta)
     }
 
   startSession = (
@@ -120,11 +111,7 @@ class WalletConnectService {
     })
   }
 
-  rejectCall = (
-    peerId: string,
-    id: number,
-    error: EthereumRpcError<string> | EthereumProviderError<string>
-  ) => {
+  rejectCall = (peerId: string, id: number, error: RpcError) => {
     const client = this.clients.find(item => item.peerId === peerId)
 
     client?.rejectRequest({
