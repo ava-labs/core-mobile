@@ -143,7 +143,6 @@ export function useExplainTransaction(
           srcTokenAddress
         )
 
-        //
         const hashedCustomSpend =
           limitAmount &&
           contract.methods.approve(spenderAddress, limitAmount).encodeABI()
