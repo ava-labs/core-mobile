@@ -9,8 +9,8 @@ import { Row } from 'components/Row'
 import { TokenWithBalanceERC20 } from 'store/balance'
 import { Checkbox } from 'components/Checkbox'
 import { BNInput } from 'components/BNInput'
-import { PeerMeta } from 'services/walletconnect/types'
 import BN from 'bn.js'
+import { PeerMeta } from 'services/walletconnectv2/WalletConnectService'
 
 export enum Limit {
   DEFAULT = 'DEFAULT',
@@ -31,8 +31,8 @@ interface Props {
   setSpendLimit(limitData: SpendLimit): void
   onClose(): void
   spendLimit: SpendLimit
-  site?: PeerMeta
   requestedApprovalLimit?: BN
+  site: PeerMeta | null | undefined
 }
 
 const EditSpendLimit = ({

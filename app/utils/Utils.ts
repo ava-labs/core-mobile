@@ -128,13 +128,13 @@ export function calculateGasAndFees({
   gasPrice: BigNumber
   tokenPrice: number
   tokenDecimals?: number
-  gasLimit?: number
+  gasLimit?: number | string
 }): GasAndFees {
   const bnFee = gasLimit ? gasPrice.mul(gasLimit) : gasPrice
   const fee = bigToLocaleString(ethersBigNumberToBig(bnFee, tokenDecimals), 8)
   return {
     gasPrice: gasPrice,
-    gasLimit: gasLimit || 0,
+    gasLimit: Number(gasLimit) || 0,
     fee,
     bnFee,
     feeInCurrency: parseFloat((parseFloat(fee) * tokenPrice).toFixed(4))

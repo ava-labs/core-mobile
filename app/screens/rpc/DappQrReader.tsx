@@ -2,7 +2,6 @@ import { StyleSheet, View } from 'react-native'
 import InputText from 'components/InputText'
 import React, { useCallback, useState } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { isValidUri } from 'services/walletconnect/WalletConnectService'
 import AvaText from 'components/AvaText'
 import QrScannerAva from 'components/QrScannerAva'
 import { Popable } from 'react-native-popable'
@@ -21,10 +20,8 @@ function DappQrReader({ onScanned }: Props) {
 
   const handleQRText = useCallback(
     (value: string) => {
-      if (isValidUri(value)) {
-        setQrText(value)
-        onScanned(value)
-      }
+      setQrText(value)
+      onScanned(value)
     },
     [onScanned]
   )
