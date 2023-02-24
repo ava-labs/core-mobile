@@ -10,14 +10,16 @@ import Avatar from 'components/Avatar'
 import React, { Dispatch } from 'react'
 import { useSelector } from 'react-redux'
 import { selectAccountByAddress } from 'store/account'
-import { truncateAddress } from 'utils/Utils'
 import { txStyles } from 'screens/rpc/components/SignTransaction/SignTransaction'
+import { Limit, SpendLimit } from 'components/EditSpendLimit'
+import { UNLIMITED_SPEND_LIMIT_LABEL } from 'screens/rpc/util/useExplainTransaction'
+import { selectSelectedCurrency } from 'store/settings/currency'
+import { formatCurrency } from 'utils/FormatCurrency'
 
 export function ApproveTransaction({
   site,
   tokenToBeApproved,
   txParams,
-  displaySpendLimit,
   defaultSpendAmount,
   gasPrice,
   gasLimit,
@@ -25,14 +27,30 @@ export function ApproveTransaction({
   selectedGasFee,
   setShowCustomSpendLimit,
   setShowTxData,
+  customSpendLimit,
   ...rest
 }: ApproveTransactionData & {
   setShowCustomSpendLimit?: Dispatch<boolean>
+  customSpendLimit: SpendLimit
 }) {
   const theme = useApplicationContext().theme
   const account = useSelector(selectAccountByAddress(rest.fromAddress))
+  const selectedCurrency = useSelector(selectSelectedCurrency)
+
+  const limitValueAmount = customSpendLimit.value?.amount
+
   const hideEdit: boolean =
-    displaySpendLimit === '0' && !!setShowCustomSpendLimit
+    limitValueAmount === '0' && !!setShowCustomSpendLimit
+
+  const isUnlimited = customSpendLimit.limitType === Limit.UNLIMITED
+
+  const tokenValue = isUnlimited
+    ? `${UNLIMITED_SPEND_LIMIT_LABEL} ${tokenToBeApproved.symbol}`
+    : `${limitValueAmount} ${tokenToBeApproved.symbol}`
+
+  const fiatValue = isUnlimited
+    ? `${UNLIMITED_SPEND_LIMIT_LABEL} ${selectedCurrency}`
+    : formatCurrency(Number(limitValueAmount), selectedCurrency, true)
 
   return (
     <>
@@ -96,11 +114,17 @@ export function ApproveTransaction({
             <Space x={10} />
             <AvaText.Body1>{tokenToBeApproved?.symbol}</AvaText.Body1>
           </Row>
-          <AvaText.Body1>
-            {displaySpendLimit?.length > 18
-              ? truncateAddress(displaySpendLimit, 12)
-              : displaySpendLimit}
-          </AvaText.Body1>
+          {customSpendLimit && (
+            <View
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-end'
+              }}>
+              <AvaText.Body1>{tokenValue}</AvaText.Body1>
+              <AvaText.Body2>{fiatValue}</AvaText.Body2>
+            </View>
+          )}
         </Row>
       </View>
     </>

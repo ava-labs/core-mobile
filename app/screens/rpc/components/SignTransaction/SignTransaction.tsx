@@ -42,6 +42,7 @@ import { useNavigation, useRoute } from '@react-navigation/native'
 import { useDappConnectionContext } from 'contexts/DappConnectionContext'
 import { useDispatch, useSelector } from 'react-redux'
 import { onRequestPostApproved, selectRequestStatus } from 'store/walletConnect'
+import { hexToBN } from '@avalabs/utils-sdk'
 import RpcRequestBottomSheet from '../RpcRequestBottomSheet'
 
 const defaultErrMessage = 'Transaction Failed'
@@ -91,6 +92,10 @@ const SignTransaction = () => {
     transaction,
     displayData
   } = useExplainTransaction(request, onFailedToLoadTransaction)
+
+  const requestedApprovalLimit = displayData.approveData
+    ? hexToBN(displayData.approveData.limit)
+    : undefined
 
   useEffect(() => {
     if (!requestStatus) return
@@ -198,6 +203,7 @@ const SignTransaction = () => {
           token={displayData?.tokenToBeApproved}
           onClose={() => setShowCustomSpendLimit(!showCustomSpendLimit)}
           setSpendLimit={setSpendLimit}
+          requestedApprovalLimit={requestedApprovalLimit}
         />
       </RpcRequestBottomSheet>
     )
@@ -235,6 +241,7 @@ const SignTransaction = () => {
             selectedGasFee={selectedGasFee}
             setShowCustomSpendLimit={setShowCustomSpendLimit}
             setShowTxData={setShowData}
+            customSpendLimit={customSpendLimit}
           />
         )) ||
           ((contractType === ContractCall.ADD_LIQUIDITY ||

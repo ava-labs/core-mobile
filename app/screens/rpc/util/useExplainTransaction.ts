@@ -31,8 +31,9 @@ import { selectNetworks } from 'store/network'
 import { ChainId } from '@avalabs/chains-sdk'
 import { useFindToken } from 'contracts/contractParsers/utils/useFindToken'
 import { EthSendTransactionRpcRequest } from 'store/walletConnect/handlers/eth_sendTransaction'
+import BN from 'bn.js'
 
-const UNLIMITED_SPEND_LIMIT_LABEL = 'Unlimited'
+export const UNLIMITED_SPEND_LIMIT_LABEL = 'Unlimited'
 
 export function useExplainTransaction(
   request: EthSendTransactionRpcRequest,
@@ -61,11 +62,10 @@ export function useExplainTransaction(
     gasLimit: number
     gasPrice: BigNumber
   } | null>(null)
-  const [displaySpendLimit, setDisplaySpendLimit] = useState<string>(
-    UNLIMITED_SPEND_LIMIT_LABEL
-  )
+  const [defaultSpendLimit, setDefaultSpendLimit] = useState<BN>()
+
   const [customSpendLimit, setCustomSpendLimit] = useState<SpendLimit>({
-    limitType: Limit.UNLIMITED
+    limitType: Limit.DEFAULT
   })
   const [selectedGasFee, setSelectedGasFee] = useState<FeePreset>(
     FeePreset.Instant
@@ -107,30 +107,35 @@ export function useExplainTransaction(
         const srcTokenAddress: string =
           transaction.displayValues?.tokenToBeApproved?.address
         const spenderAddress: string =
-          transaction.displayValues?.approveData.spender || '0'
+          transaction.displayValues?.approveData.spender
         let limitAmount = ''
 
         if (customSpendData.limitType === Limit.UNLIMITED) {
           setCustomSpendLimit({
-            ...customSpendData,
-            value: undefined,
-            default: bnToLocaleString(
-              hexToBN(transaction.displayValues.approveData?.limit ?? '0')
-            )
+            limitType: Limit.UNLIMITED,
+            value: undefined
           })
           limitAmount = ethers.constants.MaxUint256.toHexString()
-          setDisplaySpendLimit(UNLIMITED_SPEND_LIMIT_LABEL)
+        } else if (customSpendData.limitType === Limit.DEFAULT) {
+          const bn = defaultSpendLimit || new BN(0)
+          setCustomSpendLimit({
+            limitType: Limit.DEFAULT,
+            value: {
+              bn,
+              amount: bnToLocaleString(
+                bn,
+                transaction.displayValues?.tokenToBeApproved?.decimals
+              )
+            }
+          })
+          limitAmount = transaction?.displayValues?.approveData?.limit
         } else {
           setCustomSpendLimit(customSpendData)
-          setDisplaySpendLimit(
-            customSpendData.limitType === Limit.CUSTOM
-              ? customSpendData.value?.amount || ''
-              : bnToLocaleString(
-                  hexToBN(transaction.displayValues.approveData?.limit ?? '0'),
-                  transaction.displayValues.tokenToBeApproved.decimals
-                )
-          )
+
+          limitAmount =
+            customSpendData.value?.bn.toString() || new BN(0).toString()
         }
+
         const web3 = new Web3()
 
         const contract = new web3.eth.Contract(
@@ -153,7 +158,7 @@ export function useExplainTransaction(
         setTransaction(updatedTransaction)
       }
     },
-    [transaction]
+    [transaction, setTransaction, defaultSpendLimit]
   )
 
   /******************************************************************************
@@ -259,6 +264,22 @@ export function useExplainTransaction(
           chainId: activeNetwork.chainId
         }
 
+        const defaultLimitBN = hexToBN(displayValues.approveData?.limit ?? '0')
+        if (!defaultSpendLimit) {
+          setDefaultSpendLimit(defaultLimitBN)
+
+          setCustomSpendLimit({
+            limitType: Limit.DEFAULT,
+            value: {
+              bn: defaultLimitBN,
+              amount: bnToLocaleString(
+                defaultLimitBN,
+                displayValues.tokenToBeApproved?.decimals
+              )
+            }
+          })
+        }
+
         setTransaction({
           id: request.payload.id,
           method: request.payload.method,
@@ -270,6 +291,7 @@ export function useExplainTransaction(
     }
 
     loadTx().catch(err => onError(err?.error))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     activeNetwork,
     avaxToken,
@@ -282,13 +304,6 @@ export function useExplainTransaction(
     txParams,
     onError
   ])
-
-  useEffect(() => {
-    // Handle transaction Approval for REVOKING spend limit
-    if (transaction?.displayValues?.tokenAmount === '0') {
-      setDisplaySpendLimit('0')
-    }
-  }, [transaction])
 
   const feeDisplayValues = useMemo(() => {
     return (
@@ -328,7 +343,6 @@ export function useExplainTransaction(
     transaction,
     setCustomFee,
     setSpendLimit,
-    displaySpendLimit,
     customSpendLimit,
     selectedGasFee
   }
