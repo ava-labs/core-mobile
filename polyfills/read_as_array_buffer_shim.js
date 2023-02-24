@@ -10,7 +10,6 @@ FileReader.prototype.readAsArrayBuffer = function (blob) {
   this._error = null
   const fr = new FileReader()
   fr.onloadend = () => {
-    // console.log('FR result', fr.result);
     const index = fr.result.indexOf(';base64,')
     if (index === -1) {
       throw Error('Not base64 payload!')
