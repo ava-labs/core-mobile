@@ -29,7 +29,7 @@ type TransferAssetParams = {
   config: AppConfig | undefined
   activeAccount: Account | undefined
   allNetworks: Networks
-  activeNetwork: Network
+  isTestnet: boolean
 }
 
 export class BridgeService {
@@ -47,7 +47,7 @@ export class BridgeService {
     config,
     activeAccount,
     allNetworks,
-    activeNetwork
+    isTestnet
   }: TransferAssetParams): Promise<TransactionResponse | undefined> {
     if (!config) {
       throw new Error('missing bridge config')
@@ -66,15 +66,9 @@ export class BridgeService {
       throw new Error('no network found')
     }
 
-    const avalancheProvider = await getAvalancheProvider(
-      allNetworks,
-      activeNetwork.isTestnet
-    )
+    const avalancheProvider = await getAvalancheProvider(allNetworks, isTestnet)
 
-    const ethereumProvider = await getEthereumProvider(
-      allNetworks,
-      activeNetwork.isTestnet
-    )
+    const ethereumProvider = await getEthereumProvider(allNetworks, isTestnet)
 
     if (!avalancheProvider || !ethereumProvider) {
       throw new Error('no providers available')
