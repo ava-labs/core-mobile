@@ -44,7 +44,8 @@ export enum COLORS_DAY {
   colorChain2 = '#00A087',
   colorChain3 = '#7C1BF21A',
   colorChain4 = '#4D00DE',
-  neutral850 = '#2A2A2D'
+  neutral850 = '#2A2A2D',
+  neutral700 = '#58585B'
 }
 
 export enum COLORS_NIGHT {
@@ -84,7 +85,8 @@ export enum COLORS_NIGHT {
   colorChain2 = '#00DDCB',
   colorChain3 = '#934AF61A',
   colorChain4 = '#DAC3FB',
-  neutral850 = '#2A2A2D'
+  neutral850 = '#2A2A2D',
+  neutral700 = '#58585B'
 }
 
 export const SECURE_ACCESS_SET = 'secureAccessSet'
