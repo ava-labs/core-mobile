@@ -1,7 +1,7 @@
 import { PeerMeta } from 'services/walletconnect/types'
 import { AppListenerEffectAPI } from 'store'
 import { JsonRpcRequest } from '@walletconnect/jsonrpc-types'
-import { RpcMethod, RpcError } from '../types'
+import { RpcError, RpcMethod } from 'store/walletConnectV2'
 
 export interface TypedJsonRpcRequest<Method extends string, Params = unknown>
   extends JsonRpcRequest<Params> {
@@ -31,7 +31,6 @@ export interface RpcRequestHandler<
     payload: { request: Request; data: ApproveData },
     listenerApi: AppListenerEffectAPI
   ) => ApproveResponse
-  hasPostApprove?: boolean
 }
 
 export type Result<Value, Error> =

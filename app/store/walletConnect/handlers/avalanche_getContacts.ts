@@ -1,7 +1,7 @@
 import { AppListenerEffectAPI } from 'store'
 import { selectContacts } from 'store/addressBook'
 import { Contact as SharedContact } from '@avalabs/types'
-import { RpcMethod } from '../types'
+import { RpcMethod } from 'store/walletConnectV2'
 import { DappRpcRequest, HandleResponse, RpcRequestHandler } from './types'
 import { mapContactToSharedContact } from './utils/contact'
 
