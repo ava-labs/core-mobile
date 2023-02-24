@@ -1,15 +1,15 @@
 import { isAnyOf } from '@reduxjs/toolkit'
 import { setActiveAccountIndex } from 'store/account'
-import { onLogIn, onLogOut } from 'store/app'
+import { onLogOut, onRehydrationComplete } from 'store/app'
 import { AppStartListening } from 'store/middleware/listener'
 import { setActive } from 'store/network'
 import {
   killSessions,
   newSession,
   onDisconnect,
+  onRequest,
   onSendRpcError,
-  onSendRpcResult,
-  addRequest
+  onSendRpcResult
 } from '../slice'
 import {
   startSession,
@@ -22,7 +22,7 @@ import {
 import { processRequest } from './requests'
 import { sendRpcResult, sendRpcError } from './responses'
 
-export const addRpcListeners = (startListening: AppStartListening) => {
+export const addWCListeners = (startListening: AppStartListening) => {
   /*********************
    * SESSION LISTENERS *
    *********************/
@@ -32,7 +32,7 @@ export const addRpcListeners = (startListening: AppStartListening) => {
   })
 
   startListening({
-    actionCreator: onLogIn,
+    actionCreator: onRehydrationComplete,
     effect: restoreSessions
   })
 
@@ -61,7 +61,7 @@ export const addRpcListeners = (startListening: AppStartListening) => {
    * RPC REQUEST LISTENERS *
    *************************/
   startListening({
-    actionCreator: addRequest,
+    actionCreator: onRequest,
     effect: processRequest
   })
 
