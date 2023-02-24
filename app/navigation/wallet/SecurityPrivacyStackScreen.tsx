@@ -10,7 +10,7 @@ import { createStackNavigator } from '@react-navigation/stack'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import RevealMnemonic from 'navigation/wallet/RevealMnemonic'
 import { QRCodeParams, SecurityPrivacyScreenProps } from 'navigation/types'
-import ConnectedDapps from 'screens/rpc/ConnectedDapps'
+import ConnectedDapps from 'screens/rpc/ConnectedDapps/ConnectedDapps'
 import CaptureDappQR from 'screens/shared/CaptureDappQR'
 
 export type SecurityStackParamList = {
