@@ -4,7 +4,6 @@ import {
   Transaction,
   TransactionDisplayValues
 } from 'screens/rpc/util/types'
-import { useActiveNetwork } from 'hooks/useActiveNetwork'
 import { BigNumber, ethers } from 'ethers'
 import { FeePreset } from 'components/NetworkFeeSelector'
 import { calculateGasAndFees } from 'utils/Utils'
@@ -28,23 +27,28 @@ import { useSelector } from 'react-redux'
 import { NetworkTokenWithBalance, selectTokensWithBalance } from 'store/balance'
 import { selectNetworkFee } from 'store/networkFee'
 import { selectNetworks } from 'store/network'
-import { ChainId } from '@avalabs/chains-sdk'
+import { ChainId, Network } from '@avalabs/chains-sdk'
 import { useFindToken } from 'contracts/contractParsers/utils/useFindToken'
-import { EthSendTransactionRpcRequest } from 'store/walletConnect/handlers/eth_sendTransaction'
 import BN from 'bn.js'
+import { CoreTypes } from '@walletconnect/types'
+import { TransactionParams } from 'store/walletConnectV2/handlers/eth_sendTransaction/utils'
 
 export const UNLIMITED_SPEND_LIMIT_LABEL = 'Unlimited'
 
-export function useExplainTransaction(
-  request: EthSendTransactionRpcRequest,
+type Args = {
+  txParams: TransactionParams | undefined
+  network: Network | undefined
+  peerMeta: CoreTypes.Metadata | null
   onError: (error?: string) => void
-) {
+}
+
+export const useExplainTransactionShared = (args: Args) => {
+  const { network, txParams, peerMeta, onError } = args
   const networkFees = useSelector(selectNetworkFee)
   const { nativeTokenPrice: tokenPrice } = useNativeTokenPrice()
-  const activeNetwork = useActiveNetwork()
   const allNetworks = useSelector(selectNetworks)
   const avaxToken = (
-    activeNetwork?.isTestnet
+    network?.isTestnet
       ? allNetworks[ChainId.AVALANCHE_TESTNET_ID]
       : allNetworks[ChainId.AVALANCHE_MAINNET_ID]
   )?.networkToken
@@ -53,11 +57,6 @@ export function useExplainTransaction(
 
   const [transaction, setTransaction] = useState<Transaction | null>(null)
 
-  const txParams =
-    request.payload?.params && request.payload?.params.length > 0
-      ? request.payload?.params[0]
-      : undefined
-  const peerMeta = request.payload.peerMeta
   const [customGas, setCustomGas] = useState<{
     gasLimit: number
     gasPrice: BigNumber
@@ -79,7 +78,7 @@ export function useExplainTransaction(
         gasPrice,
         gasLimit,
         tokenPrice,
-        tokenDecimals: activeNetwork?.networkToken.decimals
+        tokenDecimals: network?.networkToken.decimals
       })
 
       // update transaction
@@ -98,7 +97,7 @@ export function useExplainTransaction(
         return updatedTransaction
       })
     },
-    [tokenPrice, activeNetwork?.networkToken?.decimals]
+    [tokenPrice, network?.networkToken?.decimals]
   )
 
   const setSpendLimit = useCallback(
@@ -166,15 +165,17 @@ export function useExplainTransaction(
    *****************************************************************************/
   useEffect(() => {
     async function loadTx() {
+      if (!network) throw Error('Invalid network')
+
       // Get transaction description from ABIs
       const txDescription = await getTxInfo(
-        txParams?.to.toLocaleLowerCase() ?? '',
+        txParams?.to?.toLocaleLowerCase() ?? '',
         txParams?.data ?? '',
         txParams?.value ?? '',
-        activeNetwork
+        network
       )
 
-      if (request.payload && txParams && isTxParams(txParams)) {
+      if (txParams && isTxParams(txParams)) {
         // These are the default props we'll feed into the display parser later on
         // @ts-ignore
         const displayValueProps: DisplayValueParserProps = {
@@ -188,19 +189,18 @@ export function useExplainTransaction(
         // some requests will have a missing gasLimit so we need to ensure it's there
         let gasLimit: number | null
         try {
-          gasLimit = await (txParams?.gas
+          gasLimit = await (txParams.gas
             ? BigNumber.from(txParams.gas).toNumber()
             : networkFeeService.estimateGasLimit(
                 txParams.from,
                 txParams.to,
-                txParams.data,
+                txParams.data ?? '',
                 txParams.value,
-                activeNetwork
+                network
               ))
         } catch (e) {
-          // handle gas estimation errors with the correct error message
-          Logger.error('error calculating limit', e)
-          throw e
+          Logger.error('failed to calculate gas limit', e)
+          throw Error('Unable to calculate gas limit')
         }
 
         // create txParams that includes gasLimit
@@ -236,14 +236,14 @@ export function useExplainTransaction(
           displayValues = parser
             ? await parser(
                 findToken,
-                activeNetwork,
+                network,
                 txParamsWithGasLimit,
                 decodedData,
                 displayValueProps,
                 description
               )
             : parseDisplayValues(
-                activeNetwork,
+                network,
                 txParamsWithGasLimit,
                 displayValueProps,
                 description
@@ -251,17 +251,11 @@ export function useExplainTransaction(
         } catch (err) {
           Logger.error('failed to parse transaction', err)
           displayValues = parseDisplayValues(
-            activeNetwork,
+            network,
             txParamsWithGasLimit,
             displayValueProps,
             description
           )
-        }
-
-        // add metamask and chain id to transaction
-        const networkMetaData = {
-          metamaskNetworkId: activeNetwork.platformChainId,
-          chainId: activeNetwork.chainId
         }
 
         const defaultLimitBN = hexToBN(displayValues.approveData?.limit ?? '0')
@@ -281,21 +275,18 @@ export function useExplainTransaction(
         }
 
         setTransaction({
-          id: request.payload.id,
-          method: request.payload.method,
           txParams: txParamsWithGasLimit,
-          displayValues,
-          ...networkMetaData
+          displayValues: displayValues
         })
       }
     }
 
-    loadTx().catch(err => onError(err?.error))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    loadTx().catch(err => {
+      onError(err?.error || err.message)
+    })
   }, [
-    activeNetwork,
+    network,
     avaxToken,
-    request.payload,
     findToken,
     networkFees,
     peerMeta,
@@ -308,21 +299,21 @@ export function useExplainTransaction(
   const feeDisplayValues = useMemo(() => {
     return (
       networkFees &&
-      transaction?.displayValues.gasLimit &&
+      transaction?.displayValues?.gasLimit &&
       calculateGasAndFees({
         gasPrice: customGas?.gasPrice ?? networkFees.low,
         gasLimit: customGas?.gasLimit ?? transaction.displayValues.gasLimit,
         tokenPrice,
-        tokenDecimals: activeNetwork.networkToken.decimals
+        tokenDecimals: network?.networkToken.decimals
       })
     )
   }, [
-    activeNetwork.networkToken.decimals,
+    network?.networkToken.decimals,
     customGas?.gasLimit,
     customGas?.gasPrice,
     networkFees,
     tokenPrice,
-    transaction?.displayValues.gasLimit
+    transaction?.displayValues?.gasLimit
   ])
 
   const displayData: TransactionDisplayValues = useMemo(() => {
