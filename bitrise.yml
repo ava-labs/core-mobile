@@ -80,8 +80,6 @@ workflows:
       PLATFORM: iOS
   _install-and-set-env:
     steps:
-    - activate-ssh-key@4: {}
-    - git-clone@8: {}
     - restore-npm-cache@1: {}
     - yarn@0:
         inputs:
@@ -361,27 +359,3 @@ workflows:
             npm rebuild detox
 
             ./node_modules/.bin/detox test --configuration ios.internal.release.ci --cleanup
-app:
-  envs:
-  - opts:
-      is_expand: false
-    WORKDIR: .
-  - opts:
-      is_expand: false
-    ANDROID_PROJECT_LOCATION: android
-  - opts:
-      is_expand: false
-    ANDROID_MODULE: app
-  - opts:
-      is_expand: false
-    IOS_PROJECT_PATH: ios/AvaxWallet.xcworkspace
-  - opts:
-      is_expand: false
-    SLACK_WEBHOOK_URL: https://hooks.slack.com/services/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
-  - opts:
-      is_expand: false
-    APP_TITLE: Core Mobile
-meta:
-  bitrise.io:
-    stack: osx-xcode-14.2.x-ventura
-    machine_type_id: g2-m1.8core
