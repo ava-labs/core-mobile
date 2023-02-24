@@ -1,5 +1,5 @@
 import AvaText from 'components/AvaText'
-import React, { useCallback } from 'react'
+import React from 'react'
 import { StyleSheet, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -12,49 +12,28 @@ import {
 } from 'react-native-gesture-handler'
 import FlexSpacer from 'components/FlexSpacer'
 import Avatar from 'components/Avatar'
-import { WalletScreenProps } from 'navigation/types'
-import AppNavigation from 'navigation/AppNavigation'
-import { useNavigation, useRoute } from '@react-navigation/native'
-import { useDappConnectionContext } from 'contexts/DappConnectionContext'
+import { Network } from '@avalabs/chains-sdk'
 import RpcRequestBottomSheet from './RpcRequestBottomSheet'
-import { SwitchEthereumChainView } from './SwitchEthereumChain'
 
-type AddEthereumChainScreenProps = WalletScreenProps<
-  typeof AppNavigation.Modal.AddEthereumChain
->
+type Props = {
+  dappName: string
+  dappLogo: string | undefined
+  network: Network
+  onReject: () => void
+  onApprove: () => void
+}
 
-const AddEthereumChain = () => {
-  const { goBack } = useNavigation<AddEthereumChainScreenProps['navigation']>()
-  const { request, network, isExisting } =
-    useRoute<AddEthereumChainScreenProps['route']>().params
-  const { onUserApproved: onApprove, onUserRejected: onReject } =
-    useDappConnectionContext()
+const AddEthereumChainView = ({
+  network,
+  dappName,
+  dappLogo,
+  onReject,
+  onApprove
+}: Props) => {
   const theme = useApplicationContext().theme
-  const peerMeta = request.payload.peerMeta
-
-  const rejectAndClose = useCallback(() => {
-    onReject(request)
-    goBack()
-  }, [goBack, onReject, request])
-
-  const approveAndClose = useCallback(() => {
-    onApprove(request, { network, isExisting })
-    goBack()
-  }, [goBack, isExisting, network, onApprove, request])
-
-  if (isExisting) {
-    return (
-      <SwitchEthereumChainView
-        request={request}
-        network={network}
-        onApprove={approveAndClose}
-        onReject={rejectAndClose}
-      />
-    )
-  }
 
   return (
-    <RpcRequestBottomSheet onClose={rejectAndClose}>
+    <RpcRequestBottomSheet onClose={onReject}>
       <ScrollView>
         <NativeViewGestureHandler>
           <SafeAreaView style={styles.safeView}>
@@ -67,11 +46,7 @@ const AddEthereumChain = () => {
                   width: 80,
                   backgroundColor: theme.colorBg3
                 }}>
-                <Avatar.Custom
-                  name={peerMeta?.name ?? ''}
-                  size={48}
-                  logoUri={peerMeta?.icons[0]}
-                />
+                <Avatar.Custom name={dappName} size={48} logoUri={dappLogo} />
               </OvalTagBg>
             </View>
             <Space y={16} />
@@ -95,11 +70,11 @@ const AddEthereumChain = () => {
             />
             <FlexSpacer minHeight={30} />
             <View style={styles.actionContainer}>
-              <AvaButton.PrimaryMedium onPress={approveAndClose}>
+              <AvaButton.PrimaryMedium onPress={onApprove}>
                 Approve
               </AvaButton.PrimaryMedium>
               <Space y={21} />
-              <AvaButton.SecondaryMedium onPress={rejectAndClose}>
+              <AvaButton.SecondaryMedium onPress={onReject}>
                 Reject
               </AvaButton.SecondaryMedium>
             </View>
@@ -110,7 +85,7 @@ const AddEthereumChain = () => {
   )
 }
 
-function DetailItem({ title, value }: { title: string; value: string }) {
+const DetailItem = ({ title, value }: { title: string; value: string }) => {
   const { theme } = useApplicationContext()
 
   return (
@@ -148,4 +123,4 @@ const styles = StyleSheet.create({
   }
 })
 
-export default AddEthereumChain
+export default AddEthereumChainView
