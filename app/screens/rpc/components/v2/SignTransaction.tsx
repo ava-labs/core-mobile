@@ -39,6 +39,7 @@ import { useDappConnectionV2 } from 'hooks/useDappConnectionV2'
 import { selectNetwork } from 'store/network'
 import { NetworkLogo } from 'screens/network/NetworkLogo'
 import { isAddressApproved } from 'store/walletConnectV2/handlers/eth_sign/utils'
+import { hexToBN } from '@avalabs/utils-sdk'
 import RpcRequestBottomSheet from '../shared/RpcRequestBottomSheet'
 
 const defaultErrMessage = 'Transaction failed'
@@ -96,6 +97,10 @@ const SignTransaction = () => {
     transaction,
     displayData
   } = useExplainTransactionV2(request, txParams, onFailedToLoadTransaction)
+
+  const requestedApprovalLimit = displayData.approveData
+    ? hexToBN(displayData.approveData.limit)
+    : undefined
 
   useEffect(() => {
     if (!requestStatus) return
@@ -222,6 +227,7 @@ const SignTransaction = () => {
           token={displayData?.tokenToBeApproved}
           onClose={() => setShowCustomSpendLimit(!showCustomSpendLimit)}
           setSpendLimit={setSpendLimit}
+          requestedApprovalLimit={requestedApprovalLimit}
         />
       </RpcRequestBottomSheet>
     )
@@ -258,6 +264,7 @@ const SignTransaction = () => {
             selectedGasFee={selectedGasFee}
             setShowCustomSpendLimit={setShowCustomSpendLimit}
             setShowTxData={setShowData}
+            customSpendLimit={customSpendLimit}
           />
         )) ||
           ((contractType === ContractCall.ADD_LIQUIDITY ||
