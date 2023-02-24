@@ -5,30 +5,32 @@ import React, {
   useLayoutEffect,
   useState
 } from 'react'
-import { FlatList } from 'react-native'
+import { FlatList, ListRenderItemInfo, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import AvaButton from 'components/AvaButton'
 import AvaListItem from 'components/AvaListItem'
-import Logger from 'utils/Logger'
 import { Space } from 'components/Space'
-import { useDappConnectionContext } from 'contexts/DappConnectionContext'
 import ZeroState from 'components/ZeroState'
 import AddSVG from 'components/svg/AddSVG'
 import Separator from 'components/Separator'
-import ClearSVG from 'components/svg/ClearSVG'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { SecurityPrivacyScreenProps } from 'navigation/types'
 import AvaText from 'components/AvaText'
-import Avatar from 'components/Avatar'
 import { Checkbox } from 'components/Checkbox'
-import { Row } from 'components/Row'
-import FlexSpacer from 'components/FlexSpacer'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useSelector } from 'react-redux'
 import { ApprovedAppMeta, selectApprovedDApps } from 'store/walletConnect'
-import { DeepLinkOrigin } from 'contexts/DappConnectionContext/types'
-
+import WalletConnectService, {
+  Session
+} from 'services/walletconnectv2/WalletConnectService'
+import { useDappConnectionV2 } from 'hooks/useDappConnectionV2'
+import { useDappConnectionV1 } from 'hooks/useDappConnectionV1'
+import { useDeeplink } from 'contexts/DeeplinkContext/DeeplinkContext'
+import { DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
+import { WalletConnectVersions } from 'store/walletConnectV2'
+import { Dapp } from './types'
+import { DappItem } from './DappItem'
 interface Props {
   goBack: () => void
 }
@@ -37,16 +39,42 @@ type NavigationProp = SecurityPrivacyScreenProps<
   typeof AppNavigation.SecurityPrivacy.QRCode
 >['navigation']
 
+const GET_DAPPS_V2_INTERVAL = 5000 // 5s
+
 const ConnectedDapps: FC<Props> = ({ goBack }) => {
-  const { setPendingDeepLink, killSessions } = useDappConnectionContext()
+  const { setPendingDeepLink } = useDeeplink()
   const [isEditing, setIsEditing] = useState(false)
   const [allSelected, setAllSelected] = useState(false)
-  const [sessionsToRemove, setSessionsToRemove] = useState<ApprovedAppMeta[]>(
-    []
-  )
-  const connectedDAppsSessions = useSelector(selectApprovedDApps)
+  const [dappsToRemove, setDappsToRemove] = useState<Dapp[]>([])
   const navigation = useNavigation<NavigationProp>()
   const theme = useApplicationContext().theme
+
+  const { killSessions: killSessionsV1 } = useDappConnectionV1()
+  const { killSessions: killSessionsV2 } = useDappConnectionV2()
+  const approvedDappsV1 = useSelector(selectApprovedDApps)
+  const [approvedDappsV2, setApprovedDappsV2] = useState(
+    WalletConnectService.getSessions()
+  )
+
+  const allApprovedDapps = [
+    ...approvedDappsV1.map<Dapp>(dapp => ({
+      id: dapp.peerId,
+      dapp,
+      version: WalletConnectVersions.V1
+    })),
+    ...approvedDappsV2.map<Dapp>(dapp => ({
+      id: dapp.topic,
+      dapp: dapp,
+      version: WalletConnectVersions.V2
+    }))
+  ]
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setApprovedDappsV2(WalletConnectService.getSessions())
+    }, GET_DAPPS_V2_INTERVAL)
+    return () => clearInterval(id)
+  }, [])
 
   useEffect(() => {
     const beforeBackListener = navigation.addListener('beforeRemove', e => {
@@ -55,8 +83,8 @@ const ConnectedDapps: FC<Props> = ({ goBack }) => {
       if (isEditing) {
         setIsEditing(false)
         setAllSelected(false)
-        if (sessionsToRemove.length > 0) {
-          setSessionsToRemove([])
+        if (dappsToRemove.length > 0) {
+          setDappsToRemove([])
         }
       } else {
         navigation.dispatch(e.data.action)
@@ -66,15 +94,15 @@ const ConnectedDapps: FC<Props> = ({ goBack }) => {
     return () => {
       navigation.removeListener('beforeRemove', beforeBackListener)
     }
-  }, [isEditing, navigation, sessionsToRemove, setSessionsToRemove])
+  }, [isEditing, navigation, dappsToRemove, setDappsToRemove])
 
   const getHeaderTitle = useCallback(() => {
     return (
       <AvaText.Heading1>
-        {isEditing ? `${sessionsToRemove.length} Selected` : ''}
+        {isEditing ? `${dappsToRemove.length} Selected` : ''}
       </AvaText.Heading1>
     )
-  }, [isEditing, sessionsToRemove.length])
+  }, [isEditing, dappsToRemove.length])
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -83,18 +111,40 @@ const ConnectedDapps: FC<Props> = ({ goBack }) => {
   }, [getHeaderTitle, navigation])
 
   async function handleDelete() {
-    killSessions(sessionsToRemove)
+    const dappsV2ToRemove: Session[] = [],
+      dappsV1ToRemove: ApprovedAppMeta[] = []
+
+    for (const item of dappsToRemove) {
+      if (item.version === WalletConnectVersions.V2) {
+        dappsV2ToRemove.push(item.dapp)
+      }
+
+      if (item.version === WalletConnectVersions.V1) {
+        dappsV1ToRemove.push(item.dapp)
+      }
+    }
+
     setIsEditing(false)
-    setSessionsToRemove([])
+    setDappsToRemove([])
+
+    killSessionsV2(dappsV2ToRemove)
+    setApprovedDappsV2(dapps =>
+      dapps.filter(dapp =>
+        dappsV2ToRemove.some(dappToRemove => dappToRemove.topic !== dapp.topic)
+      )
+    )
+
+    killSessionsV1(dappsV1ToRemove)
   }
 
-  function handleSelect(item: ApprovedAppMeta) {
-    if (sessionsToRemove?.some(it => it.peerId === item.peerId)) {
-      const removed = sessionsToRemove?.filter(it => it.peerId !== item.peerId)
-      setSessionsToRemove(removed)
-    } else {
-      setSessionsToRemove([...sessionsToRemove, item])
-    }
+  function handleSelect(item: Dapp) {
+    setDappsToRemove(current => {
+      if (current.some(it => it.id === item.id)) {
+        return current.filter(it => it.id !== item.id)
+      }
+
+      return [...current, item]
+    })
   }
 
   function handleAdd() {
@@ -115,12 +165,37 @@ const ConnectedDapps: FC<Props> = ({ goBack }) => {
     setAllSelected(currentState => {
       const newState = !currentState
       if (newState) {
-        setSessionsToRemove(connectedDAppsSessions)
+        setDappsToRemove(allApprovedDapps)
       } else {
-        setSessionsToRemove([])
+        setDappsToRemove([])
       }
       return newState
     })
+  }
+
+  const handleClear = async (item: Dapp) => {
+    if (item.version === WalletConnectVersions.V1) {
+      killSessionsV1([item.dapp])
+    } else {
+      killSessionsV2([item.dapp])
+      setApprovedDappsV2(dapps =>
+        dapps.filter(dapp => dapp.topic !== item.dapp.topic)
+      )
+    }
+  }
+
+  const renderItem = (item: ListRenderItemInfo<Dapp>) => {
+    const selected = dappsToRemove.some(dapp => dapp.id === item.item.id)
+
+    return (
+      <DappItem
+        item={item.item}
+        isEditing={isEditing}
+        onClear={handleClear}
+        onSelect={handleSelect}
+        selected={selected}
+      />
+    )
   }
 
   return (
@@ -133,7 +208,7 @@ const ConnectedDapps: FC<Props> = ({ goBack }) => {
       <Space y={32} />
       <FlatList
         ListHeaderComponent={
-          connectedDAppsSessions.length > 0 ? (
+          allApprovedDapps.length > 0 ? (
             <>
               {isEditing ? (
                 <AvaListItem.Base
@@ -168,102 +243,22 @@ const ConnectedDapps: FC<Props> = ({ goBack }) => {
         }
         ListEmptyComponent={<ZeroState.Sites onAddNewConnection={handleAdd} />}
         contentContainerStyle={{ flexGrow: 1 }}
-        data={connectedDAppsSessions}
-        renderItem={({ item, index }) => (
-          <ConnectionListItem
-            item={item}
-            index={index}
-            isEditing={isEditing}
-            onSelect={handleSelect}
-            selected={sessionsToRemove?.some(it => it.peerId === item.peerId)}
-          />
-        )}
+        data={allApprovedDapps}
+        renderItem={renderItem}
       />
       {isEditing && (
-        <>
-          <FlexSpacer />
+        <View>
           <AvaButton.PrimaryLarge
-            disabled={sessionsToRemove.length === 0}
+            disabled={dappsToRemove.length === 0}
             style={{ marginHorizontal: 16 }}
             textColor={theme.colorError}
             onPress={handleDelete}>
             Delete
           </AvaButton.PrimaryLarge>
-          <Space y={75} />
-        </>
+          <Space y={24} />
+        </View>
       )}
     </SafeAreaView>
-  )
-}
-
-interface ListItemProps {
-  item: ApprovedAppMeta
-  index: number
-  isEditing: boolean
-  onSelect: (item: ApprovedAppMeta) => void
-  selected: boolean
-}
-
-export function ConnectionListItem({
-  item,
-  index,
-  isEditing,
-  onSelect,
-  selected
-}: ListItemProps) {
-  const theme = useApplicationContext().theme
-  const { killSessions } = useDappConnectionContext()
-
-  async function killSession() {
-    killSessions([item])
-  }
-
-  const peerMeta = item.peerMeta
-  const iconCount = peerMeta?.icons?.length ?? 0
-
-  // try to get the icon with the highest resolution
-  const iconUrl =
-    iconCount > 2
-      ? peerMeta?.icons[2]
-      : iconCount > 1
-      ? peerMeta?.icons[1]
-      : iconCount === 1
-      ? peerMeta?.icons[0]
-      : undefined
-
-  const url = item.peerMeta?.url
-    ?.replace(/^https?:\/\//, '')
-    ?.replace('www.', '')
-
-  Logger.warn(`iconUrl: ${iconUrl}`)
-
-  return (
-    <AvaListItem.Base
-      key={index}
-      leftComponent={
-        <Row style={{ alignItems: 'center' }}>
-          {isEditing && (
-            <>
-              <Checkbox selected={selected} onPress={() => onSelect(item)} />
-              <Space x={16} />
-            </>
-          )}
-          <Avatar.Custom
-            name={item.peerMeta?.name ?? 'Unknown'}
-            logoUri={iconUrl}
-          />
-        </Row>
-      }
-      title={url ?? 'unknown'}
-      rightComponent={
-        isEditing ? null : (
-          <AvaButton.Base onPress={killSession}>
-            <ClearSVG color={theme.white} backgroundColor={theme.background} />
-          </AvaButton.Base>
-        )
-      }
-      rightComponentVerticalAlignment={'center'}
-    />
   )
 }
 
