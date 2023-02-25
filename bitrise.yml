@@ -157,10 +157,6 @@ workflows:
     - opts:
         is_expand: false
       ANDROID_BUILD_VARIANT: externalRelease
-    meta:
-      bitrise.io:
-        stack: osx-xcode-14.2.x-ventura
-        machine_type_id: g2.8core
   android-internal:
     steps:
     - deploy-to-bitrise-io@2: {}
@@ -187,10 +183,6 @@ workflows:
     - opts:
         is_expand: false
       APP_TITLE: Core Mobile Internal
-    meta:
-      bitrise.io:
-        stack: osx-xcode-14.2.x-ventura
-        machine_type_id: g2.8core
   android-internal-detox-test:
     before_run:
     - _install-and-set-env
@@ -230,10 +222,6 @@ workflows:
             npm rebuild detox
 
             ./node_modules/.bin/detox test --configuration android.internal.release.ci --cleanup
-    meta:
-      bitrise.io:
-        stack: osx-xcode-14.2.x-ventura
-        machine_type_id: g2.8core
   ios:
     steps:
     - deploy-to-itunesconnect-application-loader@1:
@@ -353,7 +341,3 @@ app:
   - opts:
       is_expand: false
     APP_TITLE: Core Mobile
-meta:
-  bitrise.io:
-    stack: osx-xcode-14.2.x-ventura
-    machine_type_id: g2-m1.8core
