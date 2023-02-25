@@ -1,29 +1,6 @@
 format_version: "11"
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 project_type: react-native
-trigger_map:
-- push_branch: release/*
-  pipeline: build-apps-external
-- push_branch: development
-  pipeline: build-apps-internal
-- tag: '*rc*'
-  pipeline: build-apps-external
-pipelines:
-  build-apps-internal:
-    stages:
-    - build-and-deploy-internal: {}
-  build-apps-external:
-    stages:
-    - build-and-deploy-external: {}
-stages:
-  build-and-deploy-internal:
-    workflows:
-    - android-internal: {}
-    - ios-internal: {}
-  build-and-deploy-external:
-    workflows:
-    - android: {}
-    - ios: {}
 workflows:
   _build-android:
     steps:
