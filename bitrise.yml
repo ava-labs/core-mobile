@@ -336,3 +336,24 @@ workflows:
             npm rebuild detox
 
             ./node_modules/.bin/detox test --configuration ios.internal.release.ci --cleanup
+app:
+  envs:
+  - opts:
+      is_expand: false
+    WORKDIR: "."
+  - opts:
+      is_expand: false
+    ANDROID_PROJECT_LOCATION: android
+  - opts:
+      is_expand: false
+    ANDROID_MODULE: app
+  - opts:
+      is_expand: false
+    IOS_PROJECT_PATH: ios/AvaxWallet.xcworkspace
+  - opts:
+      is_expand: false
+    APP_TITLE: Core Mobile
+meta:
+  bitrise.io:
+    stack: osx-xcode-14.2.x-ventura
+    machine_type_id: g2-m1.8core
