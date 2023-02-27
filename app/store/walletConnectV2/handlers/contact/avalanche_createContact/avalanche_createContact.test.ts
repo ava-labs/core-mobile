@@ -1,20 +1,13 @@
 import { ethErrors } from 'eth-rpc-errors'
 import { RpcMethod } from 'store/walletConnectV2'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
-import mockAccounts from 'tests/fixtures/accounts.json'
 import AppNavigation from 'navigation/AppNavigation'
 import * as Navigation from 'utils/Navigation'
-import { setActiveAccountIndex } from 'store/account'
-import { avalancheSelectAccountHandler as handler } from './avalanche_selectAccount'
+import * as uuid from 'uuid'
+import { addContact } from 'store/addressBook'
+import { avalancheCreateContactHandler as handler } from './avalanche_createContact'
 
-jest.mock('store/account', () => {
-  const actual = jest.requireActual('store/account')
-  return {
-    ...actual,
-    selectAccounts: () => mockAccounts,
-    selectActiveAccount: () => mockAccounts[0]
-  }
-})
+jest.mock('uuid')
 
 const mockNavigate = jest.fn()
 jest.spyOn(Navigation, 'navigate').mockImplementation(mockNavigate)
@@ -27,7 +20,7 @@ const mockListenerApi = {
 } as any
 
 const testMethod =
-  'avalanche_selectAccount' as RpcMethod.AVALANCHE_SELECT_ACCOUNT
+  'avalanche_createContact' as RpcMethod.AVALANCHE_CREATE_CONTACT
 
 const createRequest = (params: unknown) => {
   return {
@@ -50,12 +43,12 @@ const createRequest = (params: unknown) => {
 const testHandleInvalidParams = async (params: unknown) => {
   const testRequest = createRequest(params)
 
-  const result = await handler.handle(testRequest, mockListenerApi)
+  const result = await handler.handle(testRequest)
 
   expect(result).toEqual({
     success: false,
     error: ethErrors.rpc.invalidParams({
-      message: 'Account index is invalid'
+      message: 'Contact is invalid'
     })
   })
 }
@@ -74,54 +67,42 @@ const testApproveInvalidData = async (data: unknown) => {
   })
 }
 
-describe('avalanche_selectAccount handler', () => {
+describe('avalanche_createContact handler', () => {
   it('should contain correct methods', () => {
-    expect(handler.methods).toEqual(['avalanche_selectAccount'])
+    expect(handler.methods).toEqual(['avalanche_createContact'])
   })
 
   describe('handle', () => {
     // eslint-disable-next-line jest/expect-expect
     it('should return error when params are invalid', async () => {
-      const invalidParamsScenarios = [null, [], [null], [-1], ['1']]
+      const invalidParamsScenarios = [null, [], [null], [{ name: 'Bob' }]]
 
       for (const scenario of invalidParamsScenarios) {
         await testHandleInvalidParams(scenario)
       }
     })
 
-    it('should return success when requested account is already active', async () => {
-      const testRequest = createRequest([0])
-
-      const result = await handler.handle(testRequest, mockListenerApi)
-
-      expect(result).toEqual({ success: true, value: null })
-    })
-
-    it('should return error when requested account does not exist', async () => {
-      const testRequest = createRequest([22])
-
-      const result = await handler.handle(testRequest, mockListenerApi)
-
-      expect(result).toEqual({
-        success: false,
-        error: ethErrors.rpc.resourceNotFound({
-          message: 'Requested account does not exist'
-        })
-      })
-    })
-
     it('should display prompt and return success', async () => {
-      const testRequest = createRequest([1])
+      jest.spyOn(uuid, 'v4').mockImplementationOnce(() => 'testId')
 
-      const result = await handler.handle(testRequest, mockListenerApi)
+      const testContact = {
+        name: 'Bob',
+        addressBTC: 'tb1qjmapax0vtca726g8kaermd5rzdljql66esxs49',
+        address: '0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318'
+      }
+
+      const testRequest = createRequest([testContact])
+
+      const result = await handler.handle(testRequest)
 
       expect(mockNavigate).toHaveBeenCalledWith({
         name: AppNavigation.Root.Wallet,
         params: {
-          screen: AppNavigation.Modal.SelectAccountV2,
+          screen: AppNavigation.Modal.CreateRemoveContactV2,
           params: {
             request: testRequest,
-            account: mockAccounts[1]
+            contact: { ...testContact, id: 'testId' },
+            action: 'create'
           }
         }
       })
@@ -136,8 +117,14 @@ describe('avalanche_selectAccount handler', () => {
       const invalidDataScenarios = [
         null,
         {},
-        { account: null },
-        { account: { address: '0x3B0d3329ec01047F1A03CcA8106f2915AdFDC3dD' } }
+        { contact: null },
+        {
+          contact: {
+            name: 'Bob',
+            addressBTC: 'tb1qjmapax0vtca726g8kaermd5rzdljql66esxs49',
+            address: '0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318'
+          }
+        }
       ]
 
       for (const scenario of invalidDataScenarios) {
@@ -146,15 +133,34 @@ describe('avalanche_selectAccount handler', () => {
     })
 
     it('should set requested account to active and return success', async () => {
-      const testRequest = createRequest([1])
-      const requestedAccount = mockAccounts[1]
+      const testContact = {
+        id: '1aec34f6-308d-4962-ab1b-283504cc0960',
+        name: 'Bob',
+        addressBTC: 'tb1qjmapax0vtca726g8kaermd5rzdljql66esxs49',
+        address: '0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318'
+      }
+
+      const testRequest = createRequest([
+        {
+          name: 'Bob',
+          addressBTC: 'tb1qjmapax0vtca726g8kaermd5rzdljql66esxs49',
+          address: '0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318'
+        }
+      ])
 
       const result = await handler.approve(
-        { request: testRequest, data: { account: requestedAccount } },
+        { request: testRequest, data: { contact: testContact } },
         mockListenerApi
       )
 
-      expect(mockDispatch).toHaveBeenCalledWith(setActiveAccountIndex(1))
+      expect(mockDispatch).toHaveBeenCalledWith(
+        addContact({
+          address: testContact.address,
+          addressBtc: testContact.addressBTC,
+          title: testContact.name,
+          id: testContact.id
+        })
+      )
 
       expect(result).toEqual({ success: true, value: [] })
     })

@@ -41,8 +41,9 @@ class AvalancheRemoveContactHandler
       }
     }
     const contactId = result.data[0].id
-
+    console.error(contactId)
     const existingContacts = selectContacts(getState())
+    console.error(existingContacts)
     const existingContact = existingContacts[contactId]
 
     if (!existingContact) {

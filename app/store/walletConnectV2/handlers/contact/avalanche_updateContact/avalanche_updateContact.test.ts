@@ -1,18 +1,17 @@
 import { ethErrors } from 'eth-rpc-errors'
 import { RpcMethod } from 'store/walletConnectV2'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
-import mockAccounts from 'tests/fixtures/accounts.json'
+import mockContacts from 'tests/fixtures/contacts.json'
 import AppNavigation from 'navigation/AppNavigation'
 import * as Navigation from 'utils/Navigation'
-import { setActiveAccountIndex } from 'store/account'
-import { avalancheSelectAccountHandler as handler } from './avalanche_selectAccount'
+import { addContact } from 'store/addressBook'
+import { avalancheUpdateContactHandler as handler } from './avalanche_updateContact'
 
-jest.mock('store/account', () => {
-  const actual = jest.requireActual('store/account')
+jest.mock('store/addressBook', () => {
+  const actual = jest.requireActual('store/addressBook')
   return {
     ...actual,
-    selectAccounts: () => mockAccounts,
-    selectActiveAccount: () => mockAccounts[0]
+    selectContacts: () => mockContacts
   }
 })
 
@@ -27,7 +26,7 @@ const mockListenerApi = {
 } as any
 
 const testMethod =
-  'avalanche_selectAccount' as RpcMethod.AVALANCHE_SELECT_ACCOUNT
+  'avalanche_updateContact' as RpcMethod.AVALANCHE_UPDATE_CONTACT
 
 const createRequest = (params: unknown) => {
   return {
@@ -55,7 +54,7 @@ const testHandleInvalidParams = async (params: unknown) => {
   expect(result).toEqual({
     success: false,
     error: ethErrors.rpc.invalidParams({
-      message: 'Account index is invalid'
+      message: 'Contact is invalid'
     })
   })
 }
@@ -74,54 +73,60 @@ const testApproveInvalidData = async (data: unknown) => {
   })
 }
 
-describe('avalanche_selectAccount handler', () => {
+describe('avalanche_updateContact handler', () => {
   it('should contain correct methods', () => {
-    expect(handler.methods).toEqual(['avalanche_selectAccount'])
+    expect(handler.methods).toEqual(['avalanche_updateContact'])
   })
 
   describe('handle', () => {
     // eslint-disable-next-line jest/expect-expect
     it('should return error when params are invalid', async () => {
-      const invalidParamsScenarios = [null, [], [null], [-1], ['1']]
+      const invalidParamsScenarios = [null, [], [null], [{ name: 'Bob' }]]
 
       for (const scenario of invalidParamsScenarios) {
         await testHandleInvalidParams(scenario)
       }
     })
 
-    it('should return success when requested account is already active', async () => {
-      const testRequest = createRequest([0])
+    it('should return error when requested contact does not exist', async () => {
+      const testContact = {
+        id: 'someId',
+        name: 'Bob',
+        addressBTC: 'tb1qjmapax0vtca726g8kaermd5rzdljql66esxs49',
+        address: '0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318'
+      }
 
-      const result = await handler.handle(testRequest, mockListenerApi)
-
-      expect(result).toEqual({ success: true, value: null })
-    })
-
-    it('should return error when requested account does not exist', async () => {
-      const testRequest = createRequest([22])
+      const testRequest = createRequest([testContact])
 
       const result = await handler.handle(testRequest, mockListenerApi)
 
       expect(result).toEqual({
         success: false,
         error: ethErrors.rpc.resourceNotFound({
-          message: 'Requested account does not exist'
+          message: 'Contact does not exist'
         })
       })
     })
 
     it('should display prompt and return success', async () => {
-      const testRequest = createRequest([1])
+      const testContact = {
+        id: '1aec34f6-308d-4962-ab1b-283504cc0960',
+        name: 'Bob2',
+        addressBTC: 'tb1qjmapax0vtca726g8kaermd5rzdljql66esxs49',
+        address: '0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318'
+      }
+
+      const testRequest = createRequest([testContact])
 
       const result = await handler.handle(testRequest, mockListenerApi)
 
       expect(mockNavigate).toHaveBeenCalledWith({
         name: AppNavigation.Root.Wallet,
         params: {
-          screen: AppNavigation.Modal.SelectAccountV2,
+          screen: AppNavigation.Modal.UpdateContactV2,
           params: {
             request: testRequest,
-            account: mockAccounts[1]
+            contact: testContact
           }
         }
       })
@@ -136,8 +141,14 @@ describe('avalanche_selectAccount handler', () => {
       const invalidDataScenarios = [
         null,
         {},
-        { account: null },
-        { account: { address: '0x3B0d3329ec01047F1A03CcA8106f2915AdFDC3dD' } }
+        { contact: null },
+        {
+          contact: {
+            name: 'Bob',
+            address: '0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318',
+            addressBTC: 'tb1qjmapax0vtca726g8kaermd5rzdljql66esxs49'
+          }
+        }
       ]
 
       for (const scenario of invalidDataScenarios) {
@@ -145,16 +156,29 @@ describe('avalanche_selectAccount handler', () => {
       }
     })
 
-    it('should set requested account to active and return success', async () => {
-      const testRequest = createRequest([1])
-      const requestedAccount = mockAccounts[1]
+    it('should update contact and return success', async () => {
+      const testContact = {
+        id: '1aec34f6-308d-4962-ab1b-283504cc0960',
+        name: 'Bob2',
+        addressBTC: 'tb1qjmapax0vtca726g8kaermd5rzdljql66esxs49',
+        address: '0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318'
+      }
+
+      const testRequest = createRequest([testContact])
 
       const result = await handler.approve(
-        { request: testRequest, data: { account: requestedAccount } },
+        { request: testRequest, data: { contact: testContact } },
         mockListenerApi
       )
 
-      expect(mockDispatch).toHaveBeenCalledWith(setActiveAccountIndex(1))
+      expect(mockDispatch).toHaveBeenCalledWith(
+        addContact({
+          address: testContact.address,
+          addressBtc: testContact.addressBTC,
+          title: testContact.name,
+          id: testContact.id
+        })
+      )
 
       expect(result).toEqual({ success: true, value: [] })
     })
