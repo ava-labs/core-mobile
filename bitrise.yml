@@ -1,29 +1,6 @@
 format_version: "11"
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 project_type: react-native
-trigger_map:
-- push_branch: release/*
-  pipeline: build-apps-external
-- push_branch: development
-  pipeline: build-apps-internal
-- tag: '*rc*'
-  pipeline: build-apps-external
-pipelines:
-  build-apps-internal:
-    stages:
-    - build-and-deploy-internal: {}
-  build-apps-external:
-    stages:
-    - build-and-deploy-external: {}
-stages:
-  build-and-deploy-internal:
-    workflows:
-    - android-internal: {}
-    - ios-internal: {}
-  build-and-deploy-external:
-    workflows:
-    - android: {}
-    - ios: {}
 workflows:
   _build-android:
     steps:
@@ -80,8 +57,6 @@ workflows:
       PLATFORM: iOS
   _install-and-set-env:
     steps:
-    - activate-ssh-key@4: {}
-    - git-clone@8: {}
     - restore-npm-cache@1: {}
     - yarn@0:
         inputs:
@@ -182,10 +157,6 @@ workflows:
     - opts:
         is_expand: false
       ANDROID_BUILD_VARIANT: externalRelease
-    meta:
-      bitrise.io:
-        stack: osx-xcode-14.2.x-ventura
-        machine_type_id: g2.8core
   android-internal:
     steps:
     - deploy-to-bitrise-io@2: {}
@@ -212,10 +183,6 @@ workflows:
     - opts:
         is_expand: false
       APP_TITLE: Core Mobile Internal
-    meta:
-      bitrise.io:
-        stack: osx-xcode-14.2.x-ventura
-        machine_type_id: g2.8core
   android-internal-detox-test:
     before_run:
     - _install-and-set-env
@@ -255,10 +222,6 @@ workflows:
             npm rebuild detox
 
             ./node_modules/.bin/detox test --configuration android.internal.release.ci --cleanup
-    meta:
-      bitrise.io:
-        stack: osx-xcode-14.2.x-ventura
-        machine_type_id: g2.8core
   ios:
     steps:
     - deploy-to-itunesconnect-application-loader@1:
@@ -365,7 +328,7 @@ app:
   envs:
   - opts:
       is_expand: false
-    WORKDIR: .
+    WORKDIR: "."
   - opts:
       is_expand: false
     ANDROID_PROJECT_LOCATION: android
@@ -377,11 +340,4 @@ app:
     IOS_PROJECT_PATH: ios/AvaxWallet.xcworkspace
   - opts:
       is_expand: false
-    SLACK_WEBHOOK_URL: https://hooks.slack.com/services/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
-  - opts:
-      is_expand: false
     APP_TITLE: Core Mobile
-meta:
-  bitrise.io:
-    stack: osx-xcode-14.2.x-ventura
-    machine_type_id: g2-m1.8core
