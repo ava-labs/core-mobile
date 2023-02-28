@@ -5,20 +5,30 @@ import { networkSchema } from '../chain/utils'
 import { accountSchema } from '../account/avalanche_selectAccount/utils'
 import { EthSignRpcRequest } from './eth_sign'
 
+const messageSchema = z.string().describe('message')
+const addressSchema = z.string().describe('address')
+
+// https://github.com/ethereum/go-ethereum/pull/2940
 const personalSignSchema = z.object({
   method: z.literal(RpcMethod.PERSONAL_SIGN),
   params: z.union([
-    z.tuple([z.string(), z.string()]),
-    z.tuple([z.string(), z.string(), z.string().optional()])
+    z.tuple([messageSchema, addressSchema]),
+    z.tuple([
+      messageSchema,
+      addressSchema,
+      z.string().optional().describe('password')
+    ])
   ])
 })
 
+// https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_sign
 const ethSignSchema = z.object({
   method: z.literal(RpcMethod.ETH_SIGN),
-  params: z.tuple([z.string(), z.string()])
+  params: z.tuple([addressSchema, messageSchema])
 })
 
 // https://eips.ethereum.org/EIPS/eip-712#specification-of-the-eth_signtypeddata-json-rpc
+// https://docs.metamask.io/guide/signing-data.html#signtypeddata-v4
 export const typedDataSchema = z.object({
   types: z
     .object({ EIP712Domain: z.array(z.any()) })
@@ -43,22 +53,23 @@ export type OldTypedData = z.infer<typeof oldTypedDataSchema>
 
 const ethSignTypedDataSchema = z.object({
   method: z.literal(RpcMethod.SIGN_TYPED_DATA),
-  params: z.tuple([oldTypedDataSchema, z.string()])
+  params: z.tuple([oldTypedDataSchema, addressSchema])
 })
 
 const ethSignTypedDataV1Schema = z.object({
   method: z.literal(RpcMethod.SIGN_TYPED_DATA_V1),
-  params: z.tuple([oldTypedDataSchema, z.string()])
+  params: z.tuple([oldTypedDataSchema, addressSchema])
 })
 
+const dataSchema = z.string().describe('data')
 const ethSignTypedDataV3Schema = z.object({
   method: z.literal(RpcMethod.SIGN_TYPED_DATA_V3),
-  params: z.tuple([z.string(), z.string()])
+  params: z.tuple([addressSchema, dataSchema])
 })
 
 const ethSignTypedDataV4Schema = z.object({
   method: z.literal(RpcMethod.SIGN_TYPED_DATA_V4),
-  params: z.tuple([z.string(), z.string()])
+  params: z.tuple([addressSchema, dataSchema])
 })
 
 const paramsSchema = z
