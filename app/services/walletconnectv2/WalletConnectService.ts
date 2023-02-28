@@ -46,7 +46,16 @@ export type WalletConnectCallbacks = {
 }
 
 class WalletConnectService {
-  private signClient: SignClient | undefined
+  private _signClient: SignClient | undefined
+
+  private get signClient() {
+    assertNotUndefined(this._signClient)
+    return this._signClient
+  }
+
+  private set signClient(client: SignClient) {
+    this._signClient = client
+  }
 
   init = async (callbacks: WalletConnectCallbacks) => {
     // after init, WC will auto restore sessions
@@ -79,28 +88,23 @@ class WalletConnectService {
   }
 
   pair = (uri: string) => {
-    assertNotUndefined(this.signClient)
     return this.signClient.core.pairing.pair({ uri })
   }
 
   getSessions = () => {
-    assertNotUndefined(this.signClient)
     return this.signClient.session.values
   }
 
   getSession = (topic: string) => {
-    assertNotUndefined(this.signClient)
     return this.signClient.session.get(topic)
   }
 
   approveSession = async (params: EngineTypes.ApproveParams) => {
-    assertNotUndefined(this.signClient)
     const { acknowledged } = await this.signClient.approve(params)
     return acknowledged()
   }
 
   rejectSession = async (id: number) => {
-    assertNotUndefined(this.signClient)
     return this.signClient.reject({
       id,
       reason: getSdkError('USER_REJECTED')
@@ -112,8 +116,6 @@ class WalletConnectService {
     requestId: number,
     result: unknown
   ) => {
-    assertNotUndefined(this.signClient)
-
     const response = {
       id: requestId,
       jsonrpc: '2.0',
@@ -127,8 +129,6 @@ class WalletConnectService {
   }
 
   rejectRequest = async (topic: string, requestId: number, error: RpcError) => {
-    assertNotUndefined(this.signClient)
-
     const response = {
       id: requestId,
       jsonrpc: '2.0',
@@ -142,8 +142,6 @@ class WalletConnectService {
   }
 
   killSession = async (topic: string) => {
-    assertNotUndefined(this.signClient)
-
     return this.signClient.disconnect({
       topic,
       reason: getSdkError('USER_DISCONNECTED')
@@ -151,8 +149,6 @@ class WalletConnectService {
   }
 
   killAllSessions = async () => {
-    assertNotUndefined(this.signClient)
-
     const promises: Promise<void>[] = []
 
     this.signClient.session.values.forEach(session => {
