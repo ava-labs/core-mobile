@@ -1,7 +1,6 @@
 import AvaText from 'components/AvaText'
 import React, { FC } from 'react'
 import { ActivityIndicator, StyleSheet, View } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import OvalTagBg from 'components/OvalTagBg'
 import { Space } from 'components/Space'
@@ -34,7 +33,7 @@ const SimplePrompt: FC<Props> = ({
   return (
     <RpcRequestBottomSheet onClose={onReject}>
       <NativeViewGestureHandler>
-        <SafeAreaView style={styles.safeView}>
+        <View style={styles.container}>
           <AvaText.LargeTitleBold>{header}</AvaText.LargeTitleBold>
           <Space y={35} />
           <View style={styles.subTitleView}>
@@ -63,14 +62,14 @@ const SimplePrompt: FC<Props> = ({
               Reject
             </AvaButton.SecondaryMedium>
           </View>
-        </SafeAreaView>
+        </View>
       </NativeViewGestureHandler>
     </RpcRequestBottomSheet>
   )
 }
 
 const styles = StyleSheet.create({
-  safeView: {
+  container: {
     paddingTop: 32,
     flex: 1,
     paddingHorizontal: 16
