@@ -75,8 +75,10 @@ const WatchlistView: React.FC<Props> = ({
   const currency = useFocusedSelector(selectSelectedCurrency).toLowerCase()
   const dispatch = useDispatch()
   const [isSearchingTokens, setIsSearchingTokens] = useState(false)
+  const [searchResults, setSearchResults] = useState<MarketToken[] | undefined>(
+    undefined
+  )
   const [filterBy, setFilterBy] = useState(WatchlistFilter.MARKET_CAP)
-  const [tokensToDisplay, setTokensToDisplay] = useState<MarketToken[]>([])
   const isSearching = !isEmpty(searchText)
 
   // favorites are loaded locally. e only show loader if we query
@@ -84,6 +86,10 @@ const WatchlistView: React.FC<Props> = ({
   // the favorites tab and tokens are empty
   const isFetchingTokens = tokens.length === 0
   const showLoader = isSearchingTokens || (!showFavorites && isFetchingTokens)
+
+  const tokensToDisplay = useMemo(() => {
+    return searchResults ? searchResults : showFavorites ? favorites : tokens
+  }, [favorites, searchResults, showFavorites, tokens])
 
   useEffect(() => {
     async function loadAsync() {
@@ -112,7 +118,6 @@ const WatchlistView: React.FC<Props> = ({
 
           if (searchResult) {
             items = searchResult.tokens
-
             // save results to the list
             dispatch(appendTokens(searchResult.tokens))
 
@@ -123,19 +128,20 @@ const WatchlistView: React.FC<Props> = ({
 
           setIsSearchingTokens(false)
         }
+        setSearchResults(items)
+      } else {
+        setSearchResults(undefined)
       }
-      setTokensToDisplay(items)
     }
     loadAsync()
   }, [
-    showFavorites,
-    searchText,
     currency,
-    filterBy,
     dispatch,
-    tokens,
+    favorites,
     isFetchingTokens,
-    favorites
+    searchText,
+    showFavorites,
+    tokens
   ])
 
   const sortedTokens = useMemo(() => {
