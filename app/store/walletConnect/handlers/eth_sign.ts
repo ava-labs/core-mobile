@@ -7,8 +7,8 @@ import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import Logger from 'utils/Logger'
 import * as Sentry from '@sentry/react-native'
+import { RpcMethod } from 'store/walletConnectV2'
 import { updateRequestStatus } from '../slice'
-import { RpcMethod } from '../types'
 import { parseMessage } from './utils/message'
 import {
   ApproveResponse,
@@ -93,9 +93,9 @@ class EthSignHandler
 
       return { success: true, value: encodedMessage }
     } catch (e) {
-      Logger.error('failed to sign message', e)
+      Logger.error('Unable to sign message', e)
 
-      const error = ethErrors.rpc.internal<string>('failed to sign message')
+      const error = ethErrors.rpc.internal<string>('Unable to sign message')
 
       dispatch(
         updateRequestStatus({

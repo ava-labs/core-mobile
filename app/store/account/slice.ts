@@ -38,12 +38,13 @@ const accountsSlice = createSlice({
 
 // selectors
 export const selectAccounts = (state: RootState) => state.account.accounts
+
 export const selectAccountByAddress =
   (address?: string) => (state: RootState) =>
     Object.values(state.account.accounts).find(
       acc => acc.address.toLowerCase() === address?.toLowerCase()
     )
-export const selectActiveAccount = (state: RootState): Account | undefined =>
+export const selectActiveAccount = (state: RootState) =>
   state.account.accounts[state.account.activeAccountIndex]
 
 // actions

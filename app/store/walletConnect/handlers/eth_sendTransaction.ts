@@ -12,8 +12,9 @@ import AppNavigation from 'navigation/AppNavigation'
 import Logger from 'utils/Logger'
 import { ethErrors } from 'eth-rpc-errors'
 import * as Sentry from '@sentry/react-native'
+import { TransactionParams } from 'store/walletConnectV2/handlers/eth_sendTransaction/utils'
+import { RpcMethod } from 'store/walletConnectV2'
 import { updateRequestStatus } from '../slice'
-import { RpcMethod } from '../types'
 import {
   ApproveResponse,
   DappRpcRequest,
@@ -21,15 +22,6 @@ import {
   HandleResponse,
   RpcRequestHandler
 } from './types'
-
-export type TransactionParams = {
-  from: string
-  to: string
-  value: string
-  data: string
-  gas?: number
-  gasPrice?: string
-}
 
 type ApproveData = {
   transaction: Transaction | undefined
@@ -45,14 +37,13 @@ class EthSendTransactionHandler
 {
   methods = [RpcMethod.ETH_SEND_TRANSACTION]
 
-  hasPostApprove = true
-
   handle = async (
     request: EthSendTransactionRpcRequest,
     listenerApi: AppListenerEffectAPI
   ): HandleResponse => {
     const { dispatch } = listenerApi
-    // TODO: do TX parsing and parameter verification here instead of in SignTransaction.tsx
+
+    // TODO CP-4894 decode transaction data here instead of in SignTransaction component/useExplainTransaction hook
 
     // fetch network fees for tx parsing and approval screen
     dispatch(fetchNetworkFee())
@@ -127,10 +118,10 @@ class EthSendTransactionHandler
 
       return { success: true, value: transactionHash }
     } catch (e) {
-      Logger.error('failed to approve transaction call', JSON.stringify(e))
+      Logger.error('Unable to approve transaction request', JSON.stringify(e))
 
       const error = ethErrors.rpc.internal<string>(
-        'failed to approve transaction request'
+        'Unable to approve transaction request'
       )
 
       dispatch(

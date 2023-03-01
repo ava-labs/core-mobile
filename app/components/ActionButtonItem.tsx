@@ -13,7 +13,6 @@ import Animated, {
 } from 'react-native-reanimated'
 import { noop } from 'rxjs'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { Space } from 'components/Space'
 import AvaText from './AvaText'
 
 interface Props {
@@ -101,8 +100,17 @@ const ActionButtonItem: FC<Props> = ({
           </View>
           {title && (
             <>
-              <Space y={50} />
-              <AvaText.Caption color={theme.white}>{title}</AvaText.Caption>
+              <AvaText.Caption
+                color={theme.white}
+                textStyle={{
+                  fontSize: 11,
+                  position: 'absolute',
+                  top: 55,
+                  width: 100,
+                  textAlign: 'center'
+                }}>
+                {title}
+              </AvaText.Caption>
             </>
           )}
         </TouchableOpacity>

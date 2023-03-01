@@ -1,6 +1,6 @@
 import { AppListenerEffectAPI } from 'store'
 import { selectAccounts, selectActiveAccount } from 'store/account'
-import { RpcMethod } from '../types'
+import { RpcMethod } from 'store/walletConnectV2'
 import { DappRpcRequest, HandleResponse, RpcRequestHandler } from './types'
 import { mapAccountToCoreWebAccount } from './utils/account'
 

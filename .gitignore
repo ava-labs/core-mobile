@@ -68,10 +68,7 @@ eslint_report.json
 
 package-lock.json
 .markdownlint.json
-/.env
-/.env.production
-/.env.development
-/.env.production.e2e
+/.env*
 
 # detox
 e2e/artifacts/

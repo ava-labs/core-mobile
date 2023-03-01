@@ -10,7 +10,7 @@ import {
 } from 'store/network'
 import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
-import { RpcMethod } from '../types'
+import { RpcMethod } from 'store/walletConnectV2'
 import {
   ApproveResponse,
   DappRpcRequest,

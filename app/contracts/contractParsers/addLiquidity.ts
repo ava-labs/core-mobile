@@ -10,7 +10,7 @@ import { bigToLocaleString, bnToBig, hexToBN } from '@avalabs/utils-sdk'
 import { FindToken } from 'contracts/contractParsers/utils/useFindToken'
 import { parseDisplayValues } from 'screens/rpc/util/parseDisplayValues'
 import { Network } from '@avalabs/chains-sdk'
-import { TransactionParams } from 'store/walletConnect/handlers/eth_sendTransaction'
+import { TransactionParams } from 'store/walletConnectV2/handlers/eth_sendTransaction/utils'
 
 export interface AddLiquidityData {
   amountAMin: BigNumber

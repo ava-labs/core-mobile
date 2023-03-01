@@ -129,7 +129,7 @@ enum ModalScreens {
   SelectToken = 'ModalScreens.SelectToken',
   EditGasLimit = 'ModalScreens.EditGasLimit',
   BridgeSelectToken = 'ModalScreens.BridgeSelectToken',
-  // RPC PROMPTS
+  // rpc prompts for wallet connect v1
   SessionProposal = 'ModalScreens.SessionProposal',
   CreateRemoveContact = 'ModalScreens.CreateRemoveContact',
   UpdateContact = 'ModalScreens.UpdateContact',
@@ -138,7 +138,17 @@ enum ModalScreens {
   SignMessage = 'ModalScreens.SignMessage',
   BridgeAsset = 'ModalScreens.BridgeAsset',
   AddEthereumChain = 'ModalScreens.AddEthereumChain',
-  SwitchEthereumChain = 'ModalScreens.SwitchEthereumChain'
+  SwitchEthereumChain = 'ModalScreens.SwitchEthereumChain',
+  // rpc prompts for wallet connect v2
+  SessionProposalV2 = 'ModalScreens.SessionProposalV2',
+  SignMessageV2 = 'ModalScreens.SignMessageV2',
+  CreateRemoveContactV2 = 'ModalScreens.CreateRemoveContactV2',
+  UpdateContactV2 = 'ModalScreens.UpdateContactV2',
+  SelectAccountV2 = 'ModalScreens.SelectAccountV2',
+  AddEthereumChainV2 = 'ModalScreens.AddEthereumChainV2',
+  SwitchEthereumChainV2 = 'ModalScreens.SwitchEthereumChainV2',
+  BridgeAssetV2 = 'ModalScreens.BridgeAssetV2',
+  SignTransactionV2 = 'ModalScreens.SignTransactionV2'
 }
 
 enum SendScreens {

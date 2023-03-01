@@ -26,7 +26,7 @@ import {
 } from 'navigation/NavUtils'
 import { showSnackBarCustom } from 'components/Snackbar'
 import GeneralToast from 'components/toast/GeneralToast'
-import { useDappConnectionContext } from 'contexts/DappConnectionContext'
+import { useDeeplink } from 'contexts/DeeplinkContext/DeeplinkContext'
 
 export type NoWalletTabNavigatorParamList = {
   [AppNavigation.NoWalletTabs.NewWallet]: undefined
@@ -64,7 +64,7 @@ const NoWalletTabNavigator = () => {
   const drawerNavigation = useNavigation<DrawerNavigationProp>()
   const tabsNavigation = useNavigation<NavigationProp>()
   const walletState = useSelector(selectWalletState)
-  const { pendingDeepLink } = useDappConnectionContext()
+  const { pendingDeepLink } = useDeeplink()
 
   useEffect(() => {
     if (pendingDeepLink) {

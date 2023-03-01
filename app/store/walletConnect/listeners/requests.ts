@@ -9,22 +9,20 @@ import Logger from 'utils/Logger'
 import { selectActiveNetwork } from 'store/network'
 import { NetworkVMType } from '@avalabs/chains-sdk'
 import {
-  addRequest,
+  isCoreDomain,
+  isCoreMethod
+} from 'store/walletConnectV2/handlers/session_request/utils'
+import { RpcMethod } from 'store/walletConnectV2'
+import {
+  onRequest,
   onRequestApproved,
-  onRequestPostApproved,
   onRequestRejected,
   onSendRpcError,
-  onSendRpcResult,
-  removeRequest
+  onSendRpcResult
 } from '../slice'
 import { DappRpcRequest, DEFERRED_RESULT } from '../handlers/types'
 import handlerMap from '../handlers'
-import { RpcMethod } from '../types'
-import {
-  isCoreMethod,
-  isFromCoreWeb,
-  isRequestSupportedOnNetwork
-} from './utils'
+import { isRequestSupportedOnNetwork } from './utils'
 
 // check if request is either onRequestApproved or onRequestRejected
 // and also if the request is the one we are waiting for
@@ -37,18 +35,8 @@ const isRequestApprovedOrRejected =
     return false
   }
 
-// check if request is onRequestPostApproved
-// and also if the request is the one we are waiting for
-const isRequestPostApproved = (requestId: number) => (action: AnyAction) => {
-  if (onRequestPostApproved.match(action)) {
-    return action.payload.payload.id === requestId
-  }
-
-  return false
-}
-
 export const processRequest = async (
-  addRequestAction: ReturnType<typeof addRequest>,
+  addRequestAction: ReturnType<typeof onRequest>,
   listenerApi: AppListenerEffectAPI
 ) => {
   const { dispatch, take } = listenerApi
@@ -72,7 +60,6 @@ export const processRequest = async (
         })
       })
     )
-    dispatch(removeRequest(requestId))
     return
   }
 
@@ -92,7 +79,6 @@ export const processRequest = async (
         })
       )
 
-      dispatch(removeRequest(requestId))
       return
     }
   }
@@ -106,13 +92,11 @@ export const processRequest = async (
         error: handleResponse.error
       })
     )
-    dispatch(removeRequest(requestId))
     return
   }
 
   if (handleResponse.value !== DEFERRED_RESULT) {
     dispatch(onSendRpcResult({ request, result: handleResponse.value }))
-    dispatch(removeRequest(requestId))
     return
   }
 
@@ -145,18 +129,9 @@ export const processRequest = async (
         )
       } else {
         dispatch(onSendRpcResult({ request, result: approveResponse.value }))
-
-        if (handler.hasPostApprove) {
-          Logger.info(
-            `waiting for user to close the screen - request ${requestId}`
-          )
-          await take(isRequestPostApproved(requestId))
-        }
       }
     }
   }
-
-  dispatch(removeRequest(requestId))
 }
 
 export const validateRequest = (
@@ -180,7 +155,7 @@ export const validateRequest = (
 
   // only process core methods if they come from core web
   if (isCoreMethod(method)) {
-    if (!isFromCoreWeb(peerMeta?.url || '')) {
+    if (!isCoreDomain(peerMeta?.url || '')) {
       Logger.error(
         `custom core method ${method}. requested by ${peerMeta?.url}`
       )

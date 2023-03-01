@@ -37,9 +37,9 @@ import GeneralToast from 'components/toast/GeneralToast'
 import WalletConnectSVG from 'components/svg/WalletConnectSVG'
 import AvaButton from 'components/AvaButton'
 import { Row } from 'components/Row'
-import { useDappConnectionContext } from 'contexts/DappConnectionContext'
 import { getCommonBottomTabOptions, normalTabButton } from 'navigation/NavUtils'
-import { DeepLinkOrigin } from 'contexts/DappConnectionContext/types'
+import { useDeeplink } from 'contexts/DeeplinkContext/DeeplinkContext'
+import { DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
 
 export type TabNavigatorParamList = {
   [AppNavigation.Tabs.Portfolio]: { showBackButton?: boolean }
@@ -190,7 +190,7 @@ const CustomTabBarFab: FC = ({ children }) => {
   const { openMoonPay } = useInAppBrowser()
   const navigation = useNavigation<FabNavigationProp>()
   const fabRef = useRef<typeof FloatingActionButton>()
-  const { setPendingDeepLink } = useDappConnectionContext()
+  const { setPendingDeepLink } = useDeeplink()
 
   const actionItems = useMemo(() => {
     const actions: Record<string, ActionProp> = {}

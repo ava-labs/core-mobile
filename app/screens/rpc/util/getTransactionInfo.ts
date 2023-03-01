@@ -42,22 +42,22 @@ export async function getTxInfo(
   address: string,
   data: string,
   value: string,
-  activeNetwork: Network
+  network: Network
 ): Promise<
   | TransactionDescription
   | {
       error: string
     }
 > {
-  const isMainnet = !activeNetwork?.isTestnet
+  const isMainnet = !network.isTestnet
 
   /**
    * We already eliminate BTC as a tx requestor so we only need to verify if we are still on a
    * avalanche net. At this point anything else would be a subnet
    */
   if (
-    activeNetwork?.chainId !== ChainId.AVALANCHE_TESTNET_ID &&
-    activeNetwork?.chainId !== ChainId.AVALANCHE_MAINNET_ID
+    network.chainId !== ChainId.AVALANCHE_TESTNET_ID &&
+    network.chainId !== ChainId.AVALANCHE_MAINNET_ID
   ) {
     return parseDataWithABI(data, value, new Interface(ERC20.abi))
   }

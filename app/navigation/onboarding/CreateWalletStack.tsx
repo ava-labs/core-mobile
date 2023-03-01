@@ -215,6 +215,7 @@ const TermsNConditionsModalScreen = () => {
   return (
     <TermsNConditionsModal
       onNext={() => {
+        // signing in with a brand new wallet
         walletSetupHook.enterWallet(createWalletContext.mnemonic)
         dispatch(onLogIn())
         dispatch(onAppUnlocked())
