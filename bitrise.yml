@@ -1,8 +1,6 @@
 format_version: "11"
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 project_type: react-native
-<<<<<<< Updated upstream
-=======
 app:
   envs:
   - WORKDIR: .
@@ -17,40 +15,9 @@ app:
   - IOS_PROJECT_PATH: ios/AvaxWallet.xcworkspace
     opts:
       is_expand: false
-  - SLACK_WEBHOOK_URL: https://hooks.slack.com/services/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
-    opts:
-      is_expand: false
   - APP_TITLE: Core Mobile
     opts:
       is_expand: false
-meta:
-  bitrise.io:
-    machine_type_id: g2-m1.8core
-    stack: osx-xcode-14.2.x-ventura
-trigger_map:
-- push_branch: release/*
-  pipeline: build-apps-external
-- push_branch: development
-  pipeline: build-apps-internal
-- tag: '*rc*'
-  pipeline: build-apps-external
-pipelines:
-  build-apps-external:
-    stages:
-    - build-and-deploy-external: {}
-  build-apps-internal:
-    stages:
-    - build-and-deploy-internal: {}
-stages:
-  build-and-deploy-external:
-    workflows:
-    - android: {}
-    - ios: {}
-  build-and-deploy-internal:
-    workflows:
-    - android-internal: {}
-    - ios-internal: {}
->>>>>>> Stashed changes
 workflows:
   _build-android:
     envs:
@@ -125,7 +92,6 @@ workflows:
         - content: |-
             #!/usr/bin/env bash
             set -ex
-
             if [ "$ENVIRONMENT" = "production" ]; then
                 if [ "$E2E" = "true" ]; then
                     cp .env.production.e2e .env
@@ -207,10 +173,6 @@ workflows:
         - app_path: $BITRISE_SIGNED_AAB_PATH
         - track: internal
         - service_account_json_key_path: $BITRISEIO_AVALABS_GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_KEY_URL
-    meta:
-      bitrise.io:
-        machine_type_id: g2.8core
-        stack: osx-xcode-14.2.x-ventura
   android-internal:
     before_run:
     - _install-and-set-env
@@ -228,11 +190,6 @@ workflows:
     - APP_TITLE: Core Mobile Internal
       opts:
         is_expand: false
-<<<<<<< Updated upstream
-      ANDROID_BUILD_VARIANT: externalRelease
-  android-internal:
-=======
->>>>>>> Stashed changes
     steps:
     - deploy-to-bitrise-io@2: {}
     - create-install-page-qr-code@1: {}
@@ -242,29 +199,6 @@ workflows:
         - app_path: $BITRISE_SIGNED_AAB_PATH
         - track: internal
         - service_account_json_key_path: $BITRISEIO_AVALABS_GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_KEY_URL
-<<<<<<< Updated upstream
-    before_run:
-    - _install-and-set-env
-    - _set-version
-    - _build-android
-    after_run:
-    - _send-notification-slack
-    envs:
-    - opts:
-        is_expand: false
-      ENVIRONMENT: production
-    - opts:
-        is_expand: false
-      ANDROID_BUILD_VARIANT: internalRelease
-    - opts:
-        is_expand: false
-      APP_TITLE: Core Mobile Internal
-=======
-    meta:
-      bitrise.io:
-        machine_type_id: g2.8core
-        stack: osx-xcode-14.2.x-ventura
->>>>>>> Stashed changes
   android-internal-detox-test:
     before_run:
     - _install-and-set-env
@@ -300,17 +234,8 @@ workflows:
             set -o pipefail
             # debug log
             set -x
-
             npm rebuild detox
-
             ./node_modules/.bin/detox test --configuration android.internal.release.ci --cleanup
-<<<<<<< Updated upstream
-=======
-    meta:
-      bitrise.io:
-        machine_type_id: g2.8core
-        stack: osx-xcode-14.2.x-ventura
->>>>>>> Stashed changes
   ios:
     before_run:
     - _install-and-set-env
@@ -396,10 +321,10 @@ workflows:
     steps:
     - xcode-build-for-simulator@0:
         inputs:
-        - project_path: $IOS_PROJECT_PATH
         - scheme: $IOS_SCHEME
-        - configuration: $IOS_CONFIGURATION
         - simulator_device: iPhone 14
+        - configuration: $IOS_CONFIGURATION
+        - project_path: $IOS_PROJECT_PATH
     - xcode-start-simulator@0:
         inputs:
         - destination: platform=iOS Simulator,name=iPhone 13,OS=latest
@@ -413,28 +338,5 @@ workflows:
             set -o pipefail
             # debug log
             set -x
-
-
             npm rebuild detox
-
             ./node_modules/.bin/detox test --configuration ios.internal.release.ci --cleanup
-<<<<<<< Updated upstream
-app:
-  envs:
-  - opts:
-      is_expand: false
-    WORKDIR: "."
-  - opts:
-      is_expand: false
-    ANDROID_PROJECT_LOCATION: android
-  - opts:
-      is_expand: false
-    ANDROID_MODULE: app
-  - opts:
-      is_expand: false
-    IOS_PROJECT_PATH: ios/AvaxWallet.xcworkspace
-  - opts:
-      is_expand: false
-    APP_TITLE: Core Mobile
-=======
->>>>>>> Stashed changes
