@@ -337,12 +337,6 @@ workflows:
       opts:
         is_expand: false
     steps:
-    - xcode-build-for-simulator@0:
-        inputs:
-        - scheme: $IOS_SCHEME
-        - simulator_device: iPhone 14
-        - configuration: $IOS_CONFIGURATION
-        - project_path: $IOS_PROJECT_PATH
     - xcode-start-simulator@0:
         inputs:
         - destination: platform=iOS Simulator,name=iPhone 13,OS=latest
