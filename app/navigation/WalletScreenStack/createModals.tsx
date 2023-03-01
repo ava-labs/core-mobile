@@ -24,6 +24,7 @@ import AddEthereumChain from 'screens/rpc/components/v1/AddEthereumChain'
 import SwitchEthereumChain from 'screens/rpc/components/v1/SwitchEthereumChain'
 import AddEthereumChainV2 from 'screens/rpc/components/v2/AddEthereumChain'
 import SwitchEthereumChainV2 from 'screens/rpc/components/v2/SwitchEthereumChain'
+import SendTransaction from 'screens/rpc/components/SendTransaction/SendTransaction'
 import { SignOutModalScreen, WalletScreenSType } from './WalletScreenStack'
 
 export const createModals = (WalletScreenS: WalletScreenSType) => {
@@ -50,6 +51,10 @@ export const createModals = (WalletScreenS: WalletScreenSType) => {
       <WalletScreenS.Screen
         name={AppNavigation.Modal.SignTransaction}
         component={SignTransaction}
+      />
+      <WalletScreenS.Screen
+        name={AppNavigation.Modal.SendTransaction}
+        component={SendTransaction}
       />
       <WalletScreenS.Screen
         name={AppNavigation.Modal.SignMessage}
@@ -107,6 +112,10 @@ export const createModals = (WalletScreenS: WalletScreenSType) => {
       <WalletScreenS.Screen
         name={AppNavigation.Modal.SignTransactionV2}
         component={SignTransactionV2}
+      />
+      <WalletScreenS.Screen
+        name={AppNavigation.Modal.SendTransaction}
+        component={SendTransaction}
       />
     </WalletScreenS.Group>
   )

@@ -69,6 +69,7 @@ import {
   EditGasLimitParams,
   QRCodeParams,
   SelectAccountParams,
+  SendTransactionParams,
   SessionProposalParams,
   SignMessageParams,
   SignTransactionParams,
@@ -141,6 +142,7 @@ export type WalletScreenStackParams = {
   [AppNavigation.Modal.UpdateContact]: UpdateContactParams
   [AppNavigation.Modal.SelectAccount]: SelectAccountParams
   [AppNavigation.Modal.SignTransaction]: SignTransactionParams
+  [AppNavigation.Modal.SendTransaction]: SendTransactionParams
   [AppNavigation.Modal.SignMessage]: SignMessageParams
   [AppNavigation.Modal.BridgeAsset]: BridgeAssetParams
   [AppNavigation.Modal.AddEthereumChain]: AddEthereumChainParams
