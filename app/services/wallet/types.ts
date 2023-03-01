@@ -3,10 +3,18 @@ import { BitcoinInputUTXO, BitcoinOutputUTXO } from '@avalabs/wallets-sdk'
 
 export type SignTransactionRequest =
   | TransactionRequest
-  | {
-      inputs: BitcoinInputUTXO[]
-      outputs: BitcoinOutputUTXO[]
-    }
+  | BtcTransactionRequest
+  | AvalancheTransactionRequest
+
+export interface BtcTransactionRequest {
+  inputs: BitcoinInputUTXO[]
+  outputs: BitcoinOutputUTXO[]
+}
+
+export interface AvalancheTransactionRequest {
+  tx: Buffer
+  chain: 'X' | 'P' | 'C'
+}
 
 /**
  * Used for X and P chain transactions

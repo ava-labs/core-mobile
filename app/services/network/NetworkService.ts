@@ -1,5 +1,11 @@
-import { BlockCypherProvider, JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 import {
+  Avalanche,
+  BlockCypherProvider,
+  JsonRpcBatchInternal
+} from '@avalabs/wallets-sdk'
+import {
+  AVALANCHE_XP_NETWORK,
+  AVALANCHE_XP_TEST_NETWORK,
   BITCOIN_NETWORK,
   BITCOIN_TEST_NETWORK,
   ChainId,
@@ -28,13 +34,22 @@ class NetworkService {
 
   getProviderForNetwork(
     network: Network
-  ): JsonRpcBatchInternal | BlockCypherProvider {
+  ): JsonRpcBatchInternal | BlockCypherProvider | Avalanche.JsonRpcProvider {
     if (network.vmName === NetworkVMType.BITCOIN) {
       return getBitcoinProvider(network.isTestnet)
     }
 
     if (network.vmName === NetworkVMType.EVM) {
       return getEvmProvider(network)
+    }
+
+    if (
+      network.vmName === NetworkVMType.AVM ||
+      network.vmName === NetworkVMType.PVM
+    ) {
+      return network.isTestnet
+        ? Avalanche.JsonRpcProvider.getDefaultFujiProvider()
+        : Avalanche.JsonRpcProvider.getDefaultMainnetProvider()
     }
 
     throw new Error(`Unsupported network type: ${network.vmName}`)
@@ -67,6 +82,21 @@ class NetworkService {
 
         throw new Error('No provider found')
       })
+  }
+
+  /**
+   * Returns the network object for Avalanche X/P Chains
+   */
+  getAvalancheNetworkXP(isDeveloperMode: boolean) {
+    return isDeveloperMode ? AVALANCHE_XP_TEST_NETWORK : AVALANCHE_XP_NETWORK
+  }
+
+  /**
+   * Returns the provider used by Avalanche X/P/CoreEth chains.
+   */
+  getAvalancheProviderXP(isDeveloperMode: boolean): Avalanche.JsonRpcProvider {
+    const network = this.getAvalancheNetworkXP(isDeveloperMode)
+    return this.getProviderForNetwork(network) as Avalanche.JsonRpcProvider
   }
 }
 
