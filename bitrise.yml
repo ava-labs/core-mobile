@@ -72,6 +72,24 @@ workflows:
         - distribution_method: $XCODE_EXPORT
         - upload_bitcode: "no"
         - automatic_code_signing: api-key
+  _build-ios-simulator:
+    envs:
+    - PLATFORM: iOS
+      opts:
+        is_expand: false
+    steps:
+    - restore-cocoapods-cache@1: {}
+    - cocoapods-install@2:
+        inputs:
+        - verbose: "true"
+        - source_root_path: $BITRISE_SOURCE_DIR/ios
+    - save-cocoapods-cache@1: {}
+    - xcode-build-for-simulator@0:
+        inputs:
+        - scheme: $IOS_SCHEME
+        - simulator_device: iPhone 14
+        - configuration: $IOS_CONFIGURATION
+        - project_path: $IOS_PROJECT_PATH
   _install-and-set-env:
     steps:
     - restore-npm-cache@1: {}
@@ -298,7 +316,7 @@ workflows:
     before_run:
     - _install-and-set-env
     - _set-version
-    - _build-ios
+    - _build-ios-simulator
     envs:
     - ENVIRONMENT: production
       opts:
