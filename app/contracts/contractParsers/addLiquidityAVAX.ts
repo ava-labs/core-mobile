@@ -9,7 +9,7 @@ import {
 import { bigToLocaleString, ethersBigNumberToBig } from '@avalabs/utils-sdk'
 import { parseDisplayValues } from 'screens/rpc/util/parseDisplayValues'
 import { Network } from '@avalabs/chains-sdk'
-import { TransactionParams } from 'store/walletConnect/handlers/eth_sendTransaction'
+import { TransactionParams } from 'store/walletConnectV2/handlers/eth_sendTransaction/utils'
 import { FindToken } from './utils/useFindToken'
 
 export interface AddLiquidityData {

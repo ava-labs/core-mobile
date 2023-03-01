@@ -22,7 +22,7 @@ import { getEvmProvider } from 'services/network/utils/providerUtils'
 import BN from 'bn.js'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction } from '@sentry/types'
-import { RpcMethod } from 'store/walletConnect'
+import { RpcMethod } from 'store/walletConnectV2'
 
 class WalletService {
   private mnemonic?: string
@@ -124,11 +124,6 @@ class WalletService {
 
     const key = Buffer.from(privateKey, 'hex')
 
-    // instances were observed where SignTypeData version was not specified,
-    // however, payload was V4
-    const isV4 =
-      typeof data === 'object' && 'types' in data && 'primaryType' in data
-
     if (data) {
       switch (rpcMethod) {
         case RpcMethod.ETH_SIGN:
@@ -139,7 +134,7 @@ class WalletService {
           return signTypedData({
             privateKey: key,
             data,
-            version: isV4 ? SignTypedDataVersion.V4 : SignTypedDataVersion.V1
+            version: SignTypedDataVersion.V1
           })
         }
         case RpcMethod.SIGN_TYPED_DATA_V3:

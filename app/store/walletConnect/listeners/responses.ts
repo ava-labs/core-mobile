@@ -5,7 +5,7 @@ import { selectActiveAccount } from 'store/account'
 import { ethErrors } from 'eth-rpc-errors'
 import { capture } from 'store/posthog'
 import { addDapp, onSendRpcError, onSendRpcResult } from '../slice'
-import { isSessionRequestRpcRequest } from '../utils'
+import { isSessionRequestRpcRequest } from './utils'
 
 export const sendRpcResult = async (
   action: ReturnType<typeof onSendRpcResult>,

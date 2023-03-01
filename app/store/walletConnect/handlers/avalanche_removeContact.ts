@@ -5,7 +5,7 @@ import { removeContact, selectContacts } from 'store/addressBook'
 import { isString } from 'utils/string/isString'
 import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
-import { RpcMethod } from '../types'
+import { RpcMethod } from 'store/walletConnectV2'
 import {
   ApproveResponse,
   DappRpcRequest,

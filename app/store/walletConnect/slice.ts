@@ -1,42 +1,21 @@
 import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { ApprovedAppMeta, WalletConnectState } from 'store/walletConnect'
 import { RootState } from 'store/index'
-import { EthereumProviderError, EthereumRpcError } from 'eth-rpc-errors'
 import { PeerMeta } from 'services/walletconnect/types'
+import { RpcError } from 'store/walletConnectV2'
 import { DappRpcRequest } from './handlers/types'
 
 export const reducerName = 'walletConnect'
 
-const initialState = {
-  requests: [],
+const initialState: WalletConnectState = {
   requestStatuses: {},
   approvedDApps: []
-} as WalletConnectState
+}
 
 const walletConnectSlice = createSlice({
   name: reducerName,
   initialState,
   reducers: {
-    addRequest: (
-      state,
-      action: PayloadAction<DappRpcRequest<string, unknown>>
-    ) => {
-      if (
-        state.requests.some(r => r.payload.id === action.payload.payload.id)
-      ) {
-        // the request is already added
-        return
-      }
-      state.requests.push(action.payload)
-    },
-    removeRequest: (state, action: PayloadAction<number>) => {
-      state.requests = state.requests.filter(
-        request => request.payload.id !== action.payload
-      )
-
-      if (state.requestStatuses[action.payload])
-        delete state.requestStatuses[action.payload]
-    },
     updateRequestStatus: (
       state,
       action: PayloadAction<{
@@ -58,6 +37,14 @@ const walletConnectSlice = createSlice({
       state.approvedDApps = state.approvedDApps.filter(
         value => !action.payload.includes(value.peerId)
       )
+    },
+    // remove a dapp by its clientId
+    // useful when a dapp disconnects/kills the connection and we no longer can remove a dapp by its peerId
+    removeDapp: (state, action: PayloadAction<string>) => {
+      const clientId = action.payload
+      state.approvedDApps = state.approvedDApps.filter(
+        value => value.clientId !== clientId
+      )
     }
   }
 })
@@ -73,9 +60,14 @@ export const selectRequestStatus =
   }
 
 // actions
-export const onDisconnect = createAction<PeerMeta>(
-  `${reducerName}/onDisconnect`
+export const onRequest = createAction<DappRpcRequest<string, unknown>>(
+  `${reducerName}/onRequest`
 )
+
+export const onDisconnect = createAction<{
+  clientId: string
+  peerMeta: PeerMeta
+}>(`${reducerName}/onDisconnect`)
 
 export const onRequestApproved = createAction<{
   request: DappRpcRequest<string, unknown>
@@ -84,7 +76,7 @@ export const onRequestApproved = createAction<{
 
 export const onRequestRejected = createAction<{
   request: DappRpcRequest<string, unknown>
-  error?: EthereumRpcError<string> | EthereumProviderError<string>
+  error?: RpcError
 }>(`${reducerName}/onRequestRejected`)
 
 export const onSendRpcResult = createAction<{
@@ -94,12 +86,8 @@ export const onSendRpcResult = createAction<{
 
 export const onSendRpcError = createAction<{
   request: DappRpcRequest<string, unknown>
-  error?: EthereumRpcError<string> | EthereumProviderError<string>
+  error?: RpcError
 }>(`${reducerName}/onSendRpcError`)
-
-export const onRequestPostApproved = createAction<
-  DappRpcRequest<string, unknown>
->(`${reducerName}/onRequestPostApproved`)
 
 export const newSession = createAction<string>(`${reducerName}/newSession`)
 
@@ -107,12 +95,7 @@ export const killSessions = createAction<ApprovedAppMeta[]>(
   `${reducerName}/killSessions`
 )
 
-export const {
-  addRequest,
-  removeRequest,
-  updateRequestStatus,
-  addDapp,
-  removeDApps
-} = walletConnectSlice.actions
+export const { updateRequestStatus, addDapp, removeDApps, removeDapp } =
+  walletConnectSlice.actions
 
 export const walletConnectReducer = walletConnectSlice.reducer

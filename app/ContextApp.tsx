@@ -12,10 +12,11 @@ import JailbrokenWarning from 'screens/onboarding/JailbrokenWarning'
 import { BridgeProvider } from 'contexts/BridgeContext'
 import { PosthogContextProvider } from 'contexts/PosthogContext'
 import { StatusBar } from 'react-native'
-import { DappConnectionContextProvider } from 'contexts/DappConnectionContext'
+import { DeeplinkContextProvider } from 'contexts/DeeplinkContext/DeeplinkContext'
 import { EncryptedStoreProvider } from 'contexts/EncryptedStoreProvider'
 import { TopLevelErrorFallback } from 'components/TopLevelErrorFallback'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
+import FlipperAsyncStorage from 'rn-flipper-async-storage-advanced'
 
 function setToast(toast: Toast) {
   global.toast = toast
@@ -28,9 +29,9 @@ const ContextProviders: FC = ({ children }) => (
   <EncryptedStoreProvider>
     <PosthogContextProvider>
       <ApplicationContextProvider>
-        <DappConnectionContextProvider>
+        <DeeplinkContextProvider>
           <BridgeProvider>{children}</BridgeProvider>
-        </DappConnectionContextProvider>
+        </DeeplinkContextProvider>
       </ApplicationContextProvider>
     </PosthogContextProvider>
   </EncryptedStoreProvider>
@@ -40,6 +41,7 @@ const ContextApp = () => {
   return (
     <Sentry.ErrorBoundary fallback={<TopLevelErrorFallback />}>
       <StatusBar barStyle={'light-content'} backgroundColor="black" />
+      {__DEV__ && <FlipperAsyncStorage />}
       <ContextProviders>
         <JailBrokenCheck>
           <GestureHandlerRootView style={{ flex: 1 }}>

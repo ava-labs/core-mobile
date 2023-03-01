@@ -22,11 +22,7 @@ const enabledUIs: Partial<Record<UI, number[]>> = {
     ChainId.ETHEREUM_TEST_RINKEBY
   ],
   [UI.Swap]: [ChainId.AVALANCHE_MAINNET_ID],
-  [UI.Buy]: [ChainId.AVALANCHE_MAINNET_ID, ChainId.AVALANCHE_TESTNET_ID],
-  [UI.WalletConnect]: [
-    ChainId.AVALANCHE_MAINNET_ID,
-    ChainId.AVALANCHE_TESTNET_ID
-  ]
+  [UI.Buy]: [ChainId.AVALANCHE_MAINNET_ID, ChainId.AVALANCHE_TESTNET_ID]
 }
 
 // The list of features we want to disable on certain networks (blacklist)
@@ -37,7 +33,8 @@ const disabledUIs: Partial<Record<UI, number[]>> = {
     ChainId.DFK_TESTNET,
     ChainId.SWIMMER,
     ChainId.SWIMMER_TESTNET
-  ]
+  ],
+  [UI.WalletConnect]: [] // empty array means this feature shouldn't be disabled on any network
 }
 
 export const useIsUIDisabled = (ui: UI) => {

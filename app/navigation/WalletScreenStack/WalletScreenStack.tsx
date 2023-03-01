@@ -75,7 +75,16 @@ import {
   SwitchEthereumChainParams,
   TokenSelectParams,
   UpdateContactParams,
-  WalletScreenProps
+  WalletScreenProps,
+  SignMessageV2Params,
+  SessionProposalV2Params,
+  CreateRemoveContactV2Params,
+  UpdateContactV2Params,
+  SelectAccountV2Params,
+  AddEthereumChainV2Params,
+  SwitchEthereumChainV2Params,
+  BridgeAssetV2Params,
+  SignTransactionV2Params
 } from '../types'
 import AdvancedStackScreen, {
   AdvancedStackParamList
@@ -126,6 +135,7 @@ export type WalletScreenStackParams = {
   [AppNavigation.Modal.SignOut]: undefined
   [AppNavigation.Modal.SelectToken]: TokenSelectParams
   [AppNavigation.Modal.EditGasLimit]: EditGasLimitParams
+  // rpc prompts for wallet connect v1
   [AppNavigation.Modal.SessionProposal]: SessionProposalParams
   [AppNavigation.Modal.CreateRemoveContact]: CreateRemoveContactParams
   [AppNavigation.Modal.UpdateContact]: UpdateContactParams
@@ -135,6 +145,16 @@ export type WalletScreenStackParams = {
   [AppNavigation.Modal.BridgeAsset]: BridgeAssetParams
   [AppNavigation.Modal.AddEthereumChain]: AddEthereumChainParams
   [AppNavigation.Modal.SwitchEthereumChain]: SwitchEthereumChainParams
+  // rpc prompts for wallet connect v2
+  [AppNavigation.Modal.SessionProposalV2]: SessionProposalV2Params
+  [AppNavigation.Modal.SignMessageV2]: SignMessageV2Params
+  [AppNavigation.Modal.CreateRemoveContactV2]: CreateRemoveContactV2Params
+  [AppNavigation.Modal.UpdateContactV2]: UpdateContactV2Params
+  [AppNavigation.Modal.SelectAccountV2]: SelectAccountV2Params
+  [AppNavigation.Modal.AddEthereumChainV2]: AddEthereumChainV2Params
+  [AppNavigation.Modal.SwitchEthereumChainV2]: SwitchEthereumChainV2Params
+  [AppNavigation.Modal.BridgeAssetV2]: BridgeAssetV2Params
+  [AppNavigation.Modal.SignTransactionV2]: SignTransactionV2Params
 }
 
 const WalletScreenS = createStackNavigator<WalletScreenStackParams>()

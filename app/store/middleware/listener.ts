@@ -14,7 +14,8 @@ import { addBridgeListeners } from 'store/bridge'
 import { addPosthogListeners } from 'store/posthog'
 import { addWatchlistListeners } from 'store/watchlist'
 import { addNftListeners } from 'store/nft/listeners'
-import { addRpcListeners } from 'store/walletConnect'
+import { addWCListeners as addWCListenersV1 } from 'store/walletConnect'
+import { addWCListeners as addWCListenersV2 } from 'store/walletConnectV2'
 
 export type AppStartListening = TypedStartListening<RootState, AppDispatch>
 export type AppAddListener = TypedAddListener<RootState, AppDispatch>
@@ -43,7 +44,9 @@ addPosthogListeners(startListening)
 
 addWatchlistListeners(startListening)
 
-addRpcListeners(startListening)
+addWCListenersV1(startListening)
+
+addWCListenersV2(startListening)
 
 export const addAppListener = addListener as AppAddListener
 

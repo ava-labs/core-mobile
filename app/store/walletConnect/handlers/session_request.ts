@@ -1,8 +1,8 @@
-import { IClientMeta } from '@walletconnect/types'
 import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import { showSimpleToast } from 'components/Snackbar'
-import { RpcMethod } from '../types'
+import { RpcMethod } from 'store/walletConnectV2'
+import { PeerMeta } from 'services/walletconnect/types'
 import {
   DappRpcRequest,
   RpcRequestHandler,
@@ -16,7 +16,7 @@ export type SessionRequestRpcRequest = DappRpcRequest<
   {
     peerId: string
     chainId: string | null | undefined
-    peerMeta: IClientMeta | null
+    peerMeta: PeerMeta
   }[]
 >
 

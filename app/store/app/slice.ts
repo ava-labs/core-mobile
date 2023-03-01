@@ -3,9 +3,9 @@ import { AppStateStatus } from 'react-native'
 import { RootState } from 'store'
 import { AppState, WalletState } from './types'
 
-const reducerName = 'app'
+export const reducerName = 'app'
 
-const initialState: AppState = {
+export const initialState: AppState = {
   isReady: false,
   isLocked: true,
   appState: 'active',
@@ -56,8 +56,10 @@ export const onBackground = createAction(`${reducerName}/onBackground`)
 
 export const onForeground = createAction(`${reducerName}/onForeground`)
 
+// when user has successfully created/recovered a wallet
 export const onLogIn = createAction(`${reducerName}/onLogIn`)
 
+// when user has successfully "destroyed" a wallet
 export const onLogOut = createAction(`${reducerName}/onLogOut`)
 
 export const { setIsReady, setIsLocked, setAppState, setWalletState } =
