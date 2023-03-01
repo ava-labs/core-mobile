@@ -1,9 +1,6 @@
 import { SignClientTypes } from '@walletconnect/types'
 import { EthereumProviderError, EthereumRpcError } from 'eth-rpc-errors'
-import {
-  Session,
-  SessionProposalData
-} from 'services/walletconnectv2/WalletConnectService'
+import { Session, SessionProposalData } from 'services/walletconnectv2/types'
 
 export type SessionProposal = {
   data: SessionProposalData

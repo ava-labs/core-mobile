@@ -1,48 +1,16 @@
 import SignClient from '@walletconnect/sign-client'
-import {
-  SignClientTypes,
-  EngineTypes,
-  SessionTypes,
-  CoreTypes
-} from '@walletconnect/types'
+import { EngineTypes } from '@walletconnect/types'
 import { getSdkError } from '@walletconnect/utils'
 import Config from 'react-native-config'
 import { RpcError } from 'store/walletConnectV2'
 import { assertNotUndefined } from 'utils/assertions'
 import Logger from 'utils/Logger'
+import { CLIENT_METADATA, WalletConnectCallbacks } from './types'
 
 if (!Config.WALLET_CONNECT_PROJECT_ID) {
   throw Error(
     'WALLET_CONNECT_PROJECT_ID is missing. Please check your env file.'
   )
-}
-
-export const CORE_MOBILE_WALLET_ID = 'c3de833a-9cb0-4274-bb52-86e402ecfcd3'
-
-export const CLIENT_METADATA = {
-  name: 'Core',
-  description: 'Core Mobile',
-  url: 'https://www.avax.network',
-  icons: [
-    'https://assets.website-files.com/5fec984ac113c1d4eec8f1ef/62602f568fb4677b559827e5_core.jpg'
-  ],
-  walletId: CORE_MOBILE_WALLET_ID // core web depends on this id to distinguish core mobile from other wallets
-}
-
-export type PeerMeta = CoreTypes.Metadata
-
-export type SessionProposalData =
-  SignClientTypes.EventArguments['session_proposal']
-
-export type SessionRequestData =
-  SignClientTypes.EventArguments['session_request']
-
-export type Session = SessionTypes.Struct
-
-export type WalletConnectCallbacks = {
-  onSessionProposal: (data: SessionProposalData) => void
-  onSessionRequest: (data: SessionRequestData, session: Session) => void
-  onDisconnect: (data: PeerMeta) => void
 }
 
 class WalletConnectService {

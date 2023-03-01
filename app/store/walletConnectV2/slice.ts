@@ -1,10 +1,7 @@
 import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { WalletConnectState } from 'store/walletConnectV2'
 import { RootState } from 'store/index'
-import {
-  PeerMeta,
-  Session
-} from 'services/walletconnectv2/WalletConnectService'
+import { PeerMeta, Session } from 'services/walletconnectv2/types'
 import { Request, RpcError } from './types'
 
 export const reducerName = 'walletConnectV2'

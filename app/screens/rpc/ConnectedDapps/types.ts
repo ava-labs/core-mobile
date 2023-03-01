@@ -1,4 +1,4 @@
-import { Session } from 'services/walletconnectv2/WalletConnectService'
+import { Session } from 'services/walletconnectv2/types'
 import { ApprovedAppMeta } from 'store/walletConnect'
 import { WalletConnectVersions } from 'store/walletConnectV2'
 

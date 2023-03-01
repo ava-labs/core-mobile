@@ -1,5 +1,5 @@
 import { IClientMeta } from '@walletconnect/legacy-types'
-import { CLIENT_METADATA } from 'services/walletconnectv2/WalletConnectService'
+import { CLIENT_METADATA } from 'services/walletconnectv2/types'
 
 export const CLIENT_OPTIONS = {
   clientMeta: {

@@ -21,9 +21,8 @@ import { Checkbox } from 'components/Checkbox'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useSelector } from 'react-redux'
 import { ApprovedAppMeta, selectApprovedDApps } from 'store/walletConnect'
-import WalletConnectService, {
-  Session
-} from 'services/walletconnectv2/WalletConnectService'
+import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
+import { Session } from 'services/walletconnectv2/types'
 import { useDappConnectionV2 } from 'hooks/useDappConnectionV2'
 import { useDappConnectionV1 } from 'hooks/useDappConnectionV1'
 import { useDeeplink } from 'contexts/DeeplinkContext/DeeplinkContext'

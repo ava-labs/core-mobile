@@ -10,7 +10,7 @@ import { TokenWithBalanceERC20 } from 'store/balance'
 import { Checkbox } from 'components/Checkbox'
 import { BNInput } from 'components/BNInput'
 import BN from 'bn.js'
-import { PeerMeta } from 'services/walletconnectv2/WalletConnectService'
+import { PeerMeta } from 'services/walletconnectv2/types'
 
 export enum Limit {
   DEFAULT = 'DEFAULT',

@@ -1,7 +1,7 @@
 import { ethErrors } from 'eth-rpc-errors'
 import { useCallback } from 'react'
 import { useDispatch } from 'react-redux'
-import { Session } from 'services/walletconnectv2/WalletConnectService'
+import { Session } from 'services/walletconnectv2/types'
 import {
   onRequestApproved,
   onRequestRejected,

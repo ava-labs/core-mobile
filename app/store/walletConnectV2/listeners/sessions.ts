@@ -1,7 +1,5 @@
 import { AppListenerEffectAPI } from 'store/index'
-import WalletConnectService, {
-  WalletConnectCallbacks
-} from 'services/walletconnectv2/WalletConnectService'
+import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
 import { InteractionManager } from 'react-native'
 import { showSimpleToast } from 'components/Snackbar'
 import Logger from 'utils/Logger'
@@ -11,6 +9,7 @@ import {
   WalletState
 } from 'store/app'
 import { AnyAction } from '@reduxjs/toolkit'
+import { WalletConnectCallbacks } from 'services/walletconnectv2/types'
 import { killSessions, newSession, onDisconnect, onRequest } from '../slice'
 import { RpcMethod } from '../types'
 
