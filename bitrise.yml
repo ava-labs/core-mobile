@@ -350,4 +350,7 @@ workflows:
             set -o pipefail
             # debug log
             set -x
+
+            npm rebuild detox
+
             ./node_modules/.bin/detox test --configuration ios.internal.release.ci --cleanup
