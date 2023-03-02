@@ -7,6 +7,7 @@ import AvaButton from 'components/AvaButton'
 import OvalTagBg from 'components/OvalTagBg'
 import Avatar from 'components/Avatar'
 import { ScrollView } from 'react-native-gesture-handler'
+import isString from 'lodash.isstring'
 import FlexSpacer from 'components/FlexSpacer'
 import { RpcMethod } from 'store/walletConnectV2'
 import { WalletScreenProps } from 'navigation/types'
@@ -14,13 +15,13 @@ import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import RpcRequestBottomSheet from 'screens/rpc/components/shared/RpcRequestBottomSheet'
 import { useDappConnectionV2 } from 'hooks/useDappConnectionV2'
-import {
-  OldTypedData,
-  TypedData
-} from 'store/walletConnectV2/handlers/eth_sign/utils'
 import { truncateAddress } from 'utils/Utils'
 import { NetworkLogo } from 'screens/network/NetworkLogo'
 import { Row } from 'components/Row'
+import {
+  oldTypedDataSchema,
+  typedDataSchema
+} from 'store/walletConnectV2/handlers/eth_sign/schemas/ethSignTypedData'
 import EthSign from '../shared/signMessage/EthSign'
 import SignDataV4 from '../shared/signMessage/SignDataV4'
 import PersonalSign from '../shared/signMessage/PersonalSign'
@@ -102,16 +103,29 @@ const SignMessage = () => {
 
   const renderMessage = () => {
     switch (request.method) {
-      case RpcMethod.ETH_SIGN:
-        return <EthSign message={data as string} />
-      case RpcMethod.PERSONAL_SIGN:
-        return <PersonalSign message={data as string} />
+      case RpcMethod.ETH_SIGN: {
+        if (!isString(data)) return null
+        return <EthSign message={data} />
+      }
+      case RpcMethod.PERSONAL_SIGN: {
+        if (!isString(data)) return null
+        return <PersonalSign message={data} />
+      }
       case RpcMethod.SIGN_TYPED_DATA:
       case RpcMethod.SIGN_TYPED_DATA_V1:
-        return <SignDataV1 message={data as OldTypedData} />
       case RpcMethod.SIGN_TYPED_DATA_V3:
-      case RpcMethod.SIGN_TYPED_DATA_V4:
-        return <SignDataV4 message={data as TypedData} />
+      case RpcMethod.SIGN_TYPED_DATA_V4: {
+        const typedDataSchemaResult = typedDataSchema.safeParse(data)
+        const oldTypedDataSchemaResult = oldTypedDataSchema.safeParse(data)
+
+        if (oldTypedDataSchemaResult.success)
+          return <SignDataV1 message={oldTypedDataSchemaResult.data} />
+
+        if (typedDataSchemaResult.success)
+          return <SignDataV4 message={typedDataSchemaResult.data} />
+
+        return null
+      }
     }
   }
 

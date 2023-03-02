@@ -8,11 +8,11 @@ import AppNavigation from 'navigation/AppNavigation'
 import Logger from 'utils/Logger'
 import * as Sentry from '@sentry/react-native'
 import { RpcMethod } from 'store/walletConnectV2'
+import { parseRequestParams } from 'store/walletConnectV2/handlers/eth_sign/utils'
 import {
-  OldTypedData,
-  parseRequestParams,
-  TypedData
-} from 'store/walletConnectV2/handlers/eth_sign/utils'
+  TypedData,
+  OldTypedData
+} from 'store/walletConnectV2/handlers/eth_sign/schemas/ethSignTypedData'
 import { updateRequestStatus } from '../slice'
 import {
   ApproveResponse,

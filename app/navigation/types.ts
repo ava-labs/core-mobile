@@ -34,11 +34,11 @@ import { Network } from '@avalabs/chains-sdk'
 import { WalletSwitchEthereumChainRpcRequest } from 'store/walletConnect/handlers/wallet_switchEthereumChain'
 import { WalletSwitchEthereumChainRpcRequest as WalletSwitchEthereumChainRpcRequestV2 } from 'store/walletConnectV2/handlers/chain/wallet_switchEthereumChain/wallet_switchEthereumChain'
 import { SessionProposal } from 'store/walletConnectV2'
+import { TransactionParams } from 'store/walletConnectV2/handlers/eth_sendTransaction/utils'
 import {
   OldTypedData,
   TypedData
-} from 'store/walletConnectV2/handlers/eth_sign/utils'
-import { TransactionParams } from 'store/walletConnectV2/handlers/eth_sendTransaction/utils'
+} from 'store/walletConnectV2/handlers/eth_sign/schemas/ethSignTypedData'
 import { RootScreenStackParamList } from './RootScreenStack'
 import { OnboardingScreenStackParamList } from './OnboardScreenStack'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
@@ -126,14 +126,14 @@ export type SignTransactionV2Params = {
 
 export type SignMessageParams = {
   request: EthSignRpcRequest
-  data: string | undefined
+  data: string | TypedData | OldTypedData
 }
 
 export type SignMessageV2Params = {
   request: EthSignRpcRequestV2
   network: Network
   account: Account
-  data: string | OldTypedData | TypedData
+  data: string | TypedData | OldTypedData
 }
 
 export type BridgeAssetParams = {
