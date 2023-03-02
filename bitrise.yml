@@ -276,7 +276,7 @@ workflows:
 
             npm rebuild detox
 
-            ./node_modules/.bin/detox test android.internal.release.ci
+            ./node_modules/.bin/detox test --configuration android.internal.release.ci --cleanup
   ios:
     before_run:
     - _install-and-set-env
