@@ -34,7 +34,7 @@ workflows:
         - project_location: $ANDROID_PROJECT_LOCATION
         - module: $ANDROID_MODULE
         - build_type: aab
-        - arguments: assembleAndroidTest -DtestBuildType=debug
+        - arguments: 'assembleAndroidTest '
         - variant: $ANDROID_BUILD_VARIANT
     - save-gradle-cache@1: {}
     - sign-apk@1:
@@ -248,42 +248,28 @@ workflows:
     before_run:
     - _install-and-set-env
     - _set-version
-    - _build-android-e2e
+    - _build-android
+    after_run:
+    - _send-notification-slack
     envs:
     - ENVIRONMENT: production
       opts:
         is_expand: false
-    - ANDROID_BUILD_VARIANT: internalE2e
+    - ANDROID_BUILD_VARIANT: internalRelease
       opts:
         is_expand: false
     - APP_TITLE: Core Mobile Internal
       opts:
         is_expand: false
-    - E2E: "true"
-      opts:
-        is_expand: false
     steps:
-    - avd-manager@1:
+    - deploy-to-bitrise-io@2: {}
+    - create-install-page-qr-code@1: {}
+    - google-play-deploy@3:
         inputs:
-        - profile: pixel_4
-        - emulator_id: emulator-5554
-        - api_level: "30"
-    - wait-for-android-emulator@1: {}
-    - script@1:
-        inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            # fail if any commands fails
-            set -e
-            # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
-            set -o pipefail
-            # debug log
-            set -x
-            npm rebuild detox
-
-            echo $ANDROID_PROJECT_LOCATION
-
-            ./node_modules/.bin/detox test --configuration android.internal.release.ci --cleanup
+        - package_name: com.avaxwallet.internal
+        - app_path: $BITRISE_SIGNED_AAB_PATH
+        - track: internal
+        - service_account_json_key_path: $BITRISEIO_AVALABS_GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_KEY_URL
   ios:
     before_run:
     - _install-and-set-env
