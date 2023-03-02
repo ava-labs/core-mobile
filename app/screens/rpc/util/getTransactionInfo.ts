@@ -73,8 +73,18 @@ export async function getTxInfo(
     return { error: 'Contract source code not verified' }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const isJson = (str: any) => {
+    try {
+      JSON.parse(str)
+    } catch (e) {
+      return false
+    }
+    return true
+  }
+
   const abi = result || contractSource?.ABI
-  if (!abi) return { error: 'unable to get abi' }
+  if (!abi || !isJson(abi)) return { error: 'unable to get abi' }
   return parseDataWithABI(data, value, new Interface(abi))
 }
 
