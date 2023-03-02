@@ -164,6 +164,7 @@ export const useExplainTransactionShared = (args: Args) => {
    * Load transaction information
    *****************************************************************************/
   useEffect(() => {
+    // TODO: determine why loadTx render multiple times on Token Spend Approval
     async function loadTx() {
       if (!network) throw Error('Invalid network')
 
@@ -284,6 +285,7 @@ export const useExplainTransactionShared = (args: Args) => {
     loadTx().catch(err => {
       onError(err?.error || err.message)
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     network,
     avaxToken,
