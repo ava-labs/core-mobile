@@ -113,9 +113,10 @@ workflows:
     - xcode-build-for-simulator@0:
         inputs:
         - scheme: $IOS_SCHEME
-        - simulator_device: iPhone 14
+        - simulator_device: iPhone 13
         - configuration: $IOS_CONFIGURATION
         - project_path: $IOS_PROJECT_PATH
+        - code_signing_allowed: "yes"
   _install-and-set-env:
     steps:
     - restore-npm-cache@1: {}
@@ -353,9 +354,6 @@ workflows:
     - IOS_CONFIGURATION: Release
       opts:
         is_expand: false
-    - XCODE_EXPORT: app-store
-      opts:
-        is_expand: false
     - IOS_SCHEME: AvaxWalletInternal
       opts:
         is_expand: false
@@ -366,9 +364,6 @@ workflows:
       opts:
         is_expand: false
     steps:
-    - xcode-start-simulator@0:
-        inputs:
-        - destination: platform=iOS Simulator,name=iPhone 14,OS=latest
     - script@1:
         inputs:
         - content: |-
