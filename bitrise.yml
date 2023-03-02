@@ -52,6 +52,31 @@ workflows:
         - keystore_alias: $ANDROID_KEY_ALIAS
         - private_key_password: $ANDROID_KEY_PASSWORD
         - keystore_url: $BITRISEIO_ANDROID_KEY_STORE_URL
+  _build-android-e2e:
+    envs:
+    - PLATFORM: Android
+      opts:
+        is_expand: false
+    steps:
+    - install-missing-android-tools@3:
+        inputs:
+        - gradlew_path: $ANDROID_PROJECT_LOCATION/gradlew
+    - restore-gradle-cache@1: {}
+    - android-build-for-ui-testing@0:
+        inputs:
+        - project_location: $ANDROID_PROJECT_LOCATION
+        - variant: $ANDROID_BUILD_VARIANT
+        - module: $ANDROID_MODULE
+    - save-gradle-cache@1: {}
+    - sign-apk@1:
+        inputs:
+        - android_app: $BITRISE_AAB_PATH
+        - use_apk_signer: "true"
+        - debuggable_permitted: "false"
+        - keystore_url: $BITRISEIO_ANDROID_KEY_STORE_URL
+        - keystore_password: $ANDROID_STORE_PASSWORD
+        - keystore_alias: $ANDROID_KEY_ALIAS
+        - private_key_password: $ANDROID_KEY_PASSWORD
   _build-ios:
     envs:
     - PLATFORM: iOS
@@ -222,7 +247,7 @@ workflows:
     before_run:
     - _install-and-set-env
     - _set-version
-    - _build-android
+    - _build-android-e2e
     envs:
     - ENVIRONMENT: production
       opts:
