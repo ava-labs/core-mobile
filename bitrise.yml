@@ -249,8 +249,6 @@ workflows:
     - _install-and-set-env
     - _set-version
     - _build-android
-    after_run:
-    - _send-notification-slack
     envs:
     - ENVIRONMENT: production
       opts:
@@ -265,14 +263,20 @@ workflows:
       opts:
         is_expand: false
     steps:
-    - deploy-to-bitrise-io@2: {}
-    - create-install-page-qr-code@1: {}
-    - google-play-deploy@3:
+    - script@1:
         inputs:
-        - package_name: com.avaxwallet.internal
-        - app_path: $BITRISE_SIGNED_AAB_PATH
-        - track: internal
-        - service_account_json_key_path: $BITRISEIO_AVALABS_GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_KEY_URL
+        - content: |
+            #!/usr/bin/env bash
+            # fail if any commands fails
+            set -e
+            # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
+            set -o pipefail
+            # debug log
+            set -x
+
+            npm rebuild detox
+
+            ./node_modules/.bin/detox test android.internal.release.ci
   ios:
     before_run:
     - _install-and-set-env
