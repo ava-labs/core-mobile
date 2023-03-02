@@ -148,6 +148,12 @@ workflows:
             else
                 cp .env.production .env
             fi
+    - wait-for-android-emulator@1: {}
+    - avd-manager@1:
+        inputs:
+        - profile: pixel_4
+        - api_level: "30"
+        - headless_mode: "no"
   _send-notification-slack:
     steps:
     - slack@3:
