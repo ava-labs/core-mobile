@@ -25,6 +25,10 @@ workflows:
       opts:
         is_expand: false
     steps:
+    - avd-manager@1:
+        inputs:
+        - api_level: "32"
+        - profile: pixel_4
     - install-missing-android-tools@3:
         inputs:
         - gradlew_path: $ANDROID_PROJECT_LOCATION/gradlew
@@ -148,12 +152,6 @@ workflows:
             else
                 cp .env.production .env
             fi
-    - wait-for-android-emulator@1: {}
-    - avd-manager@1:
-        inputs:
-        - profile: pixel_4
-        - api_level: "30"
-        - headless_mode: "no"
   _send-notification-slack:
     steps:
     - slack@3:
@@ -269,6 +267,7 @@ workflows:
       opts:
         is_expand: false
     steps:
+    - wait-for-android-emulator@1: {}
     - script@1:
         inputs:
         - content: |
