@@ -1,378 +1,378 @@
-format_version: "11"
+format_version: '11'
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 project_type: react-native
 app:
   envs:
-  - WORKDIR: .
-    opts:
-      is_expand: false
-  - ANDROID_PROJECT_LOCATION: android
-    opts:
-      is_expand: false
-  - ANDROID_MODULE: app
-    opts:
-      is_expand: false
-  - IOS_PROJECT_PATH: ios/AvaxWallet.xcworkspace
-    opts:
-      is_expand: false
-  - APP_TITLE: Core Mobile
-    opts:
-      is_expand: false
+    - WORKDIR: .
+      opts:
+        is_expand: false
+    - ANDROID_PROJECT_LOCATION: android
+      opts:
+        is_expand: false
+    - ANDROID_MODULE: app
+      opts:
+        is_expand: false
+    - IOS_PROJECT_PATH: ios/AvaxWallet.xcworkspace
+      opts:
+        is_expand: false
+    - APP_TITLE: Core Mobile
+      opts:
+        is_expand: false
 workflows:
   _build-android:
     envs:
-    - PLATFORM: Android
-      opts:
-        is_expand: false
+      - PLATFORM: Android
+        opts:
+          is_expand: false
     steps:
-    - avd-manager@1:
-        inputs:
-        - api_level: "32"
-        - profile: pixel_4
-    - install-missing-android-tools@3:
-        inputs:
-        - gradlew_path: $ANDROID_PROJECT_LOCATION/gradlew
-    - restore-gradle-cache@1: {}
-    - android-build@1:
-        inputs:
-        - project_location: $ANDROID_PROJECT_LOCATION
-        - module: $ANDROID_MODULE
-        - build_type: aab
-        - arguments: :app:assembleInternalE2eAndroidTest
-        - variant: $ANDROID_BUILD_VARIANT
-    - save-gradle-cache@1: {}
-    - sign-apk@1:
-        inputs:
-        - android_app: $BITRISE_AAB_PATH
-        - use_apk_signer: "true"
-        - debuggable_permitted: "false"
-        - keystore_url: $BITRISEIO_ANDROID_KEY_STORE_URL
-        - keystore_password: $ANDROID_STORE_PASSWORD
-        - keystore_alias: $ANDROID_KEY_ALIAS
-        - private_key_password: $ANDROID_KEY_PASSWORD
-    - bitrise-step-export-universal-apk@0:
-        inputs:
-        - keystore_password: $ANDROID_STORE_PASSWORD
-        - keystore_alias: $ANDROID_KEY_ALIAS
-        - private_key_password: $ANDROID_KEY_PASSWORD
-        - keystore_url: $BITRISEIO_ANDROID_KEY_STORE_URL
+      - avd-manager@1:
+          inputs:
+            - api_level: '30'
+            - profile: pixel_4
+      - install-missing-android-tools@3:
+          inputs:
+            - gradlew_path: $ANDROID_PROJECT_LOCATION/gradlew
+      - restore-gradle-cache@1: {}
+      - android-build@1:
+          inputs:
+            - project_location: $ANDROID_PROJECT_LOCATION
+            - module: $ANDROID_MODULE
+            - build_type: aab
+            - arguments: :app:assembleInternalE2eAndroidTest
+            - variant: $ANDROID_BUILD_VARIANT
+      - save-gradle-cache@1: {}
+      - sign-apk@1:
+          inputs:
+            - android_app: $BITRISE_AAB_PATH
+            - use_apk_signer: 'true'
+            - debuggable_permitted: 'false'
+            - keystore_url: $BITRISEIO_ANDROID_KEY_STORE_URL
+            - keystore_password: $ANDROID_STORE_PASSWORD
+            - keystore_alias: $ANDROID_KEY_ALIAS
+            - private_key_password: $ANDROID_KEY_PASSWORD
+      - bitrise-step-export-universal-apk@0:
+          inputs:
+            - keystore_password: $ANDROID_STORE_PASSWORD
+            - keystore_alias: $ANDROID_KEY_ALIAS
+            - private_key_password: $ANDROID_KEY_PASSWORD
+            - keystore_url: $BITRISEIO_ANDROID_KEY_STORE_URL
   _build-android-e2e:
     envs:
-    - PLATFORM: Android
-      opts:
-        is_expand: false
+      - PLATFORM: Android
+        opts:
+          is_expand: false
     steps:
-    - install-missing-android-tools@3:
-        inputs:
-        - gradlew_path: $ANDROID_PROJECT_LOCATION/gradlew
-    - restore-gradle-cache@1: {}
-    - android-build-for-ui-testing@0:
-        inputs:
-        - project_location: $ANDROID_PROJECT_LOCATION
-        - variant: $ANDROID_BUILD_VARIANT
-        - module: $ANDROID_MODULE
-    - save-gradle-cache@1: {}
-    - sign-apk@1:
-        inputs:
-        - android_app: $BITRISE_AAB_PATH
-        - use_apk_signer: "true"
-        - debuggable_permitted: "false"
-        - keystore_url: $BITRISEIO_ANDROID_KEY_STORE_URL
-        - keystore_password: $ANDROID_STORE_PASSWORD
-        - keystore_alias: $ANDROID_KEY_ALIAS
-        - private_key_password: $ANDROID_KEY_PASSWORD
+      - install-missing-android-tools@3:
+          inputs:
+            - gradlew_path: $ANDROID_PROJECT_LOCATION/gradlew
+      - restore-gradle-cache@1: {}
+      - android-build-for-ui-testing@0:
+          inputs:
+            - project_location: $ANDROID_PROJECT_LOCATION
+            - variant: $ANDROID_BUILD_VARIANT
+            - module: $ANDROID_MODULE
+      - save-gradle-cache@1: {}
+      - sign-apk@1:
+          inputs:
+            - android_app: $BITRISE_AAB_PATH
+            - use_apk_signer: 'true'
+            - debuggable_permitted: 'false'
+            - keystore_url: $BITRISEIO_ANDROID_KEY_STORE_URL
+            - keystore_password: $ANDROID_STORE_PASSWORD
+            - keystore_alias: $ANDROID_KEY_ALIAS
+            - private_key_password: $ANDROID_KEY_PASSWORD
   _build-ios:
     envs:
-    - PLATFORM: iOS
-      opts:
-        is_expand: false
+      - PLATFORM: iOS
+        opts:
+          is_expand: false
     steps:
-    - restore-cocoapods-cache@1: {}
-    - cocoapods-install@2:
-        inputs:
-        - verbose: "true"
-        - source_root_path: $BITRISE_SOURCE_DIR/ios
-    - save-cocoapods-cache@1: {}
-    - xcode-archive@4:
-        inputs:
-        - project_path: $IOS_PROJECT_PATH
-        - scheme: $IOS_SCHEME
-        - compile_bitcode: "no"
-        - configuration: $IOS_CONFIGURATION
-        - distribution_method: $XCODE_EXPORT
-        - upload_bitcode: "no"
-        - automatic_code_signing: api-key
+      - restore-cocoapods-cache@1: {}
+      - cocoapods-install@2:
+          inputs:
+            - verbose: 'true'
+            - source_root_path: $BITRISE_SOURCE_DIR/ios
+      - save-cocoapods-cache@1: {}
+      - xcode-archive@4:
+          inputs:
+            - project_path: $IOS_PROJECT_PATH
+            - scheme: $IOS_SCHEME
+            - compile_bitcode: 'no'
+            - configuration: $IOS_CONFIGURATION
+            - distribution_method: $XCODE_EXPORT
+            - upload_bitcode: 'no'
+            - automatic_code_signing: api-key
   _build-ios-simulator:
     envs:
-    - PLATFORM: iOS
-      opts:
-        is_expand: false
+      - PLATFORM: iOS
+        opts:
+          is_expand: false
     steps:
-    - restore-cocoapods-cache@1: {}
-    - cocoapods-install@2:
-        inputs:
-        - verbose: "true"
-        - source_root_path: $BITRISE_SOURCE_DIR/ios
-    - save-cocoapods-cache@1: {}
-    - xcode-build-for-simulator@0:
-        inputs:
-        - scheme: $IOS_SCHEME
-        - simulator_device: iPhone 13
-        - configuration: $IOS_CONFIGURATION
-        - project_path: $IOS_PROJECT_PATH
-        - code_signing_allowed: "yes"
+      - restore-cocoapods-cache@1: {}
+      - cocoapods-install@2:
+          inputs:
+            - verbose: 'true'
+            - source_root_path: $BITRISE_SOURCE_DIR/ios
+      - save-cocoapods-cache@1: {}
+      - xcode-build-for-simulator@0:
+          inputs:
+            - scheme: $IOS_SCHEME
+            - simulator_device: iPhone 13
+            - configuration: $IOS_CONFIGURATION
+            - project_path: $IOS_PROJECT_PATH
+            - code_signing_allowed: 'yes'
   _install-and-set-env:
     steps:
-    - restore-npm-cache@1: {}
-    - yarn@0:
-        inputs:
-        - command: setup:ci
-        - workdir: $WORKDIR
-    - save-npm-cache@1: {}
-    - resource-archive@2:
-        title: Download and unzip env files
-        inputs:
-        - extract_to_path: $WORKDIR
-        - archive_url: $BITRISEIO_ENV_FILES_URL
-    - script@1:
-        title: Set Env
-        inputs:
-        - working_dir: $WORKDIR
-        - content: |-
-            #!/usr/bin/env bash
-            set -ex
-            if [ "$ENVIRONMENT" = "production" ]; then
-                if [ "$E2E" = "true" ]; then
-                    cp .env.production.e2e .env
+      - restore-npm-cache@1: {}
+      - yarn@0:
+          inputs:
+            - command: setup:ci
+            - workdir: $WORKDIR
+      - save-npm-cache@1: {}
+      - resource-archive@2:
+          title: Download and unzip env files
+          inputs:
+            - extract_to_path: $WORKDIR
+            - archive_url: $BITRISEIO_ENV_FILES_URL
+      - script@1:
+          title: Set Env
+          inputs:
+            - working_dir: $WORKDIR
+            - content: |-
+                #!/usr/bin/env bash
+                set -ex
+                if [ "$ENVIRONMENT" = "production" ]; then
+                    if [ "$E2E" = "true" ]; then
+                        cp .env.production.e2e .env
+                    else
+                        cp .env.production .env
+                    fi
+                elif [ "$ENVIRONMENT" = "development" ]; then
+                    cp .env.development .env
                 else
                     cp .env.production .env
                 fi
-            elif [ "$ENVIRONMENT" = "development" ]; then
-                cp .env.development .env
-            else
-                cp .env.production .env
-            fi
   _send-notification-slack:
     steps:
-    - slack@3:
-        inputs:
-        - pretext: '*New $PLATFORM Build Available!*'
-        - message: ""
-        - fields: |-
-            App|${APP_TITLE}
-            Platform|${PLATFORM}
-            Version|${APP_VERSION}.${BITRISE_BUILD_NUMBER}
-            Workflow|${BITRISE_TRIGGERED_WORKFLOW_ID}
-            Environment|${ENVIRONMENT}
-            Branch|${BITRISE_GIT_BRANCH}
-            Commit|${GIT_CLONE_COMMIT_HASH}
-        - title_on_error: $GIT_CLONE_COMMIT_MESSAGE_SUBJECT
-        - message_on_error: ""
-        - icon_url: ""
-        - from_username: ""
-        - timestamp: "no"
-        - color: '#40BA8E'
-        - footer_icon: ""
-        - from_username_on_error: ""
-        - icon_url_on_error: ""
-        - buttons: |
-            View App|${BITRISE_APP_URL}
-            View Build|${BITRISE_BUILD_URL}
-            Install|${BITRISE_PUBLIC_INSTALL_PAGE_URL}
-        - footer: ""
-        - thumb_url: $BITRISE_PUBLIC_INSTALL_PAGE_QR_CODE_IMAGE_URL
-        - webhook_url: $SLACK_WEBHOOK_URL
+      - slack@3:
+          inputs:
+            - pretext: '*New $PLATFORM Build Available!*'
+            - message: ''
+            - fields: |-
+                App|${APP_TITLE}
+                Platform|${PLATFORM}
+                Version|${APP_VERSION}.${BITRISE_BUILD_NUMBER}
+                Workflow|${BITRISE_TRIGGERED_WORKFLOW_ID}
+                Environment|${ENVIRONMENT}
+                Branch|${BITRISE_GIT_BRANCH}
+                Commit|${GIT_CLONE_COMMIT_HASH}
+            - title_on_error: $GIT_CLONE_COMMIT_MESSAGE_SUBJECT
+            - message_on_error: ''
+            - icon_url: ''
+            - from_username: ''
+            - timestamp: 'no'
+            - color: '#40BA8E'
+            - footer_icon: ''
+            - from_username_on_error: ''
+            - icon_url_on_error: ''
+            - buttons: |
+                View App|${BITRISE_APP_URL}
+                View Build|${BITRISE_BUILD_URL}
+                Install|${BITRISE_PUBLIC_INSTALL_PAGE_URL}
+            - footer: ''
+            - thumb_url: $BITRISE_PUBLIC_INSTALL_PAGE_QR_CODE_IMAGE_URL
+            - webhook_url: $SLACK_WEBHOOK_URL
   _set-version:
     steps:
-    - script@1:
-        title: Get Version
-        inputs:
-        - content: "#!/usr/bin/env bash\n\n# if branch is a release branch (\"release/2.0.1\" for example), grab version from branch name \n# else if tag is a release candidate tag (\"0.13.1-rc1\" for example), grab version from tag\nif [[ $BITRISE_GIT_BRANCH == *\"release/\"* ]]; then\n  arrIN=(${BITRISE_GIT_BRANCH//// })\n  version=${arrIN[1]}\nelif [[ $BITRISE_GIT_TAG =~ \"rc\" ]]; then\n  arrIN=(${BITRISE_GIT_TAG//-/ })\n  version=${arrIN[0]}\nelse\n  # else version will just be 0.0.0\n  version=\"0.0.0\"\nfi\n\nenvman add --key APP_VERSION --value \"${version}\""
-    - set-ios-info-plist-unified@1:
-        title: Set iOS Version
-        inputs:
-        - bundle_version: $BITRISE_BUILD_NUMBER
-        - bundle_version_short: $APP_VERSION
-        - info_plist_file: $BITRISE_SOURCE_DIR/ios/AvaxWallet/InfoRelease.plist
-    - change-android-versioncode-and-versionname@1:
-        title: Set Android Version
-        inputs:
-        - new_version_name: $APP_VERSION
-        - build_gradle_path: $BITRISE_SOURCE_DIR/$ANDROID_PROJECT_LOCATION/app/build.gradle
+      - script@1:
+          title: Get Version
+          inputs:
+            - content: "#!/usr/bin/env bash\n\n# if branch is a release branch (\"release/2.0.1\" for example), grab version from branch name \n# else if tag is a release candidate tag (\"0.13.1-rc1\" for example), grab version from tag\nif [[ $BITRISE_GIT_BRANCH == *\"release/\"* ]]; then\n  arrIN=(${BITRISE_GIT_BRANCH//// })\n  version=${arrIN[1]}\nelif [[ $BITRISE_GIT_TAG =~ \"rc\" ]]; then\n  arrIN=(${BITRISE_GIT_TAG//-/ })\n  version=${arrIN[0]}\nelse\n  # else version will just be 0.0.0\n  version=\"0.0.0\"\nfi\n\nenvman add --key APP_VERSION --value \"${version}\""
+      - set-ios-info-plist-unified@1:
+          title: Set iOS Version
+          inputs:
+            - bundle_version: $BITRISE_BUILD_NUMBER
+            - bundle_version_short: $APP_VERSION
+            - info_plist_file: $BITRISE_SOURCE_DIR/ios/AvaxWallet/InfoRelease.plist
+      - change-android-versioncode-and-versionname@1:
+          title: Set Android Version
+          inputs:
+            - new_version_name: $APP_VERSION
+            - build_gradle_path: $BITRISE_SOURCE_DIR/$ANDROID_PROJECT_LOCATION/app/build.gradle
   android:
     before_run:
-    - _install-and-set-env
-    - _set-version
-    - _build-android
+      - _install-and-set-env
+      - _set-version
+      - _build-android
     after_run:
-    - _send-notification-slack
+      - _send-notification-slack
     envs:
-    - ENVIRONMENT: production
-      opts:
-        is_expand: false
-    - ANDROID_BUILD_VARIANT: externalRelease
-      opts:
-        is_expand: false
+      - ENVIRONMENT: production
+        opts:
+          is_expand: false
+      - ANDROID_BUILD_VARIANT: externalRelease
+        opts:
+          is_expand: false
     steps:
-    - deploy-to-bitrise-io@2: {}
-    - create-install-page-qr-code@1: {}
-    - google-play-deploy@3:
-        inputs:
-        - package_name: com.avaxwallet
-        - app_path: $BITRISE_SIGNED_AAB_PATH
-        - track: internal
-        - service_account_json_key_path: $BITRISEIO_AVALABS_GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_KEY_URL
+      - deploy-to-bitrise-io@2: {}
+      - create-install-page-qr-code@1: {}
+      - google-play-deploy@3:
+          inputs:
+            - package_name: com.avaxwallet
+            - app_path: $BITRISE_SIGNED_AAB_PATH
+            - track: internal
+            - service_account_json_key_path: $BITRISEIO_AVALABS_GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_KEY_URL
   android-internal:
     before_run:
-    - _install-and-set-env
-    - _set-version
-    - _build-android
+      - _install-and-set-env
+      - _set-version
+      - _build-android
     after_run:
-    - _send-notification-slack
+      - _send-notification-slack
     envs:
-    - ENVIRONMENT: production
-      opts:
-        is_expand: false
-    - ANDROID_BUILD_VARIANT: internalRelease
-      opts:
-        is_expand: false
-    - APP_TITLE: Core Mobile Internal
-      opts:
-        is_expand: false
+      - ENVIRONMENT: production
+        opts:
+          is_expand: false
+      - ANDROID_BUILD_VARIANT: internalRelease
+        opts:
+          is_expand: false
+      - APP_TITLE: Core Mobile Internal
+        opts:
+          is_expand: false
     steps:
-    - deploy-to-bitrise-io@2: {}
-    - create-install-page-qr-code@1: {}
-    - google-play-deploy@3:
-        inputs:
-        - package_name: com.avaxwallet.internal
-        - app_path: $BITRISE_SIGNED_AAB_PATH
-        - track: internal
-        - service_account_json_key_path: $BITRISEIO_AVALABS_GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_KEY_URL
+      - deploy-to-bitrise-io@2: {}
+      - create-install-page-qr-code@1: {}
+      - google-play-deploy@3:
+          inputs:
+            - package_name: com.avaxwallet.internal
+            - app_path: $BITRISE_SIGNED_AAB_PATH
+            - track: internal
+            - service_account_json_key_path: $BITRISEIO_AVALABS_GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_KEY_URL
   android-internal-detox-test:
     before_run:
-    - _install-and-set-env
-    - _set-version
-    - _build-android
+      - _install-and-set-env
+      - _set-version
+      - _build-android
     envs:
-    - ENVIRONMENT: production
-      opts:
-        is_expand: false
-    - ANDROID_BUILD_VARIANT: internalRelease
-      opts:
-        is_expand: false
-    - APP_TITLE: Core Mobile Internal
-      opts:
-        is_expand: false
-    - ANDROID_TEST_APK: vagrant/git/app/build/apk
-      opts:
-        is_expand: false
+      - ENVIRONMENT: production
+        opts:
+          is_expand: false
+      - ANDROID_BUILD_VARIANT: internalRelease
+        opts:
+          is_expand: false
+      - APP_TITLE: Core Mobile Internal
+        opts:
+          is_expand: false
+      - ANDROID_TEST_APK: vagrant/git/app/build/apk
+        opts:
+          is_expand: false
     steps:
-    - wait-for-android-emulator@1: {}
-    - script@1:
-        inputs:
-        - content: |
-            #!/usr/bin/env bash
-            # fail if any commands fails
-            set -e
-            # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
-            set -o pipefail
-            # debug log
-            set -x
+      - wait-for-android-emulator@1: {}
+      - script@1:
+          inputs:
+            - content: |
+                #!/usr/bin/env bash
+                # fail if any commands fails
+                set -e
+                # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
+                set -o pipefail
+                # debug log
+                set -x
 
-            npm rebuild detox
+                npm rebuild detox
 
-            ./node_modules/.bin/detox test --configuration android.internal.release.ci --cleanup
+                ./node_modules/.bin/detox test --configuration android.internal.release.ci --cleanup
   ios:
     before_run:
-    - _install-and-set-env
-    - _set-version
-    - _build-ios
+      - _install-and-set-env
+      - _set-version
+      - _build-ios
     after_run:
-    - _send-notification-slack
+      - _send-notification-slack
     envs:
-    - ENVIRONMENT: production
-      opts:
-        is_expand: false
-    - IOS_CONFIGURATION: Release
-      opts:
-        is_expand: false
-    - XCODE_EXPORT: app-store
-      opts:
-        is_expand: false
-    - IOS_SCHEME: AvaxWallet
-      opts:
-        is_expand: false
+      - ENVIRONMENT: production
+        opts:
+          is_expand: false
+      - IOS_CONFIGURATION: Release
+        opts:
+          is_expand: false
+      - XCODE_EXPORT: app-store
+        opts:
+          is_expand: false
+      - IOS_SCHEME: AvaxWallet
+        opts:
+          is_expand: false
     steps:
-    - deploy-to-itunesconnect-application-loader@1:
-        inputs:
-        - api_key_path: $BITRISEIO_APPSTORE_CONNECT_API_KEY_URL
-        - altool_options: --verbose
-        - connection: api_key
-        - api_issuer: $APPSTORE_CONNECT_KEY_ISSUER_ID
+      - deploy-to-itunesconnect-application-loader@1:
+          inputs:
+            - api_key_path: $BITRISEIO_APPSTORE_CONNECT_API_KEY_URL
+            - altool_options: --verbose
+            - connection: api_key
+            - api_issuer: $APPSTORE_CONNECT_KEY_ISSUER_ID
   ios-internal:
     before_run:
-    - _install-and-set-env
-    - _set-version
-    - _build-ios
+      - _install-and-set-env
+      - _set-version
+      - _build-ios
     after_run:
-    - _send-notification-slack
+      - _send-notification-slack
     envs:
-    - ENVIRONMENT: production
-      opts:
-        is_expand: false
-    - IOS_CONFIGURATION: Release
-      opts:
-        is_expand: false
-    - XCODE_EXPORT: app-store
-      opts:
-        is_expand: false
-    - IOS_SCHEME: AvaxWalletInternal
-      opts:
-        is_expand: false
-    - APP_TITLE: Core Mobile Internal
-      opts:
-        is_expand: false
+      - ENVIRONMENT: production
+        opts:
+          is_expand: false
+      - IOS_CONFIGURATION: Release
+        opts:
+          is_expand: false
+      - XCODE_EXPORT: app-store
+        opts:
+          is_expand: false
+      - IOS_SCHEME: AvaxWalletInternal
+        opts:
+          is_expand: false
+      - APP_TITLE: Core Mobile Internal
+        opts:
+          is_expand: false
     steps:
-    - deploy-to-itunesconnect-application-loader@1:
-        inputs:
-        - api_key_path: $BITRISEIO_APPSTORE_CONNECT_API_KEY_URL
-        - altool_options: --verbose
-        - api_issuer: $APPSTORE_CONNECT_KEY_ISSUER_ID
-        - connection: api_key
+      - deploy-to-itunesconnect-application-loader@1:
+          inputs:
+            - api_key_path: $BITRISEIO_APPSTORE_CONNECT_API_KEY_URL
+            - altool_options: --verbose
+            - api_issuer: $APPSTORE_CONNECT_KEY_ISSUER_ID
+            - connection: api_key
   ios-internal-detox-test:
     description: just working on getting the e2e tests setup and running
     before_run:
-    - _install-and-set-env
-    - _set-version
-    - _build-ios-simulator
+      - _install-and-set-env
+      - _set-version
+      - _build-ios-simulator
     envs:
-    - ENVIRONMENT: production
-      opts:
-        is_expand: false
-    - IOS_CONFIGURATION: Release
-      opts:
-        is_expand: false
-    - IOS_SCHEME: AvaxWalletInternal
-      opts:
-        is_expand: false
-    - APP_TITLE: Core Mobile Internal
-      opts:
-        is_expand: false
-    - E2E: "true"
-      opts:
-        is_expand: false
+      - ENVIRONMENT: production
+        opts:
+          is_expand: false
+      - IOS_CONFIGURATION: Release
+        opts:
+          is_expand: false
+      - IOS_SCHEME: AvaxWalletInternal
+        opts:
+          is_expand: false
+      - APP_TITLE: Core Mobile Internal
+        opts:
+          is_expand: false
+      - E2E: 'true'
+        opts:
+          is_expand: false
     steps:
-    - script@1:
-        inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            # fail if any commands fails
-            set -e
-            # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
-            set -o pipefail
-            # debug log
-            set -x
+      - script@1:
+          inputs:
+            - content: |-
+                #!/usr/bin/env bash
+                # fail if any commands fails
+                set -e
+                # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
+                set -o pipefail
+                # debug log
+                set -x
 
-            npm rebuild detox
+                npm rebuild detox
 
-            ./node_modules/.bin/detox test --configuration ios.internal.release.ci --cleanup
+                ./node_modules/.bin/detox test --configuration ios.internal.release.ci --cleanup
