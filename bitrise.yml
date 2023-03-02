@@ -261,6 +261,9 @@ workflows:
     - APP_TITLE: Core Mobile Internal
       opts:
         is_expand: false
+    - ANDROID_TEST_APK: vagrant/git/app/build/apk
+      opts:
+        is_expand: false
     steps:
     - deploy-to-bitrise-io@2: {}
     - create-install-page-qr-code@1: {}

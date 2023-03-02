@@ -50,7 +50,7 @@ module.exports = {
     'android.internal.release.ci': {
       type: 'android.apk',
       binaryPath: process.env.BITRISE_APK_PATH,
-      testBinaryPath: process.env.BITRISE_TEST_APK_PATH
+      testBinaryPath: process.env.ANDROID_TEST_APK
     },
     'android.internal.e2e': {
       type: 'android.apk',
