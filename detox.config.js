@@ -49,8 +49,10 @@ module.exports = {
     },
     'android.internal.release.ci': {
       type: 'android.apk',
-      binaryPath: process.env.BITRISE_APK_PATH,
-      testBinaryPath: process.env.ANDROID_TEST_APK
+      binaryPath:
+        '/Users/vagrant/deploy/app-internal-universal-release-bitrise-signed.apk',
+      testBinaryPath:
+        '/Users/vagrant/git/android/app/build/outputs/apk/androidTest/internal/e2e/app-internal-e2e-androidTest.apk'
     },
     'android.internal.e2e': {
       type: 'android.apk',
