@@ -28,6 +28,7 @@ workflows:
     - avd-manager@1:
         inputs:
         - api_level: "30"
+        - headless_mode: "no"
         - profile: pixel_4
     - install-missing-android-tools@3:
         inputs:
