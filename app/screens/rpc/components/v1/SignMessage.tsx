@@ -19,11 +19,16 @@ import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { useSelector } from 'react-redux'
 import RpcRequestBottomSheet from 'screens/rpc/components/shared/RpcRequestBottomSheet'
-import { TypedData } from 'store/walletConnectV2/handlers/eth_sign/utils'
+import isString from 'lodash.isstring'
 import { useDappConnectionV1 } from 'hooks/useDappConnectionV1'
 import { RpcMethod } from 'store/walletConnectV2'
+import {
+  oldTypedDataSchema,
+  typedDataSchema
+} from 'store/walletConnectV2/handlers/eth_sign/schemas/ethSignTypedData'
 import SignDataV4 from '../shared/signMessage/SignDataV4'
 import PersonalSign from '../shared/signMessage/PersonalSign'
+import SignDataV1 from '../shared/signMessage/SignDataV1'
 
 type SignMessageScreenProps = WalletScreenProps<
   typeof AppNavigation.Modal.SignMessage
@@ -69,6 +74,36 @@ const SignMessage = () => {
     }
   }, [goBack, requestStatus])
 
+  const renderMessage = () => {
+    switch (request.payload.method) {
+      case RpcMethod.ETH_SIGN: {
+        if (!isString(data)) return null
+
+        return <EthSign message={data} />
+      }
+      case RpcMethod.PERSONAL_SIGN: {
+        if (!isString(data)) return null
+
+        return <PersonalSign message={data} />
+      }
+      case RpcMethod.SIGN_TYPED_DATA:
+      case RpcMethod.SIGN_TYPED_DATA_V1:
+      case RpcMethod.SIGN_TYPED_DATA_V3:
+      case RpcMethod.SIGN_TYPED_DATA_V4: {
+        const typedDataSchemaResult = typedDataSchema.safeParse(data)
+        const oldTypedDataSchemaResult = oldTypedDataSchema.safeParse(data)
+
+        if (oldTypedDataSchemaResult.success)
+          return <SignDataV1 message={oldTypedDataSchemaResult.data} />
+
+        if (typedDataSchemaResult.success)
+          return <SignDataV4 message={typedDataSchemaResult.data} />
+
+        return null
+      }
+    }
+  }
+
   const dappName = request.payload.peerMeta?.name ?? ''
   const dappLogoUri = request.payload.peerMeta?.icons[0]
 
@@ -94,17 +129,7 @@ const SignMessage = () => {
             </AvaText.Body3>
           </View>
           <Space y={24} />
-          {
-            {
-              [RpcMethod.ETH_SIGN]: <EthSign message={data as string} />,
-              [RpcMethod.PERSONAL_SIGN]: (
-                <PersonalSign message={data as string} />
-              ),
-              [RpcMethod.SIGN_TYPED_DATA]: (
-                <SignDataV4 message={data as unknown as TypedData} />
-              )
-            }[(request.payload.method as string) ?? 'unknown']
-          }
+          {renderMessage()}
         </View>
         <Space y={24} />
         <FlexSpacer />

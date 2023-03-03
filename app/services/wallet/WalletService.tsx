@@ -131,10 +131,15 @@ class WalletService {
           return personalSign({ privateKey: key, data })
         case RpcMethod.SIGN_TYPED_DATA:
         case RpcMethod.SIGN_TYPED_DATA_V1: {
+          // instances were observed where method was eth_signTypedData or eth_signTypedData_v1,
+          // however, payload was V4
+          const isV4 =
+            typeof data === 'object' && 'types' in data && 'primaryType' in data
+
           return signTypedData({
             privateKey: key,
             data,
-            version: SignTypedDataVersion.V1
+            version: isV4 ? SignTypedDataVersion.V4 : SignTypedDataVersion.V1
           })
         }
         case RpcMethod.SIGN_TYPED_DATA_V3:
