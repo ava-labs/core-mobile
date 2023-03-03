@@ -263,7 +263,7 @@ workflows:
     - APP_TITLE: Core Mobile Internal
       opts:
         is_expand: false
-    - ANDROID_TEST_APK: android/app/build/outputs/apk/androidTest.apk
+    - ANDROID_TEST_APK: android/app/build/outputs/apk/androidTest/app-internal-release-androidTest.apk
       opts:
         is_expand: false
     steps:
