@@ -47,7 +47,7 @@ export const NoWalletScreenStack = () => {
       />
       <NoWalletNavigator.Screen
         options={{
-          ...MainHeaderOptions('Currency')
+          ...MainHeaderOptions({ title: 'Currency' })
         }}
         name={AppNavigation.NoWallet.CurrencySelector}
         component={CurrencySelector}
@@ -62,7 +62,7 @@ export const NoWalletScreenStack = () => {
       />
       <NoWalletNavigator.Screen
         options={{
-          ...MainHeaderOptions('')
+          ...MainHeaderOptions({ title: '' })
         }}
         name={AppNavigation.Wallet.TokenDetail}
         component={TokenDetail}

@@ -41,7 +41,7 @@ function BridgeScreenStack() {
       <BridgeStack.Navigator>
         <BridgeStack.Screen
           options={{
-            ...MainHeaderOptions('')
+            ...MainHeaderOptions({ title: '' })
           }}
           name={AppNavigation.Bridge.Bridge}
           component={Bridge}

@@ -20,7 +20,7 @@ function LegalStackScreen(): JSX.Element {
         headerBackTitleVisible: false
       }}>
       <LegalStack.Screen
-        options={MainHeaderOptions('Legal')}
+        options={MainHeaderOptions({ title: 'Legal' })}
         name={AppNavigation.Legal.Legal}
         component={LegalScreen}
       />
