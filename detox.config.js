@@ -21,7 +21,7 @@ module.exports = {
     emulator_ci: {
       type: 'android.emulator',
       device: {
-        avdName: 'emulator'
+        avdName: 'emulator-5554'
       }
     }
   },

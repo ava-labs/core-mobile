@@ -29,6 +29,7 @@ workflows:
         inputs:
         - api_level: "30"
         - headless_mode: "no"
+        - emulator_id: emulator-5554
         - profile: pixel_4
     - install-missing-android-tools@3:
         inputs:
