@@ -9,13 +9,13 @@ import { ScrollView } from 'react-native-gesture-handler'
 import { WalletScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation, useRoute } from '@react-navigation/native'
-import { useDappConnectionContext } from 'contexts/DappConnectionContext'
-import RpcRequestBottomSheet from 'screens/rpc/components/RpcRequestBottomSheet'
 import ExportTxView from 'screens/rpc/components/SendTransaction/ExportTxView'
 import ImportTxView from 'screens/rpc/components/SendTransaction/ImportTxView'
 import BaseTxView from 'screens/rpc/components/SendTransaction/BaseTxView'
 import AddValidatorTxView from 'screens/rpc/components/SendTransaction/AddValidatorTxView'
 import AddDelegatorTxView from 'screens/rpc/components/SendTransaction/AddDelegatorTxView'
+import { useDappConnectionV1 } from 'hooks/useDappConnectionV1'
+import RpcRequestBottomSheet from 'screens/rpc/components/shared/RpcRequestBottomSheet'
 
 type SendTransactionScreenProps = WalletScreenProps<
   typeof AppNavigation.Modal.SendTransaction
@@ -26,7 +26,7 @@ const SendTransaction = () => {
   const { request, data } =
     useRoute<SendTransactionScreenProps['route']>().params
   const { onUserApproved: onApprove, onUserRejected: onReject } =
-    useDappConnectionContext()
+    useDappConnectionV1()
 
   const rejectAndClose = useCallback(() => {
     onReject(request)

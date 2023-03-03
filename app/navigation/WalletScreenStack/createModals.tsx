@@ -113,10 +113,6 @@ export const createModals = (WalletScreenS: WalletScreenSType) => {
         name={AppNavigation.Modal.SignTransactionV2}
         component={SignTransactionV2}
       />
-      <WalletScreenS.Screen
-        name={AppNavigation.Modal.SendTransaction}
-        component={SendTransaction}
-      />
     </WalletScreenS.Group>
   )
 

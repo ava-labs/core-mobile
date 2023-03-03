@@ -41,24 +41,28 @@ export enum RpcMethod {
   AVALANCHE_BRIDGE_ASSET = 'avalanche_bridgeAsset',
   AVALANCHE_CREATE_CONTACT = 'avalanche_createContact',
   AVALANCHE_GET_ACCOUNTS = 'avalanche_getAccounts',
+  AVALANCHE_GET_ACCOUNT_PUB_KEY = 'avalanche_getAccountPubKey',
   AVALANCHE_GET_BRIDGE_STATE = 'avalanche_getBridgeState',
   AVALANCHE_GET_CONTACTS = 'avalanche_getContacts',
   AVALANCHE_REMOVE_CONTACT = 'avalanche_removeContact',
   AVALANCHE_SELECT_ACCOUNT = 'avalanche_selectAccount',
   AVALANCHE_SET_DEVELOPER_MODE = 'avalanche_setDeveloperMode',
-  AVALANCHE_UPDATE_CONTACT = 'avalanche_updateContact'
+  AVALANCHE_UPDATE_CONTACT = 'avalanche_updateContact',
+  AVALANCHE_SEND_TRANSACTION = 'avalanche_sendTransaction'
 }
 
 export const CORE_ONLY_METHODS = [
   RpcMethod.AVALANCHE_BRIDGE_ASSET,
   RpcMethod.AVALANCHE_CREATE_CONTACT,
+  RpcMethod.AVALANCHE_GET_ACCOUNT_PUB_KEY,
   RpcMethod.AVALANCHE_GET_ACCOUNTS,
   RpcMethod.AVALANCHE_GET_BRIDGE_STATE,
   RpcMethod.AVALANCHE_GET_CONTACTS,
   RpcMethod.AVALANCHE_REMOVE_CONTACT,
   RpcMethod.AVALANCHE_SELECT_ACCOUNT,
   RpcMethod.AVALANCHE_SET_DEVELOPER_MODE,
-  RpcMethod.AVALANCHE_UPDATE_CONTACT
+  RpcMethod.AVALANCHE_UPDATE_CONTACT,
+  RpcMethod.AVALANCHE_SEND_TRANSACTION
 ]
 
 export type RpcError = EthereumRpcError<string> | EthereumProviderError<string>

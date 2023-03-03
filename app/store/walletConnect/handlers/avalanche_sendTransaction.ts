@@ -14,7 +14,7 @@ import networkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { parseAvalancheTx } from 'store/walletConnect/handlers/utils/parseAvalancheTx'
 import walletService from 'services/wallet/WalletService'
-import { RpcMethod } from '../types'
+import { RpcMethod } from 'store/walletConnectV2'
 import {
   ApproveResponse,
   DappRpcRequest,

@@ -2,7 +2,7 @@ import { AppListenerEffectAPI } from 'store'
 import { selectActiveAccount } from 'store/account'
 import walletService from 'services/wallet/WalletService'
 import { ethErrors } from 'eth-rpc-errors'
-import { RpcMethod } from '../types'
+import { RpcMethod } from 'store/walletConnectV2'
 import { DappRpcRequest, HandleResponse, RpcRequestHandler } from './types'
 
 export type AvalancheGetAccountPubKeyRpcRequest = DappRpcRequest<
