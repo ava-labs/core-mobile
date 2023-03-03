@@ -30,7 +30,7 @@ workflows:
         - api_level: "29"
         - headless_mode: "no"
         - emulator_id: emulator-5554
-        - abi: x86_64
+        - abi: arm64-v8a
         - profile: "4"
     - install-missing-android-tools@3:
         inputs:
@@ -40,8 +40,11 @@ workflows:
         inputs:
         - project_location: $ANDROID_PROJECT_LOCATION
         - module: $ANDROID_MODULE
-        - build_type: aab
         - arguments: :app:assembleInternalE2eAndroidTest
+        - app_path_pattern: |-
+            */deploy/*.apk
+            */deploy/*.aab
+        - build_type: aab
         - variant: $ANDROID_BUILD_VARIANT
     - save-gradle-cache@1: {}
     - sign-apk@1:
