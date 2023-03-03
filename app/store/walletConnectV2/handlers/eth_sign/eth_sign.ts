@@ -44,7 +44,9 @@ class EthSignHandler implements RpcRequestHandler<EthSignRpcRequest> {
     listenerApi: AppListenerEffectAPI
   ): HandleResponse => {
     const state = listenerApi.getState()
-    const result = parseRequestParams(request)
+    const { method, params } = request.data.params.request
+
+    const result = parseRequestParams({ method, params })
 
     if (!result.success) {
       Logger.error('invalid message params', result.error)

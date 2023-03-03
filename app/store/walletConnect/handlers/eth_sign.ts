@@ -8,8 +8,12 @@ import AppNavigation from 'navigation/AppNavigation'
 import Logger from 'utils/Logger'
 import * as Sentry from '@sentry/react-native'
 import { RpcMethod } from 'store/walletConnectV2'
+import { parseRequestParams } from 'store/walletConnectV2/handlers/eth_sign/utils'
+import {
+  TypedData,
+  OldTypedData
+} from 'store/walletConnectV2/handlers/eth_sign/schemas/ethSignTypedData'
 import { updateRequestStatus } from '../slice'
-import { parseMessage } from './utils/message'
 import {
   ApproveResponse,
   DappRpcRequest,
@@ -30,7 +34,7 @@ export type EthSignRpcRequest = DappRpcRequest<
 >
 
 type ApproveData = {
-  data: string | undefined
+  data: string | TypedData | OldTypedData
 }
 
 class EthSignHandler
@@ -46,13 +50,20 @@ class EthSignHandler
   ]
 
   handle = async (request: EthSignRpcRequest): HandleResponse => {
-    const { payload } = request
+    const result = parseRequestParams({
+      method: request.payload.method,
+      params: request.payload.params
+    })
 
-    if (!payload) {
-      return { success: false, error: ethErrors.rpc.invalidParams() }
+    if (!result.success) {
+      Logger.error('invalid message params', result.error)
+      return {
+        success: false,
+        error: ethErrors.rpc.invalidParams('Invalid message params')
+      }
     }
 
-    const { data } = parseMessage(payload)
+    const data = result.data.data
 
     Navigation.navigate({
       name: AppNavigation.Root.Wallet,
