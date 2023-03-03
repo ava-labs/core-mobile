@@ -49,7 +49,7 @@ const AddDelegatorTxView = ({
       <Card style={{ padding: 16 }}>
         <Row style={{ justifyContent: 'space-between' }}>
           <AvaText.Body3>Stake Amount</AvaText.Body3>
-          <View>
+          <View style={{ alignItems: 'flex-end' }}>
             <AvaText.Body2>
               {' '}
               {Number(bigIntToString(stake, 9))} AVAX
