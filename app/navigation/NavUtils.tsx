@@ -7,12 +7,21 @@ import { AppTheme } from 'contexts/ApplicationContext'
 
 export const BOTTOM_BAR_HEIGHT = 60
 
-export const MainHeaderOptions = (
-  title: string,
-  hideHeaderLeft = false,
+interface MainHeaderOptionsProps {
+  title: string
+  hideHeaderLeft?: boolean
   actionComponent?: React.ReactNode
-): Partial<StackNavigationOptions> => {
-  return {
+  headerBackTestID?: string
+}
+
+export const MainHeaderOptions = ({
+  title,
+  hideHeaderLeft = false,
+  actionComponent,
+  headerBackTestID
+}: MainHeaderOptionsProps): Partial<StackNavigationOptions> => {
+  const options: Partial<StackNavigationOptions> = {
+    headerBackTestID,
     headerShown: true,
     headerTitle: () => {
       return (
@@ -36,6 +45,7 @@ export const MainHeaderOptions = (
       shadowOpacity: 0
     }
   }
+  return options
 }
 
 export const SubHeaderOptions = (

@@ -13,6 +13,7 @@ interface BaseProps {
   title?: string | ReactNode
   message?: string | ReactNode
   button?: ReactNode
+  testID?: string
 }
 
 const ZeroStateBase: FC<BaseProps> = ({ image, title, message, button }) => {
@@ -175,7 +176,7 @@ function ZeroStateNoWatchlistFavorites({
       <ZeroStateBase
         title={title}
         message={message}
-        image={<StarSVG size={60} />}
+        image={<StarSVG size={60} testID="star_svg" />}
         button={
           <AvaButton.SecondaryLarge onPress={exploreAllTokens}>
             Explore all tokens
