@@ -27,13 +27,11 @@ workflows:
     steps:
     - avd-manager@1:
         inputs:
-        - api_level: "29"
+        - api_level: "28"
         - headless_mode: "no"
         - emulator_id: emulator-5554
-        - abi: x86_64
-        - start_command_flags: ""
+        - start_command_flags: -camera-back none
         - emulator_channel: "0"
-        - tag: google_apis_playstore
         - profile: "4"
     - install-missing-android-tools@3:
         inputs:
