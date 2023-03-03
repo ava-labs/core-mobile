@@ -30,7 +30,10 @@ workflows:
         - api_level: "29"
         - headless_mode: "no"
         - emulator_id: emulator-5554
-        - abi: arm64-v8a
+        - abi: x86_64
+        - start_command_flags: ""
+        - emulator_channel: "0"
+        - tag: google_apis_playstore
         - profile: "4"
     - install-missing-android-tools@3:
         inputs:
