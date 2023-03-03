@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit'
+import { createAction, createSlice } from '@reduxjs/toolkit'
 import { RootState } from 'store'
 import { initialState } from './types'
 
@@ -20,5 +20,9 @@ export const selectIsDeveloperMode = (state: RootState) =>
 
 // actions
 export const { toggleDeveloperMode } = advancedSlice.actions
+
+export const advancedReloadAccounts = createAction(
+  `${reducerName}/advancedReloadAccounts`
+)
 
 export const advancedReducer = advancedSlice.reducer

@@ -15,6 +15,7 @@ import {
 import { AppStartListening } from 'store/middleware/listener'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger, { LogLevel } from 'utils/Logger'
+import { extendAccountProps } from 'store/app/migrations'
 import {
   onAppLocked,
   onAppUnlocked,
@@ -39,6 +40,13 @@ const init = async (action: any, listenerApi: AppListenerEffectAPI) => {
     await BiometricsSDK.warmup()
   }
   dispatch(setIsReady(true))
+}
+
+const applyVersionMigrations = async (
+  action: unknown,
+  listenerApi: AppListenerEffectAPI
+) => {
+  extendAccountProps(listenerApi)
 }
 
 const listenToAppState = async (listenerApi: AppListenerEffectAPI) => {
@@ -129,6 +137,11 @@ export const addAppListeners = (startListening: AppStartListening) => {
   startListening({
     actionCreator: onRehydrationComplete,
     effect: init
+  })
+
+  startListening({
+    actionCreator: onRehydrationComplete,
+    effect: applyVersionMigrations
   })
 
   startListening({
