@@ -28,11 +28,9 @@ workflows:
     - avd-manager@1:
         inputs:
         - api_level: "28"
-        - headless_mode: "no"
         - emulator_id: emulator-5554
-        - start_command_flags: -camera-back none
-        - emulator_channel: "0"
-        - profile: "4"
+        - emulator_channel: "3"
+        - profile: pixel_4
     - install-missing-android-tools@3:
         inputs:
         - gradlew_path: $ANDROID_PROJECT_LOCATION/gradlew
