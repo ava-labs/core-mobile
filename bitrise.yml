@@ -40,9 +40,6 @@ workflows:
         - project_location: $ANDROID_PROJECT_LOCATION
         - module: $ANDROID_MODULE
         - arguments: :app:assembleInternalE2eAndroidTest
-        - app_path_pattern: |-
-            */deploy/*.apk
-            */deploy/*.aab
         - build_type: aab
         - variant: $ANDROID_BUILD_VARIANT
     - save-gradle-cache@1: {}
