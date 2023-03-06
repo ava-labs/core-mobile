@@ -156,7 +156,7 @@ class AvalancheSendTransactionHandler
           : 'Send transaction error'
       return {
         success: false,
-        error: ethErrors.rpc.invalidParams({
+        error: ethErrors.rpc.internal({
           message
         })
       }
