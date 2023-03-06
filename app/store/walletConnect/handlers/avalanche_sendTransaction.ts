@@ -16,6 +16,8 @@ import { parseAvalancheTx } from 'store/walletConnect/handlers/utils/parseAvalan
 import walletService from 'services/wallet/WalletService'
 import { RpcMethod } from 'store/walletConnectV2'
 import { VM } from '@avalabs/avalanchejs-v2/src/serializable/constants'
+import * as Sentry from '@sentry/react-native'
+import Logger from 'utils/Logger'
 import {
   ApproveResponse,
   DappRpcRequest,
@@ -149,11 +151,20 @@ class AvalancheSendTransactionHandler
       const result = await prov.issueTx(unsignedTx.getSignedTx())
       return { success: true, value: result.txID }
     } catch (e) {
-      // console.error(e.stack)
+      Logger.error(
+        'Unable to approve send transaction request',
+        JSON.stringify(e)
+      )
+
       const message =
         'message' in (e as Error)
           ? (e as Error).message
           : 'Send transaction error'
+
+      Sentry.captureException(e, {
+        tags: { dapps: 'sendTransaction' }
+      })
+
       return {
         success: false,
         error: ethErrors.rpc.internal({
