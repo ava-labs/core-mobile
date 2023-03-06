@@ -64,7 +64,7 @@ class AvalancheSendTransactionHandler
     if (!currentAddress) {
       return {
         success: false,
-        error: ethErrors.rpc.invalidRequest({
+        error: ethErrors.rpc.resourceNotFound({
           message: 'No active account found'
         })
       }
