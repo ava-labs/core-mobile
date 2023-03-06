@@ -79,7 +79,7 @@ class AvalancheSendTransactionHandler
     if (txData.type === 'unknown') {
       return {
         success: false,
-        error: ethErrors.rpc.invalidParams({
+        error: ethErrors.rpc.internal({
           message: 'Unable to parse transaction data. Unsupported tx type?'
         })
       }
