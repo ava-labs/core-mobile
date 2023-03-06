@@ -21,8 +21,6 @@ export const selectIsDeveloperMode = (state: RootState) =>
 // actions
 export const { toggleDeveloperMode } = advancedSlice.actions
 
-export const advancedReloadAccounts = createAction(
-  `${reducerName}/advancedReloadAccounts`
-)
+export const reloadAccounts = createAction(`${reducerName}/reloadAccounts`)
 
 export const advancedReducer = advancedSlice.reducer

@@ -1,4 +1,4 @@
-import { advancedReloadAccounts } from 'store/settings/advanced'
+import { reloadAccounts } from 'store/settings/advanced'
 import { AppListenerEffectAPI } from 'store/index'
 
 /**
@@ -14,6 +14,6 @@ export function extendAccountProps(listenerApi: AppListenerEffectAPI) {
   const { getState, dispatch } = listenerApi
   const { accounts } = getState().account
   if (!accounts[0]?.addressAVM) {
-    dispatch(advancedReloadAccounts)
+    dispatch(reloadAccounts)
   }
 }

@@ -1,7 +1,7 @@
 import { AppStartListening } from 'store/middleware/listener'
 import accountService from 'services/account/AccountsService'
 import {
-  advancedReloadAccounts,
+  reloadAccounts as reloadAccountsAction,
   selectIsDeveloperMode,
   toggleDeveloperMode
 } from 'store/settings/advanced'
@@ -52,7 +52,7 @@ export const addAccountListeners = (startListening: AppStartListening) => {
   })
 
   startListening({
-    matcher: isAnyOf(toggleDeveloperMode, advancedReloadAccounts),
+    matcher: isAnyOf(toggleDeveloperMode, reloadAccountsAction),
     effect: reloadAccounts
   })
 }
