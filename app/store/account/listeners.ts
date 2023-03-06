@@ -16,7 +16,7 @@ import {
 } from './slice'
 
 const createAndAddAccount = async (
-  action: unknown,
+  action: ReturnType<typeof addAccount>,
   listenerApi: AppListenerEffectAPI
 ) => {
   const state = listenerApi.getState()
