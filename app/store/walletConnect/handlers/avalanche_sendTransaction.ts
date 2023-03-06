@@ -9,12 +9,13 @@ import {
   UnsignedTx
 } from '@avalabs/avalanchejs-v2'
 import { ethErrors } from 'eth-rpc-errors'
-import { selectActiveAccount } from 'store/account'
+import { Account, selectActiveAccount } from 'store/account'
 import networkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { parseAvalancheTx } from 'store/walletConnect/handlers/utils/parseAvalancheTx'
 import walletService from 'services/wallet/WalletService'
 import { RpcMethod } from 'store/walletConnectV2'
+import { VM } from '@avalabs/avalanchejs-v2/src/serializable/constants'
 import {
   ApproveResponse,
   DappRpcRequest,
@@ -57,24 +58,8 @@ class AvalancheSendTransactionHandler
     }
     const unsignedTx = UnsignedTx.fromJSON(unsignedTxJson)
     const vm = unsignedTx.getVM()
-
-    const getAddressByVM = () => {
-      const activeAccount = selectActiveAccount(getState())
-
-      if (!activeAccount) {
-        return
-      }
-
-      if (vm === AVM) {
-        return activeAccount.addressAVM
-      } else if (vm === PVM) {
-        return activeAccount.addressPVM
-      } else if (vm === EVM) {
-        return activeAccount.addressCoreEth
-      }
-    }
-
-    const currentAddress = getAddressByVM()
+    const activeAccount = selectActiveAccount(getState())
+    const currentAddress = getAddressByVM(vm, activeAccount)
 
     if (!currentAddress) {
       return {
@@ -176,6 +161,20 @@ class AvalancheSendTransactionHandler
         })
       }
     }
+  }
+}
+
+function getAddressByVM(vm: VM, account: Account | undefined) {
+  if (!account) {
+    return
+  }
+
+  if (vm === AVM) {
+    return account.addressAVM
+  } else if (vm === PVM) {
+    return account.addressPVM
+  } else if (vm === EVM) {
+    return account.addressCoreEth
   }
 }
 
