@@ -140,7 +140,7 @@ export const addAppListeners = (startListening: AppStartListening) => {
   })
 
   startListening({
-    actionCreator: onRehydrationComplete,
+    actionCreator: onAppUnlocked,
     effect: applyVersionMigrations
   })
 
