@@ -24,41 +24,47 @@ const ExportTxView = ({
 
   return (
     <View>
-      <AvaText.Heading2>Approve Export</AvaText.Heading2>
-      <Space y={16} />
-      <AvaText.Body2
-        color={theme.colorText1}
-        textStyle={{ fontFamily: 'Inter-SemiBold' }}>
-        Chain: {AvalancheChainStrings[chain]}
-      </AvaText.Body2>
+      <AvaText.Heading4>Approve Export</AvaText.Heading4>
+      <Space y={28} />
+      <AvaText.TextLink color={theme.colorText1} textStyle={{ lineHeight: 20 }}>
+        Chain Details
+      </AvaText.TextLink>
       <Space y={8} />
       <Card style={{ padding: 16 }}>
         <Row style={{ justifyContent: 'space-between' }}>
-          <AvaText.Body3>Source chain</AvaText.Body3>
-          <AvaText.Body3>{AvalancheChainStrings[chain]}</AvaText.Body3>
+          <AvaText.Caption color={theme.colorText2}>
+            Source Chain
+          </AvaText.Caption>
+          <AvaText.Caption color={theme.colorText1}>
+            Avalanche {AvalancheChainStrings[chain]}
+          </AvaText.Caption>
         </Row>
         <Space y={8} />
         <Row style={{ justifyContent: 'space-between' }}>
-          <AvaText.Body3>Target chain</AvaText.Body3>
-          <AvaText.Body3>{AvalancheChainStrings[destination]}</AvaText.Body3>
+          <AvaText.Caption color={theme.colorText2}>
+            Destination Chain
+          </AvaText.Caption>
+          <AvaText.Caption color={theme.colorText1}>
+            Avalanche {AvalancheChainStrings[destination]}
+          </AvaText.Caption>
         </Row>
       </Card>
 
-      <Space y={16} />
-      <AvaText.Body2
-        color={theme.colorText1}
-        textStyle={{ fontFamily: 'Inter-SemiBold' }}>
-        Token
-      </AvaText.Body2>
+      <Space y={32} />
+      <AvaText.TextLink color={theme.colorText1} textStyle={{ lineHeight: 20 }}>
+        Balance Change
+      </AvaText.TextLink>
       <Space y={8} />
       <Card style={{ padding: 16 }}>
         <Row style={{ justifyContent: 'space-between' }}>
-          <AvaText.Body3>Transaction type</AvaText.Body3>
-          <AvaText.Body3>
+          <AvaText.Caption color={theme.colorText2}>
+            Transaction type
+          </AvaText.Caption>
+          <AvaText.Caption color={theme.colorText1}>
             {type ? (type[0] || '').toUpperCase() + type.slice(1) : ''}
-          </AvaText.Body3>
+          </AvaText.Caption>
         </Row>
-        <Separator style={{ marginVertical: 8 }} />
+        <Separator style={{ marginVertical: 16 }} color={theme.neutral800} />
         <Row style={{ justifyContent: 'space-between' }}>
           <Row style={{ alignItems: 'center' }}>
             <AvaToken color={theme.tokenLogoBg} />
@@ -66,11 +72,11 @@ const ExportTxView = ({
             <AvaText.Heading3>AVAX</AvaText.Heading3>
           </Row>
           <View style={{ alignItems: 'flex-end' }}>
-            <AvaText.Body2 color={theme.white}>
+            <AvaText.Subtitle2 color={theme.white}>
               {Number(bigIntToString(amount, 9))} AVAX
-            </AvaText.Body2>
+            </AvaText.Subtitle2>
             <Space y={2} />
-            <AvaText.Body3 color={theme.colorText2}>
+            <AvaText.Body3 color={theme.neutral400}>
               {tokenInCurrencyFormatter(
                 Number(bigIntToString(amount, 9)) * avaxPrice
               )}
@@ -79,22 +85,20 @@ const ExportTxView = ({
         </Row>
       </Card>
 
-      <Space y={16} />
-      <AvaText.Body2
-        color={theme.colorText1}
-        textStyle={{ fontFamily: 'Inter-SemiBold' }}>
+      <Space y={24} />
+      <AvaText.TextLink color={theme.colorText1} textStyle={{ lineHeight: 20 }}>
         Network fee
-      </AvaText.Body2>
+      </AvaText.TextLink>
       <Space y={8} />
       <Card style={{ padding: 16 }}>
         <Row style={{ justifyContent: 'space-between' }}>
-          <AvaText.Body3>Fee Amount</AvaText.Body3>
+          <AvaText.Body3 color={theme.neutral400}>Fee Amount</AvaText.Body3>
           <View style={{ alignItems: 'flex-end' }}>
-            <AvaText.Body2 color={theme.white}>
+            <AvaText.Subtitle2 color={theme.neutral50}>
               {Number(bigIntToString(txFee, 9))} AVAX
-            </AvaText.Body2>
+            </AvaText.Subtitle2>
             <Space y={2} />
-            <AvaText.Body3 color={theme.colorText2}>
+            <AvaText.Body3 color={theme.neutral400}>
               {tokenInCurrencyFormatter(
                 Number(bigIntToString(txFee, 9)) * avaxPrice
               )}
