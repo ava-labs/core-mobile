@@ -135,6 +135,7 @@ enum ModalScreens {
   UpdateContact = 'ModalScreens.UpdateContact',
   SelectAccount = 'ModalScreens.SelectAccount',
   SignTransaction = 'ModalScreens.SignTransaction',
+  SendTransaction = 'ModalScreens.SendTransaction',
   SignMessage = 'ModalScreens.SignMessage',
   BridgeAsset = 'ModalScreens.BridgeAsset',
   AddEthereumChain = 'ModalScreens.AddEthereumChain',

@@ -181,6 +181,67 @@ const TextHeading3: FC<AvaTextProps> = ({
   )
 }
 
+const TextHeading4: FC<AvaTextProps> = ({
+  textStyle,
+  children,
+  currency,
+  ...rest
+}) => {
+  const theme = useApplicationContext().theme
+  return (
+    <AvaxTextBase
+      {...rest}
+      currency={currency}
+      style={[styles.heading4, { color: theme.neutral50 }, textStyle]}>
+      {children}
+    </AvaxTextBase>
+  )
+}
+
+const TextSubtitle1: FC<AvaTextProps> = ({
+  textStyle,
+  color,
+  children,
+  currency,
+  ...rest
+}) => {
+  const theme = useApplicationContext().theme
+  return (
+    <AvaxTextBase
+      {...rest}
+      currency={currency}
+      style={[
+        styles.subtitle1,
+        { color: color || theme.neutralBlack },
+        textStyle
+      ]}>
+      {children}
+    </AvaxTextBase>
+  )
+}
+
+const TextSubtitle2: FC<AvaTextProps> = ({
+  textStyle,
+  color,
+  children,
+  currency,
+  ...rest
+}) => {
+  const theme = useApplicationContext().theme
+  return (
+    <AvaxTextBase
+      {...rest}
+      currency={currency}
+      style={[
+        styles.subtitle2,
+        { color: color || theme.neutralBlack },
+        textStyle
+      ]}>
+      {children}
+    </AvaxTextBase>
+  )
+}
+
 const TextBody1: FC<AvaTextProps> = ({
   textStyle,
   children,
@@ -240,11 +301,20 @@ const TextBody4: FC<AvaTextProps> = ({ textStyle, children, ...rest }) => {
   )
 }
 
-const TextLink: FC<AvaTextProps> = ({ textStyle, children, ...rest }) => {
+const TextLink: FC<AvaTextProps> = ({
+  textStyle,
+  color,
+  children,
+  ...rest
+}) => {
   const { theme } = useApplicationContext()
   return (
     <AvaxTextBase
-      style={[styles.textLink, { color: theme.colorPrimary1 }, textStyle]}
+      style={[
+        styles.textLink,
+        { color: color || theme.colorPrimary1 },
+        textStyle
+      ]}
       {...rest}>
       {children}
     </AvaxTextBase>
@@ -357,6 +427,9 @@ const AvaText = {
   Heading1: TextHeading1,
   Heading2: TextHeading2,
   Heading3: TextHeading3,
+  Heading4: TextHeading4,
+  Subtitle1: TextSubtitle1,
+  Subtitle2: TextSubtitle2,
   Body1: TextBody1,
   Body2: TextBody2,
   Body3: TextBody3,
@@ -399,6 +472,21 @@ const styles = StyleSheet.create({
   heading3: {
     fontFamily: 'Inter-SemiBold',
     fontSize: 16,
+    lineHeight: 24
+  },
+  heading4: {
+    fontFamily: 'Inter-Bold',
+    fontSize: 24,
+    lineHeight: 32
+  },
+  subtitle1: {
+    fontFamily: 'Inter-SemiBold',
+    fontSize: 16,
+    lineHeight: 28
+  },
+  subtitle2: {
+    fontFamily: 'Inter-SemiBold',
+    fontSize: 14,
     lineHeight: 24
   },
   body1: {

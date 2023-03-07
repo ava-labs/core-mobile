@@ -1,3 +1,5 @@
+import { avalancheGetAccountPubKeyHandler } from 'store/walletConnect/handlers/avalanche_getAccountPubKey'
+import { avalancheSendTransactionHandler } from 'store/walletConnect/handlers/avalanche_sendTransaction'
 import { avalancheGetAccountsHandler } from './avalanche_getAccounts'
 import { avalancheGetContactsHandler } from './avalanche_getContacts'
 import { avalancheUpdateContactHandler } from './avalanche_updateContact'
@@ -18,8 +20,10 @@ const handlerMap = [
   avalancheCreateContactHandler,
   avalancheRemoveContactHandler,
   avalancheUpdateContactHandler,
+  avalancheGetAccountPubKeyHandler,
   avalancheGetAccountsHandler,
   avalancheGetContactsHandler,
+  avalancheSendTransactionHandler,
   ethSendTransactionHandler,
   ethSignHandler,
   sessionRequestHandler,
