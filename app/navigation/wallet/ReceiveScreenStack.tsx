@@ -33,8 +33,7 @@ const ReceiveScreenStack = () => {
       <ReceiveStack.Screen
         name={AppNavigation.ReceiveTokens.ReceiveCChain}
         options={{
-          // eslint-disable-next-line react/no-unstable-nested-components
-          header: () => <TopNavigationHeader showBackButton />
+          header: TopNavigation
         }}
         component={ReceiveTokenScreen}
       />
@@ -45,5 +44,6 @@ const ReceiveScreenStack = () => {
 }
 
 const ReceiveTokenScreen = () => <ReceiveToken embedded={false} />
+const TopNavigation = () => <TopNavigationHeader showBackButton />
 
 export default ReceiveScreenStack

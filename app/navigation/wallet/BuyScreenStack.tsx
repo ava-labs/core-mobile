@@ -33,8 +33,7 @@ const BuyScreenStack = () => {
       <BuyStack.Screen
         name={AppNavigation.Wallet.Buy}
         options={{
-          // eslint-disable-next-line react/no-unstable-nested-components
-          header: () => <TopNavigationHeader showBackButton />
+          header: TopNavigation
         }}
         component={BuyScreen}
       />
@@ -45,5 +44,6 @@ const BuyScreenStack = () => {
 }
 
 const BuyScreen = () => <Buy />
+const TopNavigation = () => <TopNavigationHeader showBackButton />
 
 export default BuyScreenStack

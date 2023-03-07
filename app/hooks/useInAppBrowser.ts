@@ -5,6 +5,7 @@ import { resolve } from '@avalabs/utils-sdk'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import Config from 'react-native-config'
+import { showSimpleToast } from 'components/Snackbar'
 
 const moonpayURL = async (address: string): Promise<{ url: string }> => {
   return await fetch(`${Config.PROXY_URL}/moonpay/${address}`).then(response =>
@@ -22,10 +23,15 @@ const useInAppBrowser = () => {
 
   async function openMoonPay() {
     // TODO: Determine we should handle the error case
-    const [result] = await resolve(moonpayURL(addressC))
-
-    const moonpayUrl = result?.url ?? ''
-    openUrl(moonpayUrl)
+    const [result, error] = await resolve(moonpayURL(addressC))
+    if (error) {
+      return showSimpleToast(
+        'We cannot send your to our partner, MoonPay, at this time. Please try again soon'
+      )
+    } else {
+      const moonpayUrl = result?.url ?? ''
+      return openUrl(moonpayUrl)
+    }
   }
 
   async function openUrl(url: string) {

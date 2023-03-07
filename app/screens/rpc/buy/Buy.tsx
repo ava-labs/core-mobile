@@ -57,7 +57,6 @@ const Buy: FC = () => {
               accessibilityRole="image"
               source={MoonPayLogo}
               style={style.logo}
-              testID="back_button"
             />
             <Space y={16} />
           </AvaButton.Base>
@@ -78,7 +77,6 @@ const Buy: FC = () => {
               accessibilityRole="image"
               source={CoinbaseLogo}
               style={style.logo}
-              testID="back_button"
             />
             <Space y={16} />
           </AvaButton.Base>

@@ -29,6 +29,7 @@ const BuyCarefully = () => {
   const { openMoonPay } = useInAppBrowser()
 
   const openCoinBase = () => {
+    // TODO: Will remove and updated this feature in ticket CP-4887
     console.log('open coinbase')
   }
 
