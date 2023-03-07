@@ -42,7 +42,7 @@ export const useIsUIDisabled = (ui: UI) => {
 
   //keep this on top of this list
   if (Platform.OS === 'ios' && ui === UI.Buy) {
-    return true
+    return false // TODO: revert after testing
   }
 
   if (enabledUIs[ui]?.includes(chainId)) {

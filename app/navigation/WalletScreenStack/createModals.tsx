@@ -24,6 +24,7 @@ import AddEthereumChain from 'screens/rpc/components/v1/AddEthereumChain'
 import SwitchEthereumChain from 'screens/rpc/components/v1/SwitchEthereumChain'
 import AddEthereumChainV2 from 'screens/rpc/components/v2/AddEthereumChain'
 import SwitchEthereumChainV2 from 'screens/rpc/components/v2/SwitchEthereumChain'
+import BuyCarefully from 'screens/rpc/buy/BuyCarefully'
 import { SignOutModalScreen, WalletScreenSType } from './WalletScreenStack'
 
 export const createModals = (WalletScreenS: WalletScreenSType) => {
@@ -46,6 +47,10 @@ export const createModals = (WalletScreenS: WalletScreenSType) => {
       <WalletScreenS.Screen
         name={AppNavigation.Modal.SelectAccount}
         component={SelectAccount}
+      />
+      <WalletScreenS.Screen
+        name={AppNavigation.Modal.BuyCarefully}
+        component={BuyCarefully}
       />
       <WalletScreenS.Screen
         name={AppNavigation.Modal.SignTransaction}

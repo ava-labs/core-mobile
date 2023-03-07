@@ -26,6 +26,9 @@ import {
 import ReceiveScreenStack, {
   ReceiveStackParamList
 } from 'navigation/wallet/ReceiveScreenStack'
+import BuyScreenStack, {
+  BuyStackParamList
+} from 'navigation/wallet/BuyScreenStack'
 import SendScreenStack, {
   SendStackParamList
 } from 'navigation/wallet/SendScreenStack'
@@ -84,7 +87,8 @@ import {
   AddEthereumChainV2Params,
   SwitchEthereumChainV2Params,
   BridgeAssetV2Params,
-  SignTransactionV2Params
+  SignTransactionV2Params,
+  BuyCarefullyParams
 } from '../types'
 import AdvancedStackScreen, {
   AdvancedStackParamList
@@ -103,6 +107,9 @@ export type WalletScreenStackParams = {
     | undefined
   [AppNavigation.Wallet.ReceiveTokens]:
     | NavigatorScreenParams<ReceiveStackParamList>
+    | undefined
+  [AppNavigation.Wallet.Buy]:
+    | NavigatorScreenParams<BuyStackParamList>
     | undefined
   [AppNavigation.Wallet.AddCustomToken]: undefined
   [AppNavigation.Wallet.TokenDetail]: { tokenId: string }
@@ -140,6 +147,7 @@ export type WalletScreenStackParams = {
   [AppNavigation.Modal.CreateRemoveContact]: CreateRemoveContactParams
   [AppNavigation.Modal.UpdateContact]: UpdateContactParams
   [AppNavigation.Modal.SelectAccount]: SelectAccountParams
+  [AppNavigation.Modal.BuyCarefully]: BuyCarefullyParams
   [AppNavigation.Modal.SignTransaction]: SignTransactionParams
   [AppNavigation.Modal.SignMessage]: SignMessageParams
   [AppNavigation.Modal.BridgeAsset]: BridgeAssetParams
@@ -219,6 +227,10 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
             headerShown: false
           }}
           component={SendScreenStack}
+        />
+        <WalletScreenS.Screen
+          name={AppNavigation.Wallet.Buy}
+          component={BuyScreenStack}
         />
         <WalletScreenS.Screen
           name={AppNavigation.Wallet.ReceiveTokens}
