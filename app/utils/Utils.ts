@@ -18,6 +18,13 @@ export const truncateAddress = (address: string, size = 6): string => {
   return `${firstChunk}...${lastChunk}`
 }
 
+export const truncateNodeId = (nodeId: string, size = 6): string => {
+  const firstChunk = nodeId.substring(0, 'NodeID-'.length + size)
+  const lastChunk = nodeId.substr(-(size / 1.5))
+
+  return `${firstChunk}...${lastChunk}`
+}
+
 export function formatTokenAmount(amount: Big, denomination = 2): string {
   const formatter = new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 2,
