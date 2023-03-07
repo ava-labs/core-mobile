@@ -60,7 +60,9 @@ const testHandleInvalidParams = async (params: unknown) => {
 }
 
 const testApproveInvalidData = async (data: unknown) => {
-  const testRequest = createRequest([0])
+  const testRequest = createRequest([
+    { id: '1aec34f6-308d-4962-ab1b-283504cc0960' }
+  ])
 
   const result = await handler.approve(
     { request: testRequest, data },

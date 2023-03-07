@@ -112,7 +112,7 @@ const testHandleInvalidParams = async (params: unknown) => {
 }
 
 const testApproveInvalidData = async (data: unknown) => {
-  const testRequest = createRequest([0])
+  const testRequest = createRequest([sepoliaMainnetInfo])
 
   const result = await handler.approve(
     { request: testRequest, data },

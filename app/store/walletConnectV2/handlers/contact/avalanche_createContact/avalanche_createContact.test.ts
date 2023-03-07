@@ -54,7 +54,13 @@ const testHandleInvalidParams = async (params: unknown) => {
 }
 
 const testApproveInvalidData = async (data: unknown) => {
-  const testRequest = createRequest([0])
+  const testRequest = createRequest([
+    {
+      name: 'Bob',
+      addressBTC: 'tb1qjmapax0vtca726g8kaermd5rzdljql66esxs49',
+      address: '0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318'
+    }
+  ])
 
   const result = await handler.approve(
     { request: testRequest, data },
