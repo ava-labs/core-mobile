@@ -126,9 +126,9 @@ const SignTransaction = () => {
         ),
         duration: 'long'
       })
-      goBack()
+      rejectAndClose()
     }
-  }, [request, goBack, txFailedError])
+  }, [rejectAndClose, request, txFailedError])
 
   const explorerUrl =
     activeNetwork &&
