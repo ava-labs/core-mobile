@@ -5,8 +5,8 @@
     "namespaces": {
       "eip155": {
         "accounts": [
-          "eip155:43113:0x341b0073b66bfc19FCB54308861f604F5Eb8f51b",
-          "eip155:43114:0x341b0073b66bfc19FCB54308861f604F5Eb8f51b"
+          "eip155:43113:0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318",
+          "eip155:43114:0xcA0E993876152ccA6053eeDFC753092c8cE712D0"
         ],
         "methods": [
           "eth_sendTransaction",
