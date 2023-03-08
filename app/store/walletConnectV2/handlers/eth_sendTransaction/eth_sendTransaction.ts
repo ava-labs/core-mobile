@@ -1,7 +1,7 @@
 import { txToCustomEvmTx } from 'screens/rpc/util/txToCustomEvmTx'
 import { getEvmProvider } from 'services/network/utils/providerUtils'
-import walletService from 'services/wallet/WalletService'
-import networkService from 'services/network/NetworkService'
+import WalletService from 'services/wallet/WalletService'
+import NetworkService from 'services/network/NetworkService'
 import { AppListenerEffectAPI } from 'store'
 import { selectNetworkFee, fetchNetworkFee } from 'store/networkFee'
 import * as Navigation from 'utils/Navigation'
@@ -115,7 +115,7 @@ class EthSendTransactionHandler
     try {
       const evmParams = await txToCustomEvmTx(networkFees.low, params)
 
-      const signedTx = await walletService.sign(
+      const signedTx = await WalletService.sign(
         {
           nonce,
           chainId: network.chainId,
@@ -129,7 +129,7 @@ class EthSendTransactionHandler
         network
       )
 
-      const transactionHash = await networkService.sendTransaction(
+      const transactionHash = await NetworkService.sendTransaction(
         signedTx,
         network,
         true
