@@ -5,20 +5,20 @@ import {
   TransitionPresets
 } from '@react-navigation/stack'
 import AppNavigation from 'navigation/AppNavigation'
-import ReceiveToken from 'screens/receive/ReceiveToken'
 import TopNavigationHeader from 'navigation/TopNavigationHeader'
+import Buy from 'screens/rpc/buy/Buy'
 
-export type ReceiveStackParamList = {
-  [AppNavigation.ReceiveTokens.ReceiveCChain]: undefined
+export type BuyStackParamList = {
+  [AppNavigation.Buy.Buy]: undefined
 }
 
-const ReceiveStack = createStackNavigator<ReceiveStackParamList>()
+const BuyStack = createStackNavigator<BuyStackParamList>()
 
-const ReceiveScreenStack = () => {
+const BuyScreenStack = () => {
   const { theme } = useApplicationContext()
 
   const receiveNavigator = (
-    <ReceiveStack.Navigator
+    <BuyStack.Navigator
       screenOptions={{
         presentation: 'card',
         headerBackTitleVisible: false,
@@ -30,20 +30,20 @@ const ReceiveScreenStack = () => {
         },
         ...TransitionPresets.SlideFromRightIOS
       }}>
-      <ReceiveStack.Screen
-        name={AppNavigation.ReceiveTokens.ReceiveCChain}
+      <BuyStack.Screen
+        name={AppNavigation.Buy.Buy}
         options={{
           header: TopNavigation
         }}
-        component={ReceiveTokenScreen}
+        component={BuyScreen}
       />
-    </ReceiveStack.Navigator>
+    </BuyStack.Navigator>
   )
 
   return receiveNavigator
 }
 
-const ReceiveTokenScreen = () => <ReceiveToken embedded={false} />
+const BuyScreen = () => <Buy />
 const TopNavigation = () => <TopNavigationHeader showBackButton />
 
-export default ReceiveScreenStack
+export default BuyScreenStack
