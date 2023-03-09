@@ -117,6 +117,10 @@ export type SelectAccountV2Params = {
   account: Account
 }
 
+export type BuyCarefullyParams = {
+  tokenType: string
+}
+
 export type SignTransactionParams = {
   request: EthSendTransactionRpcRequest
 }
