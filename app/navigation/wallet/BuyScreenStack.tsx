@@ -9,7 +9,7 @@ import TopNavigationHeader from 'navigation/TopNavigationHeader'
 import Buy from 'screens/rpc/buy/Buy'
 
 export type BuyStackParamList = {
-  [AppNavigation.Wallet.Buy]: undefined
+  [AppNavigation.Buy.Buy]: undefined
 }
 
 const BuyStack = createStackNavigator<BuyStackParamList>()
@@ -31,7 +31,7 @@ const BuyScreenStack = () => {
         ...TransitionPresets.SlideFromRightIOS
       }}>
       <BuyStack.Screen
-        name={AppNavigation.Wallet.Buy}
+        name={AppNavigation.Buy.Buy}
         options={{
           header: TopNavigation
         }}

@@ -6,6 +6,7 @@ import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import Config from 'react-native-config'
 import { showSimpleToast } from 'components/Snackbar'
+import { generateOnRampURL } from '@coinbase/cbpay-js'
 
 const moonpayURL = async (address: string): Promise<{ url: string }> => {
   return await fetch(`${Config.PROXY_URL}/moonpay/${address}`).then(response =>
@@ -22,7 +23,6 @@ const useInAppBrowser = () => {
   }
 
   async function openMoonPay() {
-    // TODO: Determine we should handle the error case
     const [result, error] = await resolve(moonpayURL(addressC))
     if (error) {
       return showSimpleToast(
@@ -32,6 +32,25 @@ const useInAppBrowser = () => {
       const moonpayUrl = result?.url ?? ''
       return openUrl(moonpayUrl)
     }
+  }
+
+  const openCoinBasePay = async (address: string) => {
+    const appId = Config.COINBASE_APP_ID
+    if (!appId) {
+      return showSimpleToast(
+        'We cannot send your to our partner, Coinbase, at this time. Please try again soon'
+      )
+    }
+    const coinbaseUrl = generateOnRampURL({
+      appId,
+      destinationWallets: [
+        {
+          address,
+          assets: ['AVAX', 'ETH']
+        }
+      ]
+    })
+    return openUrl(coinbaseUrl)
   }
 
   async function openUrl(url: string) {
@@ -66,7 +85,7 @@ const useInAppBrowser = () => {
     }
   }
 
-  return { openUrl, openMoonPay }
+  return { openUrl, openMoonPay, openCoinBasePay }
 }
 
 export default useInAppBrowser

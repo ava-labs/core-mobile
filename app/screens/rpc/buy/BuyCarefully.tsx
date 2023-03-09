@@ -6,6 +6,7 @@ import { Image, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import useInAppBrowser from 'hooks/useInAppBrowser'
+import { useActiveAccount } from 'hooks/useActiveAccount'
 import BuyPrompt from './BuyPrompt'
 
 const CoinbaseLogo = require('./coinbase.png')
@@ -21,21 +22,23 @@ export enum TokenType {
 }
 
 const BuyCarefully = () => {
+  const activeAccount = useActiveAccount()
   const { goBack } = useNavigation<BuyCarefullyScreenProps['navigation']>()
 
   const { tokenType } = useRoute<BuyCarefullyScreenProps['route']>().params
 
   const isCoinbasePay = tokenType === TokenType.COINBASE
-  const { openMoonPay } = useInAppBrowser()
+  const { openMoonPay, openCoinBasePay } = useInAppBrowser()
 
-  const openCoinBase = () => {
-    // TODO: Will remove and updated this feature in ticket CP-4887
-    console.log('open coinbase')
+  const onCoinBasePay = () => {
+    if (activeAccount?.address) {
+      openCoinBasePay(activeAccount?.address)
+    }
   }
 
   return (
     <BuyPrompt
-      onConfirm={isCoinbasePay ? openCoinBase : openMoonPay}
+      onConfirm={isCoinbasePay ? onCoinBasePay : openMoonPay}
       onCancel={() => goBack()}
       renderIcon={() => (
         <Image

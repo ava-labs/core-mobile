@@ -21,9 +21,14 @@ const Buy: FC = () => {
   const { theme } = useApplicationContext()
   const { capture } = usePosthogContext()
   const navigation = useNavigation<NavigationProp>()
+  const { coinbasePayBlocked } = usePosthogContext()
 
   const onPaySelection = (type: TokenType) => {
-    capture(type)
+    capture(
+      type === TokenType.COINBASE
+        ? 'Coinbase PayBuyClicked'
+        : 'MoonpayBuyClicked'
+    )
     navigation.navigate(AppNavigation.Modal.BuyCarefully, {
       tokenType: type
     })
@@ -60,26 +65,28 @@ const Buy: FC = () => {
             />
             <Space y={16} />
           </AvaButton.Base>
-          <AvaButton.Base
-            onPress={() => onPaySelection(TokenType.COINBASE)}
-            style={[style.buttonBase, { backgroundColor: theme.neutral850 }]}>
-            <Space y={14} />
-            <AvaText.ButtonLarge
-              textStyle={[
-                style.buttonLabel,
-                {
-                  color: theme.colorText1
-                }
-              ]}>
-              Coinbase Pay
-            </AvaText.ButtonLarge>
-            <Image
-              accessibilityRole="image"
-              source={CoinbaseLogo}
-              style={style.logo}
-            />
-            <Space y={16} />
-          </AvaButton.Base>
+          {!coinbasePayBlocked && (
+            <AvaButton.Base
+              onPress={() => onPaySelection(TokenType.COINBASE)}
+              style={[style.buttonBase, { backgroundColor: theme.neutral850 }]}>
+              <Space y={14} />
+              <AvaText.ButtonLarge
+                textStyle={[
+                  style.buttonLabel,
+                  {
+                    color: theme.colorText1
+                  }
+                ]}>
+                Coinbase Pay
+              </AvaText.ButtonLarge>
+              <Image
+                accessibilityRole="image"
+                source={CoinbaseLogo}
+                style={style.logo}
+              />
+              <Space y={16} />
+            </AvaButton.Base>
+          )}
         </View>
       </View>
     </ScrollView>

@@ -73,6 +73,10 @@ enum ReceiveTokensScreens {
   ReceiveCChain = 'ReceiveTokensScreens.ReceiveCChain'
 }
 
+enum BuyScreens {
+  Buy = 'BuyScreens.Buy'
+}
+
 enum SwapScreens {
   Swap = 'SwapScreens.Swap',
   Review = 'SwapScreens.Review'
@@ -197,7 +201,8 @@ const AppNavigation = {
   AddressBook: AddressBookScreens,
   Bridge: BridgeScreens,
   Portfolio: PortfolioScreens,
-  ReceiveTokens: ReceiveTokensScreens
+  ReceiveTokens: ReceiveTokensScreens,
+  Buy: BuyScreens
 }
 
 export default AppNavigation

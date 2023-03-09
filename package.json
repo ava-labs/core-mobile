@@ -23,7 +23,6 @@
     "postinstall": "patch-package; node_modules/.bin/rn-nodeify --install events,stream,vm,assert,https,http,os --hack"
   },
   "dependencies": {
-    "@avalabs/paraswap-sdk": "2.8.0-alpha.64",
     "@avalabs/blockcypher-sdk": "2.8.0-alpha.64",
     "@avalabs/bridge-sdk": "2.8.0-alpha.64",
     "@avalabs/chains-sdk": "2.8.0-alpha.64",
@@ -31,6 +30,7 @@
     "@avalabs/covalent-sdk": "2.8.0-alpha.64",
     "@avalabs/etherscan-sdk": "2.8.0-alpha.64",
     "@avalabs/glacier-sdk": "2.8.0-alpha.64",
+    "@avalabs/paraswap-sdk": "2.8.0-alpha.64",
     "@avalabs/posthog-sdk": "2.8.0-alpha.64",
     "@avalabs/snowtrace-sdk": "2.8.0-alpha.64",
     "@avalabs/token-prices-sdk": "2.8.0-alpha.64",
@@ -38,6 +38,7 @@
     "@avalabs/utils-sdk": "2.8.0-alpha.64",
     "@avalabs/wallets-sdk": "2.8.0-alpha.64",
     "@babel/plugin-syntax-object-rest-spread": "7.8.3",
+    "@coinbase/cbpay-js": "^1.6.0",
     "@connectedcars/react-native-slide-charts": "1.0.5",
     "@eliav2/react-native-collapsible-view": "1.4.0",
     "@ethereumjs/common": "2.6.2",
