@@ -66,6 +66,7 @@ class SessionRequestHandler implements RpcRequestHandler<SessionProposal> {
     for (const chain of eip155NameSpace.chains) {
       const chainId = chain.split(':')[1] ?? ''
       const network = supportedNetworks[Number(chainId)]
+
       if (!network || network.vmName !== NetworkVMType.EVM) {
         return {
           success: false,
@@ -125,8 +126,8 @@ class SessionRequestHandler implements RpcRequestHandler<SessionProposal> {
 
     Object.keys(requiredNamespaces).forEach(key => {
       const accounts: string[] = []
-      requiredNamespaces[key]?.chains.map(chain => {
-        selectedAccounts.map(acc => accounts.push(`${chain}:${acc}`))
+      requiredNamespaces[key]?.chains.forEach(chain => {
+        selectedAccounts.forEach(acc => accounts.push(`${chain}:${acc}`))
       })
       namespaces[key] = {
         accounts,
