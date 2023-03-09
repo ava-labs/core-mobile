@@ -18,12 +18,15 @@ import { useSelector } from 'react-redux'
 import { posthogCapture, selectUserID } from 'store/posthog'
 import Logger from 'utils/Logger'
 import SentryWrapper from 'services/sentry/SentryWrapper'
+import { TransactionName } from 'services/sentry/types'
 import { sanitizeFeatureFlags } from './utils'
 import {
   FeatureFlags,
   FeatureGates,
   FeatureVars,
-  PosthogCapture
+  getSentryTransactionName,
+  PosthogCapture,
+  requireSentryFlag
 } from './types'
 
 const PostHogDecideUrl = `${Config.POSTHOG_URL}/decide?v=2`
@@ -71,6 +74,7 @@ export interface PosthogContextState {
   sendNftBlockediOS: boolean
   sendNftBlockedAndroid: boolean
   sentrySampleRate: number
+  sentrySampleRatePerTx: Record<TransactionName, number>
   useFlatListAndroid: boolean
 }
 
@@ -118,6 +122,17 @@ const processFlags = (flags: FeatureFlags) => {
   const sentrySampleRate =
     parseInt((flags[FeatureVars.SENTRY_SAMPLE_RATE] as string) ?? '0') / 100
 
+  const sentrySampleRatePerTx = {} as Record<TransactionName, number>
+  for (const flagsKey in flags) {
+    try {
+      requireSentryFlag(flagsKey)
+      const sampleRate = parseInt((flags[flagsKey] as string) ?? '0') / 100
+      sentrySampleRatePerTx[getSentryTransactionName(flagsKey)] = sampleRate
+    } catch (e) {
+      //just skip
+    }
+  }
+
   const useFlatListAndroid = !!flags[FeatureGates.USE_FLATLIST_ANDROID]
 
   return {
@@ -130,6 +145,7 @@ const processFlags = (flags: FeatureFlags) => {
     sendNftBlockedAndroid,
     eventsBlocked,
     sentrySampleRate,
+    sentrySampleRatePerTx,
     useFlatListAndroid
   }
 }
@@ -165,6 +181,7 @@ export const PosthogContextProvider = ({
     sendNftBlockedAndroid,
     eventsBlocked,
     sentrySampleRate,
+    sentrySampleRatePerTx,
     useFlatListAndroid
   } = useMemo(() => processFlags(flags), [flags])
 
@@ -285,6 +302,7 @@ export const PosthogContextProvider = ({
         sendNftBlockediOS,
         sendNftBlockedAndroid,
         sentrySampleRate,
+        sentrySampleRatePerTx,
         useFlatListAndroid
       }}>
       {children}

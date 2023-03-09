@@ -1,4 +1,5 @@
 import { JsonMap } from 'posthog-react-native/src/bridge'
+import { TransactionName } from 'services/sentry/types'
 
 export enum FeatureGates {
   EVERYTHING = 'everything',
@@ -17,6 +18,23 @@ export enum FeatureVars {
   SENTRY_SAMPLE_RATE = 'sentry-sample-rate'
 }
 
+export const SENTRY_SAMPLE_RATE_PREFIX = 'sentry-sample-rate_'
+
+type SentrySampleRateFlag = `sentry-sample-rate_${TransactionName}`
+
+export function requireSentryFlag(
+  input: string
+): asserts input is SentrySampleRateFlag {
+  if (input.startsWith(SENTRY_SAMPLE_RATE_PREFIX))
+    throw new Error('not sentry flag')
+}
+
+export function getSentryTransactionName(
+  input: SentrySampleRateFlag
+): TransactionName {
+  return input.substring(SENTRY_SAMPLE_RATE_PREFIX.length) as TransactionName
+}
+
 export type PosthogCapture = (
   event: string,
   properties?: JsonMap
@@ -25,7 +43,9 @@ export type PosthogCapture = (
 // posthog response can be an empty object when all features are disabled
 // thus, we need to use Partial
 export type PostHogDecideResponse = {
-  featureFlags: Partial<Record<FeatureGates | FeatureVars, boolean | string>>
+  featureFlags: Partial<
+    Record<FeatureGates | FeatureVars | SentrySampleRateFlag, boolean | string>
+  >
 }
 
 export type FeatureFlags = PostHogDecideResponse['featureFlags']

@@ -5,6 +5,7 @@ import { TransactionName } from 'services/sentry/types'
 
 class SentryWrapper {
   private sampleRate = DefaultSampleRate
+  private sampleRatesPerTx = {} as Record<TransactionName, number>
 
   public setSampleRate(rate: number) {
     if (!isNaN(rate)) {
@@ -12,9 +13,13 @@ class SentryWrapper {
     }
   }
 
+  public setSampleRatesPerTx(rates: Record<TransactionName, number>) {
+    this.sampleRatesPerTx = rates
+  }
+
   public startTransaction(name: TransactionName): Transaction {
     const transaction = Sentry.startTransaction({ name, op: name }, {
-      sampleRate: this.sampleRate
+      sampleRate: this.sampleRatesPerTx[name] || this.sampleRate
     } as CustomSamplingContext)
     return transaction
   }
