@@ -141,6 +141,7 @@ enum ModalScreens {
   SelectAccount = 'ModalScreens.SelectAccount',
   BuyCarefully = 'ModalScreens.BuyCarefully',
   SignTransaction = 'ModalScreens.SignTransaction',
+  SendTransaction = 'ModalScreens.SendTransaction',
   SignMessage = 'ModalScreens.SignMessage',
   BridgeAsset = 'ModalScreens.BridgeAsset',
   AddEthereumChain = 'ModalScreens.AddEthereumChain',
