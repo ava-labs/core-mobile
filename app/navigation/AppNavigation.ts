@@ -38,6 +38,7 @@ enum WalletScreens {
   Tabs = 'WalletScreens.Tabs',
   ReceiveTokens = 'WalletScreens.ReceiveTokens',
   SendTokens = 'WalletScreens.SendTokens',
+  Buy = 'WalletScreens.Buy',
   TokenManagement = 'WalletScreens.TokenManagement',
   Advanced = 'WalletScreens.Advanced',
   SecurityPrivacy = 'WalletScreens.SecurityPrivacy',
@@ -70,6 +71,10 @@ enum NoWalletTabs {
 
 enum ReceiveTokensScreens {
   ReceiveCChain = 'ReceiveTokensScreens.ReceiveCChain'
+}
+
+enum BuyScreens {
+  Buy = 'BuyScreens.Buy'
 }
 
 enum SwapScreens {
@@ -134,6 +139,7 @@ enum ModalScreens {
   CreateRemoveContact = 'ModalScreens.CreateRemoveContact',
   UpdateContact = 'ModalScreens.UpdateContact',
   SelectAccount = 'ModalScreens.SelectAccount',
+  BuyCarefully = 'ModalScreens.BuyCarefully',
   SignTransaction = 'ModalScreens.SignTransaction',
   SendTransaction = 'ModalScreens.SendTransaction',
   SignMessage = 'ModalScreens.SignMessage',
@@ -196,7 +202,8 @@ const AppNavigation = {
   AddressBook: AddressBookScreens,
   Bridge: BridgeScreens,
   Portfolio: PortfolioScreens,
-  ReceiveTokens: ReceiveTokensScreens
+  ReceiveTokens: ReceiveTokensScreens,
+  Buy: BuyScreens
 }
 
 export default AppNavigation
