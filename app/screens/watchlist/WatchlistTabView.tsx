@@ -8,6 +8,7 @@ import { Space } from 'components/Space'
 import SearchBar from 'components/SearchBar'
 import { useSelector } from 'react-redux'
 import { selectWatchlistFavoritesIsEmpty } from 'store/watchlist'
+import FavoriteWatchlistView from 'screens/watchlist/FavoriteWatchlistView'
 
 const CustomLabel: React.FC<{ focused: boolean; title: string }> = ({
   focused,
@@ -63,7 +64,7 @@ export default function WatchlistTab() {
           currentTabIndex={tabIndex}
           onTabIndexChange={setTabIndex}>
           <TabViewAva.Item title={'Favorites'}>
-            <WatchlistView showFavorites onTabIndexChanged={setTabIndex} />
+            <FavoriteWatchlistView onTabIndexChanged={setTabIndex} />
           </TabViewAva.Item>
           <TabViewAva.Item title={'All'}>{allWatchList}</TabViewAva.Item>
         </TabViewAva>

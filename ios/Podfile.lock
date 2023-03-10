@@ -434,7 +434,7 @@ PODS:
     - React-Core
   - RNFS (2.19.0):
     - React-Core
-  - RNGestureHandler (2.7.0):
+  - RNGestureHandler (2.9.0):
     - React-Core
   - RNInAppBrowser (3.7.0):
     - React-Core
@@ -447,7 +447,7 @@ PODS:
   - RNPostHog (1.1.5):
     - PostHog (~> 1.4.4)
     - React
-  - RNReanimated (2.12.0):
+  - RNReanimated (2.14.2):
     - DoubleConversion
     - FBLazyVector
     - FBReactNativeSpec
@@ -842,13 +842,13 @@ SPEC CHECKSUMS:
   RNFastImage: 5c9c9fed9c076e521b3f509fe79e790418a544e8
   RNFlashList: 399bf6a0db68f594ad2c86aaff3ea39564f39f8a
   RNFS: fc610f78fdf8bfc89a9e5cc2f898519f4dba1002
-  RNGestureHandler: 7673697e7c0e9391adefae4faa087442bc04af33
+  RNGestureHandler: 071d7a9ad81e8b83fe7663b303d132406a7d8f39
   RNInAppBrowser: e36d6935517101ccba0e875bac8ad7b0cb655364
   RNKeychain: ff836453cba46938e0e9e4c22e43d43fa2c90333
   RNOS: 6f2f9a70895bbbfbdad7196abd952e7b01d45027
   RNPermissions: de7b7c3fe1680d974ac7a85e3e97aa539c0e68ea
   RNPostHog: 5ad77e4a4d52ca151da444f11095125681d0cf68
-  RNReanimated: 2a91e85fcd343f8af3c58d3425b99fdd285590a5
+  RNReanimated: 3ed15d2c7d7fd9d9a284de291a1e347d132d282b
   RNScreens: f3230dd008a7d0ce5c0a8bc78ff12cf2315bda24
   RNSensors: e74c8bd9606400c1048ab67af7f41eb2091cb2fc
   RNSentry: db7fd7b66efda28885e4e904a8b5e7349aec61c1
