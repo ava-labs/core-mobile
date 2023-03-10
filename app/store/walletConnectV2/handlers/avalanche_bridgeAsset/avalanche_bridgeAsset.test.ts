@@ -37,8 +37,8 @@ jest.mock('store/settings/advanced', () => {
   }
 })
 
-jest.mock('store/bridge', () => {
-  const actual = jest.requireActual('store/bridge')
+jest.mock('store/bridge/slice', () => {
+  const actual = jest.requireActual('store/bridge/slice')
   return {
     ...actual,
     selectBridgeAppConfig: () => mockBridgeConfig
