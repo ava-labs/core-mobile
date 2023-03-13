@@ -39,12 +39,12 @@ function SecurityPrivacyStackScreen(): JSX.Element {
           component={SecurityPrivacyScreen}
         />
         <SecurityStack.Screen
-          options={MainHeaderOptions({ title: '' })}
+          options={MainHeaderOptions()}
           name={AppNavigation.SecurityPrivacy.DappList}
           component={DappConnectionsList}
         />
         <SecurityStack.Screen
-          options={MainHeaderOptions({ title: '' })}
+          options={MainHeaderOptions()}
           name={AppNavigation.SecurityPrivacy.QRCode}
           component={CaptureDappQR}
         />

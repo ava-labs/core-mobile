@@ -14,12 +14,14 @@ interface MainHeaderOptionsProps {
   headerBackTestID?: string
 }
 
-export const MainHeaderOptions = ({
-  title,
-  hideHeaderLeft = false,
-  actionComponent,
-  headerBackTestID
-}: MainHeaderOptionsProps): Partial<StackNavigationOptions> => {
+export const MainHeaderOptions = (
+  {
+    title,
+    hideHeaderLeft = false,
+    actionComponent,
+    headerBackTestID
+  }: MainHeaderOptionsProps = { title: '', headerBackTestID: 'header_back' }
+): Partial<StackNavigationOptions> => {
   const options: Partial<StackNavigationOptions> = {
     headerBackTestID,
     headerShown: true,

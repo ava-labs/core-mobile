@@ -247,14 +247,14 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
         />
         <WalletScreenS.Screen
           options={{
-            ...MainHeaderOptions({ title: '', headerBackTestID: 'header_back' })
+            ...MainHeaderOptions()
           }}
           name={AppNavigation.Wallet.TokenDetail}
           component={TokenDetail}
         />
         <WalletScreenS.Screen
           options={{
-            ...MainHeaderOptions({ title: '', headerBackTestID: 'header_back' })
+            ...MainHeaderOptions()
           }}
           name={AppNavigation.Wallet.OwnedTokenDetail}
           component={OwnedTokenDetail}
@@ -281,7 +281,7 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
           component={NFTScreenStack}
         />
         <WalletScreenS.Screen
-          options={MainHeaderOptions({ title: '' })}
+          options={MainHeaderOptions()}
           name={AppNavigation.Wallet.NFTManage}
           component={NftManage}
         />
@@ -323,7 +323,7 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
           component={NetworkDetailsScreen}
         />
         <WalletScreenS.Screen
-          options={MainHeaderOptions({ title: '' })}
+          options={MainHeaderOptions()}
           name={AppNavigation.Wallet.NetworkAddEdit}
           component={NetworkAddEditScreen}
         />

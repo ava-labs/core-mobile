@@ -62,7 +62,7 @@ export const NoWalletScreenStack = () => {
       />
       <NoWalletNavigator.Screen
         options={{
-          ...MainHeaderOptions({ title: '' })
+          ...MainHeaderOptions()
         }}
         name={AppNavigation.Wallet.TokenDetail}
         component={TokenDetail}
