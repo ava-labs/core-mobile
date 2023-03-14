@@ -1,8 +1,29 @@
 format_version: "11"
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 project_type: react-native
+app:
+  envs:
+  - WORKDIR: .
+    opts:
+      is_expand: false
+  - ANDROID_PROJECT_LOCATION: android
+    opts:
+      is_expand: false
+  - ANDROID_MODULE: app
+    opts:
+      is_expand: false
+  - IOS_PROJECT_PATH: ios/AvaxWallet.xcworkspace
+    opts:
+      is_expand: false
+  - APP_TITLE: Core Mobile
+    opts:
+      is_expand: false
 workflows:
   _build-android:
+    envs:
+    - PLATFORM: Android
+      opts:
+        is_expand: false
     steps:
     - install-missing-android-tools@3:
         inputs:
@@ -30,11 +51,11 @@ workflows:
         - keystore_alias: $ANDROID_KEY_ALIAS
         - private_key_password: $ANDROID_KEY_PASSWORD
         - keystore_url: $BITRISEIO_ANDROID_KEY_STORE_URL
-    envs:
-    - opts:
-        is_expand: false
-      PLATFORM: Android
   _build-ios:
+    envs:
+    - PLATFORM: iOS
+      opts:
+        is_expand: false
     steps:
     - restore-cocoapods-cache@1: {}
     - cocoapods-install@2:
@@ -51,10 +72,6 @@ workflows:
         - distribution_method: $XCODE_EXPORT
         - upload_bitcode: "no"
         - automatic_code_signing: api-key
-    envs:
-    - opts:
-        is_expand: false
-      PLATFORM: iOS
   _install-and-set-env:
     steps:
     - restore-npm-cache@1: {}
@@ -64,10 +81,10 @@ workflows:
         - workdir: $WORKDIR
     - save-npm-cache@1: {}
     - resource-archive@2:
+        title: Download and unzip env files
         inputs:
         - extract_to_path: $WORKDIR
         - archive_url: $BITRISEIO_ENV_FILES_URL
-        title: Download and unzip env files
     - script@1:
         title: Set Env
         inputs:
@@ -124,17 +141,31 @@ workflows:
         inputs:
         - content: "#!/usr/bin/env bash\n\n# if branch is a release branch (\"release/2.0.1\" for example), grab version from branch name \n# else if tag is a release candidate tag (\"0.13.1-rc1\" for example), grab version from tag\nif [[ $BITRISE_GIT_BRANCH == *\"release/\"* ]]; then\n  arrIN=(${BITRISE_GIT_BRANCH//// })\n  version=${arrIN[1]}\nelif [[ $BITRISE_GIT_TAG =~ \"rc\" ]]; then\n  arrIN=(${BITRISE_GIT_TAG//-/ })\n  version=${arrIN[0]}\nelse\n  # else version will just be 0.0.0\n  version=\"0.0.0\"\nfi\n\nenvman add --key APP_VERSION --value \"${version}\""
     - set-ios-info-plist-unified@1:
+        title: Set iOS Version
         inputs:
         - bundle_version: $BITRISE_BUILD_NUMBER
         - bundle_version_short: $APP_VERSION
         - info_plist_file: $BITRISE_SOURCE_DIR/ios/AvaxWallet/InfoRelease.plist
-        title: Set iOS Version
     - change-android-versioncode-and-versionname@1:
+        title: Set Android Version
         inputs:
         - new_version_name: $APP_VERSION
+        - version_code_offset: "1"
         - build_gradle_path: $BITRISE_SOURCE_DIR/$ANDROID_PROJECT_LOCATION/app/build.gradle
-        title: Set Android Version
   android:
+    before_run:
+    - _install-and-set-env
+    - _set-version
+    - _build-android
+    after_run:
+    - _send-notification-slack
+    envs:
+    - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - ANDROID_BUILD_VARIANT: externalRelease
+      opts:
+        is_expand: false
     steps:
     - deploy-to-bitrise-io@2: {}
     - create-install-page-qr-code@1: {}
@@ -144,6 +175,7 @@ workflows:
         - app_path: $BITRISE_SIGNED_AAB_PATH
         - track: internal
         - service_account_json_key_path: $BITRISEIO_AVALABS_GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_KEY_URL
+  android-internal:
     before_run:
     - _install-and-set-env
     - _set-version
@@ -151,13 +183,15 @@ workflows:
     after_run:
     - _send-notification-slack
     envs:
-    - opts:
+    - ENVIRONMENT: production
+      opts:
         is_expand: false
-      ENVIRONMENT: production
-    - opts:
+    - ANDROID_BUILD_VARIANT: internalRelease
+      opts:
         is_expand: false
-      ANDROID_BUILD_VARIANT: externalRelease
-  android-internal:
+    - APP_TITLE: Core Mobile Internal
+      opts:
+        is_expand: false
     steps:
     - deploy-to-bitrise-io@2: {}
     - create-install-page-qr-code@1: {}
@@ -167,40 +201,24 @@ workflows:
         - app_path: $BITRISE_SIGNED_AAB_PATH
         - track: internal
         - service_account_json_key_path: $BITRISEIO_AVALABS_GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_KEY_URL
-    before_run:
-    - _install-and-set-env
-    - _set-version
-    - _build-android
-    after_run:
-    - _send-notification-slack
-    envs:
-    - opts:
-        is_expand: false
-      ENVIRONMENT: production
-    - opts:
-        is_expand: false
-      ANDROID_BUILD_VARIANT: internalRelease
-    - opts:
-        is_expand: false
-      APP_TITLE: Core Mobile Internal
   android-internal-detox-test:
     before_run:
     - _install-and-set-env
     - _set-version
     - _build-android
     envs:
-    - opts:
+    - ENVIRONMENT: production
+      opts:
         is_expand: false
-      ENVIRONMENT: production
-    - opts:
+    - ANDROID_BUILD_VARIANT: internalE2e
+      opts:
         is_expand: false
-      ANDROID_BUILD_VARIANT: internalE2e
-    - opts:
+    - APP_TITLE: Core Mobile Internal
+      opts:
         is_expand: false
-      APP_TITLE: Core Mobile Internal
-    - opts:
+    - E2E: "true"
+      opts:
         is_expand: false
-      E2E: "true"
     steps:
     - avd-manager@1:
         inputs:
@@ -223,13 +241,6 @@ workflows:
 
             ./node_modules/.bin/detox test --configuration android.internal.release.ci --cleanup
   ios:
-    steps:
-    - deploy-to-itunesconnect-application-loader@1:
-        inputs:
-        - api_key_path: $BITRISEIO_APPSTORE_CONNECT_API_KEY_URL
-        - altool_options: --verbose
-        - connection: api_key
-        - api_issuer: $APPSTORE_CONNECT_KEY_ISSUER_ID
     before_run:
     - _install-and-set-env
     - _set-version
@@ -237,26 +248,26 @@ workflows:
     after_run:
     - _send-notification-slack
     envs:
-    - opts:
+    - ENVIRONMENT: production
+      opts:
         is_expand: false
-      ENVIRONMENT: production
-    - opts:
+    - IOS_CONFIGURATION: Release
+      opts:
         is_expand: false
-      IOS_CONFIGURATION: Release
-    - opts:
+    - XCODE_EXPORT: app-store
+      opts:
         is_expand: false
-      XCODE_EXPORT: app-store
-    - opts:
+    - IOS_SCHEME: AvaxWallet
+      opts:
         is_expand: false
-      IOS_SCHEME: AvaxWallet
+    steps:
+    - deploy-to-itunesconnect-application-loader@1:
+        inputs:
+        - api_key_path: $BITRISEIO_APPSTORE_CONNECT_API_KEY_URL
+        - altool_options: --verbose
+        - connection: api_key
+        - api_issuer: $APPSTORE_CONNECT_KEY_ISSUER_ID
   ios-internal:
-    steps:
-    - deploy-to-itunesconnect-application-loader@1:
-        inputs:
-        - api_key_path: $BITRISEIO_APPSTORE_CONNECT_API_KEY_URL
-        - altool_options: --verbose
-        - api_issuer: $APPSTORE_CONNECT_KEY_ISSUER_ID
-        - connection: api_key
     before_run:
     - _install-and-set-env
     - _set-version
@@ -264,47 +275,53 @@ workflows:
     after_run:
     - _send-notification-slack
     envs:
-    - opts:
+    - ENVIRONMENT: production
+      opts:
         is_expand: false
-      ENVIRONMENT: production
-    - opts:
+    - IOS_CONFIGURATION: Release
+      opts:
         is_expand: false
-      IOS_CONFIGURATION: Release
-    - opts:
+    - XCODE_EXPORT: app-store
+      opts:
         is_expand: false
-      XCODE_EXPORT: app-store
-    - opts:
+    - IOS_SCHEME: AvaxWalletInternal
+      opts:
         is_expand: false
-      IOS_SCHEME: AvaxWalletInternal
-    - opts:
+    - APP_TITLE: Core Mobile Internal
+      opts:
         is_expand: false
-      APP_TITLE: Core Mobile Internal
+    steps:
+    - deploy-to-itunesconnect-application-loader@1:
+        inputs:
+        - api_key_path: $BITRISEIO_APPSTORE_CONNECT_API_KEY_URL
+        - altool_options: --verbose
+        - api_issuer: $APPSTORE_CONNECT_KEY_ISSUER_ID
+        - connection: api_key
   ios-internal-detox-test:
+    description: just working on getting the e2e tests setup and running
     before_run:
     - _install-and-set-env
     - _set-version
     - _build-ios
-    after_run: []
     envs:
-    - opts:
+    - ENVIRONMENT: production
+      opts:
         is_expand: false
-      ENVIRONMENT: production
-    - opts:
+    - IOS_CONFIGURATION: Release
+      opts:
         is_expand: false
-      IOS_CONFIGURATION: Release
-    - opts:
+    - XCODE_EXPORT: app-store
+      opts:
         is_expand: false
-      XCODE_EXPORT: app-store
-    - opts:
+    - IOS_SCHEME: AvaxWalletInternal
+      opts:
         is_expand: false
-      IOS_SCHEME: AvaxWalletInternal
-    - opts:
+    - APP_TITLE: Core Mobile Internal
+      opts:
         is_expand: false
-      APP_TITLE: Core Mobile Internal
-    - opts:
+    - E2E: "true"
+      opts:
         is_expand: false
-      E2E: "true"
-    description: just working on getting the e2e tests setup and running
     steps:
     - xcode-start-simulator@0:
         inputs:
@@ -324,20 +341,3 @@ workflows:
             npm rebuild detox
 
             ./node_modules/.bin/detox test --configuration ios.internal.release.ci --cleanup
-app:
-  envs:
-  - opts:
-      is_expand: false
-    WORKDIR: "."
-  - opts:
-      is_expand: false
-    ANDROID_PROJECT_LOCATION: android
-  - opts:
-      is_expand: false
-    ANDROID_MODULE: app
-  - opts:
-      is_expand: false
-    IOS_PROJECT_PATH: ios/AvaxWallet.xcworkspace
-  - opts:
-      is_expand: false
-    APP_TITLE: Core Mobile
