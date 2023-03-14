@@ -237,7 +237,7 @@ workflows:
     - ENVIRONMENT: production
       opts:
         is_expand: false
-    - ANDROID_BUILD_VARIANT: internalRelease
+    - ANDROID_BUILD_VARIANT: internalE2e
       opts:
         is_expand: false
     - APP_TITLE: Core Mobile Internal

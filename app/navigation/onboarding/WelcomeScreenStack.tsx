@@ -44,7 +44,7 @@ const WelcomeScreenStack: () => JSX.Element = () => (
       component={LoginWithPinOrBiometryScreen}
     />
     <WelcomeScreenS.Screen
-      options={MainHeaderOptions('')}
+      options={MainHeaderOptions()}
       name={AppNavigation.Onboard.AnalyticsConsent}
       component={AnalyticsConsentScreen}
     />
