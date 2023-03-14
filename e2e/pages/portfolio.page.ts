@@ -14,6 +14,18 @@ class PortfolioPage {
     return by.text(portfolio.avaxNetwork)
   }
 
+  get arbitrumNetwork() {
+    return by.text(portfolio.arbitrumNetwork)
+  }
+
+  get addAssetsButton() {
+    return by.text(portfolio.addAssetsButton)
+  }
+
+  get addAssetsMessage() {
+    return by.text(portfolio.addAssetsMessage)
+  }
+
   get btcTokenItem() {
     return by.text(portfolio.btcTokenItem)
   }
@@ -46,8 +58,16 @@ class PortfolioPage {
     return by.text(portfolio.manageNetworks)
   }
 
+  get manageTokens() {
+    return by.text(portfolio.manageTokens)
+  }
+
   get networksHeader() {
     return by.text(portfolio.networksHeader)
+  }
+
+  get noAssetsHeader() {
+    return by.text(portfolio.noAssetsHeader)
   }
 
   get networksDropdownBTC() {
@@ -82,8 +102,20 @@ class PortfolioPage {
     await Action.tapElementAtIndex(this.addToWatchlist, platformIndex2)
   }
 
+  async tapArbitrumNetwork() {
+    await Action.tapElementAtIndex(this.arbitrumNetwork, 1)
+  }
+
+  async tapAvaxNetwork() {
+    await Action.tapElementAtIndex(this.avaxNetwork, 1)
+  }
+
   async tapBtcFavoriteToken() {
     await Action.tapElementAtIndex(this.btcTokenItem, 0)
+  }
+
+  async tapManageTokens() {
+    await Action.tapElementAtIndex(this.manageTokens, 0)
   }
 
   async tapNetworksDropdown() {
