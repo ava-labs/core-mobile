@@ -48,6 +48,11 @@ const ToastWithExplorerLink = ({
   const network = useActiveNetwork()
   const { openUrl } = useInAppBrowser()
 
+  const openExplorerLink = () => {
+    openUrl(getExplorerAddressByNetwork(network, txHash))
+    dismissToast()
+  }
+
   return (
     <>
       <AvaText.ButtonSmall color={color} textStyle={{ marginBottom: 2 }}>
@@ -56,16 +61,9 @@ const ToastWithExplorerLink = ({
       {!!txHash && network && (
         <AvaText.ButtonLarge
           color={theme.colorText1}
-          onPress={() => {
-            openUrl(getExplorerAddressByNetwork(network, txHash))
-            dismissToast()
-          }}>
+          onPress={openExplorerLink}>
           {'View in Explorer  '}
-          <Pressable
-            onPress={() => {
-              openUrl(getExplorerAddressByNetwork(network, txHash))
-              dismissToast()
-            }}>
+          <Pressable onPress={openExplorerLink}>
             <LinkSVG color={theme.colorText1} />
           </Pressable>
         </AvaText.ButtonLarge>
