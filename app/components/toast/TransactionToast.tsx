@@ -61,7 +61,13 @@ const ToastWithExplorerLink = ({
             dismissToast()
           }}>
           {'View in Explorer  '}
-          <LinkSVG color={theme.colorText1} />
+          <Pressable
+            onPress={() => {
+              openUrl(getExplorerAddressByNetwork(network, txHash))
+              dismissToast()
+            }}>
+            <LinkSVG color={theme.colorText1} />
+          </Pressable>
         </AvaText.ButtonLarge>
       )}
     </>
