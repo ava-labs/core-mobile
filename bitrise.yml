@@ -228,7 +228,7 @@ workflows:
         - app_path: $BITRISE_SIGNED_AAB_PATH
         - track: internal
         - service_account_json_key_path: $BITRISEIO_AVALABS_GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_KEY_URL
-  android-internal-detox-test:
+  android-internal-e2e:
     before_run:
     - _install-and-set-env
     - _set-version
@@ -244,6 +244,9 @@ workflows:
       opts:
         is_expand: false
     - ANDROID_TEST_APK: android/app/build/outputs/apk/androidTest/internal/e2e/app-internal-e2e-androidTest.apk
+      opts:
+        is_expand: false
+    - E2E: "true"
       opts:
         is_expand: false
     steps:
@@ -262,10 +265,9 @@ workflows:
             # debug log
             set -x
 
-            # npm rebuild detox
             echo $BITRISE_APK_PATH_LIST
-
-            yarn ./node_modules/.bin/detox test --configuration android.internal.release.ci --cleanup
+            yarn rebuild detox
+            ./node_modules/.bin/detox test --configuration android.internal.release.ci --cleanup
     - script@1:
         inputs:
         - content: |
@@ -335,7 +337,7 @@ workflows:
         - altool_options: --verbose
         - api_issuer: $APPSTORE_CONNECT_KEY_ISSUER_ID
         - connection: api_key
-  ios-internal-detox-test:
+  ios-internal-e2e:
     description: just working on getting the e2e tests setup and running
     before_run:
     - _install-and-set-env
@@ -370,5 +372,6 @@ workflows:
 
             # debug log
             set -x
-
-            yarn ./node_modules/.bin/detox test --configuration ios.internal.release.ci --cleanup
+            
+            yarn rebuild detox
+            ./node_modules/.bin/detox test --configuration ios.internal.release.ci --cleanup
