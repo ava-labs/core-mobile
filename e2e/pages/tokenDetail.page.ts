@@ -1,5 +1,6 @@
 import tokenDetail from '../locators/tokenDetail.loc'
 import Assert from '../helpers/assertions'
+import Action from '../helpers/actions'
 
 class TokenDetailsPage {
   get totalSupply() {
@@ -20,6 +21,14 @@ class TokenDetailsPage {
 
   get availableSupply() {
     return by.id(tokenDetail.availableSupply)
+  }
+
+  get backButton() {
+    return by.id(tokenDetail.backButton)
+  }
+
+  get favorite() {
+    return by.id(tokenDetail.favorite)
   }
 
   get twitterHandle() {
@@ -63,6 +72,14 @@ class TokenDetailsPage {
     await Assert.isVisible(this.oneMonthTab)
     await Assert.isVisible(this.threeMonthTab)
     await Assert.isVisible(this.oneYearTab)
+  }
+
+  async tapFavorite() {
+    await Action.tapElementAtIndex(this.favorite, 1)
+  }
+
+  async tapBackButton() {
+    await Action.tapElementAtIndex(this.backButton, 0)
   }
 }
 

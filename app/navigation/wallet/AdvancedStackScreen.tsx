@@ -17,7 +17,7 @@ const AdvancedStackScreen = () => {
         headerBackTitleVisible: false
       }}>
       <AdvancedStack.Screen
-        options={MainHeaderOptions('Advanced')}
+        options={MainHeaderOptions({ title: 'Advanced' })}
         name={AppNavigation.Advanced.Advanced}
         component={Advanced}
       />

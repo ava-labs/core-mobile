@@ -54,11 +54,11 @@ const AddressBookStack = () => {
       <Stack.Screen
         options={{
           headerShown: true,
-          ...(MainHeaderOptions(
-            'Address Book',
-            false,
-            <AddAddressBookContact />
-          ) as Partial<StackNavigationOptions>)
+          ...(MainHeaderOptions({
+            title: 'Address Book',
+            hideHeaderLeft: false,
+            actionComponent: <AddAddressBookContact />
+          }) as Partial<StackNavigationOptions>)
         }}
         name={AppNavigation.AddressBook.List}
         component={AddressBook}
@@ -66,7 +66,7 @@ const AddressBookStack = () => {
       <Stack.Screen
         options={{
           headerShown: true,
-          ...(MainHeaderOptions('') as Partial<StackNavigationOptions>)
+          ...(MainHeaderOptions() as Partial<StackNavigationOptions>)
         }}
         name={AppNavigation.AddressBook.Add}
         component={AddContact}
@@ -125,11 +125,11 @@ const ContactDetailsComp = () => {
   useEffect(() => {
     setParams({ editable: false, isContactValid })
     setOptions({
-      ...(MainHeaderOptions(
-        '',
-        false,
-        <EditAddressBookContact onEdit={onEdit} />
-      ) as Partial<StackNavigationOptions>)
+      ...(MainHeaderOptions({
+        title: '',
+        hideHeaderLeft: false,
+        actionComponent: <EditAddressBookContact onEdit={onEdit} />
+      }) as Partial<StackNavigationOptions>)
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -148,22 +148,22 @@ const ContactDetailsComp = () => {
     dispatch(saveEditingContact())
     setParams({ editable: false, isContactValid })
     setOptions({
-      ...(MainHeaderOptions(
-        '',
-        false,
-        <EditAddressBookContact onEdit={onEdit} />
-      ) as Partial<StackNavigationOptions>)
+      ...(MainHeaderOptions({
+        title: '',
+        hideHeaderLeft: false,
+        actionComponent: <EditAddressBookContact onEdit={onEdit} />
+      }) as Partial<StackNavigationOptions>)
     })
   }
 
   function onEdit() {
     setParams({ editable: true, isContactValid })
     setOptions({
-      ...(MainHeaderOptions(
-        '',
-        false,
-        <SaveAddressBookContact onSave={saveContact} />
-      ) as Partial<StackNavigationOptions>)
+      ...(MainHeaderOptions({
+        title: '',
+        hideHeaderLeft: false,
+        actionComponent: <SaveAddressBookContact onSave={saveContact} />
+      }) as Partial<StackNavigationOptions>)
     })
   }
 
