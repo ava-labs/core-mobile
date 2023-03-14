@@ -8,7 +8,7 @@ import AppNavigation from 'navigation/AppNavigation'
 import Logger from 'utils/Logger'
 import * as Sentry from '@sentry/react-native'
 import { RpcMethod } from 'store/walletConnectV2'
-import { parseRequestParams } from 'store/walletConnectV2/handlers/eth_sign/utils'
+import { parseRequestParams } from 'store/walletConnectV2/handlers/eth_sign/utils/parseRequestParams'
 import {
   TypedData,
   OldTypedData

@@ -6,7 +6,7 @@ import { bnToBig, stringToBN } from '@avalabs/utils-sdk'
 import { selectActiveAccount } from 'store/account'
 import { selectNetworks } from 'store/network'
 import Logger from 'utils/Logger'
-import { selectBridgeAppConfig } from 'store/bridge'
+import { selectBridgeAppConfig } from 'store/bridge/slice'
 import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
@@ -58,13 +58,6 @@ class AvalancheBridgeAssetHandler
     payload: { request: AvalancheBridgeAssetRequest; data?: unknown },
     listenerApi: AppListenerEffectAPI
   ): ApproveResponse => {
-    const { getState } = listenerApi
-    const state = getState()
-    const isDeveloperMode = selectIsDeveloperMode(state)
-    const activeAccount = selectActiveAccount(state)
-    const allNetworks = selectNetworks(state)
-    const bridgeAppConfig = selectBridgeAppConfig(state)
-
     const result = parseApproveData(payload.data)
 
     if (!result.success) {
@@ -74,8 +67,14 @@ class AvalancheBridgeAssetHandler
       }
     }
 
+    const state = listenerApi.getState()
+    const isDeveloperMode = selectIsDeveloperMode(state)
+    const activeAccount = selectActiveAccount(state)
+    const allNetworks = selectNetworks(state)
+    const bridgeAppConfig = selectBridgeAppConfig(state)
     const { currentBlockchain, amountStr, asset } = result.data
     const denomination = asset.denomination
+
     const amount = bnToBig(stringToBN(amountStr, denomination), denomination)
 
     try {
@@ -88,11 +87,9 @@ class AvalancheBridgeAssetHandler
         allNetworks,
         isTestnet: isDeveloperMode
       })
-
       if (!txn) {
         throw Error('transaction not found')
       }
-
       return { success: true, value: txn }
     } catch (e) {
       Logger.error('Unable to transfer asset', e)

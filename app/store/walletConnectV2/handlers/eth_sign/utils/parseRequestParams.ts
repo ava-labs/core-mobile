@@ -1,19 +1,15 @@
 import { z } from 'zod'
 import { RpcMethod } from 'store/walletConnectV2/types'
-import { SessionTypes } from '@walletconnect/types'
-import { accountSchema } from '../account/avalanche_selectAccount/utils'
-import { networkSchema } from '../chain/utils'
-import { ethSignSchema } from './schemas/ethSign'
+import { ethSignSchema } from '../schemas/ethSign'
 import {
-  combinedDataSchema,
   combinedTypedDataSchema,
   ethSignTypedDataSchema,
   ethSignTypedDataV1Schema,
   ethSignTypedDataV3Schema,
   ethSignTypedDataV4Schema,
   typedDataSchema
-} from './schemas/ethSignTypedData'
-import { personalSignSchema } from './schemas/personalSign'
+} from '../schemas/ethSignTypedData'
+import { personalSignSchema } from '../schemas/personalSign'
 
 const paramsSchema = z
   .discriminatedUnion('method', [
@@ -89,28 +85,9 @@ const paramsSchema = z
     }
   })
 
-const approveDataSchema = z.object({
-  data: combinedDataSchema,
-  network: networkSchema,
-  account: accountSchema
-})
-
 export function parseRequestParams(params: {
   method: string
   params: unknown
 }) {
   return paramsSchema.safeParse(params)
-}
-
-export function parseApproveData(data: unknown) {
-  return approveDataSchema.safeParse(data)
-}
-
-export const isAddressApproved = (
-  address: string,
-  namespaces: SessionTypes.Namespaces
-) => {
-  return namespaces.eip155?.accounts.some(
-    account => account.toLowerCase() === address.toLowerCase()
-  )
 }
