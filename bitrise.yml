@@ -265,7 +265,7 @@ workflows:
             # npm rebuild detox
             echo $BITRISE_APK_PATH_LIST
 
-            yarn ./node_modules/.bin/detox test --configuration android.internal.release.ci
+            yarn ./node_modules/.bin/detox test --configuration android.internal.release.ci --cleanup
     - script@1:
         inputs:
         - content: |
@@ -364,11 +364,11 @@ workflows:
             #!/usr/bin/env bash
             # fail if any commands fails
             set -e
+            
             # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
             set -o pipefail
+
             # debug log
             set -x
 
-            npm rebuild detox
-
-            ./node_modules/.bin/detox test --configuration ios.internal.release.ci --cleanup
+            yarn ./node_modules/.bin/detox test --configuration ios.internal.release.ci --cleanup
