@@ -266,7 +266,7 @@ workflows:
             set -x
 
             echo $BITRISE_APK_PATH_LIST
-            yarn rebuild detox
+            npm rebuild detox
             ./node_modules/.bin/detox test --configuration android.internal.release.ci --cleanup
     - script@1:
         inputs:
@@ -361,6 +361,7 @@ workflows:
         is_expand: false
     steps:
     - script@1:
+        title: Start Detox
         inputs:
         - content: |-
             #!/usr/bin/env bash
@@ -373,5 +374,5 @@ workflows:
             # debug log
             set -x
             
-            yarn rebuild detox
+            npm rebuild detox
             ./node_modules/.bin/detox test --configuration ios.internal.release.ci --cleanup
