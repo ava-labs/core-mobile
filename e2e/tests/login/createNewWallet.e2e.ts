@@ -3,7 +3,6 @@
 /**
  * @jest-environment ./environment.ts
  */
-import { device } from 'detox'
 import PortfolioPage from '../../pages/portfolio.page'
 import Assert from '../../helpers/assertions'
 import NewRecoveryPhrasePage from '../../pages/newRecoveryPhrase.page'
@@ -12,11 +11,11 @@ import WatchListPage from '../../pages/watchlist.page'
 import VerifyPhrasePage from '../../pages/verifyPhrase.page'
 import CreatePinPage from '../../pages/createPin.page'
 import BottomTabsPage from '../../pages/bottomTabs.page'
+import { warmup } from '../../helpers/warmup'
 
 describe('Create new wallet', () => {
   beforeAll(async () => {
-    await device.launchApp()
-    await Assert.isVisible(WatchListPage.walletSVG, 1)
+    await warmup()
   })
 
   it('should validate watchlist is shown', async () => {

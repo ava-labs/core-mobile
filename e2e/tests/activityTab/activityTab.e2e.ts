@@ -3,18 +3,16 @@
 /**
  * @jest-environment ./environment.ts
  */
-import { device } from 'detox'
 import BottomTabsPage from '../../pages/bottomTabs.page'
 import Assert from '../../helpers/assertions'
-import WatchListPage from '../../pages/watchlist.page'
 import ActivityTabPage from '../../pages/activityTab.page'
 import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import TransactionDetailsPage from '../../pages/transactionDetails.page'
+import { warmup } from '../../helpers/warmup'
 
 describe('Activity Tab', () => {
   beforeAll(async () => {
-    await device.launchApp()
-    await Assert.isVisible(WatchListPage.walletSVG, 1)
+    await warmup()
     await LoginRecoverWallet.recoverWalletLogin()
   })
 

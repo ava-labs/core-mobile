@@ -3,7 +3,6 @@
 /**
  * @jest-environment ./environment.ts
  */
-import { device } from 'detox'
 import { Platform } from '../../helpers/constants'
 import Assert from '../../helpers/assertions'
 import WatchListPage from '../../pages/watchlist.page'
@@ -16,13 +15,13 @@ import ActivityTabPage from '../../pages/activityTab.page'
 import delay from '../../helpers/waits'
 import actions from '../../helpers/actions'
 import transactionDetailsPage from '../../pages/transactionDetails.page'
+import { warmup } from '../../helpers/warmup'
 
 const jestExpect = require('expect')
 
 describe('Send AVAX', () => {
   beforeAll(async () => {
-    await device.launchApp()
-    await Assert.isVisible(WatchListPage.walletSVG, 1)
+    await warmup()
   })
 
   it('should validate watchlist is shown', async () => {

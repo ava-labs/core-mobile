@@ -1,5 +1,16 @@
 /** @type {Detox.DetoxConfig} */
 
+const getApkPaths = () => {
+  if (process.env.BITRISE_SIGNED_APK_PATH_LIST) {
+    const apks = process.env.BITRISE_SIGNED_APK_PATH_LIST.split('|')
+    return [apks[0], apks[1]]
+  }
+
+  return [undefined, undefined]
+}
+
+const [ANDROID_APK_PATH, ANDROID_TEST_APK_PATH] = getApkPaths()
+
 module.exports = {
   testRunner: {
     $0: 'jest',
@@ -49,10 +60,8 @@ module.exports = {
     },
     'android.internal.release.ci': {
       type: 'android.apk',
-      binaryPath:
-        '/Users/vagrant/deploy/app-internal-universal-release-bitrise-signed.apk',
-      testBinaryPath:
-        '/Users/vagrant/git/android/app/build/outputs/apk/androidTest/internal/e2e/app-internal-e2e-androidTest.apk'
+      binaryPath: ANDROID_APK_PATH,
+      testBinaryPath: ANDROID_TEST_APK_PATH
     },
     'android.internal.e2e': {
       type: 'android.apk',
