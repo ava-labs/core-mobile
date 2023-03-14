@@ -24,8 +24,8 @@ import {
 import { getEvmProvider } from 'services/network/utils/providerUtils'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction } from '@sentry/types'
-import { RpcMethod } from 'store/walletConnectV2'
 import { Account } from 'store/account'
+import { RpcMethod } from 'store/walletConnectV2/types'
 
 class WalletService {
   private mnemonic?: string

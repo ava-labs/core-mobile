@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { RpcMethod } from 'store/walletConnectV2'
+import { RpcMethod } from 'store/walletConnectV2/types'
 import { addressSchema, messageSchema } from './shared'
 
 // https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_sign

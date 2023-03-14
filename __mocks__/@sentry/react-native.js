@@ -1,6 +1,2 @@
-const SentryMock = {
-  init: () => jest.fn(),
-  captureException: jest.fn()
-}
-
-export default SentryMock
+export const init = jest.fn()
+export const captureException = jest.fn()
