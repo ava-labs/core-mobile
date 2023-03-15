@@ -1,5 +1,5 @@
 import React from 'react'
-import { StyleSheet } from 'react-native'
+import { StyleSheet, View } from 'react-native'
 import { ListRenderItemInfo as FlashListRenderItemInfo } from '@shopify/flash-list'
 import WatchListItem from 'screens/watchlist/components/WatchListItem'
 import { useNavigation } from '@react-navigation/native'
@@ -65,32 +65,48 @@ const WatchList: React.FC<Props> = ({
   const keyExtractor = (item: MarketToken) => item.id
 
   const draggableListItem = (item: RenderItemParams<MarketToken>) => {
-    return renderItem(item.item, item.drag)
+    return renderItem(item.item, item.drag, item.isActive)
   }
 
   const flashListRenderItem = (item: FlashListRenderItemInfo<MarketToken>) => {
     return renderItem(item.item)
   }
 
-  function renderItem(token: MarketToken, drag?: () => void) {
+  function renderItem(
+    token: MarketToken,
+    drag?: () => void,
+    isDragging?: boolean
+  ) {
     const chartData = charts[token.id] ?? defaultChartData
     const price = prices[token.id] ?? defaultPrice
     const displayValue = getDisplayValue(price, tokenInCurrencyFormatter)
 
     return (
-      <WatchListItem
-        token={token}
-        chartData={chartData}
-        value={displayValue}
-        filterBy={filterBy}
-        testID={`watchlist_item__${token.symbol}`}
-        onPress={() => {
-          navigation.navigate(AppNavigation.Wallet.TokenDetail, {
-            tokenId: token.id
-          })
-        }}
-        onDragPress={drag}
-      />
+      <View
+        style={
+          isDragging && {
+            elevation: 10,
+            backgroundColor: 'black',
+            shadowColor: 'white',
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: 0.5,
+            shadowRadius: 6
+          }
+        }>
+        <WatchListItem
+          token={token}
+          chartData={chartData}
+          value={displayValue}
+          filterBy={filterBy}
+          testID={`watchlist_item__${token.symbol}`}
+          onPress={() => {
+            navigation.navigate(AppNavigation.Wallet.TokenDetail, {
+              tokenId: token.id
+            })
+          }}
+          onDragPress={drag}
+        />
+      </View>
     )
   }
 
