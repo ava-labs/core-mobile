@@ -1,5 +1,5 @@
 import { FlashList } from '@shopify/flash-list'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   ContentStyle,
   ListRenderItem as FlashListRenderItem
@@ -61,10 +61,31 @@ const AvaList = <T,>({
   isDraggable,
   onDragEnd
 }: AvaListProps<T>) => {
+  const [isDragging, setIsDragging] = useState(false)
+  const [deferredData, setDeferredData] = useState([] as T[])
+
+  useEffect(checkIfData, [data, isDragging])
+
+  function checkIfData() {
+    if (!isDragging) {
+      setDeferredData(data || [])
+    }
+  }
+
+  function handleOnDragBegin() {
+    setIsDragging(true)
+  }
+
+  function handleOnDragEnd(dragEndParams: DragEndParams<T>) {
+    setIsDragging(false)
+    onDragEnd?.(dragEndParams)
+  }
+
   return isDraggable && draggableListItem ? (
     <DraggableFlatList
-      data={data || []}
-      onDragEnd={onDragEnd}
+      data={deferredData || []}
+      onDragBegin={handleOnDragBegin}
+      onDragEnd={handleOnDragEnd}
       renderItem={draggableListItem}
       ItemSeparatorComponent={ItemSeparatorComponent}
       ListEmptyComponent={ListEmptyComponent}
