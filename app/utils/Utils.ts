@@ -18,6 +18,13 @@ export const truncateAddress = (address: string, size = 6): string => {
   return `${firstChunk}...${lastChunk}`
 }
 
+export const truncateNodeId = (nodeId: string, size = 6): string => {
+  const firstChunk = nodeId.substring(0, 'NodeID-'.length + size)
+  const lastChunk = nodeId.substr(-(size / 1.5))
+
+  return `${firstChunk}...${lastChunk}`
+}
+
 export function formatTokenAmount(amount: Big, denomination = 2): string {
   const formatter = new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 2,
@@ -128,13 +135,13 @@ export function calculateGasAndFees({
   gasPrice: BigNumber
   tokenPrice: number
   tokenDecimals?: number
-  gasLimit?: number
+  gasLimit?: number | string
 }): GasAndFees {
   const bnFee = gasLimit ? gasPrice.mul(gasLimit) : gasPrice
   const fee = bigToLocaleString(ethersBigNumberToBig(bnFee, tokenDecimals), 8)
   return {
     gasPrice: gasPrice,
-    gasLimit: gasLimit || 0,
+    gasLimit: Number(gasLimit) || 0,
     fee,
     bnFee,
     feeInCurrency: parseFloat((parseFloat(fee) * tokenPrice).toFixed(4))

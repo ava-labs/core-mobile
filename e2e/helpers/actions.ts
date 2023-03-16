@@ -43,16 +43,33 @@ const waitForElementNotVisible = async (
   await waitFor(element(item)).not.toBeVisible().withTimeout(timeout)
 }
 
-const getAttributes = async (item: Detox.NativeMatcher) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const getAttributes = async (item: any) => {
   return await element(item).getAttributes()
+}
+
+// Not working for some reason, need to fix
+const getAndroidAttributesArray = async (
+  locator: Detox.NativeMatcher,
+  loopCount: number
+) => {
+  const attsArray = []
+  for (let i = 0; i < loopCount; i++) {
+    const el = element(locator).atIndex(i)
+    const atts = await el.getAttributes()
+    attsArray.push(atts)
+  }
+  console.log(JSON.stringify(attsArray))
+  return attsArray
 }
 
 const swipeUp = async (
   item: Detox.NativeMatcher,
   speed: Detox.Speed,
-  normalizedOffset: number
+  normalizedOffset: number,
+  index: number
 ) => {
-  return await element(item).swipe('up', speed, normalizedOffset)
+  return await element(item).atIndex(index).swipe('up', speed, normalizedOffset)
 }
 
 const swipeDown = async (
@@ -66,6 +83,10 @@ const swipeDown = async (
     .swipe('down', speed, normalizedOffset)
 }
 
+const platform = () => {
+  return device.getPlatform()
+}
+
 export default {
   tap,
   longPress,
@@ -76,5 +97,7 @@ export default {
   swipeUp,
   swipeDown,
   setColumnToValue,
-  setInputText
+  setInputText,
+  getAndroidAttributesArray,
+  platform
 }

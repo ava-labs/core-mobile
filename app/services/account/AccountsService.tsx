@@ -15,7 +15,10 @@ class AccountsService {
         reloadedAccounts[key] = {
           ...account,
           addressBtc: addresses[NetworkVMType.BITCOIN],
-          address: addresses[NetworkVMType.EVM]
+          address: addresses[NetworkVMType.EVM],
+          addressAVM: addresses[NetworkVMType.AVM],
+          addressPVM: addresses[NetworkVMType.PVM],
+          addressCoreEth: addresses[NetworkVMType.CoreEth]
         }
       }
     }
@@ -31,7 +34,10 @@ class AccountsService {
       index: newIndex,
       title: `Account ${newIndex + 1}`,
       addressBtc: addresses[NetworkVMType.BITCOIN],
-      address: addresses[NetworkVMType.EVM]
+      address: addresses[NetworkVMType.EVM],
+      addressAVM: addresses[NetworkVMType.AVM],
+      addressPVM: addresses[NetworkVMType.PVM],
+      addressCoreEth: addresses[NetworkVMType.CoreEth]
     } as Account
   }
 

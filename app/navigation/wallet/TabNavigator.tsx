@@ -14,7 +14,6 @@ import AvaText from 'components/AvaText'
 import ArrowSVG from 'components/svg/ArrowSVG'
 import { useNavigation } from '@react-navigation/native'
 import FloatingActionButton from 'components/FloatingActionButton'
-import useInAppBrowser from 'hooks/useInAppBrowser'
 import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
 import HistorySVG from 'components/svg/HistorySVG'
 import BridgeSVG from 'components/svg/BridgeSVG'
@@ -37,9 +36,9 @@ import GeneralToast from 'components/toast/GeneralToast'
 import WalletConnectSVG from 'components/svg/WalletConnectSVG'
 import AvaButton from 'components/AvaButton'
 import { Row } from 'components/Row'
-import { useDappConnectionContext } from 'contexts/DappConnectionContext'
 import { getCommonBottomTabOptions, normalTabButton } from 'navigation/NavUtils'
-import { DeepLinkOrigin } from 'contexts/DappConnectionContext/types'
+import { useDeeplink } from 'contexts/DeeplinkContext/DeeplinkContext'
+import { DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
 
 export type TabNavigatorParamList = {
   [AppNavigation.Tabs.Portfolio]: { showBackButton?: boolean }
@@ -187,10 +186,9 @@ const CustomTabBarFab: FC = ({ children }) => {
   const buyDisabled = useIsUIDisabled(UI.Buy)
   const wcDisabled = useIsUIDisabled(UI.WalletConnect)
   const { theme } = useApplicationContext()
-  const { openMoonPay } = useInAppBrowser()
   const navigation = useNavigation<FabNavigationProp>()
   const fabRef = useRef<typeof FloatingActionButton>()
-  const { setPendingDeepLink } = useDappConnectionContext()
+  const { setPendingDeepLink } = useDeeplink()
 
   const actionItems = useMemo(() => {
     const actions: Record<string, ActionProp> = {}
@@ -221,7 +219,7 @@ const CustomTabBarFab: FC = ({ children }) => {
       // @ts-ignore
       actions.Buy = {
         image: <BuySVG color={theme.background} size={24} />,
-        onPress: () => openMoonPay()
+        onPress: () => navigation.navigate(AppNavigation.Wallet.Buy)
       } as ActionProp
     }
 
@@ -256,7 +254,6 @@ const CustomTabBarFab: FC = ({ children }) => {
     buyDisabled,
     swapDisabled,
     navigation,
-    openMoonPay,
     theme.background
   ])
 

@@ -31,6 +31,7 @@ export function useAssetBalancesEVM(
   const tokens = useSelector(selectTokensWithBalance)
   const activeAccount = useActiveAccount()
   const { avalancheAssets, ethereumAssets, currentBlockchain } = useBridgeSDK()
+
   const { getTokenSymbolOnNetwork } = useGetTokenSymbolOnNetwork()
   const ethereumProvider = useEthereumProvider()
 

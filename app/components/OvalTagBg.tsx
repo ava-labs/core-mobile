@@ -3,8 +3,10 @@ import { View, ViewStyle } from 'react-native'
 
 type Props = {
   color?: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   children: any
   style?: ViewStyle
+  testID?: string
 }
 
 export default function OvalTagBg({

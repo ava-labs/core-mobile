@@ -1,7 +1,7 @@
 import { Image } from 'react-native'
 import { NFTItemData, NFTItemExternalData } from 'store/nft'
 import { HttpClient } from '@avalabs/utils-sdk'
-import { Erc721MetadataStatus } from '@avalabs/glacier-sdk'
+import { NftTokenMetadataStatus } from '@avalabs/glacier-sdk'
 import { convertIPFSResolver } from './utils'
 
 export class NftProcessor {
@@ -81,7 +81,7 @@ export class NftProcessor {
       return nft
     }
 
-    if (nft.metadata.indexStatus === Erc721MetadataStatus.INDEXED) {
+    if (nft.metadata.indexStatus === NftTokenMetadataStatus.INDEXED) {
       return {
         ...nft,
         name: nft.metadata.name ?? '',

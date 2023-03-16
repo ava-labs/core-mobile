@@ -10,8 +10,8 @@ import Logger from 'utils/Logger'
 import { selectBridgeAppConfig } from 'store/bridge'
 import * as Navigation from 'utils/Navigation'
 import AppNavigation from 'navigation/AppNavigation'
+import { RpcMethod } from 'store/walletConnectV2'
 import { updateRequestStatus } from '../slice'
-import { RpcMethod } from '../types'
 import {
   ApproveResponse,
   DappRpcRequest,
@@ -76,37 +76,33 @@ class AvalancheBridgeAssetHandler
     const amount = bnToBig(stringToBN(amountStr, denomination), denomination)
 
     try {
-      const result = await BridgeService.transferAsset({
+      const txn = await BridgeService.transferAsset({
         currentBlockchain,
         amount,
         asset,
         config: bridgeAppConfig,
         activeAccount,
         allNetworks,
-        activeNetwork
+        isTestnet: Boolean(activeNetwork.isTestnet)
       })
 
-      if (!result) {
-        return {
-          success: false,
-          error: ethErrors.rpc.internal('failed to transfer asset')
-        }
+      if (!txn) {
+        throw Error('transaction not found')
       }
 
       dispatch(
         updateRequestStatus({
           id: request.payload.id,
           status: {
-            result: result.hash
+            result: txn.hash
           }
         })
       )
 
-      return { success: true, value: result }
+      return { success: true, value: txn }
     } catch (e) {
-      Logger.error('Error approving dapp tx', e)
-
-      const error = ethErrors.rpc.internal<string>('failed to transfer asset')
+      Logger.error('Unable to transfer asset', e)
+      const error = ethErrors.rpc.internal<string>('Unable to transfer asset')
 
       dispatch(
         updateRequestStatus({

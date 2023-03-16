@@ -9,7 +9,13 @@
     "setupFilesAfterEnv": ["./setup.ts"],
     "globalTeardown": "detox/runners/jest/globalTeardown",
     "globalSetup": "detox/runners/jest/globalSetup",
-    "transformIgnorePatterns": ["node_modules/(?!((jest-)?react-native|react-native-elements|@react-native(-community)?)/)"],
-    "preset": "ts-jest"
-
+    "transformIgnorePatterns": ["node_modules/(?!(jest-)?react-native|@react-native-community|@react-native|@react-navigation)"],
+    "transform": {
+        "^.+\\.tsx?$": [
+          "ts-jest",
+          {
+            "babelConfig": "babel.config.js"
+          }
+        ]
+      }
 }

@@ -22,6 +22,7 @@ import {
 import { usePosthogContext } from 'contexts/PosthogContext'
 import { calculateRate } from 'swap/utils'
 import { getTokenAddress } from 'swap/getSwapRate'
+import { TokenType } from 'store/balance'
 
 const SECOND = 1000
 
@@ -75,17 +76,16 @@ const SwapReview = ({ onCancel, onBackToParent }: Props) => {
       gasPrice &&
       slippage
     ) {
-      swap(
-        getTokenAddress(fromToken),
-        getTokenAddress(toToken),
-        toToken?.decimals ?? 0,
-        fromToken?.decimals ?? 0,
-        optimalRate.srcAmount,
-        optimalRate,
-        gasLimit,
-        gasPrice,
-        slippage
-      )
+      swap({
+        srcTokenAddress: getTokenAddress(fromToken),
+        isSrcTokenNative: fromToken.type === TokenType.NATIVE,
+        destTokenAddress: getTokenAddress(toToken),
+        isDestTokenNative: toToken.type === TokenType.NATIVE,
+        priceRoute: optimalRate,
+        swapGasLimit: gasLimit,
+        swapGasPrice: gasPrice,
+        swapSlippage: slippage
+      })
     }
   }
 

@@ -64,12 +64,13 @@ const selectActiveChainId = (state: RootState) => state.network.active
 
 const selectFavorites = (state: RootState) => state.network.favorites
 
-const _selectNetworks = (state: RootState) => state.network.networks
 const _selectCustomNetworks = (state: RootState) => state.network.customNetworks
+
+export const selectRawNetworks = (state: RootState) => state.network.networks
 
 export const selectNetworks = createSelector(
   [
-    _selectNetworks,
+    selectRawNetworks,
     _selectCustomNetworks,
     selectAllCustomTokens,
     selectIsDeveloperMode
@@ -89,10 +90,12 @@ export const selectNetworks = createSelector(
       },
       {} as Record<number, Network>
     )
+
     const populatedCustomNetworks = Object.keys(customNetworks).reduce(
       (reducedNetworks, key) => {
         const chainId = parseInt(key)
         const network = customNetworks[chainId]
+
         if (network && network.isTestnet === isDeveloperMode) {
           reducedNetworks[chainId] = mergeWithCustomTokens(
             network,
@@ -103,6 +106,7 @@ export const selectNetworks = createSelector(
       },
       {} as Record<number, Network>
     )
+
     return { ...populatedNetworks, ...populatedCustomNetworks }
   }
 )
@@ -161,7 +165,7 @@ export const selectTokenInfo = (symbol: string) => (state: RootState) => {
 }
 
 export const selectIsTestnet = (chainId: number) => (state: RootState) => {
-  const networks = _selectNetworks(state)
+  const networks = selectRawNetworks(state)
   const network = networks[chainId]
   return network?.isTestnet
 }
@@ -191,6 +195,20 @@ export const selectAllNetworkTokensAsLocal = (
       } as LocalTokenWithBalance
     }) ?? []
   )
+}
+
+export const selectSomeNetworks =
+  (chainIds: number[]) => (state: RootState) => {
+    const allNetworks = selectRawNetworks(state)
+
+    return chainIds
+      .map(id => allNetworks[id])
+      .filter((network): network is Network => !!network)
+  }
+
+export const selectNetwork = (chainId: number) => (state: RootState) => {
+  const allNetworks = selectRawNetworks(state)
+  return allNetworks[chainId]
 }
 
 export const {

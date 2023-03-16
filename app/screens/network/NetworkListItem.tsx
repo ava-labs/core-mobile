@@ -16,6 +16,7 @@ type Props = {
   onPress: (chainId: number) => void
   onFavorite: (chainId: number) => void
   onInfo: (chainId: number) => void
+  testID?: string
 }
 
 export function NetworkListItem({
@@ -34,11 +35,11 @@ export function NetworkListItem({
       <Row style={{ alignItems: 'center' }}>
         {!alwaysFavoriteNetworks.includes(networkChainId) && (
           <AvaButton.Icon onPress={() => onFavorite(networkChainId)}>
-            <StarSVG selected={isFavorite} />
+            <StarSVG selected={isFavorite} testID="star_svg" />
           </AvaButton.Icon>
         )}
         <AvaButton.Icon onPress={() => onInfo(networkChainId)}>
-          <InfoSVG size={24} color={theme.colorIcon1} />
+          <InfoSVG size={24} color={theme.colorIcon1} testID="info_svg" />
         </AvaButton.Icon>
       </Row>
     )

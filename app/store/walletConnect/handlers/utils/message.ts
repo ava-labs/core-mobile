@@ -1,5 +1,5 @@
 import { JsonRpcRequest } from '@walletconnect/jsonrpc-types'
-import { RpcMethod } from 'store/walletConnect'
+import { RpcMethod } from 'store/walletConnectV2'
 
 export function parseMessage(data: JsonRpcRequest<string[]>) {
   const { params, method } = data

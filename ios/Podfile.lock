@@ -78,6 +78,15 @@ PODS:
   - jail-monkey (2.6.0):
     - React-Core
   - libevent (2.1.12)
+  - libwebp (1.2.4):
+    - libwebp/demux (= 1.2.4)
+    - libwebp/mux (= 1.2.4)
+    - libwebp/webp (= 1.2.4)
+  - libwebp/demux (1.2.4):
+    - libwebp/webp
+  - libwebp/mux (1.2.4):
+    - libwebp/demux
+  - libwebp/webp (1.2.4)
   - lottie-ios (3.2.3)
   - lottie-react-native (5.0.1):
     - lottie-ios (~> 3.2.3)
@@ -405,7 +414,7 @@ PODS:
   - RNArgon2 (2.0.1):
     - CatCrypto
     - React-Core
-  - RNCAsyncStorage (1.16.1):
+  - RNCAsyncStorage (1.17.11):
     - React-Core
   - RNCClipboard (1.8.5):
     - React-Core
@@ -417,11 +426,15 @@ PODS:
     - React-Core
   - RNDominantColor (1.7.2):
     - React
+  - RNFastImage (8.6.3):
+    - React-Core
+    - SDWebImage (~> 5.11.1)
+    - SDWebImageWebPCoder (~> 0.8.4)
   - RNFlashList (1.4.0):
     - React-Core
   - RNFS (2.19.0):
     - React-Core
-  - RNGestureHandler (2.7.0):
+  - RNGestureHandler (2.9.0):
     - React-Core
   - RNInAppBrowser (3.7.0):
     - React-Core
@@ -434,7 +447,7 @@ PODS:
   - RNPostHog (1.1.5):
     - PostHog (~> 1.4.4)
     - React
-  - RNReanimated (2.12.0):
+  - RNReanimated (2.14.2):
     - DoubleConversion
     - FBLazyVector
     - FBReactNativeSpec
@@ -469,10 +482,16 @@ PODS:
   - RNSentry (4.8.0):
     - React-Core
     - Sentry (= 7.29.0)
-  - RNSVG (12.4.4):
+  - RNSVG (13.8.0):
     - React-Core
   - RNVectorIcons (8.1.0):
     - React-Core
+  - SDWebImage (5.11.1):
+    - SDWebImage/Core (= 5.11.1)
+  - SDWebImage/Core (5.11.1)
+  - SDWebImageWebPCoder (0.8.5):
+    - libwebp (~> 1.0)
+    - SDWebImage/Core (~> 5.10)
   - Sentry (7.29.0):
     - Sentry/Core (= 7.29.0)
   - Sentry/Core (7.29.0)
@@ -561,6 +580,7 @@ DEPENDENCIES:
   - "RNDateTimePicker (from `../node_modules/@react-native-community/datetimepicker`)"
   - RNDeviceInfo (from `../node_modules/react-native-device-info`)
   - RNDominantColor (from `../node_modules/rn-dominant-color`)
+  - RNFastImage (from `../node_modules/react-native-fast-image`)
   - "RNFlashList (from `../node_modules/@shopify/flash-list`)"
   - RNFS (from `../node_modules/react-native-fs`)
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
@@ -592,9 +612,12 @@ SPEC REPOS:
     - FlipperKit
     - fmt
     - libevent
+    - libwebp
     - lottie-ios
     - OpenSSL-Universal
     - PostHog
+    - SDWebImage
+    - SDWebImageWebPCoder
     - Sentry
     - SocketRocket
     - YogaKit
@@ -710,6 +733,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-device-info"
   RNDominantColor:
     :path: "../node_modules/rn-dominant-color"
+  RNFastImage:
+    :path: "../node_modules/react-native-fast-image"
   RNFlashList:
     :path: "../node_modules/@shopify/flash-list"
   RNFS:
@@ -762,6 +787,7 @@ SPEC CHECKSUMS:
   glog: 04b94705f318337d7ead9e6d17c019bd9b1f6b1b
   jail-monkey: 07b83767601a373db876e939b8dbf3f5eb15f073
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
+  libwebp: f62cb61d0a484ba548448a4bd52aabf150ff6eef
   lottie-ios: c058aeafa76daa4cf64d773554bccc8385d0150e
   lottie-react-native: a029a86e1689c86a07169c520ae770e84348cd20
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
@@ -807,26 +833,29 @@ SPEC CHECKSUMS:
   React-runtimeexecutor: 15437b576139df27635400de0599d9844f1ab817
   ReactCommon: 349be31adeecffc7986a0de875d7fb0dcf4e251c
   RNArgon2: 1481820722fd4af1575c09f7fc9ad67c00ee8a42
-  RNCAsyncStorage: b49b4e38a1548d03b74b30e558a1d18465b94be7
+  RNCAsyncStorage: 8616bd5a58af409453ea4e1b246521bb76578d60
   RNCClipboard: cc054ad1e8a33d2a74cd13e565588b4ca928d8fd
   RNCMaskedView: 0e1bc4bfa8365eba5fbbb71e07fbdc0555249489
   RNDateTimePicker: 7658208086d86d09e1627b5c34ba0cf237c60140
   RNDeviceInfo: 0a7c1d2532aa7691f9b9925a27e43af006db4dae
   RNDominantColor: 7c17c31201566a592ba4b2fbe2bb7e00df468753
+  RNFastImage: 5c9c9fed9c076e521b3f509fe79e790418a544e8
   RNFlashList: 399bf6a0db68f594ad2c86aaff3ea39564f39f8a
   RNFS: fc610f78fdf8bfc89a9e5cc2f898519f4dba1002
-  RNGestureHandler: 7673697e7c0e9391adefae4faa087442bc04af33
+  RNGestureHandler: 071d7a9ad81e8b83fe7663b303d132406a7d8f39
   RNInAppBrowser: e36d6935517101ccba0e875bac8ad7b0cb655364
   RNKeychain: ff836453cba46938e0e9e4c22e43d43fa2c90333
   RNOS: 6f2f9a70895bbbfbdad7196abd952e7b01d45027
   RNPermissions: de7b7c3fe1680d974ac7a85e3e97aa539c0e68ea
   RNPostHog: 5ad77e4a4d52ca151da444f11095125681d0cf68
-  RNReanimated: 2a91e85fcd343f8af3c58d3425b99fdd285590a5
+  RNReanimated: 3ed15d2c7d7fd9d9a284de291a1e347d132d282b
   RNScreens: f3230dd008a7d0ce5c0a8bc78ff12cf2315bda24
   RNSensors: e74c8bd9606400c1048ab67af7f41eb2091cb2fc
   RNSentry: db7fd7b66efda28885e4e904a8b5e7349aec61c1
-  RNSVG: ecd661f380a07ba690c9c5929c475a44f432d674
+  RNSVG: c1e76b81c76cdcd34b4e1188852892dc280eb902
   RNVectorIcons: 31cebfcf94e8cf8686eb5303ae0357da64d7a5a4
+  SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
+  SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d
   Sentry: 4272663eb0eda312024d795ca3f5a562a8ce5e18
   SocketRocket: fccef3f9c5cedea1353a9ef6ada904fde10d6608
   Yoga: 99caf8d5ab45e9d637ee6e0174ec16fbbb01bcfc

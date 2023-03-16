@@ -9,5 +9,8 @@ export type Account = {
   index: number
   title: string
   addressBtc: string
-  address: string
+  address: string //TODO: rename to addressC (c-chain address)
+  addressAVM?: string
+  addressPVM?: string
+  addressCoreEth?: string
 }

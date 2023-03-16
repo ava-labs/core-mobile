@@ -1,5 +1,9 @@
 import { AppListenerEffectAPI } from 'store/index'
-import { onLogIn } from 'store/app'
+import {
+  onRehydrationComplete,
+  selectWalletState,
+  WalletState
+} from 'store/app'
 import WalletConnectService, {
   WalletConnectCallbacks
 } from 'services/walletconnect/WalletConnectService'
@@ -11,15 +15,16 @@ import { AnyAction } from '@reduxjs/toolkit'
 import { InteractionManager } from 'react-native'
 import { showSimpleToast } from 'components/Snackbar'
 import { JsonRpcRequest } from '@walletconnect/jsonrpc-types'
+import { RpcMethod } from 'store/walletConnectV2'
 import {
   removeDApps,
   killSessions,
   onDisconnect,
   newSession,
-  addRequest
+  onRequest,
+  removeDapp
 } from '../slice'
 import { selectApprovedDApps } from '../slice'
-import { RpcMethod } from '../types'
 
 const callbacks = (
   listenerApi: AppListenerEffectAPI
@@ -42,7 +47,7 @@ const callbacks = (
         peerId
       }
 
-      dispatch(addRequest({ payload: request }))
+      dispatch(onRequest({ payload: request }))
     },
     onCallRequest: (
       peerId: string,
@@ -55,9 +60,10 @@ const callbacks = (
         peerId: peerId
       }
 
-      dispatch(addRequest({ payload: request }))
+      dispatch(onRequest({ payload: request }))
     },
-    onDisconnect: (peerMeta: PeerMeta) => dispatch(onDisconnect(peerMeta))
+    onDisconnect: (clientId: string, peerMeta: PeerMeta) =>
+      dispatch(onDisconnect({ clientId, peerMeta }))
   }
 }
 
@@ -65,18 +71,30 @@ export const startSession = async (
   action: ReturnType<typeof newSession>,
   listenerApi: AppListenerEffectAPI
 ) => {
-  const uri = action.payload
-  WalletConnectService.startSession({ uri }, callbacks(listenerApi))
+  const state = listenerApi.getState()
+  const activeNetwork = selectActiveNetwork(state)
+
+  // do not start session if on BTC network
+  if (activeNetwork.vmName === NetworkVMType.BITCOIN) {
+    showSimpleToast(
+      'Wallet Connect V1 is not supported on Bitcoin network. Please switch to a different network and try again!'
+    )
+  } else {
+    const uri = action.payload
+    WalletConnectService.startSession({ uri }, callbacks(listenerApi))
+  }
 }
 
 export const restoreSessions = async (
-  action: ReturnType<typeof onLogIn>,
+  action: ReturnType<typeof onRehydrationComplete>,
   listenerApi: AppListenerEffectAPI
 ) => {
   const state = listenerApi.getState()
+  const walletState = selectWalletState(state)
   const approvedDApps = selectApprovedDApps(state)
 
-  if (approvedDApps.length === 0) return
+  if (approvedDApps.length === 0 || walletState === WalletState.NONEXISTENT)
+    return
 
   WalletConnectService.restoreSessions(approvedDApps, callbacks(listenerApi))
 }
@@ -89,6 +107,7 @@ export const updateSessions = async (
   const activeAccount = selectActiveAccount(state)
   const activeNetwork = selectActiveNetwork(state)
 
+  // we don't update session when switching to bitcoin network as bitcoin network is not supported
   if (!activeAccount || activeNetwork.vmName === NetworkVMType.BITCOIN) return
 
   WalletConnectService.updateAllSessions(
@@ -113,13 +132,16 @@ export const killSomeSessions = async (
 }
 
 export const handleDisconnect = async (
-  action: ReturnType<typeof onDisconnect>
+  action: ReturnType<typeof onDisconnect>,
+  listenerApi: AppListenerEffectAPI
 ) => {
-  const peerMeta = action.payload
+  const { clientId, peerMeta } = action.payload
+
+  listenerApi.dispatch(removeDapp(clientId))
 
   InteractionManager.runAfterInteractions(() => {
     if (peerMeta?.name) {
-      showSimpleToast(`${peerMeta.name} was disconnected`, peerMeta.url)
+      showSimpleToast(`${peerMeta.name} was disconnected`)
     }
   })
 }

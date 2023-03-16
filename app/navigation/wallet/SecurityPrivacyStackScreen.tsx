@@ -10,7 +10,7 @@ import { createStackNavigator } from '@react-navigation/stack'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import RevealMnemonic from 'navigation/wallet/RevealMnemonic'
 import { QRCodeParams, SecurityPrivacyScreenProps } from 'navigation/types'
-import ConnectedDapps from 'screens/rpc/ConnectedDapps'
+import ConnectedDapps from 'screens/rpc/ConnectedDapps/ConnectedDapps'
 import CaptureDappQR from 'screens/shared/CaptureDappQR'
 
 export type SecurityStackParamList = {
@@ -34,44 +34,44 @@ function SecurityPrivacyStackScreen(): JSX.Element {
       }}>
       <SecurityStack.Group>
         <SecurityStack.Screen
-          options={MainHeaderOptions('Security & Privacy')}
+          options={MainHeaderOptions({ title: 'Security & Privacy' })}
           name={AppNavigation.SecurityPrivacy.SecurityPrivacy}
           component={SecurityPrivacyScreen}
         />
         <SecurityStack.Screen
-          options={MainHeaderOptions('')}
+          options={MainHeaderOptions()}
           name={AppNavigation.SecurityPrivacy.DappList}
           component={DappConnectionsList}
         />
         <SecurityStack.Screen
-          options={MainHeaderOptions('')}
+          options={MainHeaderOptions()}
           name={AppNavigation.SecurityPrivacy.QRCode}
           component={CaptureDappQR}
         />
       </SecurityStack.Group>
       <SecurityStack.Group screenOptions={{ presentation: 'modal' }}>
         <SecurityStack.Screen
-          options={MainHeaderOptions('Enter your pin')}
+          options={MainHeaderOptions({ title: 'Enter your pin' })}
           name={AppNavigation.SecurityPrivacy.PinChange}
           component={PinOrBiometryLoginForPassChange}
         />
         <SecurityStack.Screen
-          options={MainHeaderOptions('Set new pin')}
+          options={MainHeaderOptions({ title: 'Set new pin' })}
           name={AppNavigation.SecurityPrivacy.CreatePin}
           component={CreatePinScreen}
         />
         <SecurityStack.Screen
-          options={MainHeaderOptions('Enter your pin')}
+          options={MainHeaderOptions({ title: 'Enter your pin' })}
           name={AppNavigation.SecurityPrivacy.ShowRecoveryPhrase}
           component={PinOrBiometryLoginForRecoveryReveal}
         />
         <SecurityStack.Screen
-          options={MainHeaderOptions('Enter your pin')}
+          options={MainHeaderOptions({ title: 'Enter your pin' })}
           name={AppNavigation.SecurityPrivacy.TurnOnBiometrics}
           component={PinForBiometryEnable}
         />
         <SecurityStack.Screen
-          options={MainHeaderOptions('Recovery Phrase')}
+          options={MainHeaderOptions({ title: 'Recovery Phrase' })}
           name={AppNavigation.SecurityPrivacy.RecoveryPhrase}
           component={RevealMnemonic}
         />

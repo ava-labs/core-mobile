@@ -31,11 +31,33 @@ class VerifyPhrasePage {
     return by.id(verifyPhraseLoc.title)
   }
 
+  async getAndroidWordNumbers() {
+    const attsArray = []
+    for (let i = 0; i < 3; i++) {
+      const atts = element(this.selectWord).atIndex(i)
+      const getAtts = await atts.getAttributes()
+      attsArray.push(getAtts)
+    }
+    return attsArray
+  }
+
+  async getIosWordNumbers() {
+    const atts = await Action.getAttributes(this.selectWord)
+    // @ts-ignore
+    return atts.elements
+  }
+
+  async determinePlatformArray() {
+    if (device.getPlatform() === 'android') {
+      return await this.getAndroidWordNumbers()
+    } else {
+      return await this.getIosWordNumbers()
+    }
+  }
+
   // Converts the index of the word to the actual word number in the recovery phrase and returns an array of 3 words to tap on the confirmation page
   async selectWordNumbers(recoveryPhraseObject: object) {
-    const attributes = await Action.getAttributes(this.selectWord)
-    // @ts-ignore
-    const elementArray = attributes.elements
+    const elementArray = await this.determinePlatformArray()
 
     const wordNumberArray: string | string[] = []
 
@@ -66,6 +88,7 @@ class VerifyPhrasePage {
       }
       try {
         await element(by.text(word)).tap()
+        console.log(word + ' this is the word thats tapped!!!')
         await delay(500)
       } catch (error) {
         console.log('More than one element found trying another index...')

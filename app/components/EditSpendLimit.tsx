@@ -9,8 +9,8 @@ import { Row } from 'components/Row'
 import { TokenWithBalanceERC20 } from 'store/balance'
 import { Checkbox } from 'components/Checkbox'
 import { BNInput } from 'components/BNInput'
-import { PeerMeta } from 'services/walletconnect/types'
 import BN from 'bn.js'
+import { PeerMeta } from 'services/walletconnectv2/types'
 
 export enum Limit {
   DEFAULT = 'DEFAULT',
@@ -24,7 +24,6 @@ export interface SpendLimit {
     bn: BN
     amount: string
   }
-  default?: string
 }
 
 interface Props {
@@ -32,7 +31,8 @@ interface Props {
   setSpendLimit(limitData: SpendLimit): void
   onClose(): void
   spendLimit: SpendLimit
-  site?: PeerMeta
+  requestedApprovalLimit?: BN
+  site: PeerMeta | null | undefined
 }
 
 const EditSpendLimit = ({
@@ -40,7 +40,8 @@ const EditSpendLimit = ({
   token,
   onClose,
   setSpendLimit,
-  site
+  site,
+  requestedApprovalLimit
 }: Props) => {
   const { theme } = useApplicationContext()
   const [customSpendLimit, setCustomSpendLimit] = useState<SpendLimit>({
@@ -91,15 +92,14 @@ const EditSpendLimit = ({
           <AvaText.Heading2 textStyle={{ marginTop: 14 }}>
             Default
           </AvaText.Heading2>
-          <AvaText.Body2
-            textStyle={{
-              backgroundColor: theme.colorBg3,
-              borderRadius: 8,
-              padding: 8,
-              maxWidth: 300
-            }}>
-            {spendLimit.default}
-          </AvaText.Body2>
+
+          <BNInput
+            value={requestedApprovalLimit}
+            denomination={token.decimals}
+            editable={false}
+            selectTextOnFocus={false}
+            style={{ maxWidth: 300 }}
+          />
         </View>
       </Row>
       <Space y={8} />

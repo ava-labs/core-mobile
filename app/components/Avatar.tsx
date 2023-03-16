@@ -1,5 +1,5 @@
 import React, { FC, useCallback, useState } from 'react'
-import { Image, StyleSheet, View } from 'react-native'
+import { StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaLogoSVG from 'components/svg/AvaLogoSVG'
 import { Opacity10 } from 'resources/Constants'
@@ -7,6 +7,7 @@ import EthereumSvg from 'components/svg/Ethereum'
 import BitcoinSVG from 'components/svg/BitcoinSVG'
 import { TokenSymbol } from 'store/network'
 import { SvgUri } from 'react-native-svg'
+import FastImage from 'react-native-fast-image'
 import AvaText from './AvaText'
 
 interface Props {
@@ -16,6 +17,7 @@ interface Props {
   showBorder?: boolean
   size?: number
   circleColor?: string
+  testID?: string
 }
 
 const AvatarBase: FC<Props> = ({
@@ -74,7 +76,8 @@ const AvatarBase: FC<Props> = ({
           ]}>
           <AvaText.Body1
             // Scale text in relation to the size
-            textStyle={{ fontSize: size * 0.5, lineHeight: size * 0.75 }}>
+            textStyle={{ fontSize: size * 0.5, lineHeight: size * 0.75 }}
+            testID={initials}>
             {initials}
           </AvaText.Body1>
         </View>
@@ -95,7 +98,7 @@ const AvatarBase: FC<Props> = ({
       // as a temporary workaround to show logos with transparency and black strokes
       // for example https://assets.coingecko.com/coins/images/13423/large/frax_share.png?1608478989
       return (
-        <Image
+        <FastImage
           style={[{ backgroundColor: 'white' }, style]}
           source={{ uri: logoUri }}
           onError={() => {
@@ -126,11 +129,18 @@ interface TokenAvatarProps {
   symbol: string
   logoUri: string | undefined
   size?: number
+  testID?: string
 }
 
 const TokenAvatar: FC<TokenAvatarProps> = ({ name, symbol, logoUri, size }) => {
   return (
-    <AvatarBase name={name} symbol={symbol} logoUri={logoUri} size={size} />
+    <AvatarBase
+      name={name}
+      symbol={symbol}
+      logoUri={logoUri}
+      size={size}
+      testID={symbol}
+    />
   )
 }
 

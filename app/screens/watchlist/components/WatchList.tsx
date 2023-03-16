@@ -1,8 +1,5 @@
 import React from 'react'
-import {
-  StyleSheet,
-  ListRenderItemInfo as FlatListRenderItemInfo
-} from 'react-native'
+import { StyleSheet, View } from 'react-native'
 import { ListRenderItemInfo as FlashListRenderItemInfo } from '@shopify/flash-list'
 import WatchListItem from 'screens/watchlist/components/WatchListItem'
 import { useNavigation } from '@react-navigation/native'
@@ -19,9 +16,14 @@ import {
   MarketToken,
   onWatchlistRefresh,
   PriceData,
-  Prices
+  Prices,
+  reorderFavorites
 } from 'store/watchlist'
-import AvaFlashList from 'components/AvaFlashList'
+import {
+  DragEndParams,
+  RenderItemParams
+} from 'react-native-draggable-flatlist/src/types'
+import AvaList from 'components/AvaList'
 import { WatchlistFilter } from '../types'
 
 const getDisplayValue = (
@@ -40,6 +42,7 @@ interface Props {
   isShowingFavorites?: boolean
   isSearching?: boolean
   onExploreAllTokens?: () => void
+  testID?: string
 }
 
 type NavigationProp = TabsScreenProps<
@@ -61,39 +64,62 @@ const WatchList: React.FC<Props> = ({
 
   const keyExtractor = (item: MarketToken) => item.id
 
-  const flatListRenderItem = (item: FlatListRenderItemInfo<MarketToken>) => {
-    return renderItem(item.item)
+  const draggableListItem = (item: RenderItemParams<MarketToken>) => {
+    return renderItem(item.item, item.drag, item.isActive)
   }
 
   const flashListRenderItem = (item: FlashListRenderItemInfo<MarketToken>) => {
     return renderItem(item.item)
   }
 
-  function renderItem(token: MarketToken) {
+  function renderItem(
+    token: MarketToken,
+    drag?: () => void,
+    isDragging?: boolean
+  ) {
     const chartData = charts[token.id] ?? defaultChartData
     const price = prices[token.id] ?? defaultPrice
     const displayValue = getDisplayValue(price, tokenInCurrencyFormatter)
 
     return (
-      <WatchListItem
-        token={token}
-        chartData={chartData}
-        value={displayValue}
-        filterBy={filterBy}
-        onPress={() => {
-          navigation.navigate(AppNavigation.Wallet.TokenDetail, {
-            tokenId: token.id
-          })
-        }}
-      />
+      <View
+        style={
+          isDragging && {
+            elevation: 10,
+            backgroundColor: 'black',
+            shadowColor: 'white',
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: 0.5,
+            shadowRadius: 6
+          }
+        }>
+        <WatchListItem
+          token={token}
+          chartData={chartData}
+          value={displayValue}
+          filterBy={filterBy}
+          testID={`watchlist_item__${token.symbol}`}
+          onPress={() => {
+            navigation.navigate(AppNavigation.Wallet.TokenDetail, {
+              tokenId: token.id
+            })
+          }}
+          onDragPress={drag}
+        />
+      </View>
     )
   }
 
   return (
-    <AvaFlashList
+    <AvaList
+      isDraggable={isShowingFavorites}
       data={tokens}
       flashRenderItem={flashListRenderItem}
-      flatRenderItem={flatListRenderItem}
+      draggableListItem={draggableListItem}
+      onDragEnd={(reOrderedFavorites: DragEndParams<MarketToken>) => {
+        const favIds = reOrderedFavorites.data.map(item => item.id)
+        dispatch(reorderFavorites(favIds))
+      }}
       ItemSeparatorComponent={SeparatorComponent}
       ListEmptyComponent={
         isShowingFavorites && !isSearching ? (

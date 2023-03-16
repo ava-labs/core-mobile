@@ -26,6 +26,9 @@ import {
 import ReceiveScreenStack, {
   ReceiveStackParamList
 } from 'navigation/wallet/ReceiveScreenStack'
+import BuyScreenStack, {
+  BuyStackParamList
+} from 'navigation/wallet/BuyScreenStack'
 import SendScreenStack, {
   SendStackParamList
 } from 'navigation/wallet/SendScreenStack'
@@ -69,13 +72,24 @@ import {
   EditGasLimitParams,
   QRCodeParams,
   SelectAccountParams,
+  SendTransactionParams,
   SessionProposalParams,
   SignMessageParams,
   SignTransactionParams,
   SwitchEthereumChainParams,
   TokenSelectParams,
   UpdateContactParams,
-  WalletScreenProps
+  WalletScreenProps,
+  SignMessageV2Params,
+  SessionProposalV2Params,
+  CreateRemoveContactV2Params,
+  UpdateContactV2Params,
+  SelectAccountV2Params,
+  AddEthereumChainV2Params,
+  SwitchEthereumChainV2Params,
+  BridgeAssetV2Params,
+  SignTransactionV2Params,
+  BuyCarefullyParams
 } from '../types'
 import AdvancedStackScreen, {
   AdvancedStackParamList
@@ -94,6 +108,9 @@ export type WalletScreenStackParams = {
     | undefined
   [AppNavigation.Wallet.ReceiveTokens]:
     | NavigatorScreenParams<ReceiveStackParamList>
+    | undefined
+  [AppNavigation.Wallet.Buy]:
+    | NavigatorScreenParams<BuyStackParamList>
     | undefined
   [AppNavigation.Wallet.AddCustomToken]: undefined
   [AppNavigation.Wallet.TokenDetail]: { tokenId: string }
@@ -126,15 +143,28 @@ export type WalletScreenStackParams = {
   [AppNavigation.Modal.SignOut]: undefined
   [AppNavigation.Modal.SelectToken]: TokenSelectParams
   [AppNavigation.Modal.EditGasLimit]: EditGasLimitParams
+  // rpc prompts for wallet connect v1
   [AppNavigation.Modal.SessionProposal]: SessionProposalParams
   [AppNavigation.Modal.CreateRemoveContact]: CreateRemoveContactParams
   [AppNavigation.Modal.UpdateContact]: UpdateContactParams
   [AppNavigation.Modal.SelectAccount]: SelectAccountParams
+  [AppNavigation.Modal.BuyCarefully]: BuyCarefullyParams
   [AppNavigation.Modal.SignTransaction]: SignTransactionParams
+  [AppNavigation.Modal.SendTransaction]: SendTransactionParams
   [AppNavigation.Modal.SignMessage]: SignMessageParams
   [AppNavigation.Modal.BridgeAsset]: BridgeAssetParams
   [AppNavigation.Modal.AddEthereumChain]: AddEthereumChainParams
   [AppNavigation.Modal.SwitchEthereumChain]: SwitchEthereumChainParams
+  // rpc prompts for wallet connect v2
+  [AppNavigation.Modal.SessionProposalV2]: SessionProposalV2Params
+  [AppNavigation.Modal.SignMessageV2]: SignMessageV2Params
+  [AppNavigation.Modal.CreateRemoveContactV2]: CreateRemoveContactV2Params
+  [AppNavigation.Modal.UpdateContactV2]: UpdateContactV2Params
+  [AppNavigation.Modal.SelectAccountV2]: SelectAccountV2Params
+  [AppNavigation.Modal.AddEthereumChainV2]: AddEthereumChainV2Params
+  [AppNavigation.Modal.SwitchEthereumChainV2]: SwitchEthereumChainV2Params
+  [AppNavigation.Modal.BridgeAssetV2]: BridgeAssetV2Params
+  [AppNavigation.Modal.SignTransactionV2]: SignTransactionV2Params
 }
 
 const WalletScreenS = createStackNavigator<WalletScreenStackParams>()
@@ -188,7 +218,7 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
         />
         <WalletScreenS.Screen
           options={{
-            ...MainHeaderOptions('Manage token list')
+            ...MainHeaderOptions({ title: 'Manage token list' })
           }}
           name={AppNavigation.Wallet.TokenManagement}
           component={TokenManagement}
@@ -201,26 +231,30 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
           component={SendScreenStack}
         />
         <WalletScreenS.Screen
+          name={AppNavigation.Wallet.Buy}
+          component={BuyScreenStack}
+        />
+        <WalletScreenS.Screen
           name={AppNavigation.Wallet.ReceiveTokens}
           component={ReceiveScreenStack}
         />
         <WalletScreenS.Screen
           options={{
-            ...MainHeaderOptions('Add Custom Token')
+            ...MainHeaderOptions({ title: 'Add Custom Token' })
           }}
           name={AppNavigation.Wallet.AddCustomToken}
           component={AddCustomToken}
         />
         <WalletScreenS.Screen
           options={{
-            ...MainHeaderOptions('')
+            ...MainHeaderOptions()
           }}
           name={AppNavigation.Wallet.TokenDetail}
           component={TokenDetail}
         />
         <WalletScreenS.Screen
           options={{
-            ...MainHeaderOptions('')
+            ...MainHeaderOptions()
           }}
           name={AppNavigation.Wallet.OwnedTokenDetail}
           component={OwnedTokenDetail}
@@ -247,7 +281,7 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
           component={NFTScreenStack}
         />
         <WalletScreenS.Screen
-          options={MainHeaderOptions('')}
+          options={MainHeaderOptions()}
           name={AppNavigation.Wallet.NFTManage}
           component={NftManage}
         />
@@ -260,31 +294,36 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
         />
         <WalletScreenS.Screen
           options={{
-            ...MainHeaderOptions('Currency')
+            ...MainHeaderOptions({ title: 'Currency' })
           }}
           name={AppNavigation.Wallet.CurrencySelector}
           component={CurrencySelector}
         />
         <WalletScreenS.Screen
           options={
-            MainHeaderOptions(
-              '',
-              false,
-              <AddNetworkAction />
-            ) as Partial<StackNavigationOptions>
+            MainHeaderOptions({
+              title: '',
+              hideHeaderLeft: false,
+              actionComponent: <AddNetworkAction />,
+              headerBackTestID: 'header_back'
+            }) as Partial<StackNavigationOptions>
           }
           name={AppNavigation.Wallet.NetworkSelector}
           component={NetworkSelectorScreen}
         />
         <WalletScreenS.Screen
           options={{
-            ...MainHeaderOptions('', false, <NetworkDetailsAction />)
+            ...MainHeaderOptions({
+              title: '',
+              hideHeaderLeft: false,
+              actionComponent: <NetworkDetailsAction />
+            })
           }}
           name={AppNavigation.Wallet.NetworkDetails}
           component={NetworkDetailsScreen}
         />
         <WalletScreenS.Screen
-          options={MainHeaderOptions('')}
+          options={MainHeaderOptions()}
           name={AppNavigation.Wallet.NetworkAddEdit}
           component={NetworkAddEditScreen}
         />

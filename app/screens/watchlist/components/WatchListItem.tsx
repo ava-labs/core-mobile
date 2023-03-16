@@ -1,5 +1,5 @@
 import React, { FC } from 'react'
-import { Dimensions, View } from 'react-native'
+import { Dimensions, Pressable, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaListItem from 'components/AvaListItem'
 import AvaText from 'components/AvaText'
@@ -12,6 +12,7 @@ import MarketMovement from 'screens/watchlist/components/MarketMovement'
 
 import { MarketToken } from 'store/watchlist'
 import { ChartData } from 'services/token/types'
+import DragHandleSVG from 'components/svg/DragHandleSVG'
 
 const deviceWidth = Dimensions.get('window').width
 
@@ -20,8 +21,10 @@ interface Props {
   chartData: ChartData
   value?: string
   onPress?: () => void
+  onDragPress?: () => void
   rank?: number
   filterBy: WatchlistFilter
+  testID?: string
 }
 
 const WatchListItem: FC<Props> = ({
@@ -29,8 +32,10 @@ const WatchListItem: FC<Props> = ({
   chartData,
   value = '0',
   onPress,
+  onDragPress,
   rank,
-  filterBy
+  filterBy,
+  testID
 }) => {
   const { symbol, name } = token
 
@@ -41,11 +46,14 @@ const WatchListItem: FC<Props> = ({
           {symbol.toUpperCase()}
         </AvaText.Heading2>
       }
+      testID={testID}
       titleAlignment={'flex-start'}
       subtitle={name}
       embedInCard={false}
-      rightComponentMaxWidth={deviceWidth * 0.55}
-      leftComponent={<LeftComponent token={token} rank={rank} />}
+      rightComponentMaxWidth={deviceWidth * 0.6}
+      leftComponent={
+        <LeftComponent token={token} rank={rank} testID={testID} />
+      }
       rightComponent={
         <RightComponent
           token={token}
@@ -53,6 +61,8 @@ const WatchListItem: FC<Props> = ({
           value={value}
           filterBy={filterBy}
           onPress={onPress}
+          testID={testID}
+          onDragPress={onDragPress}
         />
       }
       onPress={onPress}
@@ -63,12 +73,14 @@ const WatchListItem: FC<Props> = ({
 type LeftComponentProps = {
   token: MarketToken
   rank?: number
+  testID?: string
 }
 
-const LeftComponent = ({ token, rank }: LeftComponentProps) => {
+const LeftComponent = ({ token, rank, testID }: LeftComponentProps) => {
   const { logoUri, symbol, name } = token
   return (
     <View
+      testID={testID}
       style={{
         flexDirection: 'row',
         justifyContent: 'center',
@@ -76,11 +88,17 @@ const LeftComponent = ({ token, rank }: LeftComponentProps) => {
       }}>
       {rank && (
         <>
-          <AvaText.Heading3>{rank}</AvaText.Heading3>
+          <AvaText.Heading3 testID={testID}>{rank}</AvaText.Heading3>
           <Space x={9} />
         </>
       )}
-      <Avatar.Custom name={name} symbol={symbol} logoUri={logoUri} size={32} />
+      <Avatar.Custom
+        name={name}
+        symbol={symbol}
+        logoUri={logoUri}
+        size={32}
+        testID={`${name}`}
+      />
     </View>
   )
 }
@@ -90,14 +108,17 @@ type RightComponentProps = {
   chartData: ChartData
   value?: string
   filterBy: WatchlistFilter
+  testID?: string
   onPress?: () => void
+  onDragPress?: () => void
 }
 
 const RightComponent = ({
   chartData,
   value,
   filterBy,
-  onPress
+  onPress,
+  onDragPress
 }: RightComponentProps) => {
   const { theme, appHook } = useApplicationContext()
   const { selectedCurrency } = appHook
@@ -118,7 +139,7 @@ const RightComponent = ({
   if (!value) return null
 
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+    <Row style={{ alignItems: 'center' }}>
       {renderMiddleComponent()}
       <View
         style={{
@@ -142,20 +163,37 @@ const RightComponent = ({
           filterBy={filterBy}
         />
       </View>
-    </View>
+      {onDragPress && (
+        <>
+          <Pressable
+            onLongPress={onDragPress}
+            delayLongPress={100}
+            cancelable={false}
+            hitSlop={8}
+            style={{
+              padding: 16,
+              marginRight: -16
+            }}>
+            <DragHandleSVG />
+          </Pressable>
+        </>
+      )}
+    </Row>
   )
 }
 
 type MiddleComponentProps = {
   dataPoints: ChartData['dataPoints']
   ranges: ChartData['ranges']
+  testID?: string
   onPress?: () => void
 }
 
 const MiddleComponent = ({
   dataPoints,
   ranges,
-  onPress
+  onPress,
+  testID
 }: MiddleComponentProps) => {
   return (
     <View
@@ -172,6 +210,7 @@ const MiddleComponent = ({
         yRange={[ranges.minPrice, ranges.maxPrice]}
         xRange={[ranges.minDate, ranges.maxDate]}
         negative={ranges.diffValue < 0}
+        testID={testID}
       />
     </View>
   )

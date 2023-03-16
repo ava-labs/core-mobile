@@ -15,6 +15,7 @@ interface Props {
   xRange: [number, number]
   negative?: boolean
   interactive?: boolean
+  testID?: string
   onPress?: () => void
 }
 

@@ -72,6 +72,7 @@ export interface PosthogContextState {
   sendNftBlockedAndroid: boolean
   sentrySampleRate: number
   useFlatListAndroid: boolean
+  coinbasePayBlocked: boolean
 }
 
 const DefaultFeatureFlagConfig = {
@@ -85,7 +86,8 @@ const DefaultFeatureFlagConfig = {
   [FeatureGates.SEND_NFT_IOS]: true,
   [FeatureGates.SEND_NFT_ANDROID]: true,
   [FeatureVars.SENTRY_SAMPLE_RATE]: '10', // 10% of events/errors
-  [FeatureGates.USE_FLATLIST_ANDROID]: false
+  [FeatureGates.USE_FLATLIST_ANDROID]: false,
+  [FeatureGates.BUY_COINBASE_PAY]: true
 }
 
 const ONE_MINUTE = 60 * 1000
@@ -120,6 +122,9 @@ const processFlags = (flags: FeatureFlags) => {
 
   const useFlatListAndroid = !!flags[FeatureGates.USE_FLATLIST_ANDROID]
 
+  const coinbasePayBlocked =
+    !flags[FeatureGates.BUY_COINBASE_PAY] || !flags[FeatureGates.EVERYTHING]
+
   return {
     swapBlocked,
     bridgeBlocked,
@@ -130,7 +135,8 @@ const processFlags = (flags: FeatureFlags) => {
     sendNftBlockedAndroid,
     eventsBlocked,
     sentrySampleRate,
-    useFlatListAndroid
+    useFlatListAndroid,
+    coinbasePayBlocked
   }
 }
 
@@ -165,7 +171,8 @@ export const PosthogContextProvider = ({
     sendNftBlockedAndroid,
     eventsBlocked,
     sentrySampleRate,
-    useFlatListAndroid
+    useFlatListAndroid,
+    coinbasePayBlocked
   } = useMemo(() => processFlags(flags), [flags])
 
   useEffect(
@@ -285,7 +292,8 @@ export const PosthogContextProvider = ({
         sendNftBlockediOS,
         sendNftBlockedAndroid,
         sentrySampleRate,
-        useFlatListAndroid
+        useFlatListAndroid,
+        coinbasePayBlocked
       }}>
       {children}
     </PosthogContext.Provider>

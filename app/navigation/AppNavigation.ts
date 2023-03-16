@@ -38,6 +38,7 @@ enum WalletScreens {
   Tabs = 'WalletScreens.Tabs',
   ReceiveTokens = 'WalletScreens.ReceiveTokens',
   SendTokens = 'WalletScreens.SendTokens',
+  Buy = 'WalletScreens.Buy',
   TokenManagement = 'WalletScreens.TokenManagement',
   Advanced = 'WalletScreens.Advanced',
   SecurityPrivacy = 'WalletScreens.SecurityPrivacy',
@@ -70,6 +71,10 @@ enum NoWalletTabs {
 
 enum ReceiveTokensScreens {
   ReceiveCChain = 'ReceiveTokensScreens.ReceiveCChain'
+}
+
+enum BuyScreens {
+  Buy = 'BuyScreens.Buy'
 }
 
 enum SwapScreens {
@@ -129,16 +134,28 @@ enum ModalScreens {
   SelectToken = 'ModalScreens.SelectToken',
   EditGasLimit = 'ModalScreens.EditGasLimit',
   BridgeSelectToken = 'ModalScreens.BridgeSelectToken',
-  // RPC PROMPTS
+  // rpc prompts for wallet connect v1
   SessionProposal = 'ModalScreens.SessionProposal',
   CreateRemoveContact = 'ModalScreens.CreateRemoveContact',
   UpdateContact = 'ModalScreens.UpdateContact',
   SelectAccount = 'ModalScreens.SelectAccount',
+  BuyCarefully = 'ModalScreens.BuyCarefully',
   SignTransaction = 'ModalScreens.SignTransaction',
+  SendTransaction = 'ModalScreens.SendTransaction',
   SignMessage = 'ModalScreens.SignMessage',
   BridgeAsset = 'ModalScreens.BridgeAsset',
   AddEthereumChain = 'ModalScreens.AddEthereumChain',
-  SwitchEthereumChain = 'ModalScreens.SwitchEthereumChain'
+  SwitchEthereumChain = 'ModalScreens.SwitchEthereumChain',
+  // rpc prompts for wallet connect v2
+  SessionProposalV2 = 'ModalScreens.SessionProposalV2',
+  SignMessageV2 = 'ModalScreens.SignMessageV2',
+  CreateRemoveContactV2 = 'ModalScreens.CreateRemoveContactV2',
+  UpdateContactV2 = 'ModalScreens.UpdateContactV2',
+  SelectAccountV2 = 'ModalScreens.SelectAccountV2',
+  AddEthereumChainV2 = 'ModalScreens.AddEthereumChainV2',
+  SwitchEthereumChainV2 = 'ModalScreens.SwitchEthereumChainV2',
+  BridgeAssetV2 = 'ModalScreens.BridgeAssetV2',
+  SignTransactionV2 = 'ModalScreens.SignTransactionV2'
 }
 
 enum SendScreens {
@@ -185,7 +202,8 @@ const AppNavigation = {
   AddressBook: AddressBookScreens,
   Bridge: BridgeScreens,
   Portfolio: PortfolioScreens,
-  ReceiveTokens: ReceiveTokensScreens
+  ReceiveTokens: ReceiveTokensScreens,
+  Buy: BuyScreens
 }
 
 export default AppNavigation

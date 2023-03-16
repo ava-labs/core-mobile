@@ -97,7 +97,10 @@ const TokenDetail = () => {
     setOptions({
       // eslint-disable-next-line react/no-unstable-nested-components
       headerRight: () => (
-        <Pressable style={{ paddingEnd: 8 }} onPress={handleFavorite}>
+        <Pressable
+          style={{ paddingEnd: 8 }}
+          onPress={handleFavorite}
+          testID="star_svg">
           <StarSVG selected={isFavorite} />
         </Pressable>
       )
@@ -185,15 +188,20 @@ const TokenDetail = () => {
         <AvaListItem.Base
           title={<AvaText.Body2>Price</AvaText.Body2>}
           titleAlignment={'flex-start'}
+          testID="token_detail__price_title"
           subtitle={
             <Row style={{ alignItems: 'center' }}>
-              <AvaText.Heading3 tokenInCurrency textStyle={{ marginEnd: 8 }}>
+              <AvaText.Heading3
+                tokenInCurrency
+                textStyle={{ marginEnd: 8 }}
+                testID="token_detail__price">
                 {priceInCurrency}
               </AvaText.Heading3>
               <MarketMovement
                 hideCurrencyCode
                 priceChange={ranges.diffValue}
                 percentChange={ranges.percentChange}
+                testID="token_detail__price_movement"
               />
             </Row>
           }
@@ -223,6 +231,7 @@ const TokenDetail = () => {
               negative={ranges.diffValue < 0}
               width={WINDOW_WIDTH - 32} // padding
               height={CHART_HEIGHT}
+              testID="token_detail__chart"
             />
             <AvaText.Caption
               tokenInCurrency
@@ -253,22 +262,28 @@ const TokenDetail = () => {
                 : 365 // 365 days - 1 year
             )
           }}>
-          <TabViewAva.Item title={'24H'} />
-          <TabViewAva.Item title={'1W'} />
-          <TabViewAva.Item title={'1M'} />
-          <TabViewAva.Item title={'3M'} />
-          <TabViewAva.Item title={'1Y'} />
+          <TabViewAva.Item title={'24H'} testID="token_detail__24H" />
+          <TabViewAva.Item title={'1W'} testID="token_detail__1W" />
+          <TabViewAva.Item title={'1M'} testID="token_detail__1M" />
+          <TabViewAva.Item title={'3M'} testID="token_detail__3M" />
+          <TabViewAva.Item title={'1Y'} testID="token_detail__1Y" />
         </TabViewAva>
 
         {/* Market Data & Rank */}
         <AvaListItem.Base
-          title={<AvaText.Heading2>Market Data</AvaText.Heading2>}
+          title={
+            <AvaText.Heading2 testID="token_detail__market_data_title">
+              Market Data
+            </AvaText.Heading2>
+          }
           titleAlignment={'flex-start'}
           rightComponent={
             <OvalTagBg
+              testID="token_detail__rank_icon"
               color={theme.neutral850}
               style={{ height: 21, paddingVertical: 0 }}>
               <AvaText.Body2
+                testID="token_detail__rank"
                 textStyle={{
                   color: theme.colorText3
                 }}>{`Rank: ${marketCapRank}`}</AvaText.Body2>
@@ -283,6 +298,7 @@ const TokenDetail = () => {
           <DataItem
             title={'MarketCap'}
             value={formatMarketNumbers(marketCap)}
+            testID={'token_detail__market_cap'}
           />
           {contractAddress && (
             <DataItem
@@ -295,10 +311,12 @@ const TokenDetail = () => {
         </Row>
         <Row style={styles.row}>
           <DataItem
+            testID="token_detail__24h_volume"
             title={'24h Volume'}
             value={formatMarketNumbers(marketVolume)}
           />
           <DataItem
+            testID={'token_detail__website'}
             title={'Website'}
             value={
               <AvaText.Heading3
@@ -311,13 +329,16 @@ const TokenDetail = () => {
         </Row>
         <Row style={styles.row}>
           <DataItem
+            testID={'token_detail__available_supply'}
             title={'Available Supply'}
             value={formatLargeNumber(marketCirculatingSupply)}
           />
           <DataItem
+            testID="token_detail__twitter"
             title={'Twitter'}
             value={
               <AvaText.Heading3
+                testID={'token_detail__twitter_handle'}
                 textStyle={{ color: '#0A84FF' }}
                 onPress={openTwitter}>
                 {twitterHandle ? `@${twitterHandle}` : ''}
@@ -327,6 +348,7 @@ const TokenDetail = () => {
         </Row>
         <Row style={[styles.row, { paddingBottom: 16 }]}>
           <DataItem
+            testID={'token_detail__total_supply'}
             title={'Total Supply'}
             value={formatLargeNumber(marketTotalSupply)}
           />
@@ -334,6 +356,7 @@ const TokenDetail = () => {
 
         {symbol === TokenSymbol.AVAX && !buyDisabled && (
           <AvaButton.SecondaryLarge
+            testID="token_detail__buy_button"
             onPress={openMoonPay}
             style={{ marginHorizontal: 16 }}>
             Buy {symbol}
@@ -346,15 +369,17 @@ const TokenDetail = () => {
 
 const DataItem = ({
   title,
-  value
+  value,
+  testID
 }: {
   title: string
   value: string | React.ReactNode
+  testID?: string
 }) => {
   const { theme } = useApplicationContext()
   return (
     <View style={{ flex: 1 }}>
-      <AvaText.Body2 textStyle={{ color: theme.colorText3 }}>
+      <AvaText.Body2 textStyle={{ color: theme.colorText3 }} testID={testID}>
         {title}
       </AvaText.Body2>
       {typeof value === 'string' ? (

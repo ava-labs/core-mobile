@@ -1,27 +1,21 @@
-import React, { Dispatch, useEffect, useMemo, useState } from 'react'
+import React, { Dispatch, useMemo, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import Dropdown from 'components/Dropdown'
 import AvaText from 'components/AvaText'
 import {
-  MarketToken,
-  selectWatchlistFavorites,
-  selectWatchlistTokens,
+  defaultChartData,
+  defaultPrice,
   selectWatchlistCharts,
   selectWatchlistPrices,
-  setPrices,
-  setCharts,
-  appendTokens,
-  defaultPrice,
-  defaultChartData
+  selectWatchlistTokens
 } from 'store/watchlist'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
-import watchlistService from 'services/watchlist/WatchlistService'
-import { useDispatch } from 'react-redux'
 import { WatchListLoader } from 'screens/watchlist/components/WatchListLoader'
 import isEmpty from 'lodash.isempty'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { ChartData } from 'services/token/types'
+import { useTokenSearch } from 'screens/watchlist/useTokenSearch'
 import { WatchlistFilter } from './types'
 import WatchList from './components/WatchList'
 
@@ -38,6 +32,7 @@ interface Props {
   showFavorites?: boolean
   searchText?: string
   onTabIndexChanged?: Dispatch<number>
+  testID?: string
 }
 
 const filterPriceOptions = [
@@ -62,80 +57,26 @@ const renderPriceFilterSelection = (selectedItem: WatchlistFilter) => (
   <SelectionItem title={`Sort by: ${selectedItem}`} />
 )
 
-const WatchlistView: React.FC<Props> = ({
-  showFavorites,
-  searchText,
-  onTabIndexChanged
-}) => {
-  const favorites = useFocusedSelector(selectWatchlistFavorites)
+const WatchlistView: React.FC<Props> = ({ searchText }) => {
   const tokens = useFocusedSelector(selectWatchlistTokens)
   const prices = useFocusedSelector(selectWatchlistPrices)
   const charts = useFocusedSelector(selectWatchlistCharts)
   const currency = useFocusedSelector(selectSelectedCurrency).toLowerCase()
-  const dispatch = useDispatch()
-  const [isSearchingTokens, setIsSearchingTokens] = useState(false)
   const [filterBy, setFilterBy] = useState(WatchlistFilter.MARKET_CAP)
-  const [tokensToDisplay, setTokensToDisplay] = useState<MarketToken[]>([])
   const isSearching = !isEmpty(searchText)
 
-  // favorites are loaded locally. e only show loader if we query
-  // coingecko when searching OR if we're NOT on
-  // the favorites tab and tokens are empty
   const isFetchingTokens = tokens.length === 0
-  const showLoader = isSearchingTokens || (!showFavorites && isFetchingTokens)
 
-  useEffect(() => {
-    async function loadAsync() {
-      if (isFetchingTokens) return
-
-      let items: MarketToken[] = tokens
-
-      if (showFavorites) {
-        items = favorites
-      }
-
-      if (searchText && searchText.length > 0) {
-        items = items.filter(
-          i =>
-            i.name?.toLowerCase().includes(searchText.toLowerCase()) ||
-            i.symbol?.toLowerCase().includes(searchText.toLowerCase())
-        )
-
-        if (items.length === 0) {
-          setIsSearchingTokens(true)
-
-          const searchResult = await watchlistService.tokenSearch(
-            searchText,
-            currency
-          )
-
-          if (searchResult) {
-            items = searchResult.tokens
-
-            // save results to the list
-            dispatch(appendTokens(searchResult.tokens))
-
-            // also save prices and charts data so we can reuse them in the Favorites tab
-            dispatch(setPrices(searchResult.prices))
-            dispatch(setCharts(searchResult.charts))
-          }
-
-          setIsSearchingTokens(false)
-        }
-      }
-      setTokensToDisplay(items)
-    }
-    loadAsync()
-  }, [
-    showFavorites,
-    searchText,
-    currency,
-    filterBy,
-    dispatch,
-    tokens,
+  const { isSearchingTokens, searchResults } = useTokenSearch({
     isFetchingTokens,
-    favorites
-  ])
+    items: tokens,
+    searchText,
+    currency
+  })
+  const showLoader = isSearchingTokens || isFetchingTokens
+  const tokensToDisplay = useMemo(() => {
+    return searchResults ? searchResults : tokens
+  }, [searchResults, tokens])
 
   const sortedTokens = useMemo(() => {
     if (Object.keys(prices).length === 0) return tokensToDisplay
@@ -187,9 +128,8 @@ const WatchlistView: React.FC<Props> = ({
             charts={charts}
             prices={prices}
             filterBy={filterBy}
-            isShowingFavorites={showFavorites}
             isSearching={isSearching}
-            onExploreAllTokens={() => onTabIndexChanged?.(1)}
+            testID="watchlist_item"
           />
         </>
       )}
