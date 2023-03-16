@@ -26,9 +26,9 @@ export const isCoreDomain = (url: string) => {
 }
 
 const approveDataSchema = z.object({
-  selectedAccounts: z.array(z.string())
+  selectedAccounts: z.array(z.string()).nonempty()
 })
 
-export function parseApproveData(data: unknown) {
+export const parseApproveData = (data: unknown) => {
   return approveDataSchema.safeParse(data)
 }

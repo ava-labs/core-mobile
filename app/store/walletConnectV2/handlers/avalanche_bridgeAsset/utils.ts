@@ -57,7 +57,11 @@ const assetSchema = z.union([
   bitcoinConfigAssetSchema
 ])
 
-const paramsSchema = z.tuple([blockchainSchema, z.string(), assetSchema])
+const paramsSchema = z.tuple([
+  blockchainSchema,
+  z.string().describe('amount'),
+  assetSchema
+])
 
 const approveDataSchema = z.object({
   amountStr: z.string(),

@@ -113,6 +113,7 @@ export const processRequest = async (
         { ...action.payload },
         listenerApi
       )
+
       if (!approveResponse.success) {
         dispatch(
           onSendRpcError({
@@ -131,15 +132,13 @@ export const validateRequest = (
   request: Request,
   listenerApi: AppListenerEffectAPI
 ) => {
+  if (isSessionProposal(request)) return
+
+  if (chainAgnosticMethods.includes(request.method as RpcMethod)) return
+
   const { getState } = listenerApi
   const state = getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
-
-  if (isSessionProposal(request)) return
-
-  const method = request.method
-
-  if (chainAgnosticMethods.includes(method as RpcMethod)) return
 
   // validate chain against the current developer mode
   const chainId = request.data.params.chainId.split(':')[1] ?? ''

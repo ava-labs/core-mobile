@@ -5,7 +5,7 @@ import {
   BridgeTransaction,
   CriticalConfig
 } from '@avalabs/bridge-sdk'
-import { selectActiveNetwork } from 'store/network'
+import { selectActiveNetwork } from 'store/network/slice'
 import { BridgeState, initialState } from 'store/bridge/types'
 
 export const reducerName = 'bridge'

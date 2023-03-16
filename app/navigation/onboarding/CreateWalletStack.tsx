@@ -48,7 +48,7 @@ const CreateWalletStack: () => JSX.Element = () => {
     <CreateWalletContext.Provider value={{ setMnemonic, mnemonic }}>
       <CreateWalletS.Navigator screenOptions={{ headerShown: false }}>
         <CreateWalletS.Screen
-          options={MainHeaderOptions('')}
+          options={MainHeaderOptions()}
           name={AppNavigation.CreateWallet.CreateWallet}
           component={CreateWalletScreen}
         />
@@ -58,12 +58,12 @@ const CreateWalletStack: () => JSX.Element = () => {
           component={CreateWalletWarningModal}
         />
         <CreateWalletS.Screen
-          options={MainHeaderOptions('')}
+          options={MainHeaderOptions()}
           name={AppNavigation.CreateWallet.CheckMnemonic}
           component={CheckMnemonicScreen}
         />
         <CreateWalletS.Screen
-          options={MainHeaderOptions('')}
+          options={MainHeaderOptions()}
           name={AppNavigation.CreateWallet.CreatePin}
           component={CreatePinScreen}
         />

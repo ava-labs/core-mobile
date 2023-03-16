@@ -66,9 +66,10 @@ const getAndroidAttributesArray = async (
 const swipeUp = async (
   item: Detox.NativeMatcher,
   speed: Detox.Speed,
-  normalizedOffset: number
+  normalizedOffset: number,
+  index: number
 ) => {
-  return await element(item).swipe('up', speed, normalizedOffset)
+  return await element(item).atIndex(index).swipe('up', speed, normalizedOffset)
 }
 
 const swipeDown = async (

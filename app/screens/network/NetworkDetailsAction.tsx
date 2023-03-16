@@ -56,7 +56,7 @@ function ToggleFavoriteNetwork({ chainId }: { chainId: number }) {
 
   return (
     <AvaButton.Icon onPress={() => dispatch(toggleFavorite(chainId))}>
-      <StarSVG selected={isFavorite} />
+      <StarSVG selected={isFavorite} testID="star_svg" />
     </AvaButton.Icon>
   )
 }

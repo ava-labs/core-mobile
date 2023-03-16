@@ -35,6 +35,10 @@ class BottomsTabsPage {
     await Actions.tapElementAtIndex(this.plusIcon, 1)
   }
 
+  async tapPortfolioTab() {
+    await Actions.tapElementAtIndex(this.portfolioTab, 1)
+  }
+
   async tapWatchlistTab() {
     await Actions.tapElementAtIndex(this.watchlistTtab, 1)
   }
