@@ -166,7 +166,10 @@ const RightComponent = ({
       {onDragPress && (
         <>
           <Pressable
-            onTouchStart={onDragPress}
+            onLongPress={onDragPress}
+            delayLongPress={100}
+            cancelable={false}
+            hitSlop={8}
             style={{
               padding: 16,
               marginRight: -16

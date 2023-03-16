@@ -97,7 +97,10 @@ const TokenDetail = () => {
     setOptions({
       // eslint-disable-next-line react/no-unstable-nested-components
       headerRight: () => (
-        <Pressable style={{ paddingEnd: 8 }} onPress={handleFavorite}>
+        <Pressable
+          style={{ paddingEnd: 8 }}
+          onPress={handleFavorite}
+          testID="star_svg">
           <StarSVG selected={isFavorite} />
         </Pressable>
       )

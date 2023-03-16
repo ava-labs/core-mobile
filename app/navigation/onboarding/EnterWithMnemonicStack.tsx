@@ -49,7 +49,7 @@ const EnterWithMnemonicStack = () => {
     <EnterWithMnemonicContext.Provider value={{ setMnemonic, mnemonic }}>
       <EnterWithMnemonicS.Navigator screenOptions={{ headerShown: false }}>
         <EnterWithMnemonicS.Screen
-          options={MainHeaderOptions('')}
+          options={MainHeaderOptions()}
           name={AppNavigation.LoginWithMnemonic.LoginWithMnemonic}
           component={LoginWithMnemonicScreen}
         />

@@ -86,7 +86,8 @@ export default function NetworkDropdown() {
           backgroundColor: theme.colorBg2,
           borderRadius: 100
         }
-      ]}>
+      ]}
+      testID="network_dropdown_main">
       <Dropdown
         key={dropdownUniqueId}
         style={{

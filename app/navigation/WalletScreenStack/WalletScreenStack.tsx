@@ -218,7 +218,7 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
         />
         <WalletScreenS.Screen
           options={{
-            ...MainHeaderOptions('Manage token list')
+            ...MainHeaderOptions({ title: 'Manage token list' })
           }}
           name={AppNavigation.Wallet.TokenManagement}
           component={TokenManagement}
@@ -240,21 +240,21 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
         />
         <WalletScreenS.Screen
           options={{
-            ...MainHeaderOptions('Add Custom Token')
+            ...MainHeaderOptions({ title: 'Add Custom Token' })
           }}
           name={AppNavigation.Wallet.AddCustomToken}
           component={AddCustomToken}
         />
         <WalletScreenS.Screen
           options={{
-            ...MainHeaderOptions('')
+            ...MainHeaderOptions()
           }}
           name={AppNavigation.Wallet.TokenDetail}
           component={TokenDetail}
         />
         <WalletScreenS.Screen
           options={{
-            ...MainHeaderOptions('')
+            ...MainHeaderOptions()
           }}
           name={AppNavigation.Wallet.OwnedTokenDetail}
           component={OwnedTokenDetail}
@@ -281,7 +281,7 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
           component={NFTScreenStack}
         />
         <WalletScreenS.Screen
-          options={MainHeaderOptions('')}
+          options={MainHeaderOptions()}
           name={AppNavigation.Wallet.NFTManage}
           component={NftManage}
         />
@@ -294,31 +294,36 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
         />
         <WalletScreenS.Screen
           options={{
-            ...MainHeaderOptions('Currency')
+            ...MainHeaderOptions({ title: 'Currency' })
           }}
           name={AppNavigation.Wallet.CurrencySelector}
           component={CurrencySelector}
         />
         <WalletScreenS.Screen
           options={
-            MainHeaderOptions(
-              '',
-              false,
-              <AddNetworkAction />
-            ) as Partial<StackNavigationOptions>
+            MainHeaderOptions({
+              title: '',
+              hideHeaderLeft: false,
+              actionComponent: <AddNetworkAction />,
+              headerBackTestID: 'header_back'
+            }) as Partial<StackNavigationOptions>
           }
           name={AppNavigation.Wallet.NetworkSelector}
           component={NetworkSelectorScreen}
         />
         <WalletScreenS.Screen
           options={{
-            ...MainHeaderOptions('', false, <NetworkDetailsAction />)
+            ...MainHeaderOptions({
+              title: '',
+              hideHeaderLeft: false,
+              actionComponent: <NetworkDetailsAction />
+            })
           }}
           name={AppNavigation.Wallet.NetworkDetails}
           component={NetworkDetailsScreen}
         />
         <WalletScreenS.Screen
-          options={MainHeaderOptions('')}
+          options={MainHeaderOptions()}
           name={AppNavigation.Wallet.NetworkAddEdit}
           component={NetworkAddEditScreen}
         />

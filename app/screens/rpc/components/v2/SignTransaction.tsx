@@ -38,7 +38,7 @@ import { selectRequestStatus } from 'store/walletConnectV2'
 import { useDappConnectionV2 } from 'hooks/useDappConnectionV2'
 import { selectNetwork } from 'store/network'
 import { NetworkLogo } from 'screens/network/NetworkLogo'
-import { isAddressApproved } from 'store/walletConnectV2/handlers/eth_sign/utils'
+import { isAddressApproved } from 'store/walletConnectV2/handlers/eth_sign/utils/isAddressApproved'
 import { hexToBN } from '@avalabs/utils-sdk'
 import RpcRequestBottomSheet from '../shared/RpcRequestBottomSheet'
 

@@ -1,5 +1,5 @@
 import { ethErrors } from 'eth-rpc-errors'
-import walletService from 'services/wallet/WalletService'
+import WalletService from 'services/wallet/WalletService'
 import { AppListenerEffectAPI } from 'store'
 import { selectNetwork } from 'store/network'
 import * as Navigation from 'utils/Navigation'
@@ -14,11 +14,9 @@ import {
   HandleResponse,
   RpcRequestHandler
 } from '../types'
-import {
-  parseRequestParams,
-  parseApproveData,
-  isAddressApproved
-} from './utils'
+import { parseRequestParams } from './utils/parseRequestParams'
+import { parseApproveData } from './utils/parseApproveData'
+import { isAddressApproved } from './utils/isAddressApproved'
 
 export type EthSignRpcRequest = SessionRequest<
   | RpcMethod.ETH_SIGN
@@ -118,7 +116,7 @@ class EthSignHandler implements RpcRequestHandler<EthSignRpcRequest> {
     const { data, network, account } = result.data
 
     try {
-      const encodedMessage = await walletService.signMessage(
+      const encodedMessage = await WalletService.signMessage(
         request.method,
         data,
         account.index,
