@@ -74,11 +74,12 @@ workflows:
             envman add --key QT_QPA_PLATFORM --value xcb
     - avd-manager@1.2:
         inputs:
-        - api_level: "30"
+        - api_level: "28"
         - emulator_id: emulator-5554
         - emulator_channel: "0"
         - create_command_flags: --sdcard 512M
-        - tag: aosp_atd
+        - tag: default
+        - abi: x86_64
         - profile: pixel_4
     - android-build-for-ui-testing@0:
         inputs:
