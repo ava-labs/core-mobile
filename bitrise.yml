@@ -195,7 +195,7 @@ workflows:
         - fields: |-
             App|${APP_TITLE}
             Platform|${PLATFORM}
-            Version|${APP_VERSION}.${BITRISE_BUILD_NUMBER}
+            Version|${APP_VERSION}.${BUILD_NUMBER}
             Workflow|${BITRISE_TRIGGERED_WORKFLOW_ID}
             Environment|${ENVIRONMENT}
             Branch|${BITRISE_GIT_BRANCH}
@@ -219,14 +219,18 @@ workflows:
   _set-version:
     steps:
     - script@1:
-        title: Get Version
+        title: Get App Version
         inputs:
         - content: "#!/usr/bin/env bash\n\n# if branch is a release branch (\"release/2.0.1\" for example), grab version from branch name \n# else if tag is a release candidate tag (\"0.13.1-rc1\" for example), grab version from tag\nif [[ $BITRISE_GIT_BRANCH == *\"release/\"* ]]; then\n  arrIN=(${BITRISE_GIT_BRANCH//// })\n  version=${arrIN[1]}\nelif [[ $BITRISE_GIT_TAG =~ \"rc\" ]]; then\n  arrIN=(${BITRISE_GIT_TAG//-/ })\n  version=${arrIN[0]}\nelse\n  # else version will just be 0.0.0\n  version=\"0.0.0\"\nfi\n\nenvman add --key APP_VERSION --value \"${version}\""
+    - script@1:
+        title: Get Build Number
+        inputs:
+        - content: "#!/usr/bin/env bash\n# fail if any commands fails\nset -e\n# make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully\nset -o pipefail\n# debug log\nset -x\n\n# when a pipeline starts, it triggers both iOS and Android workflows\n# in order for iOS and Android to have different build numbers, we increment build number by 1 for Android\nif [ \"$PLATFORM\" = \"iOS\" ]; then\n  buildNumber=$BITRISE_BUILD_NUMBER       \nelse\n  buildNumber=$((BITRISE_BUILD_NUMBER+1))\nfi\n\nenvman add --key BUILD_NUMBER --value \"${buildNumber}\""
     - set-ios-info-plist-unified@1:
         title: Set iOS Version
         run_if: '{{enveq "PLATFORM" "iOS"}}'
         inputs:
-        - bundle_version: $BITRISE_BUILD_NUMBER
+        - bundle_version: $BUILD_NUMBER
         - bundle_version_short: $APP_VERSION
         - info_plist_file: $BITRISE_SOURCE_DIR/ios/AvaxWallet/InfoRelease.plist
     - change-android-versioncode-and-versionname@1:
@@ -234,7 +238,8 @@ workflows:
         run_if: '{{enveq "PLATFORM" "Android"}}'
         inputs:
         - new_version_name: $APP_VERSION
-        - version_code_offset: "1"
+        - version_code_offset: ""
+        - new_version_code: $BUILD_NUMBER
         - build_gradle_path: $BITRISE_SOURCE_DIR/$ANDROID_PROJECT_LOCATION/app/build.gradle
   android:
     before_run:
