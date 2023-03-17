@@ -107,7 +107,7 @@ workflows:
     - save-cocoapods-cache@1: {}
     - xcode-archive@4:
         inputs:
-        - project_path: $faIOS_PROJECT_PATH
+        - project_path: $IOS_PROJECT_PATH
         - scheme: $IOS_SCHEME
         - compile_bitcode: "no"
         - configuration: $IOS_CONFIGURATION
@@ -140,7 +140,8 @@ workflows:
             yarn setup:ci
 
             stack=`cat /etc/issue`
-            if [[ $stack == *\"Ubuntu\"* ]]; then
+            
+            if [[ $stack == *"Ubuntu"* ]]; then
               # on ubuntu, yarn setup command will fail
               # as patch-package doesn't have write access to the node_modules folder
               # thus, we need to set write permission manually
