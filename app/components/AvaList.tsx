@@ -61,10 +61,14 @@ const AvaList = <T,>({
   isDraggable,
   onDragEnd
 }: AvaListProps<T>) => {
+  function handleOnDragEnd(dragEndParams: DragEndParams<T>) {
+    onDragEnd?.(dragEndParams)
+  }
+
   return isDraggable && draggableListItem ? (
     <DraggableFlatList
       data={data || []}
-      onDragEnd={onDragEnd}
+      onDragEnd={handleOnDragEnd}
       renderItem={draggableListItem}
       ItemSeparatorComponent={ItemSeparatorComponent}
       ListEmptyComponent={ListEmptyComponent}
