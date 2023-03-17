@@ -214,7 +214,7 @@
     "@types/react-native-vector-icons": "6.4.10",
     "@types/react-test-renderer": "17.0.1",
     "@types/uuid": "8.3.4",
-    "@typescript-eslint/eslint-plugin": "5.35.1",
+    "@typescript-eslint/eslint-plugin": "5.55.0",
     "@typescript-eslint/parser": "5.31.0",
     "@welldone-software/why-did-you-render": "7.0.1",
     "babel-jest": "29.0.3",
