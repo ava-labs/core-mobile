@@ -25,7 +25,6 @@ class PostHogService {
     }
     fetch(PostHogCaptureUrl, PostHogCaptureFetchOptions)
       .then(response => {
-        console.log('popeyes response', response.ok)
         if (response.ok) {
           return response.json()
         }
