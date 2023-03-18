@@ -221,6 +221,7 @@ export const PosthogContextProvider = ({
   }
 
   function initPosthog() {
+    // TODO: This needs to remove
     ;(async function () {
       await PostHog.setup(
         Config.POSTHOG_ANALYTICS_KEY ?? '',
@@ -252,6 +253,7 @@ export const PosthogContextProvider = ({
    * events.
    */
   function setEventsLogging() {
+    // TODO: May need to move this to redux listener
     if (!isPosthogReady) {
       return
     }
