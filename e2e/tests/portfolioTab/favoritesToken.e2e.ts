@@ -3,18 +3,17 @@
 /**
  * @jest-environment ./environment.ts
  */
-import { device } from 'detox'
 import BottomTabsPage from '../../pages/bottomTabs.page'
 import Assert from '../../helpers/assertions'
 import WatchListPage from '../../pages/watchlist.page'
 import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import PortfolioPage from '../../pages/portfolio.page'
 import TokenDetailPage from '../../pages/tokenDetail.page'
+import { warmup } from '../../helpers/warmup'
 
 describe('Favorites Token', () => {
   beforeAll(async () => {
-    await device.launchApp()
-    await Assert.isVisible(WatchListPage.walletSVG, 1)
+    await warmup()
     await LoginRecoverWallet.recoverWalletLogin()
   })
 
