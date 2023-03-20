@@ -3,17 +3,15 @@
 /**
  * @jest-environment ./environment.ts
  */
-import { device } from 'detox'
 import Assert from '../../helpers/assertions'
-import WatchListPage from '../../pages/watchlist.page'
 import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import PortfolioPage from '../../pages/portfolio.page'
 import ManageTokensPage from '../../pages/manageTokens.page'
+import { warmup } from '../../helpers/warmup'
 
 describe('Change Network', () => {
   beforeAll(async () => {
-    await device.launchApp()
-    await Assert.isVisible(WatchListPage.walletSVG, 1)
+    await warmup()
     await LoginRecoverWallet.recoverWalletLogin()
   })
 
