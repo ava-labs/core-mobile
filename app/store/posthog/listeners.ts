@@ -1,7 +1,7 @@
 import { AppStartListening } from 'store/middleware/listener'
 import { onLogOut } from 'store/app'
 import { capture, regenerateUserId, selectUserID } from 'store/posthog/slice'
-import PostHog, { JsonMap } from 'posthog-react-native'
+import { JsonMap } from 'posthog-react-native'
 import Logger from 'utils/Logger'
 import PostHogService from 'services/posthog/PostHogService'
 
@@ -15,7 +15,7 @@ export const posthogCapture = ({
   properties?: JsonMap
 }) => {
   Logger.info(`posthog capture: ${event}`, properties)
-  return PostHogService.capture(posthogUserId, event, properties)
+  return PostHogService.capture(event, posthogUserId, properties)
 }
 
 export const addPosthogListeners = (startListening: AppStartListening) => {
@@ -23,7 +23,6 @@ export const addPosthogListeners = (startListening: AppStartListening) => {
     actionCreator: onLogOut,
     effect: async (action, api) => {
       api.dispatch(regenerateUserId())
-      await PostHog.reset()
     }
   })
 

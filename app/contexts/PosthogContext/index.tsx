@@ -8,7 +8,6 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import PostHog from 'posthog-react-native'
 import { timer } from 'rxjs'
 import { JsonMap } from 'posthog-react-native/src/bridge'
 import Config from 'react-native-config'
@@ -37,24 +36,6 @@ const PostHogDecideFetchOptions = {
     distinct_id: ''
   })
 }
-
-const PostHogAnalyticsConfig = __DEV__
-  ? {
-      debug: true,
-      host: Config.POSTHOG_URL,
-      android: {
-        collectDeviceId: false
-      },
-      flushAt: 1,
-      flushInterval: 10
-    }
-  : {
-      debug: false,
-      host: Config.POSTHOG_URL,
-      android: {
-        collectDeviceId: false
-      }
-    }
 
 export const PosthogContext = createContext<PosthogContextState>(
   {} as PosthogContextState
@@ -145,8 +126,6 @@ export const PosthogContextProvider = ({
 }: {
   children: ReactNode
 }) => {
-  const [isPosthogReady, setIsPosthogReady] = useState(false)
-  const [isAnalyticsEnabled, setIsAnalyticsEnabled] = useState(false)
   const posthogUserId = useSelector(selectUserID)
 
   const { timeoutPassed } = useAppBackgroundTracker({
@@ -203,15 +182,8 @@ export const PosthogContextProvider = ({
       })
   }, [])
 
-  useEffect(initPosthog, [])
-  useEffect(reloadFlagsPeriodically, [isPosthogReady, reloadFeatureFlags])
-  useEffect(setEventsLogging, [
-    analyticsConsent,
-    isPosthogReady,
-    eventsBlocked,
-    isAnalyticsEnabled,
-    capture
-  ])
+  useEffect(reloadFlagsPeriodically, [reloadFeatureFlags])
+  useEffect(setEventsLogging, [analyticsConsent, eventsBlocked, capture])
   useEffect(checkRestartSession, [capture, timeoutPassed])
 
   function checkRestartSession() {
@@ -220,23 +192,7 @@ export const PosthogContextProvider = ({
     }
   }
 
-  function initPosthog() {
-    // TODO: This needs to remove
-    ;(async function () {
-      await PostHog.setup(
-        Config.POSTHOG_ANALYTICS_KEY ?? '',
-        PostHogAnalyticsConfig
-      )
-
-      await disableAnalytics()
-      setIsPosthogReady(true)
-    })()
-  }
-
   function reloadFlagsPeriodically() {
-    if (!isPosthogReady) {
-      return
-    }
     const subscription = timer(0, ONE_MINUTE).subscribe({
       next: _ => {
         reloadFeatureFlags()
@@ -254,31 +210,12 @@ export const PosthogContextProvider = ({
    */
   function setEventsLogging() {
     // TODO: May need to move this to redux listener
-    if (!isPosthogReady) {
-      return
-    }
     if (eventsBlocked) {
-      disableAnalytics()
       return
     }
     if (analyticsConsent || analyticsConsent === undefined) {
-      if (!isAnalyticsEnabled) {
-        enableAnalytics()
-        capture('$opt_in')
-      }
-    } else {
-      disableAnalytics()
+      capture('$opt_in')
     }
-  }
-
-  async function enableAnalytics() {
-    await PostHog.enable()
-    setIsAnalyticsEnabled(true)
-  }
-
-  async function disableAnalytics() {
-    await PostHog.disable()
-    setIsAnalyticsEnabled(false)
   }
 
   return (
