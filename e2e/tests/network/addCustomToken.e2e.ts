@@ -1,8 +1,4 @@
 /* eslint-disable jest/expect-expect */
-/* eslint-env detox/detox, jest */
-/**
- * @jest-environment ./environment.ts
- */
 import Assert from '../../helpers/assertions'
 import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import PortfolioPage from '../../pages/portfolio.page'
