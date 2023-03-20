@@ -335,7 +335,7 @@ workflows:
             set -x
 
             npm rebuild detox
-            QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.internal.release.ci --headless --cleanup
+            QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.internal.release.ci --headless
   ios:
     before_run:
     - _install-and-set-env
@@ -440,4 +440,4 @@ workflows:
             set -x
 
             npm rebuild detox
-            ./node_modules/.bin/detox test --configuration ios.internal.release.ci --cleanup
+            ./node_modules/.bin/detox test --configuration ios.internal.release.ci
