@@ -3,18 +3,16 @@
 /**
  * @jest-environment ./environment.ts
  */
-import { device } from 'detox'
 import Assert from '../../helpers/assertions'
 import WatchListPage from '../../pages/watchlist.page'
 import BottomTabsPage from '../../pages/bottomTabs.page'
 import ExistingRecoveryPhrasePage from '../../pages/existingRecoveryPhrase.page'
 import tokenDetailPage from '../../pages/tokenDetail.page'
-// const jestExpect = require('expect')
+import { warmup } from '../../helpers/warmup'
 
 describe('Verify Watchlist', () => {
   beforeAll(async () => {
-    await device.launchApp()
-    await Assert.isVisible(WatchListPage.walletSVG, 1)
+    await warmup()
   })
 
   it('should validate watchlist is shown', async () => {
