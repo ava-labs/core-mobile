@@ -135,20 +135,7 @@ workflows:
     - script@1:
         title: Yarn Setup
         inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            stack=`cat /etc/issue`
-   
-            if [[ $stack == *"Ubuntu"* ]]; then
-              # on ubuntu, yarn setup command will fail
-              # as patch-package doesn't have write access to the node_modules folder
-              # thus, we need to set write permission manually
-              
-              # set permission
-              chmod -R 777 node_modules/
-            fi
-
-            yarn setup:ci
+        - content: "#!/usr/bin/env bash\nstack=`cat /etc/issue`\n\nif [[ $stack == *\"Ubuntu\"* ]]; then\n  # on ubuntu, yarn setup command will fail\n  # as patch-package doesn't have write access to the node_modules folder\n  # thus, we need to set write permission manually\n  \n  # set permission\n  chmod -R 777 node_modules/\nfi\n\nyarn setup:ci"
     - save-npm-cache@1: {}
     - script@1:
         title: Download Env Files
@@ -266,6 +253,45 @@ workflows:
         - app_path: $BITRISE_SIGNED_AAB_PATH
         - track: internal
         - service_account_json_key_path: $BITRISEIO_AVALABS_GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_KEY_URL
+  android-external-e2e:
+    before_run:
+    - _install-and-set-env
+    - _set-version
+    - _build-android-for-testing
+    envs:
+    - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - PLATFORM: Android
+      opts:
+        is_expand: false
+    - ANDROID_BUILD_VARIANT: externalE2e
+      opts:
+        is_expand: false
+    - APP_TITLE: Core Mobile
+      opts:
+        is_expand: false
+    - E2E: "true"
+      opts:
+        is_expand: false
+    steps:
+    - wait-for-android-emulator@1: {}
+    - script@1:
+        title: Detox
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            # fail if any commands fails
+            set -e
+
+            # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
+            set -o pipefail
+
+            # debug log
+            set -x
+
+            npm rebuild detox
+            QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.external.release.ci --headless
   android-internal:
     before_run:
     - _install-and-set-env
@@ -364,6 +390,47 @@ workflows:
         - altool_options: --verbose
         - connection: api_key
         - api_issuer: $APPSTORE_CONNECT_KEY_ISSUER_ID
+  ios-external-e2e:
+    before_run:
+    - _install-and-set-env
+    - _set-version
+    - _build-ios-simulator
+    envs:
+    - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - PLATFORM: iOS
+      opts:
+        is_expand: false
+    - IOS_CONFIGURATION: Release
+      opts:
+        is_expand: false
+    - IOS_SCHEME: AvaxWallet
+      opts:
+        is_expand: false
+    - APP_TITLE: Core Mobile
+      opts:
+        is_expand: false
+    - E2E: "true"
+      opts:
+        is_expand: false
+    steps:
+    - script@1:
+        title: Detox
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            # fail if any commands fails
+            set -e
+
+            # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
+            set -o pipefail
+
+            # debug log
+            set -x
+
+            npm rebuild detox
+            ./node_modules/.bin/detox test --configuration ios.external.release.ci
   ios-internal:
     before_run:
     - _install-and-set-env
@@ -398,7 +465,6 @@ workflows:
         - api_issuer: $APPSTORE_CONNECT_KEY_ISSUER_ID
         - connection: api_key
   ios-internal-e2e:
-    description: just working on getting the e2e tests setup and running
     before_run:
     - _install-and-set-env
     - _set-version

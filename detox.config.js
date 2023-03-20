@@ -51,6 +51,10 @@ module.exports = {
       type: 'ios.app',
       binaryPath: process.env.BITRISE_APP_DIR_PATH
     },
+    'ios.external.release.ci': {
+      type: 'ios.app',
+      binaryPath: process.env.BITRISE_APP_DIR_PATH
+    },
     'android.internal.debug': {
       type: 'android.apk',
       binaryPath:
@@ -59,6 +63,11 @@ module.exports = {
         'android/app/build/outputs/apk/androidTest/internal/debug/app-internal-debug-androidTest.apk'
     },
     'android.internal.release.ci': {
+      type: 'android.apk',
+      binaryPath: ANDROID_APK_PATH,
+      testBinaryPath: ANDROID_TEST_APK_PATH
+    },
+    'android.external.release.ci': {
       type: 'android.apk',
       binaryPath: ANDROID_APK_PATH,
       testBinaryPath: ANDROID_TEST_APK_PATH
@@ -116,6 +125,16 @@ module.exports = {
         }
       }
     },
+    'ios.external.release.ci': {
+      device: 'simulator',
+      app: 'ios.external.release.ci',
+      artifacts: {
+        rootDir: './e2e/artifacts/ios',
+        plugins: {
+          instruments: 'all'
+        }
+      }
+    },
     'android.internal.debug': {
       device: 'emulator',
       app: 'android.internal.debug',
@@ -126,6 +145,13 @@ module.exports = {
     'android.internal.release.ci': {
       device: 'emulator_ci',
       app: 'android.internal.release.ci',
+      artifacts: {
+        rootDir: './e2e/artifacts/android'
+      }
+    },
+    'android.external.release.ci': {
+      device: 'emulator_ci',
+      app: 'android.external.release.ci',
       artifacts: {
         rootDir: './e2e/artifacts/android'
       }
