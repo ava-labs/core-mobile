@@ -16,9 +16,10 @@ class PostHogService {
         event: eventName,
         timestamp: Date.now().toString(),
         ip: '',
+        distinct_id: userId,
         properties: {
           ...properties,
-          distinct_id: userId,
+
           $user_id: userId
         }
       })
