@@ -253,7 +253,7 @@ workflows:
         - app_path: $BITRISE_SIGNED_AAB_PATH
         - track: internal
         - service_account_json_key_path: $BITRISEIO_AVALABS_GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_KEY_URL
-  android-external-e2e:
+  android-e2e:
     before_run:
     - _install-and-set-env
     - _set-version
@@ -390,7 +390,7 @@ workflows:
         - altool_options: --verbose
         - connection: api_key
         - api_issuer: $APPSTORE_CONNECT_KEY_ISSUER_ID
-  ios-external-e2e:
+  ios-e2e:
     before_run:
     - _install-and-set-env
     - _set-version
