@@ -137,20 +137,18 @@ workflows:
         inputs:
         - content: |-
             #!/usr/bin/env bash
-            yarn setup:ci
-
             stack=`cat /etc/issue`
-            
+   
             if [[ $stack == *"Ubuntu"* ]]; then
               # on ubuntu, yarn setup command will fail
               # as patch-package doesn't have write access to the node_modules folder
               # thus, we need to set write permission manually
-
+              
               # set permission
-              chmod -R 0777 node_modules/
-              # rerun yarn setup to trigger postInstall
-              yarn setup:ci
+              chmod -R 777 node_modules/
             fi
+
+            yarn setup:ci
     - save-npm-cache@1: {}
     - script@1:
         title: Download Env Files
