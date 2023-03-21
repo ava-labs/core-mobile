@@ -1,5 +1,6 @@
 /* eslint-disable jest/expect-expect */
 import Assert from '../../helpers/assertions'
+import actions from '../../helpers/actions'
 import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import PortfolioPage from '../../pages/portfolio.page'
 import NetworksManagePage from '../../pages/networksManage.page'
@@ -19,6 +20,11 @@ describe('Change Network', () => {
     await NetworksManagePage.inputNetworkName()
     await NetworksManagePage.inputChainId()
     await NetworksManagePage.inputNativeTokenSymbol()
+    if (
+      (await actions.isVisible(NetworksManagePage.inputTextField, 5)) === false
+    ) {
+      await NetworksManagePage.swipeUp()
+    }
     await NetworksManagePage.inputExplorerUrl()
     await NetworksManagePage.swipeUp()
     await NetworksManagePage.tapSaveButton()
