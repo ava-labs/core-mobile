@@ -1,8 +1,4 @@
 /* eslint-disable jest/expect-expect */
-/* eslint-env detox/detox, jest */
-/**
- * @jest-environment ./environment.ts
- */
 import BottomTabsPage from '../../pages/bottomTabs.page'
 import Assert from '../../helpers/assertions'
 import ActivityTabPage from '../../pages/activityTab.page'
@@ -18,7 +14,7 @@ describe('Activity Tab', () => {
 
   it('should show contract call only in activity list', async () => {
     await BottomTabsPage.tapActivityTab()
-    // await Assert.isVisible(ActivityTabPage.activityListHeader)
+    await Assert.isVisible(ActivityTabPage.activityListHeader)
     await ActivityTabPage.tapFilterDropdown()
     await ActivityTabPage.tapContractCallFilterOption()
     await Assert.isNotVisible(ActivityTabPage.bridgeSVG)
@@ -49,7 +45,7 @@ describe('Activity Tab', () => {
       ActivityTabPage.selectFilterDropdown,
       'Display: Incoming'
     )
-    await ActivityTabPage.tapUsdCoinTransaction()
+    await ActivityTabPage.tapArrowIcon(1)
     await Assert.isVisible(TransactionDetailsPage.status)
     await Assert.isVisible(TransactionDetailsPage.transactionType)
   })
