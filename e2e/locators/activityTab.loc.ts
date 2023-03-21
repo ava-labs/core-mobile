@@ -9,6 +9,5 @@ export default {
   bridgeTransaction: 'bridge_transaction__item',
   bridgeSVG: 'bridge_svg',
   arrowSVG: 'arrow_svg',
-  linkIcon: 'link_svg',
-  usdCoin: 'USD Coin'
+  linkIcon: 'link_svg'
 }
