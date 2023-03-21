@@ -2,7 +2,6 @@
 import Assert from '../../helpers/assertions'
 import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import AccountManagePage from '../../pages/accountManage.page'
-import { Platform } from '../../helpers/constants'
 import actions from '../../helpers/actions'
 import { warmup } from '../../helpers/warmup'
 
@@ -23,7 +22,10 @@ describe('Add and edit accounts', () => {
     await AccountManagePage.tapEditAccount()
     await AccountManagePage.setNewAccountName()
     await AccountManagePage.tapSaveNewAccountName()
-    if (actions.platform() === Platform.Android) {
+    if (
+      (await actions.isVisible(AccountManagePage.saveNewAccountName, 0)) ===
+      true
+    ) {
       await AccountManagePage.tapSaveNewAccountName()
     }
     await Assert.isNotVisible(AccountManagePage.saveNewAccountName)
