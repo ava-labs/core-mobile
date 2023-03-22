@@ -5,16 +5,14 @@ import {
   ListRenderItem as FlashListRenderItem
 } from '@shopify/flash-list/dist/FlashListProps'
 import { RefreshControlProps } from 'react-native'
-import DraggableFlatList from 'react-native-draggable-flatlist/src/components/DraggableFlatList'
-import {
-  DragEndParams,
-  RenderItem
-} from 'react-native-draggable-flatlist/src/types'
+import DraggableList, {
+  DraggableRenderItem
+} from 'components/draggableList/DraggableList'
 
 interface AvaListProps<TItem> {
   data: TItem[] | null | undefined
   flashRenderItem: FlashListRenderItem<TItem> | null | undefined
-  draggableListItem?: RenderItem<TItem> | null | undefined
+  draggableListItem?: DraggableRenderItem<TItem> | null | undefined
   ItemSeparatorComponent?: React.ComponentType<unknown> | null | undefined
   ListEmptyComponent?:
     | React.ComponentType<unknown>
@@ -36,7 +34,7 @@ interface AvaListProps<TItem> {
   ) => string | number | undefined
   estimatedItemSize?: number | undefined
   isDraggable?: boolean
-  onDragEnd?: (params: DragEndParams<TItem>) => void
+  // onDragEnd?: (params: DragEndParams<TItem>) => void
 }
 
 /**
@@ -58,28 +56,28 @@ const AvaList = <T,>({
   refreshControl,
   getItemType,
   estimatedItemSize,
-  isDraggable,
-  onDragEnd
-}: AvaListProps<T>) => {
-  function handleOnDragEnd(dragEndParams: DragEndParams<T>) {
-    onDragEnd?.(dragEndParams)
-  }
+  isDraggable
+}: // onDragEnd
+AvaListProps<T>) => {
+  // function handleOnDragEnd(dragEndParams: DragEndParams<T>) {
+  //   onDragEnd?.(dragEndParams)
+  // }
 
   return isDraggable && draggableListItem ? (
-    <DraggableFlatList
+    <DraggableList
       data={data || []}
-      onDragEnd={handleOnDragEnd}
+      // onDragEnd={handleOnDragEnd}
       renderItem={draggableListItem}
-      ItemSeparatorComponent={ItemSeparatorComponent}
-      ListEmptyComponent={ListEmptyComponent}
-      refreshing={refreshing}
-      onRefresh={onRefresh}
-      refreshControl={refreshControl}
-      contentContainerStyle={contentContainerStyle}
-      keyExtractor={keyExtractor}
-      indicatorStyle="white"
-      onEndReached={onEndReached}
-      extraData={extraData}
+      // ItemSeparatorComponent={ItemSeparatorComponent}
+      // ListEmptyComponent={ListEmptyComponent}
+      // refreshing={refreshing}
+      // onRefresh={onRefresh}
+      // refreshControl={refreshControl}
+      // contentContainerStyle={contentContainerStyle}
+      // keyExtractor={keyExtractor}
+      // indicatorStyle="white"
+      // onEndReached={onEndReached}
+      // extraData={extraData}
     />
   ) : (
     <FlashList

@@ -16,14 +16,10 @@ import {
   MarketToken,
   onWatchlistRefresh,
   PriceData,
-  Prices,
-  reorderFavorites
+  Prices
 } from 'store/watchlist'
-import {
-  DragEndParams,
-  RenderItemParams
-} from 'react-native-draggable-flatlist/src/types'
 import AvaList from 'components/AvaList'
+import { DraggableListRenderItemInfo } from 'components/draggableList/DraggableList'
 import { WatchlistFilter } from '../types'
 
 const getDisplayValue = (
@@ -64,7 +60,9 @@ const WatchList: React.FC<Props> = ({
 
   const keyExtractor = (item: MarketToken) => item.id
 
-  const draggableListItem = (item: RenderItemParams<MarketToken>) => {
+  const draggableListItem = (
+    item: DraggableListRenderItemInfo<MarketToken>
+  ) => {
     return renderItem(item.item, item.drag, item.isActive)
   }
 
@@ -116,10 +114,10 @@ const WatchList: React.FC<Props> = ({
       data={tokens}
       flashRenderItem={flashListRenderItem}
       draggableListItem={draggableListItem}
-      onDragEnd={(reOrderedFavorites: DragEndParams<MarketToken>) => {
-        const favIds = reOrderedFavorites.data.map(item => item.id)
-        dispatch(reorderFavorites(favIds))
-      }}
+      // onDragEnd={(reOrderedFavorites: DragEndParams<MarketToken>) => {
+      //   const favIds = reOrderedFavorites.data.map(item => item.id)
+      //   dispatch(reorderFavorites(favIds))
+      // }}
       ItemSeparatorComponent={SeparatorComponent}
       ListEmptyComponent={
         isShowingFavorites && !isSearching ? (
