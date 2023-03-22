@@ -72,7 +72,8 @@ class SendService {
     sendState: SendState,
     activeNetwork: Network,
     account: Account,
-    currency: string
+    currency: string,
+    nativeTokenBalance?: BN
   ): Promise<SendState> {
     const fromAddress =
       activeNetwork.vmName === NetworkVMType.BITCOIN
@@ -84,7 +85,9 @@ class SendService {
       sendState,
       !activeNetwork.isTestnet,
       fromAddress,
-      currency
+      currency,
+      undefined,
+      nativeTokenBalance
     )
   }
 

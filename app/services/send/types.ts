@@ -54,7 +54,8 @@ export enum SendErrorMessage {
   C_CHAIN_REQUIRED = 'Must be a C chain address',
   INVALID_ADDRESS = 'Address is invalid',
   INVALID_NETWORK_FEE = 'Network Fee is invalid',
-  INSUFFICIENT_BALANCE = 'Insufficient balance.'
+  INSUFFICIENT_BALANCE = 'Insufficient balance.',
+  INSUFFICIENT_BALANCE_FOR_FEE = 'Insufficient balance for fee.'
 }
 
 export interface SendServiceHelper {
@@ -70,6 +71,7 @@ export interface SendServiceHelper {
     isMainnet: boolean,
     fromAddress: string,
     currency?: string,
-    sentryTrx?: Transaction
+    sentryTrx?: Transaction,
+    nativeTokenBalance?: BN
   ): Promise<SendState>
 }

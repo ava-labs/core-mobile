@@ -41,7 +41,8 @@ export class SendServiceEVM implements SendServiceHelper {
     isMainnet: boolean,
     fromAddress: string,
     currency?: string,
-    sentryTrx?: Transaction
+    sentryTrx?: Transaction,
+    nativeTokenBalance?: BN
   ): Promise<SendState> {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.send.evm.validate_and_calc_fees')
@@ -99,6 +100,16 @@ export class SendServiceEVM implements SendServiceHelper {
           return SendServiceEVM.getErrorState(
             newState,
             SendErrorMessage.INSUFFICIENT_BALANCE
+          )
+
+        if (
+          token.type !== TokenType.NATIVE &&
+          sendFee &&
+          nativeTokenBalance?.lt(sendFee)
+        )
+          return SendServiceEVM.getErrorState(
+            newState,
+            SendErrorMessage.INSUFFICIENT_BALANCE_FOR_FEE
           )
 
         return newState

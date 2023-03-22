@@ -185,6 +185,24 @@ export const selectBalanceTotalInCurrencyForNetworkAndAccount =
     return totalInCurrency
   }
 
+export const selectNativeTokenBalanceForNetworkAndAccount =
+  (chainId: number, accountIndex: number | undefined) => (state: RootState) => {
+    if (accountIndex === undefined) return undefined
+
+    const balanceForNetworkAndAccount = Object.values(
+      state.balance.balances
+    ).find(
+      balance =>
+        balance.chainId === chainId && balance.accountIndex === accountIndex
+    )
+
+    const nativeToken = Object.values(
+      balanceForNetworkAndAccount?.tokens ?? {}
+    )?.find(token => token.type === TokenType.NATIVE)
+
+    return nativeToken?.balance
+  }
+
 export const selectBalanceTotalForNetwork =
   (chainId: number) => (state: RootState) => {
     const balances = Object.values(state.balance.balances).filter(

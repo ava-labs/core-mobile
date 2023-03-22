@@ -14,6 +14,7 @@ import { NFTItemData } from 'store/nft'
 import { bnToEthersBigNumber, bnToLocaleString } from '@avalabs/utils-sdk'
 import { FeePreset } from 'components/NetworkFeeSelector'
 import { selectSelectedCurrency } from 'store/settings/currency'
+import { selectNativeTokenBalanceForNetworkAndAccount } from 'store/balance'
 import { usePosthogContext } from 'contexts/PosthogContext'
 import { SendState } from 'services/send/types'
 import sendService from 'services/send/SendService'
@@ -56,6 +57,13 @@ export const SendNFTContextProvider = ({
   const activeAccount = useSelector(selectActiveAccount)
   const activeNetwork = useSelector(selectActiveNetwork)
   const selectedCurrency = useSelector(selectSelectedCurrency)
+  const nativeTokenBalance = useSelector(
+    selectNativeTokenBalanceForNetworkAndAccount(
+      activeNetwork.chainId,
+      activeAccount?.index
+    )
+  )
+
   const { nativeTokenPrice } = useNativeTokenPrice(
     selectedCurrency.toLowerCase() as VsCurrencyType
   )
@@ -100,6 +108,7 @@ export const SendNFTContextProvider = ({
   useEffect(validateStateFx, [
     activeAccount,
     activeNetwork,
+    nativeTokenBalance,
     customGasPriceBig,
     trueGasLimit,
     selectedCurrency,
@@ -195,7 +204,8 @@ export const SendNFTContextProvider = ({
         } as SendState,
         activeNetwork,
         activeAccount,
-        selectedCurrency
+        selectedCurrency,
+        nativeTokenBalance
       )
       .then(state => {
         setGasLimit(state.gasLimit ?? 0)
