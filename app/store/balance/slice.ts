@@ -189,15 +189,11 @@ export const selectNativeTokenBalanceForNetworkAndAccount =
   (chainId: number, accountIndex: number | undefined) => (state: RootState) => {
     if (accountIndex === undefined) return undefined
 
-    const balanceForNetworkAndAccount = Object.values(
-      state.balance.balances
-    ).find(
-      balance =>
-        balance.chainId === chainId && balance.accountIndex === accountIndex
-    )
+    const key = getKey(chainId, accountIndex)
+    const balanceForNetworkAndAccount = state.balance.balances[key]
 
     const nativeToken = Object.values(
-      balanceForNetworkAndAccount?.tokens ?? {}
+      balanceForNetworkAndAccount?.tokens ?? []
     )?.find(token => token.type === TokenType.NATIVE)
 
     return nativeToken?.balance
