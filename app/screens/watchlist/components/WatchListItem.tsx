@@ -1,5 +1,5 @@
 import React, { FC } from 'react'
-import { Dimensions, Pressable, View } from 'react-native'
+import { Dimensions, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaListItem from 'components/AvaListItem'
 import AvaText from 'components/AvaText'
@@ -12,7 +12,6 @@ import MarketMovement from 'screens/watchlist/components/MarketMovement'
 
 import { MarketToken } from 'store/watchlist'
 import { ChartData } from 'services/token/types'
-import DragHandleSVG from 'components/svg/DragHandleSVG'
 
 const deviceWidth = Dimensions.get('window').width
 
@@ -21,7 +20,6 @@ interface Props {
   chartData: ChartData
   value?: string
   onPress?: () => void
-  onDragPress?: () => void
   rank?: number
   filterBy: WatchlistFilter
   testID?: string
@@ -32,7 +30,6 @@ const WatchListItem: FC<Props> = ({
   chartData,
   value = '0',
   onPress,
-  onDragPress,
   rank,
   filterBy,
   testID
@@ -62,7 +59,6 @@ const WatchListItem: FC<Props> = ({
           filterBy={filterBy}
           onPress={onPress}
           testID={testID}
-          onDragPress={onDragPress}
         />
       }
       onPress={onPress}
@@ -110,15 +106,13 @@ type RightComponentProps = {
   filterBy: WatchlistFilter
   testID?: string
   onPress?: () => void
-  onDragPress?: () => void
 }
 
 const RightComponent = ({
   chartData,
   value,
   filterBy,
-  onPress,
-  onDragPress
+  onPress
 }: RightComponentProps) => {
   const { theme, appHook } = useApplicationContext()
   const { selectedCurrency } = appHook
@@ -163,21 +157,6 @@ const RightComponent = ({
           filterBy={filterBy}
         />
       </View>
-      {onDragPress && (
-        <>
-          <Pressable
-            onLongPress={onDragPress}
-            delayLongPress={100}
-            cancelable={false}
-            hitSlop={8}
-            style={{
-              padding: 16,
-              marginRight: -16
-            }}>
-            <DragHandleSVG />
-          </Pressable>
-        </>
-      )}
     </Row>
   )
 }

@@ -1,56 +1,90 @@
-import React from 'react'
-import { ScrollView, View } from 'react-native'
+import assert from 'assert'
+import React, { useCallback, useMemo, useRef } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
+import DraggableItemWrapper from 'components/draggableList/DraggableItemWrapper'
+import {
+  DragEndParams,
+  DraggableRenderItem,
+  ItemId,
+  ItemPosition
+} from 'components/draggableList/types'
+import Animated, {
+  useAnimatedScrollHandler,
+  useSharedValue
+} from 'react-native-reanimated'
 
-export interface DraggableListRenderItemInfo<ItemT> {
-  item: ItemT
-  index: number
-  drag: () => void
-  isActive: boolean
-}
-
-export type DraggableRenderItem<TItem> = (
-  info: DraggableListRenderItemInfo<TItem>
-) => React.ReactElement | null
+const ITEM_HEIGHT = 60
 
 interface Props<TItem> {
   data: ReadonlyArray<TItem>
   renderItem: DraggableRenderItem<TItem>
+  keyExtractor: (item: TItem) => string
+  onDragEnd: (dragEndParams: DragEndParams<TItem>) => void
 }
 
-const DraggableList = <TItem,>({ data, renderItem }: Props<TItem>) => {
+const DraggableList = <TItem,>({
+  data,
+  renderItem,
+  keyExtractor,
+  onDragEnd
+}: Props<TItem>) => {
   const { theme } = useApplicationContext()
-  const ITEM_HEIGHT = 60
+  const scrollY = useSharedValue(0)
+  const scrollViewOffset = useSharedValue(0)
+  const positions = useSharedValue({} as Record<ItemId, ItemPosition>)
+  const viewRef = useRef<Animated.ScrollView>(null)
+
+  positions.value = useMemo(() => {
+    return data.reduce((acc, item, index) => {
+      acc[keyExtractor(item)] = index
+      return acc
+    }, {} as Record<ItemId, ItemPosition>)
+  }, [data, keyExtractor])
+
+  const handleScroll = useAnimatedScrollHandler(event => {
+    scrollY.value = event.contentOffset.y
+  })
+
+  const handleDragFinish = useCallback(() => {
+    const newListOrder = new Array<TItem>(Object.keys(positions.value).length)
+    Object.entries(positions.value).forEach(([itemId, position]) => {
+      const item = data.find(value => keyExtractor(value) === itemId)
+      assert(item)
+      newListOrder[position] = item
+    })
+    onDragEnd({ newListOrder })
+  }, [data, keyExtractor, onDragEnd, positions])
 
   function renderItems() {
-    function drag() {
-      console.log('not empty')
-    }
-
-    const isActive = false
-
-    return data.map((item, index) => {
+    return data.map(item => {
+      const itemId = keyExtractor(item)
       return (
-        <View
-          style={{
-            position: 'absolute',
-            left: 0,
-            right: 0,
-            top: index * ITEM_HEIGHT
-          }}>
-          {renderItem({
-            item,
-            index,
-            drag,
-            isActive
-          } as DraggableListRenderItemInfo<TItem>)}
-        </View>
+        <DraggableItemWrapper
+          id={itemId}
+          itemView={renderItem({ item })}
+          height={ITEM_HEIGHT}
+          scrollYShared={scrollY}
+          scrollViewOffset={scrollViewOffset}
+          positions={positions}
+          onDragFinish={handleDragFinish}
+        />
       )
     })
   }
 
   return (
-    <ScrollView
+    <Animated.ScrollView
+      ref={viewRef}
+      onScroll={handleScroll}
+      onLayout={() => {
+        if (viewRef.current) {
+          // @ts-ignore
+          viewRef.current.measure((x, y, width, height, pageX, pageY) => {
+            scrollViewOffset.value = pageY
+          })
+        }
+      }}
+      scrollEventThrottle={16}
       style={{
         flex: 1,
         position: 'relative',
@@ -58,7 +92,7 @@ const DraggableList = <TItem,>({ data, renderItem }: Props<TItem>) => {
       }}
       contentContainerStyle={{ height: data.length * ITEM_HEIGHT }}>
       {renderItems()}
-    </ScrollView>
+    </Animated.ScrollView>
   )
 }
 
