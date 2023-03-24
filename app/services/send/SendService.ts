@@ -29,15 +29,13 @@ class SendService {
             : account.address
 
         const service = await this.getService(activeNetwork, fromAddress)
-        sendState = await service.validateStateAndCalculateFees(
-          {
-            sendState,
-            isMainnet: !activeNetwork.isTestnet,
-            fromAddress,
-            currency
-          },
+        sendState = await service.validateStateAndCalculateFees({
+          sendState,
+          isMainnet: !activeNetwork.isTestnet,
+          fromAddress,
+          currency,
           sentryTrx
-        )
+        })
 
         if (sendState.error?.error) {
           throw new Error(sendState.error.message)
@@ -47,15 +45,13 @@ class SendService {
           throw new Error('Unknown error, unable to submit')
         }
 
-        const txRequest = await service.getTransactionRequest(
-          {
-            sendState,
-            isMainnet: !activeNetwork.isTestnet,
-            fromAddress,
-            currency
-          },
+        const txRequest = await service.getTransactionRequest({
+          sendState,
+          isMainnet: !activeNetwork.isTestnet,
+          fromAddress,
+          currency,
           sentryTrx
-        )
+        })
         const signedTx = await walletService.sign(
           txRequest,
           account.index,

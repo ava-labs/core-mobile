@@ -23,7 +23,6 @@ import {
 } from 'store/balance'
 import ERC721 from '@openzeppelin/contracts/build/contracts/ERC721.json'
 import { isAddress } from '@ethersproject/address'
-import { Transaction } from '@sentry/types'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 
 export class SendServiceEVM implements SendServiceHelper {
@@ -37,10 +36,9 @@ export class SendServiceEVM implements SendServiceHelper {
   }
 
   async validateStateAndCalculateFees(
-    params: ValidateStateAndCalculateFeesParams,
-    sentryTrx?: Transaction
+    params: ValidateStateAndCalculateFeesParams
   ): Promise<SendState> {
-    const { sendState, nativeTokenBalance } = params
+    const { sendState, nativeTokenBalance, sentryTrx } = params
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.send.evm.validate_and_calc_fees')
       .executeAsync(async () => {
@@ -114,10 +112,9 @@ export class SendServiceEVM implements SendServiceHelper {
   }
 
   async getTransactionRequest(
-    params: ValidateStateAndCalculateFeesParams,
-    sentryTrx?: Transaction
+    params: ValidateStateAndCalculateFeesParams
   ): Promise<TransactionRequest> {
-    const { sendState } = params
+    const { sendState, sentryTrx } = params
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.send.evm.get_trx_request')
       .executeAsync(async () => {
