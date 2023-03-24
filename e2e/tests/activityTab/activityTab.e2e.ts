@@ -1,26 +1,20 @@
 /* eslint-disable jest/expect-expect */
-/* eslint-env detox/detox, jest */
-/**
- * @jest-environment ./environment.ts
- */
-import { device } from 'detox'
 import BottomTabsPage from '../../pages/bottomTabs.page'
 import Assert from '../../helpers/assertions'
-import WatchListPage from '../../pages/watchlist.page'
 import ActivityTabPage from '../../pages/activityTab.page'
 import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import TransactionDetailsPage from '../../pages/transactionDetails.page'
+import { warmup } from '../../helpers/warmup'
 
 describe('Activity Tab', () => {
   beforeAll(async () => {
-    await device.launchApp()
-    await Assert.isVisible(WatchListPage.walletSVG, 1)
+    await warmup()
     await LoginRecoverWallet.recoverWalletLogin()
   })
 
   it('should show contract call only in activity list', async () => {
     await BottomTabsPage.tapActivityTab()
-    // await Assert.isVisible(ActivityTabPage.activityListHeader)
+    await Assert.isVisible(ActivityTabPage.activityListHeader)
     await ActivityTabPage.tapFilterDropdown()
     await ActivityTabPage.tapContractCallFilterOption()
     await Assert.isNotVisible(ActivityTabPage.bridgeSVG)
@@ -51,7 +45,7 @@ describe('Activity Tab', () => {
       ActivityTabPage.selectFilterDropdown,
       'Display: Incoming'
     )
-    await ActivityTabPage.tapUsdCoinTransaction()
+    await ActivityTabPage.tapArrowIcon(1)
     await Assert.isVisible(TransactionDetailsPage.status)
     await Assert.isVisible(TransactionDetailsPage.transactionType)
   })

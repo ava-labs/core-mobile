@@ -3,15 +3,12 @@
 /**
  * @jest-environment ./jestCustomEnv
  */
-import { device } from 'detox'
-import Assert from '../../helpers/assertions'
+import { warmup } from '../../helpers/warmup'
 import ExistingRecoveryPhrasePage from '../../pages/existingRecoveryPhrase.page'
-import WatchListPage from '../../pages/watchlist.page'
 
 describe('Add existing wallet', () => {
   beforeAll(async () => {
-    await device.launchApp()
-    await Assert.isVisible(WatchListPage.walletSVG, 1)
+    await warmup()
   })
 
   it('should successfully add an existing wallet', async () => {
