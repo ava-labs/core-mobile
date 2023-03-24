@@ -63,6 +63,18 @@ const getAndroidAttributesArray = async (
   return attsArray
 }
 
+const isVisible = async (
+  item: Detox.NativeMatcher,
+  index: number
+): Promise<boolean> => {
+  const result = await waitFor(element(item).atIndex(index))
+    .toBeVisible()
+    .withTimeout(2000)
+    .then(() => true)
+    .catch(() => false)
+  return result
+}
+
 const swipeUp = async (
   item: Detox.NativeMatcher,
   speed: Detox.Speed,
@@ -99,5 +111,6 @@ export default {
   setColumnToValue,
   setInputText,
   getAndroidAttributesArray,
-  platform
+  platform,
+  isVisible
 }

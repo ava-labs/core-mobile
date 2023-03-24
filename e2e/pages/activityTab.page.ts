@@ -45,10 +45,6 @@ class ActivityTabPage {
     return by.id(activityTab.linkIcon)
   }
 
-  get usdCoinTransaction() {
-    return by.text(activityTab.usdCoin)
-  }
-
   async tapArrowIcon(index: number) {
     await Action.tapElementAtIndex(this.arrowSVG, index)
   }
@@ -83,10 +79,6 @@ class ActivityTabPage {
 
   async tapBridgeIcon() {
     await Action.tapElementAtIndex(this.bridgeSVG, 1)
-  }
-
-  async tapUsdCoinTransaction() {
-    await Action.tapElementAtIndex(this.usdCoinTransaction, 1)
   }
 }
 

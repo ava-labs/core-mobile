@@ -1,8 +1,4 @@
 /* eslint-disable jest/expect-expect */
-/* eslint-env detox/detox, jest */
-/**
- * @jest-environment ./environment.ts
- */
 import Assert from '../../helpers/assertions'
 import actions from '../../helpers/actions'
 import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
@@ -16,7 +12,7 @@ describe('Change Network', () => {
     await LoginRecoverWallet.recoverWalletLogin()
   })
 
-  it('should add custom network', async () => {
+  it('should check empty assets on custom Network', async () => {
     await PortfolioPage.tapNetworksDropdown()
     await PortfolioPage.tapManageNetworks()
     await NetworksManagePage.tapAddNetwork()
@@ -33,29 +29,11 @@ describe('Change Network', () => {
     await NetworksManagePage.swipeUp()
     await NetworksManagePage.tapSaveButton()
     await NetworksManagePage.tapCustomTab()
-    await Assert.isVisible(NetworksManagePage.customNetwork)
-  })
-
-  it('should add custom network to favorites', async () => {
-    await NetworksManagePage.addBtcNetwork()
-    await NetworksManagePage.tapFavoritesTab()
-    await Assert.isVisible(NetworksManagePage.customNetwork)
-  })
-
-  it('should change active network to custom', async () => {
-    await NetworksManagePage.tapCustomTab()
     await NetworksManagePage.tapCustomNetwork()
-    await Assert.isVisible(NetworksManagePage.customNetwork)
-  })
 
-  it('should delete custom network', async () => {
-    await PortfolioPage.tapNetworksDropdown()
-    await PortfolioPage.tapManageNetworks()
-    await NetworksManagePage.tapCustomTab()
-    await NetworksManagePage.tapNetworkInfo()
-    await NetworksManagePage.tapDropdown()
-    await NetworksManagePage.tapDeleteNetwork()
-    await NetworksManagePage.tapDeleteNetwork()
-    await Assert.isNotVisible(NetworksManagePage.customNetwork)
+    await PortfolioPage.tapArbitrumNetwork()
+    await Assert.isVisible(PortfolioPage.noAssetsHeader)
+    await Assert.isVisible(PortfolioPage.addAssetsMessage)
+    await Assert.isVisible(PortfolioPage.addAssetsButton)
   })
 })

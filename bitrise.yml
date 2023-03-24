@@ -20,10 +20,6 @@ app:
       is_expand: false
 workflows:
   _build-android:
-    envs:
-    - PLATFORM: Android
-      opts:
-        is_expand: false
     steps:
     - install-missing-android-tools@3:
         inputs:
@@ -33,7 +29,9 @@ workflows:
         inputs:
         - project_location: $ANDROID_PROJECT_LOCATION
         - module: $ANDROID_MODULE
+        - arguments: :app:assembleInternalE2eAndroidTest
         - build_type: aab
+        - cache_level: all
         - variant: $ANDROID_BUILD_VARIANT
     - save-gradle-cache@1: {}
     - sign-apk@1:
@@ -51,11 +49,55 @@ workflows:
         - keystore_alias: $ANDROID_KEY_ALIAS
         - private_key_password: $ANDROID_KEY_PASSWORD
         - keystore_url: $BITRISEIO_ANDROID_KEY_STORE_URL
+  _build-android-for-testing:
+    steps:
+    - install-missing-android-tools@3:
+        inputs:
+        - gradlew_path: $ANDROID_PROJECT_LOCATION/gradlew
+    - restore-gradle-cache@1: {}
+    - script@1:
+        title: Fix Android Env Vars
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            # fail if any commands fails
+            set -e
+            # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
+            set -o pipefail
+            # debug log
+            set -x
+
+            # write your script here
+            # without this fix, we can't start emulator due to this error
+            # "Could not find the Qt platform plugin "offscreen" in "/opt/android-sdk-linux/emulator/lib64/qt/plugins"
+            # "Available platform plugins are: xcb."
+            envman add --key QT_QPA_PLATFORM --value xcb
+    - avd-manager@1.2:
+        inputs:
+        - api_level: "28"
+        - emulator_id: emulator-5554
+        - emulator_channel: "0"
+        - create_command_flags: --sdcard 512M
+        - tag: default
+        - abi: x86_64
+        - profile: pixel_4
+    - android-build-for-ui-testing@0:
+        inputs:
+        - module: $ANDROID_MODULE
+        - variant: $ANDROID_BUILD_VARIANT
+        - cache_level: all
+        - project_location: $ANDROID_PROJECT_LOCATION
+    - save-gradle-cache@1: {}
+    - sign-apk@1:
+        inputs:
+        - android_app: $BITRISE_APK_PATH|$BITRISE_TEST_APK_PATH
+        - use_apk_signer: "true"
+        - debuggable_permitted: "false"
+        - keystore_url: $BITRISEIO_ANDROID_KEY_STORE_URL
+        - keystore_password: $ANDROID_STORE_PASSWORD
+        - keystore_alias: $ANDROID_KEY_ALIAS
+        - private_key_password: $ANDROID_KEY_PASSWORD
   _build-ios:
-    envs:
-    - PLATFORM: iOS
-      opts:
-        is_expand: false
     steps:
     - restore-cocoapods-cache@1: {}
     - cocoapods-install@2:
@@ -72,19 +114,46 @@ workflows:
         - distribution_method: $XCODE_EXPORT
         - upload_bitcode: "no"
         - automatic_code_signing: api-key
+  _build-ios-simulator:
+    steps:
+    - restore-cocoapods-cache@1: {}
+    - cocoapods-install@2:
+        inputs:
+        - verbose: "true"
+        - source_root_path: $BITRISE_SOURCE_DIR/ios
+    - save-cocoapods-cache@1: {}
+    - xcode-build-for-simulator@0:
+        inputs:
+        - scheme: $IOS_SCHEME
+        - simulator_device: iPhone 13
+        - configuration: $IOS_CONFIGURATION
+        - project_path: $IOS_PROJECT_PATH
+        - code_signing_allowed: "yes"
   _install-and-set-env:
     steps:
     - restore-npm-cache@1: {}
-    - yarn@0:
+    - script@1:
+        title: Yarn Setup
         inputs:
-        - command: setup:ci
-        - workdir: $WORKDIR
+        - content: "#!/usr/bin/env bash\nstack=`cat /etc/issue`\n\nif [[ $stack == *\"Ubuntu\"* ]]; then\n  # on ubuntu, yarn setup command will fail\n  # as patch-package doesn't have write access to the node_modules folder\n  # thus, we need to set write permission manually\n  \n  # set permission\n  chmod -R 777 node_modules/\nfi\n\nyarn setup:ci"
     - save-npm-cache@1: {}
-    - resource-archive@2:
-        title: Download and unzip env files
+    - script@1:
+        title: Download Env Files
         inputs:
-        - extract_to_path: $WORKDIR
-        - archive_url: $BITRISEIO_ENV_FILES_URL
+        - content: |-
+            #!/usr/bin/env bash
+            # fail if any commands fails
+            set -e
+            # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
+            set -o pipefail
+            # debug log
+            set -x
+
+            # download
+            curl -Lfo "$BITRISE_SOURCE_DIR/resource.zip" "$BITRISEIO_ENV_FILES_URL"
+
+            # unzip
+            unzip -u "$BITRISE_SOURCE_DIR/resource" -d "$BITRISE_SOURCE_DIR"
     - script@1:
         title: Set Env
         inputs:
@@ -92,7 +161,6 @@ workflows:
         - content: |-
             #!/usr/bin/env bash
             set -ex
-
             if [ "$ENVIRONMENT" = "production" ]; then
                 if [ "$E2E" = "true" ]; then
                     cp .env.production.e2e .env
@@ -113,7 +181,7 @@ workflows:
         - fields: |-
             App|${APP_TITLE}
             Platform|${PLATFORM}
-            Version|${APP_VERSION}.${BITRISE_BUILD_NUMBER}
+            Version|${APP_VERSION}.${BUILD_NUMBER}
             Workflow|${BITRISE_TRIGGERED_WORKFLOW_ID}
             Environment|${ENVIRONMENT}
             Branch|${BITRISE_GIT_BRANCH}
@@ -137,20 +205,27 @@ workflows:
   _set-version:
     steps:
     - script@1:
-        title: Get Version
+        title: Get App Version
         inputs:
         - content: "#!/usr/bin/env bash\n\n# if branch is a release branch (\"release/2.0.1\" for example), grab version from branch name \n# else if tag is a release candidate tag (\"0.13.1-rc1\" for example), grab version from tag\nif [[ $BITRISE_GIT_BRANCH == *\"release/\"* ]]; then\n  arrIN=(${BITRISE_GIT_BRANCH//// })\n  version=${arrIN[1]}\nelif [[ $BITRISE_GIT_TAG =~ \"rc\" ]]; then\n  arrIN=(${BITRISE_GIT_TAG//-/ })\n  version=${arrIN[0]}\nelse\n  # else version will just be 0.0.0\n  version=\"0.0.0\"\nfi\n\nenvman add --key APP_VERSION --value \"${version}\""
+    - script@1:
+        title: Get Build Number
+        inputs:
+        - content: "#!/usr/bin/env bash\n# fail if any commands fails\nset -e\n# make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully\nset -o pipefail\n# debug log\nset -x\n\n# when a pipeline starts, it triggers both iOS and Android workflows\n# in order for iOS and Android to have different build numbers, we increment build number by 1 for Android\nif [ \"$PLATFORM\" = \"iOS\" ]; then\n  buildNumber=$BITRISE_BUILD_NUMBER       \nelse\n  buildNumber=$((BITRISE_BUILD_NUMBER+1))\nfi\n\nenvman add --key BUILD_NUMBER --value \"${buildNumber}\""
     - set-ios-info-plist-unified@1:
         title: Set iOS Version
+        run_if: '{{enveq "PLATFORM" "iOS"}}'
         inputs:
-        - bundle_version: $BITRISE_BUILD_NUMBER
+        - bundle_version: $BUILD_NUMBER
         - bundle_version_short: $APP_VERSION
         - info_plist_file: $BITRISE_SOURCE_DIR/ios/AvaxWallet/InfoRelease.plist
     - change-android-versioncode-and-versionname@1:
         title: Set Android Version
+        run_if: '{{enveq "PLATFORM" "Android"}}'
         inputs:
         - new_version_name: $APP_VERSION
-        - version_code_offset: "1"
+        - version_code_offset: ""
+        - new_version_code: $BUILD_NUMBER
         - build_gradle_path: $BITRISE_SOURCE_DIR/$ANDROID_PROJECT_LOCATION/app/build.gradle
   android:
     before_run:
@@ -161,6 +236,9 @@ workflows:
     - _send-notification-slack
     envs:
     - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - PLATFORM: Android
       opts:
         is_expand: false
     - ANDROID_BUILD_VARIANT: externalRelease
@@ -175,6 +253,45 @@ workflows:
         - app_path: $BITRISE_SIGNED_AAB_PATH
         - track: internal
         - service_account_json_key_path: $BITRISEIO_AVALABS_GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_KEY_URL
+  android-e2e:
+    before_run:
+    - _install-and-set-env
+    - _set-version
+    - _build-android-for-testing
+    envs:
+    - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - PLATFORM: Android
+      opts:
+        is_expand: false
+    - ANDROID_BUILD_VARIANT: externalE2e
+      opts:
+        is_expand: false
+    - APP_TITLE: Core Mobile
+      opts:
+        is_expand: false
+    - E2E: "true"
+      opts:
+        is_expand: false
+    steps:
+    - wait-for-android-emulator@1: {}
+    - script@1:
+        title: Detox
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            # fail if any commands fails
+            set -e
+
+            # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
+            set -o pipefail
+
+            # debug log
+            set -x
+
+            npm rebuild detox
+            QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.external.release.ci --headless
   android-internal:
     before_run:
     - _install-and-set-env
@@ -184,6 +301,9 @@ workflows:
     - _send-notification-slack
     envs:
     - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - PLATFORM: Android
       opts:
         is_expand: false
     - ANDROID_BUILD_VARIANT: internalRelease
@@ -201,13 +321,16 @@ workflows:
         - app_path: $BITRISE_SIGNED_AAB_PATH
         - track: internal
         - service_account_json_key_path: $BITRISEIO_AVALABS_GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_KEY_URL
-  android-internal-detox-test:
+  android-internal-e2e:
     before_run:
     - _install-and-set-env
     - _set-version
-    - _build-android
+    - _build-android-for-testing
     envs:
     - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - PLATFORM: Android
       opts:
         is_expand: false
     - ANDROID_BUILD_VARIANT: internalE2e
@@ -220,26 +343,23 @@ workflows:
       opts:
         is_expand: false
     steps:
-    - avd-manager@1:
-        inputs:
-        - profile: pixel_4
-        - emulator_id: emulator-5554
-        - api_level: "30"
     - wait-for-android-emulator@1: {}
     - script@1:
+        title: Detox
         inputs:
         - content: |-
             #!/usr/bin/env bash
             # fail if any commands fails
             set -e
+
             # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
             set -o pipefail
+
             # debug log
             set -x
 
             npm rebuild detox
-
-            ./node_modules/.bin/detox test --configuration android.internal.release.ci --cleanup
+            QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.internal.release.ci --headless
   ios:
     before_run:
     - _install-and-set-env
@@ -249,6 +369,9 @@ workflows:
     - _send-notification-slack
     envs:
     - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - PLATFORM: iOS
       opts:
         is_expand: false
     - IOS_CONFIGURATION: Release
@@ -267,6 +390,47 @@ workflows:
         - altool_options: --verbose
         - connection: api_key
         - api_issuer: $APPSTORE_CONNECT_KEY_ISSUER_ID
+  ios-e2e:
+    before_run:
+    - _install-and-set-env
+    - _set-version
+    - _build-ios-simulator
+    envs:
+    - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - PLATFORM: iOS
+      opts:
+        is_expand: false
+    - IOS_CONFIGURATION: Release
+      opts:
+        is_expand: false
+    - IOS_SCHEME: AvaxWallet
+      opts:
+        is_expand: false
+    - APP_TITLE: Core Mobile
+      opts:
+        is_expand: false
+    - E2E: "true"
+      opts:
+        is_expand: false
+    steps:
+    - script@1:
+        title: Detox
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            # fail if any commands fails
+            set -e
+
+            # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
+            set -o pipefail
+
+            # debug log
+            set -x
+
+            npm rebuild detox
+            ./node_modules/.bin/detox test --configuration ios.external.release.ci
   ios-internal:
     before_run:
     - _install-and-set-env
@@ -276,6 +440,9 @@ workflows:
     - _send-notification-slack
     envs:
     - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - PLATFORM: iOS
       opts:
         is_expand: false
     - IOS_CONFIGURATION: Release
@@ -297,20 +464,19 @@ workflows:
         - altool_options: --verbose
         - api_issuer: $APPSTORE_CONNECT_KEY_ISSUER_ID
         - connection: api_key
-  ios-internal-detox-test:
-    description: just working on getting the e2e tests setup and running
+  ios-internal-e2e:
     before_run:
     - _install-and-set-env
     - _set-version
-    - _build-ios
+    - _build-ios-simulator
     envs:
     - ENVIRONMENT: production
       opts:
         is_expand: false
-    - IOS_CONFIGURATION: Release
+    - PLATFORM: iOS
       opts:
         is_expand: false
-    - XCODE_EXPORT: app-store
+    - IOS_CONFIGURATION: Release
       opts:
         is_expand: false
     - IOS_SCHEME: AvaxWalletInternal
@@ -323,21 +489,19 @@ workflows:
       opts:
         is_expand: false
     steps:
-    - xcode-start-simulator@0:
-        inputs:
-        - destination: platform=iOS Simulator,name=iPhone 13,OS=latest
     - script@1:
+        title: Detox
         inputs:
         - content: |-
             #!/usr/bin/env bash
             # fail if any commands fails
             set -e
+
             # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
             set -o pipefail
+
             # debug log
             set -x
 
-
             npm rebuild detox
-
-            ./node_modules/.bin/detox test --configuration ios.internal.release.ci --cleanup
+            ./node_modules/.bin/detox test --configuration ios.internal.release.ci

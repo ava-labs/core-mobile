@@ -9,12 +9,20 @@ class NetworksPage {
     return by.id(networksManage.addNetwork)
   }
 
+  get chainID() {
+    return by.text(networksManage.chainID)
+  }
+
   get dropdown() {
     return by.id(networksManage.dropdown)
   }
 
   get deleteNetwork() {
     return by.text(networksManage.deleteNetwork)
+  }
+
+  get explorerUrl() {
+    return by.text(networksManage.explorerUrl)
   }
 
   get favoriteNetwork() {
@@ -33,8 +41,20 @@ class NetworksPage {
     return by.id(networksManage.inputTextField)
   }
 
+  get nativeTokenSymbol() {
+    return by.text(networksManage.nativeTokenSymbol)
+  }
+
   get networksTab() {
     return by.text(networksManage.networksTab)
+  }
+
+  get networkName() {
+    return by.text(networksManage.networkName)
+  }
+
+  get networkRpcUrl() {
+    return by.text(networksManage.networkRpcUrl)
   }
 
   get networkInfo() {
@@ -103,6 +123,7 @@ class NetworksPage {
       networksManage.customRpcUrl,
       0
     )
+    await Action.tap(this.networkRpcUrl)
   }
 
   async inputNetworkName() {
@@ -111,6 +132,7 @@ class NetworksPage {
       networksManage.customNetworkName,
       1
     )
+    await Action.tap(this.networkName)
   }
 
   async inputChainId() {
@@ -119,6 +141,7 @@ class NetworksPage {
       networksManage.customChainID,
       2
     )
+    await Action.tap(this.chainID)
   }
 
   async inputNativeTokenSymbol() {
@@ -127,6 +150,7 @@ class NetworksPage {
       networksManage.customNativeTokenSymbol,
       3
     )
+    await Action.tap(this.nativeTokenSymbol)
   }
 
   async inputExplorerUrl() {
@@ -135,6 +159,7 @@ class NetworksPage {
       networksManage.customExplorerUrl,
       5
     )
+    await Action.tap(this.explorerUrl)
   }
 
   async swipeUp() {

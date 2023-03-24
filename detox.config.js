@@ -1,5 +1,16 @@
 /** @type {Detox.DetoxConfig} */
 
+const getApkPaths = () => {
+  if (process.env.BITRISE_SIGNED_APK_PATH_LIST) {
+    const apks = process.env.BITRISE_SIGNED_APK_PATH_LIST.split('|')
+    return [apks[0], apks[1]]
+  }
+
+  return [undefined, undefined]
+}
+
+const [ANDROID_APK_PATH, ANDROID_TEST_APK_PATH] = getApkPaths()
+
 module.exports = {
   testRunner: {
     $0: 'jest',
@@ -16,7 +27,7 @@ module.exports = {
     },
     simulator: {
       type: 'ios.simulator',
-      device: { type: 'iPhone 13' }
+      device: { type: 'iPhone 14' }
     },
     emulator_ci: {
       type: 'android.emulator',
@@ -40,6 +51,10 @@ module.exports = {
       type: 'ios.app',
       binaryPath: process.env.BITRISE_APP_DIR_PATH
     },
+    'ios.external.release.ci': {
+      type: 'ios.app',
+      binaryPath: process.env.BITRISE_APP_DIR_PATH
+    },
     'android.internal.debug': {
       type: 'android.apk',
       binaryPath:
@@ -49,8 +64,13 @@ module.exports = {
     },
     'android.internal.release.ci': {
       type: 'android.apk',
-      binaryPath: process.env.BITRISE_APK_PATH,
-      testBinaryPath: process.env.BITRISE_APK_PATH
+      binaryPath: ANDROID_APK_PATH,
+      testBinaryPath: ANDROID_TEST_APK_PATH
+    },
+    'android.external.release.ci': {
+      type: 'android.apk',
+      binaryPath: ANDROID_APK_PATH,
+      testBinaryPath: ANDROID_TEST_APK_PATH
     },
     'android.internal.e2e': {
       type: 'android.apk',
@@ -105,6 +125,16 @@ module.exports = {
         }
       }
     },
+    'ios.external.release.ci': {
+      device: 'simulator',
+      app: 'ios.external.release.ci',
+      artifacts: {
+        rootDir: './e2e/artifacts/ios',
+        plugins: {
+          instruments: 'all'
+        }
+      }
+    },
     'android.internal.debug': {
       device: 'emulator',
       app: 'android.internal.debug',
@@ -115,6 +145,13 @@ module.exports = {
     'android.internal.release.ci': {
       device: 'emulator_ci',
       app: 'android.internal.release.ci',
+      artifacts: {
+        rootDir: './e2e/artifacts/android'
+      }
+    },
+    'android.external.release.ci': {
+      device: 'emulator_ci',
+      app: 'android.external.release.ci',
       artifacts: {
         rootDir: './e2e/artifacts/android'
       }
