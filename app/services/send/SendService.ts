@@ -29,13 +29,13 @@ class SendService {
             : account.address
 
         const service = await this.getService(activeNetwork, fromAddress)
-        sendState = await service.validateStateAndCalculateFees(
+        sendState = await service.validateStateAndCalculateFees({
           sendState,
-          !activeNetwork.isTestnet,
+          isMainnet: !activeNetwork.isTestnet,
           fromAddress,
           currency,
           sentryTrx
-        )
+        })
 
         if (sendState.error?.error) {
           throw new Error(sendState.error.message)
@@ -45,13 +45,13 @@ class SendService {
           throw new Error('Unknown error, unable to submit')
         }
 
-        const txRequest = await service.getTransactionRequest(
+        const txRequest = await service.getTransactionRequest({
           sendState,
-          !activeNetwork.isTestnet,
+          isMainnet: !activeNetwork.isTestnet,
           fromAddress,
           currency,
           sentryTrx
-        )
+        })
         const signedTx = await walletService.sign(
           txRequest,
           account.index,
@@ -72,7 +72,8 @@ class SendService {
     sendState: SendState,
     activeNetwork: Network,
     account: Account,
-    currency: string
+    currency: string,
+    nativeTokenBalance?: BN
   ): Promise<SendState> {
     const fromAddress =
       activeNetwork.vmName === NetworkVMType.BITCOIN
@@ -80,12 +81,13 @@ class SendService {
         : account.address
 
     const service = this.getService(activeNetwork, fromAddress)
-    return service.validateStateAndCalculateFees(
+    return service.validateStateAndCalculateFees({
       sendState,
-      !activeNetwork.isTestnet,
+      isMainnet: !activeNetwork.isTestnet,
       fromAddress,
-      currency
-    )
+      currency,
+      nativeTokenBalance
+    })
   }
 
   mapTokenFromNFT(nft: NFTItemData): TokenWithBalanceERC721 {
