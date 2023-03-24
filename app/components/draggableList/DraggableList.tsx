@@ -1,6 +1,5 @@
 import assert from 'assert'
-import React, { useCallback, useMemo, useRef } from 'react'
-import { useApplicationContext } from 'contexts/ApplicationContext'
+import React, { useMemo, useRef } from 'react'
 import DraggableItemWrapper from 'components/draggableList/DraggableItemWrapper'
 import {
   DragEndParams,
@@ -34,11 +33,15 @@ const DraggableList = <TItem,>({
   onDragEnd,
   ListEmptyComponent
 }: Props<TItem>) => {
-  const { theme } = useApplicationContext()
   const scrollY = useSharedValue(0)
   const scrollViewOffset = useSharedValue(0)
   const positions = useSharedValue({} as Record<ItemId, ItemPosition>)
   const viewRef = useRef<Animated.ScrollView>(null)
+  const dataRef = useRef<TItem[]>([])
+
+  useMemo(() => {
+    dataRef.current = [...data]
+  }, [data])
 
   positions.value = useMemo(() => {
     return data.reduce<Record<ItemId, ItemPosition>>((acc, item, index) => {
@@ -51,18 +54,18 @@ const DraggableList = <TItem,>({
     scrollY.value = event.contentOffset.y
   })
 
-  const handleDragFinish = useCallback(() => {
+  const handleDragFinish = () => {
     const newListOrder = new Array<TItem>(Object.keys(positions.value).length)
     Object.entries(positions.value).forEach(([itemId, position]) => {
-      const item = data.find(value => keyExtractor(value) === itemId)
+      const item = dataRef.current.find(value => keyExtractor(value) === itemId)
       assert(item)
       newListOrder[position] = item
     })
     onDragEnd({ newListOrder })
-  }, [data, keyExtractor, onDragEnd, positions])
+  }
 
   function renderItems() {
-    return data.map(item => {
+    return dataRef.current.map(item => {
       const itemId = keyExtractor(item)
       return (
         <DraggableItemWrapper
@@ -81,7 +84,7 @@ const DraggableList = <TItem,>({
 
   return (
     <>
-      {data.length === 0 ? (
+      {dataRef.current.length === 0 ? (
         ListEmptyComponent
       ) : (
         <Animated.ScrollView
@@ -98,10 +101,12 @@ const DraggableList = <TItem,>({
           scrollEventThrottle={16}
           style={{
             flex: 1,
-            position: 'relative',
-            backgroundColor: theme.background
+            position: 'relative'
           }}
-          contentContainerStyle={{ height: data.length * ITEM_HEIGHT }}>
+          contentContainerStyle={{
+            minHeight: '100%',
+            height: dataRef.current.length * ITEM_HEIGHT
+          }}>
           {renderItems()}
         </Animated.ScrollView>
       )}
