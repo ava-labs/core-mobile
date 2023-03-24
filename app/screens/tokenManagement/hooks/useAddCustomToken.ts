@@ -5,7 +5,7 @@ import TokenService from 'services/token/TokenService'
 import { addCustomToken as addCustomTokenAction } from 'store/customToken'
 import { useState, useEffect } from 'react'
 import { Network, NetworkContractToken } from '@avalabs/chains-sdk'
-import { usePosthogContext } from 'contexts/PosthogContext'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 
 const validateAddress = (
   tokenAddress: string,
@@ -45,7 +45,7 @@ const useAddCustomToken = (callback: () => void) => {
   const tokens = useSelector(selectNetworkContractTokens)
   const dispatch = useDispatch()
   const chainId = network.chainId
-  const { capture } = usePosthogContext()
+  const { capture } = usePostCapture()
 
   useEffect(() => {
     setErrorMessage('')
@@ -53,6 +53,7 @@ const useAddCustomToken = (callback: () => void) => {
 
     try {
       validateAddress(tokenAddress, tokens)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       // only start showing validation error after a certain length
       if (tokenAddress.length > 10) {

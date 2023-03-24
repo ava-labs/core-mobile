@@ -19,11 +19,11 @@ import {
   Prices,
   reorderFavorites
 } from 'store/watchlist'
+import AvaList from 'components/AvaList'
 import {
   DragEndParams,
-  RenderItemParams
-} from 'react-native-draggable-flatlist/src/types'
-import AvaList from 'components/AvaList'
+  DraggableListRenderItemInfo
+} from 'components/draggableList/types'
 import { WatchlistFilter } from '../types'
 
 const getDisplayValue = (
@@ -64,35 +64,23 @@ const WatchList: React.FC<Props> = ({
 
   const keyExtractor = (item: MarketToken) => item.id
 
-  const draggableListItem = (item: RenderItemParams<MarketToken>) => {
-    return renderItem(item.item, item.drag, item.isActive)
+  const draggableListItem = (
+    item: DraggableListRenderItemInfo<MarketToken>
+  ) => {
+    return renderItem(item.item)
   }
 
   const flashListRenderItem = (item: FlashListRenderItemInfo<MarketToken>) => {
     return renderItem(item.item)
   }
 
-  function renderItem(
-    token: MarketToken,
-    drag?: () => void,
-    isDragging?: boolean
-  ) {
+  function renderItem(token: MarketToken) {
     const chartData = charts[token.id] ?? defaultChartData
     const price = prices[token.id] ?? defaultPrice
     const displayValue = getDisplayValue(price, tokenInCurrencyFormatter)
 
     return (
-      <View
-        style={
-          isDragging && {
-            elevation: 10,
-            backgroundColor: 'black',
-            shadowColor: 'white',
-            shadowOffset: { width: 0, height: 0 },
-            shadowOpacity: 0.5,
-            shadowRadius: 6
-          }
-        }>
+      <View style={[{ flex: 1 }]}>
         <WatchListItem
           token={token}
           chartData={chartData}
@@ -104,7 +92,6 @@ const WatchList: React.FC<Props> = ({
               tokenId: token.id
             })
           }}
-          onDragPress={drag}
         />
       </View>
     )
@@ -116,8 +103,8 @@ const WatchList: React.FC<Props> = ({
       data={tokens}
       flashRenderItem={flashListRenderItem}
       draggableListItem={draggableListItem}
-      onDragEnd={(reOrderedFavorites: DragEndParams<MarketToken>) => {
-        const favIds = reOrderedFavorites.data.map(item => item.id)
+      onDragEnd={(params: DragEndParams<MarketToken>) => {
+        const favIds = params.newListOrder.map(item => item.id)
         dispatch(reorderFavorites(favIds))
       }}
       ItemSeparatorComponent={SeparatorComponent}

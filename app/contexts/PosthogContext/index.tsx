@@ -8,23 +8,17 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import PostHog from 'posthog-react-native'
 import { timer } from 'rxjs'
-import { JsonMap } from 'posthog-react-native/src/bridge'
 import Config from 'react-native-config'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import useAppBackgroundTracker from 'hooks/useAppBackgroundTracker'
-import { useSelector } from 'react-redux'
-import { posthogCapture, selectUserID } from 'store/posthog'
 import Logger from 'utils/Logger'
 import SentryWrapper from 'services/sentry/SentryWrapper'
+import { usePostCapture } from 'hooks/usePosthogCapture'
+import { useSelector, useDispatch } from 'react-redux'
+import { selectIsAnalyticsEnabled, toggleAnalytics } from 'store/posthog'
 import { sanitizeFeatureFlags } from './utils'
-import {
-  FeatureFlags,
-  FeatureGates,
-  FeatureVars,
-  PosthogCapture
-} from './types'
+import { FeatureFlags, FeatureGates, FeatureVars } from './types'
 
 const PostHogDecideUrl = `${Config.POSTHOG_URL}/decide?v=2`
 const PostHogDecideFetchOptions = {
@@ -38,30 +32,11 @@ const PostHogDecideFetchOptions = {
   })
 }
 
-const PostHogAnalyticsConfig = __DEV__
-  ? {
-      debug: true,
-      host: Config.POSTHOG_URL,
-      android: {
-        collectDeviceId: false
-      },
-      flushAt: 1,
-      flushInterval: 10
-    }
-  : {
-      debug: false,
-      host: Config.POSTHOG_URL,
-      android: {
-        collectDeviceId: false
-      }
-    }
-
 export const PosthogContext = createContext<PosthogContextState>(
   {} as PosthogContextState
 )
 
 export interface PosthogContextState {
-  capture: PosthogCapture
   setAnalyticsConsent: Dispatch<boolean | undefined>
   swapBlocked: boolean
   bridgeBlocked: boolean
@@ -145,9 +120,9 @@ export const PosthogContextProvider = ({
 }: {
   children: ReactNode
 }) => {
-  const [isPosthogReady, setIsPosthogReady] = useState(false)
-  const [isAnalyticsEnabled, setIsAnalyticsEnabled] = useState(false)
-  const posthogUserId = useSelector(selectUserID)
+  const dispatch = useDispatch()
+  const { capture } = usePostCapture()
+  const isAnalyticsEnabled = useSelector(selectIsAnalyticsEnabled)
 
   const { timeoutPassed } = useAppBackgroundTracker({
     timeoutMs: 30 * 60 * 1000,
@@ -180,12 +155,6 @@ export const PosthogContextProvider = ({
     [sentrySampleRate]
   )
 
-  const capture = useCallback(
-    (event: string, properties?: JsonMap) =>
-      posthogCapture({ posthogUserId, event, properties }),
-    [posthogUserId]
-  )
-
   const reloadFeatureFlags = useCallback(() => {
     fetch(PostHogDecideUrl, PostHogDecideFetchOptions)
       .then(response => {
@@ -203,14 +172,13 @@ export const PosthogContextProvider = ({
       })
   }, [])
 
-  useEffect(initPosthog, [])
-  useEffect(reloadFlagsPeriodically, [isPosthogReady, reloadFeatureFlags])
+  useEffect(reloadFlagsPeriodically, [reloadFeatureFlags])
   useEffect(setEventsLogging, [
     analyticsConsent,
-    isPosthogReady,
     eventsBlocked,
-    isAnalyticsEnabled,
-    capture
+    capture,
+    dispatch,
+    isAnalyticsEnabled
   ])
   useEffect(checkRestartSession, [capture, timeoutPassed])
 
@@ -220,22 +188,7 @@ export const PosthogContextProvider = ({
     }
   }
 
-  function initPosthog() {
-    ;(async function () {
-      await PostHog.setup(
-        Config.POSTHOG_ANALYTICS_KEY ?? '',
-        PostHogAnalyticsConfig
-      )
-
-      await disableAnalytics()
-      setIsPosthogReady(true)
-    })()
-  }
-
   function reloadFlagsPeriodically() {
-    if (!isPosthogReady) {
-      return
-    }
     const subscription = timer(0, ONE_MINUTE).subscribe({
       next: _ => {
         reloadFeatureFlags()
@@ -252,37 +205,23 @@ export const PosthogContextProvider = ({
    * events.
    */
   function setEventsLogging() {
-    if (!isPosthogReady) {
-      return
-    }
     if (eventsBlocked) {
-      disableAnalytics()
+      dispatch(toggleAnalytics(false))
       return
     }
     if (analyticsConsent || analyticsConsent === undefined) {
       if (!isAnalyticsEnabled) {
-        enableAnalytics()
+        dispatch(toggleAnalytics(true))
         capture('$opt_in')
+      } else {
+        dispatch(toggleAnalytics(false))
       }
-    } else {
-      disableAnalytics()
     }
-  }
-
-  async function enableAnalytics() {
-    await PostHog.enable()
-    setIsAnalyticsEnabled(true)
-  }
-
-  async function disableAnalytics() {
-    await PostHog.disable()
-    setIsAnalyticsEnabled(false)
   }
 
   return (
     <PosthogContext.Provider
       value={{
-        capture,
         setAnalyticsConsent,
         swapBlocked,
         bridgeBlocked,

@@ -1,25 +1,29 @@
 import { AppStartListening } from 'store/middleware/listener'
 import { onLogOut } from 'store/app'
-import { capture, regenerateUserId, selectUserID } from 'store/posthog/slice'
-import PostHog, { JsonMap } from 'posthog-react-native'
+import {
+  capture,
+  regenerateUserId,
+  selectUserID,
+  selectDistinctID,
+  selectIsAnalyticsEnabled
+} from 'store/posthog/slice'
 import Logger from 'utils/Logger'
+import PostHogService from 'services/posthog/PostHogService'
+import { JsonMap } from './types'
 
 export const posthogCapture = ({
+  distinctId,
   posthogUserId,
   event,
   properties
 }: {
+  distinctId: string
   posthogUserId: string
   event: string
   properties?: JsonMap
 }) => {
   Logger.info(`posthog capture: ${event}`, properties)
-
-  return PostHog.capture(event, {
-    ...properties,
-    $ip: '',
-    $user_id: posthogUserId
-  })
+  return PostHogService.capture(event, distinctId, posthogUserId, properties)
 }
 
 export const addPosthogListeners = (startListening: AppStartListening) => {
@@ -27,16 +31,21 @@ export const addPosthogListeners = (startListening: AppStartListening) => {
     actionCreator: onLogOut,
     effect: async (action, api) => {
       api.dispatch(regenerateUserId())
-      await PostHog.reset()
     }
   })
 
   startListening({
     actionCreator: capture,
     effect: async (action, api) => {
-      const posthogUserId = selectUserID(api.getState())
+      const state = api.getState()
+      const posthogUserId = selectUserID(state)
+      const distinctId = selectDistinctID(state)
+      const isAnalyticsEnabled = selectIsAnalyticsEnabled(state)
       const { event, properties } = action.payload
-      posthogCapture({ posthogUserId, event, properties })
+
+      if (isAnalyticsEnabled) {
+        posthogCapture({ distinctId, posthogUserId, event, properties })
+      }
     }
   })
 }

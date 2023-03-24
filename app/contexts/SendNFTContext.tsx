@@ -15,7 +15,6 @@ import { bnToEthersBigNumber, bnToLocaleString } from '@avalabs/utils-sdk'
 import { FeePreset } from 'components/NetworkFeeSelector'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectNativeTokenBalanceForNetworkAndAccount } from 'store/balance'
-import { usePosthogContext } from 'contexts/PosthogContext'
 import { SendState } from 'services/send/types'
 import sendService from 'services/send/SendService'
 import { useNativeTokenPrice } from 'hooks/useNativeTokenPrice'
@@ -27,6 +26,7 @@ import TransactionToast, {
 import BN from 'bn.js'
 import { InteractionManager } from 'react-native'
 import SentryWrapper from 'services/sentry/SentryWrapper'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 
 export interface SendNFTContextState {
   sendToken: NFTItemData
@@ -53,7 +53,7 @@ export const SendNFTContextProvider = ({
   nft: NFTItemData
   children: ReactNode
 }) => {
-  const { capture } = usePosthogContext()
+  const { capture } = usePostCapture()
   const activeAccount = useSelector(selectActiveAccount)
   const activeNetwork = useSelector(selectActiveNetwork)
   const selectedCurrency = useSelector(selectSelectedCurrency)

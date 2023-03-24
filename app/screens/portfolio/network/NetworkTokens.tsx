@@ -10,7 +10,7 @@ import { PortfolioScreenProps } from 'navigation/types'
 import { useIsUIDisabled, UI } from 'hooks/useIsUIDisabled'
 import { LocalTokenWithBalance, TokenType } from 'store/balance'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { usePosthogContext } from 'contexts/PosthogContext'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 import NetworkTokensHeader from './components/NetworkTokensHeader'
 
 type NavigationProp = PortfolioScreenProps<
@@ -19,7 +19,7 @@ type NavigationProp = PortfolioScreenProps<
 
 const NetworkTokens = () => {
   const { theme } = useApplicationContext()
-  const { capture } = usePosthogContext()
+  const { capture } = usePostCapture()
   const { navigate, getParent } = useNavigation<NavigationProp>()
   const {
     isLoading,

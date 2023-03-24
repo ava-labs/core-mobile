@@ -23,12 +23,12 @@ import BN from 'bn.js'
 import { FeePreset } from 'components/NetworkFeeSelector'
 import UniversalTokenSelector from 'components/UniversalTokenSelector'
 import SwapTransactionDetail from 'screens/swap/components/SwapTransactionDetails'
-import { usePosthogContext } from 'contexts/PosthogContext'
 import { calculateRate } from 'swap/utils'
 import { selectNetworkFee } from 'store/networkFee'
 import { useActiveNetwork } from 'hooks/useActiveNetwork'
 import { calculateGasAndFees, getMaxValue, truncateBN } from 'utils/Utils'
 import { bnToLocaleString, ethersBigNumberToBN } from '@avalabs/utils-sdk'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 
 type NavigationProp = SwapScreenProps<
   typeof AppNavigation.Swap.Swap
@@ -40,7 +40,7 @@ export type Amount = {
 }
 
 export default function SwapView() {
-  const { capture } = usePosthogContext()
+  const { capture } = usePostCapture()
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<NavigationProp>()
   const activeNetwork = useActiveNetwork()

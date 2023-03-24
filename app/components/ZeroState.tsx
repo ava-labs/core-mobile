@@ -172,18 +172,16 @@ function ZeroStateNoWatchlistFavorites({
   const message = 'Click the star icon on any token to mark it as a favorite.'
 
   return (
-    <View>
-      <ZeroStateBase
-        title={title}
-        message={message}
-        image={<StarSVG size={60} testID="star_svg" />}
-        button={
-          <AvaButton.SecondaryLarge onPress={exploreAllTokens}>
-            Explore all tokens
-          </AvaButton.SecondaryLarge>
-        }
-      />
-    </View>
+    <ZeroStateBase
+      title={title}
+      message={message}
+      image={<StarSVG size={60} testID="star_svg" />}
+      button={
+        <AvaButton.SecondaryLarge onPress={exploreAllTokens}>
+          Explore all tokens
+        </AvaButton.SecondaryLarge>
+      }
+    />
   )
 }
 

@@ -23,7 +23,6 @@
     "postinstall": "node_modules/.bin/patch-package; node_modules/.bin/rn-nodeify --install events,stream,vm,assert,https,http,os --hack"
   },
   "dependencies": {
-    "@avalabs/paraswap-sdk": "2.8.0-alpha.70",
     "@avalabs/blockcypher-sdk": "2.8.0-alpha.70",
     "@avalabs/bridge-sdk": "2.8.0-alpha.70",
     "@avalabs/chains-sdk": "2.8.0-alpha.70",
@@ -31,7 +30,7 @@
     "@avalabs/covalent-sdk": "2.8.0-alpha.70",
     "@avalabs/etherscan-sdk": "2.8.0-alpha.70",
     "@avalabs/glacier-sdk": "2.8.0-alpha.70",
-    "@avalabs/posthog-sdk": "2.8.0-alpha.70",
+    "@avalabs/paraswap-sdk": "2.8.0-alpha.70",
     "@avalabs/snowtrace-sdk": "2.8.0-alpha.70",
     "@avalabs/token-prices-sdk": "2.8.0-alpha.70",
     "@avalabs/types": "2.8.0-alpha.70",
@@ -105,7 +104,6 @@
     "numeral": "2.0.6",
     "paraswap": "5.2.0",
     "patch-package": "6.4.7",
-    "posthog-react-native": "1.1.5",
     "postinstall-postinstall": "2.1.0",
     "react": "18.1.0",
     "react-content-loader": "6.2.0",
@@ -119,7 +117,6 @@
     "react-native-device-info": "10.0.2",
     "react-native-dialog": "8.2.0",
     "react-native-document-picker": "5.3.0",
-    "react-native-draggable-flatlist": "4.0.1",
     "react-native-fast-image": "8.6.3",
     "react-native-flipper": "0.164.0",
     "react-native-fs": "2.19.0",
@@ -128,6 +125,7 @@
     "react-native-inappbrowser-reborn": "3.7.0",
     "react-native-keychain": "8.1.1",
     "react-native-linear-gradient": "2.5.6",
+    "react-native-localize": "2.2.6",
     "react-native-modal-datetime-picker": "10.2.0",
     "react-native-os": "1.2.6",
     "react-native-pager-view": "5.4.25",
@@ -163,6 +161,7 @@
     "rollup": "1.12.0",
     "storybook-addon-state": "1.0.3",
     "stream-browserify": "1.0.0",
+    "text-encoding": "0.7.0",
     "ts-node": "10.9.1",
     "url": "0.11.0",
     "uuid": "8.3.2",
@@ -171,8 +170,7 @@
     "vm-browserify": "0.0.4",
     "web3": "1.7.1",
     "xss": "1.0.14",
-    "zod": "3.20.2",
-    "text-encoding": "0.7.0"
+    "zod": "3.20.2"
   },
   "resolutions": {
     "minimist": "1.2.6",

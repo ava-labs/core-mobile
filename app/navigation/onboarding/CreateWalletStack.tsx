@@ -15,7 +15,6 @@ import { createStackNavigator } from '@react-navigation/stack'
 import { MainHeaderOptions } from 'navigation/NavUtils'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import WarningModal from 'components/WarningModal'
-import { usePosthogContext } from 'contexts/PosthogContext'
 import TermsNConditionsModal from 'components/TermsNConditionsModal'
 import { onAppUnlocked, onLogIn } from 'store/app'
 import { useDispatch } from 'react-redux'
@@ -23,6 +22,7 @@ import {
   RemoveEvents,
   useBeforeRemoveListener
 } from 'hooks/useBeforeRemoveListener'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 import { CreateWalletScreenProps } from '../types'
 
 export type CreateWalletStackParamList = {
@@ -89,12 +89,12 @@ type CreateWalletNavigationProp = CreateWalletScreenProps<
 const CreateWalletScreen = () => {
   const createWalletContext = useContext(CreateWalletContext)
   const { navigate } = useNavigation<CreateWalletNavigationProp>()
-  const { capture } = usePosthogContext()
+  const { capture } = usePostCapture()
   const { userSettingsRepo } = useApplicationContext().repo
 
   useBeforeRemoveListener(
     useCallback(() => {
-      capture('OnboardingCancelled').catch(() => undefined)
+      capture('OnboardingCancelled')
       userSettingsRepo.setSetting('CoreAnalytics', undefined)
     }, [capture, userSettingsRepo]),
     [RemoveEvents.GO_BACK]
@@ -114,10 +114,10 @@ type ProtectFundsNavigationProp = CreateWalletScreenProps<
 
 const CreateWalletWarningModal = () => {
   const { navigate, goBack } = useNavigation<ProtectFundsNavigationProp>()
-  const { capture } = usePosthogContext()
+  const { capture } = usePostCapture()
 
   const onUnderstand = () => {
-    capture('OnboardingMnemonicCreated').catch(() => undefined)
+    capture('OnboardingMnemonicCreated')
     goBack()
     navigate(AppNavigation.CreateWallet.CheckMnemonic)
   }
@@ -167,10 +167,10 @@ const CreatePinScreen = () => {
   const createWalletContext = useContext(CreateWalletContext)
   const walletSetupHook = useApplicationContext().walletSetupHook
   const { navigate } = useNavigation<CreatePinNavigationProp>()
-  const { capture } = usePosthogContext()
+  const { capture } = usePostCapture()
 
   const onPinSet = (pin: string): void => {
-    capture('OnboardingPasswordSet').catch(() => undefined)
+    capture('OnboardingPasswordSet')
     walletSetupHook
       .onPinCreated(createWalletContext.mnemonic, pin, false)
       .then(value => {

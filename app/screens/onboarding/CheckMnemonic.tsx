@@ -6,8 +6,8 @@ import { Space } from 'components/Space'
 import WordSelection from 'screens/onboarding/WordSelection'
 import { ShowSnackBar } from 'components/Snackbar'
 import { useCheckMnemonic } from 'screens/onboarding/useCheckMnemonic'
-import { usePosthogContext } from 'contexts/PosthogContext'
 import FlexSpacer from 'components/FlexSpacer'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 
 type Props = {
   onSuccess: () => void
@@ -25,7 +25,7 @@ export default function CheckMnemonic(
     thirdWordSelection,
     verify
   } = useCheckMnemonic(props.mnemonic)
-  const { capture } = usePosthogContext()
+  const { capture } = usePostCapture()
 
   const onVerify = (): void => {
     if (
@@ -37,7 +37,7 @@ export default function CheckMnemonic(
     }
 
     if (verify(selectedWord1, selectedWord2, selectedWord3)) {
-      capture('OnboardingMnemonicVerified').catch(() => undefined)
+      capture('OnboardingMnemonicVerified')
       props.onSuccess()
     } else {
       ShowSnackBar('Incorrect! Try again, please.')

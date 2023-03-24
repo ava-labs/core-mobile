@@ -8,8 +8,8 @@ import AppNavigation from 'navigation/AppNavigation'
 import { Row } from 'components/Row'
 import CheckmarkSVG from 'components/svg/CheckmarkSVG'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { usePosthogContext } from 'contexts/PosthogContext'
 import { PRIVACY_POLICY_URL } from 'resources/Constants'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 
 type Props = {
   nextScreen:
@@ -24,20 +24,20 @@ type Props = {
 
 const AnalyticsConsent = ({ onNextScreen, nextScreen }: Props) => {
   const { theme, repo } = useApplicationContext()
-  const { capture } = usePosthogContext()
+  const { capture } = usePostCapture()
 
   function openPrivacyPolicy() {
-    Linking.openURL(PRIVACY_POLICY_URL).catch(() => undefined)
+    Linking.openURL(PRIVACY_POLICY_URL)
   }
 
   function acceptAnalytics() {
-    capture('OnboardingAnalyticsAccepted').catch(() => undefined)
+    capture('OnboardingAnalyticsAccepted')
     repo.userSettingsRepo.setSetting('CoreAnalytics', true)
     onNextScreen(nextScreen)
   }
 
   function rejectAnalytics() {
-    capture('OnboardingAnalyticsRejected').catch(() => undefined)
+    capture('OnboardingAnalyticsRejected')
     repo.userSettingsRepo.setSetting('CoreAnalytics', false)
     onNextScreen(nextScreen)
   }

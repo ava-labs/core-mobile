@@ -9,7 +9,7 @@ import TokenAddress from 'components/TokenAddress'
 import { selectActiveNetwork } from 'store/network'
 import { ChainId } from '@avalabs/chains-sdk'
 import { selectActiveAccount } from 'store/account'
-import { usePosthogContext } from 'contexts/PosthogContext'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 
 type Props = {
   embedded: boolean
@@ -17,7 +17,7 @@ type Props = {
 
 const ReceiveToken: FC<Props> = memo(props => {
   const theme = useApplicationContext().theme
-  const { capture } = usePosthogContext()
+  const { capture } = usePostCapture()
   const embedded = !!props?.embedded
   const activeNetwork = useSelector(selectActiveNetwork)
   const activeAccount = useSelector(selectActiveAccount)

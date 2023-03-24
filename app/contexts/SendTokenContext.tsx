@@ -26,7 +26,6 @@ import { useNativeTokenPrice } from 'hooks/useNativeTokenPrice'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
-import { usePosthogContext } from 'contexts/PosthogContext'
 import { FeePreset } from 'components/NetworkFeeSelector'
 import { Amount } from 'screens/swap/SwapView'
 import { showSnackBarCustom } from 'components/Snackbar'
@@ -35,6 +34,7 @@ import TransactionToast, {
 } from 'components/toast/TransactionToast'
 import BN from 'bn.js'
 import SentryWrapper from 'services/sentry/SentryWrapper'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 
 export interface SendTokenContextState {
   sendToken: TokenWithBalance | undefined
@@ -66,7 +66,7 @@ export const SendTokenContextProvider = ({
   children: ReactNode
 }) => {
   const { theme } = useApplicationContext()
-  const { capture } = usePosthogContext()
+  const { capture } = usePostCapture()
   const activeAccount = useSelector(selectActiveAccount)
   const activeNetwork = useSelector(selectActiveNetwork)
   const selectedCurrency = useSelector(selectSelectedCurrency)
