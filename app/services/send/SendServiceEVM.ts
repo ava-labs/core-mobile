@@ -38,11 +38,10 @@ export class SendServiceEVM implements SendServiceHelper {
   }
 
   async validateStateAndCalculateFees(
-    sendState: SendState,
     params: ValidateStateAndCalculateFeesParams,
     sentryTrx?: Transaction
   ): Promise<SendState> {
-    const { nativeTokenBalance } = params
+    const { sendState, nativeTokenBalance } = params
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.send.evm.validate_and_calc_fees')
       .executeAsync(async () => {

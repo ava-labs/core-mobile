@@ -30,8 +30,8 @@ class SendService {
 
         const service = await this.getService(activeNetwork, fromAddress)
         sendState = await service.validateStateAndCalculateFees(
-          sendState,
           {
+            sendState,
             isMainnet: !activeNetwork.isTestnet,
             fromAddress,
             currency
@@ -83,7 +83,8 @@ class SendService {
         : account.address
 
     const service = this.getService(activeNetwork, fromAddress)
-    return service.validateStateAndCalculateFees(sendState, {
+    return service.validateStateAndCalculateFees({
+      sendState,
       isMainnet: !activeNetwork.isTestnet,
       fromAddress,
       currency,

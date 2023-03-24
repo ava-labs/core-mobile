@@ -63,11 +63,10 @@ class SendServiceBTC implements SendServiceHelper {
   }
 
   async validateStateAndCalculateFees(
-    sendState: SendState,
     params: ValidateStateAndCalculateFeesParams,
     sentryTrx?: Transaction
   ): Promise<SendState | ValidSendState> {
-    const { isMainnet, fromAddress, currency } = params
+    const { sendState, isMainnet, fromAddress, currency } = params
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.send.btc.validate_and_calc_fees')
       .executeAsync(async () => {

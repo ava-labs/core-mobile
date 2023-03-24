@@ -25,10 +25,6 @@ describe('validateStateAndCalculateFees', () => {
     mockNetwork,
     mockActiveAccount.address
   )
-  const walletCurrentEnvironment = {
-    isMainnet: false,
-    fromAddress: mockActiveAccount.address
-  }
 
   describe('when sending NFT', () => {
     const token = {
@@ -44,40 +40,43 @@ describe('validateStateAndCalculateFees', () => {
       gasLimit: 1
     } as SendState
 
+    const params = {
+      sendState,
+      isMainnet: false,
+      fromAddress: mockActiveAccount.address
+    }
+
     it('should succeed when all requirements met', async () => {
-      const newState = await serviceToTest.validateStateAndCalculateFees(
-        sendState,
-        walletCurrentEnvironment
-      )
+      const newState = await serviceToTest.validateStateAndCalculateFees(params)
 
       expect(newState.canSubmit).toBe(true)
     })
 
     it('should fail for missing address', async () => {
-      const newState = await serviceToTest.validateStateAndCalculateFees(
-        { ...sendState, address: undefined },
-        walletCurrentEnvironment
-      )
+      const newState = await serviceToTest.validateStateAndCalculateFees({
+        ...params,
+        sendState: { ...params.sendState, address: undefined }
+      })
 
       expect(newState.canSubmit).toBe(false)
       expect(newState.error?.message).toBe(SendErrorMessage.ADDRESS_REQUIRED)
     })
 
     it('should fail for missing network fee', async () => {
-      const newState = await serviceToTest.validateStateAndCalculateFees(
-        { ...sendState, gasPrice: BigNumber.from(0) },
-        walletCurrentEnvironment
-      )
+      const newState = await serviceToTest.validateStateAndCalculateFees({
+        ...params,
+        sendState: { ...sendState, gasPrice: BigNumber.from(0) }
+      })
 
       expect(newState.canSubmit).toBe(false)
       expect(newState.error?.message).toBe(SendErrorMessage.INVALID_NETWORK_FEE)
     })
 
     it('should fail for insufficent balance for network fee', async () => {
-      const newState = await serviceToTest.validateStateAndCalculateFees(
-        sendState,
-        { ...walletCurrentEnvironment, nativeTokenBalance: new BN(0) }
-      )
+      const newState = await serviceToTest.validateStateAndCalculateFees({
+        ...params,
+        nativeTokenBalance: new BN(0)
+      })
 
       expect(newState.canSubmit).toBe(false)
       expect(newState.error?.message).toBe(
@@ -102,50 +101,53 @@ describe('validateStateAndCalculateFees', () => {
       amount: new BN(10)
     } as SendState
 
+    const params = {
+      sendState,
+      isMainnet: false,
+      fromAddress: mockActiveAccount.address
+    }
+
     it('should succeed when all requirements met', async () => {
-      const newState = await serviceToTest.validateStateAndCalculateFees(
-        sendState,
-        walletCurrentEnvironment
-      )
+      const newState = await serviceToTest.validateStateAndCalculateFees(params)
 
       expect(newState.canSubmit).toBe(true)
     })
 
     it('should fail for missing address', async () => {
-      const newState = await serviceToTest.validateStateAndCalculateFees(
-        { ...sendState, address: undefined },
-        walletCurrentEnvironment
-      )
+      const newState = await serviceToTest.validateStateAndCalculateFees({
+        ...params,
+        sendState: { ...params.sendState, address: undefined }
+      })
 
       expect(newState.canSubmit).toBe(false)
       expect(newState.error?.message).toBe(SendErrorMessage.ADDRESS_REQUIRED)
     })
 
     it('should fail for missing network fee', async () => {
-      const newState = await serviceToTest.validateStateAndCalculateFees(
-        { ...sendState, gasPrice: BigNumber.from(0) },
-        walletCurrentEnvironment
-      )
+      const newState = await serviceToTest.validateStateAndCalculateFees({
+        ...params,
+        sendState: { ...params.sendState, gasPrice: BigNumber.from(0) }
+      })
 
       expect(newState.canSubmit).toBe(false)
       expect(newState.error?.message).toBe(SendErrorMessage.INVALID_NETWORK_FEE)
     })
 
     it('should fail for missing amount', async () => {
-      const newState = await serviceToTest.validateStateAndCalculateFees(
-        { ...sendState, amount: undefined },
-        walletCurrentEnvironment
-      )
+      const newState = await serviceToTest.validateStateAndCalculateFees({
+        ...params,
+        sendState: { ...params.sendState, amount: undefined }
+      })
 
       expect(newState.canSubmit).toBe(false)
       expect(newState.error?.message).toBe(SendErrorMessage.AMOUNT_REQUIRED)
     })
 
     it('should fail for insufficent balance', async () => {
-      const newState = await serviceToTest.validateStateAndCalculateFees(
-        { ...sendState, amount: new BN(100000) },
-        walletCurrentEnvironment
-      )
+      const newState = await serviceToTest.validateStateAndCalculateFees({
+        ...params,
+        sendState: { ...params.sendState, amount: new BN(100000) }
+      })
 
       expect(newState.canSubmit).toBe(false)
       expect(newState.error?.message).toBe(

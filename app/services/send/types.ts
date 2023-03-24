@@ -67,13 +67,13 @@ export interface SendServiceHelper {
     sentryTrx?: Transaction
   ): Promise<SignTransactionRequest>
   validateStateAndCalculateFees(
-    sendState: SendState,
     params: ValidateStateAndCalculateFeesParams,
     sentryTrx?: Transaction
   ): Promise<SendState>
 }
 
 export interface ValidateStateAndCalculateFeesParams {
+  sendState: SendState
   isMainnet: boolean
   fromAddress: string
   currency?: string
