@@ -15,6 +15,8 @@ import useAppBackgroundTracker from 'hooks/useAppBackgroundTracker'
 import Logger from 'utils/Logger'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { usePostCapture } from 'hooks/usePosthogCapture'
+import { useSelector, useDispatch } from 'react-redux'
+import { selectIsAnalyticsEnabled, toggleAnalytics } from 'store/posthog'
 import { sanitizeFeatureFlags } from './utils'
 import { FeatureFlags, FeatureGates, FeatureVars } from './types'
 
@@ -118,7 +120,9 @@ export const PosthogContextProvider = ({
 }: {
   children: ReactNode
 }) => {
+  const dispatch = useDispatch()
   const { capture } = usePostCapture()
+  const isAnalyticsEnabled = useSelector(selectIsAnalyticsEnabled)
 
   const { timeoutPassed } = useAppBackgroundTracker({
     timeoutMs: 30 * 60 * 1000,
@@ -169,7 +173,13 @@ export const PosthogContextProvider = ({
   }, [])
 
   useEffect(reloadFlagsPeriodically, [reloadFeatureFlags])
-  useEffect(setEventsLogging, [analyticsConsent, eventsBlocked, capture])
+  useEffect(setEventsLogging, [
+    analyticsConsent,
+    eventsBlocked,
+    capture,
+    dispatch,
+    isAnalyticsEnabled
+  ])
   useEffect(checkRestartSession, [capture, timeoutPassed])
 
   function checkRestartSession() {
@@ -195,12 +205,17 @@ export const PosthogContextProvider = ({
    * events.
    */
   function setEventsLogging() {
-    // TODO: May need to move this to redux listener
     if (eventsBlocked) {
+      dispatch(toggleAnalytics(false))
       return
     }
     if (analyticsConsent || analyticsConsent === undefined) {
-      capture('$opt_in')
+      if (!isAnalyticsEnabled) {
+        dispatch(toggleAnalytics(true))
+        capture('$opt_in')
+      } else {
+        dispatch(toggleAnalytics(false))
+      }
     }
   }
 
