@@ -6,7 +6,6 @@ class DeviceInfoService {
   private appName?: string
   private appNamespace?: string
   private appVersion?: string
-  private deviceId?: string
   private deviceManufacturer?: string
   private deviceModel?: string
   private deviceName?: string
