@@ -20,13 +20,19 @@ interface Props<TItem> {
   renderItem: DraggableRenderItem<TItem>
   keyExtractor: (item: TItem) => string
   onDragEnd: (dragEndParams: DragEndParams<TItem>) => void
+  ListEmptyComponent:
+    | React.ComponentType
+    | React.ReactElement
+    | null
+    | undefined
 }
 
 const DraggableList = <TItem,>({
   data,
   renderItem,
   keyExtractor,
-  onDragEnd
+  onDragEnd,
+  ListEmptyComponent
 }: Props<TItem>) => {
   const { theme } = useApplicationContext()
   const scrollY = useSharedValue(0)
@@ -74,26 +80,32 @@ const DraggableList = <TItem,>({
   }
 
   return (
-    <Animated.ScrollView
-      ref={viewRef}
-      onScroll={handleScroll}
-      onLayout={() => {
-        if (viewRef.current) {
-          // @ts-ignore
-          viewRef.current.measure((x, y, width, height, pageX, pageY) => {
-            scrollViewOffset.value = pageY
-          })
-        }
-      }}
-      scrollEventThrottle={16}
-      style={{
-        flex: 1,
-        position: 'relative',
-        backgroundColor: theme.background
-      }}
-      contentContainerStyle={{ height: data.length * ITEM_HEIGHT }}>
-      {renderItems()}
-    </Animated.ScrollView>
+    <>
+      {data.length === 0 ? (
+        ListEmptyComponent
+      ) : (
+        <Animated.ScrollView
+          ref={viewRef}
+          onScroll={handleScroll}
+          onLayout={() => {
+            if (viewRef.current) {
+              // @ts-ignore
+              viewRef.current.measure((x, y, width, height, pageX, pageY) => {
+                scrollViewOffset.value = pageY
+              })
+            }
+          }}
+          scrollEventThrottle={16}
+          style={{
+            flex: 1,
+            position: 'relative',
+            backgroundColor: theme.background
+          }}
+          contentContainerStyle={{ height: data.length * ITEM_HEIGHT }}>
+          {renderItems()}
+        </Animated.ScrollView>
+      )}
+    </>
   )
 }
 

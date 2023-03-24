@@ -71,7 +71,7 @@ const AvaList = <T,>({
       keyExtractor={keyExtractor}
       renderItem={draggableListItem}
       onDragEnd={handleOnDragEnd}
-      // ListEmptyComponent={ListEmptyComponent}
+      ListEmptyComponent={ListEmptyComponent}
     />
   ) : (
     <FlashList
