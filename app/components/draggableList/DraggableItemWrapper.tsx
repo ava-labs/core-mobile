@@ -17,6 +17,7 @@ import { clamp, objectMove } from 'components/draggableList/utils'
 type Props = {
   id: ItemId
   height: number
+  scrollYShared: SharedValue<number>
   scrollViewOffset: SharedValue<number>
   positions: SharedValue<Record<ItemId, ItemPosition>>
   onDragFinish: () => void
@@ -27,6 +28,7 @@ type Props = {
  * DraggableItemWrapper adds handle icon to the list item view and handles gestures to animate dragging.
  * @param id Id of wrapped item
  * @param height Height of for calculation of new item position while dragging
+ * @param scrollYShared How much of parent scroll view is already scrolled
  * @param scrollViewOffset Since this wrapper is placed 'absolutely' it needs to take into account absolute position of parent scroll view
  * @param positions Shared record of all sibling items including this one
  * @param onDragFinish Callback when dragging finishes
@@ -36,6 +38,7 @@ type Props = {
 const DraggableItemWrapper = ({
   id,
   height,
+  scrollYShared,
   scrollViewOffset,
   positions,
   onDragFinish,
@@ -53,11 +56,8 @@ const DraggableItemWrapper = ({
   useAnimatedReaction(
     () => positions.value[id],
     (currentPos, previousPos) => {
-      if (currentPos !== undefined && currentPos !== previousPos) {
-        if (!dragging) {
-          const itemTop = currentPos * height
-          top.value = withSpring(itemTop)
-        }
+      if (currentPos !== undefined && currentPos !== previousPos && !dragging) {
+        top.value = withSpring(currentPos * height)
       }
     },
     [dragging]
@@ -70,13 +70,13 @@ const DraggableItemWrapper = ({
       },
       onActive(event) {
         const posYRelative = event.absoluteY - scrollViewOffset.value
-
+        const posY = posYRelative + scrollYShared.value
         // update item top value
-        top.value = posYRelative - height / 2
+        top.value = posY - height / 2
 
         // get new position
         const newPosition = clamp(
-          Math.floor(posYRelative / height),
+          Math.floor(posY / height),
           0,
           Object.keys(positions.value).length - 1
         )
@@ -93,14 +93,13 @@ const DraggableItemWrapper = ({
       onFinish() {
         // when dragging ends, we move item to the correct position (a multiplier of item height)
         const newPosition = positions.value[id] ?? 0
-        const itemTop = newPosition * height
-        top.value = withSpring(itemTop)
+        top.value = withSpring(newPosition * height)
 
         runOnJS(setDragging)(false)
         runOnJS(onDragFinish)()
       }
     },
-    [height]
+    [scrollYShared, height]
   )
 
   const animatedStyle = useAnimatedStyle(() => {
