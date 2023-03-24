@@ -11,8 +11,8 @@ import {
   SendErrorMessage,
   SendServiceHelper,
   SendState,
-  ValidSendState,
-  WalletCurrentEnvironment
+  ValidateStateAndCalculateFeesParams,
+  ValidSendState
 } from 'services/send/types'
 
 // singleton services
@@ -64,10 +64,10 @@ class SendServiceBTC implements SendServiceHelper {
 
   async validateStateAndCalculateFees(
     sendState: SendState,
-    walletCurrentEnvironment: WalletCurrentEnvironment
+    params: ValidateStateAndCalculateFeesParams,
+    sentryTrx?: Transaction
   ): Promise<SendState | ValidSendState> {
-    const { isMainnet, fromAddress, currency, sentryTrx } =
-      walletCurrentEnvironment
+    const { isMainnet, fromAddress, currency } = params
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.send.btc.validate_and_calc_fees')
       .executeAsync(async () => {

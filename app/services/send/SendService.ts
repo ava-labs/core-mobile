@@ -29,12 +29,15 @@ class SendService {
             : account.address
 
         const service = await this.getService(activeNetwork, fromAddress)
-        sendState = await service.validateStateAndCalculateFees(sendState, {
-          isMainnet: !activeNetwork.isTestnet,
-          fromAddress,
-          currency,
+        sendState = await service.validateStateAndCalculateFees(
+          sendState,
+          {
+            isMainnet: !activeNetwork.isTestnet,
+            fromAddress,
+            currency
+          },
           sentryTrx
-        })
+        )
 
         if (sendState.error?.error) {
           throw new Error(sendState.error.message)
