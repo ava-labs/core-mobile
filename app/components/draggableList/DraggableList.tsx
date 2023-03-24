@@ -107,7 +107,6 @@ const DraggableList = <TItem,>({
             position: 'relative'
           }}
           contentContainerStyle={{
-            minHeight: '100%',
             height: dataRef.current.length * ITEM_HEIGHT
           }}>
           {renderItems()}
