@@ -11,7 +11,8 @@ import {
   SendErrorMessage,
   SendServiceHelper,
   SendState,
-  ValidSendState
+  ValidSendState,
+  WalletCurrentEnvironment
 } from 'services/send/types'
 
 // singleton services
@@ -63,11 +64,10 @@ class SendServiceBTC implements SendServiceHelper {
 
   async validateStateAndCalculateFees(
     sendState: SendState,
-    isMainnet: boolean,
-    fromAddress: string,
-    currency: string,
-    sentryTrx?: Transaction
+    walletCurrentEnvironment: WalletCurrentEnvironment
   ): Promise<SendState | ValidSendState> {
+    const { isMainnet, fromAddress, currency, sentryTrx } =
+      walletCurrentEnvironment
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.send.btc.validate_and_calc_fees')
       .executeAsync(async () => {
@@ -77,7 +77,7 @@ class SendServiceBTC implements SendServiceHelper {
         const { utxos } = await this.getBalance(
           isMainnet,
           fromAddress,
-          currency,
+          currency || '',
           sentryTrx
         )
         const provider = getBitcoinProvider(!isMainnet)

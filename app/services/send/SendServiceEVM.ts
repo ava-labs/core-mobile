@@ -12,7 +12,8 @@ import {
   SendErrorMessage,
   SendServiceHelper,
   SendState,
-  ValidSendState
+  ValidSendState,
+  WalletCurrentEnvironment
 } from 'services/send/types'
 import networkService from 'services/network/NetworkService'
 import { Network } from '@avalabs/chains-sdk'
@@ -38,12 +39,9 @@ export class SendServiceEVM implements SendServiceHelper {
 
   async validateStateAndCalculateFees(
     sendState: SendState,
-    isMainnet: boolean,
-    fromAddress: string,
-    currency?: string,
-    sentryTrx?: Transaction,
-    nativeTokenBalance?: BN
+    walletCurrentEvnironment: WalletCurrentEnvironment
   ): Promise<SendState> {
+    const { sentryTrx, nativeTokenBalance } = walletCurrentEvnironment
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.send.evm.validate_and_calc_fees')
       .executeAsync(async () => {

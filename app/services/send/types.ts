@@ -65,13 +65,17 @@ export interface SendServiceHelper {
     fromAddress: string,
     currency?: string,
     sentryTrx?: Transaction
-  ): Promise<SignTransactionRequest>
+  ): Promise<SignTransactionRequest> // TODO: replace with WalletCurrentEnvironment
   validateStateAndCalculateFees(
     sendState: SendState,
-    isMainnet: boolean,
-    fromAddress: string,
-    currency?: string,
-    sentryTrx?: Transaction,
-    nativeTokenBalance?: BN
+    walletCurrentEnvironment: WalletCurrentEnvironment
   ): Promise<SendState>
+}
+
+export interface WalletCurrentEnvironment {
+  isMainnet: boolean
+  fromAddress: string
+  currency?: string
+  sentryTrx?: Transaction
+  nativeTokenBalance?: BN
 }

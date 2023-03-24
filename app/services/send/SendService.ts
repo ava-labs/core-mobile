@@ -29,13 +29,12 @@ class SendService {
             : account.address
 
         const service = await this.getService(activeNetwork, fromAddress)
-        sendState = await service.validateStateAndCalculateFees(
-          sendState,
-          !activeNetwork.isTestnet,
+        sendState = await service.validateStateAndCalculateFees(sendState, {
+          isMainnet: !activeNetwork.isTestnet,
           fromAddress,
           currency,
           sentryTrx
-        )
+        })
 
         if (sendState.error?.error) {
           throw new Error(sendState.error.message)
@@ -81,14 +80,12 @@ class SendService {
         : account.address
 
     const service = this.getService(activeNetwork, fromAddress)
-    return service.validateStateAndCalculateFees(
-      sendState,
-      !activeNetwork.isTestnet,
+    return service.validateStateAndCalculateFees(sendState, {
+      isMainnet: !activeNetwork.isTestnet,
       fromAddress,
       currency,
-      undefined,
       nativeTokenBalance
-    )
+    })
   }
 
   mapTokenFromNFT(nft: NFTItemData): TokenWithBalanceERC721 {
