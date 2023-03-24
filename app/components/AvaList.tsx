@@ -5,16 +5,16 @@ import {
   ListRenderItem as FlashListRenderItem
 } from '@shopify/flash-list/dist/FlashListProps'
 import { RefreshControlProps } from 'react-native'
-import DraggableFlatList from 'react-native-draggable-flatlist/src/components/DraggableFlatList'
+import DraggableList from 'components/draggableList/DraggableList'
 import {
   DragEndParams,
-  RenderItem
-} from 'react-native-draggable-flatlist/src/types'
+  DraggableRenderItem
+} from 'components/draggableList/types'
 
 interface AvaListProps<TItem> {
   data: TItem[] | null | undefined
   flashRenderItem: FlashListRenderItem<TItem> | null | undefined
-  draggableListItem?: RenderItem<TItem> | null | undefined
+  draggableListItem?: DraggableRenderItem<TItem> | null | undefined
   ItemSeparatorComponent?: React.ComponentType<unknown> | null | undefined
   ListEmptyComponent?:
     | React.ComponentType<unknown>
@@ -23,7 +23,7 @@ interface AvaListProps<TItem> {
     | undefined
   refreshing?: boolean | null | undefined
   onRefresh?: (() => void) | null | undefined
-  keyExtractor: (item: TItem, index: number) => string
+  keyExtractor: (item: TItem) => string
   extraData?: unknown
   contentContainerStyle?: ContentStyle
   onEndReached?: (() => void) | null | undefined
@@ -66,20 +66,12 @@ const AvaList = <T,>({
   }
 
   return isDraggable && draggableListItem ? (
-    <DraggableFlatList
+    <DraggableList
       data={data || []}
-      onDragEnd={handleOnDragEnd}
-      renderItem={draggableListItem}
-      ItemSeparatorComponent={ItemSeparatorComponent}
-      ListEmptyComponent={ListEmptyComponent}
-      refreshing={refreshing}
-      onRefresh={onRefresh}
-      refreshControl={refreshControl}
-      contentContainerStyle={contentContainerStyle}
       keyExtractor={keyExtractor}
-      indicatorStyle="white"
-      onEndReached={onEndReached}
-      extraData={extraData}
+      renderItem={draggableListItem}
+      onDragEnd={handleOnDragEnd}
+      ListEmptyComponent={ListEmptyComponent}
     />
   ) : (
     <FlashList
