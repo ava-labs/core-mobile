@@ -9,6 +9,7 @@ import BN from 'bn.js'
 import { BigNumber, Contract } from 'ethers'
 import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
 import {
+  GetTransactionRequestParams,
   SendErrorMessage,
   SendServiceHelper,
   SendState,
@@ -112,7 +113,7 @@ export class SendServiceEVM implements SendServiceHelper {
   }
 
   async getTransactionRequest(
-    params: ValidateStateAndCalculateFeesParams
+    params: GetTransactionRequestParams
   ): Promise<TransactionRequest> {
     const { sendState, sentryTrx } = params
     return SentryWrapper.createSpanFor(sentryTrx)
