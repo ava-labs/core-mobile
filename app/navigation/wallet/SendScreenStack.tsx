@@ -11,6 +11,7 @@ import FeatureBlocked from 'screens/posthog/FeatureBlocked'
 import { Contact } from 'Repo'
 import { TokenWithBalance } from 'store/balance'
 import { SubHeaderOptions } from 'navigation/NavUtils'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 
 export type SendStackParamList = {
   [AppNavigation.Send.Send]:
@@ -60,7 +61,7 @@ type SendScreenProps = SendTokensScreenProps<typeof AppNavigation.Send.Send>
 const SendTokenComponent = () => {
   const { navigate } = useNavigation<SendScreenProps['navigation']>()
   const { params } = useRoute<SendScreenProps['route']>()
-  const { capture } = usePosthogContext()
+  const { capture } = usePostCapture()
 
   const onOpenSelectToken = (
     onTokenSelected: (token: TokenWithBalance) => void

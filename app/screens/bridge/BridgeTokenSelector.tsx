@@ -11,7 +11,7 @@ import SearchBar from 'components/SearchBar'
 
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import { AssetBalance } from 'screens/bridge/utils/types'
-import { usePosthogContext } from 'contexts/PosthogContext'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 
 const DEFAULT_HORIZONTAL_MARGIN = 16
 
@@ -35,7 +35,7 @@ function BridgeTokenSelector({
 }: TokenSelectorProps) {
   const [searchText, setSearchText] = useState('')
   const tokenInfoData = useTokenInfoContext()
-  const { capture } = usePosthogContext()
+  const { capture } = usePostCapture()
 
   const renderItem = (item: ListRenderItemInfo<AssetBalance>) => {
     const token = item.item

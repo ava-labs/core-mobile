@@ -22,8 +22,8 @@ import { Row } from 'components/Row'
 import { Popable } from 'react-native-popable'
 import PoppableGasAndLimit from 'components/PoppableGasAndLimit'
 import { bnToLocaleString } from '@avalabs/utils-sdk'
-import { usePosthogContext } from 'contexts/PosthogContext'
 import { PopableLabel } from 'components/PopableLabel'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 
 type NavigationProp = NFTDetailsSendScreenProps<
   typeof AppNavigation.NftSend.Review
@@ -36,7 +36,7 @@ export type NftReviewScreenProps = {
 export default function NftReview({ onSuccess }: NftReviewScreenProps) {
   const { theme } = useApplicationContext()
   const { goBack } = useNavigation<NavigationProp>()
-  const { capture } = usePosthogContext()
+  const { capture } = usePostCapture()
   const {
     sendToken: nft,
     sendStatus,

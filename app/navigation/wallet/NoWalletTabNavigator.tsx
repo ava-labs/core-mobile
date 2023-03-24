@@ -6,7 +6,6 @@ import {
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import React, { useEffect } from 'react'
 import { View } from 'react-native'
-import { usePosthogContext } from 'contexts/PosthogContext'
 import CreateNewWalletPlusSVG from 'components/svg/CreateNewWalletPlusSVG'
 import WalletSVG from 'components/svg/WalletSVG'
 import MenuSVG from 'components/svg/MenuSVG'
@@ -27,6 +26,7 @@ import {
 import { showSnackBarCustom } from 'components/Snackbar'
 import GeneralToast from 'components/toast/GeneralToast'
 import { useDeeplink } from 'contexts/DeeplinkContext/DeeplinkContext'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 
 export type NoWalletTabNavigatorParamList = {
   [AppNavigation.NoWalletTabs.NewWallet]: undefined
@@ -60,7 +60,7 @@ type DrawerNavigationProp = NoWalletScreenProps<
 >['navigation']
 const NoWalletTabNavigator = () => {
   const theme = useApplicationContext().theme
-  const { capture } = usePosthogContext()
+  const { capture } = usePostCapture()
   const drawerNavigation = useNavigation<DrawerNavigationProp>()
   const tabsNavigation = useNavigation<NavigationProp>()
   const walletState = useSelector(selectWalletState)

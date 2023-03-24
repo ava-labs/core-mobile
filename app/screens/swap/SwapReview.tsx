@@ -19,10 +19,10 @@ import {
   RemoveEvents,
   useBeforeRemoveListener
 } from 'hooks/useBeforeRemoveListener'
-import { usePosthogContext } from 'contexts/PosthogContext'
 import { calculateRate } from 'swap/utils'
 import { getTokenAddress } from 'swap/getSwapRate'
 import { TokenType } from 'store/balance'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 
 const SECOND = 1000
 
@@ -46,7 +46,7 @@ const SwapReview = ({ onCancel, onBackToParent }: Props) => {
   const theme = useApplicationContext().theme
   const [secondsLeft, setSecondsLeft] = useState('0s')
   const [colorAnim] = useState(new Animated.Value(1))
-  const { capture } = usePosthogContext()
+  const { capture } = usePostCapture()
 
   useEffect(() => {
     if (swapStatus === 'Swapping') {
