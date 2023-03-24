@@ -94,7 +94,6 @@ PODS:
   - OpenSSL-Universal (1.1.1100)
   - Permission-Camera (3.6.0):
     - RNPermissions
-  - PostHog (1.4.4)
   - RCT-Folly (2021.07.22.00):
     - boost
     - DoubleConversion
@@ -446,9 +445,6 @@ PODS:
     - React
   - RNPermissions (3.6.0):
     - React-Core
-  - RNPostHog (1.1.5):
-    - PostHog (~> 1.4.4)
-    - React
   - RNReanimated (2.14.2):
     - DoubleConversion
     - FBLazyVector
@@ -591,7 +587,6 @@ DEPENDENCIES:
   - RNLocalize (from `../node_modules/react-native-localize`)
   - RNOS (from `../node_modules/react-native-os`)
   - RNPermissions (from `../node_modules/react-native-permissions`)
-  - RNPostHog (from `../node_modules/posthog-react-native`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSensors (from `../node_modules/react-native-sensors`)
@@ -618,7 +613,6 @@ SPEC REPOS:
     - libwebp
     - lottie-ios
     - OpenSSL-Universal
-    - PostHog
     - SDWebImage
     - SDWebImageWebPCoder
     - Sentry
@@ -754,8 +748,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-os"
   RNPermissions:
     :path: "../node_modules/react-native-permissions"
-  RNPostHog:
-    :path: "../node_modules/posthog-react-native"
   RNReanimated:
     :path: "../node_modules/react-native-reanimated"
   RNScreens:
@@ -797,7 +789,6 @@ SPEC CHECKSUMS:
   lottie-react-native: a029a86e1689c86a07169c520ae770e84348cd20
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
   Permission-Camera: 0a0fb4341f50ab242f496fb2f73380e0ec454fe7
-  PostHog: 4b6321b521569092d4ef3a02238d9435dbaeb99f
   RCT-Folly: 0080d0a6ebf2577475bda044aa59e2ca1f909cda
   RCTRequired: e1866f61af7049eb3d8e08e8b133abd38bc1ca7a
   RCTTypeSafety: 27c2ac1b00609a432ced1ae701247593f07f901e
@@ -853,7 +844,6 @@ SPEC CHECKSUMS:
   RNLocalize: d4b8af4e442d4bcca54e68fc687a2129b4d71a81
   RNOS: 6f2f9a70895bbbfbdad7196abd952e7b01d45027
   RNPermissions: de7b7c3fe1680d974ac7a85e3e97aa539c0e68ea
-  RNPostHog: 5ad77e4a4d52ca151da444f11095125681d0cf68
   RNReanimated: 3ed15d2c7d7fd9d9a284de291a1e347d132d282b
   RNScreens: f3230dd008a7d0ce5c0a8bc78ff12cf2315bda24
   RNSensors: e74c8bd9606400c1048ab67af7f41eb2091cb2fc
