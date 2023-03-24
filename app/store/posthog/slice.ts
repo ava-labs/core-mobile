@@ -1,8 +1,7 @@
 import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { JsonMap } from 'posthog-react-native/src/bridge'
 import { RootState } from 'store'
 import { v4 as uuidv4 } from 'uuid'
-import { initialState } from './types'
+import { initialState, JsonMap } from './types'
 
 const reducerName = 'posthog'
 

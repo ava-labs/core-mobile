@@ -1,5 +1,5 @@
-import { JsonMap } from 'posthog-react-native'
 import Config from 'react-native-config'
+import { JsonMap } from 'store/posthog'
 import Logger from 'utils/Logger'
 import { getPosthogDeviceInfo } from './utils'
 

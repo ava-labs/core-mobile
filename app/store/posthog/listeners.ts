@@ -7,9 +7,9 @@ import {
   selectDistinctID,
   selectIsAnalyticsEnabled
 } from 'store/posthog/slice'
-import { JsonMap } from 'posthog-react-native'
 import Logger from 'utils/Logger'
 import PostHogService from 'services/posthog/PostHogService'
+import { JsonMap } from './types'
 
 export const posthogCapture = ({
   distinctId,
