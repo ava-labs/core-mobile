@@ -11,7 +11,7 @@ export function objectMove(
   to: ItemPosition
 ): Record<ItemId, ItemPosition> {
   'worklet'
-  const newObj = { ...object }
+  const newObj = Object.assign({}, object)
   for (const id in object) {
     if (object[id] === from) {
       newObj[id] = to
