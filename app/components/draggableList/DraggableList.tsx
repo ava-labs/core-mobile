@@ -8,10 +8,7 @@ import {
   ItemId,
   ItemPosition
 } from 'components/draggableList/types'
-import Animated, {
-  useAnimatedScrollHandler,
-  useSharedValue
-} from 'react-native-reanimated'
+import Animated, { useSharedValue } from 'react-native-reanimated'
 
 const ITEM_HEIGHT = 60
 
@@ -29,21 +26,16 @@ const DraggableList = <TItem,>({
   onDragEnd
 }: Props<TItem>) => {
   const { theme } = useApplicationContext()
-  const scrollY = useSharedValue(0)
   const scrollViewOffset = useSharedValue(0)
   const positions = useSharedValue({} as Record<ItemId, ItemPosition>)
   const viewRef = useRef<Animated.ScrollView>(null)
 
   positions.value = useMemo(() => {
-    return data.reduce((acc, item, index) => {
+    return data.reduce<Record<ItemId, ItemPosition>>((acc, item, index) => {
       acc[keyExtractor(item)] = index
       return acc
-    }, {} as Record<ItemId, ItemPosition>)
+    }, {})
   }, [data, keyExtractor])
-
-  const handleScroll = useAnimatedScrollHandler(event => {
-    scrollY.value = event.contentOffset.y
-  })
 
   const handleDragFinish = useCallback(() => {
     const newListOrder = new Array<TItem>(Object.keys(positions.value).length)
@@ -61,9 +53,9 @@ const DraggableList = <TItem,>({
       return (
         <DraggableItemWrapper
           id={itemId}
+          key={itemId}
           itemView={renderItem({ item })}
           height={ITEM_HEIGHT}
-          scrollYShared={scrollY}
           scrollViewOffset={scrollViewOffset}
           positions={positions}
           onDragFinish={handleDragFinish}
@@ -75,7 +67,6 @@ const DraggableList = <TItem,>({
   return (
     <Animated.ScrollView
       ref={viewRef}
-      onScroll={handleScroll}
       onLayout={() => {
         if (viewRef.current) {
           // @ts-ignore

@@ -17,7 +17,6 @@ import { clamp, objectMove } from 'components/draggableList/utils'
 type Props = {
   id: ItemId
   height: number
-  scrollYShared: SharedValue<number>
   scrollViewOffset: SharedValue<number>
   positions: SharedValue<Record<ItemId, ItemPosition>>
   onDragFinish: () => void
@@ -28,7 +27,6 @@ type Props = {
  * DraggableItemWrapper adds handle icon to the list item view and handles gestures to animate dragging.
  * @param id Id of wrapped item
  * @param height Height of for calculation of new item position while dragging
- * @param scrollYShared How much of parent scroll view is already scrolled
  * @param scrollViewOffset Since this wrapper is placed 'absolutely' it needs to take into account absolute position of parent scroll view
  * @param positions Shared record of all sibling items including this one
  * @param onDragFinish Callback when dragging finishes
@@ -38,7 +36,6 @@ type Props = {
 const DraggableItemWrapper = ({
   id,
   height,
-  scrollYShared,
   scrollViewOffset,
   positions,
   onDragFinish,
@@ -47,12 +44,20 @@ const DraggableItemWrapper = ({
   const [dragging, setDragging] = useState(false)
   const top = useSharedValue(0)
 
+  // this hook does 2 things:
+  // 1. on initial render, move the item to correct position
+  //
+  // 2. whenever item position changes while it is not being dragged
+  // it means that the user is dragging another item in the list over this item
+  // when this happens, we move the item to the new position
   useAnimatedReaction(
     () => positions.value[id],
-    currentPos => {
-      if (currentPos !== undefined) {
-        const itemTop = currentPos * height
-        top.value = withSpring(itemTop)
+    (currentPos, previousPos) => {
+      if (currentPos !== undefined && currentPos !== previousPos) {
+        if (!dragging) {
+          const itemTop = currentPos * height
+          top.value = withSpring(itemTop)
+        }
       }
     },
     [dragging]
@@ -65,15 +70,19 @@ const DraggableItemWrapper = ({
       },
       onActive(event) {
         const posYRelative = event.absoluteY - scrollViewOffset.value
-        const posY = posYRelative + scrollYShared.value
-        top.value = posY - height / 2
 
+        // update item top value
+        top.value = posYRelative - height / 2
+
+        // get new position
         const newPosition = clamp(
           Math.floor(posYRelative / height),
           0,
           Object.keys(positions.value).length - 1
         )
-        if (newPosition !== positions.value[id] ?? 0) {
+
+        // update positions of all affected items
+        if (newPosition !== (positions.value[id] ?? 0)) {
           positions.value = objectMove(
             positions.value,
             positions.value[id] ?? 0,
@@ -82,11 +91,16 @@ const DraggableItemWrapper = ({
         }
       },
       onFinish() {
+        // when dragging ends, we move item to the correct position (a multiplier of item height)
+        const newPosition = positions.value[id] ?? 0
+        const itemTop = newPosition * height
+        top.value = withSpring(itemTop)
+
         runOnJS(setDragging)(false)
         runOnJS(onDragFinish)()
       }
     },
-    [scrollYShared, height]
+    [height]
   )
 
   const animatedStyle = useAnimatedStyle(() => {
