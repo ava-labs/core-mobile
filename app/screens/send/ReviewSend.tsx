@@ -18,12 +18,12 @@ import { Popable } from 'react-native-popable'
 import { bnToLocaleString } from '@avalabs/utils-sdk'
 import PoppableGasAndLimit from 'components/PoppableGasAndLimit'
 import { ActivityIndicator } from 'components/ActivityIndicator'
-import { usePosthogContext } from 'contexts/PosthogContext'
 import {
   RemoveEvents,
   useBeforeRemoveListener
 } from 'hooks/useBeforeRemoveListener'
 import { PopableLabel } from 'components/PopableLabel'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 
 type NavigationProp = SendTokensScreenProps<
   typeof AppNavigation.Send.Review
@@ -32,7 +32,7 @@ type NavigationProp = SendTokensScreenProps<
 export default function ReviewSend({ onSuccess }: { onSuccess: () => void }) {
   const { theme } = useApplicationContext()
   const { goBack } = useNavigation<NavigationProp>()
-  const { capture } = usePosthogContext()
+  const { capture } = usePostCapture()
   const {
     sendToken,
     sendAmountInCurrency,

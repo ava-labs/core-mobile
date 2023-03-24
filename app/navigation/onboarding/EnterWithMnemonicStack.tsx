@@ -14,7 +14,6 @@ import { createStackNavigator } from '@react-navigation/stack'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { MainHeaderOptions } from 'navigation/NavUtils'
-import { usePosthogContext } from 'contexts/PosthogContext'
 import TermsNConditionsModal from 'components/TermsNConditionsModal'
 import { onAppUnlocked, onLogIn } from 'store/app'
 import { useDispatch } from 'react-redux'
@@ -22,6 +21,7 @@ import {
   RemoveEvents,
   useBeforeRemoveListener
 } from 'hooks/useBeforeRemoveListener'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 import { EnterWithMnemonicScreenProps } from '../types'
 
 export type EnterWithMnemonicStackParamList = {
@@ -79,12 +79,12 @@ type LoginNavigationProp = EnterWithMnemonicScreenProps<
 const LoginWithMnemonicScreen = () => {
   const enterWithMnemonicContext = useContext(EnterWithMnemonicContext)
   const { navigate, goBack } = useNavigation<LoginNavigationProp>()
-  const { capture } = usePosthogContext()
+  const { capture } = usePostCapture()
   const { userSettingsRepo } = useApplicationContext().repo
 
   useBeforeRemoveListener(
     useCallback(() => {
-      capture('OnboardingCancelled').catch(() => undefined)
+      capture('OnboardingCancelled')
       userSettingsRepo.setSetting('CoreAnalytics', undefined)
     }, [capture, userSettingsRepo]),
     [RemoveEvents.GO_BACK]
@@ -111,10 +111,10 @@ const CreatePinScreen = () => {
   const enterWithMnemonicContext = useContext(EnterWithMnemonicContext)
   const walletSetupHook = useApplicationContext().walletSetupHook
   const { navigate } = useNavigation<CreatePinNavigationProp>()
-  const { capture } = usePosthogContext()
+  const { capture } = usePostCapture()
 
   const onPinSet = (pin: string): void => {
-    capture('OnboardingPasswordSet').catch(() => undefined)
+    capture('OnboardingPasswordSet')
     if (enterWithMnemonicContext.mnemonic) {
       walletSetupHook
         .onPinCreated(enterWithMnemonicContext.mnemonic, pin, false)

@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { NoWalletScreenProps } from 'navigation/types'
 import WalletSVG from 'components/svg/WalletSVG'
-import { usePosthogContext } from 'contexts/PosthogContext'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 
 type NavigationProp = NoWalletScreenProps<
   typeof AppNavigation.NoWallet.Drawer
@@ -12,7 +12,7 @@ type NavigationProp = NoWalletScreenProps<
 
 const AccessExistingWalletItem = () => {
   const navigation = useNavigation<NavigationProp>()
-  const { capture } = usePosthogContext()
+  const { capture } = usePostCapture()
 
   return (
     <>
@@ -24,8 +24,8 @@ const AccessExistingWalletItem = () => {
         leftComponent={<WalletSVG size={18} />}
         rightComponentVerticalAlignment={'center'}
         onPress={() => {
-          capture('OnboardingImportWalletSelected').catch(() => undefined)
-          capture('OnboardingImportMnemonicSelected').catch(() => undefined)
+          capture('OnboardingImportWalletSelected')
+          capture('OnboardingImportMnemonicSelected')
           navigation.navigate(AppNavigation.NoWallet.Welcome, {
             screen: AppNavigation.Onboard.AnalyticsConsent,
             params: {

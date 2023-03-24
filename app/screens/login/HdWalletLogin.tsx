@@ -5,7 +5,7 @@ import TextArea from 'components/TextArea'
 import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
 import * as bip39 from 'bip39'
-import { usePosthogContext } from 'contexts/PosthogContext'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 
 type Props = {
   onEnterWallet: (mnemonic: string) => void
@@ -13,7 +13,7 @@ type Props = {
 }
 
 export default function HdWalletLogin(props: Props) {
-  const { capture } = usePosthogContext()
+  const { capture } = usePostCapture()
   const [errorMessage, setErrorMessage] = useState<string | undefined>(
     undefined
   )
@@ -31,7 +31,7 @@ export default function HdWalletLogin(props: Props) {
     const isValid = bip39.validateMnemonic(trimmed)
     try {
       if (isValid) {
-        capture('OnboardingMnemonicImported').catch(() => undefined)
+        capture('OnboardingMnemonicImported')
         props.onEnterWallet(trimmed)
       } else {
         throw new Error()
@@ -41,6 +41,7 @@ export default function HdWalletLogin(props: Props) {
     }
   }
 
+  // eslint-disable-next-line react/no-unstable-nested-components
   const EnterTestWalletButton = () => {
     return __DEV__ ? (
       <AvaButton.TextLarge

@@ -11,10 +11,10 @@ import { useSelector } from 'react-redux'
 import { selectInactiveNetworks } from 'store/network'
 import { Network } from '@avalabs/chains-sdk'
 import { Space } from 'components/Space'
-import { usePosthogContext } from 'contexts/PosthogContext'
 import { RefreshControl } from 'components/RefreshControl'
 import { NFTItemData } from 'store/nft'
 import { PortfolioScreenProps } from 'navigation/types'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 import InactiveNetworkCard from './components/Cards/InactiveNetworkCard'
 import { PortfolioTokensLoader } from './components/Loaders/PortfolioTokensLoader'
 import PortfolioHeader from './components/PortfolioHeader'
@@ -22,7 +22,7 @@ import { TokensTabHeader } from './components/TokensTabHeader'
 
 const Portfolio = () => {
   const collectiblesDisabled = useIsUIDisabled(UI.Collectibles)
-  const { capture } = usePosthogContext()
+  const { capture } = usePostCapture()
 
   function capturePosthogEvents(tabIndex: number) {
     switch (tabIndex) {
