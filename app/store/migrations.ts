@@ -1,4 +1,5 @@
 import { initialState as watchlistInitialState } from './watchlist'
+import { initialState as posthogInitialState } from './posthog'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export const migrations = {
@@ -25,6 +26,16 @@ export const migrations = {
   3: (state: any) => {
     return {
       ...state,
+      watchlist: watchlistInitialState
+    }
+  },
+  4: (state: any) => {
+    return {
+      ...state,
+      posthog: {
+        distinctId: posthogInitialState.distinctId,
+        userID: state.posthog.userID
+      },
       watchlist: watchlistInitialState
     }
   }

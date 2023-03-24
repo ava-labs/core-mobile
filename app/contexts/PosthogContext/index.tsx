@@ -14,7 +14,7 @@ import Config from 'react-native-config'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import useAppBackgroundTracker from 'hooks/useAppBackgroundTracker'
 import { useSelector } from 'react-redux'
-import { posthogCapture, selectUserID } from 'store/posthog'
+import { posthogCapture, selectUserID, selectDistinctId } from 'store/posthog'
 import Logger from 'utils/Logger'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { sanitizeFeatureFlags } from './utils'
@@ -127,6 +127,10 @@ export const PosthogContextProvider = ({
   children: ReactNode
 }) => {
   const posthogUserId = useSelector(selectUserID)
+  const distinctId = useSelector(selectDistinctId)
+
+  console.log('popeyes posthogUserId', posthogUserId)
+  console.log('distinctId', distinctId)
 
   const { timeoutPassed } = useAppBackgroundTracker({
     timeoutMs: 30 * 60 * 1000,
@@ -161,8 +165,8 @@ export const PosthogContextProvider = ({
 
   const capture = useCallback(
     (event: string, properties?: JsonMap) =>
-      posthogCapture({ posthogUserId, event, properties }),
-    [posthogUserId]
+      posthogCapture({ distinctId, posthogUserId, event, properties }),
+    [posthogUserId, distinctId]
   )
 
   const reloadFeatureFlags = useCallback(() => {
