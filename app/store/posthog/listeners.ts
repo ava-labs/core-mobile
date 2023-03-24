@@ -4,7 +4,8 @@ import {
   capture,
   regenerateUserId,
   selectUserID,
-  selectDistinctId
+  selectDistinctID,
+  selectIsAnalyticsEnabled
 } from 'store/posthog/slice'
 import { JsonMap } from 'posthog-react-native'
 import Logger from 'utils/Logger'
@@ -38,9 +39,13 @@ export const addPosthogListeners = (startListening: AppStartListening) => {
     effect: async (action, api) => {
       const state = api.getState()
       const posthogUserId = selectUserID(state)
-      const distinctId = selectDistinctId(state)
+      const distinctId = selectDistinctID(state)
+      const isAnalyticsEnabled = selectIsAnalyticsEnabled(state)
       const { event, properties } = action.payload
-      posthogCapture({ distinctId, posthogUserId, event, properties })
+
+      if (isAnalyticsEnabled) {
+        posthogCapture({ distinctId, posthogUserId, event, properties })
+      }
     }
   })
 }

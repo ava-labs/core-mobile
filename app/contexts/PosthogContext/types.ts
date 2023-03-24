@@ -1,6 +1,3 @@
-import { PayloadAction } from '@reduxjs/toolkit'
-import { JsonMap } from 'posthog-react-native/src/bridge'
-
 export enum FeatureGates {
   EVERYTHING = 'everything',
   EVENTS = 'events',
@@ -18,14 +15,6 @@ export enum FeatureGates {
 export enum FeatureVars {
   SENTRY_SAMPLE_RATE = 'sentry-sample-rate'
 }
-
-export type PosthogCapture = (
-  event: string,
-  properties?: JsonMap
-) => PayloadAction<{
-  event: string
-  properties?: JsonMap
-}>
 
 // posthog response can be an empty object when all features are disabled
 // thus, we need to use Partial

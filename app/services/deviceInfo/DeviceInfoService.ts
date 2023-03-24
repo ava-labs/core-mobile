@@ -49,14 +49,6 @@ class DeviceInfoService {
     return version
   }
 
-  getDeviceId = async () => {
-    if (this.deviceId) return this.deviceId
-
-    const uniqueId = await DeviceInfo.getUniqueId()
-    this.deviceId = uniqueId
-    return uniqueId
-  }
-
   getDeviceManufacturer = async () => {
     if (this.deviceManufacturer) return this.deviceManufacturer
 

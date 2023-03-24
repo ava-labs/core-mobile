@@ -22,7 +22,7 @@ export const posthogSlice = createSlice({
 
 // selectors
 export const selectUserID = (state: RootState) => state.posthog.userID
-export const selectDistinctId = (state: RootState) => state.posthog.distinctID
+export const selectDistinctID = (state: RootState) => state.posthog.distinctID
 export const selectIsAnalyticsEnabled = (state: RootState) =>
   state.posthog.isAnalyticsEnabled
 
