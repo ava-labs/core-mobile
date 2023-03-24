@@ -48,6 +48,7 @@ import { BNInput } from 'components/BNInput'
 import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectBridgeCriticalConfig } from 'store/bridge'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 
 const blockchainTitleMaxWidth = Dimensions.get('window').width * 0.5
 const dropdownWith = Dimensions.get('window').width * 0.6
@@ -69,7 +70,7 @@ type NavigationProp = BridgeScreenProps<
 const Bridge: FC = () => {
   const navigation = useNavigation<NavigationProp>()
   const theme = useApplicationContext().theme
-  const { capture } = usePosthogContext()
+  const { capture } = usePostCapture()
   const dispatch = useDispatch()
   const criticalConfig = useSelector(selectBridgeCriticalConfig)
 

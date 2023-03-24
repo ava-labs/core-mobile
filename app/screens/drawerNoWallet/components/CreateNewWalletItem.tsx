@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
 import { NoWalletScreenProps } from 'navigation/types'
 import CreateNewWalletPlusSVG from 'components/svg/CreateNewWalletPlusSVG'
-import { usePosthogContext } from 'contexts/PosthogContext'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 
 type NavigationProp = NoWalletScreenProps<
   typeof AppNavigation.NoWallet.Drawer
@@ -12,7 +12,7 @@ type NavigationProp = NoWalletScreenProps<
 
 const CreateNewWalletItem = () => {
   const navigation = useNavigation<NavigationProp>()
-  const { capture } = usePosthogContext()
+  const { capture } = usePostCapture()
 
   return (
     <>
@@ -24,7 +24,7 @@ const CreateNewWalletItem = () => {
         leftComponent={<CreateNewWalletPlusSVG bold size={18} />}
         rightComponentVerticalAlignment={'center'}
         onPress={() => {
-          capture('OnboardingCreateNewWalletSelected').catch(() => undefined)
+          capture('OnboardingCreateNewWalletSelected')
           navigation.navigate(AppNavigation.NoWallet.Welcome, {
             screen: AppNavigation.Onboard.AnalyticsConsent,
             params: {

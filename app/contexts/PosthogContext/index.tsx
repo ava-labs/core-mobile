@@ -9,21 +9,14 @@ import React, {
   useState
 } from 'react'
 import { timer } from 'rxjs'
-import { JsonMap } from 'posthog-react-native/src/bridge'
 import Config from 'react-native-config'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import useAppBackgroundTracker from 'hooks/useAppBackgroundTracker'
-import { useDispatch } from 'react-redux'
-import { capture as posthogCapture } from 'store/posthog'
 import Logger from 'utils/Logger'
 import SentryWrapper from 'services/sentry/SentryWrapper'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 import { sanitizeFeatureFlags } from './utils'
-import {
-  FeatureFlags,
-  FeatureGates,
-  FeatureVars,
-  PosthogCapture
-} from './types'
+import { FeatureFlags, FeatureGates, FeatureVars } from './types'
 
 const PostHogDecideUrl = `${Config.POSTHOG_URL}/decide?v=2`
 const PostHogDecideFetchOptions = {
@@ -42,7 +35,6 @@ export const PosthogContext = createContext<PosthogContextState>(
 )
 
 export interface PosthogContextState {
-  capture: PosthogCapture
   setAnalyticsConsent: Dispatch<boolean | undefined>
   swapBlocked: boolean
   bridgeBlocked: boolean
@@ -126,7 +118,7 @@ export const PosthogContextProvider = ({
 }: {
   children: ReactNode
 }) => {
-  const dispatch = useDispatch()
+  const { capture } = usePostCapture()
 
   const { timeoutPassed } = useAppBackgroundTracker({
     timeoutMs: 30 * 60 * 1000,
@@ -157,12 +149,6 @@ export const PosthogContextProvider = ({
   useEffect(
     () => SentryWrapper.setSampleRate(sentrySampleRate),
     [sentrySampleRate]
-  )
-
-  const capture = useCallback(
-    (event: string, properties?: JsonMap) =>
-      dispatch(posthogCapture({ event, properties })),
-    [dispatch]
   )
 
   const reloadFeatureFlags = useCallback(() => {
@@ -221,7 +207,6 @@ export const PosthogContextProvider = ({
   return (
     <PosthogContext.Provider
       value={{
-        capture,
         setAnalyticsConsent,
         swapBlocked,
         bridgeBlocked,

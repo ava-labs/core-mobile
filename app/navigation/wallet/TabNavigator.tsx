@@ -27,7 +27,6 @@ import {
 import WatchlistTab from 'screens/watchlist/WatchlistTabView'
 import BuySVG from 'components/svg/BuySVG'
 import TopNavigationHeader from 'navigation/TopNavigationHeader'
-import { usePosthogContext } from 'contexts/PosthogContext'
 import { Transaction } from 'store/transaction'
 import { showSnackBarCustom } from 'components/Snackbar'
 import { useSelector } from 'react-redux'
@@ -39,6 +38,7 @@ import { Row } from 'components/Row'
 import { getCommonBottomTabOptions, normalTabButton } from 'navigation/NavUtils'
 import { useDeeplink } from 'contexts/DeeplinkContext/DeeplinkContext'
 import { DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 
 export type TabNavigatorParamList = {
   [AppNavigation.Tabs.Portfolio]: { showBackButton?: boolean }
@@ -57,7 +57,7 @@ const DummyBridge = () => (
 
 const TabNavigator = () => {
   const theme = useApplicationContext().theme
-  const { capture } = usePosthogContext()
+  const { capture } = usePostCapture()
   const isBridgeDisabled = useIsUIDisabled(UI.Bridge)
   const activeNetwork = useSelector(selectActiveNetwork)
 

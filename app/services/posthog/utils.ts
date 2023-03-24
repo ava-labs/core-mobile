@@ -6,7 +6,6 @@ export const getPosthogDeviceInfo = async () => {
     $app_name: DeviceInfoService.getAppName(),
     $app_version: DeviceInfoService.getAppVersion(),
     $app_namespace: DeviceInfoService.getAppNameSpace(),
-    $device_id: await DeviceInfoService.getDeviceId(),
     $device_manufacturer: await DeviceInfoService.getDeviceManufacturer(),
     $device_model: DeviceInfoService.getDeviceModel(),
     $device_name: await DeviceInfoService.getDeviceName(),

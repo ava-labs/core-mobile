@@ -15,6 +15,7 @@ import {
 } from 'navigation/types'
 import FeatureBlocked from 'screens/posthog/FeatureBlocked'
 import { AssetBalance } from 'screens/bridge/utils/types'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 
 export type BridgeStackParamList = {
   [AppNavigation.Bridge.Bridge]: undefined
@@ -84,7 +85,7 @@ type HideTransactionNavigationProp = BridgeScreenProps<
 
 const HideTransactionWarningModal = () => {
   const navigation = useNavigation<HideTransactionNavigationProp>()
-  const { capture } = usePosthogContext()
+  const { capture } = usePostCapture()
 
   const onHide = () => {
     navigation.getParent()?.goBack()

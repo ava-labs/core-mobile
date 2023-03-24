@@ -20,11 +20,11 @@ import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
 import { NetworkVMType } from '@avalabs/chains-sdk'
 import NetworkFeeSelector from 'components/NetworkFeeSelector'
-import { usePosthogContext } from 'contexts/PosthogContext'
 import { bnToLocaleString, ethersBigNumberToBN } from '@avalabs/utils-sdk'
 import UniversalTokenSelector from 'components/UniversalTokenSelector'
 import { getMaxValue } from 'utils/Utils'
 import { Amount } from 'screens/swap/SwapView'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 
 type Props = {
   onNext: () => void
@@ -43,7 +43,7 @@ const SendToken: FC<Props> = ({
   token,
   contact
 }) => {
-  const { capture } = usePosthogContext()
+  const { capture } = usePostCapture()
   const {
     setSendToken,
     sendToken,

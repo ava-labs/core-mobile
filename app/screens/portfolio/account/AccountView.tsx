@@ -14,13 +14,13 @@ import {
   selectActiveAccount,
   setActiveAccountIndex
 } from 'store/account'
-import { usePosthogContext } from 'contexts/PosthogContext'
+import { usePostCapture } from 'hooks/usePosthogCapture'
 
 function AccountView({ onDone }: { onDone: () => void }): JSX.Element {
   const { theme } = useApplicationContext()
   const accounts = useSelector(selectAccounts)
   const dispatch = useDispatch()
-  const { capture } = usePosthogContext()
+  const { capture } = usePostCapture()
 
   const addAccountAndSetActive = async () => {
     await capture('AccountSelectorAddAccount', {
