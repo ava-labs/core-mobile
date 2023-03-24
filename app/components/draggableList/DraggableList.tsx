@@ -1,4 +1,3 @@
-import assert from 'assert'
 import React, { useMemo, useRef } from 'react'
 import DraggableItemWrapper from 'components/draggableList/DraggableItemWrapper'
 import {
@@ -11,6 +10,7 @@ import Animated, {
   useAnimatedScrollHandler,
   useSharedValue
 } from 'react-native-reanimated'
+import Logger from 'utils/Logger'
 
 const ITEM_HEIGHT = 60
 
@@ -58,8 +58,11 @@ const DraggableList = <TItem,>({
     const newListOrder = new Array<TItem>(Object.keys(positions.value).length)
     Object.entries(positions.value).forEach(([itemId, position]) => {
       const item = dataRef.current.find(value => keyExtractor(value) === itemId)
-      assert(item)
-      newListOrder[position] = item
+      if (!item) {
+        Logger.error(`No item for key ${itemId}`)
+      } else {
+        newListOrder[position] = item
+      }
     })
     onDragEnd({ newListOrder })
   }
