@@ -60,10 +60,7 @@ export enum SendErrorMessage {
 
 export interface SendServiceHelper {
   getTransactionRequest(
-    sendState: SendState,
-    isMainnet: boolean,
-    fromAddress: string,
-    currency?: string, // TODO: replace with ValidateStateAndCalculateFeesParams
+    params: ValidateStateAndCalculateFeesParams,
     sentryTrx?: Transaction
   ): Promise<SignTransactionRequest>
   validateStateAndCalculateFees(

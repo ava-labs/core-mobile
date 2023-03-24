@@ -48,10 +48,12 @@ class SendService {
         }
 
         const txRequest = await service.getTransactionRequest(
-          sendState,
-          !activeNetwork.isTestnet,
-          fromAddress,
-          currency,
+          {
+            sendState,
+            isMainnet: !activeNetwork.isTestnet,
+            fromAddress,
+            currency
+          },
           sentryTrx
         )
         const signedTx = await walletService.sign(

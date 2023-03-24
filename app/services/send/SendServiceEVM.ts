@@ -12,8 +12,7 @@ import {
   SendErrorMessage,
   SendServiceHelper,
   SendState,
-  ValidateStateAndCalculateFeesParams,
-  ValidSendState
+  ValidateStateAndCalculateFeesParams
 } from 'services/send/types'
 import networkService from 'services/network/NetworkService'
 import { Network } from '@avalabs/chains-sdk'
@@ -115,12 +114,10 @@ export class SendServiceEVM implements SendServiceHelper {
   }
 
   async getTransactionRequest(
-    sendState: ValidSendState,
-    isMainnet: boolean,
-    fromAddress: string,
-    currency?: string,
+    params: ValidateStateAndCalculateFeesParams,
     sentryTrx?: Transaction
   ): Promise<TransactionRequest> {
+    const { sendState } = params
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.send.evm.get_trx_request')
       .executeAsync(async () => {

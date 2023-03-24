@@ -23,33 +23,31 @@ import { Transaction } from '@sentry/types'
 
 class SendServiceBTC implements SendServiceHelper {
   async getTransactionRequest(
-    sendState: ValidSendState,
-    isMainnet: boolean,
-    fromAddress: string,
-    currency: string,
+    params: ValidateStateAndCalculateFeesParams,
     sentryTrx?: Transaction
   ): Promise<{
     inputs: BitcoinInputUTXO[]
     outputs: BitcoinOutputUTXO[]
   }> {
+    const { sendState, isMainnet, fromAddress, currency } = params
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.send.btc.get_trx_request')
       .executeAsync(async () => {
         const { address: toAddress, amount } = sendState
-        const feeRate = sendState.gasPrice.toNumber()
+        const feeRate = sendState.gasPrice?.toNumber()
         const provider = getBitcoinProvider(!isMainnet)
         const { utxos } = await this.getBalance(
           isMainnet,
           fromAddress,
-          currency,
+          currency || '',
           sentryTrx
         )
 
         const { inputs, outputs } = createTransferTx(
-          toAddress,
+          toAddress || '',
           fromAddress,
-          amount.toNumber(),
-          feeRate,
+          amount?.toNumber() || 0,
+          feeRate || 0,
           utxos,
           provider.getNetwork()
         )
