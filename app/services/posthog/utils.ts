@@ -11,9 +11,11 @@ export const getPosthogDeviceInfo = async () => {
     $device_model: DeviceInfoService.getDeviceModel(),
     $device_name: await DeviceInfoService.getDeviceName(),
     $device_type: await DeviceInfoService.getDeviceType(),
+    $locale: DeviceInfoService.getLocale(),
     $network_carrier: await DeviceInfoService.getNetworkCarrier(),
     $os_name: await DeviceInfoService.getOperatingSystemName(),
-    $os_version: await DeviceInfoService.getOperatingSystemVersion()
+    $os_version: await DeviceInfoService.getOperatingSystemVersion(),
+    $timezone: DeviceInfoService.getTimezone()
   }
 
   return deviceInfo

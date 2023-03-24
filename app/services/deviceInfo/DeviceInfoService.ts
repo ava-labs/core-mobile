@@ -1,4 +1,5 @@
 import DeviceInfo from 'react-native-device-info'
+import { getLocales, getTimeZone } from 'react-native-localize'
 
 class DeviceInfoService {
   private appBuild?: string
@@ -10,9 +11,11 @@ class DeviceInfoService {
   private deviceModel?: string
   private deviceName?: string
   private deviceType?: string
+  private locale?: string
   private networkCarrier?: string
   private operatingSystemName?: string
   private operatingSystemVersion?: string
+  private timezone?: string
 
   getAppBuild = () => {
     if (this.appBuild) return this.appBuild
@@ -108,6 +111,22 @@ class DeviceInfoService {
     const carrier = await DeviceInfo.getCarrier()
     this.networkCarrier = carrier
     return carrier
+  }
+
+  getLocale = () => {
+    if (this.locale) return this.locale
+
+    const preferredLocal = getLocales()[0]?.languageTag
+    this.locale = preferredLocal
+    return preferredLocal
+  }
+
+  getTimezone = () => {
+    if (this.timezone) return this.timezone
+
+    const time = getTimeZone()
+    this.timezone = time
+    return time
   }
 }
 
