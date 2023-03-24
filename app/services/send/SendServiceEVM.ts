@@ -9,10 +9,11 @@ import BN from 'bn.js'
 import { BigNumber, Contract } from 'ethers'
 import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
 import {
+  GetTransactionRequestParams,
   SendErrorMessage,
   SendServiceHelper,
   SendState,
-  ValidSendState
+  ValidateStateAndCalculateFeesParams
 } from 'services/send/types'
 import networkService from 'services/network/NetworkService'
 import { Network } from '@avalabs/chains-sdk'
@@ -23,7 +24,6 @@ import {
 } from 'store/balance'
 import ERC721 from '@openzeppelin/contracts/build/contracts/ERC721.json'
 import { isAddress } from '@ethersproject/address'
-import { Transaction } from '@sentry/types'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 
 export class SendServiceEVM implements SendServiceHelper {
@@ -37,12 +37,9 @@ export class SendServiceEVM implements SendServiceHelper {
   }
 
   async validateStateAndCalculateFees(
-    sendState: SendState,
-    isMainnet: boolean,
-    fromAddress: string,
-    currency?: string,
-    sentryTrx?: Transaction
+    params: ValidateStateAndCalculateFeesParams
   ): Promise<SendState> {
+    const { sendState, nativeTokenBalance, sentryTrx } = params
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.send.evm.validate_and_calc_fees')
       .executeAsync(async () => {
@@ -101,17 +98,24 @@ export class SendServiceEVM implements SendServiceHelper {
             SendErrorMessage.INSUFFICIENT_BALANCE
           )
 
+        if (
+          token.type !== TokenType.NATIVE &&
+          sendFee &&
+          nativeTokenBalance?.lt(sendFee)
+        )
+          return SendServiceEVM.getErrorState(
+            newState,
+            SendErrorMessage.INSUFFICIENT_BALANCE_FOR_FEE
+          )
+
         return newState
       })
   }
 
   async getTransactionRequest(
-    sendState: ValidSendState,
-    isMainnet: boolean,
-    fromAddress: string,
-    currency?: string,
-    sentryTrx?: Transaction
+    params: GetTransactionRequestParams
   ): Promise<TransactionRequest> {
+    const { sendState, sentryTrx } = params
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.send.evm.get_trx_request')
       .executeAsync(async () => {

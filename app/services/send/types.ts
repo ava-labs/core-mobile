@@ -54,22 +54,29 @@ export enum SendErrorMessage {
   C_CHAIN_REQUIRED = 'Must be a C chain address',
   INVALID_ADDRESS = 'Address is invalid',
   INVALID_NETWORK_FEE = 'Network Fee is invalid',
-  INSUFFICIENT_BALANCE = 'Insufficient balance.'
+  INSUFFICIENT_BALANCE = 'Insufficient balance.',
+  INSUFFICIENT_BALANCE_FOR_FEE = 'Insufficient balance for fee.'
 }
 
 export interface SendServiceHelper {
   getTransactionRequest(
-    sendState: SendState,
-    isMainnet: boolean,
-    fromAddress: string,
-    currency?: string,
-    sentryTrx?: Transaction
+    params: GetTransactionRequestParams
   ): Promise<SignTransactionRequest>
   validateStateAndCalculateFees(
-    sendState: SendState,
-    isMainnet: boolean,
-    fromAddress: string,
-    currency?: string,
-    sentryTrx?: Transaction
+    params: ValidateStateAndCalculateFeesParams
   ): Promise<SendState>
+}
+
+export type GetTransactionRequestParams = SendServiceFuncParams
+
+export type ValidateStateAndCalculateFeesParams = SendServiceFuncParams & {
+  nativeTokenBalance?: BN
+}
+
+type SendServiceFuncParams = {
+  sendState: SendState
+  isMainnet: boolean
+  fromAddress: string
+  currency?: string
+  sentryTrx?: Transaction
 }
