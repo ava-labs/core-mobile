@@ -109,25 +109,6 @@ class DeviceInfoService {
     this.networkCarrier = carrier
     return carrier
   }
-
-  async getPosthogDeviceInfo() {
-    const deviceInfo = {
-      $app_build: this.getAppBuild(),
-      $app_name: this.getAppName(),
-      $app_version: this.getAppVersion(),
-      $app_namespace: this.getAppNameSpace(),
-      $device_id: await this.getDeviceId(),
-      $device_manufacturer: await this.getDeviceManufacturer(),
-      $device_model: this.getDeviceModel(),
-      $device_name: await this.getDeviceName(),
-      $device_type: await this.getDeviceType(),
-      $network_carrier: await this.getNetworkCarrier(),
-      $os_name: await this.getOperatingSystemName(),
-      $os_version: await this.getOperatingSystemVersion()
-    }
-
-    return deviceInfo
-  }
 }
 
 export default new DeviceInfoService()

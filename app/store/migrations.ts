@@ -33,10 +33,9 @@ export const migrations = {
     return {
       ...state,
       posthog: {
-        distinctId: posthogInitialState.distinctId,
+        distinctID: posthogInitialState.distinctID,
         userID: state.posthog.userID
-      },
-      watchlist: watchlistInitialState
+      }
     }
   }
 }

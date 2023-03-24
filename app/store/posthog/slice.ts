@@ -18,7 +18,7 @@ export const posthogSlice = createSlice({
 
 // selectors
 export const selectUserID = (state: RootState) => state.posthog.userID
-export const selectDistinctId = (state: RootState) => state.posthog.distinctId
+export const selectDistinctId = (state: RootState) => state.posthog.distinctID
 
 // actions
 export const { regenerateUserId } = posthogSlice.actions

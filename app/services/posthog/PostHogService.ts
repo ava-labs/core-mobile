@@ -1,7 +1,7 @@
 import { JsonMap } from 'posthog-react-native'
 import Config from 'react-native-config'
 import Logger from 'utils/Logger'
-import DeviceInfoService from 'services/deviceInfo/DeviceInfoService'
+import { getPosthogDeviceInfo } from './utils'
 
 const PostHogCaptureUrl = `${Config.POSTHOG_URL}/capture/`
 
@@ -12,8 +12,7 @@ class PostHogService {
     userId: string,
     properties?: JsonMap
   ) {
-    const deviceInfo = await DeviceInfoService.getPosthogDeviceInfo()
-    console.log('distinctId', distinctId)
+    const deviceInfo = await getPosthogDeviceInfo()
     const PostHogCaptureFetchOptions = {
       method: 'POST',
       headers: {
@@ -40,7 +39,7 @@ class PostHogService {
         throw new Error('Something went wrong')
       })
       .catch(error => {
-        Logger.error('failed to fetch feature flags', error)
+        Logger.error('failed to capture PostHog event', error)
       })
   }
 }

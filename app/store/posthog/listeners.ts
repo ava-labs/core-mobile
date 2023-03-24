@@ -36,8 +36,9 @@ export const addPosthogListeners = (startListening: AppStartListening) => {
   startListening({
     actionCreator: capture,
     effect: async (action, api) => {
-      const posthogUserId = selectUserID(api.getState())
-      const distinctId = selectDistinctId(api.getState())
+      const state = api.getState()
+      const posthogUserId = selectUserID(state)
+      const distinctId = selectDistinctId(state)
       const { event, properties } = action.payload
       posthogCapture({ distinctId, posthogUserId, event, properties })
     }
