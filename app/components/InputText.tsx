@@ -101,6 +101,7 @@ const InputText = forwardRef<InputRef, Props>(
     const context = useApplicationContext()
     const [showInput, setShowInput] = useState(false)
     const [toggleShowText, setToggleShowText] = useState('Show')
+
     const [selection, setSelection] = useState<{ start: number } | undefined>({
       start: 0
     })
@@ -143,6 +144,9 @@ const InputText = forwardRef<InputRef, Props>(
     const handleFocus = () => {
       // set cursor at end of text
       setSelection({ start: text.length })
+
+      // disable selection so that user can position cursor on its own
+      setTimeout(() => setSelection(undefined), 100)
     }
 
     const theme = context.theme
