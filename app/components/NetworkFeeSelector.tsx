@@ -1,19 +1,11 @@
 import { Row } from 'components/Row'
 import AvaText from 'components/AvaText'
-import { TextInput, View } from 'react-native'
+import { View } from 'react-native'
 import AvaButton from 'components/AvaButton'
 import SettingsCogSVG from 'components/svg/SettingsCogSVG'
 import { Space } from 'components/Space'
-import React, {
-  FC,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState
-} from 'react'
+import React, { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import InputText from 'components/InputText'
 import { Opacity50 } from 'resources/Constants'
 import { Popable } from 'react-native-popable'
 import PoppableGasAndLimit from 'components/PoppableGasAndLimit'
@@ -28,6 +20,7 @@ import { bigToEthersBigNumber, ethersBigNumberToBig } from '@avalabs/utils-sdk'
 import Big from 'big.js'
 import InfoSVG from 'components/svg/InfoSVG'
 import { WalletScreenProps } from 'navigation/types'
+import InputText from './InputText'
 
 export enum FeePreset {
   Normal = 'Normal',
@@ -243,20 +236,17 @@ export const FeeSelector: FC<{
   const { theme } = useApplicationContext()
   const [showInput, setShowInput] = useState(false)
 
-  const inputRef = useRef<TextInput>(null)
-
   useEffect(() => {
-    if (selected && editable) {
-      setShowInput(true)
-    }
-    if (!selected) {
-      setShowInput(false)
-      inputRef.current?.blur()
+    if (editable) {
+      if (selected) {
+        setShowInput(true)
+      } else {
+        setShowInput(false)
+      }
     }
   }, [editable, selected])
 
   const handleSelect = () => {
-    if (editable) setShowInput(true)
     onSelect(label)
   }
 
