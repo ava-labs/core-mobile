@@ -213,9 +213,9 @@ export const PosthogContextProvider = ({
       if (!isAnalyticsEnabled) {
         dispatch(toggleAnalytics(true))
         capture('$opt_in')
-      } else {
-        dispatch(toggleAnalytics(false))
       }
+    } else {
+      dispatch(toggleAnalytics(false))
     }
   }
 
