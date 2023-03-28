@@ -210,7 +210,7 @@ const AddAddressBookContact = () => {
   const { navigate } = useNavigation<AddContactNavigationProp>()
   return (
     <AvaButton.Icon onPress={() => navigate(AppNavigation.AddressBook.Add)}>
-      <AddSVG hideCircle />
+      <AddSVG hideCircle size={38} />
     </AvaButton.Icon>
   )
 }
