@@ -1,14 +1,7 @@
-import React, {
-  RefObject,
-  useCallback,
-  useEffect,
-  useRef,
-  useState
-} from 'react'
+import React, { useCallback, useEffect, useState, forwardRef } from 'react'
 import {
   ActivityIndicator,
   Appearance,
-  InteractionManager,
   NativeSyntheticEvent,
   Keyboard,
   StyleProp,
@@ -61,7 +54,6 @@ type Props = {
   selectTextOnFocus?: boolean | undefined
   text: string
   currency?: string
-  onInputRef?: (inputRef: RefObject<TextInput>) => void
   width?: number
   style?: StyleProp<ViewStyle>
   textStyle?: StyleProp<TextStyle>
@@ -72,215 +64,208 @@ type Props = {
   testID?: string
 }
 
-export default function InputText({
-  text,
-  helperText,
-  errorText,
-  onBlur,
-  onChangeText,
-  onInputRef,
-  currency,
-  style,
-  textStyle,
-  keyboardType,
-  editable,
-  label,
-  popOverInfoText,
-  mode = 'default',
-  onMax,
-  width,
-  minHeight,
-  placeholder,
-  loading,
-  multiline,
-  onSubmit,
-  onConfirm,
-  autoFocus,
-  selectTextOnFocus,
-  paddingVertical = 12,
-  keyboardWillShow,
-  keyboardDidHide
-}: Props | Readonly<Props>) {
-  const context = useApplicationContext()
-  const [showInput, setShowInput] = useState(false)
-  const [toggleShowText, setToggleShowText] = useState('Show')
-  const textInputRef = useRef() as RefObject<TextInput>
-  const [selection, setSelection] = useState<{ start: number } | undefined>({
-    start: 0
-  })
-
-  useEffect(() => {
-    const sub1 = Keyboard.addListener('keyboardWillShow', _ => {
-      keyboardWillShow?.()
-    })
-    const sub2 = Keyboard.addListener('keyboardDidHide', _ => {
-      keyboardDidHide?.()
-    })
-    return () => {
-      sub1.remove()
-      sub2.remove()
-    }
-  }, [keyboardDidHide, keyboardWillShow])
-
-  useEffect(() => {
-    onInputRef?.(textInputRef)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [textInputRef])
-
-  useEffect(() => {
-    setToggleShowText(showInput ? 'Hide' : 'Show')
-  }, [showInput])
-
-  useEffect(() => {
-    if (autoFocus) {
-      InteractionManager.runAfterInteractions(() => {
-        textInputRef.current?.focus()
-      })
-    }
-  }, [autoFocus, textInputRef])
-
-  const submit = (): void => {
-    onSubmit?.()
-  }
-  const onClear = (): void => {
-    onTextChanged?.('')
-  }
-  const onToggleShowInput = (): void => {
-    setShowInput(!showInput)
-  }
-
-  const handleBlur = useCallback(
-    args => {
-      setSelection({ start: 0 })
-      onBlur?.(args)
+const InputText = forwardRef<TextInput, Props>(
+  (
+    {
+      text,
+      helperText,
+      errorText,
+      onBlur,
+      onChangeText,
+      currency,
+      style,
+      textStyle,
+      keyboardType,
+      editable,
+      label,
+      popOverInfoText,
+      mode = 'default',
+      onMax,
+      width,
+      minHeight,
+      placeholder,
+      loading,
+      multiline,
+      onSubmit,
+      onConfirm,
+      autoFocus,
+      selectTextOnFocus,
+      paddingVertical = 12,
+      keyboardWillShow,
+      keyboardDidHide
     },
-    [onBlur]
-  )
+    ref
+  ) => {
+    const context = useApplicationContext()
+    const [showInput, setShowInput] = useState(false)
+    const [toggleShowText, setToggleShowText] = useState('Show')
 
-  const handleFocus = () => {
-    // set cursor at end of text
-    setSelection({ start: text.length })
-    // disable selection so that user can position cursor on its own
-    setTimeout(() => setSelection(undefined), 100)
-  }
+    const [selection, setSelection] = useState<{ start: number } | undefined>({
+      start: 0
+    })
 
-  const theme = context.theme
-
-  const onTextChanged = (txt: string): void => {
-    if (keyboardType === 'numeric') {
-      txt = txt.replace(',', '.')
-      txt = txt.replace(/[^.\d]/g, '') //remove non-digits
-      txt = txt.replace(/^0+/g, '0') //remove starting double 0
-      txt = txt.replace(/^0(?=\d)/g, '') //remove starting 0 if next one is digit
-      let numOfDots = 0
-      txt = txt.replace(/\./g, substring => {
-        //remove extra decimal points
-        if (numOfDots === 0) {
-          numOfDots++
-          return substring
-        } else {
-          return ''
-        }
+    useEffect(() => {
+      const sub1 = Keyboard.addListener('keyboardWillShow', _ => {
+        keyboardWillShow?.()
       })
-    }
-    onChangeText?.(txt)
-  }
+      const sub2 = Keyboard.addListener('keyboardDidHide', _ => {
+        keyboardDidHide?.()
+      })
+      return () => {
+        sub1.remove()
+        sub2.remove()
+      }
+    }, [keyboardDidHide, keyboardWillShow])
 
-  return (
-    <View style={[{ margin: 12 }, style]}>
-      {label && (
-        <Label
-          popOverInfoText={popOverInfoText}
-          label={label}
-          backgroundColor={context.theme.colorBg3}
-        />
-      )}
-      <View
-        style={[
-          {
-            justifyContent: 'center'
+    useEffect(() => {
+      setToggleShowText(showInput ? 'Hide' : 'Show')
+    }, [showInput])
+
+    const submit = (): void => {
+      onSubmit?.()
+    }
+    const onClear = (): void => {
+      onTextChanged?.('')
+    }
+    const onToggleShowInput = (): void => {
+      setShowInput(!showInput)
+    }
+
+    const handleBlur = useCallback(
+      args => {
+        setSelection({ start: 0 })
+        onBlur?.(args)
+      },
+      [onBlur]
+    )
+
+    const handleFocus = () => {
+      // set cursor at end of text
+      setSelection({ start: text.length })
+
+      // disable selection so that user can position cursor on its own
+      setTimeout(() => setSelection(undefined), 100)
+    }
+
+    const theme = context.theme
+
+    const onTextChanged = (txt: string): void => {
+      if (keyboardType === 'numeric') {
+        txt = txt.replace(',', '.')
+        txt = txt.replace(/[^.\d]/g, '') //remove non-digits
+        txt = txt.replace(/^0+/g, '0') //remove starting double 0
+        txt = txt.replace(/^0(?=\d)/g, '') //remove starting 0 if next one is digit
+        let numOfDots = 0
+        txt = txt.replace(/\./g, substring => {
+          //remove extra decimal points
+          if (numOfDots === 0) {
+            numOfDots++
+            return substring
+          } else {
+            return ''
           }
-        ]}>
-        <TextInput
-          testID="input_text"
-          keyboardAppearance={Appearance.getColorScheme() || 'default'}
-          ref={textInputRef}
-          autoCapitalize="none"
-          placeholder={placeholder}
-          placeholderTextColor={theme.colorText2}
-          blurOnSubmit={true}
-          secureTextEntry={mode === 'private' && !showInput}
-          onSubmitEditing={submit}
-          returnKeyType={onSubmit && 'go'}
-          enablesReturnKeyAutomatically={true}
-          editable={editable !== false}
-          keyboardType={keyboardType}
-          selectTextOnFocus={selectTextOnFocus}
-          multiline={multiline && mode === 'default' ? multiline : false}
+        })
+      }
+      onChangeText?.(txt)
+    }
+
+    return (
+      <View style={[{ margin: 12 }, style]}>
+        {label && (
+          <Label
+            popOverInfoText={popOverInfoText}
+            label={label}
+            backgroundColor={context.theme.colorBg3}
+          />
+        )}
+        <View
           style={[
             {
-              minHeight: minHeight,
-              flexGrow: 0,
-              color: theme.colorText1,
-              fontSize: 16,
-              borderWidth: 1,
-              borderRadius: 8,
-              textAlignVertical: multiline ? 'top' : 'center',
-              backgroundColor: theme.colorBg3 + Opacity50,
-              paddingStart: 16,
-              paddingEnd: loading
-                ? 46
-                : mode === 'private'
-                ? 80
-                : mode === 'amount' && !onMax
-                ? 16
-                : mode === 'currency'
-                ? 50
-                : 46,
-              paddingTop: paddingVertical,
-              paddingBottom: paddingVertical,
-              fontFamily: 'Inter-Regular',
-              width: width
-            },
-            textStyle
-          ]}
-          onBlur={handleBlur}
-          onFocus={handleFocus}
-          selection={selection}
-          onChangeText={onTextChanged}
-          value={text}
-        />
-        {mode === 'default' && text.length > 0 && (
-          <ClearBtn color={theme.colorText2} onClear={onClear} />
-        )}
-        {mode === 'private' && text.length > 0 && (
-          <ShowPassBtn
-            onToggleShowInput={onToggleShowInput}
-            toggleShowText={toggleShowText}
+              justifyContent: 'center'
+            }
+          ]}>
+          <TextInput
+            testID="input_text"
+            keyboardAppearance={Appearance.getColorScheme() || 'default'}
+            ref={ref}
+            autoFocus={autoFocus}
+            autoCapitalize="none"
+            placeholder={placeholder}
+            placeholderTextColor={theme.colorText2}
+            blurOnSubmit={true}
+            secureTextEntry={mode === 'private' && !showInput}
+            onSubmitEditing={submit}
+            returnKeyType={onSubmit && 'go'}
+            enablesReturnKeyAutomatically={true}
+            editable={editable !== false}
+            keyboardType={keyboardType}
+            selectTextOnFocus={selectTextOnFocus}
+            multiline={multiline && mode === 'default' ? multiline : false}
+            style={[
+              {
+                minHeight: minHeight,
+                flexGrow: 0,
+                color: theme.colorText1,
+                fontSize: 16,
+                borderWidth: 1,
+                borderRadius: 8,
+                textAlignVertical: multiline ? 'top' : 'center',
+                backgroundColor: theme.colorBg3 + Opacity50,
+                paddingStart: 16,
+                paddingEnd: loading
+                  ? 46
+                  : mode === 'private'
+                  ? 80
+                  : mode === 'amount' && !onMax
+                  ? 16
+                  : mode === 'currency'
+                  ? 50
+                  : 46,
+                paddingTop: paddingVertical,
+                paddingBottom: paddingVertical,
+                fontFamily: 'Inter-Regular',
+                width: width
+              },
+              textStyle
+            ]}
+            onBlur={handleBlur}
+            onFocus={handleFocus}
+            selection={selection}
+            onChangeText={onTextChanged}
+            value={text}
           />
-        )}
-        {mode === 'amount' && onMax && <MaxBtn onPress={onMax} />}
-        {mode === 'confirmEntry' && (
-          <ConfirmBtn onPress={() => onConfirm?.(text)} />
-        )}
-        {mode === 'percentage' && <Percent />}
-        {mode === 'currency' && <Currency currency={currency} />}
-        {loading && (
-          <ActivityIndicator
-            style={{ position: 'absolute', right: 16 }}
-            size={'small'}
-          />
+          {mode === 'default' && text.length > 0 && (
+            <ClearBtn color={theme.colorText2} onClear={onClear} />
+          )}
+          {mode === 'private' && text.length > 0 && (
+            <ShowPassBtn
+              onToggleShowInput={onToggleShowInput}
+              toggleShowText={toggleShowText}
+            />
+          )}
+          {mode === 'amount' && onMax && <MaxBtn onPress={onMax} />}
+          {mode === 'confirmEntry' && (
+            <ConfirmBtn onPress={() => onConfirm?.(text)} />
+          )}
+          {mode === 'percentage' && <Percent />}
+          {mode === 'currency' && <Currency currency={currency} />}
+          {loading && (
+            <ActivityIndicator
+              style={{ position: 'absolute', right: 16 }}
+              size={'small'}
+            />
+          )}
+        </View>
+
+        {helperText && <HelperText helperText={helperText} />}
+
+        {(errorText || false) && (
+          <ErrorText color={theme.colorError} errorText={errorText} />
         )}
       </View>
-
-      {helperText && <HelperText helperText={helperText} />}
-
-      {(errorText || false) && (
-        <ErrorText color={theme.colorError} errorText={errorText} />
-      )}
-    </View>
-  )
-}
+    )
+  }
+)
 
 function MaxBtn({ onPress }: { onPress?: () => void }) {
   return (
@@ -459,3 +444,5 @@ const ErrorText = ({
     </>
   )
 }
+
+export default InputText
