@@ -398,7 +398,7 @@ const AddNetworkAction = () => {
           mode: 'create'
         })
       }>
-      <AddSVG hideCircle />
+      <AddSVG hideCircle size={28} />
     </AvaButton.Icon>
   )
 }
