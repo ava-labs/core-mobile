@@ -248,6 +248,12 @@ export const FeeSelector: FC<{
 
   const handleSelect = () => {
     onSelect(label)
+
+    // if you select Custom fee and then dismiss keyboard, you cannot again edit Custom unless you switch to other preset first
+    // this if statement fixes that
+    if (!showInput && editable && selected) {
+      setShowInput(true)
+    }
   }
 
   return showInput ? (
