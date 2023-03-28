@@ -64,9 +64,7 @@ type Props = {
   testID?: string
 }
 
-type InputRef = TextInput
-
-const InputText = forwardRef<InputRef, Props>(
+const InputText = forwardRef<TextInput, Props>(
   (
     {
       text,
