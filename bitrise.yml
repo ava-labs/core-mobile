@@ -135,7 +135,7 @@ workflows:
     - script@1:
         title: Yarn Setup
         inputs:
-        - content: "#!/usr/bin/env bash\nstack=`cat /etc/issue`\n\nif [[ $stack == *\"Ubuntu\"* ]]; then\n  # on ubuntu, yarn setup command will fail\n  # as patch-package doesn't have write access to the node_modules folder\n  # thus, we need to set write permission manually\n  \n  # set permission\n  chmod -R 777 node_modules/\nfi\n\nyarn setup:ci"
+        - content: "#!/usr/bin/env bash\n\nstack=`cat /etc/issue`\n\nyarn setup:ci\n\nif [[ $stack == *Ubuntu* ]]; then\n  # on ubuntu, yarn setup command will fail\n  # as patch-package doesn't have write access to the node_modules folder\n  # thus, we need to set write permission manually and rerun yarn\n  \n  # set permission\n  chmod -R 777 node_modules\n\n  yarn setup:ci\nfi"
     - save-npm-cache@1: {}
     - script@1:
         title: Download Env Files
@@ -207,7 +207,7 @@ workflows:
     - script@1:
         title: Get App Version
         inputs:
-        - content: "#!/usr/bin/env bash\n\n# if branch is a release branch (\"release/2.0.1\" for example), grab version from branch name \n# else if tag is a release candidate tag (\"0.13.1-rc1\" for example), grab version from tag\nif [[ $BITRISE_GIT_BRANCH == *\"release/\"* ]]; then\n  arrIN=(${BITRISE_GIT_BRANCH//// })\n  version=${arrIN[1]}\nelif [[ $BITRISE_GIT_TAG =~ \"rc\" ]]; then\n  arrIN=(${BITRISE_GIT_TAG//-/ })\n  version=${arrIN[0]}\nelse\n  # else version will just be 0.0.0\n  version=\"0.0.0\"\nfi\n\nenvman add --key APP_VERSION --value \"${version}\""
+        - content: "#!/usr/bin/env bash\n\n# if branch is a release branch (\"release/2.0.1\" for example), grab version from branch name \n# else if tag is a release candidate tag (\"0.13.1-rc1\" for example), grab version from tag\nif [[ $BITRISE_GIT_BRANCH == *release/* ]]; then\n  arrIN=(${BITRISE_GIT_BRANCH//// })\n  version=${arrIN[1]}\nelif [[ $BITRISE_GIT_TAG =~ \"rc\" ]]; then\n  arrIN=(${BITRISE_GIT_TAG//-/ })\n  version=${arrIN[0]}\nelse\n  # else version will just be 0.0.0\n  version=\"0.0.0\"\nfi\n\nenvman add --key APP_VERSION --value \"${version}\""
     - script@1:
         title: Get Build Number
         inputs:
