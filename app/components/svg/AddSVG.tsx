@@ -10,7 +10,7 @@ interface Prop {
   testID?: string
 }
 
-function AddSVG({ color, circleColor, hideCircle = false, size = 100 }: Prop) {
+function AddSVG({ color, circleColor, hideCircle = false, size = 38 }: Prop) {
   const context = useApplicationContext()
 
   const iconColor = color ?? context.theme.colorIcon1
