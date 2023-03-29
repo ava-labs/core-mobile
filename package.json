@@ -179,6 +179,7 @@
     "plist": "3.0.5",
     "@openzeppelin/contracts": "4.7.3",
     "ansi-regex": "4.1.1",
+    "ansi-styles": "3.2.1",
     "rxjs": "7.5.6",
     "async": "2.6.4",
     "prismjs": "1.27.0",
