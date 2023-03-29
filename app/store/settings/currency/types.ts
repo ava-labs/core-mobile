@@ -5,7 +5,7 @@ export const currencies = [
   { name: 'Canadian Dollar', symbol: 'CAD' },
   { name: 'Swiss Franc', symbol: 'CHF' },
   { name: 'Chilean Peso', symbol: 'CLP' },
-  { name: 'Chech Koruna', symbol: 'CZK' },
+  { name: 'Czech Koruna', symbol: 'CZK' },
   { name: 'Danish Krone', symbol: 'DKK' },
   { name: 'British Pound Sterling', symbol: 'GBP' },
   { name: 'Hong Kong Dollar', symbol: 'HKD' },
