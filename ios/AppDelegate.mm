@@ -7,10 +7,30 @@
 #import <React/RCTAppSetupUtils.h>
 #import <React/RCTLinkingManager.h>
 
+#ifdef FB_SONARKIT_ENABLED
+#import <FlipperKit/FlipperClient.h>
+
+// react-native-flipper-performance-monitor integration
+#import <FlipperPerformancePlugin.h>
+
+// shopify/react-native-performance integration
+#import <ReactNativePerformance/ReactNativePerformance.h>
+#endif
+
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+#ifdef FB_SONARKIT_ENABLED
+  FlipperClient *client = [FlipperClient sharedClient];
+  
+  // react-native-flipper-performance-monitor integration
+  [client addPlugin:[FlipperPerformancePlugin new]];
+  
+  // shopify/react-native-performance integration
+  [ReactNativePerformance onAppStarted];
+#endif
+
   RCTAppSetupPrepareApp(application);
   
   RCTBridge *bridge = [[RCTBridge alloc] initWithDelegate:self launchOptions:launchOptions];

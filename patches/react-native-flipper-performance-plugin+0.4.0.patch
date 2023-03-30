@@ -1,0 +1,21 @@
+diff --git a/node_modules/react-native-flipper-performance-plugin/android/build.gradle b/node_modules/react-native-flipper-performance-plugin/android/build.gradle
+index 95ad0f7..2718312 100644
+--- a/node_modules/react-native-flipper-performance-plugin/android/build.gradle
++++ b/node_modules/react-native-flipper-performance-plugin/android/build.gradle
+@@ -21,7 +21,7 @@ android {
+ }
+ 
+ dependencies {
+-    debugCompileOnly 'com.facebook.flipper:flipper:0.125.0'
++    compileOnly 'com.facebook.flipper:flipper:0.125.0'
+     //noinspection GradleDynamicVersion
+     implementation "com.facebook.react:react-native:${safeExtGet('reactNativeVersion', '+')}"
+ }
+diff --git a/node_modules/react-native-flipper-performance-plugin/android/src/debug/java/tech/bam/rnperformance/flipper/FPSMonitor.java b/node_modules/react-native-flipper-performance-plugin/android/src/main/java/tech/bam/rnperformance/flipper/FPSMonitor.java
+similarity index 100%
+rename from node_modules/react-native-flipper-performance-plugin/android/src/debug/java/tech/bam/rnperformance/flipper/FPSMonitor.java
+rename to node_modules/react-native-flipper-performance-plugin/android/src/main/java/tech/bam/rnperformance/flipper/FPSMonitor.java
+diff --git a/node_modules/react-native-flipper-performance-plugin/android/src/debug/java/tech/bam/rnperformance/flipper/RNPerfMonitorPlugin.java b/node_modules/react-native-flipper-performance-plugin/android/src/main/java/tech/bam/rnperformance/flipper/RNPerfMonitorPlugin.java
+similarity index 100%
+rename from node_modules/react-native-flipper-performance-plugin/android/src/debug/java/tech/bam/rnperformance/flipper/RNPerfMonitorPlugin.java
+rename to node_modules/react-native-flipper-performance-plugin/android/src/main/java/tech/bam/rnperformance/flipper/RNPerfMonitorPlugin.java
