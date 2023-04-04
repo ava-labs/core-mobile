@@ -5180,6 +5180,11 @@
     recyclerlistview "4.2.0"
     tslib "2.4.0"
 
+"@shopify/react-native-performance@4.1.2":
+  version "4.1.2"
+  resolved "https://registry.yarnpkg.com/@shopify/react-native-performance/-/react-native-performance-4.1.2.tgz#bd111af291b85ee125feaccd54c8e5f237a76ce7"
+  integrity sha512-1Xu2xo+hAxg75iuX5akVqAgc3h/J1ohfi7JKXlGsprP4ylpW7kHMfq/7AstL7FoUC8xcHsTUvUFhoZ94ot8g6Q==
+
 "@sideway/address@^4.1.3":
   version "4.1.3"
   resolved "https://registry.yarnpkg.com/@sideway/address/-/address-4.1.3.tgz#d93cce5d45c5daec92ad76db492cc2ee3c64ab27"
@@ -19011,10 +19016,15 @@ react-native-fast-image@8.6.3:
   resolved "https://registry.yarnpkg.com/react-native-fast-image/-/react-native-fast-image-8.6.3.tgz#6edc3f9190092a909d636d93eecbcc54a8822255"
   integrity sha512-Sdw4ESidXCXOmQ9EcYguNY2swyoWmx53kym2zRsvi+VeFCHEdkO+WG1DK+6W81juot40bbfLNhkc63QnWtesNg==
 
-react-native-flipper@0.164.0:
-  version "0.164.0"
-  resolved "https://registry.yarnpkg.com/react-native-flipper/-/react-native-flipper-0.164.0.tgz#64f6269a86a13a72e30f53ba9f5281d2073a7697"
-  integrity sha512-iJhIe3rqx6okuzBp4AJsTa2b8VRAOGzoLRFx/4HGbaGvu8AurZjz8TTQkhJsRma8dsHN2b6KKZPvGGW3wdWzvA==
+react-native-flipper-performance-plugin@0.4.0:
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/react-native-flipper-performance-plugin/-/react-native-flipper-performance-plugin-0.4.0.tgz#961ff2f9ccc942d2a4cabd4f6d401034c5402007"
+  integrity sha512-D9Z5VrktJjUenYB4X9qfKcqg9YSyQWOD7fKoxkzXoKxbyalGoWib79iD3OBHOBZEsk5RbQ006zYL7VQwA3D4Wg==
+
+react-native-flipper@0.187.1:
+  version "0.187.1"
+  resolved "https://registry.yarnpkg.com/react-native-flipper/-/react-native-flipper-0.187.1.tgz#1d9be0046effe07f4ae73899aa8a4e30474fb262"
+  integrity sha512-YN9Qql7ypL6UduJpHa5oF4573ls3vW1Q4YY8v7Zzpf5SYf9cscPb9vDgBuG8ktW/+bebOiE6wiIbmHy5wfF3Eg==
 
 react-native-fs@2.19.0:
   version "2.19.0"
@@ -19109,6 +19119,16 @@ react-native-pager-view@5.4.25:
   version "5.4.25"
   resolved "https://registry.yarnpkg.com/react-native-pager-view/-/react-native-pager-view-5.4.25.tgz#cd639d5387a7f3d5581b55a33c5faa1cbc200f97"
   integrity sha512-3drrYwaLat2fYszymZe3nHMPASJ4aJMaxiejfA1V5SK3OygYmdtmV2u5prX7TnjueJzGSyyaCYEr2JlrRt4YPg==
+
+react-native-performance-flipper-reporter@4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/react-native-performance-flipper-reporter/-/react-native-performance-flipper-reporter-4.0.0.tgz#a53267d760fbb02b34d857c26222f5bfb5662d46"
+  integrity sha512-VqG3uetTraW6eeho1SY8v8ZTWMELd/ix84V6+ZiFkdvWVWVTKp6JfFqHHXt0z4Gfp1sfaKnaFytNG+b3jDP+ZQ==
+
+react-native-performance@4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/react-native-performance/-/react-native-performance-4.0.0.tgz#43a5a44d042037288234c829e790b113b5253c43"
+  integrity sha512-GgRNl52ivoq8gNSzFlapIc8ywszGJtQsoUZxo4bvt+xGcUIYecp93oDt88x4te637qjeT+FabXTtau66EFbf7g==
 
 react-native-permissions@3.6.0:
   version "3.6.0"

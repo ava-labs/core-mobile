@@ -2,7 +2,7 @@
 
 ## Yarn
 
-1/ "ansi-styles": "3.2.1"
+### "ansi-styles": "3.2.1"
 
 We have to force ansi-styles to be v3 or else jest will break
 

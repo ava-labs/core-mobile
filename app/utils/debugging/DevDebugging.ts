@@ -7,7 +7,6 @@ const useDevDebugging = () => {
     LOGBOX_DISABLED,
     STORYBOOK_ENABLED,
     REDSCREEN_DISABLED,
-    SPLASH_ENABLED,
     SHOW_DEMO_NFTS
   } = DevDebuggingConfig
   function configure() {
@@ -18,9 +17,8 @@ const useDevDebugging = () => {
   }
 
   const isStorybookEnabled = STORYBOOK_ENABLED
-  const isSplashEnabled = SPLASH_ENABLED
   const showDemoNFTS = SHOW_DEMO_NFTS
-  return { configure, isStorybookEnabled, isSplashEnabled, showDemoNFTS }
+  return { configure, isStorybookEnabled, showDemoNFTS }
 }
 
 export default useDevDebugging
