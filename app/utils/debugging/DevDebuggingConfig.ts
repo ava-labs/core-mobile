@@ -3,7 +3,6 @@
 // git update-index --assume-unchanged app/utils/debugging/DevDebuggingConfig.ts
 
 const DevDebuggingConfig = {
-  SPLASH_ENABLED: !__DEV__,
   WDYR: false,
   STORYBOOK_ENABLED: false,
   LOGBOX_DISABLED: false,
