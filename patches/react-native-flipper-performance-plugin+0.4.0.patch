@@ -19,3 +19,16 @@ diff --git a/node_modules/react-native-flipper-performance-plugin/android/src/de
 similarity index 100%
 rename from node_modules/react-native-flipper-performance-plugin/android/src/debug/java/tech/bam/rnperformance/flipper/RNPerfMonitorPlugin.java
 rename to node_modules/react-native-flipper-performance-plugin/android/src/main/java/tech/bam/rnperformance/flipper/RNPerfMonitorPlugin.java
+diff --git a/node_modules/react-native-flipper-performance-plugin/ios/FlipperPerformancePlugin.m b/node_modules/react-native-flipper-performance-plugin/ios/FlipperPerformancePlugin.m
+index 6c4716e..355144d 100644
+--- a/node_modules/react-native-flipper-performance-plugin/ios/FlipperPerformancePlugin.m
++++ b/node_modules/react-native-flipper-performance-plugin/ios/FlipperPerformancePlugin.m
+@@ -113,7 +113,7 @@ - (void)onFrameTick:(CADisplayLink *)displayLink frameCountHolder:(FrameCountHol
+   [frameCountHolder incrementFrameCount];
+   if ([frameCountHolder previousTime] == -1) {
+     [frameCountHolder setPreviousTime:frameTimestamp];
+-  } else if (frameTimestamp - [frameCountHolder previousTime] >= 0.5) {
++  } else if (frameTimestamp - [frameCountHolder previousTime] >= 1) {
+     [_connection send:@"addRecord" withParams:@{
+       @"frameCount" : [NSNumber numberWithLong:[frameCountHolder frameCount]],
+       @"time": [NSNumber numberWithLong:(frameTimestamp - [frameCountHolder previousTime]) * 1000],
