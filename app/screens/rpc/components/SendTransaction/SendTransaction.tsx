@@ -5,7 +5,7 @@ import { StyleSheet, View } from 'react-native'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
 import FlexSpacer from 'components/FlexSpacer'
-import { ScrollView } from 'react-native-gesture-handler'
+// import { ScrollView } from 'react-native-gesture-handler'
 import { WalletScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation, useRoute } from '@react-navigation/native'
@@ -16,12 +16,16 @@ import AddValidatorTxView from 'screens/rpc/components/SendTransaction/AddValida
 import AddDelegatorTxView from 'screens/rpc/components/SendTransaction/AddDelegatorTxView'
 import { useDappConnectionV1 } from 'hooks/useDappConnectionV1'
 import RpcRequestBottomSheet from 'screens/rpc/components/shared/RpcRequestBottomSheet'
+import { useApplicationContext } from 'contexts/ApplicationContext'
+import Separator from 'components/Separator'
 
 type SendTransactionScreenProps = WalletScreenProps<
   typeof AppNavigation.Modal.SendTransaction
 >
 
 const SendTransaction = () => {
+  const { theme } = useApplicationContext()
+
   const { goBack } = useNavigation<SendTransactionScreenProps['navigation']>()
   const { request, data } =
     useRoute<SendTransactionScreenProps['route']>().params
@@ -42,15 +46,11 @@ const SendTransaction = () => {
     return (
       <>
         <FlexSpacer />
-        <View
-          style={{
-            paddingVertical: 16,
-            paddingHorizontal: 24
-          }}>
+        <View style={txStyles.actionContainer}>
           <AvaButton.PrimaryLarge onPress={onHandleApprove}>
             Approve
           </AvaButton.PrimaryLarge>
-          <Space y={20} />
+          <Space y={16} />
           <AvaButton.SecondaryLarge onPress={rejectAndClose}>
             Reject
           </AvaButton.SecondaryLarge>
@@ -76,18 +76,24 @@ const SendTransaction = () => {
 
   return (
     <RpcRequestBottomSheet onClose={rejectAndClose}>
-      <ScrollView contentContainerStyle={txStyles.scrollView}>
-        {renderSendDetails()}
+      <View style={txStyles.scrollView}>{renderSendDetails()}</View>
+      <View>
+        {data.txData.type === 'base' && <Separator color={theme.neutral800} />}
         {renderApproveRejectButtons()}
-      </ScrollView>
+      </View>
     </RpcRequestBottomSheet>
   )
 }
 
 export const txStyles = StyleSheet.create({
   scrollView: {
-    minHeight: '100%',
+    flex: 1,
     paddingTop: 16,
+    paddingHorizontal: 14
+  },
+  actionContainer: {
+    flex: 0,
+    paddingVertical: 40,
     paddingHorizontal: 14
   }
 })
