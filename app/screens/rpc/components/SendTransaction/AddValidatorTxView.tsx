@@ -20,7 +20,8 @@ const AddValidatorTxView = ({
   avaxPrice: number
 }) => {
   const { theme } = useApplicationContext()
-  const { tokenInCurrencyFormatter } = useApplicationContext().appHook
+  const { tokenInCurrencyFormatter, currencyFormatter } =
+    useApplicationContext().appHook
   const { nodeID, fee, start, end, stake } = tx
   const startDate = new Date(parseInt(start) * 1000)
   const endDate = new Date(parseInt(end) * 1000)
@@ -102,7 +103,7 @@ const AddValidatorTxView = ({
         <Space y={2} />
         <Row style={styles.currencyContainer}>
           <AvaText.Caption color={theme.neutral400}>
-            {`$0 ${selectedCurrency}`}
+            {currencyFormatter(0)}
           </AvaText.Caption>
         </Row>
       </Card>
