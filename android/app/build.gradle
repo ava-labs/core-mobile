@@ -220,7 +220,14 @@ android {
             applicationIdSuffix ".internal"
         }
         external {}
+    }
 
+    sourceSets {
+        if (flipperEnabled) {
+            main.java.srcDir 'src/flipper/java'
+        } else {
+            main.java.srcDir 'src/flipperNoop/java'
+        }
     }
 
     packagingOptions {

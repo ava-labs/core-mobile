@@ -57,14 +57,22 @@ post_install do |installer|
   __apply_Xcode_12_5_M1_post_install_workaround(installer)
 
   installer.pods_project.targets.each do |target|
-    # By default, Flipper is enabled only for React-Core Debug configuration
-    # The following is needed to have it enabled for the Release configuration (if flipper_enabled is true)
     if flipper_enabled
+      # By default, Flipper is enabled only for React-Core Debug configuration
+      # The following is needed to have it enabled for the Release configuration
       if target.name == 'React-Core'
         target.build_configurations.each do |config|
           if config.name == 'Release'
             config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] = ['$(inherited)', 'FB_SONARKIT_ENABLED=1']
           end
+        end
+      end  
+
+      # react-native-flipper hardcodes the FB_SONARKIT_ENABLED flag no matter what the build configuration is
+      # this is needed to make sure it dynamically sets the flag based on our flipper_enabled var
+      if target.name == 'react-native-flipper'
+        target.build_configurations.each do |config|
+          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] = ['$(inherited)', 'FB_SONARKIT_ENABLED=1']
         end
       end  
     end  
