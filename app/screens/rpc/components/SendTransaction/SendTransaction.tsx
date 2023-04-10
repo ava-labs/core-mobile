@@ -5,6 +5,7 @@ import { StyleSheet, View } from 'react-native'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
 import FlexSpacer from 'components/FlexSpacer'
+import { ScrollView } from 'react-native-gesture-handler'
 import { WalletScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation, useRoute } from '@react-navigation/native'
@@ -75,11 +76,15 @@ const SendTransaction = () => {
 
   return (
     <RpcRequestBottomSheet onClose={rejectAndClose}>
-      <View style={txStyles.scrollView}>{renderSendDetails()}</View>
-      <View>
-        {data.txData.type === 'base' && <Separator color={theme.neutral800} />}
-        {renderApproveRejectButtons()}
-      </View>
+      <ScrollView contentContainerStyle={txStyles.scrollView}>
+        <View>{renderSendDetails()}</View>
+        <View>
+          {data.txData.type === 'base' && (
+            <Separator color={theme.neutral800} />
+          )}
+          {renderApproveRejectButtons()}
+        </View>
+      </ScrollView>
     </RpcRequestBottomSheet>
   )
 }

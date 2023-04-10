@@ -9,6 +9,7 @@ import { AvalancheChainStrings } from 'store/walletConnect/handlers/utils/parseA
 import Card from 'components/Card'
 import { bigIntToString } from '@avalabs/utils-sdk'
 import { GetAssetDescriptionResponse } from '@avalabs/avalanchejs-v2/dist/src/vms/common'
+
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import Separator from 'components/Separator'
@@ -78,7 +79,7 @@ const BaseTxView = ({
   }
 
   return (
-    <ScrollView style={{ height: 400 }}>
+    <ScrollView style={{ maxHeight: 450 }}>
       <AvaText.Heading4>Approve Transaction</AvaText.Heading4>
       <Space y={24} />
       <AvaText.Body2 color={theme.colorText1} textStyle={{ lineHeight: 32 }}>
