@@ -1,16 +1,19 @@
 import AvaText from 'components/AvaText'
 import React from 'react'
-import { View } from 'react-native'
+import { ScrollView, StyleSheet, View } from 'react-native'
 import { Space } from 'components/Space'
 import { Row } from 'components/Row'
 import { AvalancheBaseTx } from 'store/walletConnect/handlers/types'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { AvalancheChainStrings } from 'store/walletConnect/handlers/utils/parseAvalancheTx'
 import Card from 'components/Card'
-import AvaToken from 'components/svg/AvaToken'
 import { bigIntToString } from '@avalabs/utils-sdk'
 import { GetAssetDescriptionResponse } from '@avalabs/avalanchejs-v2/dist/src/vms/common'
-import { Avalanche } from '@avalabs/wallets-sdk'
+
+import { useSelector } from 'react-redux'
+import { selectSelectedCurrency } from 'store/settings/currency'
+import Separator from 'components/Separator'
+import { truncateAddress } from 'utils/Utils'
 
 const BaseTxView = ({
   tx,
@@ -22,15 +25,7 @@ const BaseTxView = ({
   const { theme } = useApplicationContext()
   const { chain, txFee, outputs, memo } = tx
   const { tokenInCurrencyFormatter } = useApplicationContext().appHook
-
-  const isDateFuture = (date: bigint) => {
-    const now = Avalanche.getUnixNow()
-    return date > now
-  }
-
-  const unixToLocaleString = (date: bigint) => {
-    return new Date(Number(date.toString()) * 1000).toLocaleString()
-  }
+  const selectedCurrency = useSelector(selectSelectedCurrency)
 
   const renderOutputCard = (output: {
     assetId: string
@@ -42,117 +37,122 @@ const BaseTxView = ({
     isAvax: boolean
   }) => {
     return (
-      <Card key={output.assetId} style={{ padding: 16 }}>
-        <Row style={{ justifyContent: 'space-between' }}>
-          <Row style={{ alignItems: 'center' }}>
-            {output.isAvax && <AvaToken color={theme.tokenLogoBg} />}
-            <Space x={16} />
-            <AvaText.Heading3>
-              {output.assetDescription?.symbol}
-            </AvaText.Heading3>
-          </Row>
-          <View style={{ alignItems: 'flex-end' }}>
-            <AvaText.Body2 color={theme.white}>
-              {Number(
-                bigIntToString(
-                  output.amount,
-                  output.assetDescription?.denomination || 0
-                )
-              )}
+      <Card key={output.assetId} style={styles.balanceCardContainer}>
+        {output.owners.map(address => (
+          <Row style={styles.rowContainer}>
+            <AvaText.Caption color={theme.colorText1}>To</AvaText.Caption>
+            <AvaText.Body2 color={theme.colorText1}>
+              {truncateAddress(address)}
             </AvaText.Body2>
-            <Space y={2} />
-            {output.isAvax && (
-              <AvaText.Body3 color={theme.colorText2}>
-                {tokenInCurrencyFormatter(
-                  Number(
-                    bigIntToString(
-                      output.amount,
-                      output.assetDescription?.denomination || 0
-                    )
-                  ) * avaxPrice
-                )}
-              </AvaText.Body3>
-            )}
-          </View>
+          </Row>
+        ))}
+        <Separator style={styles.separator} color={theme.neutral800} />
+        <Row style={styles.rowContainer}>
+          <AvaText.Caption color={theme.colorText1}>Amount</AvaText.Caption>
+          <AvaText.Subtitle2 color={theme.colorText1}>
+            {`${Number(
+              bigIntToString(
+                output.amount,
+                output.assetDescription?.denomination || 0
+              )
+            )} AVAX`}
+          </AvaText.Subtitle2>
         </Row>
-        {isDateFuture(output.locktime) && (
-          <Row style={{ justifyContent: 'space-between' }}>
-            <AvaText.Body3 color={theme.colorText2}>Locktime</AvaText.Body3>
-            <AvaText.Body2>{unixToLocaleString(output.locktime)}</AvaText.Body2>
-          </Row>
-        )}
+        <Row style={styles.rowContainer}>
+          <AvaText.Caption color={theme.colorText1}>Threshold</AvaText.Caption>
+          <AvaText.Body2 color={theme.colorText1}>
+            {output.threshold.toString()}
+          </AvaText.Body2>
+        </Row>
         {output.owners.length > 1 && (
-          <Row style={{ justifyContent: 'space-between' }}>
-            <AvaText.Body3 color={theme.colorText2}>Threshold</AvaText.Body3>
-            <AvaText.Body2>{output.threshold.toString()}</AvaText.Body2>
+          <Row style={styles.rowContainer}>
+            <AvaText.Caption color={theme.colorText1}>
+              Threshold
+            </AvaText.Caption>
+            <AvaText.Body2 color={theme.colorText1}>
+              {output.threshold.toString()}
+            </AvaText.Body2>
           </Row>
         )}
-        <View>
-          <AvaText.Body1>Recipients</AvaText.Body1>
-          {output.owners.map(address => (
-            <AvaText.Body3 color={theme.colorText2}>{address}</AvaText.Body3>
-          ))}
-        </View>
       </Card>
     )
   }
 
   return (
-    <View>
-      <AvaText.Heading2>Approve Transaction</AvaText.Heading2>
-      <Space y={16} />
-      <Card style={{ padding: 16 }}>
-        <Row style={{ justifyContent: 'space-between' }}>
-          <AvaText.Body3>Source chain</AvaText.Body3>
-          <AvaText.Body3>{AvalancheChainStrings[chain]}</AvaText.Body3>
+    <ScrollView style={{ maxHeight: 450 }}>
+      <AvaText.Heading4>Approve Transaction</AvaText.Heading4>
+      <Space y={24} />
+      <AvaText.Body2 color={theme.colorText1} textStyle={{ lineHeight: 32 }}>
+        Chain Details
+      </AvaText.Body2>
+      <Space y={8} />
+      <Card style={styles.cardContainer}>
+        <Row style={styles.rowContainer}>
+          <AvaText.Caption color={theme.colorText1}>
+            Active chain
+          </AvaText.Caption>
+          <AvaText.Subtitle2 color={theme.colorText1}>
+            Avalanche {AvalancheChainStrings[chain]}
+          </AvaText.Subtitle2>
         </Row>
       </Card>
-
       <Space y={16} />
-      <AvaText.Body2
-        color={theme.colorText1}
-        textStyle={{ fontFamily: 'Inter-SemiBold' }}>
-        Details
+      <AvaText.Body2 color={theme.colorText1} textStyle={{ lineHeight: 20 }}>
+        Balance Change
       </AvaText.Body2>
       <Space y={8} />
       {outputs.map(output => renderOutputCard(output))}
-
       <Space y={16} />
-      <AvaText.Body2
-        color={theme.colorText1}
-        textStyle={{ fontFamily: 'Inter-SemiBold' }}>
+      <AvaText.Body2 color={theme.colorText1} textStyle={{ lineHeight: 20 }}>
         Network fee
       </AvaText.Body2>
       <Space y={8} />
-      <Card style={{ padding: 16 }}>
-        <Row style={{ justifyContent: 'space-between' }}>
-          <AvaText.Body3>Fee Amount</AvaText.Body3>
-          <View style={{ alignItems: 'flex-end' }}>
-            <AvaText.Body2 color={theme.white}>
+      <Card style={styles.cardContainer}>
+        <Row style={styles.rowContainer}>
+          <AvaText.Caption color={theme.colorText1}>Fee Amount</AvaText.Caption>
+          <View style={styles.feeContainer}>
+            <AvaText.Subtitle2 color={theme.white}>
               {Number(bigIntToString(txFee, 9))} AVAX
-            </AvaText.Body2>
+            </AvaText.Subtitle2>
             <Space y={2} />
-            <AvaText.Body3 color={theme.colorText2}>
-              {tokenInCurrencyFormatter(
+            <AvaText.Caption color={theme.colorText2}>
+              {`${tokenInCurrencyFormatter(
                 Number(bigIntToString(txFee, 9)) * avaxPrice
-              )}
-            </AvaText.Body3>
+              )} ${selectedCurrency}`}
+            </AvaText.Caption>
           </View>
         </Row>
       </Card>
-
       <Space y={16} />
-      <AvaText.Body2
-        color={theme.colorText1}
-        textStyle={{ fontFamily: 'Inter-SemiBold' }}>
-        Memo
-      </AvaText.Body2>
+      <AvaText.Body2 color={theme.colorText1}>Memo</AvaText.Body2>
       <Space y={8} />
-      <Card style={{ padding: 16 }}>
-        <AvaText.Body3 color={theme.colorText2}>{memo}</AvaText.Body3>
+      <Card style={styles.cardContainer}>
+        <AvaText.Caption color={theme.colorText2}>{memo}</AvaText.Caption>
       </Card>
-    </View>
+    </ScrollView>
   )
 }
+
+const styles = StyleSheet.create({
+  rowContainer: {
+    justifyContent: 'space-between'
+  },
+  separator: {
+    marginVertical: 16
+  },
+  innerRow: {
+    alignItems: 'center'
+  },
+  feeContainer: {
+    alignItems: 'flex-end'
+  },
+  cardContainer: {
+    padding: 16
+  },
+  balanceCardContainer: {
+    padding: 16,
+    marginBottom: 8
+  }
+})
 
 export default BaseTxView

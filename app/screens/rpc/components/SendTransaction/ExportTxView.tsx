@@ -1,6 +1,6 @@
 import AvaText from 'components/AvaText'
 import React from 'react'
-import { View } from 'react-native'
+import { StyleSheet, View } from 'react-native'
 import { Space } from 'components/Space'
 import { Row } from 'components/Row'
 import Separator from 'components/Separator'
@@ -10,6 +10,8 @@ import { AvalancheChainStrings } from 'store/walletConnect/handlers/utils/parseA
 import Card from 'components/Card'
 import AvaToken from 'components/svg/AvaToken'
 import { bigIntToString } from '@avalabs/utils-sdk'
+import { useSelector } from 'react-redux'
+import { selectSelectedCurrency } from 'store/settings/currency'
 
 const ExportTxView = ({
   tx,
@@ -21,92 +23,111 @@ const ExportTxView = ({
   const { theme } = useApplicationContext()
   const { amount, chain, destination, type, txFee } = tx
   const { tokenInCurrencyFormatter } = useApplicationContext().appHook
+  const selectedCurrency = useSelector(selectSelectedCurrency)
 
   return (
     <View>
       <AvaText.Heading4>Approve Export</AvaText.Heading4>
-      <Space y={28} />
-      <AvaText.TextLink color={theme.colorText1} textStyle={{ lineHeight: 20 }}>
-        Chain Details
-      </AvaText.TextLink>
+      <Space y={24} />
+      <AvaText.Body2 color={theme.colorText1} textStyle={{ lineHeight: 32 }}>
+        Transaction Details
+      </AvaText.Body2>
       <Space y={8} />
-      <Card style={{ padding: 16 }}>
-        <Row style={{ justifyContent: 'space-between' }}>
-          <AvaText.Caption color={theme.colorText2}>
+      <Card style={styles.cardContainer}>
+        <Row style={styles.rowContainer}>
+          <AvaText.Caption color={theme.colorText1}>
             Source Chain
           </AvaText.Caption>
-          <AvaText.Caption color={theme.colorText1}>
+          <AvaText.Subtitle2 color={theme.colorText1}>
             Avalanche {AvalancheChainStrings[chain]}
-          </AvaText.Caption>
+          </AvaText.Subtitle2>
         </Row>
         <Space y={8} />
-        <Row style={{ justifyContent: 'space-between' }}>
-          <AvaText.Caption color={theme.colorText2}>
-            Destination Chain
-          </AvaText.Caption>
+        <Row style={styles.rowContainer}>
           <AvaText.Caption color={theme.colorText1}>
-            Avalanche {AvalancheChainStrings[destination]}
+            Target Chain
           </AvaText.Caption>
+          <AvaText.Subtitle2 color={theme.colorText1}>
+            Avalanche {AvalancheChainStrings[destination]}
+          </AvaText.Subtitle2>
         </Row>
       </Card>
 
-      <Space y={32} />
-      <AvaText.TextLink color={theme.colorText1} textStyle={{ lineHeight: 20 }}>
+      <Space y={16} />
+      <AvaText.Body2 color={theme.colorText1} textStyle={{ lineHeight: 20 }}>
         Balance Change
-      </AvaText.TextLink>
+      </AvaText.Body2>
       <Space y={8} />
-      <Card style={{ padding: 16 }}>
-        <Row style={{ justifyContent: 'space-between' }}>
-          <AvaText.Caption color={theme.colorText2}>
-            Transaction type
-          </AvaText.Caption>
+      <Card style={styles.cardContainer}>
+        <Row style={styles.rowContainer}>
           <AvaText.Caption color={theme.colorText1}>
-            {type ? (type[0] || '').toUpperCase() + type.slice(1) : ''}
+            Transaction Type
           </AvaText.Caption>
+          <AvaText.Subtitle2 color={theme.colorText1}>
+            {type ? (type[0] || '').toUpperCase() + type.slice(1) : ''}
+          </AvaText.Subtitle2>
         </Row>
-        <Separator style={{ marginVertical: 16 }} color={theme.neutral800} />
-        <Row style={{ justifyContent: 'space-between' }}>
-          <Row style={{ alignItems: 'center' }}>
+        <Separator style={styles.separator} color={theme.neutral800} />
+        <Row style={styles.rowContainer}>
+          <Row style={styles.innerRow}>
             <AvaToken color={theme.tokenLogoBg} />
             <Space x={16} />
             <AvaText.Heading3>AVAX</AvaText.Heading3>
           </Row>
-          <View style={{ alignItems: 'flex-end' }}>
-            <AvaText.Subtitle2 color={theme.white}>
+          <View style={styles.feeContainer}>
+            <AvaText.Subtitle2 color={theme.colorText1}>
               {Number(bigIntToString(amount, 9))} AVAX
             </AvaText.Subtitle2>
             <Space y={2} />
-            <AvaText.Body3 color={theme.neutral400}>
-              {tokenInCurrencyFormatter(
+            <AvaText.Caption color={theme.neutral400}>
+              {`${tokenInCurrencyFormatter(
                 Number(bigIntToString(amount, 9)) * avaxPrice
-              )}
-            </AvaText.Body3>
+              )} ${selectedCurrency}`}
+            </AvaText.Caption>
           </View>
         </Row>
       </Card>
 
-      <Space y={24} />
-      <AvaText.TextLink color={theme.colorText1} textStyle={{ lineHeight: 20 }}>
+      <Space y={16} />
+      <AvaText.Body2 color={theme.colorText1} textStyle={{ lineHeight: 20 }}>
         Network fee
-      </AvaText.TextLink>
+      </AvaText.Body2>
       <Space y={8} />
-      <Card style={{ padding: 16 }}>
-        <Row style={{ justifyContent: 'space-between' }}>
-          <AvaText.Body3 color={theme.neutral400}>Fee Amount</AvaText.Body3>
-          <View style={{ alignItems: 'flex-end' }}>
+      <Card style={styles.cardContainer}>
+        <Row style={styles.rowContainer}>
+          <AvaText.Caption color={theme.colorText1}>Fee Amount</AvaText.Caption>
+          <View style={styles.feeContainer}>
             <AvaText.Subtitle2 color={theme.neutral50}>
               {Number(bigIntToString(txFee, 9))} AVAX
             </AvaText.Subtitle2>
             <Space y={2} />
-            <AvaText.Body3 color={theme.neutral400}>
-              {tokenInCurrencyFormatter(
+            <AvaText.Caption color={theme.neutral400}>
+              {`${tokenInCurrencyFormatter(
                 Number(bigIntToString(txFee, 9)) * avaxPrice
-              )}
-            </AvaText.Body3>
+              )} ${selectedCurrency}`}
+            </AvaText.Caption>
           </View>
         </Row>
       </Card>
     </View>
   )
 }
+
+const styles = StyleSheet.create({
+  rowContainer: {
+    justifyContent: 'space-between'
+  },
+  separator: {
+    marginVertical: 16
+  },
+  innerRow: {
+    alignItems: 'center'
+  },
+  feeContainer: {
+    alignItems: 'flex-end'
+  },
+  cardContainer: {
+    padding: 16
+  }
+})
 export default ExportTxView
