@@ -15,7 +15,7 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import AvaButton from 'components/AvaButton'
 import CarrotSVG from 'components/svg/CarrotSVG'
 
-const ExportTxView = ({
+const ImportTxView = ({
   tx,
   avaxPrice
 }: {
@@ -145,4 +145,4 @@ const styles = StyleSheet.create({
   }
 })
 
-export default ExportTxView
+export default ImportTxView
