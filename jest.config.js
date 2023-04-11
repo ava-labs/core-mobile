@@ -5,5 +5,5 @@ module.exports = {
   moduleNameMapper: {
     uuid: require.resolve('uuid')
   },
-  testPathIgnorePatterns: ['./e2e/tests/bridge'],
+  testPathIgnorePatterns: ['./e2e/tests/bridge']
 }
