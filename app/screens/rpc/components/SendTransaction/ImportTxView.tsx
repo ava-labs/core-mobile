@@ -1,5 +1,5 @@
 import AvaText from 'components/AvaText'
-import React from 'react'
+import React, { useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { Space } from 'components/Space'
 import { Row } from 'components/Row'
@@ -14,18 +14,59 @@ import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import AvaButton from 'components/AvaButton'
 import CarrotSVG from 'components/svg/CarrotSVG'
+import { getHexStringToBytes } from 'utils/getHexStringToBytes'
 
 const ImportTxView = ({
   tx,
-  avaxPrice
+  avaxPrice,
+  hexData,
+  toggleActionButtons
 }: {
   tx: ImportTx
   avaxPrice: number
+  hexData: string
+  toggleActionButtons: (value: boolean) => void
 }) => {
   const { theme } = useApplicationContext()
+  const [showData, setShowData] = useState(false)
+
   const { amount, chain, source, type, txFee } = tx
   const { tokenInCurrencyFormatter } = useApplicationContext().appHook
   const selectedCurrency = useSelector(selectSelectedCurrency)
+
+  const toggleShowRawData = (value: boolean) => {
+    toggleActionButtons(value)
+    setShowData(value)
+  }
+
+  if (showData) {
+    return (
+      <View style={{ padding: 16 }}>
+        <Row style={{ alignItems: 'center' }}>
+          <AvaButton.Base onPress={() => toggleShowRawData(false)}>
+            <CarrotSVG direction={'left'} size={23} />
+          </AvaButton.Base>
+          <Space x={14} />
+          <AvaText.Heading1>Transaction Data</AvaText.Heading1>
+        </Row>
+        <Space y={16} />
+        <Row style={{ justifyContent: 'space-between' }}>
+          <AvaText.Body1>Hex Data:</AvaText.Body1>
+          <AvaText.Body1>{getHexStringToBytes(hexData)} Bytes</AvaText.Body1>
+        </Row>
+        <View style={{ paddingVertical: 14 }}>
+          <AvaText.Body1
+            textStyle={{
+              padding: 16,
+              backgroundColor: theme.colorBg3,
+              borderRadius: 15
+            }}>
+            {hexData}
+          </AvaText.Body1>
+        </View>
+      </View>
+    )
+  }
 
   return (
     <View>
@@ -35,7 +76,7 @@ const ImportTxView = ({
         <AvaText.Body2 color={theme.colorText1} textStyle={{ lineHeight: 32 }}>
           Transaction Details
         </AvaText.Body2>
-        <AvaButton.Base>
+        <AvaButton.Base onPress={() => toggleShowRawData(true)}>
           <Row>
             <CarrotSVG color={theme.colorText1} direction={'left'} size={12} />
             <CarrotSVG color={theme.colorText1} size={12} />
