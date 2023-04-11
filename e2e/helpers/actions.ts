@@ -95,6 +95,17 @@ const swipeDown = async (
     .swipe('down', speed, normalizedOffset)
 }
 
+const swipeLeft = async (
+  item: Detox.NativeMatcher,
+  speed: Detox.Speed,
+  normalizedOffset: number,
+  index: number
+) => {
+  return await element(item)
+    .atIndex(index)
+    .swipe('left', speed, normalizedOffset)
+}
+
 const platform = () => {
   return device.getPlatform()
 }
@@ -108,6 +119,7 @@ export default {
   getAttributes,
   swipeUp,
   swipeDown,
+  swipeLeft,
   setColumnToValue,
   setInputText,
   getAndroidAttributesArray,

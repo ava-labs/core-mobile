@@ -19,6 +19,7 @@ import { Row } from 'components/Row'
 type Props = {
   showAddress?: boolean
   showBackButton?: boolean
+  testID?: string
 }
 
 type NavigationProp = DrawerScreenProps<
@@ -70,7 +71,8 @@ const TopNavigationHeader: FC<Props> = ({
     return (
       <AvaButton.Icon
         onPress={navigation.openDrawer}
-        style={{ marginRight: 32 }}>
+        style={{ marginRight: 32 }}
+        testID="menu_svg">
         <MenuSVG />
       </AvaButton.Icon>
     )

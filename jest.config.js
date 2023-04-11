@@ -4,5 +4,8 @@ module.exports = {
   clearMocks: true,
   moduleNameMapper: {
     uuid: require.resolve('uuid')
-  }
+  },
+  testPathIgnorePatterns: [
+    './e2e/tests/bridge',
+  ],
 }
