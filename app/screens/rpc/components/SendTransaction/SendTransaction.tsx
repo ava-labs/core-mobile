@@ -1,6 +1,6 @@
 // noinspection JSUnusedLocalSymbols
 
-import React, { useCallback } from 'react'
+import React, { useCallback, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
@@ -32,6 +32,8 @@ const SendTransaction = () => {
   const { onUserApproved: onApprove, onUserRejected: onReject } =
     useDappConnectionV1()
 
+  const hexData = JSON.parse(data.unsignedTxJson).txBytes
+
   const rejectAndClose = useCallback(() => {
     onReject(request)
     goBack()
@@ -40,6 +42,11 @@ const SendTransaction = () => {
   const onHandleApprove = () => {
     onApprove(request, data)
     goBack()
+  }
+
+  const [hideActionButtons, sethideActionButtons] = useState(false)
+  const toggleActionButtons = (value: boolean) => {
+    sethideActionButtons(value)
   }
 
   const renderApproveRejectButtons = () => {
@@ -62,9 +69,23 @@ const SendTransaction = () => {
   function renderSendDetails() {
     switch (data.txData.type) {
       case 'export':
-        return <ExportTxView tx={data.txData} avaxPrice={12} />
+        return (
+          <ExportTxView
+            tx={data.txData}
+            hexData={hexData}
+            avaxPrice={12}
+            toggleActionButtons={toggleActionButtons}
+          />
+        )
       case 'import':
-        return <ImportTxView tx={data.txData} avaxPrice={12} />
+        return (
+          <ImportTxView
+            tx={data.txData}
+            hexData={hexData}
+            avaxPrice={12}
+            toggleActionButtons={toggleActionButtons}
+          />
+        )
       case 'base':
         return <BaseTxView tx={data.txData} avaxPrice={12} />
       case 'add_validator':
@@ -82,7 +103,8 @@ const SendTransaction = () => {
           {data.txData.type === 'base' && (
             <Separator color={theme.neutral800} />
           )}
-          {renderApproveRejectButtons()}
+
+          {!hideActionButtons && renderApproveRejectButtons()}
         </View>
       </ScrollView>
     </RpcRequestBottomSheet>

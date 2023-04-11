@@ -58,12 +58,6 @@ const BaseTxView = ({
             )} AVAX`}
           </AvaText.Subtitle2>
         </Row>
-        <Row style={styles.rowContainer}>
-          <AvaText.Caption color={theme.colorText1}>Threshold</AvaText.Caption>
-          <AvaText.Body2 color={theme.colorText1}>
-            {output.threshold.toString()}
-          </AvaText.Body2>
-        </Row>
         {output.owners.length > 1 && (
           <Row style={styles.rowContainer}>
             <AvaText.Caption color={theme.colorText1}>
