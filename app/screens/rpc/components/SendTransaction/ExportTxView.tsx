@@ -12,6 +12,8 @@ import AvaToken from 'components/svg/AvaToken'
 import { bigIntToString } from '@avalabs/utils-sdk'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
+import AvaButton from 'components/AvaButton'
+import CarrotSVG from 'components/svg/CarrotSVG'
 
 const ExportTxView = ({
   tx,
@@ -29,9 +31,18 @@ const ExportTxView = ({
     <View>
       <AvaText.Heading4>Approve Export</AvaText.Heading4>
       <Space y={24} />
-      <AvaText.Body2 color={theme.colorText1} textStyle={{ lineHeight: 32 }}>
-        Transaction Details
-      </AvaText.Body2>
+      <Row style={styles.transactionContainer}>
+        <AvaText.Body2 color={theme.colorText1} textStyle={{ lineHeight: 32 }}>
+          Transaction Details
+        </AvaText.Body2>
+        <AvaButton.Base>
+          <Row>
+            <CarrotSVG color={theme.colorText1} direction={'left'} size={12} />
+            <CarrotSVG color={theme.colorText1} size={12} />
+          </Row>
+        </AvaButton.Base>
+      </Row>
+
       <Space y={8} />
       <Card style={styles.cardContainer}>
         <Row style={styles.rowContainer}>
@@ -116,6 +127,10 @@ const ExportTxView = ({
 const styles = StyleSheet.create({
   rowContainer: {
     justifyContent: 'space-between'
+  },
+  transactionContainer: {
+    justifyContent: 'space-between',
+    alignItems: 'center'
   },
   separator: {
     marginVertical: 16
