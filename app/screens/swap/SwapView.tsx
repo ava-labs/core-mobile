@@ -25,10 +25,10 @@ import UniversalTokenSelector from 'components/UniversalTokenSelector'
 import SwapTransactionDetail from 'screens/swap/components/SwapTransactionDetails'
 import { calculateRate } from 'swap/utils'
 import { selectNetworkFee } from 'store/networkFee'
-import { useActiveNetwork } from 'hooks/useActiveNetwork'
 import { calculateGasAndFees, getMaxValue, truncateBN } from 'utils/Utils'
 import { bnToLocaleString, ethersBigNumberToBN } from '@avalabs/utils-sdk'
 import { usePostCapture } from 'hooks/usePosthogCapture'
+import { selectActiveNetwork } from 'store/network'
 
 type NavigationProp = SwapScreenProps<
   typeof AppNavigation.Swap.Swap
@@ -43,7 +43,7 @@ export default function SwapView() {
   const { capture } = usePostCapture()
   const { theme } = useApplicationContext()
   const { navigate } = useNavigation<NavigationProp>()
-  const activeNetwork = useActiveNetwork()
+  const activeNetwork = useSelector(selectActiveNetwork)
   const networkFee = useSelector(selectNetworkFee)
   const tokensWithBalance = useSelector(selectTokensWithBalance)
   const tokensWithZeroBalance = useSelector(selectTokensWithZeroBalance)

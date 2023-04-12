@@ -6,7 +6,8 @@ import { Image, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import useInAppBrowser from 'hooks/useInAppBrowser'
-import { useActiveAccount } from 'hooks/useActiveAccount'
+import { useSelector } from 'react-redux'
+import { selectActiveAccount } from 'store/account'
 import BuyPrompt from './BuyPrompt'
 
 const CoinbaseLogo = require('./coinbase.png')
@@ -22,7 +23,7 @@ export enum TokenType {
 }
 
 const BuyCarefully = () => {
-  const activeAccount = useActiveAccount()
+  const activeAccount = useSelector(selectActiveAccount)
   const { goBack } = useNavigation<BuyCarefullyScreenProps['navigation']>()
 
   const { tokenType } = useRoute<BuyCarefullyScreenProps['route']>().params

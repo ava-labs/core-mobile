@@ -8,8 +8,9 @@ import FlexSpacer from 'components/FlexSpacer'
 import { Row } from 'components/Row'
 import { BigNumber } from 'ethers'
 import { useNativeTokenPrice } from 'hooks/useNativeTokenPrice'
-import { useActiveNetwork } from 'hooks/useActiveNetwork'
 import { calculateGasAndFees } from 'utils/Utils'
+import { useSelector } from 'react-redux'
+import { selectActiveNetwork } from 'store/network'
 import { PopableContent } from './PopableContent'
 
 interface EditFeesProps {
@@ -26,7 +27,7 @@ const gasLimitInfoInfoMessage = (
 const EditFees = ({ gasPrice, gasLimit, onSave, onClose }: EditFeesProps) => {
   const [newGasLimit, setNewGasLimit] = useState(gasLimit)
   const tokenPrice = useNativeTokenPrice().nativeTokenPrice
-  const network = useActiveNetwork()
+  const network = useSelector(selectActiveNetwork)
   const [feeError, setFeeError] = useState('')
   const [newFees, setNewFees] = useState<
     ReturnType<typeof calculateGasAndFees>

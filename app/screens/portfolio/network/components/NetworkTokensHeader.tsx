@@ -11,8 +11,8 @@ import {
 } from 'store/balance'
 import { ActivityIndicator } from 'components/ActivityIndicator'
 import { NetworkLogo } from 'screens/network/NetworkLogo'
-import { useActiveNetwork } from 'hooks/useActiveNetwork'
-import { useActiveAccount } from 'hooks/useActiveAccount'
+import { selectActiveNetwork } from 'store/network'
+import { selectActiveAccount } from 'store/account'
 
 const NetworkTokensHeader = () => {
   const {
@@ -20,8 +20,8 @@ const NetworkTokensHeader = () => {
   } = useApplicationContext()
   const isLoadingBalance = useSelector(selectIsLoadingBalances)
   const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
-  const { chainName, logoUri, chainId } = useActiveNetwork()
-  const account = useActiveAccount()
+  const { chainName, logoUri, chainId } = useSelector(selectActiveNetwork)
+  const account = useSelector(selectActiveAccount)
   const balanceTotal = useSelector(
     selectBalanceTotalInCurrencyForNetworkAndAccount(chainId, account?.index)
   )

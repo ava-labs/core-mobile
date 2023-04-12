@@ -6,12 +6,12 @@ import { Row } from 'components/Row'
 import TokenAddress from 'components/TokenAddress'
 import { View } from 'react-native'
 import { Space } from 'components/Space'
-import { useActiveAccount } from 'hooks/useActiveAccount'
 import Separator from 'components/Separator'
 import Avatar from 'components/Avatar'
 import { useSelector } from 'react-redux'
 import { selectTokenByAddress } from 'store/balance'
 import isEmpty from 'lodash.isempty'
+import { selectActiveAccount } from 'store/account'
 import { sharedStyles } from './styles'
 
 export function GenericTransaction({
@@ -21,7 +21,7 @@ export function GenericTransaction({
   name
 }: TransactionDisplayValues) {
   const theme = useApplicationContext().theme
-  const activeAccount = useActiveAccount()
+  const activeAccount = useSelector(selectActiveAccount)
   const token = useSelector(selectTokenByAddress(description?.args?.asset))
   return (
     <>

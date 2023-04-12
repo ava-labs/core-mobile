@@ -15,8 +15,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { getBtcBalance } from 'screens/bridge/hooks/getBtcBalance'
 import { AssetBalance } from 'screens/bridge/utils/types'
 import { BitcoinInputUTXO, getMaxTransferAmount } from '@avalabs/wallets-sdk'
-import { useActiveNetwork } from 'hooks/useActiveNetwork'
-import { useActiveAccount } from 'hooks/useActiveAccount'
 import { NetworkFee } from 'services/networkFee/types'
 import {
   BITCOIN_NETWORK,
@@ -31,13 +29,14 @@ import { useSelector } from 'react-redux'
 import { selectTokensWithBalanceByNetwork } from 'store/balance'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
-import { selectNetworks } from 'store/network'
+import { selectActiveNetwork, selectNetworks } from 'store/network'
 import Logger from 'utils/Logger'
 import { selectBridgeAppConfig } from 'store/bridge'
+import { selectActiveAccount } from 'store/account'
 
 export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
-  const activeNetwork = useActiveNetwork()
-  const activeAccount = useActiveAccount()
+  const activeNetwork = useSelector(selectActiveNetwork)
+  const activeAccount = useSelector(selectActiveAccount)
   const currency = useSelector(selectSelectedCurrency)
   const bridgeConfig = useSelector(selectBridgeAppConfig)
   const { createBridgeTransaction } = useBridgeContext()
@@ -108,6 +107,7 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
         setFeeRates(rates)
       }
     }
+
     loadRateFees()
   }, [activeNetwork.isTestnet, isBitcoinBridge])
 
@@ -144,6 +144,7 @@ export function useBtcBridge(amountInBtc: Big): BridgeAdapter {
         })
       }
     }
+
     loadBalances()
   }, [
     btcAddress,
