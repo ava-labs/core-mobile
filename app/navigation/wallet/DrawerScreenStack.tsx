@@ -13,14 +13,15 @@ export type DrawerParamList = {
 
 const DrawerStack = createDrawerNavigator()
 
+const DrawerContent = () => <DrawerView />
+
 const DrawerScreenStack = () => (
   <DrawerStack.Navigator
     screenOptions={{
       headerShown: false,
       drawerStyle: { width: '80%' }
     }}
-    useLegacyImplementation
-    drawerContent={() => <DrawerView />}>
+    drawerContent={DrawerContent}>
     <DrawerStack.Screen
       name={AppNavigation.Wallet.Tabs}
       component={TabNavigator}
