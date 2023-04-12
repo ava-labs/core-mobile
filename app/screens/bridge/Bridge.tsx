@@ -27,8 +27,12 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { BridgeScreenProps } from 'navigation/types'
 import { usePosthogContext } from 'contexts/PosthogContext'
-import { selectNetworks, setActive, TokenSymbol } from 'store/network'
-import { useActiveNetwork } from 'hooks/useActiveNetwork'
+import {
+  selectActiveNetwork,
+  selectNetworks,
+  setActive,
+  TokenSymbol
+} from 'store/network'
 import {
   bigToBN,
   bigToLocaleString,
@@ -98,7 +102,7 @@ const Bridge: FC = () => {
   } = useBridgeSDK()
   const { getTokenSymbolOnNetwork } = useGetTokenSymbolOnNetwork()
   const networks = useSelector(selectNetworks)
-  const activeNetwork = useActiveNetwork()
+  const activeNetwork = useSelector(selectActiveNetwork)
   const [bridgeError, setBridgeError] = useState<string>('')
   const [isPending, setIsPending] = useState<boolean>(false)
   const tokenInfoData = useTokenInfoContext()

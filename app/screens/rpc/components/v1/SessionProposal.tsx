@@ -9,12 +9,13 @@ import AvaButton from 'components/AvaButton'
 import { NativeViewGestureHandler } from 'react-native-gesture-handler'
 import FlexSpacer from 'components/FlexSpacer'
 import AccountItem from 'screens/portfolio/account/AccountItem'
-import { useActiveAccount } from 'hooks/useActiveAccount'
 import { showSimpleToast } from 'components/Snackbar'
 import { WalletScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { useDappConnectionV1 } from 'hooks/useDappConnectionV1'
+import { useSelector } from 'react-redux'
+import { selectActiveAccount } from 'store/account'
 import RpcRequestBottomSheet from '../shared/RpcRequestBottomSheet'
 
 const showNoActiveAccountMessage = () => {
@@ -32,7 +33,7 @@ const SessionProposal = () => {
     useDappConnectionV1()
 
   const theme = useApplicationContext().theme
-  const activeAccount = useActiveAccount()
+  const activeAccount = useSelector(selectActiveAccount)
   const peerMeta = request.payload.peerMeta
   const siteName = peerMeta?.name ?? ''
 

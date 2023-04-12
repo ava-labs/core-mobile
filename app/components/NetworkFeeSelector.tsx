@@ -12,7 +12,6 @@ import PoppableGasAndLimit from 'components/PoppableGasAndLimit'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchNetworkFee, selectNetworkFee } from 'store/networkFee'
 import { BigNumber } from 'ethers'
-import { useActiveNetwork } from 'hooks/useActiveNetwork'
 import { NetworkVMType } from '@avalabs/chains-sdk'
 import { useNavigation } from '@react-navigation/native'
 import AppNavigation from 'navigation/AppNavigation'
@@ -20,6 +19,7 @@ import { bigToEthersBigNumber, ethersBigNumberToBig } from '@avalabs/utils-sdk'
 import Big from 'big.js'
 import InfoSVG from 'components/svg/InfoSVG'
 import { WalletScreenProps } from 'navigation/types'
+import { selectActiveNetwork } from 'store/network'
 import InputText from './InputText'
 
 export enum FeePreset {
@@ -52,7 +52,7 @@ const NetworkFeeSelector = ({
   const { theme } = useApplicationContext()
   const networkFee = useSelector(selectNetworkFee)
   const dispatch = useDispatch()
-  const network = useActiveNetwork()
+  const network = useSelector(selectActiveNetwork)
   const isBtcNetwork = network.vmName === NetworkVMType.BITCOIN
   const [selectedPreset, setSelectedPreset] = useState(FeePreset.Instant)
   const [customGasPrice, setCustomGasPrice] = useState<BigNumber>()

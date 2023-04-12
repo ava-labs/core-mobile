@@ -19,7 +19,6 @@ import { GenericTransaction } from 'screens/rpc/components/shared/signTransactio
 import { SwapTransaction } from 'screens/rpc/components/shared/signTransaction/SwapTransaction'
 import NetworkFeeSelector, { FeePreset } from 'components/NetworkFeeSelector'
 import { getHexStringToBytes } from 'utils/getHexStringToBytes'
-import { useActiveNetwork } from 'hooks/useActiveNetwork'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import EditSpendLimit from 'components/EditSpendLimit'
 import CarrotSVG from 'components/svg/CarrotSVG'
@@ -43,6 +42,7 @@ import { useSelector } from 'react-redux'
 import { selectRequestStatus } from 'store/walletConnect'
 import { useDappConnectionV1 } from 'hooks/useDappConnectionV1'
 import { hexToBN } from '@avalabs/utils-sdk'
+import { selectActiveNetwork } from 'store/network'
 import RpcRequestBottomSheet from '../shared/RpcRequestBottomSheet'
 
 const defaultErrMessage = 'Transaction Failed'
@@ -59,7 +59,7 @@ const SignTransaction = () => {
   const requestStatus = useSelector(selectRequestStatus(request.payload.id))
   const { openUrl } = useInAppBrowser()
   const theme = useApplicationContext().theme
-  const activeNetwork = useActiveNetwork()
+  const activeNetwork = useSelector(selectActiveNetwork)
   const [txFailedError, setTxFailedError] = useState<string>()
   const [submitting, setSubmitting] = useState(false)
   const [showData, setShowData] = useState(false)

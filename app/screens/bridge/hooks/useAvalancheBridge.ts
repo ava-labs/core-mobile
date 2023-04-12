@@ -13,10 +13,10 @@ import { useCallback, useMemo, useState } from 'react'
 import { useSingularAssetBalanceEVM } from 'screens/bridge/hooks/useSingularAssetBalanceEVM'
 import { useAssetBalancesEVM } from 'screens/bridge/hooks/useAssetBalancesEVM'
 import Big from 'big.js'
-import { useActiveAccount } from 'hooks/useActiveAccount'
 import { useAvalancheProvider } from 'hooks/networkProviderHooks'
 import { useSelector } from 'react-redux'
 import { selectBridgeConfig } from 'store/bridge'
+import { selectActiveAccount } from 'store/account'
 
 /**
  * Hook for when the source is Avalanche
@@ -45,7 +45,7 @@ export function useAvalancheBridge(amount: Big, bridgeFee: Big): BridgeAdapter {
     Blockchain.AVALANCHE
   )
 
-  const activeAccount = useActiveAccount()
+  const activeAccount = useSelector(selectActiveAccount)
   const avalancheProvider = useAvalancheProvider()
   const hasEnoughForNetworkFee = useHasEnoughForGas(
     isAvalancheBridge ? activeAccount?.address : undefined,

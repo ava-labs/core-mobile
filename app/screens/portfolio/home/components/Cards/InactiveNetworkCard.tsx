@@ -1,6 +1,6 @@
 import React, { FC } from 'react'
 import { Network } from '@avalabs/chains-sdk'
-import { View, StyleSheet, Dimensions, TouchableHighlight } from 'react-native'
+import { Dimensions, StyleSheet, TouchableHighlight, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Opacity70, Opacity85 } from 'resources/Constants'
@@ -12,7 +12,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { setActive } from 'store/network'
 import { selectBalanceTotalInCurrencyForNetworkAndAccount } from 'store/balance'
 import { NetworkLogo } from 'screens/network/NetworkLogo'
-import { useActiveAccount } from 'hooks/useActiveAccount'
+import { selectActiveAccount } from 'store/account'
 
 const windowWidth = Dimensions.get('window').width
 
@@ -31,7 +31,7 @@ const InactiveNetworkCard: FC<Props> = ({ network }) => {
     theme
   } = useApplicationContext()
   const { navigate } = useNavigation<NavigationProp>()
-  const account = useActiveAccount()
+  const account = useSelector(selectActiveAccount)
   const totalBalance = useSelector(
     selectBalanceTotalInCurrencyForNetworkAndAccount(
       network.chainId,

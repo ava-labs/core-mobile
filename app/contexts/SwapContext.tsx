@@ -11,8 +11,6 @@ import { getSwapRate, getTokenAddress } from 'swap/getSwapRate'
 import { SwapSide } from 'paraswap'
 import { OptimalRate } from 'paraswap-core'
 import { TokenWithBalance } from 'store/balance'
-import { useActiveNetwork } from 'hooks/useActiveNetwork'
-import { useActiveAccount } from 'hooks/useActiveAccount'
 import { BigNumber } from 'ethers'
 import Logger from 'utils/Logger'
 import { showSnackBarCustom } from 'components/Snackbar'
@@ -24,14 +22,15 @@ import { Amount } from 'screens/swap/SwapView'
 import { InteractionManager } from 'react-native'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { humanizeSwapErrors } from 'localization/errors'
-// import { performSwap } from '@avalabs/paraswap-sdk'
 import { useAvalancheProvider } from 'hooks/networkProviderHooks'
 import { useSelector } from 'react-redux'
 import { selectNetworkFee } from 'store/networkFee'
 import NetworkService from 'services/network/NetworkService'
 import WalletService from 'services/wallet/WalletService'
-import { TransactionRequest } from '@ethersproject/providers'
 import { performSwap } from '@avalabs/paraswap-sdk'
+import { selectActiveNetwork } from 'store/network'
+import { selectActiveAccount } from 'store/account'
+import { TransactionRequest } from '@ethersproject/providers'
 
 export type SwapStatus = 'Idle' | 'Preparing' | 'Swapping' | 'Success' | 'Fail'
 
@@ -84,8 +83,8 @@ export const SwapContext = createContext<SwapContextState>(
 )
 
 export const SwapContextProvider = ({ children }: { children: ReactNode }) => {
-  const activeAccount = useActiveAccount()
-  const activeNetwork = useActiveNetwork()
+  const activeAccount = useSelector(selectActiveAccount)
+  const activeNetwork = useSelector(selectActiveNetwork)
   const avalancheProvider = useAvalancheProvider()
   const networkFee = useSelector(selectNetworkFee)
   const [fromToken, setFromToken] = useState<TokenWithBalance>()
