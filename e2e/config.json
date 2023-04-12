@@ -9,7 +9,7 @@
     "setupFilesAfterEnv": ["./setup.ts"],
     "globalTeardown": "detox/runners/jest/globalTeardown",
     "globalSetup": "detox/runners/jest/globalSetup",
-    "transformIgnorePatterns": ["node_modules/(?!(jest-)?react-native|@react-native-community|@react-native|@react-navigation)"],
+    "transformIgnorePatterns": ["node_modules/(?!(jest-)?react-native|@react-native-community|@react-native|@react-navigation)", "./e2e/tests/bridge"],
     "transform": {
         "^.+\\.tsx?$": [
           "ts-jest",
