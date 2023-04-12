@@ -30,6 +30,7 @@ import WalletService from 'services/wallet/WalletService'
 import { performSwap } from '@avalabs/paraswap-sdk'
 import { selectActiveNetwork } from 'store/network'
 import { selectActiveAccount } from 'store/account'
+import { TransactionRequest } from '@ethersproject/providers'
 
 export type SwapStatus = 'Idle' | 'Preparing' | 'Swapping' | 'Success' | 'Fail'
 
