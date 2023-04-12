@@ -4,5 +4,5 @@ module.exports = {
   clearMocks: true,
   moduleNameMapper: {
     uuid: require.resolve('uuid')
-  },
+  }
 }
