@@ -92,7 +92,6 @@ const DrawerWatchlist = () => (
       headerShown: false,
       drawerStyle: { width: '80%' }
     }}
-    useLegacyImplementation
     drawerContent={ExtractDrawerView}>
     <DrawerStack.Screen
       name={AppNavigation.NoWallet.Tabs}
