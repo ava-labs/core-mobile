@@ -5,7 +5,6 @@ import React, {
   useEffect,
   useState
 } from 'react'
-import { useActiveNetwork } from 'hooks/useActiveNetwork'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectWalletState, WalletState } from 'store/app'
 import { noop } from '@avalabs/utils-sdk'
@@ -15,6 +14,7 @@ import {
   newSession as newSessionV2,
   WalletConnectVersions
 } from 'store/walletConnectV2'
+import { selectActiveNetwork } from 'store/network'
 import { parseWalletConnetLink } from './utils'
 import { DeepLink, DeeplinkContextType, DeepLinkOrigin } from './types'
 
@@ -29,7 +29,7 @@ export const DeeplinkContextProvider = ({
   children: React.ReactNode
 }) => {
   const dispatch = useDispatch()
-  const activeNetwork = useActiveNetwork()
+  const activeNetwork = useSelector(selectActiveNetwork)
   const walletState = useSelector(selectWalletState)
   const isWalletActive = walletState === WalletState.ACTIVE
 
