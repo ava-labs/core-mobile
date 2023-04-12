@@ -71,8 +71,7 @@ const TopNavigationHeader: FC<Props> = ({
     return (
       <AvaButton.Icon
         onPress={navigation.openDrawer}
-        style={{ marginRight: 32 }}
-        testID="menu_svg">
+        style={{ marginRight: 32 }}>
         <MenuSVG />
       </AvaButton.Icon>
     )

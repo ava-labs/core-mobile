@@ -341,7 +341,7 @@ function WalletScreenStack(props: Props | Readonly<Props>) {
         />
         <WalletScreenS.Screen
           options={{
-            ...SubHeaderOptions('Transaction Details', undefined, 'header_back')
+            ...SubHeaderOptions('Transaction Details', false, 'header_back')
           }}
           name={AppNavigation.Bridge.BridgeTransactionStatus}
           component={BridgeTransactionStatus}
