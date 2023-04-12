@@ -93,7 +93,7 @@ export function arrayHash(array: string[]) {
   let i,
     sum = 0
   for (i = 0; i < array.length; i++) {
-    const cs = charsum(array[i] as string)
+    const cs = charsum(array[i] ?? '')
     sum = sum + 65027 / cs
   }
   return ('' + sum).slice(0, 16)
