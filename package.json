@@ -12,7 +12,7 @@
     "link": "react-native link",
     "test": "jest",
     "test:ci": "yarn run test --ci --silent",
-    "tsc": "tsc",
+    "tsc": "tsc -p .",
     "lint": "eslint .",
     "lint:ci": "yarn run lint --quiet --format json --output-file eslint_report.json",
     "postversion": "react-native-version --never-amend",
