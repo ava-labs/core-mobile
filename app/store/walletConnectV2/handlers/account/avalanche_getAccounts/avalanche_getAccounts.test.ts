@@ -52,16 +52,22 @@ describe('avalanche_getAccounts handler', () => {
           {
             index: 0,
             name: 'Account 1',
+            addressAVM: '',
             addressBTC: 'tb1qlzsvluv4cahzz8zzwud40x2hn3zq4c7zak6spw',
             addressC: '0xcA0E993876152ccA6053eeDFC753092c8cE712D0',
+            addressCoreEth: '',
+            addressPVM: '',
             active: true,
             type: 'primary'
           },
           {
             index: 1,
             name: 'Account 2',
+            addressAVM: '',
             addressBTC: 'tb1qjmapax0vtca726g8kaermd5rzdljql66esxs49',
             addressC: '0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318',
+            addressCoreEth: '',
+            addressPVM: '',
             active: false,
             type: 'primary'
           }
