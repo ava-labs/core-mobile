@@ -27,9 +27,11 @@ export function useWalletSetup(appNavHook: AppNavHook): WalletSetupHook {
   const dispatch = useDispatch()
 
   const enterWallet = (mnemonic: string) => {
-    initWalletWithMnemonic(mnemonic).then(_ =>
-      appNavHook.navigateToRootWallet()
-    )
+    initWalletWithMnemonic(mnemonic).then(_ => {
+      setTimeout(() => {
+        appNavHook.navigateToRootWallet()
+      }, 300)
+    })
   }
 
   /**

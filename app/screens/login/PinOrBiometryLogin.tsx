@@ -14,6 +14,12 @@ import DotSVG from 'components/svg/DotSVG'
 import CoreXLogoAnimated from 'components/CoreXLogoAnimated'
 import AvaText from 'components/AvaText'
 import { Subscription } from 'rxjs'
+import ReAnimated, {
+  Easing,
+  FadeIn,
+  FadeOut,
+  Layout
+} from 'react-native-reanimated'
 import {
   MnemonicLoaded,
   NothingToLoad,
@@ -99,7 +105,9 @@ export default function PinOrBiometryLogin({
 
   useEffect(() => {
     if (mnemonic) {
-      onLoginSuccess(mnemonic)
+      setTimeout(() => {
+        onLoginSuccess(mnemonic)
+      }, 500)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mnemonic])
@@ -133,46 +141,66 @@ export default function PinOrBiometryLogin({
     })
     return keys
   }
-
   return (
-    <View
-      style={[styles.verticalLayout, { backgroundColor: theme.background }]}>
-      <Space y={64} />
-      <View style={styles.growContainer}>
-        {isResettingPin || (
-          <View style={{ alignItems: 'center' }}>
+    <View style={{ height: '100%', backgroundColor: theme.background }}>
+      {!mnemonic && <Space y={64} />}
+      {!isResettingPin && (
+        <ReAnimated.View
+          layout={Layout.duration(300).easing(Easing.ease)}
+          style={{
+            flexGrow: 1,
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}>
+          <ReAnimated.View
+            style={{
+              alignItems: 'center'
+            }}
+            layout={Layout.duration(300).easing(Easing.ease)}>
             <CoreXLogoAnimated size={100} />
-          </View>
-        )}
-        <Animated.View
-          style={[
-            { padding: 60 },
-            {
-              transform: [
+            {mnemonic && (
+              <AvaText.Heading3>Unlocking wallet...</AvaText.Heading3>
+            )}
+          </ReAnimated.View>
+        </ReAnimated.View>
+      )}
+      {!mnemonic && (
+        <ReAnimated.View
+          exiting={FadeOut.duration(300)}
+          entering={FadeIn.duration(300)}
+          style={[styles.verticalLayout]}>
+          <View style={styles.growContainer}>
+            <Animated.View
+              style={[
+                { padding: 60 },
                 {
-                  translateX: jiggleAnim
+                  transform: [
+                    {
+                      translateX: jiggleAnim
+                    }
+                  ]
                 }
-              ]
-            }
-          ]}>
-          <View style={styles.dots}>{generatePinDots()}</View>
-        </Animated.View>
-        {disableKeypad && (
-          <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-            <AvaText.Heading3>Login Disabled</AvaText.Heading3>
-            <Space y={8} />
-            <AvaText.Body2>Try again in {timeRemaining}</AvaText.Body2>
+              ]}>
+              <View style={styles.dots}>{generatePinDots()}</View>
+            </Animated.View>
+            {disableKeypad && (
+              <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+                <AvaText.Heading3>Login Disabled</AvaText.Heading3>
+                <Space y={8} />
+                <AvaText.Body2>Try again in {timeRemaining}</AvaText.Body2>
+              </View>
+            )}
           </View>
-        )}
-      </View>
-      <View style={styles.keyboard}>{keyboard()}</View>
-      {isResettingPin || hideLoginWithMnemonic || (
-        <>
-          <AvaButton.TextMedium onPress={onSignInWithRecoveryPhrase}>
-            Sign In with recovery phrase
-          </AvaButton.TextMedium>
-          <Space y={16} />
-        </>
+          <View style={styles.keyboard}>{keyboard()}</View>
+          {isResettingPin || hideLoginWithMnemonic || (
+            <>
+              <AvaButton.TextMedium onPress={onSignInWithRecoveryPhrase}>
+                Sign In with recovery phrase
+              </AvaButton.TextMedium>
+              <Space y={16} />
+            </>
+          )}
+        </ReAnimated.View>
       )}
     </View>
   )
@@ -180,7 +208,7 @@ export default function PinOrBiometryLogin({
 
 const styles = StyleSheet.create({
   verticalLayout: {
-    height: '100%',
+    flexGrow: 1,
     justifyContent: 'flex-end'
   },
   growContainer: {
