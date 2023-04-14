@@ -291,7 +291,7 @@ workflows:
             set -x
 
             npm rebuild detox
-            QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.external.release.ci --headless
+            QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.external.release.ci --headless --exclude ./e2e/tests/bridge
   android-internal:
     before_run:
     - _install-and-set-env
@@ -359,7 +359,7 @@ workflows:
             set -x
 
             npm rebuild detox
-            QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.internal.release.ci --headless
+            QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test --configuration android.internal.release.ci --headless --exclude ./e2e/tests/bridge
   ios:
     before_run:
     - _install-and-set-env
@@ -430,7 +430,7 @@ workflows:
             set -x
 
             npm rebuild detox
-            ./node_modules/.bin/detox test --configuration ios.external.release.ci
+            ./node_modules/.bin/detox test --configuration ios.external.release.ci --exclude ./e2e/tests/bridge
   ios-internal:
     before_run:
     - _install-and-set-env
@@ -504,4 +504,4 @@ workflows:
             set -x
 
             npm rebuild detox
-            ./node_modules/.bin/detox test --configuration ios.internal.release.ci
+            ./node_modules/.bin/detox test --configuration ios.internal.release.ci --exclude ./e2e/tests/bridge

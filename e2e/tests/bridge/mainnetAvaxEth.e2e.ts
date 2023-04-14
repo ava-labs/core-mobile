@@ -10,8 +10,6 @@ import BottomTabsPage from '../../pages/bottomTabs.page'
 import BridgeTabPage from '../../pages/bridgeTab.page'
 import { warmup } from '../../helpers/warmup'
 
-//Currently working on iOS only
-
 describe('Bridge transfer AVAX -> ETH', () => {
   beforeAll(async () => {
     await warmup()
@@ -25,7 +23,6 @@ describe('Bridge transfer AVAX -> ETH', () => {
     await BridgeTabPage.tapSelectTokenDropdown()
     await BridgeTabPage.tapWrappedEther()
     await BridgeTabPage.inputTokenAmmountAvaxEth()
-    await Actions.waitForElement(BridgeTabPage.transferButton)
     await BridgeTabPage.tapTransferButton()
 
     await Assert.isVisible(BridgeTabPage.avalancheNetwork)
@@ -35,7 +32,7 @@ describe('Bridge transfer AVAX -> ETH', () => {
     await Assert.isVisible(BridgeTabPage.networkFee)
     await Assert.isVisible(BridgeTabPage.confirmations)
     await Assert.isVisible(BridgeTabPage.toText)
-  })
+  }, 1800000)
 
   it('Should verify transaction succeeded', async () => {
     await Actions.waitForElement(BridgeTabPage.closebutton, 1800000)

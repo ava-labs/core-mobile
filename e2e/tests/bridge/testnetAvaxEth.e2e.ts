@@ -11,9 +11,7 @@ import BridgeTabPage from '../../pages/bridgeTab.page'
 import BurgerMenuPage from '../../pages/burgerMenu.page'
 import { warmup } from '../../helpers/warmup'
 
-//Currently working on iOS only
-
-describe('Bridge transfer AVAX -> ETH', () => {
+describe('Bridge transfer testnet AVAX -> ETH', () => {
   beforeAll(async () => {
     await warmup()
     await LoginRecoverWallet.recoverWalletLogin()
@@ -32,7 +30,6 @@ describe('Bridge transfer AVAX -> ETH', () => {
     await BridgeTabPage.tapSelectTokenDropdown()
     await BridgeTabPage.tapWrappedEther()
     await BridgeTabPage.inputTokenAmmountAvaxEth()
-    await Actions.waitForElement(BridgeTabPage.transferButton)
     await BridgeTabPage.tapTransferButton()
 
     await Assert.isVisible(BridgeTabPage.avalancheNetwork)

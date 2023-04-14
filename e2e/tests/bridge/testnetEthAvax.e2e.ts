@@ -11,7 +11,7 @@ import BridgeTabPage from '../../pages/bridgeTab.page'
 import BurgerMenuPage from '../../pages/burgerMenu.page'
 import { warmup } from '../../helpers/warmup'
 
-describe('Bridge transfer AVAX -> ETH on Test Network', () => {
+describe('Bridge transfer testnet ETH -> AVAX', () => {
   beforeAll(async () => {
     await warmup()
     await LoginRecoverWallet.recoverWalletLogin()
@@ -30,20 +30,19 @@ describe('Bridge transfer AVAX -> ETH on Test Network', () => {
     await BridgeTabPage.tapSelectTokenDropdown()
     await BridgeTabPage.tapWrappedEther()
     await BridgeTabPage.inputTokenAmmountEthAvax()
-    await Actions.waitForElement(BridgeTabPage.transferButton, 100000)
     await BridgeTabPage.tapTransferButton()
 
-    await Assert.isVisible(BridgeTabPage.avalancheNetwork)
-    await Assert.isVisible(BridgeTabPage.ethereumNetwork)
-    await Assert.isVisible(BridgeTabPage.sendingAmmount)
-    await Assert.isVisible(BridgeTabPage.fromText)
-    await Assert.isVisible(BridgeTabPage.networkFee)
-    await Assert.isVisible(BridgeTabPage.confirmations)
-    await Assert.isVisible(BridgeTabPage.toText)
+    await Assert.isVisibleNoSync(BridgeTabPage.avalancheNetwork)
+    await Assert.isVisibleNoSync(BridgeTabPage.ethereumNetwork)
+    await Assert.isVisibleNoSync(BridgeTabPage.sendingAmmount)
+    await Assert.isVisibleNoSync(BridgeTabPage.fromText)
+    await Assert.isVisibleNoSync(BridgeTabPage.networkFee)
+    await Assert.isVisibleNoSync(BridgeTabPage.confirmations)
+    await Assert.isVisibleNoSync(BridgeTabPage.toText)
   }, 1800000)
 
   it('Should verify transaction succeeded', async () => {
-    await Actions.waitForElement(BridgeTabPage.closebutton, 100000)
+    await Actions.waitForElementNoSync(BridgeTabPage.closebutton, 1800000)
     await Assert.isVisible(BridgeTabPage.completedStatusEth)
     await Assert.isVisible(BridgeTabPage.completedStatusAvax)
 

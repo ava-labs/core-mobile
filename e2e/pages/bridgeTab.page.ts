@@ -155,7 +155,7 @@ class BridgeTabPage {
   }
 
   async tapTransferButton() {
-    await Actions.tapElementAtIndex(this.transferButton, 0)
+    await Actions.tapElementAtIndexNoSync(this.transferButton, 0)
   }
 
   async inputTokenAmmountAvaxBtc() {

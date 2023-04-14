@@ -50,12 +50,10 @@ module.exports = {
     'ios.internal.release.ci': {
       type: 'ios.app',
       binaryPath: process.env.BITRISE_APP_DIR_PATH,
-      "transformIgnorePatterns": ["./e2e/tests/bridge"]
     },
     'ios.external.release.ci': {
       type: 'ios.app',
       binaryPath: process.env.BITRISE_APP_DIR_PATH,
-      "transformIgnorePatterns": ["./e2e/tests/bridge"]
     },
     'android.internal.debug': {
       type: 'android.apk',
@@ -68,13 +66,11 @@ module.exports = {
       type: 'android.apk',
       binaryPath: ANDROID_APK_PATH,
       testBinaryPath: ANDROID_TEST_APK_PATH,
-      "transformIgnorePatterns": ["./e2e/tests/bridge"]
     },
     'android.external.release.ci': {
       type: 'android.apk',
       binaryPath: ANDROID_APK_PATH,
       testBinaryPath: ANDROID_TEST_APK_PATH,
-      "transformIgnorePatterns": ["./e2e/tests/bridge"]
     },
     'android.internal.e2e': {
       type: 'android.apk',

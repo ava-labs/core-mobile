@@ -10,7 +10,6 @@ import BottomTabsPage from '../../pages/bottomTabs.page'
 import BridgeTabPage from '../../pages/bridgeTab.page'
 import { warmup } from '../../helpers/warmup'
 
-//Currently working on iOS only
 describe('Bridge transfer AVAX -> BTC', () => {
   beforeAll(async () => {
     await warmup()
@@ -24,20 +23,19 @@ describe('Bridge transfer AVAX -> BTC', () => {
     await BridgeTabPage.tapSelectTokenDropdown()
     await BridgeTabPage.tapBtcToken()
     await BridgeTabPage.inputTokenAmmountAvaxBtc()
-    await Actions.waitForElement(BridgeTabPage.transferButton)
     await BridgeTabPage.tapTransferButton()
 
-    await Assert.isVisible(BridgeTabPage.avalancheNetwork)
-    await Assert.isVisible(BridgeTabPage.bitcoinNetwork)
-    await Assert.isVisible(BridgeTabPage.sendingAmmount)
-    await Assert.isVisible(BridgeTabPage.fromText)
-    await Assert.isVisible(BridgeTabPage.networkFee)
-    await Assert.isVisible(BridgeTabPage.confirmations)
-    await Assert.isVisible(BridgeTabPage.toText)
-  })
+    await Assert.isVisibleNoSync(BridgeTabPage.avalancheNetwork)
+    await Assert.isVisibleNoSync(BridgeTabPage.bitcoinNetwork)
+    await Assert.isVisibleNoSync(BridgeTabPage.sendingAmmount)
+    await Assert.isVisibleNoSync(BridgeTabPage.fromText)
+    await Assert.isVisibleNoSync(BridgeTabPage.networkFee)
+    await Assert.isVisibleNoSync(BridgeTabPage.confirmations)
+    await Assert.isVisibleNoSync(BridgeTabPage.toText)
+  }, 1800000)
 
   it('Should verify transaction succeeded', async () => {
-    await Actions.waitForElement(BridgeTabPage.closebutton, 1800000)
+    await Actions.waitForElementNoSync(BridgeTabPage.closebutton, 1800000)
     await Assert.isVisible(BridgeTabPage.completedStatusAvax)
 
     await BridgeTabPage.tapClose()

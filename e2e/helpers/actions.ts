@@ -1,4 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { element, waitFor } from 'detox'
+import { Platform } from './constants'
+import Constants from './constants'
 
 const tap = async (item: Detox.NativeMatcher) => {
   await element(item).tap()
@@ -6,6 +10,25 @@ const tap = async (item: Detox.NativeMatcher) => {
 
 const tapElementAtIndex = async (item: Detox.NativeMatcher, num: number) => {
   await element(item).atIndex(num).tap()
+}
+
+const tapElementAtIndexNoSync = async (
+  item: Detox.NativeMatcher,
+  num: number
+) => {
+  if (platform() === Platform.Android) {
+    try {
+      await element(item).atIndex(num).tap()
+    } catch (error: any) {
+      if (error.message === Constants.idleTimeoutError) {
+        console.error(Constants.animatedConsoleError)
+      } else {
+        throw error
+      }
+    }
+  } else {
+    await element(item).atIndex(num).tap()
+  }
 }
 
 const longPress = async (item: Detox.NativeMatcher) => {
@@ -36,6 +59,34 @@ const waitForElement = async (item: Detox.NativeMatcher, timeout = 2000) => {
   await waitFor(element(item)).toBeVisible().withTimeout(timeout)
 }
 
+const waitForElementNoSync = async (
+  item: Detox.NativeMatcher,
+  timeout = 2000
+) => {
+  if (platform() === Platform.Android) {
+    const startTime = Date.now()
+    const endTime = startTime + timeout
+
+    while (Date.now() < endTime) {
+      try {
+        await waitFor(element(item)).toBeVisible().withTimeout(timeout)
+        return
+      } catch (error: any) {
+        if (error.message === Constants.idleTimeoutError) {
+          console.error(Constants.animatedConsoleError)
+        } else {
+          throw error
+        }
+      }
+    }
+
+    console.error('Error: Element not visible within timeout')
+    throw new Error('Element not visible within timeout')
+  } else {
+    await waitFor(element(item)).toBeVisible().withTimeout(timeout)
+  }
+}
+
 const waitForElementNotVisible = async (
   item: Detox.NativeMatcher,
   timeout = 20000
@@ -43,7 +94,6 @@ const waitForElementNotVisible = async (
   await waitFor(element(item)).not.toBeVisible().withTimeout(timeout)
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const getAttributes = async (item: any) => {
   return await element(item).getAttributes()
 }
@@ -114,8 +164,10 @@ export default {
   tap,
   longPress,
   waitForElement,
+  waitForElementNoSync,
   waitForElementNotVisible,
   tapElementAtIndex,
+  tapElementAtIndexNoSync,
   getAttributes,
   swipeUp,
   swipeDown,
