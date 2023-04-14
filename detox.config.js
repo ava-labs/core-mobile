@@ -49,11 +49,11 @@ module.exports = {
     },
     'ios.internal.release.ci': {
       type: 'ios.app',
-      binaryPath: process.env.BITRISE_APP_DIR_PATH,
+      binaryPath: process.env.BITRISE_APP_DIR_PATH
     },
     'ios.external.release.ci': {
       type: 'ios.app',
-      binaryPath: process.env.BITRISE_APP_DIR_PATH,
+      binaryPath: process.env.BITRISE_APP_DIR_PATH
     },
     'android.internal.debug': {
       type: 'android.apk',
@@ -65,12 +65,12 @@ module.exports = {
     'android.internal.release.ci': {
       type: 'android.apk',
       binaryPath: ANDROID_APK_PATH,
-      testBinaryPath: ANDROID_TEST_APK_PATH,
+      testBinaryPath: ANDROID_TEST_APK_PATH
     },
     'android.external.release.ci': {
       type: 'android.apk',
       binaryPath: ANDROID_APK_PATH,
-      testBinaryPath: ANDROID_TEST_APK_PATH,
+      testBinaryPath: ANDROID_TEST_APK_PATH
     },
     'android.internal.e2e': {
       type: 'android.apk',
