@@ -4,10 +4,11 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
 import LinkSVG from 'components/svg/LinkSVG'
 import AvaButton from 'components/AvaButton'
-import { useActiveNetwork } from 'hooks/useActiveNetwork'
 import useInAppBrowser from 'hooks/useInAppBrowser'
 import { getExplorerAddressByNetwork } from 'utils/ExplorerUtils'
 import ClearSVG from 'components/svg/ClearSVG'
+import { useSelector } from 'react-redux'
+import { selectActiveNetwork } from 'store/network'
 
 const WINDOW_WIDTH = Dimensions.get('window').width
 
@@ -45,7 +46,7 @@ const ToastWithExplorerLink = ({
   color: string
 }) => {
   const theme = useApplicationContext().theme
-  const network = useActiveNetwork()
+  const network = useSelector(selectActiveNetwork)
   const { openUrl } = useInAppBrowser()
 
   const openExplorerLink = () => {

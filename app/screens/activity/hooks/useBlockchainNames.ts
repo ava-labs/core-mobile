@@ -3,13 +3,14 @@ import {
   BridgeTransaction,
   useBridgeSDK
 } from '@avalabs/bridge-sdk'
-import { useActiveNetwork } from 'hooks/useActiveNetwork'
 import {
   getBlockchainDisplayName,
   isPendingBridgeTransaction
 } from 'screens/bridge/utils/bridgeUtils'
 import { isAvalancheNetwork } from 'services/network/utils/isAvalancheNetwork'
 import { Transaction } from 'store/transaction'
+import { useSelector } from 'react-redux'
+import { selectActiveNetwork } from 'store/network'
 
 /**
  * Get the source and target blockchain names to display a Bridge transaction.
@@ -18,7 +19,7 @@ import { Transaction } from 'store/transaction'
 export function useBlockchainNames(tx: Transaction | BridgeTransaction) {
   const pending = isPendingBridgeTransaction(tx)
   const { avalancheAssets } = useBridgeSDK()
-  const activeNetwork = useActiveNetwork()
+  const activeNetwork = useSelector(selectActiveNetwork)
 
   if (pending) {
     return {

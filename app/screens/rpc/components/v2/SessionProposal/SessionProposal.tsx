@@ -8,14 +8,13 @@ import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
 import { NativeViewGestureHandler } from 'react-native-gesture-handler'
 import FlexSpacer from 'components/FlexSpacer'
-import { useActiveAccount } from 'hooks/useActiveAccount'
 import { showSimpleToast } from 'components/Snackbar'
 import { WalletScreenProps } from 'navigation/types'
 import AppNavigation from 'navigation/AppNavigation'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { useDappConnectionV2 } from 'hooks/useDappConnectionV2'
 import { useSelector } from 'react-redux'
-import { selectAccounts } from 'store/account'
+import { selectAccounts, selectActiveAccount } from 'store/account'
 import RpcRequestBottomSheet from '../../shared/RpcRequestBottomSheet'
 import SelectAccounts from './SelectAccounts'
 import Networks from './Networks'
@@ -37,7 +36,7 @@ const SessionProposal = () => {
     useDappConnectionV2()
 
   const theme = useApplicationContext().theme
-  const activeAccount = useActiveAccount()
+  const activeAccount = useSelector(selectActiveAccount)
   const allAccounts = useSelector(selectAccounts)
   const [selectedAccounts, setSelectedAccounts] = useState<string[]>([])
   const peerMeta = request.data.params.proposer.metadata

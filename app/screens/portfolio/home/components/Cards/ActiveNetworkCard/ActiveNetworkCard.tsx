@@ -1,6 +1,6 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
-import { View, TouchableHighlight, Text, StyleSheet } from 'react-native'
+import { StyleSheet, Text, TouchableHighlight, View } from 'react-native'
 import { selectBalanceTotalInCurrencyForNetworkAndAccount } from 'store/balance'
 import AvaText from 'components/AvaText'
 import { useApplicationContext } from 'contexts/ApplicationContext'
@@ -11,9 +11,9 @@ import AppNavigation from 'navigation/AppNavigation'
 import { PortfolioScreenProps } from 'navigation/types'
 import { useNavigation } from '@react-navigation/native'
 import { NetworkLogo } from 'screens/network/NetworkLogo'
-import { useActiveNetwork } from 'hooks/useActiveNetwork'
-import { useActiveAccount } from 'hooks/useActiveAccount'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
+import { selectActiveNetwork } from 'store/network'
+import { selectActiveAccount } from 'store/account'
 import ZeroState from './ZeroState'
 import Tokens from './Tokens'
 
@@ -24,8 +24,8 @@ type NavigationProp = PortfolioScreenProps<
 const ActiveNetworkCard = () => {
   const { filteredTokenList: tokens } = useSearchableTokenList()
 
-  const network = useActiveNetwork()
-  const account = useActiveAccount()
+  const network = useSelector(selectActiveNetwork)
+  const account = useSelector(selectActiveAccount)
   const totalBalanceInCurrency = useSelector(
     selectBalanceTotalInCurrencyForNetworkAndAccount(
       network.chainId,

@@ -11,9 +11,9 @@ import networkService from 'services/network/NetworkService'
 import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 import { ethers } from 'ethers'
 import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
-import { useActiveNetwork } from 'hooks/useActiveNetwork'
 import { useSelector } from 'react-redux'
-import { useActiveAccount } from 'hooks/useActiveAccount'
+import { selectActiveNetwork } from 'store/network'
+import { selectActiveAccount } from 'store/account'
 
 const UNKNOWN_TOKEN = (address: string): TokenWithBalanceERC20 => ({
   address,
@@ -36,8 +36,8 @@ const UNKNOWN_TOKEN = (address: string): TokenWithBalanceERC20 => ({
 export type FindToken = (address: string) => Promise<TokenWithBalanceERC20>
 
 export function useFindToken(): FindToken {
-  const activeNetwork = useActiveNetwork()
-  const activeAccount = useActiveAccount()
+  const activeNetwork = useSelector(selectActiveNetwork)
+  const activeAccount = useSelector(selectActiveAccount)
   const tokens = useSelector(selectTokensWithBalance)
 
   const findToken: FindToken = useCallback(

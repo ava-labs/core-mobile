@@ -11,6 +11,7 @@ import { truncateNodeId } from 'utils/Utils'
 import Separator from 'components/Separator'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
+import moment from 'moment'
 
 const AddDelegatorTxView = ({
   tx,
@@ -23,8 +24,12 @@ const AddDelegatorTxView = ({
   const { tokenInCurrencyFormatter, currencyFormatter } =
     useApplicationContext().appHook
   const { nodeID, start, end, stake } = tx
-  const startDate = new Date(parseInt(start) * 1000)
-  const endDate = new Date(parseInt(end) * 1000)
+  const startDate = moment(new Date(parseInt(start) * 1000)).format(
+    'MMM DD, YYYY, HH:mm A'
+  )
+  const endDate = moment(new Date(parseInt(end) * 1000)).format(
+    'MMM DD, YYYY, HH:mm A'
+  )
   const selectedCurrency = useSelector(selectSelectedCurrency)
 
   return (
