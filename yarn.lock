@@ -19245,10 +19245,10 @@ react-native-tab-view@3.3.0:
   dependencies:
     use-latest-callback "^0.1.5"
 
-react-native-toast-notifications@3.3.0:
-  version "3.3.0"
-  resolved "https://registry.yarnpkg.com/react-native-toast-notifications/-/react-native-toast-notifications-3.3.0.tgz#e88b0b264812d86ff3a8c62eca4ea54b3ce3da35"
-  integrity sha512-R94XMwHzovGc3CskniqM2EwS6GqVWgfynXi9ua/qvS+F7eD2dvlkhDhf+eUQNpTexQLoG5MYOJRQ+J8WQs3LbQ==
+react-native-toast-notifications@3.3.1:
+  version "3.3.1"
+  resolved "https://registry.yarnpkg.com/react-native-toast-notifications/-/react-native-toast-notifications-3.3.1.tgz#c3d6f3b63a4df81c2912560d27878ea056672981"
+  integrity sha512-yc1Q2nOdIYvAf0GAIlmg8q42hiwpEHnLxkxJ6P+tN6jpcKZ1qzMXlgnmNdyF9cm9VOyHQexEP8952IKNAv1Olw==
 
 react-native-url-polyfill@1.3.0:
   version "1.3.0"
