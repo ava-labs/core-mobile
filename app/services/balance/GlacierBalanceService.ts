@@ -1,6 +1,6 @@
 import { NetworkTokenWithBalance, TokenWithBalanceERC20 } from 'store/balance'
 import { Network } from '@avalabs/chains-sdk'
-import { CurrencyCode, GlacierClient } from '@avalabs/glacier-sdk'
+import { CurrencyCode, Glacier } from '@avalabs/glacier-sdk'
 import { GLACIER_URL } from 'utils/glacierUtils'
 import { BalanceServiceProvider } from 'services/balance/types'
 import { convertNativeToTokenWithBalance } from 'services/balance/nativeTokenConverter'
@@ -10,14 +10,14 @@ import { Transaction } from '@sentry/types'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 
 export class GlacierBalanceService implements BalanceServiceProvider {
-  private glacierSdk = new GlacierClient(GLACIER_URL)
+  private glacierSdk = new Glacier({ BASE: GLACIER_URL })
 
   async isProviderFor(network: Network): Promise<boolean> {
     const isHealthy = await this.isHealthy()
     if (!isHealthy) {
       return false
     }
-    const supportedChainsResp = await this.glacierSdk.supportedChains()
+    const supportedChainsResp = await this.glacierSdk.evm.supportedChains()
     const chainInfos = supportedChainsResp.chains
     const chains = chainInfos.map(chain => chain.chainId)
     return chains.some(value => value === network.chainId.toString())
@@ -53,7 +53,7 @@ export class GlacierBalanceService implements BalanceServiceProvider {
 
   private async isHealthy() {
     try {
-      const healthStatus = await this.glacierSdk.healthCheck()
+      const healthStatus = await this.glacierSdk.healthCheck.healthCheck()
       const status = healthStatus?.status?.toString()
       return status === 'ok'
     } catch (e) {
@@ -67,8 +67,10 @@ export class GlacierBalanceService implements BalanceServiceProvider {
     address: string,
     selectedCurrency: string
   ): Promise<NetworkTokenWithBalance> {
-    return this.glacierSdk
-      .getNativeBalance(network.chainId.toString(), address, {
+    return this.glacierSdk.evm
+      .getNativeBalance({
+        chainId: network.chainId.toString(),
+        address,
         currency: selectedCurrency.toLocaleLowerCase() as CurrencyCode
       })
       .then(res => res.nativeTokenBalance)
@@ -86,16 +88,14 @@ export class GlacierBalanceService implements BalanceServiceProvider {
      */
     let nextPageToken: string | undefined
     do {
-      const response = await this.glacierSdk.listErc20Balances(
-        network.chainId.toString(),
+      const response = await this.glacierSdk.evm.listErc20Balances({
+        chainId: network.chainId.toString(),
         address,
-        {
-          currency: selectedCurrency.toLocaleLowerCase() as CurrencyCode,
-          // glacier has a cap on page size of 100
-          pageSize: 100,
-          pageToken: nextPageToken
-        }
-      )
+        currency: selectedCurrency.toLocaleLowerCase() as CurrencyCode,
+        // glacier has a cap on page size of 100
+        pageSize: 100,
+        pageToken: nextPageToken
+      })
 
       tokensWithBalance.push(
         ...convertErc20ToTokenWithBalance(response.erc20TokenBalances)

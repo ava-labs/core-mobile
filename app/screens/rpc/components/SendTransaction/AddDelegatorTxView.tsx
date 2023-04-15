@@ -25,10 +25,10 @@ const AddDelegatorTxView = ({
     useApplicationContext().appHook
   const { nodeID, start, end, stake } = tx
   const startDate = moment(new Date(parseInt(start) * 1000)).format(
-    'MMM DD, YYYY HH:mm A'
+    'MMM DD, YYYY, HH:mm A'
   )
   const endDate = moment(new Date(parseInt(end) * 1000)).format(
-    'MMM DD, YYYY HH:mm A'
+    'MMM DD, YYYY, HH:mm A'
   )
   const selectedCurrency = useSelector(selectSelectedCurrency)
 

@@ -9,9 +9,9 @@ export const mapAccountToCoreWebAccount = (
   name: account.title,
   addressC: account.address,
   addressBTC: account.addressBtc,
-  addressAVM: account.addressAVM,
-  addressPVM: account.addressPVM,
-  addressCoreEth: account.addressCoreEth,
+  addressAVM: account.addressAVM ?? '',
+  addressPVM: account.addressPVM ?? '',
+  addressCoreEth: account.addressCoreEth ?? '',
   active: account.index === activeIndex,
   type: CoreAccountType.PRIMARY
 })
