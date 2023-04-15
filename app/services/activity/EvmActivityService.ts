@@ -1,5 +1,5 @@
 import { getErc20Txs, getNormalTxs } from '@avalabs/etherscan-sdk'
-import { GlacierClient } from '@avalabs/glacier-sdk'
+import { Glacier } from '@avalabs/glacier-sdk'
 import { isEthereumNetwork } from 'services/network/utils/isEthereumNetwork'
 import { GLACIER_URL } from 'utils/glacierUtils'
 import {
@@ -10,7 +10,7 @@ import {
 import { convertTransaction } from './utils/evmTransactionConverter'
 import * as EtherscanConverter from './utils/etherscanTransactionConverter'
 
-const glacierSdk = new GlacierClient(GLACIER_URL)
+const glacierSdk = new Glacier({ BASE: GLACIER_URL })
 
 export class EvmActivityService implements NetworkActivityService {
   async getActivities(params: GetActivitiesForAddressParams) {
@@ -27,11 +27,12 @@ async function getTransactionsFromGlacier({
   pageSize,
   criticalConfig
 }: GetActivitiesForAddressParams): Promise<ActivityResponse> {
-  const response = await glacierSdk.listTransactions(
-    network.chainId.toString(),
+  const response = await glacierSdk.evm.listTransactions({
+    chainId: network.chainId.toString(),
     address,
-    { pageToken: nextPageToken, pageSize }
-  )
+    pageToken: nextPageToken,
+    pageSize
+  })
 
   const transactions = response.transactions.map(item =>
     convertTransaction({
