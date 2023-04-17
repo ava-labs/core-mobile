@@ -18,5 +18,5 @@
           }
         ]
       },
-    "ignoreTestPatterns":["./e2e/tests/bridge"]
+    "testPathIgnorePatterns":["./e2e/tests/bridge"]
 }
