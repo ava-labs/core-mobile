@@ -12,6 +12,7 @@ const tapElementAtIndex = async (item: Detox.NativeMatcher, num: number) => {
   await element(item).atIndex(num).tap()
 }
 
+// tapElementAtIndexNoSync function can be used to handle idle timeout error for Android devices, should be used only if Idle timeout error presents
 const tapElementAtIndexNoSync = async (
   item: Detox.NativeMatcher,
   num: number
