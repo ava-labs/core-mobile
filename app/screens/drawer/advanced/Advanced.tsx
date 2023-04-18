@@ -58,7 +58,11 @@ const Advanced = () => {
         }
         background={theme.background}
         rightComponent={
-          <Switch value={isDeveloperMode} onValueChange={onValueChange} />
+          <Switch
+            value={isDeveloperMode}
+            onValueChange={onValueChange}
+            testID="switch"
+          />
         }
       />
     </View>
