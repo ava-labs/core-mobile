@@ -59,6 +59,8 @@ const waitForElement = async (item: Detox.NativeMatcher, timeout = 2000) => {
   await waitFor(element(item)).toBeVisible().withTimeout(timeout)
 }
 
+// waitForElementNoSync function can be used to handle idle timeout error for Android devices, should be used only if Idle timeout error presents
+
 const waitForElementNoSync = async (
   item: Detox.NativeMatcher,
   timeout = 2000
