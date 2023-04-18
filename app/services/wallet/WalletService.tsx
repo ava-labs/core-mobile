@@ -26,6 +26,8 @@ import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction } from '@sentry/types'
 import { Account } from 'store/account'
 import { RpcMethod } from 'store/walletConnectV2/types'
+import { spawnThread } from 'react-native-multithreading'
+import { runOnJS } from 'react-native-reanimated'
 
 class WalletService {
   private mnemonic?: string
@@ -41,9 +43,26 @@ class WalletService {
   private xpubXP?: string
 
   async setMnemonic(mnemonic: string) {
+    const xpubPromise = getXpubFromMnemonic(mnemonic)
+    const xpubXPPromise = new Promise<string>(resolve => {
+      // wrapper is needed because of how runOnJS works: https://docs.swmansion.com/react-native-reanimated/docs/api/miscellaneous/runOnJS/
+      const wrapper = (resolver: (value: string) => void, value: string) => {
+        resolver(value)
+      }
+      spawnThread(() => {
+        'worklet'
+        const xpubXP = Avalanche.getXpubFromMnemonic(mnemonic)
+        runOnJS(wrapper)(resolve, xpubXP)
+      })
+    })
+    const pubKeys = await Promise.allSettled([xpubPromise, xpubXPPromise])
+    if (pubKeys[0].status === 'fulfilled') {
+      this.xpub = pubKeys[0].value
+    }
+    if (pubKeys[1].status === 'fulfilled') {
+      this.xpubXP = pubKeys[1].value
+    }
     this.mnemonic = mnemonic
-    this.xpub = await getXpubFromMnemonic(mnemonic)
-    this.xpubXP = Avalanche.getXpubFromMnemonic(mnemonic)
   }
 
   async getBtcWallet(
