@@ -9,6 +9,7 @@ export default {
   customTab: 'Custom',
   dropdown: 'ellipsis_svg',
   deleteNetwork: 'Delete',
+  ethereumGoerlyNetwork: 'Ethereum Goerli',
   explorerUrl: 'Explorer URL',
   favoriteNetwork: 'star_svg',
   favoritesTab: 'Favorites',

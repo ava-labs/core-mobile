@@ -19,6 +19,7 @@ import { Row } from 'components/Row'
 type Props = {
   showAddress?: boolean
   showBackButton?: boolean
+  testID?: string
 }
 
 type NavigationProp = DrawerScreenProps<

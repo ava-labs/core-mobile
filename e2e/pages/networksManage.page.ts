@@ -21,6 +21,10 @@ class NetworksPage {
     return by.text(networksManage.deleteNetwork)
   }
 
+  get ethereumGoerlyNetwork() {
+    return by.text(networksManage.ethereumGoerlyNetwork)
+  }
+
   get explorerUrl() {
     return by.text(networksManage.explorerUrl)
   }
@@ -79,6 +83,10 @@ class NetworksPage {
 
   async tapAddNetwork() {
     await Action.tapElementAtIndex(this.addNetwork, 0)
+  }
+
+  async tapEthereumGoerliNetwork() {
+    await Action.tapElementAtIndex(this.ethereumGoerlyNetwork, 0)
   }
 
   async tapCustomTab() {

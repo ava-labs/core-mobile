@@ -9,6 +9,20 @@ module.exports = {
   resolver: {
     extraNodeModules: {
       crypto: require.resolve('react-native-quick-crypto')
+    },
+    resolveRequest: (context, moduleName, platform) => {
+      if (moduleName.startsWith('@ledgerhq/cryptoassets')) {
+        return context.resolveRequest(
+          context,
+          moduleName.replace(
+            '@ledgerhq/cryptoassets',
+            '@ledgerhq/cryptoassets/lib-es'
+          ),
+          platform
+        )
+      }
+      // Optionally, chain to the standard Metro resolver.
+      return context.resolveRequest(context, moduleName, platform)
     }
   },
   transformer: {
