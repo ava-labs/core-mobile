@@ -1,0 +1,181 @@
+diff --git a/node_modules/react-native-graph/lib/commonjs/AnimatedLineGraph.js b/node_modules/react-native-graph/lib/commonjs/AnimatedLineGraph.js
+index 25e4ad8..bc9b495 100644
+--- a/node_modules/react-native-graph/lib/commonjs/AnimatedLineGraph.js
++++ b/node_modules/react-native-graph/lib/commonjs/AnimatedLineGraph.js
+@@ -250,6 +250,7 @@ function AnimatedLineGraph(_ref) {
+     )), -1);
+   }, [indicatorPulseAnimation]);
+   const setFingerX = (0, _react.useCallback)(fingerX => {
++   
+     const y = (0, _GetYForX.getYForX)(commands.current, fingerX);
+ 
+     if (y != null) {
+@@ -259,6 +260,7 @@ function AnimatedLineGraph(_ref) {
+ 
+     if (isActive.value) pathEnd.current = fingerX / width;
+     const fingerXInRange = Math.max(fingerX - horizontalPadding, 0);
++
+     const index = Math.round(fingerXInRange / (0, _CreateGraphPath.getXInRange)(drawingWidth, pointsInRange[pointsInRange.length - 1].date, pathRange.x) * (pointsInRange.length - 1));
+     const pointIndex = Math.min(Math.max(index, 0), pointsInRange.length - 1);
+ 
+diff --git a/node_modules/react-native-graph/lib/commonjs/CreateGraphPath.js b/node_modules/react-native-graph/lib/commonjs/CreateGraphPath.js
+index 5202642..aaba4ef 100644
+--- a/node_modules/react-native-graph/lib/commonjs/CreateGraphPath.js
++++ b/node_modules/react-native-graph/lib/commonjs/CreateGraphPath.js
+@@ -78,7 +78,6 @@ function createGraphPathBase(_ref3) {
+     canvasWidth: width,
+     shouldFillGradient
+   } = _ref3;
+-
+   const path = _reactNativeSkia.Skia.Path.Make(); // Canvas width substracted by the horizontal padding => Actual drawing width
+ 
+ 
+diff --git a/node_modules/react-native-graph/lib/module/AnimatedLineGraph.js b/node_modules/react-native-graph/lib/module/AnimatedLineGraph.js
+index 88d58ed..e9c2ec3 100644
+--- a/node_modules/react-native-graph/lib/module/AnimatedLineGraph.js
++++ b/node_modules/react-native-graph/lib/module/AnimatedLineGraph.js
+@@ -235,6 +235,7 @@ export function AnimatedLineGraph(_ref) {
+ 
+     if (isActive.value) pathEnd.current = fingerX / width;
+     const fingerXInRange = Math.max(fingerX - horizontalPadding, 0);
++
+     const index = Math.round(fingerXInRange / getXInRange(drawingWidth, pointsInRange[pointsInRange.length - 1].date, pathRange.x) * (pointsInRange.length - 1));
+     const pointIndex = Math.min(Math.max(index, 0), pointsInRange.length - 1);
+ 
+diff --git a/node_modules/react-native-graph/lib/typescript/LineGraphProps.d.ts b/node_modules/react-native-graph/lib/typescript/LineGraphProps.d.ts
+index 5a8490e..8095a0b 100644
+--- a/node_modules/react-native-graph/lib/typescript/LineGraphProps.d.ts
++++ b/node_modules/react-native-graph/lib/typescript/LineGraphProps.d.ts
+@@ -46,6 +46,7 @@ interface BaseLineGraphProps extends ViewProps {
+ }
+ export declare type StaticLineGraphProps = BaseLineGraphProps & {};
+ export declare type AnimatedLineGraphProps = BaseLineGraphProps & {
++    shadowColor?: string;
+     /**
+      * Whether to enable Graph scrubbing/pan gesture.
+      */
+diff --git a/node_modules/react-native-graph/src/AnimatedLineGraph.tsx b/node_modules/react-native-graph/src/AnimatedLineGraph.tsx
+index 7bba35a..977ef72 100644
+--- a/node_modules/react-native-graph/src/AnimatedLineGraph.tsx
++++ b/node_modules/react-native-graph/src/AnimatedLineGraph.tsx
+@@ -54,6 +54,7 @@ const INDICATOR_PULSE_BLUR_RADIUS_BIG =
+ export function AnimatedLineGraph({
+   points: allPoints,
+   color,
++  shadowColor,
+   gradientFillColors,
+   lineThickness = 3,
+   range,
+@@ -91,13 +92,15 @@ export function AnimatedLineGraph({
+     [indicatorRadius]
+   )
+ 
+-  const pulseTrigger = useDerivedValue(() => {
+-    'worklet'
+-    return isActive.value ? 1 : 0
+-  }, [])
++  // const pulseTrigger = useDerivedValue(() => {
++  //   'worklet'
++  //   return isActive.value ? 1 : 0
++  // }, [])
+   const indicatorPulseAnimation = useSharedValue(0)
+-  const indicatorPulseRadius = useValue(INDICATOR_PULSE_BLUR_RADIUS_SMALL)
+-  const indicatorPulseOpacity = useValue(1)
++  const indicatorPulseRadius = useSharedValue(INDICATOR_PULSE_BLUR_RADIUS_SMALL)
++  //const indicatorPulseRadius = useValue(INDICATOR_PULSE_BLUR_RADIUS_SMALL)
++  const indicatorPulseOpacity = useSharedValue(1)
++  //const indicatorPulseOpacity = useValue(1)
+ 
+   const positions = useComputedValue(
+     () => [
+@@ -341,6 +344,9 @@ export function AnimatedLineGraph({
+ 
+   const setFingerX = useCallback(
+     (fingerX: number) => {
++
++      if (!pointsInRange?.[pointsInRange.length - 1]?.date) return 
++
+       const y = getYForX(commands.current, fingerX)
+ 
+       if (y != null) {
+@@ -356,7 +362,7 @@ export function AnimatedLineGraph({
+         (fingerXInRange /
+           getXInRange(
+             drawingWidth,
+-            pointsInRange[pointsInRange.length - 1]!.date,
++            pointsInRange[pointsInRange.length - 1].date,
+             pathRange.x
+           )) *
+           (pointsInRange.length - 1)
+@@ -445,22 +451,22 @@ export function AnimatedLineGraph({
+     // eslint-disable-next-line react-hooks/exhaustive-deps
+   }, [indicatorPulsating])
+ 
+-  useSharedValueEffect(
+-    () => {
+-      if (pulseTrigger.value === 0) {
+-        indicatorPulseRadius.current = mix(
+-          indicatorPulseAnimation.value,
+-          INDICATOR_PULSE_BLUR_RADIUS_SMALL,
+-          INDICATOR_PULSE_BLUR_RADIUS_BIG
+-        )
+-        indicatorPulseOpacity.current = mix(indicatorPulseAnimation.value, 1, 0)
+-      } else {
+-        indicatorPulseRadius.current = 0
+-      }
+-    },
+-    indicatorPulseAnimation,
+-    pulseTrigger
+-  )
++  // useSharedValueEffect(
++  //   () => {
++  //     if (pulseTrigger.value === 0) {
++  //       indicatorPulseRadius.current = mix(
++  //         indicatorPulseAnimation.value,
++  //         INDICATOR_PULSE_BLUR_RADIUS_SMALL,
++  //         INDICATOR_PULSE_BLUR_RADIUS_BIG
++  //       )
++  //       indicatorPulseOpacity.current = mix(indicatorPulseAnimation.value, 1, 0)
++  //     } else {
++  //       indicatorPulseRadius.current = 0
++  //     }
++  //   },
++  //   indicatorPulseAnimation,
++  //   pulseTrigger
++  // )
+ 
+   const axisLabelContainerStyle = {
+     paddingTop: TopAxisLabel != null ? 20 : 0,
+@@ -513,6 +519,7 @@ export function AnimatedLineGraph({
+                     colors={gradientColors}
+                     positions={positions}
+                   />
++                     {shadowColor && <Shadow dx={-1} dy={-1} color={shadowColor}  blur={3} />}
+                 </Path>
+ 
+                 {shouldFillGradient && (
+diff --git a/node_modules/react-native-graph/src/CreateGraphPath.ts b/node_modules/react-native-graph/src/CreateGraphPath.ts
+index 67e9a2e..e4a9c39 100644
+--- a/node_modules/react-native-graph/src/CreateGraphPath.ts
++++ b/node_modules/react-native-graph/src/CreateGraphPath.ts
+@@ -193,7 +193,7 @@ function createGraphPathBase({
+           return pixel + additionalPixel === exactPointX
+         })
+ 
+-      if (!isExactPointInsidePixelRatio) continue
++      // if (!isExactPointInsidePixelRatio) continue
+     }
+ 
+     const value = graphData[index]!.value
+diff --git a/node_modules/react-native-graph/src/LineGraphProps.ts b/node_modules/react-native-graph/src/LineGraphProps.ts
+index f3f27d7..2e76edf 100644
+--- a/node_modules/react-native-graph/src/LineGraphProps.ts
++++ b/node_modules/react-native-graph/src/LineGraphProps.ts
+@@ -53,6 +53,7 @@ export type StaticLineGraphProps = BaseLineGraphProps & {
+   /* any static-only line graph props? */
+ }
+ export type AnimatedLineGraphProps = BaseLineGraphProps & {
++  shadowColor?: string
+   /**
+    * Whether to enable Graph scrubbing/pan gesture.
+    */
