@@ -2,6 +2,7 @@ import React, { FC } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { GraphPoint, LineGraph } from 'react-native-graph'
 import { SelectionDot } from 'screens/watchlist/SelectionDot'
+import { hapticFeedback } from 'utils/HapticFeedback'
 import { AxisLabel } from './AxisLabel'
 import {
   NEGATIVE_GRADIENT_FILL_COLORS,
@@ -19,7 +20,7 @@ interface Props {
   negative?: boolean
   interactive?: boolean
   onPointSelected?: (p: GraphPoint) => void
-  onGestureEnd?: () => void
+  onInteractionEnded?: () => void
 }
 
 const SparklineChart: FC<Props> = ({
@@ -31,7 +32,7 @@ const SparklineChart: FC<Props> = ({
   negative = false,
   interactive = false,
   onPointSelected,
-  onGestureEnd
+  onInteractionEnded
 }) => {
   const theme = useApplicationContext().theme
 
@@ -61,6 +62,15 @@ const SparklineChart: FC<Props> = ({
     return <AxisLabel x={x} value={value} />
   }
 
+  const onGestureStart = () => {
+    hapticFeedback()
+  }
+
+  const onGestureEnd = () => {
+    hapticFeedback()
+    onInteractionEnded?.()
+  }
+
   return interactive ? (
     <LineGraph
       style={{
@@ -75,13 +85,13 @@ const SparklineChart: FC<Props> = ({
       gradientFillColors={gradientFillColors}
       enablePanGesture={true}
       SelectionDot={SelectionDot}
-      onPointSelected={p => onPointSelected?.(p)}
-      onGestureEnd={() => onGestureEnd?.()}
+      onPointSelected={onPointSelected}
+      onGestureStart={onGestureStart}
+      onGestureEnd={onGestureEnd}
       TopAxisLabel={renderTopAxisLabel}
       BottomAxisLabel={renderBottomAxisLabel}
     />
   ) : (
-    // onGestureStart={() => hapticFeedback('impactLight')}
     <LineGraph
       style={{
         width: width,

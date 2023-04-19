@@ -261,7 +261,7 @@ const TokenDetail = () => {
               height={CHART_HEIGHT}
               lineThickness={4}
               onPointSelected={updatePriceAndDate}
-              onGestureEnd={resetPriceAndDate}
+              onInteractionEnded={resetPriceAndDate}
             />
           </View>
           {getOverlayContent()}
