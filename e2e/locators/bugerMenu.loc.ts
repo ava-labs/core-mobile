@@ -1,7 +1,26 @@
 export default {
   advanced: 'Advanced',
+  addressBook: 'Address Book',
+  AddAddressButton: 'Add Address',
   backbutton: 'header_back',
   burgerbutton: 'menu_svg',
+  contactAvaxAddress: '0x19E5ECB3F15197E7A72996259C2245919C9725dD',
+  contactBtcAddress: 'tb1qwausd68f03kyxcr7qvqwunehut5npl7eeccvna',
+  contactName: 'Avax account 2',
+  carrotSvg: 'carrot_svg',
+  currency: 'Currency',
+  delete: 'Delete',
+  deleteContact: 'Delete Contact',
+  edit: 'Edit',
+  emptyContacts: 'No Addresses Saved',
+  emptyContactsText: 'Tap the button below to add an address',
+  euroCurrency: 'Euro (EUR)',
+  euroSign: 'EUR',
+  nameText: 'Name',
+  newContactName: 'Avax account 2 New',
+  saveButton: 'Save',
   switchButton: 'switch',
-  carrotSvg: 'carrot_svg'
+  inputTextField: 'input_text',
+  usdCurrency: 'United States Dollar (USD)',
+  usdSign: 'USD'
 }

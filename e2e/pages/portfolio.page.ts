@@ -26,6 +26,10 @@ class PortfolioPage {
     return by.text(portfolio.addAssetsMessage)
   }
 
+  get avaxFujiToken() {
+    return by.text(portfolio.avaxFujiToken)
+  }
+
   get btcTokenItem() {
     return by.text(portfolio.btcTokenItem)
   }
