@@ -9,6 +9,7 @@ import {
   selectWatchlistPrice,
   toggleWatchListFavorite
 } from 'store/watchlist'
+import { InteractionManager } from 'react-native'
 
 export function useTokenDetail(coingeckoId: string) {
   const dispatch = useDispatch()
@@ -38,11 +39,10 @@ export function useTokenDetail(coingeckoId: string) {
   const [urlHostname, setUrlHostname] = useState<string>('')
   const currency = selectedCurrency.toLowerCase() as VsCurrencyType
 
-  // get coingecko chart data.
+  // get coingecko chart data
   useEffect(() => {
-    ;(async () => {
+    const getChartData = async () => {
       const tokenService = getInstance()
-
       const data = await tokenService.getChartDataForCoinId({
         coingeckoId,
         days: chartDays,
@@ -57,14 +57,17 @@ export function useTokenDetail(coingeckoId: string) {
         // simply set to empty to hide the loading state.
         setChartData([])
       }
-    })()
+    }
+
+    InteractionManager.runAfterInteractions(() => {
+      getChartData()
+    })
   }, [chartDays, coingeckoId, currency])
 
   // get market cap, volume, etc
   useEffect(() => {
-    ;(async () => {
+    const getMarketDetails = async () => {
       const tokenService = getInstance()
-
       const data = await tokenService.getCoinInfo({
         coingeckoId
       })
@@ -79,7 +82,11 @@ export function useTokenDetail(coingeckoId: string) {
           ?.replace('www.', '')
         setUrlHostname(url)
       }
-    })()
+    }
+
+    InteractionManager.runAfterInteractions(() => {
+      getMarketDetails()
+    })
   }, [coingeckoId])
 
   const handleFavorite = useCallback(() => {
