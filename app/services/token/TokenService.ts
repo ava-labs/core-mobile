@@ -6,6 +6,7 @@ import {
   coinsMarketChart,
   coinsSearch,
   getBasicCoingeckoHttp,
+  getProCoingeckoHttp,
   simplePrice,
   SimplePriceResponse,
   simpleTokenPrice,
@@ -25,10 +26,12 @@ import {
 import NetworkService from 'services/network/NetworkService'
 import { MarketToken } from 'store/watchlist'
 import xss from 'xss'
+import Config from 'react-native-config'
 import { ChartData, GetMarketsParams, PriceWithMarketData } from './types'
 import { transformContractMarketChartResponse } from './utils'
 
 const coingeckoBasicClient = getBasicCoingeckoHttp()
+const coingeckoProClient = getProCoingeckoHttp()
 
 export class TokenService {
   /**
@@ -92,12 +95,13 @@ export class TokenService {
     data = getCache(cacheId)
 
     if (data === undefined) {
-      data = await coinsMarket(coingeckoBasicClient, {
+      data = await coinsMarket(coingeckoProClient, {
         currency,
         sparkline,
         coinIds,
         perPage,
-        page
+        page,
+        coinGeckoProApiKey: Config.COINGECKO_API_KEY
       })
       setCache(cacheId, data)
     }
@@ -284,10 +288,11 @@ export class TokenService {
     currency: VsCurrencyType = VsCurrencyType.USD
   ) {
     try {
-      const rawData = await coinsMarketChart(coingeckoBasicClient, {
+      const rawData = await coinsMarketChart(coingeckoProClient, {
         assetPlatformId: coingeckoId,
         currency,
-        days
+        days,
+        coinGeckoProApiKey: Config.COINGECKO_API_KEY
       })
 
       return transformContractMarketChartResponse(rawData)
@@ -298,8 +303,9 @@ export class TokenService {
 
   private async fetchCoinInfo(coingeckoId: string) {
     try {
-      return coinsInfo(coingeckoBasicClient, {
-        assetPlatformId: coingeckoId
+      return coinsInfo(coingeckoProClient, {
+        assetPlatformId: coingeckoId,
+        coinGeckoProApiKey: Config.COINGECKO_API_KEY
       })
     } catch (e) {
       return Promise.resolve(undefined)
@@ -311,12 +317,13 @@ export class TokenService {
     currencyCode: VsCurrencyType = VsCurrencyType.USD
   ) {
     try {
-      return simplePrice(coingeckoBasicClient, {
+      return simplePrice(coingeckoProClient, {
         coinIds: coingeckoId,
         currencies: [currencyCode],
         marketCap: true,
         vol24: true,
-        change24: true
+        change24: true,
+        coinGeckoProApiKey: Config.COINGECKO_API_KEY
       })
     } catch (e) {
       return Promise.resolve(undefined)
@@ -329,13 +336,14 @@ export class TokenService {
     currencyCode: VsCurrencyType = VsCurrencyType.USD
   ) {
     try {
-      return simpleTokenPrice(coingeckoBasicClient, {
+      return simpleTokenPrice(coingeckoProClient, {
         assetPlatformId,
         tokenAddresses,
         currencies: [currencyCode],
         marketCap: true,
         vol24: true,
-        change24: true
+        change24: true,
+        coinGeckoProApiKey: Config.COINGECKO_API_KEY
       })
     } catch (e) {
       return Promise.resolve(undefined)
