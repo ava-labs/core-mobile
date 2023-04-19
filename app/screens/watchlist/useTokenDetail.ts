@@ -17,7 +17,7 @@ export function useTokenDetail(coingeckoId: string) {
   const { openMoonPay, openUrl } = useInAppBrowser()
   const { selectedCurrency, currencyFormatter } =
     useApplicationContext().appHook
-  const [chartData, setChartData] = useState<{ x: number; y: number }[]>()
+  const [chartData, setChartData] = useState<{ date: Date; value: number }[]>()
   const [chartDays, setChartDays] = useState(1)
   const [ranges, setRanges] = useState<{
     minDate: number
