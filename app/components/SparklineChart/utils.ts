@@ -12,6 +12,6 @@ export const yToX = (
   y: number,
   width: number
 ) => {
-  const index = data.findIndex(val => val.y === y)
+  const index = data.findIndex(val => val.value === y)
   return (index / data.length) * width
 }
