@@ -11,7 +11,7 @@ import {
   vec
 } from '@shopify/react-native-skia'
 import type { SelectionDotProps } from 'react-native-graph'
-import { CHART_HEIGHT } from './TokenDetail'
+import { CHART_HEIGHT } from './TokenDetails/TokenDetail'
 
 const CIRCLE_RADIUS = 6
 const CIRCLE_RADIUS_MULTIPLIER = 2.5
