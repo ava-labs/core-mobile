@@ -14,7 +14,7 @@ interface Props {
   width?: number
   height?: number
   data: { date: Date; value: number }[]
-  yRange: [number, number] // y min, y max
+  yRange?: [number, number] // y min, y max
   lineThickness?: number
   negative?: boolean
   interactive?: boolean
@@ -43,8 +43,10 @@ const SparklineChart: FC<Props> = ({
 
   const shadowColor = negative ? theme.colorError : POSITIVE_SHADOW_COLOR
 
+  const shouldNotRenderAxisLabel = data.length === 0 || !yRange
+
   const renderTopAxisLabel = () => {
-    if (data.length === 0) return null
+    if (shouldNotRenderAxisLabel) return null
 
     const value = yRange[1]
     const x = yToX(data, value, width)
@@ -52,7 +54,7 @@ const SparklineChart: FC<Props> = ({
   }
 
   const renderBottomAxisLabel = () => {
-    if (data.length === 0) return null
+    if (shouldNotRenderAxisLabel) return null
 
     const value = yRange[0]
     const x = yToX(data, value, width)

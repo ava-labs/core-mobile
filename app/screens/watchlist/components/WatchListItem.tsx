@@ -6,14 +6,15 @@ import AvaText from 'components/AvaText'
 import Avatar from 'components/Avatar'
 import { Space } from 'components/Space'
 import { WatchlistFilter } from 'screens/watchlist/types'
-import SparklineChart from 'components/SparklineChart'
+import SparklineChart from 'components/SparklineChart/SparklineChart'
 import { Row } from 'components/Row'
 import MarketMovement from 'screens/watchlist/components/MarketMovement'
-
 import { MarketToken } from 'store/watchlist'
 import { ChartData } from 'services/token/types'
 
-const deviceWidth = Dimensions.get('window').width
+const DEVICE_WIDTH = Dimensions.get('window').width
+const RIGHT_COMPONENT_MAX_WIDTH = DEVICE_WIDTH * 0.6
+const CHART_WIDTH = DEVICE_WIDTH * 0.2
 
 interface Props {
   token: MarketToken
@@ -47,18 +48,15 @@ const WatchListItem: FC<Props> = ({
       titleAlignment={'flex-start'}
       subtitle={name}
       embedInCard={false}
-      rightComponentMaxWidth={deviceWidth * 0.6}
+      rightComponentMaxWidth={RIGHT_COMPONENT_MAX_WIDTH}
       leftComponent={
         <LeftComponent token={token} rank={rank} testID={testID} />
       }
       rightComponent={
         <RightComponent
-          token={token}
           chartData={chartData}
           value={value}
           filterBy={filterBy}
-          onPress={onPress}
-          testID={testID}
         />
       }
       onPress={onPress}
@@ -100,19 +98,15 @@ const LeftComponent = ({ token, rank, testID }: LeftComponentProps) => {
 }
 
 type RightComponentProps = {
-  token: MarketToken
   chartData: ChartData
   value?: string
   filterBy: WatchlistFilter
-  testID?: string
-  onPress?: () => void
 }
 
 const RightComponent = ({
   chartData,
   value,
-  filterBy,
-  onPress
+  filterBy
 }: RightComponentProps) => {
   const { theme, appHook } = useApplicationContext()
   const { selectedCurrency } = appHook
@@ -121,13 +115,7 @@ const RightComponent = ({
   const renderMiddleComponent = () => {
     if (dataPoints.length === 0) return null
 
-    return (
-      <MiddleComponent
-        dataPoints={dataPoints}
-        ranges={ranges}
-        onPress={onPress}
-      />
-    )
+    return <MiddleComponent dataPoints={dataPoints} ranges={ranges} />
   }
 
   if (!value) return null
@@ -164,16 +152,9 @@ const RightComponent = ({
 type MiddleComponentProps = {
   dataPoints: ChartData['dataPoints']
   ranges: ChartData['ranges']
-  testID?: string
-  onPress?: () => void
 }
 
-const MiddleComponent = ({
-  dataPoints,
-  ranges,
-  onPress,
-  testID
-}: MiddleComponentProps) => {
+const MiddleComponent = ({ dataPoints, ranges }: MiddleComponentProps) => {
   return (
     <View
       style={{
@@ -181,15 +162,12 @@ const MiddleComponent = ({
         alignItems: 'flex-end'
       }}>
       <SparklineChart
-        width={90}
-        height={80}
-        animated={false}
+        width={CHART_WIDTH}
+        height={30}
+        interactive={false}
+        lineThickness={3}
         data={dataPoints}
-        onPress={onPress}
-        yRange={[ranges.minPrice, ranges.maxPrice]}
-        xRange={[ranges.minDate, ranges.maxDate]}
         negative={ranges.diffValue < 0}
-        testID={testID}
       />
     </View>
   )

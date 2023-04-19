@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useState } from 'react'
+import React, { useCallback, useEffect, useLayoutEffect, useState } from 'react'
 import {
   Dimensions,
   Pressable,
@@ -18,7 +18,7 @@ import { WalletScreenProps } from 'navigation/types'
 import OvalTagBg from 'components/OvalTagBg'
 import AvaButton from 'components/AvaButton'
 import { useTokenDetail } from 'screens/watchlist/useTokenDetail'
-import SparklineChart from 'components/SparklineChart'
+import SparklineChart from 'components/SparklineChart/SparklineChart'
 import { Row } from 'components/Row'
 import MarketMovement from 'screens/watchlist/components/MarketMovement'
 import { ViewOnceInformation } from 'Repo'
@@ -28,10 +28,15 @@ import { formatLargeCurrency, formatLargeNumber } from 'utils/Utils'
 import { TokenSymbol } from 'store/network'
 import { ActivityIndicator } from 'components/ActivityIndicator'
 import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
+import { useSharedValue } from 'react-native-reanimated'
+import { ReText } from 'react-native-redash'
+import { styles as AvaTextStyles } from 'components/AvaText'
+import { format } from 'date-fns'
 
 const WINDOW_WIDTH = Dimensions.get('window').width
 const WINDOW_HEIGHT = Dimensions.get('window').height
-const CHART_HEIGHT = WINDOW_HEIGHT * 0.18
+const GOT_IT_BTN_WIDTH = WINDOW_WIDTH - 32
+export const CHART_HEIGHT = WINDOW_HEIGHT * 0.45
 
 type ScreenProps = WalletScreenProps<typeof AppNavigation.Wallet.TokenDetail>
 
@@ -43,6 +48,20 @@ const TokenDetail = () => {
   const [showChartInstruction, setShowChartInstruction] = useState(false)
   const tokenId = useRoute<ScreenProps['route']>().params.tokenId
   const buyDisabled = useIsUIDisabled(UI.Buy)
+
+  const { tokenInCurrencyFormatter } = useApplicationContext().appHook
+
+  const animatedDate = useSharedValue('Price')
+  const animatedPrice = useSharedValue('')
+
+  const updatePriceAndDate = useCallback(
+    p => {
+      const amountInCurrency = tokenInCurrencyFormatter(p.value)
+      animatedPrice.value = amountInCurrency
+      animatedDate.value = format(p.date, 'E, MMM dd, yyyy, H:mm aa')
+    },
+    [animatedPrice, animatedDate, tokenInCurrencyFormatter]
+  )
 
   const {
     isFavorite,
@@ -65,6 +84,12 @@ const TokenDetail = () => {
     contractAddress,
     changeChartDays
   } = useTokenDetail(tokenId)
+
+  const resetPriceAndDate = useCallback(() => {
+    const amountInCurrency = tokenInCurrencyFormatter(priceInCurrency ?? 0)
+    animatedPrice.value = amountInCurrency
+    animatedDate.value = 'Price'
+  }, [animatedPrice, animatedDate, priceInCurrency, tokenInCurrencyFormatter])
 
   function openTwitter() {
     twitterHandle && openUrl(`https://twitter.com/${twitterHandle}`)
@@ -118,12 +143,16 @@ const TokenDetail = () => {
     if (chartData && chartData.length === 0) {
       content = (
         <>
-          <AvaText.Heading2 color={'white'}>
-            No chart data available
-          </AvaText.Heading2>
-          <AvaText.Body3 color={'white'}>
-            We are unable to retrieve chart data for this token at this time.
-          </AvaText.Body3>
+          <AvaText.Heading5>No Chart Data Available</AvaText.Heading5>
+          <AvaText.Body2
+            textStyle={{
+              width: '70%',
+              textAlign: 'center',
+              marginTop: 10
+            }}>
+            We are unable to retrieve chart data for this token. Please check
+            back later.
+          </AvaText.Body2>
         </>
       )
     }
@@ -132,16 +161,21 @@ const TokenDetail = () => {
     if (chartData && showChartInstruction) {
       content = (
         <>
-          <AvaText.Heading2 color={'white'}>Hold and Drag</AvaText.Heading2>
-          <AvaText.Body3
-            color={'white'}
-            textStyle={{ textAlignVertical: 'center' }}>
+          <AvaText.Heading5>Hold and Drag</AvaText.Heading5>
+          <AvaText.Body2
+            textStyle={{
+              width: '50%',
+              textAlign: 'center',
+              marginTop: 10,
+              marginBottom: 30
+            }}>
             Hold and drag over chart for precise price and date
-          </AvaText.Body3>
-          <AvaButton.PrimaryMedium
+          </AvaText.Body2>
+          <AvaButton.PrimaryLarge
+            style={{ width: GOT_IT_BTN_WIDTH }}
             onPress={() => setShowChartInstruction(!showChartInstruction)}>
             Got it
-          </AvaButton.PrimaryMedium>
+          </AvaButton.PrimaryLarge>
         </>
       )
     }
@@ -154,8 +188,7 @@ const TokenDetail = () => {
             {
               alignItems: 'center',
               justifyContent: 'center',
-              backgroundColor: '#00000080',
-              marginHorizontal: 32
+              backgroundColor: '#00000080'
             }
           ]}>
           {content}
@@ -167,10 +200,10 @@ const TokenDetail = () => {
   }
 
   return (
-    <ScrollView style={{ paddingHorizontal: 8, flex: 1 }}>
+    <ScrollView style={{ flex: 1 }}>
       <View>
         <AvaListItem.Base
-          title={<AvaText.Heading1>{name}</AvaText.Heading1>}
+          title={<AvaText.Heading5>{name}</AvaText.Heading5>}
           titleAlignment={'flex-start'}
           subtitle={symbol}
           leftComponent={
@@ -186,26 +219,31 @@ const TokenDetail = () => {
           }
         />
         <AvaListItem.Base
-          title={<AvaText.Body2>Price</AvaText.Body2>}
+          title={
+            <ReText
+              text={animatedDate}
+              style={[{ color: theme.neutral50 }, AvaTextStyles.body3]}
+            />
+          }
           titleAlignment={'flex-start'}
           testID="token_detail__price_title"
           subtitle={
-            <Row style={{ alignItems: 'center' }}>
-              <AvaText.Heading3
-                tokenInCurrency
-                textStyle={{ marginEnd: 8 }}
-                testID="token_detail__price">
-                {priceInCurrency}
-              </AvaText.Heading3>
-              <MarketMovement
-                hideCurrencyCode
-                priceChange={ranges.diffValue}
-                percentChange={ranges.percentChange}
-                testID="token_detail__price_movement"
-              />
-            </Row>
+            <ReText
+              testID="token_detail__price"
+              text={animatedPrice}
+              style={[{ color: theme.neutral50 }, AvaTextStyles.heading4]}
+            />
           }
         />
+        <View style={{ marginLeft: 16 }}>
+          <MarketMovement
+            hideCurrencyCode
+            priceChange={ranges.diffValue}
+            percentChange={ranges.percentChange}
+            testID="token_detail__price_movement"
+          />
+        </View>
+
         <Space y={8} />
         <View
           style={{
@@ -214,36 +252,21 @@ const TokenDetail = () => {
             alignItems: 'center'
           }}>
           <View>
-            <AvaText.Caption
-              tokenInCurrency
-              textStyle={{
-                alignSelf: 'flex-end',
-                color: theme.colorText1,
-                marginBottom: -10
-              }}>
-              {ranges.maxPrice}
-            </AvaText.Caption>
             <SparklineChart
               interactive
               data={chartData ?? []}
               yRange={[ranges.minPrice, ranges.maxPrice]}
-              xRange={[ranges.minDate, ranges.maxDate]}
               negative={ranges.diffValue < 0}
               width={WINDOW_WIDTH - 32} // padding
               height={CHART_HEIGHT}
-              testID="token_detail__chart"
+              lineThickness={4}
+              onPointSelected={updatePriceAndDate}
+              onGestureEnd={resetPriceAndDate}
             />
-            <AvaText.Caption
-              tokenInCurrency
-              textStyle={{ alignSelf: 'flex-end', color: theme.colorText1 }}>
-              {ranges.minPrice}
-            </AvaText.Caption>
           </View>
           {getOverlayContent()}
         </View>
-
         <Space y={22} />
-
         {/* this will change once data component purpose and interaction is defined */}
         <TabViewAva
           renderCustomLabel={(title, selected, color) => (
