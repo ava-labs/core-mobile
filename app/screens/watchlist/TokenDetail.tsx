@@ -1,19 +1,12 @@
-import React, { useCallback, useEffect, useLayoutEffect, useState } from 'react'
-import {
-  Dimensions,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View
-} from 'react-native'
+import React, { useCallback, useEffect, useState } from 'react'
+import { Dimensions, ScrollView, StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaListItem from 'components/AvaListItem'
 import Avatar from 'components/Avatar'
 import AvaText from 'components/AvaText'
 import { Space } from 'components/Space'
 import TabViewAva from 'components/TabViewAva'
-import { useNavigation, useRoute } from '@react-navigation/native'
-import StarSVG from 'components/svg/StarSVG'
+import { useRoute } from '@react-navigation/native'
 import { WalletScreenProps } from 'navigation/types'
 import OvalTagBg from 'components/OvalTagBg'
 import AvaButton from 'components/AvaButton'
@@ -32,6 +25,7 @@ import { useSharedValue } from 'react-native-reanimated'
 import { ReText } from 'react-native-redash'
 import { styles as AvaTextStyles } from 'components/AvaText'
 import { format } from 'date-fns'
+import { StarButton } from 'components/StarButton'
 
 const WINDOW_WIDTH = Dimensions.get('window').width
 const WINDOW_HEIGHT = Dimensions.get('window').height
@@ -44,7 +38,6 @@ const TokenDetail = () => {
   const { theme, appHook } = useApplicationContext()
   const { saveViewOnceInformation, infoHasBeenShown, viewOnceInfo } =
     useApplicationContext().repo.informationViewOnceRepo
-  const { setOptions } = useNavigation<ScreenProps['navigation']>()
   const [showChartInstruction, setShowChartInstruction] = useState(false)
   const tokenId = useRoute<ScreenProps['route']>().params.tokenId
   const buyDisabled = useIsUIDisabled(UI.Buy)
@@ -117,20 +110,6 @@ const TokenDetail = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  useLayoutEffect(() => {
-    setOptions({
-      // eslint-disable-next-line react/no-unstable-nested-components
-      headerRight: () => (
-        <Pressable
-          style={{ paddingEnd: 8 }}
-          onPress={handleFavorite}
-          testID="star_svg">
-          <StarSVG selected={isFavorite} />
-        </Pressable>
-      )
-    })
-  }, [handleFavorite, isFavorite, setOptions])
 
   const getOverlayContent = () => {
     // loading chart data
@@ -217,7 +196,11 @@ const TokenDetail = () => {
               />
             )
           }
+          rightComponent={
+            <StarButton onPress={handleFavorite} selected={isFavorite} />
+          }
         />
+
         <AvaListItem.Base
           title={
             <ReText

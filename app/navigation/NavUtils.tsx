@@ -39,6 +39,9 @@ export const MainHeaderOptions = (
     },
     headerTitleAlign: 'left',
     headerLeft: hideHeaderLeft ? () => null : undefined,
+    headerLeftContainerStyle: {
+      paddingLeft: 8
+    },
     headerBackTitleVisible: false,
     headerRight: actionComponent ? () => actionComponent : undefined,
     headerStyle: {
