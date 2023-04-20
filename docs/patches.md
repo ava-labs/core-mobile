@@ -19,6 +19,7 @@ This patch is needed to make sure react-native-flipper on iOS dynamically sets t
 - disable indicatorPulse logic as it uses the deprecated `useSharedValueEffect` and causes `Null is not an object (evaluating ‘dispatcher.useRef’)`
 - add an assertion around pointsInRange logic to prevent `Undefined is not an object pointsInRange`
 - add support for shadowColor prop
+- disable selection dot's getYForX logic as it runs on JS thread and drastically slows down Android
 
 2/ CreateGraphPath.ts
 - disable isExactPointInsidePixelRatio logic as it creates invalid graphs. more info here https://github.com/margelo/react-native-graph/issues/70

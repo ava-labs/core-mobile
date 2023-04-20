@@ -1,35 +1,3 @@
-diff --git a/node_modules/react-native-graph/lib/commonjs/AnimatedLineGraph.js b/node_modules/react-native-graph/lib/commonjs/AnimatedLineGraph.js
-index 25e4ad8..bc9b495 100644
---- a/node_modules/react-native-graph/lib/commonjs/AnimatedLineGraph.js
-+++ b/node_modules/react-native-graph/lib/commonjs/AnimatedLineGraph.js
-@@ -250,6 +250,7 @@ function AnimatedLineGraph(_ref) {
-     )), -1);
-   }, [indicatorPulseAnimation]);
-   const setFingerX = (0, _react.useCallback)(fingerX => {
-+   
-     const y = (0, _GetYForX.getYForX)(commands.current, fingerX);
- 
-     if (y != null) {
-@@ -259,6 +260,7 @@ function AnimatedLineGraph(_ref) {
- 
-     if (isActive.value) pathEnd.current = fingerX / width;
-     const fingerXInRange = Math.max(fingerX - horizontalPadding, 0);
-+
-     const index = Math.round(fingerXInRange / (0, _CreateGraphPath.getXInRange)(drawingWidth, pointsInRange[pointsInRange.length - 1].date, pathRange.x) * (pointsInRange.length - 1));
-     const pointIndex = Math.min(Math.max(index, 0), pointsInRange.length - 1);
- 
-diff --git a/node_modules/react-native-graph/lib/commonjs/CreateGraphPath.js b/node_modules/react-native-graph/lib/commonjs/CreateGraphPath.js
-index 5202642..aaba4ef 100644
---- a/node_modules/react-native-graph/lib/commonjs/CreateGraphPath.js
-+++ b/node_modules/react-native-graph/lib/commonjs/CreateGraphPath.js
-@@ -78,7 +78,6 @@ function createGraphPathBase(_ref3) {
-     canvasWidth: width,
-     shouldFillGradient
-   } = _ref3;
--
-   const path = _reactNativeSkia.Skia.Path.Make(); // Canvas width substracted by the horizontal padding => Actual drawing width
- 
- 
 diff --git a/node_modules/react-native-graph/lib/module/AnimatedLineGraph.js b/node_modules/react-native-graph/lib/module/AnimatedLineGraph.js
 index 88d58ed..e9c2ec3 100644
 --- a/node_modules/react-native-graph/lib/module/AnimatedLineGraph.js
@@ -55,7 +23,7 @@ index 5a8490e..8095a0b 100644
       * Whether to enable Graph scrubbing/pan gesture.
       */
 diff --git a/node_modules/react-native-graph/src/AnimatedLineGraph.tsx b/node_modules/react-native-graph/src/AnimatedLineGraph.tsx
-index 7bba35a..977ef72 100644
+index 7bba35a..f2772ca 100644
 --- a/node_modules/react-native-graph/src/AnimatedLineGraph.tsx
 +++ b/node_modules/react-native-graph/src/AnimatedLineGraph.tsx
 @@ -54,6 +54,7 @@ const INDICATOR_PULSE_BLUR_RADIUS_BIG =
@@ -88,16 +56,26 @@ index 7bba35a..977ef72 100644
  
    const positions = useComputedValue(
      () => [
-@@ -341,6 +344,9 @@ export function AnimatedLineGraph({
+@@ -341,12 +344,15 @@ export function AnimatedLineGraph({
  
    const setFingerX = useCallback(
      (fingerX: number) => {
-+
+-      const y = getYForX(commands.current, fingerX)
+ 
+-      if (y != null) {
 +      if (!pointsInRange?.[pointsInRange.length - 1]?.date) return 
 +
-       const y = getYForX(commands.current, fingerX)
++      // const y = getYForX(commands.current, fingerX)
++
++      //if (y != null) {
+         circleX.current = fingerX
+-        circleY.current = y
+-      }
++        //circleY.current = y
++      //}
  
-       if (y != null) {
+       if (isActive.value) pathEnd.current = fingerX / width
+ 
 @@ -356,7 +362,7 @@ export function AnimatedLineGraph({
          (fingerXInRange /
            getXInRange(
