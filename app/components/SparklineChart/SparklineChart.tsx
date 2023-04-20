@@ -97,9 +97,9 @@ const SparklineChart: FC<Props> = ({
         width: width,
         height: height
       }}
-      animated
+      animated={false}
       color={color}
-      lineThickness={lineThickness}
+      lineThickness={2}
       points={data}
       gradientFillColors={gradientFillColors}
     />
