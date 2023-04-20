@@ -152,7 +152,7 @@ class BurgerMenuPage {
   }
 
   async inputContactName() {
-    await Actions.setInputText(this.inputTextField, burgerMenu.contactName, 1)
+    await Actions.setInputText(this.inputTextField, burgerMenu.contactName, 0)
     await Actions.tap(this.nameText)
   }
 
@@ -160,7 +160,7 @@ class BurgerMenuPage {
     await Actions.setInputText(
       this.inputTextField,
       burgerMenu.newContactName,
-      1
+      0
     )
     await Actions.tap(this.nameText)
   }
@@ -169,7 +169,7 @@ class BurgerMenuPage {
     await Actions.setInputText(
       this.inputTextField,
       burgerMenu.contactAvaxAddress,
-      2
+      1
     )
     await Actions.tap(this.nameText)
   }
@@ -178,7 +178,7 @@ class BurgerMenuPage {
     await Actions.setInputText(
       this.inputTextField,
       burgerMenu.contactBtcAddress,
-      3
+      2
     )
     await Actions.tap(this.nameText)
   }

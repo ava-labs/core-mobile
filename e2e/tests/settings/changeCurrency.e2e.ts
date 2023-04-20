@@ -4,13 +4,15 @@
  * @jest-environment ./environment.ts
  */
 import Assert from '../../helpers/assertions'
-// import Actions from '../../helpers/actions'
+import Actions from '../../helpers/actions'
 import LoginRecoverWallet from '../../helpers/loginRecoverWallet'
 import BurgerMenuPage from '../../pages/burgerMenu.page'
 import { warmup } from '../../helpers/warmup'
-// import { delay } from '../../helpers'
+import { Platform } from '../../helpers/constants'
 
-describe('Enable Testnet', () => {
+const platformIndex = Actions.platform() === Platform.iOS ? 1 : 0
+
+describe('Change Currency', () => {
   beforeAll(async () => {
     await warmup()
     await LoginRecoverWallet.recoverWalletLogin()
@@ -20,7 +22,7 @@ describe('Enable Testnet', () => {
     await BurgerMenuPage.tapBurgerMenuButton()
     await BurgerMenuPage.tapCurrency()
     await BurgerMenuPage.tapEuroCurrency()
-    await Assert.isVisible(BurgerMenuPage.euroSign)
+    await Assert.isVisible(BurgerMenuPage.euroSign, platformIndex)
     await BurgerMenuPage.swipeLeft()
   })
 
@@ -28,9 +30,7 @@ describe('Enable Testnet', () => {
     await BurgerMenuPage.tapBurgerMenuButton()
     await BurgerMenuPage.tapCurrency()
     await BurgerMenuPage.tapUSDCurrency()
-    await Assert.isVisible(BurgerMenuPage.usdSign)
+    await Assert.isVisible(BurgerMenuPage.usdSign, platformIndex)
     await BurgerMenuPage.swipeLeft()
-    // await Actions.waitForElement(BurgerMenuPage.usdSign)
-    // await Assert.isVisible(BurgerMenuPage.usdSign)
   })
 })

@@ -13,7 +13,7 @@ export default {
   deleteContact: 'Delete Contact',
   edit: 'Edit',
   emptyContacts: 'No Addresses Saved',
-  emptyContactsText: 'Tap the button below to add an address',
+  emptyContactsText: 'Tap the button below to add an address.',
   euroCurrency: 'Euro (EUR)',
   euroSign: 'EUR',
   nameText: 'Name',
