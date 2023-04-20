@@ -23,10 +23,58 @@ index 5a8490e..8095a0b 100644
       * Whether to enable Graph scrubbing/pan gesture.
       */
 diff --git a/node_modules/react-native-graph/src/AnimatedLineGraph.tsx b/node_modules/react-native-graph/src/AnimatedLineGraph.tsx
-index 7bba35a..f2772ca 100644
+index 7bba35a..ecbb5fe 100644
 --- a/node_modules/react-native-graph/src/AnimatedLineGraph.tsx
 +++ b/node_modules/react-native-graph/src/AnimatedLineGraph.tsx
-@@ -54,6 +54,7 @@ const INDICATOR_PULSE_BLUR_RADIUS_BIG =
+@@ -12,9 +12,9 @@ import {
+   vec,
+   Group,
+   PathCommand,
+-  useSharedValueEffect,
+-  mix,
+-  Circle,
++  // useSharedValueEffect,
++  // mix,
++  // Circle,
+   Shadow,
+ } from '@shopify/react-native-skia'
+ import type { AnimatedLineGraphProps } from './LineGraphProps'
+@@ -31,29 +31,30 @@ import Reanimated, {
+   runOnJS,
+   useAnimatedReaction,
+   useSharedValue,
+-  useDerivedValue,
+-  cancelAnimation,
+-  withRepeat,
+-  withSequence,
+-  withTiming,
+-  withDelay,
++  // useDerivedValue,
++  // cancelAnimation,
++  // withRepeat,
++  // withSequence,
++  // withTiming,
++  // withDelay,
+ } from 'react-native-reanimated'
+ import { getSixDigitHex } from './utils/getSixDigitHex'
+ import { GestureDetector } from 'react-native-gesture-handler'
+ import { usePanGesture } from './hooks/usePanGesture'
+-import { getYForX } from './GetYForX'
+-import { hexToRgba } from './utils/hexToRgba'
++// import { getYForX } from './GetYForX'
++// import { hexToRgba } from './utils/hexToRgba'
+ 
+ const INDICATOR_RADIUS = 7
+ const INDICATOR_BORDER_MULTIPLIER = 1.3
+-const INDICATOR_PULSE_BLUR_RADIUS_SMALL =
+-  INDICATOR_RADIUS * INDICATOR_BORDER_MULTIPLIER
+-const INDICATOR_PULSE_BLUR_RADIUS_BIG =
+-  INDICATOR_RADIUS * INDICATOR_BORDER_MULTIPLIER + 20
++// const INDICATOR_PULSE_BLUR_RADIUS_SMALL =
++//   INDICATOR_RADIUS * INDICATOR_BORDER_MULTIPLIER
++// const INDICATOR_PULSE_BLUR_RADIUS_BIG =
++//   INDICATOR_RADIUS * INDICATOR_BORDER_MULTIPLIER + 20
+ 
  export function AnimatedLineGraph({
    points: allPoints,
    color,
@@ -34,29 +82,138 @@ index 7bba35a..f2772ca 100644
    gradientFillColors,
    lineThickness = 3,
    range,
-@@ -91,13 +92,15 @@ export function AnimatedLineGraph({
-     [indicatorRadius]
-   )
- 
+@@ -85,19 +86,21 @@ export function AnimatedLineGraph({
+   const circleX = useValue(0)
+   const circleY = useValue(0)
+   const pathEnd = useValue(0)
+-  const indicatorRadius = useValue(enableIndicator ? INDICATOR_RADIUS : 0)
+-  const indicatorBorderRadius = useComputedValue(
+-    () => indicatorRadius.current * INDICATOR_BORDER_MULTIPLIER,
+-    [indicatorRadius]
+-  )
+-
 -  const pulseTrigger = useDerivedValue(() => {
 -    'worklet'
 -    return isActive.value ? 1 : 0
 -  }, [])
+-  const indicatorPulseAnimation = useSharedValue(0)
+-  const indicatorPulseRadius = useValue(INDICATOR_PULSE_BLUR_RADIUS_SMALL)
+-  const indicatorPulseOpacity = useValue(1)
++  // const indicatorRadius = useValue(enableIndicator ? INDICATOR_RADIUS : 0)
++  // const indicatorBorderRadius = useComputedValue(
++  //   () => indicatorRadius.current * INDICATOR_BORDER_MULTIPLIER,
++  //   [indicatorRadius]
++  // )
++
 +  // const pulseTrigger = useDerivedValue(() => {
 +  //   'worklet'
 +  //   return isActive.value ? 1 : 0
 +  // }, [])
-   const indicatorPulseAnimation = useSharedValue(0)
--  const indicatorPulseRadius = useValue(INDICATOR_PULSE_BLUR_RADIUS_SMALL)
--  const indicatorPulseOpacity = useValue(1)
-+  const indicatorPulseRadius = useSharedValue(INDICATOR_PULSE_BLUR_RADIUS_SMALL)
-+  //const indicatorPulseRadius = useValue(INDICATOR_PULSE_BLUR_RADIUS_SMALL)
-+  const indicatorPulseOpacity = useSharedValue(1)
-+  //const indicatorPulseOpacity = useValue(1)
++  // const indicatorPulseAnimation = useSharedValue(0)
++  // const indicatorPulseRadius = useSharedValue(INDICATOR_PULSE_BLUR_RADIUS_SMALL)
++  // const indicatorPulseRadius = useValue(INDICATOR_PULSE_BLUR_RADIUS_SMALL)
++  // const indicatorPulseOpacity = useSharedValue(1)
++  // const indicatorPulseOpacity = useValue(1)
  
    const positions = useComputedValue(
      () => [
-@@ -341,12 +344,15 @@ export function AnimatedLineGraph({
+@@ -150,29 +153,29 @@ export function AnimatedLineGraph({
+     [horizontalPadding, width]
+   )
+ 
+-  const lineWidth = useMemo(() => {
+-    const lastPoint = pointsInRange[pointsInRange.length - 1]
+-
+-    if (lastPoint == null) return drawingWidth
+-
+-    return Math.max(getXInRange(drawingWidth, lastPoint.date, pathRange.x), 0)
+-  }, [drawingWidth, pathRange.x, pointsInRange])
+-
+-  const indicatorX = useMemo(
+-    () =>
+-      commandsChanged >= 0
+-        ? Math.floor(lineWidth) + horizontalPadding
+-        : undefined,
+-    [commandsChanged, horizontalPadding, lineWidth]
+-  )
+-  const indicatorY = useMemo(
+-    () =>
+-      commandsChanged >= 0 && indicatorX != null
+-        ? getYForX(commands.current, indicatorX)
+-        : undefined,
+-    [commandsChanged, indicatorX]
+-  )
+-  const indicatorPulseColor = useMemo(() => hexToRgba(color, 0.4), [color])
++  // const lineWidth = useMemo(() => {
++  //   const lastPoint = pointsInRange[pointsInRange.length - 1]
++
++  //   if (lastPoint == null) return drawingWidth
++
++  //   return Math.max(getXInRange(drawingWidth, lastPoint.date, pathRange.x), 0)
++  // }, [drawingWidth, pathRange.x, pointsInRange])
++
++  // const indicatorX = useMemo(
++  //   () =>
++  //     commandsChanged >= 0
++  //       ? Math.floor(lineWidth) + horizontalPadding
++  //       : undefined,
++  //   [commandsChanged, horizontalPadding, lineWidth]
++  // )
++  // const indicatorY = useMemo(
++  //   () =>
++  //     commandsChanged >= 0 && indicatorX != null
++  //       ? getYForX(commands.current, indicatorX)
++  //       : undefined,
++  //   [commandsChanged, indicatorX]
++  // )
++  // const indicatorPulseColor = useMemo(() => hexToRgba(color, 0.4), [color])
+ 
+   const shouldFillGradient = gradientFillColors != null
+ 
+@@ -318,35 +321,38 @@ export function AnimatedLineGraph({
+     [interpolateProgress]
+   )
+ 
+-  const stopPulsating = useCallback(() => {
+-    cancelAnimation(indicatorPulseAnimation)
+-    indicatorPulseAnimation.value = 0
+-  }, [indicatorPulseAnimation])
+-
+-  const startPulsating = useCallback(() => {
+-    indicatorPulseAnimation.value = withRepeat(
+-      withDelay(
+-        1000,
+-        withSequence(
+-          withTiming(1, { duration: 1100 }),
+-          withTiming(0, { duration: 0 }), // revert to 0
+-          withTiming(0, { duration: 1200 }), // delay between pulses
+-          withTiming(1, { duration: 1100 }),
+-          withTiming(1, { duration: 2000 }) // delay after both pulses
+-        )
+-      ),
+-      -1
+-    )
+-  }, [indicatorPulseAnimation])
++  // const stopPulsating = useCallback(() => {
++  //   cancelAnimation(indicatorPulseAnimation)
++  //   indicatorPulseAnimation.value = 0
++  // }, [indicatorPulseAnimation])
++
++  // const startPulsating = useCallback(() => {
++  //   indicatorPulseAnimation.value = withRepeat(
++  //     withDelay(
++  //       1000,
++  //       withSequence(
++  //         withTiming(1, { duration: 1100 }),
++  //         withTiming(0, { duration: 0 }), // revert to 0
++  //         withTiming(0, { duration: 1200 }), // delay between pulses
++  //         withTiming(1, { duration: 1100 }),
++  //         withTiming(1, { duration: 2000 }) // delay after both pulses
++  //       )
++  //     ),
++  //     -1
++  //   )
++  // }, [indicatorPulseAnimation])
  
    const setFingerX = useCallback(
      (fingerX: number) => {
@@ -85,10 +242,68 @@ index 7bba35a..f2772ca 100644
              pathRange.x
            )) *
            (pointsInRange.length - 1)
-@@ -445,22 +451,22 @@ export function AnimatedLineGraph({
-     // eslint-disable-next-line react-hooks/exhaustive-deps
-   }, [indicatorPulsating])
+@@ -374,7 +380,7 @@ export function AnimatedLineGraph({
+     },
+     [
+       circleX,
+-      circleY,
++      // circleY,
+       drawingWidth,
+       horizontalPadding,
+       isActive.value,
+@@ -388,30 +394,30 @@ export function AnimatedLineGraph({
  
+   const setIsActive = useCallback(
+     (active: boolean) => {
+-      runSpring(indicatorRadius, !active ? INDICATOR_RADIUS : 0, {
+-        mass: 1,
+-        stiffness: 1000,
+-        damping: 50,
+-        velocity: 0,
+-      })
++      // runSpring(indicatorRadius, !active ? INDICATOR_RADIUS : 0, {
++      //   mass: 1,
++      //   stiffness: 1000,
++      //   damping: 50,
++      //   velocity: 0,
++      // })
+ 
+       if (active) {
+         onGestureStart?.()
+-        stopPulsating()
++        //stopPulsating()
+       } else {
+         onGestureEnd?.()
+         pointSelectedIndex.current = undefined
+         pathEnd.current = 1
+-        startPulsating()
++        //startPulsating()
+       }
+     },
+     [
+-      indicatorRadius,
++      //indicatorRadius,
+       onGestureEnd,
+       onGestureStart,
+       pathEnd,
+-      startPulsating,
+-      stopPulsating,
++      // startPulsating,
++      // stopPulsating,
+     ]
+   )
+ 
+@@ -438,29 +444,29 @@ export function AnimatedLineGraph({
+       pathEnd.current = 1
+   }, [commands, pathEnd, pointsInRange.length])
+ 
+-  useEffect(() => {
+-    if (indicatorPulsating) {
+-      startPulsating()
+-    }
+-    // eslint-disable-next-line react-hooks/exhaustive-deps
+-  }, [indicatorPulsating])
+-
 -  useSharedValueEffect(
 -    () => {
 -      if (pulseTrigger.value === 0) {
@@ -105,6 +320,13 @@ index 7bba35a..f2772ca 100644
 -    indicatorPulseAnimation,
 -    pulseTrigger
 -  )
++  // useEffect(() => {
++  //   if (indicatorPulsating) {
++  //     startPulsating()
++  //   }
++  //   // eslint-disable-next-line react-hooks/exhaustive-deps
++  // }, [indicatorPulsating])
++
 +  // useSharedValueEffect(
 +  //   () => {
 +  //     if (pulseTrigger.value === 0) {
@@ -132,6 +354,24 @@ index 7bba35a..f2772ca 100644
                  </Path>
  
                  {shouldFillGradient && (
+@@ -539,7 +546,7 @@ export function AnimatedLineGraph({
+                 />
+               )}
+ 
+-              {enableIndicator && (
++              {/* {enableIndicator && (
+                 <Group>
+                   {indicatorPulsating && (
+                     <Circle
+@@ -567,7 +574,7 @@ export function AnimatedLineGraph({
+                     color={color}
+                   />
+                 </Group>
+-              )}
++              )} */}
+             </Canvas>
+           </View>
+ 
 diff --git a/node_modules/react-native-graph/src/CreateGraphPath.ts b/node_modules/react-native-graph/src/CreateGraphPath.ts
 index 67e9a2e..e4a9c39 100644
 --- a/node_modules/react-native-graph/src/CreateGraphPath.ts
