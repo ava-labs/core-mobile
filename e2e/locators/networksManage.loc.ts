@@ -1,5 +1,6 @@
 export default {
   addNetwork: 'add_svg',
+  bitcoinTestnet: 'Bitcoin Testnet',
   chainID: 'Chain ID',
   customRpcUrl: 'https://arb1.arbitrum.io/rpc',
   customNetworkName: 'Arbitrum One',
