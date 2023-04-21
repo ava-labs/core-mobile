@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useState } from 'react'
+import React, { FC } from 'react'
 import { Dimensions, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaListItem from 'components/AvaListItem'
@@ -11,6 +11,7 @@ import { Row } from 'components/Row'
 import MarketMovement from 'screens/watchlist/components/MarketMovement'
 import { MarketToken } from 'store/watchlist'
 import { ChartData } from 'services/token/types'
+import Delay from 'components/Delay'
 
 const DEVICE_WIDTH = Dimensions.get('window').width
 const RIGHT_COMPONENT_MAX_WIDTH = DEVICE_WIDTH * 0.6
@@ -154,19 +155,6 @@ type MiddleComponentProps = {
   ranges: ChartData['ranges']
 }
 
-const Delayed = ({ children, waitBeforeShow = 250 }: Props) => {
-  const [isShown, setIsShown] = useState(false)
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsShown(true)
-    }, waitBeforeShow)
-    return () => clearTimeout(timer)
-  }, [waitBeforeShow])
-
-  return isShown ? children : null
-}
-
 const MiddleComponent = ({ dataPoints, ranges }: MiddleComponentProps) => {
   return (
     <View
@@ -174,7 +162,7 @@ const MiddleComponent = ({ dataPoints, ranges }: MiddleComponentProps) => {
         width: 90,
         alignItems: 'flex-end'
       }}>
-      <Delayed>
+      <Delay waitBeforeShow={500}>
         <SparklineChart
           width={CHART_WIDTH}
           height={30}
@@ -183,7 +171,7 @@ const MiddleComponent = ({ dataPoints, ranges }: MiddleComponentProps) => {
           data={dataPoints}
           negative={ranges.diffValue < 0}
         />
-      </Delayed>
+      </Delay>
     </View>
   )
 }
