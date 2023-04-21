@@ -22,6 +22,9 @@ import {
   useBeforeRemoveListener
 } from 'hooks/useBeforeRemoveListener'
 import { usePostCapture } from 'hooks/usePosthogCapture'
+import CoreXLogoAnimated from 'components/CoreXLogoAnimated'
+import AvaText from 'components/AvaText'
+import { View } from 'react-native'
 import { EnterWithMnemonicScreenProps } from '../types'
 
 export type EnterWithMnemonicStackParamList = {
@@ -29,6 +32,7 @@ export type EnterWithMnemonicStackParamList = {
   [AppNavigation.LoginWithMnemonic.CreatePin]: undefined
   [AppNavigation.LoginWithMnemonic.BiometricLogin]: undefined
   [AppNavigation.LoginWithMnemonic.TermsNConditions]: undefined
+  [AppNavigation.LoginWithMnemonic.Loader]: undefined
 }
 const EnterWithMnemonicS =
   createStackNavigator<EnterWithMnemonicStackParamList>()
@@ -66,6 +70,10 @@ const EnterWithMnemonicStack = () => {
           options={{ presentation: 'transparentModal' }}
           name={AppNavigation.LoginWithMnemonic.TermsNConditions}
           component={TermsNConditionsModalScreen}
+        />
+        <EnterWithMnemonicS.Screen
+          name={AppNavigation.LoginWithMnemonic.Loader}
+          component={Loader}
         />
       </EnterWithMnemonicS.Navigator>
     </EnterWithMnemonicContext.Provider>
@@ -157,20 +165,38 @@ const TermsNConditionsModalScreen = () => {
   const walletSetupHook = useApplicationContext().walletSetupHook
   const { signOut } = useApplicationContext().appHook
   const dispatch = useDispatch()
+  const { navigate } = useNavigation<BiometricLoginNavigationProp>()
 
   return (
     <TermsNConditionsModal
       onNext={() => {
-        // signing in with recovery phrase
-        walletSetupHook
-          .enterWallet(enterWithMnemonicContext.mnemonic)
-          .then(() => {
-            dispatch(onLogIn())
-            dispatch(onAppUnlocked())
-          })
+        navigate(AppNavigation.LoginWithMnemonic.Loader)
+        setTimeout(() => {
+          // signing in with recovery phrase
+          walletSetupHook
+            .enterWallet(enterWithMnemonicContext.mnemonic)
+            .then(() => {
+              dispatch(onLogIn())
+              dispatch(onAppUnlocked())
+            })
+        }, 300)
       }}
       onReject={() => signOut()}
     />
+  )
+}
+
+const Loader = () => {
+  return (
+    <View
+      style={{
+        flexGrow: 1,
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+      <CoreXLogoAnimated size={100} />
+      <AvaText.Heading3>Unlocking wallet...</AvaText.Heading3>
+    </View>
   )
 }
 
