@@ -7,7 +7,7 @@ import { ScrollView, StyleSheet, View } from 'react-native'
 import TokenAddress from 'components/TokenAddress'
 import { Space } from 'components/Space'
 import { Row } from 'components/Row'
-import SparklineChart from 'components/SparklineChart'
+//import SparklineChart from 'components/SparklineChart/SparklineChart'
 import MarketMovement from 'screens/watchlist/components/MarketMovement'
 
 const styles = StyleSheet.create({
@@ -122,7 +122,7 @@ storiesOf('AvaListItem', module).add('Examples', () => {
                 flex: 1
               }}>
               <View style={{ position: 'absolute', left: -20, bottom: -25 }}>
-                <SparklineChart
+                {/* <SparklineChart
                   data={[
                     { x: 1, y: 2 },
                     { x: 2, y: 3 },
@@ -132,7 +132,7 @@ storiesOf('AvaListItem', module).add('Examples', () => {
                   ]}
                   yRange={[1, 5]}
                   xRange={[2, 7]}
-                />
+                /> */}
               </View>
               <View style={{ alignItems: 'flex-end' }}>
                 <AvaText.Heading3>$94.02</AvaText.Heading3>
