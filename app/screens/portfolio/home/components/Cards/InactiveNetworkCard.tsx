@@ -44,7 +44,9 @@ const InactiveNetworkCard: FC<Props> = ({ network }) => {
 
   const navigateToNetworkTokens = () => {
     dispatch(setActive(network.chainId))
-    navigate(AppNavigation.Portfolio.NetworkTokens)
+    setTimeout(() => {
+      navigate(AppNavigation.Portfolio.NetworkTokens)
+    }, 300)
   }
 
   const renderContent = () => {
