@@ -24,6 +24,7 @@ import { styles as AvaTextStyles } from 'components/AvaText'
 import { format } from 'date-fns'
 import { StarButton } from 'components/StarButton'
 import { AnimatedText } from 'components/AnimatedText'
+import Delay from 'components/Delay'
 import { DataItem } from './DataItem'
 import { Overlay } from './Overlay'
 
@@ -205,17 +206,19 @@ const TokenDetail = () => {
 
         <View style={styles.chartContainer}>
           <View>
-            <SparklineChart
-              interactive
-              data={chartData ?? []}
-              yRange={yRange}
-              negative={ranges.diffValue < 0}
-              width={CHART_WIDTH}
-              height={CHART_HEIGHT}
-              lineThickness={CHART_THICKNESS}
-              onPointSelected={updatePriceAndDate}
-              onInteractionEnded={resetPriceAndDate}
-            />
+            <Delay>
+              <SparklineChart
+                interactive
+                data={chartData ?? []}
+                yRange={yRange}
+                negative={ranges.diffValue < 0}
+                width={CHART_WIDTH}
+                height={CHART_HEIGHT}
+                lineThickness={CHART_THICKNESS}
+                onPointSelected={updatePriceAndDate}
+                onInteractionEnded={resetPriceAndDate}
+              />
+            </Delay>
           </View>
           <Overlay
             chartData={chartData}
