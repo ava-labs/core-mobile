@@ -1,5 +1,5 @@
 import React from 'react'
-import { FlatList, ListRenderItemInfo } from 'react-native'
+import { ListRenderItemInfo } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 import AppNavigation from 'navigation/AppNavigation'
@@ -15,10 +15,11 @@ import { RefreshControl } from 'components/RefreshControl'
 import { NFTItemData } from 'store/nft'
 import { PortfolioScreenProps } from 'navigation/types'
 import { usePostCapture } from 'hooks/usePosthogCapture'
+import Animated, { FadeInDown, FadeOutUp } from 'react-native-reanimated'
+import { TokensTabHeader } from 'screens/portfolio/home/components/TokensTabHeader'
 import InactiveNetworkCard from './components/Cards/InactiveNetworkCard'
 import { PortfolioTokensLoader } from './components/Loaders/PortfolioTokensLoader'
 import PortfolioHeader from './components/PortfolioHeader'
-import { TokensTabHeader } from './components/TokensTabHeader'
 
 const Portfolio = () => {
   const collectiblesDisabled = useIsUIDisabled(UI.Collectibles)
@@ -61,32 +62,38 @@ const TokensTab = () => {
   const inactiveNetworks = useSelector(selectInactiveNetworks)
 
   const renderInactiveNetwork = (item: ListRenderItemInfo<Network>) => {
-    return <InactiveNetworkCard network={item.item} />
+    return (
+      <Animated.View
+        exiting={FadeOutUp.duration(300)}
+        entering={FadeInDown.delay(300).duration(300)}>
+        <InactiveNetworkCard network={item.item} />
+      </Animated.View>
+    )
   }
 
   if (isLoading) return <PortfolioTokensLoader />
 
   return (
-    <FlatList
-      columnWrapperStyle={{
-        justifyContent: 'space-between'
-      }}
-      contentContainerStyle={{
-        flexGrow: 1,
-        paddingHorizontal: 16,
-        paddingBottom: 100
-      }}
-      numColumns={2}
-      data={inactiveNetworks}
-      renderItem={renderInactiveNetwork}
-      keyExtractor={item => item.chainId.toString()}
-      ItemSeparatorComponent={Separator}
-      scrollEventThrottle={16}
-      ListHeaderComponent={<TokensTabHeader />}
-      refreshControl={
-        <RefreshControl onRefresh={refetch} refreshing={isRefetching} />
-      }
-    />
+    <>
+      <Animated.FlatList
+        columnWrapperStyle={{
+          justifyContent: 'space-between'
+        }}
+        contentContainerStyle={{
+          paddingHorizontal: 16,
+          paddingBottom: 100
+        }}
+        numColumns={2}
+        data={inactiveNetworks}
+        renderItem={renderInactiveNetwork}
+        keyExtractor={item => item.chainId.toString()}
+        ItemSeparatorComponent={Separator}
+        ListHeaderComponent={<TokensTabHeader />}
+        refreshControl={
+          <RefreshControl onRefresh={refetch} refreshing={isRefetching} />
+        }
+      />
+    </>
   )
 }
 
