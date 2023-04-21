@@ -15,7 +15,7 @@ describe('Show Recovery Phrase', () => {
     await LoginRecoverWallet.recoverWalletLogin()
   })
 
-  it('Should set new Pin & verify pin Headers', async () => {
+  it('Should verify first and last word of mnemonic presented', async () => {
     await BurgerMenuPage.tapBurgerMenuButton()
     await BurgerMenuPage.tapSecurityAndPrivacy()
     await BurgerMenuPage.tapShowRecoveryPhrase()
