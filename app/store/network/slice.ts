@@ -1,5 +1,5 @@
 import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { BITCOIN_NETWORK, Network } from '@avalabs/chains-sdk'
+import { BITCOIN_NETWORK, ChainId, Network } from '@avalabs/chains-sdk'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectAllCustomTokens } from 'store/customToken'
 import { LocalTokenWithBalance } from 'store/balance'
@@ -20,7 +20,12 @@ const reducerName = 'network'
 const initialState: NetworkState = {
   networks: {},
   customNetworks: {},
-  favorites: [...alwaysFavoriteNetworks, -1, -2, 1], //BTC, BTC testnet, ETH
+  favorites: [
+    ...alwaysFavoriteNetworks,
+    ChainId.BITCOIN,
+    ChainId.BITCOIN_TESTNET,
+    ChainId.ETHEREUM_HOMESTEAD
+  ], //BTC, BTC testnet, ETH
   active: noActiveNetwork
 }
 
