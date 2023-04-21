@@ -3,6 +3,7 @@ import { useApplicationContext } from 'contexts/ApplicationContext'
 import { GraphPoint, LineGraph } from 'react-native-graph'
 import { SelectionDot } from 'screens/watchlist/SelectionDot'
 import { hapticFeedback } from 'utils/HapticFeedback'
+import { Platform } from 'react-native'
 import { AxisLabel } from './AxisLabel'
 import {
   NEGATIVE_GRADIENT_FILL_COLORS,
@@ -71,6 +72,11 @@ const SparklineChart: FC<Props> = ({
     onInteractionEnded?.()
   }
 
+  // with react native skia, on Android, rendering a lot of canvases at once is very slow
+  // and will make the app unresponsive
+  // to work around this, we are converting skia paths to svgs and rendering them instead
+  const useSVG = Platform.OS === 'android' ? true : false
+
   return interactive ? (
     <LineGraph
       style={{
@@ -97,10 +103,10 @@ const SparklineChart: FC<Props> = ({
         width: width,
         height: height
       }}
-      animated={false}
       color={color}
-      lineThickness={2}
+      lineThickness={lineThickness}
       points={data}
+      useSVG={useSVG}
       gradientFillColors={gradientFillColors}
     />
   )

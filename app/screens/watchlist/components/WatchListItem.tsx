@@ -162,7 +162,7 @@ const MiddleComponent = ({ dataPoints, ranges }: MiddleComponentProps) => {
         width: 90,
         alignItems: 'flex-end'
       }}>
-      <Delay waitBeforeShow={500}>
+      <Delay>
         <SparklineChart
           width={CHART_WIDTH}
           height={30}
