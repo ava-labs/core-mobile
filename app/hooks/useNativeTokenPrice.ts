@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { from, timer } from 'rxjs'
 import { concatMap } from 'rxjs/operators'
-import tokenService from 'services/token/TokenService'
+import { getInstance } from 'services/token/TokenService'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
@@ -12,10 +12,12 @@ export function useNativeTokenPrice(customCurrency?: VsCurrencyType) {
   const activeNetwork = useSelector(selectActiveNetwork)
   const selectedCurrency = useSelector(selectSelectedCurrency) as VsCurrencyType
   const currency = customCurrency ?? (selectedCurrency as VsCurrencyType)
+  const tokenService = getInstance()
 
   useEffect(refreshPriceFx, [
     activeNetwork.pricingProviders?.coingecko.nativeTokenId,
-    currency
+    currency,
+    tokenService
   ])
 
   function refreshPriceFx() {

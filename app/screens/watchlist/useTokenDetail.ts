@@ -3,7 +3,7 @@ import useInAppBrowser from 'hooks/useInAppBrowser'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { CoinsInfoResponse, VsCurrencyType } from '@avalabs/coingecko-sdk'
 import { useDispatch, useSelector } from 'react-redux'
-import TokenService from 'services/token/TokenService'
+import { getInstance } from 'services/token/TokenService'
 import {
   selectIsWatchlistFavorite,
   selectWatchlistPrice,
@@ -37,11 +37,12 @@ export function useTokenDetail(coingeckoId: string) {
   const [coinInfo, setCoinInfo] = useState<CoinsInfoResponse>()
   const [urlHostname, setUrlHostname] = useState<string>('')
   const currency = selectedCurrency.toLowerCase() as VsCurrencyType
+  const tokenService = getInstance()
 
   // get coingecko chart data.
   useEffect(() => {
     ;(async () => {
-      const data = await TokenService.getChartDataForCoinId({
+      const data = await tokenService.getChartDataForCoinId({
         coingeckoId,
         days: chartDays,
         currency: currency
@@ -56,12 +57,12 @@ export function useTokenDetail(coingeckoId: string) {
         setChartData([])
       }
     })()
-  }, [chartDays, coingeckoId, currency])
+  }, [chartDays, coingeckoId, currency, tokenService])
 
   // get market cap, volume, etc
   useEffect(() => {
     ;(async () => {
-      const data = await TokenService.getCoinInfo({
+      const data = await tokenService.getCoinInfo({
         coingeckoId
       })
 
@@ -76,7 +77,7 @@ export function useTokenDetail(coingeckoId: string) {
         setUrlHostname(url)
       }
     })()
-  }, [coingeckoId])
+  }, [coingeckoId, tokenService])
 
   const handleFavorite = useCallback(() => {
     dispatch(toggleWatchListFavorite(coingeckoId))
