@@ -7,6 +7,10 @@ class CreatePinPage {
     return by.id(createPinLoc.numPadZero)
   }
 
+  get numpadOne() {
+    return by.id(createPinLoc.numpadOne)
+  }
+
   get emptyCheckBox() {
     return by.id(createPinLoc.emptyCheckBox)
   }
@@ -17,6 +21,10 @@ class CreatePinPage {
 
   async tapNumpadZero() {
     await Action.tap(this.numPadZero)
+  }
+
+  async tapNumpadOne() {
+    await Action.tap(this.numpadOne)
   }
 
   async tapNextBtn() {
@@ -30,6 +38,27 @@ class CreatePinPage {
 
   async createPin() {
     for (let i = 0; i < 12; i++) {
+      await this.tapNumpadZero()
+      await delay(500)
+    }
+  }
+
+  async createNewPin() {
+    for (let i = 0; i < 12; i++) {
+      await this.tapNumpadOne()
+      await delay(500)
+    }
+  }
+
+  async enterNewCurrentPin() {
+    for (let i = 0; i < 6; i++) {
+      await this.tapNumpadOne()
+      await delay(500)
+    }
+  }
+
+  async enterCurrentPin() {
+    for (let i = 0; i < 6; i++) {
       await this.tapNumpadZero()
       await delay(500)
     }
