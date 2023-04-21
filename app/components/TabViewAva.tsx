@@ -6,9 +6,11 @@ import {
   TabBarItemProps,
   TabView
 } from 'react-native-tab-view'
-import { View } from 'react-native'
+import { Dimensions, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaButton from 'components/AvaButton'
+
+const initialLayout = { width: Dimensions.get('window').width }
 
 type Route = {
   index: number
@@ -151,6 +153,7 @@ const TabViewAva: TabViewAvaFC = ({
       renderScene={scenes}
       renderTabBar={tabBar}
       lazy={lazy}
+      initialLayout={initialLayout}
     />
   )
 }
