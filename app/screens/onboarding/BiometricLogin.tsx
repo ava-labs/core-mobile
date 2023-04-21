@@ -1,5 +1,5 @@
-import React from 'react'
-import { Alert, Image, StyleSheet, View } from 'react-native'
+import React, { useEffect, useState } from 'react'
+import { ActivityIndicator, Alert, Image, StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Space } from 'components/Space'
 import AvaText from 'components/AvaText'
@@ -18,20 +18,29 @@ export default function BiometricLogin(
 ): JSX.Element {
   const context = useApplicationContext()
 
+  const [confirmedUseBiometry, setConfirmedUseBiometry] = useState(false)
+
   const { biometryType, storeMnemonicWithBiometric, fingerprintIcon } =
     useBiometricLogin(props.mnemonic, context.isDarkMode)
 
   const formattedBiometryType = humanize(biometryType)
 
-  async function handleUseBiometry() {
-    try {
-      await storeMnemonicWithBiometric()
-      props.onBiometrySet()
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (e: any) {
-      Alert.alert(e?.message || 'error')
+  useEffect(() => {
+    if (confirmedUseBiometry) {
+      const f = async () => {
+        try {
+          await storeMnemonicWithBiometric()
+          props.onBiometrySet()
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (e: any) {
+          Alert.alert(e?.message || 'error')
+        } finally {
+          setConfirmedUseBiometry(false)
+        }
+      }
+      f()
     }
-  }
+  }, [confirmedUseBiometry, props, storeMnemonicWithBiometric])
 
   return (
     <View style={styles.verticalLayout}>
@@ -61,10 +70,16 @@ export default function BiometricLogin(
         </AvaText.Body4>
       </View>
 
-      <AvaButton.TextMedium onPress={props.onSkip}>Skip</AvaButton.TextMedium>
+      {!confirmedUseBiometry && (
+        <AvaButton.TextMedium onPress={props.onSkip}>Skip</AvaButton.TextMedium>
+      )}
       <Space y={16} />
-      <AvaButton.PrimaryLarge onPress={handleUseBiometry}>
-        {'Use ' + formattedBiometryType}
+      <AvaButton.PrimaryLarge onPress={() => setConfirmedUseBiometry(true)}>
+        {confirmedUseBiometry ? (
+          <ActivityIndicator size={'small'} />
+        ) : (
+          'Use ' + formattedBiometryType
+        )}
       </AvaButton.PrimaryLarge>
     </View>
   )
