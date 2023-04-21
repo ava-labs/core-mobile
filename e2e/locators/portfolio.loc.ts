@@ -5,6 +5,7 @@ export default {
   addcustomToken: 'Add custom token',
   arbitrumNetwork: 'Arbitrum One',
   avaxNetwork: 'Avalanche (C-Chain)',
+  avaxFujiToken: 'Avalanche (FUJI)',
   assetsTab: 'Assets',
   btcTokenItem: 'BTC',
   btcNetwork: 'Bitcoin',
