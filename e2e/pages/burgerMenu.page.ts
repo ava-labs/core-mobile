@@ -2,7 +2,6 @@ import Actions from '../helpers/actions'
 import { Platform } from '../helpers/constants'
 import burgerMenu from '../locators/bugerMenu.loc'
 
-// const platformIndex = Actions.platform() === Platform.iOS ? 1 : 0
 const platformIndex2 = Actions.platform() === Platform.iOS ? 2 : 0
 
 class BurgerMenuPage {
@@ -18,8 +17,16 @@ class BurgerMenuPage {
     return by.text(burgerMenu.AddAddressButton)
   }
 
+  get changePin() {
+    return by.text(burgerMenu.changePin)
+  }
+
   get contactName() {
     return by.text(burgerMenu.contactName)
+  }
+
+  get copyPhraseButton() {
+    return by.text(burgerMenu.copyPhraseButton)
   }
 
   get currency() {
@@ -46,6 +53,10 @@ class BurgerMenuPage {
     return by.text(burgerMenu.edit)
   }
 
+  get enterYourPinHeader() {
+    return by.text(burgerMenu.enterYourPinHeader)
+  }
+
   get emptyContacts() {
     return by.text(burgerMenu.emptyContacts)
   }
@@ -62,6 +73,26 @@ class BurgerMenuPage {
     return by.text(burgerMenu.euroSign)
   }
 
+  get firstMnemonicWord() {
+    return by.text(burgerMenu.firstMnemonicWord)
+  }
+
+  get lastMnemonicWord() {
+    return by.text(burgerMenu.lastMnemonicWord)
+  }
+
+  get recoveeryPhraseHeader() {
+    return by.text(burgerMenu.recoveeryPhraseHeader)
+  }
+
+  get securityAndPrivacy() {
+    return by.text(burgerMenu.securityAndPrivacy)
+  }
+
+  get setNewPinHeader() {
+    return by.text(burgerMenu.setNewPinHeader)
+  }
+
   get switchButton() {
     return by.id(burgerMenu.switchButton)
   }
@@ -70,8 +101,16 @@ class BurgerMenuPage {
     return by.id(burgerMenu.inputTextField)
   }
 
+  get iWroteItDownButton() {
+    return by.text(burgerMenu.iWroteItDownButton)
+  }
+
   get saveButton() {
     return by.text(burgerMenu.saveButton)
+  }
+
+  get showRecoveryPhrase() {
+    return by.text(burgerMenu.showRecoveryPhrase)
   }
 
   get nameText() {
@@ -106,6 +145,10 @@ class BurgerMenuPage {
     await Actions.tapElementAtIndex(this.burgerMenuButton, 0)
   }
 
+  async tapChangePin() {
+    await Actions.tapElementAtIndex(this.changePin, 0)
+  }
+
   async tapContactName() {
     await Actions.tapElementAtIndex(this.contactName, 0)
   }
@@ -132,6 +175,14 @@ class BurgerMenuPage {
 
   async tapSave() {
     await Actions.tapElementAtIndex(this.saveButton, 0)
+  }
+
+  async tapSecurityAndPrivacy() {
+    await Actions.tapElementAtIndex(this.securityAndPrivacy, 0)
+  }
+
+  async tapShowRecoveryPhrase() {
+    await Actions.tapElementAtIndex(this.showRecoveryPhrase, 0)
   }
 
   async tapUSDCurrency() {
@@ -181,6 +232,10 @@ class BurgerMenuPage {
       2
     )
     await Actions.tap(this.nameText)
+  }
+
+  async tapIWroteItDownButton() {
+    await Actions.tapElementAtIndex(this.iWroteItDownButton, 0)
   }
 
   async tapBackbutton() {
