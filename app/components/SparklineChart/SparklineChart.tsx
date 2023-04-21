@@ -103,6 +103,7 @@ const SparklineChart: FC<Props> = ({
         width: width,
         height: height
       }}
+      animated={false}
       color={color}
       lineThickness={lineThickness}
       points={data}

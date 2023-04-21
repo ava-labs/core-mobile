@@ -23,3 +23,7 @@ This patch is needed to make sure react-native-flipper on iOS dynamically sets t
 
 2/ CreateGraphPath.ts
 - disable isExactPointInsidePixelRatio logic as it creates invalid graphs. more info here https://github.com/margelo/react-native-graph/issues/70
+
+3/ StaticLineGraph.tsx
+- add support for gradient fill
+- add useSVG prop - render graph path as svg. this logic is needed on Android as rendering multiple canvases at once makes the app unresponsive.
