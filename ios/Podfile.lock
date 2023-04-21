@@ -330,10 +330,6 @@ PODS:
     - React-Core
   - react-native-get-random-values (1.8.0):
     - React-Core
-  - react-native-multithreading (1.1.1):
-    - React
-    - React-callinvoker
-    - React-Core
   - react-native-pager-view (5.4.25):
     - React-Core
   - react-native-performance (4.0.0):
@@ -567,7 +563,6 @@ DEPENDENCIES:
   - react-native-flipper (from `../node_modules/react-native-flipper`)
   - react-native-flipper-performance-plugin (from `../node_modules/react-native-flipper-performance-plugin`)
   - react-native-get-random-values (from `../node_modules/react-native-get-random-values`)
-  - react-native-multithreading (from `../node_modules/react-native-multithreading`)
   - react-native-pager-view (from `../node_modules/react-native-pager-view`)
   - react-native-performance (from `../node_modules/react-native-performance`)
   - react-native-quick-base64 (from `../node_modules/react-native-quick-base64`)
@@ -699,8 +694,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-flipper-performance-plugin"
   react-native-get-random-values:
     :path: "../node_modules/react-native-get-random-values"
-  react-native-multithreading:
-    :path: "../node_modules/react-native-multithreading"
   react-native-pager-view:
     :path: "../node_modules/react-native-pager-view"
   react-native-performance:
@@ -836,7 +829,6 @@ SPEC CHECKSUMS:
   react-native-flipper: ea8a0760747ff0c2fc6eeed3bc9d8d88c95194ee
   react-native-flipper-performance-plugin: 42ec5017abd26e7c5a1f527f2db92c14a90cabdb
   react-native-get-random-values: a6ea6a8a65dc93e96e24a11105b1a9c8cfe1d72a
-  react-native-multithreading: 5e18f82a1e034a3b8ede96ff471e1ec0c97eb2b7
   react-native-pager-view: da490aa1f902c9a5aeecf0909cc975ad0e92e53e
   react-native-performance: 224bd53e6a835fda4353302cf891d088a0af7406
   react-native-quick-base64: e657e9197e61b60a9dec49807843052b830da254
