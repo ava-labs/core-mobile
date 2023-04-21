@@ -52,7 +52,6 @@ const SendToken: FC<Props> = ({
     toAccount,
     fees: {
       sendFeeNative,
-      sendFeeInCurrency,
       gasLimit,
       setCustomGasLimit,
       setSelectedFeePreset,
@@ -232,11 +231,6 @@ const SendToken: FC<Props> = ({
               onGasPriceChange={handleGasPriceChange}
               onGasLimitChange={setCustomGasLimit}
             />
-            <AvaText.Body3
-              currency
-              textStyle={{ marginTop: 4, alignSelf: 'flex-end' }}>
-              {sendFeeInCurrency}
-            </AvaText.Body3>
           </View>
           <FlexSpacer />
         </>
