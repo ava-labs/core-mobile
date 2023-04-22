@@ -122,8 +122,9 @@ class WatchlistService {
   }
 
   async getPrices(coingeckoIds: string[], currency: string): Promise<Prices> {
-    const tokenService = getBasicInstance()
-    const pricesRaw = await tokenService.getPriceWithMarketDataByCoinIds(
+    const dynamicTokenService = getInstance()
+
+    const pricesRaw = await dynamicTokenService.getPriceWithMarketDataByCoinIds(
       coingeckoIds,
       currency as VsCurrencyType
     )
