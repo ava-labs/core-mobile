@@ -1,6 +1,6 @@
 import { ChainId, Network } from '@avalabs/chains-sdk'
 import { CoinMarket, VsCurrencyType } from '@avalabs/coingecko-sdk'
-import { getBasicInstance } from 'services/token/TokenService'
+import { getBasicInstance, getInstance } from 'services/token/TokenService'
 import { transformSparklineData } from 'services/token/utils'
 import { Charts, MarketToken, Prices } from 'store/watchlist'
 
@@ -32,8 +32,8 @@ class WatchlistService {
     charts: Charts
   }> {
     // 1. get top 250 tokens with sparkline data
-    const tokenService = getBasicInstance()
-    const top250Tokens = await tokenService.getMarkets({
+    const dynamicTokenService = getInstance()
+    const top250Tokens = await dynamicTokenService.getMarkets({
       currency: currency.toLowerCase() as VsCurrencyType,
       ...getMarketsCommonParams
     })
@@ -94,7 +94,7 @@ class WatchlistService {
 
     if (tokenIdsToFetch.length !== 0) {
       // network contract tokens and favorite tokens
-      otherTokens = await tokenService.getMarkets({
+      otherTokens = await dynamicTokenService.getMarkets({
         currency: currency as VsCurrencyType,
         coinIds: tokenIdsToFetch,
         ...getMarketsCommonParams

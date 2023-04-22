@@ -37,11 +37,12 @@ export function useTokenDetail(coingeckoId: string) {
   const [coinInfo, setCoinInfo] = useState<CoinsInfoResponse>()
   const [urlHostname, setUrlHostname] = useState<string>('')
   const currency = selectedCurrency.toLowerCase() as VsCurrencyType
-  const tokenService = getInstance()
 
   // get coingecko chart data.
   useEffect(() => {
     ;(async () => {
+      const tokenService = getInstance()
+
       const data = await tokenService.getChartDataForCoinId({
         coingeckoId,
         days: chartDays,
@@ -57,11 +58,13 @@ export function useTokenDetail(coingeckoId: string) {
         setChartData([])
       }
     })()
-  }, [chartDays, coingeckoId, currency, tokenService])
+  }, [chartDays, coingeckoId, currency])
 
   // get market cap, volume, etc
   useEffect(() => {
     ;(async () => {
+      const tokenService = getInstance()
+
       const data = await tokenService.getCoinInfo({
         coingeckoId
       })
@@ -77,7 +80,7 @@ export function useTokenDetail(coingeckoId: string) {
         setUrlHostname(url)
       }
     })()
-  }, [coingeckoId, tokenService])
+  }, [coingeckoId])
 
   const handleFavorite = useCallback(() => {
     dispatch(toggleWatchListFavorite(coingeckoId))

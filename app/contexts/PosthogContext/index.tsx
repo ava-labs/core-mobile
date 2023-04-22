@@ -104,7 +104,8 @@ const processFlags = (flags: FeatureFlags) => {
     !flags[FeatureGates.BUY_COINBASE_PAY] || !flags[FeatureGates.EVERYTHING]
 
   const useCoinGeckoPro =
-    !flags[FeatureGates.USE_COINGECKO_PRO] || !flags[FeatureGates.EVERYTHING]
+    Boolean(flags[FeatureGates.USE_COINGECKO_PRO]) ||
+    !flags[FeatureGates.EVERYTHING]
 
   return {
     swapBlocked,
