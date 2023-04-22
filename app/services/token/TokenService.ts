@@ -369,7 +369,7 @@ const staticInstance = new TokenService(false)
 
 export const getInstance = () => {
   if (!dynamicInstance) {
-    throw Error('TokenService undefined')
+    console.error('TokenService undefined')
   }
   return dynamicInstance
 }
