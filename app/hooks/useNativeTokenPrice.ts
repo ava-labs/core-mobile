@@ -12,15 +12,15 @@ export function useNativeTokenPrice(customCurrency?: VsCurrencyType) {
   const activeNetwork = useSelector(selectActiveNetwork)
   const selectedCurrency = useSelector(selectSelectedCurrency) as VsCurrencyType
   const currency = customCurrency ?? (selectedCurrency as VsCurrencyType)
-  const tokenService = getInstance()
 
   useEffect(refreshPriceFx, [
     activeNetwork.pricingProviders?.coingecko.nativeTokenId,
-    currency,
-    tokenService
+    currency
   ])
 
   function refreshPriceFx() {
+    const tokenService = getInstance()
+
     const TEN_SECONDS = 10000
     const subscription = timer(0, TEN_SECONDS)
       .pipe(
