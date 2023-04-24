@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import {
   Animated,
+  Dimensions,
   InteractionManager,
   Keyboard,
   StyleSheet,
@@ -16,9 +17,9 @@ import AvaText from 'components/AvaText'
 import { Subscription } from 'rxjs'
 import ReAnimated, {
   Easing,
-  FadeIn,
-  FadeOut,
-  Layout
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming
 } from 'react-native-reanimated'
 import {
   MnemonicLoaded,
@@ -41,6 +42,8 @@ const keymap: Map<string, PinKeys> = new Map([
   ['0', PinKeys.Key0],
   ['<', PinKeys.Backspace]
 ])
+const LOGO_HEIGHT = 100
+const TOP_SPACE = 64
 
 type Props = {
   onSignInWithRecoveryPhrase: () => void
@@ -75,6 +78,29 @@ export default function PinOrBiometryLogin({
     timeRemaining
   } = usePinOrBiometryLogin()
 
+  const windowHeight = useMemo(() => Dimensions.get('window').height, [])
+  const logoTranslateY = useSharedValue(0)
+  const opacity = useSharedValue(1)
+
+  const logoTranslateYStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          translateY: withTiming(logoTranslateY.value, {
+            duration: 500,
+            easing: Easing.inOut(Easing.ease)
+          })
+        }
+      ]
+    }
+  })
+
+  const fadeOutStyle = useAnimatedStyle(() => {
+    return {
+      opacity: withTiming(opacity.value)
+    }
+  })
+
   useEffect(() => {
     Keyboard.dismiss()
   }, [])
@@ -105,12 +131,13 @@ export default function PinOrBiometryLogin({
 
   useEffect(() => {
     if (mnemonic) {
+      logoTranslateY.value = (windowHeight - LOGO_HEIGHT) / 2 - TOP_SPACE
+      opacity.value = 0
       setTimeout(() => {
         onLoginSuccess(mnemonic)
       }, 500)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mnemonic])
+  }, [logoTranslateY, mnemonic, onLoginSuccess, opacity, windowHeight])
 
   const generatePinDots = (): Element[] => {
     const dots: Element[] = []
@@ -143,32 +170,22 @@ export default function PinOrBiometryLogin({
   }
   return (
     <View style={{ height: '100%', backgroundColor: theme.background }}>
-      {!mnemonic && <Space y={64} />}
+      <Space y={TOP_SPACE} />
       {!isResettingPin && (
         <ReAnimated.View
-          layout={Layout.duration(300).easing(Easing.ease)}
-          style={{
-            flexGrow: 1,
-            justifyContent: 'center',
-            alignItems: 'center'
-          }}>
-          <ReAnimated.View
-            style={{
+          style={[
+            {
+              justifyContent: 'center',
               alignItems: 'center'
-            }}
-            layout={Layout.duration(300).easing(Easing.ease)}>
-            <CoreXLogoAnimated size={100} />
-            {mnemonic && (
-              <AvaText.Heading3>Unlocking wallet...</AvaText.Heading3>
-            )}
-          </ReAnimated.View>
+            },
+            logoTranslateYStyle
+          ]}>
+          <CoreXLogoAnimated size={LOGO_HEIGHT} />
+          {mnemonic && <AvaText.Heading3>Unlocking wallet...</AvaText.Heading3>}
         </ReAnimated.View>
       )}
-      {!mnemonic && (
-        <ReAnimated.View
-          exiting={FadeOut.duration(300)}
-          entering={FadeIn.duration(300)}
-          style={[styles.verticalLayout]}>
+      {
+        <ReAnimated.View style={fadeOutStyle}>
           <View style={styles.growContainer}>
             <Animated.View
               style={[
@@ -201,7 +218,7 @@ export default function PinOrBiometryLogin({
             </>
           )}
         </ReAnimated.View>
-      )}
+      }
     </View>
   )
 }
