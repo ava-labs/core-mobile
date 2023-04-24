@@ -1,7 +1,7 @@
 import { useDispatch, useSelector } from 'react-redux'
 import { isAddress } from '@ethersproject/address'
 import { selectActiveNetwork, selectNetworkContractTokens } from 'store/network'
-import TokenService from 'services/token/TokenService'
+import { getInstance } from 'services/token/TokenService'
 import { addCustomToken as addCustomTokenAction } from 'store/customToken'
 import { useState, useEffect } from 'react'
 import { Network, NetworkContractToken } from '@avalabs/chains-sdk'
@@ -25,7 +25,8 @@ const validateAddress = (
 }
 
 const fetchTokenData = async (network: Network, tokenAddress: string) => {
-  const networkContractToken = await TokenService.getTokenData(
+  const tokenService = getInstance()
+  const networkContractToken = await tokenService.getTokenData(
     tokenAddress,
     network
   )
