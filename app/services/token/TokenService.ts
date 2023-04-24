@@ -28,6 +28,7 @@ import { MarketToken } from 'store/watchlist'
 import xss from 'xss'
 import Config from 'react-native-config'
 import { HttpClient } from '@avalabs/utils-sdk'
+import Logger from 'utils/Logger'
 import { ChartData, GetMarketsParams, PriceWithMarketData } from './types'
 import { transformContractMarketChartResponse } from './utils'
 
@@ -369,7 +370,7 @@ const staticInstance = new TokenService(false)
 
 export const getInstance = () => {
   if (!dynamicInstance) {
-    console.error('TokenService undefined')
+    Logger.error('TokenService undefined')
   }
   return dynamicInstance
 }
