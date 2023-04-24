@@ -42,10 +42,20 @@ export type GetNftArgs = {
   network: Network
   account?: Account
   currency: string
-  nextPageToken?: string
+  nextPageToken?:
+    | {
+        erc1155?: string
+        erc721?: string
+      }
+    | string
 }
 
 export type NftResponse = {
   nfts: NFTItemData[]
-  nextPageToken?: string
+  nextPageToken?:
+    | {
+        erc1155?: string
+        erc721?: string
+      }
+    | string
 }

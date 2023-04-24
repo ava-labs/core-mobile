@@ -28,7 +28,12 @@ export class NftService {
     chainId: number,
     address: string,
     selectedCurrency?: string,
-    pageToken?: string,
+    pageToken?:
+      | {
+          erc1155?: string
+          erc721?: string
+        }
+      | string,
     sentryTrx?: Transaction
   ) {
     return SentryWrapper.createSpanFor(sentryTrx)

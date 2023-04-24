@@ -16,16 +16,18 @@ export const nftsApi = createApi({
         try {
           const nftPagedData = await nftService.fetchNft(
             network.chainId,
-            account.address,
+            '0xdb5485c85bd95f38f9def0ca85499ef67dc581c0',
             currency,
             nextPageToken
           )
 
+          const responseData: NftResponse = {
+            nfts: nftPagedData.nfts,
+            nextPageToken: nftPagedData.nextPageToken
+          }
+
           return {
-            data: {
-              nfts: nftPagedData.nfts,
-              nextPageToken: nftPagedData.nextPageToken
-            } as NftResponse
+            data: responseData
           }
         } catch (err) {
           Logger.error(`failed to get nfts for chain ${network.chainId}`, err)

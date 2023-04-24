@@ -1,5 +1,9 @@
 import { NftProvider } from 'services/nft/types'
-import { Erc721TokenBalance, Glacier } from '@avalabs/glacier-sdk'
+import {
+  Glacier,
+  ListErc1155BalancesResponse,
+  ListErc721BalancesResponse
+} from '@avalabs/glacier-sdk'
 import { NftResponse } from 'store/nft'
 import Logger from 'utils/Logger'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
@@ -25,26 +29,55 @@ export class GlacierNftProvider implements NftProvider {
   async fetchNfts(
     chainId: number,
     address: string,
-    pageToken?: string
+    selectedCurrency?: string,
+    pageToken?: {
+      erc1155?: string
+      erc721?: string
+    }
   ): Promise<NftResponse> {
     Logger.info('fetching nfts using Glacier')
 
-    const nftBalancesResp = await this.glacierSdk.evm.listErc721Balances({
-      chainId: chainId.toString(),
-      address: DevDebuggingConfig.SHOW_DEMO_NFTS ? demoAddress : address,
-      // glacier has a cap on page size of 100
-      pageSize: 10,
-      pageToken: pageToken
-    })
-    const nftBalances =
-      nftBalancesResp.erc721TokenBalances as Erc721TokenBalance[]
-    const nextPageToken = nftBalancesResp.nextPageToken
+    let erc721BalancesResp: ListErc721BalancesResponse | undefined
+    if (pageToken?.erc721 !== '') {
+      erc721BalancesResp = await this.glacierSdk.evm.listErc721Balances({
+        chainId: chainId.toString(),
+        address: DevDebuggingConfig.SHOW_DEMO_NFTS ? demoAddress : address,
+        // glacier has a cap on page size of 100
+        pageSize: 10,
+        pageToken: pageToken?.erc721
+      })
+    }
+
+    let erc1155BalancesResp: ListErc1155BalancesResponse | undefined
+    if (pageToken?.erc1155 !== '') {
+      erc1155BalancesResp = await this.glacierSdk.evm.listErc1155Balances({
+        chainId: chainId.toString(),
+        address: DevDebuggingConfig.SHOW_DEMO_NFTS ? demoAddress : address,
+        // glacier has a cap on page size of 100
+        pageSize: 10,
+        pageToken: pageToken?.erc1155
+      })
+    }
+
+    const nftBalances = [
+      ...(erc721BalancesResp?.erc721TokenBalances ?? []),
+      ...(erc1155BalancesResp?.erc1155TokenBalances ?? [])
+    ]
 
     const fullNftData = nftBalances.map(nft => addMissingFields(nft, address))
 
+    const hasMore =
+      !!erc1155BalancesResp?.nextPageToken ||
+      !!erc721BalancesResp?.nextPageToken
+
     return {
       nfts: fullNftData,
-      nextPageToken
+      nextPageToken: hasMore
+        ? {
+            erc1155: erc1155BalancesResp?.nextPageToken,
+            erc721: erc721BalancesResp?.nextPageToken
+          }
+        : ''
     }
   }
 

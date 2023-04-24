@@ -1,4 +1,4 @@
-import { Erc721TokenBalance } from '@avalabs/glacier-sdk'
+import { Erc1155TokenBalance, Erc721TokenBalance } from '@avalabs/glacier-sdk'
 import { NFTItemData } from 'store/nft'
 import { ipfsResolver } from '@avalabs/utils-sdk'
 import NftProcessor from './NftProcessor'
@@ -24,7 +24,10 @@ export const applyImageAndAspect = async (nftData: NFTItemData) => {
   return nftData
 }
 
-export const addMissingFields = (nft: Erc721TokenBalance, address: string) => {
+export const addMissingFields = (
+  nft: Erc721TokenBalance | Erc1155TokenBalance,
+  address: string
+) => {
   return {
     ...nft,
     uid: getNftUID(nft),
@@ -32,6 +35,8 @@ export const addMissingFields = (nft: Erc721TokenBalance, address: string) => {
   } as NFTItemData
 }
 
-export const getNftUID = (nft: Erc721TokenBalance): NftUID => {
+export const getNftUID = (
+  nft: Erc721TokenBalance | Erc1155TokenBalance
+): NftUID => {
   return nft.address + nft.tokenId
 }
