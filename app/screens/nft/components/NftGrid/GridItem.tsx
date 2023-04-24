@@ -6,6 +6,8 @@ import { Opacity15 } from 'resources/Constants'
 import AvaText from 'components/AvaText'
 import { NFTItemData } from 'store/nft'
 import { SvgXml } from 'react-native-svg'
+import OvalTagBg from 'components/OvalTagBg'
+import { isErc1155 } from 'services/nft/utils'
 
 const SCREEN_WIDTH = Dimensions.get('window')?.width
 const GRID_ITEM_MARGIN = 8
@@ -43,6 +45,7 @@ export const GridItem = React.memo(
     onItemSelected: (item: NFTItemData) => void
   }) => {
     const [imgLoadFailed, setImgLoadFailed] = useState(false)
+    const theme = useApplicationContext().theme
 
     return (
       <AvaButton.Base
@@ -69,6 +72,27 @@ export const GridItem = React.memo(
             }}
             source={{ uri: item.image }}
           />
+        )}
+        {isErc1155(item) && (
+          <OvalTagBg
+            style={{
+              position: 'absolute',
+              right: 8,
+              top: 8,
+              paddingHorizontal: 12,
+              paddingVertical: 0,
+              height: 20,
+              backgroundColor: theme.colorBg3
+            }}>
+            <AvaText.Body3
+              textStyle={{
+                lineHeight: 20,
+                fontWeight: '600',
+                color: theme.colorText1
+              }}>
+              {item.balance}
+            </AvaText.Body3>
+          </OvalTagBg>
         )}
       </AvaButton.Base>
     )

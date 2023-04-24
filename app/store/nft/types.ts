@@ -1,4 +1,4 @@
-import { Erc721TokenBalance } from '@avalabs/glacier-sdk'
+import { Erc1155TokenBalance, Erc721TokenBalance } from '@avalabs/glacier-sdk'
 import { Network } from '@avalabs/chains-sdk'
 import { Account } from 'store/account'
 import { NftUID } from 'services/nft/types'
@@ -13,7 +13,9 @@ export type NftState = {
   nfts: Record<NftUID, NFTItemData>
 }
 
-export type NFTItemData = Erc721TokenBalance &
+type NftTokenTypes = Erc721TokenBalance | Erc1155TokenBalance
+
+export type NFTItemData = NftTokenTypes &
   NFTItemExternalData & {
     isFullLoading: boolean
     aspect: number

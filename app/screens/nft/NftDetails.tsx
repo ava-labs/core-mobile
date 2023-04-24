@@ -17,6 +17,8 @@ import { SvgXml } from 'react-native-svg'
 import { truncateAddress } from '@avalabs/utils-sdk'
 import { isAddress } from '@ethersproject/address'
 import { usePosthogContext } from 'contexts/PosthogContext'
+import { isErc1155 } from 'services/nft/utils'
+import OvalTagBg from 'components/OvalTagBg'
 
 const imageWidth = Dimensions.get('window').width - 32
 
@@ -91,6 +93,24 @@ export default function NftDetails({
               Could not load image
             </AvaText.Heading3>
           </View>
+        )}
+
+        {isErc1155(item) && (
+          <OvalTagBg
+            style={{
+              position: 'absolute',
+              right: 8,
+              top: 8,
+              paddingHorizontal: 16,
+              paddingVertical: 2,
+              height: 24,
+              backgroundColor: theme.colorBg3
+            }}>
+            <AvaText.Body2
+              textStyle={{ fontWeight: '600', color: theme.colorText1 }}>
+              {item.balance}
+            </AvaText.Body2>
+          </OvalTagBg>
         )}
       </AvaButton.Base>
       {renderSendBtn()}

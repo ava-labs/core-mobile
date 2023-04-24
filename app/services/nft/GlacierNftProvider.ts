@@ -61,7 +61,11 @@ export class GlacierNftProvider implements NftProvider {
 
     const nftBalances = [
       ...(erc721BalancesResp?.erc721TokenBalances ?? []),
-      ...(erc1155BalancesResp?.erc1155TokenBalances ?? [])
+      // ERC1155s can have 0 balance, which mean the user does not hold any of the token anymore
+      // happens for example when being sold
+      ...(erc1155BalancesResp?.erc1155TokenBalances.filter(
+        nft => nft.balance !== '0'
+      ) ?? [])
     ]
 
     const fullNftData = nftBalances.map(nft => addMissingFields(nft, address))

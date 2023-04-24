@@ -2,7 +2,7 @@ import { Image } from 'react-native'
 import { NFTItemData, NFTItemExternalData } from 'store/nft'
 import { HttpClient } from '@avalabs/utils-sdk'
 import { NftTokenMetadataStatus } from '@avalabs/glacier-sdk'
-import { convertIPFSResolver } from './utils'
+import { convertIPFSResolver, getTokenUri, isErc721 } from './utils'
 
 export class NftProcessor {
   private base64 = require('base-64')
@@ -87,13 +87,18 @@ export class NftProcessor {
         name: nft.metadata.name ?? '',
         image: nft.metadata.imageUri ?? '',
         image_256: nft.metadata.imageUri ?? '',
-        attributes: JSON.parse(nft.metadata.attributes || '') ?? [],
+        attributes:
+          JSON.parse(
+            (isErc721(nft)
+              ? nft.metadata.attributes
+              : nft.metadata.properties) || ''
+          ) ?? [],
         description: nft.metadata.description ?? '',
         external_url: nft.metadata.externalUrl ?? '',
         animation_url: nft.metadata.animationUri ?? ''
       }
     } else {
-      const metadata = await this.fetchMetadata(nft.tokenUri)
+      const metadata = await this.fetchMetadata(getTokenUri(nft))
       // do not use spread operator on metadata to prevent overwriting core NFT properties
       return {
         ...nft,

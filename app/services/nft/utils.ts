@@ -40,3 +40,22 @@ export const getNftUID = (
 ): NftUID => {
   return nft.address + nft.tokenId
 }
+
+export const isErc721 = (
+  nft: Erc721TokenBalance | Erc1155TokenBalance
+): nft is Erc721TokenBalance => {
+  return nft.ercType === 'ERC-721'
+}
+
+export const isErc1155 = (
+  nft: Erc721TokenBalance | Erc1155TokenBalance
+): nft is Erc1155TokenBalance => {
+  return nft.ercType === 'ERC-1155'
+}
+
+export const getTokenUri = (
+  nft: Erc721TokenBalance | Erc1155TokenBalance
+): string => {
+  // Some Opensea ERC-1155s have an `0x{id}` placeholder in their URL
+  return nft.tokenUri.replace('0x{id}', nft.tokenId)
+}

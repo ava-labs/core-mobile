@@ -16,7 +16,7 @@ export const nftsApi = createApi({
         try {
           const nftPagedData = await nftService.fetchNft(
             network.chainId,
-            '0xdb5485c85bd95f38f9def0ca85499ef67dc581c0',
+            account.address,
             currency,
             nextPageToken
           )
