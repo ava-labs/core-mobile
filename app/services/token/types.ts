@@ -11,7 +11,7 @@ export interface ChartData {
     diffValue: number
     percentChange: number
   }
-  dataPoints: { x: number; y: number }[]
+  dataPoints: { date: Date; value: number }[]
 }
 
 export type PriceWithMarketData = {

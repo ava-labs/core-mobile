@@ -80,7 +80,7 @@ const WatchList: React.FC<Props> = ({
     const displayValue = getDisplayValue(price, tokenInCurrencyFormatter)
 
     return (
-      <View style={[{ flex: 1 }]}>
+      <View style={styles.item} key={token.id}>
         <WatchListItem
           token={token}
           chartData={chartData}
@@ -137,7 +137,8 @@ const SeparatorComponent = () => (
 )
 
 const styles = StyleSheet.create({
-  separator: { backgroundColor: '#323232', height: 0.5 }
+  separator: { backgroundColor: '#323232', height: 0.5 },
+  item: { flex: 1 }
 })
 
 export default React.memo(WatchList)
