@@ -28,12 +28,11 @@ export const ListItem = ({ item, onItemSelected }: Props) => {
         titleAlignment={'flex-start'}
         title={
           <AvaText.Heading2 ellipsizeMode={'tail'}>
-            {item.name}
+            {`#${item.tokenId} `}
           </AvaText.Heading2>
         }
         subtitle={
-          <AvaText.Body2
-            ellipsizeMode={'tail'}>{`#${item.tokenId} `}</AvaText.Body2>
+          <AvaText.Body2 ellipsizeMode={'tail'}>{item.name}</AvaText.Body2>
         }
         leftComponent={
           <Avatar.Custom size={40} name={item.name} logoUri={item.image} />

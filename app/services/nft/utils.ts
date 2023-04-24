@@ -57,5 +57,5 @@ export const getTokenUri = (
   nft: Erc721TokenBalance | Erc1155TokenBalance
 ): string => {
   // Some Opensea ERC-1155s have an `0x{id}` placeholder in their URL
-  return nft.tokenUri.replace('0x{id}', nft.tokenId)
+  return nft.tokenUri.replace(/0x{id}|{id}/g, nft.tokenId)
 }

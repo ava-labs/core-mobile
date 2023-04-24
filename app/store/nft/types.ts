@@ -13,7 +13,7 @@ export type NftState = {
   nfts: Record<NftUID, NFTItemData>
 }
 
-type NftTokenTypes = Erc721TokenBalance | Erc1155TokenBalance
+export type NftTokenTypes = Erc721TokenBalance | Erc1155TokenBalance
 
 export type NFTItemData = NftTokenTypes &
   NFTItemExternalData & {

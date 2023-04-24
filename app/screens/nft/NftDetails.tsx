@@ -73,7 +73,7 @@ export default function NftDetails({
             />
           </View>
         )}
-        {!item.isSvg && !imgLoadFailed && (
+        {!item.isSvg && item.image && !imgLoadFailed && (
           <Image
             onError={_ => setImgLoadFailed(true)}
             style={styles.imageStyle}
@@ -82,7 +82,7 @@ export default function NftDetails({
             source={{ uri: item.image }}
           />
         )}
-        {imgLoadFailed && (
+        {(imgLoadFailed || !item.image) && (
           <View
             style={{
               padding: 10,
