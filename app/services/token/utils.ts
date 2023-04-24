@@ -31,14 +31,14 @@ export const transformSparklineData = (data: SparklineData | []): ChartData => {
       percentChange
     },
     dataPoints: oneDayData.map((value, index) => {
-      return { x: index, y: value }
+      return { date: new Date(index), value: value }
     })
   }
 }
 
 export const transformContractMarketChartResponse = (
   rawData: ContractMarketChartResponse
-) => {
+): ChartData => {
   const dates = rawData.prices.map(value => value[0])
   const prices = rawData.prices.map(value => value[1])
 
@@ -62,7 +62,7 @@ export const transformContractMarketChartResponse = (
       percentChange
     },
     dataPoints: rawData.prices.map(tu => {
-      return { x: tu[0], y: tu[1] }
+      return { date: new Date(tu[0]), value: tu[1] }
     })
-  } as ChartData
+  }
 }
