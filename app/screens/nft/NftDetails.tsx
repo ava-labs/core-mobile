@@ -24,7 +24,7 @@ const imageWidth = Dimensions.get('window').width - 32
 
 export type NftDetailsProps = {
   nft: NFTItemData
-  onPicturePressed: (url: string, urlSmall: string, isSvg: boolean) => void
+  onPicturePressed: (url: string, isSvg: boolean) => void
   onSendPressed: (item: NFTItemData) => void
 }
 
@@ -57,32 +57,32 @@ export default function NftDetails({
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <AvaText.Heading1>
-        {item.name} #{item.tokenId}
+        {item.metadata.name} #{item.tokenId}
       </AvaText.Heading1>
       <AvaButton.Base
         style={{ marginTop: 16, marginBottom: 24 }}
         onPress={() =>
-          onPicturePressed(item.image, item.image_256, item.isSvg)
+          onPicturePressed(item.metadata.imageUri ?? '', item.isSvg)
         }>
         {item.isSvg && (
           <View style={{ alignItems: 'center' }}>
             <SvgXml
-              xml={item.image}
+              xml={item.metadata.imageUri ?? null}
               width={imageWidth}
               height={imageWidth * item.aspect}
             />
           </View>
         )}
-        {!item.isSvg && item.image && !imgLoadFailed && (
+        {!item.isSvg && item.metadata.imageUri && !imgLoadFailed && (
           <Image
             onError={_ => setImgLoadFailed(true)}
             style={styles.imageStyle}
             width={imageWidth}
             height={imageWidth * item.aspect}
-            source={{ uri: item.image }}
+            source={{ uri: item.metadata.imageUri }}
           />
         )}
-        {(imgLoadFailed || !item.image) && (
+        {(imgLoadFailed || !item.metadata.imageUri) && (
           <View
             style={{
               padding: 10,

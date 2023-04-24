@@ -27,7 +27,7 @@ const NftManage = () => {
       return (
         searchText.length === 0 ||
         nft.tokenId.toLowerCase().includes(searchText.toLowerCase()) ||
-        nft.name.toLowerCase().includes(searchText.toLowerCase())
+        nft.metadata.name?.toLowerCase().includes(searchText.toLowerCase())
       )
     })
   }, [nfts, searchText])
@@ -93,8 +93,13 @@ const renderItemList = (
       }}>
       <AvaListItem.Base
         title={item.tokenId}
-        subtitle={item.name}
-        leftComponent={<Avatar.Custom name={item.name} logoUri={item.image} />}
+        subtitle={item.metadata.name}
+        leftComponent={
+          <Avatar.Custom
+            name={item.metadata.name ?? ''}
+            logoUri={item.metadata.imageUri}
+          />
+        }
         rightComponent={
           <Switch value={!isHidden} onValueChange={_ => onItemToggled(item)} />
         }

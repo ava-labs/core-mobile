@@ -31,7 +31,7 @@ const ErrorFallback = ({ item }: { item: NFTItemData }) => {
       <AvaText.Heading2 ellipsizeMode={'tail'}>
         #{item.tokenId}
       </AvaText.Heading2>
-      <AvaText.Body2 ellipsizeMode={'tail'}>{item.name}</AvaText.Body2>
+      <AvaText.Body2 ellipsizeMode={'tail'}>{item.metadata.name}</AvaText.Body2>
     </View>
   )
 }
@@ -54,11 +54,11 @@ export const GridItem = React.memo(
         style={{
           margin: GRID_ITEM_MARGIN
         }}>
-        {!item.image || imgLoadFailed ? (
+        {!item.metadata.imageUri || imgLoadFailed ? (
           <ErrorFallback item={item} />
         ) : item.isSvg ? (
           <SvgXml
-            xml={item.image}
+            xml={item.metadata.imageUri ?? null}
             width={GRID_ITEM_WIDTH}
             height={GRID_ITEM_WIDTH * (item.aspect ?? 1)}
           />
@@ -70,7 +70,7 @@ export const GridItem = React.memo(
               height: GRID_ITEM_WIDTH * (item.aspect ?? 1),
               borderRadius: 8
             }}
-            source={{ uri: item.image }}
+            source={{ uri: item.metadata.imageUri }}
           />
         )}
         {isErc1155(item) && (

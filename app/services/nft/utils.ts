@@ -15,10 +15,14 @@ export const convertIPFSResolver = (url: string) => {
 }
 
 export const applyImageAndAspect = async (nftData: NFTItemData) => {
+  if (!nftData.metadata.imageUri) {
+    return nftData
+  }
+
   const [image, aspect, isSvg] = await NftProcessor.fetchImageAndAspect(
-    nftData.image
+    nftData.metadata.imageUri
   )
-  nftData.image = image
+  nftData.metadata.imageUri = image
   nftData.aspect = aspect
   nftData.isSvg = isSvg
   return nftData

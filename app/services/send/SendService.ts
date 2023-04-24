@@ -96,8 +96,8 @@ class SendService {
       tokenId: nft.tokenId,
       type: isErc721(nft) ? TokenType.ERC721 : TokenType.ERC1155,
       address: nft.address,
-      logoUri: nft.image,
-      name: nft.name,
+      logoUri: nft.metadata.imageUri ?? '',
+      name: nft.metadata.name ?? '',
       symbol: isErc721(nft) ? nft.symbol : '',
       //unused but included to conform to NftTokenWithBalance
       balanceInCurrency: 0,

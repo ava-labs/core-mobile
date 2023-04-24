@@ -15,14 +15,15 @@ export type NftState = {
 
 export type NftTokenTypes = Erc721TokenBalance | Erc1155TokenBalance
 
-export type NFTItemData = NftTokenTypes &
-  NFTItemExternalData & {
-    isFullLoading: boolean
-    aspect: number
-    owner: string
-    uid: string
-    isSvg: boolean
-  }
+export type NFTItemData = NftTokenTypes & {
+  isFullLoading: boolean
+  aspect: number
+  owner: string
+  uid: string
+  isSvg: boolean
+  attributes: NFTItemExternalDataAttribute[]
+  external_url: string
+}
 
 export type NFTItemExternalData = {
   name: string

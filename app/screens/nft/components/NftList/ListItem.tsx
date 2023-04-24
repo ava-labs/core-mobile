@@ -32,10 +32,16 @@ export const ListItem = ({ item, onItemSelected }: Props) => {
           </AvaText.Heading2>
         }
         subtitle={
-          <AvaText.Body2 ellipsizeMode={'tail'}>{item.name}</AvaText.Body2>
+          <AvaText.Body2 ellipsizeMode={'tail'}>
+            {item.metadata.name}
+          </AvaText.Body2>
         }
         leftComponent={
-          <Avatar.Custom size={40} name={item.name} logoUri={item.image} />
+          <Avatar.Custom
+            size={40}
+            name={item.metadata.name ?? ''}
+            logoUri={item.metadata.imageUri}
+          />
         }
         rightComponentVerticalAlignment={'center'}
         rightComponent={
