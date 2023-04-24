@@ -17,6 +17,7 @@ import SentryWrapper from 'services/sentry/SentryWrapper'
 import { usePostCapture } from 'hooks/usePosthogCapture'
 import { useSelector, useDispatch } from 'react-redux'
 import { selectIsAnalyticsEnabled, toggleAnalytics } from 'store/posthog'
+import { createInstance } from 'services/token/TokenService'
 import { sanitizeFeatureFlags } from './utils'
 import { FeatureFlags, FeatureGates, FeatureVars } from './types'
 
@@ -48,6 +49,7 @@ export interface PosthogContextState {
   sentrySampleRate: number
   useFlatListAndroid: boolean
   coinbasePayBlocked: boolean
+  useCoinGeckoPro: boolean
 }
 
 const DefaultFeatureFlagConfig = {
@@ -62,7 +64,8 @@ const DefaultFeatureFlagConfig = {
   [FeatureGates.SEND_NFT_ANDROID]: true,
   [FeatureVars.SENTRY_SAMPLE_RATE]: '10', // 10% of events/errors
   [FeatureGates.USE_FLATLIST_ANDROID]: false,
-  [FeatureGates.BUY_COINBASE_PAY]: true
+  [FeatureGates.BUY_COINBASE_PAY]: true,
+  [FeatureGates.USE_COINGECKO_PRO]: false
 }
 
 const ONE_MINUTE = 60 * 1000
@@ -100,6 +103,10 @@ const processFlags = (flags: FeatureFlags) => {
   const coinbasePayBlocked =
     !flags[FeatureGates.BUY_COINBASE_PAY] || !flags[FeatureGates.EVERYTHING]
 
+  const useCoinGeckoPro =
+    Boolean(flags[FeatureGates.USE_COINGECKO_PRO]) ||
+    !flags[FeatureGates.EVERYTHING]
+
   return {
     swapBlocked,
     bridgeBlocked,
@@ -111,7 +118,8 @@ const processFlags = (flags: FeatureFlags) => {
     eventsBlocked,
     sentrySampleRate,
     useFlatListAndroid,
-    coinbasePayBlocked
+    coinbasePayBlocked,
+    useCoinGeckoPro
   }
 }
 
@@ -147,13 +155,18 @@ export const PosthogContextProvider = ({
     eventsBlocked,
     sentrySampleRate,
     useFlatListAndroid,
-    coinbasePayBlocked
+    coinbasePayBlocked,
+    useCoinGeckoPro
   } = useMemo(() => processFlags(flags), [flags])
 
   useEffect(
     () => SentryWrapper.setSampleRate(sentrySampleRate),
     [sentrySampleRate]
   )
+
+  useEffect(() => {
+    createInstance(useCoinGeckoPro)
+  }, [useCoinGeckoPro])
 
   const reloadFeatureFlags = useCallback(() => {
     fetch(PostHogDecideUrl, PostHogDecideFetchOptions)
@@ -232,7 +245,8 @@ export const PosthogContextProvider = ({
         sendNftBlockedAndroid,
         sentrySampleRate,
         useFlatListAndroid,
-        coinbasePayBlocked
+        coinbasePayBlocked,
+        useCoinGeckoPro
       }}>
       {children}
     </PosthogContext.Provider>
