@@ -3,7 +3,7 @@ import { useNavigation } from '@react-navigation/native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AppNavigation from 'navigation/AppNavigation'
 import { PortfolioScreenProps } from 'navigation/types'
-import { View } from 'react-native'
+import { Platform, View } from 'react-native'
 import AvaText from 'components/AvaText'
 import AvaButton from 'components/AvaButton'
 import WatchlistCarrousel from 'screens/watchlist/components/WatchlistCarrousel'
@@ -49,7 +49,9 @@ export const TokensTabHeader = () => {
         Networks
       </AvaText.Heading3>
       <Animated.View
-        sharedTransitionTag={'active network card'}
+        sharedTransitionTag={
+          Platform.OS === 'ios' ? 'active-network-card' : undefined
+        }
         key={network.chainId}
         entering={FlipInEasyX.delay(300)}
         exiting={FlipOutEasyX.duration(300)}>

@@ -1,5 +1,5 @@
 import React from 'react'
-import { ListRenderItemInfo } from 'react-native'
+import { ListRenderItemInfo, Platform } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
 import AppNavigation from 'navigation/AppNavigation'
@@ -64,7 +64,9 @@ const TokensTab = () => {
   const renderInactiveNetwork = (item: ListRenderItemInfo<Network>) => {
     return (
       <Animated.View
-        sharedTransitionTag={'inactive network card'}
+        sharedTransitionTag={
+          Platform.OS === 'ios' ? 'inactive-network-card' : undefined
+        }
         exiting={FadeOutUp.duration(300)}
         entering={FadeInDown.delay(300).duration(300)}>
         <InactiveNetworkCard network={item.item} />
