@@ -16,7 +16,7 @@ import { getColorFromURL } from 'rn-dominant-color'
 import LinearGradientSVG from 'components/svg/LinearGradientSVG'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { orientation } from 'react-native-sensors'
-import { filter, map, sampleTime, tap } from 'rxjs'
+import { of, filter, map, sampleTime, tap, catchError } from 'rxjs'
 import AppNavigation from 'navigation/AppNavigation'
 import { NFTDetailsScreenProps } from 'navigation/types'
 import { SvgXml } from 'react-native-svg'
@@ -74,7 +74,13 @@ export default function NftFullScreen() {
             pitch: value.pitch,
             roll: value.roll < -0.8 ? -0.8 : value.roll > 0.8 ? 0.8 : value.roll // constrain for when device is upside-down
           }
-        })
+        }),
+        catchError(() =>
+          of({
+            pitch: 0,
+            roll: 0
+          })
+        )
       )
       .subscribe(value => {
         setSensorData({
