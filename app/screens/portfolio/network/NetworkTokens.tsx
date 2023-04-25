@@ -1,4 +1,4 @@
-import React, { useLayoutEffect } from 'react'
+import React, { useEffect } from 'react'
 import { FlatList, ListRenderItemInfo, View } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import { useSearchableTokenList } from 'screens/portfolio/useSearchableTokenList'
@@ -7,7 +7,7 @@ import PortfolioListItem from 'components/PortfolioListItem'
 import ZeroState from 'components/ZeroState'
 import AvaButton from 'components/AvaButton'
 import { PortfolioScreenProps } from 'navigation/types'
-import { useIsUIDisabled, UI } from 'hooks/useIsUIDisabled'
+import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
 import { LocalTokenWithBalance, TokenType } from 'store/balance'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { usePostCapture } from 'hooks/usePosthogCapture'
@@ -31,8 +31,10 @@ const NetworkTokens = () => {
   const manageDisabled = useIsUIDisabled(UI.ManageTokens)
   const manageBtnColor = theme.colorPrimary1
 
-  useLayoutEffect(() => {
-    getParent()?.setParams({ showBackButton: true })
+  useEffect(() => {
+    setTimeout(() => {
+      getParent()?.setParams({ showBackButton: true })
+    }, 300)
 
     return () => {
       getParent()?.setParams({ showBackButton: false })
