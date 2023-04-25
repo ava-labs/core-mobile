@@ -19,14 +19,16 @@ enum CreateWalletNavigationScreens {
   CreatePin = 'CreateWalletNavigationScreens.CreatePin',
   BiometricLogin = 'CreateWalletNavigationScreens.BiometricLogin',
   TermsNConditions = 'CreateWalletNavigationScreens.TermsNConditions',
-  ProtectFunds = 'CreateWalletNavigationScreens.ProtectFunds'
+  ProtectFunds = 'CreateWalletNavigationScreens.ProtectFunds',
+  Loader = 'CreateWalletNavigationScreens.Loader'
 }
 
 enum LoginWithMnemonicStackScreens {
   LoginWithMnemonic = 'LoginWithMnemonicStackScreens.LoginWithMnemonic',
   CreatePin = 'LoginWithMnemonicStackScreens.CreatePin',
   BiometricLogin = 'LoginWithMnemonicStackScreens.BiometricLogin',
-  TermsNConditions = 'LoginWithMnemonicStackScreens.TermsNConditions'
+  TermsNConditions = 'LoginWithMnemonicStackScreens.TermsNConditions',
+  Loader = 'LoginWithMnemonicStackScreens.Loader'
 }
 
 enum WalletScreens {

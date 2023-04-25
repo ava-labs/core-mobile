@@ -41,9 +41,18 @@ class WalletService {
   private xpubXP?: string
 
   async setMnemonic(mnemonic: string) {
+    const xpubPromise = getXpubFromMnemonic(mnemonic)
+    const xpubXPPromise = new Promise<string>(resolve => {
+      resolve(Avalanche.getXpubFromMnemonic(mnemonic))
+    })
+    const pubKeys = await Promise.allSettled([xpubPromise, xpubXPPromise])
+    if (pubKeys[0].status === 'fulfilled') {
+      this.xpub = pubKeys[0].value
+    }
+    if (pubKeys[1].status === 'fulfilled') {
+      this.xpubXP = pubKeys[1].value
+    }
     this.mnemonic = mnemonic
-    this.xpub = await getXpubFromMnemonic(mnemonic)
-    this.xpubXP = Avalanche.getXpubFromMnemonic(mnemonic)
   }
 
   async getBtcWallet(

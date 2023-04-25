@@ -22,6 +22,7 @@ import {
   useBeforeRemoveListener
 } from 'hooks/useBeforeRemoveListener'
 import { usePostCapture } from 'hooks/usePosthogCapture'
+import OwlLoader from 'components/OwlLoader'
 import { EnterWithMnemonicScreenProps } from '../types'
 
 export type EnterWithMnemonicStackParamList = {
@@ -29,6 +30,7 @@ export type EnterWithMnemonicStackParamList = {
   [AppNavigation.LoginWithMnemonic.CreatePin]: undefined
   [AppNavigation.LoginWithMnemonic.BiometricLogin]: undefined
   [AppNavigation.LoginWithMnemonic.TermsNConditions]: undefined
+  [AppNavigation.LoginWithMnemonic.Loader]: undefined
 }
 const EnterWithMnemonicS =
   createStackNavigator<EnterWithMnemonicStackParamList>()
@@ -66,6 +68,10 @@ const EnterWithMnemonicStack = () => {
           options={{ presentation: 'transparentModal' }}
           name={AppNavigation.LoginWithMnemonic.TermsNConditions}
           component={TermsNConditionsModalScreen}
+        />
+        <EnterWithMnemonicS.Screen
+          name={AppNavigation.LoginWithMnemonic.Loader}
+          component={OwlLoader}
         />
       </EnterWithMnemonicS.Navigator>
     </EnterWithMnemonicContext.Provider>
@@ -157,14 +163,21 @@ const TermsNConditionsModalScreen = () => {
   const walletSetupHook = useApplicationContext().walletSetupHook
   const { signOut } = useApplicationContext().appHook
   const dispatch = useDispatch()
+  const { navigate } = useNavigation<BiometricLoginNavigationProp>()
 
   return (
     <TermsNConditionsModal
       onNext={() => {
-        // signing in with recovery phrase
-        walletSetupHook.enterWallet(enterWithMnemonicContext.mnemonic)
-        dispatch(onLogIn())
-        dispatch(onAppUnlocked())
+        navigate(AppNavigation.LoginWithMnemonic.Loader)
+        setTimeout(() => {
+          // signing in with recovery phrase
+          walletSetupHook
+            .enterWallet(enterWithMnemonicContext.mnemonic)
+            .then(() => {
+              dispatch(onLogIn())
+              dispatch(onAppUnlocked())
+            })
+        }, 300)
       }}
       onReject={() => signOut()}
     />
