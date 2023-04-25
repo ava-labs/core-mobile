@@ -1,10 +1,11 @@
 import { NftProvider } from 'services/nft/types'
-import { NFTItemData, NftResponse } from 'store/nft'
+import { NftResponse, NftTokenTypes } from 'store/nft'
 import { Covalent } from '@avalabs/covalent-sdk'
 import Config from 'react-native-config'
 import { GetAddressBalanceV2Item } from '@avalabs/covalent-sdk'
 import Logger from 'utils/Logger'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
+import { ErcType, NftTokenMetadataStatus } from '@avalabs/glacier-sdk'
 import { addMissingFields, convertIPFSResolver } from './utils'
 
 const demoAddress = 'demo.eth'
@@ -50,7 +51,7 @@ export class CovalentNftProvider implements NftProvider {
         : '' // stop pagination
 
     const nfts = covalentNfts.reduce(
-      (agg: NFTItemData[], item: GetAddressBalanceV2Item) => {
+      (agg: NftTokenTypes[], item: GetAddressBalanceV2Item) => {
         return item.type !== 'nft'
           ? agg
           : [...agg, ...this.mapCovalentData(chainId.toString(), address, item)]
@@ -61,7 +62,7 @@ export class CovalentNftProvider implements NftProvider {
 
     return {
       nfts: fullNftData,
-      nextPageToken
+      nextPageToken: nextPageToken
     }
   }
 
@@ -69,36 +70,37 @@ export class CovalentNftProvider implements NftProvider {
     chainId: string,
     address: string,
     nftCollections: GetAddressBalanceV2Item
-  ): NFTItemData[] {
+  ): NftTokenTypes[] {
     if (nftCollections.nft_data === null) {
       return []
     }
 
     return nftCollections.nft_data.map(value => {
       return {
+        ercType: (value.supports_erc.includes('erc1155')
+          ? ErcType.ERC_1155
+          : // Typing from the SDK has the ercType properties mixed up
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ErcType.ERC_721) as any,
+        metadata: {
+          indexStatus: NftTokenMetadataStatus.INDEXED,
+          name: value.external_data.name,
+          imageUri: value.external_data.image
+            ? convertIPFSResolver(value.external_data.image)
+            : '',
+          symbol: nftCollections.contract_ticker_symbol,
+          description: value.external_data.description,
+          animationUri: value.external_data.animation_url || undefined,
+          externalUrl: value.external_data.external_url || undefined
+        },
         chainId,
         address,
         name: value.external_data.name,
+        balance: value.token_balance,
         symbol: nftCollections.contract_ticker_symbol,
         tokenId: value.token_id,
-        tokenUri: value.token_url,
-        image: value.external_data.image
-          ? convertIPFSResolver(value.external_data.image)
-          : '',
-        image_256: value.external_data.image_256,
-        // attributes:
-        //   value.external_data.attributes?.map(
-        //     attr =>
-        //       ({
-        //         trait_type: attr.trait_type,
-        //         value: attr.value
-        //       } as NFTItemExternalDataAttribute)
-        //   ) ?? [],
-        description: value.external_data.description,
-        external_url: value.external_data.external_url,
-        animation_url: value.external_data.animation_url,
-        owner: value.owner
-      } as NFTItemData
+        tokenUri: value.token_url ?? ''
+      }
     })
   }
 }

@@ -76,7 +76,11 @@ export default function NftReview({ onSuccess }: NftReviewScreenProps) {
         <View style={{ position: 'absolute' }}>
           <DotSVG fillColor={theme.colorBg1} size={72} />
         </View>
-        <Avatar.Custom size={56} name={nft.name} logoUri={nft.image} />
+        <Avatar.Custom
+          size={56}
+          name={nft.metadata.name ?? ''}
+          logoUri={nft.metadata.imageUri}
+        />
       </View>
       <View
         style={{
@@ -97,7 +101,7 @@ export default function NftReview({ onSuccess }: NftReviewScreenProps) {
         </AvaText.Heading1>
         <Space y={4} />
         <AvaText.Heading3 textStyle={{ alignSelf: 'center' }}>
-          {nft.name}
+          {nft.metadata.name}
         </AvaText.Heading3>
         <Space y={18} />
         <SendRow

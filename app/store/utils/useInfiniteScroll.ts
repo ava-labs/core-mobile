@@ -6,8 +6,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 // it manages nextPageToken and the combined data from different pages
 // inspired by https://github.com/reduxjs/redux-toolkit/discussions/1163#discussioncomment-1667214
 export const useInfiniteScroll = <
-  QueryArg extends { nextPageToken?: string },
-  QueryResult extends { nextPageToken?: string },
+  QueryArg extends { nextPageToken?: unknown },
+  QueryResult extends { nextPageToken?: unknown },
   Item
 >({
   useQuery,
@@ -21,7 +21,7 @@ export const useInfiniteScroll = <
 }) => {
   // when pageToken is undefined, it means first page
   // when pageToken is an empty string, it means no more pages to fetch
-  const [pageToken, setPageToken] = useState<string | undefined>(undefined)
+  const [pageToken, setPageToken] = useState<unknown | undefined>(undefined)
   const [combinedData, setCombinedData] = useState<Item[]>([])
   const queryParamsString = JSON.stringify(queryParams)
   const [shouldRefresh, setShouldRefresh] = useState(false)
@@ -87,7 +87,7 @@ export const useInfiniteScroll = <
   const isFetching = queryResponse?.isFetching
   const isSuccess = queryResponse?.isSuccess
   const isError = queryResponse?.isError
-  const hasMore = nextPageToken !== ''
+  const hasMore = !!nextPageToken
   const isFirstPage = pageToken === undefined
   const isFetchingNext = isFetching && pageToken !== undefined
 

@@ -59,45 +59,33 @@ export default function NftListView({
     return fullNfts.filter(value => !hiddenNfts[value.uid])
   }, [hiddenNfts, fullNfts])
 
-  const renderListToggle = () => (
-    <RadioGroup
-      onSelected={selectedItem => setListType(selectedItem as ListType)}
-      preselectedKey={'grid'}>
-      <GridSVG key={'grid'} size={24} />
-      <ListSVG key={'list'} size={24} />
-    </RadioGroup>
-  )
-
-  const renderManageBtn = () => (
-    <AvaButton.TextLink
-      style={{ paddingRight: -16 }}
-      textColor={theme.colorPrimary1}
-      onPress={onManagePressed}>
-      Manage
-    </AvaButton.TextLink>
-  )
-
-  const renderList = () => {
-    const props = {
-      nfts: filteredData,
-      onItemSelected,
-      isLoading,
-      fetchNext,
-      isFetchingNext,
-      refresh,
-      isRefreshing
-    }
-
-    return listType === 'list' ? <NftList {...props} /> : <NftGrid {...props} />
+  const props = {
+    nfts: filteredData,
+    onItemSelected,
+    isLoading,
+    fetchNext,
+    isFetchingNext,
+    refresh,
+    isRefreshing
   }
 
   return (
     <View style={styles.container}>
       <Row style={styles.topRow}>
-        {renderListToggle()}
-        {renderManageBtn()}
+        <RadioGroup
+          onSelected={selectedItem => setListType(selectedItem as ListType)}
+          preselectedKey={'grid'}>
+          <GridSVG key={'grid'} size={24} />
+          <ListSVG key={'list'} size={24} />
+        </RadioGroup>
+        <AvaButton.TextLink
+          style={{ paddingRight: -16 }}
+          textColor={theme.colorPrimary1}
+          onPress={onManagePressed}>
+          Manage
+        </AvaButton.TextLink>
       </Row>
-      {renderList()}
+      {listType === 'list' ? <NftList {...props} /> : <NftGrid {...props} />}
     </View>
   )
 }
