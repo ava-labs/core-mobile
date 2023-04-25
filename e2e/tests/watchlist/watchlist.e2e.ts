@@ -9,6 +9,7 @@ import BottomTabsPage from '../../pages/bottomTabs.page'
 import ExistingRecoveryPhrasePage from '../../pages/existingRecoveryPhrase.page'
 import tokenDetailPage from '../../pages/tokenDetail.page'
 import { warmup } from '../../helpers/warmup'
+import Actions from '../../helpers/actions'
 
 describe('Verify Watchlist', () => {
   beforeAll(async () => {
@@ -33,6 +34,7 @@ describe('Verify Watchlist', () => {
   })
 
   it('should verify token detail screen', async () => {
+    await Actions.swipeUp(tokenDetailPage.oneWeekTab, 'fast', 0.5, 0)
     await tokenDetailPage.verifyTokenDetailScreen()
   })
 })
