@@ -80,7 +80,7 @@ export class GlacierNftProvider implements NftProvider {
     const fullNftData = nftBalances.map(nft => addMissingFields(nft, address))
 
     const hasMore = responses.some(
-      resp => resp.status === 'fulfilled' && !!resp.value?.nextPageToken
+      resp => resp.status !== 'fulfilled' || !!resp.value?.nextPageToken
     )
 
     return {
@@ -90,11 +90,11 @@ export class GlacierNftProvider implements NftProvider {
             erc721:
               responses[0].status === 'fulfilled'
                 ? responses[0].value?.nextPageToken
-                : undefined,
+                : pageToken?.erc721, // reload the same page next time
             erc1155:
               responses[1].status === 'fulfilled'
                 ? responses[1].value?.nextPageToken
-                : undefined
+                : pageToken?.erc1155
           }
         : ''
     }
