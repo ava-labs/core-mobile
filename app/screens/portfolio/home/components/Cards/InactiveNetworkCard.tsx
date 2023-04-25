@@ -1,6 +1,12 @@
 import React, { FC } from 'react'
 import { Network } from '@avalabs/chains-sdk'
-import { Dimensions, StyleSheet, TouchableHighlight, View } from 'react-native'
+import {
+  Dimensions,
+  Platform,
+  StyleSheet,
+  TouchableHighlight,
+  View
+} from 'react-native'
 import AvaText from 'components/AvaText'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { Opacity70, Opacity85 } from 'resources/Constants'
@@ -44,9 +50,12 @@ const InactiveNetworkCard: FC<Props> = ({ network }) => {
 
   const navigateToNetworkTokens = () => {
     dispatch(setActive(network.chainId))
-    setTimeout(() => {
-      navigate(AppNavigation.Portfolio.NetworkTokens)
-    }, 700)
+    setTimeout(
+      () => {
+        navigate(AppNavigation.Portfolio.NetworkTokens)
+      },
+      Platform.OS === 'ios' ? 700 : 0
+    )
   }
 
   const renderContent = () => {
