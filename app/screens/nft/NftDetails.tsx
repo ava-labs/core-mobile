@@ -61,9 +61,12 @@ export default function NftDetails({
       </AvaText.Heading1>
       <AvaButton.Base
         style={{ marginTop: 16, marginBottom: 24 }}
-        onPress={() =>
-          onPicturePressed(item.metadata.imageUri ?? '', item.isSvg)
-        }>
+        onPress={() => {
+          if (!item.metadata.imageUri) {
+            return
+          }
+          onPicturePressed(item.metadata.imageUri, item.isSvg)
+        }}>
         {item.isSvg && (
           <View style={{ alignItems: 'center' }}>
             <SvgXml
