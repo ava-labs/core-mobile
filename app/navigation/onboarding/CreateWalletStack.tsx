@@ -23,6 +23,7 @@ import {
   useBeforeRemoveListener
 } from 'hooks/useBeforeRemoveListener'
 import { usePostCapture } from 'hooks/usePosthogCapture'
+import OwlLoader from 'components/OwlLoader'
 import { CreateWalletScreenProps } from '../types'
 
 export type CreateWalletStackParamList = {
@@ -32,6 +33,7 @@ export type CreateWalletStackParamList = {
   [AppNavigation.CreateWallet.CreatePin]: undefined
   [AppNavigation.CreateWallet.BiometricLogin]: undefined
   [AppNavigation.CreateWallet.TermsNConditions]: undefined
+  [AppNavigation.CreateWallet.Loader]: undefined
 }
 const CreateWalletS = createStackNavigator<CreateWalletStackParamList>()
 
@@ -76,6 +78,10 @@ const CreateWalletStack: () => JSX.Element = () => {
           options={{ presentation: 'transparentModal' }}
           name={AppNavigation.CreateWallet.TermsNConditions}
           component={TermsNConditionsModalScreen}
+        />
+        <CreateWalletS.Screen
+          name={AppNavigation.CreateWallet.Loader}
+          component={OwlLoader}
         />
       </CreateWalletS.Navigator>
     </CreateWalletContext.Provider>
@@ -211,14 +217,19 @@ const TermsNConditionsModalScreen = () => {
   const walletSetupHook = useApplicationContext().walletSetupHook
   const { signOut } = useApplicationContext().appHook
   const dispatch = useDispatch()
+  const { navigate } = useNavigation<BiometricLoginNavigationProp>()
 
   return (
     <TermsNConditionsModal
       onNext={() => {
-        // signing in with a brand new wallet
-        walletSetupHook.enterWallet(createWalletContext.mnemonic)
-        dispatch(onLogIn())
-        dispatch(onAppUnlocked())
+        navigate(AppNavigation.CreateWallet.Loader)
+        setTimeout(() => {
+          // signing in with a brand new wallet
+          walletSetupHook.enterWallet(createWalletContext.mnemonic).then(() => {
+            dispatch(onLogIn())
+            dispatch(onAppUnlocked())
+          })
+        }, 300)
       }}
       onReject={() => signOut()}
     />

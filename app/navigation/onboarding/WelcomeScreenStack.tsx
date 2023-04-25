@@ -70,8 +70,9 @@ const LoginWithPinOrBiometryScreen = () => {
         context.appNavHook.resetNavToEnterMnemonic()
       }
       onLoginSuccess={mnemonic => {
-        enterWallet(mnemonic)
-        dispatch(onAppUnlocked())
+        enterWallet(mnemonic).then(() => {
+          dispatch(onAppUnlocked())
+        })
       }}
     />
   )

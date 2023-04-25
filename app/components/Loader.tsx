@@ -19,7 +19,7 @@ export default function Loader({
   return (
     <SafeAreaView
       style={[
-        context.appBackgroundStyle,
+        { flex: 1 },
         transparent && { backgroundColor: context.theme.transparent }
       ]}>
       <View

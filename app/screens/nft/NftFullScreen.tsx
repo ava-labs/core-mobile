@@ -29,11 +29,7 @@ type RouteProp = NFTDetailsScreenProps<
 
 export default function NftFullScreen() {
   const { theme } = useApplicationContext()
-  const {
-    url: imageUrl,
-    urlSmall: imageUrlSmall,
-    isSvg
-  } = useRoute<RouteProp>().params
+  const { url: imageUrl, isSvg } = useRoute<RouteProp>().params
   const [grabbedBgColor, setGrabbedBgColor] = useState('black')
   const windowWidth = useMemo(() => Dimensions.get('window').width - 32, [])
   const [imageAspect, setImageAspect] = useState(0)
@@ -107,12 +103,12 @@ export default function NftFullScreen() {
 
   useEffect(() => {
     if (isSvg) return
-    getColorFromURL(imageUrlSmall).then(colors => {
+    getColorFromURL(imageUrl).then(colors => {
       setGrabbedBgColor(
         Platform.OS === 'ios' ? colors.secondary : colors.background
       )
     })
-  }, [isSvg, imageUrlSmall])
+  }, [isSvg, imageUrl])
 
   useEffect(() => {
     if (isSvg) return

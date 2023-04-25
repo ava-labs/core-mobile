@@ -21,11 +21,13 @@ export const nftsApi = createApi({
             nextPageToken
           )
 
+          const responseData: NftResponse = {
+            nfts: nftPagedData.nfts,
+            nextPageToken: nftPagedData.nextPageToken
+          }
+
           return {
-            data: {
-              nfts: nftPagedData.nfts,
-              nextPageToken: nftPagedData.nextPageToken
-            } as NftResponse
+            data: responseData
           }
         } catch (err) {
           Logger.error(`failed to get nfts for chain ${network.chainId}`, err)

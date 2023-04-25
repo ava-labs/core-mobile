@@ -4,10 +4,11 @@ import walletService from 'services/wallet/WalletService'
 import { Account } from 'store/account'
 import { SendServiceEVM } from 'services/send/SendServiceEVM'
 import { NFTItemData } from 'store/nft'
-import { TokenType, TokenWithBalanceERC721 } from 'store/balance'
+import { TokenType, NftTokenWithBalance } from 'store/balance'
 import BN from 'bn.js'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Transaction } from '@sentry/types'
+import { isErc721 } from 'services/nft/utils'
 import { isValidSendState, SendServiceHelper, SendState } from './types'
 import sendServiceBTC from './SendServiceBTC'
 
@@ -90,15 +91,15 @@ class SendService {
     })
   }
 
-  mapTokenFromNFT(nft: NFTItemData): TokenWithBalanceERC721 {
+  mapTokenFromNFT(nft: NFTItemData): NftTokenWithBalance {
     return {
       tokenId: nft.tokenId,
-      type: TokenType.ERC721,
+      type: isErc721(nft) ? TokenType.ERC721 : TokenType.ERC1155,
       address: nft.address,
-      logoUri: nft.image,
-      name: nft.name,
-      symbol: nft.symbol,
-      //unused but included to conform to TokenWithBalanceERC721
+      logoUri: nft.metadata.imageUri ?? '',
+      name: nft.metadata.name ?? '',
+      symbol: isErc721(nft) ? nft.symbol : '',
+      //unused but included to conform to NftTokenWithBalance
       balanceInCurrency: 0,
       balanceDisplayValue: '',
       balanceCurrencyDisplayValue: '',

@@ -28,12 +28,14 @@ const AvaButtonBase: FC<BaseProps> = ({
   onPress,
   style,
   disabled,
-  children
+  children,
+  testID
 }) => {
   const theme = useApplicationContext().theme
   return (
     <Pressable
       accessible={false}
+      testID={testID}
       android_ripple={{
         color: theme.buttonRipple,
         borderless: rippleBorderless ?? false

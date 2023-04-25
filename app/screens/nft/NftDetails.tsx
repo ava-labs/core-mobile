@@ -17,12 +17,14 @@ import { SvgXml } from 'react-native-svg'
 import { truncateAddress } from '@avalabs/utils-sdk'
 import { isAddress } from '@ethersproject/address'
 import { usePosthogContext } from 'contexts/PosthogContext'
+import { isErc1155 } from 'services/nft/utils'
+import OvalTagBg from 'components/OvalTagBg'
 
 const imageWidth = Dimensions.get('window').width - 32
 
 export type NftDetailsProps = {
   nft: NFTItemData
-  onPicturePressed: (url: string, urlSmall: string, isSvg: boolean) => void
+  onPicturePressed: (url: string, isSvg: boolean) => void
   onSendPressed: (item: NFTItemData) => void
 }
 
@@ -55,32 +57,32 @@ export default function NftDetails({
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <AvaText.Heading1>
-        {item.name} #{item.tokenId}
+        {item.metadata.name} #{item.tokenId}
       </AvaText.Heading1>
       <AvaButton.Base
         style={{ marginTop: 16, marginBottom: 24 }}
         onPress={() =>
-          onPicturePressed(item.image, item.image_256, item.isSvg)
+          onPicturePressed(item.metadata.imageUri ?? '', item.isSvg)
         }>
         {item.isSvg && (
           <View style={{ alignItems: 'center' }}>
             <SvgXml
-              xml={item.image}
+              xml={item.metadata.imageUri ?? null}
               width={imageWidth}
               height={imageWidth * item.aspect}
             />
           </View>
         )}
-        {!item.isSvg && !imgLoadFailed && (
+        {!item.isSvg && item.metadata.imageUri && !imgLoadFailed && (
           <Image
             onError={_ => setImgLoadFailed(true)}
             style={styles.imageStyle}
             width={imageWidth}
             height={imageWidth * item.aspect}
-            source={{ uri: item.image }}
+            source={{ uri: item.metadata.imageUri }}
           />
         )}
-        {imgLoadFailed && (
+        {(imgLoadFailed || !item.metadata.imageUri) && (
           <View
             style={{
               padding: 10,
@@ -91,6 +93,24 @@ export default function NftDetails({
               Could not load image
             </AvaText.Heading3>
           </View>
+        )}
+
+        {isErc1155(item) && (
+          <OvalTagBg
+            style={{
+              position: 'absolute',
+              right: 8,
+              top: 8,
+              paddingHorizontal: 16,
+              paddingVertical: 2,
+              height: 24,
+              backgroundColor: theme.colorBg3
+            }}>
+            <AvaText.Body2
+              textStyle={{ fontWeight: '600', color: theme.colorText1 }}>
+              {item.balance}
+            </AvaText.Body2>
+          </OvalTagBg>
         )}
       </AvaButton.Base>
       {renderSendBtn()}

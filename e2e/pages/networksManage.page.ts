@@ -9,6 +9,10 @@ class NetworksPage {
     return by.id(networksManage.addNetwork)
   }
 
+  get bitcoinTestnet() {
+    return by.text(networksManage.bitcoinTestnet)
+  }
+
   get chainID() {
     return by.text(networksManage.chainID)
   }

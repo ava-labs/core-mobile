@@ -20,9 +20,10 @@ import { Network } from '@avalabs/chains-sdk'
 import {
   TokenType,
   TokenWithBalanceERC20,
-  TokenWithBalanceERC721
+  NftTokenWithBalance
 } from 'store/balance'
 import ERC721 from '@openzeppelin/contracts/build/contracts/ERC721.json'
+import ERC1155 from '@openzeppelin/contracts/build/contracts/ERC1155.json'
 import { isAddress } from '@ethersproject/address'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 
@@ -86,7 +87,11 @@ export class SendServiceEVM implements SendServiceHelper {
             SendErrorMessage.INVALID_NETWORK_FEE
           )
 
-        if (token.type !== TokenType.ERC721 && (!amount || amount.isZero()))
+        if (
+          token.type !== TokenType.ERC721 &&
+          token.type !== TokenType.ERC1155 &&
+          (!amount || amount.isZero())
+        )
           return SendServiceEVM.getErrorState(
             newState,
             SendErrorMessage.AMOUNT_REQUIRED
@@ -179,7 +184,11 @@ export class SendServiceEVM implements SendServiceHelper {
       )
     } else if (sendState.token.type === TokenType.ERC721) {
       return this.getUnsignedTxERC721(
-        sendState as SendState<TokenWithBalanceERC721>
+        sendState as SendState<NftTokenWithBalance>
+      )
+    } else if (sendState.token.type === TokenType.ERC1155) {
+      return this.getUnsignedTxERC1155(
+        sendState as SendState<NftTokenWithBalance>
       )
     } else {
       throw new Error('Unsupported token')
@@ -219,7 +228,7 @@ export class SendServiceEVM implements SendServiceHelper {
   }
 
   private async getUnsignedTxERC721(
-    sendState: SendState<TokenWithBalanceERC721>
+    sendState: SendState<NftTokenWithBalance>
   ): Promise<TransactionRequest> {
     const contract = new Contract(
       sendState.token?.address || '',
@@ -233,5 +242,24 @@ export class SendServiceEVM implements SendServiceHelper {
       ...populatedTransaction, // only includes `to` and `data`
       from: this.fromAddress
     }
+  }
+
+  private async getUnsignedTxERC1155(
+    sendState: SendState<NftTokenWithBalance>
+  ): Promise<TransactionRequest> {
+    const contract = new Contract(
+      sendState.token?.address || '',
+      ERC1155.abi,
+      this.networkProvider
+    )
+
+    const populatedTransaction = await contract.populateTransaction[
+      'safeTransferFrom(address,address,uint256,uint256,bytes)'
+    ]?.(this.fromAddress, sendState.address, sendState.token?.tokenId, 1, [])
+    const unsignedTx: TransactionRequest = {
+      ...populatedTransaction,
+      from: this.fromAddress
+    }
+    return unsignedTx
   }
 }

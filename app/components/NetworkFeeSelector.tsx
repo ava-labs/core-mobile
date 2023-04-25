@@ -20,6 +20,9 @@ import Big from 'big.js'
 import InfoSVG from 'components/svg/InfoSVG'
 import { WalletScreenProps } from 'navigation/types'
 import { selectActiveNetwork } from 'store/network'
+import { useNativeTokenPrice } from 'hooks/useNativeTokenPrice'
+import { VsCurrencyType } from '@avalabs/coingecko-sdk'
+import { selectSelectedCurrency } from 'store/settings/currency'
 import InputText from './InputText'
 
 export enum FeePreset {
@@ -53,6 +56,10 @@ const NetworkFeeSelector = ({
   const networkFee = useSelector(selectNetworkFee)
   const dispatch = useDispatch()
   const network = useSelector(selectActiveNetwork)
+  const selectedCurrency = useSelector(selectSelectedCurrency)
+  const { nativeTokenPrice } = useNativeTokenPrice(
+    selectedCurrency.toLowerCase() as VsCurrencyType
+  )
   const isBtcNetwork = network.vmName === NetworkVMType.BITCOIN
   const [selectedPreset, setSelectedPreset] = useState(FeePreset.Instant)
   const [customGasPrice, setCustomGasPrice] = useState<BigNumber>()
@@ -74,11 +81,11 @@ const NetworkFeeSelector = ({
     }
   }, [customGasPrice, networkFee, selectedPreset])
 
-  const totalFeeString = useMemo(() => {
+  const totalFeeBig = useMemo(() => {
     return ethersBigNumberToBig(
       selectedGasPrice?.mul(gasLimit),
       networkFee.nativeTokenDecimals
-    ).toString()
+    )
   }, [gasLimit, networkFee.nativeTokenDecimals, selectedGasPrice])
 
   useEffect(() => {
@@ -209,9 +216,17 @@ const NetworkFeeSelector = ({
       <Row style={{ justifyContent: 'space-between', alignItems: 'center' }}>
         <AvaText.Body2>Fee Amount</AvaText.Body2>
         <AvaText.Heading3>
-          {totalFeeString} {network?.networkToken?.symbol}
+          {totalFeeBig.toString()} {network?.networkToken?.symbol}
         </AvaText.Heading3>
       </Row>
+      <AvaText.Body3
+        currency
+        color={theme.colorText2}
+        textStyle={{ marginTop: 4, alignSelf: 'flex-end' }}>
+        {(Number.parseFloat(totalFeeBig.toString()) * nativeTokenPrice).toFixed(
+          2
+        )}
+      </AvaText.Body3>
     </>
   )
 }
