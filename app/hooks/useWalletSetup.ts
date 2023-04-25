@@ -11,7 +11,7 @@ export interface WalletSetupHook {
     pin: string,
     isResetting: boolean
   ) => Promise<'useBiometry' | 'enterWallet'>
-  enterWallet: (mnemonic: string) => void
+  enterWallet: (mnemonic: string) => Promise<void>
   destroyWallet: () => void
 }
 
@@ -26,10 +26,11 @@ export function useWalletSetup(appNavHook: AppNavHook): WalletSetupHook {
   const accounts = useSelector(selectAccounts)
   const dispatch = useDispatch()
 
-  const enterWallet = (mnemonic: string) => {
-    initWalletWithMnemonic(mnemonic).then(_ =>
+  const enterWallet = async (mnemonic: string) => {
+    await initWalletWithMnemonic(mnemonic)
+    setTimeout(() => {
       appNavHook.navigateToRootWallet()
-    )
+    }, 300)
   }
 
   /**
