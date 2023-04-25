@@ -6,7 +6,7 @@ import {
 } from 'store/balance'
 import BN from 'bn.js'
 import { NetworkContractToken } from '@avalabs/chains-sdk'
-import tokenService from 'services/token/TokenService'
+import { getInstance } from 'services/token/TokenService'
 import networkService from 'services/network/NetworkService'
 import { JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
 import { ethers } from 'ethers'
@@ -59,6 +59,7 @@ export function useFindToken(): FindToken {
       // the token is unknown, fetch basic data
       let tokenData: NetworkContractToken | undefined
       try {
+        const tokenService = getInstance()
         tokenData = await tokenService.getTokenData(address, activeNetwork)
       } catch (e) {
         return UNKNOWN_TOKEN(address)
