@@ -20,7 +20,7 @@ import {
   SimpleTokenPriceResponse,
   VsCurrencyType
 } from '@avalabs/coingecko-sdk'
-import TokenService from 'services/token/TokenService'
+import { getInstance } from 'services/token/TokenService'
 import { BalanceServiceProvider } from 'services/balance/types'
 import NetworkService from 'services/network/NetworkService'
 import { Transaction } from '@sentry/types'
@@ -46,6 +46,7 @@ export class EvmBalanceService implements BalanceServiceProvider {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.balance.evm.get')
       .executeAsync(async () => {
+        const tokenService = getInstance()
         const activeTokenList = network.tokens ?? []
         const tokenAddresses = activeTokenList.map(token => token.address)
         const provider = NetworkService.getProviderForNetwork(
@@ -57,7 +58,7 @@ export class EvmBalanceService implements BalanceServiceProvider {
 
         const tokenPriceDict =
           (assetPlatformId &&
-            (await TokenService.getPricesWithMarketDataByAddresses(
+            (await tokenService.getPricesWithMarketDataByAddresses(
               tokenAddresses,
               assetPlatformId,
               currency as VsCurrencyType
@@ -89,6 +90,7 @@ export class EvmBalanceService implements BalanceServiceProvider {
     network: Network,
     currency: string
   ): Promise<NetworkTokenWithBalance> {
+    const tokenService = getInstance()
     const { networkToken } = network
     const tokenDecimals = networkToken.decimals ?? DEFAULT_DECIMALS
     const nativeTokenId =
@@ -101,7 +103,7 @@ export class EvmBalanceService implements BalanceServiceProvider {
       marketCap,
       vol24,
       change24
-    } = await TokenService.getPriceWithMarketDataByCoinId(
+    } = await tokenService.getPriceWithMarketDataByCoinId(
       nativeTokenId,
       currency as VsCurrencyType
     )
