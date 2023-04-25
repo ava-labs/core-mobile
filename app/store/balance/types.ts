@@ -7,7 +7,8 @@ export type LocalTokenId = string
 export enum TokenType {
   NATIVE = 'NATIVE',
   ERC20 = 'ERC20',
-  ERC721 = 'ERC721'
+  ERC721 = 'ERC721',
+  ERC1155 = 'ERC1155'
 }
 
 type TokenBalanceData = {
@@ -39,10 +40,10 @@ export type TokenWithBalanceERC20 = TokenBalanceData &
     type: TokenType.ERC20
   }
 
-export type TokenWithBalanceERC721 = TokenBalanceData &
+export type NftTokenWithBalance = TokenBalanceData &
   TokenMarketData & {
     tokenId: string
-    type: TokenType.ERC721
+    type: TokenType.ERC721 | TokenType.ERC1155
     address: string
     decimals: number
     description: string
@@ -58,7 +59,7 @@ export type LocalTokenWithBalance = TokenWithBalance & {
 export type TokenWithBalance =
   | NetworkTokenWithBalance
   | TokenWithBalanceERC20
-  | TokenWithBalanceERC721
+  | NftTokenWithBalance
 
 export type Balance = {
   accountIndex: number

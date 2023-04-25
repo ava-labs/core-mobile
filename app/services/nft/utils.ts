@@ -1,5 +1,5 @@
-import { Erc721TokenBalance } from '@avalabs/glacier-sdk'
-import { NFTItemData } from 'store/nft'
+import { Erc1155TokenBalance, Erc721TokenBalance } from '@avalabs/glacier-sdk'
+import { NFTItemData, NftTokenTypes } from 'store/nft'
 import { ipfsResolver } from '@avalabs/utils-sdk'
 import NftProcessor from './NftProcessor'
 import { NftUID } from './types'
@@ -15,16 +15,20 @@ export const convertIPFSResolver = (url: string) => {
 }
 
 export const applyImageAndAspect = async (nftData: NFTItemData) => {
+  if (!nftData.metadata.imageUri) {
+    return nftData
+  }
+
   const [image, aspect, isSvg] = await NftProcessor.fetchImageAndAspect(
-    nftData.image
+    nftData.metadata.imageUri
   )
-  nftData.image = image
+  nftData.metadata.imageUri = image
   nftData.aspect = aspect
   nftData.isSvg = isSvg
   return nftData
 }
 
-export const addMissingFields = (nft: Erc721TokenBalance, address: string) => {
+export const addMissingFields = (nft: NftTokenTypes, address: string) => {
   return {
     ...nft,
     uid: getNftUID(nft),
@@ -32,6 +36,19 @@ export const addMissingFields = (nft: Erc721TokenBalance, address: string) => {
   } as NFTItemData
 }
 
-export const getNftUID = (nft: Erc721TokenBalance): NftUID => {
+export const getNftUID = (nft: NftTokenTypes): NftUID => {
   return nft.address + nft.tokenId
+}
+
+export const isErc721 = (nft: NftTokenTypes): nft is Erc721TokenBalance => {
+  return nft.ercType === 'ERC-721'
+}
+
+export const isErc1155 = (nft: NftTokenTypes): nft is Erc1155TokenBalance => {
+  return nft.ercType === 'ERC-1155'
+}
+
+export const getTokenUri = (nft: NftTokenTypes): string => {
+  // Some Opensea ERC-1155s have an `0x{id}` placeholder in their URL
+  return nft.tokenUri.replace(/0x{id}|{id}/g, nft.tokenId)
 }

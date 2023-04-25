@@ -191,18 +191,24 @@ const CollectibleItem = ({ nft }: { nft: NFTItemData }) => {
       <Row>
         {nft.isSvg ? (
           <View style={{ alignItems: 'center' }}>
-            <SvgXml xml={nft.image} width={80} height={80 * nft.aspect} />
+            <SvgXml
+              xml={nft.metadata.imageUri ?? null}
+              width={80}
+              height={80 * nft.aspect}
+            />
           </View>
         ) : (
           <Image
             style={styles.nftImage}
-            source={{ uri: nft.image }}
+            source={{ uri: nft.metadata.imageUri }}
             width={80}
             height={80}
           />
         )}
         <Space x={16} />
-        <AvaText.Body2 textStyle={{ flex: 1 }}>{nft.name}</AvaText.Body2>
+        <AvaText.Body2 textStyle={{ flex: 1 }}>
+          {nft.metadata.name}
+        </AvaText.Body2>
       </Row>
     </View>
   )
