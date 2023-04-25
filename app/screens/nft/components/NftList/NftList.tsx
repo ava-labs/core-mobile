@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import { FlatList, StyleSheet, View } from 'react-native'
 import ZeroState from 'components/ZeroState'
 import { NFTItemData } from 'store/nft'
@@ -26,9 +26,12 @@ export const NftList = ({
   refresh,
   isRefreshing
 }: Props) => {
-  const onEndReached = ({ distanceFromEnd }: { distanceFromEnd: number }) => {
-    if (distanceFromEnd > 0) fetchNext()
-  }
+  const onEndReached = useCallback(
+    ({ distanceFromEnd }: { distanceFromEnd: number }) => {
+      if (distanceFromEnd > 0) fetchNext()
+    },
+    [fetchNext]
+  )
 
   if (isLoading) return <NftListLoader />
 

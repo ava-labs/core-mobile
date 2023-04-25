@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import {
   Animated,
+  Dimensions,
   InteractionManager,
   Keyboard,
   StyleSheet,
@@ -14,6 +15,12 @@ import DotSVG from 'components/svg/DotSVG'
 import CoreXLogoAnimated from 'components/CoreXLogoAnimated'
 import AvaText from 'components/AvaText'
 import { Subscription } from 'rxjs'
+import ReAnimated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming
+} from 'react-native-reanimated'
 import {
   MnemonicLoaded,
   NothingToLoad,
@@ -35,6 +42,8 @@ const keymap: Map<string, PinKeys> = new Map([
   ['0', PinKeys.Key0],
   ['<', PinKeys.Backspace]
 ])
+const LOGO_HEIGHT = 100
+const TOP_SPACE = 64
 
 type Props = {
   onSignInWithRecoveryPhrase: () => void
@@ -69,6 +78,29 @@ export default function PinOrBiometryLogin({
     timeRemaining
   } = usePinOrBiometryLogin()
 
+  const windowHeight = useMemo(() => Dimensions.get('window').height, [])
+  const logoTranslateY = useSharedValue(0)
+  const opacity = useSharedValue(1)
+
+  const logoTranslateYStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          translateY: withTiming(logoTranslateY.value, {
+            duration: 500,
+            easing: Easing.inOut(Easing.ease)
+          })
+        }
+      ]
+    }
+  })
+
+  const fadeOutStyle = useAnimatedStyle(() => {
+    return {
+      opacity: withTiming(opacity.value)
+    }
+  })
+
   useEffect(() => {
     Keyboard.dismiss()
   }, [])
@@ -99,10 +131,13 @@ export default function PinOrBiometryLogin({
 
   useEffect(() => {
     if (mnemonic) {
-      onLoginSuccess(mnemonic)
+      logoTranslateY.value = (windowHeight - LOGO_HEIGHT) / 2 - TOP_SPACE
+      opacity.value = 0
+      setTimeout(() => {
+        onLoginSuccess(mnemonic)
+      }, 500)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mnemonic])
+  }, [logoTranslateY, mnemonic, onLoginSuccess, opacity, windowHeight])
 
   const generatePinDots = (): Element[] => {
     const dots: Element[] = []
@@ -133,54 +168,64 @@ export default function PinOrBiometryLogin({
     })
     return keys
   }
-
   return (
-    <View
-      style={[styles.verticalLayout, { backgroundColor: theme.background }]}>
-      <Space y={64} />
-      <View style={styles.growContainer}>
-        {isResettingPin || (
-          <View style={{ alignItems: 'center' }}>
-            <CoreXLogoAnimated size={100} />
-          </View>
-        )}
-        <Animated.View
+    <View style={{ height: '100%', backgroundColor: theme.background }}>
+      <Space y={TOP_SPACE} />
+      {!isResettingPin && (
+        <ReAnimated.View
           style={[
-            { padding: 60 },
             {
-              transform: [
-                {
-                  translateX: jiggleAnim
-                }
-              ]
-            }
+              justifyContent: 'center',
+              alignItems: 'center'
+            },
+            logoTranslateYStyle
           ]}>
-          <View style={styles.dots}>{generatePinDots()}</View>
-        </Animated.View>
-        {disableKeypad && (
-          <View style={{ justifyContent: 'center', alignItems: 'center' }}>
-            <AvaText.Heading3>Login Disabled</AvaText.Heading3>
-            <Space y={8} />
-            <AvaText.Body2>Try again in {timeRemaining}</AvaText.Body2>
-          </View>
-        )}
-      </View>
-      <View style={styles.keyboard}>{keyboard()}</View>
-      {isResettingPin || hideLoginWithMnemonic || (
-        <>
-          <AvaButton.TextMedium onPress={onSignInWithRecoveryPhrase}>
-            Sign In with recovery phrase
-          </AvaButton.TextMedium>
-          <Space y={16} />
-        </>
+          <CoreXLogoAnimated size={LOGO_HEIGHT} />
+          {mnemonic && <AvaText.Heading3>Unlocking wallet...</AvaText.Heading3>}
+        </ReAnimated.View>
       )}
+      {
+        <ReAnimated.View style={fadeOutStyle}>
+          <View style={styles.growContainer}>
+            <Animated.View
+              style={[
+                { padding: 60 },
+                {
+                  transform: [
+                    {
+                      translateX: jiggleAnim
+                    }
+                  ]
+                }
+              ]}>
+              <View style={styles.dots}>{generatePinDots()}</View>
+            </Animated.View>
+            {disableKeypad && (
+              <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+                <AvaText.Heading3>Login Disabled</AvaText.Heading3>
+                <Space y={8} />
+                <AvaText.Body2>Try again in {timeRemaining}</AvaText.Body2>
+              </View>
+            )}
+          </View>
+          <View style={styles.keyboard}>{keyboard()}</View>
+          {isResettingPin || hideLoginWithMnemonic || (
+            <>
+              <AvaButton.TextMedium onPress={onSignInWithRecoveryPhrase}>
+                Sign In with recovery phrase
+              </AvaButton.TextMedium>
+              <Space y={16} />
+            </>
+          )}
+        </ReAnimated.View>
+      }
     </View>
   )
 }
 
 const styles = StyleSheet.create({
   verticalLayout: {
-    height: '100%',
+    flexGrow: 1,
     justifyContent: 'flex-end'
   },
   growContainer: {

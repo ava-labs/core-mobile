@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useEffect, useState } from 'react'
+import React, { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import {
   NavigationState,
   SceneRendererProps,
@@ -6,9 +6,11 @@ import {
   TabBarItemProps,
   TabView
 } from 'react-native-tab-view'
-import { View } from 'react-native'
+import { Dimensions, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaButton from 'components/AvaButton'
+
+const initialLayout = { width: Dimensions.get('window').width }
 
 type Route = {
   index: number
@@ -48,24 +50,35 @@ const TabViewAva: TabViewAvaFC = ({
   const [currentIndex, setCurrentIndex] = useState(currentTabIndex)
   const theme = useApplicationContext().theme
 
-  const childrenArray = React.Children.toArray(children)
+  const childrenArray = useMemo(
+    () => React.Children.toArray(children),
+    [children]
+  )
 
   useEffect(() => {
     setCurrentIndex(currentTabIndex)
   }, [currentTabIndex])
 
   // https://github.com/satya164/react-native-tab-view#tabview-props
-  const routes = childrenArray.map((child, index) => {
-    const isValidChild =
-      React.isValidElement(child) && child.type === TabViewAva.Item
-    const title = isValidChild ? child.props.title : index.toString()
+  const routes = useMemo(
+    () =>
+      childrenArray.map((child, index) => {
+        const isValidChild =
+          React.isValidElement(child) && child.type === TabViewAva.Item
+        const title = isValidChild ? child.props.title : index.toString()
 
-    return {
-      key: title,
-      index: index,
-      title: title
-    }
-  })
+        return {
+          key: title,
+          index: index,
+          title: title
+        }
+      }),
+    [childrenArray]
+  )
+
+  const navState = useMemo(() => {
+    return { index: currentIndex, routes }
+  }, [currentIndex, routes])
 
   const scenes = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -147,10 +160,11 @@ const TabViewAva: TabViewAvaFC = ({
   return (
     <TabView
       onIndexChange={handleIndexChange}
-      navigationState={{ index: currentIndex, routes }}
+      navigationState={navState}
       renderScene={scenes}
       renderTabBar={tabBar}
       lazy={lazy}
+      initialLayout={initialLayout}
     />
   )
 }
