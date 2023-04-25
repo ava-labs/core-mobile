@@ -64,6 +64,7 @@ const TokensTab = () => {
   const renderInactiveNetwork = (item: ListRenderItemInfo<Network>) => {
     return (
       <Animated.View
+        sharedTransitionTag={'inactive network card'}
         exiting={FadeOutUp.duration(300)}
         entering={FadeInDown.delay(300).duration(300)}>
         <InactiveNetworkCard network={item.item} />

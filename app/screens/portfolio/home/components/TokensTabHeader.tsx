@@ -49,6 +49,7 @@ export const TokensTabHeader = () => {
         Networks
       </AvaText.Heading3>
       <Animated.View
+        sharedTransitionTag={'active network card'}
         key={network.chainId}
         entering={FlipInEasyX.delay(300)}
         exiting={FlipOutEasyX.duration(300)}>
