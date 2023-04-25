@@ -23,9 +23,7 @@ import {
   useBeforeRemoveListener
 } from 'hooks/useBeforeRemoveListener'
 import { usePostCapture } from 'hooks/usePosthogCapture'
-import { View } from 'react-native'
-import CoreXLogoAnimated from 'components/CoreXLogoAnimated'
-import AvaText from 'components/AvaText'
+import OwlLoader from 'components/OwlLoader'
 import { CreateWalletScreenProps } from '../types'
 
 export type CreateWalletStackParamList = {
@@ -83,7 +81,7 @@ const CreateWalletStack: () => JSX.Element = () => {
         />
         <CreateWalletS.Screen
           name={AppNavigation.CreateWallet.Loader}
-          component={Loader}
+          component={OwlLoader}
         />
       </CreateWalletS.Navigator>
     </CreateWalletContext.Provider>
@@ -235,20 +233,6 @@ const TermsNConditionsModalScreen = () => {
       }}
       onReject={() => signOut()}
     />
-  )
-}
-
-const Loader = () => {
-  return (
-    <View
-      style={{
-        flexGrow: 1,
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}>
-      <CoreXLogoAnimated size={100} />
-      <AvaText.Heading3>Unlocking wallet...</AvaText.Heading3>
-    </View>
   )
 }
 

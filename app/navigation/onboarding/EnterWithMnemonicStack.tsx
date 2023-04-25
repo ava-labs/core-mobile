@@ -22,9 +22,7 @@ import {
   useBeforeRemoveListener
 } from 'hooks/useBeforeRemoveListener'
 import { usePostCapture } from 'hooks/usePosthogCapture'
-import CoreXLogoAnimated from 'components/CoreXLogoAnimated'
-import AvaText from 'components/AvaText'
-import { View } from 'react-native'
+import OwlLoader from 'components/OwlLoader'
 import { EnterWithMnemonicScreenProps } from '../types'
 
 export type EnterWithMnemonicStackParamList = {
@@ -73,7 +71,7 @@ const EnterWithMnemonicStack = () => {
         />
         <EnterWithMnemonicS.Screen
           name={AppNavigation.LoginWithMnemonic.Loader}
-          component={Loader}
+          component={OwlLoader}
         />
       </EnterWithMnemonicS.Navigator>
     </EnterWithMnemonicContext.Provider>
@@ -183,20 +181,6 @@ const TermsNConditionsModalScreen = () => {
       }}
       onReject={() => signOut()}
     />
-  )
-}
-
-const Loader = () => {
-  return (
-    <View
-      style={{
-        flexGrow: 1,
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}>
-      <CoreXLogoAnimated size={100} />
-      <AvaText.Heading3>Unlocking wallet...</AvaText.Heading3>
-    </View>
   )
 }
 
