@@ -7,7 +7,7 @@ import {
 } from 'store/balance'
 import { Network, NetworkVMType } from '@avalabs/chains-sdk'
 import { VsCurrencyType } from '@avalabs/coingecko-sdk'
-import TokenService from 'services/token/TokenService'
+import { getInstance } from 'services/token/TokenService'
 import { BalanceServiceProvider } from 'services/balance/types'
 import NetworkService from 'services/network/NetworkService'
 import { BlockCypherProvider, JsonRpcBatchInternal } from '@avalabs/wallets-sdk'
@@ -28,6 +28,7 @@ export class BtcBalanceService implements BalanceServiceProvider {
     return SentryWrapper.createSpanFor(sentryTrx)
       .setContext('svc.balance.btc.get')
       .executeAsync(async () => {
+        const tokenService = getInstance()
         const { networkToken } = network
         const provider = NetworkService.getProviderForNetwork(
           network
@@ -41,7 +42,7 @@ export class BtcBalanceService implements BalanceServiceProvider {
           marketCap,
           vol24,
           change24
-        } = await TokenService.getPriceWithMarketDataByCoinId(
+        } = await tokenService.getPriceWithMarketDataByCoinId(
           nativeTokenId,
           currency as VsCurrencyType
         )
