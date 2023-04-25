@@ -12,6 +12,7 @@ export interface ApplicationContextState {
   theme: AppTheme
   isDarkMode: boolean
   backgroundStyle: BackgroundStyle
+  appBackgroundStyle: AppBackgroundStyle
   navContainerTheme: Theme
   shadow: Shadow
   keyboardAvoidingViewEnabled: boolean
@@ -38,6 +39,11 @@ export declare type Shadow = {
   shadowOffset: { width: number; height: number }
 }
 
+export declare type AppBackgroundStyle = {
+  flex: number
+  backgroundColor: string
+}
+
 export const ApplicationContext = createContext<ApplicationContextState>(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   {} as any
@@ -62,6 +68,11 @@ export const ApplicationContextProvider = ({
     paddingStart: 16,
     paddingEnd: 16
   } as BackgroundStyle)
+
+  const [appBackgroundStyle] = useState({
+    backgroundColor: theme.background,
+    flex: 1
+  } as AppBackgroundStyle)
 
   const [navContainerTheme] = useState({
     dark: isDarkMode,
@@ -90,6 +101,7 @@ export const ApplicationContextProvider = ({
     theme,
     isDarkMode,
     backgroundStyle,
+    appBackgroundStyle,
     navContainerTheme,
     shadow,
     keyboardAvoidingViewEnabled,
