@@ -6,6 +6,7 @@ import {
   coinsMarketChart,
   coinsSearch,
   getBasicCoingeckoHttp,
+  getProCoingeckoHttp,
   simplePrice,
   SimplePriceResponse,
   simpleTokenPrice,
@@ -25,12 +26,27 @@ import {
 import NetworkService from 'services/network/NetworkService'
 import { MarketToken } from 'store/watchlist'
 import xss from 'xss'
+import Config from 'react-native-config'
+import { HttpClient } from '@avalabs/utils-sdk'
+import Logger from 'utils/Logger'
 import { ChartData, GetMarketsParams, PriceWithMarketData } from './types'
 import { transformContractMarketChartResponse } from './utils'
 
 const coingeckoBasicClient = getBasicCoingeckoHttp()
+const coingeckoProClient = getProCoingeckoHttp()
 
 export class TokenService {
+  private client: HttpClient
+  private proApiParams: { coinGeckoProApiKey?: string }
+
+  constructor(private useCoinGeckoPro?: boolean) {
+    this.client = useCoinGeckoPro ? coingeckoProClient : coingeckoBasicClient
+
+    this.proApiParams = this.useCoinGeckoPro
+      ? { coinGeckoProApiKey: Config.COINGECKO_API_KEY }
+      : {}
+  }
+
   /**
    * Get token data for a contract address
    * @param address the contract address
@@ -92,12 +108,13 @@ export class TokenService {
     data = getCache(cacheId)
 
     if (data === undefined) {
-      data = await coinsMarket(coingeckoBasicClient, {
+      data = await coinsMarket(this.client, {
         currency,
         sparkline,
         coinIds,
         perPage,
-        page
+        page,
+        ...this.proApiParams
       })
       setCache(cacheId, data)
     }
@@ -106,8 +123,9 @@ export class TokenService {
   }
 
   async getTokenSearch(query: string): Promise<MarketToken[] | undefined> {
-    const data = await coinsSearch(coingeckoBasicClient, {
-      query
+    const data = await coinsSearch(this.client, {
+      query,
+      ...this.proApiParams
     })
     return data?.coins?.map(coin => {
       return {
@@ -284,10 +302,11 @@ export class TokenService {
     currency: VsCurrencyType = VsCurrencyType.USD
   ) {
     try {
-      const rawData = await coinsMarketChart(coingeckoBasicClient, {
+      const rawData = await coinsMarketChart(this.client, {
         assetPlatformId: coingeckoId,
         currency,
-        days
+        days,
+        ...this.proApiParams
       })
 
       return transformContractMarketChartResponse(rawData)
@@ -298,8 +317,9 @@ export class TokenService {
 
   private async fetchCoinInfo(coingeckoId: string) {
     try {
-      return coinsInfo(coingeckoBasicClient, {
-        assetPlatformId: coingeckoId
+      return coinsInfo(this.client, {
+        assetPlatformId: coingeckoId,
+        ...this.proApiParams
       })
     } catch (e) {
       return Promise.resolve(undefined)
@@ -311,12 +331,13 @@ export class TokenService {
     currencyCode: VsCurrencyType = VsCurrencyType.USD
   ) {
     try {
-      return simplePrice(coingeckoBasicClient, {
+      return simplePrice(this.client, {
         coinIds: coingeckoId,
         currencies: [currencyCode],
         marketCap: true,
         vol24: true,
-        change24: true
+        change24: true,
+        ...this.proApiParams
       })
     } catch (e) {
       return Promise.resolve(undefined)
@@ -329,13 +350,14 @@ export class TokenService {
     currencyCode: VsCurrencyType = VsCurrencyType.USD
   ) {
     try {
-      return simpleTokenPrice(coingeckoBasicClient, {
+      return simpleTokenPrice(this.client, {
         assetPlatformId,
         tokenAddresses,
         currencies: [currencyCode],
         marketCap: true,
         vol24: true,
-        change24: true
+        change24: true,
+        ...this.proApiParams
       })
     } catch (e) {
       return Promise.resolve(undefined)
@@ -343,4 +365,20 @@ export class TokenService {
   }
 }
 
-export default new TokenService()
+let dynamicInstance: TokenService
+const staticInstance = new TokenService(false)
+
+export const getInstance = () => {
+  if (!dynamicInstance) {
+    Logger.error('TokenService undefined')
+  }
+  return dynamicInstance
+}
+
+export const getBasicInstance = () => {
+  return staticInstance
+}
+
+export const createInstance = (useCoinGeckoPro: boolean) => {
+  dynamicInstance = new TokenService(useCoinGeckoPro)
+}

@@ -1,7 +1,7 @@
 import { StackNavigationOptions } from '@react-navigation/stack'
 import AvaText from 'components/AvaText'
 import React from 'react'
-import { View } from 'react-native'
+import { Platform, View } from 'react-native'
 import { Row } from 'components/Row'
 import { AppTheme } from 'contexts/ApplicationContext'
 
@@ -39,6 +39,9 @@ export const MainHeaderOptions = (
     },
     headerTitleAlign: 'left',
     headerLeft: hideHeaderLeft ? () => null : undefined,
+    headerLeftContainerStyle: {
+      paddingLeft: Platform.OS === 'ios' ? 8 : 0
+    },
     headerBackTitleVisible: false,
     headerRight: actionComponent ? () => actionComponent : undefined,
     headerStyle: {

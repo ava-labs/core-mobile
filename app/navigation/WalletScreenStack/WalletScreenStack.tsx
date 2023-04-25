@@ -38,7 +38,7 @@ import SwapScreenStack, {
 import AddressBookStack, {
   AddressBookStackParamList
 } from 'navigation/wallet/AddressBookStack'
-import TokenDetail from 'screens/watchlist/TokenDetail'
+import TokenDetail from 'screens/watchlist/TokenDetails/TokenDetail'
 import ActivityDetail from 'screens/activity/ActivityDetail'
 import OwnedTokenDetail from 'screens/portfolio/OwnedTokenDetail'
 import BridgeScreenStack from 'navigation/wallet/BridgeScreenStack'

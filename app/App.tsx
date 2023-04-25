@@ -5,7 +5,7 @@
  * @flow strict-local
  */
 
-import React, { useState } from 'react'
+import React from 'react'
 import {
   KeyboardAvoidingView,
   LogBox,
@@ -67,10 +67,9 @@ export default function App() {
   }
 
   const context = useApplicationContext()
-  const [backgroundStyle] = useState(context.appBackgroundStyle)
 
   return (
-    <SafeAreaView style={backgroundStyle}>
+    <SafeAreaView style={{ flex: 1 }}>
       <KeyboardAvoidingView
         enabled={context.keyboardAvoidingViewEnabled}
         style={{ flex: 1 }}
