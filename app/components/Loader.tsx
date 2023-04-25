@@ -1,5 +1,5 @@
 import React from 'react'
-import { SafeAreaView, StyleSheet, View } from 'react-native'
+import { StyleSheet, View } from 'react-native'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import AvaText from 'components/AvaText'
 import { ActivityIndicator } from 'components/ActivityIndicator'
@@ -17,26 +17,20 @@ export default function Loader({
   const context = useApplicationContext()
 
   return (
-    <SafeAreaView
+    <View
       style={[
-        { flex: 1 },
+        context.backgroundStyle,
         transparent && { backgroundColor: context.theme.transparent }
       ]}>
-      <View
-        style={[
-          context.backgroundStyle,
-          transparent && { backgroundColor: context.theme.transparent }
-        ]}>
-        <View style={styles.container}>
-          <ActivityIndicator size="large" />
-          {!!message && (
-            <AvaText.LargeTitleRegular textStyle={{ alignSelf: 'center' }}>
-              {message}
-            </AvaText.LargeTitleRegular>
-          )}
-        </View>
+      <View style={styles.container}>
+        <ActivityIndicator size="large" />
+        {!!message && (
+          <AvaText.LargeTitleRegular textStyle={{ alignSelf: 'center' }}>
+            {message}
+          </AvaText.LargeTitleRegular>
+        )}
       </View>
-    </SafeAreaView>
+    </View>
   )
 }
 
