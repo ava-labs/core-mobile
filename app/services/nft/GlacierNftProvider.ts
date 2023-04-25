@@ -37,9 +37,9 @@ export class GlacierNftProvider implements NftProvider {
   ): Promise<NftResponse> {
     Logger.info('fetching nfts using Glacier')
 
-    let erc721BalancesResp: ListErc721BalancesResponse | undefined
+    let erc721BalancesRequest: Promise<ListErc721BalancesResponse> | undefined
     if (pageToken?.erc721 !== '') {
-      erc721BalancesResp = await this.glacierSdk.evm.listErc721Balances({
+      erc721BalancesRequest = this.glacierSdk.evm.listErc721Balances({
         chainId: chainId.toString(),
         address: DevDebuggingConfig.SHOW_DEMO_NFTS ? demoAddress : address,
         // glacier has a cap on page size of 100
@@ -48,9 +48,9 @@ export class GlacierNftProvider implements NftProvider {
       })
     }
 
-    let erc1155BalancesResp: ListErc1155BalancesResponse | undefined
+    let erc1155BalancesRequest: Promise<ListErc1155BalancesResponse> | undefined
     if (pageToken?.erc1155 !== '') {
-      erc1155BalancesResp = await this.glacierSdk.evm.listErc1155Balances({
+      erc1155BalancesRequest = this.glacierSdk.evm.listErc1155Balances({
         chainId: chainId.toString(),
         address: DevDebuggingConfig.SHOW_DEMO_NFTS ? demoAddress : address,
         // glacier has a cap on page size of 100
@@ -59,27 +59,42 @@ export class GlacierNftProvider implements NftProvider {
       })
     }
 
+    const responses = await Promise.allSettled([
+      erc721BalancesRequest,
+      erc1155BalancesRequest
+    ])
+
     const nftBalances = [
-      ...(erc721BalancesResp?.erc721TokenBalances ?? []),
+      ...(responses[0].status === 'fulfilled'
+        ? responses[0].value?.erc721TokenBalances ?? []
+        : []),
       // ERC1155s can have 0 balance, which mean the user does not hold any of the token anymore
       // happens for example when being sold
-      ...(erc1155BalancesResp?.erc1155TokenBalances.filter(
-        nft => nft.balance !== '0'
-      ) ?? [])
+      ...(responses[1].status === 'fulfilled'
+        ? responses[1].value?.erc1155TokenBalances.filter(
+            nft => nft.balance !== '0'
+          ) ?? []
+        : [])
     ]
 
     const fullNftData = nftBalances.map(nft => addMissingFields(nft, address))
 
-    const hasMore =
-      !!erc1155BalancesResp?.nextPageToken ||
-      !!erc721BalancesResp?.nextPageToken
+    const hasMore = responses.some(
+      resp => resp.status === 'fulfilled' && !!resp.value?.nextPageToken
+    )
 
     return {
       nfts: fullNftData,
       nextPageToken: hasMore
         ? {
-            erc1155: erc1155BalancesResp?.nextPageToken,
-            erc721: erc721BalancesResp?.nextPageToken
+            erc721:
+              responses[0].status === 'fulfilled'
+                ? responses[0].value?.nextPageToken
+                : undefined,
+            erc1155:
+              responses[1].status === 'fulfilled'
+                ? responses[1].value?.nextPageToken
+                : undefined
           }
         : ''
     }
