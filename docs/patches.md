@@ -31,3 +31,7 @@ This patch is needed to make sure react-native-flipper on iOS dynamically sets t
 ### rn-dominant-color+1.7.2.patch
 
 Android implementation of `getColorFromURL` will crash when facing urls with `ipfs://` scheme/protocol. The patch allows the method to fail without crashing.
+
+### pino+7.11.0.patch
+
+Calling pino({ level: 'error' }) will throw an error `Cannot assign to read only property 'error' of object`. The patch just replaces Object.create with Object.assign. Pino is the logger of Wallet Connect V2.
