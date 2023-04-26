@@ -1,0 +1,43 @@
+diff --git a/node_modules/rn-dominant-color/android/src/main/java/cl/hasaezs/rndominantcolor/RNDominantColorModule.java b/node_modules/rn-dominant-color/android/src/main/java/cl/hasaezs/rndominantcolor/RNDominantColorModule.java
+index df10440..0835cc0 100644
+--- a/node_modules/rn-dominant-color/android/src/main/java/cl/hasaezs/rndominantcolor/RNDominantColorModule.java
++++ b/node_modules/rn-dominant-color/android/src/main/java/cl/hasaezs/rndominantcolor/RNDominantColorModule.java
+@@ -3,19 +3,19 @@ package cl.hasaezs.rndominantcolor;
+ import android.app.Activity;
+ import android.graphics.Bitmap;
+ import android.graphics.Color;
+-import android.graphics.drawable.Drawable;
+ import android.os.Handler;
+-import android.os.Looper;
++import android.os.HandlerThread;
+ 
+ import androidx.palette.graphics.Palette;
+ 
+-import com.facebook.react.bridge.*;
++import com.facebook.react.bridge.Arguments;
++import com.facebook.react.bridge.Promise;
++import com.facebook.react.bridge.ReactApplicationContext;
++import com.facebook.react.bridge.ReactContextBaseJavaModule;
++import com.facebook.react.bridge.ReactMethod;
++import com.facebook.react.bridge.WritableMap;
+ import com.squareup.picasso.Picasso;
+ 
+-import java.io.IOException;
+-
+-import android.os.HandlerThread;
+-
+ public class RNDominantColorModule extends ReactContextBaseJavaModule {
+ 
+     private final int defaultColor;
+@@ -91,9 +91,10 @@ public class RNDominantColorModule extends ReactContextBaseJavaModule {
+ 
+ 
+                     Bitmap bitmap = null;
++
+                     try {
+                         bitmap = Picasso.get().load(url).resize(200, 200).get();
+-                    } catch (IOException e) {
++                    } catch (Exception e){
+                         promise.reject("", "On bitmap failed");
+                         e.printStackTrace();
+                         handlerThread.interrupt();
