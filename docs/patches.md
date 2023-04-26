@@ -27,3 +27,7 @@ This patch is needed to make sure react-native-flipper on iOS dynamically sets t
 3/ StaticLineGraph.tsx
 - add support for gradient fill
 - add useSVG prop - render graph path as svg. this logic is needed on Android as rendering multiple canvases at once makes the app unresponsive.
+
+### rn-dominant-color+1.7.2.patch
+
+Android implementation of `getColorFromURL` will crash when facing urls with `ipfs://` scheme/protocol. The patch allows the method to fail without crashing.
