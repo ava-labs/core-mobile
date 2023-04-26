@@ -52,7 +52,7 @@ export const initWalletConnect = async (
 
     await WalletConnectService.init(callbacks(listenerApi))
   } catch (e) {
-    Logger.error('Unable to init wallet connect', e)
+    Logger.error('Unable to init wallet connect v2', e)
   }
 }
 
