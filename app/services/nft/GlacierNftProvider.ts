@@ -8,7 +8,7 @@ import { NftResponse } from 'store/nft'
 import Logger from 'utils/Logger'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
 import { GLACIER_URL } from 'utils/glacierUtils'
-import { addMissingFields } from './utils'
+import { addMissingFields, convertIPFSResolver } from './utils'
 
 const demoAddress = '0x188c30e9a6527f5f0c3f7fe59b72ac7253c62f28'
 
@@ -77,7 +77,22 @@ export class GlacierNftProvider implements NftProvider {
         : [])
     ]
 
-    const fullNftData = nftBalances.map(nft => addMissingFields(nft, address))
+    const fullNftData = nftBalances.map(nft => {
+      const imageUri = nft.metadata.imageUri
+
+      return {
+        ...addMissingFields(nft, address),
+        // also try to resolve ipfs image uri if there is one
+        // this allows the app to display the image right away
+        // instead of waiting for all the background processing (fetch metadata, image aspect,...) to finish
+        ...(imageUri && {
+          metadata: {
+            ...nft.metadata,
+            imageUri: convertIPFSResolver(imageUri)
+          }
+        })
+      }
+    })
 
     const hasMore = responses.some(
       resp => resp.status !== 'fulfilled' || !!resp.value?.nextPageToken
