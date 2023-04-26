@@ -4,6 +4,7 @@ import {
   Blockchain,
   useBridgeFeeEstimate,
   useBridgeSDK,
+  useMinimumTransferAmount,
   usePrice,
   WrapStatus
 } from '@avalabs/bridge-sdk'
@@ -52,16 +53,18 @@ export default function useBridge() {
   )
 
   const bridgeFee = useBridgeFeeEstimate(amount) || BIG_ZERO
+  const minimum = useMinimumTransferAmount(amount)
 
   const btc = useBtcBridge(amount)
-  const eth = useEthBridge(amount, bridgeFee)
-  const avalanche = useAvalancheBridge(amount, bridgeFee)
+  const eth = useEthBridge(amount, bridgeFee, minimum)
+  const avalanche = useAvalancheBridge(amount, bridgeFee, minimum)
 
   const defaults = {
     amount,
     setAmount,
     bridgeFee,
-    price
+    price,
+    minimum
   }
 
   if (currentBlockchain === Blockchain.BITCOIN) {
