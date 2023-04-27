@@ -65,7 +65,9 @@ const TokensTab = () => {
     return (
       <Animated.View
         sharedTransitionTag={
-          Platform.OS === 'ios' ? 'inactive-network-card' : undefined
+          Platform.OS === 'ios'
+            ? 'inactive-network-card' + item.index
+            : undefined
         }
         exiting={FadeOutUp.duration(300)}
         entering={FadeInDown.delay(300).duration(300)}>
