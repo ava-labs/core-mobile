@@ -1,6 +1,7 @@
-import testConfig from 'tests/fixtures/bridgeConfig.json'
+import testConfig from 'tests/fixtures/bridgeConfig'
 import Big from 'big.js'
 import { Blockchain, BridgeTransaction } from '@avalabs/bridge-sdk'
+import { assertNotUndefined } from 'utils/assertions'
 import {
   addBridgeTransaction,
   bridgeReducer as reducer,
@@ -58,6 +59,7 @@ describe('bridge - reducer', () => {
 
     it('should update existing config', () => {
       const newConfig = testConfig
+      assertNotUndefined(newConfig.config)
       newConfig.config.critical.addressBlocklist = [
         '0x14dba1194ee20112fe6c3207c0687def0e78bacf'
       ]
