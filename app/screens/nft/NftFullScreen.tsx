@@ -20,6 +20,7 @@ import { of, filter, map, sampleTime, tap, catchError } from 'rxjs'
 import AppNavigation from 'navigation/AppNavigation'
 import { NFTDetailsScreenProps } from 'navigation/types'
 import { SvgXml } from 'react-native-svg'
+import Logger from 'utils/Logger'
 
 const SAMPLE_TIME = 50
 
@@ -109,11 +110,15 @@ export default function NftFullScreen() {
 
   useEffect(() => {
     if (isSvg) return
-    getColorFromURL(imageUrl).then(colors => {
-      setGrabbedBgColor(
-        Platform.OS === 'ios' ? colors.secondary : colors.background
+    getColorFromURL(imageUrl)
+      .then(colors => {
+        setGrabbedBgColor(
+          Platform.OS === 'ios' ? colors.secondary : colors.background
+        )
+      })
+      .catch(e =>
+        Logger.error(`failed to grab dominant colors from url ${imageUrl}`, e)
       )
-    })
   }, [isSvg, imageUrl])
 
   useEffect(() => {

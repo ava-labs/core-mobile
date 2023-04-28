@@ -2,7 +2,6 @@ import React, { FC } from 'react'
 import { useApplicationContext } from 'contexts/ApplicationContext'
 import { GraphPoint, LineGraph } from 'react-native-graph'
 import { SelectionDot } from 'screens/watchlist/SelectionDot'
-import { hapticFeedback } from 'utils/HapticFeedback'
 import { Platform } from 'react-native'
 import { AxisLabel } from './AxisLabel'
 import {
@@ -63,12 +62,14 @@ const SparklineChart: FC<Props> = ({
     return <AxisLabel x={x} value={value} />
   }
 
-  const onGestureStart = () => {
-    hapticFeedback()
-  }
+  // TODO: re-enable haptic feedback after this is fixed
+  // CP-5447: Pixel 6A phone vibrating once a minute when token chart is open
+  // const onGestureStart = () => {
+  //   hapticFeedback()
+  // }
 
   const onGestureEnd = () => {
-    hapticFeedback()
+    // hapticFeedback()
     onInteractionEnded?.()
   }
 
@@ -92,7 +93,7 @@ const SparklineChart: FC<Props> = ({
       enablePanGesture={true}
       SelectionDot={SelectionDot}
       onPointSelected={onPointSelected}
-      onGestureStart={onGestureStart}
+      // onGestureStart={onGestureStart}
       onGestureEnd={onGestureEnd}
       TopAxisLabel={renderTopAxisLabel}
       BottomAxisLabel={renderBottomAxisLabel}
